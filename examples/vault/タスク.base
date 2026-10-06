@@ -1,0 +1,85 @@
+filters:
+  and:
+    - file.inFolder("タスク")
+formulas:
+  残り: due - today()
+  状況: if(done == true, "済", if(due < today(), "期限切れ", "これから"))
+  被リンク: file.backlinks.length
+  埋め込み: file.embeds.length
+  時間: 見積時間.toFixed(1)
+properties:
+  file.name:
+    displayName: 名前
+  note.status:
+    displayName: 状態
+  note.due:
+    displayName: 期限
+  note.priority:
+    displayName: 優先度
+  note.done:
+    displayName: 済
+  formula.残り:
+    displayName: 残り
+  formula.状況:
+    displayName: 状況
+  formula.時間:
+    displayName: 時間(式)
+  formula.被リンク:
+    displayName: 被リンク(式)
+views:
+  - type: table
+    name: 進行中
+    filters:
+      and:
+        - status == "doing"
+    order:
+      - file.name
+      - status
+      - due
+      - priority
+      - 担当
+      - 手順
+    sort:
+      - property: due
+        direction: ASC
+    limit: 10
+  - type: table
+    name: 状態ごと
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - file.name
+      - due
+      - priority
+      - done
+      - tags
+      - 説明
+      - 詳細
+      - メモ
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: 期限
+    order:
+      - file.name
+      - due
+      - formula.残り
+      - formula.状況
+      - done
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: 未対応の式
+    order:
+      - file.name
+      - 見積時間
+      - formula.時間
+      - formula.埋め込み
+  - type: cards
+    name: カード
+    order:
+      - file.name
+      - status

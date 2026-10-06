@@ -1,0 +1,62 @@
+filters:
+  and:
+    - file.inFolder("Tasks")
+formulas:
+  days_left: due - today()
+  state: if(done == true, "done", if(due < today(), "overdue", "upcoming"))
+properties:
+  formula.days_left:
+    displayName: Days left
+  formula.state:
+    displayName: State
+views:
+  - type: table
+    name: Open
+    filters:
+      and:
+        - done == false
+    order:
+      - status
+      - due
+      - priority
+      - owner
+      - estimate
+      - tags
+    sort:
+      - property: due
+        direction: ASC
+    summaries:
+      estimate: Sum
+      due: Earliest
+  - type: table
+    name: By status
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - due
+      - priority
+      - owner
+      - estimate
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: By owner
+    groupBy:
+      property: owner
+      direction: ASC
+    order:
+      - status
+      - due
+      - estimate
+  - type: table
+    name: Due
+    order:
+      - due
+      - formula.days_left
+      - formula.state
+      - done
+    sort:
+      - property: due
+        direction: ASC

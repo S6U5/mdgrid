@@ -1,0 +1,7 @@
+# 試験の環境の言語を日本語に固定する(SR-23。specs/_changes/2026-10-03-language.md)。
+# 文言は LC_ALL・LC_MESSAGES・LANG で英語と日本語に切り替わるので、golden と錠のある試験の
+# 日本語の出力が利用者の環境に左右されないよう、cargo が立てるプロセス(試験と、そこから立てる
+# 実行ファイル)に渡す。英語の試験は scoped(En) か、子の環境に LANG を明示して確かめる。
+[env]
+LC_ALL = { value = "ja_JP.UTF-8", force = true }
+LANG = { value = "ja_JP.UTF-8", force = true }

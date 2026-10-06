@@ -1,0 +1,122 @@
+formulas:
+  状況: if(done == true, "済", if(due < today(), "期限切れ", if(due <= today() + "3d", "もうすぐ", "これから")))
+  優先: if(priority == 1, "高", if(priority == 2, "中", "低"))
+  時間: estimate * 8
+properties:
+  file.name:
+    displayName: タスク
+  file.folder:
+    displayName: フォルダ
+  note.status:
+    displayName: 状態
+  note.priority:
+    displayName: 優先度
+  note.start:
+    displayName: 開始
+  note.due:
+    displayName: 期日
+  note.estimate:
+    displayName: 見積(日)
+  note.done:
+    displayName: 済
+  note.tags:
+    displayName: タグ
+  note.owner:
+    displayName: 主担当
+  note.assignees:
+    displayName: 担当
+  note.parent:
+    displayName: 親
+  formula.状況:
+    displayName: 状況
+  formula.優先:
+    displayName: 優先
+  formula.時間:
+    displayName: 見積(時間)
+views:
+  - type: table
+    name: 今週の作業
+    filters:
+      and:
+        - file.inFolder("プロジェクト")
+        - done != true
+        - due <= today() + "7d"
+    order:
+      - file.name
+      - formula.状況
+      - due
+      - status
+      - assignees
+      - tags
+      - done
+    sort:
+      - property: due
+        direction: ASC
+      - property: priority
+        direction: ASC
+  - type: table
+    name: 担当ごと
+    filters:
+      and:
+        - file.inFolder("プロジェクト")
+    groupBy:
+      property: owner
+      direction: ASC
+    order:
+      - file.name
+      - status
+      - due
+      - owner
+      - assignees
+      - tags
+      - parent
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: 優先度と見積
+    filters:
+      and:
+        - file.inFolder("プロジェクト")
+        - status != "done"
+    order:
+      - file.name
+      - formula.優先
+      - priority
+      - estimate
+      - formula.時間
+      - start
+      - due
+    sort:
+      - property: priority
+        direction: ASC
+      - property: estimate
+        direction: DESC
+    limit: 8
+  - type: table
+    name: 完了
+    filters:
+      and:
+        - file.inFolder("プロジェクト")
+        - done == true
+    order:
+      - file.name
+      - due
+      - assignees
+      - tags
+      - done
+    sort:
+      - property: due
+        direction: DESC
+  - type: table
+    name: 全部
+    order:
+      - file.name
+      - file.folder
+      - status
+      - start
+      - due
+      - done
+      - tags
+      - assignees
+      - parent

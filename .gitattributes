@@ -1,0 +1,4 @@
+# Keep LF everywhere so the golden screens (tests/golden) and notes compare byte for byte on Windows too.
+* text=auto eol=lf
+*.gif binary
+*.png binary

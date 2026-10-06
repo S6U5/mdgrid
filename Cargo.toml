@@ -1,0 +1,46 @@
+[package]
+name = "mdgrid"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.90"
+description = "Browse and edit Markdown frontmatter as a table in the terminal"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["markdown", "frontmatter", "tui", "obsidian", "table"]
+categories = ["command-line-utilities", "text-editors"]
+# Only what builds the binary goes into the crate (specs, docs, tests and examples stay in the repository).
+include = ["/src/**/*.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+repository = "https://github.com/S6U5/mdgrid"
+# Not on crates.io yet (docs/todo.md O-4・O-10).
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "mdgrid"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = "0.30.2"
+unicode-width = "0.2.2"
+unicode-segmentation = "1.13"
+toml = "1.1"
+serde = { version = "1.0", features = ["derive"] }
+saphyr = { version = "0.1", default-features = false }
+saphyr-parser = "0.1.0"
+# 引数の読み取りと、同じ定義から作る補完・man(CLI-13。docs/design.md)。
+clap = { version = "4.6.7", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
+clap_complete = "4.6.11"
+clap_mangen = "0.3.3"
+# 地域の時差(今日の日付。BV-6)。ratatui を通して既に入っている版に機能を足すだけ。
+time = { version = "0.3.55", default-features = false, features = ["std", "local-offset"] }
+# --apply(CLI-17)で、--print --format json の形を読む。
+serde_json = "1"
+
+[dev-dependencies]
+# 書き戻しの性質の試験(Q-8。tests/test_writeback_props.rs)。fork・timeout は使わない。
+proptest = { version = "1.11.0", default-features = false, features = ["std"] }
+# 本物の実行ファイルを疑似端末で動かす試験(Q-10。tests/test_e2e.rs)。unix だけで回す。
+portable-pty = "0.9.0"
+vt100 = "0.16.2"
