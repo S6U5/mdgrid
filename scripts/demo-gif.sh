@@ -1,23 +1,30 @@
 #!/bin/sh
-# Build docs/assets/demo.gif from the gif-* scenes in docs/manual-scenarios.toml.
+# Build docs/assets/demo.gif (or, with `ja` as the first argument, docs/assets/ja/demo.gif with the
+# Japanese screens) from the gif-* scenes in docs/manual-scenarios.toml.
 # Needs: cargo, Python 3.11+, rsvg-convert (librsvg), ffmpeg, and the app-manual skill's tui_shot.py
 # (path in TUI_SHOT). Run from anywhere: the script moves to the repository root.
 set -eu
 cd "$(dirname "$0")/.."
 : "${TUI_SHOT:?set TUI_SHOT to the path of scripts/tui_shot.py in the app-manual skill}"
 PY="${PYTHON:-python3}"
+lang="${1:-en}"
+case "$lang" in
+  en) locale=en_US.UTF-8; out=docs/assets/demo.gif ;;
+  ja) locale=ja_JP.UTF-8; out=docs/assets/ja/demo.gif ;;
+  *) echo "usage: $0 [en|ja]" >&2; exit 2 ;;
+esac
 cargo build --release
 ids=$(grep -o 'id = "gif-[0-9]*"' docs/manual-scenarios.toml | sed 's/id = "\(.*\)"/\1/')
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 for id in $ids; do
   env -u LC_ALL -u LC_MESSAGES "$PY" "$TUI_SHOT" docs/manual-scenarios.toml --out "$work/shots" \
-    --lang en --env LANG=en_US.UTF-8 --only "$id" >/dev/null
+    --lang "$lang" --env LANG="$locale" --only "$id" >/dev/null
 done
 n=0
 for id in $ids; do
   n=$((n + 1))
-  rsvg-convert -w 1000 "$work/shots/en/images/$id.svg" -o "$work/$(printf 'f%02d' "$n").png"
+  rsvg-convert -w 1000 "$work/shots/$lang/images/$id.svg" -o "$work/$(printf 'f%02d' "$n").png"
 done
 # Each frame stays 1.4 s; the last one 3 s. One palette for all frames keeps the file small.
 : > "$work/list.txt"
@@ -32,5 +39,5 @@ printf "file '%s'\n" "$f" >> "$work/list.txt"
 # Variable frame rate keeps one GIF frame per screen; the GIF encoder stores only the changed rectangle.
 ffmpeg -loglevel error -y -f concat -safe 0 -i "$work/list.txt" -fps_mode vfr \
   -vf "split[a][b];[a]palettegen=max_colors=64:stats_mode=full[p];[b][p]paletteuse=dither=none:diff_mode=rectangle" \
-  docs/assets/demo.gif
-ls -l docs/assets/demo.gif
+  "$out"
+ls -l "$out"

@@ -1,5 +1,10 @@
 # mdgrid
 
+[![CI](https://github.com/S6U5/mdgrid/actions/workflows/ci.yml/badge.svg)](https://github.com/S6U5/mdgrid/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/mdgrid.svg)](https://crates.io/crates/mdgrid)
+[![GitHub release](https://img.shields.io/github/v/release/S6U5/mdgrid)](https://github.com/S6U5/mdgrid/releases)
+[![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/mdgrid.svg)](LICENSE-MIT)
+
 **A spreadsheet for your Markdown notes, in the terminal.** mdgrid shows a folder of Markdown files as a table — one row per note, one column per frontmatter key — and lets you edit the values in place. It writes back only the bytes of the values you changed, after showing you the diff.
 
 [日本語](README.ja.md)
@@ -14,9 +19,9 @@
 - **Six color themes besides your terminal's own colors.** Set `theme = "nord"`, `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"` or `"dozy-pink"`; the default keeps your terminal's colors.
 - **A single binary.** Written in Rust. English and Japanese UI. Respects `NO_COLOR`.
 
-## Install
+## 📦 Install
 
-**Prebuilt binaries.** Each release on the GitHub Releases page has archives for Linux (x86_64, aarch64), macOS (Intel, Apple silicon) and Windows (x86_64). Unpack one and put `mdgrid` on your `PATH`. The archive also holds shell completions (`completions/`) and a man page (`mdgrid.1`).
+**Prebuilt binaries.** Each release on the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page has archives for Linux (x86_64, aarch64), macOS (Intel, Apple silicon) and Windows (x86_64). Unpack one and put `mdgrid` on your `PATH`. The archive also holds shell completions (`completions/`) and a man page (`mdgrid.1`).
 
 **From crates.io.** With Rust 1.90 or newer:
 
@@ -34,7 +39,7 @@ cargo install --path . --locked
 
 mdgrid is not on Homebrew yet.
 
-## Quick start
+## 🚀 Quick start
 
 Try it on the demo vault, a small team's task list (copy it first, so saving does not change the repository):
 
@@ -68,7 +73,7 @@ mdgrid ~/notes --readonly
 | `?` | Help: every key, and what the marks in cells mean (`∅`, `!`, `*`, `#` …) |
 | `q` | Quit |
 
-## A closer look
+## 🔍 A closer look
 
 Pick a value that other notes use, or type a new one. Typing narrows the list to the values that contain what you typed:
 
@@ -102,7 +107,7 @@ Pick a color theme in the config (here `theme = "nord"`):
 
 [examples/themes/](examples/themes) has a sample config for each theme: `mdgrid --config examples/themes/nord.toml examples/demo`.
 
-## Use it from scripts
+## 🧰 Use it from scripts
 
 ```sh
 mdgrid ~/notes/Tasks.base --print                         # CSV with a header row
@@ -121,8 +126,9 @@ mdgrid ~/notes --pick path | tr '\n' '\0' | xargs -0 -o vi   # choose notes, the
 
 `--print` never writes to your notes. `--apply` checks every row first and writes nothing if any path, value or read-only cell is a problem; without `--yes` it only shows the diff. A value that is the same as what `--print` wrote is never rewritten, so an unchanged file writes nothing. If a note changes on disk while `--apply --yes` is writing, the notes already written stay written and mdgrid exits with code 1. `--pick` opens the table read-only and prints one line per marked row.
 
-## Documentation
+## 📚 Documentation
 
+- [User manual](docs/manual/en/index.md) — getting started, task guides, the seven themes, and a screenshot of every screen.
 - [Configuration](docs/config.md) — every setting, with defaults. `mdgrid --print-config` prints a commented starting file.
 - [Keys](docs/keys.md) — the default keys of each mode, and how to rebind them.
 - [Obsidian Bases support](docs/obsidian-bases.md) — which parts of `.base` files mdgrid reads, evaluates or ignores.
@@ -130,15 +136,15 @@ mdgrid ~/notes --pick path | tr '\n' '\0' | xargs -0 -o vi   # choose notes, the
 - [Showcase](examples/showcase/README.md) — a sample config and vault (in Japanese) that turn most features on. `examples/vault` covers the edge cases: null, empty and mismatched values, read-only notes, sync conflicts.
 - Shell completions: `mdgrid --completions <bash|zsh|fish|elvish|powershell>`. Man page: `mdgrid --man`.
 
-## Contributing
+## 🤝 Contributing
 
-Bug reports and ideas are welcome as issues; see [CONTRIBUTING.md](CONTRIBUTING.md) (pull requests are limited to collaborators). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
+Found a bug or have an idea? [Open an issue](https://github.com/S6U5/mdgrid/issues/new/choose). mdgrid is maintained by its author together with an AI coding agent (Claude Code), so a clear issue — what you did, what you expected, what happened — is usually all it takes to get a fix or a feature. Pull requests are limited to collaborators; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
 
-## How it is built
+## 🏗️ How it is built
 
 The specification lives in [specs/](specs/README.md) and every change goes through a recorded proposal and decision (in Japanese). Tests that guard requirements decided by a person are locked, so they cannot be weakened silently.
 
-## License
+## 📄 License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
 

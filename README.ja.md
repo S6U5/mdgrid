@@ -1,105 +1,153 @@
 # mdgrid
 
+[![CI](https://github.com/S6U5/mdgrid/actions/workflows/ci.yml/badge.svg)](https://github.com/S6U5/mdgrid/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/mdgrid.svg)](https://crates.io/crates/mdgrid)
+[![GitHub release](https://img.shields.io/github/v/release/S6U5/mdgrid)](https://github.com/S6U5/mdgrid/releases)
+[![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/mdgrid.svg)](LICENSE-MIT)
+
+**Markdown のノートを、ターミナルの表計算のように。** mdgrid は、フロントマター付きの Markdown のフォルダを表で見せ(ノートが行、フロントマターのキーが列)、その場で値を直せる道具です。保存のときは差分を見せてから、直した値のバイトだけを書き戻します。
+
 [English](README.md)
 
-フロントマター付き Markdown の集まりを、ターミナルの表で見て、その場で値を直す道具(Rust 製・単体の実行ファイル)。Obsidian を開かずに、Obsidian Bases の `.base` の table ビューの一部と互換の表を扱う。直したキーの値だけを書き戻し、ファイルの他の部分は1バイトも変えない。
+![mdgrid: 一覧から状態を選ぶ、カレンダーで日付を選ぶ、差分を見て保存する、まとめたビューに切り替える、操作の一覧を開く](docs/assets/ja/demo.gif)
 
-最初の版(版1)の画面と核が揃い、フォルダか `.base` を開いて、表で見る・直す・差分を見て保存する、まで使える。仕様の正本は [specs/](specs/README.md)。
+- **フロントマターを表で直す。** ほかのノートが使っている値から選ぶ(打つと候補が絞られる)、カレンダーで日付を選ぶ、タグとチェックボックスを切り替える、たくさんの行に同じ値を一度に入れる、新しいキーの列を足す、キーの名前を全部のノートで変える・消す、ができます。
+- **ファイルのほかの部分には触らない。** ほかのキー、キーの順、コメント、改行コード、本文は1バイトも変えません。保存のたびにファイルごとの差分を先に見せ、一時ファイルから置き換えて書き、その間に外でファイルが変わっていれば止まります。
+- **Obsidian Bases がわかる。** `.base` を開くと table ビューがタブに並び、絞り込み・並べ替え・まとまり・集計の行(`合計`・`平均`・`最早` など)と式の一部が使えます。Obsidian を入れていなくても動き、`.base` を書き換えることはありません。
+- **シェルになじむ。** `--print` はビューを CSV・JSON・Markdown の表で出し、`--filter` と `--sort` でその場の問い合わせもできます。出した CSV を表計算で直して `--apply` で戻すと、差分を見せて、変わったセルだけを書きます。`--pick` は画面で選んだ行のパスを次のコマンドに渡します。
+- **キーボードで動かせて、迷わない。** Vim のキーも矢印のキーも使え、全部のキーを割り当て直せます。`x`(かセルの右クリック)で、そこでできる操作とキーが出ます。コマンドのパレット(`:`)とヘルプ(`?`)にほかの全部があります。
+- **端末の色のほかに6つの色のテーマ。** 設定に `theme = "nord"`・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"` と書きます。既定は端末の色のままです。
+- **単体の実行ファイル。** Rust 製。画面は英語と日本語。`NO_COLOR` に従います。
 
-## 試す
+## 📦 入れる
 
-ビルド済みのバイナリ(Linux の x86_64・aarch64、macOS の Intel・Apple シリコン、Windows の x86_64。補完と man ページつき)は、GitHub の Releases のページの各リリースにある。crates.io からは Rust 1.90 以上で `cargo install mdgrid --locked`。ソースから作るときは Rust 1.90 以上で:
+**ビルド済みのバイナリ。** [GitHub の Releases](https://github.com/S6U5/mdgrid/releases) の各リリースに、Linux(x86_64・aarch64)、macOS(Intel・Apple シリコン)、Windows(x86_64)のアーカイブがあります。展開して `mdgrid` を `PATH` の通った場所に置きます。シェルの補完(`completions/`)と man ページ(`mdgrid.1`)も入っています。
 
-ビルドする:
+**crates.io から。** Rust 1.90 以上で:
 
 ```sh
-cargo build --release
+cargo install mdgrid --locked
 ```
 
-サンプルの保管庫([examples/vault](examples/vault))を一時フォルダに写して開く:
+**ソースから。**
+
+```sh
+git clone https://github.com/S6U5/mdgrid.git
+cd mdgrid
+cargo install --path . --locked
+```
+
+Homebrew にはまだありません。
+
+## 🚀 試す
+
+日本語の見本の保管庫([examples/vault](examples/vault))で試せます。保存するとファイルが書き換わるので、先に一時フォルダに写します:
 
 ```sh
 cp -R examples/vault /tmp/mdgrid-sample
-target/release/mdgrid /tmp/mdgrid-sample                 # フォルダを既定の表で開く
-target/release/mdgrid /tmp/mdgrid-sample/タスク.base     # .base のビュー(進行中・状態ごと・期限・未対応の式・カード)で開く
-target/release/mdgrid /tmp/mdgrid-sample/タスク/本を返す.md  # .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ
+mdgrid /tmp/mdgrid-sample/タスク.base       # .base のビュー(進行中・状態ごと・期限・未対応の式・カード)
+mdgrid /tmp/mdgrid-sample                   # フォルダの全部のノート
+mdgrid /tmp/mdgrid-sample/タスク/本を返す.md  # .md を渡すと、そのフォルダを開いてその行を選ぶ
 ```
 
-写さずに見るだけなら `--readonly` を付ける:
+英語の見本([examples/demo](examples/demo)。小さなチームの仕事の一覧)もあり、README の画面はこれで撮っています。見本の期日は 2026年10月の初めなので、画面の写しと同じに見るには今日とみなす日を渡します: `MDGRID_TODAY=2026-10-03 mdgrid /tmp/mdgrid-demo/Tasks.base`。
+
+自分のノートを開くときは、`--readonly` を付ければ書き込む心配なく見られます:
 
 ```sh
-target/release/mdgrid examples/vault/タスク.base --readonly
+mdgrid ~/notes --readonly
 ```
-
-注意: `examples/vault` を `--readonly` なしで直接開いて保存すると、リポの中のサンプルが書き換わる。
-
-英語の見本([examples/demo](examples/demo)。小さなチームの仕事の一覧と、4つの table ビューの `Tasks.base`)もある。英語の README の画面はこれで撮っている。見本の期日は 2026年10月の初めなので、それより後は多くが期限切れに見える。画面の写しと同じに見るには、今日とみなす日を `MDGRID_TODAY=2026-10-03` で渡す。
-
-設定と `.base` のビューを一通り有効にした見本([examples/showcase](examples/showcase))は、設定のファイルを `--config` で渡して開く:
-
-```sh
-cp -R examples/showcase /tmp/mdgrid-showcase
-target/release/mdgrid --config /tmp/mdgrid-showcase/config.toml /tmp/mdgrid-showcase/vault/プロジェクト.base
-```
-
-写さずに見るだけなら:
-
-```sh
-target/release/mdgrid --config examples/showcase/config.toml examples/showcase/vault/プロジェクト.base --readonly
-```
-
-設定の全項目(型・既定値・説明・例)は [docs/config.md](docs/config.md)(英語)と [docs/config.ja.md](docs/config.ja.md)(日本語)にある。`mdgrid --print-config` は全項目を既定値と説明のコメント付きの TOML で出すので、設定のファイルの出発点にできる。ノートを開くエディタは設定の `editor`(無ければ `$VISUAL`、`$EDITOR`、`vi` の順)。画面と起動の文言は英語と日本語で、設定の `language`(`auto`・`en`・`ja`。既定の `auto` は `LC_ALL`・`LC_MESSAGES`・`LANG` が `ja` で始まれば日本語、ほかは英語)で選ぶ。
-
-シェルの補完の定義は `mdgrid --completions <シェル>`(bash・zsh・fish・elvish・powershell)、man ページは `mdgrid --man` で出せる:
-
-```sh
-mdgrid --completions zsh > ~/.zfunc/_mdgrid
-mdgrid --man > ~/.local/share/man/man1/mdgrid.1
-```
-
-画面を出さずにビューの表を標準出力に出すには `--print` を付ける(形は `--format csv|json|md`、既定は csv)。行はビューの絞り込みと並べ替えのあと、列はビューの列の並びで、ノートは書き換えない。`--view` は `.base` のビューを先に、無ければ mdgrid のビューを名前で探す:
-
-```sh
-target/release/mdgrid examples/vault/タスク.base --print                     # csv(見出しの行つき)
-target/release/mdgrid examples/vault/タスク.base --print --format json | jq .
-target/release/mdgrid examples/vault --print --format md > 表.md
-target/release/mdgrid examples/vault/タスク/本を返す.md --print --format json   # そのノートの1行だけ
-target/release/mdgrid examples/vault --print --with-path                     # 先頭の列に各行のノートのパス
-target/release/mdgrid examples/vault --print --filter 'status != "done"' --sort due   # .base を書かずに絞って並べる
-target/release/mdgrid /tmp/vault --print --with-path > notes.csv   # 表計算で直して、
-target/release/mdgrid /tmp/vault --apply notes.csv                 # 差分を見る(書かない)
-target/release/mdgrid /tmp/vault --apply notes.csv --yes           # 違うセルだけを書く
-```
-
-`--print` が出すのはビューの列だけで、フォルダの表にはノートの名前の列が無い。どの行がどのノートかを知るには `--with-path` を付ける。`--with-path` を付けて出した CSV・JSON は、直して `--apply` で戻せる(既定は差分だけ。`--yes` で書く。path・値・読むだけのセルに1つでも理由があれば何も書かない。`--print` が出したのと同じ値は書き直さないので、直さずに戻しても何も書かない。書いている途中でノートが外で変わると、書き終えたノートはそのままで、終了コード 1)。`--filter <式>`(`.base` の式。何度でも渡せ、全部を満たす行)と `--sort <列>[:desc]`(何度でも)で、`.base` を書かずに絞って並べられる。`.base` のビューに添えると、絞り込みはビューの絞り込みと両方、並べ替えはビューの並べ替えの代わり。
-
-画面で選んだ行を標準出力に出すには `--pick path|<列の名前>` を付ける。画面は端末(`/dev/tty`)に読むだけで出し、Enter で、印を付けた行(印が無ければ選んでいる行)ごとに、`path` ならノートのパス(起動の引数のフォルダにノートの相対のパスをつないだもの)、列の名前ならその列の値(印なしの素の文字。改行は空白)を1行ずつ出して終わる。`q` と、解く選択・絞り込み・検索が無いときの Esc は、何も出さずに終了コード 1(エディタでは開かない)。標準出力がパイプでも動く:
-
-```sh
-target/release/mdgrid examples/vault --pick path | tr '\n' '\0' | xargs -0 -o vi    # 選んだノートを開く(空白を含むパスでも)
-target/release/mdgrid examples/vault --pick status
-```
-
-既定のキーの割り当てと、割り当て直し(設定の `[keys.<モード>]`)に書く動作の名前の一覧は [docs/keys.md](docs/keys.md)(英語)と [docs/keys.ja.md](docs/keys.ja.md)(日本語)にある。`.base` のうち mdgrid が解釈するもの(読む項目・演算子・関数・`file.*`)と解釈しないものは [docs/obsidian-bases.md](docs/obsidian-bases.md)(英語)と [docs/obsidian-bases.ja.md](docs/obsidian-bases.ja.md)(日本語)にある。書き戻しの安全(1バイトも変えない範囲・読むだけのノートの形と理由・外の変更とのぶつかり・一時ファイルと fsync による書き方)は [docs/safety.md](docs/safety.md)(英語)と [docs/safety.ja.md](docs/safety.ja.md)(日本語)にある。
-
-フロントマターの無いノートと空のフロントマター(`---` が2行だけ)のノートにも、既定で書ける(フロントマターかキーの行が足される)。設定のファイルに `add_frontmatter = false` と書くと、この2つは読むだけになり理由が出る。区切りの間に空行やコメントの行があるものは、空ではなく普通のフロントマターとして扱う。
-
-日付の形・月曜始まりのカレンダー・キーの割り当て直し・検索の欄と、ビュー(今週の作業・担当ごと・優先度と見積・完了・全部)の見どころは [examples/showcase/README.md](examples/showcase/README.md) にある。
-
-`.base` のビューに `summaries` があると、表の下に集計の行(`合計`・`平均`・`最早` など。英語の画面では `Sum`・`Average`・`Earliest`)が出る。値は今見えている行(絞り込みのあと)から計算する。
-
-色のテーマは設定の `theme` で選ぶ。端末の色のままの `"default"`(既定)のほかに、`"nord"`・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"` の6つがある。テーマごとの設定の見本は [examples/themes/](examples/themes) にある(`mdgrid --config examples/themes/nord.toml examples/vault`)。
-
-最初に使うキー:
 
 | キー | 動き |
 |---|---|
-| `?` | ヘルプ(キーの一覧) |
-| `:` | コマンドのパレット |
-| `Enter` | セルを編集する |
+| `Enter` | 選んだセルを編集する |
+| `x` | 選んだセルでできる操作 |
 | `%` | 列の値ごとの件数を見る。値を選ぶとその値の行だけ残す |
 | `A` | 新しいキーの列を足す(値を入れたノートにだけ書く) |
 | `:rename_key`・`:delete_key` | 列のキーの名前を全部のノートで変える・消す(保存の前の差分で見られる) |
 | `Ctrl+S` | 差分を見て保存する |
-| `[` `]` | `.base` のビューを切り替える |
+| `/`・`\` | 検索・打ちながら行を絞る |
+| `o` | ビューの設定: 列・絞り込み・並べ替え・まとまり |
+| `[` `]` | ビューを切り替える |
+| `:` | コマンドのパレット |
+| `?` | ヘルプ: 全部のキーと、セルの印(`∅`・`!`・`*`・`#` など)の意味 |
 | `q` | 終了 |
+
+画面の言葉は設定の `language`(`auto`・`en`・`ja`)で選びます。既定の `auto` は、`LC_ALL`・`LC_MESSAGES`・`LANG` が `ja` で始まれば日本語です。
+
+## 🔍 もう少し詳しく
+
+ほかのノートが使っている値から選ぶか、新しい値を打ちます。打つと、その文字を含む値に絞られます:
+
+![一覧から状態の値を選ぶ](docs/assets/ja/demo-edit-list.svg)
+
+日付の列はカレンダーが開きます:
+
+![カレンダーで日付を選ぶ](docs/assets/ja/demo-calendar.svg)
+
+保存するまで何も書かず、何が変わるかをそのまま見せます:
+
+![1行の差分を見せる保存の確認](docs/assets/ja/demo-save.svg)
+
+列で `%` を押すと値ごとの件数が出て、値を選ぶとその行だけが残ります:
+
+![owner の列の値ごとの件数](docs/assets/ja/demo-freq.svg)
+
+`x` で、選んだセルでできることが出ます:
+
+![セルの操作の一覧](docs/assets/ja/demo-menu.svg)
+
+`.base` のビューは行を見出しでまとめられ、見出しは `Enter` で畳めます:
+
+![状態でまとめた .base のビュー](docs/assets/ja/demo-group.svg)
+
+`summaries` のあるビューは、表の下に集計の行が出ます。値は今見えている行から計算します(見本の `Open` のビューでは、期日の `最早` と見積の `合計`)。
+
+色のテーマは設定で選びます(ここでは `theme = "nord"`):
+
+![Nord のテーマの表](docs/assets/ja/demo-theme.svg)
+
+テーマごとの設定の見本は [examples/themes/](examples/themes) にあります: `mdgrid --config examples/themes/nord.toml examples/demo`。
+
+## 🧰 スクリプトから使う
+
+```sh
+mdgrid ~/notes/Tasks.base --print                         # 見出しの行つきの CSV
+mdgrid ~/notes/Tasks.base --print --format json | jq .
+mdgrid ~/notes --print --format md > table.md
+mdgrid ~/notes/todo.md --print --format json             # そのノートの1行だけ
+mdgrid ~/notes --print --with-path                        # 先頭の列に各行のノートのパス
+mdgrid ~/notes --print --filter 'status != "done"' --sort due   # .base を書かずに絞って並べる
+mdgrid ~/notes --print --with-path > notes.csv             # notes.csv を表計算で直して:
+mdgrid ~/notes --apply notes.csv                          # 差分を見る(何も書かない)
+mdgrid ~/notes --apply notes.csv --yes                    # 変わったセルだけを書く
+mdgrid ~/notes --pick path | tr '\n' '\0' | xargs -0 -o vi   # ノートを選んで開く(空白を含むパスでも)
+```
+
+`--print` が出すのはビューの列だけで、フォルダの表にはノートの名前の列がありません。どの行がどのノートかを知るには `--with-path` を付けます。
+
+`--print` はノートを書き換えません。`--apply` は先に全部の行を確かめ、パス・値・読むだけのセルに1つでも問題があれば何も書きません。`--yes` が無ければ差分を見せるだけです。`--print` が出したのと同じ値は書き直さないので、直さずに戻しても何も書きません。`--apply --yes` で書いている途中にノートが外で変わると、書き終えたノートはそのままで、終了コード 1 で終わります。`--pick` は表を読むだけで開き、印を付けた行ごとに1行を出します。
+
+## 📚 文書
+
+- [説明書](docs/manual/ja/index.md) — はじめかた、やりたいことごとの手順、7つのテーマ、全部の画面の写し。
+- [設定](docs/config.ja.md) — 全部の項目と既定値。`mdgrid --print-config` は説明のコメント付きの設定を出すので、出発点にできます。
+- [キー](docs/keys.ja.md) — モードごとの既定のキーと、割り当て直し方。
+- [Obsidian Bases への対応](docs/obsidian-bases.ja.md) — `.base` のどこを読み、評価し、無視するか。
+- [書き戻しの安全](docs/safety.ja.md) — 何を書き、何に触らないか。読むだけになるノートとその理由。
+- [見本の設定と保管庫](examples/showcase/README.md) — ほとんどの機能を有効にした見本。`examples/vault` は、null・空・型の合わない値、読むだけのノート、同期の競合ファイルなどの端の形をそろえています。
+- シェルの補完は `mdgrid --completions <bash|zsh|fish|elvish|powershell>`、man ページは `mdgrid --man`。
+
+## 🤝 参加する
+
+バグを見つけた、こうなってほしい、という案があれば [Issue を開いて](https://github.com/S6U5/mdgrid/issues/new/choose)ください(日本語で大丈夫です)。mdgrid は作者と AI のコーディングのエージェント(Claude Code)で直しているので、何をして、何を期待し、何が起きたかが分かる Issue があれば、たいていそれだけで直したり機能を足したりできます。Pull request は共同作業者だけにしています。詳しくは [CONTRIBUTING.md](CONTRIBUTING.md) を見てください。セキュリティの問題は [SECURITY.md](SECURITY.md) のとおり非公開で知らせてください。
+
+## 🏗️ 作り方
+
+仕様の正本は [specs/](specs/README.md) にあり、変更はどれも提案と決定の記録を通ります。人が決めた要件を守る試験には錠が掛かっていて、黙って弱めることはできません。
+
+## 📄 ライセンス
+
+[Apache License, Version 2.0](LICENSE-APACHE) と [MIT license](LICENSE-MIT) のどちらかを選んで使えます。
+
+mdgrid は独立のプロジェクトで、Obsidian とは関係がなく、Obsidian の承認を受けたものでもありません。
