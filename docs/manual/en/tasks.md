@@ -20,6 +20,7 @@
 1. Select a cell and press `Enter`. The input depends on the column's type:
    - Text: pick from the values other notes have in this column (when there are at most `candidates` distinct values, 20 by default; otherwise just type), or type a new one.
    - Date: a calendar opens. `←` `→` move by day, `↑` `↓` by week, `PageUp` and `PageDown` by month. You can also type `2026-10-15`, or `+3` for three days from today. `Ctrl+T` is today.
+   - Date and time: the same calendar, with a time field under it. `Ctrl+O` switches to the time field, where `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour. Changing only the day keeps each note's time; you can also type `2026-10-15T09:30`.
    - List (such as `tags`): toggle values from the list of values found in the vault.
    - Checkbox: each `Enter` cycles empty → true → false → empty.これ
    - Number: only values that read as numbers are accepted.

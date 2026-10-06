@@ -67,6 +67,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-06 | [--print に各行のノートのパスの列を足す --with-path(print-with-path)](../_decisions/2026-10-06-print-with-path.md) | accepted | AI | 検証の指摘 | CLI-14 |
 | 2026-10-06 | [.md を渡した --print は、渡したノートの行だけを出す(print-md-rows)](../_decisions/2026-10-06-print-md-rows.md) | accepted | 人 | 人の発言 | CLI-15 |
 | 2026-10-06 | [--print に --filter と --sort を足す(print-filter-sort)](../_decisions/2026-10-06-print-filter-sort.md) | accepted | AI | 検証の指摘 | CLI-16 |

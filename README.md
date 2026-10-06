@@ -11,7 +11,7 @@
 
 ![mdgrid: pick a status, pick a date on a calendar, review the diff and save, switch to a grouped view, open the action menu](docs/assets/demo.gif)
 
-- **Edit frontmatter like a table.** Pick from values other notes already use (type to narrow the list), choose dates on a calendar, toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename and delete a key across all notes.
+- **Edit frontmatter like a table.** Pick from values other notes already use (type to narrow the list), choose dates on a calendar (with a time field for datetime columns), toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename and delete a key across all notes.
 - **Never touches the rest of the file.** Other keys, key order, comments, line endings and the body stay byte-for-byte the same. Every save shows a per-file diff first, writes atomically, and stops if the file changed on disk in the meantime.
 - **Speaks Obsidian Bases.** Open a `.base` file and get its table views as tabs, with filters, sorting, grouping, a summary row (`Sum`, `Average`, `Earliest` …) and a subset of formulas. You don't need Obsidian installed, and mdgrid never rewrites your `.base` files.
 - **Fits the shell.** `--print` writes the view as CSV, JSON or a Markdown table, with `--filter` and `--sort` for one-off queries. Edit that CSV in a spreadsheet and bring it back with `--apply`: it shows the diff and writes only the cells that changed. `--pick` lets you choose rows on screen and prints their paths for the next command.
@@ -138,7 +138,7 @@ mdgrid ~/notes --pick path | tr '\n' '\0' | xargs -0 -o vi   # choose notes, the
 
 ## 🤝 Contributing
 
-Found a bug or have an idea? [Open an issue](https://github.com/S6U5/mdgrid/issues/new/choose). mdgrid is maintained by its author together with an AI coding agent (Claude Code), so a clear issue — what you did, what you expected, what happened — is usually all it takes to get a fix or a feature. Pull requests are limited to collaborators; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
+Found a bug or have an idea? [Open an issue](https://github.com/S6U5/mdgrid/issues/new/choose). mdgrid is maintained by its author together with an AI coding agent, so a clear issue — what you did, what you expected, what happened — is usually all it takes to get a fix or a feature. Pull requests are limited to collaborators; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
 
 ## 🏗️ How it is built
 

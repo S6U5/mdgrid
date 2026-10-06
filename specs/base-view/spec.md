@@ -87,6 +87,7 @@ updated: 2026-10-07
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](../_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-07 | [見本の .base の未対応の式の例を file.embeds に替える(links-backlinks-sample)](../_decisions/2026-10-07-links-backlinks-sample.md) | accepted | 人 | 人の発言 | BV-3, BV-7 |
 | 2026-10-07 | [displayName の無い列の見出しを Obsidian の既定にする(default-headings)](../_decisions/2026-10-07-default-headings.md) | accepted | 人 | 人の発言 | BV-24 |

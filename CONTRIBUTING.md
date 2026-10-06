@@ -1,6 +1,6 @@
 # Contributing to mdgrid
 
-Thanks for your interest. Bug reports and ideas are welcome as issues, in English or Japanese. mdgrid is maintained by its author together with an AI coding agent (Claude Code): issues are read, reproduced and fixed from the report, so the more exact the steps and the notes involved, the faster the fix. Pull requests are limited to collaborators: if you have a fix or a change in mind, open an issue that describes it (a patch or a link to a branch in your fork is fine), and a collaborator will bring it in.
+Thanks for your interest. Bug reports and ideas are welcome as issues, in English or Japanese. mdgrid is maintained by its author together with an AI coding agent: issues are read, reproduced and fixed from the report, so the more exact the steps and the notes involved, the faster the fix. Pull requests are limited to collaborators: if you have a fix or a change in mind, open an issue that describes it (a patch or a link to a branch in your fork is fine), and a collaborator will bring it in.
 
 ## Reporting a bug
 

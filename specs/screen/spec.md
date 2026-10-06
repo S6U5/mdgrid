@@ -82,6 +82,7 @@ updated: 2026-10-07
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
 | 2026-10-07 | [左のノートの欄から共通のフォルダと .md を除き、名前の列があれば名前を出さない(note-column)](../_decisions/2026-10-07-note-column.md) | accepted | 人 | 人の発言 | SR-29 |
+| 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](../_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-06 | [画面のテーマを見本の7つから選べるようにする(themes)](../_decisions/2026-10-06-themes.md) | accepted | 人 | 人の発言 | SR-26 |
 | 2026-10-06 | [テーマの設定の名前と既定、色なしと 256 色の扱い(themes-details)](../_decisions/2026-10-06-themes-details.md) | accepted | AI | AI の提案 | SR-27 |

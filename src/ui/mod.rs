@@ -159,6 +159,8 @@ mod test_review6;
 #[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
+mod test_time_picker;
+#[cfg(test)]
 mod test_trust_notices;
 // 受け入れの試験(書き換えない)の書き方に当たる clippy の指摘は、ここで許す。
 #[cfg(test)]

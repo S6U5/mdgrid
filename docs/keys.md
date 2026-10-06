@@ -125,6 +125,7 @@ Editing a cell in the input box. Letter keys type text, so they have no actions.
 | `Shift+Up` | `prev_year` | In the date calendar, previous year; otherwise the same as Up |
 | `Shift+Down` | `next_year` | In the date calendar, next year; otherwise the same as Down |
 | `Ctrl+t` | `today` | In a date cell, set today's date |
+| `Ctrl+o` | `time_focus` | In a datetime calendar, switch between the day and the time field (on the time field, Up/Down move 15 minutes and Shift+Up/Down one hour) |
 | `Ctrl+d` | `clear` | In a date cell, empty the value and confirm |
 | `Home` | `cursor_home` | Move the cursor to the start |
 | `End` | `cursor_end` | Move the cursor to the end |
@@ -412,6 +413,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `prev_year` — previous year in the date calendar
 - `next_year` — next year in the date calendar
 - `today` — set today's date
+- `time_focus` — switch between the day and the time field of the datetime calendar
 - `cursor_home` — move the cursor to the start
 - `cursor_end` — move the cursor to the end
 - `delete_back` — delete the character before the cursor

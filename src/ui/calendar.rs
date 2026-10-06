@@ -43,6 +43,10 @@ pub(crate) struct Cal {
     picked: bool,
     /// 最後にカレンダーへ読んだ入力の文字(打つたびに読み直す)。
     seen: String,
+    /// 日時の列で、時刻の欄を選んでいるか(CE-30)。選んでいるとき ↑↓・Shift+↑↓ は時刻を動かす。
+    pub on_time: bool,
+    /// 日時の列か(時刻の欄を出す)。
+    datetime: bool,
 }
 
 impl Cal {
@@ -72,6 +76,8 @@ impl Cal {
             time_typed: false,
             picked: false,
             seen: text.to_string(),
+            on_time: false,
+            datetime: entry == Entry::DateTime,
         })
     }
 }
@@ -189,6 +195,33 @@ pub(crate) fn choice(i: &Input, today: i64, fmt: &DateFormat) -> Option<Choice> 
         }
     };
     Some(Choice::Day(day))
+}
+
+/// 時刻の部分(`T09:00`・`T09:00:30+09:00`)の (時, 分, 後ろの秒やタイムゾーン)。読めなければ None。
+fn hm(time: &str) -> Option<(u32, u32, &str)> {
+    let t = time.strip_prefix('T')?;
+    let h = t.get(0..2)?.parse::<u32>().ok()?;
+    let m = t.get(3..5)?.parse::<u32>().ok()?;
+    (t.as_bytes().get(2) == Some(&b':') && h < 24 && m < 60).then(|| (h, m, &t[5..]))
+}
+
+/// 時刻の部分を `step` 分だけ動かす(CE-30・CE-31)。15分の刻みにそろえ、0時をまたいでも日は変えない。
+/// 時刻が無ければ 09:00 から動かす。秒やタイムゾーンは保つ。
+fn step_time(time: &str, step: i32) -> String {
+    let (h, m, rest) = hm(time).unwrap_or((9, 0, ""));
+    let now = (h * 60 + m) as i32;
+    let next = match step {
+        15 => (now / 15 + 1) * 15,
+        -15 if now % 15 != 0 => now - now % 15,
+        s => now + s,
+    }
+    .rem_euclid(24 * 60);
+    format!("T{:02}:{:02}{rest}", next / 60, next % 60)
+}
+
+/// 時刻の欄に出す `HH:MM`(無ければ `--:--`)。
+fn time_label(time: &str) -> String {
+    hm(time).map_or_else(|| "--:--".to_string(), |(h, m, _)| format!("{h:02}:{m:02}"))
 }
 
 /// 日数の (年, 月, 日)。
@@ -349,10 +382,38 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
         row.push(Span::raw("|"));
         out.push(row);
     }
+    if c.datetime {
+        // CE-30: 時刻の欄。選んでいれば反転と `>`(色に頼らない。SR-15)。
+        let label = Msg::CalTime.text();
+        let value = format!(
+            "{}{}",
+            if c.on_time { ">" } else { " " },
+            time_label(&c.time)
+        );
+        let pad = (CAL_W - 2).saturating_sub(width(label) + 2 + width(&value));
+        let st = if c.on_time {
+            Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+        out.push(vec![
+            Span::raw(format!("| {label} ")),
+            Span::styled(value, st),
+            Span::raw(format!("{}|", " ".repeat(pad))),
+        ]);
+    }
     for e in edges(app) {
         out.push(vec![Span::raw(e)]);
     }
     out
+}
+
+/// 日時の列のカレンダーか(時刻の欄と、そのキーを出す)。
+fn datetime_open(app: &App) -> bool {
+    app.input
+        .as_ref()
+        .and_then(|i| i.cal.as_ref())
+        .is_some_and(|c| c.datetime)
 }
 
 /// 下の縁の行: 月・年のキー(CE-23・CE-24)の行と、今日に戻す・空にするのキー(CE-21)の行。どれもキーの表から(SR-4)。
@@ -371,10 +432,13 @@ fn edges(app: &App) -> Vec<String> {
     let reset = [
         key(Action::Today).map(|k| Msg::CalTodayKey.fill(&[&k])),
         key(Action::Clear).map(|k| Msg::CalClearKey.fill(&[&k])),
+        key(Action::TimeFocus)
+            .filter(|_| datetime_open(app))
+            .map(|k| Msg::CalTimeKey.fill(&[&k])),
     ];
     let fits = |items: &[&str]| width(&format!(" {} ", items.join(" "))) <= CAL_W - 2;
     let mut lines: Vec<String> = Vec::new();
-    for group in [jump, reset] {
+    for group in [&jump[..], &reset[..]] {
         let mut items: Vec<&str> = Vec::new();
         for p in group.iter().flatten() {
             if !fits(&[p]) {
@@ -397,9 +461,9 @@ fn edges(app: &App) -> Vec<String> {
     lines
 }
 
-/// 窓の高さ(見出しの縁・曜日・6週・下の縁の行)。
+/// 窓の高さ(見出しの縁・曜日・6週・日時なら時刻の欄・下の縁の行)。
 fn height(app: &App) -> usize {
-    2 + WEEKS + edges(app).len()
+    2 + WEEKS + usize::from(datetime_open(app)) + edges(app).len()
 }
 
 /// 対の2つのキー: 同じ修飾の矢印ならまとめ(`Shift+←` と `Shift+→` → `Shift+←→`)、ほかは `/` で並べる。
@@ -470,6 +534,39 @@ impl App {
             return false;
         };
         let on = shown(self);
+        // CE-30・CE-31: 時刻の欄。
+        if action == Action::TimeFocus {
+            let dt = datetime_open(self);
+            if let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) {
+                if dt && on {
+                    c.on_time = !c.on_time;
+                } else {
+                    self.message = Some(Msg::CalTimeOnly.text().into());
+                }
+            }
+            return true;
+        }
+        let on_time = on
+            && self
+                .input
+                .as_ref()
+                .and_then(|i| i.cal.as_ref())
+                .is_some_and(|c| c.on_time);
+        if on_time {
+            let step = match action {
+                Action::ListUp => 15,
+                Action::ListDown => -15,
+                Action::PrevYear => 60,
+                Action::NextYear => -60,
+                // 時刻の欄では ←→ で日を動かさない。
+                Action::CursorLeft | Action::CursorRight => return true,
+                _ => 0,
+            };
+            if step != 0 {
+                self.time_step(step);
+                return true;
+            }
+        }
         let next = match action {
             Action::CursorLeft if on => sel - 1,
             Action::CursorRight if on => sel + 1,
@@ -521,6 +618,25 @@ impl App {
         c.seen = i.text.clone();
     }
 
+    /// 時刻の欄の時刻を動かし、入力ボックスの文字をその日時にする(CE-30・CE-31)。
+    fn time_step(&mut self, step: i32) {
+        let fmt = &self.date_format;
+        let Some(i) = &mut self.input else {
+            return;
+        };
+        let Some(c) = &mut i.cal else {
+            return;
+        };
+        c.time = step_time(&c.time, step);
+        c.time_typed = true;
+        c.picked = true;
+        i.text = day_text(i.entry, fmt, c.sel, &c.time);
+        i.cursor = i.text.len();
+        i.touched = true;
+        i.fresh = false;
+        c.seen = i.text.clone();
+    }
+
     /// 打った文字が日付として読めれば、カレンダーをその日へ動かす(CE-20)。
     /// 日時は打った時刻を覚え、打ち込みに時刻が無ければ元の値の時刻を保つ(CE-21)。
     pub(crate) fn calendar_follow(&mut self) {
@@ -555,6 +671,13 @@ impl App {
         let (x, y) = (x as usize, y as usize);
         if x < g.x || x >= g.x + CAL_W || y < g.top || y >= g.top + g.h {
             return false;
+        }
+        // CE-30: 時刻の欄のクリックは時刻の欄を選ぶ。
+        if y == g.top + 2 + WEEKS && datetime_open(self) {
+            if let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) {
+                c.on_time = true;
+            }
+            return true;
         }
         let week = (y - g.top).checked_sub(2).filter(|k| *k < WEEKS);
         let col = (x - g.x)

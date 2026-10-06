@@ -76,6 +76,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](../_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-06 | [TOML のフロントマター(+++)のノートを読むだけにする(toml-frontmatter)](../_decisions/2026-10-06-toml-frontmatter.md) | accepted | AI | 検証の指摘 | WB-20 |
 | 2026-10-06 | [キーの名前の変更と削除を、全部のノートにまとめて行う(key-rename-delete)](../_decisions/2026-10-06-key-rename-delete.md) | accepted | 人 | 人の発言 | WB-1, WB-2, CE-29 |

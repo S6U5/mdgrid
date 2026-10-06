@@ -171,6 +171,8 @@ pub enum Action {
     NextMonth,
     PrevYear,
     NextYear,
+    /// 日時のカレンダーで、日と時刻の欄のどちらを選ぶかを切り替える(CE-30・CE-31)。
+    TimeFocus,
     // 保存の確認(WB-9・WB-16)
     SaveAll,
     Back,
@@ -290,6 +292,7 @@ impl Action {
             Action::NextMonth => "next_month",
             Action::PrevYear => "prev_year",
             Action::NextYear => "next_year",
+            Action::TimeFocus => "time_focus",
             Action::SaveAll => "save_all",
             Action::Back => "back",
             Action::NextFile => "next_file",
@@ -738,6 +741,15 @@ pub const BINDINGS: &[Binding] = &[
         "Ctrl+t",
         Action::Today,
         Msg::KeyDateToday,
+        INPUT,
+        0,
+    ),
+    // CE-30・CE-31: 日時のカレンダーの時刻の欄(Tab は確定して右へ、Ctrl+t は今日なので Ctrl+o)。
+    m(
+        Mode::Edit,
+        "Ctrl+o",
+        Action::TimeFocus,
+        Msg::KeyTimeFocus,
         INPUT,
         0,
     ),

@@ -714,6 +714,7 @@ msgs! {
     KeyListDownYear = "Next item/year", "次の候補・次の年";
     KeyDateToday = "Date: today", "日付: 今日";
     KeyDateClear = "Date: clear and confirm", "日付: 空にして確定";
+    KeyTimeFocus = "Datetime: switch between day and time", "日時: 日と時刻を切り替え";
     /// 入力の文字のカーソルの先頭・末尾。
     KeyCursorHome = "Start of text", "先頭";
     KeyCursorEnd = "End of text", "末尾";
@@ -890,6 +891,12 @@ msgs! {
     WdSat = "Sa", "土";
     CalMonthKeys = "{0} month", "{0} 月";
     CalYearKeys = "{0} year", "{0} 年";
+    /// CE-31: 時刻の欄への切り替えのキー。
+    CalTimeKey = "{0} time", "{0} 時刻";
+    /// CE-30: 時刻の欄の見出し。
+    CalTime = "time", "時刻";
+    /// CE-30: 時刻の欄は日時の列だけ。
+    CalTimeOnly = "the time can be set only in datetime inputs", "時刻は日時の列の入力だけ";
     CalTodayKey = "{0} today", "{0} 今日";
     CalClearKey = "{0} clear", "{0} 空";
     CalDateOnly = "this works only in date and datetime inputs", "この操作は日付・日時の列の入力だけ";
