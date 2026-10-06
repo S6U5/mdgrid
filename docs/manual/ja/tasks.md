@@ -8,6 +8,7 @@
 - [新しいノートを作る](#新しいノートを作る)
 - [.base を開く](#base-を開く)
 - [見せ方を決めて保存する](#見せ方を決めて保存する)
+- [フォルダを自分のコマンドにする](#フォルダを自分のコマンドにする)
 - [ほかのコマンドと組む](#ほかのコマンドと組む)
 - [テーマを選ぶ](#テーマを選ぶ)
 - [直せないとき](#直せないとき)
@@ -121,6 +122,30 @@ Obsidian と行き来するには、パレット(`:`)から:
 - `import_base`: `.base` のビューを mdgrid のビューとして取り込む(持てない部分は、落とした項目として出る)
 
 `--readonly` のときはビューの設定を覚えません。
+
+## フォルダを自分のコマンドにする
+
+mdgrid は開いたフォルダ(か `.base`)ごとに、見せる列とその並び・幅、`o` で決めた絞り込み・並べ替え・まとまり、畳んだまとまり、タブとして保存したビューを覚えていて、次に同じフォルダを開くと全部が戻ります。なので、シェルの alias を書くだけで、フォルダが自分のコマンドになります。
+
+`~/.zshrc` か `~/.bashrc` に、フォルダごとに1行書きます:
+
+```sh
+alias tasks='mdgrid ~/notes/Tasks'
+alias books='mdgrid ~/notes/Books'
+alias meetings='mdgrid ~/notes/Meetings --readonly'   # 見るだけ
+alias standup='mdgrid ~/notes/タスク.base --view 状態ごと'   # .base を1つのビューで開く
+```
+
+- `tasks` と打てば、前に使ったときのままのタスクの表が開きます。
+- 覚えないもの: 列の見出しからの一時的な並べ替え、`\` の簡易の絞り込み、`--readonly` で開いたときに変えたこと。
+- fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
+
+出す側も、シェルの関数で同じように作れます:
+
+```sh
+todo() { mdgrid ~/notes/Tasks --print --format md --filter 'status != "done"' --sort due; }
+pick-task() { mdgrid ~/notes/Tasks --pick path; }
+```
 
 ## ほかのコマンドと組む
 

@@ -17,7 +17,7 @@ mdgrid writes only the value of the key you changed (adding a key line when the 
 ## Contents
 
 - [Getting started](getting-started.md) — build, first run on the sample vault, reading the screen, the first keys
-- [Task guides](tasks.md) — edit and save, find and filter, edit many rows, create notes, save a view, use with other commands, choose a theme
+- [Task guides](tasks.md) — edit and save, find and filter, edit many rows, create notes, save a view, give a folder its own command with an alias, use with other commands, choose a theme
 
 ## Reference
 
