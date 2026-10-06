@@ -230,11 +230,10 @@ fn test_cli_3_config_path_follows_xdg_config_home() {
     let saved_home = std::env::var_os("HOME");
 
     let result = std::panic::catch_unwind(|| {
-        std::env::set_var("XDG_CONFIG_HOME", "/tmp/mdgrid-xdg-test");
-        assert_eq!(
-            config_path(),
-            Some(PathBuf::from("/tmp/mdgrid-xdg-test/mdgrid/config.toml"))
-        );
+        // 絶対パスでない値は無視する決まりなので、どの OS でも絶対パスになる一時フォルダの下を使う。
+        let xdg = std::env::temp_dir().join("mdgrid-xdg-test");
+        std::env::set_var("XDG_CONFIG_HOME", &xdg);
+        assert_eq!(config_path(), Some(xdg.join("mdgrid").join("config.toml")));
 
         std::env::remove_var("XDG_CONFIG_HOME");
         std::env::set_var("HOME", "/tmp/mdgrid-home-test");

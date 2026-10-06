@@ -5257,14 +5257,14 @@
     "ids": [
       "BV-24"
     ],
-    "sha": "7fd399cada8ef276",
+    "sha": "858e80a96bc92a6c",
     "by": "specs/_decisions/2026-10-07-default-headings.md"
   },
   "tests/test_default_headings.rs::test_bv_24_display_name_wins": {
     "ids": [
       "BV-24"
     ],
-    "sha": "7d9ad9d2ea38b55e",
+    "sha": "4e99c03f5a29e61c",
     "by": "specs/_decisions/2026-10-07-default-headings.md"
   },
   "src/ui/test_note_column.rs::test_sr_29_common_folder": {

@@ -27,8 +27,9 @@ impl Drop for Tmp {
     }
 }
 
-fn header(base: &str) -> String {
-    let t = Tmp::new("h");
+fn header(name: &str, base: &str) -> String {
+    // 並列の試験で一時フォルダが重ならないように、試験ごとの名前を入れる。
+    let t = Tmp::new(name);
     std::fs::write(t.0.join("a.md"), "---\nstatus: todo\nprice: 3\n---\n").unwrap();
     std::fs::write(t.0.join("v.base"), base).unwrap();
     let out = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
@@ -53,7 +54,7 @@ fn header(base: &str) -> String {
 fn test_bv_24_default_headings() {
     let base = "formulas:\n  価格: price * 2\nviews:\n  - type: table\n    name: t\n    order:\n      - file.name\n      - formula.価格\n      - status\n      - file.ctime\n      - file.mtime\n      - file.ext\n      - file.folder\n";
     assert_eq!(
-        header(base),
+        header("defaults", base),
         "file name,価格,status,created time,modified time,file extension,file folder"
     );
 }
@@ -61,5 +62,5 @@ fn test_bv_24_default_headings() {
 #[test]
 fn test_bv_24_display_name_wins() {
     let base = "formulas:\n  価格: price * 2\nproperties:\n  file.name:\n    displayName: 名前\n  formula.価格:\n    displayName: 値段\nviews:\n  - type: table\n    name: t\n    order:\n      - file.name\n      - formula.価格\n";
-    assert_eq!(header(base), "名前,値段");
+    assert_eq!(header("display", base), "名前,値段");
 }
