@@ -1,0 +1,5288 @@
+{
+  "src/source/test_markdown_unit.rs::scalar_in_list_column_is_locked_and_counted": {
+    "ids": [
+      "CE-16",
+      "CE-19"
+    ],
+    "sha": "0bf5f29fabde3870",
+    "by": "specs/_decisions/2026-10-07-scalar-list-edit.md"
+  },
+  "src/source/test_markdown_unit.rs::setting_false_refuses_save_directly": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "ba020e2d6f395fbf",
+    "from": "e4093b26c9d29697"
+  },
+  "src/source/test_markdown_unit.rs::setting_false_external_change_to_empty_frontmatter_is_changed": {
+    "ids": [
+      "WB-3",
+      "WB-4"
+    ],
+    "sha": "f0cdff8a6ca406c7",
+    "from": "e4093b26c9d29697"
+  },
+  "src/test_changes_unit.rs::undo_keeps_overwrite_base": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "e2c8e4cdbb7a2dcb",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::same_value_compares_types": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "6b5479e908fce339",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::same_value_date_compares_with_read_string": {
+    "ids": [
+      "WB-17",
+      "WB-18"
+    ],
+    "sha": "50338c182068fbdf",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::same_value_compares_lists_by_strings": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "281196f58ffed6b0",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::int_float_compare_without_rounding": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "5559bd84c7adca02",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::external_change_to_same_value_drops_pending": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "d28c12ac4850dda2",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::overwrite_seen_drops_same_and_keeps_other_cells": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "4389163a070645e4",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::set_each_applies_per_row_values_as_one_step": {
+    "ids": [
+      "CE-10",
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "28664d54ca930263",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::drop_same_keeps_redo": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "68d379159fb0365b",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::undo_after_overwrite_does_not_requote_same_value": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "28f4add96ea7191e",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::save_drops_row_whose_cells_all_match_read": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "9dabed01bc1877ee",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::revert_empties_row_state_and_undo_restores_mark": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "c7d7ff703c89011c",
+    "from": "6e0262510200155f"
+  },
+  "src/test_changes_unit.rs::scalar_onto_list_cell_is_skip": {
+    "ids": [
+      "CE-16",
+      "CE-18"
+    ],
+    "sha": "f2846caf321c7f2a",
+    "from": "6e0262510200155f"
+  },
+  "src/test_config_unit.rs::test_sr_8_blank_is_same_as_empty": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "524ca7ddcc246b15",
+    "from": "eecbcbe5fea91049"
+  },
+  "src/test_config_unit.rs::test_cli_12_every_item_is_read": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "595f88b329154c8e",
+    "from": "eecbcbe5fea91049"
+  },
+  "src/test_config_unit.rs::test_cli_12_items_have_descriptions": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "559e5e2f5e8eedf5",
+    "from": "eecbcbe5fea91049"
+  },
+  "src/test_config_unit.rs::test_ce_22_config_date_items_wrong_types_warn": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "6585e9b98404e64a",
+    "from": "eecbcbe5fea91049"
+  },
+  "src/test_config_unit.rs::test_nv_23_config_search_bar": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "26e3c83e4473a74b",
+    "from": "eecbcbe5fea91049"
+  },
+  "src/test_main.rs::test_cli_11_print_config_arg": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "38be946704e984d7",
+    "from": "ee63348f95d63a91"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_fixed_values_from_expr": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "dde63fbbebf3dda8",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_prefill_merges_list_and_skips_file_columns": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "2d20027eb9bb3091",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_26_answer_replaces_set_value": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "3b78e006b1c32596",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_note_path_trims_and_refuses_folder_name": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "42597d5ed7b84afc",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_spaced_dotdot_does_not_escape": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "bae019c80a78782e",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_obsidian_bad_chars_and_dot_parts_are_refused": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "faa9f21d5f5eb2bf",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_27_views_date_survives_load_save_load": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "a1b4712b7c298ff1",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_expr_prefill_keeps_row_in_view": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "4c551f2d55766d0b",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_settings_prefill_keeps_row_in_view": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "55fd3e149490a041",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_25_has_tag_goes_into_tags": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "44ee8dbd95990c0a",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_newnote_unit.rs::test_ce_26_empty_answer_drops_preset_values": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "f469eb2aa06bc5e3",
+    "from": "96fca98f3fd3eec0"
+  },
+  "src/test_settings_unit.rs::test_nv_17_keys_toml_form": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "9f610f885df5dc08",
+    "from": "dd8046ba6aa3758c"
+  },
+  "src/test_settings_unit.rs::test_nv_15_inherit_drops_emptied_groups": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "83fac6898f7413b3",
+    "from": "dd8046ba6aa3758c"
+  },
+  "src/test_settings_unit.rs::test_nv_15_sort_list_value_in_non_list_column_skips_empty_elements": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "7f0a5ebcaa874c59",
+    "from": "dd8046ba6aa3758c"
+  },
+  "src/test_settings_unit.rs::test_nv_17_broken_settings_keep_other_state": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "49659cae072f6bd7",
+    "from": "dd8046ba6aa3758c"
+  },
+  "src/test_types_unit.rs::date_format_rejects_ambiguous_and_duplicate_parts": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "a6d4746376e0e12c",
+    "from": "4b2d7c5bd0f13c5e"
+  },
+  "src/test_types_unit.rs::date_input_weekday_mismatch_and_century": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "9f43fd0b70266fa7",
+    "from": "4b2d7c5bd0f13c5e"
+  },
+  "src/test_views_unit.rs::test_bv_19_keep_drop_match_settings": {
+    "ids": [
+      "BV-19",
+      "NV-14"
+    ],
+    "sha": "76d5f3f09bb5c58a",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_contains_and_empty_match_settings": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "9a05412f47c905a2",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_cmp_match_settings": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "bda8ee9284a2aabe",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_review_cases_are_fixed_or_noted": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "eebe8bbb722b93b1",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_to_base_typed_and_notes": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "2caca6cd19bfbeb7",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_column_names_are_quoted": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "73a72413a9eb9a92",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_to_base_quotes_strings_for_yaml": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "01bb449b89714374",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_to_base_hidden_without_order_is_dropped": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "e09f0e27bcb1e387",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_views_unit.rs::test_bv_19_from_base_nested_filters_and_extras": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "d35dd9dc3b33d835",
+    "from": "7422b5edd6eec77c"
+  },
+  "src/test_writeback_unit.rs::block_list_keeps_remaining_lines_byte_for_byte": {
+    "ids": [
+      "CE-18",
+      "WB-1"
+    ],
+    "sha": "b2e7d2e9d8a3213c",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::flow_list_quotes_values_with_quote_chars": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "4692b5c8461fea35",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::date_shapes_and_quotes": {
+    "ids": [
+      "WB-18"
+    ],
+    "sha": "2c30ab2638961d55",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::prepend_same_key_twice_keeps_one_line_with_later_value": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "18e4dd3525cac385",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::prepend_quotes_yaml11_bool_key": {
+    "ids": [
+      "WB-3",
+      "WB-7"
+    ],
+    "sha": "f87d988c51d42e9c",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::prepend_refuses_newline_and_bad_date": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "6213e7d70b371a83",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::prepend_misquote_is_caught_by_verify": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "b7f1ba7dadca3a71",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::verify_prepended_checks_body_keys_and_delimiters": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "b0f6c3cac0e4aa7b",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::fill_empty_same_key_twice_misquote_and_no_edits": {
+    "ids": [
+      "WB-3",
+      "WB-6"
+    ],
+    "sha": "02cef22d84e36753",
+    "from": "48592c01f66b31b3"
+  },
+  "src/test_writeback_unit.rs::verify_filled_checks_outside_bytes_and_keys": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "d112535c7b95d1ec",
+    "from": "48592c01f66b31b3"
+  },
+  "src/ui/test_calendar.rs::test_ce_20_calendar_select_and_type": {
+    "ids": [
+      "CE-20"
+    ],
+    "sha": "2c18eeb1ee8726f8",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_20_invalid_typing_keeps_input_and_esc_cancels": {
+    "ids": [
+      "CE-20"
+    ],
+    "sha": "1219111622fe0258",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_20_click_a_day": {
+    "ids": [
+      "CE-20"
+    ],
+    "sha": "e1e28493a9024c57",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_22_short_formats_keep_year": {
+    "ids": [
+      "CE-20",
+      "CE-22"
+    ],
+    "sha": "3e32ac54a6e6bb3c",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_10_bulk_datetime_keeps_each_rows_time": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "450bb408ab397109",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_21_calendar_above_when_no_room_below": {
+    "ids": [
+      "CE-20"
+    ],
+    "sha": "f81792e46aec98a0",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_10_bulk_date_with_calendar": {
+    "ids": [
+      "CE-10",
+      "CE-20"
+    ],
+    "sha": "106ee8cb4c4285ce",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_22_date_format_in_table_and_input": {
+    "ids": [
+      "CE-22",
+      "WB-18"
+    ],
+    "sha": "dcaa6c0566a1df1e",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_23_shift_left_right_moves_month": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "6f79361396e9047b",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_23_shift_left_clamps_to_month_end": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "fbc7bdf9c9b3f8d0",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_23_ce_24_keys_on_bottom_edge": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "8b22e5272bd183b6",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_calendar.rs::test_ce_23_no_calendar_shift_right_keeps_date": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "667dd0e215857f82",
+    "from": "e7166222477ef5af"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_false_full_cycle_returns_to_original": {
+    "ids": [
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "75ddb74fe298a3e1",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_keyless_note_saves_false": {
+    "ids": [
+      "CE-4"
+    ],
+    "sha": "3658a8034c9e66ca",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_true_toggles_to_false": {
+    "ids": [
+      "CE-4"
+    ],
+    "sha": "b0893a548a913c4f",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_empty_value_toggles_to_true": {
+    "ids": [
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "2e3b53a45fc0bd3a",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_ce_10_bulk_toggle_follows_current_row": {
+    "ids": [
+      "CE-10",
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "e947e3e32c9ed3cf",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_ce_10_bulk_toggle_from_empty_current_row": {
+    "ids": [
+      "CE-10",
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "78cc95bbee8dc0a8",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_empty_string_toggles_to_true": {
+    "ids": [
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "63f464ace244bbc5",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_ce_10_bulk_empty_string_row_is_empty": {
+    "ids": [
+      "CE-10",
+      "CE-4"
+    ],
+    "sha": "fad7a215ad21083c",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_ce_10_bulk_skips_mismatched_rows": {
+    "ids": [
+      "CE-10",
+      "CE-4"
+    ],
+    "sha": "5d751d236fe22c27",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_detail_view_cycles": {
+    "ids": [
+      "CE-4"
+    ],
+    "sha": "10e9afaf79daa2bf",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state.md"
+  },
+  "src/ui/test_click_name.rs::test_sr_19_name_click_other_row_selects_only": {
+    "ids": [
+      "SR-19"
+    ],
+    "sha": "ba4a49ec05466381",
+    "from": "7152558f2e621bf0"
+  },
+  "src/ui/test_click_name.rs::test_sr_19_name_click_selected_row_opens_editor_and_reloads": {
+    "ids": [
+      "SR-19",
+      "SR-8"
+    ],
+    "sha": "729a5dbdb304e22a",
+    "from": "7152558f2e621bf0"
+  },
+  "src/ui/test_click_name.rs::test_sr_19_file_name_cell_click_opens_editor": {
+    "ids": [
+      "SR-19"
+    ],
+    "sha": "b00f66fd1a3a14b9",
+    "from": "7152558f2e621bf0"
+  },
+  "src/ui/test_click_name.rs::test_sr_19_file_path_cell_click_does_not_open": {
+    "ids": [
+      "SR-19"
+    ],
+    "sha": "4d311b870a38072c",
+    "from": "7152558f2e621bf0"
+  },
+  "src/ui/test_click_name.rs::test_sr_19_empty_editor_click_same_as_e": {
+    "ids": [
+      "SR-19",
+      "SR-8"
+    ],
+    "sha": "68c4bcd94894b721",
+    "from": "7152558f2e621bf0"
+  },
+  "src/ui/test_click_name.rs::test_sr_19_readonly_click_same_as_e": {
+    "ids": [
+      "SR-19"
+    ],
+    "sha": "fb80fbf30cf3edad",
+    "from": "7152558f2e621bf0"
+  },
+  "src/ui/test_diff.rs::test_wb_9_line_diff_with_context": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "439b800d8d568434",
+    "from": "bf53a609398cbf56"
+  },
+  "src/ui/test_display_more.rs::test_sr_20_column_lines_with_ambiguous_wide_keep_positions": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "67b79c195881d731",
+    "from": "24e7194bdd59137e"
+  },
+  "src/ui/test_display_more.rs::test_sr_20_zebra_counts_note_rows_not_headings": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "ffa96e6612ffc282",
+    "from": "24e7194bdd59137e"
+  },
+  "src/ui/test_display_more.rs::test_sr_20_display_section_scrolls_on_low_screen": {
+    "ids": [
+      "NV-18",
+      "SR-20"
+    ],
+    "sha": "0f1e3404671a2fe0",
+    "from": "24e7194bdd59137e"
+  },
+  "src/ui/test_display_more.rs::test_sr_20_hidden_chips_f_shows_selected_condition": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "3a385b159402f5e9",
+    "from": "24e7194bdd59137e"
+  },
+  "src/ui/test_display_more.rs::test_sr_20_hidden_tabs_header_shows_view_name": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "afbb957599c37492",
+    "from": "24e7194bdd59137e"
+  },
+  "src/ui/test_display_more.rs::test_sr_20_to_base_display_note_is_last": {
+    "ids": [
+      "BV-19",
+      "SR-20"
+    ],
+    "sha": "6937af9600f7cb8e",
+    "from": "24e7194bdd59137e"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_row_numbers_from_config": {
+    "ids": [
+      "SR-20",
+      "SR-21"
+    ],
+    "sha": "520d8b8bd49bef7d",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_row_numbers_follow_sort_and_filter": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "5156368725aac59e",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_row_numbers_skip_group_headings": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "a11f8915a8540fb2",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_settings_screen_has_display_section": {
+    "ids": [
+      "NV-13",
+      "SR-20"
+    ],
+    "sha": "56c6335a6a2cde8f",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_toggle_in_settings_applies_to_that_view_only": {
+    "ids": [
+      "NV-13",
+      "SR-20"
+    ],
+    "sha": "bd61a472cd7264f8",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_saved_native_view_keeps_display": {
+    "ids": [
+      "BV-17",
+      "SR-20"
+    ],
+    "sha": "f6533101b6e76b77",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_zebra_colors_even_rows": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "bee87c0961a036bb",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_zebra_off_by_default": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "b57a90874a4ea1c8",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_zebra_not_without_color": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "f8e13b7c780b9ee1",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_column_lines_default_none_on_draws_bars": {
+    "ids": [
+      "SR-20",
+      "SR-21"
+    ],
+    "sha": "530721683d384198",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_search_bar_hidden_from_settings_screen": {
+    "ids": [
+      "NV-23",
+      "SR-20"
+    ],
+    "sha": "ee75cbfce15dafdf",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_tabs_hidden_but_brackets_switch": {
+    "ids": [
+      "SR-20",
+      "SR-21"
+    ],
+    "sha": "98b41639f6b9b731",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_chips_hidden_but_f_works": {
+    "ids": [
+      "NV-16",
+      "SR-20"
+    ],
+    "sha": "43f532a2eab15fef",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_display_options.rs::test_sr_20_chips_hidden_from_settings_screen": {
+    "ids": [
+      "NV-16",
+      "SR-20"
+    ],
+    "sha": "354e2203b11a003b",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_external.rs::test_sr_8_editor_argv_split": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "5cb4a0d594d6e9cf",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_external.rs::test_sr_8_editor_quotes_and_escapes": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "303e25043a695924",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_external.rs::test_sr_8_editor_reload": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "4c0bb6ccb059fdd8",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_external.rs::test_sr_8_editor_with_pending_marks_external": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "10af71968a085d14",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_external.rs::test_sr_8_editor_missing_program": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "c8b26db5d30689db",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_external.rs::test_sr_8_sigint_while_editor_does_not_kill_mdgrid": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "c112bd493cca5ab4",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_external.rs::test_sr_8_nested_ignore_restores_only_on_last_drop": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "6e382b6bdf45f230",
+    "from": "41851fe9b63811e3"
+  },
+  "src/ui/test_input.rs::test_ce_4_enter_toggles_checkbox": {
+    "ids": [
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "8e87796c49eee716",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_input.rs::test_wb_17_ce_4_empty_checkbox_toggles_back": {
+    "ids": [
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "0d2219d14530a8a0",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_input.rs::test_wb_17_ce_4_ce_10_bulk_toggle_per_row": {
+    "ids": [
+      "CE-10",
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "db200a1467656881",
+    "by": "specs/_decisions/2026-10-06-checkbox-two-state-examples.md"
+  },
+  "src/ui/test_input.rs::test_ce_10_bulk_set": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "6e74f284de17e5e7",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_input.rs::test_ce_10_bulk_skips_read_only_rows": {
+    "ids": [
+      "CE-10",
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "ac66f953a13fcc61",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_input.rs::test_ce_10_bulk_toggle_checkbox": {
+    "ids": [
+      "CE-10",
+      "CE-4"
+    ],
+    "sha": "ef7ba2f6f335f7f7",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_input.rs::test_ce_10_untouched_input_writes_nothing": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "aaa9d8110225428a",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_input.rs::test_cv_2_bulk_list_never_offers_mismatched_value": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "075527a65e6c4b29",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_input.rs::test_ce_10_outside_selection_and_folded_rows": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "4a5f88f62c3a99f2",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_input.rs::test_ce_10_bulk_same_as_current_row": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "d56e3a1a3dc4ea57",
+    "from": "494f51ec618acfb8"
+  },
+  "src/ui/test_keymap.rs::test_cli_12_keys_item_lists_every_mode": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "928bb2f793036e4c",
+    "from": "e47418b5538dfaef"
+  },
+  "src/ui/test_keymap.rs::test_sr_13_default_keys": {
+    "ids": [
+      "NV-2"
+    ],
+    "sha": "2dd5701da875f923",
+    "from": "e47418b5538dfaef"
+  },
+  "src/ui/test_listpick.rs::test_ce_16_open_filter_and_add": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "5e3b89c70916e364",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_listpick.rs::test_ce_19_hash_and_no_duplicates": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "d692d03603ed2b59",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_listpick.rs::test_ce_17_bulk_add_and_remove": {
+    "ids": [
+      "CE-17",
+      "CE-18"
+    ],
+    "sha": "af96694d3d0c65ad",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_listpick.rs::test_ce_17_bulk_skips_read_only_rows": {
+    "ids": [
+      "CE-10",
+      "CE-17",
+      "WB-3"
+    ],
+    "sha": "0577e2d0d8b74320",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_listpick.rs::test_ce_16_tab_never_opens_line_input_on_list": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "92bfd6936772eac8",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_listpick.rs::test_ce_17_bulk_when_current_row_cannot_open": {
+    "ids": [
+      "CE-17"
+    ],
+    "sha": "95978eb6e5bb503e",
+    "by": "specs/_decisions/2026-10-07-scalar-list-edit.md"
+  },
+  "src/ui/test_listpick.rs::test_ce_16_space_in_search": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "4f36540eaf6442d6",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_listpick.rs::test_ce_17_bulk_enter_in_search_only_attaches": {
+    "ids": [
+      "CE-17"
+    ],
+    "sha": "3bb7ac49423909df",
+    "from": "46cf707ec4e67004"
+  },
+  "src/ui/test_native_state.rs::test_bv_19_commands_in_help_and_palette": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "6fc472326af54cc6",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_bv_19_export_dir_of_relative_base": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "479bf4c802374dad",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_bv_18_two_apps_keep_each_others_views": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "019c999274079e90",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_bv_20_applied_settings_and_columns_survive_tabs_and_restart": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "86be6e0d3bbad2bc",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_bv_18_save_as_keeps_moved_columns": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "6ccc6d05c924b7d6",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_bv_19_import_nameless_view_gets_name": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "e7ec48c16b1d0ae6",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_wb_15_readonly_hides_view_buttons_and_commands": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "01787fb27505ab09",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_state.rs::test_nv_18_left_right_follow_button_rows": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "00d1496af8ee80fa",
+    "from": "0ba75d8f40e35959"
+  },
+  "src/ui/test_native_views.rs::test_bv_17_tabs_list_default_and_saved_views": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "98e7a4b96df493f9",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_17_hand_written_views_toml_becomes_tabs": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "c49e36ca4dd34545",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_17_no_new_files_in_notes_folder": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "382aa5908b99cbb6",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_18_save_as_adds_tab": {
+    "ids": [
+      "BV-18",
+      "NV-13"
+    ],
+    "sha": "9b9381d197679ec8",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_18_overwrite_survives_restart": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "0c7f9428b5517c34",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_18_rename_changes_tab": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "35c6532e464d3e50",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_18_delete_removes_tab": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "69799188080db5f9",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_19_export_writes_new_base_and_reports_dropped": {
+    "ids": [
+      "BV-19",
+      "BV-3"
+    ],
+    "sha": "fd2911e2a850b6b5",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_19_export_refuses_existing_base": {
+    "ids": [
+      "BV-19",
+      "BV-3"
+    ],
+    "sha": "4d97ae6533be2b3f",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_native_views.rs::test_bv_19_import_base_view_adds_tab": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "9777d6216f64c1b6",
+    "from": "43e1d70865738057"
+  },
+  "src/ui/test_nav.rs::test_nv_2_quick_filter_and_esc": {
+    "ids": [
+      "NV-2"
+    ],
+    "sha": "570ea694cd8899ed",
+    "from": "f8ae43eceda6b08c"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_header_button_click_creates_note": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "2fa9b513772a4c4e",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_key_a_creates_note": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "348ca7fe803b1900",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_palette_creates_note": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "86149b36067e82ff",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_view_filter_value_is_prefilled_and_row_stays": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "b0c92be91fc53a28",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_subfolder_name_creates_folder": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "dd4ad4b3674a6ba8",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_existing_name_refused_and_retype": {
+    "ids": [
+      "CE-25",
+      "WB-2"
+    ],
+    "sha": "68ddc9da86284afd",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_outside_folder_refused": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "a657d231fb88eded",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_esc_creates_nothing": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "df8014aebace1917",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_25_readonly_creates_nothing": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "3c683a6d82f4e4bb",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_26_ask_number_then_date_with_calendar": {
+    "ids": [
+      "CE-20",
+      "CE-26"
+    ],
+    "sha": "71005406786ffb83",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_26_empty_answer_is_not_written": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "3455c44916e8fcdf",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note.rs::test_ce_26_esc_while_asking_creates_nothing": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "959bb612029c7710",
+    "from": "67bb7ccf0058ac3b"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_26_cleared_filter_value_is_not_written": {
+    "ids": [
+      "CE-25",
+      "CE-26"
+    ],
+    "sha": "5571c816c1e99f98",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_25_palette_after_key_removed": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "488d7d2485d99617",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_26_shift_tab_goes_back_to_name": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "cb9250a41d326125",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_25_bands_show_new_note_keys": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "4468706b12050e39",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_25_low_terminal_does_not_start": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "860ab3a533454c11",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_25_two_folders_have_no_button": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "37b0376d15d82874",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_new_note_more.rs::test_ce_25_guide_shows_real_folder": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "32956577ec2ac51e",
+    "from": "55b052460d00265e"
+  },
+  "src/ui/test_screen.rs::test_sr_18_read_only_cell_reason": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "4fe5e9e82fb80b76",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_screen.rs::test_ce_8_read_only_not_opened": {
+    "ids": [
+      "CE-16",
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "fddadcfabac978dd",
+    "from": "d719e5ffcc6f4ca7"
+  },
+  "src/ui/test_screen.rs::test_wb_17_revert_clears_pending": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "0d8d211a5dc775a1",
+    "from": "d719e5ffcc6f4ca7"
+  },
+  "src/ui/test_screen.rs::test_wb_17_external_same_value_clears_pending": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "3ede89692a3a32e9",
+    "from": "d719e5ffcc6f4ca7"
+  },
+  "src/ui/test_screen.rs::test_wb_17_save_drops_same_before_review": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "9fda4fd60c553671",
+    "from": "d719e5ffcc6f4ca7"
+  },
+  "src/ui/test_search_bar.rs::test_nv_23_bar_is_shown_empty_at_start": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "41e237f74602b4b2",
+    "from": "61fffed9b58f1242"
+  },
+  "src/ui/test_search_bar.rs::test_nv_23_bar_shows_word_and_count": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "120367f11de873c8",
+    "from": "61fffed9b58f1242"
+  },
+  "src/ui/test_search_bar.rs::test_nv_23_config_off_hides_bar_and_uses_bottom_line": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "47ae9ddf13cf2e39",
+    "from": "61fffed9b58f1242"
+  },
+  "src/ui/test_search_bar.rs::test_nv_2_backslash_enters_bar_and_esc_restores": {
+    "ids": [
+      "NV-2"
+    ],
+    "sha": "af4e49efaa16d3c5",
+    "from": "61fffed9b58f1242"
+  },
+  "src/ui/test_search_bar.rs::test_nv_23_click_bar_enters_and_enter_keeps_filter": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "bad0b398282b6bd3",
+    "from": "61fffed9b58f1242"
+  },
+  "src/ui/test_search_bar.rs::test_nv_23_row_click_hits_right_row_below_bar": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "861fba49052c0952",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_search_bar.rs::test_nv_23_low_terminal_bar_not_drawn_ignores_click": {
+    "ids": [
+      "NV-23"
+    ],
+    "sha": "c22a1bf76a8d8ccf",
+    "from": "61fffed9b58f1242"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_13_apply_and_cancel": {
+    "ids": [
+      "NV-13"
+    ],
+    "sha": "ae57da34b9aa15ea",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_13_palette_opens_settings": {
+    "ids": [
+      "NV-13"
+    ],
+    "sha": "0fd84d5028b2aec4",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_16_band_lists_settings": {
+    "ids": [
+      "NV-16"
+    ],
+    "sha": "aaf7b1994191afe0",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_18_settings_screen_golden": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "b4c42b29dfca3ff6",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_18_values_picker_golden": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "aaf73e1f81e329c3",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_14_keep_only_book_from_screen": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "dbe385ae53a9a292",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_14_filter_by_key_not_in_view": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "766d1d9d34b04a5f",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_15_group_off_and_by_column": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "ad582710733e46b3",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_17_settings_survive_restart_per_view": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "dba405bd2cef8e2a",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_19_formula_kind_stable_across_restart": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "bcecf250a068a1f3",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_18_apply_keeps_selected_column_by_name": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "320a526ad47cad52",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_18_click_items_and_buttons": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "8420c6f763a0f15b",
+    "from": "55776366c7f839fd"
+  },
+  "src/ui/test_shift_arrows.rs::test_ce_23_table_shift_left_right_is_left_right": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "cbf1fe777afbec99",
+    "from": "3f2dc3c37085ec1f"
+  },
+  "src/ui/test_shift_arrows.rs::test_ce_23_settings_buttons_shift_left_right": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "df93b2ffd4e93b81",
+    "from": "3f2dc3c37085ec1f"
+  },
+  "src/ui/test_shift_arrows.rs::test_ce_23_chips_shift_left_right": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "2f19048121e214b7",
+    "from": "3f2dc3c37085ec1f"
+  },
+  "src/ui/test_shift_arrows.rs::test_ce_23_search_and_palette_shift_left_right": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "56893eb588d7b001",
+    "from": "3f2dc3c37085ec1f"
+  },
+  "src/ui/test_shift_arrows.rs::test_ce_23_list_pick_shift_left_right": {
+    "ids": [
+      "CE-16",
+      "CE-23"
+    ],
+    "sha": "65ec3327f2d42a61",
+    "from": "3f2dc3c37085ec1f"
+  },
+  "src/ui/test_shift_arrows.rs::test_ce_23_text_input_shift_left_right_moves_cursor": {
+    "ids": [
+      "CE-23"
+    ],
+    "sha": "ced709152e9ae2bf",
+    "from": "3f2dc3c37085ec1f"
+  },
+  "src/ui/test_unwritable.rs::test_wb_5_enter_does_not_open_and_shows_reason": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "faaf95efae10f48f",
+    "from": "5e0c3aa1d078093c"
+  },
+  "src/ui/test_unwritable.rs::test_wb_5_read_only_cell_drawn_with_hash": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "333f067760da427b",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_unwritable.rs::test_wb_5_bulk_skips_read_only_rows_and_keeps_bytes": {
+    "ids": [
+      "CE-10",
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "8131b67fd6300d3d",
+    "from": "5e0c3aa1d078093c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_body_only_note_gets_frontmatter": {
+    "ids": [
+      "WB-1",
+      "WB-3"
+    ],
+    "sha": "4354224992c47fc2",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_crlf_note_gets_crlf_frontmatter": {
+    "ids": [
+      "WB-1",
+      "WB-3"
+    ],
+    "sha": "69e45ea4eb783631",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_no_newline_file_gets_lf": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "fdc17fe5b3ca6a40",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_empty_file_gets_frontmatter": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "e6c414964c6af82a",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_two_keys_one_frontmatter_in_written_order": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "9a523e1b042f898e",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_list_value_is_vertical": {
+    "ids": [
+      "CE-18",
+      "WB-3"
+    ],
+    "sha": "485fd5a9b0bcbc29",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_date_value_is_unquoted": {
+    "ids": [
+      "WB-18",
+      "WB-3"
+    ],
+    "sha": "5299e008fe44a50d",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_null_value_is_bare_key": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "7cf9a6b786931273",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_string_is_quoted_like_wb_7": {
+    "ids": [
+      "WB-3",
+      "WB-7"
+    ],
+    "sha": "7e079858b1e3a545",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_dashes_later_in_body_are_body": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "e015eb462cf56a64",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_added_frontmatter_reparses_to_written_values": {
+    "ids": [
+      "WB-3",
+      "WB-6"
+    ],
+    "sha": "00bd34afd16e098d",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_unreadable_notes_still_refused": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "473dfd1cf840e97c",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_save_adds_frontmatter_and_keeps_body": {
+    "ids": [
+      "WB-3",
+      "WB-6"
+    ],
+    "sha": "d44d7815b69b9b0f",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_source_cell_of_no_frontmatter_note_is_writable": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "19c260617aa085da",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_add_frontmatter.rs::test_wb_3_source_preview_save_and_reread": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "b171fa892752f4ba",
+    "from": "e8835bb667ae6b7c"
+  },
+  "tests/test_changes.rs::test_wb_10_set_many_is_one_step": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "3bfafc454cf188a4",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_ce_10_set_many_skips_unreadable_frontmatter": {
+    "ids": [
+      "CE-10",
+      "WB-3"
+    ],
+    "sha": "56b1b3716e43515f",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_ce_10_set_on_read_only_cell_is_skip": {
+    "ids": [
+      "CE-10",
+      "CE-16",
+      "WB-3"
+    ],
+    "sha": "1b65b24e5a3cb796",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_16_external_change_after_set_marks_and_stops_save": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "23c011cfdb58f0a1",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_4_external_change_after_overwrite_stops_again": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "760ae58218949001",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_4_set_after_external_reload_keeps_old_baseline": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "21433bf35356297c",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_4_external_change_before_set_is_reloaded": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "bba683ee78d53809",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_4_same_size_change_is_detected_by_mtime_and_hash": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "7712b9e56fa7d0e0",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_17_set_back_to_original_drops_pending": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "4942bce113868145",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_17_same_value_on_clean_cell_is_noop": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "1b746799cb586f84",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_17_unquoted_date_revert_keeps_bytes": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "6de0b06167cd9225",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_17_value_types_compared": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "d1e50a4fad37ed91",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_17_set_many_skips_same_value_rows": {
+    "ids": [
+      "CE-10",
+      "WB-17"
+    ],
+    "sha": "51a9937ce2650acd",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_changes.rs::test_wb_17_compares_with_value_read_after_external_change": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "eb19f47fc23e7542",
+    "from": "1d5333d58eb6a532"
+  },
+  "tests/test_config_docs.rs::test_cli_11_print_config_exits_zero": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "8fc21a95b664406f",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_11_output_reads_back_without_warnings_as_default": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "203061a211ab39be",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_11_output_has_every_item_with_comment": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "db3d1875ad72c859",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_11_output_values_are_defaults": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "082d4f0351ddc5b5",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_2_help_mentions_print_config": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "d6e165a10e664ae9",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_12_keys_cover_known_items": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "99b92b04f3477ec1",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_12_parse_knows_every_key": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "90f2f226ed6fe47d",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_12_english_doc_matches_keys": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "5311163d0fde19b3",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_12_japanese_doc_matches_keys": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "684f406590e5e54c",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs.rs::test_cli_12_print_config_matches_keys": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "b3c25b2e1bba4fda",
+    "from": "565954caa0e12f47"
+  },
+  "tests/test_config_docs_values.rs::test_cli_12_english_doc_type_default_example": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "6e27fe441b7c4f78",
+    "from": "806f0365752e7b7a"
+  },
+  "tests/test_config_docs_values.rs::test_cli_12_japanese_doc_type_default_example": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "7f2077c525f213f2",
+    "from": "806f0365752e7b7a"
+  },
+  "tests/test_config_docs_values.rs::test_cli_12_table_defaults_are_real_defaults": {
+    "ids": [
+      "CLI-11",
+      "CLI-12"
+    ],
+    "sha": "2dff78c530f4d7bc",
+    "from": "806f0365752e7b7a"
+  },
+  "tests/test_date_format.rs::test_ce_22_date_format_parse_accepts_common_patterns": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "3aa3debc096029b2",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_date_format_single_digit_parts": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "044c61e3d810773f",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_date_format_weekday_names": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "3552f7011dcf36ee",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_date_format_iso_is_default_shape": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "573b2b66a6d55cfd",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_date_format_parse_rejects_bad_patterns": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "17e199c811595f8b",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_input_iso_accepted_under_any_format": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "270e19f1510b41bb",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_input_configured_format_accepted": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "2456fc6dc21a38b7",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_input_yearless_format_uses_todays_year": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "a16ef1f8202deb84",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_input_roundtrips_formatted_text": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "30bc595b7957d6c3",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_5_input_rejects_invalid_dates": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "dbffb353b132c18f",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_5_input_allows_surrounding_whitespace": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "ba640afd9b15cfae",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_ce_22_input_with_weekday_format": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "10e3e96283290ca6",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_cli_3_config_reads_date_format_and_week_start": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "c9246c5f4eca2939",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_cli_3_config_date_defaults": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "20fbcdb2eb08e576",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_format.rs::test_cli_3_config_bad_date_format_warns_and_uses_default": {
+    "ids": [
+      "CE-22"
+    ],
+    "sha": "9cde94c181cb0813",
+    "from": "ad5a80d0e3f73282"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_plain_date_stays_unquoted": {
+    "ids": [
+      "WB-18",
+      "WB-6"
+    ],
+    "sha": "961ca4a4a1155ea1",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_quoted_date_keeps_quotes": {
+    "ids": [
+      "WB-18"
+    ],
+    "sha": "7e1bb459f7c9783f",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_missing_key_adds_unquoted_line": {
+    "ids": [
+      "WB-1",
+      "WB-18"
+    ],
+    "sha": "00c2543401be9f0a",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_null_and_empty_written_unquoted": {
+    "ids": [
+      "WB-18"
+    ],
+    "sha": "51eb6df31991e325",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_datetime_unquoted": {
+    "ids": [
+      "WB-18"
+    ],
+    "sha": "fee20f8335ace500",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_not_a_date_is_error": {
+    "ids": [
+      "WB-18"
+    ],
+    "sha": "e6e5861002a6c497",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_text_column_still_quoted": {
+    "ids": [
+      "WB-18",
+      "WB-7"
+    ],
+    "sha": "965f4aca48d8d5b0",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_save_writes_unquoted": {
+    "ids": [
+      "WB-18",
+      "WB-6"
+    ],
+    "sha": "e19bb65ed56558b7",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_18_changes_save_date_unquoted": {
+    "ids": [
+      "CE-22",
+      "WB-18"
+    ],
+    "sha": "857de1d6ea8183ea",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_date_unquoted.rs::test_wb_17_same_date_not_pending": {
+    "ids": [
+      "WB-17",
+      "WB-18"
+    ],
+    "sha": "6a1449c0c9c7f9f6",
+    "from": "138e93c8d584ea4c"
+  },
+  "tests/test_display_options.rs::test_sr_21_defaults": {
+    "ids": [
+      "SR-21"
+    ],
+    "sha": "37fd391e13220c1c",
+    "from": "4a2a6095d0fbf60c"
+  },
+  "tests/test_display_options.rs::test_sr_21_reads_each_item": {
+    "ids": [
+      "SR-21"
+    ],
+    "sha": "2e4711f25557e833",
+    "from": "4a2a6095d0fbf60c"
+  },
+  "tests/test_display_options.rs::test_sr_21_display_is_a_known_item": {
+    "ids": [
+      "CLI-12",
+      "SR-21"
+    ],
+    "sha": "3d736096b92e6cba",
+    "from": "4a2a6095d0fbf60c"
+  },
+  "tests/test_display_options.rs::test_sr_21_wrong_type_warns_and_keeps_default": {
+    "ids": [
+      "SR-21"
+    ],
+    "sha": "ccf7444d078bfaee",
+    "from": "4a2a6095d0fbf60c"
+  },
+  "tests/test_display_options.rs::test_sr_21_unknown_item_warns": {
+    "ids": [
+      "SR-21"
+    ],
+    "sha": "96fdc1c5bf7b66be",
+    "from": "4a2a6095d0fbf60c"
+  },
+  "tests/test_display_options.rs::test_sr_21_print_config_has_display": {
+    "ids": [
+      "CLI-11",
+      "SR-21"
+    ],
+    "sha": "7a2e3500e2df52a9",
+    "from": "4a2a6095d0fbf60c"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_config_editor_wins_over_env": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "2114c6e8b5ca3c8e",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_visual_before_editor": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "8e16e32c870fadf3",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_editor_env_when_no_config_or_visual": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "0e8c70d77ba8968f",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_none_falls_back_to_vi": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "f95d54d31f69ee6a",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_empty_is_same_as_absent": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "dab906576e89a6ac",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_value_with_args_kept_whole": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "8a14c7ec0208ddcf",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_config_reads_editor_string": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "ee808f8628b852da",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_config_editor_default_is_absent": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "d27e7f2ebbddf210",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_config_empty_editor_no_warning_and_absent": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "1317ddf3f202e81f",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_config_editor_not_string_warns": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "fd8e8a59e7c204da",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_editor_setting.rs::test_sr_8_config_editor_keeps_other_items": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "90f2ce5aa5df07b7",
+    "from": "65befc37f7062330"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_gets_key_between_delimiters": {
+    "ids": [
+      "WB-1",
+      "WB-3"
+    ],
+    "sha": "fe323cc79b7b2907",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_crlf": {
+    "ids": [
+      "WB-1",
+      "WB-3"
+    ],
+    "sha": "f0a7964b0c8fe1c3",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_without_body": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "b6d97479487c1053",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_1_empty_frontmatter_keeps_other_bytes": {
+    "ids": [
+      "WB-1",
+      "WB-3"
+    ],
+    "sha": "39165faf7418e4df",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_two_keys_in_written_order": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "8d7b16d1b6f434aa",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_list_date_null": {
+    "ids": [
+      "WB-18",
+      "WB-3",
+      "WB-7"
+    ],
+    "sha": "993a166fb11923c9",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_reparses_to_written_values": {
+    "ids": [
+      "WB-3",
+      "WB-6"
+    ],
+    "sha": "7a07bc5685cc9f45",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_6_empty_frontmatter_save_and_corrupt_refused": {
+    "ids": [
+      "WB-3",
+      "WB-6"
+    ],
+    "sha": "734d4d9d1d425d67",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_source_empty_frontmatter_cell_is_writable_by_default": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "a569d5fc2c719a65",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_source_explicit_true_is_same_as_default": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "6f9bca7e8a27813d",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_cli_3_add_frontmatter_setting": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "5a40666f23f117f9",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_setting_false_locks_no_and_empty_frontmatter_with_reasons": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "c3c19b18add7cb3a",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_3_setting_false_changes_skip_and_nothing_written": {
+    "ids": [
+      "CE-10",
+      "WB-3"
+    ],
+    "sha": "840e98175bc2eaf5",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_empty_frontmatter.rs::test_wb_5_other_forms_unaffected_by_setting": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "8020c4110cc84d63",
+    "from": "90ba6ae165c4807f"
+  },
+  "tests/test_examples.rs::test_examples_open_folder": {
+    "ids": [
+      "CE-16",
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "b1639951e2809585",
+    "from": "3783a294b823f307"
+  },
+  "tests/test_examples.rs::test_examples_base_views": {
+    "ids": [
+      "BV-3",
+      "BV-7"
+    ],
+    "sha": "07f7c7292c61e76d",
+    "by": "specs/_decisions/2026-10-07-links-backlinks-sample.md"
+  },
+  "tests/test_examples.rs::test_examples_showcase": {
+    "ids": [
+      "CE-16",
+      "CE-22"
+    ],
+    "sha": "d6a447b2f3d8c994",
+    "from": "3783a294b823f307"
+  },
+  "tests/test_frontmatter.rs::ce_18_block_list_span_only_when_writable": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "9d75ab21f36bac3e",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_5_duplicate_key_is_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "db2383ff72f9765b",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_5_bom_is_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "bd9cdc19c38ab701",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_5_invalid_yaml_is_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "4f891a1aa20f42c3",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_5_unclosed_is_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "ff78ba26e4b6bc3b",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_5_not_utf8_is_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "1e44430bdcdd8eec",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_5_mixed_newlines_is_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "ac37558a3d56a3e4",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_3_empty_frontmatter_is_detected_and_writable": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "652f01ffd9ad945d",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_3_no_frontmatter_is_detected": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "7a4ddd1e24fd7f44",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_2_end_points_at_first_closing_delimiter": {
+    "ids": [
+      "WB-2"
+    ],
+    "sha": "eca2f9c249b291f8",
+    "from": "77e713401482f905"
+  },
+  "tests/test_frontmatter.rs::wb_1_crlf_and_japanese_key_spans": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "6a7c6d71d70e1f2f",
+    "from": "77e713401482f905"
+  },
+  "tests/test_list_write.rs::test_ce_18_flow_list_add_keeps_form": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "b788eedea9917f16",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_flow_list_remove_and_reorder": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "42c43c3ffb09aa72",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_flow_list_keeps_trailing_comment_and_crlf": {
+    "ids": [
+      "CE-18",
+      "WB-1"
+    ],
+    "sha": "76bcfc0184881d80",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_empty_flow_list_stays_flow": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "8bada8bbe6ae7f46",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_string_onto_flow_list_is_not_editable": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "51058bc7af179b6c",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_block_list_indent_2_add_remove_reorder": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "a24d2c1c484fa205",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_block_list_indent_0_add_remove_reorder": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "d75a0f6a53837c03",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_block_list_at_end_of_frontmatter": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "2f6acc76a60dcc5c",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_block_list_keeps_crlf": {
+    "ids": [
+      "CE-18",
+      "WB-1"
+    ],
+    "sha": "488927b8ead1c030",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_block_list_with_quoted_elements_reads_back": {
+    "ids": [
+      "CE-18",
+      "WB-7"
+    ],
+    "sha": "366599038b3c938e",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_missing_key_adds_obsidian_block_form": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "325c749cf29a1948",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_missing_key_crlf": {
+    "ids": [
+      "CE-18",
+      "WB-1"
+    ],
+    "sha": "dd8b14c7d6bbce99",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_null_and_empty_string_become_block_form": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "6023839f43c38238",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_19_risky_elements_are_quoted": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "9feaffc52cdd7f5d",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_19_newline_in_element_is_rejected": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "9fd7290c1575a1e6",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_save_writes_same_form_and_passes_reread_check": {
+    "ids": [
+      "CE-18",
+      "WB-6"
+    ],
+    "sha": "a47b6a61bc99a2d8",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_18_source_save_and_preview_write_list": {
+    "ids": [
+      "CE-18",
+      "WB-6"
+    ],
+    "sha": "29017d08bc0a1432",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_16_list_candidates_counts_and_order": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "249b214d37de593a",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_16_list_candidates_follow_saved_values": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "537d6b2768d3f60d",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_ce_16_writable_list_cells_have_no_lock": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "532ca3ea94bd0c87",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_wb_17_list_set_back_to_original_is_not_pending": {
+    "ids": [
+      "CE-16",
+      "WB-17"
+    ],
+    "sha": "d40715c3d319f93f",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_wb_17_list_on_missing_or_null_is_pending": {
+    "ids": [
+      "WB-17"
+    ],
+    "sha": "97eef2c06d19e4f3",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_list_write.rs::test_wb_17_empty_list_on_missing_key_is_not_pending": {
+    "ids": [
+      "CE-18",
+      "WB-17"
+    ],
+    "sha": "b8eac4f99f73dffc",
+    "from": "78a8f009793a5def"
+  },
+  "tests/test_new_note.rs::test_ce_25_plain_name_is_md_in_open_folder": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "3e740b26354bb9a6",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_md_suffix_is_not_doubled": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "e9f250312737b050",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_subfolder_name_goes_into_subfolder": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "523dafa16f418c2d",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_outside_absolute_empty_are_refused": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "532d35f1c9165e5d",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_existing_name_is_refused": {
+    "ids": [
+      "CE-25",
+      "WB-2"
+    ],
+    "sha": "566ebeb121dd601d",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_create_makes_missing_folder_and_writes_bytes": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "0ac78c503580da20",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_create_never_overwrites_existing_file": {
+    "ids": [
+      "CE-25",
+      "WB-2"
+    ],
+    "sha": "360ab72afa626866",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_status_todo_from_settings_keep": {
+    "ids": [
+      "CE-25",
+      "WB-3"
+    ],
+    "sha": "faa557812c6053c2",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_status_todo_from_settings_cmp_eq": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "6941cbd7a4a01caf",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_status_todo_from_expr": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "86dab6b311e7c400",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_tag_condition_is_vertical_list": {
+    "ids": [
+      "CE-25",
+      "WB-3"
+    ],
+    "sha": "f33f0362a0282e6c",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_typed_cmp_eq_values_are_written_by_kind": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "599797340a05f9a7",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_ambiguous_conditions_are_not_prefilled": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "e4a5f56bca107f4d",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "9d3df4df92eb31aa",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_25_whole_flow_writes_new_note_only": {
+    "ids": [
+      "CE-25",
+      "WB-2"
+    ],
+    "sha": "064f0c21d2462320",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_26_set_values_are_written": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "1695665f9f1f6d46",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_26_filter_value_wins_over_set_value_same_column": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "6cec791b94c0a0ea",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_26_asked_values_are_written_by_kind": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "de77ebe4f383d6b4",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_26_empty_answers_are_not_written": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "375a670e158fcf82",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_26_view_rule_replaces_config_rule": {
+    "ids": [
+      "BV-17",
+      "CE-26"
+    ],
+    "sha": "b629747fe2d5a014",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_27_config_folder_is_default_place": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "380b95e471a68c72",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_27_views_toml_new_note_is_read": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "4ac9010c05ca743a",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_27_views_new_note_survives_save_and_load": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "c9d6e53145b1efcd",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_new_note.rs::test_ce_27_new_note_is_a_documented_config_item": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "8b31d78bcb2b4e8e",
+    "from": "e0593d6d5c4c0b82"
+  },
+  "tests/test_review_fixes.rs::wb_5_tab_indented_list_is_invalid_yaml": {
+    "ids": [
+      "CE-18",
+      "WB-5"
+    ],
+    "sha": "f26e6251c1dd1f89",
+    "from": "3dc8f4ba0ce7b50b"
+  },
+  "tests/test_review_fixes.rs::wb_5_tab_indented_mapping_is_invalid_yaml": {
+    "ids": [
+      "CE-18",
+      "WB-5"
+    ],
+    "sha": "de3135acf9c5565a",
+    "from": "3dc8f4ba0ce7b50b"
+  },
+  "tests/test_review_fixes.rs::ce_18_string_onto_flow_list_is_not_editable": {
+    "ids": [
+      "CE-18",
+      "WB-5"
+    ],
+    "sha": "c19b83f3ddd367de",
+    "from": "3dc8f4ba0ce7b50b"
+  },
+  "tests/test_settings.rs::test_nv_14_drop_done_hides_done_rows": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "4c97211360e62e17",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_14_keep_only_book_in_other_column": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "da464b2d2d165c5e",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_14_empty_value_can_be_kept_or_dropped": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "6324aae111ebc92b",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_14_keep_works_on_number_column": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "4fcce3e6cf379d11",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_14_matches_single_value": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "09d0c9d4a842ada3",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_14_no_filters_keeps_all_rows_in_order": {
+    "ids": [
+      "NV-14"
+    ],
+    "sha": "81f805f45a001dae",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_inherit_keeps_given_groups": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "35c65d7c9f8506ca",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_off_removes_groups": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "edd2ff3005524563",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_group_by_column_values": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "66de567ef251dc84",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_group_by_list_column_does_not_lose_rows": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "2783bc2cdaf06a29",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_sort_by_number_asc_desc": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "900039179b78be58",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_sort_by_date_puts_mismatched_and_empty_last": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "f02e1994abb91843",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_sort_is_stable_and_empty_last": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "e0748f6222a3b1e2",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_multiple_sorts": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "f43e26f44875e0a6",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_group_by_with_sort_inside_groups": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "84d069e80189d2ae",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_15_filter_then_group": {
+    "ids": [
+      "NV-15"
+    ],
+    "sha": "92309abbba50614b",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_16_settings_default_and_chips": {
+    "ids": [
+      "NV-16",
+      "NV-17"
+    ],
+    "sha": "4b9e84237c38bcfe",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_17_settings_round_trip_in_view_state": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "4b5d8bdb1cab71ec",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_17_round_trip_keeps_empty_value_choice": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "cac885258c6ad3f3",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_17_settings_are_per_view": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "d2a22a60c5021d02",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_settings.rs::test_nv_17_old_state_file_without_settings_loads": {
+    "ids": [
+      "NV-17"
+    ],
+    "sha": "f10c1bd257def177",
+    "from": "a1f2fd6c7fb0b7e3"
+  },
+  "tests/test_source.rs::test_cv_1_get_distinguishes_value_missing_and_null": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "28a100108114ae00",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_source.rs::test_wb_3_no_frontmatter_note_is_writable": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "cbe635847a4ca7dd",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_source.rs::test_wb_5_duplicate_key_note_is_locked": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "560e10d4c8db99da",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_source.rs::test_ce_16_list_values_are_editable_unless_ce_8_form": {
+    "ids": [
+      "CE-16"
+    ],
+    "sha": "f4856aae6e32d69d",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_source.rs::test_ce_18_list_save_keeps_form_through_source": {
+    "ids": [
+      "CE-18"
+    ],
+    "sha": "53cbe7858c1a4fa0",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_source.rs::test_wb_4_external_change_after_stamp_stops_save": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "4c2fcebdac6fd7a4",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_source.rs::test_wb_4_reload_then_save_over_external_change": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "c50123cd12d348ee",
+    "from": "8ece1b3335d0d6a7"
+  },
+  "tests/test_unwritable.rs::test_wb_5_parse_returns_expected_read_only": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "21df350d4949a95e",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_unwritable.rs::test_wb_5_cell_lock_has_form_specific_reason": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "f8d7f4400ddd831c",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_unwritable.rs::test_wb_5_apply_is_err": {
+    "ids": [
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "138b766c8187ce58",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_unwritable.rs::test_wb_5_writeback_save_refuses_and_keeps_bytes": {
+    "ids": [
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "410a2162312d8ff0",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_unwritable.rs::test_wb_5_changes_set_is_skipped_with_reason": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "b018bb8d1dbc3731",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_unwritable.rs::test_wb_5_changes_set_many_skips_count_and_reason": {
+    "ids": [
+      "CE-10",
+      "WB-5"
+    ],
+    "sha": "081c81118c64cba2",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_unwritable.rs::test_wb_5_save_flow_keeps_bytes": {
+    "ids": [
+      "CE-10",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "df0e1d64c5ed4d25",
+    "from": "abdfa753fef37d8f"
+  },
+  "tests/test_views.rs::test_bv_17_save_then_load_returns_same_views": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "148e4a1b9bbab9cf",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_20_views_are_per_target_and_other_targets_are_kept": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "e5027b2189185ce1",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_17_does_not_write_into_note_folder": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "0bba763c9a7ceb74",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_20_hand_written_views_toml_is_read": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "fbec68f4ebe1c29f",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_19_to_base_builds_same_rows_as_native_view": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "54e8c68a4a737271",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_19_to_base_simple_filters_expr_and_desc_group": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "54ae6b00718eee44",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_19_to_base_reports_dropped_parts": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "32baa0f294f25000",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_3_to_base_and_from_base_write_no_files": {
+    "ids": [
+      "BV-19",
+      "BV-3"
+    ],
+    "sha": "9f225ddf81cf7cd8",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_19_from_base_maps_fields": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "3e0e66636478905b",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_views.rs::test_bv_19_from_base_then_to_base_keeps_rows": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "1b7a29eb99502a42",
+    "from": "5a94a602f6f90364"
+  },
+  "tests/test_writeback.rs::wb_1_changes_only_the_value_range": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "8f246d058eee8fa8",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_block_list_neighbour": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "ea69d924a7fbb8ad",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_flow_list_neighbour": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "67c171807ec20ee2",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_nested_map_neighbour": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "ef9dd4b0f536d58b",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_block_scalar_neighbour": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "df4ad90e157bb65d",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_keeps_trailing_comment": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "89dcf5df554f7df8",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_keeps_crlf": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "c5d3f9fd175b4fa1",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_japanese_key": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "436cf4ffe5e9e860",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_dash_lines_in_body": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "3833db3dd61a7da5",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_1_quoted_and_special_values": {
+    "ids": [
+      "WB-1"
+    ],
+    "sha": "949ccc0103706702",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_2_body_is_unchanged": {
+    "ids": [
+      "WB-2"
+    ],
+    "sha": "91f7515853029696",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_2_new_key_does_not_touch_body": {
+    "ids": [
+      "WB-2"
+    ],
+    "sha": "07666ac589406d7c",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_3_appends_missing_key_as_one_line": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "80b04e6f0bb90c64",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_3_appended_line_uses_file_newline": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "cfc97e45353b91ab",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_3_no_frontmatter_gets_frontmatter_but_unreadable_is_not_written": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "4159090d3e92a24c",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_5_apply_refuses_read_only_notes": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "7587066daaa5d1d6",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_5_hard_linked_note_is_not_written": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "1bc151aa1b560df8",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_6_reparse_has_intended_value_and_others_unchanged": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "966f5ab73f0a2b33",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_6_multiple_edits_in_one_apply": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "61308f8114b4b4ff",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_7_risky_strings_are_quoted_and_read_back_as_str": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "623542cd58efe640",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_7_no_is_written_as_double_quoted": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "12eef17822be8461",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_7_keeps_double_quotes": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "291074a2023bd26d",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_7_keeps_single_quotes": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "d6d643383c31e166",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_7_plain_safe_string_stays_plain": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "f6b4ec533a8fe2c8",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_7_newline_is_rejected": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "60de3c60c52ba0f6",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_4_external_change_stops_save": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "db0bf9f55e6aecc6",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_4_same_size_same_mtime_change_is_detected_by_hash": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "1afa17ff3fc45128",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_4_unchanged_file_saves": {
+    "ids": [
+      "WB-4"
+    ],
+    "sha": "34a2474d4442a41e",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_8_leaves_no_temp_file": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "8718b1b41e68b3fc",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_8_failed_save_leaves_original_intact": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "30ed6fcb68c495f1",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_8_symlink_stays_symlink": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "9c2a9252506791d1",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback.rs::wb_8_keeps_permissions": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "f49937e7a0f59fe1",
+    "from": "9cd44364739a8653"
+  },
+  "tests/test_writeback_fixes.rs::wb_5_save_refuses_hard_linked_note_with_reason": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "ed1541f2162d5893",
+    "from": "d8d7152a4e093f2a"
+  },
+  "tests/test_writeback_fixes.rs::wb_5_save_refuses_hard_linked_note_even_for_null": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "992785f843db9708",
+    "from": "d8d7152a4e093f2a"
+  },
+  "tests/test_print.rs::test_cli_5_unsupported_formula_column_is_empty_or_null_with_one_warning": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "6e93d01f01b7358c",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_print.rs::test_cli_5_view_option_falls_back_to_mdgrid_view_in_views_toml": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "b1298b0fcb398c73",
+    "from": "5532dbf0be93ae4b"
+  },
+  "tests/test_writeback_props.rs::test_wb_1_props_existing_scalar_key": {
+    "ids": [
+      "WB-1",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "aae0f0f286fd8e84",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_writeback_props.rs::test_wb_6_props_written_value_reads_back": {
+    "ids": [
+      "WB-1",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "d1685e3ae4ced99d",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_writeback_props.rs::test_wb_1_props_added_key_is_one_line": {
+    "ids": [
+      "WB-1",
+      "WB-3",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "9cde6869912b9769",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_writeback_props.rs::test_wb_7_props_text_reads_back_as_same_string": {
+    "ids": [
+      "WB-1",
+      "WB-5",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "bdac81c019f66872",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_writeback_props.rs::test_wb_5_props_arbitrary_bytes_do_not_panic": {
+    "ids": [
+      "WB-1",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "dbae4b73d1dedf67",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_writeback_props.rs::test_wb_5_props_mutated_notes_do_not_panic": {
+    "ids": [
+      "WB-1",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "0c8e24a5726f608a",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_writeback_props.rs::test_wb_5_props_broken_notes_are_read_only": {
+    "ids": [
+      "WB-1",
+      "WB-5",
+      "WB-6"
+    ],
+    "sha": "d3bfac85ef9f8b79",
+    "from": "5e8fd59ddb014f13"
+  },
+  "tests/test_e2e.rs::test_sr_8_e2e_config_editor_with_args_gets_note_path_as_one_arg": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "306e9b28cfe34c9e",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_e2e.rs::test_sr_8_e2e_visual_before_editor_without_config": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "843c28792900c502",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_e2e.rs::test_sr_8_e2e_config_editor_before_visual_and_editor": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "850d6b39cb5ebc2b",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_e2e.rs::test_wb_3_e2e_add_frontmatter_false_makes_cell_readonly_with_reason": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "1c953ee141cd9c03",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_e2e.rs::test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "33443d6648d8b9ad",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_new_note_gaps.rs::test_ce_26_view_rule_overrides_config": {
+    "ids": [
+      "BV-17",
+      "CE-26"
+    ],
+    "sha": "9744edceb65ffd97",
+    "from": "03fc0dc3fd4b9cb5"
+  },
+  "src/ui/test_new_note_gaps.rs::test_ce_26_default_table_uses_config_rule": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "aa83b062b5e6bebf",
+    "from": "03fc0dc3fd4b9cb5"
+  },
+  "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_shows_same_list_as_cell_edit": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "fe2f354d9a729f82",
+    "from": "03fc0dc3fd4b9cb5"
+  },
+  "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_pick_done_from_list": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "c37378a09c0fbf84",
+    "from": "03fc0dc3fd4b9cb5"
+  },
+  "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_free_input_from_list": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "4050b91ef4394cd7",
+    "from": "03fc0dc3fd4b9cb5"
+  },
+  "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_too_many_values_is_one_line": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "493b52f069e34283",
+    "from": "03fc0dc3fd4b9cb5"
+  },
+  "tests/test_safety_docs.rs::test_wb_19_examples_are_read_only_when_opened": {
+    "ids": [
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "945c785b868f0060",
+    "from": "6725b071053ec858"
+  },
+  "tests/test_safety_docs.rs::test_wb_19_setting_dependent_forms_mention_add_frontmatter": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "5b537f78fe51a964",
+    "from": "6725b071053ec858"
+  },
+  "src/test_expr_unit.rs::test_deep_nesting_is_syntax_not_panic": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "69264b92d06f73d7",
+    "from": "b3ee47e4f7a93bd0"
+  },
+  "src/test_expr_unit.rs::test_has_tag_case_and_unsupported_first_wins": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "29401d1d91bbb796",
+    "from": "b3ee47e4f7a93bd0"
+  },
+  "src/ui/test_grid.rs::test_bv_7_unsupported_formula_column": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "80c46a60994b34ad",
+    "from": "9f781bd5ab8f1df3"
+  },
+  "src/ui/test_grid.rs::test_bv_7_unevaluable_filters_view_not_opened": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "ad7bd8a4b3aea5e7",
+    "from": "9f781bd5ab8f1df3"
+  },
+  "tests/test_base.rs::test_bv_7_unsupported_function_in_filters_is_err_with_name": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "75cb29d346808cc9",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_base.rs::test_bv_7_unsupported_function_in_global_filters_is_err": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "7a98e2f2b4bdf28a",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_base.rs::test_bv_7_unsupported_formula_column_is_marked": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "fdd2534fe7f2a2bf",
+    "from": "5cb4884cbc38f1c4"
+  },
+  "tests/test_base.rs::test_bv_3_base_file_bytes_unchanged": {
+    "ids": [
+      "BV-3"
+    ],
+    "sha": "79691d336744e0e5",
+    "from": "5cb4884cbc38f1c4"
+  },
+  "tests/test_bases_docs.rs::test_bv_21_fake_names_are_unsupported": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "8760f89f3deb7f3d",
+    "from": "1a476daf731bdebd"
+  },
+  "tests/test_bases_docs.rs::test_bv_21_unlisted_obsidian_functions_are_unsupported": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "6cc88ab32520c805",
+    "from": "1a476daf731bdebd"
+  },
+  "tests/test_bases_docs.rs::test_bv_21_unlisted_obsidian_methods_are_unsupported": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "7ab9e823e7f2778e",
+    "from": "1a476daf731bdebd"
+  },
+  "tests/test_bases_docs.rs::test_bv_21_unlisted_obsidian_file_fields_are_unsupported": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "bb3c05f8bf1d99a1",
+    "from": "1a476daf731bdebd"
+  },
+  "tests/test_expr.rs::test_bv_7_unknown_function_is_unsupported": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "393ee8f03aa08d0e",
+    "from": "51fdaaa9c5ff640b"
+  },
+  "tests/test_expr.rs::test_bv_7_uncomputable_file_property_is_unsupported": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "8ece1d4ea45c24b6",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_expr.rs::test_bv_7_syntax_errors": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "5de21a71bd3bdb29",
+    "from": "51fdaaa9c5ff640b"
+  },
+  "tests/test_writeback_faults.rs::wb_8_save_with_default_faults_writes_like_save": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "6cba506d9d86466b",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_save_with_default_faults_returns_usable_baseline": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "ca2df35b1db1ae77",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_6_corrupt_fails_verify_and_keeps_original": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "c71f03aaf110fd29",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_6_corrupt_with_trailing_comment_keeps_original": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "2a20e2c70a3bc18d",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_6_after_corrupt_failure_a_clean_save_succeeds": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "e5721e749b41ea33",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_6_misquote_fails_verify_and_keeps_original": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "8790931ecdfc6562",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_6_misquote_on_added_key_fails_verify": {
+    "ids": [
+      "WB-6"
+    ],
+    "sha": "ba7b00dae1b90c65",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_fail_write_keeps_original_and_no_temp": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "f48a30cabb7276e4",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_fail_fsync_keeps_original_and_no_temp": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "e0602c565e7af4b8",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_fail_write_keeps_permissions": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "b6fcb10b18b8b891",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_fail_fsync_keeps_permissions": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "c30b3a456460baa1",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_fail_fsync_on_symlink_keeps_link_and_target": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "be96b1e9b99ada99",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_writeback_faults.rs::wb_8_after_io_failure_a_clean_save_succeeds": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "3f3e9a01c7d6182f",
+    "from": "7ba4f06d92e24153"
+  },
+  "tests/test_readonly_permission.rs::test_wb_5_permission_0444_note_cells_are_locked_with_reason": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "98319e78bde970dc",
+    "from": "38e1a56c42087625"
+  },
+  "tests/test_readonly_permission.rs::test_wb_5_permission_revoked_after_pending_stops_save_and_keeps_changes": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "58a4edbc90ff9b14",
+    "from": "38e1a56c42087625"
+  },
+  "tests/test_readonly_permission.rs::test_wb_5_permission_writeback_save_refuses_0444": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "ec318ce0f0c86305",
+    "from": "38e1a56c42087625"
+  },
+  "tests/test_readonly_permission.rs::test_wb_5_permission_set_many_skips_0444_rows": {
+    "ids": [
+      "CE-10",
+      "WB-5"
+    ],
+    "sha": "27a10ca23a14186d",
+    "from": "38e1a56c42087625"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_new_note_date_unquoted": {
+    "ids": [
+      "CE-26",
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "811a50e31b4c8fb1",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_new_note_not_only_date_quoted": {
+    "ids": [
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "fd1e1dfd12bda415",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_new_note_datetime_unquoted": {
+    "ids": [
+      "CE-26",
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "ebb557586305d96c",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_new_note_typed_text_quoted": {
+    "ids": [
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "bad5b0618c4ca9d0",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_cell_empty_values_only_unquoted": {
+    "ids": [
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "8bff8ccad508f19b",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_cell_base_order_only_unquoted": {
+    "ids": [
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "5438ef61b3f850c0",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_cell_text_column_quoted": {
+    "ids": [
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "c35c642f506d49f3",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_untyped_date.rs::test_wb_18_untyped_cell_typed_text_quoted": {
+    "ids": [
+      "WB-18",
+      "WB-6",
+      "WB-7"
+    ],
+    "sha": "2d9d3450a7238e75",
+    "from": "e407f0f160567cb4"
+  },
+  "src/ui/test_new_note_folders.rs::test_ce_25_folders_pick_second_creates_there": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "177783a8249ffe5c",
+    "from": "16c050ca40ce3806"
+  },
+  "src/ui/test_new_note_folders.rs::test_ce_25_folders_default_is_first": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "4f139c4528f04735",
+    "from": "16c050ca40ce3806"
+  },
+  "src/ui/test_new_note_folders.rs::test_ce_25_folders_order_follows_arguments": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "22ece0e8556013b7",
+    "from": "16c050ca40ce3806"
+  },
+  "src/ui/test_new_note_folders.rs::test_ce_25_folders_esc_creates_nothing": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "276c75d527fc5ece",
+    "from": "16c050ca40ce3806"
+  },
+  "src/ui/test_new_note_folders.rs::test_ce_25_folders_single_folder_goes_straight_to_name": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "4aa6c146aec4f379",
+    "from": "16c050ca40ce3806"
+  },
+  "src/ui/test_new_note_folders.rs::test_ce_25_folders_readonly_does_not_start": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "da808807fa69a27c",
+    "from": "16c050ca40ce3806"
+  },
+  "src/ui/test_language.rs::test_sr_23_ui_band_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "fa6fc274c113732d",
+    "from": "d8a6475988e762fd"
+  },
+  "src/ui/test_language.rs::test_sr_23_ui_help_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "68bb674b3a3caee9",
+    "from": "d8a6475988e762fd"
+  },
+  "src/ui/test_language.rs::test_sr_23_ui_palette_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "c2adb1db0295423a",
+    "from": "d8a6475988e762fd"
+  },
+  "src/ui/test_language.rs::test_sr_23_ui_new_note_button_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "b3ffb8c238adc538",
+    "from": "d8a6475988e762fd"
+  },
+  "src/ui/test_language.rs::test_sr_23_ui_calendar_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "43f9bd6d0147201d",
+    "from": "d8a6475988e762fd"
+  },
+  "src/ui/test_language.rs::test_sr_23_ui_japanese_unchanged": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "28193510ec26a5a5",
+    "from": "d8a6475988e762fd"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_save_confirm_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "31ebba7002cf373a",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_quit_confirm_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "e37826b3b0729e25",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_input_hints_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "fad3f9e6d726613c",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_list_pick_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "69cb3a618e0184db",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_detail_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "e7fc2bd6407279b2",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_view_settings_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "d02f8ca2cad40a85",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_new_note_name_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "a5d6bc3e21f74ff9",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_read_only_reason_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "fc1c2288d6f1499e",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_default_tab_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "55cb30fcc3a5d270",
+    "from": "a48d8b8e0fff2023"
+  },
+  "src/ui/test_language_more.rs::test_sr_23_ui_more_japanese_unchanged": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "3f5b44e1268056d9",
+    "from": "a48d8b8e0fff2023"
+  },
+  "tests/test_i18n.rs::test_sr_23_table_is_not_empty": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "0b200cf00965c195",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_every_msg_has_en_and_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "553f8edf88583763",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_placeholders_match": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "de350ad9e3260eba",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_english_has_no_japanese": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "53a8e23f7ae7585b",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_fill_replaces_every_placeholder": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "1004bb51b19ece01",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_resolve_ja_locale": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "f8e2de5eeb093bba",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_resolve_other_locale_is_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "cb810963b3ec44c8",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_resolve_order": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "ee1a8ccaaadb6464",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_resolve_skips_empty": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "fb31b102d476fbee",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_resolve_setting_wins_over_env": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "530147c9cc93edd0",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_scoped_switches_and_restores": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "154378b302743c04",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_scoped_en_outside_is_test_env_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "dd3a2db5e144edb5",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_i18n.rs::test_sr_23_scoped_is_per_thread": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "752b351e2ffce26d",
+    "from": "b3749fc803247592"
+  },
+  "tests/test_language.rs::test_sr_23_help_en_with_lang_en": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "eaf530ead1616ea8",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_help_ja_with_lang_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "08cd4486db3c4302",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_help_config_ja_wins_over_lang_en": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "9c54fb696346dde2",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_help_config_en_wins_over_lang_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "5e4e8ea388fdea53",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_help_config_auto_follows_lang": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "01ae6fd757e5ae41",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_help_no_locale_env_is_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "3b86ade749d62feb",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_missing_path_reason_en": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "58e36230f9e41c29",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_missing_path_reason_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "534a8e57db7bac64",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_missing_path_reason_config_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "32d3cc57c8a9baf8",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_unknown_option_en": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "526cf94e36c56ec5",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_unknown_option_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "178c96fc44551b6e",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_print_config_has_language_auto": {
+    "ids": [
+      "CLI-11",
+      "SR-23"
+    ],
+    "sha": "b6f591da9c79f69c",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language.rs::test_sr_23_language_values_read_without_warning": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "21786d6bd8dd4a24",
+    "from": "c9ce18c1b85a6737"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_read_only_reasons_are_english": {
+    "ids": [
+      "SR-23",
+      "WB-3",
+      "WB-5"
+    ],
+    "sha": "0543702200390e19",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_read_only_reasons_stay_japanese_under_ja": {
+    "ids": [
+      "SR-23",
+      "WB-5"
+    ],
+    "sha": "0043625d6113e81d",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_changes_skip_reason_matches_lock_in_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "416285c178409957",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_config_warnings_are_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "7452545edce77b83",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_config_warnings_stay_japanese_under_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "357db5c0a5fb0397",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_base_errors_are_english": {
+    "ids": [
+      "BV-7",
+      "SR-23"
+    ],
+    "sha": "3e31184c8f5bad33",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_base_errors_stay_japanese_under_ja": {
+    "ids": [
+      "BV-7",
+      "SR-23"
+    ],
+    "sha": "26af700ab6594fe6",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_date_errors_are_english": {
+    "ids": [
+      "CE-22",
+      "SR-23"
+    ],
+    "sha": "9324309e3638e907",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_date_errors_stay_japanese_under_ja": {
+    "ids": [
+      "CE-22",
+      "SR-23"
+    ],
+    "sha": "5f21880e54767063",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_views_warnings_are_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "7952edf2f3e41b5c",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_views_warnings_stay_japanese_under_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "6674eff22edcf82e",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_english_with_lang_en": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "de2f42268d008413",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_japanese_with_lang_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "78d9094488237d02",
+    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+  },
+  "tests/test_no_japanese_literals.rs::test_sr_23_no_japanese_literals": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "15201cdbc4f977a8",
+    "from": "cbd75a951ab56ddf"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_x_opens_menu_with_sections_and_keys": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "8de7ad3eb68f37aa",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_table_rows_stay_outside_window": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "4be54626886c1261",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_enter_on_sort_item_sorts_like_s": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "67166cba0c345015",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_jk_move_in_menu": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "387b3e896213c44b",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_item_key_runs_action": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "1a4f2ff7336d07bf",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_readonly_cell_hides_edit_and_clear": {
+    "ids": [
+      "SR-24",
+      "WB-5"
+    ],
+    "sha": "349f8d4678008c98",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_esc_closes_without_doing_anything": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "e8c1dd729288189c",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_rebound_key_opens_menu": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "a37631b8e66dfbc3",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_bulk_item_only_with_marks": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "096822e33926c1da",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_24_english_menu_has_no_japanese": {
+    "ids": [
+      "SR-23",
+      "SR-24"
+    ],
+    "sha": "220a3c812797c631",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_25_prefix_g_shows_next_keys_then_moves": {
+    "ids": [
+      "SR-25"
+    ],
+    "sha": "2128e16efdc07528",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_25_prefix_then_esc_restores_band": {
+    "ids": [
+      "SR-25"
+    ],
+    "sha": "6c959560ee158f44",
+    "from": "abab5f4bd5dd759d"
+  },
+  "src/ui/test_action_menu.rs::test_sr_25_configured_prefix_shows_hint": {
+    "ids": [
+      "SR-25"
+    ],
+    "sha": "ac0102008d2b63bf",
+    "from": "abab5f4bd5dd759d"
+  },
+  "tests/test_action_menu_e2e.rs::test_sr_24_e2e_right_click_selects_cell_and_opens_menu": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "fa8530cbd73de51a",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/ui/test_themes.rs::test_sr_26_nord_paints_background_selection_and_band": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "d6763caaf4d8ac4c",
+    "from": "bc4a2da001ce59ae"
+  },
+  "src/ui/test_themes.rs::test_sr_26_every_theme_keeps_the_text": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "a0f707b42221a96c",
+    "from": "bc4a2da001ce59ae"
+  },
+  "src/ui/test_themes.rs::test_sr_26_every_theme_but_default_paints": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "8ca534f866d68306",
+    "from": "bc4a2da001ce59ae"
+  },
+  "src/ui/test_themes.rs::test_sr_26_palettes_follow_the_mockups": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "b658d281f356f654",
+    "from": "bc4a2da001ce59ae"
+  },
+  "src/ui/test_themes.rs::test_sr_26_zebra_uses_theme_colors": {
+    "ids": [
+      "SR-20",
+      "SR-26"
+    ],
+    "sha": "afe53cbdfb1ce3ad",
+    "from": "bc4a2da001ce59ae"
+  },
+  "src/ui/test_themes.rs::test_sr_27_default_zebra_is_unchanged": {
+    "ids": [
+      "SR-20"
+    ],
+    "sha": "fa7fb537a738bc8c",
+    "from": "bc4a2da001ce59ae"
+  },
+  "src/ui/test_themes_more.rs::test_sr_26_zebra_row_selection_mark_and_bold": {
+    "ids": [
+      "SR-20",
+      "SR-26"
+    ],
+    "sha": "1fc5f5985d4a8c5d",
+    "from": "5a6376fddcf17c55"
+  },
+  "src/ui/test_themes_more.rs::test_sr_26_colhead_only_on_the_column_heading_row": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "e431edc2dc7124b3",
+    "from": "5a6376fddcf17c55"
+  },
+  "src/ui/test_themes_more.rs::test_sr_26_input_box_is_strong_not_colhead": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "334e51181893e7fd",
+    "from": "5a6376fddcf17c55"
+  },
+  "src/ui/test_themes_more.rs::test_sr_26_search_hit_name_is_strong_not_colhead": {
+    "ids": [
+      "SR-26"
+    ],
+    "sha": "c56c9a0979f9519c",
+    "from": "5a6376fddcf17c55"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_25_more_esc_after_prefix_keeps_marks": {
+    "ids": [
+      "SR-25"
+    ],
+    "sha": "84f25ed9067f7b12",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_25_more_esc_after_prefix_in_menu_keeps_menu": {
+    "ids": [
+      "SR-24",
+      "SR-25"
+    ],
+    "sha": "b05e0f83c0c2cd9d",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_25_more_prefix_in_menu_band_returns": {
+    "ids": [
+      "SR-25"
+    ],
+    "sha": "af3dda3e07b0db5c",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_24_more_low_terminal_does_not_open": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "a76a10616fb60191",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_24_more_click_item_runs_it": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "c8e1ffc28f605f04",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_24_more_click_outside_closes_only": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "e22278c258f0452a",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_action_menu_more.rs::test_sr_24_more_formula_column_has_no_bulk_item": {
+    "ids": [
+      "CE-10",
+      "SR-24"
+    ],
+    "sha": "b7452e443a35e896",
+    "from": "1d12fd0e59392a5d"
+  },
+  "src/ui/test_new_note_order.rs::test_ce_26_place_then_name_then_asked_items": {
+    "ids": [
+      "CE-26"
+    ],
+    "sha": "cfa5a214eb5604ac",
+    "from": "7c1922a6e25ac755"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_view_section_ja": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "4fa528d701c2aaa4",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_view_section_en": {
+    "ids": [
+      "SR-23",
+      "SR-24"
+    ],
+    "sha": "5878d727d18b4bed",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_readonly_launch_hides_save_new_export": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "9864becc037837f0",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_25_gaps_menu_ignores_prefix_without_menu_item": {
+    "ids": [
+      "SR-24",
+      "SR-25"
+    ],
+    "sha": "a5015206a1999aea",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_25_gaps_english_prefix_hint": {
+    "ids": [
+      "SR-23",
+      "SR-25"
+    ],
+    "sha": "f595fbb117e2665e",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_resize_low_closes_menu": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "e024ebdf3cdbd9a2",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_resize_still_fits_keeps_menu": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "22656589955e21bf",
+    "from": "288f7c05cbfe450d"
+  },
+  "src/ui/test_new_note_infolder.rs::test_ce_25_infolder_creates_in_view_folder": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "f1f2befe02b383ab",
+    "from": "fb3ca11794b98987"
+  },
+  "src/ui/test_new_note_infolder.rs::test_ce_25_infolder_keeps_configured_subfolder": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "2b80cb559a15c157",
+    "from": "fb3ca11794b98987"
+  },
+  "src/ui/test_new_note_infolder.rs::test_ce_25_infolder_overrides_folder_outside_view": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "4cd31bed945e92a6",
+    "from": "fb3ca11794b98987"
+  },
+  "src/ui/test_help_markers.rs::test_sr_5_markers_section_at_end_ja": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "deb422038159c119",
+    "from": "a6aa12d1dc07e725"
+  },
+  "src/ui/test_help_markers.rs::test_sr_5_markers_section_at_end_en": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "57b364a8e2af87b3",
+    "from": "a6aa12d1dc07e725"
+  },
+  "src/ui/test_bulk_outside.rs::test_ce_10_outside_selection_tells_marked_rows_are_left_out": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "25c6e91d50fdbbd7",
+    "from": "bf321955c8a2ce20"
+  },
+  "src/ui/test_bulk_outside.rs::test_ce_10_inside_selection_has_no_outside_note": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "fe9493a429172316",
+    "from": "bf321955c8a2ce20"
+  },
+  "src/ui/test_bulk_outside.rs::test_ce_10_no_marks_no_outside_note": {
+    "ids": [
+      "CE-10"
+    ],
+    "sha": "59876db27be6cdb2",
+    "from": "bf321955c8a2ce20"
+  },
+  "src/test_yaml_error_unit.rs::test_wb_5_yaml_error_unclosed_flow_list": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "b7668bcea41ee929",
+    "from": "48bbb758b032f0b5"
+  },
+  "src/test_yaml_error_unit.rs::test_wb_5_yaml_error_none_for_valid_yaml": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "6bbbfec1ce3d7457",
+    "from": "48bbb758b032f0b5"
+  },
+  "src/ui/test_freq.rs::test_nv_9_enter_on_first_filters_to_value": {
+    "ids": [
+      "NV-16"
+    ],
+    "sha": "192302c73eace8e4",
+    "from": "670ec50a194d4742"
+  },
+  "src/ui/test_freq.rs::test_nv_9_down_enter_filters_to_second_value": {
+    "ids": [
+      "NV-16"
+    ],
+    "sha": "1549d5b9772139b6",
+    "from": "670ec50a194d4742"
+  },
+  "src/ui/test_freq.rs::test_nv_9_english_window_has_no_japanese": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "6d3bb8ce90f478cd",
+    "from": "670ec50a194d4742"
+  },
+  "src/ui/test_freq.rs::test_nv_9_english_action_label_not_japanese": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "a9e34afcf9920b53",
+    "from": "670ec50a194d4742"
+  },
+  "src/ui/test_freq.rs::test_nv_9_action_menu_column_section_has_item": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "a90f572b09bb4a63",
+    "from": "670ec50a194d4742"
+  },
+  "src/ui/test_freq.rs::test_nv_9_action_menu_item_key_opens": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "05945e7b02e699d9",
+    "from": "670ec50a194d4742"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_upper_filter_is_true": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "b0faf38bd1d70f5b",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_lower": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "2de21688427d0ec5",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_title": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "6391146ca0ffeab2",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_trim": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "b24454df97786fe3",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_starts_with_ends_with": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "6abd69a353a9a116",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_slice_string": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "a2389ee057186087",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_replace_all_string_pattern": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "3352321726c66632",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_split": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "d4ffa032e437ad6b",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_reverse_string": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "3ed2348af6f3c4a4",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_round": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "82e65b398fee4307",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_floor_ceil_abs": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "b069afbe72d1d4a3",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_date_fields": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "76add4550aa14034",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_date_and_time": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "4dd95096784f88cc",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_format": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "45e8f93c10561c8c",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_join": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "b3049ae0631b0858",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_unique": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "29498db3ab23639c",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_sort": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "39c06cafbad83bbd",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_reverse_list": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "f15734f142fb3066",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_flat": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "05f5bddc5d3acb76",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_slice_list": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "71faaa4cd2b339f4",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_max_min_functions": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "71e94faf12d20c54",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_list_function": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "42709dd71bd4fb93",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_methods_unit.rs::test_bv_6_method_still_unsupported_names": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "fbe4cd5446746233",
+    "from": "a1bee990de0e050a"
+  },
+  "src/test_expr_cap_unit.rs::test_bv_7_string_cap_replace_empty_pattern": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "0a98185f6b43c10a",
+    "from": "cf543eea01850d9e"
+  },
+  "src/test_expr_cap_unit.rs::test_bv_7_string_cap_concat": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "bd8f24317bc86417",
+    "from": "cf543eea01850d9e"
+  },
+  "src/test_expr_list_cap_unit.rs::test_bv_7_list_cap_literal_doubling": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "9e635adf9b030607",
+    "from": "8ddc9319f3224235"
+  },
+  "src/test_expr_list_cap_unit.rs::test_bv_7_list_cap_split_and_flat": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "cea2521fc1e91700",
+    "from": "8ddc9319f3224235"
+  },
+  "tests/test_links.rs::test_bv_22_this_without_base_file_is_unsupported": {
+    "ids": [
+      "BV-22",
+      "BV-7"
+    ],
+    "sha": "5f8c8087e23aa7ab",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "src/test_links_panic_unit.rs::test_bv_22_no_panic_multibyte_tail": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "5732dcc7512c61f9",
+    "from": "8ee0c0a22e9a11b1"
+  },
+  "src/test_links_panic_unit.rs::test_bv_22_no_panic_long_hostile_lines_are_fast": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "5ab0fa809b2f6f2f",
+    "from": "8ee0c0a22e9a11b1"
+  },
+  "src/test_summary_unit.rs::test_bv_14_labels_english_and_japanese": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "a82d56b6a2afcdc0",
+    "from": "6a0b4b50c5b79f99"
+  },
+  "src/ui/test_summaries.rs::test_bv_14_formula_summary_unsupported_view_opens": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "db7e9826f0d5852a",
+    "from": "0be3739dbcb8dcd8"
+  },
+  "src/ui/test_summaries.rs::test_bv_14_english_names": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "3b5bceda0f1e7c68",
+    "from": "0be3739dbcb8dcd8"
+  },
+  "src/ui/test_summaries.rs::test_bv_14_japanese_names": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "9b5dcb6d55047e14",
+    "from": "0be3739dbcb8dcd8"
+  },
+  "src/ui/test_detail_body.rs::test_nv_6_body_heading_english": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "83c1ae4dc7571ae8",
+    "from": "3e8c7212a51a5879"
+  },
+  "src/ui/test_plural_en.rs::test_sr_23_plural_header_one_row": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "1c633cacb8a567ff",
+    "from": "bdfad6de76b94bdb"
+  },
+  "src/ui/test_plural_en.rs::test_sr_23_plural_header_two_rows": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "1f9bcc536e6d4d8d",
+    "from": "bdfad6de76b94bdb"
+  },
+  "src/ui/test_plural_en.rs::test_sr_23_plural_japanese_unchanged": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "c09b4c04cf91da2e",
+    "from": "bdfad6de76b94bdb"
+  },
+  "src/test_big_int_write_unit.rs::test_cv_2_big_int_text_stays_quoted": {
+    "ids": [
+      "WB-3"
+    ],
+    "sha": "c585e71405edb4bc",
+    "from": "85d21563f2b4c0ec"
+  },
+  "src/ui/test_trust_notices.rs::test_bv_14_unsupported_summary_shown_on_open": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "b9d8c7454d183617",
+    "from": "a6750391076120c9"
+  },
+  "src/ui/test_trust_notices.rs::test_bv_14_unsupported_summary_shown_once": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "88c1b1ee9daf4a38",
+    "from": "a6750391076120c9"
+  },
+  "src/ui/test_trust_notices.rs::test_bv_2_vault_root_shown_when_empty": {
+    "ids": [
+      "BV-7"
+    ],
+    "sha": "424f63d4650596b9",
+    "from": "a6750391076120c9"
+  },
+  "src/ui/test_list_narrow.rs::test_ce_3_narrow_shows_matches_without_selection": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "22ef994e7ce8654d",
+    "from": "300136e1a0d5ceaa"
+  },
+  "src/ui/test_list_narrow.rs::test_ce_3_narrow_down_picks_match": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "3b3d284985a002fd",
+    "from": "300136e1a0d5ceaa"
+  },
+  "src/ui/test_list_narrow.rs::test_ce_3_narrow_no_match_hides_and_revert_restores": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "2edf9c9839f28577",
+    "from": "300136e1a0d5ceaa"
+  },
+  "src/ui/test_list_narrow.rs::test_sr_24_menu_position_shown_when_scrolled": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "3a8b535537d4f2fb",
+    "from": "300136e1a0d5ceaa"
+  },
+  "src/ui/test_list_narrow.rs::test_sr_24_menu_position_hidden_when_all_fit": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "dc28c0dc87a37228",
+    "from": "300136e1a0d5ceaa"
+  },
+  "src/ui/test_list_narrow.rs::test_ce_3_narrow_up_picks_last_and_typing_replaces": {
+    "ids": [
+      "SR-24"
+    ],
+    "sha": "63b6c633fb0698a2",
+    "from": "300136e1a0d5ceaa"
+  },
+  "src/ui/test_bom_values.rs::test_wb_5_bom_values_shown_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "303d05c3a9a5958b",
+    "from": "c5f751d1bb9e850a"
+  },
+  "tests/test_flow_frontmatter.rs::test_wb_5_flow_frontmatter_values_shown": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "8b2f09375889c8cc",
+    "from": "b8234c00b8a99840"
+  },
+  "tests/test_flow_frontmatter.rs::test_wb_5_flow_frontmatter_stays_read_only": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "8eb48a0d7c9db414",
+    "from": "b8234c00b8a99840"
+  },
+  "src/test_flow_limits_unit.rs::test_wb_5_flow_limits_deep_nesting_is_refused": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "3c3f813d08f2994c",
+    "from": "9ecb72ac369b561b"
+  },
+  "src/test_flow_limits_unit.rs::test_wb_5_flow_limits_large_is_refused": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "c6a2801147a0faa8",
+    "from": "9ecb72ac369b561b"
+  },
+  "src/test_flow_limits_unit.rs::test_wb_5_flow_limits_normal_still_read": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "b889d2afe2556446",
+    "from": "9ecb72ac369b561b"
+  },
+  "src/test_flow_limits_unit.rs::test_wb_5_flow_limits_deep_base_is_refused": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "89232d7d42629520",
+    "from": "9ecb72ac369b561b"
+  },
+  "src/ui/test_checkbox_two_state.rs::test_ce_4_two_state_false_and_true": {
+    "ids": [
+      "CE-4"
+    ],
+    "sha": "2c3b24ce294386ef"
+  },
+  "src/ui/test_checkbox_two_state.rs::test_ce_4_two_state_keyless_and_empty": {
+    "ids": [
+      "CE-4"
+    ],
+    "sha": "c80d7e1ca822d681"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_false_toggles_to_true": {
+    "ids": [
+      "CE-4"
+    ],
+    "sha": "cbc9b9f930955a56"
+  },
+  "src/ui/test_checkbox.rs::test_ce_4_keyless_note_toggles_true_false": {
+    "ids": [
+      "CE-4",
+      "WB-17"
+    ],
+    "sha": "5a85812f6ff16e54"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_md_file_opens_folder_and_selects_its_row": {
+    "ids": [
+      "CLI-15"
+    ],
+    "sha": "13b5dfa8f6f93a13",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_missing_md_file_fails_with_one_line_and_code_2": {
+    "ids": [
+      "CLI-15"
+    ],
+    "sha": "4c79615097d83d15",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_print_md_file_extension_is_case_insensitive": {
+    "ids": [
+      "CLI-15"
+    ],
+    "sha": "6709c7281cebad29",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_print_md_file_prints_its_row": {
+    "ids": [
+      "CLI-15"
+    ],
+    "sha": "a0b7363ba3a90a0e",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_print_two_md_files": {
+    "ids": [
+      "CLI-15"
+    ],
+    "sha": "dec02e4ee809a5d1",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_readonly_md_file_selects_its_row": {
+    "ids": [
+      "CLI-15"
+    ],
+    "sha": "f3e26c1cff808577",
+    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+  },
+  "src/test_key_ops_unit.rs::test_wb_1_key_ops_delete_block_list_keeps_next_comment": {
+    "ids": [
+      "WB-1",
+      "WB-2"
+    ],
+    "sha": "8d8d47a6ab7ab194"
+  },
+  "src/test_key_ops_unit.rs::test_wb_1_key_ops_delete_multiline_and_last": {
+    "ids": [
+      "WB-1",
+      "WB-2"
+    ],
+    "sha": "975b4a94f3adb3e9"
+  },
+  "src/test_key_ops_unit.rs::test_wb_1_key_ops_rename_keeps_other_bytes": {
+    "ids": [
+      "WB-1",
+      "WB-2"
+    ],
+    "sha": "195f5848cc60fc04"
+  },
+  "src/test_key_ops_unit.rs::test_wb_1_key_ops_rename_refuses_existing_name": {
+    "ids": [
+      "WB-1",
+      "WB-2"
+    ],
+    "sha": "03cc94b07a4f8736"
+  },
+  "src/test_key_ops_unit.rs::test_wb_1_key_ops_review_cases": {
+    "ids": [
+      "WB-1",
+      "WB-2"
+    ],
+    "sha": "8504af44c8b5b01b"
+  },
+  "src/ui/test_key_ops.rs::test_ce_29_delete_key_after_y": {
+    "ids": [
+      "CE-29",
+      "WB-1"
+    ],
+    "sha": "f2fd4a652f5a91cd"
+  },
+  "src/ui/test_key_ops.rs::test_ce_29_not_in_readonly_or_bad_names": {
+    "ids": [
+      "CE-29",
+      "WB-1"
+    ],
+    "sha": "5399874b0b1092bb"
+  },
+  "src/ui/test_key_ops.rs::test_ce_29_pending_edit_is_not_dropped": {
+    "ids": [
+      "CE-29",
+      "WB-1"
+    ],
+    "sha": "578a4f3453ff4e89"
+  },
+  "src/ui/test_key_ops.rs::test_ce_29_rename_key_in_all_notes": {
+    "ids": [
+      "CE-29",
+      "WB-1"
+    ],
+    "sha": "6776ffcb6142f6ba"
+  },
+  "src/test_links_unit.rs::test_bv_22_backlinks_and_has_link": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "0b1db2b9422f7298"
+  },
+  "src/test_links_unit.rs::test_bv_22_extract_ignores_empty_and_unclosed": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "f2a6630f39768708"
+  },
+  "src/test_links_unit.rs::test_bv_22_extract_markdown_links": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "cd3b3d6ddeec0952"
+  },
+  "src/test_links_unit.rs::test_bv_22_extract_skips_code": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "fd1eab3d47fdea77"
+  },
+  "src/test_links_unit.rs::test_bv_22_extract_wikilink_forms": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "e8cf840d363e4778"
+  },
+  "src/test_links_unit.rs::test_bv_22_has_link_to_non_note_file_by_path": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "dc5912433daad72d"
+  },
+  "src/test_links_unit.rs::test_bv_22_links_toward_non_note_file": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "add5accd8af5a1fa"
+  },
+  "src/test_links_unit.rs::test_bv_22_resolve_markdown_link_relative_to_note": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "54fe9e7f4d9069bb"
+  },
+  "src/test_links_unit.rs::test_bv_22_resolve_path_then_nearest_name": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "f8e329a0e88efe1a"
+  },
+  "tests/test_links.rs::test_bv_22_backlinks_and_has_link": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "5b0b7e7985494f32",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_frontmatter_links": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "198456cdd40e861b",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_in_folder_of_this": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "231a9b287c429d0a",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_link_forms_alias_heading_embed": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "89d53b08bab08fb6",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_links_contains_name": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "f60c59ea30cc5e85",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_links_contains_this_file": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "40e5a3964a0a0496",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_links_in_code_are_not_counted": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "9536524a78f4ac50",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_links_wikilink_and_markdown_link": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "9ca35551652229ee",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_same_name_resolves_nearest_root": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "b8fb10bdbe3c0765",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_this_file_name_and_folder": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "8f861d9742609ec8",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "tests/test_links.rs::test_bv_22_unresolved_link_stays_text": {
+    "ids": [
+      "BV-22"
+    ],
+    "sha": "9303b5bdea256ba2",
+    "by": "specs/_decisions/2026-10-07-default-headings-locks.md"
+  },
+  "src/ui/test_listpick.rs::test_ce_19_read_only_list_not_opened": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "081d3df9a194f3e9"
+  },
+  "src/ui/test_listpick.rs::test_ce_19_read_only_shapes_have_reasons": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "a285eeb6bc319542"
+  },
+  "src/ui/test_listpick.rs::test_ce_19_remove_all_writes_key": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "ac5482427f36b751"
+  },
+  "src/ui/test_listpick.rs::test_ce_19_tags_case_insensitive_new": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "a9c8efd290377b9d"
+  },
+  "src/ui/test_listpick.rs::test_ce_19_tags_case_prefers_held_spelling": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "a9f3642ea2a21f6c"
+  },
+  "src/ui/test_scalar_list_pick.rs::test_ce_19_scalar_list_opens_as_one_item": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "57e6fba1579a43db"
+  },
+  "tests/test_list_write.rs::test_ce_19_ce_8_list_forms_are_not_editable": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "3b5f42afcfac9ed8"
+  },
+  "tests/test_list_write.rs::test_ce_19_remove_all_keeps_key": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "9fb7671651831a76"
+  },
+  "tests/test_scalar_list_edit.rs::test_ce_19_scalar_list_is_rewritten_as_flow_list": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "bf9caa1ca940bf6b"
+  },
+  "tests/test_scalar_list_edit.rs::test_ce_19_scalar_list_non_string_stays_read_only": {
+    "ids": [
+      "CE-19"
+    ],
+    "sha": "35fe68e61246690a"
+  },
+  "tests/test_default_headings.rs::test_bv_24_default_headings": {
+    "ids": [
+      "BV-24"
+    ],
+    "sha": "7fd399cada8ef276",
+    "by": "specs/_decisions/2026-10-07-default-headings.md"
+  },
+  "tests/test_default_headings.rs::test_bv_24_display_name_wins": {
+    "ids": [
+      "BV-24"
+    ],
+    "sha": "7d9ad9d2ea38b55e",
+    "by": "specs/_decisions/2026-10-07-default-headings.md"
+  },
+  "src/ui/test_note_column.rs::test_sr_29_common_folder": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "709c49eb1d14579c"
+  },
+  "src/ui/test_note_column.rs::test_sr_29_name_column_hides_names_but_keeps_marks": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "8f0ea948947fad9b"
+  },
+  "src/ui/test_note_column.rs::test_sr_29_note_column_drops_common_folder_and_md": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "2b108667c951d303"
+  }
+}

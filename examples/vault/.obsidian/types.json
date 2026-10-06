@@ -1,0 +1,8 @@
+{
+  "types": {
+    "due": "date",
+    "priority": "number",
+    "done": "checkbox",
+    "tags": "tags"
+  }
+}

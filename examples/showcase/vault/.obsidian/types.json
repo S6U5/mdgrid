@@ -1,0 +1,12 @@
+{
+  "types": {
+    "due": "date",
+    "start": "date",
+    "date": "date",
+    "priority": "number",
+    "estimate": "number",
+    "done": "checkbox",
+    "tags": "tags",
+    "assignees": "multitext"
+  }
+}

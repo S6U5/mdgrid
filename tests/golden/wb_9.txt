@@ -1,0 +1,24 @@
+ 保存の確認  2ファイル  書く前の差分(- 今のファイル / + 書いたあと)
+>a.md
+   title: a
+  -status: todo
+  +status: done
+   ---
+
+ b.md
+   ---
+  -title: b
+  +title: 新しい題
+   status: doing
+
+
+
+
+
+
+
+
+
+ 未保存 2  保存の確認  Enter 保存する  Esc 戻る
+Enter で全部を書く。Esc で表に戻る(ためた変更は残る)
+

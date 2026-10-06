@@ -1,0 +1,36 @@
+name: Bug report
+description: Something does not work as described, or a note was written incorrectly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security problems: please use private vulnerability reporting (see SECURITY.md) instead.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `mdgrid --version`, your OS and terminal.
+      placeholder: mdgrid 0.0.1, macOS 15, WezTerm
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The smallest notes (frontmatter is often enough), the command line and the keys you pressed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected and what happened
+      description: For a write-back problem, include the file before and after saving.
+    validations:
+      required: true
+  - type: checkboxes
+    id: data
+    attributes:
+      label: Data
+      options:
+        - label: A note was changed in a way I did not expect (data loss or corruption).

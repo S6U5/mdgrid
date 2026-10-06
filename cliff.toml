@@ -1,0 +1,55 @@
+# git-cliff の設定(git-cliff 2.11 以上。replace_regex を使う)。https://git-cliff.org/docs/configuration
+# コミットの書き出し(`実装:`・`修正:` など。半角と全角のコロン)を CHANGELOG の節に写す。
+# 変更の記録: specs/_changes/2026-10-03-cliff.md。CHANGELOG.md はリリースの作業(Q-6)で生成する。
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to this project will be documented in this file.
+This file is generated from the commit history by git-cliff.\n
+"""
+body = """
+{% if version %}\
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+    ## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {{ commit.message | split(pat="\n") | first | replace_regex(from="^[^:：]+[:：]\\s*", to="") | trim }}\
+    {% endfor %}
+{% endfor %}\n
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = false
+filter_unconventional = false
+split_commits = false
+protect_breaking_commits = false
+# どの parser にも当たらないコミットは本文に流さない(漏れは tests/test_cliff.rs が見る)。
+filter_commits = true
+tag_pattern = "v[0-9].*"
+topo_order = false
+sort_commits = "oldest"
+# 書き出しごとに1つ。半角の `:` と全角の `:` の両方を受ける。
+commit_parsers = [
+  { message = "^実装[:：]", group = "<!-- 0 -->Features" },
+  { message = "^追加[:：]", group = "<!-- 0 -->Features" },
+  { message = "^修正[:：]", group = "<!-- 1 -->Fixes" },
+  { message = "^文書[:：]", group = "<!-- 2 -->Documentation" },
+  { message = "^specs[:：]", group = "<!-- 3 -->Specification" },
+  # 利用者に見える変化でないものは節に出さない。
+  { message = "^テスト[:：]", skip = true },
+  { message = "^試験[:：]", skip = true },
+  { message = "^照合[:：]", skip = true },
+  { message = "^照合の直し[:：]", skip = true },
+  { message = "^設計[:：]", skip = true },
+  { message = "^記録[:：]", skip = true },
+  { message = "^整形[:：]", skip = true },
+  # 作る道具と検査の設定(CI・依存の更新・MSRV)。
+  { message = "^設定[:：]", skip = true },
+]

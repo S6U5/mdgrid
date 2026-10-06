@@ -1,0 +1,21 @@
+# cargo deny check の設定。依存を足すときは、配布元・保守・既知の脆弱性を確かめてから(docs/design.md)。
+
+[advisories]
+version = 2
+yanked = "deny"
+
+[licenses]
+version = 2
+# 推移依存に Zlib(foldhash)・Unicode-3.0(unicode-ident)・BSL-1.0(ryu。Apache-2.0 との OR)がある(2026-10-01 の確認)。
+allow = ["MIT", "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "Zlib", "Unicode-3.0", "BSL-1.0"]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
