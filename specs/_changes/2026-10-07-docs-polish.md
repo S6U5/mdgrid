@@ -28,11 +28,11 @@ updated: 2026-10-07
 
 人の依頼(会話 2026-10-07): 日本語の README にも動画と画像を置く、説明書(手元の manual/、git の外)を整えて docs に置く、CI などのバッジ、README の見出しに適度に絵文字。
 
-- 説明書は docs/manual/{en,ja}/ に置き、画面は今の版で docs/manual-scenarios.toml から撮り直す。参照の文書へのリンクを新しい場所に合わせる。
+- 説明書は docs/manual/en/ と docs/manual/ja/ に置き、画面は今の版で docs/manual-scenarios.toml から撮り直す。参照の文書へのリンクを新しい場所に合わせる。
 - 日本語の README は英語の README と同じ構成にし、画像と動画は日本語の画面で撮る(docs/assets/ja/)。scripts/demo-gif.sh に言語を選ぶ引数を足す。
 
 ## 照合
 
-要件に触らない(文書と画像)。docs/manual/{en,ja}/ の参照の文書へのリンクが全部実在すること、日本語の画面の画像(docs/assets/ja/demo-edit-list.svg)を PNG にして見たこと、試験の全部(1325)が通ることを確かめた。
+要件に触らない(文書と画像)。docs/manual/en/ と docs/manual/ja/ の参照の文書へのリンクが全部実在すること、日本語の画面の画像(docs/assets/ja/demo-edit-list.svg)を PNG にして見たこと、試験の全部(1325)が通ることを確かめた。
 
 確かめた: 0 / 0
