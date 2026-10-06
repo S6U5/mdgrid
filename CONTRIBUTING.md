@@ -1,6 +1,6 @@
 # Contributing to mdgrid
 
-Thanks for your interest. Bug reports, ideas and pull requests are all welcome. Issues and pull requests can be in English or Japanese.
+Thanks for your interest. Bug reports and ideas are welcome as issues, in English or Japanese. Pull requests are limited to collaborators: if you have a fix or a change in mind, open an issue that describes it (a patch or a link to a branch in your fork is fine), and a collaborator will bring it in.
 
 ## Reporting a bug
 
@@ -41,7 +41,7 @@ cargo test
 
 The tests run in Japanese by default (`.cargo/config.toml`). Screen tests drive the real binary in a pseudo-terminal (`tests/pty/`).
 
-## Pull requests
+## Pull requests (collaborators)
 
 - Keep a pull request to one change. Small is easier to review.
 - Run `./ci.sh` before pushing; CI runs the same checks on Linux, macOS and Windows.

@@ -126,7 +126,7 @@ mdgrid ~/notes --pick path | tr '\n' '\0' | xargs -0 -o vi   # choose notes, the
 
 ## Contributing
 
-Bug reports, ideas and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
+Bug reports and ideas are welcome as issues; see [CONTRIBUTING.md](CONTRIBUTING.md) (pull requests are limited to collaborators). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
 
 ## How it is built
 
