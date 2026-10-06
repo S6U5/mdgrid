@@ -1,6 +1,6 @@
 [package]
 name = "mdgrid"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.90"
 description = "Browse and edit Markdown frontmatter as a table in the terminal"
@@ -11,8 +11,7 @@ categories = ["command-line-utilities", "text-editors"]
 # Only what builds the binary goes into the crate (specs, docs, tests and examples stay in the repository).
 include = ["/src/**/*.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 repository = "https://github.com/S6U5/mdgrid"
-# Not on crates.io yet (docs/todo.md O-4・O-10).
-publish = false
+publish = true
 
 [lib]
 path = "src/lib.rs"
