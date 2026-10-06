@@ -18,7 +18,13 @@
 
 **Prebuilt binaries.** Each release on the GitHub Releases page has archives for Linux (x86_64, aarch64), macOS (Intel, Apple silicon) and Windows (x86_64). Unpack one and put `mdgrid` on your `PATH`. The archive also holds shell completions (`completions/`) and a man page (`mdgrid.1`).
 
-**From source.** With Rust 1.90 or newer:
+**From crates.io.** With Rust 1.90 or newer:
+
+```sh
+cargo install mdgrid --locked
+```
+
+**From source.**
 
 ```sh
 git clone https://github.com/S6U5/mdgrid.git
@@ -26,7 +32,7 @@ cd mdgrid
 cargo install --path . --locked
 ```
 
-mdgrid is not on crates.io or Homebrew yet.
+mdgrid is not on Homebrew yet.
 
 ## Quick start
 

@@ -8,7 +8,7 @@
 
 ## 試す
 
-ビルド済みのバイナリ(Linux の x86_64・aarch64、macOS の Intel・Apple シリコン、Windows の x86_64。補完と man ページつき)は、GitHub の Releases のページの各リリースにある。ソースから作るときは Rust 1.90 以上で:
+ビルド済みのバイナリ(Linux の x86_64・aarch64、macOS の Intel・Apple シリコン、Windows の x86_64。補完と man ページつき)は、GitHub の Releases のページの各リリースにある。crates.io からは Rust 1.90 以上で `cargo install mdgrid --locked`。ソースから作るときは Rust 1.90 以上で:
 
 ビルドする:
 
