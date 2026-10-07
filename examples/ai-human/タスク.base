@@ -1,0 +1,92 @@
+filters:
+  and:
+    - file.inFolder("タスク")
+formulas:
+  # cellops と同じ分け方: 最後のボタンを人が押す(human_gate が none 以外)か、
+  # PC の外の仕事(actor: human)なら人。それ以外(actor が無いノートも)は AI。
+  担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 ロボットのタスク")
+properties:
+  file.name:
+    displayName: タイトル
+  note.status:
+    displayName: 状態
+  note.due:
+    displayName: 期限
+  note.priority:
+    displayName: P
+  note.human_gate:
+    displayName: 人の関門
+  note.runner:
+    displayName: Agent
+  note.workdir:
+    displayName: 起動場所
+  formula.担当:
+    displayName: 担当
+views:
+  - type: table
+    name: 人とAI
+    filters:
+      and:
+        - status != "done"
+        - status != "dropped"
+    groupBy:
+      property: formula.担当
+      direction: ASC
+    order:
+      - file.name
+      - status
+      - due
+      - priority
+      - human_gate
+      - runner
+      - workdir
+    sort:
+      - property: priority
+        direction: ASC
+      - property: due
+        direction: ASC
+  - type: table
+    name: 人だけ
+    filters:
+      and:
+        - formula.担当 == "👤 人間のタスク"
+        - status != "done"
+        - status != "dropped"
+    order:
+      - file.name
+      - status
+      - due
+      - priority
+      - human_gate
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: AIだけ
+    filters:
+      and:
+        - formula.担当 == "🤖 ロボットのタスク"
+        - status != "done"
+        - status != "dropped"
+    order:
+      - file.name
+      - status
+      - priority
+      - due
+      - runner
+      - workdir
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: 終わった
+    filters:
+      or:
+        - status == "done"
+        - status == "dropped"
+    order:
+      - file.name
+      - formula.担当
+      - status
+      - due
+      - runner

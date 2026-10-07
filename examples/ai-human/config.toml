@@ -1,0 +1,16 @@
+# 人と AI のタスクの見本(examples/ai-human)の設定。
+# mdgrid --config examples/ai-human/config.toml examples/ai-human/タスク.base
+
+# 新しいタスク(a か「+ 新規」)は、担当を決める2つの列を聞いてから作る。
+# actor を空のまま進めると書かれず、AI のタスクとして数える(cellops と同じ)。
+[new_note]
+ask = ["actor", "human_gate", "due"]
+
+[new_note.set]
+status = "todo"
+priority = "p3"
+
+# 列の区切り線と一行おきの色で、表らしく見せる。
+[display]
+column_lines = true
+zebra = true

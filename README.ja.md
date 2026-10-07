@@ -185,6 +185,7 @@ alias standup='mdgrid ~/vault/タスク.base --view 状態ごと'
 - [書き戻しの安全](docs/safety.ja.md) — 何を書き、何に触らないか。読むだけになるノートとその理由。
 - [Obsidian Bases への対応](docs/obsidian-bases.ja.md) — `.base` のどこを読み、評価し、無視するか。
 - [見本の設定と保管庫](examples/showcase/README.md) — ほとんどの機能を有効にした見本。`examples/vault` は、null・空・型の合わない値、読むだけのノート、同期の競合ファイルなどの端の形をそろえています。
+- [人と AI のタスクを分ける見本](examples/ai-human/README.md) — AI エージェントに任せきれるタスクと、人の手が要るタスク(払う・署名する・提出する・送る)をまとまりに分け、人のまとまりを上に並べる `.base` と設定。
 - シェルの補完は `mdgrid --completions <bash|zsh|fish|elvish|powershell>`、man ページは `mdgrid --man`。
 
 ## 🤝 参加する

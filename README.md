@@ -185,6 +185,7 @@ From the command palette, `:export_base` writes the current view to a new `.base
 - [Write-back safety](docs/safety.md) — what mdgrid writes, what it never touches, and which notes stay read-only and why.
 - [Obsidian Bases support](docs/obsidian-bases.md) — which parts of `.base` files mdgrid reads, evaluates or ignores.
 - [Showcase](examples/showcase/README.md) — a sample config and vault (in Japanese) that turn most features on. `examples/vault` covers the edge cases: null, empty and mismatched values, read-only notes, sync conflicts.
+- [Human and AI tasks](examples/ai-human/README.md) — a sample `.base` and config (in Japanese) that splits tasks into those an AI agent can finish and those that need a person (pay, sign, submit, send), with the people's group on top.
 - Shell completions: `mdgrid --completions <bash|zsh|fish|elvish|powershell>`. Man page: `mdgrid --man`.
 
 ## 🤝 Contributing
