@@ -47,12 +47,12 @@ pub(crate) fn table_height(app: &App, area_h: usize) -> usize {
 
 /// 集計の行の数(BV-14)。集計の無いビューでは 0。
 pub(crate) fn summary_rows(app: &App) -> usize {
-    usize::from(!app.summaries.is_empty())
+    usize::from(!app.built.summaries.is_empty())
 }
 
 /// 列の集計の文字「集計の名前 値」(BV-14)。日付はセルと同じ形(CE-22)。値が空なら名前だけ。
 fn summary_text(app: &App, col: &str) -> Option<String> {
-    let (_, s, v) = app.summaries.iter().find(|(c, _, _)| c == col)?;
+    let (_, s, v) = app.built.summaries.iter().find(|(c, _, _)| c == col)?;
     let value = match v {
         Val::Date(d) => app.date_format.format(*d),
         other => val_text(other),
@@ -265,7 +265,7 @@ fn label(app: &App, row: &RowId) -> String {
     } else {
         let full = app.src.label(row);
         let s = full
-            .strip_prefix(app.label_prefix.as_str())
+            .strip_prefix(app.built.label_prefix.as_str())
             .unwrap_or(&full);
         sanitize(s.strip_suffix(".md").unwrap_or(s))
     };

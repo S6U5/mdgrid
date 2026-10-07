@@ -5493,5 +5493,18 @@
       "CE-33"
     ],
     "sha": "d73e1fd129171b9e"
+  },
+  "tests/test_views_new_note_keys.rs::test_ce_27_views_new_note_new_keys": {
+    "ids": [
+      "CE-27",
+      "CE-33"
+    ],
+    "sha": "6dfc4f7b77fa097c"
+  },
+  "src/ui/test_note_time.rs::test_ce_32_time_variable_uses_local_now": {
+    "ids": [
+      "CE-32"
+    ],
+    "sha": "63341af28ae9b4cb"
   }
 }

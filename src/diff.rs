@@ -136,5 +136,5 @@ pub fn diff(before: &[u8], after: &[u8]) -> Vec<DiffLine> {
 }
 
 #[cfg(test)]
-#[path = "test_diff.rs"]
+#[path = "ui/test_diff.rs"]
 mod tests;

@@ -112,7 +112,7 @@ impl Mode {
     }
 
     /// 文字を入力に使うモード(前置きのキーを持たない)。
-    fn takes_text(self) -> bool {
+    pub(crate) fn takes_text(self) -> bool {
         matches!(
             self,
             Mode::Edit

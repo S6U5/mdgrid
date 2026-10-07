@@ -333,11 +333,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     } else {
         rows.insert(0, edge);
     }
-    for (k, (t, st)) in rows.into_iter().enumerate() {
-        if let Some(line) = lines.get_mut(g.top + k) {
-            *line = splice(line, g.x, Span::styled(t, st), g.iw, w);
-        }
-    }
+    super::popup::blit(lines, g.x, g.top, g.iw, w, rows);
 }
 
 /// 行の桁 [x, x + iw) を `ins` で置き換える。幅2の文字が境目にかかったら空白にする。

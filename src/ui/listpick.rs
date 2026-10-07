@@ -11,14 +11,14 @@
 use super::app::App;
 use super::input::{bulk_tail, read_only_lead};
 use super::keymap::{self, Action, Mode};
-use super::list::splice;
+use super::popup;
 use super::view::{data_y, visible_layout};
-use super::width::{fit, sanitize, take, width, Align};
+use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
 use mdgrid::source::{NewValue, RowId, Value};
 use mdgrid::types::Kind;
 use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
+use ratatui::text::Line;
 use unicode_segmentation::UnicodeSegmentation;
 
 /// 候補の印。1行なら All か None だけ。
@@ -613,14 +613,10 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
     let (ax, ay) = anchor(app, w).unwrap_or((0, 0));
     let rows = p.rows();
     let n = rows.len().max(1);
-    let below_room = limit.saturating_sub(ay + 1);
-    let above_room = ay.min(limit);
-    let below = below_room >= n + FRAME || below_room >= above_room;
-    let room = if below { below_room } else { above_room };
-    if room < FRAME || w < 8 {
+    if w < 8 {
         return None;
     }
-    let vis = n.min(room - FRAME);
+    let popup::Place { top, vis } = popup::place_with(ay, n, limit, FRAME, 0)?;
     let (nw, cw) = col_widths(p, w);
     let inner = rows
         .iter()
@@ -630,10 +626,9 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         .unwrap_or(0);
     let iw = (inner + 2).max(MIN_W).min(w);
     let start = (p.sel + 1).saturating_sub(vis);
-    let height = vis + FRAME;
     Some(Geom {
         x: ax.min(w - iw),
-        top: if below { ay + 1 } else { ay - height },
+        top,
         iw,
         start,
         vis,
@@ -675,9 +670,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     } else {
         format!("{} {pos}", sanitize(&p.col))
     };
-    let t = take(&title, tw);
-    let rest = tw - width(&t);
-    out.push((format!("+{t}{}+", "-".repeat(rest)), Style::default()));
+    out.push((popup::top_edge(&title, tw), Style::default()));
     let qroom = tw.saturating_sub(width(SEARCH.text()));
     let search = format!("{}{}", SEARCH.text(), query_view(&p.query, qroom));
     out.push((
@@ -701,17 +694,12 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         out.push((format!("|{}|", fit(&text, tw, Align::Left)), st));
     }
     out.push((format!("+{}+", "-".repeat(tw)), Style::default()));
-    for (k, (t, st)) in out.into_iter().enumerate() {
-        if let Some(line) = lines.get_mut(g.top + k) {
-            *line = splice(line, g.x, Span::styled(t, st), g.iw, w);
-        }
-    }
+    popup::blit(lines, g.x, g.top, g.iw, w, out);
 }
 
 /// 端末のカーソルの位置(SR-17: 検索の入力の位置。変換の窓がそこに出る)。
 pub(crate) fn pick_cursor(app: &App) -> Option<(u16, u16)> {
-    let w = app.size.0.saturating_sub(1) as usize;
-    let limit = (app.size.1.saturating_sub(1) as usize).saturating_sub(2);
+    let (w, limit) = popup::screen(app);
     let g = geometry(app, w, limit)?;
     let p = app.pick.as_ref()?;
     let tw = g.iw - 2;

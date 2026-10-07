@@ -4,7 +4,7 @@
 
 use super::app::App;
 use super::cell::shown;
-use super::external::plain_new;
+use super::input::new_value_text;
 use super::keymap::{Action, Mode};
 use super::view::{footer, message};
 use super::width::{fit, sanitize, take, width, Align};
@@ -122,7 +122,7 @@ impl App {
     /// 詳細に出す値の全文(改行も保つ)。ためた値は `*`、読むだけは `#` を先頭に。
     fn detail_text(&self, row: &RowId, col: &str) -> String {
         if let Some(nv) = self.changes.pending(row, col) {
-            return format!("*{}", plain_new(nv));
+            return format!("*{}", new_value_text(nv));
         }
         let s = shown(self, row, col);
         if let Shown::Prop(c) = self.cell(row, col) {
@@ -226,7 +226,6 @@ impl App {
             return self.set_mode(Mode::Table);
         };
         let n = self.detail_props(&d.row).len();
-        let last = n.saturating_sub(1);
         let page = self.detail_height();
         let Some(d) = &mut self.detail else {
             return;
@@ -237,12 +236,14 @@ impl App {
                 self.set_mode(Mode::Table);
                 return;
             }
-            Action::Down => d.sel = (d.sel + 1).min(last),
-            Action::Up => d.sel = d.sel.saturating_sub(1),
-            Action::PageDown => d.sel = (d.sel + page).min(last),
-            Action::PageUp => d.sel = d.sel.saturating_sub(page),
-            Action::Top => d.sel = 0,
-            Action::Bottom => d.sel = last,
+            Action::Down
+            | Action::Up
+            | Action::PageDown
+            | Action::PageUp
+            | Action::Top
+            | Action::Bottom => {
+                d.sel = super::popup::step_sel(d.sel, n, action, page).unwrap_or(d.sel);
+            }
             Action::Edit if self.readonly => {
                 self.message = Some(super::startup::READONLY.into());
             }

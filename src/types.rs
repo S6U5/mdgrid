@@ -232,7 +232,7 @@ pub fn writable_datetime(s: &str) -> bool {
 /// `±HHMM`・`±HH` の時差を付けてよい)を、地域の時計の秒(1970-01-01 0時からの秒。日付は0時)にする。
 /// 時差の付いた値は地域の時刻に直す(時差の無い値は地域の時刻のまま。Obsidian と同じ)。読めなければ None。
 pub fn parse_datetime(s: &str) -> Option<i64> {
-    parse_datetime_at(s, crate::print::local_offset())
+    parse_datetime_at(s, crate::clock::local_offset())
 }
 
 /// `parse_datetime` の地域の時差(秒)を渡す形(試験と、時差を決めて読むとき)。

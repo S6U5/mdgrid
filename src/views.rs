@@ -21,7 +21,7 @@ use crate::settings::{CmpOp, Cond, Dir, Group, Op, Settings};
 use crate::source::{FileInfo, Value};
 use crate::types::{self, Kind};
 use serde::{Deserialize, Serialize};
-use std::io::{self, Write};
+use std::io;
 use std::path::Path;
 
 /// 置き場の中のファイルの名前。
@@ -57,7 +57,7 @@ const VIEW_KEYS: &[&str] = &[
     "settings",
     "new_note",
 ];
-const NEW_NOTE_KEYS: &[&str] = &["folder", "name", "ask", "set"];
+const NEW_NOTE_KEYS: &[&str] = NewNote::KEYS;
 const SETTINGS_KEYS: &[&str] = &["filters", "sorts", "group", "display"];
 const COND_KEYS: &[&str] = &["col", "op"];
 
@@ -65,16 +65,11 @@ const COND_KEYS: &[&str] = &["col", "op"];
 
 /// TOML を表として読む。壊れていれば理由1行。
 fn parse_table(text: &str) -> Result<toml::Table, String> {
-    text.parse::<toml::Table>().map_err(|e: toml::de::Error| {
-        let msg = config::one_line(e.message());
-        match e.span() {
-            Some(span) => {
-                let line = text[..span.start.min(text.len())].matches('\n').count() + 1;
-                Msg::ViewsTomlLine.fill(&[&FILE_NAME, &line, &msg])
-            }
-            None => Msg::ViewsToml.fill(&[&FILE_NAME, &msg]),
-        }
-    })
+    text.parse::<toml::Table>()
+        .map_err(|e: toml::de::Error| match config::toml_error(text, &e) {
+            (Some(line), msg) => Msg::ViewsTomlLine.fill(&[&FILE_NAME, &line, &msg]),
+            (None, msg) => Msg::ViewsToml.fill(&[&FILE_NAME, &msg]),
+        })
 }
 
 /// 書かれた対象のパスが、開いた対象(実体のパス)と同じか。
@@ -153,7 +148,7 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
         Err(e) => {
             return (
                 Vec::new(),
-                vec![Msg::ViewsToml.fill(&[&path.display(), &config::one_line(&e.to_string())])],
+                vec![Msg::ViewsToml.fill(&[&path.display(), &config::squash_ws(&e.to_string())])],
             )
         }
     };
@@ -224,7 +219,7 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
                     &FILE_NAME,
                     &p,
                     &(j + 1),
-                    &config::one_line(&e.to_string()),
+                    &config::squash_ws(&e.to_string()),
                 ])),
             }
         }
@@ -341,7 +336,7 @@ pub fn save_views(dir: &Path, target: &Path, views: &[NativeView]) -> io::Result
         let mut t = match toml::Value::try_from(nv) {
             Ok(toml::Value::Table(t)) => t,
             Ok(_) => return Err(io::Error::other(Msg::ViewsNotATable.text())),
-            Err(e) => return Err(io::Error::other(config::one_line(&e.to_string()))),
+            Err(e) => return Err(io::Error::other(config::squash_ws(&e.to_string()))),
         };
         // try_from は日付を内部の表にしてしまうので、new_note は日付の値を保つ形で置き直す。
         if let Some(n) = &nv.new_note {
@@ -374,22 +369,8 @@ pub fn save_views(dir: &Path, target: &Path, views: &[NativeView]) -> io::Result
         table.insert("target".to_string(), toml::Value::Array(out));
     }
     let text =
-        toml::to_string(&table).map_err(|e| io::Error::other(config::one_line(&e.to_string())))?;
-
-    std::fs::create_dir_all(dir)?;
-    config::remove_stale_tmps(dir, FILE_NAME);
-    let tmp = dir.join(format!(".{}.tmp.{}", FILE_NAME, std::process::id()));
-    let result = (|| {
-        let mut f = std::fs::File::create(&tmp)?;
-        f.write_all(text.as_bytes())?;
-        f.sync_all()?;
-        drop(f);
-        std::fs::rename(&tmp, &path)
-    })();
-    if result.is_err() {
-        let _ = std::fs::remove_file(&tmp);
-    }
-    result
+        toml::to_string(&table).map_err(|e| io::Error::other(config::squash_ws(&e.to_string())))?;
+    config::write_atomic(dir, FILE_NAME, text.as_bytes())
 }
 
 // ---- 式の文字列 ----

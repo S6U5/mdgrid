@@ -7,7 +7,8 @@ pub mod calendar;
 pub mod cell;
 pub mod columns;
 pub mod detail;
-pub mod diff;
+// 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
+pub(crate) use crate::diff;
 pub mod display;
 pub mod entry;
 pub mod export;
@@ -24,6 +25,7 @@ pub mod native_io;
 pub mod native_views;
 pub mod nav;
 pub mod new_note;
+pub mod popup;
 pub mod review;
 pub mod settings;
 pub mod settings_pick;
@@ -163,6 +165,8 @@ mod test_list_narrow;
 mod test_note_editor;
 #[cfg(test)]
 mod test_note_form;
+#[cfg(test)]
+mod test_note_time;
 #[cfg(test)]
 mod test_review6;
 #[cfg(test)]

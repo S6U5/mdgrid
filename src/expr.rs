@@ -1484,8 +1484,8 @@ fn file_val(f: FileField, fi: &FileInfo) -> Val {
         FileField::Folder => Val::Str(fi.folder.clone()),
         FileField::Size => Val::Num(fi.size as f64),
         // 式の中の日時は地域の時計の秒(now()・today()・フロントマターの日時と同じ物差し。local-today)。
-        FileField::Mtime => datetime_val(fi.mtime + crate::print::local_offset()),
-        FileField::Ctime => datetime_val(fi.ctime + crate::print::local_offset()),
+        FileField::Mtime => datetime_val(fi.mtime + crate::clock::local_offset()),
+        FileField::Ctime => datetime_val(fi.ctime + crate::clock::local_offset()),
         FileField::Tags => Val::List(fi.tags.iter().map(|t| Val::Str(t.clone())).collect()),
         // 索引が要る(link_val)。
         FileField::Links | FileField::Backlinks => Val::Null,
@@ -1814,7 +1814,7 @@ fn format_when(day: i64, t: i64, fmt: &str) -> Option<String> {
         };
         format!("{n}{suffix}")
     };
-    let unix = day * DAY_SECS + t - crate::print::local_offset();
+    let unix = day * DAY_SECS + t - crate::clock::local_offset();
     // 長い記号を先に(`DDDD` は `DD` より先、`Do` は `D` より先)。
     let tokens: [(&str, String); 35] = [
         ("YYYY", format!("{y:04}")),

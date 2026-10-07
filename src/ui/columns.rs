@@ -54,7 +54,7 @@ fn value_key(v: &Value) -> SortKey {
         Value::Bool(b) => SortKey::Bool(*b),
         Value::Int(i) => SortKey::Num(*i as f64),
         Value::Float(f) => SortKey::Num(*f),
-        Value::List(_) => SortKey::Str(super::external::plain(v)),
+        Value::List(_) => SortKey::Str(mdgrid::print::value_plain(v)),
     }
 }
 

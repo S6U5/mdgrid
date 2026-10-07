@@ -5,10 +5,8 @@
 //! 「違うか」は、今の値を `--print` と同じ形(CSV の文字・JSON の値)にして比べる。同じなら型の読み直しも
 //! 読むだけの確かめもしない(書き出したものをそのまま戻しても、何も書かない)。
 
-use crate::ui::diff::{diff, DiffLine};
-use crate::ui::entry::parse;
-use crate::ui::input::Entry;
-use crate::ui::review::{edit_error_text, save_error_text};
+use crate::diff::{diff, DiffLine};
+use crate::edit::{edit_error_text, parse, save_error_text, Entry};
 use mdgrid::changes::{Changes, Outcome};
 use mdgrid::i18n::Msg;
 use mdgrid::print::{value_json, value_plain};

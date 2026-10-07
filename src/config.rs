@@ -71,16 +71,12 @@ impl Default for Config {
 /// TOML を読む。知らない項目・型の違う項目は警告の文にして返し、止めない(CLI-3)。
 /// 壊れた TOML は Err(理由1行)。
 pub fn parse(text: &str) -> Result<(Config, Vec<String>), String> {
-    let table: toml::Table = text.parse().map_err(|e: toml::de::Error| {
-        let msg = one_line(e.message());
-        match e.span() {
-            Some(span) => {
-                let line = text[..span.start.min(text.len())].matches('\n').count() + 1;
-                Msg::ConfigTomlLine.fill(&[&line, &msg])
-            }
-            None => Msg::ConfigToml.fill(&[&msg]),
-        }
-    })?;
+    let table: toml::Table =
+        text.parse()
+            .map_err(|e: toml::de::Error| match toml_error(text, &e) {
+                (Some(line), msg) => Msg::ConfigTomlLine.fill(&[&line, &msg]),
+                (None, msg) => Msg::ConfigToml.fill(&[&msg]),
+            })?;
 
     let mut c = Config::default();
     let mut warnings = Vec::new();
@@ -118,7 +114,7 @@ pub fn parse(text: &str) -> Result<(Config, Vec<String>), String> {
             "date_format" => match value.as_str() {
                 Some(p) => match DateFormat::parse(p) {
                     Ok(f) => c.date_format = f,
-                    Err(e) => warnings.push(Msg::ConfigBadDateFormat.fill(&[&one_line(&e)])),
+                    Err(e) => warnings.push(Msg::ConfigBadDateFormat.fill(&[&squash_ws(&e)])),
                 },
                 None => warnings.push(type_warning(name, Msg::WantDateFormat)),
             },
@@ -347,7 +343,7 @@ fn type_warning(name: &str, want: Msg) -> String {
     Msg::ConfigWrongType.fill(&[&name, &want.text()])
 }
 
-pub(crate) fn one_line(s: &str) -> String {
+pub(crate) fn squash_ws(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
@@ -465,22 +461,36 @@ pub fn save_state(dir: &Path, target: &Path, view: &str, s: &ViewState) -> io::R
         state,
         settings,
     };
-    let text = toml::to_string(&file).map_err(|e| io::Error::other(one_line(&e.to_string())))?;
+    let text = toml::to_string(&file).map_err(|e| io::Error::other(squash_ws(&e.to_string())))?;
+    write_atomic(dir, &name, text.as_bytes())
+}
 
+/// 設定のフォルダの `name` を置き換える: 同じフォルダの一時ファイルに書いて fsync し、名前を変えて置き換える
+/// (途中で止まっても前のファイルが残る)。前に残った一時ファイルは先に消す。失敗したら一時ファイルを消す。
+pub(crate) fn write_atomic(dir: &Path, name: &str, bytes: &[u8]) -> io::Result<()> {
     std::fs::create_dir_all(dir)?;
-    remove_stale_tmps(dir, &name);
+    remove_stale_tmps(dir, name);
     let tmp = dir.join(format!(".{}.tmp.{}", name, std::process::id()));
     let result = (|| {
         let mut f = std::fs::File::create(&tmp)?;
-        f.write_all(text.as_bytes())?;
+        f.write_all(bytes)?;
         f.sync_all()?;
         drop(f);
-        std::fs::rename(&tmp, dir.join(&name))
+        std::fs::rename(&tmp, dir.join(name))
     })();
     if result.is_err() {
         let _ = std::fs::remove_file(&tmp);
     }
     result
+}
+
+/// 壊れた TOML の(行の番号、1行にした理由)。行が分からなければ None。
+pub(crate) fn toml_error(text: &str, e: &toml::de::Error) -> (Option<usize>, String) {
+    let msg = squash_ws(e.message());
+    let line = e
+        .span()
+        .map(|span| text[..span.start.min(text.len())].matches('\n').count() + 1);
+    (line, msg)
 }
 
 /// 状態を消す(無ければ何もしない)。mdgrid のビューの名前の変更・削除で使う(BV-20)。

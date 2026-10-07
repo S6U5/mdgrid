@@ -1,6 +1,8 @@
 //! mdgrid の実行ファイル: 引数(CLI-1・CLI-2・CLI-4。clap で読み、補完と man も同じ定義から出す CLI-13)、設定の読み込み(CLI-3)、端末の準備と後始末、イベントのループ。
 
 mod apply;
+mod diff;
+mod edit;
 mod ui;
 
 use clap::error::{ContextKind, ContextValue, ErrorKind};

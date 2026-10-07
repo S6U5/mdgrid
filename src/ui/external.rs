@@ -4,7 +4,7 @@
 use super::app::App;
 use super::view::LABEL_HEADER;
 use mdgrid::i18n::Msg;
-use mdgrid::source::{NewValue, RowId, Value};
+use mdgrid::source::RowId;
 use std::ffi::OsString;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -420,30 +420,6 @@ pub(crate) fn run_editor(argv: &[OsString]) -> io::Result<std::process::ExitStat
 /// TSV の1つの欄: タブと改行は空白にする。
 fn tsv(s: &str) -> String {
     s.replace(['\t', '\r', '\n'], " ")
-}
-
-pub(crate) fn plain(v: &Value) -> String {
-    match v {
-        Value::Null | Value::Other => String::new(),
-        Value::Str(s) => s.clone(),
-        Value::Bool(b) => b.to_string(),
-        Value::Int(i) => i.to_string(),
-        Value::Float(f) => format!("{f:?}"),
-        Value::List(items) => items.iter().map(plain).collect::<Vec<_>>().join(", "),
-    }
-}
-
-pub(crate) fn plain_new(v: &NewValue) -> String {
-    match v {
-        NewValue::Null => String::new(),
-        NewValue::Str(s) | NewValue::Date(s) => s.clone(),
-        NewValue::Bool(b) => b.to_string(),
-        NewValue::Int(i) => i.to_string(),
-        NewValue::Float(f) => format!("{f:?}"),
-        NewValue::List(items) => items.join(", "),
-        NewValue::RenameKey(to) => format!("→ {to}"),
-        NewValue::DeleteKey => String::new(),
-    }
 }
 
 impl App {

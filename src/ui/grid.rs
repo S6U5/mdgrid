@@ -102,7 +102,7 @@ impl App {
     pub(crate) fn build_grid(&self) -> Result<Grid, String> {
         // CE-28: 足した列は、まだ無ければ右に足す(ノートに値が入れば、どの組み立てでも普通の列になる)。
         self.build_view_grid().map(|mut g| {
-            for c in &self.extra_cols {
+            for c in &self.built.extra_cols {
                 if !g.columns.iter().any(|x| &x.id == c) {
                     g.columns.push(base::Column {
                         id: c.clone(),
@@ -150,7 +150,7 @@ impl App {
     /// (`col_kinds`)を引く。表の寄せとビューの設定の絞り込み・並べ替え・グループは同じ型を使う。
     /// 決めていない列(ビューに無いノートのキー)はその場で決める。
     pub(crate) fn column_kind(&self, col: &str) -> Kind {
-        match self.col_kinds.get(col) {
+        match self.built.col_kinds.get(col) {
             Some(k) => *k,
             None => self.kind_in(col, &self.rows),
         }
@@ -174,7 +174,8 @@ impl App {
 
     /// 列の見出し(displayName か id)。
     pub(crate) fn title(&self, col: &str) -> String {
-        self.titles
+        self.built
+            .titles
             .get(col)
             .cloned()
             .unwrap_or_else(|| base::default_title(col))
@@ -243,7 +244,7 @@ impl App {
             }
         }
         self.keep_one_column();
-        self.titles = grid
+        self.built.titles = grid
             .columns
             .iter()
             .map(|c| (c.id.clone(), c.title.clone()))
@@ -266,13 +267,13 @@ impl App {
             .into_iter()
             .map(|c| (c.to_string(), self.kind_in(c, &grid.rows)))
             .collect();
-        self.col_kinds = col_kinds;
+        self.built.col_kinds = col_kinds;
         // NV-20: `.base` → ビューの設定 → 簡易の絞り込み・同じ値 → 一時的な並べ替え → 直した行の留め。
         let (rows, groups) = self.apply_settings(grid.rows, grid.groups);
         let (rows, groups) = self.overlay(rows, groups);
         self.rows = rows;
         self.groups = groups;
-        self.label_prefix = common_folder(self.src.rows().iter().map(|r| self.src.label(r)));
+        self.built.label_prefix = common_folder(self.src.rows().iter().map(|r| self.src.label(r)));
         // BV-14・BV-7: 画面に印の無い未対応の理由(集計・並べ替え)は、開いたとき(理由が変わったとき)に
         // 下の行へ一度出す(セルを選んでいると案内に隠れるため)。列の理由はセルの `?` と案内で見える。
         // ほかの知らせが出ていれば上書きしない。
@@ -281,7 +282,7 @@ impl App {
             self.message = Some(Msg::HintUnsupported.fill(&[&quiet.join(" / ")]));
         }
         self.notes = grid.notes;
-        self.summaries = self.compute_summaries(grid.summaries);
+        self.built.summaries = self.compute_summaries(grid.summaries);
         self.build_slots();
         let found = old_key
             .and_then(|k| (0..self.slots.len()).find(|&i| self.slot_key(i).as_ref() == Some(&k)));
@@ -590,4 +591,19 @@ pub(crate) fn common_folder(labels: impl Iterator<Item = String>) -> String {
         }
     }
     common.unwrap_or_default()
+}
+
+/// 組み立てた表から決めた値(App が持つ。組み立て直しのたびに grid.rs が決め直す)。
+#[derive(Default)]
+pub(crate) struct Built {
+    /// CE-28: 起動の間だけ足した列(どのノートにも無いキー)。どのビューでも表の右に出す。
+    pub extra_cols: Vec<String>,
+    /// 表の下の集計(列の id・集計・今の行で計算した値。BV-14)。空なら集計の行を出さない。
+    pub summaries: Vec<(String, mdgrid::summary::Summary, mdgrid::expr::Val)>,
+    /// 列の id → 見出し(displayName。BV-5)。
+    pub titles: HashMap<String, String>,
+    /// SR-29: 読み込んだ全部の行に共通のフォルダ(末尾の `/` まで)。左のノートの欄はこれを除いて出す。
+    pub label_prefix: String,
+    /// 列の id → 型。組み立て直しのたびに `.base` の結果の行の全部から決める(kinds とビューの設定が引く)。
+    pub col_kinds: HashMap<String, Kind>,
 }

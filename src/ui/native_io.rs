@@ -231,8 +231,8 @@ impl App {
             self.scroll_into_view();
             return;
         }
-        if !self.extra_cols.iter().any(|c| c == name) {
-            self.extra_cols.push(name.to_string());
+        if !self.built.extra_cols.iter().any(|c| c == name) {
+            self.built.extra_cols.push(name.to_string());
         }
         self.hidden.retain(|(c, _, _)| c != name);
         self.refresh();

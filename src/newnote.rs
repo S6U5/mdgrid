@@ -39,6 +39,11 @@ pub struct NewNote {
 }
 
 impl NewNote {
+    /// 設定の `[new_note]` と views.toml の `[target.view.new_note]` で知っている項目(読み書きの全部で使う)。
+    pub const KEYS: &'static [&'static str] = &[
+        "mode", "folder", "name", "ask", "required", "hidden", "body", "set",
+    ];
+
     /// CE-33: エディタで作るか。
     pub fn editor(&self) -> bool {
         self.mode == "editor"
