@@ -2,7 +2,7 @@
 
 AI エージェントに仕事を任せていると、タスクは2種類に分かれます。AI に任せきれるものと、最後に人の手が要るもの(払う・署名する・提出する・送る、PC の外での手続き)です。この見本は、その2つをまとまりに分けて、人のタスクを上に並べる表を、`.base` 1つと設定 1つで作ります。
 
-`タスク/` に 11 個のタスク(終わっていないもの 9・終わったもの 2)。日付は 2026年10月に寄せてあります。
+`vault/タスク/` に 11 個のタスク(終わっていないもの 9・終わったもの 2)。日付は 2026年10月に寄せてあります。
 
 ## 開く
 
@@ -10,7 +10,7 @@ AI エージェントに仕事を任せていると、タスクは2種類に分�
 
 ```sh
 cp -R examples/ai-human /tmp/mdgrid-ai-human
-mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/タスク.base
+mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/vault/タスク.base
 ```
 
 最初のタブ「人とAI」で、`👤 人間のタスク` と `🤖 ロボットのタスク` の見出しの下にタスクが並びます。見出しの上で `Enter` を押すと畳めます。`[` `]` でほかのビューに切り替えます。
@@ -25,12 +25,12 @@ mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/タスク.
 表として出すこともできます:
 
 ```sh
-mdgrid /tmp/mdgrid-ai-human/タスク.base --print --format md --view 人だけ
+mdgrid /tmp/mdgrid-ai-human/vault/タスク.base --print --format md --with-path --view 人だけ
 ```
 
 ## 人か AI かの決め方
 
-`タスク.base` の式 `担当` で決めます。作者の別の道具 cellops で使っていた決め方と同じです。
+`vault/タスク.base` の式 `担当` で決めます。作者の別の道具 cellops で使っていた決め方と同じです。
 
 ```yaml
 formulas:

@@ -1,5 +1,5 @@
 # 人と AI のタスクの見本(examples/ai-human)の設定。
-# mdgrid --config examples/ai-human/config.toml examples/ai-human/タスク.base
+# mdgrid --config examples/ai-human/config.toml examples/ai-human/vault/タスク.base
 
 # 新しいタスク(a か「+ 新規」)は、担当を決める2つの列を聞いてから作る。
 # actor を空のまま進めると書かれず、AI のタスクとして数える(cellops と同じ)。

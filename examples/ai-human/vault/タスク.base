@@ -6,8 +6,6 @@ formulas:
   # PC の外の仕事(actor: human)なら人。それ以外(actor が無いノートも)は AI。
   担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 ロボットのタスク")
 properties:
-  file.name:
-    displayName: タイトル
   note.status:
     displayName: 状態
   note.due:
@@ -33,7 +31,6 @@ views:
       property: formula.担当
       direction: ASC
     order:
-      - file.name
       - status
       - due
       - priority
@@ -53,7 +50,6 @@ views:
         - status != "done"
         - status != "dropped"
     order:
-      - file.name
       - status
       - due
       - priority
@@ -69,7 +65,6 @@ views:
         - status != "done"
         - status != "dropped"
     order:
-      - file.name
       - status
       - priority
       - due
@@ -85,7 +80,6 @@ views:
         - status == "done"
         - status == "dropped"
     order:
-      - file.name
       - formula.担当
       - status
       - due

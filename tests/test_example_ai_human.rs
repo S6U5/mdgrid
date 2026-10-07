@@ -50,14 +50,15 @@ fn copy_dir(from: &Path, to: &Path) {
     }
 }
 
-/// 見本を写し、`.base` の view を `--print --format csv` で出す。行ごとの列のリストを返す(見出しの行は除く)。
+/// 見本を写し、`.base` の view を `--print --format csv --with-path` で出す。行ごとの列のリストを返す
+/// (見出しの行は除く。先頭の列はノートのパス)。
 fn print_view(view: &str) -> Vec<Vec<String>> {
     let tmp = TempDir::new("ai-human");
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/ai-human");
     copy_dir(&root, tmp.path());
     let out = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
-        .arg(tmp.path().join("タスク.base"))
-        .args(["--print", "--format", "csv", "--view", view])
+        .arg(tmp.path().join("vault").join("タスク.base"))
+        .args(["--print", "--format", "csv", "--with-path", "--view", view])
         .env("XDG_CONFIG_HOME", tmp.path().join("config"))
         .env("XDG_STATE_HOME", tmp.path().join("state"))
         .env("LANG", "ja_JP.UTF-8")
@@ -79,10 +80,17 @@ fn print_view(view: &str) -> Vec<Vec<String>> {
         .collect()
 }
 
+/// パスの列からノートの名前(`.md` を除いたファイル名)を取る。
+fn note_name(path: &str) -> String {
+    Path::new(path)
+        .file_stem()
+        .unwrap()
+        .to_string_lossy()
+        .into_owned()
+}
+
 fn names(rows: &[Vec<String>]) -> Vec<String> {
-    rows.iter()
-        .map(|r| r[0].trim_end_matches(".md").to_string())
-        .collect()
+    rows.iter().map(|r| note_name(&r[0])).collect()
 }
 
 const HUMAN: [&str; 5] = [
@@ -135,7 +143,7 @@ fn test_example_ai_human_done_keeps_the_split() {
     let rows = print_view("終わった");
     let mut got: Vec<(String, String)> = rows
         .iter()
-        .map(|r| (r[0].trim_end_matches(".md").to_string(), r[1].clone()))
+        .map(|r| (note_name(&r[0]), r[1].clone()))
         .collect();
     got.sort();
     assert_eq!(

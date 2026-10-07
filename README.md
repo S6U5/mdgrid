@@ -129,6 +129,10 @@ Press `x` to see what you can do with the selected cell:
 
 ![The action menu for a cell](docs/assets/demo-menu.svg)
 
+Group and arrange the table the way you work. With a formula in a `.base` and a few lines of config, the [ai-human sample](examples/ai-human/README.md) splits tasks into those that need a person (pay, sign, submit, send) and those an AI agent can finish, with the people's group on top:
+
+![Tasks grouped into human and AI tasks](docs/assets/demo-ai-human.svg)
+
 Pick a color theme with `theme` in the config: `"nord"` (below), `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"` or `"dozy-pink"`. The default keeps your terminal's colors, and `NO_COLOR` is respected.
 
 ![The table in the Nord theme](docs/assets/demo-theme.svg)

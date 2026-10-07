@@ -129,6 +129,10 @@ fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
 ![セルの操作の一覧](docs/assets/ja/demo-menu.svg)
 
+表は、自分の仕事のやり方に合わせて組み替えられます。[見本 ai-human](examples/ai-human/README.md) は、`.base` の式1つと数行の設定で、タスクを人の手が要るもの(払う・署名する・提出する・送る)と AI エージェントに任せられるものに分け、人のまとまりを上に並べます:
+
+![人と AI に分けたタスク](docs/assets/ja/demo-ai-human.svg)
+
 色のテーマは設定の `theme` で選びます: `"nord"`(下の画面)・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"`。既定は端末の色のままで、`NO_COLOR` に従います。
 
 ![Nord のテーマの表](docs/assets/ja/demo-theme.svg)
