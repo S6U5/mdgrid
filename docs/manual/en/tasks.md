@@ -9,6 +9,7 @@
   - [Create a note](#create-a-note)
   - [Open a .base file](#open-a-base-file)
   - [Shape a view and save it](#shape-a-view-and-save-it)
+  - [Give a folder its own command](#give-a-folder-its-own-command)
   - [Use with other commands](#use-with-other-commands)
   - [Choose a theme](#choose-a-theme)
   - [When you cannot edit](#when-you-cannot-edit)
@@ -122,6 +123,30 @@ To go back and forth with Obsidian, use the palette (`:`):
 - `import_base`: take a `.base` view in as an mdgrid view (the parts it cannot hold are listed as dropped)
 
 With `--readonly`, view settings are not remembered.
+
+## Give a folder its own command
+
+mdgrid remembers each folder (or `.base`) you open: the columns you show and their order and widths, the filters, sorting and grouping set with `o`, the folded groups, and the views you saved as tabs. The next time you open the same folder, all of it comes back. So a shell alias is enough to turn a folder into a command of your own.
+
+Add one line per folder to `~/.zshrc` or `~/.bashrc`:
+
+```sh
+alias tasks='mdgrid ~/notes/Tasks'
+alias books='mdgrid ~/notes/Books'
+alias meetings='mdgrid ~/notes/Meetings --readonly'   # only for looking
+alias standup='mdgrid ~/notes/Tasks.base --view "By owner"'   # a .base, opened on one view
+```
+
+- Typing `tasks` opens the task table the way you left it.
+- What is not remembered: the quick sort from a column header, the quick filter `\`, and anything you change with `--readonly`.
+- In fish: `alias --save tasks 'mdgrid ~/notes/Tasks'`.
+
+The output side works the same way with a shell function:
+
+```sh
+todo() { mdgrid ~/notes/Tasks --print --format md --filter 'status != "done"' --sort due; }
+pick-task() { mdgrid ~/notes/Tasks --pick path; }
+```
 
 ## Use with other commands
 
