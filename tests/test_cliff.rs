@@ -114,7 +114,8 @@ fn git_subjects(root: &Path) -> Option<Vec<String>> {
     let out = match Command::new("git")
         .arg("-C")
         .arg(root)
-        .args(["log", "--format=%s"])
+        // PR の CI が取り出す仮のマージコミット(`Merge <head> into <base>`)は数えない。
+        .args(["log", "--no-merges", "--format=%s"])
         .output()
     {
         Ok(o) => o,
