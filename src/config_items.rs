@@ -141,19 +141,21 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         name: "display",
-        ty: "table ([display] with row_numbers, zebra, column_lines, tabs and chips)",
-        ty_ja: "表([display] の下に row_numbers・zebra・column_lines・tabs・chips)",
+        ty: "table ([display] with row_numbers, zebra, column_lines, group_gap, tabs and chips)",
+        ty_ja: "表([display] の下に row_numbers・zebra・column_lines・group_gap・tabs・chips)",
         default: Some(
-            "{ row_numbers = false, zebra = false, column_lines = false, tabs = true, chips = true }",
+            "{ row_numbers = false, zebra = false, column_lines = false, group_gap = false, tabs = true, \
+             chips = true }",
         ),
         example: "[display]\nrow_numbers = true\nzebra = true\ncolumn_lines = true",
         en: "How the table is shown (each true or false): row_numbers (numbers 1, 2, 3... on the\n\
              left), zebra (every other row shaded; not without colors), column_lines (a │ between\n\
-             columns), tabs (the view tabs) and chips (the band of active view settings).\n\
+             columns), group_gap (an empty line above every group heading but the first),
+             tabs (the view tabs) and chips (the band of active view settings).\n\
              The search bar stays the top-level search_bar. Each view can override these in\n\
              its view settings (o).",
         ja: "表の見せ方(どれも true か false)。row_numbers(左に 1・2・3… の行番号)・zebra(一行おきの色。\
-             色なしでは付けない)・column_lines(列の間に │)・tabs(ビューのタブ)・chips(設定の帯)。\
+             色なしでは付けない)・column_lines(列の間に │)・group_gap(2つ目からのまとまりの見出しの上に空きの行)・tabs(ビューのタブ)・chips(設定の帯)。\
              検索の欄は最上位の search_bar のまま。ビューごとにビューの設定(o)で切り替えられる。",
     },
     Item {

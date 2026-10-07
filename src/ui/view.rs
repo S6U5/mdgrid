@@ -247,7 +247,7 @@ fn visible_rows(app: &App) -> Vec<&RowId> {
         .take(app.data_height())
         .filter_map(|s| match s {
             Slot::Row(r) => app.rows.get(*r),
-            Slot::Head(_) => None,
+            Slot::Head(_) | Slot::Gap => None,
         })
         .collect()
 }
@@ -545,7 +545,8 @@ pub fn hit(app: &App, x: u16, y: u16) -> Option<(usize, usize)> {
         return None;
     }
     let i = app.top + (y - dy);
-    if i >= app.slots.len() {
+    // SR-30: 見出しの上の空きは選べない。
+    if i >= app.slots.len() || app.slots[i] == Slot::Gap {
         return None;
     }
     let (lay, cols) = visible_layout(app);
@@ -599,6 +600,8 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
         lines.push(match slot {
             Slot::Row(r) => data_row(app, &lay, &cols, i, &app.rows[*r], &ctx),
             Slot::Head(g) => heading_row(app, i, *g, w),
+            // SR-30: 見出しの上の空き。
+            Slot::Gap => Line::from(" ".repeat(w)),
         });
     }
     if app.slots.is_empty() {

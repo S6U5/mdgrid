@@ -194,6 +194,14 @@ fn assert_numbered(app: &App) {
                     "見出しの行には番号を付けない: {line:?}"
                 );
             }
+            // SR-30: 見出しの上の空きにも番号を付けない。
+            grid::Slot::Gap => {
+                assert_eq!(
+                    lead_number(line),
+                    None,
+                    "空きの行には番号を付けない: {line:?}"
+                );
+            }
         }
     }
 }

@@ -574,6 +574,8 @@ impl App {
     fn table_action(&mut self, action: Action) {
         let before = self.row;
         self.table_action_inner(action);
+        // SR-30: 見出しの上の空きには止まらず、動いた向きにもう1つ進む。
+        self.step_off_gap(if self.row < before { -1 } else { 1 });
         if self.row != before {
             self.moved();
         }

@@ -533,6 +533,15 @@ wait = "▾"
 text = { en = "The By status view groups rows under headings you can fold with Enter.", ja = "By status のビューは見出しの行でまとめ、Enter で畳める。" }
 
 [[shot]]
+id = "demo-ai-human"
+title = { en = "Human and AI tasks", ja = "人と AI のタスク" }
+command = ["./target/release/mdgrid", "--config", "examples/ai-human/config.toml", "examples/ai-human/vault/タスク.base"]
+ready = "人とAI"
+env = { MDGRID_TODAY = "2026-10-07" }
+wait = "▾"
+text = { en = "The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.", ja = "見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。" }
+
+[[shot]]
 id = "demo-menu"
 title = { en = "Actions for the selected cell", ja = "その場の操作の一覧" }
 command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]

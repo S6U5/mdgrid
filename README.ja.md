@@ -129,6 +129,10 @@ fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
 ![セルの操作の一覧](docs/assets/ja/demo-menu.svg)
 
+表は、自分の仕事のやり方に合わせて組み替えられます。[見本 ai-human](examples/ai-human/README.md) は、`.base` の式1つと数行の設定で、タスクを人の手が要るもの(払う・署名する・提出する・送る)と AI エージェントに任せられるものに分け、人のまとまりを上に並べます:
+
+![人と AI に分けたタスク](docs/assets/ja/demo-ai-human.svg)
+
 色のテーマは設定の `theme` で選びます: `"nord"`(下の画面)・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"`。既定は端末の色のままで、`NO_COLOR` に従います。
 
 ![Nord のテーマの表](docs/assets/ja/demo-theme.svg)
@@ -185,6 +189,7 @@ alias standup='mdgrid ~/vault/タスク.base --view 状態ごと'
 - [書き戻しの安全](docs/safety.ja.md) — 何を書き、何に触らないか。読むだけになるノートとその理由。
 - [Obsidian Bases への対応](docs/obsidian-bases.ja.md) — `.base` のどこを読み、評価し、無視するか。
 - [見本の設定と保管庫](examples/showcase/README.md) — ほとんどの機能を有効にした見本。`examples/vault` は、null・空・型の合わない値、読むだけのノート、同期の競合ファイルなどの端の形をそろえています。
+- [人と AI のタスクを分ける見本](examples/ai-human/README.md) — AI エージェントに任せきれるタスクと、人の手が要るタスク(払う・署名する・提出する・送る)をまとまりに分け、人のまとまりを上に並べる `.base` と設定。
 - シェルの補完は `mdgrid --completions <bash|zsh|fish|elvish|powershell>`、man ページは `mdgrid --man`。
 
 ## 🤝 参加する

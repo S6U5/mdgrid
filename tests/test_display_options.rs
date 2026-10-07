@@ -184,10 +184,16 @@ fn test_sr_21_print_config_has_display() {
             "[display] の {name} が既定値 {default} で無い\n---\n{text}"
         );
     }
+    // [SR-30] 6つ目の項目 group_gap(既定 false)。
+    assert_eq!(
+        display.get("group_gap").and_then(|v| v.as_bool()),
+        Some(false),
+        "[display] の group_gap が既定値 false で無い\n---\n{text}"
+    );
     assert_eq!(
         display.len(),
-        NAMES.len(),
-        "[display] は5項目だけ: {display:?}"
+        NAMES.len() + 1,
+        "[display] は SR-21 の5項目と SR-30 の group_gap だけ: {display:?}"
     );
     assert!(
         !display.contains_key("search_bar"),

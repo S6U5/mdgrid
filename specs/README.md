@@ -26,7 +26,7 @@ updated: 2026-09-30
 | [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 23 | 8 |
 | [output](output/spec.md) | セルや行をクリップボードにコピーする方法と、表を外に出す方法。 | コピー・貼り付け・書き出し・標準出力への出力を作る・変えるとき | 4 | 0 |
 | [scope](scope/spec.md) | mdgrid が何のための道具で、最初の版に何を入れ、何を入れないか。 | 機能を足す・削るとき、最初の版の範囲を判断するとき、名前や配り方を決めるとき | 14 | 8 |
-| [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 25 | 9 |
+| [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 26 | 10 |
 | [write-back](write-back/spec.md) | 直した値をためて、差分を見てから保存する流れと、ノートのファイルにどう書き戻すか。何を1バイトも変えず、いつ書かずに止めるか。 | 保存・取り消し・ファイルへの書き込みを作る・変えるとき、YAML の読み書きの部品を選ぶとき | 19 | 10 |
 
 取り込みで決定者が未確認の要件: なし
@@ -46,6 +46,7 @@ updated: 2026-09-30
 | 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-07 | [見本の .base の未対応の式の例を file.embeds に替える(links-backlinks-sample)](_decisions/2026-10-07-links-backlinks-sample.md) | accepted | 人 | 人の発言 | BV-3, BV-7 |
+| 2026-10-07 | [まとまりの見出しの上を空ける表示の設定(group-gap)](_decisions/2026-10-07-group-gap.md) | accepted | 人 | 人の発言 | SR-30 |
 | 2026-10-07 | [displayName の無い列の見出しを Obsidian の既定にする(default-headings)](_decisions/2026-10-07-default-headings.md) | accepted | 人 | 人の発言 | BV-24 |
 | 2026-10-07 | [既定の見出しに合わせて、見出しを鍵に使う試験の錠を掛け直す(default-headings-locks)](_decisions/2026-10-07-default-headings-locks.md) | accepted | 人 | 人の発言 | BV-22, BV-7 |
 | 2026-10-06 | [日付と数の入力でも、開いた直後に打つと今の値を置き換える(type-replaces-date-number)](_decisions/2026-10-06-type-replaces-date-number.md) | accepted | AI | 検証の指摘 | CE-5, CE-7 |

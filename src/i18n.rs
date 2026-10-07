@@ -593,6 +593,7 @@ msgs! {
     DisplayRowNumbers = "Row numbers", "行番号";
     DisplayZebra = "Zebra stripes", "一行おきの色";
     DisplayColumnLines = "Column lines", "列の区切り線";
+    DisplayGroupGap = "Group gaps", "まとまりの間";
     DisplayTabs = "Tabs", "タブ";
     DisplaySearchBar = "Search bar", "検索の欄";
     DisplayChips = "Settings band", "設定の帯";
