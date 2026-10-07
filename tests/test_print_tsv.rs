@@ -19,6 +19,13 @@ fn test_cli_5_print_tsv() {
         .output()
         .unwrap();
     let _ = std::fs::remove_dir_all(&dir);
-    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
-    assert_eq!(String::from_utf8(out.stdout).unwrap(), "t\tn\nx y\t1\nl1 l2\t2\n");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(
+        String::from_utf8(out.stdout).unwrap(),
+        "t\tn\nx y\t1\nl1 l2\t2\n"
+    );
 }

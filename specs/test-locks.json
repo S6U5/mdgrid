@@ -5387,7 +5387,8 @@
     "ids": [
       "CLI-5"
     ],
-    "sha": "8122364abdda3f72"
+    "sha": "e6efff8be3d2e786",
+    "by": "specs/_decisions/2026-10-07-export-table.md"
   },
   "tests/test_print_with_path.rs::test_cli_14_without_flag_output_has_no_path_column": {
     "ids": [
