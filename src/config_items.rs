@@ -160,16 +160,22 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         name: "new_note",
-        ty: "table ([new_note] with folder, name, ask and [new_note.set])",
-        ty_ja: "表([new_note] の下に folder・name・ask と [new_note.set])",
+        ty: "table ([new_note] with mode, folder, name, ask, required, hidden, body and [new_note.set])",
+        ty_ja: "表([new_note] の下に mode・folder・name・ask・required・hidden・body と [new_note.set])",
         default: Some("{}"),
-        example: "[new_note]\nfolder = \"inbox\"\nname = \"{date} \"\nask = [\"priority\"]\n\n[new_note.set]\ntags = [\"inbox\"]",
-        en: "How a new note is made from the table: folder (relative to the opened folder),\n\
-             name (name template; {date} is today), ask (columns asked after the name, in order)\n\
-             and [new_note.set] (column = value written into every new note). Values from the\n\
-             view's filter come first. A mdgrid view can override this with [target.view.new_note].",
-        ja: "表から新しいノートを作るときの決まり。folder(開いたフォルダからの相対)・name(名前の雛形。\
-             {date} は今日)・ask(名前のあとに聞く列の並び)・[new_note.set](列 = 前もって入れる値)。\
+        example: "[new_note]\nfolder = \"inbox\"\nname = \"{date} \"\nask = [\"priority\", \"due\"]\nrequired = [\"due\"]\nhidden = [\"created\"]\nbody = \"templates/note.md\"\n\n[new_note.set]\ntags = [\"inbox\"]\ndue = \"{date+7}\"\ncreated = \"{now}\"",
+        en: "How a new note is made from the table: mode (\"form\": a form with every field, or\n\
+             \"editor\": create and open in the editor), folder (relative to\n\
+             the opened folder), name (name template), ask (the form's columns; default: the\n\
+             visible columns), required (columns that must be filled), hidden (columns written\n\
+             without a field), body (a body template file) and [new_note.set] (column = value).\n\
+             Templates may use {date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday},\n\
+             {name} and {folder}. Values from the view's filter come first. A mdgrid view can\n\
+             override this with [target.view.new_note].",
+        ja: "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・\
+             name(名前の雛形)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・\
+             hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。\
+             雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。\
              ビューの絞り込みの値が先。mdgrid のビューでは [target.view.new_note] で置き換えられる。",
     },
     Item {

@@ -28,6 +28,108 @@ pub struct NewNote {
     pub ask: Vec<String>,
     /// 前もって入れる値(`[new_note.set]` の 列 = 値)。
     pub set: Vec<(String, NewValue)>,
+    /// CE-27: 空では作らない列。
+    pub required: Vec<String>,
+    /// CE-27: 窓に出さずに値だけ入れる列(作成日など。CE-32)。
+    pub hidden: Vec<String>,
+    /// CE-32: 本文の雛形のファイル(開いたフォルダからの相対。空なら本文なし)。
+    pub body: String,
+    /// CE-33: 作り方(`editor` なら名前だけを聞いて作り、すぐエディタで開く。ほかは窓)。
+    pub mode: String,
+}
+
+impl NewNote {
+    /// CE-33: エディタで作るか。
+    pub fn editor(&self) -> bool {
+        self.mode == "editor"
+    }
+}
+
+/// CE-32: 雛形の変数の値。
+#[derive(Clone, Debug, Default)]
+pub struct Vars {
+    /// 今日(1970-01-01 からの日数)。
+    pub today: i64,
+    /// 今の地域の時刻(0時からの分)。
+    pub minutes: i64,
+    /// 窓で決めた名前(`.md` なし)。
+    pub name: String,
+    /// 作る場所のフォルダ(開いたフォルダからの相対。根なら空)。
+    pub folder: String,
+}
+
+/// CE-32: 雛形の変数を埋める: `{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{time}`・`{now}`・`{weekday}`・
+/// `{name}`・`{folder}`。知らない変数と読めない形は文字のまま残す。
+pub fn expand(s: &str, v: &Vars) -> String {
+    let mut out = String::new();
+    let mut rest = s;
+    while let Some(i) = rest.find('{') {
+        out.push_str(&rest[..i]);
+        let after = &rest[i + 1..];
+        let Some(j) = after.find('}') else {
+            out.push_str(&rest[i..]);
+            return out;
+        };
+        let var = &after[..j];
+        match var_value(var, v) {
+            Some(text) => out.push_str(&text),
+            None => {
+                out.push('{');
+                out.push_str(var);
+                out.push('}');
+            }
+        }
+        rest = &after[j + 1..];
+    }
+    out.push_str(rest);
+    out
+}
+
+fn var_value(var: &str, v: &Vars) -> Option<String> {
+    let hm = format!("{:02}:{:02}", v.minutes / 60, v.minutes % 60);
+    Some(match var {
+        "date" => types::format_date(v.today),
+        "time" => hm,
+        "now" => format!("{}T{hm}", types::format_date(v.today)),
+        "name" => v.name.clone(),
+        "folder" => v.folder.clone(),
+        "weekday" => {
+            // 1970-01-01 は木曜。
+            let k = (v.today + 4).rem_euclid(7) as usize;
+            let names = [
+                Msg::WdSun,
+                Msg::WdMon,
+                Msg::WdTue,
+                Msg::WdWed,
+                Msg::WdThu,
+                Msg::WdFri,
+                Msg::WdSat,
+            ];
+            names[k].text().to_string()
+        }
+        _ => {
+            if let Some(f) = var.strip_prefix("date:") {
+                return types::DateFormat::parse(f).ok().map(|f| f.format(v.today));
+            }
+            let (sign, n) = if let Some(n) = var.strip_prefix("date+") {
+                (1, n)
+            } else {
+                (-1, var.strip_prefix("date-")?)
+            };
+            let n: i64 = n.trim().parse().ok()?;
+            types::format_date(v.today + sign * n)
+        }
+    })
+}
+
+/// CE-32: 入れる値の文字の部分の変数を埋める(リストは要素ごと)。
+pub fn expand_value(value: &NewValue, v: &Vars) -> NewValue {
+    match value {
+        NewValue::Str(s) => NewValue::Str(expand(s, v)),
+        NewValue::Date(s) => NewValue::Date(expand(s, v)),
+        NewValue::List(items) => NewValue::List(items.iter().map(|s| expand(s, v)).collect()),
+        other => other.clone(),
+    }
 }
 
 /// TOML の値 → 入れる値。文字列・整数・小数・真偽・日付(TOML の日付と日時。時差つきは断る)・
@@ -97,8 +199,21 @@ impl NewNote {
         let mut n = NewNote {
             folder: text("folder")?,
             name: text("name")?,
+            body: text("body")?,
+            mode: text("mode")?,
             ..NewNote::default()
         };
+        for (key, out) in [("required", &mut n.required), ("hidden", &mut n.hidden)] {
+            if let Some(a) = t.get(key) {
+                let a = a.as_array().ok_or(Msg::NewNoteAskNotArray.text())?;
+                for c in a {
+                    let c = c.as_str().ok_or(Msg::NewNoteAskNonString.text())?;
+                    if !not_a_key(c) && !out.iter().any(|x| x == c) {
+                        out.push(c.to_string());
+                    }
+                }
+            }
+        }
         if let Some(a) = t.get("ask") {
             let a = a.as_array().ok_or(Msg::NewNoteAskNotArray.text())?;
             for c in a {
@@ -134,6 +249,18 @@ impl NewNote {
             let ask = self.ask.iter().cloned().map(toml::Value::String).collect();
             t.insert("ask".into(), toml::Value::Array(ask));
         }
+        for (key, cols) in [("required", &self.required), ("hidden", &self.hidden)] {
+            if !cols.is_empty() {
+                let a = cols.iter().cloned().map(toml::Value::String).collect();
+                t.insert(key.into(), toml::Value::Array(a));
+            }
+        }
+        if !self.body.is_empty() {
+            t.insert("body".into(), toml::Value::String(self.body.clone()));
+        }
+        if !self.mode.is_empty() {
+            t.insert("mode".into(), toml::Value::String(self.mode.clone()));
+        }
         if !self.set.is_empty() {
             let set = self
                 .set
@@ -147,7 +274,7 @@ impl NewNote {
 }
 
 /// ask・set に書けない列(ノートのキーでない `file.*`・`formula.*` と空)か。
-pub(crate) fn not_a_key(col: &str) -> bool {
+pub fn not_a_key(col: &str) -> bool {
     col.trim().is_empty() || col.starts_with("file.") || col.starts_with("formula.")
 }
 
@@ -163,6 +290,14 @@ struct Raw {
     ask: Vec<String>,
     #[serde(skip_serializing_if = "toml::Table::is_empty")]
     set: toml::Table,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    required: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    hidden: Vec<String>,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    body: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    mode: String,
 }
 
 impl Serialize for NewNote {
@@ -171,6 +306,10 @@ impl Serialize for NewNote {
             folder: self.folder.clone(),
             name: self.name.clone(),
             ask: self.ask.clone(),
+            required: self.required.clone(),
+            hidden: self.hidden.clone(),
+            body: self.body.clone(),
+            mode: self.mode.clone(),
             set: self
                 .set
                 .iter()
@@ -199,11 +338,24 @@ impl<'de> Deserialize<'de> for NewNote {
                 ask.push(c);
             }
         }
+        let keys = |v: Vec<String>| {
+            let mut out: Vec<String> = Vec::new();
+            for c in v {
+                if !not_a_key(&c) && !out.contains(&c) {
+                    out.push(c);
+                }
+            }
+            out
+        };
         Ok(NewNote {
             folder: raw.folder,
             name: raw.name,
             ask,
             set,
+            required: keys(raw.required),
+            hidden: keys(raw.hidden),
+            body: raw.body,
+            mode: raw.mode,
         })
     }
 }
@@ -476,6 +628,33 @@ pub fn build(rule: &NewNote, prefill: &[Edit], answers: &[Edit]) -> Result<Vec<u
     })
 }
 
+/// CE-26・CE-32: 窓の答えと雛形の変数・本文の雛形から作る中身。前もって入れる値(絞り込み・set・hidden)の
+/// 文字の変数を埋め(`vars`)、`body` があればその中身の変数を埋めてフロントマターの後ろに書く。
+pub fn build_with(
+    rule: &NewNote,
+    prefill: &[Edit],
+    answers: &[Edit],
+    vars: &Vars,
+    body: Option<&str>,
+) -> Result<Vec<u8>, String> {
+    let mut r = rule.clone();
+    for (_, v) in &mut r.set {
+        *v = expand_value(v, vars);
+    }
+    let prefill: Vec<Edit> = prefill
+        .iter()
+        .map(|e| Edit {
+            key: e.key.clone(),
+            value: expand_value(&e.value, vars),
+        })
+        .collect();
+    let mut out = build(&r, &prefill, answers)?;
+    if let Some(b) = body {
+        out.extend_from_slice(expand(b, vars).as_bytes());
+    }
+    Ok(out)
+}
+
 /// 下のフォルダを作り、create_new で書く(CE-25・WB-2)。既にあれば Err で、そのファイルは変えない。
 /// 書き込みの途中で失敗したら、作ったファイルを消す。
 pub fn create(path: &Path, bytes: &[u8]) -> io::Result<()> {
@@ -497,3 +676,7 @@ pub fn create(path: &Path, bytes: &[u8]) -> io::Result<()> {
 #[cfg(test)]
 #[path = "test_newnote_unit.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "test_note_templates_unit.rs"]
+mod test_note_templates;

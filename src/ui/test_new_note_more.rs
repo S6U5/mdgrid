@@ -4,7 +4,7 @@
 
 use super::keymap::Mode;
 use super::startup::Startup;
-use super::test_screen::{ch, press, screen, typing, Tmp};
+use super::test_screen::{ch, ctrl, press, screen, typing, Tmp};
 use super::*;
 use mdgrid::config::Config;
 use mdgrid::settings::{Cond, Op, Settings};
@@ -112,7 +112,8 @@ fn test_ce_26_cleared_filter_value_is_not_written() {
     press(&mut a, KeyCode::Enter);
     let s = screen(&a);
     assert!(
-        s.contains("新しいノート status: todo"),
+        s.lines()
+            .any(|l| l.starts_with("> status") && l.contains("todo")),
         "前もって入れる値:\n{s}"
     );
     for _ in 0..4 {
@@ -137,7 +138,7 @@ fn test_ce_25_palette_after_key_removed() {
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Edit, "パレットから名前の欄:\n{}", screen(&a));
     typing(&mut a, "パレット");
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
     assert!(tmp.notes().join("パレット.md").is_file());
     // 候補は1つだけ(キーの表とコマンドの表で重ならない)。
     let n = help::candidates(&a, "新しいノート")
@@ -158,7 +159,9 @@ fn test_ce_26_shift_tab_goes_back_to_name() {
     typing(&mut a, "5");
     press(&mut a, KeyCode::BackTab);
     assert!(
-        screen(&a).contains("新しいノート 名前: 戻る"),
+        screen(&a)
+            .lines()
+            .any(|l| l.starts_with("> 名前") && l.contains("戻る")),
         "{}",
         screen(&a)
     );

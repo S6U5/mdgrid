@@ -194,13 +194,10 @@ fn test_ce_26_view_rule_overrides_config() {
     );
     let s = screen(&a);
     assert!(
-        s.contains("新しいノート priority"),
+        s.contains("> priority"),
         "ビューの決まりで priority を聞く:\n{s}"
     );
-    assert!(
-        !s.contains("新しいノート status"),
-        "設定の status は聞かない:\n{s}"
-    );
+    assert!(!s.contains("> status"), "設定の status は聞かない:\n{s}");
     typing(&mut a, "2");
     press(&mut a, KeyCode::Enter);
     let text = read(&tmp, "ビューで.md");
@@ -224,11 +221,8 @@ fn test_ce_26_default_table_uses_config_rule() {
     goto_tab(&mut a, "既定の表");
     start_and_name(&mut a, "既定で");
     let s = screen(&a);
-    assert!(
-        s.contains("新しいノート status"),
-        "設定の status を聞く:\n{s}"
-    );
-    assert!(!s.contains("新しいノート priority"), "{s}");
+    assert!(s.contains("> status"), "設定の status を聞く:\n{s}");
+    assert!(!s.contains("> priority"), "{s}");
     typing(&mut a, "todo");
     press(&mut a, KeyCode::Enter);
     let text = read(&tmp, "既定で.md");
@@ -259,7 +253,7 @@ fn test_ce_26_text_ask_shows_same_list_as_cell_edit() {
         "聞き終えるまで作らない"
     );
     let s = screen(&a);
-    assert!(s.contains("新しいノート status"), "{s}");
+    assert!(s.contains("> status"), "{s}");
     assert_eq!(
         texts(&list_on_screen(&s)),
         want,
@@ -324,7 +318,7 @@ fn test_ce_26_text_ask_too_many_values_is_one_line() {
     );
     start_and_name(&mut a, "多い");
     let s = screen(&a);
-    assert!(s.contains("新しいノート status"), "{s}");
+    assert!(s.contains("> status"), "{s}");
     assert!(
         list_on_screen(&s).is_empty(),
         "候補のリストは出さない:\n{s}"

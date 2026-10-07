@@ -125,6 +125,8 @@ mdgrid の既定のキーの割り当てを、モードごとに並べる。設�
 | `Shift+Up` | `prev_year` | 日付のカレンダーで前の年。カレンダーが無ければ Up と同じ |
 | `Shift+Down` | `next_year` | 日付のカレンダーで次の年。カレンダーが無ければ Down と同じ |
 | `Ctrl+t` | `today` | 日付のセルで今日の日付にする |
+| `Ctrl+s` | `create_note` | 新しいノートの窓で、どの欄からでもすぐ作る |
+| `Ctrl+e` | `create_note_edit` | 新しいノートの窓で、作ってすぐエディタで開く |
 | `Ctrl+o` | `time_focus` | 日時のカレンダーで、日と時刻の欄を切り替える(時刻の欄では ↑↓ で15分、Shift+↑↓ で1時間) |
 | `Ctrl+d` | `clear` | 日付のセルで値を空にして確定する |
 | `Home` | `cursor_home` | カーソルを先頭へ |
@@ -297,6 +299,8 @@ mdgrid の既定のキーの割り当てを、モードごとに並べる。設�
 | `Space` | `toggle` | 選んだ候補を付ける・外す。検索中は空白を打つ |
 | `Esc` | `cancel` | 取り消す |
 | `Ctrl+r` | `revert` | 開いたときの選び方に戻す |
+| `Ctrl+s` | `create_note` | 新しいノートの窓で、どの欄からでもすぐ作る |
+| `Ctrl+e` | `create_note_edit` | 新しいノートの窓で、作ってすぐエディタで開く |
 | `Up` | `list_up` | 前の候補 |
 | `Down` | `list_down` | 次の候補 |
 | `Ctrl+p` | `list_up` | 前の候補 |
@@ -413,6 +417,8 @@ mdgrid の既定のキーの割り当てを、モードごとに並べる。設�
 - `prev_year` — 日付のカレンダーで前の年
 - `next_year` — 日付のカレンダーで次の年
 - `today` — 今日の日付にする
+- `create_note_edit` — 新しいノートの窓で作って、すぐエディタで開く
+- `create_note` — 新しいノートの窓で、どの欄からでもすぐ作る
 - `time_focus` — 日時のカレンダーで日と時刻の欄を切り替える
 - `cursor_home` — カーソルを先頭へ
 - `cursor_end` — カーソルを末尾へ

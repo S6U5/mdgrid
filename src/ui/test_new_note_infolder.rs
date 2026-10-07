@@ -2,9 +2,8 @@
 //! 作った行がビューに残る(specs/_changes/2026-10-06-new-note-infolder.md)。
 
 use super::startup::Startup;
-use super::test_screen::{ch, press, screen, typing, Tmp};
+use super::test_screen::{ch, ctrl, screen, typing, Tmp};
 use super::*;
-use ratatui::crossterm::event::KeyCode;
 use std::path::PathBuf;
 
 const BASE: &str = "filters:\n  and:\n    - file.inFolder(\"Tasks\")\nviews:\n  - type: table\n    name: Open\n    filters:\n      and:\n        - done == false\n    order: [status, done]\n";
@@ -47,7 +46,8 @@ fn boot(name: &str, config: &str) -> (Tmp, App) {
 fn create(a: &mut App, name: &str) {
     ch(a, 'a');
     typing(a, name);
-    press(a, KeyCode::Enter);
+    // CE-26: 窓のどの欄からでも Ctrl+S で作る。
+    ctrl(a, 's');
 }
 
 #[test]

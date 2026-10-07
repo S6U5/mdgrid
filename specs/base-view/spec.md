@@ -88,8 +88,10 @@ updated: 2026-10-07
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
 | 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
+| 2026-10-07 | [フォームに合わせて、新しいノートの試験の錠を掛け直す(new-note-form-locks)](../_decisions/2026-10-07-new-note-form-locks.md) | accepted | 人 | 人の発言 | CE-25, CE-26, BV-17, CE-20, WB-2, SR-23 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](../_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-07 | [見本の .base の未対応の式の例を file.embeds に替える(links-backlinks-sample)](../_decisions/2026-10-07-links-backlinks-sample.md) | accepted | 人 | 人の発言 | BV-3, BV-7 |
+| 2026-10-07 | [group_gap に合わせて、表示の設定の試験の錠を掛け直す(group-gap-locks)](../_decisions/2026-10-07-group-gap-locks.md) | accepted | 人 | 人の発言 | SR-20, SR-21, NV-16 ほか 4 |
 | 2026-10-07 | [displayName の無い列の見出しを Obsidian の既定にする(default-headings)](../_decisions/2026-10-07-default-headings.md) | accepted | 人 | 人の発言 | BV-24 |
 | 2026-10-07 | [既定の見出しに合わせて、見出しを鍵に使う試験の錠を掛け直す(default-headings-locks)](../_decisions/2026-10-07-default-headings-locks.md) | accepted | 人 | 人の発言 | BV-22, BV-7 |
 | 2026-10-06 | [.base の組み込みの集計(summaries)を版1に入れる(summaries)](../_decisions/2026-10-06-summaries.md) | accepted | AI | 検証の指摘 | BV-14 |

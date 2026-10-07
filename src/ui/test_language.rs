@@ -10,7 +10,7 @@
 use super::help::candidates;
 use super::keymap::Mode;
 use super::startup::Startup;
-use super::test_screen::{buffer, ch, col_named, golden, make, press, screen, typing, Tmp};
+use super::test_screen::{buffer, ch, col_named, ctrl, golden, make, press, screen, typing, Tmp};
 use super::*;
 use mdgrid::config::Config;
 use mdgrid::i18n::{scoped, Lang};
@@ -293,7 +293,7 @@ fn header_button_clicks(name: &str) -> String {
     a.click(x0 + 1, 0);
     assert_ne!(a.mode, Mode::Table);
     typing(&mut a, "prep");
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
     assert_eq!(a.mode, Mode::Table, "作ったら表に戻る\n{}", screen(&a));
     assert!(tmp.notes().join("prep.md").is_file(), "prep.md ができる");
     label

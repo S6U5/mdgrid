@@ -125,6 +125,8 @@ Editing a cell in the input box. Letter keys type text, so they have no actions.
 | `Shift+Up` | `prev_year` | In the date calendar, previous year; otherwise the same as Up |
 | `Shift+Down` | `next_year` | In the date calendar, next year; otherwise the same as Down |
 | `Ctrl+t` | `today` | In a date cell, set today's date |
+| `Ctrl+s` | `create_note` | In the new note form, create the note now from any field |
+| `Ctrl+e` | `create_note_edit` | In the new note form, create the note and open it in the editor |
 | `Ctrl+o` | `time_focus` | In a datetime calendar, switch between the day and the time field (on the time field, Up/Down move 15 minutes and Shift+Up/Down one hour) |
 | `Ctrl+d` | `clear` | In a date cell, empty the value and confirm |
 | `Home` | `cursor_home` | Move the cursor to the start |
@@ -297,6 +299,8 @@ Picking values for a list property. Letter keys type into the search box.
 | `Space` | `toggle` | Add or remove the highlighted candidate; while searching, type a space |
 | `Esc` | `cancel` | Cancel |
 | `Ctrl+r` | `revert` | Put back the selection from when the list was opened |
+| `Ctrl+s` | `create_note` | In the new note form, create the note now from any field |
+| `Ctrl+e` | `create_note_edit` | In the new note form, create the note and open it in the editor |
 | `Up` | `list_up` | Previous candidate |
 | `Down` | `list_down` | Next candidate |
 | `Ctrl+p` | `list_up` | Previous candidate |
@@ -413,6 +417,8 @@ Every action name you can write in the keys section of the config file. Each one
 - `prev_year` — previous year in the date calendar
 - `next_year` — next year in the date calendar
 - `today` — set today's date
+- `create_note_edit` — create the note from the new note form and open it in the editor
+- `create_note` — create the note now from any field of the new note form
 - `time_focus` — switch between the day and the time field of the datetime calendar
 - `cursor_home` — move the cursor to the start
 - `cursor_end` — move the cursor to the end
