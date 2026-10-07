@@ -28,7 +28,7 @@ updated: 2026-10-07
 
 公開のリポの初めての PR(S6U5/mdgrid#6、文書だけ)で、3つの OS の test と msrv が落ちた。actions/checkout は PR の仮のマージコミット(`Merge <head> into <base>`)を取り出し、`tests/test_cliff.rs::test_cliff_history_prefixes_all_covered` がその件名を commit_parsers のどれにも当たらないとして落ちる。main への直接の push では出ないので、今まで見えなかった。
 
-終わりの条件: 履歴の突き合わせは、マージコミット(親が2つ以上)を数えない。マージコミットのある履歴でもこの試験が通り、書き出しの無いふつうのコミットは前と同じく落とす。
+終わりの条件: 履歴の突き合わせは、マージコミット(親が2つ以上)と、GitHub の仮のマージコミットの題(`Merge <40桁の16進> into <40桁の16進>`)を数えない。CI の浅いクローン(親の無い仮のマージが先頭)でもこの試験が通り、書き出しの無いふつうのコミットは前と同じく落とす。
 
 ## 不明点と仮定
 
@@ -44,17 +44,17 @@ updated: 2026-10-07
 
 ## 実装の気づき
 
-なし
+- 1回目の直し(`--no-merges` だけ)は PR の CI でまた落ちた。actions/checkout は深さ1の浅いクローンで、仮のマージコミットの親を取らないので、git はそれを親の無いコミットと見て `--no-merges` で外さない。1回目の照合は親のある本物のマージで確かめていて、この形を見逃した。題の形(`Merge <sha> into <sha>`)で外す判定を足した。
 
 ## 照合
 
-自分で照合(1行の直し)。マージコミットのある履歴を一時の複製で作り、試験を比べた。
+自分で照合(試験の1関数の直し)。CI と同じ形を作って確かめた: 一時の複製で `Merge <head の sha> into <base の sha>` の題のマージコミットを作り、`git clone --depth 1` で親の無い先頭にした。複製ごとにビルド先を分けた(共有すると、前の複製のパスを指す試験の実行ファイルが残る)。
 
 | 要件 | 結果 | 証拠 |
 |---|---|---|
 
-要件の無い変更(開発の道具)の照合: checked。コード: tests/test_cliff.rs の git_subjects(`git log --no-merges`) / テスト: tests/test_cliff.rs::test_cliff_history_prefixes_all_covered / 今: `Merge abc into def` のある履歴で通った(6 passed)。このリポの履歴でも通った(別のビルド先で 6 passed) / 前: 同じ履歴で落ちた(「当たらない 1 件: Merge abc into def」) / 変異: 書き出しの無いふつうのコミット `noprefix` を足すと、直した後も落ちる
+要件の無い変更(開発の道具)の照合: checked。コード: tests/test_cliff.rs の git_subjects(`--no-merges`)と is_pr_merge_ref / テスト: tests/test_cliff.rs::test_cliff_history_prefixes_all_covered / 今: 浅いクローンの仮のマージで通った(6 passed)。このリポの履歴でも通った / 前: 同じ浅いクローンで、`--no-merges` だけの版が落ちた(PR の CI と同じ「当たらない 1 件: Merge <sha> into <sha>」) / 変異: 件名の決まりに合わない `Merge branch 'x'` と `noprefix` を足すと、直した後も落ちる(2 件)
 
-既存のテストの削除・skip・弱体化: なし(マージコミットだけを外した。ふつうのコミットの突き合わせは前と同じ)
+既存のテストの削除・skip・弱体化: なし(外すのは親のあるマージと、GitHub の仮のマージの題の形だけ。ふつうのコミットの突き合わせは前と同じ)
 
 確かめた: 0 / 0(要件の無い変更。上の文のとおり checked)

@@ -114,7 +114,7 @@ fn git_subjects(root: &Path) -> Option<Vec<String>> {
     let out = match Command::new("git")
         .arg("-C")
         .arg(root)
-        // PR の CI が取り出す仮のマージコミット(`Merge <head> into <base>`)は数えない。
+        // 親のあるマージコミットは数えない。
         .args(["log", "--no-merges", "--format=%s"])
         .output()
     {
@@ -134,9 +134,18 @@ fn git_subjects(root: &Path) -> Option<Vec<String>> {
     Some(
         String::from_utf8_lossy(&out.stdout)
             .lines()
+            .filter(|s| !is_pr_merge_ref(s))
             .map(str::to_string)
             .collect(),
     )
+}
+
+/// PR の CI が取り出す、GitHub の仮のマージコミットの題(`Merge <40桁の16進> into <40桁の16進>`)か。
+/// CI の浅いクローンでは親が取られず、`--no-merges` では外れないので、題の形で外す。
+fn is_pr_merge_ref(subject: &str) -> bool {
+    let is_sha = |s: &str| s.len() == 40 && s.bytes().all(|b| b.is_ascii_hexdigit());
+    let words: Vec<&str> = subject.split(' ').collect();
+    matches!(words.as_slice(), ["Merge", head, "into", base] if is_sha(head) && is_sha(base))
 }
 
 #[test]
