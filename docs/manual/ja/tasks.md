@@ -31,6 +31,10 @@
 
 ![日付をカレンダーで入れる](images/edit-date.svg)
 
+日時の列では、カレンダーの下に時刻の欄が出ます(写しは見本 `examples/schedule`)。`Ctrl+O` で時刻の欄に移り、`↑` `↓` で15分、`Shift+↑` `Shift+↓` で1時間動かします。
+
+![日時の時刻を選ぶ](images/edit-datetime-time.svg)
+
 ![差分を見てから保存する](images/save.svg)
 
 - セルを空にするには `Backspace` か `Delete`。保存すると `key:` と書かれ、キーは残る。
@@ -149,12 +153,17 @@ pick-task() { mdgrid ~/notes/Tasks --pick path; }
 
 ## ほかのコマンドと組む
 
+今見えている表(絞り込み・並べ替え・隠した列を当てたもの)をそのまま残すには、パレット(`:`)で **表をファイルに書き出す** を選び、ファイルの名前を打ちます。形は拡張子(`.csv`・`.tsv`・`.json`・`.md`)で決まります。先頭の列は各ノートのパスなので、CSV と JSON は `--apply` で戻せます。
+
+![表をファイルに書き出す](images/export-table.svg)
+
 画面を出さずに、ビューの表を標準出力に出します(既定は csv。ノートは書き換えない)。
 
 ```sh
 mdgrid /tmp/mdgrid-sample/タスク.base --print
 mdgrid /tmp/mdgrid-sample/タスク.base --print --format json | jq .
 mdgrid /tmp/mdgrid-sample --print --format md > 表.md
+mdgrid /tmp/mdgrid-sample --print --format tsv > 表.tsv
 ```
 
 フォルダを `--print` すると、ノートの名前の列は出ません(列はフロントマターのキーだけ)。

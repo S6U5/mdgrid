@@ -6,7 +6,7 @@ description: 起動のしかた(引数・オプション)と、設定ファイ�
 status: active
 load_when: 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # 起動と設定(cli)
@@ -29,7 +29,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-14 | `--print` に `--with-path` を付けたときは、表の先頭に見出し `path` の列を足し、各行にそのノートのパス(OUT-3 の `--pick path` と同じ形: 起動の引数のフォルダにノートの相対のパスをつないだもの)を出すべき。json では各オブジェクトの最初の鍵 `path` にし、ビューに同じ見出しの列があれば CLI-5 の重なりの決まりで見分けるべき。`--print` の無い `--with-path` は CLI-4 と同じく理由1行と終了コード 2 にするべき。 | `mdgrid examples/demo/Tasks.base --print --with-path` → 見出しの行が `path,status,…`、各行の先頭が `examples/demo/Tasks/Fix login redirect bug.md` のようなパス。`--format json` → 各オブジェクトの最初が `"path"`。フロントマターの無いノートの行もパスで見分けられる。`--with-path` だけ → 理由1行と終了コード 2(`test_CLI_14`) | [2026-10-06](../_decisions/2026-10-06-print-with-path.md) |
 | CLI-15 | 起動の引数に `.md` のファイルを渡したときは、ファイル名を補完で渡す人が「フォルダでない」で止められないよう、そのファイルのあるフォルダを渡したのと同じに開き、画面ではそのノートの行を選んで始めるべき。ファイルが無いときは CLI-4 と同じく理由1行と終了コード 2 にするべき。`--print` に `.md` のファイルを渡したときは、そのフォルダの表のうち、渡したノートの行だけを出すべき(1つのノートの値を取り出すため)。 | `mdgrid notes/b.md` → notes の既定の表が開き、b.md の行が選ばれている。`mdgrid notes/b.md --print` → notes の表と同じ列で、b の1行だけ。`notes/a.md notes/b.md --print` → a と b の2行。`mdgrid notes/無い.md` → 理由1行と終了コード 2(`test_CLI_15`) | [2026-10-06](../_decisions/2026-10-06-print-md-rows.md)、[2026-10-06](../_decisions/2026-10-06-open-md-file.md) |
 | WB-15 | 読むだけの起動(`--readonly`)では、保存の操作を出さず、どのファイルも書くべきでない。 | `--readonly` で起動して Ctrl+S → 何も書かれず、読むだけと表示(`test_WB_15`) | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
-| CLI-5 | `mdgrid [<.base \| フォルダ> …] --print [--format csv\|json\|md] [--view <名前>]` は、画面を出さずに、開いたビュー(`.base` のビューか mdgrid のビュー。BV-17)の表を標準出力に出して終了コード 0 で終わるべき。行はビューの絞り込みと並べ替えのあと(グループ分けは並びだけに効かせ、見出しの行は出さない)、列はビューの列の並びとし、画面の見た目の状態(SR-12)と画面で掛けた絞り込みは使わないべき。既定の形は csv(RFC 4180、見出しの行つき、改行は LF)、json は列の名前を鍵にしたオブジェクトの配列(数・真偽・null・リストは JSON の型、日付と日時は文字列)、md は見出しと区切りの行のある表(セルの中の縦棒はバックスラッシュで逃がし、改行は空白)とするべき。評価できない列(BV-7)は csv と md で空、json で null にし、標準エラーに1行で知らせるべき。ノートを書き換えないべき(WB-15 と同じ)。起動できないとき・知らない形の名前は CLI-4 と同じく理由1行と終了コード 2 にするべき。 | `--print --format csv` → 見出しの行と行ごとの CSV が出て終わる。`--format json` → `[{"title": "会議", "priority": 2, "tags": ["a"]}]` の形。`--format md` → 見出しの行と区切りの行のある表。`--format xml` → 理由1行と終了コード 2。標準出力がパイプでも動く(`test_CLI_5`) | [2026-10-03](../_decisions/2026-10-03-print-pick.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
+| CLI-5 | `mdgrid [<.base \| フォルダ> …] --print [--format csv\|tsv\|json\|md] [--view <名前>]` は、画面を出さずに、開いたビュー(`.base` のビューか mdgrid のビュー。BV-17)の表を標準出力に出して終了コード 0 で終わるべき。行はビューの絞り込みと並べ替えのあと(グループ分けは並びだけに効かせ、見出しの行は出さない)、列はビューの列の並びとし、画面の見た目の状態(SR-12)と画面で掛けた絞り込みは使わないべき。既定の形は csv(RFC 4180、見出しの行つき、改行は LF)、tsv はタブ区切り(見出しの行つき、セルの中のタブと改行は空白)、json は列の名前を鍵にしたオブジェクトの配列(数・真偽・null・リストは JSON の型、日付と日時は文字列)、md は見出しと区切りの行のある表(セルの中の縦棒はバックスラッシュで逃がし、改行は空白)とするべき。評価できない列(BV-7)は csv と md で空、json で null にし、標準エラーに1行で知らせるべき。ノートを書き換えないべき(WB-15 と同じ)。起動できないとき・知らない形の名前は CLI-4 と同じく理由1行と終了コード 2 にするべき。 | `--print --format csv` → 見出しの行と行ごとの CSV が出て終わる。`--format json` → `[{"title": "会議", "priority": 2, "tags": ["a"]}]` の形。`--format md` → 見出しの行と区切りの行のある表。`--format tsv` → タブ区切り。`--format xml` → 理由1行と終了コード 2。標準出力がパイプでも動く(`test_CLI_5`) | [2026-10-07](../_decisions/2026-10-07-export-table.md)、[2026-10-03](../_decisions/2026-10-03-print-pick.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
 
 ## 要件: 版1 — セッション
 
@@ -68,6 +68,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
 | 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
+| 2026-10-07 | [画面の表をファイルに書き出し、--print に tsv を足す(export-table)](../_decisions/2026-10-07-export-table.md) | accepted | 人 | 人の発言 | OUT-2, CLI-5 |
 | 2026-10-06 | [--print に各行のノートのパスの列を足す --with-path(print-with-path)](../_decisions/2026-10-06-print-with-path.md) | accepted | AI | 検証の指摘 | CLI-14 |
 | 2026-10-06 | [.md を渡した --print は、渡したノートの行だけを出す(print-md-rows)](../_decisions/2026-10-06-print-md-rows.md) | accepted | 人 | 人の発言 | CLI-15 |
 | 2026-10-06 | [--print に --filter と --sort を足す(print-filter-sort)](../_decisions/2026-10-06-print-filter-sort.md) | accepted | AI | 検証の指摘 | CLI-16 |

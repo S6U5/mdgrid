@@ -32,6 +32,10 @@ pub(crate) enum Ask {
     ExportName,
     /// 足す列の名前(CE-28)。
     NewColumn,
+    /// 画面の表を書き出すファイルの名前(OUT-2)。
+    ExportTable,
+    /// 既にあるファイルへの上書きの確かめ(OUT-5)。続けて `y`。
+    ExportOverwrite(PathBuf),
     /// 名前を変えるキー(CE-29)。続けて新しい名前。
     RenameKey(String),
     /// 消すキーとノートの数(CE-29)。続けて `y`。
@@ -111,6 +115,10 @@ pub(crate) fn ask_lead(app: &App) -> String {
         None => String::new(),
         Some(Ask::ExportName) => Msg::AskExportName.into(),
         Some(Ask::NewColumn) => Msg::AskNewColumn.into(),
+        Some(Ask::ExportTable) => Msg::AskExportTable.into(),
+        Some(Ask::ExportOverwrite(p)) => {
+            Msg::AskExportOverwrite.fill(&[&sanitize(&p.display().to_string())])
+        }
         Some(Ask::RenameKey(k)) => Msg::AskRenameKey.fill(&[&sanitize(k)]),
         Some(Ask::DeleteKey(k, n)) => Msg::AskDeleteKey.fill(&[&sanitize(k), n]),
         Some(Ask::ImportFile(_)) => Msg::AskImportFile.into(),
@@ -177,7 +185,7 @@ impl App {
         export_dir_of(&self.nv.target)
     }
 
-    fn open_ask(&mut self, ask: Ask) {
+    pub(crate) fn open_ask(&mut self, ask: Ask) {
         self.palette = Some(PaletteState::default());
         self.nv.ask = Some(ask);
         self.set_mode(Mode::Palette);
@@ -401,6 +409,16 @@ impl App {
         match &self.nv.ask {
             Some(Ask::ExportName) => self.export_to(query),
             Some(Ask::NewColumn) => self.add_extra_column(query),
+            Some(Ask::ExportTable) => self.export_table_to(query),
+            Some(Ask::ExportOverwrite(path)) => {
+                let path = path.clone();
+                self.close_palette();
+                if query.trim().eq_ignore_ascii_case("y") {
+                    self.export_table_write(&path);
+                } else {
+                    self.message = Some(Msg::AskCancelled.into());
+                }
+            }
             Some(Ask::RenameKey(from)) => {
                 let from = from.clone();
                 self.rename_key_to(&from, query)

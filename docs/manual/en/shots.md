@@ -657,3 +657,19 @@ Keys: `l` `l` `l` `%`
 ![Count the values of a column](images/demo-freq.svg)
 
 % lists each value of the column with its count and share; Enter keeps only those rows.
+
+## Set the time of a date and time
+
+Keys: `l` `Enter` `Ctrl+O` `↑`
+
+![Set the time of a date and time](images/edit-datetime-time.svg)
+
+Date and time columns show a time field under the calendar. Ctrl+O switches to it; Up and Down move 15 minutes, Shift+Up and Shift+Down one hour.
+
+## Export the table to a file
+
+Keys: `:` `export_table` `Enter` `tasks.csv` `Enter`
+
+![Export the table to a file](images/export-table.svg)
+
+The command palette exports the table as shown (filters, sorting and hidden columns applied). The extension picks the format: .csv, .tsv, .json or .md. The first column is each note's path, so a CSV or JSON can come back with --apply.

@@ -89,6 +89,7 @@ impl Pick {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 enum PrintFormat {
     Csv,
+    Tsv,
     Json,
     Md,
 }
@@ -97,6 +98,7 @@ impl PrintFormat {
     fn lib(self) -> print::Format {
         match self {
             PrintFormat::Csv => print::Format::Csv,
+            PrintFormat::Tsv => print::Format::Tsv,
             PrintFormat::Json => print::Format::Json,
             PrintFormat::Md => print::Format::Md,
         }
@@ -750,7 +752,7 @@ fn main() -> ExitCode {
 
 /// `--pick path` の1行(OUT-3): ノートの実体のパスが起動の引数のフォルダ(`.base` ならそのフォルダ)を
 /// 正規化した場所の下なら「引数の文字 + 相対」、どれの下でもなければ実体の絶対パス。
-fn pick_path(args: &[PathBuf], note: &Path) -> String {
+pub(crate) fn pick_path(args: &[PathBuf], note: &Path) -> String {
     for arg in args {
         let dir = if is_base(arg) {
             arg.parent().unwrap_or(Path::new(""))
@@ -766,10 +768,19 @@ fn pick_path(args: &[PathBuf], note: &Path) -> String {
             .ok()
             .and_then(|r| note.strip_prefix(r).ok().map(Path::to_path_buf))
         {
-            return dir.join(rel).to_string_lossy().into_owned();
+            return slash(dir.join(rel).to_string_lossy().into_owned());
         }
     }
-    note.to_string_lossy().into_owned()
+    slash(note.to_string_lossy().into_owned())
+}
+
+/// パスの区切りを `/` にする(Windows でも。CLI-14 の `--with-path` を OS をまたいで `--apply` で戻せるように)。
+fn slash(p: String) -> String {
+    if cfg!(windows) {
+        p.replace('\\', "/")
+    } else {
+        p
+    }
 }
 
 /// mdgrid のビュー(views.toml)の置き場。config.toml と同じフォルダ(BV-17・BV-20)。

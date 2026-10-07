@@ -10,6 +10,7 @@ pub mod detail;
 pub mod diff;
 pub mod display;
 pub mod entry;
+pub mod export;
 pub mod external;
 pub mod freq;
 pub mod grid;
@@ -148,6 +149,8 @@ mod test_detail_body;
 mod test_display_more;
 #[cfg(test)]
 mod test_display_options;
+#[cfg(test)]
+mod test_export;
 #[cfg(test)]
 mod test_external;
 #[cfg(test)]

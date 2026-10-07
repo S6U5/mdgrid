@@ -17,8 +17,24 @@ use crate::views::{self, NativeView};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Format {
     Csv,
+    /// CLI-5: タブ区切り(見出しの行つき、セルの中のタブと改行は空白)。
+    Tsv,
     Json,
     Md,
+}
+
+impl Format {
+    /// OUT-2: ファイル名の拡張子(`.csv`・`.tsv`・`.json`・`.md`。大文字小文字を問わない)の形。
+    pub fn from_extension(path: &std::path::Path) -> Option<Format> {
+        let ext = path.extension()?.to_str()?.to_ascii_lowercase();
+        match ext.as_str() {
+            "csv" => Some(Format::Csv),
+            "tsv" => Some(Format::Tsv),
+            "json" => Some(Format::Json),
+            "md" => Some(Format::Md),
+            _ => None,
+        }
+    }
 }
 
 /// 表を組むビュー。
@@ -318,6 +334,7 @@ fn collect(
 pub fn render(t: &Table, f: Format) -> String {
     match f {
         Format::Csv => csv(t),
+        Format::Tsv => tsv(t),
         Format::Json => json(t),
         Format::Md => md(t),
     }
@@ -379,6 +396,24 @@ fn csv(t: &Table) -> String {
     );
     for r in &t.rows {
         line(&mut out, r.iter().map(plain).collect());
+    }
+    out
+}
+
+/// TSV のセル: タブと改行を空白にする(区切りと行の終わりにしない)。
+fn tsv_cell(s: &str) -> String {
+    one_line(s).replace('\t', " ")
+}
+
+fn tsv(t: &Table) -> String {
+    let mut out = String::new();
+    let head: Vec<String> = t.columns.iter().map(|c| tsv_cell(&c.title)).collect();
+    out.push_str(&head.join("\t"));
+    out.push('\n');
+    for r in &t.rows {
+        let v: Vec<String> = r.iter().map(|c| tsv_cell(&plain(c))).collect();
+        out.push_str(&v.join("\t"));
+        out.push('\n');
     }
     out
 }

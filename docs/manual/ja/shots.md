@@ -657,3 +657,19 @@ Frame of the demo GIF.
 ![列の値を数える](images/demo-freq.svg)
 
 % で列の値ごとの件数と割合が出る。Enter でその値の行だけに絞る。
+
+## 日時の時刻を選ぶ
+
+キー: `l` `Enter` `Ctrl+O` `↑`
+
+![日時の時刻を選ぶ](images/edit-datetime-time.svg)
+
+日時の列では、カレンダーの下に時刻の欄が出る。Ctrl+O で時刻の欄に移り、↑↓ で15分、Shift+↑↓ で1時間動かす。
+
+## 表をファイルに書き出す
+
+キー: `:` `export_table` `Enter` `tasks.csv` `Enter`
+
+![表をファイルに書き出す](images/export-table.svg)
+
+パレットから、今見えている表(絞り込み・並べ替え・隠した列を当てたもの)を書き出す。形は拡張子(.csv・.tsv・.json・.md)で決まる。先頭の列は各ノートのパスなので、CSV と JSON は --apply で戻せる。

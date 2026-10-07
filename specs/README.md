@@ -22,9 +22,9 @@ updated: 2026-09-30
 | [base-view](base-view/spec.md) | 何を読んで、どの行とどの列の表を作るか。.base の table ビューの解釈、ビューの切り替え、解釈できないときの振る舞い。 | 起動の引数・.base の読み込み・絞り込み・並べ替え・グループ分け・式の評価・ビューの切り替えを作る・変えるとき | 23 | 7 |
 | [cell-edit](cell-edit/spec.md) | 表のセルでどの値をどう直せるか。自由入力・リストからの選択・切り替え・日付・空にする・一括の設定と、読むだけにするセル。 | セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき | 28 | 13 |
 | [cell-view](cell-view/spec.md) | セルの値をどう見せるか。空・null・キーなしの区別、型と合わない値、改行、寄せ、列の幅、文字の幅、色。 | セルの描画・列の幅・文字の幅・色を作る・変えるとき | 9 | 0 |
-| [cli](cli/spec.md) | 起動のしかた(引数・オプション)と、設定ファイルの置き場所と中身、起動できないときの振る舞い。 | 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき | 18 | 4 |
+| [cli](cli/spec.md) | 起動のしかた(引数・オプション)と、設定ファイルの置き場所と中身、起動できないときの振る舞い。 | 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき | 18 | 5 |
 | [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 23 | 8 |
-| [output](output/spec.md) | セルや行をクリップボードにコピーする方法と、表を外に出す方法。 | コピー・貼り付け・書き出し・標準出力への出力を作る・変えるとき | 4 | 0 |
+| [output](output/spec.md) | セルや行をクリップボードにコピーする方法と、表を外に出す方法。 | コピー・貼り付け・書き出し・標準出力への出力を作る・変えるとき | 5 | 1 |
 | [scope](scope/spec.md) | mdgrid が何のための道具で、最初の版に何を入れ、何を入れないか。 | 機能を足す・削るとき、最初の版の範囲を判断するとき、名前や配り方を決めるとき | 14 | 8 |
 | [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 26 | 10 |
 | [write-back](write-back/spec.md) | 直した値をためて、差分を見てから保存する流れと、ノートのファイルにどう書き戻すか。何を1バイトも変えず、いつ書かずに止めるか。 | 保存・取り消し・ファイルへの書き込みを作る・変えるとき、YAML の読み書きの部品を選ぶとき | 19 | 10 |
@@ -47,6 +47,8 @@ updated: 2026-09-30
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-07 | [見本の .base の未対応の式の例を file.embeds に替える(links-backlinks-sample)](_decisions/2026-10-07-links-backlinks-sample.md) | accepted | 人 | 人の発言 | BV-3, BV-7 |
 | 2026-10-07 | [まとまりの見出しの上を空ける表示の設定(group-gap)](_decisions/2026-10-07-group-gap.md) | accepted | 人 | 人の発言 | SR-30 |
+| 2026-10-07 | [画面の表をファイルに書き出し、--print に tsv を足す(export-table)](_decisions/2026-10-07-export-table.md) | accepted | 人 | 人の発言 | OUT-2, CLI-5 |
+| 2026-10-07 | [表の書き出しの細部(export-table-details)](_decisions/2026-10-07-export-table-details.md) | accepted | AI | AI の提案 | OUT-5 |
 | 2026-10-07 | [displayName の無い列の見出しを Obsidian の既定にする(default-headings)](_decisions/2026-10-07-default-headings.md) | accepted | 人 | 人の発言 | BV-24 |
 | 2026-10-07 | [既定の見出しに合わせて、見出しを鍵に使う試験の錠を掛け直す(default-headings-locks)](_decisions/2026-10-07-default-headings-locks.md) | accepted | 人 | 人の発言 | BV-22, BV-7 |
 | 2026-10-06 | [日付と数の入力でも、開いた直後に打つと今の値を置き換える(type-replaces-date-number)](_decisions/2026-10-06-type-replaces-date-number.md) | accepted | AI | 検証の指摘 | CE-5, CE-7 |

@@ -704,6 +704,7 @@ impl App {
             Action::FocusChips => self.focus_chips(),
             // ---- mdgrid のビューの書き出しと取り込み(native_views.rs。BV-19) ----
             Action::ExportBase => self.start_export(),
+            Action::ExportTable => self.start_export_table(),
             Action::ImportBase => self.start_import(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),

@@ -32,6 +32,10 @@
 
 ![Enter a date with the calendar](images/edit-date.svg)
 
+Date and time columns add a time field under the calendar (here on the sample `examples/schedule`). `Ctrl+O` switches to it; `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour.
+
+![Set the time of a date and time](images/edit-datetime-time.svg)
+
 ![Review the diff, then save](images/save.svg)
 
 - To empty a cell press `Backspace` or `Delete`. Saving writes `key:` and keeps the key.
@@ -150,12 +154,17 @@ pick-task() { mdgrid ~/notes/Tasks --pick path; }
 
 ## Use with other commands
 
+To save the table exactly as shown — with your filters, sorting and hidden columns — choose **Export the table to a file** in the command palette (`:`) and type a file name. The extension picks the format: `.csv`, `.tsv`, `.json` or `.md`. The first column is each note's path, so a CSV or JSON can come back with `--apply`.
+
+![Export the table to a file](images/export-table.svg)
+
 Print the table of a view to standard output without opening the screen (csv by default; notes are not written):
 
 ```sh
 mdgrid /tmp/mdgrid-sample/タスク.base --print
 mdgrid /tmp/mdgrid-sample/タスク.base --print --format json | jq .
 mdgrid /tmp/mdgrid-sample --print --format md > table.md
+mdgrid /tmp/mdgrid-sample --print --format tsv > table.tsv
 ```
 
 When you `--print` a folder, there is no note-name column (the columns are the frontmatter keys only).

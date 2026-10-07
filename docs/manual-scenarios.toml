@@ -230,6 +230,22 @@ wait = { en = "added column", ja = "列 reviewer を足した" }
 text = { en = "A adds a column for a key no note has yet. Only the notes you fill in get the key when you save.", ja = "A で、まだどのノートにも無いキーの列を足す。保存では、値を入れたノートにだけキーを書く。" }
 
 [[shot]]
+id = "edit-datetime-time"
+title = { en = "Set the time of a date and time", ja = "日時の時刻を選ぶ" }
+command = ["./target/release/mdgrid", "examples/schedule"]
+ready = "start"
+keys = ["l", "Enter", "C-o", "Up"]
+wait = { en = "14:45", ja = "14:45" }
+text = { en = "Date and time columns show a time field under the calendar. Ctrl+O switches to it; Up and Down move 15 minutes, Shift+Up and Shift+Down one hour.", ja = "日時の列では、カレンダーの下に時刻の欄が出る。Ctrl+O で時刻の欄に移り、↑↓ で15分、Shift+↑↓ で1時間動かす。" }
+
+[[shot]]
+id = "export-table"
+title = { en = "Export the table to a file", ja = "表をファイルに書き出す" }
+keys = [":", "text:export_table", "Enter", "text:tasks.csv", "Enter"]
+wait = { en = "wrote", ja = "書いた" }
+text = { en = "The command palette exports the table as shown (filters, sorting and hidden columns applied). The extension picks the format: .csv, .tsv, .json or .md. The first column is each note's path, so a CSV or JSON can come back with --apply.", ja = "パレットから、今見えている表(絞り込み・並べ替え・隠した列を当てたもの)を書き出す。形は拡張子(.csv・.tsv・.json・.md)で決まる。先頭の列は各ノートのパスなので、CSV と JSON は --apply で戻せる。" }
+
+[[shot]]
 id = "freeze-columns"
 title = { en = "Freeze columns", ja = "列を固定する" }
 keys = ["l", "F", "End"]

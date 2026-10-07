@@ -681,107 +681,107 @@
       "SR-20",
       "SR-21"
     ],
-    "sha": "520d8b8bd49bef7d",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "59a8e2b8fdaa6f09",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_row_numbers_follow_sort_and_filter": {
     "ids": [
       "SR-20"
     ],
-    "sha": "5156368725aac59e",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "36b58d96af8c6383",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_row_numbers_skip_group_headings": {
     "ids": [
       "SR-20"
     ],
-    "sha": "a11f8915a8540fb2",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "af6e9c2986844fa9",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_settings_screen_has_display_section": {
     "ids": [
       "NV-13",
       "SR-20"
     ],
-    "sha": "56c6335a6a2cde8f",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "4a2ce4095d9aeebe",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_toggle_in_settings_applies_to_that_view_only": {
     "ids": [
       "NV-13",
       "SR-20"
     ],
-    "sha": "bd61a472cd7264f8",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "3f02f4a9b033fe49",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_saved_native_view_keeps_display": {
     "ids": [
       "BV-17",
       "SR-20"
     ],
-    "sha": "f6533101b6e76b77",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "bf6ab50b445440c8",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_zebra_colors_even_rows": {
     "ids": [
       "SR-20"
     ],
-    "sha": "bee87c0961a036bb",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "ba182ad458506303",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_zebra_off_by_default": {
     "ids": [
       "SR-20"
     ],
-    "sha": "b57a90874a4ea1c8",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "5ca3d1d8381297f2",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_zebra_not_without_color": {
     "ids": [
       "SR-20"
     ],
-    "sha": "f8e13b7c780b9ee1",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "45fddbfeb82a9ccc",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_column_lines_default_none_on_draws_bars": {
     "ids": [
       "SR-20",
       "SR-21"
     ],
-    "sha": "530721683d384198",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "cdc95c368275810e",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_search_bar_hidden_from_settings_screen": {
     "ids": [
       "NV-23",
       "SR-20"
     ],
-    "sha": "ee75cbfce15dafdf",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "a48e0f9ae3c0edfc",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_tabs_hidden_but_brackets_switch": {
     "ids": [
       "SR-20",
       "SR-21"
     ],
-    "sha": "98b41639f6b9b731",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "482f05310ef0dfe1",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_chips_hidden_but_f_works": {
     "ids": [
       "NV-16",
       "SR-20"
     ],
-    "sha": "43f532a2eab15fef",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "e96687be18660a8c",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_chips_hidden_from_settings_screen": {
     "ids": [
       "NV-16",
       "SR-20"
     ],
-    "sha": "354e2203b11a003b",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "f0ac184aa2a42c6b",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "src/ui/test_external.rs::test_sr_8_editor_argv_split": {
     "ids": [
@@ -2018,10 +2018,11 @@
   "tests/test_display_options.rs::test_sr_21_print_config_has_display": {
     "ids": [
       "CLI-11",
-      "SR-21"
+      "SR-21",
+      "SR-30"
     ],
-    "sha": "7a2e3500e2df52a9",
-    "from": "4a2a6095d0fbf60c"
+    "sha": "57dd11c0be4a5bb4",
+    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_wins_over_env": {
     "ids": [
@@ -5284,5 +5285,114 @@
       "SR-29"
     ],
     "sha": "2b108667c951d303"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_click_on_gap_keeps_selection": {
+    "ids": [
+      "SR-30"
+    ],
+    "sha": "951605005dbe4e72"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_cursor_skips_gap": {
+    "ids": [
+      "SR-30"
+    ],
+    "sha": "5b1539b77ff0ec6c"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_default_has_no_gap": {
+    "ids": [
+      "SR-30"
+    ],
+    "sha": "ff8728221ec2c277"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_gap_above_second_heading_only": {
+    "ids": [
+      "SR-30"
+    ],
+    "sha": "53d5288a0e9f6a4f"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_no_groups_no_gap": {
+    "ids": [
+      "SR-30"
+    ],
+    "sha": "656564e38cf626d8"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_print_config_and_views_key": {
+    "ids": [
+      "SR-30"
+    ],
+    "sha": "8c0f0c6007fa0987"
+  },
+  "src/ui/test_group_gap.rs::test_sr_30_view_override_and_row_numbers": {
+    "ids": [
+      "SR-20",
+      "SR-30"
+    ],
+    "sha": "fe263a009933cc06"
+  },
+  "tests/test_print.rs::test_cli_5_default_csv_header_rows_and_rfc4180": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "58c2a108d8c9f780"
+  },
+  "tests/test_print.rs::test_cli_5_group_by_only_orders_rows_without_heading_rows": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "22d721720477fd86"
+  },
+  "tests/test_print.rs::test_cli_5_json_array_of_objects_with_json_types": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "9a3bfa505081a04f"
+  },
+  "tests/test_print.rs::test_cli_5_md_table_with_separator_escaped_pipe_and_spaces_for_newlines": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "36e8803b5aae8f6e"
+  },
+  "tests/test_print.rs::test_cli_5_missing_path_fails_with_one_line_and_code_2": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "9509a62a34917e2a"
+  },
+  "tests/test_print.rs::test_cli_5_print_does_not_modify_or_create_files_in_vault": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "de2616d08b66a0bc"
+  },
+  "tests/test_print.rs::test_cli_5_unknown_format_fails_with_one_line_and_code_2": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "88d9b32f5e52e26d"
+  },
+  "tests/test_print.rs::test_cli_5_unknown_view_fails_with_one_line_and_code_2": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "99a96ad94156d360"
+  },
+  "tests/test_print.rs::test_cli_5_view_option_selects_another_base_view": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "e2be44e9f1ad0d6c"
+  },
+  "tests/test_print_tsv.rs::test_cli_5_print_tsv": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "8122364abdda3f72"
+  },
+  "tests/test_print_with_path.rs::test_cli_14_without_flag_output_has_no_path_column": {
+    "ids": [
+      "CLI-5"
+    ],
+    "sha": "30205103402a2aa8"
   }
 }

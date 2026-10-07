@@ -242,6 +242,8 @@ pub enum Action {
     // mdgrid のビュー(BV-19)。キーは割り当てず、パレットのコマンド(`COMMANDS`)から。
     ExportBase,
     ImportBase,
+    /// OUT-2: 画面の表をファイルに書き出す。
+    ExportTable,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
     /// その場の操作の一覧を開く(SR-24)。セルの右クリックからも。
@@ -345,6 +347,7 @@ impl Action {
             Action::MoveItemDown => "move_item_down",
             Action::RemoveItem => "remove_item",
             Action::ExportBase => "export_base",
+            Action::ExportTable => "export_table",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
             Action::Menu => "action_menu",
@@ -484,6 +487,8 @@ const fn cmd(action: Action, msg: Msg, section: Msg) -> Command {
 pub const COMMANDS: &[Command] = &[
     cmd(Action::ExportBase, Msg::CmdExportBase, NATIVE),
     cmd(Action::ImportBase, Msg::CmdImportBase, NATIVE),
+    // OUT-2: 画面の表の書き出し(既定のキーなし。パレットから)。
+    cmd(Action::ExportTable, Msg::CmdExportTable, OUTSIDE),
     // CE-29: キーの名前の変更と削除(既定のキーなし。パレットと操作の一覧から)。
     cmd(Action::RenameKey, Msg::CmdRenameKey, SHAPE),
     cmd(Action::DeleteKey, Msg::CmdDeleteKey, SHAPE),
