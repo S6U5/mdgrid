@@ -666,7 +666,7 @@ pub fn flow_frontmatter(bytes: &[u8]) -> Option<Frontmatter> {
     if inner.len() > FLOW_MAX_BYTES || flow_depth(inner) > FLOW_MAX_DEPTH {
         return None;
     }
-    crate::base::check_aliases(inner).ok()?;
+    crate::yaml_guard::check_aliases(inner).ok()?;
     let docs = Yaml::load_from_str(inner).ok()?;
     fn scalar(y: &Yaml) -> Value {
         match y {

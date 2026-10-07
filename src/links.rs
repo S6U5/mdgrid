@@ -7,7 +7,7 @@
 //! 根に近い・パスの短いもの。解けなければ書いた文字のまま(被リンクには出ない)。
 //! 索引の値はノートの根からのパスの拡張子 `.md` を除いたもの。1つのノートの同じ行き先は1つにまとめる。
 
-use crate::source::markdown::{fence_close, fence_open};
+use crate::mdtext::{fence_close, fence_open};
 use std::collections::{HashMap, HashSet};
 
 /// 拾ったリンク1つ。

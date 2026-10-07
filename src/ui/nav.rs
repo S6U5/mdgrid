@@ -5,11 +5,12 @@
 
 use super::app::App;
 use super::cell::{shown, val_text};
-use super::external::{plain, plain_new};
 use super::grid::{value_of, Slot};
+use super::input::new_value_text;
 use super::keymap::{Action, Mode};
 use mdgrid::base::Shown;
 use mdgrid::i18n::Msg;
+use mdgrid::print::value_plain;
 use mdgrid::print::{self, PrintCell};
 use mdgrid::source::RowId;
 use std::collections::HashSet;
@@ -53,10 +54,10 @@ impl App {
     /// 簡易の絞り込み(NV-2)と同じ値(NV-8)で比べる。
     pub(crate) fn plain(&self, row: &RowId, col: &str) -> String {
         if let Some(nv) = self.changes.pending(row, col) {
-            return plain_new(nv);
+            return new_value_text(nv);
         }
         match self.cell(row, col) {
-            Shown::Prop(c) => c.value.as_ref().map(plain).unwrap_or_default(),
+            Shown::Prop(c) => c.value.as_ref().map(value_plain).unwrap_or_default(),
             Shown::Computed(v) => val_text(&v),
             Shown::Unsupported(_) => String::new(),
         }
@@ -199,7 +200,7 @@ impl App {
 
     /// `--pick` で選び始める(OUT-3)。読むだけ(WB-15)は起動の側で当てる。表の Enter の案内を「選ぶ」にする。
     pub fn start_choosing(&mut self) {
-        self.choosing = true;
+        self.pick_out.choosing = true;
         for b in &mut self.keys {
             if b.mode == Mode::Table && b.action == Action::Edit {
                 b.msg = mdgrid::i18n::Msg::KeyPickFinish;
@@ -211,7 +212,7 @@ impl App {
 
     /// `--pick` で選んだ行(表の並び)。取りやめたか、まだ選んでいなければ None。
     pub fn chosen(&self) -> Option<&[RowId]> {
-        self.chosen.as_deref()
+        self.pick_out.chosen.as_deref()
     }
 
     /// `--pick` の表の動作(OUT-3)。Enter はノートの行なら印を付けた行(無ければ選んでいる行)を決めて終わる
@@ -226,7 +227,7 @@ impl App {
                 if rows.is_empty() {
                     self.message = Some(Msg::NoRowToSelect.into());
                 } else {
-                    self.chosen = Some(rows);
+                    self.pick_out.chosen = Some(rows);
                     self.quit = true;
                 }
                 true
@@ -501,4 +502,13 @@ pub(crate) fn shown_value(v: &str) -> String {
     } else {
         v.to_string()
     }
+}
+
+/// `--pick`(OUT-3)の状態。
+#[derive(Default)]
+pub(crate) struct PickOut {
+    /// 選んでいる。Enter で `chosen` を決めて終わり、q と(印も範囲も無いときの)Esc で取りやめる。
+    pub choosing: bool,
+    /// 選んだ行(表の並び)。None のまま終われば取りやめ。
+    pub chosen: Option<Vec<RowId>>,
 }

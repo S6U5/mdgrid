@@ -7,7 +7,7 @@ use super::view::{footer, message};
 use super::width::{fit, sanitize, Align};
 use mdgrid::changes::Outcome;
 use mdgrid::i18n::Msg;
-use mdgrid::source::{content_hash, EditError, RowId, SaveError};
+use mdgrid::source::{content_hash, RowId};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 
@@ -30,24 +30,8 @@ pub(crate) struct Review {
     pub sel: usize,
 }
 
-/// 書けない理由の短い日本語(表示用)。
-pub(crate) fn edit_error_text(e: &EditError) -> String {
-    match e {
-        EditError::ReadOnly(r) => Msg::ReviewReadOnly.fill(&[&format!("{r:?}")]),
-        EditError::NotEditable(s) => s.clone(),
-        EditError::Newline => Msg::ReviewNewline.into(),
-        EditError::Verify(s) => Msg::ReviewVerify.fill(&[&s]),
-    }
-}
-
-pub(crate) fn save_error_text(e: &SaveError) -> String {
-    match e {
-        SaveError::Changed => Msg::ReviewChanged.into(),
-        SaveError::Edit(e) => edit_error_text(e),
-        SaveError::Io(e) => Msg::ReviewIo.fill(&[&e]),
-        SaveError::NoPermission => Msg::ReviewReadOnly.fill(&[&Msg::NoPermission.text()]),
-    }
-}
+// 書けない理由の文は --apply と共有するので src/edit.rs にある(今までの道はそのまま使える)。
+pub(crate) use crate::edit::{edit_error_text, save_error_text};
 
 impl App {
     /// 保存の確認と終了の確認の動作。

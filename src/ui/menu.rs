@@ -10,12 +10,12 @@ use super::app::App;
 use super::cell::shown;
 use super::grid::Slot;
 use super::keymap::{self, Action, Mode};
-use super::list::splice;
+use super::popup;
 use super::view::{data_y, visible_layout};
-use super::width::{fit, take, width, Align};
+use super::width::{fit, width, Align};
 use mdgrid::i18n::Msg;
 use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
+use ratatui::text::Line;
 
 /// 一覧の節(SR-24 の順)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -209,10 +209,9 @@ impl App {
         let n = items(self).len();
         let sel = self.menu.unwrap_or(0).min(n.saturating_sub(1));
         match action {
-            Action::Up => self.menu = Some(sel.saturating_sub(1)),
-            Action::Down => self.menu = Some((sel + 1).min(n.saturating_sub(1))),
-            Action::Top => self.menu = Some(0),
-            Action::Bottom => self.menu = Some(n.saturating_sub(1)),
+            Action::Up | Action::Down | Action::Top | Action::Bottom => {
+                self.menu = popup::step_sel(sel, n, action, 0);
+            }
             Action::Run => self.run_menu_item(sel),
             Action::Close => self.close_menu(),
             _ => {}
@@ -302,11 +301,6 @@ impl App {
     }
 }
 
-/// 窓の上と下の縁の行の数。
-pub(crate) const FRAME: usize = 2;
-/// 窓の中に少なくとも見せる行の数(これより低い端末では一覧を開かない)。
-pub(crate) const MIN_VIS: usize = 3;
-
 /// 窓の置き場所と大きさ。
 struct Geom {
     x: usize,
@@ -353,16 +347,11 @@ fn geometry(
     limit: usize,
 ) -> Option<Geom> {
     let (ax, ay) = anchor(app).unwrap_or((0, data_y(app)));
-    let n = ents.len();
-    let below_room = limit.saturating_sub(ay + 1);
-    let above_room = ay.min(limit);
-    let below = below_room >= n + FRAME || below_room >= above_room;
-    let room = if below { below_room } else { above_room };
     // 見出しと項目が少なくとも MIN_VIS 行見えなければ、窓は入らない(開かない)。
-    if room < FRAME + MIN_VIS.min(n) || w < 8 {
+    if w < 8 {
         return None;
     }
-    let vis = n.min(room - FRAME);
+    let popup::Place { top, vis } = popup::place(ay, ents.len(), limit)?;
     let lw = items.iter().map(|it| width(it.label)).max().unwrap_or(0);
     let kw = items.iter().map(|it| width(&it.key)).max().unwrap_or(0);
     let inner = ents
@@ -389,10 +378,9 @@ fn geometry(
     if start > head && at - head < vis {
         start = head;
     }
-    let height = vis + FRAME;
     Some(Geom {
         x: ax.min(w - iw),
-        top: if below { ay + 1 } else { ay - height },
+        top,
         iw,
         start,
         vis,
@@ -408,9 +396,7 @@ fn window(app: &App) -> Option<(Geom, Vec<Item>, Vec<Entry>, usize)> {
     }
     let sel = app.menu.unwrap_or(0).min(items.len() - 1);
     let ents = entries(&items);
-    // 描く幅は右端の1桁を除く。下の帯より上の行は、最下行と下の帯・メッセージ行を除く(mod.rs の draw)。
-    let w = app.size.0.saturating_sub(1) as usize;
-    let limit = (app.size.1.saturating_sub(1) as usize).saturating_sub(2);
+    let (w, limit) = popup::screen(app);
     let g = geometry(app, &items, &ents, sel, w, limit)?;
     Some((g, items, ents, sel))
 }
@@ -423,16 +409,8 @@ pub(crate) fn fits(app: &App) -> bool {
 /// (x, y) にある窓の中身: 窓の外なら None、窓の中なら項目の添字(見出し・縁なら None の中身)。
 fn hit(app: &App, x: u16, y: u16) -> Option<Option<usize>> {
     let (g, _, ents, _) = window(app)?;
-    let (x, y) = (x as usize, y as usize);
-    let height = g.vis + FRAME;
-    if x < g.x || x >= g.x + g.iw || y < g.top || y >= g.top + height {
-        return None;
-    }
-    let k = y - g.top;
-    if k == 0 || k > g.vis {
-        return Some(None);
-    }
-    Some(match ents.get(g.start + k - 1) {
+    let k = popup::hit(x, y, g.x, g.top, g.iw, g.vis)?;
+    Some(match k.and_then(|k| ents.get(g.start + k)) {
         Some(Entry::Item(i)) => Some(*i),
         _ => None,
     })
@@ -463,11 +441,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let lw = items.iter().map(|it| width(it.label)).max().unwrap_or(0);
     let kw = items.iter().map(|it| width(&it.key)).max().unwrap_or(0);
     let mut out: Vec<(String, Style)> = Vec::new();
-    let title = take(Mode::Menu.label(), tw);
-    out.push((
-        format!("+{title}{}+", "-".repeat(tw - width(&title))),
-        Style::default(),
-    ));
+    out.push((popup::top_edge(Mode::Menu.label(), tw), Style::default()));
     for e in ents.iter().skip(g.start).take(g.vis) {
         match *e {
             Entry::Head(s) => out.push((
@@ -496,9 +470,5 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         "-".repeat(tw)
     };
     out.push((format!("+{edge}+"), Style::default()));
-    for (k, (t, st)) in out.into_iter().enumerate() {
-        if let Some(line) = lines.get_mut(g.top + k) {
-            *line = splice(line, g.x, Span::styled(t, st), g.iw, w);
-        }
-    }
+    popup::blit(lines, g.x, g.top, g.iw, w, out);
 }

@@ -28,7 +28,7 @@ pub(crate) struct Shown {
 }
 
 /// 改行を含む値は1行目と `…⏎`(CV-3)。
-fn one_line(s: &str) -> String {
+fn first_line_marked(s: &str) -> String {
     match s.find(['\n', '\r']) {
         Some(i) => format!("{}…⏎", sanitize(&s[..i])),
         None => sanitize(s),
@@ -44,7 +44,7 @@ fn value_text(v: &Value) -> String {
     match v {
         Value::Null => "∅".into(),
         Value::Str(s) if s.is_empty() => "\"\"".into(),
-        Value::Str(s) => one_line(s),
+        Value::Str(s) => first_line_marked(s),
         Value::Bool(b) => b.to_string(),
         Value::Int(i) => i.to_string(),
         Value::Float(f) => float_text(*f),
@@ -60,18 +60,18 @@ fn new_value_text(v: &NewValue) -> String {
     match v {
         NewValue::Null => "∅".into(),
         NewValue::Str(s) if s.is_empty() => "\"\"".into(),
-        NewValue::Str(s) | NewValue::Date(s) => one_line(s),
+        NewValue::Str(s) | NewValue::Date(s) => first_line_marked(s),
         NewValue::Bool(b) => b.to_string(),
         NewValue::Int(i) => i.to_string(),
         NewValue::Float(f) => float_text(*f),
         // CE-29: キーの名前の変更・削除のためる変更(保存までは今の値の代わりに出す)。
-        NewValue::RenameKey(to) => format!("→ {}", one_line(to)),
+        NewValue::RenameKey(to) => format!("→ {}", first_line_marked(to)),
         NewValue::DeleteKey => "×".into(),
         NewValue::List(items) => format!(
             "[{}]",
             items
                 .iter()
-                .map(|s| one_line(s))
+                .map(|s| first_line_marked(s))
                 .collect::<Vec<_>>()
                 .join(", ")
         ),
@@ -80,7 +80,7 @@ fn new_value_text(v: &NewValue) -> String {
 
 /// 計算の列の値の文字(`file.*`・`formula.*`)。null は空欄。文字列は1行にする(核の `print::val_text_with`)。
 pub(crate) fn val_text(v: &Val) -> String {
-    mdgrid::print::val_text_with(v, &one_line)
+    mdgrid::print::val_text_with(v, &first_line_marked)
 }
 
 /// 列の型の寄せ方(CV-4)。

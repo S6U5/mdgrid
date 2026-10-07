@@ -7,12 +7,14 @@
 
 pub mod base;
 pub mod changes;
+pub mod clock;
 pub mod config;
 pub mod display;
 pub mod expr;
 pub mod frontmatter;
 pub mod i18n;
 pub mod links;
+pub(crate) mod mdtext;
 pub mod newnote;
 pub mod print;
 pub mod settings;
@@ -23,3 +25,4 @@ pub mod types;
 pub mod vault;
 pub mod views;
 pub mod writeback;
+pub(crate) mod yaml_guard;

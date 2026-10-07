@@ -69,22 +69,14 @@ pub struct App {
     pub(crate) slots: Vec<Slot>,
     /// 未対応の列・並べ替えの説明(BV-7)。
     pub(crate) notes: Vec<String>,
-    /// CE-28: 起動の間だけ足した列(どのノートにも無いキー)。どのビューでも表の右に出す。
-    pub(crate) extra_cols: Vec<String>,
-    /// 表の下の集計(列の id・集計・今の行で計算した値。BV-14)。空なら集計の行を出さない。
-    pub(crate) summaries: Vec<(String, mdgrid::summary::Summary, mdgrid::expr::Val)>,
+    /// 組み立てた表から決めた値(足した列・集計・見出し・ノートの欄の前置き・列の型。grid.rs の Built)。
+    pub(crate) built: super::grid::Built,
     /// 開けないビューの理由(BV-7・SC-8)。
     pub(crate) view_error: Option<String>,
     /// 表の列の順(列の id)。表の側が持ち、新しい列は右に足す。
     pub(crate) cols: Vec<String>,
-    /// 列の id → 見出し(displayName。BV-5)。
-    pub(crate) titles: HashMap<String, String>,
-    /// SR-29: 読み込んだ全部の行に共通のフォルダ(末尾の `/` まで)。左のノートの欄はこれを除いて出す。
-    pub(crate) label_prefix: String,
     /// 列の型(CV-4 の寄せ・CV-2 の `!`)。cols と同じ並び。
     pub(crate) kinds: Vec<Kind>,
-    /// 列の id → 型。組み立て直しのたびに `.base` の結果の行の全部から決める(kinds とビューの設定が引く)。
-    pub(crate) col_kinds: HashMap<String, Kind>,
     /// 手で決めた列の幅(SR-3・NV-4)。
     pub(crate) widths: HashMap<String, usize>,
     /// 選んだ行と列(slots・cols の添字)。
@@ -185,10 +177,8 @@ pub struct App {
     pub(crate) nv: super::native_views::Native,
     /// 新しいノート(CE-25〜CE-27。new_note.rs): 設定の決まりと、作っている途中の状態。
     pub(crate) note: super::new_note::NoteMaker,
-    /// `--pick` で選んでいる(OUT-3)。Enter で `chosen` を決めて終わり、q と(印も範囲も無いときの)Esc で取りやめる。
-    pub(crate) choosing: bool,
-    /// `--pick` で選んだ行(表の並び)。None のまま終われば取りやめ。
-    pub(crate) chosen: Option<Vec<RowId>>,
+    /// `--pick`(OUT-3)の状態(nav.rs の PickOut)。
+    pub(crate) pick_out: super::nav::PickOut,
     /// その場の操作の一覧(SR-24。menu.rs)で選んでいる項目の添字。開いていなければ None。
     pub(crate) menu: Option<usize>,
     /// 列の値の頻度表(NV-9。freq.rs)。開いていなければ None。
@@ -215,14 +205,10 @@ impl App {
             folded: HashSet::new(),
             slots: Vec::new(),
             notes: Vec::new(),
-            extra_cols: Vec::new(),
-            summaries: Vec::new(),
             view_error: None,
+            built: Default::default(),
             cols: Vec::new(),
-            titles: HashMap::new(),
-            label_prefix: String::new(),
             kinds: Vec::new(),
-            col_kinds: HashMap::new(),
             widths: HashMap::new(),
             row: 0,
             col: 0,
@@ -283,8 +269,7 @@ impl App {
             week_start: WeekStart::Sun,
             nv: Default::default(),
             note: Default::default(),
-            choosing: false,
-            chosen: None,
+            pick_out: Default::default(),
             menu: None,
             freq: None,
             theme: Theme::Default,
@@ -449,15 +434,7 @@ impl App {
         let Some(name) = keymap::key_name(&ev) else {
             return;
         };
-        if matches!(
-            self.mode,
-            Mode::Edit
-                | Mode::Palette
-                | Mode::Search
-                | Mode::Filter
-                | Mode::SettingsText
-                | Mode::ListPick
-        ) {
+        if self.mode.takes_text() {
             // 表にあるキーは動作に、無い文字は入力に(全角のまま入れる。SR-17 の読み替えは表のモードだけ)。
             let found = keymap::lookup(&self.keys, self.mode, &name).or_else(|| {
                 keymap::unshifted(&name).and_then(|n| keymap::lookup(&self.keys, self.mode, &n))
@@ -591,7 +568,7 @@ impl App {
 
     fn table_action_inner(&mut self, action: Action) {
         // OUT-3: `--pick` の Enter(見出しの行では開閉のまま)と Esc の取りやめ(nav.rs)。
-        if self.choosing && self.choose_action(action) {
+        if self.pick_out.choosing && self.choose_action(action) {
             return;
         }
         // WB-15: 読むだけでは、編集・空にする・取り消し・保存をしない(見出しの行の開閉は効く)。

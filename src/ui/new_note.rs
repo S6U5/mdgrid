@@ -568,12 +568,12 @@ impl App {
 
     /// CE-32: 雛形の変数(今日・今の時刻・決めた名前・作る場所)。
     fn note_vars(&self, f: &Flow) -> newnote::Vars {
-        let off = mdgrid::print::local_offset();
         let name = f.name.trim();
         let name = name.strip_suffix(".md").unwrap_or(name);
         newnote::Vars {
             today: self.today,
-            minutes: (self.now + off).rem_euclid(86_400) / 60,
+            // now は地域の時計の秒(today_now。時差は足し済み)。
+            minutes: self.now.rem_euclid(86_400) / 60,
             name: name.rsplit('/').next().unwrap_or(name).to_string(),
             folder: f.rule.folder.trim().trim_matches('/').to_string(),
         }

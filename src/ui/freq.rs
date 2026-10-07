@@ -10,16 +10,16 @@
 
 use super::app::App;
 use super::keymap::{Action, Mode};
-use super::list::splice;
-use super::menu::{anchor, FRAME, MIN_VIS};
+use super::menu::anchor;
 use super::nav::{shown_value, Same};
+use super::popup;
 use super::view::data_y;
-use super::width::{fit, sanitize, take, width, Align};
+use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
 use mdgrid::settings::value_counts;
 use mdgrid::source::Value;
 use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
+use ratatui::text::Line;
 
 /// 開いている頻度表。
 #[derive(Debug, Clone)]
@@ -115,12 +115,10 @@ impl App {
         let Some(f) = self.freq.as_mut() else {
             return self.close_freq();
         };
-        let last = f.items.len().saturating_sub(1);
         match action {
-            Action::Up => f.sel = f.sel.saturating_sub(1),
-            Action::Down => f.sel = (f.sel + 1).min(last),
-            Action::Top => f.sel = 0,
-            Action::Bottom => f.sel = last,
+            Action::Up | Action::Down | Action::Top | Action::Bottom => {
+                f.sel = popup::step_sel(f.sel, f.items.len(), action, 0).unwrap_or(f.sel);
+            }
             Action::Run => {
                 let i = f.sel;
                 self.run_freq_item(i);
@@ -217,18 +215,12 @@ fn window(app: &App) -> Option<Geom> {
     if n == 0 {
         return None;
     }
-    // 描く幅は右端の1桁を除く。下の帯より上の行は、最下行と下の帯・メッセージ行を除く(mod.rs の draw)。
-    let w = app.size.0.saturating_sub(1) as usize;
-    let limit = (app.size.1.saturating_sub(1) as usize).saturating_sub(2);
+    let (w, limit) = popup::screen(app);
     let (ax, ay) = anchor(app).unwrap_or((0, data_y(app)));
-    let below_room = limit.saturating_sub(ay + 1);
-    let above_room = ay.min(limit);
-    let below = below_room >= n + FRAME || below_room >= above_room;
-    let room = if below { below_room } else { above_room };
-    if room < FRAME + MIN_VIS.min(n) || w < 8 {
+    if w < 8 {
         return None;
     }
-    let vis = n.min(room - FRAME);
+    let popup::Place { top, vis } = popup::place(ay, n, limit)?;
     let cw = f
         .items
         .iter()
@@ -255,10 +247,9 @@ fn window(app: &App) -> Option<Geom> {
     let vw = (iw - 2).saturating_sub(rest).min(lw);
     let sel = f.sel.min(n - 1);
     let start = (sel + 1).saturating_sub(vis);
-    let height = vis + FRAME;
     Some(Geom {
         x: ax.min(w - iw),
-        top: if below { ay + 1 } else { ay - height },
+        top,
         iw,
         vw,
         start,
@@ -269,16 +260,8 @@ fn window(app: &App) -> Option<Geom> {
 /// (x, y) にある窓の中身: 窓の外なら None、窓の中なら項目の添字(縁なら None の中身)。
 fn hit(app: &App, x: u16, y: u16) -> Option<Option<usize>> {
     let g = window(app)?;
-    let (x, y) = (x as usize, y as usize);
-    let height = g.vis + FRAME;
-    if x < g.x || x >= g.x + g.iw || y < g.top || y >= g.top + height {
-        return None;
-    }
-    let k = y - g.top;
-    if k == 0 || k > g.vis {
-        return Some(None);
-    }
-    Some(Some(g.start + k - 1))
+    let k = popup::hit(x, y, g.x, g.top, g.iw, g.vis)?;
+    Some(k.map(|k| g.start + k))
 }
 
 /// 下の帯より上の行(`lines`)に頻度表の窓を重ねる(操作の一覧と同じ見せ方)。窓の外の表はそのまま見せる。
@@ -304,11 +287,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         .unwrap_or(0);
     let sel = f.sel.min(f.items.len() - 1);
     let mut out: Vec<(String, Style)> = Vec::new();
-    let t = take(&title(app, f), tw);
-    out.push((
-        format!("+{t}{}+", "-".repeat(tw - width(&t))),
-        Style::default(),
-    ));
+    out.push((popup::top_edge(&title(app, f), tw), Style::default()));
     for (i, (v, c)) in f.items.iter().enumerate().skip(g.start).take(g.vis) {
         let st = if i == sel {
             Style::default().add_modifier(Modifier::REVERSED)
@@ -325,9 +304,5 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         out.push((format!("|{}|", fit(&text, tw, Align::Left)), st));
     }
     out.push((format!("+{}+", "-".repeat(tw)), Style::default()));
-    for (k, (t, st)) in out.into_iter().enumerate() {
-        if let Some(line) = lines.get_mut(g.top + k) {
-            *line = splice(line, g.x, Span::styled(t, st), g.iw, w);
-        }
-    }
+    popup::blit(lines, g.x, g.top, g.iw, w, out);
 }

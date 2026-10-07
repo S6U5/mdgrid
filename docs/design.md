@@ -579,6 +579,33 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - unicode-width と書記素のまとまり(unicode-segmentation)で数える。East Asian Ambiguous(○● など)は既定で1とし、設定で2にできるようにする。
 - 絵文字は幅が端末ごとにぶれるので、表の飾りには使わない。
 
+## モジュールの分け方と、写しを作らない決まり(refactor-maintainability。2026-10-07)
+
+調べ(ratatui の作りの型(TEA・部品・Flux)、gitui・helix の重ねる窓の扱い、Rust の型と誤りの設計、安全な
+リファクタリング)と、コードの込み合いの調べから決めた。振る舞いは変えていない。
+
+- **ライブラリに輪を作らない**: 下の層(types・expr・frontmatter・links)は上の層(print・base・source)に頼らない。
+  - 時計(地域の時差・今日と今)は `clock.rs`。`print::today_now` などの道は `pub use` で残す。
+  - 本文の行の読み方(字下げ・コードのフェンス)は `mdtext.rs`(source::markdown と links が使う)。
+  - YAML の見張り(別名の展開の数・入れ子の深さ)は `yaml_guard.rs`(base と frontmatter が使う)。
+  - 残した輪: `newnote::rule_for`(config・views に頼る)。試験が `newnote::rule_for` の道を使うので動かしていない。
+- **`--apply` は画面に頼らない**: 入力の読み方(`Entry`・`parse`)と書けない理由の文は `src/edit.rs`、差分は
+  `src/diff.rs`(どちらもバイナリの中。画面の `ui::entry`・`ui::review`・`ui::diff` の道は再輸出で残す)。
+- **重ねる窓の共通の部品は `ui/popup.rs`**: 画面の大きさ(`screen`)、セルの下か上への置き方(`place`・
+  `place_with`)、上の縁(`top_edge`)、当たり(`hit`)、表の行への重ね方(`blit`)、一覧の選びの上下(`step_sel`)。
+  新しい窓はこれを使い、置き方の計算を写さない。
+- **同じ働きの関数は1つ**: ノートの値の素の文字は `print::value_plain`、ためた値の素の文字は
+  `ui::input::new_value_text`。`one_line` は「改行を空白に」(print)だけで、空白をまとめるのは
+  `config::squash_ws`、セルの1行目と `…⏎` は `cell::first_line_marked`。
+- **設定の書き込みは1つ**: `config::write_atomic`(一時ファイル・fsync・名前の変更)と `config::toml_error`(壊れた
+  TOML の行と理由)を、状態(state)と views.toml の両方が使う。
+- **新しいノートの決まりの項目は `NewNote::KEYS` だけ**: 設定と views.toml の読み書きは、この並びを見る。
+- **App を部分の構造体に分けていく**: 試験が読まない項目から、意味のまとまりで分ける(`grid::Built`・
+  `nav::PickOut`)。試験が直接読む項目(mode・row・input など)の名前は変えない(錠のある試験を変えないため)。
+- 次の段の候補(まだしていない): 重ねる窓を `enum Overlay` の重なり(上の窓が先にキーを受け、使わなければ
+  モードのキーへ)にする、窓を ratatui の Widget として自分の Rect に描く、`Result<_, String>` を誤りの型に、
+  NewNote.mode などの文字の値を enum に。
+
 ## テスト
 
 - 画面は文字列のゴールデン(`UPDATE_GOLDEN=1` で更新)。設定なし・今日の日付は環境変数で注入(`MDGRID_TODAY`)・材料の更新時刻は固定。
