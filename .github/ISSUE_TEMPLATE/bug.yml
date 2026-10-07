@@ -11,7 +11,7 @@ body:
     attributes:
       label: Version
       description: Output of `mdgrid --version`, your OS and terminal.
-      placeholder: mdgrid 0.1.1, macOS 15, WezTerm
+      placeholder: mdgrid 0.1.2, macOS 15, WezTerm
     validations:
       required: true
   - type: textarea
