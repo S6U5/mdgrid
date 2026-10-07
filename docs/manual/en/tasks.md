@@ -78,16 +78,18 @@ Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it
 
 ## Create a note
 
-1. Press `a`, or click `+ New` at the top right.
-2. Type a name and press `Enter`. `sub/name` creates it in a subfolder (made if missing).
-3. The file is created at once and its row is selected, ready for values.
+1. Press `a`, or click `+ New` at the top right. A form opens with the name and a field for each column.
+2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back; each field takes the input for its type (candidates, calendar, list).
+3. Press `Ctrl+S` from any field (or `Enter` on the last one). The file is created at once and its row is selected. `Ctrl+E` creates it and opens it in your editor.
+
+![The new note form](images/new-note.svg)
 
 ![The new note](images/new-note-done.svg)
 
 - With two or more folders open, you choose the folder first.
 - In a view filtered to a single value, such as `status == "doing"`, the new note gets that value and stays in the view.
 - mdgrid does not create notes outside the opened folders or over an existing name, and not at all with `--readonly`.
-- The default folder, a name template, preset values and columns to ask for next are set in [`new_note`](../../config.md#new_note).
+- The fields, required fields, preset values (with variables such as `{date+7}` or `{now}`), hidden values such as a creation date, a body template, and whether to use the form or go straight to the editor (`mode = "editor"`) are set in [`new_note`](../../config.md#new_note).
 
 ## Open a .base file
 

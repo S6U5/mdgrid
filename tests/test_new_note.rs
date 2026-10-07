@@ -741,6 +741,7 @@ path = {p}
             name: "{date} ".to_string(),
             ask: vec!["due".to_string()],
             set: vec![("kind".to_string(), s("meeting"))],
+            ..NewNote::default()
         })
     );
     assert_eq!(views[1].new_note, None);
@@ -760,6 +761,7 @@ fn test_ce_27_views_new_note_survives_save_and_load() {
                 name: "{date} ".to_string(),
                 ask: vec!["due".to_string(), "priority".to_string()],
                 set: vec![("tags".to_string(), list(&["会議"]))],
+                ..NewNote::default()
             }),
             ..NativeView::default()
         },

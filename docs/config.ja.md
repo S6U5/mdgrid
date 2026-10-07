@@ -167,15 +167,32 @@ column_lines = true
 
 ### `new_note`
 
-- 型: `表([new_note] の下に folder・name・ask と [new_note.set])`
+- 型: `表([new_note] の下に mode・folder・name・ask・required・hidden・body と [new_note.set])`
 - 既定: `{}`
 
 表から新しいノートを作るとき(画面の「+ 新規」・`a`)の決まり。どれも省ける。
 
 - `folder`: 作る既定のフォルダ(開いたフォルダからの相対。空なら開いたフォルダ)。`..` や絶対パスで外に出る値には作らない。`.base` のビューの絞り込みに `file.inFolder("X")` があるときは、作った行がビューに残るように、そのフォルダ(保管庫の根からの `X`)に作る。`folder` はそのフォルダの中(`X/inbox` など)のときだけ使う。
 - `name`: 名前の欄に前もって入れる雛形。`{date}` は今日の日付(`YYYY-MM-DD`)。
-- `ask`: 名前のあとに1つずつ聞く列の並び。列の型に合った入力で聞き、空のまま進めればその列は書かない。
+- `ask`: 新しいノートの窓に欄として並べる列の並び。無ければ表で見えている列を並べる。欄は列の型に合った入力で直し、空の欄は書かない。どの欄からでも `Ctrl+S` で作る。
+- `required`: 空では作らない列。空のあいだは作らず、その欄に理由を出す。
+- `hidden`: 窓に欄を出さずに値だけ入れる列(`[new_note.set]` と組んで、作成日などを入れる)。
+- `mode`: `"form"`(既定。全部の欄を並べた窓)か `"editor"`(名前だけを聞き、前もって入れる値と本文の雛形で作って、すぐエディタで開く)。窓からも `Ctrl+E` で、作ってすぐエディタで開ける。
+- `body`: 本文の雛形のファイル(開いたフォルダからの相対)。その中身を新しいノートの本文にする。
 - `[new_note.set]`: 新しいノートに前もって入れる値(列 = 値)。文字列・数・真偽・日付・その並び(リストとして縦の形で書く)。
+
+雛形(`name`・`[new_note.set]` の文字の値・`body` のファイル)には次の変数を書ける。知らない変数はそのまま残る。
+
+| 変数 | 値 |
+|---|---|
+| `{date}` | 今日(`YYYY-MM-DD`) |
+| `{date+7}`・`{date-1}` | 今日から何日後・前 |
+| `{date:YYYY/MM/DD}` | 今日を日付の形で(`date_format` と同じ書き方) |
+| `{time}` | 今の時刻(`HH:MM`) |
+| `{now}` | 今の日時(`YYYY-MM-DDTHH:MM`) |
+| `{weekday}` | 曜日 |
+| `{name}` | ノートの名前 |
+| `{folder}` | 作る場所のフォルダ |
 
 ビューの絞り込みのうち値が1つに決まるもの(`status == "todo"`・タグを含む など)は、`[new_note.set]` より先に入れる。mdgrid のビュー(`views.toml`)の `[target.view.new_note]` に同じ形で書くと、そのビューではこの設定の代わりにそちらを使う。
 
@@ -183,10 +200,15 @@ column_lines = true
 [new_note]
 folder = "inbox"
 name = "{date} "
-ask = ["priority"]
+ask = ["priority", "due"]
+required = ["due"]
+hidden = ["created"]
+body = "templates/note.md"
 
 [new_note.set]
 tags = ["inbox"]
+due = "{date+7}"
+created = "{now}"
 ```
 
 ### `keys`

@@ -16,7 +16,7 @@
 
 use super::keymap::Mode;
 use super::startup::Startup;
-use super::test_screen::{ch, press, screen, typing, Tmp};
+use super::test_screen::{ch, ctrl, press, screen, typing, Tmp};
 use super::*;
 use mdgrid::config::Config;
 use mdgrid::settings::{Cond, Op, Settings};
@@ -162,6 +162,12 @@ fn name_enter(a: &mut App, name: &str) {
     press(a, KeyCode::Enter);
 }
 
+/// 名前を打って Ctrl+S(CE-26: 窓のどの欄からでも作る)。
+fn name_create(a: &mut App, name: &str) {
+    typing(a, name);
+    ctrl(a, 's');
+}
+
 /// 作ったあと: 表に戻り、その行が表にあって選ばれている。未保存は増えない。
 fn assert_created_and_selected(a: &App, rel: &str) {
     assert_eq!(a.mode, Mode::Table, "作ったら表に戻る:\n{}", screen(a));
@@ -216,7 +222,7 @@ fn test_ce_25_header_button_click_creates_note() {
     );
     click_label(&mut a, "+ 新規");
     assert_opened(&a, "「+ 新規」のクリック");
-    name_enter(&mut a, "会議の準備");
+    name_create(&mut a, "会議の準備");
     assert!(tmp.notes().join("会議の準備.md").is_file());
     assert_created_and_selected(&a, "会議の準備.md");
 }
@@ -229,7 +235,7 @@ fn test_ce_25_key_a_creates_note() {
     let before = snapshot(&tmp.notes());
     ch(&mut a, 'a');
     assert_opened(&a, "`a`");
-    name_enter(&mut a, "買い物");
+    name_create(&mut a, "買い物");
     assert_created_and_selected(&a, "買い物.md");
     let after = snapshot(&tmp.notes());
     for (p, bytes) in &before {
@@ -253,7 +259,7 @@ fn test_ce_25_palette_creates_note() {
     let mut a = boot(&tmp, Config::default(), false);
     palette(&mut a, "新しいノート");
     assert_opened(&a, "パレットの「新しいノート」");
-    name_enter(&mut a, "パレットから");
+    name_create(&mut a, "パレットから");
     assert!(tmp.notes().join("パレットから.md").is_file());
     assert_created_and_selected(&a, "パレットから.md");
 }
@@ -270,7 +276,7 @@ fn test_ce_25_view_filter_value_is_prefilled_and_row_stays() {
     assert!(!labels(&a).contains(&"b.md".to_string()), "done は見えない");
     click_label(&mut a, "+ 新規");
     assert_opened(&a, "「+ 新規」のクリック");
-    name_enter(&mut a, "会議の準備");
+    name_create(&mut a, "会議の準備");
     assert_eq!(read(&tmp, "会議の準備.md"), "---\nstatus: todo\n---\n");
     assert_created_and_selected(&a, "会議の準備.md");
     assert!(
@@ -290,7 +296,7 @@ fn test_ce_25_subfolder_name_creates_folder() {
     let tmp = vault("ce25sub");
     let mut a = boot(&tmp, Config::default(), false);
     ch(&mut a, 'a');
-    name_enter(&mut a, "プロジェクト/新しい");
+    name_create(&mut a, "プロジェクト/新しい");
     assert!(tmp.notes().join("プロジェクト/新しい.md").is_file());
     assert_created_and_selected(&a, "プロジェクト/新しい.md");
 }
@@ -311,7 +317,7 @@ fn test_ce_25_existing_name_refused_and_retype() {
     assert!(message(&a).contains("作らない"), "理由: {:?}", message(&a));
     assert_opened(&a, "作れなかったあと");
     // 打ち直す: `a` → `a2`。
-    name_enter(&mut a, "2");
+    name_create(&mut a, "2");
     assert!(tmp.notes().join("a2.md").is_file(), "打ち直した名前で作る");
     assert_created_and_selected(&a, "a2.md");
 }
@@ -474,7 +480,7 @@ fn test_ce_27_name_template_has_today() {
         "名前の欄は `{TODAY} ` で始まる:\n{}",
         screen(&a)
     );
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's');
     let rel = format!("{TODAY} 日報.md");
     assert!(tmp.notes().join(&rel).is_file());
     assert_created_and_selected(&a, &rel);
@@ -493,7 +499,7 @@ fn test_ce_27_rebind_n_to_new_note() {
     );
     ch(&mut a, 'n');
     assert_opened(&a, "割り当て直した `n`");
-    name_enter(&mut a, "n で");
+    name_create(&mut a, "n で");
     assert_created_and_selected(&a, "n で.md");
 }
 

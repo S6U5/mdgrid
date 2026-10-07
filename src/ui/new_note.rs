@@ -61,10 +61,18 @@ pub(crate) struct Flow {
     prefill: Vec<Edit>,
     /// 決めた名前(名前の Enter のあと)。
     name: String,
-    /// 0 は名前、k は `rule.ask[k - 1]`。
-    step: usize,
-    /// 聞いた値(空は Null。書かない)。
+    /// 0 は名前、k は `fields[k - 1]`。
+    pub(crate) step: usize,
+    /// CE-26: 窓の欄の列(設定の ask があればその列、無ければ表で見えている列。hidden は除く)。
+    fields: Vec<String>,
+    /// 欄ごとの答え(空は Null。書かない)。同じ列は置き換える。
     answers: Vec<Edit>,
+    /// CE-26: 今の欄を確かめたら、次の欄へ進まずに作る(Ctrl+S)。
+    finish: bool,
+    /// CE-26: 作れなかった理由と、その欄(0 は名前)。
+    error: Option<(usize, String)>,
+    /// CE-33: 作ったらエディタで開く(mode = "editor" か Ctrl+E)。
+    open_editor: bool,
 }
 
 impl Flow {
@@ -72,8 +80,18 @@ impl Flow {
     fn col(&self) -> Option<&str> {
         self.step
             .checked_sub(1)
-            .and_then(|k| self.rule.ask.get(k))
+            .and_then(|k| self.fields.get(k))
             .map(String::as_str)
+    }
+
+    /// 欄の答え。
+    fn answer_of(&self, col: &str) -> Option<&NewValue> {
+        self.answers.iter().find(|e| e.key == col).map(|e| &e.value)
+    }
+
+    /// 前もって入れる値の出どころ(絞り込みか設定か)。
+    fn preset_from_filter(&self, col: &str) -> bool {
+        self.prefill.iter().any(|e| e.key == col)
     }
 
     /// 前もって入れる値(絞り込みが先、無ければ設定の set)。
@@ -83,6 +101,20 @@ impl Flow {
             .find(|e| e.key == col)
             .map(|e| &e.value)
             .or_else(|| self.rule.set.iter().find(|(k, _)| k == col).map(|(_, v)| v))
+    }
+}
+
+/// CE-32: 雛形を埋めた値が日付・日時の形なら、日付として(囲まずに)書く: 型の決まらない列(WB-18)と、
+/// 日付・日時の列。
+fn as_date(src: &dyn Source, col: &str, v: NewValue) -> NewValue {
+    match v {
+        NewValue::Str(s)
+            if types::date_or_datetime(&s)
+                && matches!(src.kind(col).kind, Kind::Date | Kind::DateTime) =>
+        {
+            NewValue::Date(s)
+        }
+        v => date_if_untyped(src, col, v),
     }
 }
 
@@ -140,6 +172,19 @@ impl App {
             e.value = date_if_untyped(src, &e.key, std::mem::replace(&mut e.value, NewValue::Null));
         }
         let text = newnote::expand_name(&rule.name, self.today);
+        // CE-26: 窓の欄は、設定の ask があればその列、無ければ表で見えている列(書けない列と hidden は除く)。
+        let source: Vec<String> = if rule.ask.is_empty() {
+            self.cols.clone()
+        } else {
+            rule.ask.clone()
+        };
+        // CE-33: エディタで作るときは名前だけを聞く。
+        let fields: Vec<String> = source
+            .into_iter()
+            .filter(|c| !newnote::not_a_key(c) && !rule.hidden.contains(c))
+            .filter(|_| !rule.editor())
+            .collect();
+        let open_editor = rule.editor();
         self.note.flow = Some(Flow {
             root,
             places,
@@ -148,7 +193,11 @@ impl App {
             prefill,
             name: String::new(),
             step: 0,
+            fields,
             answers: Vec::new(),
+            finish: false,
+            error: None,
+            open_editor,
         });
         if choosing {
             self.open_place(0);
@@ -298,11 +347,9 @@ impl App {
         f.step -= 1;
         if f.step == 0 {
             let name = f.name.clone();
-            f.answers.clear();
             return self.open_note_input(Entry::Text, name, None);
         }
-        let prev = f.answers.pop().map(|e| e.value);
-        self.open_step(Some(prev.unwrap_or(NewValue::Null)));
+        self.open_step(None);
     }
 
     /// 今の聞く項目の欄を開く。`value` があればその値で(戻ったとき)、無ければ前もって入れる値で始める。
@@ -313,7 +360,11 @@ impl App {
         let Some(col) = f.col().map(String::from) else {
             return;
         };
-        let preset = value.or_else(|| f.preset(&col).cloned());
+        // 答えた欄はその答えで、まだなら前もって入れる値(変数を埋めて)で始める。
+        let vars = self.note_vars(f);
+        let preset = value
+            .or_else(|| f.answer_of(&col).cloned())
+            .or_else(|| f.preset(&col).map(|v| newnote::expand_value(v, &vars)));
         let kind = self.src.kind(&col).kind;
         if kind == Kind::List {
             // CE-16: リストの列はリストの選択で(前もって入れる値は付いた要素にする)。
@@ -383,6 +434,8 @@ impl App {
         }
         match action {
             Action::Commit | Action::CommitNext => self.note_commit(),
+            Action::CreateNote => self.note_create_now(),
+            Action::CreateNoteEdit => self.note_create_and_edit(),
             Action::CommitPrev => self.note_back(),
             Action::Cancel => self.cancel_note(),
             Action::Clear if self.input.as_ref().is_some_and(|i| i.cal.is_some()) => {
@@ -405,6 +458,8 @@ impl App {
         let searching = self.pick.as_ref().is_some_and(|p| p.searching());
         match action {
             Action::Cancel => self.cancel_note(),
+            Action::CreateNote => self.note_create_now(),
+            Action::CreateNoteEdit => self.note_create_and_edit(),
             Action::Commit => self.note_pick_commit(),
             Action::Run if !searching => self.note_pick_commit(),
             _ => return false,
@@ -446,12 +501,12 @@ impl App {
                 self.input = Some(i);
                 return;
             }
-            let asks = !f.rule.ask.is_empty();
+            let done = f.finish || f.fields.is_empty();
             let name = i.text.clone();
             if let Some(f) = &mut self.note.flow {
                 f.name = name;
             }
-            if !asks {
+            if done {
                 if !self.finish_note() {
                     self.input = Some(i);
                 }
@@ -497,43 +552,161 @@ impl App {
         let Some(f) = &mut self.note.flow else {
             return false;
         };
+        f.answers.retain(|e| e.key != col);
         f.answers.push(Edit { key: col, value });
-        if f.step < f.rule.ask.len() {
+        if !f.finish && f.step < f.fields.len() {
             self.ask_next();
             return true;
         }
-        if self.finish_note() {
-            return true;
+        self.finish_note()
+    }
+
+    /// 描画から使う雛形の変数(CE-32)。
+    pub(crate) fn note_vars_for(&self, f: &Flow) -> newnote::Vars {
+        self.note_vars(f)
+    }
+
+    /// CE-32: 雛形の変数(今日・今の時刻・決めた名前・作る場所)。
+    fn note_vars(&self, f: &Flow) -> newnote::Vars {
+        let off = mdgrid::print::local_offset();
+        let name = f.name.trim();
+        let name = name.strip_suffix(".md").unwrap_or(name);
+        newnote::Vars {
+            today: self.today,
+            minutes: (self.now + off).rem_euclid(86_400) / 60,
+            name: name.rsplit('/').next().unwrap_or(name).to_string(),
+            folder: f.rule.folder.trim().trim_matches('/').to_string(),
+        }
+    }
+
+    /// CE-33: Ctrl+E。Ctrl+S と同じく作り、作れたらエディタで開く。
+    fn note_create_and_edit(&mut self) {
+        let before = match &mut self.note.flow {
+            Some(f) => std::mem::replace(&mut f.open_editor, true),
+            None => return,
+        };
+        self.note_create_now();
+        if let Some(f) = &mut self.note.flow {
+            f.open_editor = before;
+        }
+    }
+
+    /// CE-26: Ctrl+S。今の欄を確かめて(読めなければ理由を出して欄は開いたまま)、次の欄へ進まずに作る。
+    fn note_create_now(&mut self) {
+        let Some(f) = &mut self.note.flow else {
+            return;
+        };
+        if f.choosing {
+            return self.note_commit();
+        }
+        f.finish = true;
+        if self.mode == Mode::ListPick {
+            self.note_pick_commit();
+        } else {
+            self.note_commit();
         }
         if let Some(f) = &mut self.note.flow {
-            f.answers.pop();
+            f.finish = false;
         }
-        false
     }
 
     /// 作る(CE-25・CE-26)。作れたら表に戻ってその行を選び true。作れなければ理由を出して false。
+    /// 作れたら、または作れない理由の欄へ移したら true。今の欄で作れない(理由はその欄に出す)なら false。
     fn finish_note(&mut self) -> bool {
         let Some(f) = &self.note.flow else {
             return false;
         };
+        let cur = f.step;
+        // CE-27: 必須の欄が空なら作らずにその欄へ。名前が作れないなら名前の欄へ。
+        let empty = |v: Option<&NewValue>| match v {
+            None | Some(NewValue::Null) => true,
+            Some(NewValue::Str(s)) => s.trim().is_empty(),
+            Some(NewValue::List(items)) => items.is_empty(),
+            _ => false,
+        };
+        let missing = f.rule.required.iter().find(|c| {
+            let v = f.answer_of(c).or_else(|| f.preset(c));
+            empty(v)
+        });
+        let problem = match newnote::note_path(&f.root, &f.rule.folder, &f.name) {
+            Err(e) => Some((0, e)),
+            Ok(_) => missing.map(|c| {
+                let at = f.fields.iter().position(|x| x == c).map_or(0, |k| k + 1);
+                (at, Msg::NoteRequiredEmpty.text().to_string())
+            }),
+        };
+        if let Some((at, e)) = problem {
+            return self.note_problem(cur, at, e);
+        }
+        let vars = self.note_vars(f);
+        let src = self.src.as_ref();
+        let mut rule = f.rule.clone();
+        for (k, v) in &mut rule.set {
+            *v = as_date(src, k, newnote::expand_value(v, &vars));
+        }
+        let prefill: Vec<Edit> = f
+            .prefill
+            .iter()
+            .map(|e| Edit {
+                key: e.key.clone(),
+                value: as_date(src, &e.key, newnote::expand_value(&e.value, &vars)),
+            })
+            .collect();
+        let body = if rule.body.trim().is_empty() {
+            None
+        } else {
+            let p = f.root.join(rule.body.trim());
+            match std::fs::read_to_string(&p) {
+                Ok(t) => Some(t),
+                Err(e) => {
+                    let msg = Msg::NoteBodyUnreadable.fill(&[&p.display(), &e]);
+                    return self.note_problem(cur, cur, msg);
+                }
+            }
+        };
         let made = newnote::note_path(&f.root, &f.rule.folder, &f.name).and_then(|path| {
-            let bytes = newnote::build(&f.rule, &f.prefill, &f.answers)?;
+            let bytes = newnote::build_with(&rule, &prefill, &f.answers, &vars, body.as_deref())?;
             newnote::create(&path, &bytes)
                 .map_err(|e| Msg::NoteCannotCreate.fill(&[&path.display(), &e]))?;
             Ok(path)
         });
         let path = match made {
             Ok(p) => p,
-            Err(e) => {
-                self.message = Some(e);
-                return false;
-            }
+            Err(e) => return self.note_problem(cur, 0, e),
         };
+        let edit = f.open_editor;
         self.note.flow = None;
         self.input = None;
         self.pick = None;
         self.set_mode(Mode::Table);
         self.select_new_note(&path);
+        // CE-33: `e` と同じ道でエディタで開く(端末を持つ main が開き、戻ったら読み直す)。
+        if edit {
+            let real = path.canonicalize().unwrap_or(path);
+            self.editor_request = Some(RowId(real.to_string_lossy().into_owned()));
+        }
+        true
+    }
+
+    /// CE-26: 作れない理由を `at` の欄に出す。今の欄なら false(呼び手が欄を開いたままにする)、
+    /// ほかの欄ならその欄を開いて true。
+    fn note_problem(&mut self, cur: usize, at: usize, e: String) -> bool {
+        self.message = Some(e.clone());
+        let Some(f) = &mut self.note.flow else {
+            return false;
+        };
+        f.error = Some((at, e));
+        if at == cur {
+            return false;
+        }
+        f.step = at;
+        if at == 0 {
+            let name = f.name.clone();
+            self.pick = None;
+            self.open_note_input(Entry::Text, name, None);
+        } else {
+            self.open_step(None);
+        }
         true
     }
 
@@ -578,29 +751,84 @@ impl App {
 
 // ---- 描画(純関数) ----
 
-/// 欄の行(入力の行。その下に案内の行)。表の下の端(下の帯の上の2行)。低い端末では None。
+/// 窓を出せる高さがあるか(窓の上の端の行。表の見出しの行から)。低い端末では None。
 fn panel_y(app: &App) -> Option<usize> {
     let h = app.size.1.saturating_sub(1) as usize;
     let limit = h.saturating_sub(2);
-    (limit >= 4).then(|| limit - 2)
+    let top = super::view::data_y(app).saturating_sub(1);
+    (limit >= top + 4).then_some(top)
 }
 
-/// 入力の前置き。
-fn lead(f: &Flow) -> String {
+/// 窓の欄(CE-26)。`None` は作る場所、`Some(0)` は名前、`Some(k)` は `fields[k - 1]`。
+fn rows(f: &Flow) -> Vec<Option<usize>> {
+    let mut out = Vec::new();
+    if f.places.len() > 1 {
+        out.push(None);
+    }
+    out.extend((0..=f.fields.len()).map(Some));
+    out
+}
+
+/// 欄の見出し(必須なら ` *`)。
+fn label(f: &Flow, row: Option<usize>) -> String {
+    match row {
+        None => Msg::NoteFieldPlace.text().to_string(),
+        Some(0) => format!("{} *", Msg::NoteFieldName.text()),
+        Some(k) => {
+            let c = &f.fields[k - 1];
+            if f.rule.required.contains(c) {
+                format!("{} *", sanitize(c))
+            } else {
+                sanitize(c)
+            }
+        }
+    }
+}
+
+/// 今の欄(行の並びでの位置)。
+fn current(f: &Flow) -> usize {
+    let off = usize::from(f.places.len() > 1);
     if f.choosing {
-        return Msg::NoteLeadPlace.text().to_string();
-    }
-    match f.col() {
-        None => Msg::NoteLeadName.text().to_string(),
-        Some(c) => Msg::NoteLeadCol.fill(&[&sanitize(c)]),
+        0
+    } else {
+        f.step + off
     }
 }
 
-/// 新しいノートの入力の欄(入力ボックスの位置。カーソル・カレンダー・リストの選択の窓の置き場)。
+/// 窓の形: 上の端の行・見出しの幅・出す欄の最初と数。
+struct Geom {
+    top: usize,
+    label_w: usize,
+    first: usize,
+    count: usize,
+}
+
+fn geom(app: &App) -> Option<Geom> {
+    let f = app.note.flow.as_ref()?;
+    let top = panel_y(app)?;
+    let h = app.size.1.saturating_sub(1) as usize;
+    let limit = h.saturating_sub(2);
+    let rs = rows(f);
+    // 見出しの行と、下の区切りの行を除いた欄の数。入らなければ今の欄の周りを出す。
+    let room = limit.saturating_sub(top + 2).max(1);
+    let count = rs.len().min(room);
+    let cur = current(f);
+    let first = cur.saturating_sub(count - 1).min(rs.len() - count);
+    let label_w = rs.iter().map(|r| width(&label(f, *r))).max().unwrap_or(4);
+    Some(Geom {
+        top,
+        label_w,
+        first,
+        count,
+    })
+}
+
+/// 新しいノートの入力の欄(入力ボックスの位置。今の欄の行。カーソル・カレンダー・リストの選択の窓の置き場)。
 pub(crate) fn note_box(app: &App, w: usize) -> Option<InputBox> {
     let f = app.note.flow.as_ref()?;
-    let y = panel_y(app)?;
-    let x = width(&lead(f));
+    let g = geom(app)?;
+    let y = g.top + 1 + current(f) - g.first;
+    let x = 2 + g.label_w + 2;
     if x + 2 > w {
         return None;
     }
@@ -619,7 +847,7 @@ pub(crate) fn note_box(app: &App, w: usize) -> Option<InputBox> {
 pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
     let f = app.note.flow.as_ref()?;
     let key = |m: Mode, a: Action| keymap::key_for(&app.keys, m, a);
-    let last = f.step >= f.rule.ask.len();
+    let last = f.step >= f.fields.len();
     let next = if f.choosing {
         Msg::KeyDecide.text()
     } else if last {
@@ -636,9 +864,18 @@ pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
     if app.mode == Mode::ListPick {
         push(key(Mode::ListPick, Action::Toggle), Msg::NoteToggle.text());
         push(key(Mode::ListPick, Action::Run), next);
+        if !last {
+            push(
+                key(Mode::ListPick, Action::CreateNote),
+                Msg::NoteCreate.text(),
+            );
+        }
         push(key(Mode::ListPick, Action::Cancel), Msg::NoteStop.text());
     } else {
         push(key(Mode::Edit, Action::Commit), next);
+        if !last && !f.choosing {
+            push(key(Mode::Edit, Action::CreateNote), Msg::NoteCreate.text());
+        }
         if f.step > 0 || (!f.choosing && f.places.len() > 1) {
             push(
                 key(Mode::Edit, Action::CommitPrev),
@@ -646,6 +883,13 @@ pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
             );
         }
         push(key(Mode::Edit, Action::Cancel), Msg::NoteStop.text());
+        // CE-33: 作ってエディタで開く(帯が狭いので最後に短く)。
+        if !f.choosing && !f.rule.editor() {
+            push(
+                key(Mode::Edit, Action::CreateNoteEdit),
+                Msg::NoteEditShort.text(),
+            );
+        }
     }
     Some(out)
 }
@@ -680,61 +924,116 @@ pub(crate) fn hint(app: &App) -> Option<Option<String>> {
     Some(Some(t))
 }
 
-/// 案内の行: 作る場所と名前、何番目か。作る場所を選んでいる間は、選んでいるフォルダの実際のパス。
-fn guide(app: &App, f: &Flow) -> String {
-    if f.choosing {
+/// 窓の見出しの行: 作る場所(作る場所を選んでいる間は選んでいるフォルダの実際のパス)。
+fn title(app: &App, f: &Flow) -> String {
+    let path = if f.choosing {
         let sel = app
             .input
             .as_ref()
             .and_then(|i| i.list.as_ref())
             .map_or(0, |l| l.sel);
-        let path = f
-            .places
+        f.places
             .get(sel)
             .map(|p| p.display().to_string())
-            .unwrap_or_default();
-        return sanitize(&Msg::NoteGuidePlace.fill(&[&(sel + 1), &f.places.len(), &path]));
-    }
-    let total = f.rule.ask.len();
-    // フォルダの名前を先に出す(長いパスは幅で切れるので後ろに)。
-    let mut place = f
-        .root
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_else(|| f.root.display().to_string());
-    if !f.rule.folder.trim().is_empty() {
-        place.push('/');
-        place.push_str(f.rule.folder.trim().trim_matches('/'));
-    }
-    let what = if f.step == 0 {
-        Msg::NoteGuideWhere.fill(&[&place, &f.root.display()])
+            .unwrap_or_default()
     } else {
-        let name = f.name.trim();
-        Msg::NoteGuideField.fill(&[&name, &f.step.min(total), &total])
+        let mut place = f
+            .root
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_else(|| f.root.display().to_string());
+        if !f.rule.folder.trim().is_empty() {
+            place.push('/');
+            place.push_str(f.rule.folder.trim().trim_matches('/'));
+        }
+        Msg::NoteGuideWhere.fill(&[&place, &f.root.display()])
     };
-    sanitize(&format!("   {what}"))
+    sanitize(&format!("{}  {path}", Msg::NoteFormTitle.text()))
 }
 
-/// 表の下の端に欄を重ねる(CE-25)。カレンダーとリストの選択の窓はこの上に重なる。
+/// 今の欄でない欄の値の見せ方: 答え、無ければ前もって入れる値と出どころ。
+fn value_text(app: &App, f: &Flow, row: Option<usize>) -> String {
+    let Some(k) = row else {
+        return f
+            .root
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+    };
+    if k == 0 {
+        return f.name.clone();
+    }
+    let c = &f.fields[k - 1];
+    if let Some(v) = f.answer_of(c) {
+        return new_value_text(v);
+    }
+    match f.preset(c) {
+        Some(v) => {
+            let vars = app.note_vars_for(f);
+            let from = if f.preset_from_filter(c) {
+                Msg::NoteFromFilter.text()
+            } else {
+                Msg::NoteFromConfig.text()
+            };
+            format!(
+                "{}  {from}",
+                new_value_text(&newnote::expand_value(v, &vars))
+            )
+        }
+        None => String::new(),
+    }
+}
+
+/// 表の上に窓を重ねる(CE-26)。カレンダーとリストの選択の窓はこの上に重なる。
 pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let Some(f) = app.note.flow.as_ref() else {
         return;
     };
-    let Some(y) = panel_y(app) else {
+    let Some(g) = geom(app) else {
         return;
     };
     let bold = Style::default().add_modifier(Modifier::BOLD);
-    let head = lead(f);
-    let mut spans = vec![Span::styled(head.clone(), bold)];
-    if let Some(b) = note_box(app, w) {
-        let st = Style::default().add_modifier(Modifier::UNDERLINED | Modifier::BOLD);
-        spans.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
+    let rev = bold.add_modifier(Modifier::REVERSED);
+    if let Some(line) = lines.get_mut(g.top) {
+        *line = super::view::pad(
+            vec![Span::styled(fit(&title(app, f), w, Align::Left), rev)],
+            w,
+            rev,
+        );
     }
-    if let Some(line) = lines.get_mut(y) {
-        *line = super::view::pad(spans, w, Style::default());
+    let rs = rows(f);
+    let cur = current(f);
+    let editing = app.mode == Mode::Edit;
+    for (k, row) in rs.iter().enumerate().skip(g.first).take(g.count) {
+        let y = g.top + 1 + k - g.first;
+        let here = k == cur;
+        let mut spans = vec![
+            Span::styled(if here { "> " } else { "  " }, bold),
+            Span::styled(fit(&label(f, *row), g.label_w, Align::Left), bold),
+            Span::raw("  "),
+        ];
+        if here && editing {
+            if let Some(b) = note_box(app, w) {
+                let st = Style::default().add_modifier(Modifier::UNDERLINED | Modifier::BOLD);
+                spans.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
+            }
+        } else {
+            let mut t = sanitize(&value_text(app, f, *row));
+            let step = row.unwrap_or(usize::MAX);
+            if let Some((at, e)) = &f.error {
+                if *at == step {
+                    t = format!("{t}  ! {}", sanitize(e));
+                }
+            }
+            spans.push(Span::raw(t));
+        }
+        if let Some(line) = lines.get_mut(y) {
+            *line = super::view::pad(spans, w, Style::default());
+        }
     }
-    if let Some(line) = lines.get_mut(y + 1) {
-        *line = Line::from(fit(&guide(app, f), w, Align::Left));
+    // 窓と表の区切り。
+    if let Some(line) = lines.get_mut(g.top + 1 + g.count) {
+        *line = Line::from("-".repeat(w));
     }
 }
 

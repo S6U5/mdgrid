@@ -918,6 +918,22 @@ msgs! {
     NoteLeadName = " New note  name: ", " 新しいノート 名前: ";
     NoteLeadCol = " New note  {0}: ", " 新しいノート {0}: ";
     NoteCreate = "Create", "作る";
+    /// CE-26: 新しいノートの窓。
+    KeyCreateNote = "Create from the form", "新規の窓で作る";
+    /// CE-33。
+    KeyCreateNoteEdit = "Create and open in the editor", "作ってエディタで開く";
+    NoteEditShort = "editor", "エディタで";
+    /// CE-33。{0} は値。
+    ConfigBadNoteMode = "new_note.mode must be \"form\" or \"editor\" (got {0:?}); using the form", "new_note.mode は \"form\" か \"editor\"({0:?} は使えない)。窓で作る";
+    NoteFormTitle = " New note ", " 新しいノート ";
+    NoteFieldPlace = "place", "作る場所";
+    NoteFieldName = "name", "名前";
+    NoteFromFilter = "(from the filter)", "(絞り込みから)";
+    NoteFromConfig = "(from the config)", "(設定から)";
+    /// CE-27。
+    NoteRequiredEmpty = "required: fill it in to create the note", "必須: 入れないと作らない";
+    /// CE-32。{0} はパス、{1} は理由。
+    NoteBodyUnreadable = "cannot read the body template {0}: {1}", "本文の雛形 {0} を読めない: {1}";
     NoteNext = "Next", "次へ";
     NoteToggle = "Toggle", "付け外し";
     NoteStop = "Cancel", "やめる";

@@ -20,7 +20,7 @@ updated: 2026-09-30
 | ケイパビリティ | 内容 | 読むとき | 要件 | うち守られる |
 |---|---|---|---|---|
 | [base-view](base-view/spec.md) | 何を読んで、どの行とどの列の表を作るか。.base の table ビューの解釈、ビューの切り替え、解釈できないときの振る舞い。 | 起動の引数・.base の読み込み・絞り込み・並べ替え・グループ分け・式の評価・ビューの切り替えを作る・変えるとき | 23 | 7 |
-| [cell-edit](cell-edit/spec.md) | 表のセルでどの値をどう直せるか。自由入力・リストからの選択・切り替え・日付・空にする・一括の設定と、読むだけにするセル。 | セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき | 28 | 13 |
+| [cell-edit](cell-edit/spec.md) | 表のセルでどの値をどう直せるか。自由入力・リストからの選択・切り替え・日付・空にする・一括の設定と、読むだけにするセル。 | セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき | 30 | 16 |
 | [cell-view](cell-view/spec.md) | セルの値をどう見せるか。空・null・キーなしの区別、型と合わない値、改行、寄せ、列の幅、文字の幅、色。 | セルの描画・列の幅・文字の幅・色を作る・変えるとき | 9 | 0 |
 | [cli](cli/spec.md) | 起動のしかた(引数・オプション)と、設定ファイルの置き場所と中身、起動できないときの振る舞い。 | 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき | 18 | 5 |
 | [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 23 | 8 |
@@ -42,11 +42,16 @@ updated: 2026-09-30
 | 2026-10-07 | [日時の列のカレンダーに時刻の欄を足す(time-picker)](_decisions/2026-10-07-time-picker.md) | accepted | 人 | 人の発言 | CE-30 |
 | 2026-10-07 | [時刻の欄の細部(time-picker-details)](_decisions/2026-10-07-time-picker-details.md) | accepted | AI | AI の提案 | CE-31 |
 | 2026-10-07 | [1つの値で書かれたリストを、付け外しでリストに書き換える(scalar-list-edit)](_decisions/2026-10-07-scalar-list-edit.md) | accepted | 人 | 人の発言 | CE-19, CE-16, CE-17 |
+| 2026-10-07 | [新しいノートの雛形の変数と本文の雛形(note-templates)](_decisions/2026-10-07-note-templates.md) | accepted | 人 | 人の発言 | CE-32 |
 | 2026-10-07 | [左のノートの欄から共通のフォルダと .md を除き、名前の列があれば名前を出さない(note-column)](_decisions/2026-10-07-note-column.md) | accepted | 人 | 人の発言 | SR-29 |
 | 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
+| 2026-10-07 | [新しいノートをフォーム(1つの窓)で作る(new-note-form)](_decisions/2026-10-07-new-note-form.md) | accepted | 人 | 人の発言 | CE-26, CE-27 |
+| 2026-10-07 | [フォームに合わせて、新しいノートの試験の錠を掛け直す(new-note-form-locks)](_decisions/2026-10-07-new-note-form-locks.md) | accepted | 人 | 人の発言 | CE-25, CE-26, BV-17, CE-20, WB-2, SR-23 |
+| 2026-10-07 | [新しいノートをフォームかエディタかで作れるようにする(new-note-editor)](_decisions/2026-10-07-new-note-editor.md) | accepted | 人 | 人の発言 | CE-33 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |
 | 2026-10-07 | [見本の .base の未対応の式の例を file.embeds に替える(links-backlinks-sample)](_decisions/2026-10-07-links-backlinks-sample.md) | accepted | 人 | 人の発言 | BV-3, BV-7 |
 | 2026-10-07 | [まとまりの見出しの上を空ける表示の設定(group-gap)](_decisions/2026-10-07-group-gap.md) | accepted | 人 | 人の発言 | SR-30 |
+| 2026-10-07 | [group_gap に合わせて、表示の設定の試験の錠を掛け直す(group-gap-locks)](_decisions/2026-10-07-group-gap-locks.md) | accepted | 人 | 人の発言 | SR-20, SR-21, NV-16 ほか 4 |
 | 2026-10-07 | [画面の表をファイルに書き出し、--print に tsv を足す(export-table)](_decisions/2026-10-07-export-table.md) | accepted | 人 | 人の発言 | OUT-2, CLI-5 |
 | 2026-10-07 | [表の書き出しの細部(export-table-details)](_decisions/2026-10-07-export-table-details.md) | accepted | AI | AI の提案 | OUT-5 |
 | 2026-10-07 | [displayName の無い列の見出しを Obsidian の既定にする(default-headings)](_decisions/2026-10-07-default-headings.md) | accepted | 人 | 人の発言 | BV-24 |

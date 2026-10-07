@@ -11,7 +11,7 @@
 
 use super::keymap::Mode;
 use super::startup::Startup;
-use super::test_screen::{ch, press, screen, typing, Tmp};
+use super::test_screen::{ch, ctrl, press, screen, typing, Tmp};
 use super::*;
 use mdgrid::config::Config;
 use ratatui::crossterm::event::KeyCode;
@@ -165,7 +165,7 @@ fn test_ce_25_folders_pick_second_creates_there() {
     press(&mut a, KeyCode::Enter);
     assert_ne!(a.mode, Mode::Table, "選んだら名前の欄:\n{}", screen(&a));
     typing(&mut a, "メモ");
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
     let made = dir(&tmp, B).join("メモ.md");
     assert!(made.is_file(), "B に作る:\n{}", screen(&a));
     assert!(!dir(&tmp, A).join("メモ.md").exists(), "A には作らない");
@@ -183,7 +183,7 @@ fn test_ce_25_folders_default_is_first() {
     press(&mut a, KeyCode::Enter);
     assert_ne!(a.mode, Mode::Table, "選んだら名前の欄:\n{}", screen(&a));
     typing(&mut a, "メモ");
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
     let made = dir(&tmp, A).join("メモ.md");
     assert!(made.is_file(), "A に作る:\n{}", screen(&a));
     assert!(!dir(&tmp, B).join("メモ.md").exists(), "B には作らない");
@@ -199,7 +199,7 @@ fn test_ce_25_folders_order_follows_arguments() {
     assert_folder_list(&a, B, A);
     press(&mut a, KeyCode::Enter);
     typing(&mut a, "メモ");
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
     let made = dir(&tmp, B).join("メモ.md");
     assert!(made.is_file(), "最初の引数の B に作る:\n{}", screen(&a));
     assert!(!dir(&tmp, A).join("メモ.md").exists());
@@ -236,7 +236,7 @@ fn test_ce_25_folders_single_folder_goes_straight_to_name() {
         screen(&a)
     );
     typing(&mut a, "メモ");
-    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
     let made = only.join("メモ.md");
     assert!(made.is_file(), "打った名前でそのまま作る:\n{}", screen(&a));
     assert_created_and_selected(&a, &made);

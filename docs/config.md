@@ -167,15 +167,32 @@ column_lines = true
 
 ### `new_note`
 
-- Type: `table ([new_note] with folder, name, ask and [new_note.set])`
+- Type: `table ([new_note] with mode, folder, name, ask, required, hidden, body and [new_note.set])`
 - Default: `{}`
 
 How a new note is made from the table ("+ New" in the header, or `a`). Every part is optional.
 
 - `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the vault root) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
 - `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`).
-- `ask`: columns asked one by one after the name, each with the input for its type. A column left empty is not written.
+- `ask`: the columns shown as fields in the new note form, in order. Without `ask`, the form shows the columns visible in the table. Each field is edited with the input for its type; a field left empty is not written. `Ctrl+S` creates the note from any field.
+- `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
+- `hidden`: columns written into every new note without a field in the form (with `[new_note.set]`, for values such as the creation date).
+- `mode`: `"form"` (default: the form with every field) or `"editor"` (ask only the name, create the note with the preset values and the body template, then open it in the editor right away). From the form, `Ctrl+E` also creates the note and opens it in the editor.
+- `body`: a template file (relative to the opened folder) whose contents become the body of the new note.
 - `[new_note.set]`: values written into every new note (column = value): a string, number, boolean, date, or an array of them (written as a vertical list).
+
+Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may use these variables; unknown ones are left as they are:
+
+| Variable | Value |
+|---|---|
+| `{date}` | today (`YYYY-MM-DD`) |
+| `{date+7}` · `{date-1}` | days from today |
+| `{date:YYYY/MM/DD}` | today in a date format (same tokens as `date_format`) |
+| `{time}` | the current time (`HH:MM`) |
+| `{now}` | the current date and time (`YYYY-MM-DDTHH:MM`) |
+| `{weekday}` | the day of the week |
+| `{name}` | the note's name |
+| `{folder}` | the folder the note is made in |
 
 Filter conditions of the view that fix a single value (such as `status == "todo"` or a tag) are written first and win over `[new_note.set]`. A mdgrid view (`views.toml`) can use the same form under `[target.view.new_note]`; that view then uses it instead of this item.
 
@@ -183,10 +200,15 @@ Filter conditions of the view that fix a single value (such as `status == "todo"
 [new_note]
 folder = "inbox"
 name = "{date} "
-ask = ["priority"]
+ask = ["priority", "due"]
+required = ["due"]
+hidden = ["created"]
+body = "templates/note.md"
 
 [new_note.set]
 tags = ["inbox"]
+due = "{date+7}"
+created = "{now}"
 ```
 
 ### `keys`

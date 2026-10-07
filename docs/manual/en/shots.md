@@ -88,15 +88,15 @@ Keys: `a`
 
 ![Create a note](images/new-note.svg)
 
-Press a, or click "+ New" at the top right, and type a name to create a note.
+Press a, or click "+ New" at the top right: the new note form lists the name and a field for each column, and preset values show where they come from.
 
 ## The new note
 
-Keys: `a` `text:電話をかける` `Enter`
+Keys: `a` `text:電話をかける` `Ctrl+S`
 
 ![The new note](images/new-note-done.svg)
 
-Type a name and press Enter: the file is created at once, and its row is selected so you can fill in values.
+Type a name and press Ctrl+S: the file is created at once (Enter moves to the next field), and its row is selected.
 
 ## Find a command by name
 

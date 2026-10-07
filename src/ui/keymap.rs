@@ -246,6 +246,10 @@ pub enum Action {
     ExportTable,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
+    /// CE-26: 新しいノートの窓で、どの欄からでも作る(既定 Ctrl+S)。
+    CreateNote,
+    /// CE-33: 新しいノートの窓で、作ってすぐエディタで開く(既定 Ctrl+E)。
+    CreateNoteEdit,
     /// その場の操作の一覧を開く(SR-24)。セルの右クリックからも。
     Menu,
     /// 選んでいる列の値の頻度表を開く(NV-9)。
@@ -350,6 +354,8 @@ impl Action {
             Action::ExportTable => "export_table",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
+            Action::CreateNote => "create_note",
+            Action::CreateNoteEdit => "create_note_edit",
             Action::Menu => "action_menu",
             Action::Freq => "frequency",
         }
@@ -1165,6 +1171,40 @@ pub const BINDINGS: &[Binding] = &[
     // リストの選択の中(CE-16・CE-17・CE-19・CE-11)。文字1つのキーは割り当てない(打つ文字は検索に入る)。
     // 検索が空のとき Space=付け外し・Enter=確定。検索中は Space=空白・Enter=選んだ候補を付けるだけ
     // (既に付いていれば何もしない。新規なら足す)で検索を空に戻す。Tab はいつでも確定。
+    // CE-26: 新しいノートの窓では、どの欄からでも Ctrl+S で作る(入力とリストの選択の両方)。
+    m(
+        Mode::ListPick,
+        "Ctrl+s",
+        Action::CreateNote,
+        Msg::KeyCreateNote,
+        INPUT,
+        0,
+    ),
+    m(
+        Mode::Edit,
+        "Ctrl+s",
+        Action::CreateNote,
+        Msg::KeyCreateNote,
+        INPUT,
+        0,
+    ),
+    // CE-33: 作ってすぐエディタで開く。
+    m(
+        Mode::ListPick,
+        "Ctrl+e",
+        Action::CreateNoteEdit,
+        Msg::KeyCreateNoteEdit,
+        INPUT,
+        0,
+    ),
+    m(
+        Mode::Edit,
+        "Ctrl+e",
+        Action::CreateNoteEdit,
+        Msg::KeyCreateNoteEdit,
+        INPUT,
+        0,
+    ),
     m(
         Mode::ListPick,
         "Tab",

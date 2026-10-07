@@ -160,6 +160,10 @@ mod test_key_ops;
 #[cfg(test)]
 mod test_list_narrow;
 #[cfg(test)]
+mod test_note_editor;
+#[cfg(test)]
+mod test_note_form;
+#[cfg(test)]
 mod test_review6;
 #[cfg(test)]
 mod test_theme_meaning;

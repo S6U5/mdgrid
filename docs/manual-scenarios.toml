@@ -82,14 +82,14 @@ text = { ja = "o で列・フィルター・並べ替え・グループを決め
 id = "new-note"
 title = { ja = "新しいノートを作る", en = "Create a note" }
 keys = ["a"]
-text = { ja = "a か右上の「+ 新規」で、名前を打って新しいノートを作る。", en = "Press a, or click \"+ New\" at the top right, and type a name to create a note." }
+text = { ja = "a か右上の「+ 新規」で、新しいノートの窓が開く。名前と、表の列ごとの欄が並び、前もって入る値には出どころが付く。", en = "Press a, or click \"+ New\" at the top right: the new note form lists the name and a field for each column, and preset values show where they come from." }
 
 [[shot]]
 id = "new-note-done"
 title = { ja = "作ったノート", en = "The new note" }
-keys = ["a", "text:電話をかける", "Enter"]
+keys = ["a", "text:電話をかける", "C-s"]
 wait = { ja = "作った", en = "created" }
-text = { ja = "名前を打って Enter で、すぐにファイルができる。作った行が選ばれ、そのまま値を入れられる。", en = "Type a name and press Enter: the file is created at once, and its row is selected so you can fill in values." }
+text = { ja = "名前を打って Ctrl+S で、すぐにファイルができる(Enter は次の欄へ)。作った行が選ばれる。", en = "Type a name and press Ctrl+S: the file is created at once (Enter moves to the next field), and its row is selected." }
 
 [[shot]]
 id = "palette-search"

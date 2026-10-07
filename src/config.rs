@@ -253,6 +253,36 @@ fn read_new_note(value: &toml::Value, warnings: &mut Vec<String>) -> NewNote {
                 Some(s) => n.name = s.to_string(),
                 None => warnings.push(type_warning(&name, Msg::WantString)),
             },
+            "mode" => match v.as_str() {
+                Some(s @ ("form" | "editor")) => n.mode = s.to_string(),
+                Some(s) => warnings.push(Msg::ConfigBadNoteMode.fill(&[&s])),
+                None => warnings.push(type_warning(&name, Msg::WantString)),
+            },
+            "body" => match v.as_str() {
+                Some(s) => n.body = s.to_string(),
+                None => warnings.push(type_warning(&name, Msg::WantString)),
+            },
+            "required" | "hidden" => match v.as_array().and_then(|a| {
+                a.iter()
+                    .map(|x| x.as_str().map(str::to_string))
+                    .collect::<Option<Vec<String>>>()
+            }) {
+                Some(cols) => {
+                    let out = if k == "required" {
+                        &mut n.required
+                    } else {
+                        &mut n.hidden
+                    };
+                    for c in cols {
+                        if newnote::not_a_key(&c) || out.contains(&c) {
+                            warnings.push(Msg::ConfigBadAsk.fill(&[&c]));
+                        } else {
+                            out.push(c);
+                        }
+                    }
+                }
+                None => warnings.push(type_warning(&name, Msg::WantColumnNames)),
+            },
             "ask" => match v.as_array().and_then(|a| {
                 a.iter()
                     .map(|x| x.as_str().map(str::to_string))
