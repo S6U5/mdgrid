@@ -1,4 +1,4 @@
-//! 表の見せ方の切り替え(SR-20・SR-21)の核。画面に依存しない。
+//! 表の見せ方の切り替え(SR-20・SR-21・SR-30)の核。画面に依存しない。
 //!
 //! 設定の `[display]`(`Display`)が既定を決め、ビューの設定(`Settings::display`。`DisplayOverride`)が
 //! 設定と違う項目だけを持って、ビューごとに上書きする。検索の欄は設定の最上位の `search_bar` を既定にする
@@ -16,6 +16,8 @@ pub struct Display {
     pub zebra: bool,
     /// 列の間に `│` を引く(既定 false)。
     pub column_lines: bool,
+    /// 2つ目以降のまとまりの見出しの上に空きの行を入れる(SR-30。既定 false)。
+    pub group_gap: bool,
     /// ビューのタブの帯を出す(既定 true)。
     pub tabs: bool,
     /// 設定の帯を出す(既定 true)。
@@ -28,6 +30,7 @@ impl Default for Display {
             row_numbers: false,
             zebra: false,
             column_lines: false,
+            group_gap: false,
             tabs: true,
             chips: true,
         }
@@ -35,7 +38,14 @@ impl Default for Display {
 }
 
 /// `[display]` の項目の名前(設定の読み取りが使う)。
-pub const NAMES: [&str; 5] = ["row_numbers", "zebra", "column_lines", "tabs", "chips"];
+pub const NAMES: [&str; 6] = [
+    "row_numbers",
+    "zebra",
+    "column_lines",
+    "group_gap",
+    "tabs",
+    "chips",
+];
 
 impl Display {
     /// 名前の項目への参照。知らない名前は None。
@@ -44,6 +54,7 @@ impl Display {
             "row_numbers" => &mut self.row_numbers,
             "zebra" => &mut self.zebra,
             "column_lines" => &mut self.column_lines,
+            "group_gap" => &mut self.group_gap,
             "tabs" => &mut self.tabs,
             "chips" => &mut self.chips,
             _ => return None,
@@ -56,6 +67,7 @@ impl Display {
             Item::RowNumbers => self.row_numbers,
             Item::Zebra => self.zebra,
             Item::ColumnLines => self.column_lines,
+            Item::GroupGap => self.group_gap,
             Item::Tabs => self.tabs,
             Item::SearchBar => search_bar,
             Item::Chips => self.chips,
@@ -69,6 +81,7 @@ pub enum Item {
     RowNumbers,
     Zebra,
     ColumnLines,
+    GroupGap,
     Tabs,
     SearchBar,
     Chips,
@@ -81,6 +94,7 @@ impl Item {
             Item::RowNumbers => Msg::DisplayRowNumbers,
             Item::Zebra => Msg::DisplayZebra,
             Item::ColumnLines => Msg::DisplayColumnLines,
+            Item::GroupGap => Msg::DisplayGroupGap,
             Item::Tabs => Msg::DisplayTabs,
             Item::SearchBar => Msg::DisplaySearchBar,
             Item::Chips => Msg::DisplayChips,
@@ -94,10 +108,11 @@ impl Item {
 }
 
 /// 「表示」の節の項目と名前(この順で並べる)。名前は日本語の文。画面には今の言語の `Item::label` を出す(SR-23)。
-pub const ITEMS: [(Item, &str); 6] = [
+pub const ITEMS: [(Item, &str); 7] = [
     (Item::RowNumbers, Item::RowNumbers.msg().ja()),
     (Item::Zebra, Item::Zebra.msg().ja()),
     (Item::ColumnLines, Item::ColumnLines.msg().ja()),
+    (Item::GroupGap, Item::GroupGap.msg().ja()),
     (Item::Tabs, Item::Tabs.msg().ja()),
     (Item::SearchBar, Item::SearchBar.msg().ja()),
     (Item::Chips, Item::Chips.msg().ja()),
@@ -114,6 +129,8 @@ pub struct DisplayOverride {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub column_lines: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_gap: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tabs: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub search_bar: Option<bool>,
@@ -126,6 +143,7 @@ pub const OVERRIDE_KEYS: &[&str] = &[
     "row_numbers",
     "zebra",
     "column_lines",
+    "group_gap",
     "tabs",
     "search_bar",
     "chips",
@@ -141,6 +159,7 @@ impl DisplayOverride {
             Item::RowNumbers => &mut self.row_numbers,
             Item::Zebra => &mut self.zebra,
             Item::ColumnLines => &mut self.column_lines,
+            Item::GroupGap => &mut self.group_gap,
             Item::Tabs => &mut self.tabs,
             Item::SearchBar => &mut self.search_bar,
             Item::Chips => &mut self.chips,

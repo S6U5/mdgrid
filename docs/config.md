@@ -144,18 +144,19 @@ theme = "nord"
 
 ### `display`
 
-- Type: `table ([display] with row_numbers, zebra, column_lines, tabs and chips)`
-- Default: `{ row_numbers = false, zebra = false, column_lines = false, tabs = true, chips = true }`
+- Type: `table ([display] with row_numbers, zebra, column_lines, group_gap, tabs and chips)`
+- Default: `{ row_numbers = false, zebra = false, column_lines = false, group_gap = false, tabs = true, chips = true }`
 
 How the table is shown. Every part is optional and is `true` or `false`.
 
 - `row_numbers` (default `false`): numbers 1, 2, 3… on the left of each row, in the order shown (after filters and sorting). Group heading rows get no number; numbering continues across groups.
 - `zebra` (default `false`): every other row gets a shaded background. Not drawn without colors (`--no-color`, `NO_COLOR`, `color = false`).
 - `column_lines` (default `false`): draw `│` between columns.
+- `group_gap` (default `false`): in a grouped view, leave an empty line above every group heading but the first. The empty line is not a row: it is not counted or numbered, the cursor skips it, and clicking it does nothing.
 - `tabs` (default `true`): show the view tabs. When hidden, `[` and `]` still switch views.
 - `chips` (default `true`): show the band of active view settings. When hidden, `f` still selects its items.
 
-The search bar is the top-level `search_bar` item; it is not part of `[display]`. Each view can override these six (including the search bar) in its view settings (`o`, the "表示" section); a view keeps only the items that differ from this configuration, and a mdgrid view saves them with the view.
+The search bar is the top-level `search_bar` item; it is not part of `[display]`. Each view can override these seven (including the search bar) in its view settings (`o`, the "表示" section); a view keeps only the items that differ from this configuration, and a mdgrid view saves them with the view.
 
 ```toml
 [display]

@@ -10,7 +10,8 @@ ask = ["actor", "human_gate", "due"]
 status = "todo"
 priority = "p3"
 
-# 列の区切り線と一行おきの色で、表らしく見せる。
+# 列の区切り線と一行おきの色で表らしく見せ、まとまりの見出しの上を1行空ける。
 [display]
 column_lines = true
 zebra = true
+group_gap = true

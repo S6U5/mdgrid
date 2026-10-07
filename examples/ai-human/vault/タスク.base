@@ -4,7 +4,7 @@ filters:
 formulas:
   # cellops と同じ分け方: 最後のボタンを人が押す(human_gate が none 以外)か、
   # PC の外の仕事(actor: human)なら人。それ以外(actor が無いノートも)は AI。
-  担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 ロボットのタスク")
+  担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 エージェントのタスク")
 properties:
   note.status:
     displayName: 状態
@@ -61,7 +61,7 @@ views:
     name: AIだけ
     filters:
       and:
-        - formula.担当 == "🤖 ロボットのタスク"
+        - formula.担当 == "🤖 エージェントのタスク"
         - status != "done"
         - status != "dropped"
     order:

@@ -151,7 +151,7 @@ fn test_example_ai_human_done_keeps_the_split() {
         vec![
             (
                 "古いブランチを消す".to_string(),
-                "🤖 ロボットのタスク".to_string()
+                "🤖 エージェントのタスク".to_string()
             ),
             (
                 "請求書を発行する".to_string(),

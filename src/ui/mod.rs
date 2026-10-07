@@ -151,6 +151,8 @@ mod test_display_options;
 #[cfg(test)]
 mod test_external;
 #[cfg(test)]
+mod test_group_gap;
+#[cfg(test)]
 mod test_key_ops;
 #[cfg(test)]
 mod test_list_narrow;

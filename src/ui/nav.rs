@@ -182,7 +182,7 @@ impl App {
         (a..=b)
             .filter_map(|i| match self.slots.get(i)? {
                 Slot::Row(r) => self.rows.get(*r).cloned(),
-                Slot::Head(_) => None,
+                Slot::Head(_) | Slot::Gap => None,
             })
             .collect()
     }
@@ -192,7 +192,7 @@ impl App {
         let a = self.anchor.as_ref()?;
         let i = self.slots.iter().position(|s| match s {
             Slot::Row(r) => self.rows.get(*r) == Some(a),
-            Slot::Head(_) => false,
+            Slot::Head(_) | Slot::Gap => false,
         })?;
         Some((i.min(to), i.max(to)))
     }

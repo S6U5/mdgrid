@@ -330,7 +330,7 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             | Mode::Freq
     ) {
         let pos = match app.slots.get(app.row) {
-            None => Msg::FooterRow.fill(&[&0, &0]),
+            None | Some(Slot::Gap) => Msg::FooterRow.fill(&[&0, &0]),
             Some(Slot::Row(r)) => Msg::FooterRow.fill(&[&(r + 1), &app.rows.len()]),
             Some(Slot::Head(g)) => Msg::FooterHead.fill(&[&(g + 1), &app.groups.len()]),
         };

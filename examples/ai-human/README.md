@@ -13,7 +13,7 @@ cp -R examples/ai-human /tmp/mdgrid-ai-human
 mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/vault/タスク.base
 ```
 
-最初のタブ「人とAI」で、`👤 人間のタスク` と `🤖 ロボットのタスク` の見出しの下にタスクが並びます。見出しの上で `Enter` を押すと畳めます。`[` `]` でほかのビューに切り替えます。
+最初のタブ「人とAI」で、`👤 人間のタスク` と `🤖 エージェントのタスク` の見出しの下にタスクが並びます。見出しの上で `Enter` を押すと畳めます。`[` `]` でほかのビューに切り替えます。
 
 | ビュー | 中身 |
 |---|---|
@@ -34,7 +34,7 @@ mdgrid /tmp/mdgrid-ai-human/vault/タスク.base --print --format md --with-path
 
 ```yaml
 formulas:
-  担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 ロボットのタスク")
+  担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 エージェントのタスク")
 ```
 
 - `actor: human` … PC の外の仕事(窓口・移動など)。人。
@@ -59,7 +59,7 @@ formulas:
 ## 設定(config.toml)
 
 - `[new_note]`: 新しいタスク(`a`)を作るとき、`actor`・`human_gate`・`due` を順に聞き、`status = "todo"`・`priority = "p3"` を入れる。
-- `[display]`: 列の区切り線と一行おきの色。
+- `[display]`: 列の区切り線と一行おきの色。`group_gap` で、2つ目のまとまりの見出しの上を1行空ける。
 
 ## 自分のコマンドにする
 

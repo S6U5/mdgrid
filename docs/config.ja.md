@@ -144,18 +144,19 @@ theme = "nord"
 
 ### `display`
 
-- 型: `表([display] の下に row_numbers・zebra・column_lines・tabs・chips)`
-- 既定: `{ row_numbers = false, zebra = false, column_lines = false, tabs = true, chips = true }`
+- 型: `表([display] の下に row_numbers・zebra・column_lines・group_gap・tabs・chips)`
+- 既定: `{ row_numbers = false, zebra = false, column_lines = false, group_gap = false, tabs = true, chips = true }`
 
 表の見せ方。どれも省けて、値は `true` か `false`。
 
 - `row_numbers`(既定 `false`): 各行の左に 1・2・3… の行番号。今の表示の並び(絞り込みと並べ替えのあと)の順。グループの見出しの行には付けず、番号はグループをまたいで続く。
 - `zebra`(既定 `false`): 一行おきに背景の色を付ける。色を使わない表示(`--no-color`・`NO_COLOR`・`color = false`)では付けない。
 - `column_lines`(既定 `false`): 列の間に `│` を引く。
+- `group_gap`(既定 `false`): まとまりのあるビューで、2つ目からのまとまりの見出しの上に空きの行を1つ入れる。空きの行は行ではなく、数えず、番号も付けず、カーソルは止まらず、クリックしても何も起きない。
 - `tabs`(既定 `true`): ビューのタブを出す。隠しても `[` `]` でビューは切り替わる。
 - `chips`(既定 `true`): 効いているビューの設定の帯を出す。隠しても `f` で帯の項目を選べる。
 
-検索の欄は最上位の `search_bar` で、`[display]` には入れない。ビューごとに、ビューの設定(`o`)の「表示」の節でこの6つ(検索の欄を含む)を切り替えられる。ビューはこの設定と違う項目だけを持ち、mdgrid のビューはビューと一緒に保存する。
+検索の欄は最上位の `search_bar` で、`[display]` には入れない。ビューごとに、ビューの設定(`o`)の「表示」の節でこの7つ(検索の欄を含む)を切り替えられる。ビューはこの設定と違う項目だけを持ち、mdgrid のビューはビューと一緒に保存する。
 
 ```toml
 [display]

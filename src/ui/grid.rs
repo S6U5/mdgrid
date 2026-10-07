@@ -9,6 +9,7 @@
 
 use super::app::App;
 use mdgrid::base::{self, Base, Grid, Shown};
+use mdgrid::display::Item;
 use mdgrid::expr::{to_val, Val};
 use mdgrid::i18n::Msg;
 use mdgrid::print::{self, val_value};
@@ -27,11 +28,13 @@ pub(crate) struct BaseFile {
     pub view: usize,
 }
 
-/// 表の1行: グループの見出し(`App.groups` の添字)か、ノートの行(`App.rows` の添字)。
+/// 表の1行: グループの見出し(`App.groups` の添字)か、ノートの行(`App.rows` の添字)か、
+/// 2つ目からの見出しの上の空き(SR-30。行として数えず、選べない)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Slot {
     Head(usize),
     Row(usize),
+    Gap,
 }
 
 /// 組み立て直しの前後で同じ行を探す鍵(BV-10)。
@@ -181,6 +184,7 @@ impl App {
         Some(match self.slots.get(i)? {
             Slot::Head(g) => SlotKey::Head(self.groups.get(*g)?.0.clone()),
             Slot::Row(r) => SlotKey::Row(self.rows.get(*r)?.clone()),
+            Slot::Gap => return None,
         })
     }
 
@@ -190,7 +194,11 @@ impl App {
             self.slots.extend((0..self.rows.len()).map(Slot::Row));
             return;
         }
+        let gap = self.shows(Item::GroupGap);
         for (g, (h, range)) in self.groups.iter().enumerate() {
+            if gap && g > 0 {
+                self.slots.push(Slot::Gap);
+            }
             self.slots.push(Slot::Head(g));
             if !self.folded.contains(h) {
                 self.slots.extend(range.clone().map(Slot::Row));
@@ -278,6 +286,7 @@ impl App {
         let found = old_key
             .and_then(|k| (0..self.slots.len()).find(|&i| self.slot_key(i).as_ref() == Some(&k)));
         self.row = found.unwrap_or_else(|| old_row.min(self.slots.len().saturating_sub(1)));
+        self.step_off_gap(1);
         self.kinds = self.cols.iter().map(|c| self.column_kind(c)).collect();
         self.scroll_into_view();
         self.guard_input();
@@ -432,7 +441,7 @@ impl App {
     pub(crate) fn cur_row(&self) -> Option<RowId> {
         match self.slots.get(self.row)? {
             Slot::Row(r) => self.rows.get(*r).cloned(),
-            Slot::Head(_) => None,
+            Slot::Head(_) | Slot::Gap => None,
         }
     }
 
@@ -440,7 +449,18 @@ impl App {
     pub(crate) fn cur_head(&self) -> Option<usize> {
         match self.slots.get(self.row)? {
             Slot::Head(g) => Some(*g),
-            Slot::Row(_) => None,
+            Slot::Row(_) | Slot::Gap => None,
+        }
+    }
+
+    /// SR-30: 選んだ行が見出しの上の空きなら、`dir`(1 なら下、-1 なら上)の向きに1つ進める。
+    /// 空きは先頭にも最後にも来ないので、進んだ先は見出しか行。
+    pub(crate) fn step_off_gap(&mut self, dir: isize) {
+        if self.slots.get(self.row) == Some(&Slot::Gap) {
+            self.row = self
+                .row
+                .saturating_add_signed(dir)
+                .min(self.slots.len().saturating_sub(1));
         }
     }
 
