@@ -369,10 +369,12 @@ impl App {
             Kind::Text | Kind::List => Entry::Text,
         };
         let list = match kind {
-            Kind::Text => self
-                .src
-                .candidates(&col, self.candidates)
-                .map(|c| List::new(&c, cur.as_ref(), !mismatch)),
+            // REL-3: リンクの列は、行き先のフォルダのノートを候補にする(見せるのは名前、書くのはリンク)。
+            Kind::Text => self.link_list(&base, &col, cur.as_ref()).or_else(|| {
+                self.src
+                    .candidates(&col, self.candidates)
+                    .map(|c| List::new(&c, cur.as_ref(), !mismatch))
+            }),
             Kind::Checkbox => Some(List::new(
                 &[Value::Bool(true), Value::Bool(false)],
                 cur.as_ref(),

@@ -84,6 +84,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         for a in [Action::Copy, Action::OpenEditor, Action::Detail] {
             want.push((Section::Cell, a, false));
         }
+        // REL-4: リンクのセルなら行き先を開く。
+        if app.cell_has_link() {
+            want.push((Section::Cell, Action::OpenLink, false));
+        }
     }
     if !app.cols.is_empty() {
         want.push((Section::Column, Action::Sort, false));
@@ -123,6 +127,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
             }
         }
         want.push((Section::Row, Action::CopyRow, false));
+        // REL-5: この行を指すリンクがあれば、つながった行。
+        if app.row_has_backlinks() {
+            want.push((Section::Row, Action::LinkedRows, false));
+        }
     }
     if writable {
         want.push((Section::View, Action::NewNote, false));

@@ -39,6 +39,11 @@ fn float_text(f: f64) -> String {
     format!("{f:?}")
 }
 
+/// 値の文字(リレーションのリストの要素など、ほかの所から)。
+pub(crate) fn value_plain(v: &Value) -> String {
+    value_text(v)
+}
+
 /// 値の文字(CV-1: null は `∅`、空の文字列は `""`)。
 fn value_text(v: &Value) -> String {
     match v {
@@ -106,7 +111,9 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
         let text = match nv {
             NewValue::Str(s) | NewValue::Date(s) => date_text(app, col, s),
             _ => None,
-        };
+        }
+        // REL-2: ためたリンクも行き先の名前で見せる。
+        .or_else(|| app.link_text_new(row, nv));
         return Shown {
             text: format!("*{}", text.unwrap_or_else(|| new_value_text(nv))),
             null: false,
@@ -136,6 +143,8 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                         Value::Str(s) => date_text(app, col, s),
                         _ => None,
                     }
+                    // REL-2・REL-10: リンクは行き先の名前で(行き先の無いものは印を付けて)見せる。
+                    .or_else(|| app.link_text(row, v))
                     .unwrap_or_else(|| value_text(v));
                     // CV-2: 列の型に合わない値は、そのまま見せて `!` を付ける。
                     let t = if types::fits(app.kind_of(col), v) {

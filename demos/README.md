@@ -16,6 +16,7 @@ sh demos/record.sh places     # 1本だけ
 | `new-note.tape` → [demo-new-note.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-new-note.gif) | 新しいノートのフォーム(雛形の値・必須の欄・隠して入れる作成日) |
 | `export.tape` → [demo-export.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-export.gif) | 絞った表を CSV に書き出す・画面なしの `--print` |
 | `places.tape` → [demo-places.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-places.gif) | 登録した表を一覧から切り替えて開く・この表を登録する |
+| `relations.tape` → [demo-relations.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-relations.gif) | リレーション: リンクを名前で見せる・行き先のノートから選ぶ・行き先を開く・つながった行 |
 | `themes.tape` → [demo-themes.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-themes.gif) | 色のテーマ(examples/themes/ の6つ) |
 
 To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screens are in English on the English sample (`examples/demo`). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.

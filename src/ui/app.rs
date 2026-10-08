@@ -193,6 +193,10 @@ pub struct App {
     pub(crate) registered: Vec<mdgrid::places::Place>,
     /// CLI-19: 終わったあとに開き直す表(一覧で選んだ。main が見る)。
     pub switch_to: Option<mdgrid::places::Place>,
+    /// REL-4・REL-5: 開き直したあとに選ぶノート(実体のパス。main が select_after_load に渡す)。
+    pub switch_select: Option<std::path::PathBuf>,
+    /// リンクの行き先を解く表と、解いた結果(REL-1。relations.rs)。
+    pub(crate) links: super::relations::Links,
     pub quit: bool,
 }
 
@@ -281,6 +285,8 @@ impl App {
             guessed_root: None,
             registered: Vec::new(),
             switch_to: None,
+            switch_select: None,
+            links: Default::default(),
             quit: false,
         };
         app.refresh();
@@ -352,16 +358,25 @@ impl App {
         let Some(path) = self.select_after_load.take() else {
             return;
         };
-        let real = path.canonicalize().unwrap_or(path);
+        self.select_note(&path);
+    }
+
+    /// ノート(パス)の行を選ぶ。見えない・無いなら何もしないで偽(CLI-15・REL-4)。
+    pub(crate) fn select_note(&mut self, path: &std::path::Path) -> bool {
+        let real = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
         let id = RowId(real.to_string_lossy().into_owned());
         let at = self
             .rows
             .iter()
             .position(|r| *r == id)
             .and_then(|r| self.slots.iter().position(|s| *s == Slot::Row(r)));
-        if let Some(i) = at {
-            self.row = i;
-            self.scroll_into_view();
+        match at {
+            Some(i) => {
+                self.row = i;
+                self.scroll_into_view();
+                true
+            }
+            None => false,
         }
     }
 
@@ -373,6 +388,8 @@ impl App {
         }
         let changed = self.src.changed();
         if !changed.is_empty() {
+            // REL-1: 外で変わったら、リンクの行き先を解き直す。
+            self.links.invalidate();
             self.changes.note_external(&changed);
             // WB-17: 外で、ためた値と同じ値に直されたセルは外す。
             self.changes.drop_same(self.src.as_ref(), &changed);
@@ -651,6 +668,7 @@ impl App {
             }
             Action::Quit => {
                 self.switch_to = None;
+                self.switch_select = None;
                 self.begin_quit();
             }
             Action::CancelLoad => {
@@ -688,6 +706,9 @@ impl App {
             // ---- 登録した表(places.rs。CLI-18・CLI-19) ----
             Action::OpenPlace => self.start_open_places(false),
             Action::RegisterPlace => self.start_register_place(),
+            // ---- リレーション(relations.rs。REL-4・REL-5) ----
+            Action::OpenLink => self.start_open_link(),
+            Action::LinkedRows => self.start_linked_rows(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),
             Action::DeleteKey => self.start_delete_key(),

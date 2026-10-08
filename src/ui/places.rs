@@ -92,6 +92,7 @@ impl App {
         }
         self.close_palette();
         self.switch_to = Some(place);
+        self.switch_select = None;
         self.begin_quit();
     }
 
@@ -172,6 +173,7 @@ impl App {
         match places::save(&dir, place) {
             Ok(()) => {
                 self.registered = places::load(&dir).0;
+                self.links.invalidate();
                 self.message = Some(done);
             }
             Err(e) => self.message = Some(Msg::PlaceSaveError.fill(&[&e])),

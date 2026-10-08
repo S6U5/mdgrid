@@ -5626,5 +5626,163 @@
       "CLI-1"
     ],
     "sha": "fb048f4219cdb075"
+  },
+  "src/test_relations_unit.rs::test_rel_1_forms_and_resolution": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "6ae5aea4bef7c5b1"
+  },
+  "src/test_relations_unit.rs::test_rel_1_percent_with_multibyte_does_not_panic": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "06fc10bcd3f76fd9"
+  },
+  "src/test_relations_unit.rs::test_rel_1_plain_words_are_not_links": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "d162b0b54bd6d593"
+  },
+  "src/test_relations_unit.rs::test_rel_1_registered_base_uses_vault_root": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "0547e60ccdf8bbf1"
+  },
+  "src/test_relations_unit.rs::test_rel_1_target_outside_root": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "c7e5fb2202ae348f"
+  },
+  "src/test_relations_unit.rs::test_rel_2_display_names": {
+    "ids": [
+      "REL-2"
+    ],
+    "sha": "94d5ca95c69de2d9"
+  },
+  "src/test_relations_unit.rs::test_rel_3_format_matches_form": {
+    "ids": [
+      "REL-3"
+    ],
+    "sha": "e4d811dd491913f3"
+  },
+  "src/test_relations_unit.rs::test_rel_3_link_column": {
+    "ids": [
+      "REL-3"
+    ],
+    "sha": "d466bdded2090a99"
+  },
+  "src/test_relations_unit.rs::test_rel_5_backlinks": {
+    "ids": [
+      "REL-5"
+    ],
+    "sha": "521fa7acb2c8a9aa"
+  },
+  "src/test_relations_unit.rs::test_rel_6_edges": {
+    "ids": [
+      "REL-6"
+    ],
+    "sha": "f60c4cb780313ec5"
+  },
+  "src/ui/test_relations.rs::test_rel_1_plain_text_column_unchanged": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "70095281637d3356"
+  },
+  "src/ui/test_relations.rs::test_rel_2_names_in_cells": {
+    "ids": [
+      "REL-2"
+    ],
+    "sha": "b081112af733d29c"
+  },
+  "src/ui/test_relations.rs::test_rel_3_list_column_many_to_many": {
+    "ids": [
+      "REL-3"
+    ],
+    "sha": "d5db4ccd85d20bba"
+  },
+  "src/ui/test_relations.rs::test_rel_3_pick_from_target_folder": {
+    "ids": [
+      "REL-3"
+    ],
+    "sha": "4b03da2907d7a160"
+  },
+  "src/ui/test_relations_open.rs::test_rel_10_resolves_again_after_save": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "ff2375160d5d097b"
+  },
+  "src/ui/test_relations_open.rs::test_rel_3_same_name_in_other_table_written_as_path": {
+    "ids": [
+      "REL-3"
+    ],
+    "sha": "a560d5014fb20e69"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_choose_among_targets": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "37dddbdf6f80b8ec"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_hidden_row_in_same_table_gives_reason": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "f6676dfa1f7096c7"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_menu_has_open_link_on_link_cell": {
+    "ids": [
+      "REL-4",
+      "SR-24"
+    ],
+    "sha": "2319317d89a1b3ab"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_no_target_reason": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "da72683ecb2750b9"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_open_target_in_other_table": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "229b7039fddd69dc"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_open_target_in_same_table": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "6b3a49f016e6de6b"
+  },
+  "src/ui/test_relations_open.rs::test_rel_4_pending_changes_ask_first": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "68d232b42c3e3735"
+  },
+  "src/ui/test_relations_open.rs::test_rel_5_linked_rows_lists_table_and_column": {
+    "ids": [
+      "REL-5"
+    ],
+    "sha": "575ad5a775fe2d1a"
+  },
+  "src/ui/test_relations_open.rs::test_rel_5_menu_offers_linked_rows_with_registered_tables": {
+    "ids": [
+      "REL-5",
+      "SR-24"
+    ],
+    "sha": "fe9e1d80983a9d11"
+  },
+  "src/ui/test_relations_open.rs::test_rel_5_no_linked_rows_message": {
+    "ids": [
+      "REL-5"
+    ],
+    "sha": "7a3fc0a0c2930c93"
   }
 }

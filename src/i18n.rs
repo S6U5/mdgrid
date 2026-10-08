@@ -1391,6 +1391,19 @@ msgs! {
     PlaceMulti = "cannot register: several folders are open (register one folder or a .base)", "登録できない: フォルダを複数開いている(フォルダ1つか .base を登録する)";
     /// {0} はビューの名前。
     PlaceNoView = "the view {0} is not here, so the first view is shown", "ビュー {0} が無いので先頭のビューを出した";
+
+    // ---- relations: リレーション(REL-4・REL-5) ----
+    CmdOpenLink = "Open the link target", "リンクの行き先を開く";
+    CmdLinkedRows = "Linked rows (notes that link here)", "つながった行(ここを指すノート)";
+    AskOpenLink = "open which target: ", "どの行き先を開く: ";
+    AskLinkedRows = "linked rows: ", "つながった行: ";
+    RelNoTarget = "no link to a note in this cell", "このセルにはノートへのリンクが無い";
+    /// {0} はノートの名前。
+    RelNoBacklinks = "no note links to {0}", "{0} を指すノートは無い";
+    /// {0} はノートの名前。
+    RelHidden = "{0} is in this table but hidden by the filter or a folded group", "{0} はこの表にあるが、絞り込みか畳んだまとまりで隠れている";
+    /// {0} はパス。
+    RelMissing = "cannot open: {0} does not exist", "開けない: {0} が無い";
 }
 
 #[cfg(test)]

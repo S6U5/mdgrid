@@ -43,6 +43,7 @@ impl App {
                 self.quit_after_save = false;
                 // CLI-19: 戻ったら、一覧で選んだ表へは移らない。
                 self.switch_to = None;
+                self.switch_select = None;
                 self.set_mode(Mode::Table);
             }
             Action::NextFile => {
@@ -158,6 +159,8 @@ impl App {
     /// 全部のファイルを書く(WB-9)。行ごとの結果をメッセージ行に出し、書けなかった変更は残す(WB-14)。
     /// 外で変わって止まった行があれば、保存の確認の画面に残って選ばせる(WB-16)。
     fn save(&mut self) {
+        // REL-1: 保存で値が変わるので、リンクの行き先を解き直す。
+        self.links.invalidate();
         let results = self.changes.save(self.src.as_mut());
         self.report(results, false);
     }

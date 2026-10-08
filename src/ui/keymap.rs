@@ -248,6 +248,10 @@ pub enum Action {
     OpenPlace,
     /// CLI-18: 今の表を登録する。
     RegisterPlace,
+    /// REL-4: 今のセルのリンクの行き先を開く。
+    OpenLink,
+    /// REL-5: 今の行を指しているノート(つながった行)。
+    LinkedRows,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
     /// CE-26: 新しいノートの窓で、どの欄からでも作る(既定 Ctrl+S)。
@@ -358,6 +362,8 @@ impl Action {
             Action::ExportTable => "export_table",
             Action::OpenPlace => "open_place",
             Action::RegisterPlace => "register_place",
+            Action::OpenLink => "open_link",
+            Action::LinkedRows => "linked_rows",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
             Action::CreateNote => "create_note",
@@ -508,17 +514,19 @@ pub const COMMANDS: &[Command] = &[
     cmd(Action::NewNote, Msg::KeyNewNote, NOTE),
 ];
 
-/// 登録した表のコマンド(CLI-18・CLI-19。既定のキーなし。パレットから)。ノートを書かないので、
-/// `COMMANDS` と違い読むだけ(WB-15)でも出す。
-pub const PLACE_COMMANDS: &[Command] = &[
+/// ノートを書かないパレットのコマンド(既定のキーなし)。`COMMANDS` と違い読むだけ(WB-15)でも出す:
+/// 登録した表(CLI-18・CLI-19)と、リレーションをたどる操作(REL-4・REL-5)。
+pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::OpenPlace, Msg::PlaceOpen, FILE),
     cmd(Action::RegisterPlace, Msg::PlaceRegister, FILE),
+    cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
+    cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。
 pub fn commands(readonly: bool) -> impl Iterator<Item = &'static Command> {
     let writes: &'static [Command] = if readonly { &[] } else { COMMANDS };
-    writes.iter().chain(PLACE_COMMANDS)
+    writes.iter().chain(READ_COMMANDS)
 }
 
 /// 既定のキー(SR-13・SR-16・SR-18・WB-10・BV-16)。

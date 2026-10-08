@@ -62,6 +62,16 @@ pub(crate) enum Ask {
     },
     /// 同じ名前の登録の置き換えの確かめ(CLI-18)。続けて `y`。
     PlaceOverwrite(mdgrid::places::Place),
+    /// 開くリンクの行き先(REL-4。セルに2つ以上あるとき)。
+    OpenLink {
+        items: Vec<String>,
+        targets: Vec<PathBuf>,
+    },
+    /// つながった行(REL-5)。選ぶとそのノートを開く。
+    LinkedRows {
+        items: Vec<String>,
+        notes: Vec<PathBuf>,
+    },
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -141,6 +151,8 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::PlaceName(_)) => Msg::PlaceAskName.into(),
         Some(Ask::PlaceGroup { .. }) => Msg::PlaceAskGroup.into(),
         Some(Ask::PlaceOverwrite(p)) => Msg::PlaceAskOverwrite.fill(&[&sanitize(&p.name)]),
+        Some(Ask::OpenLink { .. }) => Msg::AskOpenLink.into(),
+        Some(Ask::LinkedRows { .. }) => Msg::AskLinkedRows.into(),
     }
 }
 
@@ -150,6 +162,8 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::ImportFile(files)) => files,
         Some(Ask::ImportView { names, .. }) => names,
         Some(Ask::OpenPlace { items, .. }) => items,
+        Some(Ask::OpenLink { items, .. }) => items,
+        Some(Ask::LinkedRows { items, .. }) => items,
         Some(Ask::PlaceGroup { groups, .. }) => {
             // CLI-18: 打った語は新しい分類にもなるので、絞った候補をそのまま並べる。
             let shown = super::places::group_items(groups, query).0;
@@ -548,6 +562,14 @@ impl App {
                 };
                 let place = place.clone();
                 self.place_grouped(place, group)
+            }
+            Some(Ask::OpenLink { targets: paths, .. })
+            | Some(Ask::LinkedRows { notes: paths, .. }) => {
+                let Some(p) = picked.and_then(|k| paths.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.open_note(&p)
             }
             Some(Ask::PlaceOverwrite(place)) => {
                 let place = place.clone();

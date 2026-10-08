@@ -767,10 +767,13 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
         let Some(place) = app.switch_to.take() else {
             return ExitCode::SUCCESS;
         };
+        // REL-4・REL-5: 開き直したあとに選ぶノート。
+        let select = app.switch_select.take();
         match open_app(std::slice::from_ref(&place.path), None, opts, false) {
             Ok((next, ed)) => {
                 app = next;
                 editor = ed;
+                app.select_after_load = select;
                 if let Some(v) = &place.view {
                     app.select_view_named(v);
                 }
