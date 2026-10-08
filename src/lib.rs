@@ -18,6 +18,7 @@ pub(crate) mod mdtext;
 pub mod newnote;
 pub mod places;
 pub mod print;
+pub mod relations;
 pub mod settings;
 pub mod source;
 pub mod summary;

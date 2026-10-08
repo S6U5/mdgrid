@@ -181,6 +181,26 @@ view = "Reading"
 
 A leading `~` in `path` means your home folder. Rows that cannot be read (no `name` or `path`, or a repeated name) are skipped with a warning. Notes are never written.
 
+## Link tables with relations
+
+A note can point at another note with a link in its frontmatter, so folders of notes work like linked tables (tasks → projects → members). The note's file name is the key: there is no id column, and a list of links stands in for a many-to-many join table.
+
+```yaml
+project: "[[mdgrid]]"            # one project
+assignee: "[[Alice]]"
+related:                         # many
+  - "[[Website]]"
+  - "[mdgrid](../projects/mdgrid.md)"   # a Markdown link works too, and so does a plain path: ../projects/mdgrid
+```
+
+- Link cells show the target note's name. A `[[…]]` whose note does not exist is shown with `?` in front.
+- In a column whose values are mostly links, Enter lists the notes in the target's folder by name. The one you pick is written in the form the column already uses (`[[name]]` if none). In a list column you can tick several.
+- `:open_link` (or **Open the link target** in the `x` menu) opens the target: in the same table it moves to the row; otherwise it opens the registered table that holds the note (or its folder) and selects the row. Unsaved changes are confirmed first.
+- `:linked_rows` lists the notes that link to the current one, with the table and column they link from. Pick one to open it.
+- Links work whether you open a folder or a `.base`, and may point outside the opened folder. Register the folders you link between (see above) so names resolve across them. A value counts as a plain-path link only if it contains `/` or ends in `.md` and the note exists, so ordinary words stay text.
+
+The sample `examples/relations` has tasks, projects and members linked this way: `mdgrid examples/relations/tasks`.
+
 ## Use with other commands
 
 To save the table exactly as shown — with your filters, sorting and hidden columns — choose **Export the table to a file** in the command palette (`:`) and type a file name. The extension picks the format: `.csv`, `.tsv`, `.json` or `.md`. The first column is each note's path, so a CSV or JSON can come back with `--apply`.

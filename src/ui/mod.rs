@@ -27,6 +27,7 @@ pub mod nav;
 pub mod new_note;
 pub mod places;
 pub mod popup;
+pub mod relations;
 pub mod review;
 pub mod settings;
 pub mod settings_pick;
@@ -174,6 +175,10 @@ mod test_note_time;
 mod test_places;
 #[cfg(test)]
 mod test_places_more;
+#[cfg(test)]
+mod test_relations;
+#[cfg(test)]
+mod test_relations_open;
 #[cfg(test)]
 mod test_review6;
 #[cfg(test)]

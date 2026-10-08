@@ -449,3 +449,5 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `import_base` — pick a `.base` file and import one of its views as an mdgrid view
 - `open_place` — list the registered tables (`places.toml`) and open the one you pick
 - `register_place` — register the current table under a name and a group
+- `open_link` — open the note a link cell points to (its table, with its row selected)
+- `linked_rows` — list the notes that link to the current note, with the table and column they link from

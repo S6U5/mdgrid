@@ -52,6 +52,15 @@ pub(crate) struct Cand {
     pub initial: Mark,
     /// 「+ 新規」で足した(Ctrl+R で消える)。
     pub added: bool,
+    /// 見せる名前(リンクの列は行き先の名前。REL-3)。None なら要素のまま。
+    pub label: Option<String>,
+}
+
+impl Cand {
+    /// 見せる文字。
+    pub(crate) fn shown(&self) -> &str {
+        self.label.as_deref().unwrap_or(&self.name)
+    }
 }
 
 /// 見せる行。
@@ -119,8 +128,15 @@ impl Pick {
         if t.is_empty() {
             return None;
         }
+        // リンクの列は、見せる名前(行き先の名前)を打っても同じ候補(REL-3)。
         let same: Vec<usize> = (0..self.cands.len())
-            .filter(|&i| self.same(&self.cands[i].name, t))
+            .filter(|&i| {
+                let c = &self.cands[i];
+                self.same(&c.name, t)
+                    || c.label
+                        .as_deref()
+                        .is_some_and(|l| l.to_lowercase() == t.to_lowercase())
+            })
             .collect();
         let held = |i: &&usize| {
             let c = &self.cands[**i];
@@ -146,7 +162,7 @@ impl Pick {
             None => {}
         }
         for (i, c) in self.cands.iter().enumerate() {
-            if Some(i) != exact && (q.is_empty() || c.name.to_lowercase().contains(&q)) {
+            if Some(i) != exact && (q.is_empty() || c.shown().to_lowercase().contains(&q)) {
                 out.push(PickRow::Cand(i));
             }
         }
@@ -213,6 +229,7 @@ impl Pick {
                     mark: Mark::None,
                     initial: Mark::None,
                     added: true,
+                    label: None,
                 });
                 self.cands.len() - 1
             }
@@ -342,7 +359,20 @@ impl App {
             order: Vec::new(),
             sel: 0,
         };
-        let mut names: Vec<(String, usize)> = self.src.list_candidates(&col);
+        // REL-3: リンクのリストの列は、行き先のフォルダのノートを候補にする(見せるのは名前)。
+        let links = self.link_cands(&col, &pick.targets);
+        let mut names: Vec<(String, usize)> = match &links {
+            Some(l) => {
+                let counts = self.src.list_candidates(&col);
+                l.iter()
+                    .map(|(v, _)| {
+                        let n = counts.iter().find(|(c, _)| c == v).map_or(0, |(_, n)| *n);
+                        (v.clone(), n)
+                    })
+                    .collect()
+            }
+            None => self.src.list_candidates(&col),
+        };
         // ためた値にだけある要素も候補にする(件数は保管庫の中の数なので 0)。
         for (_, items) in &pick.targets {
             for e in items {
@@ -370,7 +400,11 @@ impl App {
                 mark,
                 initial: mark,
                 added: false,
+                label: None,
             });
+        }
+        if let Some(l) = &links {
+            super::relations::label_cands(&mut pick.cands, l);
         }
         pick
     }
@@ -578,7 +612,7 @@ fn row_text(p: &Pick, r: &PickRow, nw: usize, cw: usize) -> String {
             format!(
                 "{} {}  {}",
                 c.mark.text(),
-                fit(&sanitize(&c.name), nw, Align::Left),
+                fit(&sanitize(c.shown()), nw, Align::Left),
                 fit(&count, cw, Align::Right)
             )
         }
@@ -596,7 +630,7 @@ fn col_widths(p: &Pick, w: usize) -> (usize, usize) {
     let nw = p
         .cands
         .iter()
-        .map(|c| width(&sanitize(&c.name)))
+        .map(|c| width(&sanitize(c.shown())))
         .max()
         .unwrap_or(1);
     // 窓の中: 縁2・選びの印1・`[x] `4・要素・空白2・件数。収まらなければ要素の欄を縮める。
