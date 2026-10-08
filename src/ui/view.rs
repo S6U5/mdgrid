@@ -386,6 +386,20 @@ pub(crate) struct RowCtx {
     pub span: Option<(usize, usize)>,
 }
 
+/// SR-31: 入力欄の見た目(太字・下線と、色を使うときは地の色)。テーマがあれば選んだセルの地の色。
+pub(crate) fn input_style(app: &App) -> Style {
+    let st = Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED);
+    let bg = super::theme::meaning(app, |p| p.sel_bg).or(match app.color {
+        ColorMode::None => None,
+        ColorMode::Indexed => Some(Color::Indexed(238)),
+        ColorMode::Rgb => Some(Color::Rgb(68, 68, 68)),
+    });
+    match bg {
+        Some(c) => st.bg(c),
+        None => st,
+    }
+}
+
 fn highlight(mode: ColorMode) -> Option<Color> {
     match mode {
         ColorMode::None => None,
@@ -448,8 +462,9 @@ fn data_row(
     for &(j, cw) in cols {
         spans.push(Span::raw(sep));
         if let Some(b) = edit.as_ref().filter(|_| j == app.col) {
-            // 入力ボックス(CE-1)。値より広ければ右の列に重ねて広げる。
-            let st = Style::default().add_modifier(Modifier::UNDERLINED | Modifier::BOLD);
+            // 入力ボックス(CE-1)。値より広ければ右の列に重ねて広げる。SR-31: 地の色で欄と分かるように
+            // (色を使わないときは太字と下線だけ。太字と下線はテーマの強い色の目印。SR-26)。
+            let st = input_style(app);
             spans.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
             if b.w != cw {
                 break;

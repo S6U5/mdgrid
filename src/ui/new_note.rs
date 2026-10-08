@@ -795,32 +795,52 @@ fn current(f: &Flow) -> usize {
     }
 }
 
-/// 窓の形: 上の端の行・見出しの幅・出す欄の最初と数。
+/// 窓の形: 上の縁の行・左の桁・幅・見出しの幅・出す欄の最初と数(SR-31: 枠のある窓)。
 struct Geom {
     top: usize,
+    left: usize,
+    /// 窓の幅(縁を含む)。
+    bw: usize,
     label_w: usize,
     first: usize,
     count: usize,
 }
 
+/// 窓の縁と区切りと縦の線を除いた行の数(上の縁・区切り・キーの行・下の縁)。
+const BOX_FRAME: usize = 4;
+
 fn geom(app: &App) -> Option<Geom> {
     let f = app.note.flow.as_ref()?;
     let top = panel_y(app)?;
     let h = app.size.1.saturating_sub(1) as usize;
+    let w = app.size.0.saturating_sub(1) as usize;
     let limit = h.saturating_sub(2);
     let rs = rows(f);
-    // 見出しの行と、下の区切りの行を除いた欄の数。入らなければ今の欄の周りを出す。
-    let room = limit.saturating_sub(top + 2).max(1);
+    // 縁と区切りとキーの行を除いた欄の数。入らなければ今の欄の周りを出す。
+    let room = limit.saturating_sub(top + BOX_FRAME).max(1);
     let count = rs.len().min(room);
     let cur = current(f);
     let first = cur.saturating_sub(count - 1).min(rs.len() - count);
     let label_w = rs.iter().map(|r| width(&label(f, *r))).max().unwrap_or(4);
+    // 幅: 見出し + 40 桁(値の欄)を目安に、画面の左右に2桁ずつ空ける。真ん中に置く。
+    let bw = (label_w + 46)
+        .max(48)
+        .min(w.saturating_sub(4))
+        .max(24.min(w));
+    let left = (w - bw) / 2;
     Some(Geom {
         top,
+        left,
+        bw,
         label_w,
         first,
         count,
     })
+}
+
+/// 欄の行の値の欄の左の桁(縦の線・空白・印2桁・見出し・空白2桁の後ろ)。
+fn value_x(g: &Geom) -> usize {
+    g.left + 1 + 1 + 2 + g.label_w + 2
 }
 
 /// 新しいノートの入力の欄(入力ボックスの位置。今の欄の行。カーソル・カレンダー・リストの選択の窓の置き場)。
@@ -828,11 +848,12 @@ pub(crate) fn note_box(app: &App, w: usize) -> Option<InputBox> {
     let f = app.note.flow.as_ref()?;
     let g = geom(app)?;
     let y = g.top + 1 + current(f) - g.first;
-    let x = 2 + g.label_w + 2;
-    if x + 2 > w {
+    let x = value_x(&g);
+    let right = (g.left + g.bw).min(w).saturating_sub(2);
+    if x + 2 > right {
         return None;
     }
-    let room = w - x;
+    let room = right - x;
     let (text, cx) = super::detail::input_view(app, room).unwrap_or_default();
     Some(InputBox {
         x,
@@ -924,48 +945,52 @@ pub(crate) fn hint(app: &App) -> Option<Option<String>> {
     Some(Some(t))
 }
 
-/// 窓の見出しの行: 作る場所(作る場所を選んでいる間は選んでいるフォルダの実際のパス)。
+/// 窓の題(上の縁に出す): 「新しいノート · <フォルダ> に作る」。作る場所を選んでいる間は選んでいるフォルダ。
 fn title(app: &App, f: &Flow) -> String {
-    let path = if f.choosing {
+    let name = |p: &Path| {
+        p.file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_else(|| p.display().to_string())
+    };
+    let place = if f.choosing {
         let sel = app
             .input
             .as_ref()
             .and_then(|i| i.list.as_ref())
             .map_or(0, |l| l.sel);
-        f.places
-            .get(sel)
-            .map(|p| p.display().to_string())
-            .unwrap_or_default()
+        f.places.get(sel).map(|p| name(p)).unwrap_or_default()
     } else {
-        let mut place = f
-            .root
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_else(|| f.root.display().to_string());
+        let mut place = name(&f.root);
         if !f.rule.folder.trim().is_empty() {
             place.push('/');
             place.push_str(f.rule.folder.trim().trim_matches('/'));
         }
-        Msg::NoteGuideWhere.fill(&[&place, &f.root.display()])
+        place
     };
-    sanitize(&format!("{}  {path}", Msg::NoteFormTitle.text()))
+    sanitize(&format!(
+        "{} · {}",
+        Msg::NoteFormTitle.text().trim(),
+        Msg::NoteFormWhere.fill(&[&place])
+    ))
 }
 
-/// 今の欄でない欄の値の見せ方: 答え、無ければ前もって入れる値と出どころ。
-fn value_text(app: &App, f: &Flow, row: Option<usize>) -> String {
+/// 今の欄でない欄の値の見せ方: 答え、無ければ前もって入れる値と出どころ、それも無ければ型の手がかり(SR-31。
+/// 2つ目が true なら手がかりで、薄く出す)。
+fn value_text(app: &App, f: &Flow, row: Option<usize>) -> (String, bool) {
     let Some(k) = row else {
-        return f
+        let name = f
             .root
             .file_name()
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_default();
+        return (name, false);
     };
     if k == 0 {
-        return f.name.clone();
+        return (f.name.clone(), false);
     }
     let c = &f.fields[k - 1];
     if let Some(v) = f.answer_of(c) {
-        return new_value_text(v);
+        return (new_value_text(v), false);
     }
     match f.preset(c) {
         Some(v) => {
@@ -975,16 +1000,55 @@ fn value_text(app: &App, f: &Flow, row: Option<usize>) -> String {
             } else {
                 Msg::NoteFromConfig.text()
             };
-            format!(
+            let text = format!(
                 "{}  {from}",
                 new_value_text(&newnote::expand_value(v, &vars))
-            )
+            );
+            (text, false)
         }
-        None => String::new(),
+        None => (type_hint(app, c), true),
     }
 }
 
-/// 表の上に窓を重ねる(CE-26)。カレンダーとリストの選択の窓はこの上に重なる。
+/// 型の手がかり(SR-31)。
+fn type_hint(app: &App, col: &str) -> String {
+    match app.src.kind(col).kind {
+        Kind::Date => "YYYY-MM-DD".to_string(),
+        Kind::DateTime => "YYYY-MM-DDTHH:MM".to_string(),
+        Kind::Number => Msg::NoteHintKindNumber.text().to_string(),
+        Kind::List => Msg::NoteHintKindList.text().to_string(),
+        Kind::Checkbox => "[ ]".to_string(),
+        Kind::Text => String::new(),
+    }
+}
+
+/// 枠の線の文字(SR-31): (左上・右上・左下・右下・横・縦・左の区切り・右の区切り)。あいまいな幅を2と数える
+/// 設定(CV-6)では ASCII にする(罫線は東アジアのあいまいな幅の文字)。
+fn box_chars(app: &App) -> [char; 8] {
+    if app.ambiguous_wide {
+        ['+', '+', '+', '+', '-', '|', '+', '+']
+    } else {
+        ['╭', '╮', '╰', '╯', '─', '│', '├', '┤']
+    }
+}
+
+/// 窓の行を、表の行(`line`)の桁 x から、span を並べて重ねる。
+fn put(lines: &mut [Line<'static>], y: usize, x: usize, spans: Vec<Span<'static>>, w: usize) {
+    let Some(line) = lines.get_mut(y) else {
+        return;
+    };
+    let mut at = x;
+    for sp in spans {
+        let sw = width(&sp.content);
+        if sw == 0 {
+            continue;
+        }
+        *line = super::list::splice(line, at, sp, sw, w);
+        at += sw;
+    }
+}
+
+/// 表の上に窓を重ねる(CE-26・SR-31)。カレンダーとリストの選択の窓はこの上に重なる。
 pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let Some(f) = app.note.flow.as_ref() else {
         return;
@@ -992,48 +1056,87 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let Some(g) = geom(app) else {
         return;
     };
+    let [tl, tr, bl, br, hz, vt, ml, mr] = box_chars(app);
+    let inner = g.bw - 2;
     let bold = Style::default().add_modifier(Modifier::BOLD);
-    let rev = bold.add_modifier(Modifier::REVERSED);
-    if let Some(line) = lines.get_mut(g.top) {
-        *line = super::view::pad(
-            vec![Span::styled(fit(&title(app, f), w, Align::Left), rev)],
-            w,
-            rev,
-        );
-    }
+    let dim = Style::default().add_modifier(Modifier::DIM);
+    let edge = |l: char, r: char, text: &str| {
+        let t = super::width::take(text, inner);
+        format!("{l}{t}{}{r}", hz.to_string().repeat(inner - width(&t)))
+    };
+    // 上の縁と題。
+    let head = format!("{hz} {} ", title(app, f));
+    put(
+        lines,
+        g.top,
+        g.left,
+        vec![Span::styled(edge(tl, tr, &head), bold)],
+        w,
+    );
     let rs = rows(f);
     let cur = current(f);
     let editing = app.mode == Mode::Edit;
+    let vx = value_x(&g);
     for (k, row) in rs.iter().enumerate().skip(g.first).take(g.count) {
         let y = g.top + 1 + k - g.first;
         let here = k == cur;
         let mut spans = vec![
+            Span::raw(format!("{vt} ")),
             Span::styled(if here { "> " } else { "  " }, bold),
             Span::styled(fit(&label(f, *row), g.label_w, Align::Left), bold),
             Span::raw("  "),
         ];
+        let room = (g.left + g.bw).saturating_sub(vx + 1);
         if here && editing {
             if let Some(b) = note_box(app, w) {
-                let st = Style::default().add_modifier(Modifier::UNDERLINED | Modifier::BOLD);
+                // SR-31: 入力欄は反転で欄と分かるように。
+                let st = super::view::input_style(app);
                 spans.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
+                spans.push(Span::raw(" ".repeat(room.saturating_sub(b.w))));
             }
         } else {
-            let mut t = sanitize(&value_text(app, f, *row));
+            let (mut t, hint) = value_text(app, f, *row);
+            let mut t2 = sanitize(&t);
             let step = row.unwrap_or(usize::MAX);
             if let Some((at, e)) = &f.error {
                 if *at == step {
-                    t = format!("{t}  ! {}", sanitize(e));
+                    t2 = format!("{t2}  ! {}", sanitize(e));
                 }
             }
-            spans.push(Span::raw(t));
+            t = t2;
+            spans.push(Span::styled(
+                fit(&t, room, Align::Left),
+                if hint { dim } else { Style::default() },
+            ));
         }
-        if let Some(line) = lines.get_mut(y) {
-            *line = super::view::pad(spans, w, Style::default());
-        }
+        spans.push(Span::raw(vt.to_string()));
+        put(lines, y, g.left, spans, w);
     }
-    // 窓と表の区切り。
-    if let Some(line) = lines.get_mut(g.top + 1 + g.count) {
-        *line = Line::from("-".repeat(w));
+    // 区切りと、押せるキー(下の帯と同じ。キーの表から)と、下の縁。
+    let y = g.top + 1 + g.count;
+    put(lines, y, g.left, vec![Span::raw(edge(ml, mr, ""))], w);
+    let keys = hints(app).unwrap_or_default().join("  ");
+    let keys = fit(&format!(" {}", sanitize(&keys)), inner, Align::Left);
+    put(
+        lines,
+        y + 1,
+        g.left,
+        vec![
+            Span::raw(vt.to_string()),
+            Span::styled(keys, dim),
+            Span::raw(vt.to_string()),
+        ],
+        w,
+    );
+    put(lines, y + 2, g.left, vec![Span::raw(edge(bl, br, ""))], w);
+    // 窓の左右に1桁ずつ空ける(表の文字が窓の縁に付いて見えないように)。
+    for yy in g.top..=y + 2 {
+        if g.left > 0 {
+            put(lines, yy, g.left - 1, vec![Span::raw(" ")], w);
+        }
+        if g.left + g.bw < w {
+            put(lines, yy, g.left + g.bw, vec![Span::raw(" ")], w);
+        }
     }
 }
 

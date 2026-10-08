@@ -1210,8 +1210,8 @@
       "CE-25",
       "CE-26"
     ],
-    "sha": "a23287f6b93ec4d9",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "354f7d5e10669c7f",
+    "by": "specs/_decisions/2026-10-08-edit-screen-design-locks.md"
   },
   "src/ui/test_new_note_more.rs::test_ce_25_palette_after_key_removed": {
     "ids": [
@@ -1224,8 +1224,8 @@
     "ids": [
       "CE-26"
     ],
-    "sha": "dce79639244fc91c",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "9040c6532c3700f9",
+    "by": "specs/_decisions/2026-10-08-edit-screen-design-locks.md"
   },
   "src/ui/test_new_note_more.rs::test_ce_25_bands_show_new_note_keys": {
     "ids": [
