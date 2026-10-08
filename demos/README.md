@@ -1,24 +1,23 @@
-# mdgrid の機能紹介
+# Feature tours / 機能紹介の録画
 
-機能ごとに、今のターミナルの中で mdgrid を動かして見せるスクリプト。いちばん下の行に字幕が出る。
-要るのは python3 と cargo だけ(tmux は要らない。macOS と Linux)。見本(`examples/`)の写しと専用の設定で動くので、
-本物の設定とノートには触らない。終わったあとはそのまま触れて、`exit`(か Ctrl+D)で終わると写しを消す。
-字幕は今は日本語だけ。リポの根で動かす:
+Scripts for [VHS](https://github.com/charmbracelet/vhs) that record mdgrid's features as GIFs. Each `.tape` runs mdgrid on a copy of `examples/` in a temporary folder, with its own home, config and state, so nothing outside that folder is touched. The recordings go to `demos/out/`, which is not committed: upload a GIF where you need it (a pull request, an issue or a release) instead of adding it to the repository.
+
+[VHS](https://github.com/charmbracelet/vhs) の台本で、mdgrid の機能を GIF に録る。どの台本も、一時フォルダに写した `examples/` と、その中のホーム・設定・状態で mdgrid を動かすので、そのフォルダの外には触らない。録画は `demos/out/` に出て、コミットしない(要るところ、PR・Issue・リリースに貼る)。
 
 ```sh
-python3 demos/all.py                  # 全部をひと続きで(約8分。TOUR_SPEED=2 で半分)
-python3 demos/all.py places themes    # 選んだものだけ(python3 demos/all.py --list で名前)
-
-python3 demos/places.py      # 登録した表を切り替えて開く(2026-10-08)
-python3 demos/new_note.py    # 新しいノートをフォームで作る(2026-10-07)
-python3 demos/export.py      # 表をファイルに書き出す・--print(2026-10-07)
-python3 demos/values.py      # 型ごとに値を入れて保存する(リスト・日付・数・チェック・タグ・日時)
-python3 demos/themes.py      # 色のテーマを切り替える(7つ)
+brew install vhs              # VHS(ttyd と ffmpeg も入る)
+sh demos/record.sh            # 全部を撮る
+sh demos/record.sh places     # 1本だけ
 ```
 
-- 速さ: `TOUR_SPEED=2 python3 demos/places.py`(倍の速さ)
-- 英語の画面: `TOUR_LANG=en_US.UTF-8 python3 demos/export.py`(字幕は日本語のまま)
+| Tape / 台本 | Shows / 見せること |
+|---|---|
+| `values.tape` | 型ごとの入力(リスト・日付・数・チェック・タグ)と保存の確認 |
+| `new-note.tape` | 新しいノートのフォーム(雛形の値・必須の欄・隠して入れる作成日) |
+| `export.tape` | 絞った表を CSV に書き出す・画面なしの `--print` |
+| `places.tape` | 登録した表を一覧から切り替えて開く・この表を登録する |
+| `themes.tape` | 色のテーマ(examples/themes/ の6つ) |
 
-新しい紹介は `tour.py` の `Tour` を使って `TITLE`・`setup`・`steps` を書き(書き方は tour.py の先頭)、all.py の `SECTIONS` に名前を足す。steps は保管庫(examples/vault)で始まる前提で、mdgrid は `mdgrid .` のようにフォルダを渡して起動する(登録した表があると、引数なしでは一覧が出るため)。ファイル名は Python の標準のモジュール名(types・json など)と重ねない(取り込みが壊れる)。
-確かめは、tmux を端末の代わりにして流し、画面を読む:
-`tmux new -d -s t -x 110 -y 30 'TOUR_SPEED=3 python3 demos/places.py'` → `tmux capture-pane -p -t t`。
+To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screen is Japanese (`Env LANG`); set `Env LANG "en_US.UTF-8"` for English. The font is BIZ UDGothic, a monospace font with Japanese glyphs.
+
+足すときは台本を写し、設定の後に `Source demos/setup.tape` を置き、mdgrid はフォルダを渡して起動する(`mdgrid .`)。画面は日本語(`Env LANG`)。字の形は日本語を含む等幅の BIZ UDGothic。
