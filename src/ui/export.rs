@@ -30,18 +30,7 @@ fn pending_value(v: &NewValue) -> Option<Value> {
 
 /// OUT-5: 打った名前のパス。先頭の `~` はホームのフォルダ、相対は起動したフォルダから。
 fn resolve(name: &str) -> PathBuf {
-    let home = || std::env::var_os("HOME").map(PathBuf::from);
-    if name == "~" {
-        if let Some(h) = home() {
-            return h;
-        }
-    }
-    if let Some(rest) = name.strip_prefix("~/") {
-        if let Some(h) = home() {
-            return h.join(rest);
-        }
-    }
-    PathBuf::from(name)
+    mdgrid::places::expand_home(name)
 }
 
 impl App {

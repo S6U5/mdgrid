@@ -246,6 +246,13 @@ wait = { en = "wrote", ja = "書いた" }
 text = { en = "The command palette exports the table as shown (filters, sorting and hidden columns applied). The extension picks the format: .csv, .tsv, .json or .md. The first column is each note's path, so a CSV or JSON can come back with --apply.", ja = "パレットから、今見えている表(絞り込み・並べ替え・隠した列を当てたもの)を書き出す。形は拡張子(.csv・.tsv・.json・.md)で決まる。先頭の列は各ノートのパスなので、CSV と JSON は --apply で戻せる。" }
 
 [[shot]]
+id = "open-place"
+title = { en = "Open a registered table", ja = "登録した表を開く" }
+env = { XDG_CONFIG_HOME = "/tmp/mdgrid-demo/examples/places" }
+keys = [":", "text:open_place", "Enter"]
+text = { en = "Tables registered in places.toml (from the palette's register this table, or by hand) are listed by group. Type to narrow, Enter to open. Plain mdgrid with no arguments shows the same list.", ja = "places.toml に登録した表(パレットの「この表を登録」か手で書く)が分類ごとに並ぶ。打って絞り、Enter で開く。引数なしの mdgrid でも同じ一覧が出る。" }
+
+[[shot]]
 id = "freeze-columns"
 title = { en = "Freeze columns", ja = "列を固定する" }
 keys = ["l", "F", "End"]

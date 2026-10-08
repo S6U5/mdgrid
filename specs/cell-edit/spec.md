@@ -90,6 +90,7 @@ updated: 2026-10-07
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-08 | [新しいノートの窓の枠に合わせて、窓の欄を確かめる試験の錠を掛け直す(edit-screen-design-locks)](../_decisions/2026-10-08-edit-screen-design-locks.md) | accepted | 人 | 人の発言 | CE-25, CE-26 |
 | 2026-10-07 | [日時の列のカレンダーに時刻の欄を足す(time-picker)](../_decisions/2026-10-07-time-picker.md) | accepted | 人 | 人の発言 | CE-30 |
 | 2026-10-07 | [時刻の欄の細部(time-picker-details)](../_decisions/2026-10-07-time-picker-details.md) | accepted | AI | AI の提案 | CE-31 |
 | 2026-10-07 | [1つの値で書かれたリストを、付け外しでリストに書き換える(scalar-list-edit)](../_decisions/2026-10-07-scalar-list-edit.md) | accepted | 人 | 人の発言 | CE-19, CE-16, CE-17 |

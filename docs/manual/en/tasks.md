@@ -154,6 +154,33 @@ todo() { mdgrid ~/notes/Tasks --print --format md --filter 'status != "done"' --
 pick-task() { mdgrid ~/notes/Tasks --pick path; }
 ```
 
+## Register the tables you use and switch between them
+
+You can register a table you open often (a folder or a `.base`) under a name and a group. On that table, choose **register this table** in the palette (`:`), then set the name (the current view or folder name is filled in) and the group (pick one you already have or type a new one). If the name is taken, mdgrid asks before replacing it.
+
+Once something is registered, running `mdgrid` with no arguments shows the list, grouped, on top of the current folder's table. Type part of a name, group or path to narrow it, and press Enter to open one (on its registered view).
+
+![Open a registered table](images/open-place.svg)
+
+ The first row, "this folder", or Esc keeps the current folder. While a table is open, **open a registered table** in the palette shows the same list. If you have unsaved changes, mdgrid asks whether to save or discard them before switching.
+
+Registrations live in `places.toml` in the config folder (`~/.config/mdgrid/places.toml`). You can also write it by hand:
+
+```toml
+[[place]]
+name = "Tasks"
+group = "Work"
+path = "~/notes/Tasks"
+
+[[place]]
+name = "Books"
+group = "Personal"
+path = "~/notes/Books.base"
+view = "Reading"
+```
+
+A leading `~` in `path` means your home folder. Rows that cannot be read (no `name` or `path`, or a repeated name) are skipped with a warning. Notes are never written.
+
 ## Use with other commands
 
 To save the table exactly as shown — with your filters, sorting and hidden columns — choose **Export the table to a file** in the command palette (`:`) and type a file name. The extension picks the format: `.csv`, `.tsv`, `.json` or `.md`. The first column is each note's path, so a CSV or JSON can come back with `--apply`.

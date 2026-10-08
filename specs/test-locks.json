@@ -5506,5 +5506,125 @@
       "CE-32"
     ],
     "sha": "63341af28ae9b4cb"
+  },
+  "src/test_main.rs::test_cli_1_no_args_opens_current_folder_default_table": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "ec69af2537625b20"
+  },
+  "src/test_main.rs::test_cli_1_paths_or_current_folder": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "72bc715a89a510d5"
+  },
+  "src/test_places_unit.rs::test_cli_18_bad_rows_warn_and_skip": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "e418cb834087d9da"
+  },
+  "src/test_places_unit.rs::test_cli_18_places_round_trip": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "6371df51b8fc61dc"
+  },
+  "src/test_places_unit.rs::test_cli_18_tilde_is_home": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "b3bc8ec37b0bb1b6"
+  },
+  "src/test_places_unit.rs::test_cli_19_grouped_order": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "a0ad1943b5c8dee1"
+  },
+  "src/ui/test_grid.rs::test_cli_2_view_option_opens_named_view": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "a801e2f2ea8f2c4e"
+  },
+  "src/ui/test_places.rs::test_cli_18_empty_name_stays": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "194bdec271f02863"
+  },
+  "src/ui/test_places.rs::test_cli_18_pick_existing_group_and_overwrite": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "6c5066d0c270ca90"
+  },
+  "src/ui/test_places.rs::test_cli_18_register_from_palette": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "b3e1fa8243a4bf72"
+  },
+  "src/ui/test_places.rs::test_cli_19_here_closes_list": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "e602360f3a02f906"
+  },
+  "src/ui/test_places.rs::test_cli_19_no_places_message": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "bd5a009756060ac8"
+  },
+  "src/ui/test_places.rs::test_cli_19_open_list_and_switch": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "7f81e7b5e045abcd"
+  },
+  "src/ui/test_places.rs::test_cli_19_pending_changes_ask_first": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "e698bf3f3b55768f"
+  },
+  "src/ui/test_places_more.rs::test_cli_18_default_name_is_current_view": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "0415fb1214099be6"
+  },
+  "src/ui/test_places_more.rs::test_cli_18_readonly_registers_without_touching_notes": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "96b74063607950cc"
+  },
+  "src/ui/test_places_more.rs::test_cli_19_reopen_selects_registered_view": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "7b89d88579c7b7e1"
+  },
+  "src/ui/test_places_more.rs::test_cli_19_save_then_switch": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "019568e14e3a6089"
+  },
+  "tests/test_open_md_file.rs::test_cli_15_folder_selects_first_row_for_comparison": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "40608faabd505dbd"
+  },
+  "tests/test_places_e2e.rs::test_cli_1_no_places_opens_cwd": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "fb048f4219cdb075"
   }
 }

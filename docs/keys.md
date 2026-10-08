@@ -447,3 +447,5 @@ These commands have no key and can't be bound in the config file. Run them from 
 
 - `export_base` — write mdgrid's views to a new `.base` file under a name you choose (existing `.base` files are never overwritten)
 - `import_base` — pick a `.base` file and import one of its views as an mdgrid view
+- `open_place` — list the registered tables (`places.toml`) and open the one you pick
+- `register_place` — register the current table under a name and a group

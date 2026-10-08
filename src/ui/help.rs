@@ -127,8 +127,8 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
     }
     // BV-19: キーの無いパレットのコマンド(キーの欄は `:` のあとに打つ名前)。
     let mut cmd_sections: Vec<(&'static str, &'static str)> = Vec::new();
-    // 読むだけ(WB-15)では書くコマンドなので出さない(パレットと同じ)。
-    for c in keymap::COMMANDS.iter().filter(|_| !app.readonly) {
+    // 読むだけ(WB-15)では書くコマンドなので出さない(パレットと同じ。ノートを書かない登録した表のは出す)。
+    for c in keymap::commands(app.readonly) {
         if !cmd_sections.iter().any(|(s, _)| *s == c.section) {
             cmd_sections.push((c.section, c.section_text()));
         }
@@ -136,8 +136,7 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
     for (s, shown) in cmd_sections {
         out.push((String::new(), false));
         out.push((format!(" {shown}"), true));
-        let items: Vec<(String, &'static str, u8)> = keymap::COMMANDS
-            .iter()
+        let items: Vec<(String, &'static str, u8)> = keymap::commands(app.readonly)
             .filter(|c| c.section == s)
             .map(|c| (format!(":{}", c.action.name()), c.text(), 0))
             .collect();
@@ -299,9 +298,9 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
             scored.push((p, scored.len(), a));
         }
     }
-    // BV-19: キーの無いコマンド(読むだけでは書くので出さない)。
+    // BV-19: キーの無いコマンド(読むだけでは書くので出さない。ノートを書かない登録した表のは出す)。
     let mut commands: Vec<&keymap::Command> = Vec::new();
-    for c in keymap::COMMANDS.iter().filter(|_| !app.readonly) {
+    for c in keymap::commands(app.readonly) {
         let best = [score(q, c.action.name()), score(q, c.text())]
             .into_iter()
             .flatten()

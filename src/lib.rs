@@ -16,6 +16,7 @@ pub mod i18n;
 pub mod links;
 pub(crate) mod mdtext;
 pub mod newnote;
+pub mod places;
 pub mod print;
 pub mod settings;
 pub mod source;

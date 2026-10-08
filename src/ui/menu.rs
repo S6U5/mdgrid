@@ -59,8 +59,7 @@ fn label_of(app: &App, action: Action) -> &'static str {
     if let Some(b) = keymap::BINDINGS.iter().find(table) {
         return b.text();
     }
-    keymap::COMMANDS
-        .iter()
+    keymap::commands(false)
         .find(|c| c.action == action)
         .map_or(action.name(), |c| c.text())
 }

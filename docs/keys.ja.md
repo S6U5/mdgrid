@@ -447,3 +447,5 @@ mdgrid の既定のキーの割り当てを、モードごとに並べる。設�
 
 - `export_base` — mdgrid のビューを、名前を決めた新しい `.base` に書き出す(既にある `.base` は書き換えない)
 - `import_base` — `.base` を選び、そのビューを mdgrid のビューとして取り込む
+- `open_place` — 登録した表(`places.toml`)の一覧を出し、選んだ表を開く
+- `register_place` — 今の表を、名前と分類を付けて登録する
