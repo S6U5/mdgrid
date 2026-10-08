@@ -41,6 +41,10 @@ cargo test
 
 The tests run in Japanese by default (`.cargo/config.toml`). Screen tests drive the real binary in a pseudo-terminal (`tests/pty/`).
 
+## Feature tours
+
+`demos/` has scripted tours that drive mdgrid in your own terminal, with a caption on the bottom line: `python3 demos/all.py` plays them all, `python3 demos/places.py` plays one. They need only python3 and cargo (no tmux), run on a copy of `examples/` with their own config, and never touch your notes or settings. Captions are in Japanese for now. When you add a feature, add a tour for it (see `demos/README.md`).
+
 ## Pull requests (collaborators)
 
 - Keep a pull request to one change. Small is easier to review.
