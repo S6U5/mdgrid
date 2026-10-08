@@ -1,0 +1,46 @@
+name: Demos
+
+# Record the feature tours in demos/*.tape as GIFs with VHS. The release workflow calls this and attaches
+# the GIFs to the release; pull requests that change the tapes run it too, to catch a broken tape early.
+# The GIFs are never committed.
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - "demos/**"
+      - ".github/workflows/demos.yml"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  VHS_VERSION: "0.12.1"
+  VHS_SHA256: "eb33787a5b1cebf91fe0b18bd231e2d71d36c1ff4babd99ddac1a6ab411efd10"
+
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
+        with:
+          toolchain: stable
+      - name: Install VHS, ttyd, ffmpeg and the font
+        run: |
+          set -euo pipefail
+          sudo apt-get update -q
+          sudo apt-get install -y -q ttyd ffmpeg fonts-morisawa-bizud-gothic
+          name="vhs_${VHS_VERSION}_Linux_x86_64"
+          curl -fsSL -o vhs.tar.gz "https://github.com/charmbracelet/vhs/releases/download/v${VHS_VERSION}/${name}.tar.gz"
+          echo "${VHS_SHA256}  vhs.tar.gz" | sha256sum -c -
+          tar xzf vhs.tar.gz
+          sudo install "${name}/vhs" /usr/local/bin/vhs
+          vhs --version
+      - name: Record
+        run: sh demos/record.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demos
+          path: demos/out/*.gif
+          if-no-files-found: error

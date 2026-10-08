@@ -185,6 +185,7 @@ alias standup='mdgrid ~/vault/タスク.base --view 状態ごと'
 
 - [説明書](docs/manual/ja/index.md) — はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。
 - [設定](docs/config.ja.md) — 全部の項目と既定値。`mdgrid --print-config` は説明のコメント付きの設定を出すので、出発点にできます。
+- [機能紹介の録画](demos/README.md) — 型ごとの入力・新しいノートのフォーム・書き出し・登録した表・テーマの短い GIF(画面は英語)。リリースのたびに撮り直します。
 - [キー](docs/keys.ja.md) — モードごとの既定のキーと、変え方。
 - [書き戻しの安全](docs/safety.ja.md) — 何を書き、何に触らないか。読むだけになるノートとその理由。
 - [Obsidian Bases への対応](docs/obsidian-bases.ja.md) — `.base` のどこを読み、評価し、無視するか。

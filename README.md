@@ -185,6 +185,7 @@ From the command palette, `:export_base` writes the current view to a new `.base
 
 - [User manual](docs/manual/en/index.md) — getting started, task guides, the themes, and a screenshot of every screen.
 - [Configuration](docs/config.md) — every setting, with defaults. `mdgrid --print-config` prints a commented starting file.
+- [Feature tours](demos/README.md) — short GIFs of entering values by type, the new-note form, exporting, registered tables and the themes, recorded for each release.
 - [Keys](docs/keys.md) — the default keys of each mode, and how to change them.
 - [Write-back safety](docs/safety.md) — what mdgrid writes, what it never touches, and which notes stay read-only and why.
 - [Obsidian Bases support](docs/obsidian-bases.md) — which parts of `.base` files mdgrid reads, evaluates or ignores.

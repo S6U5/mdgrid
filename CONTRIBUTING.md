@@ -43,7 +43,7 @@ The tests run in Japanese by default (`.cargo/config.toml`). Screen tests drive 
 
 ## Feature tours
 
-`demos/` holds [VHS](https://github.com/charmbracelet/vhs) tapes that record mdgrid's features as GIFs (`sh demos/record.sh`). They run on a copy of `examples/` in a temporary folder and never touch your notes or settings. The GIFs go to `demos/out/` and are not committed; upload one where it is needed (a pull request, an issue or a release). When you add a feature, add a tape for it (see `demos/README.md`).
+`demos/` holds [VHS](https://github.com/charmbracelet/vhs) tapes that record mdgrid's features as GIFs (`sh demos/record.sh`). They run on a copy of `examples/` in a temporary folder and never touch your notes or settings. The GIFs go to `demos/out/` and are not committed; each release records them in CI and attaches them to the release. When you add a feature, add a tape for it (see `demos/README.md`).
 
 ## Pull requests (collaborators)
 

@@ -1,6 +1,7 @@
 name: Release
 
-# Push a tag such as v0.1.0 to build the binaries, publish a GitHub Release, and publish the crate to crates.io.
+# Push a tag such as v0.1.0 to build the binaries, record the feature tours (demos.yml), publish a GitHub Release
+# with both attached, and publish the crate to crates.io.
 on:
   push:
     tags: ["v*"]
@@ -83,8 +84,14 @@ jobs:
           name: notes
           path: NOTES.md
 
+  demos:
+    # The feature tours as GIFs. Releases are immutable, so they are recorded before the release is created.
+    uses: ./.github/workflows/demos.yml
+
   release:
-    needs: [build, notes]
+    needs: [build, notes, demos]
+    # A broken tape must not block a release: publish without the GIFs then.
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.notes.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
