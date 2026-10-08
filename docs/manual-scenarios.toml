@@ -564,6 +564,16 @@ env = { MDGRID_TODAY = "2026-10-07" }
 wait = "▾"
 text = { en = "The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.", ja = "見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。" }
 
+
+[[shot]]
+id = "demo-ai-human-en"
+title = { en = "Human and AI tasks (English sample)", ja = "人と AI のタスク(英語の見本)" }
+command = ["./target/release/mdgrid", "--config", "examples/ai-human/config.toml", "examples/ai-human/vault-en/Tasks.base"]
+ready = "People and AI"
+env = { MDGRID_TODAY = "2026-10-07" }
+wait = "▾"
+text = { en = "The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.", ja = "見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。" }
+
 [[shot]]
 id = "demo-menu"
 title = { en = "Actions for the selected cell", ja = "その場の操作の一覧" }
