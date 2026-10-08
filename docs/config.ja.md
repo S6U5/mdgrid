@@ -7,6 +7,8 @@ mdgrid は TOML のファイルを1つ読む:
 - `$XDG_CONFIG_HOME/mdgrid/config.toml`。`XDG_CONFIG_HOME` が無ければ `~/.config/mdgrid/config.toml`(macOS でも同じ)。
 - `mdgrid --config <パス>` なら、そのファイルを読む。
 
+同じフォルダには `views.toml`(mdgrid のビュー)と `places.toml`(登録した表。[使う表を登録して切り替える](manual/ja/tasks.md#使う表を登録して切り替える))も置く。この2つは mdgrid が書く。
+
 どの項目も書かなくてよい。ファイルが無ければ既定で動く。知らない項目と型の違う値は、メッセージ行に警告を出して無視し、起動は止めない。壊れた TOML は理由を1行出して止まる。
 
 既定から始めるなら、説明のコメント付きで書き出す:

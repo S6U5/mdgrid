@@ -41,6 +41,8 @@ impl App {
             Action::Back => {
                 self.review = None;
                 self.quit_after_save = false;
+                // CLI-19: 戻ったら、一覧で選んだ表へは移らない。
+                self.switch_to = None;
                 self.set_mode(Mode::Table);
             }
             Action::NextFile => {

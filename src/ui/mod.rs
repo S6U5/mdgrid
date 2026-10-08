@@ -25,6 +25,7 @@ pub mod native_io;
 pub mod native_views;
 pub mod nav;
 pub mod new_note;
+pub mod places;
 pub mod popup;
 pub mod review;
 pub mod settings;
@@ -169,6 +170,10 @@ mod test_note_editor;
 mod test_note_form;
 #[cfg(test)]
 mod test_note_time;
+#[cfg(test)]
+mod test_places;
+#[cfg(test)]
+mod test_places_more;
 #[cfg(test)]
 mod test_review6;
 #[cfg(test)]

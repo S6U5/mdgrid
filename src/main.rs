@@ -115,7 +115,7 @@ impl PrintFormat {
     bin_name = "mdgrid",
     version,
     about = "Markdown のフロントマターを端末の表で見て直す",
-    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n引数が無ければ今のフォルダを開く。",
+    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。",
     disable_help_flag = true,
     disable_version_flag = true,
     args_override_self = true
@@ -627,6 +627,7 @@ fn main() -> ExitCode {
     };
     // SR-23: 設定の language で決め直す(--help と起動できない理由もこの言語)。
     i18n::set_default(language(opts.config.as_deref(), config::config_path()));
+    let no_args = args.is_empty();
     let (paths, pick) = match parse_args(&args) {
         Ok(Command::Help) => {
             println!("{}", usage());
@@ -664,57 +665,26 @@ fn main() -> ExitCode {
     if let Err(e) = check_paths(&paths) {
         return fail(&e);
     }
-    let mut target = match open_target(&paths, opts.view.as_deref()) {
-        Ok(t) => t,
+    // OUT-3: `--pick` は読むだけ(WB-15)で開く。
+    let (mut app, editor) = match open_app(&paths, opts.view.as_deref(), &opts, pick.is_some()) {
+        Ok(a) => a,
         Err(e) => return fail(&e),
     };
-    let (config, warnings) = match load_config(opts.config.as_deref(), config::config_path()) {
-        Ok(c) => c,
-        Err(e) => return fail(&e),
-    };
-    // WB-3: 読み込み(load)の前に渡す。
-    target.src.set_add_frontmatter(config.add_frontmatter);
+    app.select_after_load = select;
     // SR-10: `--pick` は画面を端末(`/dev/tty`)に出すので、標準出力は見ない。
-    let screen = if pick.is_some() {
-        Screen::Tty
-    } else {
-        Screen::Stdout
-    };
-    let tty = match screen {
-        Screen::Tty => check_dev_tty(),
-        Screen::Stdout => check_tty(io::stdin().is_terminal(), io::stdout().is_terminal()),
+    let tty = match pick {
+        Some(_) => check_dev_tty(),
+        None => check_tty(io::stdin().is_terminal(), io::stdout().is_terminal()),
     };
     if let Err(e) = tty {
         return fail(&e);
     }
-    // SR-8: 設定の editor > $VISUAL > $EDITOR > vi。
-    let editor = config::resolve_editor(
-        config.editor.as_deref(),
-        std::env::var("VISUAL").ok().as_deref(),
-        std::env::var("EDITOR").ok().as_deref(),
-    );
-    let color = ColorMode::detect(|k| std::env::var(k).ok());
-    let mut app = App::new(Box::new(target.src), color);
-    app.no_emoji = ui::dumb_terminal(|k| std::env::var(k).ok());
-    app.start(Startup {
-        config,
-        warnings,
-        // OUT-3: `--pick` は読むだけ(WB-15)で開く。
-        readonly: opts.readonly || pick.is_some(),
-        no_color: opts.no_color,
-        state_dir: config::state_dir(),
-        // BV-17・BV-20: mdgrid のビュー(views.toml)は設定の置き場(config.toml と同じフォルダ)。
-        config_dir: config_dir(),
-        target: state_target(&paths),
-        base: target.base,
-    });
-    app.select_after_load = select;
-    app.guessed_root = target.guessed_root;
     let Some(what) = pick else {
-        return match run(&mut app, &editor, Screen::Stdout) {
-            Ok(()) => ExitCode::SUCCESS,
-            Err(e) => fail(&Msg::TerminalError.fill(&[&e])),
-        };
+        // CLI-1・CLI-19: 引数なしで起動し、登録した表があれば一覧を重ねて始める。
+        if no_args && !app.registered.is_empty() {
+            app.start_open_places(true);
+        }
+        return run_switching(app, editor, &opts);
     };
     // OUT-3: 列の名前は、ノートを読み終えてから表の列で確かめる(無ければ画面を出さずに理由1行)。
     let column = match what {
@@ -750,6 +720,68 @@ fn main() -> ExitCode {
         out.push('\n');
     }
     emit(Ok(out.into_bytes()))
+}
+
+/// 表を開いて画面の App を作る(CLI-1・CLI-2・CLI-3): 対象・設定・起動の設定。エディタの名前も返す。
+fn open_app(
+    paths: &[PathBuf],
+    view: Option<&str>,
+    opts: &Options,
+    pick: bool,
+) -> Result<(App, String), String> {
+    let mut target = open_target(paths, view)?;
+    let (config, warnings) = load_config(opts.config.as_deref(), config::config_path())?;
+    // WB-3: 読み込み(load)の前に渡す。
+    target.src.set_add_frontmatter(config.add_frontmatter);
+    // SR-8: 設定の editor > $VISUAL > $EDITOR > vi。
+    let editor = config::resolve_editor(
+        config.editor.as_deref(),
+        std::env::var("VISUAL").ok().as_deref(),
+        std::env::var("EDITOR").ok().as_deref(),
+    );
+    let color = ColorMode::detect(|k| std::env::var(k).ok());
+    let mut app = App::new(Box::new(target.src), color);
+    app.no_emoji = ui::dumb_terminal(|k| std::env::var(k).ok());
+    app.start(Startup {
+        config,
+        warnings,
+        readonly: opts.readonly || pick,
+        no_color: opts.no_color,
+        state_dir: config::state_dir(),
+        // BV-17・BV-20: mdgrid のビュー(views.toml)は設定の置き場(config.toml と同じフォルダ)。
+        config_dir: config_dir(),
+        target: state_target(paths),
+        base: target.base,
+    });
+    app.guessed_root = target.guessed_root;
+    Ok((app, editor))
+}
+
+/// 画面を出す。一覧で別の表を選んで終わったら(CLI-19)、その表で開き直して続ける。開けなければ
+/// 前の表に戻って理由を出す。
+fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
+    loop {
+        if let Err(e) = run(&mut app, &editor, Screen::Stdout) {
+            return fail(&Msg::TerminalError.fill(&[&e]));
+        }
+        let Some(place) = app.switch_to.take() else {
+            return ExitCode::SUCCESS;
+        };
+        match open_app(std::slice::from_ref(&place.path), None, opts, false) {
+            Ok((next, ed)) => {
+                app = next;
+                editor = ed;
+                if let Some(v) = &place.view {
+                    app.select_view_named(v);
+                }
+            }
+            Err(e) => {
+                app.quit = false;
+                app.set_mode(ui::keymap::Mode::Table);
+                app.message = Some(e);
+            }
+        }
+    }
 }
 
 /// `--pick path` の1行(OUT-3): ノートの実体のパスが起動の引数のフォルダ(`.base` ならそのフォルダ)を

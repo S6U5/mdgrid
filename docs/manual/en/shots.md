@@ -246,6 +246,14 @@ Keys: `A` `r` `e` `v` `i` `e` `w` `e` `r` `Enter`
 
 A adds a column for a key no note has yet. Only the notes you fill in get the key when you save.
 
+## Open a registered table
+
+Keys: `:` `open_place` `Enter`
+
+![Open a registered table](images/open-place.svg)
+
+Tables registered in places.toml (from the palette's register this table, or by hand) are listed by group. Type to narrow, Enter to open. Plain mdgrid with no arguments shows the same list.
+
 ## Freeze columns
 
 Keys: `l` `F` `End`

@@ -189,6 +189,10 @@ pub struct App {
     pub select_after_load: Option<std::path::PathBuf>,
     /// BV-2: `.base` の上に `.obsidian/` が無く、根を `.base` のフォルダに推したときのその根。
     pub guessed_root: Option<std::path::PathBuf>,
+    /// CLI-18・CLI-19: 登録した表(places.toml)。
+    pub(crate) registered: Vec<mdgrid::places::Place>,
+    /// CLI-19: 終わったあとに開き直す表(一覧で選んだ。main が見る)。
+    pub switch_to: Option<mdgrid::places::Place>,
     pub quit: bool,
 }
 
@@ -275,6 +279,8 @@ impl App {
             theme: Theme::Default,
             select_after_load: None,
             guessed_root: None,
+            registered: Vec::new(),
+            switch_to: None,
             quit: false,
         };
         app.refresh();
@@ -644,12 +650,8 @@ impl App {
                 }
             }
             Action::Quit => {
-                if self.changes.count() == 0 {
-                    self.quit = true;
-                } else {
-                    // WB-11: 保存する・捨てる・戻る を確かめる。
-                    self.set_mode(Mode::Quit);
-                }
+                self.switch_to = None;
+                self.begin_quit();
             }
             Action::CancelLoad => {
                 if self.progress.done {
@@ -683,6 +685,9 @@ impl App {
             Action::ExportBase => self.start_export(),
             Action::ExportTable => self.start_export_table(),
             Action::ImportBase => self.start_import(),
+            // ---- 登録した表(places.rs。CLI-18・CLI-19) ----
+            Action::OpenPlace => self.start_open_places(false),
+            Action::RegisterPlace => self.start_register_place(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),
             Action::DeleteKey => self.start_delete_key(),

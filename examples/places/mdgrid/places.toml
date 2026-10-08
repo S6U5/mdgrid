@@ -1,0 +1,23 @@
+# 登録した表の見本(CLI-18)。`XDG_CONFIG_HOME=examples/places mdgrid` で、リポの根から試せる。
+# A sample of registered tables. Try it from the repository root: `XDG_CONFIG_HOME=examples/places mdgrid`.
+
+[[place]]
+name = "タスク"
+group = "仕事"
+path = "examples/vault/タスク.base"
+view = "進行中"
+
+[[place]]
+name = "保管庫"
+group = "仕事"
+path = "examples/vault"
+
+[[place]]
+name = "予定"
+group = "見本"
+path = "examples/schedule"
+
+[[place]]
+name = "人と AI"
+group = "見本"
+path = "examples/ai-human/vault"

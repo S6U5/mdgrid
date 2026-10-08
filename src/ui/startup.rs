@@ -56,6 +56,12 @@ impl App {
         if s.readonly {
             self.set_readonly();
         }
+        // CLI-18: 登録した表は views.toml と同じ設定のフォルダ。
+        if let Some(dir) = &s.config_dir {
+            let (places, warns) = mdgrid::places::load(dir);
+            self.registered = places;
+            warnings.extend(warns);
+        }
         // BV-20: mdgrid のビューは開く前に読む(壊れていれば警告してタブなし)。
         warnings.extend(self.load_native(s.config_dir, &s.target));
         self.store = s.state_dir.map(|dir| Store {

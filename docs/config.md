@@ -7,6 +7,8 @@ mdgrid reads one TOML file:
 - `$XDG_CONFIG_HOME/mdgrid/config.toml`, or `~/.config/mdgrid/config.toml` when `XDG_CONFIG_HOME` is unset (also on macOS).
 - `mdgrid --config <path>` reads that file instead.
 
+The same folder also holds `views.toml` (mdgrid views) and `places.toml` (registered tables; see [Register the tables you use](manual/en/tasks.md#register-the-tables-you-use-and-switch-between-them)). mdgrid writes those two itself.
+
 Every item is optional. Without a file mdgrid runs with the defaults. Unknown items and values of the wrong type produce a warning on the message line and are ignored; mdgrid still starts. A broken TOML file stops mdgrid with a one-line reason.
 
 To start from the defaults, write them out with comments:

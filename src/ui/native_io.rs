@@ -48,6 +48,20 @@ pub(crate) enum Ask {
         base: Box<Base>,
         names: Vec<String>,
     },
+    /// 登録した表の一覧(CLI-19)。`picks` は行ごとの `App.registered` の添字(None は今のフォルダ)。
+    OpenPlace {
+        items: Vec<String>,
+        picks: Vec<Option<usize>>,
+    },
+    /// 登録する名前(CLI-18)。
+    PlaceName(mdgrid::places::Place),
+    /// 登録する分類(CLI-18)。候補は今の分類。
+    PlaceGroup {
+        place: mdgrid::places::Place,
+        groups: Vec<String>,
+    },
+    /// 同じ名前の登録の置き換えの確かめ(CLI-18)。続けて `y`。
+    PlaceOverwrite(mdgrid::places::Place),
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -123,17 +137,28 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::DeleteKey(k, n)) => Msg::AskDeleteKey.fill(&[&sanitize(k), n]),
         Some(Ask::ImportFile(_)) => Msg::AskImportFile.into(),
         Some(Ask::ImportView { file, .. }) => Msg::AskImportView.fill(&[&sanitize(file)]),
+        Some(Ask::OpenPlace { .. }) => format!("{}: ", Msg::PlaceOpen.text()),
+        Some(Ask::PlaceName(_)) => Msg::PlaceAskName.into(),
+        Some(Ask::PlaceGroup { .. }) => Msg::PlaceAskGroup.into(),
+        Some(Ask::PlaceOverwrite(p)) => Msg::PlaceAskOverwrite.fill(&[&sanitize(&p.name)]),
     }
 }
 
 /// 続きの入力の候補(全部)と、打った語で絞った添字。
-fn ask_items<'a>(app: &'a App, query: &str) -> (&'a [String], Vec<usize>) {
+fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
     let items: &[String] = match &app.nv.ask {
         Some(Ask::ImportFile(files)) => files,
         Some(Ask::ImportView { names, .. }) => names,
+        Some(Ask::OpenPlace { items, .. }) => items,
+        Some(Ask::PlaceGroup { groups, .. }) => {
+            // CLI-18: 打った語は新しい分類にもなるので、絞った候補をそのまま並べる。
+            let shown = super::places::group_items(groups, query).0;
+            let idx = (0..shown.len()).collect();
+            return (shown, idx);
+        }
         _ => &[],
     };
-    (items, filtered(items, query))
+    (items.to_vec(), filtered(items, query))
 }
 
 /// 続きの入力を表の上に重ねる(パレットと同じ場所: 2行目に入力、その下に候補)。
@@ -146,7 +171,9 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         w,
     )];
     let room = lines.len().saturating_sub(3).clamp(1, ASK_ROWS);
-    if let Ask::ExportName = ask {
+    if matches!(ask, Ask::PlaceName(_) | Ask::PlaceOverwrite(_)) {
+        // 候補の無い入力。
+    } else if let Ask::ExportName = ask {
         let dir = app
             .export_dir()
             .map(|d| d.display().to_string())
@@ -501,6 +528,35 @@ impl App {
                 }
                 self.message =
                     Some(Msg::Imported.fill(&[&file, &from, &name, &dropped_note(&dropped)]));
+            }
+            Some(Ask::OpenPlace { picks, .. }) => {
+                let Some(k) = picked else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                let pick = picks[k];
+                self.switch_place(pick)
+            }
+            Some(Ask::PlaceName(place)) => {
+                let place = place.clone();
+                self.place_named(place, query)
+            }
+            Some(Ask::PlaceGroup { place, groups }) => {
+                let values = super::places::group_items(groups, query).1;
+                let Some(group) = picked.and_then(|k| values.get(k)).cloned() else {
+                    return;
+                };
+                let place = place.clone();
+                self.place_grouped(place, group)
+            }
+            Some(Ask::PlaceOverwrite(place)) => {
+                let place = place.clone();
+                if query.trim().eq_ignore_ascii_case("y") {
+                    self.save_place(place);
+                } else {
+                    self.close_palette();
+                    self.message = Some(Msg::AskCancelled.into());
+                }
             }
             None => self.close_palette(),
         }
