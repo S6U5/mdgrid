@@ -1,7 +1,7 @@
 # 見えている表をファイルに書き出す(絞った表 → CSV)と、画面なしの --print。
-# 撮る: vhs demos/export.tape → demos/out/export.gif
+# 撮る: vhs demos/export.tape → demos/out/demo-export.gif
 
-Output demos/out/export.gif
+Output demos/out/demo-export.gif
 Set Shell bash
 Set FontFamily "BIZ UDGothic"
 Set FontSize 16
@@ -9,7 +9,7 @@ Set LineHeight 1.25
 Set Width 1280
 Set Height 680
 Set TypingSpeed 90ms
-Env LANG "ja_JP.UTF-8"
+Env LANG "en_US.UTF-8"
 
 Source demos/setup.tape
 
@@ -20,8 +20,8 @@ Sleep 2s
 Type "\doing" Sleep 600ms
 Enter Sleep 1.5s
 
-# パレットの「表をファイルに書き出す」。形は拡張子で決まる
-Type ":表をファイルに書き出す" Sleep 800ms
+# パレットの export_table(表をファイルに書き出す)。形は拡張子で決まる
+Type ":export_table" Sleep 800ms
 Enter Sleep 1s
 Type "doing.csv" Sleep 600ms
 Enter Sleep 2s

@@ -1,7 +1,7 @@
 # 色のテーマ(設定の theme の1行。見本の設定は examples/themes/)。
-# 撮る: vhs demos/themes.tape → demos/out/themes.gif
+# 撮る: vhs demos/themes.tape → demos/out/demo-themes.gif
 
-Output demos/out/themes.gif
+Output demos/out/demo-themes.gif
 Set Shell bash
 Set FontFamily "BIZ UDGothic"
 Set FontSize 16
@@ -9,7 +9,7 @@ Set LineHeight 1.25
 Set Width 1280
 Set Height 680
 Set TypingSpeed 60ms
-Env LANG "ja_JP.UTF-8"
+Env LANG "en_US.UTF-8"
 Env COLORTERM "truecolor"
 
 Source demos/setup.tape

@@ -1,7 +1,7 @@
 # 型ごとに値を入れて保存する(リスト・日付・数・チェック・タグ → 保存の確認)。
-# 撮る: vhs demos/values.tape → demos/out/values.gif
+# 撮る: vhs demos/values.tape → demos/out/demo-values.gif
 
-Output demos/out/values.gif
+Output demos/out/demo-values.gif
 Set Shell bash
 Set FontFamily "BIZ UDGothic"
 Set FontSize 16
@@ -9,7 +9,7 @@ Set LineHeight 1.25
 Set Width 1280
 Set Height 680
 Set TypingSpeed 90ms
-Env LANG "ja_JP.UTF-8"
+Env LANG "en_US.UTF-8"
 
 Source demos/setup.tape
 
@@ -34,7 +34,7 @@ Enter Sleep 1s
 # done(チェック): Enter で切り替え
 Right Enter Sleep 1.2s
 
-# tags(リスト): Space で「家」を足す
+# tags(リスト): Space で候補の先頭を足す
 Right Enter Sleep 1.5s
 Space Sleep 800ms
 Enter Sleep 1.2s
@@ -44,5 +44,5 @@ Ctrl+S Sleep 3s
 Enter Sleep 1.5s
 Type "q" Sleep 800ms
 
-Type "head -7 タスク/会議の議事録を書く.md" Sleep 500ms Enter
+Type "head -9 'Tasks/Answer support emails.md'" Sleep 500ms Enter
 Sleep 3s
