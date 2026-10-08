@@ -702,7 +702,7 @@ pub(crate) struct InputBox {
 }
 
 /// 入力ボックスの最小の幅。
-const INPUT_MIN: usize = 8;
+const INPUT_MIN: usize = 16;
 
 pub(crate) fn input_box(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Option<InputBox> {
     // CE-25: 新しいノートの入力は表の下の端の欄(new_note.rs)。

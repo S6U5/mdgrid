@@ -927,6 +927,10 @@ msgs! {
     ConfigBadNoteMode = "new_note.mode must be \"form\" or \"editor\" (got {0:?}); using the form", "new_note.mode は \"form\" か \"editor\"({0:?} は使えない)。窓で作る";
     NoteFormTitle = " New note ", " 新しいノート ";
     NoteFieldPlace = "place", "作る場所";
+    /// SR-31。{0} はフォルダの名前。
+    NoteFormWhere = "create in {0}", "{0} に作る";
+    NoteHintKindNumber = "number", "数";
+    NoteHintKindList = "[list]", "[リスト]";
     NoteFieldName = "name", "名前";
     NoteFromFilter = "(from the filter)", "(絞り込みから)";
     NoteFromConfig = "(from the config)", "(設定から)";

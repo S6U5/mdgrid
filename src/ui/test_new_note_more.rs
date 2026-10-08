@@ -113,7 +113,7 @@ fn test_ce_26_cleared_filter_value_is_not_written() {
     let s = screen(&a);
     assert!(
         s.lines()
-            .any(|l| l.starts_with("> status") && l.contains("todo")),
+            .any(|l| l.contains("> status") && l.contains("todo")),
         "前もって入れる値:\n{s}"
     );
     for _ in 0..4 {
@@ -161,7 +161,7 @@ fn test_ce_26_shift_tab_goes_back_to_name() {
     assert!(
         screen(&a)
             .lines()
-            .any(|l| l.starts_with("> 名前") && l.contains("戻る")),
+            .any(|l| l.contains("> 名前") && l.contains("戻る")),
         "{}",
         screen(&a)
     );
