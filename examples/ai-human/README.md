@@ -1,8 +1,13 @@
 # ai-human: 人のタスクと AI のタスクを分けて見る見本
 
+> **English:** the same sample in English is in `vault-en/` (`Tasks.base` and `Tasks/`). The config is shared:
+> `mdgrid --config examples/ai-human/config.toml examples/ai-human/vault-en/Tasks.base`. Its views are
+> People and AI, People only, AI only and Done; the formula `Owner` puts the tasks that need a person
+> (pay, sign, submit, send, or work away from the computer) on top.
+
 AI エージェントに仕事を任せていると、タスクは2種類に分かれます。AI に任せきれるものと、最後に人の手が要るもの(払う・署名する・提出する・送る、PC の外での手続き)です。この見本は、その2つをまとまりに分けて、人のタスクを上に並べる表を、`.base` 1つと設定 1つで作ります。
 
-`vault/タスク/` に 11 個のタスク(終わっていないもの 9・終わったもの 2)。日付は 2026年10月に寄せてあります。
+`vault/タスク/` に 11 個のタスク(英語版は `vault-en/Tasks/`。中身は同じ)(終わっていないもの 9・終わったもの 2)。日付は 2026年10月に寄せてあります。
 
 ## 開く
 

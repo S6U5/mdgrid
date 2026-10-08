@@ -1,0 +1,86 @@
+filters:
+  and:
+    - file.inFolder("Tasks")
+formulas:
+  # The same rule as cellops: a person presses the last button (human_gate other than none),
+  # or the work is away from the computer (actor: human). Everything else (and notes without actor) is AI.
+  Owner: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 Needs a person", "🤖 For an agent")
+properties:
+  note.status:
+    displayName: Status
+  note.due:
+    displayName: Due
+  note.priority:
+    displayName: P
+  note.human_gate:
+    displayName: Human gate
+  note.runner:
+    displayName: Agent
+  note.workdir:
+    displayName: Workdir
+  formula.Owner:
+    displayName: Owner
+views:
+  - type: table
+    name: People and AI
+    filters:
+      and:
+        - status != "done"
+        - status != "dropped"
+    groupBy:
+      property: formula.Owner
+      direction: ASC
+    order:
+      - status
+      - due
+      - priority
+      - human_gate
+      - runner
+      - workdir
+    sort:
+      - property: priority
+        direction: ASC
+      - property: due
+        direction: ASC
+  - type: table
+    name: People only
+    filters:
+      and:
+        - formula.Owner == "👤 Needs a person"
+        - status != "done"
+        - status != "dropped"
+    order:
+      - status
+      - due
+      - priority
+      - human_gate
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: AI only
+    filters:
+      and:
+        - formula.Owner == "🤖 For an agent"
+        - status != "done"
+        - status != "dropped"
+    order:
+      - status
+      - priority
+      - due
+      - runner
+      - workdir
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: Done
+    filters:
+      or:
+        - status == "done"
+        - status == "dropped"
+    order:
+      - formula.Owner
+      - status
+      - due
+      - runner

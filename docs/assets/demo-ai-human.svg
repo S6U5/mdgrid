@@ -2,51 +2,69 @@
 <rect width="100%" height="100%" fill="#1e1e1e" rx="6"/>
 <g font-family="Menlo, Consolas, 'DejaVu Sans Mono', 'Noto Sans Mono CJK JP', monospace" font-size="14" xml:space="preserve">
 <rect x="797.6" y="8" width="42.0" height="18" fill="#d4d4d4"/>
-<text x="16.4" y="21.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">タ</text>
-<text x="33.2" y="21.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ス</text>
-<text x="50.0" y="21.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ク</text>
-<text x="66.8" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">.</text>
-<text x="75.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">b</text>
-<text x="83.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">a</text>
-<text x="92.0" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
-<text x="100.4" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">e</text>
-<text x="125.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">9</text>
-<text x="142.4" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">r</text>
-<text x="150.8" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">o</text>
-<text x="159.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">w</text>
-<text x="167.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
+<text x="16.4" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">T</text>
+<text x="24.8" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">a</text>
+<text x="33.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
+<text x="41.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">k</text>
+<text x="50.0" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
+<text x="58.4" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">.</text>
+<text x="66.8" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">b</text>
+<text x="75.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">a</text>
+<text x="83.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
+<text x="92.0" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">e</text>
+<text x="117.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">9</text>
+<text x="134.0" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">r</text>
+<text x="142.4" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">o</text>
+<text x="150.8" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">w</text>
+<text x="159.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
 <text x="797.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">+</text>
 <text x="814.4" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">N</text>
 <text x="822.8" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">e</text>
 <text x="831.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">w</text>
-<rect x="8.0" y="26" width="67.2" height="18" fill="#d4d4d4"/>
+<rect x="8.0" y="26" width="126.0" height="18" fill="#d4d4d4"/>
 <text x="8.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">[</text>
-<text x="16.4" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">人</text>
-<text x="33.2" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">と</text>
-<text x="50.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">A</text>
-<text x="58.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">I</text>
-<text x="66.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">]</text>
-<text x="92.0" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">人</text>
-<text x="108.8" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">だ</text>
-<text x="125.6" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">け</text>
-<text x="167.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">A</text>
-<text x="176.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">I</text>
-<text x="184.4" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">だ</text>
-<text x="201.2" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">け</text>
-<text x="243.2" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">終</text>
-<text x="260.0" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">わ</text>
-<text x="276.8" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">っ</text>
-<text x="293.6" y="39.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">た</text>
-<text x="335.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">[</text>
-<text x="352.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">]</text>
-<text x="369.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">t</text>
-<text x="377.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">o</text>
-<text x="394.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">s</text>
-<text x="402.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">w</text>
-<text x="411.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">i</text>
-<text x="419.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">t</text>
-<text x="428.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">c</text>
-<text x="436.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">h</text>
+<text x="16.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">P</text>
+<text x="24.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">e</text>
+<text x="33.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">o</text>
+<text x="41.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">p</text>
+<text x="50.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">l</text>
+<text x="58.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">e</text>
+<text x="75.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">a</text>
+<text x="83.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">n</text>
+<text x="92.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">d</text>
+<text x="108.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">A</text>
+<text x="117.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">I</text>
+<text x="125.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">]</text>
+<text x="150.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">P</text>
+<text x="159.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="167.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="176.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="184.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="192.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="209.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="218.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="226.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="234.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">y</text>
+<text x="268.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">A</text>
+<text x="276.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">I</text>
+<text x="293.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="302.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="310.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="318.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">y</text>
+<text x="352.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">D</text>
+<text x="360.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="369.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="377.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="411.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">[</text>
+<text x="428.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">]</text>
+<text x="444.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">t</text>
+<text x="453.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">o</text>
+<text x="470.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">s</text>
+<text x="478.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">w</text>
+<text x="486.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">i</text>
+<text x="495.2" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">t</text>
+<text x="503.6" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">c</text>
+<text x="512.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" opacity="0.6">h</text>
 <text x="16.4" y="57.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">F</text>
 <text x="24.8" y="57.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
 <text x="33.2" y="57.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
@@ -69,470 +87,579 @@
 <text x="24.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">o</text>
 <text x="33.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">t</text>
 <text x="41.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">e</text>
-<text x="234.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="243.2" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">状</text>
-<text x="260.0" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">態</text>
-<text x="285.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="293.6" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">期</text>
-<text x="310.4" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">限</text>
-<text x="377.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="386.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">P</text>
-<text x="402.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="411.2" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">人</text>
-<text x="428.0" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">の</text>
-<text x="444.8" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">関</text>
-<text x="461.6" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">門</text>
-<text x="478.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="486.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">A</text>
+<text x="260.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="268.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">S</text>
+<text x="276.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">t</text>
+<text x="285.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">a</text>
+<text x="293.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">t</text>
+<text x="302.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">u</text>
+<text x="310.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">s</text>
+<text x="318.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="327.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">D</text>
+<text x="335.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">u</text>
+<text x="344.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">e</text>
+<text x="411.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="419.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">P</text>
+<text x="436.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="444.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">H</text>
+<text x="453.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">u</text>
+<text x="461.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">m</text>
+<text x="470.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">a</text>
+<text x="478.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">n</text>
 <text x="495.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">g</text>
-<text x="503.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">e</text>
-<text x="512.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">n</text>
-<text x="520.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">t</text>
-<text x="537.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="545.6" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">起</text>
-<text x="562.4" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">動</text>
-<text x="579.2" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">場</text>
-<text x="596.0" y="75.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">所</text>
+<text x="503.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">a</text>
+<text x="512.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">t</text>
+<text x="520.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">e</text>
+<text x="528.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="537.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">A</text>
+<text x="545.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">g</text>
+<text x="554.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">e</text>
+<text x="562.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">n</text>
+<text x="570.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">t</text>
+<text x="587.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="596.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">W</text>
+<text x="604.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">o</text>
+<text x="612.8" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">r</text>
+<text x="621.2" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">k</text>
+<text x="629.6" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">d</text>
+<text x="638.0" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">i</text>
+<text x="646.4" y="75.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold" text-decoration="underline">r</text>
 <rect x="8.0" y="80" width="831.6" height="18" fill="#d4d4d4"/>
 <text x="8.0" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">&gt;</text>
 <text x="16.4" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">▾</text>
-<text x="33.2" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">担</text>
-<text x="50.0" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">当</text>
-<text x="66.8" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">:</text>
-<text x="83.6" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">👤</text>
-<text x="108.8" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">人</text>
-<text x="125.6" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">間</text>
-<text x="142.4" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">の</text>
-<text x="159.2" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">タ</text>
-<text x="176.0" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">ス</text>
-<text x="192.8" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">ク</text>
-<text x="218.0" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">(</text>
-<text x="226.4" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">5</text>
-<text x="234.8" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">)</text>
-<text x="16.4" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">サ</text>
-<text x="33.2" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ー</text>
-<text x="50.0" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">バ</text>
-<text x="66.8" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ー</text>
-<text x="83.6" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">代</text>
-<text x="100.4" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">を</text>
-<text x="117.2" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">払</text>
-<text x="134.0" y="111.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">う</text>
-<text x="234.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="243.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
-<text x="251.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="260.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="268.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="285.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="293.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="302.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="310.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="318.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
-<text x="327.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="335.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="344.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="352.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="360.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="369.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">8</text>
-<text x="377.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="386.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="394.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="402.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="411.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="419.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
-<text x="428.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">y</text>
-<text x="478.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="486.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
-<text x="495.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
-<text x="503.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
-<text x="512.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
-<text x="520.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="528.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="537.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="33.2" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">O</text>
+<text x="41.6" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">w</text>
+<text x="50.0" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">n</text>
+<text x="58.4" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">e</text>
+<text x="66.8" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">r</text>
+<text x="75.2" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">:</text>
+<text x="92.0" y="93.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">👤</text>
+<text x="117.2" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">N</text>
+<text x="125.6" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">e</text>
+<text x="134.0" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">e</text>
+<text x="142.4" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">d</text>
+<text x="150.8" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">s</text>
+<text x="167.6" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">a</text>
+<text x="184.4" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">p</text>
+<text x="192.8" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">e</text>
+<text x="201.2" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">r</text>
+<text x="209.6" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">s</text>
+<text x="218.0" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">o</text>
+<text x="226.4" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">n</text>
+<text x="243.2" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">(</text>
+<text x="251.6" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">5</text>
+<text x="260.0" y="93.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e" font-weight="bold">)</text>
+<text x="16.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">P</text>
+<text x="24.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="33.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">y</text>
+<text x="50.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="58.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="66.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="83.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="92.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="100.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
+<text x="108.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">v</text>
+<text x="117.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="125.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
+<text x="142.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">b</text>
+<text x="150.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="159.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="167.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="260.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="268.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="276.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="285.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="293.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="318.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="327.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="335.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="344.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="352.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
+<text x="360.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="369.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="377.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="386.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="394.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="402.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">8</text>
+<text x="411.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="419.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="428.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="436.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="444.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="453.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="461.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">y</text>
+<text x="528.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="537.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
+<text x="545.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="554.0" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="562.4" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
+<text x="570.8" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="579.2" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="587.6" y="111.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
 <rect x="8.0" y="116" width="831.6" height="18" fill="#3a3a3a"/>
-<text x="16.4" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">業</text>
-<text x="33.2" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">務</text>
-<text x="50.0" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">委</text>
-<text x="66.8" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">託</text>
-<text x="83.6" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">の</text>
-<text x="100.4" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">契</text>
-<text x="117.2" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">約</text>
-<text x="134.0" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">書</text>
-<text x="150.8" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">に</text>
-<text x="167.6" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">署</text>
-<text x="184.4" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">名</text>
-<text x="201.2" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">す</text>
-<text x="218.0" y="129.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">る</text>
-<text x="234.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="243.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="251.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="260.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
-<text x="268.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="276.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
-<text x="285.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="293.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="302.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="310.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="318.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">6</text>
-<text x="327.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
-<text x="335.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
-<text x="344.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="352.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
-<text x="360.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="369.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">9</text>
-<text x="377.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="386.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
-<text x="394.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="402.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="411.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
-<text x="419.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
-<text x="428.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
-<text x="436.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="478.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="486.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">C</text>
-<text x="495.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">l</text>
-<text x="503.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
-<text x="512.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
-<text x="520.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="528.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
-<text x="537.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="16.4" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">確</text>
-<text x="33.2" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">定</text>
-<text x="50.0" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">申</text>
-<text x="66.8" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">告</text>
-<text x="83.6" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">の</text>
-<text x="100.4" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">書</text>
-<text x="117.2" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">類</text>
-<text x="134.0" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">を</text>
-<text x="150.8" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">出</text>
-<text x="167.6" y="147.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">す</text>
-<text x="234.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="243.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
-<text x="251.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="260.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="268.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="285.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="293.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="302.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="310.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="318.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
-<text x="327.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="335.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="344.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="352.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="360.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="369.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">5</text>
-<text x="377.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="386.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="394.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="402.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="411.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
-<text x="419.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
-<text x="428.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">b</text>
-<text x="436.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">m</text>
-<text x="444.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
-<text x="453.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
-<text x="478.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="486.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
-<text x="495.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
-<text x="503.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
-<text x="512.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
-<text x="520.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="528.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="537.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="16.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">S</text>
+<text x="24.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="33.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
+<text x="41.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="58.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="66.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">h</text>
+<text x="75.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="92.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
+<text x="100.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="108.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="117.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="125.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="134.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="142.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
+<text x="150.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="159.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="167.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="184.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="192.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
+<text x="201.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="209.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="218.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="226.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">m</text>
+<text x="234.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="243.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="251.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="260.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="268.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="276.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="285.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="293.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="302.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
+<text x="318.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="327.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="335.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="344.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="352.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">6</text>
+<text x="360.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
+<text x="369.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
+<text x="377.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="386.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
+<text x="394.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="402.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">9</text>
+<text x="411.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="419.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
+<text x="428.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="436.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="444.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="453.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="461.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
+<text x="470.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="528.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="537.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">C</text>
+<text x="545.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">l</text>
+<text x="554.0" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="562.4" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
+<text x="570.8" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="579.2" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="587.6" y="129.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="16.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">F</text>
+<text x="24.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="33.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="41.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="58.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="66.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="75.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="92.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="100.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="108.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">x</text>
+<text x="125.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
+<text x="134.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="142.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="150.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
+<text x="159.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
+<text x="167.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="260.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="268.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="276.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="285.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="293.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="318.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="327.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="335.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="344.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="352.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
+<text x="360.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="369.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="377.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="386.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="394.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="402.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">5</text>
+<text x="411.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="419.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="428.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="436.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="444.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="453.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
+<text x="461.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">b</text>
+<text x="470.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">m</text>
+<text x="478.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="486.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="528.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="537.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
+<text x="545.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="554.0" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="562.4" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
+<text x="570.8" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="579.2" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="587.6" y="147.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
 <rect x="8.0" y="152" width="831.6" height="18" fill="#3a3a3a"/>
-<text x="16.4" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">区</text>
-<text x="33.2" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">役</text>
-<text x="50.0" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">所</text>
-<text x="66.8" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">で</text>
-<text x="83.6" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">住</text>
-<text x="100.4" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">民</text>
-<text x="117.2" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">票</text>
-<text x="134.0" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">を</text>
-<text x="150.8" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">取</text>
-<text x="167.6" y="165.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">る</text>
-<text x="234.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="243.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
-<text x="251.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="260.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="268.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="285.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="293.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="302.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="310.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="318.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">6</text>
-<text x="327.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
-<text x="335.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
-<text x="344.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="352.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
-<text x="360.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
-<text x="369.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="377.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="386.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
-<text x="394.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">3</text>
-<text x="402.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="411.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="419.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="428.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="436.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
-<text x="478.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="537.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="16.4" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">取</text>
-<text x="33.2" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">引</text>
-<text x="50.0" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">先</text>
-<text x="66.8" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">に</text>
-<text x="83.6" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">お</text>
-<text x="100.4" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">礼</text>
-<text x="117.2" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">の</text>
-<text x="134.0" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">メ</text>
-<text x="150.8" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ー</text>
-<text x="167.6" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ル</text>
-<text x="184.4" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">を</text>
-<text x="201.2" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">送</text>
-<text x="218.0" y="183.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">る</text>
-<text x="234.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="243.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
-<text x="251.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="260.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="268.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="285.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="293.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="302.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="310.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="318.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
-<text x="327.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="335.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="344.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="352.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="360.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="369.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="377.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="386.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="394.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">3</text>
-<text x="402.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="411.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
-<text x="419.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="428.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
-<text x="436.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="478.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="486.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
-<text x="495.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
-<text x="503.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
-<text x="512.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
-<text x="520.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="528.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="537.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="16.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">G</text>
+<text x="24.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="33.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="50.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="66.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="75.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="83.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="92.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="100.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="108.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="117.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="125.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
+<text x="134.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="150.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
+<text x="159.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="167.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="176.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="184.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="192.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">f</text>
+<text x="201.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="209.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
+<text x="218.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="226.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="234.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="260.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="268.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="276.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="285.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="293.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="318.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="327.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="335.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="344.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="352.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">6</text>
+<text x="360.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
+<text x="369.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
+<text x="377.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="386.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
+<text x="394.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
+<text x="402.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="411.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="419.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
+<text x="428.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">3</text>
+<text x="436.4" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="444.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="453.2" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="461.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="470.0" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="528.8" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="587.6" y="165.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="16.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">T</text>
+<text x="24.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="33.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="41.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="50.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">k</text>
+<text x="66.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="75.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="83.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="100.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">c</text>
+<text x="108.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="117.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="125.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="134.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="142.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="159.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">b</text>
+<text x="167.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">y</text>
+<text x="184.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="192.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">m</text>
+<text x="201.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="209.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="218.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="260.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="268.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="276.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="285.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="293.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="318.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="327.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="335.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="344.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="352.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
+<text x="360.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="369.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="377.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="386.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="394.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="402.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="411.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="419.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="428.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">3</text>
+<text x="436.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="444.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="453.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="461.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="470.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="528.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="537.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
+<text x="545.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="554.0" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="562.4" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
+<text x="570.8" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="579.2" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="587.6" y="183.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
 <text x="16.4" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">▾</text>
-<text x="33.2" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">担</text>
-<text x="50.0" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">当</text>
-<text x="66.8" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">:</text>
-<text x="83.6" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">🤖</text>
-<text x="108.8" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">エ</text>
-<text x="125.6" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ー</text>
-<text x="142.4" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ジ</text>
-<text x="159.2" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ェ</text>
-<text x="176.0" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ン</text>
-<text x="192.8" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ト</text>
-<text x="209.6" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">の</text>
-<text x="226.4" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">タ</text>
-<text x="243.2" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ス</text>
-<text x="260.0" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">ク</text>
-<text x="285.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">(</text>
-<text x="293.6" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">4</text>
-<text x="302.0" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">)</text>
+<text x="33.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">O</text>
+<text x="41.6" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">w</text>
+<text x="50.0" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">n</text>
+<text x="58.4" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">e</text>
+<text x="66.8" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">r</text>
+<text x="75.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">:</text>
+<text x="92.0" y="219.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">🤖</text>
+<text x="117.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">F</text>
+<text x="125.6" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">o</text>
+<text x="134.0" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">r</text>
+<text x="150.8" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">a</text>
+<text x="159.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">n</text>
+<text x="176.0" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">a</text>
+<text x="184.4" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">g</text>
+<text x="192.8" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">e</text>
+<text x="201.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">n</text>
+<text x="209.6" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">t</text>
+<text x="226.4" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">(</text>
+<text x="234.8" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">4</text>
+<text x="243.2" y="219.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">)</text>
 <rect x="8.0" y="224" width="831.6" height="18" fill="#3a3a3a"/>
-<text x="16.4" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">会</text>
-<text x="33.2" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">議</text>
-<text x="50.0" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">の</text>
-<text x="66.8" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">議</text>
-<text x="83.6" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">事</text>
-<text x="100.4" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">録</text>
-<text x="117.2" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">を</text>
-<text x="134.0" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">要</text>
-<text x="150.8" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">約</text>
-<text x="167.6" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">す</text>
-<text x="184.4" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">る</text>
-<text x="234.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="243.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
-<text x="251.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="260.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="268.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="285.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="293.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="302.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="310.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="318.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">6</text>
-<text x="327.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
-<text x="335.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
-<text x="344.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="352.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
-<text x="360.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
-<text x="369.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">8</text>
-<text x="377.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="386.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
-<text x="394.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
-<text x="402.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="411.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="419.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="428.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="436.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
-<text x="478.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="486.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">C</text>
-<text x="495.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">l</text>
-<text x="503.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
-<text x="512.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
-<text x="520.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="528.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
-<text x="537.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="16.4" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">依</text>
-<text x="33.2" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">存</text>
-<text x="50.0" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ラ</text>
-<text x="66.8" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">イ</text>
-<text x="83.6" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ブ</text>
-<text x="100.4" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">ラ</text>
-<text x="117.2" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">リ</text>
-<text x="134.0" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">を</text>
-<text x="150.8" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">更</text>
-<text x="167.6" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">新</text>
-<text x="184.4" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">す</text>
-<text x="201.2" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">る</text>
-<text x="234.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="243.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="251.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="260.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
-<text x="268.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
-<text x="276.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">g</text>
-<text x="285.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="293.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="302.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="310.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
-<text x="318.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
-<text x="327.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="335.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="344.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
-<text x="352.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
-<text x="360.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
-<text x="369.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">4</text>
-<text x="377.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="386.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="394.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">3</text>
-<text x="402.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="411.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
-<text x="419.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="428.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
-<text x="436.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="478.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="486.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
-<text x="495.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="503.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="512.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="520.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">x</text>
-<text x="537.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="545.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">~</text>
-<text x="554.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
-<text x="562.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
-<text x="570.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
-<text x="579.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">c</text>
-<text x="587.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
-<text x="596.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
-<text x="604.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
-<text x="612.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="621.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="629.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
-<text x="638.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
-<text x="646.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="654.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="16.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">S</text>
+<text x="24.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
+<text x="33.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">m</text>
+<text x="41.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">m</text>
+<text x="50.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="58.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="66.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="75.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">z</text>
+<text x="83.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="100.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="108.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">h</text>
+<text x="117.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="134.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">m</text>
+<text x="142.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="150.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="159.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="167.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="176.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="184.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
+<text x="201.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="209.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="218.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="226.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="234.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="260.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="268.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="276.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="285.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="293.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="318.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="327.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="335.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="344.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="352.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">6</text>
+<text x="360.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
+<text x="369.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">1</text>
+<text x="377.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="386.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">-</text>
+<text x="394.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">0</text>
+<text x="402.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">8</text>
+<text x="411.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="419.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
+<text x="428.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">2</text>
+<text x="436.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="444.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="453.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="461.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="470.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="528.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="537.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">C</text>
+<text x="545.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">l</text>
+<text x="554.0" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="562.4" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
+<text x="570.8" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="579.2" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="587.6" y="237.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="16.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">U</text>
+<text x="24.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="33.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="41.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="50.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="58.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="75.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="83.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="92.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="100.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="108.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="117.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="125.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="134.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="142.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">c</text>
+<text x="150.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="159.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="167.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="260.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="268.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="276.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="285.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="293.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="302.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">g</text>
+<text x="318.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="327.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="335.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="344.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">2</text>
+<text x="352.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">6</text>
+<text x="360.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="369.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="377.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">0</text>
+<text x="386.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">-</text>
+<text x="394.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">1</text>
+<text x="402.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">4</text>
+<text x="411.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="419.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="428.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">3</text>
+<text x="436.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="444.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="453.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="461.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="470.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="528.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="537.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
+<text x="545.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="554.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="562.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="570.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">x</text>
+<text x="587.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="596.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">~</text>
+<text x="604.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
+<text x="612.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="621.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
+<text x="629.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">c</text>
+<text x="638.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
+<text x="646.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="654.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="663.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="671.6" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="680.0" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
+<text x="688.4" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="696.8" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="705.2" y="255.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
 <rect x="8.0" y="260" width="831.6" height="18" fill="#3a3a3a"/>
-<text x="16.4" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">テ</text>
-<text x="33.2" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">ス</text>
-<text x="50.0" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">ト</text>
-<text x="66.8" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">の</text>
-<text x="83.6" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">抜</text>
-<text x="100.4" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">け</text>
-<text x="117.2" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">を</text>
-<text x="134.0" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">洗</text>
-<text x="150.8" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">い</text>
-<text x="167.6" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">出</text>
-<text x="184.4" y="273.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">す</text>
-<text x="234.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="243.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
-<text x="251.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="260.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="268.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="285.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="377.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="386.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
-<text x="394.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">3</text>
-<text x="402.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="411.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="419.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="428.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
-<text x="436.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
-<text x="478.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="486.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">C</text>
-<text x="495.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">l</text>
-<text x="503.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
-<text x="512.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
-<text x="520.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
-<text x="528.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
-<text x="537.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
-<text x="545.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">~</text>
-<text x="554.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">/</text>
-<text x="562.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
-<text x="570.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
-<text x="579.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
-<text x="587.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">/</text>
-<text x="596.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
-<text x="604.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">h</text>
-<text x="612.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
-<text x="621.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
-<text x="629.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">/</text>
-<text x="638.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
-<text x="646.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
-<text x="654.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
-<text x="16.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">R</text>
-<text x="24.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">E</text>
-<text x="33.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">A</text>
-<text x="41.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">D</text>
-<text x="50.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">M</text>
-<text x="58.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">E</text>
-<text x="75.2" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">の</text>
-<text x="92.0" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">英</text>
-<text x="108.8" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">訳</text>
-<text x="125.6" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">を</text>
-<text x="142.4" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">直</text>
-<text x="159.2" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">す</text>
-<text x="234.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="243.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
-<text x="251.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="260.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="268.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="285.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="377.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="386.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="394.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">4</text>
-<text x="402.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="478.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="486.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
-<text x="495.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
-<text x="503.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
-<text x="512.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
-<text x="520.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
-<text x="528.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="537.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
-<text x="545.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">~</text>
-<text x="554.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
-<text x="562.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
-<text x="570.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
-<text x="579.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">c</text>
-<text x="587.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
-<text x="596.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
-<text x="604.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
-<text x="612.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
-<text x="621.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
-<text x="629.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
-<text x="638.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">w</text>
-<text x="646.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
-<text x="654.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">b</text>
+<text x="16.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">L</text>
+<text x="24.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="33.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="41.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="58.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="66.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">h</text>
+<text x="75.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="92.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">m</text>
+<text x="100.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="108.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="117.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="125.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="134.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="142.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">g</text>
+<text x="159.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="167.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="176.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="184.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="192.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="260.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="268.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">t</text>
+<text x="276.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="285.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="293.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="318.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="411.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="419.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
+<text x="428.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">3</text>
+<text x="436.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="444.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="453.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="461.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">n</text>
+<text x="470.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="528.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="537.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">C</text>
+<text x="545.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">l</text>
+<text x="554.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="562.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">u</text>
+<text x="570.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">d</text>
+<text x="579.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">e</text>
+<text x="587.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">│</text>
+<text x="596.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">~</text>
+<text x="604.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">/</text>
+<text x="612.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="621.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">r</text>
+<text x="629.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">c</text>
+<text x="638.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">/</text>
+<text x="646.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">s</text>
+<text x="654.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">h</text>
+<text x="663.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">o</text>
+<text x="671.6" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
+<text x="680.0" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">/</text>
+<text x="688.4" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">a</text>
+<text x="696.8" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">p</text>
+<text x="705.2" y="273.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d0d0d0">i</text>
+<text x="16.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">F</text>
+<text x="24.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">i</text>
+<text x="33.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">x</text>
+<text x="50.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="58.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="66.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="83.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">J</text>
+<text x="92.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="100.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="108.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="117.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">n</text>
+<text x="125.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="134.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="142.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="159.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">R</text>
+<text x="167.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">E</text>
+<text x="176.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">A</text>
+<text x="184.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">D</text>
+<text x="192.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">M</text>
+<text x="201.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">E</text>
+<text x="260.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="268.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">t</text>
+<text x="276.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="285.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="293.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="318.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="411.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="419.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="428.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">4</text>
+<text x="436.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="528.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="537.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">C</text>
+<text x="545.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">l</text>
+<text x="554.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">a</text>
+<text x="562.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">u</text>
+<text x="570.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">d</text>
+<text x="579.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="587.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">│</text>
+<text x="596.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">~</text>
+<text x="604.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
+<text x="612.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="621.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">r</text>
+<text x="629.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">c</text>
+<text x="638.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
+<text x="646.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">s</text>
+<text x="654.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">h</text>
+<text x="663.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">o</text>
+<text x="671.6" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">p</text>
+<text x="680.0" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">/</text>
+<text x="688.4" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">w</text>
+<text x="696.8" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">e</text>
+<text x="705.2" y="291.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">b</text>
 <rect x="8.0" y="458" width="831.6" height="18" fill="#d4d4d4"/>
 <text x="16.4" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">U</text>
 <text x="24.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">n</text>
