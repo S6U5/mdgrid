@@ -6299,5 +6299,11 @@
       "WS-7"
     ],
     "sha": "58e71ac85aa27096"
+  },
+  "src/test_writeback_underscore_unit.rs::test_wb_7_underscore_numbers_are_quoted": {
+    "ids": [
+      "WB-7"
+    ],
+    "sha": "d1e969a3fa60f34c"
   }
 }

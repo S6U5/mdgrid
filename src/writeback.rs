@@ -811,7 +811,11 @@ fn plain_safe(s: &str) -> bool {
     if WORDS.contains(&lower.as_str()) {
         return false;
     }
-    matches!(resolve_plain(s), Value::Str(_)) && !is_int_form(s)
+    // `_` を除くと数として読める形(`_0`・`1_000` など)は、読む道具によっては数になるので囲む。
+    let t = s.replace('_', "");
+    let numberish = s.chars().any(|c| c.is_ascii_digit())
+        && (t.parse::<f64>().is_ok() || t.parse::<i64>().is_ok());
+    matches!(resolve_plain(s), Value::Str(_)) && !is_int_form(s) && !numberish
 }
 
 /// 二重引用符の中でエスケープが要る文字(制御文字・YAML 1.1 の改行扱いの文字・BOM)。
@@ -1131,6 +1135,10 @@ pub(crate) fn sha256(data: &[u8]) -> [u8; 32] {
 #[cfg(test)]
 #[path = "test_writeback_unit.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "test_writeback_underscore_unit.rs"]
+mod tests_underscore;
 
 #[cfg(test)]
 #[path = "test_big_int_write_unit.rs"]
