@@ -6031,7 +6031,8 @@
     "ids": [
       "WS-1"
     ],
-    "sha": "a0c2d0da091a4e24"
+    "sha": "ee2ca6df7d233e8b",
+    "by": "specs/_decisions/2026-10-09-windows-test-locks.md"
   },
   "src/test_workspace_more_unit.rs::test_ws_7_broken_marker_warns": {
     "ids": [
@@ -6290,7 +6291,8 @@
     "ids": [
       "WS-1"
     ],
-    "sha": "449b0f41487feb6b"
+    "sha": "186f28f75a5163de",
+    "by": "specs/_decisions/2026-10-09-windows-test-locks.md"
   },
   "src/test_toml_edit_safety_unit.rs::test_ws_7_marker_paths_stay_inside": {
     "ids": [

@@ -47,20 +47,29 @@ fn test_ws_1_header_with_comment_keeps_neighbour() {
 fn test_ws_1_trailing_table_and_inline_form_survive() {
     // [WS-1] 末尾の別の表([meta])は消さない。1行の形で書いたワークスペースも壊さない(読み直して違えば書き直す)。
     let d = tmp("tail");
+    // パスは一時フォルダの下の絶対パス(Windows でも絶対)。TOML には引用して書く。
+    let p = d.join("p");
+    let q = |x: &std::path::Path| toml::Value::String(x.to_string_lossy().into_owned()).to_string();
     std::fs::write(
         d.join("workspaces.toml"),
-        "[[workspace]]\nname = \"a\"\n[[workspace.table]]\npath = \"/p\"\n\n[meta]\nnote = \"keep\"\n",
+        format!(
+            "[[workspace]]\nname = \"a\"\n[[workspace.table]]\npath = {}\n\n[meta]\nnote = \"keep\"\n",
+            q(&p)
+        ),
     )
     .unwrap();
-    assert!(workspace::remove(&d, "a", Some(&PathBuf::from("/p"))).unwrap());
+    assert!(workspace::remove(&d, "a", Some(&p)).unwrap());
     let out = std::fs::read_to_string(d.join("workspaces.toml")).unwrap();
     assert!(out.contains("[meta]") && out.contains("keep"), "{out}");
     std::fs::write(
         d.join("workspaces.toml"),
-        "workspace = [{ name = \"a\", table = [{ path = \"/p\" }] }]\n",
+        format!(
+            "workspace = [{{ name = \"a\", table = [{{ path = {} }}] }}]\n",
+            q(&p)
+        ),
     )
     .unwrap();
-    workspace::add(&d, "a", t("q", "/q")).unwrap();
+    workspace::add(&d, "a", t("q", &d.join("q").to_string_lossy())).unwrap();
     let (list, w) = workspace::load(&d);
     assert!(w.is_empty(), "{w:?}");
     assert_eq!(list[0].tables.len(), 2);

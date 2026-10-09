@@ -45,6 +45,7 @@ updated: 2026-09-30
 | 2026-10-09 | [フォルダの .mdgrid/workspace.toml をワークスペースの印として受け、アプリの側のワークスペースより先に使う(workspace-marker)](_decisions/2026-10-09-workspace-marker.md) | accepted | 人 | 人の発言 | WS-6, WS-7 |
 | 2026-10-09 | [ワークスペースの操作を、開くパスと重ならない旗にする(workspace-flags)](_decisions/2026-10-09-workspace-flags.md) | accepted | 人 | 人の発言 | WS-3, WS-7 |
 | 2026-10-09 | [自動の表に .base を入れない(workspace-auto-folders)](_decisions/2026-10-09-workspace-auto-folders.md) | accepted | 人 | 検証の指摘 | WS-5, WS-7 |
+| 2026-10-09 | [Windows でも通るように、Unix の前提を置いた2つの試験を直して錠を掛け直す(windows-test-locks)](_decisions/2026-10-09-windows-test-locks.md) | accepted | 人 | 人の発言 | WS-1 |
 | 2026-10-09 | [ビューが1つならタブの行を出さない設定(view-tabs-auto)](_decisions/2026-10-09-view-tabs-auto.md) | accepted | 人 | 人の発言 | SR-34 |
 | 2026-10-09 | [表のセルを値の型に合わせた部品で見せる(rich-cells)](_decisions/2026-10-09-rich-cells.md) | accepted | 人 | 人の発言 | SR-35 |
 | 2026-10-09 | [セルの部品を、種類ごと・列ごとに設定で選べるようにする(rich-cells-config)](_decisions/2026-10-09-rich-cells-config.md) | accepted | 人 | 人の発言 | SR-35 |

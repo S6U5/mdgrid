@@ -39,17 +39,18 @@ fn test_ws_1_broken_file_is_not_rewritten() {
 
 #[test]
 fn test_ws_1_home_and_relative_paths() {
-    // [WS-1] ホームの下は `~/…` で書き直す。相対の path は設定のフォルダから読む。
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap();
-    let list = vec![Workspace {
-        name: "W".into(),
-        tables: vec![table(home.join("notes/tasks"))],
-    }];
-    assert!(
-        to_toml(&list).contains("path = \"~/notes/tasks\""),
-        "{}",
-        to_toml(&list)
-    );
+    // [WS-1] ホームの下は `~/…` で書き直す(HOME の無い環境では確かめない)。相対の path は設定のフォルダから読む。
+    if let Some(home) = std::env::var_os("HOME").map(PathBuf::from) {
+        let list = vec![Workspace {
+            name: "W".into(),
+            tables: vec![table(home.join("notes/tasks"))],
+        }];
+        assert!(
+            to_toml(&list).contains("path = \"~/notes/tasks\""),
+            "{}",
+            to_toml(&list)
+        );
+    }
     let d = tmp("rel");
     std::fs::write(
         d.join(FILE_NAME),
