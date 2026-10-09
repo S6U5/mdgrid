@@ -60,7 +60,7 @@ From the top:
 
 | Area | What it shows |
 |---|---|
-| Header | what is open (`vault` here) and the number of rows. `+ New` at the right creates a note |
+| Header | what is open (`vault` here), the number of rows, and `· workspace <name>` when a workspace is in use. At the right, the **Table** / **Relations** tabs (when there are linked tables) and `+ New`, which creates a note |
 | Tabs | view names: `All notes` (every note of the folder), plus the views of a `.base` and views you saved |
 | Search bar | press `\` to type; rows are filtered as you type |
 | Table | one row per note. The first column is the note's path; the others are frontmatter keys |
@@ -82,7 +82,7 @@ Cell marks:
 
 ![Cell marks](images/cell-marks.svg)
 
-Column types come from `.obsidian/types.json`, or else from the first non-empty value. The type decides how you edit: pick from candidates for text, a calendar for dates, toggles for lists, cycling for checkboxes.
+Column types come from `.obsidian/types.json`, or else from the first non-empty value. The type decides how you edit: pick from candidates for text, a calendar for dates, toggles for lists, cycling for checkboxes. With colors on, the type also shows: a mark in the column heading (`#` number, `◷` date, `☑` checkbox, `⋮` list, `◉` chips), checkboxes as `☑`/`☐`, and lists and short repeated values as colored chips ([Make it look the way you like](appearance.md#cells-as-parts-or-as-text)).
 
 ## The first keys
 
@@ -121,4 +121,4 @@ mdgrid --print-config > ~/.config/mdgrid/config.toml
 
 The file is `$XDG_CONFIG_HOME/mdgrid/config.toml` (or `~/.config/mdgrid/config.toml`), or the one given with `--config <path>`. The UI language is `language` (`auto`, `en`, `ja`); the default `auto` looks at the first non-empty one of `LC_ALL`, `LC_MESSAGES` and `LANG`, in that order, and picks Japanese when it starts with `ja`, English otherwise. Every item is in [Configuration](../../config.md).
 
-Next: [Task guides](tasks.md).
+Next: [How mdgrid sees your notes](concepts.md), then the [Task guides](tasks.md).

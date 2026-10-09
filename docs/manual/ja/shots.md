@@ -92,7 +92,7 @@ a か右上の「+ 新規」で、新しいノートの窓が開く。名前と�
 
 ## 作ったノート
 
-キー: `a` `text:電話をかける` `Ctrl+S`
+キー: `a` `text:電話をかける` `C-s`
 
 ![作ったノート](images/new-note-done.svg)
 
@@ -246,9 +246,25 @@ s で 昇順 → 降順 → 解除。.base は変えない。
 
 A で、まだどのノートにも無いキーの列を足す。保存では、値を入れたノートにだけキーを書く。
 
+## 日時の時刻を選ぶ
+
+キー: `l` `Enter` `C-o` `Up`
+
+![日時の時刻を選ぶ](images/edit-datetime-time.svg)
+
+日時の列では、カレンダーの下に時刻の欄が出る。Ctrl+O で時刻の欄に移り、↑↓ で15分、Shift+↑↓ で1時間動かす。
+
+## 表をファイルに書き出す
+
+キー: `:` `text:export_table` `Enter` `text:tasks.csv` `Enter`
+
+![表をファイルに書き出す](images/export-table.svg)
+
+パレットから、今見えている表(絞り込み・並べ替え・隠した列を当てたもの)を書き出す。形は拡張子(.csv・.tsv・.json・.md)で決まる。先頭の列は各ノートのパスなので、CSV と JSON は --apply で戻せる。
+
 ## 登録した表を開く
 
-キー: `:` `open_place` `Enter`
+キー: `:` `text:open_place` `Enter`
 
 ![登録した表を開く](images/open-place.svg)
 
@@ -558,6 +574,18 @@ Ctrl+S で、ファイルごとに変わるところだけを見せる。
 
 By status のビューは見出しの行でまとめ、Enter で畳める。
 
+## 人と AI のタスク
+
+![人と AI のタスク](images/demo-ai-human.svg)
+
+見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。
+
+## 人と AI のタスク(英語の見本)
+
+![人と AI のタスク(英語の見本)](images/demo-ai-human-en.svg)
+
+見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。
+
 ## その場の操作の一覧
 
 キー: `x`
@@ -658,6 +686,14 @@ Frame of the demo GIF.
 
 Frame of the demo GIF.
 
+## 関係マップ
+
+キー: `R`
+
+![関係マップ](images/demo-relmap.svg)
+
+R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。
+
 ## 列の値を数える
 
 キー: `l` `l` `l` `%`
@@ -665,19 +701,3 @@ Frame of the demo GIF.
 ![列の値を数える](images/demo-freq.svg)
 
 % で列の値ごとの件数と割合が出る。Enter でその値の行だけに絞る。
-
-## 日時の時刻を選ぶ
-
-キー: `l` `Enter` `Ctrl+O` `↑`
-
-![日時の時刻を選ぶ](images/edit-datetime-time.svg)
-
-日時の列では、カレンダーの下に時刻の欄が出る。Ctrl+O で時刻の欄に移り、↑↓ で15分、Shift+↑↓ で1時間動かす。
-
-## 表をファイルに書き出す
-
-キー: `:` `export_table` `Enter` `tasks.csv` `Enter`
-
-![表をファイルに書き出す](images/export-table.svg)
-
-パレットから、今見えている表(絞り込み・並べ替え・隠した列を当てたもの)を書き出す。形は拡張子(.csv・.tsv・.json・.md)で決まる。先頭の列は各ノートのパスなので、CSV と JSON は --apply で戻せる。

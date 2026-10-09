@@ -23,6 +23,7 @@
 <text x="327.2" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">/</text>
 <text x="335.6" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">1</text>
 <text x="344.0" y="21.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">2</text>
+<rect x="8.0" y="26" width="831.6" height="18" fill="#3a3a46"/>
 <text x="8.0" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">&gt;</text>
 <text x="16.4" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">s</text>
 <text x="24.8" y="39.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">t</text>
@@ -111,8 +112,8 @@
 <text x="33.2" y="237.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">モ</text>
 <text x="16.4" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">手</text>
 <text x="33.2" y="255.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">順</text>
-<text x="16.4" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">本</text>
-<text x="33.2" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">文</text>
+<text x="16.4" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">本</text>
+<text x="33.2" y="291.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">文</text>
 <text x="16.4" y="309.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">メ</text>
 <text x="33.2" y="309.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">モ</text>
 <text x="50.0" y="309.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">書</text>
@@ -136,35 +137,34 @@
 <text x="352.4" y="309.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">け</text>
 <text x="369.2" y="309.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">る</text>
 <text x="386.0" y="309.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4">。</text>
-<rect x="8.0" y="458" width="831.6" height="18" fill="#d4d4d4"/>
-<text x="16.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">未</text>
-<text x="33.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">保</text>
-<text x="50.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">存</text>
-<text x="75.2" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">0</text>
-<text x="100.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">詳</text>
-<text x="117.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">細</text>
-<text x="134.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">の</text>
-<text x="150.8" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">表</text>
-<text x="167.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">示</text>
-<text x="201.2" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">E</text>
-<text x="209.6" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">n</text>
-<text x="218.0" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">t</text>
-<text x="226.4" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">e</text>
-<text x="234.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">r</text>
-<text x="251.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">編</text>
-<text x="268.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">集</text>
-<text x="302.0" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">E</text>
-<text x="310.4" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">s</text>
-<text x="318.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">c</text>
-<text x="335.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">閉</text>
-<text x="352.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">じ</text>
-<text x="369.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">る</text>
-<text x="402.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">j</text>
-<text x="419.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">下</text>
-<text x="453.2" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">k</text>
-<text x="470.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">上</text>
-<text x="503.6" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">?</text>
-<text x="520.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">ヘ</text>
-<text x="537.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">ル</text>
-<text x="554.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#1e1e1e">プ</text>
+<text x="16.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">未</text>
+<text x="33.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">保</text>
+<text x="50.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">存</text>
+<text x="75.2" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">0</text>
+<text x="100.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">詳</text>
+<text x="117.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">細</text>
+<text x="134.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">の</text>
+<text x="150.8" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">表</text>
+<text x="167.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#d4d4d4" font-weight="bold">示</text>
+<text x="201.2" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">E</text>
+<text x="209.6" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">n</text>
+<text x="218.0" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">t</text>
+<text x="226.4" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">e</text>
+<text x="234.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">r</text>
+<text x="251.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">編</text>
+<text x="268.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">集</text>
+<text x="302.0" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">E</text>
+<text x="310.4" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">s</text>
+<text x="318.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">c</text>
+<text x="335.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">閉</text>
+<text x="352.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">じ</text>
+<text x="369.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">る</text>
+<text x="402.8" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">j</text>
+<text x="419.6" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">下</text>
+<text x="453.2" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">k</text>
+<text x="470.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">上</text>
+<text x="503.6" y="471.5" textLength="8.4" lengthAdjust="spacingAndGlyphs" fill="#11a8cd" font-weight="bold">?</text>
+<text x="520.4" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">ヘ</text>
+<text x="537.2" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">ル</text>
+<text x="554.0" y="471.5" textLength="16.8" lengthAdjust="spacingAndGlyphs" fill="#666666">プ</text>
 </g></svg>

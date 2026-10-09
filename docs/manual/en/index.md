@@ -16,8 +16,11 @@ mdgrid writes only the value of the key you changed (adding a key line when the 
 
 ## Contents
 
-- [Getting started](getting-started.md) — build, first run on the sample vault, reading the screen, the first keys
-- [Task guides](tasks.md) — edit and save, find and filter, edit many rows, create notes, save a view, give a folder its own command with an alias, use with other commands, choose a theme
+- [Getting started](getting-started.md) — install, first run on the samples, reading the screen, the first keys
+- [How mdgrid sees your notes](concepts.md) — tables, views, saving, registered tables, links, workspaces, the relation map, and where mdgrid keeps things
+- [Task guides](tasks.md) — edit and save, find and filter, edit many rows, create notes, open a `.base`, save a view, give a folder its own command, register tables, link tables with relations, group tables into workspaces, use with other commands
+- [Make it look the way you like](appearance.md) — themes, cells as parts or text, frames, what is shown around the table, terminals and fonts
+- [When something looks wrong](faq.md) — marks in cells, cells you cannot edit, links with `?`, the relation map, alignment, colors, speed
 
 ## Reference
 
