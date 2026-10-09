@@ -126,6 +126,7 @@ fn test_cli_2_options() {
             readonly: true,
             no_color: true,
             config: Some(PathBuf::from("/x/c.toml")),
+            workspace: None,
         }
     );
     assert_eq!(

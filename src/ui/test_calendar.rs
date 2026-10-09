@@ -85,7 +85,7 @@ fn test_ce_20_calendar_select_and_type() {
     // 入力ボックスのすぐ下の行が見出し(年と月)、次が曜日(日曜始まり)。
     assert!(lines[cy as usize + 1].contains(" 2026年10月 "), "{s}");
     assert!(
-        lines[cy as usize + 2].contains("| 日  月  火  水  木  金  土 |"),
+        lines[cy as usize + 2].contains("│ 日  月  火  水  木  金  土 │"),
         "{s}"
     );
     // 選んでいる日は `>`、元の値は `*`(SR-15)。
@@ -151,7 +151,7 @@ fn test_ce_20_click_a_day() {
         .enumerate()
         .find(|(_, l)| l.contains("2026年10月"))
         .unwrap();
-    let gx = width::width(&line[..line.find("+-").unwrap()]);
+    let gx = width::width(&line[..line.find("╭─").unwrap()]);
     // 2026-10 は木曜始まり。2週目(4〜10日)の水曜(4列目)が 7 日。
     a.click((gx + 1 + 3 * 4 + 1) as u16, (ty + 2 + 1) as u16);
     assert_eq!(a.mode, Mode::Edit);
@@ -221,7 +221,7 @@ fn test_ce_21_monday_start() {
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
     let s = screen(&a);
-    assert!(s.contains("| 月  火  水  木  金  土  日 |"), "{s}");
+    assert!(s.contains("│ 月  火  水  木  金  土  日 │"), "{s}");
     golden("ce_21_mon", &s);
 }
 
@@ -636,7 +636,12 @@ fn bottom_edge(s: &str) -> String {
         .unwrap_or_else(|| panic!("カレンダーが出ていない\n{s}"));
     lines[title + 1..]
         .iter()
-        .find(|l| l.trim_start().starts_with("+-") || l.contains(" +-"))
+        .find(|l| {
+            let t = l.trim_start();
+            ["├─", "╰─"]
+                .iter()
+                .any(|e| t.starts_with(e) || l.contains(&format!(" {e}")))
+        })
         .unwrap_or_else(|| panic!("下の縁が無い\n{s}"))
         .to_string()
 }

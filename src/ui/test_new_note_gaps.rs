@@ -112,12 +112,12 @@ fn start_and_name(a: &mut App, name: &str) {
     press(a, KeyCode::Enter);
 }
 
-/// 画面に出ている候補のリストの項目(枠 `|` の中の `>`・`*` の印のあとの値)と、選ばれているか。
-/// セルの編集の見せ方(`|>*todo  |`・`|  done  |`)を読む。
+/// 画面に出ている候補のリストの項目(枠 `│` の中の `>`・`*` の印のあとの値)と、選ばれているか。
+/// セルの編集の見せ方(`│>*todo  │`・`│  done  │`)を読む。
 fn list_on_screen(s: &str) -> Vec<(String, bool)> {
     let mut out = Vec::new();
     for line in s.lines() {
-        let parts: Vec<&str> = line.split('|').collect();
+        let parts: Vec<&str> = line.split('│').collect();
         if parts.len() < 3 {
             continue;
         }
@@ -127,6 +127,10 @@ fn list_on_screen(s: &str) -> Vec<(String, bool)> {
                 continue;
             };
             if !matches!(sel, '>' | ' ') || !matches!(cur, '*' | ' ') {
+                continue;
+            }
+            // 候補の行は、2つの印のすぐあとに値が来る(新しいノートの窓の行 `   名前` は空白が続くので外す)。
+            if cs.as_str().starts_with(' ') {
                 continue;
             }
             let text = cs.as_str().trim();

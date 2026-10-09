@@ -15,8 +15,9 @@ Point mdgrid at a folder and every note becomes a row, every frontmatter key a c
 
 ## ✨ What it does
 
-- **One command per folder.** `alias tasks='mdgrid ~/notes/Tasks'` is all the setup there is. mdgrid remembers each folder's columns, widths, filters, sorting, grouping and saved views, so typing `tasks` brings back the same table every time. Or register the tables you use under a name and a group, and plain `mdgrid` lists them to switch between. Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, and you can jump to the target or list the notes that link back. No database, no import: the notes stay plain Markdown files.
-- **Edit frontmatter like a spreadsheet.** Pick from values other notes already use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename a key across every note.
+- **One command per folder.** `alias tasks='mdgrid ~/notes/Tasks'` is all the setup there is. mdgrid remembers each folder's columns, widths, filters, sorting, grouping and saved views, so typing `tasks` brings back the same table every time. Or register the tables you use under a name and a group, and plain `mdgrid` lists them to switch between. No database, no import: the notes stay plain Markdown files.
+- **Linked tables and a relation map.** Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, Enter picks a target by name, and you can jump to it or list the notes that link back. Press `R` for a map of the tables and their links. Group the tables of a project into a workspace (or let mdgrid find the Obsidian vault or git repository) so links stay inside it.
+- **Edit frontmatter like a spreadsheet.** Cells look like parts of a GUI table: checkboxes, colored chips for tags and statuses, and a type mark on each column. Pick from values other notes already use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename a key across every note.
 - **Leaves the rest of the file alone.** Other keys, their order, comments, line endings and the body stay byte-for-byte the same. Before anything is written you see a diff of each file.
 - **Works with other commands.** Print the table as CSV, TSV, JSON or Markdown — or export the table on screen to a file from the command palette — edit the CSV in a spreadsheet and bring the changes back, or choose notes on screen and hand their paths to the next command.
 - **Easy to learn from the keyboard.** Vim keys and arrow keys both work. Press `x` on any cell to see what you can do there, `?` for every key.
@@ -57,6 +58,20 @@ mdgrid /tmp/mdgrid-demo/Tasks
 Move with the arrow keys, press `Enter` to change a value, `Ctrl+S` to see the diff and save, and `q` to quit.
 
 The demo's due dates are in early October 2026. To see the same overdue marks as in the screenshots, set the date mdgrid treats as today: `MDGRID_TODAY=2026-10-03 mdgrid /tmp/mdgrid-demo/Tasks`.
+
+Every sample at once, from a clone of the repository. `demos/try.sh` builds mdgrid, copies the sample to a temporary folder, opens it with its own config, and deletes the copy when you quit, so your notes and settings are never touched:
+
+```sh
+git clone https://github.com/S6U5/mdgrid && cd mdgrid
+sh demos/try.sh demo        # the demo above (a team's task list)
+sh demos/try.sh relations   # tasks → projects → members linked by [[links]]; press R for the relation map
+sh demos/try.sh workspace   # the same tables grouped into a workspace (-w Work)
+sh demos/try.sh ai-human    # a .base that splits tasks into human and AI work
+sh demos/try.sh showcase    # a config that turns most features on (Japanese)
+sh demos/try.sh vault       # edge cases: empty and mismatched values, read-only notes (Japanese)
+```
+
+Anything after `--` goes to mdgrid, for example `sh demos/try.sh demo -- --readonly`.
 
 ### 2. Open your own notes
 
@@ -132,6 +147,10 @@ Press `x` to see what you can do with the selected cell:
 Group and arrange the table the way you work. With a formula in a `.base` and a few lines of config, the [ai-human sample](examples/ai-human/README.md) splits tasks into those that need a person (pay, sign, submit, send) and those an AI agent can finish, with the people's group on top:
 
 ![Tasks grouped into human and AI tasks](docs/assets/demo-ai-human.svg)
+
+Press `R` for the relation map: the tables of the workspace as boxes, with an arrow from each link column to the table it points at (`N:1`, or `N:N` for a list of links). Click a table or a link, or move with the arrow keys:
+
+![The relation map of tasks, projects and members](docs/assets/demo-relmap.svg)
 
 Pick a color theme with `theme` in the config: `"nord"` (below), `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"` or `"dozy-pink"`. The default keeps your terminal's colors, and `NO_COLOR` is respected.
 

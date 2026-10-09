@@ -248,8 +248,8 @@ fn fill_in(src: &str, args: &[&dyn Display]) -> String {
 
 msgs! {
     // ---- main: 使い方(CLI-2) ----
-    Usage = "Usage: mdgrid [<.base | folder | .md> ...] [--view <name>] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the vault root). Given a .md file, open its folder with that note selected.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any).\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version",
-        "使い方: mdgrid [<.base | フォルダ | .md> …] [--view <名前>] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す";
+    Usage = "Usage: mdgrid [<.base | folder | .md> ...] [--view <name>] [-w <name>] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid [<folder | .base> ...] --add-to <name> [--as <table name>] | --remove-from <name>\n        mdgrid [<folder> ...] --init-workspace\n        mdgrid --workspaces | --remove-workspace <name>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the vault root). Given a .md file, open its folder with that note selected.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any).\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  -w, --workspace <name>  use that workspace (workspaces.toml) for links and the relation map;\n                          with no path, open its first table\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --workspaces            list the workspaces (workspaces.toml)\n  --add-to <name>         add the given tables (default: this folder) to that workspace,\n                          creating it if needed; --as <name> names the table\n  --remove-from <name>    remove the given tables (default: this folder) from that workspace\n  --remove-workspace <name>  delete that workspace (notes are not touched)\n  --init-workspace        put a workspace marker .mdgrid/workspace.toml in the folder\n                          (default: this folder)\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version",
+        "使い方: mdgrid [<.base | フォルダ | .md> …] [--view <名前>] [-w <名前>] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す";
 
     // ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
     ValuePath = "path", "パス";
@@ -424,6 +424,12 @@ msgs! {
     WantWeekStart = "\"sun\" or \"mon\"", "\"sun\" か \"mon\"";
     WantString = "a string", "文字列";
     WantLanguage = "one of \"auto\", \"en\", \"ja\"", "\"auto\"・\"en\"・\"ja\" のどれか";
+    WantLook = "\"modern\" or \"classic\"", "\"modern\" か \"classic\"";
+    WantBorders = "\"rounded\" or \"ascii\"", "\"rounded\" か \"ascii\"";
+    WantViewTabs = "\"always\" or \"auto\"", "\"always\" か \"auto\"";
+    WantCells = "\"rich\" or \"plain\" (or a [cells] table)", "\"rich\" か \"plain\"(か [cells] の表)";
+    WantCellsColumns = "a table of column = \"rich\", \"plain\" or \"chip\"", "列 = \"rich\"・\"plain\"・\"chip\" の表";
+    WantColStyle = "\"rich\", \"plain\" or \"chip\"", "\"rich\"・\"plain\"・\"chip\" のどれか";
     WantTheme = "one of \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\"", "\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\" のどれか";
     WantKeysTable = "a [keys.<mode>] table", "[keys.<モード>] の表";
     WantKeyActionTable = "a table of key = action", "キー = 動作 の表";
@@ -614,6 +620,7 @@ msgs! {
     ModeListPick = "List picker", "リストの選択";
     ModeMenu = "Action menu", "操作の一覧";
     ModeFreq = "Value counts", "頻度表";
+    ModeRelations = "Relations", "関係マップ";
 
     // ---- ui/keymap: ヘルプの節(SR-5) ----
     SecMove = "Move", "移動";
@@ -638,6 +645,7 @@ msgs! {
     SecNote = "Create notes (palette commands)", "ノートを作る(パレットのコマンド)";
     SecInMenu = "In the action menu", "操作の一覧の中";
     SecInFreq = "In value counts", "頻度表の中";
+    SecInRelMap = "In the relation map", "関係マップの中";
 
     // ---- ui/keymap: キーの表示名(SR-4。下の帯・ヘルプ・パレット) ----
     KeyUp = "Up", "上";
@@ -834,7 +842,7 @@ msgs! {
     /// リストの列の要素で絞ったとき(NV-9)。{0} は列、{1} は値。
     HeaderSameHas = "  {0} contains {1}", "  {0} が {1} を含む";
     HeaderHidden = "  hidden columns {0}", "  隠した列 {0}";
-    TabDefault = " Default ", " 既定の表 ";
+    TabDefault = " All notes ", " 既定の表 ";
     TabSwitch = "  [ ] to switch", "  [ ] で切り替え";
     BarLead = " Filter: ", " 検索: ";
     BarCount = "  {0}/{1} rows", "  {0}/{1}行";
@@ -1202,7 +1210,7 @@ msgs! {
 
     // ---- ui/native_views: mdgrid のビュー(BV-13・BV-18・BV-20) ----
     /// `.base` なしで開いたときの先頭のタブの名前(日本語は名前の検査とビューの状態にも使う)。
-    DefaultTabName = "Default", "既定の表";
+    DefaultTabName = "All notes", "既定の表";
     /// {0} は落とした・近似の部分を ` / ` でつないだもの。
     DroppedNote = ". Dropped or approximated: {0}", "。落とした・近似の部分: {0}";
     OnlyOneView = "there is only one view (open a .base, or use \"Save as\" in view settings to switch)", "ビューは1つだけ(.base を開くか、ビューの設定で名前を付けて保存すると切り替えられる)";
@@ -1391,6 +1399,85 @@ msgs! {
     PlaceMulti = "cannot register: several folders are open (register one folder or a .base)", "登録できない: フォルダを複数開いている(フォルダ1つか .base を登録する)";
     /// {0} はビューの名前。
     PlaceNoView = "the view {0} is not here, so the first view is shown", "ビュー {0} が無いので先頭のビューを出した";
+
+    // ---- workspace: ワークスペース(WS-1〜WS-7) ----
+    /// {0} はワークスペースの名前、{1} は1から数えた番号。
+    WsBadTable = "ignored table #{1} of workspace {0}: needs a path (string)", "ワークスペース {0} の {1} 番目の表は無視した(path の文字列が要る)";
+    /// {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
+    WsBadToml = "cannot read {0} (line {1}), so its workspaces are not loaded: {2}", "{0} が読めない({1} 行目)のでワークスペースは読まない: {2}";
+    /// {0} は1から数えた番号。
+    WsBadEntry = "ignored workspace #{0} in workspaces.toml: needs a name (string) that does not repeat", "workspaces.toml の {0} 番目のワークスペースは無視した(重ならない name の文字列が要る)";
+    /// {0} はパス。
+    WsInitExists = "{0} already exists", "{0} はもうある";
+    /// {0} は名前。
+    WsUnknown = "no workspace named {0} (mdgrid --workspaces lists them)", "ワークスペース {0} は無い(mdgrid --workspaces で一覧)";
+    /// {0} はワークスペースの名前。
+    HeaderWorkspace = "  · workspace {0}", "  · ワークスペース {0}";
+    CmdWsNew = "Create a workspace with this table", "この表でワークスペースを作る";
+    CmdWsAdd = "Add this table to a workspace", "この表をワークスペースに足す";
+    CmdWsRemove = "Remove this table from a workspace", "この表をワークスペースから外す";
+    CmdWsOpen = "Open a workspace", "ワークスペースを開く";
+    AskWsName = "workspace name: ", "ワークスペースの名前: ";
+    AskWsPick = "workspace (pick or type a new one): ", "ワークスペース(選ぶか新しく打つ): ";
+    AskWsRemove = "remove from which workspace: ", "どのワークスペースから外す: ";
+    AskWsOpen = "open which workspace: ", "どのワークスペースを開く: ";
+    /// {0} はワークスペースの名前。
+    AskWsTable = "open which table of {0}: ", "{0} のどの表を開く: ";
+    /// {0} は打った名前。
+    WsNewItem = "+ new workspace: {0}", "+ 新しいワークスペース: {0}";
+    /// {0} は表、{1} はワークスペース。
+    WsAdded = "added {0} to workspace {1}", "{0} をワークスペース {1} に足した";
+    WsRemoved = "removed {0} from workspace {1}", "{0} をワークスペース {1} から外した";
+    WsNotIn = "this table is in no workspace", "この表はどのワークスペースにも無い";
+    WsNone = "no workspaces yet: create one with :workspace_new", "ワークスペースはまだ無い: :workspace_new で作る";
+    WsEmpty = "workspace {0} has no tables", "ワークスペース {0} に表が無い";
+    WsMulti = "cannot add: several folders are open (add one folder or a .base)", "足せない: フォルダを複数開いている(フォルダ1つか .base を足す)";
+    WsNoConfigDir = "cannot change workspaces: no config folder", "ワークスペースを変えられない: 設定のフォルダが無い";
+    /// {0} は誤り。
+    WsSaveError = "cannot write workspaces.toml: {0}", "workspaces.toml を書けない: {0}";
+    WsCliAsOne = "--as names one table: give one path", "--as は表を1つ名付ける: パスは1つにする";
+    /// {0} はパス。
+    WsCliNoPath = "no such file or folder: {0}", "そのファイルもフォルダも無い: {0}";
+    /// {0} はワークスペース、{1} はパス。
+    WsCliNotIn = "workspace {0} has no table {1}", "ワークスペース {0} に表 {1} は無い";
+    /// {0} はワークスペース。
+    WsCliDeleted = "removed workspace {0}", "ワークスペース {0} を消した";
+    /// {0} は作ったファイル。
+    WsCliInit = "created {0}", "{0} を作った";
+    WsCliNone = "no workspaces (mdgrid <path> --add-to <name> makes one)", "ワークスペースは無い(mdgrid <パス> --add-to <名前> で作る)";
+    /// {0} は読めなかった理由。
+    WsFixFirst = "not changed: fix workspaces.toml first ({0})", "変えなかった: 先に workspaces.toml を直す({0})";
+    /// {0} は開いた表、{1} はワークスペース。
+    WsNotInChosen = "{0} is not in workspace {1} (links use {1}'s tables and this one)", "{0} はワークスペース {1} に無い(リンクは {1} の表とこの表で探す)";
+    /// {0} はパス。
+    WsMarkerOutside = "ignored a table outside the marked folder: {0}", "印のあるフォルダの外の表は使わない: {0}";
+    WantDetect = "a list of \"vault\" and \"git\"", "\"vault\" と \"git\" の並び";
+
+    // ---- relmap: 関係マップ(REL-7〜REL-9) ----
+    KeyRelationMap = "Relation map", "関係マップ";
+    KeyRelOpen = "Open table", "表を開く";
+    KeyRelBack = "Back to the table", "表に戻る";
+    KeyRelNextTable = "Next table", "次の表";
+    KeyRelPrevTable = "Previous table", "前の表";
+    KeyRelNextLink = "Next link", "次のつながり";
+    KeyRelPrevLink = "Previous link", "前のつながり";
+    RelMapTitle = "Relation map", "関係マップ";
+    RelMapTables = "Tables", "表";
+    RelMapDetail = "Details", "詳細";
+    RelMapLinked = "Linked records", "つながった行";
+    RelMapKind = "Type", "種類";
+    RelMapManyToOne = "many-to-one N:1", "多対一(N:1)";
+    RelMapManyToMany = "many-to-many N:N", "多対多(N:N)";
+    RelMapColumn = "Column", "列";
+    RelMapTarget = "Target", "行き先";
+    RelMapLinks = "Links", "リンク";
+    RelMapReverse = "Reverse", "逆向き";
+    RelMapTop = "Most linked", "よく指される";
+    RelMapRows = "Rows", "行";
+    RelMapNoLinks = "No links from or to this table.", "この表のつながりは無い。";
+    RelMapNoTables = "no tables to map: register tables first (:register_place)", "マップにする表が無い: 先に表を登録する(:register_place)";
+    TabScreenTable = "Table", "表";
+    TabScreenRelations = "Relations", "関係";
 
     // ---- relations: リレーション(REL-4・REL-5) ----
     CmdOpenLink = "Open the link target", "リンクの行き先を開く";

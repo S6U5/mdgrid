@@ -67,6 +67,77 @@ East Asian Ambiguous の文字(`○`・`※` など)を幅2として扱う。端
 ambiguous_wide = true
 ```
 
+### `workspace_detect`
+
+- 型: `文字列の並び`
+- 既定: `["vault"]`
+
+書いたワークスペース(`-w`・`.mdgrid/workspace.toml` の印・`workspaces.toml`)に入らない表を開いたとき、上にある Obsidian の保管庫(`"vault"`。`.obsidian/` のあるフォルダ)か git のリポ(`"git"`。`.git` のあるフォルダ)の根をワークスペースとみなす。直下の、ノートのあるフォルダと `.base` が関係マップの表になる。`[]` で検知しない。
+
+```toml
+workspace_detect = ["vault", "git"]
+```
+
+### `look`
+
+- 型: `文字列`
+- 既定: `"modern"`
+
+色を使うときの見た目: `"modern"`(lazygit のように、選びは反転でなく背景の色、窓の枠とキーはアクセントの色、説明は薄い色)か `"classic"`(今までの反転)。どちらでも画面の文字は同じで、色を使わない表示(`NO_COLOR`・`--no-color`)ではどちらも classic。色は `theme` から。
+
+```toml
+look = "classic"
+```
+
+### `cells`
+
+- 型: `文字列か表`
+- 既定: `"rich"`
+
+色を使うときの表のセルの見せ方。`"rich"` は GUI の表のように部品で見せます: 真偽は `☑`・`☐`、リストの要素は1つずつ色の付いた札、いくつかの値をくり返す短い文字の列(`status` など)の値も色の付いた札、リンクはアクセントの色、列の見出しには型の印(数 `#`・日付 `◷`・真偽 `☑`・リスト `⋮`・札 `◉`)。同じ値はいつも同じ色で、文字はいつも見せます。`"plain"` は文字のまま。色を使わない表示(`--no-color`・`NO_COLOR`)では、いつも文字のまま。ノートに書く値・編集・検索・出力(`--print`)の値は変わりません。
+
+```toml
+cells = "plain"
+```
+
+表で書けば、部品ごと・列ごとに選べます。列の設定は部品の設定より優先します。`"chip"` は、自動で札にならない列も札にします。
+
+```
+[cells]
+style = "rich"     # か "plain"
+checkbox = true    # 真偽を ☑ ☐
+chips = true       # リストの要素を札
+select = true      # くり返す短い文字の値を札
+links = true       # リンクをアクセントの色
+icons = true       # 列の見出しに型の印
+
+[cells.columns]
+status = "plain"   # この列は文字のまま
+owner = "chip"     # この列は札
+```
+
+### `view_tabs`
+
+- 型: `文字列`
+- 既定: `"always"`
+
+ヘッダーの下のビューのタブの行を出すとき: `"always"`(いつも)か `"auto"`(ビューが2つ以上のときだけ)。`.base` なしで開いたフォルダのビューは **既定の表**(全部のノートと全部のキー)の1つなので、`"auto"` ではタブの行を出さず、その行も表に使います。自分のビューを保存すると出ます。`[display]` の `tabs = false` なら、どちらでも出しません。
+
+```toml
+view_tabs = "auto"
+```
+
+### `borders`
+
+- 型: `文字列`
+- 既定: `"rounded"`
+
+窓の枠の描き方: `"rounded"`(角の丸い、つながった罫線。`╭─╮`)か `"ascii"`(`+ - |`)。`ambiguous_wide = true` のときは、列がずれないようにいつも ASCII。
+
+```toml
+borders = "ascii"
+```
+
 ### `search_bar`
 
 - 型: `真偽値`

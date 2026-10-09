@@ -6,6 +6,7 @@
 //! mdgrid の核(画面に依存しない)。設計は docs/design.md、仕様は specs/。
 
 pub mod base;
+pub mod cells;
 pub mod changes;
 pub mod clock;
 pub mod config;
@@ -19,6 +20,7 @@ pub mod newnote;
 pub mod places;
 pub mod print;
 pub mod relations;
+pub mod relmap;
 pub mod settings;
 pub mod source;
 pub mod summary;
@@ -26,5 +28,10 @@ pub mod theme;
 pub mod types;
 pub mod vault;
 pub mod views;
+pub mod workspace;
 pub mod writeback;
 pub(crate) mod yaml_guard;
+
+#[cfg(test)]
+#[path = "test_toml_edit_safety_unit.rs"]
+mod test_toml_edit_safety;

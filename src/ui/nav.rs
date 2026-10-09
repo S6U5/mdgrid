@@ -49,6 +49,11 @@ pub(crate) fn matches(query: &str, text: &str) -> bool {
     }
 }
 
+/// 検索の語がセルに一致するか(NV-1)。見せる文字か、部品(☑・札。SR-35)のセルなら値の文字で。
+pub(crate) fn search_matches(app: &App, q: &str, row: &RowId, col: &str, text: &str) -> bool {
+    matches(q, text) || matches(q, &app.plain(row, col))
+}
+
 impl App {
     /// セルの素の値(ためた値を重ねる。null とキーの無いセルは空。計算の列は値の文字)。
     /// 簡易の絞り込み(NV-2)と同じ値(NV-8)で比べる。
@@ -94,7 +99,7 @@ impl App {
         };
         match col {
             None => matches(q, &self.src.label(row)),
-            Some(c) => matches(q, &shown(self, row, c).text),
+            Some(c) => search_matches(self, q, row, c, &shown(self, row, c).text),
         }
     }
 

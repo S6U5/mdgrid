@@ -447,15 +447,13 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let tw = g.iw - 2;
     let lw = items.iter().map(|it| width(it.label)).max().unwrap_or(0);
     let kw = items.iter().map(|it| width(&it.key)).max().unwrap_or(0);
+    let f = popup::frame(app);
     let mut out: Vec<(String, Style)> = Vec::new();
-    out.push((popup::top_edge(Mode::Menu.label(), tw), Style::default()));
+    out.push((popup::top_edge(f, Mode::Menu.label(), tw), Style::default()));
     for e in ents.iter().skip(g.start).take(g.vis) {
         match *e {
             Entry::Head(s) => out.push((
-                format!(
-                    "|{}|",
-                    fit(&format!(" {}", s.msg().text()), tw, Align::Left)
-                ),
+                f.side(&fit(&format!(" {}", s.msg().text()), tw, Align::Left)),
                 Style::default().add_modifier(Modifier::BOLD),
             )),
             Entry::Item(i) => {
@@ -465,17 +463,17 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
                     Style::default()
                 };
                 let text = item_text(&items[i], i == sel, lw, kw);
-                out.push((format!("|{}|", fit(&text, tw, Align::Left)), st));
+                out.push((f.side(&fit(&text, tw, Align::Left)), st));
             }
         }
     }
     // 全部が窓に入らず流れるときは、下の縁に「選んでいる番号/項目の数」(リストの選択と同じ印)。
     let edge = if g.vis < ents.len() {
         let count = format!("{}/{}", sel + 1, items.len());
-        fit(&count, tw, Align::Left).replace(' ', "-")
+        fit(&count, tw, Align::Left).replace(' ', &f.h.to_string())
     } else {
-        "-".repeat(tw)
+        f.line(tw)
     };
-    out.push((format!("+{edge}+"), Style::default()));
-    popup::blit(lines, g.x, g.top, g.iw, w, out);
+    out.push((format!("{}{edge}{}", f.bl, f.br), Style::default()));
+    popup::blit(app, lines, g.x, g.top, g.iw, w, out);
 }

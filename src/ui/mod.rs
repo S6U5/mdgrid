@@ -5,6 +5,7 @@ pub mod app;
 pub mod bands;
 pub mod calendar;
 pub mod cell;
+pub(crate) mod chips;
 pub mod columns;
 pub mod detail;
 // 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
@@ -20,6 +21,7 @@ pub mod input;
 pub mod keymap;
 pub mod list;
 pub mod listpick;
+pub mod look;
 pub mod menu;
 pub mod native_io;
 pub mod native_views;
@@ -28,6 +30,7 @@ pub mod new_note;
 pub mod places;
 pub mod popup;
 pub mod relations;
+pub mod relmap;
 pub mod review;
 pub mod settings;
 pub mod settings_pick;
@@ -36,6 +39,7 @@ pub mod startup;
 pub mod theme;
 pub mod view;
 pub mod width;
+pub mod workspace;
 
 pub use app::{dumb_terminal, App, ColorMode};
 
@@ -64,6 +68,16 @@ pub fn draw(frame: &mut Frame, app: &App) {
                 if width::has_emoji(&span.content) {
                     span.content = width::replace_emoji(&span.content).into();
                 }
+            }
+        }
+    }
+    // SR-33: モダンな見た目では、画面ごとに残っている反転(ビューの設定・ヘルプのパレットなど)も、
+    // 選びの背景の色にそろえる。classic と色なしでは反転のまま。
+    if let Some(l) = look::look(app) {
+        for line in &mut lines {
+            line.style = l.swap_reverse(line.style);
+            for span in &mut line.spans {
+                span.style = l.swap_reverse(span.style);
             }
         }
     }
@@ -130,6 +144,8 @@ mod test_audit4;
 #[cfg(test)]
 mod test_bom_values;
 #[cfg(test)]
+mod test_borders;
+#[cfg(test)]
 mod test_bulk_outside;
 #[cfg(test)]
 mod test_calendar;
@@ -150,6 +166,8 @@ mod test_detail;
 #[cfg(test)]
 mod test_detail_body;
 #[cfg(test)]
+mod test_detail_look;
+#[cfg(test)]
 mod test_display_more;
 #[cfg(test)]
 mod test_display_options;
@@ -160,11 +178,21 @@ mod test_export;
 #[cfg(test)]
 mod test_external;
 #[cfg(test)]
+mod test_freq_chips;
+#[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]
 mod test_key_ops;
 #[cfg(test)]
+mod test_list_chips;
+#[cfg(test)]
 mod test_list_narrow;
+#[cfg(test)]
+mod test_load_throttle;
+#[cfg(test)]
+mod test_look;
+#[cfg(test)]
+mod test_modern_rest;
 #[cfg(test)]
 mod test_note_editor;
 #[cfg(test)]
@@ -174,19 +202,43 @@ mod test_note_time;
 #[cfg(test)]
 mod test_places;
 #[cfg(test)]
+mod test_places_align;
+#[cfg(test)]
 mod test_places_more;
 #[cfg(test)]
 mod test_relations;
 #[cfg(test)]
 mod test_relations_open;
 #[cfg(test)]
+mod test_relmap;
+#[cfg(test)]
+mod test_relmap_click;
+#[cfg(test)]
+mod test_relmap_scroll;
+#[cfg(test)]
 mod test_review6;
+#[cfg(test)]
+mod test_rich_cells;
+#[cfg(test)]
+mod test_rich_cells_first;
+#[cfg(test)]
+mod test_rich_cells_fit;
+#[cfg(test)]
+mod test_rich_cells_more;
+#[cfg(test)]
+mod test_screen_tabs_fixed;
+#[cfg(test)]
+mod test_selects_cache;
 #[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
 mod test_time_picker;
 #[cfg(test)]
 mod test_trust_notices;
+#[cfg(test)]
+mod test_view_tabs_auto;
+#[cfg(test)]
+mod test_workspace;
 // 受け入れの試験(書き換えない)の書き方に当たる clippy の指摘は、ここで許す。
 #[cfg(test)]
 #[allow(clippy::manual_contains, clippy::cloned_ref_to_slice_refs)]

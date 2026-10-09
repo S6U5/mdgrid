@@ -3,11 +3,11 @@
  検索: (\ で絞る)
  ノート title  status
 >a      会議   todo
- b      買い物 |>*todo  |
-               |  doing |
-               |  done  |
-               |  なし  |
-               +1/4-----+
+ b      買い物 │>*todo  │
+               │  doing │
+               │  done  │
+               │  なし  │
+               ╰1/4─────╯
 
 
 

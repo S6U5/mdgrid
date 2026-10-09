@@ -704,16 +704,17 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     } else {
         format!("{} {pos}", sanitize(&p.col))
     };
-    out.push((popup::top_edge(&title, tw), Style::default()));
+    let f = popup::frame(app);
+    out.push((popup::top_edge(f, &title, tw), Style::default()));
     let qroom = tw.saturating_sub(width(SEARCH.text()));
     let search = format!("{}{}", SEARCH.text(), query_view(&p.query, qroom));
     out.push((
-        format!("|{}|", fit(&search, tw, Align::Left)),
+        f.side(&fit(&search, tw, Align::Left)),
         Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
     ));
     if rows.is_empty() {
         out.push((
-            format!("|{}|", fit(Msg::PickNoMatch.text(), tw, Align::Left)),
+            f.side(&fit(Msg::PickNoMatch.text(), tw, Align::Left)),
             Style::default(),
         ));
     }
@@ -725,10 +726,10 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         } else {
             Style::default()
         };
-        out.push((format!("|{}|", fit(&text, tw, Align::Left)), st));
+        out.push((f.side(&fit(&text, tw, Align::Left)), st));
     }
-    out.push((format!("+{}+", "-".repeat(tw)), Style::default()));
-    popup::blit(lines, g.x, g.top, g.iw, w, out);
+    out.push((f.bottom(tw), Style::default()));
+    popup::blit(app, lines, g.x, g.top, g.iw, w, out);
 }
 
 /// 端末のカーソルの位置(SR-17: 検索の入力の位置。変換の窓がそこに出る)。

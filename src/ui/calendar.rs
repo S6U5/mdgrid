@@ -16,6 +16,7 @@ use super::entry::Entry;
 use super::input::{input_box, Input};
 use super::keymap::{self, Action, Mode};
 use super::list::splice;
+use super::popup::{self, Frame};
 use super::view::visible_layout;
 use super::width::width;
 use mdgrid::i18n::Msg;
@@ -317,23 +318,19 @@ const MONTHS: [Msg; 12] = [
     Msg::Month12,
 ];
 
-/// 縁の行: `+--- 文字 ---+`(中央か、左寄せ)。収まらなければ `-` だけ。
-fn edge(text: &str, center: bool) -> String {
+/// 縁の行: 端の文字 `l`・`r` の間に、横の線と文字(中央か、左寄せ)。収まらなければ線だけ(SR-32 の枠の文字)。
+fn edge(f: Frame, text: &str, center: bool, l: char, r: char) -> String {
     let inner = CAL_W - 2;
     let tw = width(text);
     if tw > inner {
-        return format!("+{}+", "-".repeat(inner));
+        return format!("{l}{}{r}", f.line(inner));
     }
     let left = if center {
         (inner - tw) / 2
     } else {
         1.min(inner - tw)
     };
-    format!(
-        "+{}{text}{}+",
-        "-".repeat(left),
-        "-".repeat(inner - tw - left)
-    )
+    format!("{l}{}{text}{}{r}", f.line(left), f.line(inner - tw - left))
 }
 
 /// 窓の行(各行は幅 CAL_W の span の並び)。
@@ -342,19 +339,31 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
     let month = MONTHS
         .get((m as usize).wrapping_sub(1))
         .map_or_else(|| m.to_string(), |n| n.text().to_string());
+    let f = popup::frame(app);
+    // SR-33: モダンな見た目では、縁はアクセントの色、選んだ日と時刻は背景の色。
+    let look = super::look::look(app);
+    let bst = look.as_ref().map(|l| l.border()).unwrap_or_default();
+    let sel_st = |base: Style| match &look {
+        Some(l) => l.swap_reverse(base),
+        None => base,
+    };
     let mut out = vec![vec![Span::styled(
-        edge(&Msg::CalTitle.fill(&[&y, &month]), true),
-        Style::default().add_modifier(Modifier::BOLD),
+        edge(f, &Msg::CalTitle.fill(&[&y, &month]), true, f.tl, f.tr),
+        bst.add_modifier(Modifier::BOLD),
     )]];
     let names: String = weekday_names(app.week_start)
         .iter()
         .map(|n| format!(" {} ", n.text()))
         .collect();
-    out.push(vec![Span::raw(format!("|{names}|"))]);
+    out.push(vec![
+        Span::styled(f.v.to_string(), bst),
+        Span::raw(names),
+        Span::styled(f.v.to_string(), bst),
+    ]);
     let first = first_of_month(y, m);
     let grid = types::month_grid(y, m, app.week_start);
     for k in 0..WEEKS {
-        let mut row = vec![Span::raw("|")];
+        let mut row = vec![Span::styled(f.v.to_string(), bst)];
         for cell in grid.get(k).copied().unwrap_or([None; 7]) {
             let Some(dd) = cell else {
                 row.push(Span::raw(" ".repeat(CELL_W)));
@@ -363,7 +372,7 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
             let day = first + i64::from(dd) - 1;
             let sel = day == c.sel;
             let base = if sel {
-                Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
+                sel_st(Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD))
             } else {
                 Style::default()
             };
@@ -379,7 +388,7 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
                 base,
             ));
         }
-        row.push(Span::raw("|"));
+        row.push(Span::styled(f.v.to_string(), bst));
         out.push(row);
     }
     if c.datetime {
@@ -392,18 +401,20 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
         );
         let pad = (CAL_W - 2).saturating_sub(width(label) + 2 + width(&value));
         let st = if c.on_time {
-            Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
+            sel_st(Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD))
         } else {
             Style::default()
         };
         out.push(vec![
-            Span::raw(format!("| {label} ")),
+            Span::styled(f.v.to_string(), bst),
+            Span::raw(format!(" {label} ")),
             Span::styled(value, st),
-            Span::raw(format!("{}|", " ".repeat(pad))),
+            Span::raw(" ".repeat(pad)),
+            Span::styled(f.v.to_string(), bst),
         ]);
     }
     for e in edges(app) {
-        out.push(vec![Span::raw(e)]);
+        out.push(vec![Span::styled(e, bst)]);
     }
     out
 }
@@ -437,6 +448,9 @@ fn edges(app: &App) -> Vec<String> {
             .map(|k| Msg::CalTimeKey.fill(&[&k])),
     ];
     let fits = |items: &[&str]| width(&format!(" {} ", items.join(" "))) <= CAL_W - 2;
+    let f = popup::frame(app);
+    // 途中の縁は左右の区切り、最後の縁は下の角(SR-32)。
+    let mid = |t: &str| edge(f, t, false, f.lt, f.rt);
     let mut lines: Vec<String> = Vec::new();
     for group in [&jump[..], &reset[..]] {
         let mut items: Vec<&str> = Vec::new();
@@ -447,7 +461,7 @@ fn edges(app: &App) -> Vec<String> {
             items.push(p);
             if !fits(&items) {
                 items.pop();
-                lines.push(edge(&format!(" {} ", items.join(" ")), false));
+                lines.push(mid(&format!(" {} ", items.join(" "))));
                 items = vec![p];
             }
         }
@@ -456,7 +470,15 @@ fn edges(app: &App) -> Vec<String> {
         } else {
             format!(" {} ", items.join(" "))
         };
-        lines.push(edge(&text, false));
+        lines.push(mid(&text));
+    }
+    if let Some(last) = lines.last_mut() {
+        let inner: String = last
+            .chars()
+            .skip(1)
+            .take(last.chars().count().saturating_sub(2))
+            .collect();
+        *last = format!("{}{inner}{}", f.bl, f.br);
     }
     lines
 }

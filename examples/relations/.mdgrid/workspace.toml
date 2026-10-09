@@ -1,0 +1,3 @@
+# The workspace marker (WS-7): tasks, projects and members, the folders with notes right under here, are one
+# workspace. Links, linked rows and the relation map (R) look only at these tables.
+name = "Relations sample"

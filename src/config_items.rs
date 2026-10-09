@@ -63,6 +63,73 @@ pub const ITEMS: &[Item] = &[
         ja: "East Asian Ambiguous の文字(○・※ など)を幅2として扱う。端末が幅2で描くなら true。",
     },
     Item {
+        name: "workspace_detect",
+        ty: "array of strings",
+        ty_ja: "文字列の並び",
+        default: Some("[\"vault\"]"),
+        example: "workspace_detect = [\"vault\", \"git\"]",
+        en: "When the table you open is in no written workspace, treat the root of the Obsidian vault\n\
+             (\"vault\", a folder with .obsidian/) or the git repository (\"git\", a folder with .git) above it\n\
+             as a workspace: its folders with notes and .base files become the tables of the relation map.\n\
+             [] turns detection off.",
+        ja: "書いたワークスペースに入らない表を開いたとき、上にある Obsidian の保管庫(\"vault\"。.obsidian/ のあるフォルダ)か\n\
+             git のリポ(\"git\"。.git のあるフォルダ)の根をワークスペースとみなす。直下の、ノートのあるフォルダと .base が\n\
+             関係マップの表になる。[] で検知しない。",
+    },
+    Item {
+        name: "look",
+        ty: "string",
+        ty_ja: "文字列",
+        default: Some("\"modern\""),
+        example: "look = \"classic\"",
+        en: "The look when colors are on: \"modern\" (lazygit-like: tinted selection, accent borders and keys,\n\
+             dim labels) or \"classic\" (inverse video). The text on screen is the same; without colors both\n\
+             look like classic.",
+        ja: "色を使うときの見た目: \"modern\"(lazygit のように、選びは背景の色、枠とキーはアクセントの色、説明は薄い色)\n\
+             か \"classic\"(反転)。画面の文字は同じ。色なしではどちらも classic。",
+    },
+    Item {
+        name: "cells",
+        ty: "string or table",
+        ty_ja: "文字列か表",
+        default: Some("\"rich\""),
+        example: "cells = \"plain\"",
+        en: "How table cells look when colors are on: \"rich\" (booleans as checkboxes, list items and the values\n\
+             of short repeated text columns as colored chips, links in the accent color, a type mark in each column\n\
+             heading) or \"plain\" (the text as it is). As a [cells] table: style (\"rich\" or \"plain\"), checkbox,\n\
+             chips, select, links and icons (true or false for each part), and [cells.columns] with column =\n\
+             \"rich\", \"plain\" or \"chip\" (chips even if the column is not detected as one). A column setting wins\n\
+             over the part settings. Without colors cells are always plain.",
+        ja: "色を使うときの表のセルの見せ方: \"rich\"(真偽はチェックボックス、リストの要素と種類の少ない短い文字の列の\n\
+             値は色の付いた札、リンクはアクセントの色、列の見出しに型の印)か \"plain\"(文字のまま)。[cells] の表なら\n\
+             style(\"rich\" か \"plain\")、部品ごとの checkbox・chips・select・links・icons(true か false)、\n\
+             [cells.columns] に 列 = \"rich\"・\"plain\"・\"chip\"(自動で札にならない列も札に)。列の設定は部品の設定より\n\
+             優先。色を使わない表示ではいつも文字のまま。",
+    },
+    Item {
+        name: "view_tabs",
+        ty: "string",
+        ty_ja: "文字列",
+        default: Some("\"always\""),
+        example: "view_tabs = \"auto\"",
+        en: "When to show the row of view tabs: \"always\" or \"auto\" (only when there are two or more views,\n\
+             for example after you save a view; with one view the table gets that row). [display] tabs = false\n\
+             hides the tabs either way.",
+        ja: "ビューのタブの行を出すとき: \"always\"(いつも)か \"auto\"(ビューが2つ以上のときだけ。たとえばビューを\n\
+             保存したあと。1つなら、その行も表に使う)。[display] の tabs = false なら、どちらでも出さない。",
+    },
+    Item {
+        name: "borders",
+        ty: "string",
+        ty_ja: "文字列",
+        default: Some("\"rounded\""),
+        example: "borders = \"ascii\"",
+        en: "How window frames are drawn: \"rounded\" (connected lines with round corners) or \"ascii\" (+ - |).\n\
+             With ambiguous_wide = true the frames are always ASCII, so the columns stay aligned.",
+        ja: "窓の枠の描き方: \"rounded\"(角の丸い、つながった罫線)か \"ascii\"(+ - |)。\n\
+             ambiguous_wide = true のときは、列がずれないようにいつも ASCII。",
+    },
+    Item {
         name: "search_bar",
         ty: "boolean",
         ty_ja: "真偽値",
@@ -186,11 +253,11 @@ pub const ITEMS: &[Item] = &[
         example: "[keys.table]\n\"ctrl+f\" = \"search\"\n\"x\" = \"none\"",
         en: "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\
              \"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\n\
-             filter, detail, settings, settings_input, chips, list_select, menu, freq. Action names\n\
-             are shown in the command palette (:).",
+             filter, detail, settings, settings_input, chips, list_select, menu, freq, relations. Action\n\
+             names are shown in the command palette (:).",
         ja: "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\
              \"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・\
-             filter・detail・settings・settings_input・chips・list_select・menu・freq。動作の名前はコマンドのパレット(:)に出る。",
+             filter・detail・settings・settings_input・chips・list_select・menu・freq・relations。動作の名前はコマンドのパレット(:)に出る。",
     },
 ];
 

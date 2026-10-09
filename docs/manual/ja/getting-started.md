@@ -34,6 +34,22 @@ target/release/mdgrid /tmp/mdgrid-sample
 target/release/mdgrid examples/vault --readonly
 ```
 
+### 見本を全部試す
+
+リポを clone すれば、見本を全部1つのコマンドで開けます。`demos/try.sh` は mdgrid をビルドし、見本を一時フォルダに写し、その中の設定で開き、終わると写しを消します。自分のノートと設定には触りません:
+
+```sh
+git clone https://github.com/S6U5/mdgrid && cd mdgrid
+sh demos/try.sh vault       # 上の見本の保管庫(空・食い違う値・読むだけのノートなども)
+sh demos/try.sh relations   # [[リンク]] でつないだ tasks → projects → members。R で関係マップ
+sh demos/try.sh workspace   # 同じ表をワークスペースにまとめたもの(-w Work)
+sh demos/try.sh showcase    # 多くの機能を入れた設定と保管庫
+sh demos/try.sh ai-human    # 人の仕事と AI の仕事に分ける .base(英語)
+sh demos/try.sh demo        # 英語の見本(README の画面)
+```
+
+`--` のあとは mdgrid に渡ります。たとえば `sh demos/try.sh demo -- --readonly`。
+
 引数を省くと今のフォルダを開きます。フォルダを複数並べることも、`.base` を渡してそのビューで開くこともできます([作業の手引き](tasks.md#base-を開く))。
 
 ## 画面の見方

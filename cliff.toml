@@ -39,6 +39,7 @@ sort_commits = "oldest"
 commit_parsers = [
   { message = "^実装[:：]", group = "<!-- 0 -->Features" },
   { message = "^追加[:：]", group = "<!-- 0 -->Features" },
+  { message = "^改善[:：]", group = "<!-- 0 -->Features" },
   { message = "^修正[:：]", group = "<!-- 1 -->Fixes" },
   { message = "^文書[:：]", group = "<!-- 2 -->Documentation" },
   { message = "^specs[:：]", group = "<!-- 3 -->Specification" },

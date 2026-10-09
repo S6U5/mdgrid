@@ -12,15 +12,19 @@ struct TempDir(PathBuf);
 
 impl TempDir {
     fn new(name: &str) -> TempDir {
+        // 時計の刻みが粗い(macOS はマイクロ秒)と、並んで動く試験が同じ名前になるので、通し番号も足す。
+        static SEQ: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let nanos = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
         let dir = std::env::temp_dir().join(format!(
-            "mdgrid-test-{}-{}-{}",
+            "mdgrid-test-{}-{}-{}-{}",
             name,
             std::process::id(),
-            nanos
+            nanos,
+            seq
         ));
         std::fs::create_dir_all(&dir).unwrap();
         TempDir(dir)

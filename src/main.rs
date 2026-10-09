@@ -4,6 +4,7 @@ mod apply;
 mod diff;
 mod edit;
 mod ui;
+mod ws_cli;
 
 use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{CommandFactory, Parser, ValueEnum, ValueHint};
@@ -65,6 +66,8 @@ enum Command {
     Print(Vec<PathBuf>, PrintFormat, bool, Vec<String>, Vec<String>),
     /// OUT-3: 画面(`/dev/tty`)で選んだ行のパスか列の値を出す(開くパスと出すもの)。
     Pick(Vec<PathBuf>, Pick),
+    /// WS-3・WS-7: ワークスペースの操作(画面を出さない)。
+    Workspace(ws_cli::Op),
     Run(Vec<PathBuf>),
 }
 
@@ -127,6 +130,9 @@ struct Cli {
     /// .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)
     #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true)]
     view: Option<String>,
+    /// このワークスペースで開く(パスが無ければその最初の表。WS-3)
+    #[arg(short = 'w', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true)]
+    workspace: Option<String>,
     /// 読むだけで開く(編集も保存もしない)
     #[arg(long)]
     readonly: bool,
@@ -160,6 +166,24 @@ struct Cli {
     /// 画面(端末)で選んだ行のパスか列の値を標準出力に出して終わる
     #[arg(long, value_name = Msg::ValuePick.ja(), conflicts_with = "print")]
     pick: Option<String>,
+    /// ワークスペース(workspaces.toml)の一覧を出す
+    #[arg(long, conflicts_with_all = ["print", "pick", "apply"])]
+    workspaces: bool,
+    /// 開くパスの表を、このワークスペースに足す(無ければ作る)
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["print", "pick", "apply", "workspaces"])]
+    add_to: Option<String>,
+    /// --add-to で足す表の名前(無ければフォルダの名前)
+    #[arg(long = "as", value_name = Msg::ValueName.ja(), allow_hyphen_values = true, requires = "add_to")]
+    as_name: Option<String>,
+    /// 開くパスの表を、このワークスペースから外す
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["print", "pick", "apply", "workspaces", "add_to"])]
+    remove_from: Option<String>,
+    /// このワークスペースを消す(表のノートには触らない)
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["print", "pick", "apply", "workspaces", "add_to", "remove_from"])]
+    remove_workspace: Option<String>,
+    /// 開くパスのフォルダ(無ければ今のフォルダ)に、ワークスペースの印 .mdgrid/workspace.toml を作る
+    #[arg(long, conflicts_with_all = ["print", "pick", "apply", "workspaces", "add_to", "remove_from", "remove_workspace"])]
+    init_workspace: bool,
     /// 設定の全項目を既定値と説明付きの TOML で出す
     #[arg(long)]
     print_config: bool,
@@ -314,13 +338,23 @@ impl Cli {
             Command::Completions(s)
         } else if self.man {
             Command::Man
+        } else if self.workspaces {
+            Command::Workspace(ws_cli::Op::List)
+        } else if let Some(name) = self.remove_workspace {
+            Command::Workspace(ws_cli::Op::Delete(name))
         } else {
             let paths = if self.paths.is_empty() {
                 vec![here]
             } else {
                 self.paths
             };
-            if let Some(file) = self.apply {
+            if let Some(name) = self.add_to {
+                Command::Workspace(ws_cli::Op::Add(name, paths, self.as_name))
+            } else if let Some(name) = self.remove_from {
+                Command::Workspace(ws_cli::Op::Remove(name, paths))
+            } else if self.init_workspace {
+                Command::Workspace(ws_cli::Op::Init(paths))
+            } else if let Some(file) = self.apply {
                 Command::Apply(paths, file, self.yes)
             } else if self.print {
                 Command::Print(
@@ -348,6 +382,8 @@ impl Cli {
             (self.man, "--man"),
             (self.print, "--print"),
             (self.with_path, "--with-path"),
+            (self.workspaces, "--workspaces"),
+            (self.init_workspace, "--init-workspace"),
         ] {
             if on {
                 out.push(OsString::from(flag));
@@ -370,6 +406,16 @@ impl Cli {
         }
         if self.yes {
             out.push("--yes".into());
+        }
+        for (flag, v) in [
+            ("--add-to", &self.add_to),
+            ("--as", &self.as_name),
+            ("--remove-from", &self.remove_from),
+            ("--remove-workspace", &self.remove_workspace),
+        ] {
+            if let Some(v) = v {
+                out.push(format!("{flag}={v}").into());
+            }
         }
         for s in &self.sort {
             out.push(format!("--sort={s}").into());
@@ -402,12 +448,13 @@ fn parse_args_in(args: &[OsString], here: PathBuf) -> Result<Command, String> {
 }
 
 /// CLI-2 のオプション。
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 struct Options {
     view: Option<String>,
     readonly: bool,
     no_color: bool,
     config: Option<PathBuf>,
+    workspace: Option<String>,
 }
 
 /// オプションを引数から取り出す(CLI-2)。残りは命令の旗と、`--` の後ろに並べたパス(`parse_args` が読む)。
@@ -420,6 +467,7 @@ fn take_options(args: &mut Vec<OsString>) -> Result<Options, String> {
         readonly: cli.readonly,
         no_color: cli.no_color,
         config: cli.config,
+        workspace: cli.workspace,
     })
 }
 
@@ -641,6 +689,13 @@ fn main() -> ExitCode {
         // CLI-13・SR-10: 画面を出さないので、標準出力がパイプでも出す。
         Ok(Command::Completions(shell)) => return emit(Ok(completions(shell))),
         Ok(Command::Man) => return emit(man_page()),
+        // WS-3・SR-10: 画面を出さないので、標準出力がパイプでも出す。
+        Ok(Command::Workspace(op)) => {
+            return match ws_cli::run(op, config_dir().as_deref()) {
+                Ok(out) => emit(Ok(out.into_bytes())),
+                Err(e) => fail(&e),
+            }
+        }
         // CLI-5・SR-10: 画面を出さないので、端末かどうかを確かめる前に分ける。
         Ok(Command::Print(p, f, w, filter, sort)) => {
             // CLI-15: 渡した `.md` のノートの行だけを出す(フォルダの表と同じ列)。
@@ -656,8 +711,22 @@ fn main() -> ExitCode {
         Ok(Command::Apply(p, file, yes)) => {
             return apply_file(&md_to_folder(p).0, &opts, &file, yes)
         }
-        Ok(Command::Pick(p, what)) => (p, Some(what)),
-        Ok(Command::Run(p)) => (p, None),
+        Ok(Command::Pick(p, what)) => match &opts.workspace {
+            // WS-3: 無い名前は画面を出さずに理由(パスはそのまま)。
+            Some(name) => match workspace_paths(name, p, false) {
+                Ok(p) => (p, Some(what)),
+                Err(e) => return fail(&e),
+            },
+            None => (p, Some(what)),
+        },
+        Ok(Command::Run(p)) => match &opts.workspace {
+            // WS-3: 無い名前は画面を出さずに理由。パスが無ければその最初の表。
+            Some(name) => match workspace_paths(name, p, no_args) {
+                Ok(p) => (p, None),
+                Err(e) => return fail(&e),
+            },
+            None => (p, None),
+        },
         Err(e) => return fail(&e),
     };
     // CLI-15: `.md` のファイルはそのフォルダに置き換え、読み終えたらその行を選ぶ。
@@ -681,7 +750,7 @@ fn main() -> ExitCode {
     }
     let Some(what) = pick else {
         // CLI-1・CLI-19: 引数なしで起動し、登録した表があれば一覧を重ねて始める。
-        if no_args && !app.registered.is_empty() {
+        if no_args && opts.workspace.is_none() && !app.registered.is_empty() {
             app.start_open_places(true);
         }
         return run_switching(app, editor, &opts);
@@ -722,6 +791,29 @@ fn main() -> ExitCode {
     emit(Ok(out.into_bytes()))
 }
 
+/// `-w <名前>`(WS-3): 名前を workspaces.toml で確かめ、パスが無ければその最初の表を開く。
+fn workspace_paths(
+    name: &str,
+    paths: Vec<PathBuf>,
+    no_paths: bool,
+) -> Result<Vec<PathBuf>, String> {
+    let list = config_dir()
+        .map(|d| mdgrid::workspace::load(&d).0)
+        .unwrap_or_default();
+    let w = list
+        .iter()
+        .find(|w| w.name == name)
+        .ok_or_else(|| Msg::WsUnknown.fill(&[&name]))?;
+    if !no_paths {
+        return Ok(paths);
+    }
+    let first = w
+        .tables
+        .first()
+        .ok_or_else(|| Msg::WsEmpty.fill(&[&name]))?;
+    Ok(vec![first.path.clone()])
+}
+
 /// 表を開いて画面の App を作る(CLI-1・CLI-2・CLI-3): 対象・設定・起動の設定。エディタの名前も返す。
 fn open_app(
     paths: &[PathBuf],
@@ -742,6 +834,8 @@ fn open_app(
     let color = ColorMode::detect(|k| std::env::var(k).ok());
     let mut app = App::new(Box::new(target.src), color);
     app.no_emoji = ui::dumb_terminal(|k| std::env::var(k).ok());
+    // WS-6: -w で選んだワークスペースは範囲を決める前に渡す。
+    app.workspace_choice = opts.workspace.clone();
     app.start(Startup {
         config,
         warnings,
@@ -760,6 +854,7 @@ fn open_app(
 /// 画面を出す。一覧で別の表を選んで終わったら(CLI-19)、その表で開き直して続ける。開けなければ
 /// 前の表に戻って理由を出す。
 fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
+    let mut opts = opts.clone();
     loop {
         if let Err(e) = run(&mut app, &editor, Screen::Stdout) {
             return fail(&Msg::TerminalError.fill(&[&e]));
@@ -769,7 +864,13 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
         };
         // REL-4・REL-5: 開き直したあとに選ぶノート。
         let select = app.switch_select.take();
-        match open_app(std::slice::from_ref(&place.path), None, opts, false) {
+        // WS-2: ワークスペースを開いて移ったら、以後の範囲はそのワークスペース。
+        if let Some(ws) = app.switch_workspace.take() {
+            opts.workspace = Some(ws);
+        } else if std::mem::take(&mut app.switch_leave_workspace) {
+            opts.workspace = None;
+        }
+        match open_app(std::slice::from_ref(&place.path), None, &opts, false) {
             Ok((next, ed)) => {
                 app = next;
                 editor = ed;

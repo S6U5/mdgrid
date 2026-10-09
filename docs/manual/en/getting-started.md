@@ -34,6 +34,22 @@ To just look without copying, add `--readonly`. Editing, saving and creating not
 target/release/mdgrid examples/vault --readonly
 ```
 
+### All the samples
+
+Every sample at once, from a clone of the repository. `demos/try.sh` builds mdgrid, copies the sample to a temporary folder, opens it with its own config, and deletes the copy when you quit, so your notes and settings are never touched:
+
+```sh
+git clone https://github.com/S6U5/mdgrid && cd mdgrid
+sh demos/try.sh demo        # a small team's task list (the README screenshots)
+sh demos/try.sh relations   # tasks → projects → members linked by [[links]]; press R for the relation map
+sh demos/try.sh workspace   # the same tables grouped into a workspace (-w Work)
+sh demos/try.sh ai-human    # a .base that splits tasks into human and AI work
+sh demos/try.sh showcase    # a config that turns most features on (Japanese)
+sh demos/try.sh vault       # edge cases: empty and mismatched values, read-only notes (Japanese)
+```
+
+Anything after `--` goes to mdgrid, for example `sh demos/try.sh demo -- --readonly`.
+
 With no argument mdgrid opens the current folder. You can also pass several folders, or a `.base` file to open its views ([Task guides](tasks.md#open-a-base-file)).
 
 ## Reading the screen
@@ -45,7 +61,7 @@ From the top:
 | Area | What it shows |
 |---|---|
 | Header | what is open (`vault` here) and the number of rows. `+ New` at the right creates a note |
-| Tabs | view names: `Default`, plus the views of a `.base` and views you saved |
+| Tabs | view names: `All notes` (every note of the folder), plus the views of a `.base` and views you saved |
 | Search bar | press `\` to type; rows are filtered as you type |
 | Table | one row per note. The first column is the note's path; the others are frontmatter keys |
 | Bottom bar | the number of unsaved changes, the current mode, the selected row and column, and the keys you can press now |

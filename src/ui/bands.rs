@@ -25,7 +25,7 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
         Msg::HeaderRows.fill(&[&app.rows.len()])
     );
     // SR-20: タブを隠していれば、今のビューの名前(定義と違えば `*`。BV-20)をヘッダーに出す。
-    if tab_rows(app) == 0 {
+    if tab_rows(app) == 0 && !single_tab_hidden(app) {
         if let Some(v) = app.view_names().get(app.view_index()) {
             let dirty = if app.native_dirty() { "*" } else { "" };
             text.push_str(&Msg::HeaderView.fill(&[&sanitize(v), &dirty]));
@@ -64,17 +64,100 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
     if !app.hidden.is_empty() {
         text.push_str(&Msg::HeaderHidden.fill(&[&app.hidden.len()]));
     }
+    // WS-6: 範囲のワークスペースの名前(書いた範囲のとき。検知の範囲は関係マップの画面だけ)。
+    if let Some(s) = &app.scope {
+        let detected = matches!(s.source, mdgrid::workspace::Source::Detected(_));
+        if app.mode == Mode::Relations || !detected {
+            text.push_str(&Msg::HeaderWorkspace.fill(&[&sanitize(&s.name)]));
+        }
+    }
     let bold = Style::default().add_modifier(Modifier::BOLD);
+    // REL-8: 登録した表があれば、右に画面の型のタブ(表・関係)。
+    let look = super::look::look(app);
+    let tabs = screen_tabs(app);
+    let tabs_w: usize = tabs.iter().map(|(t, _)| width(t)).sum();
+    let tab_spans: Vec<Span<'static>> = tabs
+        .into_iter()
+        .map(|(t, on)| {
+            let st = match (&look, on) {
+                (Some(l), true) => l.pill(),
+                (Some(l), false) => l.faint(),
+                (None, true) => bold.add_modifier(Modifier::REVERSED),
+                (None, false) => Style::default(),
+            };
+            Span::styled(t, st)
+        })
+        .collect();
     // CE-25: 右の端に「+ 新規」(クリックで新しいノート。読むだけでは出さない)。
     let button = super::new_note::button();
     let bw = width(button);
-    if super::new_note::button_shown(app) && w >= bw + 2 {
-        return Line::from(vec![
-            Span::styled(fit(&text, w - bw, Align::Left), bold),
-            Span::styled(button, bold.add_modifier(Modifier::REVERSED)),
-        ]);
+    // SR-33: モダンな見た目では「+ 新規」を札にする(文字は同じ)。名前の色はテーマのヘッダーの色
+    // (テーマが無ければ端末の色)のまま(SR-26)。
+    let (name_st, button_st) = match &look {
+        Some(l) => (bold, l.pill()),
+        None => (bold, bold.add_modifier(Modifier::REVERSED)),
+    };
+    // 関係マップでは「+ 新規」を出さないが、その幅は空けておく(表と関係マップでタブの位置を変えない)。
+    let with_button = super::new_note::button_shown(app);
+    let right = tabs_w + if with_button { bw } else { 0 };
+    if right > 0 && w >= right + 2 {
+        let mut spans = vec![Span::styled(fit(&text, w - right, Align::Left), name_st)];
+        spans.extend(tab_spans);
+        if with_button && app.mode == Mode::Relations {
+            spans.push(Span::raw(" ".repeat(bw)));
+        } else if with_button {
+            spans.push(Span::styled(button, button_st));
+        }
+        return Line::from(spans);
     }
-    Line::from(Span::styled(fit(&text, w, Align::Left), bold))
+    Line::from(Span::styled(fit(&text, w, Align::Left), name_st))
+}
+
+/// 画面の型のタブ(REL-8): 登録した表があるとき(と関係マップの画面)だけ。(文字, 選んでいるか)。
+/// 選んでいるものは `[表]`、ほかは ` 関係 `(ビューのタブと同じ形。色なしでも分かる)。
+fn screen_tabs(app: &App) -> Vec<(String, bool)> {
+    if app.scope_places().is_empty() && app.mode != Mode::Relations {
+        return Vec::new();
+    }
+    let rel = app.mode == Mode::Relations;
+    let tab = |name: &str, on: bool| {
+        if on {
+            format!("[{name}]")
+        } else {
+            format!(" {name} ")
+        }
+    };
+    vec![
+        (tab(Msg::TabScreenTable.text(), !rel), !rel),
+        (tab(Msg::TabScreenRelations.text(), rel), rel),
+        (" ".to_string(), false),
+    ]
+}
+
+/// (x, y) が画面の型のタブなら、関係マップか(REL-8 のクリック)。
+pub(crate) fn screen_tab_at(app: &App, x: u16, y: u16) -> Option<bool> {
+    if y != 0 {
+        return None;
+    }
+    let tabs = screen_tabs(app);
+    if tabs.is_empty() {
+        return None;
+    }
+    let (w, _) = super::popup::screen(app);
+    let button = super::new_note::button();
+    let with_button = super::new_note::button_shown(app);
+    let tabs_w: usize = tabs.iter().map(|(t, _)| width(t)).sum();
+    let right = tabs_w + if with_button { width(button) } else { 0 };
+    let mut at = w.checked_sub(right)?;
+    let x = x as usize;
+    for (k, (t, _)) in tabs.iter().enumerate().take(2) {
+        let tw = width(t);
+        if x >= at && x < at + tw {
+            return Some(k == 1);
+        }
+        at += tw;
+    }
+    None
 }
 
 /// ビューのタブの並び(BV-13): (始まりの桁, 見せる文字, ビューの添字)。選んだビューは `[名前]`、ほかは ` 名前 `
@@ -102,9 +185,19 @@ fn tab_spans(app: &App) -> Vec<(usize, String, usize)> {
 /// ビューのタブ。`.base` のビュー(`.base` なしなら「既定の表」)のあとに mdgrid のビュー(BV-20)。
 /// `.base` も mdgrid のビューも無ければ既定の表の1つ(括弧なし)。
 pub(crate) fn tabs(app: &App, w: usize) -> Line<'static> {
-    let rev = Style::default().add_modifier(Modifier::REVERSED);
+    // SR-33: モダンな見た目では、選んだタブを札、ほかを薄い色(文字は同じ)。
+    let look = super::look::look(app);
+    let rev = match &look {
+        Some(l) => l.pill(),
+        None => Style::default().add_modifier(Modifier::REVERSED),
+    };
+    let other = match &look {
+        Some(l) => l.faint(),
+        None => Style::default(),
+    };
     if app.base.is_none() && app.nv.views.is_empty() {
-        let tab = fit(Msg::TabDefault.text(), w.min(10), Align::Left);
+        let label = Msg::TabDefault.text();
+        let tab = fit(label, w.min(width(label)), Align::Left);
         return pad(vec![Span::styled(tab, rev)], w, Style::default());
     }
     let mut spans = Vec::new();
@@ -113,11 +206,7 @@ pub(crate) fn tabs(app: &App, w: usize) -> Line<'static> {
         if x > used {
             spans.push(Span::raw(" ".repeat(x - used)));
         }
-        let st = if i == app.view_index() {
-            rev
-        } else {
-            Style::default()
-        };
+        let st = if i == app.view_index() { rev } else { other };
         used = x + width(&t);
         spans.push(Span::styled(t, st));
     }
@@ -145,7 +234,12 @@ pub fn tab_at(app: &App, x: u16, y: u16) -> Option<usize> {
 
 /// ビューのタブの行の数: 出すなら 1、隠すなら 0(SR-20。隠しても `[` `]` は効く)。
 pub(crate) fn tab_rows(app: &App) -> usize {
-    usize::from(app.shows(Item::Tabs))
+    usize::from(app.shows(Item::Tabs) && !single_tab_hidden(app))
+}
+
+/// SR-34: `view_tabs = "auto"` で、ビューが1つしか無いのでタブの行を出さないか。
+fn single_tab_hidden(app: &App) -> bool {
+    app.view_tabs_auto && app.view_names().len() <= 1
 }
 
 /// 検索の欄(NV-23)の行の数: 出すなら 1、出さないなら 0(設定 `search_bar` とビューの上書き。SR-20)。
@@ -353,12 +447,35 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
         Some(p) => prefix_hints(app, p),
         None => super::new_note::hints(app).unwrap_or_else(|| keymap::hints(&app.keys, app.mode)),
     };
+    let head = text.clone();
+    let mut shown: Vec<String> = Vec::new();
     for h in hints {
         if width(&text) + 2 + width(&h) > w {
             break;
         }
         text.push_str("  ");
         text.push_str(&h);
+        shown.push(h);
+    }
+    // SR-33: モダンな見た目では反転の帯をやめ、キーをアクセントの太字、説明を薄い色にする(文字は同じ)。
+    if let Some(l) = super::look::look(app) {
+        if width(&text) <= w {
+            // テーマの色の表があれば、帯の地と文字はテーマの帯の色のまま(SR-26)。
+            let base = match l.band {
+                Some((bg, fg)) => Style::default().bg(bg).fg(fg),
+                None => Style::default(),
+            };
+            let mut spans = vec![Span::styled(head, base.add_modifier(Modifier::BOLD))];
+            for h in shown {
+                spans.push(Span::styled("  ", base));
+                let (k, label) = h.split_once(' ').unwrap_or((h.as_str(), ""));
+                spans.push(Span::styled(k.to_string(), base.patch(l.key())));
+                if !label.is_empty() {
+                    spans.push(Span::styled(format!(" {label}"), base.patch(l.faint())));
+                }
+            }
+            return pad(spans, w, base);
+        }
     }
     Line::from(Span::styled(
         fit(&text, w, Align::Left),

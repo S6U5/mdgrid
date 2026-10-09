@@ -540,6 +540,7 @@ impl App {
             msg.push_str(&Msg::EditorTermNotRestored.fill(&[&e]));
         }
         if status.is_ok() {
+            self.data_gen += 1;
             match self.src.reload(&row) {
                 Err(e) => msg.push_str(&Msg::EditorCannotReload.fill(&[&e])),
                 Ok(()) => {

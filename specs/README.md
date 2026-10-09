@@ -25,9 +25,10 @@ updated: 2026-09-30
 | [cli](cli/spec.md) | 起動のしかた(引数・オプション)と、設定ファイルの置き場所と中身、起動できないときの振る舞い。 | 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき | 20 | 8 |
 | [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 23 | 8 |
 | [output](output/spec.md) | セルや行をクリップボードにコピーする方法と、表を外に出す方法。 | コピー・貼り付け・書き出し・標準出力への出力を作る・変えるとき | 5 | 1 |
-| [relations](relations/spec.md) | ノートのフロントマターに書いたリンクを、表と表をつなぐリレーションとして見せ・入れ・たどる方法。 | リンクの値の見せ方・入れ方・行き先を開く・つながった行・表どうしのつながり・関係マップの画面を作る・変えるとき | 11 | 9 |
+| [relations](relations/spec.md) | ノートのフロントマターに書いたリンクを、表と表をつなぐリレーションとして見せ・入れ・たどる方法。 | リンクの値の見せ方・入れ方・行き先を開く・つながった行・表どうしのつながり・関係マップの画面を作る・変えるとき | 12 | 10 |
 | [scope](scope/spec.md) | mdgrid が何のための道具で、最初の版に何を入れ、何を入れないか。 | 機能を足す・削るとき、最初の版の範囲を判断するとき、名前や配り方を決めるとき | 14 | 8 |
-| [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 27 | 10 |
+| [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 31 | 14 |
+| [workspace](workspace/spec.md) | 表をまとめる範囲(ワークスペース)をアプリの側に持ち、画面とコマンドで管理し、.git と保管庫を検知する。 | ワークスペースの持ち方・管理(画面とコマンド)・検知・範囲の決め方を作る・変えるとき | 7 | 7 |
 | [write-back](write-back/spec.md) | 直した値をためて、差分を見てから保存する流れと、ノートのファイルにどう書き戻すか。何を1バイトも変えず、いつ書かずに止めるか。 | 保存・取り消し・ファイルへの書き込みを作る・変えるとき、YAML の読み書きの部品を選ぶとき | 19 | 10 |
 
 取り込みで決定者が未確認の要件: なし
@@ -40,6 +41,19 @@ updated: 2026-09-30
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触る要件 |
 |---|---|---|---|---|---|
+| 2026-10-09 | [ワークスペース(表をまとめる範囲)をアプリの側で持ち、画面とコマンドで管理し、.git と保管庫を検知できるようにする(workspaces)](_decisions/2026-10-09-workspaces.md) | accepted | 人 | 人の発言 | WS-1, WS-2, WS-3 ほか 5 |
+| 2026-10-09 | [フォルダの .mdgrid/workspace.toml をワークスペースの印として受け、アプリの側のワークスペースより先に使う(workspace-marker)](_decisions/2026-10-09-workspace-marker.md) | accepted | 人 | 人の発言 | WS-6, WS-7 |
+| 2026-10-09 | [ワークスペースの操作を、開くパスと重ならない旗にする(workspace-flags)](_decisions/2026-10-09-workspace-flags.md) | accepted | 人 | 人の発言 | WS-3, WS-7 |
+| 2026-10-09 | [自動の表に .base を入れない(workspace-auto-folders)](_decisions/2026-10-09-workspace-auto-folders.md) | accepted | 人 | 検証の指摘 | WS-5, WS-7 |
+| 2026-10-09 | [ビューが1つならタブの行を出さない設定(view-tabs-auto)](_decisions/2026-10-09-view-tabs-auto.md) | accepted | 人 | 人の発言 | SR-34 |
+| 2026-10-09 | [表のセルを値の型に合わせた部品で見せる(rich-cells)](_decisions/2026-10-09-rich-cells.md) | accepted | 人 | 人の発言 | SR-35 |
+| 2026-10-09 | [セルの部品を、種類ごと・列ごとに設定で選べるようにする(rich-cells-config)](_decisions/2026-10-09-rich-cells-config.md) | accepted | 人 | 人の発言 | SR-35 |
+| 2026-10-09 | [関係マップをクリックで操作する(relmap-click)](_decisions/2026-10-09-relmap-click.md) | accepted | 人 | 人の発言 | REL-12 |
+| 2026-10-09 | [関係マップの画面・切り替えのタブ・幅に合わせた段組みを版1に入れる(relation-map-now)](_decisions/2026-10-09-relation-map-now.md) | accepted | 人 | 人の発言 | REL-7, REL-8, REL-9 |
+| 2026-10-09 | [lazygit のようなモダンな見た目を既定にし、今の見た目は設定で選べるようにする(modern-look)](_decisions/2026-10-09-modern-look.md) | accepted | 人 | 人の発言 | SR-33 |
+| 2026-10-09 | [モダンな見た目を既定にしたのに合わせて、色の試験の比べる元を今までの見た目にして錠を掛け直す(modern-look-locks)](_decisions/2026-10-09-modern-look-locks.md) | accepted | 人 | 人の発言 | SR-20, SR-26, BV-19, NV-18 |
+| 2026-10-09 | [窓の枠をつながった罫線にし、ASCII は設定で選べるようにする(modern-borders)](_decisions/2026-10-09-modern-borders.md) | accepted | 人 | 人の発言 | SR-32 |
+| 2026-10-09 | [窓の枠をつながった罫線にしたのに合わせて、枠の文字を読む試験の錠を掛け直す(modern-borders-locks)](_decisions/2026-10-09-modern-borders-locks.md) | accepted | 人 | 人の発言 | CE-10, CE-20, CE-22 ほか 7 |
 | 2026-10-08 | [ノートのリンクをリレーションとして扱う(relations)](_decisions/2026-10-08-relations.md) | accepted | 人 | 人の発言 | REL-1, REL-2, REL-3 ほか 6 |
 | 2026-10-08 | [リレーションの細部: 行き先の無いリンクの印と、名前の変更でのリンクの書き直し(relations-details)](_decisions/2026-10-08-relations-details.md) | accepted | AI | AI の提案 | REL-10, REL-11 |
 | 2026-10-08 | [よく使う表を名前と分類で登録し、一覧から開く(places)](_decisions/2026-10-08-places.md) | accepted | 人 | 人の発言 | CLI-1, CLI-18, CLI-19 |

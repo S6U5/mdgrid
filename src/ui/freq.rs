@@ -286,8 +286,9 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         .max()
         .unwrap_or(0);
     let sel = f.sel.min(f.items.len() - 1);
+    let fr = popup::frame(app);
     let mut out: Vec<(String, Style)> = Vec::new();
-    out.push((popup::top_edge(&title(app, f), tw), Style::default()));
+    out.push((popup::top_edge(fr, &title(app, f), tw), Style::default()));
     for (i, (v, c)) in f.items.iter().enumerate().skip(g.start).take(g.vis) {
         let st = if i == sel {
             Style::default().add_modifier(Modifier::REVERSED)
@@ -301,8 +302,37 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
             fit(&count_text(*c), cw, Align::Right),
             fit(&pct_text(*c, f.total), pw, Align::Right),
         );
-        out.push((format!("|{}|", fit(&text, tw, Align::Left)), st));
+        out.push((fr.side(&fit(&text, tw, Align::Left)), st));
     }
-    out.push((format!("+{}+", "-".repeat(tw)), Style::default()));
-    popup::blit(lines, g.x, g.top, g.iw, w, out);
+    out.push((fr.bottom(tw), Style::default()));
+    popup::blit(app, lines, g.x, g.top, g.iw, w, out);
+    // SR-35: 札で見せる列(札の列・リストの列)の値は、表と同じ札の色を重ねる(文字と幅は同じ)。
+    // 選んでいる項目は選びの見た目のまま。
+    let chips = app.is_select(&f.col)
+        || (app.kind_of(&f.col) == mdgrid::types::Kind::List
+            && app.rich(&f.col, mdgrid::cells::Part::Chips));
+    if !chips {
+        return;
+    }
+    for (k, (i, (v, _))) in f
+        .items
+        .iter()
+        .enumerate()
+        .skip(g.start)
+        .take(g.vis)
+        .enumerate()
+    {
+        let (Some(v), false) = (v, i == sel) else {
+            continue;
+        };
+        let Some(st) = super::chips::style(app, v) else {
+            continue;
+        };
+        let t = fit(&value_text(&Some(v.clone())), g.vw, Align::Left);
+        let t = t.trim_end().to_string();
+        let tw = width(&t);
+        if let Some(line) = lines.get_mut(g.top + 1 + k) {
+            *line = super::list::splice(line, g.x + 2, ratatui::text::Span::styled(t, st), tw, w);
+        }
+    }
 }

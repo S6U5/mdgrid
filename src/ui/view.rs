@@ -11,7 +11,7 @@ pub(crate) use super::bands::{
     band, bar_at, bar_rows, chip_at, chip_rows, chips, footer, header, message, prompt_cursor,
     quit_overlay, search_bar, tab_at, tab_rows, tabs,
 };
-use super::cell::{align_of, shown, val_text};
+use super::cell::{align_of, shown, val_text, CellPart};
 use super::display::{col_sep, num_span, num_width, zebra};
 use super::grid::{Drag, Slot};
 use super::input::input_box;
@@ -180,7 +180,7 @@ pub(crate) fn layout(app: &App) -> Layout {
             visible
                 .iter()
                 .map(|r| width(&shown(app, r, c).text))
-                .chain([width(&sanitize(&app.head_title(c)))])
+                .chain([width(&head_text(app, c))])
                 .chain(summary_text(app, c).map(|t| width(&t)))
                 .max()
                 .unwrap_or(1)
@@ -352,7 +352,13 @@ fn visible_cols(app: &App, lay: &Layout) -> Vec<(usize, usize)> {
 }
 
 fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'static> {
-    let st = Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED);
+    // SR-33: モダンな見た目では、列の見出しはアクセントの太字(下線なし)、区切りは薄い色。
+    let look = super::look::look(app);
+    let st = match &look {
+        Some(l) => l.key(),
+        None => Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+    };
+    let sep_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
     let sep = col_sep(app);
     let mut spans = vec![
         Span::raw(" ".repeat(lay.label_x())),
@@ -370,12 +376,12 @@ fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'stat
         ),
     ];
     for &(j, cw) in cols {
-        spans.push(Span::raw(sep));
+        spans.push(Span::styled(sep, sep_st));
         let align = match app.kinds[j] {
             Kind::Number => Align::Right,
             _ => Align::Left,
         };
-        let title = sanitize(&app.head_title(&app.cols[j]));
+        let title = head_text(app, &app.cols[j]);
         spans.push(Span::styled(fit(&title, cw, align), st));
     }
     pad(spans, lay.width, Style::default())
@@ -446,7 +452,14 @@ fn data_row(
             label_st = label_st.bg(c);
         }
     }
-    let mut spans = vec![Span::raw(lead)];
+    // SR-33: モダンな見た目では、今の行を背景の色で塗り、印はアクセントの色、今のセルは札にする。
+    let look = super::look::look(app);
+    let lead_st = match &look {
+        Some(l) if sel_row || lead == "+" => l.key(),
+        _ => Style::default(),
+    };
+    let sep_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
+    let mut spans = vec![Span::styled(lead, lead_st)];
     // SR-20: 行番号。
     spans.extend(num_span(app, lay, i));
     spans.push(Span::styled(
@@ -460,7 +473,7 @@ fn data_row(
     };
     let sep = col_sep(app);
     for &(j, cw) in cols {
-        spans.push(Span::raw(sep));
+        spans.push(Span::styled(sep, sep_st));
         if let Some(b) = edit.as_ref().filter(|_| j == app.col) {
             // 入力ボックス(CE-1)。値より広ければ右の列に重ねて広げる。SR-31: 地の色で欄と分かるように
             // (色を使わないときは太字と下線だけ。太字と下線はテーマの強い色の目印。SR-26)。
@@ -492,7 +505,7 @@ fn data_row(
             || app
                 .search
                 .as_ref()
-                .is_some_and(|q| super::nav::matches(q, &s.text))
+                .is_some_and(|q| super::nav::search_matches(app, q, row, &app.cols[j], &s.text))
         {
             st = st.add_modifier(Modifier::UNDERLINED);
             if let Some(c) = super::theme::meaning(app, |p| p.hl_bg).or(highlight(app.color)) {
@@ -500,12 +513,107 @@ fn data_row(
             }
         }
         if sel_row && j == app.col {
-            st = st.add_modifier(Modifier::REVERSED);
+            st = match &look {
+                Some(l) => st.patch(l.pill()),
+                None => st.add_modifier(Modifier::REVERSED),
+            };
+        }
+        // SR-35: 部品(選んでいるセルは今の選びの見た目で文字を見せる)。
+        match &s.part {
+            CellPart::Chips(items) if !(sel_row && j == app.col) => {
+                chip_spans(app, items, cw, st, &mut spans);
+                continue;
+            }
+            CellPart::Link if !(sel_row && j == app.col) => {
+                st = st.fg(look.as_ref().map_or(Color::Cyan, |l| l.accent));
+            }
+            _ => {}
         }
         spans.push(Span::styled(fit(&s.text, cw, align_of(app.kinds[j])), st));
     }
+    let line = pad(spans, lay.width, Style::default());
+    if let (true, Some(l)) = (sel_row, &look) {
+        return line.style(Style::default().bg(l.sel_bg));
+    }
     // SR-20・SR-15: 一行おきの色。
-    zebra(app, i, pad(spans, lay.width, Style::default()))
+    zebra(app, i, line)
+}
+
+/// SR-35: 札の並びを幅 `cw` に描く(札ごとに色)。入らない札は途中で切らず、残りの数を `+N` で示す
+/// (1つ目の札は、単独で入れば丸ごと、入らなければ列の幅いっぱいに `…` で切って見せる。+N は入る余地が
+/// あるときだけ)。
+/// 残りは `st` の空白。
+fn chip_spans(app: &App, items: &[String], cw: usize, st: Style, spans: &mut Vec<Span<'static>>) {
+    let mut used = 0;
+    let more_w = |rest: usize| {
+        if rest == 0 {
+            0
+        } else {
+            1 + width(&format!("+{rest}"))
+        }
+    };
+    for (k, item) in items.iter().enumerate() {
+        let chip = format!(" {} ", sanitize(item));
+        let rest = items.len() - k - 1;
+        // 頭と札の間は地の色の無い空白(chips_text と同じ形)。この札のあとに +N が要れば、その幅も取っておく。
+        let fits = used + 1 + width(&chip) + more_w(rest) <= cw;
+        // 1つ目の札は、+N の幅が取れなくても単独で入るなら丸ごと見せる(読める札を優先)。
+        let whole = fits || (k == 0 && used + 1 + width(&chip) <= cw);
+        if !fits && k > 0 {
+            let more = format!(" +{}", items.len() - k);
+            if used + width(&more) <= cw {
+                used += width(&more);
+                spans.push(Span::styled(more, st.add_modifier(Modifier::DIM)));
+            }
+            break;
+        }
+        if used >= cw {
+            break;
+        }
+        spans.push(Span::styled(" ", st));
+        used += 1;
+        let chip_st = super::chips::style(app, item).unwrap_or(st);
+        let room = cw - used;
+        let text = if whole {
+            chip
+        } else {
+            // 1つ目の札が単独でも入らない: 列の幅を全部使って札を切って見せる(+N は出さない)。
+            fit(&chip, room, Align::Left)
+        };
+        used += width(&text);
+        spans.push(Span::styled(text, chip_st));
+        if !fits {
+            let more = format!(" +{rest}");
+            if whole && rest > 0 && used + width(&more) <= cw {
+                used += width(&more);
+                spans.push(Span::styled(more, st.add_modifier(Modifier::DIM)));
+            }
+            break;
+        }
+    }
+    if used < cw {
+        spans.push(Span::styled(" ".repeat(cw - used), st));
+    }
+}
+
+/// SR-35: 列の見出しの文字(色を使う表示で、設定が許せば型の印を前に)。幅もこれで数える。
+pub(crate) fn head_text(app: &App, col: &str) -> String {
+    let title = sanitize(&app.head_title(col));
+    if !app.rich(col, mdgrid::cells::Part::Icons) {
+        return title;
+    }
+    let mark = match app.kind_of(col) {
+        Kind::Number => Some("#"),
+        Kind::Date | Kind::DateTime => Some("◷"),
+        Kind::Checkbox => Some(super::cell::CHECK_ON),
+        Kind::List => Some("⋮"),
+        Kind::Text if app.is_select(col) => Some("◉"),
+        Kind::Text => None,
+    };
+    match mark {
+        Some(m) => format!("{m} {title}"),
+        None => title,
+    }
 }
 
 /// groupBy の見出しの行(BV-5・SR-2): `▾ 列: 値(件数)`、畳んだら `▸`。
@@ -524,7 +632,10 @@ fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
     ]);
     let mut st = Style::default().add_modifier(Modifier::BOLD);
     if i == app.row {
-        st = st.add_modifier(Modifier::REVERSED);
+        st = match super::look::look(app) {
+            Some(l) => st.patch(l.selected()),
+            None => st.add_modifier(Modifier::REVERSED),
+        };
     }
     Line::from(Span::styled(fit(&text, w, Align::Left), st))
 }
@@ -580,6 +691,9 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     set_ambiguous_wide(app.ambiguous_wide);
     if app.mode == Mode::Help {
         return super::help::render_help(app, w, h);
+    }
+    if app.mode == Mode::Relations {
+        return super::relmap::render(app, w, h);
     }
     if let (Mode::Confirm, Some(r)) = (app.mode, &app.review) {
         return render_review(app, r, w, h);

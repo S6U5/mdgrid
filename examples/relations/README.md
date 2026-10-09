@@ -17,6 +17,6 @@ mdgrid examples/relations/tasks
 - Link cells show the target's name. A link whose note does not exist is shown with `?`.
 - Enter on the `project` cell lists the notes in `projects/` by name; the one you pick is written as `[[name]]`.
 - `:open_link` (or `x` on the cell) opens the target. `:linked_rows` lists the notes that link to the current one, with the column they link from.
-- Register the three folders (`:register_place` in each) to jump between them: opening a target moves to its table and selects its row.
+- The folder has a workspace marker (`.mdgrid/workspace.toml`), so the three folders are one workspace without any setup: opening a target moves to its table and selects its row, and `R` draws the relation map of the three tables.
 
 日本語: 3つのフォルダのノートが、フロントマターのリンクで互いを指す見本。リンクはノートのファイル名を指し、id の列も中間の表も要らない。`mdgrid examples/relations/tasks` で開き、`:open_link` で行き先を開き、`:linked_rows` でつながった行を出す。

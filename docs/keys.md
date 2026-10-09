@@ -79,6 +79,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `s` | `sort_column` | Sort by this column temporarily: ascending, descending, then off (the `.base` file is not changed) |
 | `-` | `hide_column` | Hide the column |
 | `+` | `show_column` | Bring back the last hidden column |
+| `R` | `relation_map` | Open the relation map of the registered tables |
 | `A` | `add_column` | Add a column for a key no note has yet (type its name); saving writes the key only to the notes you fill in |
 | `H` | `move_column_left` | Move the column to the left |
 | `L` | `move_column_right` | Move the column to the right |
@@ -343,6 +344,30 @@ The value counts of the selected column (`%`). Each value is listed with its num
 
 Clicking a value shows only its rows; clicking outside just closes the window. If the terminal is too small to show it, it doesn't open and a message explains why. `Esc` in the `table` mode clears the filter again.
 
+## `relations`
+
+The relation map (`R`, `:relation_map`, or the **Relations** tab at the top right, which appears once you have registered tables). It shows the registered tables (and the current one) as boxes with their row counts and columns, and draws an arrow from each column that links to another table: `N` on the linking side, `1` (many-to-one) or `N` (many-to-many, a list of links) on the target side. The panes follow the terminal size: 120 columns or more show the tables, the map and the details side by side; 80 or more show the map and the details; narrower terminals show the tables and links as a list. With 30 rows or more, the linked records of the selected link appear below.
+
+The mouse works too: click a table (in the list or its box on the map) to select it, and click the selected table again to open it. Click a line, an arrow or a label (or a link in the narrow list) to select that link. Click a linked record to open its note. The wheel moves between tables.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Open the selected table |
+| `Esc` | `close` | Back to the table |
+| `R` | `relation_map` | Back to the table |
+| `q` | `close` | Back to the table |
+| `j` | `down` | Next table |
+| `Down` | `down` | Next table |
+| `k` | `up` | Previous table |
+| `Up` | `up` | Previous table |
+| `l` | `right` | Next link of the selected table |
+| `Right` | `right` | Next link of the selected table |
+| `h` | `left` | Previous link of the selected table |
+| `Left` | `left` | Previous link of the selected table |
+| `?` | `help` | Show help |
+
+Clicking the **Table** tab at the top right goes back to the table.
+
 ## Actions
 
 Every action name you can write in the keys section of the config file. Each one works only in the modes where it appears in the tables above.
@@ -382,6 +407,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `sort_column` — sort by the column temporarily
 - `hide_column` — hide the column
 - `show_column` — bring back the last hidden column
+- `relation_map` — switch between the table and the relation map
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
 - `move_column_right` — move the column to the right
@@ -451,3 +477,7 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `register_place` — register the current table under a name and a group
 - `open_link` — open the note a link cell points to (its table, with its row selected)
 - `linked_rows` — list the notes that link to the current note, with the table and column they link from
+- `workspace_new` — create a workspace (`workspaces.toml`) with the current table
+- `workspace_add` — add the current table to a workspace (pick one or type a new name)
+- `workspace_remove` — remove the current table from a workspace
+- `workspace_open` — pick a workspace, then one of its tables, and open it within that workspace

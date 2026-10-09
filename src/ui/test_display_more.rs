@@ -30,7 +30,8 @@ fn vault(name: &str) -> Tmp {
 fn with(name: &str, config: &str, color: ColorMode) -> (Tmp, App) {
     let tmp = vault(name);
     let mut a = app_of(&tmp, color);
-    a.configure(&parse(config).unwrap().0);
+    // 表の見せ方(SR-20)は今までの見た目(look = "classic")の上で確かめる。
+    a.configure(&parse(&format!("look = \"classic\"\n{config}")).unwrap().0);
     (tmp, a)
 }
 

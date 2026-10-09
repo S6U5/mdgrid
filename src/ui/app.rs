@@ -86,6 +86,10 @@ pub struct App {
     pub(crate) top: usize,
     pub(crate) left: usize,
     pub(crate) message: Option<String>,
+    /// ノートを外から読み直した回数(札の列の判定を使い回すかの目印。SR-35)。
+    pub(crate) data_gen: u64,
+    /// BV-16: 読み込みの途中で次に組み直す、読んだノートの数。
+    pub(crate) next_refresh: usize,
     pub(crate) progress: Progress,
     pub(crate) cancelled: bool,
     /// 前置きのキー(`g`)。
@@ -94,7 +98,15 @@ pub struct App {
     /// 絵文字を出さない(`TERM=dumb`。SR-10)。描画の終わりで値の中の絵文字を `?` に置き換える。
     pub(crate) no_emoji: bool,
     /// East Asian Ambiguous を幅2で数える(CV-6)。
+    /// SR-35: セルの部品の設定。
+    pub(crate) cells: mdgrid::cells::Cells,
+    /// SR-34: ビューが1つならタブの行を出さない。
+    pub(crate) view_tabs_auto: bool,
     pub(crate) ambiguous_wide: bool,
+    /// SR-32: 窓の枠を ASCII で描く(設定の `borders = "ascii"`)。
+    pub(crate) borders_ascii: bool,
+    /// SR-33: 色を使うときも今までの見た目(設定の `look = "classic"`)。
+    pub(crate) look_classic: bool,
     /// 式の今日(日数)と今(UNIX 秒)。
     pub(crate) today: i64,
     pub(crate) now: i64,
@@ -191,14 +203,31 @@ pub struct App {
     pub guessed_root: Option<std::path::PathBuf>,
     /// CLI-18・CLI-19: 登録した表(places.toml)。
     pub(crate) registered: Vec<mdgrid::places::Place>,
+    /// WS-1: アプリの側のワークスペース(workspaces.toml)。
+    pub(crate) workspaces: Vec<mdgrid::workspace::Workspace>,
+    /// WS-3: 起動の `-w` で選んだワークスペースの名前(main が start の前に入れる)。
+    pub workspace_choice: Option<String>,
+    /// WS-6: 決めた範囲(無ければ登録した表を使う)。
+    pub(crate) scope: Option<mdgrid::workspace::Scope>,
+    /// WS-5: 検知のしかた(設定の workspace_detect)。範囲を決め直すときに使う。
+    pub(crate) workspace_detect: Vec<mdgrid::workspace::Detect>,
+    /// WS-2: ワークスペースを開いて移るとき、次の表で使うワークスペース(main が workspace_choice に渡す)。
+    pub switch_workspace: Option<String>,
+    /// 登録した表へ移るとき(CLI-19)は、-w で選んだワークスペースを引き継がない。
+    pub switch_leave_workspace: bool,
     /// CLI-19: 終わったあとに開き直す表(一覧で選んだ。main が見る)。
     pub switch_to: Option<mdgrid::places::Place>,
     /// REL-4・REL-5: 開き直したあとに選ぶノート(実体のパス。main が select_after_load に渡す)。
     pub switch_select: Option<std::path::PathBuf>,
     /// リンクの行き先を解く表と、解いた結果(REL-1。relations.rs)。
     pub(crate) links: super::relations::Links,
+    /// 関係マップ(REL-7。relmap.rs)。開いている間だけ。
+    pub(crate) relmap: Option<super::relmap::RelMap>,
     pub quit: bool,
 }
+
+/// 読み込みの途中で最初に組み直すまでの、読んだノートの数(BV-16)。
+const LOAD_FIRST: usize = 200;
 
 impl App {
     pub fn new(src: Box<dyn Source>, color: ColorMode) -> App {
@@ -233,6 +262,12 @@ impl App {
             color,
             no_emoji: false,
             ambiguous_wide: false,
+            view_tabs_auto: false,
+            next_refresh: 0,
+            data_gen: 0,
+            cells: mdgrid::cells::Cells::default(),
+            borders_ascii: false,
+            look_classic: false,
             today,
             now,
             size: (80, 24),
@@ -284,9 +319,16 @@ impl App {
             select_after_load: None,
             guessed_root: None,
             registered: Vec::new(),
+            workspaces: Vec::new(),
+            workspace_choice: None,
+            scope: None,
+            workspace_detect: vec![mdgrid::workspace::Detect::Vault],
+            switch_workspace: None,
+            switch_leave_workspace: false,
             switch_to: None,
             switch_select: None,
             links: Default::default(),
+            relmap: None,
             quit: false,
         };
         app.refresh();
@@ -298,6 +340,11 @@ impl App {
     /// キーの警告の文を返す。
     pub fn configure(&mut self, c: &Config) -> Vec<String> {
         self.ambiguous_wide = c.ambiguous_wide;
+        self.borders_ascii = c.borders_ascii;
+        self.look_classic = c.look_classic;
+        self.view_tabs_auto = c.view_tabs_auto;
+        self.cells = c.cells.clone();
+        self.workspace_detect = c.workspace_detect.clone();
         self.search_bar = c.search_bar;
         self.display = c.display;
         self.candidates = c.candidates;
@@ -333,7 +380,11 @@ impl App {
         // 並べ替えで表の途中に流れる)。
         let at_top = self.row == 0 && self.top == 0;
         self.progress = self.src.load(budget);
-        if self.progress.loaded != before || self.progress.done {
+        // BV-16: 読み込みの途中の組み立て直しは、読んだ数が倍になるごと(全部を毎回組み直すと、
+        // 1万を超えるノートでは読み込みより組み立て直しが重くなる)。読み終えたら必ず組み直す。
+        let due = self.progress.loaded >= self.next_refresh;
+        if (self.progress.loaded != before && due) || self.progress.done {
+            self.next_refresh = (self.progress.loaded * 2).max(LOAD_FIRST);
             self.refresh();
             if at_top && (self.row != 0 || self.top != 0) {
                 self.row = 0;
@@ -558,6 +609,7 @@ impl App {
             }
             Mode::Menu => self.menu_action(action),
             Mode::Freq => self.freq_action(action),
+            Mode::Relations => self.relmap_action(action),
             Mode::Table => self.table_action(action),
         }
         if std::mem::take(&mut self.regrid) {
@@ -709,6 +761,13 @@ impl App {
             // ---- リレーション(relations.rs。REL-4・REL-5) ----
             Action::OpenLink => self.start_open_link(),
             Action::LinkedRows => self.start_linked_rows(),
+            // ---- 関係マップ(relmap.rs。REL-7) ----
+            Action::RelationMap => self.open_relmap(),
+            // ---- ワークスペース(workspace.rs。WS-2) ----
+            Action::WsNew => self.start_ws_new(),
+            Action::WsAdd => self.start_ws_add(),
+            Action::WsRemove => self.start_ws_remove(),
+            Action::WsOpen => self.start_ws_open(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),
             Action::DeleteKey => self.start_delete_key(),
@@ -770,7 +829,13 @@ impl App {
                     return;
                 }
             }
-            Mode::Table => {}
+            Mode::Table => {
+                // REL-8: 上の端のタブで関係マップへ。
+                if super::bands::screen_tab_at(self, x, y) == Some(true) {
+                    self.open_relmap();
+                    return;
+                }
+            }
             // NV-23: 検索の欄で打っているとき、欄のクリックはそのまま、欄の外のクリックは欄を抜けて
             // (絞り込みは残す)表のクリックとして扱う。
             Mode::Filter if self.shows(mdgrid::display::Item::SearchBar) => {
@@ -785,6 +850,19 @@ impl App {
             Mode::Menu => return self.menu_click(x, y),
             // NV-9: 頻度表の項目のクリックで絞って閉じ、窓の外のクリックで閉じるだけ。
             Mode::Freq => return self.freq_click(x, y),
+            // REL-8: 関係マップの上の端のタブ。
+            Mode::Relations => {
+                match super::bands::screen_tab_at(self, x, y) {
+                    Some(false) => {
+                        self.relmap = None;
+                        self.set_mode(Mode::Table);
+                    }
+                    Some(true) => {}
+                    // REL-12: 一覧・盤・つながった行のクリック。
+                    None => self.relmap_click(x, y),
+                }
+                return;
+            }
             Mode::Chips => {
                 if let Some(i) = view::chip_at(self, x, y) {
                     self.message = None;
@@ -881,6 +959,9 @@ impl App {
             (Mode::Menu, false) => Action::Up,
             (Mode::Freq, true) => Action::Down,
             (Mode::Freq, false) => Action::Up,
+            // REL-12: 関係マップでは表を上下に選ぶ。
+            (Mode::Relations, true) => Action::Down,
+            (Mode::Relations, false) => Action::Up,
             _ => return,
         };
         self.apply(a);

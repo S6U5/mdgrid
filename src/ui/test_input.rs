@@ -82,7 +82,7 @@ fn test_ce_3_list_of_candidates() {
     );
     let s = screen(&a);
     golden("ce_3", &s);
-    assert!(s.contains("|>*todo") && s.contains("|  done"), "{s}");
+    assert!(s.contains("│>*todo") && s.contains("│  done"), "{s}");
     assert_fits(&mut a);
     // ↓↓ で done を選んで Enter → ためる変更。
     press(&mut a, KeyCode::Down);
@@ -116,7 +116,7 @@ fn test_ce_3_none_and_free_input() {
     assert_eq!(a.input.as_ref().unwrap().text, "doing");
     typing(&mut a, "!");
     assert!(a.active_list().is_none());
-    assert!(!screen(&a).contains("|>"));
+    assert!(!screen(&a).contains("│>"));
     // ↑ でリストに戻り、Ctrl+R で編集前に戻す [CE-11]。
     press(&mut a, KeyCode::Up);
     assert!(a.active_list().is_some());
@@ -619,9 +619,9 @@ fn test_ce_1_click_list_item() {
     let (y, line) = s
         .lines()
         .enumerate()
-        .find(|(_, l)| l.contains("|  doing"))
+        .find(|(_, l)| l.contains("│  doing"))
         .unwrap();
-    let x = width::width(&line[..line.find("|  doing").unwrap()]) + 3;
+    let x = width::width(&line[..line.find("│  doing").unwrap()]) + 3;
     a.click(x as u16, y as u16);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(
@@ -676,7 +676,7 @@ fn test_nv_6_detail_edit_uses_list() {
     ch(&mut a, 'K');
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Edit);
-    assert!(screen(&a).contains("|>*todo"), "{}", screen(&a));
+    assert!(screen(&a).contains("│>*todo"), "{}", screen(&a));
     assert_fits(&mut a);
     press(&mut a, KeyCode::Down);
     press(&mut a, KeyCode::Enter);

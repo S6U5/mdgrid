@@ -26,7 +26,12 @@ fn vault(name: &str) -> Tmp {
 
 fn configured(tmp: &Tmp, text: &str) -> App {
     let mut a = app_of(tmp, ColorMode::Rgb);
-    a.configure(&config::parse(text).unwrap().0);
+    // テーマの塗り替え(SR-26)は今までの見た目(look = "classic")の上で確かめる。
+    a.configure(
+        &config::parse(&format!("look = \"classic\"\n{text}"))
+            .unwrap()
+            .0,
+    );
     a
 }
 

@@ -96,16 +96,48 @@ fn columns(items: &[(String, &'static str, u8)], w: usize) -> Vec<String> {
         .collect()
 }
 
+/// ヘルプの本文の行の種類(描くときの色。文字は同じ)。
+#[derive(Clone, PartialEq, Eq)]
+enum Kind {
+    /// 節の見出し。
+    Head,
+    /// キーの欄のある行: (始まりの桁, 幅) の並び。
+    Keys(Vec<(usize, usize)>),
+    /// ほか。
+    Plain,
+}
+
+/// `columns` の行のキーの欄。
+fn key_spans(w: usize) -> Vec<(usize, usize)> {
+    if w < 44 {
+        vec![(2, KEY_W)]
+    } else {
+        vec![(2, KEY_W), (4 + (w - 4) / 2, KEY_W)]
+    }
+}
+
 /// ヘルプの本文(行の文字と、節の見出しか)。先頭に `from` のモードで押せるキー(下の帯の順位の順)、
 /// その下に全部の節(SR-5)。
 pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)> {
+    help_rows(app, from, w)
+        .into_iter()
+        .map(|(t, k)| (t, k == Kind::Head))
+        .collect()
+}
+
+/// ヘルプの本文と、行ごとの種類。
+fn help_rows(app: &App, from: Mode, w: usize) -> Vec<(String, Kind)> {
     let mut out = Vec::new();
     let mut now = entries(&app.keys, |b| {
         b.mode == from && !write_command(app, b.action)
     });
     now.sort_by_key(|(_, _, r)| if *r == 0 { u8::MAX } else { *r });
-    out.push((Msg::HelpNow.fill(&[&from.label()]), true));
-    out.extend(columns(&now, w).into_iter().map(|l| (l, false)));
+    out.push((Msg::HelpNow.fill(&[&from.label()]), Kind::Head));
+    out.extend(
+        columns(&now, w)
+            .into_iter()
+            .map(|l| (l, Kind::Keys(key_spans(w)))),
+    );
     // 節は日本語の名前でまとめ、今の言語の名前で見せる。
     let mut sections: Vec<(&'static str, &'static str)> = Vec::new();
     for b in &app.keys {
@@ -114,8 +146,8 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
         }
     }
     for (s, shown) in sections {
-        out.push((String::new(), false));
-        out.push((format!(" {shown}"), true));
+        out.push((String::new(), Kind::Plain));
+        out.push((format!(" {shown}"), Kind::Head));
         let items = entries(&app.keys, |b| {
             b.section == s && !write_command(app, b.action)
         });
@@ -123,7 +155,11 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
             out.truncate(out.len() - 2);
             continue;
         }
-        out.extend(columns(&items, w).into_iter().map(|l| (l, false)));
+        out.extend(
+            columns(&items, w)
+                .into_iter()
+                .map(|l| (l, Kind::Keys(key_spans(w)))),
+        );
     }
     // BV-19: キーの無いパレットのコマンド(キーの欄は `:` のあとに打つ名前)。
     let mut cmd_sections: Vec<(&'static str, &'static str)> = Vec::new();
@@ -134,25 +170,29 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
         }
     }
     for (s, shown) in cmd_sections {
-        out.push((String::new(), false));
-        out.push((format!(" {shown}"), true));
+        out.push((String::new(), Kind::Plain));
+        out.push((format!(" {shown}"), Kind::Head));
         let items: Vec<(String, &'static str, u8)> = keymap::commands(app.readonly)
             .filter(|c| c.section == s)
             .map(|c| (format!(":{}", c.action.name()), c.text(), 0))
             .collect();
         // 名前が長いので1列に並べる(2列では切れる)。
-        out.extend(columns(&items, w.min(43)).into_iter().map(|l| (l, false)));
+        out.extend(
+            columns(&items, w.min(43))
+                .into_iter()
+                .map(|l| (l, Kind::Keys(key_spans(w.min(43))))),
+        );
     }
     // SR-5: 最後に、色の代わりの印(SR-15)の意味。印の文字は画面と同じ定数から。
-    out.push((String::new(), false));
-    out.push((Msg::HelpMarks.text().to_string(), true));
+    out.push((String::new(), Kind::Plain));
+    out.push((Msg::HelpMarks.text().to_string(), Kind::Head));
     let mark = |m: &str, t: Msg| {
         (
             format!("    {}  {}", fit(m, 7, Align::Left), t.text()),
-            false,
+            Kind::Keys(vec![(4, 7)]),
         )
     };
-    out.push((Msg::HelpMarksCell.text().to_string(), false));
+    out.push((Msg::HelpMarksCell.text().to_string(), Kind::Plain));
     let misfit = super::cell::MISFIT_MARK.to_string();
     let lock = super::cell::LOCK_MARK.to_string();
     for (m, t) in [
@@ -167,7 +207,7 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
     ] {
         out.push(mark(m, t));
     }
-    out.push((Msg::HelpMarksRow.text().to_string(), false));
+    out.push((Msg::HelpMarksRow.text().to_string(), Kind::Plain));
     let held = super::view::HELD_MARK.to_string();
     for (m, t) in [
         (">", Msg::MarkRowCurrent),
@@ -185,16 +225,24 @@ pub(crate) fn render_help(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let Some(st) = &app.help else {
         return Vec::new();
     };
-    let body = help_lines(app, st.from, w);
+    let body = help_rows(app, st.from, w);
+    let look = super::look::look(app);
     let body_h = h.saturating_sub(3);
     let top = st.top.min(body.len().saturating_sub(body_h));
     let end = (top + body_h).min(body.len());
     let head = Msg::HelpHead.fill(&[&(top + 1), &end, &body.len()]);
     let bold = Style::default().add_modifier(Modifier::BOLD);
     let mut lines = vec![Line::from(Span::styled(fit(&head, w, Align::Left), bold))];
-    for (t, head) in &body[top..end] {
-        let st = if *head { bold } else { Style::default() };
-        lines.push(Line::from(Span::styled(fit(t, w, Align::Left), st)));
+    for (t, kind) in &body[top..end] {
+        let text = fit(t, w, Align::Left);
+        // SR-33: モダンな見た目では、節の見出しとキーの欄をアクセントの色に(文字は同じ)。
+        let line = match (kind, &look) {
+            (Kind::Head, Some(l)) => Line::from(Span::styled(text, l.key())),
+            (Kind::Head, None) => Line::from(Span::styled(text, bold)),
+            (Kind::Keys(keys), Some(l)) => Line::from(key_line(&text, keys, l.key())),
+            _ => Line::from(Span::raw(text)),
+        };
+        lines.push(line);
     }
     while lines.len() < h.saturating_sub(2) {
         lines.push(Line::from(" ".repeat(w)));
@@ -204,6 +252,31 @@ pub(crate) fn render_help(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     lines.push(view::message(app, w));
     lines.truncate(h);
     lines
+}
+
+/// 行 `text` を、キーの欄(始まりの桁, 幅)だけ `key` の見た目にした span に分ける(桁は表示の幅で数える)。
+fn key_line(text: &str, keys: &[(usize, usize)], key: Style) -> Vec<Span<'static>> {
+    let mut spans: Vec<Span<'static>> = Vec::new();
+    let mut cur = String::new();
+    let mut cur_key = false;
+    let mut x = 0;
+    for c in text.chars() {
+        let in_key = keys.iter().any(|&(s, w)| x >= s && x < s + w);
+        if in_key != cur_key && !cur.is_empty() {
+            let st = if cur_key { key } else { Style::default() };
+            spans.push(Span::styled(std::mem::take(&mut cur), st));
+        }
+        cur_key = in_key;
+        cur.push(c);
+        x += width(&c.to_string());
+    }
+    if !cur.is_empty() {
+        spans.push(Span::styled(
+            cur,
+            if cur_key { key } else { Style::default() },
+        ));
+    }
+    spans
 }
 
 /// あいまいな一致の点(大きいほど良い)。一致しなければ None。

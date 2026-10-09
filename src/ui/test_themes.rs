@@ -52,16 +52,19 @@ fn cfg(text: &str) -> Config {
 }
 
 /// 色の扱い `color` で開き、設定 `config` を当てた App。
+/// テーマの塗り替え(SR-26)は今までの見た目(`look = "classic"`)の上で確かめる(モダンな見た目 SR-33 は
+/// test_look.rs)。
 fn themed(tmp: &Tmp, color: ColorMode, config: &str) -> App {
     let mut a = app_of(tmp, color);
-    a.configure(&cfg(config));
+    a.configure(&cfg(&format!("look = \"classic\"\n{config}")));
     a
 }
 
-/// `Config::default()` を当てた App(テーマの機能が無いときの画面の比べる元)。
+/// 既定の設定に `look = "classic"` だけを当てた App(テーマの機能が無いときの画面の比べる元)。
 fn plain(tmp: &Tmp, color: ColorMode) -> App {
     let mut a = app_of(tmp, color);
-    a.configure(&Config::default());
+    a.configure(&cfg("look = \"classic\"\n"));
+    let _ = Config::default();
     a
 }
 
@@ -290,7 +293,11 @@ fn test_sr_27_default_is_unchanged() {
     let tmp = vault("thdefault");
     for color in [ColorMode::Rgb, ColorMode::Indexed, ColorMode::None] {
         let want = buffer(&plain(&tmp, color));
-        let none = buffer(&app_of(&tmp, color));
+        let none = buffer(&{
+            let mut a = app_of(&tmp, color);
+            a.look_classic = true;
+            a
+        });
         assert_same_cells(&none, &want, &format!("設定を当てない ({color:?})"));
         let empty = buffer(&themed(&tmp, color, ""));
         assert_same_cells(&empty, &want, &format!("設定なし ({color:?})"));
@@ -306,7 +313,7 @@ fn test_sr_27_default_zebra_is_unchanged() {
     // [SR-27][SR-20] 既定のテーマの一行おきの色は今と同じ。
     let tmp = vault("thdefzebra");
     let mut a = app_of(&tmp, ColorMode::Rgb);
-    let mut c = cfg("[display]\nzebra = true\n");
+    let mut c = cfg("look = \"classic\"\n\n[display]\nzebra = true\n");
     c.theme = Theme::Default;
     a.configure(&c);
     let want = buffer(&a);
