@@ -92,7 +92,7 @@ Press a, or click "+ New" at the top right: the new note form lists the name and
 
 ## The new note
 
-Keys: `a` `text:電話をかける` `Ctrl+S`
+Keys: `a` `text:電話をかける` `C-s`
 
 ![The new note](images/new-note-done.svg)
 
@@ -246,9 +246,25 @@ Keys: `A` `r` `e` `v` `i` `e` `w` `e` `r` `Enter`
 
 A adds a column for a key no note has yet. Only the notes you fill in get the key when you save.
 
+## Set the time of a date and time
+
+Keys: `l` `Enter` `C-o` `Up`
+
+![Set the time of a date and time](images/edit-datetime-time.svg)
+
+Date and time columns show a time field under the calendar. Ctrl+O switches to it; Up and Down move 15 minutes, Shift+Up and Shift+Down one hour.
+
+## Export the table to a file
+
+Keys: `:` `text:export_table` `Enter` `text:tasks.csv` `Enter`
+
+![Export the table to a file](images/export-table.svg)
+
+The command palette exports the table as shown (filters, sorting and hidden columns applied). The extension picks the format: .csv, .tsv, .json or .md. The first column is each note's path, so a CSV or JSON can come back with --apply.
+
 ## Open a registered table
 
-Keys: `:` `open_place` `Enter`
+Keys: `:` `text:open_place` `Enter`
 
 ![Open a registered table](images/open-place.svg)
 
@@ -558,6 +574,18 @@ Keys: `]`
 
 The By status view groups rows under headings you can fold with Enter.
 
+## Human and AI tasks
+
+![Human and AI tasks](images/demo-ai-human.svg)
+
+The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.
+
+## Human and AI tasks (English sample)
+
+![Human and AI tasks (English sample)](images/demo-ai-human-en.svg)
+
+The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.
+
 ## Actions for the selected cell
 
 Keys: `x`
@@ -658,6 +686,14 @@ Keys: `Enter` `Down` `Enter` `l` `Enter` `Right` `Right` `Right` `Enter` `C-s` `
 
 Frame of the demo GIF.
 
+## Relation map
+
+Keys: `R`
+
+![Relation map](images/demo-relmap.svg)
+
+R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at.
+
 ## Count the values of a column
 
 Keys: `l` `l` `l` `%`
@@ -665,19 +701,3 @@ Keys: `l` `l` `l` `%`
 ![Count the values of a column](images/demo-freq.svg)
 
 % lists each value of the column with its count and share; Enter keeps only those rows.
-
-## Set the time of a date and time
-
-Keys: `l` `Enter` `Ctrl+O` `↑`
-
-![Set the time of a date and time](images/edit-datetime-time.svg)
-
-Date and time columns show a time field under the calendar. Ctrl+O switches to it; Up and Down move 15 minutes, Shift+Up and Shift+Down one hour.
-
-## Export the table to a file
-
-Keys: `:` `export_table` `Enter` `tasks.csv` `Enter`
-
-![Export the table to a file](images/export-table.svg)
-
-The command palette exports the table as shown (filters, sorting and hidden columns applied). The extension picks the format: .csv, .tsv, .json or .md. The first column is each note's path, so a CSV or JSON can come back with --apply.
