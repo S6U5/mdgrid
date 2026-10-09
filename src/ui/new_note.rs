@@ -714,6 +714,7 @@ impl App {
     fn select_new_note(&mut self, path: &std::path::Path) {
         let real = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
         let id = RowId(real.to_string_lossy().into_owned());
+        self.data_gen += 1;
         if let Err(e) = self.src.reload(&id) {
             self.message = Some(Msg::NoteUnreadable.fill(&[&e]));
             return;
@@ -1025,11 +1026,9 @@ fn type_hint(app: &App, col: &str) -> String {
 /// 枠の線の文字(SR-31): (左上・右上・左下・右下・横・縦・左の区切り・右の区切り)。あいまいな幅を2と数える
 /// 設定(CV-6)では ASCII にする(罫線は東アジアのあいまいな幅の文字)。
 fn box_chars(app: &App) -> [char; 8] {
-    if app.ambiguous_wide {
-        ['+', '+', '+', '+', '-', '|', '+', '+']
-    } else {
-        ['╭', '╮', '╰', '╯', '─', '│', '├', '┤']
-    }
+    // SR-32: 枠の文字は窓どうしでそろえる(popup::frame)。
+    let f = super::popup::frame(app);
+    [f.tl, f.tr, f.bl, f.br, f.h, f.v, f.lt, f.rt]
 }
 
 /// 窓の行を、表の行(`line`)の桁 x から、span を並べて重ねる。
@@ -1060,6 +1059,10 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let inner = g.bw - 2;
     let bold = Style::default().add_modifier(Modifier::BOLD);
     let dim = Style::default().add_modifier(Modifier::DIM);
+    // SR-33: モダンな見た目では、縁はアクセントの色、今の欄の印もアクセントの色。
+    let look = super::look::look(app);
+    let bst = look.as_ref().map(|l| l.border()).unwrap_or_default();
+    let mark_st = look.as_ref().map(|l| l.key()).unwrap_or(bold);
     let edge = |l: char, r: char, text: &str| {
         let t = super::width::take(text, inner);
         format!("{l}{t}{}{r}", hz.to_string().repeat(inner - width(&t)))
@@ -1070,7 +1073,10 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         lines,
         g.top,
         g.left,
-        vec![Span::styled(edge(tl, tr, &head), bold)],
+        vec![Span::styled(
+            edge(tl, tr, &head),
+            bst.add_modifier(Modifier::BOLD),
+        )],
         w,
     );
     let rs = rows(f);
@@ -1081,8 +1087,8 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         let y = g.top + 1 + k - g.first;
         let here = k == cur;
         let mut spans = vec![
-            Span::raw(format!("{vt} ")),
-            Span::styled(if here { "> " } else { "  " }, bold),
+            Span::styled(format!("{vt} "), bst),
+            Span::styled(if here { "> " } else { "  " }, mark_st),
             Span::styled(fit(&label(f, *row), g.label_w, Align::Left), bold),
             Span::raw("  "),
         ];
@@ -1109,12 +1115,18 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
                 if hint { dim } else { Style::default() },
             ));
         }
-        spans.push(Span::raw(vt.to_string()));
+        spans.push(Span::styled(vt.to_string(), bst));
         put(lines, y, g.left, spans, w);
     }
     // 区切りと、押せるキー(下の帯と同じ。キーの表から)と、下の縁。
     let y = g.top + 1 + g.count;
-    put(lines, y, g.left, vec![Span::raw(edge(ml, mr, ""))], w);
+    put(
+        lines,
+        y,
+        g.left,
+        vec![Span::styled(edge(ml, mr, ""), bst)],
+        w,
+    );
     let keys = hints(app).unwrap_or_default().join("  ");
     let keys = fit(&format!(" {}", sanitize(&keys)), inner, Align::Left);
     put(
@@ -1122,13 +1134,19 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         y + 1,
         g.left,
         vec![
-            Span::raw(vt.to_string()),
-            Span::styled(keys, dim),
-            Span::raw(vt.to_string()),
+            Span::styled(vt.to_string(), bst),
+            Span::styled(keys, look.as_ref().map(|l| l.faint()).unwrap_or(dim)),
+            Span::styled(vt.to_string(), bst),
         ],
         w,
     );
-    put(lines, y + 2, g.left, vec![Span::raw(edge(bl, br, ""))], w);
+    put(
+        lines,
+        y + 2,
+        g.left,
+        vec![Span::styled(edge(bl, br, ""), bst)],
+        w,
+    );
     // 窓の左右に1桁ずつ空ける(表の文字が窓の縁に付いて見えないように)。
     for yy in g.top..=y + 2 {
         if g.left > 0 {

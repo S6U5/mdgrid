@@ -120,7 +120,7 @@ impl App {
     }
 
     /// 詳細に出す値の全文(改行も保つ)。ためた値は `*`、読むだけは `#` を先頭に。
-    fn detail_text(&self, row: &RowId, col: &str) -> String {
+    pub(crate) fn detail_text(&self, row: &RowId, col: &str) -> String {
         if let Some(nv) = self.changes.pending(row, col) {
             return format!("*{}", new_value_text(nv));
         }
@@ -131,6 +131,15 @@ impl App {
                     let mark = if s.locked.is_some() { "#" } else { "" };
                     return format!("{mark}{v}");
                 }
+            }
+        }
+        // SR-35: 部品(☑・札)は表の中だけ。詳細は値の文字で見せる。
+        let rich = s.part != super::cell::CellPart::None
+            || s.text == super::cell::CHECK_ON
+            || s.text == super::cell::CHECK_OFF;
+        if let (true, Shown::Prop(c)) = (rich, self.cell(row, col)) {
+            if let Some(v) = &c.value {
+                return super::cell::value_plain(v);
             }
         }
         s.text
@@ -357,10 +366,12 @@ pub(crate) fn render_detail(app: &App, w: usize, h: usize) -> Vec<Line<'static>>
             ]));
             continue;
         }
-        let st = if l.prop == d.sel || l.head {
-            bold
-        } else {
-            Style::default()
+        // SR-33: モダンな見た目では、選んでいる項目の行は背景の色(表と同じ)、見出し(本文)はアクセントの色。
+        let st = match (super::look::look(app), l.head, l.prop == d.sel) {
+            (Some(lk), true, _) => lk.key(),
+            (Some(lk), false, true) => lk.selected(),
+            (None, true, _) | (None, _, true) => bold,
+            _ => Style::default(),
         };
         lines.push(Line::from(Span::styled(fit(&l.text, w, Align::Left), st)));
     }

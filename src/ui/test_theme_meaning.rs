@@ -17,7 +17,12 @@ fn app(name: &str, theme: &str) -> (Tmp, App) {
     tmp.write("a.md", "---\nstatus: todo\n---\n");
     tmp.write("b.md", "---\nstatus: done\n---\n");
     let mut a = app_of(&tmp, ColorMode::Rgb);
-    a.configure(&config::parse(&format!("theme = \"{theme}\"\n")).unwrap().0);
+    // 意味の色(SR-28)は今までの見た目(look = "classic")の上で確かめる。
+    a.configure(
+        &config::parse(&format!("look = \"classic\"\ntheme = \"{theme}\"\n"))
+            .unwrap()
+            .0,
+    );
     (tmp, a)
 }
 

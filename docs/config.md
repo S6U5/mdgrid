@@ -67,6 +67,77 @@ Treat East Asian Ambiguous characters (such as `○` and `※`) as two columns w
 ambiguous_wide = true
 ```
 
+### `workspace_detect`
+
+- Type: `array of strings`
+- Default: `["vault"]`
+
+When the table you open is in no written workspace (`-w`, a `.mdgrid/workspace.toml` marker, or `workspaces.toml`), treat the root of the Obsidian vault (`"vault"`, a folder with `.obsidian/`) or the git repository (`"git"`, a folder with `.git`) above it as a workspace: its folders with notes and `.base` files become the tables of the relation map. `[]` turns detection off.
+
+```toml
+workspace_detect = ["vault", "git"]
+```
+
+### `look`
+
+- Type: `string`
+- Default: `"modern"`
+
+The look when colors are on: `"modern"` (lazygit-like: the selection is tinted instead of inverted, window borders and keys use an accent color, and descriptions are dimmed) or `"classic"` (inverse video, as before). The text on screen is the same either way, and without colors (`NO_COLOR`, `--no-color`) both look like classic. The colors come from the `theme`.
+
+```toml
+look = "classic"
+```
+
+### `cells`
+
+- Type: `string or table`
+- Default: `"rich"`
+
+How table cells look when colors are on. `"rich"` shows them as parts, like a GUI table: booleans as `☑` and `☐`, each list item as a colored chip, the values of short text columns that repeat a few values (such as `status`) as colored chips, links in the accent color, and a type mark in each column heading (`#` number, `◷` date, `☑` boolean, `⋮` list, `◉` chips). A value always keeps the same chip color, and its text is always shown. `"plain"` shows the text as it is. Without colors (`--no-color`, `NO_COLOR`) cells are always plain. The values written to notes, edited, searched and printed (`--print`) do not change.
+
+```toml
+cells = "plain"
+```
+
+As a table, choose each part and each column. A column setting wins over the part settings; `"chip"` makes chips of a column that is not detected as one.
+
+```
+[cells]
+style = "rich"     # or "plain"
+checkbox = true    # booleans as ☑ ☐
+chips = true       # list items as chips
+select = true      # short repeated text values as chips
+links = true       # links in the accent color
+icons = true       # type marks in the column headings
+
+[cells.columns]
+status = "plain"   # this column as text
+owner = "chip"     # this column as chips
+```
+
+### `view_tabs`
+
+- Type: `string`
+- Default: `"always"`
+
+When to show the row of view tabs below the header: `"always"`, or `"auto"` to show it only when there are two or more views. A folder you open without a `.base` has one view, **All notes** (every note and every key); with `"auto"` its tab row is left out and the table uses that row, until you save a view of your own. `[display] tabs = false` hides the tabs either way.
+
+```toml
+view_tabs = "auto"
+```
+
+### `borders`
+
+- Type: `string`
+- Default: `"rounded"`
+
+How window frames are drawn: `"rounded"` (connected lines with round corners, `╭─╮`) or `"ascii"` (`+ - |`). With `ambiguous_wide = true` the frames are always ASCII, so the columns stay aligned.
+
+```toml
+borders = "ascii"
+```
+
 ### `search_bar`
 
 - Type: `boolean`

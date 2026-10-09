@@ -1,8 +1,8 @@
  notes  2行
 : save
 > 保存                     save             ^S
+  この表をワークスペース…  workspace_remove
 
->a      会議のメモ 進行中
  b      買い物     完了
 
 

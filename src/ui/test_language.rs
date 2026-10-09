@@ -134,13 +134,13 @@ fn calendar_box(a: &App) -> Vec<String> {
     let top = cy + 1;
     let head = line(&s, top as usize);
     let i = head
-        .find("+-")
+        .find("╭─")
         .unwrap_or_else(|| panic!("入力の下にカレンダーの見出しが無い\n{s}"));
     let x0 = width::width(&head[..i]) as u16;
     let mut out = Vec::new();
     for y in top..buf.area.height {
         let l = cells_from(&buf, y, x0);
-        if !(l.starts_with('+') || l.starts_with('|')) {
+        if !['╭', '│', '├', '╰'].iter().any(|c| l.starts_with(*c)) {
             break;
         }
         out.push(l);

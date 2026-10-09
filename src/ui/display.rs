@@ -55,7 +55,7 @@ pub(crate) fn num_width(app: &App) -> usize {
 pub(crate) fn col_sep(app: &App) -> &'static str {
     if !app.shows(Item::ColumnLines) {
         " "
-    } else if app.ambiguous_wide {
+    } else if app.ambiguous_wide || app.borders_ascii {
         "|"
     } else {
         "│"

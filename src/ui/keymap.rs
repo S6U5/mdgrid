@@ -35,6 +35,8 @@ pub enum Mode {
     Menu,
     /// 列の値の頻度表(NV-9。freq.rs)。
     Freq,
+    /// 関係マップ(REL-7。relmap.rs)。
+    Relations,
 }
 
 impl Mode {
@@ -56,6 +58,7 @@ impl Mode {
             Mode::ListPick => Msg::ModeListPick,
             Mode::Menu => Msg::ModeMenu,
             Mode::Freq => Msg::ModeFreq,
+            Mode::Relations => Msg::ModeRelations,
         }
     }
 
@@ -82,10 +85,11 @@ impl Mode {
             Mode::ListPick => "list_select",
             Mode::Menu => "menu",
             Mode::Freq => "freq",
+            Mode::Relations => "relations",
         }
     }
 
-    pub const ALL: [Mode; 15] = [
+    pub const ALL: [Mode; 16] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -101,6 +105,7 @@ impl Mode {
         Mode::ListPick,
         Mode::Menu,
         Mode::Freq,
+        Mode::Relations,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
@@ -252,6 +257,13 @@ pub enum Action {
     OpenLink,
     /// REL-5: 今の行を指しているノート(つながった行)。
     LinkedRows,
+    /// REL-7・REL-8: 関係マップと表の画面を切り替える。
+    RelationMap,
+    /// WS-2: この表でワークスペースを作る・足す・外す・ワークスペースを開く。
+    WsNew,
+    WsAdd,
+    WsRemove,
+    WsOpen,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
     /// CE-26: 新しいノートの窓で、どの欄からでも作る(既定 Ctrl+S)。
@@ -364,6 +376,11 @@ impl Action {
             Action::RegisterPlace => "register_place",
             Action::OpenLink => "open_link",
             Action::LinkedRows => "linked_rows",
+            Action::RelationMap => "relation_map",
+            Action::WsNew => "workspace_new",
+            Action::WsAdd => "workspace_add",
+            Action::WsRemove => "workspace_remove",
+            Action::WsOpen => "workspace_open",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
             Action::CreateNote => "create_note",
@@ -463,6 +480,7 @@ const NATIVE: Msg = Msg::SecNative;
 const NOTE: Msg = Msg::SecNote;
 const IN_MENU: Msg = Msg::SecInMenu;
 const IN_FREQ: Msg = Msg::SecInFreq;
+const IN_RELMAP: Msg = Msg::SecInRelMap;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -521,6 +539,11 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::RegisterPlace, Msg::PlaceRegister, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
+    // WS-2: ワークスペース(ノートを書かない。workspaces.toml だけ)。
+    cmd(Action::WsNew, Msg::CmdWsNew, FILE),
+    cmd(Action::WsAdd, Msg::CmdWsAdd, FILE),
+    cmd(Action::WsRemove, Msg::CmdWsRemove, FILE),
+    cmd(Action::WsOpen, Msg::CmdWsOpen, FILE),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。
@@ -589,6 +612,8 @@ pub const BINDINGS: &[Binding] = &[
     b("s", Action::Sort, Msg::KeySort, SHAPE, 0),
     b("-", Action::HideColumn, Msg::KeyHideColumn, SHAPE, 0),
     b("+", Action::ShowColumn, Msg::KeyShowColumn, SHAPE, 0),
+    // REL-7・REL-8: 関係マップ(上の端のタブ・パレットからも)。
+    b("R", Action::RelationMap, Msg::KeyRelationMap, FIND, 0),
     b("A", Action::AddColumn, Msg::KeyAddColumn, SHAPE, 0),
     b(
         "H",
@@ -1536,6 +1561,111 @@ pub const BINDINGS: &[Binding] = &[
     m(Mode::Freq, "Up", Action::Up, Msg::KeyPrevItem, IN_FREQ, 4),
     m(Mode::Freq, "g g", Action::Top, Msg::KeyTop, IN_FREQ, 0),
     m(Mode::Freq, "G", Action::Bottom, Msg::KeyBottom, IN_FREQ, 0),
+    // REL-7: 関係マップ。↑↓ で表、←→ でその表のつながり、Enter で表を開く。
+    m(
+        Mode::Relations,
+        "Enter",
+        Action::Run,
+        Msg::KeyRelOpen,
+        IN_RELMAP,
+        1,
+    ),
+    m(
+        Mode::Relations,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_RELMAP,
+        2,
+    ),
+    m(
+        Mode::Relations,
+        "R",
+        Action::RelationMap,
+        Msg::KeyRelBack,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Relations,
+        "q",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Relations,
+        "j",
+        Action::Down,
+        Msg::KeyRelNextTable,
+        IN_RELMAP,
+        3,
+    ),
+    m(
+        Mode::Relations,
+        "Down",
+        Action::Down,
+        Msg::KeyRelNextTable,
+        IN_RELMAP,
+        3,
+    ),
+    m(
+        Mode::Relations,
+        "k",
+        Action::Up,
+        Msg::KeyRelPrevTable,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Relations,
+        "Up",
+        Action::Up,
+        Msg::KeyRelPrevTable,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Relations,
+        "l",
+        Action::Right,
+        Msg::KeyRelNextLink,
+        IN_RELMAP,
+        4,
+    ),
+    m(
+        Mode::Relations,
+        "Right",
+        Action::Right,
+        Msg::KeyRelNextLink,
+        IN_RELMAP,
+        4,
+    ),
+    m(
+        Mode::Relations,
+        "h",
+        Action::Left,
+        Msg::KeyRelPrevLink,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Relations,
+        "Left",
+        Action::Left,
+        Msg::KeyRelPrevLink,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Relations,
+        "?",
+        Action::Help,
+        Msg::KeyHelp,
+        IN_RELMAP,
+        0,
+    ),
 ];
 
 /// 全角の英数字・記号と `、`・`・` を、同じキーの位置の半角に直す(SR-17)。
@@ -1837,6 +1967,7 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::ListPick, &[Action::Cancel]),
     (Mode::Menu, &[Action::Close]),
     (Mode::Freq, &[Action::Close]),
+    (Mode::Relations, &[Action::Close]),
 ];
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する

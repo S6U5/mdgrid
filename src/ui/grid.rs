@@ -163,6 +163,17 @@ impl App {
         print::kind_in(self.src.as_ref(), col, rows, &|r, c| self.cell(r, c))
     }
 
+    /// SR-35: 列 `col` で部品 `part` を使うか(色を使う表示で、設定が許すとき)。
+    pub(crate) fn rich(&self, col: &str, part: mdgrid::cells::Part) -> bool {
+        self.color != super::app::ColorMode::None && self.cells.on(col, part)
+    }
+
+    /// SR-35: 列 `col` の値を札にするか(自動の判定か、設定で強いた列)。
+    pub(crate) fn is_select(&self, col: &str) -> bool {
+        (self.built.selects.contains(col) || self.cells.forced_chip(col))
+            && self.rich(col, mdgrid::cells::Part::Select)
+    }
+
     /// 列の型を名前で引く。
     pub(crate) fn kind_of(&self, col: &str) -> Kind {
         self.cols
@@ -267,6 +278,53 @@ impl App {
             .into_iter()
             .map(|c| (c.to_string(), self.kind_in(c, &grid.rows)))
             .collect();
+        // 前と同じ表(列・行の数・ためた変更の数・色・設定)なら数え直さない(絞り込みの1文字ごとの組み直しを軽く)。
+        let key = SelectsKey {
+            cols: grid.columns.iter().map(|c| c.id.clone()).collect(),
+            rows: grid.rows.len(),
+            changes: self.changes.count(),
+            color: self.color != super::app::ColorMode::None,
+            cells: self.cells.clone(),
+            done: self.progress.done,
+            view: self.view_index(),
+            data_gen: self.data_gen,
+        };
+        if self.built.selects_key.as_ref() != Some(&key) {
+            // SR-35: 自動の札の列(文字の列で、くり返しのある短い値。リンクの列と計算の列は除く)。
+            // 部品を使わない列(色なし・plain・select = false)は数えない。行は流して読み、決まったら止める。
+            let selects: std::collections::HashSet<String> = grid
+                .columns
+                .iter()
+                .map(|c| c.id.as_str())
+                .filter(|c| {
+                    col_kinds.get(*c) == Some(&Kind::Text)
+                        && !c.starts_with("file.")
+                        && !c.starts_with("formula.")
+                })
+                .filter(|c| self.rich(c, mdgrid::cells::Part::Select))
+                // 読み込みの途中は数えない(読み終えたときに一度。BV-16 の組み直しを軽く)。
+                .filter(|_| self.progress.done)
+                .filter(|c| {
+                    let vals = grid
+                        .rows
+                        .iter()
+                        .filter_map(|r| match self.src.get(r, c).value {
+                            // リンクの値は札の列にしない(改行入りの値として渡すと、すぐ「札でない」に決まる)。
+                            Some(mdgrid::source::Value::Str(s))
+                                if mdgrid::relations::parse(&s).is_some() =>
+                            {
+                                Some("\n".to_string())
+                            }
+                            Some(mdgrid::source::Value::Str(s)) => Some(s),
+                            _ => None,
+                        });
+                    mdgrid::cells::looks_like_select(vals)
+                })
+                .map(str::to_string)
+                .collect();
+            self.built.selects = selects;
+            self.built.selects_key = Some(key);
+        }
         self.built.col_kinds = col_kinds;
         // NV-20: `.base` → ビューの設定 → 簡易の絞り込み・同じ値 → 一時的な並べ替え → 直した行の留め。
         let (rows, groups) = self.apply_settings(grid.rows, grid.groups);
@@ -606,4 +664,21 @@ pub(crate) struct Built {
     pub label_prefix: String,
     /// 列の id → 型。組み立て直しのたびに `.base` の結果の行の全部から決める(kinds とビューの設定が引く)。
     pub col_kinds: HashMap<String, Kind>,
+    /// SR-35: 種類の少ない短い文字の列(自動の札)。結果の行の全部から決める。
+    pub selects: std::collections::HashSet<String>,
+    /// selects を決めたときの表(同じなら数え直さない)。
+    pub selects_key: Option<SelectsKey>,
+}
+
+/// 札の列を決めたときの表の形(SR-35)。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct SelectsKey {
+    cols: Vec<String>,
+    rows: usize,
+    changes: usize,
+    color: bool,
+    cells: mdgrid::cells::Cells,
+    done: bool,
+    view: usize,
+    data_gen: u64,
 }

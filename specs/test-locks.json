@@ -419,88 +419,88 @@
     "ids": [
       "CE-20"
     ],
-    "sha": "2c18eeb1ee8726f8",
-    "from": "e7166222477ef5af"
+    "sha": "2265129a99785d1c",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_20_invalid_typing_keeps_input_and_esc_cancels": {
     "ids": [
       "CE-20"
     ],
-    "sha": "1219111622fe0258",
-    "from": "e7166222477ef5af"
+    "sha": "7d0f127013b9574c",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_20_click_a_day": {
     "ids": [
       "CE-20"
     ],
-    "sha": "e1e28493a9024c57",
-    "from": "e7166222477ef5af"
+    "sha": "8772410db27d5b1c",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_22_short_formats_keep_year": {
     "ids": [
       "CE-20",
       "CE-22"
     ],
-    "sha": "3e32ac54a6e6bb3c",
-    "from": "e7166222477ef5af"
+    "sha": "ee715f7ab8d94cde",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_10_bulk_datetime_keeps_each_rows_time": {
     "ids": [
       "CE-10"
     ],
-    "sha": "450bb408ab397109",
-    "from": "e7166222477ef5af"
+    "sha": "eab341a146ee6f3d",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_21_calendar_above_when_no_room_below": {
     "ids": [
       "CE-20"
     ],
-    "sha": "f81792e46aec98a0",
-    "from": "e7166222477ef5af"
+    "sha": "01f488817a5609d4",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_10_bulk_date_with_calendar": {
     "ids": [
       "CE-10",
       "CE-20"
     ],
-    "sha": "106ee8cb4c4285ce",
-    "from": "e7166222477ef5af"
+    "sha": "89c617e407380cfe",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_22_date_format_in_table_and_input": {
     "ids": [
       "CE-22",
       "WB-18"
     ],
-    "sha": "dcaa6c0566a1df1e",
-    "from": "e7166222477ef5af"
+    "sha": "da45c886716223eb",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_23_shift_left_right_moves_month": {
     "ids": [
       "CE-23"
     ],
-    "sha": "6f79361396e9047b",
-    "from": "e7166222477ef5af"
+    "sha": "b19c844445633872",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_23_shift_left_clamps_to_month_end": {
     "ids": [
       "CE-23"
     ],
-    "sha": "fbc7bdf9c9b3f8d0",
-    "from": "e7166222477ef5af"
+    "sha": "e708165b3747e749",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_23_ce_24_keys_on_bottom_edge": {
     "ids": [
       "CE-23"
     ],
-    "sha": "8b22e5272bd183b6",
-    "from": "e7166222477ef5af"
+    "sha": "6492f5046d9c8efd",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_calendar.rs::test_ce_23_no_calendar_shift_right_keeps_date": {
     "ids": [
       "CE-23"
     ],
-    "sha": "667dd0e215857f82",
-    "from": "e7166222477ef5af"
+    "sha": "d89e0ee579e33b62",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_checkbox.rs::test_ce_4_false_full_cycle_returns_to_original": {
     "ids": [
@@ -636,45 +636,45 @@
     "ids": [
       "SR-20"
     ],
-    "sha": "67b79c195881d731",
-    "from": "24e7194bdd59137e"
+    "sha": "125b1d7db91def22",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_zebra_counts_note_rows_not_headings": {
     "ids": [
       "SR-20"
     ],
-    "sha": "ffa96e6612ffc282",
-    "from": "24e7194bdd59137e"
+    "sha": "8299efb9667c17c2",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_display_section_scrolls_on_low_screen": {
     "ids": [
       "NV-18",
       "SR-20"
     ],
-    "sha": "0f1e3404671a2fe0",
-    "from": "24e7194bdd59137e"
+    "sha": "a0f6e56a7ce28c85",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_hidden_chips_f_shows_selected_condition": {
     "ids": [
       "SR-20"
     ],
-    "sha": "3a385b159402f5e9",
-    "from": "24e7194bdd59137e"
+    "sha": "78e9e5ad71f7a99c",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_hidden_tabs_header_shows_view_name": {
     "ids": [
       "SR-20"
     ],
-    "sha": "afbb957599c37492",
-    "from": "24e7194bdd59137e"
+    "sha": "975bcc9596015933",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_to_base_display_note_is_last": {
     "ids": [
       "BV-19",
       "SR-20"
     ],
-    "sha": "6937af9600f7cb8e",
-    "from": "24e7194bdd59137e"
+    "sha": "232551b4675b303f",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_row_numbers_from_config": {
     "ids": [
@@ -3363,44 +3363,44 @@
       "CE-26",
       "CE-27"
     ],
-    "sha": "63f158cd181ba113",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "c73fd1d018473027",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_new_note_gaps.rs::test_ce_26_default_table_uses_config_rule": {
     "ids": [
       "CE-26",
       "CE-27"
     ],
-    "sha": "afddd44c974ea5c3",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "a75f904d6511e88f",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_shows_same_list_as_cell_edit": {
     "ids": [
       "CE-26"
     ],
-    "sha": "deb25a0985ca41b0",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "022d04ea2705ab42",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_pick_done_from_list": {
     "ids": [
       "CE-26"
     ],
-    "sha": "c37378a09c0fbf84",
-    "from": "03fc0dc3fd4b9cb5"
+    "sha": "53f93f11e955aca4",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_free_input_from_list": {
     "ids": [
       "CE-26"
     ],
-    "sha": "4050b91ef4394cd7",
-    "from": "03fc0dc3fd4b9cb5"
+    "sha": "ee82b8299e443d7d",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_new_note_gaps.rs::test_ce_26_text_ask_too_many_values_is_one_line": {
     "ids": [
       "CE-26"
     ],
-    "sha": "0bd69837b0366904",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "4f8b9e9602275dbb",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "tests/test_safety_docs.rs::test_wb_19_examples_are_read_only_when_opened": {
     "ids": [
@@ -3762,43 +3762,43 @@
     "ids": [
       "SR-23"
     ],
-    "sha": "3ed70a49f0ee71a8",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "0d2240ccbaf19bec",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_language.rs::test_sr_23_ui_help_english": {
     "ids": [
       "SR-23"
     ],
-    "sha": "8e6cdaa1675d47b9",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "3af046d4bd32570a",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_language.rs::test_sr_23_ui_palette_english": {
     "ids": [
       "SR-23"
     ],
-    "sha": "61d2ef539b1ca333",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "b9bb1d025fa8b082",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_language.rs::test_sr_23_ui_new_note_button_english": {
     "ids": [
       "SR-23"
     ],
-    "sha": "8686944da64f4a6c",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "146bff605be260ad",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_language.rs::test_sr_23_ui_calendar_english": {
     "ids": [
       "SR-23"
     ],
-    "sha": "ea733134cc95bfb8",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "4c5d80108d3c5f54",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_language.rs::test_sr_23_ui_japanese_unchanged": {
     "ids": [
       "SR-23"
     ],
-    "sha": "ca2ccebb07b7804f",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "7223ace4c36cabfb",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_language_more.rs::test_sr_23_ui_more_save_confirm_english": {
     "ids": [
@@ -4262,73 +4262,73 @@
     "ids": [
       "SR-26"
     ],
-    "sha": "d6763caaf4d8ac4c",
-    "from": "bc4a2da001ce59ae"
+    "sha": "aefc395653fd8b86",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes.rs::test_sr_26_every_theme_keeps_the_text": {
     "ids": [
       "SR-26"
     ],
-    "sha": "a0f707b42221a96c",
-    "from": "bc4a2da001ce59ae"
+    "sha": "51c0d9d77f5b8651",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes.rs::test_sr_26_every_theme_but_default_paints": {
     "ids": [
       "SR-26"
     ],
-    "sha": "8ca534f866d68306",
-    "from": "bc4a2da001ce59ae"
+    "sha": "441aafd4dc6cd6f8",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes.rs::test_sr_26_palettes_follow_the_mockups": {
     "ids": [
       "SR-26"
     ],
-    "sha": "b658d281f356f654",
-    "from": "bc4a2da001ce59ae"
+    "sha": "7e4867e4714b4d8d",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes.rs::test_sr_26_zebra_uses_theme_colors": {
     "ids": [
       "SR-20",
       "SR-26"
     ],
-    "sha": "afe53cbdfb1ce3ad",
-    "from": "bc4a2da001ce59ae"
+    "sha": "a6f7396fa34b7c4a",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes.rs::test_sr_27_default_zebra_is_unchanged": {
     "ids": [
       "SR-20"
     ],
-    "sha": "fa7fb537a738bc8c",
-    "from": "bc4a2da001ce59ae"
+    "sha": "a1919fee7f54a849",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_zebra_row_selection_mark_and_bold": {
     "ids": [
       "SR-20",
       "SR-26"
     ],
-    "sha": "1fc5f5985d4a8c5d",
-    "from": "5a6376fddcf17c55"
+    "sha": "94cf48adaa102357",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_colhead_only_on_the_column_heading_row": {
     "ids": [
       "SR-26"
     ],
-    "sha": "e431edc2dc7124b3",
-    "from": "5a6376fddcf17c55"
+    "sha": "b5ab8e3a833654c3",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_input_box_is_strong_not_colhead": {
     "ids": [
       "SR-26"
     ],
-    "sha": "334e51181893e7fd",
-    "from": "5a6376fddcf17c55"
+    "sha": "4b30d15cc12b70da",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_search_hit_name_is_strong_not_colhead": {
     "ids": [
       "SR-26"
     ],
-    "sha": "c56c9a0979f9519c",
-    "from": "5a6376fddcf17c55"
+    "sha": "b9153a04527a6d4d",
+    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
   },
   "src/ui/test_action_menu_more.rs::test_sr_25_more_esc_after_prefix_keeps_marks": {
     "ids": [
@@ -4851,43 +4851,43 @@
     "ids": [
       "SR-24"
     ],
-    "sha": "22ef994e7ce8654d",
-    "from": "300136e1a0d5ceaa"
+    "sha": "ec5c79c0971d4c36",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_list_narrow.rs::test_ce_3_narrow_down_picks_match": {
     "ids": [
       "SR-24"
     ],
-    "sha": "3b3d284985a002fd",
-    "from": "300136e1a0d5ceaa"
+    "sha": "2b14c8e90aef8537",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_list_narrow.rs::test_ce_3_narrow_no_match_hides_and_revert_restores": {
     "ids": [
       "SR-24"
     ],
-    "sha": "2edf9c9839f28577",
-    "from": "300136e1a0d5ceaa"
+    "sha": "affc4618fd65b5d2",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_list_narrow.rs::test_sr_24_menu_position_shown_when_scrolled": {
     "ids": [
       "SR-24"
     ],
-    "sha": "3a8b535537d4f2fb",
-    "from": "300136e1a0d5ceaa"
+    "sha": "14bd127c9eddb725",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_list_narrow.rs::test_sr_24_menu_position_hidden_when_all_fit": {
     "ids": [
       "SR-24"
     ],
-    "sha": "dc28c0dc87a37228",
-    "from": "300136e1a0d5ceaa"
+    "sha": "8b67fc129675e9cc",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_list_narrow.rs::test_ce_3_narrow_up_picks_last_and_typing_replaces": {
     "ids": [
       "SR-24"
     ],
-    "sha": "63b6c633fb0698a2",
-    "from": "300136e1a0d5ceaa"
+    "sha": "197222d7125346e5",
+    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
   },
   "src/ui/test_bom_values.rs::test_wb_5_bom_values_shown_read_only": {
     "ids": [
@@ -5784,5 +5784,520 @@
       "REL-5"
     ],
     "sha": "7a3fc0a0c2930c93"
+  },
+  "src/ui/test_borders.rs::test_sr_32_ascii_by_setting": {
+    "ids": [
+      "SR-32"
+    ],
+    "sha": "7e67614aceee9035"
+  },
+  "src/ui/test_borders.rs::test_sr_32_ascii_when_ambiguous_wide": {
+    "ids": [
+      "SR-32"
+    ],
+    "sha": "a465b6ca72f8db05"
+  },
+  "src/ui/test_borders.rs::test_sr_32_bad_value_warns": {
+    "ids": [
+      "SR-32"
+    ],
+    "sha": "cf84dfbd7e7c6073"
+  },
+  "src/ui/test_borders.rs::test_sr_32_rounded_by_default": {
+    "ids": [
+      "SR-32"
+    ],
+    "sha": "8ef4b4b65c6078fd"
+  },
+  "src/ui/test_look.rs::test_sr_33_bad_value_warns": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "188705967e2da867"
+  },
+  "src/ui/test_look.rs::test_sr_33_classic_and_no_color_keep_reverse": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "a3e6b9b0b9ba4eb8"
+  },
+  "src/ui/test_look.rs::test_sr_33_footer_keys_accent_labels_dim": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "a3b04bcc7a4e62fc"
+  },
+  "src/ui/test_look.rs::test_sr_33_modern_popup_uses_background": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "a0ddc5802fb3a218"
+  },
+  "src/ui/test_look.rs::test_sr_33_table_selection_is_tinted": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "268023af54a5000f"
+  },
+  "src/ui/test_look.rs::test_sr_33_text_is_the_same_in_every_look": {
+    "ids": [
+      "SR-26",
+      "SR-33"
+    ],
+    "sha": "cbbcda578c779f1e"
+  },
+  "src/test_relmap_unit.rs::test_rel_7_ascii_lines": {
+    "ids": [
+      "REL-7",
+      "SR-32"
+    ],
+    "sha": "a6372dea2539a0a8"
+  },
+  "src/test_relmap_unit.rs::test_rel_7_back_and_self_links_do_not_panic": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "9aa13dfbfab64f20"
+  },
+  "src/test_relmap_unit.rs::test_rel_7_control_chars_are_not_drawn": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "f8bfbe84ec765ef1"
+  },
+  "src/test_relmap_unit.rs::test_rel_7_empty_workspace": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "53a82c3daa3fd480"
+  },
+  "src/test_relmap_unit.rs::test_rel_7_layout_connects_boxes": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "019289459490ece0"
+  },
+  "src/test_relmap_unit.rs::test_rel_7_read_tables_and_links": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "a3999e256c49ab52"
+  },
+  "src/test_workspace_unit.rs::test_ws_1_bad_rows_warn": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "c4b22690e608d080"
+  },
+  "src/test_workspace_unit.rs::test_ws_1_read_write_round_trip": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "481914e8f51cd12d"
+  },
+  "src/test_workspace_unit.rs::test_ws_5_detect_vault_and_git": {
+    "ids": [
+      "WS-5"
+    ],
+    "sha": "c46e7152b255a876"
+  },
+  "src/test_workspace_unit.rs::test_ws_6_resolve_order": {
+    "ids": [
+      "WS-6"
+    ],
+    "sha": "8f8b9b94dafc86e8"
+  },
+  "src/test_workspace_unit.rs::test_ws_7_marker_auto_and_listed_tables": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "e7307f4143d9adc1",
+    "by": "specs/_decisions/2026-10-09-workspace-auto-folders.md"
+  },
+  "src/ui/test_relmap.rs::test_rel_7_map_shows_boxes_and_arrows": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "2f16b087dc6b0dd4"
+  },
+  "src/ui/test_relmap.rs::test_rel_7_no_tables_message": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "50635d9510de3dbf"
+  },
+  "src/ui/test_relmap.rs::test_rel_7_select_link_and_open_table": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "e95140d3eb9c988f"
+  },
+  "src/ui/test_relmap.rs::test_rel_8_no_tabs_without_places": {
+    "ids": [
+      "REL-8"
+    ],
+    "sha": "1b47384851785c72"
+  },
+  "src/ui/test_relmap.rs::test_rel_8_screen_tabs_switch": {
+    "ids": [
+      "REL-8"
+    ],
+    "sha": "dd92ed603761ed17"
+  },
+  "src/ui/test_relmap.rs::test_rel_9_layout_by_width": {
+    "ids": [
+      "REL-9"
+    ],
+    "sha": "382fb6ca6aa9f50b"
+  },
+  "src/ui/test_relmap.rs::test_rel_9_linked_records_when_tall": {
+    "ids": [
+      "REL-9"
+    ],
+    "sha": "49eb8141b27b5984"
+  },
+  "src/ui/test_workspace.rs::test_ws_2_add_and_remove_from_palette": {
+    "ids": [
+      "WS-2"
+    ],
+    "sha": "bc27307980496d9e"
+  },
+  "src/ui/test_workspace.rs::test_ws_2_open_none_says_how": {
+    "ids": [
+      "WS-2"
+    ],
+    "sha": "e8dcc8b19c71287f"
+  },
+  "src/ui/test_workspace.rs::test_ws_2_pick_existing_and_open": {
+    "ids": [
+      "WS-2"
+    ],
+    "sha": "756011a3eeb0b219"
+  },
+  "src/ui/test_workspace.rs::test_ws_4_linked_rows_follow_scope": {
+    "ids": [
+      "REL-5",
+      "WS-4"
+    ],
+    "sha": "e03b723f198f3fbf"
+  },
+  "src/ui/test_workspace.rs::test_ws_4_scope_limits_tables_and_relmap": {
+    "ids": [
+      "WS-4"
+    ],
+    "sha": "f74dfb62a8b38649"
+  },
+  "src/ui/test_workspace.rs::test_ws_6_header_shows_workspace": {
+    "ids": [
+      "WS-6"
+    ],
+    "sha": "cc6f3646f2a8bd97"
+  },
+  "tests/test_workspace_cli.rs::test_ws_3_add_list_remove_on_pipe": {
+    "ids": [
+      "WS-3"
+    ],
+    "sha": "d0eeaea74d354659",
+    "by": "specs/_decisions/2026-10-09-workspace-flags.md"
+  },
+  "tests/test_workspace_cli.rs::test_ws_3_bad_input_one_line_reason": {
+    "ids": [
+      "WS-3"
+    ],
+    "sha": "4b61f2e25346b9de",
+    "by": "specs/_decisions/2026-10-09-workspace-flags.md"
+  },
+  "tests/test_workspace_cli.rs::test_ws_3_w_opens_first_table": {
+    "ids": [
+      "WS-3"
+    ],
+    "sha": "b0dec2b73889517f",
+    "by": "specs/_decisions/2026-10-09-workspace-flags.md"
+  },
+  "tests/test_workspace_cli.rs::test_ws_7_init_marker": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "7b3a7cd81ae02456",
+    "by": "specs/_decisions/2026-10-09-workspace-flags.md"
+  },
+  "src/test_workspace_more_unit.rs::test_ws_1_broken_file_is_not_rewritten": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "1b3109aed9b021b1"
+  },
+  "src/test_workspace_more_unit.rs::test_ws_1_home_and_relative_paths": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "ee2ca6df7d233e8b",
+    "by": "specs/_decisions/2026-10-09-windows-test-locks.md"
+  },
+  "src/test_workspace_more_unit.rs::test_ws_7_broken_marker_warns": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "9458ebdf2b8547bc"
+  },
+  "tests/test_workspace_cli.rs::test_ws_3_folder_named_workspace_opens": {
+    "ids": [
+      "WS-3"
+    ],
+    "sha": "64cf68ca41fc3ee8"
+  },
+  "src/test_workspace_chosen_unit.rs::test_ws_6_chosen_without_the_table_warns": {
+    "ids": [
+      "WS-6"
+    ],
+    "sha": "307935e5d688145a"
+  },
+  "src/ui/test_screen_tabs_fixed.rs::test_rel_8_tabs_do_not_move_between_screens": {
+    "ids": [
+      "REL-8"
+    ],
+    "sha": "5f3a95e5455d174b"
+  },
+  "src/ui/test_relmap_click.rs::test_rel_12_click_link_and_linked_row": {
+    "ids": [
+      "REL-12"
+    ],
+    "sha": "b258ceec58491929"
+  },
+  "src/ui/test_relmap_click.rs::test_rel_12_click_selects_and_opens": {
+    "ids": [
+      "REL-12"
+    ],
+    "sha": "134e6a1651dbf5fb"
+  },
+  "src/ui/test_relmap_click.rs::test_rel_12_narrow_list_and_wheel": {
+    "ids": [
+      "REL-12"
+    ],
+    "sha": "3de7701cd3444f2c"
+  },
+  "src/ui/test_view_tabs_auto.rs::test_sr_23_default_tab_english_name": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "9e81f1c3cf4a9aeb"
+  },
+  "src/ui/test_view_tabs_auto.rs::test_sr_34_auto_hides_single_tab": {
+    "ids": [
+      "SR-34"
+    ],
+    "sha": "4c45855bb6c39346"
+  },
+  "src/ui/test_view_tabs_auto.rs::test_sr_34_auto_shows_tabs_with_two_views": {
+    "ids": [
+      "SR-34"
+    ],
+    "sha": "d19818cfe6c84459"
+  },
+  "src/ui/test_view_tabs_auto.rs::test_sr_34_unknown_value_warns": {
+    "ids": [
+      "SR-34"
+    ],
+    "sha": "10e4c92fc17a9508"
+  },
+  "src/test_cells_unit.rs::test_sr_35_cells_bad_values_warn": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "20554d01d42675e0"
+  },
+  "src/test_cells_unit.rs::test_sr_35_cells_string_and_table": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "7a4e50591770b745"
+  },
+  "src/test_cells_unit.rs::test_sr_35_select_detection": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "625971d248172429"
+  },
+  "src/ui/test_rich_cells.rs::test_sr_35_chip_colors_stable": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "72e916db5dd704a5"
+  },
+  "src/ui/test_rich_cells.rs::test_sr_35_per_part_and_column": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "dddf97914fab6419"
+  },
+  "src/ui/test_rich_cells.rs::test_sr_35_plain_without_color_or_setting": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "05d12a5a69d811b2"
+  },
+  "src/ui/test_rich_cells.rs::test_sr_35_rich_cells": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "a096c5f09725beee"
+  },
+  "src/ui/test_rich_cells.rs::test_sr_35_search_matches_value_text": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "fe5e7eda1c99be74"
+  },
+  "src/ui/test_places_align.rs::test_cli_19_list_paths_aligned": {
+    "ids": [
+      "CLI-19"
+    ],
+    "sha": "8c10f51165bfa2ae"
+  },
+  "src/ui/test_rich_cells_more.rs::test_sr_35_chip_column_wins_over_parts": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "dabfa4e0e9d3dc9d"
+  },
+  "src/ui/test_rich_cells_more.rs::test_sr_35_detail_shows_value_text": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "7882030cee88112e"
+  },
+  "src/ui/test_rich_cells_more.rs::test_sr_35_dotted_key_can_be_chips": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "6f5f0c63e577fbe3"
+  },
+  "src/ui/test_rich_cells_more.rs::test_sr_35_search_marks_rich_cells": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "e8fddb6b8f35a416"
+  },
+  "src/ui/test_relmap_scroll.rs::test_rel_9_narrow_list_scrolls_to_selection": {
+    "ids": [
+      "REL-12",
+      "REL-9"
+    ],
+    "sha": "a0f8459946f7088a"
+  },
+  "src/test_places_keep_unit.rs::test_cli_18_add_keeps_hand_written_text": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "75dcfe34373e1b56"
+  },
+  "src/test_places_keep_unit.rs::test_cli_18_broken_block_is_kept": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "d0facf5b4847c17d"
+  },
+  "src/test_places_keep_unit.rs::test_cli_18_replace_only_that_block": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "dadc81cc6c953d94"
+  },
+  "src/ui/test_rich_cells_fit.rs::test_sr_35_chips_all_fit": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "8772e593ffa062eb"
+  },
+  "src/ui/test_rich_cells_fit.rs::test_sr_35_chips_overflow_counts_the_rest": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "b896533da7f52394"
+  },
+  "src/ui/test_rich_cells_fit.rs::test_sr_35_first_chip_too_wide_is_cut": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "89835caa8a9b71a5"
+  },
+  "src/ui/test_rich_cells_first.rs::test_sr_35_first_chip_whole_before_count": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "a091fe0ba7e81746"
+  },
+  "src/ui/test_freq_chips.rs::test_sr_35_freq_values_use_chip_colors": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "88d427d70807f096"
+  },
+  "src/ui/test_list_chips.rs::test_sr_35_value_list_uses_chip_colors": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "26767641d943cb02"
+  },
+  "src/ui/test_modern_rest.rs::test_sr_33_help_keys_accent": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "7c510252cbb1f182"
+  },
+  "src/ui/test_modern_rest.rs::test_sr_33_no_reverse_left_in_modern": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "837457389efff0c0"
+  },
+  "src/ui/test_detail_look.rs::test_sr_33_detail_selected_row_tinted": {
+    "ids": [
+      "SR-33"
+    ],
+    "sha": "4f1da97dd1ec050b"
+  },
+  "src/ui/test_selects_cache.rs::test_sr_35_selects_reused_and_renewed": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "2b04e7f1f9f55bf7"
+  },
+  "src/test_workspace_keep_unit.rs::test_ws_1_add_keeps_hand_written_text": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "a06308c8a9b34f7e"
+  },
+  "src/test_workspace_keep_unit.rs::test_ws_1_replace_and_remove_only_that_part": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "7c4992136dd56343"
+  },
+  "src/test_toml_edit_safety_unit.rs::test_cli_18_place_header_with_comment_keeps_neighbour": {
+    "ids": [
+      "CLI-18"
+    ],
+    "sha": "39fa40f549a44e03"
+  },
+  "src/test_toml_edit_safety_unit.rs::test_ws_1_header_with_comment_keeps_neighbour": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "7bfda5b381b694b6"
+  },
+  "src/test_toml_edit_safety_unit.rs::test_ws_1_trailing_table_and_inline_form_survive": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "186f28f75a5163de",
+    "by": "specs/_decisions/2026-10-09-windows-test-locks.md"
+  },
+  "src/test_toml_edit_safety_unit.rs::test_ws_7_marker_paths_stay_inside": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "58e71ac85aa27096"
   }
 }

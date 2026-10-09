@@ -87,6 +87,8 @@ updated: 2026-10-07
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-09 | [モダンな見た目を既定にしたのに合わせて、色の試験の比べる元を今までの見た目にして錠を掛け直す(modern-look-locks)](../_decisions/2026-10-09-modern-look-locks.md) | accepted | 人 | 人の発言 | SR-20, SR-26, BV-19, NV-18 |
+| 2026-10-09 | [窓の枠をつながった罫線にしたのに合わせて、枠の文字を読む試験の錠を掛け直す(modern-borders-locks)](../_decisions/2026-10-09-modern-borders-locks.md) | accepted | 人 | 人の発言 | CE-10, CE-20, CE-22 ほか 7 |
 | 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-07 | [フォームに合わせて、新しいノートの試験の錠を掛け直す(new-note-form-locks)](../_decisions/2026-10-07-new-note-form-locks.md) | accepted | 人 | 人の発言 | CE-25, CE-26, BV-17, CE-20, WB-2, SR-23 |
 | 2026-10-07 | [file.backlinks と file.hasLink() を評価する(links-backlinks)](../_decisions/2026-10-07-links-backlinks.md) | accepted | 人 | 人の発言 | BV-22, BV-7, SR-23, WB-3, WB-5, CE-22 |

@@ -63,7 +63,8 @@ impl App {
     fn with_links<T>(&self, f: impl FnOnce(&mut LinkCtx) -> T) -> T {
         let gen = self.links.gen.get();
         let cur_key = (self.progress.loaded, gen);
-        let reg_paths: Vec<PathBuf> = self.registered.iter().map(|p| p.path.clone()).collect();
+        let places = self.scope_places();
+        let reg_paths: Vec<PathBuf> = places.iter().map(|p| p.path.clone()).collect();
         let mut ctx = self.links.ctx.borrow_mut();
         let mut changed = false;
         if ctx.cur_key != Some(cur_key) {
@@ -88,8 +89,7 @@ impl App {
         }
         let reg_key = (reg_paths, gen);
         if changed || ctx.reg_key.as_ref() != Some(&reg_key) {
-            let mut tables: Vec<Table> = self
-                .registered
+            let mut tables: Vec<Table> = places
                 .iter()
                 .map(|p| Table::new(&p.name, &p.path))
                 .collect();
@@ -330,7 +330,7 @@ impl App {
         let Some(row) = self.cur_row() else {
             return false;
         };
-        if !self.registered.is_empty() {
+        if !self.scope_places().is_empty() {
             return true;
         }
         let (Some(ix), Some(info)) = (self.src.link_index(), self.src.file(&row)) else {
@@ -404,10 +404,9 @@ impl App {
         let tables = self.with_links(|ctx| ctx.tables.clone());
         let place = relations::table_of(note, &tables)
             .and_then(|t| {
-                self.registered
-                    .iter()
+                self.scope_places()
+                    .into_iter()
                     .find(|p| Table::new(&p.name, &p.path).dir == t.dir)
-                    .cloned()
             })
             .unwrap_or_else(|| {
                 let dir = note.parent().unwrap_or(Path::new(".")).to_path_buf();

@@ -402,7 +402,7 @@ id = "native-view-save"
 title = { en = "Save as an mdgrid view", ja = "mdgrid のビューとして保存" }
 keys = ["o", "Tab", "Tab", "Tab", "Tab", "Down", "Down", "Down", "Enter", "text:mine", "Enter"]
 wait = { en = "saved as the mdgrid view", ja = "として保存した" }
-text = { en = "Save the current settings under a name; it becomes a tab next to Default and is kept in views.toml.", ja = "今の見せ方に名前を付けて保存すると、「既定の表」の横のタブになり、views.toml に残る。" }
+text = { en = "Save the current settings under a name; it becomes a tab next to All notes and is kept in views.toml.", ja = "今の見せ方に名前を付けて保存すると、「既定の表」の横のタブになり、views.toml に残る。" }
 
 [[shot]]
 id = "export-base"
@@ -698,6 +698,15 @@ env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter", "]", "x"]
 wait = { en = "Action menu", ja = "操作の一覧" }
 text = "Frame of the demo GIF."
+
+[[shot]]
+id = "demo-relmap"
+title = { en = "Relation map", ja = "関係マップ" }
+command = ["./target/release/mdgrid", "examples/relations/tasks"]
+ready = "tasks"
+keys = ["R"]
+wait = { en = "Relation map", ja = "関係マップ" }
+text = { en = "R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at.", ja = "R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。" }
 
 [[shot]]
 id = "demo-freq"

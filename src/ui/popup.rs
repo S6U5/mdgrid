@@ -68,10 +68,77 @@ pub(crate) fn step_sel(sel: usize, len: usize, action: Action, page: usize) -> O
     })
 }
 
-/// 上の縁の行: `+題----+`(幅 `tw` に収める)。
-pub(crate) fn top_edge(title: &str, tw: usize) -> String {
+/// 窓の枠の線の文字(SR-32)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Frame {
+    /// 左上・右上・左下・右下。
+    pub tl: char,
+    pub tr: char,
+    pub bl: char,
+    pub br: char,
+    /// 横・縦。
+    pub h: char,
+    pub v: char,
+    /// 左右の区切り(枠の途中の横の線)。
+    pub lt: char,
+    pub rt: char,
+}
+
+/// 角の丸い、つながった罫線(既定)。
+pub(crate) const ROUNDED: Frame = Frame {
+    tl: '╭',
+    tr: '╮',
+    bl: '╰',
+    br: '╯',
+    h: '─',
+    v: '│',
+    lt: '├',
+    rt: '┤',
+};
+
+/// ASCII(設定の `borders = "ascii"` と、East Asian Ambiguous を幅2とする設定 CV-6)。
+pub(crate) const ASCII: Frame = Frame {
+    tl: '+',
+    tr: '+',
+    bl: '+',
+    br: '+',
+    h: '-',
+    v: '|',
+    lt: '+',
+    rt: '+',
+};
+
+/// 今の設定の枠の文字(SR-32): 既定は罫線。`borders = "ascii"` か ambiguous_wide なら ASCII(罫線は
+/// East Asian Ambiguous なので、幅2で描く端末では列がずれる)。
+pub(crate) fn frame(app: &App) -> Frame {
+    if app.ambiguous_wide || app.borders_ascii {
+        ASCII
+    } else {
+        ROUNDED
+    }
+}
+
+impl Frame {
+    /// 横の線を n 個。
+    pub(crate) fn line(&self, n: usize) -> String {
+        std::iter::repeat_n(self.h, n).collect()
+    }
+
+    /// 中身の行(左右に縦の線)。
+    pub(crate) fn side(&self, inner: &str) -> String {
+        format!("{}{inner}{}", self.v, self.v)
+    }
+
+    /// 下の縁(幅 `tw` の中身の下)。
+    pub(crate) fn bottom(&self, tw: usize) -> String {
+        format!("{}{}{}", self.bl, self.line(tw), self.br)
+    }
+}
+
+/// 上の縁の行: 左上・題・横の線・右上(幅 `tw` に収める)。
+pub(crate) fn top_edge(f: Frame, title: &str, tw: usize) -> String {
     let t = take(title, tw);
-    format!("+{t}{}+", "-".repeat(tw - width(&t)))
+    format!("{}{t}{}{}", f.tl, f.line(tw - width(&t)), f.tr)
 }
 
 /// (x, y) が窓のどこか: 窓の外なら None、窓の中なら中身の行の位置(0 から。縁なら None の中身)。
@@ -96,6 +163,7 @@ pub(crate) fn hit(
 
 /// 窓の行を、表の行(`lines`)の桁 [x, x + iw) に上から重ねる。
 pub(crate) fn blit(
+    app: &App,
     lines: &mut [Line<'static>],
     x: usize,
     top: usize,
@@ -103,9 +171,100 @@ pub(crate) fn blit(
     w: usize,
     rows: Vec<(String, Style)>,
 ) {
+    let look = super::look::look(app);
     for (k, (t, st)) in rows.into_iter().enumerate() {
-        if let Some(line) = lines.get_mut(top + k) {
-            *line = splice(line, x, Span::styled(t, st), iw, w);
-        }
+        let Some(line) = lines.get_mut(top + k) else {
+            continue;
+        };
+        *line = match &look {
+            None => splice(line, x, Span::styled(t, st), iw, w),
+            Some(l) => modern_row(line, x, &t, st, iw, w, l),
+        };
     }
+}
+
+/// モダンな見た目の窓の1行(SR-33): 縁の線はアクセントの色、縁の上の題は太字、中身の反転は背景の色。
+fn modern_row(
+    line: &Line<'static>,
+    x: usize,
+    t: &str,
+    st: Style,
+    iw: usize,
+    w: usize,
+    l: &super::look::Look,
+) -> Line<'static> {
+    let chars: Vec<char> = t.chars().collect();
+    let edge = |c: char| "╭╮╰╯├┤+".contains(c);
+    let line_char = |c: char| "─-".contains(c);
+    let (Some(&first), Some(&last)) = (chars.first(), chars.last()) else {
+        return splice(line, x, Span::styled(t.to_string(), st), iw, w);
+    };
+    // 上と下の縁(角で始まる行): 線はアクセントの色、線でない文字(題・数)は太字のアクセント。
+    if edge(first) && edge(last) {
+        let mut spans: Vec<Span<'static>> = Vec::new();
+        let mut buf = String::new();
+        let mut on_line = true;
+        for (i, c) in chars.iter().enumerate() {
+            let is_line = i == 0 || i == chars.len() - 1 || line_char(*c);
+            if is_line != on_line && !buf.is_empty() {
+                let s = if on_line {
+                    l.border()
+                } else {
+                    l.border().add_modifier(ratatui::style::Modifier::BOLD)
+                };
+                spans.push(Span::styled(std::mem::take(&mut buf), s));
+            }
+            on_line = is_line;
+            buf.push(*c);
+        }
+        if !buf.is_empty() {
+            let s = if on_line {
+                l.border()
+            } else {
+                l.border().add_modifier(ratatui::style::Modifier::BOLD)
+            };
+            spans.push(Span::styled(buf, s));
+        }
+        return splice_spans(line, x, spans, iw, w);
+    }
+    // 中身の行: 左右の縦の線と、中身。
+    if "│|".contains(first) && "│|".contains(last) && chars.len() >= 2 {
+        let body: String = chars[1..chars.len() - 1].iter().collect();
+        let spans = vec![
+            Span::styled(first.to_string(), l.border()),
+            Span::styled(body, l.swap_reverse(st)),
+            Span::styled(last.to_string(), l.border()),
+        ];
+        return splice_spans(line, x, spans, iw, w);
+    }
+    splice(
+        line,
+        x,
+        Span::styled(t.to_string(), l.swap_reverse(st)),
+        iw,
+        w,
+    )
+}
+
+/// 行の桁 [x, x + iw) を、幅を足して iw になる span の並びで置き換える。
+fn splice_spans(
+    line: &Line<'static>,
+    x: usize,
+    spans: Vec<Span<'static>>,
+    iw: usize,
+    w: usize,
+) -> Line<'static> {
+    let mut out = line.clone();
+    let mut at = x;
+    let n = spans.len();
+    for (i, s) in spans.into_iter().enumerate() {
+        let sw = if i + 1 == n {
+            (x + iw).saturating_sub(at)
+        } else {
+            width(&s.content)
+        };
+        out = splice(&out, at, s, sw, w);
+        at += sw;
+    }
+    out
 }

@@ -304,16 +304,17 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         return;
     };
     let tw = g.iw - 4;
+    let f = super::popup::frame(app);
     let mut rows: Vec<(String, Style)> = Vec::new();
     for &k in shown.iter().skip(g.start).take(g.vis) {
         let it = &l.items[k];
         let sel = pick && k == l.sel;
-        let t = format!(
-            "|{}{}{}|",
+        let t = f.side(&format!(
+            "{}{}{}",
             if sel { ">" } else { " " },
             if it.current { "*" } else { " " },
             fit(&sanitize(&it.text), tw, Align::Left)
-        );
+        ));
         let st = if sel {
             Style::default().add_modifier(Modifier::REVERSED)
         } else {
@@ -326,14 +327,47 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         Some(p) => format!("{}/{}", p + 1, shown.len()),
         None => format!("{}", shown.len()),
     };
-    let edge = format!("+{}+", fit(&count, g.iw - 2, Align::Left).replace(' ', "-"));
+    // 窓が下にあれば下の縁、上にあれば上の縁に数を出す。
+    let line = fit(&count, g.iw - 2, Align::Left).replace(' ', &f.h.to_string());
+    let edge = if g.below {
+        format!("{}{line}{}", f.bl, f.br)
+    } else {
+        format!("{}{line}{}", f.tl, f.tr)
+    };
     let edge = (edge, Style::default());
     if g.below {
         rows.push(edge);
     } else {
         rows.insert(0, edge);
     }
-    super::popup::blit(lines, g.x, g.top, g.iw, w, rows);
+    super::popup::blit(app, lines, g.x, g.top, g.iw, w, rows);
+    // SR-35: 札の列の候補(文字の値)は、表と同じ札の色を重ねる(文字と幅は同じ。選んでいる候補は選びの見た目)。
+    let Some(col) = app.input.as_ref().map(|i| i.col.clone()) else {
+        return;
+    };
+    if !app.is_select(&col) {
+        return;
+    }
+    let first = g.top + usize::from(!g.below);
+    for (k, &i) in shown.iter().skip(g.start).take(g.vis).enumerate() {
+        let it = &l.items[i];
+        let NewValue::Str(v) = &it.value else {
+            continue;
+        };
+        if v.is_empty() || (pick && i == l.sel) {
+            continue;
+        }
+        let Some(st) = super::chips::style(app, v) else {
+            continue;
+        };
+        let t = fit(&sanitize(&it.text), tw, Align::Left)
+            .trim_end()
+            .to_string();
+        let width_t = width(&t);
+        if let Some(line) = lines.get_mut(first + k) {
+            *line = splice(line, g.x + 3, Span::styled(t, st), width_t, w);
+        }
+    }
 }
 
 /// 行の桁 [x, x + iw) を `ins` で置き換える。幅2の文字が境目にかかったら空白にする。

@@ -115,14 +115,52 @@ pub fn to_toml(places: &[Place]) -> String {
     toml::to_string(&root).unwrap_or_default()
 }
 
-/// 1つ登録する。同じ名前があれば置き換え、無ければ後ろに足す。ほかの行と、読めなかった行の外の並びは保つ。
+/// 1つ登録する。同じ名前があれば置き換え、無ければ後ろに足す。ファイルの文字を区画ごとに扱うので、
+/// 手で書いたコメント・空行・`~` のパス・読めなかった行は文字のまま残る。
 pub fn save(dir: &Path, place: Place) -> io::Result<()> {
-    let (mut places, _) = load(dir);
-    match places.iter_mut().find(|p| p.name == place.name) {
-        Some(p) => *p = place,
-        None => places.push(place),
+    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    config::write_atomic(dir, FILE_NAME, upsert(&text, &place).as_bytes())
+}
+
+/// `[[place]]` の区画の置き換えか足し(save の本体)。書き換えた結果を読み直し、狙った並びと違えば
+/// (手で書いた形を読み違えたとき)、並びから書き直す(コメントは消えるが、ほかの登録を壊さない)。
+pub fn upsert(text: &str, place: &Place) -> String {
+    let (mut want, _) = parse(text);
+    match want.iter_mut().find(|p| p.name == place.name) {
+        Some(p) => *p = place.clone(),
+        None => want.push(place.clone()),
     }
-    config::write_atomic(dir, FILE_NAME, to_toml(&places).as_bytes())
+    let new = upsert_text(text, place);
+    let (got, _) = parse(&new);
+    if got == want {
+        new
+    } else {
+        to_toml(&want)
+    }
+}
+
+fn upsert_text(text: &str, place: &Place) -> String {
+    let block = to_toml(std::slice::from_ref(place));
+    let lines: Vec<&str> = text.split_inclusive('\n').collect();
+    for (start, body_end) in config::toml_blocks(&lines, 0, lines.len(), "[[place]]", &[]) {
+        let body: String = lines[start..body_end].concat();
+        let (found, _) = parse(&body);
+        if found.first().is_some_and(|p| p.name == place.name) {
+            let mut out: String = lines[..start].concat();
+            out.push_str(&block);
+            out.push_str(&lines[body_end..].concat());
+            return out;
+        }
+    }
+    let mut out = text.to_string();
+    if !out.is_empty() {
+        if !out.ends_with('\n') {
+            out.push('\n');
+        }
+        out.push('\n');
+    }
+    out.push_str(&block);
+    out
 }
 
 /// 一覧の並び(CLI-19): 分類が最初に出た順にまとめ、分類の中は places.toml の順。添字の並びを返す。
@@ -159,3 +197,7 @@ pub fn groups(places: &[Place]) -> Vec<String> {
 #[cfg(test)]
 #[path = "test_places_unit.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "test_places_keep_unit.rs"]
+mod tests_keep;

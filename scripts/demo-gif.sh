@@ -1,6 +1,7 @@
 #!/bin/sh
 # Build docs/assets/demo.gif (or, with `ja` as the first argument, docs/assets/ja/demo.gif with the
-# Japanese screens) from the gif-* scenes in docs/manual-scenarios.toml.
+# Japanese screens) from the gif-* scenes in docs/manual-scenarios.toml, in true color (the modern look and
+# the cell parts of SR-33 and SR-35 need colors).
 # Needs: cargo, Python 3.11+, rsvg-convert (librsvg), ffmpeg, and the app-manual skill's tui_shot.py
 # (path in TUI_SHOT). Run from anywhere: the script moves to the repository root.
 set -eu
@@ -19,7 +20,7 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 for id in $ids; do
   env -u LC_ALL -u LC_MESSAGES "$PY" "$TUI_SHOT" docs/manual-scenarios.toml --out "$work/shots" \
-    --lang "$lang" --env LANG="$locale" --only "$id" >/dev/null
+    --lang "$lang" --env LANG="$locale" --env COLORTERM=truecolor --only "$id" >/dev/null
 done
 n=0
 for id in $ids; do

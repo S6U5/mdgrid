@@ -27,6 +27,16 @@ pub struct Config {
     pub poll_ms: u64,
     /// CV-6: East Asian Ambiguous を幅2にする。
     pub ambiguous_wide: bool,
+    /// SR-32: 窓の枠を ASCII(`+ - |`)で描く(既定は角の丸い罫線)。
+    pub borders_ascii: bool,
+    /// SR-33: 色を使うときの今までの見た目(反転)。既定は lazygit のようなモダンな見た目。
+    pub look_classic: bool,
+    /// SR-34: ビューが1つならタブの行を出さない(`view_tabs = "auto"`)。既定は "always"(いつも出す)。
+    pub view_tabs_auto: bool,
+    /// SR-35: セルの部品(`cells`)。
+    pub cells: crate::cells::Cells,
+    /// WS-5: ワークスペースの検知(既定は保管庫だけ)。
+    pub workspace_detect: Vec<crate::workspace::Detect>,
     /// NV-23: 表の上に検索の欄を出す(既定 true)。false なら出さず、簡易の絞り込み(NV-2)は最下行で打つ。
     pub search_bar: bool,
     /// CE-22: 表の日付の見せ方と打ち込みの形(既定 `YYYY-MM-DD`)。ノートに書く形は変えない。
@@ -55,6 +65,11 @@ impl Default for Config {
             candidates: 20,
             poll_ms: 1000,
             ambiguous_wide: false,
+            borders_ascii: false,
+            look_classic: false,
+            view_tabs_auto: false,
+            cells: crate::cells::Cells::default(),
+            workspace_detect: vec![crate::workspace::Detect::Vault],
             search_bar: true,
             date_format: DateFormat::iso(),
             week_start: WeekStart::Sun,
@@ -99,6 +114,34 @@ pub fn parse(text: &str) -> Result<(Config, Vec<String>), String> {
                 Some(b) => c.ambiguous_wide = b,
                 None => warnings.push(type_warning(name, Msg::WantBool)),
             },
+            "workspace_detect" => match value.as_array() {
+                Some(items) => {
+                    let parsed: Option<Vec<_>> = items
+                        .iter()
+                        .map(|v| v.as_str().and_then(crate::workspace::Detect::parse))
+                        .collect();
+                    match parsed {
+                        Some(d) => c.workspace_detect = d,
+                        None => warnings.push(type_warning(name, Msg::WantDetect)),
+                    }
+                }
+                None => warnings.push(type_warning(name, Msg::WantDetect)),
+            },
+            "look" => match value.as_str() {
+                Some("modern") => c.look_classic = false,
+                Some("classic") => c.look_classic = true,
+                _ => warnings.push(type_warning(name, Msg::WantLook)),
+            },
+            "view_tabs" => match value.as_str() {
+                Some("always") => c.view_tabs_auto = false,
+                Some("auto") => c.view_tabs_auto = true,
+                _ => warnings.push(type_warning(name, Msg::WantViewTabs)),
+            },
+            "borders" => match value.as_str() {
+                Some("rounded") => c.borders_ascii = false,
+                Some("ascii") => c.borders_ascii = true,
+                _ => warnings.push(type_warning(name, Msg::WantBorders)),
+            },
             "color" => match value.as_bool() {
                 Some(b) => c.color = b,
                 None => warnings.push(type_warning(name, Msg::WantBool)),
@@ -139,6 +182,7 @@ pub fn parse(text: &str) -> Result<(Config, Vec<String>), String> {
             "keys" => read_keys(value, &mut c.keys, &mut warnings),
             "new_note" => c.new_note = read_new_note(value, &mut warnings),
             "display" => read_display(value, &mut c.display, &mut warnings),
+            "cells" => crate::cells::read(value, &mut c.cells, &mut warnings),
             // 表にあって読み取りの無い項目は単体の試験で落とす(test_config_unit)。
             _ => {}
         }
@@ -341,6 +385,65 @@ fn read_display(value: &toml::Value, d: &mut Display, warnings: &mut Vec<String>
 /// 型の違う項目の警告。`want` は求める型(`Msg::Want*`)。
 fn type_warning(name: &str, want: Msg) -> String {
     Msg::ConfigWrongType.fill(&[&name, &want.text()])
+}
+
+/// TOML の見出しの行なら、括弧の中の空白と行末のコメントを除いた形(`[[workspace]]`・`[meta]`)。
+/// 区画を文字のまま書き換えるときに使う(places.toml・workspaces.toml)。
+pub(crate) fn toml_header(line: &str) -> Option<String> {
+    let t = line.trim();
+    let (open, close) = if t.starts_with("[[") {
+        ("[[", "]]")
+    } else if t.starts_with('[') {
+        ("[", "]")
+    } else {
+        return None;
+    };
+    let end = t.find(close)?;
+    let inner: String = t[open.len()..end]
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
+    let rest = t[end + close.len()..].trim();
+    (rest.is_empty() || rest.starts_with('#')).then(|| format!("{open}{inner}{close}"))
+}
+
+/// `lines[from..to]` の中の、見出し `head` で始まる区画 (始まり, 中身の終わり)。区画は次の見出し
+/// (`inner` に挙げたものを除く)か `to` の前まで。末尾のコメントと空行は中身に含めない(次の区画の前置き)。
+pub(crate) fn toml_blocks(
+    lines: &[&str],
+    from: usize,
+    to: usize,
+    head: &str,
+    inner: &[&str],
+) -> Vec<(usize, usize)> {
+    let mut out = Vec::new();
+    let mut i = from;
+    while i < to {
+        if toml_header(lines[i]).as_deref() != Some(head) {
+            i += 1;
+            continue;
+        }
+        let start = i;
+        let mut end = start + 1;
+        while end < to {
+            match toml_header(lines[end]) {
+                Some(h) if !inner.contains(&h.as_str()) => break,
+                _ => end += 1,
+            }
+        }
+        let next = end;
+        while end > start + 1 {
+            let t = lines[end - 1].trim();
+            if t.is_empty() || t.starts_with('#') {
+                end -= 1;
+            } else {
+                break;
+            }
+        }
+        out.push((start, end));
+        i = next;
+    }
+    out
 }
 
 pub(crate) fn squash_ws(s: &str) -> String {

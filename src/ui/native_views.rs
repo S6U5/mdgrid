@@ -28,6 +28,8 @@ use std::path::{Path, PathBuf};
 pub(crate) const DEFAULT_TAB: &str = Msg::DefaultTabName.ja();
 /// mdgrid のビューの見た目の状態を置く、状態の置き場の中のフォルダ(`.base` のビューの状態と鍵がぶつからない。BV-20)。
 pub(crate) const STATE_DIR: &str = "views";
+/// 既定の表の、前の英語の名前(SR-34 の前)。書いてある設定(places.toml の view など)が読めるよう別名として受ける。
+pub(crate) const OLD_DEFAULT_TAB: &str = "Default";
 
 /// mdgrid のビューの状態。
 #[derive(Default)]
@@ -310,7 +312,7 @@ impl App {
     pub(crate) const NO_DIR: Msg = Msg::ViewsNoDir;
 
     /// 名前が使えないなら理由(空・既定の表・`.base` のビュー・`list` のほかの mdgrid のビューと同じ名前)。
-    fn name_problem(
+    pub(crate) fn name_problem(
         &self,
         list: &[NativeView],
         name: &str,
@@ -324,7 +326,8 @@ impl App {
             .as_ref()
             .is_some_and(|b| b.base.views.iter().any(|v| v.name == name));
         // 既定の表の名前は英日のどちらでも断る(どちらの言語の画面でもタブが2つ並ばない)。
-        let default_tab = name == DEFAULT_TAB || name == Msg::DefaultTabName.en();
+        let default_tab =
+            name == DEFAULT_TAB || name == Msg::DefaultTabName.en() || name == OLD_DEFAULT_TAB;
         if default_tab || fixed {
             return Some(Msg::ViewNameFixed.fill(&[&name]));
         }

@@ -3,6 +3,7 @@
 use super::app::App;
 use super::width::{sanitize, Align};
 use mdgrid::base;
+use mdgrid::cells::Part;
 use mdgrid::expr::Val;
 use mdgrid::source::{NewValue, RowId, Value};
 use mdgrid::types::{self, Kind};
@@ -25,6 +26,29 @@ pub(crate) struct Shown {
     pub locked: Option<String>,
     /// 評価できない式(理由。選んだとき下の帯とメッセージ行に。BV-7)。
     pub unsupported: Option<String>,
+    /// SR-35: 部品(札・リンク)。文字(text)は部品の見せ方の文字で、幅もこれで数える。
+    pub part: CellPart,
+}
+
+/// セルの部品(SR-35)。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum CellPart {
+    None,
+    /// 札の並び(text は `  a   b ` のように頭に空白1つ、札ごとに前後の空白、札の間に空白1つ)。
+    Chips(Vec<String>),
+    /// リンク(アクセントの色)。
+    Link,
+}
+
+/// 真偽の部品(SR-35)。
+pub(crate) const CHECK_ON: &str = "☑";
+pub(crate) const CHECK_OFF: &str = "☐";
+
+/// 札の並びの文字(頭に地の色の無い空白1つ、札ごとに前後の空白、札の間に空白1つ)。頭の空白で、列の頭の
+/// 桁は行の地の色のまま(一行おきの色などの行の見た目を札が隠さない)。
+pub(crate) fn chips_text(items: &[String]) -> String {
+    let chips: Vec<String> = items.iter().map(|i| format!(" {i} ")).collect();
+    format!(" {}", chips.join(" "))
 }
 
 /// 改行を含む値は1行目と `…⏎`(CV-3)。
@@ -120,8 +144,10 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
             pending: true,
             locked: app.src.get(row, col).lock,
             unsupported: None,
+            part: CellPart::None,
         };
     }
+    let mut part = CellPart::None;
     let (text, null, lock) = match app.cell(row, col) {
         base::Shown::Unsupported(reason) => {
             // BV-7: 薄い `?`。本当の値の `?` とは薄さと、選んだときの下の帯で見分ける。
@@ -131,6 +157,7 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                 pending: false,
                 locked: None,
                 unsupported: Some(reason),
+                part: CellPart::None,
             };
         }
         base::Shown::Computed(v) => (val_text(&v), false, app.src.get(row, col).lock),
@@ -139,19 +166,28 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                 // キーが無いときは空欄(CV-1)。
                 None => (String::new(), false),
                 Some(v) => {
-                    let t = match v {
+                    let date = match v {
                         Value::Str(s) => date_text(app, col, s),
                         _ => None,
-                    }
+                    };
                     // REL-2・REL-10: リンクは行き先の名前で(行き先の無いものは印を付けて)見せる。
-                    .or_else(|| app.link_text(row, v))
+                    let link = date.is_none().then(|| app.link_text(row, v)).flatten();
+                    let fits = types::fits(app.kind_of(col), v);
+                    // SR-35: 部品(型に合う値だけ。リンクと日付は札にしない)。
+                    let rich = fits && cell.lock.is_none();
+                    let t = if link.is_some() && rich && app.rich(col, Part::Links) {
+                        part = CellPart::Link;
+                        link
+                    } else if let Some(t) = date.or(link) {
+                        Some(t)
+                    } else if rich {
+                        rich_text(app, col, v, &mut part)
+                    } else {
+                        None
+                    }
                     .unwrap_or_else(|| value_text(v));
                     // CV-2: 列の型に合わない値は、そのまま見せて `!` を付ける。
-                    let t = if types::fits(app.kind_of(col), v) {
-                        t
-                    } else {
-                        format!("{MISFIT_MARK}{t}")
-                    };
+                    let t = if fits { t } else { format!("{MISFIT_MARK}{t}") };
                     (t, matches!(v, Value::Null))
                 }
             };
@@ -170,5 +206,35 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
         pending: false,
         locked: lock,
         unsupported: None,
+        part,
+    }
+}
+
+/// SR-35: 真偽・リスト・札の列の値の部品の文字。部品にしなければ None。
+fn rich_text(app: &App, col: &str, v: &Value, part: &mut CellPart) -> Option<String> {
+    match v {
+        Value::Bool(b) if app.rich(col, Part::Checkbox) => {
+            Some(if *b { CHECK_ON } else { CHECK_OFF }.to_string())
+        }
+        Value::List(items) if !items.is_empty() && app.rich(col, Part::Chips) => {
+            let items: Vec<String> = items.iter().map(value_text).collect();
+            let t = chips_text(&items);
+            *part = CellPart::Chips(items);
+            Some(t)
+        }
+        // 札を強いた列(`"chip"`)の数も札に。
+        Value::Int(_) | Value::Float(_) if app.cells.forced_chip(col) && app.is_select(col) => {
+            let item = value_text(v);
+            let t = chips_text(std::slice::from_ref(&item));
+            *part = CellPart::Chips(vec![item]);
+            Some(t)
+        }
+        Value::Str(s) if !s.is_empty() && app.is_select(col) => {
+            let item = first_line_marked(s);
+            let t = chips_text(std::slice::from_ref(&item));
+            *part = CellPart::Chips(vec![item]);
+            Some(t)
+        }
+        _ => None,
     }
 }

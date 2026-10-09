@@ -72,6 +72,20 @@ pub(crate) enum Ask {
         items: Vec<String>,
         notes: Vec<PathBuf>,
     },
+    /// 新しいワークスペースの名前(WS-2)。
+    WsName,
+    /// 足すワークスペース(WS-2。今の名前から選ぶか新しく打つ)。
+    WsPick(Vec<String>),
+    /// 外すワークスペース(WS-2。この表が入っているもの)。
+    WsRemove(Vec<String>),
+    /// 開くワークスペース(WS-2)。
+    WsOpen(Vec<String>),
+    /// 開くワークスペースの表(WS-2)。
+    WsTable {
+        ws: String,
+        items: Vec<String>,
+        places: Vec<mdgrid::places::Place>,
+    },
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -153,6 +167,11 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::PlaceOverwrite(p)) => Msg::PlaceAskOverwrite.fill(&[&sanitize(&p.name)]),
         Some(Ask::OpenLink { .. }) => Msg::AskOpenLink.into(),
         Some(Ask::LinkedRows { .. }) => Msg::AskLinkedRows.into(),
+        Some(Ask::WsName) => Msg::AskWsName.into(),
+        Some(Ask::WsPick(_)) => Msg::AskWsPick.into(),
+        Some(Ask::WsRemove(_)) => Msg::AskWsRemove.into(),
+        Some(Ask::WsOpen(_)) => Msg::AskWsOpen.into(),
+        Some(Ask::WsTable { ws, .. }) => Msg::AskWsTable.fill(&[&sanitize(ws)]),
     }
 }
 
@@ -164,6 +183,14 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::OpenPlace { items, .. }) => items,
         Some(Ask::OpenLink { items, .. }) => items,
         Some(Ask::LinkedRows { items, .. }) => items,
+        Some(Ask::WsRemove(items)) | Some(Ask::WsOpen(items)) => items,
+        Some(Ask::WsTable { items, .. }) => items,
+        Some(Ask::WsPick(names)) => {
+            // WS-2: 打った語は新しいワークスペースにもなる(places の分類と同じ形)。
+            let shown = super::workspace::pick_items(names, query).0;
+            let idx = (0..shown.len()).collect();
+            return (shown, idx);
+        }
         Some(Ask::PlaceGroup { groups, .. }) => {
             // CLI-18: 打った語は新しい分類にもなるので、絞った候補をそのまま並べる。
             let shown = super::places::group_items(groups, query).0;
@@ -185,7 +212,10 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         w,
     )];
     let room = lines.len().saturating_sub(3).clamp(1, ASK_ROWS);
-    if matches!(ask, Ask::PlaceName(_) | Ask::PlaceOverwrite(_)) {
+    if matches!(
+        ask,
+        Ask::PlaceName(_) | Ask::PlaceOverwrite(_) | Ask::WsName
+    ) {
         // 候補の無い入力。
     } else if let Ask::ExportName = ask {
         let dir = app
@@ -570,6 +600,39 @@ impl App {
                     return;
                 };
                 self.open_note(&p)
+            }
+            Some(Ask::WsName) => {
+                let name = query.trim().to_string();
+                self.ws_add_current(&name)
+            }
+            Some(Ask::WsPick(names)) => {
+                let values = super::workspace::pick_items(names, query).1;
+                let Some(name) = picked.and_then(|k| values.get(k)).cloned() else {
+                    return;
+                };
+                self.ws_add_current(&name)
+            }
+            Some(Ask::WsRemove(items)) => {
+                let Some(name) = picked.and_then(|k| items.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.ws_remove_current(&name)
+            }
+            Some(Ask::WsOpen(items)) => {
+                let Some(name) = picked.and_then(|k| items.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.ws_open_tables(&name)
+            }
+            Some(Ask::WsTable { ws, places, .. }) => {
+                let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                let ws = ws.clone();
+                self.ws_switch(ws, place)
             }
             Some(Ask::PlaceOverwrite(place)) => {
                 let place = place.clone();

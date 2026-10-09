@@ -4,6 +4,7 @@
 
 use super::app::App;
 use super::native_io::Ask;
+use super::width::width;
 use mdgrid::i18n::Msg;
 use mdgrid::places::{self, Place};
 use std::path::Path;
@@ -21,19 +22,31 @@ fn short(p: &Path) -> String {
     p.to_string_lossy().into_owned()
 }
 
-/// 一覧の1行(CLI-19): 「分類 › 名前   パス · ビュー」。分類・名前・パスのどれでも絞れるように全部を並べる。
-pub(crate) fn label(p: &Place) -> String {
-    let head = if p.group.is_empty() {
+/// 一覧の行の頭(「分類 › 名前」か「名前」)。
+fn head(p: &Place) -> String {
+    if p.group.is_empty() {
         p.name.clone()
     } else {
         format!("{}{SEP}{}", p.group, p.name)
-    };
-    let mut s = format!("{head}   {}", short(&p.path));
-    if let Some(v) = &p.view {
-        s.push_str(" · ");
-        s.push_str(v);
     }
-    s
+}
+
+/// 一覧の行(CLI-19): 「分類 › 名前   パス · ビュー」。分類・名前・パスのどれでも絞れるように全部を並べる。
+/// 頭の欄を一覧の中のいちばん広いものにそろえ、パスを同じ桁から出す。
+pub(crate) fn labels(list: &[&Place]) -> Vec<String> {
+    let w = list.iter().map(|p| width(&head(p))).max().unwrap_or(0);
+    list.iter()
+        .map(|p| {
+            let h = head(p);
+            let pad = " ".repeat(w - width(&h));
+            let mut s = format!("{h}{pad}   {}", short(&p.path));
+            if let Some(v) = &p.view {
+                s.push_str(" · ");
+                s.push_str(v);
+            }
+            s
+        })
+        .collect()
 }
 
 /// 分類の欄の候補(見せる文と、選んだときの分類)。打った語が今の分類と同じでなければ、先頭に
@@ -73,10 +86,9 @@ impl App {
             items.push(Msg::PlaceHere.text().to_string());
             picks.push(None);
         }
-        for i in order {
-            items.push(label(&self.registered[i]));
-            picks.push(Some(i));
-        }
+        let shown: Vec<&Place> = order.iter().map(|&i| &self.registered[i]).collect();
+        items.extend(labels(&shown));
+        picks.extend(order.into_iter().map(Some));
         self.open_ask(Ask::OpenPlace { items, picks });
     }
 
@@ -93,6 +105,7 @@ impl App {
         self.close_palette();
         self.switch_to = Some(place);
         self.switch_select = None;
+        self.switch_leave_workspace = true;
         self.begin_quit();
     }
 
@@ -182,7 +195,18 @@ impl App {
 
     /// 開き直したあと、登録のビューを名前で選ぶ(`.base` のビューか mdgrid のビュー)。無ければ理由。
     pub fn select_view_named(&mut self, name: &str) {
-        match self.view_names().iter().position(|v| v == name) {
+        let names = self.view_names();
+        // 既定の表は、前の英語の名前(Default)でも選べる(書いてある places.toml のため)。ビューが既定の表
+        // だけなら、もう開いている。
+        let old_default = name == super::native_views::OLD_DEFAULT_TAB && self.base.is_none();
+        if old_default && names.is_empty() {
+            return;
+        }
+        match names
+            .iter()
+            .position(|v| v == name)
+            .or(old_default.then_some(0))
+        {
             Some(i) => self.select_view(i),
             None => self.message = Some(Msg::PlaceNoView.fill(&[&name])),
         }

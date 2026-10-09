@@ -56,11 +56,18 @@ impl App {
         if s.readonly {
             self.set_readonly();
         }
-        // CLI-18: 登録した表は views.toml と同じ設定のフォルダ。
+        // CLI-18: 登録した表は views.toml と同じ設定のフォルダ。WS-1: ワークスペースも。
         if let Some(dir) = &s.config_dir {
             let (places, warns) = mdgrid::places::load(dir);
             self.registered = places;
             warnings.extend(warns);
+            let (ws, warns) = mdgrid::workspace::load(dir);
+            self.workspaces = ws;
+            warnings.extend(warns);
+        }
+        // WS-6: 範囲を決める(-w → 印 → workspaces.toml → 検知 → 登録した表)。
+        if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
+            warnings.push(e);
         }
         // BV-20: mdgrid のビューは開く前に読む(壊れていれば警告してタブなし)。
         warnings.extend(self.load_native(s.config_dir, &s.target));

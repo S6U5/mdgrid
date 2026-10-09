@@ -10,6 +10,9 @@
   - [Open a .base file](#open-a-base-file)
   - [Shape a view and save it](#shape-a-view-and-save-it)
   - [Give a folder its own command](#give-a-folder-its-own-command)
+  - [Register the tables you use and switch between them](#register-the-tables-you-use-and-switch-between-them)
+  - [Link tables with relations](#link-tables-with-relations)
+  - [Group tables into workspaces](#group-tables-into-workspaces)
   - [Use with other commands](#use-with-other-commands)
   - [Choose a theme](#choose-a-theme)
   - [When you cannot edit](#when-you-cannot-edit)
@@ -119,7 +122,7 @@ What mdgrid reads — keys, operators, functions — is listed in [Obsidian Base
 
 ![View settings](images/view-settings.svg)
 
-`Apply` applies it to the table; `Save as` keeps it as an mdgrid view. On the same screen, `Overwrite`, `Rename` and `Delete` manage saved views, and `Reset` returns the settings to the defaults. A saved view becomes a tab next to `Default` and is written to `views.toml` in the config folder. The conditions in effect are shown in the settings band above the table; `f` moves into the band and `Backspace` removes one.
+`Apply` applies it to the table; `Save as` keeps it as an mdgrid view. On the same screen, `Overwrite`, `Rename` and `Delete` manage saved views, and `Reset` returns the settings to the defaults. A saved view becomes a tab next to `All notes` (with `view_tabs = "auto"` the tab row appears only from then on) and is written to `views.toml` in the config folder. The conditions in effect are shown in the settings band above the table; `f` moves into the band and `Backspace` removes one.
 
 ![Save as an mdgrid view](images/native-view-save.svg)
 
@@ -200,6 +203,44 @@ related:                         # many
 - Links work whether you open a folder or a `.base`, and may point outside the opened folder. Register the folders you link between (see above) so names resolve across them. A value counts as a plain-path link only if it contains `/` or ends in `.md` and the note exists, so ordinary words stay text.
 
 The sample `examples/relations` has tasks, projects and members linked this way: `mdgrid examples/relations/tasks`.
+
+**The relation map.** Press `R` (or click **Relations** in the tabs at the top right) to see the tables as boxes with their row counts and columns, and an arrow from each link column to the table it points at (`N` → `1`, or `N` → `N` for a list of links). `↑` `↓` pick a table, `←` `→` pick a link; the details and, on a tall terminal, the linked records follow the selection. The layout adapts to the terminal width. You can also click: a table selects it and a second click opens it, a line or an arrow selects that link, and a linked record opens its note. Press `R` again to go back to the table. The map covers the current workspace (see below), or the registered tables if there is none.
+
+## Group tables into workspaces
+
+A workspace is a named set of tables (folders or `.base` files). When the table you open belongs to one, links, linked rows, the relation map and the tabs at the top right use only that workspace's tables, so a vault for work and one for hobbies do not mix. The header shows `· workspace <name>`.
+
+In the palette (`:`): **create a workspace with this table**, **add this table to a workspace** (pick one or type a new name), **remove this table from a workspace**, and **open a workspace** (pick it, then one of its tables). From the shell (with no path, `--add-to` and `--remove-from` use the current folder):
+
+```sh
+mdgrid ~/notes/tasks --add-to Work
+mdgrid ~/notes/projects --add-to Work --as Projects
+mdgrid --workspaces                          # list them
+mdgrid -w Work                               # open the first table of Work
+mdgrid -w Work ~/notes/tasks                 # open this table within Work
+mdgrid ~/notes/tasks --remove-from Work
+mdgrid --remove-workspace Work               # the notes are not touched
+```
+
+Workspaces live in `workspaces.toml` in the config folder, next to `places.toml`:
+
+```toml
+[[workspace]]
+name = "Work"
+
+[[workspace.table]]
+name = "Tasks"
+path = "~/notes/tasks"
+
+[[workspace.table]]
+name = "Projects"
+path = "~/notes/projects"
+view = "Open"
+```
+
+To keep the workspace with the notes instead (for example in a repository you share), run `mdgrid --init-workspace` in its root (or `mdgrid <folder> --init-workspace`). It writes `.mdgrid/workspace.toml`; with no `[[table]]` in it, every folder of notes directly under the root is a table (a `.base` is not added automatically, because it covers the whole vault; list it with `[[table]]` to include it).
+
+Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/workspace.toml` above the opened folder → the first workspace in `workspaces.toml` that holds the table → detection → the registered tables. Detection is set by `workspace_detect` in the config (default `["vault"]`): the nearest Obsidian vault (a folder with `.obsidian/`), and with `"git"` also the repository root, counts as an unnamed workspace of the folders right under it. `workspace_detect = []` turns it off.
 
 ## Use with other commands
 
