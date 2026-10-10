@@ -322,6 +322,8 @@ mod test_new_note_order;
 #[cfg(test)]
 mod test_note_column;
 #[cfg(test)]
+mod test_pending_shape;
+#[cfg(test)]
 mod test_plural_en;
 #[cfg(test)]
 mod test_screen;
@@ -347,6 +349,8 @@ mod test_themes;
 mod test_themes_more;
 #[cfg(test)]
 mod test_tree;
+#[cfg(test)]
+mod test_tree_held;
 #[cfg(test)]
 mod test_type_replaces_more;
 #[cfg(test)]

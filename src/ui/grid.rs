@@ -336,8 +336,6 @@ impl App {
         // NV-20: `.base` → ビューの設定 → 簡易の絞り込み・同じ値 → 一時的な並べ替え → 直した行の留め。
         let (rows, groups) = self.apply_settings(grid.rows, grid.groups);
         let (rows, groups) = self.overlay(rows, groups);
-        // NV-27: 親子で並べるなら、まとまりの中で親の下に子を並べ直す。
-        let (rows, groups) = self.arrange_tree(rows, groups);
         self.rows = rows;
         self.groups = groups;
         self.built.label_prefix = common_folder(self.src.rows().iter().map(|r| self.src.label(r)));
@@ -407,6 +405,24 @@ impl App {
                 rs.extend(keyed.into_iter().map(|(_, r)| r));
             }
         }
+        // NV-27: 親子で並べるなら、まとまりの中で親の下に子を並べ直す。直した行の留め(NV-12)より前に
+        // 並べ直し、留めは前の表と同じ親子の並びで比べる(子を持つ行がずれて見えないため)。
+        let flat: Vec<RowId> = segs.iter().flat_map(|(_, rs)| rs.iter().cloned()).collect();
+        let mut at = 0;
+        let ranges: Vec<(String, std::ops::Range<usize>)> = segs
+            .iter()
+            .map(|(h, rs)| {
+                let r = at..at + rs.len();
+                at += rs.len();
+                (h.clone(), r)
+            })
+            .collect();
+        let (flat, ranges) = self.arrange_tree(flat, ranges);
+        let segs_tree: Vec<(String, Vec<RowId>)> = ranges
+            .into_iter()
+            .map(|(h, r)| (h, flat[r].to_vec()))
+            .collect();
+        let mut segs = segs_tree;
         self.held.clear();
         if !self.stay.is_empty() {
             self.keep_stay(&mut segs);
