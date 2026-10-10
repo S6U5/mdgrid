@@ -9,11 +9,12 @@
     python3 scripts/tui_shot.py docs/manual-scenarios.toml --out target/shots --lang en --env LANG=en_US.UTF-8
 
 作るもの:
-- index.html    入口(説明書・カタログ・画面の一覧へ)
+- index.html    言語を選ぶ入口(x-default)。覚えた選択かブラウザの言語で ja/・en/ へ移る
+- ja/・en/      入口(説明書・カタログ・画面の一覧へ)と画面の一覧(gallery.html)。hreflang で互いを示す
 - manual/ja・en 説明書(mdBook)。docs/manual/<言語>/*.md と参照のページ(キー・設定・安全・.base)を
                 1冊にまとめ、ページの間のリンクを本の中に直す。本の外を指すリンクは GitHub の上のファイルへ
 - catalog/      見た目のカタログ(docs/catalog/index.html をそのまま。SR-38)
-- gallery.html  本物の画面の一覧(場面の題と説明つき)
+- gallery.html  前の画面の一覧の URL(言語を決めて ja/・en/ の画面の一覧へ移る)
 - images/ja・en 撮った画面の SVG
 
 画面の画像はリポに入れない(撮るたびに履歴が太るため)。mdbook が要る。Python 3.11 以上(tomllib)。
@@ -101,7 +102,8 @@ a{color:var(--accent)}
 .bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
 .chips{display:flex;gap:6px}
 button.opt{font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
-button.opt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.opt{font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--fg);text-decoration:none}
+.opt.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .card{display:grid;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;color:var(--fg)}
 .card:hover{border-color:var(--accent)}
@@ -112,68 +114,72 @@ figcaption{display:grid;gap:4px;font-size:14px}
 figcaption b{font-size:15px}
 code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
 input[type=search]{font:inherit;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);min-width:0;width:min(100%,320px)}
-[data-l]{display:none}
-html[lang="ja"] [data-l="ja"],html[lang="en"] [data-l="en"]{display:revert}
 """
 
-# 言語: ?lang= > 前に選んだもの > ブラウザの言語。
-SCRIPT = """
-(function(){
-  var q = new URLSearchParams(location.search).get("lang"), s = null;
-  try { s = localStorage.getItem("mdgrid-site-lang"); } catch (e) {}
-  var nav = (navigator.language || "en").slice(0, 2) === "ja" ? "ja" : "en";
-  var lang = q === "ja" || q === "en" ? q : s === "ja" || s === "en" ? s : nav;
-  function set(l) {
-    document.documentElement.lang = l;
-    document.querySelectorAll("button[data-set]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.set === l)); });
-    document.querySelectorAll("img[data-src-ja]").forEach(function (i) { var v = i.getAttribute("data-src-" + l); if (i.getAttribute("src") !== v) i.setAttribute("src", v); });
-    document.querySelectorAll("a[data-href-ja]").forEach(function (a) { a.href = a.getAttribute("data-href-" + l); });
-    document.querySelectorAll("a[data-lang-link]").forEach(function (a) { a.href = a.dataset.langLink + "?lang=" + l; });
-    try { localStorage.setItem("mdgrid-site-lang", l); } catch (e) {}
-  }
-  document.querySelectorAll("button[data-set]").forEach(function (b) { b.addEventListener("click", function () { set(b.dataset.set); }); });
-  var f = document.getElementById("find");
-  if (f) f.addEventListener("input", function () {
-    var w = f.value.trim().toLowerCase();
-    document.querySelectorAll("figure[data-search]").forEach(function (x) { x.hidden = w !== "" && x.dataset.search.indexOf(w) < 0; });
-  });
-  set(lang);
-})();
+SITE = "https://s6u5.github.io/mdgrid/"
+NAMES = {"ja": "日本語", "en": "English"}
+KEY = "mdgrid-site-lang"
+
+# 言語の切り替え(data-pick)を押したら、選んだ言語を覚える(入口の振り分けが使う)。読み書きの失敗は無視。
+REMEMBER = """
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("a[data-pick]");
+  if (a) { try { localStorage.setItem("%s", a.getAttribute("data-pick")); } catch (x) {} }
+});
+""" % KEY
+
+# 画面の一覧の絞り込み。
+FIND = """
+var f = document.getElementById("find");
+if (f) f.addEventListener("input", function () {
+  var w = f.value.trim().toLowerCase();
+  document.querySelectorAll("figure[data-search]").forEach(function (x) { x.hidden = w !== "" && x.dataset.search.indexOf(w) < 0; });
+});
 """
 
 
-def both(key: str, tag: str = "span", **fmt) -> str:
-    return "".join(
-        f'<{tag} data-l="{l}">{html.escape(TEXT[l][key].format(**fmt))}</{tag}>' for l in LANGS
-    )
+def other_lang(l: str) -> str:
+    return "en" if l == "ja" else "ja"
 
 
-def page(title: str, body: str, desc: str) -> str:
+def alternates(rel: str) -> str:
+    """`rel` は ja の版のサイトの中の道筋(例 "ja/gallery.html")。ja・en と x-default(入口)の hreflang。"""
+    out = [f'<link rel="alternate" hreflang="{l}" href="{SITE}{rel.replace("ja/", l + "/", 1)}">' for l in LANGS]
+    out.append(f'<link rel="alternate" hreflang="x-default" href="{SITE}">')
+    return "\n".join(out)
+
+
+def page(lang: str, title: str, body: str, desc: str, head: str = "", script: str = "") -> str:
     return f"""<!doctype html>
-<html lang="ja">
+<html lang="{lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
+{head}
 <style>{CSS}</style>
 </head>
 <body>
 <div class="wrap">
 {body}
 </div>
-<script>{SCRIPT}</script>
+<script>{REMEMBER}{script}</script>
 </body>
 </html>
 """
 
 
-def lang_bar() -> str:
-    return (
-        '<div class="bar"><span class="muted">' + both("lang") + '</span><div class="chips">'
-        '<button class="opt" type="button" data-set="ja">日本語</button>'
-        '<button class="opt" type="button" data-set="en">English</button></div></div>'
-    )
+def lang_bar(lang: str, file: str) -> str:
+    """同じページの別の言語へのリンク(今の言語は印だけ)。"""
+    t = TEXT[lang]
+    items = []
+    for l in LANGS:
+        if l == lang:
+            items.append(f'<span class="opt on" aria-current="true">{NAMES[l]}</span>')
+        else:
+            items.append(f'<a class="opt" href="../{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}">{NAMES[l]}</a>')
+    return f'<div class="bar"><span class="muted">{t["lang"]}</span><div class="chips">{"".join(items)}</div></div>'
 
 
 def build(out: Path, shots_dir: Path) -> None:
@@ -195,68 +201,120 @@ def build(out: Path, shots_dir: Path) -> None:
         for s in shots:
             shutil.copy(shots_dir / l / "images" / f"{s['id']}.svg", d / f"{s['id']}.svg")
         book(l, out / "manual" / l, shots_dir / l / "images")
+        decorate_book(l, out / "manual" / l)
 
-    # 入口。リリースに付いている録画だけを並べる(workflow が名前の一覧を MDGRID_RELEASE_ASSETS に渡す。
+    # リリースに付いている録画だけを並べる(workflow が名前の一覧を MDGRID_RELEASE_ASSETS に渡す。
     # 無ければ全部)。新しい台本の録画は次のリリースまで無いので、切れたリンクを出さない。
     names = os.environ.get("MDGRID_RELEASE_ASSETS")
     have = set(names.split()) if names else None
     shown = [d for d in DEMOS if have is None or d[0] in have]
-    demos = "".join(
-        f'<a class="card" href="{RELEASE}{f}"><b><span data-l="ja">{html.escape(ja)}</span>'
-        f'<span data-l="en">{html.escape(en)}</span></b><code>{f}</code></a>'
-        for f, ja, en in shown
-    )
-    index = f"""
-<h1>mdgrid</h1>
-<p class="muted">{both("lead")}</p>
-{lang_bar()}
-<div class="cards">
-  <a class="card" href="manual/ja/" data-href-ja="manual/ja/" data-href-en="manual/en/"><h2>{both("manual")}</h2><p class="muted">{both("manual_desc")}</p></a>
-  <a class="card" data-lang-link="catalog/" href="catalog/"><h2>{both("catalog")}</h2><p class="muted">{both("catalog_desc")}</p></a>
-  <a class="card" data-lang-link="gallery.html" href="gallery.html"><h2>{both("gallery")}</h2><p class="muted">{both("gallery_desc")}</p></a>
-  <a class="card" href="{REPO}"><h2>{both("repo")}</h2><p class="muted"><code>{REPO}</code></p></a>
-</div>
-{f'<h2>{both("demos")}</h2><p class="muted">{both("demos_desc")}</p><div class="cards">{demos}</div>' if shown else ""}
-"""
-    (out / "index.html").write_text(
-        page("mdgrid", index, TEXT["en"]["lead"]), encoding="utf-8"
-    )
 
-    # 画面の一覧。
+    for l in LANGS:
+        (out / l).mkdir()
+        (out / l / "index.html").write_text(landing(l, shown), encoding="utf-8")
+        (out / l / "gallery.html").write_text(gallery(l, shots), encoding="utf-8")
+    (out / "index.html").write_text(chooser(), encoding="utf-8")
+    # 前の画面の一覧の URL(README の古いリンク)は、言語を決めて新しい URL へ。
+    (out / "gallery.html").write_text(chooser("gallery.html"), encoding="utf-8")
+    print(json.dumps({"out": str(out), "shots": len(shots)}))
+
+
+def chooser(file: str = "") -> str:
+    """入口(x-default): 覚えた選択か、?lang= か、ブラウザの言語(navigator.languages)で /ja/・/en/ へ移る。
+    合わなければ選ぶ画面のまま。移るのは location.replace(戻るで戻されない)。JS が無くても両方へのリンクが見える。"""
+    links = "".join(
+        f'<a class="card" href="{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}"><h2>{NAMES[l]}</h2>'
+        f'<p class="muted">{html.escape(TEXT[l]["lead"])}</p></a>'
+        for l in LANGS
+    )
+    route = """
+(function () {
+  var langs = ["ja", "en"], pick = null;
+  try { var q = new URLSearchParams(location.search).get("lang"); if (langs.indexOf(q) >= 0) pick = q; } catch (e) {}
+  if (!pick) { try { var s = localStorage.getItem("%s"); if (langs.indexOf(s) >= 0) pick = s; } catch (e) {} }
+  if (!pick) {
+    var nav = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+    for (var i = 0; i < nav.length && !pick; i++) { var p = String(nav[i]).slice(0, 2).toLowerCase(); if (langs.indexOf(p) >= 0) pick = p; }
+  }
+  if (pick) location.replace(pick + "/%s" + location.hash);
+})();
+""" % (KEY, file)
+    body = f"""
+<h1>mdgrid</h1>
+<p class="muted">Choose a language · 言語を選ぶ</p>
+<div class="cards">{links}</div>
+"""
+    head = alternates("ja/" + file).replace(f'hreflang="x-default" href="{SITE}"', f'hreflang="x-default" href="{SITE}{file}"')
+    return page("en", "mdgrid", body, TEXT["en"]["lead"], head, route)
+
+
+def landing(lang: str, shown) -> str:
+    t = TEXT[lang]
+    i = 1 if lang == "ja" else 2
+    demos = "".join(
+        f'<a class="card" href="{RELEASE}{d[0]}"><b>{html.escape(d[i])}</b><code>{d[0]}</code></a>' for d in shown
+    )
+    body = f"""
+<h1>mdgrid</h1>
+<p class="muted">{html.escape(t["lead"])}</p>
+{lang_bar(lang, "")}
+<div class="cards">
+  <a class="card" href="../manual/{lang}/"><h2>{t["manual"]}</h2><p class="muted">{html.escape(t["manual_desc"])}</p></a>
+  <a class="card" href="../catalog/?lang={lang}"><h2>{t["catalog"]}</h2><p class="muted">{html.escape(t["catalog_desc"])}</p></a>
+  <a class="card" href="gallery.html"><h2>{t["gallery"]}</h2><p class="muted">{html.escape(t["gallery_desc"])}</p></a>
+  <a class="card" href="{REPO}"><h2>{t["repo"]}</h2><p class="muted"><code>{REPO}</code></p></a>
+</div>
+{f'<h2>{t["demos"]}</h2><p class="muted">{t["demos_desc"]}</p><div class="cards">{demos}</div>' if shown else ""}
+"""
+    return page(lang, "mdgrid", body, t["lead"], alternates("ja/"))
+
+
+def gallery(lang: str, shots) -> str:
+    t = TEXT[lang]
     figs = []
     for s in shots:
         sid = s["id"]
         # 題と説明は {ja, en} の表か、両方に同じ文字。
-        both_l = lambda v: v if isinstance(v, dict) else {l: v for l in LANGS}
-        title = both_l(s.get("title", {}))
-        text = both_l(s.get("text", {}))
+        pick = lambda v: v.get(lang, sid) if isinstance(v, dict) else v
+        title = pick(s.get("title", sid))
+        text = pick(s.get("text", ""))
         keys = " ".join(s.get("keys", []))
-        search = " ".join([sid, keys, *title.values(), *text.values()]).lower()
-        cap = "".join(
-            f'<span data-l="{l}"><b>{html.escape(title.get(l, sid))}</b><br>'
-            f'<span class="muted">{html.escape(text.get(l, ""))}</span></span>'
-            for l in LANGS
-        )
-        k = f'<code class="muted">{both("keys")}: {html.escape(keys)}</code>' if keys else ""
+        search = " ".join([sid, keys, title, text]).lower()
+        k = f'<code class="muted">{t["keys"]}: {html.escape(keys)}</code>' if keys else ""
         figs.append(
             f'<figure id="{sid}" data-search="{html.escape(search)}">'
-            f'<a class="full" href="images/ja/{sid}.svg" data-href-ja="images/ja/{sid}.svg" data-href-en="images/en/{sid}.svg">'
-            f'<img loading="lazy" alt="{html.escape(title.get("en", sid))}" src="images/ja/{sid}.svg" '
-            f'data-src-ja="images/ja/{sid}.svg" data-src-en="images/en/{sid}.svg"></a>'
-            f"<figcaption>{cap}{k}</figcaption></figure>"
+            f'<a href="../images/{lang}/{sid}.svg"><img loading="lazy" alt="{html.escape(title)}" src="../images/{lang}/{sid}.svg"></a>'
+            f'<figcaption><b>{html.escape(title)}</b><span class="muted">{html.escape(text)}</span>{k}</figcaption></figure>'
         )
-    gallery = f"""
-<p><a data-lang-link="index.html" href="index.html">← {both("back")}</a></p>
-<h1>{both("gallery")}</h1>
-<p class="muted">{both("gallery_desc")} {both("count", n=len(shots))}</p>
-{lang_bar()}
-<input id="find" type="search" aria-label="filter" placeholder="{html.escape(TEXT['ja']['filter'])} / {html.escape(TEXT['en']['filter'])}">
+    body = f"""
+<p><a href="./">← {t["back"]}</a></p>
+<h1>{t["gallery"]}</h1>
+<p class="muted">{html.escape(t["gallery_desc"])} {t["count"].format(n=len(shots))}</p>
+{lang_bar(lang, "gallery.html")}
+<input id="find" type="search" aria-label="{t["filter"]}" placeholder="{t["filter"]}">
 <div class="shots">{''.join(figs)}</div>
 """
-    (out / "gallery.html").write_text(
-        page("mdgrid screens", gallery, TEXT["en"]["gallery_desc"]), encoding="utf-8"
-    )
-    print(json.dumps({"out": str(out), "shots": len(shots)}))
+    return page(lang, f'{t["gallery"]} · mdgrid', body, t["gallery_desc"], alternates("ja/gallery.html"), FIND)
+
+
+def decorate_book(lang: str, dest: Path) -> None:
+    """mdBook の各ページに、hreflang(ja・en・x-default)と、右上の同じページの別の言語への切り替えを書き足す。"""
+    other = other_lang(lang)
+    for f in dest.glob("*.html"):
+        name = f.name
+        text = f.read_text(encoding="utf-8")
+        alt = "\n".join(
+            [f'<link rel="alternate" hreflang="{l}" href="{SITE}manual/{l}/{name}">' for l in LANGS]
+            + [f'<link rel="alternate" hreflang="x-default" href="{SITE}">']
+        )
+        text = text.replace("</head>", alt + "\n</head>", 1)
+        switch = (
+            f'<a class="lang-switch" href="../{other}/{name}" hreflang="{other}" lang="{other}" data-pick="{other}" '
+            f'title="{NAMES[other]}" style="font-size:14px;margin-inline-end:10px;text-decoration:none">{NAMES[other]}</a>'
+        )
+        text = text.replace('<div class="right-buttons">', '<div class="right-buttons">' + switch, 1)
+        text = text.replace("</body>", f"<script>{REMEMBER}</script>\n</body>", 1)
+        f.write_text(text, encoding="utf-8")
 
 
 # ---------- 説明書(mdBook) ----------
@@ -295,7 +353,7 @@ def rewrite(text: str, src: str, lang: str) -> str:
         repo = os.path.normpath(os.path.join(base, path))
         if repo.endswith("/shots.md") and repo.startswith("docs/manual/"):
             # 画面の一覧は、サイトの画面の一覧へ。
-            new = "../../gallery.html?lang=" + lang
+            new = f"../../{lang}/gallery.html"
         elif repo.startswith(f"docs/manual/{lang}/images/"):
             new = "images/" + os.path.basename(repo)
         elif repo.startswith(f"docs/manual/{lang}/") and repo.endswith(".md"):
