@@ -1,8 +1,7 @@
-//! 色の上書き(SR-40・SR-41): `[colors]` でテーマの色の役割ごとに色を変え、`[colors.values]` で値ごとの色を
+//! 色の上書き(SR-40・SR-41): `[look.colors]` でテーマの色の役割ごとに色を変え、`[look.colors.values]` で値ごとの色を
 //! 決める。色は `"#rrggbb"`・`"#rgb"` か名前。役割と名前の並びはカタログ(docs/catalog/index.html。SR-38)と
 //! 同じにし、試験で突き合わせる。
 
-use crate::i18n::Msg;
 use crate::theme::Palette;
 
 /// 役割の名前(設定の名前。並びは Palette の欄の順)。
@@ -69,7 +68,8 @@ pub fn parse_color(s: &str) -> Option<[u8; 3]> {
     NAMED.iter().find(|(n, _)| *n == lower).map(|(_, c)| *c)
 }
 
-fn key(s: &str) -> String {
+/// 値の色の照合の鍵(前後の空白を除いて小文字)。
+pub fn value_key(s: &str) -> String {
     s.trim().to_lowercase()
 }
 
@@ -82,7 +82,7 @@ impl Colors {
 
     /// 値 `item` の色(SR-41)。決めていなければ None。
     pub fn value(&self, item: &str) -> Option<[u8; 3]> {
-        let k = key(item);
+        let k = value_key(item);
         self.values.iter().find(|(v, _)| *v == k).map(|(_, c)| *c)
     }
 
@@ -118,48 +118,9 @@ impl Colors {
     }
 }
 
-/// `[colors]` を読む。`values` の下は値の色。知らない役割・読めない色は警告して無視。
-pub fn read(value: &toml::Value, out: &mut Colors, warnings: &mut Vec<String>) {
-    let Some(t) = value.as_table() else {
-        warnings.push(Msg::ConfigWrongType.fill(&[&"colors", &Msg::WantColorsTable.text()]));
-        return;
-    };
-    for (k, v) in t {
-        if k == "values" {
-            let Some(vt) = v.as_table() else {
-                warnings.push(
-                    Msg::ConfigWrongType.fill(&[&"colors.values", &Msg::WantColorsTable.text()]),
-                );
-                continue;
-            };
-            for (item, c) in vt {
-                let name = format!("colors.values.{item}");
-                match c.as_str().and_then(parse_color) {
-                    Some(c) => {
-                        let k = key(item);
-                        if out.values.iter().any(|(v, _)| *v == k) {
-                            warnings.push(Msg::ColorValueTwice.fill(&[&name]));
-                        }
-                        out.values.retain(|(v, _)| *v != k);
-                        out.values.push((k, c));
-                    }
-                    None => {
-                        warnings.push(Msg::ConfigWrongType.fill(&[&name, &Msg::WantColor.text()]))
-                    }
-                }
-            }
-            continue;
-        }
-        let name = format!("colors.{k}");
-        let Some(i) = ROLES.iter().position(|r| r == k) else {
-            warnings.push(Msg::ConfigUnknownItem.fill(&[&name]));
-            continue;
-        };
-        match v.as_str().and_then(parse_color) {
-            Some(c) => out.roles[i] = Some(c),
-            None => warnings.push(Msg::ConfigWrongType.fill(&[&name, &Msg::WantColor.text()])),
-        }
-    }
+/// `"#rrggbb"` の書き方(画面が書くファイルに色を書くとき)。
+pub fn hex(c: [u8; 3]) -> String {
+    format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2])
 }
 
 #[cfg(test)]

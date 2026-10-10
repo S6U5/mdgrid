@@ -31,6 +31,7 @@ pub mod new_note;
 pub mod note_rename;
 pub mod places;
 pub mod popup;
+pub(crate) mod profile;
 pub mod relations;
 pub mod relmap;
 pub mod review;

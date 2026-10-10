@@ -1,29 +1,29 @@
-//! セルの部品の設定(SR-35): `cells` は文字列(`"rich"`・`"plain"`)か表(`style`・部品の種類ごとの真偽・
-//! `[cells.columns]` の列ごとの見せ方)。列ごとの設定は種類ごとの設定より優先する。色を使わない表示で
-//! 部品にしないのは画面の側(この設定は色の有無を知らない)。
+//! セルの部品(SR-35): `look.cells`(`"rich"`・`"plain"`)と `[look.columns]` の列ごとの見せ方。部品の種類ごとに
+//! 使うかは部品の形(SR-36。`plain`・`text`・印なしなら文字のまま)。列ごとの設定は部品の形より優先する。
+//! 色を使わない表示で部品にしないのは画面の側(この設定は色の有無を知らない)。読み取りは profile。
 
-use crate::i18n::Msg;
+use crate::style::{Check, Links, Status, Style, Tags};
 use std::collections::BTreeMap;
 
 /// 部品の種類。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Part {
-    /// 真偽を `☑`・`☐`。
+    /// 真偽を `☑`・`☐` など(SR-36 の `check`)。
     Checkbox,
-    /// リストの要素を札。
+    /// リストの要素を札(`tags`)。
     Chips,
-    /// 種類の少ない短い文字の列の値を札。
+    /// 種類の少ない短い文字の列の値を札(`status`)。
     Select,
-    /// リンクをアクセントの色。
+    /// リンクをアクセントの色(`links`)。
     Links,
-    /// 列の見出しに型の印。
+    /// 列の見出しに型の印(`icons`)。
     Icons,
 }
 
-/// 列ごとの見せ方。
+/// 列ごとの見せ方(`[look.columns]`)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColStyle {
-    /// 部品(種類ごとの設定によらず全部)。
+    /// 部品(部品の形によらず全部)。
     Rich,
     /// 文字のまま。
     Plain,
@@ -31,15 +31,29 @@ pub enum ColStyle {
     Chip,
 }
 
-/// `cells` の設定。
+impl ColStyle {
+    pub fn parse(s: &str) -> Option<ColStyle> {
+        match s {
+            "rich" => Some(ColStyle::Rich),
+            "plain" => Some(ColStyle::Plain),
+            "chip" => Some(ColStyle::Chip),
+            _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            ColStyle::Rich => "rich",
+            ColStyle::Plain => "plain",
+            ColStyle::Chip => "chip",
+        }
+    }
+}
+
+/// セルの部品の決まった値(`look.cells` と `[look.columns]`)。部品の種類ごとに使うかは部品の形(`Style`)で決める。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cells {
     pub rich: bool,
-    pub checkbox: bool,
-    pub chips: bool,
-    pub select: bool,
-    pub links: bool,
-    pub icons: bool,
     pub columns: BTreeMap<String, ColStyle>,
 }
 
@@ -47,28 +61,23 @@ impl Default for Cells {
     fn default() -> Self {
         Cells {
             rich: true,
-            checkbox: true,
-            chips: true,
-            select: true,
-            links: true,
-            icons: true,
             columns: BTreeMap::new(),
         }
     }
 }
 
 impl Cells {
-    /// 列 `col` で部品 `part` を使うか(色の有無は見ない)。
-    pub fn on(&self, col: &str, part: Part) -> bool {
+    /// 列 `col` で部品 `part` を使うか(色の有無は見ない)。部品の形が文字のまま(`plain`・`text`・印なし)なら使わない。
+    pub fn on(&self, col: &str, part: Part, style: &Style) -> bool {
         match self.columns.get(col) {
             Some(ColStyle::Plain) => false,
             Some(ColStyle::Rich) => true,
-            // 札を強いる列: 値(文字・数・リストの要素)を札にし、印も出す。真偽とリンクは種類ごとの設定のまま。
+            // 札を強いる列: 値(文字・数・リストの要素)を札にし、印も出す。真偽とリンクは部品の形のまま。
             Some(ColStyle::Chip) => match part {
                 Part::Select | Part::Chips | Part::Icons => true,
-                _ => self.rich && self.kind_on(part),
+                _ => self.rich && kind_on(part, style),
             },
-            None => self.rich && self.kind_on(part),
+            None => self.rich && kind_on(part, style),
         }
     }
 
@@ -76,74 +85,16 @@ impl Cells {
     pub fn forced_chip(&self, col: &str) -> bool {
         self.columns.get(col) == Some(&ColStyle::Chip)
     }
-
-    fn kind_on(&self, part: Part) -> bool {
-        match part {
-            Part::Checkbox => self.checkbox,
-            Part::Chips => self.chips,
-            Part::Select => self.select,
-            Part::Links => self.links,
-            Part::Icons => self.icons,
-        }
-    }
 }
 
-/// 設定の `cells` を読む。読めない所は警告にして既定のまま。
-pub fn read(value: &toml::Value, c: &mut Cells, warnings: &mut Vec<String>) {
-    let style = |v: &toml::Value, c: &mut Cells, w: &mut Vec<String>, name: &str| match v.as_str() {
-        Some("rich") => c.rich = true,
-        Some("plain") => c.rich = false,
-        _ => w.push(Msg::ConfigWrongType.fill(&[&name, &Msg::WantCells.text()])),
-    };
-    let Some(t) = value.as_table() else {
-        return style(value, c, warnings, "cells");
-    };
-    for (k, v) in t {
-        let name = format!("cells.{k}");
-        let flag = match k.as_str() {
-            "style" => {
-                style(v, c, warnings, &name);
-                continue;
-            }
-            "checkbox" => &mut c.checkbox,
-            "chips" => &mut c.chips,
-            "select" => &mut c.select,
-            "links" => &mut c.links,
-            "icons" => &mut c.icons,
-            "columns" => {
-                read_columns(v, c, warnings);
-                continue;
-            }
-            _ => {
-                warnings.push(Msg::ConfigUnknownItem.fill(&[&name]));
-                continue;
-            }
-        };
-        match v.as_bool() {
-            Some(b) => *flag = b,
-            None => warnings.push(Msg::ConfigWrongType.fill(&[&name, &Msg::WantBool.text()])),
-        }
-    }
-}
-
-fn read_columns(v: &toml::Value, c: &mut Cells, warnings: &mut Vec<String>) {
-    let Some(t) = v.as_table() else {
-        warnings
-            .push(Msg::ConfigWrongType.fill(&[&"cells.columns", &Msg::WantCellsColumns.text()]));
-        return;
-    };
-    for (col, s) in t {
-        let st = match s.as_str() {
-            Some("rich") => ColStyle::Rich,
-            Some("plain") => ColStyle::Plain,
-            Some("chip") => ColStyle::Chip,
-            _ => {
-                let name = format!("cells.columns.{col}");
-                warnings.push(Msg::ConfigWrongType.fill(&[&name, &Msg::WantColStyle.text()]));
-                continue;
-            }
-        };
-        c.columns.insert(col.clone(), st);
+/// 部品の形が、その部品を使う形か。
+fn kind_on(part: Part, s: &Style) -> bool {
+    match part {
+        Part::Checkbox => s.check != Check::Text,
+        Part::Chips => s.tags != Tags::Plain,
+        Part::Select => s.status != Status::Plain,
+        Part::Links => s.links != Links::Plain,
+        Part::Icons => s.icons,
     }
 }
 

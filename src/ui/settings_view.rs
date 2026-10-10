@@ -364,12 +364,15 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
             .enumerate()
             .map(|(i, (item, _))| {
                 let on = app.draft_shows(*item);
+                // SR-34: タブの行は always・auto・never の3つ。
+                let value = match (*item, app.draft_tabs()) {
+                    (mdgrid::display::Item::Tabs, mdgrid::display::TabsMode::Auto) => {
+                        format!("◐ {}", Msg::SwAuto)
+                    }
+                    _ => switch(on, Msg::SwOn, Msg::SwOff),
+                };
                 Row::item(
-                    format!(
-                        "{}  {}",
-                        fit(item.label(), 20, Align::Left),
-                        switch(on, Msg::SwOn, Msg::SwOff)
-                    ),
+                    format!("{}  {}", fit(item.label(), 20, Align::Left), value),
                     Hit::Item(Sec::Display, i),
                     sel(i),
                 )
@@ -476,15 +479,26 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
         }
         Sec::Look => {
             let lk = d.look;
-            let nerd = App::look_pick_items(2)[mdgrid::look::Nerd::ALL
-                .iter()
-                .position(|n| *n == lk.nerd)
-                .unwrap_or(0)]
-            .clone();
+            let from = |path: &str| {
+                format!(
+                    "  ({})",
+                    super::look_section::place_label(app.look_origin(path))
+                )
+            };
             let fields = [
-                (Msg::LookTheme, lk.theme.name().to_string()),
-                (Msg::LookPreset, lk.preset.name().to_string()),
-                (Msg::LookNerd, nerd),
+                (
+                    Msg::LookScope,
+                    super::look_section::place_label(lk.scope).to_string(),
+                ),
+                (
+                    Msg::LookTheme,
+                    format!("{}{}", lk.theme.label(), from("look.theme")),
+                ),
+                (
+                    Msg::LookPreset,
+                    format!("{}{}", lk.preset.name(), from("look.preset")),
+                ),
+                (Msg::LookNerd, super::look_section::nerd_text(lk.nerd)),
             ];
             let mut v: Vec<Row> = fields
                 .into_iter()
@@ -497,11 +511,11 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
                     )
                 })
                 .collect();
-            let templates = app.look_file().templates;
+            let templates = app.look_templates();
             let base = super::look_section::LOOK_FIELDS;
             v.push(Row::blank());
             v.push(Row::desc(Msg::LookTemplates));
-            for (k, (name, l)) in templates.iter().enumerate() {
+            for (k, (name, l, _)) in templates.iter().enumerate() {
                 v.push(Row::item(
                     format!(
                         "◆ {} {}",
@@ -583,10 +597,15 @@ fn pick_rows(app: &App, d: &Draft, p: &Pick, ph: usize) -> Vec<Row> {
             d.keys.iter().map(|c| col_text(app, c)).collect(),
         ),
         Pick::Look { field, .. } => {
-            let what = [Msg::LookTheme, Msg::LookPreset, Msg::LookNerd][(*field).min(2)];
+            let what = [
+                Msg::LookScope,
+                Msg::LookTheme,
+                Msg::LookPreset,
+                Msg::LookNerd,
+            ][(*field).min(3)];
             (
                 Msg::LookPickOf.fill(&[&what.text()]),
-                App::look_pick_items(*field),
+                app.look_pick_items(*field),
             )
         }
         Pick::Kind { col, .. } => (

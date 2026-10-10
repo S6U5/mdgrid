@@ -17,6 +17,7 @@ use crate::config;
 use crate::expr::{self, Env, Val};
 use crate::i18n::Msg;
 use crate::newnote::{self, NewNote};
+use crate::profile::Profile;
 use crate::settings::{CmpOp, Cond, Dir, Group, Op, Settings};
 use crate::source::{FileInfo, Value};
 use crate::types::{self, Kind};
@@ -42,7 +43,7 @@ pub struct NativeView {
     /// NV-13〜NV-22 のフィルター・並べ替え・グループ。省くと既定。
     #[serde(default, skip_serializing_if = "Settings::is_default")]
     pub settings: Settings,
-    /// CE-26・CE-27: このビューで新しいノートを作るときの決まり(`[target.view.new_note]`)。
+    /// CE-26・CE-27: このビューで新しいノートを作るときの決まり(`[table.view.new_note]`)。
     /// 無ければ設定の `[new_note]`。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub new_note: Option<NewNote>,
@@ -65,18 +66,39 @@ const VIEW_KEYS: &[&str] = &[
     "new_note",
 ];
 const NEW_NOTE_KEYS: &[&str] = NewNote::KEYS;
-const SETTINGS_KEYS: &[&str] = &["filters", "sorts", "group", "display", "tree", "wbs"];
+const SETTINGS_KEYS: &[&str] = &[
+    "filters", "sorts", "group", "display", "look", "dates", "edit", "use", "tree", "wbs",
+];
 const COND_KEYS: &[&str] = &["col", "op"];
 
 // ---- 読み書き ----
 
-/// TOML を表として読む。壊れていれば理由1行。
+/// 表ごとの項目の並びの名前(`[[table]]`)。
+const TABLE: &str = "table";
+/// 前の版の名前(`[[target]]`。CLI-20)。読むときに `[[table]]` の後ろに足し、次に書くときに `[[table]]` で書く。
+const OLD_TABLE: &str = "target";
+
+/// TOML を表として読む。壊れていれば理由1行。前の版の `[[target]]` は `[[table]]` に移す。
 fn parse_table(text: &str) -> Result<toml::Table, String> {
-    text.parse::<toml::Table>()
-        .map_err(|e: toml::de::Error| match config::toml_error(text, &e) {
-            (Some(line), msg) => Msg::ViewsTomlLine.fill(&[&FILE_NAME, &line, &msg]),
-            (None, msg) => Msg::ViewsToml.fill(&[&FILE_NAME, &msg]),
-        })
+    let mut t =
+        text.parse::<toml::Table>().map_err(|e: toml::de::Error| {
+            match config::toml_error(text, &e) {
+                (Some(line), msg) => Msg::ViewsTomlLine.fill(&[&FILE_NAME, &line, &msg]),
+                (None, msg) => Msg::ViewsToml.fill(&[&FILE_NAME, &msg]),
+            }
+        })?;
+    if let Some(old) = t.remove(OLD_TABLE) {
+        match (t.get_mut(TABLE), old) {
+            (Some(toml::Value::Array(now)), toml::Value::Array(old)) => now.extend(old),
+            (None, old) => {
+                t.insert(TABLE.into(), old);
+            }
+            (_, old) => {
+                t.insert(OLD_TABLE.into(), old);
+            }
+        }
+    }
+    Ok(t)
 }
 
 /// 書かれた対象のパスが、開いた対象(実体のパス)と同じか。
@@ -85,7 +107,7 @@ fn same_target(stored: &str, key: &str) -> bool {
 }
 
 fn unknown(path: &str, warns: &mut Vec<String>) {
-    warns.push(Msg::ViewsUnknownItem.fill(&[&FILE_NAME, &path]));
+    crate::profile::warn(warns, FILE_NAME, path, Msg::RsnUnknown.text().to_string());
 }
 
 fn check_keys(t: &toml::Table, allowed: &[&str], prefix: &str, warns: &mut Vec<String>) {
@@ -98,9 +120,9 @@ fn check_keys(t: &toml::Table, allowed: &[&str], prefix: &str, warns: &mut Vec<S
 
 /// ビューの表の知らない項目を警告にする(settings と、その filters の条件まで見る)。
 fn check_view(v: &toml::Table, warns: &mut Vec<String>) {
-    check_keys(v, VIEW_KEYS, "target.view", warns);
+    check_keys(v, VIEW_KEYS, "table.view", warns);
     if let Some(n) = v.get("new_note").and_then(|n| n.as_table()) {
-        check_keys(n, NEW_NOTE_KEYS, "target.view.new_note", warns);
+        check_keys(n, NEW_NOTE_KEYS, "table.view.new_note", warns);
         let mut seen: Vec<&str> = Vec::new();
         for c in n
             .get("ask")
@@ -110,7 +132,12 @@ fn check_view(v: &toml::Table, warns: &mut Vec<String>) {
             .filter_map(|c| c.as_str())
         {
             if newnote::not_a_key(c) || seen.contains(&c) {
-                warns.push(Msg::ViewsBadAsk.fill(&[&FILE_NAME, &c]));
+                crate::profile::warn(
+                    warns,
+                    FILE_NAME,
+                    "table.view.new_note.ask",
+                    Msg::RsnBadColumn.fill(&[&c]),
+                );
             } else {
                 seen.push(c);
             }
@@ -122,25 +149,30 @@ fn check_view(v: &toml::Table, warns: &mut Vec<String>) {
             .flat_map(|s| s.keys())
         {
             if newnote::not_a_key(c) {
-                warns.push(Msg::ViewsBadSet.fill(&[&FILE_NAME, c]));
+                crate::profile::warn(
+                    warns,
+                    FILE_NAME,
+                    &format!("table.view.new_note.set.{c}"),
+                    Msg::RsnBadColumn.fill(&[c]),
+                );
             }
         }
     }
     let Some(s) = v.get("settings").and_then(|s| s.as_table()) else {
         return;
     };
-    check_keys(s, SETTINGS_KEYS, "target.view.settings", warns);
+    check_keys(s, SETTINGS_KEYS, "table.view.settings", warns);
     if let Some(d) = s.get("display").and_then(|d| d.as_table()) {
         check_keys(
             d,
             crate::display::OVERRIDE_KEYS,
-            "target.view.settings.display",
+            "table.view.settings.display",
             warns,
         );
     }
     if let Some(fs) = s.get("filters").and_then(|f| f.as_array()) {
         for c in fs.iter().filter_map(|c| c.as_table()) {
-            check_keys(c, COND_KEYS, "target.view.settings.filters", warns);
+            check_keys(c, COND_KEYS, "table.view.settings.filters", warns);
         }
     }
 }
@@ -171,11 +203,11 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
     let mut warns = Vec::new();
     let mut views = Vec::new();
     for k in table.keys() {
-        if k != "target" {
+        if k != TABLE {
             unknown(k, &mut warns);
         }
     }
-    let targets: &[toml::Value] = match table.get("target") {
+    let targets: &[toml::Value] = match table.get(TABLE) {
         None => &[],
         Some(toml::Value::Array(a)) => a,
         Some(_) => {
@@ -188,7 +220,13 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
             warns.push(Msg::ViewsTargetNotTable.fill(&[&FILE_NAME, &(i + 1)]));
             continue;
         };
-        check_keys(t, TARGET_KEYS, "target", &mut warns);
+        for k in t.keys() {
+            if !TARGET_KEYS.contains(&k.as_str())
+                && !crate::schema::PROFILE_KEYS.contains(&k.as_str())
+            {
+                unknown(&format!("{TABLE}.{k}"), &mut warns);
+            }
+        }
         let Some(p) = t.get("path").and_then(|p| p.as_str()) else {
             warns.push(Msg::ViewsTargetNoPath.fill(&[&FILE_NAME, &(i + 1)]));
             continue;
@@ -234,13 +272,13 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
     (views, warns)
 }
 
-/// 対象 `target` の表(`[[target]]`)。無ければ・読めなければ None。
+/// 対象 `target` の表(`[[table]]`)。無ければ・読めなければ None。
 fn target_table(dir: &Path, target: &Path) -> Option<toml::Table> {
     let text = std::fs::read_to_string(dir.join(FILE_NAME)).ok()?;
     let table = parse_table(&text).ok()?;
     let key = config::target_key(target);
     table
-        .get("target")?
+        .get(TABLE)?
         .as_array()?
         .iter()
         .filter_map(|t| t.as_table())
@@ -252,7 +290,29 @@ fn target_table(dir: &Path, target: &Path) -> Option<toml::Table> {
         .cloned()
 }
 
-/// NV-25: 対象 `target` の既定のビューの名前(`[[target]]` の `default_view`)。無ければ・読めなければ None。
+/// SR-44: 対象 `target` の表の範囲の、画面が書いたプロファイル(`[[table]]` の `look` など)。
+pub fn load_table_profile(dir: &Path, target: &Path) -> (Profile, Vec<String>) {
+    let Some(t) = target_table(dir, target) else {
+        return (Profile::default(), Vec::new());
+    };
+    let mut w = Vec::new();
+    let p = Profile::read_scoped(&t, FILE_NAME, TABLE, TARGET_KEYS, &mut w);
+    // 知らない項目は load_views が警告するので、ここでは型の違いだけを返す。
+    w.retain(|m| !m.contains(Msg::RsnUnknown.text()) && !m.contains(Msg::RsnGlobalOnly.text()));
+    (p, w)
+}
+
+/// SR-44: 対象 `target` の表の範囲のプロファイルを書く(空なら消す)。ほかの項目と対象はそのまま。
+pub fn save_table_profile(dir: &Path, target: &Path, p: &Profile) -> io::Result<()> {
+    edit_target(dir, target, !p.is_empty(), |t| {
+        for k in crate::schema::PROFILE_KEYS {
+            t.remove(*k);
+        }
+        t.extend(p.to_table());
+    })
+}
+
+/// NV-25: 対象 `target` の既定のビューの名前(`[[table]]` の `default_view`)。無ければ・読めなければ None。
 pub fn load_default_view(dir: &Path, target: &Path) -> Option<String> {
     target_table(dir, target)?
         .get("default_view")?
@@ -273,7 +333,7 @@ pub fn save_default_view(dir: &Path, target: &Path, name: Option<&str>) -> io::R
     })
 }
 
-/// NV-26: 対象のタブの好み(`[[target]]` の `tab_order`・`hidden_tabs`・`tab_hint`)。
+/// NV-26: 対象のタブの好み(`[[table]]` の `tab_order`・`hidden_tabs`・`tab_hint`)。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TabPrefs {
     /// タブを見せる順(ビューの名前)。ここに無いタブは元の順で後ろ。
@@ -361,7 +421,7 @@ fn edit_target(
         Err(e) => return Err(e),
     };
     let targets = table
-        .entry("target")
+        .entry(TABLE)
         .or_insert_with(|| toml::Value::Array(Vec::new()));
     let toml::Value::Array(targets) = targets else {
         return Err(invalid(Msg::ViewsSaveTargetNotArray.fill(&[&FILE_NAME])));
@@ -450,7 +510,7 @@ pub fn save_views(dir: &Path, target: &Path, views: &[NativeView]) -> io::Result
         Err(e) if e.kind() == io::ErrorKind::NotFound => toml::Table::new(),
         Err(e) => return Err(e),
     };
-    let targets = match table.remove("target") {
+    let targets = match table.remove(TABLE) {
         None => Vec::new(),
         Some(toml::Value::Array(a)) => a,
         Some(_) => return Err(invalid(Msg::ViewsSaveTargetNotArray.fill(&[&FILE_NAME]))),
@@ -529,7 +589,7 @@ pub fn save_views(dir: &Path, target: &Path, views: &[NativeView]) -> io::Result
         out.insert(pos.unwrap_or(out.len()), toml::Value::Table(t));
     }
     if !out.is_empty() {
-        table.insert("target".to_string(), toml::Value::Array(out));
+        table.insert(TABLE.to_string(), toml::Value::Array(out));
     }
     let text =
         toml::to_string(&table).map_err(|e| io::Error::other(config::squash_ws(&e.to_string())))?;

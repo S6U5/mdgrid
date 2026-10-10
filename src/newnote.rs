@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
-/// 新しいノートの決まり(設定の `[new_note]`、ビューの `[target.view.new_note]`)。
+/// 新しいノートの決まり(設定の `[new_note]`、ビューの `[table.view.new_note]`)。
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct NewNote {
     /// 既定のフォルダ(開いたフォルダからの相対。空 = 開いたフォルダ)。
@@ -39,7 +39,7 @@ pub struct NewNote {
 }
 
 impl NewNote {
-    /// 設定の `[new_note]` と views.toml の `[target.view.new_note]` で知っている項目(読み書きの全部で使う)。
+    /// 設定の `[new_note]` と views.toml の `[table.view.new_note]` で知っている項目(読み書きの全部で使う)。
     pub const KEYS: &'static [&'static str] = &[
         "mode", "folder", "name", "ask", "required", "hidden", "body", "set",
     ];
@@ -365,10 +365,10 @@ impl<'de> Deserialize<'de> for NewNote {
     }
 }
 
-/// ビューに new_note があればそれ、無ければ設定の new_note(CE-26・CE-27)。
-pub fn rule_for<'a>(config: &'a Config, view: Option<&'a NativeView>) -> &'a NewNote {
-    view.and_then(|v| v.new_note.as_ref())
-        .unwrap_or(&config.new_note)
+/// ビューに new_note があればそれ、無ければ設定の new_note(CE-26・CE-27。範囲の重ねは SR-44 の profile::resolve)。
+pub fn rule_for(config: &Config, view: Option<&NativeView>) -> NewNote {
+    view.and_then(|v| v.new_note.clone())
+        .unwrap_or_else(|| config.resolved().new_note)
 }
 
 /// 名前の雛形の `{date}` を今日(1970-01-01 からの日数)の YYYY-MM-DD にする(CE-27)。

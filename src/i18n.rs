@@ -37,6 +37,15 @@ impl Language {
             _ => None,
         }
     }
+
+    /// 設定の値の名前。
+    pub fn name(self) -> &'static str {
+        match self {
+            Language::Auto => "auto",
+            Language::En => "en",
+            Language::Ja => "ja",
+        }
+    }
 }
 
 /// `auto` で見る環境変数(この順で最初の空でない値)。
@@ -411,12 +420,6 @@ msgs! {
     // ---- config: 設定の警告(CLI-3) ----
     ConfigTomlLine = "cannot read the config TOML (line {0}): {1}", "設定の TOML が読めない({0} 行目): {1}";
     ConfigToml = "cannot read the config TOML: {0}", "設定の TOML が読めない: {0}";
-    ConfigUnknownItem = "ignored the unknown config item `{0}`", "設定の知らない項目 `{0}` は無視した";
-    ConfigBadDateFormat = "ignored the config item `date_format` and used the default YYYY-MM-DD: {0}", "設定の項目 `date_format` を無視して既定の YYYY-MM-DD にした: {0}";
-    ConfigBadAsk = "ignored `{0}` in the config item `new_note.ask`: not a writable column, or a duplicate", "設定の項目 `new_note.ask` の `{0}` は書けない列か重なりなので無視した";
-    ConfigBadSet = "ignored `{0}` in the config item `new_note.set`: not a writable column", "設定の項目 `new_note.set` の `{0}` は書けない列なので無視した";
-    /// {0} は項目、{1} は求める型(`Want*`)。
-    ConfigWrongType = "ignored the config item `{0}`: not {1}", "設定の項目 `{0}` は{1}でないので無視した";
     WantIntAtLeast0 = "an integer of 0 or more", "0 以上の整数";
     WantIntAtLeast1 = "an integer of 1 or more", "1 以上の整数";
     WantBool = "true or false", "true か false";
@@ -425,19 +428,35 @@ msgs! {
     WantString = "a string", "文字列";
     WantLanguage = "one of \"auto\", \"en\", \"ja\"", "\"auto\"・\"en\"・\"ja\" のどれか";
     WantLook = "\"modern\" or \"classic\"", "\"modern\" か \"classic\"";
-    WantBorders = "\"rounded\" or \"ascii\"", "\"rounded\" か \"ascii\"";
-    WantViewTabs = "\"always\" or \"auto\"", "\"always\" か \"auto\"";
-    WantCells = "\"rich\" or \"plain\" (or a [cells] table)", "\"rich\" か \"plain\"(か [cells] の表)";
+    WantCells = "\"rich\" or \"plain\"", "\"rich\" か \"plain\"";
     WantCellsColumns = "a table of column = \"rich\", \"plain\" or \"chip\"", "列 = \"rich\"・\"plain\"・\"chip\" の表";
     WantColStyle = "\"rich\", \"plain\" or \"chip\"", "\"rich\"・\"plain\"・\"chip\" のどれか";
-    WantTheme = "one of \"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\", \"paper\"", "\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\" のどれか";
+    WantTheme = "one of \"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\", \"paper\" (or a { light, dark } table)", "\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\" のどれか(か { light, dark } の表)";
     /// {0} は候補の並び。
     WantOneOf = "one of {0}", "{0} のどれか";
-    WantStyleTable = "a [style] table", "[style] の表";
+    WantTable = "a table", "表";
+    WantTabs = "\"always\", \"auto\" or \"never\"", "\"always\"・\"auto\"・\"never\" のどれか";
+    /// 設定の警告(CLI-3)。{0} はファイルの名前、{1} は項目の道筋、{2} は理由。
+    SettingWarn = "{0}: {1}: {2}", "{0}: {1}: {2}";
+    /// 値の出どころ(SR-44)の、ビューの設定の範囲。
+    OriginView = "view settings", "ビューの設定";
+    /// {0} は求める型(Want*)。
+    RsnNot = "not {0} (ignored)", "{0}でないので無視した";
+    RsnUnknown = "unknown item (ignored)", "知らない項目なので無視した";
+    /// {0} は新しい道筋(CLI-20)。
+    RsnMoved = "the old name moved to `{0}` (read as that)", "旧い名前は `{0}` に移った(そこに書いたものとして読んだ)";
+    RsnGlobalOnly = "can be written only in config.toml (ignored)", "全体(config.toml)にだけ書ける項目なので無視した";
+    RsnNoTemplate = "no template named \"{0}\" (ignored)", "テンプレート「{0}」が無いので無視した";
+    RsnNestedUse = "a template cannot use another template (ignored)", "テンプレートの中の use は読まない";
+    RsnBadDateFormat = "{0}; using the default YYYY-MM-DD", "{0}。既定の YYYY-MM-DD にした";
+    RsnBadColumn = "`{0}` is not a writable column, or a duplicate (ignored)", "`{0}` は書けない列か重なりなので無視した";
+    RsnBadNoteMode = "\"{0}\" is not \"form\" or \"editor\"; using the form", "\"{0}\" は \"form\" でも \"editor\" でもないので窓で作る";
+    RsnNeedName = "needs a name (string) that does not repeat (ignored)", "重ならない name の文字列が要るので無視した";
+    RsnNeedPath = "needs a path (string) (ignored)", "path の文字列が要るので無視した";
+    RsnNeedNamePath = "needs a name and a path (strings), and the name must not repeat (ignored)", "name と path の文字列が要り、name は重ねられないので無視した";
+    RsnDuplicateValue = "the same value is written twice (one of them is used)", "同じ値が2回書かれている(どれか1つを使う)";
     WantColor = "a color (\"#rrggbb\", \"#rgb\" or a color name)", "色(\"#rrggbb\"・\"#rgb\" か色の名前)";
-    WantColorsTable = "a [colors] table", "[colors] の表";
     WantNerdFont = "true, false or \"auto\"", "true・false か \"auto\"";
-    ColorValueTwice = "{0}: the same value is written more than once (ignoring case and spaces); one of them is used", "{0}: 同じ値が(大文字・小文字と空白を除いて)2回以上ある。どれか1つを使う";
     WantKeysTable = "a [keys.<mode>] table", "[keys.<モード>] の表";
     WantKeyActionTable = "a table of key = action", "キー = 動作 の表";
     WantActionName = "an action name string", "動作の名前の文字列";
@@ -453,12 +472,13 @@ msgs! {
     /// SR-43: 見た目の区画。
     NavLook = "Look", "見た目";
     DescLook = "Theme, part shapes and round pill ends (saved to look.toml)", "テーマ・部品の形の組・丸い札の端(look.toml に残す)";
+    LookScope = "Save to", "保存先";
     LookTheme = "Theme", "テーマ";
     LookPreset = "Parts", "組";
     LookNerd = "Round pill ends", "丸い札の端";
     LookTemplates = "Templates", "テンプレート";
     LookSaveTemplate = "+ Save this look as a template", "+ 今の見た目を名前を付けて保存";
-    LookResetRow = "Back to config.toml", "config.toml に戻す";
+    LookResetRow = "Remove the override of this place", "この範囲の上書きを外す";
     LookNerdAuto = "auto (by the terminal)", "auto(自動。端末に合わせる)";
     LookNerdOn = "true (on, Nerd Font)", "true(オン。Nerd Font)";
     LookNerdOff = "false (off)", "false(オフ)";
@@ -466,19 +486,24 @@ msgs! {
     LookTemplateUsed = "Using template \"{0}\" (Apply to see it)", "テンプレート「{0}」を当てた(反映で効く)";
     LookTemplateSaved = "Saved template \"{0}\"", "テンプレート「{0}」を保存した";
     LookTemplateDeleted = "Deleted template \"{0}\"", "テンプレート「{0}」を消した";
-    LookReset = "Removed the look from look.toml (config.toml is used from the next start)", "look.toml の見た目を外した(次の起動から config.toml のとおり)";
+    /// {0} は範囲の名前。
+    LookReset = "Removed the theme and parts written for {0}", "{0}のテーマと組の上書きを外した";
+    /// {0} はテンプレートの名前。
+    LookTemplateInConfig = "Template \"{0}\" is written in config.toml; edit config.toml to delete it", "テンプレート「{0}」は config.toml にあるので、config.toml を直して消す";
+    LookMarkerReadOnly = "The workspace marker (.mdgrid/workspace.toml) is in the notes folder, so mdgrid does not write it; write the look there by hand", "ワークスペースの印(.mdgrid/workspace.toml)はノートのフォルダの中なので書かない。印に手で書く";
+    OriginDefault = "default", "既定";
+    OriginConfig = "config.toml", "config.toml";
+    OriginGlobal = "global", "全体";
+    OriginWorkspace = "this workspace", "このワークスペース";
+    OriginTable = "this table", "この表";
+    OriginThisView = "this view", "このビュー";
     TextLookTemplate = "template name", "テンプレートの名前";
     SetHintLook = "{0} choose or use  {1} delete a template (Apply to see the look)", "{0} で選ぶ・当てる、{1} でテンプレートを消す(反映で効く)";
     /// SR-43: look.toml の警告。
     LookBroken = "{0}: cannot read ({1}); using the look in config.toml", "{0} が読めない({1})。config.toml の見た目で起動する";
-    LookUnknownKey = "{0}: unknown item \"{1}\" (ignored)", "{0}: 知らない項目「{1}」(読まない)";
-    LookBadValue = "{0}: {1} = {2} is not a valid value (ignored)", "{0}: {1} = {2} は使えない値(読まない)";
     LookTemplateNoName = "{0}: a template without name (ignored)", "{0}: name の無いテンプレート(読まない)";
     ViewsToml = "cannot read {0}, so mdgrid views are not loaded: {1}", "{0} が読めないので mdgrid のビューは読まない: {1}";
     ViewsNotUtf8 = "{0} is not UTF-8, so mdgrid views are not loaded", "{0} が UTF-8 でないので mdgrid のビューは読まない";
-    ViewsUnknownItem = "ignored the unknown item `{1}` in {0}", "{0} の知らない項目 `{1}` は無視した";
-    ViewsBadAsk = "ignored `{1}` in `target.view.new_note.ask` of {0}: not a writable column, or a duplicate", "{0} の `target.view.new_note.ask` の `{1}` は書けない列か重なりなので無視した";
-    ViewsBadSet = "ignored `{1}` in `target.view.new_note.set` of {0}: not a writable column", "{0} の `target.view.new_note.set` の `{1}` は書けない列なので無視した";
     ViewsTargetNotArray = "ignored `target` in {0}: not an array of [[target]] tables", "{0} の `target` が [[target]] の表の並びでないので無視した";
     /// {1} は1から数えた番号。
     ViewsTargetNotTable = "ignored target #{1} in {0}: not a table", "{0} の {1} 番目の target が表でないので無視した";
@@ -980,8 +1005,6 @@ msgs! {
     /// CE-33。
     KeyCreateNoteEdit = "Create and open in the editor", "作ってエディタで開く";
     NoteEditShort = "editor", "エディタで";
-    /// CE-33。{0} は値。
-    ConfigBadNoteMode = "new_note.mode must be \"form\" or \"editor\" (got {0:?}); using the form", "new_note.mode は \"form\" か \"editor\"({0:?} は使えない)。窓で作る";
     NoteFormTitle = " New note ", " 新しいノート ";
     NoteFieldPlace = "place", "作る場所";
     /// SR-31。{0} はフォルダの名前。
@@ -1371,6 +1394,7 @@ msgs! {
     SwHidden = "hidden", "隠す";
     SwOn = "on", "オン";
     SwOff = "off", "オフ";
+    SwAuto = "auto", "自動";
     SetPending = "{0} not applied", "未反映 {0}";
     /// NV-26: ビューの区画(タブの順・出す隠す・既定・名前・削除・切り替えの案内)。
     NavViews = "Views", "ビュー";
@@ -1488,8 +1512,6 @@ msgs! {
     // ---- places: 登録した表(CLI-18・CLI-19) ----
     /// {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
     PlacesBadToml = "cannot read places.toml (line {0}), so registered tables are not loaded: {1}", "places.toml が読めない({0} 行目)ので登録した表は読まない: {1}";
-    /// {0} は1から数えた番号。
-    PlacesBadEntry = "ignored place #{0} in places.toml: needs a name and a path (strings), and the name must not repeat", "places.toml の {0} 番目の place は無視した(name と path の文字列が要り、name は重ねられない)";
     PlaceOpen = "open a registered table", "登録した表を開く";
     PlaceRegister = "register this table", "この表を登録";
     /// 一覧の先頭(引数なしの起動のとき)。
@@ -1516,12 +1538,8 @@ msgs! {
     PlaceNoView = "the view {0} is not here, so the first view is shown", "ビュー {0} が無いので先頭のビューを出した";
 
     // ---- workspace: ワークスペース(WS-1〜WS-7) ----
-    /// {0} はワークスペースの名前、{1} は1から数えた番号。
-    WsBadTable = "ignored table #{1} of workspace {0}: needs a path (string)", "ワークスペース {0} の {1} 番目の表は無視した(path の文字列が要る)";
     /// {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
     WsBadToml = "cannot read {0} (line {1}), so its workspaces are not loaded: {2}", "{0} が読めない({1} 行目)のでワークスペースは読まない: {2}";
-    /// {0} は1から数えた番号。
-    WsBadEntry = "ignored workspace #{0} in workspaces.toml: needs a name (string) that does not repeat", "workspaces.toml の {0} 番目のワークスペースは無視した(重ならない name の文字列が要る)";
     /// {0} はパス。
     WsInitExists = "{0} already exists", "{0} はもうある";
     /// {0} は名前。

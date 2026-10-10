@@ -165,7 +165,7 @@ impl App {
 
     /// SR-35: 列 `col` で部品 `part` を使うか(色を使う表示で、設定が許すとき)。
     pub(crate) fn rich(&self, col: &str, part: mdgrid::cells::Part) -> bool {
-        self.color != super::app::ColorMode::None && self.cells.on(col, part)
+        self.color != super::app::ColorMode::None && self.cells.on(col, part, &self.style)
     }
 
     /// SR-35: 列 `col` の値を札にするか(自動の判定か、設定で強いた列)。

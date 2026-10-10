@@ -1,230 +1,284 @@
-//! 設定(CLI-3・SR-13)と見た目の状態(SR-11・SR-12)。形は docs/design.md の `src/config.rs`。
+//! 設定(CLI-3・SR-13)と見た目の状態(SR-11・SR-12)。形は docs/design.md の「設定の形と範囲ごとの上書き」。
 //!
-//! 設定はユーザーが書く TOML(`$XDG_CONFIG_HOME/mdgrid/config.toml`)。見た目の状態は
-//! 消えても困らないもので、ノートのフォルダには書かず、呼ぶ側が渡す状態のフォルダ
+//! 設定はユーザーが書く TOML(`$XDG_CONFIG_HOME/mdgrid/config.toml`)。項目はアプリ全体の項目(`language`・
+//! `editor`・`poll_ms`・`[terminal]`・`[workspace]`・`[keys]`)と、表のプロファイル(`profile::Profile`)と、
+//! テンプレート(`[templates.<名前>]`)。項目の表は `schema`、旧い名前の写しは `legacy`。
+//! 見た目の状態は消えても困らないもので、ノートのフォルダには書かず、呼ぶ側が渡す状態のフォルダ
 //! (`$XDG_STATE_HOME/mdgrid/` など)に、対象のパスとビューの名前ごとに1つの TOML として置く。
 
 pub use crate::display::Display;
 pub use crate::i18n::Language;
 use crate::i18n::Msg;
-use crate::newnote::{self, NewNote};
-use crate::theme::Theme;
-use crate::types::{DateFormat, WeekStart};
+use crate::profile::{self, not, warn, Layer, Origin, Place, Profile, Resolved, Templates};
+pub use crate::schema::{Item, ITEMS, KEYS};
 use serde::{Deserialize, Serialize};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
+/// 丸い札の端(`terminal.nerd_font`。SR-36)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum NerdFont {
+    #[default]
+    Auto,
+    On,
+    Off,
+}
+
+impl NerdFont {
+    pub const ALL: [NerdFont; 3] = [NerdFont::Auto, NerdFont::On, NerdFont::Off];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            NerdFont::Auto => "auto",
+            NerdFont::On => "true",
+            NerdFont::Off => "false",
+        }
+    }
+
+    pub fn parse(v: &toml::Value) -> Option<NerdFont> {
+        match (v.as_bool(), v.as_str()) {
+            (Some(true), _) => Some(NerdFont::On),
+            (Some(false), _) => Some(NerdFont::Off),
+            (_, Some("auto")) => Some(NerdFont::Auto),
+            _ => None,
+        }
+    }
+
+    pub fn to_value(self) -> toml::Value {
+        match self {
+            NerdFont::Auto => toml::Value::String("auto".into()),
+            NerdFont::On => toml::Value::Boolean(true),
+            NerdFont::Off => toml::Value::Boolean(false),
+        }
+    }
+
+    /// 描いてよいか。`auto` は端末の名前で決める(`style::nerd_auto`)。
+    pub fn resolve(self, term_program: Option<&str>) -> bool {
+        match self {
+            NerdFont::Auto => crate::style::nerd_auto(term_program),
+            NerdFont::On => true,
+            NerdFont::Off => false,
+        }
+    }
+}
+
+/// 端末の性質(`[terminal]`)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Terminal {
+    /// false で色なし(NO_COLOR と同じ)。
+    pub color: bool,
+    /// CV-6: East Asian Ambiguous を幅2にする。
+    pub ambiguous_wide: bool,
+    /// SR-36: 丸い札の端。
+    pub nerd_font: NerdFont,
+}
+
+impl Default for Terminal {
+    fn default() -> Self {
+        Terminal {
+            color: true,
+            ambiguous_wide: false,
+            nerd_font: NerdFont::Auto,
+        }
+    }
+}
+
 /// 設定(CLI-3)。`parse("")` が既定。
 #[derive(Debug, Clone, PartialEq)]
 pub struct Config {
-    /// (モード, キーの表記 "j"・"ctrl+s"・"shift+tab", 動作の名前か "none")。SR-13。
-    pub keys: Vec<(String, String, String)>,
-    /// false で色なし(NO_COLOR と同じ)。
-    pub color: bool,
-    /// CE-3 の候補の上限。
-    pub candidates: usize,
-    /// BV-9 の読み直しの間隔(ミリ秒)。
-    pub poll_ms: u64,
-    /// CV-6: East Asian Ambiguous を幅2にする。
-    pub ambiguous_wide: bool,
-    /// SR-32: 窓の枠を ASCII(`+ - |`)で描く(既定は角の丸い罫線)。
-    pub borders_ascii: bool,
-    /// SR-33: 色を使うときの今までの見た目(反転)。既定は lazygit のようなモダンな見た目。
-    pub look_classic: bool,
-    /// SR-34: ビューが1つならタブの行を出さない(`view_tabs = "auto"`)。既定は "always"(いつも出す)。
-    pub view_tabs_auto: bool,
-    /// SR-35: セルの部品(`cells`)。
-    pub cells: crate::cells::Cells,
-    /// WS-5: ワークスペースの検知(既定は保管庫だけ)。
-    pub workspace_detect: Vec<crate::workspace::Detect>,
-    /// NV-23: 表の上に検索の欄を出す(既定 true)。false なら出さず、簡易の絞り込み(NV-2)は最下行で打つ。
-    pub search_bar: bool,
-    /// CE-22: 表の日付の見せ方と打ち込みの形(既定 `YYYY-MM-DD`)。ノートに書く形は変えない。
-    pub date_format: DateFormat,
-    /// CE-21: カレンダーの週の始まり(既定 日曜。設定の値は `"sun"`・`"mon"`)。
-    pub week_start: WeekStart,
-    /// WB-3: フロントマターの無いノートと空のフロントマターのノートに書く(既定 true)。false ならこの2つを読むだけ。
-    pub add_frontmatter: bool,
-    /// SR-8: ノートを開くエディタ(引数つきでよい)。None(既定。空の文字列も同じ)なら $VISUAL・$EDITOR・vi。
-    pub editor: Option<String>,
     /// SR-23: 画面と起動の文言の言語(既定 `Auto` は環境変数に従う)。
     pub language: Language,
-    /// SR-26・SR-27: 画面のテーマ(既定 `Default` は今の見た目)。
-    pub theme: Theme,
-    /// SR-39: `theme = "auto"`。端末の地の明るさで theme_light か theme_dark を使う。
-    pub theme_auto: bool,
-    pub theme_light: Theme,
-    pub theme_dark: Theme,
-    /// SR-36: 部品の形(`[style]`)。
-    pub style: crate::style::Style,
-    /// SR-40・SR-41: 色の上書き(`[colors]`)。
-    pub colors: crate::colors::Colors,
-    /// SR-36: Nerd Font の字(丸い札の端)を使ってよい。
-    pub nerd_font: bool,
-    /// SR-36: `nerd_font = "auto"`(既定)。起動のとき端末の名前で nerd_font を決める(style::nerd_auto)。
-    pub nerd_font_auto: bool,
-    /// CE-26・CE-27: 新しいノートの決まり(`[new_note]`)。既定は空(開いたフォルダ・雛形なし・聞かない・入れない)。
-    pub new_note: NewNote,
-    /// SR-20・SR-21: 表の見せ方(`[display]`)。検索の欄は最上位の `search_bar` のまま。
-    pub display: Display,
+    /// SR-8: ノートを開くエディタ(引数つきでよい)。None(既定。空の文字列も同じ)なら $VISUAL・$EDITOR・vi。
+    pub editor: Option<String>,
+    /// BV-9 の読み直しの間隔(ミリ秒)。
+    pub poll_ms: u64,
+    /// (モード, キーの表記 "j"・"ctrl+s"・"shift+tab", 動作の名前か "none")。SR-13。
+    pub keys: Vec<(String, String, String)>,
+    pub terminal: Terminal,
+    /// WS-5: ワークスペースの検知(`workspace.detect`。既定は保管庫だけ)。
+    pub workspace_detect: Vec<crate::workspace::Detect>,
+    /// 全体の表のプロファイル(config.toml に書いたもの)。
+    pub profile: Profile,
+    /// `[templates.<名前>]`(書いた順)。
+    pub templates: Templates,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
-            keys: Vec::new(),
-            color: true,
-            candidates: 20,
-            poll_ms: 1000,
-            ambiguous_wide: false,
-            borders_ascii: false,
-            look_classic: false,
-            view_tabs_auto: false,
-            cells: crate::cells::Cells::default(),
-            workspace_detect: vec![crate::workspace::Detect::Vault],
-            search_bar: true,
-            date_format: DateFormat::iso(),
-            week_start: WeekStart::Sun,
-            add_frontmatter: true,
-            editor: None,
             language: Language::Auto,
-            theme: Theme::Default,
-            theme_auto: false,
-            theme_light: Theme::Saas,
-            theme_dark: Theme::Sumi,
-            style: crate::style::Style::default(),
-            colors: crate::colors::Colors::default(),
-            nerd_font: false,
-            nerd_font_auto: true,
-            new_note: NewNote::default(),
-            display: Display::default(),
+            editor: None,
+            poll_ms: 1000,
+            keys: Vec::new(),
+            terminal: Terminal::default(),
+            workspace_detect: vec![crate::workspace::Detect::Vault],
+            profile: Profile::default(),
+            templates: Vec::new(),
         }
     }
 }
 
-/// TOML を読む。知らない項目・型の違う項目は警告の文にして返し、止めない(CLI-3)。
+impl Config {
+    /// config.toml の層(SR-44)。
+    pub fn layer(&self) -> Layer {
+        Layer {
+            origin: Origin::new(Place::Config, CONFIG_FILE),
+            profile: self.profile.clone(),
+        }
+    }
+
+    /// config.toml だけを重ねた決まった値(範囲の無いときと試験)。
+    pub fn resolved(&self) -> Resolved {
+        profile::resolve(&[self.layer()], &self.templates, &mut Vec::new())
+    }
+}
+
+/// 設定のファイルの名前(警告と出どころの説明)。
+pub const CONFIG_FILE: &str = "config.toml";
+
+/// TOML を読む(config.toml)。知らない項目・型の違う項目は警告の文にして返し、止めない(CLI-3)。
 /// 壊れた TOML は Err(理由1行)。
 pub fn parse(text: &str) -> Result<(Config, Vec<String>), String> {
-    let table: toml::Table =
-        text.parse()
-            .map_err(|e: toml::de::Error| match toml_error(text, &e) {
-                (Some(line), msg) => Msg::ConfigTomlLine.fill(&[&line, &msg]),
-                (None, msg) => Msg::ConfigToml.fill(&[&msg]),
-            })?;
+    parse_named(text, CONFIG_FILE)
+}
 
+/// `file` の名前で警告を出して読む(`--config` で渡したファイルなど)。
+pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), String> {
+    let table = parse_table(text)?;
+    let mut w = Vec::new();
+    let table = crate::legacy::lift(table, file, &mut w);
     let mut c = Config::default();
-    let mut warnings = Vec::new();
     for (name, value) in &table {
-        // 知る項目かどうかは項目の表(ITEMS)で決める(CLI-12)。
-        if !KEYS.contains(&name.as_str()) {
-            warnings.push(Msg::ConfigUnknownItem.fill(&[name]));
+        if c.profile.read_key(name, value, file, "", &mut w) {
             continue;
         }
         match name.as_str() {
-            "candidates" => match value.as_integer().and_then(|n| usize::try_from(n).ok()) {
-                Some(n) => c.candidates = n,
-                None => warnings.push(type_warning(name, Msg::WantIntAtLeast0)),
-            },
-            "poll_ms" => match value.as_integer().and_then(|n| u64::try_from(n).ok()) {
-                Some(n) if n > 0 => c.poll_ms = n,
-                _ => warnings.push(type_warning(name, Msg::WantIntAtLeast1)),
-            },
-            "ambiguous_wide" => match value.as_bool() {
-                Some(b) => c.ambiguous_wide = b,
-                None => warnings.push(type_warning(name, Msg::WantBool)),
-            },
-            "workspace_detect" => match value.as_array() {
-                Some(items) => {
-                    let parsed: Option<Vec<_>> = items
-                        .iter()
-                        .map(|v| v.as_str().and_then(crate::workspace::Detect::parse))
-                        .collect();
-                    match parsed {
-                        Some(d) => c.workspace_detect = d,
-                        None => warnings.push(type_warning(name, Msg::WantDetect)),
-                    }
-                }
-                None => warnings.push(type_warning(name, Msg::WantDetect)),
-            },
-            "look" => match value.as_str() {
-                Some("modern") => c.look_classic = false,
-                Some("classic") => c.look_classic = true,
-                _ => warnings.push(type_warning(name, Msg::WantLook)),
-            },
-            "view_tabs" => match value.as_str() {
-                Some("always") => c.view_tabs_auto = false,
-                Some("auto") => c.view_tabs_auto = true,
-                _ => warnings.push(type_warning(name, Msg::WantViewTabs)),
-            },
-            "borders" => match value.as_str() {
-                Some("rounded") => c.borders_ascii = false,
-                Some("ascii") => c.borders_ascii = true,
-                _ => warnings.push(type_warning(name, Msg::WantBorders)),
-            },
-            "color" => match value.as_bool() {
-                Some(b) => c.color = b,
-                None => warnings.push(type_warning(name, Msg::WantBool)),
-            },
-            "search_bar" => match value.as_bool() {
-                Some(b) => c.search_bar = b,
-                None => warnings.push(type_warning(name, Msg::WantBool)),
-            },
-            "add_frontmatter" => match value.as_bool() {
-                Some(b) => c.add_frontmatter = b,
-                None => warnings.push(type_warning(name, Msg::WantBool)),
-            },
-            "date_format" => match value.as_str() {
-                Some(p) => match DateFormat::parse(p) {
-                    Ok(f) => c.date_format = f,
-                    Err(e) => warnings.push(Msg::ConfigBadDateFormat.fill(&[&squash_ws(&e)])),
-                },
-                None => warnings.push(type_warning(name, Msg::WantDateFormat)),
-            },
-            "week_start" => match value.as_str() {
-                Some("sun") => c.week_start = WeekStart::Sun,
-                Some("mon") => c.week_start = WeekStart::Mon,
-                _ => warnings.push(type_warning(name, Msg::WantWeekStart)),
+            "language" => match value.as_str().and_then(Language::parse) {
+                Some(l) => c.language = l,
+                None => warn(&mut w, file, name, not(Msg::WantLanguage)),
             },
             "editor" => match value.as_str() {
                 // 空(空白だけも)は無いのと同じ(SR-8)。
                 Some(e) => c.editor = (!e.trim().is_empty()).then(|| e.to_string()),
-                None => warnings.push(type_warning(name, Msg::WantString)),
+                None => warn(&mut w, file, name, not(Msg::WantString)),
             },
-            "language" => match value.as_str().and_then(Language::parse) {
-                Some(l) => c.language = l,
-                None => warnings.push(type_warning(name, Msg::WantLanguage)),
+            "poll_ms" => match value.as_integer().and_then(|n| u64::try_from(n).ok()) {
+                Some(n) if n > 0 => c.poll_ms = n,
+                _ => warn(&mut w, file, name, not(Msg::WantIntAtLeast1)),
             },
-            "theme" => match value.as_str() {
-                Some("auto") => c.theme_auto = true,
-                _ => match value.as_str().and_then(Theme::parse) {
-                    Some(t) => c.theme = t,
-                    None => warnings.push(type_warning(name, Msg::WantTheme)),
-                },
-            },
-            "theme_light" | "theme_dark" => match value.as_str().and_then(Theme::parse) {
-                Some(t) if name == "theme_light" => c.theme_light = t,
-                Some(t) => c.theme_dark = t,
-                None => warnings.push(type_warning(name, Msg::WantTheme)),
-            },
-            "nerd_font" => match (value.as_bool(), value.as_str()) {
-                (Some(b), _) => {
-                    c.nerd_font = b;
-                    c.nerd_font_auto = false;
-                }
-                (_, Some("auto")) => c.nerd_font_auto = true,
-                _ => warnings.push(type_warning(name, Msg::WantNerdFont)),
-            },
-            "style" => crate::style::read(value, &mut c.style, &mut warnings),
-            "colors" => crate::colors::read(value, &mut c.colors, &mut warnings),
-            "keys" => read_keys(value, &mut c.keys, &mut warnings),
-            "new_note" => c.new_note = read_new_note(value, &mut warnings),
-            "display" => read_display(value, &mut c.display, &mut warnings),
-            "cells" => crate::cells::read(value, &mut c.cells, &mut warnings),
-            // 表にあって読み取りの無い項目は単体の試験で落とす(test_config_unit)。
-            _ => {}
+            "terminal" => read_terminal(value, &mut c.terminal, file, &mut w),
+            "workspace" => read_workspace(value, &mut c, file, &mut w),
+            "keys" => read_keys(value, &mut c.keys, file, &mut w),
+            "templates" => c.templates = read_templates(value, file, &mut w),
+            _ => warn(&mut w, file, name, Msg::RsnUnknown.text().to_string()),
         }
     }
-    Ok((c, warnings))
+    Ok((c, w))
+}
+
+/// 壊れた TOML の理由1行。
+fn parse_table(text: &str) -> Result<toml::Table, String> {
+    text.parse()
+        .map_err(|e: toml::de::Error| match toml_error(text, &e) {
+            (Some(line), msg) => Msg::ConfigTomlLine.fill(&[&line, &msg]),
+            (None, msg) => Msg::ConfigToml.fill(&[&msg]),
+        })
+}
+
+fn read_terminal(v: &toml::Value, t: &mut Terminal, file: &str, w: &mut Vec<String>) {
+    let Some(tab) = v.as_table() else {
+        return warn(w, file, "terminal", not(Msg::WantTable));
+    };
+    for (k, v) in tab {
+        let p = format!("terminal.{k}");
+        match k.as_str() {
+            "color" | "ambiguous_wide" => match v.as_bool() {
+                Some(b) if k == "color" => t.color = b,
+                Some(b) => t.ambiguous_wide = b,
+                None => warn(w, file, &p, not(Msg::WantBool)),
+            },
+            "nerd_font" => match NerdFont::parse(v) {
+                Some(n) => t.nerd_font = n,
+                None => warn(w, file, &p, not(Msg::WantNerdFont)),
+            },
+            _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
+        }
+    }
+}
+
+fn read_workspace(v: &toml::Value, c: &mut Config, file: &str, w: &mut Vec<String>) {
+    let Some(tab) = v.as_table() else {
+        return warn(w, file, "workspace", not(Msg::WantTable));
+    };
+    for (k, v) in tab {
+        let p = format!("workspace.{k}");
+        match k.as_str() {
+            "detect" => {
+                let parsed: Option<Vec<_>> = v.as_array().and_then(|items| {
+                    items
+                        .iter()
+                        .map(|v| v.as_str().and_then(crate::workspace::Detect::parse))
+                        .collect()
+                });
+                match parsed {
+                    Some(d) => c.workspace_detect = d,
+                    None => warn(w, file, &p, not(Msg::WantDetect)),
+                }
+            }
+            _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
+        }
+    }
+}
+
+fn read_keys(
+    value: &toml::Value,
+    keys: &mut Vec<(String, String, String)>,
+    file: &str,
+    w: &mut Vec<String>,
+) {
+    let Some(modes) = value.as_table() else {
+        return warn(w, file, "keys", not(Msg::WantKeysTable));
+    };
+    for (mode, binds) in modes {
+        let Some(binds) = binds.as_table() else {
+            warn(
+                w,
+                file,
+                &format!("keys.{mode}"),
+                not(Msg::WantKeyActionTable),
+            );
+            continue;
+        };
+        for (key, action) in binds {
+            match action.as_str() {
+                Some(a) => keys.push((mode.clone(), key.clone(), a.to_string())),
+                None => warn(
+                    w,
+                    file,
+                    &format!("keys.{mode}.{key}"),
+                    not(Msg::WantActionName),
+                ),
+            }
+        }
+    }
+}
+
+/// `[templates.<名前>]` を読む(どれもプロファイルの断片。アプリ全体の項目は書けない)。
+pub(crate) fn read_templates(v: &toml::Value, file: &str, w: &mut Vec<String>) -> Templates {
+    let Some(tab) = v.as_table() else {
+        warn(w, file, "templates", not(Msg::WantTable));
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    for (name, t) in tab {
+        let path = format!("templates.{name}");
+        let Some(t) = t.as_table() else {
+            warn(w, file, &path, not(Msg::WantTable));
+            continue;
+        };
+        out.push((name.clone(), Profile::read_scoped(t, file, &path, &[], w)));
+    }
+    out
 }
 
 /// SR-8: ノートを開くエディタ。設定の `editor`・`$VISUAL`・`$EDITOR` の順で空でない最初のもの
@@ -248,28 +302,32 @@ pub fn peek_language(text: &str) -> Language {
         .unwrap_or_default()
 }
 
-#[path = "config_items.rs"]
-mod items;
-pub use items::{Item, ITEMS, KEYS};
-
-/// `--print-config` の出力(CLI-11): 全項目を既定値と英語の説明のコメント付きで並べた TOML。
-/// 既定で書かない項目(`editor`・`keys`)は書き方の例をコメントで出す。読み直すと警告なしで既定と同じ。
+/// `--print-config` の出力(CLI-11): 全項目を区画ごとに、既定値と英語の説明と書ける範囲のコメント付きで並べた TOML。
+/// 既定で書かない項目(`editor`・`use`・表の項目)は書き方の例をコメントで出す。読み直すと警告なしで既定と同じ。
 pub fn default_toml() -> String {
-    // 文書の案内は、公開してリポの URL が決まったら URL に替える(今は公開前。SC-10)。
     let mut out = String::from(
         "# mdgrid configuration with every item at its default value.\n\
          # Location: $XDG_CONFIG_HOME/mdgrid/config.toml (or ~/.config/mdgrid/config.toml).\n\
+         # Items marked \"global only\" belong to the whole app; the others form the table profile and can\n\
+         # also be written per workspace, table and view.\n\
          # Options: mdgrid --help. Full reference: docs/config.md in the mdgrid repository.\n",
     );
+    let mut section = "";
     for item in ITEMS {
+        let sec = item.section();
+        if !item.is_table() && sec != section {
+            out.push_str(&format!("\n[{sec}]\n"));
+            section = sec;
+        }
         out.push('\n');
         for line in item.en.lines() {
             out.push_str("# ");
             out.push_str(line.trim());
             out.push('\n');
         }
+        out.push_str(&format!("# Scope: {}.\n", item.scope.en()));
         match item.default {
-            Some(v) => out.push_str(&format!("{} = {}\n", item.name, v)),
+            Some(v) => out.push_str(&format!("{} = {}\n", item.leaf(), v)),
             None => {
                 out.push_str("# Example:\n");
                 for line in item.example.lines() {
@@ -283,145 +341,93 @@ pub fn default_toml() -> String {
     out
 }
 
-fn read_keys(
-    value: &toml::Value,
-    keys: &mut Vec<(String, String, String)>,
-    warnings: &mut Vec<String>,
-) {
-    let Some(modes) = value.as_table() else {
-        warnings.push(type_warning("keys", Msg::WantKeysTable));
-        return;
+/// `--print-config --resolved` のアプリ全体の項目(CLI-21): 各項目の上に出どころ(`config.toml` か `default`)。
+pub fn app_toml(c: &Config) -> String {
+    let d = Config::default();
+    let src = |same: bool| {
+        if same {
+            "# default\n"
+        } else {
+            "# config.toml\n"
+        }
     };
-    for (mode, binds) in modes {
-        let Some(binds) = binds.as_table() else {
-            warnings.push(type_warning(
-                &format!("keys.{}", mode),
-                Msg::WantKeyActionTable,
-            ));
-            continue;
+    let mut out = String::new();
+    let line = |k: &str, v: toml::Value| {
+        let mut t = toml::Table::new();
+        t.insert(k.into(), v);
+        toml::to_string(&t).unwrap_or_default()
+    };
+    out.push_str(src(c.language == d.language));
+    out.push_str(&line(
+        "language",
+        toml::Value::String(c.language.name().into()),
+    ));
+    if let Some(e) = &c.editor {
+        out.push_str(src(false));
+        out.push_str(&line("editor", toml::Value::String(e.clone())));
+    }
+    out.push_str(src(c.poll_ms == d.poll_ms));
+    out.push_str(&line("poll_ms", toml::Value::Integer(c.poll_ms as i64)));
+    out.push_str("\n[terminal]\n");
+    out.push_str(src(c.terminal.color == d.terminal.color));
+    out.push_str(&line("color", toml::Value::Boolean(c.terminal.color)));
+    out.push_str(src(c.terminal.ambiguous_wide == d.terminal.ambiguous_wide));
+    out.push_str(&line(
+        "ambiguous_wide",
+        toml::Value::Boolean(c.terminal.ambiguous_wide),
+    ));
+    out.push_str(src(c.terminal.nerd_font == d.terminal.nerd_font));
+    out.push_str(&line("nerd_font", c.terminal.nerd_font.to_value()));
+    out.push_str("\n[workspace]\n");
+    out.push_str(src(c.workspace_detect == d.workspace_detect));
+    let detect = c
+        .workspace_detect
+        .iter()
+        .map(|m| toml::Value::String(m.name().into()))
+        .collect();
+    out.push_str(&line("detect", toml::Value::Array(detect)));
+    if !c.keys.is_empty() {
+        let mut modes = toml::Table::new();
+        for (mode, key, action) in &c.keys {
+            let m = modes
+                .entry(mode.clone())
+                .or_insert_with(|| toml::Value::Table(toml::Table::new()));
+            if let toml::Value::Table(m) = m {
+                m.insert(key.clone(), toml::Value::String(action.clone()));
+            }
+        }
+        let mut t = toml::Table::new();
+        t.insert("keys".into(), toml::Value::Table(modes));
+        out.push_str("\n# config.toml\n");
+        out.push_str(&toml::to_string(&t).unwrap_or_default());
+    }
+    out
+}
+
+/// `--migrate-config` の出力(CLI-20): 旧い書き方を新しい形に写した TOML。注釈は移らない。
+pub fn migrate(text: &str) -> Result<String, String> {
+    let table = parse_table(text)?;
+    let mut lifted = crate::legacy::lift(table, CONFIG_FILE, &mut Vec::new());
+    // 明暗の組のテーマは `[look]` の下の1行の表で書く(`[look.theme]` の区画にしない)。
+    let theme = lifted
+        .get_mut("look")
+        .and_then(|l| l.as_table_mut())
+        .and_then(|l| match l.get("theme") {
+            Some(toml::Value::Table(_)) => l.remove("theme"),
+            _ => None,
+        });
+    let mut body = toml::to_string(&lifted).map_err(|e| squash_ws(&e.to_string()))?;
+    if let Some(th) = theme {
+        let line = crate::profile::key_line("theme", &th);
+        body = match body.find("[look]\n") {
+            Some(i) => format!("{}{line}{}", &body[..i + 7], &body[i + 7..]),
+            None => format!("{body}\n[look]\n{line}"),
         };
-        for (key, action) in binds {
-            match action.as_str() {
-                Some(a) => keys.push((mode.clone(), key.clone(), a.to_string())),
-                None => warnings.push(type_warning(
-                    &format!("keys.{}.{}", mode, key),
-                    Msg::WantActionName,
-                )),
-            }
-        }
     }
-}
-
-/// `[new_note]`(CE-27)を読む。型の違う値・知らない項目は警告にして飛ばす。
-fn read_new_note(value: &toml::Value, warnings: &mut Vec<String>) -> NewNote {
-    let mut n = NewNote::default();
-    let Some(t) = value.as_table() else {
-        warnings.push(type_warning("new_note", Msg::WantNewNoteTable));
-        return n;
-    };
-    for (k, v) in t {
-        let name = format!("new_note.{k}");
-        match k.as_str() {
-            "folder" => match v.as_str() {
-                Some(s) => n.folder = s.to_string(),
-                None => warnings.push(type_warning(&name, Msg::WantString)),
-            },
-            "name" => match v.as_str() {
-                Some(s) => n.name = s.to_string(),
-                None => warnings.push(type_warning(&name, Msg::WantString)),
-            },
-            "mode" => match v.as_str() {
-                Some(s @ ("form" | "editor")) => n.mode = s.to_string(),
-                Some(s) => warnings.push(Msg::ConfigBadNoteMode.fill(&[&s])),
-                None => warnings.push(type_warning(&name, Msg::WantString)),
-            },
-            "body" => match v.as_str() {
-                Some(s) => n.body = s.to_string(),
-                None => warnings.push(type_warning(&name, Msg::WantString)),
-            },
-            "required" | "hidden" => match v.as_array().and_then(|a| {
-                a.iter()
-                    .map(|x| x.as_str().map(str::to_string))
-                    .collect::<Option<Vec<String>>>()
-            }) {
-                Some(cols) => {
-                    let out = if k == "required" {
-                        &mut n.required
-                    } else {
-                        &mut n.hidden
-                    };
-                    for c in cols {
-                        if newnote::not_a_key(&c) || out.contains(&c) {
-                            warnings.push(Msg::ConfigBadAsk.fill(&[&c]));
-                        } else {
-                            out.push(c);
-                        }
-                    }
-                }
-                None => warnings.push(type_warning(&name, Msg::WantColumnNames)),
-            },
-            "ask" => match v.as_array().and_then(|a| {
-                a.iter()
-                    .map(|x| x.as_str().map(str::to_string))
-                    .collect::<Option<Vec<String>>>()
-            }) {
-                Some(cols) => {
-                    for c in cols {
-                        if newnote::not_a_key(&c) || n.ask.contains(&c) {
-                            warnings.push(Msg::ConfigBadAsk.fill(&[&c]));
-                        } else {
-                            n.ask.push(c);
-                        }
-                    }
-                }
-                None => warnings.push(type_warning(&name, Msg::WantColumnNames)),
-            },
-            "set" => {
-                let Some(set) = v.as_table() else {
-                    warnings.push(type_warning(&name, Msg::WantColumnValueTable));
-                    continue;
-                };
-                for (col, x) in set {
-                    if newnote::not_a_key(col) {
-                        warnings.push(Msg::ConfigBadSet.fill(&[col]));
-                        continue;
-                    }
-                    match newnote::value_from_toml(x) {
-                        Some(nv) => n.set.push((col.clone(), nv)),
-                        None => warnings.push(type_warning(
-                            &format!("new_note.set.{col}"),
-                            Msg::WantSetValue,
-                        )),
-                    }
-                }
-            }
-            _ => warnings.push(Msg::ConfigUnknownItem.fill(&[&name])),
-        }
-    }
-    n
-}
-
-/// `[display]`(SR-21)を読む。表でない・型の違う値・知らない項目は警告にして既定のまま。
-fn read_display(value: &toml::Value, d: &mut Display, warnings: &mut Vec<String>) {
-    let Some(t) = value.as_table() else {
-        warnings.push(type_warning("display", Msg::WantDisplayTable));
-        return;
-    };
-    for (k, v) in t {
-        let name = format!("display.{k}");
-        match d.field_mut(k) {
-            None => warnings.push(Msg::ConfigUnknownItem.fill(&[&name])),
-            Some(slot) => match v.as_bool() {
-                Some(b) => *slot = b,
-                None => warnings.push(type_warning(&name, Msg::WantBool)),
-            },
-        }
-    }
-}
-
-/// 型の違う項目の警告。`want` は求める型(`Msg::Want*`)。
-fn type_warning(name: &str, want: Msg) -> String {
-    Msg::ConfigWrongType.fill(&[&name, &want.text()])
+    Ok(format!(
+        "# mdgrid configuration moved to the current layout by mdgrid --migrate-config.\n\
+         # Comments of the original file are not carried over.\n\n{body}"
+    ))
 }
 
 /// TOML の見出しの行なら、括弧の中の空白と行末のコメントを除いた形(`[[workspace]]`・`[meta]`)。
@@ -445,13 +451,13 @@ pub(crate) fn toml_header(line: &str) -> Option<String> {
 }
 
 /// `lines[from..to]` の中の、見出し `head` で始まる区画 (始まり, 中身の終わり)。区画は次の見出し
-/// (`inner` に挙げたものを除く)か `to` の前まで。末尾のコメントと空行は中身に含めない(次の区画の前置き)。
+/// (`inner` が真のものを除く)か `to` の前まで。末尾のコメントと空行は中身に含めない(次の区画の前置き)。
 pub(crate) fn toml_blocks(
     lines: &[&str],
     from: usize,
     to: usize,
     head: &str,
-    inner: &[&str],
+    inner: &dyn Fn(&str) -> bool,
 ) -> Vec<(usize, usize)> {
     let mut out = Vec::new();
     let mut i = from;
@@ -464,7 +470,7 @@ pub(crate) fn toml_blocks(
         let mut end = start + 1;
         while end < to {
             match toml_header(lines[end]) {
-                Some(h) if !inner.contains(&h.as_str()) => break,
+                Some(h) if !inner(&h) => break,
                 _ => end += 1,
             }
         }

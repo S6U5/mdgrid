@@ -119,12 +119,6 @@ impl Markdown {
         })
     }
 
-    /// 設定の add_frontmatter を渡す(WB-3・CLI-3)。開いた直後、読み込み(load)の前に呼ぶ。
-    /// false なら、フロントマターの無いノートと空のフロントマターのノートのセルを読むだけにし、書かない。
-    pub fn set_add_frontmatter(&mut self, on: bool) {
-        self.add_frontmatter = on;
-    }
-
     /// 設定(add_frontmatter = false)で書かないノートの理由。書けるなら None。
     fn setting_lock(&self, fm: &Result<Frontmatter, ReadOnly>) -> Option<&'static str> {
         if self.add_frontmatter {
@@ -655,6 +649,12 @@ fn not_loaded() -> io::Error {
 }
 
 impl Source for Markdown {
+    /// 設定の add_frontmatter を渡す(WB-3・CLI-3)。開いた直後、読み込み(load)の前に呼ぶ。
+    /// false なら、フロントマターの無いノートと空のフロントマターのノートのセルを読むだけにし、書かない。
+    fn set_add_frontmatter(&mut self, on: bool) {
+        self.add_frontmatter = on;
+    }
+
     fn name(&self) -> String {
         self.folders
             .iter()

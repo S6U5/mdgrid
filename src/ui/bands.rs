@@ -253,12 +253,13 @@ pub(crate) fn tab_rows(app: &App) -> usize {
     usize::from(app.shows(Item::Tabs) && !single_tab_hidden(app))
 }
 
-/// SR-34: `view_tabs = "auto"` で、ビューが1つしか無いのでタブの行を出さないか。
+/// SR-34: `display.tabs = "auto"` で、ビューが1つしか無いのでタブの行を出さないか。
 fn single_tab_hidden(app: &App) -> bool {
-    app.view_tabs_auto && app.view_names().len() <= 1
+    app.settings.display.over(&app.display).tabs == mdgrid::display::TabsMode::Auto
+        && app.view_names().len() <= 1
 }
 
-/// 検索の欄(NV-23)の行の数: 出すなら 1、出さないなら 0(設定 `search_bar` とビューの上書き。SR-20)。
+/// 検索の欄(NV-23)の行の数: 出すなら 1、出さないなら 0(設定 `display.search_bar` とビューの上書き。SR-20)。
 pub(crate) fn bar_rows(app: &App) -> usize {
     usize::from(app.shows(Item::SearchBar))
 }

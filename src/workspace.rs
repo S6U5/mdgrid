@@ -9,6 +9,7 @@
 use crate::config;
 use crate::i18n::Msg;
 use crate::places::expand_home;
+use crate::profile::{Layer, Origin, Place, Profile};
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -19,19 +20,23 @@ pub const MARKER_DIR: &str = ".mdgrid";
 pub const MARKER_FILE: &str = "workspace.toml";
 
 /// ワークスペースの表1つ。
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct WsTable {
     pub name: String,
     /// フォルダか `.base`(実体のパスか、書いたパス)。
     pub path: PathBuf,
     pub view: Option<String>,
+    /// SR-44: 表の範囲の、手で書いたプロファイル(`[workspace.table.look]`・印の `[table.look]` など)。
+    pub profile: Profile,
 }
 
 /// ワークスペース1つ。
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Workspace {
     pub name: String,
     pub tables: Vec<WsTable>,
+    /// SR-44: ワークスペースの範囲のプロファイル(`[workspace.look]`・印の最上位の `[look]` など)。
+    pub profile: Profile,
 }
 
 /// 検知のしかた(WS-5)。
@@ -47,6 +52,14 @@ impl Detect {
             "vault" => Some(Detect::Vault),
             "git" => Some(Detect::Git),
             _ => None,
+        }
+    }
+
+    /// 設定の値の名前。
+    pub fn name(self) -> &'static str {
+        match self {
+            Detect::Vault => "vault",
+            Detect::Git => "git",
         }
     }
 
@@ -72,13 +85,45 @@ pub enum Source {
 }
 
 /// 決めた範囲。
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Scope {
     pub name: String,
     pub source: Source,
     pub tables: Vec<WsTable>,
+    /// SR-44: ワークスペースの範囲のプロファイル(検知した範囲は空)。
+    pub profile: Profile,
     /// 範囲を決めるときに読めなかったもの(印の誤りなど)。画面が出す。
     pub warnings: Vec<String>,
+}
+
+impl Scope {
+    /// 出どころの説明(`Product (workspaces.toml)`・`notes (.mdgrid/workspace.toml)`)。検知した範囲は None
+    /// (ワークスペースの範囲が無い。SR-44)。
+    pub fn label(&self) -> Option<String> {
+        match self.source {
+            Source::Chosen | Source::App => Some(format!("{} ({FILE_NAME})", self.name)),
+            Source::Marker => Some(format!("{} ({MARKER_DIR}/{MARKER_FILE})", self.name)),
+            Source::Detected(_) => None,
+        }
+    }
+
+    /// ワークスペースの範囲の層(SR-44)。検知した範囲は None。
+    pub fn layer(&self) -> Option<Layer> {
+        Some(Layer {
+            origin: Origin::new(Place::Workspace, self.label()?),
+            profile: self.profile.clone(),
+        })
+    }
+
+    /// 開いたもの(フォルダか .base)の表の、手で書いた層(SR-44)。
+    pub fn table_layer(&self, opened: &Path) -> Option<Layer> {
+        let label = self.label()?;
+        let t = self.tables.iter().find(|t| same_path(&t.path, opened))?;
+        Some(Layer {
+            origin: Origin::new(Place::TableHand, format!("{label}: {}", t.name)),
+            profile: t.profile.clone(),
+        })
+    }
 }
 
 /// 表の並び(`table` の配列)を読む。`base` があれば相対のパスはそこから。
@@ -86,6 +131,7 @@ fn read_tables(
     v: Option<&toml::Value>,
     base: Option<&Path>,
     what: &str,
+    (file, prefix): (&str, &str),
     warns: &mut Vec<String>,
 ) -> Vec<WsTable> {
     let mut out: Vec<WsTable> = Vec::new();
@@ -93,7 +139,12 @@ fn read_tables(
     for (k, item) in items.iter().enumerate() {
         let n = k + 1;
         let Some(t) = item.as_table() else {
-            warns.push(Msg::WsBadTable.fill(&[&what, &n]));
+            crate::profile::warn(
+                warns,
+                file,
+                &format!("{prefix}[{n}] ({what})"),
+                Msg::RsnNeedPath.text().to_string(),
+            );
             continue;
         };
         let text = |key: &str| {
@@ -102,7 +153,12 @@ fn read_tables(
                 .map(|s| s.trim().to_string())
         };
         let Some(path) = text("path").filter(|p| !p.is_empty()) else {
-            warns.push(Msg::WsBadTable.fill(&[&what, &n]));
+            crate::profile::warn(
+                warns,
+                file,
+                &format!("{prefix}[{n}] ({what})"),
+                Msg::RsnNeedPath.text().to_string(),
+            );
             continue;
         };
         let mut p = expand_home(&path);
@@ -114,10 +170,12 @@ fn read_tables(
         let name = text("name")
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| stem_of(&p));
+        let profile = Profile::read_scoped(t, file, prefix, &["name", "path", "view"], warns);
         out.push(WsTable {
             name,
             path: p,
             view: text("view").filter(|s| !s.is_empty()),
+            profile,
         });
     }
     out
@@ -160,7 +218,12 @@ fn parse_in(text: &str, base: Option<&Path>) -> (Vec<Workspace>, Vec<String>) {
     for (k, item) in items.iter().enumerate() {
         let n = k + 1;
         let Some(t) = item.as_table() else {
-            warns.push(Msg::WsBadEntry.fill(&[&n]));
+            crate::profile::warn(
+                &mut warns,
+                FILE_NAME,
+                &format!("workspace[{n}]"),
+                Msg::RsnNeedName.text().to_string(),
+            );
             continue;
         };
         let Some(name) = t
@@ -169,11 +232,28 @@ fn parse_in(text: &str, base: Option<&Path>) -> (Vec<Workspace>, Vec<String>) {
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty() && !out.iter().any(|w| &w.name == s))
         else {
-            warns.push(Msg::WsBadEntry.fill(&[&n]));
+            crate::profile::warn(
+                &mut warns,
+                FILE_NAME,
+                &format!("workspace[{n}]"),
+                Msg::RsnNeedName.text().to_string(),
+            );
             continue;
         };
-        let tables = read_tables(t.get("table"), base, &name, &mut warns);
-        out.push(Workspace { name, tables });
+        let tables = read_tables(
+            t.get("table"),
+            base,
+            &name,
+            (FILE_NAME, "workspace.table"),
+            &mut warns,
+        );
+        let profile =
+            Profile::read_scoped(t, FILE_NAME, "workspace", &["name", "table"], &mut warns);
+        out.push(Workspace {
+            name,
+            tables,
+            profile,
+        });
     }
     (out, warns)
 }
@@ -191,13 +271,13 @@ pub fn to_toml(list: &[Workspace]) -> String {
     let arr: Vec<toml::Value> = list
         .iter()
         .map(|w| {
-            let mut t = toml::Table::new();
+            let mut t = w.profile.to_table();
             t.insert("name".into(), toml::Value::String(w.name.clone()));
             let tables: Vec<toml::Value> = w
                 .tables
                 .iter()
                 .map(|x| {
-                    let mut tt = toml::Table::new();
+                    let mut tt = x.profile.to_table();
                     tt.insert("name".into(), toml::Value::String(x.name.clone()));
                     tt.insert("path".into(), toml::Value::String(home_short(&x.path)));
                     if let Some(v) = &x.view {
@@ -251,7 +331,7 @@ pub fn add(dir: &Path, ws: &str, table: WsTable) -> io::Result<()> {
         None => {
             list.push(Workspace {
                 name: ws.to_string(),
-                tables: Vec::new(),
+                ..Workspace::default()
             });
             list.last_mut().expect("just pushed")
         }
@@ -261,7 +341,11 @@ pub fn add(dir: &Path, ws: &str, table: WsTable) -> io::Result<()> {
         .iter_mut()
         .find(|t| same_path(&t.path, &table.path))
     {
-        Some(t) => *t = table.clone(),
+        // 手で書いた表のプロファイルは残す(名前とビューだけ置き換える)。
+        Some(t) => {
+            t.name = table.name.clone();
+            t.view = table.view.clone();
+        }
         None => w.tables.push(table.clone()),
     }
     let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
@@ -313,11 +397,18 @@ struct Block {
     end: usize,
 }
 
-/// `lines[from..to]` の中の、見出し `head` で始まる区画(config::toml_blocks)。ワークスペースの区画は、
-/// その表の見出し(`[[workspace.table]]`)では終わらない。
+/// `lines[from..to]` の中の、見出し `head` で始まる区画(config::toml_blocks)。
 fn blocks(lines: &[&str], from: usize, to: usize, head: &str) -> Vec<Block> {
-    let inner: &[&str] = if head == WS_HEAD { &[TABLE_HEAD] } else { &[] };
-    config::toml_blocks(lines, from, to, head, inner)
+    // ワークスペースの区画は、その表と表のプロファイル(`[workspace.…]`・`[[workspace.…]]`)では終わらない。
+    // 表の区画は、その表のプロファイル(`[workspace.table.…]`)では終わらない。
+    let inner = |h: &str| {
+        if head == WS_HEAD {
+            h.starts_with("[workspace.") || h.starts_with("[[workspace.")
+        } else {
+            h.starts_with("[workspace.table.")
+        }
+    };
+    config::toml_blocks(lines, from, to, head, &inner)
         .into_iter()
         .map(|(start, end)| Block { start, end })
         .collect()
@@ -358,7 +449,111 @@ fn table_text(t: &WsTable) -> String {
     if let Some(v) = &t.view {
         s.push_str(&format!("view = {}\n", q(v)));
     }
+    s.push_str(&profile_text(&t.profile, &["workspace", "table"]));
     s
+}
+
+/// プロファイルを、区画の見出し `path`(`["workspace"]` なら `[workspace.look]`)の下に書く文。`use` は見出しの
+/// 前の行(呼ぶ側の区画の中)に置く。
+fn profile_text(p: &Profile, path: &[&str]) -> String {
+    let mut body = p.to_table();
+    let mut s = String::new();
+    if let Some(u) = body.remove("use") {
+        s.push_str(&format!("use = {u}\n"));
+    }
+    if body.is_empty() {
+        return s;
+    }
+    let mut root = body;
+    for key in path.iter().rev() {
+        let mut t = toml::Table::new();
+        t.insert((*key).to_string(), toml::Value::Table(root));
+        root = t;
+    }
+    let text = toml::to_string(&root).unwrap_or_default();
+    s.push('\n');
+    s.push_str(&text);
+    s
+}
+
+/// ワークスペースの範囲のプロファイルを書く(SR-43・SR-44)。区画の中の今のプロファイル(最上位の `use` と
+/// `[workspace.look]` などの区画)を置き換え、ほかの行(コメント・表)は文字のまま残す。
+pub fn save_profile(dir: &Path, ws: &str, profile: &Profile) -> io::Result<()> {
+    let mut list = load_for_edit(dir)?;
+    let Some(w) = list.iter_mut().find(|w| w.name == ws) else {
+        return Err(io::Error::other(Msg::WsUnknown.fill(&[&ws])));
+    };
+    w.profile = profile.clone();
+    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let new = checked(edit_profile(&text, ws, profile), dir, &list);
+    config::write_atomic(dir, FILE_NAME, new.as_bytes())
+}
+
+/// ワークスペースの区画の中のプロファイルを置き換えた文。
+fn edit_profile(text: &str, ws: &str, p: &Profile) -> String {
+    let mut lines: Vec<&str> = text.split_inclusive('\n').collect();
+    let owned_tail;
+    if lines.last().is_some_and(|l| !l.ends_with('\n')) {
+        owned_tail = format!("{}\n", lines.pop().unwrap_or_default());
+        lines.push(&owned_tail);
+    }
+    let n = lines.len();
+    let Some(b) = blocks(&lines, 0, n, WS_HEAD)
+        .into_iter()
+        .find(|b| block_name(&lines, *b).as_deref() == Some(ws))
+    else {
+        return text.to_string();
+    };
+    let is_profile_head = |h: &str| {
+        crate::schema::PROFILE_KEYS
+            .iter()
+            .any(|k| h == format!("[workspace.{k}]") || h.starts_with(&format!("[workspace.{k}.")))
+    };
+    // 区画の中の行を、見出しの区切りで分けて、プロファイルの区画と最上位の `use` の行を外す。
+    let mut keep: Vec<String> = Vec::new();
+    let mut skipping = false;
+    let mut head_end = None;
+    for (i, line) in lines.iter().enumerate().take(b.end).skip(b.start) {
+        if let Some(h) = config::toml_header(line) {
+            skipping = is_profile_head(&h);
+            if head_end.is_none() && i > b.start {
+                head_end = Some(keep.len());
+            }
+            if skipping {
+                continue;
+            }
+        } else if skipping {
+            continue;
+        } else if head_end.is_none() && line.trim_start().starts_with("use") {
+            let key = line.trim_start()[3..].trim_start();
+            if key.starts_with('=') {
+                continue;
+            }
+        }
+        keep.push(line.to_string());
+    }
+    let at = head_end.unwrap_or(keep.len());
+    let piece = profile_text(p, &["workspace"]);
+    let (use_line, tables) = match piece.split_once("\n\n") {
+        Some((u, rest)) if u.starts_with("use") => (format!("{u}\n"), format!("\n{rest}")),
+        _ if piece.starts_with("use") => (piece.clone(), String::new()),
+        _ => (String::new(), piece.clone()),
+    };
+    // 最上位の行のあと(最初の見出しの前)に use、その後ろにプロファイルの区画。
+    let mut head: Vec<String> = keep[..at].to_vec();
+    while head.last().is_some_and(|l| l.trim().is_empty()) {
+        head.pop();
+    }
+    head.push(use_line);
+    if !tables.is_empty() {
+        head.push(tables);
+    }
+    head.push("\n".into());
+    let mut out: Vec<String> = lines[..b.start].iter().map(|l| l.to_string()).collect();
+    out.extend(head);
+    out.extend(keep[at..].iter().cloned());
+    out.extend(lines[b.end..].iter().map(|l| l.to_string()));
+    join(out)
 }
 
 /// 行の並びを文字に戻す(最後の行の改行を保つ)。
@@ -458,7 +653,7 @@ pub fn auto_tables(root: &Path) -> Vec<WsTable> {
             out.push(WsTable {
                 name,
                 path: std::fs::canonicalize(&p).unwrap_or(p),
-                view: None,
+                ..WsTable::default()
             });
         }
     }
@@ -527,7 +722,15 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| stem_of(root));
-    let mut tables = read_tables(table.get("table"), Some(root), &name, &mut warns);
+    let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+    let mut tables = read_tables(
+        table.get("table"),
+        Some(root),
+        &name,
+        (&label, "table"),
+        &mut warns,
+    );
+    let profile = Profile::read_scoped(&table, &label, "", &["name", "table"], &mut warns);
     // 印はノートと一緒に配られるので、根の外を指す表は使わない(開いただけで外のフォルダを読ませない)。
     let real_root = std::fs::canonicalize(root).unwrap_or_else(|_| root.to_path_buf());
     tables.retain(|t| {
@@ -545,7 +748,14 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
     if table.get("table").is_none() {
         tables = auto_tables(root);
     }
-    (Workspace { name, tables }, warns)
+    (
+        Workspace {
+            name,
+            tables,
+            profile,
+        },
+        warns,
+    )
 }
 
 /// 印を作る(WS-7)。既にあれば理由。作ったファイルのパス。
@@ -630,6 +840,7 @@ pub fn resolve(
             name: w.name.clone(),
             source: Source::Chosen,
             tables: w.tables.clone(),
+            profile: w.profile.clone(),
             warnings,
         }));
     }
@@ -645,6 +856,7 @@ pub fn resolve(
                 name: w.name,
                 source: Source::Marker,
                 tables: w.tables,
+                profile: w.profile,
                 warnings,
             }));
         }
@@ -657,6 +869,7 @@ pub fn resolve(
             name: w.name.clone(),
             source: Source::App,
             tables: w.tables.clone(),
+            profile: w.profile.clone(),
             warnings: Vec::new(),
         }));
     }
@@ -667,6 +880,7 @@ pub fn resolve(
                 name: stem_of(&root),
                 source: Source::Detected(how),
                 tables,
+                profile: Profile::default(),
                 warnings: Vec::new(),
             }));
         }
