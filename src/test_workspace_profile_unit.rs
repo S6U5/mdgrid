@@ -126,9 +126,14 @@ fn test_sr_43_save_profile_keeps_comments() {
 fn test_ws_2_add_keeps_table_profile() {
     // [WS-2][SR-44] 同じ表を足し直しても、手で書いた表のプロファイルは残る。
     let dir = tmp("add");
+    // どの OS でも絶対パスになるよう、一時フォルダの下の表を指す。
+    let table = dir.join("t");
     std::fs::write(
         dir.join(FILE_NAME),
-        "[[workspace]]\nname = \"P\"\n\n[[workspace.table]]\nname = \"T\"\npath = \"/t\"\n\n[workspace.table.look]\ntheme = \"nord\"\n",
+        format!(
+            "[[workspace]]\nname = \"P\"\n\n[[workspace.table]]\nname = \"T\"\npath = {}\n\n[workspace.table.look]\ntheme = \"nord\"\n",
+            toml::Value::String(table.to_string_lossy().into_owned())
+        ),
     )
     .unwrap();
     add(
@@ -136,7 +141,7 @@ fn test_ws_2_add_keeps_table_profile() {
         "P",
         WsTable {
             name: "T2".into(),
-            path: PathBuf::from("/t"),
+            path: table.clone(),
             ..WsTable::default()
         },
     )
