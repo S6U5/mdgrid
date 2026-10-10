@@ -459,9 +459,9 @@ msgs! {
     LookTemplates = "Templates", "テンプレート";
     LookSaveTemplate = "+ Save this look as a template", "+ 今の見た目を名前を付けて保存";
     LookResetRow = "Back to config.toml", "config.toml に戻す";
-    LookNerdAuto = "auto (follow the terminal)", "auto(端末に合わせる)";
-    LookNerdOn = "true (Nerd Font)", "true(Nerd Font)";
-    LookNerdOff = "false", "false";
+    LookNerdAuto = "auto (by the terminal)", "auto(自動。端末に合わせる)";
+    LookNerdOn = "true (on, Nerd Font)", "true(オン。Nerd Font)";
+    LookNerdOff = "false (off)", "false(オフ)";
     LookPickOf = "Choose: {0}", "{0}を選ぶ";
     LookTemplateUsed = "Using template \"{0}\" (Apply to see it)", "テンプレート「{0}」を当てた(反映で効く)";
     LookTemplateSaved = "Saved template \"{0}\"", "テンプレート「{0}」を保存した";

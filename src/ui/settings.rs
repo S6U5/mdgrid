@@ -647,7 +647,7 @@ impl App {
         self.set_mode(Mode::Table);
         // SR-43: 見た目を変えていれば画面に当てて look.toml に残す。
         if d.look != d.look0 {
-            self.apply_look(d.look);
+            self.apply_look(d.look, d.look0);
         }
         self.settings = d.s;
         if d.cols != d.cols0 {

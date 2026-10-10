@@ -298,6 +298,8 @@ mod test_language_more;
 #[cfg(test)]
 mod test_list_type;
 #[cfg(test)]
+mod test_look_keep;
+#[cfg(test)]
 mod test_look_section;
 #[cfg(test)]
 mod test_native_state;

@@ -7201,5 +7201,23 @@
       "SR-38"
     ],
     "sha": "44b5e21f05885417"
+  },
+  "src/test_weekday_lang_unit.rs::test_sr_23_weekday_follows_language": {
+    "ids": [
+      "SR-23"
+    ],
+    "sha": "a6c4f95fe2aebd9c"
+  },
+  "src/ui/test_look_keep.rs::test_sr_43_auto_kept": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "a1e8a8c74a7302ab"
+  },
+  "src/ui/test_look_keep.rs::test_sr_43_only_changed_items_saved": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "1a4c9e9cad8f1e84"
   }
 }

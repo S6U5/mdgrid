@@ -1,0 +1,7 @@
+# Sample config for the theme slate (SR-26, SR-37). Run: mdgrid --config examples/themes/slate.toml examples/vault
+# In your own config ($XDG_CONFIG_HOME/mdgrid/config.toml), this one line is enough.
+theme = "slate"
+
+# The shaded rows are painted in the theme's colors too.
+[display]
+zebra = true

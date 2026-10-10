@@ -67,10 +67,19 @@ impl App {
 
     /// 写しの始まり: look.toml にあればその値、無ければ今の画面の見た目。
     pub(crate) fn look_pick_now(&self) -> LookPick {
+        // 設定が auto なら auto のまま見せる(判定した結果で置き換えない)。
         let now = LookPick {
-            theme: ThemeChoice::Named(self.theme),
+            theme: if self.theme_auto {
+                ThemeChoice::Auto
+            } else {
+                ThemeChoice::Named(self.theme)
+            },
             preset: self.style.preset,
-            nerd: if self.nerd_font { Nerd::On } else { Nerd::Off },
+            nerd: match (self.nerd_auto, self.nerd_font) {
+                (true, _) => Nerd::Auto,
+                (false, true) => Nerd::On,
+                (false, false) => Nerd::Off,
+            },
         };
         now.with(&self.look_file().look)
     }
@@ -242,23 +251,42 @@ impl App {
     }
 
     /// 反映(SR-43): 写しの見た目を画面に当て、look.toml に残す(読むだけでは書かない)。
-    pub(crate) fn apply_look(&mut self, lk: LookPick) {
-        match lk.theme {
-            ThemeChoice::Named(t) => self.theme = t,
-            // auto は起動のときに端末の地で決める。今は今のテーマのまま。
-            ThemeChoice::Auto => {}
+    /// 変えた項目だけを画面に当て、look.toml には、開いたときから変えた項目と、もともと look.toml にあった
+    /// 項目だけを書く(変えていない組を書くと、config.toml の部品ごとの形が効かなくなるため)。
+    pub(crate) fn apply_look(&mut self, lk: LookPick, lk0: LookPick) {
+        if lk.theme != lk0.theme {
+            match lk.theme {
+                ThemeChoice::Named(t) => self.theme = t,
+                // auto は起動のときに端末の地で決める。今は今のテーマのまま。
+                ThemeChoice::Auto => {}
+            }
         }
-        self.style = Style::of(lk.preset);
-        self.nerd_font = match lk.nerd {
-            Nerd::On => true,
-            Nerd::Off => false,
-            Nerd::Auto => mdgrid::style::nerd_auto(std::env::var("TERM_PROGRAM").ok().as_deref()),
-        };
+        if lk.preset != lk0.preset {
+            self.style = Style::of(lk.preset);
+        }
+        if lk.nerd != lk0.nerd {
+            self.nerd_font = match lk.nerd {
+                Nerd::On => true,
+                Nerd::Off => false,
+                Nerd::Auto => {
+                    mdgrid::style::nerd_auto(std::env::var("TERM_PROGRAM").ok().as_deref())
+                }
+            };
+        }
         if self.readonly || self.nv.dir.is_none() {
             return;
         }
         let mut f = self.look_file();
-        f.look = lk.look();
+        let keep = |changed: bool, had: bool| changed || had;
+        if keep(lk.theme != lk0.theme, f.look.theme.is_some()) {
+            f.look.theme = Some(lk.theme);
+        }
+        if keep(lk.preset != lk0.preset, f.look.preset.is_some()) {
+            f.look.preset = Some(lk.preset);
+        }
+        if keep(lk.nerd != lk0.nerd, f.look.nerd.is_some()) {
+            f.look.nerd = Some(lk.nerd);
+        }
         self.save_look_file(&f);
     }
 }

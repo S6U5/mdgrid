@@ -2,7 +2,7 @@
 
 [日本語](../ja/themes.md) · [Contents](index.md)
 
-You can pick one of seven color themes for the screen. Only the colors change; text and marks (`*` for a pending change, `>` for the selected row, and so on) stay the same.
+You can pick one of twelve color themes for the screen (or `auto`, which follows the terminal background). Only the colors change; text and marks (`*` for a pending change, `>` for the selected row, and so on) stay the same.
 
 ## How to choose
 
@@ -27,6 +27,12 @@ mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
 | [`gruvbox`](#gruvbox) | Warm browns and orange |
 | [`pink-monster`](#pink-monster) | Neon pink and lime on dark magenta |
 | [`dozy-pink`](#dozy-pink) | Soft pink and cream |
+| [`sumi`](#sumi) | Dark ink, soft grays and a teal accent |
+| [`slate`](#slate) | Slate with a violet accent |
+| [`saas`](#saas) | Light gray with an indigo accent |
+| [`saas-dark`](#saas-dark) | The dark version of saas |
+| [`paper`](#paper) | A light background with a blue accent |
+| `auto` | `theme_light` (default `saas`) on a light terminal background, `theme_dark` (default `sumi`) on a dark one |
 
 ## Gallery
 
@@ -85,6 +91,46 @@ Neon pink and lime on dark magenta. Config: `theme = "pink-monster"`.
 Soft pink and cream. Config: `theme = "dozy-pink"`.
 
 ![Dozy Pink](images/theme-dozy-pink.svg)
+
+<a id="sumi"></a>
+
+### `sumi` — Sumi
+
+Dark ink, soft grays and a teal accent. Setting: `theme = "sumi"`.
+
+![Sumi](images/theme-sumi.svg)
+
+<a id="slate"></a>
+
+### `slate` — Slate
+
+Slate with a violet accent. Setting: `theme = "slate"`.
+
+![Slate](images/theme-slate.svg)
+
+<a id="saas"></a>
+
+### `saas` — SaaS
+
+Light gray with an indigo accent. Setting: `theme = "saas"`.
+
+![SaaS](images/theme-saas.svg)
+
+<a id="saas-dark"></a>
+
+### `saas-dark` — SaaS Dark
+
+The dark version of saas. Setting: `theme = "saas-dark"`.
+
+![SaaS Dark](images/theme-saas-dark.svg)
+
+<a id="paper"></a>
+
+### `paper` — Paper
+
+A light background with a blue accent. Setting: `theme = "paper"`.
+
+![Paper](images/theme-paper.svg)
 
 ## Notes
 
