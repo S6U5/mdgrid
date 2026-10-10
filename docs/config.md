@@ -365,7 +365,7 @@ group_gap = true
 - Default: `"always"`
 - Scope: global, workspace, table, view
 
-The row of view tabs below the header: `"always"`, `"auto"` (only with two or more views; a folder opened without a `.base` has one view, **All notes**, so its tab row is left out and the table uses that row until you save a view of your own) or `"never"`. `[` and `]` switch views either way. In the "Display" section of the view settings this item cycles through the three values. Each view can override this in its view settings (`o`, the "Display" section).
+The row of view tabs below the header: `"always"`, `"auto"` (only with two or more views; a folder opened without a `.base` has one view, **Default table**, so its tab row is left out and the table uses that row until you save a view of your own) or `"never"`. `[` and `]` switch views either way. In the "Display" section of the view settings this item cycles through the three values. Each view can override this in its view settings (`o`, the "Display" section).
 
 ```toml
 [display]

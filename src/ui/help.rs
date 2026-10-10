@@ -358,6 +358,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
         let a = b.action;
         if a == Action::Palette
             || write_command(app, a)
+            || (!app.src.notes() && Action::NOTE_ONLY.contains(&a))
             || scored.iter().any(|s| s.2 == a)
             || out.iter().any(|c| c.target == Target::Run(a))
         {
@@ -373,7 +374,9 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
     }
     // BV-19: キーの無いコマンド(読むだけでは書くので出さない。ノートを書かない登録した表のは出す)。
     let mut commands: Vec<&keymap::Command> = Vec::new();
-    for c in keymap::commands(app.readonly) {
+    for c in keymap::commands(app.readonly)
+        .filter(|c| app.src.notes() || !Action::NOTE_ONLY.contains(&c.action))
+    {
         let best = [score(q, c.action.name()), score(q, c.text())]
             .into_iter()
             .flatten()

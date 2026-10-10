@@ -415,6 +415,51 @@ fn strip_md(s: &str) -> &str {
     }
 }
 
+/// 本文の雛形(`[new_note] body`。CE-32)を読む。空なら Ok(None)。雛形は開いたフォルダ(`root`)からの
+/// 相対で、その中のファイルだけを読む: 絶対パス・`~`・`..` の部分は断り、記号的なリンクで外に出るものも、
+/// 実体の場所で確かめて断る(フォルダの中の印のファイルにも書けるので、外のファイルをノートに写さないため)。
+/// 実体の場所を確かめられない(無い・行き先の無いリンク)ものは読まずに理由。読むのは確かめた実体のパス。
+/// `.obsidian/templates/…` のような `.` で始まるフォルダは受ける。
+pub fn read_body(root: &Path, body: &str) -> Result<Option<String>, String> {
+    let Some(real) = body_path(root, body)? else {
+        return Ok(None);
+    };
+    std::fs::read_to_string(&real)
+        .map(Some)
+        .map_err(|e| Msg::NoteBodyUnreadable.fill(&[&real.display(), &e]))
+}
+
+/// `read_body` の確かめ: 雛形の実体のパス(開いたフォルダの中にあると確かめたもの)。
+pub fn body_path(root: &Path, body: &str) -> Result<Option<PathBuf>, String> {
+    let body = body.trim();
+    if body.is_empty() {
+        return Ok(None);
+    }
+    let rel = Path::new(body);
+    let outside = || Msg::NoteBodyOutside.fill(&[&body]);
+    if rel.is_absolute()
+        || body.starts_with('~')
+        || body.starts_with('/')
+        || body.starts_with('\\')
+        || rel.components().any(|c| {
+            !matches!(
+                c,
+                std::path::Component::Normal(_) | std::path::Component::CurDir
+            )
+        })
+    {
+        return Err(outside());
+    }
+    let path = root.join(rel);
+    let unreadable = |e: std::io::Error| Msg::NoteBodyUnreadable.fill(&[&path.display(), &e]);
+    let real_root = root.canonicalize().map_err(unreadable)?;
+    let real = path.canonicalize().map_err(unreadable)?;
+    if !real.starts_with(&real_root) {
+        return Err(outside());
+    }
+    Ok(Some(real))
+}
+
 /// 作る場所の検査(CE-25)。root/folder/name に `.md` を補ったパス。`..` で外に出る・絶対パス・空・
 /// 制御文字・既にある → Err(理由)。名前の前後の空白は除く。フォルダは作らない。
 pub fn note_path(root: &Path, folder: &str, name: &str) -> Result<PathBuf, String> {

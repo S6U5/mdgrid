@@ -146,7 +146,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         want.push((Section::View, Action::ExportBase, false));
         want.push((Section::View, Action::Save, false));
     }
+    // SC-17: 行がノートでない表(CSV など)では、ノートだけの動作を出さない。
+    let notes = app.src.notes();
     want.into_iter()
+        .filter(|(_, a, _)| notes || !Action::NOTE_ONLY.contains(a))
         .map(|(section, action, bulk)| Item {
             section,
             label: if bulk {

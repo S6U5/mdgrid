@@ -114,6 +114,23 @@ The table views of the `.base` appear as tabs, and the first one (or the one nam
 
 What mdgrid reads — keys, operators, functions — is listed in [Obsidian Bases support](../../obsidian-bases.md).
 
+## Open a CSV or TSV as a ledger
+
+```sh
+mdgrid /tmp/mdgrid-sample/備品.csv
+```
+
+Pass one `.csv` or `.tsv` file and mdgrid opens it as a table: the first line names the columns, each following line is a row. Editing values, undo, the diff before saving, filters, sorting, grouping, saved views and `--print` work as they do for a folder of notes.
+
+- Saving rewrites only the characters of the values you changed. Other lines, the quoting, the line endings (LF or CRLF) and a leading BOM stay as they were. A value is quoted only when it contains `,`, `"` or a line break.
+- It is one file, so however many rows you change, the save review shows one diff for the file and writes it once. If the file changed elsewhere after you opened it, mdgrid does not write.
+- `a` adds an empty row at the end of the file (written right away) and opens the input on its first column.
+- Only UTF-8 is read. A Shift_JIS file, for example, does not open and mdgrid says why (save it as UTF-8 to open it). A line whose number of values differs from the header is read-only; select it to see why.
+- Features that only make sense for notes (open in the editor, rename the note, rename or remove a key, add a column, links and the relation map, parent and child rows, export to `.base`) are not shown, and their keys only say why.
+- Line endings may be LF or CRLF. A file whose lines end with a lone CR does not open; mdgrid says why. A repeated column name becomes `name#column number` from the second one on, and an empty one becomes `#column number`.
+- With `--print --with-path` the path is the file and the row number, like `ledger.csv#2`, and `--apply` brings changes back to that row.
+- Links between a CSV and notes (relations) are not supported yet. You can register a CSV table in the list of tables or a workspace and open it from there, but it is left out of links and the relation map.
+
 ## Shape a view and save it
 
 `o` opens the view settings. `Tab` moves between sections:
@@ -128,7 +145,7 @@ What mdgrid reads — keys, operators, functions — is listed in [Obsidian Base
 
 ![View settings](images/view-settings.svg)
 
-`Apply` applies it to the table; `Save as` keeps it as an mdgrid view. **Make this the default view** in the palette (`:`) or the action menu (`x`) makes the current view the one that opens next time (pick the first tab to go back to it). On the same screen, `Overwrite`, `Rename` and `Delete` manage saved views, and `Reset` returns the settings to the defaults. A saved view becomes a tab next to `All notes` (with `[display] tabs = "auto"` the tab row appears only from then on) and is written to `views.toml` in the config folder. The conditions in effect are shown in the settings band above the table; `f` moves into the band and `Backspace` removes one.
+`Apply` applies it to the table; `Save as` keeps it as an mdgrid view. **Make this the default view** in the palette (`:`) or the action menu (`x`) makes the current view the one that opens next time (pick the first tab to go back to it). On the same screen, `Overwrite`, `Rename` and `Delete` manage saved views, and `Reset` returns the settings to the defaults. A saved view becomes a tab next to `Default table` (with `[display] tabs = "auto"` the tab row appears only from then on) and is written to `views.toml` in the config folder. The conditions in effect are shown in the settings band above the table; `f` moves into the band and `Backspace` removes one.
 
 ![Save as an mdgrid view](images/native-view-save.svg)
 

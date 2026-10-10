@@ -407,6 +407,20 @@ impl Action {
         }
     }
 
+    /// SC-17: ノートだけの動作(行がノートでない表(CSV など)では出さず、キーでも断る)。
+    pub const NOTE_ONLY: &[Action] = &[
+        Action::OpenEditor,
+        Action::RenameNote,
+        Action::RenameKey,
+        Action::DeleteKey,
+        Action::AddColumn,
+        Action::OpenLink,
+        Action::LinkedRows,
+        Action::RelationMap,
+        Action::ToggleTree,
+        Action::ExportBase,
+    ];
+
     /// 動作を名前(`Action::name`)で引く(SR-13 の設定)。表にある動作だけ。
     pub fn by_name(name: &str) -> Option<Action> {
         BINDINGS.iter().map(|b| b.action).find(|a| a.name() == name)

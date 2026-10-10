@@ -229,7 +229,11 @@ fn pending(app: &App, d: &Draft) -> usize {
 fn nav_rows(app: &App, d: &Draft, nw: usize) -> Vec<(String, Option<Sec>, bool)> {
     let cur = shown_sec(d);
     let mut out = Vec::new();
-    for sec in NAV {
+    // SC-17: 行がノートでない表(CSV など)では親子(NV-27)の区画を出さない。
+    for sec in NAV
+        .into_iter()
+        .filter(|s| app.src.notes() || *s != Sec::Tree)
+    {
         let on = sec == cur;
         let name = sec_name(sec).to_string();
         let b = badge(app, d, sec);

@@ -436,7 +436,7 @@ Keys: `o` `Tab` `Tab` `Tab` `Tab` `Down` `Down` `Down` `Enter` `text:mine` `Ente
 
 ![Save as an mdgrid view](images/native-view-save.svg)
 
-Save the current settings under a name; it becomes a tab next to All notes and is kept in views.toml.
+Save the current settings under a name; it becomes a tab next to Default table and is kept in views.toml.
 
 ## Export to a new .base
 

@@ -15,7 +15,7 @@ pub struct Place {
     pub name: String,
     /// 1段の分類(空なら分類なし)。
     pub group: String,
-    /// フォルダか `.base` のパス(先頭の `~` はホームのフォルダに読み替え済み)。
+    /// フォルダか `.base` か `.csv`・`.tsv` のパス(先頭の `~` はホームのフォルダに読み替え済み)。
     pub path: PathBuf,
     /// 開くビューの名前(`.base` か mdgrid のビュー)。
     pub view: Option<String>,

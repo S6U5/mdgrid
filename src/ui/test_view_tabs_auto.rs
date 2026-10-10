@@ -95,17 +95,20 @@ fn test_sr_34_unknown_value_warns() {
 
 #[test]
 fn test_sr_23_default_tab_english_name() {
-    // [SR-23] 英語の既定の表の名前は All notes。前の名前 Default は別名として受け、ビューの名前には使えない。
+    // [SR-23] 英語の既定の表の名前は Default table(ノートでない表にも通じる名前)。前の名前 Default と All notes は
+    // 別名として受け、ビューの名前には使えない。
     let _g = mdgrid::i18n::scoped(mdgrid::i18n::Lang::En);
     let tmp = folder("sr34_en");
     let mut a = boot(&tmp, Config::default());
     let s = screen(&a);
-    assert!(s.lines().nth(1).unwrap().contains("All notes"), "{s}");
-    a.select_view_named("Default");
-    assert!(a.message.is_none(), "{:?}", a.message);
-    assert_eq!(a.view_index(), 0);
-    assert!(
-        a.name_problem(&[], "Default", None).is_some(),
-        "前の名前は使えない"
-    );
+    assert!(s.lines().nth(1).unwrap().contains("Default table"), "{s}");
+    for old in ["Default", "All notes"] {
+        a.select_view_named(old);
+        assert!(a.message.is_none(), "{:?}", a.message);
+        assert_eq!(a.view_index(), 0);
+        assert!(
+            a.name_problem(&[], old, None).is_some(),
+            "前の名前は使えない"
+        );
+    }
 }

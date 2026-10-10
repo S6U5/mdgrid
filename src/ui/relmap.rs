@@ -213,6 +213,11 @@ impl App {
 
     /// REL-7: 関係マップを開く(ワークスペースの表を読んで並べる)。今の表を選ぶ。
     pub(crate) fn open_relmap(&mut self) {
+        // SC-17: 行がノートでない表(CSV など)からは開かない(クリックの道もここで断る)。
+        if !self.src.notes() {
+            self.message = Some(Msg::CsvNoteOnly.text().into());
+            return;
+        }
         let tables = self.workspace_tables_now();
         if tables.is_empty() {
             self.message = Some(Msg::RelMapNoTables.into());
@@ -251,7 +256,7 @@ impl App {
     /// ワークスペースの表(登録した表と今の表)を今読む。
     fn workspace_tables_now(&self) -> Vec<Table> {
         let mut out: Vec<Table> = self
-            .scope_places()
+            .link_places()
             .iter()
             .map(|p| Table::new(&p.name, &p.path))
             .collect();
@@ -343,7 +348,7 @@ impl App {
             return;
         }
         let place = self
-            .scope_places()
+            .link_places()
             .into_iter()
             .find(|p| Table::new(&p.name, &p.path).dir == t.dir)
             .unwrap_or_else(|| Place {

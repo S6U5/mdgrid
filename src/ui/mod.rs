@@ -10,6 +10,7 @@ pub mod columns;
 pub mod detail;
 // 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
 pub(crate) use crate::diff;
+pub mod add_row;
 pub mod display;
 pub mod entry;
 pub mod export;
@@ -208,6 +209,8 @@ mod test_look;
 #[cfg(test)]
 mod test_modern_rest;
 #[cfg(test)]
+mod test_note_body_outside;
+#[cfg(test)]
 mod test_note_editor;
 #[cfg(test)]
 mod test_note_form;
@@ -276,6 +279,14 @@ mod test_view_tabs_auto;
 #[cfg(test)]
 mod test_workspace;
 // 受け入れの試験(書き換えない)の書き方に当たる clippy の指摘は、ここで許す。
+#[cfg(test)]
+mod test_csv_note_only;
+#[cfg(test)]
+mod test_csv_note_only_more;
+#[cfg(test)]
+mod test_csv_source;
+#[cfg(test)]
+mod test_csv_usable;
 #[cfg(test)]
 #[allow(clippy::manual_contains, clippy::cloned_ref_to_slice_refs)]
 mod test_freq;

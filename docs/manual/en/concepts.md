@@ -32,7 +32,7 @@ A key that a note does not have shows as an empty cell; an empty string shows as
 
 A **view** is a way of looking at the table: which columns, in which order, which rows (filters), how they are sorted and grouped. The tabs under the header are the views of the table you opened.
 
-- **All notes** is always there when you open a folder: every note, every key.
+- **Default table** is always there when you open a folder: every note, every key.
 - **`.base` views**: when you open an Obsidian Bases `.base` file, its table views become the tabs. mdgrid reads them but never changes the `.base` file.
 - **mdgrid views**: in **View settings** (`o`) choose columns, filters, sorting, grouping and display options, then **Save as** a name. The view becomes a new tab. Saved views live in `views.toml` in the config folder, never next to your notes.
 

@@ -121,36 +121,38 @@
     "ids": [
       "SR-8"
     ],
-    "sha": "524ca7ddcc246b15",
-    "from": "eecbcbe5fea91049"
+    "sha": "8cf5c45903845424",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_config_unit.rs::test_cli_12_every_item_is_read": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "595f88b329154c8e",
-    "from": "eecbcbe5fea91049"
+    "sha": "12261aee55b592c4",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_config_unit.rs::test_cli_12_items_have_descriptions": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "559e5e2f5e8eedf5",
-    "from": "eecbcbe5fea91049"
+    "sha": "601a4e8f9adbd77a",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_config_unit.rs::test_ce_22_config_date_items_wrong_types_warn": {
     "ids": [
-      "CE-22"
+      "CE-22",
+      "CLI-3"
     ],
-    "sha": "6585e9b98404e64a",
-    "from": "eecbcbe5fea91049"
+    "sha": "8c01f7a78cfaa5f0",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_config_unit.rs::test_nv_23_config_search_bar": {
     "ids": [
+      "CLI-3",
       "NV-23"
     ],
-    "sha": "26e3c83e4473a74b",
-    "from": "eecbcbe5fea91049"
+    "sha": "69c36c55840f6f43",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_main.rs::test_cli_11_print_config_arg": {
     "ids": [
@@ -441,8 +443,8 @@
       "CE-20",
       "CE-22"
     ],
-    "sha": "ee715f7ab8d94cde",
-    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
+    "sha": "f78da3b6f8fd03ae",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_calendar.rs::test_ce_10_bulk_datetime_keeps_each_rows_time": {
     "ids": [
@@ -471,8 +473,8 @@
       "CE-22",
       "WB-18"
     ],
-    "sha": "da45c886716223eb",
-    "by": "specs/_decisions/2026-10-09-modern-borders-locks.md"
+    "sha": "525299deec728af9",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_calendar.rs::test_ce_23_shift_left_right_moves_month": {
     "ids": [
@@ -636,45 +638,46 @@
     "ids": [
       "SR-20"
     ],
-    "sha": "125b1d7db91def22",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "7037f7e71e2ed6a2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_zebra_counts_note_rows_not_headings": {
     "ids": [
       "SR-20"
     ],
-    "sha": "8299efb9667c17c2",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "fbb67b000766c641",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_display_section_scrolls_on_low_screen": {
     "ids": [
       "NV-18",
       "SR-20"
     ],
-    "sha": "1ecf861a273dc031",
-    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
+    "sha": "08a18d9067dfc2f2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_hidden_chips_f_shows_selected_condition": {
     "ids": [
       "SR-20"
     ],
-    "sha": "78e9e5ad71f7a99c",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "073a83c193ebde9c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_hidden_tabs_header_shows_view_name": {
     "ids": [
+      "BV-13",
       "SR-20"
     ],
-    "sha": "975bcc9596015933",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "758d934657645c17",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_to_base_display_note_is_last": {
     "ids": [
       "BV-19",
       "SR-20"
     ],
-    "sha": "232551b4675b303f",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "aae86dcaa8b4685f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_row_numbers_from_config": {
     "ids": [
@@ -740,8 +743,8 @@
     "ids": [
       "SR-20"
     ],
-    "sha": "3955adc0c86f51da",
-    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
+    "sha": "e461d682b83d905a",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_column_lines_default_none_on_draws_bars": {
     "ids": [
@@ -913,8 +916,8 @@
     "ids": [
       "CLI-12"
     ],
-    "sha": "928bb2f793036e4c",
-    "from": "e47418b5538dfaef"
+    "sha": "0df36db84e7b8647",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_keymap.rs::test_sr_13_default_keys": {
     "ids": [
@@ -1297,50 +1300,50 @@
     "ids": [
       "NV-23"
     ],
-    "sha": "41e237f74602b4b2",
-    "from": "61fffed9b58f1242"
+    "sha": "4596a75fb817c2c3",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_search_bar.rs::test_nv_23_bar_shows_word_and_count": {
     "ids": [
       "NV-23"
     ],
-    "sha": "120367f11de873c8",
-    "from": "61fffed9b58f1242"
+    "sha": "0273082b665bba27",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_search_bar.rs::test_nv_23_config_off_hides_bar_and_uses_bottom_line": {
     "ids": [
       "NV-23"
     ],
-    "sha": "47ae9ddf13cf2e39",
-    "from": "61fffed9b58f1242"
+    "sha": "94229a8fedb701de",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_search_bar.rs::test_nv_2_backslash_enters_bar_and_esc_restores": {
     "ids": [
       "NV-2"
     ],
-    "sha": "af4e49efaa16d3c5",
-    "from": "61fffed9b58f1242"
+    "sha": "8fdadf83a49675bf",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_search_bar.rs::test_nv_23_click_bar_enters_and_enter_keeps_filter": {
     "ids": [
       "NV-23"
     ],
-    "sha": "bad0b398282b6bd3",
-    "from": "61fffed9b58f1242"
+    "sha": "9d251ae7118c4216",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_search_bar.rs::test_nv_23_row_click_hits_right_row_below_bar": {
     "ids": [
       "NV-23"
     ],
-    "sha": "861fba49052c0952",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "c81a163e9f9ceb6f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_search_bar.rs::test_nv_23_low_terminal_bar_not_drawn_ignores_click": {
     "ids": [
       "NV-23"
     ],
-    "sha": "c22a1bf76a8d8ccf",
-    "from": "61fffed9b58f1242"
+    "sha": "d05878235a322524",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_settings_screen.rs::test_nv_13_apply_and_cancel": {
     "ids": [
@@ -1712,93 +1715,94 @@
     "ids": [
       "CLI-11"
     ],
-    "sha": "8fc21a95b664406f",
-    "from": "565954caa0e12f47"
+    "sha": "fd28aec24d99ba3c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_11_output_reads_back_without_warnings_as_default": {
     "ids": [
       "CLI-11"
     ],
-    "sha": "203061a211ab39be",
-    "from": "565954caa0e12f47"
+    "sha": "76601a33f77a719d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_11_output_has_every_item_with_comment": {
     "ids": [
       "CLI-11"
     ],
-    "sha": "db3d1875ad72c859",
-    "from": "565954caa0e12f47"
+    "sha": "fdb4a60ca8ee1358",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_11_output_values_are_defaults": {
     "ids": [
       "CLI-11"
     ],
-    "sha": "082d4f0351ddc5b5",
-    "from": "565954caa0e12f47"
+    "sha": "50a87fc0eb770c4f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_2_help_mentions_print_config": {
     "ids": [
       "CLI-11"
     ],
-    "sha": "d6e165a10e664ae9",
-    "from": "565954caa0e12f47"
+    "sha": "020c00d1800d7d84",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_12_keys_cover_known_items": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "99b92b04f3477ec1",
-    "from": "565954caa0e12f47"
+    "sha": "f0d82abdf50d5cba",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_12_parse_knows_every_key": {
     "ids": [
-      "CLI-12"
+      "CLI-12",
+      "CLI-3"
     ],
-    "sha": "90f2f226ed6fe47d",
-    "from": "565954caa0e12f47"
+    "sha": "a5642ab2825605de",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_12_english_doc_matches_keys": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "5311163d0fde19b3",
-    "from": "565954caa0e12f47"
+    "sha": "8064ee73ded6caa1",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_12_japanese_doc_matches_keys": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "684f406590e5e54c",
-    "from": "565954caa0e12f47"
+    "sha": "cbfaae4cb2739bbd",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs.rs::test_cli_12_print_config_matches_keys": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "b3c25b2e1bba4fda",
-    "from": "565954caa0e12f47"
+    "sha": "053d9e563255a368",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs_values.rs::test_cli_12_english_doc_type_default_example": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "6e27fe441b7c4f78",
-    "from": "806f0365752e7b7a"
+    "sha": "cbe2d9cae63e573f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs_values.rs::test_cli_12_japanese_doc_type_default_example": {
     "ids": [
       "CLI-12"
     ],
-    "sha": "7f2077c525f213f2",
-    "from": "806f0365752e7b7a"
+    "sha": "39566840e7e72585",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_config_docs_values.rs::test_cli_12_table_defaults_are_real_defaults": {
     "ids": [
       "CLI-11",
       "CLI-12"
     ],
-    "sha": "2dff78c530f4d7bc",
-    "from": "806f0365752e7b7a"
+    "sha": "a3f78792224739d8",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_date_format.rs::test_ce_22_date_format_parse_accepts_common_patterns": {
     "ids": [
@@ -1886,24 +1890,27 @@
   },
   "tests/test_date_format.rs::test_cli_3_config_reads_date_format_and_week_start": {
     "ids": [
-      "CE-22"
+      "CE-22",
+      "CLI-3"
     ],
-    "sha": "c9246c5f4eca2939",
-    "from": "ad5a80d0e3f73282"
+    "sha": "d3cde211fb0824d2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_date_format.rs::test_cli_3_config_date_defaults": {
     "ids": [
-      "CE-22"
+      "CE-22",
+      "CLI-3"
     ],
-    "sha": "20fbcdb2eb08e576",
-    "from": "ad5a80d0e3f73282"
+    "sha": "1ba0446354ccb387",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_date_format.rs::test_cli_3_config_bad_date_format_warns_and_uses_default": {
     "ids": [
-      "CE-22"
+      "CE-22",
+      "CLI-3"
     ],
-    "sha": "9cde94c181cb0813",
-    "from": "ad5a80d0e3f73282"
+    "sha": "fa155cd94ec4ced0",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_date_unquoted.rs::test_wb_18_plain_date_stays_unquoted": {
     "ids": [
@@ -1985,46 +1992,47 @@
     "ids": [
       "SR-21"
     ],
-    "sha": "37fd391e13220c1c",
-    "from": "4a2a6095d0fbf60c"
+    "sha": "82f2d3d5ce605674",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_display_options.rs::test_sr_21_reads_each_item": {
     "ids": [
       "SR-21"
     ],
-    "sha": "2e4711f25557e833",
-    "from": "4a2a6095d0fbf60c"
+    "sha": "bf023724b4ddbe5e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_display_options.rs::test_sr_21_display_is_a_known_item": {
     "ids": [
       "CLI-12",
       "SR-21"
     ],
-    "sha": "3d736096b92e6cba",
-    "from": "4a2a6095d0fbf60c"
+    "sha": "3ac1e0c8346bc3fe",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_display_options.rs::test_sr_21_wrong_type_warns_and_keeps_default": {
     "ids": [
+      "CLI-3",
       "SR-21"
     ],
-    "sha": "ccf7444d078bfaee",
-    "from": "4a2a6095d0fbf60c"
+    "sha": "dad140d70c59877d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_display_options.rs::test_sr_21_unknown_item_warns": {
     "ids": [
+      "CLI-3",
       "SR-21"
     ],
-    "sha": "96fdc1c5bf7b66be",
-    "from": "4a2a6095d0fbf60c"
+    "sha": "073210dc71e7a27b",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_display_options.rs::test_sr_21_print_config_has_display": {
     "ids": [
       "CLI-11",
-      "SR-21",
-      "SR-30"
+      "SR-21"
     ],
-    "sha": "57dd11c0be4a5bb4",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "5115769d837ee232",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_wins_over_env": {
     "ids": [
@@ -2098,10 +2106,11 @@
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_keeps_other_items": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "90f2ce5aa5df07b7",
-    "from": "65befc37f7062330"
+    "sha": "7eb078f735aae744",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_gets_key_between_delimiters": {
     "ids": [
@@ -2182,10 +2191,11 @@
   },
   "tests/test_empty_frontmatter.rs::test_cli_3_add_frontmatter_setting": {
     "ids": [
+      "CLI-3",
       "WB-3"
     ],
-    "sha": "5a40666f23f117f9",
-    "from": "90ba6ae165c4807f"
+    "sha": "261bb52fb07dbbba",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_empty_frontmatter.rs::test_wb_3_setting_false_locks_no_and_empty_frontmatter_with_reasons": {
     "ids": [
@@ -2230,10 +2240,11 @@
   "tests/test_examples.rs::test_examples_showcase": {
     "ids": [
       "CE-16",
-      "CE-22"
+      "CE-22",
+      "CLI-3"
     ],
-    "sha": "d6a447b2f3d8c994",
-    "from": "3783a294b823f307"
+    "sha": "0244199545319e2e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_frontmatter.rs::ce_18_block_list_span_only_when_writable": {
     "ids": [
@@ -2485,177 +2496,180 @@
     "ids": [
       "CE-25"
     ],
-    "sha": "3e740b26354bb9a6",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "a28050bd54408688",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_md_suffix_is_not_doubled": {
     "ids": [
       "CE-25"
     ],
-    "sha": "e9f250312737b050",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "2731e1b8a9de6941",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_subfolder_name_goes_into_subfolder": {
     "ids": [
       "CE-25"
     ],
-    "sha": "523dafa16f418c2d",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "a358823b2fd36c3f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_outside_absolute_empty_are_refused": {
     "ids": [
       "CE-25"
     ],
-    "sha": "532d35f1c9165e5d",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "85405bacdd46098d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_existing_name_is_refused": {
     "ids": [
       "CE-25",
       "WB-2"
     ],
-    "sha": "566ebeb121dd601d",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "b1275f414af0ff74",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_create_makes_missing_folder_and_writes_bytes": {
     "ids": [
       "CE-25"
     ],
-    "sha": "0ac78c503580da20",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "a973fa0fcb291e70",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_create_never_overwrites_existing_file": {
     "ids": [
       "CE-25",
       "WB-2"
     ],
-    "sha": "360ab72afa626866",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "069a7ad62942443c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_status_todo_from_settings_keep": {
     "ids": [
       "CE-25",
       "WB-3"
     ],
-    "sha": "faa557812c6053c2",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "8a62e18bb6dcb134",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_status_todo_from_settings_cmp_eq": {
     "ids": [
       "CE-25"
     ],
-    "sha": "6941cbd7a4a01caf",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "e3eb05995a05c2b0",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_status_todo_from_expr": {
     "ids": [
       "CE-25"
     ],
-    "sha": "86dab6b311e7c400",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "bf4dbde0c3eb2f95",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_tag_condition_is_vertical_list": {
     "ids": [
       "CE-25",
       "WB-3"
     ],
-    "sha": "f33f0362a0282e6c",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "75984fec4635f4e6",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_typed_cmp_eq_values_are_written_by_kind": {
     "ids": [
       "CE-25"
     ],
-    "sha": "599797340a05f9a7",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "64a3083abe76ada1",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_ambiguous_conditions_are_not_prefilled": {
     "ids": [
       "CE-25"
     ],
-    "sha": "e4a5f56bca107f4d",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "9d55afe3cad9a505",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique": {
     "ids": [
       "CE-25"
     ],
-    "sha": "9d3df4df92eb31aa",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "4d408cbd06b1f1d4",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_25_whole_flow_writes_new_note_only": {
     "ids": [
       "CE-25",
       "WB-2"
     ],
-    "sha": "064f0c21d2462320",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "1d05154033391565",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_26_set_values_are_written": {
     "ids": [
       "CE-26"
     ],
-    "sha": "1695665f9f1f6d46",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "9fd327cc9f049ff4",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_26_filter_value_wins_over_set_value_same_column": {
     "ids": [
-      "CE-26"
+      "CE-26",
+      "CE-27"
     ],
-    "sha": "6cec791b94c0a0ea",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "ba070fa0551614f5",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_26_asked_values_are_written_by_kind": {
     "ids": [
       "CE-26"
     ],
-    "sha": "de77ebe4f383d6b4",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "833fef969dbeba2c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_26_empty_answers_are_not_written": {
     "ids": [
       "CE-26"
     ],
-    "sha": "375a670e158fcf82",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "69d8a40631058374",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_26_view_rule_replaces_config_rule": {
     "ids": [
       "BV-17",
       "CE-26"
     ],
-    "sha": "b629747fe2d5a014",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "6daecf7f303049c8",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_config_folder_is_default_place": {
     "ids": [
-      "CE-25"
+      "CE-25",
+      "CE-27"
     ],
-    "sha": "380b95e471a68c72",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "9e68de82fbbb0662",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_views_toml_new_note_is_read": {
     "ids": [
       "BV-17",
       "CE-27"
     ],
-    "sha": "b91a9c213518ad47",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "7dec5671d6c7cd97",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_views_new_note_survives_save_and_load": {
     "ids": [
       "BV-17",
       "CE-27"
     ],
-    "sha": "09542bbb0e5200b5",
-    "by": "specs/_decisions/2026-10-07-new-note-form-locks.md"
+    "sha": "25e7c055bddb93e9",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_new_note_is_a_documented_config_item": {
     "ids": [
+      "CE-27",
       "CLI-12"
     ],
-    "sha": "8b31d78bcb2b4e8e",
-    "from": "e0593d6d5c4c0b82"
+    "sha": "83d61c271b2be34f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_review_fixes.rs::wb_5_tab_indented_list_is_invalid_yaml": {
     "ids": [
@@ -3348,8 +3362,8 @@
     "ids": [
       "WB-3"
     ],
-    "sha": "1c953ee141cd9c03",
-    "by": "specs/_decisions/2026-10-07-note-column-locks.md"
+    "sha": "a9507d489ae0b3c0",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_e2e.rs::test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save": {
     "ids": [
@@ -4044,8 +4058,8 @@
       "CLI-11",
       "SR-23"
     ],
-    "sha": "b6f591da9c79f69c",
-    "from": "c9ce18c1b85a6737"
+    "sha": "7dcccd090e883edc",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_language.rs::test_sr_23_language_values_read_without_warning": {
     "ids": [
@@ -4080,17 +4094,19 @@
   },
   "tests/test_language_lib.rs::test_sr_23_lib_config_warnings_are_english": {
     "ids": [
+      "CLI-3",
       "SR-23"
     ],
-    "sha": "7452545edce77b83",
-    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+    "sha": "f9a11cbad2dbce23",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_language_lib.rs::test_sr_23_lib_config_warnings_stay_japanese_under_ja": {
     "ids": [
+      "CLI-3",
       "SR-23"
     ],
-    "sha": "357db5c0a5fb0397",
-    "by": "specs/_decisions/2026-10-07-links-backlinks.md"
+    "sha": "841671810f7b7e0d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_language_lib.rs::test_sr_23_lib_base_errors_are_english": {
     "ids": [
@@ -4156,8 +4172,8 @@
     "ids": [
       "SR-23"
     ],
-    "sha": "15201cdbc4f977a8",
-    "from": "cbd75a951ab56ddf"
+    "sha": "2d57e24cdd65830b",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_action_menu.rs::test_sr_24_x_opens_menu_with_sections_and_keys": {
     "ids": [
@@ -4263,73 +4279,74 @@
     "ids": [
       "SR-26"
     ],
-    "sha": "aefc395653fd8b86",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "20deaf0517f9538f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_26_every_theme_keeps_the_text": {
     "ids": [
       "SR-26"
     ],
-    "sha": "51c0d9d77f5b8651",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "c40a39bea324ca23",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_26_every_theme_but_default_paints": {
     "ids": [
       "SR-26"
     ],
-    "sha": "441aafd4dc6cd6f8",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "a41d410b8d99aba7",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_26_palettes_follow_the_mockups": {
     "ids": [
       "SR-26"
     ],
-    "sha": "7e4867e4714b4d8d",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "ffa3890eb5222c7f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_26_zebra_uses_theme_colors": {
     "ids": [
       "SR-20",
       "SR-26"
     ],
-    "sha": "a6f7396fa34b7c4a",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "23e827de80c0a065",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_default_zebra_is_unchanged": {
     "ids": [
-      "SR-20"
+      "SR-20",
+      "SR-27"
     ],
-    "sha": "a1919fee7f54a849",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "963e3b7b5cec4c4d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_zebra_row_selection_mark_and_bold": {
     "ids": [
       "SR-20",
       "SR-26"
     ],
-    "sha": "94cf48adaa102357",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "914b90e9f0efd529",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_colhead_only_on_the_column_heading_row": {
     "ids": [
       "SR-26"
     ],
-    "sha": "b5ab8e3a833654c3",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "b2ca5c93b0edf942",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_input_box_is_strong_not_colhead": {
     "ids": [
       "SR-26"
     ],
-    "sha": "4b30d15cc12b70da",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "5a55ac4ca607b142",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes_more.rs::test_sr_26_search_hit_name_is_strong_not_colhead": {
     "ids": [
       "SR-26"
     ],
-    "sha": "b9153a04527a6d4d",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "236f58d12d4e07be",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_action_menu_more.rs::test_sr_25_more_esc_after_prefix_keeps_marks": {
     "ids": [
@@ -5326,14 +5343,16 @@
     "ids": [
       "SR-30"
     ],
-    "sha": "8c0f0c6007fa0987"
+    "sha": "b5758a25e88a5e03",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_group_gap.rs::test_sr_30_view_override_and_row_numbers": {
     "ids": [
       "SR-20",
       "SR-30"
     ],
-    "sha": "fe263a009933cc06"
+    "sha": "50d3bd47f7d8850f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_print.rs::test_cli_5_default_csv_header_rows_and_rfc4180": {
     "ids": [
@@ -5406,7 +5425,8 @@
     "ids": [
       "CE-27"
     ],
-    "sha": "463627ceeb240cf0"
+    "sha": "1d9021e502db1aaf",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_newnote_unit.rs::test_ce_27_set_values_round_trip_through_toml": {
     "ids": [
@@ -5455,33 +5475,40 @@
   },
   "tests/test_new_note.rs::test_ce_27_config_new_note_is_read_without_warnings": {
     "ids": [
-      "CE-27"
+      "CE-27",
+      "CLI-3"
     ],
-    "sha": "ea707be563331428"
+    "sha": "1c7e2215d73778fe",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_default_config_has_empty_rule": {
     "ids": [
       "CE-27"
     ],
-    "sha": "e6c2dfe8baccd2b9"
+    "sha": "39051e9afe4ba8c0",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_name_template_date_is_today": {
     "ids": [
       "CE-27"
     ],
-    "sha": "090b7a316948a5fb"
+    "sha": "f31669d685302dc6",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_new_note.rs::test_ce_27_wrong_types_warn_and_do_not_stop": {
     "ids": [
-      "CE-27"
+      "CE-27",
+      "CLI-3"
     ],
-    "sha": "7406a876d2f41cc1"
+    "sha": "f82bbc67e075fd40",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_note_editor.rs::test_ce_33_bad_mode_warns_and_uses_form": {
     "ids": [
       "CE-33"
     ],
-    "sha": "46807a67a9c83013"
+    "sha": "b870e20e88571ff9",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_note_editor.rs::test_ce_33_editor_mode_creates_and_opens": {
     "ids": [
@@ -5524,7 +5551,8 @@
     "ids": [
       "CLI-18"
     ],
-    "sha": "e418cb834087d9da"
+    "sha": "58361726bb6344b7",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_places_unit.rs::test_cli_18_places_round_trip": {
     "ids": [
@@ -5790,19 +5818,22 @@
     "ids": [
       "SR-32"
     ],
-    "sha": "7e67614aceee9035"
+    "sha": "aeb06f9a593eecc9",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_borders.rs::test_sr_32_ascii_when_ambiguous_wide": {
     "ids": [
       "SR-32"
     ],
-    "sha": "a465b6ca72f8db05"
+    "sha": "ed50b421e3f5e972",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_borders.rs::test_sr_32_bad_value_warns": {
     "ids": [
       "SR-32"
     ],
-    "sha": "cf84dfbd7e7c6073"
+    "sha": "24986929a5ea95e2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_borders.rs::test_sr_32_rounded_by_default": {
     "ids": [
@@ -5814,20 +5845,22 @@
     "ids": [
       "SR-33"
     ],
-    "sha": "188705967e2da867"
+    "sha": "fdc4001e0f64de3f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look.rs::test_sr_33_classic_and_no_color_keep_reverse": {
     "ids": [
       "SR-33"
     ],
-    "sha": "a3e6b9b0b9ba4eb8"
+    "sha": "5baf649c6470844c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look.rs::test_sr_33_footer_keys_accent_labels_dim": {
     "ids": [
       "SR-33"
     ],
-    "sha": "a7d302ce5f9bfe2d",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "a91d203d7cec3418",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look.rs::test_sr_33_modern_popup_uses_background": {
     "ids": [
@@ -5839,15 +5872,16 @@
     "ids": [
       "SR-33"
     ],
-    "sha": "4eda368d778283d3",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "d85ff80f0fd65eb2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look.rs::test_sr_33_text_is_the_same_in_every_look": {
     "ids": [
       "SR-26",
       "SR-33"
     ],
-    "sha": "cbbcda578c779f1e"
+    "sha": "5540262dd8808ea5",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_relmap_unit.rs::test_rel_7_ascii_lines": {
     "ids": [
@@ -5896,7 +5930,8 @@
     "ids": [
       "WS-1"
     ],
-    "sha": "481914e8f51cd12d"
+    "sha": "7f1fa3bd4894209b",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_workspace_unit.rs::test_ws_5_detect_vault_and_git": {
     "ids": [
@@ -5908,7 +5943,8 @@
     "ids": [
       "WS-6"
     ],
-    "sha": "8f8b9b94dafc86e8"
+    "sha": "64e6bad5ca947b95",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_workspace_unit.rs::test_ws_7_marker_auto_and_listed_tables": {
     "ids": [
@@ -5963,39 +5999,44 @@
     "ids": [
       "WS-2"
     ],
-    "sha": "bc27307980496d9e"
+    "sha": "72efffed38d88801",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_workspace.rs::test_ws_2_open_none_says_how": {
     "ids": [
       "WS-2"
     ],
-    "sha": "e8dcc8b19c71287f"
+    "sha": "49afa0e35d76b8a1",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_workspace.rs::test_ws_2_pick_existing_and_open": {
     "ids": [
       "WS-2"
     ],
-    "sha": "756011a3eeb0b219"
+    "sha": "8cebfc9606fa1b63",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_workspace.rs::test_ws_4_linked_rows_follow_scope": {
     "ids": [
       "REL-5",
       "WS-4"
     ],
-    "sha": "e03b723f198f3fbf"
+    "sha": "6a001c1346e157fd",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_workspace.rs::test_ws_4_scope_limits_tables_and_relmap": {
     "ids": [
       "WS-4"
     ],
-    "sha": "f74dfb62a8b38649"
+    "sha": "e30865ff1abf0319",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_workspace.rs::test_ws_6_header_shows_workspace": {
     "ids": [
       "WS-6"
     ],
-    "sha": "218b5eee283306b3",
-    "by": "specs/_decisions/2026-10-10-ws-button.md"
+    "sha": "26a3c39271bac739",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_workspace_cli.rs::test_ws_3_add_list_remove_on_pipe": {
     "ids": [
@@ -6029,20 +6070,22 @@
     "ids": [
       "WS-1"
     ],
-    "sha": "1b3109aed9b021b1"
+    "sha": "11ce2db9cfad6b13",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_workspace_more_unit.rs::test_ws_1_home_and_relative_paths": {
     "ids": [
       "WS-1"
     ],
-    "sha": "ee2ca6df7d233e8b",
-    "by": "specs/_decisions/2026-10-09-windows-test-locks.md"
+    "sha": "bdf24f33cad804b7",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_workspace_more_unit.rs::test_ws_7_broken_marker_warns": {
     "ids": [
       "WS-7"
     ],
-    "sha": "9458ebdf2b8547bc"
+    "sha": "f090010c6a32b82e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_workspace_cli.rs::test_ws_3_folder_named_workspace_opens": {
     "ids": [
@@ -6054,7 +6097,8 @@
     "ids": [
       "WS-6"
     ],
-    "sha": "307935e5d688145a"
+    "sha": "cfd37d8e9b7a7da3",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_screen_tabs_fixed.rs::test_rel_8_tabs_do_not_move_between_screens": {
     "ids": [
@@ -6084,78 +6128,85 @@
     "ids": [
       "SR-23"
     ],
-    "sha": "9e81f1c3cf4a9aeb"
+    "sha": "0684340e0deff968",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_view_tabs_auto.rs::test_sr_34_auto_hides_single_tab": {
     "ids": [
       "SR-34"
     ],
-    "sha": "4c45855bb6c39346"
+    "sha": "8516e9025ab03a86",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_view_tabs_auto.rs::test_sr_34_auto_shows_tabs_with_two_views": {
     "ids": [
       "SR-34"
     ],
-    "sha": "d19818cfe6c84459"
+    "sha": "9a8fba58910038da",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_view_tabs_auto.rs::test_sr_34_unknown_value_warns": {
     "ids": [
       "SR-34"
     ],
-    "sha": "10e4c92fc17a9508"
+    "sha": "09f8e4830e42e003",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_cells_unit.rs::test_sr_35_cells_bad_values_warn": {
     "ids": [
       "SR-35"
     ],
-    "sha": "20554d01d42675e0"
+    "sha": "f380ddf579039058",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_cells_unit.rs::test_sr_35_cells_string_and_table": {
     "ids": [
       "SR-35"
     ],
-    "sha": "7a4e50591770b745"
+    "sha": "f99985e80b643018",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_cells_unit.rs::test_sr_35_select_detection": {
     "ids": [
       "SR-35"
     ],
-    "sha": "625971d248172429"
+    "sha": "6bc4861a36a222d0",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_chip_colors_stable": {
     "ids": [
       "SR-35"
     ],
-    "sha": "9a671592a9281263",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "a8f9185d219d22d2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_per_part_and_column": {
     "ids": [
       "SR-35"
     ],
-    "sha": "10ea56cb7b69070f",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "bab842a4de2d4c11",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_plain_without_color_or_setting": {
     "ids": [
       "SR-35"
     ],
-    "sha": "ad3daec1c28057c3",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "70feb9f91c64972d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_rich_cells": {
     "ids": [
       "SR-35"
     ],
-    "sha": "cab7e8dcdb467411",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "e5ad560e0db1a2c1",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_search_matches_value_text": {
     "ids": [
       "SR-35"
     ],
-    "sha": "0352a5b19cfa6c27",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "1efdb93b83b7c035",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_places_align.rs::test_cli_19_list_paths_aligned": {
     "ids": [
@@ -6167,29 +6218,29 @@
     "ids": [
       "SR-35"
     ],
-    "sha": "dc10bd4bf6d42f18",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "2c79ecd26044f68f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells_more.rs::test_sr_35_detail_shows_value_text": {
     "ids": [
       "SR-35"
     ],
-    "sha": "5b5f3815d106bc5d",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "85b30bf3e2ee422b",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells_more.rs::test_sr_35_dotted_key_can_be_chips": {
     "ids": [
       "SR-35"
     ],
-    "sha": "c74e405095d410a4",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "29b2d30ae72ab016",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_rich_cells_more.rs::test_sr_35_search_marks_rich_cells": {
     "ids": [
       "SR-35"
     ],
-    "sha": "f64db1882bf44f81",
-    "by": "specs/_decisions/2026-10-09-style-catalog.md"
+    "sha": "a08896a574889e46",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_relmap_scroll.rs::test_rel_9_narrow_list_scrolls_to_selection": {
     "ids": [
@@ -6264,7 +6315,8 @@
     "ids": [
       "SR-33"
     ],
-    "sha": "837457389efff0c0"
+    "sha": "7f044c27a9a8ab93",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_detail_look.rs::test_sr_33_detail_selected_row_tinted": {
     "ids": [
@@ -6282,38 +6334,43 @@
     "ids": [
       "WS-1"
     ],
-    "sha": "a06308c8a9b34f7e"
+    "sha": "db56d2110b0b6bdb",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_workspace_keep_unit.rs::test_ws_1_replace_and_remove_only_that_part": {
     "ids": [
       "WS-1"
     ],
-    "sha": "7c4992136dd56343"
+    "sha": "17091ed9310358a8",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_toml_edit_safety_unit.rs::test_cli_18_place_header_with_comment_keeps_neighbour": {
     "ids": [
       "CLI-18"
     ],
-    "sha": "39fa40f549a44e03"
+    "sha": "b938597fb28c6c61",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_toml_edit_safety_unit.rs::test_ws_1_header_with_comment_keeps_neighbour": {
     "ids": [
       "WS-1"
     ],
-    "sha": "7bfda5b381b694b6"
+    "sha": "4418eb33556ddb66",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_toml_edit_safety_unit.rs::test_ws_1_trailing_table_and_inline_form_survive": {
     "ids": [
       "WS-1"
     ],
-    "sha": "186f28f75a5163de",
-    "by": "specs/_decisions/2026-10-09-windows-test-locks.md"
+    "sha": "d8f40614c2ad7d8e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_toml_edit_safety_unit.rs::test_ws_7_marker_paths_stay_inside": {
     "ids": [
       "WS-7"
     ],
-    "sha": "58e71ac85aa27096"
+    "sha": "c9ff37fbfccdaabc",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_writeback_underscore_unit.rs::test_wb_7_underscore_numbers_are_quoted": {
     "ids": [
@@ -6325,32 +6382,37 @@
     "ids": [
       "SR-36"
     ],
-    "sha": "5d5fd8cfbc514c71"
+    "sha": "557f5f1c3f124715",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_style_unit.rs::test_sr_36_style_presets_and_overrides": {
     "ids": [
       "SR-36"
     ],
-    "sha": "68dcb182867f8527"
+    "sha": "e8ff68883f151e04",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_style_unit.rs::test_sr_37_new_themes_and_sr_39_auto": {
     "ids": [
       "SR-37",
       "SR-39"
     ],
-    "sha": "c97d6a048a9d4732"
+    "sha": "0b7e376760b41348",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_style_unit.rs::test_sr_38_names_are_listed": {
     "ids": [
       "SR-38"
     ],
-    "sha": "344adeb30db4fc5f"
+    "sha": "ff333e0c8abef8d9",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_screen.rs::test_sr_36_cross_tints_column": {
     "ids": [
       "SR-36"
     ],
-    "sha": "50ba58c7afbb7d55"
+    "sha": "34492b01c6a0265e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_screen.rs::test_sr_36_default_sumi_screen": {
     "ids": [
@@ -6363,74 +6425,87 @@
       "SR-35",
       "SR-36"
     ],
-    "sha": "a657d2977ae108c2"
+    "sha": "83752d4b702275db",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_screen.rs::test_sr_36_overrides_each_part": {
     "ids": [
       "SR-36"
     ],
-    "sha": "3b07a3e71e1e33be"
+    "sha": "0d6adcb756a2fd61",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_screen.rs::test_sr_36_pill_needs_nerd_font": {
     "ids": [
       "SR-36"
     ],
-    "sha": "5a5c9249dc08f84a"
+    "sha": "bf0a9a622a1d2974",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_screen.rs::test_sr_36_preset_saas_tints_and_segments": {
     "ids": [
       "SR-36"
     ],
-    "sha": "fc575a9ccc4e6b27"
+    "sha": "4aa4fa1328230054",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_screen.rs::test_sr_36_rules_and_frames": {
     "ids": [
       "SR-36"
     ],
-    "sha": "a708cc2c7d82e610"
+    "sha": "ea32c1a128e5ed2a",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_color_false_ignores_theme": {
     "ids": [
       "SR-27"
     ],
-    "sha": "177c3774cfe07ae6"
+    "sha": "56a6c2321cdc81d6",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_default_is_unchanged": {
     "ids": [
       "SR-27"
     ],
-    "sha": "134d06e77b2d8331"
+    "sha": "4a4de4d0d2069405",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_indexed_uses_256_colors": {
     "ids": [
       "SR-27"
     ],
-    "sha": "a76404a2410f43f5"
+    "sha": "afe8a9a627e73cef",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_no_color_ignores_theme": {
     "ids": [
       "SR-27"
     ],
-    "sha": "e8c5d6c9acfcf273"
+    "sha": "db443827a6047b01",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_theme_names": {
     "ids": [
       "SR-27",
       "SR-37"
     ],
-    "sha": "2ef5ce8caffa1964"
+    "sha": "5f2be6b96fd2651f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_to_indexed_picks_nearest": {
     "ids": [
       "SR-27"
     ],
-    "sha": "9b50da38ca84d5aa"
+    "sha": "9620f8a846cf0bf4",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_themes.rs::test_sr_27_unknown_theme_warns_and_falls_back": {
     "ids": [
+      "CLI-3",
       "SR-27"
     ],
-    "sha": "6c4f74d98416b836"
+    "sha": "20894d63e575e12e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_theme_auto_unit.rs::test_sr_39_auto_theme": {
     "ids": [
@@ -6448,8 +6523,8 @@
     "ids": [
       "SR-39"
     ],
-    "sha": "4572463311249f34",
-    "by": "specs/_decisions/2026-10-10-ci-locks.md"
+    "sha": "672e233b0ea90219",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_overlay.rs::test_sr_36_value_list_follows_style": {
     "ids": [
@@ -6461,26 +6536,30 @@
     "ids": [
       "SR-38"
     ],
-    "sha": "63fdf46af6ce47d3"
+    "sha": "37475c459ab609aa",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_catalog.rs::test_sr_38_catalog_matches_config": {
     "ids": [
       "SR-38"
     ],
-    "sha": "978975dd1a440c49"
+    "sha": "c5df808d246a8553",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_catalog.rs::test_sr_38_catalog_presets_match": {
     "ids": [
       "SR-38"
     ],
-    "sha": "4d120ef3d72a8129"
+    "sha": "07c4df9991ac2aae",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_frames.rs::test_sr_33_frame_accent_in_every_frame_shape": {
     "ids": [
       "SR-33",
       "SR-36"
     ],
-    "sha": "33acb0462de60bcb"
+    "sha": "8404fad3f76b840e",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_relmap_new_note.rs::test_ce_25_relmap_new_note": {
     "ids": [
@@ -6498,7 +6577,8 @@
     "ids": [
       "SR-36"
     ],
-    "sha": "65d3111db0af0110"
+    "sha": "636bca57799b7d37",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_relmap_new_note_load.rs::test_ce_25_relmap_new_note_after_load": {
     "ids": [
@@ -6516,49 +6596,57 @@
     "ids": [
       "SR-36"
     ],
-    "sha": "eaf00507072a4ceb"
+    "sha": "2f073d4f799b2108",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_list_pill.rs::test_sr_36_tint_rounds_with_nerd_font": {
     "ids": [
       "SR-36"
     ],
-    "sha": "f754fd5783fd2852"
+    "sha": "9c45ec4e9e317e6b",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_list_pill.rs::test_sr_36_value_list_keeps_pill_shape": {
     "ids": [
       "SR-36"
     ],
-    "sha": "91376ad525cfed88"
+    "sha": "e4a69862d9a44d1b",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_colors_unit.rs::test_sr_40_colors": {
     "ids": [
       "SR-40"
     ],
-    "sha": "bf8048fd6cd7af45"
+    "sha": "a990f05f54af6d27",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_colors_unit.rs::test_sr_41_value_colors_read": {
     "ids": [
       "SR-41"
     ],
-    "sha": "19e7366b6e724175"
+    "sha": "f87291f653e96f45",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_colors_screen.rs::test_sr_36_solid": {
     "ids": [
       "SR-36"
     ],
-    "sha": "0f6e9861ae42d759"
+    "sha": "cdc73e56a6c8d5c7",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_colors_screen.rs::test_sr_40_accent_override": {
     "ids": [
       "SR-40"
     ],
-    "sha": "2d87543e4331187d"
+    "sha": "e74c6df73fbb3920",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_colors_screen.rs::test_sr_41_value_colors": {
     "ids": [
       "SR-41"
     ],
-    "sha": "a7ada0a797815ad4"
+    "sha": "9ab01dcc736a94a4",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_catalog_colors.rs::test_sr_38_catalog_colors": {
     "ids": [
@@ -6572,13 +6660,15 @@
     "ids": [
       "SR-40"
     ],
-    "sha": "9d89baf1fce211a6"
+    "sha": "42558a3825b43b15",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_colors_more.rs::test_sr_41_value_color_in_every_chip_shape": {
     "ids": [
       "SR-41"
     ],
-    "sha": "8005a0c024f38d2a"
+    "sha": "da9622cbba40e49d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_36_style_wrong_types_warn": {
     "ids": [
@@ -6586,35 +6676,40 @@
       "SR-39",
       "SR-40"
     ],
-    "sha": "08d53c30c697a104"
+    "sha": "7da23b5a0fb9e60f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_39_colorfgbg_boundaries": {
     "ids": [
       "SR-39",
       "SR-40"
     ],
-    "sha": "9524741f425e8d54"
+    "sha": "10d7379abda09056",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_39_osc11_boundaries": {
     "ids": [
       "SR-39",
       "SR-40"
     ],
-    "sha": "f2575425d02713c8"
+    "sha": "c73411b6c60c6b1c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_39_terminal_answers_never_panic": {
     "ids": [
       "SR-39",
       "SR-40"
     ],
-    "sha": "f8428899d7c22e77"
+    "sha": "8fa477e04217116a",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_40_color_boundaries": {
     "ids": [
       "SR-39",
       "SR-40"
     ],
-    "sha": "29f4df1c0d75c02d"
+    "sha": "c41765e37a040d73",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_40_colors_wrong_types_warn": {
     "ids": [
@@ -6622,21 +6717,24 @@
       "SR-40",
       "SR-41"
     ],
-    "sha": "a80e5c29daa5185e"
+    "sha": "d22f1a2e49327a33",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_40_hex_round_trip": {
     "ids": [
       "SR-39",
       "SR-40"
     ],
-    "sha": "569d5b6f2fe4ac47"
+    "sha": "6cbc137dc9c17af4",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_bounds_unit.rs::test_sr_40_parse_color_never_panics": {
     "ids": [
       "SR-39",
       "SR-40"
     ],
-    "sha": "96634727018350bb"
+    "sha": "0c75929d729bb54f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_style_props.rs::test_sr_36_any_style_fits_the_screen": {
     "ids": [
@@ -6644,26 +6742,29 @@
       "SR-40",
       "SR-41"
     ],
-    "sha": "9e436090eb26cee2"
+    "sha": "16d5074f784d7cab",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_header_buttons.rs::test_sr_42_narrow_hides_buttons": {
     "ids": [
       "SR-42"
     ],
-    "sha": "7be05213a0344aa4"
+    "sha": "3cfc3759a394b2b2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_header_buttons.rs::test_sr_42_settings_button": {
     "ids": [
       "SR-42"
     ],
-    "sha": "82b42d816fb5df92"
+    "sha": "862812062984f206",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_header_buttons.rs::test_sr_42_workspace_button": {
     "ids": [
       "SR-42"
     ],
-    "sha": "4074b66596cba733",
-    "by": "specs/_decisions/2026-10-09-header-buttons.md"
+    "sha": "33fb8767a974bad9",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_nerd_auto_unit.rs::test_sr_36_nerd_auto": {
     "ids": [
@@ -6675,20 +6776,23 @@
     "ids": [
       "SR-36"
     ],
-    "sha": "4fc31d301e421bc9"
+    "sha": "cce456eadcc19f84",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_catalog_nerd.rs::test_sr_38_catalog_nerd_default": {
     "ids": [
       "SR-36",
       "SR-38"
     ],
-    "sha": "1561d87f9c99ccc2"
+    "sha": "46b29f491052236f",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_dozy_unit.rs::test_sr_36_dozy_pink_preset": {
     "ids": [
       "SR-36"
     ],
-    "sha": "bcfab3dcfdd5d8eb"
+    "sha": "fb359ff55516a1e2",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_main.rs::test_sr_12_state_target_per_open_target": {
     "ids": [
@@ -6700,7 +6804,8 @@
     "ids": [
       "BV-20"
     ],
-    "sha": "a7503dd9633c29bb"
+    "sha": "c64894c60bd03dff",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/test_views_unit.rs::test_bv_20_save_keeps_unknown_items_and_unreadable_views_of_own_target": {
     "ids": [
@@ -6970,7 +7075,8 @@
     "ids": [
       "NV-24"
     ],
-    "sha": "9b30a5ede866efb5"
+    "sha": "1e750b684fbee07c",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_sort_more.rs::test_nv_24_readonly_sorts_without_writing": {
     "ids": [
@@ -7046,41 +7152,26 @@
     ],
     "sha": "084d6954b487be68"
   },
-  "src/test_look_unit.rs::test_sr_43_apply_overrides_config": {
-    "ids": [
-      "SR-43"
-    ],
-    "sha": "1bdcc3148cefd889"
-  },
-  "src/test_look_unit.rs::test_sr_43_look_broken_and_bad_values_warn": {
-    "ids": [
-      "SR-43"
-    ],
-    "sha": "7166d680fc41d4a9"
-  },
-  "src/test_look_unit.rs::test_sr_43_look_round_trip_with_templates": {
-    "ids": [
-      "SR-43"
-    ],
-    "sha": "38c69177e101d938"
-  },
   "src/ui/test_look_section.rs::test_sr_43_choose_apply_and_save": {
     "ids": [
       "SR-43"
     ],
-    "sha": "1462ba1da03f5e07"
+    "sha": "2637051df83dcb90",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look_section.rs::test_sr_43_readonly_applies_without_writing": {
     "ids": [
       "SR-43"
     ],
-    "sha": "7cd6cb22f1ab2dd4"
+    "sha": "4a1004fa90f3f178",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look_section.rs::test_sr_43_templates_save_use_delete_and_reset": {
     "ids": [
       "SR-43"
     ],
-    "sha": "94d980340752bd32"
+    "sha": "7df05be42bc8d033",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "tests/test_look_e2e.rs::test_sr_43_broken_look_toml_warns": {
     "ids": [
@@ -7219,13 +7310,15 @@
     "ids": [
       "SR-43"
     ],
-    "sha": "a1e8a8c74a7302ab"
+    "sha": "ed2dfce6e62065cf",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_look_keep.rs::test_sr_43_only_changed_items_saved": {
     "ids": [
       "SR-43"
     ],
-    "sha": "1a4c9e9cad8f1e84"
+    "sha": "8510afaa9d8a0f1d",
+    "by": "specs/_decisions/2026-10-10-config-v2-relock.md"
   },
   "src/ui/test_pending_shape.rs::test_sr_35_pending_bool_and_list_use_parts": {
     "ids": [
@@ -7280,5 +7373,529 @@
       "CE-34"
     ],
     "sha": "a4467f5f73198366"
+  },
+  "src/test_csvfile_unit.rs::test_sc_15_parse_errors": {
+    "ids": [
+      "SC-15"
+    ],
+    "sha": "6ed05017751f71ae"
+  },
+  "src/test_csvfile_unit.rs::test_sc_15_parse_quotes_newlines_bom_crlf": {
+    "ids": [
+      "SC-15"
+    ],
+    "sha": "1fe46cefed4ae795"
+  },
+  "src/test_csvfile_unit.rs::test_sc_16_append_and_encode": {
+    "ids": [
+      "SC-16"
+    ],
+    "sha": "91eeae718044d58d"
+  },
+  "src/test_csvfile_unit.rs::test_sc_16_set_changes_only_that_value": {
+    "ids": [
+      "SC-16"
+    ],
+    "sha": "983206ff6075f2a5"
+  },
+  "src/ui/test_csv_source.rs::test_sc_15_open_csv_as_table": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "1d10870bc06c65d2"
+  },
+  "src/ui/test_csv_source.rs::test_sc_15_unreadable_csv_reason": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "c4f859cd8df3cc8d"
+  },
+  "src/ui/test_csv_source.rs::test_sc_16_external_change_refused": {
+    "ids": [
+      "SC-15",
+      "SC-16",
+      "WB-4"
+    ],
+    "sha": "f72ca235f43ce48a"
+  },
+  "src/ui/test_csv_source.rs::test_sc_16_external_change_stops_whole_file": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "9fbe9cd81908af36"
+  },
+  "src/ui/test_csv_source.rs::test_sc_16_save_only_edited_cells": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "729eae238cd7c70c"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_add_row": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "3db4d0b5fbcb3ec5"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_add_row_keeps_pending_edits": {
+    "ids": [
+      "SC-17",
+      "WB-4"
+    ],
+    "sha": "2954536f17a03da8"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_add_row_shown_with_pending_edits": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "ad9b2333a194d573"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_no_note_label_column": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "a5fb18e4e32dea66"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_note_only_actions_hidden": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "77e6c982a15a461c"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_note_only_actions_refused": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "63216e4b2fb683e3"
+  },
+  "src/ui/test_csv_note_only.rs::test_sc_17_single_column_empty_row_kept": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "292b1ab79d13ef34"
+  },
+  "tests/test_csv_e2e.rs::test_sc_15_e2e_print_and_unreadable": {
+    "ids": [
+      "SC-15",
+      "SC-16",
+      "SC-17"
+    ],
+    "sha": "b700691562ad4d78"
+  },
+  "tests/test_csv_e2e.rs::test_sc_16_e2e_edit_and_save_csv": {
+    "ids": [
+      "SC-15",
+      "SC-16",
+      "SC-17"
+    ],
+    "sha": "2a149c36c05fec13"
+  },
+  "tests/test_csv_e2e.rs::test_sc_17_e2e_editor_refused_and_add_row": {
+    "ids": [
+      "SC-15",
+      "SC-16",
+      "SC-17"
+    ],
+    "sha": "d2334d78a01d6196"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_15_duplicate_and_empty_headers": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "8e7b2816a82c1549"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_15_lone_cr_refused": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "d547d48b8f4aae68"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_16_float_stays_decimal": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "a7ae2dd4802381d0"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_16_many_edits_use_original_positions": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "7e91d65ec7bd08c2"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_16_preview_against_changed_file_matches_write": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "b26615a7b2564011"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_16_quote_only_when_needed": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "4ae5b69ab57bccad"
+  },
+  "src/test_csv_edges_unit.rs::test_sc_16_single_column_clear_keeps_rows": {
+    "ids": [
+      "SC-15",
+      "SC-16"
+    ],
+    "sha": "a9d81e6d8083df5d"
+  },
+  "src/ui/test_csv_note_only_more.rs::test_sc_17_csv_tables_left_out_of_links_and_map": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "6370fc2397a11924"
+  },
+  "src/ui/test_csv_note_only_more.rs::test_sc_17_relation_map_and_new_note_paths": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "fd723477fca95c55"
+  },
+  "src/ui/test_csv_note_only_more.rs::test_sc_17_settings_without_tree_section": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "b5193778cc519218"
+  },
+  "src/ui/test_csv_usable.rs::test_sc_17_bulk_edit_and_undo": {
+    "ids": [
+      "CE-10",
+      "SC-17"
+    ],
+    "sha": "9ccdb64bd10abee2"
+  },
+  "src/ui/test_csv_usable.rs::test_sc_17_filter_and_sort": {
+    "ids": [
+      "NV-3",
+      "SC-17"
+    ],
+    "sha": "bde6a78e4c351824"
+  },
+  "src/ui/test_csv_usable.rs::test_sc_17_saved_view_with_group": {
+    "ids": [
+      "BV-17",
+      "NV-15",
+      "SC-17"
+    ],
+    "sha": "4019f362b09b0bbf"
+  },
+  "src/ui/test_csv_usable.rs::test_sc_17_typed_input_date_and_checkbox": {
+    "ids": [
+      "CE-4",
+      "SC-17"
+    ],
+    "sha": "d455f1f671aba6fd"
+  },
+  "tests/test_csv_apply.rs::test_sc_17_with_path_and_apply_roundtrip": {
+    "ids": [
+      "SC-17"
+    ],
+    "sha": "51572aa1cb654dfb"
+  },
+  "src/test_csv_identity_unit.rs::test_sc_16_row_changed_outside_is_not_written": {
+    "ids": [
+      "SC-16",
+      "WB-4"
+    ],
+    "sha": "1b91d84d48fb5e21"
+  },
+  "src/test_csv_identity_unit.rs::test_sc_16_row_inserted_outside_keeps_the_edited_row": {
+    "ids": [
+      "SC-16",
+      "WB-4"
+    ],
+    "sha": "c7ab864b9f906af7"
+  },
+  "src/test_csv_identity_unit.rs::test_sc_16_row_keys_survive_own_writes": {
+    "ids": [
+      "SC-16",
+      "WB-4"
+    ],
+    "sha": "6b4b231bab1f2dba"
+  },
+  "src/test_main.rs::test_cli_3_config_missing_unknown_broken": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "3fd25a5dde92d2ad"
+  },
+  "src/test_profile_unit.rs::test_cli_21_resolved_toml_names_the_origin": {
+    "ids": [
+      "CLI-21"
+    ],
+    "sha": "a4b5d91f4e268ea7"
+  },
+  "src/test_profile_unit.rs::test_sr_44_global_items_are_refused_in_other_places": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "acb9871294452525"
+  },
+  "src/test_profile_unit.rs::test_sr_44_narrow_place_wins": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "ed72f188080dc5f9"
+  },
+  "src/test_profile_unit.rs::test_sr_44_preset_drops_wider_parts_and_theme_drops_wider_roles": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "017ddbf67703e2d6"
+  },
+  "src/test_profile_unit.rs::test_sr_44_profile_round_trips": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "d17f384ee7989b96"
+  },
+  "src/test_profile_unit.rs::test_sr_44_template_is_laid_under_the_place": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "f659a630ab7be368"
+  },
+  "src/test_uifile_unit.rs::test_cli_20_old_look_toml_is_read_and_moved": {
+    "ids": [
+      "CLI-20"
+    ],
+    "sha": "e5d38af2574abc1b"
+  },
+  "src/test_uifile_unit.rs::test_sr_43_ui_broken_and_bad_values_warn": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "13d5299c5e9c98c5"
+  },
+  "src/test_uifile_unit.rs::test_sr_43_ui_layer_overrides_config": {
+    "ids": [
+      "SR-43",
+      "SR-44"
+    ],
+    "sha": "5cdb93c61506ce34"
+  },
+  "src/test_uifile_unit.rs::test_sr_43_ui_round_trip_with_templates": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "53b0cd90977638a2"
+  },
+  "src/test_workspace_profile_unit.rs::test_sr_43_save_profile_keeps_comments": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "eda4b9a56bc6255a"
+  },
+  "src/test_workspace_profile_unit.rs::test_sr_44_detected_scope_has_no_workspace_layer": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "e132fe7f998fd0cd"
+  },
+  "src/test_workspace_profile_unit.rs::test_ws_1_workspace_and_table_profiles": {
+    "ids": [
+      "WS-1"
+    ],
+    "sha": "2f4b452b399efc64"
+  },
+  "src/test_workspace_profile_unit.rs::test_ws_2_add_keeps_table_profile": {
+    "ids": [
+      "SR-44",
+      "WS-2"
+    ],
+    "sha": "79d24ccdc5c8589a"
+  },
+  "src/test_workspace_profile_unit.rs::test_ws_7_marker_profiles": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "74db208559dcf9b0"
+  },
+  "src/ui/test_look_scope.rs::test_sr_34_tabs_never_and_cycle": {
+    "ids": [
+      "SR-34"
+    ],
+    "sha": "edb729dbbfc09abd"
+  },
+  "src/ui/test_look_scope.rs::test_sr_43_marker_workspace_is_not_written": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "c33a53605553d88a"
+  },
+  "src/ui/test_look_scope.rs::test_sr_43_save_to_app_workspace": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "4debdfca3f6cd8e3"
+  },
+  "src/ui/test_look_scope.rs::test_sr_43_save_to_this_table_shows_origin_and_reset": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "6ebbd041e1a90e79"
+  },
+  "src/ui/test_look_scope.rs::test_sr_43_save_to_this_view": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "5e1db19076a2a5e1"
+  },
+  "src/ui/test_look_scope.rs::test_sr_44_workspace_and_table_overrides_at_start": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "abeb393baaea8598"
+  },
+  "src/ui/test_startup.rs::test_cli_3_applies_items": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "5771393be3ffc59d"
+  },
+  "src/ui/test_startup.rs::test_cli_3_no_config_defaults_and_unknown_item_warned": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "eca5f54c409926d5"
+  },
+  "tests/test_config.rs::test_cli_3_broken_toml_is_err": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "60fdc1c9fb1d97d5"
+  },
+  "tests/test_config.rs::test_cli_3_config_path_follows_xdg_config_home": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "477e84f4e8efc93c"
+  },
+  "tests/test_config.rs::test_cli_3_empty_config_gives_defaults": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "70f0eaa268e33ac5"
+  },
+  "tests/test_config.rs::test_cli_3_partial_config_keeps_other_defaults": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "308219725fdc04ca"
+  },
+  "tests/test_config.rs::test_cli_3_reads_each_item": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "60b6d6283f06ad21"
+  },
+  "tests/test_config.rs::test_cli_3_unknown_item_warns_and_continues": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "80d3f39cbb608e23"
+  },
+  "tests/test_config_docs.rs::test_cli_12_docs_list_old_names": {
+    "ids": [
+      "CLI-12",
+      "CLI-20"
+    ],
+    "sha": "36bc99b8dbc1ed8e"
+  },
+  "tests/test_config_v2.rs::test_cli_11_print_config_names_scopes": {
+    "ids": [
+      "CLI-11"
+    ],
+    "sha": "8656735dcb7f595e"
+  },
+  "tests/test_config_v2.rs::test_cli_20_migrate_config_prints_the_new_layout": {
+    "ids": [
+      "CLI-20"
+    ],
+    "sha": "c3d59f1e77d0d1e4"
+  },
+  "tests/test_config_v2.rs::test_cli_20_old_names_are_read_with_warnings": {
+    "ids": [
+      "CLI-20"
+    ],
+    "sha": "b4cccf0ea90cb821"
+  },
+  "tests/test_config_v2.rs::test_cli_21_print_resolved_names_the_origin": {
+    "ids": [
+      "CLI-21",
+      "SR-44"
+    ],
+    "sha": "538e277bfef171cb"
+  },
+  "tests/test_config_v2.rs::test_cli_3_warning_shape_in_every_file": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "23ff95e6eee47ae1"
+  },
+  "tests/test_date_format.rs::test_cli_3_config_unknown_week_start_warns": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "7895fb62e8c58571"
+  },
+  "tests/test_display_options.rs::test_cli_20_old_display_names_are_moved": {
+    "ids": [
+      "CLI-20"
+    ],
+    "sha": "2c845e27d26284fb"
+  },
+  "tests/test_e2e.rs::test_cli_2_e2e_config_flag_wins_over_default_location_false": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "3b8fb5f5f4b09d76"
+  },
+  "tests/test_e2e.rs::test_cli_2_e2e_config_flag_wins_over_default_location_true": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "f08d1cb81ec68ce2"
+  },
+  "tests/test_e2e.rs::test_cli_2_e2e_default_location_is_read_without_flag": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "3f26f5b31ccbe51c"
+  },
+  "src/test_body_path_unit.rs::test_ce_32_body_inside_folder_is_read": {
+    "ids": [
+      "CE-32"
+    ],
+    "sha": "9d241e6faa22b491"
+  },
+  "src/test_body_path_unit.rs::test_ce_32_body_outside_folder_is_refused": {
+    "ids": [
+      "CE-32"
+    ],
+    "sha": "c1dcd668044d530d"
+  },
+  "src/test_body_path_unit.rs::test_ce_32_body_symlink_out_of_folder_is_refused": {
+    "ids": [
+      "CE-32"
+    ],
+    "sha": "30d8347235e3e587"
+  },
+  "src/ui/test_note_body_outside.rs::test_ce_32_body_outside_refused_on_screen": {
+    "ids": [
+      "CE-32"
+    ],
+    "sha": "258ec41dfb7c698a"
   }
 }

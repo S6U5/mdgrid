@@ -37,6 +37,15 @@ impl App {
     }
 
     /// 範囲の表(WS-4)。範囲が無ければ登録した表(CLI-18)。
+    /// リンクと関係マップの範囲の表: 今の範囲の表のうち、ノートの表(フォルダか `.base`)。CSV・TSV の表は
+    /// 行がノートでなく、ノートとの間のリンクの持ち方も決まっていないので入れない(SC-17)。
+    pub(crate) fn link_places(&self) -> Vec<Place> {
+        self.scope_places()
+            .into_iter()
+            .filter(|p| !mdgrid::source::csv::Csv::handles(&p.path))
+            .collect()
+    }
+
     pub(crate) fn scope_places(&self) -> Vec<Place> {
         match &self.scope {
             Some(Scope { tables, .. }) => tables

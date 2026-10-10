@@ -1,0 +1,6 @@
+id,item,location,qty,bought,status
+A-001,Laptop,"Tokyo, HQ",3,2026-04-01,in use
+A-002,Monitor,Osaka,5,2026-05-12,in use
+A-003,Projector,"Tokyo, HQ",1,2025-11-20,repair
+A-004,Whiteboard,Fukuoka,2,2024-08-03,stored
+A-005,Camera,Osaka,1,2026-02-14,on loan

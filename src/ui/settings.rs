@@ -40,6 +40,13 @@ pub(crate) const SECS: [Sec; 9] = [
     Sec::Buttons,
 ];
 
+/// Tab で巡る区画。SC-17: 行がノートでない表(CSV など)では親子(NV-27)の区画を出さない。
+pub(crate) fn secs(notes: bool) -> Vec<Sec> {
+    SECS.into_iter()
+        .filter(|s| notes || *s != Sec::Tree)
+        .collect()
+}
+
 /// 下のボタン(NV-13・NV-22)と、mdgrid のビューのボタン(BV-18。`VIEW_BUTTONS` から後ろ)。
 pub(crate) const BUTTONS: [Msg; 7] = [
     Msg::BtnApply,
@@ -400,6 +407,7 @@ impl App {
         if self.draft.as_ref().is_some_and(|d| d.pick.is_some()) {
             return self.pick_action(action);
         }
+        let secs = secs(self.src.notes());
         let Some(d) = self.draft.as_mut() else {
             return;
         };
@@ -407,9 +415,9 @@ impl App {
         match action {
             Action::Cancel => self.cancel_settings(),
             Action::NextSection | Action::PrevSection => {
-                let k = SECS.iter().position(|s| *s == sec).unwrap_or(0);
-                let n = SECS.len();
-                d.sec = SECS[if action == Action::NextSection {
+                let k = secs.iter().position(|s| *s == sec).unwrap_or(0);
+                let n = secs.len();
+                d.sec = secs[if action == Action::NextSection {
                     (k + 1) % n
                 } else {
                     (k + n - 1) % n

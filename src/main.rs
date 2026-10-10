@@ -13,6 +13,7 @@ use mdgrid::base::{self, Base};
 use mdgrid::config::{self, Config};
 use mdgrid::i18n::{self, Lang, Language, Msg};
 use mdgrid::print;
+use mdgrid::source::csv::Csv;
 use mdgrid::source::markdown::Markdown;
 use mdgrid::source::{Source, Value};
 use mdgrid::views;
@@ -122,7 +123,7 @@ impl PrintFormat {
     bin_name = "mdgrid",
     version,
     about = "Markdown のフロントマターを端末の表で見て直す",
-    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。",
+    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n.csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。",
     disable_help_flag = true,
     disable_version_flag = true,
     args_override_self = true
@@ -670,6 +671,11 @@ fn is_base(p: &Path) -> bool {
     p.extension().is_some_and(|e| e == "base")
 }
 
+/// SC-15: CSV・TSV のファイル(拡張子の大文字小文字を問わない)。
+fn is_csv(p: &Path) -> bool {
+    Csv::handles(p)
+}
+
 /// 開けるパスか確かめる(CLI-4)。フォルダの並びか、`.base` 1つ(フォルダと並べない)。
 fn check_paths(paths: &[PathBuf]) -> Result<(), String> {
     for p in paths {
@@ -684,6 +690,12 @@ fn check_paths(paths: &[PathBuf]) -> Result<(), String> {
             }
             continue;
         }
+        if is_csv(p) {
+            if paths.len() > 1 {
+                return Err(Msg::CsvAlone.fill(&[&p.display()]));
+            }
+            continue;
+        }
         return Err(Msg::NotAFolder.fill(&[&p.display()]));
     }
     Ok(())
@@ -691,7 +703,7 @@ fn check_paths(paths: &[PathBuf]) -> Result<(), String> {
 
 /// 開く対象: 読み込み口と、`.base` なら (定義, ヘッダーの名前, `--view` で選んだビューの添字)。
 struct Target {
-    src: Markdown,
+    src: Box<dyn Source>,
     base: Option<(Base, String, Option<usize>)>,
     /// BV-2: `.base` の上に `.obsidian/` が無いとき、推した根(`.base` のフォルダ)。
     guessed_root: Option<PathBuf>,
@@ -704,7 +716,11 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
         if let Some(v) = view {
             return Err(Msg::ViewNeedsBase.fill(&[&v]));
         }
-        let src = Markdown::open(paths).map_err(|e| Msg::CannotOpen.fill(&[&e]))?;
+        // SC-15: CSV・TSV は1つのファイルを表にする。
+        let src: Box<dyn Source> = match paths {
+            [p] if is_csv(p) => Box::new(Csv::open(p).map_err(|e| Msg::CannotOpen.fill(&[&e]))?),
+            _ => Box::new(Markdown::open(paths).map_err(|e| Msg::CannotOpen.fill(&[&e]))?),
+        };
         return Ok(Target {
             src,
             base: None,
@@ -736,7 +752,7 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| bp.display().to_string());
     Ok(Target {
-        src,
+        src: Box::new(src),
         base: Some((base, name, idx)),
         guessed_root,
     })
@@ -923,7 +939,7 @@ fn main() -> ExitCode {
     for row in rows {
         let line = match &column {
             Some(c) => app.pick_text(row, c),
-            None => pick_path(&paths, Path::new(&row.0)),
+            None => row_path(&paths, app.src.as_ref(), row),
         };
         out.push_str(&line);
         out.push('\n');
@@ -979,7 +995,7 @@ fn open_app(
         std::env::var("EDITOR").ok().as_deref(),
     );
     let color = ColorMode::detect(|k| std::env::var(k).ok());
-    let mut app = App::new(Box::new(target.src), color);
+    let mut app = App::new(target.src, color);
     app.prof.ui = ui;
     // SR-36: nerd_font = "auto" は端末の名前で決める(丸い端を自分で描く端末だけ)。
     app.prof.term_program = std::env::var("TERM_PROGRAM").ok();
@@ -1051,10 +1067,10 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
 }
 
 /// `--pick path` の1行(OUT-3): ノートの実体のパスが起動の引数のフォルダ(`.base` ならそのフォルダ)を
-/// 正規化した場所の下なら「引数の文字 + 相対」、どれの下でもなければ実体の絶対パス。
+/// 正規化した場所の下なら「引数の文字 + 相対」、どれの下でもなければ実体の絶対パス。`.csv`・`.tsv` もそのフォルダ。
 pub(crate) fn pick_path(args: &[PathBuf], note: &Path) -> String {
     for arg in args {
-        let dir = if is_base(arg) {
+        let dir = if is_base(arg) || is_csv(arg) {
             arg.parent().unwrap_or(Path::new(""))
         } else {
             arg.as_path()
@@ -1072,6 +1088,13 @@ pub(crate) fn pick_path(args: &[PathBuf], note: &Path) -> String {
         }
     }
     slash(note.to_string_lossy().into_owned())
+}
+
+/// 行の `--pick path`・`--with-path` の文字: 行のあるファイルの `pick_path` に、ファイルの中の位置の印
+/// (CSV の `#行の番号`。`Source::locate`)を付けたもの。
+pub(crate) fn row_path(args: &[PathBuf], src: &dyn Source, row: &mdgrid::source::RowId) -> String {
+    let (file, at) = src.locate(row);
+    pick_path(args, &file) + &at
 }
 
 /// パスの区切りを `/` にする(Windows でも。CLI-14 の `--with-path` を OS をまたいで `--apply` で戻せるように)。
@@ -1195,7 +1218,7 @@ fn print_view(
         (None, None) => print::ViewDef::Default,
     };
     let (today, now) = print::today_now(|k| std::env::var(k).ok());
-    let mut table = match print::table(&src, view, today, now) {
+    let mut table = match print::table(src.as_ref(), view, today, now) {
         Ok(t) => t,
         Err(e) => return fail(&e.replace('\n', " ")),
     };
@@ -1217,7 +1240,7 @@ fn print_view(
         };
         table.columns.insert(0, column);
         for (cells, id) in table.rows.iter_mut().zip(&table.row_ids) {
-            let p = pick_path(paths, Path::new(&id.0));
+            let p = row_path(paths, src.as_ref(), id);
             cells.insert(0, print::PrintCell::Prop(Some(Value::Str(p))));
         }
     }
@@ -1280,7 +1303,7 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
         Some((b, _, idx)) => print::ViewDef::Base(b, idx.unwrap_or(0)),
         None => print::ViewDef::Default,
     };
-    let table = print::table(&src, view, today, now).ok();
+    let table = print::table(src.as_ref(), view, today, now).ok();
     let cols: Vec<(String, String)> = table
         .as_ref()
         .map(|t| {
@@ -1328,36 +1351,64 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
             return fail(Msg::ApplyProblems.text());
         }
     };
-    // path は --with-path と同じ形(起動の引数のフォルダからの相対か絶対)。実体のパスで行を引く。
-    let rows: std::collections::HashSet<String> = src.rows().into_iter().map(|r| r.0).collect();
+    // path は --with-path と同じ形(起動の引数のフォルダからの相対か絶対。後ろに行の位置の印があれば
+    // `Source::locate` の印)。実体のパスと印で行を引く。
+    let rows: std::collections::HashMap<String, mdgrid::source::RowId> = src
+        .rows()
+        .into_iter()
+        .map(|r| {
+            let (file, at) = src.locate(&r);
+            (file.to_string_lossy().into_owned() + &at, r)
+        })
+        .collect();
     let find = |p: &str| -> apply::Found {
-        let p = Path::new(p);
-        let mut tries = vec![p.to_path_buf()];
-        for arg in paths {
-            let dir = if is_base(arg) {
-                arg.parent().unwrap_or(Path::new("")).to_path_buf()
-            } else {
-                arg.clone()
-            };
-            tries.push(dir.join(p));
+        // 全体をパスとして、と、最後の `#` の後ろを位置の印として(ノートの名前に `#` があっても全体を先に試す)。
+        let mut splits = vec![(p, "")];
+        if let Some(k) = p.rfind('#') {
+            splits.push((&p[..k], &p[k..]));
         }
-        let mut hits: Vec<String> = tries
-            .into_iter()
-            .filter_map(|t| t.canonicalize().ok())
-            .map(|t| t.to_string_lossy().into_owned())
-            .filter(|t| rows.contains(t))
-            .collect();
+        let mut hits: Vec<String> = Vec::new();
+        for (file, at) in splits {
+            let file = Path::new(file);
+            let mut tries = vec![file.to_path_buf()];
+            for arg in paths {
+                let dir = if is_base(arg) || is_csv(arg) {
+                    arg.parent().unwrap_or(Path::new("")).to_path_buf()
+                } else {
+                    arg.clone()
+                };
+                tries.push(dir.join(file));
+            }
+            hits.extend(
+                tries
+                    .into_iter()
+                    .filter_map(|t| t.canonicalize().ok())
+                    .map(|t| t.to_string_lossy().into_owned() + at)
+                    .filter(|t| rows.contains_key(t)),
+            );
+        }
         hits.sort();
         hits.dedup();
         match hits.len() {
             0 => apply::Found::Missing,
-            1 => apply::Found::Row(mdgrid::source::RowId(hits.remove(0))),
+            1 => apply::Found::Row(rows[&hits.remove(0)].clone()),
             _ => apply::Found::Ambiguous,
         }
     };
-    let label = |r: &mdgrid::source::RowId| pick_path(paths, Path::new(&r.0));
+    // 行の名前(保存の間も引けるよう、先に全部の行で作っておく)。
+    let labels: std::collections::HashMap<mdgrid::source::RowId, String> = src
+        .rows()
+        .into_iter()
+        .map(|r| (r.clone(), row_path(paths, src.as_ref(), &r)))
+        .collect();
+    let label = |r: &mdgrid::source::RowId| {
+        labels
+            .get(r)
+            .cloned()
+            .unwrap_or_else(|| pick_path(paths, Path::new(&r.0)))
+    };
     let mut plan = apply::plan(
-        &src,
+        src.as_ref(),
         &input,
         &find,
         &ids,
@@ -1365,7 +1416,7 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
         today,
         &resolved.date_format,
     );
-    let (diff, more, files) = apply::diff_text(&plan, &src, &label);
+    let (diff, more, files) = apply::diff_text(&plan, src.as_ref(), &label);
     plan.problems.extend(more);
     if !plan.problems.is_empty() {
         for p in &plan.problems {
@@ -1388,7 +1439,7 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
         eprintln!("mdgrid: {}", Msg::ApplyDryRun.fill(&[&files]));
         return ExitCode::SUCCESS;
     }
-    let (saved, failed) = apply::save(&mut plan, &mut src, &label);
+    let (saved, failed) = apply::save(&mut plan, src.as_mut(), &label);
     for s in &saved {
         println!("{s}");
     }

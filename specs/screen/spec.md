@@ -96,17 +96,19 @@ updated: 2026-10-10
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
-| 2026-10-10 | [設定の形の作り直しに合わせて、項目の名前と Config の形に触れる試験の錠を掛け直す(config-v2-locks)](../_decisions/2026-10-10-config-v2-locks.md) | accepted | 人 | 人の発言 | BV-17, BV-20, CE-16 ほか 34 |
-| 2026-10-10 | [表のプロファイルを、ワークスペース・表・ビューの範囲で上書きできるようにし、設定の画面で保存先の範囲を選べるようにする(scope-overrides)](../_decisions/2026-10-10-scope-overrides.md) | accepted | 人 | 人の発言 | SR-44, SR-43, WS-1 ほか 2 |
-| 2026-10-10 | [設定の形を作り直し、アプリ全体の項目と表のプロファイルに分け、重なる項目をまとめる(config-v2)](../_decisions/2026-10-10-config-v2.md) | accepted | 人 | 人の発言 | CLI-3, CLI-11, CLI-12 ほか 16 |
 | 2026-10-10 | [ビューの削除の確かめに合わせて、削除を通る試験の錠を掛け直す(view-delete-undo-locks)](../_decisions/2026-10-10-view-delete-undo-locks.md) | accepted | 人 | 人の発言 | BV-3, BV-13, BV-17 ほか 6 |
 | 2026-10-10 | [部品の形の既定(sumi)に合わせて、SR-33・SR-35・SR-36 の例を直す(style-examples)](../_decisions/2026-10-10-style-examples.md) | accepted | 人 | 検証の指摘 | SR-33, SR-35, SR-36 |
 | 2026-10-10 | [並べ替えを選んで覚える(並べ替えの窓・見出しの並べ替えの保存・既定のビュー)(sort-views)](../_decisions/2026-10-10-sort-views.md) | accepted | 人 | 人の発言 | NV-3, NV-20, SR-12 ほか 4 |
 | 2026-10-10 | [設定の画面の作り直しに合わせて SR-20・SR-23 の文を直す(settings-layout-follow)](../_decisions/2026-10-10-settings-layout-follow.md) | accepted | 人 | 人の発言 | SR-20, SR-23 |
 | 2026-10-10 | [設定の画面の作り直しに合わせて、関わる要件の例(確かめ方)の操作を直す(settings-layout-examples)](../_decisions/2026-10-10-settings-layout-examples.md) | accepted | 人 | 人の発言 | NV-13, NV-16, NV-23 ほか 4 |
+| 2026-10-10 | [表のプロファイルを、ワークスペース・表・ビューの範囲で上書きできるようにし、設定の画面で保存先の範囲を選べるようにする(scope-overrides)](../_decisions/2026-10-10-scope-overrides.md) | accepted | 人 | 人の発言 | SR-44, SR-43, WS-1, WS-7, CLI-21 |
 | 2026-10-10 | [nerd_font = "auto" で、丸い端を自分で描く端末なら丸い札にする(nerd-auto)](../_decisions/2026-10-10-nerd-auto.md) | accepted | 人 | 人の発言 | SR-36 |
 | 2026-10-10 | [設定の画面に「見た目」の区画を足し、テーマ・組・丸い札の端を選んで look.toml に残し、組み合わせを名前で保存して選べるようにする(look-section)](../_decisions/2026-10-10-look-section.md) | accepted | 人 | 人の発言 | SR-43 |
 | 2026-10-10 | [組 dozy-pink を足す(dozy-preset)](../_decisions/2026-10-10-dozy-preset.md) | accepted | 人 | 人の発言 | SR-36 |
+| 2026-10-10 | [英語の既定の表の名前を Default table にし、名前を確かめる試験の錠を掛け直す(default-tab-name-locks)](../_decisions/2026-10-10-default-tab-name-locks.md) | accepted | 人 | 人の発言 | SR-23 |
+| 2026-10-10 | [設定の形を作り直し、アプリ全体の項目と表のプロファイルに分け、重なる項目をまとめる(config-v2)](../_decisions/2026-10-10-config-v2.md) | accepted | 人 | 人の発言 | CLI-3, CLI-11, CLI-12 ほか 16 |
+| 2026-10-10 | [公開リポで入った設定の形の作り直し(#30)が書き換えた試験の錠を掛け直す(config-v2-relock)](../_decisions/2026-10-10-config-v2-relock.md) | accepted | 人 | 人の発言 | BV-17, BV-19, BV-20 ほか 42 |
+| 2026-10-10 | [設定の形の作り直しに合わせて、項目の名前と Config の形に触れる試験の錠を掛け直す(config-v2-locks)](../_decisions/2026-10-10-config-v2-locks.md) | accepted | 人 | 人の発言 | BV-17, BV-20, CE-16 ほか 34 |
 | 2026-10-10 | [公開リポの CI に合わせて、整形と unix だけの指定を当てた試験の錠を掛け直す(ci-locks)](../_decisions/2026-10-10-ci-locks.md) | accepted | 人 | 運用で起きた失敗 | SR-38, SR-39 |
 | 2026-10-09 | [ビューが1つならタブの行を出さない設定(view-tabs-auto)](../_decisions/2026-10-09-view-tabs-auto.md) | accepted | 人 | 人の発言 | SR-34 |
 | 2026-10-09 | [テーマの名前の並びに、新しい組と auto を足す(theme-list)](../_decisions/2026-10-09-theme-list.md) | accepted | 人 | 人の発言 | SR-26, SR-27 |

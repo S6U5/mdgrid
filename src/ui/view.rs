@@ -129,14 +129,15 @@ fn cap(area_w: usize) -> usize {
     (area_w * 3 / 10).max(3)
 }
 
-/// SR-29: 表の列に file.name があるか(あれば左のノートの欄に名前と見出しを出さない)。
-pub(crate) fn name_column_shown(app: &App) -> bool {
-    app.cols.iter().any(|c| c == "file.name")
+/// 左のノートの欄に名前と見出しを出さないか(印だけにする)。SR-29: 表の列に file.name があるとき。
+/// SC-17: 行がノートでない表(CSV など。行の名前は1列目の値なので重ねて出さない)。
+pub(crate) fn label_hidden(app: &App) -> bool {
+    !app.src.notes() || app.cols.iter().any(|c| c == "file.name")
 }
 
 /// ノートの列の幅(見えている行の名前と見出しから。上限は CV-5 と同じ)。
 fn label_width(app: &App, visible: &[&RowId], max: usize) -> usize {
-    let head = if name_column_shown(app) {
+    let head = if label_hidden(app) {
         0
     } else {
         width(LABEL_HEADER.text())
@@ -260,7 +261,7 @@ pub(crate) const HELD_MARK: char = '~';
 fn label(app: &App, row: &RowId) -> String {
     let flag = app.changes.external(row) || app.src.mark(row).is_some();
     // SR-29: 共通のフォルダと `.md` を除く。file.name の列があれば名前は出さず、印だけ。
-    let mut name = if name_column_shown(app) {
+    let mut name = if label_hidden(app) {
         String::new()
     } else {
         let full = app.src.label(row);
@@ -414,7 +415,7 @@ fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'stat
         Span::raw(" ".repeat(lay.label_x())),
         Span::styled(
             fit(
-                if name_column_shown(app) {
+                if label_hidden(app) {
                     ""
                 } else {
                     LABEL_HEADER.text()
