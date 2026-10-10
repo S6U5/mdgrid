@@ -11,8 +11,9 @@ use mdgrid::source::{content_hash, RowId};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 
-/// 保存の確認の画面の1ファイル(WB-9・WB-16)。
+/// 保存の確認の画面の1ファイル(WB-9・WB-16)。1つの書く単位(`Source::unit`)。
 pub(crate) struct ReviewItem {
+    /// 書く単位(Markdown では行そのもの)。
     pub row: RowId,
     pub label: String,
     /// 外で変わった(WB-16)。
@@ -59,9 +60,10 @@ impl App {
             }
             Action::Overwrite => self.overwrite(),
             Action::DiscardRow => {
-                if let Some(row) = self.review_row() {
-                    let label = self.src.label(&row);
-                    self.changes.discard(&row);
+                if let Some(unit) = self.review_row() {
+                    let label = self.src.label(&unit);
+                    let rows = self.changes.rows_in(self.src.as_ref(), &unit);
+                    self.changes.discard_rows(&rows);
                     self.after_review_change(Msg::ReviewDiscarded.fill(&[&label]));
                 }
             }
@@ -114,7 +116,7 @@ impl App {
                 },
                 Err((row, e)) => ReviewItem {
                     label: self.src.label(&row),
-                    external: self.changes.external(&row),
+                    external: self.changes.external_unit(self.src.as_ref(), &row),
                     diff: Err(edit_error_text(&e)),
                     seen: None,
                     row,
@@ -220,7 +222,7 @@ impl App {
         };
         let (row, seen) = (item.row.clone(), item.seen);
         let label = self.src.label(&row);
-        if !self.changes.external(&row) {
+        if !self.changes.external_unit(self.src.as_ref(), &row) {
             self.message = Some(Msg::ReviewNotExternal.fill(&[&label]));
             return;
         }
@@ -228,7 +230,16 @@ impl App {
             self.message = Some(Msg::ReviewNoDiff.fill(&[&label]));
             return;
         };
-        match self.changes.overwrite_seen(self.src.as_mut(), &row, seen) {
+        // 単位の中の行を、どれも見せた内容を基準にする(1つでも見せた内容と違えば書かない)。
+        let rows = self.changes.rows_in(self.src.as_ref(), &row);
+        let mut res = Ok(true);
+        for r in &rows {
+            res = self.changes.overwrite_seen(self.src.as_mut(), r, seen);
+            if !matches!(res, Ok(true)) {
+                break;
+            }
+        }
+        match res {
             Err(e) => self.message = Some(Msg::ReviewCannotReload.fill(&[&label, &e])),
             Ok(false) => {
                 self.open_review();

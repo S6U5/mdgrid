@@ -53,4 +53,6 @@ commit_parsers = [
   { message = "^整形[:：]", skip = true },
   # 作る道具と検査の設定(CI・依存の更新・MSRV)。
   { message = "^設定[:：]", skip = true },
+  # 公開リポで先に入った変更を手元に入れたコミット(変更履歴には公開リポの側の PR として出る)。
+  { message = "^取り込み[:：]", skip = true },
 ]

@@ -61,7 +61,7 @@ From the top:
 | Area | What it shows |
 |---|---|
 | Header | what is open (`vault` here), the number of rows, and `· workspace <name>` when a workspace is in use. At the right, the **Table** / **Relations** tabs (when there are linked tables) and `+ New`, which creates a note |
-| Tabs | view names: `All notes` (every note of the folder), plus the views of a `.base` and views you saved |
+| Tabs | view names: `Default table` (every note of the folder), plus the views of a `.base` and views you saved |
 | Search bar | press `\` to type; rows are filtered as you type |
 | Table | one row per note. The first column is the note's path; the others are frontmatter keys |
 | Bottom bar | the number of unsaved changes, the current mode, the selected row and column, and the keys you can press now |

@@ -127,6 +127,10 @@ impl App {
     /// 「+ 新規」・`a`・パレット: 名前の欄を開く(CE-25)。フォルダを2つ以上開いたときは、その前に
     /// 作る場所を選ぶ欄を開く(既定は最初)。読むだけでは開かない(WB-15)。
     pub(crate) fn start_new_note(&mut self) {
+        // SC-17: 行がノートでない表(CSV など)では、新しいノートの代わりに末尾に行を足す(どの道から来ても)。
+        if !self.src.notes() {
+            return self.add_row();
+        }
         if self.readonly {
             self.message = Some(super::startup::READONLY.into());
             return;
@@ -652,17 +656,10 @@ impl App {
                 value: as_date(src, &e.key, newnote::expand_value(&e.value, &vars)),
             })
             .collect();
-        let body = if rule.body.trim().is_empty() {
-            None
-        } else {
-            let p = f.root.join(rule.body.trim());
-            match std::fs::read_to_string(&p) {
-                Ok(t) => Some(t),
-                Err(e) => {
-                    let msg = Msg::NoteBodyUnreadable.fill(&[&p.display(), &e]);
-                    return self.note_problem(cur, cur, msg);
-                }
-            }
+        // CE-32: 雛形は開いたフォルダの中のファイルだけ(外を指すものは読まずに理由)。
+        let body = match newnote::read_body(&f.root, &rule.body) {
+            Ok(b) => b,
+            Err(msg) => return self.note_problem(cur, cur, msg),
         };
         let made = newnote::note_path(&f.root, &f.rule.folder, &f.name).and_then(|path| {
             let bytes = newnote::build_with(&rule, &prefill, &f.answers, &vars, body.as_deref())?;

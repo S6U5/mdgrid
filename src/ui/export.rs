@@ -85,7 +85,7 @@ impl App {
             .rows
             .iter()
             .map(|r| {
-                let path = crate::pick_path(&args, Path::new(&r.0));
+                let path = crate::row_path(&args, self.src.as_ref(), r);
                 std::iter::once(PrintCell::Prop(Some(Value::Str(path))))
                     .chain(self.cols.iter().map(|c| self.export_cell(r, c)))
                     .collect()

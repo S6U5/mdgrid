@@ -28,8 +28,14 @@ use std::path::{Path, PathBuf};
 pub(crate) const DEFAULT_TAB: &str = Msg::DefaultTabName.ja();
 /// mdgrid のビューの見た目の状態を置く、状態の置き場の中のフォルダ(`.base` のビューの状態と鍵がぶつからない。BV-20)。
 pub(crate) const STATE_DIR: &str = "views";
-/// 既定の表の、前の英語の名前(SR-34 の前)。書いてある設定(places.toml の view など)が読めるよう別名として受ける。
-pub(crate) const OLD_DEFAULT_TAB: &str = "Default";
+/// 既定の表の、前の英語の名前(SR-34 の前の Default と、行がノートでない表もあるので変えた All notes)。
+/// 書いてある設定(places.toml の view など)が読めるよう別名として受ける。
+pub(crate) const OLD_DEFAULT_TABS: &[&str] = &["Default", "All notes"];
+
+/// 既定の表の名前か(今と前の、英日のどの名前でも)。ビューの名前には使えず、選ぶときは既定の表を指す。
+pub(crate) fn is_default_tab(name: &str) -> bool {
+    name == DEFAULT_TAB || name == Msg::DefaultTabName.en() || OLD_DEFAULT_TABS.contains(&name)
+}
 
 /// mdgrid のビューの状態。
 #[derive(Default)]
@@ -367,8 +373,7 @@ impl App {
             .as_ref()
             .is_some_and(|b| b.base.views.iter().any(|v| v.name == name));
         // 既定の表の名前は英日のどちらでも断る(どちらの言語の画面でもタブが2つ並ばない)。
-        let default_tab =
-            name == DEFAULT_TAB || name == Msg::DefaultTabName.en() || name == OLD_DEFAULT_TAB;
+        let default_tab = is_default_tab(name);
         if default_tab || fixed {
             return Some(Msg::ViewNameFixed.fill(&[&name]));
         }

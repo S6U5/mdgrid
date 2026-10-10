@@ -196,9 +196,9 @@ impl App {
     /// 開き直したあと、登録のビューを名前で選ぶ(`.base` のビューか mdgrid のビュー)。無ければ理由。
     pub fn select_view_named(&mut self, name: &str) {
         let names = self.view_names();
-        // 既定の表は、前の英語の名前(Default)でも選べる(書いてある places.toml のため)。ビューが既定の表
+        // 既定の表は、前の名前や別の言語の名前でも選べる(書いてある places.toml のため)。ビューが既定の表
         // だけなら、もう開いている。
-        let old_default = name == super::native_views::OLD_DEFAULT_TAB && self.base.is_none();
+        let old_default = super::native_views::is_default_tab(name) && self.base.is_none();
         if old_default && names.is_empty() {
             return;
         }

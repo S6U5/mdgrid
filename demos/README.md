@@ -34,6 +34,7 @@ sh demos/record.sh places     # 1本だけ
 | `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
 | `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
 | `wbs.tape` → [demo-wbs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-wbs.gif) | WBS: 番号と進み具合、値の対応表を設定の画面で作る |
+| `csv.tape` → [demo-csv.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-csv.gif) | CSV を台帳として開いて直す(直した値だけを書き換える・保存の前の差分・末尾に行を足す) |
 | `themes.tape` → [demo-themes.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-themes.gif) | 色のテーマ(examples/themes/ の6つ) |
 
 To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screens are in English on the English sample (`examples/demo`). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.

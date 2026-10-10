@@ -130,7 +130,8 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
 /// 画面の型のタブ(REL-8): 登録した表があるとき(と関係マップの画面)だけ。(文字, 選んでいるか)。
 /// 選んでいるものは `[表]`、ほかは ` 関係 `(ビューのタブと同じ形。色なしでも分かる)。
 fn screen_tabs(app: &App) -> Vec<(String, bool)> {
-    if app.scope_places().is_empty() && app.mode != Mode::Relations {
+    // SC-17: 行がノートでない表(CSV など)では関係マップへのタブを出さない。
+    if !app.src.notes() || (app.link_places().is_empty() && app.mode != Mode::Relations) {
         return Vec::new();
     }
     let rel = app.mode == Mode::Relations;

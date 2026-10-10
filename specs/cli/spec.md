@@ -71,9 +71,10 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
-| 2026-10-10 | [設定の形の作り直しに合わせて、項目の名前と Config の形に触れる試験の錠を掛け直す(config-v2-locks)](../_decisions/2026-10-10-config-v2-locks.md) | accepted | 人 | 人の発言 | BV-17, BV-20, CE-16 ほか 34 |
-| 2026-10-10 | [表のプロファイルを、ワークスペース・表・ビューの範囲で上書きできるようにし、設定の画面で保存先の範囲を選べるようにする(scope-overrides)](../_decisions/2026-10-10-scope-overrides.md) | accepted | 人 | 人の発言 | SR-44, SR-43, WS-1 ほか 2 |
+| 2026-10-10 | [表のプロファイルを、ワークスペース・表・ビューの範囲で上書きできるようにし、設定の画面で保存先の範囲を選べるようにする(scope-overrides)](../_decisions/2026-10-10-scope-overrides.md) | accepted | 人 | 人の発言 | SR-44, SR-43, WS-1, WS-7, CLI-21 |
 | 2026-10-10 | [設定の形を作り直し、アプリ全体の項目と表のプロファイルに分け、重なる項目をまとめる(config-v2)](../_decisions/2026-10-10-config-v2.md) | accepted | 人 | 人の発言 | CLI-3, CLI-11, CLI-12 ほか 16 |
+| 2026-10-10 | [公開リポで入った設定の形の作り直し(#30)が書き換えた試験の錠を掛け直す(config-v2-relock)](../_decisions/2026-10-10-config-v2-relock.md) | accepted | 人 | 人の発言 | BV-17, BV-19, BV-20 ほか 42 |
+| 2026-10-10 | [設定の形の作り直しに合わせて、項目の名前と Config の形に触れる試験の錠を掛け直す(config-v2-locks)](../_decisions/2026-10-10-config-v2-locks.md) | accepted | 人 | 人の発言 | BV-17, BV-20, CE-16 ほか 34 |
 | 2026-10-08 | [よく使う表を名前と分類で登録し、一覧から開く(places)](../_decisions/2026-10-08-places.md) | accepted | 人 | 人の発言 | CLI-1, CLI-18, CLI-19 |
 | 2026-10-07 | [左のノートの欄の名前に合わせて、画面の名前を見る試験の錠を掛け直す(note-column-locks)](../_decisions/2026-10-07-note-column-locks.md) | accepted | 人 | 人の発言 | SR-21, BV-17, CE-16 ほか 9 |
 | 2026-10-07 | [group_gap に合わせて、表示の設定の試験の錠を掛け直す(group-gap-locks)](../_decisions/2026-10-07-group-gap-locks.md) | accepted | 人 | 人の発言 | SR-20, SR-21, NV-16 ほか 4 |

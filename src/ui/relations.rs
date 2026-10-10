@@ -63,7 +63,7 @@ impl App {
     fn with_links<T>(&self, f: impl FnOnce(&mut LinkCtx) -> T) -> T {
         let gen = self.links.gen.get();
         let cur_key = (self.progress.loaded, gen);
-        let places = self.scope_places();
+        let places = self.link_places();
         let reg_paths: Vec<PathBuf> = places.iter().map(|p| p.path.clone()).collect();
         let mut ctx = self.links.ctx.borrow_mut();
         let mut changed = false;
@@ -330,7 +330,7 @@ impl App {
         let Some(row) = self.cur_row() else {
             return false;
         };
-        if !self.scope_places().is_empty() {
+        if !self.link_places().is_empty() {
             return true;
         }
         let (Some(ix), Some(info)) = (self.src.link_index(), self.src.file(&row)) else {
@@ -404,7 +404,7 @@ impl App {
         let tables = self.with_links(|ctx| ctx.tables.clone());
         let place = relations::table_of(note, &tables)
             .and_then(|t| {
-                self.scope_places()
+                self.link_places()
                     .into_iter()
                     .find(|p| Table::new(&p.name, &p.path).dir == t.dir)
             })

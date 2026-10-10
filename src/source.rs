@@ -1,5 +1,6 @@
 //! 読み込み口(タスク 18。SC-14)。核(changes・ui)が形式に触れる唯一の口。形は docs/design.md。
 
+pub mod csv;
 pub mod markdown;
 
 use crate::types;
@@ -94,6 +95,49 @@ pub trait Source {
         let _ = (row, to);
         Err(std::io::Error::other("rename is not supported"))
     }
+    /// 行がノート(ファイルの名前・本文・リンクを持つ)か。偽の読み込み口(CSV など)では、ノートだけの機能
+    /// (エディタで開く・名前の変更・リンク・キーの操作など。SC-17)を出さない。既定は真。
+    fn notes(&self) -> bool {
+        true
+    }
+    /// SC-17: 末尾に空の行を1つ足してすぐ書き、足した行と、書く前と後の基準を返す。行を足せない読み込み口は Err(既定)。
+    fn append_row(&mut self) -> Result<(RowId, Stamp, Stamp), SaveError> {
+        Err(SaveError::Edit(EditError::NotEditable(
+            crate::i18n::Msg::CsvNoteOnly.text().into(),
+        )))
+    }
+    /// 行のある場所: (ファイルの実体のパス, ファイルの中の位置の印)。`--pick path`・`--with-path` はパスの後ろに印を
+    /// 付けて出し、`--apply` はそれで行を引く。既定は行の鍵がそのままパスで、印は無い(1行が1つのファイル)。
+    fn locate(&self, row: &RowId) -> (std::path::PathBuf, String) {
+        (std::path::PathBuf::from(&row.0), String::new())
+    }
+    /// 行が書かれる先(書く単位)。保存の確認と保存は、この単位ごとにまとめる(1つの単位は1回で書く)。
+    /// 既定は行そのもの(1行が1つのファイル)。`label` は単位も受ける(保存の確認の画面の見出し)。
+    fn unit(&self, row: &RowId) -> RowId {
+        row.clone()
+    }
+    /// 1つの単位の中の行の直しをまとめた差分: (今のディスクのバイト, 全部を当てたバイト)。既定は1行だけ受ける。
+    fn preview_unit(&self, edits: &[(RowId, Vec<Edit>)]) -> Result<(Vec<u8>, Vec<u8>), EditError> {
+        match edits {
+            [(row, e)] => self.preview(row, e),
+            _ => Err(EditError::NotEditable(
+                crate::i18n::Msg::RowNotLoaded.text().into(),
+            )),
+        }
+    }
+    /// 1つの単位の中の行の直しをまとめて1回で書く。base から変わっていれば SaveError::Changed。既定は1行だけ受ける。
+    fn save_unit(
+        &mut self,
+        base: &Stamp,
+        edits: &[(RowId, Vec<Edit>)],
+    ) -> Result<Stamp, SaveError> {
+        match edits {
+            [(row, e)] => self.save(row, base, e),
+            _ => Err(SaveError::Edit(EditError::NotEditable(
+                crate::i18n::Msg::RowNotLoaded.text().into(),
+            ))),
+        }
+    }
     /// 保存の前の差分用: (今のディスクのバイト, それに edits を当てたバイト)。
     /// ファイルも読んだ内容も変えない(変えると changed が外の変更を見逃す)。
     fn preview(&self, row: &RowId, edits: &[Edit]) -> Result<(Vec<u8>, Vec<u8>), EditError>;
@@ -137,6 +181,104 @@ pub trait Source {
     /// 組み立てのたびに作り直さないよう、読み込み口が覚えておく。リンクを持たない読み込み口は None(既定)。
     fn link_index(&self) -> Option<std::rc::Rc<crate::links::Index>> {
         None
+    }
+}
+
+/// 箱に入れた読み込み口もそのまま読み込み口(開く対象を形式によらず1つの型で持つため。SC-15)。
+impl<S: Source + ?Sized> Source for Box<S> {
+    fn name(&self) -> String {
+        (**self).name()
+    }
+    fn set_add_frontmatter(&mut self, on: bool) {
+        (**self).set_add_frontmatter(on)
+    }
+    fn load(&mut self, budget: usize) -> vault::Progress {
+        (**self).load(budget)
+    }
+    fn cancel(&mut self) {
+        (**self).cancel()
+    }
+    fn rows(&self) -> Vec<RowId> {
+        (**self).rows()
+    }
+    fn label(&self, row: &RowId) -> String {
+        (**self).label(row)
+    }
+    fn mark(&self, row: &RowId) -> Option<String> {
+        (**self).mark(row)
+    }
+    fn columns(&self) -> Vec<String> {
+        (**self).columns()
+    }
+    fn get(&self, row: &RowId, col: &str) -> Cell {
+        (**self).get(row, col)
+    }
+    fn stamp(&self, row: &RowId) -> Option<Stamp> {
+        (**self).stamp(row)
+    }
+    fn reload(&mut self, row: &RowId) -> std::io::Result<()> {
+        (**self).reload(row)
+    }
+    fn rename(&mut self, row: &RowId, to: &std::path::Path) -> std::io::Result<RowId> {
+        (**self).rename(row, to)
+    }
+    fn notes(&self) -> bool {
+        (**self).notes()
+    }
+    fn append_row(&mut self) -> Result<(RowId, Stamp, Stamp), SaveError> {
+        (**self).append_row()
+    }
+    fn locate(&self, row: &RowId) -> (std::path::PathBuf, String) {
+        (**self).locate(row)
+    }
+    fn unit(&self, row: &RowId) -> RowId {
+        (**self).unit(row)
+    }
+    fn preview_unit(&self, edits: &[(RowId, Vec<Edit>)]) -> Result<(Vec<u8>, Vec<u8>), EditError> {
+        (**self).preview_unit(edits)
+    }
+    fn save_unit(
+        &mut self,
+        base: &Stamp,
+        edits: &[(RowId, Vec<Edit>)],
+    ) -> Result<Stamp, SaveError> {
+        (**self).save_unit(base, edits)
+    }
+    fn preview(&self, row: &RowId, edits: &[Edit]) -> Result<(Vec<u8>, Vec<u8>), EditError> {
+        (**self).preview(row, edits)
+    }
+    fn save(&mut self, row: &RowId, base: &Stamp, edits: &[Edit]) -> Result<Stamp, SaveError> {
+        (**self).save(row, base, edits)
+    }
+    fn changed(&mut self) -> Vec<RowId> {
+        (**self).changed()
+    }
+    fn pause(&mut self, paused: bool) {
+        (**self).pause(paused)
+    }
+    fn kind(&self, col: &str) -> ColumnKind {
+        (**self).kind(col)
+    }
+    fn typed(&self, col: &str) -> bool {
+        (**self).typed(col)
+    }
+    fn folders(&self) -> Vec<std::path::PathBuf> {
+        (**self).folders()
+    }
+    fn body(&self, row: &RowId) -> Option<String> {
+        (**self).body(row)
+    }
+    fn file(&self, row: &RowId) -> Option<FileInfo> {
+        (**self).file(row)
+    }
+    fn candidates(&self, col: &str, max: usize) -> Option<Vec<Value>> {
+        (**self).candidates(col, max)
+    }
+    fn list_candidates(&self, col: &str) -> Vec<(String, usize)> {
+        (**self).list_candidates(col)
+    }
+    fn link_index(&self) -> Option<std::rc::Rc<crate::links::Index>> {
+        (**self).link_index()
     }
 }
 

@@ -604,6 +604,14 @@ impl App {
     /// 意図を受けて状態を変える(振り分け)。
     pub fn apply(&mut self, action: Action) {
         self.message = None;
+        // SC-17: 行がノートでない表(CSV など)では、ノートだけの動作を理由を出して断る。
+        if matches!(self.mode, Mode::Table | Mode::Detail | Mode::Menu)
+            && !self.src.notes()
+            && Action::NOTE_ONLY.contains(&action)
+        {
+            self.message = Some(Msg::CsvNoteOnly.text().into());
+            return;
+        }
         match self.mode {
             Mode::Help => return self.help_action(action),
             Mode::Palette => return self.palette_action(action),

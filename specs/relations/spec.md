@@ -64,6 +64,7 @@ updated: 2026-10-09
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-10 | [公開リポで入った設定の形の作り直し(#30)が書き換えた試験の錠を掛け直す(config-v2-relock)](../_decisions/2026-10-10-config-v2-relock.md) | accepted | 人 | 人の発言 | BV-17, BV-19, BV-20 ほか 42 |
 | 2026-10-09 | [ワークスペース(表をまとめる範囲)をアプリの側で持ち、画面とコマンドで管理し、.git と保管庫を検知できるようにする(workspaces)](../_decisions/2026-10-09-workspaces.md) | accepted | 人 | 人の発言 | WS-1, WS-2, WS-3 ほか 5 |
 | 2026-10-09 | [関係マップをクリックで操作する(relmap-click)](../_decisions/2026-10-09-relmap-click.md) | accepted | 人 | 人の発言 | REL-12 |
 | 2026-10-09 | [関係マップの画面・切り替えのタブ・幅に合わせた段組みを版1に入れる(relation-map-now)](../_decisions/2026-10-09-relation-map-now.md) | accepted | 人 | 人の発言 | REL-7, REL-8, REL-9 |

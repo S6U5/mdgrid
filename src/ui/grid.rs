@@ -478,8 +478,10 @@ impl App {
         } else {
             self.src.rows().into_iter().collect()
         };
+        // 抜くのは前の表にあった留める行だけ(前の表に無かった行は戻す位置が無いので、組み立てたままの位置に置く)。
+        let held_rows: HashSet<RowId> = old.iter().map(|(_, _, _, r)| r.clone()).collect();
         for (_, rs) in segs.iter_mut() {
-            rs.retain(|r| !self.stay.contains(r));
+            rs.retain(|r| !held_rows.contains(r));
         }
         for (g, h, k, r) in old {
             if !natural.contains_key(&r) && !alive.contains(&r) {

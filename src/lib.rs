@@ -11,6 +11,7 @@ pub mod changes;
 pub mod clock;
 pub mod colors;
 pub mod config;
+pub mod csvfile;
 pub mod display;
 pub mod expr;
 pub mod frontmatter;
@@ -62,3 +63,19 @@ mod test_wbs;
 #[cfg(test)]
 #[path = "test_weekday_lang_unit.rs"]
 mod test_weekday_lang;
+
+#[cfg(test)]
+#[path = "test_csvfile_unit.rs"]
+mod test_csvfile;
+
+#[cfg(test)]
+#[path = "test_csv_edges_unit.rs"]
+mod test_csv_edges;
+
+#[cfg(test)]
+#[path = "test_csv_identity_unit.rs"]
+mod test_csv_identity;
+
+#[cfg(test)]
+#[path = "test_body_path_unit.rs"]
+mod test_body_path;

@@ -12,16 +12,19 @@ pub struct Skip {
     pub reason: String,
 }
 
-/// 保存の前の差分(WB-9)。external は「外で変更」の印(WB-16)。
+/// 保存の前の差分(WB-9)。1つの書く単位(`Source::unit`)ごと。external は「外で変更」の印(WB-16)。
 #[derive(Debug, Clone, PartialEq)]
 pub struct Preview {
+    /// 書く単位(Markdown では行そのもの)。
     pub row: RowId,
+    /// 単位の中の、ためた変更のある行。
+    pub rows: Vec<RowId>,
     pub before: Vec<u8>,
     pub after: Vec<u8>,
     pub external: bool,
 }
 
-/// 行ごとの保存の結果。
+/// 書く単位ごとの保存の結果。
 #[derive(Debug)]
 pub enum Outcome {
     Saved,
@@ -223,78 +226,154 @@ impl Changes {
         self.states.get(row).is_some_and(|s| s.external)
     }
 
+    /// ためた変更のある行を、書く単位(`Source::unit`)ごとにまとめる(単位は最初に現れた順、行は昇順)。
+    pub fn units(&self, src: &dyn Source) -> Vec<(RowId, Vec<RowId>)> {
+        let mut out: Vec<(RowId, Vec<RowId>)> = Vec::new();
+        for row in self.cells.keys() {
+            let u = src.unit(row);
+            match out.iter_mut().find(|(k, _)| *k == u) {
+                Some((_, rows)) => rows.push(row.clone()),
+                None => out.push((u, vec![row.clone()])),
+            }
+        }
+        out
+    }
+
+    /// その書く単位の、ためた変更のある行。
+    pub fn rows_in(&self, src: &dyn Source, unit: &RowId) -> Vec<RowId> {
+        self.units(src)
+            .into_iter()
+            .find(|(u, _)| u == unit)
+            .map(|(_, rows)| rows)
+            .unwrap_or_default()
+    }
+
+    /// 書く単位のどれかの行に「外で変更」の印があるか(WB-16)。
+    pub fn external_unit(&self, src: &dyn Source, unit: &RowId) -> bool {
+        self.rows_in(src, unit).iter().any(|r| self.external(r))
+    }
+
+    /// 単位の中の行ごとの、書く直し(WB-17: 読んだ値と同じセルは除く。全部同じ行は除く)。
+    fn unit_edits(&self, src: &dyn Source, rows: &[RowId]) -> Vec<(RowId, Vec<Edit>)> {
+        rows.iter()
+            .map(|r| (r.clone(), self.edits(src, r)))
+            .filter(|(_, e)| !e.is_empty())
+            .collect()
+    }
+
     pub fn previews(&self, src: &dyn Source) -> Vec<Result<Preview, (RowId, EditError)>> {
-        self.cells
-            .keys()
-            .filter_map(|row| {
-                // WB-17: 読んだ値と同じセルは差分に出さない(全部同じ行は書かないので出さない)。
-                let edits = self.edits(src, row);
+        self.units(src)
+            .into_iter()
+            .filter_map(|(unit, rows)| {
+                // WB-17: 読んだ値と同じセルは差分に出さない(全部同じ単位は書かないので出さない)。
+                let edits = self.unit_edits(src, &rows);
                 if edits.is_empty() {
                     return None;
                 }
-                Some(match src.preview(row, &edits) {
+                let external = rows.iter().any(|r| self.external(r));
+                Some(match src.preview_unit(&edits) {
                     Ok((before, after)) => Ok(Preview {
-                        row: row.clone(),
+                        row: unit,
+                        rows: edits.into_iter().map(|(r, _)| r).collect(),
                         before,
                         after,
-                        external: self.external(row),
+                        external,
                     }),
-                    Err(e) => Err((row.clone(), e)),
+                    Err(e) => Err((unit, e)),
                 })
             })
             .collect()
     }
 
-    /// 行ごとに保存する。Saved の行の変更は消え、基準は新しくなる。それ以外は残す(WB-14)。
+    /// 書く単位ごとに保存する。Saved の単位の変更は消え、基準は新しくなる。それ以外は残す(WB-14)。
     pub fn save(&mut self, src: &mut dyn Source) -> Vec<(RowId, Outcome)> {
         let rows = self.rows();
         self.save_rows(src, &rows)
     }
 
-    /// 指定の行だけを保存する(保存の確認の画面で1ファイルを選んで書くとき)。結果の形は save と同じ。
-    /// ためた変更の無い行と、重ねて渡した行は飛ばす。
+    /// 指定の行の書く単位だけを保存する(保存の確認の画面で1ファイルを選んで書くとき)。単位の中のためた変更は全部書く。
+    /// 結果は単位ごと(形は save と同じ)。ためた変更の無い行と、重ねて渡した単位は飛ばす。
     pub fn save_rows(&mut self, src: &mut dyn Source, rows: &[RowId]) -> Vec<(RowId, Outcome)> {
+        let units = self.units(src);
         let mut out = Vec::new();
         let mut seen = BTreeSet::new();
         for row in rows {
-            if !self.cells.contains_key(row) || !seen.insert(row.clone()) {
+            if !self.cells.contains_key(row) && !units.iter().any(|(u, _)| u == row) {
                 continue;
             }
-            let row = row.clone();
-            let Some(base) = self.states.get(&row).and_then(|s| s.base) else {
-                // 基準の無いためる変更は作らないが、念のため書かずに止める。
-                out.push((row, Outcome::Changed));
+            let unit = src.unit(row);
+            if !seen.insert(unit.clone()) {
+                continue;
+            }
+            let Some((_, unit_rows)) = units.iter().find(|(u, _)| *u == unit) else {
+                continue;
+            };
+            // 基準(WB-4)は単位の中で1つ。違う基準の行が混ざれば、書かずに止める(基準の無いためる変更は作らないが、念のため)。
+            let bases: BTreeSet<[u8; 32]> = unit_rows
+                .iter()
+                .filter_map(|r| self.states.get(r).and_then(|s| s.base))
+                .map(|b| b.hash)
+                .collect();
+            let base = unit_rows
+                .iter()
+                .find_map(|r| self.states.get(r).and_then(|s| s.base));
+            let (Some(base), 1) = (base, bases.len()) else {
+                self.mark_external(unit_rows);
+                out.push((unit, Outcome::Changed));
                 continue;
             };
             // WB-17 の守り: 読んだ値と同じセルは書かない(クオートや書式だけが変わらないように)。
-            // 全部が同じなら書かずに、ためる変更から外す(外の変化と同じ扱いの手。結果には出さない)。
-            let edits = self.edits(src, &row);
+            // 全部が同じ行は書かずに、ためる変更から外す(外の変化と同じ扱いの手。結果には出さない)。
+            let edits = self.unit_edits(src, unit_rows);
+            let same: Vec<RowId> = unit_rows
+                .iter()
+                .filter(|r| !edits.iter().any(|(e, _)| e == *r))
+                .cloned()
+                .collect();
+            self.drop_same(src, &same);
             if edits.is_empty() {
-                self.drop_same(src, std::slice::from_ref(&row));
                 continue;
             }
-            match src.save(&row, &base, &edits) {
+            match src.save_unit(&base, &edits) {
                 Ok(_) => {
                     // 書いた行の変更は消え、積みからも除く(書いたものは取り消せない)。
-                    self.cells.remove(&row);
-                    self.states.remove(&row);
-                    for s in self.undo.iter_mut().chain(self.redo.iter_mut()) {
-                        s.drop_row(&row);
+                    for (r, _) in &edits {
+                        self.cells.remove(r);
+                        self.states.remove(r);
+                        for s in self.undo.iter_mut().chain(self.redo.iter_mut()) {
+                            s.drop_row(r);
+                        }
                     }
                     self.undo.retain(|s| !s.is_empty());
                     self.redo.retain(|s| !s.is_empty());
-                    out.push((row, Outcome::Saved));
+                    out.push((unit, Outcome::Saved));
                 }
                 Err(SaveError::Changed) => {
-                    if let Some(st) = self.states.get_mut(&row) {
-                        st.external = true;
-                    }
-                    out.push((row, Outcome::Changed));
+                    self.mark_external(unit_rows);
+                    out.push((unit, Outcome::Changed));
                 }
-                Err(e) => out.push((row, Outcome::Failed(e))),
+                Err(e) => out.push((unit, Outcome::Failed(e))),
             }
         }
         out
+    }
+
+    /// 読み込み口が自分で書いた(ためた値に触れない書き込み。SC-17 の行を足す)あと、`old` を基準にしていた行の基準を
+    /// `new` に進める。外で変わった印のある行は進めない(WB-16)。
+    pub fn rebase(&mut self, old: &Stamp, new: &Stamp) {
+        for st in self.states.values_mut() {
+            if !st.external && st.base.is_some_and(|b| b.hash == old.hash) {
+                st.base = Some(*new);
+            }
+        }
+    }
+
+    fn mark_external(&mut self, rows: &[RowId]) {
+        for r in rows {
+            if let Some(st) = self.states.get_mut(r) {
+                st.external = true;
+            }
+        }
     }
 
     /// WB-16 の「外の変更の上に書く」: 今のファイルを読み直して基準にし、印を消す。
@@ -349,16 +428,21 @@ impl Changes {
 
     /// WB-16 の「ためた変更を捨てる」。その行の変更を1手として消す。
     pub fn discard(&mut self, row: &RowId) {
-        let Some(m) = self.cells.get(row) else {
-            return;
-        };
-        let cells = m
+        self.discard_rows(std::slice::from_ref(row));
+    }
+
+    /// 複数の行(1つの書く単位など)の変更を1手として消す。
+    pub fn discard_rows(&mut self, rows: &[RowId]) {
+        let cells = rows
             .iter()
-            .map(|(col, v)| CellChange {
-                row: row.clone(),
-                col: col.clone(),
-                before: Some(v.clone()),
-                after: None,
+            .filter_map(|row| self.cells.get(row).map(|m| (row, m)))
+            .flat_map(|(row, m)| {
+                m.iter().map(move |(col, v)| CellChange {
+                    row: row.clone(),
+                    col: col.clone(),
+                    before: Some(v.clone()),
+                    after: None,
+                })
             })
             .collect();
         self.commit(cells, BTreeMap::new(), true);

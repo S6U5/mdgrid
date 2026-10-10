@@ -431,7 +431,7 @@ const TX = {
     auto: "auto(端末の地に従う)", proposal: "案(まだ設定に無い)", fromPreset: "組のまま",
   },
   en: {
-    rows: n => n === 1 ? "1 row" : `${n} rows`, tabsR: ["Table", "Relations"], newNote: "+ New", tabDefault: "All notes", tabSwitch: "  [ ] to switch",
+    rows: n => n === 1 ? "1 row" : `${n} rows`, tabsR: ["Table", "Relations"], newNote: "+ New", tabDefault: "Default table", tabSwitch: "  [ ] to switch",
     barLead: " Filter: ", barHint: "(\\ to filter)", setLead: " Settings:", setHint: "  BS to remove",
     same: (c, v) => `  same value ${c}=${v}`, filt: v => `  filter "${v}"`, unsaved: n => ` Unsaved ${n}`,
     modeTable: "Table", modeEdit: "Edit", modeHelp: "Help", modeDetail: "Details", modeMap: "Relation map", modeSearch: "Search", modeFilter: "Filter",
@@ -445,7 +445,7 @@ const TX = {
     listMsg: "↑↓ choose, Enter confirm, type for free input (*=current value)", empty: "(empty)",
     saved: n => `Saved ${n} change(s) (a sample: nothing is written to files)`, nothing: "Nothing to save",
     newMsg: "The sample cannot make new notes (mdgrid opens the name field)",
-    setHead: " View settings  vault  the table does not change until Apply", setTitle: "View settings", setTarget: "vault · All notes", setPending: n => `${n} not applied`,
+    setHead: " View settings  vault  the table does not change until Apply", setTitle: "View settings", setTarget: "vault · Default table", setPending: n => `${n} not applied`,
     secCols: "Columns", secFilter: "Filters", secSort: "Sort", secGroup: "Group", secDisplay: "Display", secViews: "Views", secLook: "Look",
     descCols: "Choose the columns to show. Reorder the ⠿ rows with K and J", descFilter: "Show only the rows that match every condition", descSort: "The first rule wins; ties go to the next rule", descGroup: "Split the rows by a column's value", descDisplay: "What is shown around the table", descViews: "Tabs above the table. Changes are saved right away", tabHintRow: "Switch hint ([ ])", tabDefMark: "★ default", tabMakeDef: "Make default", tabCurHide: "The view you are on cannot be hidden. Switch to another tab first", descLook: "Part shapes, theme and round pill ends (written to the config file)",
     shown: "shown", hiddenWord: "hidden", lookPreset: "Preset", lookTheme: "Theme", lookNerd: "Round pill ends (nerd_font)", setCols: "Columns (shown and order)", setDisplay: "Display", setFilters: "Filters (rows matching all)", setAddCond: "+ Add condition", setSorts: "Sort (top column first)", setGroup: "Group",
@@ -461,7 +461,7 @@ const TX = {
     helpHead: m => ` Help  1-${m} lines  All keys (from the key table)`, helpNow: " Keys now (Table)",
     help: [["Enter", "Edit"], ["BS Del", "Clear"], ["u ^Z", "Undo"], ["q", "Quit"], ["^S", "Save"], ["^R U", "Redo"], ["?", "Help"], [": ^P", "Commands"], ["k ↑", "Up"], ["j ↓", "Down"], ["h ←", "Left"], ["l →", "Right"], ["Tab", "Next cell"], ["Shift+Tab", "Previous cell"], ["[", "Previous view"], ["]", "Next view"], ["R", "Relation map"], ["K", "Details"], ["/", "Search"], ["n", "Next match"], ["N", "Previous match"], ["\\", "Quick filter"], ["*", "Highlight same value"], [",", "Only same value"]],
     mapTitle: " Relation map ", mapDetail: " Details ", ws: "  · workspace Sample", kind: "Kind", many: "many-to-one (N:1)", col: "Column", to: "Target", links: "Links",
-    views: ["All notes", "Doing", "Open"], chipDoing: "status: only doing", chipOpen: "status: not done",
+    views: ["Default table", "Doing", "Open"], chipDoing: "status: only doing", chipOpen: "status: not done",
     note: "Note",
     rowsData: [
       ["tasks/write-meeting-notes", "todo", "2026-10-02", 1, false, ["meeting"], "Sam"],
