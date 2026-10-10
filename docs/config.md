@@ -9,6 +9,8 @@ mdgrid reads one TOML file:
 
 The same folder also holds `views.toml` (mdgrid views) and `places.toml` (registered tables; see [Register the tables you use](manual/en/tasks.md#register-the-tables-you-use-and-switch-between-them)). mdgrid writes those two itself.
 
+The theme, parts and round pill ends you pick in the "Look" section of the view settings (`o`) are written to `look.toml` in the same folder, and at startup they are used instead of `theme`, the `preset` of `[style]` and `nerd_font` in this file (this file is never rewritten). Delete `look.toml`, or use "Back to config.toml" in that section, to go back to this file from the next start. Looks saved under a name (templates) go to `[[template]]` in `look.toml`.
+
 Every item is optional. Without a file mdgrid runs with the defaults. Unknown items and values of the wrong type produce a warning on the message line and are ignored; mdgrid still starts. A broken TOML file stops mdgrid with a one-line reason.
 
 To start from the defaults, write them out with comments:
@@ -206,13 +208,86 @@ language = "en"
 
 ### `theme`
 
-- Type: `string ("default", "nord", "solarized-light", "dracula", "gruvbox", "pink-monster" or "dozy-pink")`
+- Type: `string ("auto", "default", "nord", "solarized-light", "dracula", "gruvbox", "pink-monster", "dozy-pink", "sumi", "slate", "saas", "saas-dark" or "paper")`
 - Default: `"default"`
 
-Color theme of the screen: `"default"`, `"nord"`, `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"` or `"dozy-pink"`. `"default"` keeps the terminal's own foreground and background (the look before themes existed). The other themes paint the background, the text, the header line, the column headings, the selected cell, the bottom band, the shaded rows of `zebra` and the `>` marks with their own colors; colors that carry meaning (pending values, search matches, added and removed lines in the save review) also get theme colors chosen to stay readable on the theme's background. Without colors (`--no-color`, `NO_COLOR`, `TERM=dumb`, `color = false`) the theme is ignored. On terminals without true color (`COLORTERM` is not `truecolor` or `24bit`) the nearest of the 256 colors is used. An unknown name gives a warning and the default look.
+Color theme of the screen: `"default"`, `"nord"`, `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"`, `"dozy-pink"`, or one of the quieter sets `"sumi"`, `"slate"`, `"saas"`, `"saas-dark"` and `"paper"`. `"auto"` picks `theme_light` or `theme_dark` by the terminal's background. `"default"` keeps the terminal's own foreground and background (the look before themes existed). The other themes paint the background, the text, the header line, the column headings, the selected cell, the bottom band, the shaded rows of `zebra` and the `>` marks with their own colors; colors that carry meaning (pending values, search matches, added and removed lines in the save review) also get theme colors chosen to stay readable on the theme's background. Without colors (`--no-color`, `NO_COLOR`, `TERM=dumb`, `color = false`) the theme is ignored. On terminals without true color (`COLORTERM` is not `truecolor` or `24bit`) the nearest of the 256 colors is used. An unknown name gives a warning and the default look.
 
 ```toml
 theme = "nord"
+```
+
+### `theme_light`
+
+- Type: `string (a theme name)`
+- Default: `"saas"`
+
+With `theme = "auto"`, the theme for a light terminal background.
+
+```toml
+theme_light = "paper"
+```
+
+### `theme_dark`
+
+- Type: `string (a theme name)`
+- Default: `"sumi"`
+
+With `theme = "auto"`, the theme for a dark terminal background. mdgrid reads the background from `COLORFGBG` or asks the terminal; when it cannot tell, it uses this one.
+
+```toml
+theme_dark = "saas-dark"
+```
+
+### `style`
+
+- Type: `table ([style] with preset, status, tags, check, select, rules, tabs, frames, band and icons)`
+- Default: `{ preset = "sumi" }`
+
+The shape of each part of the screen. `preset` picks a whole set: `"sumi"` (the default: a colored dot before a status, tags separated by `·`, `✓`, the selected row's `>` mark in the accent color, a line under the headings), `"slate"`, `"saas"`, `"paper"`, `"grid"`, `"classic"` (the look of version 0.2.0) or `"dozy-pink"` (soft round pills to go with the dozy-pink theme). The other items override one part each:
+
+- `status` (short repeated values such as status or owner): `"dot"`, `"shape"` (○ ◐ ●), `"text"`, `"pill"`, `"tint"`, `"solid"` (the value color as a solid, non-translucent fill), `"soft"`, `"chip"`, `"plain"`
+- `tags` (lists): `"dots"`, `"hash"`, `"brackets"`, `"pill"`, `"tint"`, `"solid"`, `"soft"`, `"chip"`, `"plain"`
+- `check` (booleans): `"box"`, `"tick"`, `"bracket"`, `"text"`
+- `select` (the selected row and cell): `"bar"`, `"cross"`, `"tint"`, `"outline"`, `"fill"`, `"reverse"`
+- `rules` (lines in the table): `"none"`, `"header"`, `"columns"`, `"grid"`
+- `tabs`: `"underline"`, `"pill"`, `"segment"`, `"brackets"`, `"dim"`
+- `frames` (windows): `"rounded"`, `"square"`, `"heavy"`, `"ascii"`, `"none"`
+- `band` (the keys at the bottom): `"keys"`, `"boxed"`, `"quiet"`
+- `icons`: `true` or `false` (type marks in the column headings)
+
+`"pill"` draws round ends with Nerd Font glyphs, so it needs round ends (`nerd_font`; by default only in Ghostty and WezTerm); otherwise it is drawn as `"soft"`. `borders = "ascii"` still works and means `frames = "ascii"`. The catalog at `docs/catalog/index.html` shows every choice side by side and writes this table for you.
+
+```toml
+[style]
+preset = "saas"
+select = "cross"
+```
+
+### `colors`
+
+- Type: `table ([colors] with color roles, and [colors.values] for value colors)`
+- Default: `{}`
+
+Override the theme's colors by role. Roles: `background`, `text`, `header` (first line), `selection` (selected row), `selection_text`, `band` (key band), `band_text`, `accent` (headings, keys, frames), `strong`, `zebra`, `zebra_text`, `mark`, `added`, `removed`, `pending` (unsaved changes) and `highlight` (search matches). Roles you leave out keep the theme's color. `[colors.values]` sets a color per value (matched ignoring case and surrounding spaces); it is used by every part shape (`status`, `tags`) and in the value list, and works for values in any language. Colors are `"#rrggbb"`, `"#rgb"` or a name: `black`, `white`, `gray`, `red`, `orange`, `yellow`, `green`, `teal`, `cyan`, `blue`, `purple`, `magenta`, `pink`, `brown`. With `theme = "default"`, the terminal's own background and text stay, and only `accent`, `selection` and value colors are used. Unknown roles and unreadable colors produce a warning and are skipped; so does a value written twice (ignoring case and spaces), and then one of them is used. The catalog at `docs/catalog/index.html` has color pickers that write this table.
+
+```toml
+[colors]
+accent = "#e0a458"
+
+[colors.values]
+done = "green"
+```
+
+### `nerd_font`
+
+- Type: `boolean or "auto"`
+- Default: `"auto"`
+
+Whether round pill ends (Nerd Font glyphs U+E0B6 and U+E0B4) can be drawn. `true`: your terminal font is a Nerd Font (any Nerd Font works). `"auto"`: only in terminals that draw these glyphs themselves without a font, Ghostty and WezTerm (by `TERM_PROGRAM`), so nothing breaks in other terminals. Without round ends, `"pill"` is drawn as `"soft"`, and soft and solid pills keep square ends. A terminal cannot tell programs which font it uses, so for other terminals with a Nerd Font, write `true`.
+
+```toml
+nerd_font = true
 ```
 
 ### `display`
@@ -291,7 +366,7 @@ created = "{now}"
 
 Rebind keys per mode; without this item the built-in key bindings are used. Under `[keys.<mode>]`, write `key = "action name"`. The action name `"none"` removes the key. Keys are written like `"j"`, `"ctrl+s"`, `"shift+tab"`; a space separates a prefix key sequence such as `"g g"`.
 
-Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
+Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
 
 ```toml
 [keys.table]

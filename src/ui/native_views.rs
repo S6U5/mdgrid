@@ -45,6 +45,8 @@ pub(crate) struct Native {
     pub target: PathBuf,
     /// 書き出し・取り込みの続きの入力(native_io.rs)。
     pub ask: Option<Ask>,
+    /// タブの順・隠すタブ・切り替えの案内(NV-26。views.toml の対象の項目)。
+    pub tabs: views::TabPrefs,
 }
 
 /// mdgrid のビューの列の並びと式の絞り込みを `.base` にする(核の `print::synth`。`--print` と同じ組み立て)。
@@ -83,6 +85,7 @@ impl App {
         };
         let (views, warns) = views::load_views(&dir, target);
         self.nv.views = views;
+        self.nv.tabs = views::load_tab_prefs(&dir, target);
         self.nv.dir = Some(dir);
         warns
     }
@@ -169,6 +172,33 @@ impl App {
         out
     }
 
+    /// NV-26: タブの見せる順(`view_names` の添字。隠したタブも入れる)。好みの順の名前を先に、
+    /// 好みに無いタブは元の順で後ろ。
+    pub(crate) fn tab_order(&self) -> Vec<usize> {
+        let names = self.view_names();
+        let mut out: Vec<usize> = Vec::with_capacity(names.len());
+        for n in &self.nv.tabs.order {
+            if let Some(i) = names.iter().position(|x| x == n) {
+                if !out.contains(&i) {
+                    out.push(i);
+                }
+            }
+        }
+        let rest: Vec<usize> = (0..names.len()).filter(|i| !out.contains(i)).collect();
+        out.extend(rest);
+        out
+    }
+
+    /// NV-26: タブの行と `[` `]` に出すタブ(見せる順。隠したタブは今のビューでなければ外す)。
+    pub(crate) fn tab_list(&self) -> Vec<usize> {
+        let names = self.view_names();
+        let cur = self.view_index();
+        self.tab_order()
+            .into_iter()
+            .filter(|i| *i == cur || !self.nv.tabs.hidden.contains(&names[*i]))
+            .collect()
+    }
+
     pub(crate) fn view_index(&self) -> usize {
         match self.nv.at {
             Some(i) => self.base_tabs() + i,
@@ -205,6 +235,13 @@ impl App {
         self.reset_view();
     }
 
+    /// 選んだ mdgrid のビューの定義から表の元を作り直す(名前を変えたあと)。
+    pub(crate) fn refresh_native_synth(&mut self) {
+        if let Some(v) = self.native_view() {
+            self.nv.synth = Some(synth_of(v));
+        }
+    }
+
     /// mdgrid のビューを名前で選ぶ。
     fn select_native(&mut self, name: &str) {
         if let Some(j) = self.nv.views.iter().position(|v| v.name == name) {
@@ -214,13 +251,17 @@ impl App {
 
     /// `[` `]`: 前・次のビュー(端で回る)。
     pub(crate) fn switch_view(&mut self, next: bool) {
-        let n = self.view_names().len();
+        let list = self.tab_list();
+        let n = list.len();
         if n < 2 {
             self.message = Some(Msg::NoViewToSwitch.into());
             return;
         }
-        let i = self.view_index();
-        self.select_view(if next { (i + 1) % n } else { (i + n - 1) % n });
+        let i = list
+            .iter()
+            .position(|k| *k == self.view_index())
+            .unwrap_or(0);
+        self.select_view(list[if next { (i + 1) % n } else { (i + n - 1) % n }]);
         // SR-20: タブを隠していれば、どのビューに移ったかを知らせる(ヘッダーにも名前を出す)。
         if !self.shows(mdgrid::display::Item::Tabs) && self.message.is_none() {
             let name = self.view_names()[self.view_index()].clone();
@@ -354,7 +395,7 @@ impl App {
     }
 
     /// mdgrid のビューの見た目の状態を、名前の変更なら新しい名前へ移し、削除なら消す(SR-12・BV-20)。
-    fn move_state(&mut self, old: &str, new: Option<&str>) {
+    pub(crate) fn move_state(&mut self, old: &str, new: Option<&str>) {
         if self.readonly {
             return;
         }
@@ -502,6 +543,7 @@ impl App {
         self.persist_state();
         self.move_state(&old, Some(&name));
         self.adopt_views(list, Some(&name));
+        self.rename_in_tabs(&old, Some(&name));
         if let Some(v) = self.native_view() {
             self.nv.synth = Some(synth_of(v));
         }
@@ -533,6 +575,7 @@ impl App {
         };
         self.move_state(&name, None);
         self.adopt_views(list, None);
+        self.rename_in_tabs(&name, None);
         self.close_draft();
         let back = (self.base_tabs() + k).saturating_sub(1);
         let n = self.view_names().len();
@@ -542,5 +585,32 @@ impl App {
             self.select_view(back.min(n - 1));
         }
         self.message = Some(Msg::ViewDeleted.fill(&[&name]));
+    }
+}
+
+impl App {
+    /// NV-25: 今のビューを既定のビューにする(views.toml の対象の default_view)。先頭のタブ(既定の表・
+    /// `.base` の先頭のビュー)を選んだら、名前を消して先頭で開くことにする。読むだけでは書かない。
+    pub(crate) fn set_default_view(&mut self) {
+        if self.readonly {
+            self.message = Some(super::startup::READONLY.into());
+            return;
+        }
+        let Some(dir) = self.nv.dir.clone() else {
+            self.message = Some(Self::NO_DIR.into());
+            return;
+        };
+        let i = self.view_index();
+        let name = self.view_names().get(i).cloned().unwrap_or_default();
+        let store = (i > 0).then_some(name.as_str());
+        self.message = Some(
+            match mdgrid::views::save_default_view(&dir, &self.nv.target, store) {
+                Err(e) => Msg::CannotWriteFile.fill(&[&mdgrid::views::FILE_NAME, &e]),
+                Ok(()) if store.is_some() => {
+                    Msg::DefaultViewSet.fill(&[&super::width::sanitize(&name)])
+                }
+                Ok(()) => Msg::DefaultViewCleared.text().into(),
+            },
+        );
     }
 }

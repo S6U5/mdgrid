@@ -210,10 +210,10 @@ text = { en = ", keeps the rows whose value equals the selected cell; * only hig
 
 [[shot]]
 id = "sort-column"
-title = { en = "Sort for now", ja = "一時的に並べ替える" }
+title = { en = "Sort by a column", ja = "列で並べ替える" }
 keys = ["l", "s"]
 wait = { en = "ascending", ja = "昇順" }
-text = { en = "s sorts by the column: ascending, descending, then off. The .base file is not changed.", ja = "s で 昇順 → 降順 → 解除。.base は変えない。" }
+text = { en = "s sorts by the column: ascending, descending, then off. The view remembers it; the .base file is not changed.", ja = "s で 昇順 → 降順 → 解除。並べ替えはビューに覚える。.base は変えない。" }
 
 [[shot]]
 id = "hide-column"
@@ -386,21 +386,21 @@ text ={ en = "Choose a column, then tick the values to keep or hide. Counts are 
 [[shot]]
 id = "chips"
 title = { en = "The settings band", ja = "設定の帯" }
-keys = ["o", "Enter", "Enter", "Enter", "Down", "Down", "Down", "Space", "Enter", "Tab", "Tab", "Tab", "Tab", "Enter", "f"]
+keys = ["o", "Enter", "Enter", "Enter", "Down", "Down", "Down", "Space", "Enter", "Tab", "Tab", "Tab", "Tab", "Tab", "Tab", "Tab", "Enter", "f"]
 wait = { en = "except done", ja = "done を除く" }
 text = { en = "Active filters, sorting and grouping appear above the table. f moves into the band; Backspace removes an item.", ja = "効いている条件が表の上に並ぶ。f で帯に入り、Backspace で外す。" }
 
 [[shot]]
 id = "display-row-numbers"
 title = { en = "Row numbers and column lines", ja = "行番号と列の区切り線" }
-keys = ["o", "Tab", "Tab", "Tab", "Space", "Down", "Down", "Space", "Tab", "Enter"]
+keys = ["o", "Tab", "Tab", "Tab", "Tab", "Space", "Down", "Down", "Space", "Tab", "Tab", "Tab", "Enter"]
 wait = { en = "applied the view settings", ja = "ビューの設定を反映した" }
 text = { en = "The Display section turns on row numbers, zebra stripes and column lines for this view.", ja = "「表示」の節で、このビューの行番号・一行おきの色・列の区切り線を切り替える。" }
 
 [[shot]]
 id = "native-view-save"
 title = { en = "Save as an mdgrid view", ja = "mdgrid のビューとして保存" }
-keys = ["o", "Tab", "Tab", "Tab", "Tab", "Down", "Down", "Down", "Enter", "text:mine", "Enter"]
+keys = ["o", "Tab", "Tab", "Tab", "Tab", "Tab", "Tab", "Tab", "Down", "Down", "Down", "Enter", "text:mine", "Enter"]
 wait = { en = "saved as the mdgrid view", ja = "として保存した" }
 text = { en = "Save the current settings under a name; it becomes a tab next to All notes and is kept in views.toml.", ja = "今の見せ方に名前を付けて保存すると、「既定の表」の横のタブになり、views.toml に残る。" }
 

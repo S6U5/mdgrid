@@ -22,7 +22,9 @@ fn notes(name: &str) -> Tmp {
 
 fn with(tmp: &Tmp, color: ColorMode, cfg: &str) -> App {
     let mut a = app_of(tmp, color);
-    let (c, w) = mdgrid::config::parse(cfg).unwrap();
+    // SR-36: 今までの形(classic の組)の部品を確かめる。
+    let cfg = format!("{cfg}\n[style]\npreset = \"classic\"\n");
+    let (c, w) = mdgrid::config::parse(&cfg).unwrap();
     assert!(w.is_empty(), "{w:?}");
     a.configure(&c);
     a.refresh_if_needed();

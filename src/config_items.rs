@@ -194,17 +194,88 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         name: "theme",
-        ty: "string (\"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\" or \"dozy-pink\")",
-        ty_ja: "文字列(\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\")",
+        ty: "string (\"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\" or \"paper\")",
+        ty_ja: "文字列(\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\")",
         default: Some("\"default\""),
         example: "theme = \"nord\"",
-        en: "Color theme of the screen: \"default\", \"nord\", \"solarized-light\", \"dracula\",\n\
-             \"gruvbox\", \"pink-monster\" or \"dozy-pink\". \"default\" keeps the terminal's own colors.\n\
-             Ignored without colors (NO_COLOR, --no-color, TERM=dumb, color = false); 256-color\n\
-             terminals get the nearest colors.",
-        ja: "画面の色のテーマ。\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\
-             \"dozy-pink\" のどれか。\"default\" は端末の色のまま。色なし(NO_COLOR・--no-color・TERM=dumb・\
-             color = false)では効かない。256 色の端末では近い色で塗る。",
+        en: "Color theme of the screen. \"default\" keeps the terminal's own colors. \"auto\" picks\n\
+             theme_light or theme_dark by the terminal's background. Ignored without colors (NO_COLOR,\n\
+             --no-color, TERM=dumb, color = false); 256-color terminals get the nearest colors.",
+        ja: "画面の色のテーマ。\"default\" は端末の色のまま。\"auto\" は端末の地の明るさで theme_light か \
+             theme_dark を使う。色なし(NO_COLOR・--no-color・TERM=dumb・color = false)では効かない。256 色の\
+             端末では近い色で塗る。",
+    },
+    Item {
+        name: "theme_light",
+        ty: "string (a theme name)",
+        ty_ja: "文字列(テーマの名前)",
+        default: Some("\"saas\""),
+        example: "theme_light = \"paper\"",
+        en: "With theme = \"auto\", the theme for a light terminal background.",
+        ja: "theme = \"auto\" のとき、端末の地が明るいときのテーマ。",
+    },
+    Item {
+        name: "theme_dark",
+        ty: "string (a theme name)",
+        ty_ja: "文字列(テーマの名前)",
+        default: Some("\"sumi\""),
+        example: "theme_dark = \"saas-dark\"",
+        en: "With theme = \"auto\", the theme for a dark terminal background (also used when the\n\
+             background cannot be told).",
+        ja: "theme = \"auto\" のとき、端末の地が暗いときのテーマ(明るさが分からないときも)。",
+    },
+    Item {
+        name: "style",
+        ty: "table ([style] with preset, status, tags, check, select, rules, tabs, frames, band and icons)",
+        ty_ja: "表([style] の下に preset・status・tags・check・select・rules・tabs・frames・band・icons)",
+        default: Some("{ preset = \"sumi\" }"),
+        example: "[style]\npreset = \"saas\"\nselect = \"cross\"",
+        en: "The shape of each part of the screen. preset picks a whole set (\"sumi\", \"slate\", \"saas\",\n\
+             \"paper\", \"grid\", \"classic\", \"dozy-pink\"); the other items override single parts: status (\"dot\", \"shape\",\n\
+             \"text\", \"pill\", \"tint\", \"solid\", \"soft\", \"chip\", \"plain\"), tags (\"dots\", \"hash\", \"brackets\", \"pill\",\n\
+             \"tint\", \"solid\", \"soft\", \"chip\", \"plain\"), check (\"box\", \"tick\", \"bracket\", \"text\"), select (\"bar\",\n\
+             \"cross\", \"tint\", \"outline\", \"fill\", \"reverse\"), rules (\"none\", \"header\", \"columns\", \"grid\"),\n\
+             tabs (\"underline\", \"pill\", \"segment\", \"brackets\", \"dim\"), frames (\"rounded\", \"square\",\n\
+             \"heavy\", \"ascii\", \"none\"), band (\"keys\", \"boxed\", \"quiet\") and icons (true or false).\n\
+             docs/catalog/index.html shows every choice and writes this table for you.",
+        ja: "画面の部品の形。preset で組をまとめて選び(\"sumi\"・\"slate\"・\"saas\"・\"paper\"・\"grid\"・\"classic\"・\"dozy-pink\")、\
+             ほかの項目で部品を1つずつ上書きする: status(\"dot\"・\"shape\"・\"text\"・\"pill\"・\"tint\"・\"solid\"・\"soft\"・\"chip\"・\
+             \"plain\")・tags(\"dots\"・\"hash\"・\"brackets\"・\"pill\"・\"tint\"・\"solid\"・\"soft\"・\"chip\"・\"plain\")・check(\"box\"・\
+             \"tick\"・\"bracket\"・\"text\")・select(\"bar\"・\"cross\"・\"tint\"・\"outline\"・\"fill\"・\"reverse\")・rules(\"none\"・\
+             \"header\"・\"columns\"・\"grid\")・tabs(\"underline\"・\"pill\"・\"segment\"・\"brackets\"・\"dim\")・frames(\
+             \"rounded\"・\"square\"・\"heavy\"・\"ascii\"・\"none\")・band(\"keys\"・\"boxed\"・\"quiet\")・icons(true か false)。\
+             docs/catalog/index.html で全部の形を見比べ、この表を作れる。",
+    },
+    Item {
+        name: "colors",
+        ty: "table ([colors] with color roles, and [colors.values] for value colors)",
+        ty_ja: "表([colors] の下に色の役割、[colors.values] に値の色)",
+        default: Some("{}"),
+        example: "[colors]\naccent = \"#e0a458\"\n\n[colors.values]\ndone = \"green\"",
+        en: "Override the theme's colors by role: background, text, header, selection, selection_text,\n\
+             band, band_text, accent, strong, zebra, zebra_text, mark, added, removed, pending and\n\
+             highlight. [colors.values] sets a color per value (case-insensitive), used by every part\n\
+             shape. Colors are \"#rrggbb\", \"#rgb\" or a name (black, white, gray, red, orange,\n\
+             yellow, green, teal, cyan, blue, purple, magenta, pink, brown). With theme = \"default\",\n\
+             only accent, selection and value colors are used.",
+        ja: "テーマの色を役割ごとに上書きする: background・text・header・selection・selection_text・band・\
+             band_text・accent・strong・zebra・zebra_text・mark・added・removed・pending・highlight。\
+             [colors.values] は値ごとの色(大文字・小文字によらない)で、部品のどの形でも使う。色は \"#rrggbb\"・\
+             \"#rgb\" か名前(black・white・gray・red・orange・yellow・green・teal・cyan・blue・purple・magenta・\
+             pink・brown)。theme = \"default\" では accent・selection と値の色だけを使う。",
+    },
+    Item {
+        name: "nerd_font",
+        ty: "boolean or \"auto\"",
+        ty_ja: "真偽か \"auto\"",
+        default: Some("\"auto\""),
+        example: "nerd_font = true",
+        en: "Whether round pill ends (Nerd Font glyphs) can be drawn. true: your terminal font is a Nerd\n\
+             Font. \"auto\": only in terminals that draw these glyphs themselves (Ghostty, WezTerm), so\n\
+             nothing breaks elsewhere. Without round ends, \"pill\" is drawn as \"soft\".",
+        ja: "丸い札の端(Nerd Font の字)を描いてよいか。true は端末の字形が Nerd Font。\"auto\" は、その字を\
+             字体に頼らず自分で描く端末(Ghostty・WezTerm)のときだけ(ほかの端末で字が化けないように)。\
+             描けなければ \"pill\" は \"soft\" で描く。",
     },
     Item {
         name: "display",
@@ -253,11 +324,11 @@ pub const ITEMS: &[Item] = &[
         example: "[keys.table]\n\"ctrl+f\" = \"search\"\n\"x\" = \"none\"",
         en: "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\
              \"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\n\
-             filter, detail, settings, settings_input, chips, list_select, menu, freq, relations. Action\n\
+             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations. Action\n\
              names are shown in the command palette (:).",
         ja: "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\
              \"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・\
-             filter・detail・settings・settings_input・chips・list_select・menu・freq・relations。動作の名前はコマンドのパレット(:)に出る。",
+             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations。動作の名前はコマンドのパレット(:)に出る。",
     },
 ];
 

@@ -44,6 +44,7 @@ impl App {
                 // CLI-19: 戻ったら、一覧で選んだ表へは移らない。
                 self.switch_to = None;
                 self.switch_select = None;
+                self.switch_new_note = false;
                 self.set_mode(Mode::Table);
             }
             Action::NextFile => {

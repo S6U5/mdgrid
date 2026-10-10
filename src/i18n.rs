@@ -430,7 +430,14 @@ msgs! {
     WantCells = "\"rich\" or \"plain\" (or a [cells] table)", "\"rich\" か \"plain\"(か [cells] の表)";
     WantCellsColumns = "a table of column = \"rich\", \"plain\" or \"chip\"", "列 = \"rich\"・\"plain\"・\"chip\" の表";
     WantColStyle = "\"rich\", \"plain\" or \"chip\"", "\"rich\"・\"plain\"・\"chip\" のどれか";
-    WantTheme = "one of \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\"", "\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\" のどれか";
+    WantTheme = "one of \"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\", \"paper\"", "\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\" のどれか";
+    /// {0} は候補の並び。
+    WantOneOf = "one of {0}", "{0} のどれか";
+    WantStyleTable = "a [style] table", "[style] の表";
+    WantColor = "a color (\"#rrggbb\", \"#rgb\" or a color name)", "色(\"#rrggbb\"・\"#rgb\" か色の名前)";
+    WantColorsTable = "a [colors] table", "[colors] の表";
+    WantNerdFont = "true, false or \"auto\"", "true・false か \"auto\"";
+    ColorValueTwice = "{0}: the same value is written more than once (ignoring case and spaces); one of them is used", "{0}: 同じ値が(大文字・小文字と空白を除いて)2回以上ある。どれか1つを使う";
     WantKeysTable = "a [keys.<mode>] table", "[keys.<モード>] の表";
     WantKeyActionTable = "a table of key = action", "キー = 動作 の表";
     WantActionName = "an action name string", "動作の名前の文字列";
@@ -443,6 +450,30 @@ msgs! {
     // ---- views: views.toml の警告と誤り(BV-20) ----
     /// {0} はファイル、{1} は行、{2} は TOML の誤り(英語のまま)。
     ViewsTomlLine = "cannot read {0} (line {1}), so mdgrid views are not loaded: {2}", "{0} が読めない({1} 行目)ので mdgrid のビューは読まない: {2}";
+    /// SR-43: 見た目の区画。
+    NavLook = "Look", "見た目";
+    DescLook = "Theme, part shapes and round pill ends (saved to look.toml)", "テーマ・部品の形の組・丸い札の端(look.toml に残す)";
+    LookTheme = "Theme", "テーマ";
+    LookPreset = "Parts", "組";
+    LookNerd = "Round pill ends", "丸い札の端";
+    LookTemplates = "Templates", "テンプレート";
+    LookSaveTemplate = "+ Save this look as a template", "+ 今の見た目を名前を付けて保存";
+    LookResetRow = "Back to config.toml", "config.toml に戻す";
+    LookNerdAuto = "auto (follow the terminal)", "auto(端末に合わせる)";
+    LookNerdOn = "true (Nerd Font)", "true(Nerd Font)";
+    LookNerdOff = "false", "false";
+    LookPickOf = "Choose: {0}", "{0}を選ぶ";
+    LookTemplateUsed = "Using template \"{0}\" (Apply to see it)", "テンプレート「{0}」を当てた(反映で効く)";
+    LookTemplateSaved = "Saved template \"{0}\"", "テンプレート「{0}」を保存した";
+    LookTemplateDeleted = "Deleted template \"{0}\"", "テンプレート「{0}」を消した";
+    LookReset = "Removed the look from look.toml (config.toml is used from the next start)", "look.toml の見た目を外した(次の起動から config.toml のとおり)";
+    TextLookTemplate = "template name", "テンプレートの名前";
+    SetHintLook = "{0} choose or use  {1} delete a template (Apply to see the look)", "{0} で選ぶ・当てる、{1} でテンプレートを消す(反映で効く)";
+    /// SR-43: look.toml の警告。
+    LookBroken = "{0}: cannot read ({1}); using the look in config.toml", "{0} が読めない({1})。config.toml の見た目で起動する";
+    LookUnknownKey = "{0}: unknown item \"{1}\" (ignored)", "{0}: 知らない項目「{1}」(読まない)";
+    LookBadValue = "{0}: {1} = {2} is not a valid value (ignored)", "{0}: {1} = {2} は使えない値(読まない)";
+    LookTemplateNoName = "{0}: a template without name (ignored)", "{0}: name の無いテンプレート(読まない)";
     ViewsToml = "cannot read {0}, so mdgrid views are not loaded: {1}", "{0} が読めないので mdgrid のビューは読まない: {1}";
     ViewsNotUtf8 = "{0} is not UTF-8, so mdgrid views are not loaded", "{0} が UTF-8 でないので mdgrid のビューは読まない";
     ViewsUnknownItem = "ignored the unknown item `{1}` in {0}", "{0} の知らない項目 `{1}` は無視した";
@@ -620,6 +651,7 @@ msgs! {
     ModeListPick = "List picker", "リストの選択";
     ModeMenu = "Action menu", "操作の一覧";
     ModeFreq = "Value counts", "頻度表";
+    ModeSorts = "Sorting", "並べ替え";
     ModeRelations = "Relations", "関係マップ";
 
     // ---- ui/keymap: ヘルプの節(SR-5) ----
@@ -645,6 +677,7 @@ msgs! {
     SecNote = "Create notes (palette commands)", "ノートを作る(パレットのコマンド)";
     SecInMenu = "In the action menu", "操作の一覧の中";
     SecInFreq = "In value counts", "頻度表の中";
+    SecInSorts = "In the sort window", "並べ替えの窓の中";
     SecInRelMap = "In the relation map", "関係マップの中";
 
     // ---- ui/keymap: キーの表示名(SR-4。下の帯・ヘルプ・パレット) ----
@@ -680,7 +713,22 @@ msgs! {
     KeyNextView = "Next view", "次のビュー";
     KeyNarrower = "Narrow column", "列を狭く";
     KeyWider = "Widen column", "列を広く";
-    KeySort = "Sort for now", "一時的な並べ替え";
+    KeySort = "Sort by this column", "この列で並べ替え";
+    KeySortsRun = "Flip direction / add", "向きを変える・足す";
+    /// NV-24: 並べ替えの窓。
+    CmdSortMenu = "Sort…", "並べ替え…";
+    /// NV-25: 既定のビュー。
+    CmdSetDefaultView = "Make this the default view", "既定のビューにする";
+    DefaultViewSet = "\"{0}\" opens first from now on", "次から「{0}」で開く";
+    DefaultViewCleared = "the first view opens first from now on", "次から先頭のビューで開く";
+    SortButton = " Sort ", " 並べ替え ";
+    SortTitle = " Sort ", " 並べ替え ";
+    SortPickTitle = " Add a sort: column ", " 並べ替えを足す: 列 ";
+    SortAsc = "ascending", "昇順";
+    SortDesc = "descending", "降順";
+    SortAdd = "+ Add a sort", "+ 並べ替えを足す";
+    SortNoRoom = "the terminal is too small for the sort window", "端末が小さく、並べ替えの窓を出せない";
+    SortNoColumn = "every column is already in the sort", "どの列もすでに並べ替えに入っている";
     KeyHideColumn = "Hide column", "列を隠す";
     KeyShowColumn = "Show hidden column", "隠した列を戻す";
     KeyAddColumn = "Add a column (a new key)", "列を足す(新しいキー)";
@@ -1258,10 +1306,25 @@ msgs! {
     PurposeFilter = "filter", "フィルター";
     PurposeSort = "sort", "並べ替え";
     PurposeGroup = "group", "グループ";
+    PurposeTree = "the parent", "親";
+    PurposeWbsKey = "progress", "進み具合";
+    /// NV-28: WBS の行。
+    TreeWbsRow = "WBS (numbers and progress)", "WBS(番号と進み具合)";
+    TreeWbsKeyRow = "Progress key", "進み具合のキー";
+    WbsValueRow = "{0} ({1})", "{0}({1}件)";
+    TextWbsValue = "percent and label for {0} (e.g. 100 Done; - removes)", "{0} の割合とラベル(例 100 完了。- で外す)";
+    WbsBadPercent = "Type the percent as a number from 0 to 100 first: {0}", "割合は 0〜100 の数を先に打つ: {0}";
+    /// NV-27: 親子の区画。
+    NavTree = "Parent/child", "親子";
+    DescTree = "Put child notes under the note named in their parent key", "子のノートの親のキーに書いた親のノートの下に、子を字下げして並べる";
+    TreeOnRow = "Arrange by parent", "親子で並べる";
+    TreeKeyRow = "Parent key", "親のキー";
+    SetHintTree = "{0} switch or choose the key (Apply to use it; Z folds a parent in the table)", "{0} で切り替え・キーを選ぶ(反映で効く。表では Z で親を畳む)";
     DirAsc = "↑ ascending", "↑ 昇順";
     DirDesc = "↓ descending", "↓ 降順";
     GroupOnlyByColumn = "available when grouping by a column (first choose a column with \"Group by column\")", "列で分けるときに選べる(先に「列で分ける」で列を選ぶ)";
     NotRemovable = "this item cannot be removed", "消せる項目ではない";
+    SettingsClosed = "view settings closed", "ビューの設定を閉じた";
     SettingsCancelled = "view settings cancelled (the table is as before)", "ビューの設定を取り消した(表は開く前のまま)";
     SettingsReset = "reset to default (Apply to use it in the table)", "既定に戻した(反映で表に効く)";
     SettingsAppliedReadOnly = "applied the view settings (read-only, so not remembered)", "ビューの設定を反映した(読むだけなので覚えない)";
@@ -1276,6 +1339,42 @@ msgs! {
     SetSorts = "Sort (top column first)", "並べ替え(上の列が先)";
     SetAddSort = "+ Add sort", "+ 並べ替えを足す";
     SetGroup = "Group", "グループ";
+    /// NV-18: 左の区画の一覧・説明・スイッチ・未反映の数。
+    NavColumns = "Columns", "列";
+    NavFilters = "Filters", "フィルター";
+    NavSorts = "Sort", "並べ替え";
+    NavGroup = "Group", "グループ";
+    NavDisplay = "Display", "表示";
+    NavGroupOff = "off", "しない";
+    NavHideEmpty = "Hide empty groups", "空のまとまりを隠す";
+    DescColumns = "Choose the columns to show and their order", "表に出す列と、その順を決める";
+    DescFilters = "Show only the rows that match every condition", "すべての条件を満たす行だけを出す";
+    DescSorts = "The first rule wins; ties go to the next rule", "上の決まりが先。値が同じなら次の決まりで並べる";
+    DescGroup = "Split the rows by a column's value", "列の値でまとまりに分ける";
+    DescDisplay = "What is shown around the table", "表のまわりに出すもの";
+    SwShown = "shown", "表示";
+    SwHidden = "hidden", "隠す";
+    SwOn = "on", "オン";
+    SwOff = "off", "オフ";
+    SetPending = "{0} not applied", "未反映 {0}";
+    /// NV-26: ビューの区画(タブの順・出す隠す・既定・名前・削除・切り替えの案内)。
+    NavViews = "Views", "ビュー";
+    DescViews = "Tabs above the table. Changes are saved right away", "表の上のタブ。変えるとすぐ保存する";
+    TabHintRow = "Switch hint ([ ])", "切り替えの案内([ ])";
+    TabDefaultMark = "default", "既定";
+    TabMenuOf = "Tab \"{0}\"", "タブ「{0}」";
+    TabMenuDefault = "Make default", "既定にする";
+    TabMenuUndefault = "Stop being default (open the first tab)", "既定をやめる(先頭のタブで開く)";
+    TabMenuRename = "Rename", "名前を変える";
+    TabMenuDelete = "Delete", "削除";
+    TabCurrentHide = "The view you are on cannot be hidden. Switch to another tab first", "開いているビューは隠せない(先に別のタブへ)";
+    TabBaseFixed = "\"{0}\" is a .base view or the default table: it cannot be renamed or deleted", "「{0}」は .base のビューか既定の表なので、名前の変更と削除はできない";
+    TabHidden = "Hid the tab \"{0}\"", "タブ「{0}」を隠した";
+    TabShown = "Showed the tab \"{0}\"", "タブ「{0}」を出した";
+    TabMoved = "Moved the tab \"{0}\"", "タブ「{0}」を動かした";
+    TabHintOn = "Showing the switch hint", "切り替えの案内を出す";
+    TabHintOff = "Hiding the switch hint", "切り替えの案内を出さない";
+    SetHintViews = "{0} show/hide  {1} / {2} order  {3} default, rename, delete (saved right away)", "{0} で出す・隠す、{1} / {2} で順、{3} で既定・名前・削除(すぐ保存)";
     SetGroupInheritBase = "as in .base", ".base のまま";
     SetGroupInheritDefault = "default (no groups)", "既定のまま(分けない)";
     /// {0} はラジオの印。
@@ -1310,6 +1409,7 @@ msgs! {
     SetHintButtons = "{0} press. The table does not change until Apply", "{0} で押す。反映するまで表は変わらない";
     SetNativeName = "mdgrid view / {0}", "mdgrid のビュー / {0}";
     SetHead = " View settings  {0}  the table does not change until Apply", " ビューの設定  {0}  反映するまで表は変わらない";
+    SetHeadShort = " View settings  {0}", " ビューの設定  {0}";
 
     // ---- ui/settings_pick: ビューの設定の選び手と値の入力(NV-14・NV-19) ----
     PickInProgress = "choosing ({0} to go back)", "選んでいる途中({0} で戻る)";
@@ -1455,6 +1555,9 @@ msgs! {
 
     // ---- relmap: 関係マップ(REL-7〜REL-9) ----
     KeyRelationMap = "Relation map", "関係マップ";
+    TreeOff = "Rows are not arranged by parent (turn it on in the view settings, {0})", "親子で並べていない(ビューの設定 {0} の「親子」でオンにする)";
+    TreeNoKids = "This row has no child rows", "この行に子の行は無い";
+    KeyToggleTree = "Fold or unfold the child rows", "子の行を畳む・開く";
     KeyRelOpen = "Open table", "表を開く";
     KeyRelBack = "Back to the table", "表に戻る";
     KeyRelNextTable = "Next table", "次の表";
@@ -1477,6 +1580,10 @@ msgs! {
     RelMapNoLinks = "No links from or to this table.", "この表のつながりは無い。";
     RelMapNoTables = "no tables to map: register tables first (:register_place)", "マップにする表が無い: 先に表を登録する(:register_place)";
     TabScreenTable = "Table", "表";
+    /// SR-42: ヘッダーの近道のボタン。
+    HeaderWsButton = " Workspaces ", " ワークスペース ";
+    HeaderWsNamed = " ▾ {0} ", " ▾ {0} ";
+    HeaderSettingsButton = " Settings ", " 設定 ";
     TabScreenRelations = "Relations", "関係";
 
     // ---- relations: リレーション(REL-4・REL-5) ----

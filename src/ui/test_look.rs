@@ -108,7 +108,12 @@ fn test_sr_33_modern_popup_uses_background() {
 #[test]
 fn test_sr_33_footer_keys_accent_labels_dim() {
     // [SR-33] 下の帯: 反転しない。キーはアクセントの太字、説明は薄い色。
-    let (_t, a) = boot("sr33_band", "", ColorMode::Rgb);
+    // SR-36: 帯のキーの形は classic の組(keys)で。
+    let (_t, a) = boot(
+        "sr33_band",
+        "[style]\npreset = \"classic\"\n",
+        ColorMode::Rgb,
+    );
     let buf = buffer(&a);
     let (x, y) = find_word(&buf, "Enter ");
     let key = &buf[(x, y)];
@@ -122,7 +127,12 @@ fn test_sr_33_footer_keys_accent_labels_dim() {
 #[test]
 fn test_sr_33_table_selection_is_tinted() {
     // [SR-33] 表: 今の行は背景の色、今のセルは札(アクセントの背景)。反転しない。
-    let (_t, a) = boot("sr33_table", "", ColorMode::Rgb);
+    // SR-36: 選びの形は classic の組(fill)で。
+    let (_t, a) = boot(
+        "sr33_table",
+        "[style]\npreset = \"classic\"\n",
+        ColorMode::Rgb,
+    );
     let buf = buffer(&a);
     let y = view::data_y(&a) as u16;
     let row: Vec<_> = (0..buf.area.width).map(|x| buf[(x, y)].clone()).collect();

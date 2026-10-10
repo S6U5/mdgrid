@@ -447,19 +447,20 @@ fn test_sr_12_broken_state_starts_with_defaults() {
 
 #[test]
 fn test_sr_12_temporary_sort_not_kept() {
-    // [SR-12] 一時的な並べ替え(NV-3)は残さない。列の並び(H・L)は残す。
+    // [SR-12][NV-3] 見出しからの並べ替えは設定の並べ替えとして残す。列の並び(H・L)も残す。
     let tmp = notes("sr12sort");
     let mut a = boot(&tmp);
     col_named(&mut a, "status");
     ch(&mut a, 's');
-    assert!(a.sort.is_some());
+    assert_eq!(a.settings.sorts.len(), 1);
+    let sorted = labels(&a);
     ch(&mut a, 'H');
     let cols = a.cols.clone();
     ch(&mut a, 'q');
     let b = boot(&tmp);
-    assert_eq!(b.sort, None);
+    assert_eq!(b.settings.sorts, a.settings.sorts);
     assert_eq!(b.cols, cols);
-    assert_eq!(labels(&b), ["a.md", "b.md", "c.md"]);
+    assert_eq!(labels(&b), sorted);
 }
 
 #[test]

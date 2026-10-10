@@ -12,6 +12,12 @@ pub enum Theme {
     Gruvbox,
     PinkMonster,
     DozyPink,
+    /// SR-37: 落ち着いた組。
+    Sumi,
+    Slate,
+    Saas,
+    SaasDark,
+    Paper,
 }
 
 /// 役割ごとの色(RGB)。
@@ -76,7 +82,7 @@ const fn palette(v: [u32; 16]) -> Palette {
 
 impl Theme {
     /// 全部のテーマ(設定の文書と同じ順)。
-    pub const ALL: [Theme; 7] = [
+    pub const ALL: [Theme; 12] = [
         Theme::Default,
         Theme::Nord,
         Theme::SolarizedLight,
@@ -84,6 +90,11 @@ impl Theme {
         Theme::Gruvbox,
         Theme::PinkMonster,
         Theme::DozyPink,
+        Theme::Sumi,
+        Theme::Slate,
+        Theme::Saas,
+        Theme::SaasDark,
+        Theme::Paper,
     ];
 
     /// 設定の名前。
@@ -96,6 +107,26 @@ impl Theme {
             Theme::Gruvbox => "gruvbox",
             Theme::PinkMonster => "pink-monster",
             Theme::DozyPink => "dozy-pink",
+            Theme::Sumi => "sumi",
+            Theme::Slate => "slate",
+            Theme::Saas => "saas",
+            Theme::SaasDark => "saas-dark",
+            Theme::Paper => "paper",
+        }
+    }
+
+    /// 地が明るい組か(SR-39 の auto で、明るい地の端末に合わせる見本の判断にも使う)。
+    pub fn is_light(self) -> bool {
+        self.palette()
+            .is_some_and(|p| (p.bg[0] as u32 + p.bg[1] as u32 + p.bg[2] as u32) > 3 * 128)
+    }
+
+    /// SR-39: `theme = "auto"` の解決。地が明るいと分かれば `light`、それ以外(暗い・分からない)は `dark`。
+    pub fn auto(bg_light: Option<bool>, light: Theme, dark: Theme) -> Theme {
+        if bg_light == Some(true) {
+            light
+        } else {
+            dark
         }
     }
 
@@ -131,6 +162,30 @@ impl Theme {
             Theme::DozyPink => [
                 0xfbf1e1, 0x6b4a3a, 0xd9668f, 0xf2a7bf, 0x4a2f25, 0xf2a7bf, 0x4a2f25, 0xc8875a,
                 0xb8456f, 0xf6e6cf, 0x6b4a3a, 0xd9668f, 0x4f7a2e, 0xb03a2e, 0x9a5a10, 0xf3d9a8,
+            ],
+            // SR-37: 墨(暗い地・薄い灰・青緑のアクセント)。
+            Theme::Sumi => [
+                0x16171b, 0xd8d6d0, 0xd8d6d0, 0x23262c, 0xece9e2, 0x16171b, 0x8a8780, 0x86b8ad,
+                0xece9e2, 0x1a1b20, 0xd8d6d0, 0x86b8ad, 0x86b8ad, 0xd97b6c, 0xd6a85c, 0x2a3a37,
+            ],
+            // 石板(紫寄りのアクセント)。
+            Theme::Slate => [
+                0x1b1c25, 0xe1e2ea, 0xe1e2ea, 0x2a2c3d, 0xf0f0f8, 0x1b1c25, 0x8e90aa, 0x9b9cf7,
+                0xf4f4fb, 0x1f2029, 0xe1e2ea, 0x9b9cf7, 0x7ec699, 0xef7d7d, 0xe6b450, 0x34355a,
+            ],
+            // SaaS(明るい灰の地・藍のアクセント)と、その暗い地の版。
+            Theme::Saas => [
+                0xf6f7f9, 0x1e2430, 0x1e2430, 0xe6e9fb, 0x1e2430, 0xf6f7f9, 0x6b7383, 0x5b5bd6,
+                0x0f1420, 0xeef0f4, 0x1e2430, 0x5b5bd6, 0x2f9e66, 0xd4483f, 0xc47f17, 0xe4e6fb,
+            ],
+            Theme::SaasDark => [
+                0x14161c, 0xe6e8ee, 0xe6e8ee, 0x252a3a, 0xf2f3f8, 0x14161c, 0x8b93a5, 0x8b8cf8,
+                0xf5f6fa, 0x181b22, 0xe6e8ee, 0x8b8cf8, 0x4cc38a, 0xf0736a, 0xe7a93b, 0x2b2f4a,
+            ],
+            // 紙(明るい地・青のアクセント)。
+            Theme::Paper => [
+                0xf7f8fa, 0x1f2328, 0x1f2328, 0xdfe7f8, 0x1f2328, 0xf7f8fa, 0x6b7280, 0x2f63d8,
+                0x0d1117, 0xeff1f4, 0x1f2328, 0x2f63d8, 0x2f8a4a, 0xc23b3b, 0xa86b00, 0xdbe5fb,
             ],
         }))
     }
@@ -168,3 +223,33 @@ pub fn to_indexed(c: [u8; 3]) -> u8 {
     }
     best
 }
+
+/// SR-39: 環境変数 `COLORFGBG`(`文字;地` か `文字;他;地`)の地の色の番号から、地が明るいか。読めなければ None。
+/// 地の番号 7(明るい灰)と 9〜15(明るい色)を明るいとみなす。
+pub fn light_from_colorfgbg(v: &str) -> Option<bool> {
+    let bg: u8 = v.rsplit(';').next()?.trim().parse().ok()?;
+    Some(matches!(bg, 7 | 9..=15))
+}
+
+/// SR-39: 端末への問い合わせ(OSC 11)の答え `ESC ] 11 ; rgb:RRRR/GGGG/BBBB` から、地が明るいか。
+/// 読めなければ None。明るさは輝度(sRGB の重み)で半分より上を明るいとみなす。
+pub fn light_from_osc11(reply: &str) -> Option<bool> {
+    let rest = &reply[reply.find("rgb:")? + 4..];
+    let mut ch = [0f64; 3];
+    for (k, part) in rest.split('/').take(3).enumerate() {
+        let hex: String = part.chars().take_while(|c| c.is_ascii_hexdigit()).collect();
+        if hex.is_empty() || hex.len() > 4 {
+            return None;
+        }
+        let max = (16u32.pow(hex.len() as u32) - 1) as f64;
+        ch[k] = u32::from_str_radix(&hex, 16).ok()? as f64 / max;
+    }
+    if rest.split('/').count() < 3 {
+        return None;
+    }
+    Some(0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2] > 0.5)
+}
+
+#[cfg(test)]
+#[path = "test_theme_auto_unit.rs"]
+mod test_theme_auto;

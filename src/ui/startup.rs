@@ -69,6 +69,12 @@ impl App {
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
             warnings.push(e);
         }
+        // NV-25: 既定のビュー(ビューを名前で指定していなければ、開いたあとに選ぶ)。
+        let default_view = s
+            .config_dir
+            .as_ref()
+            .and_then(|d| mdgrid::views::load_default_view(d, &s.target));
+        let named = matches!(&s.base, Some((_, _, Some(_))));
         // BV-20: mdgrid のビューは開く前に読む(壊れていれば警告してタブなし)。
         warnings.extend(self.load_native(s.config_dir, &s.target));
         self.store = s.state_dir.map(|dir| Store {
@@ -86,6 +92,15 @@ impl App {
                 self.hidden.clear();
                 self.restore_state();
                 self.refresh();
+            }
+        }
+        // NV-25・BV-13: 既定のビューがあれば開く(無くなっていれば警告せず先頭のまま)。`--view` と登録した表の
+        // ビューは、このあと main が名前で選び直す。
+        if let (false, Some(d)) = (named, default_view) {
+            if let Some(i) = self.view_names().iter().position(|v| *v == d) {
+                if i != self.view_index() {
+                    self.select_view(i);
+                }
             }
         }
         if !warnings.is_empty() {

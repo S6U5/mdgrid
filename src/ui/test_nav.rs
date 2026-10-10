@@ -120,7 +120,8 @@ const NUMS: &str = "views:\n  - type: table\n    name: 全部\n    order: [n, ti
 
 #[test]
 fn test_nv_3_temporary_sort_keeps_base() {
-    // [NV-3] 見出しを2回 → 降順、3回 → .base の並びに戻る。.base のバイトは変わらない。
+    // [NV-3] 見出しを2回 → 降順、3回 → .base の並びに戻る。並べ替えはビューの設定の並べ替えとして当てる。
+    // .base のバイトは変わらない。
     let tmp = Tmp::new("nv3");
     tmp.write("a.md", "---\nn: 2\ntitle: a\n---\n");
     tmp.write("b.md", "---\nn: 3\ntitle: b\n---\n");
@@ -134,18 +135,27 @@ fn test_nv_3_temporary_sort_keeps_base() {
     col_named(&mut a, "n");
     ch(&mut a, 's');
     assert_eq!(labels(&a), ["c.md", "a.md", "b.md", "d.md"]);
-    assert!(screen(&a).lines().nth(3).unwrap().contains("n↑"));
+    // 見出しの行(並べ替えが効いている間は、検索の欄の下に設定の帯が出て1行下がる。NV-16)。
+    assert!(screen(&a)
+        .lines()
+        .nth(view::data_y(&a) - 1)
+        .unwrap()
+        .contains("n↑"));
     ch(&mut a, 's');
     assert_eq!(labels(&a), ["b.md", "a.md", "c.md", "d.md"]);
     ch(&mut a, 's');
     assert_eq!(labels(&a), ["a.md", "b.md", "c.md", "d.md"]);
-    // 見出しのクリック(列の見出しは検索の欄の下の3行目。NV-23)。
+    // 見出しのクリック(列の見出しは表の1つ上の行。NV-23・NV-16)。
     let x = header_x(&a, "title");
-    a.click(x, 3);
-    assert_eq!(a.sort, Some(("title".to_string(), false)));
-    a.click(x, 3);
+    let hy = |a: &App| view::data_y(a) as u16 - 1;
+    a.click(x, hy(&a));
+    assert_eq!(
+        a.settings.sorts,
+        [("title".to_string(), mdgrid::settings::Dir::Asc)]
+    );
+    a.click(x, hy(&a));
     assert_eq!(labels(&a), ["d.md", "c.md", "b.md", "a.md"]);
-    a.click(x, 3);
+    a.click(x, hy(&a));
     assert_eq!(labels(&a), ["a.md", "b.md", "c.md", "d.md"]);
     assert_eq!(std::fs::read(&path).unwrap(), before, ".base は変えない");
 }

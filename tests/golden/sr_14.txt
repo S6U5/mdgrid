@@ -1,9 +1,9 @@
- notes  2行
+ notes  2行                                             ワークスペース   設定
 : save
 > 保存                     save             ^S
   この表をワークスペース…  workspace_remove
+  既定のビューにする       set_default_view
 
- b      買い物     完了
 
 
 

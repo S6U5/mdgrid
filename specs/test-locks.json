@@ -651,8 +651,8 @@
       "NV-18",
       "SR-20"
     ],
-    "sha": "a0f6e56a7ce28c85",
-    "by": "specs/_decisions/2026-10-09-modern-look-locks.md"
+    "sha": "1ecf861a273dc031",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_more.rs::test_sr_20_hidden_chips_f_shows_selected_condition": {
     "ids": [
@@ -681,107 +681,107 @@
       "SR-20",
       "SR-21"
     ],
-    "sha": "59a8e2b8fdaa6f09",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "291c360e5100689c",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_row_numbers_follow_sort_and_filter": {
     "ids": [
       "SR-20"
     ],
-    "sha": "36b58d96af8c6383",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "71d6ab57dac05a2e",
+    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_row_numbers_skip_group_headings": {
     "ids": [
       "SR-20"
     ],
-    "sha": "af6e9c2986844fa9",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "a483765364f85ef5",
+    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_settings_screen_has_display_section": {
     "ids": [
       "NV-13",
       "SR-20"
     ],
-    "sha": "4a2ce4095d9aeebe",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "22423689e0fafca1",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_toggle_in_settings_applies_to_that_view_only": {
     "ids": [
       "NV-13",
       "SR-20"
     ],
-    "sha": "3f02f4a9b033fe49",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "4d22f4f0912a7f6f",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_saved_native_view_keeps_display": {
     "ids": [
       "BV-17",
       "SR-20"
     ],
-    "sha": "bf6ab50b445440c8",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "0183b4b3d5bee1a7",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_zebra_colors_even_rows": {
     "ids": [
       "SR-20"
     ],
-    "sha": "ba182ad458506303",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "2d3eed5b45d97ddc",
+    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_zebra_off_by_default": {
     "ids": [
       "SR-20"
     ],
-    "sha": "5ca3d1d8381297f2",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "1d8cd4f456e31a20",
+    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_zebra_not_without_color": {
     "ids": [
       "SR-20"
     ],
-    "sha": "45fddbfeb82a9ccc",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "3955adc0c86f51da",
+    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_column_lines_default_none_on_draws_bars": {
     "ids": [
       "SR-20",
       "SR-21"
     ],
-    "sha": "cdc95c368275810e",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "eda51f31eee04c8e",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_search_bar_hidden_from_settings_screen": {
     "ids": [
       "NV-23",
       "SR-20"
     ],
-    "sha": "a48e0f9ae3c0edfc",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "ac5625cfee7206df",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_tabs_hidden_but_brackets_switch": {
     "ids": [
       "SR-20",
       "SR-21"
     ],
-    "sha": "482f05310ef0dfe1",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "a2c79d15059ff7dd",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_chips_hidden_but_f_works": {
     "ids": [
       "NV-16",
       "SR-20"
     ],
-    "sha": "e96687be18660a8c",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "34e83922ff5c0d60",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_display_options.rs::test_sr_20_chips_hidden_from_settings_screen": {
     "ids": [
       "NV-16",
       "SR-20"
     ],
-    "sha": "f0ac184aa2a42c6b",
-    "by": "specs/_decisions/2026-10-07-group-gap-locks.md"
+    "sha": "fe4dc9bb03c65f2b",
+    "by": "specs/_decisions/2026-10-10-settings-layout-examples.md"
   },
   "src/ui/test_external.rs::test_sr_8_editor_argv_split": {
     "ids": [
@@ -1035,8 +1035,8 @@
     "ids": [
       "NV-18"
     ],
-    "sha": "00d1496af8ee80fa",
-    "from": "0ba75d8f40e35959"
+    "sha": "f793079de11b42c0",
+    "by": "specs/_decisions/2026-10-10-settings-layout.md"
   },
   "src/ui/test_native_views.rs::test_bv_17_tabs_list_default_and_saved_views": {
     "ids": [
@@ -1366,8 +1366,8 @@
     "ids": [
       "NV-18"
     ],
-    "sha": "b4c42b29dfca3ff6",
-    "from": "55776366c7f839fd"
+    "sha": "76e99eb81d83d953",
+    "by": "specs/_decisions/2026-10-10-settings-layout.md"
   },
   "src/ui/test_settings_screen.rs::test_nv_18_values_picker_golden": {
     "ids": [
@@ -1422,8 +1422,8 @@
     "ids": [
       "NV-18"
     ],
-    "sha": "8420c6f763a0f15b",
-    "from": "55776366c7f839fd"
+    "sha": "8867468e4b0aa326",
+    "by": "specs/_decisions/2026-10-10-settings-layout.md"
   },
   "src/ui/test_shift_arrows.rs::test_ce_23_table_shift_left_right_is_left_right": {
     "ids": [
@@ -3867,8 +3867,8 @@
     "ids": [
       "SR-23"
     ],
-    "sha": "3f5b44e1268056d9",
-    "from": "a48d8b8e0fff2023"
+    "sha": "178563b04397368a",
+    "by": "specs/_decisions/2026-10-10-settings-layout-follow.md"
   },
   "tests/test_i18n.rs::test_sr_23_table_is_not_empty": {
     "ids": [
@@ -5825,7 +5825,8 @@
     "ids": [
       "SR-33"
     ],
-    "sha": "a3b04bcc7a4e62fc"
+    "sha": "a7d302ce5f9bfe2d",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_look.rs::test_sr_33_modern_popup_uses_background": {
     "ids": [
@@ -5837,7 +5838,8 @@
     "ids": [
       "SR-33"
     ],
-    "sha": "268023af54a5000f"
+    "sha": "4eda368d778283d3",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_look.rs::test_sr_33_text_is_the_same_in_every_look": {
     "ids": [
@@ -5991,7 +5993,8 @@
     "ids": [
       "WS-6"
     ],
-    "sha": "cc6f3646f2a8bd97"
+    "sha": "218b5eee283306b3",
+    "by": "specs/_decisions/2026-10-10-ws-button.md"
   },
   "tests/test_workspace_cli.rs::test_ws_3_add_list_remove_on_pipe": {
     "ids": [
@@ -6122,31 +6125,36 @@
     "ids": [
       "SR-35"
     ],
-    "sha": "72e916db5dd704a5"
+    "sha": "9a671592a9281263",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_per_part_and_column": {
     "ids": [
       "SR-35"
     ],
-    "sha": "dddf97914fab6419"
+    "sha": "10ea56cb7b69070f",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_plain_without_color_or_setting": {
     "ids": [
       "SR-35"
     ],
-    "sha": "05d12a5a69d811b2"
+    "sha": "ad3daec1c28057c3",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_rich_cells": {
     "ids": [
       "SR-35"
     ],
-    "sha": "a096c5f09725beee"
+    "sha": "cab7e8dcdb467411",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells.rs::test_sr_35_search_matches_value_text": {
     "ids": [
       "SR-35"
     ],
-    "sha": "fe5e7eda1c99be74"
+    "sha": "0352a5b19cfa6c27",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_places_align.rs::test_cli_19_list_paths_aligned": {
     "ids": [
@@ -6158,25 +6166,29 @@
     "ids": [
       "SR-35"
     ],
-    "sha": "dabfa4e0e9d3dc9d"
+    "sha": "dc10bd4bf6d42f18",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells_more.rs::test_sr_35_detail_shows_value_text": {
     "ids": [
       "SR-35"
     ],
-    "sha": "7882030cee88112e"
+    "sha": "5b5f3815d106bc5d",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells_more.rs::test_sr_35_dotted_key_can_be_chips": {
     "ids": [
       "SR-35"
     ],
-    "sha": "6f5f0c63e577fbe3"
+    "sha": "c74e405095d410a4",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_rich_cells_more.rs::test_sr_35_search_marks_rich_cells": {
     "ids": [
       "SR-35"
     ],
-    "sha": "e8fddb6b8f35a416"
+    "sha": "f64db1882bf44f81",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_relmap_scroll.rs::test_rel_9_narrow_list_scrolls_to_selection": {
     "ids": [
@@ -6231,13 +6243,15 @@
     "ids": [
       "SR-35"
     ],
-    "sha": "88d427d70807f096"
+    "sha": "ff38483410e1ccde",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_list_chips.rs::test_sr_35_value_list_uses_chip_colors": {
     "ids": [
       "SR-35"
     ],
-    "sha": "26767641d943cb02"
+    "sha": "7a8fbbb1b04c27b0",
+    "by": "specs/_decisions/2026-10-09-style-catalog.md"
   },
   "src/ui/test_modern_rest.rs::test_sr_33_help_keys_accent": {
     "ids": [
@@ -6305,5 +6319,873 @@
       "WB-7"
     ],
     "sha": "d1e969a3fa60f34c"
+  },
+  "src/test_style_unit.rs::test_sr_36_style_bad_values_warn": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "5d5fd8cfbc514c71"
+  },
+  "src/test_style_unit.rs::test_sr_36_style_presets_and_overrides": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "68dcb182867f8527"
+  },
+  "src/test_style_unit.rs::test_sr_37_new_themes_and_sr_39_auto": {
+    "ids": [
+      "SR-37",
+      "SR-39"
+    ],
+    "sha": "c97d6a048a9d4732"
+  },
+  "src/test_style_unit.rs::test_sr_38_names_are_listed": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "344adeb30db4fc5f"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_cross_tints_column": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "50ba58c7afbb7d55"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_default_sumi_screen": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "153d25f9c0265e1b"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_no_color_keeps_text": {
+    "ids": [
+      "SR-35",
+      "SR-36"
+    ],
+    "sha": "a657d2977ae108c2"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_overrides_each_part": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "3b07a3e71e1e33be"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_pill_needs_nerd_font": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "5a5c9249dc08f84a"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_preset_saas_tints_and_segments": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "fc575a9ccc4e6b27"
+  },
+  "src/ui/test_style_screen.rs::test_sr_36_rules_and_frames": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "a708cc2c7d82e610"
+  },
+  "src/ui/test_themes.rs::test_sr_27_color_false_ignores_theme": {
+    "ids": [
+      "SR-27"
+    ],
+    "sha": "177c3774cfe07ae6"
+  },
+  "src/ui/test_themes.rs::test_sr_27_default_is_unchanged": {
+    "ids": [
+      "SR-27"
+    ],
+    "sha": "134d06e77b2d8331"
+  },
+  "src/ui/test_themes.rs::test_sr_27_indexed_uses_256_colors": {
+    "ids": [
+      "SR-27"
+    ],
+    "sha": "a76404a2410f43f5"
+  },
+  "src/ui/test_themes.rs::test_sr_27_no_color_ignores_theme": {
+    "ids": [
+      "SR-27"
+    ],
+    "sha": "e8c5d6c9acfcf273"
+  },
+  "src/ui/test_themes.rs::test_sr_27_theme_names": {
+    "ids": [
+      "SR-27",
+      "SR-37"
+    ],
+    "sha": "2ef5ce8caffa1964"
+  },
+  "src/ui/test_themes.rs::test_sr_27_to_indexed_picks_nearest": {
+    "ids": [
+      "SR-27"
+    ],
+    "sha": "9b50da38ca84d5aa"
+  },
+  "src/ui/test_themes.rs::test_sr_27_unknown_theme_warns_and_falls_back": {
+    "ids": [
+      "SR-27"
+    ],
+    "sha": "6c4f74d98416b836"
+  },
+  "src/test_theme_auto_unit.rs::test_sr_39_auto_theme": {
+    "ids": [
+      "SR-39"
+    ],
+    "sha": "c8e7fbc5e0248b45"
+  },
+  "src/test_theme_auto_unit.rs::test_sr_39_osc11_reply": {
+    "ids": [
+      "SR-39"
+    ],
+    "sha": "e33275b4fba8b2ea"
+  },
+  "tests/test_theme_auto_e2e.rs::test_sr_39_e2e_auto_theme_without_answer_starts": {
+    "ids": [
+      "SR-39"
+    ],
+    "sha": "8872d8951a79eca5"
+  },
+  "src/ui/test_style_overlay.rs::test_sr_36_value_list_follows_style": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "f647a37afddfaf61"
+  },
+  "tests/test_catalog.rs::test_sr_38_catalog_is_self_contained": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "63fdf46af6ce47d3"
+  },
+  "tests/test_catalog.rs::test_sr_38_catalog_matches_config": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "978975dd1a440c49"
+  },
+  "tests/test_catalog.rs::test_sr_38_catalog_presets_match": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "4d120ef3d72a8129"
+  },
+  "src/ui/test_style_frames.rs::test_sr_33_frame_accent_in_every_frame_shape": {
+    "ids": [
+      "SR-33",
+      "SR-36"
+    ],
+    "sha": "33acb0462de60bcb"
+  },
+  "src/ui/test_relmap_new_note.rs::test_ce_25_relmap_new_note": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "82013fb4bda44251"
+  },
+  "src/ui/test_relmap_new_note.rs::test_ce_25_relmap_new_note_other_table": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "38a324ae068a59fd"
+  },
+  "src/ui/test_style_selected.rs::test_sr_36_selected_cell_keeps_parts": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "65d3111db0af0110"
+  },
+  "src/ui/test_relmap_new_note_load.rs::test_ce_25_relmap_new_note_after_load": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "ed1ba9ec87f43867"
+  },
+  "src/ui/test_relmap_new_note_load.rs::test_ce_25_relmap_new_note_cancel_clears": {
+    "ids": [
+      "CE-25"
+    ],
+    "sha": "68a41a0f7436aa02"
+  },
+  "src/ui/test_style_list_pill.rs::test_sr_36_picking_cell_keeps_parts": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "eaf00507072a4ceb"
+  },
+  "src/ui/test_style_list_pill.rs::test_sr_36_tint_rounds_with_nerd_font": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "f754fd5783fd2852"
+  },
+  "src/ui/test_style_list_pill.rs::test_sr_36_value_list_keeps_pill_shape": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "91376ad525cfed88"
+  },
+  "src/test_colors_unit.rs::test_sr_40_colors": {
+    "ids": [
+      "SR-40"
+    ],
+    "sha": "bf8048fd6cd7af45"
+  },
+  "src/test_colors_unit.rs::test_sr_41_value_colors_read": {
+    "ids": [
+      "SR-41"
+    ],
+    "sha": "19e7366b6e724175"
+  },
+  "src/ui/test_colors_screen.rs::test_sr_36_solid": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "0f6e9861ae42d759"
+  },
+  "src/ui/test_colors_screen.rs::test_sr_40_accent_override": {
+    "ids": [
+      "SR-40"
+    ],
+    "sha": "2d87543e4331187d"
+  },
+  "src/ui/test_colors_screen.rs::test_sr_41_value_colors": {
+    "ids": [
+      "SR-41"
+    ],
+    "sha": "a7ada0a797815ad4"
+  },
+  "tests/test_catalog_colors.rs::test_sr_38_catalog_colors": {
+    "ids": [
+      "SR-38",
+      "SR-40"
+    ],
+    "sha": "51b762119e64929e",
+    "by": "specs/_decisions/2026-10-09-colors.md"
+  },
+  "src/ui/test_colors_more.rs::test_sr_40_no_color_ignores_colors": {
+    "ids": [
+      "SR-40"
+    ],
+    "sha": "9d89baf1fce211a6"
+  },
+  "src/ui/test_colors_more.rs::test_sr_41_value_color_in_every_chip_shape": {
+    "ids": [
+      "SR-41"
+    ],
+    "sha": "8005a0c024f38d2a"
+  },
+  "src/test_bounds_unit.rs::test_sr_36_style_wrong_types_warn": {
+    "ids": [
+      "SR-36",
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "08d53c30c697a104"
+  },
+  "src/test_bounds_unit.rs::test_sr_39_colorfgbg_boundaries": {
+    "ids": [
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "9524741f425e8d54"
+  },
+  "src/test_bounds_unit.rs::test_sr_39_osc11_boundaries": {
+    "ids": [
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "f2575425d02713c8"
+  },
+  "src/test_bounds_unit.rs::test_sr_39_terminal_answers_never_panic": {
+    "ids": [
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "f8428899d7c22e77"
+  },
+  "src/test_bounds_unit.rs::test_sr_40_color_boundaries": {
+    "ids": [
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "29f4df1c0d75c02d"
+  },
+  "src/test_bounds_unit.rs::test_sr_40_colors_wrong_types_warn": {
+    "ids": [
+      "SR-39",
+      "SR-40",
+      "SR-41"
+    ],
+    "sha": "a80e5c29daa5185e"
+  },
+  "src/test_bounds_unit.rs::test_sr_40_hex_round_trip": {
+    "ids": [
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "569d5b6f2fe4ac47"
+  },
+  "src/test_bounds_unit.rs::test_sr_40_parse_color_never_panics": {
+    "ids": [
+      "SR-39",
+      "SR-40"
+    ],
+    "sha": "96634727018350bb"
+  },
+  "src/ui/test_style_props.rs::test_sr_36_any_style_fits_the_screen": {
+    "ids": [
+      "SR-36",
+      "SR-40",
+      "SR-41"
+    ],
+    "sha": "9e436090eb26cee2"
+  },
+  "src/ui/test_header_buttons.rs::test_sr_42_narrow_hides_buttons": {
+    "ids": [
+      "SR-42"
+    ],
+    "sha": "7be05213a0344aa4"
+  },
+  "src/ui/test_header_buttons.rs::test_sr_42_settings_button": {
+    "ids": [
+      "SR-42"
+    ],
+    "sha": "82b42d816fb5df92"
+  },
+  "src/ui/test_header_buttons.rs::test_sr_42_workspace_button": {
+    "ids": [
+      "SR-42"
+    ],
+    "sha": "4074b66596cba733",
+    "by": "specs/_decisions/2026-10-09-header-buttons.md"
+  },
+  "src/test_nerd_auto_unit.rs::test_sr_36_nerd_auto": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "19c20aacc61234ea"
+  },
+  "src/test_nerd_auto_unit.rs::test_sr_36_nerd_font_setting": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "4fc31d301e421bc9"
+  },
+  "tests/test_catalog_nerd.rs::test_sr_38_catalog_nerd_default": {
+    "ids": [
+      "SR-36",
+      "SR-38"
+    ],
+    "sha": "1561d87f9c99ccc2"
+  },
+  "src/test_dozy_unit.rs::test_sr_36_dozy_pink_preset": {
+    "ids": [
+      "SR-36"
+    ],
+    "sha": "bcfab3dcfdd5d8eb"
+  },
+  "src/test_main.rs::test_sr_12_state_target_per_open_target": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "eeb5954c1d54e20f"
+  },
+  "src/test_views_unit.rs::test_bv_20_save_keeps_other_targets_and_empty_removes_target": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "a7503dd9633c29bb"
+  },
+  "src/test_views_unit.rs::test_bv_20_save_keeps_unknown_items_and_unreadable_views_of_own_target": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "75bad7bd000b795f"
+  },
+  "src/test_views_unit.rs::test_bv_20_save_refuses_broken_file": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "3bfbce9e4419204f"
+  },
+  "src/test_views_unit.rs::test_bv_20_unknown_nested_settings_key_warns": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "6cd233460df6d752"
+  },
+  "src/ui/test_grid.rs::test_bv_13_switch_view_changes_rows_and_cols": {
+    "ids": [
+      "BV-13"
+    ],
+    "sha": "56c1798184040f4e"
+  },
+  "src/ui/test_grid.rs::test_sr_1_base_header_and_tabs": {
+    "ids": [
+      "BV-13"
+    ],
+    "sha": "d8bf73e5fdc6a808"
+  },
+  "src/ui/test_native_state.rs::test_bv_20_column_widths_per_native_view": {
+    "ids": [
+      "BV-20",
+      "SR-12"
+    ],
+    "sha": "d45e9896aa7e4be7"
+  },
+  "src/ui/test_native_state.rs::test_bv_20_folded_groups_per_native_view": {
+    "ids": [
+      "BV-20",
+      "SR-12"
+    ],
+    "sha": "e824fa1b2fcda32b"
+  },
+  "src/ui/test_native_state.rs::test_bv_20_readonly_view_buttons_say_read_only": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "bc15cd0692e31c47"
+  },
+  "src/ui/test_native_state.rs::test_bv_20_rename_keeps_width": {
+    "ids": [
+      "BV-20",
+      "SR-12"
+    ],
+    "sha": "bdb17c79d1efe2ef"
+  },
+  "src/ui/test_native_state.rs::test_bv_20_rename_moves_and_delete_removes_state": {
+    "ids": [
+      "BV-20",
+      "SR-12"
+    ],
+    "sha": "9dda975aa2163a34"
+  },
+  "src/ui/test_native_views.rs::test_bv_20_base_views_come_first": {
+    "ids": [
+      "BV-13",
+      "BV-20"
+    ],
+    "sha": "12af80466d40bf04"
+  },
+  "src/ui/test_native_views.rs::test_bv_20_broken_views_toml_warns_and_starts_without_tabs": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "8affa393b1b045fc"
+  },
+  "src/ui/test_native_views.rs::test_bv_20_readonly_writes_nothing": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "623c0ead5593a59b"
+  },
+  "src/ui/test_native_views.rs::test_bv_20_unknown_key_warns_and_reads": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "3c5e0fd53da5dcbb"
+  },
+  "src/ui/test_nav.rs::test_nv_3_temporary_sort_keeps_base": {
+    "ids": [
+      "NV-3"
+    ],
+    "sha": "dc9372d1dba1f3ca",
+    "by": "specs/_decisions/2026-10-10-sort-views.md"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_20_edited_row_released_on_save": {
+    "ids": [
+      "NV-20"
+    ],
+    "sha": "f72cb71480416750"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_20_edited_row_stays_until_move": {
+    "ids": [
+      "NV-20"
+    ],
+    "sha": "fe37f82326568600"
+  },
+  "src/ui/test_settings_screen.rs::test_nv_20_layers": {
+    "ids": [
+      "NV-20"
+    ],
+    "sha": "c8da3485dcafbdab",
+    "by": "specs/_decisions/2026-10-10-sort-views.md"
+  },
+  "src/ui/test_startup.rs::test_bv_13_startup_opens_first_view": {
+    "ids": [
+      "BV-13"
+    ],
+    "sha": "4758974158cf26d1"
+  },
+  "src/ui/test_startup.rs::test_nv_4_hidden_column_survives_restart": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "c02635c3802833db"
+  },
+  "src/ui/test_startup.rs::test_sr_11_state_not_in_note_folder": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "a668d07492b31e2f"
+  },
+  "src/ui/test_startup.rs::test_sr_12_broken_state_starts_with_defaults": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "6d971585692bf51c"
+  },
+  "src/ui/test_startup.rs::test_sr_12_new_base_column_added_right_and_view_kept": {
+    "ids": [
+      "BV-13",
+      "SR-12"
+    ],
+    "sha": "a580165bc017221b"
+  },
+  "src/ui/test_startup.rs::test_sr_12_state_hiding_every_column_keeps_one": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "2914cf82d9cf7c6b"
+  },
+  "src/ui/test_startup.rs::test_sr_12_temporary_sort_not_kept": {
+    "ids": [
+      "NV-3",
+      "SR-12"
+    ],
+    "sha": "d59aad778d6e158a",
+    "by": "specs/_decisions/2026-10-10-sort-views.md"
+  },
+  "src/ui/test_startup.rs::test_sr_12_view_named_empty_not_overwritten": {
+    "ids": [
+      "BV-13",
+      "SR-12"
+    ],
+    "sha": "b422d6c998ca8bd6"
+  },
+  "tests/test_base.rs::test_bv_13_three_views_change_rows_and_columns": {
+    "ids": [
+      "BV-13"
+    ],
+    "sha": "ef49a5fd12abb1f7"
+  },
+  "tests/test_config.rs::test_sr_12_apply_state_empty_keeps_columns": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "79f662b4920b05fd"
+  },
+  "tests/test_config.rs::test_sr_12_apply_state_new_columns_appended_in_current_order": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "471c416a3062f898"
+  },
+  "tests/test_config.rs::test_sr_12_apply_state_reconciles_columns": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "3cc67fa500ca89de"
+  },
+  "tests/test_config.rs::test_sr_12_broken_state_file_gives_default": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "175c616be99816ef"
+  },
+  "tests/test_config.rs::test_sr_12_state_is_per_target_and_view": {
+    "ids": [
+      "SR-12"
+    ],
+    "sha": "9e7cd644696df802"
+  },
+  "tests/test_views.rs::test_bv_20_broken_toml_warns_and_returns_no_views": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "ee04a7c1c6653e78"
+  },
+  "tests/test_views.rs::test_bv_20_missing_file_is_empty_without_warning": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "9df22ece55022df6"
+  },
+  "tests/test_views.rs::test_bv_20_target_is_keyed_by_real_path": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "2733ee2efa62438c"
+  },
+  "tests/test_views.rs::test_bv_20_unknown_key_warns_but_views_load": {
+    "ids": [
+      "BV-20"
+    ],
+    "sha": "ab33e56255c6d64b"
+  },
+  "src/ui/test_sort_window.rs::test_nv_24_sort_window": {
+    "ids": [
+      "NV-24"
+    ],
+    "sha": "4f61e986edfafd66"
+  },
+  "src/ui/test_sort_window.rs::test_nv_24_two_rules_and_order": {
+    "ids": [
+      "NV-24"
+    ],
+    "sha": "a9327d9c4921d4dd"
+  },
+  "src/ui/test_default_view.rs::test_nv_25_default_view": {
+    "ids": [
+      "BV-13",
+      "NV-25"
+    ],
+    "sha": "4bc6962210afe9b9"
+  },
+  "src/ui/test_default_view.rs::test_nv_25_missing_and_readonly": {
+    "ids": [
+      "NV-25"
+    ],
+    "sha": "0049870b5ce5f7bd"
+  },
+  "src/ui/test_sort_remove.rs::test_nv_24_click_x_removes_rule": {
+    "ids": [
+      "NV-24"
+    ],
+    "sha": "08330a11d33251b6",
+    "by": "specs/_decisions/2026-10-10-sort-views.md"
+  },
+  "src/ui/test_sort_more.rs::test_nv_24_hidden_bar_and_narrow": {
+    "ids": [
+      "NV-24"
+    ],
+    "sha": "9b30a5ede866efb5"
+  },
+  "src/ui/test_sort_more.rs::test_nv_24_readonly_sorts_without_writing": {
+    "ids": [
+      "NV-24"
+    ],
+    "sha": "25ef4f0a8505cbe9"
+  },
+  "src/ui/test_sort_more.rs::test_nv_24_window_sort_kept_after_restart": {
+    "ids": [
+      "NV-24",
+      "SR-12"
+    ],
+    "sha": "f9ea3867c23ae48c"
+  },
+  "src/ui/test_settings_head.rs::test_nv_18_head_drops_hint_when_narrow": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "ac481bc25bc6d49b"
+  },
+  "src/test_tab_prefs_unit.rs::test_nv_26_tab_prefs_broken_file_not_written": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "0d3900aea673e04c"
+  },
+  "src/test_tab_prefs_unit.rs::test_nv_26_tab_prefs_default_removes_keys": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "78a8ed2fe8dc690d"
+  },
+  "src/test_tab_prefs_unit.rs::test_nv_26_tab_prefs_round_trip_keeps_views": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "4e9f61eeb5f4636a"
+  },
+  "src/ui/test_view_tabs.rs::test_nv_26_current_and_base_refused": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "78dd05746a20d3cb"
+  },
+  "src/ui/test_view_tabs.rs::test_nv_26_hide_order_default_persist": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "0ae60893ed98a9b5"
+  },
+  "src/ui/test_view_tabs.rs::test_nv_26_readonly_shows_but_does_not_write": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "c76db37a7bacc128"
+  },
+  "src/ui/test_view_tabs.rs::test_nv_26_rename_delete_follow_prefs": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "4d543bdc5cbfb38b"
+  },
+  "src/ui/test_view_tabs.rs::test_nv_26_switch_hint": {
+    "ids": [
+      "NV-26"
+    ],
+    "sha": "68d5d9e7bb97b0bf"
+  },
+  "src/ui/test_settings_close.rs::test_nv_13_close_without_changes_says_closed": {
+    "ids": [
+      "NV-13"
+    ],
+    "sha": "084d6954b487be68"
+  },
+  "src/test_look_unit.rs::test_sr_43_apply_overrides_config": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "1bdcc3148cefd889"
+  },
+  "src/test_look_unit.rs::test_sr_43_look_broken_and_bad_values_warn": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "7166d680fc41d4a9"
+  },
+  "src/test_look_unit.rs::test_sr_43_look_round_trip_with_templates": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "38c69177e101d938"
+  },
+  "src/ui/test_look_section.rs::test_sr_43_choose_apply_and_save": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "1462ba1da03f5e07"
+  },
+  "src/ui/test_look_section.rs::test_sr_43_readonly_applies_without_writing": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "7cd6cb22f1ab2dd4"
+  },
+  "src/ui/test_look_section.rs::test_sr_43_templates_save_use_delete_and_reset": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "94d980340752bd32"
+  },
+  "tests/test_look_e2e.rs::test_sr_43_broken_look_toml_warns": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "a98985d4f4653060"
+  },
+  "tests/test_look_e2e.rs::test_sr_43_look_toml_applies_at_start": {
+    "ids": [
+      "SR-43"
+    ],
+    "sha": "a1ac9eaab6de0530"
+  },
+  "src/test_tree_unit.rs::test_nv_27_order_empty_and_flat": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "46cd54893422b4c5"
+  },
+  "src/test_tree_unit.rs::test_nv_27_order_missing_parent_and_cycles_go_top": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "ff334fdd73de442a"
+  },
+  "src/test_tree_unit.rs::test_nv_27_order_preorder_keeps_sibling_order": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "1d059fda5480cb79"
+  },
+  "src/ui/test_tree.rs::test_nv_27_click_mark_folds": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "10493339bbde121a"
+  },
+  "src/ui/test_tree.rs::test_nv_27_indent_under_parent": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "f8d1130f970fc940"
+  },
+  "src/ui/test_tree.rs::test_nv_27_missing_parent_goes_top_and_off_restores": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "3ce9907d20466695"
+  },
+  "src/ui/test_tree.rs::test_nv_27_settings_section_turns_on": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "3a48799d49f8fdab"
+  },
+  "src/ui/test_tree.rs::test_nv_27_shift_z_folds_and_unfolds": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "de290282d2f5d1ee"
+  },
+  "src/ui/test_tree.rs::test_nv_27_sort_within_siblings": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "729d178aac32a26f"
+  },
+  "src/test_wbs_unit.rs::test_nv_28_numbers_and_progress": {
+    "ids": [
+      "NV-28"
+    ],
+    "sha": "e035ccf8e058e28e"
+  },
+  "src/ui/test_wbs.rs::test_nv_28_numbers_progress_and_labels": {
+    "ids": [
+      "NV-28"
+    ],
+    "sha": "78b36911fc5eadf1"
+  },
+  "src/ui/test_wbs.rs::test_nv_28_saved_with_native_view": {
+    "ids": [
+      "NV-28"
+    ],
+    "sha": "0f0d2895ae9b8792"
+  },
+  "src/ui/test_wbs.rs::test_nv_28_settings_builds_the_table": {
+    "ids": [
+      "NV-28"
+    ],
+    "sha": "909069f00e944ae1"
+  },
+  "src/ui/test_wbs.rs::test_nv_28_unmapped_counts_zero_and_off_hides": {
+    "ids": [
+      "NV-28"
+    ],
+    "sha": "c0ad534f92d964ca"
+  },
+  "tests/test_pages.rs::test_sr_38_pages_manual_images_are_scenes": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "993f85da1888e84c"
+  },
+  "tests/test_pages.rs::test_sr_38_pages_manual_links_resolve": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "22d866acb45784bb"
+  },
+  "tests/test_pages.rs::test_sr_38_pages_workflow_shoots_and_builds": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "ba390317cac92ae4"
   }
 }

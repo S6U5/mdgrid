@@ -822,7 +822,13 @@ fn open_app(
     pick: bool,
 ) -> Result<(App, String), String> {
     let mut target = open_target(paths, view)?;
-    let (config, warnings) = load_config(opts.config.as_deref(), config::config_path())?;
+    let (mut config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
+    // SR-43: 設定の画面の見た目の区画で選んだ見た目(look.toml)を config.toml の上に重ねる。
+    if let Some(dir) = config_dir() {
+        let (look, warns) = mdgrid::look::load(&dir);
+        warnings.extend(warns);
+        mdgrid::look::apply(&mut config, &look.look);
+    }
     // WB-3: 読み込み(load)の前に渡す。
     target.src.set_add_frontmatter(config.add_frontmatter);
     // SR-8: 設定の editor > $VISUAL > $EDITOR > vi。
@@ -832,6 +838,18 @@ fn open_app(
         std::env::var("EDITOR").ok().as_deref(),
     );
     let color = ColorMode::detect(|k| std::env::var(k).ok());
+    // SR-36: nerd_font = "auto" は端末の名前で決める(丸い端を自分で描く端末だけ)。
+    if config.nerd_font_auto {
+        config.nerd_font = mdgrid::style::nerd_auto(std::env::var("TERM_PROGRAM").ok().as_deref());
+    }
+    // SR-39: theme = "auto" は端末の地の明るさで選ぶ(色を使わない表示では問い合わせない)。
+    if config.theme_auto && config.color && !opts.no_color && color != ColorMode::None {
+        let light = ui::termbg::light(
+            |k| std::env::var(k).ok(),
+            std::time::Duration::from_millis(200),
+        );
+        config.theme = mdgrid::theme::Theme::auto(light, config.theme_light, config.theme_dark);
+    }
     let mut app = App::new(Box::new(target.src), color);
     app.no_emoji = ui::dumb_terminal(|k| std::env::var(k).ok());
     // WS-6: -w で選んだワークスペースは範囲を決める前に渡す。
@@ -864,6 +882,8 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
         };
         // REL-4・REL-5: 開き直したあとに選ぶノート。
         let select = app.switch_select.take();
+        // CE-25: 関係マップの「+ 新規」で移ったら、開いた表で名前の欄を出す。
+        let new_note = std::mem::take(&mut app.switch_new_note);
         // WS-2: ワークスペースを開いて移ったら、以後の範囲はそのワークスペース。
         if let Some(ws) = app.switch_workspace.take() {
             opts.workspace = Some(ws);
@@ -875,6 +895,7 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
                 app = next;
                 editor = ed;
                 app.select_after_load = select;
+                app.new_note_after_load = new_note;
                 if let Some(v) = &place.view {
                     app.select_view_named(v);
                 }

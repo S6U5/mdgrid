@@ -65,6 +65,12 @@ pub struct App {
     pub(crate) groups: Vec<(String, std::ops::Range<usize>)>,
     /// 畳んだグループの見出し(SR-2)。
     pub(crate) folded: HashSet<String>,
+    /// NV-27: 親子で並べたときの行ごとの深さ・子の有無・親(並べていなければ空)と、畳んだ親の行。
+    pub(crate) tree: std::collections::HashMap<RowId, mdgrid::tree::Node<RowId>>,
+    pub(crate) tree_folded: HashSet<RowId>,
+    /// NV-28: WBS の番号と、子のある行の進み具合(%)。WBS を出さなければ空。
+    pub(crate) wbs_num: std::collections::HashMap<RowId, String>,
+    pub(crate) wbs_pct: std::collections::HashMap<RowId, u8>,
     /// 画面の行(見出しとノートの行)。`row`・`top` はこの添字。グループが無ければ rows と同じ並び。
     pub(crate) slots: Vec<Slot>,
     /// 未対応の列・並べ替えの説明(BV-7)。
@@ -107,6 +113,12 @@ pub struct App {
     pub(crate) borders_ascii: bool,
     /// SR-33: 色を使うときも今までの見た目(設定の `look = "classic"`)。
     pub(crate) look_classic: bool,
+    /// SR-36: 部品の形(`[style]`)。
+    pub(crate) style: mdgrid::style::Style,
+    /// SR-36: 丸い札の端を Nerd Font の字で描いてよい。
+    pub(crate) nerd_font: bool,
+    /// SR-40・SR-41: 色の上書き。
+    pub(crate) colors: mdgrid::colors::Colors,
     /// 式の今日(日数)と今(UNIX 秒)。
     pub(crate) today: i64,
     pub(crate) now: i64,
@@ -195,10 +207,14 @@ pub struct App {
     pub(crate) menu: Option<usize>,
     /// 列の値の頻度表(NV-9。freq.rs)。開いていなければ None。
     pub(crate) freq: Option<super::freq::Freq>,
+    /// NV-24: 開いている並べ替えの窓。
+    pub(crate) sorts_win: Option<super::sorts::SortWin>,
     /// 画面のテーマ(SR-26・SR-27)。描き終えたバッファを ui/theme.rs が塗り替える。
     pub(crate) theme: Theme,
     /// 読み込みが終わったら選ぶノート(CLI-15。起動の引数に渡した `.md`)。終わりで一度だけ使う。
     pub select_after_load: Option<std::path::PathBuf>,
+    /// CE-25: 読み込みが終わったら新しいノートの名前の欄を出す(関係マップの「+ 新規」で移ったとき)。
+    pub new_note_after_load: bool,
     /// BV-2: `.base` の上に `.obsidian/` が無く、根を `.base` のフォルダに推したときのその根。
     pub guessed_root: Option<std::path::PathBuf>,
     /// CLI-18・CLI-19: 登録した表(places.toml)。
@@ -219,6 +235,8 @@ pub struct App {
     pub switch_to: Option<mdgrid::places::Place>,
     /// REL-4・REL-5: 開き直したあとに選ぶノート(実体のパス。main が select_after_load に渡す)。
     pub switch_select: Option<std::path::PathBuf>,
+    /// CE-25: 関係マップの「+ 新規」で表を開き直したら、名前の欄を出す。
+    pub switch_new_note: bool,
     /// リンクの行き先を解く表と、解いた結果(REL-1。relations.rs)。
     pub(crate) links: super::relations::Links,
     /// 関係マップ(REL-7。relmap.rs)。開いている間だけ。
@@ -240,6 +258,10 @@ impl App {
             rows: Vec::new(),
             groups: Vec::new(),
             folded: HashSet::new(),
+            tree: Default::default(),
+            tree_folded: HashSet::new(),
+            wbs_num: Default::default(),
+            wbs_pct: Default::default(),
             slots: Vec::new(),
             notes: Vec::new(),
             view_error: None,
@@ -268,6 +290,9 @@ impl App {
             cells: mdgrid::cells::Cells::default(),
             borders_ascii: false,
             look_classic: false,
+            style: Default::default(),
+            nerd_font: false,
+            colors: Default::default(),
             today,
             now,
             size: (80, 24),
@@ -315,8 +340,10 @@ impl App {
             pick_out: Default::default(),
             menu: None,
             freq: None,
+            sorts_win: None,
             theme: Theme::Default,
             select_after_load: None,
+            new_note_after_load: false,
             guessed_root: None,
             registered: Vec::new(),
             workspaces: Vec::new(),
@@ -327,6 +354,7 @@ impl App {
             switch_leave_workspace: false,
             switch_to: None,
             switch_select: None,
+            switch_new_note: false,
             links: Default::default(),
             relmap: None,
             quit: false,
@@ -342,6 +370,9 @@ impl App {
         self.ambiguous_wide = c.ambiguous_wide;
         self.borders_ascii = c.borders_ascii;
         self.look_classic = c.look_classic;
+        self.style = c.style;
+        self.nerd_font = c.nerd_font;
+        self.colors = c.colors.clone();
         self.view_tabs_auto = c.view_tabs_auto;
         self.cells = c.cells.clone();
         self.workspace_detect = c.workspace_detect.clone();
@@ -406,10 +437,13 @@ impl App {
     /// CLI-15: 読み込みが終わったら(行が揃って並びが決まってから)、起動の引数に渡したノートの行を選ぶ。
     /// 途中で選ぶと並べ替えで行が動いて画面が跳ねるので、終わりで一度だけ。見えない・無いなら何もしない。
     fn select_pending(&mut self) {
-        let Some(path) = self.select_after_load.take() else {
-            return;
-        };
-        self.select_note(&path);
+        if let Some(path) = self.select_after_load.take() {
+            self.select_note(&path);
+        }
+        // CE-25: 関係マップの「+ 新規」で移った表は、行と列が揃ってビューも決まってから名前の欄を出す。
+        if std::mem::take(&mut self.new_note_after_load) {
+            self.start_new_note();
+        }
     }
 
     /// ノート(パス)の行を選ぶ。見えない・無いなら何もしないで偽(CLI-15・REL-4)。
@@ -609,6 +643,7 @@ impl App {
             }
             Mode::Menu => self.menu_action(action),
             Mode::Freq => self.freq_action(action),
+            Mode::Sorts => self.sorts_action(action),
             Mode::Relations => self.relmap_action(action),
             Mode::Table => self.table_action(action),
         }
@@ -721,6 +756,7 @@ impl App {
             Action::Quit => {
                 self.switch_to = None;
                 self.switch_select = None;
+                self.switch_new_note = false;
                 self.begin_quit();
             }
             Action::CancelLoad => {
@@ -753,6 +789,8 @@ impl App {
             Action::FocusChips => self.focus_chips(),
             // ---- mdgrid のビューの書き出しと取り込み(native_views.rs。BV-19) ----
             Action::ExportBase => self.start_export(),
+            Action::SortMenu => self.open_sorts(),
+            Action::SetDefaultView => self.set_default_view(),
             Action::ExportTable => self.start_export_table(),
             Action::ImportBase => self.start_import(),
             // ---- 登録した表(places.rs。CLI-18・CLI-19) ----
@@ -763,6 +801,8 @@ impl App {
             Action::LinkedRows => self.start_linked_rows(),
             // ---- 関係マップ(relmap.rs。REL-7) ----
             Action::RelationMap => self.open_relmap(),
+            // ---- 親子(NV-27。grid.rs) ----
+            Action::ToggleTree => self.toggle_tree(),
             // ---- ワークスペース(workspace.rs。WS-2) ----
             Action::WsNew => self.start_ws_new(),
             Action::WsAdd => self.start_ws_add(),
@@ -850,8 +890,21 @@ impl App {
             Mode::Menu => return self.menu_click(x, y),
             // NV-9: 頻度表の項目のクリックで絞って閉じ、窓の外のクリックで閉じるだけ。
             Mode::Freq => return self.freq_click(x, y),
+            Mode::Sorts => return self.sorts_click(x, y),
             // REL-8: 関係マップの上の端のタブ。
             Mode::Relations => {
+                // SR-42: ヘッダーのボタン(表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.relmap = None;
+                    self.set_mode(Mode::Table);
+                    self.header_button(b);
+                    return;
+                }
+                // CE-25: 関係マップでも「+ 新規」(選んでいる表に作る)。
+                if super::new_note::button_at(self, x, y) {
+                    self.apply(Action::NewNote);
+                    return;
+                }
                 match super::bands::screen_tab_at(self, x, y) {
                     Some(false) => {
                         self.relmap = None;
@@ -873,9 +926,19 @@ impl App {
             }
             _ => return,
         }
+        // SR-42: ヘッダーのワークスペースと設定のボタン。
+        if let Some(b) = super::bands::header_button_at(self, x, y) {
+            self.header_button(b);
+            return;
+        }
         // CE-25: ヘッダーの「+ 新規」で新しいノートの名前の欄を開く。
         if super::new_note::button_at(self, x, y) {
             self.apply(Action::NewNote);
+            return;
+        }
+        // NV-24: 検索の欄の右の「並べ替え」のボタン。
+        if super::bands::sort_button_at(self, x, y) {
+            self.open_sorts();
             return;
         }
         // NV-23: 検索の欄のクリックで欄に入る(`\` と同じ)。
@@ -908,6 +971,17 @@ impl App {
             return;
         }
         if let Some((i, j)) = view::hit(self, x, y) {
+            // NV-27: 名前の欄の ▾/▸ の印は、その行の子孫を畳む・開く。
+            let row = match self.slots.get(i) {
+                Some(super::grid::Slot::Row(r)) => self.rows.get(*r).cloned(),
+                _ => None,
+            };
+            if row.is_some_and(|r| view::tree_mark_at(self, &r, x as usize)) {
+                self.row = i;
+                self.message = None;
+                self.toggle_tree();
+                return;
+            }
             let same_row = i == self.row;
             self.row = i;
             self.col = j;
@@ -959,11 +1033,31 @@ impl App {
             (Mode::Menu, false) => Action::Up,
             (Mode::Freq, true) => Action::Down,
             (Mode::Freq, false) => Action::Up,
+            (Mode::Sorts, true) => Action::Down,
+            (Mode::Sorts, false) => Action::Up,
             // REL-12: 関係マップでは表を上下に選ぶ。
             (Mode::Relations, true) => Action::Down,
             (Mode::Relations, false) => Action::Up,
             _ => return,
         };
         self.apply(a);
+    }
+}
+
+impl App {
+    /// 今のテーマの色の表に、`[colors]` の上書きを当てたもの(SR-40)。テーマが default なら None。
+    pub(crate) fn palette(&self) -> Option<mdgrid::theme::Palette> {
+        self.theme.palette().map(|p| self.colors.apply(p))
+    }
+}
+
+impl App {
+    /// SR-42: ヘッダーのボタンを押した(ワークスペースの一覧か、ビューの設定の画面を開く)。
+    pub(crate) fn header_button(&mut self, b: super::bands::HeaderButton) {
+        self.message = None;
+        match b {
+            super::bands::HeaderButton::Workspace => self.start_ws_open(),
+            super::bands::HeaderButton::Settings => self.apply(Action::ViewSettings),
+        }
     }
 }

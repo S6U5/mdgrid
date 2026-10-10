@@ -14,7 +14,7 @@ use ratatui::style::{Color, Modifier};
 /// テーマの意味の色(SR-28): パレットがあり色を使う表示なら、`role` の色を端末の色の扱いで。
 /// 無ければ None(呼ぶ側はテーマなしの色を使う)。
 pub(crate) fn meaning(app: &App, role: fn(&Palette) -> [u8; 3]) -> Option<Color> {
-    let p = app.theme.palette()?;
+    let p = app.palette()?;
     let rgb = role(&p);
     match app.color {
         ColorMode::None => None,
@@ -26,7 +26,7 @@ pub(crate) fn meaning(app: &App, role: fn(&Palette) -> [u8; 3]) -> Option<Color>
 /// `full`(端末の全体。空けておく最下行と右端も含む)のセルを、テーマの役割の色で塗り替える。
 /// 色を使わない表示とパレットの無いテーマでは何もしない。
 pub(crate) fn paint(buf: &mut Buffer, full: Rect, app: &App) {
-    let Some(p) = app.theme.palette() else {
+    let Some(p) = app.palette() else {
         return;
     };
     let indexed = match app.color {

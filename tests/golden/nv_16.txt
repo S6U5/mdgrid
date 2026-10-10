@@ -1,6 +1,6 @@
- notes  4行
+ notes  4行                                             ワークスペース   設定
  既定の表
- 検索: (\ で絞る)
+ 検索: (\ で絞る)                                                     並べ替え
  設定: [status: done を除く]  f で選ぶ
  ノート title      status 種別 priority due
 >a      会議の準備 todo   会議        3 2026-09-20

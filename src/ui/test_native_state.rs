@@ -390,16 +390,22 @@ fn test_wb_15_readonly_hides_view_buttons_and_commands() {
 
 #[test]
 fn test_nv_18_left_right_follow_button_rows() {
-    // [NV-18] ←→ は画面の同じ行のボタンの中で動く(既定に戻す → 名前を付けて保存 には飛ばない)。
+    // [NV-18] ←→ は画面の同じ行のボタンの中で動く。上の右は反映・取り消し、下は既定に戻すと
+    // mdgrid のビューのボタン(取り消し → 既定に戻す には飛ばない)。
     let tmp = vault("nvstate_lr");
     let mut a = boot(&tmp);
     ch(&mut a, 'o');
-    a.draft.as_mut().unwrap().select(Sec::Buttons, 2);
+    a.draft.as_mut().unwrap().select(Sec::Buttons, 1);
     press(&mut a, KeyCode::Right);
+    assert_eq!(a.draft.as_ref().unwrap().at(Sec::Buttons), 1);
+    a.draft.as_mut().unwrap().select(Sec::Buttons, 2);
+    press(&mut a, KeyCode::Left);
     assert_eq!(a.draft.as_ref().unwrap().at(Sec::Buttons), 2);
+    // 下の行は 既定に戻す・名前を付けて保存・上書き… の並び(←→ で隣へ)。
     a.draft.as_mut().unwrap().select(Sec::Buttons, VIEW_BUTTONS);
     press(&mut a, KeyCode::Left);
-    assert_eq!(a.draft.as_ref().unwrap().at(Sec::Buttons), VIEW_BUTTONS);
+    assert_eq!(a.draft.as_ref().unwrap().at(Sec::Buttons), 2);
+    press(&mut a, KeyCode::Right);
     press(&mut a, KeyCode::Right);
     assert_eq!(a.draft.as_ref().unwrap().at(Sec::Buttons), VIEW_BUTTONS + 1);
 }

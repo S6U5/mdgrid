@@ -55,7 +55,8 @@ mdgrid writes only the values you changed. A missing key gets one added line, an
 | highlight a word and move between matches | `/`, type, `Enter`; then `n`, `N` |
 | keep only rows containing a word | `\` and type (filters as you type and shows the count); `Esc` clears |
 | keep only rows with the selected cell's value | `,` (`*` only highlights them) |
-| sort by this column for now | `s` (ascending → descending → off) |
+| sort by this column | `s` or click the heading (ascending → descending → off) |
+| build a sort (several columns, directions, order) | `S` or the **Sort** button at the right of the filter bar |
 | go to a row number | `:`, the number, `Enter` |
 | hide a column / show it again | `-` / `+` |
 | move a column / change its width | `H` `L` / `<` `>` |
@@ -65,7 +66,7 @@ Search ignores case when the word is all lowercase. `Esc` clears the selection f
 
 ![Quick filter](images/quick-filter.svg)
 
-These sorts and filters are temporary. To keep them, see [Shape a view and save it](#shape-a-view-and-save-it).
+A sort is kept for the current view, so the table opens in the same order next time (the `.base` file is not changed). In the sort window you can add a rule (`Enter`, then pick a column), flip its direction (`Enter`), remove it (`d`) and reorder (`K`, `J`); every change applies right away. The quick filter `\` is temporary. To keep more, see [Shape a view and save it](#shape-a-view-and-save-it).
 
 ## Edit many rows at once
 
@@ -118,11 +119,14 @@ What mdgrid reads — keys, operators, functions — is listed in [Obsidian Base
 - Columns: which columns to show, and their order
 - Filters: add conditions. Choosing a column lists its values with counts, and you tick the values to keep or hide
 - Sort and group
+- Parent/child: when on, child notes with `parent: "[[Parent]]"` (the key can be changed) are indented under their parent. `Z` or a click on ▾ / ▸ folds or unfolds a parent. Sorting works among siblings, and a child whose parent is not in the table stays at the top level. In the same section, turn on WBS to number the rows (`1.2.1`) and build a table of values for the progress key (default `status`): type a percent and a label for each value (for example `100 Done`; `-` removes it). Rows without children show the label, parents show the average percent of their descendants. The table is saved with the view settings
 - Display: row numbers, zebra stripes, column lines, tabs, the search bar, the settings band
+- Views: the tabs above the table. `Space` shows or hides a tab, `K` / `J` move it, `Enter` makes it the default, renames or deletes it, and the last row turns the "[ ] to switch" hint on or off. These changes are saved to `views.toml` right away, without `Apply` (the view you are on cannot be hidden, and `.base` views cannot be renamed or deleted)
+- Look: pick the theme, parts and round pill ends with `Enter`; `Apply` shows them and keeps them in `look.toml` (`config.toml` is not rewritten). "+ Save this look as a template" names the combination; pick a template to use it, `d` deletes it. "Back to config.toml" goes back to `config.toml` from the next start
 
 ![View settings](images/view-settings.svg)
 
-`Apply` applies it to the table; `Save as` keeps it as an mdgrid view. On the same screen, `Overwrite`, `Rename` and `Delete` manage saved views, and `Reset` returns the settings to the defaults. A saved view becomes a tab next to `All notes` (with `view_tabs = "auto"` the tab row appears only from then on) and is written to `views.toml` in the config folder. The conditions in effect are shown in the settings band above the table; `f` moves into the band and `Backspace` removes one.
+`Apply` applies it to the table; `Save as` keeps it as an mdgrid view. **Make this the default view** in the palette (`:`) or the action menu (`x`) makes the current view the one that opens next time (pick the first tab to go back to it). On the same screen, `Overwrite`, `Rename` and `Delete` manage saved views, and `Reset` returns the settings to the defaults. A saved view becomes a tab next to `All notes` (with `view_tabs = "auto"` the tab row appears only from then on) and is written to `views.toml` in the config folder. The conditions in effect are shown in the settings band above the table; `f` moves into the band and `Backspace` removes one.
 
 ![Save as an mdgrid view](images/native-view-save.svg)
 
@@ -147,7 +151,7 @@ alias standup='mdgrid ~/notes/Tasks.base --view "By owner"'   # a .base, opened 
 ```
 
 - Typing `tasks` opens the task table the way you left it.
-- What is not remembered: the quick sort from a column header, the quick filter `\`, and anything you change with `--readonly`.
+- What is not remembered: the quick filter `\` and anything you change with `--readonly` (sorts from a heading or the sort window are remembered).
 - In fish: `alias --save tasks 'mdgrid ~/notes/Tasks'`.
 
 The output side works the same way with a shell function:

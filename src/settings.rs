@@ -78,6 +78,36 @@ pub struct Settings {
     /// SR-20・SR-21: 表の見せ方のビューごとの上書き(設定と違う項目だけ)。
     #[serde(skip_serializing_if = "DisplayOverride::is_empty")]
     pub display: DisplayOverride,
+    /// NV-27: 親子で並べるときの親のキー(None は並べない)。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tree: Option<String>,
+    /// NV-28: WBS の番号と進み具合(None は出さない。親子で並べているときだけ効く)。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wbs: Option<Wbs>,
+}
+
+/// NV-28: 進み具合のキーと、値ごとの割合とラベルの対応表。
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct Wbs {
+    pub key: String,
+    pub map: Vec<WbsValue>,
+}
+
+/// 対応表の1行(値 → 割合 0〜100 とラベル)。
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct WbsValue {
+    pub value: String,
+    pub percent: u8,
+    pub label: String,
+}
+
+impl Wbs {
+    /// 値の対応(無ければ None)。
+    pub fn of(&self, value: &str) -> Option<&WbsValue> {
+        self.map.iter().find(|m| m.value == value)
+    }
 }
 
 impl Settings {

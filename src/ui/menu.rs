@@ -135,8 +135,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
     if writable {
         want.push((Section::View, Action::NewNote, false));
     }
+    want.push((Section::View, Action::SortMenu, false));
     want.push((Section::View, Action::ViewSettings, false));
     if writable {
+        want.push((Section::View, Action::SetDefaultView, false));
         want.push((Section::View, Action::ExportBase, false));
         want.push((Section::View, Action::Save, false));
     }

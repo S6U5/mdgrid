@@ -9,6 +9,8 @@ mdgrid は TOML のファイルを1つ読む:
 
 同じフォルダには `views.toml`(mdgrid のビュー)と `places.toml`(登録した表。[使う表を登録して切り替える](manual/ja/tasks.md#使う表を登録して切り替える))も置く。この2つは mdgrid が書く。
 
+ビューの設定の画面(`o`)の「見た目」の区画で選んだテーマ・組・丸い札の端は、同じフォルダの `look.toml` に書き、起動のときこのファイルの `theme`・`[style]` の `preset`・`nerd_font` に代えて使う(このファイルは書き換えない)。`look.toml` を消すか、区画の「config.toml に戻す」で、次の起動からこのファイルのとおりに戻る。区画で名前を付けて保存した組み合わせ(テンプレート)も `look.toml` の `[[template]]` に入る。
+
 どの項目も書かなくてよい。ファイルが無ければ既定で動く。知らない項目と型の違う値は、メッセージ行に警告を出して無視し、起動は止めない。壊れた TOML は理由を1行出して止まる。
 
 既定から始めるなら、説明のコメント付きで書き出す:
@@ -206,13 +208,86 @@ language = "en"
 
 ### `theme`
 
-- 型: `文字列("default"・"nord"・"solarized-light"・"dracula"・"gruvbox"・"pink-monster"・"dozy-pink")`
+- 型: `文字列("auto"・"default"・"nord"・"solarized-light"・"dracula"・"gruvbox"・"pink-monster"・"dozy-pink"・"sumi"・"slate"・"saas"・"saas-dark"・"paper")`
 - 既定: `"default"`
 
-画面の色のテーマ。`"default"`・`"nord"`・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"` のどれか。`"default"` は端末の文字と地の色のまま(テーマの無かったときの見た目)。ほかのテーマは、地・文字・1行目・列の見出し・選んでいるセル・下の帯・`zebra` の一行おきの色・`>` の印をテーマの色で塗る。意味を持つ色(ためた値・検索の一致・保存の確認の差分の足した行と消した行)も、テーマの地で読める色で塗る。色を使わない表示(`--no-color`・`NO_COLOR`・`TERM=dumb`・`color = false`)ではテーマは効かない。トゥルーカラーに対応しない端末(`COLORTERM` が `truecolor`・`24bit` でない)では、256 色のうち近い色で塗る。知らない名前は警告を出して既定の見た目にする。
+画面の色のテーマ。`"default"`・`"nord"`・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"` と、落ち着いた組の `"sumi"`・`"slate"`・`"saas"`・`"saas-dark"`・`"paper"` のどれか。`"auto"` は端末の地の明るさで `theme_light` か `theme_dark` を使う。`"default"` は端末の文字と地の色のまま(テーマの無かったときの見た目)。ほかのテーマは、地・文字・1行目・列の見出し・選んでいるセル・下の帯・`zebra` の一行おきの色・`>` の印をテーマの色で塗る。意味を持つ色(ためた値・検索の一致・保存の確認の差分の足した行と消した行)も、テーマの地で読める色で塗る。色を使わない表示(`--no-color`・`NO_COLOR`・`TERM=dumb`・`color = false`)ではテーマは効かない。トゥルーカラーに対応しない端末(`COLORTERM` が `truecolor`・`24bit` でない)では、256 色のうち近い色で塗る。知らない名前は警告を出して既定の見た目にする。
 
 ```toml
 theme = "nord"
+```
+
+### `theme_light`
+
+- 型: `文字列(テーマの名前)`
+- 既定: `"saas"`
+
+`theme = "auto"` のとき、端末の地が明るいときのテーマ。
+
+```toml
+theme_light = "paper"
+```
+
+### `theme_dark`
+
+- 型: `文字列(テーマの名前)`
+- 既定: `"sumi"`
+
+`theme = "auto"` のとき、端末の地が暗いときのテーマ。地の明るさは `COLORFGBG` か端末への問い合わせで知り、分からなければこちらを使う。
+
+```toml
+theme_dark = "saas-dark"
+```
+
+### `style`
+
+- 型: `表([style] の下に preset・status・tags・check・select・rules・tabs・frames・band・icons)`
+- 既定: `{ preset = "sumi" }`
+
+画面の部品の形。`preset` で組をまとめて選びます: `"sumi"`(既定。状態の前に色の点、タグは `·` で区切る、`✓`、選んだ行は印 `>` をアクセントの色に、見出しの下に線)・`"slate"`・`"saas"`・`"paper"`・`"grid"`・`"classic"`(0.2.0 の見た目)・`"dozy-pink"`(テーマ dozy-pink に合う柔らかい丸い札)。ほかの項目で、部品を1つずつ上書きします:
+
+- `status`(状態や担当のような、くり返す短い値): `"dot"`・`"shape"`(○ ◐ ●)・`"text"`・`"pill"`・`"tint"`・`"solid"`(値の色をそのまま塗った、透けない札)・`"soft"`・`"chip"`・`"plain"`
+- `tags`(リスト): `"dots"`・`"hash"`・`"brackets"`・`"pill"`・`"tint"`・`"solid"`・`"soft"`・`"chip"`・`"plain"`
+- `check`(真偽): `"box"`・`"tick"`・`"bracket"`・`"text"`
+- `select`(選んでいる行とセル): `"bar"`・`"cross"`・`"tint"`・`"outline"`・`"fill"`・`"reverse"`
+- `rules`(表の線): `"none"`・`"header"`・`"columns"`・`"grid"`
+- `tabs`: `"underline"`・`"pill"`・`"segment"`・`"brackets"`・`"dim"`
+- `frames`(窓の枠): `"rounded"`・`"square"`・`"heavy"`・`"ascii"`・`"none"`
+- `band`(下の帯のキー): `"keys"`・`"boxed"`・`"quiet"`
+- `icons`: `true` か `false`(列の見出しの型の印)
+
+`"pill"` は丸い端を Nerd Font の字で描くので、丸い端を描けるとき(`nerd_font`。既定では Ghostty と WezTerm)だけ使い、そうでなければ `"soft"` で描きます。`borders = "ascii"` も今までどおり使え、`frames = "ascii"` と同じです。`docs/catalog/index.html` のカタログで全部の形を見比べ、この表を作れます。
+
+```toml
+[style]
+preset = "saas"
+select = "cross"
+```
+
+### `colors`
+
+- 型: `表([colors] の下に色の役割、[colors.values] に値の色)`
+- 既定: `{}`
+
+テーマの色を役割ごとに上書きします。役割: `background`(地)・`text`(文字)・`header`(1行目)・`selection`(選んだ行の地)・`selection_text`・`band`(下の帯の地)・`band_text`・`accent`(見出し・キー・枠)・`strong`(強調)・`zebra`(一行おきの地)・`zebra_text`・`mark`(左端の印)・`added`(足した行)・`removed`(消した行)・`pending`(ためた変更)・`highlight`(検索の一致の地)。書かなかった役割はテーマの色のままです。`[colors.values]` は値ごとの色で(前後の空白と大文字・小文字によらず照合)、部品のどの形(`status`・`tags`)でも、候補の窓でも使い、日本語の値にも付けられます。色は `"#rrggbb"`・`"#rgb"` か名前(`black`・`white`・`gray`・`red`・`orange`・`yellow`・`green`・`teal`・`cyan`・`blue`・`purple`・`magenta`・`pink`・`brown`)。`theme = "default"` では端末の地と文字は変えず、`accent`・`selection` と値の色だけを使います。知らない役割と読めない色は警告して飛ばします。同じ値を(大文字・小文字と空白を除いて)2回書いたときも警告し、どれか1つを使います。`docs/catalog/index.html` のカタログの色の欄で、この表を作れます。
+
+```toml
+[colors]
+accent = "#e0a458"
+
+[colors.values]
+done = "green"
+```
+
+### `nerd_font`
+
+- 型: `真偽か "auto"`
+- 既定: `"auto"`
+
+丸い札の端(Nerd Font の字 U+E0B6・U+E0B4)を描いてよいか。`true` は端末の字形が Nerd Font(どの Nerd Font でもよい)。`"auto"` は、その字を字体に頼らず自分で描く端末、Ghostty と WezTerm(`TERM_PROGRAM` で見分ける)のときだけ描き、ほかの端末では字が化けないようにします。描けないときは `"pill"` を `"soft"` で描き、淡い札・塗った札の端は四角のままです。端末はどの字体を使っているかをアプリに教えないので、ほかの端末で Nerd Font を使っているなら `true` と書きます。
+
+```toml
+nerd_font = true
 ```
 
 ### `display`
@@ -291,7 +366,7 @@ created = "{now}"
 
 モードごとにキーを割り当て直す。書かなければ組み込みのキーの割り当て。`[keys.<モード>]` の下に `キー = "動作の名前"` と書く。動作の名前 `"none"` でそのキーを外す。キーは `"j"`・`"ctrl+s"`・`"shift+tab"` のように書き、`"g g"` のような続けて押すキーは空白で区切る。
 
-モード: `table`・`edit`・`review`・`quit`・`help`・`palette`・`search`・`filter`・`detail`・`settings`・`settings_input`・`chips`・`list_select`・`menu`・`freq`。動作の名前はコマンドのパレット(`:`)に出る。モードごとの既定のキーと動作の名前の全部は [keys.ja.md](keys.ja.md) にある。知らないモード・キー・動作は警告して飛ばす。
+モード: `table`・`edit`・`review`・`quit`・`help`・`palette`・`search`・`filter`・`detail`・`settings`・`settings_input`・`chips`・`list_select`・`menu`・`freq`・`sorts`。動作の名前はコマンドのパレット(`:`)に出る。モードごとの既定のキーと動作の名前の全部は [keys.ja.md](keys.ja.md) にある。知らないモード・キー・動作は警告して飛ばす。
 
 ```toml
 [keys.table]

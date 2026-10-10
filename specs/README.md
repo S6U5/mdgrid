@@ -19,15 +19,15 @@ updated: 2026-09-30
 
 | ケイパビリティ | 内容 | 読むとき | 要件 | うち守られる |
 |---|---|---|---|---|
-| [base-view](base-view/spec.md) | 何を読んで、どの行とどの列の表を作るか。.base の table ビューの解釈、ビューの切り替え、解釈できないときの振る舞い。 | 起動の引数・.base の読み込み・絞り込み・並べ替え・グループ分け・式の評価・ビューの切り替えを作る・変えるとき | 23 | 7 |
+| [base-view](base-view/spec.md) | 何を読んで、どの行とどの列の表を作るか。.base の table ビューの解釈、ビューの切り替え、解釈できないときの振る舞い。 | 起動の引数・.base の読み込み・絞り込み・並べ替え・グループ分け・式の評価・ビューの切り替えを作る・変えるとき | 23 | 9 |
 | [cell-edit](cell-edit/spec.md) | 表のセルでどの値をどう直せるか。自由入力・リストからの選択・切り替え・日付・空にする・一括の設定と、読むだけにするセル。 | セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき | 30 | 16 |
 | [cell-view](cell-view/spec.md) | セルの値をどう見せるか。空・null・キーなしの区別、型と合わない値、改行、寄せ、列の幅、文字の幅、色。 | セルの描画・列の幅・文字の幅・色を作る・変えるとき | 9 | 0 |
 | [cli](cli/spec.md) | 起動のしかた(引数・オプション)と、設定ファイルの置き場所と中身、起動できないときの振る舞い。 | 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき | 20 | 8 |
-| [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 23 | 8 |
+| [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 28 | 15 |
 | [output](output/spec.md) | セルや行をクリップボードにコピーする方法と、表を外に出す方法。 | コピー・貼り付け・書き出し・標準出力への出力を作る・変えるとき | 5 | 1 |
 | [relations](relations/spec.md) | ノートのフロントマターに書いたリンクを、表と表をつなぐリレーションとして見せ・入れ・たどる方法。 | リンクの値の見せ方・入れ方・行き先を開く・つながった行・表どうしのつながり・関係マップの画面を作る・変えるとき | 12 | 10 |
 | [scope](scope/spec.md) | mdgrid が何のための道具で、最初の版に何を入れ、何を入れないか。 | 機能を足す・削るとき、最初の版の範囲を判断するとき、名前や配り方を決めるとき | 14 | 8 |
-| [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 31 | 14 |
+| [screen](screen/spec.md) | 画面の構成、キーとマウス、ヘルプとコマンドのパレット、見た目の状態の保存。セルの値・文字の幅・色の見せ方は cell-view。 | 画面の構成・キー・マウス・ヘルプ・パレット・見た目の状態を作る・変えるとき | 39 | 24 |
 | [workspace](workspace/spec.md) | 表をまとめる範囲(ワークスペース)をアプリの側に持ち、画面とコマンドで管理し、.git と保管庫を検知する。 | ワークスペースの持ち方・管理(画面とコマンド)・検知・範囲の決め方を作る・変えるとき | 7 | 7 |
 | [write-back](write-back/spec.md) | 直した値をためて、差分を見てから保存する流れと、ノートのファイルにどう書き戻すか。何を1バイトも変えず、いつ書かずに止めるか。 | 保存・取り消し・ファイルへの書き込みを作る・変えるとき、YAML の読み書きの部品を選ぶとき | 19 | 10 |
 
@@ -41,20 +41,38 @@ updated: 2026-09-30
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触る要件 |
 |---|---|---|---|---|---|
+| 2026-10-10 | [ワークスペースのボタンは、ワークスペースが無くても出す(ws-button)](_decisions/2026-10-10-ws-button.md) | accepted | 人 | 人の発言 | WS-6 |
+| 2026-10-10 | [親子で並べた表に WBS の番号と進み具合を出し、値の対応表を設定で作って保存する(wbs)](_decisions/2026-10-10-wbs.md) | accepted | 人 | 人の発言 | NV-28 |
+| 2026-10-10 | [設定の画面に「ビュー」の区画を足し、タブの並び・出す隠す・既定・名前・削除をそこで変える(view-tabs)](_decisions/2026-10-10-view-tabs.md) | accepted | 人 | 人の発言 | NV-26 |
+| 2026-10-10 | [親子のノートを字下げして並べ、畳めるようにする(tree)](_decisions/2026-10-10-tree.md) | accepted | 人 | 人の発言 | NV-27 |
+| 2026-10-10 | [親子の畳むキーを z から Z にする(tree-key)](_decisions/2026-10-10-tree-key.md) | accepted | 人 | 検証の指摘 | NV-27 |
+| 2026-10-10 | [部品の形の既定(sumi)に合わせて、SR-33・SR-35・SR-36 の例を直す(style-examples)](_decisions/2026-10-10-style-examples.md) | accepted | 人 | 検証の指摘 | SR-33, SR-35, SR-36 |
+| 2026-10-10 | [並べ替えを選んで覚える(並べ替えの窓・見出しの並べ替えの保存・既定のビュー)(sort-views)](_decisions/2026-10-10-sort-views.md) | accepted | 人 | 人の発言 | NV-3, NV-20, SR-12 ほか 4 |
+| 2026-10-10 | [ビューの設定の画面を、左に区画の一覧・右に中身・上に反映の形にする(settings-layout)](_decisions/2026-10-10-settings-layout.md) | accepted | 人 | 人の発言 | NV-18 |
+| 2026-10-10 | [設定の画面の作り直しに合わせて SR-20・SR-23 の文を直す(settings-layout-follow)](_decisions/2026-10-10-settings-layout-follow.md) | accepted | 人 | 人の発言 | SR-20, SR-23 |
+| 2026-10-10 | [設定の画面の作り直しに合わせて、関わる要件の例(確かめ方)の操作を直す(settings-layout-examples)](_decisions/2026-10-10-settings-layout-examples.md) | accepted | 人 | 人の発言 | NV-13, NV-16, NV-23 ほか 4 |
+| 2026-10-10 | [nerd_font = "auto" で、丸い端を自分で描く端末なら丸い札にする(nerd-auto)](_decisions/2026-10-10-nerd-auto.md) | accepted | 人 | 人の発言 | SR-36 |
+| 2026-10-10 | [設定の画面に「見た目」の区画を足し、テーマ・組・丸い札の端を選んで look.toml に残し、組み合わせを名前で保存して選べるようにする(look-section)](_decisions/2026-10-10-look-section.md) | accepted | 人 | 人の発言 | SR-43 |
+| 2026-10-10 | [組 dozy-pink を足す(dozy-preset)](_decisions/2026-10-10-dozy-preset.md) | accepted | 人 | 人の発言 | SR-36 |
 | 2026-10-09 | [ワークスペース(表をまとめる範囲)をアプリの側で持ち、画面とコマンドで管理し、.git と保管庫を検知できるようにする(workspaces)](_decisions/2026-10-09-workspaces.md) | accepted | 人 | 人の発言 | WS-1, WS-2, WS-3 ほか 5 |
 | 2026-10-09 | [フォルダの .mdgrid/workspace.toml をワークスペースの印として受け、アプリの側のワークスペースより先に使う(workspace-marker)](_decisions/2026-10-09-workspace-marker.md) | accepted | 人 | 人の発言 | WS-6, WS-7 |
 | 2026-10-09 | [ワークスペースの操作を、開くパスと重ならない旗にする(workspace-flags)](_decisions/2026-10-09-workspace-flags.md) | accepted | 人 | 人の発言 | WS-3, WS-7 |
 | 2026-10-09 | [自動の表に .base を入れない(workspace-auto-folders)](_decisions/2026-10-09-workspace-auto-folders.md) | accepted | 人 | 検証の指摘 | WS-5, WS-7 |
 | 2026-10-09 | [Windows でも通るように、Unix の前提を置いた2つの試験を直して錠を掛け直す(windows-test-locks)](_decisions/2026-10-09-windows-test-locks.md) | accepted | 人 | 人の発言 | WS-1 |
 | 2026-10-09 | [ビューが1つならタブの行を出さない設定(view-tabs-auto)](_decisions/2026-10-09-view-tabs-auto.md) | accepted | 人 | 人の発言 | SR-34 |
+| 2026-10-09 | [テーマの名前の並びに、新しい組と auto を足す(theme-list)](_decisions/2026-10-09-theme-list.md) | accepted | 人 | 人の発言 | SR-26, SR-27 |
+| 2026-10-09 | [部品の形とテーマを設定で選べるようにし、選ぶためのカタログをリポに置く(style-catalog)](_decisions/2026-10-09-style-catalog.md) | accepted | 人 | 人の発言 | SR-33, SR-35, SR-36, SR-37, SR-38, SR-39 |
 | 2026-10-09 | [表のセルを値の型に合わせた部品で見せる(rich-cells)](_decisions/2026-10-09-rich-cells.md) | accepted | 人 | 人の発言 | SR-35 |
 | 2026-10-09 | [セルの部品を、種類ごと・列ごとに設定で選べるようにする(rich-cells-config)](_decisions/2026-10-09-rich-cells-config.md) | accepted | 人 | 人の発言 | SR-35 |
+| 2026-10-09 | [関係マップでも「+ 新規」を出し、選んでいる表に作る(relmap-new-note)](_decisions/2026-10-09-relmap-new-note.md) | accepted | 人 | 人の発言 | CE-25 |
 | 2026-10-09 | [関係マップをクリックで操作する(relmap-click)](_decisions/2026-10-09-relmap-click.md) | accepted | 人 | 人の発言 | REL-12 |
 | 2026-10-09 | [関係マップの画面・切り替えのタブ・幅に合わせた段組みを版1に入れる(relation-map-now)](_decisions/2026-10-09-relation-map-now.md) | accepted | 人 | 人の発言 | REL-7, REL-8, REL-9 |
 | 2026-10-09 | [lazygit のようなモダンな見た目を既定にし、今の見た目は設定で選べるようにする(modern-look)](_decisions/2026-10-09-modern-look.md) | accepted | 人 | 人の発言 | SR-33 |
 | 2026-10-09 | [モダンな見た目を既定にしたのに合わせて、色の試験の比べる元を今までの見た目にして錠を掛け直す(modern-look-locks)](_decisions/2026-10-09-modern-look-locks.md) | accepted | 人 | 人の発言 | SR-20, SR-26, BV-19, NV-18 |
 | 2026-10-09 | [窓の枠をつながった罫線にし、ASCII は設定で選べるようにする(modern-borders)](_decisions/2026-10-09-modern-borders.md) | accepted | 人 | 人の発言 | SR-32 |
 | 2026-10-09 | [窓の枠をつながった罫線にしたのに合わせて、枠の文字を読む試験の錠を掛け直す(modern-borders-locks)](_decisions/2026-10-09-modern-borders-locks.md) | accepted | 人 | 人の発言 | CE-10, CE-20, CE-22 ほか 7 |
+| 2026-10-09 | [ヘッダーにワークスペースと設定のボタン(header-buttons)](_decisions/2026-10-09-header-buttons.md) | accepted | 人 | 人の発言 | SR-42 |
+| 2026-10-09 | [色の上書き [colors] と値の色、カタログの色の欄、透けない札 solid(colors)](_decisions/2026-10-09-colors.md) | accepted | 人 | 人の発言 | SR-36, SR-38, SR-40, SR-41 |
 | 2026-10-08 | [ノートのリンクをリレーションとして扱う(relations)](_decisions/2026-10-08-relations.md) | accepted | 人 | 人の発言 | REL-1, REL-2, REL-3 ほか 6 |
 | 2026-10-08 | [リレーションの細部: 行き先の無いリンクの印と、名前の変更でのリンクの書き直し(relations-details)](_decisions/2026-10-08-relations-details.md) | accepted | AI | AI の提案 | REL-10, REL-11 |
 | 2026-10-08 | [よく使う表を名前と分類で登録し、一覧から開く(places)](_decisions/2026-10-08-places.md) | accepted | 人 | 人の発言 | CLI-1, CLI-18, CLI-19 |

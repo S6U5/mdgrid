@@ -30,6 +30,10 @@ sh demos/record.sh places     # 1本だけ
 | `relations.tape` → [demo-relations.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-relations.gif) | リレーション: リンクを名前で見せる・行き先のノートから選ぶ・行き先を開く・つながった行 |
 | `relmap.tape` → [demo-relmap.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-relmap.gif) | 関係マップ(ER 図): 表の箱とつながりの矢印、タブとキーで切り替え |
 | `workspace.tape` → [demo-workspace.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-workspace.gif) | ワークスペース: 表をまとめ(`--add-to`)、一覧(`--workspaces`)、`-w` で開き、リンクと関係マップはその表で |
+| `view-tabs.tape` → [demo-view-tabs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-view-tabs.gif) | 設定の画面の「ビュー」の区画でタブを整える(隠す・順・既定・切り替えの案内) |
+| `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
+| `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
+| `wbs.tape` → [demo-wbs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-wbs.gif) | WBS: 番号と進み具合、値の対応表を設定の画面で作る |
 | `themes.tape` → [demo-themes.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-themes.gif) | 色のテーマ(examples/themes/ の6つ) |
 
 To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screens are in English on the English sample (`examples/demo`). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.

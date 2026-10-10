@@ -134,11 +134,10 @@ impl App {
             }
         }
         // SR-35: 部品(☑・札)は表の中だけ。詳細は値の文字で見せる。
-        let rich = s.part != super::cell::CellPart::None
-            || s.text == super::cell::CHECK_ON
-            || s.text == super::cell::CHECK_OFF;
-        if let (true, Shown::Prop(c)) = (rich, self.cell(row, col)) {
-            if let Some(v) = &c.value {
+        if let Shown::Prop(c) = self.cell(row, col) {
+            let rich =
+                s.part != super::cell::CellPart::None || matches!(c.value, Some(Value::Bool(_)));
+            if let (true, Some(v)) = (rich && s.locked.is_none(), &c.value) {
                 return super::cell::value_plain(v);
             }
         }

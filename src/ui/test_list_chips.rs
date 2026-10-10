@@ -15,6 +15,8 @@ fn test_sr_35_value_list_uses_chip_colors() {
         );
     }
     let mut a = app_of(&tmp, ColorMode::Rgb);
+    // SR-36: 札の色を確かめるので、今までの組(classic)で。
+    a.style = mdgrid::style::Style::of(mdgrid::style::Preset::Classic);
     a.col = a.cols.iter().position(|c| c == "status").unwrap();
     press(&mut a, KeyCode::Enter);
     let s = screen(&a);

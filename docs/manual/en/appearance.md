@@ -6,6 +6,7 @@ The look of mdgrid is set by a handful of items in the config file (`~/.config/m
 
 - [The default look](#the-default-look)
 - [Colors: themes](#colors-themes)
+- [Shapes of parts: style](#shapes-of-parts-style)
 - [Cells as parts or as text](#cells-as-parts-or-as-text)
 - [Frames and selection](#frames-and-selection)
 - [What is shown around the table](#what-is-shown-around-the-table)
@@ -14,7 +15,7 @@ The look of mdgrid is set by a handful of items in the config file (`~/.config/m
 
 ## The default look
 
-With colors on, mdgrid starts in a lazygit-like look: rounded window frames, the selection as a tinted background instead of reverse video, keys and headings in an accent color, and cells shown as parts — checkboxes, colored chips for lists and short repeated values, and a type mark in each column heading.
+With colors on, mdgrid starts in the quiet "sumi" set (`[style] preset = "sumi"`): rounded window frames, the selection as a tinted background instead of reverse video, headings in an accent color with a line under them, and cells shown as parts — a colored dot before values like status (`● doing`), lists separated by `·` (`ui · web`), and `✓` for booleans. Only the dot is colored; the value text stays in the plain, readable color.
 
 ![The default look](../../assets/demo-edit-list.svg)
 
@@ -22,11 +23,43 @@ Without colors (`--no-color`, `NO_COLOR` set, `TERM=dumb`, or `color = false`), 
 
 ## Colors: themes
 
-`theme` picks one of seven color sets: `"default"` keeps your terminal's colors, and `"nord"`, `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"` and `"dozy-pink"` paint the whole screen. Only colors change. See [Themes](themes.md) for a screenshot of each.
+`theme` picks a color set: `"default"` keeps your terminal's colors; `"nord"`, `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"`, `"dozy-pink"` and the quieter `"sumi"`, `"slate"`, `"saas"`, `"saas-dark"` and `"paper"` paint the whole screen. Only colors change. See [Themes](themes.md) for screenshots.
 
 ```toml
 theme = "nord"
 ```
+
+`theme = "auto"` uses `theme_light` (default `"saas"`) on a light terminal background and `theme_dark` (default `"sumi"`) on a dark one. mdgrid reads the background from `COLORFGBG` or asks the terminal; when it cannot tell, it assumes dark.
+
+```toml
+theme = "auto"
+theme_light = "paper"
+theme_dark = "saas-dark"
+```
+
+## Shapes of parts: style
+
+`[style]` picks the shape of each part of the table and windows. `preset` picks a whole set; the other items override one part each.
+
+| Preset | Feel |
+|---|---|
+| `sumi` (default) | Dot and text, tags separated by `·`, `✓`, a line under headings, underlined tabs |
+| `slate` | Shapes (○ ◐ ● ⊘), `#tags`, `☑`, filled tabs, heading marks |
+| `saas` | Soft tinted pills, segmented tabs |
+| `paper` | Colored text only, `[x]`, column lines, square frames |
+| `grid` | Plain text, column and heading lines, keys on a tint |
+| `classic` | The 0.2.0 look (square chips, filled selection) |
+| `dozy-pink` | Soft round pills (pair it with the `dozy-pink` theme) |
+
+```toml
+[style]
+preset = "saas"
+select = "cross"      # tint the selected row and column as a crosshair
+```
+
+The parts are `status`, `tags`, `check`, `select`, `rules`, `tabs`, `frames`, `band` and `icons` (all values in [Configuration](../../config.md#style)). Round pills (`"pill"`) are drawn with Nerd Font glyphs, so they need `nerd_font = true`; otherwise they are drawn as clipped pills.
+
+**Catalog**: open [`docs/catalog/index.html`](../../catalog/index.html) in a browser to compare themes and part shapes on a live sample. Select cells, pick values, search, filter, open details, the relation map and help — with clicks and keys. It also writes the settings to paste into `config.toml`.
 
 ## Cells as parts or as text
 
@@ -59,7 +92,7 @@ When a column is too narrow for all its chips, the chips that fit are shown whol
 ## Frames and selection
 
 - `look = "classic"` brings back the earlier look: reverse video for the selection, no accent colors. The text on screen is the same in both looks.
-- `borders = "ascii"` draws window frames with `+ - |` instead of rounded lines (always ASCII with `ambiguous_wide = true`, so columns stay aligned).
+- `[style] frames` picks window frames: `"rounded"`, `"square"`, `"heavy"`, `"ascii"` or `"none"`. `borders = "ascii"` still works and means `frames = "ascii"` (always ASCII with `ambiguous_wide = true`, so columns stay aligned).
 
 ## What is shown around the table
 

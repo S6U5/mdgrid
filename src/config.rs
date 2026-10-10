@@ -51,6 +51,18 @@ pub struct Config {
     pub language: Language,
     /// SR-26・SR-27: 画面のテーマ(既定 `Default` は今の見た目)。
     pub theme: Theme,
+    /// SR-39: `theme = "auto"`。端末の地の明るさで theme_light か theme_dark を使う。
+    pub theme_auto: bool,
+    pub theme_light: Theme,
+    pub theme_dark: Theme,
+    /// SR-36: 部品の形(`[style]`)。
+    pub style: crate::style::Style,
+    /// SR-40・SR-41: 色の上書き(`[colors]`)。
+    pub colors: crate::colors::Colors,
+    /// SR-36: Nerd Font の字(丸い札の端)を使ってよい。
+    pub nerd_font: bool,
+    /// SR-36: `nerd_font = "auto"`(既定)。起動のとき端末の名前で nerd_font を決める(style::nerd_auto)。
+    pub nerd_font_auto: bool,
     /// CE-26・CE-27: 新しいノートの決まり(`[new_note]`)。既定は空(開いたフォルダ・雛形なし・聞かない・入れない)。
     pub new_note: NewNote,
     /// SR-20・SR-21: 表の見せ方(`[display]`)。検索の欄は最上位の `search_bar` のまま。
@@ -77,6 +89,13 @@ impl Default for Config {
             editor: None,
             language: Language::Auto,
             theme: Theme::Default,
+            theme_auto: false,
+            theme_light: Theme::Saas,
+            theme_dark: Theme::Sumi,
+            style: crate::style::Style::default(),
+            colors: crate::colors::Colors::default(),
+            nerd_font: false,
+            nerd_font_auto: true,
             new_note: NewNote::default(),
             display: Display::default(),
         }
@@ -175,10 +194,28 @@ pub fn parse(text: &str) -> Result<(Config, Vec<String>), String> {
                 Some(l) => c.language = l,
                 None => warnings.push(type_warning(name, Msg::WantLanguage)),
             },
-            "theme" => match value.as_str().and_then(Theme::parse) {
-                Some(t) => c.theme = t,
+            "theme" => match value.as_str() {
+                Some("auto") => c.theme_auto = true,
+                _ => match value.as_str().and_then(Theme::parse) {
+                    Some(t) => c.theme = t,
+                    None => warnings.push(type_warning(name, Msg::WantTheme)),
+                },
+            },
+            "theme_light" | "theme_dark" => match value.as_str().and_then(Theme::parse) {
+                Some(t) if name == "theme_light" => c.theme_light = t,
+                Some(t) => c.theme_dark = t,
                 None => warnings.push(type_warning(name, Msg::WantTheme)),
             },
+            "nerd_font" => match (value.as_bool(), value.as_str()) {
+                (Some(b), _) => {
+                    c.nerd_font = b;
+                    c.nerd_font_auto = false;
+                }
+                (_, Some("auto")) => c.nerd_font_auto = true,
+                _ => warnings.push(type_warning(name, Msg::WantNerdFont)),
+            },
+            "style" => crate::style::read(value, &mut c.style, &mut warnings),
+            "colors" => crate::colors::read(value, &mut c.colors, &mut warnings),
             "keys" => read_keys(value, &mut c.keys, &mut warnings),
             "new_note" => c.new_note = read_new_note(value, &mut warnings),
             "display" => read_display(value, &mut c.display, &mut warnings),

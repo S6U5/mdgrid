@@ -13,7 +13,8 @@ use mdgrid::i18n::Msg;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 
-pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
+/// ヘッダーの左の文字(名前・行の数・読み込み・絞り込み・隠した列・ワークスペースの名前)。
+fn header_text(app: &App) -> String {
     // SR-1: `.base` を開いたらその名前、無ければフォルダの名前。
     let name = match &app.base {
         Some(b) => b.name.clone(),
@@ -71,7 +72,15 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
             text.push_str(&Msg::HeaderWorkspace.fill(&[&sanitize(&s.name)]));
         }
     }
+    text
+}
+
+pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
+    let text = header_text(app);
     let bold = Style::default().add_modifier(Modifier::BOLD);
+    // SR-42: タブの左に、ワークスペースと設定のボタン(幅が足りなければ出さない)。
+    let buttons = header_buttons(app, w);
+    let buttons_w: usize = buttons.iter().map(|(_, t, _)| width(t) + 1).sum();
     // REL-8: 登録した表があれば、右に画面の型のタブ(表・関係)。
     let look = super::look::look(app);
     let tabs = screen_tabs(app);
@@ -80,8 +89,7 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
         .into_iter()
         .map(|(t, on)| {
             let st = match (&look, on) {
-                (Some(l), true) => l.pill(),
-                (Some(l), false) => l.faint(),
+                (Some(l), on) => l.tab(app.style.tabs, on),
                 (None, true) => bold.add_modifier(Modifier::REVERSED),
                 (None, false) => Style::default(),
             };
@@ -97,15 +105,21 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
         Some(l) => (bold, l.pill()),
         None => (bold, bold.add_modifier(Modifier::REVERSED)),
     };
-    // 関係マップでは「+ 新規」を出さないが、その幅は空けておく(表と関係マップでタブの位置を変えない)。
+    // CE-25: 「+ 新規」は関係マップでも同じ位置に出す(関係マップでは選んでいる表に作る)。
     let with_button = super::new_note::button_shown(app);
-    let right = tabs_w + if with_button { bw } else { 0 };
+    let right = tabs_w + if with_button { bw } else { 0 } + buttons_w;
     if right > 0 && w >= right + 2 {
         let mut spans = vec![Span::styled(fit(&text, w - right, Align::Left), name_st)];
+        let shortcut_st = |l: &Option<super::look::Look>| match l {
+            Some(l) => Style::default().bg(l.soft_bg).fg(l.accent),
+            None => Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+        };
+        for (_, t, _) in &buttons {
+            spans.push(Span::styled(t.clone(), shortcut_st(&look)));
+            spans.push(Span::raw(" "));
+        }
         spans.extend(tab_spans);
-        if with_button && app.mode == Mode::Relations {
-            spans.push(Span::raw(" ".repeat(bw)));
-        } else if with_button {
+        if with_button {
             spans.push(Span::styled(button, button_st));
         }
         return Line::from(spans);
@@ -166,8 +180,10 @@ fn tab_spans(app: &App) -> Vec<(usize, String, usize)> {
     let mut out = Vec::new();
     let mut x = 0;
     let dirty = app.native_dirty();
-    for (i, name) in app.view_names().iter().enumerate() {
-        let name = sanitize(name);
+    let names = app.view_names();
+    // NV-26: 好みの順で、隠したタブ(今のビューでなければ)を外して並べる。
+    for i in app.tab_list() {
+        let name = sanitize(&names[i]);
         let t = if i == app.view_index() && dirty {
             format!("[{name}]*")
         } else if i == app.view_index() {
@@ -188,11 +204,11 @@ pub(crate) fn tabs(app: &App, w: usize) -> Line<'static> {
     // SR-33: モダンな見た目では、選んだタブを札、ほかを薄い色(文字は同じ)。
     let look = super::look::look(app);
     let rev = match &look {
-        Some(l) => l.pill(),
+        Some(l) => l.tab(app.style.tabs, true),
         None => Style::default().add_modifier(Modifier::REVERSED),
     };
     let other = match &look {
-        Some(l) => l.faint(),
+        Some(l) => l.tab(app.style.tabs, false),
         None => Style::default(),
     };
     if app.base.is_none() && app.nv.views.is_empty() {
@@ -211,7 +227,7 @@ pub(crate) fn tabs(app: &App, w: usize) -> Line<'static> {
         spans.push(Span::styled(t, st));
     }
     let hint = Msg::TabSwitch.text();
-    if app.view_names().len() > 1 && used + width(hint) <= w {
+    if app.nv.tabs.hint && app.tab_list().len() > 1 && used + width(hint) <= w {
         spans.push(Span::styled(
             hint.to_string(),
             Style::default().add_modifier(Modifier::DIM),
@@ -318,7 +334,49 @@ pub(crate) fn search_bar(app: &App, w: usize) -> Line<'static> {
         };
         spans.push(Span::styled(hint, dim));
     }
+    // NV-24: 右の端に「並べ替え」のボタン(入らなければ出さない)。
+    let label = super::sorts::button(app);
+    let bw = width(&label);
+    let used: usize = spans.iter().map(|s| width(&s.content)).sum();
+    if w > bw + used {
+        let mut line = pad(spans, w - bw, Style::default());
+        let look = super::look::look(app);
+        let st = match &look {
+            Some(l) if !app.settings.sorts.is_empty() => {
+                Style::default().bg(l.soft_bg).fg(l.accent)
+            }
+            Some(l) => Style::default().bg(l.soft_bg).fg(l.dim),
+            None => Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+        };
+        line.spans.push(Span::styled(label, st));
+        return line;
+    }
     pad(spans, w, Style::default())
+}
+
+/// NV-24: (x, y) が検索の欄の右の「並べ替え」のボタンか。描いたときだけ(狭い端末や長い語で
+/// ボタンを省いたら、そこは検索の欄のまま)。
+pub(crate) fn sort_button_at(app: &App, x: u16, y: u16) -> bool {
+    if !bar_drawn(app) || y != bar_y(app) {
+        return false;
+    }
+    let (w, _) = super::popup::screen(app);
+    let label = super::sorts::button(app);
+    let drawn = search_bar(app, w)
+        .spans
+        .last()
+        .is_some_and(|s| s.content == label.as_str());
+    let bw = width(&label);
+    drawn && (x as usize) >= w.saturating_sub(bw) && (x as usize) < w
+}
+
+/// NV-24: 並べ替えの窓を置く行(この行の下に開く): 検索の欄の行、無ければヘッダーの行。
+pub(crate) fn sort_anchor_y(app: &App) -> usize {
+    if bar_drawn(app) {
+        bar_y(app) as usize
+    } else {
+        0
+    }
 }
 
 /// (x, y) が検索の欄か(NV-23 のクリックで欄に入る)。欄が描かれていなければ false。
@@ -422,6 +480,7 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             | Mode::ListPick
             | Mode::Menu
             | Mode::Freq
+            | Mode::Sorts
     ) {
         let pos = match app.slots.get(app.row) {
             None | Some(Slot::Gap) => Msg::FooterRow.fill(&[&0, &0]),
@@ -469,9 +528,15 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             for h in shown {
                 spans.push(Span::styled("  ", base));
                 let (k, label) = h.split_once(' ').unwrap_or((h.as_str(), ""));
-                spans.push(Span::styled(k.to_string(), base.patch(l.key())));
+                spans.push(Span::styled(
+                    k.to_string(),
+                    base.patch(l.band_key(app.style.band)),
+                ));
                 if !label.is_empty() {
-                    spans.push(Span::styled(format!(" {label}"), base.patch(l.faint())));
+                    spans.push(Span::styled(
+                        format!(" {label}"),
+                        base.patch(Style::default().fg(l.band_dim)),
+                    ));
                 }
             }
             return pad(spans, w, base);
@@ -612,4 +677,71 @@ pub(crate) fn band(text: &str, w: usize) -> Line<'static> {
         fit(&sanitize(text), w, Align::Left),
         Style::default().add_modifier(Modifier::REVERSED),
     ))
+}
+
+/// SR-42: ヘッダーの近道のボタン。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum HeaderButton {
+    Workspace,
+    Settings,
+}
+
+/// SR-42: ヘッダーのボタン(タブの左の端からの桁, 文字, ボタン)。幅 `w` に、名前の欄を少し残して収まらなければ空。
+pub(crate) fn header_buttons(app: &App, w: usize) -> Vec<(usize, String, HeaderButton)> {
+    let ws = match &app.scope {
+        Some(s) if !matches!(s.source, mdgrid::workspace::Source::Detected(_)) => {
+            Msg::HeaderWsNamed.fill(&[&sanitize(&s.name)])
+        }
+        _ => Msg::HeaderWsButton.text().to_string(),
+    };
+    // ワークスペースが無くても出す(押すと、作り方を知らせる。WS-6)。
+    let items = vec![
+        (ws, HeaderButton::Workspace),
+        (
+            Msg::HeaderSettingsButton.text().to_string(),
+            HeaderButton::Settings,
+        ),
+    ];
+    let need: usize = items.iter().map(|(t, _)| width(t) + 1).sum();
+    let tabs_w: usize = screen_tabs(app).iter().map(|(t, _)| width(t)).sum();
+    let bw = if super::new_note::button_shown(app) {
+        width(super::new_note::button())
+    } else {
+        0
+    };
+    // 左の名前と行の数などが切れずに収まるときだけ(ボタンは近道なので、狭ければ隠す)。
+    if w < need + tabs_w + bw + width(&header_text(app)) + 2 {
+        return Vec::new();
+    }
+    let mut x = 0;
+    items
+        .into_iter()
+        .map(|(t, b)| {
+            let at = x;
+            x += width(&t) + 1;
+            (at, t, b)
+        })
+        .collect()
+}
+
+/// SR-42: (x, y) がヘッダーのボタンなら、そのボタン。
+pub(crate) fn header_button_at(app: &App, x: u16, y: u16) -> Option<HeaderButton> {
+    if y != 0 {
+        return None;
+    }
+    let (w, _) = super::popup::screen(app);
+    let buttons = header_buttons(app, w);
+    let buttons_w: usize = buttons.iter().map(|(_, t, _)| width(t) + 1).sum();
+    let tabs_w: usize = screen_tabs(app).iter().map(|(t, _)| width(t)).sum();
+    let bw = if super::new_note::button_shown(app) {
+        width(super::new_note::button())
+    } else {
+        0
+    };
+    let start = w.checked_sub(buttons_w + tabs_w + bw)?;
+    let x = x as usize;
+    buttons
+        .into_iter()
+        .find(|(at, t, _)| x >= start + at && x < start + at + width(t))
+        .map(|(_, _, b)| b)
 }
