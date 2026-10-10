@@ -91,6 +91,7 @@ updated: 2026-10-10
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-10 | [設定の形の作り直しに合わせて、項目の名前と Config の形に触れる試験の錠を掛け直す(config-v2-locks)](../_decisions/2026-10-10-config-v2-locks.md) | accepted | 人 | 人の発言 | BV-17, BV-20, CE-16 ほか 34 |
 | 2026-10-10 | [設定の形を作り直し、アプリ全体の項目と表のプロファイルに分け、重なる項目をまとめる(config-v2)](../_decisions/2026-10-10-config-v2.md) | accepted | 人 | 人の発言 | CLI-3, CLI-11, CLI-12 ほか 16 |
 | 2026-10-10 | [アプリからノートの名前を変え、そのノートを指すリンクの書き換えをためる(note-rename)](../_decisions/2026-10-10-note-rename.md) | accepted | 人 | 人の発言 | CE-34 |
 | 2026-10-09 | [関係マップでも「+ 新規」を出し、選んでいる表に作る(relmap-new-note)](../_decisions/2026-10-09-relmap-new-note.md) | accepted | 人 | 人の発言 | CE-25 |

@@ -141,8 +141,10 @@ fn test_sr_44_global_items_are_refused_in_other_places() {
 #[test]
 fn test_sr_44_profile_round_trips() {
     // [SR-44] 画面が書くプロファイルは、書いて読むと同じ。
-    let mut p = Profile::default();
-    p.use_ = Some("夜".into());
+    let mut p = Profile {
+        use_: Some("夜".into()),
+        ..Profile::default()
+    };
     p.look.theme = Some(ThemeSpec::Pair {
         light: Theme::Paper,
         dark: Theme::SaasDark,
