@@ -9,12 +9,14 @@ pub mod base;
 pub mod cells;
 pub mod changes;
 pub mod clock;
+pub mod colors;
 pub mod config;
 pub mod display;
 pub mod expr;
 pub mod frontmatter;
 pub mod i18n;
 pub mod links;
+pub mod look;
 pub(crate) mod mdtext;
 pub mod newnote;
 pub mod places;
@@ -23,8 +25,10 @@ pub mod relations;
 pub mod relmap;
 pub mod settings;
 pub mod source;
+pub mod style;
 pub mod summary;
 pub mod theme;
+pub mod tree;
 pub mod types;
 pub mod vault;
 pub mod views;
@@ -35,3 +39,19 @@ pub(crate) mod yaml_guard;
 #[cfg(test)]
 #[path = "test_toml_edit_safety_unit.rs"]
 mod test_toml_edit_safety;
+
+#[cfg(test)]
+#[path = "test_tab_prefs_unit.rs"]
+mod test_tab_prefs;
+
+#[cfg(test)]
+#[path = "test_look_unit.rs"]
+mod test_look;
+
+#[cfg(test)]
+#[path = "test_tree_unit.rs"]
+mod test_tree;
+
+#[cfg(test)]
+#[path = "test_wbs_unit.rs"]
+mod test_wbs;

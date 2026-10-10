@@ -99,7 +99,7 @@ Column types come from `.obsidian/types.json`, or else from the first non-empty 
 | `:` or `Ctrl+P` | find a command by name |
 | `q` | quit (asks first if there are unsaved changes) |
 
-The mouse works too: click a row to select it, and click a cell of the selected row to edit it. Clicking the selected row's file name is the same as `e` (open in the editor). Click a column heading to sort for now, drag a column border to resize, and scroll with the wheel.
+The mouse works too: click a row to select it, and click a cell of the selected row to edit it. Clicking the selected row's file name is the same as `e` (open in the editor). Click a column heading to sort (the view remembers it), drag a column border to resize, and scroll with the wheel.
 
 Help (`?`) lists the keys you can press now first.
 

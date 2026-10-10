@@ -306,12 +306,28 @@ impl App {
                 }
             }
             Action::Run => self.relmap_open_table(),
+            Action::NewNote => self.relmap_new_note(),
             Action::Close | Action::RelationMap => {
                 self.relmap = None;
                 self.set_mode(Mode::Table);
             }
             Action::Help => self.open_help(),
             _ => {}
+        }
+    }
+
+    /// CE-25: 関係マップの「+ 新規」: 選んでいる表を開いて、その表で名前の欄を出す。今の表ならすぐ、
+    /// ほかの表なら開き直したあと(src/main.rs)。
+    fn relmap_new_note(&mut self) {
+        if self.readonly {
+            self.message = Some(super::startup::READONLY.into());
+            return;
+        }
+        self.relmap_open_table();
+        if self.switch_to.is_some() {
+            self.switch_new_note = true;
+        } else if self.mode == Mode::Table {
+            self.start_new_note();
         }
     }
 

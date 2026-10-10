@@ -325,7 +325,8 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         let (Some(v), false) = (v, i == sel) else {
             continue;
         };
-        let Some(st) = super::chips::style(app, v) else {
+        let list = app.kind_of(&f.col) == mdgrid::types::Kind::List;
+        let Some(st) = super::chips::overlay(app, v, list) else {
             continue;
         };
         let t = fit(&value_text(&Some(v.clone())), g.vw, Align::Left);

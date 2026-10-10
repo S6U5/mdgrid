@@ -9,7 +9,9 @@
 
 mdgrid にフォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。フォルダに短い alias を付ければ、`tasks`・`books`・`meetings` がそのまま自分のコマンドになり、前に使ったときの表がそのまま開きます。
 
-[English](README.md)
+[English](README.md) · [説明書](https://s6u5.github.io/mdgrid/manual/ja/) · [見た目のカタログ](https://s6u5.github.io/mdgrid/catalog/?lang=ja) · [画面の一覧](https://s6u5.github.io/mdgrid/gallery.html?lang=ja)
+
+![同じ表を、既定の暗い見た目(墨)と明るい SaaS の見た目で](docs/assets/ja/hero.png)
 
 ![mdgrid: 一覧から状態を選ぶ、カレンダーで日付を選ぶ(日時の列は時刻の欄も)、差分を見て保存する、まとめたビューに切り替える、操作の一覧を開く](docs/assets/ja/demo.gif)
 
@@ -93,7 +95,7 @@ alias books='mdgrid ~/notes/Books'
 alias meetings='mdgrid ~/notes/Meetings --readonly'   # 見るだけ
 ```
 
-これで `tasks` と打てばタスクの表が開きます。要らない列を隠し、`o` で絞り込みと並べ替えを決め、いくつかのビューをタブとして保存しておけば、次の `tasks` はその全部が当たった状態で開きます。(列の見出しからの一時的な並べ替えと、`\` の簡易の絞り込みは、終わるまでだけです。)
+これで `tasks` と打てばタスクの表が開きます。要らない列を隠し、`o` で絞り込みと並べ替えを決め、いくつかのビューをタブとして保存しておけば、次の `tasks` はその全部が当たった状態で開きます。(列の見出しや **並べ替え** のボタンでの並べ替えも覚えます。終わるまでだけなのは `\` の簡易の絞り込みです。)
 
 出す側も、シェルの関数で同じように自分のコマンドにできます:
 
@@ -202,7 +204,7 @@ alias standup='mdgrid ~/vault/タスク.base --view 状態ごと'
 
 ## 📚 文書
 
-- [説明書](docs/manual/ja/index.md) — はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。初めてなら、まず [mdgrid の考え方](docs/manual/ja/concepts.md) を。見た目は [見た目を整える](docs/manual/ja/appearance.md)、よくある疑問は [困ったとき](docs/manual/ja/faq.md) に。
+- [説明書](https://s6u5.github.io/mdgrid/manual/ja/)([元の文](docs/manual/ja/index.md))— はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。初めてなら、まず [mdgrid の考え方](docs/manual/ja/concepts.md) を。見た目は [見た目を整える](docs/manual/ja/appearance.md)、よくある疑問は [困ったとき](docs/manual/ja/faq.md) に。
 - [設定](docs/config.ja.md) — 全部の項目と既定値。`mdgrid --print-config` は説明のコメント付きの設定を出すので、出発点にできます。
 - [機能紹介の録画](demos/README.md) — 型ごとの入力・新しいノートのフォーム・書き出し・登録した表・リレーション・関係マップ・ワークスペース・テーマの短い GIF(画面は英語)。リリースのたびに撮り直します。`sh demos/try.sh <見本>` で、見本を使い捨ての写しで開けます。
 - [キー](docs/keys.ja.md) — モードごとの既定のキーと、変え方。

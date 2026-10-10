@@ -1,6 +1,6 @@
 # mdgrid
 
-[English](../en/index.md)
+[English](../en/index.md) · 画面つきでは https://s6u5.github.io/mdgrid/manual/ja/ で読めます(画面はそこで本物の mdgrid から撮り、リポには置きません)
 
 mdgrid は、フロントマター付きの Markdown のノートの集まりを、ターミナルの表で見て、その場で値を直す道具です。ノートが行に、フロントマターのキーが列に並びます。Obsidian の保管庫を Obsidian を開かずに扱え、Obsidian Bases の `.base` の table ビューも開けます。
 

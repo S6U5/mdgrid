@@ -6,6 +6,7 @@ mdgrid の見た目は、設定のファイル(`~/.config/mdgrid/config.toml`)�
 
 - [既定の見た目](#既定の見た目)
 - [色: テーマ](#色-テーマ)
+- [部品の形: スタイル](#部品の形-スタイル)
 - [セルを部品で見せるか文字で見せるか](#セルを部品で見せるか文字で見せるか)
 - [枠と選び](#枠と選び)
 - [表のまわりに出すもの](#表のまわりに出すもの)
@@ -14,7 +15,7 @@ mdgrid の見た目は、設定のファイル(`~/.config/mdgrid/config.toml`)�
 
 ## 既定の見た目
 
-色を使える端末では、lazygit のような見た目で始まります。窓の枠は角の丸い線、選びは反転でなく背景の色、キーと見出しはアクセントの色です。セルは部品で見せます: チェックボックス、リストやくり返す短い値の色の付いた札、列の見出しの型の印。
+色を使える端末では、落ち着いた「墨」の組(`[style] preset = "sumi"`)で始まります。窓の枠は角の丸い線、選びは反転でなく背景の色、見出しはアクセントの色で下に線。セルは部品で見せます: 状態のような値は色の点と文字(`● doing`)、リストは `·` で区切り(`ui · web`)、真偽は `✓`。色を付けるのは点だけで、値の文字は読みやすいふつうの色のままです。
 
 ![既定の見た目](../../assets/ja/demo-edit-list.svg)
 
@@ -22,11 +23,43 @@ mdgrid の見た目は、設定のファイル(`~/.config/mdgrid/config.toml`)�
 
 ## 色: テーマ
 
-`theme` で7つの色の組から選びます。`"default"` は端末の色のまま、`"nord"`・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"` は画面全体を塗ります。変わるのは色だけです。見本は[テーマ](themes.md)にあります。
+`theme` で色の組を選びます。`"default"` は端末の色のまま、`"nord"`・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"` と、落ち着いた組の `"sumi"`(墨)・`"slate"`(石板)・`"saas"`・`"saas-dark"`・`"paper"`(紙)は画面全体を塗ります。変わるのは色だけです。見本は[テーマ](themes.md)にあります。
 
 ```toml
 theme = "nord"
 ```
+
+`theme = "auto"` は、端末の地が明るければ `theme_light`(既定 `"saas"`)、暗ければ `theme_dark`(既定 `"sumi"`)を使います。地の明るさは `COLORFGBG` か端末への問い合わせで知り、分からなければ暗い地とみなします。
+
+```toml
+theme = "auto"
+theme_light = "paper"
+theme_dark = "saas-dark"
+```
+
+## 部品の形: スタイル
+
+`[style]` で、表と窓の部品の形を選びます。`preset` で組をまとめて選び、ほかの項目で部品を1つずつ上書きします。
+
+| 組 | 感じ |
+|---|---|
+| `sumi`(既定) | 点と文字、`·` 区切りのタグ、`✓`、見出しの下の線、下線のタブ |
+| `slate` | 形(○ ◐ ● ⊘)、`#タグ`、`☑`、塗ったタブ、見出しの印 |
+| `saas` | 淡い地の札、切り替えの枠のタブ |
+| `paper` | 文字の色だけ、`[x]`、列の縦線、角の線の枠 |
+| `grid` | 文字のまま、縦線と見出しの線、キーに淡い地 |
+| `classic` | 0.2.0 の見た目(四角い札、塗った選び) |
+| `dozy-pink` | 柔らかい丸い札(テーマ `dozy-pink` と合わせる) |
+
+```toml
+[style]
+preset = "saas"
+select = "cross"      # 選んだ行と列を十字に塗る
+```
+
+部品の候補は `status`・`tags`・`check`・`select`・`rules`・`tabs`・`frames`・`band`・`icons` です(全部は[設定](../../config.ja.md#style))。丸い札(`"pill"`)は Nerd Font の字で描くので、`nerd_font = true` のときだけ使い、そうでなければ角を落とした札で描きます。
+
+**カタログ**: [`docs/catalog/index.html`](../../catalog/index.html) をブラウザで開くと、テーマと部品の形を触れる見本で見比べられます。セルを選ぶ・値を選ぶ・検索・絞り込み・詳細・関係マップ・ヘルプを、クリックとキーで試せます。選んだ形の設定の文(`config.toml` に貼るもの)も、そこで作れます。
 
 ## セルを部品で見せるか文字で見せるか
 
@@ -59,7 +92,7 @@ owner = "chip"        # 自動で札にならなくても札(列の設定が優�
 ## 枠と選び
 
 - `look = "classic"` で、前の見た目(選びは反転、アクセントの色なし)に戻せます。どちらでも画面の文字は同じです。
-- `borders = "ascii"` で、窓の枠を角の丸い線でなく `+ - |` で描きます(`ambiguous_wide = true` のときは、列がずれないようにいつも ASCII)。
+- 窓の枠は `[style] frames` で、`"rounded"`・`"square"`・`"heavy"`・`"ascii"`・`"none"` から選べます。`borders = "ascii"` も今までどおり使え、`frames = "ascii"` と同じです(`ambiguous_wide = true` のときは、列がずれないようにいつも ASCII)。
 
 ## 表のまわりに出すもの
 

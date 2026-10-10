@@ -9,7 +9,9 @@
 
 Point mdgrid at a folder and every note becomes a row, every frontmatter key a column. Edit the values right in the table. Give the folder a short alias, and `tasks`, `books` or `meetings` becomes your own command that opens that table just the way you left it.
 
-[日本語](README.ja.md)
+[日本語](README.ja.md) · [Manual](https://s6u5.github.io/mdgrid/manual/en/) · [Look catalog](https://s6u5.github.io/mdgrid/catalog/?lang=en) · [Screen gallery](https://s6u5.github.io/mdgrid/gallery.html?lang=en)
+
+![The same table in the default dark look (sumi) and the light SaaS look](docs/assets/hero.png)
 
 ![mdgrid: pick a status, pick a date on a calendar, review the diff and save, switch to a grouped view, open the action menu](docs/assets/demo.gif)
 
@@ -93,7 +95,7 @@ alias books='mdgrid ~/notes/Books'
 alias meetings='mdgrid ~/notes/Meetings --readonly'   # only for looking
 ```
 
-Now `tasks` opens your task table. Hide the columns you don't need, set a filter and a sort with `o`, save a few views as tabs, and the next `tasks` opens with all of it in place. (A quick sort from a column header and the quick filter `\` last only until you quit.)
+Now `tasks` opens your task table. Hide the columns you don't need, set a filter and a sort with `o`, save a few views as tabs, and the next `tasks` opens with all of it in place. (A sort from a column header or the **Sort** button is kept too; only the quick filter `\` lasts until you quit.)
 
 A shell function works the same way for the output side:
 
@@ -202,7 +204,7 @@ From the command palette, `:export_base` writes the current view to a new `.base
 
 ## 📚 Documentation
 
-- [User manual](docs/manual/en/index.md) — getting started, task guides, the themes, and a screenshot of every screen. New to mdgrid? Read [How mdgrid sees your notes](docs/manual/en/concepts.md) first; [Make it look the way you like](docs/manual/en/appearance.md) and [When something looks wrong](docs/manual/en/faq.md) cover the look and the usual questions.
+- [User manual](https://s6u5.github.io/mdgrid/manual/en/) ([source](docs/manual/en/index.md)) — getting started, task guides, the themes, and a screenshot of every screen. New to mdgrid? Read [How mdgrid sees your notes](docs/manual/en/concepts.md) first; [Make it look the way you like](docs/manual/en/appearance.md) and [When something looks wrong](docs/manual/en/faq.md) cover the look and the usual questions.
 - [Configuration](docs/config.md) — every setting, with defaults. `mdgrid --print-config` prints a commented starting file.
 - [Feature tours](demos/README.md) — short GIFs of entering values by type, the new-note form, exporting, registered tables, relations, the relation map, workspaces and the themes, recorded for each release. `sh demos/try.sh <sample>` opens a sample in a throwaway copy.
 - [Keys](docs/keys.md) — the default keys of each mode, and how to change them.

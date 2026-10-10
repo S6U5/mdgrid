@@ -20,14 +20,23 @@ pub(crate) enum Sec {
     Buttons,
     /// 表示(SR-20。行番号・一行おきの色・列の区切り線・タブ・検索の欄・設定の帯)。左の欄の下。
     Display,
+    /// ビューのタブ(NV-26。view_tabs.rs)。変えるとすぐ保存する。
+    Views,
+    /// 見た目(SR-43。look_section.rs)。テーマ・組・丸い札の端とテンプレート。
+    Look,
+    /// 親子(NV-27)。親子で並べるかと親のキー。
+    Tree,
 }
 
-pub(crate) const SECS: [Sec; 6] = [
+pub(crate) const SECS: [Sec; 9] = [
     Sec::Columns,
     Sec::Filters,
     Sec::Sorts,
     Sec::Group,
+    Sec::Tree,
     Sec::Display,
+    Sec::Views,
+    Sec::Look,
     Sec::Buttons,
 ];
 
@@ -70,6 +79,8 @@ pub(crate) enum Purpose {
     Filter,
     Sort,
     Group,
+    Tree,
+    WbsKey,
 }
 
 impl Purpose {
@@ -78,6 +89,8 @@ impl Purpose {
             Purpose::Filter => Msg::PurposeFilter.text(),
             Purpose::Sort => Msg::PurposeSort.text(),
             Purpose::Group => Msg::PurposeGroup.text(),
+            Purpose::Tree => Msg::PurposeTree.text(),
+            Purpose::WbsKey => Msg::PurposeWbsKey.text(),
         }
     }
 }
@@ -108,6 +121,16 @@ pub(crate) enum Pick {
         sel: usize,
         edit: Option<usize>,
     },
+    /// ビューの区画のタブの選び手(NV-26): 既定にする・名前を変える・削除。`tab` は区画の行。
+    TabMenu {
+        tab: usize,
+        sel: usize,
+    },
+    /// 見た目の区画の選び手(SR-43): `field` は 0 テーマ・1 組・2 丸い札の端。
+    Look {
+        field: usize,
+        sel: usize,
+    },
 }
 
 impl Pick {
@@ -116,7 +139,9 @@ impl Pick {
             Pick::Column { sel, .. }
             | Pick::Kind { sel, .. }
             | Pick::Cmp { sel, .. }
-            | Pick::Values { sel, .. } => *sel,
+            | Pick::Values { sel, .. }
+            | Pick::TabMenu { sel, .. }
+            | Pick::Look { sel, .. } => *sel,
         }
     }
 
@@ -125,7 +150,9 @@ impl Pick {
             Pick::Column { sel, .. }
             | Pick::Kind { sel, .. }
             | Pick::Cmp { sel, .. }
-            | Pick::Values { sel, .. } => sel,
+            | Pick::Values { sel, .. }
+            | Pick::TabMenu { sel, .. }
+            | Pick::Look { sel, .. } => sel,
         }
     }
 }
@@ -139,6 +166,12 @@ pub(crate) enum TextKind {
     /// mdgrid のビューの名前(BV-18): 名前を付けて保存・名前の変更。
     SaveAs,
     Rename,
+    /// ビューの区画から、開いていないビューも含めて名前を変える(NV-26。`col` は元の名前)。
+    RenameTab,
+    /// 見た目のテンプレートの名前(SR-43)。
+    LookTemplate,
+    /// WBS の値の割合とラベル(NV-28。`col` は値)。
+    WbsValue,
 }
 
 /// 値の入力(含む・含まない・比べる。NV-19)。
@@ -162,11 +195,32 @@ pub(crate) struct Draft {
     pub keys: Vec<String>,
     pub sec: Sec,
     /// 区画ごとに選んだ項目。
-    pub sel: [usize; 6],
+    pub sel: [usize; 9],
     pub pick: Option<Pick>,
     pub text: Option<TextEntry>,
     /// mdgrid のビューのボタンを出すか(読むだけ(WB-15)では出さない。BV-18)。
     pub view_buttons: bool,
+    /// ビューの区画のタブの数(NV-26。区画の項目の数に使う。タブが変われば直す)。
+    pub tabs: usize,
+    /// 見た目の写しと、開いたときの見た目(SR-43)。違えば反映で画面に当てる。
+    pub look: super::look_section::LookPick,
+    pub look0: super::look_section::LookPick,
+    /// 見た目の区画の項目の数(テンプレートの数で変わる)。
+    pub look_n: usize,
+    /// 親子の区画の親のキー(オフの間も覚えておく。NV-27)。
+    pub tree_key: String,
+    /// WBS の写し(オフの間も覚えておく)と、進み具合のキーの値と件数(NV-28)。
+    pub wbs: mdgrid::settings::Wbs,
+    pub wbs_vals: Vec<(String, usize)>,
+}
+
+impl Draft {
+    /// WBS の写しを、オンなら設定にも当てる。
+    pub(crate) fn sync_wbs(&mut self) {
+        if self.s.wbs.is_some() {
+            self.s.wbs = Some(self.wbs.clone());
+        }
+    }
 }
 
 impl Draft {
@@ -182,6 +236,12 @@ impl Draft {
             Sec::Sorts => self.s.sorts.len() + 1,
             Sec::Group => GROUP_ITEMS,
             Sec::Display => mdgrid::display::ITEMS.len(),
+            // タブの行と、末尾の切り替えの案内。
+            Sec::Views => self.tabs + 1,
+            Sec::Look => self.look_n,
+            // NV-28: WBS がオンなら値の行も。
+            Sec::Tree if self.s.wbs.is_some() => 4 + self.wbs_vals.len(),
+            Sec::Tree => 4,
             Sec::Buttons if self.view_buttons => BUTTONS.len(),
             Sec::Buttons => VIEW_BUTTONS,
         }
@@ -189,10 +249,11 @@ impl Draft {
 
     /// ボタン i と同じ行のボタンの添字の範囲(画面の並び。←→ はこの中で動く)。
     pub(crate) fn button_row(&self, i: usize) -> std::ops::Range<usize> {
-        if i < VIEW_BUTTONS {
-            0..VIEW_BUTTONS
+        // 上の右は反映・取り消し、下は mdgrid のビューのボタンと既定に戻す(NV-18)。
+        if i < 2 {
+            0..2
         } else {
-            VIEW_BUTTONS..self.len(Sec::Buttons)
+            2..self.len(Sec::Buttons)
         }
     }
 
@@ -203,6 +264,8 @@ impl Draft {
             Some(Pick::Kind { .. }) => KINDS.len(),
             Some(Pick::Cmp { .. }) => CMPS.len(),
             Some(Pick::Values { counts, .. }) => counts.len() + 1,
+            Some(Pick::TabMenu { .. }) => super::view_tabs::TAB_MENU,
+            Some(Pick::Look { field, .. }) => App::look_pick_items(*field).len(),
         }
     }
 
@@ -255,7 +318,35 @@ impl App {
     }
 
     /// `o`(とパレットの `view_settings`): 今の設定の写しで、ビューの設定の画面を開く(NV-13)。
+    /// NV-28: 進み具合のキーの値と件数(表の全部のノートから。多い順、同じなら名前の順)。対応表にある値は
+    /// 件数が 0 でも並べる。
+    pub(crate) fn wbs_values(&self, w: &mdgrid::settings::Wbs) -> Vec<(String, usize)> {
+        let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        for r in self.src.rows() {
+            if let Some(mdgrid::source::Value::Str(s)) = self.prop(&r, &w.key) {
+                let s = s.trim();
+                if !s.is_empty() {
+                    *counts.entry(s.to_string()).or_insert(0) += 1;
+                }
+            }
+        }
+        for m in &w.map {
+            counts.entry(m.value.clone()).or_insert(0);
+        }
+        let mut v: Vec<(String, usize)> = counts.into_iter().collect();
+        v.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+        v
+    }
+
     pub(crate) fn open_settings(&mut self) {
+        let wbs = self
+            .settings
+            .wbs
+            .clone()
+            .unwrap_or_else(|| mdgrid::settings::Wbs {
+                key: "status".into(),
+                map: Vec::new(),
+            });
         let cols = self.column_list();
         let mut keys: Vec<String> = cols.iter().map(|c| c.0.clone()).collect();
         for k in self.src.columns() {
@@ -269,10 +360,21 @@ impl App {
             cols,
             keys,
             sec: Sec::Filters,
-            sel: [0; 6],
+            sel: [0; 9],
             pick: None,
             text: None,
             view_buttons: !self.readonly,
+            tabs: self.section_tabs().len(),
+            look: self.look_pick_now(),
+            look0: self.look_pick_now(),
+            look_n: self.look_len(),
+            tree_key: self
+                .settings
+                .tree
+                .clone()
+                .unwrap_or_else(|| "parent".into()),
+            wbs: wbs.clone(),
+            wbs_vals: self.wbs_values(&wbs),
         });
         self.set_mode(Mode::Settings);
     }
@@ -388,6 +490,42 @@ impl App {
                 },
             },
             Sec::Display => self.toggle_display(i),
+            Sec::Views => self.views_run(i, space),
+            Sec::Look => self.look_run(i),
+            // NV-27: 0 は親子で並べるかの切り替え、1 は親のキーを選ぶ。
+            Sec::Tree => {
+                if i == 0 {
+                    d.s.tree = match d.s.tree {
+                        Some(_) => None,
+                        None => Some(d.tree_key.clone()),
+                    };
+                } else if i == 1 {
+                    let at = d.keys.iter().position(|c| *c == d.tree_key);
+                    d.pick = Some(Pick::Column {
+                        purpose: Purpose::Tree,
+                        sel: at.unwrap_or(0),
+                    });
+                } else if i == 2 {
+                    // NV-28: WBS のオン・オフ。
+                    d.s.wbs = match d.s.wbs {
+                        Some(_) => None,
+                        None => Some(d.wbs.clone()),
+                    };
+                } else if i == 3 {
+                    let at = d.keys.iter().position(|c| *c == d.wbs.key);
+                    d.pick = Some(Pick::Column {
+                        purpose: Purpose::WbsKey,
+                        sel: at.unwrap_or(0),
+                    });
+                } else if let Some((v, _)) = d.wbs_vals.get(i - 4).cloned() {
+                    let now = d
+                        .wbs
+                        .of(&v)
+                        .map(|m| format!("{} {}", m.percent, m.label).trim_end().to_string())
+                        .unwrap_or_default();
+                    self.open_text(v, TextKind::WbsValue, now, None);
+                }
+            }
             Sec::Buttons => match i {
                 0 => self.apply_draft(),
                 1 => self.cancel_settings(),
@@ -420,6 +558,9 @@ impl App {
             return;
         };
         let (sec, i) = (d.sec, d.at(d.sec));
+        if sec == Sec::Views {
+            return self.move_tab(i, up);
+        }
         let n = match sec {
             Sec::Columns => d.cols.len(),
             Sec::Filters => d.s.filters.len(),
@@ -452,6 +593,12 @@ impl App {
                 d.s.sorts.remove(i);
             }
             Sec::Group => d.s.group = Group::Inherit,
+            Sec::Look => {
+                if !self.remove_look_template(i) {
+                    self.message = Some(Msg::NotRemovable.into());
+                }
+                return;
+            }
             _ => {
                 self.message = Some(Msg::NotRemovable.into());
                 return;
@@ -463,9 +610,17 @@ impl App {
 
     /// 「取り消し」・Esc: 写しを捨てて表へ(表は開く前のまま。NV-13)。
     fn cancel_settings(&mut self) {
-        self.draft = None;
+        // 写しを変えていなければ「閉じた」(ビューの区画の変更はもう保存してある。NV-26)。
+        let changed = self
+            .draft
+            .take()
+            .is_some_and(|d| d.s != self.settings || d.cols_changed());
         self.set_mode(Mode::Table);
-        self.message = Some(Msg::SettingsCancelled.into());
+        self.message = Some(if changed {
+            Msg::SettingsCancelled.into()
+        } else {
+            Msg::SettingsClosed.into()
+        });
     }
 
     /// 「既定に戻す」(NV-22): 写しを `.base` のビューの既定(`.base` なしなら何もしない状態)と
@@ -490,6 +645,10 @@ impl App {
             return;
         };
         self.set_mode(Mode::Table);
+        // SR-43: 見た目を変えていれば画面に当てて look.toml に残す。
+        if d.look != d.look0 {
+            self.apply_look(d.look);
+        }
         self.settings = d.s;
         if d.cols != d.cols0 {
             // 選んでいた列は名前で引き直す。隠したなら、写しの並びで最寄りの表示する列(右を先に)。
@@ -528,6 +687,17 @@ impl App {
         } else {
             Msg::SettingsApplied.into()
         });
+    }
+
+    /// NV-3・NV-24: 並べ替えの決まりを今のビューの設定に当て、組み直して見た目の状態に残す。
+    pub(crate) fn set_sorts(&mut self, sorts: Vec<(String, mdgrid::settings::Dir)>) {
+        self.settings.sorts = sorts;
+        self.sort = None;
+        // 並びが変わるので、直した行の留め(NV-12)はやめて本来の位置へ。
+        self.stay.clear();
+        self.regrid = true;
+        self.refresh_if_needed();
+        self.persist_state();
     }
 
     // ---- 表の上の設定の帯(NV-16・NV-22) ----

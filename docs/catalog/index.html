@@ -1,0 +1,1538 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mdgrid 見た目のカタログ</title>
+<meta name="description" content="mdgrid の部品の形とテーマを、触れる見本で見比べて選び、config.toml に貼る設定を作るカタログ。">
+<style>
+/* Layout: a control column (theme, presets, generated config) beside a live, clickable terminal mock;
+   below it, one row per UI part with every variant drawn small. Single file, no external resources (SR-38). */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1c2027;
+  --muted: #5f6774;
+  --line: #dcdfe5;
+  --accent: #3657d6;
+  --on-accent: #ffffff;
+  --sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  --mono: Menlo, Consolas, "DejaVu Sans Mono", "Cascadia Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #111318; --surface: #191c23; --fg: #e3e5ea; --muted: #9aa1ad; --line: #2a2f39; --accent: #8fa5ff; --on-accent: #111318; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #111318; --surface: #191c23; --fg: #e3e5ea; --muted: #9aa1ad; --line: #2a2f39; --accent: #8fa5ff; --on-accent: #111318; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14.5px; line-height: 1.6; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 28px 16px 64px; display: grid; gap: 28px; }
+h1 { font-size: 24px; margin: 0; line-height: 1.3; }
+.intro { display: grid; gap: 6px; max-width: 80ch; }
+.intro p { margin: 0; color: var(--muted); }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.top { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 960px) { .top { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.panel h2, .sec-title { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+button.opt { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+button.opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+button:focus-visible, .term:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: 0; border: 1px solid rgba(127,127,127,.4); }
+label.row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+select { font: inherit; font-size: 13px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+pre.cfg { margin: 0; font-family: var(--mono); font-size: 12.5px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.copy { justify-self: start; font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.note { font-size: 12.5px; color: var(--muted); margin: 0; }
+.colors { display: grid; gap: 6px; }
+.crow { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.crow code { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.crow input[type="color"] { width: 32px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+.crow input[type="text"] { font: inherit; font-size: 13px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); min-width: 0; flex: 1; }
+.crow button, .addv { font: inherit; font-size: 12px; padding: 1px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.crow.set code { color: var(--fg); font-weight: 600; }
+details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.stage { display: grid; gap: 8px; min-width: 0; }
+.keys { display: flex; flex-wrap: wrap; gap: 6px; }
+.keys button { font: inherit; font-size: 12.5px; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.keys kbd { font-family: var(--mono); font-weight: 600; margin-right: 4px; }
+.term { min-width: 0; overflow-x: auto; border-radius: 10px; border: 1px solid var(--line); cursor: default; }
+/* One terminal cell = 1ch wide and one line tall, so box-drawing lines join like in a terminal. */
+.scr { margin: 0; padding: 12px 14px; font-family: var(--mono); font-size: 13px; line-height: 1.25; white-space: pre; font-variant-ligatures: none; width: max-content; }
+.scr span { display: inline; }
+.scr .w1, .scr .w2 { display: inline-block; text-align: center; font-style: normal; overflow: hidden; vertical-align: top; }
+.scr .w1 { width: 1ch; }
+.scr .w2 { width: 2ch; }
+.scr [data-a] { cursor: pointer; }
+.cat { display: grid; gap: 24px; }
+.part { display: grid; gap: 10px; }
+.part header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.part h3 { margin: 0; font-size: 16px; }
+.part header p { margin: 0; color: var(--muted); font-size: 13px; }
+.tag { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.card { display: grid; gap: 6px; text-align: left; font: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; color: var(--fg); min-width: 0; }
+.card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.card .name { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.card .name code { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+.card .mini { border-radius: 6px; overflow-x: auto; display: block; }
+.card .mini .scr { padding: 8px 10px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1 data-t="title">mdgrid 見た目のカタログ</h1>
+    <p data-t="intro1">テーマと部品の形を選ぶと、右の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。</p>
+    <p data-t="intro2">左下の設定を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。</p>
+  </div>
+  <div class="bar">
+    <span class="sec-title" data-t="lang">言語</span>
+    <div class="chips" id="langs"></div>
+    <span class="sec-title" data-t="page">ページ</span>
+    <div class="chips" id="pagemode"></div>
+  </div>
+
+  <div class="top">
+    <div class="panel">
+      <h2 data-t="themes">テーマ</h2>
+      <div class="chips" id="themes"></div>
+      <div id="autobox" class="chips" hidden>
+        <label class="row"><span data-t="light">明るい地</span><select id="tlight"></select></label>
+        <label class="row"><span data-t="dark">暗い地</span><select id="tdark"></select></label>
+        <label class="row"><span data-t="ground">見本の端末</span><select id="tground"></select></label>
+      </div>
+      <h2 data-t="presets">組(まとめて選ぶ)</h2>
+      <div class="chips" id="presets"></div>
+      <h2 data-t="nerd">丸い札の端(nerd_font)</h2>
+      <div class="chips" id="nerdopts"></div>
+      <label class="row" id="termrow"><span data-t="termLabel">見本の端末</span><select id="term2"></select></label>
+      <h2 data-t="colors">色(上書き)</h2>
+      <div id="colorbox" class="colors"></div>
+      <h2 data-t="values">値の色</h2>
+      <div id="valuebox" class="colors"></div>
+      <h2 data-t="config">設定(config.toml)</h2>
+      <pre class="cfg" id="cfg"></pre>
+      <button class="copy" id="copy" type="button" data-t="copy">設定をコピー</button>
+      <p class="note" id="copied" hidden data-t="copied">コピーしました</p>
+      <button class="copy" id="reset" type="button" data-t="reset">見本を最初に戻す</button>
+    </div>
+    <div class="stage">
+      <div class="keys" id="keys"></div>
+      <div class="term" id="term" tabindex="0" aria-label="mdgrid の画面の見本"></div>
+      <p class="note" data-t="termnote">画面をクリックすると、キーでも操作できます。値を変えても、ファイルには何も書きません。</p>
+    </div>
+  </div>
+
+  <div class="cat" id="catalog"></div>
+</div>
+
+<!-- 本体の設定と同じ名前(tests/test_catalog.rs が src/style.rs・src/theme.rs と突き合わせる。SR-38)。 -->
+<script type="application/json" id="names">
+{
+  "themes": ["default", "nord", "solarized-light", "dracula", "gruvbox", "pink-monster", "dozy-pink", "sumi", "slate", "saas", "saas-dark", "paper"],
+  "keys": ["preset", "status", "tags", "check", "select", "rules", "tabs", "frames", "band", "icons"],
+  "values": {
+    "preset": ["sumi", "slate", "saas", "paper", "grid", "classic", "dozy-pink"],
+    "status": ["dot", "shape", "text", "pill", "tint", "solid", "soft", "chip", "plain"],
+    "tags": ["dots", "hash", "brackets", "pill", "tint", "solid", "soft", "chip", "plain"],
+    "check": ["box", "tick", "bracket", "text"],
+    "select": ["bar", "cross", "tint", "outline", "fill", "reverse"],
+    "rules": ["none", "header", "columns", "grid"],
+    "tabs": ["underline", "pill", "segment", "brackets", "dim"],
+    "frames": ["rounded", "square", "heavy", "ascii", "none"],
+    "band": ["keys", "boxed", "quiet"]
+  },
+  "presets": {
+    "sumi":    { "status": "dot",   "tags": "dots",  "check": "tick",    "select": "bar",     "rules": "header",  "tabs": "underline", "frames": "rounded", "band": "quiet", "icons": false },
+    "slate":   { "status": "shape", "tags": "hash",  "check": "box",     "select": "bar",     "rules": "header",  "tabs": "pill",      "frames": "rounded", "band": "keys",  "icons": true },
+    "saas":    { "status": "tint",  "tags": "tint",  "check": "box",     "select": "tint",    "rules": "header",  "tabs": "segment",   "frames": "rounded", "band": "quiet", "icons": false },
+    "paper":   { "status": "text",  "tags": "plain", "check": "bracket", "select": "tint",    "rules": "columns", "tabs": "brackets",  "frames": "square",  "band": "quiet", "icons": false },
+    "grid":    { "status": "plain", "tags": "plain", "check": "tick",    "select": "outline", "rules": "grid",    "tabs": "dim",       "frames": "square",  "band": "boxed", "icons": true },
+    "classic": { "status": "chip",  "tags": "chip",  "check": "box",     "select": "fill",    "rules": "none",    "tabs": "pill",      "frames": "rounded", "band": "keys",  "icons": true },
+    "dozy-pink": { "status": "pill", "tags": "pill",  "check": "box",     "select": "bar",     "rules": "none",    "tabs": "pill",      "frames": "rounded", "band": "quiet", "icons": false }
+  },
+  "colorRoles": ["background", "text", "header", "selection", "selection_text", "band", "band_text", "accent", "strong", "zebra", "zebra_text", "mark", "added", "removed", "pending", "highlight"],
+  "colorNames": ["black", "white", "gray", "red", "orange", "yellow", "green", "teal", "cyan", "blue", "purple", "magenta", "pink", "brown"],
+  "defaults": { "theme": "default", "preset": "sumi", "theme_light": "saas", "theme_dark": "sumi", "nerd_font": false, "nerd_font_setting": "auto" }
+}
+</script>
+
+<script>
+"use strict";
+const NAMES = JSON.parse(document.getElementById("names").textContent);
+
+// ---------- 色(src/theme.rs の色の表と同じ値) ----------
+// 並び: bg fg header sel_bg sel_fg band_bg band_fg colhead strong zebra_bg zebra_fg mark add del pending hl_bg
+const PAL = {
+  "nord": "2e3440 d8dee9 88c0d0 5e81ac eceff4 3b4252 a3be8c 81a1c1 eceff4 353c4a d8dee9 ebcb8b a3be8c bf616a ebcb8b 4c566a",
+  "solarized-light": "fdf6e3 586e75 268bd2 268bd2 fdf6e3 eee8d5 657b83 cb4b16 073642 f5efdc 586e75 d33682 859900 dc322f b58900 d5e5f0",
+  "dracula": "282a36 f8f8f2 bd93f9 44475a 50fa7b 6272a4 f8f8f2 ff79c6 f1fa8c 2f3240 f8f8f2 ffb86c 50fa7b ff5555 ffb86c 6272a4",
+  "gruvbox": "282828 ebdbb2 fabd2f d79921 282828 3c3836 b8bb26 fe8019 fbf1c7 32302f ebdbb2 fb4934 b8bb26 fb4934 fabd2f 665c54",
+  "pink-monster": "1f0f1c ffd6ec ff4fb8 ff2e97 1f0f1c ff2e97 1f0f1c ff79c6 fff07a 2c1528 ffd6ec b6ff4a b6ff4a ff5c5c fff07a 5a2650",
+  "dozy-pink": "fbf1e1 6b4a3a d9668f f2a7bf 4a2f25 f2a7bf 4a2f25 c8875a b8456f f6e6cf 6b4a3a d9668f 4f7a2e b03a2e 9a5a10 f3d9a8",
+  "sumi": "16171b d8d6d0 d8d6d0 23262c ece9e2 16171b 8a8780 86b8ad ece9e2 1a1b20 d8d6d0 86b8ad 86b8ad d97b6c d6a85c 2a3a37",
+  "slate": "1b1c25 e1e2ea e1e2ea 2a2c3d f0f0f8 1b1c25 8e90aa 9b9cf7 f4f4fb 1f2029 e1e2ea 9b9cf7 7ec699 ef7d7d e6b450 34355a",
+  "saas": "f6f7f9 1e2430 1e2430 e6e9fb 1e2430 f6f7f9 6b7383 5b5bd6 0f1420 eef0f4 1e2430 5b5bd6 2f9e66 d4483f c47f17 e4e6fb",
+  "saas-dark": "14161c e6e8ee e6e8ee 252a3a f2f3f8 14161c 8b93a5 8b8cf8 f5f6fa 181b22 e6e8ee 8b8cf8 4cc38a f0736a e7a93b 2b2f4a",
+  "paper": "f7f8fa 1f2328 1f2328 dfe7f8 1f2328 f7f8fa 6b7280 2f63d8 0d1117 eff1f4 1f2328 2f63d8 2f8a4a c23b3b a86b00 dbe5fb",
+};
+const ROLE = ["bg", "fg", "header", "sel_bg", "sel_fg", "band_bg", "band_fg", "colhead", "strong", "zebra_bg", "zebra_fg", "mark", "add", "del", "pending", "hl_bg"];
+const rgb = h => [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+const hex = c => "#" + c.map(v => Math.round(v).toString(16).padStart(2, "0")).join("");
+const mixc = (a, b, t) => a.map((x, i) => Math.round(x * (1 - t) + b[i] * t));
+function palette(name) {
+  if (!PAL[name]) return null;
+  const v = PAL[name].split(" ").map(rgb);
+  return Object.fromEntries(ROLE.map((r, i) => [r, v[i]]));
+}
+// 端末の既定の色(テーマ default)。本体は端末の色のまま描く。見本は暗い端末の色で写す。
+const TERM = { bg: [28, 29, 32], fg: [212, 212, 212], cyan: [79, 179, 200], gray: [122, 127, 136] };
+
+// src/ui/look.rs の Look と同じ決め方。
+// SR-40: [colors] の上書き(役割の並びは ROLE と NAMES.colorRoles で同じ)。
+function override(p) {
+  if (!p) return p;
+  const out = Object.assign({}, p);
+  NAMES.colorRoles.forEach((name, i) => { const c = S.colors.roles[name]; if (c) out[ROLE[i]] = rgb(c.slice(1)); });
+  return out;
+}
+const roleColor = name => S.colors.roles[name] ? rgb(S.colors.roles[name].slice(1)) : null;
+function look(theme) {
+  const p = override(palette(theme));
+  // default テーマは端末の地と文字のまま、accent と selection だけ上書き。
+  if (!p) return { p: null, bg: TERM.bg, fg: TERM.fg, header: TERM.fg, accent: roleColor("accent") || TERM.cyan, dim: TERM.gray, sel_bg: roleColor("selection") || [58, 58, 70], sel_fg: null, soft_bg: [40, 40, 48], on_accent: [0, 0, 0], band: null, pending: [215, 175, 95], hl_bg: [0, 95, 135], mark: TERM.cyan, add: [126, 198, 138], del: [224, 108, 108], light: false };
+  const light = p.bg[0] + p.bg[1] + p.bg[2] > 3 * 128;
+  return { p, bg: p.bg, fg: p.fg, header: p.header, accent: p.colhead, dim: mixc(p.fg, p.bg, 0.3), band_dim: mixc(p.band_fg, p.band_bg, 0.3), sel_bg: p.sel_bg, sel_fg: p.sel_fg, soft_bg: mixc(p.bg, p.sel_bg, 0.5), on_accent: p.bg, band: [p.band_bg, p.band_fg], pending: p.pending, hl_bg: p.hl_bg, mark: p.mark, add: p.add, del: p.del, light };
+}
+
+// ---------- 値の部品(src/ui/chips.rs と同じ決め方) ----------
+const PAIRS = [
+  [[44, 82, 130], [235, 240, 248]], [[40, 110, 70], [232, 246, 236]], [[100, 70, 140], [242, 236, 250]], [[150, 90, 30], [252, 242, 230]],
+  [[140, 50, 60], [250, 234, 236]], [[30, 110, 120], [230, 246, 248]], [[140, 60, 110], [250, 234, 244]], [[85, 85, 95], [238, 238, 242]],
+];
+function fnv(s) {
+  let h = 0xcbf29ce484222325n;
+  for (const b of new TextEncoder().encode(s)) h = ((h ^ BigInt(b)) * 0x100000001b3n) & 0xffffffffffffffffn;
+  return h;
+}
+const pair = s => PAIRS[Number(fnv(s) % 8n)];
+const MEANING = [["done", "closed", "complete", "completed", "finished", "yes"], ["doing", "in progress", "in-progress", "wip", "active", "started", "review"], ["blocked", "failed", "error", "stuck"], ["todo", "to do", "open", "new", "backlog", "next"]];
+const meaning = s => { const w = s.trim().toLowerCase(); const i = MEANING.findIndex(ws => ws.includes(w)); return i < 0 ? null : i; };
+function hue(L, s) {
+  // SR-41: 設定で決めた値の色が先(大文字・小文字と前後の空白によらない)。
+  const vc = valueColor(s);
+  if (vc) return vc;
+  const p = L.p, m = meaning(s);
+  if (m === 0) return p ? p.add : [126, 198, 138];
+  if (m === 1) return p ? p.pending : [217, 178, 95];
+  if (m === 2) return p ? p.del : [224, 108, 108];
+  if (m === 3) return p ? mixc(p.fg, p.bg, 0.3) : [122, 127, 136];
+  const [bg, fg] = pair(s);
+  return L.light ? mixc(bg, [0, 0, 0], 0.1) : mixc(bg, fg, 0.35);
+}
+// 札の色。値の色(SR-41)を決めていればそれを地に、文字は読める黒か白。
+const contrast = h => (0.2126 * h[0] + 0.7152 * h[1] + 0.0722 * h[2] > 150 ? [20, 20, 24] : [250, 250, 252]);
+const valueColor = s => { const k = Object.keys(S.colors.values).find(k => k.trim().toLowerCase() === s.trim().toLowerCase()); return k && S.colors.values[k] ? rgb(S.colors.values[k].slice(1)) : null; };
+const chipSt = s => { const v = valueColor(s); if (v) return { bg: v, fg: contrast(v) }; const [bg, fg] = pair(s); return { bg, fg }; };
+function tintSt(L, s) {
+  const h = hue(L, s);
+  return { bg: mixc(L.bg, h, L.light ? 0.16 : 0.22), fg: L.light ? mixc(h, [0, 0, 0], 0.5) : mixc(h, [255, 255, 255], 0.5) };
+}
+const SHAPE = ["●", "◐", "⊘", "○"];
+// 透けない札(solid): 値の色をそのまま地に、文字は地の明るさで黒か白。
+function solidSt(L, s) {
+  const h = hue(L, s);
+  return { bg: h, fg: contrast(h) };
+}
+let pillId = 0;
+// 値を部品の切れの並びに。list はリストの列。plain なら null(値の文字のまま)。
+function parts(L, st, items, list, nerd) {
+  let k = list ? st.tags : st.status;
+  if (k === "plain") return null;
+  if (k === "pill" && !nerd) k = "soft";
+  const dim = { fg: L.p ? mixc(L.p.fg, L.p.bg, 0.3) : [110, 112, 118] };
+  const seg = (t, s) => [t, s || null];
+  const item = v => {
+    const h = hue(L, v);
+    switch (k) {
+      case "dot": return [seg("● ", { fg: h }), seg(v)];
+      case "shape": { const m = meaning(v); return [seg((m === null ? "◆" : SHAPE[m]) + " ", { fg: h }), seg(v)]; }
+      case "text": return [seg(v, { fg: h })];
+      case "pill": { const c = chipSt(v); return [seg(" " + v + " ", Object.assign({ pill: ++pillId }, c))]; }
+      case "soft": { const c = chipSt(v); return [seg("▐", { fg: c.bg }), seg(v, c), seg("▌", { fg: c.bg })]; }
+      // 淡い札。端末で端を丸くできるのは Nerd Font の丸い端の字があるときだけなので、見本も同じに。
+      case "tint": { const t = tintSt(L, v); const r = nerd ? { pill: ++pillId } : {}; return list ? [seg(" " + v + " ", Object.assign({}, r, t))] : [seg(" ", Object.assign({}, r, t)), seg("●", Object.assign({}, r, t, { fg: h })), seg(" " + v + " ", Object.assign({}, r, t))]; }
+      case "solid": return [seg(" " + v + " ", Object.assign(nerd ? { pill: ++pillId } : {}, solidSt(L, v)))];
+      case "chip": return [seg(" " + v + " ", chipSt(v))];
+      case "dots": return [seg(v)];
+      case "hash": return [seg("#" + v, { fg: h })];
+      case "brackets": return [seg("[", dim), seg(v), seg("]", dim)];
+    }
+  };
+  const lead = k === "chip" ? [seg(" ")] : [];
+  const sep = k === "dots" ? [seg(" · ", dim)] : [seg(" ")];
+  return { lead, items: items.map(item), sep };
+}
+const partsText = P => P.lead.map(s => s[0]).join("") + P.items.map(it => it.map(s => s[0]).join("")).join(P.sep.map(s => s[0]).join(""));
+const CHECKS = { box: ["☑", "☐"], tick: ["✓", "·"], bracket: ["[x]", "[ ]"], text: null };
+// 窓(候補の一覧)の値の色(chips::overlay)。
+function overlay(L, st, v, list) {
+  const k = list ? st.tags : st.status;
+  if (["chip", "pill", "soft"].includes(k)) return chipSt(v);
+  if (k === "tint") return tintSt(L, v);
+  if (k === "solid") return solidSt(L, v);
+  if (["dot", "shape", "text", "hash"].includes(k)) return { fg: hue(L, v) };
+  return null;
+}
+
+// ---------- 文字の幅(East Asian Wide は 2) ----------
+const WIDE = /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/u;
+const cw = ch => WIDE.test(ch) ? 2 : 1;
+const sw = s => [...s].reduce((n, ch) => n + cw(ch), 0);
+// 幅 w に切る(入らなければ … で)。
+function fitw(s, w, right) {
+  let out = "", n = 0;
+  if (sw(s) > w) {
+    for (const ch of s) { if (n + cw(ch) > w - 1) break; out += ch; n += cw(ch); }
+    out += "…"; n += 1;
+  } else { out = s; n = sw(s); }
+  const padS = " ".repeat(Math.max(0, w - n));
+  return right ? padS + out : out + padS;
+}
+
+// ---------- 画面の格子 ----------
+class Grid {
+  constructor(w, h, base) { this.w = w; this.h = h; this.base = base; this.c = Array.from({ length: h }, () => Array.from({ length: w }, () => ({ ch: " ", st: null, a: null }))); }
+  put(x, y, text, st, a) {
+    if (y < 0 || y >= this.h) return x;
+    for (const ch of text) {
+      const n = cw(ch);
+      if (x + n > this.w) break;
+      if (x >= 0) {
+        this.c[y][x] = { ch, st: st || null, a: a || null };
+        if (n === 2) this.c[y][x + 1] = { ch: "", st: st || null, a: a || null };
+      }
+      x += n;
+    }
+    return x;
+  }
+  // 行の地(切れの地の無い所に重ねる)。
+  // 行の地を塗る。丸い札のセルは自分の地を持つので、角の外に見せる地(under)として覚える。
+  tint(y, x0, x1, st) { for (let x = x0; x < Math.min(x1, this.w); x++) { const c = this.c[y][x]; const own = c.st || {}; c.st = Object.assign({}, st, own, own.pill && st.bg && !own.under ? { under: st.bg } : {}); } }
+  html() {
+    const L = this.base;
+    const css = (st, pos) => {
+      if (!st) return "";
+      let s = "";
+      const fg = st.fg || null, bg = st.bg || null;
+      if (st.rev) { s += `color:${hex(bg || L.bg)};background:${hex(fg || L.fg)};`; }
+      else { if (fg) s += `color:${hex(fg)};`; if (bg) s += `background:${hex(bg)};`; }
+      if (st.b) s += "font-weight:700;";
+      if (st.u) s += "text-decoration:underline;text-underline-offset:3px;";
+      if (st.dim) s += "opacity:.55;";
+      if (st.pill) s += `border-radius:${{ lr: ".7em", l: ".7em 0 0 .7em", r: "0 .7em .7em 0", m: "0" }[pos]};`;
+      return s;
+    };
+    const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    const cell = ch => ch.charCodeAt(0) < 0x80 || (ch >= "─" && ch <= "╿") ? esc(ch) : `<i class="w${cw(ch)}">${esc(ch)}</i>`;
+    const rows = this.c.map(row => {
+      // 丸い札は、同じ札の続きの両端だけを丸める。
+      const pid = c => (c.st && c.st.pill) || 0;
+      const vis = row.filter(c => c.ch !== "");
+      const pos = vis.map((c, i) => { const p = pid(c); if (!p) return ""; const a = i > 0 && pid(vis[i - 1]) === p, b = i < vis.length - 1 && pid(vis[i + 1]) === p; return a && b ? "m" : a ? "r" : b ? "l" : "lr"; });
+      let out = "", cur = null, buf = "";
+      const flush = () => { if (!buf) return; const k = cur; out += k.css || k.a != null ? `<span${k.css ? ` style="${k.css}"` : ""}${k.a != null ? ` data-a="${k.a}"` : ""}>${buf}</span>` : buf; buf = ""; };
+      vis.forEach((c, i) => {
+        // 丸い札の続きは、角の外に行の地(under)を見せる入れ物で包む(端末では丸い端の字の後ろが行の地)。
+        const under = c.st && c.st.pill && c.st.under;
+        if (under && (pos[i] === "l" || pos[i] === "lr")) { flush(); cur = null; out += `<span style="background:${hex(under)}">`; }
+        const key = { css: css(c.st, pos[i]), a: c.a };
+        if (!cur || cur.css !== key.css || cur.a !== key.a) { flush(); cur = key; }
+        buf += cell(c.ch);
+        if (under && (pos[i] === "r" || pos[i] === "lr")) { flush(); cur = null; out += "</span>"; }
+      });
+      flush();
+      return out;
+    });
+    return `<pre class="scr" style="color:${hex(L.fg)};background:${hex(L.bg)}">${rows.join("\n")}</pre>`;
+  }
+}
+</script>
+<script>
+"use strict";
+// ---------- 言語 ----------
+const TX = {
+  ja: {
+    rows: n => `${n}行`, tabsR: ["表", "関係"], newNote: "+ 新規", tabDefault: "既定の表", tabSwitch: "  [ ] で切り替え",
+    barLead: " 検索: ", barHint: "(\\ で絞る)", setLead: " 設定:", setHint: "  BS で外す",
+    same: (c, v) => `  同じ値 ${c}=${v}`, filt: v => `  絞り込み「${v}」`, unsaved: n => ` 未保存 ${n}`,
+    modeTable: "表", modeEdit: "編集", modeHelp: "ヘルプ", modeDetail: "詳細の表示", modeMap: "関係マップ", modeSearch: "検索", modeFilter: "絞り込み",
+    pos: (r, n, c, m) => `${r}/${n}行 ${c}/${m}列`,
+    hintsTable: [["Enter", "編集"], ["BS", "空にする"], ["u", "取り消し"], ["q", "終了"], ["^S", "保存"], ["^R", "やり直し"], ["?", "ヘルプ"]],
+    hintsEdit: [["Enter", "確定"], ["Esc", "取り消し"], ["Tab", "確定して右へ"]],
+    hintsHelp: [["Esc", "閉じる"], ["j", "下へ流す"], ["k", "上へ流す"]],
+    hintsDetail: [["Enter", "編集"], ["Esc", "閉じる"], ["j", "下"], ["k", "上"], ["?", "ヘルプ"]],
+    hintsMap: [["Enter", "表を開く"], ["Esc", "表に戻る"], ["j", "次の表"], ["l", "次のつながり"], ["a", "新しいノート"]],
+    hintsSearch: [["Enter", "決める"], ["Esc", "やめる"]],
+    listMsg: "↑↓ で選ぶ・Enter で決める・打つと自由入力(*=今の値)", empty: "(なし)",
+    saved: n => `${n}件の変更を保存しました(見本なので、ファイルには書きません)`, nothing: "保存する変更はありません",
+    newMsg: "見本では新しいノートは作れません(本体では名前の欄が出ます)",
+    setHead: " ビューの設定  vault  反映するまで表は変わらない", setTitle: "ビューの設定", setTarget: "vault · 既定の表", setPending: n => `未反映 ${n}`,
+    secCols: "列", secFilter: "フィルター", secSort: "並べ替え", secGroup: "グループ", secDisplay: "表示", secViews: "ビュー", secLook: "見た目",
+    descCols: "表に出す列を選ぶ。⠿ の行は K・J で順を変えられる", descFilter: "すべての条件を満たす行だけを出す", descSort: "上の決まりが先。値が同じなら次の決まりで並べる", descGroup: "列の値でまとまりに分ける", descDisplay: "表のまわりに出すもの", descViews: "表の上のタブ。変えるとすぐ保存する", tabHintRow: "切り替えの案内([ ])", tabDefMark: "★ 既定", tabMakeDef: "既定にする", tabCurHide: "開いているビューは隠せない(先に別のタブへ)", descLook: "部品の形の組・テーマ・丸い札の端(設定のファイルに書く)",
+    shown: "表示", hiddenWord: "隠す", lookPreset: "組", lookTheme: "テーマ", lookNerd: "丸い札の端(nerd_font)", setCols: "列(表示と順)", setDisplay: "表示", setFilters: "フィルター(全部を満たす行だけ)", setAddCond: "+ 条件を足す", setSorts: "並べ替え(上の列が先)", setGroup: "グループ",
+    groupOpts: ["既定のまま(分けない)", "しない", "列で分ける: status"], dRownum: "行番号", dZebra: "一行おきの色", dLines: "列の区切り線", dGap: "まとまりの間", dTabs: "タブ", dBar: "検索の欄", dBand: "設定の帯",
+    setBtns1: ["名前を付けて保存", "上書き", "名前の変更", "削除"], setApply: "反映", setCancel: "取り消し", setReset: "既定に戻す", setApplied: "反映した(ビューに覚える)", setSampleOnly: "見本ではビューの保存はできません(本体では views.toml に残します)",
+    modeSettings: "ビューの設定", hintsSettings: [["Enter", "反映"], ["Esc", "取り消し"], ["Tab", "次の区画"]], wsTitle: " ワークスペース ", wsItems: ["見本(今)", "仕事", "趣味"],
+    sortButton: " 並べ替え ", sortTitle: " 並べ替え ", sortPick: " 並べ替えを足す: 列 ", sortAdd: "+ 並べ替えを足す", asc: "昇順", desc: "降順", modeSorts: "並べ替え",
+    hintsSorts: [["Enter", "向きを変える・足す"], ["d", "外す"], ["K", "上へ"], ["J", "下へ"], ["Esc", "閉じる"]],
+    wsButton: " ▾ 見本 ", settingsButton: " 設定 ", wsMsg: "本体ではワークスペースの一覧が開き、選んだワークスペースの表へ移ります", settingsMsg: "本体ではビューの設定の画面(o)が開きます",
+    sortAsc: c => `${c} で昇順に並べた(.base は変えない)`, sortDesc: c => `${c} で降順に並べた(.base は変えない)`, sortOff: "並べ替えを解いた(.base の並び)", hits: (n) => `一致 ${n}件  n 次・N 前`, noHit: "一致なし",
+    readonlyCell: "見本では、この列は直せません(status・done・担当・tags を試せます)",
+    detailHead: (n, i, m) => ` 詳細  ${n}.md  ${i}/${m}`, body: "本文",
+    helpHead: m => ` ヘルプ  1-${m}行  キーの全部(キーの表から)`, helpNow: " 今押せるキー(表)",
+    help: [["Enter", "編集"], ["BS Del", "空にする"], ["u ^Z", "取り消し"], ["q", "終了"], ["^S", "保存"], ["^R U", "やり直し"], ["?", "ヘルプ"], [": ^P", "コマンド"], ["k ↑", "上"], ["j ↓", "下"], ["h ←", "左"], ["l →", "右"], ["Tab", "右のセル"], ["Shift+Tab", "左のセル"], ["[", "前のビュー"], ["]", "次のビュー"], ["R", "関係マップ"], ["K", "詳細の表示"], ["/", "検索"], ["n", "次の一致"], ["N", "前の一致"], ["\\", "簡易の絞り込み"], ["*", "同じ値の行を強調"], [",", "同じ値の行だけ"]],
+    mapTitle: " 関係マップ ", mapDetail: " 詳細 ", ws: "  · ワークスペース 見本", kind: "種類", many: "多対一(N:1)", col: "列", to: "行き先", links: "リンク",
+    views: ["既定の表", "進行中", "未完了"], chipDoing: "status: doing だけ", chipOpen: "status: done を除く",
+    note: "ノート",
+    rowsData: [
+      ["タスク/会議の議事録を書く", "todo", "2026-10-02", 1, false, ["会議"], "Bさん"],
+      ["タスク/住所録を見直す", "doing", "2026-10-04", 3, false, ["事務"], "Bさん"],
+      ["タスク/健康診断を予約する", "todo", "2026-10-15", 2, false, ["手続き"], "自分"],
+      ["タスク/引っ越しの見積もり", "blocked", "2026-10-20", 2, false, ["家", "手続き"], "自分"],
+      ["タスク/旅行の荷物をまとめる", "doing", "2026-10-10", 1, false, ["旅行"], "Cさん"],
+      ["タスク/書類を集める", "todo", "2027-02-15", 1, false, ["手続き"], "Cさん"],
+      ["タスク/本を返す", "done", "2026-10-01", 1, true, ["用事"], "自分"],
+      ["タスク/棚を作る", "todo", "2026-11-01", 2, false, ["家", "DIY"], "自分"],
+      ["タスク/植木に水をやる", "done", "2026-09-28", 3, true, ["家", "毎週"], "自分"],
+      ["タスク/自転車を点検する", "doing", "2026-10-05", 2, false, ["家"], "自分"],
+    ],
+    owner: "担当",
+    // ページ
+    title: "mdgrid 見た目のカタログ",
+    intro1: "テーマと部品の形を選ぶと、右の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。",
+    intro2: "左の設定を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。",
+    lang: "言語", page: "ページ", themes: "テーマ", light: "明るい地", dark: "暗い地", ground: "見本の端末", presets: "組(まとめて選ぶ)",
+    colors: "色(上書き)", values: "値の色", moreRoles: "ほかの役割", addValue: "値を足す", valuePh: "値(例: 進行中)", clear: "戻す", remove: "消す",
+    roleLabel: { background: "地", text: "文字", header: "1行目", selection: "選んだ行", selection_text: "選んだ行の文字", band: "下の帯", band_text: "下の帯の文字", accent: "アクセント", strong: "強調", zebra: "一行おき", zebra_text: "一行おきの文字", mark: "左端の印", added: "足した行", removed: "消した行", pending: "ためた変更", highlight: "検索の一致" },
+    nerd: "丸い札の端(nerd_font)", nerdAuto: "auto(端末に合わせる)", nerdTrue: "true(Nerd Font)", nerdFalse: "false", termLabel: "見本の端末", termOther: "ほかの端末", config: "設定(config.toml)", copy: "設定をコピー", copied: "コピーしました", reset: "見本を最初に戻す",
+    termnote: "画面をクリックすると、キーでも操作できます。値を変えても、ファイルには何も書きません。",
+    groundDark: "暗い", groundLight: "明るい", pageAuto: "端末に合わせる", pageLight: "明るい", pageDark: "暗い",
+    auto: "auto(端末の地に従う)", proposal: "案(まだ設定に無い)", fromPreset: "組のまま",
+  },
+  en: {
+    rows: n => n === 1 ? "1 row" : `${n} rows`, tabsR: ["Table", "Relations"], newNote: "+ New", tabDefault: "All notes", tabSwitch: "  [ ] to switch",
+    barLead: " Filter: ", barHint: "(\\ to filter)", setLead: " Settings:", setHint: "  BS to remove",
+    same: (c, v) => `  same value ${c}=${v}`, filt: v => `  filter "${v}"`, unsaved: n => ` Unsaved ${n}`,
+    modeTable: "Table", modeEdit: "Edit", modeHelp: "Help", modeDetail: "Details", modeMap: "Relation map", modeSearch: "Search", modeFilter: "Filter",
+    pos: (r, n, c, m) => `row ${r}/${n} col ${c}/${m}`,
+    hintsTable: [["Enter", "Edit"], ["BS", "Clear"], ["u", "Undo"], ["q", "Quit"], ["^S", "Save"], ["^R", "Redo"], ["?", "Help"]],
+    hintsEdit: [["Enter", "Confirm"], ["Esc", "Cancel"], ["Tab", "Confirm, go right"]],
+    hintsHelp: [["Esc", "Close"], ["j", "Scroll down"], ["k", "Scroll up"]],
+    hintsDetail: [["Enter", "Edit"], ["Esc", "Close"], ["j", "Down"], ["k", "Up"], ["?", "Help"]],
+    hintsMap: [["Enter", "Open table"], ["Esc", "Back to table"], ["j", "Next table"], ["l", "Next link"], ["a", "New note"]],
+    hintsSearch: [["Enter", "Done"], ["Esc", "Cancel"]],
+    listMsg: "↑↓ choose, Enter confirm, type for free input (*=current value)", empty: "(empty)",
+    saved: n => `Saved ${n} change(s) (a sample: nothing is written to files)`, nothing: "Nothing to save",
+    newMsg: "The sample cannot make new notes (mdgrid opens the name field)",
+    setHead: " View settings  vault  the table does not change until Apply", setTitle: "View settings", setTarget: "vault · All notes", setPending: n => `${n} not applied`,
+    secCols: "Columns", secFilter: "Filters", secSort: "Sort", secGroup: "Group", secDisplay: "Display", secViews: "Views", secLook: "Look",
+    descCols: "Choose the columns to show. Reorder the ⠿ rows with K and J", descFilter: "Show only the rows that match every condition", descSort: "The first rule wins; ties go to the next rule", descGroup: "Split the rows by a column's value", descDisplay: "What is shown around the table", descViews: "Tabs above the table. Changes are saved right away", tabHintRow: "Switch hint ([ ])", tabDefMark: "★ default", tabMakeDef: "Make default", tabCurHide: "The view you are on cannot be hidden. Switch to another tab first", descLook: "Part shapes, theme and round pill ends (written to the config file)",
+    shown: "shown", hiddenWord: "hidden", lookPreset: "Preset", lookTheme: "Theme", lookNerd: "Round pill ends (nerd_font)", setCols: "Columns (shown and order)", setDisplay: "Display", setFilters: "Filters (rows matching all)", setAddCond: "+ Add condition", setSorts: "Sort (top column first)", setGroup: "Group",
+    groupOpts: ["default (no groups)", "none", "by column: status"], dRownum: "Row numbers", dZebra: "Zebra stripes", dLines: "Column lines", dGap: "Group gaps", dTabs: "Tabs", dBar: "Search bar", dBand: "Settings band",
+    setBtns1: ["Save as", "Overwrite", "Rename", "Delete"], setApply: "Apply", setCancel: "Cancel", setReset: "Reset", setApplied: "Applied (the view remembers it)", setSampleOnly: "The sample cannot save views (mdgrid writes them to views.toml)",
+    modeSettings: "View settings", hintsSettings: [["Enter", "Apply"], ["Esc", "Cancel"], ["Tab", "Next section"]], wsTitle: " Workspaces ", wsItems: ["Sample (now)", "Work", "Hobby"],
+    sortButton: " Sort ", sortTitle: " Sort ", sortPick: " Add a sort: column ", sortAdd: "+ Add a sort", asc: "ascending", desc: "descending", modeSorts: "Sorting",
+    hintsSorts: [["Enter", "Flip / add"], ["d", "Remove"], ["K", "Up"], ["J", "Down"], ["Esc", "Close"]],
+    wsButton: " ▾ Sample ", settingsButton: " Settings ", wsMsg: "mdgrid opens the list of workspaces and moves to the chosen one", settingsMsg: "mdgrid opens the view settings screen (o)",
+    sortAsc: c => `sorted by ${c} ascending (the .base is unchanged)`, sortDesc: c => `sorted by ${c} descending (the .base is unchanged)`, sortOff: "sort cleared (.base order)", hits: n => `${n} match(es)  n next, N previous`, noHit: "No match",
+    readonlyCell: "The sample cannot edit this column (try status, done, owner, tags)",
+    detailHead: (n, i, m) => ` Details  ${n}.md  ${i}/${m}`, body: "Body",
+    helpHead: m => ` Help  1-${m} lines  All keys (from the key table)`, helpNow: " Keys now (Table)",
+    help: [["Enter", "Edit"], ["BS Del", "Clear"], ["u ^Z", "Undo"], ["q", "Quit"], ["^S", "Save"], ["^R U", "Redo"], ["?", "Help"], [": ^P", "Commands"], ["k ↑", "Up"], ["j ↓", "Down"], ["h ←", "Left"], ["l →", "Right"], ["Tab", "Next cell"], ["Shift+Tab", "Previous cell"], ["[", "Previous view"], ["]", "Next view"], ["R", "Relation map"], ["K", "Details"], ["/", "Search"], ["n", "Next match"], ["N", "Previous match"], ["\\", "Quick filter"], ["*", "Highlight same value"], [",", "Only same value"]],
+    mapTitle: " Relation map ", mapDetail: " Details ", ws: "  · workspace Sample", kind: "Kind", many: "many-to-one (N:1)", col: "Column", to: "Target", links: "Links",
+    views: ["All notes", "Doing", "Open"], chipDoing: "status: only doing", chipOpen: "status: not done",
+    note: "Note",
+    rowsData: [
+      ["tasks/write-meeting-notes", "todo", "2026-10-02", 1, false, ["meeting"], "Sam"],
+      ["tasks/review-address-book", "doing", "2026-10-04", 3, false, ["admin"], "Sam"],
+      ["tasks/book-a-checkup", "todo", "2026-10-15", 2, false, ["errand"], "me"],
+      ["tasks/moving-estimate", "blocked", "2026-10-20", 2, false, ["home", "errand"], "me"],
+      ["tasks/pack-for-the-trip", "doing", "2026-10-10", 1, false, ["travel"], "Priya"],
+      ["tasks/collect-documents", "todo", "2027-02-15", 1, false, ["errand"], "Priya"],
+      ["tasks/return-the-book", "done", "2026-10-01", 1, true, ["errand"], "me"],
+      ["tasks/build-a-shelf", "todo", "2026-11-01", 2, false, ["home", "DIY"], "me"],
+      ["tasks/water-the-plants", "done", "2026-09-28", 3, true, ["home", "weekly"], "me"],
+      ["tasks/check-the-bike", "doing", "2026-10-05", 2, false, ["home"], "me"],
+    ],
+    owner: "owner",
+    title: "mdgrid look catalog",
+    intro1: "Pick a theme and the shape of each part; the screen on the right changes to match. The screen responds to clicks and keys (select a cell, Enter to pick a value, / search, \\ filter, , same value, K details, R relation map, o settings, S sort, ? help).",
+    intro2: "Paste the settings on the left into config.toml and mdgrid looks the same. The part names and values are the ones mdgrid reads; a test fails if they drift apart.",
+    lang: "Language", page: "Page", themes: "Theme", light: "Light background", dark: "Dark background", ground: "Sample terminal", presets: "Preset (whole set)",
+    colors: "Colors (overrides)", values: "Value colors", moreRoles: "More roles", addValue: "Add a value", valuePh: "value (e.g. doing)", clear: "reset", remove: "remove",
+    roleLabel: { background: "Background", text: "Text", header: "First line", selection: "Selected row", selection_text: "Selected text", band: "Key band", band_text: "Key band text", accent: "Accent", strong: "Strong", zebra: "Zebra", zebra_text: "Zebra text", mark: "Left mark", added: "Added lines", removed: "Removed lines", pending: "Unsaved changes", highlight: "Search match" },
+    nerd: "Round pill ends (nerd_font)", nerdAuto: "auto (by terminal)", nerdTrue: "true (Nerd Font)", nerdFalse: "false", termLabel: "Sample terminal", termOther: "Other terminals", config: "Settings (config.toml)", copy: "Copy settings", copied: "Copied", reset: "Reset the sample",
+    termnote: "Click the screen to use keys too. Changing values writes nothing to files.",
+    groundDark: "dark", groundLight: "light", pageAuto: "System", pageLight: "Light", pageDark: "Dark",
+    auto: "auto (follow the terminal)", proposal: "proposal (not a setting yet)", fromPreset: "from preset",
+  },
+};
+
+// ---------- 部品の説明(カタログの並び) ----------
+const PARTS = {
+  ja: [
+    ["status", "状態", "くり返す短い値(status・担当 など)", { dot: "色の点 + 文字", shape: "形 ○ ◐ ● ⊘", text: "文字の色だけ", pill: "丸い札(Nerd Font)", tint: "淡い札 + 点(SaaS)", solid: "塗った札(透けない)", soft: "角を落とした札 ▐ ▌", chip: "四角い札(0.2.0)", plain: "文字のまま" }],
+    ["tags", "タグ", "リストの値", { dots: "a · b", hash: "#a #b", brackets: "[a] [b]", pill: "丸い札(Nerd Font)", tint: "淡い札(SaaS)", solid: "塗った札(透けない)", soft: "角を落とした札 ▐ ▌", chip: "四角い札(0.2.0)", plain: "[a, b]" }],
+    ["check", "チェック", "真偽の値", { box: "☑ / ☐", tick: "✓ / ·", bracket: "[x] / [ ]", text: "true / false" }],
+    ["select", "選び", "選んでいる行とセル", { bar: "印 + 淡い地 + 下線", cross: "十字(行と列)", tint: "淡い地 + 太字の下線", outline: "セルだけ(地なし)", fill: "セルを塗る(0.2.0)", reverse: "反転" }],
+    ["rules", "表の線", "見出しと列の区切り", { none: "線なし", header: "見出しの下に線", columns: "列の間に縦線", grid: "縦線 + 見出しの線" }],
+    ["tabs", "タブ", "ビューの切り替え", { underline: "下線", pill: "塗った札", segment: "切り替えの枠(SaaS)", brackets: "括弧と太字", dim: "濃さだけ" }],
+    ["frames", "窓の枠", "候補・確認・関係マップの枠", { rounded: "角の丸い線", square: "角の線", heavy: "太い線", ascii: "+ - |", none: "枠なし" }],
+    ["band", "下の帯", "押せるキーの案内", { keys: "キーをアクセントの色", boxed: "キーに淡い地", quiet: "キーは太字だけ" }],
+    ["icons", "見出しの印", "列の型の印", { true: "◉ status  ◷ due  ⋮ tags", false: "印なし" }],
+  ],
+  en: [
+    ["status", "Status", "Short repeated values (status, owner…)", { dot: "Colored dot + text", shape: "Shapes ○ ◐ ● ⊘", text: "Colored text", pill: "Round pill (Nerd Font)", tint: "Soft pill + dot (SaaS)", solid: "Solid pill (opaque)", soft: "Clipped pill ▐ ▌", chip: "Square chip (0.2.0)", plain: "Plain text" }],
+    ["tags", "Tags", "List values", { dots: "a · b", hash: "#a #b", brackets: "[a] [b]", pill: "Round pill (Nerd Font)", tint: "Soft pill (SaaS)", solid: "Solid pill (opaque)", soft: "Clipped pill ▐ ▌", chip: "Square chip (0.2.0)", plain: "[a, b]" }],
+    ["check", "Check", "Booleans", { box: "☑ / ☐", tick: "✓ / ·", bracket: "[x] / [ ]", text: "true / false" }],
+    ["select", "Selection", "Selected row and cell", { bar: "Mark + tint + underline", cross: "Crosshair (row and column)", tint: "Tint + bold underline", outline: "Cell only (no tint)", fill: "Filled cell (0.2.0)", reverse: "Reverse video" }],
+    ["rules", "Rules", "Heading and column lines", { none: "No lines", header: "Line under headings", columns: "Column lines", grid: "Column lines + heading line" }],
+    ["tabs", "Tabs", "View switcher", { underline: "Underline", pill: "Filled pill", segment: "Segmented (SaaS)", brackets: "Brackets and bold", dim: "Brightness only" }],
+    ["frames", "Frames", "Popups, confirmations, relation map", { rounded: "Rounded", square: "Square", heavy: "Heavy", ascii: "+ - |", none: "No frame" }],
+    ["band", "Key band", "Keys you can press", { keys: "Keys in accent", boxed: "Keys on a tint", quiet: "Keys in bold only" }],
+    ["icons", "Heading marks", "Column type marks", { true: "◉ status  ◷ due  ⋮ tags", false: "No marks" }],
+  ],
+};
+// 検索と絞り込みの案(まだ本体に無い。設定の文には出さない)。
+const PROPOSALS = {
+  ja: [
+    ["searchbar", "検索の欄", "上の検索の欄の形(案)", { line: "文字だけ(今)", field: "入力欄のような淡い地", quiet: "空のときは隠す" }],
+    ["setband", "設定の帯", "効いている絞り込み・並べ替えの並び(案)", { brackets: "[括弧](今)", pill: "淡い札 + ×", inline: "文字を · で区切る" }],
+  ],
+  en: [
+    ["searchbar", "Filter bar", "The filter bar on top (proposal)", { line: "Text only (now)", field: "Input-like tint", quiet: "Hidden when empty" }],
+    ["setband", "Settings band", "Active filters and sorts (proposal)", { brackets: "[Brackets] (now)", pill: "Soft pills + ×", inline: "Text with · separators" }],
+  ],
+};
+</script>
+<script>
+"use strict";
+// ---------- 状態 ----------
+const KEY = "mdgrid-catalog-v2";
+const DEF = NAMES.defaults;
+const fresh = () => ({ lang: navigator.language && !navigator.language.startsWith("ja") ? "en" : "ja", page: "auto", theme: "sumi", tlight: DEF.theme_light, tdark: DEF.theme_dark, ground: "dark", preset: DEF.preset, over: {}, nerd: "auto", termRound: false, searchbar: "line", setband: "brackets", colors: { roles: {}, values: {} } });
+let S = fresh();
+try { const v = JSON.parse(localStorage.getItem(KEY) || "null"); if (v && typeof v === "object") S = Object.assign(S, v); } catch (e) {}
+// サイトの入口から ?lang=ja|en で来たら、その言語で開く。
+try { const q = new URLSearchParams(location.search).get("lang"); if (q === "ja" || q === "en") S.lang = q; } catch (e) {}
+if (!NAMES.themes.includes(S.theme) && S.theme !== "auto") S.theme = "sumi";
+if (!["auto", "true", "false"].includes(S.nerd)) S.nerd = S.nerd === true ? "true" : "auto";
+// 丸い端を描けるか(SR-36): true か、auto で見本の端末が Ghostty・WezTerm のとき。
+const nerdOn = () => S.nerd === "true" || (S.nerd === "auto" && S.termRound);
+if (!NAMES.values.preset.includes(S.preset)) S.preset = DEF.preset;
+// 覚えていた上書きのうち、本体に無い項目・値は捨てる。
+// 覚えていた色も、本体の役割と色の書き方のものだけ残す。
+const okColor = c => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c);
+S.colors = S.colors && typeof S.colors === "object" ? S.colors : { roles: {}, values: {} };
+S.colors.roles = Object.fromEntries(Object.entries(S.colors.roles || {}).filter(([k, v]) => NAMES.colorRoles.includes(k) && okColor(v)));
+S.colors.values = Object.fromEntries(Object.entries(S.colors.values || {}).filter(([k, v]) => typeof k === "string" && okColor(v)));
+S.over = Object.fromEntries(Object.entries(S.over || {}).filter(([k, v]) => k === "icons" ? typeof v === "boolean" : (NAMES.values[k] || []).includes(v)));
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const style = () => Object.assign({}, NAMES.presets[S.preset], S.over);
+const themeNow = () => S.theme === "auto" ? (S.ground === "light" ? S.tlight : S.tdark) : S.theme;
+const tx = () => TX[S.lang];
+
+// 見本の画面の状態(ノートの値・選び・モード)。
+let A;
+function freshApp() {
+  const t = tx();
+  return {
+    rows: t.rowsData.map((r, i) => ({ id: i, note: r[0], status: r[1], due: r[2], priority: r[3], done: r[4], tags: r[5].slice(), owner: r[6] })),
+    pend: {}, sorts: [], sortWin: null, hidden: [], filterDone: false, group: 0, disp: { rownum: false, zebra: false, lines: false, gap: false, tabs: true, bar: true, band: true }, draft: null, tabs: { order: [0, 1, 2], hidden: [], def: 0, hint: true }, row: 0, col: 0, mode: "table", view: 0, filter: "", typing: "", search: "", same: null, list: null, msg: "", help: 0, map: { sel: 0 },
+  };
+}
+A = freshApp();
+const ALLCOLS = () => [["status", "status", "select"], ["due", "due", "date"], ["priority", "priority", "num"], ["done", "done", "check"], ["tags", "tags", "list"], ["owner", tx().owner, "select"]];
+// 表に出す列(ビューの設定で隠した列を除く)。
+const COLS = () => ALLCOLS().filter(c => !A.hidden.includes(c[0]));
+const val = (r, k) => (A.pend[r.id + ":" + k] !== undefined ? A.pend[r.id + ":" + k] : r[k]);
+const isPend = (r, k) => A.pend[r.id + ":" + k] !== undefined;
+function visible() {
+  let rs = A.rows.slice();
+  if (A.view === 1) rs = rs.filter(r => val(r, "status") === "doing");
+  if (A.view === 2) rs = rs.filter(r => val(r, "status") !== "done");
+  // ビューの設定のフィルター(見本では「status: done を除く」)。
+  if (A.filterDone) rs = rs.filter(r => val(r, "status") !== "done");
+  const f = A.mode === "filter" ? A.typing : A.filter;
+  if (f) rs = rs.filter(r => [r.note, val(r, "status"), val(r, "owner"), val(r, "due"), ...val(r, "tags")].some(v => String(v).toLowerCase().includes(f.toLowerCase())));
+  if (A.same) rs = rs.filter(r => String(val(r, A.same.k)) === A.same.v);
+  // NV-3: 見出しの並べ替え(昇順 → 降順 → 解除。ビューに覚える)。
+  // NV-3・NV-24: ビューの並べ替えの決まり(先頭が先)。
+  if (A.sorts.length) {
+    const key = (r, k) => { const v = val(r, k); return Array.isArray(v) ? v.join(",") : v; };
+    rs.sort((a, b) => { for (const s of A.sorts) { const x = key(a, s.k), y = key(b, s.k); const c = typeof x === "number" ? x - y : String(x).localeCompare(String(y)); if (c) return s.desc ? -c : c; } return 0; });
+  }
+  return rs;
+}
+// 設定の帯の項目(ビューの条件・設定のフィルター・並べ替え)。
+const chipsNow = () => {
+  const t = tx(), out = [];
+  if (A.view === 1) out.push(t.chipDoing);
+  if (A.view === 2 || A.filterDone) out.push(t.chipOpen);
+  A.sorts.forEach(s => out.push(`${s.desc ? "↓" : "↑"} ${(ALLCOLS().find(c => c[0] === s.k) || [0, s.k])[1]}`));
+  return A.disp.band ? out : [];
+};
+
+// ---------- 画面を描く ----------
+const W = 100, H = 24;
+// SR-36 の部品の形で、表の画面を描く。
+function drawTable(g, L, st, opts = {}) {
+  const t = tx();
+  const sep = st.rules === "columns" || st.rules === "grid" || A.disp.lines ? "│" : " ";
+  const faint = { fg: L.dim };
+  const key = { fg: L.accent, b: 1 };
+  const rs = visible();
+  const cols = opts.cols ? COLS().filter(c => opts.cols.includes(c[0])) : COLS();
+  if (A.row >= rs.length) A.row = Math.max(0, rs.length - 1);
+  let y = 0;
+  if (!opts.mini) {
+    // 1行目: 名前・行の数・絞り込み、右に画面の型のタブと新規。
+    let head = " vault  " + t.rows(rs.length);
+    if (A.same) head += t.same(A.same.k === "owner" ? t.owner : A.same.k, A.same.v);
+    g.put(0, 0, head, { b: 1, fg: L.header });
+    const right = [[`[${t.tabsR[0]}]`, true, "tab-table"], [" " + t.tabsR[1] + " ", false, "tab-map"]];
+    const rw = right.reduce((n, [s]) => n + sw(s), 0) + sw(t.newNote);
+    let x = W - rw;
+    headerButtons(g, L, x);
+    for (const [s, on, a] of right) x = g.put(x, 0, s, tabStyle(L, st, on), a);
+    g.put(x, 0, t.newNote, { bg: L.accent, fg: L.on_accent, b: 1 }, "new");
+    // ビューのタブ(表示の設定で隠せる)。
+    y = 1;
+    if (A.disp.tabs) {
+      let tx0 = 1;
+      // NV-26: 設定のビューの区画の順で、隠したタブ(開いているビューでなければ)を外す。
+      const shownTabs = A.tabs.order.filter(i => i === A.view || !A.tabs.hidden.includes(i));
+      shownTabs.forEach(i => {
+        const v = t.views[i];
+        const s = i === A.view ? `[${v}]` : ` ${v} `;
+        g.put(tx0, y, s, tabStyle(L, st, i === A.view), "view:" + i);
+        tx0 += sw(s) + 1;
+      });
+      if (A.tabs.hint && shownTabs.length > 1) g.put(tx0, y, t.tabSwitch.trimStart(), { dim: 1 });
+      y++;
+    }
+    // 検索の欄(案の形も。表示の設定で隠せる)。
+    const typing = A.mode === "filter";
+    const f = typing ? A.typing : A.filter;
+    if (!A.disp.bar || (S.searchbar === "quiet" && !f && !typing)) {
+      // 空のときは隠す(行は表に使う)。
+    } else if (S.searchbar === "field") {
+      const fw = 44;
+      g.put(1, y, " ⌕ " + fitw(f ? f + (typing ? "▏" : "") : t.barHint, fw - 3), { bg: L.soft_bg, fg: f ? L.fg : L.dim, pill: 900, b: typing ? 1 : 0 }, "bar");
+      if (f) g.put(1 + fw + 2, y, `${rs.length}/${A.rows.length}`, faint);
+    } else {
+      let x = g.put(0, y, t.barLead, typing ? { b: 1 } : null, "bar");
+      if (f) { x = g.put(x, y, f + (typing ? "▏" : ""), { b: 1, u: 1 }, "bar"); g.put(x + 2, y, `${rs.length}/${A.rows.length}`, faint); }
+      else g.put(x, y, t.barHint, { dim: 1 }, "bar");
+    }
+    if (A.disp.bar && !(S.searchbar === "quiet" && !f && !typing)) {
+      // NV-24: 右の端に「並べ替え」のボタン。
+      const lbl = sortLabel();
+      g.put(W - sw(lbl), y, lbl, A.sorts.length ? { bg: L.soft_bg, fg: L.accent } : { bg: L.soft_bg, fg: L.dim }, "sortbtn");
+      A.sortY = y;
+      y++;
+    }
+    // 設定の帯(効いている条件があるときだけ)。
+    const chips = chipsNow();
+    if (chips.length) {
+      if (S.setband === "pill") {
+        let x = g.put(0, y, t.setLead + " ", null);
+        chips.forEach((c, i) => { x = g.put(x, y, " " + c + " ×", Object.assign({ pill: 901 + i }, tintSt(L, "settings")), "chip:" + i) + 1; });
+      } else if (S.setband === "inline") {
+        let x = g.put(0, y, t.setLead + " ", faint);
+        chips.forEach((c, i) => { x = g.put(x, y, (i ? " · " : "") + c, { fg: L.fg }, "chip:" + i); });
+      } else {
+        let x = g.put(0, y, t.setLead, null) + 1;
+        chips.forEach((c, i) => { x = g.put(x, y, `[${c}]`, null, "chip:" + i) + 1; });
+        g.put(x, y, t.setHint.trimStart(), { dim: 1 });
+      }
+      y++;
+    }
+  }
+  // 列の幅(見出しと値の文字の幅のいちばん広いもの)。
+  const texts = cols.map(([k, name, kind]) => rs.map(r => cellText(L, st, r, k, kind).text));
+  const heads = cols.map(([k, name, kind]) => headText(st, name, kind));
+  const widths = cols.map((c, j) => Math.max(sw(heads[j]), ...texts[j].map(sw), 3));
+  const labelW = opts.mini ? 16 : Math.min(28, Math.max(sw(t.note), ...rs.map(r => sw(r.note))));
+  const x0 = 1;
+  const colX = [];
+  let cx = x0 + labelW;
+  widths.forEach(w => { colX.push(cx + 1); cx += 1 + w; });
+  const cross = st.select === "cross";
+  const headSt = Object.assign({}, key, st.rules === "header" || st.rules === "grid" ? { u: 1 } : {});
+  // 見出しの行。
+  g.put(x0, y, fitw(opts.mini ? "" : t.note, labelW), headSt);
+  cols.forEach(([k, name, kind], j) => {
+    g.put(colX[j] - 1, y, sep, faint);
+    const s = Object.assign({}, headSt, cross && j === A.col ? { bg: L.soft_bg } : {});
+    g.put(colX[j], y, fitw(heads[j], widths[j], kind === "num"), s, "head:" + j);
+  });
+  y++;
+  const maxRows = opts.mini ? 3 : H - 2 - y - 1;
+  rs.slice(0, maxRows).forEach((r, i) => {
+    const selRow = i === A.row && !opts.noSel;
+    const tintRow = selRow && !["outline", "reverse"].includes(st.select);
+    // 一行おきの色(表示の設定)。
+    const zebra = !opts.mini && A.disp.zebra && i % 2 === 1 ? { bg: L.p ? L.p.zebra_bg : [36, 37, 42] } : null;
+    const rowBg = tintRow ? { bg: L.sel_bg } : zebra;
+    g.put(0, y, selRow ? ">" : " ", selRow ? key : null);
+    g.put(x0, y, fitw(r.note, labelW), selRow ? { b: 1 } : null, `cell:${i}:-1`);
+    cols.forEach(([k, name, kind], j) => {
+      g.put(colX[j] - 1, y, sep, faint);
+      const c = cellText(L, st, r, k, kind);
+      const selCell = selRow && j === A.col;
+      let base = {};
+      if (isPend(r, k)) base.fg = L.pending;
+      const hit = A.search && String(c.plain).toLowerCase().includes(A.search.toLowerCase());
+      if (hit) Object.assign(base, { u: 1, bg: L.hl_bg });
+      const keep = selCell && c.parts && ["bar", "cross", "tint", "outline"].includes(st.select);
+      if (selCell && !keep) {
+        if (st.select === "bar" || st.select === "outline") Object.assign(base, { fg: L.accent, b: 1, u: 1 });
+        else if (st.select === "tint") Object.assign(base, { b: 1, u: 1 });
+        else if (st.select === "reverse") Object.assign(base, { rev: 1 });
+        else Object.assign(base, { bg: L.accent, fg: L.on_accent, b: 1 });
+        g.put(colX[j], y, fitw(c.text, widths[j], kind === "num"), base, `cell:${i}:${j}`);
+      } else {
+        // 選んだセルも部品の形のまま、選びの見た目(太字・下線)を重ねる。
+        if (keep) Object.assign(base, st.select === "cross" ? { bg: L.accent, fg: L.on_accent, b: 1 } : st.select === "tint" ? { b: 1, u: 1 } : { fg: L.accent, b: 1, u: 1 });
+        else if (cross && j === A.col) base.bg = L.soft_bg;
+        if (c.parts) {
+          let x = colX[j];
+          const all = [...c.parts.lead];
+          c.parts.items.forEach((it, n) => { if (n) all.push(...c.parts.sep); all.push(...it); });
+          for (const [s, so] of all) x = g.put(x, y, s, Object.assign({}, base, so || {}, so && so.pill && base.bg ? { under: base.bg } : {}), `cell:${i}:${j}`);
+          g.put(x, y, " ".repeat(Math.max(0, colX[j] + widths[j] - x)), base, `cell:${i}:${j}`);
+        } else {
+          const s = Object.assign({}, base, c.st || {});
+          g.put(colX[j], y, fitw(c.text, widths[j], kind === "num"), s, `cell:${i}:${j}`);
+        }
+      }
+    });
+    if (rowBg) g.tint(y, 0, opts.mini ? cx : W, rowBg);
+    if (st.select === "reverse" && selRow) g.tint(y, 0, 1, {});
+    y++;
+  });
+  return { colX, widths, top: y - Math.min(rs.length, maxRows), rs };
+}
+// SR-42: タブの左に、ワークスペースと設定のボタン。
+function headerButtons(g, L, right) {
+  const t = tx();
+  const items = [[t.wsButton, "ws"], [t.settingsButton, "settings"]];
+  const total = items.reduce((n, [s]) => n + sw(s) + 1, 0);
+  let x = right - total;
+  for (const [s, a] of items) x = g.put(x, 0, s, { bg: L.soft_bg, fg: L.accent }, a) + 1;
+}
+function sortLabel() {
+  const t = tx();
+  if (!A.sorts.length) return t.sortButton;
+  const s = A.sorts[0];
+  const name = (COLS().find(c => c[0] === s.k) || [s.k, s.k])[1];
+  return ` ${s.desc ? "↓" : "↑"} ${name}${A.sorts.length > 1 ? " +" + (A.sorts.length - 1) : ""} `;
+}
+// NV-24: 並べ替えの窓(検索の欄の下、右の端)。
+function drawSortWin(g, L, st) {
+  const t = tx();
+  const F = frameChars(st);
+  const w = A.sortWin;
+  const items = w.picking ? COLS().filter(c => !A.sorts.some(s => s.k === c[0])).map(c => [c[1], "pick:" + c[0]])
+    : A.sorts.map((s, i) => [`${s.desc ? "↓" : "↑"} ${(COLS().find(c => c[0] === s.k) || [0, s.k])[1]}  ${s.desc ? t.desc : t.asc}`, "rule:" + i, i]).concat([[t.sortAdd, "add"]]);
+  const title = w.picking ? t.sortPick : t.sortTitle;
+  const iw = Math.max(sw(title) + 4, ...items.map(([s]) => sw(s) + 6));
+  const x0 = W - iw, y0 = (A.sortY || 2) + 1;
+  const e = { fg: L.accent };
+  g.put(x0, y0, F[0] + F[4] + title + F[4].repeat(Math.max(0, iw - 3 - sw(title))) + F[1], e);
+  items.forEach(([s, a, ri], i) => {
+    g.put(x0, y0 + 1 + i, F[5], e);
+    const rs = { bg: L.bg, b: i === w.sel ? 1 : 0, u: i === w.sel ? 1 : 0 };
+    if (ri !== undefined) {
+      // 決まりの行は右の端に「×」(押すと外す)。
+      g.put(x0 + 1, y0 + 1 + i, fitw(" " + s, iw - 4), rs, a);
+      g.put(x0 + iw - 3, y0 + 1 + i, " ×", { bg: L.bg, fg: L.dim }, "rmrule:" + ri);
+    } else g.put(x0 + 1, y0 + 1 + i, fitw(" " + s, iw - 2), rs, a);
+    g.put(x0 + iw - 1, y0 + 1 + i, F[5], e);
+  });
+  g.put(x0, y0 + 1 + items.length, F[2] + F[4].repeat(iw - 2) + F[3], e);
+}
+function tabStyle(L, st, on) {
+  const bold = { b: 1 };
+  switch (st.tabs) {
+    case "pill": return on ? { bg: L.accent, fg: L.on_accent, b: 1 } : { fg: L.dim };
+    case "underline": return on ? { fg: L.accent, b: 1, u: 1 } : { fg: L.dim };
+    case "segment": return on ? { bg: L.sel_bg, fg: L.sel_fg || L.fg, b: 1 } : { fg: L.dim, bg: L.soft_bg };
+    case "brackets": return on ? bold : { fg: L.dim };
+    case "dim": return on ? bold : { dim: 1 };
+  }
+}
+function headText(st, name, kind) {
+  if (!st.icons) return name;
+  const m = { num: "#", date: "◷", check: (CHECKS[st.check] || ["✓"])[0], list: "⋮", select: "◉" }[kind];
+  return m ? m + " " + name : name;
+}
+function cellText(L, st, r, k, kind) {
+  const v = val(r, k);
+  const mark = isPend(r, k) ? "*" : "";
+  if (kind === "check") {
+    const m = CHECKS[st.check];
+    return { text: mark + (m ? (v ? m[0] : m[1]) : String(v)), plain: String(v) };
+  }
+  if (kind === "select" && v === "") return { text: mark + '""', plain: "" };
+  if (kind === "list" || kind === "select") {
+    const items = kind === "list" ? v : [v];
+    if (!items.length) return { text: mark + "[]", plain: "[]" };
+    const P = parts(L, st, items, kind === "list", nerdOn());
+    if (!P) return { text: mark + (kind === "list" ? "[" + v.join(", ") + "]" : v), plain: items.join(" ") };
+    if (mark) P.lead.unshift([mark, null]);
+    return { text: partsText(P), plain: items.join(" "), parts: P };
+  }
+  if (kind === "num") return { text: mark + String(v), plain: String(v) };
+  return { text: mark + String(v), plain: String(v) };
+}
+
+// 窓の枠(popup::frame)。
+function frameChars(st) {
+  return { rounded: "╭╮╰╯─│├┤", square: "┌┐└┘─│├┤", heavy: "┏┓┗┛━┃┣┫", ascii: "++++-|++", none: "        " }[st.frames];
+}
+
+// 候補の一覧(セルの下に開く。上の縁なし)。
+function drawList(g, L, st, geo) {
+  const t = tx();
+  const r = geo.rs[A.row];
+  const [k, , kind] = COLS()[A.col];
+  const cur = kind === "list" ? null : val(r, k);
+  const F = frameChars(st);
+  const items = A.list.items;
+  const iw = Math.max(Math.max(...items.map(v => sw(v || t.empty)), 6) + 3, geo.widths[A.col] + 1);
+  const x = geo.colX[A.col] - 1;
+  let y = geo.top + A.row + 1;
+  const edge = { fg: L.accent };
+  items.forEach((v, i) => {
+    const sel = i === A.list.sel;
+    const label = (sel ? ">" : " ") + (v === cur ? "*" : " ") + (v || t.empty);
+    g.put(x, y, F[5], edge);
+    let s = sel ? (st.select === "reverse" ? { rev: 1 } : { bg: L.sel_bg, fg: L.sel_fg || L.fg, b: 1 }) : { bg: L.bg };
+    g.put(x + 1, y, fitw(label.slice(0, 2), 2), s, "item:" + i);
+    // 選んでいる候補も札の形のまま(塗る・反転の選びは今まで)。丸い端は Nerd Font のときだけ。
+    const keep = !sel || ["bar", "cross", "tint", "outline"].includes(st.select);
+    const ov = keep && v ? overlay(L, st, v, kind === "list") : null;
+    const k2 = kind === "list" ? st.tags : st.status;
+    const round = ov && nerdOn() && (k2 === "pill" || k2 === "tint" || k2 === "solid") ? { pill: 800 + i } : {};
+    if (ov) {
+      g.put(x + 3, y, " ".repeat(iw - 3), s, "item:" + i);
+      g.put(x + 3, y, " " + v + " ", Object.assign({}, ov, round, sel ? { b: 1, u: 1 } : {}, round.pill && s.bg ? { under: s.bg } : {}), "item:" + i);
+    } else g.put(x + 3, y, fitw(v || t.empty, iw - 3), Object.assign({}, s, v ? {} : { dim: 1 }), "item:" + i);
+    g.put(x + iw, y, F[5], edge);
+    y++;
+  });
+  const pos = `${A.list.sel + 1}/${items.length}`;
+  g.put(x, y, F[2] + pos + F[4].repeat(Math.max(0, iw - 1 - sw(pos))) + F[3], edge);
+}
+
+function footer(g, L, st, hints, head) {
+  const y = H - 2;
+  const base = L.band ? { bg: L.band[0], fg: L.band[1] } : {};
+  g.put(0, y, " ".repeat(W), base);
+  let x = g.put(0, y, head, Object.assign({}, base, { b: 1 }));
+  for (const [k, d] of hints) {
+    if (x + 2 + sw(k) + 1 + sw(d) > W) break;
+    x = g.put(x, y, "  ", base);
+    const ks = st.band === "boxed" ? { fg: L.accent, b: 1, bg: L.soft_bg } : st.band === "quiet" ? { b: 1 } : { fg: L.accent, b: 1 };
+    x = g.put(x, y, k, Object.assign({}, base, ks), "key:" + k);
+    x = g.put(x, y, " " + d, Object.assign({}, base, { fg: L.band_dim || L.dim }), "key:" + k);
+  }
+}
+
+// ---------- ビューの設定の画面(o・ヘッダーの「設定」) ----------
+function openSettings() {
+  A.mode = "settings";
+  A.draft = { sec: 0, hidden: A.hidden.slice(), filterDone: A.filterDone, sorts: A.sorts.map(x => Object.assign({}, x)), group: A.group, disp: Object.assign({}, A.disp), preset: S.preset, theme: S.theme === "auto" ? "sumi" : S.theme, nerd: S.nerd };
+}
+// 反映していない変更の数(上の「反映」に添える)。
+function draftChanges() {
+  const D = A.draft; if (!D) return 0;
+  let n = 0;
+  if (JSON.stringify(D.hidden.slice().sort()) !== JSON.stringify(A.hidden.slice().sort())) n++;
+  if (D.filterDone !== A.filterDone) n++;
+  if (JSON.stringify(D.sorts) !== JSON.stringify(A.sorts)) n++;
+  if (D.group !== A.group) n++;
+  if (JSON.stringify(D.disp) !== JSON.stringify(A.disp)) n++;
+  if (D.preset !== S.preset || D.theme !== S.theme || D.nerd !== S.nerd) n++;
+  return n;
+}
+function settingsClick(what, arg) {
+  const D = A.draft, t = tx();
+  if (!D) return;
+  if (what === "sec") D.sec = +arg;
+  else if (what === "col") { const i = D.hidden.indexOf(arg); if (i >= 0) D.hidden.splice(i, 1); else if (D.hidden.length < ALLCOLS().length - 1) D.hidden.push(arg); }
+  else if (what === "filter") D.filterDone = !D.filterDone;
+  else if (what === "sort") { const s = D.sorts[+arg]; s.desc = !s.desc; }
+  else if (what === "sortx") D.sorts.splice(+arg, 1);
+  else if (what === "sortup") { const i = +arg; if (i > 0) [D.sorts[i - 1], D.sorts[i]] = [D.sorts[i], D.sorts[i - 1]]; }
+  else if (what === "sortadd") { const c = ALLCOLS().find(c => !D.sorts.some(s => s.k === c[0])); if (c) D.sorts.push({ k: c[0], desc: false }); }
+  else if (what === "group") D.group = +arg;
+  else if (what === "disp") D.disp[arg] = !D.disp[arg];
+  else if (what === "tabhide") { const i = +arg, k = A.tabs.hidden.indexOf(i); if (k >= 0) A.tabs.hidden.splice(k, 1); else if (i === A.view) A.msg = t.tabCurHide; else A.tabs.hidden.push(i); }
+  else if (what === "tabup") { const p = +arg, o = A.tabs.order; [o[p - 1], o[p]] = [o[p], o[p - 1]]; }
+  else if (what === "tabdef") A.tabs.def = +arg;
+  else if (what === "tabhint") A.tabs.hint = !A.tabs.hint;
+  else if (what === "preset") D.preset = arg;
+  else if (what === "theme") D.theme = arg;
+  else if (what === "nerd") D.nerd = arg;
+  else if (what === "apply") {
+    const look = D.preset !== S.preset || D.theme !== S.theme || D.nerd !== S.nerd;
+    A.hidden = D.hidden; A.filterDone = D.filterDone; A.sorts = D.sorts; A.group = D.group; A.disp = D.disp;
+    A.draft = null; A.mode = "table"; A.col = Math.min(A.col, COLS().length - 1); A.row = 0; A.msg = t.setApplied;
+    if (look) { S.preset = D.preset; S.over = {}; S.theme = D.theme; S.nerd = D.nerd; save(); renderAll(); }
+  }
+  else if (what === "cancel") { A.draft = null; A.mode = "table"; }
+  else if (what === "reset") { Object.assign(D, { hidden: [], filterDone: false, sorts: [], group: 0, disp: { rownum: false, zebra: false, lines: false, gap: false, tabs: true, bar: true, band: true } }); }
+  else A.msg = t.setSampleOnly;
+}
+// ビューの設定の画面: 左に区画の一覧(今の状態つき)、右に中身。上に「反映」「取り消し」。
+function drawSettings(g, L, st) {
+  const t = tx(), D = A.draft;
+  const accent = { fg: L.accent, b: 1 }, dim = { fg: L.dim };
+  const sw2 = on => on ? [" ● ", { bg: L.accent, fg: L.on_accent, b: 1 }] : [" ○ ", { bg: L.soft_bg, fg: L.dim }];
+  // 上の帯: 題と、いつも見える「反映」「取り消し」。
+  g.put(0, 0, " " + t.setTitle + "  ", { b: 1, fg: L.header });
+  g.put(sw(t.setTitle) + 3, 0, t.setTarget, dim);
+  const n = draftChanges();
+  let rx = W - (sw(t.setCancel) + 4) - (sw(t.setApply) + 4) - (n ? sw(t.setPending(n)) + 2 : 0);
+  if (n) rx = g.put(rx, 0, t.setPending(n), { fg: L.pending, b: 1 }) + 2;
+  rx = g.put(rx, 0, ` ${t.setApply} `, n ? { bg: L.accent, fg: L.on_accent, b: 1 } : { bg: L.soft_bg, fg: L.dim }, "set:apply") + 1;
+  g.put(rx, 0, ` ${t.setCancel} `, { bg: L.soft_bg }, "set:cancel");
+  // 左の区画の一覧。
+  const secs = [
+    [t.secCols, `${ALLCOLS().length - D.hidden.length}/${ALLCOLS().length}`],
+    [t.secFilter, D.filterDone ? "1" : "—"],
+    [t.secSort, D.sorts.length ? String(D.sorts.length) : "—"],
+    [t.secGroup, D.group === 2 ? "status" : "—"],
+    [t.secDisplay, ""],
+    [t.secViews, `${t.views.length - A.tabs.hidden.length}/${t.views.length}`],
+    [t.secLook, D.preset],
+  ];
+  const navW = 22;
+  secs.forEach(([name, badge], i) => {
+    const on = i === D.sec, y = 2 + i * 2;
+    const base = on ? { bg: L.sel_bg, fg: L.sel_fg || L.fg, b: 1 } : null;
+    g.put(1, y, fitw((on ? "▌ " : "  ") + name, navW - 6), base ? Object.assign({}, base, on ? {} : {}) : null, "set:sec:" + i);
+    g.put(navW - 5, y, fitw(badge, 4, true), on ? base : dim, "set:sec:" + i);
+    if (on) g.put(1, y, "▌", { bg: L.sel_bg, fg: L.accent });
+  });
+  for (let y = 1; y < H - 2; y++) g.put(navW, y, "│", dim);
+  // 右の中身。
+  const x = navW + 3;
+  let y = 2;
+  const head = (title, desc) => { g.put(x, y++, title, accent); g.put(x, y++, desc, dim); y++; };
+  if (D.sec === 0) {
+    head(t.secCols, t.descCols);
+    ALLCOLS().forEach(([k, name]) => {
+      const on = !D.hidden.includes(k);
+      const [sym, st2] = sw2(on);
+      g.put(x, y, "⠿ ", dim); g.put(x + 2, y, fitw(name, 18), on ? null : dim, "set:col:" + k);
+      g.put(x + 22, y, sym, st2, "set:col:" + k); g.put(x + 26, y++, on ? t.shown : t.hiddenWord, dim, "set:col:" + k);
+    });
+  } else if (D.sec === 1) {
+    head(t.secFilter, t.descFilter);
+    if (D.filterDone) { g.put(x, y, `  ${t.chipOpen}  `, { bg: L.soft_bg }, "set:filter"); g.put(x + sw(t.chipOpen) + 5, y++, "×", dim, "set:filter"); }
+    y++;
+    g.put(x, y++, t.setAddCond, { fg: L.accent }, "set:filter");
+  } else if (D.sec === 2) {
+    head(t.secSort, t.descSort);
+    D.sorts.forEach((s, i) => {
+      const name = (ALLCOLS().find(c => c[0] === s.k) || [0, s.k])[1];
+      g.put(x, y, `${i + 1}. `, dim);
+      let xx = g.put(x + 3, y, fitw(name, 14), null, "set:sort:" + i);
+      xx = g.put(xx + 1, y, ` ${s.desc ? "↓ " + t.desc : "↑ " + t.asc} `, { bg: L.soft_bg }, "set:sort:" + i) + 2;
+      if (i > 0) xx = g.put(xx, y, "↑", dim, "set:sortup:" + i) + 2;
+      g.put(xx, y++, "×", dim, "set:sortx:" + i);
+    });
+    y++;
+    g.put(x, y++, t.sortAdd, { fg: L.accent }, "set:sortadd");
+  } else if (D.sec === 3) {
+    head(t.secGroup, t.descGroup);
+    t.groupOpts.forEach((l, i) => { g.put(x, y, D.group === i ? "◉ " : "○ ", D.group === i ? { fg: L.accent } : dim, "set:group:" + i); g.put(x + 2, y++, l, null, "set:group:" + i); y++; });
+  } else if (D.sec === 4) {
+    head(t.secDisplay, t.descDisplay);
+    [["rownum", t.dRownum], ["zebra", t.dZebra], ["lines", t.dLines], ["gap", t.dGap], ["tabs", t.dTabs], ["bar", t.dBar], ["band", t.dBand]].forEach(([k, l]) => {
+      const [sym, st2] = sw2(D.disp[k]);
+      g.put(x, y, fitw(l, 20), null, "set:disp:" + k); g.put(x + 22, y++, sym, st2, "set:disp:" + k);
+    });
+  } else if (D.sec === 5) {
+    // NV-26: タブの順・出す隠す・既定・切り替えの案内(反映を待たずにすぐ効く)。
+    head(t.secViews, t.descViews);
+    A.tabs.order.forEach((i, pos) => {
+      const on = !A.tabs.hidden.includes(i);
+      const [sym, st2] = sw2(on);
+      g.put(x, y, "⠿ ", dim, pos > 0 ? "set:tabup:" + pos : null);
+      g.put(x + 2, y, fitw(t.views[i], 18), on ? null : dim, "set:tabdef:" + i);
+      g.put(x + 22, y, sym, st2, "set:tabhide:" + i); g.put(x + 26, y, on ? t.shown : t.hiddenWord, dim, "set:tabhide:" + i);
+      if (A.tabs.def === i) g.put(x + 32, y, t.tabDefMark, { fg: L.accent });
+      else g.put(x + 32, y, t.tabMakeDef, dim, "set:tabdef:" + i);
+      y++;
+    });
+    y++;
+    const [sym, st2] = sw2(A.tabs.hint);
+    g.put(x, y, fitw(t.tabHintRow, 20), null, "set:tabhint"); g.put(x + 22, y++, sym, st2, "set:tabhint");
+  } else {
+    head(t.secLook, t.descLook);
+    g.put(x, y++, t.lookPreset, dim);
+    let xx = x;
+    NAMES.values.preset.forEach(pn => { const on = D.preset === pn; xx = g.put(xx, y, ` ${pn} `, on ? { bg: L.accent, fg: L.on_accent, b: 1 } : { bg: L.soft_bg }, "set:preset:" + pn) + 1; if (xx > W - 12) { y++; xx = x; } });
+    y += 2;
+    g.put(x, y++, t.lookTheme, dim);
+    xx = x;
+    NAMES.themes.forEach(tn => { const on = D.theme === tn; const w2 = sw(tn) + 2; if (xx + w2 > W - 2) { y++; xx = x; } xx = g.put(xx, y, ` ${tn} `, on ? { bg: L.accent, fg: L.on_accent, b: 1 } : { bg: L.soft_bg }, "set:theme:" + tn) + 1; });
+    y += 2;
+    g.put(x, y++, t.lookNerd, dim);
+    xx = x;
+    ["auto", "true", "false"].forEach(v => { const on = D.nerd === v; xx = g.put(xx, y, ` ${v} `, on ? { bg: L.accent, fg: L.on_accent, b: 1 } : { bg: L.soft_bg }, "set:nerd:" + v) + 1; });
+  }
+  // 下: 保存の操作(ビュー)。
+  let bx = navW + 3;
+  const yb = H - 4;
+  t.setBtns1.forEach(l => { bx = g.put(bx, yb, ` ${l} `, { bg: L.soft_bg }, "set:other") + 1; });
+  g.put(bx + 1, yb, ` ${t.setReset} `, dim, "set:reset");
+}
+// ワークスペースの一覧(ヘッダーの「▾ 見本」)。
+function drawWsList(g, L, st) {
+  const t = tx(), F = frameChars(st);
+  const items = t.wsItems;
+  const iw = Math.max(sw(t.wsTitle) + 4, ...items.map(s => sw(s) + 4));
+  const x0 = W - iw - 22, y0 = 1;
+  const e = { fg: L.accent };
+  g.put(x0, y0, F[0] + F[4] + t.wsTitle + F[4].repeat(Math.max(0, iw - 3 - sw(t.wsTitle))) + F[1], e);
+  items.forEach((s, i) => { g.put(x0, y0 + 1 + i, F[5], e); g.put(x0 + 1, y0 + 1 + i, fitw((i === 0 ? ">" : " ") + s, iw - 2), i === 0 ? { bg: L.sel_bg, b: 1 } : { bg: L.bg }, "wsitem:" + i); g.put(x0 + iw - 1, y0 + 1 + i, F[5], e); });
+  g.put(x0, y0 + 1 + items.length, F[2] + F[4].repeat(iw - 2) + F[3], e);
+}
+function drawHelp(g, L, st) {
+  const t = tx();
+  g.put(0, 0, t.helpHead(t.help.length + 2), { b: 1, fg: L.header });
+  g.put(0, 1, t.helpNow, { b: 1, fg: L.accent, u: st.rules !== "none" ? 1 : 0 });
+  for (let i = 0; i < t.help.length; i += 2) {
+    const y = 2 + i / 2;
+    if (y >= H - 2) break;
+    [[2, t.help[i]], [52, t.help[i + 1]]].forEach(([x, it]) => { if (!it) return; g.put(x, y, fitw(it[0], 15), { fg: L.accent, b: 1 }); g.put(x + 15, y, it[1]); });
+  }
+}
+
+function drawDetail(g, L, st) {
+  const t = tx();
+  const rs = visible();
+  const r = rs[A.row];
+  if (!r) return;
+  g.put(0, 0, t.detailHead(r.note, A.row + 1, rs.length), { b: 1, fg: L.header });
+  const cols = COLS();
+  cols.forEach(([k, name, kind], i) => {
+    const v = val(r, k);
+    const text = kind === "list" ? "[" + v.join(", ") + "]" : String(v);
+    const sel = i === A.col;
+    g.put(0, 1 + i, sel ? ">" : " ", sel ? { fg: L.accent, b: 1 } : null);
+    g.put(1, 1 + i, fitw(name, 10), sel ? { b: 1 } : { fg: L.dim });
+    g.put(11, 1 + i, text, sel ? { b: 1 } : null, "dcell:" + i);
+    if (sel && !["outline", "reverse"].includes(st.select)) g.tint(1 + i, 0, W, { bg: L.sel_bg });
+  });
+  g.put(1, 3 + cols.length, t.body, { fg: L.dim });
+  g.put(1, 4 + cols.length, S.lang === "ja" ? "メモ書きから清書する。" : "Clean up the notes.");
+}
+
+// 関係マップ(ER 図)。
+function drawMap(g, L, st) {
+  const t = tx();
+  const F = frameChars(st);
+  const ln = st.frames === "heavy" ? { h: "━", v: "┃" } : st.frames === "ascii" ? { h: "-", v: "|" } : { h: "─", v: "│" };
+  const C = st.frames === "ascii" ? { dr: "+", dl: "+", ur: "+", ul: "+" } : { dr: "┌", dl: "┐", ur: "└", ul: "┘" };
+  g.put(0, 0, " tasks  " + t.rows(A.rows.length) + t.ws, { b: 1, fg: L.header });
+  const right = [[" " + t.tabsR[0] + " ", false, "tab-table"], [`[${t.tabsR[1]}]`, true, "tab-map"]];
+  let x = W - right.reduce((n, [s]) => n + sw(s), 0) - sw(t.newNote);
+  headerButtons(g, L, x);
+  for (const [s, on, a] of right) x = g.put(x, 0, s, tabStyle(L, st, on), a);
+  // CE-25: 「+ 新規」は関係マップでも同じ位置に(選んでいる表に作る)。
+  g.put(x, 0, t.newNote, { bg: L.accent, fg: L.on_accent, b: 1 }, "new");
+  const dimLine = { fg: L.dim }, acc = { fg: L.accent };
+  const outer = (x0, y0, w, h, title, on) => {
+    const e = on ? acc : dimLine;
+    g.put(x0, y0, F[0] + F[4] + title + F[4].repeat(Math.max(0, w - 3 - sw(title))) + F[1], e);
+    for (let y = y0 + 1; y < y0 + h - 1; y++) { g.put(x0, y, F[5], e); g.put(x0 + w - 1, y, F[5], e); }
+    g.put(x0, y0 + h - 1, F[2] + F[4].repeat(w - 2) + F[3], e);
+  };
+  outer(0, 1, 72, 13, t.mapTitle, true);
+  outer(72, 1, 28, 13, t.mapDetail, false);
+  const tables = [
+    ["tasks (10)", [["project → projects", 1], ["assignee → members", 1], ["status", 0]]],
+    ["projects (3)", [["lead → members", 1], ["status", 0]]],
+    ["members (4)", [["role", 0], ["team", 0]]],
+  ];
+  const xs = [2, 30, 54];
+  const ws = [22, 18, 15];
+  tables.forEach(([name, fields], i) => {
+    const on = A.map.sel === i;
+    const e = on ? acc : dimLine;
+    const x0 = xs[i], w = ws[i], y0 = 2;
+    g.put(x0, y0, F[0] + F[4].repeat(w - 2) + F[1], e);
+    const titleSt = on ? (st.select === "fill" ? { bg: L.accent, fg: L.on_accent, b: 1 } : st.select === "reverse" ? { rev: 1, b: 1 } : st.select === "outline" ? { fg: L.accent, b: 1, u: 1 } : { bg: L.sel_bg, fg: L.sel_fg || L.fg, b: 1 }) : { b: 1 };
+    g.put(x0, y0 + 1, F[5], e); g.put(x0 + 1, y0 + 1, fitw(" " + name, w - 2), titleSt, "map:" + i); g.put(x0 + w - 1, y0 + 1, F[5], e);
+    g.put(x0, y0 + 2, F[6] + F[4].repeat(w - 2) + F[7], e);
+    fields.forEach(([f, link], j) => {
+      g.put(x0, y0 + 3 + j, F[5], e);
+      g.put(x0 + 1, y0 + 3 + j, fitw(" " + f, w - 2), link ? { fg: L.accent } : null, "map:" + i);
+      g.put(x0 + w - 1, y0 + 3 + j, F[5], e);
+    });
+    g.put(x0, y0 + 3 + fields.length, F[2] + F[4].repeat(w - 2) + F[3], e);
+  });
+  // tasks.project → projects、projects.lead → members、tasks.assignee → members(下を回る)。
+  const sel = A.map.sel === 0;
+  g.put(24, 5, "N" + ln.h.repeat(3) + "1▶", sel ? acc : dimLine);
+  g.put(48, 5, "N" + ln.h + "1▶", dimLine);
+  g.put(24, 6, "N" + ln.h + C.dl, dimLine);
+  for (let y = 7; y <= 9; y++) g.put(26, y, ln.v, dimLine);
+  g.put(26, 10, C.ur + ln.h.repeat(34) + C.ul, dimLine);
+  for (let y = 9; y >= 8; y--) g.put(61, y, ln.v, dimLine);
+  g.put(61, 7, "▲", dimLine);
+  // 詳細。
+  const d = [["tasks.project → projects", { b: 1 }], ["", null], [`${t.kind}  ${t.many}`, null], [`${t.col}    project`, null], [`${t.to}  projects`, null], [`${t.links}  10`, null]];
+  d.forEach(([s, so], i) => g.put(74, 2 + i, s, so));
+}
+
+function render() {
+  const L = look(themeNow());
+  const st = style();
+  pillId = 0;
+  const g = new Grid(W, H, L);
+  const t = tx();
+  let hints = t.hintsTable, mode = t.modeTable;
+  if (A.mode === "help") { drawHelp(g, L, st); hints = t.hintsHelp; mode = t.modeHelp; }
+  else if (A.mode === "settings") { drawSettings(g, L, st); hints = t.hintsSettings; mode = t.modeSettings; }
+  else if (A.mode === "detail") { drawDetail(g, L, st); hints = t.hintsDetail; mode = t.modeDetail; }
+  else if (A.mode === "map") { drawMap(g, L, st); hints = t.hintsMap; mode = t.modeMap; }
+  else {
+    const geo = drawTable(g, L, st);
+    if (A.mode === "list") { drawList(g, L, st, geo); hints = t.hintsEdit; mode = t.modeEdit; }
+    if (A.mode === "sorts" && A.sortWin) { drawSortWin(g, L, st); hints = t.hintsSorts; mode = t.modeSorts; }
+    if (A.mode === "ws") drawWsList(g, L, st);
+    if (A.mode === "search" || A.mode === "filter") { hints = t.hintsSearch; mode = A.mode === "search" ? t.modeSearch : t.modeFilter; }
+  }
+  const rs = visible();
+  const pos = ["table", "list", "search", "filter"].includes(A.mode) ? " " + t.pos(rs.length ? A.row + 1 : 0, rs.length, A.col + 1, COLS().length) : "";
+  footer(g, L, st, hints, t.unsaved(Object.keys(A.pend).length) + "  " + mode + pos);
+  // メッセージの行。
+  const msg = A.mode === "list" ? t.listMsg : A.mode === "search" ? "/" + A.typing + "▏" : A.msg;
+  g.put(0, H - 1, msg, A.mode === "search" ? { b: 1 } : null);
+  const term = document.getElementById("term");
+  term.innerHTML = g.html();
+  term.style.background = hex(L.bg);
+}
+
+// ---------- 操作 ----------
+function openEdit() {
+  const rs = visible();
+  const r = rs[A.row];
+  if (!r) return;
+  const [k, , kind] = COLS()[A.col];
+  if (kind === "check") { setVal(r, k, !val(r, k)); return; }
+  if (kind === "select" || kind === "list") {
+    const all = [...new Set(A.rows.flatMap(x => kind === "list" ? val(x, k) : [val(x, k)]))];
+    const cur = kind === "list" ? null : val(r, k);
+    const items = (cur ? [cur] : []).concat(all.filter(v => v !== cur)).concat([""]);
+    A.mode = "list"; A.list = { items, sel: 0, k, kind }; A.msg = "";
+    return;
+  }
+  A.msg = tx().readonlyCell;
+}
+function setVal(r, k, v) {
+  const same = JSON.stringify(v) === JSON.stringify(r[k]);
+  if (same) delete A.pend[r.id + ":" + k]; else A.pend[r.id + ":" + k] = v;
+}
+function pick(i) {
+  const r = visible()[A.row];
+  const v = A.list.items[i];
+  if (A.list.kind === "list") {
+    const cur = val(r, A.list.k);
+    setVal(r, A.list.k, !v ? [] : cur.includes(v) ? cur.filter(x => x !== v) : cur.concat([v]));
+  } else setVal(r, A.list.k, v);
+  A.mode = "table"; A.list = null;
+}
+function key(k, e) {
+  const rs = visible();
+  const n = COLS().length;
+  if (A.mode === "list") {
+    if (k === "ArrowDown" || k === "j") A.list.sel = Math.min(A.list.items.length - 1, A.list.sel + 1);
+    else if (k === "ArrowUp" || k === "k") A.list.sel = Math.max(0, A.list.sel - 1);
+    else if (k === "Enter") pick(A.list.sel);
+    else if (k === "Tab") { pick(A.list.sel); A.col = Math.min(n - 1, A.col + 1); }
+    else if (k === "Escape") { A.mode = "table"; A.list = null; }
+    else return false;
+    return true;
+  }
+  if (A.mode === "settings") {
+    if (k === "Escape") { A.mode = "table"; A.draft = null; return true; }
+    if (k === "Tab" || k === "ArrowDown" || k === "j") { A.draft.sec = (A.draft.sec + 1) % 6; return true; }
+    if (k === "ArrowUp" || k === "k") { A.draft.sec = (A.draft.sec + 5) % 6; return true; }
+    if (k === "Enter") { settingsClick("apply"); return true; }
+    return false;
+  }
+  if (A.mode === "ws") { if (k === "Escape") { A.mode = "table"; return true; } return false; }
+  if (A.mode === "sorts") {
+    const w = A.sortWin, n = A.sorts.length;
+    const items = w.picking ? COLS().filter(c => !A.sorts.some(s => s.k === c[0])) : null;
+    if (k === "Escape") { if (w.picking) w.picking = false; else { A.mode = "table"; A.sortWin = null; } }
+    else if (k === "ArrowDown" || k === "j") w.sel = Math.min((w.picking ? items.length : n + 1) - 1, w.sel + 1);
+    else if (k === "ArrowUp" || k === "k") w.sel = Math.max(0, w.sel - 1);
+    else if (k === "Enter") { if (w.picking) { if (items[w.sel]) A.sorts.push({ k: items[w.sel][0], desc: false }); w.picking = false; w.sel = A.sorts.length - 1; } else if (w.sel < n) A.sorts[w.sel].desc = !A.sorts[w.sel].desc; else { w.picking = true; w.sel = 0; } }
+    else if ((k === "d" || k === "Backspace") && !w.picking && w.sel < n) { A.sorts.splice(w.sel, 1); w.sel = Math.min(w.sel, A.sorts.length); }
+    else if (k === "K" && !w.picking && w.sel > 0 && w.sel < n) { [A.sorts[w.sel - 1], A.sorts[w.sel]] = [A.sorts[w.sel], A.sorts[w.sel - 1]]; w.sel--; }
+    else if (k === "J" && !w.picking && w.sel + 1 < n) { [A.sorts[w.sel + 1], A.sorts[w.sel]] = [A.sorts[w.sel], A.sorts[w.sel + 1]]; w.sel++; }
+    else return false;
+    return true;
+  }
+  if (A.mode === "search" || A.mode === "filter") {
+    if (k === "Enter") { if (A.mode === "search") { A.search = A.typing; A.msg = countHits() ? tx().hits(countHits()) : tx().noHit; } else A.filter = A.typing; A.mode = "table"; A.row = 0; }
+    else if (k === "Escape") { if (A.mode === "filter") A.filter = ""; A.mode = "table"; A.typing = ""; }
+    else if (k === "Backspace") A.typing = [...A.typing].slice(0, -1).join("");
+    else if (k.length === 1 && !(e && (e.metaKey || e.ctrlKey))) A.typing += k;
+    else return false;
+    return true;
+  }
+  if (A.mode === "help" || A.mode === "detail" || A.mode === "map") {
+    if (k === "Escape" || k === "q" || (A.mode === "help" && k === "?") || (A.mode === "detail" && k === "K") || (A.mode === "map" && k === "R")) { A.mode = "table"; return true; }
+    if (A.mode === "detail" && (k === "j" || k === "ArrowDown")) { A.col = Math.min(n - 1, A.col + 1); return true; }
+    if (A.mode === "detail" && (k === "k" || k === "ArrowUp")) { A.col = Math.max(0, A.col - 1); return true; }
+    if (A.mode === "detail" && k === "Enter") { A.mode = "table"; openEdit(); return true; }
+    if (A.mode === "map" && (k === "j" || k === "l" || k === "ArrowRight" || k === "ArrowDown")) { A.map.sel = (A.map.sel + 1) % 3; return true; }
+    if (A.mode === "map" && (k === "k" || k === "h" || k === "ArrowLeft" || k === "ArrowUp")) { A.map.sel = (A.map.sel + 2) % 3; return true; }
+    if (A.mode === "map" && k === "Enter") { A.mode = "table"; return true; }
+    if (A.mode === "map" && k === "a") { A.mode = "table"; A.msg = tx().newMsg; return true; }
+    return k === "Escape";
+  }
+  A.msg = "";
+  switch (k) {
+    case "ArrowDown": case "j": A.row = Math.min(rs.length - 1, A.row + 1); break;
+    case "ArrowUp": case "k": A.row = Math.max(0, A.row - 1); break;
+    case "ArrowRight": case "l": case "Tab": A.col = Math.min(n - 1, A.col + 1); break;
+    case "ArrowLeft": case "h": A.col = Math.max(0, A.col - 1); break;
+    case "Enter": openEdit(); break;
+    case "Backspace": case "Delete": { const r = rs[A.row]; const [kk, , kind] = COLS()[A.col]; if (r && kind !== "num" && kind !== "date") setVal(r, kk, kind === "list" ? [] : kind === "check" ? false : ""); break; }
+    case "u": A.pend = {}; break;
+    case "/": A.mode = "search"; A.typing = ""; break;
+    case "\\": A.mode = "filter"; A.typing = A.filter; break;
+    case "n": case "N": A.msg = A.search ? tx().hits(countHits()) : tx().noHit; break;
+    case ",": { const r = rs[A.row]; const [kk, , kind] = COLS()[A.col]; if (A.same) A.same = null; else if (r && kind !== "list") A.same = { k: kk, v: String(val(r, kk)) }; A.row = 0; break; }
+    case "?": A.mode = "help"; break;
+    case "K": A.mode = "detail"; break;
+    case "R": A.mode = "map"; break;
+    case "[": A.view = (A.view + 2) % 3; A.row = 0; break;
+    case "]": A.view = (A.view + 1) % 3; A.row = 0; break;
+    case "a": A.msg = tx().newMsg; break;
+    case "s": click("head:" + A.col); return true;
+    case "S": A.mode = "sorts"; A.sortWin = { sel: 0, picking: false }; break;
+    case "o": openSettings(); break;
+    case "save": { const c = Object.keys(A.pend).length; if (c) { A.pend = {}; A.msg = tx().saved(c); } else A.msg = tx().nothing; break; }
+    case "Escape": A.search = ""; A.same = null; A.filter = ""; break;
+    default: return false;
+  }
+  return true;
+}
+function countHits() { return visible().reduce((n, r) => n + COLS().filter(([k, , kind]) => { const v = val(r, k); return String(kind === "list" ? v.join(" ") : v).toLowerCase().includes(A.search.toLowerCase()); }).length, 0); }
+function click(a) {
+  const [kind, x, y] = a.split(":");
+  if (kind === "cell") {
+    const i = +x, j = +y;
+    if (A.mode !== "table") A.mode = "table";
+    const again = A.row === i && A.col === j;
+    A.row = i; if (j >= 0) A.col = j;
+    if (again && j >= 0) openEdit();
+  } else if (kind === "item") pick(+x);
+  else if (kind === "head") {
+    // NV-3: 見出しのクリックで 昇順 → 降順 → 解除。
+    A.col = +x; A.mode = "table";
+    const [k, name] = COLS()[+x];
+    const one = A.sorts.length === 1 && A.sorts[0].k === k ? A.sorts[0] : null;
+    A.sorts = !one ? [{ k, desc: false }] : !one.desc ? [{ k, desc: true }] : [];
+    A.msg = !A.sorts.length ? tx().sortOff : A.sorts[0].desc ? tx().sortDesc(name) : tx().sortAsc(name);
+  }
+  else if (kind === "view") { A.view = +x; A.row = 0; }
+  else if (kind === "tab-map") A.mode = "map";
+  else if (kind === "tab-table") A.mode = "table";
+  else if (kind === "new") { A.mode = "table"; A.msg = tx().newMsg; }
+  else if (kind === "sortbtn") { A.mode = A.mode === "sorts" ? "table" : "sorts"; A.sortWin = { sel: 0, picking: false }; }
+  else if (kind === "add") { A.sortWin.picking = true; }
+  else if (kind === "pick") { A.sorts.push({ k: x, desc: false }); A.sortWin.picking = false; }
+  else if (kind === "rmrule") { A.sorts.splice(+x, 1); A.sortWin.sel = Math.min(A.sortWin.sel, A.sorts.length); }
+  else if (kind === "rule") { const i = +x; A.sortWin.sel = i; A.sorts[i].desc = !A.sorts[i].desc; }
+  else if (kind === "ws") { A.mode = A.mode === "ws" ? "table" : "ws"; }
+  else if (kind === "settings") openSettings();
+  else if (kind === "bar") { A.mode = "filter"; A.typing = A.filter; }
+  else if (kind === "chip") {
+    // 帯の項目を押すと、その条件を外す(ビューの条件 → 設定のフィルター → 並べ替えの順に並ぶ)。
+    let i = +x;
+    if (A.view === 1 || A.view === 2) { if (i === 0) { A.view = 0; A.filterDone = false; A.row = 0; render(); return; } i--; }
+    else if (A.filterDone) { if (i === 0) { A.filterDone = false; render(); return; } i--; }
+    A.sorts.splice(i, 1);
+  }
+  else if (kind === "set") settingsClick(x, y, a.split(":")[3]);
+  else if (kind === "wsitem") { A.mode = "table"; A.msg = tx().wsMsg; }
+  else if (kind === "map") A.map.sel = +x;
+  else if (kind === "dcell") A.col = +x;
+  else if (kind === "key") { const k = { "^S": "save", "BS": "Backspace", "Esc": "Escape" }[x] || x; key(k); }
+  render();
+}
+const term = document.getElementById("term");
+term.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); term.focus();
+  // 並べ替えの窓の外のクリックで閉じる(窓の行とボタンは除く)。
+  if (A.mode === "sorts" && !(el && /^(sortbtn|add|pick|rule|rmrule)/.test(el.dataset.a))) { A.mode = "table"; A.sortWin = null; render(); if (!el) return; }
+  if (A.mode === "ws" && !(el && /^(ws|wsitem)/.test(el.dataset.a))) { A.mode = "table"; render(); if (!el) return; }
+  if (el) click(el.dataset.a);
+});
+term.addEventListener("keydown", e => {
+  let k = e.key;
+  if ((e.ctrlKey || e.metaKey) && k === "s") k = "save";
+  else if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (key(k, e)) { e.preventDefault(); render(); }
+});
+
+// ---------- 左の操作と、部品のカタログ ----------
+const $ = id => document.getElementById(id);
+function button(label, on, fn, html) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "opt";
+  b.setAttribute("aria-pressed", String(on));
+  if (html) b.innerHTML = html; else b.textContent = label;
+  b.onclick = () => { fn(); save(); renderAll(); };
+  return b;
+}
+function config() {
+  const st = style();
+  const out = [];
+  if (S.theme === "auto") {
+    out.push('theme = "auto"');
+    if (S.tlight !== DEF.theme_light) out.push(`theme_light = "${S.tlight}"`);
+    if (S.tdark !== DEF.theme_dark) out.push(`theme_dark = "${S.tdark}"`);
+  } else if (S.theme !== DEF.theme) out.push(`theme = "${S.theme}"`);
+  if (S.nerd !== "auto") out.push(`nerd_font = ${S.nerd}`);
+  const base = NAMES.presets[S.preset];
+  const over = NAMES.keys.filter(k => k !== "preset" && st[k] !== base[k]);
+  if (S.preset !== DEF.preset || over.length) {
+    if (out.length) out.push("");
+    out.push("[style]");
+    if (S.preset !== DEF.preset) out.push(`preset = "${S.preset}"`);
+    over.forEach(k => out.push(typeof st[k] === "boolean" ? `${k} = ${st[k]}` : `${k} = "${st[k]}"`));
+  }
+  const roles = NAMES.colorRoles.filter(r => S.colors.roles[r]);
+  if (roles.length) {
+    if (out.length) out.push("");
+    out.push("[colors]");
+    roles.forEach(r => out.push(`${r} = "${S.colors.roles[r]}"`));
+  }
+  // 本体と同じく前後の空白と大文字・小文字で重なる値は1つに(あとのものが勝つ。TOML の重複キーで読めなくならないように)。
+  const seen = new Map();
+  Object.entries(S.colors.values).forEach(([k, v]) => { if (k.trim() && v) seen.set(k.trim().toLowerCase(), [k.trim(), v]); });
+  const vals = [...seen.values()];
+  // TOML の基本の文字列: \ と " と制御文字(DEL を含む)をエスケープする。
+  const tomlKey = k => /^[A-Za-z0-9_-]+$/.test(k) ? k : '"' + [...k].map(ch => { const c = ch.codePointAt(0); return ch === "\\" ? "\\\\" : ch === '"' ? '\\"' : c < 0x20 || c === 0x7f ? "\\u" + c.toString(16).padStart(4, "0") : ch; }).join("") + '"';
+  if (vals.length) {
+    if (out.length) out.push("");
+    out.push("[colors.values]");
+    vals.forEach(([k, v]) => out.push(`${tomlKey(k)} = "${v}"`));
+  }
+  return out.length ? out.join("\n") : (S.lang === "ja" ? "# 既定のまま(書かなくてよい)" : "# defaults (nothing to write)");
+}
+function mini(partKey, v) {
+  const L = look(themeNow());
+  const keep = { A: A, S: Object.assign({}, S) };
+  const st = Object.assign(style(), { [partKey]: v });
+  if (PROPOSALS.ja.some(p => p[0] === partKey)) S[partKey] = v;
+  const g = new Grid(64, 5, L);
+  const t = tx();
+  if (partKey === "tabs") {
+    let x = 1;
+    t.views.forEach((name, i) => { const s = i === 0 ? `[${name}]` : ` ${name} `; x = g.put(x, 1, s, tabStyle(L, st, i === 0)) + 1; });
+    g.h = 3; g.c = g.c.slice(0, 3);
+  } else if (partKey === "band") {
+    g.w = 64;
+    const save = [W, H];
+    const gg = new Grid(64, 3, L);
+    const base = L.band ? { bg: L.band[0], fg: L.band[1] } : {};
+    gg.put(0, 1, " ".repeat(64), base);
+    let x = gg.put(0, 1, t.unsaved(0), Object.assign({}, base, { b: 1 }));
+    for (const [k, d] of t.hintsTable.slice(0, 4)) {
+      x = gg.put(x, 1, "  ", base);
+      const ks = v === "boxed" ? { fg: L.accent, b: 1, bg: L.soft_bg } : v === "quiet" ? { b: 1 } : { fg: L.accent, b: 1 };
+      x = gg.put(x, 1, k, Object.assign({}, base, ks));
+      x = gg.put(x, 1, " " + d, Object.assign({}, base, { fg: L.dim }));
+    }
+    S = keep.S;
+    return gg.html();
+  } else if (partKey === "frames") {
+    const F = frameChars(st);
+    const items = ["todo", "doing", "done", t.empty];
+    const e = { fg: L.accent };
+    const gg = new Grid(30, 7, L);
+    gg.put(2, 0, F[0] + F[4] + " status " + F[4].repeat(10) + F[1], e);
+    items.forEach((it, i) => { gg.put(2, 1 + i, F[5], e); gg.put(3, 1 + i, fitw((i === 1 ? ">" : " ") + " " + it, 19), i === 1 ? { bg: L.sel_bg, fg: L.sel_fg || L.fg, b: 1 } : null); gg.put(22, 1 + i, F[5], e); });
+    gg.put(2, 5, F[2] + "2/4" + F[4].repeat(16) + F[3], e);
+    S = keep.S;
+    return gg.html();
+  } else if (partKey === "searchbar" || partKey === "setband") {
+    const saveA = A;
+    A = Object.assign(freshApp(), { view: partKey === "setband" ? 2 : 0, filter: partKey === "searchbar" && v !== "quiet" ? "" : "" });
+    const gg = new Grid(70, 6, L);
+    drawTable(gg, L, st, {});
+    A = saveA;
+    S = keep.S;
+    gg.c = gg.c.slice(0, 5); gg.h = 5;
+    return gg.html();
+  } else {
+    const saveA = A;
+    A = Object.assign(freshApp(), { row: 0, col: partKey === "select" ? 0 : -1 });
+    // 真偽は true と false が混ざる行で見せる。
+    if (partKey === "check") A.rows = [6, 0, 8].map(i => A.rows[i]);
+    const show = { status: ["status", "owner"], tags: ["tags"], check: ["done", "priority"], select: ["status", "due", "done"], rules: ["status", "due", "priority"], icons: ["status", "due", "tags"] }[partKey];
+    const gg = new Grid(60, 5, L);
+    drawTable(gg, L, st, { mini: true, noSel: partKey !== "select", cols: show });
+    A = saveA;
+    S = keep.S;
+    return gg.html();
+  }
+  S = keep.S;
+  return g.html();
+}
+function renderAll() {
+  const t = tx();
+  document.documentElement.lang = S.lang;
+  if (S.page === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.dataset.theme = S.page;
+  document.querySelectorAll("[data-t]").forEach(el => { const v = t[el.dataset.t]; if (typeof v === "string") el.textContent = v; });
+  document.title = t.title;
+  const langs = $("langs"); langs.innerHTML = "";
+  [["ja", "日本語"], ["en", "English"]].forEach(([k, l]) => langs.appendChild(button(l, S.lang === k, () => { S.lang = k; const p = A.pend; A = freshApp(); A.pend = p; })));
+  const pm = $("pagemode"); pm.innerHTML = "";
+  [["auto", t.pageAuto], ["light", t.pageLight], ["dark", t.pageDark]].forEach(([k, l]) => pm.appendChild(button(l, S.page === k, () => { S.page = k; })));
+  const th = $("themes"); th.innerHTML = "";
+  NAMES.themes.concat(["auto"]).forEach(name => {
+    const L = look(name === "auto" ? S.tdark : name);
+    const sw2 = name === "auto" ? `<span class="swatch" style="background:linear-gradient(90deg, ${hex(look(S.tlight).bg)} 50%, ${hex(look(S.tdark).bg)} 50%)"></span>` : `<span class="swatch" style="background:${hex(L.bg)};box-shadow:inset -4px 0 0 ${hex(L.accent)}"></span>`;
+    th.appendChild(button(name, S.theme === name, () => { S.theme = name; }, sw2 + (name === "auto" ? t.auto : name)));
+  });
+  $("autobox").hidden = S.theme !== "auto";
+  [["tlight", S.tlight], ["tdark", S.tdark]].forEach(([id, cur]) => { const s = $(id); s.innerHTML = NAMES.themes.map(n => `<option${n === cur ? " selected" : ""}>${n}</option>`).join(""); s.onchange = () => { S[id] = s.value; save(); renderAll(); }; });
+  const gs = $("tground"); gs.innerHTML = `<option value="dark"${S.ground === "dark" ? " selected" : ""}>${t.groundDark}</option><option value="light"${S.ground === "light" ? " selected" : ""}>${t.groundLight}</option>`;
+  gs.onchange = () => { S.ground = gs.value; save(); renderAll(); };
+  const pr = $("presets"); pr.innerHTML = "";
+  NAMES.values.preset.forEach(p => pr.appendChild(button(p, S.preset === p && !Object.keys(S.over).length, () => { S.preset = p; S.over = {}; })));
+  const no = $("nerdopts"); no.innerHTML = "";
+  [["auto", t.nerdAuto], ["true", t.nerdTrue], ["false", t.nerdFalse]].forEach(([k, l]) => no.appendChild(button(l, S.nerd === k, () => { S.nerd = k; })));
+  $("termrow").hidden = S.nerd !== "auto";
+  const ts = $("term2"); ts.innerHTML = `<option value="round"${S.termRound ? " selected" : ""}>Ghostty・WezTerm</option><option value="plain"${S.termRound ? "" : " selected"}>${t.termOther}</option>`;
+  ts.onchange = () => { S.termRound = ts.value === "round"; save(); renderAll(); };
+  renderColors();
+  $("cfg").textContent = config();
+  // 操作のボタン(キーの代わり)。
+  const keys = $("keys"); keys.innerHTML = "";
+  [["Enter", t.hintsTable[0][1]], ["/", t.modeSearch], ["\\", t.modeFilter], [",", S.lang === "ja" ? "同じ値だけ" : "Same value"], ["S", t.modeSorts], ["o", t.modeSettings], ["K", t.modeDetail], ["R", t.modeMap], ["?", t.modeHelp], ["Esc", S.lang === "ja" ? "戻る・外す" : "Back / clear"]].forEach(([k, l]) => {
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `<kbd>${k.replace("<", "&lt;")}</kbd>${l}`;
+    b.onclick = () => { key({ Esc: "Escape" }[k] || k); render(); term.focus(); };
+    keys.appendChild(b);
+  });
+  render();
+  // カタログ。
+  const cat = $("catalog"); cat.innerHTML = "";
+  const st = style();
+  const sections = PARTS[S.lang].map(p => [p, false]).concat(PROPOSALS[S.lang].map(p => [p, true]));
+  for (const [[k, name, sub, opts], prop] of sections) {
+    const sec = document.createElement("section");
+    sec.className = "part";
+    sec.innerHTML = `<header><h3></h3><p></p>${prop ? `<span class="tag"></span>` : ""}</header>`;
+    sec.querySelector("h3").textContent = name;
+    sec.querySelector("p").textContent = sub;
+    if (prop) sec.querySelector(".tag").textContent = t.proposal;
+    const grid = document.createElement("div"); grid.className = "grid";
+    // 本体の部品の値は名前の表(NAMES)から並べる(説明の表に無い値を設定の文に出さない。SR-38)。
+    const vals = prop ? Object.keys(opts) : k === "icons" ? ["true", "false"] : NAMES.values[k];
+    for (const v of vals) {
+      const label = opts[v] || v;
+      const value = k === "icons" ? v === "true" : v;
+      const cur = prop ? S[k] : st[k];
+      const card = document.createElement("button");
+      card.type = "button"; card.className = "card";
+      card.setAttribute("aria-pressed", String(cur === value));
+      card.innerHTML = `<span class="name"><span></span><code>${k} = ${typeof value === "boolean" ? value : '"' + v + '"'}</code></span><span class="mini">${mini(k, value)}</span>`;
+      card.querySelector(".name span").textContent = label;
+      card.onclick = () => {
+        if (prop) S[k] = value;
+        else { const base = NAMES.presets[S.preset][k]; if (base === value) delete S.over[k]; else S.over[k] = value; }
+        save(); renderAll();
+      };
+      grid.appendChild(card);
+    }
+    sec.appendChild(grid);
+    cat.appendChild(sec);
+  }
+}
+// 色の欄(SR-38・SR-40・SR-41)。今の見た目の色を初めの値にし、変えた役割だけを設定に書く。
+function renderColors() {
+  const t = tx();
+  const L = look(themeNow());
+  const cur = { background: L.bg, text: L.fg, header: L.header, selection: L.sel_bg, selection_text: L.sel_fg || L.fg, band: L.band ? L.band[0] : L.bg, band_text: L.band ? L.band[1] : L.fg, accent: L.accent, strong: L.p ? L.p.strong : L.fg, zebra: L.p ? L.p.zebra_bg : L.bg, zebra_text: L.p ? L.p.zebra_fg : L.fg, mark: L.mark, added: L.add, removed: L.del, pending: L.pending, highlight: L.hl_bg };
+  const row = r => {
+    const d = document.createElement("label");
+    d.className = "crow" + (S.colors.roles[r] ? " set" : "");
+    const inp = document.createElement("input"); inp.type = "color"; inp.value = S.colors.roles[r] || hex(cur[r]);
+    inp.oninput = () => { S.colors.roles[r] = inp.value; save(); renderAll(); };
+    const name = document.createElement("code"); name.textContent = `${r} · ${t.roleLabel[r]}`;
+    d.append(inp, name);
+    if (S.colors.roles[r]) { const b = document.createElement("button"); b.type = "button"; b.textContent = t.clear; b.onclick = e => { e.preventDefault(); delete S.colors.roles[r]; save(); renderAll(); }; d.append(b); }
+    return d;
+  };
+  const box = $("colorbox"); box.innerHTML = "";
+  const main = ["accent", "background", "text", "selection", "band", "highlight"];
+  main.forEach(r => box.append(row(r)));
+  const more = document.createElement("details");
+  if (NAMES.colorRoles.some(r => !main.includes(r) && S.colors.roles[r])) more.open = true;
+  const sum = document.createElement("summary"); sum.textContent = t.moreRoles; more.append(sum);
+  NAMES.colorRoles.filter(r => !main.includes(r)).forEach(r => more.append(row(r)));
+  box.append(more);
+  const vb = $("valuebox"); vb.innerHTML = "";
+  Object.entries(S.colors.values).forEach(([k, v]) => {
+    const d = document.createElement("div"); d.className = "crow set";
+    const c = document.createElement("input"); c.type = "color"; c.value = v;
+    c.oninput = () => { S.colors.values[k] = c.value; save(); renderAll(); };
+    const name = document.createElement("input"); name.type = "text"; name.value = k; name.placeholder = t.valuePh;
+    name.onchange = () => { const nv = name.value; const e2 = Object.entries(S.colors.values).map(([kk, vv]) => kk === k ? [nv, vv] : [kk, vv]); S.colors.values = Object.fromEntries(e2); save(); renderAll(); };
+    const b = document.createElement("button"); b.type = "button"; b.textContent = t.remove;
+    b.onclick = () => { delete S.colors.values[k]; save(); renderAll(); };
+    d.append(c, name, b); vb.append(d);
+  });
+  const add = document.createElement("button"); add.type = "button"; add.className = "addv"; add.textContent = t.addValue;
+  add.onclick = () => {
+    const used = new Set(Object.keys(S.colors.values));
+    const pick = (S.lang === "ja" ? ["doing", "todo", "done", "blocked"] : ["doing", "todo", "done", "blocked"]).find(v => !used.has(v)) || "value";
+    S.colors.values[pick] = hex(hue(look(themeNow()), pick));
+    save(); renderAll();
+  };
+  vb.append(add);
+}
+$("copy").onclick = async () => {
+  const text = config();
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("cfg")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  const n = $("copied"); n.hidden = false; setTimeout(() => { n.hidden = true; }, 1500);
+};
+$("reset").onclick = () => { A = freshApp(); render(); };
+renderAll();
+</script>
+</body>
+</html>

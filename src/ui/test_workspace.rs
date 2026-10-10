@@ -133,10 +133,11 @@ fn test_ws_4_scope_limits_tables_and_relmap() {
 
 #[test]
 fn test_ws_6_header_shows_workspace() {
-    // [WS-6] 書いたワークスペースの範囲なら、ヘッダーにその名前。範囲が無ければ出さない。
+    // [WS-6] 書いたワークスペースの範囲なら、ヘッダーにその名前。範囲が無ければ出さない
+    // (ヘッダーのボタン「ワークスペース」(SR-42)は範囲の表示に数えない)。
     let tmp = workspace("ws_header");
     let a = boot_tasks(&tmp);
-    assert!(!screen(&a).contains("ワークスペース"), "{}", screen(&a));
+    assert!(!screen(&a).contains("· ワークスペース"), "{}", screen(&a));
     write_two(&tmp);
     let a = boot_tasks(&tmp);
     let head = screen(&a).lines().next().unwrap_or_default().to_string();

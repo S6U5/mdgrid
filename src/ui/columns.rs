@@ -84,11 +84,20 @@ impl App {
         }
     }
 
-    /// 列の見出しの文字。一時的に並べている列には向きの印(`↑` 昇順・`↓` 降順。NV-3)。
+    /// 列の見出しの文字。設定の並べ替えの先頭の列には向きの印(`↑` 昇順・`↓` 降順。NV-3・NV-24)。
     pub(crate) fn head_title(&self, col: &str) -> String {
         let t = self.title(col);
-        match &self.sort {
-            Some((c, desc)) if c == col => format!("{t}{}", if *desc { "↓" } else { "↑" }),
+        match self.settings.sorts.first() {
+            Some((c, d)) if c == col => {
+                format!(
+                    "{t}{}",
+                    if *d == mdgrid::settings::Dir::Desc {
+                        "↓"
+                    } else {
+                        "↑"
+                    }
+                )
+            }
             _ => t,
         }
     }
@@ -108,23 +117,26 @@ impl App {
         true
     }
 
-    /// 選んだ列で、昇順 → 降順 → 解除(`.base` の並び)を回す(NV-3)。別の列なら昇順から。
+    /// 選んだ列で、昇順 → 降順 → 解除を回す(NV-3)。別の列なら昇順から(ほかの決まりは外す)。
+    /// 並べ替えはビューの設定の並べ替えとして当て、見た目の状態に残す(SR-12)。`.base` は変えない。
     pub(crate) fn cycle_sort(&mut self) {
+        use mdgrid::settings::Dir;
         let Some(col) = self.cols.get(self.col).cloned() else {
             return;
         };
         let t = self.title(&col);
-        self.sort = match self.sort.take() {
-            Some((c, false)) if c == col => Some((c, true)),
-            Some((c, true)) if c == col => None,
-            _ => Some((col, false)),
+        let next = match self.settings.sorts.as_slice() {
+            [(c, Dir::Asc)] if *c == col => vec![(col, Dir::Desc)],
+            [(c, Dir::Desc)] if *c == col => Vec::new(),
+            _ => vec![(col, Dir::Asc)],
         };
-        self.message = Some(match &self.sort {
-            Some((_, false)) => Msg::SortedAsc.fill(&[&t]),
-            Some((_, true)) => Msg::SortedDesc.fill(&[&t]),
+        let msg = match next.first() {
+            Some((_, Dir::Asc)) => Msg::SortedAsc.fill(&[&t]),
+            Some((_, Dir::Desc)) => Msg::SortedDesc.fill(&[&t]),
             None => Msg::SortCleared.text().into(),
-        });
-        self.relayout();
+        };
+        self.set_sorts(next);
+        self.message = Some(msg);
     }
 
     /// 選んだ列を隠す(NV-4)。最後の1列は隠さない。

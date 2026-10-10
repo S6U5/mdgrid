@@ -167,6 +167,8 @@ impl App {
             return;
         };
         match p {
+            Pick::TabMenu { tab, sel } => self.tab_menu_run(tab, sel),
+            Pick::Look { field, sel } => self.look_pick_run(field, sel),
             Pick::Column { purpose, sel } => {
                 let Some(col) = d.keys.get(sel).cloned() else {
                     return;
@@ -204,6 +206,25 @@ impl App {
                         };
                         d.pick = None;
                         d.select(Sec::Group, 2);
+                    }
+                    Purpose::WbsKey => {
+                        d.wbs.key = col;
+                        d.sync_wbs();
+                        let w = d.wbs.clone();
+                        let vals = self.wbs_values(&w);
+                        if let Some(d) = self.draft.as_mut() {
+                            d.wbs_vals = vals;
+                            d.pick = None;
+                            d.select(Sec::Tree, 3);
+                        }
+                    }
+                    Purpose::Tree => {
+                        if d.s.tree.is_some() {
+                            d.s.tree = Some(col.clone());
+                        }
+                        d.tree_key = col;
+                        d.pick = None;
+                        d.select(Sec::Tree, 1);
                     }
                 }
             }
@@ -289,6 +310,10 @@ impl App {
                     TextKind::SaveAs | TextKind::Rename => {
                         return self.commit_view_name(t.kind, v);
                     }
+                    // NV-26: ビューの区画からの名前の変更。
+                    TextKind::RenameTab => return self.rename_tab(t.col, v),
+                    TextKind::LookTemplate => return self.save_look_template(v),
+                    TextKind::WbsValue => return self.put_wbs_value(t.col, v),
                     TextKind::Contains => Op::Contains(v),
                     TextKind::NotContains => Op::NotContains(v),
                     TextKind::Cmp(o) => {
@@ -307,6 +332,38 @@ impl App {
             }
             _ => {}
         }
+    }
+
+    /// NV-28: 対応表の1行を決める(「割合 ラベル」。割合に `-` を打つと対応から外す)。
+    fn put_wbs_value(&mut self, value: String, text: String) {
+        let text = text.trim();
+        let (pct, label) = match text.split_once(char::is_whitespace) {
+            Some((p, l)) => (p, l.trim()),
+            None => (text, ""),
+        };
+        let remove = pct == "-";
+        let percent = match pct.parse::<u8>() {
+            Ok(p) if p <= 100 => p,
+            _ if remove => 0,
+            _ => {
+                self.message = Some(Msg::WbsBadPercent.fill(&[&text]));
+                return;
+            }
+        };
+        let Some(d) = self.draft.as_mut() else {
+            return;
+        };
+        d.wbs.map.retain(|m| m.value != value);
+        if !remove {
+            d.wbs.map.push(mdgrid::settings::WbsValue {
+                value,
+                percent,
+                label: label.to_string(),
+            });
+        }
+        d.sync_wbs();
+        d.text = None;
+        self.set_mode(Mode::Settings);
     }
 
     /// 比べる値が列の型で読めるか(NV-19)。読めなければ理由。

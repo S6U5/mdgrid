@@ -22,6 +22,7 @@ pub mod keymap;
 pub mod list;
 pub mod listpick;
 pub mod look;
+pub mod look_section;
 pub mod menu;
 pub mod native_io;
 pub mod native_views;
@@ -35,9 +36,12 @@ pub mod review;
 pub mod settings;
 pub mod settings_pick;
 pub mod settings_view;
+pub mod sorts;
 pub mod startup;
+pub mod termbg;
 pub mod theme;
 pub mod view;
+pub mod view_tabs;
 pub mod width;
 pub mod workspace;
 
@@ -160,7 +164,13 @@ mod test_clear_input;
 #[cfg(test)]
 mod test_click_name;
 #[cfg(test)]
+mod test_colors_more;
+#[cfg(test)]
+mod test_colors_screen;
+#[cfg(test)]
 mod test_datetime_offsets;
+#[cfg(test)]
+mod test_default_view;
 #[cfg(test)]
 mod test_detail;
 #[cfg(test)]
@@ -181,6 +191,8 @@ mod test_external;
 mod test_freq_chips;
 #[cfg(test)]
 mod test_group_gap;
+#[cfg(test)]
+mod test_header_buttons;
 #[cfg(test)]
 mod test_key_ops;
 #[cfg(test)]
@@ -214,6 +226,10 @@ mod test_relmap;
 #[cfg(test)]
 mod test_relmap_click;
 #[cfg(test)]
+mod test_relmap_new_note;
+#[cfg(test)]
+mod test_relmap_new_note_load;
+#[cfg(test)]
 mod test_relmap_scroll;
 #[cfg(test)]
 mod test_review6;
@@ -229,6 +245,24 @@ mod test_rich_cells_more;
 mod test_screen_tabs_fixed;
 #[cfg(test)]
 mod test_selects_cache;
+#[cfg(test)]
+mod test_sort_more;
+#[cfg(test)]
+mod test_sort_remove;
+#[cfg(test)]
+mod test_sort_window;
+#[cfg(test)]
+mod test_style_frames;
+#[cfg(test)]
+mod test_style_list_pill;
+#[cfg(test)]
+mod test_style_overlay;
+#[cfg(test)]
+mod test_style_props;
+#[cfg(test)]
+mod test_style_screen;
+#[cfg(test)]
+mod test_style_selected;
 #[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
@@ -264,6 +298,8 @@ mod test_language_more;
 #[cfg(test)]
 mod test_list_type;
 #[cfg(test)]
+mod test_look_section;
+#[cfg(test)]
 mod test_native_state;
 #[cfg(test)]
 mod test_native_views;
@@ -292,6 +328,10 @@ mod test_search_bar;
 #[cfg(test)]
 mod test_search_not_found;
 #[cfg(test)]
+mod test_settings_close;
+#[cfg(test)]
+mod test_settings_head;
+#[cfg(test)]
 mod test_settings_screen;
 #[cfg(test)]
 mod test_shift_arrows;
@@ -304,8 +344,14 @@ mod test_themes;
 #[cfg(test)]
 mod test_themes_more;
 #[cfg(test)]
+mod test_tree;
+#[cfg(test)]
 mod test_type_replaces_more;
 #[cfg(test)]
 mod test_untyped_date;
 #[cfg(test)]
 mod test_unwritable;
+#[cfg(test)]
+mod test_view_tabs;
+#[cfg(test)]
+mod test_wbs;

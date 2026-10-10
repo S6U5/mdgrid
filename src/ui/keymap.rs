@@ -35,6 +35,8 @@ pub enum Mode {
     Menu,
     /// 列の値の頻度表(NV-9。freq.rs)。
     Freq,
+    /// 並べ替えの窓(NV-24。sorts.rs)。
+    Sorts,
     /// 関係マップ(REL-7。relmap.rs)。
     Relations,
 }
@@ -58,6 +60,7 @@ impl Mode {
             Mode::ListPick => Msg::ModeListPick,
             Mode::Menu => Msg::ModeMenu,
             Mode::Freq => Msg::ModeFreq,
+            Mode::Sorts => Msg::ModeSorts,
             Mode::Relations => Msg::ModeRelations,
         }
     }
@@ -85,11 +88,12 @@ impl Mode {
             Mode::ListPick => "list_select",
             Mode::Menu => "menu",
             Mode::Freq => "freq",
+            Mode::Sorts => "sorts",
             Mode::Relations => "relations",
         }
     }
 
-    pub const ALL: [Mode; 16] = [
+    pub const ALL: [Mode; 17] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -105,6 +109,7 @@ impl Mode {
         Mode::ListPick,
         Mode::Menu,
         Mode::Freq,
+        Mode::Sorts,
         Mode::Relations,
     ];
 
@@ -259,6 +264,8 @@ pub enum Action {
     LinkedRows,
     /// REL-7・REL-8: 関係マップと表の画面を切り替える。
     RelationMap,
+    /// NV-27: 親子で並べた表で、選んだ行の子孫を畳む・開く。
+    ToggleTree,
     /// WS-2: この表でワークスペースを作る・足す・外す・ワークスペースを開く。
     WsNew,
     WsAdd,
@@ -274,6 +281,10 @@ pub enum Action {
     Menu,
     /// 選んでいる列の値の頻度表を開く(NV-9)。
     Freq,
+    /// 並べ替えの窓を開く(NV-24)。
+    SortMenu,
+    /// 今のビューを既定のビューにする(NV-25)。
+    SetDefaultView,
 }
 
 impl Action {
@@ -372,11 +383,14 @@ impl Action {
             Action::RemoveItem => "remove_item",
             Action::ExportBase => "export_base",
             Action::ExportTable => "export_table",
+            Action::SortMenu => "sort_menu",
+            Action::SetDefaultView => "set_default_view",
             Action::OpenPlace => "open_place",
             Action::RegisterPlace => "register_place",
             Action::OpenLink => "open_link",
             Action::LinkedRows => "linked_rows",
             Action::RelationMap => "relation_map",
+            Action::ToggleTree => "toggle_tree",
             Action::WsNew => "workspace_new",
             Action::WsAdd => "workspace_add",
             Action::WsRemove => "workspace_remove",
@@ -480,6 +494,7 @@ const NATIVE: Msg = Msg::SecNative;
 const NOTE: Msg = Msg::SecNote;
 const IN_MENU: Msg = Msg::SecInMenu;
 const IN_FREQ: Msg = Msg::SecInFreq;
+const IN_SORTS: Msg = Msg::SecInSorts;
 const IN_RELMAP: Msg = Msg::SecInRelMap;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
@@ -523,6 +538,8 @@ const fn cmd(action: Action, msg: Msg, section: Msg) -> Command {
 pub const COMMANDS: &[Command] = &[
     cmd(Action::ExportBase, Msg::CmdExportBase, NATIVE),
     cmd(Action::ImportBase, Msg::CmdImportBase, NATIVE),
+    // NV-25: 今のビューを既定のビューにする(views.toml に書くので読むだけでは出さない)。
+    cmd(Action::SetDefaultView, Msg::CmdSetDefaultView, NATIVE),
     // OUT-2: 画面の表の書き出し(既定のキーなし。パレットから)。
     cmd(Action::ExportTable, Msg::CmdExportTable, OUTSIDE),
     // CE-29: キーの名前の変更と削除(既定のキーなし。パレットと操作の一覧から)。
@@ -536,6 +553,8 @@ pub const COMMANDS: &[Command] = &[
 /// 登録した表(CLI-18・CLI-19)と、リレーションをたどる操作(REL-4・REL-5)。
 pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::OpenPlace, Msg::PlaceOpen, FILE),
+    // NV-24: 並べ替えの窓(キー `S` を外しても、検索の欄を隠しても開けるように)。
+    cmd(Action::SortMenu, Msg::CmdSortMenu, SHAPE),
     cmd(Action::RegisterPlace, Msg::PlaceRegister, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
@@ -610,10 +629,13 @@ pub const BINDINGS: &[Binding] = &[
     b("<", Action::Narrower, Msg::KeyNarrower, SHAPE, 0),
     b(">", Action::Wider, Msg::KeyWider, SHAPE, 0),
     b("s", Action::Sort, Msg::KeySort, SHAPE, 0),
+    // NV-24: 並べ替えの窓(検索の欄の右の「並べ替え」と同じ)。
+    b("S", Action::SortMenu, Msg::CmdSortMenu, SHAPE, 0),
     b("-", Action::HideColumn, Msg::KeyHideColumn, SHAPE, 0),
     b("+", Action::ShowColumn, Msg::KeyShowColumn, SHAPE, 0),
     // REL-7・REL-8: 関係マップ(上の端のタブ・パレットからも)。
     b("R", Action::RelationMap, Msg::KeyRelationMap, FIND, 0),
+    b("Z", Action::ToggleTree, Msg::KeyToggleTree, SHAPE, 0),
     b("A", Action::AddColumn, Msg::KeyAddColumn, SHAPE, 0),
     b(
         "H",
@@ -1538,6 +1560,98 @@ pub const BINDINGS: &[Binding] = &[
     m(Mode::Menu, "Up", Action::Up, Msg::KeyPrevItem, IN_MENU, 4),
     m(Mode::Menu, "g g", Action::Top, Msg::KeyTop, IN_MENU, 0),
     m(Mode::Menu, "G", Action::Bottom, Msg::KeyBottom, IN_MENU, 0),
+    // 並べ替えの窓の中(NV-24。sorts.rs)。Enter で向きを変えるか列を足し、d で外し、K・J で順を入れ替える。
+    m(
+        Mode::Sorts,
+        "Enter",
+        Action::Run,
+        Msg::KeySortsRun,
+        IN_SORTS,
+        1,
+    ),
+    m(
+        Mode::Sorts,
+        "Esc",
+        Action::Close,
+        Msg::KeyClose,
+        IN_SORTS,
+        2,
+    ),
+    m(Mode::Sorts, "q", Action::Close, Msg::KeyClose, IN_SORTS, 0),
+    m(
+        Mode::Sorts,
+        "j",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_SORTS,
+        0,
+    ),
+    m(
+        Mode::Sorts,
+        "Down",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_SORTS,
+        0,
+    ),
+    m(Mode::Sorts, "k", Action::Up, Msg::KeyPrevItem, IN_SORTS, 0),
+    m(Mode::Sorts, "Up", Action::Up, Msg::KeyPrevItem, IN_SORTS, 0),
+    m(
+        Mode::Sorts,
+        "d",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_SORTS,
+        3,
+    ),
+    m(
+        Mode::Sorts,
+        "Delete",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_SORTS,
+        0,
+    ),
+    m(
+        Mode::Sorts,
+        "Backspace",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_SORTS,
+        0,
+    ),
+    m(
+        Mode::Sorts,
+        "K",
+        Action::MoveItemUp,
+        Msg::KeyMoveItemUp,
+        IN_SORTS,
+        4,
+    ),
+    m(
+        Mode::Sorts,
+        "Shift+Up",
+        Action::MoveItemUp,
+        Msg::KeyMoveItemUp,
+        IN_SORTS,
+        0,
+    ),
+    m(
+        Mode::Sorts,
+        "J",
+        Action::MoveItemDown,
+        Msg::KeyMoveItemDown,
+        IN_SORTS,
+        5,
+    ),
+    m(
+        Mode::Sorts,
+        "Shift+Down",
+        Action::MoveItemDown,
+        Msg::KeyMoveItemDown,
+        IN_SORTS,
+        0,
+    ),
     // 列の値の頻度表の中(NV-9。freq.rs)。Enter で選んだ値の行だけに絞り、Esc で何もせず閉じる。
     m(
         Mode::Freq,
@@ -1657,6 +1771,14 @@ pub const BINDINGS: &[Binding] = &[
         Msg::KeyRelPrevLink,
         IN_RELMAP,
         0,
+    ),
+    m(
+        Mode::Relations,
+        "a",
+        Action::NewNote,
+        Msg::KeyNewNote,
+        IN_RELMAP,
+        5,
     ),
     m(
         Mode::Relations,
@@ -1967,6 +2089,7 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::ListPick, &[Action::Cancel]),
     (Mode::Menu, &[Action::Close]),
     (Mode::Freq, &[Action::Close]),
+    (Mode::Sorts, &[Action::Close]),
     (Mode::Relations, &[Action::Close]),
 ];
 

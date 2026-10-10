@@ -222,11 +222,11 @@ Keys: `,`
 
 , keeps the rows whose value equals the selected cell; * only highlights them.
 
-## Sort for now
+## Sort by a column
 
 Keys: `l` `s`
 
-![Sort for now](images/sort-column.svg)
+![Sort by a column](images/sort-column.svg)
 
 s sorts by the column: ascending, descending, then off. The .base file is not changed.
 

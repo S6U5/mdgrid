@@ -34,8 +34,11 @@ pub(crate) struct Shown {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum CellPart {
     None,
-    /// 札の並び(text は `  a   b ` のように頭に空白1つ、札ごとに前後の空白、札の間に空白1つ)。
-    Chips(Vec<String>),
+    /// 値の部品の並び(SR-36 の形。text は chips::parts の文字)。`list` はリストの列の値。
+    Chips {
+        items: Vec<String>,
+        list: bool,
+    },
     /// リンク(アクセントの色)。
     Link,
 }
@@ -44,11 +47,22 @@ pub(crate) enum CellPart {
 pub(crate) const CHECK_ON: &str = "☑";
 pub(crate) const CHECK_OFF: &str = "☐";
 
-/// 札の並びの文字(頭に地の色の無い空白1つ、札ごとに前後の空白、札の間に空白1つ)。頭の空白で、列の頭の
-/// 桁は行の地の色のまま(一行おきの色などの行の見た目を札が隠さない)。
-pub(crate) fn chips_text(items: &[String]) -> String {
-    let chips: Vec<String> = items.iter().map(|i| format!(" {i} ")).collect();
-    format!(" {}", chips.join(" "))
+/// 真偽の部品の文字(SR-36 の `check`)。`text` なら None(値の文字のまま)。
+pub(crate) fn check_marks(check: mdgrid::style::Check) -> Option<(&'static str, &'static str)> {
+    use mdgrid::style::Check;
+    match check {
+        Check::Box_ => Some((CHECK_ON, CHECK_OFF)),
+        Check::Tick => Some(("✓", "·")),
+        Check::Bracket => Some(("[x]", "[ ]")),
+        Check::Text => None,
+    }
+}
+
+/// 値の部品の文字と部品(SR-36)。形が plain なら None。
+fn parts_of(app: &App, items: Vec<String>, list: bool, part: &mut CellPart) -> Option<String> {
+    let t = super::chips::parts(app, &items, list)?.text();
+    *part = CellPart::Chips { items, list };
+    Some(t)
 }
 
 /// 改行を含む値は1行目と `…⏎`(CV-3)。
@@ -214,26 +228,18 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
 fn rich_text(app: &App, col: &str, v: &Value, part: &mut CellPart) -> Option<String> {
     match v {
         Value::Bool(b) if app.rich(col, Part::Checkbox) => {
-            Some(if *b { CHECK_ON } else { CHECK_OFF }.to_string())
+            let (on, off) = check_marks(app.style.check)?;
+            Some(if *b { on } else { off }.to_string())
         }
         Value::List(items) if !items.is_empty() && app.rich(col, Part::Chips) => {
-            let items: Vec<String> = items.iter().map(value_text).collect();
-            let t = chips_text(&items);
-            *part = CellPart::Chips(items);
-            Some(t)
+            parts_of(app, items.iter().map(value_text).collect(), true, part)
         }
         // 札を強いた列(`"chip"`)の数も札に。
         Value::Int(_) | Value::Float(_) if app.cells.forced_chip(col) && app.is_select(col) => {
-            let item = value_text(v);
-            let t = chips_text(std::slice::from_ref(&item));
-            *part = CellPart::Chips(vec![item]);
-            Some(t)
+            parts_of(app, vec![value_text(v)], false, part)
         }
         Value::Str(s) if !s.is_empty() && app.is_select(col) => {
-            let item = first_line_marked(s);
-            let t = chips_text(std::slice::from_ref(&item));
-            *part = CellPart::Chips(vec![item]);
-            Some(t)
+            parts_of(app, vec![first_line_marked(s)], false, part)
         }
         _ => None,
     }

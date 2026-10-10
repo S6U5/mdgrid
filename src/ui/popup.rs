@@ -111,10 +111,27 @@ pub(crate) const ASCII: Frame = Frame {
 /// 今の設定の枠の文字(SR-32): 既定は罫線。`borders = "ascii"` か ambiguous_wide なら ASCII(罫線は
 /// East Asian Ambiguous なので、幅2で描く端末では列がずれる)。
 pub(crate) fn frame(app: &App) -> Frame {
+    use mdgrid::style::Frames;
     if app.ambiguous_wide || app.borders_ascii {
-        ASCII
-    } else {
-        ROUNDED
+        return ASCII;
+    }
+    // SR-36 の `frames`。線の無い枠も、枠の幅は変えない(中身の位置とクリックの位置を変えない)。
+    let (tl, tr, bl, br, h, v, lt, rt) = match app.style.frames {
+        Frames::Rounded => return ROUNDED,
+        Frames::Ascii => return ASCII,
+        Frames::Square => ('┌', '┐', '└', '┘', '─', '│', '├', '┤'),
+        Frames::Heavy => ('┏', '┓', '┗', '┛', '━', '┃', '┣', '┫'),
+        Frames::None_ => (' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '),
+    };
+    Frame {
+        tl,
+        tr,
+        bl,
+        br,
+        h,
+        v,
+        lt,
+        rt,
     }
 }
 
@@ -194,8 +211,9 @@ fn modern_row(
     l: &super::look::Look,
 ) -> Line<'static> {
     let chars: Vec<char> = t.chars().collect();
-    let edge = |c: char| "╭╮╰╯├┤+".contains(c);
-    let line_char = |c: char| "─-".contains(c);
+    // 縁の文字は frames(SR-36)のどの形でも(丸・角・太い・ASCII)。
+    let edge = |c: char| "╭╮╰╯┌┐└┘┏┓┗┛├┤┣┫+".contains(c);
+    let line_char = |c: char| "─━-".contains(c);
     let (Some(&first), Some(&last)) = (chars.first(), chars.last()) else {
         return splice(line, x, Span::styled(t.to_string(), st), iw, w);
     };
@@ -228,7 +246,7 @@ fn modern_row(
         return splice_spans(line, x, spans, iw, w);
     }
     // 中身の行: 左右の縦の線と、中身。
-    if "│|".contains(first) && "│|".contains(last) && chars.len() >= 2 {
+    if "│┃|".contains(first) && "│┃|".contains(last) && chars.len() >= 2 {
         let body: String = chars[1..chars.len() - 1].iter().collect();
         let spans = vec![
             Span::styled(first.to_string(), l.border()),

@@ -53,9 +53,14 @@ pub(crate) fn num_width(app: &App) -> usize {
 /// 位置は区切りを1桁として数える)。`│` は East Asian Ambiguous で、`ambiguous_wide`(CV-6)では幅2に
 /// なるので、そのときは幅1の `|` を引く。
 pub(crate) fn col_sep(app: &App) -> &'static str {
-    if !app.shows(Item::ColumnLines) {
+    use mdgrid::style::Rules;
+    let lines = matches!(super::look::rules(app), Rules::Columns | Rules::Grid);
+    if !app.shows(Item::ColumnLines) && !lines {
         " "
-    } else if app.ambiguous_wide || app.borders_ascii {
+    } else if app.ambiguous_wide
+        || app.borders_ascii
+        || app.style.frames == mdgrid::style::Frames::Ascii
+    {
         "|"
     } else {
         "│"

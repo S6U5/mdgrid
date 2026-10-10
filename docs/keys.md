@@ -76,10 +76,12 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `]` | `next_view` | Switch to the next view |
 | `<` | `narrow_column` | Make the column narrower |
 | `>` | `widen_column` | Make the column wider |
-| `s` | `sort_column` | Sort by this column temporarily: ascending, descending, then off (the `.base` file is not changed) |
+| `s` | `sort_column` | Sort by this column: ascending, descending, then off. The sort is kept for the view (the `.base` file is not changed) |
+| `S` | `sort_menu` | Open the sort window (same as the **Sort** button at the right of the filter bar) |
 | `-` | `hide_column` | Hide the column |
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
+| `Z` | `toggle_tree` | Fold or unfold the child rows (when the view arranges rows by parent) |
 | `A` | `add_column` | Add a column for a key no note has yet (type its name); saving writes the key only to the notes you fill in |
 | `H` | `move_column_left` | Move the column to the left |
 | `L` | `move_column_right` | Move the column to the right |
@@ -344,6 +346,29 @@ The value counts of the selected column (`%`). Each value is listed with its num
 
 Clicking a value shows only its rows; clicking outside just closes the window. If the terminal is too small to show it, it doesn't open and a message explains why. `Esc` in the `table` mode clears the filter again.
 
+## `sorts`
+
+The sort window (`S`, or the **Sort** button at the right of the filter bar). It lists the sort rules of the current view (column and direction) and a last line to add one. Every change applies to the table right away and is kept for the view, like a sort from a column heading.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Flip the direction of the selected rule, or add a rule (then pick a column) |
+| `Esc` | `close` | Close the window (while picking a column, go back to the rules) |
+| `q` | `close` | Close the window |
+| `j` | `down` | Next line |
+| `Down` | `down` | Next line |
+| `k` | `up` | Previous line |
+| `Up` | `up` | Previous line |
+| `d` | `remove_item` | Remove the selected rule |
+| `Delete` | `remove_item` | Remove the selected rule |
+| `Backspace` | `remove_item` | Remove the selected rule |
+| `K` | `move_item_up` | Move the rule up (it sorts first) |
+| `Shift+Up` | `move_item_up` | Move the rule up |
+| `J` | `move_item_down` | Move the rule down |
+| `Shift+Down` | `move_item_down` | Move the rule down |
+
+Clicking a line does what `Enter` does, and clicking the `×` at the right end of a rule removes it; clicking outside closes the window.
+
 ## `relations`
 
 The relation map (`R`, `:relation_map`, or the **Relations** tab at the top right, which appears once you have registered tables). It shows the registered tables (and the current one) as boxes with their row counts and columns, and draws an arrow from each column that links to another table: `N` on the linking side, `1` (many-to-one) or `N` (many-to-many, a list of links) on the target side. The panes follow the terminal size: 120 columns or more show the tables, the map and the details side by side; 80 or more show the map and the details; narrower terminals show the tables and links as a list. With 30 rows or more, the linked records of the selected link appear below.
@@ -364,6 +389,7 @@ The mouse works too: click a table (in the list or its box on the map) to select
 | `Right` | `right` | Next link of the selected table |
 | `h` | `left` | Previous link of the selected table |
 | `Left` | `left` | Previous link of the selected table |
+| `a` | `new_note` | Open the selected table and start a new note (same as **+ New** at the top right) |
 | `?` | `help` | Show help |
 
 Clicking the **Table** tab at the top right goes back to the table.
@@ -404,10 +430,11 @@ Every action name you can write in the keys section of the config file. Each one
 - `next_view` — switch to the next view
 - `narrow_column` — make the column narrower
 - `widen_column` — make the column wider
-- `sort_column` — sort by the column temporarily
+- `sort_column` — sort by the column (kept for the view)
 - `hide_column` — hide the column
 - `show_column` — bring back the last hidden column
 - `relation_map` — switch between the table and the relation map
+- `toggle_tree` — fold or unfold the child rows of the selected row
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
 - `move_column_right` — move the column to the right
@@ -419,6 +446,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `highlight_same` — highlight the rows with the same value
 - `filter_same` — show only the rows with the same value
 - `frequency` — show the value counts of the column
+- `sort_menu` — open the sort window
 - `mark_row` — mark or unmark the row
 - `select_range` — select a range of rows
 - `extend_up` — extend the selection up

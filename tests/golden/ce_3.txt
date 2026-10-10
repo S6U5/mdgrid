@@ -1,6 +1,6 @@
- tasks.base  2行
+ tasks.base  2行                                        ワークスペース   設定
 [未完了]
- 検索: (\ で絞る)
+ 検索: (\ で絞る)                                                     並べ替え
  ノート title  status
 >a      会議   todo
  b      買い物 │>*todo  │

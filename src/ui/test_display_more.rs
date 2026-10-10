@@ -112,15 +112,21 @@ fn test_sr_20_display_section_scrolls_on_low_screen() {
     for (i, (_, name)) in mdgrid::display::ITEMS.iter().enumerate() {
         assert_eq!(a.draft.as_ref().unwrap().at(Sec::Display), i);
         let s = screen(&a);
+        // NV-18: 選んだ項目は `>` の印(スイッチの形 `● オン` / `○ オフ`)。
         assert!(
-            s.contains(&format!(">[x] {name}")) || s.contains(&format!(">[ ] {name}")),
+            s.contains(&format!(">{name}")),
             "選んだ「{name}」が見えない:\n{s}"
         );
         press(&mut a, KeyCode::Down);
     }
     // 最後の項目(設定の帯)を切り替えても見えたまま。
     ch(&mut a, ' ');
-    assert!(screen(&a).contains(">[ ] 設定の帯"), "{}", screen(&a));
+    let s = screen(&a);
+    let line = s
+        .lines()
+        .find(|l| l.contains(">設定の帯"))
+        .unwrap_or_default();
+    assert!(line.contains("○ オフ"), "{s}");
 }
 
 // ---- 中5: 帯を隠したままの f は選んだ条件をメッセージ行に出す ----

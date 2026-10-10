@@ -323,8 +323,8 @@ fn test_nv_16_band_lists_settings() {
 
 #[test]
 fn test_nv_18_settings_screen_golden() {
-    // [NV-18] 1つの画面に 列(表示・非表示と順)・フィルター・並べ替え・グループ の4つの区画と、
-    // 反映・取り消し・既定に戻す のボタン。[SR-9] 全行が幅以下。
+    // [NV-18] 左に区画の一覧(列・フィルター・並べ替え・グループ・表示と今の状態)、右に選んだ区画の中身、
+    // 上の右に「未反映 N」と反映・取り消し、下に既定に戻す。[SR-9] 全行が幅以下。
     let tmp = vault("nv18");
     let mut a = boot(&tmp, None, false);
     open(&mut a);
@@ -352,21 +352,40 @@ fn test_nv_18_settings_screen_golden() {
     ch(&mut a, ' ');
     let s = screen(&a);
     for want in [
-        "列(表示と順)",
+        "> 列",
+        "3/4",
         "フィルター",
         "並べ替え",
         "グループ",
-        "status: done を除く",
-        "priority ↓ 降順",
-        "(*) 列で分ける: 種別",
-        "[x] 空のまとまりを隠す",
-        "[ ] priority",
+        "種別",
+        "未反映 4",
+        "○ 隠す",
         "[ 反映 ]",
         "[ 取り消し ]",
         "[ 既定に戻す ]",
     ] {
         assert!(s.contains(want), "{want} が無い: {s}");
     }
+    let line = s.lines().find(|l| l.contains("⠿ priority")).unwrap();
+    assert!(line.contains("○ 隠す"), "{line}");
+    // ほかの区画の中身は、選ぶと右に出る。
+    for (sec, want) in [
+        (Sec::Filters, "status: done を除く"),
+        (Sec::Sorts, "1. priority ↓ 降順"),
+        (Sec::Group, "◉ 列で分ける: 種別"),
+    ] {
+        section(&mut a, sec);
+        let t = screen(&a);
+        assert!(t.contains(want), "{want} が無い: {t}");
+        assert_fits(&t, 80);
+    }
+    let t = screen(&a);
+    let line = t
+        .lines()
+        .find(|l| l.contains("空のまとまりを隠す"))
+        .unwrap();
+    assert!(line.contains("● オン"), "{line}");
+    section(&mut a, Sec::Columns);
     assert_fits(&s, 80);
     golden("nv_18", &s);
     // 反映すると全部が表に効く。
@@ -580,14 +599,22 @@ fn test_nv_20_layers() {
     assert_eq!(labels(&a), ["a.md"]);
     press(&mut a, KeyCode::Esc);
     assert_eq!(labels(&a), want);
-    // `s` の並びが勝つ。
+    // `s`(見出しの並べ替え)は設定の並べ替えそのものを変える(NV-3・NV-20)。
     col_named(&mut a, "priority");
     ch(&mut a, 's');
     assert_eq!(labels(&a), ["a.md", "c.md", "f.md"]);
+    assert_eq!(
+        a.settings.sorts,
+        [("priority".to_string(), mdgrid::settings::Dir::Asc)]
+    );
     ch(&mut a, 's');
     ch(&mut a, 's');
-    assert!(a.sort.is_none());
-    assert_eq!(labels(&a), want, "`s` を外すと設定の並び");
+    assert!(a.settings.sorts.is_empty(), "3回で並べ替えを外す");
+    let mut rows = labels(&a);
+    rows.sort();
+    let mut all = want.clone();
+    all.sort();
+    assert_eq!(rows, all, "絞り込みはそのまま");
 }
 
 #[test]
@@ -847,10 +874,19 @@ fn test_sr_9_settings_screen_fits_narrow() {
 
 #[test]
 fn test_nv_18_click_items_and_buttons() {
-    // [NV-18] 項目のクリックで選んで決め、ボタンのクリックで押す(反映)。
+    // [NV-18] 左の一覧のクリックで区画を選び、項目のクリックで選んで決め、上の「反映」のクリックで押す。
     let (_t, mut a) = folder("nv18click");
     open(&mut a);
-    // 右の欄の「+ 条件を足す」(フィルターの見出しの下)をクリック → 列の選び手。
+    // 左の一覧の「フィルター」をクリック → 右がフィルターの区画(列の区画から移る)。
+    section(&mut a, Sec::Columns);
+    let s = screen(&a);
+    let y = s
+        .lines()
+        .position(|l| l.find("フィルター").is_some_and(|i| i < 4))
+        .unwrap_or_else(|| panic!("一覧に「フィルター」が無い:\n{s}"));
+    a.click(3, y as u16);
+    assert_eq!(draft(&a).sec, Sec::Filters);
+    // 右の欄の「+ 条件を足す」をクリック → 列の選び手。
     let s = screen(&a);
     let (y, line) = s
         .lines()
@@ -868,10 +904,12 @@ fn test_nv_18_click_items_and_buttons() {
     press(&mut a, KeyCode::Enter);
     pick_column(&mut a, "priority");
     assert_eq!(draft(&a).s.sorts, [("priority".to_string(), Dir::Asc)]);
+    // 上の右に「未反映 1」と「反映」。
     let s = screen(&a);
-    let line = s.lines().nth(20).unwrap();
+    let line = s.lines().next().unwrap();
+    assert!(line.contains("未反映 1"), "{line}");
     let x = width::width(&line[..line.find("[ 反映 ]").unwrap()]);
-    a.click(x as u16 + 1, 20);
+    a.click(x as u16 + 1, 0);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.settings.sorts, [("priority".to_string(), Dir::Asc)]);
     assert_eq!(labels(&a)[0], "b.md");

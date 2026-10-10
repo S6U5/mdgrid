@@ -327,7 +327,7 @@ fn test_sr_27_default_zebra_is_unchanged() {
 
 #[test]
 fn test_sr_27_theme_names() {
-    // [SR-27] 設定の名前は7つ。知らない名前は None。
+    // [SR-27][SR-37] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
     let names = [
         ("default", Theme::Default),
         ("nord", Theme::Nord),
@@ -336,6 +336,11 @@ fn test_sr_27_theme_names() {
         ("gruvbox", Theme::Gruvbox),
         ("pink-monster", Theme::PinkMonster),
         ("dozy-pink", Theme::DozyPink),
+        ("sumi", Theme::Sumi),
+        ("slate", Theme::Slate),
+        ("saas", Theme::Saas),
+        ("saas-dark", Theme::SaasDark),
+        ("paper", Theme::Paper),
     ];
     for (name, t) in names {
         assert_eq!(Theme::parse(name), Some(t), "{name}");
@@ -346,7 +351,7 @@ fn test_sr_27_theme_names() {
             "設定の {name}"
         );
     }
-    assert_eq!(Theme::ALL.len(), 7);
+    assert_eq!(Theme::ALL.len(), 12);
     assert_eq!(Theme::ALL, names.map(|(_, t)| t), "Theme::ALL の順");
     for bad in ["neon", "", "Nord", "solarized_light", "solarized"] {
         assert_eq!(Theme::parse(bad), None, "{bad:?}");

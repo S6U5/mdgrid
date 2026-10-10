@@ -48,7 +48,14 @@ pub struct NativeView {
     pub new_note: Option<NewNote>,
 }
 
-const TARGET_KEYS: &[&str] = &["path", "view"];
+const TARGET_KEYS: &[&str] = &[
+    "path",
+    "view",
+    "default_view",
+    "tab_order",
+    "hidden_tabs",
+    "tab_hint",
+];
 const VIEW_KEYS: &[&str] = &[
     "name",
     "order",
@@ -58,7 +65,7 @@ const VIEW_KEYS: &[&str] = &[
     "new_note",
 ];
 const NEW_NOTE_KEYS: &[&str] = NewNote::KEYS;
-const SETTINGS_KEYS: &[&str] = &["filters", "sorts", "group", "display"];
+const SETTINGS_KEYS: &[&str] = &["filters", "sorts", "group", "display", "tree", "wbs"];
 const COND_KEYS: &[&str] = &["col", "op"];
 
 // ---- 読み書き ----
@@ -225,6 +232,162 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
         }
     }
     (views, warns)
+}
+
+/// 対象 `target` の表(`[[target]]`)。無ければ・読めなければ None。
+fn target_table(dir: &Path, target: &Path) -> Option<toml::Table> {
+    let text = std::fs::read_to_string(dir.join(FILE_NAME)).ok()?;
+    let table = parse_table(&text).ok()?;
+    let key = config::target_key(target);
+    table
+        .get("target")?
+        .as_array()?
+        .iter()
+        .filter_map(|t| t.as_table())
+        .find(|t| {
+            t.get("path")
+                .and_then(|p| p.as_str())
+                .is_some_and(|p| same_target(p, &key))
+        })
+        .cloned()
+}
+
+/// NV-25: 対象 `target` の既定のビューの名前(`[[target]]` の `default_view`)。無ければ・読めなければ None。
+pub fn load_default_view(dir: &Path, target: &Path) -> Option<String> {
+    target_table(dir, target)?
+        .get("default_view")?
+        .as_str()
+        .map(str::to_string)
+}
+
+/// NV-25: 対象 `target` の既定のビューを書く(None なら消す)。ほかの項目と対象はそのまま。
+/// 置き場の中の一時ファイル → 名前の変更で書く。壊れた views.toml は書き換えずに Err。
+pub fn save_default_view(dir: &Path, target: &Path, name: Option<&str>) -> io::Result<()> {
+    edit_target(dir, target, name.is_some(), |t| match name {
+        Some(n) => {
+            t.insert("default_view".into(), toml::Value::String(n.to_string()));
+        }
+        None => {
+            t.remove("default_view");
+        }
+    })
+}
+
+/// NV-26: 対象のタブの好み(`[[target]]` の `tab_order`・`hidden_tabs`・`tab_hint`)。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TabPrefs {
+    /// タブを見せる順(ビューの名前)。ここに無いタブは元の順で後ろ。
+    pub order: Vec<String>,
+    /// タブの行と `[` `]` に出さないビューの名前。
+    pub hidden: Vec<String>,
+    /// タブの行の切り替えの案内(「[ ] で切り替え」)を出すか。
+    pub hint: bool,
+}
+
+impl Default for TabPrefs {
+    fn default() -> Self {
+        TabPrefs {
+            order: Vec::new(),
+            hidden: Vec::new(),
+            hint: true,
+        }
+    }
+}
+
+fn names_of(v: Option<&toml::Value>) -> Vec<String> {
+    v.and_then(|v| v.as_array())
+        .map(|a| {
+            a.iter()
+                .filter_map(|x| x.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// NV-26: 対象 `target` のタブの好み。無ければ・読めなければ既定(元の順・隠さない・案内あり)。
+pub fn load_tab_prefs(dir: &Path, target: &Path) -> TabPrefs {
+    let Some(t) = target_table(dir, target) else {
+        return TabPrefs::default();
+    };
+    TabPrefs {
+        order: names_of(t.get("tab_order")),
+        hidden: names_of(t.get("hidden_tabs")),
+        hint: t.get("tab_hint").and_then(|v| v.as_bool()).unwrap_or(true),
+    }
+}
+
+/// NV-26: 対象 `target` のタブの好みを書く。既定の項目は書かずに消す。ほかの項目と対象はそのまま。
+pub fn save_tab_prefs(dir: &Path, target: &Path, p: &TabPrefs) -> io::Result<()> {
+    let names =
+        |v: &[String]| toml::Value::Array(v.iter().cloned().map(toml::Value::String).collect());
+    edit_target(dir, target, *p != TabPrefs::default(), |t| {
+        for (k, v) in [
+            ("tab_order", (!p.order.is_empty()).then(|| names(&p.order))),
+            (
+                "hidden_tabs",
+                (!p.hidden.is_empty()).then(|| names(&p.hidden)),
+            ),
+            ("tab_hint", (!p.hint).then_some(toml::Value::Boolean(false))),
+        ] {
+            match v {
+                Some(v) => {
+                    t.insert(k.into(), v);
+                }
+                None => {
+                    t.remove(k);
+                }
+            }
+        }
+    })
+}
+
+/// 対象 `target` の表を `f` で書き換えて書く(表が無ければ、`create` のときだけ作る)。ほかの対象はそのまま。
+/// 置き場の中の一時ファイル → 名前の変更で書く。壊れた views.toml は書き換えずに Err。
+fn edit_target(
+    dir: &Path,
+    target: &Path,
+    create: bool,
+    f: impl FnOnce(&mut toml::Table),
+) -> io::Result<()> {
+    let path = dir.join(FILE_NAME);
+    let key = config::target_key(target);
+    let mut table = match std::fs::read(&path) {
+        Ok(bytes) => {
+            let text = String::from_utf8(bytes)
+                .map_err(|_| invalid(Msg::ViewsSaveNotUtf8.fill(&[&FILE_NAME])))?;
+            parse_table(&text).map_err(|e| invalid(Msg::ViewsSaveBroken.fill(&[&e])))?
+        }
+        Err(e) if e.kind() == io::ErrorKind::NotFound => toml::Table::new(),
+        Err(e) => return Err(e),
+    };
+    let targets = table
+        .entry("target")
+        .or_insert_with(|| toml::Value::Array(Vec::new()));
+    let toml::Value::Array(targets) = targets else {
+        return Err(invalid(Msg::ViewsSaveTargetNotArray.fill(&[&FILE_NAME])));
+    };
+    let pos = targets.iter().position(|t| {
+        t.get("path")
+            .and_then(|p| p.as_str())
+            .is_some_and(|p| same_target(p, &key))
+    });
+    let t = match pos {
+        Some(i) => &mut targets[i],
+        None => {
+            if !create {
+                return Ok(());
+            }
+            let mut t = toml::Table::new();
+            t.insert("path".into(), toml::Value::String(key.clone()));
+            targets.push(toml::Value::Table(t));
+            targets.last_mut().expect("just pushed")
+        }
+    };
+    if let toml::Value::Table(t) = t {
+        f(t);
+    }
+    let text = toml::to_string(&table).map_err(|e| invalid(e.to_string()))?;
+    config::write_atomic(dir, FILE_NAME, text.as_bytes())
 }
 
 fn invalid(msg: String) -> io::Error {

@@ -203,7 +203,10 @@ impl App {
     fn build_slots(&mut self) {
         self.slots.clear();
         if self.groups.is_empty() {
-            self.slots.extend((0..self.rows.len()).map(Slot::Row));
+            let shown: Vec<usize> = (0..self.rows.len())
+                .filter(|&i| !self.under_folded(&self.rows[i]))
+                .collect();
+            self.slots.extend(shown.into_iter().map(Slot::Row));
             return;
         }
         let gap = self.shows(Item::GroupGap);
@@ -213,7 +216,11 @@ impl App {
             }
             self.slots.push(Slot::Head(g));
             if !self.folded.contains(h) {
-                self.slots.extend(range.clone().map(Slot::Row));
+                let shown: Vec<usize> = range
+                    .clone()
+                    .filter(|&i| !self.under_folded(&self.rows[i]))
+                    .collect();
+                self.slots.extend(shown.into_iter().map(Slot::Row));
             }
         }
     }
@@ -329,6 +336,8 @@ impl App {
         // NV-20: `.base` → ビューの設定 → 簡易の絞り込み・同じ値 → 一時的な並べ替え → 直した行の留め。
         let (rows, groups) = self.apply_settings(grid.rows, grid.groups);
         let (rows, groups) = self.overlay(rows, groups);
+        // NV-27: 親子で並べるなら、まとまりの中で親の下に子を並べ直す。
+        let (rows, groups) = self.arrange_tree(rows, groups);
         self.rows = rows;
         self.groups = groups;
         self.built.label_prefix = common_folder(self.src.rows().iter().map(|r| self.src.label(r)));
@@ -521,6 +530,115 @@ impl App {
                 .saturating_add_signed(dir)
                 .min(self.slots.len().saturating_sub(1));
         }
+    }
+
+    /// NV-27: 親子で並べるなら、まとまりごとに親の下に子を前順に並べ直し、行ごとの深さ・子の有無を持つ。
+    /// 親は親のキーの値(リストなら先頭)のリンクの行き先のノート(REL-1 と同じ解き方)。
+    fn arrange_tree(
+        &mut self,
+        rows: Vec<RowId>,
+        groups: Vec<(String, std::ops::Range<usize>)>,
+    ) -> (Vec<RowId>, Vec<(String, std::ops::Range<usize>)>) {
+        self.tree.clear();
+        self.wbs_num.clear();
+        self.wbs_pct.clear();
+        let Some(key) = self.settings.tree.clone() else {
+            return (rows, groups);
+        };
+        let parent = |r: &RowId| -> Option<RowId> {
+            let v = self.prop(r, &key)?;
+            let s = match &v {
+                Value::Str(s) => s.clone(),
+                Value::List(items) => items.iter().find_map(|x| match x {
+                    Value::Str(s) => Some(s.clone()),
+                    _ => None,
+                })?,
+                _ => return None,
+            };
+            let (_, target) = self.link_target(r, &s)?;
+            Some(RowId(target?.to_string_lossy().into_owned()))
+        };
+        let ranges: Vec<(String, std::ops::Range<usize>)> = if groups.is_empty() {
+            vec![(String::new(), 0..rows.len())]
+        } else {
+            groups.clone()
+        };
+        let wbs = self.settings.wbs.clone();
+        let mut out = Vec::with_capacity(rows.len());
+        let mut nodes = Vec::with_capacity(rows.len());
+        let mut nums = HashMap::new();
+        let mut pcts = HashMap::new();
+        for (_, range) in &ranges {
+            let group = mdgrid::tree::order(&rows[range.clone()], parent);
+            // NV-28: 番号はまとまりごとに 1 から。子の無い行の割合は対応表の値(無ければ 0)。
+            if let Some(w) = &wbs {
+                nums.extend(mdgrid::tree::numbers(&group));
+                let leaf = |r: &RowId| -> u8 {
+                    match self.prop(r, &w.key) {
+                        Some(Value::Str(s)) => w.of(s.trim()).map_or(0, |m| m.percent),
+                        _ => 0,
+                    }
+                };
+                pcts.extend(mdgrid::tree::progress(&group, leaf));
+            }
+            for n in group {
+                out.push(n.row.clone());
+                nodes.push(n);
+            }
+        }
+        self.wbs_num = nums;
+        self.wbs_pct = pcts;
+        self.tree = nodes.into_iter().map(|n| (n.row.clone(), n)).collect();
+        (out, groups)
+    }
+
+    /// NV-27: 行の祖先に畳んだ親があるか。
+    pub(crate) fn under_folded(&self, row: &RowId) -> bool {
+        if self.tree_folded.is_empty() {
+            return false;
+        }
+        let mut cur = self.tree.get(row).and_then(|n| n.parent.as_ref());
+        let mut steps = 0;
+        while let Some(p) = cur {
+            if self.tree_folded.contains(p) {
+                return true;
+            }
+            steps += 1;
+            if steps > self.tree.len() {
+                return false;
+            }
+            cur = self.tree.get(p).and_then(|n| n.parent.as_ref());
+        }
+        false
+    }
+
+    /// NV-27 の `z`: 選んだ行が子を持てば、その子孫を畳む・開く(選んだ行はそのまま)。
+    pub(crate) fn toggle_tree(&mut self) {
+        if self.settings.tree.is_none() {
+            let o = self.key_of(
+                super::keymap::Mode::Table,
+                super::keymap::Action::ViewSettings,
+            );
+            self.message = Some(Msg::TreeOff.fill(&[&o]));
+            return;
+        }
+        let Some(r) = self.cur_row() else {
+            return;
+        };
+        if !self.tree.get(&r).is_some_and(|n| n.has_kids) {
+            self.message = Some(Msg::TreeNoKids.into());
+            return;
+        }
+        if !self.tree_folded.remove(&r) {
+            self.tree_folded.insert(r.clone());
+        }
+        self.build_slots();
+        if let Some(i) =
+            (0..self.slots.len()).find(|&i| self.slot_key(i) == Some(SlotKey::Row(r.clone())))
+        {
+            self.row = i;
+        }
+        self.scroll_into_view();
     }
 
     /// 見出しの行のグループを開閉する(SR-2)。見出しの行は選んだまま。

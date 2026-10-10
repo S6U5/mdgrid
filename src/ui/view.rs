@@ -269,6 +269,34 @@ fn label(app: &App, row: &RowId) -> String {
             .unwrap_or(&full);
         sanitize(s.strip_suffix(".md").unwrap_or(s))
     };
+    // NV-27: 親子で並べていれば、深さ1つごとに2桁字下げし、子を持つ行に ▾(開いている)か ▸(畳んでいる)。
+    if let Some(n) = app.tree.get(row) {
+        let mark = match (n.has_kids, app.tree_folded.contains(row)) {
+            (false, _) => "",
+            (true, false) => "▾ ",
+            (true, true) => "▸ ",
+        };
+        // NV-28: WBS の番号を名前の前に、子のある行は進み具合、子の無い行は対応表のラベルをあとに。
+        if let Some(num) = app.wbs_num.get(row) {
+            name = format!("{num} {name}");
+            let tail = match app.wbs_pct.get(row) {
+                Some(p) => Some(format!("{p}%")),
+                None => app.settings.wbs.as_ref().and_then(|w| {
+                    let v = match app.prop(row, &w.key) {
+                        Some(mdgrid::source::Value::Str(s)) => s,
+                        _ => return None,
+                    };
+                    w.of(v.trim())
+                        .filter(|m| !m.label.is_empty())
+                        .map(|m| sanitize(&m.label))
+                }),
+            };
+            if let Some(t) = tail {
+                name = format!("{name} · {t}");
+            }
+        }
+        name = format!("{}{mark}{name}", "  ".repeat(n.depth));
+    }
     if app.held.contains(row) {
         name = format!("{HELD_MARK}{name}");
     }
@@ -277,6 +305,19 @@ fn label(app: &App, row: &RowId) -> String {
     } else {
         name
     }
+}
+
+/// NV-27: 画面の桁 `x` が、行 `row` の名前の欄の ▾/▸ の印の上か。
+pub(crate) fn tree_mark_at(app: &App, row: &RowId, x: usize) -> bool {
+    if !app.tree.get(row).is_some_and(|n| n.has_kids) {
+        return false;
+    }
+    let text = label(app, row);
+    let Some(at) = text.find(['▾', '▸']) else {
+        return false;
+    };
+    let x0 = layout(app).label_x() + width(&text[..at]);
+    (x0..x0 + 2).contains(&x)
 }
 
 fn pending_color(mode: ColorMode) -> Option<Color> {
@@ -355,11 +396,20 @@ fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'stat
     // SR-33: モダンな見た目では、列の見出しはアクセントの太字(下線なし)、区切りは薄い色。
     let look = super::look::look(app);
     let st = match &look {
-        Some(l) => l.key(),
+        // SR-36: 見出しの下の線(`header`・`grid`)は下線で(行を足さず、表の位置を変えない)。
+        Some(l) => match super::look::rules(app) {
+            mdgrid::style::Rules::Header | mdgrid::style::Rules::Grid => {
+                l.key().add_modifier(Modifier::UNDERLINED)
+            }
+            _ => l.key(),
+        },
         None => Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
     };
     let sep_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
     let sep = col_sep(app);
+    let cross = look
+        .as_ref()
+        .filter(|_| super::look::select(app) == Some(mdgrid::style::Select::Cross));
     let mut spans = vec![
         Span::raw(" ".repeat(lay.label_x())),
         Span::styled(
@@ -382,6 +432,11 @@ fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'stat
             _ => Align::Left,
         };
         let title = head_text(app, &app.cols[j]);
+        // SR-36 の十字の選び: 今の列の見出しも淡く塗る。
+        let st = match cross {
+            Some(l) if j == app.col => st.bg(l.soft_bg),
+            _ => st,
+        };
         spans.push(Span::styled(fit(&title, cw, align), st));
     }
     pad(spans, lay.width, Style::default())
@@ -459,6 +514,9 @@ fn data_row(
         _ => Style::default(),
     };
     let sep_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
+    // SR-36: 選びの形。印の文字は変えない(SR-33)。
+    let select = super::look::select(app);
+    use mdgrid::style::Select;
     let mut spans = vec![Span::styled(lead, lead_st)];
     // SR-20: 行番号。
     spans.extend(num_span(app, lay, i));
@@ -474,7 +532,16 @@ fn data_row(
     let sep = col_sep(app);
     for &(j, cw) in cols {
         spans.push(Span::styled(sep, sep_st));
-        if let Some(b) = edit.as_ref().filter(|_| j == app.col) {
+        // SR-36: 候補から選んでいる間(まだ打っていない)は、セルを部品の形のまま見せる
+        // (丸い札が、押したとたんに四角い入力の欄に変わらないように)。打ち始めたら入力の欄。
+        let picking =
+            app.input.as_ref().is_some_and(|i| {
+                i.list.is_some() && i.text == i.initial && sel_row && j == app.col
+            }) && matches!(
+                select,
+                Some(Select::Bar | Select::Cross | Select::Tint | Select::Outline)
+            );
+        if let Some(b) = edit.as_ref().filter(|_| j == app.col && !picking) {
             // 入力ボックス(CE-1)。値より広ければ右の列に重ねて広げる。SR-31: 地の色で欄と分かるように
             // (色を使わないときは太字と下線だけ。太字と下線はテーマの強い色の目印。SR-26)。
             let st = input_style(app);
@@ -513,15 +580,30 @@ fn data_row(
             }
         }
         if sel_row && j == app.col {
-            st = match &look {
-                Some(l) => st.patch(l.pill()),
-                None => st.add_modifier(Modifier::REVERSED),
+            st = match (&look, select) {
+                (Some(l), Some(Select::Bar | Select::Outline)) => st
+                    .fg(l.accent)
+                    .add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+                (Some(_), Some(Select::Tint)) => {
+                    st.add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
+                }
+                (Some(_), Some(Select::Reverse)) | (None, _) => st.add_modifier(Modifier::REVERSED),
+                (Some(l), _) => st.patch(l.pill()),
             };
+        } else if let (Some(l), Some(Select::Cross), true) = (&look, select, j == app.col) {
+            // 十字の選び: 今の列を、どの行でも淡く塗る。
+            st = st.bg(l.soft_bg);
         }
-        // SR-35: 部品(選んでいるセルは今の選びの見た目で文字を見せる)。
+        // SR-35・SR-36: 部品。選んでいるセルも部品の形のまま描き、選びの見た目(太字・下線)を重ねる
+        // (丸い札が選んだときだけ四角い塗りに変わらないように)。塗る選び(fill)と反転は今までどおり文字で。
+        let keep_parts = !(sel_row && j == app.col)
+            || matches!(
+                select,
+                Some(Select::Bar | Select::Cross | Select::Tint | Select::Outline)
+            );
         match &s.part {
-            CellPart::Chips(items) if !(sel_row && j == app.col) => {
-                chip_spans(app, items, cw, st, &mut spans);
+            CellPart::Chips { items, list } if keep_parts => {
+                chip_spans(app, items, *list, cw, st, &mut spans);
                 continue;
             }
             CellPart::Link if !(sel_row && j == app.col) => {
@@ -532,18 +614,35 @@ fn data_row(
         spans.push(Span::styled(fit(&s.text, cw, align_of(app.kinds[j])), st));
     }
     let line = pad(spans, lay.width, Style::default());
-    if let (true, Some(l)) = (sel_row, &look) {
+    // SR-36: 今の行を塗る(`outline`・`reverse` は塗らない)。
+    let tint_row = !matches!(select, Some(Select::Outline | Select::Reverse));
+    if let (true, true, Some(l)) = (sel_row, tint_row, &look) {
         return line.style(Style::default().bg(l.sel_bg));
     }
     // SR-20・SR-15: 一行おきの色。
     zebra(app, i, line)
 }
 
-/// SR-35: 札の並びを幅 `cw` に描く(札ごとに色)。入らない札は途中で切らず、残りの数を `+N` で示す
-/// (1つ目の札は、単独で入れば丸ごと、入らなければ列の幅いっぱいに `…` で切って見せる。+N は入る余地が
-/// あるときだけ)。
-/// 残りは `st` の空白。
-fn chip_spans(app: &App, items: &[String], cw: usize, st: Style, spans: &mut Vec<Span<'static>>) {
+/// SR-35・SR-36: 値の部品の並びを幅 `cw` に描く(部品ごとに色)。入らない要素は途中で切らず、残りの数を
+/// `+N` で示す(1つ目の要素は、単独で入れば丸ごと、入らなければ列の幅いっぱいに `…` で切って見せる。+N は
+/// 入る余地があるときだけ)。残りは `st` の空白。
+fn chip_spans(
+    app: &App,
+    items: &[String],
+    list: bool,
+    cw: usize,
+    st: Style,
+    spans: &mut Vec<Span<'static>>,
+) {
+    let Some(parts) = super::chips::parts(app, items, list) else {
+        spans.push(Span::styled(
+            fit(&sanitize(&items.join(", ")), cw, Align::Left),
+            st,
+        ));
+        return;
+    };
+    let seg_w = |segs: &[super::chips::Seg]| segs.iter().map(|(t, _)| width(t)).sum::<usize>();
+    let look = |o: &Option<Style>| o.map_or(st, |x| st.patch(x));
     let mut used = 0;
     let more_w = |rest: usize| {
         if rest == 0 {
@@ -552,13 +651,34 @@ fn chip_spans(app: &App, items: &[String], cw: usize, st: Style, spans: &mut Vec
             1 + width(&format!("+{rest}"))
         }
     };
-    for (k, item) in items.iter().enumerate() {
-        let chip = format!(" {} ", sanitize(item));
+    let push = |segs: &[super::chips::Seg], room: usize, spans: &mut Vec<Span<'static>>| {
+        // 幅 `room` まで描く(入らない切れは `…` で切る)。描いた幅を返す。
+        let mut w = 0;
+        for (t, o) in segs {
+            if w >= room {
+                break;
+            }
+            let t = if w + width(t) <= room {
+                t.clone()
+            } else {
+                fit(t, room - w, Align::Left)
+            };
+            w += width(&t);
+            spans.push(Span::styled(t, look(o)));
+        }
+        w
+    };
+    let lead_w = seg_w(&parts.lead);
+    let sep_w = seg_w(&parts.sep);
+    for (k, item) in parts.items.iter().enumerate() {
+        let head = if k == 0 { &parts.lead } else { &parts.sep };
+        let head_w = if k == 0 { lead_w } else { sep_w };
+        let iw = seg_w(item);
         let rest = items.len() - k - 1;
-        // 頭と札の間は地の色の無い空白(chips_text と同じ形)。この札のあとに +N が要れば、その幅も取っておく。
-        let fits = used + 1 + width(&chip) + more_w(rest) <= cw;
-        // 1つ目の札は、+N の幅が取れなくても単独で入るなら丸ごと見せる(読める札を優先)。
-        let whole = fits || (k == 0 && used + 1 + width(&chip) <= cw);
+        // この要素のあとに +N が要れば、その幅も取っておく。
+        let fits = used + head_w + iw + more_w(rest) <= cw;
+        // 1つ目の要素は、+N の幅が取れなくても単独で入るなら丸ごと見せる(読める要素を優先)。
+        let whole = fits || (k == 0 && used + head_w + iw <= cw);
         if !fits && k > 0 {
             let more = format!(" +{}", items.len() - k);
             if used + width(&more) <= cw {
@@ -570,18 +690,12 @@ fn chip_spans(app: &App, items: &[String], cw: usize, st: Style, spans: &mut Vec
         if used >= cw {
             break;
         }
-        spans.push(Span::styled(" ", st));
-        used += 1;
-        let chip_st = super::chips::style(app, item).unwrap_or(st);
-        let room = cw - used;
-        let text = if whole {
-            chip
-        } else {
-            // 1つ目の札が単独でも入らない: 列の幅を全部使って札を切って見せる(+N は出さない)。
-            fit(&chip, room, Align::Left)
-        };
-        used += width(&text);
-        spans.push(Span::styled(text, chip_st));
+        used += push(head, cw - used, spans);
+        if used >= cw {
+            break;
+        }
+        // 1つ目の要素が単独でも入らない: 列の幅を全部使って切って見せる(+N は出さない)。
+        used += push(item, cw - used, spans);
         if !fits {
             let more = format!(" +{rest}");
             if whole && rest > 0 && used + width(&more) <= cw {
@@ -599,13 +713,13 @@ fn chip_spans(app: &App, items: &[String], cw: usize, st: Style, spans: &mut Vec
 /// SR-35: 列の見出しの文字(色を使う表示で、設定が許せば型の印を前に)。幅もこれで数える。
 pub(crate) fn head_text(app: &App, col: &str) -> String {
     let title = sanitize(&app.head_title(col));
-    if !app.rich(col, mdgrid::cells::Part::Icons) {
+    if !app.style.icons || !app.rich(col, mdgrid::cells::Part::Icons) {
         return title;
     }
     let mark = match app.kind_of(col) {
         Kind::Number => Some("#"),
         Kind::Date | Kind::DateTime => Some("◷"),
-        Kind::Checkbox => Some(super::cell::CHECK_ON),
+        Kind::Checkbox => Some(super::cell::check_marks(app.style.check).map_or("✓", |m| m.0)),
         Kind::List => Some("⋮"),
         Kind::Text if app.is_select(col) => Some("◉"),
         Kind::Text => None,
@@ -779,6 +893,8 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     super::menu::overlay(app, &mut lines, w);
     // NV-9: 列の値の頻度表の窓も同じ形で重ねる(freq.rs)。
     super::freq::overlay(app, &mut lines, w);
+    // NV-24: 並べ替えの窓は検索の欄の下、右の端に重ねる(sorts.rs)。
+    super::sorts::overlay(app, &mut lines, w);
     if app.mode == Mode::Quit {
         quit_overlay(app, &mut lines, w);
     }

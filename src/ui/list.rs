@@ -10,7 +10,8 @@ use super::view::visible_layout;
 use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
 use mdgrid::source::{NewValue, Value};
-use ratatui::style::{Modifier, Style};
+use mdgrid::style::Select;
+use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -279,7 +280,12 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         .iter()
         .map(|&k| width(&sanitize(&l.items[k].text)))
         .max();
-    let iw = (text_w.unwrap_or(0) + 5).max(8).min(w);
+    // SR-36: 丸い札の候補は両端の丸い端の字の分だけ広げる。
+    let caps = app
+        .input
+        .as_ref()
+        .is_some_and(|i| app.is_select(&i.col) && super::chips::pill_caps(app, false));
+    let iw = (text_w.unwrap_or(0) + 5 + usize::from(caps)).max(8).min(w);
     if iw < 5 {
         return None;
     }
@@ -354,17 +360,36 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         let NewValue::Str(v) = &it.value else {
             continue;
         };
-        if v.is_empty() || (pick && i == l.sel) {
+        let sel = pick && i == l.sel;
+        // 選んでいる候補も札の形のまま(選びは太字と下線で重ねる)。classic などの塗る・反転の選びは今まで。
+        let keep = !sel
+            || super::look::select(app)
+                .is_some_and(|s| !matches!(s, Select::Fill | Select::Reverse));
+        if v.is_empty() || !keep {
             continue;
         }
-        let Some(st) = super::chips::style(app, v) else {
+        let Some(mut st) = super::chips::overlay(app, v, false) else {
             continue;
         };
-        let t = fit(&sanitize(&it.text), tw, Align::Left)
+        if sel {
+            st = st.add_modifier(Modifier::BOLD | Modifier::UNDERLINED);
+        }
+        let caps = super::chips::pill_caps(app, false);
+        let t = fit(&sanitize(&it.text), tw - 2 * usize::from(caps), Align::Left)
             .trim_end()
             .to_string();
         let width_t = width(&t);
-        if let Some(line) = lines.get_mut(first + k) {
+        let Some(line) = lines.get_mut(first + k) else {
+            continue;
+        };
+        if caps {
+            // 丸い札: 左の端・文字・右の端(端の字は札の地の色)。
+            let cap = Style::default().fg(st.bg.unwrap_or(Color::Reset));
+            let base = line.clone();
+            let l1 = splice(&base, g.x + 3, Span::styled("\u{e0b6}", cap), 1, w);
+            let l2 = splice(&l1, g.x + 4, Span::styled(t, st), width_t, w);
+            *line = splice(&l2, g.x + 4 + width_t, Span::styled("\u{e0b4}", cap), 1, w);
+        } else {
             *line = splice(line, g.x + 3, Span::styled(t, st), width_t, w);
         }
     }

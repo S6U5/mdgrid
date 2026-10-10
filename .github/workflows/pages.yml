@@ -1,0 +1,69 @@
+name: Pages
+
+# Publish the site to GitHub Pages, in Japanese and English:
+# - the manual (docs/manual/<lang> and the reference pages, built with mdBook),
+# - the look catalog (docs/catalog),
+# - a gallery of real screens.
+# The screens are shot here from the real binary (scripts/tui_shot.py with docs/manual-scenarios.toml),
+# so the images are never committed. scripts/pages.py builds site/; nothing else in docs/ is published.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  MDBOOK_VERSION: "0.5.4"
+  MDBOOK_SHA256: "3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
+        with:
+          toolchain: stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install mdBook
+        run: |
+          curl -sSLo mdbook.tgz "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${MDBOOK_SHA256}  mdbook.tgz" | sha256sum -c -
+          tar xzf mdbook.tgz -C /usr/local/bin mdbook
+      - name: Build mdgrid
+        run: cargo build --release --locked
+      - name: Shoot the screens
+        run: |
+          python3 scripts/tui_shot.py docs/manual-scenarios.toml --out target/shots --lang ja --env LANG=ja_JP.UTF-8
+          python3 scripts/tui_shot.py docs/manual-scenarios.toml --out target/shots --lang en --env LANG=en_US.UTF-8
+      - name: Build the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Only link the GIFs that the latest release has (new tours are recorded at the next release).
+          export MDGRID_RELEASE_ASSETS="$(gh release view --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' || true)"
+          python3 scripts/pages.py site --shots target/shots
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

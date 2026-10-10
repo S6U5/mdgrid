@@ -267,10 +267,10 @@ const DISPLAY_LABELS: [&str; 6] = [
     "設定の帯",
 ];
 
-/// 「表示」の節に移る(Tab で、見出しが `>表示` になるまで)。
+/// 「表示」の区画に移る(Tab で、選んだ区画が「表示」になるまで。NV-18)。
 fn display_section(a: &mut App) {
     for _ in 0..8 {
-        if screen(a).contains(">表示") {
+        if a.draft.as_ref().map(|d| d.sec) == Some(super::settings::Sec::Display) {
             return;
         }
         press(a, KeyCode::Tab);
@@ -278,13 +278,14 @@ fn display_section(a: &mut App) {
     panic!("「表示」の節に移れない:\n{}", screen(a));
 }
 
-/// 画面の `[x] 名前` / `[ ] 名前` の今の値。
+/// 「表示」の区画の `名前 … ● オン` / `名前 … ○ オフ` の今の値(NV-18 のスイッチ)。
 fn display_checked(a: &App, label: &str) -> bool {
     let s = screen(a);
-    let on = s.contains(&format!("[x] {label}"));
-    let off = s.contains(&format!("[ ] {label}"));
-    assert!(on != off, "「{label}」の項目が1つだけ見えない:\n{s}");
-    on
+    let line = s
+        .lines()
+        .find(|l| l.contains(label) && (l.contains("● オン") || l.contains("○ オフ")))
+        .unwrap_or_else(|| panic!("「{label}」の項目が見えない:\n{s}"));
+    line.contains("● オン")
 }
 
 /// 「表示」の節で `label` を選び、Space で切り替える。切り替えたあとの値を返す。
@@ -293,7 +294,7 @@ fn toggle_display(a: &mut App, label: &str) -> bool {
     let before = display_checked(a, label);
     for _ in 0..10 {
         let s = screen(a);
-        if s.contains(&format!(">[x] {label}")) || s.contains(&format!(">[ ] {label}")) {
+        if s.contains(&format!(">{label}")) {
             ch(a, ' ');
             let after = display_checked(a, label);
             assert_ne!(after, before, "Space で「{label}」が切り替わる");
@@ -383,6 +384,8 @@ fn test_sr_20_settings_screen_has_display_section() {
     // [SR-20][NV-13] ビューの設定の画面に「表示」の節と6つの項目。値は今効いているもの(設定の既定)。
     let (_t, mut a) = folder_with("sr20sec", "", ColorMode::None);
     open(&mut a);
+    // NV-18: 左の一覧から「表示」の区画へ。
+    display_section(&mut a);
     let s = screen(&a);
     assert!(s.contains("表示"), "{s}");
     for label in DISPLAY_LABELS {
@@ -404,6 +407,7 @@ fn test_sr_20_settings_screen_has_display_section() {
         ColorMode::None,
     );
     open(&mut b);
+    display_section(&mut b);
     assert!(display_checked(&b, "行番号"));
 }
 
@@ -472,6 +476,7 @@ fn test_sr_20_saved_native_view_keeps_display() {
     // 設定の画面の項目も保存した値。
     goto_tab(&mut b, "番号なし");
     open(&mut b);
+    display_section(&mut b);
     assert!(!display_checked(&b, "行番号"));
     assert!(display_checked(&b, "検索の欄"), "ほかの項目は設定のまま");
 }

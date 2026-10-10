@@ -518,8 +518,9 @@ fn test_sr_23_ui_more_japanese_unchanged() {
     open(&mut a);
     add_values(&mut a, "status", &[Some("done")], false);
     let s = screen(&a);
+    // NV-18: 左に区画の一覧(列・フィルター・並べ替え・グループ)、右に選んだ区画(フィルター)。
     for want in [
-        "列(表示と順)",
+        "列",
         "フィルター",
         "並べ替え",
         "グループ",
