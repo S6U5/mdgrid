@@ -17,7 +17,7 @@ The look of mdgrid is set by a handful of items in the config file (`~/.config/m
 
 With colors on, mdgrid starts in the quiet "sumi" set (`[style] preset = "sumi"`): rounded window frames, the selection as a tinted background instead of reverse video, headings in an accent color with a line under them, and cells shown as parts — a colored dot before values like status (`● doing`), lists separated by `·` (`ui · web`), and `✓` for booleans. Only the dot is colored; the value text stays in the plain, readable color.
 
-![The default look](../../assets/demo-edit-list.svg)
+![The default look](images/demo-edit-list.svg)
 
 Without colors (`--no-color`, `NO_COLOR` set, `TERM=dumb`, or `color = false`), the screen is plain text with reverse video for the selection; nothing on screen depends on color alone.
 
