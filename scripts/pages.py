@@ -33,7 +33,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LANGS = ("ja", "en")
 REPO = "https://github.com/S6U5/mdgrid"
-RELEASE = REPO + "/releases/latest/download/"
 
 TEXT = {
     "ja": {
@@ -112,6 +111,25 @@ figure{margin:0;background:var(--surface);border:1px solid var(--line);border-ra
 figure img{width:100%;height:auto;border-radius:8px;display:block}
 figcaption{display:grid;gap:4px;font-size:14px}
 figcaption b{font-size:15px}
+nav.top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
+nav.top a{color:var(--fg);text-decoration:none;font-size:14px}nav.top a:hover{color:var(--accent)}
+nav.top .brand{font-weight:700;font-size:17px}nav.top .grow{flex:1}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:28px;align-items:center;padding:12px 0}
+@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}}
+.hero h1{font-size:clamp(26px,4vw,38px);line-height:1.25}
+.hero-text{display:grid;gap:14px}.lead{font-size:17px;color:var(--muted)}.small{font-size:13px}
+.shot{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.18)}
+pre.cmd{margin:0;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line);overflow-x:auto}
+.buttons{display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:10px;background:var(--accent);color:var(--on-accent);text-decoration:none;font-weight:600}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
+.feat{display:grid;gap:8px;align-content:start}.feat img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
+.feat h3,.card h3{margin:0;font-size:16px}.feat p{font-size:14px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:24px}
+.two>div{display:grid;gap:10px;align-content:start}.cards.one{grid-template-columns:1fr}
+.demos{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:16px}
+.demo img{width:100%;height:auto;border-radius:8px;display:block}
 code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
 input[type=search]{font:inherit;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);min-width:0;width:min(100%,320px)}
 """
@@ -203,12 +221,19 @@ def build(out: Path, shots_dir: Path) -> None:
         book(l, out / "manual" / l, shots_dir / l / "images")
         decorate_book(l, out / "manual" / l)
 
-    # リリースに付いている録画だけを並べる(workflow が名前の一覧を MDGRID_RELEASE_ASSETS に渡す。
-    # 無ければ全部)。新しい台本の録画は次のリリースまで無いので、切れたリンクを出さない。
-    names = os.environ.get("MDGRID_RELEASE_ASSETS")
-    have = set(names.split()) if names else None
-    shown = [d for d in DEMOS if have is None or d[0] in have]
+    # 録画(GIF): workflow がリリースから target/demos に取ってくる(リポには入れない)。サイトに写して
+    # ページの上でその場で再生する。取ってきた分だけを並べる(新しい台本の録画は次のリリースまで無い)。
+    demo_dir = ROOT / "target" / "demos"
+    shown = [d for d in DEMOS if (demo_dir / d[0]).exists()]
+    if shown:
+        (out / "demos").mkdir()
+        for d in shown:
+            shutil.copy(demo_dir / d[0], out / "demos" / d[0])
 
+    for l in LANGS:
+        (out / "assets" / l).mkdir(parents=True)
+        src = ROOT / ("docs/assets/ja/demo.gif" if l == "ja" else "docs/assets/demo.gif")
+        shutil.copy(src, out / "assets" / l / "demo.gif")
     for l in LANGS:
         (out / l).mkdir()
         (out / l / "index.html").write_text(landing(l, shown), encoding="utf-8")
@@ -248,25 +273,100 @@ def chooser(file: str = "") -> str:
     return page("en", "mdgrid", body, TEXT["en"]["lead"], head, route)
 
 
-def landing(lang: str, shown) -> str:
+# 入口の文(日英)。特徴は具体的にできることを見出しにし、本物の画面(撮った場面)を添える。
+HOME = {
+    "ja": {
+        "tagline": "Markdown のフォルダを、ひとことで開ける自分の表に。",
+        "sub": "フォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。ノートはただの Markdown のまま。",
+        "start": "はじめかた",
+        "install": "入れる",
+        "install_note": "Rust 1.90 以上。Linux・macOS・Windows の実行ファイルは",
+        "releases": "リリース",
+        "features": [
+            ("フォルダごとに1つのコマンド", "alias tasks='mdgrid ~/notes/Tasks' の1行で、tasks と打てば前と同じ表が開く。列・絞り込み・並べ替え・ビューを覚えている。", "table"),
+            ("表計算のように直す", "同じ列のほかの値から選ぶ、カレンダーで日付、タグとチェックボックスの切り替え、たくさんの行に同じ値を一度に。", "edit-list"),
+            ("ファイルのほかの部分は変えない", "直したキーの値だけを書き、キーの順・コメント・本文は1バイトも変えない。書く前にファイルごとの差分を見せる。", "save"),
+            ("リンクで表をつなぐ", "ノートどうしのリンクで、フォルダをつながった表として扱う。R で表とつながりの図(関係マップ)。", "demo-relmap"),
+        ],
+        "try": "見本で試す",
+        "try_note": "見本を一時フォルダに写して開く(保存しても元の見本は変わらない)。",
+        "see": "見て選ぶ",
+        "more": "ほかに: 色のテーマと部品の形、親子の字下げと WBS、CSV・JSON への書き出し、英語と日本語の画面。",
+    },
+    "en": {
+        "tagline": "Turn each folder of Markdown notes into a table you open with one command.",
+        "sub": "Point mdgrid at a folder: every note becomes a row, every frontmatter key a column, and you edit the values in place. The notes stay plain Markdown.",
+        "start": "Get started",
+        "install": "Install",
+        "install_note": "Rust 1.90 or newer. Binaries for Linux, macOS and Windows are on",
+        "releases": "Releases",
+        "features": [
+            ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks' is the whole setup; typing tasks brings back the same columns, filters, sorting and views.", "table"),
+            ("Edit like a spreadsheet", "Pick from the values other notes use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows.", "edit-list"),
+            ("Leaves the rest of the file alone", "Only the values you change are written; key order, comments and the body stay byte for byte. You see a diff of each file first.", "save"),
+            ("Linked tables", "Links between notes make folders into linked tables. Press R for a map of the tables and their links.", "demo-relmap"),
+        ],
+        "try": "Try it on the demo",
+        "try_note": "Copy the demo to a temporary folder and open it (saving never changes the original).",
+        "see": "See and choose",
+        "more": "Also: color themes and part shapes, parent/child indent and WBS, export to CSV and JSON, English and Japanese screens.",
+    },
+}
+TRY = {
+    "ja": "cp -R examples/vault /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/タスク",
+    "en": "cp -R examples/demo /tmp/mdgrid-demo\nmdgrid /tmp/mdgrid-demo/Tasks",
+}
+
+
+def nav(lang: str, file: str) -> str:
+    """どのページにも同じ上の帯(説明書・カタログ・画面の一覧・GitHub と、言語の切り替え)。"""
     t = TEXT[lang]
+    o = other_lang(lang)
+    return (
+        f'<nav class="top"><a class="brand" href="./">mdgrid</a>'
+        f'<a href="../manual/{lang}/">{t["manual"]}</a><a href="../catalog/?lang={lang}">{t["catalog"]}</a>'
+        f'<a href="gallery.html">{t["gallery"]}</a><a href="{REPO}">GitHub</a>'
+        f'<span class="grow"></span><a class="opt" href="../{o}/{file}" hreflang="{o}" lang="{o}" data-pick="{o}">{NAMES[o]}</a></nav>'
+    )
+
+
+def landing(lang: str, shown) -> str:
+    t, h = TEXT[lang], HOME[lang]
     i = 1 if lang == "ja" else 2
+    feats = "".join(
+        f'<article class="feat"><a href="gallery.html#{img}"><img loading="lazy" src="../images/{lang}/{img}.svg" alt="{html.escape(title)}"></a>'
+        f"<h3>{html.escape(title)}</h3><p class=\"muted\">{html.escape(text)}</p></article>"
+        for title, text, img in h["features"]
+    )
     demos = "".join(
-        f'<a class="card" href="{RELEASE}{d[0]}"><b>{html.escape(d[i])}</b><code>{d[0]}</code></a>' for d in shown
+        f'<figure class="demo"><img loading="lazy" src="../demos/{d[0]}" alt="{html.escape(d[i])}">'
+        f"<figcaption><b>{html.escape(d[i])}</b></figcaption></figure>"
+        for d in shown
     )
     body = f"""
-<h1>mdgrid</h1>
-<p class="muted">{html.escape(t["lead"])}</p>
-{lang_bar(lang, "")}
-<div class="cards">
-  <a class="card" href="../manual/{lang}/"><h2>{t["manual"]}</h2><p class="muted">{html.escape(t["manual_desc"])}</p></a>
-  <a class="card" href="../catalog/?lang={lang}"><h2>{t["catalog"]}</h2><p class="muted">{html.escape(t["catalog_desc"])}</p></a>
-  <a class="card" href="gallery.html"><h2>{t["gallery"]}</h2><p class="muted">{html.escape(t["gallery_desc"])}</p></a>
-  <a class="card" href="{REPO}"><h2>{t["repo"]}</h2><p class="muted"><code>{REPO}</code></p></a>
-</div>
-{f'<h2>{t["demos"]}</h2><p class="muted">{t["demos_desc"]}</p><div class="cards">{demos}</div>' if shown else ""}
+{nav(lang, "")}
+<header class="hero">
+  <div class="hero-text">
+    <h1>{html.escape(h["tagline"])}</h1>
+    <p class="lead">{html.escape(h["sub"])}</p>
+    <pre class="cmd"><code>cargo install mdgrid --locked</code></pre>
+    <p class="muted small">{html.escape(h["install_note"])} <a href="{REPO}/releases/latest">{h["releases"]}</a>.</p>
+    <div class="buttons"><a class="btn" href="../manual/{lang}/getting-started.html">{h["start"]}</a><a class="btn ghost" href="{REPO}">GitHub</a></div>
+  </div>
+  <img class="shot" src="../assets/{lang}/demo.gif" alt="mdgrid">
+</header>
+<section class="feats">{feats}</section>
+<p class="muted">{html.escape(h["more"])}</p>
+<section class="two">
+  <div><h2>{h["try"]}</h2><p class="muted">{html.escape(h["try_note"])}</p><pre class="cmd"><code>{html.escape(TRY[lang])}</code></pre></div>
+  <div><h2>{h["see"]}</h2><div class="cards one">
+    <a class="card" href="../catalog/?lang={lang}"><h3>{t["catalog"]}</h3><p class="muted">{html.escape(t["catalog_desc"])}</p></a>
+    <a class="card" href="gallery.html"><h3>{t["gallery"]}</h3><p class="muted">{html.escape(t["gallery_desc"])}</p></a>
+  </div></div>
+</section>
+{f'<h2>{t["demos"]}</h2><div class="demos">{demos}</div>' if shown else ""}
 """
-    return page(lang, "mdgrid", body, t["lead"], alternates("ja/"))
+    return page(lang, f"mdgrid — {h['tagline']}", body, h["sub"], alternates("ja/"))
 
 
 def gallery(lang: str, shots) -> str:
@@ -287,10 +387,9 @@ def gallery(lang: str, shots) -> str:
             f'<figcaption><b>{html.escape(title)}</b><span class="muted">{html.escape(text)}</span>{k}</figcaption></figure>'
         )
     body = f"""
-<p><a href="./">← {t["back"]}</a></p>
+{nav(lang, "gallery.html")}
 <h1>{t["gallery"]}</h1>
 <p class="muted">{html.escape(t["gallery_desc"])} {t["count"].format(n=len(shots))}</p>
-{lang_bar(lang, "gallery.html")}
 <input id="find" type="search" aria-label="{t["filter"]}" placeholder="{t["filter"]}">
 <div class="shots">{''.join(figs)}</div>
 """
