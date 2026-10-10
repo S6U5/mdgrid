@@ -108,11 +108,11 @@ pub(crate) const ASCII: Frame = Frame {
     rt: '+',
 };
 
-/// 今の設定の枠の文字(SR-32): 既定は罫線。`borders = "ascii"` か ambiguous_wide なら ASCII(罫線は
+/// 今の設定の枠の文字(SR-32): 既定は罫線。ambiguous_wide なら ASCII(罫線は
 /// East Asian Ambiguous なので、幅2で描く端末では列がずれる)。
 pub(crate) fn frame(app: &App) -> Frame {
     use mdgrid::style::Frames;
-    if app.ambiguous_wide || app.borders_ascii {
+    if app.ambiguous_wide {
         return ASCII;
     }
     // SR-36 の `frames`。線の無い枠も、枠の幅は変えない(中身の位置とクリックの位置を変えない)。

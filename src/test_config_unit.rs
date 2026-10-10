@@ -15,24 +15,39 @@ fn test_sr_8_blank_is_same_as_empty() {
     assert_eq!(c, Config::default());
 }
 
+/// 項目 `item` に TOML の値 `value` を書いた文(区画の下の項目は区画の見出しの下に)。
+fn at(item: &Item, value: &str) -> String {
+    match item.section() {
+        "" => format!("{} = {value}\n", item.leaf()),
+        sec => format!("[{sec}]\n{} = {value}\n", item.leaf()),
+    }
+}
+
+/// 項目の例の文。
+fn example(item: &Item) -> String {
+    format!("{}\n", item.example)
+}
+
 #[test]
 fn test_cli_12_every_item_is_read() {
-    // [CLI-12] 項目の表(ITEMS)の名前はどれも parse が読む: どの型にも合わない値で、その項目の型の警告が出る
+    // [CLI-12] 項目の表(ITEMS)の道筋はどれも parse が読む: どの型にも合わない値で、その項目の型の警告が出る
     // (表にあって読み取りの無い項目は、知らない項目の警告も型の警告も出ないので、ここで落ちる)。
-    for name in KEYS {
-        let (c, w) = parse(&format!("{name} = [[1]]\n")).unwrap();
-        assert_eq!(c, Config::default(), "{name}");
-        assert_eq!(w.len(), 1, "{name}: {w:?}");
+    for item in ITEMS {
+        let text = at(item, "[[1]]");
+        let (c, w) = parse(&text).unwrap();
+        assert_eq!(c, Config::default(), "{}", item.path);
+        assert_eq!(w.len(), 1, "{}: {w:?}", item.path);
         assert!(
-            w[0].contains(name) && !w[0].contains("知らない項目"),
-            "{name}: {w:?}"
+            w[0].contains(&format!(": {}: ", item.path)) && !w[0].contains("知らない項目"),
+            "{}: {w:?}",
+            item.path
         );
     }
 }
 
 #[test]
 fn test_cli_12_items_have_descriptions() {
-    // [CLI-12] 項目の表の各行に型・英語と日本語の説明・例がある。既定で書かない項目は editor と keys だけ。
+    // [CLI-12] 項目の表の各行に型・英語と日本語の説明・例がある。既定で書かない項目は、例だけを出す項目。
     for item in ITEMS {
         assert!(
             !item.ty.is_empty()
@@ -40,19 +55,38 @@ fn test_cli_12_items_have_descriptions() {
                 && !item.ja.is_empty()
                 && !item.example.is_empty(),
             "{}",
-            item.name
+            item.path
         );
     }
     let no_default: Vec<&str> = ITEMS
         .iter()
         .filter(|i| i.default.is_none())
-        .map(|i| i.name)
+        .map(|i| i.path)
         .collect();
-    assert_eq!(no_default, ["editor", "keys"]);
-    // 例はどれも警告なしに読める。
+    assert_eq!(
+        no_default,
+        [
+            "editor",
+            "use",
+            "look.style",
+            "look.columns",
+            "look.colors",
+            "new_note",
+            "keys",
+            "templates"
+        ]
+    );
+    // 例はどれも警告なしに読める(use の例は、そのテンプレートを足して読む)。
     for item in ITEMS {
-        let (_, w) = parse(item.example).unwrap();
-        assert!(w.is_empty(), "{}: {w:?}", item.name);
+        let mut text = example(item);
+        if item.path == "use" {
+            text.push_str("[templates.night.look]\ntheme = \"dracula\"\n");
+        }
+        let (c, w) = parse(&text).unwrap();
+        assert!(w.is_empty(), "{}: {w:?}", item.path);
+        let mut rw = Vec::new();
+        crate::profile::resolve(&[c.layer()], &c.templates, &mut rw);
+        assert!(rw.is_empty(), "{}: {rw:?}", item.path);
     }
 }
 
@@ -110,37 +144,42 @@ fn test_sr_11_save_state_removes_stale_tmp_files() {
 
 #[test]
 fn test_ce_22_config_date_items_wrong_types_warn() {
-    // [CE-22][CE-21][CLI-3] 文字列でない date_format・week_start、大文字の "Mon" は警告にして既定のまま。
-    let (c, w) = parse("date_format = 1\nweek_start = \"Mon\"\n").unwrap();
-    assert_eq!(c.date_format, DateFormat::iso());
-    assert_eq!(c.week_start, WeekStart::Sun);
+    // [CE-22][CE-21][CLI-3] 文字列でない dates.format・week_start、大文字の "Mon" は警告にして既定のまま。
+    use crate::types::{DateFormat, WeekStart};
+    let (c, w) = parse("[dates]\nformat = 1\nweek_start = \"Mon\"\n").unwrap();
+    let r = c.resolved();
+    assert_eq!(r.date_format, DateFormat::iso());
+    assert_eq!(r.week_start, WeekStart::Sun);
     assert_eq!(w.len(), 2, "{w:?}");
-    assert!(w.iter().any(|s| s.contains("date_format")), "{w:?}");
-    assert!(w.iter().any(|s| s.contains("week_start")), "{w:?}");
+    assert!(w.iter().any(|s| s.contains("dates.format")), "{w:?}");
+    assert!(w.iter().any(|s| s.contains("dates.week_start")), "{w:?}");
     // 改行を含む形の警告も1行。
-    let (_, w) = parse("date_format = \"MM\\nDD\"\n").unwrap();
+    let (_, w) = parse("[dates]\nformat = \"MM\\nDD\"\n").unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
     assert!(!w[0].contains('\n'), "{w:?}");
 }
 
 #[test]
 fn test_nv_23_config_search_bar() {
-    // [NV-23][CLI-3] 検索の欄は既定で出す。`search_bar = false` で出さない。型の違う値は警告にして既定のまま。
-    let (c, w) = parse("").unwrap();
-    assert!(c.search_bar);
-    assert!(w.is_empty());
-    let (c, w) = parse("search_bar = false\n").unwrap();
-    assert!(!c.search_bar);
+    // [NV-23][CLI-3] 検索の欄は既定で出す。`[display] search_bar = false` で出さない。型の違う値は警告にして既定のまま。
+    let bar = |text: &str| {
+        let (c, w) = parse(text).unwrap();
+        (c.resolved().display.search_bar, w)
+    };
+    let (on, w) = bar("");
+    assert!(on && w.is_empty());
+    let (on, w) = bar("[display]\nsearch_bar = false\n");
+    assert!(!on);
     assert!(w.is_empty(), "知っている項目なので警告しない: {w:?}");
-    let (c, w) = parse("search_bar = \"no\"\n").unwrap();
-    assert!(c.search_bar);
+    let (on, w) = bar("[display]\nsearch_bar = \"no\"\n");
+    assert!(on);
     assert_eq!(w.len(), 1);
-    assert!(w[0].contains("search_bar"), "{w:?}");
+    assert!(w[0].contains("display.search_bar"), "{w:?}");
     // 綴りの違う項目は知らない項目の警告。
-    let (c, w) = parse("searchbar = false\n").unwrap();
-    assert!(c.search_bar);
+    let (on, w) = bar("[display]\nsearchbar = false\n");
+    assert!(on);
     assert!(
-        w[0].contains("知らない項目") && w[0].contains("searchbar"),
+        w[0].contains("知らない項目") && w[0].contains("display.searchbar"),
         "{w:?}"
     );
 }

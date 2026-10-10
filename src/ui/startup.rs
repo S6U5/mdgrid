@@ -45,14 +45,13 @@ impl App {
     /// 起動の設定を当てて、表を開く。
     pub fn start(&mut self, s: Startup) {
         let mut warnings = s.warnings;
-        warnings.extend(self.configure(&s.config));
-        // CE-26・CE-27: 新しいノートの決まり(ビューに new_note が無いとき)。
-        self.note.rule = s.config.new_note.clone();
-        // CE-25: 作る場所の一覧(起動の引数の順。`.base` はそのフォルダ。同じフォルダは1つ)。
-        self.note.places = super::new_note::places(self.src.as_ref(), &s.target, s.base.is_some());
+        // 色を使わない起動では、端末の地の明るさを問い合わせない(SR-39)。
         if s.no_color {
             self.color = ColorMode::None;
         }
+        warnings.extend(self.configure(&s.config));
+        // CE-25: 作る場所の一覧(起動の引数の順。`.base` はそのフォルダ。同じフォルダは1つ)。
+        self.note.places = super::new_note::places(self.src.as_ref(), &s.target, s.base.is_some());
         if s.readonly {
             self.set_readonly();
         }
@@ -69,6 +68,11 @@ impl App {
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
             warnings.push(e);
         }
+        // SR-44: ワークスペースと表の範囲の層を重ね、表で決まる add_frontmatter(WB-3)を読み込みの前に渡す。
+        warnings.extend(self.collect_scope_layers(&s.target, s.config_dir.as_deref()));
+        warnings.extend(self.apply_profile());
+        self.src
+            .set_add_frontmatter(self.prof.resolved.add_frontmatter);
         // NV-25: 既定のビュー(ビューを名前で指定していなければ、開いたあとに選ぶ)。
         let default_view = s
             .config_dir
@@ -153,6 +157,12 @@ impl App {
     /// mdgrid のビューは、状態が今の定義の指紋を持てば(表で変えた分の重ね)それを、持たなければ定義の
     /// 並び・隠す列・ビューの設定を当てる。幅と畳んだまとまりはどちらも状態から(BV-20)。
     pub(crate) fn restore_state(&mut self) {
+        self.restore_state_only();
+        // SR-44: ビューの範囲の層(ビューの設定)が変わったので重ね直す。
+        self.apply_profile();
+    }
+
+    fn restore_state_only(&mut self) {
         let slot = self.store.as_ref().map(|st| self.state_slot(&st.dir));
         match (&mut self.store, slot) {
             (Some(st), Some((dir, view))) => {

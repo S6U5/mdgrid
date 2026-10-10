@@ -209,6 +209,8 @@ pub(crate) struct Draft {
     pub look0: super::look_section::LookPick,
     /// 見た目の区画の項目の数(テンプレートの数で変わる)。
     pub look_n: usize,
+    /// 保存先に選べる範囲の数(SR-43)。
+    pub look_scopes: usize,
     /// 親子の区画の親のキー(オフの間も覚えておく。NV-27)。
     pub tree_key: String,
     /// WBS の写し(オフの間も覚えておく)と、進み具合のキーの値と件数(NV-28)。
@@ -267,7 +269,9 @@ impl Draft {
             Some(Pick::Cmp { .. }) => CMPS.len(),
             Some(Pick::Values { counts, .. }) => counts.len() + 1,
             Some(Pick::TabMenu { .. }) => super::view_tabs::TAB_MENU,
-            Some(Pick::Look { field, .. }) => App::look_pick_items(*field).len(),
+            Some(Pick::Look { field, .. }) => {
+                super::look_section::pick_count(*field, self.look_scopes)
+            }
         }
     }
 
@@ -370,6 +374,7 @@ impl App {
             look: self.look_pick_now(),
             look0: self.look_pick_now(),
             look_n: self.look_len(),
+            look_scopes: self.look_scopes().len(),
             tree_key: self
                 .settings
                 .tree
@@ -643,15 +648,20 @@ impl App {
 
     /// 「反映」(NV-13): 写しを App に当てて組み立て直し、見た目の状態に書く(WB-15 では書かない)。
     fn apply_draft(&mut self) {
-        let Some(d) = self.draft.take() else {
+        let Some(mut d) = self.draft.take() else {
             return;
         };
         self.set_mode(Mode::Table);
-        // SR-43: 見た目を変えていれば画面に当てて look.toml に残す。
+        // SR-43: 見た目を変えていれば、選んだ範囲の層に当てて残す(ビューの範囲は写しの設定に)。書けなかった理由と
+        // 重ねの警告は、反映した旨のあとに出す。
+        let mut notes = Vec::new();
         if d.look != d.look0 {
-            self.apply_look(d.look, d.look0);
+            self.message = None;
+            self.apply_look(&mut d.s, d.look, d.look0);
+            notes.extend(self.message.take());
         }
         self.settings = d.s;
+        notes.extend(self.apply_profile());
         if d.cols != d.cols0 {
             // 選んでいた列は名前で引き直す。隠したなら、写しの並びで最寄りの表示する列(右を先に)。
             let picked = self.cols.get(self.col).cloned();
@@ -684,11 +694,13 @@ impl App {
         self.stay.clear();
         self.regrid = true;
         self.persist_state();
-        self.message = Some(if self.readonly {
+        let done: String = if self.readonly {
             Msg::SettingsAppliedReadOnly.into()
         } else {
             Msg::SettingsApplied.into()
-        });
+        };
+        notes.insert(0, done);
+        self.message = Some(notes.join(" / "));
     }
 
     /// NV-3・NV-24: 並べ替えの決まりを今のビューの設定に当て、組み直して見た目の状態に残す。

@@ -19,7 +19,9 @@ fn test_ws_6_chosen_without_the_table_warns() {
             name: "T".into(),
             path: d.join("tasks"),
             view: None,
+            profile: Default::default(),
         }],
+        profile: Default::default(),
     }];
     let s = resolve(&d.join("other"), Some("W"), &apps, &[])
         .unwrap()

@@ -35,7 +35,7 @@ On the left of a row: `>` is the row you are on, `+` a marked row (`Space`, `v`)
 
 Select the cell: the reason appears on the bottom line. The usual ones:
 
-- **The whole row is read-only**: the note has no frontmatter (or an empty one, unless `add_frontmatter` is on), a byte order mark, mixed line endings, invalid YAML, a key written twice, and so on. mdgrid refuses rather than guessing. The full list with examples is in [Write-back safety](../../safety.md#read-only-notes).
+- **The whole row is read-only**: the note has no frontmatter (or an empty one, unless `[edit] add_frontmatter` is on), a byte order mark, mixed line endings, invalid YAML, a key written twice, and so on. mdgrid refuses rather than guessing. The full list with examples is in [Write-back safety](../../safety.md#read-only-notes).
 - **One cell is read-only**: nested maps, block scalars (`|`, `>`), anchors and tags, `file.*` and `formula.*` columns, and lists mdgrid cannot rewrite without changing their layout. See [Read-only values](../../safety.md#read-only-values).
 - **Everything is read-only**: mdgrid was started with `--readonly` or `--pick`.
 
@@ -51,7 +51,7 @@ The note it points at was not found. mdgrid looks for the target by name in the 
 
 ## The relation map shows the wrong tables, or none
 
-The map shows the tables of the current workspace; the header shows `· workspace <name>` when one is in use. mdgrid picks it in this order: `-w <name>`, a `.mdgrid/workspace.toml` marker in the folder or above it, `workspaces.toml`, the detected Obsidian vault (or git repository with `workspace_detect = ["vault", "git"]`), and finally the registered tables. If the map is empty, register the tables or put them in a workspace. See [Workspaces](concepts.md#workspaces-which-tables-belong-together).
+The map shows the tables of the current workspace; the header shows `· workspace <name>` when one is in use. mdgrid picks it in this order: `-w <name>`, a `.mdgrid/workspace.toml` marker in the folder or above it, `workspaces.toml`, the detected Obsidian vault (or git repository with `[workspace] detect = ["vault", "git"]`), and finally the registered tables. If the map is empty, register the tables or put them in a workspace. See [Workspaces](concepts.md#workspaces-which-tables-belong-together).
 
 Automatic tables (from a marker without `[[table]]`, or from detection) are the folders of notes right under the root; `.base` files are not added automatically, and folders such as `node_modules` and `target` are skipped. List a `.base` explicitly with `[[table]]` to include it.
 
@@ -61,7 +61,7 @@ The column is a formula, filter or summary that mdgrid cannot evaluate yet. Sele
 
 ## Columns do not line up, or characters look too wide
 
-Some characters (`○`, `※`, box-drawing lines) are "ambiguous width": some terminals draw them one column wide, others two. If yours draws them wide, set `ambiguous_wide = true`; the frames switch to ASCII so that everything lines up. If the checkbox or type marks (`☑ ◷ ◉ ⋮`) look odd in your font, set `[cells] checkbox = false` and `icons = false`.
+Some characters (`○`, `※`, box-drawing lines) are "ambiguous width": some terminals draw them one column wide, others two. If yours draws them wide, set `[terminal] ambiguous_wide = true`; the frames switch to ASCII so that everything lines up. If the checkbox or type marks (`☑ ◷ ◉ ⋮`) look odd in your font, set `[look.style] check = "text"` and `icons = false`.
 
 ## The colors are wrong, or there are none
 

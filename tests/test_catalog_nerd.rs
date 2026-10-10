@@ -11,10 +11,10 @@ fn test_sr_38_catalog_nerd_default() {
     let n: serde_json::Value = serde_json::from_str(&html[from..to]).unwrap();
     let item = mdgrid::config::ITEMS
         .iter()
-        .find(|i| i.name == "nerd_font")
+        .find(|i| i.path == "terminal.nerd_font")
         .unwrap();
     let want = item.default.unwrap().trim_matches('"');
     assert_eq!(n["defaults"]["nerd_font_setting"].as_str(), Some(want));
     let (c, _) = mdgrid::config::parse("").unwrap();
-    assert!(c.nerd_font_auto);
+    assert_eq!(c.terminal.nerd_font, mdgrid::config::NerdFont::Auto);
 }

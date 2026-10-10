@@ -19,6 +19,7 @@ fn table(tmp: &super::test_screen::Tmp, name: &str, dir: &str) -> WsTable {
         name: name.into(),
         path: tmp.notes().join(dir).canonicalize().unwrap(),
         view: None,
+        profile: Default::default(),
     }
 }
 

@@ -11,10 +11,11 @@ fn test_sr_40_colors() {
     assert_eq!(parse_color("#zz"), None);
     assert_eq!(parse_color("chartreuse"), None);
     let (c, w) = crate::config::parse(
-        "[colors]\naccent = \"#e0a458\"\nbackground = \"black\"\nfoo = \"red\"\nselection = \"#zz\"\n",
+        "[look.colors]\naccent = \"#e0a458\"\nbackground = \"black\"\nfoo = \"red\"\nselection = \"#zz\"\n",
     )
     .unwrap();
     assert_eq!(w.len(), 2, "{w:?}");
+    let c = c.resolved();
     assert_eq!(c.colors.role("accent"), Some([0xe0, 0xa4, 0x58]));
     assert_eq!(c.colors.role("background"), Some([17, 17, 17]));
     assert_eq!(c.colors.role("selection"), None);
@@ -32,10 +33,11 @@ fn test_sr_40_colors() {
 fn test_sr_41_value_colors_read() {
     // [SR-41] 値の色は大文字・小文字と前後の空白によらず引ける。日本語の値も。読めない色は警告。
     let (c, w) = crate::config::parse(
-        "[colors.values]\n\"進行中\" = \"#d6a85c\"\nDone = \"green\"\nbad = \"nope\"\n",
+        "[look.colors.values]\n\"進行中\" = \"#d6a85c\"\nDone = \"green\"\nbad = \"nope\"\n",
     )
     .unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
+    let c = c.resolved();
     assert_eq!(c.colors.value("進行中"), Some([0xd6, 0xa8, 0x5c]));
     assert_eq!(c.colors.value(" done "), Some([70, 168, 98]));
     assert_eq!(c.colors.value("todo"), None);

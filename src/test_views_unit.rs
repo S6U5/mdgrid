@@ -461,6 +461,7 @@ fn test_bv_20_save_refuses_broken_file() {
 #[test]
 fn test_bv_20_save_keeps_other_targets_and_empty_removes_target() {
     // [BV-20] ほかの対象と最上位の知らない項目はそのまま。空のビューで書くと対象の表ごと消える。
+    // 前の版の [[target]] は [[table]] として読み、書くときは [[table]](CLI-20)。
     let t = Tmp::new("keep");
     let notes = t.0.join("notes");
     std::fs::create_dir_all(&notes).unwrap();
@@ -474,7 +475,12 @@ fn test_bv_20_save_keeps_other_targets_and_empty_removes_target() {
     let (back, warns) = load_views(&t.0, &notes);
     assert_eq!(back, vec![v]);
     assert!(warns.iter().any(|w| w.contains("extra")), "{warns:?}");
-    assert!(warns.iter().any(|w| w.contains("target.note")), "{warns:?}");
+    assert!(warns.iter().any(|w| w.contains("table.note")), "{warns:?}");
+    let text = std::fs::read_to_string(t.0.join(FILE_NAME)).unwrap();
+    assert!(
+        text.contains("[[table]]") && !text.contains("[[target]]"),
+        "{text}"
+    );
     save_views(&t.0, &notes, &[]).unwrap();
     let (back, _) = load_views(&t.0, &notes);
     assert!(back.is_empty());

@@ -6,7 +6,7 @@ fn test_cli_12_keys_item_lists_every_mode() {
     // [CLI-12] 設定の項目の表の keys の説明(--print-config と文書の元)に、どのモードの名前もある。
     let item = mdgrid::config::ITEMS
         .iter()
-        .find(|i| i.name == "keys")
+        .find(|i| i.path == "keys")
         .unwrap();
     for m in Mode::ALL {
         assert!(item.en.contains(m.name()), "en に {} が無い", m.name());

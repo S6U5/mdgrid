@@ -1,8 +1,6 @@
-//! 部品の形の設定(SR-36): `[style]` の `preset`(組の名前)と、部品ごとの形。組で部品をまとめて選び、
+//! 部品の形の設定(SR-36): `look.preset`(組の名前)と、`[look.style]` の部品ごとの形。組で部品をまとめて選び、
 //! 部品ごとの項目はそれを上書きする。既定の組は sumi。名前の並びはカタログ(docs/catalog/index.html。SR-38)と
 //! 同じにし、試験で突き合わせる。
-
-use crate::i18n::Msg;
 
 /// 名前つきの形の列挙を作る(設定の名前 ⇔ 値)。
 macro_rules! named {
@@ -52,6 +50,10 @@ named!(
     Band { Keys = "keys", Boxed = "boxed", Quiet = "quiet" }
 );
 named!(
+    /// リンクの見せ方。
+    Links { Accent = "accent", Plain = "plain" }
+);
+named!(
     /// 組の名前。
     Preset { Sumi = "sumi", Slate = "slate", Saas = "saas", Paper = "paper", Grid = "grid", Classic = "classic", DozyPink = "dozy-pink" }
 );
@@ -68,6 +70,7 @@ pub struct Style {
     pub tabs: Tabs,
     pub frames: Frames,
     pub band: Band,
+    pub links: Links,
     pub icons: bool,
 }
 
@@ -171,56 +174,16 @@ impl Style {
             tabs,
             frames,
             band,
+            links: Links::Accent,
             icons,
         }
     }
 }
 
-/// 設定の項目の名前(`[style]` の中)。カタログと突き合わせる。
+/// 設定の項目の名前(`[look.style]` の中)。カタログと突き合わせる。
 pub const KEYS: &[&str] = &[
-    "preset", "status", "tags", "check", "select", "rules", "tabs", "frames", "band", "icons",
+    "status", "tags", "check", "select", "rules", "tabs", "frames", "band", "links", "icons",
 ];
-
-/// `[style]` を読む。`preset` を先に当て、ほかの項目はその上に重ねる。読めない値は警告して組のまま。
-pub fn read(value: &toml::Value, out: &mut Style, warnings: &mut Vec<String>) {
-    let Some(t) = value.as_table() else {
-        warnings.push(Msg::ConfigWrongType.fill(&[&"style", &Msg::WantStyleTable.text()]));
-        return;
-    };
-    if let Some(v) = t.get("preset") {
-        match v.as_str().and_then(Preset::parse) {
-            Some(p) => *out = Style::of(p),
-            None => warnings.push(bad("style.preset", Preset::NAMES)),
-        }
-    }
-    for (k, v) in t {
-        let name = format!("style.{k}");
-        macro_rules! set {
-            ($field:ident, $ty:ident) => {
-                match v.as_str().and_then($ty::parse) {
-                    Some(x) => out.$field = x,
-                    None => warnings.push(bad(&name, $ty::NAMES)),
-                }
-            };
-        }
-        match k.as_str() {
-            "preset" => {}
-            "status" => set!(status, Status),
-            "tags" => set!(tags, Tags),
-            "check" => set!(check, Check),
-            "select" => set!(select, Select),
-            "rules" => set!(rules, Rules),
-            "tabs" => set!(tabs, Tabs),
-            "frames" => set!(frames, Frames),
-            "band" => set!(band, Band),
-            "icons" => match v.as_bool() {
-                Some(b) => out.icons = b,
-                None => warnings.push(Msg::ConfigWrongType.fill(&[&name, &Msg::WantBool.text()])),
-            },
-            _ => warnings.push(Msg::ConfigUnknownItem.fill(&[&name])),
-        }
-    }
-}
 
 /// SR-36: `nerd_font = "auto"` の見分け。丸い端の字(U+E0B6・U+E0B4)を字体に頼らず自分で描く端末
 /// (`TERM_PROGRAM` が ghostty か WezTerm)なら真。ほか(分からない端末・tmux の中など)は偽。
@@ -231,15 +194,6 @@ pub fn nerd_auto(term_program: Option<&str>) -> bool {
             .as_deref(),
         Some("ghostty" | "wezterm")
     )
-}
-
-fn bad(name: &str, names: &[&str]) -> String {
-    let want = names
-        .iter()
-        .map(|n| format!("\"{n}\""))
-        .collect::<Vec<_>>()
-        .join(", ");
-    Msg::ConfigWrongType.fill(&[&name, &Msg::WantOneOf.fill(&[&want])])
 }
 
 #[cfg(test)]

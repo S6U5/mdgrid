@@ -26,7 +26,7 @@ fn test_sr_41_value_color_in_every_chip_shape() {
     // [SR-41] chip・soft・pill の札も、決めた値の色を地にする。
     for status in ["chip", "soft", "pill"] {
         let cfg = format!(
-            "nerd_font = true\n[style]\nstatus = \"{status}\"\n[colors.values]\nDone = \"#2f9e66\"\n"
+            "[terminal]\nnerd_font = true\n\n[look.style]\nstatus = \"{status}\"\n\n[look.colors.values]\nDone = \"#2f9e66\"\n"
         );
         let (_t, a) = boot(&format!("sr41_{status}"), ColorMode::Rgb, &cfg);
         let y = view::data_y(&a) as u16;
@@ -44,7 +44,7 @@ fn test_sr_40_no_color_ignores_colors() {
     let (_t, a) = boot(
         "sr40_nocolor",
         ColorMode::None,
-        "theme = \"sumi\"\n[colors]\naccent = \"red\"\n[colors.values]\ndone = \"green\"\n",
+        "[look]\ntheme = \"sumi\"\n\n[look.colors]\naccent = \"red\"\n\n[look.colors.values]\ndone = \"green\"\n",
     );
     let buf = buffer(&a);
     let colored = (0..buf.area.height).any(|y| {

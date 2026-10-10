@@ -84,7 +84,7 @@ fn test_nv_24_hidden_bar_and_narrow() {
     // [NV-24] 検索の欄を隠しても、パレットのコマンドと操作の一覧で開ける。ボタンを省いた幅では、
     // 右の端は検索の欄のまま(並べ替えの窓を開かない)。
     let tmp = notes("nv24bar");
-    let mut a = boot(&tmp, "search_bar = false\n", false);
+    let mut a = boot(&tmp, "[display]\nsearch_bar = false\n", false);
     let all = super::keymap::commands(false).any(|c| c.action == Action::SortMenu);
     assert!(all, "パレットに並べ替え");
     assert!(super::menu::items(&a)

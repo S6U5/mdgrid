@@ -29,7 +29,7 @@ fn test_sr_33_no_reverse_left_in_modern() {
     assert_eq!(a.mode, Mode::Settings);
     assert_eq!(reversed_cells(&a), 0);
     let mut c = app_of(&tmp, ColorMode::Rgb);
-    let (cfg, _) = mdgrid::config::parse("look = \"classic\"\n").unwrap();
+    let (cfg, _) = mdgrid::config::parse("[look]\nmode = \"classic\"\n").unwrap();
     c.configure(&cfg);
     ch(&mut c, 'o');
     assert!(reversed_cells(&c) > 0, "classic は反転");

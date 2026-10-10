@@ -7,6 +7,69 @@
 use crate::i18n::Msg;
 use serde::{Deserialize, Serialize};
 
+/// ビューのタブの行(SR-34): いつも・ビューが2つ以上のときだけ・出さない。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TabsMode {
+    #[default]
+    Always,
+    Auto,
+    Never,
+}
+
+impl TabsMode {
+    pub const NAMES: &'static [&'static str] = &["always", "auto", "never"];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            TabsMode::Always => "always",
+            TabsMode::Auto => "auto",
+            TabsMode::Never => "never",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<TabsMode> {
+        match s {
+            "always" => Some(TabsMode::Always),
+            "auto" => Some(TabsMode::Auto),
+            "never" => Some(TabsMode::Never),
+            _ => None,
+        }
+    }
+
+    /// 表示の区画で次に切り替える値(always → auto → never → always)。
+    pub fn next(self) -> TabsMode {
+        match self {
+            TabsMode::Always => TabsMode::Auto,
+            TabsMode::Auto => TabsMode::Never,
+            TabsMode::Never => TabsMode::Always,
+        }
+    }
+}
+
+impl Serialize for TabsMode {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(self.name())
+    }
+}
+
+impl<'de> Deserialize<'de> for TabsMode {
+    /// 名前のほか、前の版の状態のファイル・views.toml の真偽(true = always、false = never)も受ける。
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            B(bool),
+            S(String),
+        }
+        match Raw::deserialize(d)? {
+            Raw::B(true) => Ok(TabsMode::Always),
+            Raw::B(false) => Ok(TabsMode::Never),
+            Raw::S(s) => TabsMode::parse(&s)
+                .ok_or_else(|| serde::de::Error::custom(format!("unknown tabs mode {s:?}"))),
+        }
+    }
+}
+
 /// 設定の `[display]`(SR-21)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Display {
@@ -18,8 +81,10 @@ pub struct Display {
     pub column_lines: bool,
     /// 2つ目以降のまとまりの見出しの上に空きの行を入れる(SR-30。既定 false)。
     pub group_gap: bool,
-    /// ビューのタブの帯を出す(既定 true)。
-    pub tabs: bool,
+    /// ビューのタブの行(SR-34。既定 always)。
+    pub tabs: TabsMode,
+    /// 表の上の検索の欄(NV-23。既定 true)。
+    pub search_bar: bool,
     /// 設定の帯を出す(既定 true)。
     pub chips: bool,
 }
@@ -31,45 +96,23 @@ impl Default for Display {
             zebra: false,
             column_lines: false,
             group_gap: false,
-            tabs: true,
+            tabs: TabsMode::Always,
+            search_bar: true,
             chips: true,
         }
     }
 }
 
-/// `[display]` の項目の名前(設定の読み取りが使う)。
-pub const NAMES: [&str; 6] = [
-    "row_numbers",
-    "zebra",
-    "column_lines",
-    "group_gap",
-    "tabs",
-    "chips",
-];
-
 impl Display {
-    /// 名前の項目への参照。知らない名前は None。
-    pub fn field_mut(&mut self, name: &str) -> Option<&mut bool> {
-        Some(match name {
-            "row_numbers" => &mut self.row_numbers,
-            "zebra" => &mut self.zebra,
-            "column_lines" => &mut self.column_lines,
-            "group_gap" => &mut self.group_gap,
-            "tabs" => &mut self.tabs,
-            "chips" => &mut self.chips,
-            _ => return None,
-        })
-    }
-
-    /// 項目の設定の値。検索の欄は設定の最上位の `search_bar`。
-    pub fn get(&self, item: Item, search_bar: bool) -> bool {
+    /// 項目を出すか(タブは never でなければ出す。auto の1つだけのときは画面の側が隠す)。
+    pub fn get(&self, item: Item) -> bool {
         match item {
             Item::RowNumbers => self.row_numbers,
             Item::Zebra => self.zebra,
             Item::ColumnLines => self.column_lines,
             Item::GroupGap => self.group_gap,
-            Item::Tabs => self.tabs,
-            Item::SearchBar => search_bar,
+            Item::Tabs => self.tabs != TabsMode::Never,
+            Item::SearchBar => self.search_bar,
             Item::Chips => self.chips,
         }
     }
@@ -118,7 +161,7 @@ pub const ITEMS: [(Item, &str); 7] = [
     (Item::Chips, Item::Chips.msg().ja()),
 ];
 
-/// ビューごとの上書き(`Settings::display`)。設定と違う項目だけ Some。
+/// 上書き(どの範囲でも `[display]`。ビューの設定の `display` も)。書いた項目だけ Some。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct DisplayOverride {
@@ -131,14 +174,14 @@ pub struct DisplayOverride {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group_gap: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tabs: Option<bool>,
+    pub tabs: Option<TabsMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub search_bar: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chips: Option<bool>,
 }
 
-/// 上書きの項目の名前(views.toml の知らない項目の判定)。
+/// 上書きの項目の名前(知らない項目の判定)。
 pub const OVERRIDE_KEYS: &[&str] = &[
     "row_numbers",
     "zebra",
@@ -154,30 +197,91 @@ impl DisplayOverride {
         *self == DisplayOverride::default()
     }
 
-    fn slot(&mut self, item: Item) -> &mut Option<bool> {
-        match item {
-            Item::RowNumbers => &mut self.row_numbers,
-            Item::Zebra => &mut self.zebra,
-            Item::ColumnLines => &mut self.column_lines,
-            Item::GroupGap => &mut self.group_gap,
-            Item::Tabs => &mut self.tabs,
-            Item::SearchBar => &mut self.search_bar,
-            Item::Chips => &mut self.chips,
+    /// 全部の項目を書いた上書き(決まった値の書き出し)。
+    pub fn all(d: &Display) -> DisplayOverride {
+        DisplayOverride {
+            row_numbers: Some(d.row_numbers),
+            zebra: Some(d.zebra),
+            column_lines: Some(d.column_lines),
+            group_gap: Some(d.group_gap),
+            tabs: Some(d.tabs),
+            search_bar: Some(d.search_bar),
+            chips: Some(d.chips),
         }
     }
 
-    pub fn get(&self, item: Item) -> Option<bool> {
-        let mut c = *self;
-        *c.slot(item)
+    /// 真偽の項目の名前の欄(タブは別)。知らない名前は None。
+    pub fn bool_mut(&mut self, name: &str) -> Option<&mut Option<bool>> {
+        Some(match name {
+            "row_numbers" => &mut self.row_numbers,
+            "zebra" => &mut self.zebra,
+            "column_lines" => &mut self.column_lines,
+            "group_gap" => &mut self.group_gap,
+            "search_bar" => &mut self.search_bar,
+            "chips" => &mut self.chips,
+            _ => return None,
+        })
     }
 
-    /// 決まった値: 上書きがあればそれ、無ければ設定(`base`・`search_bar`)。
-    pub fn resolve(&self, item: Item, base: &Display, search_bar: bool) -> bool {
-        self.get(item).unwrap_or_else(|| base.get(item, search_bar))
+    /// 書いた項目を `d` に当て、当てた項目の名前を返す。
+    pub fn apply_to(&self, d: &mut Display) -> Vec<&'static str> {
+        let mut out = Vec::new();
+        macro_rules! put {
+            ($f:ident) => {
+                if let Some(v) = self.$f {
+                    d.$f = v;
+                    out.push(stringify!($f));
+                }
+            };
+        }
+        put!(row_numbers);
+        put!(zebra);
+        put!(column_lines);
+        put!(group_gap);
+        put!(tabs);
+        put!(search_bar);
+        put!(chips);
+        out
     }
 
-    /// 項目を `on` にする。設定と同じなら上書きを持たない(設定と違う項目だけ持つ)。
-    pub fn set(&mut self, item: Item, on: bool, base: &Display, search_bar: bool) {
-        *self.slot(item) = (on != base.get(item, search_bar)).then_some(on);
+    /// 決まった値(上書きを `base` に重ねたもの)。
+    pub fn over(&self, base: &Display) -> Display {
+        let mut d = *base;
+        self.apply_to(&mut d);
+        d
+    }
+
+    /// 決まった値で項目を出すか。
+    pub fn resolve(&self, item: Item, base: &Display) -> bool {
+        self.over(base).get(item)
+    }
+
+    /// 真偽の項目を `on` にする。土台と同じなら上書きを持たない(違う項目だけ持つ)。
+    /// タブは出す(土台が never なら always)か出さない(never)にする。
+    pub fn set(&mut self, item: Item, on: bool, base: &Display) {
+        let same = base.get(item) == on;
+        match item {
+            Item::RowNumbers => self.row_numbers = (!same).then_some(on),
+            Item::Zebra => self.zebra = (!same).then_some(on),
+            Item::ColumnLines => self.column_lines = (!same).then_some(on),
+            Item::GroupGap => self.group_gap = (!same).then_some(on),
+            Item::SearchBar => self.search_bar = (!same).then_some(on),
+            Item::Chips => self.chips = (!same).then_some(on),
+            Item::Tabs => {
+                let m = if !on {
+                    TabsMode::Never
+                } else if base.tabs == TabsMode::Never {
+                    TabsMode::Always
+                } else {
+                    base.tabs
+                };
+                self.set_tabs(m, base);
+            }
+        }
+    }
+
+    /// タブの行の値を `m` にする(土台と同じなら上書きを持たない)。
+    pub fn set_tabs(&mut self, m: TabsMode, base: &Display) {
+        self.tabs = (m != base.tabs).then_some(m);
     }
 }

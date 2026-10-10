@@ -16,6 +16,14 @@ const NOTES: &[(&str, &str)] = &[
     ("d.md", "---\ntitle: delta\nstatus: done\n---\n"),
 ];
 
+/// 設定の文 `cfg` の `[look]` の区画に1行を足す(区画が無ければ作る。同じ見出しを2回書かない)。
+fn with_look(cfg: &str, line: &str) -> String {
+    match cfg.find("[look]\n") {
+        Some(i) => format!("{}{line}\n{}", &cfg[..i + 7], &cfg[i + 7..]),
+        None => format!("{cfg}\n[look]\n{line}\n"),
+    }
+}
+
 fn vault(name: &str) -> Tmp {
     let tmp = Tmp::new(name);
     for (n, t) in NOTES {
@@ -28,7 +36,7 @@ fn configured(tmp: &Tmp, text: &str) -> App {
     let mut a = app_of(tmp, ColorMode::Rgb);
     // テーマの塗り替え(SR-26)は今までの見た目(look = "classic")の上で確かめる。
     a.configure(
-        &config::parse(&format!("look = \"classic\"\n{text}"))
+        &config::parse(&with_look(&format!("{text}\n"), "mode = \"classic\""))
             .unwrap()
             .0,
     );
@@ -63,7 +71,7 @@ fn test_sr_26_zebra_row_selection_mark_and_bold() {
     let zebra = "[display]\nzebra = true\n";
     let mut base_app = configured(&tmp, zebra);
     base_app.row = 1;
-    let mut a = configured(&tmp, &format!("theme = \"nord\"\n\n{zebra}"));
+    let mut a = configured(&tmp, &format!("{zebra}\n\n[look]\ntheme = \"nord\""));
     a.row = 1;
     let base = buffer(&base_app);
     let buf = buffer(&a);
@@ -116,7 +124,7 @@ fn test_sr_26_colhead_only_on_the_column_heading_row() {
     // [SR-26] 列の見出しの行の太字+下線は colhead。
     let tmp = vault("thmcolhead");
     let base = buffer(&configured(&tmp, ""));
-    let a = configured(&tmp, "theme = \"nord\"\n");
+    let a = configured(&tmp, "[look]\ntheme = \"nord\"\n");
     let buf = buffer(&a);
     let s = text(&buf);
     let p = nord();
@@ -136,9 +144,9 @@ fn test_sr_26_colhead_only_on_the_column_heading_row() {
 fn test_sr_26_input_box_is_strong_not_colhead() {
     // [SR-26] 編集の入力ボックス(太字+下線)は列の見出しの色でなく strong。
     let tmp = vault("thminput");
-    let cfg = "candidates = 0\n";
+    let cfg = "[edit]\ncandidates = 0\n";
     let mut b = configured(&tmp, cfg);
-    let mut a = configured(&tmp, &format!("theme = \"nord\"\n{cfg}"));
+    let mut a = configured(&tmp, &format!("{cfg}\n\n[look]\ntheme = \"nord\""));
     for app in [&mut b, &mut a] {
         col_named(app, "title");
         press(app, KeyCode::Enter);
@@ -161,7 +169,7 @@ fn test_sr_26_search_hit_name_is_strong_not_colhead() {
     // [SR-26] 検索に一致した今の行の名前(太字+下線)も strong。
     let tmp = vault("thmsearch");
     let mut b = configured(&tmp, "");
-    let mut a = configured(&tmp, "theme = \"nord\"\n");
+    let mut a = configured(&tmp, "[look]\ntheme = \"nord\"\n");
     for app in [&mut b, &mut a] {
         app.search = Some("a".into());
     }

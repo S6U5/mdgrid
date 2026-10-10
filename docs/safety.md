@@ -31,7 +31,7 @@ How values are written:
 
 ## Read-only notes
 
-Some notes cannot be written without risking damage, or without guessing which value is meant. mdgrid shows these notes but makes the whole row read-only, and shows the reason when you try to edit a cell. Except for the two forms that depend on `add_frontmatter`, this cannot be changed by any setting.
+Some notes cannot be written without risking damage, or without guessing which value is meant. mdgrid shows these notes but makes the whole row read-only, and shows the reason when you try to edit a cell. Except for the two forms that depend on `[edit] add_frontmatter`, this cannot be changed by any setting.
 
 Each reason below has a small example note. In the examples, every line ends with LF unless marked, and these markers stand for bytes:
 
@@ -48,7 +48,7 @@ Meeting notes
 Talked about the release date.
 ```
 
-By default this note is writable: saving a value adds a frontmatter block at the top, and the body stays as it was. With `add_frontmatter = false` in the config file, these notes are read-only instead and show the reason.
+By default this note is writable: saving a value adds a frontmatter block at the top, and the body stays as it was. With `add_frontmatter = false` under `[edit]` in the config file, these notes are read-only instead and show the reason.
 
 A note whose first line is `+++` (TOML frontmatter, as used by Hugo and Zola) is always read-only, whatever the setting: adding a YAML block above it would break the page for the site generator.
 
@@ -62,7 +62,7 @@ The frontmatter is just the opening and closing `---`, with nothing between them
 Meeting notes
 ```
 
-By default this note is writable: saving a value adds the key line between the two `---` lines. With `add_frontmatter = false` in the config file, these notes are read-only instead and show the reason. Frontmatter that contains only blank lines or comments is not empty; it is treated as normal frontmatter.
+By default this note is writable: saving a value adds the key line between the two `---` lines. With `add_frontmatter = false` under `[edit]` in the config file, these notes are read-only instead and show the reason. Frontmatter that contains only blank lines or comments is not empty; it is treated as normal frontmatter.
 
 ### `bom`
 

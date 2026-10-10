@@ -38,6 +38,14 @@ const NOTES: &[(&str, &str)] = &[
 
 // ---- 道具 ----
 
+/// 設定の文 `cfg` の `[look]` の区画に1行を足す(区画が無ければ作る。同じ見出しを2回書かない)。
+fn with_look(cfg: &str, line: &str) -> String {
+    match cfg.find("[look]\n") {
+        Some(i) => format!("{}{line}\n{}", &cfg[..i + 7], &cfg[i + 7..]),
+        None => format!("{cfg}\n[look]\n{line}\n"),
+    }
+}
+
 fn vault(name: &str) -> Tmp {
     let tmp = Tmp::new(name);
     for (n, t) in NOTES {
@@ -56,14 +64,14 @@ fn cfg(text: &str) -> Config {
 /// test_look.rs)。
 fn themed(tmp: &Tmp, color: ColorMode, config: &str) -> App {
     let mut a = app_of(tmp, color);
-    a.configure(&cfg(&format!("look = \"classic\"\n{config}")));
+    a.configure(&cfg(&with_look(config, "mode = \"classic\"")));
     a
 }
 
 /// 既定の設定に `look = "classic"` だけを当てた App(テーマの機能が無いときの画面の比べる元)。
 fn plain(tmp: &Tmp, color: ColorMode) -> App {
     let mut a = app_of(tmp, color);
-    a.configure(&cfg("look = \"classic\"\n"));
+    a.configure(&cfg("[look]\nmode = \"classic\"\n"));
     let _ = Config::default();
     a
 }
@@ -105,7 +113,7 @@ fn test_sr_26_nord_paints_background_selection_and_band() {
     // 下の帯の背景が #3b4252。
     let tmp = vault("thnord");
     let base = buffer(&plain(&tmp, ColorMode::Rgb));
-    let a = themed(&tmp, ColorMode::Rgb, "theme = \"nord\"\n");
+    let a = themed(&tmp, ColorMode::Rgb, "[look]\ntheme = \"nord\"\n");
     let buf = buffer(&a);
     let s = text(&buf);
 
@@ -166,7 +174,7 @@ fn test_sr_26_every_theme_keeps_the_text() {
     for color in [ColorMode::Rgb, ColorMode::Indexed] {
         let want = text(&buffer(&plain(&tmp, color)));
         for t in Theme::ALL {
-            let a = themed(&tmp, color, &format!("theme = \"{}\"\n", t.name()));
+            let a = themed(&tmp, color, &format!("[look]\ntheme = \"{}\"\n", t.name()));
             let got = text(&buffer(&a));
             assert_eq!(
                 got,
@@ -183,7 +191,11 @@ fn test_sr_26_every_theme_but_default_paints() {
     // [SR-26] default 以外の6つは、左上の地をテーマの bg で塗る。
     let tmp = vault("thall");
     for t in Theme::ALL {
-        let a = themed(&tmp, ColorMode::Rgb, &format!("theme = \"{}\"\n", t.name()));
+        let a = themed(
+            &tmp,
+            ColorMode::Rgb,
+            &format!("[look]\ntheme = \"{}\"\n", t.name()),
+        );
         let buf = buffer(&a);
         match t.palette() {
             Some(p) => assert_eq!(buf[(0u16, 0u16)].bg, rgb(p.bg), "テーマ {}", t.name()),
@@ -263,7 +275,7 @@ fn test_sr_26_zebra_uses_theme_colors() {
     let a = themed(
         &tmp,
         ColorMode::Rgb,
-        "theme = \"nord\"\n\n[display]\nzebra = true\n",
+        "[look]\ntheme = \"nord\"\n\n[display]\nzebra = true\n",
     );
     let buf = buffer(&a);
     let s = text(&buf);
@@ -301,11 +313,18 @@ fn test_sr_27_default_is_unchanged() {
         assert_same_cells(&none, &want, &format!("設定を当てない ({color:?})"));
         let empty = buffer(&themed(&tmp, color, ""));
         assert_same_cells(&empty, &want, &format!("設定なし ({color:?})"));
-        let named = buffer(&themed(&tmp, color, "theme = \"default\"\n"));
-        assert_same_cells(&named, &want, &format!("theme = \"default\" ({color:?})"));
+        let named = buffer(&themed(&tmp, color, "[look]\ntheme = \"default\"\n"));
+        assert_same_cells(
+            &named,
+            &want,
+            &format!("[look]\ntheme = \"default\" ({color:?})"),
+        );
     }
-    assert_eq!(Config::default().theme, Theme::Default);
-    assert_eq!(cfg("").theme, Theme::Default);
+    assert_eq!(
+        Config::default().resolved().theme.pick(None),
+        Theme::Default
+    );
+    assert_eq!(cfg("").resolved().theme.pick(None), Theme::Default);
 }
 
 #[test]
@@ -313,14 +332,13 @@ fn test_sr_27_default_zebra_is_unchanged() {
     // [SR-27][SR-20] 既定のテーマの一行おきの色は今と同じ。
     let tmp = vault("thdefzebra");
     let mut a = app_of(&tmp, ColorMode::Rgb);
-    let mut c = cfg("look = \"classic\"\n\n[display]\nzebra = true\n");
-    c.theme = Theme::Default;
+    let c = cfg("[look]\nmode = \"classic\"\ntheme = \"default\"\n\n[display]\nzebra = true\n");
     a.configure(&c);
     let want = buffer(&a);
     let b = themed(
         &tmp,
         ColorMode::Rgb,
-        "theme = \"default\"\n\n[display]\nzebra = true\n",
+        "[look]\ntheme = \"default\"\n\n[display]\nzebra = true\n",
     );
     assert_same_cells(&buffer(&b), &want, "default と zebra");
 }
@@ -346,7 +364,10 @@ fn test_sr_27_theme_names() {
         assert_eq!(Theme::parse(name), Some(t), "{name}");
         assert_eq!(t.name(), name);
         assert_eq!(
-            cfg(&format!("theme = \"{name}\"\n")).theme,
+            cfg(&format!("[look]\ntheme = \"{name}\"\n"))
+                .resolved()
+                .theme
+                .pick(None),
             t,
             "設定の {name}"
         );
@@ -360,22 +381,23 @@ fn test_sr_27_theme_names() {
 
 #[test]
 fn test_sr_27_unknown_theme_warns_and_falls_back() {
-    // [SR-27][CLI-3] theme = "neon" → 警告に `theme` と出て、既定の見た目で起動。
-    let (c, warnings) = config::parse("theme = \"neon\"\n").expect("知らない名前でも読める");
-    assert_eq!(c.theme, Theme::Default);
+    // [SR-27][CLI-3] look.theme = "neon" → 警告に `look.theme` と出て、既定の見た目で起動。
+    let (c, warnings) =
+        config::parse("[look]\ntheme = \"neon\"\n").expect("知らない名前でも読める");
+    assert_eq!(c.resolved().theme.pick(None), Theme::Default);
     assert!(
-        warnings.iter().any(|w| w.contains("theme")),
-        "警告に theme が無い: {warnings:?}"
+        warnings.iter().any(|w| w.contains("look.theme")),
+        "警告に look.theme が無い: {warnings:?}"
     );
     // 型の違う値も同じ。
-    let (c, warnings) = config::parse("theme = 3\n").expect("型の違う値でも読める");
-    assert_eq!(c.theme, Theme::Default);
+    let (c, warnings) = config::parse("[look]\ntheme = 3\n").expect("型の違う値でも読める");
+    assert_eq!(c.resolved().theme.pick(None), Theme::Default);
     assert!(
-        warnings.iter().any(|w| w.contains("theme")),
-        "警告に theme が無い: {warnings:?}"
+        warnings.iter().any(|w| w.contains("look.theme")),
+        "警告に look.theme が無い: {warnings:?}"
     );
     // 正しい名前なら警告は出ない。
-    let (_, warnings) = config::parse("theme = \"nord\"\n").unwrap();
+    let (_, warnings) = config::parse("[look]\ntheme = \"nord\"\n").unwrap();
     assert!(
         !warnings.iter().any(|w| w.contains("theme")),
         "正しい名前で警告: {warnings:?}"
@@ -384,15 +406,15 @@ fn test_sr_27_unknown_theme_warns_and_falls_back() {
     // 画面も既定と同じ。
     let tmp = vault("thneon");
     let want = buffer(&plain(&tmp, ColorMode::Rgb));
-    let got = buffer(&themed(&tmp, ColorMode::Rgb, "theme = \"neon\"\n"));
-    assert_same_cells(&got, &want, "theme = \"neon\"");
+    let got = buffer(&themed(&tmp, ColorMode::Rgb, "[look]\ntheme = \"neon\"\n"));
+    assert_same_cells(&got, &want, "[look]\ntheme = \"neon\"");
 }
 
 #[test]
 fn test_sr_27_no_color_ignores_theme() {
     // [SR-27][SR-10] 色を使わない表示(NO_COLOR と同じ ColorMode::None)では、theme = "dracula" でも色の指定が無い。
     let tmp = vault("thnocolor");
-    let a = themed(&tmp, ColorMode::None, "theme = \"dracula\"\n");
+    let a = themed(&tmp, ColorMode::None, "[look]\ntheme = \"dracula\"\n");
     let buf = buffer(&a);
     let s = text(&buf);
     for (x, y) in cells(&buf) {
@@ -408,7 +430,11 @@ fn test_sr_27_color_false_ignores_theme() {
     // [SR-27] 設定の color = false でも、テーマを書いても色の指定が無い。
     let tmp = vault("thcolorfalse");
     for color in [ColorMode::Rgb, ColorMode::Indexed] {
-        let a = themed(&tmp, color, "color = false\ntheme = \"dracula\"\n");
+        let a = themed(
+            &tmp,
+            color,
+            "[terminal]\ncolor = false\n\n[look]\ntheme = \"dracula\"\n",
+        );
         let buf = buffer(&a);
         let s = text(&buf);
         for (x, y) in cells(&buf) {
@@ -424,7 +450,7 @@ fn test_sr_27_indexed_uses_256_colors() {
     // [SR-27][SR-15] トゥルーカラーに対応しない端末(ColorMode::Indexed)では、近い 256 色の番号で塗る。
     let tmp = vault("thindexed");
     let base = buffer(&plain(&tmp, ColorMode::Indexed));
-    let a = themed(&tmp, ColorMode::Indexed, "theme = \"nord\"\n");
+    let a = themed(&tmp, ColorMode::Indexed, "[look]\ntheme = \"nord\"\n");
     let buf = buffer(&a);
     let s = text(&buf);
     assert_eq!(

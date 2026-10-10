@@ -17,7 +17,8 @@ fn test_sr_33_frame_accent_in_every_frame_shape() {
     }
     for (frames, corner, side) in [("square", "└", "│"), ("heavy", "┗", "┃")] {
         let mut a = app_of(&tmp, ColorMode::Rgb);
-        let (c, w) = mdgrid::config::parse(&format!("[style]\nframes = \"{frames}\"\n")).unwrap();
+        let (c, w) =
+            mdgrid::config::parse(&format!("[look.style]\nframes = \"{frames}\"\n")).unwrap();
         assert!(w.is_empty(), "{w:?}");
         a.configure(&c);
         a.col = a.cols.iter().position(|c| c == "status").unwrap();

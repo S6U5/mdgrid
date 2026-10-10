@@ -112,7 +112,7 @@ fn test_sr_36_overrides_each_part() {
     let a = with(
         &tmp,
         ColorMode::Rgb,
-        "[style]\nstatus = \"chip\"\ntags = \"hash\"\ncheck = \"bracket\"\nicons = true\n",
+        "[look.style]\nstatus = \"chip\"\ntags = \"hash\"\ncheck = \"bracket\"\nicons = true\n",
     );
     let b = row(&a, "b");
     assert!(
@@ -129,7 +129,7 @@ fn test_sr_36_overrides_each_part() {
 fn test_sr_36_preset_saas_tints_and_segments() {
     // [SR-36] preset = "saas": status は淡い地の札(点つき)、リストも淡い地の札。
     let tmp = notes("sr36_saas");
-    let mut a = with(&tmp, ColorMode::Rgb, "[style]\npreset = \"saas\"\n");
+    let mut a = with(&tmp, ColorMode::Rgb, "[look]\npreset = \"saas\"\n");
     a.col = a.cols.iter().position(|c| c == "done").unwrap();
     let r = row(&a, "a");
     assert!(r.contains(" ● todo ") && r.contains(" ui   perf"), "{r}");
@@ -143,12 +143,12 @@ fn test_sr_36_preset_saas_tints_and_segments() {
 fn test_sr_36_pill_needs_nerd_font() {
     // [SR-36] pill は nerd_font のときだけ丸い端。無ければ soft(▐ ▌)。
     let tmp = notes("sr36_pill");
-    let a = with(&tmp, ColorMode::Rgb, "[style]\ntags = \"pill\"\n");
+    let a = with(&tmp, ColorMode::Rgb, "[look.style]\ntags = \"pill\"\n");
     assert!(row(&a, "b").contains("▐docs▌"), "{}", row(&a, "b"));
     let a = with(
         &tmp,
         ColorMode::Rgb,
-        "nerd_font = true\n[style]\ntags = \"pill\"\n",
+        "[terminal]\nnerd_font = true\n\n[look.style]\ntags = \"pill\"\n",
     );
     assert!(
         row(&a, "b").contains("\u{e0b6}docs\u{e0b4}"),
@@ -161,7 +161,7 @@ fn test_sr_36_pill_needs_nerd_font() {
 fn test_sr_36_cross_tints_column() {
     // [SR-36] select = "cross": 今の列を、ほかの行でも淡く塗る。
     let tmp = notes("sr36_cross");
-    let mut a = with(&tmp, ColorMode::Rgb, "[style]\nselect = \"cross\"\n");
+    let mut a = with(&tmp, ColorMode::Rgb, "[look.style]\nselect = \"cross\"\n");
     a.col = a.cols.iter().position(|c| c == "done").unwrap();
     let buf = buffer(&a);
     let y = row_y(&a, "d");
@@ -178,7 +178,7 @@ fn test_sr_36_rules_and_frames() {
     let mut a = with(
         &tmp,
         ColorMode::Rgb,
-        "[style]\nrules = \"columns\"\nframes = \"square\"\n",
+        "[look.style]\nrules = \"columns\"\nframes = \"square\"\n",
     );
     let s = screen(&a);
     let head = s.lines().find(|l| l.contains("status")).unwrap();
@@ -193,7 +193,7 @@ fn test_sr_36_rules_and_frames() {
 fn test_sr_36_no_color_keeps_text() {
     // [SR-36][SR-35] 色を使わない表示では部品にしない(今の見た目)。
     let tmp = notes("sr36_plain");
-    let a = with(&tmp, ColorMode::None, "[style]\npreset = \"saas\"\n");
+    let a = with(&tmp, ColorMode::None, "[look]\npreset = \"saas\"\n");
     let b = row(&a, "b");
     assert!(
         b.contains("true") && b.contains("[docs]") && b.contains("doing"),

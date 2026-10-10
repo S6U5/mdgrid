@@ -128,8 +128,8 @@ fn test_sr_30_view_override_and_row_numbers() {
     // [SR-30][SR-20] 設定に無くても、ビューの上書きで空きを出せる。行番号は空きを数えず 1〜5 が続く。
     let (_t, mut a) = open("ggview", "[display]\nrow_numbers = true\n", true);
     assert!(gap_at(&a).is_empty());
-    let (base, bar) = (a.display, a.search_bar);
-    a.settings.display.set(Item::GroupGap, true, &base, bar);
+    let base = a.display;
+    a.settings.display.set(Item::GroupGap, true, &base);
     a.refresh();
     let h1 = head_at(&a, 1);
     assert_eq!(gap_at(&a), vec![h1 - 1]);
@@ -143,10 +143,10 @@ fn test_sr_30_view_override_and_row_numbers() {
 #[test]
 fn test_sr_30_print_config_and_views_key() {
     // [SR-30] `--print-config` の [display] に group_gap = false。views.toml の上書きの項目にもある。
-    let mut c = mdgrid::config::Config::default();
-    assert!(!c.display.group_gap);
-    *c.display.field_mut("group_gap").unwrap() = true;
-    assert!(c.display.group_gap);
+    let c = mdgrid::config::Config::default();
+    assert!(!c.resolved().display.group_gap);
+    let (c, w) = mdgrid::config::parse("[display]\ngroup_gap = true\n").unwrap();
+    assert!(w.is_empty() && c.resolved().display.group_gap);
     assert!(mdgrid::display::OVERRIDE_KEYS.contains(&"group_gap"));
     let text = mdgrid::config::default_toml();
     assert!(text.contains("group_gap = false"), "{text}");

@@ -31,7 +31,11 @@ fn with(name: &str, config: &str, color: ColorMode) -> (Tmp, App) {
     let tmp = vault(name);
     let mut a = app_of(&tmp, color);
     // 表の見せ方(SR-20)は今までの見た目(look = "classic")の上で確かめる。
-    a.configure(&parse(&format!("look = \"classic\"\n{config}")).unwrap().0);
+    a.configure(
+        &parse(&format!("{config}\n\n[look]\nmode = \"classic\""))
+            .unwrap()
+            .0,
+    );
     (tmp, a)
 }
 
@@ -42,7 +46,7 @@ fn test_sr_20_column_lines_with_ambiguous_wide_keep_positions() {
     // [SR-20][CV-6] `│` は Ambiguous。ambiguous_wide では幅1の `|` を引き、列の位置(描いた文字・クリック)がずれない。
     let (_t, mut a) = with(
         "dmamb",
-        "ambiguous_wide = true\n\n[display]\ncolumn_lines = true\n",
+        "[terminal]\nambiguous_wide = true\n\n[display]\ncolumn_lines = true\n",
         ColorMode::None,
     );
     let s = screen(&a);

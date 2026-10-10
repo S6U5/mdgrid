@@ -15,14 +15,16 @@ pub mod display;
 pub mod expr;
 pub mod frontmatter;
 pub mod i18n;
+pub mod legacy;
 pub mod links;
-pub mod look;
 pub(crate) mod mdtext;
 pub mod newnote;
 pub mod places;
 pub mod print;
+pub mod profile;
 pub mod relations;
 pub mod relmap;
+pub mod schema;
 pub mod settings;
 pub mod source;
 pub mod style;
@@ -30,6 +32,7 @@ pub mod summary;
 pub mod theme;
 pub mod tree;
 pub mod types;
+pub mod uifile;
 pub mod vault;
 pub mod views;
 pub mod workspace;
@@ -45,8 +48,8 @@ mod test_toml_edit_safety;
 mod test_tab_prefs;
 
 #[cfg(test)]
-#[path = "test_look_unit.rs"]
-mod test_look;
+#[path = "test_uifile_unit.rs"]
+mod test_uifile;
 
 #[cfg(test)]
 #[path = "test_tree_unit.rs"]

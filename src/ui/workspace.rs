@@ -89,7 +89,7 @@ impl App {
         Some(WsTable {
             name,
             path,
-            view: None,
+            ..WsTable::default()
         })
     }
 

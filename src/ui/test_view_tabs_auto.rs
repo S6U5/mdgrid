@@ -36,7 +36,7 @@ fn boot(tmp: &Tmp, config: Config) -> App {
 }
 
 fn auto() -> Config {
-    let (c, w) = mdgrid::config::parse("view_tabs = \"auto\"\n").unwrap();
+    let (c, w) = mdgrid::config::parse("[display]\ntabs = \"auto\"\n").unwrap();
     assert!(w.is_empty(), "{w:?}");
     c
 }
@@ -87,10 +87,10 @@ fn test_sr_34_auto_shows_tabs_with_two_views() {
 #[test]
 fn test_sr_34_unknown_value_warns() {
     // [SR-34] 知らない値は警告して always。
-    let (c, w) = mdgrid::config::parse("view_tabs = \"sometimes\"\n").unwrap();
-    assert!(!c.view_tabs_auto);
+    let (c, w) = mdgrid::config::parse("[display]\ntabs = \"sometimes\"\n").unwrap();
+    assert_eq!(c.resolved().display.tabs, mdgrid::display::TabsMode::Always);
     assert_eq!(w.len(), 1, "{w:?}");
-    assert!(w[0].contains("view_tabs"), "{w:?}");
+    assert!(w[0].contains("display.tabs"), "{w:?}");
 }
 
 #[test]

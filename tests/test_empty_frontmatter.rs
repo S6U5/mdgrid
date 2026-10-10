@@ -353,31 +353,38 @@ fn test_wb_3_source_explicit_true_is_same_as_default() {
 
 #[test]
 fn test_cli_3_add_frontmatter_setting() {
-    // [CLI-3] [WB-3] 既定は true。`add_frontmatter = false` を読め、知らない項目の警告は出ない。
-    assert!(Config::default().add_frontmatter, "default is true");
+    // [CLI-3] [WB-3] 既定は true。`[edit] add_frontmatter = false` を読め、知らない項目の警告は出ない。
+    assert!(
+        Config::default().resolved().add_frontmatter,
+        "default is true"
+    );
     let (c, w) = parse_config("").unwrap();
-    assert!(c.add_frontmatter);
+    assert!(c.resolved().add_frontmatter);
     assert!(w.is_empty(), "{w:?}");
 
-    let (c, w) = parse_config("add_frontmatter = false\n").unwrap();
-    assert!(!c.add_frontmatter, "false is read");
+    let (c, w) = parse_config("[edit]\nadd_frontmatter = false\n").unwrap();
+    assert!(!c.resolved().add_frontmatter, "false is read");
     assert!(w.is_empty(), "[CLI-3] no warning for a known item: {w:?}");
 
-    let (c, w) = parse_config("add_frontmatter = true\n").unwrap();
-    assert!(c.add_frontmatter);
+    let (c, w) = parse_config("[edit]\nadd_frontmatter = true\n").unwrap();
+    assert!(c.resolved().add_frontmatter);
     assert!(w.is_empty(), "{w:?}");
 
     // 真偽でない値は警告にとどめ、既定(true)のまま。
-    for bad in ["add_frontmatter = \"no\"\n", "add_frontmatter = 0\n"] {
+    for bad in [
+        "[edit]\nadd_frontmatter = \"no\"\n",
+        "[edit]\nadd_frontmatter = 0\n",
+    ] {
         let (c, w) = parse_config(bad).expect("not a hard error");
-        assert!(c.add_frontmatter, "{bad}: stays default");
+        assert!(c.resolved().add_frontmatter, "{bad}: stays default");
         assert_eq!(w.len(), 1, "{bad}: one warning: {w:?}");
         assert!(w[0].contains("add_frontmatter"), "{bad}: {w:?}");
     }
 
     // ほかの項目と一緒でも読める。
-    let (c, w) = parse_config("color = false\nadd_frontmatter = false\n").unwrap();
-    assert!(!c.add_frontmatter && !c.color);
+    let (c, w) =
+        parse_config("[terminal]\ncolor = false\n\n[edit]\nadd_frontmatter = false\n").unwrap();
+    assert!(!c.resolved().add_frontmatter && !c.terminal.color);
     assert!(w.is_empty(), "{w:?}");
 }
 

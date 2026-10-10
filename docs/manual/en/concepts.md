@@ -76,7 +76,7 @@ mdgrid decides the workspace of the table you open in this order:
 1. `-w <name>` on the command line.
 2. A marker file `.mdgrid/workspace.toml` in the folder or above it. This is useful in a repository you share: the workspace travels with the notes.
 3. A workspace in `workspaces.toml` (in the config folder) that contains the table. Manage these from the palette or with `--add-to`, `--remove-from` and `--workspaces`.
-4. Detection: the nearest Obsidian vault (a folder with `.obsidian/`), or a git repository if you turn that on with `workspace_detect`. Its folders of notes become the tables.
+4. Detection: the nearest Obsidian vault (a folder with `.obsidian/`), or a git repository if you turn that on with `[workspace] detect`. Its folders of notes become the tables.
 5. Otherwise, the registered tables.
 
 The header shows `· workspace <name>` when one is in use. See [Group tables into workspaces](tasks.md#group-tables-into-workspaces).

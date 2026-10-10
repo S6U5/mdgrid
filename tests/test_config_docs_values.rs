@@ -1,9 +1,9 @@
 //! 設定の文書(docs/config.md・docs/config.ja.md)の各項目の「型」「既定」の行と例を、実装の項目の表
 //! (`mdgrid::config::ITEMS`)と突き合わせる(CLI-12)。名前の集合の突き合わせは tests/test_config_docs.rs。
 //!
-//! 文書の各項目は、見出し `### \`name\`` の下に、決まった形の行を持つ:
-//! - 英語: `- Type: \`<ty>\`` と `- Default: \`<default>\``(既定の無い項目は `- Default: none`)
-//! - 日本語: `- 型: \`<ty_ja>\`` と `- 既定: \`<default>\``(既定の無い項目は `- 既定: なし`)
+//! 文書の各項目は、見出し `### \`道筋\`` の下に、決まった形の行を持つ:
+//! - 英語: `- Type: \`<ty>\``・`- Default: \`<default>\``(既定の無い項目は `- Default: none`)・`- Scope: <範囲>`
+//! - 日本語: `- 型: \`<ty_ja>\``・`- 既定: \`<default>\``(既定の無い項目は `- 既定: なし`)・`- 範囲: <範囲>`
 //! - どちらも、項目の中の ```toml の区画が `example` と同じ。
 
 use mdgrid::config::{parse, Config, Item, ITEMS};
@@ -65,31 +65,56 @@ fn quoted(v: &str) -> String {
     format!("`{v}`")
 }
 
-fn check(rel: &str, ty_prefix: &str, default_prefix: &str, none: &str, ty: fn(&Item) -> &str) {
+struct Lang {
+    rel: &'static str,
+    ty_prefix: &'static str,
+    default_prefix: &'static str,
+    scope_prefix: &'static str,
+    none: &'static str,
+    ty: fn(&Item) -> &str,
+    scope: fn(&Item) -> &str,
+}
+
+fn check(l: Lang) {
+    let Lang {
+        rel,
+        ty_prefix,
+        default_prefix,
+        scope_prefix,
+        none,
+        ty,
+        scope,
+    } = l;
     let text = repo_file(rel);
     for item in ITEMS {
-        let body = section(&text, item.name);
+        let body = section(&text, item.path);
         assert_eq!(
-            field(&body, ty_prefix, rel, item.name),
+            field(&body, scope_prefix, rel, item.path),
+            scope(item),
+            "{rel}: 項目 `{}` の書ける範囲が実装の表と違う",
+            item.path
+        );
+        assert_eq!(
+            field(&body, ty_prefix, rel, item.path),
             quoted(ty(item)),
             "{rel}: 項目 `{}` の型が実装の表と違う",
-            item.name
+            item.path
         );
         let want = match item.default {
             Some(d) => quoted(d),
             None => none.to_string(),
         };
         assert_eq!(
-            field(&body, default_prefix, rel, item.name),
+            field(&body, default_prefix, rel, item.path),
             want,
             "{rel}: 項目 `{}` の既定が実装の表と違う",
-            item.name
+            item.path
         );
         assert_eq!(
-            toml_block(&body, rel, item.name),
+            toml_block(&body, rel, item.path),
             item.example,
             "{rel}: 項目 `{}` の例が実装の表と違う",
-            item.name
+            item.path
         );
     }
 }
@@ -97,44 +122,76 @@ fn check(rel: &str, ty_prefix: &str, default_prefix: &str, none: &str, ty: fn(&I
 #[test]
 fn test_cli_12_english_doc_type_default_example() {
     // [CLI-12] docs/config.md の各項目の Type・Default の行と例が、実装の表と同じ。
-    check("docs/config.md", "- Type: ", "- Default: ", "none", |i| {
-        i.ty
+    check(Lang {
+        rel: "docs/config.md",
+        ty_prefix: "- Type: ",
+        default_prefix: "- Default: ",
+        scope_prefix: "- Scope: ",
+        none: "none",
+        ty: |i| i.ty,
+        scope: |i| i.scope.en(),
     });
 }
 
 #[test]
 fn test_cli_12_japanese_doc_type_default_example() {
     // [CLI-12] docs/config.ja.md の各項目の 型・既定 の行と例が、実装の表と同じ。
-    check(
-        "docs/config.ja.md",
-        "- 型: ",
-        "- 既定: ",
-        "なし",
-        |i| i.ty_ja,
-    );
+    check(Lang {
+        rel: "docs/config.ja.md",
+        ty_prefix: "- 型: ",
+        default_prefix: "- 既定: ",
+        scope_prefix: "- 範囲: ",
+        none: "なし",
+        ty: |i| i.ty_ja,
+        scope: |i| i.scope.ja(),
+    });
+}
+
+/// 既定と同じ振る舞いか(アプリ全体の項目と、重ねた決まった値。出どころは見ない)。
+fn behaves_as_default(c: &Config) -> bool {
+    let d = Config::default();
+    let mut r = c.resolved();
+    r.origins.clear();
+    c.language == d.language
+        && c.editor == d.editor
+        && c.poll_ms == d.poll_ms
+        && c.keys == d.keys
+        && c.terminal == d.terminal
+        && c.workspace_detect == d.workspace_detect
+        && c.templates.is_empty()
+        && r == d.resolved()
 }
 
 #[test]
 fn test_cli_12_table_defaults_are_real_defaults() {
-    // [CLI-12] [CLI-11] 表の既定値の表記は、その1行だけを読んでも警告なしで Config::default() と同じ
+    // [CLI-12] [CLI-11] 表の既定値の表記は、その1行だけを(区画の見出しの下に)読んでも警告なしで既定と同じ振る舞い
     // (表の既定値を実装と違えたら、文書を直す前にここで落ちる)。既定の無い項目は既定では None・空。
     for item in ITEMS {
         match item.default {
             Some(d) => {
-                let (c, w) = parse(&format!("{} = {d}\n", item.name)).unwrap();
-                assert!(w.is_empty(), "`{}`: {w:?}", item.name);
-                assert_eq!(
-                    c,
-                    Config::default(),
+                let text = match item.section() {
+                    "" => format!("{} = {d}\n", item.leaf()),
+                    sec => format!("[{sec}]\n{} = {d}\n", item.leaf()),
+                };
+                let (c, w) = parse(&text).unwrap();
+                assert!(w.is_empty(), "`{}`: {w:?}", item.path);
+                assert!(
+                    behaves_as_default(&c),
                     "`{}` の表の既定値が実装と違う",
-                    item.name
+                    item.path
                 );
             }
             None => {
                 let d = Config::default();
-                match item.name {
+                match item.path {
                     "editor" => assert_eq!(d.editor, None),
                     "keys" => assert!(d.keys.is_empty()),
+                    "templates" => assert!(d.templates.is_empty()),
+                    "use" => assert_eq!(d.profile.use_, None),
+                    "look.style" => assert!(d.profile.look.style.is_empty()),
+                    "look.columns" => assert!(d.profile.look.columns.is_empty()),
+                    "look.colors" => assert!(d.profile.look.values.is_empty()),
+                    "new_note" => assert_eq!(d.profile.new_note, None),
                     other => panic!("既定の無い項目 `{other}` の確かめ方を足す"),
                 }
             }

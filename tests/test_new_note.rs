@@ -30,7 +30,7 @@
 //! /// 下のフォルダを作り、create_new で書く。既にあれば Err で、そのファイルは変えない。
 //! pub fn create(path: &Path, bytes: &[u8]) -> std::io::Result<()>;
 //! /// ビューに new_note があればそれ、無ければ設定の new_note。
-//! pub fn rule_for<'a>(config: &'a Config, view: Option<&'a NativeView>) -> &'a NewNote;
+//! pub fn rule_for(config: &Config, view: Option<&NativeView>) -> NewNote;
 //!
 //! // src/config.rs: Config に `pub new_note: NewNote`(既定は NewNote::default())、ITEMS に `new_note`。
 //! // src/views.rs: NativeView に `pub new_note: Option<NewNote>`(views.toml の [target.view.new_note])。
@@ -451,7 +451,7 @@ fn test_ce_25_whole_flow_writes_new_note_only() {
     let rule = rule_for(&config, Some(&view));
     let pre = prefill(&view.settings, &view.filters_expr, &no_kinds());
     let p = note_path(t.path(), &rule.folder, "会議の準備").unwrap();
-    create(&p, &build(rule, &pre, &[]).unwrap()).unwrap();
+    create(&p, &build(&rule, &pre, &[]).unwrap()).unwrap();
     assert_eq!(
         std::fs::read_to_string(t.path().join("会議の準備.md")).unwrap(),
         "---\nstatus: todo\n---\n"
@@ -586,10 +586,11 @@ fn test_ce_26_view_rule_replaces_config_rule() {
         name: "全部".to_string(),
         ..NativeView::default()
     };
-    assert_eq!(rule_for(&config, Some(&with)), &view_rule);
-    assert_eq!(rule_for(&config, Some(&without)), &config.new_note);
-    assert_eq!(rule_for(&config, None), &config.new_note);
-    assert_eq!(config.new_note.folder, "inbox");
+    let base = config.resolved().new_note;
+    assert_eq!(rule_for(&config, Some(&with)), view_rule);
+    assert_eq!(rule_for(&config, Some(&without)), base);
+    assert_eq!(rule_for(&config, None), base);
+    assert_eq!(base.folder, "inbox");
 }
 
 // ---- CE-27: 設定の形・名前の雛形・views.toml ----
@@ -610,7 +611,7 @@ kind = "memo"
 level = 2
 "#,
     );
-    let n = &c.new_note;
+    let n = &c.resolved().new_note;
     assert_eq!(n.folder, "inbox");
     assert_eq!(n.name, "{date} ");
     assert_eq!(
@@ -634,10 +635,10 @@ level = 2
 fn test_ce_27_default_config_has_empty_rule() {
     // [CE-27] 設定に new_note が無ければ既定(開いたフォルダ・雛形なし・聞かない・入れない)。
     let c = parse_ok("");
-    assert_eq!(c.new_note, NewNote::default());
-    assert_eq!(Config::default().new_note, NewNote::default());
-    assert!(c.new_note.folder.is_empty() && c.new_note.name.is_empty());
-    assert!(c.new_note.ask.is_empty() && c.new_note.set.is_empty());
+    assert_eq!(c.resolved().new_note, NewNote::default());
+    assert_eq!(Config::default().resolved().new_note, NewNote::default());
+    assert!(c.resolved().new_note.folder.is_empty() && c.resolved().new_note.name.is_empty());
+    assert!(c.resolved().new_note.ask.is_empty() && c.resolved().new_note.set.is_empty());
 }
 
 #[test]
@@ -780,7 +781,7 @@ fn test_ce_27_views_new_note_survives_save_and_load() {
 fn test_ce_27_new_note_is_a_documented_config_item() {
     // [CE-27] [CLI-12] 設定の項目の表(文書・--print-config の元)に new_note がある。
     assert!(
-        ITEMS.iter().any(|i| i.name == "new_note"),
+        ITEMS.iter().any(|i| i.path == "new_note"),
         "ITEMS に new_note がある"
     );
     assert!(KEYS.contains(&"new_note"), "KEYS に new_note がある");

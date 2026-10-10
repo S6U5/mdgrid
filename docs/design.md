@@ -582,6 +582,19 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - 端末に従うテーマ: `ui/termbg.rs`。`COLORFGBG` の地の番号(7・9〜15 を明るい)を先に見て、無ければ `/dev/tty` を raw にして OSC 11 と DA1 を続けて送り、`poll` で最大 200ms 待つ。DA1 の答えが先に来たら答えない端末とみなしてすぐやめる(遅れた答えを表のキーと読まないため)。依存を足さず、std がリンクしている libc の `poll` を直接呼ぶ(`ui/external.rs` の `signal` と同じ形)。Windows は問い合わせない。解決は起動のとき1回(`main::open_app`)。
 - 選ばなかった案: 選びの `bar` で印を `▌` にする(SR-33 の文字を変えない決まりと、`>` を確かめる多くの試験とぶつかる)。状態の日本語の語の表(SR-23 でコードに日本語のリテラルを置かない)。
 
+## 設定の形と範囲ごとの上書き(CLI-3・CLI-11・CLI-12・CLI-20・CLI-21・SR-43・SR-44)
+
+要求と調べた不整合は変更の記録 specs/_changes/2026-10-10-config-v2.md。
+
+- **項目の表を1つに**: lib の `src/schema.rs` に、項目ごとの `Item { path: "look.style.status", ty, ty_ja, default, example, scope: Scope::Global | Scope::Profile, en, ja }` を並べる(`config_items.rs` を置き換える)。読み取りの知らない項目の判定・`--print-config`(区画ごと)・`--print-config --resolved`・docs/config*.md と突き合わせる試験・カタログの試験が、この表を見る。新しい項目は表に1行足し、読み取りの `match` に1つ足す(足し忘れは試験で落ちる)。
+- **旧い名前の表**: 同じファイルの `LEGACY: &[(old, new)]`。読み取りは、最上位で旧い名前を見つけたら、表を新しい形に写して(`legacy::lift`)から読み、「旧い名前は新しい道筋に移った」と警告する。新しい道筋にも書いてあれば新しいほう。`--migrate-config` は同じ写しをして `toml::to_string` で出す(注釈は移らない)。docs の旧い名前の表もこの表と突き合わせる。
+- **プロファイル**: `src/profile.rs` の `Profile`(どの欄も Option の部分の値): `look: LookLayer`(theme・preset・mode・cells・style の部品ごと・columns・colors の役割ごと・values)、`display: DisplayOverride`(今の型。tabs を `Tabs3` にする)、`dates: DatesLayer`、`edit: EditLayer`、`new_note: Option<NewNote>`、`use_: Option<String>`。`Profile::read(table, file, prefix, warns)` が config.toml・ui.toml・ワークスペースの印・workspaces.toml・views.toml のどれでも同じ読み方をし、`Profile::write(&mut toml::Table)` が画面の書くファイルに書く。
+- **決まった値**: `profile::resolve(layers: &[Layer], templates) -> Resolved` が、既定から狭い範囲へ順に重ねる。`Layer { origin: Origin, profile: &Profile }`、並びは 既定 → config.toml → ui.toml → ワークスペース → 表(手) → 表(views.toml) → ビュー。各層は先に `use` のテンプレートを敷いてから自分の値を重ねる(テンプレートの中の `use` は警告して読まない)。組を持つ層で `style` をその組の形に戻し(それより前の層の部品の形を捨てる)、テーマを持つ層で役割の色を空に戻す(値の色は残す)。`Resolved` は今の画面が使う型(`Style`・`Colors`・`Cells`・`Display`・`DateFormat`・`WeekStart`・`NewNote` など)と、項目の道筋ごとの `Origin`(SR-43 の「(この表)」と CLI-21 のコメント)を持つ。
+- **Config**: アプリ全体の項目(`language`・`editor`・`poll_ms`・`terminal`・`workspace`・`keys`)と、config.toml のプロファイルとテンプレートを持つ。ui.toml は `UiFile { profile, templates, nerd_font }`。App は全体・ワークスペース・表の層を持ち、ビューを選ぶたびにビューの層を足して `resolve` し直す(`App::apply_profile`)。表を切り替えるときは main が開き直すので、範囲(WS-6)が決まったあとの `App::start` で層を集める。`add_frontmatter` は表で決まるので、読み込みの前(`start` の中)に源へ渡す。
+- **警告の形**: `Msg::SettingWarn = "{0}: {1}: {2}"`(ファイル・道筋・理由)。理由は `Msg::Want*`・`Msg::Moved` など。どのファイルの読み取りも `warn(file, path, reason)` を通す。
+- **画面の書く場所**: 全体 → ui.toml(`config::write_atomic`)、ワークスペース → workspaces.toml のそのワークスペースの区画(`workspace::save_profile`。文字の区画を置き換える今の書き方で、手のコメントを残す)、表 → views.toml の `[[table]]` の `look` など、ビュー → ビューの設定(`Settings` に `look`・`dates`・`edit`・`use_` を足す)。
+- 選ばなかった案: 範囲ごとに丸ごとの Config を作って上書きする(どの値がどこから来たかが分からず、組とテーマの決まりが書けない)。`serde` の derive で全部を読む(知らない項目・型の違いを「ファイル: 道筋: 理由」で出せず、旧い名前を写せない)。
+
 ## 文字の幅
 
 - unicode-width と書記素のまとまり(unicode-segmentation)で数える。East Asian Ambiguous(○● など)は既定で1とし、設定で2にできるようにする。

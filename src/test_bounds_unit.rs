@@ -1,4 +1,4 @@
-//! 境界の値の試験(SR-36・SR-39・SR-40・SR-41): 色の書き方、[colors]・[style] の型の誤り、端末の明るさの読み取り。
+//! 境界の値の試験(SR-36・SR-39・SR-40・SR-41): 色の書き方、[look.colors]・[look.style] の型の誤り、端末の明るさの読み取り。
 //! どれも落ちず(パニックせず)、読めないものは None か警告になる。
 
 use crate::colors::{parse_color, Colors};
@@ -27,26 +27,28 @@ fn test_sr_40_color_boundaries() {
 fn test_sr_40_colors_wrong_types_warn() {
     // [SR-40][SR-41] 表でない [colors]・表でない values・文字でない色・空の表 → 警告して無視(落ちない)。
     for (cfg, warns) in [
-        ("colors = \"red\"\n", 1),
-        ("colors = 3\n", 1),
-        ("[colors]\nvalues = \"x\"\n", 1),
-        ("[colors]\naccent = 3\n", 1),
-        ("[colors]\naccent = true\n", 1),
-        ("[colors.values]\ndone = 1\n", 1),
-        ("[colors]\n", 0),
-        ("[colors.values]\n", 0),
+        ("[look]\ncolors = \"red\"\n", 1),
+        ("[look]\ncolors = 3\n", 1),
+        ("[look.colors]\nvalues = \"x\"\n", 1),
+        ("[look.colors]\naccent = 3\n", 1),
+        ("[look.colors]\naccent = true\n", 1),
+        ("[look.colors.values]\ndone = 1\n", 1),
+        ("[look.colors]\n", 0),
+        ("[look.colors.values]\n", 0),
     ] {
         let (c, w) = crate::config::parse(cfg).unwrap();
         assert_eq!(w.len(), warns, "{cfg:?}: {w:?}");
-        assert_eq!(c.colors, Colors::default(), "{cfg:?}");
+        assert_eq!(c.resolved().colors, Colors::default(), "{cfg:?}");
     }
     // 同じ値(大文字・小文字・空白違い)を2回 → 警告して1つ(TOML の表は名前の順に読むので、書いた順は残らない)。
     let (c, w) =
-        crate::config::parse("[colors.values]\ndone = \"red\"\n\" DONE \" = \"blue\"\n").unwrap();
+        crate::config::parse("[look.colors.values]\ndone = \"red\"\n\" DONE \" = \"blue\"\n")
+            .unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
-    assert_eq!(c.colors.values.len(), 1);
+    assert_eq!(c.resolved().colors.values.len(), 1);
     // 空の値のキーも読める(照合では空の値にだけ当たる)。
-    let (c, _) = crate::config::parse("[colors.values]\n\"\" = \"red\"\n").unwrap();
+    let (c, _) = crate::config::parse("[look.colors.values]\n\"\" = \"red\"\n").unwrap();
+    let c = c.resolved();
     assert_eq!(c.colors.value(""), parse_color("red"));
     assert_eq!(c.colors.value("x"), None);
 }
@@ -55,23 +57,26 @@ fn test_sr_40_colors_wrong_types_warn() {
 fn test_sr_36_style_wrong_types_warn() {
     // [SR-36] 型の誤り(preset が数・icons が文字・[style] が文字・空の文字・大文字の名前)→ 警告して既定のまま。
     for cfg in [
-        "style = \"saas\"\n",
-        "[style]\npreset = 1\n",
-        "[style]\npreset = \"\"\n",
-        "[style]\npreset = \"SAAS\"\n",
-        "[style]\nicons = \"yes\"\n",
-        "[style]\nstatus = \"Dot\"\n",
-        "[style]\nselect = [\"bar\"]\n",
+        "[look]\nstyle = \"saas\"\n",
+        "[look]\npreset = 1\n",
+        "[look]\npreset = \"\"\n",
+        "[look]\npreset = \"SAAS\"\n",
+        "[look.style]\nicons = \"yes\"\n",
+        "[look.style]\nstatus = \"Dot\"\n",
+        "[look.style]\nselect = [\"bar\"]\n",
     ] {
         let (c, w) = crate::config::parse(cfg).unwrap();
         assert_eq!(w.len(), 1, "{cfg:?}: {w:?}");
-        assert_eq!(c.style, Style::default(), "{cfg:?}");
+        assert_eq!(c.resolved().style, Style::default(), "{cfg:?}");
     }
     // preset は書いた順によらず先に当たる(上書きが後の preset に消されない)。
-    let (c, w) = crate::config::parse("[style]\nselect = \"cross\"\npreset = \"paper\"\n").unwrap();
+    let (c, w) =
+        crate::config::parse("[look.style]\nselect = \"cross\"\n[look]\npreset = \"paper\"\n")
+            .unwrap();
     assert!(w.is_empty());
-    assert_eq!(c.style.select.name(), "cross");
-    assert_eq!(c.style.rules, Style::of(Preset::Paper).rules);
+    let s = c.resolved().style;
+    assert_eq!(s.select.name(), "cross");
+    assert_eq!(s.rules, Style::of(Preset::Paper).rules);
 }
 
 #[test]

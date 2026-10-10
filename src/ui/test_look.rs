@@ -111,7 +111,7 @@ fn test_sr_33_footer_keys_accent_labels_dim() {
     // SR-36: 帯のキーの形は classic の組(keys)で。
     let (_t, a) = boot(
         "sr33_band",
-        "[style]\npreset = \"classic\"\n",
+        "[look]\npreset = \"classic\"\n",
         ColorMode::Rgb,
     );
     let buf = buffer(&a);
@@ -130,7 +130,7 @@ fn test_sr_33_table_selection_is_tinted() {
     // SR-36: 選びの形は classic の組(fill)で。
     let (_t, a) = boot(
         "sr33_table",
-        "[style]\npreset = \"classic\"\n",
+        "[look]\npreset = \"classic\"\n",
         ColorMode::Rgb,
     );
     let buf = buffer(&a);
@@ -148,7 +148,11 @@ fn test_sr_33_table_selection_is_tinted() {
 fn test_sr_33_classic_and_no_color_keep_reverse() {
     // [SR-33] look = "classic" と色なしは今まで(反転)。
     for (name, toml, color) in [
-        ("sr33_classic", "look = \"classic\"\n", ColorMode::Rgb),
+        (
+            "sr33_classic",
+            "[look]\nmode = \"classic\"\n",
+            ColorMode::Rgb,
+        ),
         ("sr33_nocolor", "", ColorMode::None),
     ] {
         let (_t, a) = with_list(name, toml, color);
@@ -174,7 +178,11 @@ fn test_sr_33_classic_and_no_color_keep_reverse() {
 fn test_sr_33_text_is_the_same_in_every_look() {
     // [SR-33][SR-26] どの見た目でも画面の文字は同じ(表・候補の窓)。
     let (_t, modern) = with_list("sr33_same_m", "", ColorMode::Rgb);
-    let (_u, classic) = with_list("sr33_same_c", "look = \"classic\"\n", ColorMode::Rgb);
+    let (_u, classic) = with_list(
+        "sr33_same_c",
+        "[look]\nmode = \"classic\"\n",
+        ColorMode::Rgb,
+    );
     let (_v, plain) = with_list("sr33_same_n", "", ColorMode::None);
     let m = text(&buffer(&modern));
     assert_eq!(m, text(&buffer(&classic)));
@@ -184,7 +192,7 @@ fn test_sr_33_text_is_the_same_in_every_look() {
 #[test]
 fn test_sr_33_bad_value_warns() {
     // [SR-33] 知らない値は警告にして既定(modern)。
-    let (c, w) = mdgrid::config::parse("look = \"fancy\"\n").unwrap();
+    let (c, w) = mdgrid::config::parse("[look]\nmode = \"fancy\"\n").unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
-    assert!(!c.look_classic);
+    assert!(!c.resolved().classic);
 }

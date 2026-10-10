@@ -2,26 +2,29 @@
 # 起動: mdgrid --config <このファイル> <保管庫>/プロジェクト.base
 # 置き場の既定は $XDG_CONFIG_HOME/mdgrid/config.toml。
 
+# ノートを開くエディタ(引数つきでよい)。書かないか空なら $VISUAL、$EDITOR、vi の順。
+# editor = "nvim"
+# editor = "code -w"
+
 # 表の日付の見せ方と打ち込みの形。ノートに書く形は YYYY-MM-DD のまま。
-date_format = "YYYY/MM/DD (ddd)"
+[dates]
+format = "YYYY/MM/DD (ddd)"
 
 # カレンダーの週の始まり("sun" か "mon")。
 week_start = "mon"
 
+[edit]
 # テキストのセルで Enter を押したときに出す候補の上限。
 candidates = 30
-
-# 表の上に検索の欄を出す(`\` で欄に入る)。
-search_bar = true
 
 # フロントマターの無いノートと空のフロントマター(`---` が2行だけ)のノートにも書く(既定 true)。
 # false にすると、この2つは読むだけになり、理由が出る。
 # 区切りの間に空行やコメントの行があれば、空ではなく普通のフロントマターとして扱う。
 add_frontmatter = true
 
-# ノートを開くエディタ(引数つきでよい)。書かないか空なら $VISUAL、$EDITOR、vi の順。
-# editor = "nvim"
-# editor = "code -w"
+# 表の上に検索の欄を出す(`\` で欄に入る)。
+[display]
+search_bar = true
 
 # キーの割り当て直し: [keys.<モード>] の下に キー = 動作の名前。
 # "none" を書くとそのキーを外す。

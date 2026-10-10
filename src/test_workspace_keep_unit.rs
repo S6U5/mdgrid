@@ -19,6 +19,7 @@ fn table(name: &str, path: PathBuf) -> WsTable {
         name: name.into(),
         path,
         view: None,
+        profile: Default::default(),
     }
 }
 

@@ -31,6 +31,7 @@ pub mod new_note;
 pub mod note_rename;
 pub mod places;
 pub mod popup;
+pub(crate) mod profile;
 pub mod relations;
 pub mod relmap;
 pub mod review;
@@ -300,6 +301,8 @@ mod test_language_more;
 mod test_list_type;
 #[cfg(test)]
 mod test_look_keep;
+#[cfg(test)]
+mod test_look_scope;
 #[cfg(test)]
 mod test_look_section;
 #[cfg(test)]

@@ -35,6 +35,7 @@ fn add_work(tmp: &super::test_screen::Tmp) {
         name: name.into(),
         path: tmp.notes().join(dir).canonicalize().unwrap(),
         view: None,
+        profile: Default::default(),
     };
     workspace::add(&cfg, "Work", t("Tasks", "tasks")).unwrap();
     workspace::add(&cfg, "Work", t("Projects", "projects")).unwrap();

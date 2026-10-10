@@ -6,11 +6,14 @@
 
 ## 選び方
 
-設定のファイル(`~/.config/mdgrid/config.toml`)に1行書きます。
+設定のファイル(`~/.config/mdgrid/config.toml`)に2行書きます。
 
 ```toml
+[look]
 theme = "nord"
 ```
+
+ワークスペースや1つの表だけのテーマも決められます: [ワークスペース・表・ビューごとの見た目](appearance.md#ワークスペース表ビューごとの見た目)。
 
 設定を書き換える前に試すなら、見本の設定を `--config` で渡します(リポの根で)。
 
@@ -32,7 +35,7 @@ mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
 | [`saas`](#saas) | 明るい灰の地・藍のアクセント |
 | [`saas-dark`](#saas-dark) | saas の暗い地の版 |
 | [`paper`](#paper) | 明るい地・青のアクセント |
-| `auto` | 端末の地が明るければ `theme_light`(既定 `saas`)、暗ければ `theme_dark`(既定 `sumi`) |
+| `auto` | 端末の地が明るければ `saas`、暗ければ `sumi`。組は `theme = { light = "paper", dark = "saas-dark" }` で選べる |
 
 ## 見本
 

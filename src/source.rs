@@ -110,6 +110,11 @@ pub trait Source {
         let _ = col;
         true
     }
+    /// WB-3: フロントマターの無いノートと空のフロントマターのノートに書くか(表のプロファイルの
+    /// `edit.add_frontmatter`。SR-44)。読み込みの前に画面が渡す。書けない読み込み口は何もしない(既定)。
+    fn set_add_frontmatter(&mut self, on: bool) {
+        let _ = on;
+    }
     /// 開いたフォルダ(CE-25 の作る場所の候補): 開くときに渡したフォルダの実体のパスを、渡した順で、
     /// 同じフォルダは最初の1つにまとめて返す。フォルダを持たない読み込み口は空(既定)。
     fn folders(&self) -> Vec<std::path::PathBuf> {

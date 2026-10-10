@@ -105,23 +105,18 @@ pub struct App {
     pub(crate) color: ColorMode,
     /// 絵文字を出さない(`TERM=dumb`。SR-10)。描画の終わりで値の中の絵文字を `?` に置き換える。
     pub(crate) no_emoji: bool,
-    /// East Asian Ambiguous を幅2で数える(CV-6)。
-    /// SR-35: セルの部品の設定。
+    /// SR-35: セルの部品(`look.cells`・`[look.columns]`)。
     pub(crate) cells: mdgrid::cells::Cells,
-    /// SR-34: ビューが1つならタブの行を出さない。
-    pub(crate) view_tabs_auto: bool,
+    /// East Asian Ambiguous を幅2で数える(CV-6)。
     pub(crate) ambiguous_wide: bool,
-    /// SR-32: 窓の枠を ASCII で描く(設定の `borders = "ascii"`)。
-    pub(crate) borders_ascii: bool,
-    /// SR-33: 色を使うときも今までの見た目(設定の `look = "classic"`)。
+    /// SR-33: 色を使うときも今までの見た目(`look.mode = "classic"`)。
     pub(crate) look_classic: bool,
-    /// SR-36: 部品の形(`[style]`)。
+    /// SR-36: 部品の形(`look.preset`・`[look.style]`)。
     pub(crate) style: mdgrid::style::Style,
-    /// SR-36: 丸い札の端を Nerd Font の字で描いてよい。
+    /// SR-36: 丸い札の端を Nerd Font の字で描いてよい(`terminal.nerd_font` を端末の名前で決めたもの)。
     pub(crate) nerd_font: bool,
-    /// SR-43: 設定の theme・nerd_font が auto か(見た目の区画の始まりの値に使う)。
-    pub(crate) theme_auto: bool,
-    pub(crate) nerd_auto: bool,
+    /// SR-44: 範囲ごとの層と決まった値(ui/profile.rs)。
+    pub(crate) prof: super::profile::Prof,
     /// SR-40・SR-41: 色の上書き。
     pub(crate) colors: mdgrid::colors::Colors,
     /// 式の今日(日数)と今(UNIX 秒)。
@@ -157,9 +152,7 @@ pub struct App {
     pub(crate) filter: Option<String>,
     /// 簡易の絞り込み・同じ値の絞り込み(NV-2・NV-8)の前の行の数(検索の欄の「N/M行」の M。NV-23)。
     pub(crate) unfiltered: usize,
-    /// 表の上に検索の欄を出す(設定 `search_bar`。既定 true。NV-23)。
-    pub(crate) search_bar: bool,
-    /// 表の見せ方の設定(`[display]`。SR-20・SR-21)。ビューごとの上書きは `settings.display`(display.rs)。
+    /// 表の見せ方の設定(`[display]`。SR-20・SR-21。範囲を重ねたもの)。ビューの設定の上書きは `settings.display`(display.rs)。
     pub(crate) display: mdgrid::display::Display,
     /// 同じ値の行だけに絞る条件(NV-8 の `,` は1つに置き換え、NV-9 の頻度表は重ねる。全部を満たす行だけ)と、
     /// 同じ値の行の強調(`*`)。
@@ -290,16 +283,13 @@ impl App {
             color,
             no_emoji: false,
             ambiguous_wide: false,
-            view_tabs_auto: false,
             next_refresh: 0,
             data_gen: 0,
             cells: mdgrid::cells::Cells::default(),
-            borders_ascii: false,
             look_classic: false,
             style: Default::default(),
             nerd_font: false,
-            theme_auto: false,
-            nerd_auto: false,
+            prof: Default::default(),
             colors: Default::default(),
             today,
             now,
@@ -319,7 +309,6 @@ impl App {
             search_at: None,
             filter: None,
             unfiltered: 0,
-            search_bar: true,
             display: Default::default(),
             same: Vec::new(),
             same_mark: None,
@@ -371,33 +360,23 @@ impl App {
         app
     }
 
-    /// 設定を当てる(CLI-3): CV-6 の `ambiguous_wide`、CE-3 の `candidates`、BV-9 の `poll_ms`、
-    /// `color = false` で色なし(SR-10)、キーの割り当て直し(SR-13)、`search_bar`(NV-23)、`[display]`(SR-21)。
-    /// キーの警告の文を返す。
+    /// 設定を当てる(CLI-3): アプリ全体の項目(`[terminal]`・`poll_ms`・`[workspace]`・キーの割り当て直し(SR-13))と、
+    /// 全体の層(config.toml と、あれば ui.toml。SR-44)を重ねた表のプロファイル。キーの警告の文を返す。
     pub fn configure(&mut self, c: &Config) -> Vec<String> {
-        self.ambiguous_wide = c.ambiguous_wide;
-        self.borders_ascii = c.borders_ascii;
-        self.look_classic = c.look_classic;
-        self.style = c.style;
-        self.nerd_font = c.nerd_font;
-        self.theme_auto = c.theme_auto;
-        self.nerd_auto = c.nerd_font_auto;
-        self.colors = c.colors.clone();
-        self.view_tabs_auto = c.view_tabs_auto;
-        self.cells = c.cells.clone();
+        self.ambiguous_wide = c.terminal.ambiguous_wide;
+        self.prof.nerd = self.prof.ui.nerd_font.unwrap_or(c.terminal.nerd_font);
+        self.nerd_font = self.prof.nerd.resolve(self.prof.term_program.as_deref());
         self.workspace_detect = c.workspace_detect.clone();
-        self.search_bar = c.search_bar;
-        self.display = c.display;
-        self.candidates = c.candidates;
         self.poll_ms = c.poll_ms;
-        self.date_format = c.date_format.clone();
-        self.week_start = c.week_start;
-        self.theme = c.theme;
-        if !c.color {
+        if !c.terminal.color {
             self.color = ColorMode::None;
         }
+        self.prof.config = c.clone();
+        self.prof.scope.clear();
+        let warnings = self.apply_profile();
         self.keys = keymap::BINDINGS.to_vec();
-        let warnings = keymap::rebind(&mut self.keys, &c.keys);
+        let mut warnings = warnings;
+        warnings.extend(keymap::rebind(&mut self.keys, &c.keys));
         self.scroll_into_view();
         warnings
     }

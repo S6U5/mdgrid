@@ -316,7 +316,15 @@ fn test_sr_23_print_config_has_language_auto() {
     );
     let (c, warnings) = parse(&text).expect("--print-config の出力は設定として読める");
     assert!(warnings.is_empty(), "読み直しで警告: {warnings:?}");
-    assert_eq!(c, Config::default(), "読み直した設定が既定と違う");
+    assert_eq!(
+        c.language,
+        Config::default().language,
+        "読み直した設定が既定と違う"
+    );
+    let (mut got, mut want) = (c.resolved(), Config::default().resolved());
+    got.origins.clear();
+    want.origins.clear();
+    assert_eq!(got, want, "読み直した設定が既定と違う");
 }
 
 #[test]

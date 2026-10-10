@@ -270,7 +270,7 @@ fn test_cli_3_no_config_defaults_and_unknown_item_warned() {
     assert_eq!(a.candidates, 20);
     assert_eq!(a.poll_interval(), std::time::Duration::from_millis(1000));
     assert_eq!(a.keys.len(), keymap::BINDINGS.len());
-    let mut a = boot_toml(&tmp, "foo = 1\ncandidates = 3\n");
+    let mut a = boot_toml(&tmp, "foo = 1\n\n[edit]\ncandidates = 3\n");
     let m = a.message.clone().expect("警告");
     assert!(m.contains("foo"), "{m}");
     assert_eq!(a.candidates, 3, "知っている項目は当てる");
@@ -285,7 +285,7 @@ fn test_cli_3_applies_items() {
     let a = boot_with(
         &tmp,
         Opts {
-            toml: "poll_ms = 250\ncandidates = 5\nambiguous_wide = true\ncolor = false\n",
+            toml: "poll_ms = 250\n\n[edit]\ncandidates = 5\n\n[terminal]\nambiguous_wide = true\ncolor = false\n",
             color: ColorMode::Indexed,
             ..PLAIN
         },

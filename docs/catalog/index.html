@@ -138,7 +138,7 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 <script type="application/json" id="names">
 {
   "themes": ["default", "nord", "solarized-light", "dracula", "gruvbox", "pink-monster", "dozy-pink", "sumi", "slate", "saas", "saas-dark", "paper"],
-  "keys": ["preset", "status", "tags", "check", "select", "rules", "tabs", "frames", "band", "icons"],
+  "keys": ["status", "tags", "check", "select", "rules", "tabs", "frames", "band", "links", "icons"],
   "values": {
     "preset": ["sumi", "slate", "saas", "paper", "grid", "classic", "dozy-pink"],
     "status": ["dot", "shape", "text", "pill", "tint", "solid", "soft", "chip", "plain"],
@@ -148,16 +148,17 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
     "rules": ["none", "header", "columns", "grid"],
     "tabs": ["underline", "pill", "segment", "brackets", "dim"],
     "frames": ["rounded", "square", "heavy", "ascii", "none"],
-    "band": ["keys", "boxed", "quiet"]
+    "band": ["keys", "boxed", "quiet"],
+    "links": ["accent", "plain"]
   },
   "presets": {
-    "sumi":    { "status": "dot",   "tags": "dots",  "check": "tick",    "select": "bar",     "rules": "header",  "tabs": "underline", "frames": "rounded", "band": "quiet", "icons": false },
-    "slate":   { "status": "shape", "tags": "hash",  "check": "box",     "select": "bar",     "rules": "header",  "tabs": "pill",      "frames": "rounded", "band": "keys",  "icons": true },
-    "saas":    { "status": "tint",  "tags": "tint",  "check": "box",     "select": "tint",    "rules": "header",  "tabs": "segment",   "frames": "rounded", "band": "quiet", "icons": false },
-    "paper":   { "status": "text",  "tags": "plain", "check": "bracket", "select": "tint",    "rules": "columns", "tabs": "brackets",  "frames": "square",  "band": "quiet", "icons": false },
-    "grid":    { "status": "plain", "tags": "plain", "check": "tick",    "select": "outline", "rules": "grid",    "tabs": "dim",       "frames": "square",  "band": "boxed", "icons": true },
-    "classic": { "status": "chip",  "tags": "chip",  "check": "box",     "select": "fill",    "rules": "none",    "tabs": "pill",      "frames": "rounded", "band": "keys",  "icons": true },
-    "dozy-pink": { "status": "pill", "tags": "pill",  "check": "box",     "select": "bar",     "rules": "none",    "tabs": "pill",      "frames": "rounded", "band": "quiet", "icons": false }
+    "sumi":    { "status": "dot",   "tags": "dots",  "check": "tick",    "select": "bar",     "rules": "header",  "tabs": "underline", "frames": "rounded", "band": "quiet", "links": "accent", "icons": false },
+    "slate":   { "status": "shape", "tags": "hash",  "check": "box",     "select": "bar",     "rules": "header",  "tabs": "pill",      "frames": "rounded", "band": "keys",  "links": "accent", "icons": true },
+    "saas":    { "status": "tint",  "tags": "tint",  "check": "box",     "select": "tint",    "rules": "header",  "tabs": "segment",   "frames": "rounded", "band": "quiet", "links": "accent", "icons": false },
+    "paper":   { "status": "text",  "tags": "plain", "check": "bracket", "select": "tint",    "rules": "columns", "tabs": "brackets",  "frames": "square",  "band": "quiet", "links": "accent", "icons": false },
+    "grid":    { "status": "plain", "tags": "plain", "check": "tick",    "select": "outline", "rules": "grid",    "tabs": "dim",       "frames": "square",  "band": "boxed", "links": "accent", "icons": true },
+    "classic": { "status": "chip",  "tags": "chip",  "check": "box",     "select": "fill",    "rules": "none",    "tabs": "pill",      "frames": "rounded", "band": "keys",  "links": "accent", "icons": true },
+    "dozy-pink": { "status": "pill", "tags": "pill",  "check": "box",     "select": "bar",     "rules": "none",    "tabs": "pill",      "frames": "rounded", "band": "quiet", "links": "accent", "icons": false }
   },
   "colorRoles": ["background", "text", "header", "selection", "selection_text", "band", "band_text", "accent", "strong", "zebra", "zebra_text", "mark", "added", "removed", "pending", "highlight"],
   "colorNames": ["black", "white", "gray", "red", "orange", "yellow", "green", "teal", "cyan", "blue", "purple", "magenta", "pink", "brown"],
@@ -197,7 +198,7 @@ function palette(name) {
 const TERM = { bg: [28, 29, 32], fg: [212, 212, 212], cyan: [79, 179, 200], gray: [122, 127, 136] };
 
 // src/ui/look.rs の Look と同じ決め方。
-// SR-40: [colors] の上書き(役割の並びは ROLE と NAMES.colorRoles で同じ)。
+// SR-40: [look.colors] の上書き(役割の並びは ROLE と NAMES.colorRoles で同じ)。
 function override(p) {
   if (!p) return p;
   const out = Object.assign({}, p);
@@ -1336,26 +1337,27 @@ function button(label, on, fn, html) {
   return b;
 }
 function config() {
+  // 本体の設定の形(CLI-3): 端末の性質は [terminal]、見た目は [look]・[look.style]・[look.colors]。
   const st = style();
   const out = [];
+  const head = h => { if (out.length) out.push(""); out.push(h); };
+  if (S.nerd !== "auto") { head("[terminal]"); out.push(`nerd_font = ${S.nerd}`); }
+  const look = [];
   if (S.theme === "auto") {
-    out.push('theme = "auto"');
-    if (S.tlight !== DEF.theme_light) out.push(`theme_light = "${S.tlight}"`);
-    if (S.tdark !== DEF.theme_dark) out.push(`theme_dark = "${S.tdark}"`);
-  } else if (S.theme !== DEF.theme) out.push(`theme = "${S.theme}"`);
-  if (S.nerd !== "auto") out.push(`nerd_font = ${S.nerd}`);
+    if (S.tlight === DEF.theme_light && S.tdark === DEF.theme_dark) look.push('theme = "auto"');
+    else look.push(`theme = { light = "${S.tlight}", dark = "${S.tdark}" }`);
+  } else if (S.theme !== DEF.theme) look.push(`theme = "${S.theme}"`);
+  if (S.preset !== DEF.preset) look.push(`preset = "${S.preset}"`);
+  if (look.length) { head("[look]"); out.push(...look); }
   const base = NAMES.presets[S.preset];
-  const over = NAMES.keys.filter(k => k !== "preset" && st[k] !== base[k]);
-  if (S.preset !== DEF.preset || over.length) {
-    if (out.length) out.push("");
-    out.push("[style]");
-    if (S.preset !== DEF.preset) out.push(`preset = "${S.preset}"`);
+  const over = NAMES.keys.filter(k => st[k] !== base[k]);
+  if (over.length) {
+    head("[look.style]");
     over.forEach(k => out.push(typeof st[k] === "boolean" ? `${k} = ${st[k]}` : `${k} = "${st[k]}"`));
   }
   const roles = NAMES.colorRoles.filter(r => S.colors.roles[r]);
   if (roles.length) {
-    if (out.length) out.push("");
-    out.push("[colors]");
+    head("[look.colors]");
     roles.forEach(r => out.push(`${r} = "${S.colors.roles[r]}"`));
   }
   // 本体と同じく前後の空白と大文字・小文字で重なる値は1つに(あとのものが勝つ。TOML の重複キーで読めなくならないように)。
@@ -1365,8 +1367,7 @@ function config() {
   // TOML の基本の文字列: \ と " と制御文字(DEL を含む)をエスケープする。
   const tomlKey = k => /^[A-Za-z0-9_-]+$/.test(k) ? k : '"' + [...k].map(ch => { const c = ch.codePointAt(0); return ch === "\\" ? "\\\\" : ch === '"' ? '\\"' : c < 0x20 || c === 0x7f ? "\\u" + c.toString(16).padStart(4, "0") : ch; }).join("") + '"';
   if (vals.length) {
-    if (out.length) out.push("");
-    out.push("[colors.values]");
+    head("[look.colors.values]");
     vals.forEach(([k, v]) => out.push(`${tomlKey(k)} = "${v}"`));
   }
   return out.length ? out.join("\n") : (S.lang === "ja" ? "# 既定のまま(書かなくてよい)" : "# defaults (nothing to write)");

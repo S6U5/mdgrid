@@ -57,7 +57,7 @@ pub(crate) fn run(op: Op, dir: Option<&Path>) -> Result<String, String> {
                 let table = WsTable {
                     name: tname.clone(),
                     path,
-                    view: None,
+                    ..WsTable::default()
                 };
                 workspace::add(d, &name, table).map_err(|e| Msg::WsSaveError.fill(&[&e]))?;
                 out.push_str(&Msg::WsAdded.fill(&[&tname, &name]));

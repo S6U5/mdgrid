@@ -55,6 +55,10 @@ enum Command {
     Version,
     /// CLI-11: 既定の設定を出す。
     PrintConfig,
+    /// CLI-21: その表で効く設定を、出どころのコメント付きで出す(開くパス)。
+    PrintResolved(Vec<PathBuf>),
+    /// CLI-20: 設定ファイルを今の形に写して出す。
+    MigrateConfig,
     /// CLI-13: シェルの補完の定義を出す。
     Completions(Shell),
     /// CLI-13: man ページを出す。
@@ -187,6 +191,12 @@ struct Cli {
     /// 設定の全項目を既定値と説明付きの TOML で出す
     #[arg(long)]
     print_config: bool,
+    /// --print-config で、その表で効く設定を出どころのコメント付きで出す
+    #[arg(long, requires = "print_config")]
+    resolved: bool,
+    /// 設定ファイルを今の形に写した TOML を出す(ファイルは書かない)
+    #[arg(long, conflicts_with = "print_config")]
+    migrate_config: bool,
     /// シェルの補完の定義を出す
     #[arg(long, value_name = Msg::ValueShell.ja())]
     completions: Option<Shell>,
@@ -332,8 +342,16 @@ impl Cli {
             Command::Help
         } else if self.version {
             Command::Version
+        } else if self.print_config && self.resolved {
+            Command::PrintResolved(if self.paths.is_empty() {
+                vec![here]
+            } else {
+                self.paths
+            })
         } else if self.print_config {
             Command::PrintConfig
+        } else if self.migrate_config {
+            Command::MigrateConfig
         } else if let Some(s) = self.completions {
             Command::Completions(s)
         } else if self.man {
@@ -379,6 +397,8 @@ impl Cli {
             (self.help, "--help"),
             (self.version, "--version"),
             (self.print_config, "--print-config"),
+            (self.resolved, "--resolved"),
+            (self.migrate_config, "--migrate-config"),
             (self.man, "--man"),
             (self.print, "--print"),
             (self.with_path, "--with-path"),
@@ -511,7 +531,94 @@ fn load_config(
     };
     let text = std::fs::read_to_string(&path)
         .map_err(|e| Msg::ConfigUnreadable.fill(&[&path.display(), &e]))?;
-    config::parse(&text).map_err(|e| format!("{}: {}", path.display(), e))
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| config::CONFIG_FILE.to_string());
+    config::parse_named(&text, &name).map_err(|e| format!("{}: {}", path.display(), e))
+}
+
+/// 設定ファイルの文(CLI-20 の `--migrate-config`)。`--config` のパスか既定の置き場。無ければ空。
+fn config_text(explicit: Option<&Path>, default: Option<PathBuf>) -> Result<String, String> {
+    let path = match explicit {
+        Some(p) => p.to_path_buf(),
+        None => match default {
+            Some(p) if p.exists() => p,
+            _ => return Ok(String::new()),
+        },
+    };
+    std::fs::read_to_string(&path).map_err(|e| Msg::ConfigUnreadable.fill(&[&path.display(), &e]))
+}
+
+/// 画面を出さない命令(`--apply`・`--print-config --resolved`)のための、開く表で効く設定(SR-44): config.toml・
+/// ui.toml・ワークスペース・表・(`--view` があれば)ビューの層を重ねる。警告も返す。
+fn resolve_table(
+    config: &Config,
+    paths: &[PathBuf],
+    opts: &Options,
+) -> (mdgrid::profile::Resolved, Vec<String>) {
+    use mdgrid::profile::{Layer, Origin, Place};
+    let mut warnings = Vec::new();
+    let mut layers = vec![config.layer()];
+    let mut templates = config.templates.clone();
+    let dir = config_dir();
+    if let Some(d) = &dir {
+        let (ui, w) = mdgrid::uifile::load(d);
+        warnings.extend(w);
+        if !ui.profile.is_empty() {
+            layers.push(ui.layer());
+        }
+        templates.extend(ui.templates);
+    }
+    let target = state_target(paths);
+    let first = paths.first().cloned().unwrap_or_else(|| target.clone());
+    let apps = dir
+        .as_deref()
+        .map(|d| mdgrid::workspace::load(d).0)
+        .unwrap_or_default();
+    if let Ok(Some(scope)) = mdgrid::workspace::resolve(
+        &first,
+        opts.workspace.as_deref(),
+        &apps,
+        &config.workspace_detect,
+    ) {
+        layers.extend(scope.layer());
+        layers.extend(scope.table_layer(&first));
+    }
+    if let Some(d) = &dir {
+        let (p, w) = mdgrid::views::load_table_profile(d, &target);
+        warnings.extend(w);
+        if !p.is_empty() {
+            let name = mdgrid::workspace::stem_of(&first);
+            layers.push(Layer {
+                origin: Origin::new(
+                    Place::TableApp,
+                    format!("{} ({name})", mdgrid::views::FILE_NAME),
+                ),
+                profile: p,
+            });
+        }
+    }
+    if let (Some(view), Some(state)) = (&opts.view, config::state_dir()) {
+        let mut s = config::load_state(&state, &target, view).settings;
+        if s.is_default() {
+            if let Some(d) = &dir {
+                let (views, _) = mdgrid::views::load_views(d, &target);
+                if let Some(nv) = views.into_iter().find(|v| &v.name == view) {
+                    s = nv.settings;
+                }
+            }
+        }
+        let p = s.profile();
+        if !p.is_empty() {
+            layers.push(Layer {
+                origin: Origin::new(Place::View, format!("view {view}")),
+                profile: p,
+            });
+        }
+    }
+    let r = mdgrid::profile::resolve(&layers, &templates, &mut warnings);
+    (r, warnings)
 }
 
 /// 見た目の状態の対象(SR-12): `.base` ならそのパス、フォルダ1つならそのパス、
@@ -686,6 +793,31 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         }
         Ok(Command::PrintConfig) => return emit(Ok(config::default_toml().into_bytes())),
+        // CLI-21: その表で効く設定(画面は出さない)。
+        Ok(Command::PrintResolved(paths)) => {
+            let (config, mut warnings) =
+                match load_config(opts.config.as_deref(), config::config_path()) {
+                    Ok(c) => c,
+                    Err(e) => return fail(&e),
+                };
+            let (r, w) = resolve_table(&config, &paths, &opts);
+            warnings.extend(w);
+            for w in &warnings {
+                eprintln!("mdgrid: {w}");
+            }
+            let mut out = config::app_toml(&config);
+            out.push_str(&mdgrid::profile::resolved_toml(&r));
+            return emit(Ok(out.into_bytes()));
+        }
+        // CLI-20: 今の形に写した設定(ファイルは書かない)。
+        Ok(Command::MigrateConfig) => {
+            return match config_text(opts.config.as_deref(), config::config_path())
+                .and_then(|t| config::migrate(&t))
+            {
+                Ok(out) => emit(Ok(out.into_bytes())),
+                Err(e) => fail(&e),
+            }
+        }
         // CLI-13・SR-10: 画面を出さないので、標準出力がパイプでも出す。
         Ok(Command::Completions(shell)) => return emit(Ok(completions(shell))),
         Ok(Command::Man) => return emit(man_page()),
@@ -829,16 +961,17 @@ fn open_app(
     opts: &Options,
     pick: bool,
 ) -> Result<(App, String), String> {
-    let mut target = open_target(paths, view)?;
-    let (mut config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
-    // SR-43: 設定の画面の見た目の区画で選んだ見た目(look.toml)を config.toml の上に重ねる。
-    if let Some(dir) = config_dir() {
-        let (look, warns) = mdgrid::look::load(&dir);
-        warnings.extend(warns);
-        mdgrid::look::apply(&mut config, &look.look);
-    }
-    // WB-3: 読み込み(load)の前に渡す。
-    target.src.set_add_frontmatter(config.add_frontmatter);
+    let target = open_target(paths, view)?;
+    let (config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
+    // SR-43・CLI-3: 画面で選んだ全体の設定(ui.toml。無ければ前の版の look.toml)を config.toml の上に重ねる。
+    let ui = match config_dir() {
+        Some(dir) => {
+            let (ui, warns) = mdgrid::uifile::load(&dir);
+            warnings.extend(warns);
+            ui
+        }
+        None => Default::default(),
+    };
     // SR-8: 設定の editor > $VISUAL > $EDITOR > vi。
     let editor = config::resolve_editor(
         config.editor.as_deref(),
@@ -846,19 +979,19 @@ fn open_app(
         std::env::var("EDITOR").ok().as_deref(),
     );
     let color = ColorMode::detect(|k| std::env::var(k).ok());
-    // SR-36: nerd_font = "auto" は端末の名前で決める(丸い端を自分で描く端末だけ)。
-    if config.nerd_font_auto {
-        config.nerd_font = mdgrid::style::nerd_auto(std::env::var("TERM_PROGRAM").ok().as_deref());
-    }
-    // SR-39: theme = "auto" は端末の地の明るさで選ぶ(色を使わない表示では問い合わせない)。
-    if config.theme_auto && config.color && !opts.no_color && color != ColorMode::None {
-        let light = ui::termbg::light(
-            |k| std::env::var(k).ok(),
-            std::time::Duration::from_millis(200),
-        );
-        config.theme = mdgrid::theme::Theme::auto(light, config.theme_light, config.theme_dark);
-    }
     let mut app = App::new(Box::new(target.src), color);
+    app.prof.ui = ui;
+    // SR-36: nerd_font = "auto" は端末の名前で決める(丸い端を自分で描く端末だけ)。
+    app.prof.term_program = std::env::var("TERM_PROGRAM").ok();
+    // SR-39: 明暗の組のテーマは端末の地の明るさで選ぶ(色を使わない表示では問い合わせない。要るときに1回)。
+    if config.terminal.color && !opts.no_color && color != ColorMode::None {
+        app.prof.probe = Some(Box::new(|| {
+            ui::termbg::light(
+                |k| std::env::var(k).ok(),
+                std::time::Duration::from_millis(200),
+            )
+        }));
+    }
     app.no_emoji = ui::dumb_terminal(|k| std::env::var(k).ok());
     // WS-6: -w で選んだワークスペースは範囲を決める前に渡す。
     app.workspace_choice = opts.workspace.clone();
@@ -1135,7 +1268,11 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
         eprintln!("mdgrid: {w}");
     }
     let mut src = target.src;
-    src.set_add_frontmatter(config.add_frontmatter);
+    let (resolved, warns) = resolve_table(&config, paths, opts);
+    for w in &warns {
+        eprintln!("mdgrid: {w}");
+    }
+    src.set_add_frontmatter(resolved.add_frontmatter);
     while !src.load(LOAD_BUDGET).done {}
     let (today, now) = print::today_now(|k| std::env::var(k).ok());
     // 見出しの名前(表示名か id)から列の id(開いたビューの列。無ければノートのキー)。
@@ -1226,7 +1363,7 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
         &ids,
         &shown,
         today,
-        &config.date_format,
+        &resolved.date_format,
     );
     let (diff, more, files) = apply::diff_text(&plan, &src, &label);
     plan.problems.extend(more);

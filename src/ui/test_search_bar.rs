@@ -35,10 +35,11 @@ fn line(app: &App, i: usize) -> String {
 }
 
 fn bar_off(app: &mut App) {
-    app.configure(&Config {
-        search_bar: false,
-        ..Config::default()
-    });
+    app.configure(
+        &mdgrid::config::parse("[display]\nsearch_bar = false\n")
+            .unwrap()
+            .0,
+    );
 }
 
 #[test]
@@ -233,7 +234,10 @@ fn test_nv_23_bar_fits_narrow_terminals() {
     check(&mut a);
     let mut b = a;
     b.configure(&Config {
-        ambiguous_wide: true,
+        terminal: mdgrid::config::Terminal {
+            ambiguous_wide: true,
+            ..Default::default()
+        },
         ..Config::default()
     });
     check(&mut b);

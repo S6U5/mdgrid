@@ -280,7 +280,10 @@ fn test_cv_6_ambiguous_wide_column_aligned() {
     let mut app = App::new(Box::new(src), ColorMode::None);
     load(&mut app);
     app.configure(&Config {
-        ambiguous_wide: true,
+        terminal: mdgrid::config::Terminal {
+            ambiguous_wide: true,
+            ..Default::default()
+        },
         ..Config::default()
     });
     let buf = buffer(&app);

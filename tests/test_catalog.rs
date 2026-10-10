@@ -2,6 +2,7 @@
 //! src/config.rs)と同じか。カタログは1つのファイルで、外の何にも頼らない。
 
 use mdgrid::config::Config;
+use mdgrid::profile::ThemeSpec;
 use mdgrid::style::{self, Band, Check, Frames, Preset, Rules, Select, Status, Style, Tags};
 use mdgrid::theme::Theme;
 use serde_json::Value;
@@ -49,6 +50,7 @@ fn test_sr_38_catalog_matches_config() {
     assert_eq!(strs(&v["tabs"]), own(mdgrid::style::Tabs::NAMES));
     assert_eq!(strs(&v["frames"]), own(Frames::NAMES));
     assert_eq!(strs(&v["band"]), own(Band::NAMES));
+    assert_eq!(strs(&v["links"]), own(mdgrid::style::Links::NAMES));
 }
 
 #[test]
@@ -71,15 +73,24 @@ fn test_sr_38_catalog_presets_match() {
         for (k, w) in want {
             assert_eq!(p[k].as_str(), Some(w), "{name}.{k}");
         }
+        assert_eq!(p["links"].as_str(), Some(s.links.name()), "{name}.links");
         assert_eq!(p["icons"].as_bool(), Some(s.icons), "{name}.icons");
     }
     let d = &n["defaults"];
     let c = Config::default();
-    assert_eq!(d["preset"].as_str(), Some(Style::default().preset.name()));
-    assert_eq!(d["theme"].as_str(), Some(c.theme.name()));
-    assert_eq!(d["theme_light"].as_str(), Some(c.theme_light.name()));
-    assert_eq!(d["theme_dark"].as_str(), Some(c.theme_dark.name()));
-    assert_eq!(d["nerd_font"].as_bool(), Some(c.nerd_font));
+    let r = c.resolved();
+    assert_eq!(d["preset"].as_str(), Some(r.preset.name()));
+    assert_eq!(d["theme"].as_str(), Some(r.theme.label().as_str()));
+    // "auto" の明暗の既定(本体の ThemeSpec::AUTO)。
+    let ThemeSpec::Pair { light, dark } = ThemeSpec::AUTO else {
+        panic!("auto は明暗の組");
+    };
+    assert_eq!(d["theme_light"].as_str(), Some(light.name()));
+    assert_eq!(d["theme_dark"].as_str(), Some(dark.name()));
+    assert_eq!(
+        d["nerd_font"].as_bool(),
+        Some(c.terminal.nerd_font.resolve(None))
+    );
 }
 
 #[test]

@@ -1,5 +1,5 @@
 //! 表の見せ方の切り替え(SR-20・SR-21。`impl App` の続きと描画の材料)。
-//! 決まった値は 設定(`App.display`・`App.search_bar`)→ ビューの上書き(`settings.display`)の順。
+//! 決まった値は 範囲を重ねた設定(`App.display`。SR-44)→ ビューの上書き(`settings.display`)の順。
 //! 描画(view.rs・bands.rs)はここで値を引き、ビューの設定の画面の「表示」の節(settings.rs・settings_view.rs)は
 //! 写しの上書きをここで切り替える。
 
@@ -15,28 +15,42 @@ use ratatui::text::{Line, Span};
 impl App {
     /// 見せ方 `item` を今のビューで出すか(設定 → ビューの上書き)。
     pub(crate) fn shows(&self, item: Item) -> bool {
-        self.settings
-            .display
-            .resolve(item, &self.display, self.search_bar)
+        self.settings.display.resolve(item, &self.display)
     }
 
     /// ビューの設定の画面の写しで、見せ方 `item` が入っているか(設定 → 写しの上書き)。
     pub(crate) fn draft_shows(&self, item: Item) -> bool {
         match &self.draft {
-            Some(d) => d.s.display.resolve(item, &self.display, self.search_bar),
+            Some(d) => d.s.display.resolve(item, &self.display),
             None => self.shows(item),
         }
     }
 
+    /// ビューの設定の画面の写しの、タブの行の値(SR-34)。
+    pub(crate) fn draft_tabs(&self) -> mdgrid::display::TabsMode {
+        match &self.draft {
+            Some(d) => d.s.display.over(&self.display).tabs,
+            None => self.settings.display.over(&self.display).tabs,
+        }
+    }
+
     /// 「表示」の節の i 番目の項目を切り替える(写しだけ。反映で表に効く)。設定と同じ値に戻したら上書きを外す。
+    /// タブの行は always → auto → never の順に変える(SR-34)。
     pub(crate) fn toggle_display(&mut self, i: usize) {
         let Some(&(item, _)) = ITEMS.get(i) else {
             return;
         };
+        let base = self.display;
+        if item == Item::Tabs {
+            let next = self.draft_tabs().next();
+            if let Some(d) = self.draft.as_mut() {
+                d.s.display.set_tabs(next, &base);
+            }
+            return;
+        }
         let on = !self.draft_shows(item);
-        let (base, bar) = (self.display, self.search_bar);
         if let Some(d) = self.draft.as_mut() {
-            d.s.display.set(item, on, &base, bar);
+            d.s.display.set(item, on, &base);
         }
     }
 }
@@ -57,10 +71,7 @@ pub(crate) fn col_sep(app: &App) -> &'static str {
     let lines = matches!(super::look::rules(app), Rules::Columns | Rules::Grid);
     if !app.shows(Item::ColumnLines) && !lines {
         " "
-    } else if app.ambiguous_wide
-        || app.borders_ascii
-        || app.style.frames == mdgrid::style::Frames::Ascii
-    {
+    } else if app.ambiguous_wide || app.style.frames == mdgrid::style::Frames::Ascii {
         "|"
     } else {
         "│"

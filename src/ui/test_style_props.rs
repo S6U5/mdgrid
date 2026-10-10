@@ -63,10 +63,10 @@ proptest! {
         }
         let mut a = app_of(&tmp, ColorMode::Rgb);
         let cfg = format!(
-            "nerd_font = {nerd}\nambiguous_wide = {wide}\n\
-             [style]\nstatus = \"{status}\"\ntags = \"{tag}\"\ncheck = \"{check}\"\nselect = \"{select}\"\n\
+            "[terminal]\nnerd_font = {nerd}\nambiguous_wide = {wide}\n\
+             [look.style]\nstatus = \"{status}\"\ntags = \"{tag}\"\ncheck = \"{check}\"\nselect = \"{select}\"\n\
              rules = \"{rules}\"\ntabs = \"{tabs}\"\nframes = \"{frames}\"\nband = \"{band}\"\nicons = {icons}\n\
-             [colors]\naccent = \"#e0a458\"\n[colors.values]\ndone = \"green\"\n\"進行中\" = \"#ff3366\"\n"
+             [look.colors]\naccent = \"#e0a458\"\n[look.colors.values]\ndone = \"green\"\n\"進行中\" = \"#ff3366\"\n"
         );
         let (c, warn) = mdgrid::config::parse(&cfg).unwrap();
         prop_assert!(warn.is_empty(), "{:?}", warn);

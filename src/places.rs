@@ -67,17 +67,32 @@ pub fn parse(text: &str) -> (Vec<Place>, Vec<String>) {
     for (k, item) in items.iter().enumerate() {
         let n = k + 1;
         let Some(t) = item.as_table() else {
-            warns.push(Msg::PlacesBadEntry.fill(&[&n]));
+            crate::profile::warn(
+                &mut warns,
+                FILE_NAME,
+                &format!("place[{n}]"),
+                Msg::RsnNeedNamePath.text().to_string(),
+            );
             continue;
         };
         let text = |key: &str| t.get(key).and_then(|v| v.as_str()).map(str::to_string);
         let (Some(name), Some(path)) = (text("name"), text("path")) else {
-            warns.push(Msg::PlacesBadEntry.fill(&[&n]));
+            crate::profile::warn(
+                &mut warns,
+                FILE_NAME,
+                &format!("place[{n}]"),
+                Msg::RsnNeedNamePath.text().to_string(),
+            );
             continue;
         };
         let name = name.trim().to_string();
         if name.is_empty() || out.iter().any(|p| p.name == name) {
-            warns.push(Msg::PlacesBadEntry.fill(&[&n]));
+            crate::profile::warn(
+                &mut warns,
+                FILE_NAME,
+                &format!("place[{n}]"),
+                Msg::RsnNeedNamePath.text().to_string(),
+            );
             continue;
         }
         out.push(Place {
@@ -142,7 +157,7 @@ pub fn upsert(text: &str, place: &Place) -> String {
 fn upsert_text(text: &str, place: &Place) -> String {
     let block = to_toml(std::slice::from_ref(place));
     let lines: Vec<&str> = text.split_inclusive('\n').collect();
-    for (start, body_end) in config::toml_blocks(&lines, 0, lines.len(), "[[place]]", &[]) {
+    for (start, body_end) in config::toml_blocks(&lines, 0, lines.len(), "[[place]]", &|_| false) {
         let body: String = lines[start..body_end].concat();
         let (found, _) = parse(&body);
         if found.first().is_some_and(|p| p.name == place.name) {

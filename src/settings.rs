@@ -6,6 +6,7 @@
 
 use crate::display::DisplayOverride;
 use crate::i18n::Msg;
+use crate::profile::{DatesLayer, EditLayer, LookLayer, Profile};
 use crate::source::{RowId, Value};
 use crate::types::{self, Kind};
 use serde::{Deserialize, Serialize};
@@ -78,6 +79,15 @@ pub struct Settings {
     /// SR-20・SR-21: 表の見せ方のビューごとの上書き(設定と違う項目だけ)。
     #[serde(skip_serializing_if = "DisplayOverride::is_empty")]
     pub display: DisplayOverride,
+    /// SR-44: ビューの範囲の見た目・日付・編集と、下に敷くテンプレート(書いた項目だけ)。
+    #[serde(skip_serializing_if = "LookLayer::is_empty")]
+    pub look: LookLayer,
+    #[serde(skip_serializing_if = "DatesLayer::is_empty")]
+    pub dates: DatesLayer,
+    #[serde(skip_serializing_if = "EditLayer::is_empty")]
+    pub edit: EditLayer,
+    #[serde(rename = "use", skip_serializing_if = "Option::is_none")]
+    pub use_: Option<String>,
     /// NV-27: 親子で並べるときの親のキー(None は並べない)。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tree: Option<String>,
@@ -113,6 +123,17 @@ impl Wbs {
 impl Settings {
     pub fn is_default(&self) -> bool {
         *self == Settings::default()
+    }
+
+    /// ビューの範囲の層(SR-44)。見せ方の上書き(`display`)は画面が `shows` で別に重ねるので入れない。
+    pub fn profile(&self) -> Profile {
+        Profile {
+            use_: self.use_.clone(),
+            look: self.look.clone(),
+            dates: self.dates.clone(),
+            edit: self.edit,
+            ..Profile::default()
+        }
     }
 
     /// 行に効く条件(フィルター・並べ替え・グループ)が無いか(設定の帯の項目が無い。NV-16)。
