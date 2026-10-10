@@ -7219,5 +7219,17 @@
       "SR-43"
     ],
     "sha": "1a4c9e9cad8f1e84"
+  },
+  "src/ui/test_pending_shape.rs::test_sr_35_pending_bool_and_list_use_parts": {
+    "ids": [
+      "SR-35"
+    ],
+    "sha": "7e844e87e367c944"
+  },
+  "src/ui/test_tree_held.rs::test_nv_12_tree_parent_edit_not_held": {
+    "ids": [
+      "NV-27"
+    ],
+    "sha": "9c19624983141283"
   }
 }

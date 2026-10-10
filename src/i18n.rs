@@ -1309,13 +1309,13 @@ msgs! {
     PurposeTree = "the parent", "親";
     PurposeWbsKey = "progress", "進み具合";
     /// NV-28: WBS の行。
-    TreeWbsRow = "WBS (numbers and progress)", "WBS(番号と進み具合)";
+    TreeWbsRow = "WBS", "WBS(番号と進み具合)";
     TreeWbsKeyRow = "Progress key", "進み具合のキー";
     WbsValueRow = "{0} ({1})", "{0}({1}件)";
     TextWbsValue = "percent and label for {0} (e.g. 100 Done; - removes)", "{0} の割合とラベル(例 100 完了。- で外す)";
     WbsBadPercent = "Type the percent as a number from 0 to 100 first: {0}", "割合は 0〜100 の数を先に打つ: {0}";
     /// NV-27: 親子の区画。
-    NavTree = "Parent/child", "親子";
+    NavTree = "Tree", "親子";
     DescTree = "Put child notes under the note named in their parent key", "子のノートの親のキーに書いた親のノートの下に、子を字下げして並べる";
     TreeOnRow = "Arrange by parent", "親子で並べる";
     TreeKeyRow = "Parent key", "親のキー";
@@ -1557,7 +1557,7 @@ msgs! {
     KeyRelationMap = "Relation map", "関係マップ";
     TreeOff = "Rows are not arranged by parent (turn it on in the view settings, {0})", "親子で並べていない(ビューの設定 {0} の「親子」でオンにする)";
     TreeNoKids = "This row has no child rows", "この行に子の行は無い";
-    KeyToggleTree = "Fold or unfold the child rows", "子の行を畳む・開く";
+    KeyToggleTree = "Fold child rows", "子の行を畳む・開く";
     KeyRelOpen = "Open table", "表を開く";
     KeyRelBack = "Back to the table", "表に戻る";
     KeyRelNextTable = "Next table", "次の表";

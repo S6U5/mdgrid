@@ -148,6 +148,13 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
     if let Some(nv) = app.changes.pending(row, col) {
         let text = match nv {
             NewValue::Str(s) | NewValue::Date(s) => date_text(app, col, s),
+            // ためた真偽とリストも、決まった値と同じ形で(`*false`・`*[a, b]` のような生の形にしない)。
+            NewValue::Bool(b) if app.rich(col, Part::Checkbox) => {
+                check_marks(app.style.check).map(|(on, off)| if *b { on } else { off }.to_string())
+            }
+            NewValue::List(items) if !items.is_empty() && app.rich(col, Part::Chips) => {
+                Some(items.join(" · "))
+            }
             _ => None,
         }
         // REL-2: ためたリンクも行き先の名前で見せる。
