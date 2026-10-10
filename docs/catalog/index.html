@@ -25,6 +25,9 @@
 }
 :root[data-theme="dark"] { --bg: #111318; --surface: #191c23; --fg: #e3e5ea; --muted: #9aa1ad; --line: #2a2f39; --accent: #8fa5ff; --on-accent: #111318; color-scheme: dark; }
 * { box-sizing: border-box; }
+/* スマホの Safari は小さい字を勝手に大きくする(text autosizing)。縮めた見本の画面で、半角の字だけが大きくなって
+   桁がずれるので止める。 */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14.5px; line-height: 1.6; }
 .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 16px 64px; display: grid; gap: 28px; }

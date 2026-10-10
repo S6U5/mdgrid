@@ -93,6 +93,7 @@ CSS = """
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111318;--surface:#191c23;--fg:#e3e5ea;--muted:#9aa1ad;--line:#2a2f39;--accent:#8fa5ff;--on-accent:#111318;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#111318;--surface:#191c23;--fg:#e3e5ea;--muted:#9aa1ad;--line:#2a2f39;--accent:#8fa5ff;--on-accent:#111318;color-scheme:dark}
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif}
 .wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px;display:grid;gap:24px}
 h1{margin:0;font-size:28px}h2{margin:0;font-size:18px}
