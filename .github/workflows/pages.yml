@@ -23,6 +23,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   MDBOOK_VERSION: "0.5.4"
+  PLAYWRIGHT_VERSION: "1.63.0"
   MDBOOK_SHA256: "3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7"
 
 jobs:
@@ -55,6 +56,13 @@ jobs:
           # Tours added since the latest release appear at the next release.
           gh release download --repo "$GITHUB_REPOSITORY" --pattern 'demo-*.gif' --dir target/demos || true
           python3 scripts/pages.py site --shots target/shots
+      - name: Check the site in a browser
+        # Links, language routing, images, the catalog (also at phone width) and console errors.
+        # A failure stops the deploy.
+        run: |
+          python3 -m pip install --quiet "playwright==${PLAYWRIGHT_VERSION}"
+          python3 -m playwright install --with-deps chromium
+          python3 scripts/check_site.py site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

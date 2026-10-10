@@ -7195,5 +7195,11 @@
       "SR-38"
     ],
     "sha": "a58072b05ab7a4f3"
+  },
+  "tests/test_pages_check.rs::test_sr_38_pages_workflow_checks_site": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "44b5e21f05885417"
   }
 }
