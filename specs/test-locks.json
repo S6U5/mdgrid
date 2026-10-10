@@ -7189,5 +7189,11 @@
       "SR-38"
     ],
     "sha": "ba390317cac92ae4"
+  },
+  "tests/test_pages_images.rs::test_sr_38_pages_manual_images_only_scenes": {
+    "ids": [
+      "SR-38"
+    ],
+    "sha": "a58072b05ab7a4f3"
   }
 }
