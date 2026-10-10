@@ -9,7 +9,7 @@
 
 Point mdgrid at a folder and every note becomes a row, every frontmatter key a column. Edit the values right in the table. Give the folder a short alias, and `tasks`, `books` or `meetings` becomes your own command that opens that table just the way you left it.
 
-[日本語](README.ja.md) · [Manual](https://s6u5.github.io/mdgrid/manual/en/) · [Look catalog](https://s6u5.github.io/mdgrid/catalog/?lang=en) · [Screen gallery](https://s6u5.github.io/mdgrid/gallery.html?lang=en)
+[日本語](README.ja.md) · [Manual](https://s6u5.github.io/mdgrid/manual/en/) · [Look catalog](https://s6u5.github.io/mdgrid/catalog/?lang=en) · [Screen gallery](https://s6u5.github.io/mdgrid/en/gallery.html)
 
 ![The same table in the default dark look (sumi) and the light SaaS look](docs/assets/hero.png)
 

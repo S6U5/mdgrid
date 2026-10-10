@@ -9,7 +9,7 @@
 
 mdgrid にフォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。フォルダに短い alias を付ければ、`tasks`・`books`・`meetings` がそのまま自分のコマンドになり、前に使ったときの表がそのまま開きます。
 
-[English](README.md) · [説明書](https://s6u5.github.io/mdgrid/manual/ja/) · [見た目のカタログ](https://s6u5.github.io/mdgrid/catalog/?lang=ja) · [画面の一覧](https://s6u5.github.io/mdgrid/gallery.html?lang=ja)
+[English](README.md) · [説明書](https://s6u5.github.io/mdgrid/manual/ja/) · [見た目のカタログ](https://s6u5.github.io/mdgrid/catalog/?lang=ja) · [画面の一覧](https://s6u5.github.io/mdgrid/ja/gallery.html)
 
 ![同じ表を、既定の暗い見た目(墨)と明るい SaaS の見た目で](docs/assets/ja/hero.png)
 
