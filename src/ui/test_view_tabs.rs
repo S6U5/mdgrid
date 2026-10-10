@@ -222,6 +222,9 @@ fn test_nv_26_rename_delete_follow_prefs() {
     press(&mut a, KeyCode::Down);
     press(&mut a, KeyCode::Down);
     press(&mut a, KeyCode::Enter);
+    // BV-18: 消す前に確かめる(y)。
+    typing(&mut a, "y");
+    press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Settings);
     let t = toml(&tmp);
     assert!(!t.contains("メモ"), "{t}");

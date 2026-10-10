@@ -71,6 +71,8 @@ pub struct App {
     /// NV-28: WBS の番号と、子のある行の進み具合(%)。WBS を出さなければ空。
     pub(crate) wbs_num: std::collections::HashMap<RowId, String>,
     pub(crate) wbs_pct: std::collections::HashMap<RowId, u8>,
+    /// BV-18: 最後に消した mdgrid のビュー(表の `u` で戻す)。
+    pub(crate) view_trash: Option<super::view_tabs::Trash>,
     /// 画面の行(見出しとノートの行)。`row`・`top` はこの添字。グループが無ければ rows と同じ並び。
     pub(crate) slots: Vec<Slot>,
     /// 未対応の列・並べ替えの説明(BV-7)。
@@ -265,6 +267,7 @@ impl App {
             tree_folded: HashSet::new(),
             wbs_num: Default::default(),
             wbs_pct: Default::default(),
+            view_trash: None,
             slots: Vec::new(),
             notes: Vec::new(),
             view_error: None,
@@ -745,6 +748,10 @@ impl App {
             }
             Action::Clear => self.clear(),
             Action::Undo => {
+                // BV-18: 消した直後のビューを戻す。
+                if self.undo_view_delete() {
+                    return;
+                }
                 let rows = self.changes.rows();
                 if self.changes.undo() {
                     self.keep_in_place(rows);
@@ -817,6 +824,7 @@ impl App {
             Action::WsOpen => self.start_ws_open(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),
+            Action::RenameNote => self.start_rename_note(),
             Action::DeleteKey => self.start_delete_key(),
             // ---- 新しいノート(new_note.rs。CE-25) ----
             Action::NewNote => self.start_new_note(),

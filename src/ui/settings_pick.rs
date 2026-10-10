@@ -314,6 +314,7 @@ impl App {
                     TextKind::RenameTab => return self.rename_tab(t.col, v),
                     TextKind::LookTemplate => return self.save_look_template(v),
                     TextKind::WbsValue => return self.put_wbs_value(t.col, v),
+                    TextKind::DeleteView => return self.confirm_delete_view(t.col, v == "y"),
                     TextKind::Contains => Op::Contains(v),
                     TextKind::NotContains => Op::NotContains(v),
                     TextKind::Cmp(o) => {

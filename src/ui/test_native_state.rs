@@ -276,6 +276,9 @@ fn test_bv_18_two_apps_keep_each_others_views() {
     goto(&mut a, "全部");
     ch(&mut a, 'o');
     a.view_button(VIEW_BUTTONS + 3);
+    // BV-18: 消す前に確かめる(y)。
+    typing(&mut a, "y");
+    press(&mut a, KeyCode::Enter);
     assert_eq!(names(&tmp), ["まとめ", "A", "B"]);
 }
 
@@ -364,6 +367,9 @@ fn test_bv_20_rename_moves_and_delete_removes_state() {
     assert_eq!(native_states(&tmp), 2, "古い名前の状態は残さない");
     ch(&mut a, 'o');
     a.view_button(VIEW_BUTTONS + 3);
+    // BV-18: 消す前に確かめる(y)。
+    typing(&mut a, "y");
+    press(&mut a, KeyCode::Enter);
     assert_eq!(native_states(&tmp), 1, "削除したビューの状態は消す");
 }
 

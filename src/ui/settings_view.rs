@@ -682,6 +682,7 @@ fn text_prompt(app: &App, col: &str, kind: TextKind) -> String {
         TextKind::Rename | TextKind::RenameTab => Msg::TextRename.into(),
         TextKind::LookTemplate => Msg::TextLookTemplate.into(),
         TextKind::WbsValue => Msg::TextWbsValue.fill(&[&sanitize(col)]),
+        TextKind::DeleteView => Msg::TextDeleteView.fill(&[&sanitize(col)]),
     }
 }
 

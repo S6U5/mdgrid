@@ -233,6 +233,8 @@ pub enum Action {
     AddColumn,
     /// CE-29: 列のキーの名前を、全部のノートで変える。
     RenameKey,
+    /// CE-34: 選んだ行のノートの名前を変える。
+    RenameNote,
     /// CE-29: 列のキーを、全部のノートから消す。
     DeleteKey,
     MoveColumnLeft,
@@ -368,6 +370,7 @@ impl Action {
             Action::ShowColumn => "show_column",
             Action::AddColumn => "add_column",
             Action::RenameKey => "rename_key",
+            Action::RenameNote => "rename_note",
             Action::DeleteKey => "delete_key",
             Action::MoveColumnLeft => "move_column_left",
             Action::MoveColumnRight => "move_column_right",
@@ -545,6 +548,8 @@ pub const COMMANDS: &[Command] = &[
     // CE-29: キーの名前の変更と削除(既定のキーなし。パレットと操作の一覧から)。
     cmd(Action::RenameKey, Msg::CmdRenameKey, SHAPE),
     cmd(Action::DeleteKey, Msg::CmdDeleteKey, SHAPE),
+    // CE-34: ノートの名前の変更(既定のキーなし。パレットと操作の一覧から)。
+    cmd(Action::RenameNote, Msg::CmdRenameNote, NOTE),
     // CE-25: 新しいノートはキー(既定 `a`)もあるが、割り当て直して外してもパレットから始められるように。
     cmd(Action::NewNote, Msg::KeyNewNote, NOTE),
 ];

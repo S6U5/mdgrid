@@ -758,6 +758,32 @@ impl Source for Markdown {
         self.note(row).map(stamp_of)
     }
 
+    fn rename(&mut self, row: &RowId, to: &std::path::Path) -> io::Result<RowId> {
+        let note = self
+            .note(row)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, Msg::RowNotLoaded.text()))?;
+        // WB-5: 読むだけのノート(ハードリンク・書き込めない権限)の名前は変えない。
+        if note.links > 1 || !note.writable {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                Msg::RenameNoteReadOnly.text(),
+            ));
+        }
+        let from = note.path.clone();
+        if to.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                Msg::RenameNoteExists.fill(&[&to.display()]),
+            ));
+        }
+        std::fs::rename(&from, to)?;
+        self.vault.forget(&from);
+        self.vault.reload(to)?;
+        let real = to.canonicalize()?;
+        self.rebuild(std::slice::from_ref(&real));
+        Ok(RowId(real.to_string_lossy().into_owned()))
+    }
+
     fn reload(&mut self, row: &RowId) -> io::Result<()> {
         let path = PathBuf::from(&row.0);
         self.vault.reload(&path)?;

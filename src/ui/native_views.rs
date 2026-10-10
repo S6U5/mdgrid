@@ -450,7 +450,13 @@ impl App {
                     .unwrap_or_default();
                 self.open_text(String::new(), TextKind::Rename, name, None);
             }
-            _ => self.delete_view(),
+            _ => {
+                let name = self
+                    .native_view()
+                    .map(|v| v.name.clone())
+                    .unwrap_or_default();
+                self.ask_delete_view(name);
+            }
         }
     }
 
@@ -557,7 +563,7 @@ impl App {
     }
 
     /// 「削除」: 選んだ mdgrid のビューとその見た目の状態を消して、前のタブへ移る。
-    fn delete_view(&mut self) {
+    pub(crate) fn delete_view(&mut self) {
         let Some(k) = self.nv.at else {
             return;
         };

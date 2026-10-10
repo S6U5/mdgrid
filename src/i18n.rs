@@ -820,6 +820,7 @@ msgs! {
     KeyActionMenu = "Action menu", "操作の一覧";
     CmdExportBase = "Export to .base", ".base に書き出す";
     CmdRenameKey = "Rename the key", "キーの名前を変える";
+    CmdRenameNote = "Rename the note", "ノートの名前を変える";
     CmdDeleteKey = "Delete the key", "キーを消す";
     CmdImportBase = "Import a .base view", ".base のビューを取り込む";
 
@@ -1212,6 +1213,15 @@ msgs! {
     ImportNoFiles = "no .base under {0}", "{0} の下に .base が無い";
     AskCancelled = "cancelled", "やめた";
     /// CE-29。{0} は今の名前。
+    /// CE-34: ノートの名前の変更。
+    AskRenameNote = "New name of the note: ", "ノートの新しい名前: ";
+    RenameNoteBad = "a note name cannot be empty or contain / or \\", "ノートの名前は空にできず、/ と \\ を含められない";
+    RenameNoteExists = "{0} already exists", "{0} はもうある";
+    RenameNoteReadOnly = "this note is read-only, so it cannot be renamed", "読むだけのノートなので名前を変えられない";
+    RenameNotePending = "save or undo the changes on this note first", "このノートにためた変更を、先に保存するか取り消す";
+    RenameNoteDone = "renamed to {0}", "名前を {0} に変えた";
+    RenameNoteLinks = "renamed to {0}; {1} link(s) to the old name are rewritten as pending changes (Ctrl+S to review)", "名前を {0} に変えた。古い名前を指すリンク {1} 件の書き換えをためた(Ctrl+S で差分を見て保存)";
+    RenameNoteFailed = "could not rename: {0}", "名前を変えられなかった: {0}";
     AskRenameKey = "Rename {0} to: ", "{0} の新しい名前: ";
     /// CE-29。{0} はキー、{1} はノートの数。
     AskDeleteKey = "Delete {0} from {1} notes? Type y and Enter: ", "{0} を {1} 個のノートから消す? y と打って Enter: ";
@@ -1281,6 +1291,11 @@ msgs! {
     /// {2} は `RenameUnapplied` か空。
     ViewRenamed = "renamed the view from \"{0}\" to \"{1}\"{2}", "ビューの名前を「{0}」から「{1}」に変えた{2}";
     ViewDeleted = "deleted the mdgrid view \"{0}\"", "mdgrid のビュー「{0}」を削除した";
+    /// BV-18: 削除の確かめと取り消し。
+    TextDeleteView = "delete the view \"{0}\"? type y and Enter (u brings it back)", "ビュー「{0}」を消す? y を打って Enter(消したあと u で戻せる)";
+    ViewDeletedUndo = "deleted the mdgrid view \"{0}\" (u in the table brings it back)", "mdgrid のビュー「{0}」を削除した(表で u を押すと戻る)";
+    ViewDeleteKept = "kept the view \"{0}\"", "ビュー「{0}」は消さなかった";
+    ViewRestored = "brought back the mdgrid view \"{0}\"", "mdgrid のビュー「{0}」を戻した";
 
     // ---- ui/settings: ビューの設定の画面(NV-13・NV-15・NV-19・NV-22) ----
     BtnApply = "Apply", "反映";

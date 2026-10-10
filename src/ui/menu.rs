@@ -127,6 +127,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
             }
         }
         want.push((Section::Row, Action::CopyRow, false));
+        // CE-34: ノートの名前を変える(読むだけの起動では出さない)。
+        if !app.readonly {
+            want.push((Section::Row, Action::RenameNote, false));
+        }
         // REL-5: この行を指すリンクがあれば、つながった行。
         if app.row_has_backlinks() {
             want.push((Section::Row, Action::LinkedRows, false));
