@@ -33,7 +33,7 @@ h1 { font-size: 24px; margin: 0; line-height: 1.3; }
 .intro p { margin: 0; color: var(--muted); }
 .bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
 .top { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 22px; align-items: start; }
-@media (max-width: 960px) { .top { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 960px) { .top { grid-template-columns: minmax(0, 1fr); } .stage { order: -1; } }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
 .panel h2, .sec-title { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -85,8 +85,8 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 <div class="wrap">
   <div class="intro">
     <h1 data-t="title">mdgrid 見た目のカタログ</h1>
-    <p data-t="intro1">テーマと部品の形を選ぶと、右の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。</p>
-    <p data-t="intro2">左下の設定を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。</p>
+    <p data-t="intro1">テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。</p>
+    <p data-t="intro2">「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。</p>
   </div>
   <div class="bar">
     <span class="sec-title" data-t="lang">言語</span>
@@ -121,6 +121,7 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
     </div>
     <div class="stage">
       <div class="keys" id="keys"></div>
+      <button class="copy" id="fitbtn" type="button" hidden></button>
       <div class="term" id="term" tabindex="0" aria-label="mdgrid の画面の見本"></div>
       <p class="note" data-t="termnote">画面をクリックすると、キーでも操作できます。値を変えても、ファイルには何も書きません。</p>
     </div>
@@ -413,13 +414,14 @@ const TX = {
     owner: "担当",
     // ページ
     title: "mdgrid 見た目のカタログ",
-    intro1: "テーマと部品の形を選ぶと、右の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。",
-    intro2: "左の設定を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。",
+    intro1: "テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。",
+    intro2: "「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。",
     lang: "言語", page: "ページ", themes: "テーマ", light: "明るい地", dark: "暗い地", ground: "見本の端末", presets: "組(まとめて選ぶ)",
     colors: "色(上書き)", values: "値の色", moreRoles: "ほかの役割", addValue: "値を足す", valuePh: "値(例: 進行中)", clear: "戻す", remove: "消す",
     roleLabel: { background: "地", text: "文字", header: "1行目", selection: "選んだ行", selection_text: "選んだ行の文字", band: "下の帯", band_text: "下の帯の文字", accent: "アクセント", strong: "強調", zebra: "一行おき", zebra_text: "一行おきの文字", mark: "左端の印", added: "足した行", removed: "消した行", pending: "ためた変更", highlight: "検索の一致" },
     nerd: "丸い札の端(nerd_font)", nerdAuto: "auto(端末に合わせる)", nerdTrue: "true(Nerd Font)", nerdFalse: "false", termLabel: "見本の端末", termOther: "ほかの端末", config: "設定(config.toml)", copy: "設定をコピー", copied: "コピーしました", reset: "見本を最初に戻す",
     termnote: "画面をクリックすると、キーでも操作できます。値を変えても、ファイルには何も書きません。",
+    fitAll: "全体を見る", fitZoom: "拡大して見る(横に流す)",
     groundDark: "暗い", groundLight: "明るい", pageAuto: "端末に合わせる", pageLight: "明るい", pageDark: "暗い",
     auto: "auto(端末の地に従う)", proposal: "案(まだ設定に無い)", fromPreset: "組のまま",
   },
@@ -470,13 +472,14 @@ const TX = {
     ],
     owner: "owner",
     title: "mdgrid look catalog",
-    intro1: "Pick a theme and the shape of each part; the screen on the right changes to match. The screen responds to clicks and keys (select a cell, Enter to pick a value, / search, \\ filter, , same value, K details, R relation map, o settings, S sort, ? help).",
-    intro2: "Paste the settings on the left into config.toml and mdgrid looks the same. The part names and values are the ones mdgrid reads; a test fails if they drift apart.",
+    intro1: "Pick a theme and the shape of each part; the sample screen changes to match. The screen responds to clicks and keys (select a cell, Enter to pick a value, / search, \\ filter, , same value, K details, R relation map, o settings, S sort, ? help).",
+    intro2: "Paste the text in "Settings (config.toml)" into config.toml and mdgrid looks the same. The part names and values are the ones mdgrid reads; a test fails if they drift apart.",
     lang: "Language", page: "Page", themes: "Theme", light: "Light background", dark: "Dark background", ground: "Sample terminal", presets: "Preset (whole set)",
     colors: "Colors (overrides)", values: "Value colors", moreRoles: "More roles", addValue: "Add a value", valuePh: "value (e.g. doing)", clear: "reset", remove: "remove",
     roleLabel: { background: "Background", text: "Text", header: "First line", selection: "Selected row", selection_text: "Selected text", band: "Key band", band_text: "Key band text", accent: "Accent", strong: "Strong", zebra: "Zebra", zebra_text: "Zebra text", mark: "Left mark", added: "Added lines", removed: "Removed lines", pending: "Unsaved changes", highlight: "Search match" },
     nerd: "Round pill ends (nerd_font)", nerdAuto: "auto (by terminal)", nerdTrue: "true (Nerd Font)", nerdFalse: "false", termLabel: "Sample terminal", termOther: "Other terminals", config: "Settings (config.toml)", copy: "Copy settings", copied: "Copied", reset: "Reset the sample",
     termnote: "Click the screen to use keys too. Changing values writes nothing to files.",
+    fitAll: "Fit to width", fitZoom: "Zoom in (scroll sideways)",
     groundDark: "dark", groundLight: "light", pageAuto: "System", pageLight: "Light", pageDark: "Dark",
     auto: "auto (follow the terminal)", proposal: "proposal (not a setting yet)", fromPreset: "from preset",
   },
@@ -1134,6 +1137,18 @@ function render() {
   const term = document.getElementById("term");
   term.innerHTML = g.html();
   term.style.background = hex(L.bg);
+  fitTerm();
+}
+// 狭い画面(スマホ)では、見本の画面を枠の幅に合わせて縮める(zoom なのでクリックの位置も合う)。
+// 「拡大して見る」を選ぶと等倍で横に流す。はみ出さない幅では切り替えを出さない。
+function fitTerm() {
+  const term = document.getElementById("term"), pre = term.querySelector(".scr"), btn = document.getElementById("fitbtn");
+  if (!pre) return;
+  pre.style.zoom = "";
+  const box = term.clientWidth, w = pre.scrollWidth, wide = w > box + 1;
+  btn.hidden = !wide;
+  if (wide && S.fit !== "full") pre.style.zoom = String(box / w);
+  btn.textContent = S.fit === "full" ? tx().fitAll : tx().fitZoom;
 }
 
 // ---------- 操作 ----------
@@ -1290,6 +1305,8 @@ function click(a) {
   render();
 }
 const term = document.getElementById("term");
+document.getElementById("fitbtn").addEventListener("click", () => { S.fit = S.fit === "full" ? "fit" : "full"; save(); fitTerm(); });
+window.addEventListener("resize", () => fitTerm());
 term.addEventListener("click", e => {
   const el = e.target.closest("[data-a]"); term.focus();
   // 並べ替えの窓の外のクリックで閉じる(窓の行とボタンは除く)。
