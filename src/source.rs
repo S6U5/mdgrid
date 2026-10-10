@@ -88,6 +88,12 @@ pub trait Source {
     /// 最後に読んだ内容の基準。
     fn stamp(&self, row: &RowId) -> Option<Stamp>;
     fn reload(&mut self, row: &RowId) -> std::io::Result<()>;
+    /// CE-34: 行のノートのファイルの名前を `to`(同じフォルダの中のパス)に変え、新しい行を返す。読むだけのノートと、
+    /// 名前を変えられない読み込み口は Err。
+    fn rename(&mut self, row: &RowId, to: &std::path::Path) -> std::io::Result<RowId> {
+        let _ = (row, to);
+        Err(std::io::Error::other("rename is not supported"))
+    }
     /// 保存の前の差分用: (今のディスクのバイト, それに edits を当てたバイト)。
     /// ファイルも読んだ内容も変えない(変えると changed が外の変更を見逃す)。
     fn preview(&self, row: &RowId, edits: &[Edit]) -> Result<(Vec<u8>, Vec<u8>), EditError>;

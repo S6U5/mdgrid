@@ -40,6 +40,8 @@ pub(crate) enum Ask {
     RenameKey(String),
     /// 消すキーとノートの数(CE-29)。続けて `y`。
     DeleteKey(String, usize),
+    /// 名前を変えるノート(CE-34)。続けて新しい名前。
+    RenameNote(mdgrid::source::RowId),
     /// 取り込む `.base`(開いたフォルダからの相対パス)。
     ImportFile(Vec<String>),
     /// 取り込むビュー。
@@ -159,6 +161,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         }
         Some(Ask::RenameKey(k)) => Msg::AskRenameKey.fill(&[&sanitize(k)]),
         Some(Ask::DeleteKey(k, n)) => Msg::AskDeleteKey.fill(&[&sanitize(k), n]),
+        Some(Ask::RenameNote(_)) => Msg::AskRenameNote.text().to_string(),
         Some(Ask::ImportFile(_)) => Msg::AskImportFile.into(),
         Some(Ask::ImportView { file, .. }) => Msg::AskImportView.fill(&[&sanitize(file)]),
         Some(Ask::OpenPlace { .. }) => format!("{}: ", Msg::PlaceOpen.text()),
@@ -493,6 +496,10 @@ impl App {
             Some(Ask::RenameKey(from)) => {
                 let from = from.clone();
                 self.rename_key_to(&from, query)
+            }
+            Some(Ask::RenameNote(row)) => {
+                let row = row.clone();
+                self.rename_note_to(&row, query)
             }
             Some(Ask::DeleteKey(key, _)) => {
                 let key = key.clone();

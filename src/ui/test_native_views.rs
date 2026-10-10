@@ -250,6 +250,12 @@ fn enter_text(a: &mut App, text: &str) {
 
 /// 確かめを出すなら Enter で決める。
 fn confirm_if_asked(a: &mut App) {
+    // BV-18: ビューの削除の確かめは y を打って Enter。
+    if a.mode == Mode::SettingsText {
+        for c in "y".chars() {
+            press(a, KeyCode::Char(c));
+        }
+    }
     if a.mode != Mode::Table && a.mode != Mode::Settings {
         press(a, KeyCode::Enter);
     }

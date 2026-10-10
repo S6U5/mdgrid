@@ -583,6 +583,13 @@ impl Vault {
     }
 
     /// 1つのノートを今すぐ読み直す(SR-8・WB-16 の「外の変更の上に書く」)。
+    /// CE-34: 名前を変えたノートの古いパスを忘れる(新しいパスは reload で読む)。
+    pub fn forget(&mut self, path: &Path) {
+        if let Ok(i) = find(&self.notes, path) {
+            self.notes.remove(i);
+        }
+    }
+
     pub fn reload(&mut self, path: &Path) -> io::Result<()> {
         let real = path.canonicalize()?;
         let (rel, found) = match find(&self.notes, &real) {

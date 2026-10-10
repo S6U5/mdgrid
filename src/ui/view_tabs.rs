@@ -12,6 +12,18 @@ use super::startup::READONLY;
 use mdgrid::i18n::Msg;
 use mdgrid::views::{self, TabPrefs};
 
+/// BV-18: 消したビューを戻すために取っておくもの(最後に消した1つ)。
+#[derive(Debug, Clone)]
+pub(crate) struct Trash {
+    pub view: mdgrid::views::NativeView,
+    pub index: usize,
+    pub tabs: TabPrefs,
+    pub default: Option<String>,
+    pub state: Option<mdgrid::config::ViewState>,
+    /// 消したときのためた変更の数(それより後に変更をためたら、`u` はまずそれを戻す)。
+    pub changes: usize,
+}
+
 /// タブの選び手の項目(既定・名前の変更・削除)。
 pub(crate) const TAB_MENU: usize = 3;
 
@@ -169,10 +181,7 @@ impl App {
                 None => self.message = Some(Msg::TabBaseFixed.fill(&[&name])),
             },
             _ => match native {
-                Some(k) if Some(k) == self.nv.at => {
-                    self.view_button(super::settings::BUTTONS.len() - 1)
-                }
-                Some(_) => self.delete_tab(&name),
+                Some(_) => self.ask_delete_view(name),
                 None => self.message = Some(Msg::TabBaseFixed.fill(&[&name])),
             },
         }
@@ -191,6 +200,105 @@ impl App {
                 Ok(()) => Msg::DefaultViewSet.fill(&[&super::width::sanitize(name)]),
             },
         );
+    }
+
+    /// BV-18: 消すビューの名前を示して確かめる(設定の画面の入力で `y`)。
+    pub(crate) fn ask_delete_view(&mut self, name: String) {
+        self.open_text(name, TextKind::DeleteView, String::new(), None);
+    }
+
+    /// 確かめの答え。`y` なら、戻せるように取っておいてから消す(開いているビューなら表へ戻る)。
+    pub(crate) fn confirm_delete_view(&mut self, name: String, yes: bool) {
+        if let Some(d) = self.draft.as_mut() {
+            d.text = None;
+        }
+        self.set_mode(Mode::Settings);
+        if !yes {
+            self.message = Some(Msg::ViewDeleteKept.fill(&[&name]));
+            return;
+        }
+        let Some(index) = self.nv.views.iter().position(|v| v.name == name) else {
+            return;
+        };
+        let state = self.store.as_ref().map(|st| {
+            mdgrid::config::load_state(
+                &st.dir.join(super::native_views::STATE_DIR),
+                &st.target,
+                &name,
+            )
+        });
+        let trash = Trash {
+            view: self.nv.views[index].clone(),
+            index,
+            tabs: self.nv.tabs.clone(),
+            default: self.default_view_name(),
+            state,
+            changes: self.changes.count(),
+        };
+        if self.nv.at == Some(index) {
+            self.delete_view();
+        } else {
+            self.delete_tab(&name);
+        }
+        if self.nv.views.iter().all(|v| v.name != name) {
+            self.view_trash = Some(trash);
+            self.message = Some(Msg::ViewDeletedUndo.fill(&[&name]));
+        }
+    }
+
+    /// BV-18: 表の `u` で、消した直後のビューを戻す(ためた変更が消したときと同じ数のときだけ)。戻したら true。
+    pub(crate) fn undo_view_delete(&mut self) -> bool {
+        let fresh = self
+            .view_trash
+            .as_ref()
+            .is_some_and(|t| t.changes == self.changes.count());
+        if !fresh {
+            return false;
+        }
+        let Some(t) = self.view_trash.take() else {
+            return false;
+        };
+        let name = t.view.name.clone();
+        let view = t.view.clone();
+        let index = t.index;
+        let res = self.edit_views(move |app, list| {
+            if let Some(e) = app.name_problem(list, &view.name, None) {
+                return Err(e);
+            }
+            list.insert(index.min(list.len()), view);
+            Ok(())
+        });
+        let list = match res {
+            Ok((list, ())) => list,
+            Err(e) => {
+                self.message = Some(e);
+                return true;
+            }
+        };
+        let keep = self.native_view().map(|v| v.name.clone());
+        self.adopt_views(list, keep.as_deref());
+        if let Some(dir) = self.nv.dir.clone() {
+            if views::save_tab_prefs(&dir, &self.nv.target, &t.tabs).is_ok() {
+                self.nv.tabs = t.tabs.clone();
+            }
+            if t.default.as_deref() == Some(name.as_str()) {
+                let _ = views::save_default_view(&dir, &self.nv.target, Some(&name));
+            }
+        }
+        if let (Some(st), Some(state)) = (self.store.as_ref(), t.state.as_ref()) {
+            let _ = mdgrid::config::save_state(
+                &st.dir.join(super::native_views::STATE_DIR),
+                &st.target,
+                &name,
+                state,
+            );
+        }
+        let n = self.section_tabs().len();
+        if let Some(d) = self.draft.as_mut() {
+            d.tabs = n;
+        }
+        self.message = Some(Msg::ViewRestored.fill(&[&name]));
+        true
     }
 
     /// 開いていない mdgrid のビューを消す(設定の画面は開いたまま)。

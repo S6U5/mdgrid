@@ -5,7 +5,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/S6U5/mdgrid)](https://github.com/S6U5/mdgrid/releases)
 [![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/mdgrid.svg)](LICENSE-MIT)
 
-**Markdown のフォルダを、ひとことで開ける自分の表に。**
+**Markdown のノートのフォルダを、コマンド1つで表として開けます。**
 
 mdgrid にフォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。フォルダに短い alias を付ければ、`tasks`・`books`・`meetings` がそのまま自分のコマンドになり、前に使ったときの表がそのまま開きます。
 

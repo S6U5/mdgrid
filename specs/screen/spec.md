@@ -95,6 +95,7 @@ updated: 2026-10-10
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-10 | [ビューの削除の確かめに合わせて、削除を通る試験の錠を掛け直す(view-delete-undo-locks)](../_decisions/2026-10-10-view-delete-undo-locks.md) | accepted | 人 | 人の発言 | BV-3, BV-13, BV-17 ほか 6 |
 | 2026-10-10 | [部品の形の既定(sumi)に合わせて、SR-33・SR-35・SR-36 の例を直す(style-examples)](../_decisions/2026-10-10-style-examples.md) | accepted | 人 | 検証の指摘 | SR-33, SR-35, SR-36 |
 | 2026-10-10 | [並べ替えを選んで覚える(並べ替えの窓・見出しの並べ替えの保存・既定のビュー)(sort-views)](../_decisions/2026-10-10-sort-views.md) | accepted | 人 | 人の発言 | NV-3, NV-20, SR-12 ほか 4 |
 | 2026-10-10 | [設定の画面の作り直しに合わせて SR-20・SR-23 の文を直す(settings-layout-follow)](../_decisions/2026-10-10-settings-layout-follow.md) | accepted | 人 | 人の発言 | SR-20, SR-23 |

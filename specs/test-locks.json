@@ -998,10 +998,11 @@
   },
   "src/ui/test_native_state.rs::test_bv_18_two_apps_keep_each_others_views": {
     "ids": [
-      "BV-18"
+      "BV-18",
+      "BV-20"
     ],
-    "sha": "019c999274079e90",
-    "from": "0ba75d8f40e35959"
+    "sha": "fc4e7ca91a404c65",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_state.rs::test_bv_20_applied_settings_and_columns_survive_tabs_and_restart": {
     "ids": [
@@ -1042,74 +1043,74 @@
     "ids": [
       "BV-17"
     ],
-    "sha": "98e7a4b96df493f9",
-    "from": "43e1d70865738057"
+    "sha": "98ca7cc5459afdc8",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_17_hand_written_views_toml_becomes_tabs": {
     "ids": [
       "BV-17"
     ],
-    "sha": "c49e36ca4dd34545",
-    "from": "43e1d70865738057"
+    "sha": "2244620a0182e484",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_17_no_new_files_in_notes_folder": {
     "ids": [
       "BV-17"
     ],
-    "sha": "382aa5908b99cbb6",
-    "from": "43e1d70865738057"
+    "sha": "d25b2a98d8385c59",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_18_save_as_adds_tab": {
     "ids": [
       "BV-18",
       "NV-13"
     ],
-    "sha": "9b9381d197679ec8",
-    "from": "43e1d70865738057"
+    "sha": "a4b1f8ec447de5ef",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_18_overwrite_survives_restart": {
     "ids": [
       "BV-18"
     ],
-    "sha": "0c7f9428b5517c34",
-    "from": "43e1d70865738057"
+    "sha": "7740d2c9121b1adc",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_18_rename_changes_tab": {
     "ids": [
       "BV-18"
     ],
-    "sha": "35c6532e464d3e50",
-    "from": "43e1d70865738057"
+    "sha": "39026e0b4f829556",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_18_delete_removes_tab": {
     "ids": [
       "BV-18"
     ],
-    "sha": "69799188080db5f9",
-    "from": "43e1d70865738057"
+    "sha": "a1082553019eb833",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_19_export_writes_new_base_and_reports_dropped": {
     "ids": [
       "BV-19",
       "BV-3"
     ],
-    "sha": "fd2911e2a850b6b5",
-    "from": "43e1d70865738057"
+    "sha": "131c2058ab224f75",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_19_export_refuses_existing_base": {
     "ids": [
       "BV-19",
       "BV-3"
     ],
-    "sha": "4d97ae6533be2b3f",
-    "from": "43e1d70865738057"
+    "sha": "40a8ced3b8d4ee87",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_19_import_base_view_adds_tab": {
     "ids": [
       "BV-19"
     ],
-    "sha": "9777d6216f64c1b6",
-    "from": "43e1d70865738057"
+    "sha": "074311a4949889e3",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_nav.rs::test_nv_2_quick_filter_and_esc": {
     "ids": [
@@ -6763,32 +6764,37 @@
       "BV-20",
       "SR-12"
     ],
-    "sha": "9dda975aa2163a34"
+    "sha": "bbfe8116a074d17a",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_20_base_views_come_first": {
     "ids": [
       "BV-13",
       "BV-20"
     ],
-    "sha": "12af80466d40bf04"
+    "sha": "c53ea21201329164",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_20_broken_views_toml_warns_and_starts_without_tabs": {
     "ids": [
       "BV-20"
     ],
-    "sha": "8affa393b1b045fc"
+    "sha": "7ecac8b8c9c9d9da",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_20_readonly_writes_nothing": {
     "ids": [
       "BV-20"
     ],
-    "sha": "623c0ead5593a59b"
+    "sha": "e1ecc80dfca289e2",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_native_views.rs::test_bv_20_unknown_key_warns_and_reads": {
     "ids": [
       "BV-20"
     ],
-    "sha": "3c5e0fd53da5dcbb"
+    "sha": "113fcdf3eb7e20b5",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_nav.rs::test_nv_3_temporary_sort_keeps_base": {
     "ids": [
@@ -7025,7 +7031,8 @@
     "ids": [
       "NV-26"
     ],
-    "sha": "4d543bdc5cbfb38b"
+    "sha": "8ec93a7d6a8f8574",
+    "by": "specs/_decisions/2026-10-10-view-delete-undo-locks.md"
   },
   "src/ui/test_view_tabs.rs::test_nv_26_switch_hint": {
     "ids": [
@@ -7231,5 +7238,47 @@
       "NV-27"
     ],
     "sha": "9c19624983141283"
+  },
+  "tests/test_ws_print.rs::test_ws_3_print_unknown_workspace_fails": {
+    "ids": [
+      "WS-3"
+    ],
+    "sha": "a7fdffedf40d6369"
+  },
+  "src/ui/test_view_delete_undo.rs::test_bv_18_cell_change_after_delete_undone_first": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "833be2e075a5794c"
+  },
+  "src/ui/test_view_delete_undo.rs::test_bv_18_delete_confirm_and_undo": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "ff1eba923e479698"
+  },
+  "src/ui/test_view_delete_undo.rs::test_bv_18_undo_restores_tab_prefs_and_default": {
+    "ids": [
+      "BV-18"
+    ],
+    "sha": "1ca9c9f4c6f58ff4"
+  },
+  "src/ui/test_note_rename.rs::test_ce_34_menu_offers_rename_note": {
+    "ids": [
+      "CE-34"
+    ],
+    "sha": "9dbc184f07706bc1"
+  },
+  "src/ui/test_note_rename.rs::test_ce_34_refuses_bad_names_and_pending_rows": {
+    "ids": [
+      "CE-34"
+    ],
+    "sha": "e9994d3c72ae9387"
+  },
+  "src/ui/test_note_rename.rs::test_ce_34_rename_and_stage_link_rewrites": {
+    "ids": [
+      "CE-34"
+    ],
+    "sha": "a4467f5f73198366"
   }
 }

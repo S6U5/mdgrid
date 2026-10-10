@@ -102,6 +102,7 @@ updated: 2026-10-10
 |---|---|---|---|---|---|
 | 2026-10-10 | [親子で並べた表に WBS の番号と進み具合を出し、値の対応表を設定で作って保存する(wbs)](../_decisions/2026-10-10-wbs.md) | accepted | 人 | 人の発言 | NV-28 |
 | 2026-10-10 | [設定の画面に「ビュー」の区画を足し、タブの並び・出す隠す・既定・名前・削除をそこで変える(view-tabs)](../_decisions/2026-10-10-view-tabs.md) | accepted | 人 | 人の発言 | NV-26 |
+| 2026-10-10 | [ビューの削除の確かめに合わせて、削除を通る試験の錠を掛け直す(view-delete-undo-locks)](../_decisions/2026-10-10-view-delete-undo-locks.md) | accepted | 人 | 人の発言 | BV-3, BV-13, BV-17 ほか 6 |
 | 2026-10-10 | [親子のノートを字下げして並べ、畳めるようにする(tree)](../_decisions/2026-10-10-tree.md) | accepted | 人 | 人の発言 | NV-27 |
 | 2026-10-10 | [親子の畳むキーを z から Z にする(tree-key)](../_decisions/2026-10-10-tree-key.md) | accepted | 人 | 検証の指摘 | NV-27 |
 | 2026-10-10 | [並べ替えを選んで覚える(並べ替えの窓・見出しの並べ替えの保存・既定のビュー)(sort-views)](../_decisions/2026-10-10-sort-views.md) | accepted | 人 | 人の発言 | NV-3, NV-20, SR-12 ほか 4 |

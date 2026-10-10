@@ -20,7 +20,7 @@ updated: 2026-09-30
 | ケイパビリティ | 内容 | 読むとき | 要件 | うち守られる |
 |---|---|---|---|---|
 | [base-view](base-view/spec.md) | 何を読んで、どの行とどの列の表を作るか。.base の table ビューの解釈、ビューの切り替え、解釈できないときの振る舞い。 | 起動の引数・.base の読み込み・絞り込み・並べ替え・グループ分け・式の評価・ビューの切り替えを作る・変えるとき | 23 | 9 |
-| [cell-edit](cell-edit/spec.md) | 表のセルでどの値をどう直せるか。自由入力・リストからの選択・切り替え・日付・空にする・一括の設定と、読むだけにするセル。 | セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき | 30 | 16 |
+| [cell-edit](cell-edit/spec.md) | 表のセルでどの値をどう直せるか。自由入力・リストからの選択・切り替え・日付・空にする・一括の設定と、読むだけにするセル。 | セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき | 31 | 17 |
 | [cell-view](cell-view/spec.md) | セルの値をどう見せるか。空・null・キーなしの区別、型と合わない値、改行、寄せ、列の幅、文字の幅、色。 | セルの描画・列の幅・文字の幅・色を作る・変えるとき | 9 | 0 |
 | [cli](cli/spec.md) | 起動のしかた(引数・オプション)と、設定ファイルの置き場所と中身、起動できないときの振る舞い。 | 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき | 20 | 8 |
 | [navigation](navigation/spec.md) | 表の中を動く・探す・絞る・並べ替える・列を扱う・行を選ぶ操作。どれも .base は変えず、画面の中だけで効く。 | 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき | 28 | 15 |
@@ -44,6 +44,8 @@ updated: 2026-09-30
 | 2026-10-10 | [ワークスペースのボタンは、ワークスペースが無くても出す(ws-button)](_decisions/2026-10-10-ws-button.md) | accepted | 人 | 人の発言 | WS-6 |
 | 2026-10-10 | [親子で並べた表に WBS の番号と進み具合を出し、値の対応表を設定で作って保存する(wbs)](_decisions/2026-10-10-wbs.md) | accepted | 人 | 人の発言 | NV-28 |
 | 2026-10-10 | [設定の画面に「ビュー」の区画を足し、タブの並び・出す隠す・既定・名前・削除をそこで変える(view-tabs)](_decisions/2026-10-10-view-tabs.md) | accepted | 人 | 人の発言 | NV-26 |
+| 2026-10-10 | [mdgrid のビューの削除を確かめ、直後の取り消しで戻せるようにする(view-delete-undo)](_decisions/2026-10-10-view-delete-undo.md) | accepted | 人 | 人の発言 | BV-18 |
+| 2026-10-10 | [ビューの削除の確かめに合わせて、削除を通る試験の錠を掛け直す(view-delete-undo-locks)](_decisions/2026-10-10-view-delete-undo-locks.md) | accepted | 人 | 人の発言 | BV-3, BV-13, BV-17 ほか 6 |
 | 2026-10-10 | [親子のノートを字下げして並べ、畳めるようにする(tree)](_decisions/2026-10-10-tree.md) | accepted | 人 | 人の発言 | NV-27 |
 | 2026-10-10 | [親子の畳むキーを z から Z にする(tree-key)](_decisions/2026-10-10-tree-key.md) | accepted | 人 | 検証の指摘 | NV-27 |
 | 2026-10-10 | [部品の形の既定(sumi)に合わせて、SR-33・SR-35・SR-36 の例を直す(style-examples)](_decisions/2026-10-10-style-examples.md) | accepted | 人 | 検証の指摘 | SR-33, SR-35, SR-36 |
@@ -51,6 +53,7 @@ updated: 2026-09-30
 | 2026-10-10 | [ビューの設定の画面を、左に区画の一覧・右に中身・上に反映の形にする(settings-layout)](_decisions/2026-10-10-settings-layout.md) | accepted | 人 | 人の発言 | NV-18 |
 | 2026-10-10 | [設定の画面の作り直しに合わせて SR-20・SR-23 の文を直す(settings-layout-follow)](_decisions/2026-10-10-settings-layout-follow.md) | accepted | 人 | 人の発言 | SR-20, SR-23 |
 | 2026-10-10 | [設定の画面の作り直しに合わせて、関わる要件の例(確かめ方)の操作を直す(settings-layout-examples)](_decisions/2026-10-10-settings-layout-examples.md) | accepted | 人 | 人の発言 | NV-13, NV-16, NV-23 ほか 4 |
+| 2026-10-10 | [アプリからノートの名前を変え、そのノートを指すリンクの書き換えをためる(note-rename)](_decisions/2026-10-10-note-rename.md) | accepted | 人 | 人の発言 | CE-34 |
 | 2026-10-10 | [nerd_font = "auto" で、丸い端を自分で描く端末なら丸い札にする(nerd-auto)](_decisions/2026-10-10-nerd-auto.md) | accepted | 人 | 人の発言 | SR-36 |
 | 2026-10-10 | [設定の画面に「見た目」の区画を足し、テーマ・組・丸い札の端を選んで look.toml に残し、組み合わせを名前で保存して選べるようにする(look-section)](_decisions/2026-10-10-look-section.md) | accepted | 人 | 人の発言 | SR-43 |
 | 2026-10-10 | [組 dozy-pink を足す(dozy-preset)](_decisions/2026-10-10-dozy-preset.md) | accepted | 人 | 人の発言 | SR-36 |

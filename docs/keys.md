@@ -509,3 +509,4 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `workspace_add` — add the current table to a workspace (pick one or type a new name)
 - `workspace_remove` — remove the current table from a workspace
 - `workspace_open` — pick a workspace, then one of its tables, and open it within that workspace
+- `rename_note` — rename the note of the selected row (also in the action menu `x`); links to the old name are rewritten as pending changes

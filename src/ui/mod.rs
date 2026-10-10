@@ -28,6 +28,7 @@ pub mod native_io;
 pub mod native_views;
 pub mod nav;
 pub mod new_note;
+pub mod note_rename;
 pub mod places;
 pub mod popup;
 pub mod relations;
@@ -322,6 +323,8 @@ mod test_new_note_order;
 #[cfg(test)]
 mod test_note_column;
 #[cfg(test)]
+mod test_note_rename;
+#[cfg(test)]
 mod test_pending_shape;
 #[cfg(test)]
 mod test_plural_en;
@@ -357,6 +360,8 @@ mod test_type_replaces_more;
 mod test_untyped_date;
 #[cfg(test)]
 mod test_unwritable;
+#[cfg(test)]
+mod test_view_delete_undo;
 #[cfg(test)]
 mod test_view_tabs;
 #[cfg(test)]

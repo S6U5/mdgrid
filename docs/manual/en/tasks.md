@@ -70,6 +70,8 @@ A sort is kept for the current view, so the table opens in the same order next t
 
 ## Edit many rows at once
 
+To rename a note, use **Rename the note** in the action menu (`x`) or the palette (`:`). Links to the old name (`[[old name]]`) are rewritten as pending changes; review the diff with `Ctrl+S` and save.
+
 1. Mark rows with `Space` (it marks and moves down). `v` marks a range, `Ctrl+A` all rows.
 2. On one of the marked rows, open the cell of the column to change with `Enter` and choose the value.
 3. Every marked row gets the same value. Rows that cannot take it (read-only notes, for example) are skipped, with the count and the reason.

@@ -706,6 +706,14 @@ fn main() -> ExitCode {
                 })
                 .filter_map(|x| x.canonicalize().ok())
                 .collect();
+            // WS-3: `-w` は `--print` でも名前を確かめ、パスが無ければその最初の表を出す。
+            let p = match &opts.workspace {
+                Some(name) => match workspace_paths(name, p, no_args) {
+                    Ok(p) => p,
+                    Err(e) => return fail(&e),
+                },
+                None => p,
+            };
             return print_view(&md_to_folder(p).0, &opts, f.lib(), w, &filter, &sort, &only);
         }
         Ok(Command::Apply(p, file, yes)) => {

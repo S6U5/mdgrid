@@ -172,6 +172,8 @@ pub(crate) enum TextKind {
     LookTemplate,
     /// WBS の値の割合とラベル(NV-28。`col` は値)。
     WbsValue,
+    /// ビューの削除の確かめ(BV-18。`col` はビューの名前)。`y` で消す。
+    DeleteView,
 }
 
 /// 値の入力(含む・含まない・比べる。NV-19)。

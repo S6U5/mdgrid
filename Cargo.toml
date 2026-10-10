@@ -1,6 +1,6 @@
 [package]
 name = "mdgrid"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.90"
 description = "Browse and edit Markdown frontmatter as a table in the terminal"
