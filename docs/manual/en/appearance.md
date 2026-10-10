@@ -57,7 +57,7 @@ preset = "saas"
 select = "cross"      # tint the selected row and column as a crosshair
 ```
 
-The parts are `status`, `tags`, `check`, `select`, `rules`, `tabs`, `frames`, `band` and `icons` (all values in [Configuration](../../config.md#style)). Round pills (`"pill"`) are drawn with Nerd Font glyphs, so they need `nerd_font = true`; otherwise they are drawn as clipped pills.
+The parts are `status`, `tags`, `check`, `select`, `rules`, `tabs`, `frames`, `band` and `icons` (all values in [Configuration](../../config.md#style)). Round pills (`"pill"`) are drawn with Nerd Font glyphs. With the default `nerd_font = "auto"` they are round on terminals that draw the rounded ends themselves (Ghostty, WezTerm) and clipped elsewhere; `true` always draws them round, `false` always clipped.
 
 **Catalog**: open [`docs/catalog/index.html`](../../catalog/index.html) in a browser to compare themes and part shapes on a live sample. Select cells, pick values, search, filter, open details, the relation map and help — with clicks and keys. It also writes the settings to paste into `config.toml`.
 

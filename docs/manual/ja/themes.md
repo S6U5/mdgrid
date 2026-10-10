@@ -2,7 +2,7 @@
 
 [English](../en/themes.md) · [目次](index.md)
 
-画面の色の組み合わせ(テーマ)を7つから選べます。変わるのは色だけで、文字と印(`*` のためた変更、`>` の選んでいる行など)はそのままです。
+画面の色の組み合わせ(テーマ)を12から選べます(端末の地に合わせる `auto` も)。変わるのは色だけで、文字と印(`*` のためた変更、`>` の選んでいる行など)はそのままです。
 
 ## 選び方
 
@@ -27,6 +27,12 @@ mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
 | [`gruvbox`](#gruvbox) | 暖かい茶と橙 |
 | [`pink-monster`](#pink-monster) | 濃い赤紫の地に蛍光の桃と黄緑 |
 | [`dozy-pink`](#dozy-pink) | 淡い桃とクリーム |
+| [`sumi`](#sumi) | 墨。暗い地・薄い灰・青緑のアクセント |
+| [`slate`](#slate) | 石板。紫寄りのアクセント |
+| [`saas`](#saas) | 明るい灰の地・藍のアクセント |
+| [`saas-dark`](#saas-dark) | saas の暗い地の版 |
+| [`paper`](#paper) | 明るい地・青のアクセント |
+| `auto` | 端末の地が明るければ `theme_light`(既定 `saas`)、暗ければ `theme_dark`(既定 `sumi`) |
 
 ## 見本
 
@@ -85,6 +91,46 @@ mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
 淡い桃とクリーム。設定: `theme = "dozy-pink"`。
 
 ![Dozy Pink](images/theme-dozy-pink.svg)
+
+<a id="sumi"></a>
+
+### `sumi` — Sumi
+
+墨。暗い地・薄い灰・青緑のアクセント。設定: `theme = "sumi"`。
+
+![Sumi](images/theme-sumi.svg)
+
+<a id="slate"></a>
+
+### `slate` — Slate
+
+石板。紫寄りのアクセント。設定: `theme = "slate"`。
+
+![Slate](images/theme-slate.svg)
+
+<a id="saas"></a>
+
+### `saas` — SaaS
+
+明るい灰の地・藍のアクセント。設定: `theme = "saas"`。
+
+![SaaS](images/theme-saas.svg)
+
+<a id="saas-dark"></a>
+
+### `saas-dark` — SaaS Dark
+
+saas の暗い地の版。設定: `theme = "saas-dark"`。
+
+![SaaS Dark](images/theme-saas-dark.svg)
+
+<a id="paper"></a>
+
+### `paper` — Paper
+
+明るい地・青のアクセント。設定: `theme = "paper"`。
+
+![Paper](images/theme-paper.svg)
 
 ## 注意
 

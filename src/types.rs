@@ -337,8 +337,16 @@ fn weekday_sun0(days: i64) -> usize {
     ((days.rem_euclid(7) + 4) % 7) as usize
 }
 
-/// 曜日の短い名前(`ddd`)。日曜から。
+/// 曜日の短い名前(`ddd`)。日曜から。見せるのは画面の言語の名前(SR-23)、読むのはどちらの名前でもよい。
 const WEEKDAY_NAMES: [&str; 7] = ["日", "月", "火", "水", "木", "金", "土"];
+const WEEKDAY_EN: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+fn weekday_name(i: usize) -> &'static str {
+    match crate::i18n::current() {
+        crate::i18n::Lang::En => WEEKDAY_EN[i],
+        _ => WEEKDAY_NAMES[i],
+    }
+}
 
 /// 日付の形の部品(CE-22)。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -468,7 +476,7 @@ impl DateFormat {
                 Part::Month(false) => out.push_str(&m.to_string()),
                 Part::Day(true) => out.push_str(&format!("{d:02}")),
                 Part::Day(false) => out.push_str(&d.to_string()),
-                Part::Weekday => out.push_str(WEEKDAY_NAMES[weekday_sun0(days)]),
+                Part::Weekday => out.push_str(weekday_name(weekday_sun0(days))),
                 Part::Lit(s) => out.push_str(s),
             }
         }
@@ -488,6 +496,7 @@ impl DateFormat {
                     let (i, name) = WEEKDAY_NAMES
                         .iter()
                         .enumerate()
+                        .chain(WEEKDAY_EN.iter().enumerate())
                         .find(|(_, n)| rest.starts_with(**n))?;
                     wd = Some(i);
                     rest = &rest[name.len()..];
@@ -511,7 +520,7 @@ impl DateFormat {
             (None, _) => Err(Msg::DateNotReal.fill(&[&t])),
             // 曜日の名前は日付の形(ddd)の値なので訳さない。
             (Some(day), Some(w)) if w != weekday_sun0(day) => Err(Msg::DateWeekdayMismatch
-                .fill(&[&t, &format_date(day), &WEEKDAY_NAMES[weekday_sun0(day)]])),
+                .fill(&[&t, &format_date(day), &weekday_name(weekday_sun0(day))])),
             (Some(day), _) => Ok(day),
         })
     }

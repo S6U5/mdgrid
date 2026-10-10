@@ -55,3 +55,7 @@ mod test_tree;
 #[cfg(test)]
 #[path = "test_wbs_unit.rs"]
 mod test_wbs;
+
+#[cfg(test)]
+#[path = "test_weekday_lang_unit.rs"]
+mod test_weekday_lang;

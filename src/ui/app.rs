@@ -117,6 +117,9 @@ pub struct App {
     pub(crate) style: mdgrid::style::Style,
     /// SR-36: 丸い札の端を Nerd Font の字で描いてよい。
     pub(crate) nerd_font: bool,
+    /// SR-43: 設定の theme・nerd_font が auto か(見た目の区画の始まりの値に使う)。
+    pub(crate) theme_auto: bool,
+    pub(crate) nerd_auto: bool,
     /// SR-40・SR-41: 色の上書き。
     pub(crate) colors: mdgrid::colors::Colors,
     /// 式の今日(日数)と今(UNIX 秒)。
@@ -292,6 +295,8 @@ impl App {
             look_classic: false,
             style: Default::default(),
             nerd_font: false,
+            theme_auto: false,
+            nerd_auto: false,
             colors: Default::default(),
             today,
             now,
@@ -372,6 +377,8 @@ impl App {
         self.look_classic = c.look_classic;
         self.style = c.style;
         self.nerd_font = c.nerd_font;
+        self.theme_auto = c.theme_auto;
+        self.nerd_auto = c.nerd_font_auto;
         self.colors = c.colors.clone();
         self.view_tabs_auto = c.view_tabs_auto;
         self.cells = c.cells.clone();

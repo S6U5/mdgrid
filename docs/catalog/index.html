@@ -38,7 +38,7 @@ h1 { font-size: 24px; margin: 0; line-height: 1.3; }
 .top { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 22px; align-items: start; }
 @media (max-width: 960px) { .top { grid-template-columns: minmax(0, 1fr); } .stage { order: -1; } }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
-.panel h2, .sec-title { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; font-weight: 600; }
+.panel h2, .sec-title { font-size: 12.5px; letter-spacing: .04em; color: var(--muted); margin: 0; font-weight: 600; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 button.opt { font: inherit; font-size: 13px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
 button.opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
@@ -87,9 +87,10 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 <body>
 <div class="wrap">
   <div class="intro">
+    <p class="note"><a href="../" id="home">← mdgrid</a></p>
     <h1 data-t="title">mdgrid 見た目のカタログ</h1>
     <p data-t="intro1">テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。</p>
-    <p data-t="intro2">「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。</p>
+    <p data-t="intro2">「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は、mdgrid の設定とそのまま同じです。</p>
   </div>
   <div class="bar">
     <span class="sec-title" data-t="lang">言語</span>
@@ -418,7 +419,7 @@ const TX = {
     // ページ
     title: "mdgrid 見た目のカタログ",
     intro1: "テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。",
-    intro2: "「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は本体の設定と同じもので、ずれたら試験が落ちます。",
+    intro2: "「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は、mdgrid の設定とそのまま同じです。",
     lang: "言語", page: "ページ", themes: "テーマ", light: "明るい地", dark: "暗い地", ground: "見本の端末", presets: "組(まとめて選ぶ)",
     colors: "色(上書き)", values: "値の色", moreRoles: "ほかの役割", addValue: "値を足す", valuePh: "値(例: 進行中)", clear: "戻す", remove: "消す",
     roleLabel: { background: "地", text: "文字", header: "1行目", selection: "選んだ行", selection_text: "選んだ行の文字", band: "下の帯", band_text: "下の帯の文字", accent: "アクセント", strong: "強調", zebra: "一行おき", zebra_text: "一行おきの文字", mark: "左端の印", added: "足した行", removed: "消した行", pending: "ためた変更", highlight: "検索の一致" },
@@ -476,7 +477,7 @@ const TX = {
     owner: "owner",
     title: "mdgrid look catalog",
     intro1: "Pick a theme and the shape of each part; the sample screen changes to match. The screen responds to clicks and keys (select a cell, Enter to pick a value, / search, \\ filter, , same value, K details, R relation map, o settings, S sort, ? help).",
-    intro2: "Paste the text in “Settings (config.toml)” into config.toml and mdgrid looks the same. The part names and values are the ones mdgrid reads; a test fails if they drift apart.",
+    intro2: "Paste the text in “Settings (config.toml)” into config.toml and mdgrid looks the same. The part names and values are exactly the ones mdgrid reads.",
     lang: "Language", page: "Page", themes: "Theme", light: "Light background", dark: "Dark background", ground: "Sample terminal", presets: "Preset (whole set)",
     colors: "Colors (overrides)", values: "Value colors", moreRoles: "More roles", addValue: "Add a value", valuePh: "value (e.g. doing)", clear: "reset", remove: "remove",
     roleLabel: { background: "Background", text: "Text", header: "First line", selection: "Selected row", selection_text: "Selected text", band: "Key band", band_text: "Key band text", accent: "Accent", strong: "Strong", zebra: "Zebra", zebra_text: "Zebra text", mark: "Left mark", added: "Added lines", removed: "Removed lines", pending: "Unsaved changes", highlight: "Search match" },

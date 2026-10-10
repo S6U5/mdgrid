@@ -57,7 +57,7 @@ preset = "saas"
 select = "cross"      # 選んだ行と列を十字に塗る
 ```
 
-部品の候補は `status`・`tags`・`check`・`select`・`rules`・`tabs`・`frames`・`band`・`icons` です(全部は[設定](../../config.ja.md#style))。丸い札(`"pill"`)は Nerd Font の字で描くので、`nerd_font = true` のときだけ使い、そうでなければ角を落とした札で描きます。
+部品の候補は `status`・`tags`・`check`・`select`・`rules`・`tabs`・`frames`・`band`・`icons` です(全部は[設定](../../config.ja.md#style))。丸い札(`"pill"`)は Nerd Font の字で描きます。`nerd_font` は既定の `"auto"` なら、丸い端を自分で描く端末(Ghostty・WezTerm)で丸い札にし、ほかの端末では角を落とした札で描きます。`true` でいつも丸く、`false` でいつも角を落とした札です。
 
 **カタログ**: [`docs/catalog/index.html`](../../catalog/index.html) をブラウザで開くと、テーマと部品の形を触れる見本で見比べられます。セルを選ぶ・値を選ぶ・検索・絞り込み・詳細・関係マップ・ヘルプを、クリックとキーで試せます。選んだ形の設定の文(`config.toml` に貼るもの)も、そこで作れます。
 

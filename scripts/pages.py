@@ -210,6 +210,9 @@ def build(out: Path, shots_dir: Path) -> None:
     shots = []
     for s in scen["shot"]:
         sid = s["id"]
+        # README の動きの GIF を作るためのコマ(gif-*)は、画面の一覧に出さない。
+        if sid.startswith("gif-"):
+            continue
         missing = [l for l in LANGS if not (shots_dir / l / "images" / f"{sid}.svg").exists()]
         if missing:
             raise SystemExit(f"画面が無い: {sid}({shots_dir}/{missing[0]}/images。先に tui_shot.py で撮る)")
@@ -290,7 +293,7 @@ HOME = {
             ("リンクで表をつなぐ", "ノートどうしのリンクで、フォルダをつながった表として扱う。R で表とつながりの図(関係マップ)。", "demo-relmap"),
         ],
         "try": "見本で試す",
-        "try_note": "見本を一時フォルダに写して開く(保存しても元の見本は変わらない)。",
+        "try_note": "見本はリポの examples にある。一時フォルダに写して開く(保存しても元の見本は変わらない)。",
         "see": "見て選ぶ",
         "more": "ほかに: 色のテーマと部品の形、親子の字下げと WBS、CSV・JSON への書き出し、英語と日本語の画面。",
     },
@@ -308,14 +311,14 @@ HOME = {
             ("Linked tables", "Links between notes make folders into linked tables. Press R for a map of the tables and their links.", "demo-relmap"),
         ],
         "try": "Try it on the demo",
-        "try_note": "Copy the demo to a temporary folder and open it (saving never changes the original).",
+        "try_note": "The samples live in the repository's examples folder. Copy one to a temporary folder and open it (saving never changes the original).",
         "see": "See and choose",
         "more": "Also: color themes and part shapes, parent/child indent and WBS, export to CSV and JSON, English and Japanese screens.",
     },
 }
 TRY = {
-    "ja": "cp -R examples/vault /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/タスク",
-    "en": "cp -R examples/demo /tmp/mdgrid-demo\nmdgrid /tmp/mdgrid-demo/Tasks",
+    "ja": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/vault /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/タスク",
+    "en": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/demo /tmp/mdgrid-demo\nmdgrid /tmp/mdgrid-demo/Tasks",
 }
 
 

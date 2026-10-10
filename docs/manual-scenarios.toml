@@ -507,6 +507,41 @@ command = ["./target/release/mdgrid", "--config", "examples/themes/dozy-pink.tom
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
 text = { en = "theme = \"dozy-pink\" (soft pink and cream). Only the colors change; marks such as * and > stay.", ja = "theme = \"dozy-pink\"(淡い桃とクリーム)。変わるのは色だけで、* や > などの印はそのまま。" }
 
+[[shot]]
+id = "theme-sumi"
+title = { en = "Theme: Sumi", ja = "テーマ: Sumi" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/sumi.toml", "examples/vault"]
+env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+text = { en = "theme = \"sumi\" (dark ink, soft grays and a teal accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"sumi\"(墨。暗い地・薄い灰・青緑のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+
+[[shot]]
+id = "theme-slate"
+title = { en = "Theme: Slate", ja = "テーマ: Slate" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/slate.toml", "examples/vault"]
+env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+text = { en = "theme = \"slate\" (slate with a violet accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"slate\"(石板。紫寄りのアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+
+[[shot]]
+id = "theme-saas"
+title = { en = "Theme: SaaS", ja = "テーマ: SaaS" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/saas.toml", "examples/vault"]
+env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+text = { en = "theme = \"saas\" (light gray with an indigo accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"saas\"(明るい灰の地・藍のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+
+[[shot]]
+id = "theme-saas-dark"
+title = { en = "Theme: SaaS Dark", ja = "テーマ: SaaS Dark" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/saas-dark.toml", "examples/vault"]
+env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+text = { en = "theme = \"saas-dark\" (the dark version of saas). Only the colors change; marks such as * and > stay.", ja = "theme = \"saas-dark\"(saas の暗い地の版)。変わるのは色だけで、* や > などの印はそのまま。" }
+
+[[shot]]
+id = "theme-paper"
+title = { en = "Theme: Paper", ja = "テーマ: Paper" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/paper.toml", "examples/vault"]
+env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+text = { en = "theme = \"paper\" (a light background with a blue accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"paper\"(明るい地・青のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+
 # ---- English demo vault (examples/demo) for the README ----
 
 [[shot]]
