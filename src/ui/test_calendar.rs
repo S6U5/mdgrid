@@ -217,7 +217,7 @@ fn test_ce_21_monday_start() {
         "ce21mon",
         &[("a.md", "---\ntitle: 会議\ndue: 2026-10-05\n---\n")],
     );
-    configure(&mut a, "week_start = \"mon\"\n");
+    configure(&mut a, "[dates]\nweek_start = \"mon\"\n");
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
     let s = screen(&a);
@@ -316,7 +316,7 @@ fn test_ce_22_short_formats_keep_year() {
             ("c.md", "---\ndue: 1999-12-30\n---\n"),
         ],
     );
-    configure(&mut a, "date_format = \"MM/DD\"\n");
+    configure(&mut a, "[dates]\nformat = \"MM/DD\"\n");
     assert!(screen(&a).contains("12/31"));
     col_named(&mut a, "due");
     // 年をまたぐ: 2026-12-31 → → 2027-01-01。
@@ -340,7 +340,7 @@ fn test_ce_22_short_formats_keep_year() {
     press(&mut a, KeyCode::Enter);
     assert_eq!(pending(&a, 1, "due"), Some(day("2020-06-11")));
     // 前の世紀(`YY/MM/DD`): 1999-12-30 は 2099 にならない。
-    configure(&mut a, "date_format = \"YY/MM/DD\"\n");
+    configure(&mut a, "[dates]\nformat = \"YY/MM/DD\"\n");
     assert!(screen(&a).contains("99/12/30"));
     press(&mut a, KeyCode::Down);
     press(&mut a, KeyCode::Enter);
@@ -585,7 +585,7 @@ fn test_ce_22_date_format_in_table_and_input() {
             ("c.md", "---\ndue: someday\n---\n"),
         ],
     );
-    configure(&mut a, "date_format = \"YYYY/MM/DD\"\n");
+    configure(&mut a, "[dates]\nformat = \"YYYY/MM/DD\"\n");
     let s = screen(&a);
     assert!(s.contains("2026/10/05") && s.contains("!someday"), "{s}");
     assert!(!s.contains("2026-10-05"), "{s}");
@@ -761,7 +761,7 @@ fn test_ce_24_leap_day_clamps() {
 fn test_ce_24_ambiguous_wide_keeps_year_key() {
     // [CE-24][CV-6][SR-9] 矢印を幅2と数える(ambiguous_wide)と1行に入らないので、縁の行を分けて「年」のキーも残す。
     let (_t, mut a) = vault("ce24wide", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
-    configure(&mut a, "ambiguous_wide = true");
+    configure(&mut a, "[terminal]\nambiguous_wide = true");
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
     assert!(calendar::shown(&a));

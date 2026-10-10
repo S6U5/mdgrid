@@ -37,7 +37,7 @@ fn at(a: &App, t: &str) -> (u16, u16) {
 #[test]
 fn test_sr_36_selected_cell_keeps_parts() {
     // [SR-36] saas(淡い札): 選んだセルの札も、選んでいないセルと同じ淡い地。選びは太字と下線で重ねる。
-    let (_t, a) = boot("sr36_sel_tint", "[style]\npreset = \"saas\"\n");
+    let (_t, a) = boot("sr36_sel_tint", "[look]\npreset = \"saas\"\n");
     let buf = buffer(&a);
     let (x, y) = at(&a, "doing");
     let want = super::chips::parts(&a, &["doing".to_string()], false)

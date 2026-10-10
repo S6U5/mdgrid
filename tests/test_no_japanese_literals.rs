@@ -18,16 +18,26 @@ const ALLOWED: &[(&str, &str, &str)] = &[
         "const WEEKDAY_NAMES",
         "日付の形 ddd の値(ノートの値の形)",
     ),
-    // config_items.rs の ja と ty_ja の文は docs/config.ja.md と突き合わせる正本なので表に移さない(記録の仮定)。
+    // schema.rs の ja・ty_ja・書ける範囲の文は docs/config.ja.md と突き合わせる正本なので表に移さない(記録の仮定)。
     (
-        "config_items.rs",
+        "schema.rs",
         "ja: \"",
         "設定の項目の日本語の説明(文書と突き合わせる正本)",
     ),
     (
-        "config_items.rs",
+        "schema.rs",
         "ty_ja: \"",
         "設定の項目の型の日本語の名前(文書と突き合わせる正本)",
+    ),
+    (
+        "schema.rs",
+        "Scope::Global => \"",
+        "書ける範囲の日本語の名前(文書と突き合わせる正本)",
+    ),
+    (
+        "schema.rs",
+        "Scope::Profile => \"",
+        "書ける範囲の日本語の名前(文書と突き合わせる正本)",
     ),
     // man と補完の説明(clap の about・long_about)は日本語のまま(記録の仮定。英語にそろえるかは後で)。
     ("main.rs", "about = \"", "clap の about(man と補完の説明)"),

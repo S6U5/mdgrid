@@ -60,7 +60,7 @@ fn test_sr_37_new_themes_and_sr_39_auto() {
     }
     assert!(Theme::Saas.is_light() && Theme::Paper.is_light() && !Theme::Sumi.is_light());
     let (r, c, w) = parse(
-        "[look]\ntheme = { light = \"paper\", dark = \"saas-dark\" }\n[terminal]\nnerd_font = true\n",
+        "[look]\ntheme = { light = \"paper\", dark = \"saas-dark\" }\n\n[terminal]\nnerd_font = true\n",
     );
     assert!(w.is_empty(), "{w:?}");
     assert_eq!(c.terminal.nerd_font, crate::config::NerdFont::On);

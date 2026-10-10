@@ -551,7 +551,7 @@ fn test_sr_20_zebra_not_without_color() {
     check(&a);
     let (_t, b) = folder_with(
         "sr20zebranc2",
-        "color = false\n\n[display]\nzebra = true\n",
+        "[terminal]\ncolor = false\n\n[display]\nzebra = true\n",
         ColorMode::Indexed,
     );
     check(&b);

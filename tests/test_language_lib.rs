@@ -429,9 +429,9 @@ fn test_sr_23_lib_config_warnings_are_english() {
     // [SR-23] [CLI-3] 英語のとき、設定の知らない項目と型の違う値の警告は英語で、キーの名前はそのまま出る。
     let cases = [
         ("unknownitem = 1\n", "unknownitem"),
-        ("add_frontmatter = \"no\"\n", "add_frontmatter"),
-        ("add_frontmatter = 0\n", "add_frontmatter"),
-        ("color = \"maybe\"\n", "color"),
+        ("[edit]\nadd_frontmatter = \"no\"\n", "add_frontmatter"),
+        ("[edit]\nadd_frontmatter = 0\n", "add_frontmatter"),
+        ("[terminal]\ncolor = \"maybe\"\n", "color"),
     ];
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
@@ -456,7 +456,7 @@ fn test_sr_23_lib_config_warnings_are_english() {
 fn test_sr_23_lib_config_warnings_stay_japanese_under_ja() {
     // [SR-23] [CLI-3] scoped(Ja) では今の日本語の警告。
     let _g = scoped(Lang::Ja);
-    for text in ["unknownitem = 1\n", "add_frontmatter = \"no\"\n"] {
+    for text in ["unknownitem = 1\n", "[edit]\nadd_frontmatter = \"no\"\n"] {
         let (_c, w) = parse_config(text).expect("警告にとどまる");
         assert_eq!(w.len(), 1, "{text:?}: {w:?}");
         assert_japanese(text, &w[0]);

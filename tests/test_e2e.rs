@@ -193,7 +193,7 @@ fn assert_gamma_editable(t: &mut Tui) {
 fn test_wb_3_e2e_add_frontmatter_false_makes_cell_readonly_with_reason() {
     // [WB-3] add_frontmatter = false → フロントマターの無いノートのセルは読むだけで理由が出る。
     let env = Env::new("wb3-false");
-    let cfg = env.write_config("c.toml", "add_frontmatter = false\n");
+    let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = false\n");
     let mut t = open(&env, &["--config", cfg.to_str().unwrap()], &[]);
     assert_gamma_readonly(&mut t);
     assert_eq!(
@@ -228,8 +228,8 @@ fn test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save() {
 fn test_cli_2_e2e_config_flag_wins_over_default_location_false() {
     // [CLI-2][CLI-3] 既定の置き場に add_frontmatter = true、--config に false → --config が効く。
     let env = Env::new("cli2-false");
-    env.write_default_config("add_frontmatter = true\n");
-    let cfg = env.write_config("c.toml", "add_frontmatter = false\n");
+    env.write_default_config("[edit]\nadd_frontmatter = true\n");
+    let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = false\n");
     let mut t = open(&env, &["--config", cfg.to_str().unwrap()], &[]);
     assert_gamma_readonly(&mut t);
     assert_gone(t.stop());
@@ -239,8 +239,8 @@ fn test_cli_2_e2e_config_flag_wins_over_default_location_false() {
 fn test_cli_2_e2e_config_flag_wins_over_default_location_true() {
     // [CLI-2][CLI-3] 逆向き: 既定の置き場に false、--config に true → 書ける。
     let env = Env::new("cli2-true");
-    env.write_default_config("add_frontmatter = false\n");
-    let cfg = env.write_config("c.toml", "add_frontmatter = true\n");
+    env.write_default_config("[edit]\nadd_frontmatter = false\n");
+    let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = true\n");
     let mut t = open(&env, &["--config", cfg.to_str().unwrap()], &[]);
     assert_gamma_editable(&mut t);
     assert_gone(t.stop());
@@ -251,7 +251,7 @@ fn test_cli_2_e2e_default_location_is_read_without_flag() {
     // [CLI-3] --config が無ければ既定の置き場($XDG_CONFIG_HOME/mdgrid/config.toml)を読む。
     // 上の2つが「置き場を読まない」ことで通ってしまわないための対照。
     let env = Env::new("cli3-default");
-    env.write_default_config("add_frontmatter = false\n");
+    env.write_default_config("[edit]\nadd_frontmatter = false\n");
     let mut t = open(&env, &[], &[]);
     assert_gamma_readonly(&mut t);
     assert_gone(t.stop());

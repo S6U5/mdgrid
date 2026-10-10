@@ -4,6 +4,14 @@ use super::test_screen::{app_of, buffer, screen, Tmp};
 use super::*;
 use ratatui::style::Modifier;
 
+/// 設定の文 `cfg` の `[look]` の区画に1行を足す(区画が無ければ作る。同じ見出しを2回書かない)。
+fn with_look(cfg: &str, line: &str) -> String {
+    match cfg.find("[look]\n") {
+        Some(i) => format!("{}{line}\n{}", &cfg[..i + 7], &cfg[i + 7..]),
+        None => format!("{cfg}\n[look]\n{line}\n"),
+    }
+}
+
 fn notes(name: &str) -> Tmp {
     let tmp = Tmp::new(name);
     for (n, done, tags, ver) in [
@@ -22,7 +30,7 @@ fn notes(name: &str) -> Tmp {
 fn with(tmp: &Tmp, cfg: &str) -> App {
     let mut a = app_of(tmp, ColorMode::Rgb);
     // SR-36: 今までの形(classic の組)の部品を確かめる。
-    let cfg = format!("{cfg}\n[style]\npreset = \"classic\"\n");
+    let cfg = with_look(cfg, "preset = \"classic\"");
     let (c, w) = mdgrid::config::parse(&cfg).unwrap();
     assert!(w.is_empty(), "{w:?}");
     a.configure(&c);
@@ -47,7 +55,7 @@ fn test_sr_35_chip_column_wins_over_parts() {
     let tmp = notes("sr35m_chip");
     let a = with(
         &tmp,
-        "[cells]\nstyle = \"plain\"\n[cells.columns]\ntags = \"chip\"\n",
+        "[look]\ncells = \"plain\"\n\n[look.columns]\ntags = \"chip\"\n",
     );
     let b = row_text(&a, "b");
     assert!(b.contains(" docs ") && !b.contains("[docs]"), "{b}");

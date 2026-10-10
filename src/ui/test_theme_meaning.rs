@@ -19,9 +19,11 @@ fn app(name: &str, theme: &str) -> (Tmp, App) {
     let mut a = app_of(&tmp, ColorMode::Rgb);
     // 意味の色(SR-28)は今までの見た目(look = "classic")の上で確かめる。
     a.configure(
-        &config::parse(&format!("look = \"classic\"\ntheme = \"{theme}\"\n"))
-            .unwrap()
-            .0,
+        &config::parse(&format!(
+            "[look]\nmode = \"classic\"\ntheme = \"{theme}\"\n"
+        ))
+        .unwrap()
+        .0,
     );
     (tmp, a)
 }

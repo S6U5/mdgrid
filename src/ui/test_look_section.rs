@@ -155,8 +155,9 @@ fn test_sr_43_templates_save_use_delete_and_reset() {
     typing(&mut a, "夜");
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Settings);
+    let saved: toml::Table = ui_toml(&tmp).parse().unwrap();
     assert!(
-        ui_toml(&tmp).contains("[templates.夜.look]"),
+        saved["templates"]["夜"]["look"].get("theme").is_some(),
         "{}",
         ui_toml(&tmp)
     );
@@ -181,8 +182,9 @@ fn test_sr_43_templates_save_use_delete_and_reset() {
     look_section(&mut a, n - 1);
     press(&mut a, KeyCode::Enter);
     let t = ui_toml(&tmp);
-    assert!(!t.contains("theme = \"nord\""), "{t}");
-    assert!(t.contains("[templates.朝.look]"), "{t}");
+    let table: toml::Table = t.parse().unwrap();
+    assert!(table.get("look").is_none(), "全体の見た目が消える: {t}");
+    assert!(t.contains("[templates."), "テンプレートは残る: {t}");
     assert_eq!(
         a.theme,
         Theme::Default,

@@ -66,8 +66,8 @@ view = ""
     let (got, warns) = parse(text);
     assert_eq!(got, vec![place("a", "", "/x"), place("b", "g", "/z")]);
     assert_eq!(warns.len(), 2, "{warns:?}");
-    assert!(warns[0].contains("2 番目"), "{warns:?}");
-    assert!(warns[1].contains("3 番目"), "{warns:?}");
+    assert!(warns[0].starts_with("places.toml: place[2]: "), "{warns:?}");
+    assert!(warns[1].starts_with("places.toml: place[3]: "), "{warns:?}");
 }
 
 #[test]

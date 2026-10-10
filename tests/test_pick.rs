@@ -223,7 +223,7 @@ fn test_out_3_pick_path_with_absolute_argument_prints_absolute_path() {
 fn pick_column_of_a_b_d(tag: &str, column: &str) -> String {
     let env = Env::new(tag);
     // 画面の日付の形を変えても、出る値は YYYY-MM-DD(change record の仮定)。
-    env.write_default_config("date_format = \"YYYY/MM/DD\"\n");
+    env.write_default_config("[dates]\nformat = \"YYYY/MM/DD\"\n");
     let mut t = open(&env, &["notes", "--pick", column], Sink::File);
     t.send_settle(" "); // a.md に印、b.md へ
     t.send_settle(" "); // b.md に印、c.md へ

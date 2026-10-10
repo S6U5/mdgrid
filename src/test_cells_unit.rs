@@ -29,7 +29,7 @@ fn test_sr_35_cells_string_and_table() {
     assert!(c.on("x", Part::Chips, &s));
     assert!(!c.on("status", Part::Chips, &s) && !c.on("status", Part::Select, &s));
     assert!(c.forced_chip("owner") && c.on("owner", Part::Select, &s));
-    let (c, s, _) = parse("[look]\ncells = \"plain\"\n[look.columns]\ntags = \"rich\"\n");
+    let (c, s, _) = parse("[look]\ncells = \"plain\"\n\n[look.columns]\ntags = \"rich\"\n");
     assert!(!c.on("x", Part::Chips, &s) && c.on("tags", Part::Chips, &s));
     let (c, s, _) = parse("[look.style]\nlinks = \"plain\"\n");
     assert!(!c.on("x", Part::Links, &s) && c.on("x", Part::Chips, &s));

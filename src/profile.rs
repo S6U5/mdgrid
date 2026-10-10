@@ -480,7 +480,7 @@ impl EditLayer {
         }
     }
 
-    fn to_table(&self) -> toml::Table {
+    fn to_table(self) -> toml::Table {
         let mut e = toml::Table::new();
         if let Some(n) = self.candidates {
             e.insert("candidates".into(), toml::Value::Integer(n as i64));
@@ -572,7 +572,10 @@ impl Profile {
             "display" => read_display(&mut self.display, v, file, &p, w),
             "dates" => self.dates.read(v, file, &p, w),
             "edit" => self.edit.read(v, file, &p, w),
-            "new_note" => self.new_note = Some(read_new_note(v, file, &p, w)),
+            "new_note" => match v.as_table() {
+                Some(_) => self.new_note = Some(read_new_note(v, file, &p, w)),
+                None => warn(w, file, &p, not(Msg::WantNewNoteTable)),
+            },
             _ => return false,
         }
         true

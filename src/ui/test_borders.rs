@@ -56,7 +56,7 @@ fn test_sr_32_rounded_by_default() {
 #[test]
 fn test_sr_32_ascii_by_setting() {
     // [SR-32] borders = "ascii" なら + - |。
-    let (_t, mut a) = boot("sr32_ascii", "borders = \"ascii\"\n");
+    let (_t, mut a) = boot("sr32_ascii", "[look.style]\nframes = \"ascii\"\n");
     let s = list_screen(&mut a);
     assert!(s.contains("|>") && s.contains('+'), "{s}");
     assert!(!s.contains('│') && !s.contains('╰'), "{s}");
@@ -65,7 +65,7 @@ fn test_sr_32_ascii_by_setting() {
 #[test]
 fn test_sr_32_ascii_when_ambiguous_wide() {
     // [SR-32][CV-6] あいまいな幅を2とする設定では、列がずれないように ASCII。
-    let (_t, mut a) = boot("sr32_wide", "ambiguous_wide = true\n");
+    let (_t, mut a) = boot("sr32_wide", "[terminal]\nambiguous_wide = true\n");
     let s = list_screen(&mut a);
     assert!(s.contains("|>") && !s.contains('│'), "{s}");
 }

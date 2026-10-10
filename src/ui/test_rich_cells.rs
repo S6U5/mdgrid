@@ -4,6 +4,14 @@
 use super::test_screen::{app_of, buffer, screen, Tmp};
 use super::*;
 
+/// 設定の文 `cfg` の `[look]` の区画に1行を足す(区画が無ければ作る。同じ見出しを2回書かない)。
+fn with_look(cfg: &str, line: &str) -> String {
+    match cfg.find("[look]\n") {
+        Some(i) => format!("{}{line}\n{}", &cfg[..i + 7], &cfg[i + 7..]),
+        None => format!("{cfg}\n[look]\n{line}\n"),
+    }
+}
+
 fn notes(name: &str) -> Tmp {
     let tmp = Tmp::new(name);
     for (n, status, done, tags) in [
@@ -23,7 +31,7 @@ fn notes(name: &str) -> Tmp {
 fn with(tmp: &Tmp, color: ColorMode, cfg: &str) -> App {
     let mut a = app_of(tmp, color);
     // SR-36: 今までの形(classic の組)の部品を確かめる。
-    let cfg = format!("{cfg}\n[style]\npreset = \"classic\"\n");
+    let cfg = with_look(cfg, "preset = \"classic\"");
     let (c, w) = mdgrid::config::parse(&cfg).unwrap();
     assert!(w.is_empty(), "{w:?}");
     a.configure(&c);
@@ -102,7 +110,7 @@ fn test_sr_35_plain_without_color_or_setting() {
     let tmp = notes("sr35_plain");
     for a in [
         with(&tmp, ColorMode::None, ""),
-        with(&tmp, ColorMode::Rgb, "cells = \"plain\"\n"),
+        with(&tmp, ColorMode::Rgb, "[look]\ncells = \"plain\"\n"),
     ] {
         let b = row(&a, "b");
         assert!(
@@ -121,7 +129,7 @@ fn test_sr_35_per_part_and_column() {
     let a = with(
         &tmp,
         ColorMode::Rgb,
-        "[cells]\ncheckbox = false\n[cells.columns]\nstatus = \"plain\"\nmemo = \"chip\"\n",
+        "[look.style]\ncheck = \"text\"\n\n[look.columns]\nstatus = \"plain\"\nmemo = \"chip\"\n",
     );
     let b = row(&a, "b");
     assert!(
@@ -135,7 +143,7 @@ fn test_sr_35_per_part_and_column() {
     let a2 = with(
         &tmp,
         ColorMode::Rgb,
-        "[cells]\nstyle = \"plain\"\n[cells.columns]\ndone = \"rich\"\n",
+        "[look]\ncells = \"plain\"\n\n[look.columns]\ndone = \"rich\"\n",
     );
     let b = row(&a2, "b");
     assert!(

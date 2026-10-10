@@ -14,7 +14,7 @@ fn test_sr_39_e2e_auto_theme_without_answer_starts() {
     std::fs::create_dir_all(&notes).unwrap();
     std::fs::write(notes.join("a.md"), "---\nstatus: todo\n---\n").unwrap();
     let cfg = home.path().join("auto.toml");
-    std::fs::write(&cfg, "theme = \"auto\"\n").unwrap();
+    std::fs::write(&cfg, "[look]\ntheme = \"auto\"\n").unwrap();
     let mut tui = Tui::spawn(
         &["--config", cfg.to_str().unwrap(), notes.to_str().unwrap()],
         home.path(),

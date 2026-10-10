@@ -219,5 +219,6 @@ fn test_sr_21_print_config_has_display() {
     // ほかの項目が [display] の表に紛れ込まない(読み直して警告なし・既定と同じ)。
     let (c, warnings) = parse(&text).expect("読める");
     assert!(warnings.is_empty(), "警告: {warnings:?}\n---\n{text}");
-    assert_eq!(c, Config::default());
+    assert_eq!(display_values(&c), DEFAULTS);
+    assert_eq!(tabs(&c), TabsMode::Always);
 }

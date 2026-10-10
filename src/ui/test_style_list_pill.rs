@@ -16,7 +16,9 @@ fn test_sr_36_value_list_keeps_pill_shape() {
         );
     }
     let mut a = app_of(&tmp, ColorMode::Rgb);
-    let (c, w) = mdgrid::config::parse("nerd_font = true\n[style]\nstatus = \"pill\"\n").unwrap();
+    let (c, w) =
+        mdgrid::config::parse("[terminal]\nnerd_font = true\n\n[look.style]\nstatus = \"pill\"\n")
+            .unwrap();
     assert!(w.is_empty(), "{w:?}");
     a.configure(&c);
     a.col = a.cols.iter().position(|c| c == "status").unwrap();
@@ -56,7 +58,7 @@ fn test_sr_36_picking_cell_keeps_parts() {
         );
     }
     let mut a = app_of(&tmp, ColorMode::Rgb);
-    let (c, _) = mdgrid::config::parse("[style]\npreset = \"saas\"\n").unwrap();
+    let (c, _) = mdgrid::config::parse("[look]\npreset = \"saas\"\n").unwrap();
     a.configure(&c);
     a.col = a.cols.iter().position(|c| c == "status").unwrap();
     press(&mut a, KeyCode::Enter);
@@ -88,7 +90,7 @@ fn test_sr_36_tint_rounds_with_nerd_font() {
     }
     for (nerd, want) in [(true, "\u{e0b6}● todo\u{e0b4}"), (false, " ● todo ")] {
         let mut a = app_of(&tmp, ColorMode::Rgb);
-        let cfg = format!("nerd_font = {nerd}\n[style]\npreset = \"saas\"\n");
+        let cfg = format!("[terminal]\nnerd_font = {nerd}\n\n[look]\npreset = \"saas\"\n");
         let (c, _) = mdgrid::config::parse(&cfg).unwrap();
         a.configure(&c);
         a.col = a.cols.iter().position(|c| c == "tags").unwrap();

@@ -138,7 +138,7 @@ fn test_cli_3_empty_config_gives_defaults() {
 fn test_cli_3_reads_each_item() {
     // [CLI-3] 候補の数・読み直しの間隔・Ambiguous の幅・色を読む。
     let text =
-        "poll_ms = 500\n[edit]\ncandidates = 30\n[terminal]\nambiguous_wide = true\ncolor = false\n";
+        "poll_ms = 500\n\n[edit]\ncandidates = 30\n\n[terminal]\nambiguous_wide = true\ncolor = false\n";
     let (c, warnings) = parse(text).expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
     assert_eq!(c.resolved().candidates, 30);
@@ -191,7 +191,7 @@ j = "none"
 #[test]
 fn test_cli_3_unknown_item_warns_and_continues() {
     // [CLI-3] 知らない項目は警告にとどめ、止めない。警告の文に項目の名前が出る。
-    let text = "frobnicate = true\n[edit]\ncandidates = 5\n";
+    let text = "frobnicate = true\n\n[edit]\ncandidates = 5\n";
     let (c, warnings) = parse(text).expect("知らない項目があっても Ok");
     assert_eq!(c.resolved().candidates, 5, "知っている項目は読む");
     assert!(
@@ -205,9 +205,9 @@ fn test_cli_3_unknown_item_warns_and_continues() {
 fn test_cli_3_broken_toml_is_err() {
     // [CLI-3] 壊れた TOML は Err(理由1行)。
     for text in [
-        "candidates = = 3\n",
+        "[edit]\ncandidates = = 3\n",
         "[keys.table\nj = \"down\"\n",
-        "color = \"\n",
+        "[terminal]\ncolor = \"\n",
     ] {
         match parse(text) {
             Err(reason) => {

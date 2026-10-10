@@ -383,7 +383,7 @@ fn test_cli_3_add_frontmatter_setting() {
 
     // ほかの項目と一緒でも読める。
     let (c, w) =
-        parse_config("[terminal]\ncolor = false\n[edit]\nadd_frontmatter = false\n").unwrap();
+        parse_config("[terminal]\ncolor = false\n\n[edit]\nadd_frontmatter = false\n").unwrap();
     assert!(!c.resolved().add_frontmatter && !c.terminal.color);
     assert!(w.is_empty(), "{w:?}");
 }

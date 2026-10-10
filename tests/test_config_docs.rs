@@ -81,7 +81,8 @@ fn item_line(text: &str, path: &str) -> Option<usize> {
     for (i, line) in text.lines().enumerate() {
         let t = line.trim_start().trim_start_matches('#').trim_start();
         if item.is_table() {
-            if t.starts_with(&format!("[{path}")) {
+            let header = t.starts_with(&format!("[{path}]")) || t.starts_with(&format!("[{path}."));
+            if header && t.ends_with(']') {
                 return Some(i);
             }
             continue;
