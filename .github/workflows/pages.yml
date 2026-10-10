@@ -51,8 +51,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Only link the GIFs that the latest release has (new tours are recorded at the next release).
-          export MDGRID_RELEASE_ASSETS="$(gh release view --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' || true)"
+          # The feature tours (GIFs) are release assets; copy them into the site so they play in the page.
+          # Tours added since the latest release appear at the next release.
+          gh release download --repo "$GITHUB_REPOSITORY" --pattern 'demo-*.gif' --dir target/demos || true
           python3 scripts/pages.py site --shots target/shots
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
