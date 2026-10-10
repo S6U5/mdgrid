@@ -6447,7 +6447,8 @@
     "ids": [
       "SR-39"
     ],
-    "sha": "8872d8951a79eca5"
+    "sha": "4572463311249f34",
+    "by": "specs/_decisions/2026-10-10-ci-locks.md"
   },
   "src/ui/test_style_overlay.rs::test_sr_36_value_list_follows_style": {
     "ids": [
@@ -7174,7 +7175,8 @@
     "ids": [
       "SR-38"
     ],
-    "sha": "993f85da1888e84c"
+    "sha": "de6e6495397e42fb",
+    "by": "specs/_decisions/2026-10-10-ci-locks.md"
   },
   "tests/test_pages.rs::test_sr_38_pages_manual_links_resolve": {
     "ids": [

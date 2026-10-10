@@ -54,6 +54,7 @@ updated: 2026-09-30
 | 2026-10-10 | [nerd_font = "auto" で、丸い端を自分で描く端末なら丸い札にする(nerd-auto)](_decisions/2026-10-10-nerd-auto.md) | accepted | 人 | 人の発言 | SR-36 |
 | 2026-10-10 | [設定の画面に「見た目」の区画を足し、テーマ・組・丸い札の端を選んで look.toml に残し、組み合わせを名前で保存して選べるようにする(look-section)](_decisions/2026-10-10-look-section.md) | accepted | 人 | 人の発言 | SR-43 |
 | 2026-10-10 | [組 dozy-pink を足す(dozy-preset)](_decisions/2026-10-10-dozy-preset.md) | accepted | 人 | 人の発言 | SR-36 |
+| 2026-10-10 | [公開リポの CI に合わせて、整形と unix だけの指定を当てた試験の錠を掛け直す(ci-locks)](_decisions/2026-10-10-ci-locks.md) | accepted | 人 | 運用で起きた失敗 | SR-38, SR-39 |
 | 2026-10-09 | [ワークスペース(表をまとめる範囲)をアプリの側で持ち、画面とコマンドで管理し、.git と保管庫を検知できるようにする(workspaces)](_decisions/2026-10-09-workspaces.md) | accepted | 人 | 人の発言 | WS-1, WS-2, WS-3 ほか 5 |
 | 2026-10-09 | [フォルダの .mdgrid/workspace.toml をワークスペースの印として受け、アプリの側のワークスペースより先に使う(workspace-marker)](_decisions/2026-10-09-workspace-marker.md) | accepted | 人 | 人の発言 | WS-6, WS-7 |
 | 2026-10-09 | [ワークスペースの操作を、開くパスと重ならない旗にする(workspace-flags)](_decisions/2026-10-09-workspace-flags.md) | accepted | 人 | 人の発言 | WS-3, WS-7 |

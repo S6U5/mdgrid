@@ -58,7 +58,10 @@ fn test_sr_38_pages_manual_images_are_scenes() {
             }
             let text = std::fs::read_to_string(&p).unwrap();
             for t in links(&text) {
-                if let Some(name) = t.strip_prefix("images/").and_then(|n| n.strip_suffix(".svg")) {
+                if let Some(name) = t
+                    .strip_prefix("images/")
+                    .and_then(|n| n.strip_suffix(".svg"))
+                {
                     seen += 1;
                     assert!(
                         set.contains(&name.to_string()),

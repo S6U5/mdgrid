@@ -102,6 +102,7 @@ updated: 2026-10-10
 | 2026-10-10 | [nerd_font = "auto" で、丸い端を自分で描く端末なら丸い札にする(nerd-auto)](../_decisions/2026-10-10-nerd-auto.md) | accepted | 人 | 人の発言 | SR-36 |
 | 2026-10-10 | [設定の画面に「見た目」の区画を足し、テーマ・組・丸い札の端を選んで look.toml に残し、組み合わせを名前で保存して選べるようにする(look-section)](../_decisions/2026-10-10-look-section.md) | accepted | 人 | 人の発言 | SR-43 |
 | 2026-10-10 | [組 dozy-pink を足す(dozy-preset)](../_decisions/2026-10-10-dozy-preset.md) | accepted | 人 | 人の発言 | SR-36 |
+| 2026-10-10 | [公開リポの CI に合わせて、整形と unix だけの指定を当てた試験の錠を掛け直す(ci-locks)](../_decisions/2026-10-10-ci-locks.md) | accepted | 人 | 運用で起きた失敗 | SR-38, SR-39 |
 | 2026-10-09 | [ビューが1つならタブの行を出さない設定(view-tabs-auto)](../_decisions/2026-10-09-view-tabs-auto.md) | accepted | 人 | 人の発言 | SR-34 |
 | 2026-10-09 | [テーマの名前の並びに、新しい組と auto を足す(theme-list)](../_decisions/2026-10-09-theme-list.md) | accepted | 人 | 人の発言 | SR-26, SR-27 |
 | 2026-10-09 | [部品の形とテーマを設定で選べるようにし、選ぶためのカタログをリポに置く(style-catalog)](../_decisions/2026-10-09-style-catalog.md) | accepted | 人 | 人の発言 | SR-33, SR-35, SR-36, SR-37, SR-38, SR-39 |
