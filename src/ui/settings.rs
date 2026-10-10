@@ -652,15 +652,16 @@ impl App {
             return;
         };
         self.set_mode(Mode::Table);
-        // SR-43: 見た目を変えていれば、選んだ範囲の層に当てて残す(ビューの範囲は写しの設定に)。
+        // SR-43: 見た目を変えていれば、選んだ範囲の層に当てて残す(ビューの範囲は写しの設定に)。書けなかった理由と
+        // 重ねの警告は、反映した旨のあとに出す。
+        let mut notes = Vec::new();
         if d.look != d.look0 {
+            self.message = None;
             self.apply_look(&mut d.s, d.look, d.look0);
+            notes.extend(self.message.take());
         }
         self.settings = d.s;
-        let warns = self.apply_profile();
-        if !warns.is_empty() {
-            self.message = Some(warns.join(" / "));
-        }
+        notes.extend(self.apply_profile());
         if d.cols != d.cols0 {
             // 選んでいた列は名前で引き直す。隠したなら、写しの並びで最寄りの表示する列(右を先に)。
             let picked = self.cols.get(self.col).cloned();
@@ -693,11 +694,13 @@ impl App {
         self.stay.clear();
         self.regrid = true;
         self.persist_state();
-        self.message = Some(if self.readonly {
+        let done: String = if self.readonly {
             Msg::SettingsAppliedReadOnly.into()
         } else {
             Msg::SettingsApplied.into()
-        });
+        };
+        notes.insert(0, done);
+        self.message = Some(notes.join(" / "));
     }
 
     /// NV-3・NV-24: 並べ替えの決まりを今のビューの設定に当て、組み直して見た目の状態に残す。

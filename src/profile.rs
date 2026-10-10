@@ -1065,3 +1065,7 @@ pub fn resolved_toml(r: &Resolved) -> String {
     }
     out
 }
+
+#[cfg(test)]
+#[path = "test_profile_unit.rs"]
+mod tests;

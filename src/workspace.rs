@@ -903,3 +903,7 @@ mod tests_chosen;
 #[cfg(test)]
 #[path = "test_workspace_keep_unit.rs"]
 mod tests_keep;
+
+#[cfg(test)]
+#[path = "test_workspace_profile_unit.rs"]
+mod tests_profile;
