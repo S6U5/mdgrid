@@ -184,7 +184,7 @@ fn test_sr_33_text_is_the_same_in_every_look() {
 #[test]
 fn test_sr_33_bad_value_warns() {
     // [SR-33] 知らない値は警告にして既定(modern)。
-    let (c, w) = mdgrid::config::parse("look = \"fancy\"\n").unwrap();
+    let (c, w) = mdgrid::config::parse("[look]\nmode = \"fancy\"\n").unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
-    assert!(!c.look_classic);
+    assert!(!c.resolved().classic);
 }

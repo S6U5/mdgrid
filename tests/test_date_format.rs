@@ -386,19 +386,22 @@ fn test_ce_21_add_months_crosses_years() {
 #[test]
 fn test_cli_3_config_reads_date_format_and_week_start() {
     // [CLI-3][CE-22][CE-21] date_format と week_start を設定ファイルから読む。
-    let text = "date_format = \"YYYY/MM/DD\"\nweek_start = \"mon\"\n";
+    let text = "[dates]\nformat = \"YYYY/MM/DD\"\nweek_start = \"mon\"\n";
     let (c, warnings) = parse_config(text).expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
-    assert_eq!(c.date_format.format(d("2026-10-05")), "2026/10/05");
+    assert_eq!(
+        c.resolved().date_format.format(d("2026-10-05")),
+        "2026/10/05"
+    );
     assert!(
-        matches!(c.week_start, WeekStart::Mon),
+        matches!(c.resolved().week_start, WeekStart::Mon),
         "week_start が月曜でない"
     );
 
-    let (c, warnings) = parse_config("week_start = \"sun\"\n").expect("読める");
+    let (c, warnings) = parse_config("[dates]\nweek_start = \"sun\"\n").expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
     assert!(
-        matches!(c.week_start, WeekStart::Sun),
+        matches!(c.resolved().week_start, WeekStart::Sun),
         "week_start が日曜でない"
     );
 }
@@ -408,9 +411,12 @@ fn test_cli_3_config_date_defaults() {
     // [CLI-3][CE-22][CE-21] 無ければ既定(YYYY-MM-DD・日曜始まり)。今までどおり 2026-10-05 と見せる。
     let (c, warnings) = parse_config("").expect("空の設定は読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
-    assert_eq!(c.date_format.format(d("2026-10-05")), "2026-10-05");
+    assert_eq!(
+        c.resolved().date_format.format(d("2026-10-05")),
+        "2026-10-05"
+    );
     assert!(
-        matches!(c.week_start, WeekStart::Sun),
+        matches!(c.resolved().week_start, WeekStart::Sun),
         "既定の週の始まりが日曜でない"
     );
 }
@@ -419,14 +425,17 @@ fn test_cli_3_config_date_defaults() {
 fn test_cli_3_config_bad_date_format_warns_and_uses_default() {
     // [CLI-3][CE-22] 読めない date_format → Ok で警告し、既定の形を使う。
     for bad in ["QQ", "", "-/."] {
-        let text = format!("date_format = \"{bad}\"\n");
+        let text = format!("[dates]\nformat = \"{bad}\"\n");
         let (c, warnings) = parse_config(&text).expect("読めない date_format でも Ok");
         assert!(
-            warnings.iter().any(|w| w.contains("date_format")),
-            "{bad:?} の警告に date_format が無い: {:?}",
+            warnings.iter().any(|w| w.contains("dates.format")),
+            "{bad:?} の警告に dates.format が無い: {:?}",
             warnings
         );
-        assert_eq!(c.date_format.format(d("2026-10-05")), "2026-10-05");
+        assert_eq!(
+            c.resolved().date_format.format(d("2026-10-05")),
+            "2026-10-05"
+        );
     }
 }
 
@@ -434,11 +443,14 @@ fn test_cli_3_config_bad_date_format_warns_and_uses_default() {
 fn test_cli_3_config_unknown_week_start_warns() {
     // [CLI-3][CE-21] 知らない week_start → Ok で警告し、既定(日曜)。
     let (c, warnings) =
-        parse_config("week_start = \"tue\"\n").expect("知らない week_start でも Ok");
+        parse_config("[dates]\nweek_start = \"tue\"\n").expect("知らない week_start でも Ok");
     assert!(
         warnings.iter().any(|w| w.contains("week_start")),
         "警告に week_start が無い: {:?}",
         warnings
     );
-    assert!(matches!(c.week_start, WeekStart::Sun), "既定の日曜でない");
+    assert!(
+        matches!(c.resolved().week_start, WeekStart::Sun),
+        "既定の日曜でない"
+    );
 }

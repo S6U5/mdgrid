@@ -384,8 +384,9 @@ fn test_ce_27_bad_ask_and_set_columns_warn_and_drop() {
         "[new_note]\nask = [\"a\", \"file.name\", \"a\", \"formula.x\"]\n[new_note.set]\n\"file.name\" = \"x\"\nb = 1\n",
     )
     .unwrap();
-    assert_eq!(c.new_note.ask, vec!["a".to_string()]);
-    assert_eq!(c.new_note.set, vec![("b".to_string(), NewValue::Int(1))]);
+    let n = c.resolved().new_note;
+    assert_eq!(n.ask, vec!["a".to_string()]);
+    assert_eq!(n.set, vec![("b".to_string(), NewValue::Int(1))]);
     assert_eq!(w.len(), 4, "{w:?}");
 }
 

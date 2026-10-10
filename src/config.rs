@@ -328,6 +328,15 @@ pub fn default_toml() -> String {
         out.push_str(&format!("# Scope: {}.\n", item.scope.en()));
         match item.default {
             Some(v) => out.push_str(&format!("{} = {}\n", item.leaf(), v)),
+            // 区画の下の項目の例は、区画の見出しの行を除いて出す(今の区画の中)。
+            None if !item.is_table() && !sec.is_empty() => {
+                out.push_str("# Example:\n");
+                for line in item.example.lines().skip(1) {
+                    out.push_str("# ");
+                    out.push_str(line);
+                    out.push('\n');
+                }
+            }
             None => {
                 out.push_str("# Example:\n");
                 for line in item.example.lines() {

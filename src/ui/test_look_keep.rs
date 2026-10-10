@@ -1,4 +1,4 @@
-//! 見た目の区画は変えた項目だけを look.toml に残し、設定の auto を保つ(SR-43)。
+//! 見た目の区画は変えた項目だけを ui.toml に残し、設定の auto を保つ(SR-43)。
 
 use super::settings::{Pick, Sec};
 use super::startup::Startup;
@@ -44,7 +44,8 @@ fn choose(a: &mut App, field: usize, name: &str) {
     }
     a.draft.as_mut().unwrap().sel[Sec::Look as usize] = field;
     press(a, KeyCode::Enter);
-    let i = App::look_pick_items(field)
+    let i = a
+        .look_pick_items(field)
         .iter()
         .position(|s| s.starts_with(name))
         .unwrap();
@@ -60,13 +61,12 @@ fn choose(a: &mut App, field: usize, name: &str) {
 
 #[test]
 fn test_sr_43_only_changed_items_saved() {
-    // [SR-43] テーマだけを変えて反映 → look.toml には theme だけ。config.toml の部品ごとの形(status = pill)は残る。
+    // [SR-43] テーマだけを変えて反映 → ui.toml には theme だけ。config.toml の部品ごとの形(status = pill)は残る。
     let tmp = setup("sr43keep");
-    let mut c = mdgrid::config::Config::default();
-    c.style.status = mdgrid::style::Status::Pill;
+    let (c, _) = mdgrid::config::parse("[look.style]\nstatus = \"pill\"\n").unwrap();
     let mut a = boot(&tmp, c);
-    choose(&mut a, 0, "nord");
-    let t = std::fs::read_to_string(tmp.0.join("config/look.toml")).unwrap();
+    choose(&mut a, 1, "nord");
+    let t = std::fs::read_to_string(tmp.0.join("config/ui.toml")).unwrap();
     assert!(t.contains("theme = \"nord\""), "{t}");
     assert!(!t.contains("preset") && !t.contains("nerd_font"), "{t}");
     assert_eq!(
@@ -78,19 +78,19 @@ fn test_sr_43_only_changed_items_saved() {
 
 #[test]
 fn test_sr_43_auto_kept() {
-    // [SR-43] 設定が nerd_font = "auto"(既定)なら、区画は auto と見せ、ほかを変えても look.toml に false を書かない。
+    // [SR-43] 設定が nerd_font = "auto"(既定)なら、区画は auto と見せ、ほかを変えても ui.toml に false を書かない。
     let tmp = setup("sr43auto");
     let mut a = boot(&tmp, mdgrid::config::Config::default());
     press(&mut a, KeyCode::Char('o'));
     assert_eq!(
         a.draft.as_ref().unwrap().look.nerd,
-        mdgrid::look::Nerd::Auto
+        mdgrid::config::NerdFont::Auto
     );
     press(&mut a, KeyCode::Esc);
-    choose(&mut a, 1, "paper");
-    let t = std::fs::read_to_string(tmp.0.join("config/look.toml")).unwrap();
+    choose(&mut a, 2, "paper");
+    let t = std::fs::read_to_string(tmp.0.join("config/ui.toml")).unwrap();
     assert!(t.contains("preset = \"paper\""), "{t}");
     assert!(!t.contains("nerd_font"), "{t}");
     // 日本語の選び手は訳つき。
-    assert!(App::look_pick_items(2).iter().any(|s| s.contains("オフ")));
+    assert!(a.look_pick_items(3).iter().any(|s| s.contains("オフ")));
 }

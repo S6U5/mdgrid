@@ -75,5 +75,5 @@ fn test_ce_33_form_ctrl_e_creates_and_opens() {
 fn test_ce_33_bad_mode_warns_and_uses_form() {
     let (c, warnings) = mdgrid::config::parse("[new_note]\nmode = \"vim\"\n").unwrap();
     assert_eq!(warnings.len(), 1, "{warnings:?}");
-    assert!(!c.new_note.editor());
+    assert!(!c.resolved().new_note.editor());
 }

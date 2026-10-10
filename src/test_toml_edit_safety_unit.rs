@@ -20,6 +20,7 @@ fn t(name: &str, path: &str) -> WsTable {
         name: name.into(),
         path: PathBuf::from(path),
         view: None,
+        profile: Default::default(),
     }
 }
 

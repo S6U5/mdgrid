@@ -24,21 +24,24 @@ fn test_sr_36_nerd_auto() {
 #[test]
 fn test_sr_36_nerd_font_setting() {
     // [SR-36] 既定は "auto"。true・false は auto を外す。ほかの値は警告して既定(auto)のまま。
-    let (c, w) = crate::config::parse("").unwrap();
-    assert!(w.is_empty() && c.nerd_font_auto && !c.nerd_font);
-    let (c, _) = crate::config::parse("nerd_font = true\n").unwrap();
-    assert!(!c.nerd_font_auto && c.nerd_font);
-    let (c, _) = crate::config::parse("nerd_font = false\n").unwrap();
-    assert!(!c.nerd_font_auto && !c.nerd_font);
-    let (c, w) = crate::config::parse("nerd_font = \"auto\"\n").unwrap();
-    assert!(w.is_empty() && c.nerd_font_auto);
+    use crate::config::NerdFont;
+    let nerd = |text: &str| {
+        let (c, w) = crate::config::parse(text).unwrap();
+        (c.terminal.nerd_font, w)
+    };
+    let (n, w) = nerd("");
+    assert!(w.is_empty() && n == NerdFont::Auto && !n.resolve(None));
+    assert_eq!(nerd("[terminal]\nnerd_font = true\n").0, NerdFont::On);
+    assert_eq!(nerd("[terminal]\nnerd_font = false\n").0, NerdFont::Off);
+    let (n, w) = nerd("[terminal]\nnerd_font = \"auto\"\n");
+    assert!(w.is_empty() && n == NerdFont::Auto && n.resolve(Some("ghostty")));
     for bad in [
-        "nerd_font = \"yes\"\n",
-        "nerd_font = 1\n",
-        "nerd_font = \"AUTO\"\n",
+        "[terminal]\nnerd_font = \"yes\"\n",
+        "[terminal]\nnerd_font = 1\n",
+        "[terminal]\nnerd_font = \"AUTO\"\n",
     ] {
-        let (c, w) = crate::config::parse(bad).unwrap();
+        let (n, w) = nerd(bad);
         assert_eq!(w.len(), 1, "{bad:?}");
-        assert!(c.nerd_font_auto, "{bad:?}");
+        assert_eq!(n, NerdFont::Auto, "{bad:?}");
     }
 }

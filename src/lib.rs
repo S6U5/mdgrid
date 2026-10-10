@@ -48,8 +48,8 @@ mod test_toml_edit_safety;
 mod test_tab_prefs;
 
 #[cfg(test)]
-#[path = "test_look_unit.rs"]
-mod test_look;
+#[path = "test_uifile_unit.rs"]
+mod test_uifile;
 
 #[cfg(test)]
 #[path = "test_tree_unit.rs"]

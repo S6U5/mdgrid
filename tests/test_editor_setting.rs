@@ -115,8 +115,8 @@ fn test_sr_8_config_editor_not_string_warns() {
 #[test]
 fn test_sr_8_config_editor_keeps_other_items() {
     // [SR-8] [CLI-3] editor を足しても、ほかの項目の読み取りは変わらない。
-    let (c, warnings) = parse("editor = \"code -w\"\ncandidates = 7\n").expect("読める");
+    let (c, warnings) = parse("editor = \"code -w\"\n[edit]\ncandidates = 7\n").expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
     assert_eq!(c.editor.as_deref(), Some("code -w"));
-    assert_eq!(c.candidates, 7);
+    assert_eq!(c.resolved().candidates, 7);
 }

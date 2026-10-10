@@ -56,7 +56,7 @@ fn cfg(text: &str) -> Config {
 /// test_look.rs)。
 fn themed(tmp: &Tmp, color: ColorMode, config: &str) -> App {
     let mut a = app_of(tmp, color);
-    a.configure(&cfg(&format!("look = \"classic\"\n{config}")));
+    a.configure(&cfg(&format!("[look]\nmode = \"classic\"\n{config}")));
     a
 }
 
@@ -304,8 +304,11 @@ fn test_sr_27_default_is_unchanged() {
         let named = buffer(&themed(&tmp, color, "theme = \"default\"\n"));
         assert_same_cells(&named, &want, &format!("theme = \"default\" ({color:?})"));
     }
-    assert_eq!(Config::default().theme, Theme::Default);
-    assert_eq!(cfg("").theme, Theme::Default);
+    assert_eq!(
+        Config::default().resolved().theme.pick(None),
+        Theme::Default
+    );
+    assert_eq!(cfg("").resolved().theme.pick(None), Theme::Default);
 }
 
 #[test]
@@ -313,8 +316,7 @@ fn test_sr_27_default_zebra_is_unchanged() {
     // [SR-27][SR-20] 既定のテーマの一行おきの色は今と同じ。
     let tmp = vault("thdefzebra");
     let mut a = app_of(&tmp, ColorMode::Rgb);
-    let mut c = cfg("look = \"classic\"\n\n[display]\nzebra = true\n");
-    c.theme = Theme::Default;
+    let c = cfg("[look]\nmode = \"classic\"\ntheme = \"default\"\n\n[display]\nzebra = true\n");
     a.configure(&c);
     let want = buffer(&a);
     let b = themed(
@@ -346,7 +348,10 @@ fn test_sr_27_theme_names() {
         assert_eq!(Theme::parse(name), Some(t), "{name}");
         assert_eq!(t.name(), name);
         assert_eq!(
-            cfg(&format!("theme = \"{name}\"\n")).theme,
+            cfg(&format!("[look]\ntheme = \"{name}\"\n"))
+                .resolved()
+                .theme
+                .pick(None),
             t,
             "設定の {name}"
         );
@@ -360,19 +365,20 @@ fn test_sr_27_theme_names() {
 
 #[test]
 fn test_sr_27_unknown_theme_warns_and_falls_back() {
-    // [SR-27][CLI-3] theme = "neon" → 警告に `theme` と出て、既定の見た目で起動。
-    let (c, warnings) = config::parse("theme = \"neon\"\n").expect("知らない名前でも読める");
-    assert_eq!(c.theme, Theme::Default);
+    // [SR-27][CLI-3] look.theme = "neon" → 警告に `look.theme` と出て、既定の見た目で起動。
+    let (c, warnings) =
+        config::parse("[look]\ntheme = \"neon\"\n").expect("知らない名前でも読める");
+    assert_eq!(c.resolved().theme.pick(None), Theme::Default);
     assert!(
-        warnings.iter().any(|w| w.contains("theme")),
-        "警告に theme が無い: {warnings:?}"
+        warnings.iter().any(|w| w.contains("look.theme")),
+        "警告に look.theme が無い: {warnings:?}"
     );
     // 型の違う値も同じ。
-    let (c, warnings) = config::parse("theme = 3\n").expect("型の違う値でも読める");
-    assert_eq!(c.theme, Theme::Default);
+    let (c, warnings) = config::parse("[look]\ntheme = 3\n").expect("型の違う値でも読める");
+    assert_eq!(c.resolved().theme.pick(None), Theme::Default);
     assert!(
-        warnings.iter().any(|w| w.contains("theme")),
-        "警告に theme が無い: {warnings:?}"
+        warnings.iter().any(|w| w.contains("look.theme")),
+        "警告に look.theme が無い: {warnings:?}"
     );
     // 正しい名前なら警告は出ない。
     let (_, warnings) = config::parse("theme = \"nord\"\n").unwrap();

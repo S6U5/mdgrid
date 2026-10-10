@@ -42,7 +42,7 @@ pub struct Item {
     pub ty_ja: &'static str,
     /// 既定値の TOML の表記。None は「既定では書かない」項目で、`example` をコメントで出す。
     pub default: Option<&'static str>,
-    /// 書き方の例(TOML の行。区画の下の項目は区画の見出しを除いた行、表の項目は見出しから)。
+    /// 書き方の例(そのまま設定に貼れる TOML。区画の下の項目は区画の見出しから)。
     pub example: &'static str,
     /// 書ける範囲。
     pub scope: Scope,
@@ -69,9 +69,9 @@ impl Item {
         }
     }
 
-    /// 表の項目(`[look.style]` のように見出しで書く項目)か。
+    /// 表の項目(`[look.style]` のように、その道筋の見出しで書く項目)か。
     pub fn is_table(&self) -> bool {
-        self.example.starts_with('[')
+        self.example.starts_with(&format!("[{}", self.path))
     }
 }
 
@@ -126,7 +126,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("true"),
-        example: "color = false",
+        example: "[terminal]\ncolor = false",
         scope: Scope::Global,
         en: "Use colors. false draws without colors (same as NO_COLOR or --no-color).",
         ja: "色を使う。false で色なし(NO_COLOR・--no-color と同じ)。",
@@ -136,7 +136,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("false"),
-        example: "ambiguous_wide = true",
+        example: "[terminal]\nambiguous_wide = true",
         scope: Scope::Global,
         en: "Treat East Asian Ambiguous characters (such as ○ and ※) as two columns wide.\n\
              Set true if your terminal draws them wide. Window frames are then always ASCII.",
@@ -148,7 +148,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean or \"auto\"",
         ty_ja: "真偽か \"auto\"",
         default: Some("\"auto\""),
-        example: "nerd_font = true",
+        example: "[terminal]\nnerd_font = true",
         scope: Scope::Global,
         en: "Whether round pill ends (Nerd Font glyphs) can be drawn. true: your terminal font is a Nerd\n\
              Font. \"auto\": only in terminals that draw these glyphs themselves (Ghostty, WezTerm), so\n\
@@ -162,7 +162,7 @@ pub const ITEMS: &[Item] = &[
         ty: "array of strings",
         ty_ja: "文字列の並び",
         default: Some("[\"vault\"]"),
-        example: "detect = [\"vault\", \"git\"]",
+        example: "[workspace]\ndetect = [\"vault\", \"git\"]",
         scope: Scope::Global,
         en: "When the table you open is in no written workspace, treat the root of the Obsidian vault\n\
              (\"vault\", a folder with .obsidian/) or the git repository (\"git\", a folder with .git) above it\n\
@@ -177,7 +177,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string (\"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\" or \"paper\") or table ({ light, dark })",
         ty_ja: "文字列(\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\")か表({ light, dark })",
         default: Some("\"default\""),
-        example: "theme = { light = \"paper\", dark = \"sumi\" }",
+        example: "[look]\ntheme = { light = \"paper\", dark = \"sumi\" }",
         scope: Scope::Profile,
         en: "Color theme of the screen. \"default\" keeps the terminal's own colors. A table\n\
              { light = ..., dark = ... } picks by the terminal's background; \"auto\" is\n\
@@ -191,7 +191,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string (\"sumi\", \"slate\", \"saas\", \"paper\", \"grid\", \"classic\" or \"dozy-pink\")",
         ty_ja: "文字列(\"sumi\"・\"slate\"・\"saas\"・\"paper\"・\"grid\"・\"classic\"・\"dozy-pink\")",
         default: Some("\"sumi\""),
-        example: "preset = \"saas\"",
+        example: "[look]\npreset = \"saas\"",
         scope: Scope::Profile,
         en: "A whole set of part shapes. [look.style] overrides single parts. A preset written in a\n\
              narrower place drops the part shapes written in wider places.",
@@ -203,7 +203,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string (\"modern\" or \"classic\")",
         ty_ja: "文字列(\"modern\" か \"classic\")",
         default: Some("\"modern\""),
-        example: "mode = \"classic\"",
+        example: "[look]\nmode = \"classic\"",
         scope: Scope::Profile,
         en: "The look when colors are on: \"modern\" (lazygit-like: tinted selection, accent borders and keys,\n\
              dim labels) or \"classic\" (inverse video). The text on screen is the same; without colors both\n\
@@ -216,7 +216,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string (\"rich\" or \"plain\")",
         ty_ja: "文字列(\"rich\" か \"plain\")",
         default: Some("\"rich\""),
-        example: "cells = \"plain\"",
+        example: "[look]\ncells = \"plain\"",
         scope: Scope::Profile,
         en: "How table cells look when colors are on: \"rich\" (booleans, lists, short repeated values,\n\
              links and column type marks drawn as parts in the shapes of [look.style]) or \"plain\" (the\n\
@@ -284,7 +284,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("false"),
-        example: "row_numbers = true",
+        example: "[display]\nrow_numbers = true",
         scope: Scope::Profile,
         en: "Numbers 1, 2, 3... on the left of each row, in the shown order.",
         ja: "各行の左に、今の表示の並びの 1・2・3… の行番号。",
@@ -294,7 +294,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("false"),
-        example: "zebra = true",
+        example: "[display]\nzebra = true",
         scope: Scope::Profile,
         en: "Shade every other row (not without colors).",
         ja: "一行おきに背景の色を付ける(色を使わない表示では付けない)。",
@@ -304,7 +304,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("false"),
-        example: "column_lines = true",
+        example: "[display]\ncolumn_lines = true",
         scope: Scope::Profile,
         en: "Draw │ between columns.",
         ja: "列の間に │ を引く。",
@@ -314,7 +314,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("false"),
-        example: "group_gap = true",
+        example: "[display]\ngroup_gap = true",
         scope: Scope::Profile,
         en: "An empty line above every group heading but the first.",
         ja: "2つ目からのまとまりの見出しの上に空きの行を1つ入れる。",
@@ -324,7 +324,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string (\"always\", \"auto\" or \"never\")",
         ty_ja: "文字列(\"always\"・\"auto\"・\"never\")",
         default: Some("\"always\""),
-        example: "tabs = \"auto\"",
+        example: "[display]\ntabs = \"auto\"",
         scope: Scope::Profile,
         en: "The row of view tabs: \"always\", \"auto\" (only with two or more views; with one view the\n\
              table gets that row) or \"never\". The tab keys work either way.",
@@ -336,7 +336,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("true"),
-        example: "search_bar = false",
+        example: "[display]\nsearch_bar = false",
         scope: Scope::Profile,
         en: "Show a search bar above the table. false hides it; the quick filter is then typed\n\
              on the bottom line.",
@@ -347,7 +347,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("true"),
-        example: "chips = false",
+        example: "[display]\nchips = false",
         scope: Scope::Profile,
         en: "Show the band of active view settings. f still picks its items when hidden.",
         ja: "効いているビューの設定の帯を出す。隠しても f で帯の項目を選べる。",
@@ -357,7 +357,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string",
         ty_ja: "文字列",
         default: Some("\"YYYY-MM-DD\""),
-        example: "format = \"YYYY/MM/DD (ddd)\"",
+        example: "[dates]\nformat = \"YYYY/MM/DD (ddd)\"",
         scope: Scope::Profile,
         en: "How dates are shown and typed in the table. Parts: YYYY, YY, MM, M, DD, D, ddd\n\
              (weekday) and non-alphanumeric separators. Notes are always written as YYYY-MM-DD.",
@@ -369,7 +369,7 @@ pub const ITEMS: &[Item] = &[
         ty: "string (\"sun\" or \"mon\")",
         ty_ja: "文字列(\"sun\" か \"mon\")",
         default: Some("\"sun\""),
-        example: "week_start = \"mon\"",
+        example: "[dates]\nweek_start = \"mon\"",
         scope: Scope::Profile,
         en: "First day of the week in the date calendar.",
         ja: "日付のカレンダーの週の始まり。",
@@ -379,7 +379,7 @@ pub const ITEMS: &[Item] = &[
         ty: "integer (0 or more)",
         ty_ja: "整数(0 以上)",
         default: Some("20"),
-        example: "candidates = 30",
+        example: "[edit]\ncandidates = 30",
         scope: Scope::Profile,
         en: "Maximum number of value candidates offered when editing a text cell.\n\
              Columns with more distinct values offer no candidates.",
@@ -390,7 +390,7 @@ pub const ITEMS: &[Item] = &[
         ty: "boolean",
         ty_ja: "真偽値",
         default: Some("true"),
-        example: "add_frontmatter = false",
+        example: "[edit]\nadd_frontmatter = false",
         scope: Scope::Profile,
         en: "Allow writing to notes with no front matter or an empty one (a front matter or a key\n\
              line is added). false makes those notes read-only.",

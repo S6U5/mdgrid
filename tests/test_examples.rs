@@ -288,13 +288,14 @@ fn test_examples_showcase() {
     let text = std::fs::read_to_string(root.join("config.toml")).unwrap();
     let (c, warnings) = mdgrid::config::parse(&text).expect("config::parse");
     assert!(warnings.is_empty(), "{warnings:?}");
+    let r = c.resolved();
     assert_eq!(
-        c.date_format.format(TODAY + 1),
+        r.date_format.format(TODAY + 1),
         "2026/10/02 (金)",
-        "date_format"
+        "dates.format"
     );
-    assert!(matches!(c.week_start, mdgrid::types::WeekStart::Mon));
-    assert!(c.search_bar);
+    assert!(matches!(r.week_start, mdgrid::types::WeekStart::Mon));
+    assert!(r.display.search_bar);
     assert!(!c.keys.is_empty());
 
     // フォルダで開く → プロジェクト・メモの全ノートが行に入る。

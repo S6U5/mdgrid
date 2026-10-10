@@ -1,5 +1,6 @@
 # Sample config for the theme nord (SR-26, SR-27). Run: mdgrid --config examples/themes/nord.toml examples/vault
-# In your own config ($XDG_CONFIG_HOME/mdgrid/config.toml), this one line is enough.
+# In your own config ($XDG_CONFIG_HOME/mdgrid/config.toml), these two lines are enough.
+[look]
 theme = "nord"
 
 # The shaded rows are painted in the theme's colors too.

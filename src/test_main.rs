@@ -161,14 +161,14 @@ fn test_cli_2_config_path() {
     // [CLI-2] `--config <パス>` の設定を読む(既定の置き場より先)。無いパスは理由1行。
     let t = TempDir::new("cfg");
     let p = t.0.join("my.toml");
-    std::fs::write(&p, "candidates = 7\n").unwrap();
+    std::fs::write(&p, "[edit]\ncandidates = 7\n").unwrap();
     let other = t.0.join("default.toml");
-    std::fs::write(&other, "candidates = 9\n").unwrap();
+    std::fs::write(&other, "[edit]\ncandidates = 9\n").unwrap();
     let (c, w) = load_config(Some(&p), Some(other.clone())).unwrap();
-    assert_eq!(c.candidates, 7);
+    assert_eq!(c.resolved().candidates, 7);
     assert!(w.is_empty());
     let (c, _) = load_config(None, Some(other)).unwrap();
-    assert_eq!(c.candidates, 9);
+    assert_eq!(c.resolved().candidates, 9);
     let e = load_config(Some(&t.0.join("none.toml")), None).unwrap_err();
     assert!(e.contains("none.toml") && !e.contains('\n'), "{e}");
 }

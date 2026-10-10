@@ -127,23 +127,24 @@ fn test_cli_3_empty_config_gives_defaults() {
     // [CLI-3] 設定が無くても(空の文字列)既定で動く。
     let (c, warnings) = parse("").expect("空の設定は読める");
     assert!(warnings.is_empty(), "空の設定で警告: {:?}", warnings);
-    assert_eq!(c.candidates, 20);
+    assert_eq!(c.resolved().candidates, 20);
     assert_eq!(c.poll_ms, 1000);
-    assert!(!c.ambiguous_wide);
-    assert!(c.color);
+    assert!(!c.terminal.ambiguous_wide);
+    assert!(c.terminal.color);
     assert!(c.keys.is_empty());
 }
 
 #[test]
 fn test_cli_3_reads_each_item() {
     // [CLI-3] 候補の数・読み直しの間隔・Ambiguous の幅・色を読む。
-    let text = "candidates = 30\npoll_ms = 500\nambiguous_wide = true\ncolor = false\n";
+    let text =
+        "poll_ms = 500\n[edit]\ncandidates = 30\n[terminal]\nambiguous_wide = true\ncolor = false\n";
     let (c, warnings) = parse(text).expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
-    assert_eq!(c.candidates, 30);
+    assert_eq!(c.resolved().candidates, 30);
     assert_eq!(c.poll_ms, 500);
-    assert!(c.ambiguous_wide);
-    assert!(!c.color);
+    assert!(c.terminal.ambiguous_wide);
+    assert!(!c.terminal.color);
     assert!(c.keys.is_empty());
 }
 
@@ -152,9 +153,9 @@ fn test_cli_3_partial_config_keeps_other_defaults() {
     // [CLI-3] 書いていない項目は既定のまま。
     let (c, _) = parse("poll_ms = 250\n").expect("読める");
     assert_eq!(c.poll_ms, 250);
-    assert_eq!(c.candidates, 20);
-    assert!(!c.ambiguous_wide);
-    assert!(c.color);
+    assert_eq!(c.resolved().candidates, 20);
+    assert!(!c.terminal.ambiguous_wide);
+    assert!(c.terminal.color);
 }
 
 #[test]
@@ -183,16 +184,16 @@ j = "none"
         c.keys
     );
     // ほかの項目は既定のまま。
-    assert_eq!(c.candidates, 20);
-    assert!(c.color);
+    assert_eq!(c.resolved().candidates, 20);
+    assert!(c.terminal.color);
 }
 
 #[test]
 fn test_cli_3_unknown_item_warns_and_continues() {
     // [CLI-3] 知らない項目は警告にとどめ、止めない。警告の文に項目の名前が出る。
-    let text = "candidates = 5\nfrobnicate = true\n";
+    let text = "frobnicate = true\n[edit]\ncandidates = 5\n";
     let (c, warnings) = parse(text).expect("知らない項目があっても Ok");
-    assert_eq!(c.candidates, 5, "知っている項目は読む");
+    assert_eq!(c.resolved().candidates, 5, "知っている項目は読む");
     assert!(
         warnings.iter().any(|w| w.contains("frobnicate")),
         "警告に項目の名前が無い: {:?}",

@@ -73,9 +73,8 @@ fn test_sr_32_ascii_when_ambiguous_wide() {
 #[test]
 fn test_sr_32_bad_value_warns() {
     // [SR-32] 知らない値は警告にして既定(罫線)。
-    let (_, warnings) = mdgrid::config::parse("borders = \"double\"\n").unwrap();
+    let (c, warnings) = mdgrid::config::parse("[look.style]\nframes = \"double\"\n").unwrap();
     assert_eq!(warnings.len(), 1, "{warnings:?}");
-    let (c, _) = mdgrid::config::parse("borders = \"double\"\n").unwrap();
-    assert!(!c.borders_ascii);
+    assert_eq!(c.resolved().style.frames, mdgrid::style::Frames::Rounded);
     let _ = Config::default();
 }
