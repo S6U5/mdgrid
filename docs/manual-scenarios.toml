@@ -470,77 +470,77 @@ id = "theme-nord"
 title = { en = "Theme: Nord", ja = "テーマ: Nord" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"nord\" (calm blues). Only the colors change; marks such as * and > stay.", ja = "theme = \"nord\"(落ち着いた青)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"nord\" (calm blues). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"nord\"(落ち着いた青)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-solarized-light"
 title = { en = "Theme: Solarized Light", ja = "テーマ: Solarized Light" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/solarized-light.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"solarized-light\" (a light background). Only the colors change; marks such as * and > stay.", ja = "theme = \"solarized-light\"(明るい地)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"solarized-light\" (a light background). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"solarized-light\"(明るい地)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-dracula"
 title = { en = "Theme: Dracula", ja = "テーマ: Dracula" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/dracula.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"dracula\" (purple and pink accents). Only the colors change; marks such as * and > stay.", ja = "theme = \"dracula\"(紫と桃のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"dracula\" (purple and pink accents). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"dracula\"(紫と桃のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-gruvbox"
 title = { en = "Theme: Gruvbox", ja = "テーマ: Gruvbox" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/gruvbox.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"gruvbox\" (warm browns and orange). Only the colors change; marks such as * and > stay.", ja = "theme = \"gruvbox\"(暖かい茶と橙)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"gruvbox\" (warm browns and orange). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"gruvbox\"(暖かい茶と橙)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-pink-monster"
 title = { en = "Theme: Pink Monster", ja = "テーマ: Pink Monster" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/pink-monster.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"pink-monster\" (neon pink and lime on dark magenta). Only the colors change; marks such as * and > stay.", ja = "theme = \"pink-monster\"(濃い赤紫の地に蛍光の桃と黄緑)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"pink-monster\" (neon pink and lime on dark magenta). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"pink-monster\"(濃い赤紫の地に蛍光の桃と黄緑)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-dozy-pink"
 title = { en = "Theme: Dozy Pink", ja = "テーマ: Dozy Pink" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/dozy-pink.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"dozy-pink\" (soft pink and cream). Only the colors change; marks such as * and > stay.", ja = "theme = \"dozy-pink\"(淡い桃とクリーム)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"dozy-pink\" (soft pink and cream). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"dozy-pink\"(淡い桃とクリーム)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-sumi"
 title = { en = "Theme: Sumi", ja = "テーマ: Sumi" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/sumi.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"sumi\" (dark ink, soft grays and a teal accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"sumi\"(墨。暗い地・薄い灰・青緑のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"sumi\" (dark ink, soft grays and a teal accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"sumi\"(墨。暗い地・薄い灰・青緑のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-slate"
 title = { en = "Theme: Slate", ja = "テーマ: Slate" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/slate.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"slate\" (slate with a violet accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"slate\"(石板。紫寄りのアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"slate\" (slate with a violet accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"slate\"(石板。紫寄りのアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-saas"
 title = { en = "Theme: SaaS", ja = "テーマ: SaaS" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/saas.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"saas\" (light gray with an indigo accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"saas\"(明るい灰の地・藍のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"saas\" (light gray with an indigo accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"saas\"(明るい灰の地・藍のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-saas-dark"
 title = { en = "Theme: SaaS Dark", ja = "テーマ: SaaS Dark" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/saas-dark.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"saas-dark\" (the dark version of saas). Only the colors change; marks such as * and > stay.", ja = "theme = \"saas-dark\"(saas の暗い地の版)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"saas-dark\" (the dark version of saas). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"saas-dark\"(saas の暗い地の版)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-paper"
 title = { en = "Theme: Paper", ja = "テーマ: Paper" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/paper.toml", "examples/vault"]
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
-text = { en = "theme = \"paper\" (a light background with a blue accent). Only the colors change; marks such as * and > stay.", ja = "theme = \"paper\"(明るい地・青のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+text = { en = "[look] theme = \"paper\" (a light background with a blue accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"paper\"(明るい地・青のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 # ---- English demo vault (examples/demo) for the README ----
 
@@ -625,7 +625,7 @@ title = { en = "The Nord theme", ja = "テーマ Nord" }
 command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-text = { en = "theme = \"nord\" in the config. Seven themes are built in.", ja = "設定に theme = \"nord\"。テーマは7つある。" }
+text = { en = "[look] theme = \"nord\" in the config. Seven themes are built in.", ja = "設定に theme = \"nord\"。テーマは7つある。" }
 
 # ---- Frames of the README demo GIF (scripts/demo-gif.sh joins them; not meant for the manual) ----
 

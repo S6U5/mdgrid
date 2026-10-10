@@ -504,37 +504,37 @@ examples/showcase/config.toml は日付の形を変え、Ctrl+F を検索に割�
 
 ![テーマ: Nord](images/theme-nord.svg)
 
-theme = "nord"(落ち着いた青)。変わるのは色だけで、* や > などの印はそのまま。
+[look] theme = "nord"(落ち着いた青)。変わるのは色だけで、* や > などの印はそのまま。
 
 ## テーマ: Solarized Light
 
 ![テーマ: Solarized Light](images/theme-solarized-light.svg)
 
-theme = "solarized-light"(明るい地)。変わるのは色だけで、* や > などの印はそのまま。
+[look] theme = "solarized-light"(明るい地)。変わるのは色だけで、* や > などの印はそのまま。
 
 ## テーマ: Dracula
 
 ![テーマ: Dracula](images/theme-dracula.svg)
 
-theme = "dracula"(紫と桃のアクセント)。変わるのは色だけで、* や > などの印はそのまま。
+[look] theme = "dracula"(紫と桃のアクセント)。変わるのは色だけで、* や > などの印はそのまま。
 
 ## テーマ: Gruvbox
 
 ![テーマ: Gruvbox](images/theme-gruvbox.svg)
 
-theme = "gruvbox"(暖かい茶と橙)。変わるのは色だけで、* や > などの印はそのまま。
+[look] theme = "gruvbox"(暖かい茶と橙)。変わるのは色だけで、* や > などの印はそのまま。
 
 ## テーマ: Pink Monster
 
 ![テーマ: Pink Monster](images/theme-pink-monster.svg)
 
-theme = "pink-monster"(濃い赤紫の地に蛍光の桃と黄緑)。変わるのは色だけで、* や > などの印はそのまま。
+[look] theme = "pink-monster"(濃い赤紫の地に蛍光の桃と黄緑)。変わるのは色だけで、* や > などの印はそのまま。
 
 ## テーマ: Dozy Pink
 
 ![テーマ: Dozy Pink](images/theme-dozy-pink.svg)
 
-theme = "dozy-pink"(淡い桃とクリーム)。変わるのは色だけで、* や > などの印はそのまま。
+[look] theme = "dozy-pink"(淡い桃とクリーム)。変わるのは色だけで、* や > などの印はそのまま。
 
 ## 仕事の一覧の .base のビュー
 

@@ -504,37 +504,37 @@ A note mdgrid cannot write safely (here a duplicate key) is shown but read-only,
 
 ![Theme: Nord](images/theme-nord.svg)
 
-theme = "nord" (calm blues). Only the colors change; marks such as * and > stay.
+[look] theme = "nord" (calm blues). Only the colors change; marks such as * and > stay.
 
 ## Theme: Solarized Light
 
 ![Theme: Solarized Light](images/theme-solarized-light.svg)
 
-theme = "solarized-light" (a light background). Only the colors change; marks such as * and > stay.
+[look] theme = "solarized-light" (a light background). Only the colors change; marks such as * and > stay.
 
 ## Theme: Dracula
 
 ![Theme: Dracula](images/theme-dracula.svg)
 
-theme = "dracula" (purple and pink accents). Only the colors change; marks such as * and > stay.
+[look] theme = "dracula" (purple and pink accents). Only the colors change; marks such as * and > stay.
 
 ## Theme: Gruvbox
 
 ![Theme: Gruvbox](images/theme-gruvbox.svg)
 
-theme = "gruvbox" (warm browns and orange). Only the colors change; marks such as * and > stay.
+[look] theme = "gruvbox" (warm browns and orange). Only the colors change; marks such as * and > stay.
 
 ## Theme: Pink Monster
 
 ![Theme: Pink Monster](images/theme-pink-monster.svg)
 
-theme = "pink-monster" (neon pink and lime on dark magenta). Only the colors change; marks such as * and > stay.
+[look] theme = "pink-monster" (neon pink and lime on dark magenta). Only the colors change; marks such as * and > stay.
 
 ## Theme: Dozy Pink
 
 ![Theme: Dozy Pink](images/theme-dozy-pink.svg)
 
-theme = "dozy-pink" (soft pink and cream). Only the colors change; marks such as * and > stay.
+[look] theme = "dozy-pink" (soft pink and cream). Only the colors change; marks such as * and > stay.
 
 ## A .base view of a task list
 
@@ -598,7 +598,7 @@ x or a right click lists what you can do here, each with its key.
 
 ![The Nord theme](images/demo-theme.svg)
 
-theme = "nord" in the config. Seven themes are built in.
+[look] [look] theme = "nord" in the config. Seven themes are built in.
 
 ## Demo frame 1
 

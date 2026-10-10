@@ -6,11 +6,14 @@ You can pick one of twelve color themes for the screen (or `auto`, which follows
 
 ## How to choose
 
-Add one line to the config file (`~/.config/mdgrid/config.toml`):
+Add two lines to the config file (`~/.config/mdgrid/config.toml`):
 
 ```toml
+[look]
 theme = "nord"
 ```
+
+A workspace or a single table can have its own theme: see [A look per workspace, table or view](appearance.md#a-look-per-workspace-table-or-view).
 
 To try one before changing your config, pass a sample config with `--config` (from the repository root):
 
@@ -32,7 +35,7 @@ mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
 | [`saas`](#saas) | Light gray with an indigo accent |
 | [`saas-dark`](#saas-dark) | The dark version of saas |
 | [`paper`](#paper) | A light background with a blue accent |
-| `auto` | `theme_light` (default `saas`) on a light terminal background, `theme_dark` (default `sumi`) on a dark one |
+| `auto` | `saas` on a light terminal background, `sumi` on a dark one. Pick your own pair with `theme = { light = "paper", dark = "saas-dark" }` |
 
 ## Gallery
 
