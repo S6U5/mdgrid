@@ -1,0 +1,38 @@
+{
+  "plugin": "decidespec",
+  "version": "0.13.2",
+  "files": {
+    ".agents/skills/decidespec-sdd-flow/SKILL.md": "2069864cc1524706906bb233307e4b1f672c217ab98fc211e161b6eafaf8e871",
+    ".agents/skills/decidespec-spec-change/SKILL.md": "55644686706865131a1a8272a564016d2e81668ca739f8bc5e4bf637732ba088",
+    ".claude/skills/decidespec-sdd-flow/SKILL.md": "2069864cc1524706906bb233307e4b1f672c217ab98fc211e161b6eafaf8e871",
+    ".claude/skills/decidespec-spec-change/SKILL.md": "55644686706865131a1a8272a564016d2e81668ca739f8bc5e4bf637732ba088",
+    ".decidespec/hooks/claude.json": "e47e232c96b48d64ebae268dc162b8478a433131c107c9543ae2f7c9a650fe62",
+    ".decidespec/hooks/codex.json": "a6b46c929fcb2ba79f484489f0ec6a3f9b61758d79853317fa1845b91f89bc60",
+    ".decidespec/scripts/check.py": "a11524f3831ee3edc98eb57d36853ff0e1d3bc9a4d3e270bb791b1201c998d3a",
+    ".decidespec/scripts/flow_guard.py": "09e8f3bdcb16067d1e75386cb8b2f00962c6932447aac900e0ba570fba7d6139",
+    ".decidespec/scripts/ulid.py": "78ec4a86840912da97ac228d7cedb615304a3b4d6f913a01df360fd2388a5240",
+    ".decidespec/skills/sdd-flow/SKILL.md": "fd7f665d8b443881a209061e5ee54c6840e84e67de788712213092a9b03d2382",
+    ".decidespec/skills/sdd-flow/agents/openai.yaml": "8a706503d6ffe8105a04aed1ffcbfd6529f52e6da764bd699e29612ee0a95fdf",
+    ".decidespec/skills/sdd-flow/phases/elicit.md": "6257dda4354698acf55c95a5e18a73e7df6c0d88318fb8f2c0da45446b202474",
+    ".decidespec/skills/sdd-flow/phases/implement.md": "6269dc6268f6cf458f2ac30b216e3293e58b53aee004d0aa9acd6780111a5fde",
+    ".decidespec/skills/sdd-flow/phases/plan.md": "e65b8be6a2d1b3b8b5b1140be2d15ad20e15bffcb309b113c114436e0a2837ce",
+    ".decidespec/skills/sdd-flow/phases/tasks.md": "6db8352f94276a4fcd085d17ee961ce2ee51b497f570d11e1a0f7e412f61583c",
+    ".decidespec/skills/sdd-flow/phases/verify.md": "af6eda47af5c665da506cf3c3c218b0756edb3b8e961e172d4bd10bbd156da72",
+    ".decidespec/skills/spec-change/SKILL.md": "b79e605d01897ccc8c6dedec27d397c3f78c1186a66ef185dd6ca287b8a9207e",
+    ".decidespec/skills/spec-change/agents/openai.yaml": "731db52ac6929ddeaa4c5102b21295ae3c6979da359f3f0532bf7f538a268221",
+    ".decidespec/skills/spec-change/modes/check.md": "4488dda0e6b1d4e19e4c859996db36354ef9c5627dac261ef0b6dd8ae62e5c98",
+    ".decidespec/skills/spec-change/modes/decide.md": "8b8bb4d246501f0e2a5078217002991bef965374d64b6e022f8995f4d06e44d5",
+    ".decidespec/skills/spec-change/modes/publish.md": "48bc0622dde698eb84460f97e33e2b1364a6486b60c93758f6e4caa21e4d302b",
+    ".decidespec/templates/agents-line.md": "d36d0d112320efd1a4fb79fb43a13bca6e15961c6d9c958024d6065604240366",
+    ".decidespec/templates/change.md": "57531ea8d800927a674bdd7a5445d430c99b9f8259026802f14cd63aeacf5a8d",
+    ".decidespec/templates/import.md": "d64198e18ac305ebb5fae0c25027bd7284a3d581bc809ad59c0ed090241d1cc8",
+    ".decidespec/templates/principles.md": "f960830fafd2fb38efb12bd6b39a48c2508febaa27666d1a9d81001ba39be8d1",
+    ".decidespec/templates/proposal.md": "3a4fe9d7bf5b563fc89fdf31180643586882bf4840daa1a24d54bb99054547e2",
+    ".decidespec/templates/spec.md": "ba21ea43c15465fcb445ca69254533373503b5b1a30f7254371feeb2d8c29fe0",
+    ".decidespec/templates/specs-readme.md": "241dca40a4759fe84ca840019488b998f6c1c71837d0a13b8508a8a3fc463daf"
+  },
+  "managed": {
+    ".claude/settings.json": "e47e232c96b48d64ebae268dc162b8478a433131c107c9543ae2f7c9a650fe62",
+    ".codex/hooks.json": "a6b46c929fcb2ba79f484489f0ec6a3f9b61758d79853317fa1845b91f89bc60"
+  }
+}

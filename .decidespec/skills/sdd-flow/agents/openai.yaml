@@ -1,0 +1,4 @@
+interface:
+  display_name: "SDD Flow"
+  short_description: "Run a code change through the seven-phase spec-driven flow with a change record"
+  default_prompt: "Use $sdd-flow to make this code change: create the change record, list the seven phases, and work through them in order."
