@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec Change"
+  short_description: "Start spec-driven development or change its specs, recording who decided each change"
+  default_prompt: "Use $spec-change to start spec-driven development here, or to change the current specs through a proposal."
