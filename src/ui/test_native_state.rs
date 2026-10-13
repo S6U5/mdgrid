@@ -289,13 +289,21 @@ fn test_bv_20_applied_settings_and_columns_survive_tabs_and_restart() {
     let tmp = vault("nvstate_overlay");
     let mut a = boot(&tmp);
     goto(&mut a, "全部");
-    assert!(!screen(&a).lines().nth(1).unwrap().contains('*'));
+    assert!(!screen(&a)
+        .lines()
+        .nth(super::bands::mid_row(&a))
+        .unwrap()
+        .contains('*'));
     apply_filter(&mut a, keep_book());
     a.col = 0;
     ch(&mut a, 'L');
     let cols = a.cols.clone();
     assert_eq!(a.rows.len(), 2);
-    assert!(screen(&a).lines().nth(1).unwrap().contains("[全部]*"));
+    assert!(screen(&a)
+        .lines()
+        .nth(super::bands::mid_row(&a))
+        .unwrap()
+        .contains("[全部]*"));
     goto(&mut a, "まとめ");
     goto(&mut a, "全部");
     assert_eq!(a.rows.len(), 2, "反映した設定が残る");
@@ -309,7 +317,11 @@ fn test_bv_20_applied_settings_and_columns_survive_tabs_and_restart() {
     ch(&mut b, 'o');
     b.view_button(VIEW_BUTTONS + 1);
     assert!(!b.native_dirty(), "上書きで定義と同じ");
-    assert!(!screen(&b).lines().nth(1).unwrap().contains('*'));
+    assert!(!screen(&b)
+        .lines()
+        .nth(super::bands::mid_row(&b))
+        .unwrap()
+        .contains('*'));
     let (v, _) = load_views(&conf(&tmp), &tmp.notes());
     let def = v.iter().find(|v| v.name == "全部").unwrap();
     assert_eq!(def.settings.filters, [keep_book()]);

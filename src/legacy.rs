@@ -4,6 +4,45 @@
 use crate::i18n::Msg;
 use crate::profile::warn;
 
+/// `[workspace] detect` の旧い値を目印のフォルダの名前に写し、移ったと警告する(WS-5)。知らない値が混ざれば
+/// 触らない(読む側が並びの誤りとして警告する)。
+fn detect_values(t: &mut toml::Table, file: &str, w: &mut Vec<String>) {
+    use crate::workspace::Detect;
+    let Some(items) = t
+        .get_mut("workspace")
+        .and_then(|v| v.as_table_mut())
+        .and_then(|ws| ws.get_mut("detect"))
+        .and_then(|d| d.as_array_mut())
+    else {
+        return;
+    };
+    let mut old = false;
+    let Some(new): Option<Vec<Detect>> = items
+        .iter()
+        .map(|v| {
+            let s = v.as_str()?;
+            Detect::parse(s).or_else(|| {
+                let d = Detect::parse_old(s);
+                old |= d.is_some();
+                d
+            })
+        })
+        .collect()
+    else {
+        return;
+    };
+    if !old {
+        return;
+    }
+    *items = new
+        .iter()
+        .map(|d| toml::Value::String(d.name().to_string()))
+        .collect();
+    let names: Vec<String> = new.iter().map(|d| format!("\"{}\"", d.name())).collect();
+    let now = format!("workspace.detect = [{}]", names.join(", "));
+    warn(w, file, "workspace.detect", Msg::RsnMoved.fill(&[&now]));
+}
+
 /// 道筋 `path` に値を置く(既にあれば置かない。途中が表でなければ置かない)。
 fn put(t: &mut toml::Table, path: &str, v: toml::Value) {
     if let Some((tab, last)) = parent(t, path) {
@@ -164,6 +203,8 @@ pub fn lift(mut t: toml::Table, file: &str, w: &mut Vec<String>) -> toml::Table 
         }
         moved(w, file, "view_tabs", "display.tabs");
     }
+    // WS-5: 検知の旧い値(`vault`・`git`)は目印のフォルダの名前に写す(全部が旧い値か新しい値のときだけ)。
+    detect_values(&mut t, file, w);
     t
 }
 

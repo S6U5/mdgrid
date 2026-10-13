@@ -5,8 +5,8 @@
 #   sh demos/try.sh workspace    ワークスペースの見本(Work に tasks と projects、Team に members。-w Work で開く)
 #   sh demos/try.sh demo         英語の見本の表(examples/demo の Tasks。期限の印は 2026-10-03 を今日として)
 #   sh demos/try.sh ai-human     人と AI のタスクに分ける .base(examples/ai-human の vault-en と設定)
-#   sh demos/try.sh showcase     多くの機能を入れた設定と保管庫(examples/showcase。日本語)
-#   sh demos/try.sh vault        日本語の見本の保管庫(examples/vault。空・食い違い・読むだけのノートなど)
+#   sh demos/try.sh showcase     多くの機能を入れた設定とルートフォルダ(examples/showcase。日本語)
+#   sh demos/try.sh vault        日本語の見本のルートフォルダ(examples/vault。空・食い違い・読むだけのノートなど)
 #   sh demos/try.sh relations -- --readonly   -- のあとは mdgrid に渡す
 set -eu
 cd "$(dirname "$0")/.."

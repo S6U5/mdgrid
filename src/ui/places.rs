@@ -140,7 +140,7 @@ impl App {
     }
 
     /// 今のビューの名前(`.base` のビューか mdgrid のビュー)。既定の表なら None。
-    fn current_view_name(&self) -> Option<String> {
+    pub(crate) fn current_view_name(&self) -> Option<String> {
         if let Some(nv) = self.native_view() {
             return Some(nv.name.clone());
         }

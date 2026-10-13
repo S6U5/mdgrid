@@ -97,8 +97,9 @@ fn test_nv_24_hidden_bar_and_narrow() {
     let mut b = boot(&tmp, "", false);
     b.resize(30, 24);
     b.filter = Some("x".repeat(40));
+    // 検索の欄はビューの帯の中(タブの右。SR-1)なので、行の左の端ではなく欄のある桁で探す。
     let y = (0..24u16)
-        .find(|&y| super::bands::bar_at(&b, 0, y))
+        .find(|&y| (0..30u16).any(|x| super::bands::bar_at(&b, x, y)))
         .expect("検索の欄の行");
     assert!(!super::bands::sort_button_at(&b, 29, y));
 }

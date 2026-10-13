@@ -2,7 +2,7 @@
 
 [日本語](../ja/index.md) · Read it with the screenshots at https://s6u5.github.io/mdgrid/manual/en/ (the images are made there from the real binary and are not kept in the repository)
 
-mdgrid shows a folder of Markdown notes with frontmatter as a table in the terminal and lets you edit the values in place. Each note is a row and each frontmatter key is a column. It works on an Obsidian vault without opening Obsidian, and it also opens the table views of Obsidian Bases `.base` files.
+mdgrid shows a folder of Markdown notes with frontmatter as a table in the terminal and lets you edit the values in place. Each note is a row and each frontmatter key is a column. It works on a root folder with `.obsidian/` without opening Obsidian, and it also opens the table views of Obsidian Bases `.base` files.
 
 ![A folder opened in mdgrid](images/table.svg)
 

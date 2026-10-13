@@ -99,6 +99,11 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         if !app.rows.is_empty() {
             want.push((Section::Column, Action::Freq, false));
         }
+        // CE-35: ノートのキーの列なら、列の型を選び直す(ノートは書かないので読むだけの起動でも)。
+        let col = &app.cols[app.col.min(app.cols.len() - 1)];
+        if !col.starts_with("file.") && !col.starts_with("formula.") {
+            want.push((Section::Column, Action::ColumnType, false));
+        }
         // CE-28: 列を足す(読むだけの起動では出さない)。
         if !app.readonly {
             want.push((Section::Column, Action::AddColumn, false));
@@ -140,6 +145,7 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         want.push((Section::View, Action::NewNote, false));
     }
     want.push((Section::View, Action::SortMenu, false));
+    want.push((Section::View, Action::FilterMenu, false));
     want.push((Section::View, Action::ViewSettings, false));
     if writable {
         want.push((Section::View, Action::SetDefaultView, false));
@@ -329,18 +335,17 @@ struct Geom {
 
 /// 選んだセルの位置(桁と行)。見えていなければ None。
 pub(crate) fn anchor(app: &App) -> Option<(usize, usize)> {
-    if app.row < app.top || app.row >= app.top + app.data_height() {
-        return None;
-    }
+    // CV-8: 伸ばした行では、その行の1行目。
+    let dy = super::rows::slot_y(app, app.row)?;
     let (lay, cols) = visible_layout(app);
     let mut x = lay.data_x();
     for &(j, cw) in &cols {
         if j == app.col {
-            return Some((x, data_y(app) + app.row - app.top));
+            return Some((x, data_y(app) + dy));
         }
         x += cw + 1;
     }
-    Some((lay.label_x(), data_y(app) + app.row - app.top))
+    Some((lay.label_x(), data_y(app) + dy))
 }
 
 /// 項目の行の文字(選んだ印・表示名・キー)。

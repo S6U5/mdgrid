@@ -5,9 +5,12 @@
 use super::test_screen::{make, screen};
 use mdgrid::i18n::{scoped, Lang};
 
-/// 画面の1行目(ヘッダー)。
-fn header(s: &str) -> String {
-    s.lines().next().unwrap_or("").to_string()
+/// 画面のヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる。前は1行目)。
+fn header(s: &str, a: &super::app::App) -> String {
+    s.lines()
+        .nth(super::bands::head_y(a) as usize)
+        .unwrap_or("")
+        .to_string()
 }
 
 #[test]
@@ -15,7 +18,7 @@ fn test_sr_23_plural_header_one_row() {
     // [SR-23] 英語の画面で 1 ノートならヘッダーは `1 row`(`1 rows` でない)。
     let _g = scoped(Lang::En);
     let (_t, a) = make("sr23one", &[("a.md", "---\ntitle: one\n---\n")]);
-    let h = header(&screen(&a));
+    let h = header(&screen(&a), &a);
     assert!(h.contains(" 1 row"), "ヘッダーに `1 row` が無い: {h:?}");
     assert!(!h.contains("1 rows"), "ヘッダーが `1 rows` のまま: {h:?}");
 }
@@ -31,7 +34,7 @@ fn test_sr_23_plural_header_two_rows() {
             ("b.md", "---\ntitle: two\n---\n"),
         ],
     );
-    let h = header(&screen(&a));
+    let h = header(&screen(&a), &a);
     assert!(h.contains(" 2 rows"), "ヘッダーに `2 rows` が無い: {h:?}");
 }
 
@@ -40,6 +43,6 @@ fn test_sr_23_plural_japanese_unchanged() {
     // [SR-23] 日本語の画面は 1 ノートでも `1行` のまま。
     let _g = scoped(Lang::Ja);
     let (_t, a) = make("sr23oneja", &[("a.md", "---\ntitle: one\n---\n")]);
-    let h = header(&screen(&a));
+    let h = header(&screen(&a), &a);
     assert!(h.contains("1行"), "ヘッダーに `1行` が無い: {h:?}");
 }

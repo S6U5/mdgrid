@@ -73,20 +73,52 @@ fn test_rel_7_select_link_and_open_table() {
 
 #[test]
 fn test_rel_8_screen_tabs_switch() {
-    // [REL-8] 登録した表があれば、上の端の右に画面の型のタブ。クリックで関係マップ・表を切り替える。
+    // [REL-8] 登録した表があれば、上の端の右に画面の型のメニュー(2026-10-12-header-menu でタブから変わった)。
+    // メニューの窓の項目のクリックで関係マップ・表を切り替える。
     let tmp = workspace("rm_tabs");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);
     let s = screen(&a);
-    let head = s.lines().next().unwrap().to_string();
-    assert!(head.contains("[表]") && head.contains(" 関係 "), "{head}");
-    let x = mdgrid_width(&head[..head.find(" 関係 ").unwrap()]) + 2;
-    a.click(x as u16, 0);
+    let head = s
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap()
+        .to_string();
+    assert!(head.contains("▦ 表 ▾"), "{head}");
+    let x = mdgrid_width(&head[..head.find("▦ 表 ▾").unwrap()]) + 2;
+    a.click(x as u16, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::ScreenMenu, "{}", screen(&a));
+    let (y, line) = screen(&a)
+        .lines()
+        .enumerate()
+        .skip(1)
+        .find(|(_, l)| l.contains("関係マップ"))
+        .map(|(y, l)| (y, l.to_string()))
+        .unwrap_or_else(|| panic!("窓に関係マップ:\n{}", screen(&a)));
+    let x = mdgrid_width(&line[..line.find("関係マップ").unwrap()]) + 1;
+    a.click(x as u16, y as u16);
     assert_eq!(a.mode, Mode::Relations, "{}", screen(&a));
-    let head = screen(&a).lines().next().unwrap().to_string();
-    assert!(head.contains("[関係]"), "{head}");
-    let x = mdgrid_width(&head[..head.find(" 表 ").unwrap()]) + 1;
-    a.click(x as u16, 0);
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap()
+        .to_string();
+    assert!(head.contains("◇ 関係マップ ▾"), "{head}");
+    let x = mdgrid_width(&head[..head.find("◇ 関係マップ ▾").unwrap()]) + 2;
+    a.click(x as u16, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::ScreenMenu, "{}", screen(&a));
+    let (y, ()) = screen(&a)
+        .lines()
+        .enumerate()
+        .skip(1)
+        .find(|(_, l)| l.contains("> ● 関係マップ"))
+        .map(|(y, _)| (y, ()))
+        .unwrap_or_else(|| panic!("窓の今の型(関係マップ)に印:\n{}", screen(&a)));
+    // 表の項目は今の型(関係マップ)の上の行。
+    let (y, line) = (y - 1, screen(&a).lines().nth(y - 1).unwrap().to_string());
+    assert!(line.contains("  表"), "{line}");
+    let x = mdgrid_width(&line[..line.rfind("  表").unwrap()]) + 2;
+    a.click(x as u16, y as u16);
     assert_eq!(a.mode, Mode::Table);
 }
 
@@ -105,7 +137,11 @@ fn test_rel_8_no_tabs_without_places() {
     while !a.loaded() {
         a.load_step(100);
     }
-    let head = screen(&a).lines().next().unwrap().to_string();
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap()
+        .to_string();
     assert!(!head.contains("[表]") && !head.contains("関係"), "{head}");
 }
 

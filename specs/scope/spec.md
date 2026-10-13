@@ -75,6 +75,7 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-11 | [ビューの帯で表の行の位置と検索の欄の字が変わる試験の錠を掛け直す(view-bar-locks)](../_decisions/2026-10-11-view-bar-locks.md) | accepted | 人 | 人の発言 | BV-7, CE-16, NV-16 ほか 5 |
 | 2026-10-10 | [CSV・TSV のファイルを表として開いて直せるようにする(csv-source)](../_decisions/2026-10-10-csv-source.md) | accepted | 人 | 人の発言 | SC-15, SC-16, SC-17 |
 | 2026-10-01 | [範囲外の項目に「次の段:」「採らない:」の印を付ける(scope-priority-marks)](../_decisions/2026-10-01-scope-priority-marks.md) | accepted | AI | 検証の指摘 | SC-13 |
 | 2026-09-30 | [最初の版の仕様を、表の TUI の調査に合わせて書き切る(v1-full-spec)](../_decisions/2026-09-30-v1-full-spec.md) | accepted | AI | 人の発言 | BV-4, BV-9, CE-1 ほか 52 |

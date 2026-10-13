@@ -1,5 +1,6 @@
 //! 表の上の検索の欄の試験(NV-23・NV-2。関係: SR-9・SR-17・CLI-3)。
 use super::keymap::Mode;
+use super::test_layout_util::{find_at, search_at};
 use super::test_screen::*;
 use super::*;
 use mdgrid::config::Config;
@@ -34,9 +35,11 @@ fn line(app: &App, i: usize) -> String {
     screen(app).lines().nth(i).unwrap_or_default().to_string()
 }
 
+/// 検索の欄を消す。SR-1 で欄はビューのタブと同じ行(ビューの帯)に入ったので、欄の行ごと消えるのは
+/// タブも出さないとき(SR-20)。前の「欄の行を消す」と同じ形にするため、タブも出さない。
 fn bar_off(app: &mut App) {
     app.configure(
-        &mdgrid::config::parse("[display]\nsearch_bar = false\n")
+        &mdgrid::config::parse("[display]\nsearch_bar = false\ntabs = \"never\"\n")
             .unwrap()
             .0,
     );
@@ -48,14 +51,28 @@ fn test_nv_23_bar_is_shown_empty_at_start() {
     let (_t, a) = sixteen("nv23start");
     let s = screen(&a);
     let lines: Vec<&str> = s.lines().collect();
-    assert!(lines[1].contains("既定の表"), "{s}");
-    assert!(lines[2].starts_with(" 検索: (\\ で絞る)"), "{s}");
-    assert!(lines[3].contains("ノート"), "列の見出しは欄の下: {s}");
-    assert_eq!(view::data_y(&a), 4);
+    // SR-1: 検索の欄はビューの帯(タブと同じ行)の、タブの右。
+    let (sx, sy) = search_at(&a);
+    let bar = lines[sy as usize];
+    assert!(bar.contains("既定の表"), "{s}");
+    assert!(bar.contains("\\ 検索…"), "{s}");
+    assert!(
+        bar.find("既定の表").unwrap() < bar.find("検索").unwrap(),
+        "{s}"
+    );
+    // 2026-10-12-search-box・view-bar-plain: 3行の帯では、欄の字の行の下に1行(空きの行か囲みの下の線)ある。
+    let frame = usize::from(super::bands::three_rows(&a));
+    assert!(
+        lines[sy as usize + 1 + frame].contains("ノート"),
+        "列の見出しは欄の下: {s}"
+    );
+    assert_eq!(view::data_y(&a), sy as usize + 2 + frame);
     // 案内は薄い。
     let buf = buffer(&a);
-    let x = (0..80u16).find(|&x| buf[(x, 2)].symbol() == "(").unwrap();
-    assert!(buf[(x, 2)].modifier.contains(ratatui::style::Modifier::DIM));
+    let x = (sx..80u16).find(|&x| buf[(x, sy)].symbol() == "…").unwrap();
+    assert!(buf[(x, sy)]
+        .modifier
+        .contains(ratatui::style::Modifier::DIM));
     // ヘッダーに絞り込みの印は無い。
     assert!(!lines[0].contains("絞り込み"), "{s}");
 }
@@ -67,12 +84,13 @@ fn test_nv_23_bar_shows_word_and_count() {
     ch(&mut a, '\\');
     typing(&mut a, "会議");
     assert_eq!(a.mode, Mode::Filter);
-    let bar = line(&a, 2);
-    assert!(bar.starts_with(" 検索: 会議▏  3/16行"), "{bar}");
+    let (_, sy) = search_at(&a);
+    let bar = line(&a, sy as usize);
+    assert!(bar.contains("\\ 検索: 会議▏  3/16行"), "{bar}");
     press(&mut a, KeyCode::Enter);
     let s = screen(&a);
-    let bar = s.lines().nth(2).unwrap();
-    assert!(bar.starts_with(" 検索: 会議  3/16行"), "{s}");
+    let bar = s.lines().nth(sy as usize).unwrap();
+    assert!(bar.contains("\\ 検索: 会議  3/16行"), "{s}");
     assert!(!bar.contains('▏'), "抜けたら印は消える: {bar}");
     assert!(!s.lines().next().unwrap().contains("絞り込み"), "{s}");
     assert_eq!(a.rows.len(), 3);
@@ -81,15 +99,23 @@ fn test_nv_23_bar_shows_word_and_count() {
 
 #[test]
 fn test_nv_23_config_off_hides_bar_and_uses_bottom_line() {
-    // [NV-23] 設定で欄を消す → 欄が無く、表が1行広い。`\` を押せば最下行で打てる。
+    // [NV-23] 設定で欄を消す → 欄が無く、表が帯の行の数だけ広い(2026-10-12-search-box・view-bar-plain で帯は3行
+    // なので3行)。`\` を押せば最下行で打てる。
     let (_t, mut a) = sixteen("nv23off");
     let h_on = a.data_height();
+    let dy_on = view::data_y(&a);
+    let (_, bar_y) = search_at(&a);
+    // 帯の一番上の行(3行の帯では上の1行)。
+    let bar_y = bar_y - u16::from(super::bands::three_rows(&a));
     bar_off(&mut a);
-    assert_eq!(a.data_height(), h_on + 1, "表が1行広い");
-    assert_eq!(view::data_y(&a), 3);
+    assert_eq!(a.data_height(), h_on + 3, "表が3行広い");
+    assert_eq!(view::data_y(&a), dy_on - 3);
     let s = screen(&a);
-    assert!(!s.contains("検索:"), "{s}");
-    assert!(s.lines().nth(2).unwrap().contains("ノート"), "{s}");
+    assert!(!s.contains("検索"), "{s}");
+    assert!(
+        s.lines().nth(bar_y as usize).unwrap().contains("ノート"),
+        "{s}"
+    );
     ch(&mut a, '\\');
     typing(&mut a, "会議");
     assert_eq!(a.rows.len(), 3);
@@ -99,9 +125,9 @@ fn test_nv_23_config_off_hides_bar_and_uses_bottom_line() {
     assert_eq!(view::cursor(&a), Some((5, 22)));
     press(&mut a, KeyCode::Enter);
     // 欄が無いときは、効いている語をヘッダーに出す(気づけるように)。
-    assert!(line(&a, 0).contains("絞り込み「会議」"));
-    // クリックで欄に入ることも無い(2行目は列の見出し)。
-    a.click(5, 2);
+    assert!(line(&a, super::bands::head_y(&a) as usize).contains("検索「会議」"));
+    // クリックで欄に入ることも無い(欄のあった行は列の見出し)。
+    a.click(5, bar_y);
     assert_ne!(a.mode, Mode::Filter);
 }
 
@@ -118,29 +144,33 @@ fn test_nv_2_backslash_enters_bar_and_esc_restores() {
     let s = screen(&a);
     // 入力は最下行ではなく上の欄に出る。
     assert!(!s.lines().nth(22).unwrap().starts_with('\\'), "{s}");
-    assert!(s.lines().nth(2).unwrap().contains("会議"), "{s}");
-    // [SR-17] 端末のカーソルは欄の語の末尾(` 検索: 会議` は幅 11)。
-    assert_eq!(view::cursor(&a), Some((11, 2)));
+    let (_, sy) = search_at(&a);
+    assert!(s.lines().nth(sy as usize).unwrap().contains("会議"), "{s}");
+    // [SR-17] 端末のカーソルは欄の語の末尾(「検索: 会議」の「会議」の後ろ。「会議」は幅 4)。
+    let (wx, wy) = find_at(&a, "検索: 会議").unwrap();
+    let end = (wx + width::width("検索: 会議") as u16, wy);
+    assert_eq!(view::cursor(&a), Some(end));
     let mut term = Terminal::new(TestBackend::new(80, 24)).unwrap();
     term.draw(|f| draw(f, &a)).unwrap();
     let got = term.get_cursor_position().unwrap();
-    assert_eq!((got.x, got.y), (11, 2));
+    assert_eq!((got.x, got.y), end);
     press(&mut a, KeyCode::Esc);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.rows.len(), 16);
     assert!(a.filter.is_none());
-    assert!(line(&a, 2).starts_with(" 検索: (\\ で絞る)"));
+    assert!(line(&a, sy as usize).contains("\\ 検索…"));
 }
 
 #[test]
 fn test_nv_23_click_bar_enters_and_enter_keeps_filter() {
     // [NV-23] 欄のクリックで欄に入る。Enter で欄を抜けても絞り込みは残り、表のキーが効く。
     let (_t, mut a) = sixteen("nv23click");
-    a.click(20, 2);
+    let (sx, sy) = search_at(&a);
+    a.click(sx + 6, sy);
     assert_eq!(a.mode, Mode::Filter);
     typing(&mut a, "会議");
     // 欄の中のクリックは打つのを続ける。
-    a.click(3, 2);
+    a.click(sx, sy);
     assert_eq!(a.mode, Mode::Filter);
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Table);
@@ -157,7 +187,7 @@ fn test_nv_23_click_bar_enters_and_enter_keeps_filter() {
     assert_eq!(a.mode, Mode::Table);
     // もう一度入ると、効いている語の続きから打てる。
     ch(&mut a, '\\');
-    assert!(line(&a, 2).starts_with(" 検索: 会議▏"));
+    assert!(line(&a, sy as usize).contains("\\ 検索: 会議▏"));
     // 欄の外(表の行)のクリックは欄を抜けて(絞り込みは残す)、その行を選ぶ。
     let y = (view::data_y(&a) + 2) as u16;
     a.click(0, y);
@@ -171,7 +201,10 @@ fn test_nv_23_row_click_hits_right_row_below_bar() {
     // [NV-23] [SR-6] 帯が1行増えても、行のクリックは見えている行を選ぶ。設定の帯(NV-16)が重なっても同じ。
     let (_t, mut a) = sixteen("nv23hit");
     let dy = view::data_y(&a) as u16;
-    assert_eq!(dy, 4);
+    let (_, sy) = search_at(&a);
+    // SR-1: 表はビューの帯(検索の欄)の下の列の見出しの、さらに下から(2026-10-12-search-box・view-bar-plain の3行の帯では
+    // その下の1行の分だけ下)。
+    assert_eq!(dy, sy + 2 + u16::from(super::bands::three_rows(&a)));
     a.click(0, dy + 3);
     assert_eq!(a.row, 3);
     let s = screen(&a);
@@ -190,22 +223,30 @@ fn test_nv_23_row_click_hits_right_row_below_bar() {
         .sorts
         .push(("title".into(), mdgrid::settings::Dir::Desc));
     a.refresh();
-    assert_eq!(view::data_y(&a), 5);
+    assert_eq!(view::data_y(&a) as u16, dy + 1);
     let s = screen(&a);
-    assert!(s.lines().nth(2).unwrap().contains("検索:"), "{s}");
-    assert!(s.lines().nth(3).unwrap().contains("設定:"), "{s}");
-    assert!((0..80u16).all(|x| view::chip_at(&a, x, 2).is_none()));
-    assert!((0..80u16).any(|x| view::chip_at(&a, x, 3) == Some(0)));
-    a.click(0, 6);
+    assert!(s.lines().nth(sy as usize).unwrap().contains("検索"), "{s}");
+    assert!(
+        s.lines()
+            .nth(sy as usize + 1 + usize::from(super::bands::three_rows(&a)))
+            .unwrap()
+            .contains("設定:"),
+        "{s}"
+    );
+    assert!((0..80u16).all(|x| view::chip_at(&a, x, sy).is_none()));
+    let chips_y = sy + 1 + u16::from(super::bands::three_rows(&a));
+    assert!((0..80u16).any(|x| view::chip_at(&a, x, chips_y) == Some(0)));
+    let y = dy + 2;
+    a.click(0, y);
     assert_eq!(a.row, 1);
     let want = a.src.label(&a.rows[1]);
     let want = want.trim_end_matches(".md");
-    assert!(s.lines().nth(6).unwrap().contains(want), "{s}");
-    // 欄を消すと1行上がる。
+    assert!(s.lines().nth(y as usize).unwrap().contains(want), "{s}");
+    // 欄を消すと帯の行の数だけ上がる(2026-10-12-search-box・view-bar-plain で帯は3行なので3行)。
     bar_off(&mut a);
-    assert_eq!(view::data_y(&a), 4);
-    a.click(0, 6);
-    assert_eq!(a.row, 2);
+    assert_eq!(view::data_y(&a) as u16, dy - 2);
+    a.click(0, y);
+    assert_eq!(a.row, 4);
 }
 
 #[test]
@@ -247,21 +288,35 @@ fn test_nv_23_bar_fits_narrow_terminals() {
 
 #[test]
 fn test_nv_23_low_terminal_bar_not_drawn_ignores_click() {
-    // [NV-23] 高さ5の端末では検索の欄が描かれない(行2は下の帯)。下の帯のクリックで絞り込みの入力に入らない。
+    // [NV-23] 低い端末では検索の欄が描かれない(欄のある行は下の帯)。下の帯のクリックで絞り込みの入力に入らない。
     // `\` で打つときは最下行に語を出し、カーソルも最下行に置く(SR-17)。
+    // SR-1 で欄はビューの帯(行 1)に入ったので、欄の行が下の帯になる高さは 4(前は欄が行 2 で高さ 5)。
     let (_t, mut a) = sixteen("nv23low");
-    a.resize(80, 5);
-    let s = view::render(&a, 79, 4);
-    let footer: String = s[2].spans.iter().map(|sp| sp.content.as_ref()).collect();
+    let (_, bar_y) = search_at(&a);
+    // 低い端末では帯は1行で、上の余白も無い(2026-10-12-search-box・view-bar-plain・bar-padding-half)ので、
+    // 1行の帯の行(2行目)。
+    let bar_y = bar_y - u16::from(super::bands::three_rows(&a)) - super::bands::head_y(&a);
+    let h = bar_y + 3;
+    a.resize(80, h);
+    let s = view::render(&a, 79, (h - 1) as usize);
+    let footer: String = s[bar_y as usize]
+        .spans
+        .iter()
+        .map(|sp| sp.content.as_ref())
+        .collect();
     assert!(footer.contains("未保存"), "{footer}");
-    a.click(5, 2);
+    a.click(5, bar_y);
     assert_eq!(a.mode, Mode::Table);
     assert!(a.prompt.is_none());
     ch(&mut a, '\\');
     typing(&mut a, "会議");
     assert_eq!(a.mode, Mode::Filter);
-    let s = view::render(&a, 79, 4);
-    let msg: String = s[3].spans.iter().map(|sp| sp.content.as_ref()).collect();
+    let s = view::render(&a, 79, (h - 1) as usize);
+    let msg: String = s[bar_y as usize + 1]
+        .spans
+        .iter()
+        .map(|sp| sp.content.as_ref())
+        .collect();
     assert!(msg.starts_with("\\会議"), "{msg}");
-    assert_eq!(view::cursor(&a).map(|c| c.1), Some(3));
+    assert_eq!(view::cursor(&a).map(|c| c.1), Some(bar_y + 1));
 }

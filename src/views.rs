@@ -169,6 +169,17 @@ fn check_view(v: &toml::Table, warns: &mut Vec<String>) {
             "table.view.settings.display",
             warns,
         );
+        // CV-8: 行を伸ばす数は 0〜9 の整数。範囲の外は警告して既定(読むときは持たない)。
+        if let Some(v) = d.get("row_extra_lines") {
+            if crate::display::row_extra_lines_ok(v).is_none() {
+                crate::profile::warn(
+                    warns,
+                    FILE_NAME,
+                    "table.view.settings.display.row_extra_lines",
+                    crate::profile::not(Msg::WantRowExtraLines),
+                );
+            }
+        }
     }
     if let Some(fs) = s.get("filters").and_then(|f| f.as_array()) {
         for c in fs.iter().filter_map(|c| c.as_table()) {

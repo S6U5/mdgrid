@@ -223,7 +223,12 @@ fn test_ce_25_two_folders_have_no_button() {
     std::fs::write(other.join("c.md"), "---\nx: 1\n---\n").unwrap();
     let target = PathBuf::from(format!("{}\n{}", tmp.notes().display(), other.display()));
     let mut a = boot_with(&tmp, &[tmp.notes(), other], target, Config::default());
-    assert!(screen(&a).lines().next().unwrap().contains("+ 新規"));
+    // 「+ 新規」は 2026-10-12-header-menu でビューの帯(2行目)に移った。
+    assert!(screen(&a)
+        .lines()
+        .nth(super::bands::mid_row(&a))
+        .unwrap()
+        .contains("+ 新規"));
     ch(&mut a, 'a');
     assert_ne!(a.mode, Mode::Table, "作る場所を選ぶ欄:\n{}", screen(&a));
     assert!(screen(&a).contains("作る場所"), "{}", screen(&a));

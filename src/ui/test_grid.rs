@@ -96,12 +96,17 @@ fn assert_fits(s: &str) {
 
 #[test]
 fn test_sr_1_base_header_and_tabs() {
-    // [SR-1] ヘッダーは `.base` の名前と行数。[BV-13] タブに3つ、先頭のビューが選ばれている。
+    // [SR-1] ヘッダーは `.base` の名前(引き出しのボタン。SR-42)と行数。[BV-13] タブに3つ、先頭のビューが選ばれている。
     let tmp = vault("sr1base");
     let app = open(&tmp, TASKS, None);
     let s = screen(&app);
-    let mut lines = s.lines();
-    assert!(lines.next().unwrap().contains("tasks.base  2行"), "{s}");
+    // ヘッダーは上の余白(2026-10-12-bar-padding-half)の下。
+    let mut lines = s.lines().skip(super::bands::head_y(&app) as usize);
+    assert!(lines.next().unwrap().contains("tasks.base ▾  2行"), "{s}");
+    // 2026-10-12-search-box・view-bar-plain: タブはビューの帯の真ん中の行(3行の帯では上の1行の次)。
+    if super::bands::three_rows(&app) {
+        lines.next();
+    }
     let tabs = lines.next().unwrap();
     assert!(
         tabs.contains("[進行中]") && tabs.contains(" 完了 ") && tabs.contains(" 全部 "),
@@ -123,15 +128,19 @@ fn test_bv_13_switch_view_changes_rows_and_cols() {
     assert_eq!(app.view_index(), 1);
     assert_eq!(labels(&app), ["b.md", "d.md"]);
     assert_eq!(app.cols, ["title", "formula.odd"]);
-    assert!(screen(&app).lines().nth(1).unwrap().contains("[完了]"));
+    assert!(screen(&app)
+        .lines()
+        .nth(mid(&app))
+        .unwrap()
+        .contains("[完了]"));
     ch(&mut app, '[');
     assert_eq!(app.view_index(), 0);
     ch(&mut app, '[');
     assert_eq!(app.view_index(), 2, "端で回る");
     // タブの帯(2行目)の「完了」をクリック。
-    let tabs = screen(&app).lines().nth(1).unwrap().to_string();
+    let tabs = screen(&app).lines().nth(mid(&app)).unwrap().to_string();
     let x = width::width(&tabs[..tabs.find("完了").unwrap()]) as u16;
-    app.click(x, 1);
+    app.click(x, mid(&app) as u16);
     assert_eq!(app.view_index(), 1);
     assert_eq!(labels(&app), ["b.md", "d.md"]);
 }
@@ -187,16 +196,17 @@ fn test_bv_7_unsupported_formula_column() {
     assert_eq!(labels(&app), ["b.md", "d.md", "e.md"]);
     let buf = buffer(&app);
     let s = super::test_screen::text(&buf);
-    // 見出しの行は4行目(検索の欄の下。NV-23)、ノートの行はその下。`?` のセルの薄さを見る。
+    // 見出しの行はビューの帯(SR-1)の下、ノートの行はその下(`view::data_y` から)。`?` のセルの薄さを見る。
+    let dy = view::data_y(&app) as u16;
     let dim_q = |y: u16| {
         (0..80u16)
             .filter(|&x| buf[(x, y)].symbol() == "?")
             .map(|x| buf[(x, y)].modifier.contains(Modifier::DIM))
             .collect::<Vec<_>>()
     };
-    assert_eq!(dim_q(4), [true], "{s}");
-    assert_eq!(dim_q(5), [true], "{s}");
-    assert_eq!(dim_q(6), [false, true], "本当の値の ? は薄くない: {s}");
+    assert_eq!(dim_q(dy), [true], "{s}");
+    assert_eq!(dim_q(dy + 1), [true], "{s}");
+    assert_eq!(dim_q(dy + 2), [false, true], "本当の値の ? は薄くない: {s}");
     col_named(&mut app, "formula.odd");
     let s = screen(&app);
     let lines: Vec<&str> = s.lines().collect();
@@ -288,20 +298,21 @@ fn test_cv_6_ambiguous_wide_column_aligned() {
     });
     let buf = buffer(&app);
     let z_at = |y: u16| (0..80u16).find(|&x| buf[(x, y)].symbol() == "Z").unwrap();
-    // ノートの行は検索の欄(NV-23)と列の見出しの下の4行目から。
-    assert_eq!(z_at(4), z_at(5), "{}", super::test_screen::text(&buf));
-    let o = (0..80u16).find(|&x| buf[(x, 4)].symbol() == "○").unwrap();
+    // ノートの行はビューの帯(SR-1)と列の見出しの下から(`view::data_y`)。
+    let dy = view::data_y(&app) as u16;
+    assert_eq!(z_at(dy), z_at(dy + 1), "{}", super::test_screen::text(&buf));
+    let o = (0..80u16).find(|&x| buf[(x, dy)].symbol() == "○").unwrap();
     assert!(matches!(
-        buf[(o, 4)].diff_option,
+        buf[(o, dy)].diff_option,
         CellDiffOption::ForcedWidth(n) if n.get() == 2
     ));
-    assert_eq!(buf[(o + 2, 4)].symbol(), "○");
+    assert_eq!(buf[(o + 2, dy)].symbol(), "○");
     assert_fits(&super::test_screen::text(&buf));
     // 既定(幅1)では ○ の後ろにすぐ次の文字。
     app.configure(&Config::default());
     let buf = buffer(&app);
-    let o = (0..80u16).find(|&x| buf[(x, 4)].symbol() == "○").unwrap();
-    assert_eq!(buf[(o + 1, 4)].symbol(), "○");
+    let o = (0..80u16).find(|&x| buf[(x, dy)].symbol() == "○").unwrap();
+    assert_eq!(buf[(o + 1, dy)].symbol(), "○");
 }
 
 #[test]
@@ -324,11 +335,12 @@ fn test_sr_3_resize_column_keys_and_drag() {
     }
     assert_eq!(view::layout(&app).widths[j], 1, "最小は1");
     assert_fits(&screen(&app));
-    // 境界(列の右の区切り)を押して右へ動かす。
+    // 境界(列の右の区切り)を押して右へ動かす。列の見出しの行は表の最初の行のすぐ上。
+    let hy = view::data_y(&app) as u16 - 1;
     let x = (0..80u16)
-        .find(|&x| view::boundary_at(&app, x, 3).is_some_and(|d| d.col == j))
+        .find(|&x| view::boundary_at(&app, x, hy).is_some_and(|d| d.col == j))
         .unwrap();
-    app.click(x, 3);
+    app.click(x, hy);
     app.drag(x + 5);
     app.release();
     assert_eq!(view::layout(&app).widths[j], 6);
@@ -351,7 +363,11 @@ fn test_cli_2_view_option_opens_named_view() {
     let app = open(&tmp, TASKS, Some("完了"));
     assert_eq!(app.view_index(), 1);
     assert_eq!(labels(&app), ["b.md", "d.md"]);
-    assert!(screen(&app).lines().nth(1).unwrap().contains("[完了]"));
+    assert!(screen(&app)
+        .lines()
+        .nth(mid(&app))
+        .unwrap()
+        .contains("[完了]"));
 }
 
 #[test]
@@ -449,4 +465,9 @@ fn test_cv_4_formula_number_and_bool_aligned() {
         s.lines().any(|l| l == ">a       #3 #false 会議のメモ"),
         "{s}"
     );
+}
+
+/// ビューの帯の真ん中の行(タブの行)。2026-10-12-search-box・view-bar-plain の3行の帯では3行目、1行の帯では2行目。
+fn mid(a: &App) -> usize {
+    super::bands::mid_row(a)
 }

@@ -1,12 +1,13 @@
 //! セルの見せ方の純関数(CV-1・CV-2・CV-3・CV-4・BV-7・SR-15・CE-22)。状態は書き換えない。
 
 use super::app::App;
-use super::width::{sanitize, Align};
+use super::width::{sanitize, take, width, wrap, Align};
 use mdgrid::base;
 use mdgrid::cells::Part;
 use mdgrid::expr::Val;
 use mdgrid::source::{NewValue, RowId, Value};
 use mdgrid::types::{self, Kind};
+use std::cell::Cell;
 
 /// 読むだけのセルの印(SR-15)。
 pub(crate) const LOCK_MARK: char = '#';
@@ -65,8 +66,21 @@ fn parts_of(app: &App, items: Vec<String>, list: bool, part: &mut CellPart) -> O
     Some(t)
 }
 
-/// 改行を含む値は1行目と `…⏎`(CV-3)。
+thread_local! {
+    /// 改行を残すか(CV-8。伸ばした表の行の文字を作る間だけ。`cell_lines` が置いて戻す)。
+    static KEEP_NEWLINES: Cell<bool> = const { Cell::new(false) };
+}
+
+/// 改行を含む値は1行目と `…⏎`(CV-3)。伸ばした表の行の文字を作る間(CV-8)は、行ごとに整えて改行を残す。
 fn first_line_marked(s: &str) -> String {
+    if KEEP_NEWLINES.with(Cell::get) {
+        return s
+            .replace("\r\n", "\n")
+            .split(['\n', '\r'])
+            .map(sanitize)
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     match s.find(['\n', '\r']) {
         Some(i) => format!("{}…⏎", sanitize(&s[..i])),
         None => sanitize(s),
@@ -229,6 +243,35 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
         unsupported: None,
         part,
     }
+}
+
+/// CV-8: セル `s`(`shown` の結果)の文字を幅 `cw` で折り返した行。最大 `max` 行で、入らなければ最後の行の
+/// 後ろに `…`。改行は改行で分ける(CV-3)。札(部品の並び)と、列の幅に入り改行の無い文字は1行のまま。
+pub(crate) fn cell_lines(
+    app: &App,
+    s: &Shown,
+    row: &RowId,
+    col: &str,
+    cw: usize,
+    max: usize,
+) -> Vec<String> {
+    let one = max <= 1
+        || matches!(s.part, CellPart::Chips { .. })
+        || (width(&s.text) <= cw && !s.text.contains('⏎'));
+    if one {
+        return vec![s.text.clone()];
+    }
+    KEEP_NEWLINES.with(|k| k.set(true));
+    let full = shown(app, row, col).text;
+    KEEP_NEWLINES.with(|k| k.set(false));
+    let mut out = wrap(full.trim_end_matches('\n'), cw);
+    if out.len() > max {
+        out.truncate(max);
+        let last = out.pop().unwrap_or_default();
+        let ell = width("…");
+        out.push(format!("{}…", take(&last, cw.saturating_sub(ell))));
+    }
+    out
 }
 
 /// SR-35: 真偽・リスト・札の列の値の部品の文字。部品にしなければ None。

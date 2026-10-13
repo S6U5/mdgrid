@@ -118,7 +118,7 @@ fn test_sr_26_nord_paints_background_selection_and_band() {
     let s = text(&buf);
 
     // 地。
-    assert_eq!(buf[(0u16, 0u16)].bg, NORD_BG, "左上の背景\n{s}");
+    assert_eq!(top_left(&buf), NORD_BG, "左上の背景\n{s}");
     // 空けておく最下行と右端も地の色。
     assert_eq!(buf[(78u16, 23u16)].bg, NORD_BG, "最下行の背景\n{s}");
     // 右下の隅の1セルは書かない(自動折り返しを避ける)。
@@ -128,9 +128,11 @@ fn test_sr_26_nord_paints_background_selection_and_band() {
         "右下の隅は塗らない\n{s}"
     );
     assert_eq!(buf[(79u16, 5u16)].bg, NORD_BG, "右端の背景\n{s}");
-    // 1行目はヘッダーの色(テーマなしで色を持たないとき)。
-    assert_eq!(base[(0u16, 0u16)].fg, Color::Reset);
-    assert_eq!(buf[(0u16, 0u16)].fg, NORD_HEADER, "ヘッダーの前景\n{s}");
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる。前は1行目)はヘッダーの色(テーマなしで
+    // 色を持たないとき)。
+    let hy = super::bands::head_y(&a);
+    assert_eq!(base[(0u16, hy)].fg, Color::Reset);
+    assert_eq!(buf[(0u16, hy)].fg, NORD_HEADER, "ヘッダーの前景\n{s}");
 
     // 選んでいるセル: テーマなしで反転の、最初のノートの行のセル。
     let dy = view::data_y(&a) as u16;
@@ -171,11 +173,21 @@ fn test_sr_26_nord_paints_background_selection_and_band() {
 fn test_sr_26_every_theme_keeps_the_text() {
     // [SR-26] 7つのどのテーマでも、画面の文字はテーマなしと1字も違わない(色だけを変える)。
     let tmp = vault("thtext");
+    // 2026-10-12-half-row-inverse: 画面の地の色が分かる(テーマが画面の地を塗る)ときだけ、余白の端数を半分の
+    // 塗りの字(`▀`・`▄`)の行で描き、分からないテーマなしでは同じ行の数の空き行にする(色の飾りの違い)ので、
+    // 半分の塗りの字は空白とみなして比べる。
+    let no_half = |t: String| {
+        t.replace(['▀', '▄'], " ")
+            .lines()
+            .map(str::trim_end)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
     for color in [ColorMode::Rgb, ColorMode::Indexed] {
-        let want = text(&buffer(&plain(&tmp, color)));
+        let want = no_half(text(&buffer(&plain(&tmp, color))));
         for t in Theme::ALL {
             let a = themed(&tmp, color, &format!("[look]\ntheme = \"{}\"\n", t.name()));
-            let got = text(&buffer(&a));
+            let got = no_half(text(&buffer(&a)));
             assert_eq!(
                 got,
                 want,
@@ -198,7 +210,7 @@ fn test_sr_26_every_theme_but_default_paints() {
         );
         let buf = buffer(&a);
         match t.palette() {
-            Some(p) => assert_eq!(buf[(0u16, 0u16)].bg, rgb(p.bg), "テーマ {}", t.name()),
+            Some(p) => assert_eq!(top_left(&buf), rgb(p.bg), "テーマ {}", t.name()),
             None => assert_eq!(t, Theme::Default, "パレットが無いのは default だけ"),
         }
     }
@@ -454,7 +466,7 @@ fn test_sr_27_indexed_uses_256_colors() {
     let buf = buffer(&a);
     let s = text(&buf);
     assert_eq!(
-        buf[(0u16, 0u16)].bg,
+        top_left(&buf),
         Color::Indexed(to_indexed([0x2e, 0x34, 0x40])),
         "左上の背景\n{s}"
     );
@@ -496,5 +508,16 @@ fn test_sr_27_to_indexed_picks_nearest() {
                 assert!(to_indexed(c) >= 16, "{} の {c:?}", t.name());
             }
         }
+    }
+}
+
+/// 左上の隅に見える地の色。2026-10-12-half-row-inverse で上の余白の半行は、セルの地を帯の色で塗り、上の半分を
+/// 画面の地の色の `▀` で消すので、そのときは字の色(見えている上の半分)を返す。
+fn top_left(buf: &ratatui::buffer::Buffer) -> Color {
+    let c = &buf[(0u16, 0u16)];
+    if c.symbol() == "▀" {
+        c.fg
+    } else {
+        c.bg
     }
 }

@@ -23,6 +23,11 @@ pub(crate) struct SortWin {
     pub picking: Option<(Vec<String>, usize)>,
 }
 
+/// ビューの帯のボタンの文字(前後の空白なし。NV-24): 決まりが無ければ「並べ替え」、あれば先頭の決まり(と残りの数)。
+pub(crate) fn label(app: &App) -> String {
+    button(app).trim().to_string()
+}
+
 /// 検索の欄の右の端のボタンの文字(NV-24): 決まりが無ければ「並べ替え」、あれば先頭の決まり(と残りの数)。
 pub(crate) fn button(app: &App) -> String {
     match app.settings.sorts.first() {
@@ -91,8 +96,11 @@ fn window(app: &App) -> Option<Geom> {
     if iw < 8 {
         return None;
     }
-    // 検索の欄の行(無ければヘッダー)の下に、右の端にそろえて置く。
-    let ay = super::bands::sort_anchor_y(app);
+    // NV-23: ビューの帯のボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
+    // ボタンが描かれていなければ、ヘッダーの下に右の端にそろえて置く。
+    let (bx, ay) = super::bands::button_anchor(app, super::bands::ViewButton::Sort)
+        .map(|(x, y)| (Some(x), y))
+        .unwrap_or((None, super::bands::head_y(app) as usize));
     let popup::Place { top, vis } = popup::place(ay, items.len(), limit)?;
     let sel = match &w.picking {
         Some((_, s)) => *s,
@@ -100,7 +108,7 @@ fn window(app: &App) -> Option<Geom> {
     }
     .min(items.len() - 1);
     Some(Geom {
-        x: sw - iw,
+        x: bx.map_or(sw - iw, |x| x.min(sw - iw)),
         top,
         iw,
         start: (sel + 1).saturating_sub(vis),

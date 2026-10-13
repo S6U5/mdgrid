@@ -111,6 +111,7 @@ When a column is too narrow for all its chips, the chips that fit are shown whol
 | `[display] zebra = true` | Shade every other row (only with colors). |
 | `[display] column_lines = true` | Draw `│` between columns. |
 | `[display] group_gap = true` | Leave an empty line above every group heading but the first. |
+| `[display] row_extra_lines = 2` | Wrap long values and values with line breaks at the column width, growing a row up to 3 lines (only as tall as needed; what does not fit ends with `…`). 0 keeps one line. |
 
 Each view can override the `[display]` items in its view settings (`o`, the "Display" section), and a saved mdgrid view keeps them.
 

@@ -246,7 +246,8 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     }
     out.push(Line::from(" ".repeat(w)));
     for (k, l) in out.into_iter().enumerate() {
-        if let Some(slot) = lines.get_mut(1 + k) {
+        // ヘッダーのすぐ下(SR-1 の上の余白の分だけ下がる)。
+        if let Some(slot) = lines.get_mut(super::bands::head_y(app) as usize + 1 + k) {
             *slot = l;
         }
     }

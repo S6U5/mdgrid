@@ -189,7 +189,14 @@ fn test_sr_20_hidden_tabs_header_shows_view_name() {
     while !a.loaded() {
         a.load_step(100);
     }
-    let head = |a: &App| screen(a).lines().next().unwrap_or("").to_string();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let head = |a: &App| {
+        screen(a)
+            .lines()
+            .nth(super::bands::head_y(a) as usize)
+            .unwrap_or("")
+            .to_string()
+    };
     assert!(head(&a).contains("ビュー 一つ目"), "{}", screen(&a));
     ch(&mut a, ']');
     assert!(head(&a).contains("ビュー 二つ目"), "{}", screen(&a));

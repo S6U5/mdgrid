@@ -33,18 +33,14 @@ use std::time::{Duration, Instant};
 use ui::startup::Startup;
 use ui::{App, ColorMode};
 
-/// 使い方(`--help`。CLI-2)の日本語。文は文言の表(SR-23)にある。
+/// 使い方(`--help`。CLI-2)の日本語(試験が中身を見る)。文は台帳(SR-23)にある。
+#[cfg(test)]
 const USAGE: &str = Msg::Usage.ja();
-
-/// 使い方の英語(SR-23)。
-const USAGE_EN: &str = Msg::Usage.en();
 
 /// 今の言語の使い方(SR-23)。
 fn usage() -> &'static str {
-    match i18n::current() {
-        Lang::En => USAGE_EN,
-        Lang::Ja => USAGE,
-    }
+    // 言語を名指ししない(台帳を足すだけで言語が増えるように。SR-23)。
+    Msg::Usage.text()
 }
 
 /// 1回に読むノートの数(BV-16)。描画のたびにこの分だけ進める。
@@ -123,7 +119,7 @@ impl PrintFormat {
     bin_name = "mdgrid",
     version,
     about = "Markdown のフロントマターを端末の表で見て直す",
-    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートは保管庫の根の下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n.csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。",
+    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n.csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。",
     disable_help_flag = true,
     disable_version_flag = true,
     args_override_self = true
@@ -1500,6 +1496,12 @@ fn restore(screen: Screen) {
 
 /// `editor` はノートを開くエディタ(SR-8。`config::resolve_editor` で決めたもの)。`screen` は画面の書き先。
 fn run(app: &mut App, editor: &str, screen: Screen) -> io::Result<()> {
+    // NV-23: 余白の端数を描くのに端末の地の色が要るときだけ、画面を出す前に端末に問い合わせる(短く待つ)。
+    // 答えはプロセスで1回だけ問い合わせて覚える(表を開き直しても問い合わせない)。色を使わない設定では
+    // 問い合わせない(明暗の問い合わせ `prof.probe` を置かない設定と同じ)。
+    if app.prof.probe.is_some() && ui::bands::wants_term_bg(app) {
+        app.term_bg = ui::termbg::color_once(std::time::Duration::from_millis(200));
+    }
     let hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         restore(screen);

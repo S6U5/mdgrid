@@ -242,7 +242,7 @@ fn nearer(a: &str, b: &str) -> std::cmp::Ordering {
         .then(a.cmp(b))
 }
 
-/// 保管庫のリンクの索引(読み込みのたびに作り直す)。
+/// ルートフォルダのリンクの索引(読み込みのたびに作り直す)。
 #[derive(Debug, Default)]
 pub struct Index {
     /// 小文字の stem → stem。

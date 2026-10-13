@@ -89,7 +89,7 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
   <div class="intro">
     <p class="note"><a href="../" id="home">← mdgrid</a></p>
     <h1 data-t="title">mdgrid 見た目のカタログ</h1>
-    <p data-t="intro1">テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。</p>
+    <p data-t="intro1">テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で探す・\ で検索・, で同じ値だけ・K で詳細・R で関係マップ・w でワークスペース・o で設定・S で並べ替え・? でヘルプ)。</p>
     <p data-t="intro2">「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は、mdgrid の設定とそのまま同じです。</p>
   </div>
   <div class="bar">
@@ -372,10 +372,10 @@ class Grid {
 // ---------- 言語 ----------
 const TX = {
   ja: {
-    rows: n => `${n}行`, tabsR: ["表", "関係"], newNote: "+ 新規", tabDefault: "既定の表", tabSwitch: "  [ ] で切り替え",
-    barLead: " 検索: ", barHint: "(\\ で絞る)", setLead: " 設定:", setHint: "  BS で外す",
+    rows: n => `${n}行`, crumbName: "見本", screenTable: "表", screenMap: "関係マップ", settingsLabel: "設定", newNote: "+ 新規", tabDefault: "既定の表", tabSwitch: "  [ ] で切り替え",
+    barName: "検索", barCount: (n, m) => `  ${n}/${m}行`, filterBtn: "絞り込み", groupBtn: "分類", colsBtn: "列", setLead: " 設定:", setHint: "  BS で外す",
     same: (c, v) => `  同じ値 ${c}=${v}`, filt: v => `  絞り込み「${v}」`, unsaved: n => ` 未保存 ${n}`,
-    modeTable: "表", modeEdit: "編集", modeHelp: "ヘルプ", modeDetail: "詳細の表示", modeMap: "関係マップ", modeSearch: "検索", modeFilter: "絞り込み",
+    modeTable: "表", modeEdit: "編集", modeHelp: "ヘルプ", modeDetail: "詳細の表示", modeMap: "関係マップ", modeSearch: "探す", modeFilter: "検索",
     pos: (r, n, c, m) => `${r}/${n}行 ${c}/${m}列`,
     hintsTable: [["Enter", "編集"], ["BS", "空にする"], ["u", "取り消し"], ["q", "終了"], ["^S", "保存"], ["^R", "やり直し"], ["?", "ヘルプ"]],
     hintsEdit: [["Enter", "確定"], ["Esc", "取り消し"], ["Tab", "確定して右へ"]],
@@ -393,15 +393,15 @@ const TX = {
     groupOpts: ["既定のまま(分けない)", "しない", "列で分ける: status"], dRownum: "行番号", dZebra: "一行おきの色", dLines: "列の区切り線", dGap: "まとまりの間", dTabs: "タブ", dBar: "検索の欄", dBand: "設定の帯",
     setBtns1: ["名前を付けて保存", "上書き", "名前の変更", "削除"], setApply: "反映", setCancel: "取り消し", setReset: "既定に戻す", setApplied: "反映した(ビューに覚える)", setSampleOnly: "見本ではビューの保存はできません(本体では views.toml に残します)",
     modeSettings: "ビューの設定", hintsSettings: [["Enter", "反映"], ["Esc", "取り消し"], ["Tab", "次の区画"]], wsTitle: " ワークスペース ", wsItems: ["見本(今)", "仕事", "趣味"],
-    sortButton: " 並べ替え ", sortTitle: " 並べ替え ", sortPick: " 並べ替えを足す: 列 ", sortAdd: "+ 並べ替えを足す", asc: "昇順", desc: "降順", modeSorts: "並べ替え",
+    sortName: "並べ替え", sortTitle: " 並べ替え ", sortPick: " 並べ替えを足す: 列 ", sortAdd: "+ 並べ替えを足す", asc: "昇順", desc: "降順", modeSorts: "並べ替え",
     hintsSorts: [["Enter", "向きを変える・足す"], ["d", "外す"], ["K", "上へ"], ["J", "下へ"], ["Esc", "閉じる"]],
-    wsButton: " ▾ 見本 ", settingsButton: " 設定 ", wsMsg: "本体ではワークスペースの一覧が開き、選んだワークスペースの表へ移ります", settingsMsg: "本体ではビューの設定の画面(o)が開きます",
+    wsMsg: "本体ではワークスペースの一覧が開き、選んだワークスペースの表へ移ります", settingsMsg: "本体ではビューの設定の画面(o)が開きます",
     sortAsc: c => `${c} で昇順に並べた(.base は変えない)`, sortDesc: c => `${c} で降順に並べた(.base は変えない)`, sortOff: "並べ替えを解いた(.base の並び)", hits: (n) => `一致 ${n}件  n 次・N 前`, noHit: "一致なし",
     readonlyCell: "見本では、この列は直せません(status・done・担当・tags を試せます)",
     detailHead: (n, i, m) => ` 詳細  ${n}.md  ${i}/${m}`, body: "本文",
     helpHead: m => ` ヘルプ  1-${m}行  キーの全部(キーの表から)`, helpNow: " 今押せるキー(表)",
     help: [["Enter", "編集"], ["BS Del", "空にする"], ["u ^Z", "取り消し"], ["q", "終了"], ["^S", "保存"], ["^R U", "やり直し"], ["?", "ヘルプ"], [": ^P", "コマンド"], ["k ↑", "上"], ["j ↓", "下"], ["h ←", "左"], ["l →", "右"], ["Tab", "右のセル"], ["Shift+Tab", "左のセル"], ["[", "前のビュー"], ["]", "次のビュー"], ["R", "関係マップ"], ["K", "詳細の表示"], ["/", "検索"], ["n", "次の一致"], ["N", "前の一致"], ["\\", "簡易の絞り込み"], ["*", "同じ値の行を強調"], [",", "同じ値の行だけ"]],
-    mapTitle: " 関係マップ ", mapDetail: " 詳細 ", ws: "  · ワークスペース 見本", kind: "種類", many: "多対一(N:1)", col: "列", to: "行き先", links: "リンク",
+    mapTitle: " 関係マップ ", mapDetail: " 詳細 ", kind: "種類", many: "多対一(N:1)", col: "列", to: "行き先", links: "リンク",
     views: ["既定の表", "進行中", "未完了"], chipDoing: "status: doing だけ", chipOpen: "status: done を除く",
     note: "ノート",
     rowsData: [
@@ -419,7 +419,7 @@ const TX = {
     owner: "担当",
     // ページ
     title: "mdgrid 見た目のカタログ",
-    intro1: "テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で検索・\\ で絞る・, で同じ値だけ・K で詳細・R で関係マップ・o で設定・S で並べ替え・? でヘルプ)。",
+    intro1: "テーマと部品の形を選ぶと、見本の画面がその見た目になります。画面はクリックとキーで触れます(セルを選ぶ・Enter で値を選ぶ・/ で探す・\\ で検索・, で同じ値だけ・K で詳細・R で関係マップ・w でワークスペース・o で設定・S で並べ替え・? でヘルプ)。",
     intro2: "「設定(config.toml)」の欄の文を config.toml に貼ると、mdgrid が同じ見た目になります。部品の名前と値は、mdgrid の設定とそのまま同じです。",
     lang: "言語", page: "ページ", themes: "テーマ", light: "明るい地", dark: "暗い地", ground: "見本の端末", presets: "組(まとめて選ぶ)",
     colors: "色(上書き)", values: "値の色", moreRoles: "ほかの役割", addValue: "値を足す", valuePh: "値(例: 進行中)", clear: "戻す", remove: "消す",
@@ -431,10 +431,10 @@ const TX = {
     auto: "auto(端末の地に従う)", proposal: "案(まだ設定に無い)", fromPreset: "組のまま",
   },
   en: {
-    rows: n => n === 1 ? "1 row" : `${n} rows`, tabsR: ["Table", "Relations"], newNote: "+ New", tabDefault: "Default table", tabSwitch: "  [ ] to switch",
-    barLead: " Filter: ", barHint: "(\\ to filter)", setLead: " Settings:", setHint: "  BS to remove",
+    rows: n => n === 1 ? "1 row" : `${n} rows`, crumbName: "Sample", screenTable: "Table", screenMap: "Relation map", settingsLabel: "Settings", newNote: "+ New", tabDefault: "Default table", tabSwitch: "  [ ] to switch",
+    barName: "Search", barCount: (n, m) => `  ${n}/${m} ${m === 1 ? "row" : "rows"}`, filterBtn: "Filter", groupBtn: "Group", colsBtn: "Columns", setLead: " Settings:", setHint: "  BS to remove",
     same: (c, v) => `  same value ${c}=${v}`, filt: v => `  filter "${v}"`, unsaved: n => ` Unsaved ${n}`,
-    modeTable: "Table", modeEdit: "Edit", modeHelp: "Help", modeDetail: "Details", modeMap: "Relation map", modeSearch: "Search", modeFilter: "Filter",
+    modeTable: "Table", modeEdit: "Edit", modeHelp: "Help", modeDetail: "Details", modeMap: "Relation map", modeSearch: "Find", modeFilter: "Search",
     pos: (r, n, c, m) => `row ${r}/${n} col ${c}/${m}`,
     hintsTable: [["Enter", "Edit"], ["BS", "Clear"], ["u", "Undo"], ["q", "Quit"], ["^S", "Save"], ["^R", "Redo"], ["?", "Help"]],
     hintsEdit: [["Enter", "Confirm"], ["Esc", "Cancel"], ["Tab", "Confirm, go right"]],
@@ -452,15 +452,15 @@ const TX = {
     groupOpts: ["default (no groups)", "none", "by column: status"], dRownum: "Row numbers", dZebra: "Zebra stripes", dLines: "Column lines", dGap: "Group gaps", dTabs: "Tabs", dBar: "Search bar", dBand: "Settings band",
     setBtns1: ["Save as", "Overwrite", "Rename", "Delete"], setApply: "Apply", setCancel: "Cancel", setReset: "Reset", setApplied: "Applied (the view remembers it)", setSampleOnly: "The sample cannot save views (mdgrid writes them to views.toml)",
     modeSettings: "View settings", hintsSettings: [["Enter", "Apply"], ["Esc", "Cancel"], ["Tab", "Next section"]], wsTitle: " Workspaces ", wsItems: ["Sample (now)", "Work", "Hobby"],
-    sortButton: " Sort ", sortTitle: " Sort ", sortPick: " Add a sort: column ", sortAdd: "+ Add a sort", asc: "ascending", desc: "descending", modeSorts: "Sorting",
+    sortName: "Sort", sortTitle: " Sort ", sortPick: " Add a sort: column ", sortAdd: "+ Add a sort", asc: "ascending", desc: "descending", modeSorts: "Sorting",
     hintsSorts: [["Enter", "Flip / add"], ["d", "Remove"], ["K", "Up"], ["J", "Down"], ["Esc", "Close"]],
-    wsButton: " ▾ Sample ", settingsButton: " Settings ", wsMsg: "mdgrid opens the list of workspaces and moves to the chosen one", settingsMsg: "mdgrid opens the view settings screen (o)",
+    wsMsg: "mdgrid opens the list of workspaces and moves to the chosen one", settingsMsg: "mdgrid opens the view settings screen (o)",
     sortAsc: c => `sorted by ${c} ascending (the .base is unchanged)`, sortDesc: c => `sorted by ${c} descending (the .base is unchanged)`, sortOff: "sort cleared (.base order)", hits: n => `${n} match(es)  n next, N previous`, noHit: "No match",
     readonlyCell: "The sample cannot edit this column (try status, done, owner, tags)",
     detailHead: (n, i, m) => ` Details  ${n}.md  ${i}/${m}`, body: "Body",
     helpHead: m => ` Help  1-${m} lines  All keys (from the key table)`, helpNow: " Keys now (Table)",
     help: [["Enter", "Edit"], ["BS Del", "Clear"], ["u ^Z", "Undo"], ["q", "Quit"], ["^S", "Save"], ["^R U", "Redo"], ["?", "Help"], [": ^P", "Commands"], ["k ↑", "Up"], ["j ↓", "Down"], ["h ←", "Left"], ["l →", "Right"], ["Tab", "Next cell"], ["Shift+Tab", "Previous cell"], ["[", "Previous view"], ["]", "Next view"], ["R", "Relation map"], ["K", "Details"], ["/", "Search"], ["n", "Next match"], ["N", "Previous match"], ["\\", "Quick filter"], ["*", "Highlight same value"], [",", "Only same value"]],
-    mapTitle: " Relation map ", mapDetail: " Details ", ws: "  · workspace Sample", kind: "Kind", many: "many-to-one (N:1)", col: "Column", to: "Target", links: "Links",
+    mapTitle: " Relation map ", mapDetail: " Details ", kind: "Kind", many: "many-to-one (N:1)", col: "Column", to: "Target", links: "Links",
     views: ["Default table", "Doing", "Open"], chipDoing: "status: only doing", chipOpen: "status: not done",
     note: "Note",
     rowsData: [
@@ -477,7 +477,7 @@ const TX = {
     ],
     owner: "owner",
     title: "mdgrid look catalog",
-    intro1: "Pick a theme and the shape of each part; the sample screen changes to match. The screen responds to clicks and keys (select a cell, Enter to pick a value, / search, \\ filter, , same value, K details, R relation map, o settings, S sort, ? help).",
+    intro1: "Pick a theme and the shape of each part; the sample screen changes to match. The screen responds to clicks and keys (select a cell, Enter to pick a value, / find, \\ search, , same value, K details, R relation map, w workspaces, o settings, S sort, ? help).",
     intro2: "Paste the text in “Settings (config.toml)” into config.toml and mdgrid looks the same. The part names and values are exactly the ones mdgrid reads.",
     lang: "Language", page: "Page", themes: "Theme", light: "Light background", dark: "Dark background", ground: "Sample terminal", presets: "Preset (whole set)",
     colors: "Colors (overrides)", values: "Value colors", moreRoles: "More roles", addValue: "Add a value", valuePh: "value (e.g. doing)", clear: "reset", remove: "remove",
@@ -518,11 +518,11 @@ const PARTS = {
 // 検索と絞り込みの案(まだ本体に無い。設定の文には出さない)。
 const PROPOSALS = {
   ja: [
-    ["searchbar", "検索の欄", "上の検索の欄の形(案)", { line: "文字だけ(今)", field: "入力欄のような淡い地", quiet: "空のときは隠す" }],
+    ["searchbar", "検索の欄", "ビューの帯の検索の欄の形(案)", { line: "文字だけ", field: "淡い地の欄(今)", quiet: "空のときは隠す" }],
     ["setband", "設定の帯", "効いている絞り込み・並べ替えの並び(案)", { brackets: "[括弧](今)", pill: "淡い札 + ×", inline: "文字を · で区切る" }],
   ],
   en: [
-    ["searchbar", "Filter bar", "The filter bar on top (proposal)", { line: "Text only (now)", field: "Input-like tint", quiet: "Hidden when empty" }],
+    ["searchbar", "Search box", "The search box in the view bar (proposal)", { line: "Text only", field: "Tinted field (now)", quiet: "Hidden when empty" }],
     ["setband", "Settings band", "Active filters and sorts (proposal)", { brackets: "[Brackets] (now)", pill: "Soft pills + ×", inline: "Text with · separators" }],
   ],
 };
@@ -532,7 +532,7 @@ const PROPOSALS = {
 // ---------- 状態 ----------
 const KEY = "mdgrid-catalog-v2";
 const DEF = NAMES.defaults;
-const fresh = () => ({ lang: navigator.language && !navigator.language.startsWith("ja") ? "en" : "ja", page: "auto", theme: "sumi", tlight: DEF.theme_light, tdark: DEF.theme_dark, ground: "dark", preset: DEF.preset, over: {}, nerd: "auto", termRound: false, searchbar: "line", setband: "brackets", colors: { roles: {}, values: {} } });
+const fresh = () => ({ lang: navigator.language && !navigator.language.startsWith("ja") ? "en" : "ja", page: "auto", theme: "sumi", tlight: DEF.theme_light, tdark: DEF.theme_dark, ground: "dark", preset: DEF.preset, over: {}, nerd: "auto", termRound: false, searchbar: "field", setband: "brackets", colors: { roles: {}, values: {} } });
 let S = fresh();
 try { const v = JSON.parse(localStorage.getItem(KEY) || "null"); if (v && typeof v === "object") S = Object.assign(S, v); } catch (e) {}
 // サイトの入口から ?lang=ja|en で来たら、その言語で開く。
@@ -608,53 +608,63 @@ function drawTable(g, L, st, opts = {}) {
   if (A.row >= rs.length) A.row = Math.max(0, rs.length - 1);
   let y = 0;
   if (!opts.mini) {
-    // 1行目: 名前・行の数・絞り込み、右に画面の型のタブと新規。
-    let head = " vault  " + t.rows(rs.length);
-    if (A.same) head += t.same(A.same.k === "owner" ? t.owner : A.same.k, A.same.v);
-    g.put(0, 0, head, { b: 1, fg: L.header });
-    const right = [[`[${t.tabsR[0]}]`, true, "tab-table"], [" " + t.tabsR[1] + " ", false, "tab-map"]];
-    const rw = right.reduce((n, [s]) => n + sw(s), 0) + sw(t.newNote);
-    let x = W - rw;
-    headerButtons(g, L, x);
-    for (const [s, on, a] of right) x = g.put(x, 0, s, tabStyle(L, st, on), a);
-    g.put(x, 0, t.newNote, { bg: L.accent, fg: L.on_accent, b: 1 }, "new");
-    // ビューのタブ(表示の設定で隠せる)。
-    y = 1;
-    if (A.disp.tabs) {
-      let tx0 = 1;
-      // NV-26: 設定のビューの区画の順で、隠したタブ(開いているビューでなければ)を外す。
-      const shownTabs = A.tabs.order.filter(i => i === A.view || !A.tabs.hidden.includes(i));
-      shownTabs.forEach(i => {
-        const v = t.views[i];
-        const s = i === A.view ? `[${v}]` : ` ${v} `;
-        g.put(tx0, y, s, tabStyle(L, st, i === A.view), "view:" + i);
-        tx0 += sw(s) + 1;
-      });
-      if (A.tabs.hint && shownTabs.length > 1) g.put(tx0, y, t.tabSwitch.trimStart(), { dim: 1 });
-      y++;
-    }
-    // 検索の欄(案の形も。表示の設定で隠せる)。
+    // SR-1: 上の余白(display.top_padding、既定 1)の下にヘッダー。
+    // SR-42: 左にパンくずのボタンと行の数、右の端に画面の型のメニューと設定のボタン。
+    let rest = t.rows(rs.length);
+    if (A.same) rest += t.same(A.same.k === "owner" ? t.owner : A.same.k, A.same.v);
+    drawHeader(g, L, t.crumbName, rest, false);
+    y = HEAD_Y + 1;
+    // NV-23: ビューの帯(上下に余白 display.bar_padding、既定 1)。左にタブ、検索の欄、ボタン、右の端に新規。
     const typing = A.mode === "filter";
     const f = typing ? A.typing : A.filter;
-    if (!A.disp.bar || (S.searchbar === "quiet" && !f && !typing)) {
-      // 空のときは隠す(行は表に使う)。
-    } else if (S.searchbar === "field") {
-      const fw = 44;
-      g.put(1, y, " ⌕ " + fitw(f ? f + (typing ? "▏" : "") : t.barHint, fw - 3), { bg: L.soft_bg, fg: f ? L.fg : L.dim, pill: 900, b: typing ? 1 : 0 }, "bar");
-      if (f) g.put(1 + fw + 2, y, `${rs.length}/${A.rows.length}`, faint);
-    } else {
-      let x = g.put(0, y, t.barLead, typing ? { b: 1 } : null, "bar");
-      if (f) { x = g.put(x, y, f + (typing ? "▏" : ""), { b: 1, u: 1 }, "bar"); g.put(x + 2, y, `${rs.length}/${A.rows.length}`, faint); }
-      else g.put(x, y, t.barHint, { dim: 1 }, "bar");
-    }
-    if (A.disp.bar && !(S.searchbar === "quiet" && !f && !typing)) {
-      // NV-24: 右の端に「並べ替え」のボタン。
-      const lbl = sortLabel();
-      g.put(W - sw(lbl), y, lbl, A.sorts.length ? { bg: L.soft_bg, fg: L.accent } : { bg: L.soft_bg, fg: L.dim }, "sortbtn");
-      A.sortY = y;
+    const barOn = A.disp.bar && !(S.searchbar === "quiet" && !f && !typing);
+    if (A.disp.tabs || A.disp.bar) {
       y++;
+      let x = 0;
+      if (A.disp.tabs) {
+        // NV-26: 設定のビューの区画の順で、隠したタブ(開いているビューでなければ)を外す。
+        const shownTabs = A.tabs.order.filter(i => i === A.view || !A.tabs.hidden.includes(i));
+        shownTabs.forEach((i, n) => {
+          const v = t.views[i];
+          const s = i === A.view ? `[${v}]` : ` ${v} `;
+          x = g.put(x + (n ? 1 : 0), y, s, tabStyle(L, st, i === A.view), "view:" + i);
+        });
+        A.tabsMany = shownTabs.length > 1;
+      }
+      x = x ? x + 3 : 1;
+      if (barOn) {
+        // 検索の欄: 「\ 検索…」、語があれば「\ 検索: 語  3/10行」。
+        const field = S.searchbar === "line" ? {} : { bg: L.soft_bg };
+        const segs = [["\\", Object.assign({}, field, { fg: L.accent, b: 1 })], [" " + t.barName, Object.assign({}, field, typing ? { b: 1 } : {})]];
+        if (typing || f) {
+          segs.push([": ", Object.assign({}, field, typing ? { b: 1 } : {})], [f, Object.assign({}, field, { b: 1 })]);
+          if (typing) segs.push(["▏", field]);
+          if (f) segs.push([t.barCount(rs.length, A.rows.length), Object.assign({}, field, { fg: L.dim })]);
+        } else segs.push(["…", Object.assign({}, field, { fg: L.dim })]);
+        const inner = segs.reduce((n, [s]) => n + sw(s), 0);
+        const fw = Math.max(inner, 14) + 2;
+        let bx = g.put(x, y, " ", field, "bar");
+        for (const [s, so] of segs) bx = g.put(bx, y, s, so, "bar");
+        g.put(bx, y, " ".repeat(Math.max(0, x + fw - bx)), field, "bar");
+        x += fw + 1;
+      }
+      // ボタン(頭のキーの字はアクセントの色の太字、名前は控えめな色。効いていればアクセントの色)。
+      const buttons = [[` | ${t.filterBtn} `, "|", A.filterDone, "filterbtn"], [` S ${sortLabel()} `, "S", A.sorts.length > 0, "sortbtn"], [` ${t.groupBtn} `, null, A.group === 2, "groupbtn"], [` ${t.colsBtn} `, null, A.hidden.length > 0, "colsbtn"]];
+      const nb = ` a ${t.newNote} `;
+      // 入らなければ 列・分類・並べ替え・絞り込みの順に省く(「+ 新規」は右の端に残す)。
+      while (buttons.length && x + buttons.reduce((n, [s]) => n + sw(s) + 1, 0) > W - sw(nb) - 1) buttons.pop();
+      for (const [s, k, on, a] of buttons) {
+        if (a === "sortbtn") { A.sortX = x; A.sortY = y; }
+        x = keyButton(g, L, x, y, s, k, btnSt(L, on), a) + 1;
+      }
+      // NV-26: タブの切り替えの案内(タブが2つ以上で、入るときだけ)。
+      const hint = t.tabSwitch;
+      if (A.disp.tabs && A.tabs.hint && A.tabsMany && x - 1 + sw(hint) <= W - sw(nb) - 1) g.put(x - 1, y, hint, { dim: 1 });
+      // CE-25: 右の端の「+ 新規」。
+      keyButton(g, L, W - sw(nb), y, nb, "a", btnSt(L, false), "new");
+      y += 2;
     }
-    // 設定の帯(効いている条件があるときだけ)。
+    // 設定の帯(効いている条件があるときだけ。ビューの帯の下)。
     const chips = chipsNow();
     if (chips.length) {
       if (S.setband === "pill") {
@@ -736,22 +746,41 @@ function drawTable(g, L, st, opts = {}) {
   });
   return { colX, widths, top: y - Math.min(rs.length, maxRows), rs };
 }
-// SR-42: タブの左に、ワークスペースと設定のボタン。
-function headerButtons(g, L, right) {
-  const t = tx();
-  const items = [[t.wsButton, "ws"], [t.settingsButton, "settings"]];
-  const total = items.reduce((n, [s]) => n + sw(s) + 1, 0);
-  let x = right - total;
-  for (const [s, a] of items) x = g.put(x, 0, s, { bg: L.soft_bg, fg: L.accent }, a) + 1;
+// SR-1: ヘッダーの行(上の余白 display.top_padding の既定 1 の下)。
+const HEAD_Y = 1;
+// ボタンの見た目(NV-23。ビューの帯とヘッダーのボタンで同じ)。on は効いているか。
+const btnSt = (L, on) => ({ bg: L.soft_bg, fg: on ? L.accent : L.dim });
+// NV-23・SR-42: ボタンの文字 text(頭が「キー 」か「 キー 」)を、キーの字だけアクセントの色の太字で描く。
+function keyButton(g, L, x, y, text, key, base, a) {
+  const lead = text.startsWith(" ") ? " " : "";
+  if (key && text.slice(lead.length).startsWith(key + " ")) {
+    x = g.put(x, y, lead, base, a);
+    x = g.put(x, y, key, Object.assign({}, base, { fg: L.accent, b: 1 }), a);
+    return g.put(x, y, text.slice(lead.length + key.length), base, a);
+  }
+  return g.put(x, y, text, base, a);
 }
+// SR-42・REL-8: ヘッダー。左にパンくずのボタン「w 名前 ▾」(押すとワークスペースの一覧)と行の数、
+// 右の端に画面の型のメニュー「▦ 表 ▾」(関係マップでは「◇ 関係マップ ▾」。押すと切り替え)と「o ⚙ 設定」。
+function drawHeader(g, L, crumb, rest, onMap) {
+  const t = tx(), y = HEAD_Y;
+  const x = keyButton(g, L, 1, y, `w ${crumb} ▾`, "w", { bg: L.soft_bg, fg: L.header, b: 1 }, "ws");
+  g.put(x, y, "  " + rest, { b: 1, fg: L.header });
+  const menu = onMap ? ` ◇ ${t.screenMap} ▾ ` : ` ▦ ${t.screenTable} ▾ `;
+  const set = ` o ⚙ ${t.settingsLabel} `;
+  const sx = W - sw(set);
+  keyButton(g, L, sx - 1 - sw(menu), y, menu, null, btnSt(L, false), onMap ? "tab-table" : "tab-map");
+  keyButton(g, L, sx, y, set, "o", btnSt(L, false), "settings");
+}
+// 並べ替えのボタンの名前(前後の空白なし。並べ替えがあれば最初の決まりと残りの数)。
 function sortLabel() {
   const t = tx();
-  if (!A.sorts.length) return t.sortButton;
+  if (!A.sorts.length) return t.sortName;
   const s = A.sorts[0];
   const name = (COLS().find(c => c[0] === s.k) || [s.k, s.k])[1];
-  return ` ${s.desc ? "↓" : "↑"} ${name}${A.sorts.length > 1 ? " +" + (A.sorts.length - 1) : ""} `;
+  return `${s.desc ? "↓" : "↑"} ${name}${A.sorts.length > 1 ? " +" + (A.sorts.length - 1) : ""}`;
 }
-// NV-24: 並べ替えの窓(検索の欄の下、右の端)。
+// NV-24: 並べ替えの窓(ビューの帯の並べ替えのボタンの下)。
 function drawSortWin(g, L, st) {
   const t = tx();
   const F = frameChars(st);
@@ -760,7 +789,7 @@ function drawSortWin(g, L, st) {
     : A.sorts.map((s, i) => [`${s.desc ? "↓" : "↑"} ${(COLS().find(c => c[0] === s.k) || [0, s.k])[1]}  ${s.desc ? t.desc : t.asc}`, "rule:" + i, i]).concat([[t.sortAdd, "add"]]);
   const title = w.picking ? t.sortPick : t.sortTitle;
   const iw = Math.max(sw(title) + 4, ...items.map(([s]) => sw(s) + 6));
-  const x0 = W - iw, y0 = (A.sortY || 2) + 1;
+  const x0 = Math.min(A.sortX || 0, W - iw), y0 = (A.sortY || 3) + 1;
   const e = { fg: L.accent };
   g.put(x0, y0, F[0] + F[4] + title + F[4].repeat(Math.max(0, iw - 3 - sw(title))) + F[1], e);
   items.forEach(([s, a, ri], i) => {
@@ -1015,12 +1044,12 @@ function drawSettings(g, L, st) {
   t.setBtns1.forEach(l => { bx = g.put(bx, yb, ` ${l} `, { bg: L.soft_bg }, "set:other") + 1; });
   g.put(bx + 1, yb, ` ${t.setReset} `, dim, "set:reset");
 }
-// ワークスペースの一覧(ヘッダーの「▾ 見本」)。
+// ワークスペースの一覧(ヘッダーのパンくず「w 見本 ▾」・w。パンくずのすぐ下に開く)。
 function drawWsList(g, L, st) {
   const t = tx(), F = frameChars(st);
   const items = t.wsItems;
   const iw = Math.max(sw(t.wsTitle) + 4, ...items.map(s => sw(s) + 4));
-  const x0 = W - iw - 22, y0 = 1;
+  const x0 = 1, y0 = HEAD_Y + 1;
   const e = { fg: L.accent };
   g.put(x0, y0, F[0] + F[4] + t.wsTitle + F[4].repeat(Math.max(0, iw - 3 - sw(t.wsTitle))) + F[1], e);
   items.forEach((s, i) => { g.put(x0, y0 + 1 + i, F[5], e); g.put(x0 + 1, y0 + 1 + i, fitw((i === 0 ? ">" : " ") + s, iw - 2), i === 0 ? { bg: L.sel_bg, b: 1 } : { bg: L.bg }, "wsitem:" + i); g.put(x0 + iw - 1, y0 + 1 + i, F[5], e); });
@@ -1059,17 +1088,16 @@ function drawDetail(g, L, st) {
 
 // 関係マップ(ER 図)。
 function drawMap(g, L, st) {
+  // CE-25: 関係マップではビューの帯が無いので、新しいノートは a で作る。
   const t = tx();
   const F = frameChars(st);
   const ln = st.frames === "heavy" ? { h: "━", v: "┃" } : st.frames === "ascii" ? { h: "-", v: "|" } : { h: "─", v: "│" };
   const C = st.frames === "ascii" ? { dr: "+", dl: "+", ur: "+", ul: "+" } : { dr: "┌", dl: "┐", ur: "└", ul: "┘" };
-  g.put(0, 0, " tasks  " + t.rows(A.rows.length) + t.ws, { b: 1, fg: L.header });
-  const right = [[" " + t.tabsR[0] + " ", false, "tab-table"], [`[${t.tabsR[1]}]`, true, "tab-map"]];
-  let x = W - right.reduce((n, [s]) => n + sw(s), 0) - sw(t.newNote);
-  headerButtons(g, L, x);
-  for (const [s, on, a] of right) x = g.put(x, 0, s, tabStyle(L, st, on), a);
-  // CE-25: 「+ 新規」は関係マップでも同じ位置に(選んでいる表に作る)。
-  g.put(x, 0, t.newNote, { bg: L.accent, fg: L.on_accent, b: 1 }, "new");
+  // SR-42・REL-8: ヘッダーは表の画面と同じ形(パンくずに範囲 › 表、メニューは「◇ 関係マップ ▾」)。
+  drawHeader(g, L, t.crumbName + " › tasks", t.rows(A.rows.length), true);
+  // マップの窓はヘッダーのすぐ下から(上の余白の分だけ下げる)。
+  const g0 = g;
+  g = { put: (x, y, s, so, a) => g0.put(x, y + HEAD_Y, s, so, a) };
   const dimLine = { fg: L.dim }, acc = { fg: L.accent };
   const outer = (x0, y0, w, h, title, on) => {
     const e = on ? acc : dimLine;
@@ -1204,7 +1232,7 @@ function key(k, e) {
     if (k === "Enter") { settingsClick("apply"); return true; }
     return false;
   }
-  if (A.mode === "ws") { if (k === "Escape") { A.mode = "table"; return true; } return false; }
+  if (A.mode === "ws") { if (k === "Escape" || k === "w") { A.mode = "table"; return true; } return false; }
   if (A.mode === "sorts") {
     const w = A.sortWin, n = A.sorts.length;
     const items = w.picking ? COLS().filter(c => !A.sorts.some(s => s.k === c[0])) : null;
@@ -1259,6 +1287,8 @@ function key(k, e) {
     case "s": click("head:" + A.col); return true;
     case "S": A.mode = "sorts"; A.sortWin = { sel: 0, picking: false }; break;
     case "o": openSettings(); break;
+    case "|": openSettings(); A.draft.sec = 1; break;
+    case "w": A.mode = "ws"; break;
     case "save": { const c = Object.keys(A.pend).length; if (c) { A.pend = {}; A.msg = tx().saved(c); } else A.msg = tx().nothing; break; }
     case "Escape": A.search = ""; A.same = null; A.filter = ""; break;
     default: return false;
@@ -1294,6 +1324,10 @@ function click(a) {
   else if (kind === "rule") { const i = +x; A.sortWin.sel = i; A.sorts[i].desc = !A.sorts[i].desc; }
   else if (kind === "ws") { A.mode = A.mode === "ws" ? "table" : "ws"; }
   else if (kind === "settings") openSettings();
+  // NV-23: ビューの帯の絞り込み・分類・列のボタン(見本では、ビューの設定のその区画を開く)。
+  else if (kind === "filterbtn") { openSettings(); A.draft.sec = 1; }
+  else if (kind === "groupbtn") { openSettings(); A.draft.sec = 3; }
+  else if (kind === "colsbtn") { openSettings(); A.draft.sec = 0; }
   else if (kind === "bar") { A.mode = "filter"; A.typing = A.filter; }
   else if (kind === "chip") {
     // 帯の項目を押すと、その条件を外す(ビューの条件 → 設定のフィルター → 並べ替えの順に並ぶ)。
@@ -1411,11 +1445,12 @@ function mini(partKey, v) {
   } else if (partKey === "searchbar" || partKey === "setband") {
     const saveA = A;
     A = Object.assign(freshApp(), { view: partKey === "setband" ? 2 : 0, filter: partKey === "searchbar" && v !== "quiet" ? "" : "" });
-    const gg = new Grid(70, 6, L);
+    const gg = new Grid(70, 10, L);
     drawTable(gg, L, st, {});
     A = saveA;
     S = keep.S;
-    gg.c = gg.c.slice(0, 5); gg.h = 5;
+    // ビューの帯から表の見出しまで(上の余白・ヘッダー・帯の上の余白は省く)。
+    gg.c = gg.c.slice(HEAD_Y + 2, HEAD_Y + 6); gg.h = 4;
     return gg.html();
   } else {
     const saveA = A;

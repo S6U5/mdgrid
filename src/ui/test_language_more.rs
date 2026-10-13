@@ -463,7 +463,8 @@ fn test_sr_23_ui_more_default_tab_english() {
     save_views(&conf, &tmp.notes(), &[view]).unwrap();
     let mut a = boot(&tmp);
     let s = screen(&a);
-    let tabs = line(&s, 1);
+    // タブはビューの帯の字の行(2026-10-12-search-box・view-bar-plain の3行の帯では3行目)。
+    let tabs = line(&s, super::bands::mid_row(&a));
     assert!(
         tabs.contains("todo"),
         "タブに mdgrid のビュー: {tabs:?}\n{s}"
@@ -476,11 +477,11 @@ fn test_sr_23_ui_more_default_tab_english() {
     assert!(!has_ja(&tabs), "タブの行: {tabs:?}\n{s}");
     // 切り替えてもタブの行に日本語が無い(知らせはタブを隠しているときだけ出る。SR-20)。
     ch(&mut a, ']');
-    let tabs2 = line(&screen(&a), 1);
+    let tabs2 = line(&screen(&a), super::bands::mid_row(&a));
     assert!(tabs2.contains("[todo]"), "{tabs2:?}");
     assert!(!has_ja(&tabs2), "todo を選んだタブの行: {tabs2:?}");
     ch(&mut a, '[');
-    let tabs3 = line(&screen(&a), 1);
+    let tabs3 = line(&screen(&a), super::bands::mid_row(&a));
     assert!(!tabs3.contains("[todo]"), "既定の表に戻る: {tabs3:?}");
     assert!(
         tabs3

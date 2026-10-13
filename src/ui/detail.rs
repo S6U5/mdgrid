@@ -7,7 +7,7 @@ use super::cell::shown;
 use super::input::new_value_text;
 use super::keymap::{Action, Mode};
 use super::view::{footer, message};
-use super::width::{fit, sanitize, take, width, Align};
+use super::width::{fit, sanitize, take, width, wrap, Align};
 use mdgrid::base::Shown;
 use mdgrid::i18n::Msg;
 use mdgrid::source::{RowId, Value};
@@ -59,28 +59,6 @@ fn note_body_lines(body: &str) -> Vec<String> {
         .collect();
     if lines.len() > NOTE_BODY_MAX {
         out.push("…".into());
-    }
-    out
-}
-
-/// 値を幅 `w` で折り返す(改行でも分ける)。空なら1行の空。
-fn wrap(s: &str, w: usize) -> Vec<String> {
-    let w = w.max(1);
-    let mut out = Vec::new();
-    for para in s.split('\n') {
-        let mut rest = sanitize(para.trim_end_matches('\r'));
-        if rest.is_empty() {
-            out.push(String::new());
-            continue;
-        }
-        while !rest.is_empty() {
-            let mut head = take(&rest, w);
-            if head.is_empty() {
-                head = rest.graphemes(true).next().unwrap_or_default().to_string();
-            }
-            rest.drain(..head.len());
-            out.push(head);
-        }
     }
     out
 }

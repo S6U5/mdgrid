@@ -193,6 +193,19 @@ fn cmp_symbol(op: CmpOp) -> &'static str {
     }
 }
 
+/// 条件の比べ方と値の文字(絞り込みの窓の表の形。NV-29)。値の無い比べ方(空である など)は値が空。
+pub fn cond_parts(c: &Cond) -> (String, String) {
+    match &c.op {
+        Op::Keep(k) => (Msg::OpKeep.text().to_string(), keys_label(k)),
+        Op::Drop(k) => (Msg::OpDrop.text().to_string(), keys_label(k)),
+        Op::Contains(s) => (Msg::KindContains.text().to_string(), s.clone()),
+        Op::NotContains(s) => (Msg::KindNotContains.text().to_string(), s.clone()),
+        Op::Cmp(o, s) => (cmp_symbol(*o).to_string(), s.clone()),
+        Op::Empty => (Msg::KindEmpty.text().to_string(), String::new()),
+        Op::NotEmpty => (Msg::KindNotEmpty.text().to_string(), String::new()),
+    }
+}
+
 fn cond_text(c: &Cond) -> String {
     let body = match &c.op {
         Op::Keep(k) => Msg::CondOnly.fill(&[&keys_label(k)]),

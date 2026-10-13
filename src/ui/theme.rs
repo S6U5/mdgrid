@@ -69,6 +69,12 @@ pub(crate) fn paint(buf: &mut Buffer, full: Rect, app: &App) {
         .then(|| (view::data_y(app) as u16).checked_sub(1))
         .flatten()
         .map(|d| full.y + d);
+    // ヘッダーの行(表の画面と関係マップでは SR-1 の上の余白の分だけ下がる)。
+    let head_row = if table_screen(app) || app.mode == Mode::Relations {
+        super::bands::head_y(app)
+    } else {
+        0
+    };
     // 右下の隅の1セルは書かない(端末の自動折り返しを避ける。ui::draw と同じ理由)。
     let corner = (
         full.right().saturating_sub(1),
@@ -102,7 +108,7 @@ pub(crate) fn paint(buf: &mut Buffer, full: Rect, app: &App) {
             }
             if !own_fg {
                 let m = cell.modifier;
-                let role = if y == full.y {
+                let role = if y == full.y + head_row {
                     header
                 } else if m.contains(Modifier::BOLD | Modifier::UNDERLINED) {
                     if Some(y) == colhead_y {

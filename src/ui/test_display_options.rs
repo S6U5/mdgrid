@@ -218,9 +218,11 @@ fn assert_unnumbered(app: &App) {
     }
 }
 
-/// タブの行(2行目)。
+/// タブの行(ビューの帯の真ん中の行。3行の帯(2026-10-12-search-box・view-bar-plain)では3行目、
+/// 1行の帯では2行目)。
 fn tab_line(a: &App) -> String {
-    screen(a).lines().nth(1).unwrap_or("").to_string()
+    let y = super::bands::mid_row(a);
+    screen(a).lines().nth(y).unwrap_or("").to_string()
 }
 
 /// `]` で名前のタブまで動かす(選んだタブは `[名前]`)。
@@ -292,7 +294,8 @@ fn display_checked(a: &App, label: &str) -> bool {
 fn toggle_display(a: &mut App, label: &str) -> bool {
     display_section(a);
     let before = display_checked(a, label);
-    for _ in 0..10 {
+    // 項目の数だけ下へ(2026-10-12-row-lines で 11 項目になった。数を決め打ちしない)。
+    for _ in 0..=mdgrid::display::ITEMS.len() {
         let s = screen(a);
         if s.contains(&format!(">{label}")) {
             ch(a, ' ');
@@ -665,16 +668,27 @@ fn test_sr_20_column_lines_default_none_on_draws_bars() {
 #[test]
 fn test_sr_20_search_bar_hidden_from_settings_screen() {
     // [SR-20][NV-23] 設定の画面の「表示」で検索の欄を隠して反映 → 欄が無く表が1行広い。`\` は最下行で打てる。
-    let (_t, mut a) = folder_with("sr20bar", "", ColorMode::None);
+    // SR-1: 欄はビューのタブと同じ行(ビューの帯)にあり、行ごと消えるのはタブも出さないとき。前の「欄の行が
+    // 消える」と同じ形にするため、タブを出さない設定(SR-34 の never)で始める。
+    let (_t, mut a) = folder_with("sr20bar", "[display]\ntabs = \"never\"\n", ColorMode::None);
     let h_on = a.data_height();
-    assert!(screen(&a).contains("検索:"));
+    let dy_on = view::data_y(&a);
+    assert!(screen(&a).contains("\\ 検索"));
     open(&mut a);
     assert!(!toggle_display(&mut a, "検索の欄"));
     apply_btn(&mut a);
-    assert_eq!(a.data_height(), h_on + 1, "表が1行広い");
+    // 2026-10-12-search-box・view-bar-plain: 帯は3行なので、欄を隠すと表は3行広い。
+    assert_eq!(a.data_height(), h_on + 3, "表が3行広い");
+    assert_eq!(view::data_y(&a), dy_on - 3);
     let s = screen(&a);
-    assert!(!s.contains("検索:"), "{s}");
-    assert!(s.lines().nth(2).unwrap().contains("ノート"), "{s}");
+    assert!(!s.contains("検索"), "{s}");
+    assert!(
+        s.lines()
+            .nth(view::data_y(&a) - 1)
+            .unwrap()
+            .contains("ノート"),
+        "{s}"
+    );
     ch(&mut a, '\\');
     typing(&mut a, "会議");
     assert_eq!(a.mode, Mode::Filter);
@@ -689,24 +703,31 @@ fn test_sr_20_search_bar_hidden_from_settings_screen() {
 
 #[test]
 fn test_sr_20_tabs_hidden_but_brackets_switch() {
-    // [SR-20][SR-21] 設定 `[display] tabs = false` → タブの行が無く、表が1行広い。`]` でビューは切り替わる。
+    // [SR-20][SR-21] 設定 `[display] tabs = false` → タブが無い。SR-1 で検索の欄はタブと同じ行(ビューの帯)に
+    // あるので、行は欄のために残り、表は上がらない(決定 2026-10-11-view-bar-locks)。`]` でビューは切り替わる。
     let tmp = vault("sr20tabs");
     let on = boot_base(&tmp, cfg(""), ColorMode::None);
     let h_on = on.data_height();
     let rows_all = labels(&on);
     drop(on);
     let mut a = boot_base(&tmp, cfg("[display]\ntabs = false\n"), ColorMode::None);
-    assert_eq!(a.data_height(), h_on + 1, "表が1行広い");
+    assert_eq!(a.data_height(), h_on, "検索の欄の行が残り、表は上がらない");
     let s = screen(&a);
     assert!(
         !s.contains("[全部]") && !s.contains("進行"),
         "タブが無い:\n{s}"
     );
+    // 検索の欄はビューの帯の左の端(タブのあった所)に寄る。2026-10-12-search-box・view-bar-plain で帯は
+    // 上下に余白を取り、欄の字は帯の真ん中の行(上の余白(bar-padding-half)の分も下がる)。
     assert!(
-        s.lines().nth(1).unwrap().starts_with(" 検索:"),
-        "検索の欄が1行上がる:\n{s}"
+        s.lines()
+            .nth(super::bands::mid_row(&a))
+            .unwrap()
+            .starts_with("  \\ 検索"),
+        "検索の欄がビューの帯の左の端:\n{s}"
     );
-    assert!((0..80u16).all(|x| view::tab_at(&a, x, 1).is_none()));
+    let mid = super::bands::mid_row(&a) as u16;
+    assert!((0..80u16).all(|x| view::tab_at(&a, x, mid).is_none()));
     assert_eq!(labels(&a), rows_all);
     // `]` で「進行」(doing を外す)に切り替わる。
     ch(&mut a, ']');

@@ -1,0 +1,1486 @@
+# mdgrid の画面と起動の文言の台帳: 英語(SR-23)。文言の名前と並びの正本。
+# 1行に1つ `名前 = "文"`(TOML の基本の文字列)。`##` の行は次の文言の説明(コードの文書になる)、`#` の行は区切り。
+# 差し込みは `{0}`・`{1}` の番号。ほかの言語の台帳は同じ名前を全部持ち、同じ番号を使う(欠け・余り・空・番号の
+# 食い違いはビルドで落ちる。build.rs・src/ledger.rs)。
+
+
+# ---- main: 使い方(CLI-2) ----
+Usage = "Usage: mdgrid [<.base | folder | .md | .csv> ...] [--view <name>] [-w <name>] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid [<folder | .base> ...] --add-to <name> [--as <table name>] | --remove-from <name>\n        mdgrid [<folder> ...] --init-workspace\n        mdgrid --workspaces | --remove-workspace <name>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the root folder). Given a .md file, open its folder with that note selected.\n  Given a .csv or .tsv file, open it as a table: one row per line, the first line\n  names the columns.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any).\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  -w, --workspace <name>  use that workspace (workspaces.toml) for links and the relation map;\n                          with no path, open its first table\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --workspaces            list the workspaces (workspaces.toml)\n  --add-to <name>         add the given tables (default: this folder) to that workspace,\n                          creating it if needed; --as <name> names the table\n  --remove-from <name>    remove the given tables (default: this folder) from that workspace\n  --remove-workspace <name>  delete that workspace (notes are not touched)\n  --init-workspace        put a workspace marker .mdgrid/workspace.toml in the folder\n                          (default: this folder)\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version"
+
+# ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
+ValuePath = "path"
+ValueName = "name"
+ValueFormat = "format"
+ValuePick = "path|column"
+ValueShell = "shell"
+ValueExpr = "expression"
+ValueSort = "column[:desc]"
+
+# ---- main: 引数の誤り(CLI-4。clap の誤りを1行に直す) ----
+CliUnknownOption = "unknown option: {0} (see --help)"
+## {0} はオプション、{1} は無いもの(`CliWhat*`)。
+CliMissingValue = "{0} needs {1}"
+CliWhatView = "a view name"
+CliWhatConfig = "a config path"
+CliWhatShell = "a shell name"
+CliWhatFormat = "a format name"
+CliWhatPick = "what to print (path or a column name)"
+CliWhatValue = "a value"
+CliUnknownValue = "unknown value for {0}: {1} (valid values: {2})"
+## 並べた値の区切り。
+ListSep = ", "
+CliInvalidUtf8 = "arguments are not valid UTF-8"
+CliConflict = "{0} and {1} cannot be used together (see --help)"
+CliRequired = "{0} is required (see --help)"
+## {0} は渡された旗、{1} はそれに要るもの(`--format`・`--with-path` に `--print`)。
+CliRequiredBy = "{0} requires {1} (see --help)"
+CliTakesNoValue = "{0} takes no value: {1} (see --help)"
+CliBadArgument = "cannot read the argument: {0} (see --help)"
+CliUnreadable = "cannot read the arguments: {0} (see --help)"
+
+# ---- main: 起動できない理由(CLI-4・SR-10) ----
+CannotWriteOutput = "cannot write the output: {0}"
+ConfigUnreadable = "cannot read the config: {0} ({1})"
+PathUnopenable = "cannot open the path: {0} ({1})"
+CsvAlone = "a .csv or .tsv must be given alone (not with folders or other files): {0}"
+BaseAlone = ".base must be given alone (not with folders or another .base): {0}"
+NotAFolder = "not a folder: {0}"
+ViewNeedsBase = "--view {0} can only be used when opening a .base"
+CannotOpen = "cannot open: {0}"
+BaseUnreadable = "cannot read the .base: {0} ({1})"
+## {0} はビューの名前、{1} は `ViewsAre` か `NoViews`。
+NoSuchView = "no view \"{0}\" ({1})"
+ViewsAre = "views: {0}"
+NoViews = "there are no views"
+NotATerminal = "standard input and output are not a terminal, so the screen cannot be shown"
+NoDevTty = "cannot open the terminal (/dev/tty), so the screen cannot be shown ({0})"
+TerminalError = "terminal error: {0}"
+PickNoColumn = "--pick column \"{0}\" is not in the table (columns: {1})"
+
+# ---- source/markdown: 読むだけの理由(WB-3・WB-5・CE-8・CE-16・CE-19・BV-12) ----
+LockNoFrontmatterSetting = "no front matter (not added by the setting)"
+LockEmptyFrontmatterSetting = "empty front matter (not filled by the setting)"
+LockTypesConflict = "types.json gives this column different types per root (read-only)"
+LockNoFrontmatter = "no front matter"
+LockEmptyFrontmatter = "front matter is empty"
+LockBom = "the file starts with a BOM"
+
+# ---- --apply(CLI-17) ----
+## {0} は JSON の読み取りの誤り。
+ApplyBadJson = "cannot read the JSON: {0}"
+## {0} は何番目のオブジェクトか。
+ApplyNoPath = "item {0} has no \"path\" (print with --with-path)"
+ApplyBadCsv = "cannot read the CSV: a quoted field is not closed"
+ApplyNoPathColumn = "the CSV has no \"path\" column (print with --with-path)"
+## {0} は行、{1} は欄の数、{2} は見出しの欄の数。
+ApplyCsvWidth = "line {0} has {1} fields, the header has {2}"
+ApplyNotList = "the value must be text, a number, true/false, null or a list of text"
+## {0} は行、{1} は path。
+ApplyUnknownPath = "line {0}: no note at {1}"
+## {0} は行、{1} は path、{2} は列、{3} は理由。
+ApplyBadValue = "line {0}: {1}: {2}: {3}"
+## {0} は行、{1} は path、{2} は列、{3} は読むだけの理由。
+ApplyLocked = "line {0}: {1}: {2} cannot be written ({3})"
+## {0} はノート。
+ApplyChangedOutside = "{0} changed outside mdgrid; not written"
+## {0} は変わるファイルの数。
+ApplyDryRun = "{0} files would change; nothing was written (add --yes to write them)"
+## {0} は数。
+ApplyDryRunOne = "{0} file would change; nothing was written (add --yes to write it)"
+## {0} は捨てた直しの数、{1} は列の名前。
+ApplyIgnored = "{0} edits in columns that cannot be written were ignored ({1})"
+ApplyIgnoredOne = "{0} edit in a column that cannot be written was ignored ({1})"
+## CLI-16。{0} は列の名前。
+CliUnknownSort = "--sort {0}: no such column in the view or in the notes"
+ApplyNoChanges = "no changes: every value is the same as in the notes"
+## {0} はファイル、{1} は誤り。
+ApplyUnreadable = "cannot read {0}: {1}"
+ApplyProblems = "nothing was written because of the problems above"
+## {0} は見出し。
+ApplyDuplicateHeader = "the column {0} appears twice in the header"
+## {0} は見出し。
+ApplyUnknownColumn = "the column {0} is not in the view and no note has that key (check the spelling)"
+## {0} は見出し。
+ApplyAmbiguousColumn = "the column {0} could mean two columns (a display name and another column's key)"
+## {0} は行、{1} は path。
+ApplyAmbiguousPath = "line {0}: {1} matches different notes under the given folders (write the path from one folder)"
+## {0} は行、{1} は path、{2} は列、{3} は先に書いた行。
+ApplyDuplicateRow = "line {0}: {1}: {2} is already set on line {3}"
+## {0} は値。
+ApplyDateForm = "write dates as YYYY-MM-DD (\"{0}\")"
+ApplyListAmbiguous = "this list has items containing \", \" or edge spaces, so it cannot be edited from CSV (use --format json)"
+## {0} は数。
+ApplyBigNumber = "{0} does not fit in a 64-bit integer (it would be rounded)"
+ApplyReadonly = "--apply writes notes, so it cannot be used with --readonly"
+## CLI-16。{0} は渡した --sort の値。
+CliBadSort = "--sort {0}: write a column, optionally followed by :asc or :desc"
+## CLI-16。{0} はビューの名前。
+CliFilterNativeView = "--filter and --sort work with a .base view or a folder, not with the mdgrid view \"{0}\""
+LockToml = "the frontmatter is TOML (+++), not YAML"
+LockNotUtf8 = "the file is not UTF-8"
+LockMixedNewlines = "mixed line endings"
+## {0} は重なったキー。
+LockDuplicateKey = "the same key appears twice ({0})"
+LockUnclosed = "front matter is not closed"
+LockHardLink = "the file has hard links"
+LockInvalidYaml = "unreadable format (read-only)"
+LockInvalidYamlAt = "unreadable YAML at line {0}: {1} (read-only)"
+LockFileAttr = "file attribute (read-only)"
+LockFormulaColumn = "formula column (read-only)"
+## WB-5。`writeback::NO_PERMISSION` は日本語。
+NoPermission = "no write permission"
+ListBlankBetween = "list with blank lines between items"
+ListCommentBetween = "list with comments between items"
+ListTrailingComment = "list with comments after items"
+ListIndent = "list with items at different indents"
+ListTabAfterDash = "list with a tab after `-`"
+ListMultiLine = "list with an item spanning several lines"
+ListNested = "list with nested items"
+ListNonString = "list with non-string items"
+ValueNested = "nested value"
+ValueMultiLine = "multi-line value"
+ValueAnchor = "anchored value"
+ValueTagged = "tagged value"
+ValueUnwritable = "value in a form that cannot be rewritten"
+RowNotLoaded = "row not loaded"
+SyncConflictFile = "sync conflict file"
+CannotRead = "cannot read: {0}"
+
+# ---- changes: ためられない理由(CE-8・CE-16・CE-18) ----
+NoBaseAfterReload = "no baseline for the reloaded row"
+SkipListCell = "cannot write a single value to a list cell (add or remove items instead)"
+SkipNotLoaded = "not loaded yet"
+
+# ---- types: 日付の形と日付の打ち込み(CE-5・CE-22) ----
+## {0} は形(引用符つき)、{1} は理由。
+DateFormatBad = "cannot read the date format {0}: {1}"
+DateFormatBadChar = "{0} cannot be used (the parts are YYYY, YY, MM, M, DD, D, ddd and non-alphanumeric separators)"
+DateFormatMonthDay = "needs exactly one month (MM or M) and one day (DD or D)"
+DateFormatYearWeekday = "at most one year and one weekday"
+DateFormatAdjacent = "M and D cannot be placed next to other number parts without a separator"
+DateNotReal = "no such date: {0}"
+## {0} は打ち込み、{1} は日付、{2} は曜日(訳さない)。
+DateWeekdayMismatch = "the weekday does not match the date: {0} ({1} is {2})"
+## {1} は使える形を `ListSep` で並べたもの。
+DateUnreadable = "not a date: {0} ({1})"
+DateEmptyClears = "empty to clear"
+DateOutOfRange = "outside the date range (0000-01-01 to 9999-12-31): {0}"
+
+# ---- config: 設定の警告(CLI-3) ----
+ConfigTomlLine = "cannot read the config TOML (line {0}): {1}"
+ConfigToml = "cannot read the config TOML: {0}"
+WantIntAtLeast0 = "an integer of 0 or more"
+WantIntAtLeast1 = "an integer of 1 or more"
+WantBool = "true or false"
+WantDateFormat = "a date format string"
+WantWeekStart = "\"sun\" or \"mon\""
+WantString = "a string"
+WantLanguage = "one of \"auto\", \"en\", \"ja\""
+WantLook = "\"modern\" or \"classic\""
+WantCells = "\"rich\" or \"plain\""
+WantCellsColumns = "a table of column = \"rich\", \"plain\" or \"chip\""
+WantColStyle = "\"rich\", \"plain\" or \"chip\""
+WantTheme = "one of \"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\", \"paper\" (or a { light, dark } table)"
+## {0} は候補の並び。
+WantOneOf = "one of {0}"
+WantTable = "a table"
+WantTabs = "\"always\", \"auto\" or \"never\""
+WantButtons = "\"plain\" or \"box\""
+WantBarPadding = "0 to 2 in steps of 0.5 (0, 0.5, 1, 1.5 or 2)"
+WantRowExtraLines = "a whole number from 0 to 9"
+## 設定の警告(CLI-3)。{0} はファイルの名前、{1} は項目の道筋、{2} は理由。
+SettingWarn = "{0}: {1}: {2}"
+## 値の出どころ(SR-44)の、ビューの設定の範囲。
+OriginView = "view settings"
+## {0} は求める型(Want*)。
+RsnNot = "not {0} (ignored)"
+RsnUnknown = "unknown item (ignored)"
+## {0} は新しい道筋(CLI-20)。
+RsnMoved = "the old name moved to `{0}` (read as that)"
+RsnGlobalOnly = "can be written only in config.toml (ignored)"
+RsnNoTemplate = "no template named \"{0}\" (ignored)"
+RsnNestedUse = "a template cannot use another template (ignored)"
+RsnBadDateFormat = "{0}; using the default YYYY-MM-DD"
+RsnBadColumn = "`{0}` is not a writable column, or a duplicate (ignored)"
+RsnBadNoteMode = "\"{0}\" is not \"form\" or \"editor\"; using the form"
+RsnNeedName = "needs a name (string) that does not repeat (ignored)"
+RsnNeedPath = "needs a path (string) (ignored)"
+RsnNeedNamePath = "needs a name and a path (strings), and the name must not repeat (ignored)"
+RsnDuplicateValue = "the same value is written twice (one of them is used)"
+WantColor = "a color (\"#rrggbb\", \"#rgb\" or a color name)"
+WantNerdFont = "true, false or \"auto\""
+WantKeysTable = "a [keys.<mode>] table"
+WantKeyActionTable = "a table of key = action"
+WantActionName = "an action name string"
+WantNewNoteTable = "a [new_note] table"
+WantColumnNames = "a list of column name strings"
+WantColumnValueTable = "a table of column = value"
+WantSetValue = "a string, number, boolean, date, or a list of them"
+WantDisplayTable = "a [display] table"
+
+# ---- views: views.toml の警告と誤り(BV-20) ----
+## {0} はファイル、{1} は行、{2} は TOML の誤り(英語のまま)。
+ViewsTomlLine = "cannot read {0} (line {1}), so mdgrid views are not loaded: {2}"
+## SR-43: 見た目の区画。
+NavLook = "Look"
+DescLook = "Theme, part shapes and round pill ends (saved to look.toml)"
+LookScope = "Save to"
+LookTheme = "Theme"
+LookPreset = "Parts"
+LookNerd = "Round pill ends"
+LookTemplates = "Templates"
+LookSaveTemplate = "+ Save this look as a template"
+LookResetRow = "Remove the override of this place"
+LookNerdAuto = "auto (by the terminal)"
+LookNerdOn = "true (on, Nerd Font)"
+LookNerdOff = "false (off)"
+LookPickOf = "Choose: {0}"
+LookTemplateUsed = "Using template \"{0}\" (Apply to see it)"
+LookTemplateSaved = "Saved template \"{0}\""
+LookTemplateDeleted = "Deleted template \"{0}\""
+## {0} は範囲の名前。
+LookReset = "Removed the theme and parts written for {0}"
+## {0} はテンプレートの名前。
+LookTemplateInConfig = "Template \"{0}\" is written in config.toml; edit config.toml to delete it"
+LookMarkerReadOnly = "The workspace marker (.mdgrid/workspace.toml) is in the notes folder, so mdgrid does not write it; write the look there by hand"
+OriginDefault = "default"
+OriginConfig = "config.toml"
+OriginGlobal = "global"
+OriginWorkspace = "this workspace"
+OriginTable = "this table"
+OriginThisView = "this view"
+TextLookTemplate = "template name"
+SetHintLook = "{0} choose or use  {1} delete a template (Apply to see the look)"
+## SR-43: look.toml の警告。
+LookBroken = "{0}: cannot read ({1}); using the look in config.toml"
+LookTemplateNoName = "{0}: a template without name (ignored)"
+ViewsToml = "cannot read {0}, so mdgrid views are not loaded: {1}"
+ViewsNotUtf8 = "{0} is not UTF-8, so mdgrid views are not loaded"
+ViewsTargetNotArray = "ignored `target` in {0}: not an array of [[target]] tables"
+## {1} は1から数えた番号。
+ViewsTargetNotTable = "ignored target #{1} in {0}: not a table"
+ViewsTargetNoPath = "ignored target #{1} in {0}: no path (string)"
+ViewsViewNotArray = "ignored the view of target `{1}` in {0}: not an array of [[target.view]] tables"
+ViewsViewNotTable = "ignored view #{2} of target `{1}` in {0}: not a table"
+ViewsViewUnreadable = "ignored view #{2} of target `{1}` in {0}: cannot read it: {3}"
+ViewsSaveNotUtf8 = "{0} is not UTF-8, so it is not written"
+ViewsSaveBroken = "{0} (not written)"
+ViewsSaveTargetNotArray = "`target` in {0} is not an array of tables, so it is not written"
+ViewsNotATable = "cannot turn the view into a table"
+
+# ---- views: .base への書き出しの近似と落としたもの(BV-19・SR-20) ----
+ExportEmptyNote = "how {0} is judged \"empty\": when the value is a map or a nested list, it may look empty to the expression and the rows may differ"
+## {0} は列、{1} は `Approx*`。
+ExportApprox = "the condition on {0} is approximate: {1}"
+ApproxDateValue = "the date or date-time value \"{0}\" is compared as a date or time (values with surrounding spaces, or the same date-time written differently, also match)"
+ApproxMapValue = "the value \"{…}\" (a map or nested list) cannot be matched by the expression"
+ApproxContainsDateTime = "\"{0}\" is searched in date-time values padded to seconds (…T10:00:00)"
+ApproxContainsJoined = "\"{0}\" is searched in the list items joined as text, so it also matches across item boundaries"
+ApproxContainsMap = "map and nested-list values (\"{…}\" in settings) cannot be searched the same way by the expression"
+ApproxCmpList = "list values (values of the wrong type) are not kept by the expression (settings compares each item)"
+ApproxCmpDateLoose = "values with surrounding spaces, space-separated values and values with Z are also read as dates or date-times (values of the wrong type in settings)"
+ApproxCmpUnknownType = "the column type is unknown, so values are compared with \"{0}\" as text (for a number or date column, settings keeps no rows)"
+ApproxCmpListJoined = "list values are compared as their items joined as text, not item by item"
+ApproxCmpMapEmpty = "map and nested-list values (\"{…}\" in settings) look empty to the expression and are not kept"
+ApproxCmpDateTimePadded = "date-time values are compared padded to seconds (…T10:00:00)"
+## {0} は formula の名前を `ListSep` と `formula.` でつないだもの。
+ExportFormulaRefs = "references formula.{0}, but mdgrid views have no formulas, so they were not exported (the references were kept but cannot be evaluated)"
+ExportHiddenDropped = "dropped the hidden columns ({0}): the column order (order) is empty, so .base cannot express them"
+ExportHideEmptyDropped = "dropped \"hide empty\" of the group ({0}) (NV-21): .base groupBy cannot express it"
+ExportDisplayDropped = "dropped the display toggles (row numbers, zebra stripes, etc. SR-20): .base has none"
+ImportNoView = ".base has no view {0}"
+ImportNoType = "the view has no type, so it was imported as table"
+ImportTypeAsTable = "imported the type: {0} view as table"
+ImportLimitDropped = "dropped limit: {0} (row limit): mdgrid views have none"
+ImportFormulasDropped = "dropped formulas ({0}): mdgrid views have none (columns and expressions using formula.* cannot be evaluated)"
+ImportDisplayNameDropped = "dropped displayName of properties ({0}): mdgrid views have none"
+
+# ---- base: .base の誤りと評価できない理由(BV-7・SC-8) ----
+BaseYaml = "cannot read the .base YAML: {0}"
+BaseNotMap = "the top of the .base is not a map"
+## {0} は深さの上限。
+BaseTooDeep = "the YAML is nested more than {0} levels deep"
+BaseAliasTooBig = "expanding the aliases (*) in the .base is too large (up to {0} nodes)"
+BaseFilterShape = "cannot read the filters (expected an expression string or a map of and, or, not)"
+BaseFilterUnknown = "unknown filters form: {0} (expected and, or, not)"
+## {0} は関数・項目、{1} は式。
+BaseUnsupported = "unsupported function or field {0} (expression: {1})"
+BaseExprSyntax = "cannot read the expression: {0} (expression: {1})"
+BaseInExpr = "{0} (expression: {1})"
+BaseFilterKept = "the filters expression cannot be evaluated by mdgrid (kept, but the view cannot be opened): {0}"
+BaseFilterDropped = "dropped an unreadable part of the filters: {0}"
+BaseFormulaCycle = "formula.{0} is circular"
+BaseFormulaMissing = "formula.{0} is not in formulas"
+BaseUnsupportedField = "unsupported field {0}"
+BaseBadColumn = "cannot read the column: {0}"
+BaseNoViewIndex = "no view {0}"
+BaseViewNoType = "view \"{0}\" has no type"
+## {0} は型、{1} はビューの名前。
+BaseViewUnsupported = "{0} view \"{1}\" is not supported (mdgrid shows table views only)"
+BaseGlobalFilters = "cannot evaluate the global filters: {0}"
+BaseViewFilters = "cannot evaluate the filters of view \"{0}\": {1}"
+BaseCannotSort = "cannot sort by {0} (treated as empty): {1}"
+## 空のグループの見出し(base・settings)。
+EmptyHeading = "(empty)"
+## {0} は列、{1} は集計の名前、{2} は最上位の summaries の式。
+BaseSummaryFormula = "summary of {0}: the formula summary {1} is not supported ({2})"
+## {0} は列、{1} は集計の名前。
+BaseSummaryUnknown = "summary of {0}: unknown summary {1}"
+BaseSummaryGroups = "summaries per group are not supported (the summary row is for the whole table)"
+
+# ---- summary: 組み込みの集計の名前(BV-14。英語は Obsidian の名前) ----
+SummaryAverage = "Average"
+SummaryMin = "Min"
+SummaryMax = "Max"
+SummarySum = "Sum"
+SummaryRange = "Range"
+SummaryMedian = "Median"
+SummaryStddev = "Stddev"
+SummaryEarliest = "Earliest"
+SummaryLatest = "Latest"
+SummaryChecked = "Checked"
+SummaryUnchecked = "Unchecked"
+SummaryEmpty = "Empty"
+SummaryFilled = "Filled"
+SummaryUnique = "Unique"
+## 集計の行の、ノートの列の見出し。
+SummaryRow = "Summary"
+
+# ---- expr: 式の読み取りの誤り ----
+ExprBadNumber = "not a number: {0}"
+ExprNameAfterNumber = "a name right after a number: {0}{1}"
+ExprUnclosedString = "unclosed string"
+ExprBadChar = "unexpected character: {0}"
+ExprTooDeep = "the expression is nested too deeply"
+ExprMissing = "missing {0}"
+ExprCommaOrRParen = "`,` or `)`"
+ExprCommaOrRBrack = "`,` or `]`"
+ExprNoNameAfterDot = "no name after `.`"
+ExprUnexpectedEnd = "the expression ends too early"
+ExprUnexpectedToken = "unexpected token here: {0}"
+ExprArityAtLeast = "{0} or more"
+ExprArityRange = "{0} to {1}"
+## {0} は関数、{1} は渡した数、{2} は求める数。
+ExprArity = "wrong number of arguments for {0} ({1} given, expected {2})"
+ExprTrailing = "extra input after the expression: {0}"
+
+# ---- newnote: 新しいノートの設定と作れない理由(CE-25・CE-26・CE-27) ----
+NewNoteNotTable = "new_note is not a table"
+NewNoteNotString = "new_note.{0} is not a string"
+NewNoteAskNotArray = "new_note.ask is not an array"
+NewNoteAskNonString = "new_note.ask has a non-string value"
+NewNoteSetNotTable = "new_note.set is not a table"
+NewNoteSetBadValue = "`{0}` in new_note.set is not a string, number, boolean, date, or a list of them"
+## {0} は `NewNoteWhat*`。
+NewNoteControl = "{0} has a control character"
+NewNoteAbsolute = "{0} is an absolute path (outside the opened folder), so the note is not created"
+NewNoteBadChar = "{0} has `{1}`, which Obsidian does not allow, so the note is not created"
+NewNoteDotDot = "{0} has `..` (outside the opened folder), so the note is not created"
+NewNoteDotPart = "`{1}` in {0} starts with `.` (skipped when reading), so the note is not created"
+NewNoteWhatFolder = "the configured folder"
+NewNoteWhatName = "the name"
+NewNoteEmptyName = "the name is empty, so the note is not created"
+NewNoteNameIsFolder = "the name ends with a folder, so the note is not created"
+NewNoteExists = "{0} already exists, so the note is not created"
+NewNoteEmptyKey = "cannot write a value with an empty column name: {0}"
+NewNoteNewline = "a value has a line break, so the note is not created"
+NewNoteNotEditable = "a value cannot be written, so the note is not created: {0}"
+NewNoteCannotBuild = "cannot build the content of the new note: {0}"
+
+# ---- print: --print の誤り(CLI-5) ----
+PrintNoViews = ".base has no views"
+PrintNativeView = "mdgrid view \"{0}\": {1}"
+
+# ---- settings: 設定の帯の項目(NV-16) ----
+ChipSort = "sort: {0} {1}"
+ChipGroupOff = "group: none"
+ChipGroup = "group: {0} {1}"
+ChipHideEmpty = " (hide empty)"
+CondOnly = "only {0}"
+CondExcept = "except {0}"
+CondContains = "contains \"{0}\""
+CondNotContains = "does not contain \"{0}\""
+CondEmpty = "is empty"
+CondNotEmpty = "is not empty"
+
+# ---- display: 「表示」の節の項目(SR-21) ----
+DisplayRowNumbers = "Row numbers"
+DisplayZebra = "Zebra stripes"
+DisplayColumnLines = "Column lines"
+DisplayGroupGap = "Group gaps"
+DisplayTabs = "Tabs"
+DisplaySearchBar = "Search bar"
+DisplayChips = "Settings band"
+DisplayButtons = "View bar buttons"
+DisplayBarPadding = "View bar padding"
+DisplayTopPadding = "Top padding"
+DisplayRowExtraLines = "Taller rows"
+
+# ---- ui/keymap: モードの表示名(SR-16。下の帯・ヘルプ・警告) ----
+ModeTable = "Table"
+ModeEdit = "Edit"
+ModeConfirm = "Save review"
+ModeQuit = "Confirm quit"
+ModeHelp = "Help"
+ModePalette = "Palette"
+## NV-1・NV-2(2026-10-11): 呼び直す前の `/` と上の欄のモードの表示名(書いた設定を前のモードに読む)。
+OldModeSearch = "Search"
+OldModeFilter = "Filter"
+ModeSearch = "Find"
+ModeFilter = "Search"
+ModeDetail = "Details"
+ModeSettings = "View settings"
+ModeSettingsText = "Settings input"
+ModeChips = "Settings band"
+ModeListPick = "List picker"
+ModeMenu = "Action menu"
+ModeFreq = "Value counts"
+ModeSorts = "Sorting"
+ModeFilterWin = "Filters"
+ModeFilterText = "Filter value"
+ModeDrawer = "Tables"
+ModeRelations = "Relations"
+ModeScreenMenu = "Screen type"
+
+# ---- ui/keymap: ヘルプの節(SR-5) ----
+SecMove = "Move"
+SecEdit = "Edit"
+SecFile = "Save and quit"
+SecInput = "Input box"
+SecReview = "Save review"
+SecQuit = "Confirm quit"
+SecFind = "Help and commands"
+SecOutside = "Editor and copy"
+SecInHelp = "In help"
+SecInPalette = "In the palette"
+SecShape = "Table layout"
+SecSearch = "Search and filter"
+SecSelect = "Selection and details"
+SecInPrompt = "Find and search input"
+SecInDetail = "In details"
+SecInSettings = "In view settings"
+SecInChips = "In the settings band"
+SecInPick = "In the list picker"
+SecNative = "mdgrid views (palette commands)"
+SecNote = "Create notes (palette commands)"
+SecInMenu = "In the action menu"
+SecInFreq = "In value counts"
+SecInSorts = "In the sort window"
+SecInFilters = "In the filter window"
+SecInDrawer = "In the table list"
+SecInRelMap = "In the relation map"
+SecInScreenMenu = "In the screen type menu"
+
+# ---- ui/keymap: キーの表示名(SR-4。下の帯・ヘルプ・パレット) ----
+KeyUp = "Up"
+KeyDown = "Down"
+KeyLeft = "Left"
+KeyRight = "Right"
+KeyFirstColumn = "First column"
+KeyLastColumn = "Last column"
+KeyPageUp = "Page up"
+KeyPageDown = "Page down"
+KeyHalfPageUp = "Half page up"
+KeyHalfPageDown = "Half page down"
+KeyFirstRow = "First row"
+KeyLastRow = "Last row"
+KeyNextCell = "Next cell"
+KeyPrevCell = "Previous cell"
+KeyEdit = "Edit"
+KeyClear = "Clear"
+## 表の取り消し(undo)。
+KeyUndo = "Undo"
+KeyRedo = "Redo"
+KeyNewNote = "New note"
+KeySave = "Save"
+KeyQuit = "Quit"
+KeyCancelLoad = "Stop loading"
+KeyHelp = "Help"
+KeyCommands = "Commands"
+KeyOpenEditor = "Open in editor"
+KeyCopyCell = "Copy cell"
+KeyCopyRow = "Copy row"
+KeyPrevView = "Previous view"
+KeyNextView = "Next view"
+KeyNarrower = "Narrow column"
+KeyWider = "Widen column"
+KeySort = "Sort by this column"
+KeySortsRun = "Flip direction / add"
+KeyScreenMenuRun = "Switch to the screen"
+## NV-24: 並べ替えの窓。
+CmdSortMenu = "Sort…"
+## NV-25: 既定のビュー。
+CmdSetDefaultView = "Make this the default view"
+DefaultViewSet = "\"{0}\" opens first from now on"
+DefaultViewCleared = "the first view opens first from now on"
+SortButton = " Sort "
+SortTitle = " Sort "
+SortPickTitle = " Add a sort: column "
+SortAsc = "ascending"
+SortDesc = "descending"
+SortAdd = "+ Add a sort"
+SortNoRoom = "the terminal is too small for the sort window"
+## NV-29: 絞り込みの窓。
+CmdFilterMenu = "Filter…"
+FilterButton = " Filter "
+## {0} は条件の数。
+FilterButtonN = " Filter {0} "
+FilterTitle = " Filter "
+FilterPickColumn = " Filter by: column "
+FilterAdd = "+ Add a filter"
+FilterNoRoom = "the terminal is too small for the filter window"
+KeyFiltersRun = "Change / add / pick"
+KeyFiltersCell = "Pick a field (column / comparison / value)"
+KeyFiltersCheck = "Check a value / switch mode"
+SortNoColumn = "every column is already in the sort"
+KeyHideColumn = "Hide column"
+KeyShowColumn = "Show hidden column"
+KeyAddColumn = "Add a column (a new key)"
+KeyMoveColumnLeft = "Move column left"
+KeyMoveColumnRight = "Move column right"
+KeyFreeze = "Freeze columns to here"
+KeySearch = "Find"
+KeySearchNext = "Next match"
+KeySearchPrev = "Previous match"
+KeyQuickFilter = "Search"
+KeyHighlightSame = "Highlight same value"
+KeyFilterSame = "Only same value"
+KeyFrequency = "Value counts"
+KeyFreqRun = "Only this value"
+KeyMark = "Mark row"
+KeyVisual = "Select range"
+KeyExtendUp = "Extend up"
+KeyExtendDown = "Extend down"
+KeySelectAll = "Select all"
+KeyEscape = "Clear selection/search"
+KeyDetail = "Details"
+KeyViewSettings = "View settings"
+KeyFocusChips = "Select settings band"
+KeyCommit = "Confirm"
+## 入力の取り消し(cancel)。
+KeyCancel = "Cancel"
+KeyCommitNext = "Confirm, go right"
+KeyCommitPrev = "Confirm, go left"
+KeyRevert = "Original value"
+KeyClearInput = "Clear the input"
+KeyListUpWeek = "Previous item/week"
+KeyListDownWeek = "Next item/week"
+KeyLeftDay = "Left/previous day"
+KeyRightDay = "Right/next day"
+KeyDatePrevMonth = "Date: previous month"
+KeyDateNextMonth = "Date: next month"
+KeyLeftMonth = "Left/previous month"
+KeyRightMonth = "Right/next month"
+KeyListUpYear = "Previous item/year"
+KeyListDownYear = "Next item/year"
+KeyDateToday = "Date: today"
+KeyDateClear = "Date: clear and confirm"
+KeyTimeFocus = "Datetime: switch between day and time"
+## 入力の文字のカーソルの先頭・末尾。
+KeyCursorHome = "Start of text"
+KeyCursorEnd = "End of text"
+KeyDeleteBack = "Delete previous char"
+KeyDeleteForward = "Delete next char"
+KeyFilterClear = "Clear filter"
+KeyClose = "Close"
+## 詳細の表示・ヘルプの先頭・末尾。
+KeyTop = "Top"
+KeyBottom = "Bottom"
+KeyDecide = "OK"
+KeyToggle = "Toggle"
+KeyBackCancel = "Back/cancel"
+KeyNextSection = "Next section"
+KeyPrevSection = "Previous section"
+KeyMoveItemUp = "Move up"
+KeyMoveItemDown = "Move down"
+KeyDelete = "Delete"
+KeyBack = "Back"
+KeyRemove = "Remove"
+KeyLeftItem = "Left item"
+KeyRightItem = "Right item"
+KeyBackToTable = "Back to table"
+KeyPickRun = "Confirm (add while searching)"
+KeyPickToggle = "Toggle (space while searching)"
+KeyPickRevert = "Back to as opened"
+KeyPrevItem = "Previous item"
+KeyNextItem = "Next item"
+## 保存の確認で全部を書く。
+KeySaveAll = "Save all"
+KeyNextFile = "Next file"
+KeyPrevFile = "Previous file"
+KeyOverwrite = "Write this file over the outside change"
+KeyDiscardRow = "Discard pending changes"
+## 終了の確認で保存する。
+KeyQuitSave = "Save and quit"
+KeyQuitDiscard = "Discard and quit"
+KeyScrollDown = "Scroll down"
+KeyScrollUp = "Scroll up"
+KeyRun = "Run"
+## 読むだけのときの表の Enter(SR-2)。
+KeyToggleGroup = "Open/close group"
+## `--pick` のときの表の Enter(OUT-3)。
+KeyPickFinish = "Pick and finish"
+## その場の操作の一覧を開く(SR-24)。
+KeyActionMenu = "Action menu"
+CmdExportBase = "Export to .base"
+CmdRenameKey = "Rename the key"
+CmdRenameNote = "Rename the note"
+CmdDeleteKey = "Delete the key"
+CmdImportBase = "Import a .base view"
+
+# ---- ui/keymap: キーの読み取りと割り当て直しの警告(SR-13・SR-16) ----
+KeyErrEmpty = "the key is empty"
+KeyErrModifier = "unknown modifier `{0}`"
+KeyErrSpace = "write the space key as `space`"
+KeyErrShiftChar = "for shift+{0}, write the character shift produces"
+KeyErrNoKey = "no key in `{0}`"
+KeyErrUnknown = "unknown key `{0}`"
+KeyErrSpaceModifier = "space cannot take a modifier"
+KeyErrShiftSame = "shift+{0} cannot be told apart"
+## {0} はモード、{1} は動作の名前を `` `、` `` でつないだもの、{2} は戻したキー。
+RebindExitKept = "the settings would leave no key for `{1}` in {0} mode, so they were not applied and the default keys {2} were kept"
+RebindUnknownMode = "`keys.{0}` in the settings is not a known mode, so it was ignored (modes: {1})"
+RebindBadKey = "`{0}` in the settings is not a readable key, so it was ignored ({1})"
+RebindNoPrefix = "`{0}` in the settings cannot be a prefix key in {1} mode, so it was ignored"
+RebindUnknownAction = "the action `{1}` of `{0}` in the settings is unknown, so it was ignored"
+RebindNotInMode = "the action `{1}` of `{0}` in the settings cannot be used in {2} mode, so it was ignored"
+## {0} は設定の場所を `ListSep` で並べたもの、{1} はモード、{2} はキー。
+RebindSameKey = "{0} in the settings give two actions to the same key `{2}` in {1} mode, so none were applied (SR-16)"
+## {2} はぶつかるキー、{3} はその動作の名前。
+RebindPrefixClash = "`{0}` in the settings overlaps as a prefix with the key `{2}` ({3}) in {1} mode, so it was ignored (SR-16; remove that first with \"none\")"
+
+# ---- ui/help: ヘルプとパレット(SR-5・SR-14・NV-7) ----
+HelpNow = " Keys now ({0})"
+## SR-5: ヘルプの最後の印の節。
+HelpMarks = " Markers"
+HelpMarksCell = "  In a cell"
+HelpMarksRow = "  Left of a row"
+MarkNull = "null: the key is there, with no value"
+MarkEmptyStr = "an empty string"
+MarkBlank = "the note has no such key"
+MarkBlankSign = "(blank)"
+MarkMisfit = "the value does not fit the column type"
+MarkPending = "changed, not saved yet"
+MarkLock = "read-only (select it to see why)"
+MarkUnsupported = "a formula mdgrid cannot evaluate"
+MarkMultiline = "the value has line breaks (first line shown)"
+MarkRowCurrent = "the row you are on"
+MarkRowMarked = "a marked row (Space, v)"
+MarkRowExternal = "changed outside mdgrid, or a sync conflict file"
+MarkRowHeld = "edited; stays in place until you save or move"
+## {0}-{1} は見えている行、{2} は全部の行の数。
+HelpHead = " Help  {0}-{1}/{2} lines  All keys (from the key table)"
+## `HelpHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HelpHeadOne = " Help  {0}-{1}/{2} line  All keys (from the key table)"
+PaletteGoto = "Go to line {0}"
+PaletteEmpty = "  (no matching command)"
+PaletteNoMatch = "no matching command: {0}"
+GotoNoRows = "no rows"
+GotoPastEnd = "there is no line {0} ({1} rows). Moved to the last row"
+## `GotoPastEnd` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GotoPastEndOne = "there is no line {0} ({1} row). Moved to the last row"
+GotoFolded = "line {0} is in a folded group (moved to its heading)"
+
+# ---- ui/bands: ヘッダー・タブ・検索の欄・設定の帯・下の帯・メッセージ行(SR-1・SR-15・NV-23・NV-16) ----
+HeaderRows = "{0} rows"
+## `HeaderRows` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HeaderRow = "{0} row"
+## {1} は定義と違えば `*`。
+HeaderView = "  view {0}{1}"
+HeaderLoading = "  loading {0}/{1}"
+HeaderCancelKey = " ({0} to stop)"
+HeaderCancelled = "  loading stopped"
+HeaderFilter = "  search \"{0}\""
+HeaderSame = "  same value {0}={1}"
+## リストの列の要素で絞ったとき(NV-9)。{0} は列、{1} は値。
+HeaderSameHas = "  {0} contains {1}"
+HeaderHidden = "  hidden columns {0}"
+TabDefault = " Default table "
+TabSwitch = "  [ ] to switch"
+BarLead = " Search: "
+## NV-23: ビューの帯の検索の欄の名前と、語が無いときの印。
+BarName = "Search"
+BarEmpty = "…"
+## NV-23: ビューの帯の分類・列のボタン。
+ViewGroup = "Group"
+ViewColumns = "Columns"
+BarCount = "  {0}/{1} rows"
+## `BarCount` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BarCountOne = "  {0}/{1} row"
+BarKey = "({0} to search)"
+BarClick = "(click to search)"
+ChipsLead = " Settings:"
+ChipsRemoveKey = "  {0} to remove"
+ChipsSelectKey = "  {0} to select"
+FooterUnsaved = " Unsaved {0}"
+FooterSelected = "  selected {0}"
+FooterRow = "row {0}/{1}"
+FooterHead = "group {0}/{1}"
+FooterCol = " col {0}/{1}"
+FooterUnsupported = "  ?=unsupported formula"
+HintReviewExternal = "changed outside: o writes this file over the outside change, d discards the pending changes"
+HintReview = "Enter writes everything. Esc goes back to the table (pending changes stay)"
+HintViewError = "this view cannot be opened (reason in the table area). [ ] for other views"
+## {0} は理由を ` / ` でつないだもの。
+HintUnsupported = "unsupported: {0}"
+## BV-2: `.base` の上に `.obsidian/` が無く、0行のとき。{0} は探した根。
+VaultRootGuessed = "no rows: no .obsidian/ folder above the .base, so notes were searched only under {0}"
+HintHeadRow = "group heading ({0} rows). Enter opens/closes"
+## `HintHeadRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HintHeadRowOne = "group heading ({0} row). Enter opens/closes"
+HintExternalNote = "the note changed outside (pending changes are kept)"
+## {0} は印。
+HintHeld = "{0}: with the edited value this row would not be here. Save or move to re-sort"
+HintUnsupportedFormula = "unsupported formula (no value shown): {0}"
+HintReadOnly = "read-only: {0}"
+QuitBand = " {0} unsaved change(s). Choose what to do before quitting"
+
+# ---- ui/calendar: カレンダー(CE-20・CE-21・CE-23・CE-24) ----
+## {0} は年、{1} は月(`Month*`)。
+CalTitle = " {1} {0} "
+Month1 = "January"
+Month2 = "February"
+Month3 = "March"
+Month4 = "April"
+Month5 = "May"
+Month6 = "June"
+Month7 = "July"
+Month8 = "August"
+Month9 = "September"
+Month10 = "October"
+Month11 = "November"
+Month12 = "December"
+WdSun = "Su"
+WdMon = "Mo"
+WdTue = "Tu"
+WdWed = "We"
+WdThu = "Th"
+WdFri = "Fr"
+WdSat = "Sa"
+CalMonthKeys = "{0} month"
+CalYearKeys = "{0} year"
+## CE-31: 時刻の欄への切り替えのキー。
+CalTimeKey = "{0} time"
+## CE-30: 時刻の欄の見出し。
+CalTime = "time"
+## CE-30: 時刻の欄は日時の列だけ。
+CalTimeOnly = "the time can be set only in datetime inputs"
+CalTodayKey = "{0} today"
+CalClearKey = "{0} clear"
+CalDateOnly = "this works only in date and datetime inputs"
+
+# ---- ui/new_note: 新しいノート(CE-25・CE-26・CE-27) ----
+NoteButton = "+ New"
+NoteNoPlace = "the place to create it (the opened folder) is unknown, so the note is not created"
+NoteTooLow = "the terminal is too short for the new note fields, so it did not start (make the terminal taller)"
+NoteFirstPlace = "the place is the first field"
+NoteFirstName = "the name is the first field"
+## {0} はパス、{1} は理由。
+NoteCannotCreate = "cannot create {0}, so the note is not created: {1}"
+NoteUnreadable = "created but cannot read it: {0}"
+NoteCreated = "created: {0}"
+NoteCreatedHidden = "created: {0} (not visible with the current filter or folded groups)"
+NoteCancelled = "new note cancelled (nothing created)"
+NoteLeadPlace = " New note  place: "
+NoteLeadName = " New note  name: "
+NoteLeadCol = " New note  {0}: "
+NoteCreate = "Create"
+## CE-26: 新しいノートの窓。
+KeyCreateNote = "Create from the form"
+## CE-33。
+KeyCreateNoteEdit = "Create and open in the editor"
+NoteEditShort = "editor"
+NoteFormTitle = " New note "
+NoteFieldPlace = "place"
+## SR-31。{0} はフォルダの名前。
+NoteFormWhere = "create in {0}"
+NoteHintKindNumber = "number"
+NoteHintKindList = "[list]"
+NoteFieldName = "name"
+NoteFromFilter = "(from the filter)"
+NoteFromConfig = "(from the config)"
+## CE-27。
+NoteRequiredEmpty = "required: fill it in to create the note"
+## CE-32。{0} はパス、{1} は理由。
+NoteBodyOutside = "the body template {0} must be a file inside the opened folder"
+NoteBodyUnreadable = "cannot read the body template {0}: {1}"
+NoteNext = "Next"
+NoteToggle = "Toggle"
+NoteStop = "Cancel"
+NotePrevField = "Previous field"
+NoteHintPlace = "↑↓ choose the place, Enter to confirm"
+NoteHintFree = "free input, empty writes nothing (↑↓ back to the list)"
+NoteHintList = "↑↓ choose, Enter confirm, type for free input (*=current value), none = write nothing"
+NoteHintNumber = "number: a value read as a number, empty writes nothing"
+NoteHintCheckbox = "true or false, empty writes nothing"
+## {0} は使える形。
+NoteHintDate = "date: {0}, +3 / -2 (from today), empty writes nothing"
+NoteHintDateTime = "datetime: YYYY-MM-DDTHH:MM, {0}, +3, empty writes nothing"
+## {0}/{1} は何番目か、{2} はパス。
+NoteGuidePlace = "   choose the place {0}/{1}: {2}"
+## {0} はフォルダの名前、{1} はパス。
+NoteGuideWhere = "create in {0} ({1})"
+## {0} は名前、{1}/{2} は何番目か。
+NoteGuideField = "field {1}/{2} of {0} (empty writes nothing)"
+
+# ---- ui/app: 表の操作のメッセージ(WB-1・SR-12) ----
+NothingToSave = "no changes to save"
+NothingToUndo = "nothing to undo"
+NothingToRedo = "nothing to redo"
+LoadAlreadyDone = "loading has already finished"
+LoadStopped = "stopped loading ({0} read)"
+
+# ---- ui/columns: 一時的な並べ替え・列を隠す・固定(NV-4) ----
+SortedAsc = "sorted by {0} ascending (the .base is unchanged)"
+SortedDesc = "sorted by {0} descending (the .base is unchanged)"
+SortCleared = "sort cleared (.base order)"
+LastColumnHide = "cannot hide the last column"
+ColumnHidden = "hid column: {0} (+ to show)"
+NoHiddenColumns = "no hidden columns"
+ColumnShown = "showed column: {0}"
+FreezeCleared = "unfroze the columns"
+FreezeTooWide = "the left {0} columns do not fit on the screen, so they were not frozen (narrow the columns or pick a column further left)"
+## `FreezeTooWide` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FreezeTooWideOne = "the left {0} column does not fit on the screen, so it was not frozen (narrow the column or pick a column further left)"
+Frozen = "froze the left {0} columns"
+## `Frozen` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FrozenOne = "froze the left {0} column"
+
+# ---- ui/detail: 詳細の表示(SR-10) ----
+DetailNoRow = "select a row to show details (not a group heading)"
+DetailHead = " Details  {0}  {1}/{2}"
+DetailBody = "Body"
+
+# ---- ui/display: 隠した設定の帯の条件(SR-20・NV-22) ----
+ChipRemoved = "removed the band condition: {0}"
+## 2つの知らせをつなぐ。
+TwoMessages = "{0}. {1}"
+HiddenChip = "hidden band condition {0}/{1}: [{2}]  {3} to remove"
+
+# ---- ui/entry: セルの入力の読み方と案内(CE-2・CE-5・CE-7・CE-22) ----
+EntryNotNumber = "not a number: {0} (a number, or empty to clear)"
+EntryNotBool = "not true or false: {0} (empty to clear)"
+## {1} は打ち込める日付の形。
+EntryNotDateTime = "not a date: {0} (YYYY-MM-DDTHH:MM or {1}, +3, -2, empty to clear)"
+EditBulkLead = "bulk {0} rows: "
+## `EditBulkLead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditBulkLeadOne = "bulk {0} row: "
+## CE-10: 印を付けた行の外で編集を始めたとき。
+EditOnlyThisRow = "editing this row only: the {0} marked rows are not included (press Enter on a marked row to edit them all)"
+## `EditOnlyThisRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditOnlyThisRowOne = "editing this row only: the {0} marked row is not included (press Enter on the marked row to edit it)"
+EditMismatch = "the current value does not fit the column type. "
+EditHintList = "↑↓ choose, Enter confirm, type for free input (*=current value)"
+EditHintNumber = "number: a value read as a number, empty to clear"
+EditHintCheckbox = "true or false, empty to clear (↑↓ for the list)"
+EditHintDate = "date: {0}, +3 / -2 (from today), empty to clear"
+EditHintDateTime = "datetime: YYYY-MM-DDTHH:MM, {0}, +3, empty to clear"
+EditHintBackToList = " (↑↓ back to the list)"
+## CE-3: 打った文字で絞った候補を見せているとき。
+EditHintPickNarrowed = " (↑↓ pick a matching value)"
+
+# ---- ui/external: コピーとエディタ(OUT-1・SR-8) ----
+## 試験のビルドの偽のクリップボードが返す誤り。
+ClipTestFailure = "test failure"
+ClipNoCommand = "{0} not found"
+ClipNoOsClipboard = "cannot send to the clipboard of this OS"
+## 並べた理由の区切り。
+ReasonSep = "; "
+ClipTimeout = "the OS clipboard does not respond"
+ClipCannotPass = "cannot pass the text: {0}"
+ClipExitCode = "exit status {0}"
+## {0} は base64 のバイト数、{1} は上限。
+Osc52TooLong = "too long, so not sent ({0} bytes in base64, limit {1})"
+WordsTrailingBackslash = "nothing after the trailing \\"
+WordsUnclosedSingle = "unclosed '"
+WordsUnclosedDouble = "unclosed \""
+CopyWhatSelected = "{0} selected rows"
+## `CopyWhatSelected` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+CopyWhatSelectedOne = "{0} selected row"
+CopyWhatCell = "the cell"
+CopyWhatRow = "the row"
+CopyNoCell = "no cell to copy"
+CopyNoRow = "no row to copy"
+## {0} は `CopyWhat*`、{1} は誤り。
+CopiedBoth = "copied {0} (OSC 52 and the OS clipboard)"
+CopiedOscOnly = "copied {0} (OSC 52 only; cannot send to the OS clipboard: {1})"
+CopiedOsOnly = "copied {0} (OS clipboard only; cannot send OSC 52: {1})"
+CopyFailed = "cannot copy (OSC 52: {0}; OS clipboard: {1})"
+EditorNoRow = "no row to open"
+EditorBadSetting = "cannot read the editor setting: {0}"
+EditorNoTerminal = "cannot restore the terminal, so the editor was not opened: {0}"
+## {0} はコマンド、{1} は誤り。
+EditorCannotStart = "cannot start the editor: {0} ({1})"
+## {0} は終了の状態、{1} はノート。
+EditorFailed = "the editor exited with a failure ({0}): {1}"
+EditorReturned = "back from the editor: {0}"
+EditorTermNotRestored = ". Cannot restore the terminal: {0}"
+EditorCannotReload = ". Cannot reload: {0}"
+
+# ---- ui/startup・list・grid・view: 表の画面(WB-15・SR-12・BV-5・BV-7・CE-10) ----
+OpenedReadOnly = "opened read-only (--readonly: no editing, no saving)"
+StateUnwritable = "cannot write the view state: {0}"
+## リストの候補の「なし」(Null)。
+NoneLabel = "(empty)"
+InputClosedRowGone = "the edited row left the table, so the input was closed ({0}; unconfirmed text was discarded)"
+## ノートの列の見出し。
+NoteColumn = "Note"
+## {0} は選びの印、{1} は開閉の印、{2} は列の名前と `: `、{3} は値、{4} は件数。
+HeadingRow = "{0}{1} {2}{3} ({4})"
+ViewCannotOpen = "(this view cannot be opened: {0})"
+NoNotes = "(no notes)"
+TableLoading = "(loading…)"
+
+# ---- ui/input: セルの編集と一括の設定(CE-1・CE-9・CE-10・CE-11・SR-3) ----
+CellNotDrawn = "the selected cell is not visible on the screen, so it is not edited (widen the terminal or narrow the columns)"
+CellNotDrawnEsc = "the selected cell is not visible on the screen, so it is not edited (widen the terminal or narrow the columns) (Esc to cancel)"
+## 読むだけの理由の前置き(一括で飛ばした理由では外す)。
+ReadOnlyLead = "read-only: "
+BulkFoldedOut = ". {0} rows are in folded groups, so they were left out"
+## `BulkFoldedOut` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkFoldedOutOne = ". {0} row is in a folded group, so it was left out"
+## {1} は理由を ` / ` でつないだもの。
+BulkSkipped = ". Skipped {0} rows ({1})"
+## `BulkSkipped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSkippedOne = ". Skipped {0} row ({1})"
+NeighborRowGone = "the edited row left the table, so the next cell was not opened ({0})"
+BulkNoEditable = "no editable cell in the selected rows ({0})"
+EditMultiLine = "a value with line breaks cannot be edited in a one-line input (open it in the editor; a later version)"
+EditNotOneLine = "this value cannot be edited in a one-line input"
+NoEditableRight = "no editable cell to the right in this row ({0})"
+NoEditableLeft = "no editable cell to the left in this row ({0})"
+NoCellRight = "no cell to the right in this row"
+NoCellLeft = "no cell to the left in this row"
+CannotCommit = "cannot confirm: {0}"
+BulkSet = "bulk: set {0} rows"
+## `BulkSet` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetOne = "bulk: set {0} row"
+BulkSame = " ({0} rows already had the value)"
+## `BulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSameOne = " ({0} row already had the value)"
+BulkTypeMismatch = "type mismatch"
+## 一括で空にしたときの {1}。
+BulkStateEmpty = "empty"
+BulkSetTo = "bulk: set {0} rows to {1}"
+## `BulkSetTo` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetToOne = "bulk: set {0} row to {1}"
+CannotClear = "cannot clear: {0}"
+
+# ---- ui/listpick: リストの選択(CE-16・CE-17・CE-19) ----
+NotAList = "not a list value"
+PickNotDrawn = "the selected cell is not visible on the screen, so it is not confirmed (widen the terminal, or Esc to cancel)"
+PickBulkDone = "bulk: edited {0} rows"
+## `PickBulkDone` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkDoneOne = "bulk: edited {0} row"
+PickBulkSame = " ({0} rows unchanged)"
+## `PickBulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkSameOne = " ({0} row unchanged)"
+## {0}・{1} はキー。
+PickKeysSearching = "{0} add (new items are added), {1} confirm"
+PickKeys = "{0} toggle, {1} confirm"
+## {1} は `PickKeys*`。
+PickHintBulk = "bulk {0} rows ([x]=all rows [-]=some rows [ ]=none). {1}"
+## `PickHintBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickHintBulkOne = "bulk {0} row ([x]=all rows [-]=some rows [ ]=none). {1}"
+PickHint = "type to narrow ([x]=set). {0}"
+PickNew = "+ New: {0}"
+## 候補の件数。
+PickCount = "{0}"
+PickSearchLead = "Search: "
+## {0} は列、{1} は行の数、{2} は位置。
+PickTitleBulk = "{0} {1} rows {2}"
+## `PickTitleBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickTitleBulkOne = "{0} {1} row {2}"
+PickNoMatch = " (no matching item)"
+
+# ---- ui/menu: その場の操作の一覧(SR-24)の節と、キーの無い項目 ----
+MenuSecCell = "Cell"
+MenuSecColumn = "Column"
+MenuSecRow = "Row"
+MenuSecView = "View and file"
+MenuBulk = "Set on selected rows"
+MenuNoRoom = "the terminal is too small to show the action menu"
+
+# ---- ui/freq: 列の値の頻度表(NV-9) ----
+## {0} は列の名前。
+FreqTitle = "Value counts: {0}"
+FreqNoRoom = "the terminal is too small to show the value counts"
+FreqNoColumn = "select a column to count its values"
+FreqNoRows = "no rows to count"
+FreqLoading = "can't count values while notes are loading"
+FreqClosed = "the rows changed, so the value counts were closed"
+FreqStacked = "counted within the same-value filter; Enter narrows it further"
+
+# ---- ui/native_io: .base への書き出しと取り込み(BV-19・BV-20) ----
+AskExportName = "Export to .base, file name: "
+AskImportFile = ".base to import: "
+AskImportView = "views of {0}: "
+AskExportWhere = "  write a new .base under {0} (existing names are not written)"
+AskNoMatch = "  (nothing matches)"
+ExportNoDir = "the folder to export to is unknown"
+ImportNoDir = "the folder to look for .base files is unknown"
+ImportNoFiles = "no .base under {0}"
+AskCancelled = "cancelled"
+## SC-15: CSV・TSV を読めない理由。
+CsvNotUtf8 = "the file is not UTF-8 (save it as UTF-8 to open it)"
+CsvUnclosedQuote = "a quote opened on line {0} is never closed"
+CsvNoHeader = "the file is empty (the first line must hold the column names)"
+CsvCrOnly = "line {0} ends with a lone CR (save the file with LF or CRLF line endings to open it)"
+CsvRowChanged = "this row was changed or removed outside mdgrid; the change is not written to another row"
+CsvColumnCount = "this line has {0} values but there are {1} columns; it is read-only"
+## SC-17: CSV・TSV ではしない操作。
+CsvNoteOnly = "not available in a CSV/TSV table (it works on notes)"
+CsvRowAdded = "added a row at the end of {0}"
+CsvNoKeyOps = "a CSV column cannot be renamed or removed here"
+CsvNoSuchColumn = "no column named {0} in the CSV"
+## CE-34: ノートの名前の変更。
+AskRenameNote = "New name of the note: "
+RenameNoteBad = "a note name cannot be empty or contain / or \\"
+RenameNoteExists = "{0} already exists"
+RenameNoteReadOnly = "this note is read-only, so it cannot be renamed"
+RenameNotePending = "save or undo the changes on this note first"
+RenameNoteDone = "renamed to {0}"
+RenameNoteLinks = "renamed to {0}; {1} link(s) to the old name are rewritten as pending changes (Ctrl+S to review)"
+RenameNoteFailed = "could not rename: {0}"
+AskRenameKey = "Rename {0} to: "
+## CE-29。{0} はキー、{1} はノートの数。
+AskDeleteKey = "Delete {0} from {1} notes? Type y and Enter: "
+## CE-29。{0} は古い名前、{1} は新しい名前、{2} はノートの数。
+KeyRenamed = "renaming {0} to {1} in {2} notes (saved with Ctrl+S)"
+## CE-29。{0} はキー、{1} はノートの数。
+KeyDeleted = "deleting {0} from {1} notes (saved with Ctrl+S)"
+## CE-29。{0} は新しい名前。
+KeyOpExists = "the key {0} is already there"
+## CE-29。{0} はキー。
+KeyOpNoNotes = "no note has the key {0}"
+KeyOpPending = "the cell has an unsaved edit (save or undo it first)"
+KeyOpComputed = "file.* and formula.* columns are not keys in the notes"
+KeyOpBadName = "a key name cannot be empty, contain a line break, or start with file. or formula."
+## CE-28。
+AskNewColumn = "New column (key name): "
+## OUT-2。
+CmdExportTable = "Export the table to a file"
+AskExportTable = "Export the table, file name (.csv .tsv .json .md): "
+## OUT-5。{0} はパス。
+AskExportOverwrite = "{0} exists. Overwrite? Type y and Enter: "
+## OUT-2。
+ExportTableBadExt = "the file name must end in .csv, .tsv, .json or .md"
+## OUT-5。{0} は行の数、{1} はパス。
+ExportTableDone = "wrote {0} rows to {1}"
+## OUT-5。{0} はパス、{1} は理由。
+ExportTableFailed = "could not write {0}: {1}"
+AddColumnBad = "a column name cannot be empty, contain a line break, or start with file. or formula."
+## {0} は列の名前。
+AddColumnAdded = "added column {0}: only the notes you fill in get the key when you save"
+ImportNoMatchFile = "no matching .base"
+ImportUnreadable = "cannot read {0}: {1}"
+ImportNoViews = "{0} has no views"
+ImportUnnamed = "(unnamed {0})"
+ImportNoMatchView = "no matching view"
+## {0} はファイル、{1} は元のビュー、{2} は新しい名前、{3} は `DroppedNote` か空。
+Imported = "imported view \"{1}\" of {0} as the mdgrid view \"{2}\"{3}"
+ExportNameEmpty = "type a file name (e.g. todo.base)"
+ExportNameOnly = "type only the file name (it is written under the opened folder)"
+ExportExists = "{0} already exists, so it is not written (existing .base files are not overwritten; use another name)"
+CannotWriteFile = "cannot write {0}: {1}"
+## {0} はビュー、{1} はファイル、{2} は `DroppedNote` か空。
+Exported = "exported view \"{0}\" to {1}{2}"
+
+# ---- ui/native_views: mdgrid のビュー(BV-13・BV-18・BV-20) ----
+## `.base` なしで開いたときの先頭のタブの名前(日本語は名前の検査とビューの状態にも使う)。
+DefaultTabName = "Default table"
+## {0} は落とした・近似の部分を ` / ` でつないだもの。
+DroppedNote = ". Dropped or approximated: {0}"
+OnlyOneView = "there is only one view (open a .base, or use \"Save as\" in view settings to switch)"
+NoViewToSwitch = "no view to switch to"
+SwitchedView = "switched to view \"{0}\""
+ViewsNoDir = "the place for mdgrid views (the config folder) is unknown, so mdgrid views cannot be saved"
+ViewNameEmpty = "the name is empty (type a name)"
+ViewNameFixed = "\"{0}\" is the name of the default table or a .base view (use another name)"
+ViewNameTaken = "an mdgrid view \"{0}\" already exists (use another name, or \"Overwrite\" in that view to change it)"
+## 空の名前で保存したビューの名前。
+ViewDefaultName = "View"
+StateCannotMove = "cannot move the view state: {0}"
+## {0} は既定の表の名前、{1} は押したボタン、{2} は「名前を付けて保存」のボタン。
+ViewButtonFixed = "\"{1}\" cannot be used on {0} or .base views (use \"{2}\" to make an mdgrid view)"
+ViewSavedAs = "saved as the mdgrid view \"{0}\"{1}"
+ViewGoneOverwrite = "\"{0}\" was deleted elsewhere, so it cannot be overwritten"
+ViewOverwritten = "overwrote the mdgrid view \"{0}\""
+ViewGoneRename = "\"{0}\" was deleted elsewhere, so it cannot be renamed"
+RenameUnapplied = " (changes in the settings screen were not applied)"
+## {2} は `RenameUnapplied` か空。
+ViewRenamed = "renamed the view from \"{0}\" to \"{1}\"{2}"
+ViewDeleted = "deleted the mdgrid view \"{0}\""
+## BV-18: 削除の確かめと取り消し。
+TextDeleteView = "delete the view \"{0}\"? type y and Enter (u brings it back)"
+ViewDeletedUndo = "deleted the mdgrid view \"{0}\" (u in the table brings it back)"
+ViewDeleteKept = "kept the view \"{0}\""
+ViewRestored = "brought back the mdgrid view \"{0}\""
+
+# ---- ui/settings: ビューの設定の画面(NV-13・NV-15・NV-19・NV-22) ----
+BtnApply = "Apply"
+## ビューの設定の「取り消し」のボタン。
+BtnCancel = "Cancel"
+BtnReset = "Reset"
+BtnSaveAs = "Save as"
+BtnOverwrite = "Overwrite"
+BtnRename = "Rename"
+BtnDelete = "Delete"
+KindValues = "Pick from the values"
+## NV-29: 絞り込みの窓の表の形の比べ方(値の一覧の残す・隠す)。
+OpKeep = "only"
+OpDrop = "hide"
+KindContains = "Contains"
+KindNotContains = "Does not contain"
+KindCompare = "Compare (= ≠ < ≤ > ≥)"
+KindEmpty = "Is empty"
+KindNotEmpty = "Is not empty"
+CmpEq = "=  equal"
+CmpNe = "≠  not equal"
+CmpLt = "<  less than / before"
+CmpLe = "≤  at most / until"
+CmpGt = ">  greater than / after"
+CmpGe = "≥  at least / from"
+PurposeFilter = "filter"
+PurposeSort = "sort"
+PurposeGroup = "group"
+PurposeTree = "the parent"
+PurposeWbsKey = "progress"
+## NV-28: WBS の行。
+TreeWbsRow = "WBS"
+TreeWbsKeyRow = "Progress key"
+WbsValueRow = "{0} ({1})"
+TextWbsValue = "percent and label for {0} (e.g. 100 Done; - removes)"
+WbsBadPercent = "Type the percent as a number from 0 to 100 first: {0}"
+## NV-27: 親子の区画。
+NavTree = "Tree"
+DescTree = "Put child notes under the note named in their parent key"
+TreeOnRow = "Arrange by parent"
+TreeKeyRow = "Parent key"
+SetHintTree = "{0} switch or choose the key (Apply to use it; Z folds a parent in the table)"
+DirAsc = "↑ ascending"
+DirDesc = "↓ descending"
+GroupOnlyByColumn = "available when grouping by a column (first choose a column with \"Group by column\")"
+NotRemovable = "this item cannot be removed"
+SettingsClosed = "view settings closed"
+SettingsCancelled = "view settings cancelled (the table is as before)"
+SettingsReset = "reset to default (Apply to use it in the table)"
+SettingsAppliedReadOnly = "applied the view settings (read-only, so not remembered)"
+SettingsApplied = "applied the view settings"
+ChipsEmpty = "the settings band is empty ({0} opens view settings)"
+
+# ---- ui/settings_view: ビューの設定の画面の描画(NV-18・SR-20) ----
+SetColumns = "Columns (shown and order)"
+SetDisplay = "Display"
+SetFilters = "Filters (rows matching all)"
+SetAddFilter = "+ Add condition"
+SetSorts = "Sort (top column first)"
+SetAddSort = "+ Add sort"
+SetGroup = "Group"
+## NV-18: 左の区画の一覧・説明・スイッチ・未反映の数。
+NavColumns = "Columns"
+NavFilters = "Filters"
+NavSorts = "Sort"
+NavGroup = "Group"
+NavDisplay = "Display"
+NavGroupOff = "off"
+NavHideEmpty = "Hide empty groups"
+DescColumns = "Choose the columns to show and their order"
+DescFilters = "Show only the rows that match every condition"
+DescSorts = "The first rule wins; ties go to the next rule"
+DescGroup = "Split the rows by a column's value"
+DescDisplay = "What is shown around the table"
+SwShown = "shown"
+SwHidden = "hidden"
+SwOn = "on"
+SwOff = "off"
+SwAuto = "auto"
+## NV-23: ビューの帯のボタンの描き方(plain・box・compact)。
+SwPlain = "plain"
+SwBox = "boxed"
+## {0} は帯の上下の余白の行の数(NV-23)。
+SwPadding = "{0} lines"
+SetPending = "{0} not applied"
+## NV-26: ビューの区画(タブの順・出す隠す・既定・名前・削除・切り替えの案内)。
+NavViews = "Views"
+DescViews = "Tabs above the table. Changes are saved right away"
+TabHintRow = "Switch hint ([ ])"
+TabDefaultMark = "default"
+TabMenuOf = "Tab \"{0}\""
+TabMenuDefault = "Make default"
+TabMenuUndefault = "Stop being default (open the first tab)"
+TabMenuRename = "Rename"
+TabMenuDelete = "Delete"
+TabCurrentHide = "The view you are on cannot be hidden. Switch to another tab first"
+TabBaseFixed = "\"{0}\" is a .base view or the default table: it cannot be renamed or deleted"
+TabHidden = "Hid the tab \"{0}\""
+TabShown = "Showed the tab \"{0}\""
+TabMoved = "Moved the tab \"{0}\""
+TabHintOn = "Showing the switch hint"
+TabHintOff = "Hiding the switch hint"
+SetHintViews = "{0} show/hide  {1} / {2} order  {3} default, rename, delete (saved right away)"
+SetGroupInheritBase = "as in .base"
+SetGroupInheritDefault = "default (no groups)"
+## {0} はラジオの印。
+SetGroupOff = "{0} none"
+## {0} はラジオの印、{1} は列か `SetGroupPickColumn`。
+SetGroupBy = "{0} by column: {1}"
+SetGroupPickColumn = "(choose a column)"
+## {0} はチェックの印。
+SetGroupHideEmpty = "{0} hide empty groups"
+SetGroupOrder = "group order: {0}"
+## {0} は目的(`Purpose*`)。
+PickColumnFor = "Choose a column to {0} by"
+PickKindOf = "Condition type for {0}"
+PickCmpOf = "How to compare {0}"
+PickModeKeep = "mode: keep only rows with checked values"
+PickModeHide = "mode: hide rows with checked values"
+## {0} はチェックの印、{1} は値、{2} は件数。
+PickValueRow = "{0} {1}  {2}"
+PickValuesOf = "Values of {0} (count)"
+TextContains = "text that {0} contains"
+TextNotContains = "text that {0} does not contain"
+TextSaveAs = "name of the new mdgrid view"
+TextRename = "new name of the view"
+## {0}・{1}・{2} はキー。
+SetHintValues = "{0} check / switch mode, {1} confirm, {2} back"
+SetHintPick = "{0} choose, {1} back"
+SetHintColumns = "{0} show/hide, {1} / {2} move"
+SetHintFilters = "{0} add/edit condition, {1} switch keep/hide, {2} delete"
+SetHintSorts = "{0} add / change direction, {1} / {2} order, {3} delete"
+SetHintGroup = "{0} choose (hide empty and order apply when grouping by a column)"
+SetHintDisplay = "{0} show/hide (this view only; Apply to use it in the table)"
+SetHintButtons = "{0} press. The table does not change until Apply"
+SetNativeName = "mdgrid view / {0}"
+SetHead = " View settings  {0}  the table does not change until Apply"
+SetHeadShort = " View settings  {0}"
+
+# ---- ui/settings_pick: ビューの設定の選び手と値の入力(NV-14・NV-19) ----
+PickInProgress = "choosing ({0} to go back)"
+SortAlready = "{0} is already in the sort"
+NoValueChecked = "no value is checked ({0} to check)"
+ValueEmpty = "the value is empty ({0} to go back)"
+OperandNumber = "type a number (e.g. 3). \"{0}\" is not a number"
+OperandDate = "type a date as YYYY-MM-DD. Cannot read \"{0}\""
+OperandDateTime = "type a datetime as YYYY-MM-DDTHH:MM. Cannot read \"{0}\""
+
+# ---- ui/nav: 選択・同じ値・検索(NV-1・NV-5・NV-8・OUT-3) ----
+PickNoEditor = "read-only while picking with --pick (no editor; Enter to pick, q to cancel)"
+VisualHint = "select a range: move, then v to confirm (Esc to clear)"
+SelectedAll = "selected all rows ({0})"
+SelectionCleared = "selection cleared"
+FilterCleared = "search cleared"
+NoRowToSelect = "no row to select"
+SelectValueCell = "select a value cell"
+## {0} は列、{1} は値、{2} は行の数。
+HighlightSame = "highlighting rows with the same value: {0} = {1} ({2} rows)"
+## `HighlightSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HighlightSameOne = "highlighting rows with the same value: {0} = {1} ({2} row)"
+SameFilterCleared = "same-value filter cleared ({0})"
+SameFilterOn = "only rows with the same value: {0} (Esc to clear)"
+NotFound = "not found"
+NoSearchTerm = "nothing to find (/ to find)"
+NotFoundTerm = "not found: {0}"
+WrappedToTop = "wrapped from the bottom to the top"
+WrappedToBottom = "wrapped from the top to the bottom"
+
+# ---- ui/review: 保存の確認(WB-9・WB-16) ----
+ReviewReadOnly = "read-only ({0})"
+ReviewNewline = "a value with line breaks cannot be written"
+ReviewVerify = "stopped by the check of the written result ({0})"
+ReviewChanged = "changed outside"
+ReviewIo = "cannot write ({0})"
+ReviewDiscarded = "discarded the pending changes: {0}"
+ReviewSaved = "saved {0} files"
+## `ReviewSaved` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewSavedOne = "saved {0} file"
+## {0} はファイルを `, ` でつないだもの。
+ReviewSavedList = " ({0})"
+ReviewStopped = "stopped {0} files changed outside ({1})"
+## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewStoppedOne = "stopped {0} file changed outside ({1})"
+ReviewFailed = "could not write {0} files ({1})"
+## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewFailedOne = "could not write {0} file ({1})"
+## 文と文の区切り。
+SentenceSep = ". "
+ReviewNotExternal = "{0} has not changed outside (Enter to save)"
+ReviewNoDiff = "{0} cannot be written (no diff could be made)"
+ReviewCannotReload = "cannot reload: {0} ({1})"
+ReviewChangedAgain = "{0} changed outside again. Check the diff and press o again"
+ReviewExternalHead = "  changed outside: o writes this file over the outside change / d discards the pending changes"
+ReviewDiffError = "   cannot write: {0}"
+ReviewHead = " Save review  {0} files  diff before writing (- current file / + after writing)"
+## `ReviewHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewHeadOne = " Save review  {0} file  diff before writing (- current file / + after writing)"
+
+# ---- places: 登録した表(CLI-18・CLI-19) ----
+## {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
+PlacesBadToml = "cannot read places.toml (line {0}), so registered tables are not loaded: {1}"
+PlaceOpen = "open a registered table"
+PlaceRegister = "register this table"
+## 一覧の先頭(引数なしの起動のとき)。
+PlaceHere = "this folder (stay here)"
+PlaceNoGroup = "(no group)"
+PlaceNone = "no registered tables yet. Register this one with \"register this table\" from the palette"
+## {0} はパス。
+PlaceMissing = "cannot open: {0} does not exist"
+PlaceAskName = "name for this table: "
+PlaceAskGroup = "group (pick or type a new one, empty for none): "
+## {0} は名前。
+PlaceAskOverwrite = "{0} is already registered. Replace it? (y/n) "
+## {0} は名前、{1} は分類。
+PlaceSaved = "registered {0} in {1}"
+PlaceSavedNoGroup = "registered {0}"
+## {0} は誤り。
+PlaceSaveError = "cannot write places.toml: {0}"
+PlaceNoConfigDir = "cannot register: no config folder"
+PlaceEmptyName = "the name is empty"
+## {0} は打った分類。
+PlaceNewGroup = "+ new group: {0}"
+PlaceMulti = "cannot register: several folders are open (register one folder or a .base)"
+## {0} はビューの名前。
+PlaceNoView = "the view {0} is not here, so the first view is shown"
+
+# ---- workspace: ワークスペース(WS-1〜WS-7) ----
+## {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
+WsBadToml = "cannot read {0} (line {1}), so its workspaces are not loaded: {2}"
+## {0} はパス。
+WsInitExists = "{0} already exists"
+## {0} は名前。
+WsUnknown = "no workspace named {0} (mdgrid --workspaces lists them)"
+## {0} はワークスペースの名前。
+HeaderWorkspace = "  · workspace {0}"
+CmdWsNew = "Create a workspace with this table"
+CmdWsAdd = "Add this table to a workspace"
+CmdWsRemove = "Remove this table from a workspace"
+CmdWsOpen = "Open a workspace"
+## WS-8: 表の一覧の引き出し。
+CmdWsDrawer = "Table list (switch tables)"
+KeyWsDrawer = "Table list"
+KeyDrawerRun = "Open table / fold"
+KeyDrawerOpen = "Unfold workspace"
+KeyDrawerFold = "Fold workspace"
+DrawerRegistered = " Registered tables "
+DrawerEmpty = "no tables to list: create a workspace with :workspace_new or register a table with :register_place"
+DrawerNoRoom = "the terminal is too small for the table list"
+AskWsName = "workspace name: "
+AskWsPick = "workspace (pick or type a new one): "
+AskWsRemove = "remove from which workspace: "
+AskWsOpen = "open which workspace: "
+## {0} はワークスペースの名前。
+AskWsTable = "open which table of {0}: "
+## {0} は打った名前。
+WsNewItem = "+ new workspace: {0}"
+## {0} は表、{1} はワークスペース。
+WsAdded = "added {0} to workspace {1}"
+WsRemoved = "removed {0} from workspace {1}"
+WsNotIn = "this table is in no workspace"
+WsNone = "no workspaces yet: create one with :workspace_new"
+WsEmpty = "workspace {0} has no tables"
+WsMulti = "cannot add: several folders are open (add one folder or a .base)"
+WsNoConfigDir = "cannot change workspaces: no config folder"
+## {0} は誤り。
+WsSaveError = "cannot write workspaces.toml: {0}"
+WsCliAsOne = "--as names one table: give one path"
+## {0} はパス。
+WsCliNoPath = "no such file or folder: {0}"
+## {0} はワークスペース、{1} はパス。
+WsCliNotIn = "workspace {0} has no table {1}"
+## {0} はワークスペース。
+WsCliDeleted = "removed workspace {0}"
+## {0} は作ったファイル。
+WsCliInit = "created {0}"
+WsCliNone = "no workspaces (mdgrid <path> --add-to <name> makes one)"
+## {0} は読めなかった理由。
+WsFixFirst = "not changed: fix workspaces.toml first ({0})"
+## {0} は開いた表、{1} はワークスペース。
+WsNotInChosen = "{0} is not in workspace {1} (links use {1}'s tables and this one)"
+## {0} はパス。
+WsMarkerOutside = "ignored a table outside the marked folder: {0}"
+WantDetect = "a list of \".obsidian\" and \".git\""
+
+# ---- relmap: 関係マップ(REL-7〜REL-9) ----
+KeyRelationMap = "Relation map"
+TreeOff = "Rows are not arranged by parent (turn it on in the view settings, {0})"
+TreeNoKids = "This row has no child rows"
+KeyToggleTree = "Fold child rows"
+KeyRelOpen = "Open table"
+KeyRelBack = "Back to the table"
+KeyRelNextTable = "Next table"
+KeyRelPrevTable = "Previous table"
+KeyRelNextLink = "Next link"
+KeyRelPrevLink = "Previous link"
+RelMapTitle = "Relation map"
+RelMapTables = "Tables"
+RelMapDetail = "Details"
+RelMapLinked = "Linked records"
+RelMapKind = "Type"
+RelMapManyToOne = "many-to-one N:1"
+RelMapManyToMany = "many-to-many N:N"
+RelMapColumn = "Column"
+RelMapTarget = "Target"
+RelMapLinks = "Links"
+RelMapReverse = "Reverse"
+RelMapTop = "Most linked"
+RelMapRows = "Rows"
+RelMapNoLinks = "No links from or to this table."
+RelMapNoTables = "no tables to map: register tables first (:register_place)"
+TabScreenTable = "Table"
+## SR-42: ヘッダーの近道のボタン。
+HeaderWsButton = " Workspaces "
+HeaderWsNamed = " ▾ {0} "
+HeaderSettingsButton = " Settings "
+## REL-8: 画面の型のメニュー(ヘッダーのボタンと窓)。
+ScreenRelMap = "Relation map"
+ScreenMenuTitle = " View as "
+ScreenMenuNoRoom = "the terminal is too small for the screen type menu"
+## SR-42: ヘッダーの右の端の設定のボタン。
+HeaderSettings = "Settings"
+
+# ---- relations: リレーション(REL-4・REL-5) ----
+CmdOpenLink = "Open the link target"
+CmdLinkedRows = "Linked rows (notes that link here)"
+AskOpenLink = "open which target: "
+AskLinkedRows = "linked rows: "
+RelNoTarget = "no link to a note in this cell"
+## {0} はノートの名前。
+RelNoBacklinks = "no note links to {0}"
+## {0} はノートの名前。
+RelHidden = "{0} is in this table but hidden by the filter or a folded group"
+## {0} はパス。
+RelMissing = "cannot open: {0} does not exist"
+
+# ---- 列の型(CE-35。`[types]` と型の窓) ----
+WantTypesTable = "a table of column = type"
+WantType = "\"text\", \"number\", \"checkbox\", \"date\", \"datetime\", \"list\" or \"auto\""
+
+# ---- 列の型の窓(CE-35。type_menu.rs) ----
+ModeColumnType = "Column type"
+SecInColumnType = "In the column type menu"
+KeyColumnTypeRun = "Use the type"
+CmdColumnType = "Change the column type"
+## {0} は列の名前。
+TypeMenuTitle = "Type of {0}"
+## {0} は推定の型の名前。
+TypeAuto = "Auto ({0})"
+TypeText = "Text"
+TypeNumber = "Number"
+TypeCheckbox = "Checkbox"
+TypeDate = "Date"
+TypeDateTime = "Date and time"
+TypeList = "List"
+## {0} は列の名前。
+TypeComputed = "{0} is a computed column, so its type cannot be changed"
+## {0} は列の名前、{1} は型の名前。
+TypeSet = "{0}: type {1} (written to the table in views.toml)"
+TypeSetNoSave = "{0}: type {1} (only for this run: there is no place for views.toml)"
+
+# ---- types: 曜日の短い名前(日付の形の ddd。CE-22) ----
+DddSun = "Sun"
+DddMon = "Mon"
+DddTue = "Tue"
+DddWed = "Wed"
+DddThu = "Thu"
+DddFri = "Fri"
+DddSat = "Sat"

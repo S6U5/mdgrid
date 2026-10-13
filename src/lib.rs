@@ -16,6 +16,7 @@ pub mod display;
 pub mod expr;
 pub mod frontmatter;
 pub mod i18n;
+pub mod ledger;
 pub mod legacy;
 pub mod links;
 pub(crate) mod mdtext;

@@ -115,13 +115,14 @@ fn date_vault(name: &str, notes: &[(&str, &str)]) -> (Tmp, App) {
     (tmp, a)
 }
 
-/// ヘッダーの行の右の端の「+ …」の文字と、その始まりの桁。
+/// ビューの帯(2行目。2026-10-12-header-menu でヘッダーから移った)の右の端の「+ …」の文字と、その始まりの桁。
 fn header_button(a: &App) -> (String, u16) {
     let s = screen(a);
-    let h = line(&s, 0);
+    // 2026-10-12-search-box・view-bar-plain の3行の帯では真ん中の行。
+    let h = line(&s, super::bands::mid_row(a));
     let i = h
         .rfind("+ ")
-        .unwrap_or_else(|| panic!("ヘッダーに「+ …」が無い: {h:?}\n{s}"));
+        .unwrap_or_else(|| panic!("ビューの帯に「+ …」が無い: {h:?}\n{s}"));
     let label = h[i..].trim_end().to_string();
     (label, width::width(&h[..i]) as u16)
 }
@@ -243,7 +244,8 @@ fn test_sr_23_ui_palette_english() {
     ch(&mut a, ':');
     typing(&mut a, "save");
     let s = screen(&a);
-    let first = line(&s, 2);
+    // パレットはヘッダーのすぐ下(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let first = line(&s, super::bands::head_y(&a) as usize + 2);
     assert!(
         first.starts_with('>') && first.contains("save") && first.contains("^S"),
         "{s}"
@@ -255,8 +257,8 @@ fn test_sr_23_ui_palette_english() {
 
 // ---- 4. ヘッダーの「+ 新規」 ----
 
-/// ヘッダーの右の端の「+ …」を、始まり・終わりの桁でクリックすると名前の欄が開き、
-/// 1つ左の桁では開かない。最後に名前を打って作る。返すのはボタンの文字。
+/// ビューの帯の右の端の「+ …」を、始まり・終わりの桁と頭のキーの字でクリックすると名前の欄が開き、
+/// ボタン(頭の「 a 」を含む)の1つ左の桁では開かない。最後に名前を打って作る。返すのはボタンの文字(キーを除く)。
 fn header_button_clicks(name: &str) -> String {
     let tmp = Tmp::new(name);
     for (n, t) in EN_NOTES {
@@ -267,12 +269,16 @@ fn header_button_clicks(name: &str) -> String {
     let w = width::width(&label) as u16;
     assert!(w > 2, "「+ 」の後ろに文字がある: {label:?}");
     let s = screen(&a);
+    let y = super::bands::mid_row(&a);
     assert!(
-        line(&s, 0).trim_end().ends_with(&label),
-        "ヘッダーの右の端: {s}"
+        line(&s, y).trim_end().ends_with(&label),
+        "ビューの帯の右の端: {s}"
     );
-    for x in [x0, x0 + w - 1] {
-        a.click(x, 0);
+    let y = y as u16;
+    // 頭のキーの字(「a」)は「+」の2つ左。ボタンは前後に空白1つを含む。
+    let x_left = x0 - 4;
+    for x in [x0, x0 + w - 1, x0 - 2] {
+        a.click(x, y);
         assert_ne!(
             a.mode,
             Mode::Table,
@@ -282,15 +288,15 @@ fn header_button_clicks(name: &str) -> String {
         press(&mut a, KeyCode::Esc);
         assert_eq!(a.mode, Mode::Table, "Esc で表に戻る");
     }
-    a.click(x0 - 1, 0);
+    a.click(x_left, y);
     assert_eq!(
         a.mode,
         Mode::Table,
-        "{label:?} の1つ左の桁 {} では開かない\n{}",
-        x0 - 1,
+        "{label:?} のボタンの1つ左の桁 {} では開かない\n{}",
+        x_left,
         screen(&a)
     );
-    a.click(x0 + 1, 0);
+    a.click(x0 + 1, y);
     assert_ne!(a.mode, Mode::Table);
     typing(&mut a, "prep");
     ctrl(&mut a, 's'); // CE-26: 窓のどの欄からでも作る
@@ -301,7 +307,7 @@ fn header_button_clicks(name: &str) -> String {
 
 #[test]
 fn test_sr_23_ui_new_note_button_english() {
-    // [SR-23] 英語では、ヘッダーの「+ 新規」が英語の文字になり、そのクリックの当たりが英語の幅で合う。
+    // [SR-23] 英語では、ビューの帯の「+ 新規」が英語の文字になり、そのクリックの当たりが英語の幅で合う。
     let _g = scoped(Lang::En);
     let label = header_button_clicks("sr23new");
     assert!(!has_ja(&label), "ヘッダーのボタンが英語: {label:?}");
@@ -390,7 +396,7 @@ fn test_sr_23_ui_japanese_unchanged() {
     typing(&mut a, "save");
     golden("sr_14", &screen(&a));
 
-    // ヘッダーの「+ 新規」と、その当たり。
+    // ビューの帯の「+ 新規」と、その当たり。
     let label = header_button_clicks("sr23janew");
     assert_eq!(label, "+ 新規");
 

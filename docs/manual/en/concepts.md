@@ -69,21 +69,21 @@ Because the file name is the key, a folder of notes works like a table and links
 
 ## Workspaces: which tables belong together
 
-To resolve a link by name, mdgrid has to know which tables to look in. A **workspace** answers that: a named set of tables that belong together, such as the tasks, projects and members of one project. Links, linked rows, the relation map and the tabs at the top right use only the tables of the current workspace, so your work vault and your reading notes do not mix.
+To resolve a link by name, mdgrid has to know which tables to look in. A **workspace** answers that: a named set of tables that belong together, such as the tasks, projects and members of one project. Links, linked rows, the relation map and the screen type menu at the top right use only the tables of the current workspace, so the root folder for your work and your reading notes do not mix.
 
 mdgrid decides the workspace of the table you open in this order:
 
 1. `-w <name>` on the command line.
 2. A marker file `.mdgrid/workspace.toml` in the folder or above it. This is useful in a repository you share: the workspace travels with the notes.
 3. A workspace in `workspaces.toml` (in the config folder) that contains the table. Manage these from the palette or with `--add-to`, `--remove-from` and `--workspaces`.
-4. Detection: the nearest Obsidian vault (a folder with `.obsidian/`), or a git repository if you turn that on with `[workspace] detect`. Its folders of notes become the tables.
+4. Detection: the nearest root folder (a folder with `.obsidian/`), or a git repository if you turn that on with `[workspace] detect`. Its folders of notes become the tables.
 5. Otherwise, the registered tables.
 
-The header shows `· workspace <name>` when one is in use. See [Group tables into workspaces](tasks.md#group-tables-into-workspaces).
+When one is in use, the breadcrumb in the header shows `<workspace> › <table>`. See [Group tables into workspaces](tasks.md#group-tables-into-workspaces).
 
 ## The relation map
 
-Press `R` (or click **Relations** in the tabs at the top right) to see the workspace as a diagram: one box per table with its row count and columns, and an arrow from each link column to the table it points at, marked `N:1` (one link) or `N:N` (a list of links). Select a table or a link with the arrow keys or the mouse; the details and the linked records follow the selection. `Enter` (or a second click) opens the table. Press `R` again to go back.
+Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the workspace as a diagram: one box per table with its row count and columns, and an arrow from each link column to the table it points at, marked `N:1` (one link) or `N:N` (a list of links). Select a table or a link with the arrow keys or the mouse; the details and the linked records follow the selection. `Enter` (or a second click) opens the table. Press `R` again to go back.
 
 ## Where mdgrid keeps things
 

@@ -616,7 +616,7 @@ pub fn prefill(
     out
 }
 
-/// 式の絞り込みの `file.inFolder("x")`(`&&` でつないだ項)のうち一番深いフォルダ(保管庫の根から)。
+/// 式の絞り込みの `file.inFolder("x")`(`&&` でつないだ項)のうち一番深いフォルダ(ルートフォルダから)。
 /// 新しいノートをそこに作れば、作った行がビューに残る(CE-25)。無ければ None。
 pub fn view_folder(filters_expr: &[String]) -> Option<String> {
     filters_expr

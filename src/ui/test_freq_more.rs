@@ -110,7 +110,12 @@ fn test_nv_9_header_shows_contains_for_list_and_empty_label() {
     let (_t, mut a) = make("nv9more-head", NOTES);
     let lines = open(&mut a, "tags");
     pick(&mut a, &lines, "会議");
-    let head = screen(&a).lines().next().unwrap_or_default().to_string();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap_or_default()
+        .to_string();
     assert!(
         head.contains("tags が 会議 を含む"),
         "含むの形でない: {head}"
@@ -120,7 +125,12 @@ fn test_nv_9_header_shows_contains_for_list_and_empty_label() {
     let lines = open(&mut a, "tags");
     pick(&mut a, &lines, "(空)");
     assert_eq!(names(&a), ["e.md"]);
-    let head = screen(&a).lines().next().unwrap_or_default().to_string();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap_or_default()
+        .to_string();
     assert!(head.contains("tags=(空)"), "空が「(空)」でない: {head}");
 }
 
@@ -132,7 +142,12 @@ fn test_nv_8_comma_on_empty_cell_shows_empty_label() {
     a.row = names(&a).iter().position(|n| n == "e.md").unwrap();
     ch(&mut a, ',');
     assert_eq!(names(&a), ["e.md"]);
-    let head = screen(&a).lines().next().unwrap_or_default().to_string();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap_or_default()
+        .to_string();
     assert!(head.contains("tags=(空)"), "空が「(空)」でない: {head}");
 }
 

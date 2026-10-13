@@ -96,7 +96,12 @@ fn labels(a: &App) -> Vec<String> {
 fn goto_tab(a: &mut App, name: &str) {
     let want = format!("[{name}]");
     for _ in 0..12 {
-        if screen(a).lines().nth(1).unwrap_or("").contains(&want) {
+        if screen(a)
+            .lines()
+            .nth(super::bands::mid_row(a))
+            .unwrap_or("")
+            .contains(&want)
+        {
             return;
         }
         ch(a, ']');

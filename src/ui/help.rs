@@ -436,8 +436,10 @@ pub(crate) fn palette_overlay(app: &App, lines: &mut [Line<'static>], w: usize) 
         out.push(Line::from(Span::styled(fit(&t, w, Align::Left), st)));
     }
     out.push(Line::from(" ".repeat(w)));
+    // ヘッダーのすぐ下(SR-1 の上の余白の分だけ下がる)。
+    let top = super::bands::head_y(app) as usize + 1;
     for (k, l) in out.into_iter().enumerate() {
-        if let Some(slot) = lines.get_mut(1 + k) {
+        if let Some(slot) = lines.get_mut(top + k) {
             *slot = l;
         }
     }
@@ -449,7 +451,7 @@ pub(crate) fn palette_cursor(app: &App) -> Option<(u16, u16)> {
     let lead = super::native_views::ask_lead(app);
     let x = 2 + width(&lead) + width(&sanitize(&p.query));
     let w = app.size.0.saturating_sub(1) as usize;
-    (x < w).then_some((x as u16, 1))
+    (x < w).then_some((x as u16, super::bands::head_y(app) + 1))
 }
 
 impl App {

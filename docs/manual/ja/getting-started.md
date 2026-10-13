@@ -19,9 +19,9 @@ mdgrid --completions zsh > ~/.zfunc/_mdgrid
 mdgrid --man > ~/.local/share/man/man1/mdgrid.1
 ```
 
-## 見本の保管庫で開く
+## 見本のルートフォルダで開く
 
-リポには見本の保管庫 `examples/vault` があります。保存するとファイルが書き換わるので、一時フォルダに写してから開きます。
+リポには見本のルートフォルダ `examples/vault` があります。保存するとファイルが書き換わるので、一時フォルダに写してから開きます。
 
 ```sh
 cp -R examples/vault /tmp/mdgrid-sample
@@ -40,10 +40,10 @@ target/release/mdgrid examples/vault --readonly
 
 ```sh
 git clone https://github.com/S6U5/mdgrid && cd mdgrid
-sh demos/try.sh vault       # 上の見本の保管庫(空・食い違う値・読むだけのノートなども)
+sh demos/try.sh vault       # 上の見本のルートフォルダ(空・食い違う値・読むだけのノートなども)
 sh demos/try.sh relations   # [[リンク]] でつないだ tasks → projects → members。R で関係マップ
 sh demos/try.sh workspace   # 同じ表をワークスペースにまとめたもの(-w Work)
-sh demos/try.sh showcase    # 多くの機能を入れた設定と保管庫
+sh demos/try.sh showcase    # 多くの機能を入れた設定とルートフォルダ
 sh demos/try.sh ai-human    # 人の仕事と AI の仕事に分ける .base(英語)
 sh demos/try.sh demo        # 英語の見本(README の画面)
 ```
@@ -60,7 +60,8 @@ sh demos/try.sh demo        # 英語の見本(README の画面)
 
 | 場所 | 中身 |
 |---|---|
-| ヘッダー | 開いたもの(ここでは `vault`)と行の数、ワークスペースを使っているときは `· ワークスペース <名前>`。右には **表** / **関係** のタブ(つながった表があるとき)と、新しいノートを作る「+ 新規」 |
+| ヘッダー | 頭にパンくずのボタン(`w` か押すと表の一覧の引き出し。ワークスペースを使っているときは `<ワークスペース> › <表> ▾`、ここでは `vault ▾`)と行の数。右には画面の型のメニュー(**▦ 表 ▾**。つながった表があれば関係マップも選べる)と、ビューの設定を開く **⚙ 設定**。新しいノートを作る「+ 新規」はビューの帯の右の端 |
+| ビューの帯 | 上下に1行ずつ余白を取った帯(余白は設定 `display.bar_padding`)。左にビューのタブ、右に検索の欄と、絞り込み・並べ替え・分類・列のボタン、右の端に「+ 新規」 |
 | タブ | ビューの名前。「既定の表」のほかに、`.base` のビューや自分で保存したビューが並ぶ |
 | 検索の欄 | `\` で入ると、打つたびに行が絞られる |
 | 表 | 1行が1つのノート。先頭の列がノートのパス、あとの列がフロントマターのキー |

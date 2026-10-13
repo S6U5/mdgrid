@@ -122,6 +122,24 @@ pub const ITEMS: &[Item] = &[
         ja: "テンプレート [templates.<名前>] を、この場所に書いた値の下に敷く。",
     },
     Item {
+        path: "types",
+        ty: "table (column = \"text\", \"number\", \"checkbox\", \"date\", \"datetime\", \"list\" or \"auto\")",
+        ty_ja: "表(列 = \"text\"・\"number\"・\"checkbox\"・\"date\"・\"datetime\"・\"list\"・\"auto\")",
+        default: Some("{}"),
+        example: "[types]\ndue = \"date\"\nestimate = \"number\"",
+        scope: Scope::Profile,
+        en: "The type of single columns. It wins over the root folder's type settings (.obsidian/types.json)\n\
+             and over guessing from the values; \"auto\" goes back to guessing (a narrower scope can undo a\n\
+             wider one). The type sets the cell input, the ! mark on values that do not fit, sorting and the\n\
+             type mark of the column heading. Notes are not changed. Clicking the type mark of a heading, or\n\
+             column_type in the palette or the action menu, picks a type and writes it to the table in\n\
+             views.toml.",
+        ja: "列ごとの型。ルートフォルダの型の設定(.obsidian/types.json)と、値からの推定より優先する。\"auto\" は推定に\
+             戻す(狭い範囲で広い範囲の型を外せる)。型はセルの入力・合わない値の ! の印・並べ替え・列の見出しの型の印に\
+             効く。ノートは書き換えない。見出しの型の印のクリック、パレットか操作の一覧の column_type で型を選ぶと、\
+             views.toml の表に書く。",
+    },
+    Item {
         path: "terminal.color",
         ty: "boolean",
         ty_ja: "真偽値",
@@ -158,19 +176,35 @@ pub const ITEMS: &[Item] = &[
              描けなければ \"pill\" は \"soft\" で描く。",
     },
     Item {
+        path: "terminal.nerd_icons",
+        ty: "boolean",
+        ty_ja: "真偽値",
+        default: Some("false"),
+        example: "[terminal]\nnerd_icons = true",
+        scope: Scope::Global,
+        en: "Use icon glyphs from a Nerd Font for the settings button, the screen type button and menu, the\n\
+             type marks of column headings and the calendar title. Set true only if your terminal font is a\n\
+             Nerd Font; by default plain characters are used (⚙, ▦, ◇, #, ◷, ⋮, ◉, ✓). Emoji are never used.",
+        ja: "設定のボタン・画面の型のボタンと窓・列の見出しの型の印・カレンダーの題に、アイコン用のフォント(Nerd Font)の\
+             記号を使う。端末の字形が Nerd Font のときだけ true にする。既定は字の記号(⚙・▦・◇・#・◷・⋮・◉・✓)。\
+             絵文字は使わない。",
+    },
+    Item {
         path: "workspace.detect",
         ty: "array of strings",
         ty_ja: "文字列の並び",
-        default: Some("[\"vault\"]"),
-        example: "[workspace]\ndetect = [\"vault\", \"git\"]",
+        default: Some("[\".obsidian\"]"),
+        example: "[workspace]\ndetect = [\".obsidian\", \".git\"]",
         scope: Scope::Global,
-        en: "When the table you open is in no written workspace, treat the root of the Obsidian vault\n\
-             (\"vault\", a folder with .obsidian/) or the git repository (\"git\", a folder with .git) above it\n\
-             as a workspace: its folders with notes become the tables of the relation map.\n\
-             [] turns detection off.",
-        ja: "書いたワークスペースに入らない表を開いたとき、上にある Obsidian の保管庫(\"vault\"。.obsidian/ のあるフォルダ)か\
-             git のリポ(\"git\"。.git のあるフォルダ)の根をワークスペースとみなす。直下の、ノートのあるフォルダが\
-             関係マップの表になる。[] で検知しない。",
+        en: "When the table you open is in no written workspace, treat the nearest folder above it that\n\
+             has one of these marker folders as a workspace (the root folder): \".obsidian\" (a folder with\n\
+             .obsidian/) or \".git\" (a git repository). Its folders with notes become the tables of the\n\
+             relation map. [] turns detection off. The old values \"vault\" and \"git\" are read the same\n\
+             way, with a warning.",
+        ja: "書いたワークスペースに入らない表を開いたとき、上にたどって、この目印のフォルダを持つ最寄りのフォルダ\
+             (ルートフォルダ)をワークスペースとみなす: \".obsidian\"(.obsidian/ のあるフォルダ)か \".git\"(git のリポ)。\
+             直下の、ノートのあるフォルダが関係マップの表になる。[] で検知しない。旧い値 \"vault\"・\"git\" も\
+             同じ意味で読み、警告する。",
     },
     Item {
         path: "look.theme",
@@ -353,6 +387,68 @@ pub const ITEMS: &[Item] = &[
         ja: "効いているビューの設定の帯を出す。隠しても f で帯の項目を選べる。",
     },
     Item {
+        path: "display.buttons",
+        ty: "string (\"plain\" or \"box\")",
+        ty_ja: "文字列(\"plain\" か \"box\")",
+        default: Some("\"plain\""),
+        example: "[display]\nbuttons = \"box\"",
+        scope: Scope::Profile,
+        en: "How the search bar and the Filter and Sort buttons in the view bar are drawn: \"plain\"\n\
+             (shown by their background) or \"box\" (each in a box drawn with lines on the padding lines\n\
+             of the view bar, not filled). With no padding (display.bar_padding = 0) no lines are drawn.",
+        ja: "ビューの帯の検索の欄と絞り込み・並べ替えのボタンの描き方: \"plain\"(地の色で示す)か \"box\"(それぞれを\
+             帯の上下の余白の行に引いた線で四角く囲む。中は塗らない)。余白が無い(display.bar_padding = 0)と線は\
+             描かない。",
+    },
+    Item {
+        path: "display.bar_padding",
+        ty: "number (0 to 2 in steps of 0.5)",
+        ty_ja: "数(0〜2 の 0.5 刻み)",
+        default: Some("1"),
+        example: "[display]\nbar_padding = 0.5",
+        scope: Scope::Profile,
+        en: "Padding above and below the view bar, in lines: 0, 0.5, 1, 1.5 or 2 (1 and 1.0 both work).\n\
+             0 draws the view bar on one line. A half line gets the view bar's background color with its\n\
+             outer half covered by half blocks (▀ above, ▄ below) in the screen's background color (the\n\
+             theme's, or the terminal's, asked once at startup); when that is unknown, without colors, and\n\
+             with terminal.ambiguous_wide = true, it is rounded up to an empty line.\n\
+             Terminals shorter than 16 lines, and a hidden search bar, always use 0. Other values are\n\
+             warned about and the default is used.",
+        ja: "ビューの帯の上下の余白の行の数: 0・0.5・1・1.5・2(1 と 1.0 のどちらも書ける)。0 なら帯は余白なしの1行。\
+             0.5 の端数は、帯の地の色で塗り外側の半分を画面の地の色の半分の塗りの字(上は ▀、下は ▄)で消した行で描き、\
+             帯の行に地の色を敷く。画面の地の色が分からない(テーマが画面の地を塗らず、端末も答えない)ときと、色を\
+             使わない表示と terminal.ambiguous_wide = true では、端数を1行の空き行に切り上げる。端末の高さが16行に満たないときと、\
+             検索の欄を出さないときは、いつも 0。ほかの値は警告して既定にする。",
+    },
+    Item {
+        path: "display.top_padding",
+        ty: "number (0 to 2 in steps of 0.5)",
+        ty_ja: "数(0〜2 の 0.5 刻み)",
+        default: Some("1"),
+        example: "[display]\ntop_padding = 0",
+        scope: Scope::Profile,
+        en: "Padding above the header, in lines: 0, 0.5, 1, 1.5 or 2. A half line is drawn like\n\
+             display.bar_padding (▀ above the header, which then gets the view bar's background color).\n\
+             Terminals shorter than 16 lines always use 0.",
+        ja: "ヘッダーの上の余白の行の数: 0・0.5・1・1.5・2。端数は display.bar_padding と同じく描く(ヘッダーの上に ▀ の行、\
+             ヘッダーの行に帯の地の色)。端末の高さが16行に満たないときは、いつも 0。",
+    },
+    Item {
+        path: "display.row_extra_lines",
+        ty: "integer (0 to 9)",
+        ty_ja: "整数(0〜9)",
+        default: Some("0"),
+        example: "[display]\nrow_extra_lines = 2",
+        scope: Scope::Profile,
+        en: "How many extra lines a table row may grow by: a row holding a long value or a value with\n\
+             line breaks wraps it at the column width and grows up to 1 + this many lines (each row only\n\
+             as tall as it needs). What does not fit ends with …. 0 keeps every row on one line, with\n\
+             line breaks shown as …⏎. Other values are warned about and the default is used.",
+        ja: "表の行を伸ばす行の数: 長い値や改行のある値は列の幅で折り返し、行を最大で「1 + この数」の行の高さまで\
+             伸ばす(行ごとに要るだけの高さ)。入りきらない分は最後に …。0 ならどの行も1行で、改行は …⏎ で示す。\
+             ほかの値は警告して既定にする。",
+    },
+    Item {
         path: "dates.format",
         ty: "string",
         ty_ja: "文字列",
@@ -426,11 +522,11 @@ pub const ITEMS: &[Item] = &[
         scope: Scope::Global,
         en: "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\
              \"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\n\
-             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations. Action\n\
+             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type. Action\n\
              names are shown in the command palette (:).",
         ja: "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\
              \"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・\
-             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations。動作の名前はコマンドのパレット(:)に出る。",
+             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type。動作の名前はコマンドのパレット(:)に出る。",
     },
     Item {
         path: "templates",
@@ -477,7 +573,9 @@ pub const SECTIONS: &[&str] = &[
 ];
 
 /// 表のプロファイルの最上位の名前(どの範囲でも書ける)。
-pub const PROFILE_KEYS: &[&str] = &["use", "look", "display", "dates", "edit", "new_note"];
+pub const PROFILE_KEYS: &[&str] = &[
+    "use", "look", "display", "dates", "edit", "new_note", "types",
+];
 
 /// アプリ全体の最上位の名前(全体にだけ書ける)。
 pub const GLOBAL_KEYS: &[&str] = &[

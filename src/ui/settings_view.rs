@@ -108,7 +108,7 @@ fn switch(on: bool, yes: Msg, no: Msg) -> String {
     }
 }
 
-fn check(on: bool) -> &'static str {
+pub(crate) fn check(on: bool) -> &'static str {
     if on {
         "[x]"
     } else {
@@ -369,9 +369,30 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
             .map(|(i, (item, _))| {
                 let on = app.draft_shows(*item);
                 // SR-34: タブの行は always・auto・never の3つ。
+                // NV-23: 帯のボタンの描き方は plain・box、余白は 0〜2 行。
+                use mdgrid::display::ButtonsMode as B;
                 let value = match (*item, app.draft_tabs()) {
                     (mdgrid::display::Item::Tabs, mdgrid::display::TabsMode::Auto) => {
                         format!("◐ {}", Msg::SwAuto)
+                    }
+                    (mdgrid::display::Item::Buttons, _) => match app.draft_buttons() {
+                        B::Plain => format!("○ {}", Msg::SwPlain),
+                        B::Box => format!("● {}", Msg::SwBox),
+                    },
+                    (mdgrid::display::Item::BarPadding | mdgrid::display::Item::TopPadding, _) => {
+                        let n = if *item == mdgrid::display::Item::BarPadding {
+                            app.draft_bar_padding()
+                        } else {
+                            app.draft_top_padding()
+                        };
+                        let mark = if n.0 == 0 { "○" } else { "●" };
+                        format!("{mark} {}", Msg::SwPadding.fill(&[&n.text()]))
+                    }
+                    // CV-8: 行を伸ばす数。
+                    (mdgrid::display::Item::RowExtraLines, _) => {
+                        let n = app.draft_row_extra_lines();
+                        let mark = if n == 0 { "○" } else { "●" };
+                        format!("{mark} {}", Msg::SwPadding.fill(&[&n]))
                     }
                     _ => switch(on, Msg::SwOn, Msg::SwOff),
                 };
@@ -688,7 +709,7 @@ fn row_span(r: Option<&Row>, w: usize) -> Span<'static> {
 }
 
 /// 値の入力の行の前置き(「status を含む」など)。
-fn text_prompt(app: &App, col: &str, kind: TextKind) -> String {
+pub(crate) fn text_prompt(app: &App, col: &str, kind: TextKind) -> String {
     let c = sanitize(&app.title(col));
     match kind {
         TextKind::Contains => Msg::TextContains.fill(&[&c]),

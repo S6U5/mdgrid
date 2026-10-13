@@ -17,7 +17,7 @@
   - [Choose a theme](#choose-a-theme)
   - [When you cannot edit](#when-you-cannot-edit)
 
-`mdgrid` in the examples is the `target/release/mdgrid` you built, and `/tmp/mdgrid-sample` is the sample vault copied in [Getting started](getting-started.md#open-the-sample-vault).
+`mdgrid` in the examples is the `target/release/mdgrid` you built, and `/tmp/mdgrid-sample` is the sample root folder copied in [Getting started](getting-started.md#open-the-sample-root-folder).
 
 ## Edit values and save
 
@@ -25,7 +25,7 @@
    - Text: pick from the values other notes have in this column (when there are at most `candidates` distinct values, 20 by default; otherwise just type), or type a new one.
    - Date: a calendar opens. `←` `→` move by day, `↑` `↓` by week, `PageUp` and `PageDown` by month. You can also type `2026-10-15`, or `+3` for three days from today. `Ctrl+T` is today.
    - Date and time: the same calendar, with a time field under it. `Ctrl+O` switches to the time field, where `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour. Changing only the day keeps each note's time; you can also type `2026-10-15T09:30`.
-   - List (such as `tags`): toggle values from the list of values found in the vault.
+   - List (such as `tags`): toggle values from the list of values found in the root folder.
    - Checkbox: each `Enter` cycles empty → true → false → empty.これ
    - Number: only values that read as numbers are accepted.
 2. Press `Enter` to confirm, `Esc` to cancel, or `Tab` to confirm and move right.
@@ -84,7 +84,7 @@ Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it
 
 ## Create a note
 
-1. Press `a`, or click `+ New` at the top right. A form opens with the name and a field for each column.
+1. Press `a`, or click `+ New` at the right end of the view bar. A form opens with the name and a field for each column.
 2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back; each field takes the input for its type (candidates, calendar, list).
 3. Press `Ctrl+S` from any field (or `Enter` on the last one). The file is created at once and its row is selected. `Ctrl+E` creates it and opens it in your editor.
 
@@ -227,11 +227,11 @@ related:                         # many
 
 The sample `examples/relations` has tasks, projects and members linked this way: `mdgrid examples/relations/tasks`.
 
-**The relation map.** Press `R` (or click **Relations** in the tabs at the top right) to see the tables as boxes with their row counts and columns, and an arrow from each link column to the table it points at (`N` → `1`, or `N` → `N` for a list of links). `↑` `↓` pick a table, `←` `→` pick a link; the details and, on a tall terminal, the linked records follow the selection. The layout adapts to the terminal width. You can also click: a table selects it and a second click opens it, a line or an arrow selects that link, and a linked record opens its note. Press `R` again to go back to the table. The map covers the current workspace (see below), or the registered tables if there is none.
+**The relation map.** Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the tables as boxes with their row counts and columns, and an arrow from each link column to the table it points at (`N` → `1`, or `N` → `N` for a list of links). `↑` `↓` pick a table, `←` `→` pick a link; the details and, on a tall terminal, the linked records follow the selection. The layout adapts to the terminal width. You can also click: a table selects it and a second click opens it, a line or an arrow selects that link, and a linked record opens its note. Press `R` again to go back to the table. The map covers the current workspace (see below), or the registered tables if there is none.
 
 ## Group tables into workspaces
 
-A workspace is a named set of tables (folders or `.base` files). When the table you open belongs to one, links, linked rows, the relation map and the tabs at the top right use only that workspace's tables, so a vault for work and one for hobbies do not mix. The header shows `· workspace <name>`.
+A workspace is a named set of tables (folders or `.base` files). When the table you open belongs to one, links, linked rows, the relation map and the screen type menu at the top right use only that workspace's tables, so a root folder for work and one for hobbies do not mix. The breadcrumb in the header shows `<workspace> › <table>`.
 
 In the palette (`:`): **create a workspace with this table**, **add this table to a workspace** (pick one or type a new name), **remove this table from a workspace**, and **open a workspace** (pick it, then one of its tables). From the shell (with no path, `--add-to` and `--remove-from` use the current folder):
 
@@ -261,9 +261,9 @@ path = "~/notes/projects"
 view = "Open"
 ```
 
-To keep the workspace with the notes instead (for example in a repository you share), run `mdgrid --init-workspace` in its root (or `mdgrid <folder> --init-workspace`). It writes `.mdgrid/workspace.toml`; with no `[[table]]` in it, every folder of notes directly under the root is a table (a `.base` is not added automatically, because it covers the whole vault; list it with `[[table]]` to include it).
+To keep the workspace with the notes instead (for example in a repository you share), run `mdgrid --init-workspace` in its root (or `mdgrid <folder> --init-workspace`). It writes `.mdgrid/workspace.toml`; with no `[[table]]` in it, every folder of notes directly under the root is a table (a `.base` is not added automatically, because it covers the whole root folder; list it with `[[table]]` to include it).
 
-Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/workspace.toml` above the opened folder → the first workspace in `workspaces.toml` that holds the table → detection → the registered tables. Detection is set by `[workspace] detect` in the config (default `["vault"]`): the nearest Obsidian vault (a folder with `.obsidian/`), and with `"git"` also the repository root, counts as an unnamed workspace of the folders right under it. `detect = []` turns it off.
+Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/workspace.toml` above the opened folder → the first workspace in `workspaces.toml` that holds the table → detection → the registered tables. Detection is set by `[workspace] detect` in the config (default `[".obsidian"]`; the old values `"vault"` and `"git"` are still read): the nearest root folder (a folder with `.obsidian/`), and with `".git"` also the repository root, counts as an unnamed workspace of the folders right under it. `detect = []` turns it off.
 
 ## Use with other commands
 

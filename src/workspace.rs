@@ -3,7 +3,7 @@
 //! - アプリの側(WS-1): 設定のフォルダの `workspaces.toml`(`[[workspace]]` に `name` と `[[workspace.table]]`)。
 //! - フォルダの印(WS-7): `.mdgrid/workspace.toml`(`name` と `[[table]]`。`path` は根からの相対)。表を書かなければ
 //!   根の直下の、ノートのあるフォルダを表にする(`.base` は入れない。書けば足せる)。
-//! - 検知(WS-5): Obsidian の保管庫(`.obsidian/`)か git のリポ(`.git`)の根を、名前の無いワークスペースに。
+//! - 検知(WS-5): 目印のフォルダ(`.obsidian/`・`.git`)を持つルートフォルダを、名前の無いワークスペースに。
 //! - 範囲の決め方(WS-6): `-w` → 印 → workspaces.toml → 検知 →(呼ぶ側で)登録した表。
 
 use crate::config;
@@ -47,7 +47,15 @@ pub enum Detect {
 }
 
 impl Detect {
+    /// 設定の値(目印のフォルダの名前 `.obsidian`・`.git`)から。
     pub fn parse(s: &str) -> Option<Detect> {
+        [Detect::Vault, Detect::Git]
+            .into_iter()
+            .find(|d| d.marker() == s)
+    }
+
+    /// 旧い設定の値(`vault`・`git`)から(WS-5。読んで、移ったと警告する)。
+    pub fn parse_old(s: &str) -> Option<Detect> {
         match s {
             "vault" => Some(Detect::Vault),
             "git" => Some(Detect::Git),
@@ -55,12 +63,9 @@ impl Detect {
         }
     }
 
-    /// 設定の値の名前。
+    /// 設定の値の名前(目印のフォルダの名前)。
     pub fn name(self) -> &'static str {
-        match self {
-            Detect::Vault => "vault",
-            Detect::Git => "git",
-        }
+        self.marker()
     }
 
     fn marker(self) -> &'static str {
@@ -648,7 +653,7 @@ pub fn auto_tables(root: &Path) -> Vec<WsTable> {
         if link || SKIP_DIRS.contains(&name.as_str()) {
             continue;
         }
-        // `.base` は入れない(表のフォルダが保管庫の根になり、ほかの表と重なる。要れば書いて足す)。
+        // `.base` は入れない(表のフォルダがルートフォルダになり、ほかの表と重なる。要れば書いて足す)。
         if p.is_dir() && has_notes(&p) {
             out.push(WsTable {
                 name,

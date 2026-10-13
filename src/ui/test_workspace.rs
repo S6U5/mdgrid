@@ -134,15 +134,24 @@ fn test_ws_4_scope_limits_tables_and_relmap() {
 
 #[test]
 fn test_ws_6_header_shows_workspace() {
-    // [WS-6] 書いたワークスペースの範囲なら、ヘッダーにその名前。範囲が無ければ出さない
-    // (ヘッダーのボタン「ワークスペース」(SR-42)は範囲の表示に数えない)。
+    // [WS-6] 書いたワークスペースの範囲なら、ヘッダー(パンくず「範囲 › 表」。SR-42)にその名前。範囲が無ければ
+    // 出さない(パンくずは表の名前だけ)。前の配置の「· ワークスペース Work」は、パンくずの「Work › 」に置き換わった(頭に引き出しのキー w)。
     let tmp = workspace("ws_header");
     let a = boot_tasks(&tmp);
-    assert!(!screen(&a).contains("· ワークスペース"), "{}", screen(&a));
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap_or_default()
+        .to_string();
+    assert!(!head.contains('›'), "{}", screen(&a));
     write_two(&tmp);
     let a = boot_tasks(&tmp);
-    let head = screen(&a).lines().next().unwrap_or_default().to_string();
-    assert!(head.contains("ワークスペース Work"), "{head}");
+    let head = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap_or_default()
+        .to_string();
+    assert!(head.trim_start().starts_with("w Work › "), "{head}");
 }
 
 /// projects のフォルダを開く(登録した表は無し。範囲はワークスペースで決まる)。

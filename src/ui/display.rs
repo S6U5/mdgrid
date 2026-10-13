@@ -34,8 +34,41 @@ impl App {
         }
     }
 
+    /// ビューの設定の画面の写しの、帯のボタンの描き方(NV-23)。
+    pub(crate) fn draft_buttons(&self) -> mdgrid::display::ButtonsMode {
+        match &self.draft {
+            Some(d) => d.s.display.over(&self.display).buttons,
+            None => self.settings.display.over(&self.display).buttons,
+        }
+    }
+
+    /// ビューの設定の画面の写しの、帯の上下の余白の行の数(NV-23)。
+    pub(crate) fn draft_bar_padding(&self) -> mdgrid::display::Pad {
+        match &self.draft {
+            Some(d) => d.s.display.over(&self.display).bar_padding,
+            None => self.settings.display.over(&self.display).bar_padding,
+        }
+    }
+
+    /// ビューの設定の画面の写しの、ヘッダーの上の余白(SR-1)。
+    pub(crate) fn draft_top_padding(&self) -> mdgrid::display::Pad {
+        match &self.draft {
+            Some(d) => d.s.display.over(&self.display).top_padding,
+            None => self.settings.display.over(&self.display).top_padding,
+        }
+    }
+
+    /// ビューの設定の画面の写しの、行を伸ばす数(CV-8)。
+    pub(crate) fn draft_row_extra_lines(&self) -> u8 {
+        match &self.draft {
+            Some(d) => d.s.display.over(&self.display).row_extra_lines,
+            None => self.settings.display.over(&self.display).row_extra_lines,
+        }
+    }
+
     /// 「表示」の節の i 番目の項目を切り替える(写しだけ。反映で表に効く)。設定と同じ値に戻したら上書きを外す。
-    /// タブの行は always → auto → never の順に変える(SR-34)。
+    /// タブの行は always → auto → never の順に変える(SR-34)。帯のボタンは plain ↔ box、帯の余白と上の余白は 0〜2 を 0.5 刻み(NV-23・SR-1)。
+    /// 行を伸ばす数は 0 → 1 → 2 → 3 → 0(CV-8)。
     pub(crate) fn toggle_display(&mut self, i: usize) {
         let Some(&(item, _)) = ITEMS.get(i) else {
             return;
@@ -45,6 +78,36 @@ impl App {
             let next = self.draft_tabs().next();
             if let Some(d) = self.draft.as_mut() {
                 d.s.display.set_tabs(next, &base);
+            }
+            return;
+        }
+        // NV-23・SR-1: 帯の余白と上の余白は 0 → 0.5 → 1 → 1.5 → 2 → 0 の順に変える。
+        if item == Item::BarPadding {
+            let next = self.draft_bar_padding().next();
+            if let Some(d) = self.draft.as_mut() {
+                d.s.display.set_bar_padding(next, &base);
+            }
+            return;
+        }
+        if item == Item::RowExtraLines {
+            let next = mdgrid::display::next_row_extra_lines(self.draft_row_extra_lines());
+            if let Some(d) = self.draft.as_mut() {
+                d.s.display.set_row_extra_lines(next, &base);
+            }
+            return;
+        }
+        if item == Item::TopPadding {
+            let next = self.draft_top_padding().next();
+            if let Some(d) = self.draft.as_mut() {
+                d.s.display.set_top_padding(next, &base);
+            }
+            return;
+        }
+        // NV-23: 帯のボタンの描き方は plain ↔ box。
+        if item == Item::Buttons {
+            let next = self.draft_buttons().next();
+            if let Some(d) = self.draft.as_mut() {
+                d.s.display.set_buttons(next, &base);
             }
             return;
         }

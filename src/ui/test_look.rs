@@ -184,9 +184,18 @@ fn test_sr_33_text_is_the_same_in_every_look() {
         ColorMode::Rgb,
     );
     let (_v, plain) = with_list("sr33_same_n", "", ColorMode::None);
+    // 2026-10-12-bar-padding-half: 余白の端数の半分の塗りの字(`▄`・`▀`)は、色を使わない表示では同じ行数の
+    // 空き行になる(色の飾りの代わり)ので、空白とみなして比べる。
     let m = text(&buffer(&modern));
     assert_eq!(m, text(&buffer(&classic)));
-    assert_eq!(m, text(&buffer(&plain)));
+    let no_half = |t: String| {
+        t.replace(['▄', '▀'], " ")
+            .lines()
+            .map(str::trim_end)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    assert_eq!(no_half(m), no_half(text(&buffer(&plain))));
 }
 
 #[test]

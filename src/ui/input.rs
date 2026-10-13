@@ -345,7 +345,7 @@ impl App {
             });
             return;
         };
-        let kind = self.src.kind(&col).kind;
+        let kind = self.col_type(&col);
         let cur = self.current(&base, &col);
         let mismatch =
             self.src.get(&base, &col).value.is_some_and(|v| {
@@ -712,9 +712,11 @@ pub(crate) fn input_box(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Opt
         return super::new_note::note_box(app, lay.width);
     }
     let input = app.input.as_ref()?;
-    if app.mode != Mode::Edit || app.row < app.top || app.row >= app.top + app.data_height() {
+    if app.mode != Mode::Edit {
         return None;
     }
+    // CV-8: 伸ばした行では、その行の1行目。
+    let dy = super::rows::slot_y(app, app.row)?;
     let mut x = lay.data_x();
     let mut cw = None;
     for &(j, w) in cols {
@@ -741,7 +743,7 @@ pub(crate) fn input_box(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Opt
     let text = take(&format!("{before}{after}"), w);
     Some(InputBox {
         x,
-        y: data_y(app) + app.row - app.top,
+        y: data_y(app) + dy,
         w,
         text,
         cursor_x,
@@ -754,6 +756,7 @@ pub fn cursor(app: &App) -> Option<(u16, u16)> {
         Mode::Palette => return super::help::palette_cursor(app),
         Mode::Search | Mode::Filter => return super::view::prompt_cursor(app),
         Mode::SettingsText => return super::settings_view::text_cursor(app),
+        Mode::FilterText => return super::filters::text_cursor(app),
         Mode::Settings | Mode::Chips => return None,
         Mode::ListPick => return super::listpick::pick_cursor(app),
         Mode::Edit if app.detail.is_some() => return super::detail::detail_cursor(app),

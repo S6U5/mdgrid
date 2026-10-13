@@ -9,12 +9,12 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant, SystemTime};
 
 /// 探さない下のフォルダか(BV-1・BV-23): 名前が `.` で始まる(`.obsidian`・`.git`・`.trash` を含む隠しフォルダ。
-/// Obsidian も保管庫に入れない)か `node_modules`(コードのリポの依存のパッケージ)。渡したフォルダそのものは探す。
+/// Obsidian もルートフォルダに入れない)か `node_modules`(コードのリポの依存のパッケージ)。渡したフォルダそのものは探す。
 fn skipped_dir(name: &str) -> bool {
     name.starts_with('.') || name == "node_modules"
 }
 
-/// 渡したフォルダから保管庫の根を決める(BV-2): `.obsidian/` を持つ最寄りの上のフォルダ、無ければ渡したフォルダ。
+/// 渡したフォルダからルートフォルダを決める(BV-2): `.obsidian/` を持つ最寄りの上のフォルダ、無ければ渡したフォルダ。
 /// 実体のパス(canonicalize)にし、同じ根・ほかの根の中に入る根は1つにまとめる。読めないパスは Err。
 pub fn roots(folders: &[PathBuf]) -> io::Result<Vec<PathBuf>> {
     let mut found = Vec::new();
@@ -410,11 +410,11 @@ pub struct Vault {
     paused: bool,
     /// poll での探し直し(追加と、根の外を指すリンクが消えたことを見つける)
     rescan: Option<Scan>,
-    /// 大きな保管庫で、次の poll が更新時刻を見始めるノートの位置(BV-9 の順に回す見回り)。
+    /// 大きなルートフォルダで、次の poll が更新時刻を見始めるノートの位置(BV-9 の順に回す見回り)。
     cursor: usize,
 }
 
-/// 1回の poll で更新時刻を見るノートの数の上限(BV-9)。これより多い保管庫は順に回して全部を見る。
+/// 1回の poll で更新時刻を見るノートの数の上限(BV-9)。これより多いルートフォルダは順に回して全部を見る。
 pub const STAT_BUDGET: usize = 2000;
 
 impl Vault {
@@ -425,7 +425,7 @@ impl Vault {
     }
 
     /// `open` と同じ。`keep`(起動の引数に渡したフォルダの実体のパス)とその上のフォルダは、隠しフォルダでも
-    /// 探す(BV-23: 保管庫の根から探すので、渡した隠しフォルダを飛ばさないように)。
+    /// 探す(BV-23: ルートフォルダから探すので、渡した隠しフォルダを飛ばさないように)。
     pub fn open_keeping(roots: Vec<PathBuf>, keep: Vec<PathBuf>) -> Vault {
         let load = Scan::new(&roots, &keep);
         Vault {

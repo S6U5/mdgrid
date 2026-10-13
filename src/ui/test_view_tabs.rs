@@ -51,7 +51,19 @@ fn toml(tmp: &Tmp) -> String {
 
 /// 表の上のタブの行(画面の2行目)。
 fn tab_line(a: &App) -> String {
-    screen(a).lines().nth(1).unwrap_or_default().to_string()
+    wide_screen(a)
+        .lines()
+        .nth(super::bands::mid_row(a))
+        .unwrap_or_default()
+        .to_string()
+}
+
+/// 幅 140 の端末で描いた画面(2026-10-12-header-menu でビューの帯の右の端に「+ 新規」が入り、80 桁では
+/// 今のでないタブと切り替えの案内が省かれるので、タブの並びと案内は広い端末で見る)。
+fn wide_screen(a: &App) -> String {
+    let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(140, 24)).unwrap();
+    term.draw(|f| draw(f, a)).unwrap();
+    super::test_screen::text(term.backend().buffer())
 }
 
 fn current(a: &App) -> String {

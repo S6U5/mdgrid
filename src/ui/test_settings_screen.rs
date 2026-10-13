@@ -298,23 +298,29 @@ fn test_nv_16_band_lists_settings() {
     // 何も効いていなければ帯を出さない。
     let (_t, mut a) = folder("nv16");
     let s = screen(&a);
-    // 行は 0 から: ヘッダー・タブ・検索の欄(NV-23)のあとが帯。
-    assert!(s.lines().nth(3).unwrap().contains("ノート"), "帯なし: {s}");
+    // 行は 0 から: ヘッダー・ビューの帯(SR-1。タブと検索の欄)のあとが帯。帯が無ければそこが列の見出し。
+    let band_y = view::data_y(&a) - 1;
+    assert!(
+        s.lines().nth(band_y).unwrap().contains("ノート"),
+        "帯なし: {s}"
+    );
     hide_done(&mut a);
     let s = screen(&a);
-    let band = s.lines().nth(3).unwrap();
+    let band = s.lines().nth(band_y).unwrap();
     assert!(band.contains("status") && band.contains("done"), "{s}");
     assert!(band.contains("[status: done を除く]"), "{band}");
     assert!(
-        s.lines().nth(4).unwrap().contains("ノート"),
+        s.lines().nth(band_y + 1).unwrap().contains("ノート"),
         "表は1行下がる: {s}"
     );
+    assert_eq!(view::data_y(&a), band_y + 2, "表は1行下がる");
     assert_fits(&s, 80);
     golden("nv_16", &s);
-    // 表のクリックも1行ずれる(5行目が最初のノートの行)。
-    a.click(0, 6);
+    // 表のクリックも1行ずれる(見出しの次の行が最初のノートの行)。
+    let dy = (band_y + 2) as u16;
+    a.click(0, dy + 1);
     assert_eq!(a.row, 1);
-    a.click(0, 5);
+    a.click(0, dy);
     assert_eq!(a.row, 0);
     assert_eq!(a.mode, Mode::Table);
 }
@@ -526,7 +532,12 @@ fn test_nv_15_group_off_and_by_column() {
     assert_eq!(a.settings.group, Group::Off);
     assert!(a.groups.is_empty());
     assert!(a.slots.iter().all(|s| matches!(s, grid::Slot::Row(_))));
-    assert!(!screen(&a).contains('▾'));
+    // 1行目のパンくずのボタンの ▾(SR-42)は見出しではないので除く。
+    // ヘッダーは上の余白(2026-10-12-bar-padding-half)の分だけ下がる。
+    assert!(!screen(&a)
+        .lines()
+        .skip(super::bands::head_y(&a) as usize + 1)
+        .any(|l| l.contains('▾')));
     open(&mut a);
     section(&mut a, Sec::Group);
     sel_to(&mut a, 2);
@@ -710,8 +721,13 @@ fn test_nv_22_remove_one_from_band() {
     ch(&mut a, 'f');
     assert_eq!(a.mode, Mode::Chips);
     let s = screen(&a);
+    // 設定の帯は列の見出しのすぐ上(ビューの帯の下。SR-1)。
+    let band_y = view::data_y(&a) - 2;
     assert!(
-        s.lines().nth(3).unwrap().contains(">[status: done を除く]"),
+        s.lines()
+            .nth(band_y)
+            .unwrap()
+            .contains(">[status: done を除く]"),
         "{s}"
     );
     assert_fits(&s, 80);
@@ -724,9 +740,9 @@ fn test_nv_22_remove_one_from_band() {
     assert_eq!(a.mode, Mode::Table);
     // クリックで外す。
     let x = (0..80u16)
-        .find(|&x| view::chip_at(&a, x, 3) == Some(0))
+        .find(|&x| view::chip_at(&a, x, band_y as u16) == Some(0))
         .unwrap();
-    a.click(x, 3);
+    a.click(x, band_y as u16);
     assert!(a.settings.is_default());
     assert_eq!(labels(&a), all, "done の行が戻る");
     assert!(a.message.as_deref().unwrap().contains("外した"));
@@ -779,9 +795,10 @@ fn test_nv_17_settings_survive_restart_per_view() {
     let b = boot(&tmp, None, false);
     assert_eq!(b.settings, s);
     assert_eq!(labels(&b), rows);
+    // 設定の帯は列の見出しのすぐ上(ビューの帯の下。SR-1)。
     assert!(screen(&b)
         .lines()
-        .nth(3)
+        .nth(view::data_y(&b) - 2)
         .unwrap()
         .contains("status: done を除く"));
     let c = boot(&tmp, Some("進行"), false);

@@ -46,7 +46,7 @@ impl Mark {
 pub(crate) struct Cand {
     /// 要素(tags は先頭の `#` を除いたもの)。
     pub name: String,
-    /// 保管庫の中でこの要素を持つノートの数(CE-19)。
+    /// ルートフォルダの中でこの要素を持つノートの数(CE-19)。
     pub count: usize,
     pub mark: Mark,
     pub initial: Mark,
@@ -255,7 +255,7 @@ fn is_blank(v: &Value) -> bool {
 impl App {
     /// リストの選択で開くセルか(CE-16): 今の値がリスト、か列の型がリストで値が空(キーなし・Null・空の文字列)。
     pub(crate) fn wants_pick(&self, row: &RowId, col: &str) -> bool {
-        let list_kind = || self.src.kind(col).kind == Kind::List;
+        let list_kind = || self.col_type(col) == Kind::List;
         match self.changes.pending(row, col) {
             Some(NewValue::List(_)) => true,
             Some(NewValue::Null) => list_kind(),
@@ -274,7 +274,7 @@ impl App {
 
     /// リストのセルか(CE-16): 列の型がリストか、リストの選択で開く値。1行の入力はどの道でも開かない。
     pub(crate) fn is_list_cell(&self, row: &RowId, col: &str) -> bool {
-        self.src.kind(col).kind == Kind::List || self.wants_pick(row, col)
+        self.col_type(col) == Kind::List || self.wants_pick(row, col)
     }
 
     /// 行の今の要素(ためた値があればそれ)。書けなければ理由(CE-8 の形は読むだけ。CE-19)。
@@ -303,7 +303,7 @@ impl App {
                 .collect(),
             Some(v) if is_blank(&v) => Ok(Vec::new()),
             // CE-19: リストの列の1つの文字列は1つの要素(確定でフローのリストに書き換わる)。
-            Some(Value::Str(s)) if self.src.kind(col).kind == Kind::List => Ok(vec![s]),
+            Some(Value::Str(s)) if self.col_type(col) == Kind::List => Ok(vec![s]),
             Some(_) => Err(NOT_LIST.into()),
         }
     }
@@ -343,7 +343,7 @@ impl App {
         self.set_mode(Mode::ListPick);
     }
 
-    /// リストの選択の状態を作る: 候補は保管庫の要素と、書く行の要素(1行・一括でない)。
+    /// リストの選択の状態を作る: 候補はルートフォルダの要素と、書く行の要素(1行・一括でない)。
     /// 新しいノートの聞く項目(CE-26。new_note.rs)も、行の無い1つの書き先でこれを使う。
     pub(crate) fn new_pick(&self, col: String, targets: Vec<(RowId, Vec<String>)>) -> Pick {
         let tags = col == "tags";
@@ -373,7 +373,7 @@ impl App {
             }
             None => self.src.list_candidates(&col),
         };
-        // ためた値にだけある要素も候補にする(件数は保管庫の中の数なので 0)。
+        // ためた値にだけある要素も候補にする(件数はルートフォルダの中の数なので 0)。
         for (_, items) in &pick.targets {
             for e in items {
                 let k = pick.key(e);
@@ -584,14 +584,13 @@ fn anchor(app: &App, w: usize) -> Option<(usize, usize)> {
     if app.detail.is_some() {
         return super::detail::detail_anchor(app, w).map(|(x, y, _)| (x, y));
     }
-    if app.row < app.top || app.row >= app.top + app.data_height() {
-        return None;
-    }
+    // CV-8: 伸ばした行では、その行の1行目。
+    let dy = super::rows::slot_y(app, app.row)?;
     let (lay, cols) = visible_layout(app);
     let mut x = lay.data_x();
     for &(j, cw) in &cols {
         if j == app.col {
-            return Some((x, data_y(app) + app.row - app.top));
+            return Some((x, data_y(app) + dy));
         }
         x += cw + 1;
     }

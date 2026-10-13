@@ -89,10 +89,6 @@ fn message(a: &App) -> String {
     a.message.clone().unwrap_or_default()
 }
 
-fn header(a: &App) -> String {
-    screen(a).lines().next().unwrap_or("").to_string()
-}
-
 /// ヘッダー(1行目。開いたフォルダの名前が出る)を除いた行。
 fn body(a: &App) -> Vec<String> {
     screen(a).lines().skip(1).map(str::to_string).collect()
@@ -149,14 +145,18 @@ fn assert_created_and_selected(a: &App, path: &Path) {
 
 #[test]
 fn test_ce_25_folders_pick_second_creates_there() {
-    // [CE-25] A・B を開く → ヘッダーの右の端に「+ 新規」。`a` → A と B の一覧(A に印)。
+    // [CE-25] A・B を開く → ビューの帯の右の端に「+ 新規」(2026-10-12-header-menu でヘッダーから移った)。`a` → A と B の一覧(A に印)。
     // ↓ で B → Enter → 名前の欄 → 「メモ」Enter → `B/メモ.md` ができ、A には作らない。その行が選ばれる。
     let tmp = two_folders("ce25f_pick");
     let mut a = boot_ab(&tmp, false);
-    let h = header(&a);
+    let h = screen(&a)
+        .lines()
+        .nth(super::bands::mid_row(&a))
+        .unwrap_or("")
+        .to_string();
     assert!(
         h.trim_end().ends_with("+ 新規"),
-        "2つ開いてもヘッダーの右の端に「+ 新規」: {h:?}"
+        "2つ開いてもビューの帯の右の端に「+ 新規」: {h:?}"
     );
     ch(&mut a, 'a');
     assert_folder_list(&a, A, B);
@@ -252,7 +252,13 @@ fn test_ce_25_folders_readonly_does_not_start() {
     assert_eq!(a.mode, Mode::Table, "始めない:\n{}", screen(&a));
     assert!(message(&a).contains("読むだけ"), "{:?}", message(&a));
     a.message = None;
-    if header(&a).contains("+ 新規") {
+    // 「+ 新規」は 2026-10-12-header-menu でビューの帯(2行目)に移った。
+    if screen(&a)
+        .lines()
+        .nth(super::bands::mid_row(&a))
+        .unwrap_or("")
+        .contains("+ 新規")
+    {
         click_label(&mut a, "+ 新規");
         assert_eq!(a.mode, Mode::Table, "クリックでも始めない:\n{}", screen(&a));
         assert!(message(&a).contains("読むだけ"), "{:?}", message(&a));

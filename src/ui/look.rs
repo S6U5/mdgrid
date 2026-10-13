@@ -35,6 +35,48 @@ fn mix(a: [u8; 3], b: [u8; 3], t: f32) -> [u8; 3] {
     [m(a[0], b[0]), m(a[1], b[1]), m(a[2], b[2])]
 }
 
+/// SR-1・NV-23: 余白の端数を半分の塗りの字で描くときの、帯(とヘッダー)の地の色。色を使わない表示では None。
+/// テーマの色の表があれば端末の地と選びの地の間(ボタンの地 `soft_bg` より地に近い)、無ければ控えめな暗い灰色
+/// (ボタンの地 `Rgb(40, 40, 48)`・`Indexed(235)` より一段暗く、ボタンが帯の上で見分けられる)。classic でも敷く。
+pub(crate) fn bar_bg(app: &App) -> Option<Color> {
+    let indexed = match app.color {
+        ColorMode::None => return None,
+        ColorMode::Indexed => true,
+        ColorMode::Rgb => false,
+    };
+    let c = |rgb: [u8; 3]| {
+        if indexed {
+            Color::Indexed(to_indexed(rgb))
+        } else {
+            Color::Rgb(rgb[0], rgb[1], rgb[2])
+        }
+    };
+    Some(match app.palette() {
+        Some(p) => c(mix(p.bg, p.sel_bg, 0.25)),
+        None if indexed => Color::Indexed(234),
+        None => Color::Rgb(30, 30, 36),
+    })
+}
+
+/// NV-23: 画面の地の色。テーマが画面の地を塗るときはその色、塗らないときは端末の地の色(問い合わせた答え。
+/// `App::term_bg`)。色を使わない表示と、分からないときは None。
+pub(crate) fn screen_bg(app: &App) -> Option<Color> {
+    let indexed = match app.color {
+        ColorMode::None => return None,
+        ColorMode::Indexed => true,
+        ColorMode::Rgb => false,
+    };
+    let rgb = match app.palette() {
+        Some(p) => p.bg,
+        None => app.term_bg?,
+    };
+    Some(if indexed {
+        Color::Indexed(to_indexed(rgb))
+    } else {
+        Color::Rgb(rgb[0], rgb[1], rgb[2])
+    })
+}
+
 /// 今の設定のモダンな見た目の色。classic か色なしなら None。
 pub(crate) fn look(app: &App) -> Option<Look> {
     if app.look_classic {
