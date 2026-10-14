@@ -1,0 +1,16 @@
+{
+  "name": "mdgrid",
+  "owner": {
+    "name": "S6U5"
+  },
+  "metadata": {
+    "description": "mdgrid: Markdown front matter as tables, for people and AI agents."
+  },
+  "plugins": [
+    {
+      "name": "mdgrid",
+      "source": "./plugins/mdgrid",
+      "description": "Query, filter, sort and export the front matter of Markdown notes (Obsidian vaults, task folders, .base views) as CSV, TSV, JSON or Markdown with the mdgrid CLI, and write edited values back after showing a diff."
+    }
+  ]
+}
