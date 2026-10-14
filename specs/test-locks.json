@@ -10492,5 +10492,29 @@
       "SR-45"
     ],
     "sha": "362aa03cada1f285"
+  },
+  "src/ui/test_export_infolder.rs::test_bv_19_export_infolder_nested_subfolder_uses_path_from_root": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "9112e496c1b82192"
+  },
+  "src/ui/test_export_infolder.rs::test_bv_19_export_infolder_root_adds_no_infolder": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "6285ed8fffc6dcf7"
+  },
+  "src/ui/test_export_infolder.rs::test_bv_19_export_infolder_subfolder_adds_infolder_filter": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "a78879180d07709b"
+  },
+  "src/ui/test_export_infolder.rs::test_bv_19_export_infolder_subfolder_reopens_same_rows": {
+    "ids": [
+      "BV-19"
+    ],
+    "sha": "65d39bda541681c2"
   }
 }
