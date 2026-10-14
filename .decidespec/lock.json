@@ -1,6 +1,6 @@
 {
   "plugin": "decidespec",
-  "version": "0.21.7",
+  "version": "0.21.9",
   "files": {
     ".agents/skills/decidespec-sdd-flow/SKILL.md": "2069864cc1524706906bb233307e4b1f672c217ab98fc211e161b6eafaf8e871",
     ".agents/skills/decidespec-spec-change/SKILL.md": "3bbf92d3bf6be1745daad28d9d77bb2534d2407302e35b85d00a030aeed3481f",
@@ -8,7 +8,7 @@
     ".claude/skills/decidespec-spec-change/SKILL.md": "3bbf92d3bf6be1745daad28d9d77bb2534d2407302e35b85d00a030aeed3481f",
     ".decidespec/hooks/claude.json": "e47e232c96b48d64ebae268dc162b8478a433131c107c9543ae2f7c9a650fe62",
     ".decidespec/hooks/codex.json": "a6b46c929fcb2ba79f484489f0ec6a3f9b61758d79853317fa1845b91f89bc60",
-    ".decidespec/scripts/check.py": "a5d9c3d1d1caa1195d612db758bc4b61242b55700e5605b81e31085f9d57ba9e",
+    ".decidespec/scripts/check.py": "e5aa043a8466efb387356a3fb6262cbd1fa5b236ddced67b24190f99ee1c85de",
     ".decidespec/scripts/flow_guard.py": "09e8f3bdcb16067d1e75386cb8b2f00962c6932447aac900e0ba570fba7d6139",
     ".decidespec/scripts/ulid.py": "78ec4a86840912da97ac228d7cedb615304a3b4d6f913a01df360fd2388a5240",
     ".decidespec/skills/sdd-flow/SKILL.md": "12c98eea2b8b8867ac69714eee928ede23316ed9d5c7f37057c2da2eec6ba9ab",
