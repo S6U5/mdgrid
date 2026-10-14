@@ -10516,5 +10516,17 @@
       "BV-19"
     ],
     "sha": "65d39bda541681c2"
+  },
+  "tests/test_agent_skill.rs::test_cli_22_plugin_versions_match_crate": {
+    "ids": [
+      "CLI-22"
+    ],
+    "sha": "9f5d16a09a753ee0"
+  },
+  "tests/test_agent_skill.rs::test_cli_22_skill_examples_run": {
+    "ids": [
+      "CLI-22"
+    ],
+    "sha": "f36a71418225f67a"
   }
 }

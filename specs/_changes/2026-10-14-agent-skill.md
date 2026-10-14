@@ -18,10 +18,10 @@ updated: 2026-10-14
 |---|---|---|
 | 要求 | 済 | この記録の「要求」 |
 | 不明点 | 済 | この記録の「不明点と仮定」 |
-| 仕様化 | 進行中 | [提案](../_decisions/2026-10-14-agent-skill.md) |
-| 設計 | 未 | この記録の「設計」 |
-| タスク | 未 | この記録の「タスク」 |
-| 実装 | 未 | |
+| 仕様化 | 済 | [提案](../_decisions/2026-10-14-agent-skill.md) |
+| 設計 | 済 | この記録の「設計」 |
+| タスク | 済 | この記録の「タスク」 |
+| 実装 | 進行中 | |
 | 照合 | 未 | この記録の「照合」 |
 
 ## 要求
@@ -40,13 +40,19 @@ updated: 2026-10-14
 
 ## 設計
 
-未
+- 置き場: スキルは `plugins/mdgrid/skills/mdgrid/SKILL.md`。マニフェストは `plugins/mdgrid/.claude-plugin/plugin.json`(Claude Code)・`plugins/mdgrid/.codex-plugin/plugin.json`(Codex)・`plugins/mdgrid/plugin.json`(共通の形)。索引はリポ直下の `.claude-plugin/marketplace.json` と `.agents/plugins/marketplace.json`。decidespec の配り方と同じ形にした(人が既に使っている入れ方に揃える)。
+- 動く例の約束: SKILL.md の中で、情報の文字列が `sh` の囲みだけを「動く例」とする(`text` などは動かさない)。試験は一時のフォルダに見本を作り、`mdgrid` を PATH に置いて、`sh` の囲みを上から順に、同じフォルダで `sh -e` で動かす。見本は `tasks/` に `status`(todo・doing・done)・`due`(日付)・`priority`(数)を持つノートを3つと、`tasks.base`(ビュー `Open`: `status != "done"`)。例はこのキーとビューだけを使う。囲みの1つは `active.md` に、status が todo か doing の行を Markdown の表で出す。
+- `sh` の囲みの試験は Unix だけで動かす(CI の Windows には sh が無い)。版の試験はどの OS でも動く。
+- 却下した案: 例を Rust で字句に分けて動かす(シェルの `>` やパイプの扱いを作り直すことになる)。SKILL.md を生成する(手引きは人が読む文で、生成すると読みにくい)。
+- CLI-22 の対応: タスク1(試験)・タスク2(スキルとマニフェスト)。
+- 検証のコマンド: `cargo test --test test_agent_skill`、`python3 .decidespec/scripts/check.py .`。
 
 ## タスク
 
 | # | タスク | 要件 | 完了の条件 | 範囲 | 受け入れ(テスト名) | 状態 |
 |---|---|---|---|---|---|---|
-| 1 | 未 | CLI-22 | 未 | 未 | 未 | 未 |
+| 1 | スキルの例が動くことと版が揃うことの試験を先に置く | CLI-22 | 試験がスキル無しで落ちる | tests/test_agent_skill.rs | test_cli_22_skill_examples_run, test_cli_22_plugin_versions_match_crate | 未 |
+| 2 | SKILL.md・マニフェスト・索引を書く | CLI-22 | 試験が通り、README から入れ方が分かる | plugins/mdgrid/ .claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md README.ja.md | test_cli_22_skill_examples_run, test_cli_22_plugin_versions_match_crate | 未 |
 
 ## 実装の気づき
 
