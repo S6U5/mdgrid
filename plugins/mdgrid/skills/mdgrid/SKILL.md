@@ -22,7 +22,8 @@ mdgrid <folder | .base | .md> ... --print [--format csv|tsv|json|md] [--with-pat
 - `--filter` keeps rows where the expression is true. Repeat it to require all of them.
 - `--sort column` sorts ascending, `column:desc` descending. Repeat it for tie-breakers.
 - With a `.base`, `--view <name>` picks the view (its filters, columns and sort apply; `--filter` narrows it further). Without `--view`, the first view is used.
-- Paths are folders (all notes below them), `.base` files, or single `.md` files. Several can be given.
+- Paths are folders (all notes below them), `.base` files, or single `.md` files. Several folders can be given. Don't mix a single `.md` file with folders: the other folders are then dropped from the output.
+- Write output files outside the folder you are reading (or name them so they are not notes you scan), so the export doesn't become a note in the next run.
 
 Examples (in a folder `tasks/` whose notes have `status`, `due` and `priority`):
 
@@ -50,7 +51,7 @@ Put the expression in single quotes so the shell keeps the double quotes inside 
 - Comparisons and logic: `==` `!=` `<` `<=` `>` `>=` `&&` `||` `!`, parentheses.
 - Strings in quotes: `status == "doing"`. Dates written `YYYY-MM-DD` compare as dates: `due < "2026-11-01"`, `due <= today() + "7d"`, `due >= today() - "2 weeks"`.
 - Lists and strings: `tags.contains("work")`, `title.lower().contains("draft")`, `tags.isEmpty()`, `!status.isEmpty()`.
-- Files: `file.inFolder("projects")`, `file.hasTag("urgent")`, `file.hasProperty("due")`, `file.name`, `file.mtime > now() - "1d"`.
+- Files: `file.inFolder("projects")`, `file.hasTag("urgent")`, `file.hasProperty("due")`, `file.basename == "todo-list"` (`file.name` includes `.md`), `file.mtime > now() - "1d"`.
 
 The full list of operators, functions and methods is in https://github.com/S6U5/mdgrid/blob/main/docs/obsidian-bases.md. If an expression cannot be read, mdgrid prints the reason on one line and exits with code 2; fix the expression rather than falling back to parsing files yourself.
 
@@ -71,7 +72,7 @@ sed 's/,doing,/,done,/' doing.csv > done.csv
 mdgrid tasks --apply done.csv
 ```
 
-Edit the file any way you like (by hand, a script); keep the `path` column and the header, and don't rely on fixed column positions, which follow the keys of the notes. Step 3 prints a unified diff of the notes and writes nothing. **Show that diff to the user and wait for their approval**, then run the same command with `--yes` (`mdgrid tasks --apply done.csv --yes`) to write. Never add `--yes` on your own. mdgrid writes only the changed values and leaves the rest of each note byte for byte as it was.
+Edit the file any way you like (by hand, a script); keep the `path` column and the header, and don't rely on fixed column positions, which follow the keys of the notes (the `sed` above only works because `status` is the column after `path` here). Run `--apply` from the same directory and with the same folder or `.base` as the export, because the paths are relative to them. Step 3 prints a unified diff of the notes and writes nothing. **Show that diff to the user and wait for their approval**, then run the same command with `--yes` (`mdgrid tasks --apply done.csv --yes`) to write. Never add `--yes` on your own. mdgrid writes only the changed values and leaves the rest of each note byte for byte as it was.
 
 ## Handing results to another AI or a person
 
