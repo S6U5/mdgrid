@@ -17,7 +17,7 @@
   --accent: #3657d6;
   --on-accent: #ffffff;
   --sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
-  --mono: Menlo, Consolas, "DejaVu Sans Mono", "Cascadia Mono", ui-monospace, monospace;
+  --mono: Menlo, Consolas, "DejaVu Sans Mono", "Cascadia Mono", "BIZ UDGothic", ui-monospace, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -68,6 +68,8 @@ details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 .scr .w1, .scr .w2 { display: inline-block; text-align: center; font-style: normal; overflow: hidden; vertical-align: top; }
 .scr .w1 { width: 1ch; }
 .scr .w2 { width: 2ch; }
+/* A wide character fills its two cells like in a terminal: --cjk is measured on load (fitCjk). Only drawn larger, so the cells do not move. */
+.scr .w2 { transform: scale(var(--cjk, 1)); }
 .scr [data-a] { cursor: pointer; }
 .cat { display: grid; gap: 24px; }
 .part { display: grid; gap: 10px; }
@@ -1589,6 +1591,20 @@ $("copy").onclick = async () => {
   const n = $("copied"); n.hidden = false; setTimeout(() => { n.hidden = true; }, 1500);
 };
 $("reset").onclick = () => { A = freshApp(); render(); };
+// 全角の字が 2ch にちょうど入る倍率。英数字と罫線の等幅の字(Menlo など)には日本語が無く、代わりの字(BIZ UDGothic など)は 2ch より細い。
+function fitCjk() {
+  const m = document.createElement("pre"); m.className = "scr";
+  m.style.cssText = "position:absolute;visibility:hidden;padding:0";
+  m.innerHTML = '<span id="m1">0000000000</span><br><span id="m2">あああああ</span>';
+  document.body.appendChild(m);
+  const one = m.querySelector("#m1").getBoundingClientRect().width / 10;
+  const wide = m.querySelector("#m2").getBoundingClientRect().width / 5;
+  m.remove();
+  const k = wide > 0 ? (2 * one) / wide : 1;
+  document.documentElement.style.setProperty("--cjk", String(Math.min(1.4, Math.max(0.8, k))));
+}
+fitCjk();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCjk);
 renderAll();
 </script>
 </body>
