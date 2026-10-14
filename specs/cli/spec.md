@@ -6,7 +6,7 @@ description: 起動のしかた(引数・オプション)と、設定ファイ�
 status: active
 load_when: 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-11
+updated: 2026-10-14
 ---
 
 # 起動と設定(cli)
@@ -32,6 +32,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-5 | `mdgrid [<.base \| フォルダ> …] --print [--format csv\|tsv\|json\|md] [--view <名前>]` は、画面を出さずに、開いたビュー(`.base` のビューか mdgrid のビュー。BV-17)の表を標準出力に出して終了コード 0 で終わるべき。行はビューの絞り込みと並べ替えのあと(グループ分けは並びだけに効かせ、見出しの行は出さない)、列はビューの列の並びとし、画面の見た目の状態(SR-12)と画面で掛けた絞り込みは使わないべき。既定の形は csv(RFC 4180、見出しの行つき、改行は LF)、tsv はタブ区切り(見出しの行つき、セルの中のタブと改行は空白)、json は列の名前を鍵にしたオブジェクトの配列(数・真偽・null・リストは JSON の型、日付と日時は文字列)、md は見出しと区切りの行のある表(セルの中の縦棒はバックスラッシュで逃がし、改行は空白)とするべき。評価できない列(BV-7)は csv と md で空、json で null にし、標準エラーに1行で知らせるべき。ノートを書き換えないべき(WB-15 と同じ)。起動できないとき・知らない形の名前は CLI-4 と同じく理由1行と終了コード 2 にするべき。 | `--print --format csv` → 見出しの行と行ごとの CSV が出て終わる。`--format json` → `[{"title": "会議", "priority": 2, "tags": ["a"]}]` の形。`--format md` → 見出しの行と区切りの行のある表。`--format tsv` → タブ区切り。`--format xml` → 理由1行と終了コード 2。標準出力がパイプでも動く(`test_CLI_5`) | [2026-10-07](../_decisions/2026-10-07-export-table.md)、[2026-10-03](../_decisions/2026-10-03-print-pick.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
 | CLI-20 | 0.3.0 までの書き方は、読んで新しい場所に当て、項目ごとに「旧い名前は新しい道筋に移った」と警告するべき: `color`・`ambiguous_wide`・`nerd_font` → `[terminal]`、`workspace_detect` → `workspace.detect`、`theme`・`theme_light`・`theme_dark` → `look.theme`(`"auto"` に明暗のどちらかを書いていれば明暗の表)、`look` → `look.mode`、`borders` → `look.style.frames`、`[style]` → `[look.style]`(`preset` は `look.preset`)、`cells` の文字列と `[cells] style` → `look.cells`、`[cells]` の部品ごとの真偽 → `[look.style]` のその部品の `plain`(真偽は `check = "text"`、リンクは `links = "plain"`、印は `icons`)、`[cells.columns]` → `[look.columns]`、`[colors]` → `[look.colors]`、`view_tabs` → `display.tabs`、`[display] tabs = false` → `display.tabs = "never"`、`search_bar` → `display.search_bar`、`date_format`・`week_start` → `dates.format`・`dates.week_start`、`candidates`・`add_frontmatter` → `[edit]`。旧い名前と新しい道筋の両方に書いてあれば、新しい道筋を使うべき。画面が書くファイルの旧い形(`look.toml`、views.toml の `[[target]]`)も読み、次に書くときに新しい形(ui.toml、`[[table]]`)で書き、`look.toml` は ui.toml に移したあと消してよい。`mdgrid --migrate-config` は、設定ファイル(`--config` があればそのファイル)を新しい形にした TOML を標準出力に出して終了コード 0 で終わり、ファイルは書かないべき。注釈は移らないことを、出す文の先頭のコメントで知らせるべき。 | `theme = "auto"` と `theme_light = "paper"` → 明るい地で paper、警告に `theme_light` と `look.theme`。`borders = "ascii"` → 枠が ASCII で、警告に `look.style.frames`。`view_tabs = "auto"` と `[display] tabs = "always"` → always。`mdgrid --migrate-config` → `[look]` の下に `theme = { light = "paper", dark = "sumi" }`、出した文を読み直すと警告なしで同じ振る舞い。look.toml だけがある → その見た目で起動し、見た目の区画で反映すると ui.toml ができて look.toml が無い(`test_cli_20_*`) | [2026-10-10](../_decisions/2026-10-10-config-v2.md) |
 | CLI-21 | `mdgrid [<表>] --print-config --resolved` は、その表(引数が無ければ今のフォルダ。`--view` があればそのビュー)を開いたときに効く表のプロファイルとアプリ全体の項目の全部を、CLI-11 と同じ区画の TOML で標準出力に出し、各項目の上に、その値がどこから来たか(既定・config.toml・ui.toml・ワークスペースの印か workspaces.toml とその名前・views.toml の表・ビューの名前・テンプレートの名前)をコメントで添えて、終了コード 0 で終わるべき。出したものは設定ファイルとして警告なしに読めるべき。画面を開かず、ファイルは書かないべき。 | SR-44 の例で `mdgrid notes/tasks --print-config --resolved` → `theme = "dracula"` の上に `# views.toml (notes/tasks)`、`preset` の上に `# default`。出した文を `--config` で読む → 警告なし(`test_cli_21_*`) | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) |
+| CLI-22 | リポは、AI エージェント(Claude Code・Codex)が mdgrid を CLI で使うための手引きのスキル(`SKILL.md`)を、プラグインとして入れられる形(Claude Code と Codex のマーケットプレイスの索引とマニフェスト)で置くべき。スキルは、頼まれた条件を `--print` の `--filter`・`--sort`・`--view`・`--format`・`--with-path` に組み立てて表をファイルに出す手順と、`--apply` で書き戻すときは差分を人に見せてから `--yes` で書く手順を書く。スキルに書いた例のコマンドは、そのまま動かして通るべき(古い旗や書けない式を AI に教えないため)。マニフェストの版は Cargo.toml の版と揃えるべき。 | SKILL.md の例のコマンドを見本のフォルダ(status が todo・doing・done のノート)で動かす → 全部が終了コード 0 で、todo と doing の絞り込みの例は2行だけを出す(`test_cli_22_skill_examples_run`)。マニフェストの版が Cargo.toml の版と違う → 落ちる(`test_cli_22_plugin_versions_match_crate`) | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) |
 
 ## 要件: 版1 — セッション
 
@@ -71,6 +72,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-14 | [mdgrid を CLI で使う AI エージェント向けのスキルを、プラグインとして置く(agent-skill)](../_decisions/2026-10-14-agent-skill.md) | accepted | 人 | 人の発言 | CLI-22 |
 | 2026-10-13 | [表示の項目が11になって変わる試験の錠を掛け直す(row-lines-locks)](../_decisions/2026-10-13-row-lines-locks.md) | accepted | 人 | AI の提案 | SR-20, SR-21, CLI-11 ほか 4 |
 | 2026-10-12 | [余白の既定を 1 にして変わる試験の錠を掛け直す(padding-default-one-locks)](../_decisions/2026-10-12-padding-default-one-locks.md) | accepted | 人 | AI の提案 | NV-23, SR-1, SR-26, CLI-11, SR-21 |
 | 2026-10-12 | [右上のメニュー・3行のビューの帯で行の位置が変わる試験の錠を、まとめて掛け直す(header-menu-locks)](../_decisions/2026-10-12-header-menu-locks.md) | accepted | 人 | AI の提案 | BV-3, BV-7, BV-13 ほか 26 |
@@ -118,6 +120,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-5 | [2026-10-07](../_decisions/2026-10-07-export-table.md) | tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_english_with_lang_en, tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_japanese_with_lang_ja, tests/test_print.rs::test_cli_5_default_csv_header_rows_and_rfc4180 ほか 12 | [2026-10-07-export-table](../_changes/2026-10-07-export-table.md) 2026-10-07 |
 | CLI-20 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_uifile_unit.rs::test_cli_20_old_look_toml_is_read_and_moved, tests/test_config_docs.rs::test_cli_12_docs_list_old_names, tests/test_config_v2.rs::test_cli_20_migrate_config_prints_the_new_layout ほか 3 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
 | CLI-21 | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) | src/test_profile_unit.rs::test_cli_21_resolved_toml_names_the_origin, tests/test_config_v2.rs::test_cli_21_print_resolved_names_the_origin | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
+| CLI-22 | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) | なし | なし |
 | CLI-6 | [2026-10-01](../_decisions/2026-10-01-sessions.md) | なし | なし |
 | CLI-7 | [2026-10-11](../_decisions/2026-10-11-filter-button.md) | なし | [2026-10-11-filter-button](../_changes/2026-10-11-filter-button.md) 2026-10-11 |
 | CLI-8 | [2026-10-01](../_decisions/2026-10-01-sessions-details.md) | なし | なし |
