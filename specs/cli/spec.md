@@ -120,7 +120,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-5 | [2026-10-07](../_decisions/2026-10-07-export-table.md) | tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_english_with_lang_en, tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_japanese_with_lang_ja, tests/test_print.rs::test_cli_5_default_csv_header_rows_and_rfc4180 ほか 12 | [2026-10-07-export-table](../_changes/2026-10-07-export-table.md) 2026-10-07 |
 | CLI-20 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_uifile_unit.rs::test_cli_20_old_look_toml_is_read_and_moved, tests/test_config_docs.rs::test_cli_12_docs_list_old_names, tests/test_config_v2.rs::test_cli_20_migrate_config_prints_the_new_layout ほか 3 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
 | CLI-21 | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) | src/test_profile_unit.rs::test_cli_21_resolved_toml_names_the_origin, tests/test_config_v2.rs::test_cli_21_print_resolved_names_the_origin | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
-| CLI-22 | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) | なし | なし |
+| CLI-22 | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) | tests/test_agent_skill.rs::test_cli_22_plugin_versions_match_crate, tests/test_agent_skill.rs::test_cli_22_skill_examples_run | [2026-10-14-agent-skill](../_changes/2026-10-14-agent-skill.md) 2026-10-14 |
 | CLI-6 | [2026-10-01](../_decisions/2026-10-01-sessions.md) | なし | なし |
 | CLI-7 | [2026-10-11](../_decisions/2026-10-11-filter-button.md) | なし | [2026-10-11-filter-button](../_changes/2026-10-11-filter-button.md) 2026-10-11 |
 | CLI-8 | [2026-10-01](../_decisions/2026-10-01-sessions-details.md) | なし | なし |

@@ -2,7 +2,7 @@
 type: Change
 id: 01M4XF345A72W5G367P82HJ0YN
 title: mdgrid を CLI で使う AI エージェント向けのスキルを、プラグインとして置く
-status: active
+status: done
 size: full
 created: 2026-10-14
 updated: 2026-10-14
@@ -21,8 +21,8 @@ updated: 2026-10-14
 | 仕様化 | 済 | [提案](../_decisions/2026-10-14-agent-skill.md) |
 | 設計 | 済 | この記録の「設計」 |
 | タスク | 済 | この記録の「タスク」 |
-| 実装 | 進行中 | |
-| 照合 | 未 | この記録の「照合」 |
+| 実装 | 済 | |
+| 照合 | 済 | この記録の「照合」 |
 
 ## 要求
 
@@ -51,19 +51,23 @@ updated: 2026-10-14
 
 | # | タスク | 要件 | 完了の条件 | 範囲 | 受け入れ(テスト名) | 状態 |
 |---|---|---|---|---|---|---|
-| 1 | スキルの例が動くことと版が揃うことの試験を先に置く | CLI-22 | 試験がスキル無しで落ちる | tests/test_agent_skill.rs | test_cli_22_skill_examples_run, test_cli_22_plugin_versions_match_crate | 未 |
-| 2 | SKILL.md・マニフェスト・索引を書く | CLI-22 | 試験が通り、README から入れ方が分かる | plugins/mdgrid/ .claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md README.ja.md | test_cli_22_skill_examples_run, test_cli_22_plugin_versions_match_crate | 未 |
+| 1 | スキルの例が動くことと版が揃うことの試験を先に置く | CLI-22 | 試験がスキル無しで落ちる | tests/test_agent_skill.rs | test_cli_22_skill_examples_run, test_cli_22_plugin_versions_match_crate | 済 |
+| 2 | SKILL.md・マニフェスト・索引を書く | CLI-22 | 試験が通り、README から入れ方が分かる | plugins/mdgrid/ .claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md README.ja.md | test_cli_22_skill_examples_run, test_cli_22_plugin_versions_match_crate | 済 |
 
 ## 実装の気づき
 
-なし
+- レビュー役の指摘で、スキルに注意を足した: 1つの `.md` とフォルダを混ぜると他のフォルダが出力から落ちる(CLI-15 の決まり)、出力を読むフォルダの中に置くと次の回でノートになる、`file.name` は `.md` を含む、`--apply` は書き出しと同じ場所と根から動かす。
+- 残したこと: 試験が動かすのは `sh` の囲みだけで、式の箇条書きや `--yes` の行は動かさない(人が手で確かめた)。式の一覧は docs/obsidian-bases.md に任せ、スキルには代表だけを置く。
+- Codex の `validate_plugin.py` はこの環境に無いので走らせていない。Claude Code の `claude plugin validate --strict` は、プラグインと索引の両方で通った。
 
 ## 照合
 
+`check.py --evidence` は「前: 要件の手前で落ちた」の gap を出した(実装前の試験が、要件の置くべきファイルを読む所で panic したため、アサーションと見分けられない)。full のため、書込なしのフレッシュ文脈の検証役が前後のコミットで走らせ直して判定した。
+
 | 要件 | 結果 | 証拠 |
 |---|---|---|
-| CLI-22 | unassessed | |
+| CLI-22 | checked | コード: plugins/mdgrid/skills/mdgrid/SKILL.md / テスト: tests/test_agent_skill.rs::test_cli_22_skill_examples_run, tests/test_agent_skill.rs::test_cli_22_plugin_versions_match_crate / 今: 通った(cargo test --test test_agent_skill、2 passed) / 前: 落ちた(342e603 で、要件の置く SKILL.md と plugin.json が無いため2件とも落ちる。見本と実行ファイルの前置きの確かめは通っており、要件の手前の失敗ではない) |
 
-既存のテストの削除・skip・弱体化: なし
+既存のテストの削除・skip・弱体化: なし(tests/ は test_agent_skill.rs の新規だけ。錠は2件の追加だけ)
 
-確かめた: 0 / 1
+確かめた: 1 / 1
