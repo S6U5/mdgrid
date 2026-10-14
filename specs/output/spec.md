@@ -61,4 +61,14 @@ updated: 2026-10-11
 | 2026-10-03 | [--pick の列の値は素の文字、Esc は解くものが無いときだけ取りやめ(pick-plain)](../_decisions/2026-10-03-pick-plain.md) | accepted | AI | 検証の指摘 | OUT-3 |
 | 2026-09-30 | [最初の版の仕様を、表の TUI の調査に合わせて書き切る(v1-full-spec)](../_decisions/2026-09-30-v1-full-spec.md) | accepted | AI | 人の発言 | BV-4, BV-9, CE-1 ほか 52 |
 | 2026-09-30 | [TUI の名前を mdgrid にする(rename-mdgrid)](../_decisions/2026-09-30-rename-mdgrid.md) | accepted | AI | 人の発言 | OUT-3, CLI-1, CLI-3 |
+
+## この機能のつながり
+
+| 要件 | 最新の決定 | テスト | 最後の照合 |
+|---|---|---|---|
+| OUT-1 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/ui/test_external.rs::test_out_1_base64_and_osc52, src/ui/test_external.rs::test_out_1_clipboard_command_hang_times_out, src/ui/test_external.rs::test_out_1_copy_cell_and_row ほか 7 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| OUT-2 | [2026-10-11](../_decisions/2026-10-11-filter-button.md) | なし | [2026-10-11-filter-button](../_changes/2026-10-11-filter-button.md) 2026-10-11 |
+| OUT-5 | [2026-10-07](../_decisions/2026-10-07-export-table-details.md) | なし | [2026-10-07-export-table](../_changes/2026-10-07-export-table.md) 2026-10-07 |
+| OUT-3 | [2026-10-03](../_decisions/2026-10-03-pick-plain.md) | tests/test_pick.rs::test_out_3_esc_with_marks_only_clears_marks, tests/test_pick.rs::test_out_3_esc_without_marks_cancels_with_exit_1, tests/test_pick.rs::test_out_3_pick_column_newline_becomes_space_and_missing_is_empty ほか 12 | [2026-10-06-skip-hidden-dirs](../_changes/2026-10-06-skip-hidden-dirs.md) 2026-10-06 |
+| OUT-4 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | なし | なし |
 <!-- decidespec:history:end -->

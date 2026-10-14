@@ -2,7 +2,7 @@
 type: Change
 id: 01M4XBS9EBWGEFNV7BCFPG0GC2
 title: ルートフォルダの下のフォルダの表を .base に書き出すと、フォルダの条件が入らない
-status: active
+status: done
 size: bugfix
 created: 2026-10-14
 updated: 2026-10-14
@@ -22,7 +22,7 @@ updated: 2026-10-14
 | 設計 | 対象外: bugfix | |
 | タスク | 済 | この記録の「タスク」 |
 | 実装 | 済 | |
-| 照合 | 未 | この記録の「照合」 |
+| 照合 | 済 | この記録の「照合」 |
 
 ## 要求
 
@@ -47,10 +47,12 @@ updated: 2026-10-14
 
 ## 照合
 
+`check.py --evidence` の行(bugfix で全部 checked のため検証役は起動しない)。
+
 | 要件 | 結果 | 証拠 |
 |---|---|---|
-| BV-19 | unassessed | まだ |
+| BV-19 | checked | コード: src/ui/native_io.rs / テスト: src/ui/test_export_infolder.rs::test_bv_19_export_infolder_subfolder_adds_infolder_filter ほか BV-19 を指す 26 件 / 今: 通った(cargo test test_bv_19) / 前: 落ちた(実装前は下のフォルダの3件がアサーションで落ちる) |
 
-既存のテストの削除・skip・弱体化: まだ
+既存のテストの削除・skip・弱体化: なし(足したのは新しいファイルだけ)
 
-確かめた: 0 / 1
+確かめた: 1 / 1
