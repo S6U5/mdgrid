@@ -65,4 +65,19 @@ updated: 2026-10-12
 | 2026-09-30 | [仕様の点検の指摘を直す(v1-review-fixes)](../_decisions/2026-09-30-v1-review-fixes.md) | accepted | AI | 検証の指摘 | SR-13, SR-10, SR-12 ほか 18 |
 | 2026-09-30 | [最初の版の仕様を、表の TUI の調査に合わせて書き切る(v1-full-spec)](../_decisions/2026-09-30-v1-full-spec.md) | accepted | AI | 人の発言 | BV-4, BV-9, CE-1 ほか 52 |
 | 2026-09-30 | [最初の版の設計(v1-design)](../_decisions/2026-09-30-v1-design.md) | accepted | AI | AI の提案 | BV-1, BV-2, BV-3 ほか 35 |
+
+## この機能のつながり
+
+| 要件 | 最新の決定 | テスト | 最後の照合 |
+|---|---|---|---|
+| CV-1 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_gaps.rs::test_cv_1_null_is_dim_but_empty_string_and_missing_are_not, src/ui/test_screen.rs::test_cv_1_null_empty_missing, tests/test_source.rs::test_cv_1_get_distinguishes_value_missing_and_null | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| CV-2 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/test_big_int_unit.rs::test_cv_2_big_int_boundary_still_int, src/test_big_int_unit.rs::test_cv_2_big_int_kept_as_text, src/test_big_int_write_unit.rs::test_cv_2_big_int_text_stays_quoted ほか 16 | [2026-10-06-trust-notices](../_changes/2026-10-06-trust-notices.md) 2026-10-06 |
+| CV-3 | [2026-10-12](../_decisions/2026-10-12-row-lines.md) | src/ui/test_gaps.rs::test_cv_3_detail_shows_every_line_of_multiline_value, src/ui/test_row_lines.rs::test_cv_3_newline_marked_without_extra_lines, src/ui/test_row_lines.rs::test_cv_8_newline_splits_lines ほか 1 | [2026-10-12-row-lines](../_changes/2026-10-12-row-lines.md) 2026-10-13 |
+| CV-4 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_grid.rs::test_cv_4_formula_number_and_bool_aligned, src/ui/test_grid.rs::test_cv_4_types_json_number_right_aligned, src/ui/test_screen.rs::test_cv_4_numbers_right_aligned | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| SR-9 | [2026-09-30](../_decisions/2026-09-30-v1-design.md) | src/ui/test_calendar.rs::test_ce_21_narrow_terminal_types_only, src/ui/test_calendar.rs::test_ce_23_no_calendar_shift_right_keeps_date, src/ui/test_calendar.rs::test_ce_24_ambiguous_wide_keeps_year_key ほか 13 | [2026-10-11-emoji-vs16-revert](../_changes/2026-10-11-emoji-vs16-revert.md) 2026-10-11 |
+| SR-10 | [2026-10-03](../_decisions/2026-10-03-print-pick.md) | src/test_main.rs::test_sr_10_not_a_terminal, src/test_relmap_unit.rs::test_rel_7_control_chars_are_not_drawn, src/ui/test_gaps.rs::test_sr_10_dumb_term_draws_no_emoji ほか 5 | [2026-10-11-emoji-vs16-revert](../_changes/2026-10-11-emoji-vs16-revert.md) 2026-10-11 |
+| SR-15 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/ui/test_display_options.rs::test_sr_20_zebra_not_without_color, src/ui/test_screen.rs::test_sr_10_no_color, src/ui/test_screen.rs::test_sr_15_pending_mark_and_256_colors ほか 4 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| CV-5 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_gaps.rs::test_cv_5_width_from_visible_rows_changes_on_scroll, src/ui/test_screen.rs::test_cv_5_long_value_capped | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| CV-6 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_borders.rs::test_sr_32_ascii_when_ambiguous_wide, src/ui/test_calendar.rs::test_ce_24_ambiguous_wide_keeps_year_key, src/ui/test_display_more.rs::test_sr_20_column_lines_with_ambiguous_wide_keep_positions ほか 2 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| CV-8 | [2026-10-12](../_decisions/2026-10-12-row-lines.md) | src/ui/test_row_lines.rs::test_cv_3_newline_marked_without_extra_lines, src/ui/test_row_lines.rs::test_cv_8_bottom_row_fully_visible, src/ui/test_row_lines.rs::test_cv_8_click_on_second_line_selects_row ほか 19 | [2026-10-12-row-lines](../_changes/2026-10-12-row-lines.md) 2026-10-13 |
 <!-- decidespec:history:end -->

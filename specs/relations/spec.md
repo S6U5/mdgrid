@@ -73,4 +73,21 @@ updated: 2026-10-09
 | 2026-10-09 | [関係マップの画面・切り替えのタブ・幅に合わせた段組みを版1に入れる(relation-map-now)](../_decisions/2026-10-09-relation-map-now.md) | accepted | 人 | 人の発言 | REL-7, REL-8, REL-9 |
 | 2026-10-08 | [ノートのリンクをリレーションとして扱う(relations)](../_decisions/2026-10-08-relations.md) | accepted | 人 | 人の発言 | REL-1, REL-2, REL-3 ほか 6 |
 | 2026-10-08 | [リレーションの細部: 行き先の無いリンクの印と、名前の変更でのリンクの書き直し(relations-details)](../_decisions/2026-10-08-relations-details.md) | accepted | AI | AI の提案 | REL-10, REL-11 |
+
+## この機能のつながり
+
+| 要件 | 最新の決定 | テスト | 最後の照合 |
+|---|---|---|---|
+| REL-1 | [2026-10-08](../_decisions/2026-10-08-relations.md) | src/test_relations_unit.rs::test_rel_1_forms_and_resolution, src/test_relations_unit.rs::test_rel_1_percent_with_multibyte_does_not_panic, src/test_relations_unit.rs::test_rel_1_plain_words_are_not_links ほか 4 | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-2 | [2026-10-08](../_decisions/2026-10-08-relations.md) | src/test_relations_unit.rs::test_rel_2_display_names, src/ui/test_relations.rs::test_rel_2_names_in_cells | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-10 | [2026-10-08](../_decisions/2026-10-08-relations-details.md) | src/test_relations_unit.rs::test_rel_2_display_names, src/ui/test_relations.rs::test_rel_10_missing_target_marked, src/ui/test_relations_open.rs::test_rel_10_resolves_again_after_save | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-3 | [2026-10-08](../_decisions/2026-10-08-relations.md) | src/test_relations_unit.rs::test_rel_3_format_matches_form, src/test_relations_unit.rs::test_rel_3_link_column, src/ui/test_relations.rs::test_rel_3_list_column_many_to_many ほか 2 | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-4 | [2026-10-08](../_decisions/2026-10-08-relations.md) | src/ui/test_relations_open.rs::test_rel_4_choose_among_targets, src/ui/test_relations_open.rs::test_rel_4_hidden_row_in_same_table_gives_reason, src/ui/test_relations_open.rs::test_rel_4_menu_has_open_link_on_link_cell ほか 4 | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-5 | [2026-10-09](../_decisions/2026-10-09-workspaces.md) | src/test_relations_unit.rs::test_rel_5_backlinks, src/ui/test_relations_open.rs::test_rel_5_linked_rows_lists_table_and_column, src/ui/test_relations_open.rs::test_rel_5_menu_offers_linked_rows_with_registered_tables ほか 2 | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-6 | [2026-10-09](../_decisions/2026-10-09-workspaces.md) | src/test_relations_unit.rs::test_rel_6_edges | [2026-10-08-relations](../_changes/2026-10-08-relations.md) 2026-10-08 |
+| REL-7 | [2026-10-09](../_decisions/2026-10-09-relation-map-now.md) | src/test_relmap_unit.rs::test_rel_7_ascii_lines, src/test_relmap_unit.rs::test_rel_7_back_and_self_links_do_not_panic, src/test_relmap_unit.rs::test_rel_7_control_chars_are_not_drawn ほか 6 | なし |
+| REL-8 | [2026-10-12](../_decisions/2026-10-12-header-menu.md) | src/ui/test_header_menu.rs::test_rel_8_menu_back_to_table, src/ui/test_header_menu.rs::test_rel_8_menu_esc_closes_without_change, src/ui/test_header_menu.rs::test_rel_8_menu_lists_types_and_switches ほか 5 | [2026-10-12-header-menu](../_changes/2026-10-12-header-menu.md) 2026-10-12 |
+| REL-9 | [2026-10-09](../_decisions/2026-10-09-relation-map-now.md) | src/ui/test_relmap.rs::test_rel_9_layout_by_width, src/ui/test_relmap.rs::test_rel_9_linked_records_when_tall, src/ui/test_relmap_scroll.rs::test_rel_9_narrow_list_scrolls_to_selection | [2026-10-09-relmap-narrow-scroll](../_changes/2026-10-09-relmap-narrow-scroll.md) 2026-10-09 |
+| REL-12 | [2026-10-09](../_decisions/2026-10-09-relmap-click.md) | src/ui/test_relmap_click.rs::test_rel_12_click_link_and_linked_row, src/ui/test_relmap_click.rs::test_rel_12_click_selects_and_opens, src/ui/test_relmap_click.rs::test_rel_12_narrow_list_and_wheel ほか 1 | [2026-10-09-relmap-click](../_changes/2026-10-09-relmap-click.md) 2026-10-09 |
+| REL-11 | [2026-10-08](../_decisions/2026-10-08-relations-details.md) | なし | なし |
 <!-- decidespec:history:end -->

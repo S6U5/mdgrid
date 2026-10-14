@@ -223,6 +223,8 @@ mod test_edit_design;
 #[cfg(test)]
 mod test_export;
 #[cfg(test)]
+mod test_export_infolder;
+#[cfg(test)]
 mod test_external;
 #[cfg(test)]
 mod test_filter_window;

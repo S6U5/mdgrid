@@ -81,4 +81,26 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 | 2026-09-30 | [最初の版の仕様を、表の TUI の調査に合わせて書き切る(v1-full-spec)](../_decisions/2026-09-30-v1-full-spec.md) | accepted | AI | 人の発言 | BV-4, BV-9, CE-1 ほか 52 |
 | 2026-09-30 | [形式ごとの読み込み口を差し替えられる形にする(pluggable-sources)](../_decisions/2026-09-30-pluggable-sources.md) | accepted | AI | 人の発言 | SC-14 |
 | 2026-09-30 | [取り込み: scope](../_decisions/2026-09-30-import-scope.md) | accepted | 取り込み | 取り込み | SC-1, SC-2, SC-3 ほか 9 |
+
+## この機能のつながり
+
+| 要件 | 最新の決定 | テスト | 最後の照合 |
+|---|---|---|---|
+| SC-1 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-2 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-3 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-4 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-5 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-6 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-7 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-8 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | src/ui/test_gaps.rs::test_sc_8_other_view_type_shows_unsupported_reason, tests/test_base.rs::test_sc_8_cards_view_is_err, tests/test_base.rs::test_sc_8_list_map_kanban_views_are_err ほか 3 | [2026-10-01-examples](../_changes/2026-10-01-examples.md) 2026-10-01 |
+| SC-9 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-13 | [2026-10-01](../_decisions/2026-10-01-scope-priority-marks.md) | なし | なし |
+| SC-14 | [2026-09-30](../_decisions/2026-09-30-pluggable-sources.md) | tests/test_source.rs::test_bv_1_folder_rows_labels_and_columns, tests/test_source.rs::test_changed_reports_externally_edited_row_and_rereads, tests/test_source.rs::test_preview_returns_before_and_after_without_touching_file | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| SC-10 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-11 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-12 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
+| SC-15 | [2026-10-10](../_decisions/2026-10-10-csv-source.md) | src/test_csv_edges_unit.rs::test_sc_15_duplicate_and_empty_headers, src/test_csv_edges_unit.rs::test_sc_15_lone_cr_refused, src/test_csv_edges_unit.rs::test_sc_16_float_stays_decimal ほか 14 | [2026-10-10-csv-source](../_changes/2026-10-10-csv-source.md) 2026-10-10 |
+| SC-16 | [2026-10-10](../_decisions/2026-10-10-csv-source.md) | src/test_csv_edges_unit.rs::test_sc_15_duplicate_and_empty_headers, src/test_csv_edges_unit.rs::test_sc_15_lone_cr_refused, src/test_csv_edges_unit.rs::test_sc_16_float_stays_decimal ほか 17 | [2026-10-10-csv-source](../_changes/2026-10-10-csv-source.md) 2026-10-10 |
+| SC-17 | [2026-10-10](../_decisions/2026-10-10-csv-source.md) | src/ui/test_csv_note_only.rs::test_sc_17_add_row, src/ui/test_csv_note_only.rs::test_sc_17_add_row_keeps_pending_edits, src/ui/test_csv_note_only.rs::test_sc_17_add_row_shown_with_pending_edits ほか 15 | [2026-10-10-csv-source](../_changes/2026-10-10-csv-source.md) 2026-10-10 |
 <!-- decidespec:history:end -->

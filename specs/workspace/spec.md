@@ -65,4 +65,17 @@ updated: 2026-10-13
 | 2026-10-09 | [ワークスペースの操作を、開くパスと重ならない旗にする(workspace-flags)](../_decisions/2026-10-09-workspace-flags.md) | accepted | 人 | 人の発言 | WS-3, WS-7 |
 | 2026-10-09 | [自動の表に .base を入れない(workspace-auto-folders)](../_decisions/2026-10-09-workspace-auto-folders.md) | accepted | 人 | 検証の指摘 | WS-5, WS-7 |
 | 2026-10-09 | [Windows でも通るように、Unix の前提を置いた2つの試験を直して錠を掛け直す(windows-test-locks)](../_decisions/2026-10-09-windows-test-locks.md) | accepted | 人 | 人の発言 | WS-1 |
+
+## この機能のつながり
+
+| 要件 | 最新の決定 | テスト | 最後の照合 |
+|---|---|---|---|
+| WS-1 | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) | src/test_toml_edit_safety_unit.rs::test_ws_1_header_with_comment_keeps_neighbour, src/test_toml_edit_safety_unit.rs::test_ws_1_trailing_table_and_inline_form_survive, src/test_workspace_keep_unit.rs::test_ws_1_add_keeps_hand_written_text ほか 6 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
+| WS-2 | [2026-10-09](../_decisions/2026-10-09-workspaces.md) | src/test_workspace_profile_unit.rs::test_ws_2_add_keeps_table_profile, src/ui/test_workspace.rs::test_ws_2_add_and_remove_from_palette, src/ui/test_workspace.rs::test_ws_2_open_none_says_how ほか 1 | なし |
+| WS-3 | [2026-10-09](../_decisions/2026-10-09-workspace-flags.md) | tests/test_workspace_cli.rs::test_ws_3_add_list_remove_on_pipe, tests/test_workspace_cli.rs::test_ws_3_bad_input_one_line_reason, tests/test_workspace_cli.rs::test_ws_3_folder_named_workspace_opens ほか 2 | [2026-10-10-explore-fixes-3](../_changes/2026-10-10-explore-fixes-3.md) 2026-10-10 |
+| WS-4 | [2026-10-09](../_decisions/2026-10-09-workspaces.md) | src/ui/test_workspace.rs::test_ws_4_linked_rows_follow_scope, src/ui/test_workspace.rs::test_ws_4_scope_limits_tables_and_relmap | なし |
+| WS-5 | [2026-10-13](../_decisions/2026-10-13-root-folder.md) | src/test_workspace_unit.rs::test_ws_5_detect_vault_and_git, tests/test_root_folder.rs::test_ws_5_detect_old_names_read_with_warning, tests/test_root_folder.rs::test_ws_5_detect_reads_marker_names ほか 3 | [2026-10-13-root-folder](../_changes/2026-10-13-root-folder.md) 2026-10-13 |
+| WS-6 | [2026-10-13](../_decisions/2026-10-13-root-folder.md) | src/test_workspace_chosen_unit.rs::test_ws_6_chosen_without_the_table_warns, src/test_workspace_unit.rs::test_ws_6_resolve_order, src/ui/test_view_bar.rs::test_sr_42_crumb_scope_and_table ほか 1 | [2026-10-13-root-folder](../_changes/2026-10-13-root-folder.md) 2026-10-13 |
+| WS-7 | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) | src/test_toml_edit_safety_unit.rs::test_ws_7_marker_paths_stay_inside, src/test_workspace_more_unit.rs::test_ws_7_broken_marker_warns, src/test_workspace_profile_unit.rs::test_ws_7_marker_profiles ほか 2 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
+| WS-8 | [2026-10-11](../_decisions/2026-10-11-view-bar.md) | src/ui/test_crumb_button.rs::test_sr_42_crumb_button_click_key_and_arrow, src/ui/test_view_bar.rs::test_sr_42_crumb_click_toggles_drawer, src/ui/test_view_bar.rs::test_ws_8_crumb_drawer_switches_table ほか 17 | [2026-10-11-view-bar](../_changes/2026-10-11-view-bar.md) 2026-10-12 |
 <!-- decidespec:history:end -->

@@ -149,6 +149,30 @@ pub(crate) fn export_dir_of(t: &Path) -> Option<PathBuf> {
     }
 }
 
+/// BV-19: 開いたフォルダがルートフォルダ(`.obsidian` のある上のフォルダ)の下なら、
+/// その範囲の `file.inFolder("<ルートフォルダからのフォルダ>")`。ルートフォルダそのもの・ルートフォルダが無い・
+/// フォルダでないときは None。
+pub(crate) fn folder_filter(target: &Path) -> Option<String> {
+    if !target.is_dir() {
+        return None;
+    }
+    let real = target.canonicalize().ok()?;
+    let root = mdgrid::vault::roots(std::slice::from_ref(&real))
+        .ok()?
+        .into_iter()
+        .next()?;
+    let rel = real.strip_prefix(&root).ok()?;
+    if rel.as_os_str().is_empty() {
+        return None;
+    }
+    let parts: Vec<String> = rel
+        .components()
+        .map(|c| c.as_os_str().to_string_lossy().into_owned())
+        .collect();
+    let folder = parts.join("/").replace('\\', "\\\\").replace('"', "\\\"");
+    Some(format!("file.inFolder(\"{folder}\")"))
+}
+
 /// パレットの入力の前置き(続きの入力のときだけ)。
 pub(crate) fn ask_lead(app: &App) -> String {
     match &app.nv.ask {
@@ -680,7 +704,13 @@ impl App {
             return;
         }
         let cols = self.column_list();
-        let (nv, mut dropped) = self.as_native(&self.settings, &cols, true);
+        let (mut nv, mut dropped) = self.as_native(&self.settings, &cols, true);
+        // BV-19: `.base` はルートフォルダの全部のノートを相手にするので、下のフォルダの表なら、その範囲を絞り込みに足す。
+        if let Some(f) = folder_filter(&self.nv.target) {
+            if !nv.filters_expr.iter().any(|e| e.trim() == f) {
+                nv.filters_expr.insert(0, f);
+            }
+        }
         let kind = |c: &str| Some(self.column_kind(c));
         let (yaml, more) = views::to_base_typed(&nv, &kind);
         dropped.extend(more);

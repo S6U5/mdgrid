@@ -4,7 +4,7 @@
 使い方: python3 <このファイル> [<repo-root>] [--specs <dir>] [--stale-days N] [--write]
   --write  specs/README.md の生成区画を書き直す(区画が無ければ末尾に足す)
   --lock   守られる要件のテストで、まだ錠の無いものに錠をかける。前の取り方の指紋のままの錠は、新しい指紋へ掛け直す(TL-13)
-  --verbose  W12・W8・W3 を種類ごとの1行にまとめず、1件ずつ出す
+  --verbose  W12・W8・W3・W19・W22 を種類ごとの1行にまとめず、1件ずつ出す(W19 は、コミットしていない記録の分と git が無いときは、もとから1件ずつ。DC-14)
   --lock --relock <決定記録>  変えてよい決定の記録(人の決定か、錨との照合のある AI 自己採択)で変えた・消した要件のテストの錠を掛け直す・外す(TL-5)。
            削除していない要件の錠のあるテストを1つも残さない掛け直しは拒む(TL-15)
   --trail  先頭に人の確認待ち(OM-7。3件ならブレーキ)を並べ、そのあと、どの specs/_bundles/ の記録にも載っていない決着した決定記録を、人の発言の記録を先に並べ、7件以上なら「要約を出す時」を出す(OM-14)
@@ -143,7 +143,8 @@ DECIDED_BY = {"人", "AI"}
 TRIGGERS = ["人の発言", "運用で起きた失敗", "検証の指摘", "AI の提案"]
 STRONG_TRIGGERS = {"人の発言", "運用で起きた失敗"}
 MAX_REQS = 15
-SUMMARIZED = {"W12": "要件を指すテストが無い", "W8": "要件の文末が強さの5語でない", "W3": "spec.md の要件が多い"}
+SUMMARIZED = {"W12": "要件を指すテストが無い", "W8": "要件の文末が強さの5語でない", "W3": "spec.md の要件が多い",
+              "W19": "done の変更の記録の照合の証拠が型に合わない", "W22": "checked にした後にテストが変わった"}
 MAX_CAPABILITIES = 10
 DEFAULT_STALE_DAYS = 30
 TEST_NAME_RE = re.compile(r"(^|/)(test_[^/]*|[^/]*_test\.[a-z]+|[^/]*\.(test|spec)\.[a-z]+)$")
@@ -283,36 +284,63 @@ def approval_quotes(rec):
 
 def _load_human(session_id, uuid, with_time=False):
     """(状態, 人の発言)。with_time なら (状態, 人の発言, 時刻の文字列)。"""
-    import json
     f = find_session(session_id)
     if not f:
         return ("unverifiable", None, "") if with_time else ("unverifiable", None)
+    e = _session_entry(f, uuid)
+    if e is not None:
+        text = human_text(e)
+        st = "ok" if text is not None else "not-human"
+        return (st, text, str(e.get("timestamp") or "")) if with_time else (st, text)
+    return ("absent", None, "") if with_time else ("absent", None)
+
+
+_SESSION_ENTRIES = {}
+
+
+def _session_entry(f, uuid):
+    """会話の記録のファイル f で uuid が一致する最初の行。無ければ None。ファイルの大きさと更新時刻ごとに一度だけ
+    全体を読んで覚える(発言を1つ探すたびに頭から読み直さないため)。全体を読み切れない(書き込みの途中で字が切れて
+    いるなど)ときは、覚えずに頭から一致する行まで読む(前と同じく、一致した行より後ろは読まない)。"""
+    import json
+    st = f.stat()
+    key = (str(f), st.st_size, st.st_mtime_ns)
+    if key not in _SESSION_ENTRIES:
+        d = {}
+        try:
+            with f.open(encoding="utf-8") as fh:
+                for line in fh:
+                    try:
+                        e = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(e, dict) and isinstance(e.get("uuid"), str):
+                        d.setdefault(e["uuid"], e)
+        except Exception:
+            d = None
+        for k in [k for k in _SESSION_ENTRIES if k[0] == key[0]]:
+            del _SESSION_ENTRIES[k]
+        _SESSION_ENTRIES[key] = d
+    d = _SESSION_ENTRIES[key]
+    if d is not None:
+        return d.get(uuid)
     for line in f.open(encoding="utf-8"):
         try:
             e = json.loads(line)
         except ValueError:
             continue
         if isinstance(e, dict) and e.get("uuid") == uuid:
-            text = human_text(e)
-            st = "ok" if text is not None else "not-human"
-            return (st, text, str(e.get("timestamp") or "")) if with_time else (st, text)
-    return ("absent", None, "") if with_time else ("absent", None)
+            return e
+    return None
 
 
 def _load_entry(session_id, uuid):
     """(状態, 会話の記録の1行)。状態は ok / unverifiable(会話の記録が手元に無い) / absent(発言が無い)。"""
-    import json
     f = find_session(session_id)
     if not f:
         return "unverifiable", None
-    for line in f.open(encoding="utf-8"):
-        try:
-            e = json.loads(line)
-        except ValueError:
-            continue
-        if isinstance(e, dict) and e.get("uuid") == uuid:
-            return "ok", e
-    return "absent", None
+    e = _session_entry(f, uuid)
+    return ("ok", e) if e is not None else ("absent", None)
 
 
 def human_parts(entry):
@@ -967,8 +995,31 @@ def rehash(rec_path):
     return "付け直した: %s" % _as_val(hs)
 
 
+def uncommitted_paths(root, specs):
+    """DC-14: specs の下で、コミットしていない(作業ツリーか索引で変えた・まだ追跡していない)ファイルの根からの相対の
+    パスの集合。git の作業ツリーでない・git が失敗したら None。"""
+    import subprocess
+    out = set()
+    for args in (["ls-files", "-z", "-m", "-o", "--exclude-standard"],
+                 ["diff", "--cached", "-z", "--name-only", "--relative"]):
+        try:
+            r = subprocess.run(["git", "-C", str(root)] + args + ["--", str(specs.relative_to(root))],
+                               capture_output=True, text=True)
+        except (OSError, ValueError):
+            return None
+        if r.returncode != 0:
+            return None
+        out |= {x for x in r.stdout.split("\0") if x}
+    return out
+
+
 def git_ignored(root, rels):
     """TL-10: rels(根からの相対のパス)のうち、git が無視するもの。git の作業ツリーでなければ空。"""
+    return _git_ignored(root, rels) or set()
+
+
+def _git_ignored(root, rels):
+    """git_ignored と同じ。ただし git check-ignore が失敗したら(git の外、サブモジュールの中のパスなど)None。"""
     import subprocess
     rels = list(rels)
     if not rels:
@@ -977,25 +1028,74 @@ def git_ignored(root, rels):
         r = subprocess.run(["git", "-C", str(root), "check-ignore", "--stdin"],
                            input="\n".join(rels) + "\n", capture_output=True, text=True)
     except OSError:
-        return set()
+        return None
     if r.returncode not in (0, 1):
-        return set()
+        return None
     return {line for line in r.stdout.splitlines() if line}
 
 
-def find_tests(root):
+def _walk_files(root, prune=True):
+    """(root の下のファイルの相対のパス, 刈ったフォルダ)。SKIP_DIRS("specs" は除く)の中には入らない。prune なら、
+    git がフォルダごと無視する(git ls-files --others --ignored --directory が返す)フォルダのうち、追跡している
+    ファイルを持たないものの中にも入らない(Rust の target/ のような大きなフォルダをたどらないため。その中のファイルは
+    どれも git が無視するので、たどってから除いたときと同じになる)。並びと名前は root.rglob("*") と同じ規則
+    (シンボリックリンクのフォルダには入らない)。"""
+    import os
+    skip = set()
+    if prune:
+        ign = git_out(root, "ls-files", "-z", "--others", "--ignored", "--exclude-standard", "--directory")
+        skip = {x[:-1] for x in (ign or "").split("\0") if x.endswith("/")}
+        if skip:
+            tracked = [t for t in (git_out(root, "ls-files", "-z") or "").split("\0") if t]
+            skip = {d for d in skip if not any(t.startswith(d + "/") for t in tracked)}
+    out, pruned, todo = [], [], [""]
+    while todo:
+        rel = todo.pop()
+        try:
+            entries = list(os.scandir(str(root / rel) if rel else str(root)))
+        except OSError:
+            continue
+        for e in entries:
+            r = rel + "/" + e.name if rel else e.name
+            try:
+                is_dir = e.is_dir() and not e.is_symlink()
+            except OSError:
+                is_dir = False
+            if not is_dir:
+                out.append(r)
+            elif r in skip:
+                pruned.append(r)
+            elif e.name not in SKIP_DIRS - {"specs"}:
+                todo.append(r)
+    return out, pruned
+
+
+def _nested_root(root, rel):
+    """rel(テストの候補のファイル)を中に持つ、自分の specs/README.md を持つフォルダ(root そのものは除く)があるか。
+    root.rglob("specs/README.md") で探していたときと同じく、無視するフォルダの中も見る。"""
+    import os
+    parts = rel.split("/")[:-1]
+    for i in range(1, len(parts) + 1):
+        if set(parts[:i]) & (SKIP_DIRS - {"specs"}):
+            break
+        if os.path.exists(os.path.join(str(root), *parts[:i], "specs", "README.md")):
+            return True
+    return False
+
+
+def find_tests(root, prune=True):
     """テストのファイルと、その中で指している要件 ID。git が無視するファイルは除く(TL-10)。"""
     out = {}
-    # 中に自分の specs/README.md を持つフォルダ(見本・別の仕様の根)は、別のリポとして探さない
-    nested = [d.parent.parent for d in root.rglob("specs/README.md")
-              if d.parent.parent != root and not set(d.relative_to(root).parts) & (SKIP_DIRS - {"specs"})]
-    for p in root.rglob("*"):
-        if not p.is_file() or set(p.relative_to(root).parts) & SKIP_DIRS:
-            continue
-        if any(n in p.parents for n in nested):
+    files, pruned = _walk_files(root, prune)
+    for rel in files:
+        p = root / rel
+        if not p.is_file() or set(rel.split("/")) & SKIP_DIRS:
             continue
         rel = p.relative_to(root).as_posix()
         if not TEST_NAME_RE.search(rel):
+            continue
+        # 中に自分の specs/README.md を持つフォルダ(見本・別の仕様の根)は、別のリポとして探さない
+        if _nested_root(root, rel):
             continue
         try:
             text = p.read_text(encoding="utf-8")
@@ -1004,7 +1104,11 @@ def find_tests(root):
         ids = set(TEST_ID_RES[0].findall(text))
         ids |= {"%s-%s" % m for m in TEST_ID_RES[1].findall(text)}
         out[rel] = ids
-    for rel in git_ignored(root, out):
+    ign = _git_ignored(root, out)
+    if ign is None and pruned:
+        # 無視の判定が失敗するリポでは、無視するファイルも数えていた。刈ったフォルダの中も同じに数える
+        return find_tests(root, prune=False)
+    for rel in ign or set():
         del out[rel]
     return out
 
@@ -1915,14 +2019,104 @@ def git_out(root, *args):
 
 
 _CHANGED_SINCE = {}
+_HISTORY = {}
+_EXCLUDED = {}
+
+
+def _history(root):
+    """HEAD から辿れる履歴: ({コミット: 親の並び}, {親が1つのコミット: 親との間で変えたファイル}, {(マージ, 何番目の親):
+    その親との間で変えたファイル}, HEAD のコミット)。ファイルは root からの相対。検査の1回の中で覚え(main の始めに
+    捨てる)、git はマージの数 + 3 回だけ呼ぶ。読めないか、親の無いコミットが2つ以上ある(別々の履歴をつないだ)なら None。"""
+    key = str(root)
+    if key not in _HISTORY:
+        head = (git_out(root, "rev-parse", "HEAD") or "").strip()
+        _HISTORY[key] = None
+        par = git_out(root, "rev-list", "--parents", head or "HEAD")
+        log = git_out(root, "-c", "log.showRoot=true", "log", "--no-merges", "--no-renames", "--relative", "--name-only", "-z",
+                      "--format=%x01%H", head or "HEAD")
+        if par is None or log is None:
+            return None
+        parents = {x.split()[0]: x.split()[1:] for x in par.splitlines() if x.strip()}
+        if sum(1 for ps in parents.values() if not ps) > 1:
+            return None
+        files = {}
+        for chunk in log.split("\x01"):
+            h, _, rest = chunk.partition("\0")
+            if h:
+                files[h] = {x.strip("\n") for x in rest.split("\0")} - {""}
+        merged = {}
+        for c, ps in parents.items():
+            for i, q in enumerate(ps if len(ps) > 1 else []):
+                out = git_out(root, "diff-tree", "-r", "--no-renames", "--relative", "--name-only", "-z", q, c)
+                if out is None:
+                    return None
+                merged[(c, i)] = set(out.split("\0")) - {""}
+        _HISTORY[key] = (parents, files, merged, head)
+    return _HISTORY[key]
+
+
+def _changed_by_history(root, commit, f):
+    """`git log commit..HEAD -- f` が空でないかを、_history から確かに言えるときだけ決める。言えなければ None。
+    - 範囲のどのコミットも、どの親との間でも f を変えていない → 空(どのコミットも f について親と同じ)。
+    - 範囲にマージが無い → f を変えたコミットがあれば空でない。
+    - HEAD から親が1つのコミットだけを範囲の中で辿った一本道に、f を変えたコミットがある → 空でない(履歴の簡略化が
+      刈るのはマージの親だけで、一本道は必ず辿る)。
+    それ以外(マージの向こうでだけ変わった)は、git の簡略化の規則が込み入っているので決めない。"""
+    if not f.isascii() or set(f) & set("*?[]\\") or f.startswith(":"):
+        # 名前の正規化(macOS の NFD と NFC)と、pathspec としての読み(glob)で git log と比べ方が違い得るので、決めない
+        return None
+    hist = _history(root)
+    if hist is None or commit not in hist[0]:
+        return None
+    parents, files, merged = hist[:3]
+    key = (str(root), hist[3], commit)
+    if key not in _EXCLUDED:
+        seen, todo = {commit}, [commit]
+        while todo:
+            for q in parents.get(todo.pop(), []):
+                if q not in seen:
+                    seen.add(q)
+                    todo.append(q)
+        rng = [c for c in parents if c not in seen]
+        names = set().union(*[files.get(c, set()) for c in rng if len(parents[c]) < 2],
+                            *[merged[(c, i)] for c in rng for i in range(len(parents[c])) if len(parents[c]) > 1])
+        tip, c = set(), next(iter(parents))
+        while c not in seen and len(parents[c]) < 2:
+            tip |= files.get(c, set())
+            if not parents[c]:
+                break
+            c = parents[c][0]
+        _EXCLUDED[key] = (names, all(len(parents[c]) < 2 for c in rng), tip)
+    names, linear, tip = _EXCLUDED[key]
+    if f not in names:
+        return False
+    if linear or f in tip:
+        return True
+    return None
 
 
 def test_changed_since(root, commit, f):
-    """TL-12: コミット commit の後(HEAD まで)にファイル f が変わったか。同じ組は覚えて、重ねて呼ばない。"""
+    """TL-12: コミット commit の後(HEAD まで)にファイル f が変わったか。同じ組は覚えて、重ねて呼ばない。
+    履歴を一度だけ読んで確かに言えるときはそれで決め(_changed_by_history)、言えないときだけ f に絞った git log を呼ぶ。"""
     key = (str(root), commit, f)
     if key not in _CHANGED_SINCE:
-        _CHANGED_SINCE[key] = bool((git_out(root, "log", "--format=%H", "%s..HEAD" % commit, "--", f) or "").strip())
+        got = _changed_by_history(root, commit, f)
+        if got is None:
+            got = bool((git_out(root, "log", "--format=%H", "%s..HEAD" % commit, "--", f) or "").strip())
+        _CHANGED_SINCE[key] = got
     return _CHANGED_SINCE[key]
+
+
+def prefetch_changed_since(root, pairs):
+    """W22 が聞くかもしれない (コミット, ファイル) の組のうち、履歴から決められないものの git log を並べて呼んで先に
+    覚える(組ごとに順に呼ぶと、大きな履歴で数十秒かかるため。答えは順に呼んだときと同じ)。"""
+    import os
+    from concurrent.futures import ThreadPoolExecutor
+    left = sorted(x for x in pairs if (str(root), x[0], x[1]) not in _CHANGED_SINCE
+                  and _changed_by_history(root, x[0], x[1]) is None)
+    if left:
+        with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as ex:
+            list(ex.map(lambda x: test_changed_since(root, *x), left))
 
 
 def checked_records(root, specs, docs):
@@ -1932,19 +2126,30 @@ def checked_records(root, specs, docs):
     各要素は (記録のパス, updated, コミット or None)。コミットが None の記録は W22 の起点にしない。"""
     order = git_out(root, "rev-list", "--topo-order", "HEAD")
     pos = {h: i for i, h in enumerate(order.split())} if order else {}
-    found = []
+    todo = []
     for p, (fm, body, text) in docs.items():
         if p.relative_to(specs).parts[0] != CHANGES or fm.get("status") != "done":
             continue
         ids = {r[0] for r in verify_rows(body) if len(r) > 1 and r[1] == "checked" and re.match(ID_PAT + "$", r[0])}
-        if not ids:
-            continue
+        if ids:
+            todo.append((p, fm, ids))
+    state = {}
+    if pos and todo:
+        # 記録ごとの git の2回の呼び出しは互いに関係が無いので、並べて呼ぶ(記録の多いリポで数秒かかるため)
+        import os
+        from concurrent.futures import ThreadPoolExecutor
+
+        def look(p):
+            rel = p.relative_to(root).as_posix()
+            return p, ((git_out(root, "status", "--porcelain", "--", rel) or "").strip(),
+                       (git_out(root, "log", "-1", "--format=%H", "--", rel) or "").strip() or None)
+        with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as ex:
+            state = dict(ex.map(look, [p for p, _, _ in todo]))
+    found = []
+    for p, fm, ids in todo:
         commit = None
         if pos:
-            rel = p.relative_to(root).as_posix()
-            dirty = (git_out(root, "status", "--porcelain", "--", rel) or "").strip()
-            out = git_out(root, "log", "-1", "--format=%H", "--", rel)
-            commit = (out or "").strip() or None
+            dirty, commit = state[p]
             if dirty or commit not in pos:
                 commit = None
         updated = fm.get("updated", "")
@@ -2378,6 +2583,8 @@ SELF = Path(__file__).resolve()
 
 
 def main(argv):
+    _HISTORY.clear()  # 履歴は検査の1回の中でだけ覚える(同じプロセスで HEAD が動いたあとに古い履歴を使わない)
+    _EXCLUDED.clear()
     for stream in (sys.stdout, sys.stderr):  # Windows の cp1252 などでも日本語を出せるように
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
@@ -2776,6 +2983,8 @@ def main(argv):
     # --- 照合の証拠の古さ(TL-12): 要件を checked にした最後の記録のコミットの後に、その要件のテストのファイルが変わった ---
     checked_by = checked_records(root, specs, docs)
     unit_keys = {rid: sorted(k for k, (ids, sha) in units.items() if rid in ids) for rid in reqs}
+    prefetch_changed_since(root, {(c, k.split("::")[0]) for rid in reqs for k in unit_keys[rid]
+                                  for _, _, c in checked_by.get(rid, []) if c})
     for rid, r in reqs.items():
         # 起点は git に入っていて作業ツリーで変えていない記録だけ。どれか1件の後でテストのファイルが変わっていなければ出さない
         # (マージで古い記録の側の枝だけが変わったときの誤検知を避ける)。
@@ -2932,9 +3141,14 @@ def main(argv):
     shown = warns
     if "--verbose" not in argv:
         # いつも出続ける種類は、種類ごとの1行にまとめる(--verbose で1件ずつ)。数は1件ずつ数えたまま。
-        shown = [w for w in warns if w.split(" ", 1)[0] not in SUMMARIZED]
+        # DC-14: W19 は、コミットしていない記録(git が無ければすべて)の分を1件ずつ残す。
+        fresh = uncommitted_paths(root, specs) if any(w.startswith("W19 ") for w in warns) else set()
+        keep = [w for w in warns if w.split(" ", 1)[0] not in SUMMARIZED
+                or (w.startswith("W19 ") and (fresh is None
+                                              or Path(w.split(" ", 2)[1].rstrip(":")).as_posix() in fresh))]
+        shown = keep
         for code, what in SUMMARIZED.items():
-            n = sum(1 for w in warns if w.split(" ", 1)[0] == code)
+            n = sum(1 for w in warns if w.split(" ", 1)[0] == code and w not in keep)
             if n:
                 shown.append("%s ×%d(%s。--verbose で1件ずつ)" % (code, n, what))
     for w in shown:
