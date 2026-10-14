@@ -6,7 +6,7 @@ description: セルの値をどう見せるか。空・null・キーなしの区
 status: active
 load_when: セルの描画・列の幅・文字の幅・色を作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-12
+updated: 2026-10-14
 ---
 
 # セルと文字の見せ方(cell-view)
@@ -34,6 +34,7 @@ updated: 2026-10-12
 | CV-5 | 列の幅の既定は、見えている行の値の幅から決め、1列の上限を画面の幅の3割にするべき。 | 長い値の列 → 幅は画面の3割で `…` で切れる(`test_CV_5`) | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) |
 | CV-6 | East Asian Ambiguous の文字(○● など)の幅は既定で1とし、設定で2にできるべき。 | 設定で2にすると ○ の列がずれない(`test_CV_6`) | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) |
 | CV-8 | 表の行は、設定 `display.row_extra_lines`(0〜9 の整数。既定 0)で、長い値と改行のある値を折り返し、データの1行を最大で「1 + その数」の行の高さまで伸ばせるべき(列の幅を広げなくても、長い説明を詳細の表示を開かずに表で読めるように)。行の高さは、その行のセルのうち一番多くの行が要るものに合わせ、行ごとに変わってよい(短い値だけの行は1行のまま)。折り返しは列の幅で、字の幅(CV-6)に従って切り、改行のある値は改行で行を分けるべき。伸ばした行に入りきらない値は、最後の行の後ろに `…` を付けるべき。リストの値の札・まとまりの見出しの行・まとまりの間の空き行は1行のままにしてよい。2行目より下の行には行の印(`>` など)と行番号を出さず、列の区切りと、一行おきの色・選んでいる行の色は行の高さ全部に付けるべき。縦のスクロール・ページ送り・マウスのクリックは伸ばした行の高さで数え、選んでいる行は高さ全部が見えるように表を流すべき(画面より高い行は上から入る分だけ見せる)。値の編集の欄と候補の窓は、その行の1行目に出すべき。0 では今の1行の見え方と1字も変わらないべき。ビューの設定の「表示」の区画(NV-18)で 0・1・2・3 を順に切り替え、ビューごとに上書きできるべき(SR-20 と同じ)。範囲の外の値は警告して既定にするべき。 | `row_extra_lines = 2`、列の幅 20 に 50 字の説明 → その行は3行の高さで、説明が全部見える。61 字 → 3行目の終わりが `…`。2行の説明(改行あり) → 2行の高さで1行目と2行目。短い値だけの行 → 1行。伸ばした行の2行目をクリック → その行を選ぶ。一番下の行を選ぶ → その行の高さ全部が見えるまで表が流れる。`row_extra_lines = 0` → 今と同じ(ゴールデン `test_CV_3` が変わらない)。`row_extra_lines = 12` → 警告して 0(`test_cv_8_*`) | [2026-10-12](../_decisions/2026-10-12-row-lines.md) |
+| CV-9 | 決まり(CE-36)に合わないセルにも、型と合わない値(CV-2)と同じ `!` の印を付けるべき(必須のキーが無いノートの空のセルにも付ける)。型と合わない値と決まりに合わない値を、画面と CLI でまとめて「問題」と呼び、理由を「型が合わない(日付ではない など)」「必須のキーが無い」「選べる値ではない」の3つで言い分けるべき。印は色だけに頼らない(SR-15)。 | `[rules.status] values = ["todo", "done"]` → `wip` のセルに `!`。`required = true` で status の無いノートの空欄に `!`。date の列の someday は今までどおり `!`(`test_cv_9_*`) | [2026-10-14](../_decisions/2026-10-14-type-check.md) |
 
 ## 範囲外
 
@@ -57,6 +58,7 @@ updated: 2026-10-12
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-14 | [型と決まりに合わない値を「問題」として探し、画面と CLI で確かめられるようにする(type-check)](../_decisions/2026-10-14-type-check.md) | accepted | 人 | 人の発言 | CE-36, CV-9, NV-30, CLI-22 |
 | 2026-10-12 | [長い値を折り返して、表の行を設定した行の数まで伸ばす(row-lines)](../_decisions/2026-10-12-row-lines.md) | accepted | 人 | 人の発言 | CV-8, CV-3, SR-21 |
 | 2026-10-11 | [もとは幅1の字に絵文字の印を付けた書記素は、印を外して1桁で描く(emoji-vs16)](../_decisions/2026-10-11-emoji-vs16.md) | accepted | 人 | 人の発言 | CV-7 |
 | 2026-10-11 | [絵文字の印を外して1桁で描く決まりを取り下げ、カラーの絵文字に戻す(emoji-vs16-revert)](../_decisions/2026-10-11-emoji-vs16-revert.md) | accepted | 人 | 人の発言 | CV-7 |
@@ -80,4 +82,5 @@ updated: 2026-10-12
 | CV-5 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_gaps.rs::test_cv_5_width_from_visible_rows_changes_on_scroll, src/ui/test_screen.rs::test_cv_5_long_value_capped | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
 | CV-6 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_borders.rs::test_sr_32_ascii_when_ambiguous_wide, src/ui/test_calendar.rs::test_ce_24_ambiguous_wide_keeps_year_key, src/ui/test_display_more.rs::test_sr_20_column_lines_with_ambiguous_wide_keep_positions ほか 2 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
 | CV-8 | [2026-10-12](../_decisions/2026-10-12-row-lines.md) | src/ui/test_row_lines.rs::test_cv_3_newline_marked_without_extra_lines, src/ui/test_row_lines.rs::test_cv_8_bottom_row_fully_visible, src/ui/test_row_lines.rs::test_cv_8_click_on_second_line_selects_row ほか 19 | [2026-10-12-row-lines](../_changes/2026-10-12-row-lines.md) 2026-10-13 |
+| CV-9 | [2026-10-14](../_decisions/2026-10-14-type-check.md) | src/ui/test_problems.rs::test_cv_9_required_missing_key_marked, src/ui/test_problems.rs::test_cv_9_rule_violation_marked, tests/test_rules_config.rs::test_cv_9_reason_texts_follow_language ほか 1 | [2026-10-14-type-check](../_changes/2026-10-14-type-check.md) 2026-10-15 |
 <!-- decidespec:history:end -->

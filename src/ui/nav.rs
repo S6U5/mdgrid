@@ -70,6 +70,10 @@ impl App {
 
     /// 簡易の絞り込み(NV-2)と同じ値の絞り込み(NV-8)を通るか。
     pub(crate) fn passes(&self, row: &RowId) -> bool {
+        // NV-30: 問題のある行だけ(見えている列で)。
+        if self.only_problems && !self.cols.iter().any(|c| self.problem(row, c).is_some()) {
+            return false;
+        }
         for s in &self.same {
             let hit = if s.by_keys {
                 // NV-9: 頻度表の値(リストは要素ごと、空は値の無い行)。
@@ -115,6 +119,9 @@ impl App {
             Action::QuickFilter => self.open_prompt(Mode::Filter),
             Action::SearchNext => self.search_step(true),
             Action::SearchPrev => self.search_step(false),
+            Action::NextProblem => self.problem_step(true),
+            Action::PrevProblem => self.problem_step(false),
+            Action::ProblemsOnly => self.toggle_problems_only(),
             Action::Mark => {
                 if let Some(r) = self.cur_row() {
                     if !self.marked.remove(&r) {
@@ -164,9 +171,10 @@ impl App {
             self.anchor = None;
             self.marked.clear();
             self.message = Some(Msg::SelectionCleared.into());
-        } else if self.filter.is_some() || !self.same.is_empty() {
+        } else if self.filter.is_some() || !self.same.is_empty() || self.only_problems {
             self.filter = None;
             self.same.clear();
+            self.only_problems = false;
             self.relayout();
             self.message = Some(Msg::FilterCleared.into());
         } else if self.search.is_some() || self.same_mark.is_some() {
@@ -244,6 +252,7 @@ impl App {
                     && self.marked.is_empty()
                     && self.filter.is_none()
                     && self.same.is_empty()
+                    && !self.only_problems
                     && self.search.is_none()
                     && self.same_mark.is_none() =>
             {
@@ -443,6 +452,53 @@ impl App {
     }
 
     /// `n` `N`: 次・前の一致へ(端で回る。NV-1)。
+    /// NV-30: 次・前の問題(CV-9)のセルへ跳ぶ。行の順、同じ行では列の順に探し、端で反対の端に回る。
+    /// 跳んだらメッセージ行に理由。問題が無ければ知らせて動かない。
+    fn problem_step(&mut self, forward: bool) {
+        let n = self.slots.len();
+        let m = self.cols.len();
+        let total = n * m;
+        if total == 0 {
+            self.message = Some(Msg::NoProblems.into());
+            return;
+        }
+        let start = self.row * m + self.col.min(m - 1);
+        for step in 1..=total {
+            let p = if forward {
+                (start + step) % total
+            } else {
+                (start + total * 2 - step) % total
+            };
+            let (i, j) = (p / m, p % m);
+            let Some(Slot::Row(r)) = self.slots.get(i) else {
+                continue;
+            };
+            let Some(row) = self.rows.get(*r) else {
+                continue;
+            };
+            if let Some(reason) = self.problem(row, &self.cols[j]) {
+                self.row = i;
+                self.col = j;
+                self.scroll_into_view();
+                let title = self.title(&self.cols[j]);
+                self.message = Some(Msg::ProblemAt.fill(&[&title, &reason.text()]));
+                return;
+            }
+        }
+        self.message = Some(Msg::NoProblems.into());
+    }
+
+    /// NV-30: 問題のある行だけに絞る・外す。
+    fn toggle_problems_only(&mut self) {
+        self.only_problems = !self.only_problems;
+        self.message = Some(if self.only_problems {
+            Msg::ProblemsOnlyOn.into()
+        } else {
+            Msg::ProblemsOnlyOff.into()
+        });
+        self.relayout();
+    }
+
     fn search_step(&mut self, forward: bool) {
         if self.search.is_none() {
             self.message = Some(Msg::NoSearchTerm.into());

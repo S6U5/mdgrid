@@ -95,6 +95,14 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
             want.push((Section::Column, Action::FilterSame, false));
             want.push((Section::Column, Action::HighlightSame, false));
         }
+        // NV-30: 問題へ跳ぶ・問題のある行だけ(問題があるか、絞っているとき)。
+        if app.built.problems > 0 {
+            want.push((Section::Column, Action::NextProblem, false));
+            want.push((Section::Column, Action::PrevProblem, false));
+        }
+        if app.built.problems > 0 || app.only_problems {
+            want.push((Section::Column, Action::ProblemsOnly, false));
+        }
         // NV-9: 列の値の頻度表(数える行があるとき)。
         if !app.rows.is_empty() {
             want.push((Section::Column, Action::Freq, false));

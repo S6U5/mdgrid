@@ -263,6 +263,11 @@ pub enum Action {
     Escape,
     HighlightSame,
     FilterSame,
+    /// NV-30: 次・前の問題(CV-9)のセルへ跳ぶ。
+    NextProblem,
+    PrevProblem,
+    /// NV-30: 問題のある行だけに絞る・外す。
+    ProblemsOnly,
     // 並べ替えと列(NV-3・NV-4)
     Sort,
     HideColumn,
@@ -409,6 +414,9 @@ impl Action {
             Action::Escape => "clear_selection",
             Action::HighlightSame => "highlight_same",
             Action::FilterSame => "filter_same",
+            Action::NextProblem => "next_problem",
+            Action::PrevProblem => "prev_problem",
+            Action::ProblemsOnly => "problems_only",
             Action::Sort => "sort_column",
             Action::HideColumn => "hide_column",
             Action::ShowColumn => "show_column",
@@ -626,6 +634,8 @@ pub const READ_COMMANDS: &[Command] = &[
     // 見出しの型の印から)。
     cmd(Action::ColumnType, Msg::CmdColumnType, SHAPE),
     cmd(Action::OpenPlace, Msg::PlaceOpen, FILE),
+    // NV-30: 問題のある行だけ(既定のキーなし。下の帯の問題の数のクリックでも)。
+    cmd(Action::ProblemsOnly, Msg::CmdProblemsOnly, SEARCH),
     // NV-24: 並べ替えの窓(キー `S` を外しても、検索の欄を隠しても開けるように)。
     cmd(Action::SortMenu, Msg::CmdSortMenu, SHAPE),
     // NV-29: 絞り込みの窓(キー `|` を外しても、検索の欄を隠しても開けるように)。
@@ -739,6 +749,9 @@ pub const BINDINGS: &[Binding] = &[
     b("\\", Action::QuickFilter, Msg::KeyQuickFilter, SEARCH, 0),
     b("*", Action::HighlightSame, Msg::KeyHighlightSame, SEARCH, 0),
     b(",", Action::FilterSame, Msg::KeyFilterSame, SEARCH, 0),
+    // NV-30: 次・前の問題(型か決まりに合わない値。CV-9)。
+    b("!", Action::NextProblem, Msg::KeyNextProblem, SEARCH, 0),
+    b("@", Action::PrevProblem, Msg::KeyPrevProblem, SEARCH, 0),
     // NV-9: 選んでいる列の値の頻度表(選んだ値で絞る)。
     b("%", Action::Freq, Msg::KeyFrequency, SEARCH, 0),
     // 選択と詳細(NV-5・NV-6・SR-16・SR-18)

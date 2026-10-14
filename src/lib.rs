@@ -26,6 +26,7 @@ pub mod print;
 pub mod profile;
 pub mod relations;
 pub mod relmap;
+pub mod rules;
 pub mod schema;
 pub mod settings;
 pub mod source;

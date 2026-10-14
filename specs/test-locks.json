@@ -10493,6 +10493,156 @@
     ],
     "sha": "362aa03cada1f285"
   },
+  "tests/test_rules_config.rs::test_ce_36_file_and_formula_columns_warn_and_are_unused": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "96c074baa14c74e7"
+  },
+  "tests/test_rules_config.rs::test_ce_36_narrow_scope_overrides_per_item": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "cb0d6dd25c7a77b5"
+  },
+  "tests/test_rules_config.rs::test_ce_36_required_violations": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "29bc245c5070756f"
+  },
+  "tests/test_rules_config.rs::test_ce_36_rules_read_without_warnings": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "6bc0e93879d9f007"
+  },
+  "tests/test_rules_config.rs::test_ce_36_type_mismatch_comes_first": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "abf897f66ef03b51"
+  },
+  "tests/test_rules_config.rs::test_ce_36_unknown_item_and_non_string_values_warn": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "3baf158cdb960446"
+  },
+  "tests/test_rules_config.rs::test_ce_36_values_check_each_list_item": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "30208ef82b61b516"
+  },
+  "tests/test_rules_config.rs::test_ce_36_values_compare_numbers_and_bools_as_text": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "48fbed5cc6bf714d"
+  },
+  "tests/test_rules_config.rs::test_ce_36_values_compare_text_case_sensitive": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "8cb514d168aafab8"
+  },
+  "tests/test_rules_config.rs::test_ce_36_wrong_value_types_warn_and_item_is_unused": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "1f9234bfc2afce47"
+  },
+  "tests/test_rules_config.rs::test_cv_9_reason_texts_follow_language": {
+    "ids": [
+      "CV-9"
+    ],
+    "sha": "8d8b91e60a90d40b"
+  },
+  "tests/test_rules_config.rs::test_cv_9_reason_texts_in_japanese": {
+    "ids": [
+      "CV-9"
+    ],
+    "sha": "c90ac993bc9c17fa"
+  },
+  "src/ui/test_problems.rs::test_ce_36_number_values_listed_as_numbers": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "df8a61177c495219"
+  },
+  "src/ui/test_problems.rs::test_ce_36_values_listed_as_candidates": {
+    "ids": [
+      "CE-36"
+    ],
+    "sha": "f8bf49d1b7a129d7"
+  },
+  "src/ui/test_problems.rs::test_cv_9_required_missing_key_marked": {
+    "ids": [
+      "CV-9"
+    ],
+    "sha": "dbd7482daca41469"
+  },
+  "src/ui/test_problems.rs::test_cv_9_rule_violation_marked": {
+    "ids": [
+      "CV-9"
+    ],
+    "sha": "17c9f77f8648f491"
+  },
+  "src/ui/test_problems.rs::test_nv_30_click_count_toggles": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "2637a35d39d2a414"
+  },
+  "src/ui/test_problems.rs::test_nv_30_folded_group_not_counted_or_jumped": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "21f7e7110871b145"
+  },
+  "src/ui/test_problems.rs::test_nv_30_next_problem_wraps_with_reason": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "9dbdd90e22720c46"
+  },
+  "src/ui/test_problems.rs::test_nv_30_no_problems": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "a1ad23d1405c8f0a"
+  },
+  "src/ui/test_problems.rs::test_nv_30_prev_problem": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "efe950153db73378"
+  },
+  "src/ui/test_problems.rs::test_nv_30_problem_count_in_bottom_band": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "0ec86b785eeafcbf"
+  },
+  "src/ui/test_problems.rs::test_nv_30_problems_only_esc_clears": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "8397f52e189e36af"
+  },
+  "src/ui/test_problems.rs::test_nv_30_problems_only_toggle": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "bd6c8ee0e2c51e71"
+  },
+  "src/ui/test_problems.rs::test_nv_30_readonly": {
+    "ids": [
+      "NV-30"
+    ],
+    "sha": "1c7e9296fe6a3082"
+  },
   "src/ui/test_export_infolder.rs::test_bv_19_export_infolder_nested_subfolder_uses_path_from_root": {
     "ids": [
       "BV-19"

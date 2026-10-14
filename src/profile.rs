@@ -9,6 +9,7 @@ use crate::colors::{self, Colors};
 use crate::display::{ButtonsMode, Display, DisplayOverride, Pad, TabsMode};
 use crate::i18n::Msg;
 use crate::newnote::{self, NewNote};
+use crate::rules::{self, Rule, RuleLayer};
 use crate::schema;
 use crate::style::{Band, Check, Frames, Links, Preset, Rules, Select, Status, Style, Tabs, Tags};
 use crate::theme::Theme;
@@ -548,6 +549,8 @@ pub struct Profile {
     pub new_note: Option<NewNote>,
     /// `[types]`(CE-35): 列の名前 → 型。None は `"auto"`(推定に戻す。広い範囲の型を外す)。
     pub types: BTreeMap<String, Option<Kind>>,
+    /// `[rules.<列>]`(CE-36): 列の名前 → 書いた決まりの項目。
+    pub rules: BTreeMap<String, RuleLayer>,
 }
 
 impl Profile {
@@ -579,6 +582,7 @@ impl Profile {
                 None => warn(w, file, &p, not(Msg::WantNewNoteTable)),
             },
             "types" => read_types(&mut self.types, v, file, &p, w),
+            "rules" => read_rules(&mut self.rules, v, file, &p, w),
             _ => return false,
         }
         true
@@ -647,6 +651,24 @@ impl Profile {
                 .collect();
             t.insert("types".into(), toml::Value::Table(ty));
         }
+        if !self.rules.is_empty() {
+            let rs = self
+                .rules
+                .iter()
+                .map(|(c, r)| {
+                    let mut t = toml::Table::new();
+                    if let Some(b) = r.required {
+                        t.insert("required".into(), toml::Value::Boolean(b));
+                    }
+                    if let Some(vs) = &r.values {
+                        let vs = vs.iter().map(|v| toml::Value::String(v.clone())).collect();
+                        t.insert("values".into(), toml::Value::Array(vs));
+                    }
+                    (c.clone(), toml::Value::Table(t))
+                })
+                .collect();
+            t.insert("rules".into(), toml::Value::Table(rs));
+        }
     }
 
     /// 書いた項目の表。
@@ -678,6 +700,52 @@ fn read_types(
             }
             _ => warn(w, file, &join(path, col), not(Msg::WantType)),
         }
+    }
+}
+
+/// `[rules.<列>]` を読む(CE-36)。`required`(真偽)と `values`(文字列の並び)。計算の列・知らない項目・
+/// 型の違う値は警告して、その項目は書かなかったことにする。
+fn read_rules(
+    out: &mut BTreeMap<String, RuleLayer>,
+    v: &toml::Value,
+    file: &str,
+    path: &str,
+    w: &mut Vec<String>,
+) {
+    let Some(t) = v.as_table() else {
+        return warn(w, file, path, not(Msg::WantRulesTable));
+    };
+    for (col, v) in t {
+        let cp = join(path, col);
+        let Some(items) = v.as_table() else {
+            warn(w, file, &cp, not(Msg::WantRuleTable));
+            continue;
+        };
+        if rules::computed(col) {
+            warn(w, file, &cp, Msg::RsnRuleComputed.text().to_string());
+            continue;
+        }
+        let mut layer = RuleLayer::default();
+        for (k, v) in items {
+            let ip = join(&cp, k);
+            match k.as_str() {
+                "required" => match v.as_bool() {
+                    Some(b) => layer.required = Some(b),
+                    None => warn(w, file, &ip, not(Msg::WantBool)),
+                },
+                "values" => {
+                    let list: Option<Vec<String>> = v
+                        .as_array()
+                        .and_then(|a| a.iter().map(|x| x.as_str().map(str::to_string)).collect());
+                    match list {
+                        Some(l) => layer.values = Some(l),
+                        None => warn(w, file, &ip, not(Msg::WantStringList)),
+                    }
+                }
+                _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
+            }
+        }
+        out.insert(col.clone(), layer);
     }
 }
 
@@ -898,6 +966,8 @@ pub struct Resolved {
     pub new_note: NewNote,
     /// `[types]`(CE-35): 設定で決めた列の型(`"auto"` の列は無い)。
     pub types: BTreeMap<String, Kind>,
+    /// `[rules.<列>]`(CE-36): 範囲を重ねた列の決まり。
+    pub rules: BTreeMap<String, Rule>,
     /// 項目の道筋 → 出どころ(既定の項目は無い)。
     pub origins: BTreeMap<String, Origin>,
 }
@@ -918,6 +988,7 @@ impl Default for Resolved {
             add_frontmatter: true,
             new_note: NewNote::default(),
             types: BTreeMap::new(),
+            rules: BTreeMap::new(),
             origins: BTreeMap::new(),
         }
     }
@@ -991,6 +1062,16 @@ impl Resolved {
             }
             self.mark(&format!("types.{col}"), o);
         }
+        // CE-36: 決まりは列ごと・項目ごとに狭い範囲が勝つ。
+        for (col, l) in &p.rules {
+            l.apply(self.rules.entry(col.clone()).or_default());
+            if l.required.is_some() {
+                self.mark(&format!("rules.{col}.required"), o);
+            }
+            if l.values.is_some() {
+                self.mark(&format!("rules.{col}.values"), o);
+            }
+        }
         for name in p.display.apply_to(&mut self.display) {
             self.mark(&format!("display.{name}"), o);
         }
@@ -1051,6 +1132,17 @@ impl Resolved {
             .types
             .iter()
             .map(|(c, k)| (c.clone(), Some(*k)))
+            .collect();
+        p.rules = self
+            .rules
+            .iter()
+            .map(|(c, r)| {
+                let l = RuleLayer {
+                    required: Some(r.required),
+                    values: r.values.clone(),
+                };
+                (c.clone(), l)
+            })
             .collect();
         p
     }

@@ -65,6 +65,8 @@ enum Command {
     /// CLI-5: 画面を出さずにビューの表を出す(開くパスと形と、先頭にパスの列を足すか(CLI-14)と、
     /// 絞り込みの式と並べ替え(CLI-16))。
     Print(Vec<PathBuf>, PrintFormat, bool, Vec<String>, Vec<String>),
+    /// CLI-23: 画面を出さずに、ビューの行の問題(型と決まりに合わない値)を出す(開くパス)。
+    Check(Vec<PathBuf>),
     /// OUT-3: 画面(`/dev/tty`)で選んだ行のパスか列の値を出す(開くパスと出すもの)。
     Pick(Vec<PathBuf>, Pick),
     /// WS-3・WS-7: ワークスペースの操作(画面を出さない)。
@@ -158,6 +160,9 @@ struct Cli {
     /// --print をこの列で並べる(列[:asc|:desc]。何度でも。ビューの並べ替えの代わり)
     #[arg(long, value_name = Msg::ValueSort.ja(), requires = "print", allow_hyphen_values = true)]
     sort: Vec<String>,
+    /// 画面を出さずに、ビューの行の型と決まりに合わない値を1行ずつ出す(あれば終了コード 1)
+    #[arg(long, conflicts_with_all = ["print", "pick"])]
+    check: bool,
     /// --print の形の CSV・JSON(- で標準入力)の値をノートに当てる(既定は差分だけ。--yes で書く)
     #[arg(long, value_name = Msg::ValuePath.ja(), conflicts_with_all = ["print", "pick"], allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
     apply: Option<PathBuf>,
@@ -369,6 +374,8 @@ impl Cli {
                 Command::Workspace(ws_cli::Op::Remove(name, paths))
             } else if self.init_workspace {
                 Command::Workspace(ws_cli::Op::Init(paths))
+            } else if self.check {
+                Command::Check(paths)
             } else if let Some(file) = self.apply {
                 Command::Apply(paths, file, self.yes)
             } else if self.print {
@@ -398,6 +405,7 @@ impl Cli {
             (self.migrate_config, "--migrate-config"),
             (self.man, "--man"),
             (self.print, "--print"),
+            (self.check, "--check"),
             (self.with_path, "--with-path"),
             (self.workspaces, "--workspaces"),
             (self.init_workspace, "--init-workspace"),
@@ -843,13 +851,7 @@ fn main() -> ExitCode {
         // CLI-5・SR-10: 画面を出さないので、端末かどうかを確かめる前に分ける。
         Ok(Command::Print(p, f, w, filter, sort)) => {
             // CLI-15: 渡した `.md` のノートの行だけを出す(フォルダの表と同じ列)。
-            let only: Vec<PathBuf> = p
-                .iter()
-                .filter(|x| {
-                    x.extension().is_some_and(|e| e.eq_ignore_ascii_case("md")) && x.is_file()
-                })
-                .filter_map(|x| x.canonicalize().ok())
-                .collect();
+            let only = md_files(&p);
             // WS-3: `-w` は `--print` でも名前を確かめ、パスが無ければその最初の表を出す。
             let p = match &opts.workspace {
                 Some(name) => match workspace_paths(name, p, no_args) {
@@ -858,7 +860,21 @@ fn main() -> ExitCode {
                 },
                 None => p,
             };
-            return print_view(&md_to_folder(p).0, &opts, f.lib(), w, &filter, &sort, &only);
+            let out = ViewOut::Print(f.lib(), w);
+            return print_view(&md_to_folder(p).0, &opts, out, &filter, &sort, &only);
+        }
+        Ok(Command::Check(p)) => {
+            // CLI-15: 渡した `.md` のノートだけを確かめる(`--print` と同じ。pre-commit で変えたノートだけを渡せる)。
+            let only = md_files(&p);
+            let p = match &opts.workspace {
+                Some(name) => match workspace_paths(name, p, no_args) {
+                    Ok(p) => p,
+                    Err(e) => return fail(&e),
+                },
+                None => p,
+            };
+            let paths = md_to_folder(p).0;
+            return print_view(&paths, &opts, ViewOut::Check, &[], &[], &only);
         }
         Ok(Command::Apply(p, file, yes)) => {
             return apply_file(&md_to_folder(p).0, &opts, &file, yes)
@@ -1107,18 +1123,29 @@ fn config_dir() -> Option<PathBuf> {
     config::config_path().and_then(|p| p.parent().map(|d| d.to_path_buf()))
 }
 
+/// ビューの行から出すもの: 表(CLI-5。形と、先頭にパスの列を足すか(CLI-14))か、問題(CLI-23)。
+#[derive(Clone, Copy, PartialEq)]
+enum ViewOut {
+    Print(print::Format, bool),
+    Check,
+}
+
 /// `--print`(CLI-5): ノートを全部読んでから、ビューの表を標準出力に出す。画面の見た目の状態は使わず、
 /// 何も書かない(WB-15)。警告(設定・views.toml・評価できない列)は標準エラーに1行ずつ。
 /// `with_path`(CLI-14)なら、表の先頭に見出し `path` の列と各行の `--pick path` と同じ形のパスを足す。
+/// `ViewOut::Check`(CLI-23)なら、表の代わりにビューの行の問題を出す。
 fn print_view(
     paths: &[PathBuf],
     opts: &Options,
-    format: print::Format,
-    with_path: bool,
+    out: ViewOut,
     filter: &[String],
     sort: &[String],
     only: &[PathBuf],
 ) -> ExitCode {
+    let (format, with_path) = match out {
+        ViewOut::Print(f, w) => (f, w),
+        ViewOut::Check => (print::Format::Csv, false),
+    };
     // CLI-16: `列[:asc|:desc]` を先に読む(読めなければ理由1行)。
     let mut sorts = Vec::new();
     for s in sort {
@@ -1141,7 +1168,7 @@ fn print_view(
         Ok(t) => t,
         Err(e) => return fail(&e),
     };
-    let (_, mut warnings) = match load_config(opts.config.as_deref(), config::config_path()) {
+    let (config, mut warnings) = match load_config(opts.config.as_deref(), config::config_path()) {
         Ok(c) => c,
         Err(e) => return fail(&e),
     };
@@ -1229,6 +1256,9 @@ fn print_view(
         let mut k = keep.iter();
         table.row_ids.retain(|_| *k.next().unwrap_or(&false));
     }
+    if out == ViewOut::Check {
+        return check_rows(paths, opts, &config, src.as_ref(), &table.row_ids, warnings);
+    }
     if with_path {
         let column = base::Column {
             id: "path".into(),
@@ -1247,6 +1277,57 @@ fn print_view(
         eprintln!("mdgrid: {}", Msg::VaultRootGuessed.fill(&[&root.display()]));
     }
     emit(Ok(print::render(&table, format).into_bytes()))
+}
+
+/// 起動の引数のうち、ある `.md` のファイルの実体のパス(CLI-15)。
+fn md_files(paths: &[PathBuf]) -> Vec<PathBuf> {
+    paths
+        .iter()
+        .filter(|x| x.extension().is_some_and(|e| e.eq_ignore_ascii_case("md")) && x.is_file())
+        .filter_map(|x| x.canonicalize().ok())
+        .collect()
+}
+
+/// `--check`(CLI-23): 行 `rows` の問題を `パス:行: 列: 理由` で出し、数を標準エラーに。あれば終了コード 1。
+fn check_rows(
+    paths: &[PathBuf],
+    opts: &Options,
+    config: &Config,
+    src: &dyn mdgrid::source::Source,
+    rows: &[mdgrid::source::RowId],
+    mut warnings: Vec<String>,
+) -> ExitCode {
+    let (resolved, w) = resolve_table(config, paths, opts);
+    warnings.extend(w);
+    for w in &warnings {
+        eprintln!("mdgrid: {w}");
+    }
+    // CE-2・CE-35: 設定の型が先、無ければノートの型(画面と同じ)。
+    let kind = |c: &str| match resolved.types.get(c) {
+        Some(k) => *k,
+        None => src.kind(c).kind,
+    };
+    let found = mdgrid::rules::check(src, rows, &kind, &resolved.rules);
+    // パスと行の順(キーの無い問題はそのパスの後ろ)。
+    let mut lines: Vec<(String, usize, String)> = found
+        .iter()
+        .map(|f| {
+            let path = row_path(paths, src, &f.row);
+            let at = f.line.map_or(String::new(), |n| format!(":{n}"));
+            let text = format!("{path}{at}: {}: {}\n", f.col, f.reason.text());
+            (path, f.line.unwrap_or(usize::MAX), text)
+        })
+        .collect();
+    lines.sort_by(|a, b| (&a.0, a.1).cmp(&(&b.0, b.1)));
+    let out: String = lines.into_iter().map(|(_, _, t)| t).collect();
+    if found.is_empty() {
+        return emit(Ok(Vec::new()));
+    }
+    eprintln!("mdgrid: {}", Msg::CheckCount.fill(&[&found.len()]));
+    match emit(Ok(out.into_bytes())) {
+        c if c == ExitCode::SUCCESS => ExitCode::from(1),
+        c => c,
+    }
 }
 
 /// `--apply`(CLI-17): CSV・JSON を読み、全部を確かめてから、差分を出す(`--yes` なら書く)。

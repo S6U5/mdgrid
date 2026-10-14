@@ -140,6 +140,25 @@ pub const ITEMS: &[Item] = &[
              views.toml の表に書く。",
     },
     Item {
+        path: "rules",
+        ty: "table of tables (column = { required = boolean, values = [string, …] })",
+        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …] })",
+        default: Some("{}"),
+        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]",
+        scope: Scope::Profile,
+        en: "Rules for single columns, checked together with the column type. required = true makes a\n\
+             missing key, null, an empty string or an empty list a problem; values lists the allowed values\n\
+             (each item of a list must be one of them, case-sensitive). A narrower scope wins item by item.\n\
+             Problems get the ! mark, the bottom band counts them, ! and @ jump between them, and\n\
+             mdgrid --check lists them. Rules never change notes or stop you writing a value; a column with\n\
+             values offers them in the cell input. Computed columns (file.*, formula.*) cannot have rules.",
+        ja: "列ごとの決まり。列の型と合わせて確かめる。required = true は、キーが無い・null・空の文字列・空のリストを問題に\
+             する。values は選べる値の並び(リストは各要素がこのどれか。大文字小文字を区別する)。狭い範囲が項目ごとに勝つ。\
+             問題には ! の印が付き、下の帯に数が出て、! と @ で跳べ、mdgrid --check で並べて出せる。決まりはノートを\
+             書き換えず、値を書くことも止めない。values のある列は、セルの入力の候補にその値を並べる。計算の列(file.*・\
+             formula.*)には書けない。",
+    },
+    Item {
         path: "terminal.color",
         ty: "boolean",
         ty_ja: "真偽値",
@@ -574,7 +593,7 @@ pub const SECTIONS: &[&str] = &[
 
 /// 表のプロファイルの最上位の名前(どの範囲でも書ける)。
 pub const PROFILE_KEYS: &[&str] = &[
-    "use", "look", "display", "dates", "edit", "new_note", "types",
+    "use", "look", "display", "dates", "edit", "new_note", "types", "rules",
 ];
 
 /// アプリ全体の最上位の名前(全体にだけ書ける)。

@@ -173,8 +173,14 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
         }
         // REL-2: ためたリンクも行き先の名前で見せる。
         .or_else(|| app.link_text_new(row, nv));
+        // CV-9: ためた値も決まりに合わなければ `!` を(保存の前に気づけるよう)。
+        let bad = if app.problem(row, col).is_some() {
+            "!"
+        } else {
+            ""
+        };
         return Shown {
-            text: format!("*{}", text.unwrap_or_else(|| new_value_text(nv))),
+            text: format!("*{bad}{}", text.unwrap_or_else(|| new_value_text(nv))),
             null: false,
             pending: true,
             locked: app.src.get(row, col).lock,
@@ -198,7 +204,8 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
         base::Shown::Computed(v) => (val_text(&v), false, app.src.get(row, col).lock),
         base::Shown::Prop(cell) => {
             let (text, null) = match &cell.value {
-                // キーが無いときは空欄(CV-1)。
+                // キーが無いときは空欄(CV-1)。必須の決まり(CE-36)があれば `!` だけ(CV-9)。
+                None if app.problem(row, col).is_some() => (MISFIT_MARK.to_string(), false),
                 None => (String::new(), false),
                 Some(v) => {
                     let date = match v {
@@ -221,8 +228,9 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                         None
                     }
                     .unwrap_or_else(|| value_text(v));
-                    // CV-2: 列の型に合わない値は、そのまま見せて `!` を付ける。
-                    let t = if fits { t } else { format!("{MISFIT_MARK}{t}") };
+                    // CV-2・CV-9: 列の型か決まりに合わない値は、そのまま見せて `!` を付ける。
+                    let bad = !fits || app.problem(row, col).is_some();
+                    let t = if bad { format!("{MISFIT_MARK}{t}") } else { t };
                     (t, matches!(v, Value::Null))
                 }
             };

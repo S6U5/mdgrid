@@ -13,6 +13,7 @@ use mdgrid::display::Item;
 use mdgrid::expr::{to_val, Val};
 use mdgrid::i18n::Msg;
 use mdgrid::print::{self, val_value};
+use mdgrid::rules::{self, Reason};
 use mdgrid::settings::{self, Group};
 use mdgrid::source::{NewValue, RowId, Value};
 use mdgrid::summary::{self, Summary};
@@ -184,6 +185,24 @@ impl App {
         print::kind_in(self.src.as_ref(), col, rows, &|r, c| self.cell(r, c))
     }
 
+    /// CV-9: セルの問題(型に合わない値か、決まり(CE-36)に合わない値)。ノートのキーの列だけを、ためた値を
+    /// 重ねた値で見る。計算の列と、評価できない列は問題にしない。
+    pub(crate) fn problem(&self, row: &RowId, col: &str) -> Option<Reason> {
+        if rules::computed(col) {
+            return None;
+        }
+        let rule = self.prof.resolved.rules.get(col);
+        let v = self.prop(row, col);
+        // 決まりの無い列で値が無ければ問題は無い(セルの見せ方を引かずに済ませる)。
+        if rule.is_none() && v.is_none() {
+            return None;
+        }
+        if !matches!(self.cell(row, col), Shown::Prop(_)) {
+            return None;
+        }
+        rules::problem(self.kind_of(col), rule, v.as_ref())
+    }
+
     /// SR-35: 列 `col` で部品 `part` を使うか(色を使う表示で、設定が許すとき)。
     pub(crate) fn rich(&self, col: &str, part: mdgrid::cells::Part) -> bool {
         self.color != super::app::ColorMode::None && self.cells.on(col, part, &self.style)
@@ -222,6 +241,26 @@ impl App {
     }
 
     fn build_slots(&mut self) {
+        self.lay_slots();
+        // NV-30: 下の帯の問題の数は、見えている行(畳んだまとまりの中を除く。跳べる先と同じ)と見えている列で、
+        // 並べ直すたびに1回だけ数える(描くたびに数えない)。
+        self.built.problems = self
+            .slots
+            .iter()
+            .filter_map(|s| match s {
+                Slot::Row(r) => self.rows.get(*r),
+                Slot::Head(_) | Slot::Gap => None,
+            })
+            .map(|r| {
+                self.cols
+                    .iter()
+                    .filter(|c| self.problem(r, c).is_some())
+                    .count()
+            })
+            .sum();
+    }
+
+    fn lay_slots(&mut self) {
         self.slots.clear();
         if self.groups.is_empty() {
             let shown: Vec<usize> = (0..self.rows.len())
@@ -364,6 +403,8 @@ impl App {
         self.built.col_kinds = col_kinds;
         // NV-20: `.base` → ビューの設定 → 簡易の絞り込み・同じ値 → 一時的な並べ替え → 直した行の留め。
         let (rows, groups) = self.apply_settings(grid.rows, grid.groups);
+        // NV-30: 問題のある行だけの絞り込み(overlay の passes)は表の列の型を使う。
+        self.kinds = self.cols.iter().map(|c| self.column_kind(c)).collect();
         let (rows, groups) = self.overlay(rows, groups);
         self.rows = rows;
         self.groups = groups;
@@ -420,7 +461,7 @@ impl App {
         } else {
             vec![(String::new(), rows)]
         };
-        let narrowed = self.filter.is_some() || !self.same.is_empty();
+        let narrowed = self.filter.is_some() || !self.same.is_empty() || self.only_problems;
         // NV-23: 検索の欄の「N/M行」の M(絞る前の行の数)。
         self.unfiltered = segs.iter().map(|(_, rs)| rs.len()).sum();
         for (_, rs) in &mut segs {
@@ -833,6 +874,8 @@ pub(crate) struct Built {
     pub selects: std::collections::HashSet<String>,
     /// selects を決めたときの表(同じなら数え直さない)。
     pub selects_key: Option<SelectsKey>,
+    /// NV-30: 今の表(行と見えている列)の問題(CV-9)の数。
+    pub problems: usize,
 }
 
 /// 札の列を決めたときの表の形(SR-35)。

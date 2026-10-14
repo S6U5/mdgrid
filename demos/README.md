@@ -41,6 +41,7 @@ sh demos/record.sh places     # 1本だけ
 | `themes.tape` → [demo-themes.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-themes.gif) | 色のテーマ(examples/themes/ の6つ) |
 | `row-lines.tape` → [demo-row-lines.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-row-lines.gif) | 行を伸ばす設定(`[display] row_extra_lines = 2`): 長い値と改行のある値を折り返し、行を要るだけ伸ばす |
 | `column-types.tape` → [demo-column-types.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-column-types.gif) | 列の型を選び直す: パレットの `column_type`(か見出しの型の印のクリック)で型の窓を開き、型を選ぶと表に効く。「自動」で推定に戻る |
+| `problems.tape` → [demo-problems.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-problems.gif) | 型と決まりの問題: `[rules.<列>]` の必須と選べる値に合わない値に `!`、下の帯に数。`!` で次の問題へ跳び、`problems_only` で問題のある行だけ、`mdgrid --check` で CI から確かめる |
 
 To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screens are in English on the English sample (`examples/demo`). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.
 

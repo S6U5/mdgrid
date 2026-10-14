@@ -94,6 +94,8 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `\` | `quick_filter` | Search: show only the rows containing some text (the search bar above the table) |
 | `*` | `highlight_same` | Highlight the rows with the same value as the selected cell |
 | `,` | `filter_same` | Show only the rows with the same value as the selected cell |
+| `!` | `next_problem` | Jump to the next problem: a value that does not fit the column type or a rule (`[rules]`); the reason shows below |
+| `@` | `prev_problem` | Jump to the previous problem |
 | `%` | `frequency` | Show how many rows have each value of the selected column, and pick one to show only those rows |
 | `Space` | `mark_row` | Mark or unmark the row, then move down |
 | `v` | `select_range` | Start selecting a range of rows; press again to mark the range |
@@ -537,6 +539,8 @@ Every action name you can write in the keys section of the config file. Each one
 - `quick_filter` — search: show only the rows containing some text
 - `highlight_same` — highlight the rows with the same value
 - `filter_same` — show only the rows with the same value
+- `next_problem` — jump to the next problem
+- `prev_problem` — jump to the previous problem
 - `frequency` — show the value counts of the column
 - `sort_menu` — open the sort window
 - `filter_menu` — open the filter window
@@ -595,6 +599,7 @@ These commands have no key and can't be bound in the config file. Run them from 
 
 - `export_base` — write mdgrid's views to a new `.base` file under a name you choose (existing `.base` files are never overwritten)
 - `import_base` — pick a `.base` file and import one of its views as an mdgrid view
+- `problems_only` — show only the rows with problems, or all rows again (also by clicking the problem count in the bottom band)
 - `open_place` — list the registered tables (`places.toml`) and open the one you pick
 - `register_place` — register the current table under a name and a group
 - `open_link` — open the note a link cell points to (its table, with its row selected)

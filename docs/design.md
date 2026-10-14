@@ -597,6 +597,15 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **画面の書く場所**: 全体 → ui.toml(`config::write_atomic`)、ワークスペース → workspaces.toml のそのワークスペースの区画(`workspace::save_profile`。文字の区画を置き換える今の書き方で、手のコメントを残す)、表 → views.toml の `[[table]]` の `look` など、ビュー → ビューの設定(`Settings` に `look`・`dates`・`edit`・`use_` を足す)。
 - 選ばなかった案: 範囲ごとに丸ごとの Config を作って上書きする(どの値がどこから来たかが分からず、組とテーマの決まりが書けない)。`serde` の derive で全部を読む(知らない項目・型の違いを「ファイル: 道筋: 理由」で出せず、旧い名前を写せない)。
 
+## 型と決まりの問題(CE-36・CV-9・NV-30・CLI-23。type-check。2026-10-14)
+
+要求は変更の記録 specs/_changes/2026-10-14-type-check.md。
+
+- **判定は1か所**: lib の `src/rules.rs` の `problem(kind, rule, value)` が、型(`types::fits`)→ 必須 → 選べる値の順で最初の理由を返す。画面(`App::problem`。ためた値を重ねた値)と `--check`(`rules::check`。ノートの全部のキーと決まりのある列)が同じ関数を使う。却下: 画面の cell.rs の判定を CLI に写す(食い違いが生まれる)。
+- **決まりの置き場**: 表のプロファイルの `[rules.<列>]`(`Profile.rules: 列 → RuleLayer`)。`[types]` と同じく範囲を重ね、列ごと・項目ごと(`required`・`values`)に狭い範囲が勝つ(`Resolved.rules`)。決まりは書き戻しを止めない(型の CV-2 と違い、合わない値でも書き戻しの安全に関わらないため)。
+- **数は組み立てのときに**: 下の帯の問題の数は、組み立て直し(`rebuild`)の終わりに今の行と見えている列で数えて `Built.problems` に持つ。描くたびに数えない(1万行で重い)。問題のある行だけの絞り込みは `overlay` の `passes` に重ねる(簡易の絞り込み・同じ値と同じ段)。そのため列の型(`kinds`)は `overlay` の前に決める。
+- **CLI の列の型**: 画面と同じく `[types]` → `Source::kind`(ルートフォルダの型の設定か、読んだ全部のノートからの推定)。行の番号は `frontmatter::key_lines` のキーの文字の位置から。
+
 ## 文字の幅
 
 - unicode-width と書記素のまとまり(unicode-segmentation)で数える。East Asian Ambiguous(○● など)は既定で1とし、設定で2にできるようにする。

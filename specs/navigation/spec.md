@@ -6,7 +6,7 @@ description: 表の中を動く・探す・絞る・並べ替える・列を扱�
 status: active
 load_when: 移動・検索・簡易の絞り込み・一時的な並べ替え・列の表示・行の選択・詳細の表示・ビューの設定を作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-12
+updated: 2026-10-14
 ---
 
 # 移動・検索・選択・一時的な並べ替え(navigation)
@@ -37,6 +37,7 @@ updated: 2026-10-12
 | NV-27 | ビューの設定の画面(NV-18)の左の一覧に「親子」の区画を持ち、そこでオンにしたビューでは、ノートのキー(既定 `parent`。区画で選べる)に書いた親のノートへのリンク(REL-1 と同じ書き方と解き方。リストなら先頭のリンク)で、子の行を親の行のすぐ下に並べ、深さ1つごとに2桁字下げしてノートの欄に見せるべき。兄弟の順は今の並べ替え(NV-3・NV-24・`.base` の sort)のままにするべき。子を持つ行の名前の前に ▾(開いている)か ▸(畳んでいる)を付け、`Z`(Shift+z。とその印のクリック)で子孫を畳む・開くべき。親が今の表に無い子(絞り込みで外れた・別のまとまり・解けないリンク)と、親子が輪になった行は、一番上の段に並べるべき(行を落とさないため)。グループ分け(NV-15)があるときは、まとまりの中で親子に並べるべき。オン・オフとキーはビューの設定として反映で効き、見た目の状態と mdgrid のビュー(BV-17)に残るべき。 | `parent: "[[設計]]"` の「画面」と「API」、`parent: "[[画面]]"` の「部品」がある表で親子をオン → 「設計」の下に「画面」(字下げ2桁)・その下に「部品」(4桁)・「API」(2桁)。title の降順で並べる → 兄弟の「画面」と「API」だけが入れ替わる。「設計」で `Z` → 子孫が隠れて「▸ 設計」。もう一度 `Z` → 戻る。「設計」を絞り込みで外す → 「画面」と「API」が一番上の段。A の親が B・B の親が A → 両方とも一番上の段。親子をオフ → 今までの並び。`test_nv_27_*` | [2026-10-10](../_decisions/2026-10-10-tree-key.md) [2026-10-10](../_decisions/2026-10-10-tree.md) |
 | NV-28 | ビューの設定の画面の「親子」の区画で、親子で並べているビュー(NV-27)に WBS をオンにできるべき。オンのとき、行の名前の前に WBS の番号(まとまりの中で一番上の段を 1 から、子は親の番号に `.` と兄弟の中の順をつなぐ。例 `1.2.1`)を付けるべき。区画では進み具合のキー(既定 `status`)と、その値ごとの割合(0〜100)とラベルの対応表を作れるべきで、表の行に出てくる値を件数つきで並べ、値ごとに割合とラベルを打って決める。子の無い行は、名前のあとに対応表のラベルを、子のある行は、子孫の子の無い行の割合の平均を `%` で出すべき(対応表に無い値と値の無い行は 0% と数える)。WBS のオン・オフ、進み具合のキー、対応表はビューの設定として反映で効き、見た目の状態と mdgrid のビュー(BV-17)に残るべき。親子で並べていないときは WBS を出さないべき。 | 設計の下に画面(その下に部品 done・ボタン todo)と API(doing)がある表で、親子と WBS をオンにし、対応表で done = 100 完了・doing = 50 作業中・todo = 0 未着手 → 「1 設計 · 50%」「1.1 画面 · 50%」「1.1.1 部品 · 完了」「1.1.2 ボタン · 未着手」「1.2 API · 作業中」。API の status を空にする → 「1 設計」は 33%(100+0+0 の平均)。対応表に無い値 blocked → 0% と数え、ラベルは出さない。親子をオフ → 番号と進み具合が消える。開き直す → 対応表が残る。`test_nv_28_*` | [2026-10-10](../_decisions/2026-10-10-wbs.md) |
 | NV-29 | ビューの帯(NV-23)の、検索の欄の右に「絞り込み」のボタンを出し、押すと、ボタンのすぐ下に、今のビューの設定のフィルターの条件(NV-14・NV-19)を1つ1行の表(列・比べ方・値・外す)で並べた小さな窓を開くべき(設定の画面(NV-13)を開いて反映する手間なしに、並べ替えの窓(NV-24)と同じ手軽さで絞るため)。窓では、条件を足す(列を選び、その列に合う条件を選ぶ: 値の一覧のチェック・含む・含まない・比較・空である・空でない)・外す・変えることができ、変えるときは条件の行の列・比べ方・値のどれかを選んで、その場で直せるべき。窓では、変えるとすぐ表に効かせ、設定のフィルター(NV-13)として見た目の状態(SR-12)に保存するべき。条件が効いている間は、ボタンに条件の数を見せる(例「絞り込み 2」)。窓の外のクリックか Esc で閉じる。検索の欄を出さない設定(NV-23)では、同じ窓を操作の一覧とコマンドのパレットから開けるべき。読むだけの起動(WB-15)でも使え、ノートは書かないべき。 | ビューの帯の「絞り込み」を押す → ボタンの下に窓が開き「+ 絞り込みを足す」。status を選び done のチェックを外す → すぐ done の行が消え、ボタンに「絞り込み 1」、上の帯に「status: done を除く」。条件の行の比べ方を選んで「含む」に変え、「ing」と打つ → その場で条件が変わる。終了して開き直す → 同じ。priority の `≥ 3` を足す → 両方を満たす行だけ。窓で条件を外す → 元の行。端末が狭くてボタンが入らない → ボタンを出さず、パレットから開ける。読むだけの起動でも絞れる(ノートは書かない)(`test_nv_29_*`) | [2026-10-11](../_decisions/2026-10-11-view-bar.md)、[2026-10-11](../_decisions/2026-10-11-filter-button.md) |
+| NV-30 | 表のモードで、次の問題(CV-9)のセルへ跳ぶ操作(既定 `!`)と前の問題へ跳ぶ操作(既定 `@`。`!` の隣のキーで、`g` で始まる前置きのキーを増やさない(SR-16))があり(どちらも SR-4 のキーの表で割り当て直せ、パレットと操作の一覧からも使える)、表の行の順に(同じ行では列の順に)探して端で反対の端に回り、跳んだらメッセージ行にそのセルの問題の理由を出すべき。問題が無ければそう知らせて動かないべき。下の帯に、今の表(ビューの絞り込みのあとの行と、見えている列)の問題の数を、1つ以上あるときだけ出すべき(例「問題 3」)。問題のある行だけに絞る切り替えを、パレット・操作の一覧・下の帯の問題の数のクリックから使え、絞っている間はそれと分かるように出し、もう一度の切り替えで外せるべき。読むだけの起動(WB-15)でも使えるべき。 | 3つの問題のある表で `!` → 1つめの問題のセルに移り、メッセージ行に「due: 型が合わない(日付ではない)」。3回目の `!` のあと `!` → 1つめに戻る。`@` → 前へ。下の帯に「問題 3」。パレットの「問題のある行だけ」→ 問題のある行だけ、もう一度 → 元に戻る。問題の無い表 → 帯に数が出ず、`!` で「問題は無い」(`test_nv_30_*`) | [2026-10-14](../_decisions/2026-10-14-prev-problem-key.md)、[2026-10-14](../_decisions/2026-10-14-type-check.md) |
 
 ## 却下した案
 
@@ -101,6 +102,8 @@ updated: 2026-10-12
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-14 | [型と決まりに合わない値を「問題」として探し、画面と CLI で確かめられるようにする(type-check)](../_decisions/2026-10-14-type-check.md) | accepted | 人 | 人の発言 | CE-36, CV-9, NV-30, CLI-22 |
+| 2026-10-14 | [前の問題へ跳ぶ既定のキーを g ! から @ にする(prev-problem-key)](../_decisions/2026-10-14-prev-problem-key.md) | accepted | AI | 検証の指摘 | NV-30 |
 | 2026-10-13 | [表示の項目が11になって変わる試験の錠を掛け直す(row-lines-locks)](../_decisions/2026-10-13-row-lines-locks.md) | accepted | 人 | AI の提案 | SR-20, SR-21, CLI-11 ほか 4 |
 | 2026-10-12 | [ビューの帯は既定で線なし・上下に余白の3行にし、線で囲む形と1行の形は設定で選ぶ(view-bar-plain)](../_decisions/2026-10-12-view-bar-plain.md) | accepted | 人 | 人の発言 | SR-1, NV-23 |
 | 2026-10-12 | [検索の欄と絞り込み・並べ替えのボタンを線で四角く囲み、ビューの帯を3行にする(search-box)](../_decisions/2026-10-12-search-box.md) | accepted | 人 | 人の発言 | SR-1, NV-23 |
@@ -156,6 +159,7 @@ updated: 2026-10-12
 | NV-27 | [2026-10-10](../_decisions/2026-10-10-tree-key.md) | src/test_tree_unit.rs::test_nv_27_order_empty_and_flat, src/test_tree_unit.rs::test_nv_27_order_missing_parent_and_cycles_go_top, src/test_tree_unit.rs::test_nv_27_order_preorder_keeps_sibling_order ほか 7 | [2026-10-10-tree](../_changes/2026-10-10-tree.md) 2026-10-10 |
 | NV-28 | [2026-10-10](../_decisions/2026-10-10-wbs.md) | src/test_wbs_unit.rs::test_nv_28_numbers_and_progress, src/ui/test_wbs.rs::test_nv_28_numbers_progress_and_labels, src/ui/test_wbs.rs::test_nv_28_saved_with_native_view ほか 2 | [2026-10-10-wbs](../_changes/2026-10-10-wbs.md) 2026-10-10 |
 | NV-29 | [2026-10-11](../_decisions/2026-10-11-view-bar.md) | src/ui/test_filter_window.rs::test_nv_29_bad_operand_is_refused_with_reason, src/ui/test_filter_window.rs::test_nv_29_buttons_filter_then_sort_at_right_end, src/ui/test_filter_window.rs::test_nv_29_click_opens_window_and_hide_done ほか 13 | [2026-10-11-view-bar](../_changes/2026-10-11-view-bar.md) 2026-10-12 |
+| NV-30 | [2026-10-14](../_decisions/2026-10-14-prev-problem-key.md) | src/ui/test_problems.rs::test_nv_30_click_count_toggles, src/ui/test_problems.rs::test_nv_30_folded_group_not_counted_or_jumped, src/ui/test_problems.rs::test_nv_30_next_problem_wraps_with_reason ほか 6 | [2026-10-14-type-check](../_changes/2026-10-14-type-check.md) 2026-10-15 |
 | NV-12 | [2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) | src/ui/test_csv_note_only.rs::test_sc_17_add_row_shown_with_pending_edits, src/ui/test_grid.rs::test_ce_11_tab_after_row_leaves_view_does_not_write_other_row, src/ui/test_nav.rs::test_nv_12_edited_row_stays_until_save ほか 5 | [2026-10-10-explore-fixes-2](../_changes/2026-10-10-explore-fixes-2.md) 2026-10-10 |
 | NV-5 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/ui/test_action_menu_more.rs::test_sr_25_more_esc_after_prefix_keeps_marks, src/ui/test_keymap.rs::test_sr_13_default_keys, src/ui/test_nav.rs::test_nv_5_marks_range_all_and_esc ほか 1 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
 | NV-6 | [2026-10-06](../_decisions/2026-10-06-detail-body.md) | src/ui/test_checkbox.rs::test_ce_4_detail_view_cycles, src/ui/test_detail.rs::test_ce_1_click_inside_detail_input_keeps_editing, src/ui/test_detail.rs::test_nv_6_detail_wraps_long_value ほか 9 | [2026-10-06-detail-body](../_changes/2026-10-06-detail-body.md) 2026-10-06 |
