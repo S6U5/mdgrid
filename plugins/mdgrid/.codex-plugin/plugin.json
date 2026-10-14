@@ -1,0 +1,19 @@
+{
+  "name": "mdgrid",
+  "version": "0.3.0",
+  "description": "Query, filter, sort and export the front matter of Markdown notes (Obsidian vaults, task folders, .base views) as CSV, TSV, JSON or Markdown with the mdgrid CLI, and write edited values back after showing a diff.",
+  "author": {
+    "name": "S6U5"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "mdgrid",
+    "shortDescription": "Export and edit Markdown front matter as tables from the CLI.",
+    "longDescription": "Gives the agent one skill, mdgrid, that teaches it to use the mdgrid CLI: open a folder of Markdown notes or an Obsidian .base view as a table, filter it with Obsidian Bases expressions, sort it, and print it as CSV, TSV, JSON or a Markdown table to a file that can be handed to a person, a spreadsheet or another AI. Bulk edits go through mdgrid --apply, which shows a diff first and writes only with --yes after the user approves. Requires the mdgrid binary.",
+    "developerName": "S6U5",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use $mdgrid to list my tasks whose status is todo or doing as a Markdown table in active.md."
+  },
+  "keywords": ["markdown","frontmatter","obsidian","obsidian-bases","csv","cli"]
+}

@@ -188,6 +188,17 @@ mdgrid は書く前に全部の行を確かめ、パスや値に1つでも問題
 mdgrid ~/notes/Tasks --pick path | tr '\n' '\0' | xargs -0 -o vi
 ```
 
+## 🤖 AI エージェントと使う
+
+mdgrid には、Claude Code と Codex にこれらのコマンドの使い方を教えるスキルがあります。「status が todo か doing のタスクを Markdown の表にして」と頼むと、エージェントが `--print --filter` のコマンドを組み立ててファイルに出します。そのファイルは、どのチャットの AI にも渡せます。まとめて書き換えるときは `--apply` の差分を見せ、あなたが良いと言ってから書きます。
+
+```text
+/plugin marketplace add S6U5/mdgrid
+/plugin install mdgrid@mdgrid
+```
+
+Codex では、このリポをプラグインのマーケットプレイスに足して `mdgrid` を入れます。スキルの本体は [plugins/mdgrid/skills/mdgrid/SKILL.md](plugins/mdgrid/skills/mdgrid/SKILL.md) です。mdgrid 本体は別に入れてください。
+
 ## 🪨 Obsidian を使っている人へ
 
 mdgrid はどんな Markdown のフォルダでも使えますが、Obsidian の [Bases](https://help.obsidian.md/bases) も読めます。`.base` を開くと table ビューがタブに並び、絞り込み・並べ替え・まとまり・集計の行(`合計`・`平均`・`最早` など)と式の一部が使えます。Obsidian を入れていなくても動き、`.base` を書き換えることはありません。

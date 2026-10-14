@@ -1,0 +1,11 @@
+{
+  "name": "mdgrid",
+  "displayName": "mdgrid",
+  "version": "0.3.0",
+  "description": "Query, filter, sort and export the front matter of Markdown notes (Obsidian vaults, task folders, .base views) as CSV, TSV, JSON or Markdown with the mdgrid CLI, and write edited values back after showing a diff.",
+  "author": {
+    "name": "S6U5"
+  },
+  "homepage": "https://github.com/S6U5/mdgrid",
+  "keywords": ["markdown","frontmatter","obsidian","obsidian-bases","csv","cli"]
+}

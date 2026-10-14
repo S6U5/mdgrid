@@ -188,6 +188,17 @@ mdgrid checks every row before writing. If any path or value is a problem, nothi
 mdgrid ~/notes/Tasks --pick path | tr '\n' '\0' | xargs -0 -o vi
 ```
 
+## 🤖 Use with AI agents
+
+mdgrid ships a skill that teaches Claude Code and Codex to use these commands: ask "list my tasks that are todo or doing as a Markdown table" and the agent builds the `--print --filter` command and writes the file for you, which you can then hand to any chat assistant. For bulk edits it shows you the `--apply` diff and writes only after you say yes.
+
+```text
+/plugin marketplace add S6U5/mdgrid
+/plugin install mdgrid@mdgrid
+```
+
+In Codex, add this repository as a plugin marketplace and install `mdgrid`. The skill itself is [plugins/mdgrid/skills/mdgrid/SKILL.md](plugins/mdgrid/skills/mdgrid/SKILL.md); the mdgrid binary must be installed separately.
+
 ## 🪨 For Obsidian users
 
 mdgrid works on any folder of Markdown notes, and it also understands Obsidian's [Bases](https://help.obsidian.md/bases). Open a `.base` file and its table views appear as tabs, with their filters, sorting, grouping, summary rows (`Sum`, `Average`, `Earliest` …) and a subset of formulas. Obsidian does not need to be installed, and mdgrid never rewrites your `.base` files.

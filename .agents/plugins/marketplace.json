@@ -1,0 +1,20 @@
+{
+  "name": "mdgrid",
+  "interface": {
+    "displayName": "mdgrid"
+  },
+  "plugins": [
+    {
+      "name": "mdgrid",
+      "source": {
+        "source": "local",
+        "path": "./plugins/mdgrid"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
