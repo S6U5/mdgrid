@@ -70,6 +70,137 @@ impl<'de> Deserialize<'de> for TabsMode {
     }
 }
 
+/// ビューの帯の検索の欄と絞り込み・並べ替えのボタンの描き方(NV-23): 線なし(既定。地の色で示す)・
+/// 線で四角く囲む(線は帯の上下の余白の行に描く)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ButtonsMode {
+    #[default]
+    Plain,
+    Box,
+}
+
+impl ButtonsMode {
+    pub const NAMES: &'static [&'static str] = &["plain", "box"];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            ButtonsMode::Plain => "plain",
+            ButtonsMode::Box => "box",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<ButtonsMode> {
+        match s {
+            "plain" => Some(ButtonsMode::Plain),
+            "box" => Some(ButtonsMode::Box),
+            _ => None,
+        }
+    }
+
+    /// 表示の区画で次に切り替える値(plain ↔ box)。
+    pub fn next(self) -> ButtonsMode {
+        match self {
+            ButtonsMode::Plain => ButtonsMode::Box,
+            ButtonsMode::Box => ButtonsMode::Plain,
+        }
+    }
+}
+
+/// 余白の行の数(SR-1 の `top_padding`・NV-23 の `bar_padding`)。0〜2 を 0.5 刻みで、半行の数で持つ(0〜4)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
+pub struct Pad(pub u8);
+
+impl Pad {
+    /// 上限(2 行 = 半行 4 つ)。
+    pub const MAX: u8 = 4;
+    /// 既定(1 行。端数は環境で半行にも1行にもなるので既定にしない。2026-10-12-padding-default-one)。
+    pub const DEFAULT: Pad = Pad(2);
+
+    /// 設定の値(0〜2 の 0.5 刻み)から。範囲の外・刻みに合わない値は None。
+    pub fn from_f64(v: f64) -> Option<Pad> {
+        let h = v * 2.0;
+        if !(0.0..=f64::from(Pad::MAX)).contains(&h) || h.fract() != 0.0 {
+            return None;
+        }
+        Some(Pad(h as u8))
+    }
+
+    /// 設定に書く値(0・0.5・1・1.5・2)。
+    pub fn value(self) -> f64 {
+        f64::from(self.0) / 2.0
+    }
+
+    /// 画面に出す文字(「0.5」「1」など)。
+    pub fn text(self) -> String {
+        if self.0.is_multiple_of(2) {
+            (self.0 / 2).to_string()
+        } else {
+            format!("{}.5", self.0 / 2)
+        }
+    }
+
+    /// 表示の区画で次に切り替える値(0 → 0.5 → 1 → 1.5 → 2 → 0)。
+    pub fn next(self) -> Pad {
+        if self.0 >= Pad::MAX {
+            Pad(0)
+        } else {
+            Pad(self.0 + 1)
+        }
+    }
+
+    /// 端末の行に直した (空き行の数, 半分の塗りの行があるか)。半分の塗りの字を使えなければ端数は切り上げる。
+    pub fn rows(self, half_ok: bool) -> (usize, bool) {
+        let full = usize::from(self.0 / 2);
+        let half = self.0 % 2 == 1;
+        if half && !half_ok {
+            (full + 1, false)
+        } else {
+            (full, half)
+        }
+    }
+}
+
+impl Serialize for Pad {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        if self.0.is_multiple_of(2) {
+            s.serialize_i64(i64::from(self.0 / 2))
+        } else {
+            s.serialize_f64(self.value())
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Pad {
+    /// 0.5 のような小数と、1 のような整数の両方を受ける。
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            I(i64),
+            F(f64),
+        }
+        let v = match Raw::deserialize(d)? {
+            Raw::I(i) => i as f64,
+            Raw::F(f) => f,
+        };
+        Pad::from_f64(v).ok_or_else(|| serde::de::Error::custom(format!("bad padding {v}")))
+    }
+}
+
+impl Serialize for ButtonsMode {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(self.name())
+    }
+}
+
+impl<'de> Deserialize<'de> for ButtonsMode {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(d)?;
+        ButtonsMode::parse(&s)
+            .ok_or_else(|| serde::de::Error::custom(format!("unknown buttons mode {s:?}")))
+    }
+}
+
 /// 設定の `[display]`(SR-21)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Display {
@@ -87,6 +218,14 @@ pub struct Display {
     pub search_bar: bool,
     /// 設定の帯を出す(既定 true)。
     pub chips: bool,
+    /// ビューの帯のボタンの描き方(NV-23。既定 plain)。
+    pub buttons: ButtonsMode,
+    /// ビューの帯の上下に空ける行の数(NV-23。0〜2 の 0.5 刻み。既定 1)。
+    pub bar_padding: Pad,
+    /// ヘッダーの上に空ける行の数(SR-1。0〜2 の 0.5 刻み。既定 1)。
+    pub top_padding: Pad,
+    /// データの1行を最大で「1 + この数」の行の高さまで伸ばす(CV-8。0〜9。既定 0)。
+    pub row_extra_lines: u8,
 }
 
 impl Default for Display {
@@ -99,7 +238,25 @@ impl Default for Display {
             tabs: TabsMode::Always,
             search_bar: true,
             chips: true,
+            buttons: ButtonsMode::Plain,
+            bar_padding: Pad::DEFAULT,
+            top_padding: Pad::DEFAULT,
+            row_extra_lines: 0,
         }
+    }
+}
+
+/// 行を伸ばす設定の上限(CV-8)。
+pub const ROW_EXTRA_MAX: u8 = 9;
+/// 設定の画面で切り替える上限(CV-8。0 → 1 → 2 → 3 → 0)。
+const ROW_EXTRA_CYCLE: u8 = 3;
+
+/// 表示の区画で次に切り替える行を伸ばす数(0 → 1 → 2 → 3 → 0。設定で 4 より上を書いていれば 0 に)。
+pub fn next_row_extra_lines(n: u8) -> u8 {
+    if n >= ROW_EXTRA_CYCLE {
+        0
+    } else {
+        n + 1
     }
 }
 
@@ -114,6 +271,10 @@ impl Display {
             Item::Tabs => self.tabs != TabsMode::Never,
             Item::SearchBar => self.search_bar,
             Item::Chips => self.chips,
+            Item::Buttons => self.buttons == ButtonsMode::Box,
+            Item::BarPadding => self.bar_padding.0 > 0,
+            Item::TopPadding => self.top_padding.0 > 0,
+            Item::RowExtraLines => self.row_extra_lines > 0,
         }
     }
 }
@@ -127,7 +288,15 @@ pub enum Item {
     GroupGap,
     Tabs,
     SearchBar,
+    /// ビューの帯のボタンの描き方(NV-23。`buttons`。plain・box を切り替える)。
+    Buttons,
+    /// ビューの帯の上下の余白(NV-23。`bar_padding`。0〜2 を 0.5 刻みで順に切り替える)。
+    BarPadding,
+    /// ヘッダーの上の余白(SR-1。`top_padding`。0〜2 を 0.5 刻みで順に切り替える)。
+    TopPadding,
     Chips,
+    /// 行を伸ばす数(CV-8。`row_extra_lines`。0〜3 を順に切り替える)。
+    RowExtraLines,
 }
 
 impl Item {
@@ -141,6 +310,10 @@ impl Item {
             Item::Tabs => Msg::DisplayTabs,
             Item::SearchBar => Msg::DisplaySearchBar,
             Item::Chips => Msg::DisplayChips,
+            Item::Buttons => Msg::DisplayButtons,
+            Item::BarPadding => Msg::DisplayBarPadding,
+            Item::TopPadding => Msg::DisplayTopPadding,
+            Item::RowExtraLines => Msg::DisplayRowExtraLines,
         }
     }
 
@@ -151,13 +324,17 @@ impl Item {
 }
 
 /// 「表示」の節の項目と名前(この順で並べる)。名前は日本語の文。画面には今の言語の `Item::label` を出す(SR-23)。
-pub const ITEMS: [(Item, &str); 7] = [
+pub const ITEMS: [(Item, &str); 11] = [
     (Item::RowNumbers, Item::RowNumbers.msg().ja()),
     (Item::Zebra, Item::Zebra.msg().ja()),
     (Item::ColumnLines, Item::ColumnLines.msg().ja()),
     (Item::GroupGap, Item::GroupGap.msg().ja()),
     (Item::Tabs, Item::Tabs.msg().ja()),
     (Item::SearchBar, Item::SearchBar.msg().ja()),
+    (Item::Buttons, Item::Buttons.msg().ja()),
+    (Item::BarPadding, Item::BarPadding.msg().ja()),
+    (Item::TopPadding, Item::TopPadding.msg().ja()),
+    (Item::RowExtraLines, Item::RowExtraLines.msg().ja()),
     (Item::Chips, Item::Chips.msg().ja()),
 ];
 
@@ -179,6 +356,41 @@ pub struct DisplayOverride {
     pub search_bar: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chips: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub buttons: Option<ButtonsMode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bar_padding: Option<Pad>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_padding: Option<Pad>,
+    /// 範囲(0〜9)の外・整数でない値は持たない(既定にする。警告は読む側。views.rs・profile.rs)。
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "row_extra_lines_in_range"
+    )]
+    pub row_extra_lines: Option<u8>,
+}
+
+/// 行を伸ばす数の値(CV-8)か: 0〜9 の整数。
+pub fn row_extra_lines_ok(v: &toml::Value) -> Option<u8> {
+    v.as_integer()
+        .filter(|n| (0..=i64::from(ROW_EXTRA_MAX)).contains(n))
+        .map(|n| n as u8)
+}
+
+/// ビューの上書きの `row_extra_lines` を読む(CV-8)。範囲の外・整数でない値は None(ビューごと捨てない)。
+fn row_extra_lines_in_range<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<Option<u8>, D::Error> {
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Raw {
+        I(i64),
+        Other(serde::de::IgnoredAny),
+    }
+    Ok(match Raw::deserialize(d)? {
+        Raw::I(n) if (0..=i64::from(ROW_EXTRA_MAX)).contains(&n) => Some(n as u8),
+        _ => None,
+    })
 }
 
 /// 上書きの項目の名前(知らない項目の判定)。
@@ -190,6 +402,10 @@ pub const OVERRIDE_KEYS: &[&str] = &[
     "tabs",
     "search_bar",
     "chips",
+    "buttons",
+    "bar_padding",
+    "top_padding",
+    "row_extra_lines",
 ];
 
 impl DisplayOverride {
@@ -207,10 +423,14 @@ impl DisplayOverride {
             tabs: Some(d.tabs),
             search_bar: Some(d.search_bar),
             chips: Some(d.chips),
+            buttons: Some(d.buttons),
+            bar_padding: Some(d.bar_padding),
+            top_padding: Some(d.top_padding),
+            row_extra_lines: Some(d.row_extra_lines),
         }
     }
 
-    /// 真偽の項目の名前の欄(タブは別)。知らない名前は None。
+    /// 真偽の項目の名前の欄(タブとボタンの描き方は別)。知らない名前は None。
     pub fn bool_mut(&mut self, name: &str) -> Option<&mut Option<bool>> {
         Some(match name {
             "row_numbers" => &mut self.row_numbers,
@@ -241,6 +461,10 @@ impl DisplayOverride {
         put!(tabs);
         put!(search_bar);
         put!(chips);
+        put!(buttons);
+        put!(bar_padding);
+        put!(top_padding);
+        put!(row_extra_lines);
         out
     }
 
@@ -267,6 +491,38 @@ impl DisplayOverride {
             Item::GroupGap => self.group_gap = (!same).then_some(on),
             Item::SearchBar => self.search_bar = (!same).then_some(on),
             Item::Chips => self.chips = (!same).then_some(on),
+            Item::Buttons => {
+                let m = if on {
+                    ButtonsMode::Box
+                } else {
+                    ButtonsMode::Plain
+                };
+                self.set_buttons(m, base);
+            }
+            Item::BarPadding => {
+                let n = match (on, base.bar_padding) {
+                    (false, _) => Pad(0),
+                    (true, Pad(0)) => Pad::DEFAULT,
+                    (true, b) => b,
+                };
+                self.set_bar_padding(n, base);
+            }
+            Item::TopPadding => {
+                let n = match (on, base.top_padding) {
+                    (false, _) => Pad(0),
+                    (true, Pad(0)) => Pad::DEFAULT,
+                    (true, b) => b,
+                };
+                self.set_top_padding(n, base);
+            }
+            Item::RowExtraLines => {
+                let n = match (on, base.row_extra_lines) {
+                    (false, _) => 0,
+                    (true, 0) => 1,
+                    (true, b) => b,
+                };
+                self.set_row_extra_lines(n, base);
+            }
             Item::Tabs => {
                 let m = if !on {
                     TabsMode::Never
@@ -278,6 +534,26 @@ impl DisplayOverride {
                 self.set_tabs(m, base);
             }
         }
+    }
+
+    /// ボタンの描き方を `m` にする(土台と同じなら上書きを持たない。NV-23)。
+    pub fn set_buttons(&mut self, m: ButtonsMode, base: &Display) {
+        self.buttons = (m != base.buttons).then_some(m);
+    }
+
+    /// 帯の余白の行の数を `n` にする(土台と同じなら上書きを持たない。NV-23)。
+    pub fn set_bar_padding(&mut self, n: Pad, base: &Display) {
+        self.bar_padding = (n != base.bar_padding).then_some(n);
+    }
+
+    /// ヘッダーの上の余白を `n` にする(土台と同じなら上書きを持たない。SR-1)。
+    pub fn set_top_padding(&mut self, n: Pad, base: &Display) {
+        self.top_padding = (n != base.top_padding).then_some(n);
+    }
+
+    /// 行を伸ばす数を `n` にする(土台と同じなら上書きを持たない。CV-8)。
+    pub fn set_row_extra_lines(&mut self, n: u8, base: &Display) {
+        self.row_extra_lines = (n != base.row_extra_lines).then_some(n);
     }
 
     /// タブの行の値を `m` にする(土台と同じなら上書きを持たない)。

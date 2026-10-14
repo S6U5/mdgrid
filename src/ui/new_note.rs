@@ -32,7 +32,7 @@ use ratatui::text::{Line, Span};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-/// ヘッダーの右の端のボタン(CE-25)の今の言語の文字。クリックの当たり(`button_at`)もこの幅から。
+/// ビューの帯の右の端のボタン(CE-25)の今の言語の文字(頭のキーを除く)。
 pub(crate) fn button() -> &'static str {
     Msg::NoteButton.text()
 }
@@ -106,11 +106,11 @@ impl Flow {
 
 /// CE-32: 雛形を埋めた値が日付・日時の形なら、日付として(囲まずに)書く: 型の決まらない列(WB-18)と、
 /// 日付・日時の列。
-fn as_date(src: &dyn Source, col: &str, v: NewValue) -> NewValue {
+/// `kind` は列の型(設定の `[types]` が先。CE-35)。
+fn as_date(src: &dyn Source, col: &str, kind: Kind, v: NewValue) -> NewValue {
     match v {
         NewValue::Str(s)
-            if types::date_or_datetime(&s)
-                && matches!(src.kind(col).kind, Kind::Date | Kind::DateTime) =>
+            if types::date_or_datetime(&s) && matches!(kind, Kind::Date | Kind::DateTime) =>
         {
             NewValue::Date(s)
         }
@@ -369,7 +369,7 @@ impl App {
         let preset = value
             .or_else(|| f.answer_of(&col).cloned())
             .or_else(|| f.preset(&col).map(|v| newnote::expand_value(v, &vars)));
-        let kind = self.src.kind(&col).kind;
+        let kind = self.col_type(&col);
         if kind == Kind::List {
             // CE-16: リストの列はリストの選択で(前もって入れる値は付いた要素にする)。
             let items = match preset {
@@ -646,14 +646,19 @@ impl App {
         let src = self.src.as_ref();
         let mut rule = f.rule.clone();
         for (k, v) in &mut rule.set {
-            *v = as_date(src, k, newnote::expand_value(v, &vars));
+            *v = as_date(src, k, self.col_type(k), newnote::expand_value(v, &vars));
         }
         let prefill: Vec<Edit> = f
             .prefill
             .iter()
             .map(|e| Edit {
                 key: e.key.clone(),
-                value: as_date(src, &e.key, newnote::expand_value(&e.value, &vars)),
+                value: as_date(
+                    src,
+                    &e.key,
+                    self.col_type(&e.key),
+                    newnote::expand_value(&e.value, &vars),
+                ),
             })
             .collect();
         // CE-32: 雛形は開いたフォルダの中のファイルだけ(外を指すものは読まずに理由)。
@@ -1010,7 +1015,7 @@ fn value_text(app: &App, f: &Flow, row: Option<usize>) -> (String, bool) {
 
 /// 型の手がかり(SR-31)。
 fn type_hint(app: &App, col: &str) -> String {
-    match app.src.kind(col).kind {
+    match app.col_type(col) {
         Kind::Date => "YYYY-MM-DD".to_string(),
         Kind::DateTime => "YYYY-MM-DDTHH:MM".to_string(),
         Kind::Number => Msg::NoteHintKindNumber.text().to_string(),
@@ -1185,19 +1190,17 @@ fn place_name(p: &Path) -> String {
         .unwrap_or_else(|| p.display().to_string())
 }
 
-/// ヘッダーにボタンを出すか(読むだけ(WB-15)と、作る場所(開いたフォルダ)が無いときは出さない)。
+/// 「+ 新規」のボタンを出すか(読むだけ(WB-15)と、作る場所(開いたフォルダ)が無いときは出さない)。
 pub(crate) fn button_shown(app: &App) -> bool {
     !app.readonly && app.note.places.iter().any(|p| p.is_dir())
 }
 
-/// (x, y) がヘッダーの「+ 新規」か(CE-25)。
+/// (x, y) がビューの帯の右の端の「+ 新規」か(CE-25。関係マップでも同じ桁)。
 pub(crate) fn button_at(app: &App, x: u16, y: u16) -> bool {
-    let w = app.size.0.saturating_sub(1) as usize;
-    let bw = width(button());
-    y == 0 && button_shown(app) && w >= bw + 2 && (w - bw..w).contains(&(x as usize))
+    super::bands::new_button_at(app, x, y)
 }
 
-/// 保管庫の根(`.obsidian` のある最寄りの上。BV-2)から `dir` のフォルダが、作る場所の根 `root` の中なら、
+/// ルートフォルダ(`.obsidian` のある最寄りの上。BV-2)から `dir` のフォルダが、作る場所の根 `root` の中なら、
 /// `root` からの相対(`/` でつなぐ)。外か、根が決まらなければ None。
 fn folder_under_root(root: &Path, dir: &str) -> Option<String> {
     let real = root.canonicalize().ok()?;

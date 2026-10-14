@@ -193,6 +193,28 @@ pub fn replace_emoji(s: &str) -> String {
     out
 }
 
+/// 値を幅 `w` で折り返す(改行でも分ける。字の単位)。空なら1行の空。詳細の表示(NV-6)と、伸ばした表の行(CV-8)。
+pub(crate) fn wrap(s: &str, w: usize) -> Vec<String> {
+    let w = w.max(1);
+    let mut out = Vec::new();
+    for para in s.split('\n') {
+        let mut rest = sanitize(para.trim_end_matches('\r'));
+        if rest.is_empty() {
+            out.push(String::new());
+            continue;
+        }
+        while !rest.is_empty() {
+            let mut head = take(&rest, w);
+            if head.is_empty() {
+                head = rest.graphemes(true).next().unwrap_or_default().to_string();
+            }
+            rest.drain(..head.len());
+            out.push(head);
+        }
+    }
+    out
+}
+
 /// 寄せ方。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Align {

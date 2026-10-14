@@ -5,10 +5,14 @@
   --write  specs/README.md の生成区画を書き直す(区画が無ければ末尾に足す)
   --lock   守られる要件のテストで、まだ錠の無いものに錠をかける。前の取り方の指紋のままの錠は、新しい指紋へ掛け直す(TL-13)
   --verbose  W12・W8・W3 を種類ごとの1行にまとめず、1件ずつ出す
-  --lock --relock <決定記録>  人の決定で変えた・消した要件のテストの錠を掛け直す・外す
+  --lock --relock <決定記録>  変えてよい決定の記録(人の決定か、錨との照合のある AI 自己採択)で変えた・消した要件のテストの錠を掛け直す・外す(TL-5)。
+           削除していない要件の錠のあるテストを1つも残さない掛け直しは拒む(TL-15)
+  --trail  先頭に人の確認待ち(OM-7。3件ならブレーキ)を並べ、そのあと、どの specs/_bundles/ の記録にも載っていない決着した決定記録を、人の発言の記録を先に並べ、7件以上なら「要約を出す時」を出す(OM-14)
   --approve <決定記録> --find <語句> [--find <語句>]  語句を含む人の発言を会話の記録から探し、approval-evidence と approval-hash を書き込む(語句は記録に残さない)
   --fingerprint <specs/_bundles/…md>  承認の文・束の指紋(囲みの中の本文 + 改行1つの SHA-256 の先頭16文字)を出す(OM-13)
   --settle <提案> accepted|rejected|withdrawn  提案の status と updated を書いて _decisions/ へ移し、相対リンクを直す(CF-6)
+  --tests <要件 ID>[,<要件 ID>…]  その要件を指す今のテストを1行ずつ出す(無ければ「なし」。TL-17)
+  --overlap <要件 ID>[,<要件 ID>…]  要件の「実装:」のコミットを1つずつ打ち消した版でテストを走らせ、落ちた版で重なりの候補を出す(TL-18)
   --evidence <変更の記録> [--test-cmd "<{file} を含む雛形>"]  要件を指すテストを今と実装前で走らせ、照合の表の行を出す(SF-9)
   --rehash <決定記録>  approval-evidence の指す人の発言から approval-hash を書き込む(伏せ字にした旧い記録の付け直し)
 
@@ -23,8 +27,9 @@ specs/_decisions/(accepted / rejected / withdrawn と取り込みの記録)、�
 記録の置き場は先頭に _ を付けて、機能のフォルダと見分ける。各 spec.md の末尾には、その機能の決定の一覧と、
 要件ごとのつながりの表(最新の決定・テスト・最後に checked にした変更の記録)を --write が書く。
 
-「守られる」要件 = AI が自己採択で触れない要件。決定の列のリンク先に decided-by: 人 の記録
-(旧形式なら decision-makers に【人】)が1本でもあるか、取り込みの記録で扱いが 人 / 未確認 のもの。
+「守られる」要件 = 決定の列のリンク先に decided-by: 人 の記録(旧形式なら decision-makers に【人】)が1本でもあるか、
+取り込みの記録で扱いが 人 / 未確認 のもの。AI が自己採択で変えるときは「錨との照合」の節(principles.md のあるリポでは
+P 番号つき)が要る(OM-6)。原則(P 番号)と、principles.md のフロントマター gated に載った要件は、AI が自己採択で触れない(OM-13)。
 
 エラー:
   E0  specs/ か索引が無い、引数が不正、旧い形(specs/changes/)のまま、旧い名前(specs/proposals/・specs/decisions/)のまま
@@ -42,19 +47,33 @@ specs/_decisions/(accepted / rejected / withdrawn と取り込みの記録)、�
   E12 提案のフロントマターの値が語彙外か欠けている(decided-by / trigger / trigger-link / touches)
   E13 touches と差分の行の ID の集合が一致しない
   E14 decided-by: 人 なのに、承認の記録に「YYYY-MM-DD 人の承認(要約: …)」の行(旧い記録は伏せ字の行)が無い
-  E15 AI 自己採択の記録が、その時点で守られていた要件に触っている
+  E15 AI 自己採択の記録が、原則か gated の要件(一度でも載ったもの)、またはその時点で守られていた要件に「錨との照合」の節なしで
+      触っている。または、人の確認待ち(錨との照合のある、原則か gated に触る AI 自己採択で、照合できた確認の記録に載っていないもの)が
+      すでに3件あるのに、原則か gated に触っている(ブレーキ。OM-7)
   E16 採択された「追加」または強める「変更」の強さが しなければならない / してはならない なのに、
       trigger が 人の発言 / 運用で起きた失敗 でない
   E17 最新の記録が取り込みの要件の文言が、取り込んだ文言と違う(変えるなら提案で)
   E18 テストが仕様に無い要件 ID を指している([XX-n] か test_XX_n の形で書く)
   E19 守られる要件に結びついたテスト(Python はテスト関数ごと)が、錠の指紋から変わっている
-  E20 錠(specs/test-locks.json)を書き換えた・外したコミットに、人の決定が伴っていない(git の履歴で確かめる)
+  E20 錠(specs/test-locks.json)を書き換えた・外したコミットに、変えてよい決定の記録が伴っていない(git の履歴で確かめる)
   E21 Python のテストが構文エラーで読めない(錠の指紋も、テスト関数ごとの要件とのつながりも見られない)
   E22 approval-evidence の指す発言が人の発言でない、または approval-hash(発言の指紋)が合わない(会話の記録が手元にあるときだけ)
   E27 決定記録・提案に人の発言の原文の引用(人「…」、【人】「…」、> 【人】の行)がある(原文は引用せず要約する)
-  E29 承認の記録の「承認の文 <パス>、指紋 <16文字>」が、保存した承認の文の今の指紋と合わない、または承認した人の発言が、独立した語としての指紋も、対象の要件 ID と承認を示す語も含まない(OM-13)
+  E29 承認の記録の「承認の文 <パス>、指紋 <16文字>」が、保存した承認の文の今の指紋と合わない、または承認した人の発言が、独立した語としての指紋も、対象の要件 ID と承認を示す語も含まない(選択肢の答えでは、承認を示す語は選んだ答えの側に要る。OM-13)
   E28 決定記録・提案・変更の記録の文が、会話の記録の人の発言と一致する(会話の記録が手元にあるときだけ。日本語の文を8字ずつに切り、7割以上が人の発言にある文)
   E30 .decidespec/lock.json に載ったファイル(spec-init がコピーした道具と入口)の中身が、lock.json の指紋と違うか無い(手で直さない。直すならプラグイン側で直して spec-init で更新する。TS-5)
+  E31 principles.md に gated を置いた後に、原則の行か gated、または一度でも gated に載った要件の spec.md の行(要件の文か
+      確かめ方。OM-21)を、変えた ID に触る決定の記録(人の決定か、錨との照合のある
+      AI 自己採択)なしに変えたコミットがある(git の履歴で確かめる。OM-19)
+  E32 採択済みの decided-by: 人 の記録に approval-evidence か approval-hash が無い(--approve <記録> --find <語句> で
+      会話の記録から付ける。語句は記録に残らない。伏せ字の承認は、approval-evidence を持つ記録が初めて _decisions/ に
+      入ったコミットより前に git に入ったものだけ W20。OM-12)
+  E34 _decisions/ に入った記録の status・decided-by・decision-makers・touches を、入ったあとで変えた、または記録を消した
+      (git の履歴と作業ツリーで確かめる。本文の伏せ字とリンクの直しは見ない。OM-22)
+  E33 確認の記録(specs/_bundles/ の、フロントマターに confirms を持つ記録)が、照合できる人の言葉を指していない
+      (会話の記録が手元にあるのに指した会話が無いときを含む)、その言葉が確認の記録の指紋と人の側(打った文か選んだ答え)の
+      確認を示す語を含まない(打ち消し「承認しない」「いいえ」などは数えない)、confirms の記録が無いか本文の指紋(- <パス>、指紋 <16文字>)と今の指紋が合わない
+      (確認のあとで変わった)、またはほかの記録の承認と同じ発言を指す(OM-13)
   E23 変更の記録(specs/_changes/)のフェーズの表が7行の順(要求・不明点・仕様化・設計・タスク・実装・照合)でない、
       状態が語彙外(未 / 進行中 / 済 / 対象外: 理由)、対象外に理由が無い、要求・実装・照合を対象外にしている、size が語彙外
   E24 変更の記録で、前のフェーズが済か対象外になる前に、後のフェーズが進行中か済になっている
@@ -70,11 +89,10 @@ specs/_decisions/(accepted / rejected / withdrawn と取り込みの記録)、�
   W5  spec.md に要件が1行も無い
   W6  提案が --stale-days(既定 30)日以上 proposed のまま
   W7  審議中の提案の「変更」の旧の引用が、現行の要件の文言と一致しない(先に入った変更がある)
-  W8  要件の文末が強さの5語でない(最新の記録が取り込みの要件は除く)
+  W8  要件の文末(理由の括弧は除く。DC-13)が強さの5語でない(最新の記録が取り込みの要件は除く)
   W9  要件に曖昧語がある(同上)
   W10 旧形式の提案が _proposals/ にある(書き直すか取り下げる)
   W15 spec.md の末尾の生成区画(決定とつながり)が古い(--write で直す)
-  W16 decided-by: 人 の採択に approval-evidence か approval-hash が無い(--approve <記録> --find <語句> で会話の記録から付ける。語句は記録に残らない)
   W17 approval-evidence の会話の記録が手元に無く、照合できない
   W11 仕様・原則の本文に【人】の印がある(人と AI の区別は決定記録に置く)
   W12 リポにテストがあるのに、要件を指すテストが無い(確かめ方が「読んで判定」「対象外」のものと、最新の記録が取り込みのものは除く)
@@ -86,6 +104,10 @@ specs/_decisions/(accepted / rejected / withdrawn と取り込みの記録)、�
   W21 AI 自己採択の記録と、同じ要件を守る人の決定が、同じ日に同じコミットで入り、前後が分からない(E15 を確かめられない)
   W22 要件を checked にした最後の変更の記録(done)がコミットされた後に、その要件を指すテストのファイルが変わった
   W23 指紋による承認で、会話の記録が読めず、人の発言が指紋を含むかの照合を飛ばした(OM-18)
+  W25 人の確認待ちが3件あるあいだの AI 自己採択(E15 のブレーキ)だが、会話の記録がまったく無い場所(CI など)なので警告にとどめる(OM-13)
+  W26 _decisions/ に入った記録の書き換え・消去(E34 の対象)だが、E34 の検査を持つ check.py がリポに入る前の履歴なので警告に
+      留める(境は、その check.py が入ったコミット。追跡しているファイルにだけあれば次のコミット。OM-22)
+  W24 AI 自己採択が触った要件が、その記録より後に gated に載った(さかのぼって E15 にしない)
       (git の履歴で確かめる。git が無い・記録が git に無い・作業ツリーで変えた記録は起点にしない。
       checked にした記録のどれか1件の後で変わっていなければ出さない)
 """
@@ -103,7 +125,7 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER_RE = re.compile(r"\{[^{}\n]{1,60}\}")
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 CROSS_REPO_RE = re.compile(r"^[\w.-]+/[\w.-]+:/")
-# 錠: 要件の文を変えずに、その要件のテストの錠を人の決定で掛け直す(TL-9)。
+# 錠: 要件の文を変えずに、その要件のテストの錠を、変えてよい決定の記録で掛け直す(TL-9)。
 DIFF_RE = re.compile(r"^-\s*(追加|変更|削除|錠)\s*[::]\s*(%s)(.*)$" % ID_PAT)
 OLD_NEW_RE = re.compile(r"旧「(.*?)」\s*→\s*新「(.*)」(?=\s*(?:\(確かめ方|\(文言|$))")
 MUST_RE = re.compile(r"(なければならない|[てで]はならない)[。.]?$")
@@ -185,7 +207,7 @@ def human_grams():
                         e = json.loads(line)
                     except ValueError:
                         continue
-                    t = human_text(e) if isinstance(e, dict) else None
+                    t = human_text(e, typed_only=True) if isinstance(e, dict) else None
                     if t and 10 <= len(_norm(t)) <= 1500:
                         t = _norm(t)
                         grams.update(t[i:i + GRAM] for i in range(len(t) - GRAM + 1))
@@ -216,14 +238,22 @@ def fingerprint(text):
     return hashlib.sha256(_norm(text).encode("utf-8")).hexdigest()[:16]
 
 
-def human_text(entry):
+def human_text(entry, typed_only=False):
     """会話の記録の1行が人の打ち込んだ発言なら、貼り付けを除いた本文を返す。そうでなければ None。
 
     人の発言は2つの形で残る: ふつうの発言(type: user、本文が文字列、origin.kind: human)と、
     作業中に送った発言(type: attachment、attachment.type: queued_command、attachment.origin.kind: human)。
     サブエージェントの報告(origin.kind: peer)や通知(task-notification)は人の発言ではない。
+    選択肢の問いで人が選んだ答え(type: user の toolUseResult に questions と answers があるもの。道具が人の操作として
+    書き、AI は書けない)も人の答えとして、「問いの文: 選んだ答え」を改行でつないだ文を返す(OM-12)。
     """
     content = None
+    tur = entry.get("toolUseResult") if entry.get("type") == "user" else None
+    if isinstance(tur, dict) and isinstance(tur.get("questions"), list) and isinstance(tur.get("answers"), dict):
+        if typed_only:
+            # 問いの文は AI が書いたもの。人の言葉の写し(E28)を見るときは、選んだ答えだけを人の言葉とする
+            return "\n".join(str(a) for a in tur["answers"].values())
+        return "\n".join("%s: %s" % (q, a) for q, a in tur["answers"].items())
     if entry.get("type") == "user":
         origin = entry.get("origin") or {}
         c = (entry.get("message") or {}).get("content")
@@ -262,11 +292,45 @@ def _load_human(session_id, uuid, with_time=False):
             e = json.loads(line)
         except ValueError:
             continue
-        if e.get("uuid") == uuid:
+        if isinstance(e, dict) and e.get("uuid") == uuid:
             text = human_text(e)
             st = "ok" if text is not None else "not-human"
             return (st, text, str(e.get("timestamp") or "")) if with_time else (st, text)
     return ("absent", None, "") if with_time else ("absent", None)
+
+
+def _load_entry(session_id, uuid):
+    """(状態, 会話の記録の1行)。状態は ok / unverifiable(会話の記録が手元に無い) / absent(発言が無い)。"""
+    import json
+    f = find_session(session_id)
+    if not f:
+        return "unverifiable", None
+    for line in f.open(encoding="utf-8"):
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(e, dict) and e.get("uuid") == uuid:
+            return "ok", e
+    return "absent", None
+
+
+def human_parts(entry):
+    """人の言葉を (問いの文, 人の側の文) の組で返す。打った発言は ("", 本文)。選択肢の問いの答えは、問いごとに
+    (問いの文, 選んだ答え)。問いの文は AI が書いたもので、人の側は選んだ答えだけ(OM-13)。人の言葉でなければ []。"""
+    tur = entry.get("toolUseResult") if entry.get("type") == "user" else None
+    if isinstance(tur, dict) and isinstance(tur.get("questions"), list) and isinstance(tur.get("answers"), dict):
+        return [(str(q), str(a)) for q, a in tur["answers"].items()]
+    t = human_text(entry)
+    return [("", t)] if t is not None else []
+
+
+def any_transcripts():
+    """会話の記録の置き場に .jsonl が1つでもあるか。無ければ、会話の記録がまったく無い場所(CI など)とみなす(OM-13)。"""
+    for d in transcript_dirs():
+        if d.is_dir() and next(d.glob("*/*.jsonl"), None) is not None:
+            return True
+    return False
 
 
 def verify_evidence(rec):
@@ -299,13 +363,36 @@ def verify_evidence(rec):
 def _set_front(text, key, val):
     if "\n%s:" % key in text:
         return re.sub(r"(?m)^%s:.*$" % re.escape(key), "%s: %s" % (key, val), text, count=1)
-    return text.replace("\ndecided-by:", "\n%s: %s\ndecided-by:" % (key, val), 1)
+    if "\ndecided-by:" in text:
+        return text.replace("\ndecided-by:", "\n%s: %s\ndecided-by:" % (key, val), 1)
+    i = text.index("\n---", 3)
+    return text[:i] + "\n%s: %s" % (key, val) + text[i:]
 
 
 APPROVAL_TEXT_RE = re.compile(r"承認の文\s*`?(\S+?\.md)`?\s*[、,]\s*指紋\s*`?([0-9a-fA-F]{16}|[0-9a-fA-F]{8})(?![0-9a-fA-F])`?")
 # 承認を示す語(小文字にした文で照合する)。英字の語は前後に英字が続かないとき、「はい」は区切りに挟まれたときだけ(OM-13)
 APPROVAL_RE = re.compile(r"承認|了承|(?<![a-z])(?:ok|okay|approve|approved)(?![a-z])|(?:^|[\s、。,.!！?？])はい(?=$|[\s、。,.!！?？])")
+# 確認・承認を打ち消す言い方(「承認しない」「OKではない」「いいえ」など)。人の側の文にあれば、確認・承認に数えない(OM-13)
+NEG_RE = re.compile(r"(?:承認|了承|(?<![a-z])ok|okay|approve|approved)\s*(?:は|を)?\s*(?:しない|しません|せず|できない|できません|"
+                    r"ではない|でない|じゃない|ではありません|不可|まだ|以外)|(?<![a-z])(?:not|no|don't|do not|never)\s+(?:ok|okay|approve)"
+                    r"|いいえ|差し戻|却下|拒否|見送|保留")
 FP_LEN = 16
+
+
+# 選択肢の答えは AI が書いた選択肢の名前なので、確認・承認に数えるのは、指紋と承認を示す語だけの答えに限る(OM-13)。
+# 「承認は保留する」「OK以外」のような、語を含むが断る名前の選択肢を、確認に数えないため
+CHOICE_OK_RE = re.compile(r"^(?:を|の)?(?:承認|承認する|承認します|了承|了承する|了承します|ok|okay|はい|approve|approved)$")
+
+
+def consents(side, choice=False):
+    """人の側の文(打った文か選んだ答え)が、確認・承認を示す語を含み、打ち消していないか(OM-13)。
+    選択肢の答え(choice)は、指紋・記号・空白を除くと承認を示す語だけであること。"""
+    side = side.lower()
+    if choice:
+        rest = re.sub(r"(?<![0-9a-f])[0-9a-f]{16}(?![0-9a-f])", "", side)
+        rest = re.sub(r"[\s、。,.!！()()「」:：]+", "", rest)
+        return bool(CHOICE_OK_RE.match(rest))
+    return bool(APPROVAL_RE.search(side)) and not NEG_RE.search(side)
 LEGACY_FP_BEFORE = "2026-10-12T00:00:00"  # これより前の人の発言にある独立した8文字の指紋は、前の承認として有効(OM-13)
 FENCE_RE = re.compile(r"^````markdown\n(.*?)\n````$", re.S | re.M)
 
@@ -322,6 +409,26 @@ def bundle_digest(path):
 def bundle_fingerprint(path):
     """承認の文・束の指紋: SHA-256 の先頭16文字(OM-13)。前の8文字の指紋は、先頭の8文字と比べて照合する。"""
     return bundle_digest(path)[:FP_LEN]
+
+
+def record_fingerprint(path):
+    """確認した決定記録の指紋: ファイル全体(フロントマターを含む)の SHA-256 の先頭16文字(OM-13)。
+    確認のあとで decided-by や touches を変えても分かるように、フロントマターも含める。"""
+    import hashlib
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:FP_LEN]
+
+
+def confirm_fingerprint(path):
+    """確認の記録の指紋: approval-evidence・approval-hash の行を除いたファイル全体(confirms と本文の指紋の行を含む)の
+    SHA-256 の先頭16文字(OM-13)。囲みの外や confirms に、確認のあとで記録を足しても分かるように、全体で取る。"""
+    import hashlib
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    end = text.find("\n---", 4) if text.startswith("---\n") else -1
+    if end >= 0:  # 除くのはフロントマターの中の行だけ(split_front と同じ読み方。キーの前後の空白も同じに扱う)
+        head = "".join(l for l in text[:end + 1].splitlines(keepends=True)
+                       if l.split(":", 1)[0].strip() not in ("approval-evidence", "approval-hash") or l.startswith((" ", "#")))
+        text = head + text[end + 1:]
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:FP_LEN]
 
 
 _FP_HISTORY = {}
@@ -655,6 +762,111 @@ def evidence(root, specs, rec_path, reqs, tmpl):
     return ["| 要件 | 結果 | 証拠 |", "|---|---|---|"] + rows + ["", "確かめた: %d / %d" % (checked, len(rows))]
 
 
+def overlap(root, rids, tmpl):
+    """TL-18: 要件ごとに、件名が「テスト:」で [ID] を含むコミットの親に今のテストを重ねた版で、要件のテストを走らせる
+    (版とテストの組を並べて走らせる)。比べるのは、その要件のテストのうち通るものがある版だけ(全テストが落ちる版は、
+    機能がまだ無い版で、見分ける手がかりにならない)。落ちた版が同じテストを組にまとめ、組 X の落ちた版を組 Y が
+    すべて落ちているなら「X ⊆ Y」を、2つ以上のテストを持つ組は組そのものを、重なりの候補にする。どの版でも落ちない
+    テストも候補。全テストが落ちる版でだけ落ちるテストは「見分けられない」、確かめられない版のあるテストは「比べない」。"""
+    import os
+    import shutil
+    import subprocess
+    import tempfile
+    from concurrent.futures import ThreadPoolExecutor
+    tests = find_tests(root)
+    units = test_units(root, tests)
+    log = git_out(root, "log", "--reverse", "--format=%H%x09%s") or ""
+    prefix = (git_out(root, "rev-parse", "--show-prefix") or "").strip()
+    out = []
+    for rid in rids:
+        mine = sorted(k for k, (ids, _) in units.items() if rid in ids)
+        commits = [l.split("\t", 1)[0] for l in log.splitlines()
+                   if "\t" in l and l.split("\t", 1)[1].startswith("実装:") and "[%s]" % rid in l.split("\t", 1)[1]]
+        out.append("%s: テスト %d 件、版 %d(件名に [%s] を含む「実装:」のコミットを、今のコードから1つずつ打ち消した版)"
+                   % (rid, len(mine), len(commits), rid))
+        if not mine or not commits:
+            out.append("比べられない(%s)" % ("テストが無い" if not mine else "「実装:」のコミットが無い"))
+            continue
+        # 版ごとに今の HEAD を一時の worktree に出し、その実装のコミットだけを打ち消して、今のテストを重ねる
+        where, tmps, broken = {}, [], set()
+        for c in commits:
+            v = "−" + c[:7]
+            tmp = tempfile.mkdtemp(prefix="decidespec-overlap-")
+            wt = Path(tmp) / "wt"
+            add = subprocess.run(["git", "-C", str(root), "worktree", "add", "--detach", "-q", str(wt), "HEAD"],
+                                 capture_output=True, text=True)
+            if add.returncode != 0:
+                broken.add(v)
+                shutil.rmtree(tmp, ignore_errors=True)
+                continue
+            tmps.append((tmp, wt))
+            rv = subprocess.run(["git", "-C", str(wt), "revert", "--no-commit", c], capture_output=True, text=True)
+            if rv.returncode != 0:
+                broken.add(v)  # 打ち消しが衝突した: その版は作れない
+                continue
+            here = wt / prefix if prefix else wt
+            _overlay_tests(root, here, tests)
+            where[v] = here
+        if broken:
+            out.append("比べない版(打ち消しが衝突して作れない): %s" % ", ".join(sorted(broken)))
+        try:
+            jobs = [(v, k) for v in where for k in mine]
+            with ThreadPoolExecutor(max_workers=os.cpu_count() or 2) as ex:
+                results = dict(zip(jobs, ex.map(lambda j: _run_unit(j[1], where[j[0]], tmpl), jobs)))
+        finally:
+            for tmp, wt in tmps:
+                subprocess.run(["git", "-C", str(root), "worktree", "remove", "--force", str(wt)], capture_output=True)
+                shutil.rmtree(tmp, ignore_errors=True)
+            subprocess.run(["git", "-C", str(root), "worktree", "prune"], capture_output=True)
+        versions = ["−" + c[:7] for c in commits]
+        fails = {k: set() for k in mine}
+        unsure = {k: set() for k in mine}
+        passed = {v: 0 for v in versions}
+        for (v, k), r in results.items():
+            if r is None or (not r[0] and r[3] != "assert"):
+                unsure[k].add(v)
+            elif not r[0]:
+                fails[k].add(v)
+            else:
+                passed[v] += 1
+        usable = {v for v in versions if passed[v]}  # 通るテストがある版だけを比べる
+        skipped = sorted(set(versions) - usable - broken)
+        if skipped:
+            out.append("比べない版(要件のテストがどれも通らない。機能がまだ無い版): %s" % ", ".join(skipped))
+        if not usable:
+            # 比べる版が無いのに「どの版でも落ちない」と言うと、重なりでないものを候補に出してしまう
+            out.append("比べられない(比べられる版が1つも無い。候補は出さない)")
+            continue
+        for k in mine:
+            out.append("%s: 落ちた版 %s / 確かめられない版 %s" % (k, ", ".join(sorted(fails[k])) or "なし",
+                                                        ", ".join(sorted(unsure[k])) or "なし"))
+        groups = {}
+        for k in mine:
+            if unsure[k] & usable:
+                # その版で、ほかのテストが捕まえない不具合を捕まえていたかもしれない。外して漏れを作らないよう候補にしない
+                out.append("比べない: %s は確かめられない版(%s)があるので、重なりの候補にしない"
+                           % (k, ", ".join(sorted(unsure[k] & usable))))
+                continue
+            f = frozenset(fails[k] & usable)
+            if fails[k] and not f:
+                out.append("見分けられない: %s は、要件のテストがどれも通らない版でだけ落ちる(候補にしない)" % k)
+                continue
+            groups.setdefault(f, []).append(k)
+        for f, ks in sorted(groups.items(), key=lambda x: (sorted(x[0]), x[1])):
+            if not f:
+                for k in ks:
+                    out.append("重なりの候補: %s はどの版でも落ちない" % k)
+                continue
+            if len(ks) > 1:
+                out.append("重なりの候補(同じ版 %s で落ちる組): %s" % (", ".join(sorted(f)), ", ".join(ks)))
+            for g, ys in groups.items():
+                if g and f < g:
+                    out.append("重なりの候補: 組 [%s] ⊆ 組 [%s](前者が落ちる版では後者も落ちる)"
+                               % (", ".join(ks), ", ".join(ys)))
+    out.append("候補は機械が外さない。外すかは整理(TL-14)で、新しい文脈の検証役の照合を経て決める")
+    return out
+
+
 def first_quote(text):
     """最初の「」の対の中身(入れ子の「」を数える)。差分の行の後ろにある別の「」(範囲外の文を消す注など)を
     要件の文に含めない(CF-17 の E16)。閉じていなければ None。"""
@@ -672,10 +884,25 @@ def first_quote(text):
     return None
 
 
-def is_must(text):
-    """必須の強さか: 文末が しなければならない / してはならない、または文末に強さの5語が無く「必ず」(「必ずしも」は除く)を含む。"""
+def strength_tail(text):
+    """強さを読む文末: 文末の理由の括弧(半角・全角、中に括弧を持たないもの)と後ろの「。」を、無くなるまで除く(DC-13)。"""
     t = text.strip()
-    return bool(MUST_RE.search(t)) or (bool(re.search(r"必ず(?!しも)", t)) and not STRENGTH_RE.search(t))
+    while True:
+        m = re.search(r"[(（][^()（）]*[)）][。.]?$", t)
+        if not m:
+            return t
+        t = t[:m.start()].rstrip()
+
+
+def is_must(text):
+    """必須の強さか: 文末(理由の括弧を除く)が しなければならない / してはならない、または文末に強さの5語が無く
+    「必ず」(「必ずしも」は除く)を含む。"""
+    t = text.strip()
+    tail = strength_tail(t)
+    # 除いた括弧の中に必須の語があれば、理由でなく必須の中身として読む(括弧に入れて E16 を黙らせない)
+    if re.search(r"なければならない|[てで]はならない|必ず(?!しも)", t[len(tail):]):
+        return True
+    return bool(MUST_RE.search(tail)) or (bool(re.search(r"必ず(?!しも)", t)) and not STRENGTH_RE.search(tail))
 
 
 def _as_val(xs):
@@ -686,6 +913,10 @@ def approve(rec_path, records, phrases):
     """語句ごとに、それを含む人の発言を会話の記録から探し、approval-evidence と approval-hash を書き込む。語句は記録に残さない。"""
     import json
     rec = next((r for p, r in records.items() if p.resolve() == rec_path.resolve()), None)
+    if rec is None and rec_path.is_file():
+        fm0, b0 = split_front(rec_path.read_text(encoding="utf-8"))
+        if fm0 and fm0.get("confirms"):
+            rec = Record(rec_path, fm0, b0 or "")
     if rec is None:
         return "記録が見つからない: %s" % rec_path
     if not phrases:
@@ -1047,8 +1278,9 @@ def load_locks(path):
 
 
 def lock_history_errors(root, specs, lock_path, records):
-    """E20: 錠の記録の書き換え・削除は、人の決定(by)を伴うときだけ。git の履歴で確かめる。"""
+    """E20: 錠の記録の書き換え・削除は、変えてよい決定の記録(by)を伴うときだけ(TL-6)。git の履歴で確かめる。"""
     import json
+    need_p, _ = principles_gate(specs)
     import subprocess
     rel = lock_path.relative_to(root).as_posix()
     git = ["git", "-C", str(root)]
@@ -1075,7 +1307,7 @@ def lock_history_errors(root, specs, lock_path, records):
             ok = False
             if by:
                 rec = next((x for p, x in records.items() if p.relative_to(root).as_posix() == by), None)
-                ok = bool(rec) and rec.decided_by == "人" and rec.status == "accepted" \
+                ok = bool(rec) and rec.may_change_locked(need_p) \
                     and set(entry.get("ids", [])) <= set(rec.touches)
             if new is not None and new.get("legacy") == entry.get("sha") and \
                     _relock_ok(git, h, key, entry.get("sha"), new.get("sha")):
@@ -1086,19 +1318,501 @@ def lock_history_errors(root, specs, lock_path, records):
             if new is None and key.split("::")[0] in ignored:
                 continue  # TL-10: git が無視するファイルの錠は、そのリポのテストでない
             if new is None:
-                # 外すときは、そのコミットで _decisions/ に人の決定が足されていること
-                files = subprocess.run(git + ["show", "--name-only", "--format=", h], capture_output=True, text=True).stdout.split()
+                # 外すときは、そのコミットで _decisions/ に変えてよい決定の記録が足されていること
+                files = subprocess.run(git + ["show", "--name-only", "--relative", "--format=", h],  # リポからの相対(git の最上位でなくても)
+                                       capture_output=True, text=True).stdout.split()
                 ok = any(f.startswith(specs.relative_to(root).as_posix() + "/" + DECS + "/") and
                          next((x for p, x in records.items() if p.relative_to(root).as_posix() == f
-                               and x.decided_by == "人" and set(entry.get("ids", [])) <= set(x.touches)), None)
+                               and x.may_change_locked(need_p) and set(entry.get("ids", [])) <= set(x.touches)), None)
                          for f in files)
             if not ok:
-                out.append("E20 %s(コミット %s): 錠 %s を人の決定なしに書き換え・外した" % (rel, h[:7], key))
+                out.append("E20 %s(コミット %s): 錠 %s を、変えてよい決定の記録(人の決定か、錨との照合のある AI 自己採択)なしに書き換え・外した"
+                           % (rel, h[:7], key))
         prev = cur
     return out
 
 
 _RELOCK = {}
+
+
+def _principles_state(text):
+    """principles.md の1版から (gated のキーがあるか, gated の ID の集合, P 番号ごとの行の組)。
+    同じ P 番号の行が重なれば、その行をすべて組に入れる(差し込みを見逃さない)。無い版は空。"""
+    fm, body = split_front(text or "")
+    fm = fm or {}
+    rows = {}
+    for line in (body or "").splitlines():
+        m = REQ_ROW_RE.match(line)
+        if m and PRINCIPLE_RE.match(m.group(1)):
+            rows.setdefault(m.group(1), []).append(line.strip())
+    return "gated" in fm, set(as_list(fm.get("gated", ""))), {k: tuple(v) for k, v in rows.items()}
+
+
+def _principles_changed(old, new):
+    return (old[1] ^ new[1]) | {k for k in set(old[2]) | set(new[2]) if old[2].get(k) != new[2].get(k)} | (
+        {"gated"} if old[0] and not new[0] else set())
+
+
+def _human_touches(texts, seen=(), seen_evidence=()):
+    """決定記録の (パス, 本文) から、採択済みの人の決定の touches の和。id が seen(それまでの履歴で
+    _decisions/ にあった id)に入る記録は、古い決定の使い回し(外に出して戻す・消して書き直す)なので数えない。
+    approval-evidence が seen_evidence(それまでの履歴の _decisions/ に現れた承認の場所)に入る記録も、
+    本物の人の決定を id だけ変えて写したものなので数えない。"""
+    covered = set()
+    for path, text in texts:
+        fm, body = split_front(text or "")
+        if not fm or fm.get("id", "") in seen or set(as_list(fm.get("approval-evidence", ""))) & set(seen_evidence):
+            continue
+        x = Record(path, fm, body or "")
+        if x.legacy:
+            continue  # 旧い形(decided-by の無い記録)は過去を読むためだけで、新しく入っても人の決定に数えない
+        if x.status == "accepted" and (x.decided_by == "人" or (x.decided_by == "AI" and x.anchor_ok(True))):  # OM-19: 錨との照合のある AI 自己採択も
+            covered |= set(x.touches)
+    return covered
+
+
+def _entered(name_status, decs):
+    """git diff --name-status の出力から、_decisions/ に入った記録のパス。足したものと、_decisions/ の外から
+    移したもの(採択で _proposals/ から移す)だけ。_decisions/ の中での改名は、古い記録の使い回しなので数えない。"""
+    out = []
+    for line in name_status.splitlines():
+        parts = line.split("\t")
+        new = parts[-1]
+        if not new.startswith(decs):
+            continue
+        if parts[0].startswith("R") and parts[1].startswith(decs):
+            continue
+        out.append(new)
+    return out
+
+
+def _req_rows(text):
+    """spec.md の要件の表(生成区画を除く)の {ID: (要件の文, 確かめ方)}。決定の列は比べない(採択でリンクが増えるため)。"""
+    own = H_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text or "")
+    out = {}
+    for line in own.splitlines():
+        m = REQ_ROW_RE.match(line)
+        if m:
+            c = cells(line)
+            if len(c) == 4:
+                out[m.group(1)] = (c[1], c[2])
+    return out
+
+
+def _gated_rows_errors(root, specs, commits, base, state, seen, added_decisions, git):
+    """E31(OM-21): gated が初めて置かれたコミットより後に、そのときまでに一度でも gated に載った要件の spec.md の行
+    (要件の文か確かめ方)を変えたコミットは、そのコミットで _decisions/ に入った採択済みの決定(人の決定か、錨との照合の
+    ある AI 自己採択)で、その ID を touches に持つものを伴うこと。行は、そのコミットで変わったすべての spec.md を合わせて
+    ID ごとに比べる(ケイパビリティの改名や行の移動は変更に数えない)。後で gated に足した要件は、足したコミットより後だけを
+    見る。まだコミットしていない変更も HEAD と比べて見る。"""
+    srel = specs.relative_to(root).as_posix()
+    since = {}  # ID -> 初めて gated に載ったコミット
+    for c in commits:
+        for rid in state(c[0])[1]:
+            since.setdefault(rid, c[0])
+    p = specs / "principles.md"
+    now_gated = _principles_state(p.read_text(encoding="utf-8"))[1] if p.is_file() else set()
+    if not since and not now_gated:
+        return []
+    anc = {}
+
+    def gated_at(par, h):
+        """par の時点で載っていた(載ったコミットが par かその祖先)要件と、h で載っている要件。"""
+        out = set(state(h)[1])
+        for rid, at in since.items():
+            if (at, par) not in anc:
+                anc[(at, par)] = at == par or git("merge-base", "--is-ancestor", at, par).returncode == 0
+            if anc[(at, par)]:
+                out.add(rid)
+        return out
+
+    def rows_at(rev, files):
+        out = {}
+        for f in files:
+            r = git("show", "%s:./%s" % (rev, f))
+            out.update(_req_rows(r.stdout if r.returncode == 0 else ""))
+        return out
+
+    # spec.md を変えたコミットだけに先に絞る(すべてのコミットに diff を呼ばない)
+    lg = git("log", "-m", "--no-renames", "--format=@%H", "--name-only", "--relative", "--",
+             ":(glob)%s/*/spec.md" % srel)
+    touched, cur = {}, None
+    for line in (lg.stdout if lg.returncode == 0 else "").splitlines():
+        if line.startswith("@"):
+            cur = line[1:]
+        elif line.strip() and cur:
+            touched.setdefault(cur, set()).add(line.strip())
+    out = []
+    for c in commits:
+        h, parents = c[0], c[1:]
+        if h == base or not parents or h not in touched or git("merge-base", "--is-ancestor", base, h).returncode != 0:
+            continue
+        changed = None
+        for par in parents:  # マージは、どの親とも違う変更だけを、その場の変更とみなす
+            files = [f for f in git("diff", "--name-only", "--no-renames", "--relative", par, h, "--", srel).stdout.split()
+                     if f.endswith("/spec.md")]
+            a, b = rows_at(par, files), rows_at(h, files)
+            ch = {rid for rid in gated_at(par, h) if a.get(rid) != b.get(rid)}
+            changed = ch if changed is None else changed & ch
+        if not changed:
+            continue
+        covered = set()
+        for par in parents:
+            covered |= _human_touches(added_decisions(par, h), *seen(par))
+        missing = sorted(changed - covered)
+        if missing:
+            out.append("E31 %s/(コミット %s): gated の要件 %s の行(要件の文か確かめ方)を、その ID に触る決定の記録なしに"
+                       "変えた(OM-21)" % (srel, h[:7], ", ".join(missing)))
+    head = git("rev-parse", "--verify", "-q", "HEAD")
+    if head.returncode == 0 and git("merge-base", "--is-ancestor", base, "HEAD").returncode == 0:
+        st = git("diff", "--name-only", "--no-renames", "--relative", "HEAD", "--", srel).stdout.split()
+        st += git("ls-files", "--others", "--exclude-standard", "--", srel).stdout.split()
+        files = sorted({f for f in st if f.endswith("/spec.md")})
+        if files:
+            a = rows_at("HEAD", files)
+            b = {}
+            for f in files:
+                if (root / f).is_file():
+                    b.update(_req_rows((root / f).read_text(encoding="utf-8")))
+            changed = {rid for rid in gated_at("HEAD", "HEAD") | now_gated if a.get(rid) != b.get(rid)}
+            if changed:
+                decs = srel + "/" + DECS + "/"
+                new = _entered(git("diff", "--name-status", "--diff-filter=AR", "-M", "--relative", "HEAD").stdout, decs)
+                new += git("ls-files", "--others", "--exclude-standard", "--", decs).stdout.split()
+                texts = [(root / q, (root / q).read_text(encoding="utf-8")) for q in new if (root / q).is_file()]
+                missing = sorted(changed - _human_touches(texts, *seen("HEAD")))
+                if missing:
+                    out.append("E31 %s/(まだコミットしていない変更): gated の要件 %s の行を、その ID に触る決定の記録なしに"
+                               "変えている(OM-21)" % (srel, ", ".join(missing)))
+    return out
+
+
+SEALED_KEYS = ("status", "decided-by", "touches")
+
+
+def _sealed_keys(path, text):
+    """決着した記録の、書き換えてはならない値。decided-by と touches は Record の読み方で取る(旧い形の記録は
+    decision-makers と本文の差分の節から読むので、それも含めて比べる。名前の伏せ字は人か AI かを変えないので比べない)。"""
+    fm, body = split_front(text or "")
+    if not fm:
+        return {k: "" for k in SEALED_KEYS}
+    r = Record(path, fm, body or "")
+    return {"status": r.status, "decided-by": r.decided_by, "touches": tuple(sorted(r.touches))}
+
+
+def sealed_errors(root, specs):
+    """E34(OM-22): _decisions/ に入った記録は、入ったあとで status・decided-by(旧い形は decision-makers)・touches を
+    変えたり、記録を消したり、別の名前に移したりしないこと。比べる元は、その記録が _decisions/ に入ったあとで、決着した
+    status(DECIDED_STATUS)を初めて持ったコミットの版(_decisions/ の中での改名はたどる)。proposed のまま入った版は
+    比べる元にしない(採択の作業の途中のコミットに、移しただけの版が紛れ込むことがあるため)。proposed のまま入った記録が
+    枝ごとに別々に決着したときは、どの枝でも最初に決着した版(祖先に決着した版を持たない版)を比べる元にし、そのどれかと
+    違えば E34 にする(マージで片方の決着を書き換えさせないため)。コミットに決着した版が無ければ比べない。今の版は作業ツリー。本文(伏せ字・採択の道具が直すリンク)は比べない。
+    マージのコミットの差分と、まだコミットしていない(ステージ済みを含む)消去・改名も見る。git の履歴が無ければ確かめない。
+    この検査(def sealed_errors を持つ check.py)がリポに初めて入ったコミット(境)より前のコミットで起きた書き換え・
+    消去は、検査の無かったときの履歴なので W26 に留める(境のコミット自身と、その後と、まだコミットしていないものは E34)。
+    (エラーと W26 の行, 入ったときの値) を返す。入ったときの値は、書き換えた・移した記録の {今の名前: 値} で、ブレーキの
+    数え方はこの値で見る(書き換えで確認待ちから外さないため。W26 に留めた書き換えは今の値で見る)。"""
+    import subprocess
+    decs = specs.relative_to(root).as_posix() + "/" + DECS + "/"
+
+    def git(*args):
+        return subprocess.run(["git", "-C", str(root)] + list(args), capture_output=True, text=True,
+                              encoding="utf-8", errors="replace")
+
+    try:
+        # --topo-order: 古い日付の枝のコミットが、記録の入ったコミットより前に並んで比べる元から落ちないように
+        r = git("log", "--reverse", "--topo-order", "--full-history", "-m", "--format=@%H", "--name-status", "-M",
+                "--relative", "--", decs)
+    except OSError:
+        return [], {}
+    if r.returncode != 0:
+        return [], {}
+    first, gone, cur = {}, {}, None  # first: 今のパス -> (最初に入ったコミット, そのときのパス)
+    vers = {}  # 今のパス -> 入ったあとにその記録を変えたコミットの並び [(コミット, そのときのパス)](古い順)
+
+    def take(st, parts, where):
+        if st in ("A", "C", "R"):
+            new = parts[-1]
+            if new.startswith(decs):
+                old = parts[1] if st == "R" else None
+                if old and old.startswith(decs) and old in first:
+                    first.setdefault(new, first[old])  # _decisions/ の中での改名: 元の記録の版と比べる
+                    vers.setdefault(new, list(vers.get(old, [])))
+                else:
+                    first.setdefault(new, (where, new))
+                    vers.setdefault(new, [])
+                if where is not None:
+                    vers[new].append((where, new))
+        if st == "M" and parts[1] in vers and where is not None:
+            vers[parts[1]].append((where, parts[1]))
+        if st in ("D", "R") and parts[1].startswith(decs):
+            gone.setdefault(parts[1], [])
+            if where not in gone[parts[1]]:
+                gone[parts[1]].append(where)
+
+    for line in r.stdout.splitlines():
+        if line.startswith("@"):
+            cur = line[1:]
+            continue
+        parts = line.split("\t")
+        if len(parts) >= 2:
+            take(parts[0][:1], parts, cur)
+    # まだコミットしていない(ステージ済みを含む)消去・改名
+    w = git("diff", "--name-status", "-M", "--relative", "HEAD", "--", decs)
+    for line in (w.stdout if w.returncode == 0 else "").splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 2:
+            take(parts[0][:1], parts, None)
+    for path in git("ls-files", "--deleted", "--", decs).stdout.split():
+        gone.setdefault(path, [])
+        if None not in gone[path]:
+            gone[path].append(None)
+
+    # 境: 検査を持つ check.py(名前が check.py で def sealed_errors を含む)が、親のどれにも無い状態から入ったコミット
+    # すべて(マージで入ってきたものは数えない)。境より前とは、そのすべての真の祖先であること(枝の上に別の境を作る、
+    # 親の順を入れ替えたマージ、古い日付のコミットでは動かない。枝ごとに別々に入れたリポでは、どちらにも前のものだけ)。
+    # コミットに無く、追跡しているファイル(ステージ済みを含む)にだけあれば、次のコミットが境で、コミット済みの履歴は
+    # すべて境より前。追跡していないファイルは数えない。どこにも無いリポ(検査を外から走らせるだけ)は免除しない
+    has_cache = {}
+
+    def has_check(c):
+        if c not in has_cache:
+            r2 = git("grep", "-l", "-F", "def sealed_errors", c, "--", ":(glob)**/check.py")
+            has_cache[c] = r2.returncode == 0 and bool(r2.stdout.strip())
+        return has_cache[c]
+
+    lb = git("log", "--full-history", "-m", "--format=%H", "-S", "def sealed_errors", "--", ":(glob)**/check.py")
+    mins = []
+    for c in sorted(set(lb.stdout.split()) if lb.returncode == 0 else set()):
+        pr = git("rev-list", "--parents", "-n", "1", c).stdout.split()[1:]
+        if has_check(c) and not any(has_check(q) for q in pr):
+            mins.append(c)
+    upcoming = False
+    if not mins:
+        for q in git("ls-files", "--cached", "--", ":(glob)**/check.py").stdout.split():
+            try:
+                if "def sealed_errors" in (root / q).read_text(encoding="utf-8", errors="replace"):
+                    upcoming = True
+                    break
+            except OSError:
+                continue
+    rel_cache = {}
+
+    def anc(x, y):
+        if (x, y) not in rel_cache:
+            rel_cache[(x, y)] = x == y or git("merge-base", "--is-ancestor", x, y).returncode == 0
+        return rel_cache[(x, y)]
+
+    def pre_bound(c):
+        """コミット c が境より前か: 境のすべての真の祖先。境が次のコミットなら、コミット済みはすべて前。境が無ければ前は無い。"""
+        if c is None:
+            return False
+        if not mins:
+            return upcoming
+        return all(c != m and anc(c, m) for m in mins)
+
+    def post_bound(c):
+        """コミット c が境の後か: 境のどれかが c の祖先(c 自身を含む)。"""
+        return c is not None and any(anc(m, c) for m in mins)
+
+    def at_bounds(paths):
+        """境の各コミットとその親(境より前の版)での記録の版(paths のどれかの名前で)。無いところは None。
+        境のコミット自身での書き換えを境より前に数えないため、親の版も見る。"""
+        vals = []
+        points = []
+        for m in mins:
+            points += [m] + git("rev-list", "--parents", "-n", "1", m).stdout.split()[1:]
+        for m in points:
+            got = None
+            for q in paths:
+                r3 = git("show", "%s:./%s" % (m, q))
+                if r3.returncode == 0:
+                    got = r3.stdout
+                    break
+            vals.append(got)
+        return vals
+
+    out, orig = [], {}
+    for path, (h, at) in sorted(first.items()):
+        f = root / path
+        if not f.is_file() or h is None:
+            continue
+        b = _sealed_keys(f, f.read_text(encoding="utf-8"))
+        settled_vers, seen = [], set()  # 決着した版 [(コミット, 値)]
+        for c, cp in vers.get(path, [(h, at)]):
+            if c in seen:
+                continue
+            seen.add(c)
+            old = git("show", "%s:./%s" % (c, cp))
+            if old.returncode != 0:
+                continue
+            keys = _sealed_keys(f, old.stdout)
+            if keys["status"] in DECIDED_STATUS:
+                # 入ったときに決着していた版でも打ち切らない。同じ名前の記録をほかの枝で別に足したときも、その枝で決着した
+                # 版を比べる元に入れる(同じ線の後の版は、祖先に決着した版を持つので下で比べる元から外れる)
+                settled_vers.append((c, keys))
+        # 比べる元: どの枝でも最初に決着した版(ほかの決着した版を祖先に持たない版)
+        bases = [(c, keys) for c, keys in settled_vers
+                 if not any(d != c and git("merge-base", "--is-ancestor", d, c).returncode == 0
+                            for d, _ in settled_vers)]
+        if not bases:
+            continue
+        settled, a = next(((c, keys) for c, keys in bases if any(keys[k] != b[k] for k in SEALED_KEYS)), bases[0])
+        diff = [k for k in SEALED_KEYS if a[k] != b[k]]
+        if diff:
+            # W26: 境のどの時点でも、すでに今の値になっていて、境の後のどの版も、HEAD の版も今の値と同じとき。
+            # 境が次のコミットなら、HEAD の版が今の値と同じとき(コミット済みの書き換えはすべて境より前)
+            hv = git("show", "HEAD:./%s" % path)
+            ok = hv.returncode == 0 and _sealed_keys(f, hv.stdout) == b and (mins or upcoming)
+            if ok and mins:
+                ok = all(v is not None and _sealed_keys(f, v) == b for v in at_bounds([path, at]))
+                for c, cp in vers.get(path, []):
+                    if not ok or pre_bound(c):
+                        continue
+                    # 境より前でない版(境の後と、境と無関係な枝)は、今の値か、親のどれかの版と同じ値(その版では値を
+                    # 変えていない)であること。境の後の版は親も境の後なので、たどれば今の値でなければならない
+                    old = git("show", "%s:./%s" % (c, cp))
+                    if old.returncode != 0:
+                        continue
+                    kc = _sealed_keys(f, old.stdout)
+                    if kc == b:
+                        continue
+                    same = False
+                    for q in git("rev-list", "--parents", "-n", "1", c).stdout.split()[1:]:
+                        pv = git("show", "%s:./%s" % (q, cp))
+                        if pv.returncode == 0 and _sealed_keys(f, pv.stdout) == kc:
+                            same = True
+                    ok = same and not post_bound(c)
+            if ok:
+                out.append("W26 %s: _decisions/ に入ったあとで %s を変えたが、E34 の検査がリポに入る前の履歴なので"
+                           "警告に留める(OM-22)" % (path, "・".join(diff)))
+                if at != path:
+                    orig[Path(path).name] = b
+                continue
+        if diff or at != path:
+            orig[Path(path).name] = a
+        if diff:
+            out.append("E34 %s: _decisions/ に入ったあとで %s を変えた(%sコミット %s の版と違う。決着した記録は書き換えない。"
+                       "OM-22)" % (path, "・".join(diff), "入った" if settled == h else "決着した", settled[:7]))
+    for path, hs in sorted(gone.items()):
+        if (root / path).exists():
+            continue
+        # W26: 消したコミットがすべて境より前で、境のどの時点にも記録が無いとき
+        if all(pre_bound(h) for h in hs) and not any(v is not None for v in at_bounds([path])):
+            out.append("W26 %s: _decisions/ から記録を消したか移した(コミット %s)が、E34 の検査がリポに入る前の履歴なので"
+                       "警告に留める(OM-22)" % (path, ", ".join(h[:7] for h in hs)))
+        else:
+            h = next((h for h in hs if not pre_bound(h)), hs[-1])
+            out.append("E34 %s: _decisions/ から記録を消したか移した(%s。決着した記録は消さない。OM-22)"
+                       % (path, "コミット %s" % h[:7] if h else "まだコミットしていない変更"))
+    return out, orig
+
+
+def principles_history_errors(root, specs, records):
+    """E31(OM-19): principles.md に gated が初めて置かれたコミットより後に、原則の行か gated を変えたコミットは、
+    そのコミットで _decisions/ に入った(足した・移した)採択済みの人の決定を伴い、その touches が変えた ID を
+    すべて含むこと。各コミットは親の版と比べ(マージは、どの親とも違う変更だけ)、記録はそのコミットの版から読む。
+    まだコミットしていない変更(ステージしたものと作業ツリー)も HEAD と比べて見る(pre-commit で止めるため)。"""
+    import subprocess
+    p = specs / "principles.md"
+    rel = p.relative_to(root).as_posix()
+    decs = specs.relative_to(root).as_posix() + "/" + DECS + "/"
+
+    def git(*args):
+        return subprocess.run(["git", "-C", str(root)] + list(args), capture_output=True, text=True)
+
+    try:
+        # パスで絞った git log は履歴を簡略化してマージや枝のコミットを飛ばしうるので、すべてのコミットをたどる。
+        r = git("rev-list", "--reverse", "--topo-order", "--parents", "HEAD")
+    except OSError:
+        return []  # git が無い
+    if r.returncode != 0:
+        return []  # コミットが無い
+    commits = [line.split() for line in r.stdout.splitlines() if line.strip()]
+    query = "".join("%s:./%s\n" % (c[0], rel) for c in commits)
+    b = subprocess.run(["git", "-C", str(root), "cat-file", "--batch-check=%(objectname) %(objecttype)"],
+                       input=query, capture_output=True, text=True)
+    blob = {}
+    for c, line in zip(commits, b.stdout.splitlines()):
+        parts = line.split()
+        blob[c[0]] = parts[0] if len(parts) == 2 and parts[1] == "blob" else None
+    by_blob = {}
+
+    def state(rev):
+        k = blob.get(rev, "?" + rev)
+        if k not in by_blob:
+            if k is None:
+                by_blob[k] = _principles_state("")
+            else:
+                s = git("show", "%s:./%s" % (rev, rel))
+                by_blob[k] = _principles_state(s.stdout if s.returncode == 0 else "")
+        return by_blob[k]
+
+    base = next((c[0] for c in commits if blob.get(c[0]) and state(c[0])[0]), None)
+    if base is None:
+        return []
+    seen_cache = {}
+
+    def seen(rev):
+        """rev とその祖先で、一度でも _decisions/ にあった記録の id と approval-evidence。"""
+        if rev not in seen_cache:
+            lg = git("log", "-p", "--no-renames", "--full-history", "--format=", rev, "--", decs)
+            # フロントマターと同じ読み方(前後の引用符を外す)で取る
+            def grab(key):  # リストの形でも要素に分けて取る
+                return {v for m in re.finditer(r"(?m)^[+-]%s:(.*)$" % re.escape(key), lg.stdout)
+                        for v in as_list(m.group(1).strip().strip('"').strip("'"))}
+            seen_cache[rev] = (grab("id"), grab("approval-evidence"))
+        return seen_cache[rev]
+
+    def added_decisions(parent, rev):
+        """parent から rev までに _decisions/ に足された・移された記録の (パス, rev の版の本文)。"""
+        out = []
+        for path in _entered(git("diff", "--name-status", "--diff-filter=AR", "-M", "--relative", parent, rev).stdout, decs):
+            s = git("show", "%s:./%s" % (rev, path))
+            out.append((root / path, s.stdout if s.returncode == 0 else ""))
+        return out
+
+    out = []
+    out += _gated_rows_errors(root, specs, commits, base, state, seen, added_decisions, git)
+    for c in commits:
+        h, parents = c[0], c[1:]
+        if h == base or not parents or all(blob.get(h) == blob.get(par) for par in parents):
+            continue  # 原則のファイルが、どの親とも同じ
+        if git("merge-base", "--is-ancestor", base, h).returncode != 0:
+            continue
+        cur = state(h)
+        changed = None
+        for par in parents:  # マージは、検査を経た親(起点かその子孫)のどれとも違う変更だけを、その場の変更とみなす
+            ch = _principles_changed(state(par), cur)
+            if par != base and git("merge-base", "--is-ancestor", base, par).returncode != 0:
+                continue  # 起点より前に分かれた枝の親: その枝の変更は検査を経ていない
+            changed = ch if changed is None else changed & ch
+        if changed is None:
+            changed = _principles_changed(state(parents[0]), cur)
+        if not changed:
+            continue
+        covered = set()
+        for par in parents:
+            covered |= _human_touches(added_decisions(par, h), *seen(par))
+        missing = sorted(changed - covered)
+        if missing:
+            out.append("E31 %s(コミット %s): 原則か gated の %s を、その ID に触る人の決定なしに変えた(OM-19)"
+                       % (rel, h[:7], ", ".join(missing)))
+    # まだコミットしていない変更: HEAD の版と作業ツリーを比べ、作業ツリーで _decisions/ に入った記録を数える
+    head = git("rev-parse", "--verify", "-q", "HEAD")
+    if head.returncode == 0 and (base == head.stdout.strip() or
+                                 git("merge-base", "--is-ancestor", base, "HEAD").returncode == 0):
+        cur = _principles_state(p.read_text(encoding="utf-8") if p.is_file() else "")
+        changed = _principles_changed(state("HEAD"), cur)
+        if changed:
+            new = _entered(git("diff", "--name-status", "--diff-filter=AR", "-M", "--relative", "HEAD").stdout, decs)
+            new += git("ls-files", "--others", "--exclude-standard", "--", decs).stdout.split()
+            texts = [(root / q, (root / q).read_text(encoding="utf-8")) for q in new if (root / q).is_file()]
+            missing = sorted(changed - _human_touches(texts, *seen("HEAD")))
+            if missing:
+                out.append("E31 %s(まだコミットしていない変更): 原則か gated の %s を、その ID に触る人の決定なしに"
+                           "変えている(OM-19)" % (rel, ", ".join(missing)))
+    return out
 
 
 def _relock_ok(git, commit, key, legacy, sha):
@@ -1332,6 +2046,240 @@ def arg_value(argv, flag, default):
     return argv[i + 1]
 
 
+PRINCIPLE_RE = re.compile(r"^P\d+$")
+TRAIL_AT = 7  # 軌跡の要約を出す件数(OM-14)
+BRAKE_AT = 3  # 人の確認待ちがこの件数あるあいだは、原則と gated に触る AI 自己採択を止める(OM-7)
+
+
+def _added_order(path):
+    """記録がその場所に入った順の鍵: git に入った記録は、そのパスに最初に現れたコミットの深さ。入っていない記録は最後。"""
+    import subprocess
+    r = subprocess.run(["git", "log", "--reverse", "--format=%H", "--", path.name], cwd=path.parent,
+                       capture_output=True, text=True)
+    hs = r.stdout.split() if r.returncode == 0 else []
+    if not hs:
+        return (1, 0, path.name)
+    rr = subprocess.run(["git", "rev-list", "--count", hs[0]], cwd=path.parent, capture_output=True, text=True)
+    return (0, int(rr.stdout.strip() or 0), path.name)
+
+
+def pending(root, specs, records, gated, need_p, since=None, done=frozenset(), orig=None):
+    """人の確認待ち(OM-7): 錨との照合のある AI 自己採択で、原則か gated の要件(一度でも載ったもの)に触り、
+    照合できた確認の記録(done)に載っていないもの。gated に載る前に入った記録(W24)の、その要件への触れは数えない。
+    入った順に並べる。"""
+    since = since or {}
+    orig = orig or {}  # 入ったあとで書き換えた・移した記録は、入ったときの値で数える(OM-22)
+
+    def counts(r):
+        for x in (orig[r.path.name]["touches"] if r.path.name in orig else r.touches):
+            if PRINCIPLE_RE.match(x):
+                return True
+            if x in gated and not (x in since and added_before(r.path, since[x])):
+                return True
+        return False
+
+    def was(r, k, now):
+        return orig[r.path.name][k] if r.path.name in orig else now
+    out = [r for p, r in records.items() if p.parent.name == DECS and was(r, "status", r.status) == "accepted"
+           and was(r, "decided-by", r.decided_by) == "AI" and r.anchor_ok(need_p) and counts(r) and p.name not in done]
+    return sorted(out, key=lambda r: _added_order(r.path))
+
+
+CONFIRM_LINE_RE = re.compile(r"^\s*-\s*`?(\S+?\.md)`?\s*[、,]\s*指紋\s*`?([0-9a-fA-F]{16})`?\s*$", re.M)
+
+
+def confirm_check(root, specs, records):
+    """OM-13: 確認の記録(specs/_bundles/ の、フロントマターに confirms を持つ記録)を照合する。
+    (エラー, 警告, 照合できた確認の記録に載った決定記録の名前) を返す。
+
+    確認できるのは、confirms の記録がすべて実在し、本文の「- <パス>、指紋 <16文字>」がその記録の今の指紋と合い、
+    指した人の言葉が、確認の記録の指紋(bundle_fingerprint)を独立した語として含み、確認を示す語を人の側(打った文か
+    選んだ答え)に含むときだけ。選択肢の答えでは、指紋は問いの文にあってよい。ほかの記録の承認・確認と同じ発言は使えない。
+    指した会話の記録が無いとき: 会話の記録がまったく無い場所なら W17 で数えず、ほかの会話の記録があれば E33。"""
+    errs, warns, done = [], [], set()
+    bdir = specs / BUNDLES
+    if not bdir.is_dir():
+        return errs, warns, done
+    others = {}
+    for r in records.values():
+        for ev in as_list(r.fm.get("approval-evidence", "")):
+            others.setdefault(ev, set()).add(r.path.name)
+    for b in sorted(bdir.glob("*.md")):
+        fm0, _ = split_front(b.read_text(encoding="utf-8"))
+        for ev in as_list((fm0 or {}).get("approval-evidence", "")) if fm0 and fm0.get("confirms") else []:
+            others.setdefault(ev, set()).add(b.name)
+    by_name = {r.path.name: r for r in records.values() if r.path.parent.name == DECS}
+    have_logs = None
+    for b in sorted(bdir.glob("*.md")):
+        fm, body = split_front(b.read_text(encoding="utf-8"))
+        if not fm or not fm.get("confirms"):
+            continue
+        rel = b.relative_to(root)
+        names = as_list(fm.get("confirms", ""))
+        listed = {Path(x).name: f.lower() for x, f in CONFIRM_LINE_RE.findall(body or "")}
+        bad = ["本文の指紋の行 %s が confirms に無い" % n for n in sorted(set(listed) - {Path(x).name for x in names})]
+        for x in names:
+            r = by_name.get(Path(x).name)
+            if r is None:
+                bad.append("確認した記録 %s が _decisions/ に無い" % x)
+            elif Path(x).name not in listed:
+                bad.append("本文に %s の指紋の行(- <パス>、指紋 <16文字>)が無い" % x)
+            elif listed[Path(x).name] != record_fingerprint(r.path):
+                bad.append("%s が確認のあとで変わった(本文の指紋 %s、今 %s)" % (x, listed[Path(x).name],
+                                                                record_fingerprint(r.path)))
+        rec = Record(b, fm, body or "")
+        st, why = verify_evidence(rec)
+        if st == "missing":
+            errs.append("E33 %s: 確認の記録に approval-evidence か approval-hash が無い" % rel); continue
+        evs = as_list(fm.get("approval-evidence", ""))
+        shared = sorted({n for ev in evs for n in others.get(ev, set())} - {b.name})
+        if shared:
+            errs.append("E33 %s: 確認の言葉が、ほかの記録の承認・確認と同じ発言を指している(%s)" % (rel, ", ".join(shared)))
+            continue
+        if bad:
+            errs.append("E33 %s: %s" % (rel, "。".join(bad))); continue
+        if st == "bad":
+            errs.append("E33 %s: %s" % (rel, why)); continue
+        if st == "unverifiable":
+            if have_logs is None:
+                have_logs = any_transcripts()
+            if have_logs and not why.startswith("承認の場所を伏せ字"):
+                errs.append("E33 %s: %s(ほかの会話の記録はあるので、存在しない会話を指している)" % (rel, why))
+            else:
+                warns.append("W17 %s: %s(確認を照合できず、確認待ちは減らさない)" % (rel, why))
+            continue
+        fpb = confirm_fingerprint(b)
+        ok = False
+        for ev in evs:
+            m = re.match(r"^claude:([^/]+)/(.+)$", ev)
+            if not m:
+                continue
+            s2, e = _load_entry(m.group(1), m.group(2))
+            if s2 != "ok":
+                continue
+            for q, a in human_parts(e):
+                has_fp = re.search(r"(?<![0-9a-z])%s(?![0-9a-z])" % fpb, (q + "\n" + a).lower())
+                if has_fp and consents(a, choice=bool(q)):
+                    ok = True
+        if not ok:
+            errs.append("E33 %s: 確認の言葉が、確認の記録の指紋 %s と、人の側(打った文か選んだ答え)の確認を示す語の両方を"
+                        "含まない" % (rel, fpb))
+            continue
+        done |= {Path(x).name for x in names}
+    return errs, warns, done
+
+
+def trail(specs, records):
+    """OM-14: どの _bundles/ の記録にもファイル名が載っていない、決着した決定記録(取り込みを除く)。
+    束は _proposals/ のパスで記録を指していることがあるので、ファイル名で照合する。数えるのは軌跡の要約
+    (…-trail-N.md)と旧い束(…-bundle-N.md)だけで、事前承認の文(…-approval-N.md など)は要約でない。"""
+    listed = set()
+    bdir = specs / BUNDLES
+    if bdir.is_dir():
+        for b in bdir.glob("*.md"):
+            if not re.search(r"-(?:trail|bundle)-\d+\.md$", b.name):
+                continue
+            listed |= set(re.findall(r"[A-Za-z0-9_.-]+\.md", b.read_text(encoding="utf-8")))
+    left = [r for p, r in records.items() if p.parent.name == DECS and not r.is_import
+            and r.status in ("accepted", "rejected", "withdrawn") and p.name not in listed]
+    left.sort(key=lambda r: (r.fm.get("trigger", "") != "人の発言", r.path.name))
+    need_p, gated = principles_gate(specs)
+    since = gated_since(specs) if need_p else {}
+    done = confirm_check(specs.parent, specs, records)[2]
+    pend = pending(specs.parent, specs, records, gated | set(since), need_p, since, done,
+                   sealed_errors(specs.parent, specs)[1])
+    out = []
+    if pend:
+        out.append("人の確認待ち(%d / %d)%s" % (len(pend), BRAKE_AT, "。ブレーキが掛かっている(原則と gated に触る AI 自己採択を止める)"
+                                                       if len(pend) >= BRAKE_AT else ""))
+        out += ["- %s" % r.path.relative_to(specs.parent).as_posix() for r in pend]
+    out += ["| 記録 | 結果 | 決定者 | きっかけ |", "|---|---|---|---|"]
+    out += ["| %s | %s | %s | %s |" % (r.path.relative_to(specs.parent).as_posix(), r.status, r.decided_by,
+                                       r.fm.get("trigger", "")) for r in left]
+    n = len(left)
+    out.append("要約を出す時(%d / %d)" % (n, TRAIL_AT) if n >= TRAIL_AT else "まだ出さない(%d / %d)" % (n, TRAIL_AT))
+    return out
+
+
+def gated_since(specs):
+    """gated の要件ごとに、principles.md のフロントマターの gated に初めて載ったコミット。
+    git の履歴が無ければ空(さかのぼりを確かめられないので、すべての記録に当てる)。"""
+    import subprocess
+    p = specs / "principles.md"
+    git = ["git", "-C", str(p.parent)]
+    try:
+        r = subprocess.run(git + ["log", "--reverse", "--format=%H", "--", p.name], capture_output=True, text=True)
+    except OSError:
+        return {}
+    if r.returncode != 0:
+        return {}
+    since = {}
+    for h in r.stdout.split():
+        show = subprocess.run(git + ["show", "%s:./%s" % (h, p.name)], capture_output=True, text=True)
+        if show.returncode != 0:
+            continue
+        fm, _ = split_front(show.stdout)
+        for rid in as_list(fm.get("gated", "")):
+            since.setdefault(rid, h)
+    return since
+
+
+def legacy_boundary(specs):
+    """照合の仕組みの境(OM-12): _decisions/ の履歴で、照合した approval-evidence(claude:…)の行が初めて現れたコミット。
+    今の記録から外しても境は動かない。伏せ字の approval-evidence は数えない。無い・git が無ければ None。"""
+    import subprocess
+    d = specs / DECS
+    if not d.is_dir():
+        return None
+    try:
+        r = subprocess.run(["git", "log", "--reverse", "--format=%H", "-G", "^approval-evidence: *claude:", "--", "."],
+                           cwd=d, capture_output=True, text=True)
+    except OSError:
+        return None
+    hs = r.stdout.split() if r.returncode == 0 else []
+    return hs[0] if hs else None
+
+
+def frozen_before(path, commit):
+    """記録のすべての版が commit の真の祖先のコミットで入り、作業ツリーでも変わっていないか(W20)。
+    境のあとで書き換えた・消して同じ名前で入れ直した記録は、前の承認に数えない。"""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "log", "--format=%H", "--", path.name], cwd=path.parent, capture_output=True, text=True)
+        hs = r.stdout.split() if r.returncode == 0 else []
+        if not hs:
+            return False
+        for h in hs:
+            if h == commit or subprocess.run(["git", "merge-base", "--is-ancestor", h, commit], cwd=path.parent,
+                                             capture_output=True).returncode != 0:
+                return False
+        return subprocess.run(["git", "diff", "--quiet", "HEAD", "--", path.name], cwd=path.parent,
+                              capture_output=True).returncode == 0
+    except OSError:
+        return False
+
+
+def added_before(path, commit):
+    """記録が git に入ったコミットが、commit の真の祖先か(W24)。時刻は書き換えられるので、親子の関係で見る。"""
+    import subprocess
+    r = subprocess.run(["git", "log", "--diff-filter=A", "--format=%H", "--", path.name],
+                       cwd=path.parent, capture_output=True, text=True)
+    hs = r.stdout.split() if r.returncode == 0 else []
+    if not hs or hs[-1] == commit:
+        return False
+    return subprocess.run(["git", "merge-base", "--is-ancestor", hs[-1], commit], cwd=path.parent,
+                          capture_output=True).returncode == 0
+
+
+def principles_gate(specs):
+    """(principles.md があるか, 事前承認の要件の集合)。一覧は principles.md のフロントマター gated(OM-13)。"""
+    p = specs / "principles.md"
+    if not p.is_file():
+        return False, set()
+    fm, _ = split_front(p.read_text(encoding="utf-8"))
+    return True, set(as_list(fm.get("gated", "")))
+
+
 class Record:
     """_proposals/ と _decisions/ の1ファイル。"""
 
@@ -1373,6 +2321,18 @@ class Record:
             row = self.import_rows.get(rid)
             return bool(row) and row[0] in ("人", "未確認")
         return self.decided_by == "人" and rid in self.touches
+
+    def anchor_ok(self, need_p):
+        """OM-6: 「錨との照合」の節が空・雛形のままでなく、principles.md のあるリポでは P 番号を挙げている。"""
+        text = re.sub(r"<!--.*?-->", "", section(self.body, "錨との照合"), flags=re.S).strip()
+        if not text or re.fullmatch(r"\{[^{}]*\}", text):
+            return False
+        return not need_p or bool(re.search(r"(?<![A-Za-z0-9-])P\d+(?!\d)", text))
+
+    def may_change_locked(self, need_p):
+        """TL-5・TL-6: 錠を掛け直し・外してよい決定の記録(人の決定か、錨との照合を持つ AI 自己採択)。"""
+        return self.status == "accepted" and (
+            self.decided_by == "人" or (self.decided_by == "AI" and self.anchor_ok(need_p)))
 
 
 def vendored_errors(root):
@@ -1433,7 +2393,12 @@ def main(argv):
         if not target.is_file():
             print("E0 %s が無い" % target)
             return 1
-        print(bundle_fingerprint(target))
+        # 決定記録はファイル全体の指紋(確認の記録の本文に並べる)、承認の文・確認の記録は本文の指紋
+        if target.parent.name == DECS:
+            print(record_fingerprint(target))
+        else:
+            fm, _ = split_front(target.read_text(encoding="utf-8"))
+            print(confirm_fingerprint(target) if fm and fm.get("confirms") else bundle_fingerprint(target))
         return 0
     if not specs.is_dir():
         print("E0 %s が無い" % specs)
@@ -1561,6 +2526,9 @@ def main(argv):
 
     by_path = {p.resolve(): r for p, r in records.items()}
 
+    need_p, gated = principles_gate(specs)
+    since = gated_since(specs) if need_p else {}
+    ever = gated | set(since)  # 一度でも gated に載った要件(外す提案を含む。OM-7)
     known = set(reqs)
     if (specs / "principles.md").exists():
         known |= {m.group(1) for line in (specs / "principles.md").read_text(encoding="utf-8").splitlines()
@@ -1588,12 +2556,20 @@ def main(argv):
             if row and row[1] != r["text"]:
                 errors.append("E17 %s: %s は取り込んだ文言から変わっている(変えるなら提案で)" % (where, rid))
             continue
-        if not STRENGTH_RE.search(r["text"]):
+        if not STRENGTH_RE.search(strength_tail(r["text"])):
             warns.append("W8 %s: %s の文末が強さの5語でない" % (where, rid))
         vague = [w for w in VAGUE if w in r["text"]]
         if vague:
             warns.append("W9 %s: %s に曖昧語(%s)" % (where, rid, "・".join(vague)))
 
+    ce, cw, done = confirm_check(root, specs, records)
+    errors += ce
+    warns += cw
+    sealed, orig = sealed_errors(root, specs)
+    pend = pending(root, specs, records, ever, need_p, since, done, orig)
+    brake_over = {r.path.name for r in pend[BRAKE_AT:]}  # 確認待ちの4件目から(OM-7)
+    no_logs = bool(brake_over) and not any_transcripts()  # 会話の記録がまったく無い場所では W25(OM-13)
+    boundary = None
     # --- 記録ごとの検査 ---
     known_fps = {fp.lower() for r in records.values() for _, fp in APPROVAL_TEXT_RE.findall(section(r.body, "承認の記録"))}
     for p, rec in records.items():
@@ -1603,6 +2579,13 @@ def main(argv):
         if rec.legacy:
             if in_props:
                 warns.append("W10 %s: 旧形式の提案(decided-by が無い)。書き直すか取り下げる" % rel)
+            elif rec.decided_by == "人" and rec.status == "accepted":
+                if boundary is None:
+                    boundary = legacy_boundary(specs) or ""
+                # 境が無い(git が無い・照合した人の決定がまだ無い・公開の書き出し)リポでは確かめない
+                if boundary and not added_before(rec.path, boundary):
+                    errors.append("E32 %s: decided-by の無い旧い形の記録が、照合の仕組みの境より前に git に入っていない"
+                                  "(人の決定に数えない。decided-by を書いて --approve で照合する。OM-23)" % rel)
             continue
         if not rec.is_import:
             if rec.decided_by not in DECIDED_BY:
@@ -1636,11 +2619,18 @@ def main(argv):
         if human_sentences(strip_code(rec.body.replace(section(rec.body, "差分"), ""))):
             errors.append("E28 %s: 会話の記録の人の発言と一致する文がある(要約に書き直す)" % rel)
         if rec.decided_by == "人" and rec.status == "accepted" and old_approval:
-            warns.append("W20 %s: 照合の仕組みより前の人の承認(伏せ字、照合なし)" % rel)
+            if boundary is None:
+                boundary = legacy_boundary(specs) or ""
+            if boundary and frozen_before(rec.path, boundary):
+                warns.append("W20 %s: 照合の仕組みより前の人の承認(伏せ字、照合なし)" % rel)
+            else:
+                errors.append("E32 %s: 伏せ字の承認が、照合の仕組み(照合した approval-evidence が初めて _decisions/ に"
+                              "入ったコミット)より前に git に入ったままの記録でない(--approve %s --find <語句> で照合する。OM-12)"
+                              % (rel, rel))
         elif rec.decided_by == "人" and rec.status == "accepted" and not rec.legacy:
             state, why = verify_evidence(rec)
             if state == "missing":
-                warns.append("W16 %s: 人の承認が会話の記録で照合されていない(--approve %s --find <語句>、または --rehash %s)"
+                errors.append("E32 %s: 人の承認が会話の記録で照合されていない(--approve %s --find <語句>、または --rehash %s)"
                              % (rel, rel, rel))
             elif state == "unverifiable":
                 warns.append("W17 %s: %s(照合できない)" % (rel, why))
@@ -1674,23 +2664,32 @@ def main(argv):
                 continue
             if redacted:
                 warns.append("W17 %s: 承認の文 %s が承認のあとで伏せ字にされ、指紋を照合できない(OM-17)" % (rel, path))
-            texts = []
+            texts, pairs = [], []
             for ev in as_list(rec.fm.get("approval-evidence", "")):
                 m = re.match(r"^claude:([^/]+)/(.+)$", ev)
                 if m:
                     st, text, when = _load_human(m.group(1), m.group(2), with_time=True)
                     if st == "ok":
                         texts.append((text.lower(), when))
+                        e = _load_entry(m.group(1), m.group(2))[1]
+                        pairs.append(human_parts(e) if e else [("", text)])
             touched = set(x.lower() for x in rec.touches)
 
-            def approves(t, when):
+            def approves(prs, when):
                 # 指紋は前後に英数字の続かない独立した語のときだけ。8文字は、この版より前の発言(前の承認)だけ。
-                # ID は承認を示す語と同じ発言にあるときだけ(OM-13)
-                if re.search(r"(?<![0-9a-z])%s(?![0-9a-z])" % fp, t) and \
-                        (len(fp) == FP_LEN or (when and when < LEGACY_FP_BEFORE)):
-                    return True
-                return bool(touched & set(re.findall(ID_PAT.lower(), t))) and bool(APPROVAL_RE.search(t))
-            if texts and not any(approves(t, w) for t, w in texts):
+                # ID は承認を示す語と同じ発言にあるときだけ。選択肢の答えは問いと答えの組ごとに見て、承認を示す語は
+                # 選んだ答えの側に要る。人の側が打ち消していれば数えない(OM-13)
+                for q, a in prs:
+                    whole = (q + "\n" + a).lower()
+                    if NEG_RE.search(a.lower()):
+                        continue
+                    if re.search(r"(?<![0-9a-z])%s(?![0-9a-z])" % fp, whole) and \
+                            (len(fp) == FP_LEN or (when and when < LEGACY_FP_BEFORE)) and (not q or consents(a, choice=True)):
+                        return True
+                    if touched & set(re.findall(ID_PAT.lower(), whole)) and consents(a, choice=bool(q)):
+                        return True
+                return False
+            if texts and not any(approves(pr, w) for (_, w), pr in zip(texts, pairs)):
                 errors.append("E29 %s: 承認した人の発言が、独立した語としての指紋 %s も、対象の要件 ID と承認を示す語も含まない(OM-13)"
                               % (rel, fp))
             if not texts and rec.status == "accepted" and rec.decided_by == "人":
@@ -1702,12 +2701,29 @@ def main(argv):
                         continue  # 日付などの8桁の数字
                     errors.append("E29 %s: 承認した人の発言の16進の語 %s が、承認の文の指紋 %s と違う(OM-13)" % (rel, other, fp))
         if rec.status == "accepted" and rec.decided_by == "AI":
+            anchored = rec.anchor_ok(need_p)
             for rid in rec.touches:
+                if rid in ever and rid in since and added_before(rec.path, since[rid]):
+                    warns.append("W24 %s: %s が gated に載る前に入った AI 自己採択。さかのぼって止めない(OM-13)" % (rel, rid))
+                    continue
+                if (PRINCIPLE_RE.match(rid) or rid in ever) and anchored:
+                    if rec.path.name in brake_over and no_logs:
+                        warns.append("W25 %s: 人の確認待ちが3件あるあいだの、原則か gated の %s に触る AI 自己採択。会話の記録が"
+                                     "まったく無い場所なので、確認を照合できず警告にとどめる(OM-7・OM-13)" % (rel, rid))
+                    elif rec.path.name in brake_over:
+                        errors.append("E15 %s: 人の確認待ちが3件あるあいだの、原則か gated の %s に触る AI 自己採択(OM-7)" % (rel, rid))
+                    continue
+                if PRINCIPLE_RE.match(rid) or rid in ever:
+                    errors.append("E15 %s: AI 自己採択で、原則か gated の要件 %s に、錨との照合の節なしで触っている"
+                                  "(錨との照合の節を置く。OM-6・OM-7)" % (rel, rid))
+                    continue
+                if anchored:
+                    continue  # OM-6: 錨との照合があれば、守られる要件も AI が変えてよい
                 others = [o for o in records.values() if o is not rec and o.protects(rid)]
                 guards = [o for o in others if earlier_or_same(o, rec)]
                 unknown = [o for o in others if earlier_or_same(o, rec) is None]
                 if guards:
-                    errors.append("E15 %s: AI 自己採択で守られた要件 %s に触っている(%s)"
+                    errors.append("E15 %s: AI 自己採択で守られた要件 %s に触り、「錨との照合」の節が無いか足りない(%s。OM-6)"
                                   % (rel, rid, guards[0].path.relative_to(root)))
                 elif unknown:
                     warns.append("W21 %s: 同じ日・同じコミットの人の決定 %s と前後が分からず、%s が守られていたかを確かめられない"
@@ -1776,9 +2792,10 @@ def main(argv):
         rec = records.get((root / by).resolve()) if by else None
         if by:
             by_rec = next((r for p, r in records.items() if p.resolve() == (root / by).resolve()), None)
-            if not by_rec or by_rec.decided_by != "人" or by_rec.status != "accepted":
-                print("E0 --relock には、採択済みで decided-by: 人 の決定記録を指定する(%s)" % by)
+            if not by_rec or not by_rec.may_change_locked(need_p):
+                print("E0 --relock には、採択済みの人の決定か、「錨との照合」の節を持つ AI 自己採択の記録を指定する(%s。TL-5)" % by)
                 return 1
+        before = {k: dict(v) for k, v in locks.items()}
         moved = migrate_file_locks(root, locks, units, protected_ids)
         # TL-10: git が無視するファイルを指す錠は、そのリポのテストでないので外す。
         for key in ignored_lock_keys(root, locks):
@@ -1803,9 +2820,20 @@ def main(argv):
                 if set(locks[key]["ids"]) <= set(by_rec.touches):
                     del locks[key]
                     changed.append(key + "(外した)")
+        if by:
+            # TL-15: 決定の記録が消していない要件の、錠のあるテストを1つも残さない掛け直しは拒む
+            # 削除と数えるのは、差分に「削除」があり、仕様からも消えている要件だけ(「削除」と書くだけで外さない)
+            deleted = {rid for kind, rid, _ in by_rec.diffs if kind == "削除" and rid not in reqs}
+            lost = sorted(rid for rid in set(by_rec.touches) - deleted
+                          if any(rid in e.get("ids", []) for e in before.values())
+                          and not any(rid in e.get("ids", []) for e in locks.values()))
+            if lost:
+                print("E0 --relock で、%s の錠のあるテストが1つも残らない(テストをまとめるなら移し先を残す。"
+                      "要件を消すなら差分に「削除」を書く。TL-15)。錠は書き換えなかった" % ", ".join(lost))
+                return 1
         import json
         lock_path.write_text(json.dumps(locks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print("錠: 足した %d、人の決定で変えた %d、関数ごとに移した %d、新しい指紋へ掛け直した %d(%s)"
+        print("錠: 足した %d、決定の記録で変えた %d、関数ごとに移した %d、新しい指紋へ掛け直した %d(%s)"
               % (len(added), len(changed), len(moved), len(relocked), lock_path.relative_to(root)))
     skip = ignored_lock_keys(root, locks)
     for key, entry in sorted(locks.items()):
@@ -1815,7 +2843,7 @@ def main(argv):
         if cur and entry.get("sha") == _LEGACY.get(key):
             errors.append("E19 %s: 錠が前の取り方の指紋のまま(中身は同じ。--lock で新しい指紋へ掛け直す。TL-13)" % key)
         elif not cur or cur[1] != entry.get("sha"):
-            errors.append("E19 %s: 守られる要件 %s のテストが変わった(人の承認つきの提案で変え、--lock --relock <決定記録>)"
+            errors.append("E19 %s: 守られる要件 %s のテストが変わった(人の決定か、錨との照合のある提案で変え、--lock --relock <決定記録>)"
                           % (key, ", ".join(entry.get("ids", []))))
     for key, ids in sorted(want.items()):
         if key not in locks:
@@ -1823,6 +2851,9 @@ def main(argv):
                          % (key, ", ".join(ids)))
     for msg in lock_history_errors(root, specs, lock_path, records):
         errors.append(msg)
+    errors += principles_history_errors(root, specs, records)
+    errors += [x for x in sealed if x.startswith("E")]
+    warns += [x for x in sealed if x.startswith("W")]
 
     if len(spec_files) > MAX_CAPABILITIES:
         warns.append("W2 ケイパビリティが %d 本(目安 %d 本まで)" % (len(spec_files), MAX_CAPABILITIES))
@@ -1834,6 +2865,23 @@ def main(argv):
         return 0
     if "--rehash" in argv:
         print(rehash(root / arg_value(argv, "--rehash", "")))
+        return 0
+    if "--trail" in argv:
+        for line in trail(specs, records):
+            print(line)
+        return 0
+    if "--tests" in argv:
+        units = test_units(root, find_tests(root))
+        for rid in [x.strip() for x in arg_value(argv, "--tests", "").split(",") if x.strip()]:
+            mine = sorted(k for k, (ids, _) in units.items() if rid in ids)
+            print("%s: %s" % (rid, "%d 件" % len(mine) if mine else "なし"))
+            for k in mine:
+                print(k)
+        return 0
+    if "--overlap" in argv:
+        rids = [x.strip() for x in arg_value(argv, "--overlap", "").split(",") if x.strip()]
+        for line in overlap(root, rids, arg_value(argv, "--test-cmd", "")):
+            print(line)
         return 0
     if "--evidence" in argv:
         for line in evidence(root, specs, root / arg_value(argv, "--evidence", ""), reqs, arg_value(argv, "--test-cmd", "")):

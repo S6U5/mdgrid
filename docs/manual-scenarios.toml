@@ -2,7 +2,7 @@
 # Output: manual/<lang>/ (git-ignored). Regenerate:
 #   python3 <app-manual>/scripts/tui_shot.py docs/manual-scenarios.toml --lang ja --env LANG=ja_JP.UTF-8
 #   python3 <app-manual>/scripts/tui_shot.py docs/manual-scenarios.toml --lang en --env LANG=en_US.UTF-8
-# Build first: cargo build --release. Only the sample vault (examples/vault) is shown.
+# Build first: cargo build --release. Only the sample root folder (examples/vault) is shown.
 # Each shot runs on a fresh copy of examples/ in /tmp/mdgrid-demo (stage), so shots may save; the real samples are never written.
 
 [app]
@@ -15,7 +15,7 @@ ready = "タスク/"
 env = { MDGRID_TODAY = "2026-10-03" }
 timeout = 10
 title = { ja = "mdgrid の使い方", en = "Using mdgrid" }
-intro = { ja = "フロントマター付きの Markdown のノートを、ターミナルの表で見て直す。画面は見本の保管庫(examples/vault)。", en = "View and edit Markdown notes with frontmatter as a table in the terminal. The screens show the sample vault (examples/vault)." }
+intro = { ja = "フロントマター付きの Markdown のノートを、ターミナルの表で見て直す。画面は見本のルートフォルダ(examples/vault)。", en = "View and edit Markdown notes with frontmatter as a table in the terminal. The screens show the sample root folder (examples/vault)." }
 
 [[shot]]
 id = "table"
@@ -44,7 +44,7 @@ text = { ja = "日付の列ではカレンダーが開く。矢印で日を動�
 id = "edit-tags"
 title = { ja = "タグを付け外しする", en = "Add and remove tags" }
 keys = ["l", "l", "l", "l", "Enter"]
-text = { ja = "リストの列では、保管庫にある値の一覧から付け外しする。", en = "List columns let you toggle values found across the vault." }
+text = { ja = "リストの列では、ルートフォルダにある値の一覧から付け外しする。", en = "List columns let you toggle values found across the root folder." }
 
 [[shot]]
 id = "save"
@@ -82,7 +82,7 @@ text = { ja = "o で列・フィルター・並べ替え・グループを決め
 id = "new-note"
 title = { ja = "新しいノートを作る", en = "Create a note" }
 keys = ["a"]
-text = { ja = "a か右上の「+ 新規」で、新しいノートの窓が開く。名前と、表の列ごとの欄が並び、前もって入る値には出どころが付く。", en = "Press a, or click \"+ New\" at the top right: the new note form lists the name and a field for each column, and preset values show where they come from." }
+text = { ja = "a かビューの帯の右の端の「+ 新規」で、新しいノートの窓が開く。名前と、表の列ごとの欄が並び、前もって入る値には出どころが付く。", en = "Press a, or click \"+ New\" at the right end of the view bar: the new note form lists the name and a field for each column, and preset values show where they come from." }
 
 [[shot]]
 id = "new-note-done"
@@ -542,7 +542,7 @@ command = ["./target/release/mdgrid", "--config", "examples/themes/paper.toml", 
 env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"paper\" (a light background with a blue accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"paper\"(明るい地・青のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
-# ---- English demo vault (examples/demo) for the README ----
+# ---- English demo root folder (examples/demo) for the README ----
 
 [[shot]]
 id = "demo-table"

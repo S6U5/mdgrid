@@ -20,7 +20,7 @@ To rebind keys, add a `[keys.<mode>]` table to the config file and write `"key" 
 - You can bind an action only in a mode where it has a default key. One key can't do two things in the same mode, and a single key can't also be the first key of a sequence (`g` alongside `g g`). Remove the conflicting key with `"none"` first.
 - Each mode always keeps a way out (for example, `quit` or `palette` in `table`, `cancel` in `edit`). If your config would remove every key for it, mdgrid keeps the default keys and shows a warning.
 - Unknown modes, keys, and actions are skipped with a warning.
-- Modes where you type text (`edit`, `palette`, `search`, `filter`, `settings_input`, `list_select`) don't bind single letters by default and don't accept key sequences.
+- Modes where you type text (`edit`, `palette`, `search`, `filter`, `settings_input`, `list_select`, `filter_input`) don't bind single letters by default and don't accept key sequences.
 
 In the `table` mode, full-width letters and symbols typed while a Japanese input method is on act like their half-width keys, and `、` and `・` act like `,` and `/`.
 
@@ -60,7 +60,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `Ctrl+r` | `redo` | Redo the change you undid |
 | `U` | `redo` | Redo the change you undid |
 | `Ctrl+Shift+z` | `redo` | Redo the change you undid |
-| `a` | `new_note` | Create a new note |
+| `a` | `new_note` | Create a new note (same as **+ New** at the right end of the view bar) |
 | `Ctrl+s` | `save` | Review the pending changes as a diff, then save them |
 | `q` | `quit` | Quit (asks first if there are unsaved changes) |
 | `Ctrl+g` | `cancel_load` | Stop loading notes |
@@ -77,7 +77,9 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `<` | `narrow_column` | Make the column narrower |
 | `>` | `widen_column` | Make the column wider |
 | `s` | `sort_column` | Sort by this column: ascending, descending, then off. The sort is kept for the view (the `.base` file is not changed) |
-| `S` | `sort_menu` | Open the sort window (same as the **Sort** button at the right of the filter bar) |
+| `S` | `sort_menu` | Open the sort window (same as the **Sort** button in the view bar) |
+| `\|` | `filter_menu` | Open the filter window (same as the **Filter** button in the view bar) |
+| `w` | `workspace_drawer` | Open the table list (same as clicking the scope or table name in the header breadcrumb) |
 | `-` | `hide_column` | Hide the column |
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
@@ -86,10 +88,10 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `H` | `move_column_left` | Move the column to the left |
 | `L` | `move_column_right` | Move the column to the right |
 | `F` | `freeze_columns` | Freeze the columns up to this one so they stay visible when scrolling (press again to unfreeze) |
-| `/` | `search` | Search for text |
+| `/` | `search` | Find text (highlights the matches; the rows stay) |
 | `n` | `search_next` | Go to the next match |
 | `N` | `search_prev` | Go to the previous match |
-| `\` | `quick_filter` | Show only the rows containing some text (quick filter) |
+| `\` | `quick_filter` | Search: show only the rows containing some text (the search bar above the table) |
 | `*` | `highlight_same` | Highlight the rows with the same value as the selected cell |
 | `,` | `filter_same` | Show only the rows with the same value as the selected cell |
 | `%` | `frequency` | Show how many rows have each value of the selected column, and pick one to show only those rows |
@@ -218,27 +220,27 @@ The help screen (`?`).
 
 ## `search`
 
-Typing a search term (`/`).
+Typing a term to find (`/`). The rows stay; matches are highlighted and `n` and `N` move between them.
 
 | Key | Action | Description |
 |---|---|---|
-| `Enter` | `commit` | Search for the term |
-| `Esc` | `cancel` | Cancel the search |
+| `Enter` | `commit` | Find the term |
+| `Esc` | `cancel` | Cancel finding |
 | `Backspace` | `delete_back` | Delete the character before the cursor |
 
 ## `filter`
 
-Typing a quick filter term (`\`).
+Typing a search term (`\`, the search bar above the table). Every keystroke shows only the rows containing the term.
 
 | Key | Action | Description |
 |---|---|---|
-| `Enter` | `commit` | Apply the filter |
-| `Esc` | `cancel` | Clear the filter |
+| `Enter` | `commit` | Leave the bar, keeping the search |
+| `Esc` | `cancel` | Clear the search |
 | `Backspace` | `delete_back` | Delete the character before the cursor |
 
 ## `settings`
 
-The view settings screen (`o`), where you change filters, sorting, grouping, and columns.
+The view settings screen (`o`, or the **⚙ Settings** button at the top right), where you change filters, sorting, grouping, and columns.
 
 | Key | Action | Description |
 |---|---|---|
@@ -348,7 +350,7 @@ Clicking a value shows only its rows; clicking outside just closes the window. I
 
 ## `sorts`
 
-The sort window (`S`, or the **Sort** button at the right of the filter bar). It lists the sort rules of the current view (column and direction) and a last line to add one. Every change applies to the table right away and is kept for the view, like a sort from a column heading.
+The sort window (`S`, or the **Sort** button in the view bar; it opens right below the button). It lists the sort rules of the current view (column and direction) and a last line to add one. Every change applies to the table right away and is kept for the view, like a sort from a column heading.
 
 | Key | Action | Description |
 |---|---|---|
@@ -369,9 +371,67 @@ The sort window (`S`, or the **Sort** button at the right of the filter bar). It
 
 Clicking a line does what `Enter` does, and clicking the `×` at the right end of a rule removes it; clicking outside closes the window.
 
+## `drawer`
+
+The table list (`w`, `:workspace_drawer`, or the scope or table name in the header breadcrumb). It slides over the table from the left and lists the tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Below them, the other workspaces are listed by name, folded; unfold one to see its tables. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). It is hidden until opened.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Switch to the selected table, or fold/unfold a heading |
+| `Esc` | `close` | Close the list |
+| `q` | `close` | Close the list |
+| `w` | `close` | Close the list |
+| `j` | `down` | Next line |
+| `Down` | `down` | Next line |
+| `k` | `up` | Previous line |
+| `Up` | `up` | Previous line |
+| `g g` | `top` | First line |
+| `G` | `bottom` | Last line |
+| `l` | `right` | Unfold the heading |
+| `Right` | `right` | Unfold the heading |
+| `h` | `left` | Fold the heading (on a table under a heading, fold that heading) |
+| `Left` | `left` | Fold the heading |
+
+Clicking a line does what `Enter` does; clicking outside the list (including the header breadcrumb) closes it.
+
+## `filter_window`
+
+The filter window (`|`, or the **Filter** button in the view bar; it opens right below the button). It lists the filter conditions of the current view as a table, one condition per line (column, comparison, value, ×), and a last line to add one. On a condition line, ←→ picks a field and Enter edits that field in place. To add, pick a column, then a kind (pick from the values, contains, does not contain, compare, is empty, is not empty), then the value. Every change applies to the table right away and is kept for the view (the same filters as in the view settings).
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Edit the condition, or add one (pick a column, then a kind); inside a step, go on with the selected item |
+| `Esc` | `close` | Close the window (while adding, go back to the conditions) |
+| `q` | `close` | Close the window |
+| `j` | `down` | Next line |
+| `Down` | `down` | Next line |
+| `k` | `up` | Previous line |
+| `Up` | `up` | Previous line |
+| `Space` | `toggle` | Check or uncheck a value in the value list (on the first line, switch keep / hide) |
+| `d` | `remove_item` | Remove the selected condition |
+| `Delete` | `remove_item` | Remove the selected condition |
+| `Backspace` | `remove_item` | Remove the selected condition |
+| `h` | `left` | Previous field of the condition (column / comparison / value) |
+| `Left` | `left` | Previous field of the condition |
+| `l` | `right` | Next field of the condition |
+| `Right` | `right` | Next field of the condition |
+
+Clicking a line does what `Enter` does (in the value list, it checks the value); clicking the `×` at the right of a condition removes it. Clicking outside closes the window.
+
+## `filter_input`
+
+Typing the value for contains, does not contain, or compare in the filter window.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `commit` | Add the condition with this value (if the value doesn't fit the column type, say why) |
+| `Esc` | `cancel` | Go back to the conditions without adding |
+| `Backspace` | `delete_back` | Delete the character before the cursor |
+
+
 ## `relations`
 
-The relation map (`R`, `:relation_map`, or the **Relations** tab at the top right, which appears once you have registered tables). It shows the registered tables (and the current one) as boxes with their row counts and columns, and draws an arrow from each column that links to another table: `N` on the linking side, `1` (many-to-one) or `N` (many-to-many, a list of links) on the target side. The panes follow the terminal size: 120 columns or more show the tables, the map and the details side by side; 80 or more show the map and the details; narrower terminals show the tables and links as a list. With 30 rows or more, the linked records of the selected link appear below.
+The relation map (`R`, `:relation_map`, or **Relation map** in the screen type menu at the top right, which lists it once you have registered tables). It shows the registered tables (and the current one) as boxes with their row counts and columns, and draws an arrow from each column that links to another table: `N` on the linking side, `1` (many-to-one) or `N` (many-to-many, a list of links) on the target side. The panes follow the terminal size: 120 columns or more show the tables, the map and the details side by side; 80 or more show the map and the details; narrower terminals show the tables and links as a list. With 30 rows or more, the linked records of the selected link appear below.
 
 The mouse works too: click a table (in the list or its box on the map) to select it, and click the selected table again to open it. Click a line, an arrow or a label (or a link in the narrow list) to select that link. Click a linked record to open its note. The wheel moves between tables.
 
@@ -389,10 +449,42 @@ The mouse works too: click a table (in the list or its box on the map) to select
 | `Right` | `right` | Next link of the selected table |
 | `h` | `left` | Previous link of the selected table |
 | `Left` | `left` | Previous link of the selected table |
-| `a` | `new_note` | Open the selected table and start a new note (same as **+ New** at the top right) |
+| `a` | `new_note` | Open the selected table and start a new note (same as **+ New** at the right end of the second line) |
 | `?` | `help` | Show help |
 
-Clicking the **Table** tab at the top right goes back to the table.
+Choosing **Table** in the screen type menu at the top right (**◇ Relation map ▾**) goes back to the table. The **⚙ Settings** button at the top right goes back to the table and opens the view settings.
+
+## `screen_menu`
+
+The screen type menu (the **▦ Table ▾** button at the top right; on the relation map it reads **◇ Relation map ▾**). It opens right below the button and lists the screen types: Table, and Relation map when there are linked tables. The current type is marked with `●`, and a type that has a key shows it at the right (`R` for the relation map). Selecting a type switches to it. `R` switches without opening the menu.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Switch to the selected screen |
+| `Esc` | `close` | Close the menu |
+| `q` | `close` | Close the menu |
+| `j` | `down` | Next line |
+| `Down` | `down` | Next line |
+| `k` | `up` | Previous line |
+| `Up` | `up` | Previous line |
+
+Clicking a line does what `Enter` does; clicking outside the menu (including the button) closes it.
+
+## `column_type`
+
+The column type menu (CE-35): click the type mark of a column heading, or run `column_type` from the palette or the action menu. It opens right below the column heading and lists **Auto** (with the type guessed from the values) and the types Text, Number, Checkbox, Date, Date and time and List; the current one is marked with `●`. The chosen type is written to the table in `views.toml` (`[types]`) and applies at once; notes are not changed. Not for `file.*` and `formula.*` columns.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Use the selected type |
+| `Esc` | `close` | Close the menu |
+| `q` | `close` | Close the menu |
+| `j` | `down` | Next line |
+| `Down` | `down` | Next line |
+| `k` | `up` | Previous line |
+| `Up` | `up` | Previous line |
+
+Clicking a line does what `Enter` does; clicking outside the menu closes it.
 
 ## Actions
 
@@ -439,14 +531,16 @@ Every action name you can write in the keys section of the config file. Each one
 - `move_column_left` — move the column to the left
 - `move_column_right` — move the column to the right
 - `freeze_columns` — freeze the columns up to this one
-- `search` — search for text
+- `search` — find text
 - `search_next` — go to the next match
 - `search_prev` — go to the previous match
-- `quick_filter` — show only the rows containing some text
+- `quick_filter` — search: show only the rows containing some text
 - `highlight_same` — highlight the rows with the same value
 - `filter_same` — show only the rows with the same value
 - `frequency` — show the value counts of the column
 - `sort_menu` — open the sort window
+- `filter_menu` — open the filter window
+- `workspace_drawer` — open or close the table list
 - `mark_row` — mark or unmark the row
 - `select_range` — select a range of rows
 - `extend_up` — extend the selection up

@@ -136,8 +136,14 @@ impl App {
         let Some(rm) = self.relmap.as_ref() else {
             return;
         };
+        // SR-1・CE-25: ヘッダーの上の余白と、ヘッダーの下の帯の上の余白の分だけ、画面の行を関係マップの行に直す。
+        let off = super::bands::top_rows(self) + super::bands::bar_padding(self);
+        let Some(y) = (y as usize).checked_sub(off) else {
+            return;
+        };
+        let h = h.saturating_sub(off);
         let g = geo(w, h);
-        let (x, y) = (x as usize, y as usize);
+        let x = x as usize;
         // 窓の中の (桁, 行)。枠の上なら None。
         let inner = |left: usize, pw: usize, top: usize, ph: usize| -> Option<(usize, usize)> {
             (x > left && x + 1 < left + pw && y > top && y + 1 < top + ph)
@@ -693,7 +699,16 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let Some(rm) = app.relmap.as_ref() else {
         return vec![Line::from(" ".repeat(w)); h];
     };
-    let mut lines = vec![super::bands::header(app, w)];
+    // SR-1: ヘッダーの上の余白(表の画面と同じ行にヘッダーを出す)。
+    let mut lines = super::bands::top_lines(app, w);
+    lines.push(super::bands::header(app, w));
+    // CE-25: ヘッダーの下に、表の画面の帯の上の余白と同じ行の数を空ける(「+ 新規」を帯の真ん中の行と同じ行に
+    // 置くため)。
+    for _ in 0..super::bands::bar_padding(app) {
+        lines.push(Line::from(" ".repeat(w)));
+    }
+    let off = lines.len() - 1;
+    let h = h.saturating_sub(off);
     let g = geo(w, h);
     let (top_h, linked_h) = (g.top_h, g.linked_h);
     let title_map = Msg::RelMapTitle.text();
@@ -759,10 +774,16 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
         ));
     }
     lines.extend(body);
-    while lines.len() < h.saturating_sub(2) {
+    while lines.len() < off + h.saturating_sub(2) {
         lines.push(Line::from(" ".repeat(w)));
     }
-    lines.truncate(h.saturating_sub(2));
+    lines.truncate(off + h.saturating_sub(2));
+    // CE-25: 「+ 新規」は表の画面のビューの帯の真ん中の行と同じ行・同じ桁(窓の上の縁の右の端)。
+    if let Some(l) = lines.get_mut(off + 1) {
+        *l = super::bands::relmap_new_overlay(app, l, w);
+    }
+    // REL-8: 画面の型のメニューの窓(関係マップから開いたとき)。
+    super::screen_menu::overlay(app, &mut lines, w);
     lines.push(super::bands::footer(app, w));
     lines.push(super::bands::message(app, w));
     lines

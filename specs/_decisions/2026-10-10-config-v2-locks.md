@@ -3,7 +3,8 @@ type: Proposal
 id: 01M4JR4MD0JFTYDNJ9B9ZSGSCJ
 title: 設定の形の作り直しに合わせて、項目の名前と Config の形に触れる試験の錠を掛け直す(config-v2-locks)
 status: accepted
-approval-evidence: 会話 2026-10-10(人の決定 Q2「掛け直してよい」と「さいたく」)
+approval-evidence: 〔伏せ字: 会話の記録の場所〕
+approval-hash: 93ac4e2463333200
 decided-by: 人
 trigger: 人の発言
 trigger-link: 会話 2026-10-10
@@ -126,3 +127,5 @@ updated: 2026-10-10
 ## 承認の記録
 
 2026-10-10 人の承認(要約: 作り直しの不明点 Q2 で「掛け直してよい」を選び、提案2本を「さいたく」と採択した)
+
+2026-10-13 人の承認(要約: 元の会話の記録が手元に無く照合できなかったので、選択肢の問いでこの決定を承認し直した)

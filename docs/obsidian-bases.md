@@ -10,7 +10,7 @@ mdgrid never changes an existing `.base` file. Exporting a view writes a new `.b
 
 ## Which notes are searched
 
-The rows come from the vault the `.base` belongs to. mdgrid finds the vault root by walking up from the `.base` file's folder to the nearest folder that contains `.obsidian/`, then reads every note under it. If no `.obsidian/` folder is found (for example, a vault copied without its settings), only the `.base` file's own folder is searched, so a filter such as `file.inFolder("Projects")` can match nothing. When that happens and the view is empty, mdgrid says which folder it searched (on the bottom line, and on stderr with `--print`). To fix it, create an empty `.obsidian/` folder at the vault root.
+The rows come from the root folder the `.base` belongs to. mdgrid finds the root folder by walking up from the `.base` file's folder to the nearest folder that contains `.obsidian/`, then reads every note under it. If no `.obsidian/` folder is found (for example, a root folder copied without its settings), only the `.base` file's own folder is searched, so a filter such as `file.inFolder("Projects")` can match nothing. When that happens and the view is empty, mdgrid says which folder it searched (on the bottom line, and on stderr with `--print`). To fix it, create an empty `.obsidian/` folder in the root folder.
 
 Like Obsidian, mdgrid does not look inside folders whose names start with `.` (such as `.obsidian`, `.git` and `.trash`). It also skips `node_modules`, so opening a code repository does not list the documentation of its dependencies. A folder you name on the command line is always searched, even if its name starts with `.`.
 
@@ -131,13 +131,13 @@ Values:
 - `file.name`: the file name with its extension.
 - `file.basename`: the file name without the extension.
 - `file.ext`: the extension.
-- `file.path`: the path from the vault root.
-- `file.folder`: the folder from the vault root.
+- `file.path`: the path from the root folder.
+- `file.folder`: the folder from the root folder.
 - `file.size`: the size in bytes.
 - `file.mtime`: the time the file was last modified.
 - `file.ctime`: the time the file was created.
 - `file.tags`: the tags of the note: the frontmatter `tags` (also `tag`, `Tags`, in any case; a list, or text split at commas and spaces) and the `#tags` in the body.
-- `file.links`: the notes this note links to, as a list. Links are taken from the body and from frontmatter values: `[[name]]`, `[[name|text]]`, `[[name#heading]]`, `![[name]]` and `[text](path.md)`. Links inside code blocks and inline code are skipped, as are web addresses. Each link becomes the path of the target note from the vault root without `.md` (for example `sub/c`). The target is the note at that path from the vault root (a `[text](path)` link first tries the path relative to the note's folder); otherwise the note with that name, and when several notes share the name, the one nearest the vault root (then the shortest path). Case does not matter. A link that matches no note stays as written (`[[missing]]` gives `missing`). Each target is listed once.
+- `file.links`: the notes this note links to, as a list. Links are taken from the body and from frontmatter values: `[[name]]`, `[[name|text]]`, `[[name#heading]]`, `![[name]]` and `[text](path.md)`. Links inside code blocks and inline code are skipped, as are web addresses. Each link becomes the path of the target note from the root folder without `.md` (for example `sub/c`). The target is the note at that path from the root folder (a `[text](path)` link first tries the path relative to the note's folder); otherwise the note with that name, and when several notes share the name, the one nearest the root folder (then the shortest path). Case does not matter. A link that matches no note stays as written (`[[missing]]` gives `missing`). Each target is listed once.
 - `file.backlinks`: the notes that link to this note, as a list of their paths without `.md` (the same link rules as `file.links`).
 
 Functions on `file`:
@@ -153,7 +153,7 @@ When a `.base` file is opened directly, `this` is that `.base` file. `this.file`
 
 ## Summaries
 
-A view's `summaries` adds one row under the table, just above the bottom line. The left column says `Summary` (`集計` in Japanese), and each summarized column shows the summary name and its value, for example `Sum 18` or `Earliest 2026-10-05`, lined up with the column and scrolled with it. Summaries are computed from the rows the view shows now, after its filters, the view settings and the quick filter, so narrowing the table changes the values. Pending (unsaved) values count. A view without `summaries` has no summary row. In Japanese the names are shown in Japanese (`合計 18`).
+A view's `summaries` adds one row under the table, just above the bottom line. The left column says `Summary` (`集計` in Japanese), and each summarized column shows the summary name and its value, for example `Sum 18` or `Earliest 2026-10-05`, lined up with the column and scrolled with it. Summaries are computed from the rows the view shows now, after its filters, the view settings and the search, so narrowing the table changes the values. Pending (unsaved) values count. A view without `summaries` has no summary row. In Japanese the names are shown in Japanese (`合計 18`).
 
 ```yaml
 views:

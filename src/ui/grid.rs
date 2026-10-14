@@ -150,6 +150,27 @@ impl App {
     /// (`col_kinds`)を引く。表の寄せとビューの設定の絞り込み・並べ替え・グループは同じ型を使う。
     /// 決めていない列(ビューに無いノートのキー)はその場で決める。
     pub(crate) fn column_kind(&self, col: &str) -> Kind {
+        // CE-35: 設定の `[types]` で決めた型が先(ノートのキーの列だけ)。
+        if !col.starts_with("file.") && !col.starts_with("formula.") {
+            if let Some(k) = self.prof.resolved.types.get(col) {
+                return *k;
+            }
+        }
+        self.guessed_kind(col)
+    }
+
+    /// CE-35: 列の型(設定の `[types]` が先、無ければノートの型)。表に出ていない列(新しいノートの欄など)にも使う。
+    pub(crate) fn col_type(&self, col: &str) -> Kind {
+        if !col.starts_with("file.") && !col.starts_with("formula.") {
+            if let Some(k) = self.prof.resolved.types.get(col) {
+                return *k;
+            }
+        }
+        self.src.kind(col).kind
+    }
+
+    /// 設定の `[types]` を見ない列の型(ルートフォルダの型の設定か推定。CE-2。型の窓の「自動」に添える)。
+    pub(crate) fn guessed_kind(&self, col: &str) -> Kind {
         match self.built.col_kinds.get(col) {
             Some(k) => *k,
             None => self.kind_in(col, &self.rows),
@@ -295,6 +316,7 @@ impl App {
             done: self.progress.done,
             view: self.view_index(),
             data_gen: self.data_gen,
+            types: self.prof.resolved.types.clone(),
         };
         if self.built.selects_key.as_ref() != Some(&key) {
             // SR-35: 自動の札の列(文字の列で、くり返しのある短い値。リンクの列と計算の列は除く)。
@@ -305,6 +327,13 @@ impl App {
                 .map(|c| c.id.as_str())
                 .filter(|c| {
                     col_kinds.get(*c) == Some(&Kind::Text)
+                        // CE-35: 設定で文字でない型にした列は札にしない。
+                        && self
+                            .prof
+                            .resolved
+                            .types
+                            .get(*c)
+                            .is_none_or(|k| *k == Kind::Text)
                         && !c.starts_with("file.")
                         && !c.starts_with("formula.")
                 })
@@ -817,4 +846,6 @@ pub(crate) struct SelectsKey {
     done: bool,
     view: usize,
     data_gen: u64,
+    /// CE-35: 設定で決めた列の型(型を変えたら札の列を数え直す)。
+    types: std::collections::BTreeMap<String, Kind>,
 }

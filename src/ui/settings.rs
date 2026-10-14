@@ -351,6 +351,26 @@ impl App {
         v
     }
 
+    /// 設定で選べる列: 表の列の並び(隠した列を含む)のあとに、ほかのキー。絞り込みの窓(NV-29)と共通。
+    pub(crate) fn setting_keys(&self) -> Vec<String> {
+        let mut keys: Vec<String> = self.column_list().into_iter().map(|c| c.0).collect();
+        for k in self.src.columns() {
+            if !keys.contains(&k) {
+                keys.push(k);
+            }
+        }
+        keys
+    }
+
+    /// NV-23: ビューの設定の画面を、区画 `sec` を選んで開く(ビューの帯の分類・列のボタン)。
+    pub(crate) fn open_settings_at(&mut self, sec: Sec) {
+        self.apply(Action::ViewSettings);
+        if let Some(d) = self.draft.as_mut() {
+            let i = d.sel[sec as usize];
+            d.select(sec, i);
+        }
+    }
+
     pub(crate) fn open_settings(&mut self) {
         let wbs = self
             .settings
@@ -361,12 +381,7 @@ impl App {
                 map: Vec::new(),
             });
         let cols = self.column_list();
-        let mut keys: Vec<String> = cols.iter().map(|c| c.0.clone()).collect();
-        for k in self.src.columns() {
-            if !keys.contains(&k) {
-                keys.push(k);
-            }
-        }
+        let keys = self.setting_keys();
         self.draft = Some(Draft {
             s: self.settings.clone(),
             cols0: cols.clone(),
@@ -716,6 +731,16 @@ impl App {
         self.settings.sorts = sorts;
         self.sort = None;
         // 並びが変わるので、直した行の留め(NV-12)はやめて本来の位置へ。
+        self.stay.clear();
+        self.regrid = true;
+        self.refresh_if_needed();
+        self.persist_state();
+    }
+
+    /// 設定のフィルターを置き換えてすぐ効かせ、見た目の状態に残す(絞り込みの窓。NV-29・NV-20)。
+    pub(crate) fn set_filters(&mut self, filters: Vec<mdgrid::settings::Cond>) {
+        self.settings.filters = filters;
+        // 行が変わるので、直した行の留め(NV-12)はやめて本来の位置へ。
         self.stay.clear();
         self.regrid = true;
         self.refresh_if_needed();

@@ -192,7 +192,7 @@ fn print_config() -> String {
 
 #[test]
 fn test_sr_21_print_config_has_display() {
-    // [SR-21][CLI-11] --print-config に [display] の7項目が既定値で出る(TOML として読んで判定)。
+    // [SR-21][CLI-11] --print-config に [display] の11項目が既定値で出る(TOML として読んで判定)。
     let text = print_config();
     let table: toml::Table = text.parse().expect("--print-config の出力は TOML");
     let display = table
@@ -211,7 +211,29 @@ fn test_sr_21_print_config_has_display() {
         Some("always"),
         "[display] の tabs\n---\n{text}"
     );
-    assert_eq!(display.len(), 7, "[display] は7項目: {display:?}");
+    // 2026-10-12-search-box・bar-padding・bar-padding-half で buttons・bar_padding・top_padding が増えた。
+    assert_eq!(
+        display.get("buttons").and_then(|v| v.as_str()),
+        Some("plain"),
+        "[display] の buttons\n---\n{text}"
+    );
+    for name in ["bar_padding", "top_padding"] {
+        assert_eq!(
+            // 2026-10-12-padding-default-one で既定は 1(整数で書く。1 と 1.0 はどちらも読める)。
+            display
+                .get(name)
+                .and_then(|v| v.as_float().or_else(|| v.as_integer().map(|i| i as f64))),
+            Some(1.0),
+            "[display] の {name}\n---\n{text}"
+        );
+    }
+    // 2026-10-12-row-lines で row_extra_lines(既定 0)が増えた。
+    assert_eq!(
+        display.get("row_extra_lines").and_then(|v| v.as_integer()),
+        Some(0),
+        "[display] の row_extra_lines\n---\n{text}"
+    );
+    assert_eq!(display.len(), 11, "[display] は11項目: {display:?}");
     assert!(
         !table.contains_key("search_bar"),
         "検索の欄は [display] の中"

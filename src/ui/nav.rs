@@ -106,7 +106,8 @@ impl App {
     /// 表のモードの、移動・検索・選択の動作。扱ったら true。
     pub(crate) fn nav_action(&mut self, action: Action) -> bool {
         let last_row = self.slots.len().saturating_sub(1);
-        let half = (self.data_height() / 2).max(1);
+        // CV-8: 伸ばした行の高さで数える(0 では表の高さの半分)。
+        let half = (super::rows::page(self) / 2).max(1);
         match action {
             Action::HalfPageDown => self.row = (self.row + half).min(last_row),
             Action::HalfPageUp => self.row = self.row.saturating_sub(half),

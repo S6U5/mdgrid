@@ -212,7 +212,20 @@ fn snapshot(dir: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
 
 /// タブの行(2行目)。
 fn tabs(a: &App) -> String {
-    screen(a).lines().nth(1).unwrap_or("").to_string()
+    // タブはビューの帯の字の行(2026-10-12-search-box・view-bar-plain の3行の帯では3行目)。
+    wide_screen(a)
+        .lines()
+        .nth(super::bands::mid_row(a))
+        .unwrap_or("")
+        .to_string()
+}
+
+/// 幅 120 の端末で描いた画面(2026-10-12-header-menu でビューの帯の右の端に「+ 新規」が入り、80 桁では
+/// 今のでないタブと切り替えの案内が省かれるので、タブの並びは広い端末で見る)。
+fn wide_screen(a: &App) -> String {
+    let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(120, 24)).unwrap();
+    term.draw(|f| draw(f, a)).unwrap();
+    super::test_screen::text(term.backend().buffer())
 }
 
 /// `]` で名前のタブまで動かす(選んだタブは `[名前]`)。

@@ -106,9 +106,10 @@ fn test_sc_17_no_note_label_column() {
     // [SC-17] 左の欄に「ノート」の見出しと行の名前(1列目と同じ値)を重ねて出さない。
     let (_t, a) = open("sc17label", LEDGER);
     let s = screen(&a);
-    let head = s.lines().nth(3).unwrap();
+    let dy = super::view::data_y(&a);
+    let head = s.lines().nth(dy - 1).unwrap();
     assert!(!head.contains("ノート") && head.contains("name"), "{s}");
-    let first = s.lines().nth(4).unwrap();
+    let first = s.lines().nth(dy).unwrap();
     assert_eq!(first.matches("りんご").count(), 1, "{s}");
 }
 

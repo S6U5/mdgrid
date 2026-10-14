@@ -6,16 +6,19 @@ use super::*;
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
 
-/// 1行目の「+ 新規」の「+」の桁。無ければ None。
+/// ビューの帯(2026-10-12-header-menu でヘッダーから移った。2026-10-12-search-box・view-bar-plain の3行の帯では真ん中の行)の
+/// 「+ 新規」の「+」の桁。関係マップでも同じ行(2026-10-12-relmap-new-row)。無ければ None。
 fn button_x(a: &App) -> Option<u16> {
     let (w, h) = a.size;
     let mut t = Terminal::new(TestBackend::new(w, h)).unwrap();
     t.draw(|f| super::draw(f, a)).unwrap();
     let b = t.backend().buffer().clone();
+    // 関係マップでも同じ行(2026-10-12-relmap-new-row)。
+    let y = super::bands::mid_row(a) as u16;
     let first = super::new_note::button().trim().chars().next()?;
     let next = super::new_note::button().trim().chars().nth(2)?;
     (0..b.area.width.saturating_sub(2)).find(|&x| {
-        b[(x, 0)].symbol() == first.to_string() && b[(x + 2, 0)].symbol() == next.to_string()
+        b[(x, y)].symbol() == first.to_string() && b[(x + 2, y)].symbol() == next.to_string()
     })
 }
 
@@ -30,7 +33,7 @@ fn test_ce_25_relmap_new_note() {
     assert_eq!(a.mode, Mode::Relations);
     assert_eq!(button_x(&a), Some(at), "関係マップでも同じ位置");
     // 押す(ボタンのクリック)。
-    a.click(at + 1, 0);
+    a.click(at + 1, super::bands::mid_row(&a) as u16);
     assert!(a.relmap.is_none(), "表の画面に戻る");
     assert!(a.note.flow.is_some(), "名前の欄が出る");
 }

@@ -18,7 +18,7 @@ Point mdgrid at a folder and every note becomes a row, every frontmatter key a c
 ## ✨ What it does
 
 - **One command per folder.** `alias tasks='mdgrid ~/notes/Tasks'` is all the setup there is. mdgrid remembers each folder's columns, widths, filters, sorting, grouping and saved views, so typing `tasks` brings back the same table every time. Or register the tables you use under a name and a group, and plain `mdgrid` lists them to switch between. No database, no import: the notes stay plain Markdown files.
-- **Linked tables and a relation map.** Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, Enter picks a target by name, and you can jump to it or list the notes that link back. Press `R` for a map of the tables and their links. Group the tables of a project into a workspace (or let mdgrid find the Obsidian vault or git repository) so links stay inside it.
+- **Linked tables and a relation map.** Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, Enter picks a target by name, and you can jump to it or list the notes that link back. Press `R` for a map of the tables and their links. Group the tables of a project into a workspace (or let mdgrid find the root folder, the folder with `.obsidian/`, or the git repository) so links stay inside it.
 - **Edit frontmatter like a spreadsheet.** Cells look like parts of a GUI table: checkboxes, colored chips for tags and statuses, and a type mark on each column. Pick from values other notes already use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename a key across every note.
 - **Leaves the rest of the file alone.** Other keys, their order, comments, line endings and the body stay byte-for-byte the same. Before anything is written you see a diff of each file.
 - **Opens CSV and TSV too.** Pass a `.csv` or `.tsv` file to use it as a ledger: edit values in the table, and saving rewrites only the values you changed.
@@ -96,7 +96,7 @@ alias books='mdgrid ~/notes/Books'
 alias meetings='mdgrid ~/notes/Meetings --readonly'   # only for looking
 ```
 
-Now `tasks` opens your task table. Hide the columns you don't need, set a filter and a sort with `o`, save a few views as tabs, and the next `tasks` opens with all of it in place. (A sort from a column header or the **Sort** button is kept too; only the quick filter `\` lasts until you quit.)
+Now `tasks` opens your task table. Hide the columns you don't need, set a filter and a sort with `o`, save a few views as tabs, and the next `tasks` opens with all of it in place. (A sort from a column header or the **Sort** button is kept too; only the search `\` lasts until you quit. The **Filter** button next to **Sort** adds filter conditions that are kept, like a sort.)
 
 A shell function works the same way for the output side:
 
@@ -194,7 +194,7 @@ mdgrid works on any folder of Markdown notes, and it also understands Obsidian's
 
 ```sh
 mdgrid /tmp/mdgrid-demo/Tasks.base                    # four views: Open, By status, By owner, Due
-alias standup='mdgrid ~/vault/Tasks.base --view "By owner"'
+alias standup='mdgrid ~/notes/Tasks.base --view "By owner"'
 ```
 
 Grouped views show headings that you can fold with `Enter`:
@@ -211,7 +211,7 @@ From the command palette, `:export_base` writes the current view to a new `.base
 - [Keys](docs/keys.md) — the default keys of each mode, and how to change them.
 - [Write-back safety](docs/safety.md) — what mdgrid writes, what it never touches, and which notes stay read-only and why.
 - [Obsidian Bases support](docs/obsidian-bases.md) — which parts of `.base` files mdgrid reads, evaluates or ignores.
-- [Showcase](examples/showcase/README.md) — a sample config and vault (in Japanese) that turn most features on. `examples/vault` covers the edge cases: null, empty and mismatched values, read-only notes, sync conflicts.
+- [Showcase](examples/showcase/README.md) — a sample config and root folder (in Japanese) that turn most features on. `examples/vault` covers the edge cases: null, empty and mismatched values, read-only notes, sync conflicts.
 - [Human and AI tasks](examples/ai-human/README.md) — a sample `.base` and config (in English in `vault-en`, in Japanese in `vault`) that splits tasks into those an AI agent can finish and those that need a person (pay, sign, submit, send), with the people's group on top.
 - Shell completions: `mdgrid --completions <bash|zsh|fish|elvish|powershell>`. Man page: `mdgrid --man`.
 

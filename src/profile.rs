@@ -6,13 +6,13 @@
 
 use crate::cells::{Cells, ColStyle};
 use crate::colors::{self, Colors};
-use crate::display::{Display, DisplayOverride, TabsMode};
+use crate::display::{ButtonsMode, Display, DisplayOverride, Pad, TabsMode};
 use crate::i18n::Msg;
 use crate::newnote::{self, NewNote};
 use crate::schema;
 use crate::style::{Band, Check, Frames, Links, Preset, Rules, Select, Status, Style, Tabs, Tags};
 use crate::theme::Theme;
-use crate::types::{DateFormat, WeekStart};
+use crate::types::{DateFormat, Kind, WeekStart};
 use std::collections::BTreeMap;
 
 // ---- 警告 ----
@@ -546,6 +546,8 @@ pub struct Profile {
     pub edit: EditLayer,
     /// `[new_note]`(1つの項目。狭い範囲に書けば丸ごと代わる)。
     pub new_note: Option<NewNote>,
+    /// `[types]`(CE-35): 列の名前 → 型。None は `"auto"`(推定に戻す。広い範囲の型を外す)。
+    pub types: BTreeMap<String, Option<Kind>>,
 }
 
 impl Profile {
@@ -576,6 +578,7 @@ impl Profile {
                 Some(_) => self.new_note = Some(read_new_note(v, file, &p, w)),
                 None => warn(w, file, &p, not(Msg::WantNewNoteTable)),
             },
+            "types" => read_types(&mut self.types, v, file, &p, w),
             _ => return false,
         }
         true
@@ -633,6 +636,17 @@ impl Profile {
                 t.insert("new_note".into(), v);
             }
         }
+        if !self.types.is_empty() {
+            let ty = self
+                .types
+                .iter()
+                .map(|(c, k)| {
+                    let name = k.map_or("auto", Kind::name);
+                    (c.clone(), toml::Value::String(name.to_string()))
+                })
+                .collect();
+            t.insert("types".into(), toml::Value::Table(ty));
+        }
     }
 
     /// 書いた項目の表。
@@ -640,6 +654,30 @@ impl Profile {
         let mut t = toml::Table::new();
         self.write(&mut t);
         t
+    }
+}
+
+/// `[types]` を読む(CE-35)。列の名前 = 型の名前か `"auto"`。知らない型は警告して、その列は書かなかったことにする。
+fn read_types(
+    out: &mut BTreeMap<String, Option<Kind>>,
+    v: &toml::Value,
+    file: &str,
+    path: &str,
+    w: &mut Vec<String>,
+) {
+    let Some(t) = v.as_table() else {
+        return warn(w, file, path, not(Msg::WantTypesTable));
+    };
+    for (col, v) in t {
+        match v.as_str() {
+            Some("auto") => {
+                out.insert(col.clone(), None);
+            }
+            Some(s) if Kind::parse(s).is_some() => {
+                out.insert(col.clone(), Kind::parse(s));
+            }
+            _ => warn(w, file, &join(path, col), not(Msg::WantType)),
+        }
     }
 }
 
@@ -670,6 +708,36 @@ fn read_display(
                     );
                 }
                 _ => warn(w, file, &p, not(Msg::WantTabs)),
+            }
+            continue;
+        }
+        // NV-23・SR-1: 帯の上下とヘッダーの上の余白(0〜2 の 0.5 刻み。整数も小数も受ける)。範囲の外・刻みに
+        // 合わない値は警告して既定。
+        if k == "bar_padding" || k == "top_padding" {
+            let n = v
+                .as_float()
+                .or_else(|| v.as_integer().map(|i| i as f64))
+                .and_then(Pad::from_f64);
+            match n {
+                Some(n) if k == "bar_padding" => d.bar_padding = Some(n),
+                Some(n) => d.top_padding = Some(n),
+                None => warn(w, file, &p, not(Msg::WantBarPadding)),
+            }
+            continue;
+        }
+        // CV-8: 行を伸ばす数(0〜9 の整数)。範囲の外・整数でない値は警告して既定。
+        if k == "row_extra_lines" {
+            match crate::display::row_extra_lines_ok(v) {
+                Some(n) => d.row_extra_lines = Some(n),
+                None => warn(w, file, &p, not(Msg::WantRowExtraLines)),
+            }
+            continue;
+        }
+        // NV-23: ボタンの描き方("plain"・"box")。
+        if k == "buttons" {
+            match v.as_str().and_then(ButtonsMode::parse) {
+                Some(m) => d.buttons = Some(m),
+                None => warn(w, file, &p, not(Msg::WantButtons)),
             }
             continue;
         }
@@ -828,6 +896,8 @@ pub struct Resolved {
     pub candidates: usize,
     pub add_frontmatter: bool,
     pub new_note: NewNote,
+    /// `[types]`(CE-35): 設定で決めた列の型(`"auto"` の列は無い)。
+    pub types: BTreeMap<String, Kind>,
     /// 項目の道筋 → 出どころ(既定の項目は無い)。
     pub origins: BTreeMap<String, Origin>,
 }
@@ -847,6 +917,7 @@ impl Default for Resolved {
             candidates: 20,
             add_frontmatter: true,
             new_note: NewNote::default(),
+            types: BTreeMap::new(),
             origins: BTreeMap::new(),
         }
     }
@@ -908,6 +979,18 @@ impl Resolved {
             self.cells.columns.insert(col.clone(), *st);
             self.mark(&format!("look.columns.{col}"), o);
         }
+        // CE-35: 列の型は列ごとに狭い範囲が勝ち、`"auto"` は広い範囲の型を外す。
+        for (col, k) in &p.types {
+            match k {
+                Some(k) => {
+                    self.types.insert(col.clone(), *k);
+                }
+                None => {
+                    self.types.remove(col);
+                }
+            }
+            self.mark(&format!("types.{col}"), o);
+        }
         for name in p.display.apply_to(&mut self.display) {
             self.mark(&format!("display.{name}"), o);
         }
@@ -964,6 +1047,11 @@ impl Resolved {
         if self.new_note != NewNote::default() {
             p.new_note = Some(self.new_note.clone());
         }
+        p.types = self
+            .types
+            .iter()
+            .map(|(c, k)| (c.clone(), Some(*k)))
+            .collect();
         p
     }
 }

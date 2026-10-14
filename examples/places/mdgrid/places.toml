@@ -8,7 +8,7 @@ path = "examples/vault/タスク.base"
 view = "進行中"
 
 [[place]]
-name = "保管庫"
+name = "見本"
 group = "仕事"
 path = "examples/vault"
 

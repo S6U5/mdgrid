@@ -11,11 +11,45 @@ pub(crate) fn light(env: impl Fn(&str) -> Option<String>, wait: Duration) -> Opt
             return Some(l);
         }
     }
-    query(wait)
+    query(wait).and_then(|r| mdgrid::theme::light_from_osc11(&r))
 }
 
+/// NV-23: 端末の地の色(RGB)。`COLORFGBG` からは色が分からないので、いつも OSC 11 で問い合わせる。
+/// 答えが無ければ None。
+pub(crate) fn color(wait: Duration) -> Option<[u8; 3]> {
+    query(wait).and_then(|r| rgb_from_osc11(&r))
+}
+
+/// `color` の答えをプロセスで1回だけ問い合わせて覚える(表を開き直したときに、画面を出している間の端末へ
+/// 問い合わせない)。
+pub(crate) fn color_once(wait: Duration) -> Option<[u8; 3]> {
+    static ONCE: std::sync::OnceLock<Option<[u8; 3]>> = std::sync::OnceLock::new();
+    *ONCE.get_or_init(|| color(wait))
+}
+
+/// OSC 11 の答え(`rgb:RRRR/GGGG/BBBB`。1〜4桁の16進)を 8 ビットの RGB に直す。読めなければ None。
+pub(crate) fn rgb_from_osc11(reply: &str) -> Option<[u8; 3]> {
+    let rest = &reply[reply.find("rgb:")? + 4..];
+    let parts: Vec<&str> = rest.split('/').take(3).collect();
+    if parts.len() < 3 {
+        return None;
+    }
+    let mut out = [0u8; 3];
+    for (k, part) in parts.iter().enumerate() {
+        let hex: String = part.chars().take_while(|c| c.is_ascii_hexdigit()).collect();
+        if hex.is_empty() || hex.len() > 4 {
+            return None;
+        }
+        let max = (16u32.pow(hex.len() as u32) - 1) as f64;
+        let v = u32::from_str_radix(&hex, 16).ok()? as f64 / max;
+        out[k] = (v * 255.0).round() as u8;
+    }
+    Some(out)
+}
+
+/// 端末に OSC 11 を問い合わせ、答えの文字(読んだもの全部)を返す。答えが無ければ None。
 #[cfg(unix)]
-fn query(wait: Duration) -> Option<bool> {
+fn query(wait: Duration) -> Option<String> {
     use ratatui::crossterm::terminal;
     use std::io::{Read, Write};
     use std::os::raw::{c_int, c_short};
@@ -82,7 +116,8 @@ fn query(wait: Duration) -> Option<bool> {
                 }
             }
         }
-        mdgrid::theme::light_from_osc11(&String::from_utf8_lossy(&buf))
+        let s = String::from_utf8_lossy(&buf).into_owned();
+        s.contains("rgb:").then_some(s)
     })();
     if !was_raw {
         let _ = terminal::disable_raw_mode();
@@ -91,6 +126,6 @@ fn query(wait: Duration) -> Option<bool> {
 }
 
 #[cfg(not(unix))]
-fn query(_wait: Duration) -> Option<bool> {
+fn query(_wait: Duration) -> Option<String> {
     None
 }

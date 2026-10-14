@@ -69,14 +69,18 @@ fn test_sr_14_palette_save_first_golden() {
     assert_eq!(c[0].target, Target::Run(Action::Save));
     assert_eq!(c[0].keys, "^S");
     let s = screen(&a);
-    let line = s.lines().nth(2).unwrap();
+    // パレットはヘッダーのすぐ下(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let line = s
+        .lines()
+        .nth(super::bands::head_y(&a) as usize + 2)
+        .unwrap();
     assert!(
         line.starts_with(">") && line.contains("保存") && line.contains("^S"),
         "{s}"
     );
     golden("sr_14", &s);
-    // [SR-17] 端末のカーソルは入力の位置。
-    assert_eq!(view::cursor(&a), Some((6, 1)));
+    // [SR-17] 端末のカーソルは入力の位置(ヘッダーのすぐ下。2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    assert_eq!(view::cursor(&a), Some((6, super::bands::head_y(&a) + 1)));
     // [SR-9] パレットも全行が幅以下。
     assert_fits(&mut a);
     // Esc で閉じる。

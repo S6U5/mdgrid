@@ -612,7 +612,11 @@ fn test_bv_13_startup_opens_first_view() {
     ch(&mut a, 'q');
     let b = boot_base(&tmp, None);
     assert_eq!(b.view_index(), 0, "前に選んだビューは起動に使わない");
-    assert!(screen(&b).lines().nth(1).unwrap().contains("[進行中]"));
+    assert!(screen(&b)
+        .lines()
+        .nth(super::bands::mid_row(&b))
+        .unwrap()
+        .contains("[進行中]"));
     let c = boot_base(&tmp, Some("全部"));
     assert_eq!(c.view_index(), 2);
     assert_eq!(c.cols, cols, "ビューごとの列の順は残る");

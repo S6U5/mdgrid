@@ -131,7 +131,7 @@ fn test_ws_7_init_marker() {
 
 #[test]
 fn test_ws_3_w_opens_first_table() {
-    // [WS-3] `-w <名前>` だけなら、そのワークスペースの最初の表を開き、ヘッダーに名前(WS-6)。
+    // [WS-3] `-w <名前>` だけなら、そのワークスペースの最初の表を開き、ヘッダーのパンくずに名前(WS-6・SR-42)。
     let home = TempDir::new("ws-cli-w");
     let h = home.path();
     notes(h);
@@ -140,7 +140,7 @@ fn test_ws_3_w_opens_first_table() {
         .success());
     let mut tui = Tui::spawn(&["-w", "Product"], h, &[]);
     tui.wait_until("最初の表とワークスペースの名前", |s| {
-        s.contains("projects") && s.contains("ワークスペース Product")
+        s.contains("Product › projects")
     });
     tui.send("q");
     assert_eq!(tui.wait_exit(), 0);

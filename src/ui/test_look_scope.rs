@@ -217,10 +217,13 @@ fn test_sr_43_save_to_this_view() {
 
 #[test]
 fn test_sr_34_tabs_never_and_cycle() {
-    // [SR-34] display.tabs = "never" → タブの行が無い。表示の区画のタブの項目は always → auto → never の順。
+    // [SR-34] display.tabs = "never" → タブが無い(SR-1 でタブはビューの帯の中。帯の行は検索の欄のために残る)。
+    // 表示の区画のタブの項目は always → auto → never の順。
     let tmp = tables("sr34never", None);
     let a = boot_at(&tmp, "tasks", "[display]\ntabs = \"never\"\n");
-    assert_eq!(super::bands::tab_rows(&a), 0);
+    assert!(super::bands::view_bar(&a, a.size.0 as usize)
+        .tabs
+        .is_empty());
     let mut b = boot_at(&tmp, "tasks", "");
     press(&mut b, KeyCode::Char('o'));
     let i = mdgrid::display::ITEMS

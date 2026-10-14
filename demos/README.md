@@ -12,7 +12,7 @@ sh demos/try.sh workspace     # workspaces sample (-w Work) / ワークスペー
 sh demos/try.sh demo          # English sample table / 英語の見本の表
 sh demos/try.sh ai-human      # human and AI tasks (.base) / 人と AI のタスク
 sh demos/try.sh showcase      # most features on / 多くの機能を入れた見本
-sh demos/try.sh vault         # Japanese sample vault / 日本語の見本の保管庫
+sh demos/try.sh vault         # Japanese sample root folder / 日本語の見本のルートフォルダ
 ```
 
 ```sh
@@ -33,9 +33,14 @@ sh demos/record.sh places     # 1本だけ
 | `view-tabs.tape` → [demo-view-tabs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-view-tabs.gif) | 設定の画面の「ビュー」の区画でタブを整える(隠す・順・既定・切り替えの案内) |
 | `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
 | `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
+| `ws-drawer.tape` → [demo-ws-drawer.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-ws-drawer.gif) | 表の一覧の引き出し: `w` で左から重ねて出し、同じワークスペースの表・ほかのワークスペースの表へ移る |
+| `filter.tape` → [demo-filter.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-filter.gif) | 絞り込みの窓: 検索の欄の右の「絞り込み」(`|`)で値を隠す・数で比べる・外す。上の欄の検索は別 |
+| `layout.tape`・`layout-narrow.tape` | 画面の配置の見本: 普段の表・絞り込みの窓・絞った後・表の一覧の引き出しを、広い画面と 80×24 くらいの画面で場面ごとに撮る(PNG は `demos/out/layout/`)。配置を変える前と後を並べて見るため |
 | `wbs.tape` → [demo-wbs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-wbs.gif) | WBS: 番号と進み具合、値の対応表を設定の画面で作る |
 | `csv.tape` → [demo-csv.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-csv.gif) | CSV を台帳として開いて直す(直した値だけを書き換える・保存の前の差分・末尾に行を足す) |
 | `themes.tape` → [demo-themes.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-themes.gif) | 色のテーマ(examples/themes/ の6つ) |
+| `row-lines.tape` → [demo-row-lines.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-row-lines.gif) | 行を伸ばす設定(`[display] row_extra_lines = 2`): 長い値と改行のある値を折り返し、行を要るだけ伸ばす |
+| `column-types.tape` → [demo-column-types.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-column-types.gif) | 列の型を選び直す: パレットの `column_type`(か見出しの型の印のクリック)で型の窓を開き、型を選ぶと表に効く。「自動」で推定に戻る |
 
 To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screens are in English on the English sample (`examples/demo`). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.
 

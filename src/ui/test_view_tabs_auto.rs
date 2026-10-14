@@ -51,12 +51,26 @@ fn row_of(s: &str, text: &str) -> usize {
 #[test]
 fn test_sr_34_auto_hides_single_tab() {
     // [SR-34] 既定(always)はタブの行に既定の表。auto でビューが1つなら、タブの行もヘッダーの名前も無く、表が1行上がる。
+    // SR-1 でタブは検索の欄と同じ行(ビューの帯)にあり、行ごと消えるのは検索の欄も出さないとき。前の「タブの行」
+    // と同じ形にするため、両方とも検索の欄を出さない設定で比べる。
     let tmp = folder("sr34_auto");
-    let a = boot(&tmp, Config::default());
+    let no_bar = |toml: &str| {
+        let (c, w) =
+            mdgrid::config::parse(&format!("[display]\nsearch_bar = false\n{toml}")).unwrap();
+        assert!(w.is_empty(), "{w:?}");
+        c
+    };
+    let a = boot(&tmp, no_bar(""));
     let s = screen(&a);
-    assert!(s.lines().nth(1).unwrap().contains("既定の表"), "{s}");
+    assert!(
+        s.lines()
+            .nth(super::bands::mid_row(&a))
+            .unwrap()
+            .contains("既定の表"),
+        "{s}"
+    );
     let before = row_of(&s, "alpha");
-    let b = boot(&tmp, auto());
+    let b = boot(&tmp, no_bar("tabs = \"auto\"\n"));
     let s = screen(&b);
     assert!(
         !s.contains("既定の表"),
@@ -80,7 +94,7 @@ fn test_sr_34_auto_shows_tabs_with_two_views() {
     .unwrap();
     let a = boot(&tmp, auto());
     let s = screen(&a);
-    let tabs = s.lines().nth(1).unwrap();
+    let tabs = s.lines().nth(super::bands::mid_row(&a)).unwrap();
     assert!(tabs.contains("既定の表") && tabs.contains("mine"), "{s}");
 }
 
@@ -101,7 +115,13 @@ fn test_sr_23_default_tab_english_name() {
     let tmp = folder("sr34_en");
     let mut a = boot(&tmp, Config::default());
     let s = screen(&a);
-    assert!(s.lines().nth(1).unwrap().contains("Default table"), "{s}");
+    assert!(
+        s.lines()
+            .nth(super::bands::mid_row(&a))
+            .unwrap()
+            .contains("Default table"),
+        "{s}"
+    );
     for old in ["Default", "All notes"] {
         a.select_view_named(old);
         assert!(a.message.is_none(), "{:?}", a.message);

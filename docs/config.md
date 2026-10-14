@@ -179,19 +179,32 @@ Whether round pill ends (Nerd Font glyphs U+E0B6 and U+E0B4) can be drawn. `true
 nerd_font = true
 ```
 
+### `terminal.nerd_icons`
+
+- Type: `boolean`
+- Default: `false`
+- Scope: global only
+
+Use icon glyphs from a Nerd Font for the settings button (gear), the screen type button and menu (table, relation map), the type marks of column headings (number, date, date and time, checkbox, list, chip columns) and the calendar title. Set `true` only if your terminal font is a Nerd Font: other fonts show empty boxes for these glyphs. By default plain characters are used (`⚙`, `▦`, `◇`, `#`, `◷`, `⋮`, `◉`, and the check mark of the part shape, `✓` by default). Emoji are never used. The glyphs are counted with the same character widths as the rest of the screen.
+
+```toml
+[terminal]
+nerd_icons = true
+```
+
 ## `[workspace]` — workspaces
 
 ### `workspace.detect`
 
 - Type: `array of strings`
-- Default: `["vault"]`
+- Default: `[".obsidian"]`
 - Scope: global only
 
-When the table you open is in no written workspace (`-w`, a `.mdgrid/workspace.toml` marker, or `workspaces.toml`), treat the root of the Obsidian vault (`"vault"`, a folder with `.obsidian/`) or the git repository (`"git"`, a folder with `.git`) above it as a workspace: its folders with notes become the tables of the relation map. `[]` turns detection off. A detected workspace has no workspace place for overrides.
+When the table you open is in no written workspace (`-w`, a `.mdgrid/workspace.toml` marker, or `workspaces.toml`), treat the nearest folder above it that has one of these marker folders as a workspace (the root folder): `".obsidian"` (a folder with `.obsidian/`) or `".git"` (a git repository). Its folders with notes become the tables of the relation map. `[]` turns detection off. The old values `"vault"` and `"git"` are read the same way, with a warning that they moved. A detected workspace has no workspace place for overrides.
 
 ```toml
 [workspace]
-detect = ["vault", "git"]
+detect = [".obsidian", ".git"]
 ```
 
 ## `[look]` — theme, parts and colors
@@ -378,7 +391,7 @@ tabs = "auto"
 - Default: `true`
 - Scope: global, workspace, table, view
 
-Show a search bar above the table (`\` moves into it). `false` hides the bar; the quick filter is then typed on the bottom line. Each view can override this in its view settings (`o`, the "Display" section).
+Show a search bar above the table (`\` moves into it). `false` hides the bar; the search term is then typed on the bottom line. Each view can override this in its view settings (`o`, the "Display" section).
 
 ```toml
 [display]
@@ -396,6 +409,58 @@ Show the band of active view settings. When hidden, `f` still selects its items.
 ```toml
 [display]
 chips = false
+```
+
+### `display.buttons`
+
+- Type: `string ("plain" or "box")`
+- Default: `"plain"`
+- Scope: global, workspace, table, view
+
+How the search bar and the **Filter** and **Sort** buttons in the view bar are drawn. `"plain"` shows them by their background. `"box"` draws each of them in its own box of lines, without filling it; the lines go on the padding lines next to the middle line of the view bar (see `display.bar_padding`), and clicking anywhere in a box works. With no padding, no lines are drawn. In the "Display" section of the view settings this item switches between the two values, and each view can override it there (`o`).
+
+```toml
+[display]
+buttons = "box"
+```
+
+### `display.bar_padding`
+
+- Type: `number (0 to 2 in steps of 0.5)`
+- Default: `1`
+- Scope: global, workspace, table, view
+
+Padding above and below the view bar (the view tabs, the search bar and the buttons sit on its middle line), in lines: `0`, `0.5`, `1`, `1.5` or `2`. Both `1` and `1.0` work. The default is `1`: a half line looks different depending on the terminal and the theme (see below), so it is never the default. `0` draws the view bar on one line. Terminals can only leave whole lines, so a half line is drawn as a line next to the view bar whose cells get the view bar's background color, with its outer half covered by half blocks in the screen's background color (`▀` above, `▄` below); the view bar line itself gets the same background. The screen's background color is the theme's when the theme paints the screen; otherwise mdgrid asks the terminal for its background color once at startup. When that color is unknown, without colors, and with `terminal.ambiguous_wide = true` (half blocks may take two columns there), the half line is rounded up to an empty line. Other values produce a warning and the default is used. Terminals shorter than 16 lines, and a hidden search bar, always use `0`. In the "Display" section of the view settings this item cycles through 0, 0.5, 1, 1.5 and 2, and each view can override it there (`o`).
+
+```toml
+[display]
+bar_padding = 0.5
+```
+
+### `display.top_padding`
+
+- Type: `number (0 to 2 in steps of 0.5)`
+- Default: `1`
+- Scope: global, workspace, table, view
+
+Padding above the header, in lines, with the same values as `display.bar_padding`. A half line is drawn the same way: a line right above the header in the view bar's background color, with its upper half covered by `▀` in the screen's background color; the header then gets the view bar's background color. Terminals shorter than 16 lines always use `0`. In the "Display" section of the view settings this item cycles through the values, and each view can override it there (`o`).
+
+```toml
+[display]
+top_padding = 0
+```
+
+### `display.row_extra_lines`
+
+- Type: `integer (0 to 9)`
+- Default: `0`
+- Scope: global, workspace, table, view
+
+How many extra lines a table row may grow by. A row holding a long value, or a value with line breaks, wraps it at the column width (by character, counting widths like the rest of the table) and grows up to 1 + this many lines. Each row is only as tall as its tallest cell needs, so rows with short values stay on one line. A line break starts a new line; what does not fit ends with `…` on the last line. List values drawn as chips, group headings and the gaps between groups stay on one line. Lines below the first carry no row marker (`>`) and no row number; column lines and row colors cover the whole row. Scrolling, paging and mouse clicks count the grown lines, and the selected row scrolls into view with all its lines. The edit box and its pop-ups open on the row's first line. `0` keeps every row on one line, with line breaks shown as `…⏎`. Other values produce a warning and the default is used. In the "Display" section of the view settings this item cycles through 0, 1, 2 and 3, and each view can override it there (`o`).
+
+```toml
+[display]
+row_extra_lines = 2
 ```
 
 ## `[dates]` — dates
@@ -462,9 +527,9 @@ add_frontmatter = false
 - Default: none
 - Scope: global, workspace, table, view
 
-How a new note is made from the table ("+ New" in the header, or `a`). Every part is optional.
+How a new note is made from the table ("+ New" at the right end of the view bar, or `a`). Every part is optional.
 
-- `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the vault root) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
+- `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the root folder) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
 - `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`).
 - `ask`: the columns shown as fields in the new note form, in order. Without `ask`, the form shows the columns visible in the table. Each field is edited with the input for its type; a field left empty is not written. `Ctrl+S` creates the note from any field.
 - `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
@@ -503,6 +568,22 @@ due = "{date+7}"
 created = "{now}"
 ```
 
+## `[types]` — column types
+
+### `types`
+
+- Type: `table (column = "text", "number", "checkbox", "date", "datetime", "list" or "auto")`
+- Default: `{}`
+- Scope: global, workspace, table, view
+
+The type of single columns. A type written here wins over the root folder's type settings (`.obsidian/types.json`, which mdgrid only reads) and over guessing from the values. `"auto"` goes back to guessing, so a narrower scope can undo a type set in a wider one. The type decides the cell input, the `!` mark on values that do not fit, sorting, and the type mark in the column heading. Notes are never changed. Click the type mark of a column heading, or run `column_type` from the palette or the action menu, to pick a type (or "Auto") for the selected column; the choice is written to the table in `views.toml`. Columns of `file.*` and `formula.*` keep their own types. An unknown type name produces a warning and the column is guessed.
+
+```toml
+[types]
+due = "date"
+estimate = "number"
+```
+
 ## `[keys]` — key bindings
 
 ### `keys`
@@ -513,7 +594,7 @@ created = "{now}"
 
 Rebind keys per mode; without this item the built-in key bindings are used. Under `[keys.<mode>]`, write `key = "action name"`. The action name `"none"` removes the key. Keys are written like `"j"`, `"ctrl+s"`, `"shift+tab"`; a space separates a prefix key sequence such as `"g g"`.
 
-Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`, `relations`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
+Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`, `relations`, `drawer`, `filter_window`, `filter_input`, `screen_menu`, `column_type`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
 
 ```toml
 [keys.table]

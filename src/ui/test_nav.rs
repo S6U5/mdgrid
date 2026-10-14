@@ -92,7 +92,13 @@ fn test_nv_2_quick_filter_and_esc() {
     assert_eq!(names(&a), ["a.md", "c.md"]);
     // NV-23: 効いている語は表の上の検索の欄に出る(ヘッダーには出さない)。
     let s = screen(&a);
-    assert!(s.lines().nth(2).unwrap().contains("検索: 会議"), "{s}");
+    // 検索の欄はビューの帯(表の行より上)にある(SR-1)。
+    assert!(
+        s.lines()
+            .take(view::data_y(&a))
+            .any(|l| l.contains("検索: 会議")),
+        "{s}"
+    );
     assert!(!s.lines().next().unwrap().contains("絞り込み"), "{s}");
     press(&mut a, KeyCode::Esc);
     assert_eq!(names(&a), ["a.md", "b.md", "c.md"]);
@@ -174,8 +180,16 @@ fn test_nv_4_hide_show_move_freeze() {
     col_named(&mut a, "beta");
     ch(&mut a, '-');
     assert!(!a.cols.contains(&"beta".to_string()));
-    assert!(!screen(&a).lines().nth(3).unwrap().contains("beta"));
-    assert!(screen(&a).lines().next().unwrap().contains("隠した列 1"));
+    assert!(!screen(&a)
+        .lines()
+        .nth(view::data_y(&a) - 1)
+        .unwrap()
+        .contains("beta"));
+    assert!(screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap()
+        .contains("隠した列 1"));
     // 組み立て直しても隠したまま(見た目の状態として残すのは起動のタスク)。
     a.refresh();
     assert!(!a.cols.contains(&"beta".to_string()));
@@ -192,7 +206,11 @@ fn test_nv_4_hide_show_move_freeze() {
     ch(&mut a, 'F');
     assert_eq!(a.frozen, 1);
     ch(&mut a, '$');
-    let head = screen(&a).lines().nth(3).unwrap().to_string();
+    let head = screen(&a)
+        .lines()
+        .nth(view::data_y(&a) - 1)
+        .unwrap()
+        .to_string();
     assert!(head.contains("alpha") && head.contains("eta"), "{head}");
     assert!(!head.contains("beta"), "{head}");
     assert_fits(&mut a);
@@ -217,7 +235,9 @@ fn test_nv_5_marks_range_all_and_esc() {
     }
     assert!(footer_line(&a).contains("選択 3"), "{}", footer_line(&a));
     assert_eq!(a.row, 3);
-    assert!(screen(&a).lines().nth(4).unwrap().starts_with('+'));
+    // 2026-10-12-search-box・view-bar-plain: 帯は3行なので、行は2行下。
+    let y = 4 + 2 * usize::from(super::bands::three_rows(&a));
+    assert!(screen(&a).lines().nth(y).unwrap().starts_with('+'));
     press(&mut a, KeyCode::Esc);
     assert!(!footer_line(&a).contains("選択"));
     ch(&mut a, 'g');
@@ -286,7 +306,7 @@ fn test_nv_8_same_value_highlight_and_filter() {
     assert_eq!(names(&a), ["a.md", "c.md"]);
     assert!(screen(&a)
         .lines()
-        .next()
+        .nth(super::bands::head_y(&a) as usize)
         .unwrap()
         .contains("同じ値 status=done"));
     ch(&mut a, ',');
@@ -340,7 +360,10 @@ fn test_nv_12_edited_row_stays_until_save() {
     assert_eq!(a.changes.count(), 1);
     assert_eq!(labels(&a), ["a.md", "c.md"], "直した行は元の位置に留まる");
     let s = screen(&a);
-    assert!(s.lines().nth(4).unwrap().contains("~a "), "{s}");
+    assert!(
+        s.lines().nth(view::data_y(&a)).unwrap().contains("~a "),
+        "{s}"
+    );
     assert!(
         s.lines()
             .nth(22)
@@ -402,9 +425,10 @@ fn test_sr_6_click_selects_then_edits() {
     // [SR-6] 別の行のセルを1回クリック → 選ぶだけ。選んだ行のセルのクリック → 編集。ホイールで上下。
     let (_t, mut a) = make("sr6", STATUS);
     let x = header_x(&a, "status");
-    a.click(x, 5);
+    let y = view::data_y(&a) as u16 + 1;
+    a.click(x, y);
     assert_eq!((a.row, a.mode), (1, Mode::Table));
-    a.click(x, 5);
+    a.click(x, y);
     assert_eq!(a.mode, Mode::Edit);
     press(&mut a, KeyCode::Esc);
     a.wheel(true);
@@ -430,7 +454,11 @@ fn test_nv_4_frozen_columns_keep_selected_visible() {
     assert_eq!(a.frozen, 3);
     ch(&mut a, '$');
     assert_eq!(a.cols[a.col], "b5");
-    let head = screen(&a).lines().nth(3).unwrap().to_string();
+    let head = screen(&a)
+        .lines()
+        .nth(view::data_y(&a) - 1)
+        .unwrap()
+        .to_string();
     assert!(head.contains("b5") && head.contains("a1"), "{head}");
     assert!(view::selected_drawn(&a));
     press(&mut a, KeyCode::Enter);
@@ -439,7 +467,11 @@ fn test_nv_4_frozen_columns_keep_selected_visible() {
     press(&mut a, KeyCode::Esc);
     press(&mut a, KeyCode::Backspace);
     assert_eq!(a.changes.count(), 1);
-    assert!(screen(&a).lines().nth(4).unwrap().contains("*∅"));
+    assert!(screen(&a)
+        .lines()
+        .nth(view::data_y(&a))
+        .unwrap()
+        .contains("*∅"));
     assert_fits(&mut a);
 }
 

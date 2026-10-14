@@ -27,7 +27,7 @@ Answers to the questions people run into most. Press `?` in mdgrid for every key
 | `*` before a value | Changed, not saved yet |
 | `#` before a value | Read-only; select the cell to see why |
 | `?` (dim) | A `.base` formula mdgrid cannot evaluate |
-| `…⏎` | The value has line breaks; only the first line is shown |
+| `…⏎` | The value has line breaks; only the first line is shown (with `[display] row_extra_lines`, rows grow and show the lines) |
 
 On the left of a row: `>` is the row you are on, `+` a marked row (`Space`, `v`), `!` a note changed outside mdgrid (or a sync conflict file), and `~` a row you edited that stays in place until you save or move.
 
@@ -51,7 +51,7 @@ The note it points at was not found. mdgrid looks for the target by name in the 
 
 ## The relation map shows the wrong tables, or none
 
-The map shows the tables of the current workspace; the header shows `· workspace <name>` when one is in use. mdgrid picks it in this order: `-w <name>`, a `.mdgrid/workspace.toml` marker in the folder or above it, `workspaces.toml`, the detected Obsidian vault (or git repository with `[workspace] detect = ["vault", "git"]`), and finally the registered tables. If the map is empty, register the tables or put them in a workspace. See [Workspaces](concepts.md#workspaces-which-tables-belong-together).
+The map shows the tables of the current workspace; when one is in use, the breadcrumb in the header shows `<workspace> › <table>`. mdgrid picks it in this order: `-w <name>`, a `.mdgrid/workspace.toml` marker in the folder or above it, `workspaces.toml`, the detected root folder (a folder with `.obsidian/`, or a git repository with `[workspace] detect = [".obsidian", ".git"]`), and finally the registered tables. If the map is empty, register the tables or put them in a workspace. See [Workspaces](concepts.md#workspaces-which-tables-belong-together).
 
 Automatic tables (from a marker without `[[table]]`, or from detection) are the folders of notes right under the root; `.base` files are not added automatically, and folders such as `node_modules` and `target` are skipped. List a `.base` explicitly with `[[table]]` to include it.
 

@@ -123,8 +123,14 @@ fn message(a: &App) -> String {
     a.message.clone().unwrap_or_default()
 }
 
-fn header(a: &App) -> String {
-    screen(a).lines().next().unwrap_or("").to_string()
+/// ビューの帯(2行目。「+ 新規」は 2026-10-12-header-menu でヘッダーからここの右の端に移った)。
+fn bar(a: &App) -> String {
+    // 2026-10-12-search-box・view-bar-plain の3行の帯では真ん中の行。
+    screen(a)
+        .lines()
+        .nth(super::bands::mid_row(a))
+        .unwrap_or("")
+        .to_string()
 }
 
 /// 画面の文字 `label` をクリックする。
@@ -199,7 +205,12 @@ fn status_todo_view() -> NativeView {
 fn goto_tab(a: &mut App, name: &str) {
     let want = format!("[{name}]");
     for _ in 0..12 {
-        if screen(a).lines().nth(1).unwrap_or("").contains(&want) {
+        if screen(a)
+            .lines()
+            .nth(super::bands::mid_row(a))
+            .unwrap_or("")
+            .contains(&want)
+        {
             return;
         }
         ch(a, ']');
@@ -211,14 +222,14 @@ fn goto_tab(a: &mut App, name: &str) {
 
 #[test]
 fn test_ce_25_header_button_click_creates_note() {
-    // [CE-25] ヘッダーの行の右の端に「+ 新規」。クリックで名前の欄 → 名前を打って Enter →
+    // [CE-25] ビューの帯の行の右の端に「+ 新規」。クリックで名前の欄 → 名前を打って Enter →
     // 開いたフォルダに `<名前>.md` ができ、表にその行が出て選ばれている。未保存は増えない。
     let tmp = vault("ce25click");
     let mut a = boot(&tmp, Config::default(), false);
-    let h = header(&a);
+    let h = bar(&a);
     assert!(
         h.trim_end().ends_with("+ 新規"),
-        "ヘッダーの右の端に「+ 新規」: {h:?}"
+        "ビューの帯の右の端に「+ 新規」: {h:?}"
     );
     click_label(&mut a, "+ 新規");
     assert_opened(&a, "「+ 新規」のクリック");
@@ -282,7 +293,7 @@ fn test_ce_25_view_filter_value_is_prefilled_and_row_stays() {
     assert!(
         screen(&a)
             .lines()
-            .nth(1)
+            .nth(super::bands::mid_row(&a))
             .unwrap_or("")
             .contains("[やること]"),
         "ビューはそのまま:\n{}",
@@ -367,7 +378,7 @@ fn test_ce_25_readonly_creates_nothing() {
     assert_eq!(a.mode, Mode::Table, "名前の欄は開かない:\n{}", screen(&a));
     assert!(message(&a).contains("読むだけ"), "{:?}", message(&a));
     a.message = None;
-    if header(&a).contains("+ 新規") {
+    if bar(&a).contains("+ 新規") {
         click_label(&mut a, "+ 新規");
         assert_eq!(a.mode, Mode::Table, "クリックでも開かない:\n{}", screen(&a));
         assert!(message(&a).contains("読むだけ"), "{:?}", message(&a));

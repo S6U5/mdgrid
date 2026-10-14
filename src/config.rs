@@ -71,6 +71,8 @@ pub struct Terminal {
     pub ambiguous_wide: bool,
     /// SR-36: 丸い札の端。
     pub nerd_font: NerdFont,
+    /// SR-45: アイコン用のフォント(Nerd Font)の記号を使う(既定 false)。
+    pub nerd_icons: bool,
 }
 
 impl Default for Terminal {
@@ -79,6 +81,7 @@ impl Default for Terminal {
             color: true,
             ambiguous_wide: false,
             nerd_font: NerdFont::Auto,
+            nerd_icons: false,
         }
     }
 }
@@ -95,7 +98,7 @@ pub struct Config {
     /// (モード, キーの表記 "j"・"ctrl+s"・"shift+tab", 動作の名前か "none")。SR-13。
     pub keys: Vec<(String, String, String)>,
     pub terminal: Terminal,
-    /// WS-5: ワークスペースの検知(`workspace.detect`。既定は保管庫だけ)。
+    /// WS-5: ワークスペースの検知(`workspace.detect`。既定は `.obsidian` だけ)。
     pub workspace_detect: Vec<crate::workspace::Detect>,
     /// 全体の表のプロファイル(config.toml に書いたもの)。
     pub profile: Profile,
@@ -201,6 +204,10 @@ fn read_terminal(v: &toml::Value, t: &mut Terminal, file: &str, w: &mut Vec<Stri
                 Some(n) => t.nerd_font = n,
                 None => warn(w, file, &p, not(Msg::WantNerdFont)),
             },
+            "nerd_icons" => match v.as_bool() {
+                Some(b) => t.nerd_icons = b,
+                None => warn(w, file, &p, not(Msg::WantBool)),
+            },
             _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
         }
     }
@@ -214,6 +221,7 @@ fn read_workspace(v: &toml::Value, c: &mut Config, file: &str, w: &mut Vec<Strin
         let p = format!("workspace.{k}");
         match k.as_str() {
             "detect" => {
+                // WS-5: 値は目印のフォルダの名前(旧い値は legacy::lift が写して警告する)。
                 let parsed: Option<Vec<_>> = v.as_array().and_then(|items| {
                     items
                         .iter()
@@ -327,7 +335,8 @@ pub fn default_toml() -> String {
         }
         out.push_str(&format!("# Scope: {}.\n", item.scope.en()));
         match item.default {
-            Some(v) => out.push_str(&format!("{} = {}\n", item.leaf(), v)),
+            // 表の項目(`types` の既定 `{}` など)は、既定があっても書き方の例を出す(区画の見出しにする)。
+            Some(v) if !item.is_table() => out.push_str(&format!("{} = {}\n", item.leaf(), v)),
             // 区画の下の項目の例は、区画の見出しの行を除いて出す(今の区画の中)。
             None if !item.is_table() && !sec.is_empty() => {
                 out.push_str("# Example:\n");
@@ -337,7 +346,7 @@ pub fn default_toml() -> String {
                     out.push('\n');
                 }
             }
-            None => {
+            _ => {
                 out.push_str("# Example:\n");
                 for line in item.example.lines() {
                     out.push_str("# ");
@@ -387,6 +396,11 @@ pub fn app_toml(c: &Config) -> String {
     ));
     out.push_str(src(c.terminal.nerd_font == d.terminal.nerd_font));
     out.push_str(&line("nerd_font", c.terminal.nerd_font.to_value()));
+    out.push_str(src(c.terminal.nerd_icons == d.terminal.nerd_icons));
+    out.push_str(&line(
+        "nerd_icons",
+        toml::Value::Boolean(c.terminal.nerd_icons),
+    ));
     out.push_str("\n[workspace]\n");
     out.push_str(src(c.workspace_detect == d.workspace_detect));
     let detect = c

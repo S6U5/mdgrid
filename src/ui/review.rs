@@ -46,6 +46,9 @@ impl App {
                 self.switch_to = None;
                 self.switch_select = None;
                 self.switch_new_note = false;
+                // WS-8: 移る先の範囲の旗も捨てる(あとで別の道で移るときに、前の選びの範囲を拾わない)。
+                self.switch_workspace = None;
+                self.switch_leave_workspace = false;
                 self.set_mode(Mode::Table);
             }
             Action::NextFile => {

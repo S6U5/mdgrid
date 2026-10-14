@@ -165,7 +165,10 @@ fn test_sr_10_dumb_term_draws_no_emoji() {
     assert!(!b.no_emoji);
     let s2 = screen(&b);
     assert!(s2.contains("🍎りんご"), "{s2}");
-    assert_eq!(s.lines().nth(3), s2.lines().nth(3));
+    // 列の見出しの行(表の最初の行のすぐ上。SR-1)。
+    let hy = view::data_y(&a) - 1;
+    assert_eq!(view::data_y(&b) - 1, hy);
+    assert_eq!(s.lines().nth(hy), s2.lines().nth(hy));
     assert_eq!(view::layout(&a).widths, view::layout(&b).widths);
 }
 
@@ -245,7 +248,8 @@ fn test_bv_12_conflicting_type_cell_enter_is_read_only() {
 
 /// ヘッダーの「読み込み中 N/M」の N。
 fn loaded_on_screen(s: &str) -> usize {
-    let top = s.lines().next().unwrap();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の行の下)。
+    let top = s.lines().find(|l| l.contains("読み込み中")).unwrap();
     let rest = &top[top.find("読み込み中 ").expect("読み込み中の表示") + "読み込み中 ".len()..];
     rest[..rest.find('/').unwrap()].parse().unwrap()
 }
@@ -271,7 +275,12 @@ fn test_bv_16_ten_thousand_notes_first_screen_fast() {
     assert!(took < Duration::from_secs(1), "最初の画面まで {took:?}");
     assert!(!a.loaded());
     // 読んだ分の行が出る(読む順はフォルダの並びなので、どのノートかは問わない)。
-    assert!(s.lines().nth(4).unwrap()[1..].starts_with('n'), "{s}");
+    // 2026-10-12-search-box・view-bar-plain: 帯は3行なので、最初の行は2行下。
+    let first_row = 4 + 2 * usize::from(super::bands::three_rows(&a));
+    assert!(
+        s.lines().nth(first_row).unwrap()[1..].starts_with('n'),
+        "{s}"
+    );
     let first = loaded_on_screen(&s);
     assert!(first > 0 && first < 10_000, "{first}");
     assert_eq!(a.rows.len(), first, "{s}");
@@ -320,7 +329,11 @@ fn test_wb_13_sync_conflict_row_marked_and_explained() {
         .unwrap();
     let s = screen(&a);
     assert!(s.contains("!note.sync-conflict-2"), "{s}");
-    let plain = s.lines().find(|l| l[1..].starts_with("note ")).unwrap();
+    // 2026-10-12-view-bar-plain: ビューの帯の上下の空きの行(空の行)を飛ばして探す。
+    let plain = s
+        .lines()
+        .find(|l| l.get(1..).is_some_and(|r| r.starts_with("note ")))
+        .unwrap();
     assert!(!plain.contains("!note "), "普通の行に印は無い: {s}");
     a.row = i;
     a.scroll_into_view();
@@ -350,8 +363,9 @@ fn test_cv_1_null_is_dim_but_empty_string_and_missing_are_not() {
     col_named(&mut a, "t");
     let buf = buffer(&a);
     let s = text(&buf);
-    assert!(s.lines().nth(4).unwrap().contains('∅'), "{s}");
-    assert!(s.lines().nth(5).unwrap().contains("\"\""), "{s}");
+    let dy = view::data_y(&a);
+    assert!(s.lines().nth(dy).unwrap().contains('∅'), "{s}");
+    assert!(s.lines().nth(dy + 1).unwrap().contains("\"\""), "{s}");
     let null = cell_mods(&buf, &a, 0, "s");
     assert!(null.iter().all(|m| m.contains(Modifier::DIM)), "{null:?}");
     for i in [1, 2] {

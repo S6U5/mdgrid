@@ -67,7 +67,7 @@ pub struct Markdown {
     folders: Vec<PathBuf>,
     /// 最後に読んだ内容を解析した結果(実体のパス → 解析)。根の下の読んだノート全部。
     parsed: HashMap<PathBuf, Parsed>,
-    /// types.json に無い列の推定した型(CE-2)。セルを読むたびに全ノートから推定し直すと、大きな保管庫で
+    /// types.json に無い列の推定した型(CE-2)。セルを読むたびに全ノートから推定し直すと、大きなルートフォルダで
     /// 2乗に遅くなるので覚える。ノートを解析し直したら忘れる。
     inferred: std::cell::RefCell<HashMap<String, Kind>>,
     /// リンクの索引(BV-22)。inferred と同じく、セルごとに全ノートを見直さないよう覚え、ノートを解析し直したら忘れる。
@@ -143,7 +143,7 @@ impl Markdown {
         Markdown::open(&roots)
     }
 
-    /// 保管庫の根(BV-2)。
+    /// ルートフォルダ(BV-2)。
     pub fn roots(&self) -> &[PathBuf] {
         self.vault.roots()
     }

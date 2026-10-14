@@ -1,0 +1,1485 @@
+# mdgrid の画面と起動の文言の台帳: 日本語(SR-23)。名前と並びは英語の台帳(en.toml)に合わせる。
+# 1行に1つ `名前 = "文"`。`##` と `#` の行は英語の台帳の説明と区切りの写し(訳す手がかり。ビルドは読まない)。
+# 差し込みの番号(`{0}` など)は英語の文と同じ組にする。
+
+
+# ---- main: 使い方(CLI-2) ----
+Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
+
+# ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
+ValuePath = "パス"
+ValueName = "名前"
+ValueFormat = "形"
+ValuePick = "path|列の名前"
+ValueShell = "シェル"
+ValueExpr = "式"
+ValueSort = "列[:desc]"
+
+# ---- main: 引数の誤り(CLI-4。clap の誤りを1行に直す) ----
+CliUnknownOption = "知らないオプション: {0}(--help で使い方)"
+## {0} はオプション、{1} は無いもの(`CliWhat*`)。
+CliMissingValue = "{0} に{1}が無い"
+CliWhatView = "ビューの名前"
+CliWhatConfig = "設定のパス"
+CliWhatShell = "シェルの名前"
+CliWhatFormat = "形の名前"
+CliWhatPick = "出すもの(path か列の名前)"
+CliWhatValue = "値"
+CliUnknownValue = "{0} に知らない値: {1}(使える値: {2})"
+## 並べた値の区切り。
+ListSep = "・"
+CliInvalidUtf8 = "引数が UTF-8 で読めない"
+CliConflict = "{0} と {1} は一緒に使えない(--help で使い方)"
+CliRequired = "{0} が要る(--help で使い方)"
+## {0} は渡された旗、{1} はそれに要るもの(`--format`・`--with-path` に `--print`)。
+CliRequiredBy = "{0} には {1} が要る(--help で使い方)"
+CliTakesNoValue = "{0} は値を取らない: {1}(--help で使い方)"
+CliBadArgument = "読めない引数: {0}(--help で使い方)"
+CliUnreadable = "引数が読めない: {0}(--help で使い方)"
+
+# ---- main: 起動できない理由(CLI-4・SR-10) ----
+CannotWriteOutput = "出せない: {0}"
+ConfigUnreadable = "設定が読めない: {0}({1})"
+PathUnopenable = "開けないパス: {0}({1})"
+CsvAlone = ".csv・.tsv は1つだけで渡す(フォルダや別のファイルと並べない): {0}"
+BaseAlone = ".base は1つだけで渡す(フォルダや別の .base と並べない): {0}"
+NotAFolder = "フォルダではない: {0}"
+ViewNeedsBase = "--view {0} は .base を開くときだけ使える"
+CannotOpen = "開けない: {0}"
+BaseUnreadable = ".base が読めない: {0}({1})"
+## {0} はビューの名前、{1} は `ViewsAre` か `NoViews`。
+NoSuchView = "ビュー「{0}」は無い({1})"
+ViewsAre = "あるビュー: {0}"
+NoViews = "ビューが無い"
+NotATerminal = "標準の入出力が端末ではないので、画面を出せない"
+NoDevTty = "端末(/dev/tty)が開けないので、画面を出せない({0})"
+TerminalError = "端末の誤り: {0}"
+PickNoColumn = "--pick の列「{0}」は表に無い(ある列: {1})"
+
+# ---- source/markdown: 読むだけの理由(WB-3・WB-5・CE-8・CE-16・CE-19・BV-12) ----
+LockNoFrontmatterSetting = "フロントマターが無い(設定で書かない)"
+LockEmptyFrontmatterSetting = "空のフロントマター(設定で書かない)"
+LockTypesConflict = "根ごとに types.json の型が違う(読むだけ)"
+LockNoFrontmatter = "フロントマターが無い"
+LockEmptyFrontmatter = "フロントマターが空"
+LockBom = "BOM つきのファイル"
+
+# ---- --apply(CLI-17) ----
+## {0} は JSON の読み取りの誤り。
+ApplyBadJson = "JSON を読めない: {0}"
+## {0} は何番目のオブジェクトか。
+ApplyNoPath = "{0} 番目に \"path\" が無い(--with-path を付けて出す)"
+ApplyBadCsv = "CSV を読めない: 引用符で囲んだ欄が閉じていない"
+ApplyNoPathColumn = "CSV に path の列が無い(--with-path を付けて出す)"
+## {0} は行、{1} は欄の数、{2} は見出しの欄の数。
+ApplyCsvWidth = "{0} 行目の欄の数が {1}(見出しは {2})"
+ApplyNotList = "値は文字・数・true/false・null・文字のリストにする"
+## {0} は行、{1} は path。
+ApplyUnknownPath = "{0} 行目: {1} にノートが無い"
+## {0} は行、{1} は path、{2} は列、{3} は理由。
+ApplyBadValue = "{0} 行目: {1}: {2}: {3}"
+## {0} は行、{1} は path、{2} は列、{3} は読むだけの理由。
+ApplyLocked = "{0} 行目: {1}: {2} は書けない({3})"
+## {0} はノート。
+ApplyChangedOutside = "{0} は外で変わったので書かなかった"
+## {0} は変わるファイルの数。
+ApplyDryRun = "{0} 個のファイルが変わる。まだ書いていない(書くには --yes を付ける)"
+## {0} は数。
+ApplyDryRunOne = "{0} 個のファイルが変わる。まだ書いていない(書くには --yes を付ける)"
+## {0} は捨てた直しの数、{1} は列の名前。
+ApplyIgnored = "書けない列の {0} 個の直しは当てなかった({1})"
+ApplyIgnoredOne = "書けない列の {0} 個の直しは当てなかった({1})"
+## CLI-16。{0} は列の名前。
+CliUnknownSort = "--sort {0}: ビューにもノートにも無い列"
+ApplyNoChanges = "変わる値が無い(どれもノートと同じ)"
+## {0} はファイル、{1} は誤り。
+ApplyUnreadable = "{0} を読めない: {1}"
+ApplyProblems = "上の理由があるので、何も書かなかった"
+## {0} は見出し。
+ApplyDuplicateHeader = "見出しに列 {0} が2つある"
+## {0} は見出し。
+ApplyUnknownColumn = "列 {0} はビューに無く、どのノートにもそのキーが無い(綴りを確かめる)"
+## {0} は見出し。
+ApplyAmbiguousColumn = "列 {0} は2つの列に読める(表示名と、別の列のキー)"
+## {0} は行、{1} は path。
+ApplyAmbiguousPath = "{0} 行目: {1} は渡したフォルダごとに別のノートに当たる(1つのフォルダからのパスで書く)"
+## {0} は行、{1} は path、{2} は列、{3} は先に書いた行。
+ApplyDuplicateRow = "{0} 行目: {1}: {2} は {3} 行目でも当てている"
+## {0} は値。
+ApplyDateForm = "日付は YYYY-MM-DD で書く(「{0}」)"
+ApplyListAmbiguous = "このリストの要素に「, 」か前後の空白があり、CSV からは直せない(--format json を使う)"
+## {0} は数。
+ApplyBigNumber = "{0} は64ビットの整数に入らない(丸めてしまう)"
+ApplyReadonly = "--apply はノートを書くので --readonly と一緒に使えない"
+## CLI-16。{0} は渡した --sort の値。
+CliBadSort = "--sort {0}: 列の名前と、後ろに :asc か :desc(無くてよい)を書く"
+## CLI-16。{0} はビューの名前。
+CliFilterNativeView = "--filter・--sort は .base のビューかフォルダに使う(mdgrid のビュー「{0}」には使えない)"
+LockToml = "フロントマターが YAML でなく TOML(+++)"
+LockNotUtf8 = "UTF-8 ではない"
+LockMixedNewlines = "改行コードが混ざっている"
+## {0} は重なったキー。
+LockDuplicateKey = "同じキーが2回ある({0})"
+LockUnclosed = "フロントマターが閉じていない"
+LockHardLink = "ハードリンクがある"
+LockInvalidYaml = "読めない形(読むだけ)"
+LockInvalidYamlAt = "YAML が {0}行目で読めない: {1}(読むだけ)"
+LockFileAttr = "ファイルの属性(読むだけ)"
+LockFormulaColumn = "式の列(読むだけ)"
+## WB-5。`writeback::NO_PERMISSION` は日本語。
+NoPermission = "書き込めない権限"
+ListBlankBetween = "要素の間に空行があるリスト"
+ListCommentBetween = "要素の間にコメントがあるリスト"
+ListTrailingComment = "要素の行末にコメントがあるリスト"
+ListIndent = "字下げの違う要素があるリスト"
+ListTabAfterDash = "`-` のあとがタブのリスト"
+ListMultiLine = "複数行にまたがる要素を含むリスト"
+ListNested = "入れ子の要素を含むリスト"
+ListNonString = "文字列でない要素を含むリスト"
+ValueNested = "ネストした値"
+ValueMultiLine = "複数行の値"
+ValueAnchor = "アンカーの値"
+ValueTagged = "タグつきの値"
+ValueUnwritable = "書き換えられない形の値"
+RowNotLoaded = "読んでいない行"
+SyncConflictFile = "同期の競合ファイル"
+CannotRead = "読めない: {0}"
+
+# ---- changes: ためられない理由(CE-8・CE-16・CE-18) ----
+NoBaseAfterReload = "読み直した行の基準が無い"
+SkipListCell = "リストのセルには1つの値を書けない(要素を付け外しする)"
+SkipNotLoaded = "まだ読めていない"
+
+# ---- types: 日付の形と日付の打ち込み(CE-5・CE-22) ----
+## {0} は形(引用符つき)、{1} は理由。
+DateFormatBad = "日付の形 {0} が読めない: {1}"
+DateFormatBadChar = "{0} は使えない(部品は YYYY・YY・MM・M・DD・D・ddd と、英数字でない区切りの文字)"
+DateFormatMonthDay = "月(MM か M)と日(DD か D)が1つずつ要る"
+DateFormatYearWeekday = "年と曜日は1つまで"
+DateFormatAdjacent = "M・D はほかの数の部品と区切り無しで並べられない"
+DateNotReal = "実在しない日付: {0}"
+## {0} は打ち込み、{1} は日付、{2} は曜日(訳さない)。
+DateWeekdayMismatch = "曜日が日付と合わない: {0}({1} は {2})"
+## {1} は使える形を `ListSep` で並べたもの。
+DateUnreadable = "日付として読めない: {0}({1})"
+DateEmptyClears = "空で消す"
+DateOutOfRange = "日付の範囲(0000-01-01〜9999-12-31)の外: {0}"
+
+# ---- config: 設定の警告(CLI-3) ----
+ConfigTomlLine = "設定の TOML が読めない({0} 行目): {1}"
+ConfigToml = "設定の TOML が読めない: {0}"
+WantIntAtLeast0 = "0 以上の整数"
+WantIntAtLeast1 = "1 以上の整数"
+WantBool = "true か false"
+WantDateFormat = "日付の形の文字列"
+WantWeekStart = "\"sun\" か \"mon\""
+WantString = "文字列"
+WantLanguage = "\"auto\"・\"en\"・\"ja\" のどれか"
+WantLook = "\"modern\" か \"classic\""
+WantCells = "\"rich\" か \"plain\""
+WantCellsColumns = "列 = \"rich\"・\"plain\"・\"chip\" の表"
+WantColStyle = "\"rich\"・\"plain\"・\"chip\" のどれか"
+WantTheme = "\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\" のどれか(か { light, dark } の表)"
+## {0} は候補の並び。
+WantOneOf = "{0} のどれか"
+WantTable = "表"
+WantTabs = "\"always\"・\"auto\"・\"never\" のどれか"
+WantButtons = "\"plain\" か \"box\""
+WantBarPadding = "0〜2 の 0.5 刻み(0・0.5・1・1.5・2)"
+WantRowExtraLines = "0〜9 の整数"
+## 設定の警告(CLI-3)。{0} はファイルの名前、{1} は項目の道筋、{2} は理由。
+SettingWarn = "{0}: {1}: {2}"
+## 値の出どころ(SR-44)の、ビューの設定の範囲。
+OriginView = "ビューの設定"
+## {0} は求める型(Want*)。
+RsnNot = "{0}でないので無視した"
+RsnUnknown = "知らない項目なので無視した"
+## {0} は新しい道筋(CLI-20)。
+RsnMoved = "旧い名前は `{0}` に移った(そこに書いたものとして読んだ)"
+RsnGlobalOnly = "全体(config.toml)にだけ書ける項目なので無視した"
+RsnNoTemplate = "テンプレート「{0}」が無いので無視した"
+RsnNestedUse = "テンプレートの中の use は読まない"
+RsnBadDateFormat = "{0}。既定の YYYY-MM-DD にした"
+RsnBadColumn = "`{0}` は書けない列か重なりなので無視した"
+RsnBadNoteMode = "\"{0}\" は \"form\" でも \"editor\" でもないので窓で作る"
+RsnNeedName = "重ならない name の文字列が要るので無視した"
+RsnNeedPath = "path の文字列が要るので無視した"
+RsnNeedNamePath = "name と path の文字列が要り、name は重ねられないので無視した"
+RsnDuplicateValue = "同じ値が2回書かれている(どれか1つを使う)"
+WantColor = "色(\"#rrggbb\"・\"#rgb\" か色の名前)"
+WantNerdFont = "true・false か \"auto\""
+WantKeysTable = "[keys.<モード>] の表"
+WantKeyActionTable = "キー = 動作 の表"
+WantActionName = "動作の名前の文字列"
+WantNewNoteTable = "[new_note] の表"
+WantColumnNames = "列の名前の文字列の並び"
+WantColumnValueTable = "列 = 値 の表"
+WantSetValue = "文字列・数・真偽・日付・その並び"
+WantDisplayTable = "[display] の表"
+
+# ---- views: views.toml の警告と誤り(BV-20) ----
+## {0} はファイル、{1} は行、{2} は TOML の誤り(英語のまま)。
+ViewsTomlLine = "{0} が読めない({1} 行目)ので mdgrid のビューは読まない: {2}"
+## SR-43: 見た目の区画。
+NavLook = "見た目"
+DescLook = "テーマ・部品の形の組・丸い札の端(look.toml に残す)"
+LookScope = "保存先"
+LookTheme = "テーマ"
+LookPreset = "組"
+LookNerd = "丸い札の端"
+LookTemplates = "テンプレート"
+LookSaveTemplate = "+ 今の見た目を名前を付けて保存"
+LookResetRow = "この範囲の上書きを外す"
+LookNerdAuto = "auto(自動。端末に合わせる)"
+LookNerdOn = "true(オン。Nerd Font)"
+LookNerdOff = "false(オフ)"
+LookPickOf = "{0}を選ぶ"
+LookTemplateUsed = "テンプレート「{0}」を当てた(反映で効く)"
+LookTemplateSaved = "テンプレート「{0}」を保存した"
+LookTemplateDeleted = "テンプレート「{0}」を消した"
+## {0} は範囲の名前。
+LookReset = "{0}のテーマと組の上書きを外した"
+## {0} はテンプレートの名前。
+LookTemplateInConfig = "テンプレート「{0}」は config.toml にあるので、config.toml を直して消す"
+LookMarkerReadOnly = "ワークスペースの印(.mdgrid/workspace.toml)はノートのフォルダの中なので書かない。印に手で書く"
+OriginDefault = "既定"
+OriginConfig = "config.toml"
+OriginGlobal = "全体"
+OriginWorkspace = "このワークスペース"
+OriginTable = "この表"
+OriginThisView = "このビュー"
+TextLookTemplate = "テンプレートの名前"
+SetHintLook = "{0} で選ぶ・当てる、{1} でテンプレートを消す(反映で効く)"
+## SR-43: look.toml の警告。
+LookBroken = "{0} が読めない({1})。config.toml の見た目で起動する"
+LookTemplateNoName = "{0}: name の無いテンプレート(読まない)"
+ViewsToml = "{0} が読めないので mdgrid のビューは読まない: {1}"
+ViewsNotUtf8 = "{0} が UTF-8 でないので mdgrid のビューは読まない"
+ViewsTargetNotArray = "{0} の `target` が [[target]] の表の並びでないので無視した"
+## {1} は1から数えた番号。
+ViewsTargetNotTable = "{0} の {1} 番目の target が表でないので無視した"
+ViewsTargetNoPath = "{0} の {1} 番目の target に path(文字列)が無いので無視した"
+ViewsViewNotArray = "{0} の target `{1}` の view が [[target.view]] の表の並びでないので無視した"
+ViewsViewNotTable = "{0} の target `{1}` の {2} 番目のビューが表でないので無視した"
+ViewsViewUnreadable = "{0} の target `{1}` の {2} 番目のビューが読めないので無視した: {3}"
+ViewsSaveNotUtf8 = "{0} が UTF-8 でないので書かない"
+ViewsSaveBroken = "{0}(書かない)"
+ViewsSaveTargetNotArray = "{0} の `target` が表の並びでないので書かない"
+ViewsNotATable = "ビューを表にできない"
+
+# ---- views: .base への書き出しの近似と落としたもの(BV-19・SR-20) ----
+ExportEmptyNote = "{0} の「空」の判定: 値がマップか入れ子のリストのときは、式では空に見えて行がずれることがある"
+## {0} は列、{1} は `Approx*`。
+ExportApprox = "{0} の条件は近似: {1}"
+ApproxDateValue = "日付・日時の形の値「{0}」は日付・時刻として比べる(前後の空白や別の書き方の同じ日時の値も当たる)"
+ApproxMapValue = "値「{…}」(マップ・入れ子のリスト)は式で当てられない"
+ApproxContainsDateTime = "「{0}」は日時の値を秒まで補った形(…T10:00:00)の中で探す"
+ApproxContainsJoined = "「{0}」はリストの要素をつないだ文字の中で探すので、要素の境目にも当たる"
+ApproxContainsMap = "マップ・入れ子のリストの値(settings では「{…}」)は式で同じに探せない"
+ApproxCmpList = "リストの値(型の合わない値)は式では残らない(settings は要素ごとに比べる)"
+ApproxCmpDateLoose = "前後に空白のある・空白区切りの・Z 付きの値も日付・日時として読む(settings では型の合わない値)"
+ApproxCmpUnknownType = "列の型が分からないので「{0}」と文字の順で比べる(数・日付の列なら settings ではどの行も残らない)"
+ApproxCmpListJoined = "リストの値は要素ごとでなく、要素をつないだ文字で比べる"
+ApproxCmpMapEmpty = "マップ・入れ子のリストの値(settings では「{…}」)は式では空に見えて残らない"
+ApproxCmpDateTimePadded = "日時の値は秒まで補った形(…T10:00:00)で比べる"
+## {0} は formula の名前を `ListSep` と `formula.` でつないだもの。
+ExportFormulaRefs = "formula.{0} を参照しているが、mdgrid のビューは formulas を持たないので書き出していない(参照は残したが評価できない)"
+ExportHiddenDropped = "隠す列({0})は、列の並び(order)が空なので .base で表せず落とした"
+ExportHideEmptyDropped = "グループ({0})の「空を隠す」(NV-21)は .base の groupBy で表せないので落とした"
+ExportDisplayDropped = "表示の切り替え(行番号・一行おきの色など。SR-20)は .base に無いので落とした"
+ImportNoView = ".base にビュー {0} は無い"
+ImportNoType = "ビューに type が無いので table として取り込んだ"
+ImportTypeAsTable = "type: {0} のビューを table として取り込んだ"
+ImportLimitDropped = "limit: {0}(行数の上限)は mdgrid のビューに無いので落とした"
+ImportFormulasDropped = "formulas({0})は mdgrid のビューに無いので落とした(formula.* を使う列と式は評価できない)"
+ImportDisplayNameDropped = "properties の displayName({0})は mdgrid のビューに無いので落とした"
+
+# ---- base: .base の誤りと評価できない理由(BV-7・SC-8) ----
+BaseYaml = ".base の YAML が読めない: {0}"
+BaseNotMap = ".base の先頭がマップでない"
+## {0} は深さの上限。
+BaseTooDeep = "YAML の入れ子が {0} 段より深い"
+BaseAliasTooBig = ".base の別名(*)を展開すると大きすぎる({0} ノードまで)"
+BaseFilterShape = "filters の形が読めない(式の文字列か and・or・not のマップのはず)"
+BaseFilterUnknown = "filters の知らない形: {0}(and・or・not のはず)"
+## {0} は関数・項目、{1} は式。
+BaseUnsupported = "未対応の関数・項目 {0}(式: {1})"
+BaseExprSyntax = "式が読めない: {0}(式: {1})"
+BaseInExpr = "{0}(式: {1})"
+BaseFilterKept = "filters の式は mdgrid で評価できない(残したがビューは開けない): {0}"
+BaseFilterDropped = "filters の読めない部分を落とした: {0}"
+BaseFormulaCycle = "formula.{0} が循環"
+BaseFormulaMissing = "formula.{0} は formulas に無い"
+BaseUnsupportedField = "未対応の項目 {0}"
+BaseBadColumn = "読めない列: {0}"
+BaseNoViewIndex = "ビュー {0} は無い"
+BaseViewNoType = "ビュー「{0}」に type が無い"
+## {0} は型、{1} はビューの名前。
+BaseViewUnsupported = "{0} のビュー「{1}」は未対応(mdgrid は table のビューだけ)"
+BaseGlobalFilters = "全体の filters を評価できない: {0}"
+BaseViewFilters = "ビュー「{0}」の filters を評価できない: {1}"
+BaseCannotSort = "{0} で並べられない(空として扱う): {1}"
+## 空のグループの見出し(base・settings)。
+EmptyHeading = "(空)"
+## {0} は列、{1} は集計の名前、{2} は最上位の summaries の式。
+BaseSummaryFormula = "{0} の集計: 式の集計 {1} は未対応({2})"
+## {0} は列、{1} は集計の名前。
+BaseSummaryUnknown = "{0} の集計: 知らない集計 {1}"
+BaseSummaryGroups = "まとまりごとの集計は未対応(集計の行は表全体)"
+
+# ---- summary: 組み込みの集計の名前(BV-14。英語は Obsidian の名前) ----
+SummaryAverage = "平均"
+SummaryMin = "最小"
+SummaryMax = "最大"
+SummarySum = "合計"
+SummaryRange = "範囲"
+SummaryMedian = "中央値"
+SummaryStddev = "標準偏差"
+SummaryEarliest = "最早"
+SummaryLatest = "最遅"
+SummaryChecked = "チェックあり"
+SummaryUnchecked = "チェックなし"
+SummaryEmpty = "空"
+SummaryFilled = "空でない"
+SummaryUnique = "種類"
+## 集計の行の、ノートの列の見出し。
+SummaryRow = "集計"
+
+# ---- expr: 式の読み取りの誤り ----
+ExprBadNumber = "数として読めない: {0}"
+ExprNameAfterNumber = "数の直後に名前がある: {0}{1}"
+ExprUnclosedString = "文字列が閉じていない"
+ExprBadChar = "読めない文字: {0}"
+ExprTooDeep = "式の入れ子が深すぎる"
+ExprMissing = "{0} が無い"
+ExprCommaOrRParen = "`,` か `)`"
+ExprCommaOrRBrack = "`,` か `]`"
+ExprNoNameAfterDot = "`.` の後ろに名前が無い"
+ExprUnexpectedEnd = "式が途中で終わっている"
+ExprUnexpectedToken = "ここに置けない記号: {0}"
+ExprArityAtLeast = "{0} 以上"
+ExprArityRange = "{0}〜{1}"
+## {0} は関数、{1} は渡した数、{2} は求める数。
+ExprArity = "{0} の引数の数が違う({1} 個。{2} 個のはず)"
+ExprTrailing = "式の後ろに余計なものがある: {0}"
+
+# ---- newnote: 新しいノートの設定と作れない理由(CE-25・CE-26・CE-27) ----
+NewNoteNotTable = "new_note が表でない"
+NewNoteNotString = "new_note.{0} が文字列でない"
+NewNoteAskNotArray = "new_note.ask が並びでない"
+NewNoteAskNonString = "new_note.ask に文字列でない値がある"
+NewNoteSetNotTable = "new_note.set が表でない"
+NewNoteSetBadValue = "new_note.set の `{0}` は文字列・数・真偽・日付・その並びでない"
+## {0} は `NewNoteWhat*`。
+NewNoteControl = "{0}に制御文字がある"
+NewNoteAbsolute = "{0}が絶対パス(開いたフォルダの外)なので作らない"
+NewNoteBadChar = "{0}に Obsidian で使えない文字 `{1}` があるので作らない"
+NewNoteDotDot = "{0}に `..` がある(開いたフォルダの外)ので作らない"
+NewNoteDotPart = "{0}の `{1}` は `.` で始まる(読み込みで飛ばす)ので作らない"
+NewNoteWhatFolder = "設定のフォルダ"
+NewNoteWhatName = "名前"
+NewNoteEmptyName = "名前が空なので作らない"
+NewNoteNameIsFolder = "名前がフォルダで終わっているので作らない"
+NewNoteExists = "{0} は既にあるので作らない"
+NewNoteEmptyKey = "列の名前が空の値は書けない: {0}"
+NewNoteNewline = "値に改行があるので作らない"
+NewNoteNotEditable = "書けない値なので作らない: {0}"
+NewNoteCannotBuild = "新しいノートの中身を作れない: {0}"
+
+# ---- print: --print の誤り(CLI-5) ----
+PrintNoViews = ".base に views が無い"
+PrintNativeView = "mdgrid のビュー「{0}」: {1}"
+
+# ---- settings: 設定の帯の項目(NV-16) ----
+ChipSort = "並べ替え: {0} {1}"
+ChipGroupOff = "グループ: なし"
+ChipGroup = "グループ: {0} {1}"
+ChipHideEmpty = "(空を隠す)"
+CondOnly = "{0} だけ"
+CondExcept = "{0} を除く"
+CondContains = "「{0}」を含む"
+CondNotContains = "「{0}」を含まない"
+CondEmpty = "空である"
+CondNotEmpty = "空でない"
+
+# ---- display: 「表示」の節の項目(SR-21) ----
+DisplayRowNumbers = "行番号"
+DisplayZebra = "一行おきの色"
+DisplayColumnLines = "列の区切り線"
+DisplayGroupGap = "まとまりの間"
+DisplayTabs = "タブ"
+DisplaySearchBar = "検索の欄"
+DisplayChips = "設定の帯"
+DisplayButtons = "帯のボタン"
+DisplayBarPadding = "帯の余白"
+DisplayTopPadding = "上の余白"
+DisplayRowExtraLines = "行を伸ばす"
+
+# ---- ui/keymap: モードの表示名(SR-16。下の帯・ヘルプ・警告) ----
+ModeTable = "表"
+ModeEdit = "編集"
+ModeConfirm = "保存の確認"
+ModeQuit = "終了の確認"
+ModeHelp = "ヘルプ"
+ModePalette = "パレット"
+## NV-1・NV-2(2026-10-11): 呼び直す前の `/` と上の欄のモードの表示名(書いた設定を前のモードに読む)。
+OldModeSearch = "検索"
+OldModeFilter = "絞り込み"
+ModeSearch = "探す"
+ModeFilter = "検索"
+ModeDetail = "詳細の表示"
+ModeSettings = "ビューの設定"
+ModeSettingsText = "設定の値の入力"
+ModeChips = "設定の帯"
+ModeListPick = "リストの選択"
+ModeMenu = "操作の一覧"
+ModeFreq = "頻度表"
+ModeSorts = "並べ替え"
+ModeFilterWin = "絞り込み"
+ModeFilterText = "絞り込みの値"
+ModeDrawer = "表の一覧"
+ModeRelations = "関係マップ"
+ModeScreenMenu = "画面の型"
+
+# ---- ui/keymap: ヘルプの節(SR-5) ----
+SecMove = "移動"
+SecEdit = "編集"
+SecFile = "保存と終了"
+SecInput = "入力ボックス"
+SecReview = "保存の確認"
+SecQuit = "終了の確認"
+SecFind = "ヘルプとコマンド"
+SecOutside = "エディタとコピー"
+SecInHelp = "ヘルプの中"
+SecInPalette = "パレットの中"
+SecShape = "表の形"
+SecSearch = "検索と絞り込み"
+SecSelect = "選択と詳細"
+SecInPrompt = "探す・検索の入力"
+SecInDetail = "詳細の表示の中"
+SecInSettings = "ビューの設定の中"
+SecInChips = "設定の帯の中"
+SecInPick = "リストの選択の中"
+SecNative = "mdgrid のビュー(パレットのコマンド)"
+SecNote = "ノートを作る(パレットのコマンド)"
+SecInMenu = "操作の一覧の中"
+SecInFreq = "頻度表の中"
+SecInSorts = "並べ替えの窓の中"
+SecInFilters = "絞り込みの窓の中"
+SecInDrawer = "表の一覧の中"
+SecInRelMap = "関係マップの中"
+SecInScreenMenu = "画面の型の窓の中"
+
+# ---- ui/keymap: キーの表示名(SR-4。下の帯・ヘルプ・パレット) ----
+KeyUp = "上"
+KeyDown = "下"
+KeyLeft = "左"
+KeyRight = "右"
+KeyFirstColumn = "列の先頭"
+KeyLastColumn = "列の末尾"
+KeyPageUp = "1画面上"
+KeyPageDown = "1画面下"
+KeyHalfPageUp = "半画面上"
+KeyHalfPageDown = "半画面下"
+KeyFirstRow = "先頭の行"
+KeyLastRow = "末尾の行"
+KeyNextCell = "右のセル"
+KeyPrevCell = "左のセル"
+KeyEdit = "編集"
+KeyClear = "空にする"
+## 表の取り消し(undo)。
+KeyUndo = "取り消し"
+KeyRedo = "やり直し"
+KeyNewNote = "新しいノート"
+KeySave = "保存"
+KeyQuit = "終了"
+KeyCancelLoad = "読み込みの中止"
+KeyHelp = "ヘルプ"
+KeyCommands = "コマンド"
+KeyOpenEditor = "エディタで開く"
+KeyCopyCell = "セルをコピー"
+KeyCopyRow = "行をコピー"
+KeyPrevView = "前のビュー"
+KeyNextView = "次のビュー"
+KeyNarrower = "列を狭く"
+KeyWider = "列を広く"
+KeySort = "この列で並べ替え"
+KeySortsRun = "向きを変える・足す"
+KeyScreenMenuRun = "その画面に切り替える"
+## NV-24: 並べ替えの窓。
+CmdSortMenu = "並べ替え…"
+## NV-25: 既定のビュー。
+CmdSetDefaultView = "既定のビューにする"
+DefaultViewSet = "次から「{0}」で開く"
+DefaultViewCleared = "次から先頭のビューで開く"
+SortButton = " 並べ替え "
+SortTitle = " 並べ替え "
+SortPickTitle = " 並べ替えを足す: 列 "
+SortAsc = "昇順"
+SortDesc = "降順"
+SortAdd = "+ 並べ替えを足す"
+SortNoRoom = "端末が小さく、並べ替えの窓を出せない"
+## NV-29: 絞り込みの窓。
+CmdFilterMenu = "絞り込み…"
+FilterButton = " 絞り込み "
+## {0} は条件の数。
+FilterButtonN = " 絞り込み {0} "
+FilterTitle = " 絞り込み "
+FilterPickColumn = " 絞り込む列 "
+FilterAdd = "+ 絞り込みを足す"
+FilterNoRoom = "端末が小さく、絞り込みの窓を出せない"
+KeyFiltersRun = "直す・足す・選ぶ"
+KeyFiltersCell = "欄を選ぶ(列・比べ方・値)"
+KeyFiltersCheck = "値のチェック・方式の切り替え"
+SortNoColumn = "どの列もすでに並べ替えに入っている"
+KeyHideColumn = "列を隠す"
+KeyShowColumn = "隠した列を戻す"
+KeyAddColumn = "列を足す(新しいキー)"
+KeyMoveColumnLeft = "列を左へ"
+KeyMoveColumnRight = "列を右へ"
+KeyFreeze = "ここまでの列を固定"
+KeySearch = "探す"
+KeySearchNext = "次の一致"
+KeySearchPrev = "前の一致"
+KeyQuickFilter = "検索"
+KeyHighlightSame = "同じ値の行を強調"
+KeyFilterSame = "同じ値の行だけ"
+KeyFrequency = "頻度表"
+KeyFreqRun = "この値の行だけ"
+KeyMark = "行の印"
+KeyVisual = "範囲で選ぶ"
+KeyExtendUp = "範囲を上へ"
+KeyExtendDown = "範囲を下へ"
+KeySelectAll = "全部を選ぶ"
+KeyEscape = "選択・検索を解く"
+KeyDetail = "詳細の表示"
+KeyViewSettings = "ビューの設定"
+KeyFocusChips = "設定の帯を選ぶ"
+KeyCommit = "確定"
+## 入力の取り消し(cancel)。
+KeyCancel = "取り消し"
+KeyCommitNext = "確定して右へ"
+KeyCommitPrev = "確定して左へ"
+KeyRevert = "編集前の値"
+KeyClearInput = "入力を消す"
+KeyListUpWeek = "前の候補・前の週"
+KeyListDownWeek = "次の候補・次の週"
+KeyLeftDay = "左・前の日"
+KeyRightDay = "右・次の日"
+KeyDatePrevMonth = "日付: 前の月"
+KeyDateNextMonth = "日付: 次の月"
+KeyLeftMonth = "左・前の月"
+KeyRightMonth = "右・次の月"
+KeyListUpYear = "前の候補・前の年"
+KeyListDownYear = "次の候補・次の年"
+KeyDateToday = "日付: 今日"
+KeyDateClear = "日付: 空にして確定"
+KeyTimeFocus = "日時: 日と時刻を切り替え"
+## 入力の文字のカーソルの先頭・末尾。
+KeyCursorHome = "先頭"
+KeyCursorEnd = "末尾"
+KeyDeleteBack = "前の字を消す"
+KeyDeleteForward = "後の字を消す"
+KeyFilterClear = "解除"
+KeyClose = "閉じる"
+## 詳細の表示・ヘルプの先頭・末尾。
+KeyTop = "先頭"
+KeyBottom = "末尾"
+KeyDecide = "決める"
+KeyToggle = "切り替え"
+KeyBackCancel = "戻る・取り消し"
+KeyNextSection = "次の区画"
+KeyPrevSection = "前の区画"
+KeyMoveItemUp = "上へ動かす"
+KeyMoveItemDown = "下へ動かす"
+KeyDelete = "消す"
+KeyBack = "戻る"
+KeyRemove = "外す"
+KeyLeftItem = "左の項目"
+KeyRightItem = "右の項目"
+KeyBackToTable = "表に戻る"
+KeyPickRun = "確定(検索中は付ける)"
+KeyPickToggle = "付け外し(検索中は空白)"
+KeyPickRevert = "開いたときに戻す"
+KeyPrevItem = "前の候補"
+KeyNextItem = "次の候補"
+## 保存の確認で全部を書く。
+KeySaveAll = "保存する"
+KeyNextFile = "次のファイル"
+KeyPrevFile = "前のファイル"
+KeyOverwrite = "このファイルを外の変更の上に書く"
+KeyDiscardRow = "ためた変更を捨てる"
+## 終了の確認で保存する。
+KeyQuitSave = "保存する"
+KeyQuitDiscard = "捨てて終わる"
+KeyScrollDown = "下へ流す"
+KeyScrollUp = "上へ流す"
+KeyRun = "実行"
+## 読むだけのときの表の Enter(SR-2)。
+KeyToggleGroup = "見出しの開閉"
+## `--pick` のときの表の Enter(OUT-3)。
+KeyPickFinish = "選んで終わる"
+## その場の操作の一覧を開く(SR-24)。
+KeyActionMenu = "操作の一覧"
+CmdExportBase = ".base に書き出す"
+CmdRenameKey = "キーの名前を変える"
+CmdRenameNote = "ノートの名前を変える"
+CmdDeleteKey = "キーを消す"
+CmdImportBase = ".base のビューを取り込む"
+
+# ---- ui/keymap: キーの読み取りと割り当て直しの警告(SR-13・SR-16) ----
+KeyErrEmpty = "キーが空"
+KeyErrModifier = "知らない修飾キー `{0}`"
+KeyErrSpace = "空白のキーは `space` と書く"
+KeyErrShiftChar = "shift+{0} は、shift で出る文字そのものを書く"
+KeyErrNoKey = "キーが無い `{0}`"
+KeyErrUnknown = "知らないキー `{0}`"
+KeyErrSpaceModifier = "space に修飾キーは付けられない"
+KeyErrShiftSame = "shift+{0} は区別できない"
+## {0} はモード、{1} は動作の名前を `` `、` `` でつないだもの、{2} は戻したキー。
+RebindExitKept = "設定で{0}のモードの `{1}` のキーが無くなるので、その設定は当てず既定のキー {2} を残した"
+RebindUnknownMode = "設定の `keys.{0}` は知らないモードなので無視した(モード: {1})"
+RebindBadKey = "設定の `{0}` は読めないキーなので無視した({1})"
+RebindNoPrefix = "設定の `{0}` は{1}のモードでは前置きのキーにできないので無視した"
+RebindUnknownAction = "設定の `{0}` の動作 `{1}` は知らないので無視した"
+RebindNotInMode = "設定の `{0}` の動作 `{1}` は{2}のモードでは使えないので無視した"
+## {0} は設定の場所を `ListSep` で並べたもの、{1} はモード、{2} はキー。
+RebindSameKey = "設定の {0} は{1}のモードの同じキー `{2}` に2つの動作を当てるので、どれも無視した(SR-16)"
+## {2} はぶつかるキー、{3} はその動作の名前。
+RebindPrefixClash = "設定の `{0}` は{1}のモードのキー `{2}`({3})と前置きが重なるので無視した(SR-16。先に \"none\" で外す)"
+
+# ---- ui/help: ヘルプとパレット(SR-5・SR-14・NV-7) ----
+HelpNow = " 今押せるキー({0})"
+## SR-5: ヘルプの最後の印の節。
+HelpMarks = " 印"
+HelpMarksCell = "  セルの中"
+HelpMarksRow = "  行の左"
+MarkNull = "null(キーはあり、値が無い)"
+MarkEmptyStr = "空の文字列"
+MarkBlank = "ノートにそのキーが無い"
+MarkBlankSign = "(空欄)"
+MarkMisfit = "列の型に合わない値"
+MarkPending = "直したが、まだ保存していない"
+MarkLock = "読むだけ(選ぶと理由が出る)"
+MarkUnsupported = "評価できない式"
+MarkMultiline = "改行を含む値(1行目だけ)"
+MarkRowCurrent = "今の行"
+MarkRowMarked = "印を付けた行(Space・v)"
+MarkRowExternal = "外で変わったノートか、同期の競合ファイル"
+MarkRowHeld = "直して元の位置に留めている行(保存か移動まで)"
+## {0}-{1} は見えている行、{2} は全部の行の数。
+HelpHead = " ヘルプ  {0}-{1}/{2}行  キーの全部(キーの表から)"
+## `HelpHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HelpHeadOne = " ヘルプ  {0}-{1}/{2}行  キーの全部(キーの表から)"
+PaletteGoto = "{0} 行目へ移動"
+PaletteEmpty = "  (合うコマンドが無い)"
+PaletteNoMatch = "合うコマンドが無い: {0}"
+GotoNoRows = "行が無い"
+GotoPastEnd = "{0} 行目は無い(全 {1} 行)。末尾の行へ移った"
+## `GotoPastEnd` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GotoPastEndOne = "{0} 行目は無い(全 {1} 行)。末尾の行へ移った"
+GotoFolded = "{0} 行目は畳んだグループの中(見出しへ移った)"
+
+# ---- ui/bands: ヘッダー・タブ・検索の欄・設定の帯・下の帯・メッセージ行(SR-1・SR-15・NV-23・NV-16) ----
+HeaderRows = "{0}行"
+## `HeaderRows` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HeaderRow = "{0}行"
+## {1} は定義と違えば `*`。
+HeaderView = "  ビュー {0}{1}"
+HeaderLoading = "  読み込み中 {0}/{1}"
+HeaderCancelKey = "({0} で中止)"
+HeaderCancelled = "  読み込みを止めた"
+HeaderFilter = "  検索「{0}」"
+HeaderSame = "  同じ値 {0}={1}"
+## リストの列の要素で絞ったとき(NV-9)。{0} は列、{1} は値。
+HeaderSameHas = "  {0} が {1} を含む"
+HeaderHidden = "  隠した列 {0}"
+TabDefault = " 既定の表 "
+TabSwitch = "  [ ] で切り替え"
+BarLead = " 検索: "
+## NV-23: ビューの帯の検索の欄の名前と、語が無いときの印。
+BarName = "検索"
+BarEmpty = "…"
+## NV-23: ビューの帯の分類・列のボタン。
+ViewGroup = "分類"
+ViewColumns = "列"
+BarCount = "  {0}/{1}行"
+## `BarCount` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BarCountOne = "  {0}/{1}行"
+BarKey = "({0} で絞る)"
+BarClick = "(クリックで絞る)"
+ChipsLead = " 設定:"
+ChipsRemoveKey = "  {0} で外す"
+ChipsSelectKey = "  {0} で選ぶ"
+FooterUnsaved = " 未保存 {0}"
+FooterSelected = "  選択 {0}"
+FooterRow = "{0}/{1}行"
+FooterHead = "見出し {0}/{1}"
+FooterCol = " {0}/{1}列"
+FooterUnsupported = "  ?=未対応の式"
+HintReviewExternal = "外で変わったノート: o でこのファイルを外の変更の上に書く、d でためた変更を捨てる"
+HintReview = "Enter で全部を書く。Esc で表に戻る(ためた変更は残る)"
+HintViewError = "このビューは開けない(理由は表の欄)。[ ] でほかのビューへ"
+## {0} は理由を ` / ` でつないだもの。
+HintUnsupported = "未対応: {0}"
+## BV-2: `.base` の上に `.obsidian/` が無く、0行のとき。{0} は探した根。
+VaultRootGuessed = "行が無い: .base の上に .obsidian/ が無いので、{0} の下だけを探した"
+HintHeadRow = "見出しの行({0}件)。Enter で開閉"
+## `HintHeadRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HintHeadRowOne = "見出しの行({0}件)。Enter で開閉"
+HintExternalNote = "外でノートが変わった(ためた変更は残っている)"
+## {0} は印。
+HintHeld = "{0}: 直した値ではこの位置に来ない行。保存か行の移動で並び直す"
+HintUnsupportedFormula = "未対応の式(値を出さない): {0}"
+HintReadOnly = "読むだけ: {0}"
+QuitBand = " 未保存の変更が {0} ある。終わる前にどうするか選ぶ"
+
+# ---- ui/calendar: カレンダー(CE-20・CE-21・CE-23・CE-24) ----
+## {0} は年、{1} は月(`Month*`)。
+CalTitle = " {0}年{1} "
+Month1 = "1月"
+Month2 = "2月"
+Month3 = "3月"
+Month4 = "4月"
+Month5 = "5月"
+Month6 = "6月"
+Month7 = "7月"
+Month8 = "8月"
+Month9 = "9月"
+Month10 = "10月"
+Month11 = "11月"
+Month12 = "12月"
+WdSun = "日"
+WdMon = "月"
+WdTue = "火"
+WdWed = "水"
+WdThu = "木"
+WdFri = "金"
+WdSat = "土"
+CalMonthKeys = "{0} 月"
+CalYearKeys = "{0} 年"
+## CE-31: 時刻の欄への切り替えのキー。
+CalTimeKey = "{0} 時刻"
+## CE-30: 時刻の欄の見出し。
+CalTime = "時刻"
+## CE-30: 時刻の欄は日時の列だけ。
+CalTimeOnly = "時刻は日時の列の入力だけ"
+CalTodayKey = "{0} 今日"
+CalClearKey = "{0} 空"
+CalDateOnly = "この操作は日付・日時の列の入力だけ"
+
+# ---- ui/new_note: 新しいノート(CE-25・CE-26・CE-27) ----
+NoteButton = "+ 新規"
+NoteNoPlace = "作る場所(開いたフォルダ)が分からないので作らない"
+NoteTooLow = "端末が低くて新しいノートの欄を出せないので始めない(端末を高くする)"
+NoteFirstPlace = "作る場所が最初の項目"
+NoteFirstName = "名前が最初の項目"
+## {0} はパス、{1} は理由。
+NoteCannotCreate = "{0} を作れないので作らない: {1}"
+NoteUnreadable = "作ったが読めない: {0}"
+NoteCreated = "作った: {0}"
+NoteCreatedHidden = "作った: {0}(今の絞り込みか畳んだまとまりでは見えない)"
+NoteCancelled = "新しいノートを取りやめた(作らない)"
+NoteLeadPlace = " 新しいノート 作る場所: "
+NoteLeadName = " 新しいノート 名前: "
+NoteLeadCol = " 新しいノート {0}: "
+NoteCreate = "作る"
+## CE-26: 新しいノートの窓。
+KeyCreateNote = "新規の窓で作る"
+## CE-33。
+KeyCreateNoteEdit = "作ってエディタで開く"
+NoteEditShort = "エディタで"
+NoteFormTitle = " 新しいノート "
+NoteFieldPlace = "作る場所"
+## SR-31。{0} はフォルダの名前。
+NoteFormWhere = "{0} に作る"
+NoteHintKindNumber = "数"
+NoteHintKindList = "[リスト]"
+NoteFieldName = "名前"
+NoteFromFilter = "(絞り込みから)"
+NoteFromConfig = "(設定から)"
+## CE-27。
+NoteRequiredEmpty = "必須: 入れないと作らない"
+## CE-32。{0} はパス、{1} は理由。
+NoteBodyOutside = "本文の雛形 {0} は、開いたフォルダの中のファイルにする"
+NoteBodyUnreadable = "本文の雛形 {0} を読めない: {1}"
+NoteNext = "次へ"
+NoteToggle = "付け外し"
+NoteStop = "やめる"
+NotePrevField = "前の項目"
+NoteHintPlace = "↑↓ で作る場所を選ぶ・Enter で決める"
+NoteHintFree = "自由入力・空なら書かない(↑↓ でリストに戻る)"
+NoteHintList = "↑↓ で選ぶ・Enter で決める・打つと自由入力(*=今の値)・なし = 書かない"
+NoteHintNumber = "数: 数として読める値・空なら書かない"
+NoteHintCheckbox = "true か false・空なら書かない"
+## {0} は使える形。
+NoteHintDate = "日付: {0}・+3 / -2(今日から)・空なら書かない"
+NoteHintDateTime = "日時: YYYY-MM-DDTHH:MM・{0}・+3・空なら書かない"
+## {0}/{1} は何番目か、{2} はパス。
+NoteGuidePlace = "   作る場所を選ぶ {0}/{1}: {2}"
+## {0} はフォルダの名前、{1} はパス。
+NoteGuideWhere = "{0} に作る({1})"
+## {0} は名前、{1}/{2} は何番目か。
+NoteGuideField = "{0} の項目 {1}/{2}(空なら書かない)"
+
+# ---- ui/app: 表の操作のメッセージ(WB-1・SR-12) ----
+NothingToSave = "保存する変更が無い"
+NothingToUndo = "取り消す変更が無い"
+NothingToRedo = "やり直す変更が無い"
+LoadAlreadyDone = "読み込みは終わっている"
+LoadStopped = "読み込みを止めた({0} 件を読んだ)"
+
+# ---- ui/columns: 一時的な並べ替え・列を隠す・固定(NV-4) ----
+SortedAsc = "{0} で昇順に並べた(.base は変えない)"
+SortedDesc = "{0} で降順に並べた(.base は変えない)"
+SortCleared = "並べ替えを解いた(.base の並び)"
+LastColumnHide = "最後の列は隠せない"
+ColumnHidden = "列を隠した: {0}(+ で戻す)"
+NoHiddenColumns = "隠した列が無い"
+ColumnShown = "列を戻した: {0}"
+FreezeCleared = "列の固定を解いた"
+FreezeTooWide = "左の {0} 列は画面に収まらないので固定しない(列を狭くするか、左の列を選ぶ)"
+## `FreezeTooWide` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FreezeTooWideOne = "左の {0} 列は画面に収まらないので固定しない(列を狭くするか、左の列を選ぶ)"
+Frozen = "左の {0} 列を固定した"
+## `Frozen` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FrozenOne = "左の {0} 列を固定した"
+
+# ---- ui/detail: 詳細の表示(SR-10) ----
+DetailNoRow = "詳細を出す行を選ぶ(見出しの行では出せない)"
+DetailHead = " 詳細  {0}  {1}/{2}"
+DetailBody = "本文"
+
+# ---- ui/display: 隠した設定の帯の条件(SR-20・NV-22) ----
+ChipRemoved = "帯の条件を外した: {0}"
+## 2つの知らせをつなぐ。
+TwoMessages = "{0}。{1}"
+HiddenChip = "隠した帯の条件 {0}/{1}: [{2}]  {3} で外す"
+
+# ---- ui/entry: セルの入力の読み方と案内(CE-2・CE-5・CE-7・CE-22) ----
+EntryNotNumber = "数として読めない: {0}(数か、空で消す)"
+EntryNotBool = "true か false でない: {0}(空で消す)"
+## {1} は打ち込める日付の形。
+EntryNotDateTime = "日付として読めない: {0}(YYYY-MM-DDTHH:MM か {1}・+3・-2・空で消す)"
+EditBulkLead = "一括 {0}行: "
+## `EditBulkLead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditBulkLeadOne = "一括 {0}行: "
+## CE-10: 印を付けた行の外で編集を始めたとき。
+EditOnlyThisRow = "この行だけを直す: 印を付けた {0}行は入れない(印の行の上で Enter なら全部に入れる)"
+## `EditOnlyThisRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditOnlyThisRowOne = "この行だけを直す: 印を付けた {0}行は入れない(印の行の上で Enter なら全部に入れる)"
+EditMismatch = "今の値は列の型に合わない。"
+EditHintList = "↑↓ で選ぶ・Enter で決める・打つと自由入力(*=今の値)"
+EditHintNumber = "数: 数として読める値・空で消す"
+EditHintCheckbox = "true か false・空で消す(↑↓ でリスト)"
+EditHintDate = "日付: {0}・+3 / -2(今日から)・空で消す"
+EditHintDateTime = "日時: YYYY-MM-DDTHH:MM・{0}・+3・空で消す"
+EditHintBackToList = "(↑↓ でリストに戻る)"
+## CE-3: 打った文字で絞った候補を見せているとき。
+EditHintPickNarrowed = "(↑↓ で当たる候補を選ぶ)"
+
+# ---- ui/external: コピーとエディタ(OUT-1・SR-8) ----
+## 試験のビルドの偽のクリップボードが返す誤り。
+ClipTestFailure = "試験の失敗"
+ClipNoCommand = "{0} が無い"
+ClipNoOsClipboard = "この OS のクリップボードには送れない"
+## 並べた理由の区切り。
+ReasonSep = "、"
+ClipTimeout = "OS のクリップボードが応答しない"
+ClipCannotPass = "渡せない: {0}"
+ClipExitCode = "終了コード {0}"
+## {0} は base64 のバイト数、{1} は上限。
+Osc52TooLong = "長すぎるので送らない(base64 で {0} バイト、上限 {1})"
+WordsTrailingBackslash = "末尾の \\ の後ろに文字が無い"
+WordsUnclosedSingle = "閉じていない ' がある"
+WordsUnclosedDouble = "閉じていない \" がある"
+CopyWhatSelected = "選んだ {0} 行"
+## `CopyWhatSelected` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+CopyWhatSelectedOne = "選んだ {0} 行"
+CopyWhatCell = "セル"
+CopyWhatRow = "行"
+CopyNoCell = "コピーするセルが無い"
+CopyNoRow = "コピーする行が無い"
+## {0} は `CopyWhat*`、{1} は誤り。
+CopiedBoth = "{0}をコピーした(OSC 52 と OS のクリップボード)"
+CopiedOscOnly = "{0}をコピーした(OSC 52 だけ。OS のクリップボードに送れない: {1})"
+CopiedOsOnly = "{0}をコピーした(OS のクリップボードだけ。OSC 52 を送れない: {1})"
+CopyFailed = "コピーできない(OSC 52: {0}。OS のクリップボード: {1})"
+EditorNoRow = "開く行が無い"
+EditorBadSetting = "エディタの設定を読めない: {0}"
+EditorNoTerminal = "端末を戻せないのでエディタを開かない: {0}"
+## {0} はコマンド、{1} は誤り。
+EditorCannotStart = "エディタを起動できない: {0}({1})"
+## {0} は終了の状態、{1} はノート。
+EditorFailed = "エディタが失敗で終わった({0}): {1}"
+EditorReturned = "エディタから戻った: {0}"
+EditorTermNotRestored = "。端末を戻せない: {0}"
+EditorCannotReload = "。読み直せない: {0}"
+
+# ---- ui/startup・list・grid・view: 表の画面(WB-15・SR-12・BV-5・BV-7・CE-10) ----
+OpenedReadOnly = "読むだけで開いている(--readonly。編集も保存もしない)"
+StateUnwritable = "見た目の状態を書けない: {0}"
+## リストの候補の「なし」(Null)。
+NoneLabel = "なし"
+InputClosedRowGone = "直した行が表から外れたので入力を閉じた({0}。確定していない文字は捨てた)"
+## ノートの列の見出し。
+NoteColumn = "ノート"
+## {0} は選びの印、{1} は開閉の印、{2} は列の名前と `: `、{3} は値、{4} は件数。
+HeadingRow = "{0}{1} {2}{3}({4}件)"
+ViewCannotOpen = "(このビューは開けない: {0})"
+NoNotes = "(ノートがありません)"
+TableLoading = "(読み込み中…)"
+
+# ---- ui/input: セルの編集と一括の設定(CE-1・CE-9・CE-10・CE-11・SR-3) ----
+CellNotDrawn = "選んだセルが画面に見えていないので直さない(端末を広げるか、列を狭くする)"
+CellNotDrawnEsc = "選んだセルが画面に見えていないので直さない(端末を広げるか、列を狭くする)(Esc で取り消す)"
+## 読むだけの理由の前置き(一括で飛ばした理由では外す)。
+ReadOnlyLead = "読むだけ: "
+BulkFoldedOut = "。{0}行は畳んだまとまりの中なので入れない"
+## `BulkFoldedOut` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkFoldedOutOne = "。{0}行は畳んだまとまりの中なので入れない"
+## {1} は理由を ` / ` でつないだもの。
+BulkSkipped = "。{0}行を飛ばした({1})"
+## `BulkSkipped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSkippedOne = "。{0}行を飛ばした({1})"
+NeighborRowGone = "直した行が表から外れたので隣のセルは開かない({0})"
+BulkNoEditable = "選んだ行に直せるセルが無い({0})"
+EditMultiLine = "改行を含む値は1行の入力では直せない(エディタで開く。後の版)"
+EditNotOneLine = "この値は1行の入力では直せない"
+NoEditableRight = "この行の右に直せるセルが無い({0})"
+NoEditableLeft = "この行の左に直せるセルが無い({0})"
+NoCellRight = "この行の右にセルが無い"
+NoCellLeft = "この行の左にセルが無い"
+CannotCommit = "確定できない: {0}"
+BulkSet = "一括: {0}行に入れた"
+## `BulkSet` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetOne = "一括: {0}行に入れた"
+BulkSame = "({0}行は同じ値)"
+## `BulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSameOne = "({0}行は同じ値)"
+BulkTypeMismatch = "型が合わない"
+## 一括で空にしたときの {1}。
+BulkStateEmpty = "空"
+BulkSetTo = "一括: {0}行を{1}にした"
+## `BulkSetTo` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetToOne = "一括: {0}行を{1}にした"
+CannotClear = "空にできない: {0}"
+
+# ---- ui/listpick: リストの選択(CE-16・CE-17・CE-19) ----
+NotAList = "リストでない値"
+PickNotDrawn = "選んだセルが画面に見えていないので確定しない(端末を広げるか、Esc で取り消す)"
+PickBulkDone = "一括: {0}行を直した"
+## `PickBulkDone` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkDoneOne = "一括: {0}行を直した"
+PickBulkSame = "({0}行は変わらない)"
+## `PickBulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkSameOne = "({0}行は変わらない)"
+## {0}・{1} はキー。
+PickKeysSearching = "{0} 付ける(新規は足す)・{1} 確定"
+PickKeys = "{0} 付け外し・{1} 確定"
+## {1} は `PickKeys*`。
+PickHintBulk = "一括 {0}行([x]=全部の行 [-]=一部の行 [ ]=なし)。{1}"
+## `PickHintBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickHintBulkOne = "一括 {0}行([x]=全部の行 [-]=一部の行 [ ]=なし)。{1}"
+PickHint = "打って絞る([x]=付いている)。{0}"
+PickNew = "+ 新規: {0}"
+## 候補の件数。
+PickCount = "{0}件"
+PickSearchLead = "検索: "
+## {0} は列、{1} は行の数、{2} は位置。
+PickTitleBulk = "{0} {1}行 {2}"
+## `PickTitleBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickTitleBulkOne = "{0} {1}行 {2}"
+PickNoMatch = " (合う要素が無い)"
+
+# ---- ui/menu: その場の操作の一覧(SR-24)の節と、キーの無い項目 ----
+MenuSecCell = "セル"
+MenuSecColumn = "列"
+MenuSecRow = "行"
+MenuSecView = "ビューとファイル"
+MenuBulk = "選んだ行にまとめて入れる"
+MenuNoRoom = "端末が狭くて操作の一覧を出せない"
+
+# ---- ui/freq: 列の値の頻度表(NV-9) ----
+## {0} は列の名前。
+FreqTitle = "頻度表: {0}"
+FreqNoRoom = "端末が狭くて頻度表を出せない"
+FreqNoColumn = "値を数える列を選ぶ"
+FreqNoRows = "数える行が無い"
+FreqLoading = "読み込みの途中は値を数えられない"
+FreqClosed = "行が変わったので頻度表を閉じた"
+FreqStacked = "同じ値の絞り込みの中で数えた。Enter でさらに絞る"
+
+# ---- ui/native_io: .base への書き出しと取り込み(BV-19・BV-20) ----
+AskExportName = ".base に書き出す ファイルの名前: "
+AskImportFile = "取り込む .base: "
+AskImportView = "{0} のビュー: "
+AskExportWhere = "  {0} の下に新しい .base を書く(既存の名前には書かない)"
+AskNoMatch = "  (合うものが無い)"
+ExportNoDir = "書き出す先のフォルダが分からない"
+ImportNoDir = "取り込む .base を探すフォルダが分からない"
+ImportNoFiles = "{0} の下に .base が無い"
+AskCancelled = "やめた"
+## SC-15: CSV・TSV を読めない理由。
+CsvNotUtf8 = "UTF-8 のファイルでない(UTF-8 で保存し直すと開ける)"
+CsvUnclosedQuote = "{0} 行目で開いた引用符が閉じていない"
+CsvNoHeader = "ファイルが空(1行目に列の名前が要る)"
+CsvCrOnly = "{0} 行目の改行が CR だけ(改行を LF か CRLF にして保存し直すと開ける)"
+CsvRowChanged = "この行は外で変わったか消えたので、直しをほかの行に書かない"
+CsvColumnCount = "この行は値が {0} 個で、列は {1} 個なので読むだけ"
+## SC-17: CSV・TSV ではしない操作。
+CsvNoteOnly = "CSV・TSV の表では使えない(ノートの機能)"
+CsvRowAdded = "{0} の末尾に行を足した"
+CsvNoKeyOps = "CSV の列の名前の変更・削除はここではできない"
+CsvNoSuchColumn = "CSV に {0} という列は無い"
+## CE-34: ノートの名前の変更。
+AskRenameNote = "ノートの新しい名前: "
+RenameNoteBad = "ノートの名前は空にできず、/ と \\ を含められない"
+RenameNoteExists = "{0} はもうある"
+RenameNoteReadOnly = "読むだけのノートなので名前を変えられない"
+RenameNotePending = "このノートにためた変更を、先に保存するか取り消す"
+RenameNoteDone = "名前を {0} に変えた"
+RenameNoteLinks = "名前を {0} に変えた。古い名前を指すリンク {1} 件の書き換えをためた(Ctrl+S で差分を見て保存)"
+RenameNoteFailed = "名前を変えられなかった: {0}"
+AskRenameKey = "{0} の新しい名前: "
+## CE-29。{0} はキー、{1} はノートの数。
+AskDeleteKey = "{0} を {1} 個のノートから消す? y と打って Enter: "
+## CE-29。{0} は古い名前、{1} は新しい名前、{2} はノートの数。
+KeyRenamed = "{0} の名前を {2} 個のノートで {1} に変える(保存で書く)"
+## CE-29。{0} はキー、{1} はノートの数。
+KeyDeleted = "{0} を {1} 個のノートから消す(保存で書く)"
+## CE-29。{0} は新しい名前。
+KeyOpExists = "{0} のキーが既にある"
+## CE-29。{0} はキー。
+KeyOpNoNotes = "{0} のキーを持つノートが無い"
+KeyOpPending = "そのセルに保存していない直しがある(先に保存か取り消し)"
+KeyOpComputed = "file.* と formula.* の列はノートのキーでない"
+KeyOpBadName = "キーの名前は、空・改行を含む・file. か formula. で始まる名前にできない"
+## CE-28。
+AskNewColumn = "新しい列(キーの名前): "
+## OUT-2。
+CmdExportTable = "表をファイルに書き出す"
+AskExportTable = "表を書き出す ファイルの名前(.csv .tsv .json .md): "
+## OUT-5。{0} はパス。
+AskExportOverwrite = "{0} はもうある。上書きする? y と打って Enter: "
+## OUT-2。
+ExportTableBadExt = "ファイルの名前は .csv・.tsv・.json・.md で終える"
+## OUT-5。{0} は行の数、{1} はパス。
+ExportTableDone = "{0} 行を {1} に書いた"
+## OUT-5。{0} はパス、{1} は理由。
+ExportTableFailed = "{0} に書けない: {1}"
+AddColumnBad = "列の名前は、空・改行を含む・file. か formula. で始まる名前にできない"
+## {0} は列の名前。
+AddColumnAdded = "列 {0} を足した: 値を入れたノートにだけ、保存でキーを書く"
+ImportNoMatchFile = "合う .base が無い"
+ImportUnreadable = "{0} を読めない: {1}"
+ImportNoViews = "{0} に views が無い"
+ImportUnnamed = "(名前なし {0})"
+ImportNoMatchView = "合うビューが無い"
+## {0} はファイル、{1} は元のビュー、{2} は新しい名前、{3} は `DroppedNote` か空。
+Imported = "{0} のビュー「{1}」を mdgrid のビュー「{2}」として取り込んだ{3}"
+ExportNameEmpty = "ファイルの名前を打つ(例: 未完了.base)"
+ExportNameOnly = "ファイルの名前だけを打つ(書く先は開いたフォルダの下に決まっている)"
+ExportExists = "{0} はもうあるので書かない(既存の .base は書き換えない。別の名前にする)"
+CannotWriteFile = "{0} に書けない: {1}"
+## {0} はビュー、{1} はファイル、{2} は `DroppedNote` か空。
+Exported = "ビュー「{0}」を {1} に書き出した{2}"
+
+# ---- ui/native_views: mdgrid のビュー(BV-13・BV-18・BV-20) ----
+## `.base` なしで開いたときの先頭のタブの名前(日本語は名前の検査とビューの状態にも使う)。
+DefaultTabName = "既定の表"
+## {0} は落とした・近似の部分を ` / ` でつないだもの。
+DroppedNote = "。落とした・近似の部分: {0}"
+OnlyOneView = "ビューは1つだけ(.base を開くか、ビューの設定で名前を付けて保存すると切り替えられる)"
+NoViewToSwitch = "切り替えるビューが無い"
+SwitchedView = "ビュー「{0}」に切り替えた"
+ViewsNoDir = "mdgrid のビューの置き場(設定のフォルダ)が分からないので、mdgrid のビューを保存できない"
+ViewNameEmpty = "名前が空(名前を打つ)"
+ViewNameFixed = "「{0}」は既定の表か .base のビューと同じ名前(別の名前にする)"
+ViewNameTaken = "「{0}」という mdgrid のビューはもうある(別の名前にする。変えるならそのビューで「上書き」)"
+## 空の名前で保存したビューの名前。
+ViewDefaultName = "ビュー"
+StateCannotMove = "見た目の状態を移せない: {0}"
+## {0} は既定の表の名前、{1} は押したボタン、{2} は「名前を付けて保存」のボタン。
+ViewButtonFixed = "{0}・.base のビューは{1}できない(「{2}」で mdgrid のビューにする)"
+ViewSavedAs = "mdgrid のビュー「{0}」として保存した{1}"
+ViewGoneOverwrite = "「{0}」はほかで消されたので上書きできない"
+ViewOverwritten = "mdgrid のビュー「{0}」を上書きした"
+ViewGoneRename = "「{0}」はほかで消されたので名前を変えられない"
+RenameUnapplied = "(設定の画面で変えたところは反映していない)"
+## {2} は `RenameUnapplied` か空。
+ViewRenamed = "ビューの名前を「{0}」から「{1}」に変えた{2}"
+ViewDeleted = "mdgrid のビュー「{0}」を削除した"
+## BV-18: 削除の確かめと取り消し。
+TextDeleteView = "ビュー「{0}」を消す? y を打って Enter(消したあと u で戻せる)"
+ViewDeletedUndo = "mdgrid のビュー「{0}」を削除した(表で u を押すと戻る)"
+ViewDeleteKept = "ビュー「{0}」は消さなかった"
+ViewRestored = "mdgrid のビュー「{0}」を戻した"
+
+# ---- ui/settings: ビューの設定の画面(NV-13・NV-15・NV-19・NV-22) ----
+BtnApply = "反映"
+## ビューの設定の「取り消し」のボタン。
+BtnCancel = "取り消し"
+BtnReset = "既定に戻す"
+BtnSaveAs = "名前を付けて保存"
+BtnOverwrite = "上書き"
+BtnRename = "名前の変更"
+BtnDelete = "削除"
+KindValues = "値の一覧から選ぶ"
+## NV-29: 絞り込みの窓の表の形の比べ方(値の一覧の残す・隠す)。
+OpKeep = "残す"
+OpDrop = "隠す"
+KindContains = "含む"
+KindNotContains = "含まない"
+KindCompare = "比べる(= ≠ < ≤ > ≥)"
+KindEmpty = "空である"
+KindNotEmpty = "空でない"
+CmpEq = "=  等しい"
+CmpNe = "≠  等しくない"
+CmpLt = "<  より小さい・より前"
+CmpLe = "≤  以下・その日まで"
+CmpGt = ">  より大きい・より後"
+CmpGe = "≥  以上・その日から"
+PurposeFilter = "フィルター"
+PurposeSort = "並べ替え"
+PurposeGroup = "グループ"
+PurposeTree = "親"
+PurposeWbsKey = "進み具合"
+## NV-28: WBS の行。
+TreeWbsRow = "WBS(番号と進み具合)"
+TreeWbsKeyRow = "進み具合のキー"
+WbsValueRow = "{0}({1}件)"
+TextWbsValue = "{0} の割合とラベル(例 100 完了。- で外す)"
+WbsBadPercent = "割合は 0〜100 の数を先に打つ: {0}"
+## NV-27: 親子の区画。
+NavTree = "親子"
+DescTree = "子のノートの親のキーに書いた親のノートの下に、子を字下げして並べる"
+TreeOnRow = "親子で並べる"
+TreeKeyRow = "親のキー"
+SetHintTree = "{0} で切り替え・キーを選ぶ(反映で効く。表では Z で親を畳む)"
+DirAsc = "↑ 昇順"
+DirDesc = "↓ 降順"
+GroupOnlyByColumn = "列で分けるときに選べる(先に「列で分ける」で列を選ぶ)"
+NotRemovable = "消せる項目ではない"
+SettingsClosed = "ビューの設定を閉じた"
+SettingsCancelled = "ビューの設定を取り消した(表は開く前のまま)"
+SettingsReset = "既定に戻した(反映で表に効く)"
+SettingsAppliedReadOnly = "ビューの設定を反映した(読むだけなので覚えない)"
+SettingsApplied = "ビューの設定を反映した"
+ChipsEmpty = "設定の帯に項目が無い({0} でビューの設定を開く)"
+
+# ---- ui/settings_view: ビューの設定の画面の描画(NV-18・SR-20) ----
+SetColumns = "列(表示と順)"
+SetDisplay = "表示"
+SetFilters = "フィルター(全部を満たす行だけ)"
+SetAddFilter = "+ 条件を足す"
+SetSorts = "並べ替え(上の列が先)"
+SetAddSort = "+ 並べ替えを足す"
+SetGroup = "グループ"
+## NV-18: 左の区画の一覧・説明・スイッチ・未反映の数。
+NavColumns = "列"
+NavFilters = "フィルター"
+NavSorts = "並べ替え"
+NavGroup = "グループ"
+NavDisplay = "表示"
+NavGroupOff = "しない"
+NavHideEmpty = "空のまとまりを隠す"
+DescColumns = "表に出す列と、その順を決める"
+DescFilters = "すべての条件を満たす行だけを出す"
+DescSorts = "上の決まりが先。値が同じなら次の決まりで並べる"
+DescGroup = "列の値でまとまりに分ける"
+DescDisplay = "表のまわりに出すもの"
+SwShown = "表示"
+SwHidden = "隠す"
+SwOn = "オン"
+SwOff = "オフ"
+SwAuto = "自動"
+## NV-23: ビューの帯のボタンの描き方(plain・box・compact)。
+SwPlain = "線なし"
+SwBox = "囲む"
+## {0} は帯の上下の余白の行の数(NV-23)。
+SwPadding = "{0}行"
+SetPending = "未反映 {0}"
+## NV-26: ビューの区画(タブの順・出す隠す・既定・名前・削除・切り替えの案内)。
+NavViews = "ビュー"
+DescViews = "表の上のタブ。変えるとすぐ保存する"
+TabHintRow = "切り替えの案内([ ])"
+TabDefaultMark = "既定"
+TabMenuOf = "タブ「{0}」"
+TabMenuDefault = "既定にする"
+TabMenuUndefault = "既定をやめる(先頭のタブで開く)"
+TabMenuRename = "名前を変える"
+TabMenuDelete = "削除"
+TabCurrentHide = "開いているビューは隠せない(先に別のタブへ)"
+TabBaseFixed = "「{0}」は .base のビューか既定の表なので、名前の変更と削除はできない"
+TabHidden = "タブ「{0}」を隠した"
+TabShown = "タブ「{0}」を出した"
+TabMoved = "タブ「{0}」を動かした"
+TabHintOn = "切り替えの案内を出す"
+TabHintOff = "切り替えの案内を出さない"
+SetHintViews = "{0} で出す・隠す、{1} / {2} で順、{3} で既定・名前・削除(すぐ保存)"
+SetGroupInheritBase = ".base のまま"
+SetGroupInheritDefault = "既定のまま(分けない)"
+## {0} はラジオの印。
+SetGroupOff = "{0} しない"
+## {0} はラジオの印、{1} は列か `SetGroupPickColumn`。
+SetGroupBy = "{0} 列で分ける: {1}"
+SetGroupPickColumn = "(列を選ぶ)"
+## {0} はチェックの印。
+SetGroupHideEmpty = "{0} 空のまとまりを隠す"
+SetGroupOrder = "まとまりの並び: {0}"
+## {0} は目的(`Purpose*`)。
+PickColumnFor = "{0}の列を選ぶ"
+PickKindOf = "{0} の条件の種類"
+PickCmpOf = "{0} の比べ方"
+PickModeKeep = "方式: チェックした値の行だけ残す"
+PickModeHide = "方式: チェックした値の行を隠す"
+## {0} はチェックの印、{1} は値、{2} は件数。
+PickValueRow = "{0} {1}  {2}件"
+PickValuesOf = "{0} の値(件数)"
+TextContains = "{0} が含む文字"
+TextNotContains = "{0} が含まない文字"
+TextSaveAs = "新しい mdgrid のビューの名前"
+TextRename = "ビューの新しい名前"
+## {0}・{1}・{2} はキー。
+SetHintValues = "{0} でチェック・方式の切り替え、{1} で決める、{2} で戻る"
+SetHintPick = "{0} で選ぶ、{1} で戻る"
+SetHintColumns = "{0} で表示・非表示、{1} / {2} で順を動かす"
+SetHintFilters = "{0} で条件を足す・直す、{1} で 残す・隠す を切り替え、{2} で消す"
+SetHintSorts = "{0} で足す・向きを変える、{1} / {2} で順、{3} で消す"
+SetHintGroup = "{0} で選ぶ(空を隠す・並びは列で分けるとき)"
+SetHintDisplay = "{0} で出す・出さないを切り替え(このビューだけ。反映で表に効く)"
+SetHintButtons = "{0} で押す。反映するまで表は変わらない"
+SetNativeName = "mdgrid のビュー / {0}"
+SetHead = " ビューの設定  {0}  反映するまで表は変わらない"
+SetHeadShort = " ビューの設定  {0}"
+
+# ---- ui/settings_pick: ビューの設定の選び手と値の入力(NV-14・NV-19) ----
+PickInProgress = "選んでいる途中({0} で戻る)"
+SortAlready = "{0} はもう並べ替えにある"
+NoValueChecked = "値にチェックが無い({0} で付ける)"
+ValueEmpty = "値が空({0} で戻る)"
+OperandNumber = "数を打つ(例: 3)。「{0}」は数でない"
+OperandDate = "日付は YYYY-MM-DD で打つ。「{0}」は読めない"
+OperandDateTime = "日時は YYYY-MM-DDTHH:MM で打つ。「{0}」は読めない"
+
+# ---- ui/nav: 選択・同じ値・検索(NV-1・NV-5・NV-8・OUT-3) ----
+PickNoEditor = "--pick で選んでいる間は読むだけ(エディタでは開かない。Enter で選ぶ・q で取りやめ)"
+VisualHint = "範囲で選ぶ: 動かして v で決める(Esc で解く)"
+SelectedAll = "全部の行を選んだ({0}行)"
+SelectionCleared = "選択を解いた"
+FilterCleared = "検索を解いた"
+NoRowToSelect = "選ぶ行が無い"
+SelectValueCell = "値のセルを選ぶ"
+## {0} は列、{1} は値、{2} は行の数。
+HighlightSame = "同じ値の行を強調: {0} = {1}({2}行)"
+## `HighlightSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HighlightSameOne = "同じ値の行を強調: {0} = {1}({2}行)"
+SameFilterCleared = "同じ値の絞り込みを解いた({0})"
+SameFilterOn = "同じ値の行だけ: {0}(Esc で解く)"
+NotFound = "見つからない"
+NoSearchTerm = "探す語が無い(/ で探す)"
+NotFoundTerm = "見つからない: {0}"
+WrappedToTop = "末尾から先頭へ回った"
+WrappedToBottom = "先頭から末尾へ回った"
+
+# ---- ui/review: 保存の確認(WB-9・WB-16) ----
+ReviewReadOnly = "読むだけ({0})"
+ReviewNewline = "改行を含む値は書けない"
+ReviewVerify = "書いた結果の検査で止めた({0})"
+ReviewChanged = "外で変更"
+ReviewIo = "書けない({0})"
+ReviewDiscarded = "ためた変更を捨てた: {0}"
+ReviewSaved = "保存した {0}件"
+## `ReviewSaved` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewSavedOne = "保存した {0}件"
+## {0} はファイルを `, ` でつないだもの。
+ReviewSavedList = "({0})"
+ReviewStopped = "外で変わって止めた {0}件({1})"
+## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewStoppedOne = "外で変わって止めた {0}件({1})"
+ReviewFailed = "書けなかった {0}件({1})"
+## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewFailedOne = "書けなかった {0}件({1})"
+## 文と文の区切り。
+SentenceSep = "。"
+ReviewNotExternal = "{0} は外で変わっていない(Enter で保存)"
+ReviewNoDiff = "{0} は書けない(差分を作れない)"
+ReviewCannotReload = "読み直せない: {0}({1})"
+ReviewChangedAgain = "{0} はまた外で変わった。差分を見直してもう一度 o"
+ReviewExternalHead = "  外で変更: o このファイルを外の変更の上に書く / d ためた変更を捨てる"
+ReviewDiffError = "   書けない: {0}"
+ReviewHead = " 保存の確認  {0}ファイル  書く前の差分(- 今のファイル / + 書いたあと)"
+## `ReviewHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewHeadOne = " 保存の確認  {0}ファイル  書く前の差分(- 今のファイル / + 書いたあと)"
+
+# ---- places: 登録した表(CLI-18・CLI-19) ----
+## {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
+PlacesBadToml = "places.toml が読めない({0} 行目)ので登録した表は読まない: {1}"
+PlaceOpen = "登録した表を開く"
+PlaceRegister = "この表を登録"
+## 一覧の先頭(引数なしの起動のとき)。
+PlaceHere = "今のフォルダ(このまま)"
+PlaceNoGroup = "(分類なし)"
+PlaceNone = "登録した表はまだ無い。パレットの「この表を登録」で登録できる"
+## {0} はパス。
+PlaceMissing = "開けない: {0} が無い"
+PlaceAskName = "この表の名前: "
+PlaceAskGroup = "分類(選ぶか新しく打つ。空なら分類なし): "
+## {0} は名前。
+PlaceAskOverwrite = "{0} はもう登録してある。置き換える?(y/n) "
+## {0} は名前、{1} は分類。
+PlaceSaved = "{0} を {1} に登録した"
+PlaceSavedNoGroup = "{0} を登録した"
+## {0} は誤り。
+PlaceSaveError = "places.toml を書けない: {0}"
+PlaceNoConfigDir = "登録できない: 設定のフォルダが無い"
+PlaceEmptyName = "名前が空"
+## {0} は打った分類。
+PlaceNewGroup = "+ 新しい分類: {0}"
+PlaceMulti = "登録できない: フォルダを複数開いている(フォルダ1つか .base を登録する)"
+## {0} はビューの名前。
+PlaceNoView = "ビュー {0} が無いので先頭のビューを出した"
+
+# ---- workspace: ワークスペース(WS-1〜WS-7) ----
+## {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
+WsBadToml = "{0} が読めない({1} 行目)のでワークスペースは読まない: {2}"
+## {0} はパス。
+WsInitExists = "{0} はもうある"
+## {0} は名前。
+WsUnknown = "ワークスペース {0} は無い(mdgrid --workspaces で一覧)"
+## {0} はワークスペースの名前。
+HeaderWorkspace = "  · ワークスペース {0}"
+CmdWsNew = "この表でワークスペースを作る"
+CmdWsAdd = "この表をワークスペースに足す"
+CmdWsRemove = "この表をワークスペースから外す"
+CmdWsOpen = "ワークスペースを開く"
+## WS-8: 表の一覧の引き出し。
+CmdWsDrawer = "表の一覧(表を切り替える)"
+KeyWsDrawer = "表の一覧"
+KeyDrawerRun = "表を開く・畳む"
+KeyDrawerOpen = "ワークスペースを開く"
+KeyDrawerFold = "ワークスペースを畳む"
+DrawerRegistered = " 登録した表 "
+DrawerEmpty = "並べる表が無い: :workspace_new でワークスペースを作るか、:register_place で表を登録する"
+DrawerNoRoom = "端末が小さく、表の一覧を出せない"
+AskWsName = "ワークスペースの名前: "
+AskWsPick = "ワークスペース(選ぶか新しく打つ): "
+AskWsRemove = "どのワークスペースから外す: "
+AskWsOpen = "どのワークスペースを開く: "
+## {0} はワークスペースの名前。
+AskWsTable = "{0} のどの表を開く: "
+## {0} は打った名前。
+WsNewItem = "+ 新しいワークスペース: {0}"
+## {0} は表、{1} はワークスペース。
+WsAdded = "{0} をワークスペース {1} に足した"
+WsRemoved = "{0} をワークスペース {1} から外した"
+WsNotIn = "この表はどのワークスペースにも無い"
+WsNone = "ワークスペースはまだ無い: :workspace_new で作る"
+WsEmpty = "ワークスペース {0} に表が無い"
+WsMulti = "足せない: フォルダを複数開いている(フォルダ1つか .base を足す)"
+WsNoConfigDir = "ワークスペースを変えられない: 設定のフォルダが無い"
+## {0} は誤り。
+WsSaveError = "workspaces.toml を書けない: {0}"
+WsCliAsOne = "--as は表を1つ名付ける: パスは1つにする"
+## {0} はパス。
+WsCliNoPath = "そのファイルもフォルダも無い: {0}"
+## {0} はワークスペース、{1} はパス。
+WsCliNotIn = "ワークスペース {0} に表 {1} は無い"
+## {0} はワークスペース。
+WsCliDeleted = "ワークスペース {0} を消した"
+## {0} は作ったファイル。
+WsCliInit = "{0} を作った"
+WsCliNone = "ワークスペースは無い(mdgrid <パス> --add-to <名前> で作る)"
+## {0} は読めなかった理由。
+WsFixFirst = "変えなかった: 先に workspaces.toml を直す({0})"
+## {0} は開いた表、{1} はワークスペース。
+WsNotInChosen = "{0} はワークスペース {1} に無い(リンクは {1} の表とこの表で探す)"
+## {0} はパス。
+WsMarkerOutside = "印のあるフォルダの外の表は使わない: {0}"
+WantDetect = "\".obsidian\" と \".git\" の並び"
+
+# ---- relmap: 関係マップ(REL-7〜REL-9) ----
+KeyRelationMap = "関係マップ"
+TreeOff = "親子で並べていない(ビューの設定 {0} の「親子」でオンにする)"
+TreeNoKids = "この行に子の行は無い"
+KeyToggleTree = "子の行を畳む・開く"
+KeyRelOpen = "表を開く"
+KeyRelBack = "表に戻る"
+KeyRelNextTable = "次の表"
+KeyRelPrevTable = "前の表"
+KeyRelNextLink = "次のつながり"
+KeyRelPrevLink = "前のつながり"
+RelMapTitle = "関係マップ"
+RelMapTables = "表"
+RelMapDetail = "詳細"
+RelMapLinked = "つながった行"
+RelMapKind = "種類"
+RelMapManyToOne = "多対一(N:1)"
+RelMapManyToMany = "多対多(N:N)"
+RelMapColumn = "列"
+RelMapTarget = "行き先"
+RelMapLinks = "リンク"
+RelMapReverse = "逆向き"
+RelMapTop = "よく指される"
+RelMapRows = "行"
+RelMapNoLinks = "この表のつながりは無い。"
+RelMapNoTables = "マップにする表が無い: 先に表を登録する(:register_place)"
+TabScreenTable = "表"
+## SR-42: ヘッダーの近道のボタン。
+HeaderWsButton = " ワークスペース "
+HeaderWsNamed = " ▾ {0} "
+HeaderSettingsButton = " 設定 "
+## REL-8: 画面の型のメニュー(ヘッダーのボタンと窓)。
+ScreenRelMap = "関係マップ"
+ScreenMenuTitle = " 画面の型 "
+ScreenMenuNoRoom = "端末が小さく、画面の型の窓を出せない"
+## SR-42: ヘッダーの右の端の設定のボタン。
+HeaderSettings = "設定"
+
+# ---- relations: リレーション(REL-4・REL-5) ----
+CmdOpenLink = "リンクの行き先を開く"
+CmdLinkedRows = "つながった行(ここを指すノート)"
+AskOpenLink = "どの行き先を開く: "
+AskLinkedRows = "つながった行: "
+RelNoTarget = "このセルにはノートへのリンクが無い"
+## {0} はノートの名前。
+RelNoBacklinks = "{0} を指すノートは無い"
+## {0} はノートの名前。
+RelHidden = "{0} はこの表にあるが、絞り込みか畳んだまとまりで隠れている"
+## {0} はパス。
+RelMissing = "開けない: {0} が無い"
+
+# ---- 列の型(CE-35。`[types]` と型の窓) ----
+WantTypesTable = "列 = 型 の表"
+WantType = "\"text\"・\"number\"・\"checkbox\"・\"date\"・\"datetime\"・\"list\"・\"auto\" のどれか"
+
+# ---- 列の型の窓(CE-35。type_menu.rs) ----
+ModeColumnType = "列の型"
+SecInColumnType = "列の型の窓の中"
+KeyColumnTypeRun = "その型にする"
+CmdColumnType = "列の型を変える"
+## {0} は列の名前。
+TypeMenuTitle = "{0} の型"
+## {0} は推定の型の名前。
+TypeAuto = "自動({0})"
+TypeText = "テキスト"
+TypeNumber = "数"
+TypeCheckbox = "チェック"
+TypeDate = "日付"
+TypeDateTime = "日時"
+TypeList = "リスト"
+## {0} は列の名前。
+TypeComputed = "{0} は計算の列なので、型は変えられない"
+## {0} は列の名前、{1} は型の名前。
+TypeSet = "{0} の型: {1}(views.toml の表に書いた)"
+TypeSetNoSave = "{0} の型: {1}(views.toml の置き場が無いので、この起動の間だけ)"
+
+# ---- types: 曜日の短い名前(日付の形の ddd。CE-22) ----
+DddSun = "日"
+DddMon = "月"
+DddTue = "火"
+DddWed = "水"
+DddThu = "木"
+DddFri = "金"
+DddSat = "土"

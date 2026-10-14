@@ -95,7 +95,10 @@ fn test_rel_12_click_link_and_linked_row() {
         })
         .expect("つながりのセル");
     // 一覧の窓は 0 から 26 桁、盤の窓の中は 27 桁目・2 行目から。
-    a.click((26 + 1 + mx) as u16, (2 + my) as u16);
+    // 2026-10-12-bar-padding-half: ヘッダーの上の余白の分だけ下がる。2026-10-12-relmap-new-row: ヘッダーの下の
+    // 帯の上の余白の分も下がる。
+    let top = super::bands::top_rows(&a) + super::bands::bar_padding(&a);
+    a.click((26 + 1 + mx) as u16, (2 + top + my) as u16);
     assert_eq!(a.relmap.as_ref().unwrap().link, Some(want));
     // つながった行(下の窓)の1行目 → その元のノートを開く(今の表の行なので、その行を選んで表に戻る)。
     let first = a.relmap.as_ref().unwrap().links[want].pairs[0].0.clone();

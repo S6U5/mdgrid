@@ -48,15 +48,7 @@ impl App {
         checked: Vec<Option<String>>,
         edit: Option<usize>,
     ) {
-        let rows = self.build_grid().map(|g| g.rows).unwrap_or_default();
-        let vals: Vec<Option<Value>> = rows.iter().map(|r| self.setting_value(r, &col)).collect();
-        let mut counts = core::value_counts(vals.iter().map(|v| v.as_ref()));
-        // 今は無い値にチェックが付いていれば、件数 0 で残す(外せるように)。
-        for k in &checked {
-            if !counts.iter().any(|(c, _)| c == k) {
-                counts.push((k.clone(), 0));
-            }
-        }
+        let counts = self.value_counts_for(&col, &checked);
         let sel = usize::from(!counts.is_empty());
         if let Some(d) = self.draft.as_mut() {
             d.pick = Some(Pick::Values {
@@ -68,6 +60,24 @@ impl App {
                 edit,
             });
         }
+    }
+
+    /// 値の一覧の値と件数(NV-19): `.base` の結果の行の値ごと(リストは要素ごと、空は「(空)」)。
+    /// 今は無い値にチェックが付いていれば、件数 0 で残す(外せるように)。絞り込みの窓(NV-29)と共通。
+    pub(crate) fn value_counts_for(
+        &self,
+        col: &str,
+        checked: &[Option<String>],
+    ) -> Vec<(Option<String>, usize)> {
+        let rows = self.build_grid().map(|g| g.rows).unwrap_or_default();
+        let vals: Vec<Option<Value>> = rows.iter().map(|r| self.setting_value(r, col)).collect();
+        let mut counts = core::value_counts(vals.iter().map(|v| v.as_ref()));
+        for k in checked {
+            if !counts.iter().any(|(c, _)| c == k) {
+                counts.push((k.clone(), 0));
+            }
+        }
+        counts
     }
 
     pub(crate) fn open_text(
@@ -368,7 +378,7 @@ impl App {
     }
 
     /// 比べる値が列の型で読めるか(NV-19)。読めなければ理由。
-    fn check_operand(&self, col: &str, v: &str) -> Result<(), String> {
+    pub(crate) fn check_operand(&self, col: &str, v: &str) -> Result<(), String> {
         match self.column_kind(col) {
             Kind::Number if v.parse::<f64>().is_err() => Err(Msg::OperandNumber.fill(&[&v])),
             Kind::Date if types::parse_date(v).is_none() => Err(Msg::OperandDate.fill(&[&v])),

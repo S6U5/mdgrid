@@ -16,6 +16,34 @@ pub enum Kind {
     List,
 }
 
+impl Kind {
+    /// 設定の `[types]` に書く型の名前(CE-35)。
+    pub const NAMES: [&'static str; 6] = ["text", "number", "checkbox", "date", "datetime", "list"];
+    /// 全部の型(`NAMES` と同じ並び)。
+    pub const ALL: [Kind; 6] = [
+        Kind::Text,
+        Kind::Number,
+        Kind::Checkbox,
+        Kind::Date,
+        Kind::DateTime,
+        Kind::List,
+    ];
+
+    /// 設定に書く名前。
+    pub fn name(self) -> &'static str {
+        let i = Kind::ALL.iter().position(|k| *k == self).unwrap_or(0);
+        Kind::NAMES[i]
+    }
+
+    /// 設定の名前から。知らない名前は None。
+    pub fn parse(s: &str) -> Option<Kind> {
+        Kind::NAMES
+            .iter()
+            .position(|n| *n == s)
+            .map(|i| Kind::ALL[i])
+    }
+}
+
 /// 複数の根の types.json を合わせた結果(BV-12)。
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Declared {
@@ -337,15 +365,19 @@ fn weekday_sun0(days: i64) -> usize {
     ((days.rem_euclid(7) + 4) % 7) as usize
 }
 
-/// 曜日の短い名前(`ddd`)。日曜から。見せるのは画面の言語の名前(SR-23)、読むのはどちらの名前でもよい。
-const WEEKDAY_NAMES: [&str; 7] = ["日", "月", "火", "水", "木", "金", "土"];
-const WEEKDAY_EN: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+/// 曜日の短い名前(`ddd`)の文言。日曜から。見せるのは画面の言語の名前(SR-23)、読むのはどの言語の名前でもよい。
+const WEEKDAY_NAMES: [Msg; 7] = [
+    Msg::DddSun,
+    Msg::DddMon,
+    Msg::DddTue,
+    Msg::DddWed,
+    Msg::DddThu,
+    Msg::DddFri,
+    Msg::DddSat,
+];
 
 fn weekday_name(i: usize) -> &'static str {
-    match crate::i18n::current() {
-        crate::i18n::Lang::En => WEEKDAY_EN[i],
-        _ => WEEKDAY_NAMES[i],
-    }
+    WEEKDAY_NAMES[i].text()
 }
 
 /// 日付の形の部品(CE-22)。
@@ -493,11 +525,15 @@ impl DateFormat {
             match p {
                 Part::Lit(s) => rest = rest.strip_prefix(s.as_str())?,
                 Part::Weekday => {
-                    let (i, name) = WEEKDAY_NAMES
+                    let (i, name) = crate::i18n::Lang::ALL
                         .iter()
-                        .enumerate()
-                        .chain(WEEKDAY_EN.iter().enumerate())
-                        .find(|(_, n)| rest.starts_with(**n))?;
+                        .flat_map(|l| {
+                            WEEKDAY_NAMES
+                                .iter()
+                                .enumerate()
+                                .map(move |(i, m)| (i, m.get(*l)))
+                        })
+                        .find(|(_, n)| rest.starts_with(*n))?;
                     wd = Some(i);
                     rest = &rest[name.len()..];
                 }

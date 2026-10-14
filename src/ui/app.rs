@@ -115,6 +115,8 @@ pub struct App {
     pub(crate) style: mdgrid::style::Style,
     /// SR-36: 丸い札の端を Nerd Font の字で描いてよい(`terminal.nerd_font` を端末の名前で決めたもの)。
     pub(crate) nerd_font: bool,
+    /// SR-45: アイコン用のフォントの記号を使う(`terminal.nerd_icons`)。
+    pub(crate) nerd_icons: bool,
     /// SR-44: 範囲ごとの層と決まった値(ui/profile.rs)。
     pub(crate) prof: super::profile::Prof,
     /// SR-40・SR-41: 色の上書き。
@@ -207,6 +209,17 @@ pub struct App {
     pub(crate) freq: Option<super::freq::Freq>,
     /// NV-24: 開いている並べ替えの窓。
     pub(crate) sorts_win: Option<super::sorts::SortWin>,
+    /// WS-8: 開いている表の一覧の引き出し。
+    pub(crate) drawer: Option<super::drawer::Drawer>,
+    /// NV-29: 開いている絞り込みの窓。
+    pub(crate) filter_win: Option<super::filters::FilterWin>,
+    /// NV-23: 端末の地の色(OSC 11 で起動時に問い合わせた答え。試験からも与えられる)。分からなければ None で、
+    /// テーマが画面の地を塗らないときは余白の端数を1行に切り上げる。
+    pub(crate) term_bg: Option<[u8; 3]>,
+    /// REL-8: 開いている画面の型のメニュー。
+    pub(crate) screen_menu: Option<super::screen_menu::ScreenMenu>,
+    /// CE-35: 開いている列の型の窓。
+    pub(crate) type_menu: Option<super::type_menu::TypeMenu>,
     /// 画面のテーマ(SR-26・SR-27)。描き終えたバッファを ui/theme.rs が塗り替える。
     pub(crate) theme: Theme,
     /// 読み込みが終わったら選ぶノート(CLI-15。起動の引数に渡した `.md`)。終わりで一度だけ使う。
@@ -289,6 +302,7 @@ impl App {
             look_classic: false,
             style: Default::default(),
             nerd_font: false,
+            nerd_icons: false,
             prof: Default::default(),
             colors: Default::default(),
             today,
@@ -338,6 +352,11 @@ impl App {
             menu: None,
             freq: None,
             sorts_win: None,
+            drawer: None,
+            filter_win: None,
+            term_bg: None,
+            screen_menu: None,
+            type_menu: None,
             theme: Theme::Default,
             select_after_load: None,
             new_note_after_load: false,
@@ -356,6 +375,13 @@ impl App {
             relmap: None,
             quit: false,
         };
+        // CE-25: 作る場所の既定は読み込み口が開いたフォルダ(起動の設定 `start` が対象から決め直す)。
+        app.note.places = app
+            .src
+            .folders()
+            .into_iter()
+            .filter(|d| d.is_dir())
+            .collect();
         app.refresh();
         app
     }
@@ -366,6 +392,7 @@ impl App {
         self.ambiguous_wide = c.terminal.ambiguous_wide;
         self.prof.nerd = self.prof.ui.nerd_font.unwrap_or(c.terminal.nerd_font);
         self.nerd_font = self.prof.nerd.resolve(self.prof.term_program.as_deref());
+        self.nerd_icons = c.terminal.nerd_icons;
         self.workspace_detect = c.workspace_detect.clone();
         self.poll_ms = c.poll_ms;
         if !c.terminal.color {
@@ -516,6 +543,17 @@ impl App {
             .left
             .min(self.cols.len().saturating_sub(1))
             .max(fz.min(self.cols.len().saturating_sub(1)));
+        // CV-8: 伸ばした行は、高さ全部が見えるまで流す(列を決めたあとで、見える列の高さで数える)。
+        // top が変わると列の幅を測る行も変わり、行の高さが変わりうるので、決まるまで測り直す(数回で止める)。
+        if super::rows::extra(self) > 0 {
+            for _ in 0..4 {
+                let t = super::rows::top_for(self);
+                if t == self.top {
+                    break;
+                }
+                self.top = t;
+            }
+        }
     }
 
     /// 選んだセル(ノートの行と列)。見出しの行では None。
@@ -547,6 +585,7 @@ impl App {
                         Mode::Palette => self.palette_insert(c),
                         Mode::Search | Mode::Filter => self.prompt_insert(c),
                         Mode::SettingsText => self.settings_insert(c),
+                        Mode::FilterText => self.filter_insert(c),
                         Mode::ListPick => self.list_pick_insert(c),
                         // CE-25: 作る場所を選ぶ欄では文字を受けない(自由入力に切り替えない)。
                         Mode::Edit if self.note_choosing() => {}
@@ -597,6 +636,13 @@ impl App {
             }
             // SR-24: 一覧の上では、一覧のキーでなければ表のモードのキーとして読む(menu.rs)。
             None if self.mode == Mode::Menu => self.menu_key(&name),
+            // WS-8: 引き出しは、表で開いたキー(割り当て直したものも)でも閉じる。
+            None if self.mode == Mode::Drawer
+                && keymap::lookup(&self.keys, Mode::Table, &name) == Some(Action::WsDrawer) =>
+            {
+                self.close_drawer();
+                true
+            }
             None => false,
         }
     }
@@ -641,6 +687,10 @@ impl App {
             Mode::Menu => self.menu_action(action),
             Mode::Freq => self.freq_action(action),
             Mode::Sorts => self.sorts_action(action),
+            Mode::Drawer => self.drawer_action(action),
+            Mode::ScreenMenu => self.screen_menu_action(action),
+            Mode::ColumnType => self.type_menu_action(action),
+            Mode::FilterWin | Mode::FilterText => self.filters_action(action),
             Mode::Relations => self.relmap_action(action),
             Mode::Table => self.table_action(action),
         }
@@ -693,7 +743,8 @@ impl App {
         }
         let last_row = self.slots.len().saturating_sub(1);
         let last_col = self.cols.len().saturating_sub(1);
-        let page = self.data_height().max(1);
+        // CV-8: ページ送りは伸ばした行の高さで数える。
+        let page = super::rows::page(self);
         match action {
             Action::Up => self.row = self.row.saturating_sub(1),
             Action::Down => self.row = (self.row + 1).min(last_row),
@@ -758,6 +809,8 @@ impl App {
                 self.switch_to = None;
                 self.switch_select = None;
                 self.switch_new_note = false;
+                self.switch_workspace = None;
+                self.switch_leave_workspace = false;
                 self.begin_quit();
             }
             Action::CancelLoad => {
@@ -791,6 +844,7 @@ impl App {
             // ---- mdgrid のビューの書き出しと取り込み(native_views.rs。BV-19) ----
             Action::ExportBase => self.start_export(),
             Action::SortMenu => self.open_sorts(),
+            Action::FilterMenu => self.open_filters(),
             Action::SetDefaultView => self.set_default_view(),
             Action::ExportTable => self.start_export_table(),
             Action::ImportBase => self.start_import(),
@@ -809,8 +863,11 @@ impl App {
             Action::WsAdd => self.start_ws_add(),
             Action::WsRemove => self.start_ws_remove(),
             Action::WsOpen => self.start_ws_open(),
+            Action::WsDrawer => self.open_drawer(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),
+            // CE-35: 列の型を選び直す窓。
+            Action::ColumnType => self.open_type_menu(),
             Action::RenameNote => self.start_rename_note(),
             Action::DeleteKey => self.start_delete_key(),
             // ---- 新しいノート(new_note.rs。CE-25) ----
@@ -872,10 +929,10 @@ impl App {
                 }
             }
             Mode::Table => {
-                // REL-8: 上の端のタブで関係マップへ。
-                if super::bands::screen_tab_at(self, x, y) == Some(true) {
-                    self.open_relmap();
-                    return;
+                // SR-42・REL-8: ヘッダーの右の端の画面の型のメニューと設定のボタン。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
                 }
             }
             // NV-23: 検索の欄で打っているとき、欄のクリックはそのまま、欄の外のクリックは欄を抜けて
@@ -893,13 +950,19 @@ impl App {
             // NV-9: 頻度表の項目のクリックで絞って閉じ、窓の外のクリックで閉じるだけ。
             Mode::Freq => return self.freq_click(x, y),
             Mode::Sorts => return self.sorts_click(x, y),
-            // REL-8: 関係マップの上の端のタブ。
+            // WS-8: 引き出しの行のクリックで移り、外(ヘッダーのボタンを含む)のクリックで閉じる。
+            Mode::Drawer => return self.drawer_click(x, y),
+            // REL-8: 画面の型のメニューの行のクリックで切り替え、外のクリックで閉じる。
+            Mode::ScreenMenu => return self.screen_menu_click(x, y),
+            Mode::ColumnType => return self.type_menu_click(x, y),
+            // NV-29: 絞り込みの窓の行のクリック、外のクリックで閉じる。
+            Mode::FilterWin | Mode::FilterText => return self.filters_click(x, y),
             Mode::Relations => {
-                // SR-42: ヘッダーのボタン(表の画面に戻ってから開く)。
-                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
                     self.relmap = None;
                     self.set_mode(Mode::Table);
-                    self.header_button(b);
+                    self.open_drawer();
                     return;
                 }
                 // CE-25: 関係マップでも「+ 新規」(選んでいる表に作る)。
@@ -907,15 +970,13 @@ impl App {
                     self.apply(Action::NewNote);
                     return;
                 }
-                match super::bands::screen_tab_at(self, x, y) {
-                    Some(false) => {
-                        self.relmap = None;
-                        self.set_mode(Mode::Table);
-                    }
-                    Some(true) => {}
-                    // REL-12: 一覧・盤・つながった行のクリック。
-                    None => self.relmap_click(x, y),
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
                 }
+                // REL-12: 一覧・盤・つながった行のクリック。
+                self.relmap_click(x, y);
                 return;
             }
             Mode::Chips => {
@@ -928,19 +989,21 @@ impl App {
             }
             _ => return,
         }
-        // SR-42: ヘッダーのワークスペースと設定のボタン。
-        if let Some(b) = super::bands::header_button_at(self, x, y) {
-            self.header_button(b);
+        // SR-42: ヘッダーのパンくずで表の一覧の引き出し(WS-8)。
+        if super::bands::crumb_at(self, x, y) {
+            self.message = None;
+            self.open_drawer();
             return;
         }
-        // CE-25: ヘッダーの「+ 新規」で新しいノートの名前の欄を開く。
+        // CE-25: ビューの帯の「+ 新規」で新しいノートの名前の欄を開く。
         if super::new_note::button_at(self, x, y) {
             self.apply(Action::NewNote);
             return;
         }
-        // NV-24: 検索の欄の右の「並べ替え」のボタン。
-        if super::bands::sort_button_at(self, x, y) {
-            self.open_sorts();
+        // NV-23: ビューの帯のボタン(絞り込み・並べ替えは窓、分類・列はビューの設定の画面)。
+        if let Some(b) = super::bands::view_button_at(self, x, y) {
+            self.message = None;
+            self.press_view_button(b);
             return;
         }
         // NV-23: 検索の欄のクリックで欄に入る(`\` と同じ)。
@@ -962,6 +1025,13 @@ impl App {
         }
         if let Some(d) = view::boundary_at(self, x, y) {
             self.drag = Some(d);
+            return;
+        }
+        // CE-35: 列の見出しの型の印のクリックで、その列の型の窓。
+        if let Some(j) = view::type_mark_at(self, x, y) {
+            self.message = None;
+            self.col = j;
+            self.open_type_menu();
             return;
         }
         // NV-3: 列の見出しのクリックで一時的な並べ替え。
@@ -1037,6 +1107,14 @@ impl App {
             (Mode::Freq, false) => Action::Up,
             (Mode::Sorts, true) => Action::Down,
             (Mode::Sorts, false) => Action::Up,
+            (Mode::Drawer, true) => Action::Down,
+            (Mode::Drawer, false) => Action::Up,
+            (Mode::ScreenMenu, true) => Action::Down,
+            (Mode::ScreenMenu, false) => Action::Up,
+            (Mode::ColumnType, true) => Action::Down,
+            (Mode::ColumnType, false) => Action::Up,
+            (Mode::FilterWin, true) => Action::Down,
+            (Mode::FilterWin, false) => Action::Up,
             // REL-12: 関係マップでは表を上下に選ぶ。
             (Mode::Relations, true) => Action::Down,
             (Mode::Relations, false) => Action::Up,
@@ -1054,12 +1132,32 @@ impl App {
 }
 
 impl App {
-    /// SR-42: ヘッダーのボタンを押した(ワークスペースの一覧か、ビューの設定の画面を開く)。
-    pub(crate) fn header_button(&mut self, b: super::bands::HeaderButton) {
-        self.message = None;
+    /// NV-23: ビューの帯のボタンを押した。
+    pub(crate) fn press_view_button(&mut self, b: super::bands::ViewButton) {
+        use super::bands::ViewButton as B;
+        use super::settings::Sec;
         match b {
-            super::bands::HeaderButton::Workspace => self.start_ws_open(),
-            super::bands::HeaderButton::Settings => self.apply(Action::ViewSettings),
+            B::Filter => self.open_filters(),
+            B::Sort => self.open_sorts(),
+            B::Group => self.open_settings_at(Sec::Group),
+            B::Columns => self.open_settings_at(Sec::Columns),
+        }
+    }
+
+    /// SR-42・REL-8: ヘッダーの右の端のボタンを押した。関係マップでは、設定は表の画面に戻ってから開く。
+    pub(crate) fn press_header_button(&mut self, b: super::bands::HeaderButton) {
+        use super::bands::HeaderButton as H;
+        match b {
+            H::Menu => self.open_screen_menu(),
+            // CE-25: ビューの帯を出さないときの「+ 新規」。
+            H::New => self.apply(Action::NewNote),
+            H::Settings => {
+                if self.mode == Mode::Relations {
+                    self.relmap = None;
+                    self.set_mode(Mode::Table);
+                }
+                self.apply(Action::ViewSettings);
+            }
         }
     }
 }

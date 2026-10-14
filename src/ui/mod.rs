@@ -12,10 +12,13 @@ pub mod detail;
 pub(crate) use crate::diff;
 pub mod add_row;
 pub mod display;
+pub mod drawer;
 pub mod entry;
 pub mod export;
 pub mod external;
+pub mod filters;
 pub mod freq;
+pub(crate) mod glyphs;
 pub mod grid;
 pub mod help;
 pub mod input;
@@ -36,6 +39,8 @@ pub(crate) mod profile;
 pub mod relations;
 pub mod relmap;
 pub mod review;
+pub(crate) mod rows;
+pub mod screen_menu;
 pub mod settings;
 pub mod settings_pick;
 pub mod settings_view;
@@ -43,6 +48,7 @@ pub mod sorts;
 pub mod startup;
 pub mod termbg;
 pub mod theme;
+pub mod type_menu;
 pub mod view;
 pub mod view_tabs;
 pub mod width;
@@ -88,10 +94,34 @@ pub fn draw(frame: &mut Frame, app: &App) {
             }
         }
     }
+    let lines_bg: Vec<Option<ratatui::style::Color>> = lines.iter().map(|l| l.style.bg).collect();
     if app.ambiguous_wide {
         write_lines(frame.buffer_mut(), area, &lines);
     } else {
         frame.render_widget(Paragraph::new(lines), area);
+    }
+    // NV-23・SR-1: 帯の地の色を敷いた行(ビューの帯・ヘッダーと半行の余白)は、描かない右端の1桁も同じに塗る
+    // (帯が画面の右の端まで続いて見えるように。テーマの塗り替えより先)。
+    if let Some(band) = look::bar_bg(app) {
+        let edge = full.right().saturating_sub(1);
+        let last = full.bottom().saturating_sub(1);
+        if edge > area.x && edge >= area.right() {
+            let buf = frame.buffer_mut();
+            for (dy, line) in lines_bg.iter().enumerate() {
+                let y = area.y + dy as u16;
+                if y >= last || *line != Some(band) {
+                    continue;
+                }
+                // 半行の余白の行は同じ字(画面の地の色の半分の塗り)、ほかは帯の地の色の空白。
+                let src = buf[(edge - 1, y)].clone();
+                if matches!(src.symbol(), "▀" | "▄") {
+                    buf[(edge, y)] = src;
+                } else {
+                    buf[(edge, y)].reset();
+                    buf[(edge, y)].set_bg(band);
+                }
+            }
+        }
     }
     // SR-26・SR-27: テーマは描き終えたバッファを役割で塗り替える(色なし・default では何もしない)。
     theme::paint(frame.buffer_mut(), full, app);
@@ -171,6 +201,10 @@ mod test_colors_more;
 #[cfg(test)]
 mod test_colors_screen;
 #[cfg(test)]
+mod test_column_types;
+#[cfg(test)]
+mod test_column_types_more;
+#[cfg(test)]
 mod test_datetime_offsets;
 #[cfg(test)]
 mod test_default_view;
@@ -191,9 +225,17 @@ mod test_export;
 #[cfg(test)]
 mod test_external;
 #[cfg(test)]
+mod test_filter_window;
+#[cfg(test)]
+// 錠のある試験のファイルの use を書き換えないため(specs/_changes/2026-10-14-fmt-view-bar-cases.md)。
+#[allow(unused_imports)]
+mod test_filter_window_more;
+#[cfg(test)]
 mod test_freq_chips;
 #[cfg(test)]
 mod test_group_gap;
+#[cfg(test)]
+mod test_half_explicit_rounds_up;
 #[cfg(test)]
 mod test_header_buttons;
 #[cfg(test)]
@@ -217,6 +259,8 @@ mod test_note_form;
 #[cfg(test)]
 mod test_note_time;
 #[cfg(test)]
+mod test_padding_default_one;
+#[cfg(test)]
 mod test_places;
 #[cfg(test)]
 mod test_places_align;
@@ -235,6 +279,8 @@ mod test_relmap_new_note;
 #[cfg(test)]
 mod test_relmap_new_note_load;
 #[cfg(test)]
+mod test_relmap_new_row;
+#[cfg(test)]
 mod test_relmap_scroll;
 #[cfg(test)]
 mod test_review6;
@@ -246,6 +292,10 @@ mod test_rich_cells_first;
 mod test_rich_cells_fit;
 #[cfg(test)]
 mod test_rich_cells_more;
+#[cfg(test)]
+mod test_row_lines;
+#[cfg(test)]
+mod test_row_lines_more;
 #[cfg(test)]
 mod test_screen_tabs_fixed;
 #[cfg(test)]
@@ -278,7 +328,19 @@ mod test_trust_notices;
 mod test_view_tabs_auto;
 #[cfg(test)]
 mod test_workspace;
+#[cfg(test)]
+mod test_ws_drawer;
+#[cfg(test)]
+mod test_ws_drawer_more;
 // 受け入れの試験(書き換えない)の書き方に当たる clippy の指摘は、ここで許す。
+#[cfg(test)]
+mod test_bar_padding;
+#[cfg(test)]
+mod test_bar_padding_half;
+#[cfg(test)]
+mod test_bar_padding_theme;
+#[cfg(test)]
+mod test_crumb_button;
 #[cfg(test)]
 mod test_csv_note_only;
 #[cfg(test)]
@@ -297,6 +359,12 @@ mod test_gaps;
 #[cfg(test)]
 mod test_grid;
 #[cfg(test)]
+mod test_half_row_inverse;
+#[cfg(test)]
+mod test_half_row_inverse_termbg;
+#[cfg(test)]
+mod test_header_menu;
+#[cfg(test)]
 mod test_help;
 #[cfg(test)]
 mod test_help_markers;
@@ -308,6 +376,8 @@ mod test_keys_doc;
 mod test_language;
 #[cfg(test)]
 mod test_language_more;
+#[cfg(test)]
+mod test_layout_util;
 #[cfg(test)]
 mod test_list_type;
 #[cfg(test)]
@@ -322,6 +392,10 @@ mod test_native_state;
 mod test_native_views;
 #[cfg(test)]
 mod test_nav;
+#[cfg(test)]
+mod test_nerd_icons;
+#[cfg(test)]
+mod test_new_button_header;
 #[cfg(test)]
 mod test_new_note;
 #[cfg(test)]
@@ -346,6 +420,8 @@ mod test_plural_en;
 mod test_screen;
 #[cfg(test)]
 mod test_search_bar;
+#[cfg(test)]
+mod test_search_box;
 #[cfg(test)]
 mod test_search_not_found;
 #[cfg(test)]
@@ -374,6 +450,12 @@ mod test_type_replaces_more;
 mod test_untyped_date;
 #[cfg(test)]
 mod test_unwritable;
+#[cfg(test)]
+mod test_view_bar;
+#[cfg(test)]
+mod test_view_bar_cases;
+#[cfg(test)]
+mod test_view_bar_plain;
 #[cfg(test)]
 mod test_view_delete_undo;
 #[cfg(test)]

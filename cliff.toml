@@ -55,4 +55,6 @@ commit_parsers = [
   { message = "^設定[:：]", skip = true },
   # 公開リポで先に入った変更を手元に入れたコミット(変更履歴には公開リポの側の PR として出る)。
   { message = "^取り込み[:：]", skip = true },
+  # 仕様駆動の道具(.decidespec/)の更新。利用者に見える変化でない。
+  { message = "^decidespec[:：]", skip = true },
 ]

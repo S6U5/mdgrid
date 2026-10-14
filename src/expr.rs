@@ -1286,7 +1286,7 @@ pub enum Fixed {
     Contains(String, String),
     /// `file.hasTag("x")`(引数1つ。先頭の `#` は除く)。Obsidian と同じく tags の列のタグ。
     Tag(String),
-    /// `file.inFolder("x")`(保管庫の根からのフォルダ。前後の `/` は除く。空は入れない)。
+    /// `file.inFolder("x")`(ルートフォルダからのフォルダ。前後の `/` は除く。空は入れない)。
     Folder(String),
 }
 

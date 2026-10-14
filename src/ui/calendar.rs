@@ -348,7 +348,18 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
         None => base,
     };
     let mut out = vec![vec![Span::styled(
-        edge(f, &Msg::CalTitle.fill(&[&y, &month]), true, f.tl, f.tr),
+        // SR-45: アイコンを使うときは題の頭にカレンダーの記号。
+        edge(
+            f,
+            &format!(
+                " {}{}",
+                super::glyphs::calendar_head(app),
+                Msg::CalTitle.fill(&[&y, &month]).trim_start()
+            ),
+            true,
+            f.tl,
+            f.tr,
+        ),
         bst.add_modifier(Modifier::BOLD),
     )]];
     let names: String = weekday_names(app.week_start)

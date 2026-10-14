@@ -8,17 +8,19 @@ use mdgrid::workspace::{self, WsTable};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
 
-/// 1行目で文字 `t` の始まる桁。
+/// ヘッダーの行で文字 `t` の始まる桁。
 fn col_of(a: &App, t: &str) -> Option<u16> {
     let (w, h) = a.size;
     let mut term = Terminal::new(TestBackend::new(w, h)).unwrap();
     term.draw(|f| super::draw(f, a)).unwrap();
     let b = term.backend().buffer().clone();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let hy = super::bands::head_y(a);
     let first: Vec<char> = t.chars().collect();
     (0..b.area.width).find(|&x| {
         let mut xx = x;
         first.iter().all(|c| {
-            let ok = xx < b.area.width && b[(xx, 0)].symbol() == c.to_string();
+            let ok = xx < b.area.width && b[(xx, hy)].symbol() == c.to_string();
             xx += if super::width::width(&c.to_string()) == 2 {
                 2
             } else {
@@ -43,42 +45,79 @@ fn add_work(tmp: &super::test_screen::Tmp) {
 
 #[test]
 fn test_sr_42_settings_button() {
-    // [SR-42] 「設定」は表の画面と関係マップで同じ桁。押すとビューの設定の画面(関係マップからは表に戻ってから)。
+    // [SR-42] ビューの設定の画面を開くボタンは、ヘッダーの右の端の「⚙ 設定」(表の画面と関係マップの1行目に
+    // 出し、2行目のビューの帯には無い。2026-10-12-header-menu で帯から移った)。⚙ を押すとビューの設定の画面。
     let tmp = workspace("sr42_settings");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);
-    let x = col_of(&a, "設定").expect("表の画面の設定");
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)とビューの帯の字の行。
+    let head = |a: &App| {
+        screen(a)
+            .lines()
+            .nth(super::bands::head_y(a) as usize)
+            .unwrap_or_default()
+            .to_string()
+    };
+    let bar = |a: &App| {
+        screen(a)
+            .lines()
+            .nth(super::bands::mid_row(a))
+            .unwrap_or_default()
+            .to_string()
+    };
+    assert!(head(&a).contains("設定"), "{}", screen(&a));
+    assert!(
+        !bar(&a).contains('⚙'),
+        "ビューの帯に ⚙ は無い:\n{}",
+        screen(&a)
+    );
     ch(&mut a, 'R');
     assert_eq!(a.mode, Mode::Relations);
-    assert_eq!(col_of(&a, "設定"), Some(x), "関係マップでも同じ桁");
-    a.click(x, 0);
-    assert!(a.relmap.is_none());
+    assert!(
+        head(&a).contains("設定"),
+        "関係マップの1行目にもある:\n{}",
+        screen(&a)
+    );
+    ch(&mut a, 'R');
+    assert_eq!(a.mode, Mode::Table);
+    let gear = col_of(&a, "⚙").expect("ヘッダーの ⚙");
+    a.click(gear, super::bands::head_y(&a));
     assert_eq!(a.mode, Mode::Settings, "{}", screen(&a));
 }
 
 #[test]
 fn test_sr_42_workspace_button() {
-    // [SR-42] ワークスペースの範囲で開いたら、ボタンにその名前。押すとワークスペースの一覧。
-    // ワークスペースが1つも無くても、ワークスペースのボタンは出す(WS-6)。
+    // [SR-42] ワークスペースの範囲で開いたら、パンくずにその名前。押すと表の一覧の引き出し(WS-8)、
+    // もう一度押すと閉じる。ワークスペースが1つも無くても、引き出しの入口(パンくずの表の名前)は出す(WS-6)。
+    // 前の配置のヘッダーのボタン「▾ Work」「ワークスペース」は、パンくずの「Work」と表の名前に置き換わった。
     let tmp = workspace("sr42_ws");
-    let a = boot_tasks(&tmp);
+    let mut a = boot_tasks(&tmp);
     assert!(screen(&a)
         .lines()
-        .next()
+        .nth(super::bands::head_y(&a) as usize)
         .unwrap_or_default()
-        .contains("ワークスペース"));
+        .contains("tasks"));
+    let x = col_of(&a, "tasks").expect("パンくずの表の名前");
+    a.click(x + 1, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::Drawer, "{}", screen(&a));
+    a.click(x + 1, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::Table, "{}", screen(&a));
     add_work(&tmp);
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);
-    let x = col_of(&a, "▾ Work").expect("ワークスペースの名前のボタン");
-    a.click(x + 2, 0);
-    assert_eq!(a.mode, Mode::Palette, "{}", screen(&a));
-    assert!(screen(&a).contains("Work"), "{}", screen(&a));
+    let x = col_of(&a, "Work").expect("パンくずのワークスペースの名前");
+    a.click(x + 2, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::Drawer, "{}", screen(&a));
+    assert!(screen(&a).contains("Projects"), "{}", screen(&a));
+    a.click(x + 2, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::Table, "{}", screen(&a));
+    assert!(a.switch_to.is_none());
 }
 
 #[test]
 fn test_sr_42_narrow_hides_buttons() {
-    // [SR-42] 幅が足りなければボタンを隠し、タブと「+ 新規」は残す。
+    // [SR-42] 幅が足りなければボタンを隠し、画面の型のメニューと「+ 新規」(2026-10-12-header-menu で
+    // ビューの帯に移った)は残す。
     let tmp = workspace("sr42_narrow");
     add_work(&tmp);
     let mut a = boot_tasks(&tmp);
@@ -87,10 +126,23 @@ fn test_sr_42_narrow_hides_buttons() {
     term.draw(|f| super::draw(f, &a)).unwrap();
     let b = term.backend().buffer().clone();
     // 全角の字の後ろの桁は空白なので、空白を除いて比べる。
+    let hy = super::bands::head_y(&a);
     let head: String = (0..60)
-        .map(|x| b[(x, 0)].symbol().to_string())
+        .map(|x| b[(x, hy)].symbol().to_string())
         .collect::<String>()
         .replace(' ', "");
-    assert!(!head.contains("設定") && !head.contains("▾"), "{head}");
-    assert!(head.contains("新規"), "{head}");
+    // ビューの帯の字の行(2026-10-12-search-box・view-bar-plain の3行の帯では3行目)。
+    let mid = super::bands::mid_row(&a) as u16;
+    let bar: String = (0..60)
+        .map(|x| b[(x, mid)].symbol().to_string())
+        .collect::<String>()
+        .replace(' ', "");
+    // ▾ はパンくずのボタン(SR-42)と画面の型のメニュー(REL-8)の2つだけ。前の右上の「▾ ワークスペース」の
+    // ボタンは無い。
+    assert!(
+        !head.contains("設定") && head.matches('▾').count() == 2,
+        "{head}"
+    );
+    assert!(head.contains("表▾"), "{head}");
+    assert!(bar.contains("新規"), "{bar}");
 }

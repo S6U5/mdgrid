@@ -252,7 +252,15 @@ fn test_nv_9_enter_on_first_filters_to_value() {
     // [NV-9] [NV-16] 窓の最初の項目(会議)で Enter → 窓が閉じて表のモード、tags に会議を持つ行だけになり、
     // 上の設定の帯に条件(会議)が出る。
     let (_t, mut a) = make("nv9enter", TAGS);
-    let before_top = top(&screen(&a));
+    // 表の行より上(ヘッダー・ビューの帯・設定の帯・列の見出し。SR-1)。行の数は `view::data_y` から。
+    let top_rows = |a: &App| {
+        screen(a)
+            .lines()
+            .take(view::data_y(a))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let before_top = top_rows(&a);
     assert!(
         !before_top.contains("会議"),
         "材料: 開く前から帯に会議:\n{before_top}"
@@ -266,7 +274,10 @@ fn test_nv_9_enter_on_first_filters_to_value() {
         "会議を持つ行だけでない"
     );
     let s = screen(&a);
-    assert!(top(&s).contains("会議"), "上の帯に条件(会議)が無い:\n{s}");
+    assert!(
+        top_rows(&a).contains("会議"),
+        "上の帯に条件(会議)が無い:\n{s}"
+    );
     assert_eq!(a.changes.count(), 0, "絞り込みでノートを書いた");
 }
 

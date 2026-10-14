@@ -19,9 +19,9 @@ mdgrid --completions zsh > ~/.zfunc/_mdgrid
 mdgrid --man > ~/.local/share/man/man1/mdgrid.1
 ```
 
-## Open the sample vault
+## Open the sample root folder
 
-The repository has a sample vault, `examples/vault`. Saving rewrites files, so copy it to a temporary folder first:
+The repository has a sample root folder, `examples/vault`. Saving rewrites files, so copy it to a temporary folder first:
 
 ```sh
 cp -R examples/vault /tmp/mdgrid-sample
@@ -60,7 +60,8 @@ From the top:
 
 | Area | What it shows |
 |---|---|
-| Header | what is open (`vault` here), the number of rows, and `· workspace <name>` when a workspace is in use. At the right, the **Table** / **Relations** tabs (when there are linked tables) and `+ New`, which creates a note |
+| Header | a breadcrumb button at the start (press `w` or click it for the drawer listing the tables; `<workspace> › <table> ▾` when a workspace is in use, `vault ▾` here) and the number of rows. At the right, the screen type menu (**▦ Table ▾**, which lists the relation map when there are linked tables) and **⚙ Settings** for the view settings. `+ New`, which creates a note, is at the right end of the view bar |
+| View bar | a bar with one empty line above and below it (setting `display.bar_padding`): the view tabs at the left, then the search bar and the Filter, Sort, Group and Columns buttons, and `+ New` at the right end |
 | Tabs | view names: `Default table` (every note of the folder), plus the views of a `.base` and views you saved |
 | Search bar | press `\` to type; rows are filtered as you type |
 | Table | one row per note. The first column is the note's path; the others are frontmatter keys |

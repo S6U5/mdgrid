@@ -1,5 +1,5 @@
 # mdgrid の設定の見本(examples/showcase)。
-# 起動: mdgrid --config <このファイル> <保管庫>/プロジェクト.base
+# 起動: mdgrid --config <このファイル> <ルートフォルダ>/プロジェクト.base
 # 置き場の既定は $XDG_CONFIG_HOME/mdgrid/config.toml。
 
 # ノートを開くエディタ(引数つきでよい)。書かないか空なら $VISUAL、$EDITOR、vi の順。

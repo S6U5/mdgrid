@@ -136,7 +136,11 @@ fn test_sr_1_five_bands() {
         ],
     );
     let s = screen(&app);
-    assert!(s.lines().next().unwrap().contains("notes  3行"));
+    assert!(s
+        .lines()
+        .nth(super::bands::head_y(&app) as usize)
+        .unwrap()
+        .contains("notes ▾  3行"));
     assert!(s.contains("未保存 0"));
     golden("sr_1", &s);
 }
@@ -379,10 +383,11 @@ fn test_sr_18_read_only_cell_reason() {
     // [SR-15] 読むだけのセルは薄い表示に加えて `#` の印(NO_COLOR でも見分けられる)。
     // 複数行の値の中身の見せ方は CV の決まりなので問わず、セルの先頭の `#` だけを見る。
     let cell_text = |line: &str, name: &str| line.split(name).nth(1).unwrap().trim().to_string();
-    let ro = cell_text(s.lines().nth(4).unwrap(), "a ");
+    let dy = view::data_y(&a);
+    let ro = cell_text(s.lines().nth(dy).unwrap(), "a ");
     assert!(ro.starts_with('#'), "{s}");
     // [CE-16] 書ける形のリスト(1行の `[a, b]`)には `#` の印が無い。
-    let rw = cell_text(s.lines().nth(5).unwrap(), "b ");
+    let rw = cell_text(s.lines().nth(dy + 1).unwrap(), "b ");
     assert_eq!(rw, "[a, b]", "{s}");
     press(&mut a, KeyCode::Backspace);
     assert_eq!(a.changes.count(), 0);
@@ -400,9 +405,10 @@ fn test_sr_3_selected_column_stays_visible() {
     let (_t, mut a) = make("sr3", &[("a.md", &fm)]);
     for i in 0..20 {
         let s = screen(&a);
-        let head = s.lines().nth(3).unwrap();
+        let dy = view::data_y(&a);
+        let head = s.lines().nth(dy - 1).unwrap();
         assert!(head.contains(&format!("prop{i:02}")), "{i}: {head}");
-        let row = s.lines().nth(4).unwrap();
+        let row = s.lines().nth(dy).unwrap();
         assert!(
             row.contains(&format!("value-of-property-{i:02}")),
             "{i}: {row}"
@@ -461,7 +467,10 @@ fn test_sr_15_pending_mark_and_256_colors() {
     press(&mut a, KeyCode::Backspace);
     ch(&mut a, 'j');
     let s = screen(&a);
-    assert!(s.lines().nth(4).unwrap().contains("*∅"), "{s}");
+    assert!(
+        s.lines().nth(view::data_y(&a)).unwrap().contains("*∅"),
+        "{s}"
+    );
     let buf = buffer(&a);
     assert!(buf
         .content()
@@ -506,7 +515,12 @@ fn test_bv_16_cancel_load() {
     let mut a = App::new(Box::new(src), ColorMode::None);
     a.load_step(10);
     // [SR-4] 中止のキーの表示はキーの表から引く。
-    let top = screen(&a).lines().next().unwrap().to_string();
+    // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    let top = screen(&a)
+        .lines()
+        .nth(super::bands::head_y(&a) as usize)
+        .unwrap()
+        .to_string();
     assert!(top.contains("^G で中止"), "{top}");
     // 前置き `g` のあとの Ctrl+G も中止として効く。
     ch(&mut a, 'g');
@@ -563,8 +577,12 @@ fn test_ce_1_enter_type_enter_pending() {
     assert_eq!(a.mode, keymap::Mode::Edit);
     // [SR-17] 端末のカーソルは入力の位置(値の末尾)に置く。
     let (cx, cy) = view::cursor(&a).unwrap();
-    assert_eq!(cy, 4);
-    let row = screen(&a).lines().nth(4).unwrap().to_string();
+    assert_eq!(cy as usize, view::data_y(&a));
+    let row = screen(&a)
+        .lines()
+        .nth(view::data_y(&a))
+        .unwrap()
+        .to_string();
     assert!(row.contains("todo"), "{row}");
     for _ in 0..4 {
         press(&mut a, KeyCode::Backspace);

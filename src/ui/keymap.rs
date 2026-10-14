@@ -39,6 +39,16 @@ pub enum Mode {
     Sorts,
     /// 関係マップ(REL-7。relmap.rs)。
     Relations,
+    /// 表の一覧の引き出し(WS-8。drawer.rs)。
+    Drawer,
+    /// 絞り込みの窓(NV-29。filters.rs)。
+    FilterWin,
+    /// 絞り込みの窓の値の入力(含む・含まない・比べる。NV-29)。
+    FilterText,
+    /// 画面の型のメニューの窓(REL-8。screen_menu.rs)。
+    ScreenMenu,
+    /// 列の型の窓(CE-35。type_menu.rs)。
+    ColumnType,
 }
 
 impl Mode {
@@ -62,6 +72,11 @@ impl Mode {
             Mode::Freq => Msg::ModeFreq,
             Mode::Sorts => Msg::ModeSorts,
             Mode::Relations => Msg::ModeRelations,
+            Mode::Drawer => Msg::ModeDrawer,
+            Mode::FilterWin => Msg::ModeFilterWin,
+            Mode::FilterText => Msg::ModeFilterText,
+            Mode::ScreenMenu => Msg::ModeScreenMenu,
+            Mode::ColumnType => Msg::ModeColumnType,
         }
     }
 
@@ -90,10 +105,15 @@ impl Mode {
             Mode::Freq => "freq",
             Mode::Sorts => "sorts",
             Mode::Relations => "relations",
+            Mode::Drawer => "drawer",
+            Mode::FilterWin => "filter_window",
+            Mode::FilterText => "filter_input",
+            Mode::ScreenMenu => "screen_menu",
+            Mode::ColumnType => "column_type",
         }
     }
 
-    pub const ALL: [Mode; 17] = [
+    pub const ALL: [Mode; 22] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -111,14 +131,31 @@ impl Mode {
         Mode::Freq,
         Mode::Sorts,
         Mode::Relations,
+        Mode::Drawer,
+        Mode::FilterWin,
+        Mode::FilterText,
+        Mode::ScreenMenu,
+        Mode::ColumnType,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
     /// (設定の書き方が画面の言語で変わらないように)。
     pub fn by_name(name: &str) -> Option<Mode> {
-        Mode::ALL
-            .into_iter()
-            .find(|m| m.name() == name || m.msg().ja() == name || m.msg().en() == name)
+        // NV-1・NV-2(2026-10-11): `/` を「探す」、上の欄を「検索」と呼び直す前の表示名は、書いた設定の意味が
+        // 変わらないように前のモードに読む(新しい表示名より先)。
+        let is = |m: Msg| name == m.ja() || name == m.en();
+        let old = if is(Msg::OldModeSearch) {
+            Some(Mode::Search)
+        } else if is(Msg::OldModeFilter) {
+            Some(Mode::Filter)
+        } else {
+            None
+        };
+        old.or_else(|| {
+            Mode::ALL
+                .into_iter()
+                .find(|m| m.name() == name || m.msg().ja() == name || m.msg().en() == name)
+        })
     }
 
     /// 文字を入力に使うモード(前置きのキーを持たない)。
@@ -131,6 +168,7 @@ impl Mode {
                 | Mode::Filter
                 | Mode::SettingsText
                 | Mode::ListPick
+                | Mode::FilterText
         )
     }
 }
@@ -237,6 +275,8 @@ pub enum Action {
     RenameNote,
     /// CE-29: 列のキーを、全部のノートから消す。
     DeleteKey,
+    /// CE-35: 列の型を選び直す窓を開く。
+    ColumnType,
     MoveColumnLeft,
     MoveColumnRight,
     Freeze,
@@ -273,6 +313,8 @@ pub enum Action {
     WsAdd,
     WsRemove,
     WsOpen,
+    /// WS-8: 表の一覧の引き出しを開け閉めする。
+    WsDrawer,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
     /// CE-26: 新しいノートの窓で、どの欄からでも作る(既定 Ctrl+S)。
@@ -285,6 +327,8 @@ pub enum Action {
     Freq,
     /// 並べ替えの窓を開く(NV-24)。
     SortMenu,
+    /// 絞り込みの窓を開く(NV-29)。
+    FilterMenu,
     /// 今のビューを既定のビューにする(NV-25)。
     SetDefaultView,
 }
@@ -372,6 +416,7 @@ impl Action {
             Action::RenameKey => "rename_key",
             Action::RenameNote => "rename_note",
             Action::DeleteKey => "delete_key",
+            Action::ColumnType => "column_type",
             Action::MoveColumnLeft => "move_column_left",
             Action::MoveColumnRight => "move_column_right",
             Action::Freeze => "freeze_columns",
@@ -387,6 +432,7 @@ impl Action {
             Action::ExportBase => "export_base",
             Action::ExportTable => "export_table",
             Action::SortMenu => "sort_menu",
+            Action::FilterMenu => "filter_menu",
             Action::SetDefaultView => "set_default_view",
             Action::OpenPlace => "open_place",
             Action::RegisterPlace => "register_place",
@@ -398,6 +444,7 @@ impl Action {
             Action::WsAdd => "workspace_add",
             Action::WsRemove => "workspace_remove",
             Action::WsOpen => "workspace_open",
+            Action::WsDrawer => "workspace_drawer",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
             Action::CreateNote => "create_note",
@@ -513,6 +560,10 @@ const IN_MENU: Msg = Msg::SecInMenu;
 const IN_FREQ: Msg = Msg::SecInFreq;
 const IN_SORTS: Msg = Msg::SecInSorts;
 const IN_RELMAP: Msg = Msg::SecInRelMap;
+const IN_DRAWER: Msg = Msg::SecInDrawer;
+const IN_SCREEN_MENU: Msg = Msg::SecInScreenMenu;
+const IN_COLUMN_TYPE: Msg = Msg::SecInColumnType;
+const IN_FILTERS: Msg = Msg::SecInFilters;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -571,9 +622,14 @@ pub const COMMANDS: &[Command] = &[
 /// ノートを書かないパレットのコマンド(既定のキーなし)。`COMMANDS` と違い読むだけ(WB-15)でも出す:
 /// 登録した表(CLI-18・CLI-19)と、リレーションをたどる操作(REL-4・REL-5)。
 pub const READ_COMMANDS: &[Command] = &[
+    // CE-35: 列の型を選び直す(既定のキーなし。ノートは書かないので読むだけの起動でも。パレット・操作の一覧・
+    // 見出しの型の印から)。
+    cmd(Action::ColumnType, Msg::CmdColumnType, SHAPE),
     cmd(Action::OpenPlace, Msg::PlaceOpen, FILE),
     // NV-24: 並べ替えの窓(キー `S` を外しても、検索の欄を隠しても開けるように)。
     cmd(Action::SortMenu, Msg::CmdSortMenu, SHAPE),
+    // NV-29: 絞り込みの窓(キー `|` を外しても、検索の欄を隠しても開けるように)。
+    cmd(Action::FilterMenu, Msg::CmdFilterMenu, SHAPE),
     cmd(Action::RegisterPlace, Msg::PlaceRegister, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
@@ -582,6 +638,7 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::WsAdd, Msg::CmdWsAdd, FILE),
     cmd(Action::WsRemove, Msg::CmdWsRemove, FILE),
     cmd(Action::WsOpen, Msg::CmdWsOpen, FILE),
+    cmd(Action::WsDrawer, Msg::CmdWsDrawer, FILE),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。
@@ -650,6 +707,10 @@ pub const BINDINGS: &[Binding] = &[
     b("s", Action::Sort, Msg::KeySort, SHAPE, 0),
     // NV-24: 並べ替えの窓(検索の欄の右の「並べ替え」と同じ)。
     b("S", Action::SortMenu, Msg::CmdSortMenu, SHAPE, 0),
+    // NV-29: 絞り込みの窓(検索の欄の右の「絞り込み」と同じ。`\` の検索の隣)。
+    b("|", Action::FilterMenu, Msg::CmdFilterMenu, SHAPE, 0),
+    // WS-8: 表の一覧の引き出し(ヘッダーの「ワークスペース」と同じ)。
+    b("w", Action::WsDrawer, Msg::KeyWsDrawer, FILE, 0),
     b("-", Action::HideColumn, Msg::KeyHideColumn, SHAPE, 0),
     b("+", Action::ShowColumn, Msg::KeyShowColumn, SHAPE, 0),
     // REL-7・REL-8: 関係マップ(上の端のタブ・パレットからも)。
@@ -1694,6 +1755,371 @@ pub const BINDINGS: &[Binding] = &[
     m(Mode::Freq, "Up", Action::Up, Msg::KeyPrevItem, IN_FREQ, 4),
     m(Mode::Freq, "g g", Action::Top, Msg::KeyTop, IN_FREQ, 0),
     m(Mode::Freq, "G", Action::Bottom, Msg::KeyBottom, IN_FREQ, 0),
+    // 絞り込みの窓の中(NV-29。filters.rs)。Enter で条件を直すか足す段へ進み、Space で値のチェック、d で外す。←→ で条件の行の欄(列・比べ方・値)を選ぶ。
+    m(
+        Mode::FilterWin,
+        "h",
+        Action::Left,
+        Msg::KeyFiltersCell,
+        IN_FILTERS,
+        5,
+    ),
+    m(
+        Mode::FilterWin,
+        "Left",
+        Action::Left,
+        Msg::KeyFiltersCell,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "l",
+        Action::Right,
+        Msg::KeyFiltersCell,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "Right",
+        Action::Right,
+        Msg::KeyFiltersCell,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "Enter",
+        Action::Run,
+        Msg::KeyFiltersRun,
+        IN_FILTERS,
+        1,
+    ),
+    m(
+        Mode::FilterWin,
+        "Esc",
+        Action::Close,
+        Msg::KeyClose,
+        IN_FILTERS,
+        2,
+    ),
+    m(
+        Mode::FilterWin,
+        "q",
+        Action::Close,
+        Msg::KeyClose,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "j",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "Down",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "k",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "Up",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "Space",
+        Action::Toggle,
+        Msg::KeyFiltersCheck,
+        IN_FILTERS,
+        3,
+    ),
+    m(
+        Mode::FilterWin,
+        "d",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_FILTERS,
+        4,
+    ),
+    m(
+        Mode::FilterWin,
+        "Delete",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterWin,
+        "Backspace",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_FILTERS,
+        0,
+    ),
+    m(
+        Mode::FilterText,
+        "Enter",
+        Action::Commit,
+        Msg::KeyDecide,
+        IN_FILTERS,
+        1,
+    ),
+    m(
+        Mode::FilterText,
+        "Esc",
+        Action::Cancel,
+        Msg::KeyBack,
+        IN_FILTERS,
+        2,
+    ),
+    m(
+        Mode::FilterText,
+        "Backspace",
+        Action::DeleteBack,
+        Msg::KeyDeleteBack,
+        IN_FILTERS,
+        0,
+    ),
+    // 表の一覧の引き出しの中(WS-8。drawer.rs)。Enter で表へ移るか見出しを開け閉めし、l・h で見出しを開く・畳む。
+    m(
+        Mode::Drawer,
+        "Enter",
+        Action::Run,
+        Msg::KeyDrawerRun,
+        IN_DRAWER,
+        1,
+    ),
+    m(
+        Mode::Drawer,
+        "Esc",
+        Action::Close,
+        Msg::KeyClose,
+        IN_DRAWER,
+        2,
+    ),
+    m(
+        Mode::Drawer,
+        "q",
+        Action::Close,
+        Msg::KeyClose,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "w",
+        Action::Close,
+        Msg::KeyClose,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "j",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "Down",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "k",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "Up",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_DRAWER,
+        0,
+    ),
+    m(Mode::Drawer, "g g", Action::Top, Msg::KeyTop, IN_DRAWER, 0),
+    m(
+        Mode::Drawer,
+        "G",
+        Action::Bottom,
+        Msg::KeyBottom,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "l",
+        Action::Right,
+        Msg::KeyDrawerOpen,
+        IN_DRAWER,
+        3,
+    ),
+    m(
+        Mode::Drawer,
+        "Right",
+        Action::Right,
+        Msg::KeyDrawerOpen,
+        IN_DRAWER,
+        0,
+    ),
+    m(
+        Mode::Drawer,
+        "h",
+        Action::Left,
+        Msg::KeyDrawerFold,
+        IN_DRAWER,
+        4,
+    ),
+    m(
+        Mode::Drawer,
+        "Left",
+        Action::Left,
+        Msg::KeyDrawerFold,
+        IN_DRAWER,
+        0,
+    ),
+    // 画面の型のメニューの窓の中(REL-8。screen_menu.rs)。Enter で選んだ画面に切り替える。
+    m(
+        Mode::ScreenMenu,
+        "Enter",
+        Action::Run,
+        Msg::KeyScreenMenuRun,
+        IN_SCREEN_MENU,
+        1,
+    ),
+    m(
+        Mode::ScreenMenu,
+        "Esc",
+        Action::Close,
+        Msg::KeyClose,
+        IN_SCREEN_MENU,
+        2,
+    ),
+    m(
+        Mode::ScreenMenu,
+        "q",
+        Action::Close,
+        Msg::KeyClose,
+        IN_SCREEN_MENU,
+        0,
+    ),
+    m(
+        Mode::ScreenMenu,
+        "j",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_SCREEN_MENU,
+        0,
+    ),
+    m(
+        Mode::ScreenMenu,
+        "Down",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_SCREEN_MENU,
+        0,
+    ),
+    m(
+        Mode::ScreenMenu,
+        "k",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_SCREEN_MENU,
+        0,
+    ),
+    m(
+        Mode::ScreenMenu,
+        "Up",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_SCREEN_MENU,
+        0,
+    ),
+    // 列の型の窓の中(CE-35。type_menu.rs)。Enter で選んだ型にする。
+    m(
+        Mode::ColumnType,
+        "Enter",
+        Action::Run,
+        Msg::KeyColumnTypeRun,
+        IN_COLUMN_TYPE,
+        1,
+    ),
+    m(
+        Mode::ColumnType,
+        "Esc",
+        Action::Close,
+        Msg::KeyClose,
+        IN_COLUMN_TYPE,
+        2,
+    ),
+    m(
+        Mode::ColumnType,
+        "q",
+        Action::Close,
+        Msg::KeyClose,
+        IN_COLUMN_TYPE,
+        0,
+    ),
+    m(
+        Mode::ColumnType,
+        "j",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_COLUMN_TYPE,
+        0,
+    ),
+    m(
+        Mode::ColumnType,
+        "Down",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_COLUMN_TYPE,
+        0,
+    ),
+    m(
+        Mode::ColumnType,
+        "k",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_COLUMN_TYPE,
+        0,
+    ),
+    m(
+        Mode::ColumnType,
+        "Up",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_COLUMN_TYPE,
+        0,
+    ),
     // REL-7: 関係マップ。↑↓ で表、←→ でその表のつながり、Enter で表を開く。
     m(
         Mode::Relations,
@@ -2110,6 +2536,11 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::Freq, &[Action::Close]),
     (Mode::Sorts, &[Action::Close]),
     (Mode::Relations, &[Action::Close]),
+    (Mode::Drawer, &[Action::Close]),
+    (Mode::FilterWin, &[Action::Close]),
+    (Mode::FilterText, &[Action::Cancel]),
+    (Mode::ScreenMenu, &[Action::Close]),
+    (Mode::ColumnType, &[Action::Close]),
 ];
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する

@@ -445,7 +445,7 @@ pub struct Table {
 }
 
 impl Table {
-    /// 登録した表から。`.base` は、開いたときと同じく保管庫の根(`.obsidian` のある最寄りの上のフォルダ。
+    /// 登録した表から。`.base` は、開いたときと同じくルートフォルダ(`.obsidian` のある最寄りの上のフォルダ。
     /// 無ければ `.base` のフォルダ)を表のフォルダにする(REL-1: `.base` もフォルダも同じに扱う)。
     pub fn new(name: &str, path: &Path) -> Table {
         let dir = if path.extension().is_some_and(|x| x == "base") {

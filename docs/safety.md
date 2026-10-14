@@ -145,7 +145,7 @@ Within a note that can be written, some individual cells are still read-only, ea
 - Columns that are not frontmatter keys: file properties (`file.*`) and formula columns (`formula.*`).
 - Nested maps (`key:` followed by indented `sub: value` lines, or `{a: 1}`) and block scalars (`|` and `>`). mdgrid shows them but does not rewrite them.
 - Values that use anchors or aliases (`&a`, `*a`), tagged values (`!!str 12`), and values that span several lines (a plain or quoted scalar continued on the next line, or a flow list like `[a,` followed by ` b]`).
-- A column whose type differs between the `types.json` files of different vault roots.
+- A column whose type differs between the `types.json` files of different root folders.
 - Lists that mdgrid cannot rewrite while keeping their original layout. In a list column, the item picker does not open for these, and the reason names the form: a blank line or a comment between items, a comment at the end of an item, items with different indentation, a tab after `-`, an item that continues onto the next line, nested items (a list or map inside an item), items that are not strings (for example `- 2024`, which would change type if rewritten). A list column written as a single string (`tags: x`) opens as a one-item list and is rewritten as `tags: [x, y]` when you change it; a single value that is not a string (`tags: 2024`) stays read-only.
 
 For example, `notes` and `aliases` here are read-only, while `status` can be edited:

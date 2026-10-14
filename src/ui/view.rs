@@ -9,9 +9,9 @@
 use super::app::{App, ColorMode};
 pub(crate) use super::bands::{
     band, bar_at, bar_rows, chip_at, chip_rows, chips, footer, header, message, prompt_cursor,
-    quit_overlay, search_bar, tab_at, tab_rows, tabs,
+    quit_overlay, tab_at, tab_rows, view_bar_lines,
 };
-use super::cell::{align_of, shown, val_text, CellPart};
+use super::cell::{align_of, cell_lines, shown, val_text, CellPart};
 use super::display::{col_sep, num_span, num_width, zebra};
 use super::grid::{Drag, Slot};
 use super::input::input_box;
@@ -36,13 +36,19 @@ pub(crate) const LABEL_HEADER: Msg = Msg::NoteColumn;
 
 /// 表の最初の行の画面の行。タブ(SR-20)・検索の欄(NV-23)・設定の帯(NV-16)が出ていれば、その分だけ下がる。
 pub(crate) fn data_y(app: &App) -> usize {
-    DATA_Y + tab_rows(app) + bar_rows(app) + chip_rows(app)
+    super::bands::top_rows(app) + DATA_Y + tab_rows(app) + bar_rows(app) + chip_rows(app)
 }
 
 /// 高さ `area_h` の画面の、表の中の行の数。集計の行(BV-14)があれば1行減る。
 pub(crate) fn table_height(app: &App, area_h: usize) -> usize {
-    area_h
-        .saturating_sub(CHROME + tab_rows(app) + bar_rows(app) + chip_rows(app) + summary_rows(app))
+    area_h.saturating_sub(
+        super::bands::top_rows(app)
+            + CHROME
+            + tab_rows(app)
+            + bar_rows(app)
+            + chip_rows(app)
+            + summary_rows(app),
+    )
 }
 
 /// 集計の行の数(BV-14)。集計の無いビューでは 0。
@@ -232,8 +238,8 @@ pub(crate) fn freeze_fits(app: &App, col: usize) -> bool {
 
 /// 選んだセルが表の画面に描かれているか(見えないセルを直さない守り。SR-3)。
 pub(crate) fn selected_drawn(app: &App) -> bool {
-    let h = app.data_height();
-    if app.row < app.top || app.row >= app.top + h {
+    // CV-8: 伸ばした行は、その行の1行目が表の中にあれば描かれている。
+    if super::rows::slot_y(app, app.row).is_none() {
         return false;
     }
     let (_, cols) = visible_layout(app);
@@ -482,7 +488,8 @@ fn data_row(
     i: usize,
     row: &RowId,
     ctx: &RowCtx,
-) -> Line<'static> {
+    k: usize,
+) -> Vec<Line<'static>> {
     let sel_row = i == app.row;
     // 左の1桁: 選んだ行(NV-5)は `+`、今の行は `>`。
     let lead = if is_selected(app, ctx, i, row) {
@@ -531,8 +538,18 @@ fn data_row(
         None
     };
     let sep = col_sep(app);
+    // CV-8: 2行目より下の行。左の欄(行の印・行番号・名前)は空け、セルは折り返した続き。
+    let max = 1 + super::rows::extra(app);
+    let mut more: Vec<Vec<Span<'static>>> = (1..k)
+        .map(|_| vec![Span::raw(" ".repeat(lay.label_x() + lay.label_w))])
+        .collect();
+    // 入力ボックスが列より広く右の列に重なれば、1行目はそこまで(2行目より下は続ける)。
+    let mut covered = false;
     for &(j, cw) in cols {
-        spans.push(Span::styled(sep, sep_st));
+        for m in more.iter_mut() {
+            m.push(Span::styled(sep, sep_st));
+        }
+        let mut cell = vec![Span::styled(sep, sep_st)];
         // SR-36: 候補から選んでいる間(まだ打っていない)は、セルを部品の形のまま見せる
         // (丸い札が、押したとたんに四角い入力の欄に変わらないように)。打ち始めたら入力の欄。
         let picking =
@@ -546,10 +563,14 @@ fn data_row(
             // 入力ボックス(CE-1)。値より広ければ右の列に重ねて広げる。SR-31: 地の色で欄と分かるように
             // (色を使わないときは太字と下線だけ。太字と下線はテーマの強い色の目印。SR-26)。
             let st = input_style(app);
-            spans.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
-            if b.w != cw {
-                break;
+            cell.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
+            for m in more.iter_mut() {
+                m.push(Span::raw(" ".repeat(cw)));
             }
+            if !covered {
+                spans.extend(cell);
+            }
+            covered |= b.w != cw;
             continue;
         }
         let s = shown(app, row, &app.cols[j]);
@@ -604,7 +625,14 @@ fn data_row(
             );
         match &s.part {
             CellPart::Chips { items, list } if keep_parts => {
-                chip_spans(app, items, *list, cw, st, &mut spans);
+                // CV-8: 札は1行のまま。
+                chip_spans(app, items, *list, cw, st, &mut cell);
+                for m in more.iter_mut() {
+                    m.push(Span::styled(" ".repeat(cw), blank(st)));
+                }
+                if !covered {
+                    spans.extend(cell);
+                }
                 continue;
             }
             CellPart::Link if !(sel_row && j == app.col) => {
@@ -612,16 +640,38 @@ fn data_row(
             }
             _ => {}
         }
-        spans.push(Span::styled(fit(&s.text, cw, align_of(app.kinds[j])), st));
+        // CV-8: 伸ばせるときは折り返した行(0 では `s.text` の1行)。
+        let align = align_of(app.kinds[j]);
+        let cl = cell_lines(app, &s, row, &app.cols[j], cw, max);
+        cell.push(Span::styled(fit(&cl[0], cw, align), st));
+        for (n, m) in more.iter_mut().enumerate() {
+            m.push(match cl.get(n + 1) {
+                Some(t) => Span::styled(fit(t, cw, align), st),
+                None => Span::styled(" ".repeat(cw), blank(st)),
+            });
+        }
+        if !covered {
+            spans.extend(cell);
+        }
     }
-    let line = pad(spans, lay.width, Style::default());
-    // SR-36: 今の行を塗る(`outline`・`reverse` は塗らない)。
+    // SR-36: 今の行を塗る(`outline`・`reverse` は塗らない)。CV-8: 伸ばした行は高さ全部に。
     let tint_row = !matches!(select, Some(Select::Outline | Select::Reverse));
-    if let (true, true, Some(l)) = (sel_row, tint_row, &look) {
-        return line.style(Style::default().bg(l.sel_bg));
-    }
-    // SR-20・SR-15: 一行おきの色。
-    zebra(app, i, line)
+    std::iter::once(spans)
+        .chain(more)
+        .map(|spans| {
+            let line = pad(spans, lay.width, Style::default());
+            if let (true, true, Some(l)) = (sel_row, tint_row, &look) {
+                return line.style(Style::default().bg(l.sel_bg));
+            }
+            // SR-20・SR-15: 一行おきの色。
+            zebra(app, i, line)
+        })
+        .collect()
+}
+
+/// CV-8: 伸ばした行の、文字の無い所の見た目(セルの色は残し、下線は引かない)。
+fn blank(st: Style) -> Style {
+    st.remove_modifier(Modifier::UNDERLINED)
 }
 
 /// SR-35・SR-36: 値の部品の並びを幅 `cw` に描く(部品ごとに色)。入らない要素は途中で切らず、残りの数を
@@ -717,12 +767,16 @@ pub(crate) fn head_text(app: &App, col: &str) -> String {
     if !app.style.icons || !app.rich(col, mdgrid::cells::Part::Icons) {
         return title;
     }
+    // SR-45: 記号は glyphs.rs(設定でアイコン用のフォントの記号)。
+    use super::glyphs::{glyph, nerd_on, Glyph};
     let mark = match app.kind_of(col) {
-        Kind::Number => Some("#"),
-        Kind::Date | Kind::DateTime => Some("◷"),
+        Kind::Number => Some(glyph(app, Glyph::Number)),
+        Kind::Date => Some(glyph(app, Glyph::Date)),
+        Kind::DateTime => Some(glyph(app, Glyph::DateTime)),
+        Kind::Checkbox if nerd_on(app) => Some(glyph(app, Glyph::Check)),
         Kind::Checkbox => Some(super::cell::check_marks(app.style.check).map_or("✓", |m| m.0)),
-        Kind::List => Some("⋮"),
-        Kind::Text if app.is_select(col) => Some("◉"),
+        Kind::List => Some(glyph(app, Glyph::List)),
+        Kind::Text if app.is_select(col) => Some(glyph(app, Glyph::Select)),
         Kind::Text => None,
     };
     match mark {
@@ -755,6 +809,55 @@ fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
     Line::from(Span::styled(fit(&text, w, Align::Left), st))
 }
 
+/// 見えている列 `col` の左の端の桁(CE-35 の型の窓の置き場)。見えていなければ None。
+pub(crate) fn column_x(app: &App, col: &str) -> Option<usize> {
+    let (lay, cols) = visible_layout(app);
+    let mut cx = lay.data_x();
+    for &(j, w) in &cols {
+        if app.cols[j] == col {
+            return Some(cx);
+        }
+        cx += w + 1;
+    }
+    None
+}
+
+/// (x, y) が列の見出しの型の印(SR-35。印の字と後ろの空白)なら、その列の添字(CE-35 のクリック)。
+pub fn type_mark_at(app: &App, x: u16, y: u16) -> Option<usize> {
+    if y as usize != data_y(app) - 1 {
+        return None;
+    }
+    let (lay, cols) = visible_layout(app);
+    let x = x as usize;
+    let mut cx = lay.data_x();
+    for &(j, w) in &cols {
+        // 計算の列の印は型を選べないので、今までどおり並べ替えに当てる。
+        let c = &app.cols[j];
+        if c.starts_with("file.") || c.starts_with("formula.") {
+            cx += w + 1;
+            continue;
+        }
+        let head = head_text(app, &app.cols[j]);
+        let title = sanitize(&app.head_title(&app.cols[j]));
+        if head != title && app.kinds[j] != Kind::Number {
+            // 印は見出しの頭(数の列は右寄せなので、印の位置は見出しの文字の幅から)。
+            let mark = head.len() - title.len();
+            let mw = width(&head[..mark]);
+            if x >= cx && x < cx + mw.min(w) {
+                return Some(j);
+            }
+        } else if head != title {
+            let pad = w.saturating_sub(width(&head));
+            let mw = width(&head[..head.len() - title.len()]);
+            if x >= cx + pad && x < cx + pad + mw {
+                return Some(j);
+            }
+        }
+        cx += w + 1;
+    }
+    None
+}
+
 /// (x, y) が列の見出し(境界の空白を除く)なら、その列の添字(NV-3 のクリック)。
 pub fn header_at(app: &App, x: u16, y: u16) -> Option<usize> {
     if y as usize != data_y(app) - 1 {
@@ -785,7 +888,8 @@ pub fn hit(app: &App, x: u16, y: u16) -> Option<(usize, usize)> {
     if y < dy || y >= dy + app.data_height() {
         return None;
     }
-    let i = app.top + (y - dy);
+    // CV-8: 伸ばした行の2行目より下も、その行。
+    let i = super::rows::slot_at(app, y - dy)?;
     // SR-30: 見出しの上の空きは選べない。
     if i >= app.slots.len() || app.slots[i] == Slot::Gap {
         return None;
@@ -807,7 +911,7 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     if app.mode == Mode::Help {
         return super::help::render_help(app, w, h);
     }
-    if app.mode == Mode::Relations {
+    if super::bands::on_relmap(app) {
         return super::relmap::render(app, w, h);
     }
     if let (Mode::Confirm, Some(r)) = (app.mode, &app.review) {
@@ -822,14 +926,12 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let lay = layout(app);
     let lay = Layout { width: w, ..lay };
     let cols = visible_cols(app, &lay);
-    let mut lines = vec![header(app, w)];
-    // BV-13・SR-20: ビューのタブ。隠しても `[` `]` で切り替わる。
+    // SR-1: ヘッダーの上の余白(`display.top_padding`)。
+    let mut lines = super::bands::top_lines(app, w);
+    lines.push(header(app, w));
+    // SR-1・NV-23: ビューの帯(タブ・検索の欄・ボタン)。タブと欄を両方隠せば出さない(`[` `]`・`\\` は効く)。
     if tab_rows(app) > 0 {
-        lines.push(tabs(app, w));
-    }
-    // NV-23: 検索の欄(タブの下)。設定で出さないこともある。
-    if bar_rows(app) > 0 {
-        lines.push(search_bar(app, w));
+        lines.extend(view_bar_lines(app, w));
     }
     // NV-16: 効いている設定の帯(検索の欄の下)。無ければ出さない。
     if chip_rows(app) > 0 {
@@ -840,13 +942,14 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let ctx = RowCtx {
         span: app.anchor_span(app.row),
     };
-    for (i, slot) in app.slots.iter().enumerate().skip(app.top).take(data_h) {
-        lines.push(match slot {
-            Slot::Row(r) => data_row(app, &lay, &cols, i, &app.rows[*r], &ctx),
-            Slot::Head(g) => heading_row(app, i, *g, w),
+    // CV-8: 伸ばした行は高さの分の行を並べる(一番下の行は入る分だけ)。
+    for (i, _, k) in super::rows::frame_in(app, &cols, data_h) {
+        match &app.slots[i] {
+            Slot::Row(r) => lines.extend(data_row(app, &lay, &cols, i, &app.rows[*r], &ctx, k)),
+            Slot::Head(g) => lines.push(heading_row(app, i, *g, w)),
             // SR-30: 見出しの上の空き。
-            Slot::Gap => Line::from(" ".repeat(w)),
-        });
+            Slot::Gap => lines.push(Line::from(" ".repeat(w))),
+        }
     }
     if app.slots.is_empty() {
         match &app.view_error {
@@ -896,6 +999,14 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     super::freq::overlay(app, &mut lines, w);
     // NV-24: 並べ替えの窓は検索の欄の下、右の端に重ねる(sorts.rs)。
     super::sorts::overlay(app, &mut lines, w);
+    // NV-29: 絞り込みの窓も検索の欄の下、右の端に重ねる(filters.rs)。
+    super::filters::overlay(app, &mut lines, w);
+    // WS-8: 表の一覧の引き出しは左の端、ヘッダーの下に重ねる(drawer.rs)。
+    super::drawer::overlay(app, &mut lines, w);
+    // REL-8: 画面の型のメニューはヘッダーのボタンのすぐ下に重ねる(screen_menu.rs)。
+    super::screen_menu::overlay(app, &mut lines, w);
+    // CE-35: 列の型の窓は列の見出しのすぐ下に重ねる(type_menu.rs)。
+    super::type_menu::overlay(app, &mut lines, w);
     if app.mode == Mode::Quit {
         quit_overlay(app, &mut lines, w);
     }

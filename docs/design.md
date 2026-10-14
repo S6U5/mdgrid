@@ -100,7 +100,7 @@ pub enum ReadOnly { /* 既存に加えて */ HardLink }       // WB-5。`save` �
 // writeback::apply は NewValue::Null を `key:`(コロンの後ろに何も書かない)で書く(CE-9)。キーは消さない。
 
 // src/vault.rs(タスク 4)
-/// 渡したフォルダから保管庫の根を決める(BV-2): `.obsidian/` を持つ最寄りの上のフォルダ、無ければ渡したフォルダ。
+/// 渡したフォルダからルートフォルダを決める(BV-2): `.obsidian/` を持つ最寄りの上のフォルダ、無ければ渡したフォルダ。
 /// 実体のパス(canonicalize)にし、同じ根・ほかの根の中に入る根は1つにまとめる。読めないパスは Err。
 pub fn roots(folders: &[PathBuf]) -> io::Result<Vec<PathBuf>>;
 pub struct Stamp { pub mtime: SystemTime, pub len: u64 }
@@ -373,7 +373,7 @@ pub fn save_with(path: &Path, base: &Baseline, edits: &[Edit], faults: &Faults) 
 
 | ファイル | 中身 | 要件 |
 |---|---|---|
-| `src/ui/grid.rs` | 表の行と列の組み立て: `.base` があれば `Base::build`、無ければ `default_grid`。その上に簡易の絞り込み(NV-2)・同じ値の絞り込み(NV-8)を重ね(見出しの並べ替え NV-3 と並べ替えの窓 NV-24 は設定の並べ替えを変える。settings.rs の set_sorts)、ためた値で計算し直す(NV-12: 値を直した行は、保存か移動の操作まで元の位置に留める)。列の順・隠す列・幅(NV-4・SR-12)、グループの開閉(SR-2) | BV-4・BV-5・BV-13・NV-2・NV-3・NV-4・NV-8・NV-12・SR-2 |
+| `src/ui/grid.rs` | 表の行と列の組み立て: `.base` があれば `Base::build`、無ければ `default_grid`。その上に検索(NV-2)・同じ値の絞り込み(NV-8)を重ね(見出しの並べ替え NV-3 と並べ替えの窓 NV-24 は設定の並べ替えを変える。settings.rs の set_sorts。絞り込みの窓 NV-29 は設定のフィルターを変える。set_filters)、ためた値で計算し直す(NV-12: 値を直した行は、保存か移動の操作まで元の位置に留める)。列の順・隠す列・幅(NV-4・SR-12)、グループの開閉(SR-2) | BV-4・BV-5・BV-13・NV-2・NV-3・NV-4・NV-8・NV-12・SR-2 |
 | `src/ui/nav.rs` | 移動(NV-7: `:<番号>`・`0` `$`・Ctrl+D / Ctrl+U)、検索(NV-1: `/`・`n` `N`・smartcase・一致の強調)、選択(NV-5: Space・`v`・Shift+矢印・Ctrl+A・Esc)、`*` の強調・`,` の絞り込み(SR-18・NV-8)、`--pick` の選び(OUT-3: `App.choosing`。表の Enter はノートの行なら印の行(無ければ選んでいる行)を `App.chosen` に決めて終わり、見出しの行は開閉のまま。Esc は SR-18 の順に解き、解くものが何も無いときだけ取りやめ。q はふだんの終了で、`chosen` が無いまま終われば取りやめ。エディタ(`e`・名前のクリック)は開かず理由を出す。コピーの OSC 52 は `TtyClipboard` で `/dev/tty` へ) | NV-1・NV-5・NV-7・NV-8・SR-18・OUT-3 |
 | `src/ui/detail.rs` | 詳細の表示(NV-6: `K`。全プロパティを縦に、長い値は折り返す。Enter で選んだプロパティの編集、Esc と `K` で閉じる) | NV-6・SR-16 |
 | `src/ui/input.rs` | 型ごとの入り方(CE-2〜CE-7): テキストは候補のリスト(CE-3。`Source::candidates`、今の値に印、「なし」、自由入力に切り替え。開いた直後(↑↓ のあとも)に打つと今の値を置き換える: Input の `fresh`)、チェックは切り替え(CE-4)、日付は `YYYY-MM-DD`・`+3`・空(CE-5)、数は数だけ(CE-7)。不正なら閉じずに理由。一括の設定(CE-10: 選んだ行に `Changes::set_many`、飛ばした数と理由) | CE-2〜CE-7・CE-10 |
@@ -428,7 +428,7 @@ pub fn apply(rows: Vec<RowId>, groups: Vec<(String, Range<usize>)>, s: &Settings
 
 保存の形(NV-17): 状態のファイルの最上位の `settings` の表に書き(既定なら書かない。無ければ既定)、Keep・Drop の値は TOML が None を書けないので `{ value = "..." }` と「(空)」の `{ empty = true }` の表の配列にする。
 
-重ね順(NV-20): `.base` の filters・sort・groupBy(`Base::build`)→ 設定(`settings::apply`)→ 簡易の絞り込み(NV-2)・同じ値(NV-8)→ 直した行の留め(NV-12)。見出しの並べ替え(NV-3)と並べ替えの窓(NV-24)は設定の並べ替えそのものを変え、見た目の状態に残す。計算の列(`file.*`・`formula.*`)は画面の値(`Shown::Computed`)を `Value` に写して渡す。
+重ね順(NV-20): `.base` の filters・sort・groupBy(`Base::build`)→ 設定(`settings::apply`)→ 検索(NV-2)・同じ値(NV-8)→ 直した行の留め(NV-12)。見出しの並べ替え(NV-3)と並べ替えの窓(NV-24)は設定の並べ替えそのものを、絞り込みの窓(NV-29)は設定のフィルターそのものを変え、見た目の状態に残す。計算の列(`file.*`・`formula.*`)は画面の値(`Shown::Computed`)を `Value` に写して渡す。
 
 画面(`src/ui/settings.rs`): モード「ビューの設定」。開くと今の設定の写しを編集し、「反映」で `App` に当てて組み立て直し、見た目の状態に書く(WB-15 では書かない)。「取り消し」・Esc は写しを捨てる。4つの区画(列・フィルター・並べ替え・グループ)を Tab で移り、フィルターは列を選ぶ → 値の一覧(件数つき)にチェック(Space)か、条件の種類を選んで値を打つ。区画の下に「反映」「取り消し」「既定に戻す」のボタン(クリックでも押せる)。キーはすべて keymap の表(SR-4・SR-16)。表の上の帯(`bands.rs`)は、ビューのタブの下に `settings.chips()` を並べ、選んで Backspace(か帯の項目のクリック)でその条件だけを外す(NV-22)。開くキーは表のモードの空いたキー(パレットの動作 `view_settings` からも)。
 
@@ -556,9 +556,9 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 形と、選ばなかった案は変更の記録 specs/_changes/2026-10-03-language.md にある。
 
-- 文言の表: 画面と起動の文言は lib の `src/i18n.rs` の `msgs!` の表1か所に、英語と日本語の組で置く(`Key = "english", "日本語";`)。マクロが `enum Msg`・`Msg::ALL`・`const fn en`・`const fn ja`・`text`(今の言語)・`fill`(`{0}`・`{1}` の番号の差し込み。ほかの `{` と差し込んだ値の中は見ない)を作る。片方が欠けた行はコンパイルで落ちる。`Msg` は `Display` と `From<Msg> for String` を持ち、`Some(MSG.into())` のまま今の言語の文になる。依存は足さない(fluent などは const で持てず、欠けを型で閉じられない)。
+- 文言の台帳: 画面と起動の文言は言語ごとの台帳 `locales/<言語の符号>.toml` に置く(1行に1つ `Key = "文"`。`##` の行はその文言の説明、`#` の行は区切り。英語の `en.toml` が名前と並びの正本)。`build.rs` が台帳を `src/ledger.rs`(依存は toml だけの純関数。lib の `mdgrid::ledger` としても試験できる)で読んで確かめ、欠け・余り・空・差し込みの番号(`{0}` など)の食い違いがあればビルドを落とす。誤りが無ければ `OUT_DIR/locales.rs` に `Lang`(台帳のファイルの名前から。英語が先頭で既定)・`Language`(`Auto` と各言語)・`Msg`・`Msg::ALL`・言語ごとの `const fn en`・`ja`・`get` を書き、`src/i18n.rs` が `include!` する。`text`(今の言語)・`fill`(`{0}`・`{1}` の番号の差し込み。ほかの `{` と差し込んだ値の中は見ない)・`singular` は `src/i18n.rs` にある。`Msg` は `Display` と `From<Msg> for String` を持ち、`Some(MSG.into())` のまま今の言語の文になる。言語を足すときは台帳を足す(`auto` は環境変数の値の頭が英語のほかの言語の符号なら、その言語)。実行時に読む形や fluent などは使わない(配るファイルが増え、欠けが動かすまで分からず、const で持てない)。
 - 日本語が同じでも意味の違う文(入力の「取り消し」とビューの設定の「取り消し」のボタンなど)は別の行にする。日本語の文は表に移す前の文とバイトまで同じにし、golden と錠のある試験をそのまま通す。
-- src の文字列のリテラルに日本語を残さない(tests/test_no_japanese_literals.rs が試験のファイルと `src/i18n.rs` を除いて調べる)。日本語の名前を値として持つ公開の定数(`writeback::NO_PERMISSION`・`display::ITEMS` の名前・`keymap` の `label`・`native_views::DEFAULT_TAB` など)は `Msg::X.ja()` を指し、表示には今の言語の文(`text`・`label()`)を出す。`DEFAULT_TAB`(既定の表)は日本語の値。mdgrid のビューの名前の検査は英日の両方の名前(`Msg::DefaultTabName.ja()` と `.en()`)と比べて断る(どちらの言語でも既定の表と同じ名前のタブが並ばず、`--view` も取り違えない)。タブ・メッセージと、既定の表から書き出す `.base` のビューの名前は今の言語の名前(`Msg::DefaultTabName.text()`)。ビューの状態に書く名前(views.toml・見た目の状態の鍵)は言語で変わらない(既定の表の名前を状態の鍵に使わない)。`Y` のコピーの見出しの「ノート」(`view::LABEL_HEADER`)のように、出す文字の中の見出しや名前も今の言語で変わる。
+- src の文字列のリテラルに日本語を残さない(tests/test_no_japanese_literals.rs が試験のファイルと `src/i18n.rs` を除いて調べる。文言の文は台帳にある)。日本語の名前を値として持つ公開の定数(`writeback::NO_PERMISSION`・`display::ITEMS` の名前・`keymap` の `label`・`native_views::DEFAULT_TAB` など)は `Msg::X.ja()` を指し、表示には今の言語の文(`text`・`label()`)を出す。`DEFAULT_TAB`(既定の表)は日本語の値。mdgrid のビューの名前の検査は英日の両方の名前(`Msg::DefaultTabName.ja()` と `.en()`)と比べて断る(どちらの言語でも既定の表と同じ名前のタブが並ばず、`--view` も取り違えない)。タブ・メッセージと、既定の表から書き出す `.base` のビューの名前は今の言語の名前(`Msg::DefaultTabName.text()`)。ビューの状態に書く名前(views.toml・見た目の状態の鍵)は言語で変わらない(既定の表の名前を状態の鍵に使わない)。`Y` のコピーの見出しの「ノート」(`view::LABEL_HEADER`)のように、出す文字の中の見出しや名前も今の言語で変わる。
 - 言語の決め方: 設定の `language`(`auto`・`en`・`ja`。既定 `auto`)が `en`・`ja` ならそれ。`auto` は `LC_ALL`・`LC_MESSAGES`・`LANG` の順で最初の空でない値が `ja` で始まれば日本語、ほか(どれも無いときも)は英語(`i18n::resolve`)。今の言語は、スレッドの上書き(`scoped`。試験用)> 大域の既定(`set_default`。main だけが呼ぶ)> 環境 の順。main は最初に環境で決め、`--config` を読んだあと `config::peek_language` で設定の `language` だけを読んで上書きする。言語は引数でも App・Source でも持ち回らない(公開の trait の形と、錠のある試験が構造体の式で作る `Startup` を変えないため)。
 - clap の引数の誤りは設定を読む前に出るので、環境の言語で出す(SR-23 の小さな例外)。
 - 試験と `cargo run` の言語: `.cargo/config.toml` の `[env]` が `LC_ALL`・`LANG` を `ja_JP.UTF-8` に force するので、`cargo test` と、そこから立てる実行ファイルと、`cargo run` は、利用者の `LANG` と設定の `auto` に関係なく日本語になる。英語の試験は `scoped(Lang::En)` か、子の環境に `LANG=en_US.UTF-8` を明示し `LC_ALL`・`LC_MESSAGES` を外して確かめる。開発中に英語で見るには、設定に `language = "en"` と書くか、`target/debug/mdgrid`(`target/release/mdgrid`)を直接起動する。
@@ -601,6 +601,14 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 - unicode-width と書記素のまとまり(unicode-segmentation)で数える。East Asian Ambiguous(○● など)は既定で1とし、設定で2にできるようにする。
 - 絵文字は幅が端末ごとにぶれるので、表の飾りには使わない。
+
+## 表の行の高さ(CV-8。row-lines。2026-10-12)
+
+- 行の高さと画面の位置の計算は `src/ui/rows.rs` に集める(描く・クリック・入力の欄と窓・スクロール・ページ送り)。`data_y + row - top` のように行を画面の1行と数える式を、ほかの所に書かない。
+- `row_extra_lines = 0` では、rows.rs のどの関数も今までの算術(1 slot = 画面の1行)をそのまま返す。0 で画面が1字も変わらないことを、計算の道を分けて守る。
+- `app.top` は slot の添字のまま(行の途中から描かない)。画面より高い行は上から入る分だけ見せる。
+- 列の幅は先に決め、行の高さはその幅で数える。幅を測る行は「1 slot を1行と数えたときに見える範囲」にする(実際に見える行で測り直すと、高さと幅が循環する)。
+- 行の高さは、見えている列のセルで数える。改行を残した文字は、`cell.rs` のスレッドローカルの切り替えで `shown` から作る(`shown` に引数を足さない。改行を残すのは表の行を描くときだけ)。
 
 ## モジュールの分け方と、写しを作らない決まり(refactor-maintainability。2026-10-07)
 

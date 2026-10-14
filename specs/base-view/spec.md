@@ -6,7 +6,7 @@ description: 何を読んで、どの行とどの列の表を作るか。.base �
 status: active
 load_when: 起動の引数・.base の読み込み・絞り込み・並べ替え・グループ分け・式の評価・ビューの切り替えを作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-10
+updated: 2026-10-13
 ---
 
 # 表の組み立て(base-view)
@@ -20,10 +20,10 @@ updated: 2026-10-10
 | ID | 要件 | 例(確かめ方) | 決定 |
 |---|---|---|---|
 | BV-1 | `.base` のファイルを渡されたら、その定義で表を作るべき。フォルダだけを渡されたら、その中の Markdown のノートを行、フロントマターのキーを列にした既定の表を作るべき。 | 設定も `.base` も無いフォルダを渡す → 全ノートと全キーの表(`test_BV_1`) | [2026-09-30](../_decisions/2026-09-30-v1-design.md) |
-| BV-2 | ノートを探す範囲(保管庫の根)は、`.obsidian/` を持つ最寄りの上のフォルダとし、無ければ渡したフォルダにするべき。範囲は引数で1つ以上のフォルダを並べて広げてよい。 | 2つのリポのフォルダを並べて渡す → 両方のノートが1つの表に入る(`test_BV_2`) | [2026-09-30](../_decisions/2026-09-30-v1-design.md) |
+| BV-2 | ノートを探す範囲(ルートフォルダ)は、`.obsidian/` を持つ最寄りの上のフォルダとし、無ければ渡したフォルダにするべき。範囲は引数で1つ以上のフォルダを並べて広げてよい。 | 2つのリポのフォルダを並べて渡す → 両方のノートが1つの表に入る(`test_BV_2`) | [2026-10-13](../_decisions/2026-10-13-root-folder.md)、[2026-09-30](../_decisions/2026-09-30-v1-design.md) |
 | BV-3 | `.base` のファイルと、ノートの中の ````base` のブロックを書き換えてはならない。 | 表の操作の前後で `.base` のバイトが同じ(`test_BV_3`) | [2026-10-03](../_decisions/2026-10-03-strict-write-safety.md)、[2026-09-30](../_decisions/2026-09-30-v1-design.md) |
 | BV-11 | 渡したフォルダの重なりやシンボリックリンクで同じノートが2度見つかったら、実体のパスで1行にするべき。 | 同じフォルダを2回と、そこを指すリンクを渡す → 行は1つ(`test_BV_11`) | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
-| BV-12 | 保管庫の根が複数あって `.obsidian/types.json` の型が列で食い違うときは、その列をテキストとして扱い、読むだけにするべき。 | 根 A で date・根 B で text の `due` → テキストで表示し、編集できない理由を出す(`test_BV_12`) | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
+| BV-12 | ルートフォルダが複数あって `.obsidian/types.json` の型が列で食い違うときは、その列をテキストとして扱い、読むだけにするべき。 | 根 A で date・根 B で text の `due` → テキストで表示し、編集できない理由を出す(`test_BV_12`) | [2026-10-13](../_decisions/2026-10-13-root-folder.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
 
 ## 要件: 版1 — 解釈
 
@@ -37,15 +37,15 @@ updated: 2026-10-10
 | BV-21 | `.base` のうち mdgrid が解釈するもの(読む項目・ビューの型・演算子・関数とメソッド・`file.*` の値)と、解釈しないもの(BV-7 で未対応と出すもの)を、英語(`docs/obsidian-bases.md`)と日本語(`docs/obsidian-bases.ja.md`)の文書に並べるべき。文書の関数・メソッド・`file.*` の一覧と、式の評価が受け付ける一覧が食い違えば試験で落ちるべき(文書が古くなるのを防ぐため)。 | 式の評価に関数を1つ足して文書を直さない → 試験が落ちる。文書に評価できない関数を書く → 落ちる。文書の対応する関数を使った絞り込みは BV-7 の未対応にならない(`test_BV_21`) | [2026-10-03](../_decisions/2026-10-03-bases-docs.md) |
 | BV-8 | `.base` の中の知らないキーは、エラーにせず無視し、消するべきでない。 | ビューに独自のキーを足した `.base` → 開ける(`test_BV_8`) | [2026-09-30](../_decisions/2026-09-30-v1-design.md) |
 | BV-13 | `.base` の views が2つ以上あれば、ビューを切り替えられるべき。起動時は既定に選んだビュー(NV-25)を、無ければ先頭のビューを開くべき。 | ビューが3つの `.base` → タブに3つ、先頭が選ばれている。切り替えると行と列が変わる(`test_BV_13`) | [2026-10-10](../_decisions/2026-10-10-sort-views.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
-| BV-22 | 式は、ノートのリンクを評価するべき: `file.links`(そのノートの本文とフロントマターにある `[[名前]]`・`[[名前\|表示]]`・`[[名前#見出し]]`・`[文字](相対のパス.md)` の行き先のノートのリスト。行き先は Obsidian と同じく、保管庫の根からのパス、無ければ同じ名前のノート(同じ名前が複数なら根に近い・パスの短いもの)に解き、解けないリンクは文字のまま入れる)・`file.backlinks`(そのノートを行き先に持つノートのリスト)・`file.hasLink(x)`(x はノートの名前・パス・`this.file`)。`.base` を直接開いたときの `this` はその `.base` のファイルとし、`this.file.name`・`this.file.folder` などと `file.hasLink(this.file)` を評価するべき。 | a.md の本文に `[[b]]` と `[x](sub/c.md)` → a の file.links に b と sub/c。`[[無い]]` は文字 "無い" のまま入る。Projects.base を開き `file.inFolder(this.file.folder)` → .base と同じフォルダのノート。`file.links.contains(this.file)` → .base を指すノート。b.md を a と c が指す → b の file.backlinks に a と c。`file.hasLink("b")` → b を指すノートで真。`file.hasLink(this.file)` → .base を指すノート(`test_bv_22_*`) | [2026-10-07](../_decisions/2026-10-07-links-backlinks.md)、[2026-10-06](../_decisions/2026-10-06-links-this-narrow.md)、[2026-10-06](../_decisions/2026-10-06-links-this.md) |
-| BV-23 | ノートを探すときは、名前が `.` で始まるフォルダ(Obsidian が保管庫に入れない隠しフォルダ)と `node_modules` の下を探さないべき(コードのリポを開いたときに依存のパッケージの文書を行にしないため)。渡したフォルダそのものが隠しフォルダでも、その中は探してよい。 | `a.md`・`.hidden/b.md`・`node_modules/p/README.md`・`sub/c.md` のフォルダを --print → a と sub/c の2行。`.hidden` を直接渡す → b の1行(`test_bv_23_*`) | [2026-10-06](../_decisions/2026-10-06-skip-hidden-dirs.md) |
+| BV-22 | 式は、ノートのリンクを評価するべき: `file.links`(そのノートの本文とフロントマターにある `[[名前]]`・`[[名前\|表示]]`・`[[名前#見出し]]`・`[文字](相対のパス.md)` の行き先のノートのリスト。行き先は Obsidian と同じく、ルートフォルダからのパス、無ければ同じ名前のノート(同じ名前が複数なら根に近い・パスの短いもの)に解き、解けないリンクは文字のまま入れる)・`file.backlinks`(そのノートを行き先に持つノートのリスト)・`file.hasLink(x)`(x はノートの名前・パス・`this.file`)。`.base` を直接開いたときの `this` はその `.base` のファイルとし、`this.file.name`・`this.file.folder` などと `file.hasLink(this.file)` を評価するべき。 | a.md の本文に `[[b]]` と `[x](sub/c.md)` → a の file.links に b と sub/c。`[[無い]]` は文字 "無い" のまま入る。Projects.base を開き `file.inFolder(this.file.folder)` → .base と同じフォルダのノート。`file.links.contains(this.file)` → .base を指すノート。b.md を a と c が指す → b の file.backlinks に a と c。`file.hasLink("b")` → b を指すノートで真。`file.hasLink(this.file)` → .base を指すノート(`test_bv_22_*`) | [2026-10-13](../_decisions/2026-10-13-root-folder.md)、[2026-10-07](../_decisions/2026-10-07-links-backlinks.md)、[2026-10-06](../_decisions/2026-10-06-links-this-narrow.md)、[2026-10-06](../_decisions/2026-10-06-links-this.md) |
+| BV-23 | ノートを探すときは、名前が `.` で始まるフォルダ(Obsidian がノートに数えない隠しフォルダ)と `node_modules` の下を探さないべき(コードのリポを開いたときに依存のパッケージの文書を行にしないため)。渡したフォルダそのものが隠しフォルダでも、その中は探してよい。 | `a.md`・`.hidden/b.md`・`node_modules/p/README.md`・`sub/c.md` のフォルダを --print → a と sub/c の2行。`.hidden` を直接渡す → b の1行(`test_bv_23_*`) | [2026-10-13](../_decisions/2026-10-13-root-folder.md)、[2026-10-06](../_decisions/2026-10-06-skip-hidden-dirs.md) |
 | BV-14 | `.base` のビューの `summaries`(列の id → 集計の名前)のうち、Obsidian の組み込みの集計(Average・Min・Max・Sum・Range・Median・Stddev・Earliest・Latest・Checked・Unchecked・Empty・Filled・Unique)を、今のビューの行(絞り込みのあと)で計算し、表の下に1行で、集計した列の下に「集計の名前 値」を出すべき。集計の名前は英語と日本語で見せ、型の合わない値は数えないべき。式で書いた集計(最上位の `summaries` の formula)とまとまりごとの集計は解釈しないで、未対応の理由を出すべき。 | `summaries: {estimate: Sum, due: Earliest, done: Checked}` → 表の下に「Sum 18」「Earliest 2026-10-05」「Checked 2」。絞り込みで行が減ると値も変わる。`values.mean()` の集計 → 未対応の理由が出て、ビューは開く(`test_bv_14_*`) | [2026-10-06](../_decisions/2026-10-06-summaries.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
 
 ## 要件: 版1 — 集まりの変化
 
 | ID | 要件 | 例(確かめ方) | 決定 |
 |---|---|---|---|
-| BV-9 | ノートの変化は、ファイルの更新時刻と大きさを一定の間隔(既定 1 秒、設定で変えられる)で見て、変わったノートだけを読み直して表に反映するべき。ファイルの変更通知は、使うなら補助にとどめるべき。編集中・リストを開いている間は、読み直しを止めるべき。何もしていなくても CPU を使い続けないよう、ノートが 2,000 を超える保管庫では、1回の間隔で見るノートを 2,000 に限り、順に回して全部を見てよい。 | 外でノートを1つ直す → 次の間隔で、そのノートの行だけが変わる。編集中は変わらない(`test_BV_9`)。2,500 ノートの保管庫で後ろのほうのノートを直す → 2回の間隔のうちに変わる(`test_bv_9_round_robin_*`) | [2026-10-06](../_decisions/2026-10-06-poll-round-robin.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md)、[2026-09-30](../_decisions/2026-09-30-v1-design.md) |
+| BV-9 | ノートの変化は、ファイルの更新時刻と大きさを一定の間隔(既定 1 秒、設定で変えられる)で見て、変わったノートだけを読み直して表に反映するべき。ファイルの変更通知は、使うなら補助にとどめるべき。編集中・リストを開いている間は、読み直しを止めるべき。何もしていなくても CPU を使い続けないよう、ノートが 2,000 を超えるルートフォルダでは、1回の間隔で見るノートを 2,000 に限り、順に回して全部を見てよい。 | 外でノートを1つ直す → 次の間隔で、そのノートの行だけが変わる。編集中は変わらない(`test_BV_9`)。2,500 ノートのルートフォルダで後ろのほうのノートを直す → 2回の間隔のうちに変わる(`test_bv_9_round_robin_*`) | [2026-10-13](../_decisions/2026-10-13-root-folder.md)、[2026-10-06](../_decisions/2026-10-06-poll-round-robin.md)、[2026-09-30](../_decisions/2026-09-30-v1-full-spec.md)、[2026-09-30](../_decisions/2026-09-30-v1-design.md) |
 | BV-10 | 読み直したあとも、同じノートの行を選んだままにし、その行が消えたら最寄りの行を選ぶべき。 | 選んだ行のノートを消す → 下の行が選ばれる(`test_BV_10`) | [2026-09-30](../_decisions/2026-09-30-v1-design.md) |
 | BV-16 | ノートが1万あっても、最初の画面は読み込みを待たずに出し、読み込み中は進捗を出し、読み込みの中止の操作(既定は Ctrl+G。Ctrl+C はコピー(OUT-1))で読み込みを止められるべき。 | 1万ノートの材料 → 1秒以内に画面が出て、進捗が増える。Ctrl+G → 読み込みが止まり、読んだ分の表が残る(`test_BV_16`) | [2026-10-01](../_decisions/2026-10-01-key-defaults.md)、[2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) |
 
@@ -87,6 +87,12 @@ updated: 2026-10-10
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-13 | [表示の項目が11になって変わる試験の錠を掛け直す(row-lines-locks)](../_decisions/2026-10-13-row-lines-locks.md) | accepted | 人 | AI の提案 | SR-20, SR-21, CLI-11 ほか 4 |
+| 2026-10-13 | [「保管庫」をルートフォルダと言い換え、検知の値を目印のフォルダの名前にする(root-folder)](../_decisions/2026-10-13-root-folder.md) | accepted | 人 | 人の発言 | BV-2, BV-12, BV-22 ほか 6 |
+| 2026-10-12 | [右上のメニュー・3行のビューの帯で行の位置が変わる試験の錠を、まとめて掛け直す(header-menu-locks)](../_decisions/2026-10-12-header-menu-locks.md) | accepted | 人 | AI の提案 | BV-3, BV-7, BV-13 ほか 26 |
+| 2026-10-12 | [余白の 0.5 刻み・半行の描き方で行の位置が変わる試験の錠を、まとめて掛け直す(half-row-locks)](../_decisions/2026-10-12-half-row-locks.md) | accepted | 人 | AI の提案 | BV-7, BV-13, BV-17 ほか 28 |
+| 2026-10-12 | [パンくずのボタンでヘッダーの字が変わる試験の錠を掛け直す(crumb-button-locks)](../_decisions/2026-10-12-crumb-button-locks.md) | accepted | 人 | AI の提案 | SR-1, BV-13, NV-15, SR-42, WS-6 |
+| 2026-10-11 | [ビューの帯で表の行の位置と検索の欄の字が変わる試験の錠を掛け直す(view-bar-locks)](../_decisions/2026-10-11-view-bar-locks.md) | accepted | 人 | 人の発言 | BV-7, CE-16, NV-16 ほか 5 |
 | 2026-10-10 | [mdgrid のビューの削除を確かめ、直後の取り消しで戻せるようにする(view-delete-undo)](../_decisions/2026-10-10-view-delete-undo.md) | accepted | 人 | 人の発言 | BV-18 |
 | 2026-10-10 | [ビューの削除の確かめに合わせて、削除を通る試験の錠を掛け直す(view-delete-undo-locks)](../_decisions/2026-10-10-view-delete-undo-locks.md) | accepted | 人 | 人の発言 | BV-3, BV-13, BV-17 ほか 6 |
 | 2026-10-10 | [並べ替えを選んで覚える(並べ替えの窓・見出しの並べ替えの保存・既定のビュー)(sort-views)](../_decisions/2026-10-10-sort-views.md) | accepted | 人 | 人の発言 | NV-3, NV-20, SR-12 ほか 4 |
