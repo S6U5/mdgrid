@@ -227,6 +227,8 @@ mod test_external;
 #[cfg(test)]
 mod test_filter_window;
 #[cfg(test)]
+// 錠のある試験のファイルの use を書き換えないため(specs/_changes/2026-10-14-fmt-view-bar-cases.md)。
+#[allow(unused_imports)]
 mod test_filter_window_more;
 #[cfg(test)]
 mod test_freq_chips;

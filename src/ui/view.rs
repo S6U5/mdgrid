@@ -889,9 +889,7 @@ pub fn hit(app: &App, x: u16, y: u16) -> Option<(usize, usize)> {
         return None;
     }
     // CV-8: 伸ばした行の2行目より下も、その行。
-    let Some(i) = super::rows::slot_at(app, y - dy) else {
-        return None;
-    };
+    let i = super::rows::slot_at(app, y - dy)?;
     // SR-30: 見出しの上の空きは選べない。
     if i >= app.slots.len() || app.slots[i] == Slot::Gap {
         return None;

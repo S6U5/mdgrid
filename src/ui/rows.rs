@@ -52,8 +52,11 @@ pub(crate) fn frame_in(app: &App, cols: &[(usize, usize)], h: usize) -> Vec<(usi
     out
 }
 
+/// 見えている列と、見えている slot(`frame_in` の戻り)。
+type Frame = (Vec<(usize, usize)>, Vec<(usize, usize, usize)>);
+
 /// 今の画面の、見えている slot(`frame_in` を今の列と表の高さで)。
-fn frame(app: &App) -> (Vec<(usize, usize)>, Vec<(usize, usize, usize)>) {
+fn frame(app: &App) -> Frame {
     let (_, cols) = visible_layout(app);
     let f = frame_in(app, &cols, app.data_height());
     (cols, f)

@@ -60,7 +60,10 @@ fn test_sr_34_auto_single_view_keeps_search_bar() {
     // 2026-10-12-search-box・view-bar-plain: 3行の帯では、字は真ん中の行、見出しは帯の下。
     let m = super::bands::mid_row(&a) - super::bands::top_rows(&a);
     let head = 1 + super::bands::tab_rows(&a);
-    assert!(!l[0].contains("既定の表"), "ヘッダーにビューの名前を足さない:\n{s}");
+    assert!(
+        !l[0].contains("既定の表"),
+        "ヘッダーにビューの名前を足さない:\n{s}"
+    );
     assert!(!l[m].contains("既定の表"), "タブは出さない:\n{s}");
     for t in ["\\ 検索", "絞り込み", "並べ替え"] {
         assert!(l[m].contains(t), "帯の行に「{t}」:\n{s}");

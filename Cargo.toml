@@ -20,6 +20,10 @@ path = "src/lib.rs"
 name = "mdgrid"
 path = "src/main.rs"
 
+[lints.clippy]
+# 錠のある試験(tests/test_root_folder.rs)の assert_eq!(…, true) を書き換えないため(specs/_changes/2026-10-14-fmt-view-bar-cases.md)
+bool_assert_comparison = "allow"
+
 [dependencies]
 ratatui = "0.30.2"
 unicode-width = "0.2.2"
