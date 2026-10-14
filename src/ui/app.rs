@@ -160,6 +160,8 @@ pub struct App {
     /// 同じ値の行の強調(`*`)。
     pub(crate) same: Vec<super::nav::Same>,
     pub(crate) same_mark: Option<(String, String)>,
+    /// NV-30: 問題(CV-9)のある行だけに絞る。
+    pub(crate) only_problems: bool,
     /// 検索・簡易の絞り込みの入力(下の行)。
     pub(crate) prompt: Option<Prompt>,
     /// 一時的な並べ替え(列, 降順か)(NV-3。.base は変えない)。
@@ -326,6 +328,7 @@ impl App {
             display: Default::default(),
             same: Vec::new(),
             same_mark: None,
+            only_problems: false,
             prompt: None,
             sort: None,
             hidden: Vec::new(),
@@ -993,6 +996,11 @@ impl App {
         if super::bands::crumb_at(self, x, y) {
             self.message = None;
             self.open_drawer();
+            return;
+        }
+        // NV-30: 下の帯の問題の数で、問題のある行だけに絞る・外す。
+        if super::bands::problems_at(self, x, y) {
+            self.apply(Action::ProblemsOnly);
             return;
         }
         // CE-25: ビューの帯の「+ 新規」で新しいノートの名前の欄を開く。

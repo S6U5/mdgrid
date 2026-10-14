@@ -4,7 +4,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
+Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --check [--view <名前>]\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --check                 画面を出さずに、ビューの行の型と決まり([rules])に合わない値を1行ずつ出す\n                          (パス:行: 列: 理由。あれば終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "パス"
@@ -1483,3 +1483,26 @@ DddWed = "水"
 DddThu = "木"
 DddFri = "金"
 DddSat = "土"
+
+# ---- 問題: 型と決まりの確かめ(CE-36・CV-9・NV-30・CLI-23) ----
+WantRulesTable = "列ごとの表([rules.<列>])"
+WantRuleTable = "required と values の表"
+WantStringList = "文字列の並び"
+RsnRuleComputed = "計算の列には決まりを書けないので無視した"
+## {0} は型の名前(日付・数 など)。
+ProblemType = "型が合わない({0}ではない)"
+ProblemRequired = "必須のキーが無い"
+ProblemNotAllowed = "選べる値ではない"
+## {0} は列、{1} は理由。
+ProblemAt = "{0}: {1}"
+NoProblems = "問題は無い"
+## {0} は問題の数。
+FooterProblems = "  問題 {0}"
+HeaderProblems = "  問題のある行だけ"
+ProblemsOnlyOn = "問題のある行だけにした"
+ProblemsOnlyOff = "問題のある行だけの絞り込みを外した"
+KeyNextProblem = "次の問題へ"
+KeyPrevProblem = "前の問題へ"
+CmdProblemsOnly = "問題のある行だけ(切り替え)"
+## {0} は問題の数。
+CheckCount = "問題 {0}"

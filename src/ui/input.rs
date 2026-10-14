@@ -371,15 +371,53 @@ impl App {
         let list = match kind {
             // REL-3: リンクの列は、行き先のフォルダのノートを候補にする(見せるのは名前、書くのはリンク)。
             Kind::Text => self.link_list(&base, &col, cur.as_ref()).or_else(|| {
-                self.src
-                    .candidates(&col, self.candidates)
-                    .map(|c| List::new(&c, cur.as_ref(), !mismatch))
+                // CE-36: 選べる値(決まりの values)があれば、数の上限によらずその値を候補に。
+                let allowed = self
+                    .prof
+                    .resolved
+                    .rules
+                    .get(&col)
+                    .and_then(|r| r.values.clone());
+                match allowed {
+                    Some(vs) => {
+                        let c: Vec<Value> = vs.into_iter().map(Value::Str).collect();
+                        Some(List::new(&c, cur.as_ref(), !mismatch))
+                    }
+                    None => self
+                        .src
+                        .candidates(&col, self.candidates)
+                        .map(|c| List::new(&c, cur.as_ref(), !mismatch)),
+                }
             }),
             Kind::Checkbox => Some(List::new(
                 &[Value::Bool(true), Value::Bool(false)],
                 cur.as_ref(),
                 !mismatch,
             )),
+            // CE-36: 数・日付・日時の列も、選べる値があればその型の値にして候補に(型に合わない値は並べない)。
+            Kind::Number | Kind::Date | Kind::DateTime => {
+                let allowed = self
+                    .prof
+                    .resolved
+                    .rules
+                    .get(&col)
+                    .and_then(|r| r.values.clone());
+                allowed.map(|vs| {
+                    let c: Vec<Value> = vs
+                        .into_iter()
+                        .map(|v| match kind {
+                            Kind::Number => v
+                                .parse::<i64>()
+                                .map(Value::Int)
+                                .or_else(|_| v.parse::<f64>().map(Value::Float))
+                                .unwrap_or(Value::Str(v)),
+                            _ => Value::Str(v),
+                        })
+                        .filter(|v| types::fits(kind, v))
+                        .collect();
+                    List::new(&c, cur.as_ref(), !mismatch)
+                })
+            }
             _ => None,
         };
         // CE-22: 日付は設定の形で見せる(4桁の年が無い形なら `YYYY-MM-DD`。型の合わない値はそのまま)。

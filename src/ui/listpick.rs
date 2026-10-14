@@ -373,6 +373,20 @@ impl App {
             }
             None => self.src.list_candidates(&col),
         };
+        // CE-36: 選べる値(決まりの values)も候補にする(まだどのノートにも無い値は件数 0)。
+        if let Some(vs) = self
+            .prof
+            .resolved
+            .rules
+            .get(&col)
+            .and_then(|r| r.values.as_ref())
+        {
+            for v in vs {
+                if !names.iter().any(|(n, _)| n == v) {
+                    names.push((v.clone(), 0));
+                }
+            }
+        }
         // ためた値にだけある要素も候補にする(件数はルートフォルダの中の数なので 0)。
         for (_, items) in &pick.targets {
             for e in items {

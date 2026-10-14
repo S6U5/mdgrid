@@ -584,6 +584,22 @@ due = "date"
 estimate = "number"
 ```
 
+## `[rules]` — column rules
+
+### `rules`
+
+- Type: `table of tables (column = { required = boolean, values = [string, …] })`
+- Default: `{}`
+- Scope: global, workspace, table, view
+
+Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Rules never change notes and never stop you writing a value. A column with `values` offers them in the cell input. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
+
+```toml
+[rules.status]
+required = true
+values = ["todo", "doing", "done"]
+```
+
 ## `[keys]` — key bindings
 
 ### `keys`

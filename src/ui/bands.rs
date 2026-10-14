@@ -60,6 +60,10 @@ fn header_text(app: &App) -> String {
             &sanitize(&super::nav::shown_value(&s.value)),
         ]));
     }
+    // NV-30: 問題のある行だけに絞っている。
+    if app.only_problems {
+        text.push_str(Msg::HeaderProblems.text());
+    }
     if !app.hidden.is_empty() {
         text.push_str(&Msg::HeaderHidden.fill(&[&app.hidden.len()]));
     }
@@ -1148,6 +1152,10 @@ pub fn chip_at(app: &App, x: u16, y: u16) -> Option<usize> {
 pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
     // 未保存の数は狭い端末でも切れないよう先頭に置く(SR-1)。
     let mut text = Msg::FooterUnsaved.fill(&[&app.changes.count()]);
+    // NV-30: 問題の数(1つ以上のとき。クリックで問題のある行だけに絞る)。
+    if app.built.problems > 0 {
+        text.push_str(&Msg::FooterProblems.fill(&[&app.built.problems]));
+    }
     // NV-5: 選んだ行の数。
     let n = app.selection().len();
     if n > 0 {
@@ -1233,6 +1241,19 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
         fit(&text, w, Align::Left),
         Style::default().add_modifier(Modifier::REVERSED),
     ))
+}
+
+/// NV-30: (x, y) が下の帯の問題の数か(押すと問題のある行だけに絞る・外す)。
+pub(crate) fn problems_at(app: &App, x: u16, y: u16) -> bool {
+    // 描く高さは端末の最下行を空けた高さ(ui::draw)で、下の帯はその下から2行目。
+    if app.built.problems == 0 || y as usize + 3 != app.size.1 as usize {
+        return false;
+    }
+    let x0 = width(&Msg::FooterUnsaved.fill(&[&app.changes.count()]));
+    let t = Msg::FooterProblems.fill(&[&app.built.problems]);
+    let lead = t.len() - t.trim_start().len();
+    let x = x as usize;
+    x >= x0 + lead && x < x0 + width(&t)
 }
 
 /// 前置きのキーの続きの案内(SR-25): 先頭に `前置き →`、続けて押せるキーと表示名。

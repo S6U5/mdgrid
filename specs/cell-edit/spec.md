@@ -6,7 +6,7 @@ description: 表のセルでどの値をどう直せるか。自由入力・リ�
 status: active
 load_when: セルの編集・候補の出し方・入力ボックス・一括の編集を作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # セルの編集とリストからの選択(cell-edit)
@@ -66,6 +66,7 @@ updated: 2026-10-13
 | CE-33 | 新しいノートの作り方は、設定の `[new_note] mode` で `form`(既定。CE-26 の窓)か `editor` を選べるべきで、ビューごとにも決められてよい(BV-17)。`editor` では、作る場所(CE-25)と名前だけを聞き、前もって入れる値(絞り込み・set・hidden。CE-32 の変数を埋める)と本文の雛形でノートを作って、すぐ SR-8 の `e` と同じエディタで開き、戻ったらそのノートを読み直してその行を選ぶべき。フォームからも、作ってすぐエディタで開くキー(既定 Ctrl+E。割り当て直せる)で作れるべき。 | `mode = \"editor\"` で `a` → 名前だけの窓。名前を打って Enter → ノートができ、エディタで開く頼み(`e` と同じ)が出る。フォームで Ctrl+E → 作ってエディタで開く頼み(`test_ce_33_*`) | [2026-10-07](../_decisions/2026-10-07-new-note-editor.md) |
 | CE-34 | 表のモードで、選んだ行のノートのファイルの名前を、操作の一覧(SR-24)とパレットの「ノートの名前を変える」で変えられるべき(キーは既定で割り当てない)。新しい名前を打ち(`.md` は付けても付けなくてもよい)、同じフォルダの中で名前だけを変え、空・フォルダの区切りを含む名前・もうあるファイルの名前は理由を出して断るべき。そのノートにためた変更がある間・読むだけのノート(WB-5)・読むだけの起動(WB-15)では断るべき。名前を変えたら、開いている表と登録した表(CLI-18)のノートのうち、古い名前を指すリンク(`[[古い名前]]`・`[[古い名前\|表示]]`・`[[古い名前#見出し]]`)を新しい名前に書き換える変更を、ためる変更として(保存の前の差分(WB-9)で見られ、取り消せる)ためて、その数を知らせるべき(名前の変更でリンクを黙って切らないため)。 | 「会議の準備」の行で「ノートの名前を変える」→「会議の準備(10月)」と打つ → ファイルが `会議の準備(10月).md` になり、行がその名前で選ばれたまま。ほかのノートの `project: "[[会議の準備]]"` を書き換える変更が2件ためられ、Ctrl+S の差分に出る。`/` を含む名前・もうある名前 → 断って理由。ためた変更のある行 → 断る。`--readonly` → 出ない。`test_ce_34_*` | [2026-10-10](../_decisions/2026-10-10-note-rename.md) |
 | CE-35 | 表の列の型を、設定の `[types]`(列の名前 = `"text"`・`"number"`・`"checkbox"`・`"date"`・`"datetime"`・`"list"`・`"auto"`。範囲ごとに重ね、狭い範囲が勝つ。SR-44)で決められるべきで、決めた型はルートフォルダの型の設定と推定(CE-2)より優先し、`"auto"` はその列を推定に戻すべき。表のモードで、列の見出しの型の印(SR-35)のクリック・操作の一覧(SR-24)の列の節・パレットから、選んだ列の型を選び直す窓を出し、「自動」(推定の型を添える)と各型を並べて今の型に印を付け、選んだ型を開いている表の範囲(views.toml の表)の `[types]` に書いて、すぐ表に効かせるべき(セルの入力・型と合わない値の印(CV-2)・並べ替え・見出しの型の印)。ノートの値は書き換えないべき。`file.*`・`formula.*` の列では出さないべき。知らない型の名前は警告して、その列を推定のままにするべき。 | `[types] due = "date"` → due の値が文字でも日付の入力になり、日付でない値に `!`。due の見出しの型の印をクリック → 型の窓、「数」を選ぶ → views.toml の表に `due = "number"`、日付の値に `!`。「自動」を選ぶ → 推定の型に戻り、views.toml から due が消える。`[types] due = "when"` → 警告して推定(`test_ce_35_*`) | [2026-10-13](../_decisions/2026-10-13-column-types.md) |
+| CE-36 | 表の列の決まりを、設定の `[rules.<列の名前>]` に `required`(真偽。真なら、キーが無い・null・空の文字列・空のリストを違反とする)と `values`(文字の配列。値の文字(リストなら各要素の文字)がこのどれかでなければ違反とする。大文字小文字を区別する)で書けるべきで、範囲ごとに項目ごとに重ね、狭い範囲が勝つべき(SR-44)。決まりはノートを書き換えず、決まりに合わない値を書くことも止めないべき(決まりは確かめるための物で、書いてから直す流れを妨げないため)。`values` のある列の編集では、CE-3 の数の上限によらず、その値を候補のリストに並べるべき。`file.*`・`formula.*` の列の決まりと、知らない項目・型の違う値は、警告してその項目を使わないべき。 | `[rules.status] required = true` と `values = ["todo", "doing", "done"]` → status の無いノートと `status: wip` のノートが違反(CV-9 の印)、`status: done` は違反でない。status のセルで Enter → 候補のリストに todo・doing・done。表の範囲で `values = ["todo", "done"]` を重ねる → 表では doing も違反。`[rules."file.name"] required = true` → 警告して使わない。`required = "yes"` → 警告(`test_ce_36_*`) | [2026-10-14](../_decisions/2026-10-14-type-check.md) |
 
 ## 範囲外
 
@@ -92,6 +93,7 @@ updated: 2026-10-13
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-14 | [型と決まりに合わない値を「問題」として探し、画面と CLI で確かめられるようにする(type-check)](../_decisions/2026-10-14-type-check.md) | accepted | 人 | 人の発言 | CE-36, CV-9, NV-30, CLI-22 |
 | 2026-10-13 | [「保管庫」をルートフォルダと言い換え、検知の値を目印のフォルダの名前にする(root-folder)](../_decisions/2026-10-13-root-folder.md) | accepted | 人 | 人の発言 | BV-2, BV-12, BV-22 ほか 6 |
 | 2026-10-13 | [ビューの帯を出さないときは「+ 新規」をヘッダーの右の端のボタンの左に出す(new-button-header)](../_decisions/2026-10-13-new-button-header.md) | accepted | AI | 検証の指摘 | CE-25, SR-1, SR-42 |
 | 2026-10-13 | [列の型を設定と見出しの型の印から選び直せるようにする(column-types)](../_decisions/2026-10-13-column-types.md) | accepted | 人 | 人の発言 | CE-35, CE-2 |
@@ -184,4 +186,5 @@ updated: 2026-10-13
 | CE-33 | [2026-10-07](../_decisions/2026-10-07-new-note-editor.md) | src/ui/test_note_editor.rs::test_ce_33_bad_mode_warns_and_uses_form, src/ui/test_note_editor.rs::test_ce_33_editor_mode_creates_and_opens, src/ui/test_note_editor.rs::test_ce_33_form_ctrl_e_creates_and_opens ほか 1 | [2026-10-07-new-note-editor](../_changes/2026-10-07-new-note-editor.md) 2026-10-07 |
 | CE-34 | [2026-10-10](../_decisions/2026-10-10-note-rename.md) | src/ui/test_note_rename.rs::test_ce_34_menu_offers_rename_note, src/ui/test_note_rename.rs::test_ce_34_refuses_bad_names_and_pending_rows, src/ui/test_note_rename.rs::test_ce_34_rename_and_stage_link_rewrites | なし |
 | CE-35 | [2026-10-13](../_decisions/2026-10-13-column-types.md) | src/ui/test_column_types.rs::test_ce_35_auto_returns_to_inference, src/ui/test_column_types.rs::test_ce_35_header_mark_click_opens_menu, src/ui/test_column_types.rs::test_ce_35_menu_lists_types_and_writes_table_scope ほか 10 | [2026-10-13-column-types](../_changes/2026-10-13-column-types.md) 2026-10-13 |
+| CE-36 | [2026-10-14](../_decisions/2026-10-14-type-check.md) | src/ui/test_problems.rs::test_ce_36_number_values_listed_as_numbers, src/ui/test_problems.rs::test_ce_36_values_listed_as_candidates, tests/test_rules_config.rs::test_ce_36_file_and_formula_columns_warn_and_are_unused ほか 9 | [2026-10-14-type-check](../_changes/2026-10-14-type-check.md) 2026-10-15 |
 <!-- decidespec:history:end -->

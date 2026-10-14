@@ -6,7 +6,7 @@ description: 起動のしかた(引数・オプション)と、設定ファイ�
 status: active
 load_when: 起動の引数・オプション・設定ファイル・終了コードを作る・変えるとき
 created: 2026-09-30
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # 起動と設定(cli)
@@ -33,6 +33,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-20 | 0.3.0 までの書き方は、読んで新しい場所に当て、項目ごとに「旧い名前は新しい道筋に移った」と警告するべき: `color`・`ambiguous_wide`・`nerd_font` → `[terminal]`、`workspace_detect` → `workspace.detect`、`theme`・`theme_light`・`theme_dark` → `look.theme`(`"auto"` に明暗のどちらかを書いていれば明暗の表)、`look` → `look.mode`、`borders` → `look.style.frames`、`[style]` → `[look.style]`(`preset` は `look.preset`)、`cells` の文字列と `[cells] style` → `look.cells`、`[cells]` の部品ごとの真偽 → `[look.style]` のその部品の `plain`(真偽は `check = "text"`、リンクは `links = "plain"`、印は `icons`)、`[cells.columns]` → `[look.columns]`、`[colors]` → `[look.colors]`、`view_tabs` → `display.tabs`、`[display] tabs = false` → `display.tabs = "never"`、`search_bar` → `display.search_bar`、`date_format`・`week_start` → `dates.format`・`dates.week_start`、`candidates`・`add_frontmatter` → `[edit]`。旧い名前と新しい道筋の両方に書いてあれば、新しい道筋を使うべき。画面が書くファイルの旧い形(`look.toml`、views.toml の `[[target]]`)も読み、次に書くときに新しい形(ui.toml、`[[table]]`)で書き、`look.toml` は ui.toml に移したあと消してよい。`mdgrid --migrate-config` は、設定ファイル(`--config` があればそのファイル)を新しい形にした TOML を標準出力に出して終了コード 0 で終わり、ファイルは書かないべき。注釈は移らないことを、出す文の先頭のコメントで知らせるべき。 | `theme = "auto"` と `theme_light = "paper"` → 明るい地で paper、警告に `theme_light` と `look.theme`。`borders = "ascii"` → 枠が ASCII で、警告に `look.style.frames`。`view_tabs = "auto"` と `[display] tabs = "always"` → always。`mdgrid --migrate-config` → `[look]` の下に `theme = { light = "paper", dark = "sumi" }`、出した文を読み直すと警告なしで同じ振る舞い。look.toml だけがある → その見た目で起動し、見た目の区画で反映すると ui.toml ができて look.toml が無い(`test_cli_20_*`) | [2026-10-10](../_decisions/2026-10-10-config-v2.md) |
 | CLI-21 | `mdgrid [<表>] --print-config --resolved` は、その表(引数が無ければ今のフォルダ。`--view` があればそのビュー)を開いたときに効く表のプロファイルとアプリ全体の項目の全部を、CLI-11 と同じ区画の TOML で標準出力に出し、各項目の上に、その値がどこから来たか(既定・config.toml・ui.toml・ワークスペースの印か workspaces.toml とその名前・views.toml の表・ビューの名前・テンプレートの名前)をコメントで添えて、終了コード 0 で終わるべき。出したものは設定ファイルとして警告なしに読めるべき。画面を開かず、ファイルは書かないべき。 | SR-44 の例で `mdgrid notes/tasks --print-config --resolved` → `theme = "dracula"` の上に `# views.toml (notes/tasks)`、`preset` の上に `# default`。出した文を `--config` で読む → 警告なし(`test_cli_21_*`) | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) |
 | CLI-22 | リポは、AI エージェント(Claude Code・Codex)が mdgrid を CLI で使うための手引きのスキル(`SKILL.md`)を、プラグインとして入れられる形(Claude Code と Codex のマーケットプレイスの索引とマニフェスト)で置くべき。スキルは、頼まれた条件を `--print` の `--filter`・`--sort`・`--view`・`--format`・`--with-path` に組み立てて表をファイルに出す手順と、`--apply` で書き戻すときは差分を人に見せてから `--yes` で書く手順を書く。スキルに書いた例のコマンドは、そのまま動かして通るべき(古い旗や書けない式を AI に教えないため)。マニフェストの版は Cargo.toml の版と揃えるべき。 | SKILL.md の例のコマンドを見本のフォルダ(status が todo・doing・done のノート)で動かす → 全部が終了コード 0 で、todo と doing の絞り込みの例は2行だけを出す(`test_cli_22_skill_examples_run`)。マニフェストの版が Cargo.toml の版と違う → 落ちる(`test_cli_22_plugin_versions_match_crate`) | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) |
+| CLI-23 | `mdgrid [<.base \| フォルダ> …] --check [--view <名前>]` は、画面を出さずに、開いたビュー(CLI-5 と同じく、ビューの絞り込みのあとの行。画面の見た目の状態は使わない)の各ノートの全部のフロントマターのキーと、決まり(CE-36)のある列を確かめ、問題(CV-9)を1つ1行で `<パス>:<行>: <列>: <理由>`(キーが無いときは行を付けず `<パス>: <列>: <理由>`)の形でパスと行の順に標準出力に出し、問題の数を標準エラーに1行で出すべき。列の型は、画面と同じく CE-2 の順(設定・ルートフォルダの型の設定・読み込んだ全部のノート(BV-2 の範囲)からの推定)で決めるべき(画面と `--check` で同じ値の判定が食い違わないため)。起動の引数に `.md` のファイルを渡したときは、`--print` と同じく(CLI-15)そのノートの行だけを確かめるべき。問題が無ければ終了コード 0、あれば 1、起動できないときは CLI-4 と同じく理由1行と 2 にするべき(CI と pre-commit で止められるようにするため)。パスは `--pick path`(OUT-3)と同じ形にし、ノートを書き換えないべき。 | `[types] due = "date"` で `due: someday` のノートと、`[rules.status] required = true` で status の無いノート → `notes/a.md:3: due: 型が合わない(日付ではない)` と `notes/b.md: status: 必須のキーが無い`、標準エラーに「問題 2」、終了コード 1。直したあと → 出力なし、終了コード 0。無いパス → 理由1行と終了コード 2。ビューの絞り込みで日付の値の行だけが残っても、ほかの行の値で決まる列の型は画面と同じ。`notes/a.md --check` → a.md の問題だけ(`test_cli_23_*`) | [2026-10-15](../_decisions/2026-10-15-check-id.md)、[2026-10-14](../_decisions/2026-10-14-check-kinds.md)、[2026-10-14](../_decisions/2026-10-14-type-check.md) |
 
 ## 要件: 版1 — セッション
 
@@ -56,6 +57,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 ## 範囲外
 
 - 採らない: 設定ファイルでの任意のコードの実行(VisiData の Python の設定の型。安全面で不利)。
+- CLI-22(`--check`)は 2026-10-15 に削除し、文と確かめ方を変えずに CLI-23 へ移した([記録](../_decisions/2026-10-15-check-id.md))。CLI-22 の ID は、公開リポで先にマージしたエージェントのスキルの要件(2026-10-14-agent-skill)のもの。
 
 ## 前提(AI の仮定)
 
@@ -72,6 +74,9 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-15 | [--check の要件の ID を CLI-22 から CLI-23 に付け替える(check-id)](../_decisions/2026-10-15-check-id.md) | accepted | AI | 検証の指摘 | CLI-22, CLI-23 |
+| 2026-10-14 | [型と決まりに合わない値を「問題」として探し、画面と CLI で確かめられるようにする(type-check)](../_decisions/2026-10-14-type-check.md) | accepted | 人 | 人の発言 | CE-36, CV-9, NV-30, CLI-22 |
+| 2026-10-14 | [--check の列の型を画面と同じ推定にし、.md を渡したらそのノートだけを確かめる(check-kinds)](../_decisions/2026-10-14-check-kinds.md) | accepted | AI | 検証の指摘 | CLI-22 |
 | 2026-10-14 | [mdgrid を CLI で使う AI エージェント向けのスキルを、プラグインとして置く(agent-skill)](../_decisions/2026-10-14-agent-skill.md) | accepted | 人 | 人の発言 | CLI-22 |
 | 2026-10-13 | [表示の項目が11になって変わる試験の錠を掛け直す(row-lines-locks)](../_decisions/2026-10-13-row-lines-locks.md) | accepted | 人 | AI の提案 | SR-20, SR-21, CLI-11 ほか 4 |
 | 2026-10-12 | [余白の既定を 1 にして変わる試験の錠を掛け直す(padding-default-one-locks)](../_decisions/2026-10-12-padding-default-one-locks.md) | accepted | 人 | AI の提案 | NV-23, SR-1, SR-26, CLI-11, SR-21 |
@@ -116,11 +121,12 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-13 | [2026-10-03](../_decisions/2026-10-03-completions-man.md) | なし | [2026-10-06-help-wording](../_changes/2026-10-06-help-wording.md) 2026-10-06 |
 | CLI-14 | [2026-10-06](../_decisions/2026-10-06-print-with-path.md) | tests/test_print_with_path.rs::test_cli_14_base_with_path_is_relative_to_base_folder, tests/test_print_with_path.rs::test_cli_14_csv_with_path_first_column_is_note_path, tests/test_print_with_path.rs::test_cli_14_json_with_path_first_key_is_path ほか 4 | [2026-10-07-windows-path-slash](../_changes/2026-10-07-windows-path-slash.md) 2026-10-07 |
 | CLI-15 | [2026-10-06](../_decisions/2026-10-06-print-md-rows.md) | tests/test_open_md_file.rs::test_cli_15_md_file_opens_folder_and_selects_its_row, tests/test_open_md_file.rs::test_cli_15_missing_md_file_fails_with_one_line_and_code_2, tests/test_open_md_file.rs::test_cli_15_print_md_file_extension_is_case_insensitive ほか 3 | [2026-10-06-print-md-rows](../_changes/2026-10-06-print-md-rows.md) 2026-10-06 |
-| WB-15 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_readonly_launch_hides_save_new_export, src/ui/test_click_name.rs::test_sr_19_readonly_click_same_as_e, src/ui/test_look_section.rs::test_sr_43_readonly_applies_without_writing ほか 12 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
+| WB-15 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/ui/test_action_menu_gaps.rs::test_sr_24_gaps_readonly_launch_hides_save_new_export, src/ui/test_click_name.rs::test_sr_19_readonly_click_same_as_e, src/ui/test_look_section.rs::test_sr_43_readonly_applies_without_writing ほか 13 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
 | CLI-5 | [2026-10-07](../_decisions/2026-10-07-export-table.md) | tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_english_with_lang_en, tests/test_language_lib.rs::test_sr_23_lib_print_warning_is_japanese_with_lang_ja, tests/test_print.rs::test_cli_5_default_csv_header_rows_and_rfc4180 ほか 12 | [2026-10-07-export-table](../_changes/2026-10-07-export-table.md) 2026-10-07 |
 | CLI-20 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_uifile_unit.rs::test_cli_20_old_look_toml_is_read_and_moved, tests/test_config_docs.rs::test_cli_12_docs_list_old_names, tests/test_config_v2.rs::test_cli_20_migrate_config_prints_the_new_layout ほか 3 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
 | CLI-21 | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) | src/test_profile_unit.rs::test_cli_21_resolved_toml_names_the_origin, tests/test_config_v2.rs::test_cli_21_print_resolved_names_the_origin | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
 | CLI-22 | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) | tests/test_agent_skill.rs::test_cli_22_plugin_versions_match_crate, tests/test_agent_skill.rs::test_cli_22_skill_examples_run | [2026-10-14-agent-skill](../_changes/2026-10-14-agent-skill.md) 2026-10-14 |
+| CLI-23 | [2026-10-15](../_decisions/2026-10-15-check-id.md) | tests/test_check_cli.rs::test_cli_23_missing_path_exits_2, tests/test_check_cli.rs::test_cli_23_no_problems_prints_nothing_and_exits_0, tests/test_check_cli.rs::test_cli_23_reports_type_and_required_problems ほか 3 | [2026-10-14-type-check](../_changes/2026-10-14-type-check.md) 2026-10-15 |
 | CLI-6 | [2026-10-01](../_decisions/2026-10-01-sessions.md) | なし | なし |
 | CLI-7 | [2026-10-11](../_decisions/2026-10-11-filter-button.md) | なし | [2026-10-11-filter-button](../_changes/2026-10-11-filter-button.md) 2026-10-11 |
 | CLI-8 | [2026-10-01](../_decisions/2026-10-01-sessions-details.md) | なし | なし |
