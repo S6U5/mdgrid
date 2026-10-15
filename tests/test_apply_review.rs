@@ -115,9 +115,10 @@ fn test_cli_17_round_trip_odd_values_writes_nothing() {
 fn test_cli_17_round_trip_sample_vaults_writes_nothing() {
     let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
     for (sample, target) in [
-        ("vault", "v"),
-        ("demo", "v/Tasks.base"),
-        ("vault", "v/タスク.base"),
+        ("quirks", "v"),
+        ("studio", "v/Tasks.base"),
+        ("studio", "v/Projects"),
+        ("quirks", "v/Tasks.base"),
     ] {
         let root = dir(&format!("sample-{sample}"));
         let src = manifest.join("examples").join(sample);

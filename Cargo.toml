@@ -26,6 +26,7 @@ bool_assert_comparison = "allow"
 
 [dependencies]
 ratatui = "0.30.2"
+regex = "1"
 unicode-width = "0.2.2"
 unicode-segmentation = "1.13"
 toml = "1.1"

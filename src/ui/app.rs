@@ -1130,6 +1130,22 @@ impl App {
         };
         self.apply(a);
     }
+
+    /// 横のホイール(SR-6)。表では `h`・`l` と同じに左右の列へ。ほかの画面では何もしない。
+    pub fn hwheel(&mut self, right: bool) {
+        if self.mode == Mode::Table {
+            self.apply(if right { Action::Right } else { Action::Left });
+        }
+    }
+
+    /// shift を押したホイール(SR-6)。表では横のホイールと同じにし、ほかの画面では縦のホイールのまま。
+    pub fn shift_wheel(&mut self, down: bool) {
+        if self.mode == Mode::Table {
+            self.hwheel(down);
+        } else {
+            self.wheel(down);
+        }
+    }
 }
 
 impl App {

@@ -41,6 +41,8 @@ commit_parsers = [
   { message = "^追加[:：]", group = "<!-- 0 -->Features" },
   { message = "^改善[:：]", group = "<!-- 0 -->Features" },
   { message = "^修正[:：]", group = "<!-- 1 -->Fixes" },
+  # 2026-10-15 に「直し:」で始めたコミットがある(修正と同じ扱い。以後は「修正:」を使う)。
+  { message = "^直し[:：]", group = "<!-- 1 -->Fixes" },
   { message = "^文書[:：]", group = "<!-- 2 -->Documentation" },
   { message = "^specs[:：]", group = "<!-- 3 -->Specification" },
   # 利用者に見える変化でないものは節に出さない。

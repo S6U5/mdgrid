@@ -143,6 +143,13 @@ impl Markdown {
         Markdown::open(&roots)
     }
 
+    /// WS-9: フォルダ `dir` に置いたとみなす `.base` で開く(ファイルは無い。ルートフォルダは `open_vault` と同じに決める)。
+    pub fn open_vault_dir(dir: &Path) -> io::Result<Markdown> {
+        std::fs::metadata(dir)?;
+        let roots = vault::roots(&[dir.to_path_buf()])?;
+        Markdown::open(&roots)
+    }
+
     /// ルートフォルダ(BV-2)。
     pub fn roots(&self) -> &[PathBuf] {
         self.vault.roots()

@@ -66,6 +66,14 @@ impl App {
         }
     }
 
+    /// ビューの設定の画面の写しの、ノートの欄のフォルダの出し方(SR-46)。
+    pub(crate) fn draft_note_path(&self) -> mdgrid::display::NotePath {
+        match &self.draft {
+            Some(d) => d.s.display.over(&self.display).note_path,
+            None => self.settings.display.over(&self.display).note_path,
+        }
+    }
+
     /// 「表示」の節の i 番目の項目を切り替える(写しだけ。反映で表に効く)。設定と同じ値に戻したら上書きを外す。
     /// タブの行は always → auto → never の順に変える(SR-34)。帯のボタンは plain ↔ box、帯の余白と上の余白は 0〜2 を 0.5 刻み(NV-23・SR-1)。
     /// 行を伸ばす数は 0 → 1 → 2 → 3 → 0(CV-8)。
@@ -93,6 +101,14 @@ impl App {
             let next = mdgrid::display::next_row_extra_lines(self.draft_row_extra_lines());
             if let Some(d) = self.draft.as_mut() {
                 d.s.display.set_row_extra_lines(next, &base);
+            }
+            return;
+        }
+        // SR-46: ノートのパスは common → name → full → off → common。
+        if item == Item::NotePath {
+            let next = self.draft_note_path().next();
+            if let Some(d) = self.draft.as_mut() {
+                d.s.display.set_note_path(next, &base);
             }
             return;
         }

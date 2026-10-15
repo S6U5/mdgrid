@@ -157,6 +157,39 @@ fn read_tables(
                 .and_then(|v| v.as_str())
                 .map(|s| s.trim().to_string())
         };
+        // WS-9: 印の表は `.base` と同じ中身を `base` に書ける(`.base` のファイルは要らない)。
+        let inline = match (file.starts_with(MARKER_DIR), t.get("base"), base) {
+            (true, Some(b), Some(root)) => {
+                let at = format!("{prefix}[{n}].base");
+                match inline_base_json(b, file, &at, warns) {
+                    Some(_) => Some(root),
+                    None => continue,
+                }
+            }
+            _ => None,
+        };
+        if let Some(root) = inline {
+            if t.get("path").is_some() {
+                crate::profile::warn(
+                    warns,
+                    file,
+                    &format!("{prefix}[{n}].path"),
+                    Msg::RsnBaseOverPath.text().to_string(),
+                );
+            }
+            let name = text("name")
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(|| "base".to_string());
+            let profile =
+                Profile::read_scoped(t, file, prefix, &["name", "path", "view", "base"], warns);
+            out.push(WsTable {
+                path: root.join(inline_file_name(&name)),
+                name,
+                view: text("view").filter(|s| !s.is_empty()),
+                profile,
+            });
+            continue;
+        }
         let Some(path) = text("path").filter(|p| !p.is_empty()) else {
             crate::profile::warn(
                 warns,
@@ -184,6 +217,159 @@ fn read_tables(
         });
     }
     out
+}
+
+/// WS-9: 印の表に中身を書いた表を、根に置いたとみなす `.base` のファイルの名前(ファイルは無い)。
+fn inline_file_name(name: &str) -> String {
+    format!("{}.base", name.replace(['/', '\\'], "_"))
+}
+
+/// WS-9: 印の文から、中身を書いた表の名前と中身(`.base` として読める文)を並べる。警告は捨てる(印を読むときに出す)。
+fn inline_tables(root: &Path) -> Vec<(String, String)> {
+    let file = root.join(MARKER_DIR).join(MARKER_FILE);
+    let Some(table) = std::fs::read_to_string(&file)
+        .ok()
+        .and_then(|t| t.parse::<toml::Table>().ok())
+    else {
+        return Vec::new();
+    };
+    let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+    let mut out = Vec::new();
+    let items = table
+        .get("table")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+    for (k, item) in items.iter().enumerate() {
+        let Some(t) = item.as_table() else { continue };
+        let Some(b) = t.get("base") else { continue };
+        let name = t
+            .get("name")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| "base".to_string());
+        let mut ignore = Vec::new();
+        if let Some(json) =
+            inline_base_json(b, &label, &format!("table[{}].base", k + 1), &mut ignore)
+        {
+            out.push((inline_file_name(&name), json));
+        }
+    }
+    out
+}
+
+/// WS-9・WS-10: 印の表の `base`(TOML の表)を、`.base` として読める文(JSON は YAML として読める)にする。
+/// 最上位とビューの `where` は、`filters` に足す条件(列の値が配列のどれか)に直す。表でなければ警告して None。
+fn inline_base_json(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<String> {
+    if !v.is_table() {
+        // 表でない中身も表として残し、開くときに `.base` の読めない中身と同じ理由を出す(WS-9)。
+        crate::profile::warn(warns, file, at, crate::profile::not(Msg::WantTable));
+        return serde_json::to_string(&serde_json::to_value(v).ok()?).ok();
+    }
+    let mut j = serde_json::to_value(v).ok()?;
+    where_to_filters(&mut j, file, at, warns);
+    if let Some(views) = j.get_mut("views").and_then(|v| v.as_array_mut()) {
+        for (i, view) in views.iter_mut().enumerate() {
+            where_to_filters(view, file, &format!("{at}.views[{}]", i + 1), warns);
+        }
+    }
+    serde_json::to_string(&j).ok()
+}
+
+/// WS-10: `where = { 列 = [値, …] }` を、`filters` と両方を満たす条件にする。列ごとに「値のどれか」(リストの
+/// 列は要素のどれか)で、列どうしは全部。空の配列・配列でない値・文字列と数と真偽でない要素は警告してその列を使わない。
+fn where_to_filters(obj: &mut serde_json::Value, file: &str, at: &str, warns: &mut Vec<String>) {
+    let Some(map) = obj.as_object_mut() else {
+        return;
+    };
+    let Some(w) = map.remove("where") else {
+        return;
+    };
+    let Some(cols) = w.as_object() else {
+        crate::profile::warn(
+            warns,
+            file,
+            &format!("{at}.where"),
+            crate::profile::not(Msg::WantTable),
+        );
+        return;
+    };
+    let mut conds: Vec<serde_json::Value> = Vec::new();
+    for (col, vals) in cols {
+        let ok: Option<Vec<String>> = vals.as_array().filter(|a| !a.is_empty()).and_then(|a| {
+            a.iter()
+                .map(|x| match x {
+                    serde_json::Value::String(_)
+                    | serde_json::Value::Number(_)
+                    | serde_json::Value::Bool(_) => Some(x.to_string()),
+                    _ => None,
+                })
+                .collect()
+        });
+        let Some(lits) = ok else {
+            crate::profile::warn(
+                warns,
+                file,
+                &format!("{at}.where.{col}"),
+                crate::profile::not(Msg::WantValuesArray),
+            );
+            continue;
+        };
+        // 計算の列(`formula.x`)・ファイルの項目(`file.x`)・`note.x` はそのまま式に書く(列の名前と同じ)。
+        let dotted = ["formula.", "file.", "note."].iter().any(|p| {
+            col.strip_prefix(p).is_some_and(|r| {
+                !r.is_empty() && r.chars().all(|c| c.is_alphanumeric() || c == '_')
+            })
+        });
+        let key = if dotted || col.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            col.clone()
+        } else {
+            format!("note[{}]", serde_json::Value::String(col.clone()))
+        };
+        let any: Vec<serde_json::Value> = lits
+            .iter()
+            .map(|l| serde_json::Value::String(format!("list({key}).contains({l})")))
+            .collect();
+        conds.push(serde_json::json!({ "or": any }));
+    }
+    if conds.is_empty() {
+        return;
+    }
+    if let Some(f) = map.remove("filters") {
+        conds.insert(0, f);
+    }
+    map.insert("filters".into(), serde_json::json!({ "and": conds }));
+}
+
+/// 開ける表のパスか: ファイルかフォルダが在るか、印に中身を書いた表(WS-9。ファイルは無い)。
+pub fn openable(path: &Path) -> bool {
+    path.exists() || inline_base(path).is_some()
+}
+
+/// WS-9: 印の表の `base` で開く `.base` のパス(ファイルは無い)なら、その中身(JSON)と印のファイルのパス。
+pub fn inline_base(path: &Path) -> Option<(String, PathBuf)> {
+    if std::fs::symlink_metadata(path).is_ok() || path.extension().is_none_or(|x| x != "base") {
+        return None;
+    }
+    let root = match path.parent() {
+        Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
+        _ => PathBuf::from("."),
+    };
+    let marker = root.join(MARKER_DIR).join(MARKER_FILE);
+    if !marker.is_file() {
+        return None;
+    }
+    let want = path.file_name()?.to_string_lossy().into_owned();
+    inline_tables(&root)
+        .into_iter()
+        .find(|(f, _)| *f == want)
+        .map(|(_, b)| (b, marker))
 }
 
 /// パスの名前(`.base` は拡張子を除く。フォルダの `v1.2` はそのまま)。
@@ -302,7 +488,7 @@ pub fn to_toml(list: &[Workspace]) -> String {
 
 /// ホームのフォルダの下なら `~/…` で書く(手で書いた `~` を、書き直しで失わない)。
 fn home_short(p: &Path) -> String {
-    if let Some(home) = std::env::var_os("HOME").map(PathBuf::from) {
+    if let Some(home) = config::home_dir() {
         if let Ok(rest) = p.strip_prefix(&home) {
             if !rest.as_os_str().is_empty() {
                 return format!("~/{}", rest.to_string_lossy());
@@ -735,10 +921,20 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
         (&label, "table"),
         &mut warns,
     );
-    let profile = Profile::read_scoped(&table, &label, "", &["name", "table"], &mut warns);
+    // WS-7: `open`(根を開いたときの表)は marker_open が読む。
+    let profile = Profile::read_scoped(&table, &label, "", &["name", "table", "open"], &mut warns);
     // 印はノートと一緒に配られるので、根の外を指す表は使わない(開いただけで外のフォルダを読ませない)。
     let real_root = std::fs::canonicalize(root).unwrap_or_else(|_| root.to_path_buf());
+    // WS-9: 中身を印に書いた表は、根に置いたとみなす `.base` なので外を指さない。
+    let inline: Vec<PathBuf> = inline_tables(root)
+        .into_iter()
+        .map(|(f, _)| root.join(f))
+        .collect();
     tables.retain(|t| {
+        // 同じ名前のファイル(リンクを含む)が根にあれば、ほかの表と同じく外を指さないかを確かめる。
+        if inline.contains(&t.path) && std::fs::symlink_metadata(&t.path).is_err() {
+            return true;
+        }
         let real = std::fs::canonicalize(&t.path).unwrap_or_else(|_| t.path.clone());
         let inside = real.starts_with(&real_root)
             && !t
@@ -761,6 +957,48 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
         },
         warns,
     )
+}
+
+/// 印の `open`(WS-7・CLI-1): 根のフォルダを開いたときに開く、印の表(書いた表は `name`、自動の表はフォルダの名前)。
+/// `open` が無い・印が無いなら None。印の表のどれも指さないときは警告(CLI-3 の形)して None。
+pub fn marker_open(root: &Path) -> (Option<WsTable>, Vec<String>) {
+    let file = root.join(MARKER_DIR).join(MARKER_FILE);
+    let mut warns = Vec::new();
+    let Ok(text) = std::fs::read_to_string(&file) else {
+        return (None, warns);
+    };
+    // 壊れた TOML は範囲を決めるときに read_marker が知らせる。
+    let Ok(table) = text.parse::<toml::Table>() else {
+        return (None, warns);
+    };
+    let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+    let name = match table.get("open") {
+        None => return (None, warns),
+        Some(toml::Value::String(s)) => s.trim().to_string(),
+        Some(_) => {
+            crate::profile::warn(
+                &mut warns,
+                &label,
+                "open",
+                crate::profile::not(Msg::WantString),
+            );
+            return (None, warns);
+        }
+    };
+    let (ws, _) = read_marker(root);
+    match ws.tables.iter().find(|t| t.name == name) {
+        Some(t) => (Some(t.clone()), warns),
+        None => {
+            let names: Vec<&str> = ws.tables.iter().map(|t| t.name.as_str()).collect();
+            crate::profile::warn(
+                &mut warns,
+                &label,
+                "open",
+                Msg::RsnOpenUnknown.fill(&[&name, &names.join(", ")]),
+            );
+            (None, warns)
+        }
+    }
 }
 
 /// 印を作る(WS-7)。既にあれば理由。作ったファイルのパス。

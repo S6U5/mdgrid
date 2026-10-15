@@ -1,0 +1,16 @@
+{
+  "types": {
+    "due": "date",
+    "start": "date",
+    "joined": "date",
+    "since": "date",
+    "when": "datetime",
+    "priority": "number",
+    "estimate": "number",
+    "budget": "number",
+    "hours_per_week": "number",
+    "billable": "checkbox",
+    "tags": "tags",
+    "skills": "tags"
+  }
+}

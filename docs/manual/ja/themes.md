@@ -18,7 +18,7 @@ theme = "nord"
 設定を書き換える前に試すなら、見本の設定を `--config` で渡します(リポの根で)。
 
 ```sh
-mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
+mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample/Tasks.base
 ```
 
 | 名前 | 見た目 |

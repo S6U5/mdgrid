@@ -89,20 +89,21 @@ impl App {
         }
         let reg_key = (reg_paths, gen);
         if changed || ctx.reg_key.as_ref() != Some(&reg_key) {
-            let mut tables: Vec<Table> = places
-                .iter()
-                .map(|p| Table::new(&p.name, &p.path))
-                .collect();
+            let tables = self.with_current_table(
+                places
+                    .iter()
+                    .map(|p| Table::new(&p.name, &p.path))
+                    .collect(),
+            );
             let cur_root = ctx.current.as_ref().map(|n| n.root.clone());
-            if let Some(root) = &cur_root {
-                if !tables.iter().any(|t| &t.dir == root) {
-                    tables.push(Table::new(&self.src.name(), root));
-                }
-            }
+            let cur_dir = self.current_table_dir();
             if ctx.reg_key.as_ref() != Some(&reg_key) {
+                // 今の表(読み込んだノート)と同じフォルダは読み直さない。
                 ctx.registered = tables
                     .iter()
-                    .filter(|t| Some(&t.dir) != cur_root.as_ref())
+                    .filter(|t| {
+                        Some(&t.dir) != cur_root.as_ref() && Some(&t.dir) != cur_dir.as_ref()
+                    })
                     .map(|t| Notes::scan(&t.dir))
                     .collect();
                 ctx.reg_key = Some(reg_key);
@@ -111,6 +112,33 @@ impl App {
             ctx.cache.clear();
         }
         f(&mut ctx)
+    }
+
+    /// 今の表のフォルダ(実体のパス)。フォルダを1つ開いたならそのフォルダ(`.base` はそのルートフォルダ。
+    /// relations::Table::new と同じ)。フォルダを2つ以上開いたときは、読み込んだノートの根。ノートが無ければ None。
+    pub(crate) fn current_table_dir(&self) -> Option<PathBuf> {
+        // ノートが無ければ表は無い(REL-7 の「表が無い」)。
+        let row = self.src.rows().into_iter().next()?;
+        if let [one] = self.src.folders().as_slice() {
+            return Some(one.clone());
+        }
+        let info = self.src.file(&row)?;
+        let mut root = PathBuf::from(&row.0);
+        for _ in Path::new(&info.path).components() {
+            root.pop();
+        }
+        Some(root)
+    }
+
+    /// 範囲の表に今の表を足す(REL-5・REL-7)。今の表のフォルダがどれかの表のフォルダ(の下)なら、その表の
+    /// ノートとして数えるので足さない。足すときは今の表の名前で。
+    pub(crate) fn with_current_table(&self, mut tables: Vec<Table>) -> Vec<Table> {
+        if let Some(dir) = self.current_table_dir() {
+            if !tables.iter().any(|t| dir.starts_with(&t.dir)) {
+                tables.push(Table::new(&self.src.name(), &dir));
+            }
+        }
+        tables
     }
 
     /// 値の文字のリンクの行き先(REL-1)。リンクでなければ None、リンクで解けなければ Some(None)。
@@ -166,6 +194,31 @@ impl App {
             }
             _ => None,
         }
+    }
+
+    /// まとまりの見出しと頻度表の値(REL-2): リンクを名前にした文字。`text` は値の文字(リストは要素を `, ` で
+    /// つないだもの。settings::group_label・base の見出しと同じ)。`row` はその値を持つ行(相対のリンクを解く元)。
+    /// リンクを1つも含まなければ None(今までの見せ方)。
+    pub(crate) fn link_label(&self, row: &RowId, text: &str) -> Option<String> {
+        if let Some(t) = self.link_word(row, text) {
+            return Some(t);
+        }
+        let parts: Vec<&str> = text.split(", ").collect();
+        if parts.len() < 2 {
+            return None;
+        }
+        let mut any = false;
+        let shown: Vec<String> = parts
+            .iter()
+            .map(|p| match self.link_word(row, p) {
+                Some(t) => {
+                    any = true;
+                    t
+                }
+                None => p.to_string(),
+            })
+            .collect();
+        any.then(|| shown.join(", "))
     }
 
     /// ためた値のリンクを名前にした文字(REL-2)。
@@ -395,14 +448,20 @@ impl App {
         if self.select_note(note) {
             return;
         }
-        // 今の表のノートなのに選べない(絞り込みで隠れている)なら、開き直さずに理由を出す。
+        // 今の表のノートなのに選べない(絞り込みで隠れている)なら、開き直さずに理由を出す。`.base` の表は、
+        // ルートフォルダの全部のノートを読むが、表のノートは `.base` の全体の絞り込みを通るものだけ。
         let id = note.canonicalize().unwrap_or_else(|_| note.to_path_buf());
-        if self.src.rows().iter().any(|r| Path::new(&r.0) == id) {
-            self.message = Some(Msg::RelHidden.fill(&[&relations::file_stem(note)]));
-            return;
+        if let Some(row) = self.src.rows().into_iter().find(|r| Path::new(&r.0) == id) {
+            if self.in_base_table(&row) {
+                self.message = Some(Msg::RelHidden.fill(&[&relations::file_stem(note)]));
+                return;
+            }
         }
         let tables = self.with_links(|ctx| ctx.tables.clone());
+        let here = self.current_table_dir();
         let place = relations::table_of(note, &tables)
+            // 今の表を開き直しても行き先は出ないので、ノートのフォルダを開く。
+            .filter(|t| Some(&t.dir) != here.as_ref())
             .and_then(|t| {
                 self.link_places()
                     .into_iter()
@@ -420,5 +479,15 @@ impl App {
         self.switch_to = Some(place);
         self.switch_select = Some(note.to_path_buf());
         self.begin_quit();
+    }
+
+    /// 読み込んだノートが今の表のノートか: `.base` を開いていれば、その全体の絞り込み(ビューのでなく)を通るもの。
+    fn in_base_table(&self, row: &RowId) -> bool {
+        let Some(b) = &self.base else {
+            return true;
+        };
+        let prop = |r: &RowId, k: &str| self.prop(r, k);
+        b.base
+            .keeps(self.src.as_ref(), &prop, row, self.today, self.now)
     }
 }

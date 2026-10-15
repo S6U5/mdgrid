@@ -388,6 +388,16 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
                         let mark = if n.0 == 0 { "○" } else { "●" };
                         format!("{mark} {}", Msg::SwPadding.fill(&[&n.text()]))
                     }
+                    // SR-46: ノートの欄のフォルダの出し方。
+                    (mdgrid::display::Item::NotePath, _) => {
+                        let m = app.draft_note_path();
+                        let mark = if m == mdgrid::display::NotePath::Off {
+                            "○"
+                        } else {
+                            "●"
+                        };
+                        format!("{mark} {}", m.name())
+                    }
                     // CV-8: 行を伸ばす数。
                     (mdgrid::display::Item::RowExtraLines, _) => {
                         let n = app.draft_row_extra_lines();

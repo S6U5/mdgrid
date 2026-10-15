@@ -19,6 +19,7 @@ pub use super::input::{cursor, in_input};
 use super::keymap::Mode;
 use super::review::render_review;
 use super::width::{fit, sanitize, set_ambiguous_wide, take, width, Align};
+use mdgrid::display::NotePath;
 use mdgrid::expr::Val;
 use mdgrid::i18n::Msg;
 use mdgrid::source::RowId;
@@ -138,7 +139,12 @@ fn cap(area_w: usize) -> usize {
 /// 左のノートの欄に名前と見出しを出さないか(印だけにする)。SR-29: 表の列に file.name があるとき。
 /// SC-17: 行がノートでない表(CSV など。行の名前は1列目の値なので重ねて出さない)。
 pub(crate) fn label_hidden(app: &App) -> bool {
-    !app.src.notes() || app.cols.iter().any(|c| c == "file.name")
+    !app.src.notes() || app.cols.iter().any(|c| c == "file.name") || note_path(app) == NotePath::Off
+}
+
+/// ノートの欄のフォルダの出し方(SR-46。ビューの上書きを重ねた値)。
+fn note_path(app: &App) -> NotePath {
+    app.settings.display.over(&app.display).note_path
 }
 
 /// ノートの列の幅(見えている行の名前と見出しから。上限は CV-5 と同じ)。
@@ -266,15 +272,31 @@ pub(crate) const HELD_MARK: char = '~';
 /// を付ける(色に頼らない)。
 fn label(app: &App, row: &RowId) -> String {
     let flag = app.changes.external(row) || app.src.mark(row).is_some();
-    // SR-29: 共通のフォルダと `.md` を除く。file.name の列があれば名前は出さず、印だけ。
+    // SR-29・SR-46: `.md` を除き、フォルダは note_path に従う(既定は共通のフォルダを除く)。file.name の列が
+    // あるときと off のときは名前は出さず、印だけ。
     let mut name = if label_hidden(app) {
         String::new()
     } else {
         let full = app.src.label(row);
-        let s = full
-            .strip_prefix(app.built.label_prefix.as_str())
-            .unwrap_or(&full);
-        sanitize(s.strip_suffix(".md").unwrap_or(s))
+        let s = match note_path(app) {
+            NotePath::Full => full.as_str(),
+            NotePath::Name => full.rsplit('/').next().unwrap_or(&full),
+            _ => full
+                .strip_prefix(app.built.label_prefix.as_str())
+                .unwrap_or(&full),
+        };
+        let s = s.strip_suffix(".md").unwrap_or(s);
+        // SR-47: 名前の正規表現は、フォルダを除いた最後の名前の部分に当てる。
+        match app.settings.display.over(&app.display).note_name {
+            Some(re) => {
+                let (dir, base) = match s.rsplit_once('/') {
+                    Some((d, b)) => (format!("{d}/"), b),
+                    None => (String::new(), s),
+                };
+                sanitize(&format!("{dir}{}", re.apply(base)))
+            }
+            None => sanitize(s),
+        }
     };
     // NV-27: 親子で並べていれば、深さ1つごとに2桁字下げし、子を持つ行に ▾(開いている)か ▸(畳んでいる)。
     if let Some(n) = app.tree.get(row) {
@@ -792,11 +814,17 @@ fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
     };
     let open = !app.folded.contains(h);
     let by = app.group_title().map(|t| format!("{}: ", sanitize(&t)));
+    // REL-2: リンクの値のまとまりは、セルと同じに行き先の名前で見せる(まとまりの最初の行から解く)。
+    let shown = app
+        .rows
+        .get(range.start)
+        .and_then(|r| app.link_label(r, h))
+        .unwrap_or_else(|| h.clone());
     let text = Msg::HeadingRow.fill(&[
         &if i == app.row { ">" } else { " " },
         &if open { "▾" } else { "▸" },
         &by.unwrap_or_default(),
-        &sanitize(h),
+        &sanitize(&shown),
         &range.len(),
     ]);
     let mut st = Style::default().add_modifier(Modifier::BOLD);

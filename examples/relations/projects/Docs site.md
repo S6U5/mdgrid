@@ -1,4 +1,0 @@
----
-status: idea
-lead: "[[Carol]]"
----

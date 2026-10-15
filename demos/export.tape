@@ -13,7 +13,7 @@ Env LANG "en_US.UTF-8"
 
 Source demos/setup.tape
 
-Type "mdgrid ." Sleep 500ms Enter
+Type "mdgrid Tasks" Sleep 500ms Enter
 Sleep 2s
 
 # \ で doing の行だけに絞る
@@ -32,5 +32,5 @@ Type "cat doing.csv" Sleep 500ms Enter
 Sleep 3s
 
 # 画面なしで出す
-Type `clear && mdgrid --print --format md --filter 'status == "todo"' --sort due` Sleep 500ms Enter
+Type `clear && mdgrid Tasks --print --format md --filter 'status == "todo"' --sort due` Sleep 500ms Enter
 Sleep 4s

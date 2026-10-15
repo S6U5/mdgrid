@@ -1,6 +1,6 @@
 //! 設定(CLI-3・SR-13)と見た目の状態(SR-11・SR-12)。形は docs/design.md の「設定の形と範囲ごとの上書き」。
 //!
-//! 設定はユーザーが書く TOML(`$XDG_CONFIG_HOME/mdgrid/config.toml`)。項目はアプリ全体の項目(`language`・
+//! 設定はユーザーが書く TOML(`$XDG_CONFIG_HOME/mdgrid/config.toml`。Windows は `%APPDATA%\mdgrid\config.toml`)。項目はアプリ全体の項目(`language`・
 //! `editor`・`poll_ms`・`[terminal]`・`[workspace]`・`[keys]`)と、表のプロファイル(`profile::Profile`)と、
 //! テンプレート(`[templates.<名前>]`)。項目の表は `schema`、旧い名前の写しは `legacy`。
 //! 見た目の状態は消えても困らないもので、ノートのフォルダには書かず、呼ぶ側が渡す状態のフォルダ
@@ -289,15 +289,27 @@ pub(crate) fn read_templates(v: &toml::Value, file: &str, w: &mut Vec<String>) -
     out
 }
 
+/// SR-8: 設定・`$VISUAL`・`$EDITOR` のどれも無いときのエディタ。
+pub const DEFAULT_EDITOR: &str = default_editor_for(cfg!(windows));
+
+/// SR-8: OS ごとの既定のエディタ。Windows には vi がふつう無いので notepad。
+pub const fn default_editor_for(windows: bool) -> &'static str {
+    if windows {
+        "notepad"
+    } else {
+        "vi"
+    }
+}
+
 /// SR-8: ノートを開くエディタ。設定の `editor`・`$VISUAL`・`$EDITOR` の順で空でない最初のもの
-/// (空白だけの値も空とみなす)、どれも無ければ `vi`。値は単語に分けずそのまま返す(分けるのは起動の側の `editor_argv`)。
+/// (空白だけの値も空とみなす)、どれも無ければ `DEFAULT_EDITOR`。値は単語に分けずそのまま返す(分けるのは起動の側の `editor_argv`)。
 /// 環境変数は呼ぶ側(main)が読んで渡す。
 pub fn resolve_editor(config: Option<&str>, visual: Option<&str>, editor: Option<&str>) -> String {
     [config, visual, editor]
         .into_iter()
         .flatten()
         .find(|v| !v.trim().is_empty())
-        .unwrap_or("vi")
+        .unwrap_or(DEFAULT_EDITOR)
         .to_string()
 }
 
@@ -315,7 +327,8 @@ pub fn peek_language(text: &str) -> Language {
 pub fn default_toml() -> String {
     let mut out = String::from(
         "# mdgrid configuration with every item at its default value.\n\
-         # Location: $XDG_CONFIG_HOME/mdgrid/config.toml (or ~/.config/mdgrid/config.toml).\n\
+         # Location: $XDG_CONFIG_HOME/mdgrid/config.toml (or ~/.config/mdgrid/config.toml;\n\
+         # on Windows %APPDATA%\\mdgrid\\config.toml).\n\
          # Items marked \"global only\" belong to the whole app; the others form the table profile and can\n\
          # also be written per workspace, table and view.\n\
          # Options: mdgrid --help. Full reference: docs/config.md in the mdgrid repository.\n",
@@ -516,26 +529,60 @@ pub(crate) fn squash_ws(s: &str) -> String {
     s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
-/// $XDG_CONFIG_HOME/mdgrid/config.toml、無ければ ~/.config/mdgrid/config.toml(CLI-3)。
-/// どちらの環境変数も無い(空の)ときは None。
+/// $XDG_CONFIG_HOME/mdgrid/config.toml、無ければ ~/.config/mdgrid/config.toml(Windows では
+/// %APPDATA%\mdgrid\config.toml。CLI-3)。どの環境変数も無い(空の)ときは None。
 pub fn config_path() -> Option<PathBuf> {
-    base_dir("XDG_CONFIG_HOME", ".config").map(|d| d.join("mdgrid").join("config.toml"))
+    config_path_in(&|k| std::env::var_os(k), cfg!(windows))
 }
 
-/// 見た目の状態の既定の置き場: $XDG_STATE_HOME/mdgrid/、無ければ ~/.local/state/mdgrid/。
+/// 見た目の状態の既定の置き場: $XDG_STATE_HOME/mdgrid/、無ければ ~/.local/state/mdgrid/
+/// (Windows では %LOCALAPPDATA%\mdgrid\)。
 pub fn state_dir() -> Option<PathBuf> {
-    base_dir("XDG_STATE_HOME", ".local/state").map(|d| d.join("mdgrid"))
+    state_dir_in(&|k| std::env::var_os(k), cfg!(windows))
 }
 
-fn base_dir(xdg: &str, home_rel: &str) -> Option<PathBuf> {
+/// ホームのフォルダ: $HOME、無ければ Windows では %USERPROFILE%(先頭の `~` の読み替えと短い見せ方)。
+pub fn home_dir() -> Option<PathBuf> {
+    home_dir_in(&|k| std::env::var_os(k), cfg!(windows))
+}
+
+/// 環境変数を読む関数(試験では作った値を渡す)。
+pub(crate) type Env<'a> = &'a dyn Fn(&str) -> Option<std::ffi::OsString>;
+
+pub(crate) fn config_path_in(env: Env, windows: bool) -> Option<PathBuf> {
+    base_dir_in(env, windows, "XDG_CONFIG_HOME", ".config", "APPDATA")
+        .map(|d| d.join("mdgrid").join("config.toml"))
+}
+
+pub(crate) fn state_dir_in(env: Env, windows: bool) -> Option<PathBuf> {
+    base_dir_in(
+        env,
+        windows,
+        "XDG_STATE_HOME",
+        ".local/state",
+        "LOCALAPPDATA",
+    )
+    .map(|d| d.join("mdgrid"))
+}
+
+pub(crate) fn home_dir_in(env: Env, windows: bool) -> Option<PathBuf> {
+    let var = |k: &str| env(k).filter(|v| !v.is_empty()).map(PathBuf::from);
+    var("HOME").or_else(|| if windows { var("USERPROFILE") } else { None })
+}
+
+/// `XDG_*`(絶対パスだけ)、無ければ Windows は `win`(`APPDATA` など)、ほかは `$HOME/<home_rel>`。
+fn base_dir_in(env: Env, windows: bool, xdg: &str, home_rel: &str, win: &str) -> Option<PathBuf> {
     // XDG の仕様どおり、絶対パスでない値は無視する。
-    if let Some(v) = std::env::var_os(xdg) {
+    if let Some(v) = env(xdg) {
         let p = PathBuf::from(v);
         if p.is_absolute() {
             return Some(p);
         }
     }
-    let home = std::env::var_os("HOME").filter(|h| !h.is_empty())?;
+    if windows {
+        return env(win).filter(|v| !v.is_empty()).map(PathBuf::from);
+    }
+    let home = env("HOME").filter(|h| !h.is_empty())?;
     Some(PathBuf::from(home).join(home_rel))
 }
 
@@ -711,3 +758,7 @@ pub fn apply_state(columns: &[String], s: &ViewState) -> (Vec<String>, Vec<Strin
 #[cfg(test)]
 #[path = "test_config_unit.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "test_windows_unit.rs"]
+mod tests_windows;

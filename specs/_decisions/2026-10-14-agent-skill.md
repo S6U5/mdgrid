@@ -3,7 +3,7 @@ type: Proposal
 id: 01M4XF3460KFP6HXDZRA134VVD
 title: mdgrid を CLI で使う AI エージェント向けのスキルを、プラグインとして置く(agent-skill)
 status: accepted
-approval-evidence: claude:16cd3d01-7fb5-55be-833f-4c92632eec00/be880d59-16cf-4706-9676-4f0610bd5bac
+approval-evidence: 〔伏せ字: 会話の記録の場所〕
 approval-hash: ec76f408167ce486
 decided-by: 人
 trigger: 人の発言

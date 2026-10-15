@@ -14,7 +14,7 @@ Env COLORTERM "truecolor"
 
 Source demos/setup.tape
 
-Type "mdgrid ." Sleep 400ms Enter
+Type "mdgrid Tasks" Sleep 400ms Enter
 Sleep 2s
 
 # 「名前を付けて保存」でビューを2つ作る(Shift+Tab 2回で下のボタン、↓3回で Save as)

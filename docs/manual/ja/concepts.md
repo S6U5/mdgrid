@@ -96,4 +96,4 @@ mdgrid はリンクを行き先の名前で見せ、セルを直すときは行�
 | ワークスペース | `~/.config/mdgrid/workspaces.toml`、またはフォルダの `.mdgrid/workspace.toml` |
 | 表ごとの最後の見た目(幅・隠した列・ビュー) | `~/.local/state/mdgrid/` |
 
-`XDG_CONFIG_HOME` と `XDG_STATE_HOME` で2つのフォルダを変えられます。どれも手で直せる TOML で、`places.toml` と `workspaces.toml` は mdgrid が書き換えても手書きのコメントを残します。
+`XDG_CONFIG_HOME` と `XDG_STATE_HOME` で2つのフォルダを変えられます。Windows の既定は `%APPDATA%\mdgrid\` と `%LOCALAPPDATA%\mdgrid\` です。どれも手で直せる TOML で、`places.toml` と `workspaces.toml` は mdgrid が書き換えても手書きのコメントを残します。

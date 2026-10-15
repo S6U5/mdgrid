@@ -387,8 +387,29 @@ pub(crate) fn tab_rows(app: &App) -> usize {
     if !(tabs_shown(app) || search_shown(app)) {
         0
     } else {
-        1 + 2 * bar_padding(app)
+        1 + 2 * bar_padding(app) + wrap_rows(app)
     }
+}
+
+/// NV-31: 帯の上に足したタブの行の数(`display.tab_wrap` で、タブが帯の行に入らないとき)。
+pub(crate) fn wrap_rows(app: &App) -> usize {
+    thread_local! {
+        /// 帯を置く途中(検索の欄が描かれるかを見るときに帯の行を引く)で、もう一度数えないための印。
+        static COUNTING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    }
+    if !tab_wrap(app) || COUNTING.with(|c| c.get()) {
+        return 0;
+    }
+    COUNTING.with(|c| c.set(true));
+    let (w, _) = super::popup::screen(app);
+    let n = view_bar(app, w).wrapped.len();
+    COUNTING.with(|c| c.set(false));
+    n
+}
+
+/// NV-31: タブを折り返す設定か(タブを出しているときだけ)。
+fn tab_wrap(app: &App) -> bool {
+    tabs_shown(app) && app.settings.display.over(&app.display).tab_wrap
 }
 
 /// 帯の上下に余白を取る端末の高さの下限(これより低いと表の行を残すため余白なしの1行で描く。NV-23)。
@@ -524,7 +545,7 @@ fn boxed_button(b: ViewButton) -> bool {
 
 /// ビューの帯の真ん中の行(タブ・欄の字・ボタンの字の行)。1行の帯なら帯の行そのもの。
 fn bar_mid(app: &App) -> u16 {
-    bar_y(app) + bar_padding(app) as u16
+    bar_y(app) + (wrap_rows(app) + bar_padding(app)) as u16
 }
 
 /// ビューの帯の字の行(試験から。囲むときは3行の真ん中)。
@@ -697,6 +718,8 @@ pub(crate) struct ViewBar {
     pub buttons: Vec<(usize, String, ViewButton, bool)>,
     /// CE-25: 右の端の「+ 新規」: (桁, 文字)。作れないか入らなければ None。
     pub new: Option<(usize, String)>,
+    /// NV-31: 帯の上に足した行のタブ(上の行から。各行は (桁, 文字, ビューの添字))。
+    pub wrapped: Vec<Vec<(usize, String, usize)>>,
 }
 
 /// 幅 `w` のビューの帯の置き方。左からタブ、少し空けて検索の欄、その右にボタン(表の近くにまとめる)、
@@ -742,12 +765,49 @@ pub(crate) fn view_bar(app: &App, w: usize) -> ViewBar {
         let nw = new.as_ref().map_or(0, |t| width(t) + 1);
         tw + if tw > 0 && rest > 0 { gap } else { 1 } + rest + nw
     };
+    // NV-31: 折り返す設定なら、入らないタブを帯の上の行へ(左から幅いっぱいに)。残りは真ん中の行の左。
+    let mut wrapped: Vec<Vec<(usize, String, usize)>> = Vec::new();
+    if tab_wrap(app) && tabs.len() > 1 && need(&tabs, search_w, &buttons, &new) > w {
+        let room = w.saturating_sub(need(&[], search_w, &buttons, &new) + gap);
+        // 真ん中の行に残す後ろのタブ(入るだけ)。
+        let mut keep = 0;
+        let mut used = 0;
+        for (_, t, _) in tabs.iter().rev() {
+            let tw = width(t) + usize::from(keep > 0);
+            if used + tw > room {
+                break;
+            }
+            used += tw;
+            keep += 1;
+        }
+        let rest = tabs.split_off(tabs.len() - keep);
+        let mut row: Vec<(usize, String, usize)> = Vec::new();
+        let mut x = 0;
+        for (_, t, i) in tabs.drain(..) {
+            let tw = width(&t);
+            if x > 0 && x + tw > w {
+                wrapped.push(std::mem::take(&mut row));
+                x = 0;
+            }
+            row.push((x, t, i));
+            x += tw + 1;
+        }
+        if !row.is_empty() {
+            wrapped.push(row);
+        }
+        let mut x = 0;
+        for (_, t, i) in rest {
+            let tw = width(&t);
+            tabs.push((x, t, i));
+            x += tw + 1;
+        }
+    }
     // 列・分類を後ろから省く。
     while need(&tabs, search_w, &buttons, &new) > w && buttons.len() > 2 {
         buttons.pop();
     }
-    // 今のでないタブを省く(今のタブを左の端に)。
-    if need(&tabs, search_w, &buttons, &new) > w && tabs.len() > 1 {
+    // 今のでないタブを省く(今のタブを左の端に)。折り返したときは省かない(NV-31)。
+    if wrapped.is_empty() && need(&tabs, search_w, &buttons, &new) > w && tabs.len() > 1 {
         let cur = app.view_index();
         tabs.retain(|(_, _, i)| *i == cur);
         if let Some(t) = tabs.first_mut() {
@@ -786,6 +846,7 @@ pub(crate) fn view_bar(app: &App, w: usize) -> ViewBar {
         search,
         buttons,
         new,
+        wrapped,
     }
 }
 
@@ -903,12 +964,31 @@ pub(crate) fn view_bar_lines(app: &App, w: usize) -> Vec<Line<'static>> {
         spans.extend(key_spans(t, key.as_deref(), button_st(false), &look));
     }
     let mid = pad(spans, w, Style::default());
+    // NV-31: 帯の上に足したタブの行(真ん中の行のタブと同じ見た目)。
+    let wrapped: Vec<Line<'static>> = bar
+        .wrapped
+        .iter()
+        .map(|row| {
+            let mut spans: Vec<Span<'static>> = Vec::new();
+            let mut used = 0;
+            for (x, t, i) in row {
+                if *x > used {
+                    spans.push(Span::raw(" ".repeat(x - used)));
+                    used = *x;
+                }
+                let st = if *i == app.view_index() { rev } else { other };
+                used += width(t);
+                spans.push(Span::styled(t.clone(), st));
+            }
+            pad(spans, w, Style::default())
+        })
+        .collect();
     // NV-23: 上下の余白の行。box の線は真ん中の行に接する余白の行に描き、残りは空き。
     // SR-1・NV-23: 端数は帯に接する側に半行(セルの地は帯の色、外側の半分を画面の地の色の字で消す。上 `▀`・下 `▄`)。そのときは帯の行に地の色を敷く。
     let (full, half) = bar_pad(app);
     let n = full + usize::from(half);
     if n == 0 {
-        return vec![mid];
+        return [wrapped, vec![mid]].concat();
     }
     let blank = || Line::from(" ".repeat(w));
     if !boxed {
@@ -925,7 +1005,7 @@ pub(crate) fn view_bar_lines(app: &App, w: usize) -> Vec<Line<'static>> {
             out.push(half_line(app, '▄', w, bg));
         }
         out.extend((0..full).map(|_| blank()));
-        return out;
+        return [wrapped, out].concat();
     }
     // 上と下の線(囲みの桁だけ。ほかは空白)。
     let edge = |l: char, r: char| -> Line<'static> {
@@ -948,16 +1028,29 @@ pub(crate) fn view_bar_lines(app: &App, w: usize) -> Vec<Line<'static>> {
     out.push(mid);
     out.push(edge(fr.bl, fr.br));
     out.extend((1..n).map(|_| blank()));
-    out
+    [wrapped, out].concat()
 }
 
 /// (x, y) がタブなら、そのビューの添字(BV-13 のクリック)。
 pub fn tab_at(app: &App, x: u16, y: u16) -> Option<usize> {
-    if !bar_row(app, y, false) || tab_rows(app) == 0 || no_views(app) {
+    if tab_rows(app) == 0 || no_views(app) {
         return None;
     }
     let (w, _) = super::popup::screen(app);
     let x = x as usize;
+    // NV-31: 帯の上に足した行のタブ。
+    let top = bar_y(app);
+    if y >= top && ((y - top) as usize) < wrap_rows(app) {
+        return view_bar(app, w)
+            .wrapped
+            .get((y - top) as usize)?
+            .iter()
+            .find(|(x0, t, _)| x >= *x0 && x < x0 + width(t))
+            .map(|(_, _, i)| *i);
+    }
+    if !bar_row(app, y, false) {
+        return None;
+    }
     view_bar(app, w)
         .tabs
         .into_iter()

@@ -4,7 +4,7 @@
 
 mdgrid reads one TOML file:
 
-- `$XDG_CONFIG_HOME/mdgrid/config.toml`, or `~/.config/mdgrid/config.toml` when `XDG_CONFIG_HOME` is unset (also on macOS).
+- `$XDG_CONFIG_HOME/mdgrid/config.toml`, or `~/.config/mdgrid/config.toml` when `XDG_CONFIG_HOME` is unset (also on macOS). On Windows, when `XDG_CONFIG_HOME` is unset: `%APPDATA%\mdgrid\config.toml`.
 - `mdgrid --config <path>` reads that file instead.
 
 The same folder also holds files that mdgrid writes itself: `ui.toml` (what you pick on the screen, such as the theme in the "Look" section of the view settings), `views.toml` (mdgrid views and per-table settings), `workspaces.toml` (workspaces) and `places.toml` (registered tables; see [Register the tables you use](manual/en/tasks.md#register-the-tables-you-use-and-switch-between-them)). mdgrid never rewrites `config.toml`.
@@ -49,6 +49,17 @@ path = "tasks"
 
 [table.look]
 theme = "dracula"
+```
+
+The marker can also name the table to open for its root folder: `open = "<table name>"` at the top level (the `name` of a `[[table]]`, or the folder name of an automatic table). Opening the root folder (`mdgrid` there, `mdgrid .`, or its path from elsewhere) then opens that table (in its `view`, unless `--view` is given) instead of every note in the folder; `--print`, `--check` and `--print-config --resolved` use it too. `--raw` opens the folder itself. A subfolder, two or more folders, or a `.md` file do not use it. An `open` that names no table is a warning, and the folder opens as it is.
+
+```toml
+# tasks/.mdgrid/workspace.toml — `mdgrid` in tasks/ opens tasks.base, not README.md or AGENTS.md
+open = "tasks"
+
+[[table]]
+name = "tasks"
+path = "tasks.base"
 ```
 
 ## Old names (0.3.0)
@@ -108,7 +119,7 @@ language = "en"
 - Default: none
 - Scope: global only
 
-Editor that opens the selected note (`e`, or a click on the selected row's file name). Arguments are allowed, such as `"code -w"`; the value is split into words without a shell (quotes and backslashes work as in POSIX), and the note path is added as one argument. When this is unset, empty, or only spaces, mdgrid uses `$VISUAL`, then `$EDITOR`, then `vi` — the first one that is not empty. After the editor exits, mdgrid re-reads the note.
+Editor that opens the selected note (`e`, or a click on the selected row's file name). Arguments are allowed, such as `"code -w"`; the value is split into words without a shell (quotes and backslashes work as in POSIX), and the note path is added as one argument. When this is unset, empty, or only spaces, mdgrid uses `$VISUAL`, then `$EDITOR`, then `vi` (`notepad` on Windows) — the first one that is not empty. After the editor exits, mdgrid re-reads the note, so the editor must stay open until you close the note: an editor that returns at once (such as Windows Notepad with tabs, when it is already open) needs a waiting form in `editor`, for example `"code -w"`. On Windows, write a path with forward slashes (`editor = "C:/tools/nvim.exe"`) or inside quotes: a backslash outside quotes escapes the next character, so `C:\tools\nvim.exe` would not start.
 
 ```toml
 editor = "nvim"
@@ -461,6 +472,47 @@ How many extra lines a table row may grow by. A row holding a long value, or a v
 ```toml
 [display]
 row_extra_lines = 2
+```
+
+### `display.tab_wrap`
+
+- Type: `boolean`
+- Default: `false`
+- Scope: global, workspace, table, view
+
+When the view tabs do not fit on the row of the view bar (with the search box and the buttons), wrap them onto extra rows above it, filled from the left, so every tab stays visible and can be clicked; the remaining tabs stay at the left of the bar's row, and the table moves down by the extra rows. When the tabs fit, nothing changes. `false` keeps one row: on a narrow screen the tabs other than the current one are left out (the `[` `]` keys still switch).
+
+```toml
+[display]
+tab_wrap = true
+```
+
+### `display.note_name`
+
+- Type: `string (a regular expression)`
+- Default: `""`
+- Scope: global, workspace, table, view
+
+A regular expression applied to the name in the note column, after `note_path` (with folders, to the last part of the path only). When it matches, the column shows the group named `name`, or else the first group, or else the name with the matched part removed. A name that does not match, or that would become empty, is shown as it is. `""` sets nothing. Search and the note names in messages and the detail view are not changed. An expression that cannot be read produces a warning and is not used. It is not switched in the "Display" section of the view settings (it is free text); a view can still override it in the view's `display` in `views.toml`.
+
+```toml
+[display]
+note_name = '^\d{8}_'
+```
+
+With `note_path = "name"`, this shows `20261015_report.md` as `report`; `note_name = '^(?P<name>.+)_v\d+$'` shows `plan_v3.md` as `plan`.
+
+### `display.note_path`
+
+- Type: `string ("common", "name", "full" or "off")`
+- Default: `"common"`
+- Scope: global, workspace, table, view
+
+How the note column on the left shows each note (without `.md`). `"common"` drops the folder shared by every row, `"name"` shows only the name, `"full"` shows the path from the root, and `"off"` shows no name and no heading, only the row marks (`!`, `~`) and the tree indent and ▾/▸, as when the table has a `file.name` column. Search and the note names in messages and the detail view keep the path from the root. Other values produce a warning and the default is used. In the "Display" section of the view settings this item cycles through common, name, full and off, and each view can override it there (`o`).
+
+```toml
+[display]
+note_path = "name"
 ```
 
 ## `[dates]` — dates

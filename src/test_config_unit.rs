@@ -5,7 +5,10 @@ fn test_sr_8_blank_is_same_as_empty() {
     // [SR-8] 空白だけの値も空とみなし、次の候補へ進む。
     assert_eq!(resolve_editor(None, Some(" "), Some("nvim")), "nvim");
     assert_eq!(resolve_editor(Some("  "), Some("\t"), Some("nvim")), "nvim");
-    assert_eq!(resolve_editor(Some(" "), Some(" "), Some(" ")), "vi");
+    assert_eq!(
+        resolve_editor(Some(" "), Some(" "), Some(" ")),
+        DEFAULT_EDITOR
+    );
     // 空白でない値は前後の空白も含めてそのまま(単語分けは起動の側)。
     assert_eq!(resolve_editor(Some(" hx "), None, None), " hx ");
     // 設定の editor = "  " は警告なしに None。

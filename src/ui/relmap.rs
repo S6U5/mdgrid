@@ -232,9 +232,17 @@ impl App {
         let (infos, links) = relmap::read(&tables);
         let ascii = popup::frame(self) == popup::ASCII;
         let map = relmap::layout(&infos, &links, ascii);
+        // 今の表を含む箱(いちばん深いもの)を選ぶ。
         let here = self.current_table_dir();
         let sel = here
-            .and_then(|d| infos.iter().position(|t| t.dir == d))
+            .and_then(|d| {
+                infos
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, t)| d.starts_with(&t.dir))
+                    .max_by_key(|(_, t)| t.dir.components().count())
+                    .map(|(i, _)| i)
+            })
             .unwrap_or(0);
         let mut rm = RelMap {
             infos,
@@ -248,29 +256,14 @@ impl App {
         self.set_mode(Mode::Relations);
     }
 
-    /// 今の表のフォルダ(実体のパス)。
-    fn current_table_dir(&self) -> Option<std::path::PathBuf> {
-        let row = self.src.rows().into_iter().next()?;
-        let info = self.src.file(&row)?;
-        let mut root = std::path::PathBuf::from(&row.0);
-        for _ in std::path::Path::new(&info.path).components() {
-            root.pop();
-        }
-        Some(root)
-    }
-
     /// ワークスペースの表(登録した表と今の表)を今読む。
     fn workspace_tables_now(&self) -> Vec<Table> {
-        let mut out: Vec<Table> = self
-            .link_places()
-            .iter()
-            .map(|p| Table::new(&p.name, &p.path))
-            .collect();
-        if let Some(root) = self.current_table_dir() {
-            if !out.iter().any(|t| t.dir == root) {
-                out.push(Table::new(&self.src.name(), &root));
-            }
-        }
+        let mut out = self.with_current_table(
+            self.link_places()
+                .iter()
+                .map(|p| Table::new(&p.name, &p.path))
+                .collect(),
+        );
         // 箱とつながりは名前で結ぶので、同じ名前(フォルダの Tasks と Tasks.base など)は番号で分ける。
         for i in 1..out.len() {
             let base = out[i].name.clone();

@@ -4,3 +4,4 @@ target/
 /site
 /docs/manual/*/images/
 /target/shots/
+__pycache__/

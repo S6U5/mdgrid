@@ -93,7 +93,7 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 | SC-5 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
 | SC-6 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
 | SC-7 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
-| SC-8 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | src/ui/test_gaps.rs::test_sc_8_other_view_type_shows_unsupported_reason, tests/test_base.rs::test_sc_8_cards_view_is_err, tests/test_base.rs::test_sc_8_list_map_kanban_views_are_err ほか 3 | [2026-10-01-examples](../_changes/2026-10-01-examples.md) 2026-10-01 |
+| SC-8 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | src/ui/test_gaps.rs::test_sc_8_other_view_type_shows_unsupported_reason, tests/test_base.rs::test_sc_8_cards_view_is_err, tests/test_base.rs::test_sc_8_list_map_kanban_views_are_err ほか 3 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
 | SC-9 | [2026-09-30](../_decisions/2026-09-30-import-scope.md) | なし | なし |
 | SC-13 | [2026-10-01](../_decisions/2026-10-01-scope-priority-marks.md) | なし | なし |
 | SC-14 | [2026-09-30](../_decisions/2026-09-30-pluggable-sources.md) | tests/test_source.rs::test_bv_1_folder_rows_labels_and_columns, tests/test_source.rs::test_changed_reports_externally_edited_row_and_rereads, tests/test_source.rs::test_preview_returns_before_and_after_without_touching_file | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |

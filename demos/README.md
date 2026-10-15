@@ -7,12 +7,12 @@ Scripts for [VHS](https://github.com/charmbracelet/vhs) that record mdgrid's fea
 Try it by hand (a copy of `examples/` with its own config, removed when you quit) / 手で試す(写した見本と専用の設定で開き、終わると消す):
 
 ```sh
-sh demos/try.sh               # relation map sample (press R) / 関係マップの見本(R を押す)
+sh demos/try.sh               # the studio sample: linked tables (x on a link, R for the map) / 主役の見本(リンクのセルで x、R で関係マップ)
 sh demos/try.sh workspace     # workspaces sample (-w Work) / ワークスペースの見本
-sh demos/try.sh demo          # English sample table / 英語の見本の表
+sh demos/try.sh configs       # most features on / 多くの機能を入れた設定
+sh demos/try.sh quirks        # awkward notes: empty, mismatched, read-only / 扱いにくいノートの見本
 sh demos/try.sh ai-human      # human and AI tasks (.base) / 人と AI のタスク
-sh demos/try.sh showcase      # most features on / 多くの機能を入れた見本
-sh demos/try.sh vault         # Japanese sample root folder / 日本語の見本のルートフォルダ
+sh demos/try.sh places        # registered tables / 登録した表の見本
 ```
 
 ```sh
@@ -43,6 +43,6 @@ sh demos/record.sh places     # 1本だけ
 | `column-types.tape` → [demo-column-types.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-column-types.gif) | 列の型を選び直す: パレットの `column_type`(か見出しの型の印のクリック)で型の窓を開き、型を選ぶと表に効く。「自動」で推定に戻る |
 | `problems.tape` → [demo-problems.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-problems.gif) | 型と決まりの問題: `[rules.<列>]` の必須と選べる値に合わない値に `!`、下の帯に数。`!` で次の問題へ跳び、`problems_only` で問題のある行だけ、`mdgrid --check` で CI から確かめる |
 
-To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder (`mdgrid .`). The screens are in English on the English sample (`examples/demo`). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.
+To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder of the sample (`mdgrid Tasks`). The screens are in English on the studio sample (`examples/studio`, with today fixed at 2026-10-06). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.
 
-足すときは台本を写し、設定の後に `Source demos/setup.tape` を置き、mdgrid はフォルダを渡して起動する(`mdgrid .`)。画面は英語で、見本は英語の `examples/demo`。字の形は日本語も含む等幅の BIZ UDGothic。
+足すときは台本を写し、設定の後に `Source demos/setup.tape` を置き、mdgrid は見本のフォルダを渡して起動する(`mdgrid Tasks`)。画面は英語で、見本は `examples/studio`(今日は 2026-10-06 に固定)。字の形は日本語も含む等幅の BIZ UDGothic。

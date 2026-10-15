@@ -51,30 +51,30 @@ Homebrew にはまだありません。
 
 ### 1. 見本で試す
 
-日本語の見本([examples/vault](examples/vault))で試せます。保存するとファイルが書き換わるので、先に一時フォルダに写します:
+見本([examples/studio](examples/studio))は、架空の小さな制作会社 Northwind Studio のタスク・案件・顧客・人・会議です。5つのフォルダのノートが、互いにリンクでつながっています(ノートは英語)。保存するとファイルが書き換わるので、先に一時フォルダに写します:
 
 ```sh
-cp -R examples/vault /tmp/mdgrid-sample
-mdgrid /tmp/mdgrid-sample/タスク
+cp -R examples/studio /tmp/studio
+mdgrid /tmp/studio/Tasks
 ```
 
-矢印のキーで動き、`Enter` で値を直し、`Ctrl+S` で差分を見て保存し、`q` で終わります。
+矢印のキーで動き、`Enter` で値を直し、`Ctrl+S` で差分を見て保存し、`q` で終わります。`project` や `owner` のセルで `x` を押すと、リンクの行き先のノートを開くなど、できることが並びます。`R` で5つの表のつながりが見えます。
 
-英語の見本([examples/demo](examples/demo)。小さなチームの仕事の一覧)もあり、README の画面はこれで撮っています。見本の期日は 2026年10月の初めなので、画面の写しと同じに見るには今日とみなす日を渡します: `MDGRID_TODAY=2026-10-03 mdgrid /tmp/mdgrid-demo/Tasks`。
+README の画面はこの見本で撮っています。見本の期日は 2026年10月の初めなので、画面の写しと同じに見るには今日とみなす日を渡します: `MDGRID_TODAY=2026-10-06 mdgrid /tmp/studio/Tasks.base`。
 
 リポを clone すれば、見本を全部1つのコマンドで開けます。`demos/try.sh` は mdgrid をビルドし、見本を一時フォルダに写し、その中の設定で開き、終わると写しを消します。自分のノートと設定には触りません:
 
 ```sh
 git clone https://github.com/S6U5/mdgrid && cd mdgrid
-sh demos/try.sh vault       # 上の日本語の見本(空・食い違う値・読むだけのノートなども)
-sh demos/try.sh relations   # [[リンク]] でつないだ tasks → projects → members。R で関係マップ
-sh demos/try.sh workspace   # 同じ表をワークスペースにまとめたもの(-w Work)
-sh demos/try.sh showcase    # 多くの機能を入れた設定とルートフォルダ
-sh demos/try.sh ai-human    # 人の仕事と AI の仕事に分ける .base(英語)
-sh demos/try.sh demo        # 英語の見本(README の画面)
+sh demos/try.sh studio      # 上の見本。[[リンク]] でつないだ5つの表。R で関係マップ
+sh demos/try.sh workspace   # 同じ表のいくつかをワークスペースにまとめたもの(-w Work)
+sh demos/try.sh configs     # 多くの機能を入れた設定で studio を開く
+sh demos/try.sh quirks      # 扱いにくいノート(空・食い違う値・読むだけのノートなど)
+sh demos/try.sh ai-human    # 人の仕事と AI の仕事に分ける .base
+sh demos/try.sh places      # 登録した表
 ```
 
-`--` のあとは mdgrid に渡ります。たとえば `sh demos/try.sh demo -- --readonly`。
+`--` のあとは mdgrid に渡ります。たとえば `sh demos/try.sh studio -- --readonly`。
 
 ### 2. 自分のノートを開く
 
@@ -141,7 +141,7 @@ fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
 列で `%` を押すと値ごとの件数が出て、値を選ぶとその行だけが残ります:
 
-![owner の列の値ごとの件数](docs/assets/ja/demo-freq.svg)
+![status の列の値ごとの件数](docs/assets/ja/demo-freq.svg)
 
 `x` で、選んだセルでできることが出ます:
 
@@ -153,13 +153,13 @@ fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
 `R` で関係マップ: ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引きます(`N:1`、リンクのリストなら `N:N`)。表やつながりはクリックか矢印のキーで選べます:
 
-![tasks・projects・members の関係マップ](docs/assets/ja/demo-relmap.svg)
+![タスク・案件・顧客・人・会議の関係マップ](docs/assets/ja/demo-relmap.svg)
 
 色のテーマは設定の `theme` で選びます: `"nord"`(下の画面)・`"solarized-light"`・`"dracula"`・`"gruvbox"`・`"pink-monster"`・`"dozy-pink"`。既定は端末の色のままで、`NO_COLOR` に従います。
 
 ![Nord のテーマの表](docs/assets/ja/demo-theme.svg)
 
-テーマごとの設定の見本は [examples/themes/](examples/themes) にあります: `mdgrid --config examples/themes/nord.toml examples/demo`。
+テーマごとの設定の見本は [examples/themes/](examples/themes) にあります: `mdgrid --config examples/themes/nord.toml examples/studio/Tasks.base`。
 
 ## 🧰 ほかのコマンドと使う
 
@@ -204,8 +204,8 @@ Codex では、このリポをプラグインのマーケットプレイスに�
 mdgrid はどんな Markdown のフォルダでも使えますが、Obsidian の [Bases](https://help.obsidian.md/bases) も読めます。`.base` を開くと table ビューがタブに並び、絞り込み・並べ替え・まとまり・集計の行(`合計`・`平均`・`最早` など)と式の一部が使えます。Obsidian を入れていなくても動き、`.base` を書き換えることはありません。
 
 ```sh
-mdgrid /tmp/mdgrid-sample/タスク.base                # ビュー: 進行中・状態ごと・期限・未対応の式・カード
-alias standup='mdgrid ~/notes/タスク.base --view 状態ごと'
+mdgrid /tmp/studio/Tasks.base     # ビュー: Open・This week・By status・By project など7つ
+alias standup='mdgrid ~/notes/タスク.base --view 担当ごと'
 ```
 
 まとめたビューは見出しが付き、`Enter` で畳めます:
@@ -222,7 +222,7 @@ alias standup='mdgrid ~/notes/タスク.base --view 状態ごと'
 - [キー](docs/keys.ja.md) — モードごとの既定のキーと、変え方。
 - [書き戻しの安全](docs/safety.ja.md) — 何を書き、何に触らないか。読むだけになるノートとその理由。
 - [Obsidian Bases への対応](docs/obsidian-bases.ja.md) — `.base` のどこを読み、評価し、無視するか。
-- [見本の設定とルートフォルダ](examples/showcase/README.md) — ほとんどの機能を有効にした見本。`examples/vault` は、null・空・型の合わない値、読むだけのノート、同期の競合ファイルなどの端の形をそろえています。
+- [見本](examples/README.md) — どれも同じ架空の制作会社のもの。リンクでつないだ5つの表と `.base` のビュー(`studio`)、null・空・型の合わない値、読むだけのノート、同期の競合ファイルなどの端の形(`quirks`)、ほとんどの機能を有効にした設定(`configs`)、登録した表(`places`)。
 - [人と AI のタスクを分ける見本](examples/ai-human/README.md) — AI エージェントに任せきれるタスクと、人の手が要るタスク(払う・署名する・提出する・送る)をまとまりに分け、人のまとまりを上に並べる `.base` と設定。
 - シェルの補完は `mdgrid --completions <bash|zsh|fish|elvish|powershell>`、man ページは `mdgrid --man`。
 

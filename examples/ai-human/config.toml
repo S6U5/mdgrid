@@ -1,8 +1,8 @@
-# 人と AI のタスクの見本(examples/ai-human)の設定。
-# mdgrid --config examples/ai-human/config.toml examples/ai-human/vault/タスク.base
+# The config for the human and AI tasks sample (examples/ai-human).
+# mdgrid --config examples/ai-human/config.toml examples/ai-human/Tasks.base
 
-# 新しいタスク(a か「+ 新規」)は、担当を決める2つの列を聞いてから作る。
-# actor を空のまま進めると書かれず、AI のタスクとして数える(cellops と同じ)。
+# A new task (a, or "+ New") asks the two columns that decide who does it.
+# Leave actor empty and it is not written: the task counts as an agent task.
 [new_note]
 ask = ["actor", "human_gate", "due"]
 
@@ -10,7 +10,7 @@ ask = ["actor", "human_gate", "due"]
 status = "todo"
 priority = "p3"
 
-# 列の区切り線と一行おきの色で表らしく見せ、まとまりの見出しの上を1行空ける。
+# Lines between columns and zebra rows, and one empty line above each group heading.
 [display]
 column_lines = true
 zebra = true

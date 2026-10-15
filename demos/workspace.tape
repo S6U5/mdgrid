@@ -15,13 +15,13 @@ Env COLORTERM "truecolor"
 Source demos/setup.tape
 
 Hide
-Type "cd ../relations && clear"
+Type "clear"
 Enter
 Sleep 300ms
 Show
 
-# tasks・projects・members を Work にまとめる
-Type "mdgrid tasks projects members --add-to Work" Sleep 400ms Enter
+# Tasks・Projects・People を Work にまとめる
+Type "mdgrid Tasks Projects People --add-to Work" Sleep 400ms Enter
 Sleep 1.2s
 Type "mdgrid --workspaces" Sleep 400ms Enter
 Sleep 2s

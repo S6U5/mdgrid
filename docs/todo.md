@@ -90,7 +90,13 @@ Issue(テンプレ) → triage(AI・読むだけ) → decidespec の提案を起
 - [x] **O-8 CONTRIBUTING・CODE_OF_CONDUCT・SECURITY** — specs/_changes/2026-10-06-oss-community.md(報告先は Private vulnerability reporting、と AI が決めた)。元の項目: 仕様駆動の説明(specs/ が正本・提案から・`[XX-n]`)、ci.sh と check.py、Issue の流れ、Contributor Covenant 2.1、Private vulnerability reporting。
 - [x] **O-9 スクリーンショットと GIF** — specs/_changes/2026-10-06-demo-gif.md(vhs を使わず、説明書の場面と ffmpeg で scripts/demo-gif.sh)。元の項目: vhs の `.tape` で showcase を操作。CI で作り直すか `docs/assets/` に置く。
 - [ ] **O-10 公開の書き出し(門0)** [P0/M] 依存 ほぼ全 P0・O-1 **人** — 手元で check.py(E27・E28)、ラボのパスと会話の ID の扱い、`git archive` → `git init`、gitleaks、人の指示で `gh repo create` とルールセット。
-- [ ] **O-11 Windows の確かめ** [P1/M] 依存 Q-1 **人**(対象に入れるか)— 名前の変更での置き換え・ハードリンク・fsync・`$EDITOR`・日本語のファイル名。直すか未対応と書く。
+- [ ] **O-11 Windows の確かめ** [P1/M] 依存 Q-1 — 人の判断(会話 2026-10-14): Windows を対象に入れる。一部済(specs/_changes/2026-10-15-windows-target.md: 設定の置き場は `%APPDATA%\mdgrid\`、状態は `%LOCALAPPDATA%\mdgrid\`、`~` は `USERPROFILE`、既定のエディタは notepad、OS のクリップボードは `clip`、CI の windows の試験を止める側にした、ほかのアプリが開いているノート・読み取り専用の属性・日本語の名前の保存の試験 tests/test_windows_writeback.rs)。元の項目: 名前の変更での置き換え・ハードリンク・fsync・`$EDITOR`・日本語のファイル名。残り:
+  - [ ] ハードリンクの見分け(WB-5): Windows では数を取らず(`vault.rs` の `links_of` と `writeback.rs` の `refuse_hard_link` が常に1とみなす)、ハードリンクのあるノートを書いてしまう。std の `number_of_links` は不安定なので、`GetFileInformationByHandle` を直接呼ぶ(`ui/external.rs` の `signal` と同じ形)か、依存を足すかを決める。
+  - [ ] 疑似端末の e2e(Q-10。`tests/test_e2e.rs` など `#[cfg(unix)]`): portable-pty の ConPTY で回すか。
+  - [ ] notepad を既定にしたときの待ち(SR-8): Windows 11 のタブのメモ帳がすでに開いているとき、起動したプロセスがすぐ終わって読み直しが早すぎないかを実機で確かめる(待たないなら docs/config.md の案内のとおり `editor` を置く)。
+  - [ ] エディタの値の `\`(SR-8): `split_words` は引用符の外の `\` を打ち消しとして解くので、Windows の `C:\tools\nvim.exe` がそのままでは起動しない(docs/config.md に `/` か引用符で書くと案内した)。Windows では引用符の外の `\` を文字にするか。錠のある test_sr_8_editor_quotes_and_escapes に触る。
+  - [ ] Windows の書き戻しの試験(tests/test_windows_writeback.rs)が公開リポの CI で通るかを、書き出しのあとに見る(照合の WB-8・WB-14 はそれまで unassessed)。
+  - [ ] 実機での手の確かめ: Windows Terminal で `y` のコピー(clip と OSC 52)、`e` のエディタ、日本語のパスの表。
 
 ### D. 設定と文書
 

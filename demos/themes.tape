@@ -17,22 +17,22 @@ Source demos/setup.tape
 Type "cat ../themes/nord.toml" Sleep 500ms Enter
 Sleep 2.5s
 
-Type "clear && mdgrid --config ../themes/nord.toml ." Sleep 300ms Enter
+Type "clear && mdgrid --config ../themes/nord.toml Tasks.base" Sleep 300ms Enter
 Sleep 2.5s
 Type "q"
-Type "clear && mdgrid --config ../themes/solarized-light.toml ." Sleep 300ms Enter
+Type "clear && mdgrid --config ../themes/solarized-light.toml Tasks.base" Sleep 300ms Enter
 Sleep 2.5s
 Type "q"
-Type "clear && mdgrid --config ../themes/dracula.toml ." Sleep 300ms Enter
+Type "clear && mdgrid --config ../themes/dracula.toml Tasks.base" Sleep 300ms Enter
 Sleep 2.5s
 Type "q"
-Type "clear && mdgrid --config ../themes/gruvbox.toml ." Sleep 300ms Enter
+Type "clear && mdgrid --config ../themes/gruvbox.toml Tasks.base" Sleep 300ms Enter
 Sleep 2.5s
 Type "q"
-Type "clear && mdgrid --config ../themes/pink-monster.toml ." Sleep 300ms Enter
+Type "clear && mdgrid --config ../themes/pink-monster.toml Tasks.base" Sleep 300ms Enter
 Sleep 2.5s
 Type "q"
-Type "clear && mdgrid --config ../themes/dozy-pink.toml ." Sleep 300ms Enter
+Type "clear && mdgrid --config ../themes/dozy-pink.toml Tasks.base" Sleep 300ms Enter
 Sleep 2.5s
 Type "q"
 Sleep 500ms

@@ -23,7 +23,7 @@ pub struct Place {
 
 /// 先頭の `~` をホームのフォルダにする(places.toml と、書き出しで打った名前)。
 pub fn expand_home(s: &str) -> PathBuf {
-    let home = || std::env::var_os("HOME").map(PathBuf::from);
+    let home = config::home_dir;
     if s == "~" {
         if let Some(h) = home() {
             return h;

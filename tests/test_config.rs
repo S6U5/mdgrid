@@ -236,14 +236,17 @@ fn test_cli_3_config_path_follows_xdg_config_home() {
         std::env::set_var("XDG_CONFIG_HOME", &xdg);
         assert_eq!(config_path(), Some(xdg.join("mdgrid").join("config.toml")));
 
-        std::env::remove_var("XDG_CONFIG_HOME");
-        std::env::set_var("HOME", "/tmp/mdgrid-home-test");
-        assert_eq!(
-            config_path(),
-            Some(PathBuf::from(
-                "/tmp/mdgrid-home-test/.config/mdgrid/config.toml"
-            ))
-        );
+        // XDG_CONFIG_HOME が無いとき HOME を見るのは Windows 以外(Windows は %APPDATA%。src/test_windows_unit.rs)。
+        if !cfg!(windows) {
+            std::env::remove_var("XDG_CONFIG_HOME");
+            std::env::set_var("HOME", "/tmp/mdgrid-home-test");
+            assert_eq!(
+                config_path(),
+                Some(PathBuf::from(
+                    "/tmp/mdgrid-home-test/.config/mdgrid/config.toml"
+                ))
+            );
+        }
     });
 
     match saved_xdg {

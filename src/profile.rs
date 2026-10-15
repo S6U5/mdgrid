@@ -801,6 +801,23 @@ fn read_display(
             }
             continue;
         }
+        // SR-47: ノートの欄の名前の正規表現。空の文字列は書かないのと同じ。読めなければ警告して使わない。
+        if k == "note_name" {
+            match v.as_str().map(crate::display::NoteName::new) {
+                Some(Ok(n)) => d.note_name = n,
+                Some(Err(e)) => warn(w, file, &p, Msg::RsnBadRegex.fill(&[&e.replace('\n', " ")])),
+                None => warn(w, file, &p, not(Msg::WantString)),
+            }
+            continue;
+        }
+        // SR-46: ノートの欄のフォルダの出し方("common"・"name"・"full"・"off")。
+        if k == "note_path" {
+            match v.as_str().and_then(crate::display::NotePath::parse) {
+                Some(m) => d.note_path = Some(m),
+                None => warn(w, file, &p, not(Msg::WantNotePath)),
+            }
+            continue;
+        }
         // NV-23: ボタンの描き方("plain"・"box")。
         if k == "buttons" {
             match v.as_str().and_then(ButtonsMode::parse) {

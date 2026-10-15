@@ -35,7 +35,7 @@
 
 ![Enter a date with the calendar](images/edit-date.svg)
 
-Date and time columns add a time field under the calendar (here on the sample `examples/schedule`). `Ctrl+O` switches to it; `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour.
+Date and time columns add a time field under the calendar (here on the meetings of the sample, `examples/studio/Meetings`). `Ctrl+O` switches to it; `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour.
 
 ![Set the time of a date and time](images/edit-datetime-time.svg)
 
@@ -100,8 +100,8 @@ Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it
 ## Open a .base file
 
 ```sh
-mdgrid /tmp/mdgrid-sample/タスク.base
-mdgrid /tmp/mdgrid-sample/タスク.base --view 期限
+mdgrid /tmp/mdgrid-sample/Tasks.base
+mdgrid /tmp/mdgrid-sample/Tasks.base --view "This week"
 ```
 
 The table views of the `.base` appear as tabs, and the first one (or the one named by `--view`) opens. Switch with `[` and `]`. mdgrid reads filters, order, sort, groupBy, limit, displayName and formulas; `Enter` on a group heading folds the group.
@@ -117,7 +117,7 @@ What mdgrid reads — keys, operators, functions — is listed in [Obsidian Base
 ## Open a CSV or TSV as a ledger
 
 ```sh
-mdgrid /tmp/mdgrid-sample/備品.csv
+mdgrid /tmp/mdgrid-sample/equipment.csv
 ```
 
 Pass one `.csv` or `.tsv` file and mdgrid opens it as a table: the first line names the columns, each following line is a row. Editing values, undo, the diff before saving, filters, sorting, grouping, saved views and `--print` work as they do for a folder of notes.
@@ -209,14 +209,14 @@ A leading `~` in `path` means your home folder. Rows that cannot be read (no `na
 
 ## Link tables with relations
 
-A note can point at another note with a link in its frontmatter, so folders of notes work like linked tables (tasks → projects → members). The note's file name is the key: there is no id column, and a list of links stands in for a many-to-many join table.
+A note can point at another note with a link in its frontmatter, so folders of notes work like linked tables (tasks → projects → clients). The note's file name is the key: there is no id column, and a list of links stands in for a many-to-many join table.
 
 ```yaml
-project: "[[mdgrid]]"            # one project
-assignee: "[[Alice]]"
-related:                         # many
-  - "[[Website]]"
-  - "[mdgrid](../projects/mdgrid.md)"   # a Markdown link works too, and so does a plain path: ../projects/mdgrid
+project: "[[Clinic Booking App]]"     # one project
+owner: "[[Leo Park]]"
+depends_on:                           # many
+  - "[[Design the booking screens]]"
+  - "[Build the appointment API](Build%20the%20appointment%20API.md)"   # a Markdown link works too, and so does a plain path
 ```
 
 - Link cells show the target note's name. A `[[…]]` whose note does not exist is shown with `?` in front.
@@ -225,7 +225,7 @@ related:                         # many
 - `:linked_rows` lists the notes that link to the current one, with the table and column they link from. Pick one to open it.
 - Links work whether you open a folder or a `.base`, and may point outside the opened folder. Register the folders you link between (see above) so names resolve across them. A value counts as a plain-path link only if it contains `/` or ends in `.md` and the note exists, so ordinary words stay text.
 
-The sample `examples/relations` has tasks, projects and members linked this way: `mdgrid examples/relations/tasks`.
+The sample `examples/studio` links tasks, projects, clients, people and meetings this way: `mdgrid examples/studio/Tasks`.
 
 **The relation map.** Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the tables as boxes with their row counts and columns, and an arrow from each link column to the table it points at (`N` → `1`, or `N` → `N` for a list of links). `↑` `↓` pick a table, `←` `→` pick a link; the details and, on a tall terminal, the linked records follow the selection. The layout adapts to the terminal width. You can also click: a table selects it and a second click opens it, a line or an arrow selects that link, and a linked record opens its note. Press `R` again to go back to the table. The map covers the current workspace (see below), or the registered tables if there is none.
 
@@ -263,6 +263,8 @@ view = "Open"
 
 To keep the workspace with the notes instead (for example in a repository you share), run `mdgrid --init-workspace` in its root (or `mdgrid <folder> --init-workspace`). It writes `.mdgrid/workspace.toml`; with no `[[table]]` in it, every folder of notes directly under the root is a table (a `.base` is not added automatically, because it covers the whole root folder; list it with `[[table]]` to include it).
 
+To open a chosen table whenever the root folder is opened, write `open = "<table name>"` at the top level of the marker (the `name` of a `[[table]]`, or the folder name of an automatic table). For example, a ledger folder with a README or AGENTS.md next to its notes can open only its `.base`. Add `--raw` to see every note in the folder.
+
 Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/workspace.toml` above the opened folder → the first workspace in `workspaces.toml` that holds the table → detection → the registered tables. Detection is set by `[workspace] detect` in the config (default `[".obsidian"]`; the old values `"vault"` and `"git"` are still read): the nearest root folder (a folder with `.obsidian/`), and with `".git"` also the repository root, counts as an unnamed workspace of the folders right under it. `detect = []` turns it off.
 
 ## Use with other commands
@@ -274,10 +276,10 @@ To save the table exactly as shown — with your filters, sorting and hidden col
 Print the table of a view to standard output without opening the screen (csv by default; notes are not written):
 
 ```sh
-mdgrid /tmp/mdgrid-sample/タスク.base --print
-mdgrid /tmp/mdgrid-sample/タスク.base --print --format json | jq .
-mdgrid /tmp/mdgrid-sample --print --format md > table.md
-mdgrid /tmp/mdgrid-sample --print --format tsv > table.tsv
+mdgrid /tmp/mdgrid-sample/Tasks.base --print
+mdgrid /tmp/mdgrid-sample/Tasks.base --print --format json | jq .
+mdgrid /tmp/mdgrid-sample/Tasks --print --format md > table.md
+mdgrid /tmp/mdgrid-sample/Tasks --print --format tsv > table.tsv
 ```
 
 When you `--print` a folder, there is no note-name column (the columns are the frontmatter keys only).
@@ -285,8 +287,8 @@ When you `--print` a folder, there is no note-name column (the columns are the f
 Pick rows on screen and print their paths or a column's values. The screen is read-only; `Enter` prints the marked rows (or the selected row) one per line and exits. `q` cancels, prints nothing and exits with status 1.
 
 ```sh
-mdgrid /tmp/mdgrid-sample --pick path | xargs -o vi    # open the picked notes
-mdgrid /tmp/mdgrid-sample --pick status
+mdgrid /tmp/mdgrid-sample/Tasks --pick path | xargs -o vi    # open the picked notes
+mdgrid /tmp/mdgrid-sample/Tasks --pick status
 ```
 
 ![Pick rows for another command](images/pick.svg)

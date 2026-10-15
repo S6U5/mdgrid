@@ -137,9 +137,8 @@
     "ids": [
       "SR-8"
     ],
-    "sha": "5611dea689fa9744",
-    "by": "specs/_decisions/2026-10-10-config-v2-relock.md",
-    "legacy": "8cf5c45903845424"
+    "sha": "273612c5bc47d4a8",
+    "by": "specs/_decisions/2026-10-15-windows-target.md"
   },
   "src/test_config_unit.rs::test_cli_12_every_item_is_read": {
     "ids": [
@@ -701,9 +700,8 @@
       "SR-19",
       "SR-8"
     ],
-    "sha": "223a9494a97b2377",
-    "from": "7152558f2e621bf0",
-    "legacy": "68c4bcd94894b721"
+    "sha": "49678e0f1db98ced",
+    "by": "specs/_decisions/2026-10-15-windows-target.md"
   },
   "src/ui/test_click_name.rs::test_sr_19_readonly_click_same_as_e": {
     "ids": [
@@ -882,9 +880,8 @@
     "ids": [
       "SR-8"
     ],
-    "sha": "09b19a8172c58682",
-    "from": "41851fe9b63811e3",
-    "legacy": "5cb4a0d594d6e9cf"
+    "sha": "01a3343f23cb98a1",
+    "by": "specs/_decisions/2026-10-15-windows-target.md"
   },
   "src/ui/test_external.rs::test_sr_8_editor_quotes_and_escapes": {
     "ids": [
@@ -2259,97 +2256,89 @@
       "CLI-11",
       "SR-21"
     ],
-    "sha": "ac228e9bc7d1114e",
-    "by": "specs/_decisions/2026-10-13-row-lines-locks.md"
+    "sha": "8a02b6ed2d39f096",
+    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_wins_over_env": {
     "ids": [
       "SR-8"
     ],
-    "sha": "5117aad82b26c165",
-    "from": "65befc37f7062330",
-    "legacy": "2114c6e8b5ca3c8e"
+    "sha": "01c2f6ccc4d988b9",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_visual_before_editor": {
     "ids": [
       "SR-8"
     ],
-    "sha": "1d4835933133d2d5",
-    "from": "65befc37f7062330",
-    "legacy": "8e16e32c870fadf3"
+    "sha": "a91148853e99413a",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_editor_env_when_no_config_or_visual": {
     "ids": [
       "SR-8"
     ],
-    "sha": "8efe47fc7b55ebfa",
-    "from": "65befc37f7062330",
-    "legacy": "0e8c70d77ba8968f"
+    "sha": "27edb14a392e5d5f",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_none_falls_back_to_vi": {
     "ids": [
       "SR-8"
     ],
-    "sha": "f77be29cdbcff566",
-    "from": "65befc37f7062330",
-    "legacy": "f95d54d31f69ee6a"
+    "sha": "7094c4e185b16058",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_empty_is_same_as_absent": {
     "ids": [
       "SR-8"
     ],
-    "sha": "af34f658f96f928b",
-    "from": "65befc37f7062330",
-    "legacy": "dab906576e89a6ac"
+    "sha": "8edf0b1783249ae0",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_value_with_args_kept_whole": {
     "ids": [
       "SR-8"
     ],
-    "sha": "b6b6b98111c70b50",
-    "from": "65befc37f7062330",
-    "legacy": "8a14c7ec0208ddcf"
+    "sha": "eb9126ffece8596d",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_reads_editor_string": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "6ed0b9d849c7ab79",
-    "from": "65befc37f7062330",
-    "legacy": "ee808f8628b852da"
+    "sha": "44fb2292326f948e",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_default_is_absent": {
     "ids": [
       "SR-8"
     ],
-    "sha": "fee0bf51cbe9053f",
-    "from": "65befc37f7062330",
-    "legacy": "d27e7f2ebbddf210"
+    "sha": "0d69f2ca7b30fa96",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_empty_editor_no_warning_and_absent": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "92eb640e9a4d6795",
-    "from": "65befc37f7062330",
-    "legacy": "1317ddf3f202e81f"
+    "sha": "14c3f6158436ba2c",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_not_string_warns": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "e8443394dd5607b5",
-    "from": "65befc37f7062330",
-    "legacy": "fd8e8a59e7c204da"
+    "sha": "b7972def4a632879",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_keeps_other_items": {
     "ids": [
       "CLI-3",
       "SR-8"
     ],
-    "sha": "7e9de4227863467a",
-    "by": "specs/_decisions/2026-10-10-config-v2-relock.md",
-    "legacy": "7eb078f735aae744"
+    "sha": "b188464db290549e",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_gets_key_between_delimiters": {
     "ids": [
@@ -2476,21 +2465,20 @@
   "tests/test_examples.rs::test_examples_open_folder": {
     "ids": [
       "CE-16",
+      "CE-19",
       "WB-3",
       "WB-5"
     ],
-    "sha": "19d8d89cd646800b",
-    "from": "3783a294b823f307",
-    "legacy": "b1639951e2809585"
+    "sha": "5372ac9cd3493fbe",
+    "by": "specs/_decisions/2026-10-15-examples-studio-locks.md"
   },
   "tests/test_examples.rs::test_examples_base_views": {
     "ids": [
       "BV-3",
       "BV-7"
     ],
-    "sha": "5af2dce7f8eb032c",
-    "by": "specs/_decisions/2026-10-07-links-backlinks-sample.md",
-    "legacy": "07f7c7292c61e76d"
+    "sha": "32227d12dce112fa",
+    "by": "specs/_decisions/2026-10-15-examples-studio-locks.md"
   },
   "tests/test_examples.rs::test_examples_showcase": {
     "ids": [
@@ -2498,9 +2486,8 @@
       "CE-22",
       "CLI-3"
     ],
-    "sha": "afc8d4d77d606d73",
-    "by": "specs/_decisions/2026-10-10-config-v2-relock.md",
-    "legacy": "0244199545319e2e"
+    "sha": "f0ef57562371412c",
+    "by": "specs/_decisions/2026-10-15-examples-fmt-locks.md"
   },
   "tests/test_frontmatter.rs::ce_18_block_list_span_only_when_writable": {
     "ids": [
@@ -8791,8 +8778,8 @@
     "ids": [
       "CLI-3"
     ],
-    "sha": "34155204df26298a",
-    "legacy": "477e84f4e8efc93c"
+    "sha": "717777af08b9f5ad",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_config.rs::test_cli_3_empty_config_gives_defaults": {
     "ids": [
@@ -9904,7 +9891,8 @@
       "CV-8",
       "SR-21"
     ],
-    "sha": "955cf5a68e73c69f"
+    "sha": "88c3a9192a30131b",
+    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
   },
   "src/ui/test_row_lines_more.rs::test_cv_8_chips_stay_one_line": {
     "ids": [
@@ -10678,5 +10666,382 @@
       "CLI-22"
     ],
     "sha": "f36a71418225f67a"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_dot": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "ea7fa07c0af31bcb",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_no_args_in_root": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "e067590f896cd1a2"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_print_first_view_rows": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "9b354d85fab0a90a"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_raw_gives_default_table": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "ef540f2678d9d5b3",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_raw_without_marker_changes_nothing": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "15288a33a853f92e"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_root_path_from_elsewhere": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "eb02f935d7670697",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_screen_raw_shows_default_table": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "f0ebc604d4250f29"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_screen_skips_places_list": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "516d29b55269fbf5"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_subfolder_does_not_search_up": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "54f0d326a8bdf06f",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_marker_open.rs::test_cli_1_marker_open_two_folders_ignore_marker": {
+    "ids": [
+      "CLI-1"
+    ],
+    "sha": "124bbec81667e2ba",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_marker_open.rs::test_ws_7_marker_open_auto_table_by_folder_name": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "4c4c6a700c7a3916",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_marker_open.rs::test_ws_7_marker_open_unknown_name_warns_and_opens_default": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "d0a01884808095ee"
+  },
+  "tests/test_marker_open.rs::test_ws_7_marker_open_written_table_view": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "799128c29d59ec08",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "tests/test_example_studio.rs::test_example_studio_edges": {
+    "ids": [
+      "REL-6"
+    ],
+    "sha": "7823a3665e7a9efb"
+  },
+  "tests/test_example_studio.rs::test_example_studio_every_link_resolves": {
+    "ids": [
+      "REL-1"
+    ],
+    "sha": "e51a7a5c77d9ea19"
+  },
+  "tests/test_example_studio.rs::test_example_studio_linked_rows_of_a_project": {
+    "ids": [
+      "REL-5"
+    ],
+    "sha": "d5da3f0e9ddb075e",
+    "by": "specs/_decisions/2026-10-15-examples-fmt-locks.md"
+  },
+  "tests/test_example_studio.rs::test_example_studio_marker_tables": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "a050b2d4473c8ecf"
+  },
+  "tests/test_marker_open.rs::test_ws_7_marker_open_screen_uses_view": {
+    "ids": [
+      "WS-7"
+    ],
+    "sha": "a8bf920031c38294",
+    "by": "specs/_decisions/2026-10-15-marker-open.md"
+  },
+  "src/ui/test_note_path.rs::test_sr_29_note_path_full_keeps_common_folder": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "ffdd88de919e9200"
+  },
+  "src/ui/test_note_path.rs::test_sr_29_note_path_name_search_matches_folder": {
+    "ids": [
+      "NV-2",
+      "SR-29"
+    ],
+    "sha": "045feca23eaea1b4"
+  },
+  "src/ui/test_note_path.rs::test_sr_29_note_path_name_shows_only_names": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "bb0e85bfa97f34a8"
+  },
+  "src/ui/test_note_path.rs::test_sr_29_note_path_off_hides_names_and_heading": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "c98941f628aba0ae"
+  },
+  "src/ui/test_note_path.rs::test_sr_29_note_path_off_keeps_marks": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "3696bf8abb90fad4"
+  },
+  "src/ui/test_note_path.rs::test_sr_46_saved_native_view_keeps_note_path": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "9c430fd5618a7e81"
+  },
+  "src/ui/test_note_path.rs::test_sr_46_settings_cycles_four_values": {
+    "ids": [
+      "NV-18"
+    ],
+    "sha": "ae9f372d5401b9c7"
+  },
+  "src/ui/test_note_path.rs::test_sr_46_settings_full_applies_to_that_view_only": {
+    "ids": [
+      "NV-13"
+    ],
+    "sha": "8a16685ae24534bc"
+  },
+  "src/ui/test_note_path.rs::test_sr_46_unknown_value_keeps_default_look": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "8a0001cbc3e4dfc7"
+  },
+  "tests/test_note_path.rs::test_sr_21_note_path_in_config_docs": {
+    "ids": [
+      "CLI-12",
+      "SR-21"
+    ],
+    "sha": "1d92b4e9f0c5cf9d"
+  },
+  "tests/test_note_path.rs::test_sr_21_note_path_in_print_config": {
+    "ids": [
+      "CLI-11",
+      "SR-21"
+    ],
+    "sha": "866b273b80a254a5",
+    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
+  },
+  "tests/test_note_path.rs::test_sr_46_config_default_is_common": {
+    "ids": [
+      "SR-21"
+    ],
+    "sha": "b32277e7aaea4244"
+  },
+  "tests/test_note_path.rs::test_sr_46_known_item_and_view_override_key": {
+    "ids": [
+      "CLI-12",
+      "SR-21"
+    ],
+    "sha": "80fac4042ea1ce58"
+  },
+  "tests/test_note_path.rs::test_sr_46_scopes_narrow_wins": {
+    "ids": [
+      "SR-44"
+    ],
+    "sha": "120e8e0ae530c905"
+  },
+  "tests/test_note_path.rs::test_sr_46_unknown_value_warns_and_keeps_default": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "53ca0376ebe3ed26"
+  },
+  "tests/test_note_path.rs::test_sr_46_views_override_reads_value": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "dbd4fe9f50d663e6"
+  },
+  "tests/test_note_path.rs::test_sr_46_views_override_unknown_value_warns": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "0c8e07349ab75a6a"
+  },
+  "src/ui/test_link_labels.rs::test_rel_2_frequency_shows_link_names": {
+    "ids": [
+      "REL-2"
+    ],
+    "sha": "00cbba2df9c8f6e4"
+  },
+  "src/ui/test_link_labels.rs::test_rel_2_group_heading_shows_link_names": {
+    "ids": [
+      "REL-2"
+    ],
+    "sha": "eeba12d8ebb730dc"
+  },
+  "src/ui/test_link_labels.rs::test_rel_2_list_group_heading_shows_link_names": {
+    "ids": [
+      "REL-2"
+    ],
+    "sha": "3cdd899861c3be54"
+  },
+  "src/ui/test_link_labels.rs::test_rel_4_base_row_hidden_by_view_filter_gives_reason": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "6219873d29e4b1f7"
+  },
+  "src/ui/test_link_labels.rs::test_rel_4_open_link_from_base_to_registered_table": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "74f8fbbec220db41"
+  },
+  "src/ui/test_link_labels.rs::test_rel_4_open_link_from_base_without_registered_tables": {
+    "ids": [
+      "REL-4"
+    ],
+    "sha": "523721df7f50c311"
+  },
+  "src/ui/test_link_labels.rs::test_rel_7_folder_inside_base_table_has_no_extra_table": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "bd557f2e875e4c7c"
+  },
+  "src/ui/test_link_labels.rs::test_rel_7_partial_workspace_has_no_extra_table": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "6c58efef1fb99388"
+  },
+  "src/test_windows_unit.rs::test_cli_3_windows_config_in_appdata": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "54a6106873fa50e4"
+  },
+  "src/test_windows_unit.rs::test_cli_3_windows_home_falls_back_to_userprofile": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "4208d0730442903b"
+  },
+  "src/test_windows_unit.rs::test_cli_3_windows_state_in_localappdata": {
+    "ids": [
+      "CLI-3",
+      "SR-12"
+    ],
+    "sha": "517de816a6c3f15a"
+  },
+  "src/test_windows_unit.rs::test_cli_3_windows_xdg_first_and_none": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "46d5cf0a0a61dc76"
+  },
+  "src/test_windows_unit.rs::test_sr_8_default_editor_per_os": {
+    "ids": [
+      "SR-8"
+    ],
+    "sha": "7ab1d21c9835abbe"
+  },
+  "tests/test_windows_writeback.rs::test_wb_5_windows_read_only_attribute_is_not_written": {
+    "ids": [
+      "WB-5"
+    ],
+    "sha": "f4c4b71a340f266b"
+  },
+  "tests/test_windows_writeback.rs::test_wb_8_windows_japanese_name": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "4f706fce60a632b9"
+  },
+  "tests/test_windows_writeback.rs::test_wb_8_windows_note_held_open_by_another_app": {
+    "ids": [
+      "WB-8"
+    ],
+    "sha": "e4fb7c915e3cf440"
+  },
+  "src/ui/test_note_name.rs::test_sr_47_common_keeps_folders": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "8b3feb92b42690c9"
+  },
+  "src/ui/test_note_name.rs::test_sr_47_ledger_look": {
+    "ids": [
+      "SR-29"
+    ],
+    "sha": "d56aa8e51948917a"
+  },
+  "src/ui/test_note_name.rs::test_sr_47_search_still_matches_date": {
+    "ids": [
+      "NV-1"
+    ],
+    "sha": "e270cf371421cd53"
+  },
+  "tests/test_note_name.rs::test_sr_47_config_bad_regex_warns_and_unused": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "00b2bdebce028132"
+  },
+  "tests/test_note_name.rs::test_sr_47_note_name_in_config_docs": {
+    "ids": [
+      "CLI-12"
+    ],
+    "sha": "dcaf5f11b156786d"
+  },
+  "tests/test_note_name.rs::test_sr_47_note_name_in_print_config": {
+    "ids": [
+      "CLI-11",
+      "SR-21"
+    ],
+    "sha": "1a4b83a04c76ea65"
+  },
+  "tests/test_note_name.rs::test_sr_47_views_override_bad_regex_warns_view_kept": {
+    "ids": [
+      "CLI-3"
+    ],
+    "sha": "a6222fd40fa769a6"
+  },
+  "tests/test_note_name.rs::test_sr_47_views_override_reads_regex": {
+    "ids": [
+      "BV-17"
+    ],
+    "sha": "849bdc0d3dee2fe0"
+  },
+  "tests/test_marker_base_switch.rs::test_ws_9_switch_back_to_marker_base_table": {
+    "ids": [
+      "WS-8"
+    ],
+    "sha": "50d64ec688d62756",
+    "by": "specs/_decisions/2026-10-15-pty-tests-unix-locks.md"
   }
 }

@@ -330,10 +330,12 @@ pub const ITEMS: &[Item];
 pub const KEYS: &[&str];                            // ITEMS の名前(const の中で写す)
 /// `--print-config` の出力: 英語の説明のコメント付きの TOML。既定の無い項目は例をコメントで出す(読み直すと警告なしで既定と同じ)。
 pub fn default_toml() -> String;
-pub fn config_path() -> Option<PathBuf>;            // $XDG_CONFIG_HOME/mdgrid/config.toml、無ければ ~/.config/mdgrid/config.toml
+pub fn config_path() -> Option<PathBuf>;            // $XDG_CONFIG_HOME/mdgrid/config.toml、無ければ ~/.config/mdgrid/config.toml(Windows は %APPDATA%\mdgrid\config.toml)
 /// 見た目の状態(SR-11・SR-12): $XDG_STATE_HOME/mdgrid/(無ければ ~/.local/state/mdgrid/)に、開いた対象のパスとビューの名前ごとの TOML。
 pub struct ViewState { pub order: Vec<String>, pub hidden: Vec<String>, pub widths: Vec<(String, u16)>, pub folded: Vec<String>, pub view: Option<String> }
-pub fn state_dir() -> Option<PathBuf>;              // $XDG_STATE_HOME/mdgrid、無ければ ~/.local/state/mdgrid
+pub fn state_dir() -> Option<PathBuf>;              // $XDG_STATE_HOME/mdgrid、無ければ ~/.local/state/mdgrid(Windows は %LOCALAPPDATA%\mdgrid。端末ごとでローミングしない)
+pub fn home_dir() -> Option<PathBuf>;               // $HOME、無ければ Windows は %USERPROFILE%(先頭の `~`)。置き場の3つは環境変数と Windows かを引数に取る *_in で、どの OS の試験でも Windows の分岐を確かめる
+pub const DEFAULT_EDITOR: &str;                     // SR-8 の既定: vi、Windows は notepad(vi がふつう無い)
 pub fn load_state(dir: &Path, target: &Path, view: &str) -> ViewState;   // 無い・壊れている → 既定(空)
 pub fn save_state(dir: &Path, target: &Path, view: &str, s: &ViewState) -> io::Result<()>;  // 一時ファイル → 名前の変更
 /// SR-12: 状態の並びと隠す列は今ある列にだけ当て、状態に無い列は右に足す。(並び, 隠す列)を返す。
@@ -378,7 +380,7 @@ pub fn save_with(path: &Path, base: &Baseline, edits: &[Edit], faults: &Faults) 
 | `src/ui/detail.rs` | 詳細の表示(NV-6: `K`。全プロパティを縦に、長い値は折り返す。Enter で選んだプロパティの編集、Esc と `K` で閉じる) | NV-6・SR-16 |
 | `src/ui/input.rs` | 型ごとの入り方(CE-2〜CE-7): テキストは候補のリスト(CE-3。`Source::candidates`、今の値に印、「なし」、自由入力に切り替え。開いた直後(↑↓ のあとも)に打つと今の値を置き換える: Input の `fresh`)、チェックは切り替え(CE-4)、日付は `YYYY-MM-DD`・`+3`・空(CE-5)、数は数だけ(CE-7)。不正なら閉じずに理由。一括の設定(CE-10: 選んだ行に `Changes::set_many`、飛ばした数と理由) | CE-2〜CE-7・CE-10 |
 | `src/ui/help.rs` | ヘルプ(SR-5: `?`。先頭に今のモードで押せるキー、その下に全部)とパレット(SR-14: `:` と Ctrl+P。動作の名前のあいまい検索、割り当てキーを横に、`:120`・`w`・`q`)。どちらもキーの表から作る | SR-4・SR-5・SR-14・SR-16 |
-| `src/ui/external.rs` | `$EDITOR`(SR-8: 引数つきを空白で分け、シェルを通さず、パスは1つの引数。端末を戻してから起動し、戻ったら読み直す)、コピー(OUT-1: `y` と Ctrl+C。セル・行・選んだ行を見出しつきのタブ区切りで、OSC 52 と OS のクリップボード(macOS は `pbcopy`、Linux は `wl-copy` か `xclip`。依存の crate は足さない)。片方が失敗しても止めずに知らせる) | SR-8・OUT-1 |
+| `src/ui/external.rs` | `$EDITOR`(SR-8: 引数つきを空白で分け、シェルを通さず、パスは1つの引数。端末を戻してから起動し、戻ったら読み直す)、コピー(OUT-1: `y` と Ctrl+C。セル・行・選んだ行を見出しつきのタブ区切りで、OSC 52 と OS のクリップボード(macOS は `pbcopy`、Linux は `wl-copy` か `xclip`、Windows は `clip` に BOM つきの UTF-16LE と CRLF で渡す(UTF-8 のままだと日本語が化ける)。表は `clip_commands`。依存の crate は足さない)。片方が失敗しても止めずに知らせる) | SR-8・OUT-1 |
 
 起動(タスク 8): `mdgrid [<.base | フォルダ> …] [--view <名前>] [--readonly] [--no-color] [--config <パス>] [--print-config] [--completions <シェル>] [--man] [--help] [--version]`(CLI-1・CLI-2。`--print-config` は CLI-11 で、`config::default_toml()` を出して終了コード 0。`--completions`・`--man` は CLI-13 で、`clap_complete`・`clap_mangen` が clap の定義から作ったものを出して終了コード 0。どちらも画面を出さないので、標準出力がパイプでも動く)。`.base` を渡したら `Markdown::open_vault`。設定(CLI-3)を読み、警告はメッセージ行に出す。キーの割り当て直し(SR-13)は、設定の `(モード, キー, 動作)` で表を上書きした写しを作る(`"none"` で外す)。起動で開くビューは `.base` の先頭のビュー(`--view` があればそれ。BV-13)で、前に選んだビューは起動に使わない。見た目の状態(SR-11・SR-12)は、ビューごとに、そのビューを開いたときに読んで列の順・隠す列・幅・畳んだまとまりに当て、終了とビューの切り替えで書く。`--readonly`(WB-15)では編集・空にする・保存の動作を表から外し、保存のキーで「読むだけで開いている」と出す。在る `.md` のファイル(拡張子の大文字小文字を問わない)を渡したら(CLI-15)、`main::md_to_folder` が `check_paths` の前にそのフォルダ(親が空なら `.`)に置き換え、`--print`・`--pick` もその置き換えたフォルダを起動の引数とみなす(`--pick path` の形も)。画面では `App::select_after_load` に覚え、読み込みが終わったとき(取りやめを含む)に一度だけその行を選ぶ(途中で選ぶと並べ替えで行が動き画面が跳ねるので、途中では選ばない)。無い `.md` は置き換えず、CLI-4 の理由1行にする。
 

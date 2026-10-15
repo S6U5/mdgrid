@@ -106,6 +106,130 @@ impl ButtonsMode {
     }
 }
 
+/// ノートの欄のフォルダの出し方(SR-29・SR-46): 全部の行に共通のフォルダを除く(既定)・名前だけ・
+/// 根からのパス・名前を出さない(行の印だけ)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum NotePath {
+    #[default]
+    Common,
+    Name,
+    Full,
+    Off,
+}
+
+impl NotePath {
+    pub const NAMES: &'static [&'static str] = &["common", "name", "full", "off"];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            NotePath::Common => "common",
+            NotePath::Name => "name",
+            NotePath::Full => "full",
+            NotePath::Off => "off",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<NotePath> {
+        match s {
+            "common" => Some(NotePath::Common),
+            "name" => Some(NotePath::Name),
+            "full" => Some(NotePath::Full),
+            "off" => Some(NotePath::Off),
+            _ => None,
+        }
+    }
+
+    /// 表示の区画で次に切り替える値(common → name → full → off → common)。
+    pub fn next(self) -> NotePath {
+        match self {
+            NotePath::Common => NotePath::Name,
+            NotePath::Name => NotePath::Full,
+            NotePath::Full => NotePath::Off,
+            NotePath::Off => NotePath::Common,
+        }
+    }
+}
+
+impl Serialize for NotePath {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(self.name())
+    }
+}
+
+impl<'de> Deserialize<'de> for NotePath {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(d)?;
+        NotePath::parse(&s)
+            .ok_or_else(|| serde::de::Error::custom(format!("unknown note path {s:?}")))
+    }
+}
+
+/// ノートの欄の名前の正規表現(SR-47)。`Display` を Copy のまま持つため、読んだ正規表現は表に置き、番号で指す。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NoteName(u32);
+
+fn note_names() -> &'static std::sync::Mutex<Vec<(String, regex::Regex)>> {
+    static NAMES: std::sync::OnceLock<std::sync::Mutex<Vec<(String, regex::Regex)>>> =
+        std::sync::OnceLock::new();
+    NAMES.get_or_init(Default::default)
+}
+
+impl NoteName {
+    /// 正規表現を読む。空の文字列は書かないのと同じ(None)。読めなければ理由。
+    pub fn new(pattern: &str) -> Result<Option<NoteName>, String> {
+        if pattern.is_empty() {
+            return Ok(None);
+        }
+        let mut names = note_names().lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(i) = names.iter().position(|(p, _)| p == pattern) {
+            return Ok(Some(NoteName(i as u32)));
+        }
+        let re = regex::Regex::new(pattern).map_err(|e| e.to_string())?;
+        names.push((pattern.to_string(), re));
+        Ok(Some(NoteName((names.len() - 1) as u32)))
+    }
+
+    /// 書いた正規表現の文字。
+    pub fn pattern(self) -> String {
+        let names = note_names().lock().unwrap_or_else(|e| e.into_inner());
+        names
+            .get(self.0 as usize)
+            .map(|(p, _)| p.clone())
+            .unwrap_or_default()
+    }
+
+    /// 名前に当てる(SR-47): 一致すれば、組 `name` か1つ目の組の部分、組が無ければ一致した部分を除いた残り。
+    /// 一致しないときと、結果が空になるときは名前のまま。
+    pub fn apply(self, name: &str) -> String {
+        let names = note_names().lock().unwrap_or_else(|e| e.into_inner());
+        let Some((_, re)) = names.get(self.0 as usize) else {
+            return name.to_string();
+        };
+        let Some(c) = re.captures(name) else {
+            return name.to_string();
+        };
+        let out = match c.name("name").or_else(|| c.get(1)) {
+            Some(m) => m.as_str().to_string(),
+            None if re.captures_len() > 1 => String::new(),
+            None => {
+                let m = c.get(0).expect("group 0 is the whole match");
+                format!("{}{}", &name[..m.start()], &name[m.end()..])
+            }
+        };
+        if out.is_empty() {
+            name.to_string()
+        } else {
+            out
+        }
+    }
+}
+
+impl Serialize for NoteName {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(&self.pattern())
+    }
+}
+
 /// 余白の行の数(SR-1 の `top_padding`・NV-23 の `bar_padding`)。0〜2 を 0.5 刻みで、半行の数で持つ(0〜4)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, PartialOrd, Ord)]
 pub struct Pad(pub u8);
@@ -226,6 +350,12 @@ pub struct Display {
     pub top_padding: Pad,
     /// データの1行を最大で「1 + この数」の行の高さまで伸ばす(CV-8。0〜9。既定 0)。
     pub row_extra_lines: u8,
+    /// ノートの欄のフォルダの出し方(SR-29・SR-46。既定 common)。
+    pub note_path: NotePath,
+    /// ノートの欄の名前の正規表現(SR-47。既定なし)。
+    pub note_name: Option<NoteName>,
+    /// ビューのタブが帯の1行に入らないとき、帯の上に折り返して全部を見せる(NV-31。既定 false)。
+    pub tab_wrap: bool,
 }
 
 impl Default for Display {
@@ -242,6 +372,9 @@ impl Default for Display {
             bar_padding: Pad::DEFAULT,
             top_padding: Pad::DEFAULT,
             row_extra_lines: 0,
+            note_path: NotePath::Common,
+            note_name: None,
+            tab_wrap: false,
         }
     }
 }
@@ -275,6 +408,7 @@ impl Display {
             Item::BarPadding => self.bar_padding.0 > 0,
             Item::TopPadding => self.top_padding.0 > 0,
             Item::RowExtraLines => self.row_extra_lines > 0,
+            Item::NotePath => self.note_path != NotePath::Off,
         }
     }
 }
@@ -297,6 +431,8 @@ pub enum Item {
     Chips,
     /// 行を伸ばす数(CV-8。`row_extra_lines`。0〜3 を順に切り替える)。
     RowExtraLines,
+    /// ノートの欄のフォルダの出し方(SR-46。`note_path`。common・name・full・off を順に切り替える)。
+    NotePath,
 }
 
 impl Item {
@@ -314,6 +450,7 @@ impl Item {
             Item::BarPadding => Msg::DisplayBarPadding,
             Item::TopPadding => Msg::DisplayTopPadding,
             Item::RowExtraLines => Msg::DisplayRowExtraLines,
+            Item::NotePath => Msg::DisplayNotePath,
         }
     }
 
@@ -324,7 +461,7 @@ impl Item {
 }
 
 /// 「表示」の節の項目と名前(この順で並べる)。名前は日本語の文。画面には今の言語の `Item::label` を出す(SR-23)。
-pub const ITEMS: [(Item, &str); 11] = [
+pub const ITEMS: [(Item, &str); 12] = [
     (Item::RowNumbers, Item::RowNumbers.msg().ja()),
     (Item::Zebra, Item::Zebra.msg().ja()),
     (Item::ColumnLines, Item::ColumnLines.msg().ja()),
@@ -335,6 +472,7 @@ pub const ITEMS: [(Item, &str); 11] = [
     (Item::BarPadding, Item::BarPadding.msg().ja()),
     (Item::TopPadding, Item::TopPadding.msg().ja()),
     (Item::RowExtraLines, Item::RowExtraLines.msg().ja()),
+    (Item::NotePath, Item::NotePath.msg().ja()),
     (Item::Chips, Item::Chips.msg().ja()),
 ];
 
@@ -368,6 +506,48 @@ pub struct DisplayOverride {
         deserialize_with = "row_extra_lines_in_range"
     )]
     pub row_extra_lines: Option<u8>,
+    /// 知らない値は持たない(既定にする。警告は読む側。views.rs・profile.rs)。
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "note_path_known"
+    )]
+    pub note_path: Option<NotePath>,
+    /// 空の文字列は「書かない」。読めない正規表現は持たない(警告は読む側。views.rs・profile.rs)。
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "note_name_ok"
+    )]
+    pub note_name: Option<NoteName>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tab_wrap: Option<bool>,
+}
+
+/// ビューの上書きの `note_name` を読む(SR-47)。読めない正規表現・文字列でない値・空の文字列は None。
+fn note_name_ok<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<NoteName>, D::Error> {
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Raw {
+        S(String),
+        Other(serde::de::IgnoredAny),
+    }
+    Ok(match Raw::deserialize(d)? {
+        Raw::S(s) => NoteName::new(&s).ok().flatten(),
+        Raw::Other(_) => None,
+    })
+}
+
+/// ビューの上書きの `note_path` を読む(SR-46)。知らない値・文字列でない値は None(ビューごと捨てない)。
+fn note_path_known<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<NotePath>, D::Error> {
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Raw {
+        S(String),
+        Other(serde::de::IgnoredAny),
+    }
+    Ok(match Raw::deserialize(d)? {
+        Raw::S(s) => NotePath::parse(&s),
+        Raw::Other(_) => None,
+    })
 }
 
 /// 行を伸ばす数の値(CV-8)か: 0〜9 の整数。
@@ -406,6 +586,9 @@ pub const OVERRIDE_KEYS: &[&str] = &[
     "bar_padding",
     "top_padding",
     "row_extra_lines",
+    "note_path",
+    "note_name",
+    "tab_wrap",
 ];
 
 impl DisplayOverride {
@@ -427,6 +610,9 @@ impl DisplayOverride {
             bar_padding: Some(d.bar_padding),
             top_padding: Some(d.top_padding),
             row_extra_lines: Some(d.row_extra_lines),
+            note_path: Some(d.note_path),
+            note_name: d.note_name,
+            tab_wrap: Some(d.tab_wrap),
         }
     }
 
@@ -434,6 +620,7 @@ impl DisplayOverride {
     pub fn bool_mut(&mut self, name: &str) -> Option<&mut Option<bool>> {
         Some(match name {
             "row_numbers" => &mut self.row_numbers,
+            "tab_wrap" => &mut self.tab_wrap,
             "zebra" => &mut self.zebra,
             "column_lines" => &mut self.column_lines,
             "group_gap" => &mut self.group_gap,
@@ -465,6 +652,12 @@ impl DisplayOverride {
         put!(bar_padding);
         put!(top_padding);
         put!(row_extra_lines);
+        put!(note_path);
+        put!(tab_wrap);
+        if let Some(v) = self.note_name {
+            d.note_name = Some(v);
+            out.push("note_name");
+        }
         out
     }
 
@@ -523,6 +716,14 @@ impl DisplayOverride {
                 };
                 self.set_row_extra_lines(n, base);
             }
+            Item::NotePath => {
+                let m = match (on, base.note_path) {
+                    (false, _) => NotePath::Off,
+                    (true, NotePath::Off) => NotePath::Common,
+                    (true, b) => b,
+                };
+                self.set_note_path(m, base);
+            }
             Item::Tabs => {
                 let m = if !on {
                     TabsMode::Never
@@ -554,6 +755,11 @@ impl DisplayOverride {
     /// 行を伸ばす数を `n` にする(土台と同じなら上書きを持たない。CV-8)。
     pub fn set_row_extra_lines(&mut self, n: u8, base: &Display) {
         self.row_extra_lines = (n != base.row_extra_lines).then_some(n);
+    }
+
+    /// ノートの欄のフォルダの出し方を `m` にする(土台と同じなら上書きを持たない。SR-46)。
+    pub fn set_note_path(&mut self, m: NotePath, base: &Display) {
+        self.note_path = (m != base.note_path).then_some(m);
     }
 
     /// タブの行の値を `m` にする(土台と同じなら上書きを持たない)。

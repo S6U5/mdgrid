@@ -4,7 +4,7 @@
 
 mdgrid は TOML のファイルを1つ読む:
 
-- `$XDG_CONFIG_HOME/mdgrid/config.toml`。`XDG_CONFIG_HOME` が無ければ `~/.config/mdgrid/config.toml`(macOS でも同じ)。
+- `$XDG_CONFIG_HOME/mdgrid/config.toml`。`XDG_CONFIG_HOME` が無ければ `~/.config/mdgrid/config.toml`(macOS でも同じ)。Windows では `XDG_CONFIG_HOME` が無ければ `%APPDATA%\mdgrid\config.toml`。
 - `mdgrid --config <パス>` なら、そのファイルを読む。
 
 同じフォルダには mdgrid が書くファイルも置く: `ui.toml`(画面で選んだもの。ビューの設定の「見た目」の区画のテーマなど)、`views.toml`(mdgrid のビューと表ごとの設定)、`workspaces.toml`(ワークスペース)、`places.toml`(登録した表。[使う表を登録して切り替える](manual/ja/tasks.md#使う表を登録して切り替える))。mdgrid は `config.toml` を書き換えない。
@@ -49,6 +49,17 @@ path = "tasks"
 
 [table.look]
 theme = "dracula"
+```
+
+印には、根のフォルダを開いたときの表も書ける: 最上位の `open = "<表の名前>"`(`[[table]]` の `name` か、自動の表ならフォルダの名前)。根のフォルダを開くと(そこで `mdgrid`・`mdgrid .`・ほかからそのパス)、フォルダの全部のノートではなくその表を(`--view` が無ければその `view` で)開く。`--print`・`--check`・`--print-config --resolved` も同じ。`--raw` でフォルダそのものを開く。下のフォルダ・2つ以上のフォルダ・`.md` のファイルでは使わない。どの表も指さない `open` は警告して、フォルダをそのまま開く。
+
+```toml
+# tasks/.mdgrid/workspace.toml — tasks で `mdgrid` と打つと、README.md や AGENTS.md ではなく tasks.base を開く
+open = "tasks"
+
+[[table]]
+name = "tasks"
+path = "tasks.base"
 ```
 
 ## 旧い名前(0.3.0)
@@ -108,7 +119,7 @@ language = "en"
 - 既定: なし
 - 範囲: 全体だけ
 
-選んだノートを開くエディタ(`e`、または選んだ行のファイル名のクリック)。`"code -w"` のような引数つきでよい。値はシェルを通さずに単語に分け(引用符とバックスラッシュは POSIX と同じ)、ノートのパスを1つの引数として足す。書かないか、空か、空白だけなら、`$VISUAL`、`$EDITOR`、`vi` の順で空でない最初のものを使う。エディタが終わると、そのノートを読み直す。
+選んだノートを開くエディタ(`e`、または選んだ行のファイル名のクリック)。`"code -w"` のような引数つきでよい。値はシェルを通さずに単語に分け(引用符とバックスラッシュは POSIX と同じ)、ノートのパスを1つの引数として足す。書かないか、空か、空白だけなら、`$VISUAL`、`$EDITOR`、`vi`(Windows では `notepad`)の順で空でない最初のものを使う。エディタが終わると、そのノートを読み直すので、エディタはノートを閉じるまで戻らない形にする。すぐ戻るエディタ(すでに開いているタブのメモ帳など)は、`"code -w"` のように待つ形を `editor` に書く。Windows でパスを書くときは `/` で区切るか(`editor = "C:/tools/nvim.exe"`)、引用符で囲む。引用符の外の `\` は次の字を打ち消すので、`C:\tools\nvim.exe` のままでは起動しない。
 
 ```toml
 editor = "nvim"
@@ -461,6 +472,47 @@ top_padding = 0
 ```toml
 [display]
 row_extra_lines = 2
+```
+
+### `display.tab_wrap`
+
+- 型: `真偽値`
+- 既定: `false`
+- 範囲: 全体・ワークスペース・表・ビュー
+
+ビューのタブがビューの帯の行(検索の欄とボタンの行)に入らないとき、帯の上に行を足して左から折り返し、全部のタブを見せる(足した行のタブもクリックで選べる)。残りのタブは帯の行の左に置き、足した行のぶん表は下がる。入るときは何も変えない。`false` なら1行のままで、狭い画面では今のでないタブを省く(`[` `]` での切り替えは効く)。
+
+```toml
+[display]
+tab_wrap = true
+```
+
+### `display.note_name`
+
+- 型: `文字列(正規表現)`
+- 既定: `""`
+- 範囲: 全体・ワークスペース・表・ビュー
+
+ノートの欄の名前に当てる正規表現(`note_path` のあと。フォルダがあれば最後の名前の部分だけ)。一致したら、名前の付いた組 `name`、無ければ1つ目の組、組が無ければ一致した部分を除いた残りを出す。一致しない名前と、空になる名前はそのまま出す。`""` は何もしない。検索と、メッセージ・詳しく見る画面のノートの名前は変えない。読めない正規表現は警告して使わない。ビューの設定の「表示」の区画では切り替えない(自由に書く文字列のため)。ビューごとの値は views.toml のビューの `display` に書ける。
+
+```toml
+[display]
+note_name = '^\d{8}_'
+```
+
+`note_path = "name"` と合わせると、`20261015_資料.md` は `資料` になる。`note_name = '^(?P<name>.+)_v\d+$'` なら `企画_v3.md` は `企画`。
+
+### `display.note_path`
+
+- 型: `文字列("common"・"name"・"full"・"off")`
+- 既定: `"common"`
+- 範囲: 全体・ワークスペース・表・ビュー
+
+左のノートの欄の出し方(`.md` は除く)。`"common"` は全部の行に共通のフォルダを除き、`"name"` は名前だけ、`"full"` は根からのパスを出す。`"off"` は名前も見出しも出さず、行の印(`!`・`~`)と親子の字下げと ▾・▸ だけを出す(表に `file.name` の列があるときと同じ)。検索と、メッセージ・詳しく見る画面のノートの名前は根からのパスのまま。ほかの値は警告して既定にする。ビューの設定(`o`)の「表示」の区画で common・name・full・off を順に切り替え、ビューごとに上書きできる。
+
+```toml
+[display]
+note_path = "name"
 ```
 
 ## `[dates]` — 日付

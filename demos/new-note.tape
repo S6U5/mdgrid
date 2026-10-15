@@ -15,19 +15,19 @@ Source demos/setup.tape
 
 # 新しいノートの決まり(録画には映さない)
 Hide
-Type `printf '[new_note]\nfolder = "Tasks"\nask = ["status", "due", "priority"]\nrequired = ["due"]\nhidden = ["created"]\n\n[new_note.set]\nstatus = "todo"\ndue = "{date+7}"\ncreated = "{now}"\n' > "$XDG_CONFIG_HOME/mdgrid/config.toml" && clear`
+Type `printf '[new_note]\nask = ["status", "due", "priority"]\nrequired = ["due"]\nhidden = ["created"]\n\n[new_note.set]\nstatus = "todo"\ndue = "{date+7}"\ncreated = "{now}"\n' > "$XDG_CONFIG_HOME/mdgrid/config.toml" && clear`
 Enter
 Sleep 300ms
 Show
 
 Type "cat $XDG_CONFIG_HOME/mdgrid/config.toml" Sleep 500ms Enter
 Sleep 3s
-Type "clear && mdgrid ." Sleep 500ms Enter
+Type "clear && mdgrid Tasks" Sleep 500ms Enter
 Sleep 2s
 
 # a でフォームの窓。status と due には雛形の値が入っている
 Type "a" Sleep 1.5s
-Type "Buy milk" Sleep 600ms
+Type "Order business cards" Sleep 600ms
 Enter Sleep 800ms
 Enter Sleep 800ms
 
@@ -42,5 +42,5 @@ Type "2" Sleep 600ms
 Ctrl+S Sleep 2s
 Type "q" Sleep 800ms
 
-Type "cat 'Tasks/Buy milk.md'" Sleep 500ms Enter
+Type "cat 'Tasks/Order business cards.md'" Sleep 500ms Enter
 Sleep 3s

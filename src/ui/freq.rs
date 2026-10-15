@@ -16,10 +16,12 @@ use super::popup;
 use super::view::data_y;
 use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
+use mdgrid::relations;
 use mdgrid::settings::value_counts;
-use mdgrid::source::Value;
+use mdgrid::source::{RowId, Value};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::Line;
+use std::collections::HashMap;
 
 /// 開いている頻度表。
 #[derive(Debug, Clone)]
@@ -28,6 +30,8 @@ pub(crate) struct Freq {
     pub col: String,
     /// (値, 件数)。値の None は空。件数の多い順、同じ数は値の順(空は後ろ)。
     pub items: Vec<(Option<String>, usize)>,
+    /// 項目の見せ方(`items` と同じ順)。リンクは行き先の名前(REL-2)、空は「(空)」。
+    pub labels: Vec<String>,
     /// 数えた行の数(割合の分母)。
     pub total: usize,
     /// 選んでいる項目。
@@ -50,6 +54,27 @@ fn value_text(v: &Option<String>) -> String {
     sanitize(&shown_value(v.as_deref().unwrap_or("")))
 }
 
+/// 項目の見せ方(REL-2): リンクはセルと同じに行き先の名前(その値を持つ最初の行から解く)、ほかは値のまま。
+fn labels(app: &App, col: &str, items: &[(Option<String>, usize)]) -> Vec<String> {
+    let mut first: HashMap<String, RowId> = HashMap::new();
+    for r in &app.rows {
+        if let Some(v) = app.setting_value(r, col) {
+            for s in relations::strings(&v) {
+                first.entry(s.to_string()).or_insert_with(|| r.clone());
+            }
+        }
+    }
+    items
+        .iter()
+        .map(|(v, _)| {
+            v.as_ref()
+                .and_then(|s| app.link_label(first.get(s)?, s))
+                .map(|t| sanitize(&t))
+                .unwrap_or_else(|| value_text(v))
+        })
+        .collect()
+}
+
 impl App {
     /// 頻度表を開く(表のモードから)。列が無い・数える行が無い・窓が入らないときは開かず、理由を出す。
     pub(crate) fn open_freq(&mut self) {
@@ -70,9 +95,11 @@ impl App {
             return;
         }
         let items = counts(self, &col);
+        let labels = labels(self, &col, &items);
         self.freq = Some(Freq {
             col,
             items,
+            labels,
             total: self.rows.len(),
             sel: 0,
         });
@@ -233,12 +260,7 @@ fn window(app: &App) -> Option<Geom> {
         .map(|(_, c)| width(&pct_text(*c, f.total)))
         .max()
         .unwrap_or(0);
-    let lw = f
-        .items
-        .iter()
-        .map(|(v, _)| width(&value_text(v)))
-        .max()
-        .unwrap_or(0);
+    let lw = f.labels.iter().map(|l| width(l)).max().unwrap_or(0);
     // 印・値・件数・割合の行の、値の欄より外の幅。
     let rest = 1 + 2 + cw + 2 + pw + 1;
     let inner = (rest + lw).max(width(&title(app, f)));
@@ -289,7 +311,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let fr = popup::frame(app);
     let mut out: Vec<(String, Style)> = Vec::new();
     out.push((popup::top_edge(fr, &title(app, f), tw), Style::default()));
-    for (i, (v, c)) in f.items.iter().enumerate().skip(g.start).take(g.vis) {
+    for (i, (_, c)) in f.items.iter().enumerate().skip(g.start).take(g.vis) {
         let st = if i == sel {
             Style::default().add_modifier(Modifier::REVERSED)
         } else {
@@ -298,7 +320,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         let text = format!(
             "{}{}  {}  {} ",
             if i == sel { ">" } else { " " },
-            fit(&value_text(v), g.vw, Align::Left),
+            fit(&f.labels[i], g.vw, Align::Left),
             fit(&count_text(*c), cw, Align::Right),
             fit(&pct_text(*c, f.total), pw, Align::Right),
         );
@@ -329,7 +351,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         let Some(st) = super::chips::overlay(app, v, list) else {
             continue;
         };
-        let t = fit(&value_text(&Some(v.clone())), g.vw, Align::Left);
+        let t = fit(&f.labels[i], g.vw, Align::Left);
         let t = t.trim_end().to_string();
         let tw = width(&t);
         if let Some(line) = lines.get_mut(g.top + 1 + k) {

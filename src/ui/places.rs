@@ -14,7 +14,7 @@ const SEP: &str = " › ";
 
 /// パスを短く見せる(ホームのフォルダの下なら `~/…`)。
 fn short(p: &Path) -> String {
-    if let Some(home) = std::env::var_os("HOME").map(std::path::PathBuf::from) {
+    if let Some(home) = mdgrid::config::home_dir() {
         if let Ok(rest) = p.strip_prefix(&home) {
             return Path::new("~").join(rest).to_string_lossy().into_owned();
         }
@@ -98,7 +98,8 @@ impl App {
             self.close_palette();
             return;
         };
-        if !place.path.exists() {
+        // WS-9: 印に中身を書いた表は、ファイルが無くても開ける。
+        if !mdgrid::workspace::openable(&place.path) {
             self.message = Some(Msg::PlaceMissing.fill(&[&short(&place.path)]));
             return;
         }
