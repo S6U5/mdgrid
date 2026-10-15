@@ -2256,8 +2256,8 @@
       "CLI-11",
       "SR-21"
     ],
-    "sha": "50e3c1a767611b76",
-    "by": "specs/_decisions/2026-10-15-note-name.md"
+    "sha": "8a02b6ed2d39f096",
+    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_wins_over_env": {
     "ids": [
@@ -9899,8 +9899,8 @@
       "CV-8",
       "SR-21"
     ],
-    "sha": "9a09618a1a0a59bb",
-    "by": "specs/_decisions/2026-10-15-note-name.md"
+    "sha": "88c3a9192a30131b",
+    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
   },
   "src/ui/test_row_lines_more.rs::test_cv_8_chips_stay_one_line": {
     "ids": [
@@ -10859,8 +10859,8 @@
       "CLI-11",
       "SR-21"
     ],
-    "sha": "f83abddad426ef1c",
-    "by": "specs/_decisions/2026-10-15-note-name.md"
+    "sha": "866b273b80a254a5",
+    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
   },
   "tests/test_note_path.rs::test_sr_46_config_default_is_common": {
     "ids": [
@@ -11044,5 +11044,12 @@
       "BV-17"
     ],
     "sha": "849bdc0d3dee2fe0"
+  },
+  "tests/test_marker_base_switch.rs::test_ws_9_switch_back_to_marker_base_table": {
+    "ids": [
+      "WS-8"
+    ],
+    "sha": "50d64ec688d62756",
+    "by": "specs/_decisions/2026-10-15-pty-tests-unix-locks.md"
   }
 }

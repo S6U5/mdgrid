@@ -323,6 +323,8 @@ mod test_style_screen;
 #[cfg(test)]
 mod test_style_selected;
 #[cfg(test)]
+mod test_tab_wrap;
+#[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
 mod test_time_picker;

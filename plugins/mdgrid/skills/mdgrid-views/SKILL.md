@@ -77,6 +77,7 @@ path = "archive"                 # a plain folder table; switch tables with `w` 
 
 - `[table.base]` takes the same keys as a `.base` file (`filters`, `formulas`, `properties`, `summaries`, `views`) with the same expressions; see https://github.com/S6U5/mdgrid/blob/main/docs/obsidian-bases.md. A table can instead point at a real `.base` with `path = "x.base"` (Obsidian then sees the same views); don't write both.
 - `where` works at the top of `[table.base]` (every view) and in each view; keys must all match, values are "any of", list columns match by element, and it combines with `filters`.
+- A `where` key can be a formula column (`"formula.due_bucket" = ["overdue", "today"]`). Define a classification once in `formulas` (for example a due-date bucket with `today()`) and let each tab pick buckets, instead of repeating date conditions per tab.
 - Settings under `[display]`, `[types]`, `[rules.*]` at the top apply to every table of the folder; the same sections under a `[[table]]` (`[table.display]`, `[table.rules.status]`) apply to that table only.
 - The full list of settings is in https://github.com/S6U5/mdgrid/blob/main/docs/config.md.
 

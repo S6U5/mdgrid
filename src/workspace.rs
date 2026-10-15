@@ -321,7 +321,13 @@ fn where_to_filters(obj: &mut serde_json::Value, file: &str, at: &str, warns: &m
             );
             continue;
         };
-        let key = if col.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        // 計算の列(`formula.x`)・ファイルの項目(`file.x`)・`note.x` はそのまま式に書く(列の名前と同じ)。
+        let dotted = ["formula.", "file.", "note."].iter().any(|p| {
+            col.strip_prefix(p).is_some_and(|r| {
+                !r.is_empty() && r.chars().all(|c| c.is_alphanumeric() || c == '_')
+            })
+        });
+        let key = if dotted || col.chars().all(|c| c.is_alphanumeric() || c == '_') {
             col.clone()
         } else {
             format!("note[{}]", serde_json::Value::String(col.clone()))
@@ -339,6 +345,11 @@ fn where_to_filters(obj: &mut serde_json::Value, file: &str, at: &str, warns: &m
         conds.insert(0, f);
     }
     map.insert("filters".into(), serde_json::json!({ "and": conds }));
+}
+
+/// 開ける表のパスか: ファイルかフォルダが在るか、印に中身を書いた表(WS-9。ファイルは無い)。
+pub fn openable(path: &Path) -> bool {
+    path.exists() || inline_base(path).is_some()
 }
 
 /// WS-9: 印の表の `base` で開く `.base` のパス(ファイルは無い)なら、その中身(JSON)と印のファイルのパス。

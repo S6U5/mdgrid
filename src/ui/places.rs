@@ -98,7 +98,8 @@ impl App {
             self.close_palette();
             return;
         };
-        if !place.path.exists() {
+        // WS-9: 印に中身を書いた表は、ファイルが無くても開ける。
+        if !mdgrid::workspace::openable(&place.path) {
             self.message = Some(Msg::PlaceMissing.fill(&[&short(&place.path)]));
             return;
         }

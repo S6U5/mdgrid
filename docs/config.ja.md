@@ -474,6 +474,19 @@ top_padding = 0
 row_extra_lines = 2
 ```
 
+### `display.tab_wrap`
+
+- 型: `真偽値`
+- 既定: `false`
+- 範囲: 全体・ワークスペース・表・ビュー
+
+ビューのタブがビューの帯の行(検索の欄とボタンの行)に入らないとき、帯の上に行を足して左から折り返し、全部のタブを見せる(足した行のタブもクリックで選べる)。残りのタブは帯の行の左に置き、足した行のぶん表は下がる。入るときは何も変えない。`false` なら1行のままで、狭い画面では今のでないタブを省く(`[` `]` での切り替えは効く)。
+
+```toml
+[display]
+tab_wrap = true
+```
+
 ### `display.note_name`
 
 - 型: `文字列(正規表現)`
@@ -484,10 +497,10 @@ row_extra_lines = 2
 
 ```toml
 [display]
-note_path = "name"
-note_name = '^\d{8}_'              # 20261015_資料.md → 資料
-# note_name = '^(?P<name>.+)_v\d+$' # 企画_v3.md → 企画
+note_name = '^\d{8}_'
 ```
+
+`note_path = "name"` と合わせると、`20261015_資料.md` は `資料` になる。`note_name = '^(?P<name>.+)_v\d+$'` なら `企画_v3.md` は `企画`。
 
 ### `display.note_path`
 

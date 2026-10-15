@@ -354,6 +354,8 @@ pub struct Display {
     pub note_path: NotePath,
     /// ノートの欄の名前の正規表現(SR-47。既定なし)。
     pub note_name: Option<NoteName>,
+    /// ビューのタブが帯の1行に入らないとき、帯の上に折り返して全部を見せる(NV-31。既定 false)。
+    pub tab_wrap: bool,
 }
 
 impl Default for Display {
@@ -372,6 +374,7 @@ impl Default for Display {
             row_extra_lines: 0,
             note_path: NotePath::Common,
             note_name: None,
+            tab_wrap: false,
         }
     }
 }
@@ -515,6 +518,8 @@ pub struct DisplayOverride {
         deserialize_with = "note_name_ok"
     )]
     pub note_name: Option<NoteName>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tab_wrap: Option<bool>,
 }
 
 /// ビューの上書きの `note_name` を読む(SR-47)。読めない正規表現・文字列でない値・空の文字列は None。
@@ -583,6 +588,7 @@ pub const OVERRIDE_KEYS: &[&str] = &[
     "row_extra_lines",
     "note_path",
     "note_name",
+    "tab_wrap",
 ];
 
 impl DisplayOverride {
@@ -606,6 +612,7 @@ impl DisplayOverride {
             row_extra_lines: Some(d.row_extra_lines),
             note_path: Some(d.note_path),
             note_name: d.note_name,
+            tab_wrap: Some(d.tab_wrap),
         }
     }
 
@@ -613,6 +620,7 @@ impl DisplayOverride {
     pub fn bool_mut(&mut self, name: &str) -> Option<&mut Option<bool>> {
         Some(match name {
             "row_numbers" => &mut self.row_numbers,
+            "tab_wrap" => &mut self.tab_wrap,
             "zebra" => &mut self.zebra,
             "column_lines" => &mut self.column_lines,
             "group_gap" => &mut self.group_gap,
@@ -645,6 +653,7 @@ impl DisplayOverride {
         put!(top_padding);
         put!(row_extra_lines);
         put!(note_path);
+        put!(tab_wrap);
         if let Some(v) = self.note_name {
             d.note_name = Some(v);
             out.push("note_name");

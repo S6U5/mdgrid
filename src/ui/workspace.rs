@@ -225,7 +225,8 @@ impl App {
 
     /// WS-2: ワークスペースの表へ移る(終わる手順を通してから main が開き直す。範囲はそのワークスペース)。
     pub(crate) fn ws_switch(&mut self, ws: String, place: Place) {
-        if !place.path.exists() {
+        // WS-9: 印に中身を書いた表は、ファイルが無くても開ける。
+        if !mdgrid::workspace::openable(&place.path) {
             self.message = Some(Msg::PlaceMissing.fill(&[&place.path.display()]));
             return;
         }

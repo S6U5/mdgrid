@@ -481,6 +481,19 @@ pub const ITEMS: &[Item] = &[
              \"off\" は名前を出さない(行の印だけ)。ほかの値は警告して既定にする。",
     },
     Item {
+        path: "display.tab_wrap",
+        ty: "boolean",
+        ty_ja: "真偽値",
+        default: Some("false"),
+        example: "[display]\ntab_wrap = true",
+        scope: Scope::Profile,
+        en: "When the view tabs do not fit on the row of the view bar, wrap them onto extra rows above it so every\n\
+             tab stays visible (the table moves down by those rows). false keeps one row and leaves out other tabs\n\
+             when the screen is narrow.",
+        ja: "ビューのタブがビューの帯の行に入らないとき、帯の上に行を足して折り返し、全部のタブを見せる(足した行のぶん\
+             表は下がる)。false なら1行のままで、狭い画面では今のでないタブを省く。",
+    },
+    Item {
         path: "display.note_name",
         ty: "string (a regular expression)",
         ty_ja: "文字列(正規表現)",

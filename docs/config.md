@@ -474,6 +474,19 @@ How many extra lines a table row may grow by. A row holding a long value, or a v
 row_extra_lines = 2
 ```
 
+### `display.tab_wrap`
+
+- Type: `boolean`
+- Default: `false`
+- Scope: global, workspace, table, view
+
+When the view tabs do not fit on the row of the view bar (with the search box and the buttons), wrap them onto extra rows above it, filled from the left, so every tab stays visible and can be clicked; the remaining tabs stay at the left of the bar's row, and the table moves down by the extra rows. When the tabs fit, nothing changes. `false` keeps one row: on a narrow screen the tabs other than the current one are left out (the `[` `]` keys still switch).
+
+```toml
+[display]
+tab_wrap = true
+```
+
 ### `display.note_name`
 
 - Type: `string (a regular expression)`
@@ -484,10 +497,10 @@ A regular expression applied to the name in the note column, after `note_path` (
 
 ```toml
 [display]
-note_path = "name"
-note_name = '^\d{8}_'              # 20261015_report.md → report
-# note_name = '^(?P<name>.+)_v\d+$' # plan_v3.md → plan
+note_name = '^\d{8}_'
 ```
+
+With `note_path = "name"`, this shows `20261015_report.md` as `report`; `note_name = '^(?P<name>.+)_v\d+$'` shows `plan_v3.md` as `plan`.
 
 ### `display.note_path`
 
