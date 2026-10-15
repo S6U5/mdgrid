@@ -2263,90 +2263,82 @@
     "ids": [
       "SR-8"
     ],
-    "sha": "5117aad82b26c165",
-    "from": "65befc37f7062330",
-    "legacy": "2114c6e8b5ca3c8e"
+    "sha": "01c2f6ccc4d988b9",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_visual_before_editor": {
     "ids": [
       "SR-8"
     ],
-    "sha": "1d4835933133d2d5",
-    "from": "65befc37f7062330",
-    "legacy": "8e16e32c870fadf3"
+    "sha": "a91148853e99413a",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_editor_env_when_no_config_or_visual": {
     "ids": [
       "SR-8"
     ],
-    "sha": "8efe47fc7b55ebfa",
-    "from": "65befc37f7062330",
-    "legacy": "0e8c70d77ba8968f"
+    "sha": "27edb14a392e5d5f",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_none_falls_back_to_vi": {
     "ids": [
       "SR-8"
     ],
-    "sha": "f77be29cdbcff566",
-    "from": "65befc37f7062330",
-    "legacy": "f95d54d31f69ee6a"
+    "sha": "7094c4e185b16058",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_empty_is_same_as_absent": {
     "ids": [
       "SR-8"
     ],
-    "sha": "af34f658f96f928b",
-    "from": "65befc37f7062330",
-    "legacy": "dab906576e89a6ac"
+    "sha": "8edf0b1783249ae0",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_value_with_args_kept_whole": {
     "ids": [
       "SR-8"
     ],
-    "sha": "b6b6b98111c70b50",
-    "from": "65befc37f7062330",
-    "legacy": "8a14c7ec0208ddcf"
+    "sha": "eb9126ffece8596d",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_reads_editor_string": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "6ed0b9d849c7ab79",
-    "from": "65befc37f7062330",
-    "legacy": "ee808f8628b852da"
+    "sha": "44fb2292326f948e",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_default_is_absent": {
     "ids": [
       "SR-8"
     ],
-    "sha": "fee0bf51cbe9053f",
-    "from": "65befc37f7062330",
-    "legacy": "d27e7f2ebbddf210"
+    "sha": "0d69f2ca7b30fa96",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_empty_editor_no_warning_and_absent": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "92eb640e9a4d6795",
-    "from": "65befc37f7062330",
-    "legacy": "1317ddf3f202e81f"
+    "sha": "14c3f6158436ba2c",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_not_string_warns": {
     "ids": [
+      "CLI-3",
       "SR-8"
     ],
-    "sha": "e8443394dd5607b5",
-    "from": "65befc37f7062330",
-    "legacy": "fd8e8a59e7c204da"
+    "sha": "b7972def4a632879",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_keeps_other_items": {
     "ids": [
       "CLI-3",
       "SR-8"
     ],
-    "sha": "7e9de4227863467a",
-    "by": "specs/_decisions/2026-10-10-config-v2-relock.md",
-    "legacy": "7eb078f735aae744"
+    "sha": "b188464db290549e",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_empty_frontmatter.rs::test_wb_3_empty_frontmatter_gets_key_between_delimiters": {
     "ids": [
@@ -8786,8 +8778,8 @@
     "ids": [
       "CLI-3"
     ],
-    "sha": "34155204df26298a",
-    "legacy": "477e84f4e8efc93c"
+    "sha": "717777af08b9f5ad",
+    "by": "specs/_decisions/2026-10-15-windows-tests-locks.md"
   },
   "tests/test_config.rs::test_cli_3_empty_config_gives_defaults": {
     "ids": [

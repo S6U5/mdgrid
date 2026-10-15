@@ -11,7 +11,7 @@
 //! pub fn resolve_editor(config: Option<&str>, visual: Option<&str>, editor: Option<&str>) -> String;
 //! ```
 
-use mdgrid::config::{parse, resolve_editor, Config};
+use mdgrid::config::{parse, resolve_editor, Config, DEFAULT_EDITOR};
 
 #[test]
 fn test_sr_8_config_editor_wins_over_env() {
@@ -38,8 +38,8 @@ fn test_sr_8_editor_env_when_no_config_or_visual() {
 
 #[test]
 fn test_sr_8_none_falls_back_to_vi() {
-    // [SR-8] どれも無い → vi。
-    assert_eq!(resolve_editor(None, None, None), "vi");
+    // [SR-8] どれも無い → OS ごとの既定(vi。Windows は notepad。名前の値は src/test_windows_unit.rs)。
+    assert_eq!(resolve_editor(None, None, None), DEFAULT_EDITOR);
 }
 
 #[test]
@@ -48,8 +48,8 @@ fn test_sr_8_empty_is_same_as_absent() {
     assert_eq!(resolve_editor(Some(""), Some("hx"), Some("vim")), "hx");
     assert_eq!(resolve_editor(Some(""), None, Some("vim")), "vim");
     assert_eq!(resolve_editor(Some(""), Some(""), Some("vim")), "vim");
-    assert_eq!(resolve_editor(None, Some(""), Some("")), "vi");
-    assert_eq!(resolve_editor(Some(""), Some(""), Some("")), "vi");
+    assert_eq!(resolve_editor(None, Some(""), Some("")), DEFAULT_EDITOR);
+    assert_eq!(resolve_editor(Some(""), Some(""), Some("")), DEFAULT_EDITOR);
 }
 
 #[test]
@@ -91,7 +91,10 @@ fn test_sr_8_config_empty_editor_no_warning_and_absent() {
         resolve_editor(c.editor.as_deref(), None, Some("vim")),
         "vim"
     );
-    assert_eq!(resolve_editor(c.editor.as_deref(), None, None), "vi");
+    assert_eq!(
+        resolve_editor(c.editor.as_deref(), None, None),
+        DEFAULT_EDITOR
+    );
 }
 
 #[test]

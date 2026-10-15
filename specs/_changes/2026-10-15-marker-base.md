@@ -43,7 +43,7 @@ updated: 2026-10-15
 
 | # | タスク | 要件 | 完了の条件 | 範囲 | 受け入れ(テスト名) | 状態 |
 |---|---|---|---|---|---|---|
-| 1 | 印の base を読み、印の根で開く | WS-9 | `[table.base]` の表が .base と同じに開き、--print・--view・--check が効く | `src/workspace.rs` `src/main.rs` `src/source/markdown.rs` `src/ui/drawer.rs` `src/ui/places.rs` `src/ui/workspace.rs` `locales/en.toml` `locales/ja.toml` | test_ws_9_* | 済 |
+| 1 | 印の base を読み、印の根で開く | WS-9 | `[table.base]` の表が .base と同じに開き、--print・--view・--check が効く | `src/workspace.rs` `src/main.rs` `src/source/markdown.rs` `src/ui/drawer.rs` `src/ui/places.rs` `src/ui/workspace.rs` `locales/en.toml` `locales/ja.toml` `cliff.toml` | test_ws_9_* | 済 |
 | 2 | where を filters に直す | WS-10 | 値の配列のどれか、列どうしは全部、filters と両方、悪い値は警告 | `src/workspace.rs` `tests/test_where_formula.rs` `plugins/mdgrid/skills/mdgrid-views/SKILL.md` | test_ws_10_* | 済 |
 | 3 | 受け入れの試験を置く | WS-9, WS-10 | 例が通る | `tests/test_marker_base.rs` `tests/test_marker_base_name.rs` `tests/test_marker_base_switch.rs` | test_ws_9_* / test_ws_10_* | 済 |
 
@@ -55,6 +55,7 @@ updated: 2026-10-15
 - 安全の見直しの指摘: 根に同じ名前の `.base`(リンクを含む)があると、中身を書いた表として印の外を指す決まりを素通りし、リンク先を読めた。同じ名前のファイルがあるときは中身を書いた表とみなさず、ほかの表と同じく外を指さないかを確かめるよう直した。
 - 人の指摘: 引き出しでほかの表へ移ったあと、台帳(中身を印に書いた表)に戻れなかった。表を移る前に「パスが在るか」を見ていて、ファイルの無い表を「無い」と断っていた。在るか中身を書いた表かを見る `openable` にした(引き出し・登録した表・ワークスペースを開く、の3か所)。
 - `where` の鍵の計算の列(`formula.期限` など)を `note["formula.期限"]` に直していて当たらなかった。`formula.`・`file.`・`note.` で始まる鍵はそのまま式に書くよう直した(台帳の期限のタブで、期限の区分を計算の列で1回定義して選ぶため)。
+- この記録の直しのコミットを「直し:」で始め、cliff.toml の書き出しの決まりに当たらず tests/test_cliff.rs が落ちた。履歴は書き直さず、cliff.toml で「直し:」を修正と同じに扱う。以後は「修正:」で始める。
 - 試験は実装のあとに独立の試験役が書く(人が台帳を急いで移したがっているため、実装を先にした)。
 
 ## 照合
