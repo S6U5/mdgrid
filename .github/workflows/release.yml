@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
@@ -125,7 +125,7 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' -A "mdgrid-release (github.com/S6U5/mdgrid)" \
             "https://crates.io/api/v1/crates/mdgrid/$version")
           if [ "$code" = 200 ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; else echo "skip=false" >> "$GITHUB_OUTPUT"; fi
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
         if: steps.check.outputs.skip == 'false'
         with:
           toolchain: stable
