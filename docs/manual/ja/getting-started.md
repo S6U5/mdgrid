@@ -21,17 +21,19 @@ mdgrid --man > ~/.local/share/man/man1/mdgrid.1
 
 ## 見本のルートフォルダで開く
 
-リポには見本のルートフォルダ `examples/vault` があります。保存するとファイルが書き換わるので、一時フォルダに写してから開きます。
+リポには見本のルートフォルダ `examples/studio` があります。架空の制作会社 Northwind Studio のタスク・案件・顧客・人・会議の5つのフォルダで、ノートは互いにリンクでつながっています(ノートは英語。[見本の説明](../../../examples/README.md))。保存するとファイルが書き換わるので、一時フォルダに写してから開きます。
 
 ```sh
-cp -R examples/vault /tmp/mdgrid-sample
-target/release/mdgrid /tmp/mdgrid-sample
+cp -R examples/studio /tmp/mdgrid-sample
+target/release/mdgrid /tmp/mdgrid-sample/Tasks
 ```
+
+見本の日付は 2026年10月の初めです。この説明書の画面は、今日を 2026-10-06 として撮っています(`MDGRID_TODAY=2026-10-06`)。
 
 写さずに見るだけなら `--readonly` を付けます。編集・保存・新しいノートができなくなり、何も書きません。
 
 ```sh
-target/release/mdgrid examples/vault --readonly
+target/release/mdgrid examples/studio/Tasks --readonly
 ```
 
 ### 見本を全部試す
@@ -40,12 +42,12 @@ target/release/mdgrid examples/vault --readonly
 
 ```sh
 git clone https://github.com/S6U5/mdgrid && cd mdgrid
-sh demos/try.sh vault       # 上の見本のルートフォルダ(空・食い違う値・読むだけのノートなども)
-sh demos/try.sh relations   # [[リンク]] でつないだ tasks → projects → members。R で関係マップ
-sh demos/try.sh workspace   # 同じ表をワークスペースにまとめたもの(-w Work)
-sh demos/try.sh showcase    # 多くの機能を入れた設定とルートフォルダ
-sh demos/try.sh ai-human    # 人の仕事と AI の仕事に分ける .base(英語)
-sh demos/try.sh demo        # 英語の見本(README の画面)
+sh demos/try.sh studio      # 上の見本。[[リンク]] でつないだ5つの表。R で関係マップ
+sh demos/try.sh workspace   # 同じ表のいくつかをワークスペースにまとめたもの(-w Work)
+sh demos/try.sh configs     # 多くの機能を入れた設定で studio を開く
+sh demos/try.sh quirks      # 扱いにくいノート(空・食い違う値・読むだけのノートなど)
+sh demos/try.sh ai-human    # 人の仕事と AI の仕事に分ける .base
+sh demos/try.sh places      # 登録した表
 ```
 
 `--` のあとは mdgrid に渡ります。たとえば `sh demos/try.sh demo -- --readonly`。
@@ -100,7 +102,7 @@ sh demos/try.sh demo        # 英語の見本(README の画面)
 | `:` か `Ctrl+P` | コマンドを名前で探す |
 | `q` | 終わる(未保存の変更があれば確かめる) |
 
-マウスも使えます。行のクリックで選び、選んだ行のセルのクリックで編集を始めます。選んだ行のファイル名のクリックは `e`(エディタで開く)と同じです。列の見出しのクリックで並べ替え(ビューに覚えます)、列の境目のドラッグで幅を変え、ホイールで上下に動きます。
+マウスも使えます。行のクリックで選び、選んだ行のセルのクリックで編集を始めます。選んだ行のファイル名のクリックは `e`(エディタで開く)と同じです。列の見出しのクリックで並べ替え(ビューに覚えます)、列の境目のドラッグで幅を変え、ホイールで上下に動きます。トラックパッドの横のスワイプ(横のホイール)と shift+ホイールでは左右の列に動きます。
 
 ヘルプ(`?`)は、先頭に今押せるキーを出します。
 

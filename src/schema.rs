@@ -97,9 +97,9 @@ pub const ITEMS: &[Item] = &[
         example: "editor = \"nvim\"",
         scope: Scope::Global,
         en: "Editor that opens the selected note (arguments allowed, e.g. \"code -w\"; run without\n\
-             a shell). Unset or blank: $VISUAL, then $EDITOR, then vi.",
+             a shell). Unset or blank: $VISUAL, then $EDITOR, then vi (notepad on Windows).",
         ja: "選んだノートを開くエディタ(引数つきでよい。例 \"code -w\"。シェルは通さない)。\
-             無いか空(空白だけも)なら $VISUAL、$EDITOR、vi の順。",
+             無いか空(空白だけも)なら $VISUAL、$EDITOR、vi(Windows は notepad)の順。",
     },
     Item {
         path: "poll_ms",
@@ -466,6 +466,34 @@ pub const ITEMS: &[Item] = &[
         ja: "表の行を伸ばす行の数: 長い値や改行のある値は列の幅で折り返し、行を最大で「1 + この数」の行の高さまで\
              伸ばす(行ごとに要るだけの高さ)。入りきらない分は最後に …。0 ならどの行も1行で、改行は …⏎ で示す。\
              ほかの値は警告して既定にする。",
+    },
+    Item {
+        path: "display.note_path",
+        ty: "string (\"common\", \"name\", \"full\" or \"off\")",
+        ty_ja: "文字列(\"common\"・\"name\"・\"full\"・\"off\")",
+        default: Some("\"common\""),
+        example: "[display]\nnote_path = \"name\"",
+        scope: Scope::Profile,
+        en: "How the note column on the left shows each note: \"common\" drops the folder shared by every row,\n\
+             \"name\" shows only the name, \"full\" the path from the root, and \"off\" no name (only the row marks).\n\
+             Other values are warned about and the default is used.",
+        ja: "左のノートの欄の出し方: \"common\" は全部の行に共通のフォルダを除き、\"name\" は名前だけ、\"full\" は根からのパス、\
+             \"off\" は名前を出さない(行の印だけ)。ほかの値は警告して既定にする。",
+    },
+    Item {
+        path: "display.note_name",
+        ty: "string (a regular expression)",
+        ty_ja: "文字列(正規表現)",
+        default: Some("\"\""),
+        example: "[display]\nnote_name = '^\\d{8}_'",
+        scope: Scope::Profile,
+        en: "A regular expression applied to the name in the note column (after note_path; with folders, to the last\n\
+             part only). When it matches, show the group named name, or else the first group, or else the name with\n\
+             the match removed. A name that does not match, or would become empty, is shown as it is. \"\" sets\n\
+             nothing. An expression that cannot be read is warned about and not used.",
+        ja: "ノートの欄の名前に当てる正規表現(note_path のあと。フォルダがあれば最後の名前の部分だけ)。一致したら、\
+             名前の付いた組 name、無ければ1つ目の組、組が無ければ一致した部分を除いた残りを出す。一致しない名前と、\
+             空になる名前はそのまま。\"\" は何もしない。読めない正規表現は警告して使わない。",
     },
     Item {
         path: "dates.format",

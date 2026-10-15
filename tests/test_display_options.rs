@@ -192,7 +192,7 @@ fn print_config() -> String {
 
 #[test]
 fn test_sr_21_print_config_has_display() {
-    // [SR-21][CLI-11] --print-config に [display] の11項目が既定値で出る(TOML として読んで判定)。
+    // [SR-21][CLI-11] --print-config に [display] の13項目が既定値で出る(TOML として読んで判定)。
     let text = print_config();
     let table: toml::Table = text.parse().expect("--print-config の出力は TOML");
     let display = table
@@ -233,7 +233,8 @@ fn test_sr_21_print_config_has_display() {
         Some(0),
         "[display] の row_extra_lines\n---\n{text}"
     );
-    assert_eq!(display.len(), 11, "[display] は11項目: {display:?}");
+    // 2026-10-15-note-path で note_path(既定 "common")が、2026-10-15-note-name で note_name(既定 "")が増えた。
+    assert_eq!(display.len(), 13, "[display] は13項目: {display:?}");
     assert!(
         !table.contains_key("search_bar"),
         "検索の欄は [display] の中"

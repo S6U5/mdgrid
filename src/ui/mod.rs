@@ -373,6 +373,8 @@ mod test_help;
 #[cfg(test)]
 mod test_help_markers;
 #[cfg(test)]
+mod test_hwheel;
+#[cfg(test)]
 mod test_input;
 #[cfg(test)]
 mod test_keys_doc;
@@ -382,6 +384,8 @@ mod test_language;
 mod test_language_more;
 #[cfg(test)]
 mod test_layout_util;
+#[cfg(test)]
+mod test_link_labels;
 #[cfg(test)]
 mod test_list_type;
 #[cfg(test)]
@@ -414,6 +418,10 @@ mod test_new_note_more;
 mod test_new_note_order;
 #[cfg(test)]
 mod test_note_column;
+#[cfg(test)]
+mod test_note_name;
+#[cfg(test)]
+mod test_note_path;
 #[cfg(test)]
 mod test_note_rename;
 #[cfg(test)]

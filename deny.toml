@@ -1,4 +1,5 @@
-# cargo deny check の設定。依存を足すときは、配布元・保守・既知の脆弱性を確かめてから(docs/design.md)。
+# cargo deny check の設定。ci.sh では licenses・bans・sources を落とし、advisories(勧告)は今は警告だけにする。
+# 依存を足すときは、配布元・保守・既知の脆弱性を確かめてから(docs/design.md)。
 
 [advisories]
 version = 2

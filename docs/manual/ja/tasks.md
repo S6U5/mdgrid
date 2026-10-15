@@ -34,7 +34,7 @@
 
 ![日付をカレンダーで入れる](images/edit-date.svg)
 
-日時の列では、カレンダーの下に時刻の欄が出ます(写しは見本 `examples/schedule`)。`Ctrl+O` で時刻の欄に移り、`↑` `↓` で15分、`Shift+↑` `Shift+↓` で1時間動かします。
+日時の列では、カレンダーの下に時刻の欄が出ます(写しは見本の会議 `examples/studio/Meetings`)。`Ctrl+O` で時刻の欄に移り、`↑` `↓` で15分、`Shift+↑` `Shift+↓` で1時間動かします。
 
 ![日時の時刻を選ぶ](images/edit-datetime-time.svg)
 
@@ -99,8 +99,8 @@ mdgrid が書くのは直したキーの値だけです。無いキーは1行足
 ## .base を開く
 
 ```sh
-mdgrid /tmp/mdgrid-sample/タスク.base
-mdgrid /tmp/mdgrid-sample/タスク.base --view 期限
+mdgrid /tmp/mdgrid-sample/Tasks.base
+mdgrid /tmp/mdgrid-sample/Tasks.base --view "This week"
 ```
 
 `.base` の table ビューがタブに並び、先頭(か `--view` の名前)が開きます。`[`・`]` で切り替えます。filters・order・sort・groupBy・limit・displayName・formulas を読み、グループの見出しの行は `Enter` で畳めます。
@@ -116,7 +116,7 @@ mdgrid /tmp/mdgrid-sample/タスク.base --view 期限
 ## CSV・TSV を台帳として開く
 
 ```sh
-mdgrid /tmp/mdgrid-sample/備品.csv
+mdgrid /tmp/mdgrid-sample/equipment.csv
 ```
 
 `.csv`・`.tsv` のファイルを1つ渡すと、1行目を列の名前、2行目からを行にした表で開きます。値の直し・取り消し・保存の前の差分・絞り込み・並べ替え・グループ分け・ビューの保存・`--print` は、ノートのフォルダと同じように使えます。
@@ -208,14 +208,14 @@ view = "読んでいる"
 
 ## リンクで表をつなぐ(リレーション)
 
-ノートのフロントマターにほかのノートへのリンクを書くと、ノートのフォルダどうしを、つながった表(タスク → プロジェクト → メンバー)として扱えます。キーはノートのファイル名なので id の列は要らず、多対多はリンクのリストで書けるので中間の表も要りません。
+ノートのフロントマターにほかのノートへのリンクを書くと、ノートのフォルダどうしを、つながった表(タスク → 案件 → 顧客)として扱えます。キーはノートのファイル名なので id の列は要らず、多対多はリンクのリストで書けるので中間の表も要りません。
 
 ```yaml
-project: "[[mdgrid]]"            # プロジェクト1つ
-assignee: "[[Alice]]"
-related:                         # 複数
-  - "[[Website]]"
-  - "[mdgrid](../projects/mdgrid.md)"   # Markdown のリンクも、ただのパス(../projects/mdgrid)も使える
+project: "[[Clinic Booking App]]"     # 案件1つ
+owner: "[[Leo Park]]"
+depends_on:                           # 複数
+  - "[[Design the booking screens]]"
+  - "[Build the appointment API](Build%20the%20appointment%20API.md)"   # Markdown のリンクも、ただのパスも使える
 ```
 
 - リンクのセルは、行き先のノートの名前で出ます。行き先の無い `[[…]]` は、名前の前に `?` が付きます。
@@ -224,7 +224,7 @@ related:                         # 複数
 - `:linked_rows` で、今のノートを指しているノートを、どの表のどの列からかと一緒に並べます。選ぶとそのノートを開きます。
 - フォルダを開いても `.base` を開いても同じに効き、行き先は開いたフォルダの外でもかまいません。つなぐフォルダを登録しておくと(上の節)、名前がフォルダをまたいで解けます。ただのパスは、`/` を含むか `.md` で終わり、ノートが実際にあるときだけリンクとみなすので、普通の言葉は文字のままです。
 
-見本 `examples/relations` は、この形でつないだタスク・プロジェクト・メンバーです: `mdgrid examples/relations/tasks`。
+見本 `examples/studio` は、この形でタスク・案件・顧客・人・会議をつないでいます: `mdgrid examples/studio/Tasks`。
 
 **関係マップ。** `R`(か右上の画面の型のメニューの **関係マップ**)で、表を箱(行の数と列)にし、リンクの列から行き先の表へ矢印を引いた図が出ます(`N` → `1`、リンクのリストなら `N` → `N`)。`↑` `↓` で表を、`←` `→` でつながりを選ぶと、詳細と(縦に広い端末では)つながった行が変わります。並びは端末の幅に合わせて変わります。クリックでも操作できます(表は1回で選び、もう一度で開く。線や矢印でつながりを選び、つながった行でそのノートを開く)。もう一度 `R` で表に戻ります。図に出るのは今のワークスペース(下)の表、無ければ登録した表です。
 
@@ -262,6 +262,8 @@ view = "進行中"
 
 ノートの側に置きたいとき(共有するリポなど)は、その根で `mdgrid --init-workspace`(か `mdgrid <フォルダ> --init-workspace`)を動かします。`.mdgrid/workspace.toml` ができ、`[[table]]` を書かなければ、根の直下のノートのあるフォルダが全部、表になります(`.base` はルートフォルダ全体を指すので自動では入れません。入れたければ `[[table]]` に書きます)。
 
+根のフォルダを開いたときに決めた表を開きたいときは、印の最上位に `open = "<表の名前>"` を書きます(`[[table]]` の `name`。自動の表ならフォルダの名前)。たとえば README や AGENTS.md の並ぶ台帳のフォルダで、`.base` の表だけを開けます。フォルダの全部のノートを見たいときは `--raw` を添えます。
+
 範囲の決め方(先に当たったもの): `-w` → 開いたフォルダから上へたどって最初の `.mdgrid/workspace.toml` → その表を含む `workspaces.toml` の最初のワークスペース → 検知 → 登録した表。検知は設定の `[workspace] detect`(既定は `[".obsidian"]`。旧い値 `"vault"`・`"git"` も読む)で、いちばん近いルートフォルダ(`.obsidian/` のあるフォルダ)を、`".git"` を足せばリポの根も、直下のフォルダを表とする名前の無いワークスペースとみなします。`detect = []` で検知しません。
 
 ## ほかのコマンドと組む
@@ -273,10 +275,10 @@ view = "進行中"
 画面を出さずに、ビューの表を標準出力に出します(既定は csv。ノートは書き換えない)。
 
 ```sh
-mdgrid /tmp/mdgrid-sample/タスク.base --print
-mdgrid /tmp/mdgrid-sample/タスク.base --print --format json | jq .
-mdgrid /tmp/mdgrid-sample --print --format md > 表.md
-mdgrid /tmp/mdgrid-sample --print --format tsv > 表.tsv
+mdgrid /tmp/mdgrid-sample/Tasks.base --print
+mdgrid /tmp/mdgrid-sample/Tasks.base --print --format json | jq .
+mdgrid /tmp/mdgrid-sample/Tasks --print --format md > 表.md
+mdgrid /tmp/mdgrid-sample/Tasks --print --format tsv > 表.tsv
 ```
 
 フォルダを `--print` すると、ノートの名前の列は出ません(列はフロントマターのキーだけ)。
@@ -284,8 +286,8 @@ mdgrid /tmp/mdgrid-sample --print --format tsv > 表.tsv
 画面で行を選んで、そのパスか列の値を出します。画面は読むだけで、`Enter` で印を付けた行(無ければ選んでいる行)を1行ずつ出して終わります。`q` で取りやめると何も出さず、終了コードは 1 です。
 
 ```sh
-mdgrid /tmp/mdgrid-sample --pick path | xargs -o vi    # 選んだノートを開く
-mdgrid /tmp/mdgrid-sample --pick status
+mdgrid /tmp/mdgrid-sample/Tasks --pick path | xargs -o vi    # 選んだノートを開く
+mdgrid /tmp/mdgrid-sample/Tasks --pick status
 ```
 
 ![行を選んでほかのコマンドに渡す](images/pick.svg)

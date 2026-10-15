@@ -38,7 +38,10 @@ fn test_sr_8_editor_argv_split() {
             OsString::from("/tmp/my notes/a b.md")
         ]
     );
-    assert_eq!(editor_argv("", p).unwrap()[0], OsString::from("vi"));
+    assert_eq!(
+        editor_argv("", p).unwrap()[0],
+        OsString::from(mdgrid::config::DEFAULT_EDITOR)
+    );
     // シェルの記号もそのまま1つの語(展開しない)。
     assert_eq!(
         editor_argv("ed $HOME;", p).unwrap()[1],

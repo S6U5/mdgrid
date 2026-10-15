@@ -21,8 +21,8 @@ font="'JetBrainsMono Nerd Font Mono', "
 for variant in dark light; do
   mkdir -p "$work/$variant/mdgrid"
   case $variant in
-    dark) printf 'theme = "sumi"\nnerd_font = true\n' > "$work/$variant/mdgrid/config.toml"; bg="#16171b" ;;
-    light) printf 'theme = "saas"\nnerd_font = true\n\n[style]\npreset = "saas"\n' > "$work/$variant/mdgrid/config.toml"; bg="#f6f7f9" ;;
+    dark) printf '[terminal]\nnerd_font = true\n\n[look]\ntheme = "sumi"\n' > "$work/$variant/mdgrid/config.toml"; bg="#16171b" ;;
+    light) printf '[terminal]\nnerd_font = true\n\n[look]\ntheme = "saas"\npreset = "saas"\n' > "$work/$variant/mdgrid/config.toml"; bg="#f6f7f9" ;;
   esac
   env -u LC_ALL -u LC_MESSAGES "$PY" "$TUI_SHOT" docs/manual-scenarios.toml --out "$work/shots-$variant" \
     --lang "$lang" --env LANG="$locale" --env COLORTERM=truecolor --env XDG_CONFIG_HOME="$work/$variant" \

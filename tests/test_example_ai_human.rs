@@ -1,5 +1,5 @@
 //! 見本 examples/ai-human(人と AI のタスクを分けて見る)を開く試験。
-//! 記録: specs/_changes/2026-10-07-example-ai-human.md のタスク 1。
+//! 記録: specs/_changes/2026-10-07-example-ai-human.md のタスク 1(見本は 2026-10-15 に英語の制作会社のタスクに作り直した)。
 //!
 //! 見本は一時フォルダに写してから開く(リポの examples の中は書かない)。
 //! 分け方は cellops と同じ: `actor: human` か、`human_gate` が none 以外なら人。
@@ -61,11 +61,11 @@ fn print_view(view: &str) -> Vec<Vec<String>> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/ai-human");
     copy_dir(&root, tmp.path());
     let out = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
-        .arg(tmp.path().join("vault").join("タスク.base"))
+        .arg(tmp.path().join("Tasks.base"))
         .args(["--print", "--format", "csv", "--with-path", "--view", view])
         .env("XDG_CONFIG_HOME", tmp.path().join("config"))
         .env("XDG_STATE_HOME", tmp.path().join("state"))
-        .env("LANG", "ja_JP.UTF-8")
+        .env("LANG", "en_US.UTF-8")
         .env_remove("LC_ALL")
         .env_remove("LC_MESSAGES")
         .output()
@@ -98,24 +98,24 @@ fn names(rows: &[Vec<String>]) -> Vec<String> {
 }
 
 const HUMAN: [&str; 5] = [
-    "サーバー代を払う",
-    "業務委託の契約書に署名する",
-    "確定申告の書類を出す",
-    "区役所で住民票を取る",
-    "取引先にお礼のメールを送る",
+    "Pay the hosting bill",
+    "Sign the Harbor Clinic contract",
+    "Submit the quarterly tax filing",
+    "Pick up the projector from repair",
+    "Send the bakery a launch-day checklist",
 ];
 
 const AI: [&str; 4] = [
-    "会議の議事録を要約する",
-    "依存ライブラリを更新する",
-    "テストの抜けを洗い出す",
-    "README の英訳を直す",
+    "Summarize the clinic workshop notes",
+    "Update dependencies in the booking app",
+    "List the missing tests for the appointment API",
+    "Fix broken links on the catalog site",
 ];
 
 #[test]
 fn test_example_ai_human_groups_people_first() {
     // 終わっていないタスクが、人のまとまり(優先度 → 期限の順)、AI のまとまりの順に並ぶ。
-    let rows = print_view("人とAI");
+    let rows = print_view("People and AI");
     let got = names(&rows);
     let want: Vec<String> = HUMAN
         .iter()
@@ -127,8 +127,8 @@ fn test_example_ai_human_groups_people_first() {
 
 #[test]
 fn test_example_ai_human_split_views() {
-    let mut human = names(&print_view("人だけ"));
-    let mut ai = names(&print_view("AIだけ"));
+    let mut human = names(&print_view("People only"));
+    let mut ai = names(&print_view("AI only"));
     human.sort();
     ai.sort();
     let mut want_h: Vec<String> = HUMAN.iter().map(|s| s.to_string()).collect();
@@ -137,14 +137,14 @@ fn test_example_ai_human_split_views() {
     want_a.sort();
     // human_gate が none 以外(pay・sign・submit・send)か actor: human なら人。
     assert_eq!(human, want_h);
-    // actor の無い「README の英訳を直す」は AI に入る。
+    // actor の無い「Fix broken links on the catalog site」は AI に入る。
     assert_eq!(ai, want_a);
 }
 
 #[test]
 fn test_example_ai_human_done_keeps_the_split() {
     // 終わったタスクにも担当の式が効く(human_gate: send の請求書は人)。
-    let rows = print_view("終わった");
+    let rows = print_view("Done");
     let mut got: Vec<(String, String)> = rows
         .iter()
         .map(|r| (note_name(&r[0]), r[1].clone()))
@@ -154,12 +154,12 @@ fn test_example_ai_human_done_keeps_the_split() {
         got,
         vec![
             (
-                "古いブランチを消す".to_string(),
-                "🤖 エージェントのタスク".to_string()
+                "Delete stale preview sites".to_string(),
+                "🤖 For an agent".to_string()
             ),
             (
-                "請求書を発行する".to_string(),
-                "👤 人間のタスク".to_string()
+                "Send the Lumen Books invoice".to_string(),
+                "👤 Needs a person".to_string()
             ),
         ]
     );

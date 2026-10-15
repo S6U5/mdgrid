@@ -180,6 +180,35 @@ fn check_view(v: &toml::Table, warns: &mut Vec<String>) {
                 );
             }
         }
+        // SR-47: ノートの欄の名前の正規表現。読めない値は警告して使わない(読むときは持たない)。
+        if let Some(v) = d.get("note_name") {
+            let bad = match v.as_str() {
+                Some(s) => crate::display::NoteName::new(s).err(),
+                None => Some(Msg::WantString.text().to_string()),
+            };
+            if let Some(e) = bad {
+                crate::profile::warn(
+                    warns,
+                    FILE_NAME,
+                    "table.view.settings.display.note_name",
+                    Msg::RsnBadRegex.fill(&[&e.replace('\n', " ")]),
+                );
+            }
+        }
+        // SR-46: ノートの欄のフォルダの出し方。知らない値は警告して既定(読むときは持たない)。
+        if let Some(v) = d.get("note_path") {
+            if v.as_str()
+                .and_then(crate::display::NotePath::parse)
+                .is_none()
+            {
+                crate::profile::warn(
+                    warns,
+                    FILE_NAME,
+                    "table.view.settings.display.note_path",
+                    crate::profile::not(Msg::WantNotePath),
+                );
+            }
+        }
     }
     if let Some(fs) = s.get("filters").and_then(|f| f.as_array()) {
         for c in fs.iter().filter_map(|c| c.as_table()) {

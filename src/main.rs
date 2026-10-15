@@ -18,7 +18,7 @@ use mdgrid::source::markdown::Markdown;
 use mdgrid::source::{Source, Value};
 use mdgrid::views;
 use ratatui::backend::CrosstermBackend;
-use ratatui::crossterm::event::{self, Event, MouseButton, MouseEventKind};
+use ratatui::crossterm::event::{self, Event, KeyModifiers, MouseButton, MouseEventKind};
 use ratatui::crossterm::terminal::{
     self, BeginSynchronizedUpdate, EndSynchronizedUpdate, EnterAlternateScreen,
     LeaveAlternateScreen,
@@ -121,7 +121,7 @@ impl PrintFormat {
     bin_name = "mdgrid",
     version,
     about = "Markdown のフロントマターを端末の表で見て直す",
-    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n.csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。",
+    long_about = "フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n.base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n.md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n.csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n印 .mdgrid/workspace.toml の open に表を書いたフォルダは、その表を開く。",
     disable_help_flag = true,
     disable_version_flag = true,
     args_override_self = true
@@ -136,6 +136,9 @@ struct Cli {
     /// このワークスペースで開く(パスが無ければその最初の表。WS-3)
     #[arg(short = 'w', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true)]
     workspace: Option<String>,
+    /// 印の open の表ではなく、フォルダそのものを開く(CLI-1)
+    #[arg(long)]
+    raw: bool,
     /// 読むだけで開く(編集も保存もしない)
     #[arg(long)]
     readonly: bool,
@@ -683,6 +686,13 @@ fn is_csv(p: &Path) -> bool {
 /// 開けるパスか確かめる(CLI-4)。フォルダの並びか、`.base` 1つ(フォルダと並べない)。
 fn check_paths(paths: &[PathBuf]) -> Result<(), String> {
     for p in paths {
+        // WS-9: 印の表に中身を書いた `.base`(ファイルは無い)。
+        if is_base(p) && mdgrid::workspace::inline_base(p).is_some() {
+            if paths.len() > 1 {
+                return Err(Msg::BaseAlone.fill(&[&p.display()]));
+            }
+            continue;
+        }
         let meta =
             std::fs::metadata(p).map_err(|e| Msg::PathUnopenable.fill(&[&p.display(), &e]))?;
         if meta.is_dir() {
@@ -731,8 +741,13 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
             guessed_root: None,
         });
     };
-    let text =
-        std::fs::read_to_string(bp).map_err(|e| Msg::BaseUnreadable.fill(&[&bp.display(), &e]))?;
+    // WS-9: 印の表に書いた中身なら、印のファイルを `this` にし、印の根で開く。
+    let inline = mdgrid::workspace::inline_base(bp);
+    let text = match &inline {
+        Some((t, _)) => t.clone(),
+        None => std::fs::read_to_string(bp)
+            .map_err(|e| Msg::BaseUnreadable.fill(&[&bp.display(), &e]))?,
+    };
     let base =
         base::parse(&text).map_err(|e| format!("{}: {}", bp.display(), e.replace('\n', " ")))?;
     let idx = match view {
@@ -743,16 +758,28 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
             Msg::NoSuchView.fill(&[&v, &have])
         })?),
     };
-    let src = Markdown::open_vault(bp).map_err(|e| Msg::CannotOpen.fill(&[&e]))?;
+    let src = match &inline {
+        Some(_) => Markdown::open_vault_dir(
+            bp.parent()
+                .filter(|d| !d.as_os_str().is_empty())
+                .unwrap_or(Path::new(".")),
+        ),
+        None => Markdown::open_vault(bp),
+    }
+    .map_err(|e| Msg::CannotOpen.fill(&[&e]))?;
     let guessed_root = match src.roots() {
         [r] if !r.ancestors().any(|a| a.join(".obsidian").is_dir()) => Some(r.clone()),
         _ => None,
     };
     // BV-22: `.base` を直接開いたときの this はその `.base` のファイル。
     let mut base = base;
-    base.set_this(src.this_file(bp));
-    let name = bp
-        .file_name()
+    base.set_this(src.this_file(inline.as_ref().map_or(bp.as_path(), |(_, m)| m.as_path())));
+    // WS-9: 印の表に中身を書いた表は、ファイルが無いので `.base` を付けずに表の名前だけを見せる。
+    let shown = match &inline {
+        Some(_) => bp.file_stem(),
+        None => bp.file_name(),
+    };
+    let name = shown
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| bp.display().to_string());
     Ok(Target {
@@ -796,6 +823,9 @@ fn main() -> ExitCode {
     // SR-23: 引数の誤りは設定を読む前に出るので、まず環境から決める。
     i18n::set_default(i18n::resolve(Language::Auto, |k| std::env::var(k).ok()));
     let mut args: Vec<OsString> = std::env::args_os().skip(1).collect();
+    // CLI-1: `--raw` は印の `open` を使わない(命令の旗でもオプションでもないので、先に読んでおく)。
+    // `-w` だけ(パスなし)かは、命令の旗(`--print` など)を除いた位置の引数で見る。
+    let (raw, no_paths) = parse_cli(&args).map_or((false, true), |c| (c.raw, c.paths.is_empty()));
     let opts = match take_options(&mut args) {
         Ok(o) => o,
         Err(e) => return fail(&e),
@@ -803,6 +833,8 @@ fn main() -> ExitCode {
     // SR-23: 設定の language で決め直す(--help と起動できない理由もこの言語)。
     i18n::set_default(language(opts.config.as_deref(), config::config_path()));
     let no_args = args.is_empty();
+    // CLI-1: `-w` だけで(パスなしで)開くワークスペースの最初の表には、印の `open` を使わない。
+    let use_marker = !raw && !(opts.workspace.is_some() && no_paths);
     let (paths, pick) = match parse_args(&args) {
         Ok(Command::Help) => {
             println!("{}", usage());
@@ -815,12 +847,23 @@ fn main() -> ExitCode {
         Ok(Command::PrintConfig) => return emit(Ok(config::default_toml().into_bytes())),
         // CLI-21: その表で効く設定(画面は出さない)。
         Ok(Command::PrintResolved(paths)) => {
+            // CLI-1: 印の根なら、印の `open` の表で効く設定。
+            let (paths, view, _, marker_warns) = if use_marker {
+                marker_paths(paths, &opts)
+            } else {
+                (paths, None, false, Vec::new())
+            };
+            let opts = Options {
+                view: opts.view.clone().or(view),
+                ..opts.clone()
+            };
             let (config, mut warnings) =
                 match load_config(opts.config.as_deref(), config::config_path()) {
                     Ok(c) => c,
                     Err(e) => return fail(&e),
                 };
             let (r, w) = resolve_table(&config, &paths, &opts);
+            warnings.extend(marker_warns);
             warnings.extend(w);
             for w in &warnings {
                 eprintln!("mdgrid: {w}");
@@ -860,6 +903,7 @@ fn main() -> ExitCode {
                 },
                 None => p,
             };
+            let (p, opts) = marker_for_print(p, &opts, use_marker);
             let out = ViewOut::Print(f.lib(), w);
             return print_view(&md_to_folder(p).0, &opts, out, &filter, &sort, &only);
         }
@@ -873,6 +917,7 @@ fn main() -> ExitCode {
                 },
                 None => p,
             };
+            let (p, opts) = marker_for_print(p, &opts, use_marker);
             let paths = md_to_folder(p).0;
             return print_view(&paths, &opts, ViewOut::Check, &[], &[], &only);
         }
@@ -897,17 +942,33 @@ fn main() -> ExitCode {
         },
         Err(e) => return fail(&e),
     };
+    // CLI-1・WS-7: 印の根のフォルダなら、印の `open` の表で開く(登録した表の一覧は重ねない)。
+    let (paths, marker_view, marker, marker_warns) = if use_marker {
+        marker_paths(paths, &opts)
+    } else {
+        (paths, None, false, Vec::new())
+    };
     // CLI-15: `.md` のファイルはそのフォルダに置き換え、読み終えたらその行を選ぶ。
     let (paths, select) = md_to_folder(paths);
     if let Err(e) = check_paths(&paths) {
         return fail(&e);
     }
     // OUT-3: `--pick` は読むだけ(WB-15)で開く。
-    let (mut app, editor) = match open_app(&paths, opts.view.as_deref(), &opts, pick.is_some()) {
+    let (mut app, editor) = match open_app(
+        &paths,
+        opts.view.as_deref(),
+        &opts,
+        pick.is_some(),
+        marker_warns,
+    ) {
         Ok(a) => a,
         Err(e) => return fail(&e),
     };
     app.select_after_load = select;
+    // WS-7: 印の表の `view` は、登録した表と同じく開いてから選ぶ(`.base` のビューでも mdgrid のビューでもよい)。
+    if let Some(v) = &marker_view {
+        app.select_view_named(v);
+    }
     // SR-10: `--pick` は画面を端末(`/dev/tty`)に出すので、標準出力は見ない。
     let tty = match pick {
         Some(_) => check_dev_tty(),
@@ -918,7 +979,7 @@ fn main() -> ExitCode {
     }
     let Some(what) = pick else {
         // CLI-1・CLI-19: 引数なしで起動し、登録した表があれば一覧を重ねて始める。
-        if no_args && opts.workspace.is_none() && !app.registered.is_empty() {
+        if no_args && !marker && opts.workspace.is_none() && !app.registered.is_empty() {
             app.start_open_places(true);
         }
         return run_switching(app, editor, &opts);
@@ -959,6 +1020,46 @@ fn main() -> ExitCode {
     emit(Ok(out.into_bytes()))
 }
 
+/// 印の表(CLI-1・WS-7): 開くフォルダが1つで印の根なら、印の `open` の表に置き換える(`--raw` のときは呼ばない)。
+/// 置き換えた表のビュー(`--view` が無いときだけ)と、置き換えたかと、印の警告も返す。
+fn marker_paths(
+    paths: Vec<PathBuf>,
+    opts: &Options,
+) -> (Vec<PathBuf>, Option<String>, bool, Vec<String>) {
+    if paths.len() != 1 || !paths[0].is_dir() {
+        return (paths, None, false, Vec::new());
+    }
+    match mdgrid::workspace::marker_open(&paths[0]) {
+        (Some(t), w) => (
+            vec![t.path],
+            t.view.filter(|_| opts.view.is_none()),
+            true,
+            w,
+        ),
+        (None, w) => (paths, None, false, w),
+    }
+}
+
+/// 画面を出さない起動(CLI-1): 印の表に置き換え、印の表のビューを `--view` の代わりにし、警告は標準エラーへ。
+fn marker_for_print(
+    paths: Vec<PathBuf>,
+    opts: &Options,
+    use_marker: bool,
+) -> (Vec<PathBuf>, Options) {
+    if !use_marker {
+        return (paths, opts.clone());
+    }
+    let (paths, view, _, warns) = marker_paths(paths, opts);
+    for w in &warns {
+        eprintln!("mdgrid: {w}");
+    }
+    let opts = Options {
+        view: opts.view.clone().or(view),
+        ..opts.clone()
+    };
+    (paths, opts)
+}
+
 /// `-w <名前>`(WS-3): 名前を workspaces.toml で確かめ、パスが無ければその最初の表を開く。
 fn workspace_paths(
     name: &str,
@@ -988,9 +1089,12 @@ fn open_app(
     view: Option<&str>,
     opts: &Options,
     pick: bool,
+    marker_warns: Vec<String>,
 ) -> Result<(App, String), String> {
     let target = open_target(paths, view)?;
     let (config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
+    // WS-7: 印の `open` の警告も起動の警告に並べる。
+    warnings.extend(marker_warns);
     // SR-43・CLI-3: 画面で選んだ全体の設定(ui.toml。無ければ前の版の look.toml)を config.toml の上に重ねる。
     let ui = match config_dir() {
         Some(dir) => {
@@ -1059,7 +1163,13 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
         } else if std::mem::take(&mut app.switch_leave_workspace) {
             opts.workspace = None;
         }
-        match open_app(std::slice::from_ref(&place.path), None, &opts, false) {
+        match open_app(
+            std::slice::from_ref(&place.path),
+            None,
+            &opts,
+            false,
+            Vec::new(),
+        ) {
             Ok((next, ed)) => {
                 app = next;
                 editor = ed;
@@ -1680,8 +1790,18 @@ fn handle(app: &mut App, ev: Event) {
         Event::Key(k) => app.key(k),
         // マウスは App の側でキーと同じ意図に直す(CE-1 の入力の外のクリック・SR-6)。
         Event::Mouse(m) => match m.kind {
+            // SR-6: shift を押したホイールは、表では横のホイールと同じ(横を送らない端末とマウスのため)。
+            MouseEventKind::ScrollDown if m.modifiers.contains(KeyModifiers::SHIFT) => {
+                app.shift_wheel(true)
+            }
+            MouseEventKind::ScrollUp if m.modifiers.contains(KeyModifiers::SHIFT) => {
+                app.shift_wheel(false)
+            }
             MouseEventKind::ScrollDown => app.wheel(true),
             MouseEventKind::ScrollUp => app.wheel(false),
+            // SR-6: 横のホイール(トラックパッドの横のスワイプ)。
+            MouseEventKind::ScrollRight => app.hwheel(true),
+            MouseEventKind::ScrollLeft => app.hwheel(false),
             MouseEventKind::Down(MouseButton::Left) => app.click(m.column, m.row),
             // SR-24: セルの右クリックでそのセルを選び、その場の操作の一覧を開く。
             MouseEventKind::Down(MouseButton::Right) => app.right_click(m.column, m.row),

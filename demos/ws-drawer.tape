@@ -15,24 +15,24 @@ Env COLORTERM "truecolor"
 
 Source demos/setup.tape
 
-# relations のフォルダは印で「Relations sample」(tasks・projects・members)。別に Demo のワークスペースを作っておく(映さない)
+# studio のフォルダは印で「Northwind Studio」(Tasks・Projects・Clients・People・Meetings)。別に Office のワークスペースを作っておく(映さない)
 Hide
-Type "mdgrid Tasks --add-to Demo >/dev/null && cd ../relations && clear"
+Type "mdgrid ../quirks/Tasks --add-to Office >/dev/null && clear"
 Enter
 Sleep 300ms
 Show
 
-# tasks を開く(範囲は Relations sample)。普段は引き出しが無い
-Type "mdgrid tasks" Sleep 400ms Enter
+# Tasks を開く(範囲は Northwind Studio)。普段は引き出しが無い
+Type "mdgrid Tasks" Sleep 400ms Enter
 Sleep 2.5s
 
-# w で引き出し: 範囲の表(今の表 tasks に印)と、畳んだ Demo
+# w で引き出し: 範囲の表(今の表 Tasks に印)と、畳んだ Office
 Type "w" Sleep 2s
-# projects へ移る
-Up Sleep 800ms
+# Projects へ移る
+Down Sleep 800ms
 Enter Sleep 2.5s
 
-# もう一度開き、Demo を開いてその表へ(範囲は Demo になる)
+# もう一度開き、Office を開いてその表へ(範囲は Office になる)
 Type "w" Sleep 1.5s
 Type "G" Sleep 800ms
 Enter Sleep 1.5s

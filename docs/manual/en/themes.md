@@ -18,7 +18,7 @@ A workspace or a single table can have its own theme: see [A look per workspace,
 To try one before changing your config, pass a sample config with `--config` (from the repository root):
 
 ```sh
-mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample
+mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample/Tasks.base
 ```
 
 | Name | Look |

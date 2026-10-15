@@ -3,7 +3,8 @@
 
 decidespec の形で仕様を持つリポ(specs/README.md に decidespec の生成区画がある)で、コードのファイル
 (specs/ の外の、Markdown でないファイル)を書こうとしたとき、実装が進行中の変更の記録
-(specs/_changes/*.md で status: active、フェーズの表の実装が「進行中」、それより前がすべて済か対象外)が
+(specs/_changes/*.md で status: active、フェーズの表の実装が「進行中」、それより前がすべて済か対象外。
+specs/README.md の pace が concurrent か無いリポ(SF-12)では、要求が済なら不明点からタスクは問わない)が
 無ければ、書き込みを止める(終了コード 2、理由は標準エラー)。それ以外は何もしない(終了コード 0)。
 記録は check.py と同じ規則(E23・E24)で形と順序を確かめ、崩れた記録では門を開けない。
 Bash は、コマンドの中の書き込み先(> >> の先、tee・sed -i・cp・mv・touch・rm の対象)を拾って同じ判定をする。
@@ -52,10 +53,26 @@ def front(text):
     return fm, text[m.end():] if m else text
 
 
+def concurrent(root):
+    """SF-12・SF-15: specs/README.md の pace が concurrent か無いときだけ同時進行。ただし HEAD の版が sequential なら、
+    作業ツリーで書き換えていても順番どおりに見る(記録なしに書き換えて門を開け、コミットの前に戻す道を塞ぐ)。"""
+    if not check.is_concurrent(check.repo_pace(root)):
+        return False
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", str(root), "show", "HEAD:./specs/README.md"], capture_output=True, text=True)
+    except OSError:
+        return True
+    # HEAD の版が順番どおり(sequential か、書き損じのような concurrent 以外の値)なら順番どおりに見る
+    return r.returncode != 0 or check.is_concurrent(check.pace_of(r.stdout))
+
+
 def implementing_one(p, fm, body, done_ok=False):
-    """記録 p が、実装が進行中(done_ok なら済も)で、形の崩れていないものなら p を返す。"""
+    """記録 p が、実装が進行中(done_ok なら済も)で、形の崩れていないものなら p を返す。
+    前のフェーズの終わり方は、順番どおり(SF-5)なら全部、同時進行(SF-12)なら要求だけを見る。"""
     if fm.get("status") not in (("active", "done") if done_ok else ("active",)):
         return None
+    conc = concurrent(p.parent.parent.parent)
     sec = re.search(r"(?m)^##\s+フェーズ[^\n]*\n(.*?)(?=^##\s|\Z)", body, re.S)
     if not sec:
         return None
@@ -64,9 +81,10 @@ def implementing_one(p, fm, body, done_ok=False):
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
         if len(cells) >= 2 and cells[0] in PHASES:
             states[cells[0]] = "対象外" if cells[1].startswith("対象外") else cells[1]
+    before = ["要求"] if conc else PHASES[:PHASES.index("実装")]
     if states.get("実装") in (("進行中", "済") if done_ok else ("進行中",)) and all(
-            states.get(n) in ("済", "対象外") for n in PHASES[:PHASES.index("実装")]):
-        errs, _ = check.check_change(p.name, fm, body, {}, check.datetime.date.today(), 10 ** 6)
+            states.get(n) in ("済", "対象外") for n in before):
+        errs, _ = check.check_change(p.name, fm, body, {}, check.datetime.date.today(), 10 ** 6, concurrent=conc)
         if not [e for e in errs if e.startswith(("E23", "E24"))]:
             return p
     return None
@@ -355,7 +373,8 @@ def _managed(root):
 
 BLOCK = ("decidespec: %s はコードのファイル。このリポは decidespec の仕様駆動なので、書く前に sdd-flow の流れで"
          "変更の記録(specs/_changes/)を作り、実装のフェーズを「進行中」にする(それより前のフェーズは済か"
-         "「対象外: 理由」。記録は check.py の E23・E24 を通る形にする)。規模は tiny / bugfix / full から選ぶ(差分を一文で言えれば tiny。迷ったら軽い方)。\n")
+         "「対象外: 理由」。specs/README.md の pace が concurrent か無いリポでは、要求が済なら、ほかは進行中のままでよい。"
+         "記録は check.py の E23・E24 を通る形にする)。規模は tiny / bugfix / full から選ぶ(差分を一文で言えれば tiny。迷ったら軽い方)。\n")
 
 
 def git_run(root, *args):
@@ -528,7 +547,9 @@ def session_start(cwd):
     root = find_root(Path(cwd).resolve())
     if root is not None:
         print("このリポは decidespec の仕様駆動(specs/)。コードを足す・直す・消す依頼は、頼まれなくても sdd-flow スキルの流れ"
-              "(変更の記録 specs/_changes/ に7つのフェーズを並べる)で進める。記録の実装が進行中でないと、コードの書き込みはフックが止める。")
+              "(変更の記録 specs/_changes/ に7つのフェーズを並べる)で進める。記録の実装が進行中でないと、コードの書き込みはフックが止める。"
+              + ("pace は同時進行(要求を済にしたら、仕様化から実装までを並べて進めてよい。SF-12)。" if concurrent(root)
+                 else "pace は順番どおり(前のフェーズが済か対象外になってから次へ。SF-5)。"))
     return 0
 
 

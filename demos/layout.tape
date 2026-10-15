@@ -49,9 +49,9 @@ Screenshot demos/out/layout/3-filtered.png
 Sleep 1s
 Type "q" Sleep 600ms
 
-# 4 表の一覧の引き出し(印のワークスペースのある relations の tasks)
-Type "cd ../relations && clear" Enter
-Type "mdgrid tasks" Sleep 300ms Enter
+# 4 表の一覧の引き出し(印のワークスペース Northwind Studio の Tasks)
+Type "clear" Enter
+Type "mdgrid Tasks" Sleep 300ms Enter
 Sleep 2s
 Type "w" Sleep 1.2s
 Screenshot demos/out/layout/4-drawer.png

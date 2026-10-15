@@ -18,7 +18,7 @@ cargo build --release
 # Draw with a Nerd Font (round pill ends) and nerd_font = true; the GIF is drawn here, so readers need no font.
 work_cfg=$(mktemp -d)
 mkdir -p "$work_cfg/mdgrid"
-printf 'nerd_font = true\n' > "$work_cfg/mdgrid/config.toml"
+printf '[terminal]\nnerd_font = true\n' > "$work_cfg/mdgrid/config.toml"
 ids=$(grep -o 'id = "gif-[0-9]*"' docs/manual-scenarios.toml | sed 's/id = "\(.*\)"/\1/')
 work=$(mktemp -d)
 trap 'rm -rf "$work" "$work_cfg"' EXIT

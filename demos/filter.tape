@@ -34,6 +34,8 @@ Down Sleep 600ms
 Enter Sleep 1s
 Down Sleep 400ms
 Down Sleep 400ms
+Down Sleep 400ms
+Down Sleep 400ms
 Enter Sleep 1s
 Down Sleep 400ms
 Down Sleep 400ms

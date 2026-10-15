@@ -14,7 +14,7 @@ Env COLORTERM "truecolor"
 
 Source demos/setup.tape
 
-Type "mdgrid ." Sleep 400ms Enter
+Type "mdgrid Tasks" Sleep 400ms Enter
 Sleep 2s
 
 # 見た目の区画(Tab 5回)

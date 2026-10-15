@@ -14,14 +14,8 @@ Env COLORTERM "truecolor"
 
 Source demos/setup.tape
 
-# 見本 examples/relations の3つのフォルダを登録した表にする(録画には映さない)
-Hide
-Type `cd ../relations && R="$PWD" && printf '[[place]]\nname = "Tasks"\npath = "%s/tasks"\n\n[[place]]\nname = "Projects"\npath = "%s/projects"\n\n[[place]]\nname = "Members"\npath = "%s/members"\n' "$R" "$R" "$R" > "$XDG_CONFIG_HOME/mdgrid/places.toml" && clear`
-Enter
-Sleep 300ms
-Show
 
-Type "mdgrid tasks" Sleep 500ms Enter
+Type "mdgrid Tasks" Sleep 500ms Enter
 Sleep 2s
 
 # 右上のタブ(Table / Relations)。R で関係マップへ

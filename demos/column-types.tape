@@ -22,7 +22,10 @@ Show
 
 Type "mdgrid Tasks" Sleep 300ms Enter
 Sleep 2s
-# done の列へ(チェックの列)。パレットから型の窓を開く。
+# billable の列へ(チェックの列)。パレットから型の窓を開く。
+Type "l" Sleep 300ms
+Type "l" Sleep 300ms
+Type "l" Sleep 300ms
 Type "l" Sleep 300ms
 Type "l" Sleep 300ms
 Type "l" Sleep 600ms

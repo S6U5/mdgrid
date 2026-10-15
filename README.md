@@ -49,32 +49,32 @@ mdgrid is not on Homebrew yet.
 
 ## 🚀 Get started
 
-### 1. Try it on the demo
+### 1. Try it on the sample
 
-The demo is a small team's task list. Copy it first, so saving does not change the repository:
+The sample is Northwind Studio, a made-up web studio: its tasks, projects, clients, people and meetings, five folders of notes that link to each other. Copy it first, so saving does not change the repository:
 
 ```sh
-cp -R examples/demo /tmp/mdgrid-demo
-mdgrid /tmp/mdgrid-demo/Tasks
+cp -R examples/studio /tmp/studio
+mdgrid /tmp/studio/Tasks
 ```
 
-Move with the arrow keys, press `Enter` to change a value, `Ctrl+S` to see the diff and save, and `q` to quit.
+Move with the arrow keys, press `Enter` to change a value, `Ctrl+S` to see the diff and save, and `q` to quit. On a `project` or `owner` cell, `x` lists what you can do, including opening the note it links to; `R` shows how the five tables link.
 
-The demo's due dates are in early October 2026. To see the same overdue marks as in the screenshots, set the date mdgrid treats as today: `MDGRID_TODAY=2026-10-03 mdgrid /tmp/mdgrid-demo/Tasks`.
+The sample's due dates are in early October 2026. To see the same overdue marks as in the screenshots, set the date mdgrid treats as today: `MDGRID_TODAY=2026-10-06 mdgrid /tmp/studio/Tasks.base`.
 
 Every sample at once, from a clone of the repository. `demos/try.sh` builds mdgrid, copies the sample to a temporary folder, opens it with its own config, and deletes the copy when you quit, so your notes and settings are never touched:
 
 ```sh
 git clone https://github.com/S6U5/mdgrid && cd mdgrid
-sh demos/try.sh demo        # the demo above (a team's task list)
-sh demos/try.sh relations   # tasks → projects → members linked by [[links]]; press R for the relation map
-sh demos/try.sh workspace   # the same tables grouped into a workspace (-w Work)
+sh demos/try.sh studio      # the sample above: five tables linked by [[links]]; press R for the relation map
+sh demos/try.sh workspace   # some of the same tables grouped into workspaces (-w Work)
+sh demos/try.sh configs     # the studio with a config that turns most features on
+sh demos/try.sh quirks      # awkward notes: empty and mismatched values, read-only notes
 sh demos/try.sh ai-human    # a .base that splits tasks into human and AI work
-sh demos/try.sh showcase    # a config that turns most features on (Japanese)
-sh demos/try.sh vault       # edge cases: empty and mismatched values, read-only notes (Japanese)
+sh demos/try.sh places      # registered tables
 ```
 
-Anything after `--` goes to mdgrid, for example `sh demos/try.sh demo -- --readonly`.
+Anything after `--` goes to mdgrid, for example `sh demos/try.sh studio -- --readonly`.
 
 ### 2. Open your own notes
 
@@ -141,7 +141,7 @@ Nothing is written until you save, and you see exactly what will change:
 
 Press `%` on a column to count its values, and pick one to keep only those rows:
 
-![Value counts for the owner column](docs/assets/demo-freq.svg)
+![Value counts for the status column](docs/assets/demo-freq.svg)
 
 Press `x` to see what you can do with the selected cell:
 
@@ -153,13 +153,13 @@ Group and arrange the table the way you work. With a formula in a `.base` and a 
 
 Press `R` for the relation map: the tables of the workspace as boxes, with an arrow from each link column to the table it points at (`N:1`, or `N:N` for a list of links). Click a table or a link, or move with the arrow keys:
 
-![The relation map of tasks, projects and members](docs/assets/demo-relmap.svg)
+![The relation map of the studio: tasks, projects, clients, people and meetings](docs/assets/demo-relmap.svg)
 
 Pick a color theme with `theme` in the config: `"nord"` (below), `"solarized-light"`, `"dracula"`, `"gruvbox"`, `"pink-monster"` or `"dozy-pink"`. The default keeps your terminal's colors, and `NO_COLOR` is respected.
 
 ![The table in the Nord theme](docs/assets/demo-theme.svg)
 
-[examples/themes/](examples/themes) has a sample config for each theme: `mdgrid --config examples/themes/nord.toml examples/demo`.
+[examples/themes/](examples/themes) has a sample config for each theme: `mdgrid --config examples/themes/nord.toml examples/studio/Tasks.base`.
 
 ## 🧰 Use with other commands
 
@@ -204,7 +204,7 @@ In Codex, add this repository as a plugin marketplace and install `mdgrid`. The 
 mdgrid works on any folder of Markdown notes, and it also understands Obsidian's [Bases](https://help.obsidian.md/bases). Open a `.base` file and its table views appear as tabs, with their filters, sorting, grouping, summary rows (`Sum`, `Average`, `Earliest` …) and a subset of formulas. Obsidian does not need to be installed, and mdgrid never rewrites your `.base` files.
 
 ```sh
-mdgrid /tmp/mdgrid-demo/Tasks.base                    # four views: Open, By status, By owner, Due
+mdgrid /tmp/studio/Tasks.base     # seven views: Open, This week, By status, By project, …
 alias standup='mdgrid ~/notes/Tasks.base --view "By owner"'
 ```
 
@@ -222,8 +222,8 @@ From the command palette, `:export_base` writes the current view to a new `.base
 - [Keys](docs/keys.md) — the default keys of each mode, and how to change them.
 - [Write-back safety](docs/safety.md) — what mdgrid writes, what it never touches, and which notes stay read-only and why.
 - [Obsidian Bases support](docs/obsidian-bases.md) — which parts of `.base` files mdgrid reads, evaluates or ignores.
-- [Showcase](examples/showcase/README.md) — a sample config and root folder (in Japanese) that turn most features on. `examples/vault` covers the edge cases: null, empty and mismatched values, read-only notes, sync conflicts.
-- [Human and AI tasks](examples/ai-human/README.md) — a sample `.base` and config (in English in `vault-en`, in Japanese in `vault`) that splits tasks into those an AI agent can finish and those that need a person (pay, sign, submit, send), with the people's group on top.
+- [Samples](examples/README.md) — one made-up web studio throughout: five linked tables with a `.base` of views (`studio`), the edge cases such as null, empty and mismatched values, read-only notes and sync conflicts (`quirks`), a config that turns most features on (`configs`), and registered tables (`places`).
+- [Human and AI tasks](examples/ai-human/README.md) — a sample `.base` and config that splits tasks into those an AI agent can finish and those that need a person (pay, sign, submit, send), with the people's group on top.
 - Shell completions: `mdgrid --completions <bash|zsh|fish|elvish|powershell>`. Man page: `mdgrid --man`.
 
 ## 🤝 Contributing

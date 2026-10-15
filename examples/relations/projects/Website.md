@@ -1,4 +1,0 @@
----
-status: planning
-lead: "[[Bob]]"
----

@@ -237,7 +237,10 @@ fn test_sr_19_empty_editor_click_same_as_e() {
     let by_e = outcome(&mut a, "", press_e);
     // `e` の今の振る舞い(変えない前提): 空なら vi で起動を頼む。
     let argv = by_e.argv.clone().expect("`e` で起動を頼まない");
-    assert_eq!(argv[0], std::ffi::OsString::from("vi"));
+    assert_eq!(
+        argv[0],
+        std::ffi::OsString::from(mdgrid::config::DEFAULT_EDITOR)
+    );
     assert_eq!(argv.len(), 2);
     assert_eq!(by_e.mode, Mode::Table);
     // 選んだ行の名前の欄のクリック。

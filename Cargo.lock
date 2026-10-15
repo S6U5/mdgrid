@@ -727,6 +727,7 @@ dependencies = [
  "portable-pty",
  "proptest",
  "ratatui",
+ "regex",
  "saphyr",
  "saphyr-parser",
  "serde",

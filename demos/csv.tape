@@ -32,7 +32,7 @@ Enter Sleep 1s
 
 # a で末尾に行を足し、id を打つ
 Type "a" Sleep 1.2s
-Type "A-006" Sleep 600ms
+Type "E-006" Sleep 600ms
 Enter Sleep 1s
 
 # 保存の前の差分: 1つのファイルにまとめて、直した値だけ

@@ -2,20 +2,20 @@
 # Output: manual/<lang>/ (git-ignored). Regenerate:
 #   python3 <app-manual>/scripts/tui_shot.py docs/manual-scenarios.toml --lang ja --env LANG=ja_JP.UTF-8
 #   python3 <app-manual>/scripts/tui_shot.py docs/manual-scenarios.toml --lang en --env LANG=en_US.UTF-8
-# Build first: cargo build --release. Only the sample root folder (examples/vault) is shown.
+# Build first: cargo build --release. The screens show the samples of a made-up web studio (examples/studio and examples/quirks).
 # Each shot runs on a fresh copy of examples/ in /tmp/mdgrid-demo (stage), so shots may save; the real samples are never written.
 
 [app]
-command = ["./target/release/mdgrid", "examples/vault"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks"]
 stage = ["examples"]
 stage_dir = "/tmp/mdgrid-demo"
 cols = 100
 rows = 28
-ready = "タスク/"
-env = { MDGRID_TODAY = "2026-10-03" }
+ready = "Northwind Studio"
+env = { MDGRID_TODAY = "2026-10-06" }
 timeout = 10
 title = { ja = "mdgrid の使い方", en = "Using mdgrid" }
-intro = { ja = "フロントマター付きの Markdown のノートを、ターミナルの表で見て直す。画面は見本のルートフォルダ(examples/vault)。", en = "View and edit Markdown notes with frontmatter as a table in the terminal. The screens show the sample root folder (examples/vault)." }
+intro = { ja = "フロントマター付きの Markdown のノートを、ターミナルの表で見て直す。画面は見本の制作会社のタスク(examples/studio/Tasks)と、扱いにくいノートの見本(examples/quirks)。", en = "View and edit Markdown notes with frontmatter as a table in the terminal. The screens show the tasks of the sample web studio (examples/studio/Tasks) and the sample of awkward notes (examples/quirks)." }
 
 [[shot]]
 id = "table"
@@ -37,13 +37,13 @@ text = { ja = "リストで打つと、打った文字を含む候補だけが�
 [[shot]]
 id = "edit-date"
 title = { ja = "日付をカレンダーで入れる", en = "Enter a date with the calendar" }
-keys = ["l", "Enter"]
+keys = ["l", "l", "l", "Enter"]
 text = { ja = "日付の列ではカレンダーが開く。矢印で日を動かし、Enter で決める。", en = "Date columns open a calendar. Move with the arrow keys and press Enter." }
 
 [[shot]]
 id = "edit-tags"
 title = { ja = "タグを付け外しする", en = "Add and remove tags" }
-keys = ["l", "l", "l", "l", "Enter"]
+keys = ["l", "l", "l", "l", "l", "l", "l", "Enter"]
 text = { ja = "リストの列では、ルートフォルダにある値の一覧から付け外しする。", en = "List columns let you toggle values found across the root folder." }
 
 [[shot]]
@@ -87,7 +87,7 @@ text = { ja = "a かビューの帯の右の端の「+ 新規」で、新しい�
 [[shot]]
 id = "new-note-done"
 title = { ja = "作ったノート", en = "The new note" }
-keys = ["a", "text:電話をかける", "C-s"]
+keys = ["a", "text:Call Rosa about the menu", "C-s"]
 wait = { ja = "作った", en = "created" }
 text = { ja = "名前を打って Ctrl+S で、すぐにファイルができる(Enter は次の欄へ)。作った行が選ばれる。", en = "Type a name and press Ctrl+S: the file is created at once (Enter moves to the next field), and its row is selected." }
 
@@ -114,57 +114,61 @@ text = { en = "After a prefix key such as g, the bottom band lists the keys you 
 [[shot]]
 id = "base-tabs"
 title = { en = "Open a .base file", ja = ".base を開く" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base"]
-ready = "進行中"
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
+ready = "Open"
 text = { en = "Each table view of the .base becomes a tab; the first one opens. Column titles come from displayName.", ja = ".base の table ビューがタブに並び、先頭が開く。列の見出しは displayName。" }
 
 [[shot]]
 id = "base-group"
 title = { en = "Switch views; grouped rows", ja = "ビューを切り替える(グループ)" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base"]
-ready = "進行中"
-keys = ["]"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
+ready = "Open"
+keys = ["]", "]"]
 wait = "▾"
-text = { en = "] and [ switch views. This view groups the notes by status with heading rows.", ja = "] と [ でビューを切り替える。このビューは status ごとに見出しの行で分かれる。" }
+text = { en = "] and [ switch views. This view groups the tasks by status with heading rows.", ja = "] と [ でビューを切り替える。このビューは status ごとに見出しの行で分かれる。" }
 
 [[shot]]
 id = "base-group-folded"
 title = { en = "Fold a group", ja = "まとまりを畳む" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base"]
-ready = "進行中"
-keys = ["]", "Enter"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
+ready = "Open"
+keys = ["]", "]", "Enter"]
 wait = "▸"
 text = { en = "Enter on a heading row folds or unfolds its group.", ja = "見出しの行で Enter を押すと、そのまとまりを畳む・開く。" }
 
 [[shot]]
 id = "base-unsupported-formula"
 title = { en = "Formulas mdgrid cannot evaluate", ja = "評価できない式" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base", "--view", "未対応の式"]
-ready = "未対応の式"
-keys = ["l", "l"]
+command = ["./target/release/mdgrid", "examples/quirks/Tasks.base", "--view", "Unsupported"]
+ready = "Unsupported"
+keys = ["l"]
 wait = { en = "unsupported formula", ja = "未対応の式(値を出さない)" }
 text = { en = "A column whose formula is not supported shows a dim ? instead of guessing. Select it to see which expression.", ja = "評価できない式の列は推測せず薄い ? を出す。選ぶと下にどの式かが出る。" }
 
 [[shot]]
 id = "base-cards"
 title = { en = "Views other than table", ja = "table 以外のビュー" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base", "--view", "カード"]
-ready = "カード"
+command = ["./target/release/mdgrid", "examples/quirks/Tasks.base", "--view", "Cards"]
+ready = "Cards"
 wait = { en = "cannot be opened", ja = "開けない" }
 text = { en = "Only table views are supported; other view types are not opened and the reason is shown.", ja = "mdgrid は table のビューだけ。ほかの型は開かずに理由を出す。" }
 
 [[shot]]
 id = "sync-conflict"
 title = { en = "Sync conflict files", ja = "同期の競合ファイル" }
-keys = [":", "text:14", "Enter"]
+keys = [":", "text:3", "Enter"]
 wait = { en = "sync conflict", ja = "同期の競合" }
+command = ["./target/release/mdgrid", "examples/quirks"]
+ready = "Notes/"
 text = { en = "Conflict copies made by sync tools are marked with ! so you can resolve them by hand.", ja = "同期の道具が作った競合ファイルには ! が付く。手で片付ける。" }
 
 [[shot]]
 id = "cell-marks"
 title = { en = "Empty, null, missing and mismatched values", ja = "空・null・キーなし・型の不一致" }
-keys = ["j", "j", "j", "l"]
-text = { en = "∅ is null, \"\" is an empty string, a blank cell has no key, and ! marks a value that does not fit the column type (someday in a date column).", ja = "∅ は null、\"\" は空の文字列、空欄はキーなし。! は列の型に合わない値(日付の列の someday)。" }
+keys = ["j", "j", "j", "j", "j", "j", "j", "j", "j", "l", "l"]
+command = ["./target/release/mdgrid", "examples/quirks"]
+ready = "Notes/"
+text = { en = "∅ is null, \"\" is an empty string, a blank cell has no key, and ! marks a value that does not fit the column type (someday in a date column). The notes are from examples/quirks.", ja = "∅ は null、\"\" は空の文字列、空欄はキーなし。! は列の型に合わない値(日付の列の someday)。ノートは見本 examples/quirks。" }
 
 [[shot]]
 id = "detail"
@@ -197,8 +201,8 @@ text = { en = "/ highlights every match; n and N move between them. Lowercase te
 [[shot]]
 id = "quick-filter"
 title = { en = "Quick filter", ja = "簡易の絞り込み" }
-keys = ["\\", "text:家"]
-wait = { en = "/16 rows", ja = "/16行" }
+keys = ["\\", "text:bakery"]
+wait = { en = "/20 rows", ja = "/20行" }
 text = { en = "\\ moves into the search bar; rows narrow as you type, and the bar shows the count. Esc clears it.", ja = "\\ で上の欄に入り、打つたびに行が絞られ件数が出る。Esc で解除。" }
 
 [[shot]]
@@ -211,7 +215,7 @@ text = { en = ", keeps the rows whose value equals the selected cell; * only hig
 [[shot]]
 id = "sort-column"
 title = { en = "Sort by a column", ja = "列で並べ替える" }
-keys = ["l", "s"]
+keys = ["l", "l", "l", "s"]
 wait = { en = "ascending", ja = "昇順" }
 text = { en = "s sorts by the column: ascending, descending, then off. The view remembers it; the .base file is not changed.", ja = "s で 昇順 → 降順 → 解除。並べ替えはビューに覚える。.base は変えない。" }
 
@@ -232,10 +236,10 @@ text = { en = "A adds a column for a key no note has yet. Only the notes you fil
 [[shot]]
 id = "edit-datetime-time"
 title = { en = "Set the time of a date and time", ja = "日時の時刻を選ぶ" }
-command = ["./target/release/mdgrid", "examples/schedule"]
-ready = "start"
-keys = ["l", "Enter", "C-o", "Up"]
-wait = { en = "14:45", ja = "14:45" }
+command = ["./target/release/mdgrid", "examples/studio/Meetings"]
+ready = "Bakery kickoff"
+keys = ["Enter", "C-o", "Up"]
+wait = { en = "10:15", ja = "10:15" }
 text = { en = "Date and time columns show a time field under the calendar. Ctrl+O switches to it; Up and Down move 15 minutes, Shift+Up and Shift+Down one hour.", ja = "日時の列では、カレンダーの下に時刻の欄が出る。Ctrl+O で時刻の欄に移り、↑↓ で15分、Shift+↑↓ で1時間動かす。" }
 
 [[shot]]
@@ -275,21 +279,21 @@ text = { en = "Typing in the list replaces the value with what you type (← or 
 [[shot]]
 id = "checkbox-toggle"
 title = { en = "Toggle a checkbox", ja = "チェックボックスを切り替える" }
-keys = ["l", "l", "l", "Enter"]
+keys = ["l", "l", "l", "l", "l", "l", "Enter"]
 wait = { en = "Unsaved 1", ja = "未保存 1" }
 text = { en = "Enter switches between true and false (an empty cell becomes true; Backspace empties it). The change is pending until you save.", ja = "Enter で true と false を切り替える(空のセルは true に。空にするのは BS)。保存までは書かない。" }
 
 [[shot]]
 id = "edit-date-invalid"
 title = { en = "Dates are checked", ja = "日付は確かめられる" }
-keys = ["l", "Enter", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "text:2026-02-30", "Enter"]
+keys = ["l", "l", "l", "Enter", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "text:2026-02-30", "Enter"]
 wait = { en = "no such date", ja = "実在しない日付" }
 text = { en = "A date that does not exist is refused and the input stays open. +3 means three days from today.", ja = "実在しない日付は受け付けず、入力は開いたまま。+3 は今日から3日後。" }
 
 [[shot]]
 id = "edit-number-invalid"
 title = { en = "Numbers only in number columns", ja = "数の列は数だけ" }
-keys = ["l", "l", "Enter", "text:a", "Enter"]
+keys = ["l", "l", "l", "l", "Enter", "text:a", "Enter"]
 wait = { en = "not a number", ja = "数として読めない" }
 text = { en = "A number column accepts only values that read as a number.", ja = "数の列は数として読める値だけを受け付ける。" }
 
@@ -303,8 +307,10 @@ text = { en = "Backspace or Delete empties the value; it is saved as `key:` and 
 [[shot]]
 id = "type-mismatch"
 title = { en = "A value of the wrong type", ja = "型の合わない値を直す" }
-keys = ["j", "j", "j", "l", "Enter"]
+keys = ["j", "j", "j", "j", "j", "j", "j", "j", "j", "l", "l", "Enter"]
 wait = { en = "does not fit the column type", ja = "型に合わない" }
+command = ["./target/release/mdgrid", "examples/quirks"]
+ready = "Notes/"
 text = { en = "A cell whose value does not fit the column opens the input for the column's type, showing this month.", ja = "型の合わない値のセルは列の型の入力で開き、カレンダーは今日の月を出す。" }
 
 [[shot]]
@@ -317,49 +323,54 @@ text = { en = "With rows marked, the edit applies to all of them. Rows that cann
 [[shot]]
 id = "bulk-tags"
 title = { en = "Add or remove list items on several rows", ja = "複数の行のリストを付け外し" }
-keys = ["l", "l", "l", "l", "Space", "Space", "Space", "k", "Enter"]
+keys = ["l", "l", "l", "l", "l", "l", "l", "Space", "Space", "Space", "k", "Enter"]
 wait = { en = "some rows", ja = "一部の行" }
 text = { en = "[x] means every marked row has the item, [-] some of them. Other items in each row are kept.", ja = "[x] は全部の行、[-] は一部の行が持つ。各行のほかの要素は残る。" }
 
 [[shot]]
 id = "held-row"
 title = { en = "Edited rows stay in place", ja = "直した行はその場に残る" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base"]
-ready = "進行中"
-keys = ["l", "Enter", "Backspace", "Backspace", "Backspace", "Backspace", "Backspace", "text:todo", "Enter"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
+ready = "Open"
+keys = ["Enter", "text:done", "Enter"]
 wait = { en = "would not be here", ja = "この位置に来ない" }
-text = { en = "This view shows only doing; a row you change to todo stays until you save or move, so it does not vanish.", ja = "doing だけのビューで todo に直しても、保存か移動まで行は残る。" }
+text = { en = "This view hides finished tasks; a row you change to done stays until you save or move, so it does not vanish.", ja = "済んだタスクを隠すビューで done に直しても、保存か移動まで行は残る。" }
 
 [[shot]]
 id = "add-frontmatter"
 title = { en = "Notes without frontmatter", ja = "フロントマターの無いノート" }
 keys = ["G", "k", "Enter", "text:todo", "Enter", "C-s"]
 wait = { en = "Save review", ja = "保存の確認" }
+command = ["./target/release/mdgrid", "examples/quirks/Notes"]
+ready = "Weekly review"
 text = { en = "Writing to a note without frontmatter adds a --- block at the top; the body is unchanged.", ja = "フロントマターの無いノートに書くと、先頭に --- の区切りと行が足される。本文は変わらない。" }
 
 [[shot]]
 id = "readonly-cell-nested"
 title = { en = "Cells you cannot edit", ja = "直せないセル" }
-keys = ["j", "l", "l", "l", "l", "l", "l", "l", "Enter"]
+keys = ["j", "j", "l", "l", "l", "l", "l", "l", "l", "Enter"]
 wait = { en = "nested value", ja = "ネストした値" }
+command = ["./target/release/mdgrid", "examples/quirks/Tasks"]
+ready = "Write up the offsite"
 text = { en = "Nested maps, block scalars, file.* and formula.* columns and a few other forms are read-only; Enter shows the reason.", ja = "ネストした値・ブロックスカラー・file.* と formula.* の列などは読むだけで、Enter で理由が出る。" }
 
 [[shot]]
 id = "multiline-value"
 title = { en = "Values with line breaks", ja = "改行を含む値" }
-keys = ["l", "l", "l", "l", "l", "l", "Enter"]
+keys = ["G", "End", "Enter"]
 wait = { en = "line breaks", ja = "改行を含む値" }
+command = ["./target/release/mdgrid", "examples/quirks/Tasks"]
+ready = "Write up the offsite"
 text = { en = "Values with line breaks cannot be edited in the one-line input; open the note with e.", ja = "改行を含む値は1行の入力では直せない。e でノートをエディタで開く。" }
 
 [[shot]]
 id = "showcase-calendar"
 title = { en = "Date format and week start from the config", ja = "設定の日付の形と週の始まり" }
-command = ["./target/release/mdgrid", "--config", "examples/showcase/config.toml", "examples/showcase/vault/プロジェクト.base"]
-ready = "今週の作業"
-env = { MDGRID_TODAY = "2026-10-02" }
-keys = ["l", "l", "Enter"]
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+keys = ["l", "l", "l", "Enter"]
 wait = { en = "year", ja = "年" }
-text = { en = "examples/showcase sets date_format = \"YYYY/MM/DD (ddd)\" and week_start = \"mon\". Notes still get YYYY-MM-DD.", ja = "見本の設定は date_format = \"YYYY/MM/DD (ddd)\"・week_start = \"mon\"。ノートには YYYY-MM-DD で書く。" }
+text = { en = "examples/configs/studio.toml sets date_format = \"YYYY/MM/DD (ddd)\" and week_start = \"mon\". Notes still get YYYY-MM-DD.", ja = "見本の設定は date_format = \"YYYY/MM/DD (ddd)\"・week_start = \"mon\"。ノートには YYYY-MM-DD で書く。" }
 
 [[shot]]
 id = "quit-confirm"
@@ -371,7 +382,7 @@ text = { en = "s reviews and saves, d discards and quits, Esc goes back.", ja = 
 [[shot]]
 id = "readonly-mode"
 title = { en = "Open read-only", ja = "読むだけで開く" }
-command = ["./target/release/mdgrid", "examples/vault", "--readonly"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks", "--readonly"]
 keys = ["Enter"]
 wait = { en = "read-only", ja = "読むだけ" }
 text = { en = "--readonly never writes: no editing, no saving, no new notes, and view settings are not remembered.", ja = "--readonly では何も書かない。編集・保存・新しいノートができず、ビューの設定も覚えない。" }
@@ -414,6 +425,8 @@ text = { en = "Writes the view to a new .base under a name you choose; existing 
 [[shot]]
 id = "import-base"
 title = { en = "Import a .base view", ja = ".base のビューを取り込む" }
+command = ["./target/release/mdgrid", "examples/quirks"]
+ready = "Notes/"
 keys = [":", "text:import_base", "Enter"]
 wait = { en = ".base to import", ja = "取り込む .base" }
 text = { en = "Pick a .base and one of its views to copy it as an mdgrid view.", ja = ".base とそのビューを選んで、mdgrid のビューとして写す。" }
@@ -421,6 +434,8 @@ text = { en = "Pick a .base and one of its views to copy it as an mdgrid view.",
 [[shot]]
 id = "import-base-done"
 title = { en = "Imported view", ja = "取り込んだビュー" }
+command = ["./target/release/mdgrid", "examples/quirks"]
+ready = "Notes/"
 keys = [":", "text:import_base", "Enter", "Enter", "Enter"]
 wait = { en = "imported", ja = "取り込んだ" }
 text = { en = "The view becomes a tab. Parts an mdgrid view cannot hold (formulas, limit, displayName) are listed as dropped.", ja = "ビューがタブに増える。持てない部分(formulas・limit・displayName)は落とした項目として出る。" }
@@ -428,15 +443,15 @@ text = { en = "The view becomes a tab. Parts an mdgrid view cannot hold (formula
 [[shot]]
 id = "new-note-base"
 title = { en = "New note in a filtered view", ja = "絞ったビューで作る" }
-command = ["./target/release/mdgrid", "examples/vault/タスク.base"]
-ready = "進行中"
+command = ["./target/release/mdgrid", "examples/quirks/Tasks.base"]
+ready = "Doing"
 keys = ["a"]
 text = { en = "In a view filtered by status == \"doing\", the new note gets status: doing so it stays in the view.", ja = "status == \"doing\" で絞ったビューで作ると、status: doing が入り、そのビューに残る。" }
 
 [[shot]]
 id = "new-note-place"
 title = { en = "Choose where to create it", ja = "作る場所を選ぶ" }
-command = ["./target/release/mdgrid", "examples/vault/タスク", "examples/vault/メモ"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks", "examples/studio/Meetings"]
 ready = { en = "+ New", ja = "+ 新規" }
 keys = ["a"]
 wait = { en = "place", ja = "作る場所" }
@@ -445,117 +460,129 @@ text = { en = "With two or more folders open, you first pick the folder; the fir
 [[shot]]
 id = "pick"
 title = { en = "Pick rows for another command", ja = "行を選んでほかのコマンドに渡す" }
-command = ["./target/release/mdgrid", "examples/vault", "--pick", "path"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks", "--pick", "path"]
 keys = ["Space", "Space"]
 wait = { en = "selected 2", ja = "選択 2" }
 text = { en = "--pick opens the table read-only; Enter prints the marked rows' paths, one per line, and exits. q cancels.", ja = "--pick は読むだけで開き、Enter で印を付けた行のパスを1行ずつ出して終わる。q で取りやめ。" }
 
 [[shot]]
 id = "showcase-table"
-title = { en = "The showcase configuration", ja = "設定の見本" }
-command = ["./target/release/mdgrid", "--config", "examples/showcase/config.toml", "examples/showcase/vault/プロジェクト.base"]
-ready = "今週の作業"
-env = { MDGRID_TODAY = "2026-10-02" }
-text = { en = "examples/showcase/config.toml changes the date format and rebinds Ctrl+F to search. Start it with --config.", ja = "examples/showcase/config.toml は日付の形を変え、Ctrl+F を検索に割り当てる。--config で渡して開く。" }
+title = { en = "The sample configuration", ja = "設定の見本" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+text = { en = "examples/configs/studio.toml changes the date format, adds column lines, zebra rows, rules and value colors, and rebinds Ctrl+F to search. Start it with --config.", ja = "examples/configs/studio.toml は日付の形を変え、列の区切り線・一行おきの色・決まり・値の色を足し、Ctrl+F を検索に割り当てる。--config で渡して開く。" }
 
 [[shot]]
 id = "readonly-row"
 title = { en = "A read-only note", ja = "読むだけのノート" }
 keys = ["G", "Enter"]
 wait = { en = "the same key appears twice", ja = "同じキーが2回ある" }
+command = ["./target/release/mdgrid", "examples/quirks/Notes"]
+ready = "Weekly review"
 text = { en = "A note mdgrid cannot write safely (here a duplicate key) is shown but read-only, with the reason.", ja = "安全に書けないノート(ここではキーの重複)は表に出るが読むだけで、理由が出る。" }
 
 [[shot]]
 id = "theme-nord"
 title = { en = "Theme: Nord", ja = "テーマ: Nord" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"nord\" (calm blues). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"nord\"(落ち着いた青)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-solarized-light"
 title = { en = "Theme: Solarized Light", ja = "テーマ: Solarized Light" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/solarized-light.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/solarized-light.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"solarized-light\" (a light background). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"solarized-light\"(明るい地)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-dracula"
 title = { en = "Theme: Dracula", ja = "テーマ: Dracula" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/dracula.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/dracula.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"dracula\" (purple and pink accents). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"dracula\"(紫と桃のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-gruvbox"
 title = { en = "Theme: Gruvbox", ja = "テーマ: Gruvbox" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/gruvbox.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/gruvbox.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"gruvbox\" (warm browns and orange). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"gruvbox\"(暖かい茶と橙)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-pink-monster"
 title = { en = "Theme: Pink Monster", ja = "テーマ: Pink Monster" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/pink-monster.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/pink-monster.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"pink-monster\" (neon pink and lime on dark magenta). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"pink-monster\"(濃い赤紫の地に蛍光の桃と黄緑)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-dozy-pink"
 title = { en = "Theme: Dozy Pink", ja = "テーマ: Dozy Pink" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/dozy-pink.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/dozy-pink.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"dozy-pink\" (soft pink and cream). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"dozy-pink\"(淡い桃とクリーム)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-sumi"
 title = { en = "Theme: Sumi", ja = "テーマ: Sumi" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/sumi.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/sumi.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"sumi\" (dark ink, soft grays and a teal accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"sumi\"(墨。暗い地・薄い灰・青緑のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-slate"
 title = { en = "Theme: Slate", ja = "テーマ: Slate" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/slate.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/slate.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"slate\" (slate with a violet accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"slate\"(石板。紫寄りのアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-saas"
 title = { en = "Theme: SaaS", ja = "テーマ: SaaS" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/saas.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/saas.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"saas\" (light gray with an indigo accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"saas\"(明るい灰の地・藍のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-saas-dark"
 title = { en = "Theme: SaaS Dark", ja = "テーマ: SaaS Dark" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/saas-dark.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/saas-dark.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"saas-dark\" (the dark version of saas). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"saas-dark\"(saas の暗い地の版)。変わるのは色だけで、* や > などの印はそのまま。" }
 
 [[shot]]
 id = "theme-paper"
 title = { en = "Theme: Paper", ja = "テーマ: Paper" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/paper.toml", "examples/vault"]
-env = { MDGRID_TODAY = "2026-10-03", COLORTERM = "truecolor" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/paper.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"paper\" (a light background with a blue accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"paper\"(明るい地・青のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
 
-# ---- English demo root folder (examples/demo) for the README ----
+# ---- The studio sample (examples/studio) for the README ----
 
 [[shot]]
 id = "demo-table"
 title = { en = "A .base view of a task list", ja = "仕事の一覧の .base のビュー" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
-text = { en = "examples/demo/Tasks.base: four table views as tabs. The Open view hides finished tasks and sorts by due date. The row under the table sums the estimates and shows the earliest due date.", ja = "examples/demo/Tasks.base。table ビューが4つタブに並ぶ。Open は済んだ仕事を隠し、期限の順に並べる。表の下の行は見積もりの合計と一番早い期限。" }
+text = { en = "examples/studio/Tasks.base: seven table views as tabs. The Open view hides finished tasks and sorts by due date; project and owner are links shown by name. The row under the table sums the estimates and shows the earliest due date.", ja = "examples/studio/Tasks.base。table ビューが7つタブに並ぶ。Open は済んだ仕事を隠し、期限の順に並べる。project と owner はリンクで、名前で出る。表の下の行は見積もりの合計と一番早い期限。" }
 
 [[shot]]
 id = "demo-edit-list"
 title = { en = "Pick a status", ja = "status を選ぶ" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
 keys = ["Enter"]
@@ -564,55 +591,46 @@ text = { en = "Enter on a status cell lists the values other notes use.", ja = "
 [[shot]]
 id = "demo-calendar"
 title = { en = "Pick a due date", ja = "期限を選ぶ" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
-keys = ["l", "Enter"]
+keys = ["l", "l", "l", "Enter"]
 text = { en = "Date columns open a calendar.", ja = "日付の列ではカレンダーが開く。" }
 
 [[shot]]
 id = "demo-save"
 title = { en = "Review the diff, then save", ja = "差分を見てから保存する" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
-keys = ["Enter", "Down", "Enter", "C-s"]
+keys = ["Enter", "Up", "Enter", "C-s"]
 wait = { en = "Save review", ja = "保存の確認" }
 text = { en = "Ctrl+S shows exactly which bytes will change in each file.", ja = "Ctrl+S で、ファイルごとに変わるところだけを見せる。" }
 
 [[shot]]
 id = "demo-group"
 title = { en = "Grouped by status", ja = "status ごとのまとまり" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
-keys = ["]"]
+keys = ["]", "]"]
 wait = "▾"
 text = { en = "The By status view groups rows under headings you can fold with Enter.", ja = "By status のビューは見出しの行でまとめ、Enter で畳める。" }
 
 [[shot]]
 id = "demo-ai-human"
 title = { en = "Human and AI tasks", ja = "人と AI のタスク" }
-command = ["./target/release/mdgrid", "--config", "examples/ai-human/config.toml", "examples/ai-human/vault/タスク.base"]
-ready = "人とAI"
-env = { MDGRID_TODAY = "2026-10-07" }
-wait = "▾"
-text = { en = "The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.", ja = "見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。" }
-
-
-[[shot]]
-id = "demo-ai-human-en"
-title = { en = "Human and AI tasks (English sample)", ja = "人と AI のタスク(英語の見本)" }
-command = ["./target/release/mdgrid", "--config", "examples/ai-human/config.toml", "examples/ai-human/vault-en/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/ai-human/config.toml", "examples/ai-human/Tasks.base"]
 ready = "People and AI"
-env = { MDGRID_TODAY = "2026-10-07" }
+env = { MDGRID_TODAY = "2026-10-06" }
 wait = "▾"
 text = { en = "The ai-human sample groups open tasks by a formula: the ones that need a person on top, the ones an AI agent can finish below.", ja = "見本 ai-human は、式で終わっていないタスクを分け、人の手が要るものを上、AI に任せられるものを下に並べる。" }
+
 
 [[shot]]
 id = "demo-menu"
 title = { en = "Actions for the selected cell", ja = "その場の操作の一覧" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
 keys = ["x"]
@@ -622,7 +640,7 @@ text = { en = "x or a right click lists what you can do here, each with its key.
 [[shot]]
 id = "demo-theme"
 title = { en = "The Nord theme", ja = "テーマ Nord" }
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"nord\" in the config. Seven themes are built in.", ja = "設定に theme = \"nord\"。テーマは7つある。" }
@@ -632,7 +650,7 @@ text = { en = "[look] theme = \"nord\" in the config. Seven themes are built in.
 [[shot]]
 id = "gif-01"
 title = "Demo frame 1"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 keys = []
@@ -641,7 +659,7 @@ text = "Frame of the demo GIF."
 [[shot]]
 id = "gif-02"
 title = "Demo frame 2"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 keys = ["Enter"]
@@ -650,104 +668,104 @@ text = "Frame of the demo GIF."
 [[shot]]
 id = "gif-03"
 title = "Demo frame 3"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down"]
+keys = ["Enter", "Up"]
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-04"
 title = "Demo frame 4"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter"]
+keys = ["Enter", "Up", "Enter"]
 wait = { en = "Unsaved 1", ja = "未保存 1" }
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-05"
 title = "Demo frame 5"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter"]
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-06"
 title = "Demo frame 6"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter", "Right", "Right", "Right"]
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-07"
 title = "Demo frame 7"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right", "Enter"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter", "Right", "Right", "Right", "Enter"]
 wait = { en = "Unsaved 2", ja = "未保存 2" }
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-08"
 title = "Demo frame 8"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s"]
 wait = { en = "Save review", ja = "保存の確認" }
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-09"
 title = "Demo frame 9"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter"]
 wait = { en = "saved", ja = "保存した" }
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-10"
 title = "Demo frame 10"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter", "]"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter", "]", "]"]
 wait = "▾"
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "gif-11"
 title = "Demo frame 11"
-command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
-keys = ["Enter", "Down", "Enter", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter", "]", "x"]
+keys = ["Enter", "Up", "Enter", "l", "l", "l", "Enter", "Right", "Right", "Right", "Enter", "C-s", "Enter", "]", "]", "x"]
 wait = { en = "Action menu", ja = "操作の一覧" }
 text = "Frame of the demo GIF."
 
 [[shot]]
 id = "demo-relmap"
 title = { en = "Relation map", ja = "関係マップ" }
-command = ["./target/release/mdgrid", "examples/relations/tasks"]
-ready = "tasks"
+command = ["./target/release/mdgrid", "examples/studio/Tasks"]
+ready = "Northwind Studio"
 keys = ["R"]
 wait = { en = "Relation map", ja = "関係マップ" }
-text = { en = "R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at.", ja = "R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。" }
+text = { en = "R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at: tasks to projects and people, projects to clients, meetings to projects and people.", ja = "R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。タスクから案件と人へ、案件から顧客へ、会議から案件と人へ。" }
 
 [[shot]]
 id = "demo-freq"
 title = { en = "Count the values of a column", ja = "列の値を数える" }
-command = ["./target/release/mdgrid", "examples/demo/Tasks.base"]
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
-keys = ["l", "l", "l", "%"]
+keys = ["%"]
 text = { en = "% lists each value of the column with its count and share; Enter keeps only those rows.", ja = "% で列の値ごとの件数と割合が出る。Enter でその値の行だけに絞る。" }

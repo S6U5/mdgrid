@@ -885,6 +885,34 @@ impl Base {
             .unwrap_or_else(|| default_title(id))
     }
 
+    /// 行が全体の絞り込み(`filters`。ビューのでなく)を通るか(REL-4: リンクの行き先がこの表のノートか)。
+    /// 評価できない絞り込みは通す(表を組むときに理由が出る)。
+    pub fn keeps(
+        &self,
+        src: &dyn Source,
+        prop: &dyn Fn(&RowId, &str) -> Option<Value>,
+        row: &RowId,
+        today: i64,
+        now: i64,
+    ) -> bool {
+        if self.filters.check(self).is_err() {
+            return true;
+        }
+        let index = src.link_index();
+        let links = Links {
+            index: index.as_deref(),
+            this: self.this.as_ref(),
+        };
+        let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
+        let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
+        let ctx = Ctx::new(self, &p, &file, &links, today, now);
+        let keep = self.filters.pass(&ctx);
+        if ctx.bad.borrow_mut().take().is_some() {
+            return true;
+        }
+        keep
+    }
+
     /// ビューを組み立てる(BV-4・BV-5・BV-13)。table 以外(SC-8)・評価できない filters(BV-7)は Err(理由)。
     /// 並べ替えは安定(同じ鍵は src.rows() の順)。groupBy のまとまりで並べ、中は sort。limit は最後に全体の行数に効く。
     pub fn build(

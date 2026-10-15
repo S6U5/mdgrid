@@ -1,0 +1,127 @@
+filters:
+  and:
+    - file.inFolder("Tasks")
+formulas:
+  days_left: due - today()
+  state: if(status == "done", "done", if(due < today(), "overdue", if(due <= today() + "3d", "soon", "later")))
+  hours: estimate * 8
+properties:
+  formula.days_left:
+    displayName: Days left
+  formula.state:
+    displayName: State
+  formula.hours:
+    displayName: Hours
+  note.depends_on:
+    displayName: Depends on
+views:
+  - type: table
+    name: Open
+    filters:
+      and:
+        - status != "done"
+    order:
+      - status
+      - project
+      - owner
+      - due
+      - priority
+      - estimate
+      - tags
+    sort:
+      - property: due
+        direction: ASC
+    summaries:
+      estimate: Sum
+      due: Earliest
+  - type: table
+    name: This week
+    filters:
+      and:
+        - status != "done"
+        - due <= today() + "7d"
+    order:
+      - formula.state
+      - due
+      - owner
+      - project
+      - depends_on
+    sort:
+      - property: due
+        direction: ASC
+      - property: priority
+        direction: ASC
+  - type: table
+    name: By status
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - project
+      - owner
+      - due
+      - priority
+      - estimate
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: By project
+    groupBy:
+      property: project
+      direction: ASC
+    order:
+      - status
+      - owner
+      - due
+      - estimate
+      - billable
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: By owner
+    groupBy:
+      property: owner
+      direction: ASC
+    order:
+      - status
+      - project
+      - due
+      - priority
+      - estimate
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: Dependencies
+    filters:
+      and:
+        - status != "done"
+        - "!depends_on.isEmpty()"
+    order:
+      - status
+      - owner
+      - depends_on
+      - due
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: Workload
+    filters:
+      and:
+        - status != "done"
+    order:
+      - owner
+      - priority
+      - estimate
+      - formula.hours
+      - formula.days_left
+    sort:
+      - property: priority
+        direction: ASC
+      - property: estimate
+        direction: DESC
+    summaries:
+      estimate: Sum

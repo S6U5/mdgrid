@@ -77,6 +77,12 @@ P 番号つき)が要る(OM-6)。原則(P 番号)と、principles.md のフロ�
   E23 変更の記録(specs/_changes/)のフェーズの表が7行の順(要求・不明点・仕様化・設計・タスク・実装・照合)でない、
       状態が語彙外(未 / 進行中 / 済 / 対象外: 理由)、対象外に理由が無い、要求・実装・照合を対象外にしている、size が語彙外
   E24 変更の記録で、前のフェーズが済か対象外になる前に、後のフェーズが進行中か済になっている
+      (specs/README.md の pace が concurrent か無いリポでは、要求が済になる前にほかのフェーズが、または不明点から
+      実装までが済か対象外になる前に照合が、進行中か済になっている。SF-12)
+  E35 specs/README.md の pace が concurrent でも sequential でもない(空を含む。その値は sequential と同じに順に進める。SF-16)
+  E36 specs/README.md の pace を sequential から別の値に変えた・消したコミット(まだコミットしていない書き換えを含む)が、
+      そのコミットで _decisions/ に入った、差分に「- pace: sequential → <値>(理由)」の行と touches の pace を持つ
+      採択済みの人の決定(か錨との照合のある AI 自己採択)を伴わない(git の履歴で確かめる。SF-15)
   E25 変更の記録のタスクの表が、仕様に無い要件 ID を指している
   E26 done の変更の記録で、照合が済でない、unassessed が残る、「確かめた: N / M」が表と合わない、
       タスクの要件が照合の表に無い、同じ要件が2行ある、gap に証拠(欠けているもの)が書かれていない
@@ -131,7 +137,9 @@ OLD_NEW_RE = re.compile(r"旧「(.*?)」\s*→\s*新「(.*)」(?=\s*(?:\(確か�
 MUST_RE = re.compile(r"(なければならない|[てで]はならない)[。.]?$")
 STRENGTH_RE = re.compile(r"(なければならない|[てで]はならない|べきでない|べき|[てで]よい)[。.]?$")
 VAGUE = ("適切に", "なるべく", "できるだけ", "柔軟に", "速やかに", "十分に", "必要に応じて", "適宜")
-CONVO_RE = re.compile(r"^会話\s*\d{4}-\d{2}-\d{2}$")
+CONVO_RE = re.compile(r"^(?:会話|中継)\s*\d{4}-\d{2}-\d{2}$")  # 中継: 別のセッションの中継で届いた発言(OM-8)
+# pace の切り替え: 要件の文を変えずに、specs/README.md の pace を sequential から外す決定(SF-15)。touches には pace を書く
+PACE_LINE_RE = re.compile(r"(?m)^-\s*pace\s*[::]\s*sequential\s*→")
 APPROVAL_LINE_RE = re.compile(r"\d{4}-\d{2}-\d{2} 人の承認")
 REDACTED = "〔伏せ字"
 VERBATIM_RE = re.compile(r"(?m)人「(?!…」|〔)[^」\n]+」|^>\s*【人】|【人】「(?!…」|〔)[^」\n]+」")
@@ -1919,6 +1927,99 @@ def principles_history_errors(root, specs, records):
     return out
 
 
+def pace_history_errors(root, specs):
+    """E36(SF-15): specs/README.md の pace を sequential から別の値に変えた・消したコミットは、そのコミットで
+    _decisions/ に入った、差分に「- pace: sequential → …」の行と touches の pace を持つ採択済みの人の決定
+    (か錨との照合のある AI 自己採択)を伴うこと。各コミットは sequential だった親ごとに比べ、記録はそのコミットの版から読む。
+    まだコミットしていない書き換えも HEAD と比べて見る(作業ツリーで _decisions/ に入った記録を数える)。"""
+    import subprocess
+    readme = specs / "README.md"
+    rel = readme.relative_to(root).as_posix()
+    decs = specs.relative_to(root).as_posix() + "/" + DECS + "/"
+
+    def git(*args):
+        return subprocess.run(["git", "-C", str(root)] + list(args), capture_output=True, text=True)
+
+    try:
+        r = git("rev-list", "--reverse", "--topo-order", "--parents", "HEAD")
+    except OSError:
+        return []  # git が無い
+    if r.returncode != 0:
+        return []  # コミットが無い
+    commits = [line.split() for line in r.stdout.splitlines() if line.strip()]
+    query = "".join("%s:./%s\n" % (c[0], rel) for c in commits)
+    b = subprocess.run(["git", "-C", str(root), "cat-file", "--batch-check=%(objectname) %(objecttype)"],
+                       input=query, capture_output=True, text=True)
+    blob = {}
+    for c, line in zip(commits, b.stdout.splitlines()):
+        parts = line.split()
+        blob[c[0]] = parts[0] if len(parts) == 2 and parts[1] == "blob" else None
+    by_blob = {}
+
+    def pace(rev):
+        k = blob.get(rev)
+        if k is None:
+            return None
+        if k not in by_blob:
+            s = git("show", "%s:./%s" % (rev, rel))
+            by_blob[k] = pace_of(s.stdout if s.returncode == 0 else "")
+        return by_blob[k]
+
+    if not any(pace(c[0]) == "sequential" for c in commits):
+        return []
+    seen_cache = {}
+
+    def seen(rev):
+        """rev とその祖先で、一度でも _decisions/ にあった記録の id と approval-evidence(使い回しを数えない)。"""
+        if rev not in seen_cache:
+            lg = git("log", "-p", "--no-renames", "--full-history", "--format=", rev, "--", decs)
+
+            def grab(key):
+                return {v for m in re.finditer(r"(?m)^[+-]%s:(.*)$" % re.escape(key), lg.stdout)
+                        for v in as_list(m.group(1).strip().strip('"').strip("'"))}
+            seen_cache[rev] = (grab("id"), grab("approval-evidence"))
+        return seen_cache[rev]
+
+    def switched(texts, rev):
+        """伴う記録の中に、- pace: の行を持ち、touches に pace を持つ、人の決定か錨のある AI 自己採択があるか。"""
+        ok = [(p, t) for p, t in texts if PACE_LINE_RE.search(section(split_front(t or "")[1] or "", "差分"))]
+        return "pace" in _human_touches(ok, *seen(rev))
+
+    def show_value(v):
+        return "消した" if v is None else ("空" if v == "" else v)
+
+    out = []
+    for c in commits:
+        h, parents = c[0], c[1:]
+        cur = pace(h)
+        if cur == "sequential":
+            continue
+        for par in parents:
+            if pace(par) != "sequential":
+                continue
+            texts = []
+            for path in _entered(git("diff", "--name-status", "--diff-filter=AR", "-M", "--relative", par, h).stdout, decs):
+                s = git("show", "%s:./%s" % (h, path))
+                texts.append((root / path, s.stdout if s.returncode == 0 else ""))
+            if not switched(texts, par):
+                out.append("E36 %s(コミット %s): pace を sequential から %s にしたが、「- pace: sequential → …」の行と"
+                           " touches の pace を持つ人の決定(か錨との照合のある AI 自己採択)を伴わない(SF-15)"
+                           % (rel, h[:7], show_value(cur)))
+                break
+    # まだコミットしていない書き換え: HEAD の版と作業ツリーを比べ、作業ツリーで _decisions/ に入った記録を数える
+    if pace(git("rev-parse", "HEAD").stdout.strip()) == "sequential":
+        now = pace_of(readme.read_text(encoding="utf-8")) if readme.is_file() else None
+        if now != "sequential":
+            new = _entered(git("diff", "--name-status", "--diff-filter=AR", "-M", "--relative", "HEAD").stdout, decs)
+            new += git("ls-files", "--others", "--exclude-standard", "--", decs).stdout.split()
+            texts = [(root / q, (root / q).read_text(encoding="utf-8")) for q in new if (root / q).is_file()]
+            if not switched(texts, "HEAD"):
+                out.append("E36 %s(まだコミットしていない変更): pace を sequential から %s にしているが、"
+                           "「- pace: sequential → …」の行と touches の pace を持つ人の決定(か錨との照合のある"
+                           " AI 自己採択)を伴わない(SF-15)" % (rel, show_value(now)))
+    return out
+
+
 def _relock_ok(git, commit, key, legacy, sha):
     """TL-13 の掛け直しが正しいか: そのコミットのテストのファイルから、前の取り方と新しい取り方の指紋を
     計算し直し、錠の記録の両方と一致するか。記録の legacy を書き換えただけでは通らない。"""
@@ -1939,6 +2040,25 @@ def file_hash(path):
 PROPS, DECS, CHANGES, BUNDLES = "_proposals", "_decisions", "_changes", "_bundles"
 CHANGE_STATUS = {"active", "done", "abandoned"}
 CHANGE_SIZES = {"tiny", "bugfix", "full"}
+PACES = {"concurrent", "sequential"}
+
+
+def pace_of(text):
+    """specs/README.md の1版の pace の値。キーが無ければ None、値が空なら ""。"""
+    fm, _ = split_front(text or "")
+    return fm.get("pace") if fm else None
+
+
+def is_concurrent(value):
+    """SF-12: pace が concurrent か無いときだけ同時進行。ほかの値(空・書き損じを含む)は SF-5 の順。"""
+    return value is None or value == "concurrent"
+
+
+def repo_pace(root):
+    try:
+        return pace_of((Path(root) / "specs" / "README.md").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError):
+        return None
 PHASES = ["要求", "不明点", "仕様化", "設計", "タスク", "実装", "照合"]
 NO_SKIP = {"要求", "実装", "照合"}
 VERIFY_RESULTS = {"checked", "gap", "unassessed"}
@@ -2162,8 +2282,9 @@ def checked_records(root, specs, docs):
     return out
 
 
-def check_change(rel, fm, body, reqs, today, stale_days):
-    """変更の記録(specs/_changes/)の検査。フェーズの順序・対象外の理由・照合の完了を見る。"""
+def check_change(rel, fm, body, reqs, today, stale_days, concurrent=False):
+    """変更の記録(specs/_changes/)の検査。フェーズの順序・対象外の理由・照合の完了を見る。
+    concurrent(SF-12)なら、要求のあとの不明点から実装までは同時に進めてよく、照合だけはそれらが終わってから。"""
     errors, warns = [], []
     status = fm.get("status", "")
     if fm.get("size", "") not in CHANGE_SIZES:
@@ -2190,7 +2311,8 @@ def check_change(rel, fm, body, reqs, today, stale_days):
             states[name] = "未"
     for i, name in enumerate(PHASES):
         if states[name] in ("進行中", "済"):
-            early = [n for n in PHASES[:i] if states[n] not in ("済", "対象外")]
+            early = [n for n in PHASES[:i] if states[n] not in ("済", "対象外")
+                     and not (concurrent and name != "照合" and n != "要求")]
             if early:
                 errors.append("E24 %s: %s が %s なのに、前のフェーズ %s が終わっていない" % (rel, name, states[name], "・".join(early)))
     task_ids = set()
@@ -2629,6 +2751,11 @@ def main(argv):
     readme = specs / "README.md"
     if not readme.exists():
         errors.append("E0 specs/README.md(索引)が無い")
+    pv = pace_of(readme.read_text(encoding="utf-8")) if readme.is_file() else None  # --specs の置き場の README から読む
+    if readme.exists():
+        if pv is not None and pv not in PACES:
+            errors.append("E35 specs/README.md: pace は %s のいずれか(今: %s。この値ではフェーズを順に進める。SF-16)"
+                          % (" | ".join(sorted(PACES)), pv or "空"))
 
     errors += vendored_errors(root)
 
@@ -2742,7 +2869,8 @@ def main(argv):
                   for m in [REQ_ROW_RE.match(line)] if m}
     for p, (fm, body, text) in docs.items():
         if p.relative_to(specs).parts[0] == CHANGES and p.suffix == ".md":
-            e, w = check_change(p.relative_to(root), fm, body, known, today, stale_days)
+            e, w = check_change(p.relative_to(root), fm, body, known, today, stale_days,
+                                concurrent=is_concurrent(pv))
             if VERBATIM_RE.search(strip_code(body)):
                 e.append("E27 %s: 人の発言の原文の引用がある(要約にし、元は会話の記録の場所で指す)" % p.relative_to(root))
             if human_sentences(strip_code(body)):
@@ -2806,13 +2934,15 @@ def main(argv):
                 errors.append("E12 %s: trigger-link が無い" % rel)
             elif not (CONVO_RE.match(tl) or tl.startswith(("http://", "https://")) or CROSS_REPO_RE.match(tl)
                       or (p.parent / tpath).exists() or (root / tpath).exists()):
-                errors.append("E12 %s: trigger-link が実在の場所か「会話 YYYY-MM-DD」でない(%s)" % (rel, tl))
+                errors.append("E12 %s: trigger-link が実在の場所か「会話 YYYY-MM-DD」「中継 YYYY-MM-DD」でない(%s)" % (rel, tl))
         if not rec.touches:
             errors.append("E12 %s: touches が空" % rel)
         if rec.is_import and rec.rewritten and not section(rec.body, "照合").strip():
             warns.append("W14 %s: 書き直した取り込みに「## 照合」(書込なしの検証役の照合の結果)が無い" % rel)
         if not rec.is_import:
             diff_ids = {d[1] for d in rec.diffs}
+            if PACE_LINE_RE.search(section(rec.body, "差分")):
+                diff_ids.add("pace")  # SF-15 の切り替えの行
             if diff_ids != set(rec.touches):
                 errors.append("E13 %s: touches %s と差分の ID %s が一致しない"
                               % (rel, sorted(rec.touches), sorted(diff_ids)))
@@ -3061,6 +3191,7 @@ def main(argv):
     for msg in lock_history_errors(root, specs, lock_path, records):
         errors.append(msg)
     errors += principles_history_errors(root, specs, records)
+    errors += pace_history_errors(root, specs)
     errors += [x for x in sealed if x.startswith("E")]
     warns += [x for x in sealed if x.startswith("W")]
 

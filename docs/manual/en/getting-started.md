@@ -21,17 +21,19 @@ mdgrid --man > ~/.local/share/man/man1/mdgrid.1
 
 ## Open the sample root folder
 
-The repository has a sample root folder, `examples/vault`. Saving rewrites files, so copy it to a temporary folder first:
+The repository has a sample root folder, `examples/studio`: the tasks, projects, clients, people and meetings of Northwind Studio, a made-up web studio, in five folders that link to each other ([about the samples](../../../examples/README.md)). Saving rewrites files, so copy it to a temporary folder first:
 
 ```sh
-cp -R examples/vault /tmp/mdgrid-sample
-target/release/mdgrid /tmp/mdgrid-sample
+cp -R examples/studio /tmp/mdgrid-sample
+target/release/mdgrid /tmp/mdgrid-sample/Tasks
 ```
+
+The sample's dates are in early October 2026; the screens in this manual are taken as if today were 2026-10-06 (`MDGRID_TODAY=2026-10-06`).
 
 To just look without copying, add `--readonly`. Editing, saving and creating notes are then off, and nothing is written:
 
 ```sh
-target/release/mdgrid examples/vault --readonly
+target/release/mdgrid examples/studio/Tasks --readonly
 ```
 
 ### All the samples
@@ -40,15 +42,15 @@ Every sample at once, from a clone of the repository. `demos/try.sh` builds mdgr
 
 ```sh
 git clone https://github.com/S6U5/mdgrid && cd mdgrid
-sh demos/try.sh demo        # a small team's task list (the README screenshots)
-sh demos/try.sh relations   # tasks → projects → members linked by [[links]]; press R for the relation map
-sh demos/try.sh workspace   # the same tables grouped into a workspace (-w Work)
+sh demos/try.sh studio      # the sample above: five tables linked by [[links]]; press R for the relation map
+sh demos/try.sh workspace   # some of the same tables grouped into workspaces (-w Work)
+sh demos/try.sh configs     # the studio with a config that turns most features on
+sh demos/try.sh quirks      # awkward notes: empty and mismatched values, read-only notes
 sh demos/try.sh ai-human    # a .base that splits tasks into human and AI work
-sh demos/try.sh showcase    # a config that turns most features on (Japanese)
-sh demos/try.sh vault       # edge cases: empty and mismatched values, read-only notes (Japanese)
+sh demos/try.sh places      # registered tables
 ```
 
-Anything after `--` goes to mdgrid, for example `sh demos/try.sh demo -- --readonly`.
+Anything after `--` goes to mdgrid, for example `sh demos/try.sh studio -- --readonly`.
 
 With no argument mdgrid opens the current folder. You can also pass several folders, or a `.base` file to open its views ([Task guides](tasks.md#open-a-base-file)).
 
@@ -100,7 +102,7 @@ Column types come from `.obsidian/types.json`, or else from the first non-empty 
 | `:` or `Ctrl+P` | find a command by name |
 | `q` | quit (asks first if there are unsaved changes) |
 
-The mouse works too: click a row to select it, and click a cell of the selected row to edit it. Clicking the selected row's file name is the same as `e` (open in the editor). Click a column heading to sort (the view remembers it), drag a column border to resize, and scroll with the wheel.
+The mouse works too: click a row to select it, and click a cell of the selected row to edit it. Clicking the selected row's file name is the same as `e` (open in the editor). Click a column heading to sort (the view remembers it), drag a column border to resize, and scroll with the wheel. A sideways trackpad swipe (the horizontal wheel) or shift+wheel moves between columns.
 
 Help (`?`) lists the keys you can press now first.
 

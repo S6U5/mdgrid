@@ -317,8 +317,8 @@ HOME = {
     },
 }
 TRY = {
-    "ja": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/vault /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/タスク",
-    "en": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/demo /tmp/mdgrid-demo\nmdgrid /tmp/mdgrid-demo/Tasks",
+    "ja": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/studio /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/Tasks",
+    "en": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/studio /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/Tasks",
 }
 
 

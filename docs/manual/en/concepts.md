@@ -96,4 +96,4 @@ Press `R` (or pick **Relation map** in the screen type menu at the top right) to
 | Workspaces | `~/.config/mdgrid/workspaces.toml`, or `.mdgrid/workspace.toml` in a folder |
 | How you left each table (widths, hidden columns, view) | `~/.local/state/mdgrid/` |
 
-`XDG_CONFIG_HOME` and `XDG_STATE_HOME` move the two folders. The files are plain TOML you can edit by hand; mdgrid keeps your comments when it updates `places.toml` and `workspaces.toml`.
+`XDG_CONFIG_HOME` and `XDG_STATE_HOME` move the two folders. On Windows they default to `%APPDATA%\mdgrid\` and `%LOCALAPPDATA%\mdgrid\`. The files are plain TOML you can edit by hand; mdgrid keeps your comments when it updates `places.toml` and `workspaces.toml`.

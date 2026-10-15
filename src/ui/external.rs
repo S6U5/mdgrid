@@ -109,20 +109,51 @@ pub(crate) fn default_clipboard() -> Box<dyn Clipboard> {
 /// OS のクリップボードのコマンドが応答するまで待つ長さ。
 const CLIP_TIMEOUT: Duration = Duration::from_secs(2);
 
-/// OS のクリップボードのコマンドに標準入力で渡す。macOS は pbcopy、ほかの Unix は wl-copy、
-/// それが無いか失敗したら xclip。
+/// OS のクリップボードのコマンドに渡す形。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ClipInput {
+    /// そのままの UTF-8。
+    Utf8,
+    /// Windows の `clip`: BOM つきの UTF-16LE で、改行は CRLF(UTF-8 のままだと日本語が化けるため)。
+    WindowsText,
+}
+
+impl ClipInput {
+    pub(crate) fn encode(self, text: &str) -> Vec<u8> {
+        match self {
+            ClipInput::Utf8 => text.as_bytes().to_vec(),
+            ClipInput::WindowsText => {
+                let crlf = text.replace("\r\n", "\n").replace('\n', "\r\n");
+                let mut out = vec![0xFF, 0xFE];
+                out.extend(crlf.encode_utf16().flat_map(u16::to_le_bytes));
+                out
+            }
+        }
+    }
+}
+
+/// 試す順のクリップボードのコマンド: macOS は pbcopy、ほかの Unix は wl-copy、それが無いか失敗したら xclip、
+/// Windows は clip。`os` は `std::env::consts::OS` の値。
+pub(crate) fn clip_commands(
+    os: &str,
+) -> &'static [(&'static str, &'static [&'static str], ClipInput)] {
+    match os {
+        "macos" => &[("pbcopy", &[], ClipInput::Utf8)],
+        "windows" => &[("clip", &[], ClipInput::WindowsText)],
+        _ if cfg!(unix) => &[
+            ("wl-copy", &[], ClipInput::Utf8),
+            ("xclip", &["-selection", "clipboard"], ClipInput::Utf8),
+        ],
+        _ => &[],
+    }
+}
+
+/// OS のクリップボードのコマンドに標準入力で渡す(`clip_commands` の順に試す)。
 #[cfg_attr(test, allow(dead_code))]
 fn os_copy(text: &str) -> Result<(), String> {
-    let cmds: &[(&str, &[&str])] = if cfg!(target_os = "macos") {
-        &[("pbcopy", &[])]
-    } else if cfg!(unix) {
-        &[("wl-copy", &[]), ("xclip", &["-selection", "clipboard"])]
-    } else {
-        &[]
-    };
     let mut errs = Vec::new();
-    for (prog, args) in cmds {
-        match pipe_to(prog, args, text, CLIP_TIMEOUT) {
+    for (prog, args, input) in clip_commands(std::env::consts::OS) {
+        match pipe_bytes_to(prog, args, input.encode(text), CLIP_TIMEOUT) {
             Ok(()) => return Ok(()),
             Err(e) if e.kind() == io::ErrorKind::NotFound => {
                 errs.push(Msg::ClipNoCommand.fill(&[&prog]))
@@ -139,7 +170,18 @@ fn os_copy(text: &str) -> Result<(), String> {
 /// 子のプロセスの標準入力に `text` を渡して終わりを待つ。書き込みは別のスレッドで行い、
 /// `timeout` を過ぎたら子を kill して wait し、「応答しない」の誤りを返す(画面を固めない)。
 /// 書き込みに失敗しても子は wait して残さない。
+#[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn pipe_to(prog: &str, args: &[&str], text: &str, timeout: Duration) -> io::Result<()> {
+    pipe_bytes_to(prog, args, text.as_bytes().to_vec(), timeout)
+}
+
+/// `pipe_to` のバイト列の版(Windows の `clip` には UTF-16LE を渡す)。
+pub(crate) fn pipe_bytes_to(
+    prog: &str,
+    args: &[&str],
+    data: Vec<u8>,
+    timeout: Duration,
+) -> io::Result<()> {
     let mut child = Command::new(prog)
         .args(args)
         .stdin(Stdio::piped())
@@ -147,7 +189,6 @@ pub(crate) fn pipe_to(prog: &str, args: &[&str], text: &str, timeout: Duration) 
         .stderr(Stdio::null())
         .spawn()?;
     let stdin = child.stdin.take();
-    let data = text.as_bytes().to_vec();
     // 孫のプロセスが標準入力を持ったまま残ると書き込みが終わらないことがあるので、join は待たない。
     let writer = std::thread::spawn(move || match stdin {
         Some(mut s) => s.write_all(&data),
@@ -296,14 +337,14 @@ pub fn split_words(s: &str) -> Result<Vec<String>, String> {
 }
 
 /// エディタの値(`config::resolve_editor` で決めたもの)を単語に分け(`split_words`)、最後にノートのパスを1つの引数として足す(SR-8)。
-/// シェルは通さない。空なら vi。
+/// シェルは通さない。空なら `config::DEFAULT_EDITOR`(vi。Windows は notepad)。
 pub fn editor_argv(editor: &str, path: &Path) -> Result<Vec<OsString>, String> {
     let mut argv: Vec<OsString> = split_words(editor)?
         .into_iter()
         .map(OsString::from)
         .collect();
     if argv.is_empty() {
-        argv.push("vi".into());
+        argv.push(mdgrid::config::DEFAULT_EDITOR.into());
     }
     argv.push(path.as_os_str().to_owned());
     Ok(argv)
@@ -558,3 +599,7 @@ impl App {
         self.message = Some(msg);
     }
 }
+
+#[cfg(test)]
+#[path = "test_windows_clip.rs"]
+mod tests_windows;

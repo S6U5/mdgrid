@@ -1,76 +1,73 @@
-# ai-human: 人のタスクと AI のタスクを分けて見る見本
+# ai-human: tasks for people and tasks for agents
 
-> **English:** the same sample in English is in `vault-en/` (`Tasks.base` and `Tasks/`). The config is shared:
-> `mdgrid --config examples/ai-human/config.toml examples/ai-human/vault-en/Tasks.base`. Its views are
-> People and AI, People only, AI only and Done; the formula `Owner` puts the tasks that need a person
-> (pay, sign, submit, send, or work away from the computer) on top.
+When AI agents do part of the work, tasks split in two: those an agent can finish on its own, and those where a person has to do the last step (pay, sign, submit, send, or anything away from the computer). This sample puts the two in separate groups, people first, with one `.base` and one config.
 
-AI エージェントに仕事を任せていると、タスクは2種類に分かれます。AI に任せきれるものと、最後に人の手が要るもの(払う・署名する・提出する・送る、PC の外での手続き)です。この見本は、その2つをまとまりに分けて、人のタスクを上に並べる表を、`.base` 1つと設定 1つで作ります。
+`Tasks/` holds 11 admin tasks of Northwind Studio, the made-up company of the [other samples](../README.md): 9 open and 2 finished, dated October 2026.
 
-`vault/タスク/` に 11 個のタスク(英語版は `vault-en/Tasks/`。中身は同じ)(終わっていないもの 9・終わったもの 2)。日付は 2026年10月に寄せてあります。
+## Open it
 
-## 開く
-
-リポの根で、一時フォルダに写してから開きます(写した先なら編集して保存してよい):
+From the repository root, copy it to a temporary folder first (then you can edit and save):
 
 ```sh
 cp -R examples/ai-human /tmp/mdgrid-ai-human
-mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/vault/タスク.base
+mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/Tasks.base
 ```
 
-最初のタブ「人とAI」で、`👤 人間のタスク` と `🤖 エージェントのタスク` の見出しの下にタスクが並びます。見出しの上で `Enter` を押すと畳めます。`[` `]` でほかのビューに切り替えます。
+The first view, People and AI, lists the tasks under `👤 Needs a person` and `🤖 For an agent`. Enter on a heading folds it. `[` `]` switch views.
 
-| ビュー | 中身 |
+| View | Shows |
 |---|---|
-| 人とAI | 終わっていないタスクを、人 → AI のまとまりに分ける。まとまりの中は優先度 → 期限の順 |
-| 人だけ | 人の手が要るタスクだけを期限の順に |
-| AIだけ | AI に任せられるタスクだけを優先度の順に(どの Agent がどこで動くか) |
-| 終わった | 終わった・取りやめたタスクと、その担当 |
+| People and AI | Open tasks, people first; by priority, then due date, inside each group |
+| People only | The tasks that need a person, by due date |
+| AI only | The tasks an agent can finish, by priority, with the agent and the folder it runs in |
+| Done | Finished and dropped tasks, with who did them |
 
-表として出すこともできます:
+As text instead of a screen:
 
 ```sh
-mdgrid /tmp/mdgrid-ai-human/vault/タスク.base --print --format md --with-path --view 人だけ
+mdgrid /tmp/mdgrid-ai-human/Tasks.base --print --format md --with-path --view "People only"
 ```
 
-## 人か AI かの決め方
+## How a task is sorted
 
-`vault/タスク.base` の式 `担当` で決めます。作者の別の道具 cellops で使っていた決め方と同じです。
+The formula `Owner` in `Tasks.base` decides:
 
 ```yaml
 formulas:
-  担当: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 人間のタスク", "🤖 エージェントのタスク")
+  Owner: if(actor == "human" || if(human_gate, human_gate != "none", false), "👤 Needs a person", "🤖 For an agent")
 ```
 
-- `actor: human` … PC の外の仕事(窓口・移動など)。人。
-- `human_gate` が `submit`・`pay`・`sign`・`send` … 準備は AI、最後のボタンは人。人。
-- それ以外 … AI。`actor` を書いていないノートも AI。
+- `actor: human`: work away from the computer (picking something up, going to a counter). A person.
+- `human_gate` is `submit`, `pay`, `sign` or `send`: the agent prepares, a person presses the last button. A person.
+- Anything else is an agent task, including a note with no `actor`.
 
-ビュー「人とAI」は `groupBy` にこの式を使います。`👤` は `🤖` より文字の順が前なので、昇順(`ASC`)で人のまとまりが上に来ます。
+The People and AI view groups by this formula. `👤` sorts before `🤖`, so ascending order (`ASC`) puts the people's group on top.
 
-## フロントマター
+## Frontmatter
 
-| キー | 列の名前 | 値の例 |
+| Key | Column | Example values |
 |---|---|---|
-| `status` | 状態 | `todo`・`doing`・`done`・`dropped` |
-| `priority` | P | `p1`〜`p5` |
-| `due` | 期限 | `2026-10-15` |
-| `actor` | (担当の式で使う) | `ai`・`human` |
-| `human_gate` | 人の関門 | `none`・`submit`・`pay`・`sign`・`send` |
-| `runner` | Agent | `Claude`・`Codex` |
-| `workdir` | 起動場所 | `~/src/shop/api` |
-| `done_when` | (表には出さない) | 終わりの条件の1文 |
+| `status` | Status | `todo`, `doing`, `done`, `dropped` |
+| `priority` | P | `p1` to `p5` |
+| `due` | Due | `2026-10-15` |
+| `actor` | (used by the formula) | `ai`, `human` |
+| `human_gate` | Human gate | `none`, `submit`, `pay`, `sign`, `send` |
+| `runner` | Agent | `Claude`, `Codex` |
+| `workdir` | Workdir | `~/src/clinic-booking` |
+| `done_when` | (not shown) | One sentence: when the task is done |
 
-## 設定(config.toml)
+## The config (config.toml)
 
-- `[new_note]`: 新しいタスク(`a`)を作るとき、`actor`・`human_gate`・`due` を順に聞き、`status = "todo"`・`priority = "p3"` を入れる。
-- `[display]`: 列の区切り線と一行おきの色。`group_gap` で、2つ目のまとまりの見出しの上を1行空ける。
+- `[new_note]`: a new task (`a`) asks `actor`, `human_gate` and `due`, and starts with `status = "todo"` and `priority = "p3"`.
+- `[display]`: lines between columns, zebra rows, and an empty line above the second group heading (`group_gap`).
 
-## 自分のコマンドにする
+## Make it your own command
 
-自分のタスクのフォルダに `タスク.base` を置き、alias を書けば、ひとことで開けます:
+Put a `Tasks.base` in your own task folder and add an alias:
 
 ```sh
-alias tasks='mdgrid --config ~/notes/mdgrid-tasks.toml ~/notes/タスク.base'
-alias mine='mdgrid ~/notes/タスク.base --view 人だけ'
+alias tasks='mdgrid --config ~/notes/mdgrid-tasks.toml ~/notes/Tasks.base'
+alias mine='mdgrid ~/notes/Tasks.base --view "People only"'
 ```
+
+日本語: AI エージェントに任せきれるタスクと、最後に人の手が要るタスク(払う・署名する・提出する・送る、PC の外の用事)を、`.base` の式1つと設定1つで分けて、人のタスクを上に並べる見本。`mdgrid --config examples/ai-human/config.toml examples/ai-human/Tasks.base --readonly` で開く。

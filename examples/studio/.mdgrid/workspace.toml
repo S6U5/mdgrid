@@ -1,0 +1,25 @@
+# The workspace marker (WS-7): the folders with notes right under here (Tasks, Projects, Clients, People and
+# Meetings) are one workspace. Links, linked rows and the relation map (R) look only at these tables.
+name = "Northwind Studio"
+# Opening this folder (`mdgrid examples/studio`) opens Tasks.base; `--raw` opens the folder itself (CLI-1).
+open = "Tasks"
+
+[[table]]
+name = "Tasks"
+path = "Tasks.base"
+
+[[table]]
+name = "Projects"
+path = "Projects"
+
+[[table]]
+name = "Clients"
+path = "Clients"
+
+[[table]]
+name = "People"
+path = "People"
+
+[[table]]
+name = "Meetings"
+path = "Meetings"

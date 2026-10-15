@@ -1,0 +1,78 @@
+filters:
+  and:
+    - file.inFolder("Tasks")
+formulas:
+  days_left: due - today()
+  state: if(done == true, "done", if(due < today(), "overdue", "later"))
+  backlinks: file.backlinks.length
+  embeds: file.embeds.length
+  hours_fixed: hours.toFixed(1)
+properties:
+  note.status:
+    displayName: Status
+  note.due:
+    displayName: Due
+  note.priority:
+    displayName: Priority
+  note.done:
+    displayName: Done
+  formula.days_left:
+    displayName: Days left
+  formula.state:
+    displayName: State
+  formula.hours_fixed:
+    displayName: Hours (formula)
+  formula.backlinks:
+    displayName: Backlinks (formula)
+views:
+  - type: table
+    name: Doing
+    filters:
+      and:
+        - status == "doing"
+    order:
+      - status
+      - due
+      - priority
+      - owner
+      - steps
+    sort:
+      - property: due
+        direction: ASC
+    limit: 10
+  - type: table
+    name: By status
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - due
+      - priority
+      - done
+      - tags
+      - summary
+      - details
+      - note
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: Due
+    order:
+      - due
+      - formula.days_left
+      - formula.state
+      - done
+    sort:
+      - property: due
+        direction: ASC
+  - type: table
+    name: Unsupported
+    order:
+      - hours
+      - formula.hours_fixed
+      - formula.embeds
+  - type: cards
+    name: Cards
+    order:
+      - status
