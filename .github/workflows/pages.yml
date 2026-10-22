@@ -63,7 +63,7 @@ jobs:
           python3 -m pip install --quiet "playwright==${PLAYWRIGHT_VERSION}"
           python3 -m playwright install --with-deps chromium
           python3 scripts/check_site.py site
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
