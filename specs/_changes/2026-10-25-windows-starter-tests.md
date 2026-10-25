@@ -2,7 +2,7 @@
 type: Change
 id: 01M5S6YTKM3NQ9A059Q14QN56Q
 title: Windows でパスの区切りの違いで落ちるスターターの試験と相対パスを直す(windows-starter-tests)
-status: active
+status: done
 size: bugfix
 created: 2026-10-25
 updated: 2026-10-25
@@ -22,7 +22,7 @@ updated: 2026-10-25
 | 設計 | 対象外: 補助の直しだけ | — |
 | タスク | 済 | この記録の「タスク」 |
 | 実装 | 済 | 「実装: [ST-1][ST-2][ST-3][ST-4][ST-5] …」のコミット |
-| 照合 | 進行中 | この記録の「照合」 |
+| 照合 | 済 | この記録の「照合」 |
 
 ## 要求
 
@@ -68,4 +68,22 @@ updated: 2026-10-25
 
 ## 照合
 
-(未)
+`check.py --evidence` は、この記録の「テスト:」のコミットが無い(bugfix で、試験の補助だけを直した)ため 5 件とも unassessed だったので、書込なしの検証役(フレッシュ文脈)に回した。検証役は a2a1d23(採択)→ cebf309(実装)の差分と、公開リポの CI の記録(「前」run 40180006597・「今」run 40188437605 の windows-latest)を読み、CI が試した版と手元の版が同じことをファイルの sha256 で確かめ、手元では関わる束(`cargo test --lib test_st_` 24 件・`cargo test --bin mdgrid test_st_5` 7 件)だけを走らせた(テスト全体は回していない)。
+
+| 要件 | 結果 | 証拠 |
+|---|---|---|
+| ST-1 | checked | コード: src/test_starter_unit.rs:94(rels)・:113(files_under)・:136(file_rels)が核の rel_str(src/starter.rs:268。部品を `/` でつなぐ)で相対パスを文字にする / テスト: src/test_starter_unit.rs::test_st_1_reads_manifest_ledger_and_samples・test_st_1_lang_variant_replaces_whole_ledger_and_samples・test_st_1_no_variant_for_language_uses_plain_ledger(同じファイルの test_st_1_* ほか 2 件は本文不変で前も通った) / 今: 通った(手元 `cargo test --lib test_st_` 24 件 0 失敗、CI run 40188437605 windows-latest の lib 337 件 0 失敗で test_st_1_* 5 件 ok) / 前: 落ちた(run 40180006597 windows-latest: 上の 3 件が `.mdgrid\templates\card.md` と `.mdgrid/templates/card.md` の区切りの違いで assert_eq に落ちた) |
+| ST-2 | checked | コード: 同上(file_rels・rels・files_under) / テスト: src/test_starter_unit.rs::test_st_2_builtin_four_in_name_order_with_every_language・test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings(test_st_2_builtin_marker_has_no_name_so_the_folder_names_the_workspace は前も通った) / 今: 通った(手元の同じ束、CI の lib で test_st_2_* 3 件 ok) / 前: 落ちた(2 件。`印が無い: [".mdgrid\\templates\\bookmark.md", …]` のように区切りの違いで `== ".mdgrid/workspace.toml"` が偽) |
+| ST-3 | checked | コード: 変更なし(同じファイルの補助 rels・files_under・file_rels が変わり、錠の値だけ変わる。5 件の本文は差分に無い) / テスト: src/test_starter_unit.rs::test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_builtin・test_st_3_list_without_config_dir_is_builtin_only・test_st_3_broken_manifest_warns_in_cli_3_shape_and_is_skipped・test_st_3_starter_without_marker_warns_and_is_skipped・test_st_3_find_by_name / 今: 通った(手元の同じ束、CI の lib で 5 件 ok) / 前: 通っていた(run 40180006597 の lib で test_st_3_* 5 件 ok。相対パスの文字を比べていない守りの試験) |
+| ST-4 | checked | コード: 同上(rels・files_under) / テスト: src/test_starter_unit.rs::test_st_4_create_copies_ledger_as_is_without_samples・test_st_4_create_with_samples_fills_sample_vars_only・test_st_4_create_refuses_when_any_target_exists_and_writes_nothing・test_st_4_create_without_samples_ignores_existing_sample_path(test_st_4_create_makes_a_missing_root は前も通った) / 今: 通った(手元の同じ束、CI の lib で test_st_4_* 5 件 ok) / 前: 落ちた(4 件。`board\First card.md` と `board/First card.md` などの区切りの違い) |
+| ST-5 | checked | コード: src/ui/test_starter.rs:44(slash)・:64(files_under)、src/ui/test_starter_more.rs:14(slash)・:34(files_under)・:91-93(絶対パスの例を temp_dir() から作り、is_absolute() を確かめてから resolve_dir に渡す) / テスト: src/ui/test_starter.rs::test_st_5_palette_lists_starters_then_folder_then_samples_then_opens・test_st_5_n_makes_the_ledger_without_samples・test_st_5_esc_at_any_step_cancels_and_writes_nothing・test_st_5_empty_folder_is_refused_and_absolute_path_is_used_as_is・test_st_5_readonly_has_no_command_and_refuses、src/ui/test_starter_more.rs::test_st_5_two_open_folders_refuse_to_create・test_st_5_folder_is_relative_to_the_open_folder_unless_home_or_absolute / 今: 通った(手元 `cargo test --bin mdgrid test_st_5` 7 件 0 失敗、CI の bin 948 件 0 失敗で test_st_5_* 7 件 ok。Windows で初めて走った) / 前: 走っていない(run 40180006597 の windows-latest は lib の束で止まり bin は実行されていない。元の例 `/abs/x` は Windows では is_absolute() が偽なので、走っていても「絶対はそのまま」の観測にはなっていなかった) |
+
+既存のテストの削除・skip・弱体化: なし(試験の関数の本文で変わった assert は test_st_5_folder_… の絶対パスの例 1 か所だけで、is_absolute() の確認が足されて前より強い。補助は部品を `/` でつなぐ形なので、Unix では名前の中の `\` が1つの部品として残り、入れ子との区別は消えない。Unix での補助の出力は変更前と同じで、期待値は1つも変えていない)
+
+要件の文と例: specs/starter/spec.md の ST-1〜ST-6 の文・例は不変(差分は末尾の生成区画だけ)。
+
+セキュリティの回: 対象外(bugfix)
+
+CI(公開リポ PR #45、run 40188437605): lint・deny・msrv・ubuntu・macos・windows の6つが通った。Windows は lib 337・bin 948・tests/ の束を合わせて 1936 件 0 失敗(CLI・e2e・見本の同期の試験は `#![cfg(unix)]` で 0 件)。レビュー #1 の前提(bin と tests/ が Windows で初めて回る)は、この走りで満たした。
+
+確かめた: 5 / 5
