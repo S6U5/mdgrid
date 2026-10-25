@@ -783,9 +783,16 @@ fn chip_spans(
     }
 }
 
+/// SR-48: 計算の列の見出しの頭の印(関数の f。East Asian Width が N で、どの端末でも幅1)。
+pub(crate) const FORMULA_MARK: &str = "\u{192}";
+
 /// SR-35: 列の見出しの文字(色を使う表示で、設定が許せば型の印を前に)。幅もこれで数える。
 pub(crate) fn head_text(app: &App, col: &str) -> String {
     let title = sanitize(&app.head_title(col));
+    // SR-48: 計算の列は、色や設定に依らず頭に ƒ(幅1)を付けて、ノートのキーの列と見分けられるようにする。
+    if col.starts_with("formula.") {
+        return format!("{FORMULA_MARK} {title}");
+    }
     if !app.style.icons || !app.rich(col, mdgrid::cells::Part::Icons) {
         return title;
     }
@@ -941,6 +948,9 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     }
     if super::bands::on_relmap(app) {
         return super::relmap::render(app, w, h);
+    }
+    if super::bands::on_tree(app) {
+        return super::folder_tree::render(app, w, h);
     }
     if let (Mode::Confirm, Some(r)) = (app.mode, &app.review) {
         return render_review(app, r, w, h);

@@ -43,7 +43,11 @@ case "$what" in
     sed "s|examples/|$work/examples/|" "$work/examples/places/mdgrid/places.toml" > "$work/config/mdgrid/places.toml"
     dir="$work/examples"; target=""
     ;;
-  *) echo "unknown sample: $what (studio, workspace, configs, quirks, ai-human, places)" >&2; exit 2 ;;
+  starter)
+    XDG_CONFIG_HOME="$work/config" XDG_STATE_HOME="$work/state" "$ROOT/target/release/mdgrid" "$work/books" --init-workspace --starter reading --with-samples >/dev/null
+    dir="$work/books"; target="."
+    ;;
+  *) echo "unknown sample: $what (studio, workspace, configs, quirks, ai-human, places, starter)" >&2; exit 2 ;;
 esac
 cd "$dir"
 if [ -n "$target" ]; then

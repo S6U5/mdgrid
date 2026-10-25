@@ -244,6 +244,7 @@ impl App {
                     .map(|(i, _)| i)
             })
             .unwrap_or(0);
+        self.folder_tree = None;
         let mut rm = RelMap {
             infos,
             links,
@@ -365,7 +366,7 @@ impl App {
 }
 
 /// 窓: 枠と題の付いた w×h の行。`focused` なら枠はアクセントの色(モダン)か太字の題(ほか)。
-fn panel(
+pub(crate) fn panel(
     app: &App,
     title: &str,
     body: Vec<Line<'static>>,
@@ -672,7 +673,7 @@ fn one_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
 }
 
 /// 横に並べる(各窓は同じ高さの行の並び)。
-fn side_by_side(cols: Vec<Vec<Line<'static>>>) -> Vec<Line<'static>> {
+pub(crate) fn side_by_side(cols: Vec<Vec<Line<'static>>>) -> Vec<Line<'static>> {
     let h = cols.iter().map(Vec::len).max().unwrap_or(0);
     (0..h)
         .map(|y| {

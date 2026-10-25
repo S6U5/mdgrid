@@ -59,4 +59,8 @@ commit_parsers = [
   { message = "^取り込み[:：]", skip = true },
   # 仕様駆動の道具(.decidespec/)の更新。利用者に見える変化でない。
   { message = "^decidespec[:：]", skip = true },
+  # 公開リポから取り込む Dependabot と CI のコミット(文はそのまま取り込む。docs/public-sync.md)。
+  # 依存の更新は節に出し(配る実行ファイルの中身が変わる)、CI の設定は出さない。
+  { message = "^Bump ", group = "<!-- 4 -->Dependencies" },
+  { message = "^ci[:：]", skip = true },
 ]

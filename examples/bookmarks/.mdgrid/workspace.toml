@@ -1,0 +1,62 @@
+# The mdgrid workspace marker (WS-7) of a bookmark ledger, made from the built-in starter "bookmarks".
+# One note per bookmark under Bookmarks/, with its place in the folder tree written in `folder` ("bar > Dev > Web")
+# and its order inside that folder in `order`. `tree` (TR-2) turns on the tree view: press T, or pick Tree in the
+# screen type menu at the top right; o opens the URL in the browser. This is your copy.
+open = "Bookmarks"
+
+# The note column shows the file name only.
+[display]
+note_path = "name"
+
+[types]
+order = "number"
+added = "date"
+
+# Allowed values (CE-36): offered when you edit the cell; other values are marked.
+[rules.status]
+values = ["active", "archived"]
+
+# New note (n): asks for the URL and the folder, fills in the rest, and starts the body from the template.
+[new_note]
+folder = "Bookmarks"
+ask = ["url", "folder"]
+hidden = ["added"]
+body = ".mdgrid/templates/bookmark.md"
+
+[new_note.set]
+status = "active"
+added = "{date}"
+
+[[table]]
+name = "Bookmarks"
+tree = { path = "folder", order = "order" }
+
+[table.base]
+filters = { and = ['file.inFolder("Bookmarks")'] }
+
+[table.base.properties]
+"note.url" = { displayName = "URL" }
+"note.folder" = { displayName = "Folder" }
+"note.order" = { displayName = "Order" }
+"note.status" = { displayName = "Status" }
+"note.added" = { displayName = "Added" }
+
+[[table.base.views]]
+type = "table"
+name = "All"
+order = ["url", "folder", "order", "status", "added"]
+sort = [{ property = "folder", direction = "ASC" }, { property = "order", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Active"
+where = { status = ["active"] }
+order = ["url", "folder", "order", "added"]
+sort = [{ property = "folder", direction = "ASC" }, { property = "order", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Archived"
+where = { status = ["archived"] }
+order = ["url", "folder", "added"]
+sort = [{ property = "added", direction = "DESC" }]

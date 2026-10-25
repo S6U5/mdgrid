@@ -2,8 +2,9 @@
 //! `--init-workspace`。開くパス(位置の引数)と重ならない。画面を出さないので、標準出力がパイプでも動く。
 //! `workspaces.toml` は設定のフォルダ(views.toml と同じ)に置く。
 
-use mdgrid::i18n::Msg;
+use mdgrid::i18n::{self, Msg};
 use mdgrid::workspace::{self, WsTable};
+use mdgrid::{clock, starter};
 use std::path::{Path, PathBuf};
 
 /// ワークスペースの操作。
@@ -17,8 +18,10 @@ pub(crate) enum Op {
     Remove(String, Vec<PathBuf>),
     /// ワークスペースごと消す。
     Delete(String),
-    /// 印を作る(フォルダ)。
-    Init(Vec<PathBuf>),
+    /// 印を作る(フォルダ)。スターターがあれば、その名前と見本を入れるか(ST-4)。
+    Init(Vec<PathBuf>, Option<(String, bool)>),
+    /// スターターの一覧(ST-3)。
+    Starters,
 }
 
 /// 動かす。出す文(標準出力)か、理由(誤り)を返す。
@@ -89,11 +92,59 @@ pub(crate) fn run(op: Op, dir: Option<&Path>) -> Result<String, String> {
             workspace::remove(d, &name, None).map_err(|e| Msg::WsSaveError.fill(&[&e]))?;
             Ok(Msg::WsCliDeleted.fill(&[&name]) + "\n")
         }
-        Op::Init(paths) => {
+        Op::Init(paths, None) => {
             let mut out = String::new();
             for p in paths {
                 let made = workspace::init(&real(&p)?)?;
                 out.push_str(&Msg::WsCliInit.fill(&[&made.display()]));
+                out.push('\n');
+            }
+            Ok(out)
+        }
+        // ST-4: スターターから台帳を作る(根が無ければ作るので、パスの実体は取らない)。
+        Op::Init(paths, Some((name, with_samples))) => {
+            if paths.len() > 1 {
+                return Err(Msg::StarterOne.text().to_string());
+            }
+            let (list, warns) = starter::list(dir);
+            for w in &warns {
+                eprintln!("mdgrid: {w}");
+            }
+            let Some(s) = starter::find(&list, &name) else {
+                return Err(Msg::StarterUnknown.fill(&[&name]));
+            };
+            let root = paths
+                .into_iter()
+                .next()
+                .unwrap_or_else(|| PathBuf::from("."));
+            let today_now = clock::today_now(|k| std::env::var(k).ok());
+            let made = starter::create(&root, s, i18n::current(), with_samples, today_now)?;
+            let mut out = String::new();
+            for p in made {
+                out.push_str(&Msg::WsCliInit.fill(&[&p.display()]));
+                out.push('\n');
+            }
+            Ok(out)
+        }
+        // ST-3: 名前と今の言語の名前・説明を1行ずつ。ユーザーのものには印を添える。
+        Op::Starters => {
+            let (list, warns) = starter::list(dir);
+            for w in &warns {
+                eprintln!("mdgrid: {w}");
+            }
+            let lang = i18n::current();
+            let mut out = String::new();
+            for s in &list {
+                let (title, desc) = starter::describe(s, lang);
+                out.push_str(&format!("{}  {title}", s.name));
+                if matches!(s.origin, starter::Origin::User(_)) {
+                    out.push(' ');
+                    out.push_str(Msg::StarterUser.text());
+                }
+                if !desc.is_empty() {
+                    out.push_str(" · ");
+                    out.push_str(&desc);
+                }
                 out.push('\n');
             }
             Ok(out)

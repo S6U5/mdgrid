@@ -254,6 +254,12 @@ pub struct App {
     pub(crate) links: super::relations::Links,
     /// 関係マップ(REL-7。relmap.rs)。開いている間だけ。
     pub(crate) relmap: Option<super::relmap::RelMap>,
+    /// TR-2: 印に書いた木の設定と警告の場所(`table[n].tree`)。無い・書き方が違う・階層の列が無いなら None。
+    pub(crate) tree_spec: Option<(mdgrid::folder_tree::TreeSpec, String)>,
+    /// 木の画面(TR-1。folder_tree.rs)。開いている間だけ。
+    pub(crate) folder_tree: Option<super::folder_tree::FolderTree>,
+    /// TR-5: URL を開く口(試験では差し替える)。
+    pub(crate) opener: Box<dyn super::external::Opener>,
     pub quit: bool,
 }
 
@@ -376,6 +382,9 @@ impl App {
             switch_new_note: false,
             links: Default::default(),
             relmap: None,
+            tree_spec: None,
+            folder_tree: None,
+            opener: super::external::default_opener(),
             quit: false,
         };
         // CE-25: 作る場所の既定は読み込み口が開いたフォルダ(起動の設定 `start` が対象から決め直す)。
@@ -443,6 +452,8 @@ impl App {
             }
         }
         if self.progress.done {
+            // TR-2: 階層の列が表に無ければ警告して木を出さない(列は読み終えてから分かる)。
+            self.check_tree_column();
             self.select_pending();
             // BV-2: 推した根で0行なら、探した場所を一度出す(黙って空の表にしない)。
             if let Some(root) = self.guessed_root.take() {
@@ -498,6 +509,8 @@ impl App {
             // WB-17: 外で、ためた値と同じ値に直されたセルは外す。
             self.changes.drop_same(self.src.as_ref(), &changed);
             self.refresh();
+            // TR-1: 木の画面を開いていれば、今のビューを通った行で組み直す。
+            self.rebuild_tree();
             if self.review.is_some() {
                 self.reopen_review_keeping_overlay();
             }
@@ -695,6 +708,7 @@ impl App {
             Mode::ColumnType => self.type_menu_action(action),
             Mode::FilterWin | Mode::FilterText => self.filters_action(action),
             Mode::Relations => self.relmap_action(action),
+            Mode::Tree => self.tree_action(action),
             Mode::Table => self.table_action(action),
         }
         if std::mem::take(&mut self.regrid) {
@@ -859,6 +873,9 @@ impl App {
             Action::LinkedRows => self.start_linked_rows(),
             // ---- 関係マップ(relmap.rs。REL-7) ----
             Action::RelationMap => self.open_relmap(),
+            // ---- 木の画面(folder_tree.rs。TR-1・TR-5) ----
+            Action::TreeView => self.open_tree(),
+            Action::OpenUrl => self.open_url_here(),
             // ---- 親子(NV-27。grid.rs) ----
             Action::ToggleTree => self.toggle_tree(),
             // ---- ワークスペース(workspace.rs。WS-2) ----
@@ -867,6 +884,8 @@ impl App {
             Action::WsRemove => self.start_ws_remove(),
             Action::WsOpen => self.start_ws_open(),
             Action::WsDrawer => self.open_drawer(),
+            // ---- スターターから台帳を作る(starter.rs。ST-5) ----
+            Action::StarterNew => self.start_starter_new(),
             // ---- キーの名前の変更と削除(native_io.rs。CE-29) ----
             Action::RenameKey => self.start_rename_key(),
             // CE-35: 列の型を選び直す窓。
@@ -980,6 +999,22 @@ impl App {
                 }
                 // REL-12: 一覧・盤・つながった行のクリック。
                 self.relmap_click(x, y);
+                return;
+            }
+            Mode::Tree => {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
+                    self.close_tree();
+                    self.open_drawer();
+                    return;
+                }
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
+                }
+                // TR-7: フォルダ・開閉の印・右の行・タブの行のクリック。
+                self.tree_click(x, y);
                 return;
             }
             Mode::Chips => {
@@ -1126,6 +1161,9 @@ impl App {
             // REL-12: 関係マップでは表を上下に選ぶ。
             (Mode::Relations, true) => Action::Down,
             (Mode::Relations, false) => Action::Up,
+            // TR-7: 木の画面では、選んでいる欄で上下に選ぶ(行の操作の窓が開いていれば窓の中)。
+            (Mode::Tree, true) => Action::Down,
+            (Mode::Tree, false) => Action::Up,
             _ => return,
         };
         self.apply(a);
@@ -1179,6 +1217,9 @@ impl App {
                 if self.mode == Mode::Relations {
                     self.relmap = None;
                     self.set_mode(Mode::Table);
+                }
+                if self.mode == Mode::Tree {
+                    self.close_tree();
                 }
                 self.apply(Action::ViewSettings);
             }

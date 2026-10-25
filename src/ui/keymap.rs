@@ -49,6 +49,8 @@ pub enum Mode {
     ScreenMenu,
     /// 列の型の窓(CE-35。type_menu.rs)。
     ColumnType,
+    /// 木の画面(TR-1。folder_tree.rs)。
+    Tree,
 }
 
 impl Mode {
@@ -77,6 +79,7 @@ impl Mode {
             Mode::FilterText => Msg::ModeFilterText,
             Mode::ScreenMenu => Msg::ModeScreenMenu,
             Mode::ColumnType => Msg::ModeColumnType,
+            Mode::Tree => Msg::ModeTree,
         }
     }
 
@@ -110,10 +113,11 @@ impl Mode {
             Mode::FilterText => "filter_input",
             Mode::ScreenMenu => "screen_menu",
             Mode::ColumnType => "column_type",
+            Mode::Tree => "tree",
         }
     }
 
-    pub const ALL: [Mode; 22] = [
+    pub const ALL: [Mode; 23] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -136,6 +140,7 @@ impl Mode {
         Mode::FilterText,
         Mode::ScreenMenu,
         Mode::ColumnType,
+        Mode::Tree,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
@@ -320,6 +325,8 @@ pub enum Action {
     WsOpen,
     /// WS-8: 表の一覧の引き出しを開け閉めする。
     WsDrawer,
+    /// ST-5: スターターから台帳を作る(パレットから)。
+    StarterNew,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
     /// CE-26: 新しいノートの窓で、どの欄からでも作る(既定 Ctrl+S)。
@@ -336,6 +343,10 @@ pub enum Action {
     FilterMenu,
     /// 今のビューを既定のビューにする(NV-25)。
     SetDefaultView,
+    /// TR-1: 表と木の画面を切り替える。
+    TreeView,
+    /// TR-5: 行の http・https の URL を OS の既定のブラウザで開く。
+    OpenUrl,
 }
 
 impl Action {
@@ -453,12 +464,15 @@ impl Action {
             Action::WsRemove => "workspace_remove",
             Action::WsOpen => "workspace_open",
             Action::WsDrawer => "workspace_drawer",
+            Action::StarterNew => "starter_new",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
             Action::CreateNote => "create_note",
             Action::CreateNoteEdit => "create_note_edit",
             Action::Menu => "action_menu",
             Action::Freq => "frequency",
+            Action::TreeView => "tree_view",
+            Action::OpenUrl => "open_url",
         }
     }
 
@@ -572,6 +586,7 @@ const IN_DRAWER: Msg = Msg::SecInDrawer;
 const IN_SCREEN_MENU: Msg = Msg::SecInScreenMenu;
 const IN_COLUMN_TYPE: Msg = Msg::SecInColumnType;
 const IN_FILTERS: Msg = Msg::SecInFilters;
+const IN_TREE: Msg = Msg::SecInTree;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -625,6 +640,8 @@ pub const COMMANDS: &[Command] = &[
     cmd(Action::RenameNote, Msg::CmdRenameNote, NOTE),
     // CE-25: 新しいノートはキー(既定 `a`)もあるが、割り当て直して外してもパレットから始められるように。
     cmd(Action::NewNote, Msg::KeyNewNote, NOTE),
+    // ST-5: スターターから台帳を作る(ファイルを書くので読むだけでは出さない)。
+    cmd(Action::StarterNew, Msg::CmdStarterNew, FILE),
 ];
 
 /// ノートを書かないパレットのコマンド(既定のキーなし)。`COMMANDS` と違い読むだけ(WB-15)でも出す:
@@ -643,6 +660,8 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::RegisterPlace, Msg::PlaceRegister, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
+    // TR-5: 行の URL を開く(既定のキーなし。木の中では `o`。操作の一覧からも)。
+    cmd(Action::OpenUrl, Msg::CmdOpenUrl, OUTSIDE),
     // WS-2: ワークスペース(ノートを書かない。workspaces.toml だけ)。
     cmd(Action::WsNew, Msg::CmdWsNew, FILE),
     cmd(Action::WsAdd, Msg::CmdWsAdd, FILE),
@@ -725,6 +744,8 @@ pub const BINDINGS: &[Binding] = &[
     b("+", Action::ShowColumn, Msg::KeyShowColumn, SHAPE, 0),
     // REL-7・REL-8: 関係マップ(上の端のタブ・パレットからも)。
     b("R", Action::RelationMap, Msg::KeyRelationMap, FIND, 0),
+    // TR-1: 木の画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
+    b("T", Action::TreeView, Msg::KeyTreeView, FIND, 0),
     b("Z", Action::ToggleTree, Msg::KeyToggleTree, SHAPE, 0),
     b("A", Action::AddColumn, Msg::KeyAddColumn, SHAPE, 0),
     b(
@@ -2245,7 +2266,103 @@ pub const BINDINGS: &[Binding] = &[
         Msg::KeyHelp,
         IN_RELMAP,
         0,
+    ), // TR-1・TR-3〜TR-7: 木の画面。↑↓ で選び、←→ で開閉と欄の移り、Tab で欄を切り替え、Enter で開閉か表へ。
+    m(
+        Mode::Tree,
+        "Enter",
+        Action::Run,
+        Msg::KeyTreeRun,
+        IN_TREE,
+        1,
     ),
+    m(
+        Mode::Tree,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_TREE,
+        2,
+    ),
+    m(
+        Mode::Tree,
+        "T",
+        Action::TreeView,
+        Msg::KeyRelBack,
+        IN_TREE,
+        0,
+    ),
+    m(Mode::Tree, "q", Action::Close, Msg::KeyRelBack, IN_TREE, 0),
+    m(Mode::Tree, "j", Action::Down, Msg::KeyTreeNext, IN_TREE, 0),
+    m(
+        Mode::Tree,
+        "Down",
+        Action::Down,
+        Msg::KeyTreeNext,
+        IN_TREE,
+        0,
+    ),
+    m(Mode::Tree, "k", Action::Up, Msg::KeyTreePrev, IN_TREE, 0),
+    m(Mode::Tree, "Up", Action::Up, Msg::KeyTreePrev, IN_TREE, 0),
+    m(Mode::Tree, "l", Action::Right, Msg::KeyTreeIn, IN_TREE, 0),
+    m(
+        Mode::Tree,
+        "Right",
+        Action::Right,
+        Msg::KeyTreeIn,
+        IN_TREE,
+        0,
+    ),
+    m(Mode::Tree, "h", Action::Left, Msg::KeyTreeOut, IN_TREE, 0),
+    m(
+        Mode::Tree,
+        "Left",
+        Action::Left,
+        Msg::KeyTreeOut,
+        IN_TREE,
+        0,
+    ),
+    m(
+        Mode::Tree,
+        "Space",
+        Action::Toggle,
+        Msg::KeyTreeToggle,
+        IN_TREE,
+        0,
+    ),
+    m(
+        Mode::Tree,
+        "Tab",
+        Action::NextSection,
+        Msg::KeyTreePane,
+        IN_TREE,
+        3,
+    ),
+    m(
+        Mode::Tree,
+        "Shift+Tab",
+        Action::PrevSection,
+        Msg::KeyTreePane,
+        IN_TREE,
+        0,
+    ),
+    m(
+        Mode::Tree,
+        "o",
+        Action::OpenUrl,
+        Msg::KeyOpenUrl,
+        IN_TREE,
+        4,
+    ),
+    m(Mode::Tree, "x", Action::Menu, Msg::KeyTreeMenu, IN_TREE, 5),
+    m(
+        Mode::Tree,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_TREE,
+        0,
+    ),
+    m(Mode::Tree, "?", Action::Help, Msg::KeyHelp, IN_TREE, 0),
 ];
 
 /// 全角の英数字・記号と `、`・`・` を、同じキーの位置の半角に直す(SR-17)。
@@ -2554,6 +2671,7 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::FilterText, &[Action::Cancel]),
     (Mode::ScreenMenu, &[Action::Close]),
     (Mode::ColumnType, &[Action::Close]),
+    (Mode::Tree, &[Action::Close]),
 ];
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する

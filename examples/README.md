@@ -10,6 +10,7 @@ Every sample here belongs to the same made-up company, **Northwind Studio**: a s
 | [ai-human/](ai-human/README.md) | The studio's admin tasks split into those an AI agent can finish and those that need a person. |
 | [places/](places) | Registered tables: the studio's tables and the other samples in one list. |
 | [themes/](themes) | One config per color theme. |
+| [bookmarks/](bookmarks) | A bookmark ledger (one note per bookmark, its folder written as `bar > Dev > Web`) seen as a folder tree with `T`. Made from the built-in starter `bookmarks`. |
 
 `sh demos/try.sh <sample>` opens a sample in a throwaway copy with its own config, and removes it when you quit.
 
@@ -79,6 +80,15 @@ mdgrid --config examples/configs/studio.toml examples/studio/Tasks.base --readon
 | `[rules.status]` | required, one of `todo`, `doing`, `done` | Other values get a `!`; `--check` lists them |
 | `[look.colors.values]` | `todo`, `doing`, `done` | The status values get their own colors |
 | `[keys.table]` | `"ctrl+f" = "search"` | `Ctrl+F` searches, like `/` |
+
+## bookmarks: a folder tree
+
+`Bookmarks/` keeps one note per bookmark: `url`, `folder` (where it sits, such as `bar > Dev > Web`), `order` (its place in the folder), `status` and `added`. The whole folder is what `mdgrid examples/bookmarks --init-workspace --starter bookmarks --with-samples` writes (a test keeps the two the same; `mdgrid --starters` lists the other starters). The workspace marker gives the table `tree = { path = "folder", order = "order" }`, so `T` (or **Tree** in the screen type menu) shows the folders on the left with their counts and the bookmarks of the selected folder on the right, in `order`. `o` opens the selected bookmark's `http` or `https` URL in your browser; the `file:` value of "Local notes file" is never opened. Enter goes back to that row in the table.
+
+```sh
+cp -R examples/bookmarks /tmp/bookmarks
+mdgrid /tmp/bookmarks                 # opens the Bookmarks table; press T
+```
 
 ## places: registered tables
 

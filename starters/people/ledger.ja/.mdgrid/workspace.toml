@@ -1,0 +1,61 @@
+# mdgrid のワークスペースの印(WS-7)。組み込みのスターター「人と会議」から作った台帳。
+# People/ に人を1件1ノート、Meetings/ に会議を1件1ノート。会議の `attendees` が人へのリンク(「[[安藤 真]]」)。
+# 表「会議」はこの印に書き([table.base]、WS-9)、このフォルダを開くと開く(open)。「人」はフォルダそのもの。
+# R で2つの表のつながりを見る。これは自分の写しなので、好きに直してよい。
+open = "会議"
+
+# ノートの欄はファイルの名前だけ。
+[display]
+note_path = "name"
+
+[types]
+when = "datetime"
+last_contact = "date"
+attendees = "list"
+tags = "list"
+
+[[table]]
+name = "会議"
+
+# 新しいノート(n): 日時・出席者・議題を聞き、本文を雛形から始める。
+[table.new_note]
+folder = "Meetings"
+ask = ["when", "attendees", "topic"]
+body = ".mdgrid/templates/meeting.md"
+
+[table.new_note.set]
+when = "{now}"
+
+[table.base]
+filters = { and = ['file.inFolder("Meetings")'] }
+
+[table.base.properties]
+"note.when" = { displayName = "日時" }
+"note.attendees" = { displayName = "出席者" }
+"note.topic" = { displayName = "議題" }
+"note.next_actions" = { displayName = "次の行動" }
+
+[[table.base.views]]
+type = "table"
+name = "全部"
+order = ["when", "attendees", "topic", "next_actions"]
+sort = [{ property = "when", direction = "DESC" }]
+
+[[table.base.views]]
+type = "table"
+name = "議題ごと"
+order = ["when", "attendees", "next_actions"]
+groupBy = { property = "topic", direction = "ASC" }
+sort = [{ property = "when", direction = "DESC" }]
+
+[[table]]
+name = "人"
+path = "People"
+
+# 新しい人: 役割・所属・メールを聞く。
+[table.new_note]
+ask = ["role", "org", "email"]
+hidden = ["last_contact"]
+
+[table.new_note.set]
+last_contact = "{date}"

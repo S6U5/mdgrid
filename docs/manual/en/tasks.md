@@ -267,6 +267,20 @@ To open a chosen table whenever the root folder is opened, write `open = "<table
 
 Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/workspace.toml` above the opened folder → the first workspace in `workspaces.toml` that holds the table → detection → the registered tables. Detection is set by `[workspace] detect` in the config (default `[".obsidian"]`; the old values `"vault"` and `"git"` are still read): the nearest root folder (a folder with `.obsidian/`), and with `".git"` also the repository root, counts as an unnamed workspace of the folders right under it. `detect = []` turns it off.
 
+## Create a ledger from a starter
+
+The common kinds of ledger (tasks, bookmarks, a reading log, people and meetings) can start from a **starter**: a marker and note templates ready to use. `mdgrid --starters` lists them; `mdgrid <folder> --init-workspace --starter <name>` writes one (`--with-samples` adds a few sample notes). The folder is created if missing, and if any target file already exists nothing is written.
+
+```sh
+mdgrid --starters
+mdgrid ~/notes/books --init-workspace --starter reading --with-samples
+mdgrid ~/notes/books
+```
+
+In the screen, **Create a ledger from a starter** in the command palette (`:`) does the same: pick a starter, type the folder to create (relative to the open folder; the starter's name by default), answer `y`/`n` for the samples, and the new ledger opens. Esc cancels at any step.
+
+Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones (`starter.toml`, `ledger/`, `samples/`). The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `ledger/`.
+
 ## Use with other commands
 
 To save the table exactly as shown — with your filters, sorting and hidden columns — choose **Export the table to a file** in the command palette (`:`) and type a file name. The extension picks the format: `.csv`, `.tsv`, `.json` or `.md`. The first column is each note's path, so a CSV or JSON can come back with `--apply`.

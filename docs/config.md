@@ -62,6 +62,31 @@ name = "tasks"
 path = "tasks.base"
 ```
 
+A `[[table]]` in the marker can also set up the tree view (`T`; `tree` in [Keys](keys.md)): `tree = { path = "<column>", separator = "<separator>", order = "<column>" }`. The value of the `path` column, split at `separator` (default ` > `), is where the row sits in the tree, and the `order` column (optional) sorts the rows in a folder. When the column holds a list, its first item is used. A `path` column the table does not have, an empty separator, or a `tree` that is not a table is a warning (in the form `.mdgrid/workspace.toml: table[1].tree.separator: …`), and the tree is not offered.
+
+```toml
+# bookmarks/.mdgrid/workspace.toml — see notes whose folder is like "bar > dev > Web" as a folder tree
+[[table]]
+name = "Bookmarks"
+path = "Bookmarks"
+tree = { path = "folder", order = "order" }
+```
+
+A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
+
+```
+starters/kanban/
+  starter.toml                  # [name] and [description], one key per language code (en, ja)
+  ledger/                       # copied as is, relative to the ledger's root
+    .mdgrid/workspace.toml
+    .mdgrid/templates/card.md   # the body template named by [new_note] (its {date} is filled when a note is made)
+  samples/                      # copied only with --with-samples; {date}, {date+N}, {now} … are filled when copied
+    Board/First card.md
+  ledger.ja/  samples.ja/       # optional: used instead of ledger/ and samples/ when the language is ja
+```
+
+A starter with the same name as a built-in one replaces it. The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `starters/<name>/ledger/`.
+
 ## Old names (0.3.0)
 
 Configurations written for 0.3.0 still work: each old name is read as its new path with a warning. `mdgrid --migrate-config` prints your configuration in the current layout (comments are not carried over). The old `look.toml` is read when there is no `ui.toml`, and is moved to `ui.toml` the next time mdgrid writes it; `[[target]]` in `views.toml` becomes `[[table]]` the same way.
@@ -480,11 +505,25 @@ row_extra_lines = 2
 - Default: `false`
 - Scope: global, workspace, table, view
 
-When the view tabs do not fit on the row of the view bar (with the search box and the buttons), wrap them onto extra rows above it, filled from the left, so every tab stays visible and can be clicked; the remaining tabs stay at the left of the bar's row, and the table moves down by the extra rows. When the tabs fit, nothing changes. `false` keeps one row: on a narrow screen the tabs other than the current one are left out (the `[` `]` keys still switch).
+When the view tabs do not fit on the row of the view bar (with the search box and the buttons), move them all off that row onto the rows right below it, filled from the left and as many rows as they need, so every tab stays visible and can be clicked; the bar's row keeps only the search box and the buttons, and the table moves down by the extra rows. When the tabs fit, nothing changes. `false` keeps one row: on a narrow screen the tabs other than the current one are left out (the `[` `]` keys still switch). When a view has `tab_break`, the tabs go on rows below whatever this setting says (see `tab_break` in [Obsidian Bases support](obsidian-bases.md)).
 
 ```toml
 [display]
 tab_wrap = true
+```
+
+### `display.tab_wrap_gap`
+
+- Type: `boolean`
+- Default: `false`
+- Scope: global, workspace, table, view
+
+With `tab_wrap`, put one empty row between the bar's row (the search box and the buttons) and the rows of tabs below it. Nothing changes when the tabs fit. When a view's `tab_break` puts the tabs below, the same one empty row goes in.
+
+```toml
+[display]
+tab_wrap = true
+tab_wrap_gap = true
 ```
 
 ### `display.note_name`
@@ -662,7 +701,7 @@ values = ["todo", "doing", "done"]
 
 Rebind keys per mode; without this item the built-in key bindings are used. Under `[keys.<mode>]`, write `key = "action name"`. The action name `"none"` removes the key. Keys are written like `"j"`, `"ctrl+s"`, `"shift+tab"`; a space separates a prefix key sequence such as `"g g"`.
 
-Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`, `relations`, `drawer`, `filter_window`, `filter_input`, `screen_menu`, `column_type`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
+Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`, `relations`, `drawer`, `filter_window`, `filter_input`, `screen_menu`, `column_type`, `tree`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
 
 ```toml
 [keys.table]

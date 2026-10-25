@@ -88,6 +88,18 @@ pub(crate) enum Ask {
         items: Vec<String>,
         places: Vec<mdgrid::places::Place>,
     },
+    /// スターターを選ぶ(ST-5)。`starters` は `items` と同じ並び。
+    StarterPick {
+        items: Vec<String>,
+        starters: Vec<mdgrid::starter::Starter>,
+    },
+    /// 作る場所(ST-5。候補なし。既定はスターターの名前)。
+    StarterDir(Box<mdgrid::starter::Starter>),
+    /// 見本のノートを入れるか(ST-5)。続けて `y`/`n`。
+    StarterSamples {
+        starter: Box<mdgrid::starter::Starter>,
+        root: PathBuf,
+    },
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -199,6 +211,9 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::WsRemove(_)) => Msg::AskWsRemove.into(),
         Some(Ask::WsOpen(_)) => Msg::AskWsOpen.into(),
         Some(Ask::WsTable { ws, .. }) => Msg::AskWsTable.fill(&[&sanitize(ws)]),
+        Some(Ask::StarterPick { .. }) => Msg::AskStarterPick.into(),
+        Some(Ask::StarterDir(_)) => Msg::AskStarterDir.into(),
+        Some(Ask::StarterSamples { .. }) => Msg::AskStarterSamples.into(),
     }
 }
 
@@ -212,6 +227,7 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::LinkedRows { items, .. }) => items,
         Some(Ask::WsRemove(items)) | Some(Ask::WsOpen(items)) => items,
         Some(Ask::WsTable { items, .. }) => items,
+        Some(Ask::StarterPick { items, .. }) => items,
         Some(Ask::WsPick(names)) => {
             // WS-2: 打った語は新しいワークスペースにもなる(places の分類と同じ形)。
             let shown = super::workspace::pick_items(names, query).0;
@@ -241,15 +257,21 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let room = lines.len().saturating_sub(3).clamp(1, ASK_ROWS);
     if matches!(
         ask,
-        Ask::PlaceName(_) | Ask::PlaceOverwrite(_) | Ask::WsName
+        Ask::PlaceName(_) | Ask::PlaceOverwrite(_) | Ask::WsName | Ask::StarterSamples { .. }
     ) {
         // 候補の無い入力。
-    } else if let Ask::ExportName = ask {
+    } else if let Ask::ExportName | Ask::StarterDir(_) = ask {
+        // 候補は無く、相対パスの基準のフォルダを1行。
         let dir = app
             .export_dir()
             .map(|d| d.display().to_string())
             .unwrap_or_default();
-        let t = Msg::AskExportWhere.fill(&[&dir]);
+        let msg = if matches!(ask, Ask::ExportName) {
+            Msg::AskExportWhere
+        } else {
+            Msg::AskStarterWhere
+        };
+        let t = msg.fill(&[&dir]);
         out.push(Line::from(fit(&sanitize(&t), w, Align::Left)));
     } else {
         let (items, idx) = ask_items(app, &p.query);
@@ -280,7 +302,7 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
 impl App {
     /// 書き出しと取り込みの `.base` の置き場: 開いたフォルダ(`.base` で開いたならその `.base` のフォルダ。
     /// `mdgrid tasks.base` のように相対パスで開いてフォルダの部分が空なら今のフォルダ)。
-    fn export_dir(&self) -> Option<PathBuf> {
+    pub(crate) fn export_dir(&self) -> Option<PathBuf> {
         export_dir_of(&self.nv.target)
     }
 
@@ -673,6 +695,27 @@ impl App {
                 } else {
                     self.close_palette();
                     self.message = Some(Msg::AskCancelled.into());
+                }
+            }
+            // ST-5: スターター → 作る場所 → 見本を入れるか → 作って開く(starter.rs)。
+            Some(Ask::StarterPick { starters, .. }) => {
+                let Some(s) = picked.and_then(|k| starters.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.starter_picked(s)
+            }
+            Some(Ask::StarterDir(s)) => {
+                let s = (**s).clone();
+                self.starter_dir(s, query)
+            }
+            Some(Ask::StarterSamples { starter, root }) => {
+                let (s, root) = ((**starter).clone(), root.clone());
+                self.close_palette();
+                match query.trim().to_ascii_lowercase().as_str() {
+                    "y" => self.starter_make(s, root, true),
+                    "n" => self.starter_make(s, root, false),
+                    _ => self.message = Some(Msg::AskCancelled.into()),
                 }
             }
             None => self.close_palette(),

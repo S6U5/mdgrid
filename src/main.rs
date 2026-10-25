@@ -193,6 +193,15 @@ struct Cli {
     /// 開くパスのフォルダ(無ければ今のフォルダ)に、ワークスペースの印 .mdgrid/workspace.toml を作る
     #[arg(long, conflicts_with_all = ["print", "pick", "apply", "workspaces", "add_to", "remove_from", "remove_workspace"])]
     init_workspace: bool,
+    /// --init-workspace で、このスターター(組み込みか、設定のフォルダの starters/<名前>)から台帳を作る(ST-4)
+    #[arg(long, value_name = Msg::ValueName.ja(), requires = "init_workspace")]
+    starter: Option<String>,
+    /// --starter で、見本のノートも入れる(ST-4)
+    #[arg(long, requires = "starter")]
+    with_samples: bool,
+    /// スターターの一覧(名前と1行の説明)を出す(ST-3)
+    #[arg(long, conflicts_with_all = ["print", "pick", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace"])]
+    starters: bool,
     /// 設定の全項目を既定値と説明付きの TOML で出す
     #[arg(long)]
     print_config: bool,
@@ -363,6 +372,8 @@ impl Cli {
             Command::Man
         } else if self.workspaces {
             Command::Workspace(ws_cli::Op::List)
+        } else if self.starters {
+            Command::Workspace(ws_cli::Op::Starters)
         } else if let Some(name) = self.remove_workspace {
             Command::Workspace(ws_cli::Op::Delete(name))
         } else {
@@ -376,7 +387,10 @@ impl Cli {
             } else if let Some(name) = self.remove_from {
                 Command::Workspace(ws_cli::Op::Remove(name, paths))
             } else if self.init_workspace {
-                Command::Workspace(ws_cli::Op::Init(paths))
+                Command::Workspace(ws_cli::Op::Init(
+                    paths,
+                    self.starter.map(|s| (s, self.with_samples)),
+                ))
             } else if self.check {
                 Command::Check(paths)
             } else if let Some(file) = self.apply {
@@ -412,6 +426,8 @@ impl Cli {
             (self.with_path, "--with-path"),
             (self.workspaces, "--workspaces"),
             (self.init_workspace, "--init-workspace"),
+            (self.with_samples, "--with-samples"),
+            (self.starters, "--starters"),
         ] {
             if on {
                 out.push(OsString::from(flag));
@@ -440,6 +456,7 @@ impl Cli {
             ("--as", &self.as_name),
             ("--remove-from", &self.remove_from),
             ("--remove-workspace", &self.remove_workspace),
+            ("--starter", &self.starter),
         ] {
             if let Some(v) = v {
                 out.push(format!("{flag}={v}").into());

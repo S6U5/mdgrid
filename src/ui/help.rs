@@ -508,7 +508,13 @@ impl App {
     pub(crate) fn close_palette(&mut self) {
         self.palette = None;
         self.nv.ask = None;
-        self.set_mode(Mode::Table);
+        // TR-5: 木の画面から開いたパレットは、閉じると木に戻る。
+        let back = if self.folder_tree.is_some() {
+            Mode::Tree
+        } else {
+            Mode::Table
+        };
+        self.set_mode(back);
     }
 
     /// パレットの中の動作: 実行・閉じる・候補の選択・1字消す。

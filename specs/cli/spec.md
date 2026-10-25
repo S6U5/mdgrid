@@ -75,8 +75,16 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-15 | [Windows で OS ごとの既定と違う所を確かめていた2つの試験のファイルを直し、錠を掛け直す(windows-tests-locks)](../_decisions/2026-10-15-windows-tests-locks.md) | accepted | AI | 検証の指摘 | CLI-3, SR-8 |
+| 2026-10-15 | [Windows を対象に入れ、設定の置き場とエディタの既定を Windows に合わせる(windows-target)](../_decisions/2026-10-15-windows-target.md) | accepted | AI | 人の発言 | CLI-3, SR-8, SR-19 |
+| 2026-10-15 | [印でビューと表を決める手引きのスキル mdgrid-views をプラグインに置く(views-skill)](../_decisions/2026-10-15-views-skill.md) | accepted | AI | 人の発言 | CLI-24 |
+| 2026-10-15 | [ビューのタブが帯の1行に入らないとき、次の行に折り返して全部を見せる設定 tab_wrap を足す(tab-wrap)](../_decisions/2026-10-15-tab-wrap.md) | accepted | AI | 人の発言 | NV-23, NV-31, SR-21, CLI-11, CV-8 |
+| 2026-10-15 | [折り返すときはタブを全部、検索の欄の行の下に要る行の数だけ並べ、間の空き行を設定 tab_wrap_gap で選べるようにする(tab-wrap-below)](../_decisions/2026-10-15-tab-wrap-below.md) | accepted | 人 | 人の発言 | NV-31, NV-23, SR-21, CLI-11, CV-8 |
+| 2026-10-15 | [[display] の項目の数を 12 に直した2つの試験の錠を掛け直す(note-path-locks)](../_decisions/2026-10-15-note-path-locks.md) | accepted | AI | 検証の指摘 | SR-21, CLI-11, CV-8 |
+| 2026-10-15 | [ノートの欄の名前を正規表現で抜き出す・削る設定 note_name を足す(note-name)](../_decisions/2026-10-15-note-name.md) | accepted | AI | 人の発言 | SR-21, SR-29, SR-47, CLI-11, CV-8 |
 | 2026-10-15 | [印のあるフォルダを開いたら、印に書いた表を開く(marker-open)](../_decisions/2026-10-15-marker-open.md) | accepted | 人 | 人の発言 | CLI-1, WS-7 |
 | 2026-10-15 | [見本を架空の制作会社の英語のデータに作り直して変わる、見本の試験の錠を掛け直す(examples-studio-locks)](../_decisions/2026-10-15-examples-studio-locks.md) | accepted | 人 | 人の発言 | CE-16, WB-3, WB-5 ほか 4 |
+| 2026-10-15 | [見本の試験を cargo fmt の形にそろえ、錠を掛け直す(examples-fmt-locks)](../_decisions/2026-10-15-examples-fmt-locks.md) | accepted | AI | 検証の指摘 | REL-5, CE-16, CE-22, CLI-3 |
 | 2026-10-15 | [--check の要件の ID を CLI-22 から CLI-23 に付け替える(check-id)](../_decisions/2026-10-15-check-id.md) | accepted | AI | 検証の指摘 | CLI-22, CLI-23 |
 | 2026-10-14 | [型と決まりに合わない値を「問題」として探し、画面と CLI で確かめられるようにする(type-check)](../_decisions/2026-10-14-type-check.md) | accepted | 人 | 人の発言 | CE-36, CV-9, NV-30, CLI-22 |
 | 2026-10-14 | [--check の列の型を画面と同じ推定にし、.md を渡したらそのノートだけを確かめる(check-kinds)](../_decisions/2026-10-14-check-kinds.md) | accepted | AI | 検証の指摘 | CLI-22 |
@@ -115,12 +123,12 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 要件 | 最新の決定 | テスト | 最後の照合 |
 |---|---|---|---|
-| CLI-1 | [2026-10-15](../_decisions/2026-10-15-marker-open.md) | src/test_main.rs::test_cli_1_no_args_opens_current_folder_default_table, src/test_main.rs::test_cli_1_paths_or_current_folder, src/ui/test_grid.rs::test_cli_2_view_option_opens_named_view ほか 12 | [2026-10-10-release-0-3-0](../_changes/2026-10-10-release-0-3-0.md) 2026-10-10 |
+| CLI-1 | [2026-10-15](../_decisions/2026-10-15-marker-open.md) | src/test_main.rs::test_cli_1_no_args_opens_current_folder_default_table, src/test_main.rs::test_cli_1_paths_or_current_folder, src/ui/test_grid.rs::test_cli_2_view_option_opens_named_view ほか 12 | [2026-10-25-release-0-4-0](../_changes/2026-10-25-release-0-4-0.md) 2026-10-25 |
 | CLI-2 | [2026-10-03](../_decisions/2026-10-03-stale-text.md) | src/test_main.rs::test_cli_11_print_config_arg, src/test_main.rs::test_cli_2_config_path, src/test_main.rs::test_cli_2_options ほか 5 | [2026-10-09-release-v0.2.0](../_changes/2026-10-09-release-v0.2.0.md) 2026-10-09 |
-| CLI-3 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_config_unit.rs::test_ce_22_config_date_items_wrong_types_warn, src/test_config_unit.rs::test_nv_23_config_search_bar, src/test_main.rs::test_cli_3_config_missing_unknown_broken ほか 36 | [2026-10-15-examples-studio](../_changes/2026-10-15-examples-studio.md) 2026-10-15 |
+| CLI-3 | [2026-10-15](../_decisions/2026-10-15-windows-target.md) | src/test_config_unit.rs::test_ce_22_config_date_items_wrong_types_warn, src/test_config_unit.rs::test_nv_23_config_search_bar, src/test_main.rs::test_cli_3_config_missing_unknown_broken ほか 45 | [2026-10-15-windows-tests](../_changes/2026-10-15-windows-tests.md) 2026-10-15 |
 | CLI-4 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/test_main.rs::test_cli_4_missing_path_one_line_reason, src/ui/test_grid.rs::test_cli_4_unknown_view_one_line_exit_2, tests/test_open_md_file.rs::test_cli_15_missing_md_file_fails_with_one_line_and_code_2 ほか 3 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
-| CLI-11 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_main.rs::test_cli_11_print_config_arg, tests/test_config_docs.rs::test_cli_11_output_has_every_item_with_comment, tests/test_config_docs.rs::test_cli_11_output_reads_back_without_warnings_as_default ほか 8 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
-| CLI-12 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_config_unit.rs::test_cli_12_every_item_is_read, src/test_config_unit.rs::test_cli_12_items_have_descriptions, src/ui/test_keymap.rs::test_cli_12_keys_item_lists_every_mode ほか 11 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
+| CLI-11 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_main.rs::test_cli_11_print_config_arg, tests/test_config_docs.rs::test_cli_11_output_has_every_item_with_comment, tests/test_config_docs.rs::test_cli_11_output_reads_back_without_warnings_as_default ほか 10 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
+| CLI-12 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/test_config_unit.rs::test_cli_12_every_item_is_read, src/test_config_unit.rs::test_cli_12_items_have_descriptions, src/ui/test_keymap.rs::test_cli_12_keys_item_lists_every_mode ほか 14 | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
 | CLI-13 | [2026-10-03](../_decisions/2026-10-03-completions-man.md) | なし | [2026-10-06-help-wording](../_changes/2026-10-06-help-wording.md) 2026-10-06 |
 | CLI-14 | [2026-10-06](../_decisions/2026-10-06-print-with-path.md) | tests/test_print_with_path.rs::test_cli_14_base_with_path_is_relative_to_base_folder, tests/test_print_with_path.rs::test_cli_14_csv_with_path_first_column_is_note_path, tests/test_print_with_path.rs::test_cli_14_json_with_path_first_key_is_path ほか 4 | [2026-10-07-windows-path-slash](../_changes/2026-10-07-windows-path-slash.md) 2026-10-07 |
 | CLI-15 | [2026-10-06](../_decisions/2026-10-06-print-md-rows.md) | tests/test_open_md_file.rs::test_cli_15_md_file_opens_folder_and_selects_its_row, tests/test_open_md_file.rs::test_cli_15_missing_md_file_fails_with_one_line_and_code_2, tests/test_open_md_file.rs::test_cli_15_print_md_file_extension_is_case_insensitive ほか 3 | [2026-10-06-print-md-rows](../_changes/2026-10-06-print-md-rows.md) 2026-10-06 |
@@ -130,6 +138,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 | CLI-21 | [2026-10-10](../_decisions/2026-10-10-scope-overrides.md) | src/test_profile_unit.rs::test_cli_21_resolved_toml_names_the_origin, tests/test_config_v2.rs::test_cli_21_print_resolved_names_the_origin | [2026-10-10-config-v2](../_changes/2026-10-10-config-v2.md) 2026-10-10 |
 | CLI-22 | [2026-10-14](../_decisions/2026-10-14-agent-skill.md) | tests/test_agent_skill.rs::test_cli_22_plugin_versions_match_crate, tests/test_agent_skill.rs::test_cli_22_skill_examples_run | [2026-10-14-agent-skill](../_changes/2026-10-14-agent-skill.md) 2026-10-14 |
 | CLI-23 | [2026-10-15](../_decisions/2026-10-15-check-id.md) | tests/test_check_cli.rs::test_cli_23_missing_path_exits_2, tests/test_check_cli.rs::test_cli_23_no_problems_prints_nothing_and_exits_0, tests/test_check_cli.rs::test_cli_23_reports_type_and_required_problems ほか 3 | [2026-10-14-type-check](../_changes/2026-10-14-type-check.md) 2026-10-15 |
+| CLI-24 | [2026-10-15](../_decisions/2026-10-15-views-skill.md) | tests/test_views_skill.rs::test_cli_24_skill_marker_example_opens_its_views, tests/test_views_skill.rs::test_cli_24_skill_marker_example_reads_without_warnings, tests/test_views_skill.rs::test_cli_24_skill_names_the_checklist | なし |
 | CLI-6 | [2026-10-01](../_decisions/2026-10-01-sessions.md) | なし | なし |
 | CLI-7 | [2026-10-11](../_decisions/2026-10-11-filter-button.md) | なし | [2026-10-11-filter-button](../_changes/2026-10-11-filter-button.md) 2026-10-11 |
 | CLI-8 | [2026-10-01](../_decisions/2026-10-01-sessions-details.md) | なし | なし |

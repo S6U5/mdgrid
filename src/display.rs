@@ -354,8 +354,10 @@ pub struct Display {
     pub note_path: NotePath,
     /// ノートの欄の名前の正規表現(SR-47。既定なし)。
     pub note_name: Option<NoteName>,
-    /// ビューのタブが帯の1行に入らないとき、帯の上に折り返して全部を見せる(NV-31。既定 false)。
+    /// ビューのタブが帯の1行に入らないとき、検索の欄の行の下に要る行の数だけ並べて全部を見せる(NV-31。既定 false)。
     pub tab_wrap: bool,
+    /// NV-31: 検索の欄の行と、その下に並べたタブの行の間に空き行を1つ入れる(既定 false)。
+    pub tab_wrap_gap: bool,
 }
 
 impl Default for Display {
@@ -375,6 +377,7 @@ impl Default for Display {
             note_path: NotePath::Common,
             note_name: None,
             tab_wrap: false,
+            tab_wrap_gap: false,
         }
     }
 }
@@ -520,6 +523,8 @@ pub struct DisplayOverride {
     pub note_name: Option<NoteName>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tab_wrap: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tab_wrap_gap: Option<bool>,
 }
 
 /// ビューの上書きの `note_name` を読む(SR-47)。読めない正規表現・文字列でない値・空の文字列は None。
@@ -589,6 +594,7 @@ pub const OVERRIDE_KEYS: &[&str] = &[
     "note_path",
     "note_name",
     "tab_wrap",
+    "tab_wrap_gap",
 ];
 
 impl DisplayOverride {
@@ -613,6 +619,7 @@ impl DisplayOverride {
             note_path: Some(d.note_path),
             note_name: d.note_name,
             tab_wrap: Some(d.tab_wrap),
+            tab_wrap_gap: Some(d.tab_wrap_gap),
         }
     }
 
@@ -621,6 +628,7 @@ impl DisplayOverride {
         Some(match name {
             "row_numbers" => &mut self.row_numbers,
             "tab_wrap" => &mut self.tab_wrap,
+            "tab_wrap_gap" => &mut self.tab_wrap_gap,
             "zebra" => &mut self.zebra,
             "column_lines" => &mut self.column_lines,
             "group_gap" => &mut self.group_gap,
@@ -654,6 +662,7 @@ impl DisplayOverride {
         put!(row_extra_lines);
         put!(note_path);
         put!(tab_wrap);
+        put!(tab_wrap_gap);
         if let Some(v) = self.note_name {
             d.note_name = Some(v);
             out.push("note_name");

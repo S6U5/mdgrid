@@ -5,7 +5,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "Usage: mdgrid [<.base | folder | .md | .csv> ...] [--view <name>] [-w <name>] [--raw] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder | .md> ...] --check [--view <name>]\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid [<folder | .base> ...] --add-to <name> [--as <table name>] | --remove-from <name>\n        mdgrid [<folder> ...] --init-workspace\n        mdgrid --workspaces | --remove-workspace <name>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the root folder). Given a .md file, open its folder with that note selected.\n  Given a .csv or .tsv file, open it as a table: one row per line, the first line\n  names the columns.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any). A folder with a marker .mdgrid/workspace.toml that names\n  a table in \"open\" opens that table instead.\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  -w, --workspace <name>  use that workspace (workspaces.toml) for links and the relation map;\n                          with no path, open its first table\n  --raw                   open the folder itself, not the table named in its marker's \"open\"\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --check                 print the values that do not fit the column type or a rule\n                          ([rules]), one per line (path:line: column: reason; exit code 1\n                          if there are any)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --workspaces            list the workspaces (workspaces.toml)\n  --add-to <name>         add the given tables (default: this folder) to that workspace,\n                          creating it if needed; --as <name> names the table\n  --remove-from <name>    remove the given tables (default: this folder) from that workspace\n  --remove-workspace <name>  delete that workspace (notes are not touched)\n  --init-workspace        put a workspace marker .mdgrid/workspace.toml in the folder\n                          (default: this folder)\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version"
+Usage = "Usage: mdgrid [<.base | folder | .md | .csv> ...] [--view <name>] [-w <name>] [--raw] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder | .md> ...] --check [--view <name>]\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid [<folder | .base> ...] --add-to <name> [--as <table name>] | --remove-from <name>\n        mdgrid [<folder> ...] --init-workspace [--starter <name> [--with-samples]]\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <name>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the root folder). Given a .md file, open its folder with that note selected.\n  Given a .csv or .tsv file, open it as a table: one row per line, the first line\n  names the columns.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any). A folder with a marker .mdgrid/workspace.toml that names\n  a table in \"open\" opens that table instead.\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  -w, --workspace <name>  use that workspace (workspaces.toml) for links and the relation map;\n                          with no path, open its first table\n  --raw                   open the folder itself, not the table named in its marker's \"open\"\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --check                 print the values that do not fit the column type or a rule\n                          ([rules]), one per line (path:line: column: reason; exit code 1\n                          if there are any)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --workspaces            list the workspaces (workspaces.toml)\n  --add-to <name>         add the given tables (default: this folder) to that workspace,\n                          creating it if needed; --as <name> names the table\n  --remove-from <name>    remove the given tables (default: this folder) from that workspace\n  --remove-workspace <name>  delete that workspace (notes are not touched)\n  --init-workspace        put a workspace marker .mdgrid/workspace.toml in the folder\n                          (default: this folder)\n  --starter <name>        with --init-workspace, create a ledger (marker, note templates) from that\n                          starter: a built-in one, or starters/<name> in the config folder\n  --with-samples          with --starter, add the starter's sample notes too\n  --starters              list the starters, one per line (name and a one-line description)\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "path"
@@ -1409,6 +1409,32 @@ WsNotInChosen = "{0} is not in workspace {1} (links use {1}'s tables and this on
 WsMarkerOutside = "ignored a table outside the marked folder: {0}"
 WantDetect = "a list of \".obsidian\" and \".git\""
 
+# ---- starter: 台帳のスターター(ST-1〜ST-6) ----
+## {0} は名前。
+StarterUnknown = "no starter named {0} (mdgrid --starters lists them)"
+StarterOne = "--starter makes one ledger: give one folder"
+## ST-3: 一覧で、ユーザーのスターターに添える。
+StarterUser = "(yours)"
+## {0} はパス。
+StarterNotFolder = "{0} is a file, not a folder"
+## {0} はパス。
+StarterLink = "{0} is a symbolic link, so nothing is written (it could point outside the ledger)"
+## ST-3: 読めないスターターを飛ばす理由(CLI-3 の形の理由の部分)。
+StarterNoLedger = "missing, so the starter is skipped"
+StarterNotText = "not UTF-8 text, so the starter is skipped"
+## {0} は TOML の誤り(英語のまま)。
+StarterBadToml = "not valid TOML, so the starter is skipped: {0}"
+## {0} は作った台帳の根、{1} はスターターの名前、{2} はファイルの数。
+StarterMade = "created {0} from the starter {1} ({2} files)"
+CmdStarterNew = "Create a ledger from a starter"
+AskStarterPick = "starter: "
+AskStarterDir = "folder to create: "
+## {0} は基準のフォルダ。
+AskStarterWhere = "relative to {0}"
+AskStarterSamples = "add the sample notes too? (y/n) "
+StarterDirEmpty = "type the folder to create"
+StarterMulti = "cannot create: several folders are open (open one folder or a .base)"
+
 # ---- relmap: 関係マップ(REL-7〜REL-9) ----
 KeyRelationMap = "Relation map"
 TreeOff = "Rows are not arranged by parent (turn it on in the view settings, {0})"
@@ -1516,3 +1542,36 @@ KeyPrevProblem = "Previous problem"
 CmdProblemsOnly = "Only rows with problems (toggle)"
 ## {0} is the number of problems.
 CheckCount = "{0} problems"
+## TR-1 to TR-7: the tree view.
+ModeTree = "Tree"
+SecInTree = "In the tree"
+ScreenTree = "Tree"
+KeyTreeView = "Switch between the table and the tree"
+KeyTreeRun = "Open or close the folder / show the row in the table"
+KeyTreeToggle = "Open or close the folder"
+KeyTreeIn = "Open the folder / to the rows"
+KeyTreeOut = "Close the folder / to the folders"
+KeyTreePane = "Switch between the folders and the rows"
+KeyTreeNext = "Next folder or row"
+KeyTreePrev = "Previous folder or row"
+KeyTreeMenu = "Actions on the row"
+KeyOpenUrl = "Open the URL"
+CmdOpenUrl = "Open the URL of the row in the browser"
+TreeFolders = "Folders"
+TreeRows = "Rows"
+TreeNone = "(none)"
+TreeEmptyFolder = "no rows directly in this folder"
+TreeNoRows = "no rows to put in the tree"
+TreeNotSet = "this table has no tree setting (write tree = { path = \"<column>\" } in its [[table]] of the workspace marker)"
+TreeNoUrl = "this row has no http or https URL"
+TreeShowInTable = "Show this row in the table"
+TreeRowHidden = "the row is not shown in the table (in a folded group or filtered out)"
+## {0} is the URL.
+UrlOpening = "opening {0}"
+## {0} is the URL, {1} the reason.
+UrlOpenFailed = "could not open {0}: {1}"
+RsnTreeNotTable = "not a table like { path = \"<column>\" }, so no tree"
+RsnTreeNeedPath = "no path (the column with the folders), so no tree"
+RsnTreeEmptySep = "the separator is empty, so no tree"
+## {0} is the column.
+RsnTreeNoColumn = "the table has no column {0}, so no tree"

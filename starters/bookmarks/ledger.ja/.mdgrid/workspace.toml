@@ -1,0 +1,62 @@
+# mdgrid のワークスペースの印(WS-7)。組み込みのスターター「ブックマーク」から作った台帳。
+# Bookmarks/ の下に1件1ノート。置き場の階層を `folder` の列に「bar > 開発 > Web」の形で、そのフォルダの中の並びを
+# `order` に書く。`tree`(TR-2)で木の画面が使える: T を押すか、右上の画面の型のメニューで「木」を選ぶ。o で URL を開く。
+# これは自分の写しなので、好きに直してよい。
+open = "ブックマーク"
+
+# ノートの欄はファイルの名前だけ。
+[display]
+note_path = "name"
+
+[types]
+order = "number"
+added = "date"
+
+# 値の候補(CE-36)。セルを直すときに並び、ほかの値には印が付く。
+[rules.status]
+values = ["active", "archived"]
+
+# 新しいノート(n): URL と置き場を聞き、残りを埋め、本文を雛形から始める。
+[new_note]
+folder = "Bookmarks"
+ask = ["url", "folder"]
+hidden = ["added"]
+body = ".mdgrid/templates/bookmark.md"
+
+[new_note.set]
+status = "active"
+added = "{date}"
+
+[[table]]
+name = "ブックマーク"
+tree = { path = "folder", order = "order" }
+
+[table.base]
+filters = { and = ['file.inFolder("Bookmarks")'] }
+
+[table.base.properties]
+"note.url" = { displayName = "URL" }
+"note.folder" = { displayName = "置き場" }
+"note.order" = { displayName = "並び" }
+"note.status" = { displayName = "状態" }
+"note.added" = { displayName = "追加" }
+
+[[table.base.views]]
+type = "table"
+name = "全部"
+order = ["url", "folder", "order", "status", "added"]
+sort = [{ property = "folder", direction = "ASC" }, { property = "order", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "使う"
+where = { status = ["active"] }
+order = ["url", "folder", "order", "added"]
+sort = [{ property = "folder", direction = "ASC" }, { property = "order", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "しまった"
+where = { status = ["archived"] }
+order = ["url", "folder", "added"]
+sort = [{ property = "added", direction = "DESC" }]

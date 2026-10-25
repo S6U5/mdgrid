@@ -25,6 +25,8 @@ pub(crate) struct ScreenMenu {
 enum Screen {
     Table,
     Relations,
+    /// TR-1: 木(表に木の設定があるときだけ)。
+    Tree,
 }
 
 /// 窓に並べる型(表と、つながる表があれば関係マップ。関係マップの画面ではいつも)。
@@ -34,6 +36,9 @@ fn screens(app: &App) -> Vec<Screen> {
     if rel {
         out.push(Screen::Relations);
     }
+    if app.tree_ready() || app.folder_tree.is_some() {
+        out.push(Screen::Tree);
+    }
     out
 }
 
@@ -41,6 +46,8 @@ fn screens(app: &App) -> Vec<Screen> {
 fn current(app: &App) -> Screen {
     if app.relmap.is_some() {
         Screen::Relations
+    } else if app.folder_tree.is_some() {
+        Screen::Tree
     } else {
         Screen::Table
     }
@@ -55,6 +62,11 @@ fn entry(app: &App, s: Screen) -> (String, Option<String>) {
             Glyph::RelMap,
             Msg::ScreenRelMap.text(),
             keymap::key_for(&app.keys, Mode::Table, Action::RelationMap),
+        ),
+        Screen::Tree => (
+            Glyph::Tree,
+            Msg::ScreenTree.text(),
+            keymap::key_for(&app.keys, Mode::Table, Action::TreeView),
         ),
     };
     let name = if nerd_on(app) {
@@ -130,6 +142,8 @@ impl App {
         self.screen_menu = None;
         let back = if self.relmap.is_some() {
             Mode::Relations
+        } else if self.folder_tree.is_some() {
+            Mode::Tree
         } else {
             Mode::Table
         };
@@ -166,9 +180,19 @@ impl App {
         match to {
             Screen::Table => {
                 self.relmap = None;
+                self.folder_tree = None;
                 self.set_mode(Mode::Table);
             }
-            Screen::Relations => self.open_relmap(),
+            Screen::Relations => {
+                self.folder_tree = None;
+                self.set_mode(Mode::Table);
+                self.open_relmap();
+            }
+            Screen::Tree => {
+                self.relmap = None;
+                self.set_mode(Mode::Table);
+                self.open_tree();
+            }
         }
     }
 

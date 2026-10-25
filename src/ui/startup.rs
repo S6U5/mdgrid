@@ -68,6 +68,10 @@ impl App {
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
             warnings.push(e);
         }
+        // TR-2: 印に書いた木の設定(書き方が違えば警告して木を出さない)。
+        let (tree, warns) = mdgrid::workspace::marker_tree(&s.target);
+        self.tree_spec = tree;
+        warnings.extend(warns);
         // SR-44: ワークスペースと表の範囲の層を重ね、表で決まる add_frontmatter(WB-3)を読み込みの前に渡す。
         warnings.extend(self.collect_scope_layers(&s.target, s.config_dir.as_deref()));
         warnings.extend(self.apply_profile());

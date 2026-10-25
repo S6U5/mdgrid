@@ -1,0 +1,80 @@
+# mdgrid のワークスペースの印(WS-7)。組み込みのスターター「読書・視聴」から作った台帳。
+# Reading/ の下に、本・記事・映画・講演・ポッドキャストを1件1ノート。表「読書」はこの印に書き([table.base]、WS-9)、
+# このフォルダを開くと開く(open)。これは自分の写しなので、好きに直してよい。
+open = "読書"
+
+# まとまりの間に空きの行を1つ。ノートの欄はファイルの名前だけ。
+[display]
+group_gap = true
+note_path = "name"
+
+[types]
+rating = "number"
+started = "date"
+finished = "date"
+added = "date"
+tags = "list"
+
+# 値の候補(CE-36)。セルを直すときに並び、ほかの値には印が付く。
+[rules.kind]
+values = ["book", "article", "film", "talk", "podcast"]
+
+[rules.status]
+values = ["want", "now", "done", "dropped"]
+
+# 新しいノート(n): 種類・著者・URL を聞き、残りを埋め、本文を雛形から始める。
+[new_note]
+folder = "Reading"
+ask = ["kind", "author", "url"]
+hidden = ["added"]
+body = ".mdgrid/templates/entry.md"
+
+[new_note.set]
+status = "want"
+added = "{date}"
+
+[[table]]
+name = "読書"
+
+[table.base]
+filters = { and = ['file.inFolder("Reading")'] }
+
+[table.base.properties]
+"note.kind" = { displayName = "種類" }
+"note.author" = { displayName = "著者" }
+"note.status" = { displayName = "状態" }
+"note.rating" = { displayName = "評価" }
+"note.started" = { displayName = "始めた日" }
+"note.finished" = { displayName = "終えた日" }
+"note.added" = { displayName = "追加" }
+"note.url" = { displayName = "URL" }
+"note.tags" = { displayName = "タグ" }
+
+# 状態ごとのタブ([ と ] で切り替える)と、種類でまとめたタブ。
+[[table.base.views]]
+type = "table"
+name = "読みたい"
+where = { status = ["want"] }
+order = ["kind", "author", "added", "tags", "url"]
+sort = [{ property = "added", direction = "DESC" }]
+
+[[table.base.views]]
+type = "table"
+name = "読んでいる"
+where = { status = ["now"] }
+order = ["kind", "author", "started", "tags"]
+sort = [{ property = "started", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "読んだ"
+where = { status = ["done", "dropped"] }
+order = ["kind", "author", "rating", "finished", "status"]
+sort = [{ property = "finished", direction = "DESC" }]
+
+[[table.base.views]]
+type = "table"
+name = "種類ごと"
+order = ["kind", "status", "author", "rating"]
+groupBy = { property = "kind", direction = "ASC" }
+sort = [{ property = "status", direction = "ASC" }]

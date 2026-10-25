@@ -1,0 +1,10 @@
+# The built-in starter "people" (ST-2): one note per person and one per meeting, the meetings linking to the
+# people. [name] and [description] are the words shown by `mdgrid --starters` and in the palette, one per
+# language code of locales/ (en is required).
+[name]
+en = "People and meetings"
+ja = "人と会議"
+
+[description]
+en = "One note per person (role, organization, contact) and per meeting (when, attendees, next actions); R maps the links"
+ja = "1件1ノートの人(役割・所属・連絡先)と会議(日時・出席者・次の行動)。R でつながりを見る"

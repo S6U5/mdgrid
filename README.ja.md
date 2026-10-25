@@ -86,6 +86,16 @@ mdgrid ~/notes/Tasks --readonly
 
 `.md` のファイルを1つ渡すと、そのフォルダを開いてそのノートの行を選びます。
 
+白紙から始めるなら、組み込みのスターターが台帳のひとそろい(印・ノートの雛形と、`--with-samples` で見本のノート)を書きます:
+
+```sh
+mdgrid --starters                                                       # tasks・bookmarks・reading・people
+mdgrid ~/notes/books --init-workspace --starter reading --with-samples
+mdgrid ~/notes/books
+```
+
+自分のスターターは設定のフォルダの `starters/<名前>/` に置きます([設定](docs/config.ja.md))。
+
 ### 3. 自分のコマンドにする
 
 よく開くフォルダごとに、`~/.zshrc` か `~/.bashrc` に alias を書きます:

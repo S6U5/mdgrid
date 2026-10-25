@@ -36,6 +36,8 @@ pub struct View {
     pub limit: Option<usize>,
     /// `summaries`(列の id → 集計の名前。BV-14)。名前は build で読む。
     pub summaries: Vec<(String, String)>,
+    /// NV-32: `tab_break`(このタブの前でタブの行を改める)。mdgrid の足したキーで、真偽のほかは false。
+    pub tab_break: bool,
     filters: Filter,
 }
 
@@ -306,6 +308,10 @@ fn view_of(y: &Yaml) -> View {
         group_by,
         limit,
         summaries,
+        tab_break: matches!(
+            get(y, "tab_break").map(untag),
+            Some(Yaml::Value(Scalar::Boolean(true)))
+        ),
         filters: get(y, "filters").map_or(Filter::And(Vec::new()), filter_of),
     }
 }
@@ -843,6 +849,7 @@ impl Base {
                 group_by: None,
                 limit: None,
                 summaries: Vec::new(),
+                tab_break: false,
                 filters: Filter::And(Vec::new()),
             }],
             filters: Filter::And(Vec::new()),

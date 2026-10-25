@@ -50,6 +50,8 @@ updated: 2026-10-15
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-15 | [疑似端末の試験のファイルを Windows で組み立てないようにし、錠を掛け直す(pty-tests-unix-locks)](../_decisions/2026-10-15-pty-tests-unix-locks.md) | accepted | AI | 検証の指摘 | WS-8 |
+| 2026-10-15 | [印の表の base に、列の値を配列で並べて絞る where を書けるようにする(marker-where)](../_decisions/2026-10-15-marker-where.md) | accepted | AI | 人の発言 | WS-10 |
 | 2026-10-15 | [印のあるフォルダを開いたら、印に書いた表を開く(marker-open)](../_decisions/2026-10-15-marker-open.md) | accepted | 人 | 人の発言 | CLI-1, WS-7 |
 | 2026-10-15 | [印の表に、.base と同じ中身(絞り込み・計算の列・表示名・ビュー)を TOML で書けるようにする(marker-base)](../_decisions/2026-10-15-marker-base.md) | accepted | AI | 人の発言 | WS-9 |
 | 2026-10-13 | [「保管庫」をルートフォルダと言い換え、検知の値を目印のフォルダの名前にする(root-folder)](../_decisions/2026-10-13-root-folder.md) | accepted | 人 | 人の発言 | BV-2, BV-12, BV-22 ほか 6 |
@@ -81,6 +83,7 @@ updated: 2026-10-15
 | WS-5 | [2026-10-13](../_decisions/2026-10-13-root-folder.md) | src/test_workspace_unit.rs::test_ws_5_detect_vault_and_git, tests/test_root_folder.rs::test_ws_5_detect_old_names_read_with_warning, tests/test_root_folder.rs::test_ws_5_detect_reads_marker_names ほか 3 | [2026-10-13-root-folder](../_changes/2026-10-13-root-folder.md) 2026-10-13 |
 | WS-6 | [2026-10-13](../_decisions/2026-10-13-root-folder.md) | src/test_workspace_chosen_unit.rs::test_ws_6_chosen_without_the_table_warns, src/test_workspace_unit.rs::test_ws_6_resolve_order, src/ui/test_view_bar.rs::test_sr_42_crumb_scope_and_table ほか 1 | [2026-10-13-root-folder](../_changes/2026-10-13-root-folder.md) 2026-10-13 |
 | WS-7 | [2026-10-15](../_decisions/2026-10-15-marker-open.md) | src/test_toml_edit_safety_unit.rs::test_ws_7_marker_paths_stay_inside, src/test_workspace_more_unit.rs::test_ws_7_broken_marker_warns, src/test_workspace_profile_unit.rs::test_ws_7_marker_profiles ほか 7 | [2026-10-15-examples-studio](../_changes/2026-10-15-examples-studio.md) 2026-10-15 |
-| WS-8 | [2026-10-11](../_decisions/2026-10-11-view-bar.md) | src/ui/test_crumb_button.rs::test_sr_42_crumb_button_click_key_and_arrow, src/ui/test_view_bar.rs::test_sr_42_crumb_click_toggles_drawer, src/ui/test_view_bar.rs::test_ws_8_crumb_drawer_switches_table ほか 17 | [2026-10-11-view-bar](../_changes/2026-10-11-view-bar.md) 2026-10-12 |
-| WS-9 | [2026-10-15](../_decisions/2026-10-15-marker-base.md) | なし | なし |
+| WS-8 | [2026-10-11](../_decisions/2026-10-11-view-bar.md) | src/ui/test_crumb_button.rs::test_sr_42_crumb_button_click_key_and_arrow, src/ui/test_view_bar.rs::test_sr_42_crumb_click_toggles_drawer, src/ui/test_view_bar.rs::test_ws_8_crumb_drawer_switches_table ほか 18 | [2026-10-11-view-bar](../_changes/2026-10-11-view-bar.md) 2026-10-12 |
+| WS-9 | [2026-10-15](../_decisions/2026-10-15-marker-base.md) | tests/test_marker_base.rs::test_ws_9_marker_base_and_path_warns_uses_base, tests/test_marker_base.rs::test_ws_9_marker_base_bytes_unchanged, tests/test_marker_base.rs::test_ws_9_marker_base_print_first_view ほか 4 | なし |
+| WS-10 | [2026-10-15](../_decisions/2026-10-15-marker-where.md) | tests/test_marker_base.rs::test_ws_10_where_and_filters_both, tests/test_marker_base.rs::test_ws_10_where_empty_array_warns_and_does_not_narrow, tests/test_marker_base.rs::test_ws_10_where_list_column_by_element ほか 7 | なし |
 <!-- decidespec:history:end -->

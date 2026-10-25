@@ -190,7 +190,7 @@ fn print_config() -> String {
 
 #[test]
 fn test_sr_21_note_path_in_print_config() {
-    // [SR-21][SR-46][CLI-11] --print-config の [display] に note_path = "common" が出て、項目は14(2026-10-15-note-name で note_name、2026-10-15-tab-wrap で tab_wrap が増えた)。
+    // [SR-21][SR-46][CLI-11] --print-config の [display] に note_path = "common" が出て、項目は15(2026-10-15-note-name で note_name、2026-10-15-tab-wrap で tab_wrap、2026-10-15-tab-wrap-below で tab_wrap_gap が増えた)。
     // 出力を読み直しても警告なし。
     let text = print_config();
     let table: toml::Table = text.parse().expect("TOML");
@@ -200,7 +200,7 @@ fn test_sr_21_note_path_in_print_config() {
         Some("common"),
         "{text}"
     );
-    assert_eq!(display.len(), 14, "[display] は14項目: {display:?}");
+    assert_eq!(display.len(), 15, "[display] は15項目: {display:?}");
     let (_, w) = parse(&text).expect("読める");
     assert!(w.is_empty(), "{w:?}");
 }

@@ -1,0 +1,10 @@
+# The built-in starter "reading" (ST-2): one note per book, article, film, talk or podcast. [name] and
+# [description] are the words shown by `mdgrid --starters` and in the palette, one per language code of
+# locales/ (en is required).
+[name]
+en = "Reading"
+ja = "読書・視聴"
+
+[description]
+en = "One note per book, article, film or talk: queue, now, done; kind, author, rating, dates"
+ja = "1件1ノートの本・記事・映画・講演。読みたい・読んでいる・読んだ、種類・著者・評価・日付"

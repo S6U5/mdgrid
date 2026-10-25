@@ -86,6 +86,8 @@ P 番号つき)が要る(OM-6)。原則(P 番号)と、principles.md のフロ�
   E25 変更の記録のタスクの表が、仕様に無い要件 ID を指している
   E26 done の変更の記録で、照合が済でない、unassessed が残る、「確かめた: N / M」が表と合わない、
       タスクの要件が照合の表に無い、同じ要件が2行ある、gap に証拠(欠けているもの)が書かれていない
+  E37 done の変更の記録の「レビューの指摘」の表に、区分(重要 / 細部 / 前から)か行き先(直した / 間違い /
+      意図どおり / 見送り)が空か決まった値でない行がある、または表の行も「なし」も無い(節の無い記録は見ない。PH-15)
 
 警告:
   W1  README の生成区画が古い(--write で直す)
@@ -1402,45 +1404,70 @@ def lock_history_errors(root, specs, lock_path, records):
         return []  # git が無い
     if r.returncode != 0:
         return []
-    out, prev = [], {}
+    def version(rev):
+        show = subprocess.run(git + ["show", "%s:./%s" % (rev, rel)], capture_output=True, text=True)
+        try:
+            return json.loads(show.stdout) if show.returncode == 0 and show.stdout.strip() else {}
+        except ValueError:
+            return {}
+
+    def same(a, b):
+        return (a is None and b is None) or (a is not None and b is not None and a.get("sha") == b.get("sha"))
+
+    out = []
     ignored = None
     for h in r.stdout.split():
-        show = subprocess.run(git + ["show", "%s:./%s" % (h, rel)], capture_output=True, text=True)
-        cur = json.loads(show.stdout) if show.returncode == 0 and show.stdout.strip() else {}
-        gone = {k.split("::")[0] for k in prev if k not in cur}
-        if gone:
-            ignored = (ignored or set()) | git_ignored(root, gone)
-        ignored = ignored or set()
-        for key, entry in prev.items():
-            new = cur.get(key)
-            if new is not None and new.get("sha") == entry.get("sha"):
-                continue
-            by = (new or {}).get("by") if new else None
-            ok = False
-            if by:
-                rec = next((x for p, x in records.items() if p.relative_to(root).as_posix() == by), None)
-                ok = bool(rec) and rec.may_change_locked(need_p) \
-                    and set(entry.get("ids", [])) <= set(rec.touches)
-            if new is not None and new.get("legacy") == entry.get("sha") and \
-                    _relock_ok(git, h, key, entry.get("sha"), new.get("sha")):
-                continue  # TL-13: 前の取り方の指紋から、同じ中身の新しい指紋へ掛け直した
-            if new is None and any(k.startswith(key + "::") and v.get("from") == entry.get("sha")
-                                   for k, v in cur.items()):
-                continue  # TL-8: ファイルごとの錠を、同じ中身の関数ごとの錠に移した
-            if new is None and key.split("::")[0] in ignored:
-                continue  # TL-10: git が無視するファイルの錠は、そのリポのテストでない
-            if new is None:
-                # 外すときは、そのコミットで _decisions/ に変えてよい決定の記録が足されていること
-                files = subprocess.run(git + ["show", "--name-only", "--relative", "--format=", h],  # リポからの相対(git の最上位でなくても)
-                                       capture_output=True, text=True).stdout.split()
-                ok = any(f.startswith(specs.relative_to(root).as_posix() + "/" + DECS + "/") and
-                         next((x for p, x in records.items() if p.relative_to(root).as_posix() == f
-                               and x.may_change_locked(need_p) and set(entry.get("ids", [])) <= set(x.touches)), None)
-                         for f in files)
-            if not ok:
-                out.append("E20 %s(コミット %s): 錠 %s を、変えてよい決定の記録(人の決定か、錨との照合のある AI 自己採択)なしに書き換え・外した"
-                           % (rel, h[:7], key))
-        prev = cur
+        cur = version(h)
+        # 各コミットを自分の親の錠と比べる(日付順に前のコミットと比べると、並んだ枝が混ざって取り違える)
+        parents = subprocess.run(git + ["rev-list", "--parents", "-n", "1", h],
+                                 capture_output=True, text=True).stdout.split()[1:]
+        olds = [version(p) for p in parents] or [{}]
+        base = {}
+        if len(parents) > 1:
+            mb = subprocess.run(git + ["merge-base", "--octopus", *parents], capture_output=True, text=True)
+            base = version(mb.stdout.strip()) if mb.returncode == 0 and mb.stdout.strip() else {}
+        seen = set()
+        for i, prev in enumerate(olds):
+            gone = {k.split("::")[0] for k in prev if k not in cur}
+            if gone:
+                ignored = (ignored or set()) | git_ignored(root, gone)
+            ignored = ignored or set()
+            for key, entry in prev.items():
+                new = cur.get(key)
+                if new is not None and new.get("sha") == entry.get("sha"):
+                    continue
+                # 合流: 別の親の側の変更なら、その側のコミットで確かめてある
+                if any(same(other.get(key), new) and (new is not None or key in base)
+                       for j, other in enumerate(olds) if j != i):
+                    continue
+                if key in seen:
+                    continue
+                by = (new or {}).get("by") if new else None
+                ok = False
+                if by:
+                    rec = next((x for p, x in records.items() if p.relative_to(root).as_posix() == by), None)
+                    ok = bool(rec) and rec.may_change_locked(need_p) \
+                        and set(entry.get("ids", [])) <= set(rec.touches)
+                if new is not None and new.get("legacy") == entry.get("sha") and \
+                        _relock_ok(git, h, key, entry.get("sha"), new.get("sha")):
+                    continue  # TL-13: 前の取り方の指紋から、同じ中身の新しい指紋へ掛け直した
+                if new is None and any(k.startswith(key + "::") and v.get("from") == entry.get("sha")
+                                       for k, v in cur.items()):
+                    continue  # TL-8: ファイルごとの錠を、同じ中身の関数ごとの錠に移した
+                if new is None and key.split("::")[0] in ignored:
+                    continue  # TL-10: git が無視するファイルの錠は、そのリポのテストでない
+                if new is None:
+                    # 外すときは、そのコミットで _decisions/ に変えてよい決定の記録が足されていること
+                    files = subprocess.run(git + ["show", "--name-only", "--relative", "--format=", h],  # リポからの相対(git の最上位でなくても)
+                                           capture_output=True, text=True).stdout.split()
+                    ok = any(f.startswith(specs.relative_to(root).as_posix() + "/" + DECS + "/") and
+                             next((x for p, x in records.items() if p.relative_to(root).as_posix() == f
+                                   and x.may_change_locked(need_p) and set(entry.get("ids", [])) <= set(x.touches)), None)
+                             for f in files)
+                if not ok:
+                    seen.add(key)
+                    out.append("E20 %s(コミット %s): 錠 %s を、変えてよい決定の記録(人の決定か、錨との照合のある AI 自己採択)なしに書き換え・外した"
+                               % (rel, h[:7], key))
     return out
 
 
@@ -2062,6 +2089,18 @@ def repo_pace(root):
 PHASES = ["要求", "不明点", "仕様化", "設計", "タスク", "実装", "照合"]
 NO_SKIP = {"要求", "実装", "照合"}
 VERIFY_RESULTS = {"checked", "gap", "unassessed"}
+FINDINGS = "レビューの指摘"
+FINDING_KINDS = ("重要", "細部", "前から")
+FINDING_FATES = ("直した", "間違い", "意図どおり", "見送り")
+# 1行に「なし」だけ(「- なし」「なし。」「**なし**」も可)。行の中の空白だけを見て、改行をまたがない(\s* だと空行の並びで2乗の時間がかかる)。
+NONE_LINE = re.compile(r"(?m)^[ \t]*(?:[-*][ \t]+)?(?:\*\*)?なし(?:\*\*)?[。.]?[ \t]*$")
+
+
+def finding_rows(body):
+    """PH-15: 変更の記録の「レビューの指摘」の表の行。節が無ければ None(旧い記録は見ない)。"""
+    if not re.search(r"(?m)^##\s+%s" % re.escape(FINDINGS), body):  # section() と同じく、見出しの後ろの語は問わない
+        return None
+    return [r for r in table_rows(section(body, FINDINGS)) if any(c.strip() for c in r)]
 H_BEGIN, H_END = "<!-- decidespec:history:begin -->", "<!-- decidespec:history:end -->"
 H_RE = re.compile(re.escape(H_BEGIN) + r".*?" + re.escape(H_END), re.S)
 BEGIN, END = "<!-- decidespec:begin -->", "<!-- decidespec:end -->"
@@ -2356,6 +2395,17 @@ def check_change(rel, fm, body, reqs, today, stale_days, concurrent=False):
         m = re.search(r"確かめた[::]\s*(\d+)\s*/\s*(\d+)", section(body, "照合"))
         if not m or (int(m.group(1)), int(m.group(2))) != (checked, len(vrows)):
             errors.append("E26 %s: 「確かめた: N / M」が照合の表(checked %d / %d)と合わない" % (rel, checked, len(vrows)))
+        frows = finding_rows(body)
+        if frows is not None:
+            if not frows and not NONE_LINE.search(section(body, FINDINGS)):  # 説明の文の「なし」は数えない
+                errors.append("E37 %s: 「%s」に表の行も「なし」も無い" % (rel, FINDINGS))
+            for r in frows:
+                kind = r[2].strip() if len(r) > 2 else ""
+                fate = r[-1].strip() if len(r) > 3 else ""
+                if kind not in FINDING_KINDS or fate not in FINDING_FATES:
+                    errors.append("E37 %s: 「%s」の %s の区分か行き先が決まった値でない(区分: %s、行き先: %s。今: %s / %s)" % (
+                        rel, FINDINGS, r[0].strip() or "行", " / ".join(FINDING_KINDS), " / ".join(FINDING_FATES),
+                        kind or "空", fate or "空"))
     if status == "active":
         u = fm.get("updated", "")
         if DATE_RE.match(u) and (today - datetime.date.fromisoformat(u)).days >= stale_days:
@@ -3327,6 +3377,23 @@ def flow_metrics(root, records, docs, specs):
     git の履歴で変わる数字なので、--write のときだけ計算し、W1(生成区画が古い)の比較には入れない。"""
     import statistics
     out = ["", METRICS_HEAD, ""]
+    # PH-16: レビューの指摘の行き先(git の履歴に依らないので、git が無くても出す)。
+    fates, nrec = {f: 0 for f in FINDING_FATES}, 0
+    for p, (fm, body, text) in sorted(docs.items()):
+        if p.relative_to(specs).parts[0] != CHANGES or fm.get("status") != "done":
+            continue
+        frows = finding_rows(body)
+        if not frows:
+            continue  # 節が無いか「なし」(表のある記録だけを数える)
+        nrec += 1
+        for r in frows:
+            if len(r) > 3 and r[-1].strip() in fates:
+                fates[r[-1].strip()] += 1
+    if nrec:
+        out.append("- レビューの指摘の行き先: %s(done の変更の記録 %d 件の「%s」の表の行を、区分を問わず数える)" % (
+            " / ".join("%s %d" % (f, fates[f]) for f in FINDING_FATES), nrec, FINDINGS))
+    else:
+        out.append("- レビューの指摘の行き先: なし(「%s」の表を持つ done の変更の記録が無い)" % FINDINGS)
     if git_out(root, "rev-parse", "--git-dir") is None:
         return out + ["- 数えられない(git の履歴が無い)"]
     if (git_out(root, "rev-parse", "--is-shallow-repository") or "").strip() == "true":

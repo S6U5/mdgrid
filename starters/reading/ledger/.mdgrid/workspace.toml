@@ -1,0 +1,80 @@
+# The mdgrid workspace marker (WS-7) of a reading log, made from the built-in starter "reading".
+# One note per book, article, film, talk or podcast under Reading/. The table "Reading" below is written here
+# ([table.base], WS-9) and opens when you open this folder (open). This is your copy.
+open = "Reading"
+
+# A blank line between the groups; the note column shows the file name only.
+[display]
+group_gap = true
+note_path = "name"
+
+[types]
+rating = "number"
+started = "date"
+finished = "date"
+added = "date"
+tags = "list"
+
+# Allowed values (CE-36): offered when you edit the cell; other values are marked.
+[rules.kind]
+values = ["book", "article", "film", "talk", "podcast"]
+
+[rules.status]
+values = ["want", "now", "done", "dropped"]
+
+# New note (n): asks for the kind, the author and the URL, fills in the rest, and starts the body from the template.
+[new_note]
+folder = "Reading"
+ask = ["kind", "author", "url"]
+hidden = ["added"]
+body = ".mdgrid/templates/entry.md"
+
+[new_note.set]
+status = "want"
+added = "{date}"
+
+[[table]]
+name = "Reading"
+
+[table.base]
+filters = { and = ['file.inFolder("Reading")'] }
+
+[table.base.properties]
+"note.kind" = { displayName = "Kind" }
+"note.author" = { displayName = "Author" }
+"note.status" = { displayName = "Status" }
+"note.rating" = { displayName = "Rating" }
+"note.started" = { displayName = "Started" }
+"note.finished" = { displayName = "Finished" }
+"note.added" = { displayName = "Added" }
+"note.url" = { displayName = "URL" }
+"note.tags" = { displayName = "Tags" }
+
+# Tabs by status ([ and ] switch them), and one grouped by kind.
+[[table.base.views]]
+type = "table"
+name = "Queue"
+where = { status = ["want"] }
+order = ["kind", "author", "added", "tags", "url"]
+sort = [{ property = "added", direction = "DESC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Now"
+where = { status = ["now"] }
+order = ["kind", "author", "started", "tags"]
+sort = [{ property = "started", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Done"
+where = { status = ["done", "dropped"] }
+order = ["kind", "author", "rating", "finished", "status"]
+sort = [{ property = "finished", direction = "DESC" }]
+
+[[table.base.views]]
+type = "table"
+name = "By kind"
+order = ["kind", "status", "author", "rating"]
+groupBy = { property = "kind", direction = "ASC" }
+sort = [{ property = "status", direction = "ASC" }]
