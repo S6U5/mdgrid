@@ -197,6 +197,7 @@ impl App {
         if self.relmap.is_some() {
             self.relmap = None;
         }
+        self.folder_tree = None;
         if self.mode != Mode::Table {
             self.set_mode(Mode::Table);
         }

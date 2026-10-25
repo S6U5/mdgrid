@@ -487,11 +487,21 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\ntab_wrap = true",
         scope: Scope::Profile,
-        en: "When the view tabs do not fit on the row of the view bar, wrap them onto extra rows above it so every\n\
-             tab stays visible (the table moves down by those rows). false keeps one row and leaves out other tabs\n\
-             when the screen is narrow.",
-        ja: "ビューのタブがビューの帯の行に入らないとき、帯の上に行を足して折り返し、全部のタブを見せる(足した行のぶん\
-             表は下がる)。false なら1行のままで、狭い画面では今のでないタブを省く。",
+        en: "When the view tabs do not fit on the row of the view bar, move them all to rows below the search box\n\
+             and the buttons, as many rows as they need, so every tab stays visible (the table moves down by those\n\
+             rows). false keeps one row and leaves out other tabs when the screen is narrow.",
+        ja: "ビューのタブがビューの帯の行に入らないとき、タブを全部、検索の欄とボタンの行の下に要る行の数だけ並べ、\
+             全部のタブを見せる(足した行のぶん表は下がる)。false なら1行のままで、狭い画面では今のでないタブを省く。",
+    },
+    Item {
+        path: "display.tab_wrap_gap",
+        ty: "boolean",
+        ty_ja: "真偽値",
+        default: Some("false"),
+        example: "[display]\ntab_wrap = true\ntab_wrap_gap = true",
+        scope: Scope::Profile,
+        en: "With tab_wrap, put one empty row between the row of the search box and the rows of tabs below it.",
+        ja: "tab_wrap でタブを下に並べたとき、検索の欄の行とその下のタブの行の間に空き行を1つ入れる。",
     },
     Item {
         path: "display.note_name",
@@ -582,11 +592,11 @@ pub const ITEMS: &[Item] = &[
         scope: Scope::Global,
         en: "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\
              \"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\n\
-             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type. Action\n\
+             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree. Action\n\
              names are shown in the command palette (:).",
         ja: "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\
              \"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・\
-             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type。動作の名前はコマンドのパレット(:)に出る。",
+             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type・tree。動作の名前はコマンドのパレット(:)に出る。",
     },
     Item {
         path: "templates",

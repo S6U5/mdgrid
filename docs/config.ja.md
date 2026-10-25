@@ -62,6 +62,31 @@ name = "tasks"
 path = "tasks.base"
 ```
 
+印の `[[table]]` には、木の画面(`T`。[キー](keys.ja.md) の `tree`)の設定も書ける: `tree = { path = "<列>", separator = "<区切り>", order = "<列>" }`。`path` の列の値を `separator`(省略は ` > `)で切ったものを、その行の置き場の階層とみなし、`order` の列(省略してよい)でフォルダの中を並べる。階層の列が文字のリストなら最初の要素を使う。`path` の列が表に無い、区切りが空、`tree` が表でないときは、警告(`.mdgrid/workspace.toml: table[1].tree.separator: …` の形)して木を出さない。
+
+```toml
+# bookmarks/.mdgrid/workspace.toml — folder が「bar > 開発 > Web」のようなノートを、フォルダの木で見る
+[[table]]
+name = "Bookmarks"
+path = "Bookmarks"
+tree = { path = "folder", order = "order" }
+```
+
+印は手で書かなくてもよい。**スターター**は、よくある台帳の印とノートの雛形(と少しの見本のノート)をひとまとめにしたもので、`mdgrid <フォルダ> --init-workspace --starter <名前>` が新しいフォルダに書く: フォルダが無ければ作り、`--with-samples` で見本のノートも入れ、上書きはしない(書く先のファイルが1つでもあれば何も書かない)。`mdgrid --starters` で一覧が1行ずつ出る: 組み込みの `tasks`・`bookmarks`・`reading`・`people` と、自分のもの。画面ではパレットの **スターターから台帳を作る** が同じこと(選んで、作る場所を打ち、見本を入れるかを答える)。自分のスターターは設定のフォルダの `starters/<名前>/` に、組み込みと同じ形で置く:
+
+```
+starters/kanban/
+  starter.toml                  # [name] と [description]。鍵は言語の符号(en・ja)
+  ledger/                       # そのまま写す(台帳の根からの相対)
+    .mdgrid/workspace.toml
+    .mdgrid/templates/card.md   # [new_note] が指す本文の雛形({date} はノートを作るときに埋まる)
+  samples/                      # --with-samples のときだけ写す。{date}・{date+N}・{now} … は写すときに埋まる
+    Board/最初の札.md
+  ledger.ja/  samples.ja/       # 任意: 言語が ja のとき、ledger/ と samples/ の代わりに使う
+```
+
+組み込みと同じ名前のスターターは、組み込みの代わりになる。いちばん早い作り方は、気に入った台帳の `.mdgrid/` を `starters/<名前>/ledger/` に写すこと。
+
 ## 旧い名前(0.3.0)
 
 0.3.0 の書き方の設定もそのまま動く: 旧い名前は新しい道筋として読み、警告を出す。`mdgrid --migrate-config` で、今の設定を新しい形にした文を出せる(注釈は移らない)。前の版の `look.toml` は `ui.toml` が無いときに読み、次に書くときに `ui.toml` へ移す。`views.toml` の `[[target]]` も同じく `[[table]]` になる。
@@ -480,11 +505,25 @@ row_extra_lines = 2
 - 既定: `false`
 - 範囲: 全体・ワークスペース・表・ビュー
 
-ビューのタブがビューの帯の行(検索の欄とボタンの行)に入らないとき、帯の上に行を足して左から折り返し、全部のタブを見せる(足した行のタブもクリックで選べる)。残りのタブは帯の行の左に置き、足した行のぶん表は下がる。入るときは何も変えない。`false` なら1行のままで、狭い画面では今のでないタブを省く(`[` `]` での切り替えは効く)。
+ビューのタブがビューの帯の行(検索の欄とボタンの行)に入らないとき、タブを全部その行から外し、すぐ下の行に左から並べて要る行の数だけ折り返し、全部のタブを見せる(足した行のタブもクリックで選べる)。帯の行は検索の欄とボタンだけになり、足した行のぶん表は下がる。入るときは何も変えない。`false` なら1行のままで、狭い画面では今のでないタブを省く(`[` `]` での切り替えは効く)。ビューに `tab_break` があるときは、この設定に依らずタブを下の行に並べる([Obsidian Bases の対応範囲](obsidian-bases.ja.md)の `tab_break`)。
 
 ```toml
 [display]
 tab_wrap = true
+```
+
+### `display.tab_wrap_gap`
+
+- 型: `真偽値`
+- 既定: `false`
+- 範囲: 全体・ワークスペース・表・ビュー
+
+`tab_wrap` でタブを帯の行の下に並べたとき、帯の行(検索の欄とボタン)とタブの行の間に空き行を1つ入れる。折り返さないときは何もしない。ビューの `tab_break` でタブを下に並べたときも、同じく空き行を1つ入れる。
+
+```toml
+[display]
+tab_wrap = true
+tab_wrap_gap = true
 ```
 
 ### `display.note_name`
@@ -662,7 +701,7 @@ values = ["todo", "doing", "done"]
 
 モードごとにキーを割り当て直す。書かなければ組み込みのキーの割り当て。`[keys.<モード>]` の下に `キー = "動作の名前"` と書く。動作の名前 `"none"` でそのキーを外す。キーは `"j"`・`"ctrl+s"`・`"shift+tab"` のように書き、`"g g"` のような続けて押すキーは空白で区切る。
 
-モード: `table`・`edit`・`review`・`quit`・`help`・`palette`・`search`・`filter`・`detail`・`settings`・`settings_input`・`chips`・`list_select`・`menu`・`freq`・`sorts`・`relations`・`drawer`・`filter_window`・`filter_input`・`screen_menu`・`column_type`。動作の名前はコマンドのパレット(`:`)に出る。モードごとの既定のキーと動作の名前の全部は [keys.ja.md](keys.ja.md) にある。知らないモード・キー・動作は警告して飛ばす。
+モード: `table`・`edit`・`review`・`quit`・`help`・`palette`・`search`・`filter`・`detail`・`settings`・`settings_input`・`chips`・`list_select`・`menu`・`freq`・`sorts`・`relations`・`drawer`・`filter_window`・`filter_input`・`screen_menu`・`column_type`・`tree`。動作の名前はコマンドのパレット(`:`)に出る。モードごとの既定のキーと動作の名前の全部は [keys.ja.md](keys.ja.md) にある。知らないモード・キー・動作は警告して飛ばす。
 
 ```toml
 [keys.table]

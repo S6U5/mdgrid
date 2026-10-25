@@ -1,7 +1,8 @@
 //! コミットの書き出しを git-cliff で CHANGELOG の節に写す設定(cliff.toml)の試験。
 //! 変更の記録: specs/_changes/2026-10-03-cliff.md(タスク 1)。関係する要件: なし(開発の道具)。
 //! git-cliff はこの環境に無いので、cliff.toml を TOML として読み、commit_parsers の
-//! message の頭(`^<書き出し>` に半角と全角のコロンの文字の組が続く形)と `git log` の書き出しを突き合わせる。
+//! message の頭(`^<書き出し>` に半角と全角のコロンの文字の組が続く形。公開リポから取り込む Dependabot の
+//! `Bump …` のように、コロンの無い題は `^<語> `(語と空白)の形)と `git log` の書き出しを突き合わせる。
 //! 正規表現の crate は使わない。
 
 use std::collections::BTreeSet;
@@ -46,14 +47,22 @@ fn parsers(cliff: &toml::Table) -> Vec<toml::Table> {
         .collect()
 }
 
-/// message の `^<書き出し>` + SEP_CLASS から書き出しを取り出す。形が違えば None。
-fn prefix_of(message: &str) -> Option<&str> {
-    let word = message.strip_prefix('^')?.strip_suffix(SEP_CLASS)?;
+/// message の `^<書き出し>` + SEP_CLASS から書き出しを取り出す。コロンの無い題に当てる `^<語> `(語と空白)の形は、
+/// 語の後ろに空白を付けた鍵にして、コロンの形と見分ける。形が違えば None。
+fn prefix_of(message: &str) -> Option<String> {
+    let rest = message.strip_prefix('^')?;
+    let (word, key) = if let Some(w) = rest.strip_suffix(SEP_CLASS) {
+        (w, w.to_string())
+    } else if let Some(w) = rest.strip_suffix(' ') {
+        (w, format!("{w} "))
+    } else {
+        return None;
+    };
     let meta = |c: char| "\\^$.|?*+()[]{}:\u{ff1a}".contains(c) || c.is_whitespace();
     if word.is_empty() || word.chars().any(meta) {
         return None;
     }
-    Some(word)
+    Some(key)
 }
 
 /// 各 parser の書き出しと、その行き先(節の名前か skip)。
@@ -86,7 +95,7 @@ fn parser_entries(cliff: &toml::Table) -> Vec<(String, Dest)> {
                     "commit_parsers[{i}] ({message:?}) は group(文字列)か skip = true のどちらか一方を持つこと"
                 ),
             };
-            (prefix.to_string(), dest)
+            (prefix, dest)
         })
         .collect()
 }
@@ -102,11 +111,12 @@ fn group_name(g: &str) -> &str {
     g
 }
 
-/// コミットの題の書き出し(最初の `:` か `:` の前)。
-fn subject_prefix(subject: &str) -> &str {
+/// コミットの題の書き出し(最初の `:` か `:` の前)。コロンの無い題は最初の語に空白を付けた鍵(`prefix_of` の
+/// `^<語> ` の形と合わせる)。
+fn subject_prefix(subject: &str) -> String {
     match subject.find([':', '\u{ff1a}']) {
-        Some(i) => &subject[..i],
-        None => subject,
+        Some(i) => subject[..i].to_string(),
+        None => format!("{} ", subject.split_whitespace().next().unwrap_or("")),
     }
 }
 
@@ -183,7 +193,7 @@ fn test_cliff_history_prefixes_all_covered() {
     };
     let missing: Vec<&String> = subjects
         .iter()
-        .filter(|s| !known.contains(subject_prefix(s)))
+        .filter(|s| !known.contains(&subject_prefix(s)))
         .collect();
     assert!(
         missing.is_empty(),
@@ -261,16 +271,27 @@ fn test_cliff_changelog_has_header_and_body() {
 #[test]
 fn test_cliff_prefix_helpers() {
     // 試験の道具そのものの確かめ(cliff.toml に依らない)。
-    assert_eq!(prefix_of("^実装[:\u{ff1a}]"), Some("実装"));
-    assert_eq!(prefix_of("^照合の直し[:\u{ff1a}]"), Some("照合の直し"));
+    assert_eq!(prefix_of("^実装[:\u{ff1a}]").as_deref(), Some("実装"));
+    assert_eq!(
+        prefix_of("^照合の直し[:\u{ff1a}]").as_deref(),
+        Some("照合の直し")
+    );
     assert_eq!(prefix_of("^実装:"), None);
     assert_eq!(prefix_of("^実装[:]"), None);
     assert_eq!(prefix_of("^(実装|追加)[:\u{ff1a}]"), None);
     assert_eq!(prefix_of("実装[:\u{ff1a}]"), None);
+    // コロンの無い題に当てる形(語と空白)。鍵は空白を付けて、コロンの形と見分ける。
+    assert_eq!(prefix_of("^Bump ").as_deref(), Some("Bump "));
+    assert_eq!(prefix_of("^Bump"), None);
+    assert_eq!(prefix_of("^Bump deps "), None);
     assert_eq!(subject_prefix("照合の直し: 何か"), "照合の直し");
     assert_eq!(subject_prefix("文書\u{ff1a}何か: x"), "文書");
     assert_eq!(subject_prefix("specs:採択: x"), "specs");
-    assert_eq!(subject_prefix("区切り無し"), "区切り無し");
+    assert_eq!(subject_prefix("区切り無し"), "区切り無し ");
+    assert_eq!(
+        subject_prefix("Bump actions/checkout from 4 to 5 (#1)"),
+        "Bump "
+    );
     assert_eq!(group_name("<!-- 0 -->Features"), "Features");
     assert_eq!(group_name("Fixes"), "Fixes");
 }

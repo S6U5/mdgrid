@@ -1,0 +1,10 @@
+# The built-in starter "bookmarks" (ST-2): one note per bookmark, its folder written as "bar > Dev > Web",
+# seen as a folder tree (T). [name] and [description] are the words shown by `mdgrid --starters` and in the
+# palette, one per language code of locales/ (en is required).
+[name]
+en = "Bookmarks"
+ja = "ブックマーク"
+
+[description]
+en = "One note per bookmark with its folder written as \"bar > Dev > Web\"; T shows the folder tree, o opens the URL"
+ja = "1件1ノートのブックマーク。置き場を「bar > 開発 > Web」の列に書き、T で木、o で URL を開く"

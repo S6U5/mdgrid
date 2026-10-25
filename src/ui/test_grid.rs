@@ -461,8 +461,9 @@ fn test_cv_4_formula_number_and_bool_aligned() {
     );
     let s = screen(&app);
     // 見出し「num」(式の名前。BV-24)の右端に `#3`、「done」の列に `#false`(`#` は読むだけの印)。
+    // 計算の列の見出しは頭に「ƒ 」が付く(SR-48)ので、列はその分広い。
     assert!(
-        s.lines().any(|l| l == ">a       #3 #false 会議のメモ"),
+        s.lines().any(|l| l == ">a         #3 #false 会議のメモ"),
         "{s}"
     );
 }

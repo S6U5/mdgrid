@@ -1,0 +1,9 @@
+# The built-in starter "tasks" (ST-2): one note per task. [name] and [description] are the words shown by
+# `mdgrid --starters` and in the palette, one per language code of locales/ (en is required).
+[name]
+en = "Tasks"
+ja = "タスク"
+
+[description]
+en = "One note per task: tabs by status (open, doing, waiting, done), due date, priority, tags"
+ja = "1件1ノートのタスク。状態のタブ(未完了・進行中・待ち・完了)・期限・優先度・タグ"

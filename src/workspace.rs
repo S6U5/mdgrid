@@ -180,8 +180,13 @@ fn read_tables(
             let name = text("name")
                 .filter(|s| !s.is_empty())
                 .unwrap_or_else(|| "base".to_string());
-            let profile =
-                Profile::read_scoped(t, file, prefix, &["name", "path", "view", "base"], warns);
+            // TR-2: 印の `tree`(木の設定)は開くときに marker_tree が読む。
+            let skip: &[&str] = if file.starts_with(MARKER_DIR) {
+                &["name", "path", "view", "base", "tree"]
+            } else {
+                &["name", "path", "view", "base"]
+            };
+            let profile = Profile::read_scoped(t, file, prefix, skip, warns);
             out.push(WsTable {
                 path: root.join(inline_file_name(&name)),
                 name,
@@ -208,7 +213,12 @@ fn read_tables(
         let name = text("name")
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| stem_of(&p));
-        let profile = Profile::read_scoped(t, file, prefix, &["name", "path", "view"], warns);
+        let skip: &[&str] = if file.starts_with(MARKER_DIR) {
+            &["name", "path", "view", "tree"]
+        } else {
+            &["name", "path", "view"]
+        };
+        let profile = Profile::read_scoped(t, file, prefix, skip, warns);
         out.push(WsTable {
             name,
             path: p,
@@ -370,6 +380,157 @@ pub fn inline_base(path: &Path) -> Option<(String, PathBuf)> {
         .into_iter()
         .find(|(f, _)| *f == want)
         .map(|(_, b)| (b, marker))
+}
+
+/// TR-2: 開いたもの(フォルダか .base)の表に、印の `[[table]]` で書いた木の設定(`tree = { path, separator, order }`)と、
+/// 警告の場所(`table[n].tree`)。印が無い・その表が無い・`tree` が無いなら None。書き方が違えば CLI-3 の形で
+/// 警告して None(表でない・`path` が無い・区切りが空)。`order` が文字でなければ警告して無いものとする。
+pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, String)>, Vec<String>) {
+    let mut warns = Vec::new();
+    let start = if opened.extension().is_some_and(|x| x == "base") {
+        opened.parent().unwrap_or(opened).to_path_buf()
+    } else {
+        opened.to_path_buf()
+    };
+    let Some(root) = find_marker(&start) else {
+        return (None, warns);
+    };
+    let file = root.join(MARKER_DIR).join(MARKER_FILE);
+    // 壊れた TOML は範囲を決めるときに read_marker が知らせる。
+    let Some(table) = std::fs::read_to_string(&file)
+        .ok()
+        .and_then(|t| t.parse::<toml::Table>().ok())
+    else {
+        return (None, warns);
+    };
+    let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+    let items = table
+        .get("table")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+    for (k, item) in items.iter().enumerate() {
+        let Some(t) = item.as_table() else { continue };
+        let Some(tree) = t.get("tree") else { continue };
+        let text = |key: &str| {
+            t.get(key)
+                .and_then(|v| v.as_str())
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+        };
+        let path = if t.get("base").is_some() {
+            root.join(inline_file_name(
+                &text("name").unwrap_or_else(|| "base".to_string()),
+            ))
+        } else {
+            let Some(p) = text("path") else { continue };
+            let p = expand_home(&p);
+            if p.is_relative() {
+                root.join(p)
+            } else {
+                p
+            }
+        };
+        if real_path(&path) != real_path(opened) {
+            continue;
+        }
+        let at = format!("table[{}].tree", k + 1);
+        let spec = read_tree(tree, &label, &at, &mut warns);
+        return (spec.map(|s| (s, at)), warns);
+    }
+    (None, warns)
+}
+
+/// 比べるための実体のパス。無いファイル(WS-9 の `[table.base]` の `.base`)は、フォルダの側を実体のパスに直して
+/// 名前をつなぐ(根を `.` で開くと `./名前.base` になり、そのままでは実体のパスに直せないため)。
+fn real_path(p: &Path) -> PathBuf {
+    if let Ok(r) = std::fs::canonicalize(p) {
+        return r;
+    }
+    match (p.parent(), p.file_name()) {
+        (Some(d), Some(f)) => {
+            let d = if d.as_os_str().is_empty() {
+                Path::new(".")
+            } else {
+                d
+            };
+            std::fs::canonicalize(d)
+                .unwrap_or_else(|_| d.to_path_buf())
+                .join(f)
+        }
+        _ => p.to_path_buf(),
+    }
+}
+
+/// TR-2: `tree = { path = "<列>", separator = "<区切り>", order = "<列>" }` を読む。
+fn read_tree(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::folder_tree::TreeSpec> {
+    use crate::profile::{not, warn};
+    let Some(t) = v.as_table() else {
+        warn(warns, file, at, Msg::RsnTreeNotTable.text().to_string());
+        return None;
+    };
+    for k in t.keys() {
+        if !["path", "separator", "order"].contains(&k.as_str()) {
+            warn(
+                warns,
+                file,
+                &format!("{at}.{k}"),
+                Msg::RsnUnknown.text().to_string(),
+            );
+        }
+    }
+    let path = match t.get("path") {
+        Some(toml::Value::String(s)) if !s.trim().is_empty() => s.trim().to_string(),
+        _ => {
+            warn(
+                warns,
+                file,
+                &format!("{at}.path"),
+                Msg::RsnTreeNeedPath.text().to_string(),
+            );
+            return None;
+        }
+    };
+    let separator = match t.get("separator") {
+        None => crate::folder_tree::DEFAULT_SEPARATOR.to_string(),
+        Some(toml::Value::String(s)) if s.is_empty() => {
+            warn(
+                warns,
+                file,
+                &format!("{at}.separator"),
+                Msg::RsnTreeEmptySep.text().to_string(),
+            );
+            return None;
+        }
+        Some(toml::Value::String(s)) => s.clone(),
+        Some(_) => {
+            warn(
+                warns,
+                file,
+                &format!("{at}.separator"),
+                not(Msg::WantString),
+            );
+            return None;
+        }
+    };
+    let order = match t.get("order") {
+        None => None,
+        Some(toml::Value::String(s)) if !s.trim().is_empty() => Some(s.trim().to_string()),
+        Some(_) => {
+            warn(warns, file, &format!("{at}.order"), not(Msg::WantString));
+            None
+        }
+    };
+    Some(crate::folder_tree::TreeSpec {
+        path,
+        separator,
+        order,
+    })
 }
 
 /// パスの名前(`.base` は拡張子を除く。フォルダの `v1.2` はそのまま)。
@@ -1150,3 +1311,7 @@ mod tests_keep;
 #[cfg(test)]
 #[path = "test_workspace_profile_unit.rs"]
 mod tests_profile;
+
+#[cfg(test)]
+#[path = "test_tree_base_unit.rs"]
+mod tests_tree_base;

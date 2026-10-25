@@ -2256,8 +2256,8 @@
       "CLI-11",
       "SR-21"
     ],
-    "sha": "8a02b6ed2d39f096",
-    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
+    "sha": "0b195a285930167b",
+    "by": "specs/_decisions/2026-10-15-tab-wrap-below.md"
   },
   "tests/test_editor_setting.rs::test_sr_8_config_editor_wins_over_env": {
     "ids": [
@@ -9891,8 +9891,8 @@
       "CV-8",
       "SR-21"
     ],
-    "sha": "88c3a9192a30131b",
-    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
+    "sha": "5e8e38454b1cd738",
+    "by": "specs/_decisions/2026-10-15-tab-wrap-below.md"
   },
   "src/ui/test_row_lines_more.rs::test_cv_8_chips_stay_one_line": {
     "ids": [
@@ -10851,8 +10851,8 @@
       "CLI-11",
       "SR-21"
     ],
-    "sha": "866b273b80a254a5",
-    "by": "specs/_decisions/2026-10-15-tab-wrap.md"
+    "sha": "a74d432cbd6f32e7",
+    "by": "specs/_decisions/2026-10-15-tab-wrap-below.md"
   },
   "tests/test_note_path.rs::test_sr_46_config_default_is_common": {
     "ids": [
@@ -11043,5 +11043,501 @@
     ],
     "sha": "50d64ec688d62756",
     "by": "specs/_decisions/2026-10-15-pty-tests-unix-locks.md"
+  },
+  "src/ui/test_tab_wrap.rs::test_nv_31_all_tabs_below_bar": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "b565cd182c5be9cb"
+  },
+  "src/ui/test_tab_wrap.rs::test_nv_31_click_wrapped_tab_selects_view": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "f749877ac92b52e3"
+  },
+  "src/ui/test_tab_wrap.rs::test_nv_31_narrow_wraps_all_tabs": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "29922ec8a3fade27"
+  },
+  "src/ui/test_tab_wrap.rs::test_nv_31_wide_same_as_off": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "afe1b36dc0391b67"
+  },
+  "src/ui/test_tab_wrap_below.rs::test_nv_31_box_tabs_below_bottom_line": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "d4dbf27793adc474"
+  },
+  "src/ui/test_tab_wrap_below.rs::test_nv_31_click_tab_below_after_gap": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "1b494ab92b618199"
+  },
+  "src/ui/test_tab_wrap_below.rs::test_nv_31_gap_puts_one_empty_row": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "c834315ad2133849"
+  },
+  "src/ui/test_tab_wrap_below.rs::test_nv_31_gap_without_wrap_changes_nothing": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "0c95465c66d6c23e"
+  },
+  "src/ui/test_tab_wrap_below.rs::test_nv_31_tabs_right_below_search_by_default": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "c7cd1eba4884ac24"
+  },
+  "src/ui/test_tab_wrap_below.rs::test_nv_31_zero_padding_tabs_below": {
+    "ids": [
+      "NV-31"
+    ],
+    "sha": "7a48318732f67b4c"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_2_empty_separator_warns_and_no_tree": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "3a87b3b08679c3b7"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_2_marker_tree_reads_path_order_and_default_separator": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "4174ad6b62a3b93a"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_2_split_by_separator": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "3bf6b946e9a6bead"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_3_same_name_under_other_parents": {
+    "ids": [
+      "TR-3"
+    ],
+    "sha": "da263ffa71d8f11c"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_3_tree_counts_and_none": {
+    "ids": [
+      "TR-3"
+    ],
+    "sha": "7dba49917b117fad"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_4_rows_by_order_then_name": {
+    "ids": [
+      "TR-4"
+    ],
+    "sha": "534de3c6cbb93d0c"
+  },
+  "src/test_folder_tree_unit.rs::test_tr_5_web_url_only_http": {
+    "ids": [
+      "TR-5"
+    ],
+    "sha": "4dc981fb4803b6eb"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_1_menu_offers_tree_and_switches": {
+    "ids": [
+      "TR-1"
+    ],
+    "sha": "fee82361f14dd06f"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_1_no_tree_without_setting": {
+    "ids": [
+      "TR-1"
+    ],
+    "sha": "1804f9acff073857"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_1_tree_uses_view_rows": {
+    "ids": [
+      "TR-1"
+    ],
+    "sha": "b195ae1af579e904"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_2_custom_separator": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "199cc4c98fd8999d"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_2_empty_separator_warns_and_no_tree": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "7fd389e466c7555d"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_2_missing_column_warns_and_no_tree": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "298275d4957a4214"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_3_tree_counts_fold_and_none": {
+    "ids": [
+      "TR-3"
+    ],
+    "sha": "0e1379f40ad1d736"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_4_opens_at_current_row": {
+    "ids": [
+      "TR-4"
+    ],
+    "sha": "e55195418d557f77"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_4_rows_by_order_and_enter_jumps": {
+    "ids": [
+      "TR-4"
+    ],
+    "sha": "06455a373e9f552e"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_5_open_url_shows_and_passes_value": {
+    "ids": [
+      "TR-5"
+    ],
+    "sha": "69fa8de7634c721a"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_6_layout_by_width": {
+    "ids": [
+      "TR-6"
+    ],
+    "sha": "f9080b6c5bddf843"
+  },
+  "src/ui/test_folder_tree.rs::test_tr_7_mouse": {
+    "ids": [
+      "TR-7"
+    ],
+    "sha": "065e4dbe6cc582d9"
+  },
+  "tests/test_tree_e2e.rs::test_tr_1_tree_screen_counts_and_jump_e2e": {
+    "ids": [
+      "TR-1",
+      "TR-3",
+      "TR-4",
+      "TR-6"
+    ],
+    "sha": "543abcea16164a73"
+  },
+  "tests/test_tree_e2e.rs::test_tr_2_empty_separator_warns_e2e": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "32a8d0808e1a44c3"
+  },
+  "src/test_tree_base_unit.rs::test_tr_2_base_only_table_by_other_spelling_of_root": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "47733bb764bd4b5d"
+  },
+  "src/test_tree_base_unit.rs::test_tr_2_base_only_table_has_tree": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "e27e8751e1df8cdd"
+  },
+  "tests/test_tree_base_e2e.rs::test_tr_2_base_only_marker_table_tree_e2e": {
+    "ids": [
+      "TR-2"
+    ],
+    "sha": "4dc5bebe87cd668c"
+  },
+  "src/test_starter_unit.rs::test_st_1_lang_variant_replaces_whole_ledger_and_samples": {
+    "ids": [
+      "ST-1"
+    ],
+    "sha": "b0ec34e20a6c3284"
+  },
+  "src/test_starter_unit.rs::test_st_1_missing_language_falls_back_to_en_then_folder_name": {
+    "ids": [
+      "ST-1"
+    ],
+    "sha": "df5b94cdecae2830"
+  },
+  "src/test_starter_unit.rs::test_st_1_no_manifest_means_folder_name_and_empty_description": {
+    "ids": [
+      "ST-1"
+    ],
+    "sha": "f9d112a38019a336"
+  },
+  "src/test_starter_unit.rs::test_st_1_no_variant_for_language_uses_plain_ledger": {
+    "ids": [
+      "ST-1"
+    ],
+    "sha": "3f0cf1f028717b17"
+  },
+  "src/test_starter_unit.rs::test_st_1_reads_manifest_ledger_and_samples": {
+    "ids": [
+      "ST-1"
+    ],
+    "sha": "f025ee1cf920b2e3"
+  },
+  "src/test_starter_unit.rs::test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings": {
+    "ids": [
+      "ST-2"
+    ],
+    "sha": "78a523b1d67891f5"
+  },
+  "src/test_starter_unit.rs::test_st_2_builtin_four_in_name_order_with_every_language": {
+    "ids": [
+      "ST-2"
+    ],
+    "sha": "99a31773fd03f953"
+  },
+  "src/test_starter_unit.rs::test_st_2_builtin_marker_has_no_name_so_the_folder_names_the_workspace": {
+    "ids": [
+      "ST-2"
+    ],
+    "sha": "d0dd43b66f44192b"
+  },
+  "src/test_starter_unit.rs::test_st_3_broken_manifest_warns_in_cli_3_shape_and_is_skipped": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "bad84e9e71244e68"
+  },
+  "src/test_starter_unit.rs::test_st_3_find_by_name": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "7555b74e7b784f8b"
+  },
+  "src/test_starter_unit.rs::test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_builtin": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "ac40128acb69ab02"
+  },
+  "src/test_starter_unit.rs::test_st_3_list_without_config_dir_is_builtin_only": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "c22561604f2ad54c"
+  },
+  "src/test_starter_unit.rs::test_st_3_starter_without_marker_warns_and_is_skipped": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "13a38f5558c41c1e"
+  },
+  "src/test_starter_unit.rs::test_st_4_create_copies_ledger_as_is_without_samples": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "1553b1b326fcfd5d"
+  },
+  "src/test_starter_unit.rs::test_st_4_create_makes_a_missing_root": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "ac89919eb2ae1d45"
+  },
+  "src/test_starter_unit.rs::test_st_4_create_refuses_when_any_target_exists_and_writes_nothing": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "295b86d59089a9bd"
+  },
+  "src/test_starter_unit.rs::test_st_4_create_with_samples_fills_sample_vars_only": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "29a0665a6e9a3922"
+  },
+  "src/test_starter_unit.rs::test_st_4_create_without_samples_ignores_existing_sample_path": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "3fac96a9c0b9b35e"
+  },
+  "src/ui/test_starter.rs::test_st_5_empty_folder_is_refused_and_absolute_path_is_used_as_is": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "d3a85f423d457a59"
+  },
+  "src/ui/test_starter.rs::test_st_5_esc_at_any_step_cancels_and_writes_nothing": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "a85011bfae7b8e54"
+  },
+  "src/ui/test_starter.rs::test_st_5_n_makes_the_ledger_without_samples": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "368a30345dae3b5b"
+  },
+  "src/ui/test_starter.rs::test_st_5_palette_lists_starters_then_folder_then_samples_then_opens": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "1253239d15264518"
+  },
+  "src/ui/test_starter.rs::test_st_5_readonly_has_no_command_and_refuses": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "1235b150cf88b5e1"
+  },
+  "tests/test_starter_cli.rs::test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean": {
+    "ids": [
+      "ST-2"
+    ],
+    "sha": "2c2488d6d3e6bd71"
+  },
+  "tests/test_starter_cli.rs::test_st_3_broken_manifest_warns_one_line_and_others_are_listed": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "9e902d503a2de00a"
+  },
+  "tests/test_starter_cli.rs::test_st_3_starter_without_marker_warns_and_is_skipped": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "4abf6e3f4905c432"
+  },
+  "tests/test_starter_cli.rs::test_st_3_starters_does_not_combine_with_other_commands": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "1442c4d0d5e004cb"
+  },
+  "tests/test_starter_cli.rs::test_st_3_starters_lists_builtin_without_config_dir": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "02e9b92a927d4418"
+  },
+  "tests/test_starter_cli.rs::test_st_3_user_starters_first_in_name_order_and_hide_builtin_of_same_name": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "0ce76439fc3f7481"
+  },
+  "tests/test_starter_cli.rs::test_st_4_flag_misuse_is_one_line_and_code_2": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "00a2e242724d865d"
+  },
+  "tests/test_starter_cli.rs::test_st_4_init_with_starter_writes_ledger_only_and_lists_files": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "8e4385a7a4e33481"
+  },
+  "tests/test_starter_cli.rs::test_st_4_second_run_fails_with_2_and_changes_nothing": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "cb7a153f01781e65"
+  },
+  "tests/test_starter_cli.rs::test_st_4_unknown_starter_one_line_names_starters_flag": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "618a8e181859eb9b"
+  },
+  "tests/test_starter_cli.rs::test_st_4_user_starter_samples_get_exact_values": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "48546de10eb42887"
+  },
+  "tests/test_starter_cli.rs::test_st_4_with_samples_fills_sample_vars_and_keeps_template_vars": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "c883fdb661db2273"
+  },
+  "tests/test_starter_cli.rs::test_st_4_without_folder_uses_the_current_folder": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "9aaa96eb895034ae"
+  },
+  "tests/test_starter_e2e.rs::test_st_5_palette_creates_a_ledger_from_a_starter_and_opens_it_e2e": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "36d1aa6d52d13eef"
+  },
+  "tests/test_starter_e2e.rs::test_st_5_tilde_folder_is_under_the_home_folder_e2e": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "1b4e673fdd13e9e1"
+  },
+  "tests/test_starter_e2e.rs::test_st_6_opening_a_made_ledger_changes_no_bytes_e2e": {
+    "ids": [
+      "ST-6"
+    ],
+    "sha": "eea51621b567f5b7"
+  },
+  "tests/test_starter_examples.rs::test_st_2_examples_bookmarks_matches_the_builtin_starter": {
+    "ids": [
+      "ST-2"
+    ],
+    "sha": "5a55bb04aa1fa888"
+  },
+  "src/test_starter_more_unit.rs::test_st_1_ledger_variant_without_marker_is_refused": {
+    "ids": [
+      "ST-1",
+      "ST-3"
+    ],
+    "sha": "abec00866b8f00a8"
+  },
+  "src/test_starter_more_unit.rs::test_st_3_a_linked_starter_folder_is_read": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "2bd2f028e647966f"
+  },
+  "src/test_starter_more_unit.rs::test_st_3_hidden_folders_in_starters_are_not_starters": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "8c05fd9ead106b3b"
+  },
+  "src/test_starter_more_unit.rs::test_st_3_non_file_entries_in_a_starter_are_skipped": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "8b4b75aeb2ed7efe"
+  },
+  "src/test_starter_more_unit.rs::test_st_3_unreadable_file_warning_names_the_file_in_cli_3_shape": {
+    "ids": [
+      "ST-3"
+    ],
+    "sha": "979a05a389b56e97"
+  },
+  "src/test_starter_more_unit.rs::test_st_4_create_refuses_when_a_folder_on_the_way_is_a_link": {
+    "ids": [
+      "ST-4"
+    ],
+    "sha": "ad3af45dd6a6cc9e"
+  },
+  "src/ui/test_starter_more.rs::test_st_5_folder_is_relative_to_the_open_folder_unless_home_or_absolute": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "e0c612b7ca41f4e9"
+  },
+  "src/ui/test_starter_more.rs::test_st_5_two_open_folders_refuse_to_create": {
+    "ids": [
+      "ST-5"
+    ],
+    "sha": "756b800202fcf06f"
   }
 }

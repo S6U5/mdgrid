@@ -17,6 +17,7 @@ pub mod entry;
 pub mod export;
 pub mod external;
 pub mod filters;
+pub mod folder_tree;
 pub mod freq;
 pub(crate) mod glyphs;
 pub mod grid;
@@ -45,6 +46,7 @@ pub mod settings;
 pub mod settings_pick;
 pub mod settings_view;
 pub mod sorts;
+pub mod starter;
 pub mod startup;
 pub mod termbg;
 pub mod theme;
@@ -233,6 +235,8 @@ mod test_filter_window;
 #[allow(unused_imports)]
 mod test_filter_window_more;
 #[cfg(test)]
+mod test_folder_tree;
+#[cfg(test)]
 mod test_freq_chips;
 #[cfg(test)]
 mod test_group_gap;
@@ -323,7 +327,11 @@ mod test_style_screen;
 #[cfg(test)]
 mod test_style_selected;
 #[cfg(test)]
+mod test_tab_break;
+#[cfg(test)]
 mod test_tab_wrap;
+#[cfg(test)]
+mod test_tab_wrap_below;
 #[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
@@ -446,6 +454,10 @@ mod test_settings_head;
 mod test_settings_screen;
 #[cfg(test)]
 mod test_shift_arrows;
+#[cfg(test)]
+mod test_starter;
+#[cfg(test)]
+mod test_starter_more;
 #[cfg(test)]
 mod test_startup;
 #[cfg(test)]

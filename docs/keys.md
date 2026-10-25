@@ -83,6 +83,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `-` | `hide_column` | Hide the column |
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
+| `T` | `tree_view` | Open the tree view (when the table has a tree setting in the workspace marker) |
 | `Z` | `toggle_tree` | Fold or unfold the child rows (when the view arranges rows by parent) |
 | `A` | `add_column` | Add a column for a key no note has yet (type its name); saving writes the key only to the notes you fill in |
 | `H` | `move_column_left` | Move the column to the left |
@@ -458,7 +459,7 @@ Choosing **Table** in the screen type menu at the top right (**◇ Relation map 
 
 ## `screen_menu`
 
-The screen type menu (the **▦ Table ▾** button at the top right; on the relation map it reads **◇ Relation map ▾**). It opens right below the button and lists the screen types: Table, and Relation map when there are linked tables. The current type is marked with `●`, and a type that has a key shows it at the right (`R` for the relation map). Selecting a type switches to it. `R` switches without opening the menu.
+The screen type menu (the **▦ Table ▾** button at the top right; on the relation map it reads **◇ Relation map ▾**). It opens right below the button and lists the screen types: Table, Relation map when there are linked tables, and Tree when the workspace marker gives the table a tree setting. The current type is marked with `●`, and a type that has a key shows it at the right (`R` for the relation map, `T` for the tree). Selecting a type switches to it. `R` and `T` switch without opening the menu.
 
 | Key | Action | Description |
 |---|---|---|
@@ -487,6 +488,34 @@ The column type menu (CE-35): click the type mark of a column heading, or run `c
 | `Up` | `up` | Previous line |
 
 Clicking a line does what `Enter` does; clicking outside the menu closes it.
+
+## `tree`
+
+The tree view (`T`, `:tree_view`, or **Tree** in the screen type menu at the top right). It is offered only for a table whose `[[table]]` in the workspace marker has `tree = { path = "<column>" }` (see [Configuration](config.md)). The value of that column (such as `bar > dev > Web`) is split at the separator; the folders are on the left and the rows directly in the selected folder on the right. Each folder shows how many rows are under it (including its subfolders). Rows with an empty value go to **(none)**. The rows on the right are sorted by the `order` column (smallest first; values that are not numbers and empty values last; equal values by note name) and show the columns of the current view. The tree is built from the rows that pass the current view. The panes follow the terminal width: side by side when wide, one at a time when narrow (switch with the tabs on top or `Tab`).
+
+The mouse works too: click a folder to select it, click its `▾` or `▸` mark to close or open it, click a row on the right to select it, and click the selected row again to go to that row in the table. The wheel moves the selection up and down.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Open or close the folder / show the row in the table |
+| `Esc` | `close` | Back to the table |
+| `T` | `tree_view` | Back to the table |
+| `q` | `close` | Back to the table |
+| `j` | `down` | Next folder or row |
+| `Down` | `down` | Next folder or row |
+| `k` | `up` | Previous folder or row |
+| `Up` | `up` | Previous folder or row |
+| `l` | `right` | Open the folder / to the rows |
+| `Right` | `right` | Open the folder / to the rows |
+| `h` | `left` | Close the folder / to the folders |
+| `Left` | `left` | Close the folder / to the folders |
+| `Space` | `toggle` | Open or close the folder |
+| `Tab` | `next_section` | Switch between the folders and the rows |
+| `Shift+Tab` | `prev_section` | Switch between the folders and the rows |
+| `o` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the URL is shown in the message line first; other values are never opened) |
+| `x` | `action_menu` | Actions on the selected row (open the URL, show the row in the table) |
+| `:` | `palette` | Command palette (closing it returns to the tree) |
+| `?` | `help` | Show the help |
 
 ## Actions
 
@@ -529,6 +558,8 @@ Every action name you can write in the keys section of the config file. Each one
 - `show_column` — bring back the last hidden column
 - `relation_map` — switch between the table and the relation map
 - `toggle_tree` — fold or unfold the child rows of the selected row
+- `tree_view` — switch between the table and the tree view
+- `open_url` — open the http or https URL of the selected row in the browser (in the table, from the palette and the action menu)
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
 - `move_column_right` — move the column to the right
@@ -608,4 +639,5 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `workspace_add` — add the current table to a workspace (pick one or type a new name)
 - `workspace_remove` — remove the current table from a workspace
 - `workspace_open` — pick a workspace, then one of its tables, and open it within that workspace
+- `starter_new` — pick a starter (a built-in one or `starters/<name>` in the config folder), type the folder to create and whether to add the sample notes, and open the new ledger
 - `rename_note` — rename the note of the selected row (also in the action menu `x`); links to the old name are rewritten as pending changes

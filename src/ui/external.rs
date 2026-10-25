@@ -106,6 +106,75 @@ pub(crate) fn default_clipboard() -> Box<dyn Clipboard> {
     }
 }
 
+/// URL を開く口(TR-5)。試験では OS のブラウザを開かずに、渡された値を覚えるものに差し替える。
+pub trait Opener {
+    /// `url`(`folder_tree::web_url` を通った http・https の URL)を OS の既定のブラウザで開く。
+    fn open(&mut self, url: &str) -> Result<(), String>;
+}
+
+/// 本物の開く口: OS の開くコマンドに URL を1つの引数で渡す(シェルを通さない)。
+#[cfg_attr(test, allow(dead_code))]
+pub struct SystemOpener;
+
+impl Opener for SystemOpener {
+    fn open(&mut self, url: &str) -> Result<(), String> {
+        #[cfg(target_os = "macos")]
+        let mut cmd = {
+            let mut c = Command::new("open");
+            c.arg(url);
+            c
+        };
+        #[cfg(windows)]
+        let mut cmd = {
+            let mut c = Command::new("rundll32");
+            c.arg("url.dll,FileProtocolHandler").arg(url);
+            c
+        };
+        #[cfg(not(any(target_os = "macos", windows)))]
+        let mut cmd = {
+            let mut c = Command::new("xdg-open");
+            c.arg(url);
+            c
+        };
+        let mut child = cmd
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .map_err(|e| e.to_string())?;
+        // 終わりを待つ糸(子を残さない)。開くコマンドはすぐ戻る。
+        std::thread::spawn(move || {
+            let _ = child.wait();
+        });
+        Ok(())
+    }
+}
+
+/// 試験の開く口: 渡された URL を覚えるだけ。
+#[cfg(test)]
+#[derive(Default)]
+pub(crate) struct OpenLog(pub std::rc::Rc<std::cell::RefCell<Vec<String>>>);
+
+#[cfg(test)]
+impl Opener for OpenLog {
+    fn open(&mut self, url: &str) -> Result<(), String> {
+        self.0.borrow_mut().push(url.to_string());
+        Ok(())
+    }
+}
+
+/// 既定の開く口。試験のビルドではブラウザを開かない。
+pub(crate) fn default_opener() -> Box<dyn Opener> {
+    #[cfg(test)]
+    {
+        Box::new(OpenLog::default())
+    }
+    #[cfg(not(test))]
+    {
+        Box::new(SystemOpener)
+    }
+}
+
 /// OS のクリップボードのコマンドが応答するまで待つ長さ。
 const CLIP_TIMEOUT: Duration = Duration::from_secs(2);
 

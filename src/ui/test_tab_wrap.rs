@@ -1,9 +1,10 @@
-//! ビューのタブが帯の行に入らないとき、帯の上に行を足して折り返す設定 `display.tab_wrap`(NV-31)の受け入れ試験。
-//! 記録: specs/_proposals/2026-10-15-tab-wrap.md。
+//! ビューのタブが帯の行に入らないとき、タブを全部、検索の欄の行の下に要る行の数だけ並べる設定
+//! `display.tab_wrap`(NV-31)の受け入れ試験。記録: specs/_proposals/2026-10-15-tab-wrap.md・
+//! specs/_changes/2026-10-15-tab-wrap-below.md。
 //!
 //! 内部の状態のフィールドや新しい関数には頼らず、設定の文字・端末の大きさ・クリック・描いた画面の文字・
 //! 今のビューの名前で確かめる。置いた仮定:
-//! - ビューの帯の真ん中の行は、検索の欄「\ 検索」のある行(NV-23)。足した行はその行より上にある。
+//! - ビューの帯の真ん中の行は、検索の欄「\ 検索」のある行(NV-23)。足した行はその行より下にある。
 //! - タブの字はビューの名前を含む(今のタブは「[名前]」、ほかは「 名前 」)。
 //! - 表の1行目の高さは、ノートの title の字のある行で見る。
 
@@ -105,10 +106,10 @@ fn search_row(s: &str) -> usize {
     row_of(s, "\\ 検索")
 }
 
-/// 帯の真ん中の行とその上の行(ヘッダーと、足した行)だけを見る(表の status の字とタブを取り違えないように)。
+/// 表の1行目より上の行(ヘッダー・帯・足した行)だけを見る(表の status の字とタブを取り違えないように)。
 fn bar_part(s: &str) -> Vec<String> {
     s.lines()
-        .take(search_row(s) + 1)
+        .take(row_of(s, "会議のメモ"))
         .map(|l| l.to_string())
         .collect()
 }
@@ -143,8 +144,8 @@ fn current(a: &App) -> String {
 
 #[test]
 fn test_nv_31_narrow_wraps_all_tabs() {
-    // [NV-31] tab_wrap = true で幅 60 → 帯の上に行が足され、7つのタブの名前が全部見え、検索の欄と「絞り込み」も
-    // 見える。足した行のぶん表は下がる。
+    // [NV-31] tab_wrap = true で幅 60 → 検索の欄の行の下に行が足され、7つのタブの名前が全部見え、検索の欄と
+    // 「絞り込み」も見える。足した行のぶん表は下がる。
     let (_t, a) = boot("nv31_wrap", WRAP, 60);
     let s = scr(&a);
     for v in VIEWS {
@@ -155,67 +156,74 @@ fn test_nv_31_narrow_wraps_all_tabs() {
         s.lines().nth(mid).unwrap().contains("絞り込み"),
         "帯の真ん中の行に「絞り込み」が無い:\n{s}"
     );
-    // 足した行(帯の真ん中の行より上)にタブがある。
-    assert!(
-        VIEWS
-            .iter()
-            .any(|v| tab_row(&s, v).is_some_and(|r| r < mid)),
-        "帯の上の行にタブが無い:\n{s}"
-    );
+    // タブは全部、帯の真ん中の行より下の行にある。
+    for v in VIEWS {
+        assert!(
+            tab_row(&s, v).is_some_and(|r| r > mid),
+            "タブ「{v}」が検索の欄の行の下に無い:\n{s}"
+        );
+    }
 
-    // 折り返さないとき(false)と比べて、帯の真ん中の行と表の1行目が同じ行の数だけ下がる。
+    // 折り返さないとき(false)と比べて、帯の真ん中の行は同じ行で、表の1行目はタブの行の数だけ下がる。
     let (_t2, b) = boot("nv31_wrap_off", NO_WRAP, 60);
     let s2 = scr(&b);
-    let added = mid
-        .checked_sub(search_row(&s2))
-        .unwrap_or_else(|| panic!("帯が上がった:\n{s}\n----\n{s2}"));
-    assert!(added >= 1, "帯の上に行が足されていない:\n{s}\n----\n{s2}");
+    assert_eq!(
+        mid,
+        search_row(&s2),
+        "帯の真ん中の行は動かない:\n{s}\n----\n{s2}"
+    );
+    let lines: std::collections::BTreeSet<usize> =
+        VIEWS.iter().filter_map(|v| tab_row(&s, v)).collect();
     assert_eq!(
         row_of(&s, "会議のメモ"),
-        row_of(&s2, "会議のメモ") + added,
-        "表は足した行のぶん下がる:\n{s}\n----\n{s2}"
+        row_of(&s2, "会議のメモ") + lines.len(),
+        "表はタブの行のぶん下がる:\n{s}\n----\n{s2}"
     );
 }
 
 #[test]
-fn test_nv_31_remaining_tabs_left_of_bar() {
-    // [NV-31] 折り返す幅(60〜140 を 10 刻み)のどれでも、7つのタブが全部見え、足した行は先頭のタブ(今のビュー
-    // 「[未完了]」)から左の端に並び、帯の真ん中の行に残ったタブは検索の欄より左にある。真ん中の行にタブが
-    // 残る幅が1つはある(幅 60 では検索の欄とボタンで埋まり、全部が上の行に行く)。
-    let mut kept_somewhere = false;
+fn test_nv_31_all_tabs_below_bar() {
+    // [NV-31] 折り返す幅(60〜140 を 10 刻み)のどれでも、7つのタブが全部見える。折り返したときは、帯の真ん中の
+    // 行にタブが無く(検索の欄が左の端寄り)、タブの行は真ん中の行のすぐ下から間を空けずに続き、先頭のタブ
+    // (今のビュー「[未完了]」)から左の端に並ぶ。折り返す幅が1つはある。
     let mut wrapped_somewhere = false;
     for w in (60..=140).step_by(10) {
-        let (_t, a) = boot(&format!("nv31_rest_{w}"), WRAP, w);
+        let (_t, a) = boot(&format!("nv31_below_{w}"), WRAP, w);
         let s = scr(&a);
         let mid = search_row(&s);
-        let line = s.lines().nth(mid).unwrap();
-        let at_search = line.find("\\ 検索").unwrap();
         for v in VIEWS {
             assert!(tab_row(&s, v).is_some(), "幅 {w}: タブ「{v}」が無い:\n{s}");
         }
         let first = tab_row(&s, "未完了").unwrap();
-        if first < mid {
+        if first != mid {
             wrapped_somewhere = true;
+            assert_eq!(first, mid + 1, "幅 {w}: タブの行は真ん中の行のすぐ下:\n{s}");
             assert!(
                 s.lines().nth(first).unwrap().starts_with("[未完了]"),
-                "幅 {w}: 足した行は左の端から並ぶ:\n{s}"
+                "幅 {w}: タブの行は左の端から並ぶ:\n{s}"
             );
-        }
-        for v in VIEWS.iter().filter(|v| tab_row(&s, v) == Some(mid)) {
-            assert!(
-                line.find(v).unwrap() < at_search,
-                "幅 {w}: 帯の行のタブ「{v}」が検索の欄より右:\n{s}"
-            );
-            if first < mid {
-                kept_somewhere = true;
+            for v in VIEWS {
+                assert_ne!(
+                    tab_row(&s, v),
+                    Some(mid),
+                    "幅 {w}: 真ん中の行にタブ「{v}」:\n{s}"
+                );
             }
+            let rows: std::collections::BTreeSet<usize> =
+                VIEWS.iter().filter_map(|v| tab_row(&s, v)).collect();
+            let last = *rows.iter().last().unwrap();
+            assert_eq!(
+                rows.len(),
+                last - first + 1,
+                "幅 {w}: タブの行は間を空けない:\n{s}"
+            );
+            assert!(
+                s.lines().nth(mid).unwrap().find("\\ 検索").unwrap() < 4,
+                "幅 {w}: 検索の欄は左の端寄り:\n{s}"
+            );
         }
     }
     assert!(wrapped_somewhere, "どの幅でも折り返していない");
-    assert!(
-        kept_somewhere,
-        "折り返したとき、帯の真ん中の行にタブが残る幅が無い"
-    );
 }
 
 #[test]
@@ -226,7 +234,7 @@ fn test_nv_31_click_wrapped_tab_selects_view() {
     let mid = search_row(&s);
     let target = VIEWS[1..]
         .iter()
-        .find(|v| tab_row(&s, v).is_some_and(|r| r < mid))
+        .find(|v| tab_row(&s, v).is_some_and(|r| r > mid))
         .unwrap_or_else(|| panic!("足した行に今のでないタブが無い:\n{s}"));
     let y = tab_row(&s, target).unwrap() as u16;
     let x = col_in(&a, y, target).unwrap_or_else(|| panic!("行 {y} に「{target}」が無い:\n{s}"));

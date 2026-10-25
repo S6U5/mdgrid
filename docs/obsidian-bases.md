@@ -38,6 +38,7 @@ Inside a view:
 | `groupBy` | `property` and `direction`. Rows are gathered under one heading per value; empty values go under `(empty)` (`(空)` in Japanese). Within a group, rows follow `sort`. |
 | `limit` | A whole number. Applied last, to the total number of rows. |
 | `summaries` | A map from a column (`estimate`, `note.estimate`, `file.*` or `formula.*`) to a built-in summary name. See [Summaries](#summaries). |
+| `tab_break` | A key mdgrid adds (Obsidian ignores it). With `true`, the row of tabs breaks before this tab. When a shown tab other than the first has it, all tabs go on rows below the search box, whatever the terminal width and `display.tab_wrap`, and a new row starts here (a row that does not fit wraps within itself). On a hidden tab, the row breaks at the next shown tab. For example, keep the tabs that filter by status and the tabs that filter by due date on separate rows. |
 
 `filters` (both at the top level and in a view) is either an expression string or a map with `and`, `or` and `not`, each holding a list of expression strings or further maps. Several of these keys in one map are combined by AND. `not` keeps a row when none of its entries is true. Any other key in such a map, or a value of another shape, makes the view fail to open (see [Not supported](#not-supported)). A filter keeps a row only when its expression is true under the same rules as `if`: `null`, `false`, `0`, and an empty string are false.
 

@@ -86,6 +86,16 @@ mdgrid ~/notes/Tasks --readonly
 
 Giving a single `.md` file opens its folder with that note selected.
 
+Starting from scratch? A built-in starter writes a ready-made ledger (the marker, note templates and, with `--with-samples`, a few sample notes):
+
+```sh
+mdgrid --starters                                                       # tasks, bookmarks, reading, people
+mdgrid ~/notes/books --init-workspace --starter reading --with-samples
+mdgrid ~/notes/books
+```
+
+Your own starters go in the config folder under `starters/<name>/` ([config](docs/config.md)).
+
 ### 3. Make it your own command
 
 Add an alias for each folder you open often to your `~/.zshrc` or `~/.bashrc`:

@@ -144,6 +144,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         if !app.readonly {
             want.push((Section::Row, Action::RenameNote, false));
         }
+        // TR-5: この行に http・https の URL があれば、URL を開く。
+        if app.cur_row().is_some_and(|r| app.row_url(&r).is_some()) {
+            want.push((Section::Row, Action::OpenUrl, false));
+        }
         // REL-5: この行を指すリンクがあれば、つながった行。
         if app.row_has_backlinks() {
             want.push((Section::Row, Action::LinkedRows, false));

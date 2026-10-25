@@ -1,6 +1,6 @@
 [package]
 name = "mdgrid"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 rust-version = "1.90"
 description = "Browse and edit Markdown frontmatter as a table in the terminal"
@@ -9,7 +9,7 @@ readme = "README.md"
 keywords = ["markdown", "frontmatter", "tui", "obsidian", "table"]
 categories = ["command-line-utilities", "text-editors"]
 # Only what builds the binary goes into the crate (specs, docs, tests and examples stay in the repository).
-include = ["/src/**/*.rs", "/build.rs", "/locales/*.toml", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+include = ["/src/**/*.rs", "/build.rs", "/locales/*.toml", "/starters/**", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 repository = "https://github.com/S6U5/mdgrid"
 publish = true
 
@@ -31,8 +31,8 @@ unicode-width = "0.2.2"
 unicode-segmentation = "1.13"
 toml = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-saphyr = { version = "0.1", default-features = false }
-saphyr-parser = "0.1.0"
+saphyr = { version = "0.2", default-features = false }
+saphyr-parser = "0.2"
 # 引数の読み取りと、同じ定義から作る補完・man(CLI-13。docs/design.md)。
 clap = { version = "4.6.7", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 clap_complete = "4.6.11"

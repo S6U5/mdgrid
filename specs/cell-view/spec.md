@@ -58,6 +58,10 @@ updated: 2026-10-14
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-15 | [ビューのタブが帯の1行に入らないとき、次の行に折り返して全部を見せる設定 tab_wrap を足す(tab-wrap)](../_decisions/2026-10-15-tab-wrap.md) | accepted | AI | 人の発言 | NV-23, NV-31, SR-21, CLI-11, CV-8 |
+| 2026-10-15 | [折り返すときはタブを全部、検索の欄の行の下に要る行の数だけ並べ、間の空き行を設定 tab_wrap_gap で選べるようにする(tab-wrap-below)](../_decisions/2026-10-15-tab-wrap-below.md) | accepted | 人 | 人の発言 | NV-31, NV-23, SR-21, CLI-11, CV-8 |
+| 2026-10-15 | [[display] の項目の数を 12 に直した2つの試験の錠を掛け直す(note-path-locks)](../_decisions/2026-10-15-note-path-locks.md) | accepted | AI | 検証の指摘 | SR-21, CLI-11, CV-8 |
+| 2026-10-15 | [ノートの欄の名前を正規表現で抜き出す・削る設定 note_name を足す(note-name)](../_decisions/2026-10-15-note-name.md) | accepted | AI | 人の発言 | SR-21, SR-29, SR-47, CLI-11, CV-8 |
 | 2026-10-14 | [型と決まりに合わない値を「問題」として探し、画面と CLI で確かめられるようにする(type-check)](../_decisions/2026-10-14-type-check.md) | accepted | 人 | 人の発言 | CE-36, CV-9, NV-30, CLI-22 |
 | 2026-10-12 | [長い値を折り返して、表の行を設定した行の数まで伸ばす(row-lines)](../_decisions/2026-10-12-row-lines.md) | accepted | 人 | 人の発言 | CV-8, CV-3, SR-21 |
 | 2026-10-11 | [もとは幅1の字に絵文字の印を付けた書記素は、印を外して1桁で描く(emoji-vs16)](../_decisions/2026-10-11-emoji-vs16.md) | accepted | 人 | 人の発言 | CV-7 |
