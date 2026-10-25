@@ -11255,139 +11255,162 @@
     "ids": [
       "ST-1"
     ],
-    "sha": "b0ec34e20a6c3284"
+    "sha": "d3de4a7bf1996dbc",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_1_missing_language_falls_back_to_en_then_folder_name": {
     "ids": [
       "ST-1"
     ],
-    "sha": "df5b94cdecae2830"
+    "sha": "4a5155d2e9d77248",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_1_no_manifest_means_folder_name_and_empty_description": {
     "ids": [
       "ST-1"
     ],
-    "sha": "f9d112a38019a336"
+    "sha": "381dd21c8f52e1fa",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_1_no_variant_for_language_uses_plain_ledger": {
     "ids": [
       "ST-1"
     ],
-    "sha": "3f0cf1f028717b17"
+    "sha": "baa819de911b0825",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_1_reads_manifest_ledger_and_samples": {
     "ids": [
       "ST-1"
     ],
-    "sha": "f025ee1cf920b2e3"
+    "sha": "722636035ddefaba",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings": {
     "ids": [
       "ST-2"
     ],
-    "sha": "78a523b1d67891f5"
+    "sha": "b12049713df60580",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_2_builtin_four_in_name_order_with_every_language": {
     "ids": [
       "ST-2"
     ],
-    "sha": "99a31773fd03f953"
+    "sha": "757a746c4fb7081a",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_2_builtin_marker_has_no_name_so_the_folder_names_the_workspace": {
     "ids": [
       "ST-2"
     ],
-    "sha": "d0dd43b66f44192b"
+    "sha": "5f9df909948f54e2",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_3_broken_manifest_warns_in_cli_3_shape_and_is_skipped": {
     "ids": [
       "ST-3"
     ],
-    "sha": "bad84e9e71244e68"
+    "sha": "8bd388ea9fcb461c",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_3_find_by_name": {
     "ids": [
       "ST-3"
     ],
-    "sha": "7555b74e7b784f8b"
+    "sha": "ebb5b7b0612ed1af",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_builtin": {
     "ids": [
       "ST-3"
     ],
-    "sha": "ac40128acb69ab02"
+    "sha": "c02f79a5b209b98b",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_3_list_without_config_dir_is_builtin_only": {
     "ids": [
       "ST-3"
     ],
-    "sha": "c22561604f2ad54c"
+    "sha": "6ea601596530ea24",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_3_starter_without_marker_warns_and_is_skipped": {
     "ids": [
       "ST-3"
     ],
-    "sha": "13a38f5558c41c1e"
+    "sha": "709b6e20f311f699",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_4_create_copies_ledger_as_is_without_samples": {
     "ids": [
       "ST-4"
     ],
-    "sha": "1553b1b326fcfd5d"
+    "sha": "ba8f4982640b33e9",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_4_create_makes_a_missing_root": {
     "ids": [
       "ST-4"
     ],
-    "sha": "ac89919eb2ae1d45"
+    "sha": "9ce9d479090f499c",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_4_create_refuses_when_any_target_exists_and_writes_nothing": {
     "ids": [
       "ST-4"
     ],
-    "sha": "295b86d59089a9bd"
+    "sha": "8808d65d701af293",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_4_create_with_samples_fills_sample_vars_only": {
     "ids": [
       "ST-4"
     ],
-    "sha": "29a0665a6e9a3922"
+    "sha": "e8a20c04a08cc34c",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/test_starter_unit.rs::test_st_4_create_without_samples_ignores_existing_sample_path": {
     "ids": [
       "ST-4"
     ],
-    "sha": "3fac96a9c0b9b35e"
+    "sha": "7fbe0754b9544ea0",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/ui/test_starter.rs::test_st_5_empty_folder_is_refused_and_absolute_path_is_used_as_is": {
     "ids": [
       "ST-5"
     ],
-    "sha": "d3a85f423d457a59"
+    "sha": "06f863f53973c046",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/ui/test_starter.rs::test_st_5_esc_at_any_step_cancels_and_writes_nothing": {
     "ids": [
       "ST-5"
     ],
-    "sha": "a85011bfae7b8e54"
+    "sha": "f5319b08162db60b",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/ui/test_starter.rs::test_st_5_n_makes_the_ledger_without_samples": {
     "ids": [
       "ST-5"
     ],
-    "sha": "368a30345dae3b5b"
+    "sha": "2614ba167bbc5a33",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/ui/test_starter.rs::test_st_5_palette_lists_starters_then_folder_then_samples_then_opens": {
     "ids": [
       "ST-5"
     ],
-    "sha": "1253239d15264518"
+    "sha": "e96498df955d1d96",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/ui/test_starter.rs::test_st_5_readonly_has_no_command_and_refuses": {
     "ids": [
       "ST-5"
     ],
-    "sha": "1235b150cf88b5e1"
+    "sha": "d6d2d58ef4db127f",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "tests/test_starter_cli.rs::test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean": {
     "ids": [
@@ -11532,12 +11555,14 @@
     "ids": [
       "ST-5"
     ],
-    "sha": "e0c612b7ca41f4e9"
+    "sha": "c6e497b688828ee5",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   },
   "src/ui/test_starter_more.rs::test_st_5_two_open_folders_refuse_to_create": {
     "ids": [
       "ST-5"
     ],
-    "sha": "756b800202fcf06f"
+    "sha": "7627ea581d8d7b33",
+    "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
   }
 }

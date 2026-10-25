@@ -40,7 +40,15 @@ fn palette(a: &mut App, cmd: &str) {
     press(a, KeyCode::Enter);
 }
 
-/// `root` の下のファイル(根からの相対。揃える)。
+/// パスの部品を `/` でつなぐ(区切りは OS に依らず `/`。名前の中の `\` は残る)。
+fn slash(p: &Path) -> String {
+    p.iter()
+        .map(|c| c.to_string_lossy().into_owned())
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+/// `root` の下のファイル(根からの相対。揃える。区切りは OS に依らず `/`)。
 fn files_under(root: &Path) -> Vec<String> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_path_buf()];
@@ -53,7 +61,7 @@ fn files_under(root: &Path) -> Vec<String> {
             if p.is_dir() {
                 stack.push(p);
             } else {
-                out.push(p.strip_prefix(root).unwrap().to_string_lossy().into_owned());
+                out.push(slash(p.strip_prefix(root).unwrap()));
             }
         }
     }

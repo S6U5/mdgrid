@@ -10,7 +10,15 @@ use mdgrid::config::Config;
 use mdgrid::source::markdown::Markdown;
 use std::path::{Path, PathBuf};
 
-/// `root` の下のファイル(根からの相対。揃える)。
+/// パスの部品を `/` でつなぐ(区切りは OS に依らず `/`。名前の中の `\` は残る)。
+fn slash(p: &Path) -> String {
+    p.iter()
+        .map(|c| c.to_string_lossy().into_owned())
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+/// `root` の下のファイル(根からの相対。揃える。区切りは `/`)。
 fn files_under(root: &Path) -> Vec<String> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_path_buf()];
@@ -23,7 +31,7 @@ fn files_under(root: &Path) -> Vec<String> {
             if p.is_dir() {
                 stack.push(p);
             } else {
-                out.push(p.strip_prefix(root).unwrap().to_string_lossy().into_owned());
+                out.push(slash(p.strip_prefix(root).unwrap()));
             }
         }
     }
@@ -79,7 +87,10 @@ fn test_st_5_folder_is_relative_to_the_open_folder_unless_home_or_absolute() {
     assert_eq!(resolve_dir(base, "books"), base.join("books"));
     assert_eq!(resolve_dir(base, "a/b"), base.join("a/b"));
     assert_eq!(resolve_dir(base, "~foo/x"), base.join("~foo/x"));
-    assert_eq!(resolve_dir(base, "/abs/x"), Path::new("/abs/x"));
+    // 絶対のパスは OS の一時フォルダから作る(`/abs/x` は Windows では絶対でない)。
+    let abs = std::env::temp_dir().join("mdgrid-st-abs").join("x");
+    assert!(abs.is_absolute());
+    assert_eq!(resolve_dir(base, &abs.to_string_lossy()), abs);
     let home = mdgrid::places::expand_home("~");
     assert_eq!(resolve_dir(base, "~"), home);
     assert_eq!(resolve_dir(base, "~/x"), mdgrid::places::expand_home("~/x"));

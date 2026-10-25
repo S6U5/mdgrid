@@ -87,22 +87,17 @@ fn now() -> (i64, i64) {
     (today, today * 86_400 + 9 * 3600 + 5 * 60)
 }
 
-/// 返したパスを根からの相対にして揃える。
+/// 返したパスを根からの相対にして揃える(区切りは OS に依らず `/`。核の `rel_str` と同じく部品を `/` でつなぐので、名前の中の `\` は残る)。
 fn rels(root: &Path, made: &[PathBuf]) -> Vec<String> {
     let mut v: Vec<String> = made
         .iter()
-        .map(|p| {
-            p.strip_prefix(root)
-                .unwrap_or(p.as_path())
-                .to_string_lossy()
-                .into_owned()
-        })
+        .map(|p| rel_str(p.strip_prefix(root).unwrap_or(p.as_path())))
         .collect();
     v.sort();
     v
 }
 
-/// `root` の下の全部のファイル(根からの相対。揃える)。無ければ空。
+/// `root` の下の全部のファイル(根からの相対。揃える。区切りは OS に依らず `/`)。無ければ空。
 fn files_under(root: &Path) -> Vec<String> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_path_buf()];
@@ -115,7 +110,7 @@ fn files_under(root: &Path) -> Vec<String> {
             if p.is_dir() {
                 stack.push(p);
             } else {
-                out.push(p.strip_prefix(root).unwrap().to_string_lossy().into_owned());
+                out.push(rel_str(p.strip_prefix(root).unwrap()));
             }
         }
     }
@@ -131,14 +126,14 @@ fn st_names(list: &[Starter]) -> Vec<&str> {
     list.iter().map(|s| s.name.as_str()).collect()
 }
 
-/// 部分(と言語の変種)で絞ったファイルの相対パス(揃える)。
+/// 部分(と言語の変種)で絞ったファイルの相対パス(揃える。区切りは OS に依らず `/`)。
 fn file_rels(s: &Starter, ledger: bool, lang: Option<&str>) -> Vec<String> {
     let mut v: Vec<String> = s
         .files
         .iter()
         .filter(|f| matches!(f.part, Part::Ledger) == ledger)
         .filter(|f| f.lang.as_deref() == lang)
-        .map(|f| f.rel.to_string_lossy().into_owned())
+        .map(|f| rel_str(&f.rel))
         .collect();
     v.sort();
     v

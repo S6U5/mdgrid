@@ -54,6 +54,7 @@ updated: 2026-10-24
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-10-25 | [Windows でパスの区切りの違いで落ちるスターターの試験の補助を直し、錠を掛け直す(windows-starter-tests-locks)](../_decisions/2026-10-25-windows-starter-tests-locks.md) | accepted | AI | 検証の指摘 | ST-1, ST-2, ST-3, ST-4, ST-5 |
 | 2026-10-24 | [台帳のスターター(組み込みの印・雛形・見本)から表を作れるようにする(starter)](../_decisions/2026-10-24-starter.md) | accepted | 人 | 人の発言 | ST-1, ST-2, ST-3, ST-4, ST-5, ST-6 |
 
 ## この機能のつながり
