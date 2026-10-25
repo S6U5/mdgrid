@@ -51,4 +51,4 @@ toml = "1.1"
 proptest = { version = "1.11.0", default-features = false, features = ["std"] }
 # 本物の実行ファイルを疑似端末で動かす試験(Q-10。tests/test_e2e.rs)。unix だけで回す。
 portable-pty = "0.9.0"
-vt100 = "0.16.2"
+vt100 = "0.18.1"
