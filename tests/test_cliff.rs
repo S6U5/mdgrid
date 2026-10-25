@@ -53,10 +53,9 @@ fn prefix_of(message: &str) -> Option<String> {
     let rest = message.strip_prefix('^')?;
     let (word, key) = if let Some(w) = rest.strip_suffix(SEP_CLASS) {
         (w, w.to_string())
-    } else if let Some(w) = rest.strip_suffix(' ') {
-        (w, format!("{w} "))
     } else {
-        return None;
+        let w = rest.strip_suffix(' ')?;
+        (w, format!("{w} "))
     };
     let meta = |c: char| "\\^$.|?*+()[]{}:\u{ff1a}".contains(c) || c.is_whitespace();
     if word.is_empty() || word.chars().any(meta) {
