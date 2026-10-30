@@ -1,0 +1,78 @@
+# The mdgrid workspace marker (WS-7) of a task ledger, made from the built-in starter "tasks".
+# One note per task under Tasks/. The table "Tasks" below is written here ([table.base], WS-9) and opens
+# when you open this folder (open). This is your copy: rename columns, add views, change the values.
+open = "Tasks"
+
+# A blank line between the status groups; the note column shows the file name only.
+[display]
+group_gap = true
+note_path = "name"
+
+# Column types: dates sort as dates, open a calendar when edited, and mark values of the wrong shape.
+[types]
+due = "date"
+created = "date"
+done_at = "date"
+tags = "list"
+
+# Allowed values (CE-36): offered when you edit the cell; other values are marked.
+[rules.status]
+values = ["todo", "doing", "waiting", "done"]
+
+[rules.priority]
+values = ["p1", "p2", "p3"]
+
+# New note (n): asks for the due date and the priority, fills in the rest, and starts the body from the template.
+[new_note]
+folder = "Tasks"
+ask = ["due", "priority"]
+hidden = ["created"]
+body = ".mdgrid/templates/task.md"
+
+[new_note.set]
+status = "todo"
+created = "{date}"
+
+[[table]]
+name = "Tasks"
+
+[table.base]
+filters = { and = ['file.inFolder("Tasks")'] }
+
+[table.base.properties]
+"note.status" = { displayName = "Status" }
+"note.due" = { displayName = "Due" }
+"note.priority" = { displayName = "Priority" }
+"note.tags" = { displayName = "Tags" }
+"note.created" = { displayName = "Created" }
+"note.done_at" = { displayName = "Done" }
+
+# Tabs by status ([ and ] switch them).
+[[table.base.views]]
+type = "table"
+name = "Open"
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "due", "priority", "tags"]
+groupBy = { property = "status", direction = "ASC" }
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Doing"
+where = { status = ["doing"] }
+order = ["due", "priority", "tags"]
+sort = [{ property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Waiting"
+where = { status = ["waiting"] }
+order = ["due", "priority", "tags"]
+sort = [{ property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Done"
+where = { status = ["done"] }
+order = ["done_at", "priority", "tags"]
+sort = [{ property = "done_at", direction = "DESC" }]

@@ -11,6 +11,9 @@ Every sample here belongs to the same made-up company, **Northwind Studio**: a s
 | [places/](places) | Registered tables: the studio's tables and the other samples in one list. |
 | [themes/](themes) | One config per color theme. |
 | [bookmarks/](bookmarks) | A bookmark ledger (one note per bookmark, its folder written as `bar > Dev > Web`) seen as a folder tree with `T`. Made from the built-in starter `bookmarks`. |
+| [tasks/](tasks) | A task ledger made with `--init-workspace --starter tasks --with-samples`: tabs by status (Open, Doing, Waiting, Done), due date, priority and tags. |
+| [reading/](reading) | A reading ledger from the reading starter: books, articles, films and talks, with the tabs Queue, Now and Done. |
+| [people/](people) | A people-and-meetings ledger from the people starter: a People table and a Meetings table linked to it (press `R` for the map). |
 
 `sh demos/try.sh <sample>` opens a sample in a throwaway copy with its own config, and removes it when you quit.
 

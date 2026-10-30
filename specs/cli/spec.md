@@ -123,7 +123,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 | 要件 | 最新の決定 | テスト | 最後の照合 |
 |---|---|---|---|
-| CLI-1 | [2026-10-15](../_decisions/2026-10-15-marker-open.md) | src/test_main.rs::test_cli_1_no_args_opens_current_folder_default_table, src/test_main.rs::test_cli_1_paths_or_current_folder, src/ui/test_grid.rs::test_cli_2_view_option_opens_named_view ほか 12 | [2026-10-25-release-0-4-0](../_changes/2026-10-25-release-0-4-0.md) 2026-10-25 |
+| CLI-1 | [2026-10-15](../_decisions/2026-10-15-marker-open.md) | src/test_main.rs::test_cli_1_no_args_opens_current_folder_default_table, src/test_main.rs::test_cli_1_paths_or_current_folder, src/ui/test_grid.rs::test_cli_2_view_option_opens_named_view ほか 12 | [2026-10-30-cliff-chore-deps](../_changes/2026-10-30-cliff-chore-deps.md) 2026-10-30 |
 | CLI-2 | [2026-10-03](../_decisions/2026-10-03-stale-text.md) | src/test_main.rs::test_cli_11_print_config_arg, src/test_main.rs::test_cli_2_config_path, src/test_main.rs::test_cli_2_options ほか 5 | [2026-10-09-release-v0.2.0](../_changes/2026-10-09-release-v0.2.0.md) 2026-10-09 |
 | CLI-3 | [2026-10-15](../_decisions/2026-10-15-windows-target.md) | src/test_config_unit.rs::test_ce_22_config_date_items_wrong_types_warn, src/test_config_unit.rs::test_nv_23_config_search_bar, src/test_main.rs::test_cli_3_config_missing_unknown_broken ほか 45 | [2026-10-15-windows-tests](../_changes/2026-10-15-windows-tests.md) 2026-10-15 |
 | CLI-4 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/test_main.rs::test_cli_4_missing_path_one_line_reason, src/ui/test_grid.rs::test_cli_4_unknown_view_one_line_exit_2, tests/test_open_md_file.rs::test_cli_15_missing_md_file_fails_with_one_line_and_code_2 ほか 3 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |

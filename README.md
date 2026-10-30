@@ -230,7 +230,7 @@ From the command palette, `:export_base` writes the current view to a new `.base
 
 ## Documentation
 
-- [User manual](https://s6u5.github.io/mdgrid/manual/en/) ([source](docs/manual/en/index.md)) — getting started, task guides, the themes, and a screenshot of every screen. New to mdgrid? Start with [Ways to see your notes](docs/manual/en/views.md) and [Getting started](docs/manual/en/getting-started.md); [Make it look the way you like](docs/manual/en/appearance.md) and [When something looks wrong](docs/manual/en/faq.md) cover the look and the usual questions.
+- [User manual](https://s6u5.github.io/mdgrid/manual/en/) ([source](docs/manual/en/index.md)) — getting started, task guides, the themes, and a screenshot of every screen. New to mdgrid? Start with [Ways to see your notes](docs/manual/en/views.md) and [What mdgrid can do](docs/manual/en/features.md), then [Getting started](docs/manual/en/getting-started.md); [Make it look the way you like](docs/manual/en/appearance.md) and [When something looks wrong](docs/manual/en/faq.md) cover the look and the usual questions.
 - [Configuration](docs/config.md) — every setting, with defaults. `mdgrid --print-config` prints a commented starting file.
 - [Feature tours](demos/README.md) — short GIFs of entering values by type, the new-note form, exporting, registered tables, relations, the relation map, workspaces and the themes, recorded for each release. `sh demos/try.sh <sample>` opens a sample in a throwaway copy.
 - [Keys](docs/keys.md) — the default keys of each mode, and how to change them.

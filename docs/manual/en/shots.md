@@ -733,3 +733,31 @@ Keys: `T` `j` `j` `j`
 ![The tree screen](images/tree.svg)
 
 T, on a table whose workspace marker has a tree setting. The left pane is the folder tree built from the folder column, with a count per folder; the right pane lists the rows of the selected folder. Enter folds or opens a folder, Esc goes back to the table.
+
+## Create a ledger from a starter
+
+Keys: `:` `text:starter` `Enter`
+
+![Create a ledger from a starter](images/starter-pick.svg)
+
+The command palette's "Create a ledger from a starter" lists the built-in starters (tasks, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.
+
+## The tasks starter
+
+![The tasks starter](images/starter-tasks.svg)
+
+examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Doing, Waiting, Done), due date, priority and tags.
+
+## The reading starter
+
+![The reading starter](images/starter-reading.svg)
+
+examples/reading was made with the reading starter: books, articles, films and talks, with the tabs Queue, Now and Done, and columns for kind, author and rating.
+
+## The people starter: relation map
+
+Keys: `R`
+
+![The people starter: relation map](images/starter-people.svg)
+
+examples/people was made with the people starter: a People table (role, organization, contact) and a Meetings table (date, attendees, next actions) linked to it. R shows the two tables and the links between them.
