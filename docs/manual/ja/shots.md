@@ -640,7 +640,7 @@ Frame of the demo GIF.
 
 ## Demo frame 3
 
-キー: `Enter` `Down`
+キー: `Enter` `Up`
 
 ![Demo frame 3](images/gif-03.svg)
 
@@ -725,3 +725,11 @@ R で、ワークスペースの表を箱にし、リンクの列から行き先
 ![列の値を数える](images/demo-freq.svg)
 
 % で列の値ごとの件数と割合が出る。Enter でその値の行だけに絞る。
+
+## 木の画面
+
+キー: `T` `j` `j` `j`
+
+![木の画面](images/tree.svg)
+
+印に木の設定のある表で T。左は folder の列から組んだフォルダの木と件数、右は選んだフォルダの行。Enter でフォルダを畳む・開く、Esc で表に戻る。

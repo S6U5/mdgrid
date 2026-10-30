@@ -640,7 +640,7 @@ Frame of the demo GIF.
 
 ## Demo frame 3
 
-Keys: `Enter` `Down`
+Keys: `Enter` `Up`
 
 ![Demo frame 3](images/gif-03.svg)
 
@@ -725,3 +725,11 @@ Keys: `%`
 ![Count the values of a column](images/demo-freq.svg)
 
 % lists each value of the column with its count and share; Enter keeps only those rows.
+
+## The tree screen
+
+Keys: `T` `j` `j` `j`
+
+![The tree screen](images/tree.svg)
+
+T, on a table whose workspace marker has a tree setting. The left pane is the folder tree built from the folder column, with a count per folder; the right pane lists the rows of the selected folder. Enter folds or opens a folder, Esc goes back to the table.
