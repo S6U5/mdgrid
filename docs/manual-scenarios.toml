@@ -769,3 +769,12 @@ ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
 keys = ["%"]
 text = { en = "% lists each value of the column with its count and share; Enter keeps only those rows.", ja = "% で列の値ごとの件数と割合が出る。Enter でその値の行だけに絞る。" }
+
+[[shot]]
+id = "tree"
+title = { en = "The tree screen", ja = "木の画面" }
+command = ["./target/release/mdgrid", "examples/bookmarks"]
+ready = "Bookmarks"
+keys = ["T", "sleep:0.5", "j", "j", "j"]
+wait = { en = "Rows: bar > Dev > Web", ja = "行: bar > Dev > Web" }
+text = { en = "T, on a table whose workspace marker has a tree setting. The left pane is the folder tree built from the folder column, with a count per folder; the right pane lists the rows of the selected folder. Enter folds or opens a folder, Esc goes back to the table.", ja = "印に木の設定のある表で T。左は folder の列から組んだフォルダの木と件数、右は選んだフォルダの行。Enter でフォルダを畳む・開く、Esc で表に戻る。" }

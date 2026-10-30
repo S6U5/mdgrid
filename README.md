@@ -5,39 +5,43 @@
 [![GitHub release](https://img.shields.io/github/v/release/S6U5/mdgrid)](https://github.com/S6U5/mdgrid/releases)
 [![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/mdgrid.svg)](LICENSE-MIT)
 
-**Turn each folder of Markdown notes into a table you open with one command.**
+Turn each folder of Markdown notes into a table you open with one command.
 
-Point mdgrid at a folder and every note becomes a row, every frontmatter key a column. Edit the values right in the table. Give the folder a short alias, and `tasks`, `books` or `meetings` becomes your own command that opens that table just the way you left it.
+You have forty task notes and want to set `status: done` on the finished ones. A few reading notes are missing their `rating`. Too many to open one at a time in an editor, and a shame to flatten into a spreadsheet. Point mdgrid at the folder and every note becomes a row, every frontmatter key a column, and you edit the values right in the table. The notes stay plain Markdown. Give the folder a short alias, and `tasks`, `books` or `meetings` becomes your own command that opens that table just the way you left it.
 
-[日本語](README.ja.md) · [Manual](https://s6u5.github.io/mdgrid/manual/en/) · [Look catalog](https://s6u5.github.io/mdgrid/catalog/?lang=en) · [Screen gallery](https://s6u5.github.io/mdgrid/en/gallery.html)
+[日本語](README.ja.md) · [Manual](https://s6u5.github.io/mdgrid/manual/en/) · [Ways to see your notes](https://s6u5.github.io/mdgrid/manual/en/views.html) · [Look catalog](https://s6u5.github.io/mdgrid/catalog/?lang=en) · [Screen gallery](https://s6u5.github.io/mdgrid/en/gallery.html)
 
 ![The same table in the default dark look (sumi) and the light SaaS look](docs/assets/hero.png)
 
 ![mdgrid: pick a status, pick a date on a calendar, review the diff and save, switch to a grouped view, open the action menu](docs/assets/demo.gif)
 
-## ✨ What it does
+## What it does
 
-- **One command per folder.** `alias tasks='mdgrid ~/notes/Tasks'` is all the setup there is. mdgrid remembers each folder's columns, widths, filters, sorting, grouping and saved views, so typing `tasks` brings back the same table every time. Or register the tables you use under a name and a group, and plain `mdgrid` lists them to switch between. No database, no import: the notes stay plain Markdown files.
-- **Linked tables and a relation map.** Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, Enter picks a target by name, and you can jump to it or list the notes that link back. Press `R` for a map of the tables and their links. Group the tables of a project into a workspace (or let mdgrid find the root folder, the folder with `.obsidian/`, or the git repository) so links stay inside it.
-- **Edit frontmatter like a spreadsheet.** Cells look like parts of a GUI table: checkboxes, colored chips for tags and statuses, and a type mark on each column. Pick from values other notes already use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename a key across every note.
-- **Leaves the rest of the file alone.** Other keys, their order, comments, line endings and the body stay byte-for-byte the same. Before anything is written you see a diff of each file.
-- **Opens CSV and TSV too.** Pass a `.csv` or `.tsv` file to use it as a ledger: edit values in the table, and saving rewrites only the values you changed.
-- **Works with other commands.** Print the table as CSV, TSV, JSON or Markdown — or export the table on screen to a file from the command palette — edit the CSV in a spreadsheet and bring the changes back, or choose notes on screen and hand their paths to the next command.
-- **Easy to learn from the keyboard.** Vim keys and arrow keys both work. Press `x` on any cell to see what you can do there, `?` for every key.
+One command per folder. `alias tasks='mdgrid ~/notes/Tasks'` is all the setup there is. mdgrid remembers each folder's columns, widths, filters, sorting, grouping and saved views, so typing `tasks` brings back the same table every time. Or register the tables you use under a name and a group, and plain `mdgrid` lists them to switch between. No database, no import.
 
-Also: seven color themes, English and Japanese screens, a single binary written in Rust. If you use Obsidian, mdgrid can also open `.base` files ([see below](#-for-obsidian-users)).
+Besides the table: groups, a folder tree, a map of how the tables link, the counts of a column's values, and one note in detail. The tree, the map, the counts and the detail are one key away; groups come from the view settings. `Esc` brings the table back. They are laid out one screen each in [Ways to see your notes](https://s6u5.github.io/mdgrid/manual/en/views.html).
 
-## 📦 Install
+Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, Enter picks a target by name, and you can jump to it or list the notes that link back. Press `R` for a map of the tables and their links. Group the tables of a project into a workspace (or let mdgrid find the root folder, the folder with `.obsidian/`, or the git repository) so links stay inside it.
 
-**Prebuilt binaries.** Each release on the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page has archives for Linux (x86_64, aarch64), macOS (Intel, Apple silicon) and Windows (x86_64). Unpack one and put `mdgrid` on your `PATH`. The archive also holds shell completions (`completions/`) and a man page (`mdgrid.1`).
+Editing feels like a spreadsheet. Cells show as checkboxes, colored chips for tags and statuses, and a type mark on each column. Pick from values other notes already use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows at once, add a column for a new key, or rename a key across every note.
 
-**From crates.io.** With Rust 1.90 or newer:
+The rest of the file is left alone. Other keys, their order, comments, line endings and the body stay byte for byte the same, and you see a diff of each file before anything is written. Pass a `.csv` or `.tsv` file to edit it the same way; saving rewrites only the values you changed.
+
+It works with other commands. Print the table as CSV, TSV, JSON or Markdown (or export the table on screen to a file from the command palette), edit the CSV in a spreadsheet and bring the changes back, or choose notes on screen and hand their paths to the next command.
+
+Vim keys and arrow keys both work. Press `x` on any cell to see what you can do there, `?` for every key. Twelve color themes, English and Japanese screens, a single binary written in Rust. If you use Obsidian, mdgrid can also open `.base` files ([see below](#for-obsidian-users)).
+
+## Install
+
+Prebuilt binaries. Each release on the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page has archives for Linux (x86_64, aarch64), macOS (Intel, Apple silicon) and Windows (x86_64). Unpack one and put `mdgrid` on your `PATH`. The archive also holds shell completions (`completions/`) and a man page (`mdgrid.1`).
+
+From crates.io. With Rust 1.90 or newer:
 
 ```sh
 cargo install mdgrid --locked
 ```
 
-**From source.**
+From source.
 
 ```sh
 git clone https://github.com/S6U5/mdgrid.git
@@ -47,7 +51,7 @@ cargo install --path . --locked
 
 mdgrid is not on Homebrew yet.
 
-## 🚀 Get started
+## Get started
 
 ### 1. Try it on the sample
 
@@ -116,7 +120,7 @@ todo() { mdgrid ~/notes/Tasks --print --format md --filter 'status != "done"' --
 
 In fish, use `alias --save tasks 'mdgrid ~/notes/Tasks'`.
 
-## ⌨️ Keys to start with
+## Keys to start with
 
 | To do this | Press |
 |---|---|
@@ -135,7 +139,7 @@ In fish, use `alias --save tasks 'mdgrid ~/notes/Tasks'`.
 
 Every key can be changed in the config; see [Keys](docs/keys.md).
 
-## 🔍 A closer look
+## A closer look
 
 Pick a value that other notes use, or type a new one. Typing narrows the list:
 
@@ -171,9 +175,9 @@ Pick a color theme with `theme` in the config: `"nord"` (below), `"solarized-lig
 
 [examples/themes/](examples/themes) has a sample config for each theme: `mdgrid --config examples/themes/nord.toml examples/studio/Tasks.base`.
 
-## 🧰 Use with other commands
+## Use with other commands
 
-**Print the table.** `--print` writes the table to standard output and never changes your notes. Add `--with-path` to get each row's note path as the first column.
+Print the table. `--print` writes the table to standard output and never changes your notes. Add `--with-path` to get each row's note path as the first column.
 
 ```sh
 mdgrid ~/notes/Tasks --print                       # CSV with a header row
@@ -182,7 +186,7 @@ mdgrid ~/notes/Tasks --print --format md > tasks.md
 mdgrid ~/notes/Tasks --print --filter 'status != "done"' --sort due
 ```
 
-**Edit in a spreadsheet and bring it back.** Export with `--with-path`, edit the file, then `--apply` it. Without `--yes` it only shows the diff.
+Edit in a spreadsheet and bring it back. Export with `--with-path`, edit the file, then `--apply` it. Without `--yes` it only shows the diff.
 
 ```sh
 mdgrid ~/notes/Tasks --print --with-path > tasks.csv
@@ -192,13 +196,13 @@ mdgrid ~/notes/Tasks --apply tasks.csv --yes    # write only the cells that chan
 
 mdgrid checks every row before writing. If any path or value is a problem, nothing is written. Cells you did not change are never rewritten.
 
-**Choose notes and pass them on.** `--pick` opens the table read-only. Mark rows, press `Enter`, and their paths are printed one per line:
+Choose notes and pass them on. `--pick` opens the table read-only. Mark rows, press `Enter`, and their paths are printed one per line:
 
 ```sh
 mdgrid ~/notes/Tasks --pick path | tr '\n' '\0' | xargs -0 -o vi
 ```
 
-## 🤖 Use with AI agents
+## Use with AI agents
 
 mdgrid ships a skill that teaches Claude Code and Codex to use these commands: ask "list my tasks that are todo or doing as a Markdown table" and the agent builds the `--print --filter` command and writes the file for you, which you can then hand to any chat assistant. For bulk edits it shows you the `--apply` diff and writes only after you say yes.
 
@@ -209,7 +213,7 @@ mdgrid ships a skill that teaches Claude Code and Codex to use these commands: a
 
 In Codex, add this repository as a plugin marketplace and install `mdgrid`. The skill itself is [plugins/mdgrid/skills/mdgrid/SKILL.md](plugins/mdgrid/skills/mdgrid/SKILL.md); the mdgrid binary must be installed separately.
 
-## 🪨 For Obsidian users
+## For Obsidian users
 
 mdgrid works on any folder of Markdown notes, and it also understands Obsidian's [Bases](https://help.obsidian.md/bases). Open a `.base` file and its table views appear as tabs, with their filters, sorting, grouping, summary rows (`Sum`, `Average`, `Earliest` …) and a subset of formulas. Obsidian does not need to be installed, and mdgrid never rewrites your `.base` files.
 
@@ -224,9 +228,9 @@ Grouped views show headings that you can fold with `Enter`:
 
 From the command palette, `:export_base` writes the current view to a new `.base`, and `:import_base` takes a `.base` view in as an mdgrid view. mdgrid also reads the property types in `.obsidian/types.json`. See [Obsidian Bases support](docs/obsidian-bases.md) for what is read, evaluated or ignored.
 
-## 📚 Documentation
+## Documentation
 
-- [User manual](https://s6u5.github.io/mdgrid/manual/en/) ([source](docs/manual/en/index.md)) — getting started, task guides, the themes, and a screenshot of every screen. New to mdgrid? Read [How mdgrid sees your notes](docs/manual/en/concepts.md) first; [Make it look the way you like](docs/manual/en/appearance.md) and [When something looks wrong](docs/manual/en/faq.md) cover the look and the usual questions.
+- [User manual](https://s6u5.github.io/mdgrid/manual/en/) ([source](docs/manual/en/index.md)) — getting started, task guides, the themes, and a screenshot of every screen. New to mdgrid? Start with [Ways to see your notes](docs/manual/en/views.md) and [Getting started](docs/manual/en/getting-started.md); [Make it look the way you like](docs/manual/en/appearance.md) and [When something looks wrong](docs/manual/en/faq.md) cover the look and the usual questions.
 - [Configuration](docs/config.md) — every setting, with defaults. `mdgrid --print-config` prints a commented starting file.
 - [Feature tours](demos/README.md) — short GIFs of entering values by type, the new-note form, exporting, registered tables, relations, the relation map, workspaces and the themes, recorded for each release. `sh demos/try.sh <sample>` opens a sample in a throwaway copy.
 - [Keys](docs/keys.md) — the default keys of each mode, and how to change them.
@@ -236,15 +240,15 @@ From the command palette, `:export_base` writes the current view to a new `.base
 - [Human and AI tasks](examples/ai-human/README.md) — a sample `.base` and config that splits tasks into those an AI agent can finish and those that need a person (pay, sign, submit, send), with the people's group on top.
 - Shell completions: `mdgrid --completions <bash|zsh|fish|elvish|powershell>`. Man page: `mdgrid --man`.
 
-## 🤝 Contributing
+## Contributing
 
 Found a bug or have an idea? [Open an issue](https://github.com/S6U5/mdgrid/issues/new/choose). mdgrid is maintained by its author together with an AI coding agent, so a clear issue — what you did, what you expected, what happened — is usually all it takes to get a fix or a feature. Pull requests are limited to collaborators; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as described in [SECURITY.md](SECURITY.md).
 
-## 🏗️ How it is developed
+## How it is developed
 
 The specification lives in [specs/](specs/README.md) and every change goes through a recorded proposal and decision (in Japanese). Tests that guard requirements decided by a person are locked, so they cannot be weakened silently.
 
-## 📄 License
+## License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
 

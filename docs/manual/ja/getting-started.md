@@ -2,6 +2,8 @@
 
 [English](../en/getting-started.md) · [目次](index.md)
 
+入れ方は3つから1つ選びます。見本を開いて、最初のセルを直して保存するまでが、このページの道です。
+
 ## 入れる
 
 mdgrid は Rust 製の単体の実行ファイルです。[GitHub の Releases](https://github.com/S6U5/mdgrid/releases) から OS に合うアーカイブを落とすか、Rust 1.90 以上で次を実行して入れます。
@@ -27,6 +29,8 @@ mdgrid --man > ~/.local/share/man/man1/mdgrid.1
 cp -R examples/studio /tmp/mdgrid-sample
 target/release/mdgrid /tmp/mdgrid-sample/Tasks
 ```
+
+ヘッダーに「Northwind Studio」、下にタスクの行が並べば成功です。`q` で終われます。
 
 見本の日付は 2026年10月の初めです。この説明書の画面は、今日を 2026-10-06 として撮っています(`MDGRID_TODAY=2026-10-06`)。
 

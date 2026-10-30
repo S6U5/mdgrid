@@ -5,39 +5,43 @@
 [![GitHub release](https://img.shields.io/github/v/release/S6U5/mdgrid)](https://github.com/S6U5/mdgrid/releases)
 [![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/mdgrid.svg)](LICENSE-MIT)
 
-**Markdown のノートのフォルダを、コマンド1つで表として開けます。**
+Markdown のノートのフォルダを、コマンド1つで表として開けます。
 
-mdgrid にフォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。フォルダに短い alias を付ければ、`tasks`・`books`・`meetings` がそのまま自分のコマンドになり、前に使ったときの表がそのまま開きます。
+タスクのノートが 40 枚あって、終わったものの `status` を `done` にしたい。読書の記録に `rating` を付け忘れたノートが何枚かある。1枚ずつエディタで開くには多すぎて、表計算に写すには惜しい。そんなとき mdgrid にフォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。ノートはただの Markdown のままです。フォルダに短い alias を付ければ、`tasks`・`books`・`meetings` がそのまま自分のコマンドになり、前に使ったときの表がそのまま開きます。
 
-[English](README.md) · [説明書](https://s6u5.github.io/mdgrid/manual/ja/) · [見た目のカタログ](https://s6u5.github.io/mdgrid/catalog/?lang=ja) · [画面の一覧](https://s6u5.github.io/mdgrid/ja/gallery.html)
+[English](README.md) · [説明書](https://s6u5.github.io/mdgrid/manual/ja/) · [見せ方の一覧](https://s6u5.github.io/mdgrid/manual/ja/views.html) · [見た目のカタログ](https://s6u5.github.io/mdgrid/catalog/?lang=ja) · [画面の一覧](https://s6u5.github.io/mdgrid/ja/gallery.html)
 
 ![同じ表を、既定の暗い見た目(墨)と明るい SaaS の見た目で](docs/assets/ja/hero.png)
 
 ![mdgrid: 一覧から状態を選ぶ、カレンダーで日付を選ぶ(日時の列は時刻の欄も)、差分を見て保存する、まとめたビューに切り替える、操作の一覧を開く](docs/assets/ja/demo.gif)
 
-## ✨ できること
+## できること
 
-- **フォルダごとに1つのコマンド。** 用意は `alias tasks='mdgrid ~/notes/Tasks'` の1行だけです。mdgrid はフォルダごとに、列の並び・幅、絞り込み・並べ替え・まとまり、保存したビューを覚えているので、`tasks` と打てば毎回同じ表が開きます。よく使う表を名前と分類を付けて登録しておけば、引数なしの `mdgrid` で一覧から選んで切り替えられます。データベースも取り込みも要らず、ノートはただの Markdown のままです。
-- **つながった表と関係マップ。** ノートどうしをリンクでつなげば(`project: "[[mdgrid]]"`)、フォルダをつながった表として扱えます。リンクは名前で出て、Enter で行き先を名前から選べ、行き先へ移ったり、ここを指すノートを並べたりできます。`R` で表とつながりの図(関係マップ)が出ます。仕事ごとの表をワークスペースにまとめれば(`.obsidian/` のあるルートフォルダや git のリポを自動で見つけることも)、リンクはその中だけで探します。
-- **フロントマターを表計算のように直す。** セルは GUI の表のような部品で見せます: チェックボックス、タグや状態の色の付いた札、列ごとの型の印。ほかのノートが使っている値から選ぶ、カレンダーで日付を選ぶ、タグとチェックボックスを切り替える、たくさんの行に同じ値を一度に入れる、新しいキーの列を足す、キーの名前を全部のノートで変える、ができます。
-- **ファイルのほかの部分には触らない。** ほかのキー、キーの順、コメント、改行コード、本文は1バイトも変えません。書く前に、ファイルごとの差分を必ず見せます。
-- **CSV・TSV も開ける。** `.csv`・`.tsv` のファイルを渡すと台帳として表で直せます。保存では直した値だけを書き換えます。
-- **ほかのコマンドと組み合わせられる。** 表を CSV・TSV・JSON・Markdown で出す(画面の表もパレットからファイルに書き出せる)、出した CSV を表計算で直して戻す、画面で選んだノートのパスを次のコマンドに渡す、ができます。
-- **キーボードで覚えやすい。** Vim のキーも矢印のキーも使えます。どのセルでも `x` を押せばそこでできることが、`?` で全部のキーが出ます。
+フォルダごとに1つのコマンド。用意は `alias tasks='mdgrid ~/notes/Tasks'` の1行だけです。mdgrid はフォルダごとに、列の並びと幅、絞り込み・並べ替え・まとまり、保存したビューを覚えているので、`tasks` と打てば毎回同じ表が開きます。よく使う表を名前と分類を付けて登録しておけば、引数なしの `mdgrid` で一覧から選んで切り替えられます。データベースも取り込みも要りません。
 
-ほかに: 7つの色のテーマ、英語と日本語の画面、Rust 製の単体の実行ファイル。Obsidian を使っているなら `.base` も開けます([下を参照](#-obsidian-を使っている人へ))。
+表のほかに、まとまり(グループ)、フォルダの木、表どうしのつながりの図、列の値の分布、ノート1枚の詳細。木・関係マップ・値の分布・詳細はキー1つで、まとまりはビューの設定から切り替わり、`Esc` で表に戻ります。画面を1枚ずつ、[見せ方の一覧](https://s6u5.github.io/mdgrid/manual/ja/views.html)に並べました。
 
-## 📦 入れる
+ノートどうしをリンクでつなげば(`project: "[[mdgrid]]"`)、フォルダをつながった表として扱えます。リンクは名前で出て、Enter で行き先を名前から選び、行き先へ移ることも、ここを指すノートを並べることもできます。`R` を押せば表とつながりの図(関係マップ)。仕事ごとの表をワークスペースにまとめれば(`.obsidian/` のあるルートフォルダや git のリポを自動で見つけることも)、リンクはその中だけで探します。
 
-**ビルド済みのバイナリ。** [GitHub の Releases](https://github.com/S6U5/mdgrid/releases) の各リリースに、Linux(x86_64・aarch64)、macOS(Intel・Apple シリコン)、Windows(x86_64)のアーカイブがあります。展開して `mdgrid` を `PATH` の通った場所に置きます。シェルの補完(`completions/`)と man ページ(`mdgrid.1`)も入っています。
+直し方は表計算に近い形です。セルはチェックボックス、タグや状態の色の付いた札、列ごとの型の印で見せます。ほかのノートが使っている値から選ぶ、カレンダーで日付を選ぶ、タグとチェックボックスを切り替える、たくさんの行に同じ値を一度に入れる、新しいキーの列を足す、キーの名前を全部のノートで変える、ができます。
 
-**crates.io から。** Rust 1.90 以上で:
+ファイルのほかの部分には触りません。ほかのキー、キーの順、コメント、改行コード、本文は1バイトも変えず、書く前にファイルごとの差分を必ず見せます。`.csv`・`.tsv` のファイルを渡せば台帳として同じように直せ、保存では直した値だけを書き換えます。
+
+ほかのコマンドとも組めます。表を CSV・TSV・JSON・Markdown で出す(画面の表もパレットからファイルに書き出せる)、出した CSV を表計算で直して戻す、画面で選んだノートのパスを次のコマンドに渡す、ができます。
+
+キーは Vim のものも矢印も使えます。どのセルでも `x` を押せばそこでできることが、`?` で全部のキーが出ます。色のテーマは 12、画面は英語と日本語、Rust 製の単体の実行ファイルです。`.base` も開けます([下を参照](#obsidian-を使っている人へ))。
+
+## 入れる
+
+ビルド済みのバイナリ。 [GitHub の Releases](https://github.com/S6U5/mdgrid/releases) の各リリースに、Linux(x86_64・aarch64)、macOS(Intel・Apple シリコン)、Windows(x86_64)のアーカイブがあります。展開して `mdgrid` を `PATH` の通った場所に置きます。シェルの補完(`completions/`)と man ページ(`mdgrid.1`)も入っています。
+
+crates.io から。 Rust 1.90 以上で:
 
 ```sh
 cargo install mdgrid --locked
 ```
 
-**ソースから。**
+ソースから。
 
 ```sh
 git clone https://github.com/S6U5/mdgrid.git
@@ -47,7 +51,7 @@ cargo install --path . --locked
 
 Homebrew にはまだありません。
 
-## 🚀 はじめる
+## はじめる
 
 ### 1. 見本で試す
 
@@ -116,7 +120,7 @@ todo() { mdgrid ~/notes/Tasks --print --format md --filter 'status != "done"' --
 
 fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
-## ⌨️ まず覚えるキー
+## まず覚えるキー
 
 | したいこと | キー |
 |---|---|
@@ -135,7 +139,7 @@ fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
 キーはどれも設定で変えられます。[キー](docs/keys.ja.md)を見てください。画面の言葉は設定の `language`(`auto`・`en`・`ja`)で選びます。既定の `auto` は、`LC_ALL`・`LC_MESSAGES`・`LANG` が `ja` で始まれば日本語です。
 
-## 🔍 もう少し詳しく
+## もう少し詳しく
 
 ほかのノートが使っている値から選ぶか、新しい値を打ちます。打つと候補が絞られます:
 
@@ -171,9 +175,9 @@ fish では `alias --save tasks 'mdgrid ~/notes/Tasks'` です。
 
 テーマごとの設定の見本は [examples/themes/](examples/themes) にあります: `mdgrid --config examples/themes/nord.toml examples/studio/Tasks.base`。
 
-## 🧰 ほかのコマンドと使う
+## ほかのコマンドと使う
 
-**表を出す。** `--print` は表を標準出力に出し、ノートは書き換えません。`--with-path` を付けると、先頭の列に各行のノートのパスが入ります。
+表を出す。 `--print` は表を標準出力に出し、ノートは書き換えません。`--with-path` を付けると、先頭の列に各行のノートのパスが入ります。
 
 ```sh
 mdgrid ~/notes/Tasks --print                       # 見出しの行つきの CSV
@@ -182,7 +186,7 @@ mdgrid ~/notes/Tasks --print --format md > tasks.md
 mdgrid ~/notes/Tasks --print --filter 'status != "done"' --sort due
 ```
 
-**表計算で直して戻す。** `--with-path` を付けて出し、ファイルを直して `--apply` で戻します。`--yes` が無ければ差分を見せるだけです。
+表計算で直して戻す。 `--with-path` を付けて出し、ファイルを直して `--apply` で戻します。`--yes` が無ければ差分を見せるだけです。
 
 ```sh
 mdgrid ~/notes/Tasks --print --with-path > tasks.csv
@@ -192,13 +196,13 @@ mdgrid ~/notes/Tasks --apply tasks.csv --yes    # 変わったセルだけを書
 
 mdgrid は書く前に全部の行を確かめ、パスや値に1つでも問題があれば何も書きません。直していないセルは書き直しません。
 
-**ノートを選んで渡す。** `--pick` は表を読むだけで開きます。行に印を付けて `Enter` を押すと、そのパスが1行ずつ出ます:
+ノートを選んで渡す。 `--pick` は表を読むだけで開きます。行に印を付けて `Enter` を押すと、そのパスが1行ずつ出ます:
 
 ```sh
 mdgrid ~/notes/Tasks --pick path | tr '\n' '\0' | xargs -0 -o vi
 ```
 
-## 🤖 AI エージェントと使う
+## AI エージェントと使う
 
 mdgrid には、Claude Code と Codex にこれらのコマンドの使い方を教えるスキルがあります。「status が todo か doing のタスクを Markdown の表にして」と頼むと、エージェントが `--print --filter` のコマンドを組み立ててファイルに出します。そのファイルは、どのチャットの AI にも渡せます。まとめて書き換えるときは `--apply` の差分を見せ、あなたが良いと言ってから書きます。
 
@@ -209,7 +213,7 @@ mdgrid には、Claude Code と Codex にこれらのコマンドの使い方を
 
 Codex では、このリポをプラグインのマーケットプレイスに足して `mdgrid` を入れます。スキルの本体は [plugins/mdgrid/skills/mdgrid/SKILL.md](plugins/mdgrid/skills/mdgrid/SKILL.md) です。mdgrid 本体は別に入れてください。
 
-## 🪨 Obsidian を使っている人へ
+## Obsidian を使っている人へ
 
 mdgrid はどんな Markdown のフォルダでも使えますが、Obsidian の [Bases](https://help.obsidian.md/bases) も読めます。`.base` を開くと table ビューがタブに並び、絞り込み・並べ替え・まとまり・集計の行(`合計`・`平均`・`最早` など)と式の一部が使えます。Obsidian を入れていなくても動き、`.base` を書き換えることはありません。
 
@@ -224,9 +228,9 @@ alias standup='mdgrid ~/notes/タスク.base --view 担当ごと'
 
 コマンドのパレットの `:export_base` は今のビューを新しい `.base` に書き出し、`:import_base` は `.base` のビューを mdgrid のビューとして取り込みます。`.obsidian/types.json` のプロパティの型も読みます。どこを読み、評価し、無視するかは [Obsidian Bases への対応](docs/obsidian-bases.ja.md)にあります。
 
-## 📚 文書
+## 文書
 
-- [説明書](https://s6u5.github.io/mdgrid/manual/ja/)([元の文](docs/manual/ja/index.md))— はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。初めてなら、まず [mdgrid の考え方](docs/manual/ja/concepts.md) を。見た目は [見た目を整える](docs/manual/ja/appearance.md)、よくある疑問は [困ったとき](docs/manual/ja/faq.md) に。
+- [説明書](https://s6u5.github.io/mdgrid/manual/ja/)([元の文](docs/manual/ja/index.md))— はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。初めてなら、まず[見せ方の一覧](docs/manual/ja/views.md)と[はじめかた](docs/manual/ja/getting-started.md)を。見た目は [見た目を整える](docs/manual/ja/appearance.md)、よくある疑問は [困ったとき](docs/manual/ja/faq.md) に。
 - [設定](docs/config.ja.md) — 全部の項目と既定値。`mdgrid --print-config` は説明のコメント付きの設定を出すので、出発点にできます。
 - [機能紹介の録画](demos/README.md) — 型ごとの入力・新しいノートのフォーム・書き出し・登録した表・リレーション・関係マップ・ワークスペース・テーマの短い GIF(画面は英語)。リリースのたびに撮り直します。`sh demos/try.sh <見本>` で、見本を使い捨ての写しで開けます。
 - [キー](docs/keys.ja.md) — モードごとの既定のキーと、変え方。
@@ -236,15 +240,15 @@ alias standup='mdgrid ~/notes/タスク.base --view 担当ごと'
 - [人と AI のタスクを分ける見本](examples/ai-human/README.md) — AI エージェントに任せきれるタスクと、人の手が要るタスク(払う・署名する・提出する・送る)をまとまりに分け、人のまとまりを上に並べる `.base` と設定。
 - シェルの補完は `mdgrid --completions <bash|zsh|fish|elvish|powershell>`、man ページは `mdgrid --man`。
 
-## 🤝 参加する
+## 参加する
 
 バグを見つけた、こうなってほしい、という案があれば [Issue を開いて](https://github.com/S6U5/mdgrid/issues/new/choose)ください(日本語で大丈夫です)。mdgrid は作者と AI のコーディングのエージェントで直しているので、何をして、何を期待し、何が起きたかが分かる Issue があれば、たいていそれだけで直したり機能を足したりできます。Pull request は共同作業者だけにしています。詳しくは [CONTRIBUTING.md](CONTRIBUTING.md) を見てください。セキュリティの問題は [SECURITY.md](SECURITY.md) のとおり非公開で知らせてください。
 
-## 🏗️ 作り方
+## 作り方
 
 仕様の正本は [specs/](specs/README.md) にあり、変更はどれも提案と決定の記録を通ります。人が決めた要件を守る試験には錠が掛かっていて、黙って弱めることはできません。
 
-## 📄 ライセンス
+## ライセンス
 
 [Apache License, Version 2.0](LICENSE-APACHE) と [MIT license](LICENSE-MIT) のどちらかを選んで使えます。
 

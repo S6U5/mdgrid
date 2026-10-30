@@ -11564,5 +11564,89 @@
     ],
     "sha": "7627ea581d8d7b33",
     "by": "specs/_decisions/2026-10-25-windows-starter-tests-locks.md"
+  },
+  "tests/test_docs_order.rs::test_sr_50_manual_index_toc_in_reading_order": {
+    "ids": [
+      "SR-50"
+    ],
+    "sha": "b2805b1047d6c2ba"
+  },
+  "tests/test_docs_order.rs::test_sr_50_no_hype_words_en": {
+    "ids": [
+      "SR-50"
+    ],
+    "sha": "d94687521d59918c"
+  },
+  "tests/test_docs_order.rs::test_sr_50_no_hype_words_ja": {
+    "ids": [
+      "SR-50"
+    ],
+    "sha": "e7a6d6b68f130343"
+  },
+  "tests/test_docs_order.rs::test_sr_50_pages_py_pages_in_reading_order": {
+    "ids": [
+      "SR-50"
+    ],
+    "sha": "a0f654b68e43190f"
+  },
+  "tests/test_views_page.rs::test_sr_49_manual_index_links_views_page": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "a27dd63948df52ba"
+  },
+  "tests/test_views_page.rs::test_sr_49_pages_py_builds_views_and_links_from_landing": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "63fbf6e26c2a97f7"
+  },
+  "tests/test_views_page.rs::test_sr_49_scenarios_have_tree_scene": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "285240b3f3e1ad9d"
+  },
+  "tests/test_views_page.rs::test_sr_49_views_pages_headings_cover_eight_views": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "bbccee894d8b38f2"
+  },
+  "tests/test_views_page.rs::test_sr_49_views_pages_images_are_scenes": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "d94b6fe0ca23cc6c"
+  },
+  "tests/test_views_page.rs::test_sr_49_views_pages_links_resolve": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "e57a63e9cbce2729"
+  },
+  "tests/test_views_page_more.rs::test_sr_49_views_anchors_point_at_headings": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "6fc8237b7f35b166"
+  },
+  "tests/test_views_page_more.rs::test_sr_49_views_headings_name_each_view_exactly": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "1e23655450151ff0"
+  },
+  "tests/test_views_page_more.rs::test_sr_49_views_sections_have_image_and_link": {
+    "ids": [
+      "SR-49"
+    ],
+    "sha": "81be12e6a4f2e4fe"
+  },
+  "tests/test_views_page_more.rs::test_sr_50_scenarios_no_hype_words": {
+    "ids": [
+      "SR-50"
+    ],
+    "sha": "9c9d67e5bc23440e"
   }
 }

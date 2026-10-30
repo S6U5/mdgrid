@@ -2,6 +2,8 @@
 
 [日本語](../ja/getting-started.md) · [Contents](index.md)
 
+Pick one of three ways to install. The rest of the page is one path: open the sample, edit a cell, save.
+
 ## Install
 
 mdgrid is a single executable written in Rust. Download an archive for your OS from the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page, or install it with Rust 1.90 or newer:
@@ -27,6 +29,8 @@ The repository has a sample root folder, `examples/studio`: the tasks, projects,
 cp -R examples/studio /tmp/mdgrid-sample
 target/release/mdgrid /tmp/mdgrid-sample/Tasks
 ```
+
+If the header says "Northwind Studio" and task rows fill the table, it worked. `q` quits.
 
 The sample's dates are in early October 2026; the screens in this manual are taken as if today were 2026-10-06 (`MDGRID_TODAY=2026-10-06`).
 
