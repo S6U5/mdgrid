@@ -16,7 +16,7 @@ added = "date"
 [rules.status]
 values = ["active", "archived"]
 
-# 新しいノート(n): URL と置き場を聞き、残りを埋め、本文を雛形から始める。
+# 新しいノート(a): URL と置き場を聞き、残りを埋め、本文を雛形から始める。
 [new_note]
 folder = "Bookmarks"
 ask = ["url", "folder"]

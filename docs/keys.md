@@ -84,6 +84,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
 | `T` | `tree_view` | Open the tree view (when the table has a tree setting in the workspace marker) |
+| `C` | `gantt_view` | Open the gantt screen (when the workspace marker has a gantt setting, or the date columns can be inferred) |
 | `Z` | `toggle_tree` | Fold or unfold the child rows (when the view arranges rows by parent) |
 | `A` | `add_column` | Add a column for a key no note has yet (type its name); saving writes the key only to the notes you fill in |
 | `H` | `move_column_left` | Move the column to the left |
@@ -517,6 +518,34 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 | `:` | `palette` | Command palette (closing it returns to the tree) |
 | `?` | `help` | Show the help |
 
+## `gantt`
+
+The gantt screen (`C`, `:gantt_view`, or **Gantt** in the screen type menu at the top right). It is offered on a table whose `[[table]]` in the workspace marker has `gantt = { start = "<column>", end = "<column>" }` (`days = "<column>"` instead of `end` also works), or, without a setting, on a table whose date columns can be inferred by name (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了). See [Configuration](config.md). The rows of the current view are listed with their names on the left and a time axis with bars on the right. The unit is a day, a week or a month; on opening, the finest unit that fits the range of the rows in the width. Today's column is marked (`▾`, `┊`). A row with only one of the two dates shows `◆`; a row with neither shows no bar. With parent/child rows in the view settings, the order, indent and folding are the same as in the table, and so are the WBS numbers and progress (`█` and `░` in the bar); a parent without dates gets the span of its descendants. The screen is read-only; dates are edited in the table.
+
+The mouse works too: click a row to select it, click the selected row again to move to that row in the table. The wheel selects up and down; the horizontal wheel moves the time axis.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Show the row in the table |
+| `Esc` | `close` | Back to the table |
+| `C` | `gantt_view` | Back to the table |
+| `q` | `close` | Back to the table |
+| `j` | `down` | Next row |
+| `Down` | `down` | Next row |
+| `k` | `up` | Previous row |
+| `Up` | `up` | Previous row |
+| `l` | `right` | Scroll the time axis later |
+| `Right` | `right` | Scroll the time axis later |
+| `h` | `left` | Scroll the time axis earlier |
+| `Left` | `left` | Scroll the time axis earlier |
+| `+` | `zoom_in` | Finer unit (month → week → day) |
+| `-` | `zoom_out` | Coarser unit (day → week → month) |
+| `t` | `today` | Go to today |
+| `Z` | `toggle_tree` | Fold or unfold the child rows of the selected row |
+| `Space` | `toggle_tree` | Fold or unfold the child rows of the selected row |
+| `:` | `palette` | The command palette (closing it returns to the gantt) |
+| `?` | `help` | Show the help |
+
 ## Actions
 
 Every action name you can write in the keys section of the config file. Each one works only in the modes where it appears in the tables above.
@@ -559,6 +588,9 @@ Every action name you can write in the keys section of the config file. Each one
 - `relation_map` — switch between the table and the relation map
 - `toggle_tree` — fold or unfold the child rows of the selected row
 - `tree_view` — switch between the table and the tree view
+- `gantt_view` — switch between the table and the gantt screen
+- `zoom_in` — finer unit of the gantt time axis (month → week → day)
+- `zoom_out` — coarser unit of the gantt time axis (day → week → month)
 - `open_url` — open the http or https URL of the selected row in the browser (in the table, from the palette and the action menu)
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
@@ -599,7 +631,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `next_month` — next month in the date calendar
 - `prev_year` — previous year in the date calendar
 - `next_year` — next year in the date calendar
-- `today` — set today's date
+- `today` — set today's date (in the Gantt view, scroll the time axis to today)
 - `create_note_edit` — create the note from the new note form and open it in the editor
 - `create_note` — create the note now from any field of the new note form
 - `time_focus` — switch between the day and the time field of the datetime calendar

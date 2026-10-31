@@ -10,7 +10,7 @@ Four starters are built in, and each one is a sample of a way to use mdgrid. The
 
 ![The tasks starter](images/starter-tasks.svg)
 
-Tasks. One note per task, with status tabs (Open, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you.
+Tasks. One note per task, with status tabs (Open, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you. With its `start` and `due` columns, `C` shows it as a Gantt too.
 
 ![The tree screen](images/tree.svg)
 
@@ -73,6 +73,14 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 `o` sets the columns, filters, sorting, grouping and display; save it under a name and it becomes a tab. Choose "Set as default view" and the folder opens on that view next time.
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it)
+
+## See the schedule as a gantt
+
+![The gantt screen](images/gantt.svg)
+
+`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
+
+[Gantt in the list of views](views.md#gantt), [Key bindings](../../keys.md)
 
 ## Open a .base file
 

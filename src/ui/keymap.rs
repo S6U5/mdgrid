@@ -51,6 +51,8 @@ pub enum Mode {
     ColumnType,
     /// 木の画面(TR-1。folder_tree.rs)。
     Tree,
+    /// ガントの画面(GA-2。gantt.rs)。
+    Gantt,
 }
 
 impl Mode {
@@ -80,6 +82,7 @@ impl Mode {
             Mode::ScreenMenu => Msg::ModeScreenMenu,
             Mode::ColumnType => Msg::ModeColumnType,
             Mode::Tree => Msg::ModeTree,
+            Mode::Gantt => Msg::ModeGantt,
         }
     }
 
@@ -114,10 +117,11 @@ impl Mode {
             Mode::ScreenMenu => "screen_menu",
             Mode::ColumnType => "column_type",
             Mode::Tree => "tree",
+            Mode::Gantt => "gantt",
         }
     }
 
-    pub const ALL: [Mode; 23] = [
+    pub const ALL: [Mode; 24] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -141,6 +145,7 @@ impl Mode {
         Mode::ScreenMenu,
         Mode::ColumnType,
         Mode::Tree,
+        Mode::Gantt,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
@@ -347,6 +352,12 @@ pub enum Action {
     TreeView,
     /// TR-5: 行の http・https の URL を OS の既定のブラウザで開く。
     OpenUrl,
+    /// GA-2: 表とガントの画面を切り替える。
+    GanttView,
+    /// GA-4: ガントの時間軸の単位を細かく(月 → 週 → 日)。
+    ZoomIn,
+    /// GA-4: ガントの時間軸の単位を粗く(日 → 週 → 月)。
+    ZoomOut,
 }
 
 impl Action {
@@ -473,6 +484,9 @@ impl Action {
             Action::Freq => "frequency",
             Action::TreeView => "tree_view",
             Action::OpenUrl => "open_url",
+            Action::GanttView => "gantt_view",
+            Action::ZoomIn => "zoom_in",
+            Action::ZoomOut => "zoom_out",
         }
     }
 
@@ -587,6 +601,7 @@ const IN_SCREEN_MENU: Msg = Msg::SecInScreenMenu;
 const IN_COLUMN_TYPE: Msg = Msg::SecInColumnType;
 const IN_FILTERS: Msg = Msg::SecInFilters;
 const IN_TREE: Msg = Msg::SecInTree;
+const IN_GANTT: Msg = Msg::SecInGantt;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -662,6 +677,8 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
     // TR-5: 行の URL を開く(既定のキーなし。木の中では `o`。操作の一覧からも)。
     cmd(Action::OpenUrl, Msg::CmdOpenUrl, OUTSIDE),
+    // GA-2: ガントの画面(画面の型のメニューとパレットからも)。
+    cmd(Action::GanttView, Msg::CmdGanttView, FIND),
     // WS-2: ワークスペース(ノートを書かない。workspaces.toml だけ)。
     cmd(Action::WsNew, Msg::CmdWsNew, FILE),
     cmd(Action::WsAdd, Msg::CmdWsAdd, FILE),
@@ -746,6 +763,8 @@ pub const BINDINGS: &[Binding] = &[
     b("R", Action::RelationMap, Msg::KeyRelationMap, FIND, 0),
     // TR-1: 木の画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
     b("T", Action::TreeView, Msg::KeyTreeView, FIND, 0),
+    // GA-2: ガントの画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
+    b("C", Action::GanttView, Msg::KeyGanttView, FIND, 0),
     b("Z", Action::ToggleTree, Msg::KeyToggleTree, SHAPE, 0),
     b("A", Action::AddColumn, Msg::KeyAddColumn, SHAPE, 0),
     b(
@@ -2363,6 +2382,145 @@ pub const BINDINGS: &[Binding] = &[
         0,
     ),
     m(Mode::Tree, "?", Action::Help, Msg::KeyHelp, IN_TREE, 0),
+    // GA-2〜GA-5: ガントの画面。↑↓ で行、←→ で時間軸、+- で単位、t で今日、Z で畳む・開く、Enter で表のその行へ。
+    m(
+        Mode::Gantt,
+        "Enter",
+        Action::Run,
+        Msg::KeyGanttRun,
+        IN_GANTT,
+        1,
+    ),
+    m(
+        Mode::Gantt,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_GANTT,
+        2,
+    ),
+    m(
+        Mode::Gantt,
+        "C",
+        Action::GanttView,
+        Msg::KeyRelBack,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "q",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "j",
+        Action::Down,
+        Msg::KeyGanttNext,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Down",
+        Action::Down,
+        Msg::KeyGanttNext,
+        IN_GANTT,
+        0,
+    ),
+    m(Mode::Gantt, "k", Action::Up, Msg::KeyGanttPrev, IN_GANTT, 0),
+    m(
+        Mode::Gantt,
+        "Up",
+        Action::Up,
+        Msg::KeyGanttPrev,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "l",
+        Action::Right,
+        Msg::KeyGanttLater,
+        IN_GANTT,
+        3,
+    ),
+    m(
+        Mode::Gantt,
+        "Right",
+        Action::Right,
+        Msg::KeyGanttLater,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "h",
+        Action::Left,
+        Msg::KeyGanttEarlier,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Left",
+        Action::Left,
+        Msg::KeyGanttEarlier,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "+",
+        Action::ZoomIn,
+        Msg::KeyGanttZoomIn,
+        IN_GANTT,
+        4,
+    ),
+    m(
+        Mode::Gantt,
+        "-",
+        Action::ZoomOut,
+        Msg::KeyGanttZoomOut,
+        IN_GANTT,
+        5,
+    ),
+    m(
+        Mode::Gantt,
+        "t",
+        Action::Today,
+        Msg::KeyGanttToday,
+        IN_GANTT,
+        6,
+    ),
+    m(
+        Mode::Gantt,
+        "Z",
+        Action::ToggleTree,
+        Msg::KeyToggleTree,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Space",
+        Action::ToggleTree,
+        Msg::KeyToggleTree,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_GANTT,
+        0,
+    ),
+    m(Mode::Gantt, "?", Action::Help, Msg::KeyHelp, IN_GANTT, 0),
 ];
 
 /// 全角の英数字・記号と `、`・`・` を、同じキーの位置の半角に直す(SR-17)。
@@ -2672,6 +2830,7 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::ScreenMenu, &[Action::Close]),
     (Mode::ColumnType, &[Action::Close]),
     (Mode::Tree, &[Action::Close]),
+    (Mode::Gantt, &[Action::Close]),
 ];
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する

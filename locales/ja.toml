@@ -1574,3 +1574,36 @@ RsnTreeNeedPath = "path(階層の列)が無いので、木を出さない"
 RsnTreeEmptySep = "区切りが空なので、木を出さない"
 ## {0} は列。
 RsnTreeNoColumn = "表に列 {0} が無いので、木を出さない"
+
+# ---- ガント(GA-1〜GA-7。gantt.rs) ----
+ModeGantt = "ガント"
+SecInGantt = "ガントの中"
+ScreenGantt = "ガント"
+KeyGanttView = "表とガントを切り替える"
+KeyGanttRun = "表でこの行を見る"
+KeyGanttNext = "次の行"
+KeyGanttPrev = "前の行"
+KeyGanttLater = "時間軸を後ろへ"
+KeyGanttEarlier = "時間軸を前へ"
+KeyGanttZoomIn = "単位を細かく(月 → 週 → 日)"
+KeyGanttZoomOut = "単位を粗く(日 → 週 → 月)"
+KeyGanttToday = "今日へ"
+CmdGanttView = "ガントを開く"
+## {0} は始まりの列、{1} は終わりの列(か日数の列)、{2} は単位。
+GanttTitle = "ガント: {0} → {1}({2})"
+GanttInferred = "推定"
+## GA-1: 印に gantt の設定が無いとき、棒の始まりとみなす列の名前(空白区切り。大文字小文字を問わない)。訳ではなく、どの言語の画面でも全部の言語の名前を使う。
+GanttStartNames = "開始"
+## GA-1: 印に gantt の設定が無いとき、棒の終わりとみなす列の名前(空白区切り)。訳ではない。
+GanttEndNames = "期限 終了"
+GanttUnitDay = "日"
+GanttUnitWeek = "週"
+GanttUnitMonth = "月"
+GanttNotSet = "この表にはガントの設定が無く、日付の列からも推定できない(ワークスペースの印の [[table]] に gantt = { start = \"<列>\", end = \"<列>\" } を書く)"
+GanttNoRows = "ガントに出す行が無い"
+GanttNoDates = "ガントの列に日付を持つ行が無い"
+RsnGanttNotTable = "{ start = \"<列>\", end = \"<列>\" } の形の表でないので、ガントを出さない"
+RsnGanttNeedStart = "start(始まりの列)が無いので、ガントを出さない"
+RsnGanttNeedEnd = "end(終わりの列)か days(日数の列)が無いので、ガントを出さない"
+## {0} は列。
+RsnGanttNoColumn = "表に列 {0} が無いので、ガントを出さない"

@@ -11696,5 +11696,193 @@
       "SR-51"
     ],
     "sha": "223f5577f94ab0d3"
+  },
+  "src/test_gantt_unit.rs::test_ga_1_bar_from_values_end_or_days": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "1069e90c33a165cf"
+  },
+  "src/test_gantt_unit.rs::test_ga_1_infer_end_only_and_none": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "6d04e1a9baaf96ff"
+  },
+  "src/test_gantt_unit.rs::test_ga_1_infer_start_and_end_from_column_names": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "76a7a98385498627"
+  },
+  "src/test_gantt_unit.rs::test_ga_1_marker_gantt_days_instead_of_end": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "11fe0113249bb25e"
+  },
+  "src/test_gantt_unit.rs::test_ga_1_marker_gantt_reads_start_and_end": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "d01fbb6292db9808"
+  },
+  "src/test_gantt_unit.rs::test_ga_1_marker_gantt_warns_and_none_when_malformed": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "d1b29ce92352fa47"
+  },
+  "src/test_gantt_unit.rs::test_ga_2_cell_of_and_cell_start_round_trip": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "64c632d264d6f89a"
+  },
+  "src/test_gantt_unit.rs::test_ga_2_fit_unit_finest_that_fits": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "772577d9857c2bb0"
+  },
+  "src/test_gantt_unit.rs::test_ga_2_floor_unit_week_monday_month_first": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "351f374da3f0b0ef"
+  },
+  "src/test_gantt_unit.rs::test_ga_3_bar_span_of_children": {
+    "ids": [
+      "GA-3"
+    ],
+    "sha": "056ae4108eef4e47"
+  },
+  "src/test_gantt_unit.rs::test_ga_7_tree_and_gantt_read_in_the_same_shape": {
+    "ids": [
+      "GA-7"
+    ],
+    "sha": "f9e82f2fb2174f81"
+  },
+  "src/ui/test_gantt.rs::test_ga_1_c_opens_gantt_and_menu_offers_it": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "339b87d36ddde5f0"
+  },
+  "src/ui/test_gantt.rs::test_ga_1_infers_from_date_columns_and_says_so": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "0843ed2ecbc02dc9"
+  },
+  "src/ui/test_gantt.rs::test_ga_1_missing_column_warns_and_no_gantt": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "b045a70639d61c4c"
+  },
+  "src/ui/test_gantt.rs::test_ga_1_no_date_columns_gives_reason": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "fc2aa8b9207aab69"
+  },
+  "src/ui/test_gantt.rs::test_ga_2_bars_points_today_and_no_color": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "596e4247258d2684"
+  },
+  "src/ui/test_gantt.rs::test_ga_2_wide_range_opens_coarser_unit": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "c79d3453c9dd7933"
+  },
+  "src/ui/test_gantt.rs::test_ga_3_parent_bar_spans_children_and_wbs_fills": {
+    "ids": [
+      "GA-3"
+    ],
+    "sha": "7aefc245ad419e05"
+  },
+  "src/ui/test_gantt.rs::test_ga_3_z_folds_children": {
+    "ids": [
+      "GA-3"
+    ],
+    "sha": "898a613e2f699031"
+  },
+  "src/ui/test_gantt.rs::test_ga_4_keys_select_scroll_zoom_today_and_back": {
+    "ids": [
+      "GA-4"
+    ],
+    "sha": "b62a5c9bc15185cd"
+  },
+  "src/ui/test_gantt.rs::test_ga_4_mouse_click_and_wheel": {
+    "ids": [
+      "GA-4"
+    ],
+    "sha": "62457833b6b8162f"
+  },
+  "src/ui/test_gantt.rs::test_ga_5_read_only_and_rebuilds_on_external_change": {
+    "ids": [
+      "GA-5"
+    ],
+    "sha": "71b2487b56e04b0a"
+  },
+  "src/ui/test_gantt.rs::test_ga_7_menu_lists_only_openable_types": {
+    "ids": [
+      "GA-7"
+    ],
+    "sha": "7fa4113d99603aa1"
+  },
+  "tests/test_gantt_docs.rs::test_ga_6_config_doc_explains_gantt": {
+    "ids": [
+      "GA-6"
+    ],
+    "sha": "f97007585f832dfb"
+  },
+  "tests/test_gantt_docs.rs::test_ga_6_features_page_mentions_gantt": {
+    "ids": [
+      "GA-6"
+    ],
+    "sha": "bfb64e60143c2a50"
+  },
+  "tests/test_gantt_docs.rs::test_ga_6_keys_doc_has_gantt_section_and_c_in_table": {
+    "ids": [
+      "GA-6"
+    ],
+    "sha": "ec4181f6618863fa"
+  },
+  "tests/test_gantt_docs.rs::test_ga_6_scenario_gantt_presses_c": {
+    "ids": [
+      "GA-6"
+    ],
+    "sha": "9b80e8865766254c"
+  },
+  "tests/test_gantt_docs.rs::test_ga_6_tasks_starter_has_gantt_setting_and_start_column": {
+    "ids": [
+      "GA-6"
+    ],
+    "sha": "995d5c76769c83bf"
+  },
+  "tests/test_gantt_docs.rs::test_ga_6_views_page_has_gantt_section_with_image_and_link": {
+    "ids": [
+      "GA-6"
+    ],
+    "sha": "2b5b0b0e89593310"
+  },
+  "tests/test_gantt_e2e.rs::test_ga_1_c_opens_gantt_and_enter_returns_e2e": {
+    "ids": [
+      "GA-1",
+      "GA-2",
+      "GA-4"
+    ],
+    "sha": "627a2e4ccedcfffb"
+  },
+  "tests/test_gantt_e2e.rs::test_ga_1_missing_column_warns_e2e": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "61019eebe6616842"
   }
 }

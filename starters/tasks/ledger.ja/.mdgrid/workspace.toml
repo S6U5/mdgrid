@@ -10,6 +10,7 @@ note_path = "name"
 
 # 列の型。日付は日付として並び、直すときにカレンダーが開き、形の合わない値に印が付く。
 [types]
+start = "date"
 due = "date"
 created = "date"
 done_at = "date"
@@ -22,7 +23,7 @@ values = ["todo", "doing", "waiting", "done"]
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# 新しいノート(n): 期限と優先度を聞き、残りを埋め、本文を雛形から始める。
+# 新しいノート(a): 期限と優先度を聞き、残りを埋め、本文を雛形から始める。
 [new_note]
 folder = "Tasks"
 ask = ["due", "priority"]
@@ -35,12 +36,15 @@ created = "{date}"
 
 [[table]]
 name = "タスク"
+# ガントの画面(C。GA-1): 開始から期限までの棒。親子の行(ビューの設定)はその字下げのまま。
+gantt = { start = "start", end = "due" }
 
 [table.base]
 filters = { and = ['file.inFolder("Tasks")'] }
 
 [table.base.properties]
 "note.status" = { displayName = "状態" }
+"note.start" = { displayName = "開始" }
 "note.due" = { displayName = "期限" }
 "note.priority" = { displayName = "優先度" }
 "note.tags" = { displayName = "タグ" }

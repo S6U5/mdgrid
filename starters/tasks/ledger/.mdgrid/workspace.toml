@@ -10,6 +10,7 @@ note_path = "name"
 
 # Column types: dates sort as dates, open a calendar when edited, and mark values of the wrong shape.
 [types]
+start = "date"
 due = "date"
 created = "date"
 done_at = "date"
@@ -22,7 +23,7 @@ values = ["todo", "doing", "waiting", "done"]
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# New note (n): asks for the due date and the priority, fills in the rest, and starts the body from the template.
+# New note (a): asks for the due date and the priority, fills in the rest, and starts the body from the template.
 [new_note]
 folder = "Tasks"
 ask = ["due", "priority"]
@@ -35,12 +36,15 @@ created = "{date}"
 
 [[table]]
 name = "Tasks"
+# The gantt screen (C, GA-1): bars from the start date to the due date. Parent/child rows (view settings) keep their indent.
+gantt = { start = "start", end = "due" }
 
 [table.base]
 filters = { and = ['file.inFolder("Tasks")'] }
 
 [table.base.properties]
 "note.status" = { displayName = "Status" }
+"note.start" = { displayName = "Start" }
 "note.due" = { displayName = "Due" }
 "note.priority" = { displayName = "Priority" }
 "note.tags" = { displayName = "Tags" }

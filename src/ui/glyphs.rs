@@ -15,6 +15,8 @@ pub(crate) enum Glyph {
     RelMap,
     /// 画面の型: 木(TR-1)。
     Tree,
+    /// 画面の型: ガント(GA-2)。
+    Gantt,
     /// 型の印: 数。
     Number,
     /// 型の印: 日付(カレンダーの題も)。
@@ -36,6 +38,7 @@ fn plain(g: Glyph) -> &'static str {
         Glyph::Table => "▦",
         Glyph::RelMap => "◇",
         Glyph::Tree => "▤",
+        Glyph::Gantt => "▬",
         Glyph::Number => "#",
         Glyph::Date | Glyph::DateTime => "◷",
         Glyph::List => "⋮",
@@ -51,6 +54,7 @@ fn nerd(g: Glyph) -> &'static str {
         Glyph::Table => "\u{f0ce}",    // nf-fa-table
         Glyph::RelMap => "\u{f0e8}",   // nf-fa-sitemap
         Glyph::Tree => "\u{f07c}",     // nf-fa-folder_open
+        Glyph::Gantt => "\u{f0ae}",    // nf-fa-tasks
         Glyph::Number => "\u{f292}",   // nf-fa-hashtag
         Glyph::Date => "\u{f073}",     // nf-fa-calendar
         Glyph::DateTime => "\u{f017}", // nf-fa-clock_o

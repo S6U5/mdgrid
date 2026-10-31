@@ -34,6 +34,7 @@ sh demos/record.sh places     # 1本だけ
 | `view-tabs.tape` → [demo-view-tabs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-view-tabs.gif) | 設定の画面の「ビュー」の区画でタブを整える(隠す・順・既定・切り替えの案内) |
 | `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
 | `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
+| `gantt.tape` → [demo-gantt.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-gantt.gif) | ガント: タスクの台帳を `C` で時間軸の横棒にし、`-` `+` で単位、`t` で今日へ |
 | `ws-drawer.tape` → [demo-ws-drawer.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-ws-drawer.gif) | 表の一覧の引き出し: `w` で左から重ねて出し、同じワークスペースの表・ほかのワークスペースの表へ移る |
 | `filter.tape` → [demo-filter.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-filter.gif) | 絞り込みの窓: 検索の欄の右の「絞り込み」(`|`)で値を隠す・数で比べる・外す。上の欄の検索は別 |
 | `layout.tape`・`layout-narrow.tape` | 画面の配置の見本: 普段の表・絞り込みの窓・絞った後・表の一覧の引き出しを、広い画面と 80×24 くらいの画面で場面ごとに撮る(PNG は `demos/out/layout/`)。配置を変える前と後を並べて見るため |

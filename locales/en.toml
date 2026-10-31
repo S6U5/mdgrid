@@ -1575,3 +1575,36 @@ RsnTreeNeedPath = "no path (the column with the folders), so no tree"
 RsnTreeEmptySep = "the separator is empty, so no tree"
 ## {0} is the column.
 RsnTreeNoColumn = "the table has no column {0}, so no tree"
+
+# ---- ガント(GA-1〜GA-7。gantt.rs) ----
+ModeGantt = "Gantt"
+SecInGantt = "In the gantt"
+ScreenGantt = "Gantt"
+KeyGanttView = "Switch between the table and the gantt"
+KeyGanttRun = "Show the row in the table"
+KeyGanttNext = "Next row"
+KeyGanttPrev = "Previous row"
+KeyGanttLater = "Scroll the time axis later"
+KeyGanttEarlier = "Scroll the time axis earlier"
+KeyGanttZoomIn = "Finer unit (month → week → day)"
+KeyGanttZoomOut = "Coarser unit (day → week → month)"
+KeyGanttToday = "Go to today"
+CmdGanttView = "Open the gantt"
+## {0} is the start column, {1} the end column (or the days column), {2} the unit.
+GanttTitle = "Gantt: {0} → {1} ({2})"
+GanttInferred = "inferred"
+## GA-1: column names taken as the start of a bar when the marker has no gantt setting (space-separated, any case). Not a translation: every language's list applies on every screen.
+GanttStartNames = "start begin from"
+## GA-1: column names taken as the end of a bar when the marker has no gantt setting (space-separated, any case). Not a translation.
+GanttEndNames = "end due finish until to"
+GanttUnitDay = "day"
+GanttUnitWeek = "week"
+GanttUnitMonth = "month"
+GanttNotSet = "this table has no gantt setting and no date columns to infer it from (write gantt = { start = \"<column>\", end = \"<column>\" } in its [[table]] of the workspace marker)"
+GanttNoRows = "no rows for the gantt"
+GanttNoDates = "no row has a date in the gantt columns"
+RsnGanttNotTable = "not a table like { start = \"<column>\", end = \"<column>\" }, so no gantt"
+RsnGanttNeedStart = "no start (the column with the start date), so no gantt"
+RsnGanttNeedEnd = "neither end (the end date) nor days (the length in days), so no gantt"
+## {0} is the column.
+RsnGanttNoColumn = "the table has no column {0}, so no gantt"

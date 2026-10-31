@@ -19,6 +19,7 @@ pub mod external;
 pub mod filters;
 pub mod folder_tree;
 pub mod freq;
+pub mod gantt;
 pub(crate) mod glyphs;
 pub mod grid;
 pub mod help;
@@ -238,6 +239,10 @@ mod test_filter_window_more;
 mod test_folder_tree;
 #[cfg(test)]
 mod test_freq_chips;
+#[cfg(test)]
+mod test_gantt;
+#[cfg(test)]
+mod test_gantt_more;
 #[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]

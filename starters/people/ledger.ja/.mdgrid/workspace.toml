@@ -17,7 +17,7 @@ tags = "list"
 [[table]]
 name = "会議"
 
-# 新しいノート(n): 日時・出席者・議題を聞き、本文を雛形から始める。
+# 新しいノート(a): 日時・出席者・議題を聞き、本文を雛形から始める。
 [table.new_note]
 folder = "Meetings"
 ask = ["when", "attendees", "topic"]
