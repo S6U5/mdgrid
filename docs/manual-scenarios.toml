@@ -808,3 +808,12 @@ ready = "people"
 keys = ["R"]
 wait = { en = "Relation map", ja = "関係マップ" }
 text = { en = "examples/people was made with the people starter: a People table (role, organization, contact) and a Meetings table (date, attendees, next actions) linked to it. R shows the two tables and the links between them.", ja = "examples/people は人と会議のスターターで作った台帳。人の表(役割・所属・連絡先)と会議の表(日時・出席者・次の行動)がリンクでつながる。R で2つの表とつながりが見える。" }
+
+[[shot]]
+id = "gantt"
+title = { en = "The gantt screen", ja = "ガントの画面" }
+command = ["./target/release/mdgrid", "examples/tasks"]
+ready = "Tasks"
+keys = ["C"]
+wait = { en = "Gantt:", ja = "ガント:" }
+text = { en = "C on a table with a gantt setting (or date columns named like start and due): the rows of the current view as bars from the start date to the due date, with today marked. + and - switch the unit between day, week and month.", ja = "ガントの設定(か start・due のような日付の列)のある表で C。今のビューの行が開始から期限までの横棒になり、今日に印が付く。+ と - で日・週・月の単位を切り替える。" }

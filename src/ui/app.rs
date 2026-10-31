@@ -258,6 +258,12 @@ pub struct App {
     pub(crate) tree_spec: Option<(mdgrid::folder_tree::TreeSpec, String)>,
     /// 木の画面(TR-1。folder_tree.rs)。開いている間だけ。
     pub(crate) folder_tree: Option<super::folder_tree::FolderTree>,
+    /// GA-1: 印に書いたガントの設定と、警告の場所(`table[n].gantt`)。
+    pub(crate) gantt_spec: Option<(mdgrid::gantt::GanttSpec, String)>,
+    /// GA-1: 印の設定の列が表に無く、警告して外したか(推定にも落ちず、ガントを出さない)。
+    pub(crate) gantt_off: bool,
+    /// GA-2: ガントの画面(開いている間だけ。gantt.rs)。
+    pub(crate) gantt: Option<super::gantt::Gantt>,
     /// TR-5: URL を開く口(試験では差し替える)。
     pub(crate) opener: Box<dyn super::external::Opener>,
     pub quit: bool,
@@ -384,6 +390,9 @@ impl App {
             relmap: None,
             tree_spec: None,
             folder_tree: None,
+            gantt_spec: None,
+            gantt_off: false,
+            gantt: None,
             opener: super::external::default_opener(),
             quit: false,
         };
@@ -454,6 +463,8 @@ impl App {
         if self.progress.done {
             // TR-2: 階層の列が表に無ければ警告して木を出さない(列は読み終えてから分かる)。
             self.check_tree_column();
+            // GA-1: ガントの設定の列が表に無ければ警告して設定を外す。
+            self.check_gantt_column();
             self.select_pending();
             // BV-2: 推した根で0行なら、探した場所を一度出す(黙って空の表にしない)。
             if let Some(root) = self.guessed_root.take() {
@@ -511,6 +522,8 @@ impl App {
             self.refresh();
             // TR-1: 木の画面を開いていれば、今のビューを通った行で組み直す。
             self.rebuild_tree();
+            // GA-5: ガントの画面を開いていれば組み直す。
+            self.rebuild_gantt();
             if self.review.is_some() {
                 self.reopen_review_keeping_overlay();
             }
@@ -709,6 +722,7 @@ impl App {
             Mode::FilterWin | Mode::FilterText => self.filters_action(action),
             Mode::Relations => self.relmap_action(action),
             Mode::Tree => self.tree_action(action),
+            Mode::Gantt => self.gantt_action(action),
             Mode::Table => self.table_action(action),
         }
         if std::mem::take(&mut self.regrid) {
@@ -875,6 +889,8 @@ impl App {
             Action::RelationMap => self.open_relmap(),
             // ---- 木の画面(folder_tree.rs。TR-1・TR-5) ----
             Action::TreeView => self.open_tree(),
+            // ---- ガントの画面(gantt.rs。GA-2) ----
+            Action::GanttView => self.open_gantt(),
             Action::OpenUrl => self.open_url_here(),
             // ---- 親子(NV-27。grid.rs) ----
             Action::ToggleTree => self.toggle_tree(),
@@ -999,6 +1015,22 @@ impl App {
                 }
                 // REL-12: 一覧・盤・つながった行のクリック。
                 self.relmap_click(x, y);
+                return;
+            }
+            Mode::Gantt => {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
+                    self.close_gantt();
+                    self.open_drawer();
+                    return;
+                }
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
+                }
+                // GA-4: 行のクリック。
+                self.gantt_click(x, y);
                 return;
             }
             Mode::Tree => {
@@ -1164,6 +1196,9 @@ impl App {
             // TR-7: 木の画面では、選んでいる欄で上下に選ぶ(行の操作の窓が開いていれば窓の中)。
             (Mode::Tree, true) => Action::Down,
             (Mode::Tree, false) => Action::Up,
+            // GA-4: ガントの画面では行を上下に選ぶ。
+            (Mode::Gantt, true) => Action::Down,
+            (Mode::Gantt, false) => Action::Up,
             _ => return,
         };
         self.apply(a);
@@ -1173,6 +1208,9 @@ impl App {
     pub fn hwheel(&mut self, right: bool) {
         if self.mode == Mode::Table {
             self.apply(if right { Action::Right } else { Action::Left });
+        } else if self.mode == Mode::Gantt {
+            // GA-4: ガントでは時間軸を動かす。
+            self.gantt_hwheel(right);
         }
     }
 
@@ -1220,6 +1258,9 @@ impl App {
                 }
                 if self.mode == Mode::Tree {
                     self.close_tree();
+                }
+                if self.mode == Mode::Gantt {
+                    self.close_gantt();
                 }
                 self.apply(Action::ViewSettings);
             }

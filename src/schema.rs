@@ -592,11 +592,11 @@ pub const ITEMS: &[Item] = &[
         scope: Scope::Global,
         en: "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\
              \"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\n\
-             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree. Action\n\
+             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree, gantt. Action\n\
              names are shown in the command palette (:).",
         ja: "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\
              \"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・\
-             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type・tree。動作の名前はコマンドのパレット(:)に出る。",
+             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type・tree・gantt。動作の名前はコマンドのパレット(:)に出る。",
     },
     Item {
         path: "templates",

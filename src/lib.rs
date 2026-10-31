@@ -16,6 +16,7 @@ pub mod display;
 pub mod expr;
 pub mod folder_tree;
 pub mod frontmatter;
+pub mod gantt;
 pub mod i18n;
 pub mod ledger;
 pub mod legacy;

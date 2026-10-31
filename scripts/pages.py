@@ -92,6 +92,7 @@ DEMOS = [
     ("demo-view-tabs.gif", "ビューのタブを整える", "Arranging view tabs"),
     ("demo-look.gif", "見た目を選んで保存", "Picking and saving a look"),
     ("demo-tree.gif", "親子の字下げ", "Parent/child indent"),
+    ("demo-gantt.gif", "ガント", "Gantt"),
     ("demo-wbs.gif", "WBS", "WBS"),
     ("demo-themes.gif", "色のテーマ", "Color themes"),
 ]
