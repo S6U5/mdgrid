@@ -39,11 +39,13 @@ TEXT = {
         "title": "mdgrid",
         "lead": "フロントマター付きの Markdown のノートを、ターミナルの表で見て直す道具。",
         "manual": "説明書",
-        "manual_desc": "見せ方の一覧・はじめかた・作業の手引き・考え方・見た目・困ったとき、キーと設定の一覧。",
+        "manual_desc": "見せ方の一覧・できることの一覧・はじめかた・作業の手引き・考え方・見た目・困ったとき、キーと設定の一覧。",
         "catalog": "見た目のカタログ",
         "catalog_desc": "テーマと部品の形を触って選び、config.toml に貼る設定を作る。",
         "views": "見せ方の一覧",
         "views_desc": "表・まとまり・木・関係マップ・値の分布・テーマ。どんな画面があるかを1枚ずつ。",
+        "features": "できることの一覧",
+        "features_desc": "タスク・ブックマーク・読書・人と会議の場面と、直す・保存する・絞る・つなぐ・作る・出す。機能ごとに画面1枚。",
         "gallery": "画面の一覧",
         "gallery_desc": "本物の mdgrid の画面を、場面ごとに見る(説明書と同じ写し)。",
         "repo": "リポジトリ",
@@ -59,11 +61,13 @@ TEXT = {
         "title": "mdgrid",
         "lead": "View and edit Markdown notes with frontmatter as a table in the terminal.",
         "manual": "Manual",
-        "manual_desc": "Ways to see your notes, getting started, how-tos, concepts, appearance, troubleshooting, and the key and setting lists.",
+        "manual_desc": "Ways to see your notes, what mdgrid can do, getting started, how-tos, concepts, appearance, troubleshooting, and the key and setting lists.",
         "catalog": "Look catalog",
         "catalog_desc": "Try themes and part shapes, then copy the settings into config.toml.",
         "views": "Ways to see your notes",
         "views_desc": "Table, groups, tree, relation map, value counts, themes. One screen each.",
+        "features": "What mdgrid can do",
+        "features_desc": "Tasks, bookmarks, reading, people and meetings, then editing, saving, filtering, linking, creating, exporting. One screen per feature.",
         "gallery": "Screen gallery",
         "gallery_desc": "Real mdgrid screens, scene by scene (the same shots as the manual).",
         "repo": "Repository",
@@ -369,6 +373,7 @@ def landing(lang: str, shown) -> str:
   <div><h2>{h["try"]}</h2><p class="muted">{html.escape(h["try_note"])}</p><pre class="cmd"><code>{html.escape(TRY[lang])}</code></pre></div>
   <div><h2>{h["see"]}</h2><div class="cards one">
     <a class="card" href="../manual/{lang}/views.html"><h3>{t["views"]}</h3><p class="muted">{html.escape(t["views_desc"])}</p></a>
+    <a class="card" href="../manual/{lang}/features.html"><h3>{t["features"]}</h3><p class="muted">{html.escape(t["features_desc"])}</p></a>
     <a class="card" href="../catalog/?lang={lang}"><h3>{t["catalog"]}</h3><p class="muted">{html.escape(t["catalog_desc"])}</p></a>
     <a class="card" href="gallery.html"><h3>{t["gallery"]}</h3><p class="muted">{html.escape(t["gallery_desc"])}</p></a>
   </div></div>
@@ -428,7 +433,7 @@ def decorate_book(lang: str, dest: Path) -> None:
 # ---------- 説明書(mdBook) ----------
 
 # 本に入れるページ(題は各ページの最初の見出しから)。参照のページは docs/ の言語ごとの版を本の名前で入れる。
-PAGES = ["index.md", "views.md", "getting-started.md", "tasks.md", "concepts.md", "appearance.md", "themes.md", "faq.md"]
+PAGES = ["index.md", "views.md", "features.md", "getting-started.md", "tasks.md", "concepts.md", "appearance.md", "themes.md", "faq.md"]
 REFS = {
     "ja": {"keys.md": "docs/keys.ja.md", "config.md": "docs/config.ja.md", "safety.md": "docs/safety.ja.md", "obsidian-bases.md": "docs/obsidian-bases.ja.md"},
     "en": {"keys.md": "docs/keys.md", "config.md": "docs/config.md", "safety.md": "docs/safety.md", "obsidian-bases.md": "docs/obsidian-bases.md"},

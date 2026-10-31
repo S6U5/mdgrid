@@ -57,11 +57,23 @@ fn prefix_of(message: &str) -> Option<String> {
         let w = rest.strip_suffix(' ')?;
         (w, format!("{w} "))
     };
-    let meta = |c: char| "\\^$.|?*+()[]{}:\u{ff1a}".contains(c) || c.is_whitespace();
-    if word.is_empty() || word.chars().any(meta) {
+    // 括弧は `\(`・`\)` と逃がした形だけ許す(`chore(deps)` のような Dependabot の題。逃がさない括弧は
+    // 正規表現のグループになって題に当たらないので退ける)。鍵は逃がしを外した語。
+    let bare = word.replace("\\(", "(").replace("\\)", ")");
+    let unescaped_paren = word.replace("\\(", "").replace("\\)", "");
+    let meta = |c: char| "\\^$.|?*+[]{}:\u{ff1a}".contains(c) || c.is_whitespace();
+    if bare.is_empty()
+        || bare.chars().any(meta)
+        || unescaped_paren.contains('(')
+        || unescaped_paren.contains(')')
+    {
         return None;
     }
-    Some(key)
+    Some(if key.ends_with(' ') {
+        format!("{bare} ")
+    } else {
+        bare
+    })
 }
 
 /// 各 parser の書き出しと、その行き先(節の名前か skip)。

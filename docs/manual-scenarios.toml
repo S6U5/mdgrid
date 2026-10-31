@@ -778,3 +778,33 @@ ready = "Bookmarks"
 keys = ["T", "sleep:0.5", "j", "j", "j"]
 wait = { en = "Rows: bar > Dev > Web", ja = "行: bar > Dev > Web" }
 text = { en = "T, on a table whose workspace marker has a tree setting. The left pane is the folder tree built from the folder column, with a count per folder; the right pane lists the rows of the selected folder. Enter folds or opens a folder, Esc goes back to the table.", ja = "印に木の設定のある表で T。左は folder の列から組んだフォルダの木と件数、右は選んだフォルダの行。Enter でフォルダを畳む・開く、Esc で表に戻る。" }
+
+[[shot]]
+id = "starter-pick"
+title = { en = "Create a ledger from a starter", ja = "スターターから台帳を作る" }
+keys = [":", "text:starter", "Enter"]
+wait = { en = "starter:", ja = "スターター:" }
+text = { en = "The command palette's \"Create a ledger from a starter\" lists the built-in starters (tasks, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.", ja = "パレットの「スターターから台帳を作る」で、組み込み(tasks・bookmarks・reading・people)と自分のスターターが並ぶ。選んで、作る場所と見本を入れるかを答えると、新しい表が開く。" }
+
+[[shot]]
+id = "starter-tasks"
+title = { en = "The tasks starter", ja = "タスクのスターター" }
+command = ["./target/release/mdgrid", "examples/tasks"]
+ready = "Tasks"
+text = { en = "examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Doing, Waiting, Done), due date, priority and tags.", ja = "examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・進行中・待ち・完了)、期限、優先度、タグ。" }
+
+[[shot]]
+id = "starter-reading"
+title = { en = "The reading starter", ja = "読書のスターター" }
+command = ["./target/release/mdgrid", "examples/reading"]
+ready = "Reading"
+text = { en = "examples/reading was made with the reading starter: books, articles, films and talks, with the tabs Queue, Now and Done, and columns for kind, author and rating.", ja = "examples/reading は読書のスターターで作った台帳。本・記事・映画・講演を1件1ノートで、読みたい・読んでいる・読んだのタブと、種類・著者・評価の列。" }
+
+[[shot]]
+id = "starter-people"
+title = { en = "The people starter: relation map", ja = "人と会議のスターター: 関係マップ" }
+command = ["./target/release/mdgrid", "examples/people"]
+ready = "people"
+keys = ["R"]
+wait = { en = "Relation map", ja = "関係マップ" }
+text = { en = "examples/people was made with the people starter: a People table (role, organization, contact) and a Meetings table (date, attendees, next actions) linked to it. R shows the two tables and the links between them.", ja = "examples/people は人と会議のスターターで作った台帳。人の表(役割・所属・連絡先)と会議の表(日時・出席者・次の行動)がリンクでつながる。R で2つの表とつながりが見える。" }

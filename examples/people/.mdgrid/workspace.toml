@@ -1,0 +1,61 @@
+# The mdgrid workspace marker (WS-7) of a people ledger, made from the built-in starter "people".
+# People/ holds one note per person; Meetings/ one note per meeting, whose `attendees` link to the people
+# ("[[Ana Lima]]"). The table "Meetings" below is written here ([table.base], WS-9) and opens when you open this
+# folder (open); "People" is the folder itself. R shows how the two tables link. This is your copy.
+open = "Meetings"
+
+# The note column shows the file name only.
+[display]
+note_path = "name"
+
+[types]
+when = "datetime"
+last_contact = "date"
+attendees = "list"
+tags = "list"
+
+[[table]]
+name = "Meetings"
+
+# New note (n): asks for the time, the attendees and the topic, and starts the body from the template.
+[table.new_note]
+folder = "Meetings"
+ask = ["when", "attendees", "topic"]
+body = ".mdgrid/templates/meeting.md"
+
+[table.new_note.set]
+when = "{now}"
+
+[table.base]
+filters = { and = ['file.inFolder("Meetings")'] }
+
+[table.base.properties]
+"note.when" = { displayName = "When" }
+"note.attendees" = { displayName = "Attendees" }
+"note.topic" = { displayName = "Topic" }
+"note.next_actions" = { displayName = "Next actions" }
+
+[[table.base.views]]
+type = "table"
+name = "All"
+order = ["when", "attendees", "topic", "next_actions"]
+sort = [{ property = "when", direction = "DESC" }]
+
+[[table.base.views]]
+type = "table"
+name = "By topic"
+order = ["when", "attendees", "next_actions"]
+groupBy = { property = "topic", direction = "ASC" }
+sort = [{ property = "when", direction = "DESC" }]
+
+[[table]]
+name = "People"
+path = "People"
+
+# New person: asks for the role, the organization and the email.
+[table.new_note]
+ask = ["role", "org", "email"]
+hidden = ["last_contact"]
+
+[table.new_note.set]
+last_contact = "{date}"

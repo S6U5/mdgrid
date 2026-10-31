@@ -230,7 +230,7 @@ alias standup='mdgrid ~/notes/タスク.base --view 担当ごと'
 
 ## 文書
 
-- [説明書](https://s6u5.github.io/mdgrid/manual/ja/)([元の文](docs/manual/ja/index.md))— はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。初めてなら、まず[見せ方の一覧](docs/manual/ja/views.md)と[はじめかた](docs/manual/ja/getting-started.md)を。見た目は [見た目を整える](docs/manual/ja/appearance.md)、よくある疑問は [困ったとき](docs/manual/ja/faq.md) に。
+- [説明書](https://s6u5.github.io/mdgrid/manual/ja/)([元の文](docs/manual/ja/index.md))— はじめかた、やりたいことごとの手順、テーマ、全部の画面の写し。初めてなら、まず[見せ方の一覧](docs/manual/ja/views.md)と[できることの一覧](docs/manual/ja/features.md)、それから[はじめかた](docs/manual/ja/getting-started.md)を。見た目は [見た目を整える](docs/manual/ja/appearance.md)、よくある疑問は [困ったとき](docs/manual/ja/faq.md) に。
 - [設定](docs/config.ja.md) — 全部の項目と既定値。`mdgrid --print-config` は説明のコメント付きの設定を出すので、出発点にできます。
 - [機能紹介の録画](demos/README.md) — 型ごとの入力・新しいノートのフォーム・書き出し・登録した表・リレーション・関係マップ・ワークスペース・テーマの短い GIF(画面は英語)。リリースのたびに撮り直します。`sh demos/try.sh <見本>` で、見本を使い捨ての写しで開けます。
 - [キー](docs/keys.ja.md) — モードごとの既定のキーと、変え方。

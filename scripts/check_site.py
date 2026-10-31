@@ -144,7 +144,7 @@ def browser_checks(base: str) -> None:
         pg = ctx.new_page()
         pg.goto(base + "catalog/?lang=en")
         check(pg.locator("#term .scr").count() == 1, "カタログの見本の画面が描かれる")
-        check("vault" in (pg.text_content("#term") or ""), "カタログの見本の画面に表の中身がある")
+        check("tasks" in (pg.text_content("#term") or ""), "カタログの見本の画面に表の中身がある")
         check(pg.is_hidden("#fitbtn"), "広い幅ではカタログの拡大の切り替えを出さない")
         check(pg.locator("#catalog .card").count() > 20, "カタログの部品の見本が並ぶ")
         pg.close()

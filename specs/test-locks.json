@@ -11648,5 +11648,53 @@
       "SR-50"
     ],
     "sha": "9c9d67e5bc23440e"
+  },
+  "tests/test_features_page.rs::test_sr_51_features_anchors_point_at_headings": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "96abd4bdafde2b4b"
+  },
+  "tests/test_features_page.rs::test_sr_51_features_headings_name_each_feature_exactly": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "e13e80586631ff73"
+  },
+  "tests/test_features_page.rs::test_sr_51_features_links_resolve": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "4b7bfb7e562be4cb"
+  },
+  "tests/test_features_page.rs::test_sr_51_features_pages_images_are_scenes": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "f1ba5d7369907450"
+  },
+  "tests/test_features_page.rs::test_sr_51_features_sections_have_image_and_link": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "f0f5a1a750798f9d"
+  },
+  "tests/test_features_page.rs::test_sr_51_manual_index_links_features_page_after_views": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "4ac3284dc5fcd2db"
+  },
+  "tests/test_features_page.rs::test_sr_51_pages_py_builds_features_after_views_and_links_from_landing": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "7fa40bdeb06cd6a7"
+  },
+  "tests/test_features_page.rs::test_sr_51_scenarios_have_starter_pick_scene": {
+    "ids": [
+      "SR-51"
+    ],
+    "sha": "223f5577f94ab0d3"
   }
 }
