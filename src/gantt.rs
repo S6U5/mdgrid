@@ -142,6 +142,48 @@ pub fn cell_start(k: i64, origin: i64, unit: Unit) -> i64 {
     }
 }
 
+/// GA-2: 1マスの字の数。日・週は1字、月は3字(月の数を見出しに書け、棒を旬で塗れる)。
+pub fn col_chars(unit: Unit) -> i64 {
+    match unit {
+        Unit::Month => 3,
+        Unit::Day | Unit::Week => 1,
+    }
+}
+
+/// 月の旬(0 = 1〜10日、1 = 11〜20日、2 = 21日〜末日)。
+fn third(day: u32) -> i64 {
+    match day {
+        0..=10 => 0,
+        11..=20 => 1,
+        _ => 2,
+    }
+}
+
+/// GA-2: 日 `d` が、左端の字(マス `origin` の先頭)から数えて何字目か(左は負)。月の単位はマスの3字のうち旬の字。
+pub fn col_of(d: i64, origin: i64, unit: Unit) -> i64 {
+    let k = cell_of(d, origin, unit);
+    match unit {
+        Unit::Month => k * 3 + third(civil(d).2),
+        Unit::Day | Unit::Week => k,
+    }
+}
+
+/// GA-2: 左端から `j` 字目が表す日の範囲(最初の日, 最後の日)。月の単位は旬の範囲。最初の日が最後の日より後なら
+/// 空の範囲(日付の端 9999-12 より右のマスは `cell_start` が端で止まり、マスの始まりが終わりより後になる。旬の始まりは
+/// 終わりで抑えず、空のまま返す)。
+pub fn col_days(j: i64, origin: i64, unit: Unit) -> (i64, i64) {
+    let n = col_chars(unit);
+    let k = j.div_euclid(n);
+    let s = cell_start(k, origin, unit);
+    let e = cell_start(k + 1, origin, unit) - 1;
+    match (unit, j.rem_euclid(n)) {
+        (Unit::Month, 0) => (s, (s + 9).min(e)),
+        (Unit::Month, 1) => (s + 10, (s + 19).min(e)),
+        (Unit::Month, _) => (s + 20, e),
+        _ => (s, e),
+    }
+}
+
 /// GA-2: 範囲 `first..=last`(日)が幅 `cols` のマスに収まる、最も細かい単位(日 → 週 → 月。月でも収まらなければ月)。
 pub fn fit_unit(first: i64, last: i64, cols: usize) -> Unit {
     let cols = i64::try_from(cols.max(1)).unwrap_or(i64::MAX);

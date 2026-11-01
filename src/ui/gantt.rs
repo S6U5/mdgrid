@@ -351,12 +351,13 @@ impl App {
         self.rebuild_gantt();
     }
 
-    /// GA-4: 時間軸を今日が見える位置へ(今日を左から 1/3 に)。
+    /// GA-4: 時間軸を今日が見える位置へ(今日を左から 1/3 に。戻す数は字でなくマスで数える)。
     fn gantt_today(&mut self) {
         let cols = axis_cols(inner_now(self));
         if let Some(g) = self.gantt.as_mut() {
             let today = gantt::floor_unit(self.today, g.unit);
-            let back = i64::try_from(cols / TODAY_AT).unwrap_or(0);
+            let cells = i64::try_from(cols).unwrap_or(0) / gantt::col_chars(g.unit);
+            let back = cells / i64::try_from(TODAY_AT).unwrap_or(1);
             g.origin = gantt::cell_start(-back, today, g.unit);
         }
     }
@@ -443,15 +444,16 @@ impl App {
     }
 }
 
-/// 時間軸の見出しの2行と、下の行で反転して示す今日のマス。今日のマスは下の行に `▾`。ただし週の単位で
-/// 月の数「MM」(2字)に重なるときは数を残し、そのマスを反転で示す(1字の日・月の数は消えても並びから読める)。
-/// - 日: 上は月の始まるマス(と左端)に「YYYY-MM」、下は日の一の位。
+/// 時間軸の見出しの2行と、下の行で反転して示す今日の字。字はマスを `col_chars` 字ずつ並べたもの(月は3字)。
+/// - 日: 上は月の始まるマス(と左端)に「YYYY-MM」、下は月曜のマスにその日の数(1〜2字)。
 /// - 週: 上は年の始まる週(と左端)に「YYYY」、下は1日を含む週に月の数「MM」、ほかは「·」。
-/// - 月: 上は1月のマス(と左端)に「YYYY」、下は月の一の位。
+/// - 月: 上は1月のマス(と左端)に「YYYY」、下はマスの先頭から月の数(右寄せの2字)。
 ///
 /// 上の行の字は、次の切れ目までに収まる形を選ぶ(「YYYY-MM」が収まらなければ「MM」、それも収まらなければ
-/// 出さない)ので、1つの字がほかの切れ目を潰さない。
+/// 出さない)ので、1つの字がほかの切れ目を潰さず、年どうしもくっつかない。今日の字は、下の行が空なら `▾`、
+/// 数に重なれば数を残してその字を反転で示す(色なしでも見える。SR-15)。
 fn axis_header(g: &Gantt, cols: usize, today: i64) -> (String, String, Option<usize>) {
+    let n = usize::try_from(gantt::col_chars(g.unit)).unwrap_or(1);
     let blank = if g.unit == Unit::Week { '·' } else { ' ' };
     let mut top = vec![' '; cols];
     let mut low = vec![blank; cols];
@@ -463,75 +465,151 @@ fn axis_header(g: &Gantt, cols: usize, today: i64) -> (String, String, Option<us
             }
         }
     };
-    // 上の行の切れ目(そのマスから新しい年月が始まる): (マス, 年, 月。月は 0 なら年だけ)。
+    // 上の行の切れ目(その字から新しい年月が始まる): (字, 年, 月。月は 0 なら年だけ)。
     let mut cuts: Vec<(usize, i64, u32)> = Vec::new();
-    for k in 0..cols {
+    for k in 0..cols.div_ceil(n) {
+        let at = k * n;
         let d = cell(k);
         let (y, m, day) = gantt::civil(d);
         let (ly, lm, _) = gantt::civil(cell(k + 1) - 1);
         match g.unit {
             Unit::Day => {
-                low[k] = char::from_digit(day % 10, 10).unwrap_or(' ');
+                // 月曜(1970-01-01 は木曜)。
+                if (d + 3).rem_euclid(7) == 0 {
+                    put(&mut low, at, &day.to_string());
+                }
                 if k == 0 || day == 1 {
-                    cuts.push((k, y, m));
+                    cuts.push((at, y, m));
                 }
             }
             Unit::Week => {
                 if day == 1 || lm != m {
                     let mm = if day == 1 { m } else { lm };
-                    put(&mut low, k, &format!("{mm:02}"));
+                    put(&mut low, at, &format!("{mm:02}"));
                 }
                 if k == 0 || (m == 1 && day == 1) || ly != y {
-                    cuts.push((k, ly, 0));
+                    cuts.push((at, ly, 0));
                 }
             }
             Unit::Month => {
-                low[k] = char::from_digit(m % 10, 10).unwrap_or(' ');
+                put(&mut low, at, &format!("{m:>2}"));
                 if k == 0 || m == 1 {
-                    cuts.push((k, y, 0));
+                    cuts.push((at, y, 0));
                 }
             }
         }
     }
-    for (i, &(k, y, m)) in cuts.iter().enumerate() {
-        let gap = cuts.get(i + 1).map_or(cols, |c| c.0) - k;
+    for (i, &(at, y, m)) in cuts.iter().enumerate() {
+        let gap = cuts.get(i + 1).map_or(cols, |c| c.0) - at;
         let label = match (m, gap) {
             (1.., 7..) => format!("{y:04}-{m:02}"),
             (1.., 2..) => format!("{m:02}"),
             (0, 4..) => format!("{y:04}"),
             _ => String::new(),
         };
-        put(&mut top, k, &label);
+        put(&mut top, at, &label);
     }
     let mut mark = None;
-    for (k, slot) in low.iter_mut().enumerate() {
-        if (cell(k)..cell(k + 1)).contains(&today) {
-            if g.unit == Unit::Week && *slot != blank {
-                mark = Some(k);
-            } else {
-                *slot = '▾';
-            }
+    let at = usize::try_from(gantt::col_of(today, g.origin, g.unit)).ok();
+    if let Some(slot) = at.and_then(|j| low.get_mut(j)) {
+        if *slot == blank {
+            *slot = '▾';
+        } else {
+            mark = at;
         }
     }
     (top.into_iter().collect(), low.into_iter().collect(), mark)
 }
 
-/// 1行の棒の文字(幅 `cols`)。棒は `█`(進み具合ぶん)と `░`、印は `◆`、今日の空のマスは `┊`。
-/// 塗りは棒の全長(マスの数)に対する割合で、棒の始まりのマスから数える(左にはみ出していても同じ)。
+/// GA-2: 時間軸の `j` 字目の地の段(`look::axis_band` の level)。1 の位は帯で、日・週の単位では月ごと、月の単位では
+/// 年ごとに交互(週は週の最後の日の月)。2 の位は日の単位の土日。縦線の字を使わないので、棒と今日の印 `┊` を切らない。
+fn band_of(g: &Gantt, j: usize) -> u8 {
+    let (s, e) = gantt::col_days(i64::try_from(j).unwrap_or(0), g.origin, g.unit);
+    // 週は週の最後の日の月(見出しの月の数「MM」を1日を含む週に書くのと揃える)。空の範囲(日付の端 9999-12 より
+    // 右の旬)は始まりの日が端の外なので、最後の日で決める(10000 年と読んで3字ごとの縞にしない)。
+    let (y, m, _) = gantt::civil(if g.unit == Unit::Week || s > e { e } else { s });
+    let n = match g.unit {
+        Unit::Month => y,
+        Unit::Day | Unit::Week => y * 12 + i64::from(m),
+    };
+    let weekend = g.unit == Unit::Day && (s + 3).rem_euclid(7) >= 5;
+    u8::from(n.rem_euclid(2) == 1) | (u8::from(weekend) << 1)
+}
+
+/// Span の列をちょうど幅 `w` にする(はみ出す分を切り、足りなければ空白で埋める)。曖昧な字を2桁で数える設定
+/// (CV-6)では `█` `┊` `◆` `·` が2桁になり、時間軸の字の数より広くなるので、枠(`relmap::panel` は広すぎる行を
+/// 切らない)からはみ出さないように切る。
+fn fit_spans(spans: Vec<Span<'static>>, w: usize) -> Vec<Span<'static>> {
+    let mut out = Vec::with_capacity(spans.len() + 1);
+    let mut used = 0;
+    for sp in spans {
+        let sw = width(&sp.content);
+        if used + sw <= w {
+            used += sw;
+            out.push(sp);
+            continue;
+        }
+        let t = super::width::take(&sp.content, w - used);
+        used += width(&t);
+        out.push(Span::styled(t, sp.style));
+        break;
+    }
+    if used < w {
+        out.push(Span::raw(" ".repeat(w - used)));
+    }
+    out
+}
+
+/// 時間軸の字 `text` を、字ごとの地の帯(色なしでは無し)を付けた Span に分ける。`mark` の字は反転。
+fn axis_spans(app: &App, g: &Gantt, text: &str, mark: Option<usize>) -> Vec<Span<'static>> {
+    let colors: Vec<_> = (0..4).map(|l| super::look::axis_band(app, l)).collect();
+    let style = |j: usize| {
+        // 今日の印の字は反転だけ(帯の地を付けない): 地を持つ反転は `theme::paint` が自分の色とみなして塗らず、
+        // classic の見た目では素の反転のまま残るため。モダンな見た目では選びの見た目に置き換わる。
+        if mark == Some(j) {
+            return Style::default().add_modifier(Modifier::REVERSED);
+        }
+        match colors[usize::from(band_of(g, j))] {
+            Some(c) => Style::default().bg(c),
+            None => Style::default(),
+        }
+    };
+    let mut out: Vec<Span<'static>> = Vec::new();
+    let mut run = String::new();
+    let mut run_st: Option<Style> = None;
+    for (j, c) in text.chars().enumerate() {
+        let st = style(j);
+        if run_st.is_some_and(|s| s != st) {
+            out.push(Span::styled(
+                std::mem::take(&mut run),
+                run_st.unwrap_or_default(),
+            ));
+        }
+        run_st = Some(st);
+        run.push(c);
+    }
+    if !run.is_empty() {
+        out.push(Span::styled(run, run_st.unwrap_or_default()));
+    }
+    out
+}
+
+/// 1行の棒の文字(幅 `cols` 字)。棒は `█`(進み具合ぶん)と `░`、印は `◆`、今日の空の字は `┊`。
+/// 字の日の範囲は `col_days`(月の単位は旬)。塗りは棒の全長(字の数)に対する割合で、棒の始まりの字から
+/// 数える(左にはみ出していても同じ)。
 fn bar_cells(g: &Gantt, bar: Bar, pct: Option<u8>, cols: usize, today: i64) -> String {
     let mut out = String::with_capacity(cols);
-    // 棒の始まりと終わりのマス(画面の外も含む)と、塗るマスの数。
+    // 棒の始まりと終わりの字(画面の外も含む)と、塗る字の数。
     let span = bar.range().map(|(bs, be)| {
-        let k0 = gantt::cell_of(bs, g.origin, g.unit);
-        let k1 = gantt::cell_of(be, g.origin, g.unit);
+        let k0 = gantt::col_of(bs, g.origin, g.unit);
+        let k1 = gantt::col_of(be, g.origin, g.unit);
         let total = usize::try_from(k1 - k0 + 1).unwrap_or(0);
         let filled = pct.map_or(total, |p| (total * usize::from(p.min(100))).div_ceil(100));
         (k0, k1, i64::try_from(filled).unwrap_or(i64::MAX))
     });
     for k in 0..cols {
         let ki = i64::try_from(k).unwrap_or(0);
-        let s = gantt::cell_start(ki, g.origin, g.unit);
-        let e = gantt::cell_start(ki + 1, g.origin, g.unit) - 1;
+        let (s, e) = gantt::col_days(ki, g.origin, g.unit);
         let c = if let Some((k0, _, filled)) = span.filter(|(k0, k1, _)| (*k0..=*k1).contains(&ki))
         {
             if ki - k0 < filled {
@@ -600,38 +678,33 @@ fn body_lines(app: &App, g: &Gantt, iw: usize, vis: usize) -> Vec<Line<'static>>
     let nw = name_w(iw);
     let cols = axis_cols(iw);
     let (top, low, mark) = axis_header(g, cols, app.today);
-    let low_line = match mark {
-        // 週の単位で今日が月の数に重なるとき: その1字を反転(色なしでも見える)。
-        Some(k) => {
-            let chars: Vec<char> = low.chars().collect();
-            let before: String = chars[..k].iter().collect();
-            let at: String = chars.get(k).into_iter().collect();
-            let after: String = chars.get(k + 1..).unwrap_or_default().iter().collect();
-            Line::from(vec![
-                Span::raw(format!("{} {before}", " ".repeat(nw))),
-                Span::styled(at, Style::default().add_modifier(Modifier::REVERSED)),
-                Span::raw(after),
-            ])
-        }
-        None => Line::from(format!("{} {low}", " ".repeat(nw))),
+    // 見出しの2行: 名前の欄の幅の空白のあとに時間軸(地の帯つき。今日が数に重なればその字を反転)。
+    let pad = || Span::raw(" ".repeat(nw + 1));
+    let head = |text: &str, mark: Option<usize>| {
+        let mut spans = vec![pad()];
+        spans.extend(axis_spans(app, g, text, mark));
+        Line::from(fit_spans(spans, iw))
     };
-    let mut lines = vec![Line::from(format!("{} {top}", " ".repeat(nw))), low_line];
+    let mut lines = vec![head(&top, None), head(&low, mark)];
     let rows_vis = vis.saturating_sub(2);
     let first = scroll(g.sel, rows_vis);
     for (i, row) in g.rows.iter().enumerate().skip(first).take(rows_vis) {
         let bar = g.bars.get(row).copied().unwrap_or_default();
         let pct = app.wbs_pct.get(row).copied();
-        let text = format!(
-            "{} {}",
-            name_cell(app, g, row, nw),
-            bar_cells(g, bar, pct, cols, app.today)
-        );
-        let st = if i == g.sel {
-            sel_style(app)
+        let name = name_cell(app, g, row, nw);
+        let cells = bar_cells(g, bar, pct, cols, app.today);
+        // 選んでいる行は行の全体を選びの見た目に(帯より先)。ほかの行は時間軸に地の帯。
+        if i == g.sel {
+            let text = format!("{name} {cells}");
+            lines.push(Line::from(Span::styled(
+                fit(&text, iw, Align::Left),
+                sel_style(app),
+            )));
         } else {
-            Style::default()
-        };
-        lines.push(Line::from(Span::styled(fit(&text, iw, Align::Left), st)));
+            let mut spans = vec![Span::raw(format!("{name} "))];
+            spans.extend(axis_spans(app, g, &cells, None));
+            lines.push(Line::from(fit_spans(spans, iw)));
+        }
     }
     lines
 }

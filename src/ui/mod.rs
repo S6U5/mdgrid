@@ -242,6 +242,14 @@ mod test_freq_chips;
 #[cfg(test)]
 mod test_gantt;
 #[cfg(test)]
+mod test_gantt_axis;
+#[cfg(test)]
+mod test_gantt_axis_fix;
+#[cfg(test)]
+mod test_gantt_axis_more;
+#[cfg(test)]
+mod test_gantt_axis_sel;
+#[cfg(test)]
 mod test_gantt_more;
 #[cfg(test)]
 mod test_group_gap;

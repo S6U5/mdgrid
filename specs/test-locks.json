@@ -11884,5 +11884,258 @@
       "GA-1"
     ],
     "sha": "61019eebe6616842"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_band_day_months_and_weekends": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "ef4288e5a2857636",
+    "by": "specs/_decisions/2026-11-01-gantt-bands-default-theme.md"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_band_month_by_year": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "b955bc515f7b79fc",
+    "by": "specs/_decisions/2026-11-01-gantt-bands-default-theme.md"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_band_none_without_color": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "d2b4bc73364a8786"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_day_header_mondays_only": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "19a448bd3ce4e423"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_month_bars_by_thirds": {
+    "ids": [
+      "GA-2",
+      "GA-3"
+    ],
+    "sha": "11581da9e8207124"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_month_header_numbers_and_years": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "e80843e493373abd"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_month_today_keeps_digits_reversed": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "3fe45840c7e2382f"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_month_wbs_fill_counts_chars": {
+    "ids": [
+      "GA-2",
+      "GA-3"
+    ],
+    "sha": "e40dad85971abc25"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_no_table_hint_head_row": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "505886d5dde56ba2"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_no_table_hint_read_only_row": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "5133117eaeb38ea9"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_4_today_month_left_of_half": {
+    "ids": [
+      "GA-4"
+    ],
+    "sha": "4a6d4e747aff4740"
+  },
+  "src/ui/test_gantt_axis.rs::test_rel_7_no_table_hint_head_row": {
+    "ids": [
+      "REL-7"
+    ],
+    "sha": "5b0f7924da994657"
+  },
+  "src/ui/test_gantt_axis.rs::test_tr_1_no_table_hint_head_row": {
+    "ids": [
+      "TR-1"
+    ],
+    "sha": "85b208d4b71cb826"
+  },
+  "src/ui/test_gantt_axis.rs::test_ga_2_band_none_with_default_theme": {
+    "ids": [
+      "GA-2",
+      "SR-40"
+    ],
+    "sha": "384b06b9b39392b2"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_ga_2_ambiguous_wide_keeps_right_edge": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "f6da3402b3bd1570"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_ga_2_band_contrast_with_themes": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "353d7e304bec2931"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_ga_2_band_week_month_digits_follow_month": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "2563a78fb355d3e7"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_ga_2_month_point_once_at_year_9999": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "ff84123d35a39d36"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_ga_2_no_table_hint_under_help": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "f99b8b80b28b1ddf"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_ga_2_view_hint_still_shown": {
+    "ids": [
+      "BV-7",
+      "GA-2"
+    ],
+    "sha": "76ebf644f87fa15a"
+  },
+  "src/ui/test_gantt_axis_more.rs::test_tr_1_no_table_hint_under_help": {
+    "ids": [
+      "TR-1"
+    ],
+    "sha": "617cdf8b16b80fb1"
+  },
+  "src/ui/test_gantt_axis_fix.rs::test_ga_2_band_indexed_levels_far_apart": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "43830834af833207"
+  },
+  "src/ui/test_gantt_axis_fix.rs::test_ga_2_band_month_cells_even_past_9999": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "96af6d121d5ed0d7"
+  },
+  "src/ui/test_gantt_axis_fix.rs::test_ga_2_band_weekday_vs_weekend_across_month": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "67a1b0ccbf8026ca"
+  },
+  "src/ui/test_gantt_axis_fix.rs::test_ga_2_classic_today_digit_same_in_band": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "c79cbbadb5e582c5"
+  },
+  "src/ui/test_gantt_axis_fix.rs::test_rel_7_no_view_error_hint": {
+    "ids": [
+      "BV-7",
+      "REL-7"
+    ],
+    "sha": "0b57b66b8f047300"
+  },
+  "src/ui/test_gantt_axis_sel.rs::test_ga_2_band_levels_far_from_selection": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "1f99e3ee4a787cd1"
+  },
+  "src/ui/test_gantt_axis_sel.rs::test_ga_2_band_levels_ordered_from_ground": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "0fee2994ddf8ca64"
+  },
+  "src/ui/test_gantt_axis_sel.rs::test_ga_2_today_digit_stands_out_from_bands": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "904ad9e6f615af96"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_1_days_column_and_datetime_values": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "7946f423134d7a74"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_1_huge_days_do_not_overflow": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "6d3b9f0a73834563"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_1_missing_column_warning_names_the_key": {
+    "ids": [
+      "GA-1"
+    ],
+    "sha": "c8b90afdad3d0475"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_2_header_labels_do_not_swallow_the_next_month": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "92ccef3c78df98e5"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_2_week_today_keeps_the_month_digits": {
+    "ids": [
+      "GA-2"
+    ],
+    "sha": "421edd29f560dc3b"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_3_fill_counts_from_the_bar_start_when_scrolled_off": {
+    "ids": [
+      "GA-3"
+    ],
+    "sha": "6d60d278e4c38313"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_3_z_keeps_the_selected_row": {
+    "ids": [
+      "GA-3"
+    ],
+    "sha": "81c287dc5b617111"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_3_z_keeps_the_table_row_by_key": {
+    "ids": [
+      "GA-3"
+    ],
+    "sha": "d51fde9423198f39"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_4_click_selects_the_clicked_row_when_scrolled": {
+    "ids": [
+      "GA-4"
+    ],
+    "sha": "e963d70531dcf347"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_4_palette_action_applies_to_the_selected_row": {
+    "ids": [
+      "GA-4"
+    ],
+    "sha": "9e11b0e326543571"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_4_scroll_past_the_last_year_keeps_origin_on_a_boundary": {
+    "ids": [
+      "GA-4"
+    ],
+    "sha": "94945d940f78ed31"
+  },
+  "src/ui/test_gantt_more.rs::test_ga_7_title_shows_dash_for_missing_column": {
+    "ids": [
+      "GA-7"
+    ],
+    "sha": "d7f0019b7ca4e1d8"
   }
 }

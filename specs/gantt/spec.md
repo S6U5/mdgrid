@@ -53,17 +53,18 @@ updated: 2026-10-31
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-11-01 | [テーマが default のときはガントの時間軸に地の帯を塗らず、帯の試験の錠を掛け直す(gantt-bands-default-theme)](../_decisions/2026-11-01-gantt-bands-default-theme.md) | accepted | 人 | 人の発言 | GA-2 |
 | 2026-10-31 | [画面の型「ガント」を足し、WBS の行を時間軸の横棒で見る(gantt)](../_decisions/2026-10-31-gantt.md) | accepted | 人 | 人の発言 | GA-1, GA-2, GA-3 ほか 4 |
 
 ## この機能のつながり
 
 | 要件 | 最新の決定 | テスト | 最後の照合 |
 |---|---|---|---|
-| GA-1 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
-| GA-2 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
-| GA-3 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
-| GA-4 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
-| GA-5 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
-| GA-6 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
-| GA-7 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | なし | なし |
+| GA-1 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | src/test_gantt_unit.rs::test_ga_1_bar_from_values_end_or_days, src/test_gantt_unit.rs::test_ga_1_infer_end_only_and_none, src/test_gantt_unit.rs::test_ga_1_infer_start_and_end_from_column_names ほか 12 | [2026-10-31-gantt](../_changes/2026-10-31-gantt.md) 2026-10-31 |
+| GA-2 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | src/test_gantt_unit.rs::test_ga_2_cell_of_and_cell_start_round_trip, src/test_gantt_unit.rs::test_ga_2_fit_unit_finest_that_fits, src/test_gantt_unit.rs::test_ga_2_floor_unit_week_monday_month_first ほか 29 | [2026-11-01-gantt-axis](../_changes/2026-11-01-gantt-axis.md) 2026-11-01 |
+| GA-3 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | src/test_gantt_unit.rs::test_ga_3_bar_span_of_children, src/ui/test_gantt.rs::test_ga_3_parent_bar_spans_children_and_wbs_fills, src/ui/test_gantt.rs::test_ga_3_z_folds_children ほか 5 | [2026-11-01-gantt-axis](../_changes/2026-11-01-gantt-axis.md) 2026-11-01 |
+| GA-4 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | src/ui/test_gantt.rs::test_ga_4_keys_select_scroll_zoom_today_and_back, src/ui/test_gantt.rs::test_ga_4_mouse_click_and_wheel, src/ui/test_gantt_axis.rs::test_ga_4_today_month_left_of_half ほか 4 | [2026-11-01-gantt-axis](../_changes/2026-11-01-gantt-axis.md) 2026-11-01 |
+| GA-5 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | src/ui/test_gantt.rs::test_ga_5_read_only_and_rebuilds_on_external_change | [2026-10-31-gantt](../_changes/2026-10-31-gantt.md) 2026-10-31 |
+| GA-6 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | tests/test_gantt_docs.rs::test_ga_6_config_doc_explains_gantt, tests/test_gantt_docs.rs::test_ga_6_features_page_mentions_gantt, tests/test_gantt_docs.rs::test_ga_6_keys_doc_has_gantt_section_and_c_in_table ほか 3 | [2026-10-31-gantt](../_changes/2026-10-31-gantt.md) 2026-10-31 |
+| GA-7 | [2026-10-31](../_decisions/2026-10-31-gantt.md) | src/test_gantt_unit.rs::test_ga_7_tree_and_gantt_read_in_the_same_shape, src/ui/test_gantt.rs::test_ga_7_menu_lists_only_openable_types, src/ui/test_gantt_more.rs::test_ga_7_title_shows_dash_for_missing_column | [2026-10-31-gantt](../_changes/2026-10-31-gantt.md) 2026-10-31 |
 <!-- decidespec:history:end -->
