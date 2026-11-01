@@ -1,5 +1,6 @@
 ---
 status: waiting
+start: {date-4}
 due: {date+7}
 priority: p2
 tags: [purchasing]

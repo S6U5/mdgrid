@@ -761,3 +761,11 @@ Keys: `R`
 ![The people starter: relation map](images/starter-people.svg)
 
 examples/people was made with the people starter: a People table (role, organization, contact) and a Meetings table (date, attendees, next actions) linked to it. R shows the two tables and the links between them.
+
+## The gantt screen
+
+Keys: `C`
+
+![The gantt screen](images/gantt.svg)
+
+C on a table with a gantt setting (or date columns named like start and due): the rows of the current view as bars from the start date to the due date, with today marked. + and - switch the unit between day, week and month.

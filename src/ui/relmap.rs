@@ -245,6 +245,7 @@ impl App {
             })
             .unwrap_or(0);
         self.folder_tree = None;
+        self.gantt = None;
         let mut rm = RelMap {
             infos,
             links,

@@ -36,6 +36,14 @@ Write `tree = { path = "folder" }` on the table in the workspace file (`.mdgrid/
 
 [The `tree` setting](../../config.md), [Create a ledger from a starter](tasks.md#create-a-ledger-from-a-starter)
 
+## Gantt
+
+![The gantt screen](images/gantt.svg)
+
+`C` turns the rows of the current view into bars on a time axis. The start and end columns come from `gantt = { start = "start", end = "due" }` in the workspace marker, or, without a setting, are inferred from date columns named like `start` and `due`. With parent/child rows and WBS in the view settings, the order, numbers and progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month, `t` goes to today. The gantt screen is there from 0.4.0.
+
+The `gantt` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
+
 ## Parent/child indent and WBS
 
 If notes carry `parent: "[[Parent]]"`, the parent/child section of the view settings indents children under their parent. `Z` folds and opens. Turn on WBS in the same section and rows get `1.2.1` numbers and a progress figure from the status column (a parent shows the average of its descendants). The sample notes have no parents, so there is no screen here; the [release recording](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) shows it moving.

@@ -1,5 +1,6 @@
 ---
 status: waiting
+start: 2026-10-02
 due: 2026-10-13
 priority: p2
 tags: [purchasing]
