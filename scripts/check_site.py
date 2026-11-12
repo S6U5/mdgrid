@@ -6,6 +6,7 @@
 要るもの: Playwright の Python 版と Chromium(pip install playwright && playwright install chromium)。
 確かめること:
 - 全部のページの相対のリンクと画像の行き先があること
+- サイトの地図(sitemap.xml)が XML として読め、公開するページとちょうど同じ URL を持つこと
 - 入口の振り分け: 日本語のブラウザは /ja/、英語は /en/、ほかの言語は選ぶ画面のまま、選んだ言語は覚える
 - 説明書: 右上の切り替えが同じページの別の言語を指し、hreflang(ja・en・x-default)がある
 - 入口と画面の一覧の画像と録画が読める、画面の一覧の絞り込み
@@ -22,6 +23,7 @@ import os
 import re
 import sys
 import threading
+from xml.etree import ElementTree
 
 from playwright.sync_api import sync_playwright
 
@@ -46,6 +48,58 @@ def links(site: str) -> None:
             if not os.path.exists(p) and not os.path.exists(os.path.join(p, "index.html")):
                 bad.append(f"{os.path.relpath(f, site)} → {u}")
     check(not bad, f"相対のリンクと画像の行き先がある({len(bad)} 件が無い){': ' + ', '.join(bad[:5]) if bad else ''}")
+
+
+SITE = "https://s6u5.github.io/mdgrid/"
+SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
+
+
+def site_pages(site: str) -> set:
+    """サイトの地図に載るべきページの URL(scripts/pages.py の決まりを、作った site/ のファイルから別に数える):
+    HTML のうち、言語を選んで移るだけの根の入口と前の URL、mdBook の目次の部品・404・印刷の版を除いたもの。
+    index.html はフォルダの形、説明書は mdBook のファイル名のまま(hreflang と同じ形)。"""
+    out = set()
+    for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True):
+        rel = os.path.relpath(f, site).replace(os.sep, "/")
+        if rel in ("index.html", "gallery.html") or os.path.basename(rel) in ("toc.html", "404.html", "print.html"):
+            continue
+        if not rel.startswith("manual/") and rel.endswith("index.html"):
+            rel = rel[: -len("index.html")]
+        out.add(SITE + rel)
+    return out
+
+
+def sitemap(site: str) -> None:
+    """sitemap.xml が XML の urlset で、どの URL もサイトの中のページを指し、重ならず、公開するページとちょうど同じ。"""
+    path = os.path.join(site, "sitemap.xml")
+    if not os.path.exists(path):
+        check(False, "sitemap.xml がある")
+        return
+    try:
+        root = ElementTree.parse(path).getroot()
+    except ElementTree.ParseError as e:
+        check(False, f"sitemap.xml が XML として読める({e})")
+        return
+    check(root.tag == SITEMAP_NS + "urlset", f"sitemap.xml の根が sitemaps.org の urlset(今: {root.tag})")
+    urls = [(e.text or "").strip() for e in root.iter(SITEMAP_NS + "loc")]
+    bad = []
+    for u in urls:
+        rel = u[len(SITE):] if u.startswith(SITE) else None
+        if rel is None or rel.startswith("/") or ".." in rel.split("/"):
+            bad.append(u)
+            continue
+        p = os.path.join(site, rel)
+        # フォルダの形(末尾の /)は index.html、ほかはファイルそのもの(末尾の / の無いフォルダは移されるので外れ)。
+        if not (os.path.isfile(os.path.join(p, "index.html")) if rel == "" or rel.endswith("/") else os.path.isfile(p)):
+            bad.append(u)
+    check(not bad, f"sitemap.xml の URL がどれもサイトの中のページを指す({len(bad)} 件が外れ){': ' + ', '.join(bad[:5]) if bad else ''}")
+    check(len(urls) == len(set(urls)), "sitemap.xml の URL が重ならない")
+    want = site_pages(site)
+    miss, extra = sorted(want - set(urls)), sorted(set(urls) - want)
+    check(
+        not miss and not extra,
+        f"sitemap.xml が公開するページとちょうど同じ(無い {len(miss)} 件・余計 {len(extra)} 件){': ' + ', '.join((miss + extra)[:5]) if miss or extra else ''}",
+    )
 
 
 def serve(site: str):
@@ -179,6 +233,7 @@ def browser_checks(base: str) -> None:
 def main() -> int:
     site = sys.argv[1] if len(sys.argv) > 1 else "site"
     links(site)
+    sitemap(site)
     httpd, base = serve(site)
     try:
         browser_checks(base)

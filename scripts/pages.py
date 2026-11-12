@@ -16,6 +16,10 @@
 - catalog/      見た目のカタログ(docs/catalog/index.html をそのまま。SR-38)
 - gallery.html  前の画面の一覧の URL(言語を決めて ja/・en/ の画面の一覧へ移る)
 - images/ja・en 撮った画面の SVG
+- sitemap.xml   検索エンジンに出すサイトの地図(公開するページだけ。検索の管理に直に出す)
+
+環境変数 GOOGLE_SITE_VERIFICATION があれば、入口(index.html)に検索の管理の持ち主の確認のタグを足す
+(workflow は公開リポの Actions の変数から渡す。値はページに出るもので秘密ではない)。
 
 画面の画像はリポに入れない(撮るたびに履歴が太るため)。mdbook が要る。Python 3.11 以上(tomllib)。
 """
@@ -211,6 +215,7 @@ def lang_bar(lang: str, file: str) -> str:
 
 def build(out: Path, shots_dir: Path) -> None:
     scen = tomllib.loads((ROOT / "docs/manual-scenarios.toml").read_text(encoding="utf-8"))
+    verify = verification()  # 値がおかしければ、作り始める前に止める
     if out.exists():
         shutil.rmtree(out)
     (out / "catalog").mkdir(parents=True)
@@ -250,15 +255,56 @@ def build(out: Path, shots_dir: Path) -> None:
         (out / l).mkdir()
         (out / l / "index.html").write_text(landing(l, shown), encoding="utf-8")
         (out / l / "gallery.html").write_text(gallery(l, shots), encoding="utf-8")
-    (out / "index.html").write_text(chooser(), encoding="utf-8")
+    (out / "index.html").write_text(chooser(verify=verify), encoding="utf-8")
     # 前の画面の一覧の URL(README の古いリンク)は、言語を決めて新しい URL へ。
     (out / "gallery.html").write_text(chooser("gallery.html"), encoding="utf-8")
-    print(json.dumps({"out": str(out), "shots": len(shots)}))
+    urls = sitemap(out)
+    print(json.dumps({"out": str(out), "shots": len(shots), "sitemap": urls}))
 
 
-def chooser(file: str = "") -> str:
+def verification() -> str:
+    """検索の管理の持ち主の確認のタグ(環境変数 GOOGLE_SITE_VERIFICATION の値)。無ければ空。
+    値は英数字・-・_ だけを受ける(タグに変な字を入れない)。"""
+    v = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
+    if not v:
+        return ""
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", v):
+        raise SystemExit("GOOGLE_SITE_VERIFICATION は英数字・-・_ だけにする(メタタグの content の値だけを入れる)")
+    return f'<meta name="google-site-verification" content="{v}">'
+
+
+# サイトの地図に載せないページ: 言語を選んで移るだけの入口と前の URL(検索の取得は en/ へ移されるので、
+# 移る先の ja/・en/ を載せる)と、mdBook の目次の部品・404 のページ(印刷の版と目次は noindex でも外れる)。
+NOT_IN_SITEMAP = {"index.html", "gallery.html"}
+BOOK_PARTS = {"toc.html", "404.html"}
+
+
+def sitemap(out: Path) -> int:
+    """作った site/ の HTML から sitemap.xml を書き、載せた URL の数を返す。noindex のページ(mdBook の印刷の版・目次)と
+    NOT_IN_SITEMAP・BOOK_PARTS は載せない。URL の形は hreflang に合わせる(index.html はフォルダの形。説明書は
+    mdBook のファイル名のまま)。lastmod は書かない(作るたびに全部変わり、正しい日付にならないため)。"""
+    urls = []
+    for f in sorted(out.rglob("*.html")):
+        rel = f.relative_to(out).as_posix()
+        if rel in NOT_IN_SITEMAP or f.name in BOOK_PARTS:
+            continue
+        if re.search(r'<meta[^>]+name="robots"[^>]+noindex', f.read_text(encoding="utf-8")):
+            continue
+        if not rel.startswith("manual/") and (rel == "index.html" or rel.endswith("/index.html")):
+            rel = rel[: -len("index.html")]
+        urls.append(SITE + rel)
+    body = "".join(f"  <url><loc>{html.escape(u)}</loc></url>\n" for u in urls)
+    (out / "sitemap.xml").write_text(
+        f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n',
+        encoding="utf-8",
+    )
+    return len(urls)
+
+
+def chooser(file: str = "", verify: str = "") -> str:
     """入口(x-default): 覚えた選択か、?lang= か、ブラウザの言語(navigator.languages)で /ja/・/en/ へ移る。
-    合わなければ選ぶ画面のまま。移るのは location.replace(戻るで戻されない)。JS が無くても両方へのリンクが見える。"""
+    合わなければ選ぶ画面のまま。移るのは location.replace(戻るで戻されない)。JS が無くても両方へのリンクが見える。
+    `verify` は head に足す検索の管理の確認のタグ(入口だけ)。"""
     links = "".join(
         f'<a class="card" href="{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}"><h2>{NAMES[l]}</h2>'
         f'<p class="muted">{html.escape(TEXT[l]["lead"])}</p></a>'
@@ -282,6 +328,8 @@ def chooser(file: str = "") -> str:
 <div class="cards">{links}</div>
 """
     head = alternates("ja/" + file).replace(f'hreflang="x-default" href="{SITE}"', f'hreflang="x-default" href="{SITE}{file}"')
+    if verify:
+        head = verify + "\n" + head
     return page("en", "mdgrid", body, TEXT["en"]["lead"], head, route)
 
 
