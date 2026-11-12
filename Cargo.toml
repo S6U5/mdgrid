@@ -11,6 +11,9 @@ categories = ["command-line-utilities", "text-editors"]
 # Only what builds the binary goes into the crate (specs, docs, tests and examples stay in the repository).
 include = ["/src/**/*.rs", "/build.rs", "/locales/*.toml", "/starters/**", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 repository = "https://github.com/S6U5/mdgrid"
+homepage = "https://s6u5.github.io/mdgrid/"
+# The manual, not docs.rs: the library inside is not an API for users.
+documentation = "https://s6u5.github.io/mdgrid/manual/en/"
 publish = true
 
 [lib]

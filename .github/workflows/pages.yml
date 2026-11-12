@@ -51,6 +51,9 @@ jobs:
       - name: Build the site
         env:
           GH_TOKEN: ${{ github.token }}
+          # Search Console ownership tag for the landing page (the content value only). It is shown in
+          # the page, so it is a repository variable, not a secret. Unset: no tag.
+          GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
         run: |
           # The feature tours (GIFs) are release assets; copy them into the site so they play in the page.
           # Tours added since the latest release appear at the next release.
