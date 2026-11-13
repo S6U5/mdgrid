@@ -12077,7 +12077,8 @@
     "ids": [
       "BD-1"
     ],
-    "sha": "65dee4fb5970f12a"
+    "sha": "ff2ad3548c9c07b1",
+    "by": "specs/_decisions/2026-11-13-board-tests-locks.md"
   },
   "src/ui/test_board.rs::test_bd_1_file_and_formula_columns_stay_with_reason": {
     "ids": [
@@ -12238,7 +12239,8 @@
     "ids": [
       "BD-4"
     ],
-    "sha": "97cdcd85e8e88204"
+    "sha": "7b06f548d6e918b8",
+    "by": "specs/_decisions/2026-11-13-board-tests-locks.md"
   },
   "src/ui/test_board.rs::test_bd_4_save_opens_review_from_table_and_writes": {
     "ids": [

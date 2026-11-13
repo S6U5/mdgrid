@@ -58,17 +58,18 @@ updated: 2026-11-13
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
 | 2026-11-13 | [列の値ごとのレーンにノートをカードとして並べる「ボード」の画面を足す(board-view)](../_decisions/2026-11-13-board-view.md) | accepted | 人 | 人の発言 | BD-1, BD-2, BD-3 ほか 5 |
+| 2026-11-13 | [ボードの画面の受け入れのテスト2本の誤りを直し、錠を掛け直す(board-tests-locks)](../_decisions/2026-11-13-board-tests-locks.md) | accepted | 人 | 検証の指摘 | BD-1, BD-4 |
 
 ## この機能のつながり
 
 | 要件 | 最新の決定 | テスト | 最後の照合 |
 |---|---|---|---|
-| BD-1 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
-| BD-2 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
-| BD-3 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
-| BD-4 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
-| BD-5 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
-| BD-6 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
+| BD-1 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | src/ui/test_board.rs::test_bd_1_action_board_view_switches, src/ui/test_board.rs::test_bd_1_english_words, src/ui/test_board.rs::test_bd_1_esc_q_and_same_key_return_to_table ほか 9 | なし |
+| BD-2 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | src/ui/test_board.rs::test_bd_1_english_words, src/ui/test_board.rs::test_bd_2_missing_null_and_empty_text_share_none_lane, src/ui/test_board.rs::test_bd_2_no_rule_text_order_and_no_none_lane ほか 13 | なし |
+| BD-3 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | src/ui/test_board.rs::test_bd_2_pending_value_decides_lane, src/ui/test_board.rs::test_bd_3_card_name_and_first_two_columns, src/ui/test_board.rs::test_bd_3_cards_follow_view_sort ほか 5 | なし |
+| BD-4 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | src/ui/test_board.rs::test_bd_4_card_actions_move_left_and_right, src/ui/test_board.rs::test_bd_4_edges_do_not_move, src/ui/test_board.rs::test_bd_4_move_out_of_none_lane_sets_value ほか 12 | なし |
+| BD-5 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | src/ui/test_board.rs::test_bd_5_lines_fit_any_width_and_height, src/ui/test_board.rs::test_bd_5_long_text_stays_in_its_lane, src/ui/test_board.rs::test_bd_5_tall_lane_scrolls_to_selected_card ほか 2 | なし |
+| BD-6 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | src/ui/test_board.rs::test_bd_6_click_card_selects_then_goes_to_table_row, src/ui/test_board.rs::test_bd_6_click_lane_head_selects_lane, src/ui/test_board.rs::test_bd_6_click_second_line_and_other_card_selects ほか 1 | なし |
 | BD-7 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
 | BD-8 | [2026-11-13](../_decisions/2026-11-13-board-view.md) | なし | なし |
 <!-- decidespec:history:end -->

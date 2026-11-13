@@ -359,7 +359,11 @@ fn test_bd_1_esc_q_and_same_key_return_to_table() {
         assert_eq!(a.mode, Mode::Table, "{key:?}");
         let s = scr(&a);
         assert!(s.contains("▦ 表 ▾"), "{key:?}\n{s}");
-        assert!(head(&s, "todo").is_none(), "{key:?}\n{s}");
+        // 表の行の「todo 2026-11-18」は見出しでない(レーンの見出しなら数は 2)。
+        assert!(
+            head(&s, "todo").is_none_or(|h| h.count != 2),
+            "{key:?}\n{s}"
+        );
         assert_eq!(a.changes.count(), 0);
         // 戻ったあと、もう一度 B で開ける。
         ch(&mut a, 'B');
@@ -1094,8 +1098,8 @@ fn test_bd_4_same_card_stays_selected_across_moves() {
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(table_row(&a), "fix-login");
-    // 表の画面でも、ためた値(done)が見える。
-    assert_eq!(a.changes.count(), 2);
+    // 2回移しても、ためた変更は同じセルの1つ(値は done)。
+    assert_eq!(a.changes.count(), 1);
 }
 
 // ---------------------------------------------------------------- BD-5
