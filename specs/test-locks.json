@@ -12433,5 +12433,31 @@
       "CE-15"
     ],
     "sha": "2c7544a625eeca10"
+  },
+  "src/ui/test_board_fixes.rs::test_bd_2_long_value_keeps_count_and_marks": {
+    "ids": [
+      "BD-2",
+      "BD-5"
+    ],
+    "sha": "f4cd23ad53e75516"
+  },
+  "src/ui/test_board_fixes.rs::test_bd_3_card_name_shows_when_note_column_is_hidden": {
+    "ids": [
+      "BD-3"
+    ],
+    "sha": "0a89372e75affd63"
+  },
+  "src/ui/test_board_fixes.rs::test_bd_4_moving_back_drops_the_pending_change_of_an_empty_text": {
+    "ids": [
+      "BD-4",
+      "WB-17"
+    ],
+    "sha": "c19676d2d27373c4"
+  },
+  "src/ui/test_board_fixes.rs::test_bd_6_click_below_the_drawn_cards_does_not_pick_a_hidden_card": {
+    "ids": [
+      "BD-6"
+    ],
+    "sha": "f3a1376112c33eab"
   }
 }

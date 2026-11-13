@@ -270,7 +270,7 @@ pub(crate) const HELD_MARK: char = '~';
 
 /// 行の表示名。外で変わった行・同期の競合ファイルには `!`、値を直して元の位置に留めている行には `~`
 /// を付ける(色に頼らない)。
-pub(crate) fn label(app: &App, row: &RowId) -> String {
+fn label(app: &App, row: &RowId) -> String {
     let flag = app.changes.external(row) || app.src.mark(row).is_some();
     // SR-29・SR-46: `.md` を除き、フォルダは note_path に従う(既定は共通のフォルダを除く)。file.name の列が
     // あるときと off のときは名前は出さず、印だけ。

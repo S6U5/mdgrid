@@ -183,6 +183,8 @@ mod test_add_column;
 #[cfg(test)]
 mod test_audit4;
 #[cfg(test)]
+mod test_board_fixes;
+#[cfg(test)]
 mod test_bom_values;
 #[cfg(test)]
 mod test_borders;

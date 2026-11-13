@@ -118,11 +118,18 @@ impl App {
             Some(NewValue::Str(s)) | Some(NewValue::Date(s)) => s.clone(),
             Some(NewValue::Null) => return None,
             Some(_) => self.plain(row, col),
-            None => match self.src.get(row, col).value {
-                Some(Value::Str(s)) => s,
-                Some(Value::Null) | None => return None,
-                Some(v) => super::cell::value_plain(&v),
-            },
+            None => return self.board_read_value(row, col),
+        };
+        let one = text.lines().next().unwrap_or_default().to_string();
+        (!one.trim().is_empty()).then_some(one)
+    }
+
+    /// 行のまとめる列の、読んだ値(ためた値を見ない)のレーンの文字。
+    fn board_read_value(&self, row: &RowId, col: &str) -> Option<String> {
+        let text = match self.src.get(row, col).value {
+            Some(Value::Str(s)) => s,
+            Some(Value::Null) | None => return None,
+            Some(v) => super::cell::value_plain(&v),
         };
         let one = text.lines().next().unwrap_or_default().to_string();
         (!one.trim().is_empty()).then_some(one)
@@ -182,8 +189,30 @@ impl App {
         };
         let (col, lane, card) = (old.col.clone(), old.lane, old.card);
         let row = old.row().cloned();
+        // 開いている間は、レーンを消さない(カードを移して空になったレーンへ、戻せるように)。前からあるレーンは
+        // 前の並びのまま、新しく出た値のレーンは「(なし)」の前に足す。
+        let mut fresh = self.build_board(&col);
+        let mut lanes: Vec<Lane> = Vec::new();
+        for l in &old.lanes {
+            let rows = match fresh.iter().position(|f| f.value == l.value) {
+                Some(i) => fresh.remove(i).rows,
+                None => Vec::new(),
+            };
+            lanes.push(Lane {
+                value: l.value.clone(),
+                rows,
+            });
+        }
+        for f in fresh {
+            let at = lanes
+                .iter()
+                .position(|l| l.value.is_none())
+                .filter(|_| f.value.is_some())
+                .unwrap_or(lanes.len());
+            lanes.insert(at, f);
+        }
         let mut b = Board {
-            lanes: self.build_board(&col),
+            lanes,
             col,
             lane,
             card,
@@ -239,7 +268,22 @@ impl App {
             Some(v) => NewValue::Str(v.clone()),
             None => NewValue::Null,
         };
-        match self.changes.set(self.src.as_ref(), &row, &col, v) {
+        // 読んだ値のレーンへ戻すときは、ためた値を外す(元の値の書き方・型のまま。未保存に数えない)。
+        let back = self.changes.pending(&row, &col).is_some()
+            && self.board_read_value(&row, &col) == target.value;
+        let res = if back {
+            match self
+                .changes
+                .set_each(self.src.as_ref(), &col, &[(row.clone(), None)])
+                .pop()
+            {
+                Some(skip) => Err(skip),
+                None => Ok(()),
+            }
+        } else {
+            self.changes.set(self.src.as_ref(), &row, &col, v)
+        };
+        match res {
             Err(skip) => {
                 self.message = Some(format!("{}{}", super::input::read_only_lead(), skip.reason));
             }
@@ -344,7 +388,11 @@ impl App {
         let inner = y - g.top;
         let hit_card = (inner >= 1 && inner + 1 < g.ph)
             .then(|| first_card + (inner - 1) / CARD_H)
-            .filter(|&k| (inner - 1) % CARD_H < CARD_H - 1 && k < b.lanes[lane].rows.len());
+            .filter(|&k| {
+                (inner - 1) % CARD_H < CARD_H - 1
+                    && k < first_card + vis
+                    && k < b.lanes[lane].rows.len()
+            });
         let same = hit_card.is_some_and(|k| lane == b.lane && k == b.card);
         let Some(b) = self.board.as_mut() else {
             return;
@@ -392,7 +440,7 @@ fn lane_lines(
     let mut out = Vec::new();
     for (k, row) in lane.rows.iter().enumerate().skip(first).take(vis) {
         let sel = focused && k == b.card;
-        let name = one_line(super::view::label(app, row));
+        let name = card_name(app, row);
         let t = format!(
             "{}{}{}",
             if sel { ">" } else { " " },
@@ -415,6 +463,28 @@ fn lane_lines(
         out.push(Line::from(" ".repeat(w)));
     }
     out
+}
+
+/// カードの名前(BD-3): ノートの名前。表の左のノートの欄と同じく、共通のフォルダと `.md` を除き、名前の正規表現
+/// (SR-47)を当てる。ノートの欄を出さない表(`file.name` の列がある・`note_path = off`・CSV)でも名前は出し、
+/// 表の行の印(親子・WBS・留めた行)は付けない。
+fn card_name(app: &App, row: &RowId) -> String {
+    let full = app.src.label(row);
+    let s = full
+        .strip_prefix(app.built.label_prefix.as_str())
+        .unwrap_or(&full);
+    let s = s.strip_suffix(".md").unwrap_or(s);
+    let s = s.lines().next().unwrap_or_default();
+    match app.settings.display.over(&app.display).note_name {
+        Some(re) => {
+            let (dir, base) = match s.rsplit_once('/') {
+                Some((d, b)) => (format!("{d}/"), b),
+                None => (String::new(), s),
+            };
+            sanitize(&format!("{dir}{}", re.apply(base)))
+        }
+        None => sanitize(s),
+    }
 }
 
 /// ボードの見出しの行: まとめる列と、選んでいるレーンの位置。
@@ -451,13 +521,23 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     for i in g.first..(g.first + g.n).min(b.lanes.len()) {
         let lane = &b.lanes[i];
         let first = if i == b.lane { scroll(b.card, vis) } else { 0 };
-        let mut title = format!("{} {}", lane_name(lane), lane.rows.len());
+        // 題は「値 数」と、上下に隠れたカードの印。幅が足りなければ値の側を切り、数と印は残す(BD-2・BD-5)。
+        let mut tail = format!(" {}", lane.rows.len());
         if first > 0 {
-            title.push_str(" ^");
+            tail.push_str(" ^");
         }
         if first + vis < lane.rows.len() {
-            title.push_str(" v");
+            tail.push_str(" v");
         }
+        // 窓の題に使える幅(枠・角の横の線・前後の空白を除く)。
+        let room = g.lw.saturating_sub(5).saturating_sub(width(&tail));
+        let name = lane_name(lane);
+        let name = if width(&name) > room {
+            fit(&name, room, Align::Left)
+        } else {
+            name
+        };
+        let title = format!("{name}{tail}");
         cols.push(panel(
             app,
             &title,
