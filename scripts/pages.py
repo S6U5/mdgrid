@@ -343,7 +343,7 @@ def chooser(file: str = "", verify: str = "") -> str:
 HOME = {
     "ja": {
         "tagline": "Markdown のノートのフォルダを、コマンド1つで表として開けます。",
-        "h1": ["ノートのフォルダを、", "<em>表</em>で開く。"],
+        "h1": ["Markdown と CSV を、", "ターミナルでデータベースに。"],
         "sub": "Markdown のノートのフォルダや CSV を、ターミナルでデータベースのように開きます。絞る、並べる、まとめる、リンクでつなぐ。直した値だけを、元のファイルに書き戻します。",
         "start": "はじめかた",
         "try_link": "1分で試す",
@@ -456,7 +456,7 @@ HOME = {
     },
     "en": {
         "tagline": "Turn each folder of Markdown notes into a table you open with one command.",
-        "h1": ["Open a folder of notes", "as a <em>table</em>."],
+        "h1": ["Markdown and CSV,", "a database in your terminal."],
         "sub": "mdgrid opens a folder of Markdown notes, or a CSV file, like a database in your terminal. Filter, sort, group, and link tables. Only the values you change are written back to the files.",
         "start": "Get started",
         "try_link": "Try it in a minute",
