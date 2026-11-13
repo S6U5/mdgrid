@@ -185,6 +185,8 @@ mod test_audit4;
 #[cfg(test)]
 mod test_board_fixes;
 #[cfg(test)]
+mod test_board_lanes;
+#[cfg(test)]
 mod test_bom_values;
 #[cfg(test)]
 mod test_borders;

@@ -12459,5 +12459,17 @@
       "BD-6"
     ],
     "sha": "f3a1376112c33eab"
+  },
+  "src/ui/test_board_lanes.rs::test_bd_2_emptied_none_lane_stays_until_reopened": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "b30a8aa8b3e378e5"
+  },
+  "src/ui/test_board_lanes.rs::test_bd_2_emptied_value_lane_stays_and_keeps_its_place": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "89a52f077aee60eb"
   }
 }
