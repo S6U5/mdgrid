@@ -378,21 +378,29 @@ HOME = {
         "ai_eyebrow": "分割した画面で",
         "ai_h": "AI の隣の pane に置く",
         "ai_p": "ターミナルを割って、片方で AI エージェントに仕事を頼み、もう片方に mdgrid を開いておきます。エージェントがノートを書き換えると、表が追いかけます。人は表で確かめて、違っていればその場で直します。",
-        "ai_left": "エージェント(図)",
+        "ai_left": "AI エージェント(架空の画面)",
         "ai_right": "mdgrid(本物の画面)",
         "ai_ask": "カタログのリンク切れを直して、タスクを閉じて",
-        "ai_log": [("Tasks/ を読む", "mdgrid Tasks --print --format json"), ("ノートを1枚直した", None), ("型と決まりを確かめる", "mdgrid Tasks --check")],
+        # (ラベル, コマンドかパス, 結果)。結果は本物の mdgrid で確かめた形(9 行・--check は問題が無ければ何も出さず終了コード 0)。
+        "ai_log": [
+            ("読む", "mdgrid Tasks.base --print --format json", "9 行"),
+            ("書く", "Tasks/Fix broken links on the catalog site.md", None),
+            ("確かめる", "mdgrid Tasks --check", "問題なし(終了コード 0)"),
+        ],
+        "ai_done": "リンクを直して、タスクを done にしました。右の表で確かめてください。",
+        "ai_hint": "Enter 送る · Esc 止める",
         "ai_fits": [
             ("1秒ごとに読み直す", "mdgrid の外でノートが変わると、表に出ます。間隔は設定の poll_ms で変えられます。"),
             ("黙って上書きしない", "こちらが直している途中のノートを外で書き換えられたら、そのノートの保存は止まり、どちらを残すかを選べます。"),
             ("エージェント向けのスキル", "mdgrid の CLI の使い方を教えるスキルを、リポの plugins/mdgrid に置いています。"),
         ],
-        "ai_note": "左の pane は説明のための図です。tmux や WezTerm など、画面を割れる端末ならどれでも同じ置き方ができます。",
+        "ai_note": "左の pane は、説明のために作った架空のエージェントの画面です。tmux や WezTerm など、画面を割れる端末ならどれでも同じ置き方ができます。",
         "cli_eyebrow": "ターミナルの道具として",
         "cli_h": "ターミナルで完結する",
         "cli_fits": [
             ("tmux", "コピー(y)が、tmux の中からでも手元のクリップボードに届きます。"),
             ("WezTerm・Ghostty", "丸い札などの飾りを、端末を見分けて自動で描きます。ほかの端末では崩れない形に。"),
+            ("エディタ", "e で、選んだノートをふだんのエディタで開きます。vim・Neovim・Helix・Emacs など $EDITOR に入れたもの、code -w も。閉じると表が読み直します。"),
             ("マウス", "操作はキーが基本で、行やセルのクリックとホイールも効きます。"),
         ],
         "cli_p": "mdgrid は実行ファイル1つです。常駐するものも、別に立てるデータベースもありません。データはノートと CSV のファイルそのものなので、git で差分が追え、ふだんのエディタで同じフォルダを開いたままにできます。",
@@ -482,21 +490,28 @@ HOME = {
         "ai_eyebrow": "In a split terminal",
         "ai_h": "Keep it in the pane next to your AI agent",
         "ai_p": "Split the terminal: ask an AI agent to do the work in one pane and keep mdgrid open in the other. When the agent rewrites a note, the table follows. You check the result in the table and fix it right there if it is off.",
-        "ai_left": "Agent (illustration)",
+        "ai_left": "AI agent (a made-up screen)",
         "ai_right": "mdgrid (real screen)",
         "ai_ask": "Fix the broken links on the catalog and close the task",
-        "ai_log": [("Read Tasks/", "mdgrid Tasks --print --format json"), ("Edited one note", None), ("Check types and rules", "mdgrid Tasks --check")],
+        "ai_log": [
+            ("Read", "mdgrid Tasks.base --print --format json", "9 rows"),
+            ("Write", "Tasks/Fix broken links on the catalog site.md", None),
+            ("Check", "mdgrid Tasks --check", "no problems (exit code 0)"),
+        ],
+        "ai_done": "Links fixed and the task set to done. Have a look at the table on the right.",
+        "ai_hint": "Enter to send · Esc to stop",
         "ai_fits": [
             ("Rereads every second", "When a note changes outside mdgrid, the table shows it. The interval is the poll_ms setting."),
             ("Never overwrites silently", "If a note you are editing is rewritten outside, saving stops for that note and you choose which version to keep."),
             ("A skill for agents", "A skill that teaches agents the mdgrid CLI lives in plugins/mdgrid in the repository."),
         ],
-        "ai_note": "The left pane is an illustration. Any terminal that splits, such as tmux or WezTerm, works the same way.",
+        "ai_note": "The left pane is a made-up agent screen, drawn for this page. Any terminal that splits, such as tmux or WezTerm, works the same way.",
         "cli_eyebrow": "As a terminal tool",
         "cli_h": "Everything happens in the terminal",
         "cli_fits": [
             ("tmux", "Copying with y reaches your local clipboard from inside tmux too."),
             ("WezTerm, Ghostty", "Rounded chips and similar marks are drawn where the terminal is known to render them, and fall back to plain shapes elsewhere."),
+            ("Editors", "Press e to open the selected note in your editor: vim, Neovim, Helix, Emacs or whatever $EDITOR holds, and code -w too. Close it and the table rereads the note."),
             ("Mouse", "Keys come first, and clicking rows and cells and the wheel work as well."),
         ],
         "cli_p": "mdgrid is a single binary. Nothing runs in the background and there is no database to set up. The data is the note and CSV files themselves, so git shows the diffs and your usual editor can keep the same folder open.",
@@ -701,15 +716,17 @@ def landing(lang: str, shown, shots) -> str:
     starter = lambda sid: cmd(f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}", lang)
     scenes = tabset("scene-", h["scene_eyebrow"], h["scenes"], starter)
 
-    # 分割した画面: 左はエージェントの pane の図(頼みごと・走らせるコマンド・直した1行)、右は本物の画面。
-    ai_rows = [f'<span class="ask">› {html.escape(h["ai_ask"])}</span>']
-    for what, run in h["ai_log"]:
-        ai_rows.append(f'<span class="dot">●</span> {html.escape(what)}')
-        if run:
-            ai_rows.append(f'  <span class="ps">$ </span>{html.escape(run)}')
-        else:
-            ai_rows += ['  <span class="cm">Tasks/Fix broken links on the catalog site.md</span>', '  <span class="del">- status: todo</span>', '  <span class="add">+ status: done</span>']
-    ai_log = "\n".join(ai_rows)
+    # 分割した画面: 左は架空のエージェントの画面(どの製品の画面も写さない。名前も sample-agent)、右は本物の画面。
+    ai_steps = ""
+    for what, arg, result in h["ai_log"]:
+        tail = f'<span class="res">└ {html.escape(result)}</span>' if result else '<span class="diff"><span class="del">- status: todo</span><span class="add">+ status: done</span></span>'
+        ai_steps += f'<div class="act"><span class="lab">▸ {html.escape(what)}</span><span class="arg">{html.escape(arg)}</span>{tail}</div>'
+    ai_log = (
+        f'<div class="agent-ui"><p class="who">sample-agent v1.0 · ~/notes/ai-human</p>'
+        f'<p class="ask">{html.escape(h["ai_ask"])}</p>{ai_steps}'
+        f'<p class="done">{html.escape(h["ai_done"])}</p>'
+        f'<div class="box" aria-hidden="true"><span>&gt;</span><i></i></div><p class="hint">{html.escape(h["ai_hint"])}</p></div>'
+    )
 
     # ターミナルの道具として: 本物のオプションの使い方を、1つの端末に並べる(# の行は説明。写すのはコマンドだけ)。
     cli_lines = "\n".join(f'<span class="cm"># {html.escape(why)}</span>\n<span class="ps">$ </span>{html.escape(run)}' for why, run in h["cli"])
@@ -778,7 +795,7 @@ def landing(lang: str, shown, shots) -> str:
   <div class="head rise"><p class="eyebrow">{h["ai_eyebrow"]}</p><h2>{h["ai_h"]}</h2><p>{html.escape(h["ai_p"])}</p></div>
   <div class="term panes rise"><div class="bar-t"><i></i><i></i><i></i><span>~/notes</span></div>
     <div class="split-t">
-      <div class="pane-t agent"><p class="cap">{h["ai_left"]}</p><pre><code>{ai_log}</code></pre></div>
+      <div class="pane-t agent"><p class="cap">{h["ai_left"]}</p>{ai_log}</div>
       <div class="pane-t"><p class="cap">{h["ai_right"]}</p><a href="gallery.html#demo-ai-human"><img loading="lazy" width="856" height="520" src="{img("demo-ai-human")}" alt="{html.escape(h["ai_right"])}"></a></div>
     </div>
   </div>
