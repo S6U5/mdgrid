@@ -32,6 +32,7 @@ import subprocess
 import shutil
 import sys
 import tomllib
+import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -60,6 +61,10 @@ TEXT = {
         "count": "{n} 場面",
         "keys": "押したキー",
         "lang": "言語",
+        "start": "はじめかた",
+        "copy": "写す",
+        "copied": "写した",
+        "mode": "明るい・暗いを切り替える",
     },
     "en": {
         "title": "mdgrid",
@@ -82,6 +87,10 @@ TEXT = {
         "count": "{n} scenes",
         "keys": "Keys pressed",
         "lang": "Language",
+        "start": "Get started",
+        "copy": "Copy",
+        "copied": "Copied",
+        "mode": "Switch light and dark",
     },
 }
 
@@ -100,52 +109,9 @@ DEMOS = [
     ("demo-themes.gif", "色のテーマ", "Color themes"),
 ]
 
-CSS = """
-:root{--bg:#f6f7f9;--surface:#fff;--fg:#1c2027;--muted:#5f6774;--line:#dcdfe5;--accent:#3657d6;--on-accent:#fff;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111318;--surface:#191c23;--fg:#e3e5ea;--muted:#9aa1ad;--line:#2a2f39;--accent:#8fa5ff;--on-accent:#111318;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#111318;--surface:#191c23;--fg:#e3e5ea;--muted:#9aa1ad;--line:#2a2f39;--accent:#8fa5ff;--on-accent:#111318;color-scheme:dark}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px;display:grid;gap:24px}
-h1{margin:0;font-size:28px}h2{margin:0;font-size:18px}
-p{margin:0}.muted{color:var(--muted)}
-a{color:var(--accent)}
-.bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
-.chips{display:flex;gap:6px}
-button.opt{font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
-.opt{font:inherit;font-size:13px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--fg);text-decoration:none}
-.opt.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.card{display:grid;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;text-decoration:none;color:var(--fg)}
-.card:hover{border-color:var(--accent)}
-.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:16px}
-figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:8px;min-width:0}
-figure img{width:100%;height:auto;border-radius:8px;display:block}
-figcaption{display:grid;gap:4px;font-size:14px}
-figcaption b{font-size:15px}
-nav.top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
-nav.top a{color:var(--fg);text-decoration:none;font-size:14px}nav.top a:hover{color:var(--accent)}
-nav.top .brand{font-weight:700;font-size:17px}nav.top .grow{flex:1}
-.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:28px;align-items:center;padding:12px 0}
-@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}}
-.hero h1{font-size:clamp(26px,4vw,38px);line-height:1.25}
-.hero-text{display:grid;gap:14px}.lead{font-size:17px;color:var(--muted)}.small{font-size:13px}
-.shot{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.18)}
-pre.cmd{margin:0;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line);overflow-x:auto}
-.buttons{display:flex;gap:10px;flex-wrap:wrap}
-.btn{padding:8px 16px;border-radius:10px;background:var(--accent);color:var(--on-accent);text-decoration:none;font-weight:600}
-.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
-.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
-.feat{display:grid;gap:8px;align-content:start}.feat img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
-.feat h3,.card h3{margin:0;font-size:16px}.feat p{font-size:14px}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:24px}
-.two>div{display:grid;gap:10px;align-content:start}.cards.one{grid-template-columns:1fr}
-.demos{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:16px}
-.demo img{width:100%;height:auto;border-radius:8px;display:block}
-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
-input[type=search]{font:inherit;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);min-width:0;width:min(100%,320px)}
-"""
+# 見た目(CSS)と入口の動き(JS)は scripts/site/ に置き、各ページに埋める(1枚の HTML で完結し、外から何も読まない)。
+CSS = (ROOT / "scripts/site/site.css").read_text(encoding="utf-8")
+LANDING_JS = (ROOT / "scripts/site/landing.js").read_text(encoding="utf-8")
 
 SITE = "https://s6u5.github.io/mdgrid/"
 NAMES = {"ja": "日本語", "en": "English"}
@@ -180,7 +146,43 @@ def alternates(rel: str) -> str:
     return "\n".join(out)
 
 
-def page(lang: str, title: str, body: str, desc: str, head: str = "", script: str = "") -> str:
+MODE_KEY = "mdgrid-site-theme"
+# 描く前に: JS があることの印と、覚えた明るい・暗いの選択(ちらつかせない)。
+EARLY = (
+    'document.documentElement.classList.add("js");'
+    'try{var m=localStorage.getItem("%s");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-theme",m)}catch(e){}'
+) % MODE_KEY
+# 明るい・暗いの切り替え(上の帯のボタン)。選択は覚える。
+MODE = """
+(function () {
+  var b = document.getElementById("mode");
+  if (!b) return;
+  b.addEventListener("click", function () {
+    var r = document.documentElement, now = r.getAttribute("data-theme");
+    if (!now) now = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    var next = now === "dark" ? "light" : "dark";
+    r.setAttribute("data-theme", next);
+    try { localStorage.setItem("%s", next); } catch (e) {}
+  });
+})();
+""" % MODE_KEY
+
+# 名前の横の印(表の枠と、選んだセル)。タブの印(favicon)にも同じ形を使う。
+LOGO = (
+    '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1.2" y="1.2" width="17.6" height="17.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.7"/>'
+    '<path d="M1.2 7.4h17.6M7.4 7.4v11.4" stroke="currentColor" stroke-width="1.7"/><rect x="9.7" y="9.7" width="6.8" height="3.4" rx="1" fill="currentColor"/></svg>'
+)
+FAVICON = "data:image/svg+xml," + urllib.parse.quote(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1e1e1e"/>'
+    '<g transform="translate(6 6)" color="#3fc3e6">' + LOGO.replace(' aria-hidden="true"', "").replace("<svg", '<svg width="20" height="20"') + "</g></svg>"
+)
+ICON_COPY = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>'
+ICON_MODE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg>'
+
+
+def page(lang: str, title: str, body: str, desc: str, head: str = "", script: str = "", top: str = "", wide: bool = False) -> str:
+    """1枚のページ。`top` は上の帯、`wide` は幅いっぱいの段を自分で持つページ(入口)。"""
+    main = body if wide else f'<div class="wrap">\n{body}\n</div>'
     GA = ANALYTICS + "\n" if ANALYTICS else ""
     return f"""<!doctype html>
 <html lang="{lang}">
@@ -189,14 +191,15 @@ def page(lang: str, title: str, body: str, desc: str, head: str = "", script: st
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
+<link rel="icon" href="{FAVICON}">
 {GA}{head}
+<script>{EARLY}</script>
 <style>{CSS}</style>
 </head>
 <body>
-<div class="wrap">
-{body}
-</div>
-<script>{REMEMBER}{script}</script>
+{top}
+{main}
+<script>{REMEMBER}{MODE}{script}</script>
 </body>
 </html>
 """
@@ -257,9 +260,11 @@ def build(out: Path, shots_dir: Path) -> None:
         (out / "assets" / l).mkdir(parents=True)
         src = ROOT / ("docs/assets/ja/demo.gif" if l == "ja" else "docs/assets/demo.gif")
         shutil.copy(src, out / "assets" / l / "demo.gif")
+        # 共有したときに出る絵(og:image)。README の先頭と同じ、暗い見た目と明るい見た目を並べた1枚。
+        shutil.copy(src.with_name("hero.png"), out / "assets" / l / "hero.png")
     for l in LANGS:
         (out / l).mkdir()
-        (out / l / "index.html").write_text(landing(l, shown), encoding="utf-8")
+        (out / l / "index.html").write_text(landing(l, shown, shots), encoding="utf-8")
         (out / l / "gallery.html").write_text(gallery(l, shots), encoding="utf-8")
     (out / "index.html").write_text(chooser(verify=verify), encoding="utf-8")
     # 前の画面の一覧の URL(README の古いリンク)は、言語を決めて新しい URL へ。
@@ -367,102 +372,537 @@ def chooser(file: str = "", verify: str = "") -> str:
     return page("en", "mdgrid", body, TEXT["en"]["lead"], head, route)
 
 
-# 入口の文(日英)。特徴は具体的にできることを見出しにし、本物の画面(撮った場面)を添える。
+# 入口の文(日英)。docs/writing.md の読む人の順: 何が見えるか → 1分で試す → 自分の場面 → できること → 見た目 → 次に読むもの。
+# 特徴は具体的にできることを見出しにし、本物の画面(撮った場面)を添える。
 HOME = {
     "ja": {
         "tagline": "Markdown のノートのフォルダを、コマンド1つで表として開けます。",
-        "sub": "フォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。ノートはただの Markdown のまま。",
+        "h1": ["Markdown と CSV を、", "ターミナルでデータベースに。"],
+        "sub": "Markdown のノートのフォルダや CSV を、ターミナルでデータベースのように開きます。絞る、並べる、まとめる、リンクでつなぐ。直した値だけを、元のファイルに書き戻します。",
         "start": "はじめかた",
-        "install": "入れる",
-        "install_note": "Rust 1.90 以上。Linux・macOS・Windows の実行ファイルは",
+        "try_link": "1分で試す",
+        "facts": ["Linux・macOS・Windows", "端末で動く実行ファイル1つ", "MIT / Apache-2.0"],
+        "bin": "リリースから実行ファイルを取る",
+        "rust": "cargo で入れるなら Rust 1.90 以上",
         "releases": "リリース",
-        "features": [
-            ("フォルダごとに1つのコマンド", "alias tasks='mdgrid ~/notes/Tasks' の1行で、tasks と打てば前と同じ表が開く。列・絞り込み・並べ替え・ビューを覚えている。", "table"),
-            ("表計算のように直す", "同じ列のほかの値から選ぶ、カレンダーで日付、タグとチェックボックスの切り替え、たくさんの行に同じ値を一度に。", "edit-list"),
-            ("ファイルのほかの部分は変えない", "直したキーの値だけを書き、キーの順・コメント・本文は1バイトも変えない。書く前にファイルごとの差分を見せる。", "save"),
-            ("リンクで表をつなぐ", "ノートどうしのリンクで、フォルダをつながった表として扱う。R で表とつながりの図(関係マップ)。", "demo-relmap"),
+        "steps": [
+            ("Markdown のフォルダ", "ノートが行に、フロントマターのキーが列に並ぶ。", "table", "mdgrid ~/notes/Tasks"),
+            ("CSV のファイル", "1行目が列の名前になる。.tsv も同じ。", "csv-table", "mdgrid equipment.csv"),
+            ("つながった表", "ノートのリンクが表をつなぐ。R で関係マップ。", "demo-relmap", "mdgrid ~/notes/Tasks"),
         ],
-        "try": "見本で試す",
-        "try_note": "見本はリポの examples にある。一時フォルダに写して開く(保存しても元の見本は変わらない)。",
+        # 見出し(*_h)は人が書き直す前提の、説明だけの仮の文。
+        "db_eyebrow": "データベースとして",
+        "db_h": "絞る・並べる・まとめる・1枚を見る",
+        "db_p": "ファイルはそのままで、表の側だけが動きます。どれもキー1つか2つで、Esc で元の表に戻ります。",
+        "db": [
+            ("filter", "絞る", "打った語で絞る", "\\ を押して打つと、その語を含む行だけが残ります。列の値を選んで絞ることも、条件をビューに残すこともできます。", "quick-filter"),
+            ("sort", "並べる", "列で並べ替える", "列の上で s。もう一度押すと逆順になります。ノートのファイルの並びは変わりません。", "sort-column"),
+            ("group", "まとめる", "値ごとのまとまり", "status ごと、project ごとに行をまとめます。見出しは畳めて、件数が付きます。", "demo-group"),
+            ("views", "ビュー", "見方に名前を付けて残す", "絞り込み・並べ替え・列の組をビューにして、タブで切り替えます。.base のビューもそのまま開きます。", "base-tabs"),
+            ("freq", "値の分布", "列の値を数える", "% で、その列にどの値が何件あるか。空のままのノートが何枚あるかも分かります。", "demo-freq"),
+            ("detail", "1枚を見る", "ノート1枚を、表から出ずに読む", "K で、選んだノートの全部のプロパティと本文が1枚に出ます。Enter でそのまま直せます。", "detail"),
+        ],
+        "more": "ほかに: 型ごとの入力(カレンダー・タグ・チェックボックス)、まとめて直す、親子の字下げと WBS、型と決まりの検査、英語と日本語の画面。",
+        "rel_eyebrow": "リレーション",
+        "rel_h": "リンクが、表と表のリレーションになる",
+        "rel_p": "フロントマターにノートへのリンクを書くと、その列は行き先の表へのリレーションになります。セルから行き先のノートを開き、そのノートを指している行をたどれます。R を押すと、表とつながりが1枚の図に。",
+        "rel_file": "タスクのノートの2行",
+        "rel_note": "リレーションはノートどうしの間のものです。CSV の表は、まだこの範囲に入りません。",
+        "rel_more": "リンクで表をつなぐ",
+        "ai_eyebrow": "分割した画面で",
+        "ai_h": "AI の隣の pane に置く",
+        "ai_p": "ターミナルを割って、片方で AI エージェントに仕事を頼み、もう片方に mdgrid を開いておきます。エージェントがノートを書き換えると、表が追いかけます。人は表で確かめて、違っていればその場で直します。",
+        "ai_left": "AI エージェント(架空の画面)",
+        "ai_right": "mdgrid(本物の画面)",
+        "ai_ask": "カタログのリンク切れを直して、タスクを閉じて",
+        # (ラベル, コマンドかパス, 結果)。結果は本物の mdgrid で確かめた形(9 行・--check は問題が無ければ何も出さず終了コード 0)。
+        "ai_log": [
+            ("読む", "mdgrid Tasks.base --print --format json", "9 行"),
+            ("書く", "Tasks/Fix broken links on the catalog site.md", None),
+            ("確かめる", "mdgrid Tasks --check", "問題なし(終了コード 0)"),
+        ],
+        "ai_done": "リンクを直して、タスクを done にしました。右の表で確かめてください。",
+        "ai_hint": "Enter 送る · Esc 止める",
+        "ai_fits": [
+            ("1秒ごとに読み直す", "mdgrid の外でノートが変わると、表に出ます。間隔は設定の poll_ms で変えられます。"),
+            ("黙って上書きしない", "こちらが直している途中のノートを外で書き換えられたら、そのノートの保存は止まり、どちらを残すかを選べます。"),
+            ("エージェント向けのスキル", "mdgrid の CLI の使い方を教えるスキルを、リポの plugins/mdgrid に置いています。"),
+        ],
+        "ai_note": "左の pane は、説明のために作った架空のエージェントの画面です。tmux や WezTerm など、画面を割れる端末ならどれでも同じ置き方ができます。",
+        "cli_eyebrow": "ターミナルの道具として",
+        "cli_h": "ターミナルで完結する",
+        "cli_fits": [
+            ("tmux", "コピー(y)が、tmux の中からでも手元のクリップボードに届きます。"),
+            ("WezTerm・Ghostty", "丸い札などの飾りを、端末を見分けて自動で描きます。ほかの端末では崩れない形に。"),
+            ("エディタ", "e で、選んだノートをふだんのエディタで開きます。vim・Neovim・Helix・Emacs など $EDITOR に入れたもの、code -w も。閉じると表が読み直します。"),
+            ("マウス", "操作はキーが基本で、行やセルのクリックとホイールも効きます。"),
+        ],
+        "cli_p": "mdgrid は実行ファイル1つです。常駐するものも、別に立てるデータベースもありません。データはノートと CSV のファイルそのものなので、git で差分が追え、ふだんのエディタで同じフォルダを開いたままにできます。",
+        "cli": [
+            ("フォルダごとに1コマンド", "alias tasks='mdgrid ~/notes/Tasks'"),
+            ("表を標準出力へ(csv・tsv・json・md)", "mdgrid ~/notes/Tasks --print --format json | jq ."),
+            ("画面で選んだノートを、次のコマンドへ", "mdgrid ~/notes/Tasks --pick path | xargs -o vi"),
+            ("型と決まりに合わない値を探す", "mdgrid ~/notes/Tasks --check"),
+            ("読むだけで開く", "mdgrid ~/notes/Tasks --readonly"),
+        ],
+        "cli_more": "ほかのコマンドと組む",
+        "how_eyebrow": "安心して直せる",
+        "how_h": "書くのは、直した値だけ",
+        "how_p": "見本のタスクのノートを5枚並べました。行を選ぶと、左にそのノートの中身が出ます。status を選び直してみてください。ファイルに書かれるのがその1行だけだと分かります。CSV でも同じ約束です。",
+        "how_file": "ノート(ただの Markdown)",
+        "how_sheet": "mdgrid の表",
+        "how_note_col": "ノート",
+        "how_say": {
+            "unsaved": "未保存",
+            "clean": "行を選ぶか、status を選び直す。",
+            "dirty": "書くのは {n} 行。キーの順も、コメントも、本文も、1バイトも変えません。",
+        },
+        "how_undo": "元に戻す",
+        "how_note": "この図はブラウザの中の模型です。本物の mdgrid は、Ctrl+S でこの差分を見せてから書きます。",
+        "how_more": "安全のしくみ",
+        "try_eyebrow": "1分で試す",
+        "try_h": "見本を開いて、1つ直すまで。",
+        "try": [
+            ("入れる", "リリースのアーカイブを展開して PATH の通った所に置くのがいちばん早い道です。Rust があるなら次の1行でも入ります(ビルドに数分)。"),
+            ("見本を写して開く", "見本はリポの examples にあります。一時フォルダに写してから開くので、保存しても元の見本は変わりません。"),
+            ("この表が出れば成功", "「Northwind Studio」のタスクの表です。"),
+        ],
+        "try_keys": [("j k", "動く"), ("Enter", "直す"), ("Ctrl+S", "差分を見て保存"), ("q", "終わる")],
+        "try_more": "入れ方のほかの道と画面の読み方",
+        "scene_eyebrow": "自分の場面で",
+        "scene_h": "空のフォルダから、台帳の形で始める。",
+        "scene_p": "4つのスターターが入っています。印と雛形と見本を書き出すので、最初の1枚から表で見られます。ノートがもうあるなら、そのフォルダを渡すだけです。",
+        "scenes": [
+            ("tasks", "タスク", "1件1ノートのタスク", "未完了・進行中・待ち・完了のタブと、期限、優先度、タグ。終わったものの status を done にするのは、セルで Enter を押して選ぶだけ。", "starter-tasks"),
+            ("reading", "読書", "本・記事・映画・講演の記録", "読みたい・読んでいる・読んだのタブと、種類・著者・評価の列。rating を付け忘れたノートは、空のセルが並ぶのですぐ見つかります。", "starter-reading"),
+            ("people", "人と会議", "人の表と、会議の表", "会議のノートの出席者が、人のノートへのリンクになります。R を押すと、2つの表とつながりが図で見えます。", "starter-people"),
+            ("bookmarks", "ブックマーク", "フォルダで眺めるブックマーク", "folder の列からフォルダの木を組みます。T で木が開き、右に選んだフォルダの行。Enter で URL を開けます。", "tree"),
+        ],
+        "look_eyebrow": "見た目",
+        "look_h": "色は、設定の1行。",
+        "look_p": "名前を押すと、そのテーマの本物の画面に替わります。変わるのは色だけで、* や > などの印はそのまま。枠や印の形まで決めるなら、カタログで触って選べます。",
+        "next_eyebrow": "次に読むもの",
+        "next_h": "見て選ぶ",
+        "last_h": "いつものフォルダで開く。",
+        "last_p": "入れたら、ノートのフォルダを渡すだけです。設定は要りません。",
+        "foot": "mdgrid は MIT と Apache-2.0 のどちらかで使えます。",
         "see": "見て選ぶ",
-        "more": "ほかに: 色のテーマと部品の形、親子の字下げと WBS、CSV・JSON への書き出し、英語と日本語の画面。",
     },
     "en": {
         "tagline": "Turn each folder of Markdown notes into a table you open with one command.",
-        "sub": "Point mdgrid at a folder: every note becomes a row, every frontmatter key a column, and you edit the values in place. The notes stay plain Markdown.",
+        "h1": ["Markdown and CSV,", "a database in your terminal."],
+        "sub": "mdgrid opens a folder of Markdown notes, or a CSV file, like a database in your terminal. Filter, sort, group, and link tables. Only the values you change are written back to the files.",
         "start": "Get started",
-        "install": "Install",
-        "install_note": "Rust 1.90 or newer. Binaries for Linux, macOS and Windows are on",
+        "try_link": "Try it in a minute",
+        "facts": ["Linux, macOS, Windows", "One binary, runs in the terminal", "MIT / Apache-2.0"],
+        "bin": "Get a binary from Releases",
+        "rust": "cargo needs Rust 1.90 or newer",
         "releases": "Releases",
-        "features": [
-            ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks' is the whole setup; typing tasks brings back the same columns, filters, sorting and views.", "table"),
-            ("Edit like a spreadsheet", "Pick from the values other notes use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows.", "edit-list"),
-            ("Leaves the rest of the file alone", "Only the values you change are written; key order, comments and the body stay byte for byte. You see a diff of each file first.", "save"),
-            ("Linked tables", "Links between notes make folders into linked tables. Press R for a map of the tables and their links.", "demo-relmap"),
+        "steps": [
+            ("A folder of Markdown", "Notes line up as rows, frontmatter keys as columns.", "table", "mdgrid ~/notes/Tasks"),
+            ("A CSV file", "The first line names the columns. .tsv works the same way.", "csv-table", "mdgrid equipment.csv"),
+            ("Linked tables", "Links between notes join the tables. Press R for the relation map.", "demo-relmap", "mdgrid ~/notes/Tasks"),
         ],
-        "try": "Try it on the demo",
-        "try_note": "The samples live in the repository's examples folder. Copy one to a temporary folder and open it (saving never changes the original).",
+        "db_eyebrow": "As a database",
+        "db_h": "Filter, sort, group, and read one note",
+        "db_p": "The files stay as they are; only the table moves. Each of these is a key or two away, and Esc brings the table back.",
+        "db": [
+            ("filter", "Filter", "Filter by what you type", "Press \\ and type: only the rows containing that text remain. You can also filter by picking values of a column, and keep the conditions in a view.", "quick-filter"),
+            ("sort", "Sort", "Sort by a column", "Press s on a column, and again to reverse. The order of the note files does not change.", "sort-column"),
+            ("group", "Group", "Rows grouped by value", "Group rows by status or by project. Headings fold and carry a count.", "demo-group"),
+            ("views", "Views", "Name a way of looking and keep it", "Save filters, sorting and a set of columns as a view, and switch views with tabs. Views in a .base file open as they are.", "base-tabs"),
+            ("freq", "Value counts", "Count the values of a column", "Press % to see which values a column holds and how many notes have each, including how many are still empty.", "demo-freq"),
+            ("detail", "One note", "Read one note without leaving the table", "Press K to see every property and the body of the selected note on one screen. Enter edits right there.", "detail"),
+        ],
+        "more": "Also: typed inputs (calendar, tags, checkboxes), bulk edits, parent/child indent and WBS, type and rule checks, English and Japanese screens.",
+        "rel_eyebrow": "Relations",
+        "rel_h": "A link becomes a relation between tables",
+        "rel_p": "Write a link to another note in the frontmatter and that column becomes a relation to the table the note lives in. From a cell you can open the target note and follow the rows that point at it. Press R to see the tables and their links in one map.",
+        "rel_file": "Two lines of a task note",
+        "rel_note": "Relations are between notes. CSV tables are not part of this yet.",
+        "rel_more": "Linking tables",
+        "ai_eyebrow": "In a split terminal",
+        "ai_h": "Keep it in the pane next to your AI agent",
+        "ai_p": "Split the terminal: ask an AI agent to do the work in one pane and keep mdgrid open in the other. When the agent rewrites a note, the table follows. You check the result in the table and fix it right there if it is off.",
+        "ai_left": "AI agent (a made-up screen)",
+        "ai_right": "mdgrid (real screen)",
+        "ai_ask": "Fix the broken links on the catalog and close the task",
+        "ai_log": [
+            ("Read", "mdgrid Tasks.base --print --format json", "9 rows"),
+            ("Write", "Tasks/Fix broken links on the catalog site.md", None),
+            ("Check", "mdgrid Tasks --check", "no problems (exit code 0)"),
+        ],
+        "ai_done": "Links fixed and the task set to done. Have a look at the table on the right.",
+        "ai_hint": "Enter to send · Esc to stop",
+        "ai_fits": [
+            ("Rereads every second", "When a note changes outside mdgrid, the table shows it. The interval is the poll_ms setting."),
+            ("Never overwrites silently", "If a note you are editing is rewritten outside, saving stops for that note and you choose which version to keep."),
+            ("A skill for agents", "A skill that teaches agents the mdgrid CLI lives in plugins/mdgrid in the repository."),
+        ],
+        "ai_note": "The left pane is a made-up agent screen, drawn for this page. Any terminal that splits, such as tmux or WezTerm, works the same way.",
+        "cli_eyebrow": "As a terminal tool",
+        "cli_h": "Everything happens in the terminal",
+        "cli_fits": [
+            ("tmux", "Copying with y reaches your local clipboard from inside tmux too."),
+            ("WezTerm, Ghostty", "Rounded chips and similar marks are drawn where the terminal is known to render them, and fall back to plain shapes elsewhere."),
+            ("Editors", "Press e to open the selected note in your editor: vim, Neovim, Helix, Emacs or whatever $EDITOR holds, and code -w too. Close it and the table rereads the note."),
+            ("Mouse", "Keys come first, and clicking rows and cells and the wheel work as well."),
+        ],
+        "cli_p": "mdgrid is a single binary. Nothing runs in the background and there is no database to set up. The data is the note and CSV files themselves, so git shows the diffs and your usual editor can keep the same folder open.",
+        "cli": [
+            ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks'"),
+            ("Print the table to standard output (csv, tsv, json, md)", "mdgrid ~/notes/Tasks --print --format json | jq ."),
+            ("Hand the notes you pick to the next command", "mdgrid ~/notes/Tasks --pick path | xargs -o vi"),
+            ("Find values that do not fit the column type or a rule", "mdgrid ~/notes/Tasks --check"),
+            ("Open read-only", "mdgrid ~/notes/Tasks --readonly"),
+        ],
+        "cli_more": "Working with other commands",
+        "how_eyebrow": "Safe to edit",
+        "how_h": "Only the value you change is written",
+        "how_p": "Here are five task notes from the sample. Pick a row and its file shows on the left. Then change a status: the one line that would be written lights up, and nothing else moves. CSV files get the same promise.",
+        "how_file": "A note (plain Markdown)",
+        "how_sheet": "The table in mdgrid",
+        "how_note_col": "note",
+        "how_say": {
+            "unsaved": "unsaved",
+            "clean": "Pick a row, or change a status.",
+            "dirty": "{n} line(s) to write. Key order, comments and the body stay byte for byte.",
+        },
+        "how_undo": "Undo",
+        "how_note": "This is a model in the browser. The real mdgrid shows you this diff on Ctrl+S before it writes.",
+        "how_more": "How saving stays safe",
+        "try_eyebrow": "Try it in a minute",
+        "try_h": "From the sample to your first edit.",
+        "try": [
+            ("Install", "The quickest way is to unpack a release archive and put mdgrid on your PATH. With Rust, this one line works too (the build takes a few minutes)."),
+            ("Copy the sample and open it", "The samples live in the repository's examples folder. You open a copy in a temporary folder, so saving never changes the original."),
+            ("You should see this table", "It is the task table of \"Northwind Studio\"."),
+        ],
+        "try_keys": [("j k", "move"), ("Enter", "edit"), ("Ctrl+S", "review and save"), ("q", "quit")],
+        "try_more": "Other ways to install, and how to read the screen",
+        "scene_eyebrow": "For your own notes",
+        "scene_h": "Start from an empty folder, already shaped as a table.",
+        "scene_p": "Four starters are built in. Each writes a marker, a note template and a few samples, so the first note already shows up in a table. If you have notes, just pass their folder.",
+        "scenes": [
+            ("tasks", "Tasks", "One note per task", "Tabs for open, doing, waiting and done, with due date, priority and tags. Marking a task done is Enter on its status cell and one pick.", "starter-tasks"),
+            ("reading", "Reading", "Books, articles, films, talks", "Tabs for the queue, what you are on now and what is done, with columns for kind, author and rating. Notes with no rating stand out as empty cells.", "starter-reading"),
+            ("people", "People and meetings", "A people table and a meetings table", "The attendees of a meeting note link to people notes. Press R to see the two tables and the links between them.", "starter-people"),
+            ("bookmarks", "Bookmarks", "Bookmarks you browse by folder", "The folder column becomes a tree. Press T for the tree, with the rows of the selected folder on the right. Enter opens the URL.", "tree"),
+        ],
+        "look_eyebrow": "Looks",
+        "look_h": "Colors are one line of config.",
+        "look_p": "Press a name to see the real screen in that theme. Only the colors change; marks such as * and > stay. To choose borders and marks too, try them in the catalog.",
+        "next_eyebrow": "Read next",
+        "next_h": "See and choose",
+        "last_h": "Open the folder you already have.",
+        "last_p": "Once installed, pass your notes folder. There is nothing to set up.",
+        "foot": "mdgrid is available under MIT or Apache-2.0.",
         "see": "See and choose",
-        "more": "Also: color themes and part shapes, parent/child indent and WBS, export to CSV and JSON, English and Japanese screens.",
     },
 }
-TRY = {
-    "ja": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/studio /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/Tasks",
-    "en": "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/studio /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/Tasks",
-}
+TRY = "git clone https://github.com/S6U5/mdgrid && cd mdgrid\ncp -R examples/studio /tmp/mdgrid-sample\nmdgrid /tmp/mdgrid-sample/Tasks"
+INSTALL = "cargo install mdgrid --locked"
+
+# 仕組みの図に出すノート(見本 examples/studio/Tasks の本物のファイルを読む)と、表に出す列。
+MODEL_NOTES = [
+    "Write the ordering estimate",
+    "Build the menu page",
+    "Photograph the seasonal pastries",
+    "Design the booking screens",
+    "Review privacy requirements with the clinic",
+]
+MODEL_COLS = ["status", "project", "owner", "due", "priority"]
+MODEL_STATUS = ["todo", "doing", "done"]
+
+
+def version() -> str:
+    """Cargo.toml の版(入口に出す)。"""
+    return tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))["package"]["version"]
+
+
+def model_notes() -> list:
+    """図のノート: ファイルの行そのものと、表に出す値(リンクの [[ ]] と引用符は外して名前だけ)。"""
+    out = []
+    for name in MODEL_NOTES:
+        lines = (ROOT / "examples/studio/Tasks" / f"{name}.md").read_text(encoding="utf-8").rstrip("\n").split("\n")
+        note = {"name": name, "path": f"Tasks/{name}.md", "lines": lines}
+        for line in lines[1 : lines.index("---", 1)]:
+            m = re.match(r"([A-Za-z_]+):\s*(.*)$", line)
+            if m and m.group(1) in MODEL_COLS:
+                note[m.group(1)] = re.sub(r'^"?\[\[(.*)\]\]"?$', r"\1", m.group(2))
+        if note.get("status") not in MODEL_STATUS:
+            raise SystemExit(f"図のノートの status が {MODEL_STATUS} に無い: {name}")
+        out.append(note)
+    return out
+
+
+def cmd(text: str, lang: str, prompt: str = "$ ") -> str:
+    """コマンドの箱。行の頭の $ は写す文字に入れない。写すボタンは JS で動く(無ければ選んで写せる)。"""
+    t = TEXT[lang]
+    lines = "\n".join(f'<span class="ps">{prompt}</span>{html.escape(l)}' if prompt else html.escape(l) for l in text.split("\n"))
+    return (
+        f'<div class="cmd"><pre><code data-text="{html.escape(text)}">{lines}</code></pre>'
+        f'<button type="button" data-copy data-done="{t["copied"]}">{ICON_COPY}<span>{t["copy"]}</span></button></div>'
+    )
 
 
 def nav(lang: str, file: str) -> str:
-    """どのページにも同じ上の帯(説明書・カタログ・画面の一覧・GitHub と、言語の切り替え)。"""
+    """どのページにも同じ上の帯(説明書・カタログ・画面の一覧・GitHub、言語と明暗の切り替え、はじめかた)。"""
     t = TEXT[lang]
     o = other_lang(lang)
     return (
-        f'<nav class="top"><a class="brand" href="./">mdgrid</a>'
-        f'<a href="../manual/{lang}/">{t["manual"]}</a><a href="../catalog/?lang={lang}">{t["catalog"]}</a>'
-        f'<a href="gallery.html">{t["gallery"]}</a><a href="{REPO}">GitHub</a>'
-        f'<span class="grow"></span><a class="opt" href="../{o}/{file}" hreflang="{o}" lang="{o}" data-pick="{o}">{NAMES[o]}</a></nav>'
+        f'<nav class="top"><a class="brand" href="./">{LOGO}mdgrid</a>'
+        f'<div class="links"><a href="../manual/{lang}/">{t["manual"]}</a><a href="../catalog/?lang={lang}">{t["catalog"]}</a>'
+        f'<a href="gallery.html">{t["gallery"]}</a><a href="{REPO}">GitHub</a></div>'
+        f'<span class="grow"></span><div class="tools">'
+        f'<a class="opt" href="../{o}/{file}" hreflang="{o}" lang="{o}" data-pick="{o}">{NAMES[o]}</a>'
+        f'<button class="opt mode" id="mode" type="button" aria-label="{t["mode"]}" title="{t["mode"]}">{ICON_MODE}</button>'
+        f'<a class="go" href="../manual/{lang}/getting-started.html">{t["start"]}</a></div></nav>'
     )
 
 
-def landing(lang: str, shown) -> str:
+def model(lang: str, notes: list) -> str:
+    """仕組みの図(ノートのファイルと表)。JS が無いときは、最初のノートを選んだ静かな図として読める。"""
+    h = HOME[lang]
+    first = notes[0]
+    file_lines, inside, ended = [], False, False
+    for raw in first["lines"]:
+        m = re.match(r"([A-Za-z_]+)(:.*)$", raw)
+        if raw == "---":
+            inside = not inside and not ended
+            ended = ended or not inside
+            file_lines.append(f'<span class="l fm">{raw}</span>')
+        elif inside and m:
+            file_lines.append(f'<span class="l"><span class="k" data-key="{m.group(1)}">{m.group(1)}</span>{html.escape(m.group(2))}</span>')
+        else:
+            file_lines.append(f'<span class="l{"" if inside else " body"}">{html.escape(raw)}</span>')
+    head = f'<th scope="col">{h["how_note_col"]}</th>' + "".join(
+        f'<th scope="col" data-col="{c}"{" class=num" if c == "priority" else ""}>{c}</th>' for c in MODEL_COLS
+    )
+    rows = []
+    for i, n in enumerate(notes):
+        opts = "".join(f'<option{" selected" if s == n["status"] else ""}>{s}</option>' for s in MODEL_STATUS)
+        rows.append(
+            f'<tr{" class=sel" if i == 0 else ""}><td><button class="name" type="button" title="{html.escape(n["name"])}">{html.escape(n["name"])}</button></td>'
+            f'<td data-col="status"><span class="pick" data-v="{n["status"]}"><i></i>'
+            f'<select aria-label="status: {html.escape(n["name"])}">{opts}</select></span></td>'
+            f'<td class="link" data-col="project">{html.escape(n.get("project", ""))}</td>'
+            f'<td class="link" data-col="owner">{html.escape(n.get("owner", ""))}</td>'
+            f'<td data-col="due">{html.escape(n.get("due", ""))}</td>'
+            f'<td class="num" data-col="priority">{html.escape(n.get("priority", ""))}</td></tr>'
+        )
+    say = html.escape(json.dumps(h["how_say"], ensure_ascii=False))
+    data = json.dumps([{"path": n["path"], "lines": n["lines"], "status": n["status"]} for n in notes], ensure_ascii=False).replace("</", "<\\/")
+    return f"""<div id="model" data-say="{say}">
+<div class="model">
+  <section class="pane file" aria-label="{h["how_file"]}"><header><b>{html.escape(first["path"])}</b><span>{h["how_file"]}</span></header>
+  <pre><code>{"".join(file_lines)}</code></pre></section>
+  <div class="join" aria-hidden="true">⇄</div>
+  <section class="pane sheet" aria-label="{h["how_sheet"]}"><header><b>~/notes/Tasks</b><span>{h["how_sheet"]}</span></header>
+  <div class="scroll"><table><thead><tr>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>
+  <div class="tally" aria-live="polite"><b>{h["how_say"]["unsaved"]} 0</b><span>{h["how_say"]["clean"]}</span><button type="button" hidden>{h["how_undo"]}</button></div></section>
+</div>
+<p class="note">{html.escape(h["how_note"])}</p>
+<script type="application/json" id="model-data">{data}</script>
+</div>"""
+
+
+def landing(lang: str, shown, shots) -> str:
     t, h = TEXT[lang], HOME[lang]
     i = 1 if lang == "ja" else 2
-    feats = "".join(
-        f'<article class="feat"><a href="gallery.html#{img}"><img loading="lazy" src="../images/{lang}/{img}.svg" alt="{html.escape(title)}"></a>'
-        f"<h3>{html.escape(title)}</h3><p class=\"muted\">{html.escape(text)}</p></article>"
-        for title, text, img in h["features"]
+    img = lambda sid: f"../images/{lang}/{sid}.svg"
+    man = f"../manual/{lang}/"
+
+    # 最初の画面: Markdown のフォルダ・CSV のファイル・つながった表の3場面(本物の画面)。枠の題は、その場面のコマンド。
+    frames = "".join(
+        f'<a href="gallery.html#{sid}"{" class=on" if k == 0 else ""}><img{"" if k == 0 else " loading=lazy"} width="856" height="520" src="{img(sid)}" alt="{html.escape(title + ": " + text)}"></a>'
+        for k, (title, text, sid, _) in enumerate(h["steps"])
     )
+    steps = "".join(
+        f'<button class="step" type="button" data-cmd="{html.escape(run)}" aria-pressed="{"true" if k == 0 else "false"}"><span class="n">{k + 1}</span><b>{html.escape(title)}</b><span class="t">{html.escape(text)}</span></button>'
+        for k, (title, text, sid, run) in enumerate(h["steps"])
+    )
+    under = f'<a href="{REPO}/releases/latest">{h["bin"]}</a> · {h["rust"]}'
+    facts = "".join(f"<li>{html.escape(x)}</li>" for x in [f"v{version()}"] + h["facts"])
+
+    # 1分で試す。
+    keys = " ".join(f"<kbd>{k}</kbd> {html.escape(w)}" for k, w in h["try_keys"])
+    (t1, p1), (t2, p2), (t3, p3) = h["try"]
+    tries = f"""
+<li><h3>{t1}</h3><p>{html.escape(p1)}</p>{cmd(INSTALL, lang)}<p class="small">{under}</p></li>
+<li><h3>{t2}</h3><p>{html.escape(p2)}</p>{cmd(TRY, lang)}</li>
+<li><h3>{t3}</h3><a class="screen" href="gallery.html#table"><img loading="lazy" width="856" height="520" src="{img("table")}" alt="{html.escape(t3)}"></a><p>{html.escape(p3)} {keys}</p><p class="small"><a href="{man}getting-started.html">{html.escape(h["try_more"])}</a></p></li>"""
+
+    # タブで切り替える画面の組(データベースとして・自分の場面)。JS が無ければ全部が縦に並ぶ。
+    def tabset(pre: str, label: str, items, extra=lambda sid: "") -> str:
+        tabs = "".join(
+            f'<button class="tab" type="button" role="tab" id="tab-{pre}{sid}" aria-controls="{pre}{sid}" aria-selected="{"true" if k == 0 else "false"}">{html.escape(name)}</button>'
+            for k, (sid, name, _, _, _) in enumerate(items)
+        )
+        panels = "".join(
+            f'<div class="scene" role="tabpanel" id="{pre}{sid}" aria-labelledby="tab-{pre}{sid}"><div class="say"><h3>{html.escape(title)}</h3><p>{html.escape(text)}</p>{extra(sid)}</div>'
+            f'<a class="screen" href="gallery.html#{shot}"><img loading="lazy" width="856" height="520" src="{img(shot)}" alt="{html.escape(title)}"></a></div>'
+            for sid, name, title, text, shot in items
+        )
+        return f'<div class="tabs" role="tablist" aria-label="{html.escape(label)}">{tabs}</div>\n{panels}'
+
+    db = tabset("db-", h["db_eyebrow"], h["db"])
+    starter = lambda sid: cmd(f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}", lang)
+    scenes = tabset("scene-", h["scene_eyebrow"], h["scenes"], starter)
+
+    # 分割した画面: 左は架空のエージェントの画面(どの製品の画面も写さない。名前も sample-agent)、右は本物の画面。
+    ai_steps = ""
+    for what, arg, result in h["ai_log"]:
+        tail = f'<span class="res">└ {html.escape(result)}</span>' if result else '<span class="diff"><span class="del">- status: todo</span><span class="add">+ status: done</span></span>'
+        ai_steps += f'<div class="act"><span class="lab">▸ {html.escape(what)}</span><span class="arg">{html.escape(arg)}</span>{tail}</div>'
+    ai_log = (
+        f'<div class="agent-ui"><p class="who">sample-agent v1.0 · ~/notes/ai-human</p>'
+        f'<p class="ask">{html.escape(h["ai_ask"])}</p>{ai_steps}'
+        f'<p class="done">{html.escape(h["ai_done"])}</p>'
+        f'<div class="box" aria-hidden="true"><span>&gt;</span><i></i></div><p class="hint">{html.escape(h["ai_hint"])}</p></div>'
+    )
+
+    # ターミナルの道具として: 本物のオプションの使い方を、1つの端末に並べる(# の行は説明。写すのはコマンドだけ)。
+    cli_lines = "\n".join(f'<span class="cm"># {html.escape(why)}</span>\n<span class="ps">$ </span>{html.escape(run)}' for why, run in h["cli"])
+    cli_text = html.escape("\n".join(run for _, run in h["cli"]))
+    cli = (
+        f'<div class="cmd tall"><pre><code data-text="{cli_text}">{cli_lines}</code></pre>'
+        f'<button type="button" data-copy data-done="{t["copied"]}">{ICON_COPY}<span>{t["copy"]}</span></button></div>'
+    )
+
+    # 見た目: テーマの場面(theme-*)を名前で並べ、押すと画面を差し替える。JS が無ければ画面の一覧のその場面へ行く。
+    looks = [(s["id"][len("theme-"):], s["title"][lang].split(": ", 1)[-1]) for s in shots if s["id"].startswith("theme-")]
+    look_tabs = "".join(
+        f'<a class="tab" role="button" href="gallery.html#theme-{lid}" data-look="{lid}" aria-pressed="{"true" if k == 0 else "false"}">{html.escape(name)}</a>'
+        for k, (lid, name) in enumerate(looks)
+    )
+    look0 = looks[0][0]
+    look_code = (
+        f'<div class="cmd"><pre><code id="look-code" data-text="[look]&#10;theme = &quot;{look0}&quot;"><span class="cm">[look]</span>\n<span class="v">theme = "{look0}"</span></code></pre>'
+        f'<button type="button" data-copy data-done="{t["copied"]}">{ICON_COPY}<span>{t["copy"]}</span></button></div>'
+    )
+
     demos = "".join(
         f'<figure class="demo"><img loading="lazy" src="../demos/{d[0]}" alt="{html.escape(d[i])}">'
         f"<figcaption><b>{html.escape(d[i])}</b></figcaption></figure>"
         for d in shown
     )
+    card = lambda href, title, desc: f'<a class="card" href="{href}"><h3>{title}</h3><p class="muted">{html.escape(desc)}</p><span class="arrow" aria-hidden="true">→</span></a>'
     body = f"""
-{nav(lang, "")}
+<main>
 <header class="hero">
-  <div class="hero-text">
-    <h1>{html.escape(h["tagline"])}</h1>
+  <div class="in">
+    <p class="prompt"><b>$</b> mdgrid ~/notes/Tasks<i></i></p>
+    <h1><span>{h["h1"][0]}</span>{"" if lang == "ja" else " "}<span>{h["h1"][1]}</span></h1>
     <p class="lead">{html.escape(h["sub"])}</p>
-    <pre class="cmd"><code>cargo install mdgrid --locked</code></pre>
-    <p class="muted small">{html.escape(h["install_note"])} <a href="{REPO}/releases/latest">{h["releases"]}</a>.</p>
-    <div class="buttons"><a class="btn" href="../manual/{lang}/getting-started.html">{h["start"]}</a><a class="btn ghost" href="{REPO}">GitHub</a></div>
+    {cmd(INSTALL, lang)}
+    <p class="under">{under}</p>
+    <div class="cta"><a class="btn" href="{man}getting-started.html">{h["start"]} →</a><a class="btn ghost" href="#try">{h["try_link"]}</a><a class="btn ghost" href="{REPO}">GitHub</a></div>
+    <ul class="facts">{facts}</ul>
   </div>
-  <img class="shot" src="../assets/{lang}/demo.gif" alt="mdgrid">
+  <div class="stage">
+    <div class="term"><div class="bar-t"><i></i><i></i><i></i><span>mdgrid ~/notes/Tasks</span></div><div class="frames">{frames}</div></div>
+    <div class="steps">{steps}</div>
+  </div>
 </header>
-<section class="feats">{feats}</section>
-<p class="muted">{html.escape(h["more"])}</p>
-<section class="two">
-  <div><h2>{h["try"]}</h2><p class="muted">{html.escape(h["try_note"])}</p><pre class="cmd"><code>{html.escape(TRY[lang])}</code></pre></div>
-  <div><h2>{h["see"]}</h2><div class="cards one">
-    <a class="card" href="../manual/{lang}/views.html"><h3>{t["views"]}</h3><p class="muted">{html.escape(t["views_desc"])}</p></a>
-    <a class="card" href="../manual/{lang}/features.html"><h3>{t["features"]}</h3><p class="muted">{html.escape(t["features_desc"])}</p></a>
-    <a class="card" href="../catalog/?lang={lang}"><h3>{t["catalog"]}</h3><p class="muted">{html.escape(t["catalog_desc"])}</p></a>
-    <a class="card" href="gallery.html"><h3>{t["gallery"]}</h3><p class="muted">{html.escape(t["gallery_desc"])}</p></a>
-  </div></div>
-</section>
-{f'<h2>{t["demos"]}</h2><div class="demos">{demos}</div>' if shown else ""}
+
+<section class="sec tint" id="db"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["db_eyebrow"]}</p><h2>{h["db_h"]}</h2><p>{html.escape(h["db_p"])}</p></div>
+  {db}
+  <p class="also">{html.escape(h["more"])} <a href="{man}features.html">{t["features"]} →</a></p>
+</div></section>
+
+<section class="sec" id="relations"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["rel_eyebrow"]}</p><h2>{h["rel_h"]}</h2><p>{html.escape(h["rel_p"])}</p></div>
+  <div class="rel rise">
+    <div class="say">
+      <section class="pane file" aria-label="{h["rel_file"]}"><header><b>Tasks/Build the appointment API.md</b><span>{h["rel_file"]}</span></header>
+      <pre><code><span class="l"><span class="k">project</span>: "[[Clinic Booking App]]"</span><span class="l"><span class="k">owner</span>: "[[Sam Ortiz]]"</span></code></pre></section>
+      <p class="note">{html.escape(h["rel_note"])}</p>
+      <a class="more" href="{man}features.html">{html.escape(h["rel_more"])} →</a>
+    </div>
+    <a class="screen" href="gallery.html#demo-relmap"><img loading="lazy" width="856" height="520" src="{img("demo-relmap")}" alt="{html.escape(h["rel_h"])}"></a>
+  </div>
+</div></section>
+
+<section class="sec tint" id="ai"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["ai_eyebrow"]}</p><h2>{h["ai_h"]}</h2><p>{html.escape(h["ai_p"])}</p></div>
+  <div class="term panes rise"><div class="bar-t"><i></i><i></i><i></i><span>~/notes</span></div>
+    <div class="split-t">
+      <div class="pane-t agent"><p class="cap">{h["ai_left"]}</p>{ai_log}</div>
+      <div class="pane-t"><p class="cap">{h["ai_right"]}</p><a href="gallery.html#demo-ai-human"><img loading="lazy" width="856" height="520" src="{img("demo-ai-human")}" alt="{html.escape(h["ai_right"])}"></a></div>
+    </div>
+  </div>
+  <dl class="fits rise">{"".join(f"<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>" for k, v in h["ai_fits"])}</dl>
+  <p class="note">{html.escape(h["ai_note"])}</p>
+</div></section>
+
+<section class="sec" id="cli"><div class="in">
+  <div class="split">
+    <div class="head rise"><p class="eyebrow">{h["cli_eyebrow"]}</p><h2>{h["cli_h"]}</h2><p>{html.escape(h["cli_p"])}</p>
+      <a class="more" href="{man}tasks.html">{html.escape(h["cli_more"])} →</a></div>
+    {cli}
+  </div>
+  <dl class="fits rise">{"".join(f"<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>" for k, v in h["cli_fits"])}</dl>
+</div></section>
+
+<section class="sec tint" id="how"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["how_eyebrow"]}</p><h2>{h["how_h"]}</h2><p>{html.escape(h["how_p"])}</p></div>
+  {model(lang, model_notes())}
+  <p class="also"><a class="more" href="{man}safety.html">{html.escape(h["how_more"])} →</a></p>
+</div></section>
+
+<section class="sec" id="try"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["try_eyebrow"]}</p><h2>{h["try_h"]}</h2></div>
+  <ol class="try rise">{tries}</ol>
+</div></section>
+
+<section class="sec tint" id="scenes"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["scene_eyebrow"]}</p><h2>{h["scene_h"]}</h2><p>{html.escape(h["scene_p"])}</p></div>
+  {scenes}
+</div></section>
+
+<section class="sec" id="look"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["look_eyebrow"]}</p><h2>{h["look_h"]}</h2><p>{html.escape(h["look_p"])}</p></div>
+  <div class="look">
+    <a class="screen" href="gallery.html#theme-{look0}"><img id="look-img" loading="lazy" width="856" height="520" src="{img("theme-" + look0)}" alt="{html.escape(looks[0][1])}"></a>
+    <div class="side"><div class="tabs">{look_tabs}</div>{look_code}<a class="btn ghost" href="../catalog/?lang={lang}">{t["catalog"]} →</a></div>
+  </div>
+</div></section>
+
+<section class="sec tint" id="next"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["next_eyebrow"]}</p><h2>{h["next_h"]}</h2></div>
+  <div class="cards five">
+    {card(man + "views.html", t["views"], t["views_desc"])}
+    {card(man + "features.html", t["features"], t["features_desc"])}
+    {card(man, t["manual"], t["manual_desc"])}
+    {card("../catalog/?lang=" + lang, t["catalog"], t["catalog_desc"])}
+    {card("gallery.html", t["gallery"], t["gallery_desc"])}
+  </div>
+</div></section>
+{f'<section class="sec" id="demos"><div class="in"><div class="head"><p class="eyebrow">{t["demos"]}</p><h2>{t["demos_desc"]}</h2></div><div class="demos">{demos}</div></div></section>' if shown else ""}
+<section class="sec last"><div class="in">
+  <h2>{h["last_h"]}</h2><p class="lead">{html.escape(h["last_p"])}</p>
+  {cmd(INSTALL + chr(10) + "mdgrid ~/notes/Tasks", lang)}
+  <div class="cta"><a class="btn" href="{man}getting-started.html">{h["start"]} →</a><a class="btn ghost" href="{REPO}/releases/latest">{h["releases"]}</a></div>
+</div></section>
+</main>
+<footer class="foot"><div class="in"><span>{html.escape(h["foot"])}</span><span class="grow"></span>
+  <a href="{man}">{t["manual"]}</a><a href="{REPO}">GitHub</a><a href="{REPO}/releases">{h["releases"]}</a><a href="https://crates.io/crates/mdgrid">crates.io</a></div></footer>
 """
-    return page(lang, f"mdgrid — {h['tagline']}", body, h["sub"], alternates("ja/"))
+    title = f"mdgrid — {h['tagline']}"
+    og = "\n".join(
+        [
+            f'<meta property="og:type" content="website">',
+            f'<meta property="og:site_name" content="mdgrid">',
+            f'<meta property="og:title" content="{html.escape(title)}">',
+            f'<meta property="og:description" content="{html.escape(h["sub"])}">',
+            f'<meta property="og:url" content="{SITE}{lang}/">',
+            f'<meta property="og:image" content="{SITE}assets/{lang}/hero.png">',
+            f'<meta name="twitter:card" content="summary_large_image">',
+        ]
+    )
+    return page(lang, title, body, h["sub"], alternates("ja/") + "\n" + og, LANDING_JS, top=nav(lang, ""), wide=True)
 
 
 def gallery(lang: str, shots) -> str:
@@ -483,13 +923,12 @@ def gallery(lang: str, shots) -> str:
             f'<figcaption><b>{html.escape(title)}</b><span class="muted">{html.escape(text)}</span>{k}</figcaption></figure>'
         )
     body = f"""
-{nav(lang, "gallery.html")}
 <h1>{t["gallery"]}</h1>
 <p class="muted">{html.escape(t["gallery_desc"])} {t["count"].format(n=len(shots))}</p>
 <input id="find" type="search" aria-label="{t["filter"]}" placeholder="{t["filter"]}">
 <div class="shots">{''.join(figs)}</div>
 """
-    return page(lang, f'{t["gallery"]} · mdgrid', body, t["gallery_desc"], alternates("ja/gallery.html"), FIND)
+    return page(lang, f'{t["gallery"]} · mdgrid', body, t["gallery_desc"], alternates("ja/gallery.html"), FIND, top=nav(lang, "gallery.html"))
 
 
 def decorate_book(lang: str, dest: Path) -> None:
