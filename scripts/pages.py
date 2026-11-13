@@ -376,7 +376,12 @@ HOME = {
         "rel_note": "リレーションはノートどうしの間のものです。CSV の表は、まだこの範囲に入りません。",
         "rel_more": "リンクで表をつなぐ",
         "cli_eyebrow": "ターミナルの道具として",
-        "cli_h": "ターミナルの中で、ほかのコマンドと組む",
+        "cli_h": "ターミナルで完結する",
+        "cli_fits": [
+            ("tmux", "コピー(y)が、tmux の中からでも手元のクリップボードに届きます。"),
+            ("WezTerm・Ghostty", "丸い札などの飾りを、端末を見分けて自動で描きます。ほかの端末では崩れない形に。"),
+            ("マウス", "操作はキーが基本で、行やセルのクリックとホイールも効きます。"),
+        ],
         "cli_p": "mdgrid は実行ファイル1つです。常駐するものも、別に立てるデータベースもありません。データはノートと CSV のファイルそのものなので、git で差分が追え、ふだんのエディタで同じフォルダを開いたままにできます。",
         "cli": [
             ("フォルダごとに1コマンド", "alias tasks='mdgrid ~/notes/Tasks'"),
@@ -462,7 +467,12 @@ HOME = {
         "rel_note": "Relations are between notes. CSV tables are not part of this yet.",
         "rel_more": "Linking tables",
         "cli_eyebrow": "As a terminal tool",
-        "cli_h": "It lives in the terminal and works with other commands",
+        "cli_h": "Everything happens in the terminal",
+        "cli_fits": [
+            ("tmux", "Copying with y reaches your local clipboard from inside tmux too."),
+            ("WezTerm, Ghostty", "Rounded chips and similar marks are drawn where the terminal is known to render them, and fall back to plain shapes elsewhere."),
+            ("Mouse", "Keys come first, and clicking rows and cells and the wheel work as well."),
+        ],
         "cli_p": "mdgrid is a single binary. Nothing runs in the background and there is no database to set up. The data is the note and CSV files themselves, so git shows the diffs and your usual editor can keep the same folder open.",
         "cli": [
             ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks'"),
@@ -734,6 +744,7 @@ def landing(lang: str, shown, shots) -> str:
       <a class="more" href="{man}tasks.html">{html.escape(h["cli_more"])} →</a></div>
     {cli}
   </div>
+  <dl class="fits rise">{"".join(f"<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>" for k, v in h["cli_fits"])}</dl>
 </div></section>
 
 <section class="sec" id="how"><div class="in">

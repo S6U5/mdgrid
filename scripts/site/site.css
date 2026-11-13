@@ -254,6 +254,11 @@ html.js .scene[hidden]{display:none}
 .cmd.tall button{padding:10px 14px;border-left:0;border-top:1px solid var(--term-line);justify-content:center}
 @media (max-width:900px){.rel,.split{grid-template-columns:minmax(0,1fr)}}
 
+.fits{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:0 28px;margin:clamp(28px,4vw,44px) 0 0;border-top:1px solid var(--line)}
+.fits>div{padding:16px 0}
+.fits dt{font:600 14px/1.6 var(--mono);color:var(--fg)}
+.fits dd{margin:4px 0 0;font-size:14.5px;color:var(--muted)}
+
 /* テーマ */
 .look{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(18px,3vw,36px);align-items:start}
 .look .side{display:grid;gap:16px}
