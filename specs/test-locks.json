@@ -11696,5 +11696,244 @@
       "SR-51"
     ],
     "sha": "223f5577f94ab0d3"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_action_opens_review_with_heading_and_diff": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "04ffc236234f7e54"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_confirm_restores_bytes_and_pending_value": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "c5f680eca99cd2d4"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_english_texts": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "1139f66ea23fa2a7"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_esc_cancels_without_writing": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "32c0663add58a1bd"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_file_changed_outside_shows_reason_and_is_skipped": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "2b7cafba214f6914"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_no_save_yet_only_tells": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "fa3582f948428d4c"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_only_last_save_is_undone": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "033caaf71a8d05c2"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_overwrite_and_discard_keys_do_nothing_in_undo_review": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "25c6a4133939ceeb"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_palette_command_without_default_key": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "8dedcdc4e4119e73"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_readonly_has_no_command": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "c4af6e815a970004"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_restored_value_can_be_saved_again": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "6046860f90009fff"
+  },
+  "src/ui/test_save_undo.rs::test_wb_21_two_files_one_changed_outside": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "81f3a932dcfa2a97"
+  },
+  "tests/test_save_undo.rs::test_wb_21_csv_changed_outside_is_not_restored": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "41ee9645fc0ae8cd"
+  },
+  "tests/test_save_undo.rs::test_wb_21_memory_lives_only_in_the_running_changes": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "b42f9e7e1c88fa0d"
+  },
+  "tests/test_save_undo.rs::test_wb_21_no_backup_file_in_the_folder": {
+    "ids": [
+      "WB-2",
+      "WB-21"
+    ],
+    "sha": "b5464ffe096b65f4"
+  },
+  "tests/test_save_undo.rs::test_wb_21_no_save_means_nothing_to_undo": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "b442f806f90d71c0"
+  },
+  "tests/test_save_undo.rs::test_wb_21_only_last_save_is_undone_other_file": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "aa0f0bb508821ef1"
+  },
+  "tests/test_save_undo.rs::test_wb_21_only_last_save_is_undone_same_file": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "621efda4c691d1f9"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_keeps_permissions": {
+    "ids": [
+      "WB-21",
+      "WB-8"
+    ],
+    "sha": "d95572545530015e"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_keeps_symlink": {
+    "ids": [
+      "WB-21",
+      "WB-8"
+    ],
+    "sha": "1b6dabcb1f5e6095"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_refuses_hard_linked_file": {
+    "ids": [
+      "WB-21",
+      "WB-5"
+    ],
+    "sha": "ddf34f161cb1a702"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_refuses_stale_base": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "766c21ef02962cc9"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_refuses_when_file_changed_outside": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "c09bf6b09fbfe1e9"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_replaces_bytes_when_file_matches_base": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "0907dd88f39b0d7f"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_same_length_change_is_detected": {
+    "ids": [
+      "WB-21",
+      "WB-4"
+    ],
+    "sha": "362fcc27801d95eb"
+  },
+  "tests/test_save_undo.rs::test_wb_21_restore_writes_given_bytes_verbatim": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "f9585ff668081223"
+  },
+  "tests/test_save_undo.rs::test_wb_21_save_that_wrote_nothing_keeps_previous_memory": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "19e9a01d79a767a7"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_keeps_values_set_after_the_save": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "256d3d0d4c12ff70"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_restores_cells_as_one_step": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "8ceac79f2df80264"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_restores_file_bytes_and_pending_value": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "b7361d8c0e229844"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_skips_changed_unit_after_source_saw_it": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "27964ea53bb1d798"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_skips_unit_changed_outside": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "da75a21db2982814"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_then_fix_and_save_again": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "dcfbeedede41558c"
+  },
+  "tests/test_save_undo.rs::test_wb_21_undo_save_works_through_csv_source": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "ac36f50c1a4ec68e"
+  },
+  "tests/test_save_undo_e2e.rs::test_wb_21_e2e_cancel_undo_review_writes_nothing": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "bdaab16be6ea145d"
+  },
+  "tests/test_save_undo_e2e.rs::test_wb_21_e2e_english_command_and_message": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "a9a95c69fe92d66b"
+  },
+  "tests/test_save_undo_e2e.rs::test_wb_21_e2e_no_save_yet_says_nothing_to_undo": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "ec0a27813476d09b"
+  },
+  "tests/test_save_undo_e2e.rs::test_wb_21_e2e_palette_undo_save_shows_diff_and_restores_bytes": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "7e601672a637d327"
+  },
+  "tests/test_save_undo_e2e.rs::test_wb_21_e2e_readonly_has_no_undo_save_command": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "5020d98c05e951a9"
   }
 }

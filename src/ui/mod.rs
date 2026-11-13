@@ -305,6 +305,8 @@ mod test_row_lines;
 #[cfg(test)]
 mod test_row_lines_more;
 #[cfg(test)]
+mod test_save_undo;
+#[cfg(test)]
 mod test_screen_tabs_fixed;
 #[cfg(test)]
 mod test_selects_cache;
