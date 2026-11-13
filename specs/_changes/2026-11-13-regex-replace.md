@@ -2,7 +2,7 @@
 type: Change
 id: 01M799C8GE6ACT0Q43MTT9SQZX
 title: 選んだ列の値を正規表現で探して置き換える(regex-replace)
-status: active
+status: done
 size: full
 created: 2026-11-13
 updated: 2026-11-13
@@ -17,12 +17,12 @@ updated: 2026-11-13
 | フェーズ | 状態 | 成果物 |
 |---|---|---|
 | 要求 | 済 | この記録の「要求」 |
-| 不明点 | 進行中 | この記録の「不明点と仮定」 |
+| 不明点 | 済 | この記録の「不明点と仮定」 |
 | 仕様化 | 済 | [決定](../_decisions/2026-11-13-regex-replace.md) |
-| 設計 | 進行中 | この記録の「設計」 |
-| タスク | 進行中 | この記録の「タスク」 |
-| 実装 | 進行中 | コミット |
-| 照合 | 未 | この記録の「照合」 |
+| 設計 | 済 | この記録の「設計」 |
+| タスク | 済 | この記録の「タスク」 |
+| 実装 | 済 | コミット |
+| 照合 | 済 | この記録の「照合」 |
 
 ## 要求
 
@@ -61,8 +61,8 @@ updated: 2026-11-13
 
 | # | タスク | 要件 | 完了の条件 | 範囲 | 受け入れ(テスト名) | 状態 |
 |---|---|---|---|---|---|---|
-| 1 | 置き換えの操作(入口・聞く順・ためる) | CE-15 | パレットから正規表現と置き換える文字を答えると、変わったセルだけが1手でたまる | src/ui/replace.rs, src/ui/native_io.rs, src/ui/keymap.rs, src/ui/app.rs, src/ui/menu.rs, src/ui/mod.rs, locales/en.toml, locales/ja.toml, docs/keys.md, docs/keys.ja.md | src/ui/test_regex_replace.rs・tests/test_regex_replace_e2e.rs の `test_ce_15_*` | 未 |
-| 2 | 文書: できることの一覧・手引き・場面 | CE-15 | 説明書に1項と画面1枚 | docs/manual, docs/manual-scenarios.toml | 読んで判定 | 未 |
+| 1 | 置き換えの操作(入口・聞く順・ためる) | CE-15 | パレットから正規表現と置き換える文字を答えると、変わったセルだけが1手でたまる | src/ui/replace.rs, src/ui/native_io.rs, src/ui/keymap.rs, src/ui/app.rs, src/ui/menu.rs, src/ui/mod.rs, locales/en.toml, locales/ja.toml, docs/keys.md, docs/keys.ja.md | src/ui/test_regex_replace.rs・tests/test_regex_replace_e2e.rs の `test_ce_15_*` | 済 |
+| 2 | 文書: できることの一覧・手引き・場面 | CE-15 | 説明書に1項と画面1枚 | docs/manual, docs/manual-scenarios.toml | 読んで判定 | 済 |
 
 ## 実装の気づき
 
@@ -86,7 +86,16 @@ updated: 2026-11-13
 
 ## 照合
 
+検証役(実装を見ていない新しい文脈。書込なし)が、実装の前(acf43ac に今の e2e のテストを重ねた worktree)と後(b92e7b0)で確かめた。証拠のスクリプト(`check.py --evidence`)は「前: 要件の手前で落ちた」(単体試験が、実装前には無い名前を使うのでコンパイルで落ちる)として gap を出したので、前で落ちることは e2e で確かめた。
+
 | 要件 | 結果 | 証拠 |
 |---|---|---|
+| CE-15 | checked | コード: src/ui/replace.rs:15 / テスト: tests/test_regex_replace_e2e.rs::test_ce_15_e2e_palette_replace_then_save_writes_files / 今: 通った(`cargo test --test test_regex_replace_e2e`・`cargo test --bin mdgrid test_ce_15`) / 前: 落ちた(e2e 2本とも。パレットに `regex_replace` の候補が出ずに時間切れ) |
 
-確かめた: 0 / 0
+既存のテストの削除・skip・弱体化: なし(既存のテストのファイルは変えていない。ゴールデン `tests/golden/sr_5.txt`・`sr_14.txt` は、足したキーとコマンドの分と、パレットの表示名の欄を広げた分が変わった)
+
+セキュリティの回: 指摘 1 件(細部。重要なし)
+
+全体の走り: 約 4 分(`cargo test --no-fail-fast`。最後の「実装:」の直前。前から落ちる `test_cliff_history_prefixes_all_covered` の1本を除いて通った。この1本は、この変更を外しても落ちる)。`cargo fmt --check`・`cargo clippy --all-targets -- -D warnings`・`check.py` は通った
+
+確かめた: 1 / 1

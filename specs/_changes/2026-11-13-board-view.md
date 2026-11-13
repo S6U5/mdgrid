@@ -2,7 +2,7 @@
 type: Change
 id: 01M799C8J9A9V8585NV6HD2SFE
 title: 列の値ごとのレーンにノートをカードとして並べる「ボード」の画面を足す(board-view)
-status: active
+status: done
 size: full
 created: 2026-11-13
 updated: 2026-11-13
@@ -17,12 +17,12 @@ updated: 2026-11-13
 | フェーズ | 状態 | 成果物 |
 |---|---|---|
 | 要求 | 済 | この記録の「要求」 |
-| 不明点 | 進行中 | この記録の「不明点と仮定」 |
+| 不明点 | 済 | この記録の「不明点と仮定」 |
 | 仕様化 | 済 | [決定](../_decisions/2026-11-13-board-view.md) |
-| 設計 | 進行中 | この記録の「設計」 |
-| タスク | 進行中 | この記録の「タスク」 |
-| 実装 | 進行中 | コミット |
-| 照合 | 未 | この記録の「照合」 |
+| 設計 | 済 | この記録の「設計」 |
+| タスク | 済 | この記録の「タスク」 |
+| 実装 | 済 | コミット |
+| 照合 | 済 | この記録の「照合」 |
 
 ## 要求
 
@@ -64,11 +64,11 @@ updated: 2026-11-13
 
 | # | タスク | 要件 | 完了の条件 | 範囲 | 受け入れ(テスト名) | 状態 |
 |---|---|---|---|---|---|---|
-| 1 | レーンに分ける核 | BD-2 | 値と順を渡すと、決まりの順・文字の順・最後に「(なし)」のレーンが返る | src/board.rs, src/lib.rs | tests/test_board.rs の `test_bd_2_*` | 未 |
-| 2 | ボードの画面(開く・描く・動く・表へ) | BD-1, BD-2, BD-3, BD-5 | `B` でレーンとカードが出て、Enter で表のその行、Esc で戻る | src/ui/board.rs, src/ui/keymap.rs, src/ui/app.rs, src/ui/view.rs, src/ui/bands.rs, src/ui/help.rs, src/ui/screen_menu.rs, src/ui/mod.rs, locales/en.toml, locales/ja.toml, docs/keys.md, docs/keys.ja.md | src/ui/test_board.rs・tests/test_board_e2e.rs の `test_bd_1_*`・`test_bd_3_*`・`test_bd_5_*` | 未 |
-| 3 | カードを移す・取り消し・保存 | BD-4 | `L` で隣のレーンへ移って未保存 1、`u` で戻る、Ctrl+S で保存の確認 | src/ui/board.rs | src/ui/test_board.rs・tests/test_board_e2e.rs の `test_bd_4_*` | 未 |
-| 4 | マウス | BD-6 | カードのクリックで選び、もう一度で表のその行 | src/ui/board.rs, src/ui/app.rs | src/ui/test_board.rs の `test_bd_6_*` | 未 |
-| 5 | 文書: 見せ方の一覧・できることの一覧・場面・設計 | BD-1 | 説明書の「見せ方の一覧」に画面1枚と1項 | docs/manual, docs/manual-scenarios.toml, docs/design.md, README.md, README.ja.md | 読んで判定 | 未 |
+| 1 | レーンに分ける核 | BD-2 | 値と順を渡すと、決まりの順・文字の順・最後に「(なし)」のレーンが返る | src/board.rs, src/lib.rs | tests/test_board.rs の `test_bd_2_*` | 済 |
+| 2 | ボードの画面(開く・描く・動く・表へ) | BD-1, BD-2, BD-3, BD-5 | `B` でレーンとカードが出て、Enter で表のその行、Esc で戻る | src/ui/board.rs, src/ui/keymap.rs, src/ui/app.rs, src/ui/view.rs, src/ui/bands.rs, src/ui/help.rs, src/ui/screen_menu.rs, src/ui/mod.rs, locales/en.toml, locales/ja.toml, docs/keys.md, docs/keys.ja.md | src/ui/test_board.rs・tests/test_board_e2e.rs の `test_bd_1_*`・`test_bd_3_*`・`test_bd_5_*` | 済 |
+| 3 | カードを移す・取り消し・保存 | BD-4 | `L` で隣のレーンへ移って未保存 1、`u` で戻る、Ctrl+S で保存の確認 | src/ui/board.rs | src/ui/test_board.rs・tests/test_board_e2e.rs の `test_bd_4_*` | 済 |
+| 4 | マウス | BD-6 | カードのクリックで選び、もう一度で表のその行 | src/ui/board.rs, src/ui/app.rs | src/ui/test_board.rs の `test_bd_6_*` | 済 |
+| 5 | 文書: 見せ方の一覧・できることの一覧・場面・設計 | BD-1 | 説明書の「見せ方の一覧」に画面1枚と1項 | docs/manual, docs/manual-scenarios.toml, docs/design.md, README.md, README.ja.md | 読んで判定 | 済 |
 
 ## 実装の気づき
 
@@ -92,7 +92,23 @@ updated: 2026-11-13
 
 ## 照合
 
+検証役(実装を見ていない新しい文脈。書込なし)が、実装の前(acf43ac に今の e2e のテストを重ねた worktree)と後(b92e7b0)で確かめた。証拠のスクリプト(`check.py --evidence`)は「前: 要件の手前で落ちた」(単体試験が、実装前には無い名前を使うのでコンパイルで落ちる)として gap を出したので、前で落ちることは e2e で確かめた。
+
 | 要件 | 結果 | 証拠 |
 |---|---|---|
+| BD-1 | checked | コード: src/ui/board.rs:156 / テスト: tests/test_board_e2e.rs::test_bd_1_board_shows_lanes_and_back_e2e / 今: 通った(`cargo test --test test_board --test test_board_e2e`・`cargo test --bin mdgrid test_bd_`) / 前: 落ちた(`B` を押しても表のままで、ボードの画面を待って時間切れ) |
+| BD-2 | checked | コード: src/board.rs:15 / テスト: src/ui/test_board_lanes.rs::test_bd_2_emptied_none_lane_stays_until_reopened / 今: 通った(`cargo test --test test_board`・`cargo test --bin mdgrid test_bd_2`) / 前: 落ちた(ボードの画面が無い。BD-1 の e2e で確かめた) |
+| BD-3 | checked | コード: src/ui/board.rs:424 / テスト: src/ui/test_board.rs::test_bd_3_card_name_and_first_two_columns / 今: 通った(`cargo test --bin mdgrid test_bd_`) / 前: 落ちた(ボードの画面が無い。BD-1 の e2e で確かめた) |
+| BD-4 | checked | コード: src/ui/board.rs:244 / テスト: tests/test_board_e2e.rs::test_bd_4_move_card_then_save_writes_file_e2e / 今: 通った(`cargo test --test test_board_e2e`・`cargo test --bin mdgrid test_bd_`) / 前: 落ちた(ボードの画面を待って時間切れ) |
+| BD-5 | checked | コード: src/ui/board.rs:83 / テスト: src/ui/test_board.rs::test_bd_5_lines_fit_any_width_and_height / 今: 通った(`cargo test --bin mdgrid test_bd_`) / 前: 落ちた(ボードの画面が無い。BD-1 の e2e で確かめた) |
+| BD-6 | checked | コード: src/ui/board.rs:364 / テスト: src/ui/test_board.rs::test_bd_6_click_card_selects_then_goes_to_table_row / 今: 通った(`cargo test --bin mdgrid test_bd_`) / 前: 落ちた(ボードの画面が無い。BD-1 の e2e で確かめた) |
 
-確かめた: 0 / 0
+既存のテストの削除・skip・弱体化: なし(既存のテストのファイルは変えていない。ゴールデン `tests/golden/sr_5.txt`・`sr_14.txt` は、足したキーとコマンドの分と、パレットの表示名の欄を広げた分が変わった)。受け入れのテスト 2 本の直し(決定 2026-11-13-board-tests-locks)は、検証役が弱体化でないと判定した
+
+gap と行き先: 検証役は BD-2 を gap にした(開いている間は空になったレーンを消さない実装が、BD-2 の文に無い)。行き先は「提案にした」: 決定 2026-11-13-board-lanes-stay(AI 自己採択。錨との照合あり)で BD-2 に書き足し、`src/ui/test_board_lanes.rs` の試験を足して、今のコードで通ることを確かめた(再照合 1 回)。検証役のほかの指摘: 改行を含む値のカードを移せる点は、セキュリティの回の指摘と同じで直した。テキストの列の中の数の値から出来たレーンへ移すと文字でためる点は、差分に出る端の場合として残す
+
+セキュリティの回: 指摘 1 件(細部。重要なし)
+
+全体の走り: 約 4 分(`cargo test --no-fail-fast`。最後の「実装:」の直前。前から落ちる `test_cliff_history_prefixes_all_covered` の1本を除いて通った。この1本は、この変更を外しても落ちる)。`cargo fmt --check`・`cargo clippy --all-targets -- -D warnings`・`check.py` は通った
+
+確かめた: 6 / 6
