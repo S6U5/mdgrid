@@ -11935,5 +11935,129 @@
       "WB-21"
     ],
     "sha": "5020d98c05e951a9"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_action_menu_lists_it_in_column_section": {
+    "ids": [
+      "CE-15",
+      "SR-24"
+    ],
+    "sha": "ac06ef0e8022d877"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_applies_to_pending_value": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "36866be73a858a82"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_bad_regex_changes_nothing": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "a473024f365a0272"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_does_not_start_on_formula_column": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "7c07d139f98447e4"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_does_not_start_on_non_text_columns": {
+    "ids": [
+      "CE-15",
+      "CE-2"
+    ],
+    "sha": "3e9c34c73f865be6"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_english_wording": {
+    "ids": [
+      "CE-15",
+      "SR-23"
+    ],
+    "sha": "6429d6ae157bf6b3"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_file_unchanged_until_save": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "633e1d807940fbc8"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_filtered_out_rows_are_not_targets": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "270e9d94e823959d"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_no_match_stages_nothing": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "2009760a181c78d2"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_no_selection_replaces_all_rows_of_view": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "74a9346010af6a65"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_non_string_cells_are_untouched": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "0b562a345b99f5f2"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_numbered_and_named_groups": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "1b21d416bbeeb04b"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_read_only_note_is_skipped_with_reason": {
+    "ids": [
+      "CE-15",
+      "WB-5"
+    ],
+    "sha": "a9c3ab6d798b1bd9"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_readonly_start_hides_command": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "559e461d64786cd3"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_replaces_every_match_in_a_cell": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "7051ed7d5ca735cb"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_same_value_cells_are_not_staged": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "6fcdd0a72b12b01c"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_selected_rows_only": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "b5ed4a8519ebda74"
+  },
+  "src/ui/test_regex_replace.rs::test_ce_15_undo_once_restores_all": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "8f50d1decf966909"
+  },
+  "tests/test_regex_replace_e2e.rs::test_ce_15_e2e_bad_regex_changes_nothing": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "5d5569735a4d24f5"
+  },
+  "tests/test_regex_replace_e2e.rs::test_ce_15_e2e_palette_replace_then_save_writes_files": {
+    "ids": [
+      "CE-15"
+    ],
+    "sha": "ab704825cadb7792"
   }
 }

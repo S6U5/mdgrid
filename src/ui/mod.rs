@@ -275,6 +275,8 @@ mod test_places_more;
 #[cfg(test)]
 mod test_problems;
 #[cfg(test)]
+mod test_regex_replace;
+#[cfg(test)]
 mod test_relations;
 #[cfg(test)]
 mod test_relations_open;
