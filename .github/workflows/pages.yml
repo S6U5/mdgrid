@@ -54,6 +54,9 @@ jobs:
           # Search Console ownership tag for the landing page (the content value only). It is shown in
           # the page, so it is a repository variable, not a secret. Unset: no tag.
           GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
+          # Google Analytics 4 measurement ID (G-...). Also shown in the page, so a variable. Unset: no tag.
+          # The tag loads only on the published host, so the browser check below sends nothing to Google.
+          GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
         run: |
           # The feature tours (GIFs) are release assets; copy them into the site so they play in the page.
           # Tours added since the latest release appear at the next release.
@@ -62,6 +65,8 @@ jobs:
       - name: Check the site in a browser
         # Links, language routing, images, the catalog (also at phone width) and console errors.
         # A failure stops the deploy.
+        env:
+          GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
         run: |
           python3 -m pip install --quiet "playwright==${PLAYWRIGHT_VERSION}"
           python3 -m playwright install --with-deps chromium

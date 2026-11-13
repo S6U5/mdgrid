@@ -183,6 +183,7 @@ ICON_MODE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r
 def page(lang: str, title: str, body: str, desc: str, head: str = "", script: str = "", top: str = "", wide: bool = False) -> str:
     """1枚のページ。`top` は上の帯、`wide` は幅いっぱいの段を自分で持つページ(入口)。"""
     main = body if wide else f'<div class="wrap">\n{body}\n</div>'
+    GA = ANALYTICS + "\n" if ANALYTICS else ""
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
@@ -191,7 +192,7 @@ def page(lang: str, title: str, body: str, desc: str, head: str = "", script: st
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
 <link rel="icon" href="{FAVICON}">
-{head}
+{GA}{head}
 <script>{EARLY}</script>
 <style>{CSS}</style>
 </head>
@@ -219,10 +220,15 @@ def lang_bar(lang: str, file: str) -> str:
 def build(out: Path, shots_dir: Path) -> None:
     scen = tomllib.loads((ROOT / "docs/manual-scenarios.toml").read_text(encoding="utf-8"))
     verify = verification()  # 値がおかしければ、作り始める前に止める
+    global ANALYTICS
+    ANALYTICS = analytics()
     if out.exists():
         shutil.rmtree(out)
     (out / "catalog").mkdir(parents=True)
-    shutil.copy(ROOT / "docs/catalog/index.html", out / "catalog/index.html")
+    catalog = (ROOT / "docs/catalog/index.html").read_text(encoding="utf-8")
+    if ANALYTICS:
+        catalog = catalog.replace("</head>", ANALYTICS + "\n</head>", 1)
+    (out / "catalog/index.html").write_text(catalog, encoding="utf-8")
     shots = []
     for s in scen["shot"]:
         sid = s["id"]
@@ -276,6 +282,34 @@ def verification() -> str:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", v):
         raise SystemExit("GOOGLE_SITE_VERIFICATION は英数字・-・_ だけにする(メタタグの content の値だけを入れる)")
     return f'<meta name="google-site-verification" content="{v}">'
+
+
+# アクセス解析(GA4)の計測のタグ。build() が analytics() で埋める(無ければ空)。
+ANALYTICS = ""
+HOST = SITE.split("/")[2]
+
+# gtag.js は公開のホストでだけ読み込む(手元・CI の検査では Google へ何も送らず、数も汚さない)。
+GTAG = """<script>
+(function () {
+  if (location.hostname !== "%s") return;
+  var s = document.createElement("script"); s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=%s"; document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { dataLayer.push(arguments); };
+  gtag("js", new Date()); gtag("config", "%s");
+})();
+</script>"""
+
+
+def analytics() -> str:
+    """アクセス解析(GA4)の計測のタグ(環境変数 GA_MEASUREMENT_ID の値)。無ければ空。
+    値は G- と英大文字・数字だけを受ける(スクリプトに変な字を入れない)。"""
+    v = os.environ.get("GA_MEASUREMENT_ID", "").strip()
+    if not v:
+        return ""
+    if not re.fullmatch(r"G-[A-Z0-9]+", v):
+        raise SystemExit("GA_MEASUREMENT_ID は G- で始まる測定 ID(例 G-ABC123XYZ)だけにする")
+    return GTAG % (HOST, v, v)
 
 
 # サイトの地図に載せないページ: 言語を選んで移るだけの入口と前の URL(検索の取得は en/ へ移されるので、
@@ -907,7 +941,7 @@ def decorate_book(lang: str, dest: Path) -> None:
             [f'<link rel="alternate" hreflang="{l}" href="{SITE}manual/{l}/{name}">' for l in LANGS]
             + [f'<link rel="alternate" hreflang="x-default" href="{SITE}">']
         )
-        text = text.replace("</head>", alt + "\n</head>", 1)
+        text = text.replace("</head>", alt + "\n" + (ANALYTICS + "\n" if ANALYTICS else "") + "</head>", 1)
         switch = (
             f'<a class="lang-switch" href="../{other}/{name}" hreflang="{other}" lang="{other}" data-pick="{other}" '
             f'title="{NAMES[other]}" style="font-size:14px;margin-inline-end:10px;text-decoration:none">{NAMES[other]}</a>'
