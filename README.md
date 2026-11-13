@@ -27,6 +27,8 @@ Editing feels like a spreadsheet. Cells show as checkboxes, colored chips for ta
 
 The rest of the file is left alone. Other keys, their order, comments, line endings and the body stay byte for byte the same, and you see a diff of each file before anything is written. Pass a `.csv` or `.tsv` file to edit it the same way; saving rewrites only the values you changed.
 
+It sits well next to an AI agent. Split the terminal, let the agent work on the notes in one pane, and keep the table open in the other. When the agent rewrites a note, its row changes within a second; you check it and fix it right there. [Use with AI agents](#use-with-ai-agents) walks through it with a sample.
+
 It works with other commands. Print the table as CSV, TSV, JSON or Markdown (or export the table on screen to a file from the command palette), edit the CSV in a spreadsheet and bring the changes back, or choose notes on screen and hand their paths to the next command.
 
 Vim keys and arrow keys both work. Press `x` on any cell to see what you can do there, `?` for every key. Twelve color themes, English and Japanese screens, a single binary written in Rust. If you use Obsidian, mdgrid can also open `.base` files ([see below](#for-obsidian-users)).
@@ -161,10 +163,6 @@ Press `x` to see what you can do with the selected cell:
 
 ![The action menu for a cell](docs/assets/demo-menu.svg)
 
-Group and arrange the table the way you work. With a formula in a `.base` and a few lines of config, the [ai-human sample](examples/ai-human/README.md) splits tasks into those that need a person (pay, sign, submit, send) and those an AI agent can finish, with the people's group on top:
-
-![Tasks grouped into human and AI tasks](docs/assets/demo-ai-human.svg)
-
 Press `R` for the relation map: the tables of the workspace as boxes, with an arrow from each link column to the table it points at (`N:1`, or `N:N` for a list of links). Click a table or a link, or move with the arrow keys:
 
 ![The relation map of the studio: tasks, projects, clients, people and meetings](docs/assets/demo-relmap.svg)
@@ -204,7 +202,24 @@ mdgrid ~/notes/Tasks --pick path | tr '\n' '\0' | xargs -0 -o vi
 
 ## Use with AI agents
 
-mdgrid ships a skill that teaches Claude Code and Codex to use these commands: ask "list my tasks that are todo or doing as a Markdown table" and the agent builds the `--print --filter` command and writes the file for you, which you can then hand to any chat assistant. For bulk edits it shows you the `--apply` diff and writes only after you say yes.
+Split the terminal. In one pane an AI agent works through your task notes, and in the other the table stays open. mdgrid re-reads notes that change on disk, once a second by default, so when the agent sets `status: done` on a note you see the row change. If the agent got it wrong, fix the cell and save.
+
+![Tasks grouped into those that need a person and those an agent can finish](docs/assets/demo-ai-human.svg)
+
+Try it on the [ai-human sample](examples/ai-human/README.md): eleven admin tasks, grouped by a formula into those that need a person (pay, sign, submit, send) and those an agent can finish, people on top. From a clone of the repository:
+
+```sh
+cp -R examples/ai-human /tmp/mdgrid-ai-human
+mdgrid --config /tmp/mdgrid-ai-human/config.toml /tmp/mdgrid-ai-human/Tasks.base
+```
+
+1. In the other pane, ask your agent: "In /tmp/mdgrid-ai-human/Tasks, the broken links on the catalog site are fixed. Mark that task done." No agent at hand? Open `Tasks/Fix broken links on the catalog site.md` in an editor and change `status: todo` to `status: done` yourself.
+2. Watch the table. `For an agent (4)` becomes `(3)`: the first view lists open tasks, so the finished one leaves it. Press `]` three times for the Done view, and it is there.
+3. Not what you wanted? Move to its Status cell, press `Enter`, pick `todo`, and `Ctrl+S` shows the one-line diff before it writes.
+
+You and the agent do not write over each other without knowing. If the agent changes a note while you have unsaved edits on it, mdgrid keeps your edits, marks the row with `!`, and on save holds that note back until you choose: write your values over the agent's change, or drop yours. [Write-back safety](docs/safety.md#external-changes) has the details.
+
+The agent does not have to parse the files either. mdgrid ships a skill that teaches Claude Code and Codex its commands: ask "list my tasks that are todo or doing as a Markdown table" and the agent builds the `--print --filter` command and writes the file, which you can hand to any chat assistant. For bulk edits it shows you the `--apply` diff and writes only after you say yes.
 
 ```text
 /plugin marketplace add S6U5/mdgrid
