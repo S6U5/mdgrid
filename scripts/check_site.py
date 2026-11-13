@@ -12,6 +12,7 @@
 - 入口と画面の一覧の画像と録画が読める、画面の一覧の絞り込み
 - 見た目のカタログ: 見本の画面が描かれる、幅 390px で縮んで横にはみ出さない、拡大の切り替え、広い幅では切り替えを出さない
 - 入口が幅 390px で横にはみ出さない
+- docs/pages-root のファイル(検索の管理の持ち主の確認のファイル)がサイトの根に同じ中身である
 - 環境変数 GA_MEASUREMENT_ID があれば、全部のページにその ID の、公開のホストでだけ動くアクセス解析(GA4)のタグがある。無ければどのページにも無い
 - どのページにもコンソールのエラー(とページの例外)が無い
 落ちたら理由を並べて終了コード 1。
@@ -64,6 +65,8 @@ def site_pages(site: str) -> set:
         rel = os.path.relpath(f, site).replace(os.sep, "/")
         if rel in ("index.html", "gallery.html") or os.path.basename(rel) in ("toc.html", "404.html", "print.html"):
             continue
+        if re.fullmatch(r"google[0-9a-f]+\.html", rel):  # 検索の管理の持ち主の確認のファイル(ページでない)
+            continue
         if not rel.startswith("manual/") and rel.endswith("index.html"):
             rel = rel[: -len("index.html")]
         out.add(SITE + rel)
@@ -110,6 +113,7 @@ def analytics(site: str) -> None:
     heads = {
         os.path.relpath(f, site): open(f, encoding="utf-8").read().split("</head>", 1)[0]
         for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True)
+        if not re.fullmatch(r"google[0-9a-f]+\.html", os.path.basename(f))
     }
     if not v:
         bad = [r for r, h in heads.items() if "googletagmanager" in h]
@@ -118,6 +122,17 @@ def analytics(site: str) -> None:
     tag, guard = f'gtag("config", "{v}")', 'if (location.hostname !== "s6u5.github.io") return;'
     bad = [r for r, h in heads.items() if tag not in h or guard not in h]
     check(not bad, f"全部のページの head に、公開のホストでだけ動くアクセス解析のタグがある({len(bad)} 件が無い){': ' + ', '.join(bad[:5]) if bad else ''}")
+
+
+def verify_files(site: str) -> None:
+    """docs/pages-root のファイル(検索の管理の持ち主の確認のファイル)が、サイトの根に同じ中身である。"""
+    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "pages-root")
+    bad = [
+        n for n in sorted(os.listdir(root))
+        if not os.path.isfile(os.path.join(site, n))
+        or open(os.path.join(site, n), "rb").read() != open(os.path.join(root, n), "rb").read()
+    ]
+    check(not bad, f"docs/pages-root のファイルがサイトの根に同じ中身である({len(bad)} 件が違う){': ' + ', '.join(bad) if bad else ''}")
 
 
 def serve(site: str):
@@ -253,6 +268,7 @@ def main() -> int:
     links(site)
     sitemap(site)
     analytics(site)
+    verify_files(site)
     httpd, base = serve(site)
     try:
         browser_checks(base)
