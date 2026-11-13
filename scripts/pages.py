@@ -18,6 +18,9 @@
 - images/ja・en 撮った画面の SVG
 - sitemap.xml   検索エンジンに出すサイトの地図(公開するページだけ。検索の管理に直に出す)
 
+どのページの head にも、正規の URL(canonical)と、貼ったときのカードのタグ(OGP・Twitter Card)を入れる。
+カードの画像は docs/assets/og.png・docs/assets/ja/og.png(scripts/og_image.py で作り直せる)。
+
 環境変数 GOOGLE_SITE_VERIFICATION があれば、入口(index.html)に検索の管理の持ち主の確認のタグを足す
 (workflow は公開リポの Actions の変数から渡す。値はページに出るもので秘密ではない)。
 
@@ -139,11 +142,42 @@ def other_lang(l: str) -> str:
     return "en" if l == "ja" else "ja"
 
 
-def alternates(rel: str) -> str:
-    """`rel` は ja の版のサイトの中の道筋(例 "ja/gallery.html")。ja・en と x-default(入口)の hreflang。"""
+def alternates(rel: str, default: str = SITE) -> str:
+    """`rel` は ja の版のサイトの中の道筋(例 "ja/gallery.html")。ja・en と x-default の hreflang。
+    x-default(`default`)は言語を決めて移るページ(入口は根、画面の一覧は gallery.html)。そのページも同じ組を示す。"""
     out = [f'<link rel="alternate" hreflang="{l}" href="{SITE}{rel.replace("ja/", l + "/", 1)}">' for l in LANGS]
-    out.append(f'<link rel="alternate" hreflang="x-default" href="{SITE}">')
+    out.append(f'<link rel="alternate" hreflang="x-default" href="{default}">')
     return "\n".join(out)
+
+
+# 貼ったときのカードの画像(docs/assets/og.png・docs/assets/ja/og.png を site/assets/<言語>/og.png に写す)。
+OG_W, OG_H = 1200, 630
+OG_LOCALE = {"ja": "ja_JP", "en": "en_US"}
+
+
+def social(lang: str, title: str, desc: str, url: str) -> str:
+    """正規の URL(canonical)と、貼ったときのカードのタグ(OGP・Twitter Card)。`url` はそのページの公開の URL。"""
+    t, d, u = html.escape(title), html.escape(desc), html.escape(url)
+    img = f"{SITE}assets/{lang}/og.png"
+    return "\n".join(
+        [
+            f'<link rel="canonical" href="{u}">',
+            '<meta property="og:type" content="website">',
+            '<meta property="og:site_name" content="mdgrid">',
+            f'<meta property="og:locale" content="{OG_LOCALE[lang]}">',
+            f'<meta property="og:url" content="{u}">',
+            f'<meta property="og:title" content="{t}">',
+            f'<meta property="og:description" content="{d}">',
+            f'<meta property="og:image" content="{img}">',
+            f'<meta property="og:image:width" content="{OG_W}">',
+            f'<meta property="og:image:height" content="{OG_H}">',
+            f'<meta property="og:image:alt" content="{html.escape(OG_ALT[lang])}">',
+            '<meta name="twitter:card" content="summary_large_image">',
+            f'<meta name="twitter:title" content="{t}">',
+            f'<meta name="twitter:description" content="{d}">',
+            f'<meta name="twitter:image" content="{img}">',
+        ]
+    )
 
 
 MODE_KEY = "mdgrid-site-theme"
@@ -180,10 +214,12 @@ ICON_COPY = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-w
 ICON_MODE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg>'
 
 
-def page(lang: str, title: str, body: str, desc: str, head: str = "", script: str = "", top: str = "", wide: bool = False) -> str:
-    """1枚のページ。`top` は上の帯、`wide` は幅いっぱいの段を自分で持つページ(入口)。"""
+def page(lang: str, title: str, body: str, desc: str, url: str, head: str = "", script: str = "", top: str = "", wide: bool = False) -> str:
+    """1枚のページ。`url` はそのページの公開の URL(canonical とカードのタグに入れる)。`top` は上の帯、
+    `wide` は幅いっぱいの段を自分で持つページ(入口)。"""
     main = body if wide else f'<div class="wrap">\n{body}\n</div>'
     GA = ANALYTICS + "\n" if ANALYTICS else ""
+    head = social(lang, title, desc, url) + ("\n" + head if head else "")
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
@@ -226,6 +262,11 @@ def build(out: Path, shots_dir: Path) -> None:
         shutil.rmtree(out)
     (out / "catalog").mkdir(parents=True)
     catalog = (ROOT / "docs/catalog/index.html").read_text(encoding="utf-8")
+    # カタログは1ファイルのまま(docs/ の元は変えない)。head に正規の URL とカードのタグだけを足す。
+    # ?lang= を付けた URL も catalog/ に正規化する。
+    catalog = catalog.replace(
+        "</head>", social("ja", head_text(catalog, "title"), head_text(catalog, "description"), SITE + "catalog/") + "\n</head>", 1
+    )
     if ANALYTICS:
         catalog = catalog.replace("</head>", ANALYTICS + "\n</head>", 1)
     (out / "catalog/index.html").write_text(catalog, encoding="utf-8")
@@ -260,8 +301,7 @@ def build(out: Path, shots_dir: Path) -> None:
         (out / "assets" / l).mkdir(parents=True)
         src = ROOT / ("docs/assets/ja/demo.gif" if l == "ja" else "docs/assets/demo.gif")
         shutil.copy(src, out / "assets" / l / "demo.gif")
-        # 共有したときに出る絵(og:image)。README の先頭と同じ、暗い見た目と明るい見た目を並べた1枚。
-        shutil.copy(src.with_name("hero.png"), out / "assets" / l / "hero.png")
+        shutil.copy(ROOT / ("docs/assets/ja/og.png" if l == "ja" else "docs/assets/og.png"), out / "assets" / l / "og.png")
     for l in LANGS:
         (out / l).mkdir()
         (out / l / "index.html").write_text(landing(l, shown, shots), encoding="utf-8")
@@ -318,10 +358,15 @@ NOT_IN_SITEMAP = {"index.html", "gallery.html"}
 BOOK_PARTS = {"toc.html", "404.html"}
 
 
+def folder_form(rel: str) -> str:
+    """サイトの中の道筋を公開の URL の形にする(index.html はフォルダの形。canonical・hreflang・サイトの地図で同じ)。"""
+    return rel[: -len("index.html")] if rel == "index.html" or rel.endswith("/index.html") else rel
+
+
 def sitemap(out: Path) -> int:
     """作った site/ の HTML から sitemap.xml を書き、載せた URL の数を返す。noindex のページ(mdBook の印刷の版・目次)と
-    NOT_IN_SITEMAP・BOOK_PARTS は載せない。URL の形は hreflang に合わせる(index.html はフォルダの形。説明書は
-    mdBook のファイル名のまま)。lastmod は書かない(作るたびに全部変わり、正しい日付にならないため)。"""
+    NOT_IN_SITEMAP・BOOK_PARTS は載せない。URL の形は canonical・hreflang と同じ(index.html はフォルダの形。
+    説明書の入口も manual/<言語>/)。lastmod は書かない(作るたびに全部変わり、正しい日付にならないため)。"""
     urls = []
     for f in sorted(out.rglob("*.html")):
         rel = f.relative_to(out).as_posix()
@@ -329,15 +374,20 @@ def sitemap(out: Path) -> int:
             continue
         if re.search(r'<meta[^>]+name="robots"[^>]+noindex', f.read_text(encoding="utf-8")):
             continue
-        if not rel.startswith("manual/") and (rel == "index.html" or rel.endswith("/index.html")):
-            rel = rel[: -len("index.html")]
-        urls.append(SITE + rel)
+        urls.append(SITE + folder_form(rel))
     body = "".join(f"  <url><loc>{html.escape(u)}</loc></url>\n" for u in urls)
     (out / "sitemap.xml").write_text(
         f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n',
         encoding="utf-8",
     )
     return len(urls)
+
+
+ROOT_TITLE = "mdgrid — Markdown frontmatter as a table in the terminal"
+OG_ALT = {
+    "ja": "mdgrid の画面: Markdown のノートが行、フロントマターのキーが列の表",
+    "en": "An mdgrid screen: Markdown notes as rows, frontmatter keys as columns",
+}
 
 
 def chooser(file: str = "", verify: str = "") -> str:
@@ -366,10 +416,13 @@ def chooser(file: str = "", verify: str = "") -> str:
 <p class="muted">Choose a language · 言語を選ぶ</p>
 <div class="cards">{links}</div>
 """
-    head = alternates("ja/" + file).replace(f'hreflang="x-default" href="{SITE}"', f'hreflang="x-default" href="{SITE}{file}"')
+    head = alternates("ja/" + file, SITE + file)
     if verify:
         head = verify + "\n" + head
-    return page("en", "mdgrid", body, TEXT["en"]["lead"], head, route)
+    # 題には探す語を入れる(根の入口は検索の結果に出る)。前の画面の一覧の URL は画面の一覧の題。
+    title = f'{TEXT["en"]["gallery"]} · mdgrid' if file else ROOT_TITLE
+    desc = TEXT["en"]["gallery_desc"] if file else TEXT["en"]["lead"]
+    return page("en", title, body, desc, SITE + file, head, route)
 
 
 # 入口の文(日英)。docs/writing.md の読む人の順: 何が見えるか → 1分で試す → 自分の場面 → できること → 見た目 → 次に読むもの。
@@ -890,19 +943,31 @@ def landing(lang: str, shown, shots) -> str:
 <footer class="foot"><div class="in"><span>{html.escape(h["foot"])}</span><span class="grow"></span>
   <a href="{man}">{t["manual"]}</a><a href="{REPO}">GitHub</a><a href="{REPO}/releases">{h["releases"]}</a><a href="https://crates.io/crates/mdgrid">crates.io</a></div></footer>
 """
-    title = f"mdgrid — {h['tagline']}"
-    og = "\n".join(
-        [
-            f'<meta property="og:type" content="website">',
-            f'<meta property="og:site_name" content="mdgrid">',
-            f'<meta property="og:title" content="{html.escape(title)}">',
-            f'<meta property="og:description" content="{html.escape(h["sub"])}">',
-            f'<meta property="og:url" content="{SITE}{lang}/">',
-            f'<meta property="og:image" content="{SITE}assets/{lang}/hero.png">',
-            f'<meta name="twitter:card" content="summary_large_image">',
-        ]
+    return page(
+        lang, f"mdgrid — {h['tagline']}", body, h["sub"], f"{SITE}{lang}/",
+        alternates("ja/") + "\n" + software_ld(lang), LANDING_JS, top=nav(lang, ""), wide=True,
     )
-    return page(lang, title, body, h["sub"], alternates("ja/") + "\n" + og, LANDING_JS, top=nav(lang, ""), wide=True)
+
+
+def software_ld(lang: str) -> str:
+    """言語の入口に置く構造化データ(schema.org の SoftwareApplication)。文は入口の文と同じ。"""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "mdgrid",
+        "description": HOME[lang]["sub"],
+        "url": f"{SITE}{lang}/",
+        "image": f"{SITE}assets/{lang}/og.png",
+        "inLanguage": lang,
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS, Windows",
+        "license": ["https://spdx.org/licenses/MIT.html", "https://spdx.org/licenses/Apache-2.0.html"],
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "downloadUrl": f"{REPO}/releases/latest",
+        "sameAs": [REPO, "https://crates.io/crates/mdgrid"],
+    }
+    # </script> で閉じられないように、< を \u003c にして埋める。
+    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False).replace("<", "\\u003c") + "</script>"
 
 
 def gallery(lang: str, shots) -> str:
@@ -928,20 +993,33 @@ def gallery(lang: str, shots) -> str:
 <input id="find" type="search" aria-label="{t["filter"]}" placeholder="{t["filter"]}">
 <div class="shots">{''.join(figs)}</div>
 """
-    return page(lang, f'{t["gallery"]} · mdgrid', body, t["gallery_desc"], alternates("ja/gallery.html"), FIND, top=nav(lang, "gallery.html"))
+    return page(
+        lang, f'{t["gallery"]} · mdgrid', body, t["gallery_desc"], f"{SITE}{lang}/gallery.html",
+        alternates("ja/gallery.html", SITE + "gallery.html"), FIND, top=nav(lang, "gallery.html"),
+    )
 
 
 def decorate_book(lang: str, dest: Path) -> None:
-    """mdBook の各ページに、hreflang(ja・en・x-default)と、右上の同じページの別の言語への切り替えを書き足す。"""
+    """mdBook の各ページに、右上の同じページの別の言語への切り替えを書き足す。章のページには、hreflang(ja・en・x-default)・
+    正規の URL・説明文(本文の最初の段落から)・カードのタグも書き足す(検索に出さない印刷の版・目次・404 には足さない)。
+    URL は入口をフォルダの形(manual/<言語>/)にする。x-default は英語の版(言語を決めて移るページが説明書には無いため)。"""
     other = other_lang(lang)
     for f in dest.glob("*.html"):
         name = f.name
         text = f.read_text(encoding="utf-8")
-        alt = "\n".join(
-            [f'<link rel="alternate" hreflang="{l}" href="{SITE}manual/{l}/{name}">' for l in LANGS]
-            + [f'<link rel="alternate" hreflang="x-default" href="{SITE}">']
-        )
-        text = text.replace("</head>", alt + "\n" + (ANALYTICS + "\n" if ANALYTICS else "") + "</head>", 1)
+        shape = folder_form(name)
+        alt = ""
+        if name not in BOOK_PARTS and name != "print.html":
+            alt = "\n".join(
+                [f'<link rel="alternate" hreflang="{l}" href="{SITE}manual/{l}/{shape}">' for l in LANGS]
+                + [f'<link rel="alternate" hreflang="x-default" href="{SITE}manual/en/{shape}">']
+            )
+            desc = first_paragraph(text) or TEXT[lang]["manual_desc"]
+            text, n = re.subn(r'<meta name="description" content="[^"]*">', lambda m: f'<meta name="description" content="{html.escape(desc)}">', text, count=1)
+            if n == 0:
+                alt = f'<meta name="description" content="{html.escape(desc)}">\n' + alt
+            alt = social(lang, head_text(text, "title"), desc, f"{SITE}manual/{lang}/{shape}") + "\n" + alt
+        text = text.replace("</head>", (alt + "\n" if alt else "") + (ANALYTICS + "\n" if ANALYTICS else "") + "</head>", 1)
         switch = (
             f'<a class="lang-switch" href="../{other}/{name}" hreflang="{other}" lang="{other}" data-pick="{other}" '
             f'title="{NAMES[other]}" style="font-size:14px;margin-inline-end:10px;text-decoration:none">{NAMES[other]}</a>'
@@ -949,6 +1027,34 @@ def decorate_book(lang: str, dest: Path) -> None:
         text = text.replace('<div class="right-buttons">', '<div class="right-buttons">' + switch, 1)
         text = text.replace("</body>", f"<script>{REMEMBER}</script>\n</body>", 1)
         f.write_text(text, encoding="utf-8")
+
+
+def head_text(text: str, what: str) -> str:
+    """HTML の head から、題(`title`)か説明文(`description`)の字を取る(無ければ空)。"""
+    pat = r"<title>(.*?)</title>" if what == "title" else r'<meta name="description" content="([^"]*)"'
+    m = re.search(pat, text, re.S)
+    return html.unescape(m.group(1)).strip() if m else ""
+
+
+DESC_MAX = {"ja": 120, "en": 160}
+
+
+def first_paragraph(text: str) -> str:
+    """mdBook のページの本文の最初の段落(リンクだけの行は飛ばす)を、説明文の長さにして返す。長ければ文の切れ目で切り、
+    切れ目が無ければ字数で切って … を付ける。"""
+    main = re.search(r"<main>(.*?)</main>", text, re.S)
+    for m in re.finditer(r"<p>(.*?)</p>", main.group(1) if main else "", re.S):
+        p = " ".join(html.unescape(re.sub(r"<[^>]+>", "", m.group(1))).split())
+        # リンクだけの行(章の頭の「English · 目次」など)は説明文にしない。
+        rest = html.unescape(re.sub(r"<[^>]+>", "", re.sub(r"<a\b.*?</a>", "", m.group(1), flags=re.S)))
+        if len(re.sub(r"[\s·()()]", "", rest)) < 10:
+            continue
+        limit = DESC_MAX["ja" if re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", p) else "en"]
+        if len(p) <= limit:
+            return p
+        cut = max(p.rfind("。", 0, limit) + 1, p.rfind(". ", 0, limit) + 1)
+        return p[:cut].strip() if cut > limit // 3 else p[: limit - 1].rstrip() + "…"
+    return ""
 
 
 # ---------- 説明書(mdBook) ----------

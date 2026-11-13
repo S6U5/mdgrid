@@ -7,6 +7,9 @@
 確かめること:
 - 全部のページの相対のリンクと画像の行き先があること
 - サイトの地図(sitemap.xml)が XML として読め、公開するページとちょうど同じ URL を持つこと
+- サイトの地図に載るページの head: 正規の URL(canonical)が地図の URL と同じ、説明文(description)が空でない、
+  貼ったときのカードのタグ(og:title・og:url・og:image・twitter:card)があり、画像が site/ の中にある
+- hreflang で示した先のページが、同じ組(ja・en・x-default)を示し返す
 - 入口の振り分け: 日本語のブラウザは /ja/、英語は /en/、ほかの言語は選ぶ画面のまま、選んだ言語は覚える
 - 説明書: 右上の切り替えが同じページの別の言語を指し、hreflang(ja・en・x-default)がある
 - 入口と画面の一覧の画像と録画が読める、画面の一覧の絞り込み
@@ -59,16 +62,90 @@ SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 def site_pages(site: str) -> set:
     """サイトの地図に載るべきページの URL(scripts/pages.py の決まりを、作った site/ のファイルから別に数える):
     HTML のうち、言語を選んで移るだけの根の入口と前の URL、mdBook の目次の部品・404・印刷の版を除いたもの。
-    index.html はフォルダの形、説明書は mdBook のファイル名のまま(hreflang と同じ形)。"""
+    index.html はフォルダの形(説明書の入口も。canonical・hreflang と同じ形)。"""
     out = set()
     for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True):
         rel = os.path.relpath(f, site).replace(os.sep, "/")
         if rel in ("index.html", "gallery.html") or os.path.basename(rel) in ("toc.html", "404.html", "print.html"):
             continue
-        if not rel.startswith("manual/") and rel.endswith("index.html"):
+        if rel.endswith("index.html"):
             rel = rel[: -len("index.html")]
         out.add(SITE + rel)
     return out
+
+
+def file_of(site: str, url: str) -> str:
+    """サイトの URL が指す site/ の中のファイル(フォルダの形は index.html)。サイトの外の URL は空。"""
+    if not url.startswith(SITE):
+        return ""
+    rel = url[len(SITE):].split("?", 1)[0].split("#", 1)[0]
+    return os.path.join(site, rel, "index.html") if rel == "" or rel.endswith("/") else os.path.join(site, rel)
+
+
+def head_of(path: str) -> str:
+    return open(path, encoding="utf-8").read().split("</head>", 1)[0]
+
+
+def attr(head: str, pat: str) -> str:
+    m = re.search(pat, head)
+    return m.group(1).strip() if m else ""
+
+
+def alternates_of(head: str) -> dict:
+    return dict(re.findall(r'<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">', head))
+
+
+def heads(site: str) -> None:
+    """サイトの地図に載るページの head に、検索と共有のためのタグが揃っている。"""
+    bad = []
+    for url in sorted(site_pages(site)):
+        h = head_of(file_of(site, url))
+        canon = attr(h, r'<link rel="canonical" href="([^"]*)">')
+        image = attr(h, r'<meta property="og:image" content="([^"]*)">')
+        lacks = [
+            what
+            for what, ok in [
+                ("canonical", canon == url),
+                ("canonical が1つ", h.count('rel="canonical"') == 1),
+                ("description", attr(h, r'<meta name="description" content="([^"]*)">') != ""),
+                ("description が1つ", h.count('<meta name="description"') == 1),
+                ("og:title", attr(h, r'<meta property="og:title" content="([^"]*)">') != ""),
+                ("og:url", attr(h, r'<meta property="og:url" content="([^"]*)">') == url),
+                ("og:image", image != "" and os.path.isfile(file_of(site, image) or os.devnull)),
+                ("twitter:card", attr(h, r'<meta name="twitter:card" content="([^"]*)">') == "summary_large_image"),
+            ]
+            if not ok
+        ]
+        if lacks:
+            bad.append(f"{url[len(SITE):] or '/'}({'・'.join(lacks)})")
+    check(not bad, f"地図に載るページの head に canonical・description・カードのタグがある({len(bad)} 件が欠ける){': ' + ', '.join(bad[:5]) if bad else ''}")
+
+
+def hreflang(site: str) -> None:
+    """地図に載るページ(1枚で両方の言語を持つカタログを除く)は hreflang を持つ。hreflang を持つページは、
+    ja・en・x-default を示し、その組に自分が入り、示した先のページが同じ組を示し返す。"""
+    bad = []
+    must = {os.path.normpath(file_of(site, u)) for u in site_pages(site) if u != SITE + "catalog/"}
+    for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True):
+        alts = alternates_of(head_of(f))
+        rel = os.path.relpath(f, site).replace(os.sep, "/")
+        if not alts:
+            if os.path.normpath(f) in must:
+                bad.append(f"{rel}(hreflang が無い)")
+            continue
+        if os.path.normpath(f) not in {os.path.normpath(file_of(site, h) or os.devnull) for h in alts.values()}:
+            bad.append(f"{rel}(組に自分が無い)")
+            continue
+        if sorted(alts) != ["en", "ja", "x-default"]:
+            bad.append(f"{rel}(組が {sorted(alts)})")
+            continue
+        for lang, href in alts.items():
+            target = file_of(site, href)
+            if not target or not os.path.isfile(target):
+                bad.append(f"{rel}({lang} の先 {href} が無い)")
+            elif alternates_of(head_of(target)) != alts:
+                bad.append(f"{rel}({lang} の先 {href} が同じ組を示し返さない)")
+    check(not bad, f"hreflang で示した先が同じ組を示し返す({len(bad)} 件が外れ){': ' + ', '.join(bad[:5]) if bad else ''}")
 
 
 def sitemap(site: str) -> None:
@@ -289,6 +366,8 @@ def main() -> int:
     site = sys.argv[1] if len(sys.argv) > 1 else "site"
     links(site)
     sitemap(site)
+    heads(site)
+    hreflang(site)
     analytics(site)
     httpd, base = serve(site)
     try:
