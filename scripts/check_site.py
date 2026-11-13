@@ -212,7 +212,11 @@ def browser_checks(base: str) -> None:
             pg.click("#model .tally button")
             check(pg.locator("#model .file .l.del").count() == 0 and row.locator("select").input_value() == was,
                   f"{lang}/ の図を元に戻せる")
-            pg.click("#tab-people")
+            pg.click(".steps .step >> nth=1")
+            check("equipment.csv" in (pg.text_content(".term .bar-t span") or ""), f"{lang}/ の枠の題が場面のコマンドになる")
+            pg.click("#tab-db-detail")
+            check(pg.is_visible("#db-detail") and pg.is_hidden("#db-filter"), f"{lang}/ のデータベースの段のタブが切り替わる")
+            pg.click("#tab-scene-people")
             check(pg.is_visible("#scene-people") and pg.is_hidden("#scene-tasks"), f"{lang}/ の場面のタブが切り替わる")
             pg.click('[data-look="dracula"]')
             check("theme-dracula.svg" in (pg.get_attribute("#look-img", "src") or "") and 'theme = "dracula"' in (pg.text_content("#look-code") or ""),

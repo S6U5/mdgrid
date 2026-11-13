@@ -344,7 +344,7 @@ HOME = {
     "ja": {
         "tagline": "Markdown のノートのフォルダを、コマンド1つで表として開けます。",
         "h1": ["ノートのフォルダを、", "<em>表</em>で開く。"],
-        "sub": "フォルダを渡すと、ノートが行、フロントマターのキーが列の表になり、その場で値を直せます。ノートはただの Markdown のまま。",
+        "sub": "Markdown のノートのフォルダや CSV を、ターミナルでデータベースのように開きます。絞る、並べる、まとめる、リンクでつなぐ。直した値だけを、元のファイルに書き戻します。",
         "start": "はじめかた",
         "try_link": "1分で試す",
         "facts": ["Linux・macOS・Windows", "端末で動く実行ファイル1つ", "MIT / Apache-2.0"],
@@ -352,13 +352,43 @@ HOME = {
         "rust": "cargo で入れるなら Rust 1.90 以上",
         "releases": "リリース",
         "steps": [
-            ("開く", "フォルダを渡すと、ノートが行に、キーが列に並ぶ。", "table"),
-            ("直す", "セルで Enter。同じ列のほかのノートの値から選べる。", "edit-list"),
-            ("確かめて保存", "Ctrl+S でファイルごとの差分。書くのは直した値だけ。", "save"),
+            ("Markdown のフォルダ", "ノートが行に、フロントマターのキーが列に並ぶ。", "table", "mdgrid ~/notes/Tasks"),
+            ("CSV のファイル", "1行目が列の名前になる。.tsv も同じ。", "csv-table", "mdgrid equipment.csv"),
+            ("つながった表", "ノートのリンクが表をつなぐ。R で関係マップ。", "demo-relmap", "mdgrid ~/notes/Tasks"),
         ],
-        "how_eyebrow": "仕組み",
-        "how_h": "ノート1枚が1行、キーが列。",
-        "how_p": "見本のタスクのノートを5枚並べました。行を選ぶと、左にそのノートの中身が出ます。status を選び直してみてください。ファイルに書かれるのがその1行だけだと分かります。",
+        # 見出し(*_h)は人が書き直す前提の、説明だけの仮の文。
+        "db_eyebrow": "データベースとして",
+        "db_h": "絞る・並べる・まとめる・1枚を見る",
+        "db_p": "ファイルはそのままで、表の側だけが動きます。どれもキー1つか2つで、Esc で元の表に戻ります。",
+        "db": [
+            ("filter", "絞る", "打った語で絞る", "\\ を押して打つと、その語を含む行だけが残ります。列の値を選んで絞ることも、条件をビューに残すこともできます。", "quick-filter"),
+            ("sort", "並べる", "列で並べ替える", "列の上で s。もう一度押すと逆順になります。ノートのファイルの並びは変わりません。", "sort-column"),
+            ("group", "まとめる", "値ごとのまとまり", "status ごと、project ごとに行をまとめます。見出しは畳めて、件数が付きます。", "demo-group"),
+            ("views", "ビュー", "見方に名前を付けて残す", "絞り込み・並べ替え・列の組をビューにして、タブで切り替えます。.base のビューもそのまま開きます。", "base-tabs"),
+            ("freq", "値の分布", "列の値を数える", "% で、その列にどの値が何件あるか。空のままのノートが何枚あるかも分かります。", "demo-freq"),
+            ("detail", "1枚を見る", "ノート1枚を、表から出ずに読む", "K で、選んだノートの全部のプロパティと本文が1枚に出ます。Enter でそのまま直せます。", "detail"),
+        ],
+        "more": "ほかに: 型ごとの入力(カレンダー・タグ・チェックボックス)、まとめて直す、親子の字下げと WBS、型と決まりの検査、英語と日本語の画面。",
+        "rel_eyebrow": "リレーション",
+        "rel_h": "リンクが、表と表のリレーションになる",
+        "rel_p": "フロントマターにノートへのリンクを書くと、その列は行き先の表へのリレーションになります。セルから行き先のノートを開き、そのノートを指している行をたどれます。R を押すと、表とつながりが1枚の図に。",
+        "rel_file": "タスクのノートの2行",
+        "rel_note": "リレーションはノートどうしの間のものです。CSV の表は、まだこの範囲に入りません。",
+        "rel_more": "リンクで表をつなぐ",
+        "cli_eyebrow": "ターミナルの道具として",
+        "cli_h": "ターミナルの中で、ほかのコマンドと組む",
+        "cli_p": "mdgrid は実行ファイル1つです。常駐するものも、別に立てるデータベースもありません。データはノートと CSV のファイルそのものなので、git で差分が追え、ふだんのエディタで同じフォルダを開いたままにできます。",
+        "cli": [
+            ("フォルダごとに1コマンド", "alias tasks='mdgrid ~/notes/Tasks'"),
+            ("表を標準出力へ(csv・tsv・json・md)", "mdgrid ~/notes/Tasks --print --format json | jq ."),
+            ("画面で選んだノートを、次のコマンドへ", "mdgrid ~/notes/Tasks --pick path | xargs -o vi"),
+            ("型と決まりに合わない値を探す", "mdgrid ~/notes/Tasks --check"),
+            ("読むだけで開く", "mdgrid ~/notes/Tasks --readonly"),
+        ],
+        "cli_more": "ほかのコマンドと組む",
+        "how_eyebrow": "安心して直せる",
+        "how_h": "書くのは、直した値だけ",
+        "how_p": "見本のタスクのノートを5枚並べました。行を選ぶと、左にそのノートの中身が出ます。status を選び直してみてください。ファイルに書かれるのがその1行だけだと分かります。CSV でも同じ約束です。",
         "how_file": "ノート(ただの Markdown)",
         "how_sheet": "mdgrid の表",
         "how_note_col": "ノート",
@@ -368,7 +398,8 @@ HOME = {
             "dirty": "書くのは {n} 行。キーの順も、コメントも、本文も、1バイトも変えません。",
         },
         "how_undo": "元に戻す",
-        "how_note": "この図はブラウザの中の模型です。本物の mdgrid は、Ctrl+S でこの差分を見せてから書きます(上の3枚目の画面)。",
+        "how_note": "この図はブラウザの中の模型です。本物の mdgrid は、Ctrl+S でこの差分を見せてから書きます。",
+        "how_more": "安全のしくみ",
         "try_eyebrow": "1分で試す",
         "try_h": "見本を開いて、1つ直すまで。",
         "try": [
@@ -387,15 +418,6 @@ HOME = {
             ("people", "人と会議", "人の表と、会議の表", "会議のノートの出席者が、人のノートへのリンクになります。R を押すと、2つの表とつながりが図で見えます。", "starter-people"),
             ("bookmarks", "ブックマーク", "フォルダで眺めるブックマーク", "folder の列からフォルダの木を組みます。T で木が開き、右に選んだフォルダの行。Enter で URL を開けます。", "tree"),
         ],
-        "feat_eyebrow": "できること",
-        "feat_h": "直すのは表で。残るのは Markdown。",
-        "features": [
-            ("フォルダごとに1つのコマンド", "alias tasks='mdgrid ~/notes/Tasks' の1行で、tasks と打てば前と同じ表が開く。列・絞り込み・並べ替え・ビューを覚えている。", "table", "views.html", "見せ方の一覧"),
-            ("表計算のように直す", "同じ列のほかの値から選ぶ、カレンダーで日付、タグとチェックボックスの切り替え、たくさんの行に同じ値を一度に。", "edit-date", "features.html", "できることの一覧"),
-            ("ファイルのほかの部分は変えない", "直したキーの値だけを書き、キーの順・コメント・本文は1バイトも変えない。書く前にファイルごとの差分を見せる。", "save", "safety.html", "安全のしくみ"),
-            ("リンクで表をつなぐ", "ノートどうしのリンクで、フォルダをつながった表として扱う。R で表とつながりの図(関係マップ)。", "demo-relmap", "features.html", "できることの一覧"),
-        ],
-        "more": "ほかに: 親子の字下げと WBS、.base のビュー、CSV・JSON への書き出し、--print でほかのコマンドへ、読むだけで開く、英語と日本語の画面。",
         "look_eyebrow": "見た目",
         "look_h": "色は、設定の1行。",
         "look_p": "名前を押すと、そのテーマの本物の画面に替わります。変わるのは色だけで、* や > などの印はそのまま。枠や印の形まで決めるなら、カタログで触って選べます。",
@@ -409,7 +431,7 @@ HOME = {
     "en": {
         "tagline": "Turn each folder of Markdown notes into a table you open with one command.",
         "h1": ["Open a folder of notes", "as a <em>table</em>."],
-        "sub": "Point mdgrid at a folder: every note becomes a row, every frontmatter key a column, and you edit the values in place. The notes stay plain Markdown.",
+        "sub": "mdgrid opens a folder of Markdown notes, or a CSV file, like a database in your terminal. Filter, sort, group, and link tables. Only the values you change are written back to the files.",
         "start": "Get started",
         "try_link": "Try it in a minute",
         "facts": ["Linux, macOS, Windows", "One binary, runs in the terminal", "MIT / Apache-2.0"],
@@ -417,13 +439,42 @@ HOME = {
         "rust": "cargo needs Rust 1.90 or newer",
         "releases": "Releases",
         "steps": [
-            ("Open", "Pass a folder. Notes line up as rows, keys as columns.", "table"),
-            ("Edit", "Press Enter on a cell and pick from the values other notes use.", "edit-list"),
-            ("Review, then save", "Ctrl+S shows a diff per file. Only the edited value is written.", "save"),
+            ("A folder of Markdown", "Notes line up as rows, frontmatter keys as columns.", "table", "mdgrid ~/notes/Tasks"),
+            ("A CSV file", "The first line names the columns. .tsv works the same way.", "csv-table", "mdgrid equipment.csv"),
+            ("Linked tables", "Links between notes join the tables. Press R for the relation map.", "demo-relmap", "mdgrid ~/notes/Tasks"),
         ],
-        "how_eyebrow": "How it works",
-        "how_h": "One note, one row. One key, one column.",
-        "how_p": "Here are five task notes from the sample. Pick a row and its file shows on the left. Then change a status: the one line that would be written lights up, and nothing else moves.",
+        "db_eyebrow": "As a database",
+        "db_h": "Filter, sort, group, and read one note",
+        "db_p": "The files stay as they are; only the table moves. Each of these is a key or two away, and Esc brings the table back.",
+        "db": [
+            ("filter", "Filter", "Filter by what you type", "Press \\ and type: only the rows containing that text remain. You can also filter by picking values of a column, and keep the conditions in a view.", "quick-filter"),
+            ("sort", "Sort", "Sort by a column", "Press s on a column, and again to reverse. The order of the note files does not change.", "sort-column"),
+            ("group", "Group", "Rows grouped by value", "Group rows by status or by project. Headings fold and carry a count.", "demo-group"),
+            ("views", "Views", "Name a way of looking and keep it", "Save filters, sorting and a set of columns as a view, and switch views with tabs. Views in a .base file open as they are.", "base-tabs"),
+            ("freq", "Value counts", "Count the values of a column", "Press % to see which values a column holds and how many notes have each, including how many are still empty.", "demo-freq"),
+            ("detail", "One note", "Read one note without leaving the table", "Press K to see every property and the body of the selected note on one screen. Enter edits right there.", "detail"),
+        ],
+        "more": "Also: typed inputs (calendar, tags, checkboxes), bulk edits, parent/child indent and WBS, type and rule checks, English and Japanese screens.",
+        "rel_eyebrow": "Relations",
+        "rel_h": "A link becomes a relation between tables",
+        "rel_p": "Write a link to another note in the frontmatter and that column becomes a relation to the table the note lives in. From a cell you can open the target note and follow the rows that point at it. Press R to see the tables and their links in one map.",
+        "rel_file": "Two lines of a task note",
+        "rel_note": "Relations are between notes. CSV tables are not part of this yet.",
+        "rel_more": "Linking tables",
+        "cli_eyebrow": "As a terminal tool",
+        "cli_h": "It lives in the terminal and works with other commands",
+        "cli_p": "mdgrid is a single binary. Nothing runs in the background and there is no database to set up. The data is the note and CSV files themselves, so git shows the diffs and your usual editor can keep the same folder open.",
+        "cli": [
+            ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks'"),
+            ("Print the table to standard output (csv, tsv, json, md)", "mdgrid ~/notes/Tasks --print --format json | jq ."),
+            ("Hand the notes you pick to the next command", "mdgrid ~/notes/Tasks --pick path | xargs -o vi"),
+            ("Find values that do not fit the column type or a rule", "mdgrid ~/notes/Tasks --check"),
+            ("Open read-only", "mdgrid ~/notes/Tasks --readonly"),
+        ],
+        "cli_more": "Working with other commands",
+        "how_eyebrow": "Safe to edit",
+        "how_h": "Only the value you change is written",
+        "how_p": "Here are five task notes from the sample. Pick a row and its file shows on the left. Then change a status: the one line that would be written lights up, and nothing else moves. CSV files get the same promise.",
         "how_file": "A note (plain Markdown)",
         "how_sheet": "The table in mdgrid",
         "how_note_col": "note",
@@ -433,7 +484,8 @@ HOME = {
             "dirty": "{n} line(s) to write. Key order, comments and the body stay byte for byte.",
         },
         "how_undo": "Undo",
-        "how_note": "This is a model in the browser. The real mdgrid shows you this diff on Ctrl+S before it writes (the third screen above).",
+        "how_note": "This is a model in the browser. The real mdgrid shows you this diff on Ctrl+S before it writes.",
+        "how_more": "How saving stays safe",
         "try_eyebrow": "Try it in a minute",
         "try_h": "From the sample to your first edit.",
         "try": [
@@ -452,15 +504,6 @@ HOME = {
             ("people", "People and meetings", "A people table and a meetings table", "The attendees of a meeting note link to people notes. Press R to see the two tables and the links between them.", "starter-people"),
             ("bookmarks", "Bookmarks", "Bookmarks you browse by folder", "The folder column becomes a tree. Press T for the tree, with the rows of the selected folder on the right. Enter opens the URL.", "tree"),
         ],
-        "feat_eyebrow": "What it does",
-        "feat_h": "Edit in a table. Keep plain Markdown.",
-        "features": [
-            ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks' is the whole setup; typing tasks brings back the same columns, filters, sorting and views.", "table", "views.html", "Ways to see your notes"),
-            ("Edit like a spreadsheet", "Pick from the values other notes use, choose dates on a calendar, toggle tags and checkboxes, set one value on many rows.", "edit-date", "features.html", "What mdgrid can do"),
-            ("Leaves the rest of the file alone", "Only the values you change are written; key order, comments and the body stay byte for byte. You see a diff of each file first.", "save", "safety.html", "How saving stays safe"),
-            ("Linked tables", "Links between notes make folders into linked tables. Press R for a map of the tables and their links.", "demo-relmap", "features.html", "What mdgrid can do"),
-        ],
-        "more": "Also: parent/child indent and WBS, .base views, export to CSV and JSON, --print for other commands, read-only mode, English and Japanese screens.",
         "look_eyebrow": "Looks",
         "look_h": "Colors are one line of config.",
         "look_p": "Press a name to see the real screen in that theme. Only the colors change; marks such as * and > stay. To choose borders and marks too, try them in the catalog.",
@@ -585,14 +628,14 @@ def landing(lang: str, shown, shots) -> str:
     img = lambda sid: f"../images/{lang}/{sid}.svg"
     man = f"../manual/{lang}/"
 
-    # 最初の画面: 開く → 直す → 保存 の3場面(本物の画面)。
+    # 最初の画面: Markdown のフォルダ・CSV のファイル・つながった表の3場面(本物の画面)。枠の題は、その場面のコマンド。
     frames = "".join(
         f'<a href="gallery.html#{sid}"{" class=on" if k == 0 else ""}><img{"" if k == 0 else " loading=lazy"} width="856" height="520" src="{img(sid)}" alt="{html.escape(title + ": " + text)}"></a>'
-        for k, (title, text, sid) in enumerate(h["steps"])
+        for k, (title, text, sid, _) in enumerate(h["steps"])
     )
     steps = "".join(
-        f'<button class="step" type="button" aria-pressed="{"true" if k == 0 else "false"}"><span class="n">{k + 1}</span><b>{html.escape(title)}</b><span class="t">{html.escape(text)}</span></button>'
-        for k, (title, text, sid) in enumerate(h["steps"])
+        f'<button class="step" type="button" data-cmd="{html.escape(run)}" aria-pressed="{"true" if k == 0 else "false"}"><span class="n">{k + 1}</span><b>{html.escape(title)}</b><span class="t">{html.escape(text)}</span></button>'
+        for k, (title, text, sid, run) in enumerate(h["steps"])
     )
     under = f'<a href="{REPO}/releases/latest">{h["bin"]}</a> · {h["rust"]}'
     facts = "".join(f"<li>{html.escape(x)}</li>" for x in [f"v{version()}"] + h["facts"])
@@ -605,24 +648,29 @@ def landing(lang: str, shown, shots) -> str:
 <li><h3>{t2}</h3><p>{html.escape(p2)}</p>{cmd(TRY, lang)}</li>
 <li><h3>{t3}</h3><a class="screen" href="gallery.html#table"><img loading="lazy" width="856" height="520" src="{img("table")}" alt="{html.escape(t3)}"></a><p>{html.escape(p3)} {keys}</p><p class="small"><a href="{man}getting-started.html">{html.escape(h["try_more"])}</a></p></li>"""
 
-    # 自分の場面(4つのスターター)。
-    tabs = "".join(
-        f'<button class="tab" type="button" role="tab" id="tab-{sid}" aria-controls="scene-{sid}" aria-selected="{"true" if k == 0 else "false"}">{html.escape(name)}</button>'
-        for k, (sid, name, _, _, _) in enumerate(h["scenes"])
-    )
-    scenes = "".join(
-        f'<div class="scene" role="tabpanel" id="scene-{sid}" aria-labelledby="tab-{sid}"><div class="say"><h3>{html.escape(title)}</h3><p>{html.escape(text)}</p>'
-        f'{cmd(f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples" + chr(10) + f"mdgrid ~/{sid}", lang)}</div>'
-        f'<a class="screen" href="gallery.html#{shot}"><img loading="lazy" width="856" height="520" src="{img(shot)}" alt="{html.escape(title)}"></a></div>'
-        for sid, name, title, text, shot in h["scenes"]
-    )
+    # タブで切り替える画面の組(データベースとして・自分の場面)。JS が無ければ全部が縦に並ぶ。
+    def tabset(pre: str, label: str, items, extra=lambda sid: "") -> str:
+        tabs = "".join(
+            f'<button class="tab" type="button" role="tab" id="tab-{pre}{sid}" aria-controls="{pre}{sid}" aria-selected="{"true" if k == 0 else "false"}">{html.escape(name)}</button>'
+            for k, (sid, name, _, _, _) in enumerate(items)
+        )
+        panels = "".join(
+            f'<div class="scene" role="tabpanel" id="{pre}{sid}" aria-labelledby="tab-{pre}{sid}"><div class="say"><h3>{html.escape(title)}</h3><p>{html.escape(text)}</p>{extra(sid)}</div>'
+            f'<a class="screen" href="gallery.html#{shot}"><img loading="lazy" width="856" height="520" src="{img(shot)}" alt="{html.escape(title)}"></a></div>'
+            for sid, name, title, text, shot in items
+        )
+        return f'<div class="tabs" role="tablist" aria-label="{html.escape(label)}">{tabs}</div>\n{panels}'
 
-    # できること。くわしい先は、見せ方の一覧(views.html)・できることの一覧(features.html)・安全(safety.html)。
-    feats = "".join(
-        f'<article class="feat rise"><div class="say"><span class="no">{k + 1:02d}</span><h3>{html.escape(title)}</h3><p>{html.escape(text)}</p>'
-        f'<a class="more" href="{man}{to}">{html.escape(label)} →</a></div>'
-        f'<a class="screen" href="gallery.html#{sid}"><img loading="lazy" width="856" height="520" src="{img(sid)}" alt="{html.escape(title)}"></a></article>'
-        for k, (title, text, sid, to, label) in enumerate(h["features"])
+    db = tabset("db-", h["db_eyebrow"], h["db"])
+    starter = lambda sid: cmd(f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}", lang)
+    scenes = tabset("scene-", h["scene_eyebrow"], h["scenes"], starter)
+
+    # ターミナルの道具として: 本物のオプションの使い方を、1つの端末に並べる(# の行は説明。写すのはコマンドだけ)。
+    cli_lines = "\n".join(f'<span class="cm"># {html.escape(why)}</span>\n<span class="ps">$ </span>{html.escape(run)}' for why, run in h["cli"])
+    cli_text = html.escape("\n".join(run for _, run in h["cli"]))
+    cli = (
+        f'<div class="cmd tall"><pre><code data-text="{cli_text}">{cli_lines}</code></pre>'
+        f'<button type="button" data-copy data-done="{t["copied"]}">{ICON_COPY}<span>{t["copy"]}</span></button></div>'
     )
 
     # 見た目: テーマの場面(theme-*)を名前で並べ、押すと画面を差し替える。JS が無ければ画面の一覧のその場面へ行く。
@@ -661,26 +709,47 @@ def landing(lang: str, shown, shots) -> str:
   </div>
 </header>
 
-<section class="sec tint" id="how"><div class="in">
-  <div class="head rise"><p class="eyebrow">{h["how_eyebrow"]}</p><h2>{h["how_h"]}</h2><p>{html.escape(h["how_p"])}</p></div>
-  {model(lang, model_notes())}
+<section class="sec tint" id="db"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["db_eyebrow"]}</p><h2>{h["db_h"]}</h2><p>{html.escape(h["db_p"])}</p></div>
+  {db}
+  <p class="also">{html.escape(h["more"])} <a href="{man}features.html">{t["features"]} →</a></p>
 </div></section>
 
-<section class="sec" id="try"><div class="in">
+<section class="sec" id="relations"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["rel_eyebrow"]}</p><h2>{h["rel_h"]}</h2><p>{html.escape(h["rel_p"])}</p></div>
+  <div class="rel rise">
+    <div class="say">
+      <section class="pane file" aria-label="{h["rel_file"]}"><header><b>Tasks/Build the appointment API.md</b><span>{h["rel_file"]}</span></header>
+      <pre><code><span class="l"><span class="k">project</span>: "[[Clinic Booking App]]"</span><span class="l"><span class="k">owner</span>: "[[Sam Ortiz]]"</span></code></pre></section>
+      <p class="note">{html.escape(h["rel_note"])}</p>
+      <a class="more" href="{man}features.html">{html.escape(h["rel_more"])} →</a>
+    </div>
+    <a class="screen" href="gallery.html#demo-relmap"><img loading="lazy" width="856" height="520" src="{img("demo-relmap")}" alt="{html.escape(h["rel_h"])}"></a>
+  </div>
+</div></section>
+
+<section class="sec tint" id="cli"><div class="in">
+  <div class="split">
+    <div class="head rise"><p class="eyebrow">{h["cli_eyebrow"]}</p><h2>{h["cli_h"]}</h2><p>{html.escape(h["cli_p"])}</p>
+      <a class="more" href="{man}tasks.html">{html.escape(h["cli_more"])} →</a></div>
+    {cli}
+  </div>
+</div></section>
+
+<section class="sec" id="how"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["how_eyebrow"]}</p><h2>{h["how_h"]}</h2><p>{html.escape(h["how_p"])}</p></div>
+  {model(lang, model_notes())}
+  <p class="also"><a class="more" href="{man}safety.html">{html.escape(h["how_more"])} →</a></p>
+</div></section>
+
+<section class="sec tint" id="try"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["try_eyebrow"]}</p><h2>{h["try_h"]}</h2></div>
   <ol class="try rise">{tries}</ol>
 </div></section>
 
-<section class="sec tint" id="scenes"><div class="in">
+<section class="sec" id="scenes"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["scene_eyebrow"]}</p><h2>{h["scene_h"]}</h2><p>{html.escape(h["scene_p"])}</p></div>
-  <div class="tabs" role="tablist" aria-label="{h["scene_eyebrow"]}">{tabs}</div>
   {scenes}
-</div></section>
-
-<section class="sec" id="features"><div class="in">
-  <div class="head rise"><p class="eyebrow">{h["feat_eyebrow"]}</p><h2>{h["feat_h"]}</h2></div>
-  <div class="feats">{feats}</div>
-  <p class="also">{html.escape(h["more"])}</p>
 </div></section>
 
 <section class="sec tint" id="look"><div class="in">

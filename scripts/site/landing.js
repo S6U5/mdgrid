@@ -27,15 +27,17 @@
     });
   });
 
-  // 最初の画面: 開く → 直す → 保存 の3場面。押すまでは順に進み、押したらそこで止まる。
+  // 最初の画面: Markdown のフォルダ・CSV のファイル・つながった表の3場面。押すまでは順に進み、押したらそこで止まる。
   (function () {
     var steps = all(".steps .step"), frames = all(".frames a");
     if (!steps.length) return;
     var at = 0, timer = null, auto = !still, DUR = 5200, seen = false;
+    var title = document.querySelector(".term .bar-t span");
     function show(i) {
       at = i;
       steps.forEach(function (s, k) { s.setAttribute("aria-pressed", k === i ? "true" : "false"); s.classList.remove("run"); });
       frames.forEach(function (f, k) { f.classList.toggle("on", k === i); f.tabIndex = k === i ? 0 : -1; });
+      if (title) title.textContent = steps[i].getAttribute("data-cmd");
     }
     function tick() {
       clearTimeout(timer);

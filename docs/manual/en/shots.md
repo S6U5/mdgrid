@@ -761,3 +761,9 @@ Keys: `R`
 ![The people starter: relation map](images/starter-people.svg)
 
 examples/people was made with the people starter: a People table (role, organization, contact) and a Meetings table (date, attendees, next actions) linked to it. R shows the two tables and the links between them.
+
+## Open a CSV file
+
+![Open a CSV file](images/csv-table.svg)
+
+Pass a .csv or .tsv file: the first line names the columns and the rest are rows. Editing, the diff before saving, filters, sorting and groups work as they do for a folder of notes.

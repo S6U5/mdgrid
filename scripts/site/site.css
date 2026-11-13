@@ -240,6 +240,20 @@ html.js .scene[hidden]{display:none}
 @media (max-width:900px){.feat,.feat:nth-child(even){grid-template-columns:minmax(0,1fr)}.feat:nth-child(even) .say{order:0}}
 .also{margin-top:clamp(36px,5vw,56px);padding-top:20px;border-top:1px solid var(--line);color:var(--muted)}
 
+/* リレーション・ターミナルの道具 */
+.more{font-size:14.5px;font-weight:600;text-decoration:none}
+.more:hover{text-decoration:underline}
+.rel{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:clamp(18px,3vw,36px);align-items:center}
+.rel .say{display:grid;gap:14px}
+.rel .file pre{min-height:0}
+.rel .note{margin:0}
+.split{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(20px,4vw,56px);align-items:center}
+.split .head{margin:0}
+.cmd.tall{flex-direction:column}
+.cmd.tall pre{font-size:13.5px;line-height:1.9;padding:18px 20px}
+.cmd.tall button{padding:10px 14px;border-left:0;border-top:1px solid var(--term-line);justify-content:center}
+@media (max-width:900px){.rel,.split{grid-template-columns:minmax(0,1fr)}}
+
 /* テーマ */
 .look{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(18px,3vw,36px);align-items:start}
 .look .side{display:grid;gap:16px}
