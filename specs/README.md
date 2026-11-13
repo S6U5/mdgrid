@@ -48,6 +48,7 @@ updated: 2026-09-30
 | 2026-11-13 | [選んだ列の値を正規表現で探して置き換える操作を、版1に入れる(regex-replace)](_decisions/2026-11-13-regex-replace.md) | accepted | 人 | 人の発言 | CE-15 |
 | 2026-11-13 | [列の値ごとのレーンにノートをカードとして並べる「ボード」の画面を足す(board-view)](_decisions/2026-11-13-board-view.md) | accepted | 人 | 人の発言 | BD-1, BD-2, BD-3 ほか 5 |
 | 2026-11-13 | [ボードの画面の受け入れのテスト2本の誤りを直し、錠を掛け直す(board-tests-locks)](_decisions/2026-11-13-board-tests-locks.md) | accepted | 人 | 検証の指摘 | BD-1, BD-4 |
+| 2026-11-13 | [ボードを開いている間は、空になったレーンを戻す先として残す(board-lanes-stay)](_decisions/2026-11-13-board-lanes-stay.md) | accepted | AI | 検証の指摘 | BD-2 |
 | 2026-10-30 | [説明書とサイトに「できることの一覧」のページを置く(features-page)](_decisions/2026-10-30-features-page.md) | accepted | 人 | 人の発言 | SR-51 |
 | 2026-10-26 | [説明書とサイトの入口を、読む人の順に並べ、人が読んで温度のある文で書く(docs-reading-order)](_decisions/2026-10-26-docs-reading-order.md) | accepted | 人 | 人の発言 | SR-50 |
 | 2026-10-25 | [Windows でパスの区切りの違いで落ちるスターターの試験の補助を直し、錠を掛け直す(windows-starter-tests-locks)](_decisions/2026-10-25-windows-starter-tests-locks.md) | accepted | AI | 検証の指摘 | ST-1, ST-2, ST-3, ST-4, ST-5 |
