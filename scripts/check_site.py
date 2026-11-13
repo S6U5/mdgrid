@@ -12,6 +12,7 @@
 - 入口と画面の一覧の画像と録画が読める、画面の一覧の絞り込み
 - 見た目のカタログ: 見本の画面が描かれる、幅 390px で縮んで横にはみ出さない、拡大の切り替え、広い幅では切り替えを出さない
 - 入口が幅 390px で横にはみ出さない
+- 環境変数 GA_MEASUREMENT_ID があれば、全部のページにその ID の、公開のホストでだけ動くアクセス解析(GA4)のタグがある。無ければどのページにも無い
 - どのページにもコンソールのエラー(とページの例外)が無い
 落ちたら理由を並べて終了コード 1。
 """
@@ -100,6 +101,23 @@ def sitemap(site: str) -> None:
         not miss and not extra,
         f"sitemap.xml が公開するページとちょうど同じ(無い {len(miss)} 件・余計 {len(extra)} 件){': ' + ', '.join((miss + extra)[:5]) if miss or extra else ''}",
     )
+
+
+def analytics(site: str) -> None:
+    """GA_MEASUREMENT_ID があれば、全部の HTML の head にその ID の計測のタグがあり、公開のホストでだけ動く。
+    無ければ、どのページにもタグが無い。"""
+    v = os.environ.get("GA_MEASUREMENT_ID", "").strip()
+    heads = {
+        os.path.relpath(f, site): open(f, encoding="utf-8").read().split("</head>", 1)[0]
+        for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True)
+    }
+    if not v:
+        bad = [r for r, h in heads.items() if "googletagmanager" in h]
+        check(not bad, f"GA_MEASUREMENT_ID が無いので、どのページにもアクセス解析のタグが無い({len(bad)} 件にある)")
+        return
+    tag, guard = f'gtag("config", "{v}")', 'if (location.hostname !== "s6u5.github.io") return;'
+    bad = [r for r, h in heads.items() if tag not in h or guard not in h]
+    check(not bad, f"全部のページの head に、公開のホストでだけ動くアクセス解析のタグがある({len(bad)} 件が無い){': ' + ', '.join(bad[:5]) if bad else ''}")
 
 
 def serve(site: str):
@@ -234,6 +252,7 @@ def main() -> int:
     site = sys.argv[1] if len(sys.argv) > 1 else "site"
     links(site)
     sitemap(site)
+    analytics(site)
     httpd, base = serve(site)
     try:
         browser_checks(base)
