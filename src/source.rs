@@ -138,6 +138,19 @@ pub trait Source {
             ))),
         }
     }
+    /// WB-21: 単位のファイルが `base`(保存で書いたあとの基準)と同じときだけ、中身を `bytes`(保存の前のバイト)で
+    /// 置き換えて読み直し、新しい基準を返す。外で変わっていれば SaveError::Changed。戻せない読み込み口は Err(既定)。
+    fn restore_unit(
+        &mut self,
+        unit: &RowId,
+        base: &Stamp,
+        bytes: &[u8],
+    ) -> Result<Stamp, SaveError> {
+        let _ = (unit, base, bytes);
+        Err(SaveError::Edit(EditError::NotEditable(
+            crate::i18n::Msg::RowNotLoaded.text().into(),
+        )))
+    }
     /// 保存の前の差分用: (今のディスクのバイト, それに edits を当てたバイト)。
     /// ファイルも読んだ内容も変えない(変えると changed が外の変更を見逃す)。
     fn preview(&self, row: &RowId, edits: &[Edit]) -> Result<(Vec<u8>, Vec<u8>), EditError>;
@@ -218,6 +231,14 @@ impl<S: Source + ?Sized> Source for Box<S> {
     }
     fn reload(&mut self, row: &RowId) -> std::io::Result<()> {
         (**self).reload(row)
+    }
+    fn restore_unit(
+        &mut self,
+        unit: &RowId,
+        base: &Stamp,
+        bytes: &[u8],
+    ) -> Result<Stamp, SaveError> {
+        (**self).restore_unit(unit, base, bytes)
     }
     fn rename(&mut self, row: &RowId, to: &std::path::Path) -> std::io::Result<RowId> {
         (**self).rename(row, to)

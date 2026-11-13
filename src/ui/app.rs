@@ -258,6 +258,8 @@ pub struct App {
     pub(crate) tree_spec: Option<(mdgrid::folder_tree::TreeSpec, String)>,
     /// 木の画面(TR-1。folder_tree.rs)。開いている間だけ。
     pub(crate) folder_tree: Option<super::folder_tree::FolderTree>,
+    /// ボードの画面(BD-1。board.rs)。開いている間だけ。
+    pub(crate) board: Option<super::board::Board>,
     /// TR-5: URL を開く口(試験では差し替える)。
     pub(crate) opener: Box<dyn super::external::Opener>,
     pub quit: bool,
@@ -384,6 +386,7 @@ impl App {
             relmap: None,
             tree_spec: None,
             folder_tree: None,
+            board: None,
             opener: super::external::default_opener(),
             quit: false,
         };
@@ -511,6 +514,8 @@ impl App {
             self.refresh();
             // TR-1: 木の画面を開いていれば、今のビューを通った行で組み直す。
             self.rebuild_tree();
+            // BD-1: ボードの画面を開いていれば、今のビューを通った行で組み直す。
+            self.rebuild_board();
             if self.review.is_some() {
                 self.reopen_review_keeping_overlay();
             }
@@ -709,6 +714,7 @@ impl App {
             Mode::FilterWin | Mode::FilterText => self.filters_action(action),
             Mode::Relations => self.relmap_action(action),
             Mode::Tree => self.tree_action(action),
+            Mode::Board => self.board_action(action),
             Mode::Table => self.table_action(action),
         }
         if std::mem::take(&mut self.regrid) {
@@ -875,6 +881,8 @@ impl App {
             Action::RelationMap => self.open_relmap(),
             // ---- 木の画面(folder_tree.rs。TR-1・TR-5) ----
             Action::TreeView => self.open_tree(),
+            // ---- ボードの画面(board.rs。BD-1) ----
+            Action::BoardView => self.open_board(),
             Action::OpenUrl => self.open_url_here(),
             // ---- 親子(NV-27。grid.rs) ----
             Action::ToggleTree => self.toggle_tree(),
@@ -891,6 +899,10 @@ impl App {
             // CE-35: 列の型を選び直す窓。
             Action::ColumnType => self.open_type_menu(),
             Action::RenameNote => self.start_rename_note(),
+            // ---- 保存の取り消し(review.rs。WB-21) ----
+            Action::UndoSave => self.start_undo_save(),
+            // ---- 正規表現の置き換え(replace.rs。CE-15) ----
+            Action::RegexReplace => self.start_replace(),
             Action::DeleteKey => self.start_delete_key(),
             // ---- 新しいノート(new_note.rs。CE-25) ----
             Action::NewNote => self.start_new_note(),
@@ -1015,6 +1027,22 @@ impl App {
                 }
                 // TR-7: フォルダ・開閉の印・右の行・タブの行のクリック。
                 self.tree_click(x, y);
+                return;
+            }
+            Mode::Board => {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
+                    self.close_board();
+                    self.open_drawer();
+                    return;
+                }
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
+                }
+                // BD-6: カードとレーンのクリック。
+                self.board_click(x, y);
                 return;
             }
             Mode::Chips => {
@@ -1164,6 +1192,9 @@ impl App {
             // TR-7: 木の画面では、選んでいる欄で上下に選ぶ(行の操作の窓が開いていれば窓の中)。
             (Mode::Tree, true) => Action::Down,
             (Mode::Tree, false) => Action::Up,
+            // BD-6: ボードの画面では、選んでいるレーンのカードを上下に選ぶ。
+            (Mode::Board, true) => Action::Down,
+            (Mode::Board, false) => Action::Up,
             _ => return,
         };
         self.apply(a);
@@ -1220,6 +1251,9 @@ impl App {
                 }
                 if self.mode == Mode::Tree {
                     self.close_tree();
+                }
+                if self.mode == Mode::Board {
+                    self.close_board();
                 }
                 self.apply(Action::ViewSettings);
             }

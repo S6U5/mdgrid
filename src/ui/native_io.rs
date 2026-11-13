@@ -42,6 +42,10 @@ pub(crate) enum Ask {
     DeleteKey(String, usize),
     /// 名前を変えるノート(CE-34)。続けて新しい名前。
     RenameNote(mdgrid::source::RowId),
+    /// 置き換える列(CE-15)。続けて探す正規表現。
+    ReplacePattern(String),
+    /// 置き換える列と探す正規表現(CE-15)。続けて置き換える文字。
+    ReplaceWith { col: String, pattern: String },
     /// 取り込む `.base`(開いたフォルダからの相対パス)。
     ImportFile(Vec<String>),
     /// 取り込むビュー。
@@ -198,6 +202,8 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::RenameKey(k)) => Msg::AskRenameKey.fill(&[&sanitize(k)]),
         Some(Ask::DeleteKey(k, n)) => Msg::AskDeleteKey.fill(&[&sanitize(k), n]),
         Some(Ask::RenameNote(_)) => Msg::AskRenameNote.text().to_string(),
+        Some(Ask::ReplacePattern(_)) => Msg::AskReplacePattern.text().to_string(),
+        Some(Ask::ReplaceWith { .. }) => Msg::AskReplaceWith.text().to_string(),
         Some(Ask::ImportFile(_)) => Msg::AskImportFile.into(),
         Some(Ask::ImportView { file, .. }) => Msg::AskImportView.fill(&[&sanitize(file)]),
         Some(Ask::OpenPlace { .. }) => format!("{}: ", Msg::PlaceOpen.text()),
@@ -257,7 +263,12 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let room = lines.len().saturating_sub(3).clamp(1, ASK_ROWS);
     if matches!(
         ask,
-        Ask::PlaceName(_) | Ask::PlaceOverwrite(_) | Ask::WsName | Ask::StarterSamples { .. }
+        Ask::PlaceName(_)
+            | Ask::PlaceOverwrite(_)
+            | Ask::WsName
+            | Ask::StarterSamples { .. }
+            | Ask::ReplacePattern(_)
+            | Ask::ReplaceWith { .. }
     ) {
         // 候補の無い入力。
     } else if let Ask::ExportName | Ask::StarterDir(_) = ask {
@@ -547,6 +558,14 @@ impl App {
             Some(Ask::RenameNote(row)) => {
                 let row = row.clone();
                 self.rename_note_to(&row, query)
+            }
+            Some(Ask::ReplacePattern(col)) => {
+                let col = col.clone();
+                self.replace_pattern(&col, query)
+            }
+            Some(Ask::ReplaceWith { col, pattern }) => {
+                let (col, pattern) = (col.clone(), pattern.clone());
+                self.replace_with(&col, &pattern, query)
             }
             Some(Ask::DeleteKey(key, _)) => {
                 let key = key.clone();

@@ -27,6 +27,8 @@ enum Screen {
     Relations,
     /// TR-1: 木(表に木の設定があるときだけ)。
     Tree,
+    /// BD-1: ボード(カーソルのある列でまとめる)。
+    Board,
 }
 
 /// 窓に並べる型(表と、つながる表があれば関係マップ。関係マップの画面ではいつも)。
@@ -39,6 +41,7 @@ fn screens(app: &App) -> Vec<Screen> {
     if app.tree_ready() || app.folder_tree.is_some() {
         out.push(Screen::Tree);
     }
+    out.push(Screen::Board);
     out
 }
 
@@ -48,6 +51,8 @@ fn current(app: &App) -> Screen {
         Screen::Relations
     } else if app.folder_tree.is_some() {
         Screen::Tree
+    } else if app.board.is_some() {
+        Screen::Board
     } else {
         Screen::Table
     }
@@ -67,6 +72,11 @@ fn entry(app: &App, s: Screen) -> (String, Option<String>) {
             Glyph::Tree,
             Msg::ScreenTree.text(),
             keymap::key_for(&app.keys, Mode::Table, Action::TreeView),
+        ),
+        Screen::Board => (
+            Glyph::Table,
+            Msg::ScreenBoard.text(),
+            keymap::key_for(&app.keys, Mode::Table, Action::BoardView),
         ),
     };
     let name = if nerd_on(app) {
@@ -144,6 +154,8 @@ impl App {
             Mode::Relations
         } else if self.folder_tree.is_some() {
             Mode::Tree
+        } else if self.board.is_some() {
+            Mode::Board
         } else {
             Mode::Table
         };
@@ -181,14 +193,24 @@ impl App {
             Screen::Table => {
                 self.relmap = None;
                 self.folder_tree = None;
+                self.board = None;
                 self.set_mode(Mode::Table);
             }
+            Screen::Board => {
+                self.relmap = None;
+                self.folder_tree = None;
+                self.board = None;
+                self.set_mode(Mode::Table);
+                self.open_board();
+            }
             Screen::Relations => {
+                self.board = None;
                 self.folder_tree = None;
                 self.set_mode(Mode::Table);
                 self.open_relmap();
             }
             Screen::Tree => {
+                self.board = None;
                 self.relmap = None;
                 self.set_mode(Mode::Table);
                 self.open_tree();

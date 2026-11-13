@@ -419,12 +419,23 @@ pub(crate) fn palette_overlay(app: &App, lines: &mut [Line<'static>], w: usize) 
         out.push(Line::from(fit(Msg::PaletteEmpty.text(), w, Align::Left)));
     }
     let start = p.sel.saturating_sub(room - 1);
+    // 表示名の欄は 24 桁。見えている候補に長い名前があれば、切らずに出せる幅まで広げる(34 桁まで)。
+    let label_w = cands
+        .iter()
+        .skip(start)
+        .take(room)
+        .map(|c| super::width::width(&sanitize(&c.label)))
+        .max()
+        .unwrap_or(0)
+        .clamp(24, 34)
+        // 幅の狭い端末では、動作の名前の欄(16 桁)を削らない所まで。
+        .min(w.saturating_sub(20).max(24));
     for (i, c) in cands.iter().enumerate().skip(start).take(room) {
         let sel = i == p.sel;
         let t = format!(
             "{} {} {} {}",
             if sel { ">" } else { " " },
-            fit(&sanitize(&c.label), 24, Align::Left),
+            fit(&sanitize(&c.label), label_w, Align::Left),
             fit(&c.name, 16, Align::Left),
             sanitize(&c.keys)
         );
@@ -499,8 +510,14 @@ impl App {
     /// パレットに文字を足す。全角の英数字は半角に直す(SR-17)。
     pub(crate) fn palette_insert(&mut self, c: char) {
         self.message = None;
+        // CE-15: 探す正規表現と置き換える文字は、打った字がそのまま値になるので、全角の字を半角に直さない。
+        let raw = matches!(
+            self.nv.ask,
+            Some(super::native_io::Ask::ReplacePattern(_))
+                | Some(super::native_io::Ask::ReplaceWith { .. })
+        );
         if let Some(p) = &mut self.palette {
-            p.query.push(keymap::halfwidth(c));
+            p.query.push(if raw { c } else { keymap::halfwidth(c) });
             p.sel = 0;
         }
     }
@@ -511,6 +528,8 @@ impl App {
         // TR-5: 木の画面から開いたパレットは、閉じると木に戻る。
         let back = if self.folder_tree.is_some() {
             Mode::Tree
+        } else if self.board.is_some() {
+            Mode::Board
         } else {
             Mode::Table
         };

@@ -3,6 +3,7 @@
 
 pub mod app;
 pub mod bands;
+pub mod board;
 pub mod calendar;
 pub mod cell;
 pub(crate) mod chips;
@@ -39,6 +40,7 @@ pub mod popup;
 pub(crate) mod profile;
 pub mod relations;
 pub mod relmap;
+pub mod replace;
 pub mod review;
 pub(crate) mod rows;
 pub mod screen_menu;
@@ -293,6 +295,8 @@ mod test_relmap_new_row;
 #[cfg(test)]
 mod test_relmap_scroll;
 #[cfg(test)]
+mod test_replace_fixes;
+#[cfg(test)]
 mod test_review6;
 #[cfg(test)]
 mod test_rich_cells;
@@ -357,7 +361,9 @@ mod test_bar_padding;
 mod test_bar_padding_half;
 #[cfg(test)]
 mod test_bar_padding_theme;
+// 錠のある試験の補助の書き方(文字の比べ方)を書き換えないため(specs/_changes/2026-11-13-board-view.md)。
 #[cfg(test)]
+#[allow(clippy::manual_pattern_char_comparison)]
 mod test_board;
 #[cfg(test)]
 mod test_crumb_button;

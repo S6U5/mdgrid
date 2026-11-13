@@ -53,6 +53,20 @@ keys = ["Enter", "Down", "Enter", "C-s"]
 text = { ja = "直した値はすぐには書かない。Ctrl+S でファイルごとの差分を見て、確かめてから書く。直したキーの値の外は1バイトも変えない。", en = "Edits are kept until you save. Ctrl+S shows the diff per file; confirm to write. Nothing outside the edited value changes." }
 
 [[shot]]
+id = "regex-replace"
+title = { ja = "正規表現で置き換える", en = "Replace with a regular expression" }
+keys = [":", "text:regex_replace", "Enter", "text:^to(do)$"]
+wait = { ja = "探す正規表現", en = "Find (regular expression)" }
+text = { ja = "パレットの「正規表現で置き換える」は、今の列の値を正規表現で探して置き換える。探す正規表現、置き換える文字の順に答える。行を選んでいれば選んだ行だけ、いなければ今のビューの全部の行が対象。変わったセルは未保存になり、u の1回で全部戻る。", en = "\"Replace with a regular expression\" in the palette finds and replaces in the current column. Answer the pattern, then the replacement. Selected rows only, or every row of the view when none is selected. Changed cells become unsaved, and one u takes them all back." }
+
+[[shot]]
+id = "save-undo"
+title = { ja = "保存を取り消す", en = "Undo the last save" }
+keys = ["Enter", "Down", "Enter", "C-s", "Enter", ":", "text:undo_save", "Enter"]
+wait = { ja = "保存の取り消し", en = "Undo the last save:" }
+text = { ja = "保存したあと、パレットの「保存を取り消す」で、最後の保存で書いたファイルを保存の前の中身に戻せる。先に差分(今のファイル → 保存の前)が出て、Enter で戻す。書いた値は未保存に戻る。", en = "After saving, \"Undo the last save\" in the palette puts the files that save wrote back to what they were before. The diff (current file → before the save) comes first; Enter restores. The written values become unsaved again." }
+
+[[shot]]
 id = "save-done"
 title = { ja = "保存したあと", en = "After saving" }
 keys = ["Enter", "Down", "Enter", "C-s", "Enter"]
@@ -769,6 +783,13 @@ ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06" }
 keys = ["%"]
 text = { en = "% lists each value of the column with its count and share; Enter keeps only those rows.", ja = "% で列の値ごとの件数と割合が出る。Enter でその値の行だけに絞る。" }
+
+[[shot]]
+id = "board"
+title = { en = "The board screen", ja = "ボードの画面" }
+keys = ["B"]
+wait = { en = "Board:", ja = "ボード:" }
+text = { en = "B, with the cursor on a text column such as status. Each value of the column becomes a lane and each note a card. h and l choose a lane, j and k a card; H and L move the card to the next lane, which changes the value as an unsaved change. Enter shows the card's row in the table, Esc goes back.", ja = "status のようなテキストの列にカーソルを置いて B。列の値ごとにレーンができ、ノートが1枚ずつカードになる。h・l でレーン、j・k でカードを選び、H・L でカードを隣のレーンへ移すと、値の変更が未保存になる。Enter でカードの行を表で見る、Esc で表に戻る。" }
 
 [[shot]]
 id = "tree"

@@ -309,7 +309,7 @@ impl App {
     }
 
     /// 表の行(RowId)を選ぶ。見えなければ偽。
-    fn select_row_id(&mut self, id: &RowId) -> bool {
+    pub(crate) fn select_row_id(&mut self, id: &RowId) -> bool {
         let at = self.rows.iter().position(|r| r == id).and_then(|r| {
             self.slots
                 .iter()

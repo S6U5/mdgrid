@@ -19,7 +19,7 @@ You have forty task notes and want to set `status: done` on the finished ones. A
 
 One command per folder. `alias tasks='mdgrid ~/notes/Tasks'` is all the setup there is. mdgrid remembers each folder's columns, widths, filters, sorting, grouping and saved views, so typing `tasks` brings back the same table every time. Or register the tables you use under a name and a group, and plain `mdgrid` lists them to switch between. No database, no import.
 
-Besides the table: groups, a folder tree, a map of how the tables link, the counts of a column's values, and one note in detail. The tree, the map, the counts and the detail are one key away; groups come from the view settings. `Esc` brings the table back. They are laid out one screen each in [Ways to see your notes](https://s6u5.github.io/mdgrid/manual/en/views.html).
+Besides the table: groups, a board of cards per value, a folder tree, a map of how the tables link, the counts of a column's values, and one note in detail. The board, the tree, the map, the counts and the detail are one key away; groups come from the view settings. `Esc` brings the table back. They are laid out one screen each in [Ways to see your notes](https://s6u5.github.io/mdgrid/manual/en/views.html).
 
 Notes can link to each other (`project: "[[mdgrid]]"`), so folders work as linked tables: links show by name, Enter picks a target by name, and you can jump to it or list the notes that link back. Press `R` for a map of the tables and their links. Group the tables of a project into a workspace (or let mdgrid find the root folder, the folder with `.obsidian/`, or the git repository) so links stay inside it.
 

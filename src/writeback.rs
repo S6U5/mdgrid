@@ -914,13 +914,39 @@ pub fn save_with(
         return Err(SaveError::Changed);
     }
     let new = apply_inner(&current, edits, faults.misquote).map_err(SaveError::Edit)?;
+    replace(&real, &meta, base, new, edits, faults)
+}
 
+/// WB-21: 今のファイルが `base` と同じときだけ、中身を `bytes` で置き換える(保存の取り消し)。手順は `save` と同じ
+/// (ハードリンクと権限の断り → 一時ファイル → 読み直し → fsync → 直前の再検査 → 名前の変更。WB-5・WB-6・WB-8・WB-12)。
+/// 値の書き換えはしない(覚えておいた保存の前のバイトをそのまま戻す)。新しい基準を返す。
+pub fn restore(path: &Path, base: &Baseline, bytes: &[u8]) -> Result<Baseline, SaveError> {
+    let real = fs::canonicalize(path)?;
+    let meta = fs::metadata(&real)?;
+    refuse_hard_link(&meta)?;
+    refuse_no_permission(&real)?;
+    let (_, now) = read_with_baseline(&real)?;
+    if &now != base {
+        return Err(SaveError::Changed);
+    }
+    replace(&real, &meta, base, bytes.to_vec(), &[], &Faults::default())
+}
+
+/// 検査の済んだ内容 `new` を、一時ファイルを通して `real` に置く(`save_with` と `restore` の共通の後半)。
+fn replace(
+    real: &Path,
+    meta: &fs::Metadata,
+    base: &Baseline,
+    new: Vec<u8>,
+    edits: &[Edit],
+    faults: &Faults,
+) -> Result<Baseline, SaveError> {
     let dir = real
         .parent()
         .ok_or_else(|| io::Error::other("the note has no parent folder"))?;
-    let (tmp_path, mut tmp) = create_temp(dir, &real)?;
+    let (tmp_path, mut tmp) = create_temp(dir, real)?;
     let result = (|| -> Result<Baseline, SaveError> {
-        copy_permissions(&tmp, &meta)?;
+        copy_permissions(&tmp, meta)?;
         let bytes = if faults.corrupt {
             std::borrow::Cow::Owned(corrupt_target(&new, edits))
         } else {
@@ -957,18 +983,18 @@ pub fn save_with(
             )));
         }
         if let Some(outside) = &faults.before_rename {
-            fs::write(&real, outside)?;
+            fs::write(real, outside)?;
         }
         // 名前を変える直前にもう一度、基準を検査する(WB-12)。
-        let meta = fs::metadata(&real)?;
+        let meta = fs::metadata(real)?;
         refuse_hard_link(&meta)?;
         // 名前の変更はフォルダに書ければ通るので、ファイルの権限はここでも確かめる(WB-5)。
-        refuse_no_permission(&real)?;
-        let (_, again) = read_with_baseline(&real)?;
+        refuse_no_permission(real)?;
+        let (_, again) = read_with_baseline(real)?;
         if &again != base {
             return Err(SaveError::Changed);
         }
-        fs::rename(&tmp_path, &real)?;
+        fs::rename(&tmp_path, real)?;
         Ok(next)
     })();
     let next = match result {

@@ -392,6 +392,15 @@ impl Source for Csv {
         self.write(base, |me, disk| me.applied(disk, edits))
     }
 
+    fn restore_unit(
+        &mut self,
+        _unit: &RowId,
+        base: &Stamp,
+        bytes: &[u8],
+    ) -> Result<Stamp, SaveError> {
+        self.write(base, |_, _| Ok(bytes.to_vec()))
+    }
+
     fn preview(&self, row: &RowId, edits: &[Edit]) -> Result<(Vec<u8>, Vec<u8>), EditError> {
         self.preview_unit(&[(row.clone(), edits.to_vec())])
     }

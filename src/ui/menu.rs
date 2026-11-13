@@ -121,6 +121,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
                 want.push((Section::Column, Action::RenameKey, false));
                 want.push((Section::Column, Action::DeleteKey, false));
             }
+            // CE-15: テキストの列なら、正規表現で置き換える。
+            if app.replace_column_ok(col) {
+                want.push((Section::Column, Action::RegexReplace, false));
+            }
         }
         for a in [
             Action::HideColumn,

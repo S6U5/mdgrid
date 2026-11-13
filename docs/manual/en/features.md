@@ -42,11 +42,27 @@ Edits are held as pending changes until `Ctrl+S`, which shows a diff per file be
 
 [Edit values and save](tasks.md#edit-values-and-save), [Write-back safety](../../safety.md)
 
+## Undo the last save
+
+![Undo the last save](images/save-undo.svg)
+
+Noticed a mistake after saving? "Undo the last save" in the palette (`:`) shows the diff and puts the files that save wrote back, byte for byte, to what they were before it. The written values become unsaved again, so you can fix them and save once more.
+
+[Edit values and save](tasks.md#edit-values-and-save), [Write-back safety](../../safety.md)
+
 ## Edit many rows at once
 
 ![Set one value on many rows](images/bulk-set.svg)
 
 Mark rows with `Space` and set one value on all of them. Tags can be added or removed in bulk the same way, and marked rows can be handed to the next command.
+
+[Edit many rows at once](tasks.md#edit-many-rows-at-once)
+
+## Replace with a regular expression
+
+![Replace with a regular expression](images/regex-replace.svg)
+
+For when `v1 draft` should become `version 1 draft` on dozens of rows. Run "Replace with a regular expression" from the palette (`:`) or the action menu (`x`), answer the pattern (`v(\d)`) and the replacement (`version $1`), and every matching cell of the current column becomes unsaved at once. Nothing is written until you review the diff and save, as usual.
 
 [Edit many rows at once](tasks.md#edit-many-rows-at-once)
 

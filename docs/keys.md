@@ -84,6 +84,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
 | `T` | `tree_view` | Open the tree view (when the table has a tree setting in the workspace marker) |
+| `B` | `board_view` | Open the board view, grouped by the column under the cursor (a text column) |
 | `Z` | `toggle_tree` | Fold or unfold the child rows (when the view arranges rows by parent) |
 | `A` | `add_column` | Add a column for a key no note has yet (type its name); saving writes the key only to the notes you fill in |
 | `H` | `move_column_left` | Move the column to the left |
@@ -517,6 +518,40 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 | `:` | `palette` | Command palette (closing it returns to the tree) |
 | `?` | `help` | Show the help |
 
+## `board`
+
+The board view (`B`, `:board_view`, or **Board** in the screen type menu at the top right). It needs no setup: it groups the rows of the current view by the column the cursor was on, one lane per value and one card per row. The column must be a text column of the notes; on any other column (numbers, dates, lists, checkboxes, `file.*`, formulas) the board does not open and the reason is shown. Lanes follow the order of `values` in the column's rule (`[rules.<column>]` in [Configuration](config.md)) first, including values no row has yet, then the other values in alphabetical order, and **(none)** last when some rows have no value. A lane title shows its value and the number of cards. A card shows the note's name and, below it, the values of the first two visible columns of the view; a card with pending changes has a `*`.
+
+Moving a card to the next lane (`H` / `L`) stages a change of that column's value, as one undo step. Nothing is written until you save: `Ctrl+S` goes back to the table and opens the save review with the diff. Moving to **(none)** empties the value. Cards of read-only notes do not move, and nothing moves when mdgrid was started with `--readonly`.
+
+When the lanes do not fit the width, the board scrolls sideways to keep the selected lane visible; `<` and `>` at the ends of the lane title row mark hidden lanes, and `^` / `v` after a lane's count mark hidden cards. The mouse works too: click a card to select it, click the selected card again to go to that row in the table, click a lane title to select the lane, and the wheel moves through the cards.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Show the card's row in the table |
+| `Esc` | `close` | Back to the table |
+| `B` | `board_view` | Back to the table |
+| `q` | `close` | Back to the table |
+| `h` | `left` | Lane to the left |
+| `Left` | `left` | Lane to the left |
+| `l` | `right` | Lane to the right |
+| `Right` | `right` | Lane to the right |
+| `j` | `down` | Next card |
+| `Down` | `down` | Next card |
+| `k` | `up` | Previous card |
+| `Up` | `up` | Previous card |
+| `H` | `card_left` | Move the card to the lane on the left (stages a change of the grouping column) |
+| `Shift+Left` | `card_left` | Move the card to the lane on the left |
+| `L` | `card_right` | Move the card to the lane on the right (stages a change of the grouping column) |
+| `Shift+Right` | `card_right` | Move the card to the lane on the right |
+| `u` | `undo` | Undo the last pending change |
+| `Ctrl+z` | `undo` | Undo the last pending change |
+| `Ctrl+r` | `redo` | Redo |
+| `U` | `redo` | Redo |
+| `Ctrl+s` | `save` | Go back to the table and open the save review |
+| `:` | `palette` | Command palette (closing it returns to the board) |
+| `?` | `help` | Show the help |
+
 ## Actions
 
 Every action name you can write in the keys section of the config file. Each one works only in the modes where it appears in the tables above.
@@ -559,6 +594,9 @@ Every action name you can write in the keys section of the config file. Each one
 - `relation_map` — switch between the table and the relation map
 - `toggle_tree` — fold or unfold the child rows of the selected row
 - `tree_view` — switch between the table and the tree view
+- `board_view` — switch between the table and the board view (lanes by the values of the column under the cursor)
+- `card_left` — in the board, move the selected card to the lane on the left (stages a change)
+- `card_right` — in the board, move the selected card to the lane on the right (stages a change)
 - `open_url` — open the http or https URL of the selected row in the browser (in the table, from the palette and the action menu)
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
@@ -641,3 +679,5 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `workspace_open` — pick a workspace, then one of its tables, and open it within that workspace
 - `starter_new` — pick a starter (a built-in one or `starters/<name>` in the config folder), type the folder to create and whether to add the sample notes, and open the new ledger
 - `rename_note` — rename the note of the selected row (also in the action menu `x`); links to the old name are rewritten as pending changes
+- `regex_replace` — find with a regular expression in the current column and replace (asks for the pattern, then the replacement; `$1` and `${name}` refer to groups; write `${1}x` when text follows directly). Applies to the selected rows, or every row of the view when none is selected; only cells whose value is text change, as one pending change step (also in the action menu `x`)
+- `undo_save` — put the files written by the last save back to what they were before it (shows the diff first; a file changed outside since the save is left alone; the written values become pending changes again)

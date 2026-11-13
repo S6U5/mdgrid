@@ -118,6 +118,12 @@ pub(crate) fn on_tree(app: &App) -> bool {
         || (matches!(app.mode, Mode::ScreenMenu | Mode::Palette) && app.folder_tree.is_some())
 }
 
+/// BD-1: ボードの画面か(画面の型のメニューとパレットをボードから開いている間も)。
+pub(crate) fn on_board(app: &App) -> bool {
+    app.mode == Mode::Board
+        || (matches!(app.mode, Mode::ScreenMenu | Mode::Palette) && app.board.is_some())
+}
+
 /// ボタンの見た目(NV-23。ビューの帯とヘッダーのボタンで同じ)。`on` は効いているか。
 fn button_style(look: &Option<super::look::Look>, on: bool) -> Style {
     match look {
@@ -193,6 +199,12 @@ fn menu_button_text(app: &App) -> String {
         )
     } else if on_tree(app) {
         format!(" {} {} ▾ ", glyph(app, Glyph::Tree), Msg::ScreenTree.text())
+    } else if on_board(app) {
+        format!(
+            " {} {} ▾ ",
+            glyph(app, Glyph::Table),
+            Msg::ScreenBoard.text()
+        )
     } else {
         format!(
             " {} {} ▾ ",
@@ -1320,7 +1332,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             | Mode::Drawer
             | Mode::FilterWin
             | Mode::FilterText
-    ) || (app.mode == Mode::ScreenMenu && app.relmap.is_none() && app.folder_tree.is_none())
+    ) || (app.mode == Mode::ScreenMenu
+        && app.relmap.is_none()
+        && app.folder_tree.is_none()
+        && app.board.is_none())
     {
         let pos = match app.slots.get(app.row) {
             None | Some(Slot::Gap) => Msg::FooterRow.fill(&[&0, &0]),
@@ -1441,6 +1456,9 @@ pub(crate) fn message(app: &App, w: usize) -> Line<'static> {
             }
             if let Some(r) = &app.review {
                 let item = r.items.get(r.sel)?;
+                if r.undo {
+                    return Some(Msg::HintUndoSave.text().into());
+                }
                 return Some(if item.external {
                     Msg::HintReviewExternal.text().into()
                 } else {

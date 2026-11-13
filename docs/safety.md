@@ -174,6 +174,16 @@ A note may change on disk while mdgrid has it open, for example when you edit it
 
 mdgrid also marks conflict files from sync tools (names containing `.sync-conflict-` or `conflicted copy`), so you can notice them and resolve them by hand.
 
+## Undoing a save
+
+If you notice a mistake after saving, "Undo the last save" in the command palette (`:`) puts the files written by the last save back to what they were before it.
+
+- **What is restored.** Only the files written by the most recent save. Each time it saves, mdgrid keeps the content each file had before the write in memory. That copy is replaced by the next save and is gone when mdgrid exits. No backup files are created in your notes folder.
+- **The diff comes first.** For each file you see the diff from the current content to the content before the save. `Enter` restores, `Esc` leaves every file alone.
+- **Byte for byte.** mdgrid does not rewrite the values backwards; it puts back the content it kept. The write follows the same steps as in "How a file is written" below (temporary file, fsync, rename).
+- **Outside changes are kept.** A file that changed outside after the save (its content is no longer what mdgrid wrote) is not restored, and the reason is shown. The other files are restored.
+- **The written values become pending changes again.** The values that save wrote go back to "unsaved", so you can fix them and save again. Press `u` to drop them.
+
 ## How a file is written
 
 Saving a note follows these steps. If any step fails, the original note is left untouched, the temporary file is removed, and the pending changes are kept.

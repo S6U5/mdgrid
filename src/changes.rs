@@ -80,6 +80,18 @@ impl Step {
     }
 }
 
+/// 最後の保存で書いた1つの単位の控え(WB-21)。メモリにだけ持つ。
+#[derive(Debug, Clone)]
+struct Saved {
+    unit: RowId,
+    /// 書いたあとの基準。今のファイルがこれと違えば、外で変わったので戻さない。
+    after: Stamp,
+    /// 保存の前のファイルのバイト。
+    before: Vec<u8>,
+    /// 書いた値(行ごと)。戻したら、ためる変更に戻す。
+    cells: Vec<(RowId, Vec<(String, NewValue)>)>,
+}
+
 /// ためる変更: (行, 列) → 新しい値、行ごとの基準、取り消しとやり直しの積み、外で変更の印。
 #[derive(Debug, Default)]
 pub struct Changes {
@@ -87,6 +99,8 @@ pub struct Changes {
     states: BTreeMap<RowId, RowState>,
     undo: Vec<Step>,
     redo: Vec<Step>,
+    /// 最後の保存で書いた単位(WB-21)。次に何かを書いた保存で置き換わり、戻したら消える。
+    last_save: Vec<Saved>,
 }
 
 impl Changes {
@@ -297,6 +311,9 @@ impl Changes {
         let units = self.units(src);
         let mut out = Vec::new();
         let mut seen = BTreeSet::new();
+        // WB-21: この保存で書いた単位の控え。1つでも書けたら、前の保存の控えと置き換える。
+        let mut batch: Vec<Saved> = Vec::new();
+        let mut wrote = false;
         for row in rows {
             if !self.cells.contains_key(row) && !units.iter().any(|(u, _)| u == row) {
                 continue;
@@ -334,9 +351,33 @@ impl Changes {
             if edits.is_empty() {
                 continue;
             }
+            // WB-21: 保存の前のバイトを控える。基準と同じ中身のときだけ(違えば save_unit が止める)。
+            let before = src
+                .preview_unit(&edits)
+                .ok()
+                .map(|(b, _)| b)
+                .filter(|b| crate::source::content_hash(b) == base.hash);
             match src.save_unit(&base, &edits) {
-                Ok(_) => {
-                    // 書いた行の変更は消え、積みからも除く(書いたものは取り消せない)。
+                Ok(after) => {
+                    wrote = true;
+                    if let Some(before) = before {
+                        batch.push(Saved {
+                            unit: unit.clone(),
+                            after,
+                            before,
+                            cells: edits
+                                .iter()
+                                .map(|(r, es)| {
+                                    let cols = es
+                                        .iter()
+                                        .map(|e| (e.key.clone(), e.value.clone()))
+                                        .collect();
+                                    (r.clone(), cols)
+                                })
+                                .collect(),
+                        });
+                    }
+                    // 書いた行の変更は消え、積みからも除く(ためる変更の取り消しでは戻せない。ファイルを戻すのは undo_save)。
                     for (r, _) in &edits {
                         self.cells.remove(r);
                         self.states.remove(r);
@@ -355,12 +396,97 @@ impl Changes {
                 Err(e) => out.push((unit, Outcome::Failed(e))),
             }
         }
+        if wrote {
+            self.last_save = batch;
+        }
         out
+    }
+
+    /// WB-21: 最後の保存で書いた単位の控え: (単位, 書いたあとの基準, 保存の前のバイト)。無ければ空。
+    pub fn saved_units(&self) -> Vec<(RowId, Stamp, Vec<u8>)> {
+        self.last_save
+            .iter()
+            .map(|s| (s.unit.clone(), s.after, s.before.clone()))
+            .collect()
+    }
+
+    /// WB-21: 最後の保存で書いた単位を、保存の前のバイトに戻す。結果は単位ごと(Saved = 戻した、Changed = 保存のあとに
+    /// 外で変わったので書かなかった、Failed = 書けなかった)。戻した単位の控えは消え、その保存で書いた値は、ためる変更として
+    /// 1手で戻る(保存のあとに同じセルへためた値があれば、そちらを残す)。戻せなかった単位の控えは残す。
+    pub fn undo_save(&mut self, src: &mut dyn Source) -> Vec<(RowId, Outcome)> {
+        let saved = std::mem::take(&mut self.last_save);
+        let mut out = Vec::new();
+        let mut cells = Vec::new();
+        let mut bases = BTreeMap::new();
+        let mut restored: Vec<RowId> = Vec::new();
+        for s in saved {
+            match src.restore_unit(&s.unit, &s.after, &s.before) {
+                Ok(next) => {
+                    // 保存のあとにこの単位へためた変更の基準を、戻したあとの基準に進める(この単位の行だけ。
+                    // 中身が同じ別のノートの基準は動かさない)。取り消し・やり直しの積みの中の基準も同じに進める。
+                    self.rebase_unit(src, &s.unit, &s.after, &next);
+                    restored.extend(s.cells.iter().map(|(r, _)| r.clone()));
+                    for (row, cols) in &s.cells {
+                        for (col, v) in cols {
+                            if self.pending(row, col).is_some()
+                                || same_as_read(v, &src.get(row, col).value)
+                            {
+                                continue;
+                            }
+                            cells.push(CellChange {
+                                row: row.clone(),
+                                col: col.clone(),
+                                before: None,
+                                after: Some(v.clone()),
+                            });
+                            if !self.cells.contains_key(row) {
+                                bases.insert(row.clone(), next);
+                            }
+                        }
+                    }
+                    out.push((s.unit, Outcome::Saved));
+                }
+                Err(SaveError::Changed) => {
+                    out.push((s.unit.clone(), Outcome::Changed));
+                    self.last_save.push(s);
+                }
+                Err(e) => {
+                    out.push((s.unit.clone(), Outcome::Failed(e)));
+                    self.last_save.push(s);
+                }
+            }
+        }
+        self.commit(cells, bases, true);
+        // WB-17: 保存のあとにためた値が、戻したファイルの値と同じになったら外す。
+        self.drop_same(src, &restored);
+        out
+    }
+
+    /// 単位 `unit` の行のうち、`old` を基準にしていた行(と、積みの中の同じ基準)を `new` に進める。
+    fn rebase_unit(&mut self, src: &dyn Source, unit: &RowId, old: &Stamp, new: &Stamp) {
+        let hit = |st: &RowState| !st.external && st.base.is_some_and(|b| b.hash == old.hash);
+        for (row, st) in self.states.iter_mut() {
+            if src.unit(row) == *unit && hit(st) {
+                st.base = Some(*new);
+            }
+        }
+        for step in self.undo.iter_mut().chain(self.redo.iter_mut()) {
+            for r in step.rows.iter_mut().filter(|r| src.unit(&r.row) == *unit) {
+                for st in [&mut r.before, &mut r.after] {
+                    if hit(st) {
+                        st.base = Some(*new);
+                    }
+                }
+            }
+        }
     }
 
     /// 読み込み口が自分で書いた(ためた値に触れない書き込み。SC-17 の行を足す)あと、`old` を基準にしていた行の基準を
     /// `new` に進める。外で変わった印のある行は進めない(WB-16)。
     pub fn rebase(&mut self, old: &Stamp, new: &Stamp) {
+        // WB-21: 保存のあとに読み込み口が自分で書いたファイルは、保存の前のバイトに戻すと、その書き込み(足した行)も
+        // 消える。控えを忘れる(保存の取り消しの対象から外す)。
+        self.last_save.retain(|s| s.after.hash != old.hash);
         for st in self.states.values_mut() {
             if !st.external && st.base.is_some_and(|b| b.hash == old.hash) {
                 st.base = Some(*new);

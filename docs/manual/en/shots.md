@@ -50,6 +50,22 @@ Keys: `Enter` `Down` `Enter` `C-s`
 
 Edits are kept until you save. Ctrl+S shows the diff per file; confirm to write. Nothing outside the edited value changes.
 
+## Replace with a regular expression
+
+Keys: `:` `text:regex_replace` `Enter` `text:^to(do)$`
+
+![Replace with a regular expression](images/regex-replace.svg)
+
+"Replace with a regular expression" in the palette finds and replaces in the current column. Answer the pattern, then the replacement. Selected rows only, or every row of the view when none is selected. Changed cells become unsaved, and one u takes them all back.
+
+## Undo the last save
+
+Keys: `Enter` `Down` `Enter` `C-s` `Enter` `:` `text:undo_save` `Enter`
+
+![Undo the last save](images/save-undo.svg)
+
+After saving, "Undo the last save" in the palette puts the files that save wrote back to what they were before. The diff (current file → before the save) comes first; Enter restores. The written values become unsaved again.
+
 ## After saving
 
 Keys: `Enter` `Down` `Enter` `C-s` `Enter`
@@ -725,6 +741,14 @@ Keys: `%`
 ![Count the values of a column](images/demo-freq.svg)
 
 % lists each value of the column with its count and share; Enter keeps only those rows.
+
+## The board screen
+
+Keys: `B`
+
+![The board screen](images/board.svg)
+
+B, with the cursor on a text column such as status. Each value of the column becomes a lane and each note a card. h and l choose a lane, j and k a card; H and L move the card to the next lane, which changes the value as an unsaved change. Enter shows the card's row in the table, Esc goes back.
 
 ## The tree screen
 

@@ -6,6 +6,7 @@
 //! mdgrid の核(画面に依存しない)。設計は docs/design.md、仕様は specs/。
 
 pub mod base;
+pub mod board;
 pub mod cells;
 pub mod changes;
 pub mod clock;

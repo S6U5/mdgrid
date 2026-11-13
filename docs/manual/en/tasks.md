@@ -42,6 +42,7 @@ Date and time columns add a time field under the calendar (here on the meetings 
 ![Review the diff, then save](images/save.svg)
 
 - To empty a cell press `Backspace` or `Delete`. Saving writes `key:` and keeps the key.
+- Noticed a mistake after saving? Run "Undo the last save" from the palette (`:`). It shows the diff from the current content of the files that save wrote to what they were before, and `Enter` puts them back. The written values become unsaved again, so you can fix them and save once more. A file that changed outside after the save is left alone.
 - `q` with unsaved changes asks: `s` save and quit, `d` discard and quit, `Esc` back.
 - `K` shows every property of one note (details), long values in full; `Enter` edits one.
 - Edit the body or values with line breaks in your editor with `e`; mdgrid re-reads the note when you return. The editor is the `editor` setting, else `$VISUAL`, `$EDITOR`, then `vi`.
@@ -81,6 +82,14 @@ In a list column, a value every row has shows as `[x]` and a value only some row
 ![Add or remove list items on several rows](images/bulk-tags.svg)
 
 Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it at once.
+
+To change only part of a value (a prefix, a spelling), use the regular expression replace.
+
+1. Put the cursor on the column. For some rows only, mark them with `Space` first. With no marks, every row of the view is a target.
+2. Choose "Replace with a regular expression" from the palette (`:`) or the action menu (`x`).
+3. Type the pattern and press `Enter` (for example `v(\d)`), then the replacement and `Enter` (for example `version $1`; `$1` and `${name}` refer to groups of the pattern. When text follows a group directly, write `${1}x`; `$1x` is read as a group named `1x` and comes out empty).
+
+Only the cells that match and actually change become unsaved, and one `u` takes them all back. Only cells whose value is text change; numbers, dates, lists, empty cells and read-only notes are left alone, and the command does not start on a column that is not text. To ignore case, start the pattern with `(?i)`.
 
 ## Create a note
 

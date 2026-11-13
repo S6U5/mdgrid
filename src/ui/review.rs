@@ -29,6 +29,8 @@ pub(crate) struct Review {
     pub items: Vec<ReviewItem>,
     /// 選んだファイル(`o`・`d` の対象)。
     pub sel: usize,
+    /// WB-21: 保存の取り消しの確認(差分は 今のファイル → 保存の前)。確定で戻す。`o`・`d` は効かない。
+    pub undo: bool,
 }
 
 // 書けない理由の文は --apply と共有するので src/edit.rs にある(今までの道はそのまま使える)。
@@ -38,6 +40,7 @@ impl App {
     /// 保存の確認と終了の確認の動作。
     pub(crate) fn review_action(&mut self, action: Action) {
         match action {
+            Action::SaveAll if self.undoing() => self.undo_save(),
             Action::SaveAll => self.save(),
             Action::Back => {
                 self.review = None;
@@ -61,6 +64,8 @@ impl App {
                     r.sel = r.sel.saturating_sub(1);
                 }
             }
+            // WB-21: 保存の取り消しの確認では、戻すかやめるかだけ。
+            Action::Overwrite | Action::DiscardRow if self.undoing() => {}
             Action::Overwrite => self.overwrite(),
             Action::DiscardRow => {
                 if let Some(unit) = self.review_row() {
@@ -104,6 +109,11 @@ impl App {
 
     /// 保存の確認の画面を(作り直して)開く(WB-9)。ためた変更が無ければ表に戻る。
     pub(crate) fn open_review(&mut self) {
+        // WB-21: 保存の取り消しの確認を出している間(外の変化などで作り直すとき)は、取り消しの差分を作り直す。
+        if self.undoing() {
+            self.open_undo_review();
+            return;
+        }
         let sel = self.review.as_ref().map(|r| r.sel).unwrap_or(0);
         let items: Vec<ReviewItem> = self
             .changes
@@ -132,8 +142,104 @@ impl App {
             return;
         }
         let sel = sel.min(items.len() - 1);
-        self.review = Some(Review { items, sel });
+        self.review = Some(Review {
+            items,
+            sel,
+            undo: false,
+        });
         self.set_mode(Mode::Confirm);
+    }
+
+    /// 保存の取り消しの確認を出しているか(WB-21)。
+    fn undoing(&self) -> bool {
+        self.review.as_ref().is_some_and(|r| r.undo)
+    }
+
+    /// WB-21: パレットの「保存を取り消す」。最後の保存の控えが無ければ知らせるだけ。あれば確認の画面へ。
+    pub(crate) fn start_undo_save(&mut self) {
+        if self.readonly {
+            self.message = Some(super::startup::READONLY.into());
+            return;
+        }
+        if self.changes.saved_units().is_empty() {
+            self.message = Some(Msg::UndoSaveNone.text().into());
+            return;
+        }
+        self.open_undo_review();
+    }
+
+    /// WB-21: 保存の取り消しの確認の画面を(作り直して)開く。差分は、今のファイルから保存の前の中身へ。
+    /// 今のファイルが保存で書いた中身と違えば、差分の代わりに戻さない理由を出す(外の変更を消さない)。
+    pub(crate) fn open_undo_review(&mut self) {
+        let sel = self.review.as_ref().map(|r| r.sel).unwrap_or(0);
+        let items: Vec<ReviewItem> = self
+            .changes
+            .saved_units()
+            .into_iter()
+            .map(|(unit, after, before)| {
+                let (path, _) = self.src.locate(&unit);
+                let (d, seen) = match std::fs::read(&path) {
+                    Ok(now) if content_hash(&now) == after.hash => {
+                        (Ok(diff(&now, &before)), Some(after.hash))
+                    }
+                    Ok(_) => (Err(Msg::UndoSaveChanged.text().to_string()), None),
+                    Err(e) => (Err(Msg::CannotRead.fill(&[&e])), None),
+                };
+                ReviewItem {
+                    label: self.src.label(&unit),
+                    external: false,
+                    diff: d,
+                    seen,
+                    row: unit,
+                }
+            })
+            .collect();
+        if items.is_empty() {
+            self.review = None;
+            self.set_mode(Mode::Table);
+            return;
+        }
+        let sel = sel.min(items.len() - 1);
+        self.review = Some(Review {
+            items,
+            sel,
+            undo: true,
+        });
+        self.set_mode(Mode::Confirm);
+    }
+
+    /// WB-21: 確認のあと、最後の保存で書いたファイルを保存の前の中身に戻す。戻したファイルの値は、ためる変更に戻る。
+    /// 保存のあとに外で変わったファイルと書けなかったファイルは、そのままにして知らせる。
+    fn undo_save(&mut self) {
+        // REL-1: 値が変わるので、リンクの行き先を解き直す。
+        self.links.invalidate();
+        let results = self.changes.undo_save(self.src.as_mut());
+        let mut restored = Vec::new();
+        let mut stopped = Vec::new();
+        let mut failed = Vec::new();
+        for (row, out) in &results {
+            let label = self.src.label(row);
+            match out {
+                Outcome::Saved => restored.push(label),
+                Outcome::Changed => stopped.push(label),
+                Outcome::Failed(e) => failed.push(format!("{label}: {}", save_error_text(e))),
+            }
+        }
+        let mut parts = Vec::new();
+        if !restored.is_empty() {
+            parts.push(Msg::UndoSaveDone.fill(&[&restored.len(), &restored.join(", ")]));
+        }
+        if !stopped.is_empty() {
+            parts.push(Msg::ReviewStopped.fill(&[&stopped.len(), &stopped.join(", ")]));
+        }
+        if !failed.is_empty() {
+            parts.push(Msg::ReviewFailed.fill(&[&failed.len(), &failed.join(", ")]));
+        }
+        self.review = None;
+        self.quit_after_save = false;
+        self.set_mode(Mode::Table);
+        self.refresh();
+        self.message = Some(parts.join(Msg::SentenceSep.text()));
     }
 
     fn review_row(&self) -> Option<RowId> {
@@ -323,7 +429,11 @@ fn review_body(app: &App, r: &Review, w: usize) -> (Vec<Line<'static>>, Vec<usiz
 
 /// 保存の確認の画面(WB-9): ヘッダー・ファイルごとの差分・下の帯・メッセージ行。
 pub(crate) fn render_review(app: &App, r: &Review, w: usize, h: usize) -> Vec<Line<'static>> {
-    let head = Msg::ReviewHead.fill(&[&r.items.len()]);
+    let head = if r.undo {
+        Msg::UndoSaveHead.fill(&[&r.items.len()])
+    } else {
+        Msg::ReviewHead.fill(&[&r.items.len()])
+    };
     let mut lines = vec![Line::from(Span::styled(
         fit(&head, w, Align::Left),
         Style::default().add_modifier(Modifier::BOLD),

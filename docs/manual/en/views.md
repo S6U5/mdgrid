@@ -28,6 +28,14 @@ Rows gather under heading rows, one per value of a column. `Enter` on a heading 
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it) (the sort and group section of the view settings)
 
+## Board
+
+![The board screen](images/board.svg)
+
+Put the cursor on the `status` column and press `B`: the notes line up as cards in one lane per value, so you can see side by side whether todo is piling up or doing holds too much. `H` and `L` move a card to the next lane, which makes that value change unsaved; it is written, as always, after you review the diff with `Ctrl+S`. No setup is needed. To fix the order of the lanes, list them in the config as `[rules.status] values = ["todo", "doing", "done"]`.
+
+The `board` section of [Key bindings](../../keys.md), [the `rules` setting](../../config.md)
+
 ## Tree
 
 ![The tree screen](images/tree.svg)

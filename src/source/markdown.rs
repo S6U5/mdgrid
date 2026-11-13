@@ -875,6 +875,34 @@ impl Source for Markdown {
         })
     }
 
+    fn restore_unit(
+        &mut self,
+        unit: &RowId,
+        base: &Stamp,
+        bytes: &[u8],
+    ) -> Result<Stamp, SaveError> {
+        let path = self.note(unit).ok_or_else(not_loaded)?.path.clone();
+        // WB-21: 外で変わったかは中身で決める(更新時刻だけが変わったファイルは戻せる)。今のファイルの中身が
+        // 保存で書いた中身と同じなら、今の基準で書く(書く直前の再検査は、この基準からの変化を見る)。
+        let now = writeback::baseline(&path)?;
+        if now.hash != base.hash {
+            return Err(SaveError::Changed);
+        }
+        let next = writeback::restore(&path, &now, bytes)?;
+        // 書いたバイトと返った基準で置き換える(save と同じ。読み直さない)。
+        let stamp = vault::Stamp {
+            mtime: next.mtime,
+            len: next.len,
+        };
+        self.vault.replace(&path, bytes.to_vec(), stamp);
+        self.rebuild(std::slice::from_ref(&path));
+        Ok(Stamp {
+            mtime: next.mtime,
+            len: next.len,
+            hash: next.hash,
+        })
+    }
+
     fn changed(&mut self) -> Vec<RowId> {
         let poll = self.vault.poll();
         if poll.changed.is_empty() && poll.added.is_empty() && poll.removed.is_empty() {

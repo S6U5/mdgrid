@@ -51,6 +51,8 @@ pub enum Mode {
     ColumnType,
     /// 木の画面(TR-1。folder_tree.rs)。
     Tree,
+    /// ボードの画面(BD-1。board.rs)。
+    Board,
 }
 
 impl Mode {
@@ -80,6 +82,7 @@ impl Mode {
             Mode::ScreenMenu => Msg::ModeScreenMenu,
             Mode::ColumnType => Msg::ModeColumnType,
             Mode::Tree => Msg::ModeTree,
+            Mode::Board => Msg::ModeBoard,
         }
     }
 
@@ -114,10 +117,11 @@ impl Mode {
             Mode::ScreenMenu => "screen_menu",
             Mode::ColumnType => "column_type",
             Mode::Tree => "tree",
+            Mode::Board => "board",
         }
     }
 
-    pub const ALL: [Mode; 23] = [
+    pub const ALL: [Mode; 24] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -141,6 +145,7 @@ impl Mode {
         Mode::ScreenMenu,
         Mode::ColumnType,
         Mode::Tree,
+        Mode::Board,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
@@ -347,6 +352,15 @@ pub enum Action {
     TreeView,
     /// TR-5: 行の http・https の URL を OS の既定のブラウザで開く。
     OpenUrl,
+    /// WB-21: 最後の保存で書いたファイルを、保存の前の中身に戻す(差分を見せて確かめる)。
+    UndoSave,
+    /// CE-15: 今の列の値を、正規表現で探して置き換える(ためる変更にする)。
+    RegexReplace,
+    /// BD-1: 表とボードの画面を切り替える。
+    BoardView,
+    /// BD-4: ボードの画面で、選んだカードを左・右のレーンへ移す。
+    CardLeft,
+    CardRight,
 }
 
 impl Action {
@@ -473,6 +487,11 @@ impl Action {
             Action::Freq => "frequency",
             Action::TreeView => "tree_view",
             Action::OpenUrl => "open_url",
+            Action::UndoSave => "undo_save",
+            Action::RegexReplace => "regex_replace",
+            Action::BoardView => "board_view",
+            Action::CardLeft => "card_left",
+            Action::CardRight => "card_right",
         }
     }
 
@@ -587,6 +606,7 @@ const IN_SCREEN_MENU: Msg = Msg::SecInScreenMenu;
 const IN_COLUMN_TYPE: Msg = Msg::SecInColumnType;
 const IN_FILTERS: Msg = Msg::SecInFilters;
 const IN_TREE: Msg = Msg::SecInTree;
+const IN_BOARD: Msg = Msg::SecInBoard;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -642,6 +662,10 @@ pub const COMMANDS: &[Command] = &[
     cmd(Action::NewNote, Msg::KeyNewNote, NOTE),
     // ST-5: スターターから台帳を作る(ファイルを書くので読むだけでは出さない)。
     cmd(Action::StarterNew, Msg::CmdStarterNew, FILE),
+    // CE-15: 正規表現で置き換える(既定のキーなし。ためる変更を作るので読むだけでは出さない。パレットと操作の一覧から)。
+    cmd(Action::RegexReplace, Msg::CmdRegexReplace, SHAPE),
+    // WB-21: 最後の保存を取り消す(既定のキーなし。ファイルを書くので読むだけでは出さない)。
+    cmd(Action::UndoSave, Msg::CmdUndoSave, FILE),
 ];
 
 /// ノートを書かないパレットのコマンド(既定のキーなし)。`COMMANDS` と違い読むだけ(WB-15)でも出す:
@@ -746,6 +770,7 @@ pub const BINDINGS: &[Binding] = &[
     b("R", Action::RelationMap, Msg::KeyRelationMap, FIND, 0),
     // TR-1: 木の画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
     b("T", Action::TreeView, Msg::KeyTreeView, FIND, 0),
+    b("B", Action::BoardView, Msg::KeyBoardView, FIND, 0),
     b("Z", Action::ToggleTree, Msg::KeyToggleTree, SHAPE, 0),
     b("A", Action::AddColumn, Msg::KeyAddColumn, SHAPE, 0),
     b(
@@ -2363,6 +2388,170 @@ pub const BINDINGS: &[Binding] = &[
         0,
     ),
     m(Mode::Tree, "?", Action::Help, Msg::KeyHelp, IN_TREE, 0),
+    // BD-1・BD-3・BD-4: ボードの画面。←→ でレーン、↑↓ でカード、H・L でカードを隣のレーンへ、Enter で表のその行へ。
+    m(
+        Mode::Board,
+        "Enter",
+        Action::Run,
+        Msg::KeyBoardRun,
+        IN_BOARD,
+        1,
+    ),
+    m(
+        Mode::Board,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_BOARD,
+        2,
+    ),
+    m(
+        Mode::Board,
+        "B",
+        Action::BoardView,
+        Msg::KeyRelBack,
+        IN_BOARD,
+        2,
+    ),
+    m(
+        Mode::Board,
+        "q",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "h",
+        Action::Left,
+        Msg::KeyBoardLanePrev,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "Left",
+        Action::Left,
+        Msg::KeyBoardLanePrev,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "l",
+        Action::Right,
+        Msg::KeyBoardLaneNext,
+        IN_BOARD,
+        3,
+    ),
+    m(
+        Mode::Board,
+        "Right",
+        Action::Right,
+        Msg::KeyBoardLaneNext,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "j",
+        Action::Down,
+        Msg::KeyBoardCardNext,
+        IN_BOARD,
+        4,
+    ),
+    m(
+        Mode::Board,
+        "Down",
+        Action::Down,
+        Msg::KeyBoardCardNext,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "k",
+        Action::Up,
+        Msg::KeyBoardCardPrev,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "Up",
+        Action::Up,
+        Msg::KeyBoardCardPrev,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "H",
+        Action::CardLeft,
+        Msg::KeyCardLeft,
+        IN_BOARD,
+        5,
+    ),
+    m(
+        Mode::Board,
+        "Shift+Left",
+        Action::CardLeft,
+        Msg::KeyCardLeft,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "L",
+        Action::CardRight,
+        Msg::KeyCardRight,
+        IN_BOARD,
+        6,
+    ),
+    m(
+        Mode::Board,
+        "Shift+Right",
+        Action::CardRight,
+        Msg::KeyCardRight,
+        IN_BOARD,
+        0,
+    ),
+    m(Mode::Board, "u", Action::Undo, Msg::KeyUndo, IN_BOARD, 0),
+    m(
+        Mode::Board,
+        "Ctrl+z",
+        Action::Undo,
+        Msg::KeyUndo,
+        IN_BOARD,
+        0,
+    ),
+    m(
+        Mode::Board,
+        "Ctrl+r",
+        Action::Redo,
+        Msg::KeyRedo,
+        IN_BOARD,
+        0,
+    ),
+    m(Mode::Board, "U", Action::Redo, Msg::KeyRedo, IN_BOARD, 0),
+    m(
+        Mode::Board,
+        "Ctrl+s",
+        Action::Save,
+        Msg::KeySave,
+        IN_BOARD,
+        7,
+    ),
+    m(
+        Mode::Board,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_BOARD,
+        0,
+    ),
+    m(Mode::Board, "?", Action::Help, Msg::KeyHelp, IN_BOARD, 0),
 ];
 
 /// 全角の英数字・記号と `、`・`・` を、同じキーの位置の半角に直す(SR-17)。
@@ -2672,6 +2861,7 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::ScreenMenu, &[Action::Close]),
     (Mode::ColumnType, &[Action::Close]),
     (Mode::Tree, &[Action::Close]),
+    (Mode::Board, &[Action::Close]),
 ];
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する

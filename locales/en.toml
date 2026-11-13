@@ -634,6 +634,10 @@ KeyActionMenu = "Action menu"
 CmdExportBase = "Export to .base"
 CmdRenameKey = "Rename the key"
 CmdRenameNote = "Rename the note"
+## WB-21: パレットのコマンド。
+CmdUndoSave = "Undo the last save"
+## CE-15: パレットと操作の一覧のコマンド。
+CmdRegexReplace = "Replace with a regular expression"
 CmdDeleteKey = "Delete the key"
 CmdImportBase = "Import a .base view"
 
@@ -729,6 +733,8 @@ FooterCol = " col {0}/{1}"
 FooterUnsupported = "  ?=unsupported formula"
 HintReviewExternal = "changed outside: o writes this file over the outside change, d discards the pending changes"
 HintReview = "Enter writes everything. Esc goes back to the table (pending changes stay)"
+## WB-21: 保存の取り消しの確認の画面の案内。
+HintUndoSave = "Enter restores the files to what they were before the save. Esc cancels (no file changes)"
 HintViewError = "this view cannot be opened (reason in the table area). [ ] for other views"
 ## {0} は理由を ` / ` でつないだもの。
 HintUnsupported = "unsupported: {0}"
@@ -1052,6 +1058,15 @@ RenameNoteDone = "renamed to {0}"
 RenameNoteLinks = "renamed to {0}; {1} link(s) to the old name are rewritten as pending changes (Ctrl+S to review)"
 RenameNoteFailed = "could not rename: {0}"
 AskRenameKey = "Rename {0} to: "
+# ---- 正規表現の置き換え(CE-15) ----
+AskReplacePattern = "Find (regular expression): "
+AskReplaceWith = "Replace with: "
+## {0} は置き換えたセルの数。後ろに BulkFoldedOut・BulkSkipped が続く。
+ReplaceDone = "replaced {0} cell(s)"
+ReplaceNoMatch = "no cell matches"
+## {0} は regex の理由(英語)。
+ReplaceBadPattern = "not a valid regular expression: {0}"
+ReplaceNotText = "only text columns can be replaced"
 ## CE-29。{0} はキー、{1} はノートの数。
 AskDeleteKey = "Delete {0} from {1} notes? Type y and Enter: "
 ## CE-29。{0} は古い名前、{1} は新しい名前、{2} はノートの数。
@@ -1323,6 +1338,14 @@ ReviewHead = " Save review  {0} files  diff before writing (- current file / + a
 ## `ReviewHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewHeadOne = " Save review  {0} file  diff before writing (- current file / + after writing)"
 
+# ---- 保存の取り消し(WB-21) ----
+## {0} は戻すファイルの数。
+UndoSaveHead = " Undo the last save: {0} file(s)  diff before restoring (- current file / + before the save)"
+UndoSaveNone = "there is no save to undo"
+UndoSaveChanged = "changed outside since the save, so it is not restored"
+## {0} は戻したファイルの数、{1} はファイルを `, ` でつないだもの。
+UndoSaveDone = "undid the save of {0} file(s) ({1}); the written values are pending changes again"
+
 # ---- places: 登録した表(CLI-18・CLI-19) ----
 ## {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
 PlacesBadToml = "cannot read places.toml (line {0}), so registered tables are not loaded: {1}"
@@ -1566,6 +1589,23 @@ TreeNotSet = "this table has no tree setting (write tree = { path = \"<column>\"
 TreeNoUrl = "this row has no http or https URL"
 TreeShowInTable = "Show this row in the table"
 TreeRowHidden = "the row is not shown in the table (in a folded group or filtered out)"
+
+# ---- ボードの画面(BD-1〜BD-6) ----
+ModeBoard = "Board"
+SecInBoard = "In the board"
+ScreenBoard = "Board"
+KeyBoardView = "Switch between the table and the board"
+KeyBoardRun = "Show the card's row in the table"
+KeyBoardLanePrev = "Lane to the left"
+KeyBoardLaneNext = "Lane to the right"
+KeyBoardCardNext = "Next card"
+KeyBoardCardPrev = "Previous card"
+KeyCardLeft = "Move the card to the lane on the left"
+KeyCardRight = "Move the card to the lane on the right"
+BoardNotText = "this column cannot make a board (put the cursor on a text column)"
+BoardNoRows = "there are no rows to put on a board"
+## {0} は移した先のレーンの名前。
+BoardMoved = "moved to {0}"
 ## {0} is the URL.
 UrlOpening = "opening {0}"
 ## {0} is the URL, {1} the reason.

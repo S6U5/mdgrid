@@ -633,6 +633,10 @@ KeyActionMenu = "操作の一覧"
 CmdExportBase = ".base に書き出す"
 CmdRenameKey = "キーの名前を変える"
 CmdRenameNote = "ノートの名前を変える"
+## WB-21: パレットのコマンド。
+CmdUndoSave = "保存を取り消す"
+## CE-15: パレットと操作の一覧のコマンド。
+CmdRegexReplace = "正規表現で置き換える"
 CmdDeleteKey = "キーを消す"
 CmdImportBase = ".base のビューを取り込む"
 
@@ -728,6 +732,8 @@ FooterCol = " {0}/{1}列"
 FooterUnsupported = "  ?=未対応の式"
 HintReviewExternal = "外で変わったノート: o でこのファイルを外の変更の上に書く、d でためた変更を捨てる"
 HintReview = "Enter で全部を書く。Esc で表に戻る(ためた変更は残る)"
+## WB-21: 保存の取り消しの確認の画面の案内。
+HintUndoSave = "Enter で保存の前の中身に戻す。Esc でやめる(ファイルは変えない)"
 HintViewError = "このビューは開けない(理由は表の欄)。[ ] でほかのビューへ"
 ## {0} は理由を ` / ` でつないだもの。
 HintUnsupported = "未対応: {0}"
@@ -1051,6 +1057,15 @@ RenameNoteDone = "名前を {0} に変えた"
 RenameNoteLinks = "名前を {0} に変えた。古い名前を指すリンク {1} 件の書き換えをためた(Ctrl+S で差分を見て保存)"
 RenameNoteFailed = "名前を変えられなかった: {0}"
 AskRenameKey = "{0} の新しい名前: "
+# ---- 正規表現の置き換え(CE-15) ----
+AskReplacePattern = "探す正規表現: "
+AskReplaceWith = "置き換える文字: "
+## {0} は置き換えたセルの数。後ろに BulkFoldedOut・BulkSkipped が続く。
+ReplaceDone = "{0} 件を置き換えた"
+ReplaceNoMatch = "一致するセルは無い"
+## {0} は regex の理由(英語)。
+ReplaceBadPattern = "正規表現として読めない: {0}"
+ReplaceNotText = "テキストの列でだけ置き換えられる"
 ## CE-29。{0} はキー、{1} はノートの数。
 AskDeleteKey = "{0} を {1} 個のノートから消す? y と打って Enter: "
 ## CE-29。{0} は古い名前、{1} は新しい名前、{2} はノートの数。
@@ -1322,6 +1337,14 @@ ReviewHead = " 保存の確認  {0}ファイル  書く前の差分(- 今のフ�
 ## `ReviewHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewHeadOne = " 保存の確認  {0}ファイル  書く前の差分(- 今のファイル / + 書いたあと)"
 
+# ---- 保存の取り消し(WB-21) ----
+## {0} は戻すファイルの数。
+UndoSaveHead = " 保存の取り消し: {0} ファイル  戻す前の差分(- 今のファイル / + 保存の前)"
+UndoSaveNone = "取り消す保存は無い"
+UndoSaveChanged = "保存のあとに外で変わったので戻さない"
+## {0} は戻したファイルの数、{1} はファイルを `, ` でつないだもの。
+UndoSaveDone = "保存を取り消した {0}件({1})。書いた値はためる変更に戻した"
+
 # ---- places: 登録した表(CLI-18・CLI-19) ----
 ## {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
 PlacesBadToml = "places.toml が読めない({0} 行目)ので登録した表は読まない: {1}"
@@ -1565,6 +1588,23 @@ TreeNotSet = "この表には木の設定が無い(ワークスペースの印�
 TreeNoUrl = "この行に http・https の URL が無い"
 TreeShowInTable = "表でこの行を見る"
 TreeRowHidden = "表でその行が見えない(畳んだ分類の中か、絞り込みの外)"
+
+# ---- ボードの画面(BD-1〜BD-6) ----
+ModeBoard = "ボード"
+SecInBoard = "ボードの中"
+ScreenBoard = "ボード"
+KeyBoardView = "表とボードを切り替える"
+KeyBoardRun = "カードの行を表で見る"
+KeyBoardLanePrev = "左のレーン"
+KeyBoardLaneNext = "右のレーン"
+KeyBoardCardNext = "次のカード"
+KeyBoardCardPrev = "前のカード"
+KeyCardLeft = "カードを左のレーンへ移す"
+KeyCardRight = "カードを右のレーンへ移す"
+BoardNotText = "この列ではボードにできない(テキストの列にカーソルを置いて開く)"
+BoardNoRows = "ボードに並べる行が無い"
+## {0} は移した先のレーンの名前。
+BoardMoved = "{0} へ移した"
 ## {0} は URL。
 UrlOpening = "開く: {0}"
 ## {0} は URL、{1} は理由。
