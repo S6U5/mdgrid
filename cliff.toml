@@ -64,4 +64,6 @@ commit_parsers = [
   { message = "^Bump ", group = "<!-- 4 -->Dependencies" },
   { message = "^chore\\(deps\\)[:：]", group = "<!-- 4 -->Dependencies" },
   { message = "^ci[:：]", skip = true },
+  # 公開リポの側で作った PR の題(スカッシュマージの題がそのまま入る)。手元の「文書:」と同じ節に出す。
+  { message = "^docs[:：]", group = "<!-- 2 -->Documentation" },
 ]

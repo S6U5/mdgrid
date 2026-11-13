@@ -685,7 +685,7 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - 回帰の試験表: 全角・絵文字・結合文字・East Asian Ambiguous・制御文字を含む材料の画面のゴールデンを持ち、ratatui と crossterm の版を上げるときに必ず走らせる(csvlens の日本語の行が重なる不具合は ratatui の版で起きた)。手で確かめる端末の表(Terminal.app・iTerm2・Ghostty・WezTerm・tmux の中)を docs に置く。
 - 端末で区別できないキー(Ctrl+Shift+Z・Shift+Space・Ctrl+Space など。kitty のキーボードの手順が無い端末)は、同じ動作に区別できるキー(やり直しは Ctrl+R と `U`)も割り当てる。
 - CI: fmt・`clippy -D warnings`・test。
-- CHANGELOG: コミットの書き方(`実装:`・`修正:` などの書き出し)は今のままにし、リポの根の `cliff.toml`(git-cliff)で書き出しを CHANGELOG の節に写す(`実装`・`追加` → Features、`修正` → Fixes、`文書` → Documentation、`specs` → Specification、ほかは出さない)。CHANGELOG.md はリリースの作業(Q-6)で生成する。新しい書き出しを使うときは cliff.toml に足す(tests/test_cliff.rs が履歴の書き出しの漏れを見る)。
+- CHANGELOG: コミットの書き方(`実装:`・`修正:` などの書き出し)は今のままにし、リポの根の `cliff.toml`(git-cliff)で書き出しを CHANGELOG の節に写す(`実装`・`追加` → Features、`修正` → Fixes、`文書`・公開リポの PR の題の `docs` → Documentation、`specs` → Specification、ほかは出さない)。CHANGELOG.md はリリースの作業(Q-6)で生成する。新しい書き出しを使うときは cliff.toml に足す(tests/test_cliff.rs が履歴の書き出しの漏れを見る)。
 - TUI 本体(配る実行ファイルの言語・フレームワーク)は Rust だけにし、cellops のような Node との二重持ちはしない。試験の道具はこの限りでなく、通しの試験(本物の疑似端末で起動 → 操作 → 画面とファイルを確かめる)には Node の Microsoft tui-test を `e2e/` に分けて使ってよい(人の判断、2026-10-01)。単体の試験とゴールデンは `cargo test` に置く。
 
 ## セッション(CLI-6〜CLI-10)
