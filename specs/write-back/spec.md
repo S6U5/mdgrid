@@ -6,7 +6,7 @@ description: 直した値をためて、差分を見てから保存する流れ�
 status: active
 load_when: 保存・取り消し・ファイルへの書き込みを作る・変えるとき、YAML の読み書きの部品を選ぶとき
 created: 2026-09-30
-updated: 2026-10-13
+updated: 2026-11-13
 ---
 
 # ノートへの書き戻し(write-back)
@@ -25,6 +25,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 | WB-14 | 保存が止まったとき(外部の変更など)は、ためる変更を捨てずに残し、読み直してからやり直せるべき。 | 保存の途中で外部の変更 → 止まり、未保存の数は減らない(`test_WB_14`) | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) |
 | WB-16 | 外やエディタ(SR-8)でノートが変わったとき、そのノートにためた変更が無ければ読み直すべき。ためた変更があれば、表の値は読み直してもためた変更は残し、行に「外で変更」の印を付けるべき。保存の基準は WB-4 のとおりとし、保存では差分を見せて、外の変更の上に書くか、ためた変更を捨てるかを選ばせるべき。 | status をためたまま外で title を直す → 行に印。保存 → 止まり、差分と2つの選択肢(`test_WB_16`) | [2026-10-03](../_decisions/2026-10-03-stale-text.md)、[2026-10-01](../_decisions/2026-10-01-overwrite-baseline.md)、[2026-09-30](../_decisions/2026-09-30-v1-review-fixes.md) |
 | WB-17 | ためた値が、そのセルの最後に読んだ値と同じになったら(直して元の値に戻した、一括の設定で元と同じ値を入れた、など)、そのセルをためる変更から外し、未保存の数・保存の差分・ためる変更の印に出すべきでない。戻したつもりでも書き戻すと書式やクオートが変わりうるので、元の値に戻したセルは書くべきでない。外す操作も取り消し・やり直しの1手にするべき。 | `status: todo` を done に直す → 「未保存 1」。もう一度 todo に直す → 「未保存 0」で、セルに `*` が無く、Ctrl+S は「変更は無い」。`u` → done に戻って「未保存 1」。クオートの無い日付 `due: 2026-09-30` を別の日付にしてから 2026-09-30 に戻して保存 → ファイルは1バイトも変わらない。数の列の `3` に 3 を入れる → ためない。数の `3` と文字の `"3"` は違う値として扱う。`done: false` のチェックボックスで Enter を2回 → true から元の false に戻って「未保存 0」(`test_WB_17`) | [2026-10-06](../_decisions/2026-10-06-checkbox-two-state-examples.md)、[2026-10-01](../_decisions/2026-10-01-revert-to-original.md) |
+| WB-21 | 最後の保存(WB-9)で書いたファイルを、保存の前の中身に戻せるべき(パレットの「保存を取り消す」から。既定のキーは割り当てない)。戻す前に、ファイルごとの差分(今の中身から保存の前の中身へ)を見せて確認をとり、確定したら WB-8 の手順で書き、戻したファイルは保存の前と1バイトも違わないようにするべき。保存のあとに外で変わったファイル(今の中身が、保存で書いた中身と違う)は、書かずに飛ばして知らせなければならない(外の変更を消さないため)。戻したファイルの、その保存で書いた値は、ためる変更として戻し(取り消し・やり直しの1手。WB-10)、直してもう一度保存できるべき。覚えるのは最後の1回の保存だけで、起動している間だけにし、ノートのフォルダに控えのファイルを作ってはならない(WB-2)。読むだけの起動(WB-15)ではコマンドを出さない。 | `status: todo` を done に直して保存 → ファイルは `status: done`。「保存を取り消す」→ 差分に `-status: done` と `+status: todo`。確定 → ファイルは保存の前と1バイトも違わず、status のセルは done のまま「未保存 1」。`u` → 「未保存 0」。保存のあとに外で title を直してから「保存を取り消す」→ 差分の代わりに外で変わったと出て、確定してもそのファイルは書かれない。まだ保存していないとき → 何も書かず、取り消す保存が無いと知らせる。2回保存したあと → 戻るのは2回目の保存だけ。`test_wb_21_*` | [2026-11-13](../_decisions/2026-11-13-save-undo.md) |
 
 ## 要件: 版1 — 書き換える範囲
 
@@ -58,7 +59,6 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 
 - 採らない: ネストした map・ブロックスカラーの値の書き換え(読むだけ)。
 - 採らない: 表からの本文の編集(エディタに渡す。screen の SR-8)。
-- 次の段: 保存したあとの取り消し(ファイルを元に戻す)。
 
 ## 前提(AI の仮定)
 
@@ -76,6 +76,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 
 | 日付 | 記録 | 結果 | 決定者 | きっかけ | 触った要件 |
 |---|---|---|---|---|---|
+| 2026-11-13 | [最後の保存で書いたファイルを、保存の前の中身に戻せるようにする(save-undo)](../_decisions/2026-11-13-save-undo.md) | accepted | 人 | 人の発言 | WB-21 |
 | 2026-10-15 | [見本を架空の制作会社の英語のデータに作り直して変わる、見本の試験の錠を掛け直す(examples-studio-locks)](../_decisions/2026-10-15-examples-studio-locks.md) | accepted | 人 | 人の発言 | CE-16, WB-3, WB-5 ほか 4 |
 | 2026-10-12 | [右上のメニュー・3行のビューの帯で行の位置が変わる試験の錠を、まとめて掛け直す(header-menu-locks)](../_decisions/2026-10-12-header-menu-locks.md) | accepted | 人 | AI の提案 | BV-3, BV-7, BV-13 ほか 26 |
 | 2026-10-10 | [設定の形を作り直し、アプリ全体の項目と表のプロファイルに分け、重なる項目をまとめる(config-v2)](../_decisions/2026-10-10-config-v2.md) | accepted | 人 | 人の発言 | CLI-3, CLI-11, CLI-12 ほか 16 |
@@ -118,6 +119,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 | WB-14 | [2026-09-30](../_decisions/2026-09-30-v1-full-spec.md) | src/test_changes_unit.rs::save_rows_writes_only_given_rows, src/ui/test_screen.rs::test_wb_16_external_change_overwrite, tests/test_changes.rs::test_wb_14_partial_save_keeps_stopped_rows ほか 3 | [2026-09-30-v1-full-spec](../_changes/2026-09-30-v1-full-spec.md) 2026-10-01 |
 | WB-16 | [2026-10-03](../_decisions/2026-10-03-stale-text.md) | src/source/test_markdown_unit.rs::setting_false_external_change_to_empty_frontmatter_is_changed, src/test_changes_unit.rs::external_change_to_same_value_drops_pending, src/test_changes_unit.rs::overwrite_seen_drops_same_and_keeps_other_cells ほか 21 | [2026-10-03-stale-text](../_changes/2026-10-03-stale-text.md) 2026-10-03 |
 | WB-17 | [2026-10-06](../_decisions/2026-10-06-checkbox-two-state-examples.md) | src/test_changes_unit.rs::drop_same_keeps_redo, src/test_changes_unit.rs::external_change_to_same_value_drops_pending, src/test_changes_unit.rs::int_float_compare_without_rounding ほか 30 | [2026-10-06-checkbox-two-state](../_changes/2026-10-06-checkbox-two-state.md) 2026-10-06 |
+| WB-21 | [2026-11-13](../_decisions/2026-11-13-save-undo.md) | なし | なし |
 | WB-1 | [2026-10-06](../_decisions/2026-10-06-key-rename-delete.md) | src/test_key_ops_unit.rs::test_wb_1_key_ops_delete_block_list_keeps_next_comment, src/test_key_ops_unit.rs::test_wb_1_key_ops_delete_multiline_and_last, src/test_key_ops_unit.rs::test_wb_1_key_ops_rename_keeps_other_bytes ほか 34 | [2026-10-25-deps-saphyr-0-2](../_changes/2026-10-25-deps-saphyr-0-2.md) 2026-10-25 |
 | WB-2 | [2026-10-06](../_decisions/2026-10-06-key-rename-delete.md) | src/test_key_ops_unit.rs::test_wb_1_key_ops_delete_block_list_keeps_next_comment, src/test_key_ops_unit.rs::test_wb_1_key_ops_delete_multiline_and_last, src/test_key_ops_unit.rs::test_wb_1_key_ops_rename_keeps_other_bytes ほか 9 | [2026-10-06-key-rename-delete](../_changes/2026-10-06-key-rename-delete.md) 2026-10-06 |
 | WB-3 | [2026-10-10](../_decisions/2026-10-10-config-v2.md) | src/source/test_markdown_unit.rs::setting_false_external_change_to_empty_frontmatter_is_changed, src/source/test_markdown_unit.rs::setting_false_refuses_save_directly, src/test_big_int_write_unit.rs::test_cv_2_big_int_text_stays_quoted ほか 58 | [2026-10-15-examples-studio](../_changes/2026-10-15-examples-studio.md) 2026-10-15 |
