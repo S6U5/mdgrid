@@ -222,9 +222,6 @@ def build(out: Path, shots_dir: Path) -> None:
     if out.exists():
         shutil.rmtree(out)
     (out / "catalog").mkdir(parents=True)
-    # サイトの根にそのまま置くファイル(検索の管理の持ち主の確認の HTML ファイル google<英数字>.html)。
-    for f in sorted((ROOT / "docs/pages-root").glob("*")):
-        shutil.copy(f, out / f.name)
     catalog = (ROOT / "docs/catalog/index.html").read_text(encoding="utf-8")
     if ANALYTICS:
         catalog = catalog.replace("</head>", ANALYTICS + "\n</head>", 1)
@@ -314,8 +311,6 @@ def analytics() -> str:
 # 移る先の ja/・en/ を載せる)と、mdBook の目次の部品・404 のページ(印刷の版と目次は noindex でも外れる)。
 NOT_IN_SITEMAP = {"index.html", "gallery.html"}
 BOOK_PARTS = {"toc.html", "404.html"}
-# 検索の管理の持ち主の確認のファイル(docs/pages-root から根へ写す。ページでないので地図に載せない)。
-VERIFY_FILE = re.compile(r"google[0-9a-f]+\.html")
 
 
 def sitemap(out: Path) -> int:
@@ -325,7 +320,7 @@ def sitemap(out: Path) -> int:
     urls = []
     for f in sorted(out.rglob("*.html")):
         rel = f.relative_to(out).as_posix()
-        if rel in NOT_IN_SITEMAP or f.name in BOOK_PARTS or VERIFY_FILE.fullmatch(rel):
+        if rel in NOT_IN_SITEMAP or f.name in BOOK_PARTS:
             continue
         if re.search(r'<meta[^>]+name="robots"[^>]+noindex', f.read_text(encoding="utf-8")):
             continue

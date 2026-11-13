@@ -32,8 +32,6 @@ updated: 2026-11-13
 
 ## 不明点と仮定
 
-- 追記(会話 2026-11-13): 人が、検索の管理の確認に「HTML ファイル」の方法のファイル(`google5ff7a2d9f283d831.html`)を渡した。タグの方法(変数 `GOOGLE_SITE_VERIFICATION`)はそのまま残し、ファイルの方法にも応える。ファイルの中身は公開のものなので、リポに置く(手元と公開リポの中身は同じに保てる)。
-
 - 解析の道具: GA4(人が選んだ。GoatCounter・Cloudflare とくらべて、検索の管理とつなげられる)。
 - 同意の表示(Cookie のバナー)は付けない(仮定。人に伝える)。
 
@@ -45,7 +43,6 @@ updated: 2026-11-13
   - 付ける所: `page()` で作るページ(入口・前の URL・言語の入口・画面の一覧)の head、写したカタログ(`catalog/index.html`)と mdBook の各ページ(`decorate_book`)の `</head>` の前。
 - `.github/workflows/pages.yml`: 「Build the site」の env に `GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}`。ページに出る値なので secrets でなく vars。値はリポに書かない(手元のリポと公開リポの中身を同じに保つ)。
 - `scripts/check_site.py`: 変数があるとき、サイトの全部の HTML にその ID のタグがあることを確かめる。
-- 確認のファイル: `docs/pages-root/` のファイルを、サイトを作るときに根へそのまま写す。`google<16進>.html` はページでないので、地図(pages.py の sitemap と check_site.py の site_pages)とタグの検査から外す。check_site.py は、docs/pages-root のファイルが根に同じ中身であることを確かめる。
 - 関わる束: `cargo test --test test_pages --test test_pages_images --test test_pages_check` と、手元で `python3 scripts/pages.py` → `python3 scripts/check_site.py`
 
 ## タスク
@@ -53,9 +50,10 @@ updated: 2026-11-13
 | # | タスク | 要件 | 完了の条件 | 範囲 | 受け入れ(テスト名) | 状態 |
 |---|---|---|---|---|---|---|
 | 1 | GA4 の計測のタグ | — | 変数のあるときだけ全部の HTML にタグ、公開のホストでだけ動く | scripts/pages.py, .github/workflows/pages.yml, scripts/check_site.py | 読んで判定(手元で作って check_site.py) | 済 |
-| 2 | 検索の管理の確認のファイル | — | docs/pages-root のファイルがサイトの根に同じ中身で置かれ、地図とタグの検査から外れる | docs/pages-root/, scripts/pages.py, scripts/check_site.py | 読んで判定(手元で作って check_site.py) | 済 |
 
 ## 実装の気づき
+
+- 確認のファイルの方法(コミット 82be840)は取り下げた。人が、値をリポに書く(ハードコード)より変数のほうがよいと決め、タグの方法(変数 `GOOGLE_SITE_VERIFICATION`)を使う(会話 2026-11-13)。docs/pages-root と、pages.py・check_site.py の確認のファイルの扱いを戻した。
 
 - 計測のスクリプトは即時の関数で包み、ページの変数(`s`)を外に漏らさない。
 - 変数は Build の段だけでなく、検査の段(Check the site in a browser)の env にも渡す(検査がタグの有無を見るため)。
@@ -82,5 +80,3 @@ updated: 2026-11-13
 全体の走り: 未測定(Rust のコードは変えていない)
 
 確かめた: 0 / 0(要件の無い変更。タスク1は上の文のとおり checked)
-
-タスク2の照合: checked。手元で作った site/ の根に `google5ff7a2d9f283d831.html` が元と同じ中身で入り、sitemap.xml は 31 件のまま(確認のファイルは載らない)。check_site.py は変数ありで全部通った。根のファイルの中身を変えると、確認のファイルの検査が落ちた。
