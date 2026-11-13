@@ -259,6 +259,20 @@ html.js .scene[hidden]{display:none}
 .fits dt{font:600 14px/1.6 var(--mono);color:var(--fg)}
 .fits dd{margin:4px 0 0;font-size:14.5px;color:var(--muted)}
 
+/* 分割した画面(左にエージェントの図、右に本物の画面) */
+.split-t{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,8fr)}
+.pane-t{min-width:0;display:grid;grid-template-rows:auto 1fr;align-content:start}
+.pane-t+.pane-t{border-left:1px solid var(--term-line)}
+.pane-t .cap{font:12px/1 var(--mono);color:var(--term-muted);padding:9px 14px;border-bottom:1px solid var(--term-line)}
+.pane-t pre{margin:0;padding:16px 16px 20px;font-size:13px;line-height:1.85;color:var(--term-fg);overflow-x:auto}
+.pane-t pre code{font-size:inherit}
+.pane-t .ask{color:#fff;font-weight:600}
+.pane-t .dot,.pane-t .ps{color:var(--term-accent)}
+.pane-t .cm{color:var(--term-muted)}
+.pane-t .del{color:#f08a80}.pane-t .add{color:#8fd89b}
+.pane-t img{width:100%}
+@media (max-width:820px){.split-t{grid-template-columns:minmax(0,1fr)}.pane-t+.pane-t{border-left:0;border-top:1px solid var(--term-line)}}
+
 /* テーマ */
 .look{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(18px,3vw,36px);align-items:start}
 .look .side{display:grid;gap:16px}

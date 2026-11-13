@@ -375,6 +375,19 @@ HOME = {
         "rel_file": "タスクのノートの2行",
         "rel_note": "リレーションはノートどうしの間のものです。CSV の表は、まだこの範囲に入りません。",
         "rel_more": "リンクで表をつなぐ",
+        "ai_eyebrow": "分割した画面で",
+        "ai_h": "AI の隣の pane に置く",
+        "ai_p": "ターミナルを割って、片方で AI エージェントに仕事を頼み、もう片方に mdgrid を開いておきます。エージェントがノートを書き換えると、表が追いかけます。人は表で確かめて、違っていればその場で直します。",
+        "ai_left": "エージェント(図)",
+        "ai_right": "mdgrid(本物の画面)",
+        "ai_ask": "カタログのリンク切れを直して、タスクを閉じて",
+        "ai_log": [("Tasks/ を読む", "mdgrid Tasks --print --format json"), ("ノートを1枚直した", None), ("型と決まりを確かめる", "mdgrid Tasks --check")],
+        "ai_fits": [
+            ("1秒ごとに読み直す", "mdgrid の外でノートが変わると、表に出ます。間隔は設定の poll_ms で変えられます。"),
+            ("黙って上書きしない", "こちらが直している途中のノートを外で書き換えられたら、そのノートの保存は止まり、どちらを残すかを選べます。"),
+            ("エージェント向けのスキル", "mdgrid の CLI の使い方を教えるスキルを、リポの plugins/mdgrid に置いています。"),
+        ],
+        "ai_note": "左の pane は説明のための図です。tmux や WezTerm など、画面を割れる端末ならどれでも同じ置き方ができます。",
         "cli_eyebrow": "ターミナルの道具として",
         "cli_h": "ターミナルで完結する",
         "cli_fits": [
@@ -466,6 +479,19 @@ HOME = {
         "rel_file": "Two lines of a task note",
         "rel_note": "Relations are between notes. CSV tables are not part of this yet.",
         "rel_more": "Linking tables",
+        "ai_eyebrow": "In a split terminal",
+        "ai_h": "Keep it in the pane next to your AI agent",
+        "ai_p": "Split the terminal: ask an AI agent to do the work in one pane and keep mdgrid open in the other. When the agent rewrites a note, the table follows. You check the result in the table and fix it right there if it is off.",
+        "ai_left": "Agent (illustration)",
+        "ai_right": "mdgrid (real screen)",
+        "ai_ask": "Fix the broken links on the catalog and close the task",
+        "ai_log": [("Read Tasks/", "mdgrid Tasks --print --format json"), ("Edited one note", None), ("Check types and rules", "mdgrid Tasks --check")],
+        "ai_fits": [
+            ("Rereads every second", "When a note changes outside mdgrid, the table shows it. The interval is the poll_ms setting."),
+            ("Never overwrites silently", "If a note you are editing is rewritten outside, saving stops for that note and you choose which version to keep."),
+            ("A skill for agents", "A skill that teaches agents the mdgrid CLI lives in plugins/mdgrid in the repository."),
+        ],
+        "ai_note": "The left pane is an illustration. Any terminal that splits, such as tmux or WezTerm, works the same way.",
         "cli_eyebrow": "As a terminal tool",
         "cli_h": "Everything happens in the terminal",
         "cli_fits": [
@@ -675,6 +701,16 @@ def landing(lang: str, shown, shots) -> str:
     starter = lambda sid: cmd(f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}", lang)
     scenes = tabset("scene-", h["scene_eyebrow"], h["scenes"], starter)
 
+    # 分割した画面: 左はエージェントの pane の図(頼みごと・走らせるコマンド・直した1行)、右は本物の画面。
+    ai_rows = [f'<span class="ask">› {html.escape(h["ai_ask"])}</span>']
+    for what, run in h["ai_log"]:
+        ai_rows.append(f'<span class="dot">●</span> {html.escape(what)}')
+        if run:
+            ai_rows.append(f'  <span class="ps">$ </span>{html.escape(run)}')
+        else:
+            ai_rows += ['  <span class="cm">Tasks/Fix broken links on the catalog site.md</span>', '  <span class="del">- status: todo</span>', '  <span class="add">+ status: done</span>']
+    ai_log = "\n".join(ai_rows)
+
     # ターミナルの道具として: 本物のオプションの使い方を、1つの端末に並べる(# の行は説明。写すのはコマンドだけ)。
     cli_lines = "\n".join(f'<span class="cm"># {html.escape(why)}</span>\n<span class="ps">$ </span>{html.escape(run)}' for why, run in h["cli"])
     cli_text = html.escape("\n".join(run for _, run in h["cli"]))
@@ -738,7 +774,19 @@ def landing(lang: str, shown, shots) -> str:
   </div>
 </div></section>
 
-<section class="sec tint" id="cli"><div class="in">
+<section class="sec tint" id="ai"><div class="in">
+  <div class="head rise"><p class="eyebrow">{h["ai_eyebrow"]}</p><h2>{h["ai_h"]}</h2><p>{html.escape(h["ai_p"])}</p></div>
+  <div class="term panes rise"><div class="bar-t"><i></i><i></i><i></i><span>~/notes</span></div>
+    <div class="split-t">
+      <div class="pane-t agent"><p class="cap">{h["ai_left"]}</p><pre><code>{ai_log}</code></pre></div>
+      <div class="pane-t"><p class="cap">{h["ai_right"]}</p><a href="gallery.html#demo-ai-human"><img loading="lazy" width="856" height="520" src="{img("demo-ai-human")}" alt="{html.escape(h["ai_right"])}"></a></div>
+    </div>
+  </div>
+  <dl class="fits rise">{"".join(f"<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>" for k, v in h["ai_fits"])}</dl>
+  <p class="note">{html.escape(h["ai_note"])}</p>
+</div></section>
+
+<section class="sec" id="cli"><div class="in">
   <div class="split">
     <div class="head rise"><p class="eyebrow">{h["cli_eyebrow"]}</p><h2>{h["cli_h"]}</h2><p>{html.escape(h["cli_p"])}</p>
       <a class="more" href="{man}tasks.html">{html.escape(h["cli_more"])} →</a></div>
@@ -747,23 +795,23 @@ def landing(lang: str, shown, shots) -> str:
   <dl class="fits rise">{"".join(f"<div><dt>{html.escape(k)}</dt><dd>{html.escape(v)}</dd></div>" for k, v in h["cli_fits"])}</dl>
 </div></section>
 
-<section class="sec" id="how"><div class="in">
+<section class="sec tint" id="how"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["how_eyebrow"]}</p><h2>{h["how_h"]}</h2><p>{html.escape(h["how_p"])}</p></div>
   {model(lang, model_notes())}
   <p class="also"><a class="more" href="{man}safety.html">{html.escape(h["how_more"])} →</a></p>
 </div></section>
 
-<section class="sec tint" id="try"><div class="in">
+<section class="sec" id="try"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["try_eyebrow"]}</p><h2>{h["try_h"]}</h2></div>
   <ol class="try rise">{tries}</ol>
 </div></section>
 
-<section class="sec" id="scenes"><div class="in">
+<section class="sec tint" id="scenes"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["scene_eyebrow"]}</p><h2>{h["scene_h"]}</h2><p>{html.escape(h["scene_p"])}</p></div>
   {scenes}
 </div></section>
 
-<section class="sec tint" id="look"><div class="in">
+<section class="sec" id="look"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["look_eyebrow"]}</p><h2>{h["look_h"]}</h2><p>{html.escape(h["look_p"])}</p></div>
   <div class="look">
     <a class="screen" href="gallery.html#theme-{look0}"><img id="look-img" loading="lazy" width="856" height="520" src="{img("theme-" + look0)}" alt="{html.escape(looks[0][1])}"></a>
@@ -771,7 +819,7 @@ def landing(lang: str, shown, shots) -> str:
   </div>
 </div></section>
 
-<section class="sec" id="next"><div class="in">
+<section class="sec tint" id="next"><div class="in">
   <div class="head rise"><p class="eyebrow">{h["next_eyebrow"]}</p><h2>{h["next_h"]}</h2></div>
   <div class="cards five">
     {card(man + "views.html", t["views"], t["views_desc"])}
@@ -781,7 +829,7 @@ def landing(lang: str, shown, shots) -> str:
     {card("gallery.html", t["gallery"], t["gallery_desc"])}
   </div>
 </div></section>
-{f'<section class="sec tint" id="demos"><div class="in"><div class="head"><p class="eyebrow">{t["demos"]}</p><h2>{t["demos_desc"]}</h2></div><div class="demos">{demos}</div></div></section>' if shown else ""}
+{f'<section class="sec" id="demos"><div class="in"><div class="head"><p class="eyebrow">{t["demos"]}</p><h2>{t["demos_desc"]}</h2></div><div class="demos">{demos}</div></div></section>' if shown else ""}
 <section class="sec last"><div class="in">
   <h2>{h["last_h"]}</h2><p class="lead">{html.escape(h["last_p"])}</p>
   {cmd(INSTALL + chr(10) + "mdgrid ~/notes/Tasks", lang)}

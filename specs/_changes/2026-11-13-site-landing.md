@@ -70,6 +70,8 @@ updated: 2026-11-13
 
 ## 実装の気づき
 
+- 4回目: 人の見方「画面を割れる環境で、AI を隣の pane に開くと輝く」を段にした。左の pane はエージェントの図(特定の製品の画面を真似ない)、右は見本 ai-human の本物の画面。書いた事実は、外の変更の読み直し(poll_ms。docs/safety.ja.md)、外で変わったノートには書かない(WB-4)、エージェント向けのスキル(plugins/mdgrid)。
+
 - 3回目: 人が「ターミナル内で完結」をどこかに入れると決めた。ターミナルの段の見出しにし、端末との相性を、リポで確かめられる事実だけで足した(tmux の中からのコピー = OUT-1、WezTerm・Ghostty の見分け = SR-36、マウス = はじめかた)。
 
 - 2回目(同じ日): 段を、人の決めた軸(データベースとして・リレーション・ターミナルの道具として・書くのは直した値だけ)に組み直した。CSV を開く場面 `csv-table` を台本(`docs/manual-scenarios.toml`)と画面の一覧(`docs/manual/<言語>/shots.md`)に足した。詳細(K)の画面には本文も出るので、「1枚を見る」として出した。上の設計の「入口の並び」は1回目のもので、今の並びは docs/design.md にある。
@@ -90,7 +92,7 @@ updated: 2026-11-13
 | SR-50 | checked | テスト: tests/test_docs_order.rs::test_sr_50_no_hype_words_ja・test_sr_50_no_hype_words_en・test_sr_50_pages_py_pages_in_reading_order / 読んで判定: 入口の段が docs/writing.md の読む人の順 |
 | SR-51 | checked | テスト: tests/test_features_page.rs::test_sr_51_pages_py_builds_features_after_views_and_links_from_landing / コード: landing() のカードが features.html を指す |
 
-要件の無いタスク2・3: checked。手元で全部の場面を撮り(ja・en)、`python3 scripts/pages.py <一時フォルダ>/site --shots target/shots` で作った site/ を `python3 scripts/check_site.py` で確かめ、63 件が全部通った(2回目の並びで)(入口の部品を触る検査を ja・en に足した分を含む。390px の入口は ja・en とも横にはみ出さない)。入口は明るい・暗い・スマホの幅で写して目で見た。
+要件の無いタスク2・3: checked。手元で全部の場面を撮り(ja・en)、`python3 scripts/pages.py <一時フォルダ>/site --shots target/shots` で作った site/ を `python3 scripts/check_site.py` で確かめ、65 件が全部通った(2回目の並びで)(入口の部品を触る検査を ja・en に足した分を含む。390px の入口は ja・en とも横にはみ出さない)。入口は明るい・暗い・スマホの幅で写して目で見た。
 
 既存のテストの削除・skip・弱体化: なし
 

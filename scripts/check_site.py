@@ -214,6 +214,7 @@ def browser_checks(base: str) -> None:
                   f"{lang}/ の図を元に戻せる")
             pg.click(".steps .step >> nth=1")
             check("equipment.csv" in (pg.text_content(".term .bar-t span") or ""), f"{lang}/ の枠の題が場面のコマンドになる")
+            check(pg.locator("#ai .pane-t").count() == 2 and pg.locator("#ai .pane-t img").count() == 1, f"{lang}/ の分割した画面の段に、図の pane と本物の画面がある")
             pg.click("#tab-db-detail")
             check(pg.is_visible("#db-detail") and pg.is_hidden("#db-filter"), f"{lang}/ のデータベースの段のタブが切り替わる")
             pg.click("#tab-scene-people")
