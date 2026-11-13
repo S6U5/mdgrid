@@ -12059,5 +12059,365 @@
       "CE-15"
     ],
     "sha": "ab704825cadb7792"
+  },
+  "src/ui/test_board.rs::test_bd_1_action_board_view_switches": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "e528d2abc607b1fd"
+  },
+  "src/ui/test_board.rs::test_bd_1_english_words": {
+    "ids": [
+      "BD-1",
+      "BD-2"
+    ],
+    "sha": "9c6899ce916b8732"
+  },
+  "src/ui/test_board.rs::test_bd_1_esc_q_and_same_key_return_to_table": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "65dee4fb5970f12a"
+  },
+  "src/ui/test_board.rs::test_bd_1_file_and_formula_columns_stay_with_reason": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "7546b023fbd38ce2"
+  },
+  "src/ui/test_board.rs::test_bd_1_key_switches_and_shows_lanes_with_cards": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "293c135fc812a73c"
+  },
+  "src/ui/test_board.rs::test_bd_1_menu_on_number_column_stays_with_reason": {
+    "ids": [
+      "BD-1",
+      "REL-8"
+    ],
+    "sha": "787ad8550f24770f"
+  },
+  "src/ui/test_board.rs::test_bd_1_menu_switches_to_board": {
+    "ids": [
+      "BD-1",
+      "REL-8"
+    ],
+    "sha": "dc77af29745cb2a5"
+  },
+  "src/ui/test_board.rs::test_bd_1_non_text_columns_stay_with_reason": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "b81c8ed836351c8c"
+  },
+  "src/ui/test_board.rs::test_bd_1_only_rows_through_view": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "3e5e76d074c96ced"
+  },
+  "src/ui/test_board.rs::test_bd_1_palette_switches_to_board": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "4a9a7828fd53b58b"
+  },
+  "src/ui/test_board.rs::test_bd_2_missing_null_and_empty_text_share_none_lane": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "1d2c61c7a722c5dc"
+  },
+  "src/ui/test_board.rs::test_bd_2_no_rule_text_order_and_no_none_lane": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "df6551a1a2a68546"
+  },
+  "src/ui/test_board.rs::test_bd_2_pending_value_decides_lane": {
+    "ids": [
+      "BD-2",
+      "BD-3"
+    ],
+    "sha": "cbca8ec1bc93adad"
+  },
+  "src/ui/test_board.rs::test_bd_2_rule_values_order_with_empty_lane_and_none_last": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "a543027e8b54b623"
+  },
+  "src/ui/test_board.rs::test_bd_3_card_name_and_first_two_columns": {
+    "ids": [
+      "BD-3"
+    ],
+    "sha": "4ad866b134fd0f8f"
+  },
+  "src/ui/test_board.rs::test_bd_3_cards_follow_view_sort": {
+    "ids": [
+      "BD-3",
+      "NV-3"
+    ],
+    "sha": "f573e725cd8a22da"
+  },
+  "src/ui/test_board.rs::test_bd_3_enter_goes_to_table_row": {
+    "ids": [
+      "BD-3"
+    ],
+    "sha": "00606fc5c72e19a5"
+  },
+  "src/ui/test_board.rs::test_bd_3_keys_move_between_lanes_and_cards": {
+    "ids": [
+      "BD-3"
+    ],
+    "sha": "ac57fd628f8a91aa"
+  },
+  "src/ui/test_board.rs::test_bd_3_pending_mark_on_cards_with_changes": {
+    "ids": [
+      "BD-3"
+    ],
+    "sha": "2b84db2b59c19554"
+  },
+  "src/ui/test_board.rs::test_bd_3_second_line_skips_grouping_column": {
+    "ids": [
+      "BD-3"
+    ],
+    "sha": "d6c83c4abbcc1ecd"
+  },
+  "src/ui/test_board.rs::test_bd_4_card_actions_move_left_and_right": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "690664d037ec72ea"
+  },
+  "src/ui/test_board.rs::test_bd_4_edges_do_not_move": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "3345a002ca9b8f78"
+  },
+  "src/ui/test_board.rs::test_bd_4_move_out_of_none_lane_sets_value": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "204a7e2718085726"
+  },
+  "src/ui/test_board.rs::test_bd_4_move_right_pends_one_change_and_keeps_file": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "bdea2ce26e0af693"
+  },
+  "src/ui/test_board.rs::test_bd_4_move_to_none_lane_empties_value": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "83ae86da0c6aceea"
+  },
+  "src/ui/test_board.rs::test_bd_4_moves_into_rule_lane_without_rows": {
+    "ids": [
+      "BD-2",
+      "BD-4"
+    ],
+    "sha": "37dbffa9fe392ae9"
+  },
+  "src/ui/test_board.rs::test_bd_4_read_only_cell_stays_with_reason": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "28b1182074843969"
+  },
+  "src/ui/test_board.rs::test_bd_4_readonly_start_does_not_move": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "9b2c6c949c9a0b48"
+  },
+  "src/ui/test_board.rs::test_bd_4_same_card_stays_selected_across_moves": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "97cdcd85e8e88204"
+  },
+  "src/ui/test_board.rs::test_bd_4_save_opens_review_from_table_and_writes": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "d762dfd54d9eee17"
+  },
+  "src/ui/test_board.rs::test_bd_4_save_review_back_keeps_changes": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "e103344cd6373784"
+  },
+  "src/ui/test_board.rs::test_bd_4_shift_arrows_move_card": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "472e2d868995eed0"
+  },
+  "src/ui/test_board.rs::test_bd_4_undo_and_redo_in_board": {
+    "ids": [
+      "BD-4"
+    ],
+    "sha": "8b5f1c8ab9a43273"
+  },
+  "src/ui/test_board.rs::test_bd_4_unreadable_frontmatter_card_does_not_move": {
+    "ids": [
+      "BD-4",
+      "WB-5"
+    ],
+    "sha": "31c8aac2abfa1ba2"
+  },
+  "src/ui/test_board.rs::test_bd_5_lines_fit_any_width_and_height": {
+    "ids": [
+      "BD-5"
+    ],
+    "sha": "a2be11add7a81dc4"
+  },
+  "src/ui/test_board.rs::test_bd_5_long_text_stays_in_its_lane": {
+    "ids": [
+      "BD-5"
+    ],
+    "sha": "e3cfcf71fea4b0be"
+  },
+  "src/ui/test_board.rs::test_bd_5_tall_lane_scrolls_to_selected_card": {
+    "ids": [
+      "BD-5"
+    ],
+    "sha": "d9d6afbb705f525a"
+  },
+  "src/ui/test_board.rs::test_bd_5_width_100_shows_all_five_lanes": {
+    "ids": [
+      "BD-5"
+    ],
+    "sha": "98f69cecaec929e7"
+  },
+  "src/ui/test_board.rs::test_bd_5_width_40_shows_two_lanes_and_scrolls_to_selected": {
+    "ids": [
+      "BD-5"
+    ],
+    "sha": "9e92f48601219f9c"
+  },
+  "src/ui/test_board.rs::test_bd_6_click_card_selects_then_goes_to_table_row": {
+    "ids": [
+      "BD-6"
+    ],
+    "sha": "2a37047b285c2df8"
+  },
+  "src/ui/test_board.rs::test_bd_6_click_lane_head_selects_lane": {
+    "ids": [
+      "BD-6"
+    ],
+    "sha": "0822b1b568fe9b89"
+  },
+  "src/ui/test_board.rs::test_bd_6_click_second_line_and_other_card_selects": {
+    "ids": [
+      "BD-6"
+    ],
+    "sha": "0e5fb3ec6c2ff897"
+  },
+  "src/ui/test_board.rs::test_bd_6_wheel_selects_cards_in_lane": {
+    "ids": [
+      "BD-6"
+    ],
+    "sha": "ae8db266ddbf853c"
+  },
+  "tests/test_board.rs::test_bd_2_keeps_given_row_order_in_each_lane": {
+    "ids": [
+      "BD-2",
+      "BD-3"
+    ],
+    "sha": "c48690eb0516ab91"
+  },
+  "tests/test_board.rs::test_bd_2_no_rule_sorts_by_text": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "e31d73020500dec2"
+  },
+  "tests/test_board.rs::test_bd_2_none_lane_is_last_even_if_first_row_is_empty": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "277cb0184f83d983"
+  },
+  "tests/test_board.rs::test_bd_2_none_lane_only_when_empty_rows": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "fdf73c65fc69f0b5"
+  },
+  "tests/test_board.rs::test_bd_2_rule_lanes_shown_without_rows": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "b9cacd429b954e9b"
+  },
+  "tests/test_board.rs::test_bd_2_rule_order_first_then_rest_then_none": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "a87258b128c6c212"
+  },
+  "tests/test_board.rs::test_bd_2_same_value_makes_one_lane_and_every_row_once": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "b1e979f503bdc297"
+  },
+  "tests/test_board.rs::test_bd_2_values_differ_by_exact_text": {
+    "ids": [
+      "BD-2"
+    ],
+    "sha": "e060e7d48b505ec4"
+  },
+  "tests/test_board_e2e.rs::test_bd_1_board_shows_lanes_and_back_e2e": {
+    "ids": [
+      "BD-1",
+      "BD-2"
+    ],
+    "sha": "e86e7ab6bea788b3"
+  },
+  "tests/test_board_e2e.rs::test_bd_1_number_column_does_not_switch_e2e": {
+    "ids": [
+      "BD-1"
+    ],
+    "sha": "6b017472c2aca7c6"
+  },
+  "tests/test_board_e2e.rs::test_bd_4_move_card_then_save_writes_file_e2e": {
+    "ids": [
+      "BD-2",
+      "BD-4"
+    ],
+    "sha": "0209eba6a0d19738"
+  },
+  "tests/test_save_undo_fixes.rs::test_wb_21_undo_save_does_not_move_the_base_of_an_identical_note": {
+    "ids": [
+      "WB-21",
+      "WB-4"
+    ],
+    "sha": "27595ab567371f7c"
+  },
+  "tests/test_save_undo_fixes.rs::test_wb_21_undo_save_drops_a_pending_value_equal_to_the_restored_file": {
+    "ids": [
+      "WB-17",
+      "WB-21"
+    ],
+    "sha": "02779a445036951d"
+  },
+  "tests/test_save_undo_fixes.rs::test_wb_21_undo_save_moves_the_base_inside_the_undo_stack": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "155af1fc41427876"
+  },
+  "tests/test_save_undo_fixes.rs::test_wb_21_undo_save_restores_when_only_the_mtime_changed": {
+    "ids": [
+      "WB-21"
+    ],
+    "sha": "53a19d7dc374dd27"
   }
 }

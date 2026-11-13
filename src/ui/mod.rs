@@ -358,6 +358,8 @@ mod test_bar_padding_half;
 #[cfg(test)]
 mod test_bar_padding_theme;
 #[cfg(test)]
+mod test_board;
+#[cfg(test)]
 mod test_crumb_button;
 #[cfg(test)]
 mod test_csv_note_only;
