@@ -268,6 +268,11 @@ impl App {
             Some(v) => NewValue::Str(v.clone()),
             None => NewValue::Null,
         };
+        // 1行の入力で直せないセル(改行を含む値・読むだけ)のカードは移さない(値の2行目から先を黙って消さない)。
+        if let Err(reason) = self.editable(&row, &col) {
+            self.message = Some(reason);
+            return;
+        }
         // 読んだ値のレーンへ戻すときは、ためた値を外す(元の値の書き方・型のまま。未保存に数えない)。
         let back = self.changes.pending(&row, &col).is_some()
             && self.board_read_value(&row, &col) == target.value;

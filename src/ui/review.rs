@@ -161,7 +161,7 @@ impl App {
             self.message = Some(super::startup::READONLY.into());
             return;
         }
-        if self.changes.saved_units().is_empty() {
+        if !self.changes.has_saved() {
             self.message = Some(Msg::UndoSaveNone.text().into());
             return;
         }

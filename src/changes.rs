@@ -402,6 +402,11 @@ impl Changes {
         out
     }
 
+    /// WB-21: 戻せる保存の控えがあるか(控えたバイトを写さずに見る)。
+    pub fn has_saved(&self) -> bool {
+        !self.last_save.is_empty()
+    }
+
     /// WB-21: 最後の保存で書いた単位の控え: (単位, 書いたあとの基準, 保存の前のバイト)。無ければ空。
     pub fn saved_units(&self) -> Vec<(RowId, Stamp, Vec<u8>)> {
         self.last_save
