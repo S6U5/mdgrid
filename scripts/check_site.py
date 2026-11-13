@@ -10,6 +10,7 @@
 - 入口の振り分け: 日本語のブラウザは /ja/、英語は /en/、ほかの言語は選ぶ画面のまま、選んだ言語は覚える
 - 説明書: 右上の切り替えが同じページの別の言語を指し、hreflang(ja・en・x-default)がある
 - 入口と画面の一覧の画像と録画が読める、画面の一覧の絞り込み
+- 入口の部品: 場面の切り替え、仕組みの図、場面のタブ、テーマ、写すボタン、明るい・暗いの切り替え
 - 見た目のカタログ: 見本の画面が描かれる、幅 390px で縮んで横にはみ出さない、拡大の切り替え、広い幅では切り替えを出さない
 - 入口が幅 390px で横にはみ出さない
 - どのページにもコンソールのエラー(とページの例外)が無い
@@ -194,6 +195,37 @@ def browser_checks(base: str) -> None:
         check(0 < shown < total, f"画面の一覧の絞り込み(calendar で {shown}/{total})")
         pg.close()
 
+        # 入口の部品: 場面の切り替え、仕組みの図(status を直すと書かれる1行が出て、元に戻せる)、場面のタブ、テーマ、写すボタン。
+        for lang in ("ja", "en"):
+            pg = ctx.new_page()
+            errs = errors_of(pg)
+            pg.goto(base + lang + "/")
+            pg.click(".steps .step >> nth=2")
+            on = pg.eval_on_selector_all(".frames a", "fs => fs.map(f => f.classList.contains('on'))")
+            check(on == [False, False, True], f"{lang}/ の場面の切り替えで3枚目が出る(今: {on})")
+            row = pg.locator("#model tbody tr").nth(1)
+            was = row.locator("select").input_value()
+            row.locator("select").select_option("done" if was != "done" else "todo")
+            check(pg.locator("#model .file .l.del").count() == 1 and pg.locator("#model .file .l.add").count() == 1,
+                  f"{lang}/ の図で status を直すと、消える行と書く行が1行ずつ出る")
+            check("1" in (pg.text_content("#model .tally b") or ""), f"{lang}/ の図の未保存が 1 になる")
+            pg.click("#model .tally button")
+            check(pg.locator("#model .file .l.del").count() == 0 and row.locator("select").input_value() == was,
+                  f"{lang}/ の図を元に戻せる")
+            pg.click("#tab-people")
+            check(pg.is_visible("#scene-people") and pg.is_hidden("#scene-tasks"), f"{lang}/ の場面のタブが切り替わる")
+            pg.click('[data-look="dracula"]')
+            check("theme-dracula.svg" in (pg.get_attribute("#look-img", "src") or "") and 'theme = "dracula"' in (pg.text_content("#look-code") or ""),
+                  f"{lang}/ のテーマを押すと画面と設定の行が替わる")
+            pg.wait_for_function("document.getElementById('look-img').complete && document.getElementById('look-img').naturalWidth > 0")
+            copy = pg.locator(".hero .cmd button[data-copy]")
+            check(copy.count() == 1 and pg.get_attribute(".hero .cmd code", "data-text") == "cargo install mdgrid --locked",
+                  f"{lang}/ の入れるコマンドに写すボタンがある")
+            pg.click("#mode")
+            check(pg.evaluate("document.documentElement.getAttribute('data-theme')") in ("light", "dark"), f"{lang}/ の明るい・暗いの切り替えが効く")
+            check(not errs, f"{lang}/ の部品を触ってもコンソールのエラーが無い{': ' + errs[0][:120] if errs else ''}")
+            pg.close()
+
         # カタログ: 広い幅では等倍で切り替えを出さない。
         pg = ctx.new_page()
         pg.goto(base + "catalog/?lang=en")
@@ -221,7 +253,7 @@ def browser_checks(base: str) -> None:
         adj = pg.evaluate("(() => { const s = getComputedStyle(document.documentElement); return s.webkitTextSizeAdjust || s.textSizeAdjust || ''; })()")
         check(adj == "100%", f"カタログが字の自動の拡大を止めている(text-size-adjust {adj!r})")
         check(not errs, f"390px のカタログにコンソールのエラーが無い{': ' + errs[0][:120] if errs else ''}")
-        for u in ["ja/", "en/gallery.html", "manual/ja/tasks.html"]:
+        for u in ["ja/", "en/", "en/gallery.html", "manual/ja/tasks.html"]:
             pg.goto(base + u)
             pg.wait_for_timeout(200)
             sw = pg.evaluate("document.documentElement.scrollWidth")
