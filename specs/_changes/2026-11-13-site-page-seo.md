@@ -53,7 +53,7 @@ updated: 2026-11-13
   - hreflang の x-default: 画面の一覧は、言語を決めて移る `gallery.html`(これも同じ組を示す)を指す。説明書は英語の版を指す(言語を決めて移るページが無いため)。入口は今のまま根。
   - 根の入口の題: `mdgrid — Markdown frontmatter as a table in the terminal`。
   - 言語の入口に `SoftwareApplication` の JSON-LD(名前・説明・URL・OS・分類・無料・リポと crates.io)。`<` を `\u003c` にして埋める。
-  - 共有のカードの画像: `docs/assets/og.png`・`docs/assets/ja/og.png`(1200×630。題・ひとことと本物の画面)を site/assets/<言語>/og.png に写す。今の hero.png は 2024×608 で、カードの比(1.91:1)に合わず左右が切れるため使わない。画像は `scripts/og_image.py`(Playwright。check_site.py と同じ道具)で作り直せる。文は pages.py の入口の文(HOME の tagline)から取る。
+  - 共有のカードの画像: `docs/assets/og.png`・`docs/assets/ja/og.png`(1200×630。題・ひとことと本物の画面)を site/assets/<言語>/og.png に写す。今の hero.png は 2024×608 で、カードの比(1.91:1)に合わず左右が切れるため使わない。画像は `scripts/og_image.py`(Playwright。check_site.py と同じ道具)で作り直せる。文は pages.py の入口の見出し(HOME の h1)から取る。
 - `scripts/check_site.py`: ブラウザを使わない検査を足す。サイトの地図に載るページごとに、canonical が地図の URL と同じ・description が空でない・`og:title`・`og:url`(canonical と同じ)・`og:image`(site/ の中にある)・`twitter:card` がある。hreflang を持つページは、示した先(サイトの中)のページが同じ組を示し返す。`site_pages()` の説明書の入口の形も pages.py に合わせる。
 - 却下:
   - サイトの地図の `lastmod`: Pages の workflow の checkout は履歴が1件だけで、ファイルごとの日付を git から取れない。履歴を全部取ると毎回の公開が重くなる。
@@ -72,6 +72,7 @@ updated: 2026-11-13
 
 - mdBook は空の description(`content=""`)をどのページにも出すので、足さずに置き換える。章の本文の最初の段落は「English · 目次」のようなリンクだけの行なので、リンクを除いた字が10字に満たない段落は飛ばす。
 - 手元に日本語の字(Noto Sans JP)が無く、カードの画像は npm の @fontsource/noto-sans-jp から入れた字で描いた(リポには入れない)。
+- main の入口の作り直し(specs/_changes/2026-11-13-site-landing.md。#58)を取り込んだ。そちらが入口だけに足した og のタグと hero.png の写しは、どのページにも入れる `social()` とカードの画像(og.png)に置き換えた。カードの文は新しい入口の見出し(h1)に合わせて作り直した。取り込んだあと、場面を撮り直して作った site/ に check_site.py を回し、68 項目が全部通った。
 - レビューの版: ce1ecc2e07c32a268d14d59b5cfde7c7111611e9(記録・scripts/og_image.py・docs/assets/og.png・docs/assets/ja/og.png はまだ追跡していないので作業ツリーで読む)
 
 ## レビューの指摘
