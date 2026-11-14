@@ -17,7 +17,7 @@ tags = "list"
 [[table]]
 name = "Meetings"
 
-# New note (n): asks for the time, the attendees and the topic, and starts the body from the template.
+# New note (a): asks for the time, the attendees and the topic, and starts the body from the template.
 [table.new_note]
 folder = "Meetings"
 ask = ["when", "attendees", "topic"]

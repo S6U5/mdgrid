@@ -62,6 +62,8 @@ name = "tasks"
 path = "tasks.base"
 ```
 
+A `[[table]]` in the marker can also set up the gantt screen (`C`; `gantt` in [Keys](keys.md)): `gantt = { start = "<column>", end = "<column>" }`, or `days = "<column>"` (the length in days) instead of `end`. Without the setting, mdgrid infers the columns from the names of the date columns (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了) and the screen title says so. A `gantt` that is not a table, has no `start`, or has neither `end` nor `days` is a warning and the setting is dropped; a column the table does not have is reported once the notes are read. The screen types all take the same shape (`<type> = { <column names> }`), and the screen type menu lists only the types that have a setting or an inference.
+
 A `[[table]]` in the marker can also set up the tree view (`T`; `tree` in [Keys](keys.md)): `tree = { path = "<column>", separator = "<separator>", order = "<column>" }`. The value of the `path` column, split at `separator` (default ` > `), is where the row sits in the tree, and the `order` column (optional) sorts the rows in a folder. When the column holds a list, its first item is used. A `path` column the table does not have, an empty separator, or a `tree` that is not a table is a warning (in the form `.mdgrid/workspace.toml: table[1].tree.separator: …`), and the tree is not offered.
 
 ```toml

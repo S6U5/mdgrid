@@ -118,6 +118,22 @@ pub(crate) fn on_tree(app: &App) -> bool {
         || (matches!(app.mode, Mode::ScreenMenu | Mode::Palette) && app.folder_tree.is_some())
 }
 
+/// GA-2: ガントの画面か(画面の型のメニューとパレットをガントから開いている間も)。
+pub(crate) fn on_gantt(app: &App) -> bool {
+    app.mode == Mode::Gantt
+        || (matches!(app.mode, Mode::ScreenMenu | Mode::Palette) && app.gantt.is_some())
+}
+
+/// 表でない画面の型(ガント・木・関係マップ)か。そこから `?` で開いたヘルプの間も(ヘルプは開いた元のモードを持つ)。
+fn on_other_screen(app: &App) -> bool {
+    let from_help = app.mode == Mode::Help
+        && app
+            .help
+            .as_ref()
+            .is_some_and(|h| matches!(h.from, Mode::Gantt | Mode::Tree | Mode::Relations));
+    on_gantt(app) || on_tree(app) || on_relmap(app) || from_help
+}
+
 /// ボタンの見た目(NV-23。ビューの帯とヘッダーのボタンで同じ)。`on` は効いているか。
 fn button_style(look: &Option<super::look::Look>, on: bool) -> Style {
     match look {
@@ -193,6 +209,12 @@ fn menu_button_text(app: &App) -> String {
         )
     } else if on_tree(app) {
         format!(" {} {} ▾ ", glyph(app, Glyph::Tree), Msg::ScreenTree.text())
+    } else if on_gantt(app) {
+        format!(
+            " {} {} ▾ ",
+            glyph(app, Glyph::Gantt),
+            Msg::ScreenGantt.text()
+        )
     } else {
         format!(
             " {} {} ▾ ",
@@ -1320,7 +1342,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             | Mode::Drawer
             | Mode::FilterWin
             | Mode::FilterText
-    ) || (app.mode == Mode::ScreenMenu && app.relmap.is_none() && app.folder_tree.is_none())
+    ) || (app.mode == Mode::ScreenMenu
+        && app.relmap.is_none()
+        && app.folder_tree.is_none()
+        && app.gantt.is_none())
     {
         let pos = match app.slots.get(app.row) {
             None | Some(Slot::Gap) => Msg::FooterRow.fill(&[&0, &0]),
@@ -1447,13 +1472,19 @@ pub(crate) fn message(app: &App, w: usize) -> Line<'static> {
                     Msg::HintReview.text().into()
                 });
             }
-            if app.view_error.is_some() {
-                return Some(Msg::HintViewError.text().into());
-            }
             let notes = || {
                 (!app.notes.is_empty())
                     .then(|| Msg::HintUnsupported.fill(&[&app.notes.join(" / ")]))
             };
+            // GA-2・TR-1・REL-7: ほかの画面の型(ガント・木・関係マップと、そこから開いたヘルプ)では、表の案内を出さず、
+            // ビューの未対応の理由だけを出す。開けないビューの案内は表の欄と `[` `]` を指すので出さない(関係マップは
+            // 行が無くても開ける)。
+            if on_other_screen(app) {
+                return notes();
+            }
+            if app.view_error.is_some() {
+                return Some(Msg::HintViewError.text().into());
+            }
             if let Some(g) = app.cur_head() {
                 let n = app.groups.get(g).map_or(0, |(_, r)| r.len());
                 return Some(Msg::HintHeadRow.fill(&[&n])).or_else(notes);

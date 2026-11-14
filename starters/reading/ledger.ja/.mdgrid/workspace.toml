@@ -22,7 +22,7 @@ values = ["book", "article", "film", "talk", "podcast"]
 [rules.status]
 values = ["want", "now", "done", "dropped"]
 
-# 新しいノート(n): 種類・著者・URL を聞き、残りを埋め、本文を雛形から始める。
+# 新しいノート(a): 種類・著者・URL を聞き、残りを埋め、本文を雛形から始める。
 [new_note]
 folder = "Reading"
 ask = ["kind", "author", "url"]

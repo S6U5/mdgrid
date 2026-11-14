@@ -342,6 +342,11 @@ const LAST_DAY: i64 = 2_932_896;
 const CALC_LIMIT: i64 = i64::MAX / 4;
 
 /// 日数が `parse_date` で読める範囲(0000-01-01〜9999-12-31)か。CE-5 の入力(今日からの日数など)はこれで確かめてから書く。
+/// 日を日付の範囲(0000-01-01〜9999-12-31)に収める(計算で範囲を出た値の守り)。
+pub fn clamp_date(days: i64) -> i64 {
+    days.clamp(FIRST_DAY, LAST_DAY)
+}
+
 pub fn date_in_range(days: i64) -> bool {
     (FIRST_DAY..=LAST_DAY).contains(&days)
 }
