@@ -254,6 +254,7 @@ impl App {
             select_row(&mut ft, &cur);
         }
         self.relmap = None;
+        self.gantt = None;
         self.folder_tree = Some(ft);
         self.set_mode(Mode::Tree);
     }

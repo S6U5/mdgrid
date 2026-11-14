@@ -511,6 +511,8 @@ impl App {
         // TR-5: 木の画面から開いたパレットは、閉じると木に戻る。
         let back = if self.folder_tree.is_some() {
             Mode::Tree
+        } else if self.gantt.is_some() {
+            Mode::Gantt
         } else {
             Mode::Table
         };

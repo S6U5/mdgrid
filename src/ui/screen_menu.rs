@@ -27,6 +27,8 @@ enum Screen {
     Relations,
     /// TR-1: 木(表に木の設定があるときだけ)。
     Tree,
+    /// GA-2: ガント(設定か推定で列が決まるときだけ)。
+    Gantt,
 }
 
 /// 窓に並べる型(表と、つながる表があれば関係マップ。関係マップの画面ではいつも)。
@@ -39,6 +41,9 @@ fn screens(app: &App) -> Vec<Screen> {
     if app.tree_ready() || app.folder_tree.is_some() {
         out.push(Screen::Tree);
     }
+    if app.gantt_ready() || app.gantt.is_some() {
+        out.push(Screen::Gantt);
+    }
     out
 }
 
@@ -48,6 +53,8 @@ fn current(app: &App) -> Screen {
         Screen::Relations
     } else if app.folder_tree.is_some() {
         Screen::Tree
+    } else if app.gantt.is_some() {
+        Screen::Gantt
     } else {
         Screen::Table
     }
@@ -67,6 +74,11 @@ fn entry(app: &App, s: Screen) -> (String, Option<String>) {
             Glyph::Tree,
             Msg::ScreenTree.text(),
             keymap::key_for(&app.keys, Mode::Table, Action::TreeView),
+        ),
+        Screen::Gantt => (
+            Glyph::Gantt,
+            Msg::ScreenGantt.text(),
+            keymap::key_for(&app.keys, Mode::Table, Action::GanttView),
         ),
     };
     let name = if nerd_on(app) {
@@ -124,6 +136,8 @@ fn window(app: &App) -> Option<Geom> {
 impl App {
     /// REL-8: 画面の型のメニューを開く(表の画面か関係マップから)。
     pub(crate) fn open_screen_menu(&mut self) {
+        // 前の操作のメッセージは、窓を開いた時点で役目を終える(クリックで開くときと同じ)。
+        self.message = None;
         let sel = screens(self)
             .iter()
             .position(|s| *s == current(self))
@@ -144,6 +158,8 @@ impl App {
             Mode::Relations
         } else if self.folder_tree.is_some() {
             Mode::Tree
+        } else if self.gantt.is_some() {
+            Mode::Gantt
         } else {
             Mode::Table
         };
@@ -181,17 +197,26 @@ impl App {
             Screen::Table => {
                 self.relmap = None;
                 self.folder_tree = None;
+                self.gantt = None;
                 self.set_mode(Mode::Table);
             }
             Screen::Relations => {
                 self.folder_tree = None;
+                self.gantt = None;
                 self.set_mode(Mode::Table);
                 self.open_relmap();
             }
             Screen::Tree => {
                 self.relmap = None;
+                self.gantt = None;
                 self.set_mode(Mode::Table);
                 self.open_tree();
+            }
+            Screen::Gantt => {
+                self.relmap = None;
+                self.folder_tree = None;
+                self.set_mode(Mode::Table);
+                self.open_gantt();
             }
         }
     }

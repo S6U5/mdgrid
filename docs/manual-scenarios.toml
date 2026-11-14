@@ -815,3 +815,12 @@ title = { en = "Open a CSV file", ja = "CSV のファイルを開く" }
 command = ["./target/release/mdgrid", "examples/studio/equipment.csv"]
 ready = "equipment"
 text = { en = "Pass a .csv or .tsv file: the first line names the columns and the rest are rows. Editing, the diff before saving, filters, sorting and groups work as they do for a folder of notes.", ja = ".csv か .tsv のファイルを渡すと、1行目が列の名前、2行目からが行の表で開く。値の直し・保存の前の差分・絞り込み・並べ替え・グループ分けは、ノートのフォルダと同じ。" }
+
+[[shot]]
+id = "gantt"
+title = { en = "The gantt screen", ja = "ガントの画面" }
+command = ["./target/release/mdgrid", "examples/tasks"]
+ready = "Tasks"
+keys = ["C"]
+wait = { en = "Gantt:", ja = "ガント:" }
+text = { en = "C on a table with a gantt setting (or date columns named like start and due): the rows of the current view as bars from the start date to the due date, with today marked. + and - switch the unit between day, week and month.", ja = "ガントの設定(か start・due のような日付の列)のある表で C。今のビューの行が開始から期限までの横棒になり、今日に印が付く。+ と - で日・週・月の単位を切り替える。" }

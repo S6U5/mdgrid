@@ -62,6 +62,8 @@ name = "tasks"
 path = "tasks.base"
 ```
 
+印の `[[table]]` には、ガントの画面(`C`。[キー](keys.ja.md) の `gantt`)の設定も書ける: `gantt = { start = "<列>", end = "<列>" }`(`end` の代わりに `days = "<日数の列>"` でもよい)。設定が無くても、日付の列の名前(始まりは start・begin・from・開始、終わりは end・due・finish・until・to・期限・終了)から推定し、画面の題にそう示す。`gantt` が表でない、`start` が無い、`end` も `days` も無いときは警告して設定を外し、列が表に無いときはノートを読み終えてから知らせる。画面の型の設定はどれも同じ形(`<型> = { <列の名前> }`)で、画面の型のメニューには設定か推定のある型だけが並ぶ。
+
 印の `[[table]]` には、木の画面(`T`。[キー](keys.ja.md) の `tree`)の設定も書ける: `tree = { path = "<列>", separator = "<区切り>", order = "<列>" }`。`path` の列の値を `separator`(省略は ` > `)で切ったものを、その行の置き場の階層とみなし、`order` の列(省略してよい)でフォルダの中を並べる。階層の列が文字のリストなら最初の要素を使う。`path` の列が表に無い、区切りが空、`tree` が表でないときは、警告(`.mdgrid/workspace.toml: table[1].tree.separator: …` の形)して木を出さない。
 
 ```toml

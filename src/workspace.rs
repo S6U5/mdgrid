@@ -180,9 +180,9 @@ fn read_tables(
             let name = text("name")
                 .filter(|s| !s.is_empty())
                 .unwrap_or_else(|| "base".to_string());
-            // TR-2: 印の `tree`(木の設定)は開くときに marker_tree が読む。
+            // TR-2・GA-1: 印の `tree`(木)と `gantt`(ガント)の設定は開くときに marker_tree・marker_gantt が読む。
             let skip: &[&str] = if file.starts_with(MARKER_DIR) {
-                &["name", "path", "view", "base", "tree"]
+                &["name", "path", "view", "base", "tree", "gantt"]
             } else {
                 &["name", "path", "view", "base"]
             };
@@ -214,7 +214,7 @@ fn read_tables(
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| stem_of(&p));
         let skip: &[&str] = if file.starts_with(MARKER_DIR) {
-            &["name", "path", "view", "tree"]
+            &["name", "path", "view", "tree", "gantt"]
         } else {
             &["name", "path", "view"]
         };
@@ -386,6 +386,23 @@ pub fn inline_base(path: &Path) -> Option<(String, PathBuf)> {
 /// 警告の場所(`table[n].tree`)。印が無い・その表が無い・`tree` が無いなら None。書き方が違えば CLI-3 の形で
 /// 警告して None(表でない・`path` が無い・区切りが空)。`order` が文字でなければ警告して無いものとする。
 pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, String)>, Vec<String>) {
+    marker_setting(opened, "tree", read_tree)
+}
+
+/// GA-1: 開いたものの表に、印の `[[table]]` で書いたガントの設定(`gantt = { start, end, days }`)と、警告の場所
+/// (`table[n].gantt`)。印が無い・その表が無い・`gantt` が無いなら None。書き方が違えば CLI-3 の形で警告して
+/// None(表でない・`start` が無い・`end` も `days` も無い)。
+pub fn marker_gantt(opened: &Path) -> (Option<(crate::gantt::GanttSpec, String)>, Vec<String>) {
+    marker_setting(opened, "gantt", read_gantt)
+}
+
+/// GA-7: 画面の型ごとの設定の共通の読み方。開いたもの(フォルダか .base)と `real_path` で同じ `[[table]]` を探し、
+/// その鍵 `key`(`tree`・`gantt`)の値を `read` で読む。警告の場所は `table[n].<key>`。
+fn marker_setting<T>(
+    opened: &Path,
+    key: &str,
+    read: impl Fn(&toml::Value, &str, &str, &mut Vec<String>) -> Option<T>,
+) -> (Option<(T, String)>, Vec<String>) {
     let mut warns = Vec::new();
     let start = if opened.extension().is_some_and(|x| x == "base") {
         opened.parent().unwrap_or(opened).to_path_buf()
@@ -411,7 +428,7 @@ pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, Stri
         .unwrap_or_default();
     for (k, item) in items.iter().enumerate() {
         let Some(t) = item.as_table() else { continue };
-        let Some(tree) = t.get("tree") else { continue };
+        let Some(value) = t.get(key) else { continue };
         let text = |key: &str| {
             t.get(key)
                 .and_then(|v| v.as_str())
@@ -434,11 +451,71 @@ pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, Stri
         if real_path(&path) != real_path(opened) {
             continue;
         }
-        let at = format!("table[{}].tree", k + 1);
-        let spec = read_tree(tree, &label, &at, &mut warns);
+        let at = format!("table[{}].{key}", k + 1);
+        let spec = read(value, &label, &at, &mut warns);
         return (spec.map(|s| (s, at)), warns);
     }
     (None, warns)
+}
+
+/// GA-1: `gantt = { start = "<列>", end = "<列>", days = "<列>" }` を読む(`end` か `days` のどちらか)。
+fn read_gantt(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::gantt::GanttSpec> {
+    use crate::profile::{not, warn};
+    let Some(t) = v.as_table() else {
+        warn(warns, file, at, Msg::RsnGanttNotTable.text().to_string());
+        return None;
+    };
+    for k in t.keys() {
+        if !["start", "end", "days"].contains(&k.as_str()) {
+            warn(
+                warns,
+                file,
+                &format!("{at}.{k}"),
+                Msg::RsnUnknown.text().to_string(),
+            );
+        }
+    }
+    let text = |key: &str, warns: &mut Vec<String>| -> Option<String> {
+        match t.get(key) {
+            None => None,
+            Some(toml::Value::String(s)) if !s.trim().is_empty() => Some(s.trim().to_string()),
+            Some(toml::Value::String(_)) => None,
+            Some(_) => {
+                warn(warns, file, &format!("{at}.{key}"), not(Msg::WantString));
+                None
+            }
+        }
+    };
+    let Some(start) = text("start", warns) else {
+        warn(
+            warns,
+            file,
+            &format!("{at}.start"),
+            Msg::RsnGanttNeedStart.text().to_string(),
+        );
+        return None;
+    };
+    let end = text("end", warns);
+    let days = text("days", warns);
+    if end.is_none() && days.is_none() {
+        warn(
+            warns,
+            file,
+            &format!("{at}.end"),
+            Msg::RsnGanttNeedEnd.text().to_string(),
+        );
+        return None;
+    }
+    Some(crate::gantt::GanttSpec {
+        start: Some(start),
+        end,
+        days,
+    })
 }
 
 /// 比べるための実体のパス。無いファイル(WS-9 の `[table.base]` の `.base`)は、フォルダの側を実体のパスに直して

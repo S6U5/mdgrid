@@ -240,6 +240,23 @@ impl App {
         })
     }
 
+    /// スロットを組み直し、表の今の行を鍵で保つ(畳まれて見えなくなれば `fallback` の行へ)。
+    /// ガントの畳み(GA-3)から使う: 全部の組み直し(`refresh`)は要らず、行の並べ直しだけでよい。
+    pub(crate) fn build_slots_keep_row(&mut self, fallback: &RowId) {
+        let old_key = self.slot_key(self.row);
+        self.build_slots();
+        let find = |app: &Self, k: &SlotKey| {
+            (0..app.slots.len()).find(|&i| app.slot_key(i).as_ref() == Some(k))
+        };
+        let found = old_key
+            .and_then(|k| find(self, &k))
+            .or_else(|| find(self, &SlotKey::Row(fallback.clone())));
+        if let Some(i) = found {
+            self.row = i;
+        }
+        self.scroll_into_view();
+    }
+
     fn build_slots(&mut self) {
         self.lay_slots();
         // NV-30: 下の帯の問題の数は、見えている行(畳んだまとまりの中を除く。跳べる先と同じ)と見えている列で、

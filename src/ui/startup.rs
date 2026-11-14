@@ -72,6 +72,10 @@ impl App {
         let (tree, warns) = mdgrid::workspace::marker_tree(&s.target);
         self.tree_spec = tree;
         warnings.extend(warns);
+        // GA-1: 印に書いたガントの設定(書き方が違えば警告して設定を外す。推定は別に効く)。
+        let (gantt, warns) = mdgrid::workspace::marker_gantt(&s.target);
+        self.gantt_spec = gantt;
+        warnings.extend(warns);
         // SR-44: ワークスペースと表の範囲の層を重ね、表で決まる add_frontmatter(WB-3)を読み込みの前に渡す。
         warnings.extend(self.collect_scope_layers(&s.target, s.config_dir.as_deref()));
         warnings.extend(self.apply_profile());

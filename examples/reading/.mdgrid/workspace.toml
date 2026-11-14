@@ -22,7 +22,7 @@ values = ["book", "article", "film", "talk", "podcast"]
 [rules.status]
 values = ["want", "now", "done", "dropped"]
 
-# New note (n): asks for the kind, the author and the URL, fills in the rest, and starts the body from the template.
+# New note (a): asks for the kind, the author and the URL, fills in the rest, and starts the body from the template.
 [new_note]
 folder = "Reading"
 ask = ["kind", "author", "url"]
