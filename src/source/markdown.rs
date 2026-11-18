@@ -796,6 +796,49 @@ impl Source for Markdown {
         Ok(RowId(real.to_string_lossy().into_owned()))
     }
 
+    fn trash(&mut self, row: &RowId) -> io::Result<crate::trash::Trashed> {
+        let path = self
+            .note(row)
+            .map(|n| n.path.clone())
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, Msg::RowNotLoaded.text()))?;
+        // 根の下のノートだけ(ごみ箱は根の `.trash/`)。深い根を先に見る。
+        let root = self
+            .vault
+            .roots()
+            .iter()
+            .filter(|r| path.starts_with(r))
+            .max_by_key(|r| r.components().count())
+            .cloned()
+            .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, Msg::RowNotLoaded.text()))?;
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0);
+        let item = crate::trash::put(&root, &path, now)?;
+        self.vault.forget(&path);
+        self.rebuild(std::slice::from_ref(&path));
+        Ok(item)
+    }
+
+    fn restore(&mut self, item: &crate::trash::Trashed) -> io::Result<RowId> {
+        let to = crate::trash::restore(item)?;
+        self.vault.reload(&to)?;
+        let real = to.canonicalize()?;
+        self.rebuild(std::slice::from_ref(&real));
+        Ok(RowId(real.to_string_lossy().into_owned()))
+    }
+
+    fn trashed(&self) -> Vec<crate::trash::Trashed> {
+        let mut out: Vec<crate::trash::Trashed> = self
+            .vault
+            .roots()
+            .iter()
+            .flat_map(|r| crate::trash::list(r))
+            .collect();
+        out.sort_by(|a, b| b.when.cmp(&a.when).then_with(|| a.rel.cmp(&b.rel)));
+        out
+    }
+
     fn reload(&mut self, row: &RowId) -> io::Result<()> {
         let path = PathBuf::from(&row.0);
         self.vault.reload(&path)?;

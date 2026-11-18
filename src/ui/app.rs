@@ -74,6 +74,9 @@ pub struct App {
     pub(crate) wbs_pct: std::collections::HashMap<RowId, u8>,
     /// BV-18: 最後に消した mdgrid のビュー(表の `u` で戻す)。
     pub(crate) view_trash: Option<super::view_tabs::Trash>,
+    /// ノートの作成・削除の、取り消せる手とやり直せる手(note_trash.rs)。
+    pub(crate) note_undo: Vec<super::note_trash::NoteOp>,
+    pub(crate) note_redo: Vec<super::note_trash::NoteOp>,
     /// 画面の行(見出しとノートの行)。`row`・`top` はこの添字。グループが無ければ rows と同じ並び。
     pub(crate) slots: Vec<Slot>,
     /// 未対応の列・並べ替えの説明(BV-7)。
@@ -297,6 +300,8 @@ impl App {
             wbs_num: Default::default(),
             wbs_pct: Default::default(),
             view_trash: None,
+            note_undo: Vec::new(),
+            note_redo: Vec::new(),
             slots: Vec::new(),
             notes: Vec::new(),
             view_error: None,
@@ -851,6 +856,10 @@ impl App {
                 if self.undo_view_delete() {
                     return;
                 }
+                // cell-edit.new-note-undo・cell-edit.delete-note-undo: 一番新しい手がノートの作成・削除ならそれを戻す。
+                if self.undo_note_op() {
+                    return;
+                }
                 let rows = self.changes.rows();
                 if self.changes.undo() {
                     self.keep_in_place(rows);
@@ -859,6 +868,9 @@ impl App {
                 }
             }
             Action::Redo => {
+                if self.redo_note_op() {
+                    return;
+                }
                 let rows = self.changes.rows();
                 if self.changes.redo() {
                     self.keep_in_place(rows);
@@ -941,6 +953,8 @@ impl App {
             // CE-35: 列の型を選び直す窓。
             Action::ColumnType => self.open_type_menu(),
             Action::RenameNote => self.start_rename_note(),
+            Action::DeleteNote => self.start_delete_note(),
+            Action::RestoreNote => self.start_restore_note(),
             Action::DeleteKey => self.start_delete_key(),
             // ---- 新しいノート(new_note.rs。CE-25) ----
             Action::NewNote => self.start_new_note(),

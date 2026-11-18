@@ -95,6 +95,22 @@ pub trait Source {
         let _ = (row, to);
         Err(std::io::Error::other("rename is not supported"))
     }
+    /// cell-edit.delete-note-trash-only: 行のノートをごみ箱へ動かす(消さない)。動かせなければ Err で、ノートは元のまま。
+    /// ごみ箱を持たない読み込み口は Err(既定)。
+    fn trash(&mut self, row: &RowId) -> std::io::Result<crate::trash::Trashed> {
+        let _ = row;
+        Err(std::io::Error::other("trash is not supported"))
+    }
+    /// cell-edit.trash-restore-keep-existing: ごみ箱のノートを元の場所へ戻し、戻した行を返す。元の場所に
+    /// ファイルがあれば、置き換えずに `AlreadyExists` の Err。
+    fn restore(&mut self, item: &crate::trash::Trashed) -> std::io::Result<RowId> {
+        let _ = item;
+        Err(std::io::Error::other("trash is not supported"))
+    }
+    /// ごみ箱のノート(新しい順)。ごみ箱を持たない読み込み口は空(既定)。
+    fn trashed(&self) -> Vec<crate::trash::Trashed> {
+        Vec::new()
+    }
     /// 行がノート(ファイルの名前・本文・リンクを持つ)か。偽の読み込み口(CSV など)では、ノートだけの機能
     /// (エディタで開く・名前の変更・リンク・キーの操作など。SC-17)を出さない。既定は真。
     fn notes(&self) -> bool {
@@ -221,6 +237,15 @@ impl<S: Source + ?Sized> Source for Box<S> {
     }
     fn rename(&mut self, row: &RowId, to: &std::path::Path) -> std::io::Result<RowId> {
         (**self).rename(row, to)
+    }
+    fn trash(&mut self, row: &RowId) -> std::io::Result<crate::trash::Trashed> {
+        (**self).trash(row)
+    }
+    fn restore(&mut self, item: &crate::trash::Trashed) -> std::io::Result<RowId> {
+        (**self).restore(item)
+    }
+    fn trashed(&self) -> Vec<crate::trash::Trashed> {
+        (**self).trashed()
     }
     fn notes(&self) -> bool {
         (**self).notes()

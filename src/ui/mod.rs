@@ -37,6 +37,7 @@ pub mod native_views;
 pub mod nav;
 pub mod new_note;
 pub mod note_rename;
+pub mod note_trash;
 pub mod places;
 pub mod popup;
 pub(crate) mod profile;
@@ -478,6 +479,8 @@ mod test_note_name;
 mod test_note_path;
 #[cfg(test)]
 mod test_note_rename;
+#[cfg(test)]
+mod test_note_trash;
 #[cfg(test)]
 mod test_pending_shape;
 #[cfg(test)]

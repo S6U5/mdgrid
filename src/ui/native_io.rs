@@ -42,6 +42,16 @@ pub(crate) enum Ask {
     DeleteKey(String, usize),
     /// 名前を変えるノート(CE-34)。続けて新しい名前。
     RenameNote(mdgrid::source::RowId),
+    /// 消すノートと、そのノートを指しているノートの数(cell-edit.delete-note-confirm)。続けて `y`。
+    DeleteNote {
+        row: mdgrid::source::RowId,
+        links: usize,
+    },
+    /// ごみ箱のノートの一覧(cell-edit.trash-restore-list)。選ぶと元の場所へ戻す。
+    RestoreNote {
+        items: Vec<String>,
+        notes: Vec<mdgrid::trash::Trashed>,
+    },
     /// 取り込む `.base`(開いたフォルダからの相対パス)。
     ImportFile(Vec<String>),
     /// 取り込むビュー。
@@ -198,6 +208,8 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::RenameKey(k)) => Msg::AskRenameKey.fill(&[&sanitize(k)]),
         Some(Ask::DeleteKey(k, n)) => Msg::AskDeleteKey.fill(&[&sanitize(k), n]),
         Some(Ask::RenameNote(_)) => Msg::AskRenameNote.text().to_string(),
+        Some(Ask::DeleteNote { .. }) => Msg::AskDeleteNote.into(),
+        Some(Ask::RestoreNote { .. }) => Msg::AskRestoreNote.into(),
         Some(Ask::ImportFile(_)) => Msg::AskImportFile.into(),
         Some(Ask::ImportView { file, .. }) => Msg::AskImportView.fill(&[&sanitize(file)]),
         Some(Ask::OpenPlace { .. }) => format!("{}: ", Msg::PlaceOpen.text()),
@@ -225,6 +237,7 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::OpenPlace { items, .. }) => items,
         Some(Ask::OpenLink { items, .. }) => items,
         Some(Ask::LinkedRows { items, .. }) => items,
+        Some(Ask::RestoreNote { items, .. }) => items,
         Some(Ask::WsRemove(items)) | Some(Ask::WsOpen(items)) => items,
         Some(Ask::WsTable { items, .. }) => items,
         Some(Ask::StarterPick { items, .. }) => items,
@@ -260,6 +273,15 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         Ask::PlaceName(_) | Ask::PlaceOverwrite(_) | Ask::WsName | Ask::StarterSamples { .. }
     ) {
         // 候補の無い入力。
+    } else if let Ask::DeleteNote { row, links } = ask {
+        // cell-edit.delete-note-confirm: 消すノートの名前を、問いの下の1行に出す(長い名前で問いが切れないように)。
+        let label = app.src.label(row);
+        let t = if *links == 0 {
+            Msg::DeleteNoteWhich.fill(&[&label])
+        } else {
+            Msg::DeleteNoteWhichLinks.fill(&[&label, links])
+        };
+        out.push(Line::from(fit(&sanitize(&t), w, Align::Left)));
     } else if let Ask::ExportName | Ask::StarterDir(_) = ask {
         // 候補は無く、相対パスの基準のフォルダを1行。
         let dir = app
@@ -547,6 +569,17 @@ impl App {
             Some(Ask::RenameNote(row)) => {
                 let row = row.clone();
                 self.rename_note_to(&row, query)
+            }
+            Some(Ask::DeleteNote { row, .. }) => {
+                let row = row.clone();
+                self.confirm_delete_note(row, query.trim().eq_ignore_ascii_case("y"))
+            }
+            Some(Ask::RestoreNote { notes, .. }) => {
+                let Some(item) = picked.and_then(|k| notes.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.restore_note(item)
             }
             Some(Ask::DeleteKey(key, _)) => {
                 let key = key.clone();

@@ -768,3 +768,5 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `workspace_open` — pick a workspace, then one of its tables, and open it within that workspace
 - `starter_new` — pick a starter (a built-in one or `starters/<name>` in the config folder), type the folder to create and whether to add the sample notes, and open the new ledger
 - `rename_note` — rename the note of the selected row (also in the action menu `x`); links to the old name are rewritten as pending changes
+- `delete_note` — move the note of the selected row to the trash (`.trash/` in the opened folder) after confirming its name (also in the action menu `x`); `u` brings it back
+- `restore_note` — pick a note in the trash and put it back where it was

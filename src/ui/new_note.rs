@@ -721,6 +721,8 @@ impl App {
             self.message = Some(Msg::NoteUnreadable.fill(&[&e]));
             return;
         }
+        // cell-edit.new-note-undo: 作ったことを取り消しの1手にする。
+        self.note_created(id.clone());
         // 移動の操作なので、留めていた行は本来の位置へ(NV-12)。
         self.stay.clear();
         self.refresh();
