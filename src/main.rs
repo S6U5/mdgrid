@@ -784,7 +784,9 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
         None => Markdown::open_vault(bp),
     }
     .map_err(|e| Msg::CannotOpen.fill(&[&e]))?;
+    // BV-2: 印に中身を書いた表(WS-9)の根は印のフォルダで、推した根ではない(starter.builtin-empty-quiet)。
     let guessed_root = match src.roots() {
+        _ if inline.is_some() => None,
         [r] if !r.ancestors().any(|a| a.join(".obsidian").is_dir()) => Some(r.clone()),
         _ => None,
     };

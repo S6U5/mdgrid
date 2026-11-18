@@ -151,6 +151,11 @@
 `req~cell-edit.new-note-form-typed~1` P1
 - 受け入れ: ask = [priority, due](priority が数・due が日付の列)→ priority の欄で `12a` は閉じずに不正を表示し、due の欄はカレンダーつきの日付の入力で開く。
 
+#### 新しいノートの窓で、決まりに `values` のある列(cell-edit.rules-values)の欄は、その列を持つノートが1件も無くても、その値を決まりの順で候補のリストに並べるべき
+`req~cell-edit.new-note-form-rule-values~1` P1
+- なぜ: 見本なしで作った台帳の最初のノートでも、選べる値から選べるようにするため
+- 受け入れ: ノートが1件も無い表で `[rules.priority] values = ["p1", "p2", "p3"]`、ask = [priority] → priority の欄の候補のリストに p1・p2・p3 がこの順で並び、最後に「なし」。決まりの無いテキストの列で、どのノートにも値が無い → リストを出さず1行の入力。
+
 #### 新しいノートの窓は、Ctrl+S(どの欄からでも)と最後の欄の Enter でノートを作るべき
 `req~cell-edit.new-note-form-create~1` P1
 - 受け入れ: 名前の欄で「メモ」と打って Ctrl+S → `メモ.md` が作られる。最後の欄で Enter でも作られる。

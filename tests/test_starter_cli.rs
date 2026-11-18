@@ -687,3 +687,29 @@ fn test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean
         }
     }
 }
+
+#[test]
+fn test_st_2_builtin_ledgers_without_samples_open_quietly() {
+    // [stest -> req~starter.builtin-empty-quiet~1] 4つの組み込みから見本なしで作る(ja と en。上に .obsidian/ は無い): --print の標準エラーが空で、終了コード 0。
+    let t = home("st-builtin-empty");
+    let h = t.path();
+    for lang in ["ja_JP.UTF-8", "en_US.UTF-8"] {
+        for name in BUILTIN {
+            let tag = format!("{name}-{}", &lang[..2]);
+            let root = h.join(&tag);
+            ok(
+                run_lang(
+                    h,
+                    h,
+                    lang,
+                    &[],
+                    &[&tag, "--init-workspace", "--starter", name],
+                ),
+                &format!("{tag}: create"),
+            );
+            let o = run_lang(h, &root, lang, &[], &["--print"]);
+            assert_eq!(o.status.code(), Some(0), "{tag}: {}", err(&o));
+            assert_eq!(err(&o), "", "{tag}: 標準エラーに知らせがある");
+        }
+    }
+}

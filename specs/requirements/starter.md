@@ -51,6 +51,11 @@
 `req~starter.builtin-no-warning~1` P1
 - 受け入れ: 4つの組み込みから見本つきで作る → `--print-config --resolved` の標準エラーに `mdgrid:` の行が無い。`LANG=en_US.UTF-8` でも同じ。
 
+#### 組み込みのスターターから見本なしで作った台帳は、どの言語の変種でも、行が無いことの知らせ・警告を出さずに開けるべき(Obsidian を使わないフォルダで `.obsidian/` の話をしない)
+`req~starter.builtin-empty-quiet~1` P1
+- なぜ: 印のある台帳の根は印のフォルダで、`.obsidian/` から推した根ではないため
+- 受け入れ: 4つの組み込みから見本なしで作る(上のどこにも `.obsidian/` が無い)→ `--print` の標準エラーが空で、終了コード 0。`LANG=en_US.UTF-8` でも同じ。印の無い場所の `.base` が 0 行のときは、今までどおり探した根を標準エラーに出す(base-view.root-folder-nearest)。
+
 #### 組み込みのスターターは、どの言語の変種でも、印の `open` が印の表を指すべき
 `req~starter.builtin-open~1` P1
 - 受け入れ: 4つの組み込みから見本つきで作る → `--print` が見本の行を出す。`LANG=en_US.UTF-8` でも同じ。

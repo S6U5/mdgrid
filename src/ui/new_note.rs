@@ -397,10 +397,14 @@ impl App {
             None => raw.clone(),
         };
         let cal = Cal::open(entry, &raw, &text, self.today);
-        // CE-3: テキストの列は、セルの編集と同じ候補のリスト(list.rs)。今の値は前もって入れる値か前の答え。
-        // 候補が0件(どのノートにもまだ無い列)なら「なし」だけのリストにせず1行の入力。
-        let list = match kind {
-            Kind::Text => self
+        // CE-3・CE-36: セルの編集と同じ候補のリスト(list.rs)。今の値は前もって入れる値か前の答え。
+        // 決まりの選べる値(`[rules.<列>] values`)があればその値(どのノートにもまだ無い列でも並ぶ)。
+        // 無ければテキストの列はノートにある値で、それも0件なら「なし」だけのリストにせず1行の入力。
+        let list = match (self.rule_candidates(&col, kind), kind) {
+            (Some(c), Kind::Text | Kind::Number | Kind::Date | Kind::DateTime) => {
+                Some(List::new(&c, preset.as_ref(), true))
+            }
+            (_, Kind::Text) => self
                 .src
                 .candidates(&col, self.candidates)
                 .filter(|c| {
