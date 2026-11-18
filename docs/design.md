@@ -604,6 +604,7 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 要求は変更の記録 specs/_history/decidespec/_changes/2026-10-14-type-check.md。
 
 - **判定は1か所**: lib の `src/rules.rs` の `problem(kind, rule, value)` が、型(`types::fits`)→ 必須 → 選べる値の順で最初の理由を返す。画面(`App::problem`。ためた値を重ねた値)と `--check`(`rules::check`。ノートの全部のキーと決まりのある列)が同じ関数を使う。却下: 画面の cell.rs の判定を CLI に写す(食い違いが生まれる)。
+- **一緒に入れる値(`then`)**: `[rules.<列>.then]`(`Rule.then: 値 → 列 → 入れる文字`)。画面(`ui/then.rs` の `App::follow`)が変数を埋めて列の型で読み、`Changes::set_each_then` が元の直しと同じ1手(`Step`)に入れる。だから取り消し・やり直し・差分は今までの道のまま。前のためた値で入れた列は、別の値に直したときに外す。却下: 保存のときに入れる(差分に出る前に書かれ、取り消せない)。
 - **決まりの置き場**: 表のプロファイルの `[rules.<列>]`(`Profile.rules: 列 → RuleLayer`)。`[types]` と同じく範囲を重ね、列ごと・項目ごと(`required`・`values`)に狭い範囲が勝つ(`Resolved.rules`)。決まりは書き戻しを止めない(型の CV-2 と違い、合わない値でも書き戻しの安全に関わらないため)。
 - **数は組み立てのときに**: 下の帯の問題の数は、組み立て直し(`rebuild`)の終わりに今の行と見えている列で数えて `Built.problems` に持つ。描くたびに数えない(1万行で重い)。問題のある行だけの絞り込みは `overlay` の `passes` に重ねる(簡易の絞り込み・同じ値と同じ段)。そのため列の型(`kinds`)は `overlay` の前に決める。
 - **CLI の列の型**: 画面と同じく `[types]` → `Source::kind`(ルートフォルダの型の設定か、読んだ全部のノートからの推定)。行の番号は `frontmatter::key_lines` のキーの文字の位置から。

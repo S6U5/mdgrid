@@ -21,6 +21,10 @@ tags = "list"
 [rules.status]
 values = ["todo", "doing", "waiting", "done"]
 
+# 状態を done にすると、完了日に今日が入る。
+[rules.status.then]
+done = { done_at = "{date}" }
+
 [rules.priority]
 values = ["p1", "p2", "p3"]
 

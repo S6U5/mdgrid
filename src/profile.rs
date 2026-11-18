@@ -664,6 +664,19 @@ impl Profile {
                         let vs = vs.iter().map(|v| toml::Value::String(v.clone())).collect();
                         t.insert("values".into(), toml::Value::Array(vs));
                     }
+                    if let Some(then) = &r.then {
+                        let then = then
+                            .iter()
+                            .map(|(value, sets)| {
+                                let sets = sets
+                                    .iter()
+                                    .map(|(c, v)| (c.clone(), toml::Value::String(v.clone())))
+                                    .collect();
+                                (value.clone(), toml::Value::Table(sets))
+                            })
+                            .collect();
+                        t.insert("then".into(), toml::Value::Table(then));
+                    }
                     (c.clone(), toml::Value::Table(t))
                 })
                 .collect();
@@ -742,11 +755,45 @@ fn read_rules(
                         None => warn(w, file, &ip, not(Msg::WantStringList)),
                     }
                 }
+                "then" => layer.then = read_then(v, file, &ip, w),
                 _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
             }
         }
         out.insert(col.clone(), layer);
     }
+}
+
+/// `[rules.<列>.then]` を読む: `値 = { 列 = "入れる文字" }`。表でない `then` は警告して使わない。表でない値の項目・
+/// 計算の列・文字列でない入れる値は、警告してその項目だけ飛ばす。
+fn read_then(v: &toml::Value, file: &str, path: &str, w: &mut Vec<String>) -> Option<rules::Then> {
+    let Some(t) = v.as_table() else {
+        warn(w, file, path, not(Msg::WantRuleTable));
+        return None;
+    };
+    let mut then = rules::Then::new();
+    for (value, sets) in t {
+        let vp = join(path, value);
+        let Some(sets) = sets.as_table() else {
+            warn(w, file, &vp, not(Msg::WantRuleTable));
+            continue;
+        };
+        let mut out = BTreeMap::new();
+        for (col, text) in sets {
+            let cp = join(&vp, col);
+            if rules::computed(col) {
+                warn(w, file, &cp, Msg::RsnRuleComputed.text().to_string());
+                continue;
+            }
+            match text.as_str() {
+                Some(s) => {
+                    out.insert(col.clone(), s.to_string());
+                }
+                None => warn(w, file, &cp, not(Msg::WantString)),
+            }
+        }
+        then.insert(value.clone(), out);
+    }
+    Some(then)
 }
 
 /// `[display]` を読む(SR-21)。`tabs` の真偽は旧い書き方(CLI-20)として受ける。
@@ -1088,6 +1135,9 @@ impl Resolved {
             if l.values.is_some() {
                 self.mark(&format!("rules.{col}.values"), o);
             }
+            if l.then.is_some() {
+                self.mark(&format!("rules.{col}.then"), o);
+            }
         }
         for name in p.display.apply_to(&mut self.display) {
             self.mark(&format!("display.{name}"), o);
@@ -1157,6 +1207,7 @@ impl Resolved {
                 let l = RuleLayer {
                     required: Some(r.required),
                     values: r.values.clone(),
+                    then: (!r.then.is_empty()).then(|| r.then.clone()),
                 };
                 (c.clone(), l)
             })

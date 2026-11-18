@@ -55,6 +55,7 @@ pub mod starter;
 pub mod startup;
 pub mod termbg;
 pub mod theme;
+mod then;
 pub mod type_menu;
 pub mod view;
 pub mod view_tabs;
@@ -377,6 +378,8 @@ mod test_tab_wrap;
 mod test_tab_wrap_below;
 #[cfg(test)]
 mod test_theme_meaning;
+#[cfg(test)]
+mod test_then;
 #[cfg(test)]
 mod test_time_picker;
 #[cfg(test)]

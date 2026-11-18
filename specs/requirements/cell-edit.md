@@ -790,6 +790,38 @@
 `req~cell-edit.rules-bad-items~1` P1
 - 受け入れ: `required = "yes"` → 警告して required を使わない。`[rules.status] foo = 1` → 警告。
 
+### ある値に直したとき、一緒に入れる値
+
+#### 設定の `[rules.<列>.then]` に `値 = { 列 = "入れる文字" }` を書いてよく、その列のセルをその値に直したら、同じ行のその列にも値をためるべき
+`req~cell-edit.then-set~1` P1
+- なぜ: 完了にした日のように、ある値にしたとき決まって入れる値を、手で入れずに済ませるため
+- 受け入れ: 今日が 2026-10-06、`[rules.status.then]` に `done = { done_at = "{date}" }`(入れる文字には cell-edit.template-vars の変数を書ける)で、`status: todo` の行の status を `done` に直す → その行に `status: done` と `done_at: 2026-10-06` のためる変更。別の行の status を `doing` に直す → その行のためる変更は `status: doing` だけ。
+
+#### 一緒にためた値は、元の直しと同じ1手として取り消せるべき
+`req~cell-edit.then-undo~1` P1
+- 受け入れ: status を `done` に直して `done_at` もたまったあと、取り消しを1回 → status と done_at のためる変更がどちらも無い。
+
+#### ためた値を別の値に直すか元の値に戻したら、前の値で一緒にためた列の変更を外すべき
+`req~cell-edit.then-unset~1` P1
+- なぜ: 間違えて完了にした行を直したときに、完了日だけが残らないようにするため
+- 受け入れ: status を `done` に直し、続けて `doing` に直す → ためる変更は `status: doing` だけ。status を `done` に直し、続けて元の `todo` に戻す → その行のためる変更は無い。
+
+#### 一括の編集でも、直した行のそれぞれに一緒に入れる値をためるべき
+`req~cell-edit.then-bulk~1` P1
+- 受け入れ: `status: todo` の2行に印を付けて status をまとめて `done` に直す → 2行とも `status: done` と `done_at: 2026-10-06` のためる変更。
+
+#### カンバンで札をレーンへ動かしたときも、そのレーンの値で一緒に入れる値をためるべき
+`req~cell-edit.then-kanban~1` P1
+- 受け入れ: カンバンで `todo` の札を `done` のレーンまで動かす → その行に `done_at: 2026-10-06` のためる変更。取り消しを1回 → 札は1つ前のレーンに戻り、done_at のためる変更は無い。
+
+#### `then` の入れる文字が空のときは、その列を空にする変更をためるべき
+`req~cell-edit.then-clear~1` P1
+- 受け入れ: `[rules.status.then]` に `todo = { done_at = "" }` で、`status: done`・`done_at: 2026-10-01` の行の status を `todo` に直す → `status: todo` と、done_at を空にするためる変更。
+
+#### 表でない `then` は、cli.config-file の形で警告して使わないべき
+`req~cell-edit.then-invalid~1` P1
+- 受け入れ: `[rules.status]` に `then = "done"` → `config.toml: rules.status.then:` で始まる警告1行で、status を `done` に直してもためる変更は `status: done` だけ。
+
 ### 次の段(まだ作っていない。P2)
 
 #### 選んだ範囲の値を、ためる変更として正規表現で置き換えてよい
@@ -797,6 +829,12 @@
 - 受け入れ: `v1` → `v2` の置き換えで、選んだ行の値だけが変わる(読んで判定)。
 
 ## 未確定事項
+
+### 一緒に入れる値(`then`)の置き場と、どこまで効かせるか
+`tbd~then-scope`
+- 決める人: 人
+- 仮: 置き場は `[rules.<列>.then]`。効くのは画面の直し(セル・一括・チェックボックス・空にする・カンバン)で、リストの列の直しと `--apply` には効かない。入れる先に値があっても上書きする。入れる文字の `{name}`・`{folder}` は空になる。
+- 根拠: 2026-11-18 の話: あると便利な機能を探して入れていく。完了にしたら完了日を入れるのを最初に入れた。
 
 ### 新しいノートの名前の空白を、決めた文字に置き換える設定を持つか
 `tbd~new-note-name-space-fill`

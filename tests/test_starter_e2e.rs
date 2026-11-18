@@ -219,3 +219,33 @@ fn test_st_2_tasks_starter_prefixes_new_notes_and_hides_the_prefix_e2e() {
         assert_eq!(tui.wait_exit(), 0, "{lang}");
     }
 }
+
+#[test]
+fn test_st_2_tasks_starter_fills_the_done_date_e2e() {
+    // [stest -> req~starter.tasks-done-at~1] tasks から作った台帳で状態を done にして保存すると、ノートの done_at に今日が書かれる。
+    let home = TempDir::new("starter-done-at");
+    let h = home.path();
+    std::fs::create_dir_all(h.join("state")).unwrap();
+    make_in(h, "tasks", "ja_JP.UTF-8");
+    // 見本のノートは除き、札を1枚だけにする。
+    std::fs::remove_dir_all(h.join("tasks/Tasks")).unwrap();
+    std::fs::create_dir_all(h.join("tasks/Tasks")).unwrap();
+    let note = h.join("tasks/Tasks/請求書を送る.md");
+    std::fs::write(&note, "---\nstatus: todo\ndone_at:\n---\n").unwrap();
+    let mut tui = Tui::spawn(&["tasks"], h, &[("MDGRID_TODAY", "2026-10-06")]);
+    tui.wait_until("表が出る", |s| s.contains("請求書を送る"));
+    // カンバンで todo の札を、doing・waiting を通って done のレーンへ動かす。
+    tui.send("B");
+    tui.wait_until("カンバン", |s| s.contains("done"));
+    for lane in ["doing", "waiting", "done"] {
+        tui.send("L");
+        tui.wait_until("札が動く", |s| s.contains(&format!("→ {lane}")));
+    }
+    tui.wait_until("未保存", |s| s.contains("未保存 2"));
+    tui.send("\x13");
+    tui.wait_for("+done_at: 2026-10-06");
+    tui.send("\r");
+    let body = pty::wait_file(&note, &tui, |s| s.contains("done_at: 2026"));
+    assert_eq!(body, "---\nstatus: done\ndone_at: 2026-10-06\n---\n");
+    tui.stop();
+}

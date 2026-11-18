@@ -16,13 +16,20 @@ pub struct Rule {
     pub required: bool,
     /// 選べる値。値の文字(リストなら各要素の文字)がこのどれかでなければ違反。None は決まりなし。
     pub values: Option<Vec<String>>,
+    /// `then`: この列をある値に直したとき、同じ行に一緒に入れる値(値 → 列 → 入れる文字。雛形の変数を書ける)。
+    pub then: Then,
 }
+
+/// `[rules.<列>.then]` の中身: 値 → (列 → 入れる文字)。
+pub type Then = BTreeMap<String, BTreeMap<String, String>>;
 
 /// 1つの範囲に書いた決まり(書いた項目だけ。狭い範囲が項目ごとに勝つ。SR-44)。
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RuleLayer {
     pub required: Option<bool>,
     pub values: Option<Vec<String>>,
+    /// 書けば、広い範囲の `then` に丸ごと代わる。
+    pub then: Option<Then>,
 }
 
 impl RuleLayer {
@@ -33,6 +40,9 @@ impl RuleLayer {
         }
         if let Some(v) = &self.values {
             r.values = Some(v.clone());
+        }
+        if let Some(t) = &self.then {
+            r.then = t.clone();
         }
     }
 }

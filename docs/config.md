@@ -704,16 +704,21 @@ estimate = "number"
 
 ### `rules`
 
-- Type: `table of tables (column = { required = boolean, values = [string, …] })`
+- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } } })`
 - Default: `{}`
 - Scope: global, workspace, table, view
 
-Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Rules never change notes and never stop you writing a value. A column with `values` offers them in the cell input. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
+Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Checking a rule never changes a note and never stops you writing a value. A column with `values` offers them in the cell input. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
+
+`then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today.
 
 ```toml
 [rules.status]
 required = true
 values = ["todo", "doing", "done"]
+
+[rules.status.then]
+done = { done_at = "{date}" }
 ```
 
 ## `[keys]` — key bindings
