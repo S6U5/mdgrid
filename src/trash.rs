@@ -1,5 +1,5 @@
 //! ごみ箱(cell-edit.delete-note-*・cell-edit.trash-restore-*)。ノートは消さずに、根のフォルダの `.trash/` の下へ動かす
-//! (`.trash/` は Obsidian のごみ箱と同じ置き場で、mdgrid は中を探さない)。置き場は tbd~cell-edit.delete-note-trash-place の仮。
+//! (`.trash/` は Obsidian のごみ箱と同じ置き場で、mdgrid は中を探さない)。置き場は cell-edit.delete-note-trash-place。
 //!
 //! 形: `<根>/.trash/mdgrid/<消した時刻(UNIX 秒)>-<通し番号>/<根からの相対パス>`。1回の削除に1つのフォルダを
 //! `create_dir`(既にあれば失敗)で作るので、前からごみ箱にあるファイルを置き換えることが無い。元の場所と

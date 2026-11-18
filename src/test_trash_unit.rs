@@ -34,7 +34,7 @@ impl Drop for Tmp {
 
 #[test]
 fn test_put_moves_the_note_into_the_trash_with_the_same_bytes() {
-    // [utest -> req~cell-edit.delete-note-menu~1] 消したノートは元の場所に無く、ごみ箱に同じバイトである。
+    // [utest -> req~cell-edit.delete-note-menu~1, req~cell-edit.delete-note-trash-place~1] 消したノートは元の場所に無く、根のフォルダの `.trash/` の下に同じバイトである。
     let t = Tmp::new("put");
     let p = t.write("プロジェクト/メモ.md", "---\nstatus: todo\n---\n本文\n");
     let item = put(&t.0, &p, 1_800_000_000).unwrap();

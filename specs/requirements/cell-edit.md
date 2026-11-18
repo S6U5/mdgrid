@@ -12,6 +12,8 @@
 - 旧い CE-13(新しい名前なし)は 2026-10-02 に削除([2026-10-02](../_history/decidespec/_decisions/2026-10-02-list-select.md))。移行先: cell-edit.list-items・cell-edit.list-layout(版1に入れた)。
 - 旧い CE-14(新しい名前なし)は 2026-10-02 に削除([2026-10-02](../_history/decidespec/_decisions/2026-10-02-new-note.md))。移行先: cell-edit.new-note・cell-edit.new-note-form(版1に入れた)。
 - 採らない: 式(`formula.*`)の編集と、表計算のようなセル参照・数式。
+- 採らない: 取り消しとやり直しの手を一覧で見て、選んだ所まで戻す・進む「履歴」の画面(2026-11-18。`u`・Ctrl+R と「ごみ箱から戻す」(cell-edit.trash-restore-list)でまかなう)。
+- 採らない: ごみ箱のノートを mdgrid から完全に消す操作と、古いごみの自動の片づけ(2026-11-18。mdgrid はごみ箱の中を消さず、片づけは人がファイルの道具でする)。
 - キーの名前の変更と削除は cell-edit.rename-delete-key(2026-10-06 に write-back.byte-range・write-back.frontmatter-only を変えて入れた)。列の追加は cell-edit.add-column。
 
 ## 前提(旧い仕様で AI が置いた仮定)
@@ -697,6 +699,16 @@
 `req~cell-edit.trash-restore-readonly~1` P1
 - 受け入れ: `--readonly` で起動 → パレットに「ごみ箱から戻す」が出ない。
 
+#### ノートの削除のごみ箱は、根のフォルダの `.trash/` の下に置くべき(OS のごみ箱は使わない)
+`req~cell-edit.delete-note-trash-place~1` P1
+- なぜ: 「ごみ箱から戻す」の一覧と元の場所への戻しを、どの OS でも同じにできて、Obsidian のごみ箱と同じ置き場で、mdgrid が中を探さない(base-view の隠しフォルダ)ため
+- 受け入れ: `プロジェクト/メモ.md` を消す → 根のフォルダの `.trash/` の下に `メモ.md` が同じバイトであり、表に「メモ」の行が出ない。
+
+#### ノートの削除は、消すノートを指すリンクを書き換えず、確かめの問いに、リンクで指しているノートの数を添えるべき
+`req~cell-edit.delete-note-links~1` P1
+- なぜ: リンクが切れることを消す前に知らせ、消したノートを戻せばリンクもそのまま生きるようにするため
+- 受け入れ: `project: "[[メモ]]"` を持つノートが2つあるとき「メモ」の行で「ノートを消す」→ 確かめに 2 個と出て、y のあとも2つのノートは同じバイトで、ためた変更は0件。指すノートが無いとき → 確かめに数を出さない。
+
 #### 表の列の型を、設定の `[types]`(列の名前 = `"text"`・`"number"`・`"checkbox"`・`"date"`・`"datetime"`・`"list"`・`"auto"`)で決められるべきで、決めた型はルートフォルダの型の設定と推定(cell-edit.column-type)より優先するべき(範囲ごとに重ね、狭い範囲が勝つ。screen.profile-scopes)
 `req~cell-edit.type-config-types~1` P1
 - 受け入れ: `[types] due = "date"` → due の値が文字でも日付の入力になり、日付でない値に `!`。
@@ -768,25 +780,3 @@
 #### 選んだ範囲の値を、ためる変更として正規表現で置き換えてよい
 `req~cell-edit.regex-replace~1` P2
 - 受け入れ: `v1` → `v2` の置き換えで、選んだ行の値だけが変わる(読んで判定)。
-
-## 未確定事項
-
-### ノートの削除のごみ箱は、保管庫の `.trash/`(Obsidian と同じ。mdgrid は探さないフォルダ)か、OS のごみ箱か
-`tbd~cell-edit.delete-note-trash-place`
-- 決める人: 人
-- 仮: 保管庫の `.trash/`(「ごみ箱から戻す」の一覧と元の場所への戻しを、どの OS でも同じに作れるため)
-
-### 消すノートを指すリンクが、ほかのノートにあるときにどうするか
-`tbd~cell-edit.delete-note-links`
-- 決める人: 人
-- 仮: リンクは書き換えず、確かめの問いに、指しているノートの数を添える
-
-### 取り消しとやり直しの手を一覧で見て、選んだ所まで戻す・進む「履歴」の画面を持つか
-`tbd~cell-edit.history-screen`
-- 決める人: 人
-- 仮: 持たない(`u`・Ctrl+R と「ごみ箱から戻す」で足りるかを使って確かめてから決める)
-
-### ごみ箱のノートを、mdgrid から完全に消す・古いものを自動で片づける操作を持つか
-`tbd~cell-edit.trash-empty`
-- 決める人: 人
-- 仮: 持たない(mdgrid はごみ箱の中を消さない。片づけは人がファイルの道具でする)

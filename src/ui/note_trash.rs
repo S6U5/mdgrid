@@ -99,7 +99,7 @@ impl App {
         self.open_ask(Ask::DeleteNote { row, links });
     }
 
-    /// tbd~cell-edit.delete-note-links(仮: リンクは書き換えず、指しているノートの数を確かめの問いに添える)。
+    /// cell-edit.delete-note-links: リンクは書き換えず、指しているノートの数を確かめの問いに添える。
     /// 開いている表のノートのうち、フロントマターの値に `[[name]]`・`[[name|…]]`・`[[name#…]]` を持つものの数。
     fn links_to(&self, name: &str, except: &RowId) -> usize {
         let hit = |s: &str| super::note_rename::rewrite_links(s, name, "\u{0}").is_some();

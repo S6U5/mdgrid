@@ -433,3 +433,49 @@ fn test_restore_is_hidden_when_readonly() {
     assert_eq!(a.mode, Mode::Table);
     assert!(!t.notes().join("メモ.md").exists());
 }
+
+#[test]
+fn test_delete_note_shows_how_many_notes_link_to_it_and_keeps_the_links() {
+    // [utest -> req~cell-edit.delete-note-links~1] `[[メモ]]` を持つノートが2つあるとき、確かめに 2 個と出て、y のあとも2つのノートは同じバイトで、ためた変更は0件。
+    let a1 = "---\nproject: \"[[メモ]]\"\n---\n";
+    let a2 = "---\nrelated:\n  - \"[[メモ|覚え書き]]\"\n---\n";
+    let (t, mut a) = make(
+        "dn-links",
+        &[
+            ("a.md", a1),
+            ("b.md", a2),
+            ("メモ.md", MEMO),
+            ("メモ帳.md", "---\nx: \"[[メモ帳]]\"\n---\n"),
+        ],
+    );
+    select(&mut a, "メモ.md");
+    a.apply(Action::DeleteNote);
+    let shown = screen(&a);
+    assert!(
+        shown.contains("メモ.md(2 個のノートがリンクで指している)"),
+        "{shown}"
+    );
+    a.palette.as_mut().unwrap().query = "y".into();
+    press(&mut a, KeyCode::Enter);
+    assert!(!t.notes().join("メモ.md").exists());
+    assert_eq!(
+        std::fs::read(t.notes().join("a.md")).unwrap(),
+        a1.as_bytes()
+    );
+    assert_eq!(
+        std::fs::read(t.notes().join("b.md")).unwrap(),
+        a2.as_bytes()
+    );
+    assert_eq!(a.changes.count(), 0);
+}
+
+#[test]
+fn test_delete_note_shows_no_count_when_nothing_links_to_it() {
+    // [utest -> req~cell-edit.delete-note-links~1] 指すノートが無いとき、確かめに数を出さない。
+    let (_t, mut a) = notes("dn-nolinks");
+    select(&mut a, "メモ");
+    a.apply(Action::DeleteNote);
+    let shown = screen(&a);
+    assert!(shown.contains("消すノート: メモ.md"), "{shown}");
+    assert!(!shown.contains("リンクで指している"), "{shown}");
+}
