@@ -187,7 +187,7 @@ fn test_nv_30_no_problems() {
 
 #[test]
 fn test_nv_30_problems_only_toggle() {
-    // [utest -> req~navigation.problem-jump-filter-off~1] パレットの problems_only → 問題のある行(b・c・d)だけ、ヘッダーに「問題のある行だけ」。
+    // [utest -> req~navigation.problem-jump-filter-off~1, req~navigation.problem-jump-filter-shown~2] パレットの problems_only → 問題のある行(b・c・d)だけ、ヘッダーに「問題のある行だけ」。
     // もう一度 → 元の5行に戻る。
     let (_t, mut a) = boot("nv30_only", NOTES, RULES, false);
     assert_eq!(a.rows.len(), 5);
@@ -204,7 +204,7 @@ fn test_nv_30_problems_only_toggle() {
 
 #[test]
 fn test_nv_30_problems_only_esc_clears() {
-    // [utest -> req~navigation.problem-jump-filter-shown~1] 絞っている間に Esc → 外れて元の行に戻る。
+    // [utest -> req~navigation.problem-jump-filter-shown~2] 絞っている間に Esc → 外れて元の行に戻る。
     let (_t, mut a) = boot("nv30_esc", NOTES, RULES, false);
     palette(&mut a, "problems_only");
     assert_eq!(a.rows.len(), 3);
