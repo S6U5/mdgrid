@@ -317,9 +317,7 @@ impl App {
 
     /// 列が表にあるか(ノートのキーの列か、計算の列・ファイルの列)。
     fn chart_col_ok(&self, col: &str) -> bool {
-        col.starts_with("formula.")
-            || col.starts_with("file.")
-            || self.src.columns().iter().any(|x| x == col)
+        col.starts_with("formula.") || col.starts_with("file.") || self.has_column(col)
     }
 
     /// CH-1: 使える印のグラフ(列が出そろうまでは全部、出そろったら列が表にあるものだけ)。

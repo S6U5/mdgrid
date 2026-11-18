@@ -4,8 +4,9 @@ start: {date+20}
 due: {date+30}
 priority: p2
 tags: [admin]
+url: https://example.com/domains
 created: {date}
 ---
 # Renew the domain
 
-The registrar sends the reminder two weeks before.
+Renew it on the registrar's site. The reminder comes two weeks before.

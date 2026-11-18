@@ -225,6 +225,8 @@ mod test_column_types_more;
 #[cfg(test)]
 mod test_datetime_offsets;
 #[cfg(test)]
+mod test_declared_columns;
+#[cfg(test)]
 mod test_default_view;
 #[cfg(test)]
 mod test_detail;

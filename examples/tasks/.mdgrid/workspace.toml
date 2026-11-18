@@ -23,10 +23,10 @@ values = ["todo", "doing", "waiting", "done"]
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# New note (a): asks for the due date and the priority, fills in the rest, and starts the body from the template.
+# New note (a): asks for the due date, the priority and a URL, fills in the rest, and starts the body from the template.
 [new_note]
 folder = "Tasks"
-ask = ["due", "priority"]
+ask = ["due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
 
@@ -57,6 +57,7 @@ filters = { and = ['file.inFolder("Tasks")'] }
 "note.due" = { displayName = "Due" }
 "note.priority" = { displayName = "Priority" }
 "note.tags" = { displayName = "Tags" }
+"note.url" = { displayName = "URL" }
 "note.created" = { displayName = "Created" }
 "note.done_at" = { displayName = "Done" }
 
@@ -65,7 +66,7 @@ filters = { and = ['file.inFolder("Tasks")'] }
 type = "table"
 name = "Open"
 where = { status = ["todo", "doing", "waiting"] }
-order = ["status", "due", "priority", "tags"]
+order = ["status", "due", "priority", "tags", "url"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
 
@@ -73,19 +74,19 @@ sort = [{ property = "priority", direction = "ASC" }, { property = "due", direct
 type = "table"
 name = "Doing"
 where = { status = ["doing"] }
-order = ["due", "priority", "tags"]
+order = ["due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "Waiting"
 where = { status = ["waiting"] }
-order = ["due", "priority", "tags"]
+order = ["due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "Done"
 where = { status = ["done"] }
-order = ["done_at", "priority", "tags"]
+order = ["done_at", "priority", "tags", "url"]
 sort = [{ property = "done_at", direction = "DESC" }]

@@ -198,7 +198,8 @@ fn test_kb_5_setting_column_removed_outside_closes_kanban() {
     // [utest -> req~kanban.reload~1, req~kanban.config-empty-table~1] #19: 読み終えてからカンバンを開き、外で全部のノートの status を state に変えて poll → 古い設定の
     // まま組み直さず、カンバンを閉じて表に戻り、理由1行に無い列の名前 status が出る。そのあと札を動かすキーを
     // 押しても、表に無い列に値をためない。
-    let (t, mut a) = boot("kbfx19gone", NOTES, RULES, KANBAN);
+    // 設定に status を書いていない台帳で確かめる(`[rules.status]` に書いた列は、ノートに無くても表にあると数える。kanban.config-declared-column)。
+    let (t, mut a) = boot("kbfx19gone", NOTES, "", KANBAN);
     open(&mut a);
     for (n, body) in NOTES {
         edit_outside(&t, n, &body.replace("status:", "state:"));

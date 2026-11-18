@@ -18,9 +18,6 @@ use ratatui::crossterm::event::KeyCode;
 use ratatui::Terminal;
 use std::path::PathBuf;
 
-/// 状態の列の決まり(CE-36)。レーンの順はこの順。
-const RULES: &str = "[rules.status]\nvalues = [\"todo\", \"doing\", \"waiting\", \"done\"]\n";
-
 /// 印の [[table]] のカンバンの設定。
 const KANBAN: &str = "kanban = { column = \"status\" }";
 
@@ -217,7 +214,8 @@ fn first_key_closes_kanban(a: &mut App) {
 fn test_kb_5_help_stays_open_when_setting_column_is_removed_outside() {
     // [utest -> req~kanban.reload~1] #21: カンバンでヘルプ(`?`)を開いたまま、外で status を state に変えて poll → ヘルプは開いたまま。
     // ヘルプを閉じる `q` で終わらず(表の q として効かない)、カンバンに戻った最初のキーで、カンバンを閉じて理由を出す。
-    let (t, mut a) = boot("kbfx21help", NOTES, RULES, KANBAN);
+    // 設定に status を書いていない台帳で確かめる(`[rules.status]` に書いた列は、ノートに無くても表にあると数える。kanban.config-declared-column)。
+    let (t, mut a) = boot("kbfx21help", NOTES, "", KANBAN);
     open(&mut a);
     ch(&mut a, '?');
     assert_eq!(a.mode, Mode::Help, "前提: ヘルプが開く: {:?}", a.message);
@@ -240,7 +238,8 @@ fn test_kb_5_palette_stays_open_when_setting_column_is_removed_outside() {
     // [utest -> req~kanban.reload~1] #21: カンバンでパレット(`:`)を開いたまま、外で status を state に変えて poll → パレットは開いたまま。
     // 打った `e` はパレットの文字で、表のキー(エディタで開く)として効かない。Esc でパレットを閉じてカンバンに
     // 戻った最初のキーで、カンバンを閉じて理由を出す。
-    let (t, mut a) = boot("kbfx21pal", NOTES, RULES, KANBAN);
+    // 設定に status を書いていない台帳で確かめる(`[rules.status]` に書いた列は、ノートに無くても表にあると数える。kanban.config-declared-column)。
+    let (t, mut a) = boot("kbfx21pal", NOTES, "", KANBAN);
     open(&mut a);
     ch(&mut a, ':');
     assert_eq!(

@@ -202,7 +202,13 @@ fn palette(a: &mut App, query: &str) {
 
 /// 見本なしの空の台帳を読み終え、外で設定の列の無いノート(first.md)を書いて poll する。
 fn empty_then_first_note(tag: &str, line: &str) -> (Tmp, App) {
-    let (t, mut a) = boot(tag, &[], RULES, line);
+    empty_then_first_note_top(tag, RULES, line)
+}
+
+/// `empty_then_first_note` を、印の先頭 `top` を決めて作る。設定に status を書かない台帳は `top` を空にする
+/// (`[types]`・`[rules]` に書いた列は、ノートに無くても表にあると数えるため。kanban.config-declared-column)。
+fn empty_then_first_note_top(tag: &str, top: &str, line: &str) -> (Tmp, App) {
+    let (t, mut a) = boot(tag, &[], top, line);
     assert!(a.rows.is_empty(), "前提: 0件");
     t.write("first.md", "---\ntitle: x\n---\n");
     a.poll();
@@ -264,7 +270,7 @@ fn test_tr_2_column_added_after_first_note_opens_tree() {
 fn test_kb_1_b_names_the_missing_column_not_no_setting() {
     // [utest -> req~kanban.config-guess~1, req~kanban.config-guess-none~1, req~kanban.config-empty-table~1] #14: 設定はあって列が無いあいだ(空の台帳に status の無いノートができた)の B の理由は、
     // 「設定が無い」でなく、無い列の名前 status を言う。
-    let (_t, mut a) = empty_then_first_note("kbfx14r", KANBAN);
+    let (_t, mut a) = empty_then_first_note_top("kbfx14r", "", KANBAN);
     let m = reason_for_missing_column(&mut a, 'B');
     assert!(m.contains("status") && !m.contains("設定が無"), "{m}");
 }
@@ -300,7 +306,8 @@ fn test_tr_2_t_names_the_missing_column_not_no_setting() {
 fn test_kb_1_first_new_note_reports_created_and_missing_column() {
     // [utest -> req~kanban.config-empty-table~1] #15: 見本なしの空の台帳で「+ 新規」(`a`)から最初のノートを作る(status を書かない)→ 作ったあとの
     // メッセージに、「作った」の知らせと一緒に、列 status が無い警告(CLI-3 の形)が出る。
-    let (t, mut a) = boot("kbfx15", &[], RULES, KANBAN);
+    // 設定に status を書いていない台帳で確かめる(`[rules.status]` に書いた列は、ノートに無くても表にあると数える。kanban.config-declared-column)。
+    let (t, mut a) = boot("kbfx15", &[], "", KANBAN);
     assert!(a.rows.is_empty(), "前提: 0件");
     ch(&mut a, 'a');
     assert_ne!(a.mode, Mode::Table, "前提: 名前の欄が開く: {:?}", a.message);

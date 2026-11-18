@@ -43,6 +43,11 @@
 `req~gantt.config-missing-column~1` P1
 - 受け入れ: `start = "none"` → 警告1行で、メニューに出ない。
 
+### 設定の `[types]`・`[rules.<列>]` に書いた列は、その列を持つノートが1件も無くても、ガントの設定の列として表にあると数えるべき
+`req~gantt.config-declared-column~1` P1
+- なぜ: スターターから作った台帳で、開始や期限をまだ書いていないノートだけのときに、設定で決めた列が無いと言わないようにするため
+- 受け入れ: `[types] start = "date"`・`due = "date"`、`gantt = { start = "start", end = "due" }` の表に、start も due も持たないノートが1件 → 警告せず、`C` でガントが開く。`[types]` にも `[rules]` にもノートにも無い列 `begin` を `start` に書く → gantt.config-missing-column のとおり警告1行で開かない。
+
 ### 行が1つも無い表(見本なしで作った台帳など)では、ガントの設定の列があるかを決めず、警告しないべき
 `req~gantt.config-empty-table~1` P1
 - なぜ: 表の列はノートのキーから作るので、行が無いと設定の列があるかを決められないため

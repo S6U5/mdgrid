@@ -151,7 +151,7 @@ impl App {
     /// 設定の列が使えないなら理由(表に無い・リストの列)。使えれば None。
     fn kanban_column_ok(&self, col: &str) -> Option<String> {
         let computed = col.starts_with("formula.") || col.starts_with("file.");
-        if !computed && !self.src.columns().iter().any(|x| x == col) {
+        if !computed && !self.has_column(col) {
             return Some(Msg::RsnKanbanNoColumn.fill(&[&col]));
         }
         if self.col_type(col) == Kind::List {

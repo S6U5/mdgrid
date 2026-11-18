@@ -51,6 +51,11 @@
 `req~chart.config-missing-column~1` P1
 - 受け入れ: `x = "none"` → 読み終えて警告1行。行が1つも無い表で `x = "none"` → 列があるかを決めず、警告しない(gantt.config と同じ)。
 
+### 設定の `[types]`・`[rules.<列>]` に書いた列は、その列を持つノートが1件も無くても、`chart` の列として表にあると数えるべき
+`req~chart.config-declared-column~1` P1
+- なぜ: その列をまだ書いていないノートだけのときに、印のグラフが外れないようにするため
+- 受け入れ: `[rules.status] values = ["todo", "doing", "done"]`、`chart = [{ name = "S", x = "status" }]` の表に、status を持たないノートが1件 → 警告しない。`x = "none"`(設定にもノートにも無い)→ chart.config-missing-column のとおり警告1行。
+
 ### `P`(か画面の型のメニューの「グラフ」)で、今のビューの行(絞り込み・並べ替えのあと。tree.screen と同じ)を数えたグラフの画面を開くべき
 `req~chart.open-screen~1` P1
 - 受け入れ: ビューで絞った表で `P` → グラフの画面が開き、ビューで絞った行だけを数える。

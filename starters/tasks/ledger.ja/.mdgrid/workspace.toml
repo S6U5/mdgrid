@@ -23,10 +23,10 @@ values = ["todo", "doing", "waiting", "done"]
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# 新しいノート(a): 期限と優先度を聞き、残りを埋め、本文を雛形から始める。
+# 新しいノート(a): 期限・優先度・URL を聞き、残りを埋め、本文を雛形から始める。
 [new_note]
 folder = "Tasks"
-ask = ["due", "priority"]
+ask = ["due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
 
@@ -56,6 +56,7 @@ filters = { and = ['file.inFolder("Tasks")'] }
 "note.due" = { displayName = "期限" }
 "note.priority" = { displayName = "優先度" }
 "note.tags" = { displayName = "タグ" }
+"note.url" = { displayName = "URL" }
 "note.created" = { displayName = "作成" }
 "note.done_at" = { displayName = "完了日" }
 
@@ -64,7 +65,7 @@ filters = { and = ['file.inFolder("Tasks")'] }
 type = "table"
 name = "未完了"
 where = { status = ["todo", "doing", "waiting"] }
-order = ["status", "due", "priority", "tags"]
+order = ["status", "due", "priority", "tags", "url"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
 
@@ -72,19 +73,19 @@ sort = [{ property = "priority", direction = "ASC" }, { property = "due", direct
 type = "table"
 name = "進行中"
 where = { status = ["doing"] }
-order = ["due", "priority", "tags"]
+order = ["due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "待ち"
 where = { status = ["waiting"] }
-order = ["due", "priority", "tags"]
+order = ["due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "完了"
 where = { status = ["done"] }
-order = ["done_at", "priority", "tags"]
+order = ["done_at", "priority", "tags", "url"]
 sort = [{ property = "done_at", direction = "DESC" }]
