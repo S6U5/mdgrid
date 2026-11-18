@@ -21,6 +21,7 @@ pub mod filters;
 pub mod folder_tree;
 pub mod freq;
 pub mod gantt;
+mod gitflow;
 pub(crate) mod glyphs;
 pub mod grid;
 pub mod help;
@@ -268,6 +269,8 @@ mod test_gantt_axis_more;
 mod test_gantt_axis_sel;
 #[cfg(test)]
 mod test_gantt_more;
+#[cfg(test)]
+mod test_gitflow;
 #[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]

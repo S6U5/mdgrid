@@ -226,6 +226,47 @@ pub const ITEMS: &[Item] = &[
              同じ意味で読み、警告する。",
     },
     Item {
+        path: "git.auto",
+        ty: "\"off\", \"add\", \"commit\" or \"push\"",
+        ty_ja: "\"off\"・\"add\"・\"commit\"・\"push\"",
+        default: Some("\"off\""),
+        example: "[git]\nauto = \"commit\"",
+        scope: Scope::Global,
+        en: "How far mdgrid goes with git after it writes notes in a git repository: \"off\" does nothing,\n\
+             \"add\" stages the notes it wrote, \"commit\" also commits them (only those notes, never other\n\
+             changed or staged files), \"push\" also pushes. Folders that are not git repositories are\n\
+             left alone. A git failure is reported in one line and the save itself stays done.",
+        ja: "git のリポの中のノートを書いたあと、git をどこまで進めるか: \"off\" は何もしない、\"add\" は書いた\
+             ノートをステージする、\"commit\" はさらにコミットする(書いたノートだけ。ほかの変更中のファイルや\
+             ステージ済みのファイルは入れない)、\"push\" はさらに push する。git のリポでないフォルダでは何もしない。\
+             git が失敗したら1行で知らせ、保存そのものは済んだままにする。",
+    },
+    Item {
+        path: "git.when",
+        ty: "\"save\" or \"quit\"",
+        ty_ja: "\"save\"・\"quit\"",
+        default: Some("\"save\""),
+        example: "[git]\nwhen = \"quit\"",
+        scope: Scope::Global,
+        en: "When git.auto runs: \"save\" after every save (one commit per save), \"quit\" once when mdgrid\n\
+             exits (one commit for the session). Notes still waiting at exit are always handled then.",
+        ja: "git.auto をいつ走らせるか: \"save\" は保存のたび(保存1回が1つのコミット)、\"quit\" は終了のときに\
+             1回(その起動の分をまとめて1つのコミット)。終了のときに残っているノートは、どちらでもそこで流す。",
+    },
+    Item {
+        path: "git.message",
+        ty: "\"auto\" or \"ask\"",
+        ty_ja: "\"auto\"・\"ask\"",
+        default: Some("\"auto\""),
+        example: "[git]\nmessage = \"ask\"",
+        scope: Scope::Global,
+        en: "The commit message: \"auto\" writes \"mdgrid: update N notes\" and the paths; \"ask\" opens a\n\
+             one-line field after each save (empty uses the automatic message, Esc leaves the notes for\n\
+             the commit at exit).",
+        ja: "コミットの文: \"auto\" は「mdgrid: N 件のノートを更新」とパスの一覧を書く。\"ask\" は保存のたびに1行の\
+             欄を出す(空なら自動の文。Esc はコミットせず、終了のときのコミットに回す)。",
+    },
+    Item {
         path: "look.theme",
         ty: "string (\"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\" or \"paper\") or table ({ light, dark })",
         ty_ja: "文字列(\"auto\"・\"default\"・\"nord\"・\"solarized-light\"・\"dracula\"・\"gruvbox\"・\"pink-monster\"・\"dozy-pink\"・\"sumi\"・\"slate\"・\"saas\"・\"saas-dark\"・\"paper\")か表({ light, dark })",
@@ -633,6 +674,7 @@ pub fn item(path: &str) -> Option<&'static Item> {
 pub const SECTIONS: &[&str] = &[
     "terminal",
     "workspace",
+    "git",
     "look",
     "display",
     "dates",
@@ -654,6 +696,7 @@ pub const GLOBAL_KEYS: &[&str] = &[
     "poll_ms",
     "terminal",
     "workspace",
+    "git",
     "keys",
     "templates",
 ];

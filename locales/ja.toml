@@ -1379,6 +1379,14 @@ DrawerRegistered = " 登録した表 "
 DrawerEmpty = "並べる表が無い: :workspace_new でワークスペースを作るか、:register_place で表を登録する"
 DrawerNoRoom = "端末が小さく、表の一覧を出せない"
 AskWsName = "ワークスペースの名前: "
+## write-back.git-*: 保存のあとの git。{0} はノートの数、失敗の理由。
+GitAutoMessage = "mdgrid: {0} 件のノートを更新"
+GitAutoMessageOne = "mdgrid: 1 件のノートを更新"
+GitAdded = "git: {0} 件をステージした"
+GitCommitted = "git: {0} 件をコミットした"
+GitPushed = "git: {0} 件をコミットして push した"
+GitFailed = "git が失敗した(保存は済んでいる): {0}"
+AskGitMessage = "コミットの文(空なら自動の文): "
 AskWsPick = "ワークスペース(選ぶか新しく打つ): "
 AskWsRemove = "どのワークスペースから外す: "
 AskWsOpen = "どのワークスペースを開く: "
@@ -1413,6 +1421,9 @@ WsNotInChosen = "{0} はワークスペース {1} に無い(リンクは {1} の
 ## {0} はパス。
 WsMarkerOutside = "印のあるフォルダの外の表は使わない: {0}"
 WantDetect = "\".obsidian\" と \".git\" の並び"
+WantGitAuto = "\"off\"・\"add\"・\"commit\"・\"push\" のどれか"
+WantGitWhen = "\"save\" か \"quit\""
+WantGitMessage = "\"auto\" か \"ask\""
 
 # ---- starter: 台帳のスターター(ST-1〜ST-6) ----
 ## {0} は名前。

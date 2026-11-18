@@ -276,5 +276,65 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 `req~write-back.toml-frontmatter~1` P0
 - 受け入れ: `+++\ntitle = "x"\n+++\n` のノートの列で Enter → 編集できず理由。フロントマターを足す設定でも足さない。
 
+### 保存のあとの git
+
+#### 既定(`[git] auto = "off"`)では、保存しても git を走らせてはならない
+`req~write-back.git-off-default~1` P1
+- なぜ: 頼んでいないコミットや push を、道具が勝手にしないようにするため
+- 受け入れ: 設定の無いまま、git のリポの中のノートを直して保存 → コミットは増えず、インデックスも前と同じで、メッセージに git の知らせが無い。
+
+#### `[git] auto = "add"` のときは、保存で書いたノートだけをステージするべき
+`req~write-back.git-add~1` P1
+- 受け入れ: a.md を直して保存、other.txt は外で変更中 → ステージされるのは a.md だけで、other.txt は変更中のまま、コミットは増えない。
+
+#### `[git] auto = "commit"` のときは、書いたノートだけを1つのコミットにし、ほかの変更中のファイルと先にステージしてあったファイルを入れないべき
+`req~write-back.git-commit~1` P1
+- なぜ: 作業の途中のほかのファイルを、mdgrid の保存に巻き込まないようにするため
+- 受け入れ: a.md を直して保存、other.txt は変更中、b.md は先にステージ済み → コミットの中身は a.md だけで、other.txt は変更中のまま、b.md はステージ済みのまま。書いたノートが HEAD と同じ中身 → コミットを作らない。
+
+#### `[git] auto = "push"` のときは、コミットのあとに push するべき
+`req~write-back.git-push~1` P1
+- 受け入れ: push 先のあるリポで a.md を直して保存 → リモートのブランチが手元の HEAD と同じになる。
+
+#### `[git] when = "save"`(既定)は保存と画面からのノートの作成のたびに、`"quit"` は終了のときに1回、git に渡すべきで、終了のときに残っているノートはどちらでも渡すべき
+`req~write-back.git-when~1` P1
+- 受け入れ: `when = "save"` で保存を2回 → コミットが2つ。画面から新しいノート c を作る → c.md だけのコミット。`when = "quit"` で a.md と b.md を別々に保存 → そのあいだコミットは増えず、終了のときに a.md と b.md の1つのコミット。
+
+#### `[git] message = "auto"`(既定)のコミットの文は、1行目にノートの数を言う文、空行、リポの根からのパスを1行ずつにするべき
+`req~write-back.git-message-auto~1` P1
+- 受け入れ: a.md と Tasks/x.md の2件 → 1行目「mdgrid: 2 件のノートを更新」(英語は `mdgrid: update 2 notes`)、空行、`a.md`、`Tasks/x.md`。1件 → 「mdgrid: 1 件のノートを更新」。
+
+#### `[git] message = "ask"` のときは、保存のあとに1行の欄を出し、打った文をコミットの文の1行目にするべき
+`req~write-back.git-message-ask~1` P1
+- 受け入れ: 保存 → 欄が開き、打つまでコミットしない。「見直し」と打って Enter → 1行目が「見直し」のコミット。空のまま Enter → 自動の文(write-back.git-message-auto)。Esc → コミットせず、終了のときに自動の文でコミットする。
+
+#### git のリポでないフォルダのノートでは、`[git]` の設定によらず何もせず、知らせも欄も出さないべき
+`req~write-back.git-not-repo~1` P1
+- 受け入れ: 上のどこにも `.git` の無いフォルダで `auto = "push"`・`message = "ask"` → 保存は済み、欄は開かず、メッセージに git の知らせが無い。
+
+#### git が失敗したときは、保存を済んだままにし、理由を1行で知らせるべき
+`req~write-back.git-failure~1` P1
+- なぜ: git の都合で、直した値を失わせないため
+- 受け入れ: push 先の無いリポで `auto = "push"` → ノートは書かれて未保存 0、メッセージに「git が失敗した(保存は済んでいる)」と `git push` の理由が1行。次の保存か終了のときに、もう一度 git に渡す。
+
+#### `[git]` は設定ファイル(config.toml)にだけ書け、台帳の印に書いたものは警告して使わないべき
+`req~write-back.git-global-only~1` P1
+- なぜ: 写してきた台帳の印が、開いた人のリポで勝手にコミットや push をさせないようにするため
+- 受け入れ: config.toml の `[git] auto = "push"` → 効く。`auto = "sometimes"` → `git.auto` を言う警告1行で、既定(off)のまま。印 `.mdgrid/workspace.toml` の `[git] auto = "push"` → 警告1行で使わない。
+
 ## 未確定事項
 
+### 画面を出さないコマンド(`--new-note`・`--apply --yes`)で書いたノートも、`[git]` の設定で git に渡すか
+`tbd~write-back.git-cli`
+- 決める人: 人
+- 仮: 渡さない(画面からの保存と作成だけ。スクリプトは自分で git を呼べる)
+
+### 画面で名前を変えたノート(cell-edit のノートの改名)を、git に渡すか
+`tbd~write-back.git-rename`
+- 決める人: 人
+- 仮: 渡さない(保存で書いたノートと、画面から作ったノートだけ)
+
+### 「保存のたびにコミットし、push は終了のときだけ」の組み合わせを設定で選べるようにするか
+`tbd~write-back.git-push-at-quit`
+- 決める人: 人
+- 仮: 今は無い(`when` は add・commit・push の全部に同じに効く)

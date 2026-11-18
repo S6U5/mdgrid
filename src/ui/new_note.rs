@@ -686,6 +686,9 @@ impl App {
         self.pick = None;
         self.set_mode(Mode::Table);
         self.select_new_note(&path);
+        // write-back.git-when: 画面から作ったノートも git に渡す。
+        self.git_note(path.clone());
+        self.git_after_write();
         // CE-33: `e` と同じ道でエディタで開く(端末を持つ main が開き、戻ったら読み直す)。
         if edit {
             let real = path.canonicalize().unwrap_or(path);

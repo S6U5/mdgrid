@@ -18,6 +18,7 @@ pub mod expr;
 pub mod folder_tree;
 pub mod frontmatter;
 pub mod gantt;
+pub mod gitsync;
 pub mod i18n;
 pub mod kanban;
 pub mod ledger;

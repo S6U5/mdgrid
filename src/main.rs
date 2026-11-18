@@ -1189,6 +1189,10 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
             return fail(&Msg::TerminalError.fill(&[&e]));
         }
         let Some(place) = app.switch_to.take() else {
+            // write-back.git-when: 終了のときに、まだ git に渡していないノートを流す(失敗は1行で知らせる)。
+            if let Some(e) = app.git_flush_at_quit() {
+                eprintln!("mdgrid: {e}");
+            }
             return ExitCode::SUCCESS;
         };
         // REL-4・REL-5: 開き直したあとに選ぶノート。
@@ -1208,7 +1212,9 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
             false,
             Vec::new(),
         ) {
-            Ok((next, ed)) => {
+            Ok((mut next, ed)) => {
+                // 別の表へ移っても、まだ git に渡していないノートは持ち越す。
+                next.git_pending = std::mem::take(&mut app.git_pending);
                 app = next;
                 editor = ed;
                 app.select_after_load = select;

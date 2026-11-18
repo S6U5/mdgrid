@@ -32,6 +32,8 @@ pub(crate) enum Ask {
     ExportName,
     /// 足す列の名前(CE-28)。
     NewColumn,
+    /// write-back.git-message-ask: コミットの文の1行目(空なら自動の文)。
+    GitMessage,
     /// 画面の表を書き出すファイルの名前(OUT-2)。
     ExportTable,
     /// 既にあるファイルへの上書きの確かめ(OUT-5)。続けて `y`。
@@ -191,6 +193,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         None => String::new(),
         Some(Ask::ExportName) => Msg::AskExportName.into(),
         Some(Ask::NewColumn) => Msg::AskNewColumn.into(),
+        Some(Ask::GitMessage) => Msg::AskGitMessage.into(),
         Some(Ask::ExportTable) => Msg::AskExportTable.into(),
         Some(Ask::ExportOverwrite(p)) => {
             Msg::AskExportOverwrite.fill(&[&sanitize(&p.display().to_string())])
@@ -257,7 +260,11 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let room = lines.len().saturating_sub(3).clamp(1, ASK_ROWS);
     if matches!(
         ask,
-        Ask::PlaceName(_) | Ask::PlaceOverwrite(_) | Ask::WsName | Ask::StarterSamples { .. }
+        Ask::PlaceName(_)
+            | Ask::PlaceOverwrite(_)
+            | Ask::WsName
+            | Ask::GitMessage
+            | Ask::StarterSamples { .. }
     ) {
         // 候補の無い入力。
     } else if let Ask::ExportName | Ask::StarterDir(_) = ask {
@@ -530,6 +537,11 @@ impl App {
         match &self.nv.ask {
             Some(Ask::ExportName) => self.export_to(query),
             Some(Ask::NewColumn) => self.add_extra_column(query),
+            Some(Ask::GitMessage) => {
+                let first = query.trim().to_string();
+                self.close_palette();
+                self.git_flush(Some(&first));
+            }
             Some(Ask::ExportTable) => self.export_table_to(query),
             Some(Ask::ExportOverwrite(path)) => {
                 let path = path.clone();

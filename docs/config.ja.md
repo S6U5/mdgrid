@@ -21,7 +21,7 @@ mdgrid --print-config > ~/.config/mdgrid/config.toml
 
 ## 2種類の項目
 
-- **アプリ全体の項目**(範囲「全体だけ」): 最上位の `language`・`editor`・`poll_ms` と、区画 `[terminal]`・`[workspace]`・`[keys]`・`[templates]`。`config.toml` にだけ書く(`ui.toml` には `[terminal] nerd_font` を書ける)。
+- **アプリ全体の項目**(範囲「全体だけ」): 最上位の `language`・`editor`・`poll_ms` と、区画 `[terminal]`・`[workspace]`・`[git]`・`[keys]`・`[templates]`。`config.toml` にだけ書く(`ui.toml` には `[terminal] nerd_font` を書ける)。
 - **表のプロファイル**(範囲「全体・ワークスペース・表・ビュー」): `use`・`[look]`・`[display]`・`[dates]`・`[edit]`・`[new_note]`。下のどの場所にも同じ形で書け、狭い範囲が広い範囲を上書きする。
 
 ## ワークスペース・表・ビューごとの上書き
@@ -260,6 +260,49 @@ nerd_icons = true
 ```toml
 [workspace]
 detect = [".obsidian", ".git"]
+```
+
+## `[git]` — 保存のあとの git
+
+ノートを git のリポに置いているとき、mdgrid が書いたノートを保存のあとに git へ渡せる。既定は何もしない。渡すのは mdgrid が書いた(か作った)ノートだけで、ほかの変更中のファイルやステージ済みのファイルはコミットに入れない。この区画は `config.toml` にだけ書く(台帳の印には書けない: 写してきた台帳が勝手に push しないように)。
+
+### `git.auto`
+
+- 型: `"off"・"add"・"commit"・"push"`
+- 既定: `"off"`
+- 範囲: 全体だけ
+
+git をどこまで進めるか。`"off"` は何もしない。`"add"` は書いたノートをステージする。`"commit"` はさらにコミットする(書いたノートだけ)。`"push"` はさらに push する。git のリポでないフォルダでは何もしない。git が失敗したら(push 先が無いなど)1行で知らせ、保存そのものは済んだままにする。
+
+```toml
+[git]
+auto = "commit"
+```
+
+### `git.when`
+
+- 型: `"save"・"quit"`
+- 既定: `"save"`
+- 範囲: 全体だけ
+
+いつ走らせるか。`"save"` は保存のたび(保存1回が1つのコミット)。`"quit"` は終了のときに1回(その起動の分をまとめて1つのコミット)。画面から作った新しいノートも対象で、終了のときに残っているノートはどちらの設定でもそこで流す。
+
+```toml
+[git]
+when = "quit"
+```
+
+### `git.message`
+
+- 型: `"auto"・"ask"`
+- 既定: `"auto"`
+- 範囲: 全体だけ
+
+コミットの文。`"auto"` は1行目に「mdgrid: N 件のノートを更新」、空行のあとにリポの根からのパスを1行ずつ書く。`"ask"` は保存のたびに1行の欄を出し、打った文を1行目にする(空のまま Enter なら自動の文。Esc はコミットせず、終了のときのコミットに回す)。
+
+```toml
+[git]
+message = "ask"
 ```
 
 ## `[look]` — テーマ・部品・色

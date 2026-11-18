@@ -48,6 +48,17 @@ Date and time columns add a time field under the calendar (here on the meetings 
 
 mdgrid writes only the values you changed. A missing key gets one added line, and a note without frontmatter gets frontmatter added at the top (the body is untouched). If a note changed on disk before you save, the review shows it and lets you choose to write over it (`o`). The details are in [Write-back safety](../../safety.md).
 
+If your notes live in a git repository, mdgrid can go on to git after a save. Set it in the config file (`config.toml`); by default it does nothing.
+
+```toml
+[git]
+auto = "commit"    # off, add, commit or push (how far to go)
+when = "save"      # save (after every save) or quit (once at exit)
+message = "auto"   # auto (an automatic message) or ask (a one-line field after each save)
+```
+
+Only the notes mdgrid wrote (or created from the screen) enter the commit; other changed files are left alone. If git fails, the save stays done and one line says why. The items are described under [`[git]`](../../config.md#git--git-after-a-save).
+
 ## Find, filter and sort
 
 | To | Keys |

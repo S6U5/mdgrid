@@ -183,6 +183,8 @@ pub struct App {
     pub(crate) candidates: usize,
     /// BV-9 の読み直しの間隔(設定 `poll_ms`。既定 1000)。
     pub(crate) poll_ms: u64,
+    /// write-back.git-*: mdgrid が書いた・作ったノートのうち、まだ git に渡していないもの。
+    pub(crate) git_pending: Vec<std::path::PathBuf>,
     /// 読むだけで開いた(`--readonly`。WB-15)。
     pub(crate) readonly: bool,
     /// 読むだけで表から外したキー(押したら「読むだけで開いている」と出す。WB-15)。
@@ -361,6 +363,7 @@ impl App {
             detail: None,
             candidates: 20,
             poll_ms: 1000,
+            git_pending: Vec::new(),
             readonly: false,
             locked: Vec::new(),
             store: None,

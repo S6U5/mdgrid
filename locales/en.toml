@@ -1380,6 +1380,14 @@ DrawerRegistered = " Registered tables "
 DrawerEmpty = "no tables to list: create a workspace with :workspace_new or register a table with :register_place"
 DrawerNoRoom = "the terminal is too small for the table list"
 AskWsName = "workspace name: "
+## write-back.git-*: 保存のあとの git。{0} はノートの数、失敗の理由。
+GitAutoMessage = "mdgrid: update {0} notes"
+GitAutoMessageOne = "mdgrid: update 1 note"
+GitAdded = "git: staged {0}"
+GitCommitted = "git: committed {0}"
+GitPushed = "git: committed and pushed {0}"
+GitFailed = "git failed (the save is done): {0}"
+AskGitMessage = "commit message (empty for the automatic one): "
 AskWsPick = "workspace (pick or type a new one): "
 AskWsRemove = "remove from which workspace: "
 AskWsOpen = "open which workspace: "
@@ -1414,6 +1422,9 @@ WsNotInChosen = "{0} is not in workspace {1} (links use {1}'s tables and this on
 ## {0} はパス。
 WsMarkerOutside = "ignored a table outside the marked folder: {0}"
 WantDetect = "a list of \".obsidian\" and \".git\""
+WantGitAuto = "one of \"off\", \"add\", \"commit\", \"push\""
+WantGitWhen = "\"save\" or \"quit\""
+WantGitMessage = "\"auto\" or \"ask\""
 
 # ---- starter: 台帳のスターター(ST-1〜ST-6) ----
 ## {0} は名前。
