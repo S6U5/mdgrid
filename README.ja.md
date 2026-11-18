@@ -35,12 +35,6 @@ Markdown のノートのフォルダを、コマンド1つで表として開け�
 
 ビルド済みのバイナリ。 [GitHub の Releases](https://github.com/S6U5/mdgrid/releases) の各リリースに、Linux(x86_64・aarch64)、macOS(Intel・Apple シリコン)、Windows(x86_64)のアーカイブがあります。展開して `mdgrid` を `PATH` の通った場所に置きます。シェルの補完(`completions/`)と man ページ(`mdgrid.1`)も入っています。
 
-Homebrew で(macOS と Linux)。
-
-```sh
-brew install s6u5/tap/mdgrid
-```
-
 crates.io から。 Rust 1.90 以上で:
 
 ```sh
@@ -63,6 +57,8 @@ git clone https://github.com/S6U5/mdgrid.git
 cd mdgrid
 cargo install --path . --locked
 ```
+
+Homebrew にはまだありません。
 
 ## はじめる
 

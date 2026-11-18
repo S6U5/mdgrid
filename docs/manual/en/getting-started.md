@@ -9,7 +9,6 @@ There are several ways to install; pick one. The rest of the page is one path: o
 mdgrid is a single executable written in Rust. Download an archive for your OS from the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page, or use the tool you already have:
 
 ```sh
-brew install s6u5/tap/mdgrid        # Homebrew (macOS, Linux)
 cargo install mdgrid --locked       # Rust 1.90 or newer; builds from source in a few minutes
 cargo binstall mdgrid               # cargo-binstall; fetches the prebuilt binary
 nix profile install github:S6U5/mdgrid   # Nix (to just try it: nix run github:S6U5/mdgrid)

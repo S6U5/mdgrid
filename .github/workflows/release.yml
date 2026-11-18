@@ -1,7 +1,7 @@
 name: Release
 
 # Push a tag such as v0.1.0 to build the binaries, record the feature tours (demos.yml), publish a GitHub Release
-# with both attached, publish the crate to crates.io, and write the Homebrew formula to the tap.
+# with both attached, and publish the crate to crates.io.
 on:
   push:
     tags: ["v*"]
@@ -106,57 +106,6 @@ jobs:
         run: |
           mv dist/NOTES.md NOTES.md
           gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "mdgrid $GITHUB_REF_NAME" --notes-file NOTES.md
-
-  homebrew:
-    # Writes Formula/mdgrid.rb to the tap (S6U5/homebrew-tap) so `brew install s6u5/tap/mdgrid` gets this release.
-    # Needs the secret HOMEBREW_TAP_TOKEN: a fine-grained token with Contents read/write on the tap only.
-    # Keep it in the environment homebrew-tap, limited to v* tags, so a workflow on a branch cannot read it.
-    # Without the secret, or on a pre-release tag (v1.2.3-rc1), the job does nothing.
-    needs: [release]
-    runs-on: ubuntu-latest
-    environment: homebrew-tap
-    permissions:
-      contents: read
-    steps:
-      - name: Decide whether to publish
-        id: check
-        env:
-          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: |
-          if [ -z "$TAP_TOKEN" ]; then
-            echo "::notice::HOMEBREW_TAP_TOKEN is not set; the tap is left as it is."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          elif ! printf '%s' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "::notice::$GITHUB_REF_NAME is a pre-release; the tap is left as it is."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        if: steps.check.outputs.skip == 'false'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        if: steps.check.outputs.skip == 'false'
-        with:
-          path: dist
-          merge-multiple: true
-      - name: Write the formula to the tap
-        if: steps.check.outputs.skip == 'false'
-        env:
-          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: |
-          set -euo pipefail
-          git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/S6U5/homebrew-tap.git" tap
-          mkdir -p tap/Formula
-          python3 scripts/homebrew_formula.py "$GITHUB_REF_NAME" dist > tap/Formula/mdgrid.rb
-          cd tap
-          git add Formula/mdgrid.rb
-          if git diff --cached --quiet; then
-            echo "The formula is already at $GITHUB_REF_NAME."
-            exit 0
-          fi
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -m "mdgrid ${GITHUB_REF_NAME#v}"
-          git push origin HEAD
 
   crates:
     # crates.io Trusted Publishing: no long-lived token; the auth action gets one that lives only for this job.

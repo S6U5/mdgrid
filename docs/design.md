@@ -690,13 +690,12 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 ## 配布(入れ方)
 
-入れ方はどれも、タグを push すると走る `.github/workflows/release.yml` の成果物から出る。アーカイブの名前(`mdgrid-<タグ>-<target>.tar.gz`、Windows は `.zip`)と中の並び(同じ名前のフォルダの下に `mdgrid`・`mdgrid.1`・`completions/`)を変えるときは、下の binstall と Homebrew の指定も同じ変更で直す。
+入れ方はどれも、タグを push すると走る `.github/workflows/release.yml` の成果物から出る。アーカイブの名前(`mdgrid-<タグ>-<target>.tar.gz`、Windows は `.zip`)と中の並び(同じ名前のフォルダの下に `mdgrid`・`mdgrid.1`・`completions/`)を変えるときは、下の binstall の指定も同じ変更で直す。
 
 - GitHub Releases のアーカイブと crates.io(`cargo install`): release.yml の build・release・crates のジョブ。
 - cargo binstall: `Cargo.toml` の `[package.metadata.binstall]` に、アーカイブの URL と中の実行ファイルの場所を書く。binstall は crates.io に出た版の Cargo.toml を読むので、指定はその版を出したときから効く。
-- Homebrew: tap のリポ `S6U5/homebrew-tap` の `Formula/mdgrid.rb`。release.yml の homebrew のジョブが、`scripts/homebrew_formula.py` でアーカイブのチェックサムから formula を作って書き込む。formula はビルド済みのアーカイブを落とすだけで、Rust は要らない。書き込みには、秘密の値 `HOMEBREW_TAP_TOKEN`(tap のリポだけに Contents の読み書きを許した fine-grained のトークン)が要る。置き場はこのリポの環境(Environments)`homebrew-tap` にし、環境の「Deployment branches and tags」を `v*` のタグだけに絞る(リポ全体の秘密の値にすると、ブランチに足したワークフローからも読めるため)。無いときと試しの版のタグ(`v1.2.3-rc1`)では、ジョブは何もしない。トークンには期限があるので、切れたら作り直して入れ替える。homebrew-core には出していない(審査と、利用の多さの条件がある)。
 - Nix: リポの根の `flake.nix`(nixpkgs の `rustPlatform.buildRustPackage`。依存は `Cargo.lock` から取るのでハッシュの書き換えは要らない)。ソースは crate と同じファイルだけを渡し、試験は回さない(試験は `cargo test` の CI が見る)。`flake.lock` は nixpkgs の版を留めるので、`rust-version` を上げて nixpkgs の Rust が足りなくなったら `nix flake update` で進める。ci.yml の nix のジョブが `nix flake check` でビルドを見る。
-- まだ無いもの: Windows の Scoop・winget、Linux の .deb・.rpm・AUR、1行のインストーラ。
+- まだ無いもの: Homebrew(tap を持つと、formula を書き換えるトークンと守るリポが1つ増えるので見送った。人の判断、2026-11-18)、Windows の Scoop・winget、Linux の .deb・.rpm・AUR、1行のインストーラ。
 
 ## セッション(CLI-6〜CLI-10)
 
