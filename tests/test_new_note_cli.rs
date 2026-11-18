@@ -126,6 +126,29 @@ fn test_new_note_uses_the_new_note_settings_and_template() {
 }
 
 #[test]
+fn test_new_note_uses_the_settings_of_the_marker_open_table() {
+    // [stest -> req~cli.new-note-create~1] 印の open の表に書いた [table.new_note](folder = "Tasks")は、台帳を相対のパスで渡しても今のフォルダから起動しても使う。
+    let marker = "open = \"Tasks\"\n\n[[table]]\nname = \"Tasks\"\n\n\
+[table.new_note]\nfolder = \"Tasks\"\n\n[table.new_note.set]\nstatus = \"todo\"\n\n\
+[table.base]\nfilters = { and = ['file.inFolder(\"Tasks\")'] }\n";
+    let t = ledger("nn-table", marker);
+    let o = run(t.path(), &["t", "--new-note", "a"]);
+    assert_eq!(out(&o), "t/Tasks/a.md\n", "{}", err(&o));
+    assert_eq!(
+        read(&t.path().join("t/Tasks/a.md")),
+        "---\nstatus: todo\n---\n"
+    );
+    let o = run_in(
+        t.path(),
+        &t.path().join("t"),
+        "ja_JP.UTF-8",
+        &["--new-note", "b"],
+    );
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert!(t.path().join("t/Tasks/b.md").is_file(), "{}", out(&o));
+}
+
+#[test]
 fn test_new_note_without_settings_makes_an_empty_note_in_the_folder() {
     // [stest -> req~cli.new-note-create~1] 境界: 設定も印も無いフォルダで --new-note memo → そのフォルダに空の memo.md。フォルダを渡さなければ今のフォルダ。
     let t = TempDir::new("nn-plain");

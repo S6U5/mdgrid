@@ -1,0 +1,143 @@
+# mdgrid のワークスペースの印(WS-7)。組み込みのスターター「タスク(人と AI)」から作った台帳。
+# Tasks/ にタスクを1件1ノート、Routines/ にルーチン(繰り返しの仕事)を1件1ノート。
+# 表「タスク」と「ルーチン」はこの印に書き([table.base]、WS-9)、このフォルダを開くと「タスク」が開く(open)。
+# 表はヘッダーのパンくずか w で切り替える。R で2つの表のつながりを見る(タスクの routine がルーチンへのリンク)。
+# これは自分の写しなので、列の名前・ビュー・値の候補は好きに直してよい。
+open = "タスク"
+
+# 担当のまとまりの間に空きの行を1つ。ノートの欄はファイルの名前だけ。
+[display]
+group_gap = true
+note_path = "name"
+
+# 列の型。日付は日付として並び、直すときにカレンダーが開き、形の合わない値に印が付く。
+[types]
+start = "date"
+due = "date"
+created = "date"
+done_at = "date"
+next_due = "date"
+last_done = "date"
+tags = "list"
+
+# 値の候補(CE-36)。セルを直すときと新しいノートの窓に並び、ほかの値には印が付く。
+# actor は誰がやるか: human(人)・ai(エージェント)・both(エージェントが用意して人が仕上げる)。
+[rules.actor]
+values = ["human", "ai", "both"]
+
+[rules.status]
+values = ["todo", "doing", "waiting", "done", "dropped"]
+
+[rules.priority]
+values = ["p1", "p2", "p3"]
+
+[[table]]
+name = "タスク"
+# ガントの画面(C): 開始から期限までの棒。
+gantt = { start = "start", end = "due" }
+# カンバンの画面(B): 状態ごとのレーンに札を [rules.status] の順で並べる。H と L で札を動かすと状態を書き換える。
+kanban = { column = "status" }
+# グラフの画面(P): 状態ごとの数、担当ごとの数、月ごとの期限、担当と状態の組。[ と ] で移る。
+chart = [
+  { name = "状態ごと", x = "status" },
+  { name = "担当ごと", x = "actor" },
+  { name = "月ごとの期限", kind = "line", x = "due", unit = "month" },
+  { name = "担当と状態", kind = "heatmap", x = "actor", by = "status" },
+]
+
+# 新しいタスク(a、または mdgrid --new-note): 担当・期限・優先度を聞き、残りを埋め、本文を雛形から始める。
+[table.new_note]
+folder = "Tasks"
+ask = ["actor", "due", "priority"]
+hidden = ["created"]
+body = ".mdgrid/templates/task.md"
+
+[table.new_note.set]
+status = "todo"
+created = "{date}"
+
+[table.base]
+filters = { and = ['file.inFolder("Tasks")'] }
+
+# 担当: actor が ai ならエージェント、both なら人とエージェント、それ以外(書いていないノートも)は人。
+[table.base.formulas]
+"担当" = 'if(actor == "ai", "🤖 エージェントのタスク", if(actor == "both", "🤝 人とエージェント", "👤 人のタスク"))'
+
+[table.base.properties]
+"note.status" = { displayName = "状態" }
+"note.actor" = { displayName = "誰が" }
+"note.start" = { displayName = "開始" }
+"note.due" = { displayName = "期限" }
+"note.priority" = { displayName = "優先度" }
+"note.tags" = { displayName = "タグ" }
+"note.url" = { displayName = "URL" }
+"note.routine" = { displayName = "ルーチン" }
+"note.created" = { displayName = "作成" }
+"note.done_at" = { displayName = "完了日" }
+"formula.担当" = { displayName = "担当" }
+
+# タブ([ と ] で切り替える)。どれも優先度、期限の順。
+[[table.base.views]]
+type = "table"
+name = "人と AI"
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "due", "priority", "tags", "routine", "url"]
+groupBy = { property = "formula.担当", direction = "ASC" }
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "人だけ"
+filters = { and = ['actor != "ai"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "due", "priority", "tags", "url"]
+sort = [{ property = "due", direction = "ASC" }, { property = "priority", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "AI だけ"
+filters = { and = ['actor == "ai" || actor == "both"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "priority", "due", "tags", "url"]
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "完了"
+where = { status = ["done", "dropped"] }
+order = ["status", "formula.担当", "done_at", "routine"]
+sort = [{ property = "done_at", direction = "DESC" }]
+
+# ルーチン: 繰り返しの決まり(recurrence は自由な文)と、次にやる日・最後にやった日。mdgrid は次の回を作らない:
+# その回のタスクを作るときに routine の列でこのノートを指し、終えたら last_done と next_due を直す(人かエージェントが)。
+[[table]]
+name = "ルーチン"
+
+# 新しいルーチン: 繰り返し・担当・次にやる日を聞く。
+[table.new_note]
+folder = "Routines"
+ask = ["recurrence", "actor", "next_due"]
+body = ".mdgrid/templates/routine.md"
+
+[table.base]
+filters = { and = ['file.inFolder("Routines")'] }
+
+[table.base.properties]
+"note.recurrence" = { displayName = "繰り返し" }
+"note.next_due" = { displayName = "次にやる日" }
+"note.last_done" = { displayName = "最後にやった日" }
+"note.actor" = { displayName = "誰が" }
+"note.tags" = { displayName = "タグ" }
+
+[[table.base.views]]
+type = "table"
+name = "次にやる順"
+order = ["recurrence", "next_due", "last_done", "actor", "tags"]
+sort = [{ property = "next_due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "担当ごと"
+order = ["recurrence", "next_due", "last_done", "tags"]
+groupBy = { property = "actor", direction = "ASC" }
+sort = [{ property = "next_due", direction = "ASC" }]

@@ -279,7 +279,7 @@ Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/works
 
 ## Create a ledger from a starter
 
-The common kinds of ledger (tasks, bookmarks, a reading log, people and meetings) can start from a **starter**: a marker and note templates ready to use. `mdgrid --starters` lists them; `mdgrid <folder> --init-workspace --starter <name>` writes one (`--with-samples` adds a few sample notes). The folder is created if missing, and if any target file already exists nothing is written.
+The common kinds of ledger (tasks, tasks shared with AI agents, bookmarks, a reading log, people and meetings) can start from a **starter**: a marker and note templates ready to use. `mdgrid --starters` lists them; `mdgrid <folder> --init-workspace --starter <name>` writes one (`--with-samples` adds a few sample notes). The folder is created if missing, and if any target file already exists nothing is written.
 
 ```sh
 mdgrid --starters
@@ -288,6 +288,8 @@ mdgrid ~/notes/books
 ```
 
 In the screen, **Create a ledger from a starter** in the command palette (`:`) does the same: pick a starter, type the folder to create (relative to the open folder; the starter's name by default), answer `y`/`n` for the samples, and the new ledger opens. Esc cancels at any step.
+
+`tasks-ai` is a ledger for work shared between people and AI agents. A task's `actor` (human, ai or both) splits it into the "People only" and "AI only" tabs, and the charts by status and by actor (`P`), the Gantt (`C`) and the Kanban (`B`) open as they are. A second table, "Routines", holds repeating work; the task for one round links to it from its `routine` column (switch tables with `w` or the breadcrumb, and press `R` to see the links). mdgrid does not create the next round: a person or an agent adds it, for example with `--new-note`.
 
 Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones (`starter.toml`, `ledger/`, `samples/`). The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `ledger/`.
 

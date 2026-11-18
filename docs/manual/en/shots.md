@@ -740,7 +740,7 @@ Keys: `:` `text:starter` `Enter`
 
 ![Create a ledger from a starter](images/starter-pick.svg)
 
-The command palette's "Create a ledger from a starter" lists the built-in starters (tasks, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.
+The command palette's "Create a ledger from a starter" lists the built-in starters (tasks, tasks-ai, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.
 
 ## The tasks starter
 

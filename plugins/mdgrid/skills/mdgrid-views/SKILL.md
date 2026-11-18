@@ -9,7 +9,7 @@ mdgrid reads a marker file `.mdgrid/workspace.toml` in a folder. With it, openin
 
 Check that mdgrid is installed with `mdgrid --version`. If it is missing, tell the user it can be installed from https://github.com/S6U5/mdgrid (do not install it without asking).
 
-For a new folder, start from a built-in starter instead of a blank marker: `mdgrid --starters` lists them (tasks, bookmarks, reading, people) and `mdgrid <folder> --init-workspace --starter <name>` writes the marker and the note templates (`--with-samples` adds sample notes). Then adjust what it wrote with the checklist below.
+For a new folder, start from a built-in starter instead of a blank marker: `mdgrid --starters` lists them (tasks, tasks-ai, bookmarks, reading, people) and `mdgrid <folder> --init-workspace --starter <name>` writes the marker and the note templates (`--with-samples` adds sample notes). Then adjust what it wrote with the checklist below.
 
 ## Checklist (do all of it)
 

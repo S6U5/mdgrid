@@ -27,8 +27,8 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// 組み込みの4つ(名前の順)。
-const BUILTIN: [&str; 4] = ["bookmarks", "people", "reading", "tasks"];
+/// 組み込みの5つ(名前の順)。
+const BUILTIN: [&str; 5] = ["bookmarks", "people", "reading", "tasks", "tasks-ai"];
 
 /// 旗を知らないときの理由の頭(日本語)。旗の組み合わせの誤りは、これでない理由で止まる(実装の無い版と見分ける)。
 const UNKNOWN_OPTION: &str = "知らないオプション";
@@ -222,7 +222,7 @@ fn assert_lists_files(stdout: &str, files: &BTreeMap<String, Vec<u8>>, what: &st
 
 #[test]
 fn test_st_3_starters_lists_builtin_without_config_dir() {
-    // [stest -> req~starter.user-list~1] 設定の置き場が無くても --starters は組み込みの4つを名前の順に、名前と説明を1行ずつ標準出力に出し、
+    // [stest -> req~starter.user-list~2] 設定の置き場が無くても --starters は組み込みの5つを名前の順に、名前と説明を1行ずつ標準出力に出し、
     // 終了コード 0。画面を開かず、ファイルは書かない。HOME も XDG_CONFIG_HOME も無いときも同じ。
     let t = TempDir::new("st-list-builtin");
     let h = t.path();
@@ -254,7 +254,7 @@ fn test_st_3_starters_lists_builtin_without_config_dir() {
 
 #[test]
 fn test_st_3_user_starters_first_in_name_order_and_hide_builtin_of_same_name() {
-    // [stest -> req~starter.user-list~1, req~starter.user-skip-broken~1, req~starter.user-no-side-effect~1] 設定の置き場の starters/<名前>/ のものは名前の順に先に出て、同じ名前(tasks)の組み込みは出ない。
+    // [stest -> req~starter.user-list~2, req~starter.user-skip-broken~1, req~starter.user-no-side-effect~1] 設定の置き場の starters/<名前>/ のものは名前の順に先に出て、同じ名前(tasks)の組み込みは出ない。
     // 説明は今の言語(ja と en で変わる)。starter.toml の無いものはフォルダの名前で出る。ファイルは書かない。
     let t = home("st-list-user");
     let h = t.path();
@@ -270,7 +270,15 @@ fn test_st_3_user_starters_first_in_name_order_and_hide_builtin_of_same_name() {
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(
         starter_names(&o),
-        ["alpha", "kanban", "tasks", "bookmarks", "people", "reading"],
+        [
+            "alpha",
+            "kanban",
+            "tasks",
+            "bookmarks",
+            "people",
+            "reading",
+            "tasks-ai"
+        ],
         "{}",
         out(&o)
     );
@@ -293,7 +301,15 @@ fn test_st_3_user_starters_first_in_name_order_and_hide_builtin_of_same_name() {
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(
         starter_names(&o),
-        ["alpha", "kanban", "tasks", "bookmarks", "people", "reading"]
+        [
+            "alpha",
+            "kanban",
+            "tasks",
+            "bookmarks",
+            "people",
+            "reading",
+            "tasks-ai"
+        ]
     );
     let lines = out_lines(&o);
     assert!(
@@ -322,7 +338,14 @@ fn test_st_3_broken_manifest_warns_one_line_and_others_are_listed() {
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(
         starter_names(&o),
-        ["okay", "bookmarks", "people", "reading", "tasks"],
+        [
+            "okay",
+            "bookmarks",
+            "people",
+            "reading",
+            "tasks",
+            "tasks-ai"
+        ],
         "{}",
         out(&o)
     );
@@ -354,7 +377,7 @@ fn test_st_3_starter_without_marker_warns_and_is_skipped() {
 
 #[test]
 fn test_st_3_starters_does_not_combine_with_other_commands() {
-    // [stest -> req~starter.user-list~1, req~starter.user-no-side-effect~1] --starters は一覧だけ: --init-workspace や --print と一緒には組めず、理由1行と終了コード 2。何も書かない。
+    // [stest -> req~starter.user-list~2, req~starter.user-no-side-effect~1] --starters は一覧だけ: --init-workspace や --print と一緒には組めず、理由1行と終了コード 2。何も書かない。
     let t = home("st-list-conflict");
     let h = t.path();
     for args in [
@@ -635,7 +658,7 @@ fn test_st_4_flag_misuse_is_one_line_and_code_2() {
 
 #[test]
 fn test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean() {
-    // [stest -> req~starter.builtin-no-warning~1] 4つの組み込みから見本つきで作る(ja と en): --print-config --resolved の標準エラーに mdgrid: の行が無く、
+    // [stest -> req~starter.builtin-no-warning~2] 5つの組み込みから見本つきで作る(ja と en): --print-config --resolved の標準エラーに mdgrid: の行が無く、
     // --print --with-path が見本の行(パスが .md)を出し、--check の終了コードが 0。LANG=en_US.UTF-8 でも同じ。
     let t = home("st-builtin-cli");
     let h = t.path();
@@ -690,7 +713,7 @@ fn test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean
 
 #[test]
 fn test_st_2_builtin_ledgers_without_samples_open_quietly() {
-    // [stest -> req~starter.builtin-empty-quiet~1] 4つの組み込みから見本なしで作る(ja と en。上に .obsidian/ は無い): --print の標準エラーが空で、終了コード 0。
+    // [stest -> req~starter.builtin-empty-quiet~1] 5つの組み込みから見本なしで作る(ja と en。上に .obsidian/ は無い): --print の標準エラーが空で、終了コード 0。
     let t = home("st-builtin-empty");
     let h = t.path();
     for lang in ["ja_JP.UTF-8", "en_US.UTF-8"] {

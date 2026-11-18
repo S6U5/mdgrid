@@ -91,7 +91,7 @@ path = "Bookmarks"
 tree = { path = "folder", order = "order" }
 ```
 
-A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
+A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `tasks-ai`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
 
 ```
 starters/kanban/

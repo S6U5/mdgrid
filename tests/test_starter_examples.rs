@@ -34,7 +34,7 @@ fn files(root: &Path) -> BTreeMap<String, Vec<u8>> {
 
 #[test]
 fn test_st_2_examples_bookmarks_matches_the_builtin_starter() {
-    // [stest -> req~starter.builtin-list~1, req~starter.builtin-same-shape~1] 組み込みの bookmarks から英語・見本つきで作った木が、リポの examples/bookmarks と(パスも中身も)同じ。
+    // [stest -> req~starter.builtin-list~2, req~starter.builtin-same-shape~1] 組み込みの bookmarks から英語・見本つきで作った木が、リポの examples/bookmarks と(パスも中身も)同じ。
     let t = TempDir::new("st-examples");
     let h = t.path();
     let made = h.join("bookmarks");

@@ -39,30 +39,30 @@
 `req~starter.shape-lang-variant~1` P1
 - 受け入れ: `ledger.ja/` があり言語が ja → `ledger/` は使わず `ledger.ja/` の中身だけ。
 
-#### mdgrid は組み込みのスターター `tasks`・`bookmarks`・`reading`・`people` を実行ファイルの中に持つべき
-`req~starter.builtin-list~1` P1
-- 受け入れ: 設定の置き場が無い → 組み込みのスターターは `tasks`(タスク)・`bookmarks`(ブックマーク)・`reading`(読書・視聴の記録)・`people`(人・連絡先・会議メモ)の4つで、どれからも `--init-workspace --starter` で作れる。
+#### mdgrid は組み込みのスターター `tasks`・`tasks-ai`・`bookmarks`・`reading`・`people` を実行ファイルの中に持つべき
+`req~starter.builtin-list~2` P1
+- 受け入れ: 設定の置き場が無い → 組み込みのスターターは `tasks`(タスク)・`tasks-ai`(人と AI で分けるタスクとルーチン)・`bookmarks`(ブックマーク)・`reading`(読書・視聴の記録)・`people`(人・連絡先・会議メモ)の5つで、どれからも `--init-workspace --starter` で作れる。
 
 #### 組み込みのスターターは、ユーザーのスターター(starter.user)と同じ形・同じ読み方の見本とし、組み込みだけに効く特例を作らないべき
 `req~starter.builtin-same-shape~1` P1
 - 受け入れ: 組み込みの `reading` と同じ中身を設定の置き場の `starters/reading2/` に置く → `--init-workspace --starter reading2` で、`--starter reading` と同じパスと中身の印と雛形ができる。
 
 #### 組み込みのスターターは、どの言語の変種でも、印が警告なしに読めるべき(印の読み込み・木の設定・`open` の警告が空)
-`req~starter.builtin-no-warning~1` P1
-- 受け入れ: 4つの組み込みから見本つきで作る → `--print-config --resolved` の標準エラーに `mdgrid:` の行が無い。`LANG=en_US.UTF-8` でも同じ。
+`req~starter.builtin-no-warning~2` P1
+- 受け入れ: 5つの組み込みのどれからでも見本つきで作る → `--print-config --resolved` の標準エラーに `mdgrid:` の行が無い。`LANG=en_US.UTF-8` でも同じ。
 
 #### 組み込みのスターターから見本なしで作った台帳は、どの言語の変種でも、行が無いことの知らせ・警告を出さずに開けるべき(Obsidian を使わないフォルダで `.obsidian/` の話をしない)
 `req~starter.builtin-empty-quiet~1` P1
 - なぜ: 印のある台帳の根は印のフォルダで、`.obsidian/` から推した根ではないため
-- 受け入れ: 4つの組み込みから見本なしで作る(上のどこにも `.obsidian/` が無い)→ `--print` の標準エラーが空で、終了コード 0。`LANG=en_US.UTF-8` でも同じ。印の無い場所の `.base` が 0 行のときは、今までどおり探した根を標準エラーに出す(base-view.root-folder-nearest)。
+- 受け入れ: 5つの組み込みのどれからでも見本なしで作る(上のどこにも `.obsidian/` が無い)→ `--print` の標準エラーが空で、終了コード 0。`LANG=en_US.UTF-8` でも同じ。印の無い場所の `.base` が 0 行のときは、今までどおり探した根を標準エラーに出す(base-view.root-folder-nearest)。
 
 #### 組み込みのスターターは、どの言語の変種でも、印の `open` が印の表を指すべき
-`req~starter.builtin-open~1` P1
-- 受け入れ: 4つの組み込みから見本つきで作る → `--print` が見本の行を出す。`LANG=en_US.UTF-8` でも同じ。
+`req~starter.builtin-open~2` P1
+- 受け入れ: 5つの組み込みのどれからでも見本つきで作る → `--print` が見本の行を出す。`LANG=en_US.UTF-8` でも同じ。
 
 #### 組み込みのスターターの見本のノートは、どの言語の変種でも `--check` で問題 0 になるべき
-`req~starter.builtin-samples-check~1` P1
-- 受け入れ: 4つの組み込みから見本つきで作る → `--check` の問題が 0。`LANG=en_US.UTF-8` でも同じ。
+`req~starter.builtin-samples-check~2` P1
+- 受け入れ: 5つの組み込みのどれからでも見本つきで作る → `--check` の問題が 0。`LANG=en_US.UTF-8` でも同じ。
 
 #### ユーザーのスターターは、設定の置き場(cli.config-file)の `starters/<名前>/` に、組み込みと同じ形で置けるべき
 `req~starter.user-place~1` P1
@@ -77,8 +77,8 @@
 - 受け入れ: `starters/tasks/` を置く → tasks は1つで、ユーザーのもの。
 
 #### `mdgrid --starters` は、スターターの名前と今の言語の1行の説明を1行ずつ標準出力に出して終了コード 0 で終わり、設定の置き場が無くても組み込みを出すべき
-`req~starter.user-list~1` P1
-- 受け入れ: 置き場なし → `--starters` が組み込みの4つを、名前と説明の1行ずつ標準出力に出し、終了コード 0。
+`req~starter.user-list~2` P1
+- 受け入れ: 置き場なし → `--starters` が組み込みの5つを、名前と説明の1行ずつ標準出力に出し、終了コード 0。
 
 #### 読めないスターター(壊れた `starter.toml`・`ledger/.mdgrid/workspace.toml` の無いもの)は、cli.config-file の形で警告して飛ばすべき
 `req~starter.user-skip-broken~1` P1
@@ -120,8 +120,8 @@
 - 受け入れ: `mdgrid books --init-workspace --starter reading` → 標準出力に、作ったファイル(印と雛形)が1行に1つずつ出て、画面は出ない。
 
 #### コマンドのパレット(screen.palette)の「スターターから台帳を作る」で、スターター・作る場所・見本の有無を答えると、starter.init と同じに作り、その台帳の印の `open` の表(無ければ根)を開くべき
-`req~starter.palette-create~1` P1
-- 受け入れ: `:` → 「スターター」→ 一覧(名前と説明。打った字で絞る)に組み込みの4つ → reading を Enter → 「作る場所」の欄に `reading`(既定は開いたフォルダの下のスターターの名前)が入っているのを `~/notes/books`(開いたフォルダからの相対・`~`・絶対のパスを打てる)に直して Enter → 「見本のノートも入れる?(y/n)」→ `y` → books の Reading の表が開き、パンくずに books。
+`req~starter.palette-create~2` P1
+- 受け入れ: `:` → 「スターター」→ 一覧(名前と説明。打った字で絞る)に組み込みの5つ → reading を Enter → 「作る場所」の欄に `reading`(既定は開いたフォルダの下のスターターの名前)が入っているのを `~/notes/books`(開いたフォルダからの相対・`~`・絶対のパスを打てる)に直して Enter → 「見本のノートも入れる?(y/n)」→ `y` → books の Reading の表が開き、パンくずに books。
 
 #### パレットの「スターターから台帳を作る」は、ためた変更があれば、cli.places-list と同じく保存か取りやめを確かめるべき
 `req~starter.palette-unsaved~1` P1

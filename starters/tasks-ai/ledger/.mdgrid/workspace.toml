@@ -1,0 +1,144 @@
+# The mdgrid workspace marker (WS-7) of a ledger made from the built-in starter "tasks-ai".
+# One note per task under Tasks/, one note per routine (repeating work) under Routines/.
+# The tables "Tasks" and "Routines" are written here ([table.base], WS-9); opening this folder opens "Tasks" (open).
+# Switch tables from the breadcrumb in the header or with w. R maps the links (a task's routine links to a routine).
+# This is your copy: rename columns, add views, change the values.
+open = "Tasks"
+
+# A blank line between the groups; the note column shows the file name only.
+[display]
+group_gap = true
+note_path = "name"
+
+# Column types: dates sort as dates, open a calendar when edited, and mark values of the wrong shape.
+[types]
+start = "date"
+due = "date"
+created = "date"
+done_at = "date"
+next_due = "date"
+last_done = "date"
+tags = "list"
+
+# Allowed values (CE-36): listed when you edit a cell and in the new note form; other values get a mark.
+# actor is who does the work: human, ai (an agent), or both (an agent prepares, a person finishes).
+[rules.actor]
+values = ["human", "ai", "both"]
+
+[rules.status]
+values = ["todo", "doing", "waiting", "done", "dropped"]
+
+[rules.priority]
+values = ["p1", "p2", "p3"]
+
+[[table]]
+name = "Tasks"
+# The Gantt screen (C): a bar from start to due.
+gantt = { start = "start", end = "due" }
+# The Kanban screen (B): cards in a lane per status, in the order of [rules.status]. H and L move a card and rewrite its status.
+kanban = { column = "status" }
+# The chart screen (P): counts by status and by actor, due dates by month, actor against status. [ and ] switch charts.
+chart = [
+  { name = "By status", x = "status" },
+  { name = "By actor", x = "actor" },
+  { name = "Due by month", kind = "line", x = "due", unit = "month" },
+  { name = "Actor and status", kind = "heatmap", x = "actor", by = "status" },
+]
+
+# A new task (a, or mdgrid --new-note): asks who does it, the due date and the priority, fills the rest, and starts the body from the template.
+[table.new_note]
+folder = "Tasks"
+ask = ["actor", "due", "priority"]
+hidden = ["created"]
+body = ".mdgrid/templates/task.md"
+
+[table.new_note.set]
+status = "todo"
+created = "{date}"
+
+[table.base]
+filters = { and = ['file.inFolder("Tasks")'] }
+
+# Owner: an agent when actor is ai, both when it is both, a person otherwise (also when actor is missing).
+[table.base.formulas]
+"Owner" = 'if(actor == "ai", "🤖 For an agent", if(actor == "both", "🤝 A person and an agent", "👤 Needs a person"))'
+
+[table.base.properties]
+"note.status" = { displayName = "Status" }
+"note.actor" = { displayName = "Actor" }
+"note.start" = { displayName = "Start" }
+"note.due" = { displayName = "Due" }
+"note.priority" = { displayName = "Priority" }
+"note.tags" = { displayName = "Tags" }
+"note.url" = { displayName = "URL" }
+"note.routine" = { displayName = "Routine" }
+"note.created" = { displayName = "Created" }
+"note.done_at" = { displayName = "Done" }
+"formula.Owner" = { displayName = "Owner" }
+
+# Tabs ([ and ] switch). All sorted by priority, then due date.
+[[table.base.views]]
+type = "table"
+name = "People and AI"
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "due", "priority", "tags", "routine", "url"]
+groupBy = { property = "formula.Owner", direction = "ASC" }
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "People only"
+filters = { and = ['actor != "ai"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "due", "priority", "tags", "url"]
+sort = [{ property = "due", direction = "ASC" }, { property = "priority", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "AI only"
+filters = { and = ['actor == "ai" || actor == "both"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "priority", "due", "tags", "url"]
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Done"
+where = { status = ["done", "dropped"] }
+order = ["status", "formula.Owner", "done_at", "routine"]
+sort = [{ property = "done_at", direction = "DESC" }]
+
+# Routines: the rule in your own words (recurrence), the next date and the last date done. mdgrid does not create
+# the next round: when you add the task for a round, point its routine column at the note here, and update last_done
+# and next_due when it is done (you or an agent).
+[[table]]
+name = "Routines"
+
+# A new routine: asks the recurrence, who does it and the next date.
+[table.new_note]
+folder = "Routines"
+ask = ["recurrence", "actor", "next_due"]
+body = ".mdgrid/templates/routine.md"
+
+[table.base]
+filters = { and = ['file.inFolder("Routines")'] }
+
+[table.base.properties]
+"note.recurrence" = { displayName = "Recurrence" }
+"note.next_due" = { displayName = "Next" }
+"note.last_done" = { displayName = "Last done" }
+"note.actor" = { displayName = "Actor" }
+"note.tags" = { displayName = "Tags" }
+
+[[table.base.views]]
+type = "table"
+name = "Next up"
+order = ["recurrence", "next_due", "last_done", "actor", "tags"]
+sort = [{ property = "next_due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "By actor"
+order = ["recurrence", "next_due", "last_done", "tags"]
+groupBy = { property = "actor", direction = "ASC" }
+sort = [{ property = "next_due", direction = "ASC" }]

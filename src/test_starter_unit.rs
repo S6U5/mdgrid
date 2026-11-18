@@ -322,10 +322,13 @@ fn test_st_1_no_variant_for_language_uses_plain_ledger() {
 
 #[test]
 fn test_st_2_builtin_four_in_name_order_with_every_language() {
-    // [utest -> req~starter.builtin-list~1] 組み込みは bookmarks・people・reading・tasks の4つで名前の順。どれも Origin::Builtin で、名前と説明を
+    // [utest -> req~starter.builtin-list~2] 組み込みは bookmarks・people・reading・tasks・tasks-ai の5つで名前の順。どれも Origin::Builtin で、名前と説明を
     // 文言の台帳の全言語に持ち、印 .mdgrid/workspace.toml と雛形(.mdgrid/templates/)と見本を持つ。
     let all = builtin();
-    assert_eq!(st_names(&all), ["bookmarks", "people", "reading", "tasks"]);
+    assert_eq!(
+        st_names(&all),
+        ["bookmarks", "people", "reading", "tasks", "tasks-ai"]
+    );
     for s in &all {
         assert!(matches!(s.origin, Origin::Builtin), "{}: 組み込み", s.name);
         for lang in Lang::ALL {
@@ -362,7 +365,7 @@ fn test_st_2_builtin_four_in_name_order_with_every_language() {
 
 #[test]
 fn test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings() {
-    // [utest -> req~starter.builtin-no-warning~1] 組み込みの全部 × 全言語を一時フォルダに作る(見本あり・なし)と、印の読み込み(read_marker)・
+    // [utest -> req~starter.builtin-no-warning~2] 組み込みの全部 × 全言語を一時フォルダに作る(見本あり・なし)と、印の読み込み(read_marker)・
     // open(marker_open)・木の設定(marker_tree)の警告が空で、open が印の表(根の中)を指す。
     // 返したパスは書いたファイルと一致し、見本ありなら .mdgrid/ の外にノートがある。
     let t = Tmp::new("builtin");
@@ -444,7 +447,15 @@ fn test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_buil
     assert!(warns.is_empty(), "{warns:?}");
     assert_eq!(
         st_names(&got),
-        ["alpha", "tasks", "zeta", "bookmarks", "people", "reading"]
+        [
+            "alpha",
+            "tasks",
+            "zeta",
+            "bookmarks",
+            "people",
+            "reading",
+            "tasks-ai"
+        ]
     );
     let tasks: Vec<&Starter> = got.iter().filter(|s| s.name == "tasks").collect();
     assert_eq!(tasks.len(), 1, "tasks は1つ");
@@ -463,7 +474,7 @@ fn test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_buil
 
 #[test]
 fn test_st_3_list_without_config_dir_is_builtin_only() {
-    // [utest -> req~starter.user-list~1, req~starter.user-no-side-effect~1] 設定の置き場が無い(None・無いフォルダ・starters/ の無いフォルダ)なら組み込みだけで、警告なし。
+    // [utest -> req~starter.user-list~2, req~starter.user-no-side-effect~1] 設定の置き場が無い(None・無いフォルダ・starters/ の無いフォルダ)なら組み込みだけで、警告なし。
     let t = Tmp::new("nodir");
     let builtin_names: Vec<String> = builtin().iter().map(|s| s.name.clone()).collect();
     for (what, dir) in [
@@ -507,7 +518,14 @@ fn test_st_3_broken_manifest_warns_in_cli_3_shape_and_is_skipped() {
     );
     assert_eq!(
         st_names(&got),
-        ["okay", "bookmarks", "people", "reading", "tasks"],
+        [
+            "okay",
+            "bookmarks",
+            "people",
+            "reading",
+            "tasks",
+            "tasks-ai"
+        ],
         "壊れたものは出ず、ほかは出る"
     );
 }

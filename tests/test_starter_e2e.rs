@@ -74,7 +74,7 @@ fn home(tag: &str) -> TempDir {
 
 #[test]
 fn test_st_5_palette_creates_a_ledger_from_a_starter_and_opens_it_e2e() {
-    // [stest -> req~starter.palette-create~1] `:` → 「スターターから台帳を作る」→ reading → 作る場所(既定 reading)→ y → 読書の表が開き、
+    // [stest -> req~starter.palette-create~2] `:` → 「スターターから台帳を作る」→ reading → 作る場所(既定 reading)→ y → 読書の表が開き、
     // タブに「読みたい」がある。q で終えると、作った台帳のファイルがある。
     let home = home("starter-e2e");
     let h = home.path();
@@ -110,7 +110,7 @@ fn test_st_5_palette_creates_a_ledger_from_a_starter_and_opens_it_e2e() {
 
 #[test]
 fn test_st_5_tilde_folder_is_under_the_home_folder_e2e() {
-    // [stest -> req~starter.palette-create~1] 作る場所の欄の既定(スターターの名前)を消して `~/books` と打つ → HOME の下の books に作り、
+    // [stest -> req~starter.palette-create~2] 作る場所の欄の既定(スターターの名前)を消して `~/books` と打つ → HOME の下の books に作り、
     // 開いたフォルダの下に `~` という名前のフォルダはできない。n で見本は入れない。
     let home = home("starter-e2e-tilde");
     let h = home.path();

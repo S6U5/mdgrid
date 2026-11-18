@@ -935,9 +935,23 @@ fn load_for_edit(dir: &Path) -> io::Result<Vec<Workspace>> {
 
 /// 同じ表か(実体のパスで比べる)。
 pub fn same_path(a: &Path, b: &Path) -> bool {
-    let ca = std::fs::canonicalize(a).unwrap_or_else(|_| a.to_path_buf());
-    let cb = std::fs::canonicalize(b).unwrap_or_else(|_| b.to_path_buf());
-    ca == cb
+    real_or_virtual(a) == real_or_virtual(b)
+}
+
+/// 実体のパス。ファイルが無いとき(印に中身を書いた表の、仮の `.base` のパス。WS-9)は、親のフォルダの実体に
+/// 名前をつなぐ(相対のパスで開いても、絶対のパスで読んだ印の表と同じに比べられるように)。
+fn real_or_virtual(p: &Path) -> PathBuf {
+    if let Ok(c) = std::fs::canonicalize(p) {
+        return c;
+    }
+    let parent = match p.parent() {
+        Some(d) if !d.as_os_str().is_empty() => d,
+        _ => Path::new("."),
+    };
+    match (std::fs::canonicalize(parent), p.file_name()) {
+        (Ok(d), Some(name)) => d.join(name),
+        _ => p.to_path_buf(),
+    }
 }
 
 /// 表を足す(WS-2・WS-3)。ワークスペースが無ければ作る。同じ表がもうあれば名前とビューを置き換える。

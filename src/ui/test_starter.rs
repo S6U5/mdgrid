@@ -71,7 +71,7 @@ fn files_under(root: &Path) -> Vec<String> {
 
 #[test]
 fn test_st_5_palette_lists_starters_then_folder_then_samples_then_opens() {
-    // [utest -> req~starter.palette-create~1] パレットの「スターターから台帳を作る」→ 一覧に組み込みの4つ(名前と説明)→ reading を選ぶ →
+    // [utest -> req~starter.palette-create~2] パレットの「スターターから台帳を作る」→ 一覧に組み込みの5つ(名前と説明)→ reading を選ぶ →
     // 「作る場所」の欄に reading が入っている → Enter → 「見本のノートも入れる?」→ y → 開いたフォルダの下の
     // reading/ に印・雛形・見本ができ、その台帳の open の表へ開き直す。
     let tmp = workspace("st_flow");
@@ -79,7 +79,7 @@ fn test_st_5_palette_lists_starters_then_folder_then_samples_then_opens() {
     palette(&mut a, "スターターから台帳を作る");
     assert_eq!(a.mode, Mode::Palette, "{}", screen(&a));
     let s = screen(&a);
-    for name in ["tasks", "bookmarks", "reading", "people"] {
+    for name in ["tasks", "tasks-ai", "bookmarks", "reading", "people"] {
         assert!(s.contains(name), "一覧に {name}:\n{s}");
     }
     assert!(s.contains("スターター:"), "{s}");
@@ -133,7 +133,7 @@ fn test_st_5_palette_lists_starters_then_folder_then_samples_then_opens() {
 
 #[test]
 fn test_st_5_n_makes_the_ledger_without_samples() {
-    // [utest -> req~starter.palette-create~1] 見本を入れるかに n → 印と雛形だけで、見本のノートは書かない。
+    // [utest -> req~starter.palette-create~2] 見本を入れるかに n → 印と雛形だけで、見本のノートは書かない。
     let tmp = workspace("st_no_samples");
     let mut a = boot(&tmp, false);
     palette(&mut a, "スターターから台帳を作る");
@@ -156,7 +156,7 @@ fn test_st_5_n_makes_the_ledger_without_samples() {
 
 #[test]
 fn test_st_5_esc_at_any_step_cancels_and_writes_nothing() {
-    // [utest -> req~starter.palette-create~1, req~starter.palette-esc~1] Esc はどの段でも取りやめで、何も作らない。見本を入れるかに y/n 以外も取りやめ。
+    // [utest -> req~starter.palette-create~2, req~starter.palette-esc~1] Esc はどの段でも取りやめで、何も作らない。見本を入れるかに y/n 以外も取りやめ。
     let tmp = workspace("st_esc");
     let mut a = boot(&tmp, false);
     let before = files_under(&tmp.notes());
@@ -196,7 +196,7 @@ fn test_st_5_esc_at_any_step_cancels_and_writes_nothing() {
 
 #[test]
 fn test_st_5_empty_folder_is_refused_and_absolute_path_is_used_as_is() {
-    // [utest -> req~starter.palette-create~1] 作る場所が空なら理由を出して欄に留まる。絶対のパスはそのまま作る先になる。
+    // [utest -> req~starter.palette-create~2] 作る場所が空なら理由を出して欄に留まる。絶対のパスはそのまま作る先になる。
     let tmp = workspace("st_dir");
     let mut a = boot(&tmp, false);
     palette(&mut a, "スターターから台帳を作る");

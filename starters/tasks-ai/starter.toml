@@ -1,0 +1,9 @@
+# The built-in starter "tasks-ai" (ST-2): tasks shared by people and AI agents, with routines.
+# [name] and [description] are the words shown by `mdgrid --starters` and in the palette, one per language code of locales/ (en is required).
+[name]
+en = "Tasks with AI"
+ja = "タスク(人と AI)"
+
+[description]
+en = "Tasks split by who does them (a person, an agent, or both), with routines, charts, Gantt and Kanban"
+ja = "担当(人・AI・両方)で分けるタスクと、ルーチンの表。グラフ・ガント・カンバンつき"

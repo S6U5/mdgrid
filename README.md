@@ -93,7 +93,7 @@ Giving a single `.md` file opens its folder with that note selected.
 Starting from scratch? A built-in starter writes a ready-made ledger (the marker, note templates and, with `--with-samples`, a few sample notes):
 
 ```sh
-mdgrid --starters                                                       # tasks, bookmarks, reading, people
+mdgrid --starters                                                       # tasks, tasks-ai, bookmarks, reading, people
 mdgrid ~/notes/books --init-workspace --starter reading --with-samples
 mdgrid ~/notes/books
 ```
