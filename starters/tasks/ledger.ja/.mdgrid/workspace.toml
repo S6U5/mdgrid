@@ -3,10 +3,11 @@
 # これは自分の写しなので、列の名前・ビュー・値の候補は好きに直してよい。
 open = "タスク"
 
-# 状態のまとまりの間に空きの行を1つ。ノートの欄はファイルの名前だけ。
+# 状態のまとまりの間に空きの行を1つ。ノートの欄はファイルの名前だけで、新しいノートの頭に付く日付(20261118_)は出さない。
 [display]
 group_gap = true
 note_path = "name"
+note_name = '^\d{8}_'
 
 # 列の型。日付は日付として並び、直すときにカレンダーが開き、形の合わない値に印が付く。
 [types]
@@ -20,12 +21,17 @@ tags = "list"
 [rules.status]
 values = ["todo", "doing", "waiting", "done"]
 
+# 状態を done にすると、完了日に今日が入る。
+[rules.status.then]
+done = { done_at = "{date}" }
+
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# 新しいノート(a): 期限・優先度・URL を聞き、残りを埋め、本文を雛形から始める。
+# 新しいノート(a): 名前は今日の日付(20261118_)で始め、期限・優先度・URL を聞き、残りを埋め、本文を雛形から始める。
 [new_note]
 folder = "Tasks"
+name = "{date:YYYYMMDD}_"
 ask = ["due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
@@ -50,7 +56,12 @@ chart = [
 [table.base]
 filters = { and = ['file.inFolder("Tasks")'] }
 
+# 残り: 今日から期限までの隔たり(「あと3日」「5日前」)。見るたびに計算し、ノートには書かない。
+[table.base.formulas]
+left = 'due.relative()'
+
 [table.base.properties]
+"formula.left" = { displayName = "残り" }
 "note.status" = { displayName = "状態" }
 "note.start" = { displayName = "開始" }
 "note.due" = { displayName = "期限" }
@@ -64,10 +75,17 @@ filters = { and = ['file.inFolder("Tasks")'] }
 [[table.base.views]]
 type = "table"
 name = "未完了"
-where = { status = ["todo", "doing", "waiting"] }
-order = ["status", "due", "priority", "tags", "url"]
+filters = 'status != "done"'
+order = ["status", "due", "formula.left", "priority", "tags", "url"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "期限切れ"
+filters = { and = ['status != "done"', 'due < today()'] }
+order = ["status", "due", "formula.left", "priority", "tags"]
+sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"

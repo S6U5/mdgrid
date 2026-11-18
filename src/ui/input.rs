@@ -573,8 +573,9 @@ impl App {
     ) -> Result<(), String> {
         let Some(rows) = bulk else {
             let v = v.value(self, row, col);
+            let follow = self.follow(col);
             self.changes
-                .set(self.src.as_ref(), row, col, v)
+                .set_then(self.src.as_ref(), row, col, v, &follow)
                 .map_err(|s| Msg::CannotCommit.fill(&[&s.reason]))?;
             // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
             self.stay.insert(row.clone());
@@ -596,7 +597,10 @@ impl App {
                 items.push((r.clone(), Some(rv)));
             }
         }
-        let skips = self.changes.set_each(self.src.as_ref(), col, &items);
+        let follow = self.follow(col);
+        let skips = self
+            .changes
+            .set_each_then(self.src.as_ref(), col, &items, &follow);
         reasons.extend(skips.iter().map(|s| s.reason.clone()));
         let done = items.len() - skips.len();
         self.stay.extend(items.into_iter().map(|(r, _)| r));
@@ -637,9 +641,10 @@ impl App {
         };
         let Some(rows) = bulk else {
             let items = [(row.clone(), value_for(self, row))];
+            let follow = self.follow(col);
             if let Some(s) = self
                 .changes
-                .set_each(self.src.as_ref(), col, &items)
+                .set_each_then(self.src.as_ref(), col, &items, &follow)
                 .first()
             {
                 self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
@@ -680,7 +685,10 @@ impl App {
                 items.push((r.clone(), v));
             }
         }
-        let skips = self.changes.set_each(self.src.as_ref(), col, &items);
+        let follow = self.follow(col);
+        let skips = self
+            .changes
+            .set_each_then(self.src.as_ref(), col, &items, &follow);
         reasons.extend(skips.iter().map(|s| s.reason.clone()));
         let done = items.len() - skips.len();
         self.stay.extend(items.into_iter().map(|(r, _)| r));
@@ -707,9 +715,10 @@ impl App {
             self.message = Some(NOT_DRAWN.into());
             return;
         }
+        let follow = self.follow(&col);
         match self
             .changes
-            .set(self.src.as_ref(), &row, &col, NewValue::Null)
+            .set_then(self.src.as_ref(), &row, &col, NewValue::Null, &follow)
         {
             Ok(()) => {
                 self.stay.insert(row);

@@ -818,6 +818,8 @@ NoteFormWhere = "create in {0}"
 NoteHintKindNumber = "number"
 NoteHintKindList = "[list]"
 NoteFieldName = "name"
+## cell-edit.body-choose: the label of the field that picks the body template.
+NoteFieldBody = "template"
 NoteFromFilter = "(from the filter)"
 NoteFromConfig = "(from the config)"
 ## CE-27。
@@ -1772,3 +1774,29 @@ ChartUnit = "unit: {0}"
 RsnChartNotTable = "not a table like { kind = \"<kind>\", x = \"<column>\" }, so this chart is left out"
 ## {0} is the column.
 RsnChartNoColumn = "the table has no column {0}, so this chart is left out"
+
+# ---- expr: relative()(base-view.relative。今日・今からの隔たり) ----
+# 向き(先・前)と単位の組ごとに1文を持つ(語順や格が向きで変わる言語でも、文を丸ごと訳せるように)。
+# {0} は数。`…One` は数が 1 のときの文。
+RelToday = "today"
+RelNow = "now"
+RelInMinutes = "in {0} minutes"
+RelInMinutesOne = "in {0} minute"
+RelAgoMinutes = "{0} minutes ago"
+RelAgoMinutesOne = "{0} minute ago"
+RelInHours = "in {0} hours"
+RelInHoursOne = "in {0} hour"
+RelAgoHours = "{0} hours ago"
+RelAgoHoursOne = "{0} hour ago"
+RelInDays = "in {0} days"
+RelInDaysOne = "in {0} day"
+RelAgoDays = "{0} days ago"
+RelAgoDaysOne = "{0} day ago"
+RelInMonths = "in {0} months"
+RelInMonthsOne = "in {0} month"
+RelAgoMonths = "{0} months ago"
+RelAgoMonthsOne = "{0} month ago"
+RelInYears = "in {0} years"
+RelInYearsOne = "in {0} year"
+RelAgoYears = "{0} years ago"
+RelAgoYearsOne = "{0} year ago"

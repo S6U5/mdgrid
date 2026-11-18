@@ -805,7 +805,7 @@ id = "starter-tasks"
 title = { en = "The tasks starter", ja = "タスクのスターター" }
 command = ["./target/release/mdgrid", "examples/tasks"]
 ready = "Tasks"
-text = { en = "examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Doing, Waiting, Done), due date, priority and tags.", ja = "examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・進行中・待ち・完了)、期限、優先度、タグ。" }
+text = { en = "examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Overdue, Doing, Waiting, Done), due date, priority and tags.", ja = "examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・期限切れ・進行中・待ち・完了)、期限、優先度、タグ。" }
 
 [[shot]]
 id = "starter-reading"

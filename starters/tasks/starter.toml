@@ -5,5 +5,5 @@ en = "Tasks"
 ja = "タスク"
 
 [description]
-en = "One note per task: tabs by status (open, doing, waiting, done), due date, priority, tags"
-ja = "1件1ノートのタスク。状態のタブ(未完了・進行中・待ち・完了)・期限・優先度・タグ"
+en = "One note per task: tabs by status (open, overdue, doing, waiting, done), due date, priority, tags"
+ja = "1件1ノートのタスク。状態のタブ(未完了・期限切れ・進行中・待ち・完了)・期限・優先度・タグ"

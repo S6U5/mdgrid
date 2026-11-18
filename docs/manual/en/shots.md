@@ -746,7 +746,7 @@ The command palette's "Create a ledger from a starter" lists the built-in starte
 
 ![The tasks starter](images/starter-tasks.svg)
 
-examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Doing, Waiting, Done), due date, priority and tags.
+examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Overdue, Doing, Waiting, Done), due date, priority and tags.
 
 ## The reading starter
 

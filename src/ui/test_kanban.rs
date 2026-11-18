@@ -1195,3 +1195,26 @@ fn test_kb_5_external_change_moves_card_and_keeps_selection() {
     assert_eq!(selected(&s), ["beta"], "{s}");
     assert_eq!(a.changes.count(), 0);
 }
+
+// [utest -> req~cell-edit.then-kanban~1]
+#[test]
+fn test_then_fills_the_other_column_when_a_card_moves_to_the_lane() {
+    // todo の札を done のレーンまで動かすと、その行の done_at に今日がたまり、取り消し1回で前のレーンに戻って done_at も外れる。
+    let top = format!("{RULES}\n[rules.status.then]\ndone = {{ done_at = \"{{date}}\" }}\n");
+    let (_t, mut a) = boot("then-kanban", NOTES, &top, KANBAN);
+    a.today = mdgrid::types::parse_date("2026-10-06").unwrap();
+    let s = open(&mut a);
+    assert_eq!(selected(&s), ["alpha"], "{s}");
+    for _ in 0..3 {
+        ch(&mut a, 'L');
+    }
+    assert_eq!(lane_of(&screen(&a), "alpha"), "done", "{}", screen(&a));
+    let row = a.changes.rows().pop().unwrap();
+    assert_eq!(
+        a.changes.pending(&row, "done_at"),
+        Some(&mdgrid::writeback::NewValue::Date("2026-10-06".into()))
+    );
+    ch(&mut a, 'u');
+    assert_eq!(lane_of(&screen(&a), "alpha"), "waiting", "{}", screen(&a));
+    assert_eq!(a.changes.pending(&row, "done_at"), None);
+}

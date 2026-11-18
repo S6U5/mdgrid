@@ -53,6 +53,8 @@ clap_mangen = "0.3.3"
 time = { version = "0.3.55", default-features = false, features = ["std", "local-offset"] }
 # --apply(CLI-17)で、--print --format json の形を読む。
 serde_json = "1"
+# 雛形の変数 {uuid}・{uid}(cell-edit.template-vars-uuid)の乱数を OS から取る。
+getrandom = "0.3"
 
 [build-dependencies]
 # 文言の台帳(locales/*.toml)を読む(SR-23。build.rs)。依存の toml と同じ版。

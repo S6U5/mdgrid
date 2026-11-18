@@ -18,11 +18,17 @@ pub struct Rule {
     pub values: Option<Vec<String>>,
 }
 
+/// `[rules.<列>.then]` の中身: その列をある値に直したとき、同じ行に一緒に入れる値。値 → (列 → 入れる文字。
+/// 雛形の変数を書ける)。重ねたあとの値は `Resolved.then`(列 → Then)にある。
+pub type Then = BTreeMap<String, BTreeMap<String, String>>;
+
 /// 1つの範囲に書いた決まり(書いた項目だけ。狭い範囲が項目ごとに勝つ。SR-44)。
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RuleLayer {
     pub required: Option<bool>,
     pub values: Option<Vec<String>>,
+    /// 書けば、広い範囲の `then` に丸ごと代わる。
+    pub then: Option<Then>,
 }
 
 impl RuleLayer {

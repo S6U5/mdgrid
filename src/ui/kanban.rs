@@ -113,7 +113,7 @@ fn lane_name(key: &LaneKey) -> String {
 }
 
 /// レーンの値を、表の入力と同じ読み方(`entry::parse`)で列の型の値にする。型に合わなければ理由(表の入力と同じ文)。
-fn value_for(app: &App, col: &str, v: &str) -> Result<NewValue, String> {
+pub(super) fn value_for(app: &App, col: &str, v: &str) -> Result<NewValue, String> {
     let entry = match app.col_type(col) {
         Kind::Number => Entry::Number,
         Kind::Checkbox => Entry::Checkbox,
@@ -439,7 +439,11 @@ impl App {
                 return;
             }
         };
-        if let Err(s) = self.changes.set(self.src.as_ref(), &row, &col, nv) {
+        let follow = self.follow(&col);
+        if let Err(s) = self
+            .changes
+            .set_then(self.src.as_ref(), &row, &col, nv, &follow)
+        {
             self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
             return;
         }
