@@ -32,6 +32,8 @@ pub(crate) enum Target {
     Run(Action),
     /// 行番号(1 始まり。NV-7)。
     Goto(usize),
+    /// `wq`・`x`: 保存して終わる(差分の確認 → 確定で書いて終わる)。
+    SaveQuit,
 }
 
 /// パレットの候補。
@@ -320,7 +322,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
     let cand = |target: Target, label: String, name: &str| {
         let keys = match target {
             Target::Run(a) => keymap::keys_of(&app.keys, Mode::Table, a).join(" "),
-            Target::Goto(_) => String::new(),
+            Target::Goto(_) | Target::SaveQuit => String::new(),
         };
         Cand {
             target,
@@ -350,6 +352,11 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
             Target::Run(Action::Quit),
             label_of(Action::Quit).into(),
             "q",
+        )),
+        "wq" | "x" if !app.readonly => out.push(cand(
+            Target::SaveQuit,
+            Msg::PaletteSaveQuit.text().into(),
+            q,
         )),
         _ => {}
     }
@@ -545,6 +552,17 @@ impl App {
                         Target::Goto(n) => {
                             self.close_screen();
                             self.goto_line(n)
+                        }
+                        // 終了の確認で「保存する」を選んだのと同じ道(差分の確認 → 確定で書いて終わる)。
+                        // ためた変更が無ければそのまま終わる。`q` と同じく、表を移る予約は捨てる。
+                        Target::SaveQuit => {
+                            self.close_screen();
+                            self.switch_to = None;
+                            self.switch_select = None;
+                            self.switch_new_note = false;
+                            self.switch_workspace = None;
+                            self.switch_leave_workspace = false;
+                            self.review_action(Action::QuitSave);
                         }
                     }
                 }
