@@ -808,6 +808,8 @@ NoteFormWhere = "create in {0}"
 NoteHintKindNumber = "number"
 NoteHintKindList = "[list]"
 NoteFieldName = "name"
+## cell-edit.body-choose: the label of the field that picks the body template.
+NoteFieldBody = "template"
 NoteFromFilter = "(from the filter)"
 NoteFromConfig = "(from the config)"
 ## CE-27。

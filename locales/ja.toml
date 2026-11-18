@@ -807,6 +807,8 @@ NoteFormWhere = "{0} に作る"
 NoteHintKindNumber = "数"
 NoteHintKindList = "[リスト]"
 NoteFieldName = "名前"
+## cell-edit.body-choose。新しいノートの窓の、本文の雛形を選ぶ欄の見出し。
+NoteFieldBody = "雛形"
 NoteFromFilter = "(絞り込みから)"
 NoteFromConfig = "(設定から)"
 ## CE-27。

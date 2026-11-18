@@ -25,7 +25,7 @@ use super::list::{to_new, Item, List};
 use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
 use mdgrid::newnote::{self, NewNote};
-use mdgrid::source::{date_if_untyped, Edit, NewValue, RowId, Source};
+use mdgrid::source::{date_if_untyped, Edit, NewValue, RowId, Source, Value};
 use mdgrid::types::{self, Kind};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -75,9 +75,38 @@ pub(crate) struct Flow {
     open_editor: bool,
     /// このノートの `{uuid}`・`{uid}`(窓を開いたときに作り、名前・値・本文で同じ値を使う)。
     ids: newnote::Ids,
+    /// `[new_note] body` がフォルダのときの、選べる雛形の名前(名前の順。フォルダでなければ空)。
+    bodies: Vec<String>,
 }
 
+/// 窓の欄の並び(`Flow::fields`)の中で、本文の雛形を選ぶ欄を表す名前(列ではない。ノートには書かない)。
+/// 欄の決め方は仮決め(tbd~body-choose-shape)。
+const BODY_FIELD: &str = "\u{1}body";
+
 impl Flow {
+    /// `[new_note] body` がフォルダなら、その中の雛形の名前を読み直し、選ぶ欄を名前の次に置く(無ければ外す)。
+    fn set_bodies(&mut self) {
+        self.fields.retain(|c| c != BODY_FIELD);
+        self.bodies = newnote::body_choices(&self.root, &self.rule.body);
+        if !self.bodies.is_empty() && !self.rule.editor() {
+            self.fields.insert(0, BODY_FIELD.to_string());
+        }
+    }
+
+    /// 本文の雛形のパス(開いたフォルダからの相対)。選ぶ欄が無ければ設定の `body` のまま。欄があれば答えた雛形、
+    /// まだ答えていなければ名前の順で最初の雛形、「なし」なら空(本文なし)。
+    fn body(&self) -> String {
+        if self.bodies.is_empty() {
+            return self.rule.body.clone();
+        }
+        let name = match self.answer_of(BODY_FIELD) {
+            Some(NewValue::Null) => return String::new(),
+            Some(v) => new_value_text(v),
+            None => self.bodies[0].clone(),
+        };
+        newnote::body_choice_path(&self.rule.body, &name)
+    }
+
     /// 今聞いている列(名前の間は None)。
     fn col(&self) -> Option<&str> {
         self.step
@@ -206,7 +235,11 @@ impl App {
             error: None,
             open_editor,
             ids,
+            bodies: Vec::new(),
         });
+        if let Some(f) = &mut self.note.flow {
+            f.set_bodies();
+        }
         if choosing {
             self.open_place(0);
         } else {
@@ -259,6 +292,7 @@ impl App {
         if let Some(p) = f.places.get(sel) {
             f.root = p.clone();
         }
+        f.set_bodies();
         f.choosing = false;
         let text = if f.name.is_empty() {
             newnote::expand_name_ids(&f.rule.name, today, &f.ids)
@@ -368,6 +402,20 @@ impl App {
         let Some(col) = f.col().map(String::from) else {
             return;
         };
+        if col == BODY_FIELD {
+            // cell-edit.body-choose: 雛形の名前の候補のリスト(最後に「なし」)。今の値は前の答えか最初の雛形。
+            let cur = match f.answer_of(BODY_FIELD) {
+                Some(v) => v.clone(),
+                None => NewValue::Str(f.bodies[0].clone()),
+            };
+            let cands: Vec<Value> = f.bodies.iter().cloned().map(Value::Str).collect();
+            let list = List::new(&cands, Some(&cur), true);
+            self.open_note_input(Entry::Text, new_value_text(&cur), None);
+            if let Some(i) = &mut self.input {
+                i.list = Some(list);
+            }
+            return;
+        }
         // 答えた欄はその答えで、まだなら前もって入れる値(変数を埋めて)で始める。
         let vars = self.note_vars(f);
         let preset = value
@@ -667,12 +715,19 @@ impl App {
             })
             .collect();
         // CE-32: 雛形は開いたフォルダの中のファイルだけ(外を指すものは読まずに理由)。
-        let body = match newnote::read_body(&f.root, &rule.body) {
+        let body = match newnote::read_body(&f.root, &f.body()) {
             Ok(b) => b,
             Err(msg) => return self.note_problem(cur, cur, msg),
         };
+        // 雛形を選ぶ欄の答えは列ではないので、ノートには書かない。
+        let answers: Vec<Edit> = f
+            .answers
+            .iter()
+            .filter(|e| e.key != BODY_FIELD)
+            .cloned()
+            .collect();
         let made = newnote::note_path(&f.root, &f.rule.folder, &f.name).and_then(|path| {
-            let bytes = newnote::build_with(&rule, &prefill, &f.answers, &vars, body.as_deref())?;
+            let bytes = newnote::build_with(&rule, &prefill, &answers, &vars, body.as_deref())?;
             newnote::create(&path, &bytes)
                 .map_err(|e| Msg::NoteCannotCreate.fill(&[&path.display(), &e]))?;
             Ok(path)
@@ -784,6 +839,7 @@ fn label(f: &Flow, row: Option<usize>) -> String {
     match row {
         None => Msg::NoteFieldPlace.text().to_string(),
         Some(0) => format!("{} *", Msg::NoteFieldName.text()),
+        Some(k) if f.fields[k - 1] == BODY_FIELD => Msg::NoteFieldBody.text().to_string(),
         Some(k) => {
             let c = &f.fields[k - 1];
             if f.rule.required.contains(c) {
@@ -1001,6 +1057,9 @@ fn value_text(app: &App, f: &Flow, row: Option<usize>) -> (String, bool) {
     let c = &f.fields[k - 1];
     if let Some(v) = f.answer_of(c) {
         return (new_value_text(v), false);
+    }
+    if c == BODY_FIELD {
+        return (f.bodies[0].clone(), false);
     }
     match f.preset(c) {
         Some(v) => {

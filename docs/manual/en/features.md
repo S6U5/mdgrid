@@ -62,7 +62,7 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 
 ![Create a note](images/new-note.svg)
 
-`a` (or "+ New" at the right end of the view bar) opens a form with the name and one field per column and writes one note. The folder, the file name and the body template come from the workspace marker. It can also start the file name with today's date or a short id (`{uid}`), and put a UUID (`{uuid}`) in the frontmatter.
+`a` (or "+ New" at the right end of the view bar) opens a form with the name and one field per column and writes one note. The folder, the file name and the body template come from the workspace marker. It can also start the file name with today's date or a short id (`{uid}`), and put a UUID (`{uuid}`) in the frontmatter. Keep several body templates in a folder and the form lets you pick one.
 
 [Create a note](tasks.md#create-a-note)
 

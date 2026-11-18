@@ -645,7 +645,7 @@ How a new note is made from the table ("+ New" at the right end of the view bar,
 - `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
 - `hidden`: columns written into every new note without a field in the form (with `[new_note.set]`, for values such as the creation date).
 - `mode`: `"form"` (default: the form with every field) or `"editor"` (ask only the name, create the note with the preset values and the body template, then open it in the editor right away). From the form, `Ctrl+E` also creates the note and opens it in the editor.
-- `body`: a template file (relative to the opened folder) whose contents become the body of the new note.
+- `body`: a template file (relative to the opened folder) whose contents become the body of the new note. If it names a folder, the form gets a "template" field after the name, and you pick one of the folder's `.md` files (the first by name if you do not pick; "(empty)" for no body).
 - `[new_note.set]`: values written into every new note (column = value): a string, number, boolean, date, or an array of them (written as a vertical list).
 
 Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may use these variables; unknown ones are left as they are:

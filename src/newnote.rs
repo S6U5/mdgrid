@@ -500,6 +500,30 @@ pub fn read_body(root: &Path, body: &str) -> Result<Option<String>, String> {
         .map_err(|e| Msg::NoteBodyUnreadable.fill(&[&real.display(), &e]))
 }
 
+/// `[new_note] body` がフォルダのとき、その直下の `.md` の名前(`.md` なし。名前の順)。フォルダでない・外を指す・
+/// 読めないときと、`.md` が1つも無いときは空(cell-edit.body-choose)。
+pub fn body_choices(root: &Path, body: &str) -> Vec<String> {
+    let Ok(Some(dir)) = body_path(root, body) else {
+        return Vec::new();
+    };
+    let Ok(rd) = std::fs::read_dir(&dir) else {
+        return Vec::new();
+    };
+    let mut names: Vec<String> = rd
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| p.is_file() && p.extension().is_some_and(|x| x == "md"))
+        .filter_map(|p| p.file_stem().and_then(|s| s.to_str()).map(str::to_string))
+        .collect();
+    names.sort();
+    names
+}
+
+/// `body` のフォルダの中の雛形 `name` の、開いたフォルダからの相対のパス。
+pub fn body_choice_path(body: &str, name: &str) -> String {
+    format!("{}/{name}.md", body.trim().trim_end_matches('/'))
+}
+
 /// `read_body` の確かめ: 雛形の実体のパス(開いたフォルダの中にあると確かめたもの)。
 pub fn body_path(root: &Path, body: &str) -> Result<Option<PathBuf>, String> {
     let body = body.trim();

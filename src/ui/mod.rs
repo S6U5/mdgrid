@@ -301,6 +301,8 @@ mod test_look;
 #[cfg(test)]
 mod test_modern_rest;
 #[cfg(test)]
+mod test_note_bodies;
+#[cfg(test)]
 mod test_note_body_outside;
 #[cfg(test)]
 mod test_note_editor;
