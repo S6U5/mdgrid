@@ -746,7 +746,7 @@ R で、ワークスペースの表を箱にし、リンクの列から行き先
 
 ![タスクのスターター](images/starter-tasks.svg)
 
-examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・進行中・待ち・完了)、期限、優先度、タグ。
+examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・期限切れ・進行中・待ち・完了)、期限、優先度、タグ。
 
 ## 読書のスターター
 

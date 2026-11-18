@@ -69,10 +69,17 @@ filters = { and = ['file.inFolder("Tasks")'] }
 [[table.base.views]]
 type = "table"
 name = "未完了"
-where = { status = ["todo", "doing", "waiting"] }
+filters = 'status != "done"'
 order = ["status", "due", "priority", "tags"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "期限切れ"
+filters = { and = ['status != "done"', 'due < today()'] }
+order = ["status", "due", "priority", "tags"]
+sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"

@@ -10,7 +10,7 @@ Four starters are built in, and each one is a sample of a way to use mdgrid. The
 
 ![The tasks starter](images/starter-tasks.svg)
 
-Tasks. One note per task, with status tabs (Open, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you. The name of a new note starts with today's date, like `20261118_`, so you can make a task with the same title on another day; the table hides that date and shows only the title. Setting the status to `done` fills the done date (`done_at`) with today. With its `start` and `due` columns, `C` shows it as a Gantt too.
+Tasks. One note per task, with status tabs (Open, Overdue, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you. The name of a new note starts with today's date, like `20261118_`, so you can make a task with the same title on another day; the table hides that date and shows only the title. Setting the status to `done` fills the done date (`done_at`) with today. With its `start` and `due` columns, `C` shows it as a Gantt too.
 
 ![The tree screen](images/tree.svg)
 

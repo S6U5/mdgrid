@@ -66,14 +66,21 @@ filters = { and = ['file.inFolder("Tasks")'] }
 "note.created" = { displayName = "Created" }
 "note.done_at" = { displayName = "Done" }
 
-# Tabs by status ([ and ] switch them).
+# Tabs ([ and ] switch them): one per status, plus Overdue for unfinished tasks past their due date. Open also shows notes that have no status yet.
 [[table.base.views]]
 type = "table"
 name = "Open"
-where = { status = ["todo", "doing", "waiting"] }
+filters = 'status != "done"'
 order = ["status", "due", "priority", "tags"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Overdue"
+filters = { and = ['status != "done"', 'due < today()'] }
+order = ["status", "due", "priority", "tags"]
+sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"

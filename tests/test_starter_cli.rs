@@ -687,3 +687,108 @@ fn test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean
         }
     }
 }
+
+#[test]
+fn test_st_2_tasks_first_tab_keeps_notes_without_a_status() {
+    // [stest -> req~starter.tasks-open-no-status~1] tasks の最初のタブは、done でないノートを、状態の無いノートも含めて出す。
+    // 観点: 日本語と英語の変種の両方。
+    for lang in ["ja_JP.UTF-8", "en_US.UTF-8"] {
+        let home = home("st-open-no-status");
+        let h = home.path();
+        let root = h.join("tasks");
+        let made = run_lang(
+            h,
+            h,
+            lang,
+            &[],
+            &[
+                root.to_str().unwrap(),
+                "--init-workspace",
+                "--starter",
+                "tasks",
+            ],
+        );
+        ok(made, "tasks から作る");
+        put(
+            &root.join("Tasks/a-priority-only.md"),
+            "---\npriority: p2\n---\n",
+        );
+        put(&root.join("Tasks/b-no-frontmatter.md"), "# memo\n");
+        put(&root.join("Tasks/c-todo.md"), "---\nstatus: todo\n---\n");
+        put(&root.join("Tasks/d-done.md"), "---\nstatus: done\n---\n");
+        let printed = run_lang(
+            h,
+            h,
+            lang,
+            &[],
+            &[root.to_str().unwrap(), "--print", "--with-path"],
+        );
+        let text = ok(printed, "--print");
+        let mut names: Vec<&str> = ["a-priority-only", "b-no-frontmatter", "c-todo", "d-done"]
+            .into_iter()
+            .filter(|n| text.contains(n))
+            .collect();
+        names.sort();
+        assert_eq!(
+            names,
+            ["a-priority-only", "b-no-frontmatter", "c-todo"],
+            "{lang}:\n{text}"
+        );
+    }
+}
+
+#[test]
+fn test_st_2_tasks_overdue_tab_shows_only_past_due_open_notes() {
+    // [stest -> req~starter.tasks-overdue-tab~1] tasks の「期限切れ」のタブは、期限が今日より前で done でないノートだけを出す。
+    // 観点: 期限が今日ちょうどのノートは出ない。期限の無いノートと done のノートも出ない。
+    for (lang, tab) in [("ja_JP.UTF-8", "期限切れ"), ("en_US.UTF-8", "Overdue")] {
+        let home = home("st-overdue");
+        let h = home.path();
+        let root = h.join("tasks");
+        let made = run_lang(
+            h,
+            h,
+            lang,
+            &[],
+            &[
+                root.to_str().unwrap(),
+                "--init-workspace",
+                "--starter",
+                "tasks",
+            ],
+        );
+        ok(made, "tasks から作る");
+        put(
+            &root.join("Tasks/a-yesterday.md"),
+            "---\nstatus: todo\ndue: 2026-10-09\n---\n",
+        );
+        put(
+            &root.join("Tasks/b-today.md"),
+            "---\nstatus: todo\ndue: 2026-10-10\n---\n",
+        );
+        put(
+            &root.join("Tasks/c-done.md"),
+            "---\nstatus: done\ndue: 2026-10-01\n---\n",
+        );
+        put(&root.join("Tasks/d-no-due.md"), "---\nstatus: todo\n---\n");
+        let printed = run_lang(
+            h,
+            h,
+            lang,
+            &[("MDGRID_TODAY", "2026-10-10")],
+            &[
+                root.to_str().unwrap(),
+                "--print",
+                "--with-path",
+                "--view",
+                tab,
+            ],
+        );
+        let text = ok(printed, "--print --view");
+        let names: Vec<&str> = ["a-yesterday", "b-today", "c-done", "d-no-due"]
+            .into_iter()
+            .filter(|n| text.contains(n))
+            .collect();
+        assert_eq!(names, ["a-yesterday"], "{lang}:\n{text}");
+    }
+}
