@@ -46,9 +46,14 @@
 - 受け入れ: `[rules.status] values = ["todo", "doing", "done"]`、`kanban = { column = "status" }` の表に、status を持たないノートが1件 → 警告せず、`B` でカンバンが開き、レーン todo・doing・done が並ぶ。`column = "none"`(設定にもノートにも無い)→ kanban.config-bad-column のとおり警告1行。
 
 ### 行が1つも無い表(見本なしで作った台帳など)では、カンバンの設定の列があるかを決めず、警告しないべき(画面の型のメニューには出し、開くときに出す行が無いと理由を出す)
-`req~kanban.config-empty-table~1` P1
+`req~kanban.config-empty-table~2` P1
 - なぜ: 行が1つも無い表では、列をノートのキーから作るため
-- 受け入れ: 行が1つも無い表 → 読み終えても警告せず、メニューに出て、開くと理由1行。外からノートを足すと `B` で開く。
+- 受け入れ: 行が1つも無い表 → 読み終えても警告せず、メニューに出て、開くと理由1行(列に決まりの値があるときは、kanban.open-empty-lanes のとおり空のレーンで開く)。外からノートを足すと `B` で開く。
+
+### 行が1つも無くても、カンバンの列に決まりの値(cell-edit.rules-values)があるときは、その値のレーンを札 0 枚で並べてカンバンを開くべき
+`req~kanban.open-empty-lanes~1` P1
+- なぜ: 見本なしで作った台帳でも、設定で決めた状態の並びを最初から見られるようにするため
+- 受け入れ: ノートが1件も無い表で `[rules.status] values = ["todo", "doing", "done"]`、`kanban = { column = "status" }` → `B` でカンバンが開き、レーン todo (0)・doing (0)・done (0) がこの順で並ぶ。札を動かすキーを押しても何もためない。決まりの値の無い列で行が1つも無い → kanban.config-empty-table のとおり開かずに理由1行。
 
 ### `B`(か画面の型のメニューの「カンバン」)で、今のビューの行(絞り込み・並べ替えのあと。tree.screen と同じ)を、列の値ごとのレーン(縦の列)に札として並べて見せるべき
 `req~kanban.open-lanes~1` P1

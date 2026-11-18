@@ -255,11 +255,12 @@ impl App {
             self.message = Some(why.unwrap_or_else(|| Msg::KanbanNotSet.text().into()));
             return;
         };
-        if self.rows.is_empty() {
+        let mut lanes = self.kanban_lanes(&spec);
+        // kanban.open-empty-lanes: 行が無くても、列の決まりに値があれば空のレーンで開く(レーンが1つも無ければ理由)。
+        if self.rows.is_empty() && lanes.is_empty() {
             self.message = Some(Msg::KanbanNoRows.text().into());
             return;
         }
-        let mut lanes = self.kanban_lanes(&spec);
         let mut lane = 0;
         if let Some(cur) = self.cur_row() {
             for (i, l) in lanes.iter_mut().enumerate() {

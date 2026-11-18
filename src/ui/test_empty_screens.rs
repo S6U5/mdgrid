@@ -146,7 +146,7 @@ fn test_tr_2_empty_table_missing_path_column_no_warning_menu_and_reason() {
 
 #[test]
 fn test_kb_1_empty_table_missing_status_column_no_warning_menu_and_reason() {
-    // [utest -> req~kanban.config-empty-table~1] 行が1つも無い表で kanban = { column = "none" } → 読み終えても警告しない。
+    // [utest -> req~kanban.config-empty-table~2] 行が1つも無い表で kanban = { column = "none" } → 読み終えても警告しない。
     // 画面の型のメニューに「カンバン」(キー B)が出て、B では開かずに理由「カンバンに出す行が無い」。
     check(
         "emptykb",

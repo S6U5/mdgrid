@@ -807,7 +807,7 @@ fn test_kb_2_kanban_opened_while_loading_is_rebuilt_when_loading_ends() {
 
 #[test]
 fn test_kb_1_kanban_opened_while_loading_closes_when_setting_turns_off() {
-    // [utest -> req~kanban.config-bad-column~1, req~kanban.config-empty-table~1] #6: 設定の列が表に無い(column = "none")表で、読み込みの途中に B で開く → 読み終えて列が無いと分かったら、
+    // [utest -> req~kanban.config-bad-column~1, req~kanban.config-empty-table~2] #6: 設定の列が表に無い(column = "none")表で、読み込みの途中に B で開く → 読み終えて列が無いと分かったら、
     // 警告1行(CLI-3 の形)を出し、開いているカンバンを閉じて表に戻る。
     let owned = forty();
     let notes: Vec<(&str, &str)> = owned
@@ -835,7 +835,7 @@ fn test_kb_1_kanban_opened_while_loading_closes_when_setting_turns_off() {
 
 #[test]
 fn test_kb_1_setting_column_gone_does_not_fall_back_to_inference() {
-    // [utest -> req~kanban.config-column~1, req~kanban.config-guess~1, req~kanban.config-guess-none~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~1] #8: 設定 column = "phase" で開いたまま、外で全部のノートから phase を消す → 推定(status)に落ちない:
+    // [utest -> req~kanban.config-column~1, req~kanban.config-guess~1, req~kanban.config-guess-none~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~2] #8: 設定 column = "phase" で開いたまま、外で全部のノートから phase を消す → 推定(status)に落ちない:
     // 開いたままなら題は phase のままで「推定」と示さない。表に戻って B でも、推定の status のカンバンは開かない。
     let notes: &[(&str, &str)] = &[
         ("alpha.md", "---\nstatus: todo\nphase: plan\n---\n"),
@@ -944,7 +944,7 @@ fn test_ga_1_setting_column_gone_does_not_fall_back_to_inference() {
 
 #[test]
 fn test_kb_1_empty_ledger_does_not_warn_and_kanban_opens_after_adding_note() {
-    // [utest -> req~kanban.config-empty-table~1] #9: 行が0件の台帳(kanban = { column = "status" })→ 読み終えても「列が無い」と警告しない。
+    // [utest -> req~kanban.config-empty-table~2] #9: 行が0件の台帳(kanban = { column = "status" })→ 読み終えても「列が無い」と警告しない。
     // 同じ回で外からノートを足すと、B でカンバンが開く。
     let (t, mut a) = boot("kbfix9", &[], RULES, KANBAN);
     assert!(a.rows.is_empty(), "前提: 0件");

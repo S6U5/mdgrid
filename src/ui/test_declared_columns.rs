@@ -103,3 +103,48 @@ fn test_tree_path_declared_in_types_does_not_warn_when_no_note_has_it() {
         "{m}"
     );
 }
+
+#[test]
+fn test_kanban_opens_with_empty_lanes_when_there_are_no_rows() {
+    // [utest -> req~kanban.open-empty-lanes~1] ノートが1件も無い表で [rules.status] values = todo・doing・done、kanban = { column = "status" } → B でカンバンが開き、札 0 枚のレーン todo・doing・done がこの順で並ぶ。
+    let tmp = Tmp::new("dc-kanban-empty");
+    std::fs::create_dir_all(tmp.notes()).unwrap();
+    std::fs::create_dir_all(tmp.0.join(".mdgrid")).unwrap();
+    std::fs::write(
+        tmp.0.join(".mdgrid/workspace.toml"),
+        format!("{TOP}\n[[table]]\nname = \"T\"\npath = \"notes\"\nkanban = {{ column = \"status\" }}\n"),
+    )
+    .unwrap();
+    let dir: PathBuf = tmp.notes();
+    let src = Markdown::open(std::slice::from_ref(&dir)).unwrap();
+    let mut a = App::new(Box::new(src), ColorMode::None);
+    a.resize(120, 30);
+    a.start(Startup {
+        config: Config::default(),
+        warnings: Vec::new(),
+        readonly: false,
+        no_color: true,
+        state_dir: Some(tmp.0.join("state")),
+        config_dir: Some(tmp.0.join("config")),
+        target: dir,
+        base: None,
+    });
+    while !a.loaded() {
+        a.load_step(100);
+    }
+    assert!(a.rows.is_empty(), "前提: 0件");
+    ch(&mut a, 'B');
+    assert_eq!(a.mode, Mode::Kanban, "{:?}", a.message);
+    let s = screen(&a);
+    let at = |w: &str| s.find(w).unwrap_or_else(|| panic!("レーン {w}:\n{s}"));
+    assert!(
+        at("todo (0)") < at("doing (0)") && at("doing (0)") < at("done (0)"),
+        "{s}"
+    );
+    // レーンの中を動いても、札が無いので何もためない。
+    for k in ['j', 'l', 'L', 'H', 'h'] {
+        ch(&mut a, k);
+    }
+    assert_eq!(a.mode, Mode::Kanban);
+    assert_eq!(a.changes.count(), 0);
+}

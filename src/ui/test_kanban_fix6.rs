@@ -179,7 +179,7 @@ fn to_first_lane(a: &mut App) {
 
 #[test]
 fn test_kb_4_setting_column_not_in_table_does_not_move_card_while_loading() {
-    // [utest -> req~kanban.move-card~1, req~kanban.move-pending~1, req~kanban.move-readonly~1, req~kanban.config-column~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~1] #23: 印の設定の列が表の列に無い名前(`note.status`。表の列は status)の `.base` を、読み込みの途中に
+    // [utest -> req~kanban.move-card~1, req~kanban.move-pending~1, req~kanban.move-readonly~1, req~kanban.config-column~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~2] #23: 印の設定の列が表の列に無い名前(`note.status`。表の列は status)の `.base` を、読み込みの途中に
     // B で開いて札を L で右のレーンへ動かす → 値をためず(未保存の変更は 0、`note.status` のキーへの変更も無い)、
     // 列が無いことを言う理由1行(列の名前 note.status を言う)を出す。読み終えたあとに B で断るのと同じく、表に無い
     // 列に書かない。直しが B の時点で断る形でもよい(そのときは B の理由で見る)。

@@ -600,7 +600,7 @@ fn warn_after_first_note(tag: &str, line: &str) -> String {
 
 #[test]
 fn test_kb_1_column_missing_warns_when_first_note_is_added() {
-    // [utest -> req~kanban.config-empty-table~1] #12: 見本なしの空の台帳(kanban = { column = "status" })で読み終えたあと、status の無いノートを外で
+    // [utest -> req~kanban.config-empty-table~2] #12: 見本なしの空の台帳(kanban = { column = "status" })で読み終えたあと、status の無いノートを外で
     // 足す → そのとき CLI-3 の形で列が無いと警告する(「設定が無い」ではない)。
     let m = warn_after_first_note("kbfx12", KANBAN);
     assert!(

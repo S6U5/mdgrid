@@ -463,7 +463,7 @@ fn select_card(a: &mut App, name: &str) {
 
 #[test]
 fn test_kb_1_setting_opens_with_b_and_menu_offers_kanban() {
-    // [utest -> req~kanban.config-column~1, req~kanban.config-guess~1, req~kanban.config-empty-table~1] kanban = { column = "status" } の表 → 警告なし。画面の型のメニューに「カンバン」(切り替えのキー B)が
+    // [utest -> req~kanban.config-column~1, req~kanban.config-guess~1, req~kanban.config-empty-table~2] kanban = { column = "status" } の表 → 警告なし。画面の型のメニューに「カンバン」(切り替えのキー B)が
     // 出て、B で開く。題に列の名前 status があり、「推定」は無い。もう一度 B で表。メニューの「カンバン」を選んでも開く。
     let (_t, mut a) = boot("kb1set", NOTES, RULES, KANBAN);
     assert_eq!(a.message, None, "警告が無い");
@@ -565,7 +565,7 @@ fn test_kb_1_infers_japanese_name_and_skips_list_column() {
 
 #[test]
 fn test_kb_1_no_status_like_column_gives_reason() {
-    // [utest -> req~kanban.config-guess-none~1, req~kanban.config-empty-table~1] 設定なしで状態らしい列が無い → B は理由1行で開かない。画面の型のメニューに「カンバン」は出ない。
+    // [utest -> req~kanban.config-guess-none~1, req~kanban.config-empty-table~2] 設定なしで状態らしい列が無い → B は理由1行で開かない。画面の型のメニューに「カンバン」は出ない。
     let notes: &[(&str, &str)] = &[
         ("a.md", "---\ntitle: x\npriority: p1\n---\n"),
         ("b.md", "---\ntitle: y\npriority: p2\n---\n"),
@@ -583,7 +583,7 @@ fn test_kb_1_no_status_like_column_gives_reason() {
 
 #[test]
 fn test_kb_1_missing_column_warns_and_no_kanban() {
-    // [utest -> req~kanban.config-guess-none~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~1] column = "none"(表に無い列)→ 読み終えたときに CLI-3 の形の警告1行で、カンバンを出さない。
+    // [utest -> req~kanban.config-guess-none~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~2] column = "none"(表に無い列)→ 読み終えたときに CLI-3 の形の警告1行で、カンバンを出さない。
     // 推定できる status の列があっても推定で開かず、メニューにも出ない。
     let (_t, mut a) = boot("kb1col", NOTES, RULES, "kanban = { column = \"none\" }");
     let m = a.message.clone().unwrap_or_default();
@@ -623,7 +623,7 @@ fn test_kb_1_list_column_setting_warns() {
 
 #[test]
 fn test_kb_1_bad_setting_shape_warns() {
-    // [utest -> req~kanban.config-guess~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~1] 書き方の違う設定(column が文字でない・column が無い・表でない)→ CLI-3 の形の警告(場所は
+    // [utest -> req~kanban.config-guess~1, req~kanban.config-bad-column~1, req~kanban.config-empty-table~2] 書き方の違う設定(column が文字でない・column が無い・表でない)→ CLI-3 の形の警告(場所は
     // table[1].kanban。「知らない項目」ではない)で、設定を使わない。推定できる列の無い表なのでカンバンは出ない。
     let notes: &[(&str, &str)] = &[
         ("a.md", "---\nphase: plan\n---\n"),
