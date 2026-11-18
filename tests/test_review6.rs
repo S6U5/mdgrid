@@ -81,7 +81,7 @@ fn test_cli_17_two_headers_same_column() {
     );
 }
 
-// [stest -> req~cli.apply-dry-run~1, req~cli.apply-reject-all~1, req~cli.apply-list-cell~1]
+// [stest -> req~cli.apply-reject-all~1, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_json_empty_list_and_big_int() {
     let root = dir("json");

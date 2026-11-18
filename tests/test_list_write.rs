@@ -246,7 +246,7 @@ fn test_ce_18_block_list_indent_0_add_remove_reorder() {
 
 #[test]
 fn test_ce_18_block_list_at_end_of_frontmatter() {
-    // [utest -> req~cell-edit.list-layout~1] 縦のリストがフロントマターの最後のキーでも、閉じの区切りと本文はそのまま。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-add-item~1] 縦のリストがフロントマターの最後のキーでも、閉じの区切りと本文はそのまま。
     let before = "---\nstatus: draft\ntags:\n  - a\n---\nbody\n";
     assert_eq!(
         apply_list(before, "tags", &["a", "b"]),
@@ -282,7 +282,7 @@ fn test_ce_18_block_list_with_quoted_elements_reads_back() {
 
 #[test]
 fn test_ce_18_missing_key_adds_obsidian_block_form() {
-    // [utest -> req~cell-edit.list-layout~1] キーが無いノートに [a] → `tags:` と `  - a` の2行が閉じの区切りの前に足される。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-add-key~1] キーが無いノートに [a] → `tags:` と `  - a` の2行が閉じの区切りの前に足される。
     let before = "---\ntitle: t\nstatus: draft\n---\nbody\n";
     let after = apply_list(before, "tags", &["a"]);
     assert_eq!(

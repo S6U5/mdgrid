@@ -1,14 +1,10 @@
 name: Demos
 
 # Record the feature tours in demos/*.tape as GIFs with VHS. The release workflow calls this and attaches
-# the GIFs to the release; pull requests that change the tapes run it too, to catch a broken tape early.
-# The GIFs are never committed.
+# the GIFs to the release. It does not run on pull requests: a run takes about 45 minutes, tapes rarely
+# change, and a broken tape shows up when the release records them. The GIFs are never committed.
 on:
   workflow_call:
-  pull_request:
-    paths:
-      - "demos/**"
-      - ".github/workflows/demos.yml"
 
 permissions:
   contents: read

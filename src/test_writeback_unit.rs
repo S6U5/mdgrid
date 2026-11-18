@@ -47,7 +47,7 @@ fn write_list(src: &str, items: &[&str]) -> String {
 
 #[test]
 fn block_list_keeps_remaining_lines_byte_for_byte() {
-    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-null~1, req~write-back.byte-range-delete-key~1] 残る要素の行は、`-` のあとの空白・末尾の空白・引用符を含めてそのまま。新しい要素の行だけを作る。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~1, req~write-back.byte-range-delete-key~1] 残る要素の行は、`-` のあとの空白・末尾の空白・引用符を含めてそのまま。新しい要素の行だけを作る。
     let src = "---\ntags:\n  -   a\n  - b  \n  - 'c'\nx: 1\n---\n";
     assert_eq!(
         write_list(src, &["a", "b", "c", "d"]),

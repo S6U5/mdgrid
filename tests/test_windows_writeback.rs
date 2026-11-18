@@ -1,9 +1,10 @@
 //! Windows の書き戻しの安全(WB-5・WB-8・WB-14)。仕様: specs/_history/decidespec/write-back/spec.md。
 //! ほかのアプリが開いているノート、読み取り専用の属性、日本語の名前を Windows で確かめる
-//! (specs/_history/decidespec/_changes/2026-10-15-windows-target.md)。ハードリンクの見分けは Windows では未対応(docs/todo.md の O-11)。
+//! (specs/_history/decidespec/_changes/2026-10-15-windows-target.md)。ハードリンクのあるノートも Windows で確かめる。
 #![cfg(windows)]
 
-use mdgrid::writeback::{baseline, save, Edit, NewValue, SaveError};
+use mdgrid::frontmatter::ReadOnly;
+use mdgrid::writeback::{baseline, save, Edit, EditError, NewValue, SaveError};
 use std::os::windows::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 
@@ -106,6 +107,24 @@ fn test_wb_5_windows_read_only_attribute_is_not_written() {
     assert!(matches!(r, Err(SaveError::NoPermission)), "{r:?}");
     assert_eq!(std::fs::read(&note).unwrap(), NOTE);
     assert_eq!(dir.names(), vec!["note.md".to_string()]);
+}
+
+#[test]
+fn test_wb_5_windows_hard_link_is_not_written() {
+    // [utest -> req~write-back.refuse-unsafe-read-only~1] ハードリンクのあるノートは Windows でも書かずに止め、理由はハードリンクで、元のまま。
+    let dir = TempDir::new("hardlink");
+    let note = dir.write("note.md", NOTE);
+    let base = baseline(&note).unwrap();
+    std::fs::hard_link(&note, dir.0.join("other.md")).unwrap();
+    let r = save(&note, &base, &done());
+    assert!(
+        matches!(
+            r,
+            Err(SaveError::Edit(EditError::ReadOnly(ReadOnly::HardLink)))
+        ),
+        "{r:?}"
+    );
+    assert_eq!(std::fs::read(&note).unwrap(), NOTE);
 }
 
 #[test]

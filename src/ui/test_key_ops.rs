@@ -2,7 +2,7 @@
 //! specs/_history/decidespec/_changes/2026-10-06-key-rename-delete.md。
 
 use super::keymap::{Action, Mode};
-use super::test_screen::{ch, col_named, ctrl, make, press, read, typing};
+use super::test_screen::{app_of, ch, col_named, ctrl, make, press, read, screen, typing};
 use super::*;
 use mdgrid::source::NewValue;
 use ratatui::crossterm::event::KeyCode;
@@ -19,7 +19,7 @@ fn at(a: &App, name: &str, col: &str) -> Option<NewValue> {
     a.changes.pending(&a.rows[i], col).cloned()
 }
 
-// [utest -> req~cell-edit.rename-delete-key-skip-existing~1, req~cell-edit.rename-delete-key-skip-unsafe~1, req~cell-edit.rename-delete-key-undo~1]
+// [utest -> req~cell-edit.rename-delete-key-skip-existing~1, req~cell-edit.rename-delete-key-undo~1]
 #[test]
 fn test_ce_29_rename_key_in_all_notes() {
     let (t, mut a) = make("ce29ren", NOTES);
@@ -40,6 +40,11 @@ fn test_ce_29_rename_key_in_all_notes() {
     assert_eq!(at(&a, "d.md", "status"), None);
     let m = a.message.clone().unwrap();
     assert!(m.contains('2') && m.contains("state"), "{m}");
+    // 飛ばした数(1)と理由(その名前のキーがある)が、変えた数とは別に出る。
+    assert!(
+        m.contains("1行を飛ばした") && m.contains("state のキーが既にある"),
+        "{m}"
+    );
     // 1手で戻せる。
     ch(&mut a, 'u');
     assert_eq!(a.changes.count(), 0);
@@ -53,6 +58,63 @@ fn test_ce_29_rename_key_in_all_notes() {
     assert_eq!(read(&t, "b.md"), "---\ntitle: b\nstate: doing # now\n---\n");
     assert_eq!(read(&t, "c.md"), NOTES[2].1);
     assert_eq!(read(&t, "d.md"), NOTES[3].1);
+}
+
+// [utest -> req~cell-edit.rename-delete-key-skip-unsafe~1]
+#[test]
+fn test_ce_29_rename_key_skips_unsafe_notes() {
+    let notes: &[(&str, &str)] = &[
+        ("a.md", "---\nstatus: todo\n---\n"),
+        ("ro.md", "---\nstatus: todo\ntitle: ro\n---\n"),
+    ];
+    let (t, a0) = make("ce29unsafe", notes);
+    drop(a0);
+    let ro = t.notes().join("ro.md");
+    let mut perm = std::fs::metadata(&ro).unwrap().permissions();
+    perm.set_readonly(true);
+    std::fs::set_permissions(&ro, perm).unwrap();
+    // 権限を変えたあとで読み直す。
+    let mut a = app_of(&t, ColorMode::None);
+    col_named(&mut a, "status");
+    a.apply(Action::RenameKey);
+    typing(&mut a, "state");
+    press(&mut a, KeyCode::Enter);
+    let m = a.message.clone().unwrap();
+    assert!(
+        m.contains("1 個") && m.contains("1行を飛ばした(書き込めない権限)"),
+        "{m}"
+    );
+    // 書けないノートにはためず、書けるノートだけにためる。
+    assert_eq!(
+        at(&a, "a.md", "status"),
+        Some(NewValue::RenameKey("state".into()))
+    );
+    assert_eq!(at(&a, "ro.md", "status"), None);
+    assert_eq!(a.changes.count(), 1);
+    // 保存しても、書けないノートのファイルは変わらない。
+    ctrl(&mut a, 's');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(read(&t, "ro.md"), notes[1].1);
+    assert_eq!(read(&t, "a.md"), "---\nstate: todo\n---\n");
+}
+
+// [utest -> req~cell-edit.rename-delete-key-diff~1]
+#[test]
+fn test_ce_29_rename_key_review_shows_diff() {
+    let (t, mut a) = make("ce29diff", NOTES);
+    col_named(&mut a, "status");
+    a.apply(Action::RenameKey);
+    typing(&mut a, "state");
+    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's');
+    assert_eq!(a.mode, Mode::Confirm, "{:?}", a.message);
+    let s = screen(&a);
+    assert!(
+        s.contains("-status: todo") && s.contains("+state: todo"),
+        "{s}"
+    );
+    // 確かめの画面では、まだ書かない。
+    assert_eq!(read(&t, "a.md"), NOTES[0].1);
 }
 
 // [utest -> req~cell-edit.rename-delete-key-confirm~1]
@@ -100,7 +162,7 @@ fn test_ce_29_not_in_readonly_or_bad_names() {
     assert_eq!(a.changes.count(), 0);
 }
 
-// [utest -> req~cell-edit.rename-delete-key-skip-existing~1, req~cell-edit.rename-delete-key-skip-unsafe~1, req~cell-edit.rename-delete-key-confirm~1, req~cell-edit.rename-delete-key-diff~1]
+// [utest -> req~cell-edit.rename-delete-key-confirm~1]
 #[test]
 fn test_ce_29_pending_edit_is_not_dropped() {
     let (_t, mut a) = make("ce29pend", NOTES);

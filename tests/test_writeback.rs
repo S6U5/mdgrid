@@ -147,7 +147,7 @@ fn wb_1_flow_list_neighbour() {
 
 #[test]
 fn wb_1_nested_map_neighbour() {
-    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~1]
+    // [utest -> req~write-back.byte-range-null~1]
     let after = assert_only_value_changed("nested_map.md", "status", s("done"));
     assert_eq!(
         after,
@@ -204,7 +204,7 @@ fn wb_1_dash_lines_in_body() {
 
 #[test]
 fn wb_1_quoted_and_special_values() {
-    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-key~1, req~write-back.byte-range-add-item~1]
+    // [utest -> req~write-back.byte-range-null~1]
     assert_only_value_changed("quoted.md", "dq", s("done"));
     assert_only_value_changed("quoted.md", "sq", s("done"));
     assert_only_value_changed("special_chars.md", "colon", s("c: d"));
@@ -217,7 +217,7 @@ fn wb_1_quoted_and_special_values() {
 
 #[test]
 fn wb_2_body_is_unchanged() {
-    // [utest -> req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1]
+    // [utest -> req~write-back.frontmatter-only-no-body~1, req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1]
     for (file, key) in [
         ("dash_line.md", "status"),
         ("rich.md", "status"),
@@ -324,7 +324,7 @@ fn wb_5_hard_linked_note_is_not_written() {
 
 #[test]
 fn ce_8_apply_refuses_read_only_values() {
-    // [utest -> req~cell-edit.read-only-forms~1]
+    // [utest -> req~cell-edit.read-only-forms~1, req~write-back.frontmatter-only-top-level~1]
     for (file, key) in [
         ("nested_map.md", "meta"),
         ("block_scalar.md", "literal"),
@@ -340,6 +340,14 @@ fn ce_8_apply_refuses_read_only_values() {
             "{file}: {key}"
         );
     }
+    // 値がネストした map の `meta` に書こうとして保存まで進めても、止まってファイルは変わらない。
+    let dir = TempDir::new("nested-meta");
+    let original = fixture("nested_map.md");
+    let note = dir.write("nested_map.md", &original);
+    let base = baseline(&note).unwrap();
+    let r = save(&note, &base, &[edit("meta", s("x"))]);
+    assert!(r.is_err(), "ネストした map のセルは書かない");
+    assert_eq!(std::fs::read(&note).unwrap(), original);
 }
 
 // ---- WB-6 ----

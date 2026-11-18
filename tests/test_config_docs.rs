@@ -192,7 +192,7 @@ fn test_cli_11_output_values_are_defaults() {
 
 #[test]
 fn test_cli_2_help_mentions_print_config() {
-    // [stest -> req~cli.options~1, req~cli.print-config-output~1] --help に --print-config が出る。
+    // [stest -> req~cli.options~2, req~cli.print-config-output~1] --help に --print-config が出る。
     let out = run(&["--help"]);
     assert_eq!(out.status.code(), Some(0));
     let help = String::from_utf8_lossy(&out.stdout);

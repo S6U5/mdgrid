@@ -278,7 +278,3 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 
 ## 未確定事項
 
-### Windows で、ハードリンクのノートを読むだけにするか(Win32 を直に呼ぶ実装が要る)と、Windows の CI の結果で write-back.atomic-replace・write-back.keep-on-stop を確かめたとするか。変更の記録 2026-10-15-windows-target の照合が 4 / 7 で止まっている(docs/todo.md の O-11)
-`tbd~write-back.windows`
-- 決める人: 人
-- 期限: main に取り込む前

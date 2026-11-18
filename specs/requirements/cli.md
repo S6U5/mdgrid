@@ -57,8 +57,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 `req~cli.launch-marker-other-base~1` P1
 - 受け入れ: `open = "台帳"`(`path = "tasks.base"`)の印のあるフォルダの別の `other.base` のパスを渡す → tasks.base でなく other.base の表が開く。
 
-#### `--view <名前>`・`--readonly`・`--no-color`・`--config <パス>`・`--print-config`(cli.print-config)・`-s` / `--session`(cli.session-save)・`--sessions`(cli.session-screen)・`--help`・`--version` を受け付けるべき
-`req~cli.options~1` P1
+#### `--view <名前>`・`--readonly`・`--no-color`・`--config <パス>`・`--print-config`(cli.print-config)・`--help`・`--version` を受け付けるべき(セッションの `-s`・`--session`・`--sessions` は、セッション(cli.session-save・cli.session-screen-list)を作るときに足す)
+`req~cli.options~2` P1
 - 受け入れ: `--view 進行中` → そのビューで開く。
 
 #### 設定ファイルは TOML で、OS の設定の置き場(`XDG_CONFIG_HOME` か、macOS でも `~/.config/mdgrid/config.toml`。Windows では `XDG_CONFIG_HOME` が無ければ `%APPDATA%\mdgrid\config.toml`)に1つ置くべき
@@ -352,39 +352,39 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 ### セッション
 
 #### 表の表示を名前を付けたセッションとして保存し、`mdgrid -s <名前>`(`--session <名前>`)で、その表示のまま起動できるべき
-`req~cli.session-save~1` P1
+`req~cli.session-save~1` P2
 - 受け入れ: フォルダを開き、絞り込み・並び・列を決めて名前 `進行中` で保存して終了 → `mdgrid -s 進行中` で同じフォルダ・同じ絞り込み・並び・列の表が開く。無い名前 `mdgrid -s 無い` → 理由1行と終了コード 2。
 
 #### セッションは、開くフォルダ(1つ以上)、`.base` のパスとビューの名前(任意)、画面で掛けた絞り込み、並び、列の並びと隠す列、読むだけで開くか(`--readonly`)を持つべき
-`req~cli.session-content-fields~1` P1
+`req~cli.session-content-fields~1` P2
 - 受け入れ: `.base` の無いフォルダで status のセルが「進行中」の行だけに絞り(navigation.same-value)、`\` で「会議」と打って絞り(navigation.search)、`due` の昇順、`title`・`status`・`due` の3列にして保存 → 起動し直すと同じ3列・同じ並び・同じ2つの絞り込み(絞り込みは検索 navigation.search・同じ値の絞り込み navigation.same-value。次の段の式の絞り込み navigation.expr-filter は入ったら同じく。並びは一時的な並べ替え navigation.header-sort も、保存したときのものを持つ)。
 
 #### セッションで開いたときは、列の並びと隠す列を、screen.state-store の見た目の状態より先に当てるべき
-`req~cli.session-content-columns-first~1` P1
+`req~cli.session-content-columns-first~1` P2
 - 受け入れ: 見た目の状態で `due` を隠した表を、`title`・`status`・`due` の3列のセッションで開く → 3列が出る。セッションにあって今の表に無い列 → その列だけ飛ばして警告。
 
 #### セッションで開いたときは、表の行と値を、値をセッションに写さず、起動のたびに今のノートから作り直すべき
-`req~cli.session-content-fresh-values~1` P1
+`req~cli.session-content-fresh-values~1` P2
 - 受け入れ: セッション `進行中` を保存したあとノートの値を直して `mdgrid -s 進行中` → あとから直したノートの値が出る。
 
 #### セッションは、ノートのフォルダや `.base` に書かず(screen.state-separate・base-view.base-untouched・write-back.frontmatter-only と同じ理由)、設定の置き場(cli.config-file)の `sessions.toml` に名前ごとに置くべきで、人が手で書いてもよく、知らない項目は警告にとどめるべき
-`req~cli.session-store~1` P1
+`req~cli.session-store~1` P2
 - 受け入れ: 保存したあと、ノートのフォルダに新しいファイルが無く、`~/.config/mdgrid/sessions.toml` に `[sessions.進行中]` がある。手で `color = "red"` を足す → 起動して警告。
 
 #### 画面から、今の表示を名前を付けてセッションとして保存できるべき
-`req~cli.session-screen-save~1` P1
+`req~cli.session-screen-save~1` P2
 - 受け入れ: 画面で今の表示を名前 `進行中` で保存 → sessions.toml に `[sessions.進行中]` ができる。
 
 #### 画面からセッションを保存するときに同じ名前があれば、上書きしてよいか確かめるべき
-`req~cli.session-screen-overwrite~1` P1
+`req~cli.session-screen-overwrite~1` P2
 - 受け入れ: 同じ名前で2回保存 → 2回目に上書きの確認が出て、断ると元のまま。
 
 #### `mdgrid --sessions` は、保存したセッションの名前と開くフォルダを1行ずつ出して終わるべき
-`req~cli.session-screen-list~1` P1
+`req~cli.session-screen-list~1` P2
 - 受け入れ: `--sessions` → `進行中	~/notes/tasks` の形の行が並び、終了コード 0。セッションが1つも無い → 何も出さず終了コード 0。
 
 #### 無い名前・壊れた `sessions.toml`・セッションの開くフォルダが無いときは、cli.fail-fast と同じく理由を1行で出して終了コード 2 で終わり、どちらを開くか曖昧になる `-s` とパスの引数を一緒に渡されたときも同じにするべき
-`req~cli.session-errors~1` P1
+`req~cli.session-errors~1` P2
 - 受け入れ: `mdgrid -s 無い` → `セッション「無い」はありません(ある名前: 進行中)` の1行と終了コード 2。`mdgrid -s 進行中 ~/notes` → 理由1行と終了コード 2。
 
 #### `--print` には、`--filter <式>`(base-view.expr-eval の式。何度でも渡せ、全部を満たす行だけ)を添えてよい
@@ -497,12 +497,6 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 - 受け入れ: path のフォルダが無い行を選んで Enter → 理由が出て、その表は開かない。
 
 ## 未確定事項
-
-### セッション(cli.session-save・cli.session-content・cli.session-store・cli.session-screen・cli.session-errors)を作るか、要求から外すか。旧い仕様では版1だが実装もテストも無く、変更の記録 2026-10-01-sessions は実装が未のまま。cli.options の `-s`・`--session`・`--sessions` も今の実行ファイルに無い(要求の文と実装が食い違う)
-`tbd~cli.sessions`
-- 決める人: 人
-- 期限: main に取り込む前
-- 仮: 要求は旧い文のまま P1 で残し、テストは付けない
 
 ### `--print --with-path` の json で、足した `path` とビューの同じ見出しの列を、どの形の鍵で見分けるか(cli.with-path-name-clash が指す cli.print の重なりの決まりが、cli.print の文に無い)
 `tbd~cli.with-path-name-clash`
