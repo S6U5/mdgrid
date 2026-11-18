@@ -246,18 +246,30 @@ fn test_new_note_prints_the_created_path() {
 
 #[test]
 fn test_new_note_never_overwrites_an_existing_note() {
-    // [stest -> req~cli.new-note-no-overwrite~1] 既にある名前でもう一度 → 理由1行と終了コード 2 で、既にあるファイルのバイトは変わらない。
+    // [stest -> req~cli.new-note-no-overwrite~1] --new-note で作ったノートと同じ名前でもう一度(別の値を添えて)→ 理由1行と終了コード 2 で、既にあるファイルのバイトは変わらない。
+    // 観点: 1回目が作れることを先に確かめる(何も作れない道具でも「上書きしない」は通ってしまうため)。
     let t = ledger("nn-exists", MARKER);
     let path = t.path().join("t/Tasks/Buy milk.md");
-    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-    std::fs::write(&path, "---\nstatus: done\n---\nkeep me\n").unwrap();
+    let o = run(
+        t.path(),
+        &["t", "--new-note", "Buy milk", "--set", "priority=p2"],
+    );
+    assert_eq!(o.status.code(), Some(0), "1回目は作る: {}", err(&o));
+    let first = read(&path);
+    assert!(first.contains("priority: p2"), "{first}");
     let o = run(
         t.path(),
         &["t", "--new-note", "Buy milk", "--set", "priority=p1"],
     );
     let why = fails_one_line(&o, "既にある名前");
     assert!(why.contains("Buy milk.md"), "{why}");
-    assert_eq!(read(&path), "---\nstatus: done\n---\nkeep me\n");
+    assert_eq!(read(&path), first, "2回目は1バイトも変えない");
+    // 手で書いたノート(本文つき)も同じ。
+    let hand = t.path().join("t/Tasks/Hand.md");
+    std::fs::write(&hand, "---\nstatus: done\n---\nkeep me\n").unwrap();
+    let o = run(t.path(), &["t", "--new-note", "Hand"]);
+    fails_one_line(&o, "手で書いたノート");
+    assert_eq!(read(&hand), "---\nstatus: done\n---\nkeep me\n");
 }
 
 #[test]
