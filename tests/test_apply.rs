@@ -68,7 +68,7 @@ fn printed(root: &Path, format: &str) -> String {
     out(&o)
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-yes-write~1, req~cli.apply-empty-cell~1]
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1, req~cli.apply-empty-cell~1]
 #[test]
 fn test_cli_17_json_dry_run_shows_diff_and_writes_nothing() {
     let root = vault("dry");

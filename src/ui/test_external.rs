@@ -162,6 +162,34 @@ fn test_sr_8_editor_with_pending_marks_external() {
 }
 
 #[test]
+fn test_wb_11_external_change_keeps_pending_and_shows_outside_value() {
+    // [utest -> req~write-back.external-keep-pending~1] status をためたまま外で title を直す → 表の title は外で直した値になり、status のためた値と「未保存 1」は残る。
+    let (t, mut a) = make(
+        "wb11kp",
+        &[("a.md", "---\ntitle: a\nstatus: todo\n---\nbody\n")],
+    );
+    edit_cell(&mut a, 0, "status", "done");
+    edit_outside(
+        &t,
+        "a.md",
+        "---\ntitle: 外で直した\nstatus: todo\n---\nbody\n",
+    );
+    a.poll();
+    let row = a.rows[0].clone();
+    assert_eq!(
+        a.src.get(&row, "title").value,
+        Some(mdgrid::source::Value::Str("外で直した".into()))
+    );
+    assert_eq!(
+        a.changes.pending(&row, "status"),
+        Some(&mdgrid::source::NewValue::Str("done".into()))
+    );
+    assert_eq!(a.changes.count(), 1);
+    let s = screen(&a);
+    assert!(s.contains("外で直した") && s.contains("未保存 1"), "{s}");
+}
+
+#[test]
 fn test_sr_8_editor_missing_program() {
     // [utest -> req~screen.editor-fallback~1] 起動できなければ止まらずに知らせる。端末は戻す。
     let _lock = editor_lock();

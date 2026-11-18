@@ -226,7 +226,7 @@ fn test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save() {
 
 #[test]
 fn test_cli_2_e2e_config_flag_wins_over_default_location_false() {
-    // [stest -> req~cli.options~1, req~cli.config-file-location~1] 既定の置き場に add_frontmatter = true、--config に false → --config が効く。
+    // [stest -> req~cli.options~2, req~cli.config-file-location~1] 既定の置き場に add_frontmatter = true、--config に false → --config が効く。
     let env = Env::new("cli2-false");
     env.write_default_config("[edit]\nadd_frontmatter = true\n");
     let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = false\n");
@@ -237,7 +237,7 @@ fn test_cli_2_e2e_config_flag_wins_over_default_location_false() {
 
 #[test]
 fn test_cli_2_e2e_config_flag_wins_over_default_location_true() {
-    // [stest -> req~cli.options~1, req~cli.config-file-location~1] 逆向き: 既定の置き場に false、--config に true → 書ける。
+    // [stest -> req~cli.options~2, req~cli.config-file-location~1] 逆向き: 既定の置き場に false、--config に true → 書ける。
     let env = Env::new("cli2-true");
     env.write_default_config("[edit]\nadd_frontmatter = false\n");
     let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = true\n");

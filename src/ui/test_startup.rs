@@ -298,7 +298,7 @@ fn test_cli_3_applies_items() {
 
 #[test]
 fn test_cli_2_no_color() {
-    // [utest -> req~cli.options~1, req~cell-view.no-color-env~1, req~cell-view.no-color-pipe-print-pick~1] `--no-color` で、色の出せる端末でも色を出さない(ためる変更のセルも)。
+    // [utest -> req~cli.options~2, req~cell-view.no-color-env~1, req~cell-view.no-color-pipe-print-pick~1] `--no-color` で、色の出せる端末でも色を出さない(ためる変更のセルも)。
     let tmp = notes("nocolor");
     let mut a = boot_with(
         &tmp,

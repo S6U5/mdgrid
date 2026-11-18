@@ -194,7 +194,6 @@ fn wb_3_no_frontmatter_is_detected() {
 
 #[test]
 fn wb_2_end_points_at_first_closing_delimiter() {
-    // [utest -> req~write-back.frontmatter-only-top-level~1, req~write-back.frontmatter-only-no-body~1]
     let bytes = fixture("dash_line.md");
     let fm = parse(&bytes).unwrap();
     let head = b"---\ntitle: t\nstatus: draft\n";

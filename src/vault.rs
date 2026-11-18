@@ -272,15 +272,73 @@ fn stamp_of(meta: &fs::Metadata) -> Stamp {
     }
 }
 
+/// ファイルのハードリンクの数(WB-5)。
 #[cfg(unix)]
-fn links_of(meta: &fs::Metadata) -> u64 {
+pub(crate) fn links_of(_path: &Path, meta: &fs::Metadata) -> u64 {
     use std::os::unix::fs::MetadataExt;
     meta.nlink()
 }
 
-#[cfg(not(unix))]
-fn links_of(_meta: &fs::Metadata) -> u64 {
+/// ファイルのハードリンクの数(WB-5)。Windows はメタデータに数が無いので、ファイルを開いて Win32 に聞く。
+/// 聞けなかったときは 1 とみなす(書くときに開けなければ、保存がそこで止まる)。
+#[cfg(windows)]
+pub(crate) fn links_of(path: &Path, _meta: &fs::Metadata) -> u64 {
+    win_links::count(path).unwrap_or(1)
+}
+
+#[cfg(not(any(unix, windows)))]
+pub(crate) fn links_of(_path: &Path, _meta: &fs::Metadata) -> u64 {
     1
+}
+
+/// std の `number_of_links` は不安定なので、`GetFileInformationByHandle` を直に呼ぶ(依存を足さない)。
+#[cfg(windows)]
+mod win_links {
+    use std::ffi::c_void;
+    use std::os::windows::io::AsRawHandle;
+    use std::path::Path;
+
+    #[repr(C)]
+    struct FileTime {
+        low: u32,
+        high: u32,
+    }
+
+    /// BY_HANDLE_FILE_INFORMATION と同じ並び。
+    #[repr(C)]
+    struct ByHandleFileInformation {
+        attributes: u32,
+        creation_time: FileTime,
+        last_access_time: FileTime,
+        last_write_time: FileTime,
+        volume_serial_number: u32,
+        file_size_high: u32,
+        file_size_low: u32,
+        number_of_links: u32,
+        file_index_high: u32,
+        file_index_low: u32,
+    }
+
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn GetFileInformationByHandle(file: *mut c_void, info: *mut ByHandleFileInformation)
+            -> i32;
+    }
+
+    pub(super) fn count(path: &Path) -> Option<u64> {
+        let file = std::fs::File::open(path).ok()?;
+        let mut info = std::mem::MaybeUninit::<ByHandleFileInformation>::zeroed();
+        // SAFETY: file は開いているファイルのハンドルで、info は関数が書く構造体の大きさを持つ。
+        let ok = unsafe {
+            GetFileInformationByHandle(file.as_raw_handle() as *mut c_void, info.as_mut_ptr())
+        };
+        if ok == 0 {
+            return None;
+        }
+        // SAFETY: 成功したときは、関数が構造体の全部を書いた。
+        let info = unsafe { info.assume_init() };
+        Some(u64::from(info.number_of_links))
+    }
 }
 
 #[cfg(unix)]
@@ -311,6 +369,7 @@ fn read_note(real: PathBuf, rel: String, found: Vec<PathBuf>) -> io::Result<Note
     };
     let conflict = is_conflict(&real);
     let writable = crate::writeback::can_write(&real);
+    let links = links_of(&real, &meta);
     Ok(Note {
         path: real,
         rel,
@@ -318,7 +377,7 @@ fn read_note(real: PathBuf, rel: String, found: Vec<PathBuf>) -> io::Result<Note
         stamp,
         conflict,
         found,
-        links: links_of(&meta),
+        links,
         writable,
         perm: perm_of(&meta),
     })

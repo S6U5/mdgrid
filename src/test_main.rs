@@ -106,7 +106,7 @@ impl Drop for TempDir {
 
 #[test]
 fn test_cli_2_options() {
-    // [utest -> req~cli.options~1] `--readonly`・`--no-color`・`--config <パス>`・`--view <名前>` を受け、残りはパス。
+    // [utest -> req~cli.options~2] `--readonly`・`--no-color`・`--config <パス>`・`--view <名前>` を受け、残りはパス。
     // `--` の後ろはパスのまま。値の無い `--config` は理由1行。
     let mut a = args(&[
         "notes",
@@ -144,7 +144,7 @@ fn test_cli_2_options() {
 
 #[test]
 fn test_cli_11_print_config_arg() {
-    // [utest -> req~cli.print-config-output~1, req~cli.options~1] `--print-config` は既定の設定を出す命令。`--` の後ろならパス。
+    // [utest -> req~cli.print-config-output~1, req~cli.options~2] `--print-config` は既定の設定を出す命令。`--` の後ろならパス。
     assert_eq!(
         parse_args(&args(&["--print-config"])),
         Ok(Command::PrintConfig)
@@ -158,7 +158,7 @@ fn test_cli_11_print_config_arg() {
 
 #[test]
 fn test_cli_2_config_path() {
-    // [utest -> req~cli.options~1] `--config <パス>` の設定を読む(既定の置き場より先)。無いパスは理由1行。
+    // [utest -> req~cli.options~2] `--config <パス>` の設定を読む(既定の置き場より先)。無いパスは理由1行。
     let t = TempDir::new("cfg");
     let p = t.0.join("my.toml");
     std::fs::write(&p, "[edit]\ncandidates = 7\n").unwrap();

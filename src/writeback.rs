@@ -907,7 +907,7 @@ pub fn save_with(
     // シンボリックリンクは辿った先を書く(リンクはそのまま残る)。
     let real = fs::canonicalize(path)?;
     let meta = fs::metadata(&real)?;
-    refuse_hard_link(&meta)?;
+    refuse_hard_link(&real, &meta)?;
     refuse_no_permission(&real)?;
     let (current, now) = read_with_baseline(&real)?;
     if &now != base {
@@ -961,7 +961,7 @@ pub fn save_with(
         }
         // 名前を変える直前にもう一度、基準を検査する(WB-12)。
         let meta = fs::metadata(&real)?;
-        refuse_hard_link(&meta)?;
+        refuse_hard_link(&real, &meta)?;
         // 名前の変更はフォルダに書ければ通るので、ファイルの権限はここでも確かめる(WB-5)。
         refuse_no_permission(&real)?;
         let (_, again) = read_with_baseline(&real)?;
@@ -1004,16 +1004,10 @@ fn corrupt_target(new: &[u8], edits: &[Edit]) -> Vec<u8> {
 }
 
 /// WB-5: ハードリンクのあるノートは書かない(置き換えるとリンクが切れるため)。
-fn refuse_hard_link(meta: &fs::Metadata) -> Result<(), SaveError> {
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::MetadataExt;
-        if meta.nlink() > 1 {
-            return Err(SaveError::Edit(EditError::ReadOnly(ReadOnly::HardLink)));
-        }
+fn refuse_hard_link(real: &Path, meta: &fs::Metadata) -> Result<(), SaveError> {
+    if crate::vault::links_of(real, meta) > 1 {
+        return Err(SaveError::Edit(EditError::ReadOnly(ReadOnly::HardLink)));
     }
-    #[cfg(not(unix))]
-    let _ = meta;
     Ok(())
 }
 

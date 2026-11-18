@@ -769,8 +769,13 @@ impl Source for Markdown {
         let note = self
             .note(row)
             .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, Msg::RowNotLoaded.text()))?;
-        // WB-5: 読むだけのノート(ハードリンク・書き込めない権限)の名前は変えない。
-        if note.links > 1 || !note.writable {
+        // WB-5: 読むだけのノート(ハードリンク・書き込めない権限・読めないフロントマター)の名前は変えない。
+        // フロントマターが無い・空のノートは、書ける(足せる)ので断らない。
+        let unreadable = matches!(
+            frontmatter::parse(&note.bytes),
+            Err(r) if !matches!(r, ReadOnly::NoFrontmatter | ReadOnly::EmptyFrontmatter)
+        );
+        if note.links > 1 || !note.writable || unreadable {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
                 Msg::RenameNoteReadOnly.text(),
