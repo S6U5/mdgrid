@@ -92,6 +92,20 @@ wait = { ja = "作った", en = "created" }
 text = { ja = "名前を打って Ctrl+S で、すぐにファイルができる(Enter は次の欄へ)。作った行が選ばれる。", en = "Type a name and press Ctrl+S: the file is created at once (Enter moves to the next field), and its row is selected." }
 
 [[shot]]
+id = "delete-note"
+title = { ja = "ノートを消す前の確かめ", en = "Confirming before a note is deleted" }
+keys = [":", "text:delete_note", "Enter"]
+wait = { ja = "消すノート", en = "Note to delete" }
+text = { ja = "「ノートを消す」は、名前を示して確かめる。y と Enter でごみ箱(.trash/)へ動かし、ほかの答えと Esc では何もしない。", en = "\"Delete the note\" shows the name and asks first. Type y and Enter to move it to the trash (.trash/); any other answer, or Esc, does nothing." }
+
+[[shot]]
+id = "trash-restore"
+title = { ja = "ごみ箱から戻す", en = "Restore from the trash" }
+keys = [":", "text:delete_note", "Enter", "text:y", "Enter", ":", "text:restore_note", "Enter"]
+wait = { ja = "ごみ箱から戻すノート", en = "Note to restore" }
+text = { ja = "ごみ箱のノートが、名前・元の場所・消した日時つきで並ぶ。選んで Enter で元の場所に戻る。", en = "The notes in the trash are listed with their name, original place and the time they were deleted. Pick one and press Enter to put it back." }
+
+[[shot]]
 id = "palette-search"
 title = { en = "Find a command by name", ja = "コマンドを名前で探す" }
 keys = [":", "text:save"]

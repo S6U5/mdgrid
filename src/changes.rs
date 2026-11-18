@@ -87,6 +87,8 @@ pub struct Changes {
     states: BTreeMap<RowId, RowState>,
     undo: Vec<Step>,
     redo: Vec<Step>,
+    /// 利用者の手でやり直しの積みを消した回数(ノートの作成・削除のやり直しが古くなったかを画面が見る)。
+    cleared: u64,
 }
 
 impl Changes {
@@ -164,6 +166,27 @@ impl Changes {
         self.apply(&mut step, true);
         self.undo.push(step);
         true
+    }
+
+    /// 取り消せる手の数(画面が、ノートの作成・削除の手との前後を決めるのに使う)。
+    pub fn undo_depth(&self) -> usize {
+        self.undo.len()
+    }
+
+    /// やり直せる手の数。
+    pub fn redo_depth(&self) -> usize {
+        self.redo.len()
+    }
+
+    /// 利用者の新しい手でやり直しの積みを消した回数。
+    pub fn redo_epoch(&self) -> u64 {
+        self.cleared
+    }
+
+    /// 新しい手(ノートの作成・削除)のあと: やり直しの積みを消す(ためる変更の新しい手と同じ)。
+    pub fn clear_redo(&mut self) {
+        self.redo.clear();
+        self.cleared += 1;
     }
 
     pub fn pending(&self, row: &RowId, col: &str) -> Option<&NewValue> {
@@ -560,7 +583,7 @@ impl Changes {
         }
         self.undo.push(Step { cells, rows });
         if clear_redo {
-            self.redo.clear();
+            self.clear_redo();
         }
     }
 

@@ -66,6 +66,14 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 
 [Create a note](tasks.md#create-a-note)
 
+## Delete a note and bring it back
+
+![Restore from the trash](images/trash-restore.svg)
+
+Press `u` right after creating a note by mistake and it moves to the trash; `Ctrl+R` brings it back. "Delete the note" does the same for a note that was already there. The file is never erased, so "Restore from the trash" still returns it to its place after you close mdgrid.
+
+[Delete a note and bring it back](tasks.md#delete-a-note-and-bring-it-back)
+
 ## Shape a view and save it
 
 ![View settings](images/view-settings.svg)

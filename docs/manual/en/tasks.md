@@ -118,6 +118,28 @@ mdgrid ~/notes/tasks --new-note "Buy milk" --set due=2026-11-20 --set priority=p
 - `--set column=value` is the same as typing into a field of the form, and can be repeated. The value is read by the column type. Separate list items with commas; an empty value (`--set status=`) leaves the column out.
 - For an existing name, a name outside the folder, a value that does not fit the type, or an empty required column, it creates nothing, prints one line with the reason and exits with code 2.
 
+## Delete a note and bring it back
+
+If you created a note by mistake, press `u` right after creating it. The file is not erased: it moves to `.trash/` (the trash) inside the opened folder. If you want it after all, `Ctrl+R` puts it back where it was.
+
+To clear away a note that was already there:
+
+1. On its row, choose "Delete the note" from the action menu (`x`) or the palette (`:`).
+2. Check the name, then type `y` and press `Enter`. The note moves to the trash and its row leaves the table. Any other answer, or `Esc`, does nothing.
+3. To undo, press `u`. The note returns to its place and its row is selected.
+
+![Confirming before a note is deleted](images/delete-note.svg)
+
+After you close mdgrid you can still get a note back with "Restore from the trash" in the palette. It lists the notes in the trash with their name, original place and the time they were deleted; pick one and press `Enter`.
+
+![Restore from the trash](images/trash-restore.svg)
+
+- If a note with the same name already exists at the original place, nothing is restored and mdgrid tells you. Neither note changes.
+- A note with pending changes cannot be deleted. Save them or undo them with `u` first.
+- If other notes link to the note, the confirmation shows how many. The links are not rewritten.
+- mdgrid never empties the trash. To clear it, delete `.trash/mdgrid/` with your file manager.
+- Deleting and restoring are not available with `--readonly` or in CSV and TSV tables.
+
 ## Open a .base file
 
 ```sh

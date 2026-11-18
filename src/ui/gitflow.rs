@@ -70,7 +70,8 @@ impl App {
         let in_repo: Vec<PathBuf> = self
             .git_pending
             .iter()
-            .filter(|p| gitsync::repo_root(p).is_some())
+            // 作ったあとに取り消した・消したノート(ごみ箱へ動いた)は、もう無いので渡さない。
+            .filter(|p| p.exists() && gitsync::repo_root(p).is_some())
             .cloned()
             .collect();
         if in_repo.is_empty() {

@@ -11,7 +11,7 @@ mdgrid is a single executable written in Rust. Download an archive for your OS f
 ```sh
 cargo install mdgrid --locked       # Rust 1.90 or newer; builds from source in a few minutes
 cargo binstall mdgrid               # cargo-binstall; fetches the prebuilt binary
-nix profile install github:S6U5/mdgrid   # Nix (to just try it: nix run github:S6U5/mdgrid)
+nix profile install github:S6U5/mdgrid/v0.4.0   # Nix (to just try it: nix run github:S6U5/mdgrid/v0.4.0)
 ```
 
 To build from a clone of the repository instead, run `cargo build --release` to get `target/release/mdgrid`. The examples below use `target/release/mdgrid`; with an installed `mdgrid`, just type `mdgrid`.
