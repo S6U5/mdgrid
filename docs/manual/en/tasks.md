@@ -97,6 +97,28 @@ Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it
 - mdgrid does not create notes outside the opened folders or over an existing name, and not at all with `--readonly`.
 - The fields, required fields, preset values (with variables such as `{date+7}` or `{now}`), hidden values such as a creation date, a body template, and whether to use the form or go straight to the editor (`mode = "editor"`) are set in [`new_note`](../../config.md#new_note).
 
+## Delete a note and bring it back
+
+If you created a note by mistake, press `u` right after creating it. The file is not erased: it moves to `.trash/` (the trash) inside the opened folder. If you want it after all, `Ctrl+R` puts it back where it was.
+
+To clear away a note that was already there:
+
+1. On its row, choose "Delete the note" from the action menu (`x`) or the palette (`:`).
+2. Check the name, then type `y` and press `Enter`. The note moves to the trash and its row leaves the table. Any other answer, or `Esc`, does nothing.
+3. To undo, press `u`. The note returns to its place and its row is selected.
+
+![Confirming before a note is deleted](images/delete-note.svg)
+
+After you close mdgrid you can still get a note back with "Restore from the trash" in the palette. It lists the notes in the trash with their name, original place and the time they were deleted; pick one and press `Enter`.
+
+![Restore from the trash](images/trash-restore.svg)
+
+- If a note with the same name already exists at the original place, nothing is restored and mdgrid tells you. Neither note changes.
+- A note with pending changes cannot be deleted. Save them or undo them with `u` first.
+- If other notes link to the note, the confirmation shows how many. The links are not rewritten.
+- mdgrid never empties the trash. To clear it, delete `.trash/mdgrid/` with your file manager.
+- Deleting and restoring are not available with `--readonly` or in CSV and TSV tables.
+
 ## Open a .base file
 
 ```sh

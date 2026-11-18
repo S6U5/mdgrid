@@ -298,6 +298,10 @@ pub enum Action {
     RenameKey,
     /// CE-34: 選んだ行のノートの名前を変える。
     RenameNote,
+    /// cell-edit.delete-note-menu: 選んだ行のノートをごみ箱へ動かす。
+    DeleteNote,
+    /// cell-edit.trash-restore-list: ごみ箱のノートを選んで元の場所へ戻す。
+    RestoreNote,
     /// CE-29: 列のキーを、全部のノートから消す。
     DeleteKey,
     /// CE-35: 列の型を選び直す窓を開く。
@@ -487,6 +491,8 @@ impl Action {
             Action::AddColumn => "add_column",
             Action::RenameKey => "rename_key",
             Action::RenameNote => "rename_note",
+            Action::DeleteNote => "delete_note",
+            Action::RestoreNote => "restore_note",
             Action::DeleteKey => "delete_key",
             Action::ColumnType => "column_type",
             Action::MoveColumnLeft => "move_column_left",
@@ -564,6 +570,7 @@ impl Action {
         Action::HighlightSame,
         Action::FilterSame,
         Action::RenameNote,
+        Action::DeleteNote,
         Action::OpenLink,
         Action::LinkedRows,
         Action::ToggleTree,
@@ -576,6 +583,8 @@ impl Action {
     pub const NOTE_ONLY: &[Action] = &[
         Action::OpenEditor,
         Action::RenameNote,
+        Action::DeleteNote,
+        Action::RestoreNote,
         Action::RenameKey,
         Action::DeleteKey,
         Action::AddColumn,
@@ -737,6 +746,9 @@ pub const COMMANDS: &[Command] = &[
     cmd(Action::DeleteKey, Msg::CmdDeleteKey, SHAPE),
     // CE-34: ノートの名前の変更(既定のキーなし。パレットと操作の一覧から)。
     cmd(Action::RenameNote, Msg::CmdRenameNote, NOTE),
+    // cell-edit.delete-note-menu・cell-edit.trash-restore-list: ノートをごみ箱へ動かす・ごみ箱から戻す(既定のキーなし)。
+    cmd(Action::DeleteNote, Msg::CmdDeleteNote, NOTE),
+    cmd(Action::RestoreNote, Msg::CmdRestoreNote, NOTE),
     // CE-25: 新しいノートはキー(既定 `a`)もあるが、割り当て直して外してもパレットから始められるように。
     cmd(Action::NewNote, Msg::KeyNewNote, NOTE),
     // ST-5: スターターから台帳を作る(ファイルを書くので読むだけでは出さない)。

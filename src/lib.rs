@@ -38,6 +38,7 @@ pub mod starter;
 pub mod style;
 pub mod summary;
 pub mod theme;
+pub mod trash;
 pub mod tree;
 pub mod types;
 pub mod uifile;
