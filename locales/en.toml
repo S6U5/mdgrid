@@ -692,6 +692,8 @@ HelpHead = " Help  {0}-{1}/{2} lines  All keys (from the key table)"
 ## `HelpHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 HelpHeadOne = " Help  {0}-{1}/{2} line  All keys (from the key table)"
 PaletteGoto = "Go to line {0}"
+## パレットの `wq`・`x`。
+PaletteSaveQuit = "Save and quit"
 PaletteEmpty = "  (no matching command)"
 PaletteNoMatch = "no matching command: {0}"
 GotoNoRows = "no rows"

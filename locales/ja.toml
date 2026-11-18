@@ -691,6 +691,8 @@ HelpHead = " ヘルプ  {0}-{1}/{2}行  キーの全部(キーの表から)"
 ## `HelpHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 HelpHeadOne = " ヘルプ  {0}-{1}/{2}行  キーの全部(キーの表から)"
 PaletteGoto = "{0} 行目へ移動"
+## パレットの `wq`・`x`。
+PaletteSaveQuit = "保存して終わる"
 PaletteEmpty = "  (合うコマンドが無い)"
 PaletteNoMatch = "合うコマンドが無い: {0}"
 GotoNoRows = "行が無い"

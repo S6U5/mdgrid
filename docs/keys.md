@@ -65,7 +65,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `q` | `quit` | Quit (asks first if there are unsaved changes) |
 | `Ctrl+g` | `cancel_load` | Stop loading notes |
 | `?` | `help` | Show the help with every key |
-| `:` | `palette` | Open the command palette (also takes a row number like `:120`, `w` to save, `q` to quit) |
+| `:` | `palette` | Open the command palette (also takes a row number like `:120`, `w` to save, `q` to quit, `wq` or `x` to save and quit) |
 | `Ctrl+p` | `palette` | Open the command palette |
 | `x` | `action_menu` | Open the menu of actions you can use on the selected cell, each with its current key (right-clicking a cell also opens it) |
 | `e` | `open_editor` | Open the selected note in your editor, and reload it when you return |

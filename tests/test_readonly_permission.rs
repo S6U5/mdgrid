@@ -34,11 +34,16 @@ impl TempDir {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
+        // 並んで走る試験が同じ名前(perm-rootcheck)を同じ時刻に作ると、片方の 0444 のファイルに
+        // もう片方が書こうとして落ちる(時計の刻みが粗い macOS で起きた)。通し番号で分ける。
+        static SEQ: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let dir = std::env::temp_dir().join(format!(
-            "mdgrid-test-{}-{}-{}",
+            "mdgrid-test-{}-{}-{}-{}",
             name,
             std::process::id(),
-            nanos
+            nanos,
+            seq
         ));
         std::fs::create_dir_all(&dir).unwrap();
         TempDir(dir)
