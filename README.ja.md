@@ -46,9 +46,11 @@ cargo install mdgrid --locked
 Nix で。 入れずにその場で動かすか、プロファイルに入れます。
 
 ```sh
-nix run github:S6U5/mdgrid -- ~/notes/Tasks
-nix profile install github:S6U5/mdgrid
+nix run github:S6U5/mdgrid/v0.4.0 -- ~/notes/Tasks
+nix profile install github:S6U5/mdgrid/v0.4.0
 ```
+
+タグを付けると、リリースした版が入ります。付けない `github:S6U5/mdgrid` は、main ブランチの開発中の版です。
 
 ソースから。
 
