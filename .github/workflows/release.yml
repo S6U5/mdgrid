@@ -110,9 +110,13 @@ jobs:
   homebrew:
     # Writes Formula/mdgrid.rb to the tap (S6U5/homebrew-tap) so `brew install s6u5/tap/mdgrid` gets this release.
     # Needs the secret HOMEBREW_TAP_TOKEN: a fine-grained token with Contents read/write on the tap only.
+    # Keep it in the environment homebrew-tap, limited to v* tags, so a workflow on a branch cannot read it.
     # Without the secret, or on a pre-release tag (v1.2.3-rc1), the job does nothing.
     needs: [release]
     runs-on: ubuntu-latest
+    environment: homebrew-tap
+    permissions:
+      contents: read
     steps:
       - name: Decide whether to publish
         id: check

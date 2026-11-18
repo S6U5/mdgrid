@@ -78,7 +78,7 @@ Issue(テンプレ) → triage(AI・読むだけ) → decidespec の提案を起
 - [ ] **O-5 入れ方** [P0/M] 依存 Q-1・O-4 **人**(tap の名前)
   - → `dist init`(GitHub Releases のバイナリ・インストーラ・binstall)
   - → Homebrew の tap。最低でも `cargo install --locked mdgrid` を P0
-  - → 人の判断(2026-11-18): cargo binstall・Homebrew の tap(`S6U5/homebrew-tap`)・Nix flake を足す。済: Cargo.toml の binstall の指定、`scripts/homebrew_formula.py` と release.yml の homebrew のジョブ(docs/design.md の「配布」)。残り(人): tap のリポを作り、秘密の値 `HOMEBREW_TAP_TOKEN` を入れる。dist(1行のインストーラ)は入れていない
+  - → 人の判断(2026-11-18): cargo binstall・Homebrew の tap(`S6U5/homebrew-tap`)・Nix flake を足す。済: Cargo.toml の binstall の指定、`scripts/homebrew_formula.py` と release.yml の homebrew のジョブ(docs/design.md の「配布」)。残り(人): tap のリポを作り、環境 `homebrew-tap`(`v*` のタグだけ)に秘密の値 `HOMEBREW_TAP_TOKEN` を入れる。dist(1行のインストーラ)は入れていない
 - [x] **O-6 Nix flake** — `flake.nix`(nixpkgs の buildRustPackage。crane・naersk は使わない)と ci.yml の nix のジョブ(2026-11-18)。元の項目: crane か naersk、`nix run github:…` を README に。
 - [x] **O-12 インストーラの検討** — specs/_history/decidespec/_changes/2026-10-06-release.md(まず GitHub Releases の圧縮ファイルとソースからの cargo install。tap・crates.io・署名は公開のあと、と AI が決めた)。元の項目: O-5 の前に、入れ方の選び方を1枚にまとめて決める。
   - → 候補の比較(対象の OS・利用者の手間・保守の手間・更新のしかた): shell と PowerShell の1行インストーラ(dist)・`cargo install` / `cargo binstall`・Homebrew の tap(のち core)・Nix(flake / nixpkgs)・Windows の winget と Scoop・Linux の .deb / .rpm(cargo-deb・cargo-generate-rpm)・AUR・MSI(dist)
