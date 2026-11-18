@@ -142,7 +142,7 @@ const OPS: [CmpOp; 6] = [
 
 #[test]
 fn test_bv_19_keep_drop_match_settings() {
-    // [BV-19] [NV-14] [NV-19] Keep・Drop(「(空)」・リストの要素・数・真偽・日付)を式にしても settings と同じ行。
+    // [utest -> req~base-view.export-base-write~1, req~navigation.settings-filter~1, req~navigation.filter-conditions-checklist~1, req~navigation.filter-conditions-more~1, req~navigation.filter-conditions-all~1] Keep・Drop(「(空)」・リストの要素・数・真偽・日付)を式にしても settings と同じ行。
     let all = clean();
     for kind in [Kind::Text, Kind::List, Kind::Checkbox, Kind::DateTime] {
         for keys in [
@@ -170,7 +170,7 @@ fn test_bv_19_keep_drop_match_settings() {
 
 #[test]
 fn test_bv_19_contains_and_empty_match_settings() {
-    // [BV-19] [NV-19] 含む・含まない(大文字小文字を区別しない)と、空である・空でない。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-dropped~1, req~navigation.filter-conditions-more~1] 含む・含まない(大文字小文字を区別しない)と、空である・空でない。
     // 入れ子のリストに中身がある値([["a"]])の Contains は式で同じにできない(試験の材料に入れない)。
     let all = clean();
     for needle in [
@@ -199,7 +199,7 @@ fn test_bv_19_contains_and_empty_match_settings() {
 
 #[test]
 fn test_bv_19_cmp_match_settings() {
-    // [BV-19] [NV-19] 比較: 列の型を渡せば、数・日付・日時・テキスト・真偽で settings と同じ。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-dropped~1, req~navigation.filter-conditions-more~1] 比較: 列の型を渡せば、数・日付・日時・テキスト・真偽で settings と同じ。
     // 型を渡さないときは、比べる値の形と列の型が合う(数の列に数、日付の列に日付)なら同じ。
     let scalars: Vec<Option<Value>> = clean()
         .into_iter()
@@ -250,7 +250,7 @@ fn test_bv_19_cmp_match_settings() {
 
 #[test]
 fn test_bv_19_review_cases_are_fixed_or_noted() {
-    // [BV-19] 日時の列の Keep は同じ行になる。Contains の日時の書き方と、マップ・入れ子のリストの空は注意が出る。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-dropped~1] 日時の列の Keep は同じ行になる。Contains の日時の書き方と、マップ・入れ子のリストの空は注意が出る。
     let keep = cond("at", Op::Keep(some(&["2026-02-01T10:00"])));
     let v = s("2026-02-01T10:00");
     assert!(settings::matches(&keep, Some(&v), Kind::DateTime));
@@ -279,7 +279,7 @@ fn test_bv_19_review_cases_are_fixed_or_noted() {
 
 #[test]
 fn test_bv_19_to_base_typed_and_notes() {
-    // [BV-19] 型を渡すと日付の列の比較は日付だけ。近似の注意と formula の参照は落とした説明に出る。
+    // [utest -> req~base-view.export-base-dropped~1] 型を渡すと日付の列の比較は日付だけ。近似の注意と formula の参照は落とした説明に出る。
     let view = NativeView {
         name: "v".to_string(),
         order: vec!["file.name".to_string(), "formula.f".to_string()],
@@ -318,7 +318,7 @@ fn test_bv_19_to_base_typed_and_notes() {
 
 #[test]
 fn test_bv_19_column_names_are_quoted() {
-    // [BV-19] 記号・日本語・予約語の列の名前は note["…"] で参照する。
+    // [utest -> req~base-view.export-base-new-file~1] 記号・日本語・予約語の列の名前は note["…"] で参照する。
     assert_eq!(col_ref("status"), "status");
     assert_eq!(col_ref("file.name"), "file.name");
     assert_eq!(col_ref("期限"), r#"note["期限"]"#);
@@ -332,7 +332,7 @@ fn test_bv_19_column_names_are_quoted() {
 
 #[test]
 fn test_bv_19_to_base_quotes_strings_for_yaml() {
-    // [BV-19] 名前・式・列の引用符・改行・コロンは YAML の引用符で囲み、base::parse で同じに戻る。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-new-file~1] 名前・式・列の引用符・改行・コロンは YAML の引用符で囲み、base::parse で同じに戻る。
     let view = NativeView {
         name: "it's: \"x\"\nnext".to_string(),
         order: vec!["file.name".to_string(), "a: b".to_string()],
@@ -362,7 +362,7 @@ fn test_bv_19_to_base_quotes_strings_for_yaml() {
 
 #[test]
 fn test_bv_19_to_base_hidden_without_order_is_dropped() {
-    // [BV-19] order が空で隠す列があるビューは、隠す列を落としたと知らせる。
+    // [utest -> req~base-view.export-base-dropped~1] order が空で隠す列があるビューは、隠す列を落としたと知らせる。
     let view = NativeView {
         name: "x".to_string(),
         hidden: vec!["due".to_string()],
@@ -376,7 +376,7 @@ fn test_bv_19_to_base_hidden_without_order_is_dropped() {
 
 #[test]
 fn test_bv_19_from_base_nested_filters_and_extras() {
-    // [BV-19] not・or の入れ子は式に、formulas・displayName・読めない形は落とした説明に出る。
+    // [utest -> req~base-view.export-base-dropped~1] not・or の入れ子は式に、formulas・displayName・読めない形は落とした説明に出る。
     let text = r#"filters:
   not:
     - 'status == "done"'
@@ -450,7 +450,7 @@ fn named(name: &str) -> NativeView {
 
 #[test]
 fn test_bv_20_save_refuses_broken_file() {
-    // [BV-20] 壊れた views.toml には書かず、中身はそのまま。
+    // [utest -> req~base-view.views-toml-broken~1, req~base-view.views-toml-atomic-save~1] 壊れた views.toml には書かず、中身はそのまま。
     let t = Tmp::new("broken");
     let p = t.0.join(FILE_NAME);
     std::fs::write(&p, "[[target]\n").unwrap();
@@ -460,7 +460,7 @@ fn test_bv_20_save_refuses_broken_file() {
 
 #[test]
 fn test_bv_20_save_keeps_other_targets_and_empty_removes_target() {
-    // [BV-20] ほかの対象と最上位の知らない項目はそのまま。空のビューで書くと対象の表ごと消える。
+    // [utest -> req~base-view.views-toml-unknown-items~1] ほかの対象と最上位の知らない項目はそのまま。空のビューで書くと対象の表ごと消える。
     // 前の版の [[target]] は [[table]] として読み、書くときは [[table]](CLI-20)。
     let t = Tmp::new("keep");
     let notes = t.0.join("notes");
@@ -491,7 +491,7 @@ fn test_bv_20_save_keeps_other_targets_and_empty_removes_target() {
 
 #[test]
 fn test_bv_20_save_keeps_unknown_items_and_unreadable_views_of_own_target() {
-    // [BV-20] 自分の対象の知らない項目(memo)、同じ名前のビューの知らない項目(color・settings.width)、
+    // [utest -> req~base-view.views-toml-layout~1, req~base-view.views-toml-unknown-items~1, req~base-view.views-toml-view-state~1] 自分の対象の知らない項目(memo)、同じ名前のビューの知らない項目(color・settings.width)、
     // 読めなかったビュー(order が文字列)は保存しても残る。読めなかったビューは同じ名前で上書きされたら消える。
     let t = Tmp::new("own");
     let key = config::target_key(&t.0);
@@ -546,7 +546,7 @@ name = "消す"
 
 #[test]
 fn test_bv_20_unknown_nested_settings_key_warns() {
-    // [BV-20] [CLI-3] settings の中の知らない項目も警告にして、ビューは読む。
+    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] settings の中の知らない項目も警告にして、ビューは読む。
     let t = Tmp::new("nested");
     let key = config::target_key(&t.0);
     let text = format!(

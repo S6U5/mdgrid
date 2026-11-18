@@ -98,7 +98,7 @@ fn row_of(a: &App, name: &str) -> usize {
 
 #[test]
 fn test_nv_26_hide_order_default_persist() {
-    // [NV-26] ビューの区画で「全部」を隠す → すぐタブから消え、`]` で移らない。「未完了」を K で上へ。
+    // [utest -> req~navigation.view-tabs-save~1] ビューの区画で「全部」を隠す → すぐタブから消え、`]` で移らない。「未完了」を K で上へ。
     // 「完了」を既定にする → views.toml に default_view。開き直すと同じ順・同じ隠し方で「完了」から。
     let tmp = setup("nv26a");
     let mut a = boot(&tmp, false);
@@ -153,7 +153,7 @@ fn test_nv_26_hide_order_default_persist() {
 
 #[test]
 fn test_nv_26_current_and_base_refused() {
-    // [NV-26] 開いているビューは隠さない。`.base` のビューは名前の変更も削除もできない(理由が出る)。
+    // [utest -> req~navigation.view-tabs-keep-current~1, req~navigation.view-tabs-base-fixed~1] 開いているビューは隠さない。`.base` のビューは名前の変更も削除もできない(理由が出る)。
     // 既定のタブでもう一度選ぶと既定をやめる。
     let tmp = setup("nv26b");
     let mut a = boot(&tmp, false);
@@ -196,7 +196,7 @@ fn test_nv_26_current_and_base_refused() {
 
 #[test]
 fn test_nv_26_rename_delete_follow_prefs() {
-    // [NV-26] 開いていない mdgrid のビューの名前を変える・消す。設定の画面は開いたまま、タブの順・隠す・
+    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-rename~1, req~navigation.view-tabs-save~1, req~navigation.view-tabs-count~1] 開いていない mdgrid のビューの名前を変える・消す。設定の画面は開いたまま、タブの順・隠す・
     // 既定の名前も合わせる。
     let tmp = setup("nv26c");
     let mut a = boot(&tmp, false);
@@ -246,7 +246,7 @@ fn test_nv_26_rename_delete_follow_prefs() {
 
 #[test]
 fn test_nv_26_switch_hint() {
-    // [NV-26] 末尾の行で切り替えの案内をオフ → タブの行に「[ ] で切り替え」が無い。開き直しても同じ。
+    // [utest -> req~navigation.view-tabs-hint~1] 末尾の行で切り替えの案内をオフ → タブの行に「[ ] で切り替え」が無い。開き直しても同じ。
     let tmp = setup("nv26d");
     let mut a = boot(&tmp, false);
     assert!(tab_line(&a).contains("[ ] で切り替え"), "{}", tab_line(&a));
@@ -263,7 +263,7 @@ fn test_nv_26_switch_hint() {
 
 #[test]
 fn test_nv_26_readonly_shows_but_does_not_write() {
-    // [NV-26][WB-15] 読むだけでは区画を見せるが、変える操作は理由を出して書かない。
+    // [utest -> req~navigation.view-tabs-readonly~1, req~cli.readonly~1] 読むだけでは区画を見せるが、変える操作は理由を出して書かない。
     let tmp = setup("nv26e");
     let before = toml(&tmp);
     let mut a = boot(&tmp, true);

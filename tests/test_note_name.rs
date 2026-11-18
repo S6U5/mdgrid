@@ -1,6 +1,6 @@
 //! ノートの欄の名前の正規表現 `display.note_name`(SR-47・SR-21)の設定の読み込みと、`--print-config`・文書の
 //! 受け入れ試験。読めない正規表現と文字列でない値は `config.toml: display.note_name:` で始まる警告1つで、使わない。
-//! 空の文字列は書かないのと同じ。記録: specs/_decisions/2026-10-15-note-name.md。環境変数は書き換えない(子の環境だけ)。
+//! 空の文字列は書かないのと同じ。記録: specs/_history/decidespec/_decisions/2026-10-15-note-name.md。環境変数は書き換えない(子の環境だけ)。
 //! 画面の見え方は src/ui/test_note_name.rs。
 
 use mdgrid::config::parse;
@@ -17,7 +17,7 @@ fn note_name(text: &str) -> (Option<String>, Vec<String>) {
 
 #[test]
 fn test_sr_47_config_reads_valid_regex() {
-    // [SR-47] 読める正規表現は警告なしで読み、そのまま使う。書かなければ無し。
+    // [stest -> req~screen.note-name-regex~1, req~screen.note-name-match~1, req~screen.note-name-invalid~1] 読める正規表現は警告なしで読み、そのまま使う。書かなければ無し。
     let (n, w) = note_name("[display]\nnote_name = '^[0-9]{6}-'\n");
     assert!(w.is_empty(), "{w:?}");
     assert_eq!(n.as_deref(), Some("^[0-9]{6}-"));
@@ -28,7 +28,7 @@ fn test_sr_47_config_reads_valid_regex() {
 
 #[test]
 fn test_sr_47_config_bad_regex_warns_and_unused() {
-    // [SR-47][CLI-3] 読めない正規表現・文字列でない値 → `config.toml: display.note_name: ` で始まる警告1つで、
+    // [stest -> req~screen.note-name-invalid~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~1] 読めない正規表現・文字列でない値 → `config.toml: display.note_name: ` で始まる警告1つで、
     // 正規表現は使わない。ほかの項目は読む。
     for v in ["'('", "'[あ-'", "true", "8", "['^x']"] {
         let text = format!("[display]\nnote_name = {v}\nzebra = true\n");
@@ -46,7 +46,7 @@ fn test_sr_47_config_bad_regex_warns_and_unused() {
 
 #[test]
 fn test_sr_47_config_empty_string_is_none() {
-    // [SR-47] `note_name = ""` は書かないのと同じ。警告しない。
+    // [stest -> req~screen.note-name-not-in-settings~1] `note_name = ""` は書かないのと同じ。警告しない。
     let (n, w) = note_name("[display]\nnote_name = \"\"\n");
     assert!(w.is_empty(), "{w:?}");
     assert_eq!(n, None);
@@ -82,7 +82,7 @@ fn views_toml(name: &str, display: &str) -> (PathBuf, PathBuf) {
 
 #[test]
 fn test_sr_47_views_override_reads_regex() {
-    // [SR-47][BV-17] ビューの設定の `display` の読める `note_name` を警告なしで読み、ビューの上書きとして持つ。
+    // [stest -> req~screen.note-name-scopes~1, req~screen.note-name-invalid~1, req~screen.note-name-not-in-settings~1, req~base-view.own-views-toml~1, req~base-view.own-views-beyond-base~1] ビューの設定の `display` の読める `note_name` を警告なしで読み、ビューの上書きとして持つ。
     let (conf, notes) = views_toml("ok", "note_name = '_draft$'");
     let (views, warns) = mdgrid::views::load_views(&conf, &notes);
     assert!(warns.is_empty(), "{warns:?}");
@@ -94,7 +94,7 @@ fn test_sr_47_views_override_reads_regex() {
 
 #[test]
 fn test_sr_47_views_override_bad_regex_warns_view_kept() {
-    // [SR-47][CLI-3] ビューの上書きの読めない正規表現・文字列でない値 → 警告1つで上書きを持たない。ビューは捨てない。
+    // [stest -> req~screen.note-name-invalid~1, req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-ui-keeps-config~1] ビューの上書きの読めない正規表現・文字列でない値 → 警告1つで上書きを持たない。ビューは捨てない。
     for (i, v) in ["note_name = '(x'", "note_name = 3"].iter().enumerate() {
         let (conf, notes) = views_toml(&format!("bad{i}"), v);
         let (views, warns) = mdgrid::views::load_views(&conf, &notes);
@@ -111,7 +111,7 @@ fn test_sr_47_views_override_bad_regex_warns_view_kept() {
 
 #[test]
 fn test_sr_47_note_name_in_print_config() {
-    // [SR-47][SR-21][CLI-11] --print-config の [display] に note_name = ""(既定なし)が出る。読み直しても警告なし。
+    // [stest -> req~screen.note-name-regex~1, req~screen.note-name-invalid~1, req~screen.display-config-keys~1, req~cli.print-config-reads-back~1] --print-config の [display] に note_name = ""(既定なし)が出る。読み直しても警告なし。
     let nowhere =
         std::env::temp_dir().join(format!("mdgrid-note-name-none-{}", std::process::id()));
     let out = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
@@ -140,7 +140,7 @@ fn test_sr_47_note_name_in_print_config() {
 
 #[test]
 fn test_sr_47_note_name_in_config_docs() {
-    // [SR-47][CLI-12] docs/config.md と docs/config.ja.md に項目の見出し `### \`display.note_name\`` がある。
+    // [stest -> req~screen.note-name-match~1, req~screen.note-name-invalid~1, req~screen.note-name-docs~1, req~screen.note-name-not-in-settings~1, req~cli.config-docs~1] docs/config.md と docs/config.ja.md に項目の見出し `### \`display.note_name\`` がある。
     for rel in ["docs/config.md", "docs/config.ja.md"] {
         let p = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(rel);
         let text = std::fs::read_to_string(&p).unwrap_or_else(|e| panic!("{rel} を読めない: {e}"));

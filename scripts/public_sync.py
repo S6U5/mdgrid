@@ -363,7 +363,8 @@ def cmd_import(a, st):
         if p.returncode != 0:
             print(
                 "\nぶつかった。直して git cherry-pick --continue のあと、もう一度 import する。"
-                "specs の生成の区画と test-locks.json は手元の側を取り、check.py --write で作り直す"
+                "凍結した specs/_history/decidespec/ は手元の側を取り、specs/requirements/ は直して"
+                " python3 tools/trace_gate.py check を通す"
                 "(docs/public-sync.md)。",
                 file=sys.stderr,
             )

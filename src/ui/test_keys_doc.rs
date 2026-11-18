@@ -429,37 +429,37 @@ fn check_descriptions(lang: &Lang) {
 
 #[test]
 fn test_sr_22_en_doc_matches_bindings() {
-    // [SR-22] 英語の文書の (モード, キー, 動作) が、キーの表と多くも少なくもなく一致する。
+    // [utest -> req~screen.keys-docs-files~1, req~screen.keys-docs-sync~1] 英語の文書の (モード, キー, 動作) が、キーの表と多くも少なくもなく一致する。
     check_bindings(&EN);
 }
 
 #[test]
 fn test_sr_22_ja_doc_matches_bindings() {
-    // [SR-22] 日本語の文書の (モード, キー, 動作) が、キーの表と多くも少なくもなく一致する。
+    // [utest -> req~screen.keys-docs-files~1] 日本語の文書の (モード, キー, 動作) が、キーの表と多くも少なくもなく一致する。
     check_bindings(&JA);
 }
 
 #[test]
 fn test_sr_22_en_doc_lists_every_action_name() {
-    // [SR-22] 英語の文書の動作の名前の一覧が、BINDINGS に出る動作の名前と一致する。
+    // [utest -> req~screen.keys-docs-files~1] 英語の文書の動作の名前の一覧が、BINDINGS に出る動作の名前と一致する。
     check_action_names(&EN);
 }
 
 #[test]
 fn test_sr_22_ja_doc_lists_every_action_name() {
-    // [SR-22] 日本語の文書の動作の名前の一覧が、BINDINGS に出る動作の名前と一致する。
+    // [utest -> req~screen.keys-docs-files~1] 日本語の文書の動作の名前の一覧が、BINDINGS に出る動作の名前と一致する。
     check_action_names(&JA);
 }
 
 #[test]
 fn test_sr_22_en_doc_descriptions_not_empty() {
-    // [SR-22] 英語の文書の各行の説明が空でない。
+    // [utest -> req~screen.keys-docs-files~1, req~screen.keys-docs-by-mode~1] 英語の文書の各行の説明が空でない。
     check_descriptions(&EN);
 }
 
 #[test]
 fn test_sr_22_ja_doc_descriptions_not_empty() {
-    // [SR-22] 日本語の文書の各行の説明が空でない。
+    // [utest -> req~screen.keys-docs-files~1] 日本語の文書の各行の説明が空でない。
     check_descriptions(&JA);
 }
 
@@ -488,7 +488,7 @@ fn free_table_key() -> (String, String) {
 
 #[test]
 fn test_sr_22_doc_action_names_rebind_in_config() {
-    // [SR-22] 文書の table の節に書いた動作の名前を、設定の `[keys.table]` に別のキーで書くと、
+    // [utest -> req~screen.keys-docs-files~1, req~screen.keys-docs-by-mode~1] 文書の table の節に書いた動作の名前を、設定の `[keys.table]` に別のキーで書くと、
     // そのキーでその動作が引ける(文書の名前がそのまま設定で使える)。英・日の両方の文書で確かめる。
     let (cfg_key, key) = free_table_key();
     for lang in [&EN, &JA] {
@@ -541,7 +541,7 @@ fn test_sr_22_doc_action_names_rebind_in_config() {
 
 #[test]
 fn test_sr_22_docs_link_each_other() {
-    // [SR-22] 英語の文書から日本語の文書へ、日本語の文書から英語の文書へのリンクがある。
+    // [utest -> req~screen.keys-docs-files~1] 英語の文書から日本語の文書へ、日本語の文書から英語の文書へのリンクがある。
     for lang in [&EN, &JA] {
         let doc = parse_doc(lang);
         let link = format!("]({})", lang.link_to);
@@ -556,7 +556,7 @@ fn test_sr_22_docs_link_each_other() {
 
 #[test]
 fn test_sr_22_parser_reads_assumed_shape() {
-    // [SR-22] 試験の読み方の確かめ(文書の形の仮定どおりに読めること)。
+    // [utest -> req~screen.keys-docs-files~1, req~screen.keys-docs-sync~1] 試験の読み方の確かめ(文書の形の仮定どおりに読めること)。
     assert_eq!(first_code_span("`j`"), Some("j".into()));
     assert_eq!(first_code_span("`` ` ``"), Some("`".into()));
     assert_eq!(first_code_span("- `down` — move"), Some("down".into()));

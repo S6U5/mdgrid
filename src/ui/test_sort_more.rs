@@ -49,7 +49,7 @@ fn add_due(a: &mut App) {
 
 #[test]
 fn test_nv_24_window_sort_kept_after_restart() {
-    // [NV-24][SR-12] 窓で決めた並べ替えは、開き直しても同じ。
+    // [utest -> req~navigation.sort-window-save~1, req~screen.state-store-header-sort~1] 窓で決めた並べ替えは、開き直しても同じ。
     let tmp = notes("nv24keep");
     let mut a = boot(&tmp, "", false);
     add_due(&mut a);
@@ -62,7 +62,7 @@ fn test_nv_24_window_sort_kept_after_restart() {
 
 #[test]
 fn test_nv_24_readonly_sorts_without_writing() {
-    // [NV-24] 読むだけの起動でも並べ替えられ、ノートも状態も書かない。
+    // [utest -> req~navigation.sort-window-edit~1] 読むだけの起動でも並べ替えられ、ノートも状態も書かない。
     let tmp = notes("nv24ro");
     let before = std::fs::read(tmp.notes().join("a.md")).unwrap();
     let mut a = boot(&tmp, "", true);
@@ -81,7 +81,7 @@ fn test_nv_24_readonly_sorts_without_writing() {
 
 #[test]
 fn test_nv_24_hidden_bar_and_narrow() {
-    // [NV-24] 検索の欄を隠しても、パレットのコマンドと操作の一覧で開ける。ボタンを省いた幅では、
+    // [utest -> req~navigation.sort-window-open~1, req~navigation.sort-window-palette~1] 検索の欄を隠しても、パレットのコマンドと操作の一覧で開ける。ボタンを省いた幅では、
     // 右の端は検索の欄のまま(並べ替えの窓を開かない)。
     let tmp = notes("nv24bar");
     let mut a = boot(&tmp, "[display]\nsearch_bar = false\n", false);

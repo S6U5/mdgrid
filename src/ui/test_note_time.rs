@@ -1,5 +1,5 @@
-//! [CE-32] 雛形の {time}・{now} は、App の now(地域の時計の秒)の時刻。
-//! specs/_changes/2026-10-07-template-time-offset.md。
+//! [cell-edit.template-vars] 雛形の {time}・{now} は、App の now(地域の時計の秒)の時刻。
+//! specs/_history/decidespec/_changes/2026-10-07-template-time-offset.md。
 
 use super::keymap::Mode;
 use super::startup::Startup;
@@ -8,6 +8,7 @@ use super::*;
 use mdgrid::source::markdown::Markdown;
 use mdgrid::types;
 
+// [utest -> req~cell-edit.template-vars-list~1, req~cell-edit.template-vars-body~1]
 #[test]
 fn test_ce_32_time_variable_uses_local_now() {
     let tmp = Tmp::new("ce32time");

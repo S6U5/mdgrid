@@ -1,8 +1,8 @@
-//! [BV-19] ルートフォルダ(`.obsidian` のあるフォルダ)の下のフォルダを開いた表を、パレットの
+//! [base-view.export-base] ルートフォルダ(`.obsidian` のあるフォルダ)の下のフォルダを開いた表を、パレットの
 //! 「.base に書き出す」で書き出すと、書いた `.base` の絞り込みに `file.inFolder("<ルートからのフォルダ>")`
 //! が入り、その `.base` を開くと書き出す前と同じ行(そのフォルダの下のノートだけ。入れ子も)が出る。
 //! 開いたフォルダがルートフォルダそのものなら、フォルダの条件は足さない。
-//! 変更の記録: specs/_changes/2026-10-14-export-infolder.md(タスク 1)。
+//! 変更の記録: specs/_history/decidespec/_changes/2026-10-14-export-infolder.md(タスク 1)。
 //! 実装を見ずに、パレットのキーとファイルと行で確かめる(材料のノートは作り物)。
 
 use super::keymap::Mode;
@@ -154,6 +154,7 @@ fn filter_exprs(path: &Path) -> Vec<String> {
 
 // ---- 試験 ----
 
+// [utest -> req~base-view.export-base-write~1]
 #[test]
 fn test_bv_19_export_infolder_subfolder_adds_infolder_filter() {
     // 下のフォルダ Tasks を開いて書き出す → 書いた .base の絞り込みに file.inFolder("Tasks")。
@@ -171,6 +172,7 @@ fn test_bv_19_export_infolder_subfolder_adds_infolder_filter() {
     );
 }
 
+// [utest -> req~base-view.export-base-write~1]
 #[test]
 fn test_bv_19_export_infolder_subfolder_reopens_same_rows() {
     // 下のフォルダ Tasks の表を書き出し、その .base を開く → 書き出す前と同じ行
@@ -204,6 +206,7 @@ fn test_bv_19_export_infolder_subfolder_reopens_same_rows() {
     );
 }
 
+// [utest -> req~base-view.export-base-write~1]
 #[test]
 fn test_bv_19_export_infolder_nested_subfolder_uses_path_from_root() {
     // さらに下のフォルダ Tasks/sub を開いて書き出す → ルートフォルダからのフォルダ "Tasks/sub" で絞り、
@@ -225,6 +228,7 @@ fn test_bv_19_export_infolder_nested_subfolder_uses_path_from_root() {
     assert_eq!(labels(&b), before, "書き出した .base でも同じ行");
 }
 
+// [utest -> req~base-view.export-base-write~1]
 #[test]
 fn test_bv_19_export_infolder_root_adds_no_infolder() {
     // 境: 開いたフォルダがルートフォルダそのもの → フォルダの条件は足さない。

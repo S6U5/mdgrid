@@ -5,7 +5,7 @@ use crate::types::{parse_date, parse_date_input, DateFormat};
 
 #[test]
 fn test_sr_23_weekday_follows_language() {
-    // [SR-23] 2026-10-01 は木曜: 英語の画面は Thu、日本語の画面は 木。打ち込みは言語によらず両方を受ける。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-ledger~1, req~screen.locales-no-translate~1] 2026-10-01 は木曜: 英語の画面は Thu、日本語の画面は 木。打ち込みは言語によらず両方を受ける。
     let f = DateFormat::parse("DD/MM/YYYY ddd").unwrap();
     let day = parse_date("2026-10-01").unwrap();
     {

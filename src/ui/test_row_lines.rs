@@ -1,7 +1,7 @@
 //! 表の行を伸ばす設定 `display.row_extra_lines`(CV-8)と、伸ばせるときの改行のある値(CV-3)の受け入れ試験。
 //! 長い値は列の幅で折り返し、改行は改行で行を分け、データの1行を最大で「1 + 設定の数」の行の高さまで伸ばす。
 //! 行の高さは行ごとに変わる。0 では今の1行の見え方と1字も変わらない。
-//! 記録: specs/_changes/2026-10-12-row-lines.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-row-lines.md(タスク #1)。
 //!
 //! 仮定(実装役に渡す): 設定の画面の「表示」の区画の項目の名前は「行を伸ばす」、値は帯の余白と同じ「N行」の字。
 
@@ -80,7 +80,7 @@ fn refs<'a>(v: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a str)> {
 
 #[test]
 fn test_cv_8_long_value_wraps_to_three_lines() {
-    // [CV-8] row_extra_lines = 2、幅 20 の列に 50 字 → その行は3行の高さで、説明が全部見える。
+    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-height~1] row_extra_lines = 2、幅 20 の列に 50 字 → その行は3行の高さで、説明が全部見える。
     let notes = three_notes();
     let (_t, a) = boot("cv8_wrap", &refs(&notes), "row_extra_lines = 2\n");
     let l = lines(&a);
@@ -98,7 +98,7 @@ fn test_cv_8_long_value_wraps_to_three_lines() {
 
 #[test]
 fn test_cv_8_overflow_ends_with_ellipsis() {
-    // [CV-8] 伸ばした行に入りきらない値 → 最後の行の後ろに `…`。
+    // [utest -> req~cell-view.row-lines-ellipsis~1] 伸ばした行に入りきらない値 → 最後の行の後ろに `…`。
     let notes = vec![("a.md", format!("---\ndesc: {LONG61}\n---\n"))];
     let (_t, a) = boot("cv8_ell", &refs(&notes), "row_extra_lines = 2\n");
     let l = lines(&a);
@@ -114,7 +114,7 @@ fn test_cv_8_overflow_ends_with_ellipsis() {
 
 #[test]
 fn test_cv_8_newline_splits_lines() {
-    // [CV-8][CV-3] 改行のある値 → 改行で行を分ける(`…⏎` は付けない)。
+    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-wrap-newline~1, req~cell-view.multiline~1] 改行のある値 → 改行で行を分ける(`…⏎` は付けない)。
     let notes = vec![
         ("a.md", "---\ndesc: |\n  first line\n  second line\n---\n"),
         ("b.md", "---\ndesc: next\n---\n"),
@@ -130,7 +130,7 @@ fn test_cv_8_newline_splits_lines() {
 
 #[test]
 fn test_cv_3_newline_marked_without_extra_lines() {
-    // [CV-3][CV-8] 0(既定)では今のまま: 1行目と `…⏎`。設定を書かないときと画面が1字も変わらない。
+    // [utest -> req~cell-view.multiline~1, req~cell-view.row-lines-zero~1] 0(既定)では今のまま: 1行目と `…⏎`。設定を書かないときと画面が1字も変わらない。
     let notes = vec![
         (
             "a.md",
@@ -148,7 +148,7 @@ fn test_cv_3_newline_marked_without_extra_lines() {
 
 #[test]
 fn test_cv_8_continuation_lines_have_no_marks() {
-    // [CV-8] 2行目より下の行には、行の印 `>` と行番号を出さない。
+    // [utest -> req~cell-view.row-lines-continuation~1] 2行目より下の行には、行の印 `>` と行番号を出さない。
     let notes = three_notes();
     let (_t, a) = boot(
         "cv8_marks",
@@ -169,7 +169,7 @@ fn test_cv_8_continuation_lines_have_no_marks() {
 
 #[test]
 fn test_cv_8_click_on_second_line_selects_row() {
-    // [CV-8] 伸ばした行の2行目をクリック → その行を選ぶ。その下の行をクリック → 次の行。
+    // [utest -> req~cell-view.row-lines-count-height~1] 伸ばした行の2行目をクリック → その行を選ぶ。その下の行をクリック → 次の行。
     let notes = three_notes();
     let (_t, mut a) = boot("cv8_click", &refs(&notes), "row_extra_lines = 2\n");
     let l = lines(&a);
@@ -186,7 +186,7 @@ fn test_cv_8_click_on_second_line_selects_row() {
 
 #[test]
 fn test_cv_8_bottom_row_fully_visible() {
-    // [CV-8] 一番下の行を選ぶ → その行の高さ全部が見えるまで表が流れる。
+    // [utest -> req~cell-view.row-lines-keep-visible~1] 一番下の行を選ぶ → その行の高さ全部が見えるまで表が流れる。
     let mut notes: Vec<(String, String)> = (0..40)
         .map(|i| {
             (
@@ -213,7 +213,7 @@ fn test_cv_8_bottom_row_fully_visible() {
 
 #[test]
 fn test_cv_8_page_down_counts_tall_rows() {
-    // [CV-8] ページ送りは伸ばした行の高さで数える: 全部3行の行で PageDown → 選んだ行が画面の中に見える。
+    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-count-height~1, req~cell-view.row-lines-keep-visible~1] ページ送りは伸ばした行の高さで数える: 全部3行の行で PageDown → 選んだ行が画面の中に見える。
     let notes: Vec<(String, String)> = (0..30)
         .map(|i| {
             (
@@ -244,7 +244,7 @@ fn test_cv_8_page_down_counts_tall_rows() {
 
 #[test]
 fn test_cv_8_edit_box_on_first_line() {
-    // [CV-8] 伸ばした行のセルを編集する → 入力の欄はその行の1行目。
+    // [utest -> req~cell-view.row-lines-edit-first-line~1] 伸ばした行のセルを編集する → 入力の欄はその行の1行目。
     let notes = three_notes();
     let (_t, mut a) = boot("cv8_edit", &refs(&notes), "row_extra_lines = 2\n");
     let l = lines(&a);
@@ -259,7 +259,7 @@ fn test_cv_8_edit_box_on_first_line() {
 
 #[test]
 fn test_cv_8_settings_cycles_zero_to_three() {
-    // [CV-8][NV-18] ビューの設定の「表示」の区画で「行を伸ばす」を 0 → 1 → 2 → 3 → 0 と切り替える。
+    // [utest -> req~cell-view.row-lines-settings-toggle~1, req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~1] ビューの設定の「表示」の区画で「行を伸ばす」を 0 → 1 → 2 → 3 → 0 と切り替える。
     let notes = three_notes();
     let (_t, mut a) = boot("cv8_settings", &refs(&notes), "");
     a.resize(120, 50);

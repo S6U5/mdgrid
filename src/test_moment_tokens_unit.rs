@@ -1,4 +1,4 @@
-//! [BV-6] 日付の .format() の Moment の書き方(英語の既定のロケール)。specs/_changes/2026-10-06-moment-tokens.md。
+//! [base-view.expr-eval] 日付の .format() の Moment の書き方(英語の既定のロケール)。specs/_history/decidespec/_changes/2026-10-06-moment-tokens.md。
 
 use super::format_when;
 use crate::types::parse_date;
@@ -9,6 +9,7 @@ fn f(date: &str, t: i64, fmt: &str) -> String {
 
 const T1504: i64 = 15 * 3600 + 4 * 60;
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_moment_tokens_ordinal_and_12h() {
     assert_eq!(f("2026-10-05", T1504, "Do MMMM"), "5th October");
@@ -32,6 +33,7 @@ fn test_bv_6_moment_tokens_ordinal_and_12h() {
     assert_eq!(f("2026-10-05", 12 * 3600, "h A"), "12 PM");
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_moment_tokens_weeks() {
     // 2026-10-05 は月曜日。ISO の第41週、日曜始まりの週も第41週。
@@ -44,6 +46,7 @@ fn test_bv_6_moment_tokens_weeks() {
     assert_eq!(f("2025-12-29", 0, "GGGG W"), "2026 1");
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_moment_tokens_misc() {
     assert_eq!(f("2026-10-05", 0, "Q"), "4");

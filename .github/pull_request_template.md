@@ -4,10 +4,10 @@
 
 ## Requirements
 
-<!-- Requirement IDs from specs/ if you know them (e.g. SR-24), or "none". A maintainer can help. -->
+<!-- Requirement names from specs/requirements/ if you know them (e.g. screen.action-menu), or "none". A maintainer can help. -->
 
 ## Checks
 
-- [ ] `./ci.sh` passes (fmt, clippy, tests)
+- [ ] `./ci.sh` passes (fmt, clippy, tests, `tools/trace_gate.py check`)
 - [ ] Tests added or updated for the changed behavior
 - [ ] Docs in `docs/` updated in English and Japanese, if a key, setting or message changed

@@ -1,8 +1,9 @@
-//! [CE-2] types.json の型は、同じ名前が無ければ大文字小文字を問わずに引く(Obsidian のプロパティの名前と同じ)。
-//! specs/_changes/2026-10-06-types-case.md。
+//! [cell-edit.column-type] types.json の型は、同じ名前が無ければ大文字小文字を問わずに引く(Obsidian のプロパティの名前と同じ)。
+//! specs/_history/decidespec/_changes/2026-10-06-types-case.md。
 
 use super::*;
 
+// [utest -> req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1]
 #[test]
 fn test_ce_2_types_json_any_case() {
     let nanos = std::time::SystemTime::now()

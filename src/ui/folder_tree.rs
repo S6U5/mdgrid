@@ -1,4 +1,4 @@
-//! 木の画面(specs/tree/spec.md の TR-1〜TR-7。`impl App` の続き): 階層を文字の列で持つ表を、左のフォルダの木と、
+//! 木の画面(specs/_history/decidespec/tree/spec.md の TR-1〜TR-7。`impl App` の続き): 階層を文字の列で持つ表を、左のフォルダの木と、
 //! 右の選んだフォルダの直下の行で見せる。表の画面とは別の画面の型(SC-9)で、画面の型のメニュー(REL-8)と
 //! キー `T` で切り替える。木を組むのは画面に依存しない `mdgrid::folder_tree`。
 //!
@@ -160,7 +160,7 @@ impl App {
     /// TR-1・TR-2: この表で木を出せるか(印に木の設定があり、階層の列が表にある)。読み込みの途中は列を待たない。
     pub(crate) fn tree_ready(&self) -> bool {
         match &self.tree_spec {
-            Some((spec, _)) => !self.progress.done || self.tree_column_ok(spec),
+            Some((spec, _)) => !self.columns_settled() || self.tree_column_ok(spec),
             None => false,
         }
     }
@@ -189,7 +189,6 @@ impl App {
             &format!("{at}.path"),
             &Msg::RsnTreeNoColumn.fill(&[&spec.path]),
         ]);
-        self.tree_spec = None;
         self.message = Some(match self.message.take() {
             Some(m) => format!("{m} / {w}"),
             None => w,
@@ -232,7 +231,11 @@ impl App {
     /// TR-1: 木の画面を開く。今の表の行があれば、そのフォルダとその行を選ぶ。
     pub(crate) fn open_tree(&mut self) {
         let Some((spec, _)) = self.tree_spec.clone().filter(|_| self.tree_ready()) else {
-            self.message = Some(Msg::TreeNotSet.text().into());
+            // 設定はあって階層の列が表に無いなら、その列を言う(「設定が無い」と言わない)。
+            self.message = Some(match &self.tree_spec {
+                Some((s, _)) => Msg::RsnTreeNoColumn.fill(&[&s.path]),
+                None => Msg::TreeNotSet.text().into(),
+            });
             return;
         };
         let (tree, rows) = self.build_tree(&spec);
@@ -253,7 +256,7 @@ impl App {
         if let Some(cur) = self.cur_row() {
             select_row(&mut ft, &cur);
         }
-        self.relmap = None;
+        self.leave_screens();
         self.folder_tree = Some(ft);
         self.set_mode(Mode::Tree);
     }
@@ -473,10 +476,12 @@ impl App {
                 self.folder_tree = Some(ft);
                 return self.open_palette();
             }
-            // パレットから選んだ木に無い動作は、表の画面に戻ってからする。
+            // パレットから選んだ木に無い動作は、表の画面に戻ってからする。右の欄で選んでいる行を表で選べれば
+            // そこで。選べなければ、行やセルに効く動作だけしない(表の別の行に効かせない。ガント・カンバンと同じ)。
             (a, _) => {
-                self.close_tree();
-                return self.apply(a);
+                let row = ft.row().cloned();
+                self.folder_tree = Some(ft);
+                return self.act_from_screen(row, a, Msg::TreeEmptyFolder);
             }
         }
         self.folder_tree = Some(ft);

@@ -1,5 +1,5 @@
 //! 新しいノートの残り(new-note-gaps)の画面の受け入れ試験。CE-26・CE-27(関係: CE-2・CE-3・BV-17)。
-//! 仕様: specs/cell-edit/spec.md、記録 specs/_changes/2026-10-03-new-note-gaps.md。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md、記録 specs/_history/decidespec/_changes/2026-10-03-new-note-gaps.md。
 //! 画面の実装を見ずに、キー・画面の文字・ファイルで確かめる。今日は 2026-10-03 に固定する。
 //!
 //! 仮定(実装役に渡す):
@@ -185,7 +185,7 @@ fn select_in_list(a: &mut App, want: &str) {
 
 #[test]
 fn test_ce_26_view_rule_overrides_config() {
-    // [CE-26][CE-27][BV-17] 設定の [new_note] が ask = ["status"]、views.toml のビューの new_note が
+    // [utest -> req~cell-edit.new-note-form-skip-empty~1, req~cell-edit.new-note-form-per-view~1, req~cell-edit.new-note-config-set~1, req~cell-edit.new-note-config-view~1, req~cell-edit.new-note-config-filter-first~1, req~base-view.own-views-tabs~1, req~base-view.own-views-no-note-files~1] 設定の [new_note] が ask = ["status"]、views.toml のビューの new_note が
     // ask = ["priority"]・set = { kind = "x" } → そのビューで始めると、名前のあとに priority を聞き
     // (status は聞かない)、作ったノートに kind: x と priority が入り、status は無い。
     let tmp = vault("nng_view");
@@ -218,7 +218,7 @@ fn test_ce_26_view_rule_overrides_config() {
 
 #[test]
 fn test_ce_26_default_table_uses_config_rule() {
-    // [CE-26][CE-27] 同じ設定・同じ views.toml で、既定の表(ビューを選ばない)では設定の status を聞く。
+    // [utest -> req~cell-edit.new-note-form-ask~1, req~cell-edit.new-note-form-per-view~1, req~cell-edit.new-note-config-view~1] 同じ設定・同じ views.toml で、既定の表(ビューを選ばない)では設定の status を聞く。
     // ビューの set(kind)は入らない。
     let tmp = vault("nng_default");
     write_view(
@@ -244,7 +244,7 @@ fn test_ce_26_default_table_uses_config_rule() {
 
 #[test]
 fn test_ce_26_text_ask_shows_same_list_as_cell_edit() {
-    // [CE-26][CE-3] status が todo・done だけ → 名前のあとに、セルの編集で status のセルを開いたときと
+    // [utest -> req~cell-edit.new-note-form-bad-name~1, req~cell-edit.value-list-type-replaces~1, req~cell-edit.value-list-narrow~1] status が todo・done だけ → 名前のあとに、セルの編集で status のセルを開いたときと
     // 同じ候補(todo・done と「なし」)が同じ見せ方で出る。
     let tmp = vault("nng_list");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"status\"]\n"));
@@ -272,7 +272,7 @@ fn test_ce_26_text_ask_shows_same_list_as_cell_edit() {
 
 #[test]
 fn test_ce_26_text_ask_pick_done_from_list() {
-    // [CE-26][CE-3] 候補のリストで done を選んで確定 → 作ったノートが `status: done`。
+    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-move~1, req~cell-edit.value-list-narrow~1] 候補のリストで done を選んで確定 → 作ったノートが `status: done`。
     let tmp = vault("nng_pick");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"status\"]\n"));
     start_and_name(&mut a, "選ぶ");
@@ -289,7 +289,7 @@ fn test_ce_26_text_ask_pick_done_from_list() {
 
 #[test]
 fn test_ce_26_text_ask_free_input_from_list() {
-    // [CE-26][CE-3] 候補のリストから、打って自由入力に切り替える(リストは消える)→ `waiting` で作れる。
+    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-move~1, req~cell-edit.new-note-form-create~1, req~cell-edit.new-note-form-esc~1, req~cell-edit.new-note-form-bad-name~1, req~cell-edit.value-list-open~1, req~cell-edit.value-list-free-input~1] 候補のリストから、打って自由入力に切り替える(リストは消える)→ `waiting` で作れる。
     let tmp = vault("nng_free");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"status\"]\n"));
     start_and_name(&mut a, "自由");
@@ -313,7 +313,7 @@ fn test_ce_26_text_ask_free_input_from_list() {
 
 #[test]
 fn test_ce_26_text_ask_too_many_values_is_one_line() {
-    // [CE-26][CE-3] status の異なる値が 21 個(既定の 20 より多い)→ セルの編集と同じく候補のリストは出さず
+    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-move~1, req~cell-edit.new-note-form-typed~1, req~cell-edit.new-note-form-create~1, req~cell-edit.new-note-form-esc~1, req~cell-edit.value-list-open~1] status の異なる値が 21 個(既定の 20 より多い)→ セルの編集と同じく候補のリストは出さず
     // 1行の入力。打った値で作る。
     let tmp = Tmp::new("nng_many");
     for i in 0..21 {

@@ -8,7 +8,7 @@ use pty::{TempDir, Tui};
 
 #[test]
 fn test_tr_2_base_only_marker_table_tree_e2e() {
-    // [TR-2] open = "ブックマーク" と [table.base] だけの表 → T で木の画面。
+    // [stest -> req~tree.config-path~1] open = "ブックマーク" と [table.base] だけの表 → T で木の画面。
     let home = TempDir::new("tree-base-e2e");
     let h = home.path();
     let w = |rel: &str, text: &str| {

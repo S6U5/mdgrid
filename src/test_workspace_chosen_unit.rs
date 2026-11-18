@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn test_ws_6_chosen_without_the_table_warns() {
-    // [WS-6] -w で選んだワークスペースに無い表を開いたら、範囲は選んだものにして、そう言う。入っていれば言わない。
+    // [utest -> req~workspace.scope-order-rank~1] -w で選んだワークスペースに無い表を開いたら、範囲は選んだものにして、そう言う。入っていれば言わない。
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()

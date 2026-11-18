@@ -4,7 +4,7 @@ use std::path::Path;
 
 #[test]
 fn test_sr_38_pages_workflow_checks_site() {
-    // [SR-38] サイトを作る → ブラウザで確かめる → 上げる、の順。確かめる道具が要ることを確かめる。
+    // [utest -> req~screen.style-catalog-page~1] サイトを作る → ブラウザで確かめる → 上げる、の順。確かめる道具が要ることを確かめる。
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let wf = std::fs::read_to_string(root.join(".github/workflows/pages.yml")).unwrap();
     let build = wf

@@ -33,7 +33,7 @@ fn current(a: &App) -> String {
 
 #[test]
 fn test_nv_25_default_view() {
-    // [NV-25][BV-13] 「完了」を既定のビューにする → views.toml に default_view。開き直すと「完了」。
+    // [utest -> req~navigation.default-view-open~1, req~base-view.view-switch-startup~1] 「完了」を既定のビューにする → views.toml に default_view。開き直すと「完了」。
     // `--view` があればそちら。先頭(進行中)を選ぶと名前を消す。
     let tmp = vault("nv25");
     base_path(&tmp, TASKS);
@@ -57,7 +57,7 @@ fn test_nv_25_default_view() {
 
 #[test]
 fn test_nv_25_missing_and_readonly() {
-    // [NV-25] 既定のビューの名前が無くなっていたら、警告せず先頭。読むだけでは書かない。
+    // [utest -> req~navigation.default-view-missing~1] 既定のビューの名前が無くなっていたら、警告せず先頭。読むだけでは書かない。
     let tmp = vault("nv25miss");
     base_path(&tmp, TASKS);
     let dir = tmp.0.join("config");

@@ -1,6 +1,6 @@
 //! テーマが画面の地を塗らない既定でも、端末の地の色が分かれば(起動時の OSC 11 の答え。試験では
 //! `App::term_bg` で与える)、余白の端数を半行で描く(NV-23・SR-1)試験。
-//! 記録: specs/_changes/2026-10-12-search-box.md(タスク #7)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-search-box.md(タスク #7)。
 
 use super::startup::Startup;
 use super::test_screen::{text, Tmp};
@@ -59,7 +59,7 @@ const SCREEN: Color = Color::Rgb(TERM_BG[0], TERM_BG[1], TERM_BG[2]);
 
 #[test]
 fn test_nv_23_half_termbg_default_layout() {
-    // [SR-1][NV-23] 色ありの既定で端末の地の色が分かる → 1行目は上の余白の半行(`▀`)、2行目がヘッダー、3行目が
+    // [utest -> req~screen.layout-half-padding~1, req~navigation.search-box-half-glyphs~1] 色ありの既定で端末の地の色が分かる → 1行目は上の余白の半行(`▀`)、2行目がヘッダー、3行目が
     // 帯の上の半行(`▀`)、4行目がビューの帯、5行目が帯の下の半行(`▄`)、6行目が列の見出し。半行のセルの地は
     // 帯(ヘッダー)の行と同じ帯の地の色、字の色は端末の地の色。
     let (_t, a) = boot(
@@ -106,7 +106,7 @@ fn test_nv_23_half_termbg_default_layout() {
 
 #[test]
 fn test_nv_23_half_termbg_one_and_a_half() {
-    // [NV-23] `top_padding = 0`・`bar_padding = 1.5` → 1行目がヘッダー、2行目が空き、3行目が `▀`、4行目が帯、
+    // [utest -> req~navigation.search-box-key-glyph~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-half-fallback~1] `top_padding = 0`・`bar_padding = 1.5` → 1行目がヘッダー、2行目が空き、3行目が `▀`、4行目が帯、
     // 5行目が `▄`、6行目が空き、7行目が見出し。
     let (_t, a) = boot(
         "tbg15",
@@ -127,7 +127,7 @@ fn test_nv_23_half_termbg_one_and_a_half() {
 
 #[test]
 fn test_nv_23_half_termbg_no_color_still_rounds_up() {
-    // [NV-23] 端末の地の色が分かっても、色を使わない表示では今のとおり端数を1行の空き行に切り上げる。
+    // [utest -> req~navigation.search-box-half-fallback~1] 端末の地の色が分かっても、色を使わない表示では今のとおり端数を1行の空き行に切り上げる。
     let (_t, a) = boot("tbgnocolor", "", ColorMode::None);
     let s = lines(&buf(&a)).join("\n");
     assert!(!s.contains('▄') && !s.contains('▀'), "{s}");
@@ -135,7 +135,7 @@ fn test_nv_23_half_termbg_no_color_still_rounds_up() {
 
 #[test]
 fn test_nv_23_half_termbg_rgb_from_osc11() {
-    // [NV-23] 端末の答え(OSC 11)から地の色を読む: 4桁と2桁の16進、読めない答え。
+    // [utest -> req~navigation.search-box-screen-bg~1] 端末の答え(OSC 11)から地の色を読む: 4桁と2桁の16進、読めない答え。
     use super::termbg::rgb_from_osc11;
     assert_eq!(
         rgb_from_osc11("\x1b]11;rgb:0c0c/1e1e/ffff\x1b\\"),

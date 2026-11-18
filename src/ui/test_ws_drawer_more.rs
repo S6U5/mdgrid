@@ -31,7 +31,7 @@ fn boot(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_ws_8_back_forgets_the_scope() {
-    // [WS-8] 変更をためてほかのワークスペースの表を選び、確かめで戻る → 移る先の範囲の旗も残らない
+    // [utest -> req~workspace.drawer-others~1, req~workspace.drawer-unsaved~1] 変更をためてほかのワークスペースの表を選び、確かめで戻る → 移る先の範囲の旗も残らない
     // (あとで別の道で移るときに、前に選んだワークスペースの範囲で開き直さない)。
     let (_tmp, mut a) = boot("ws8_back_scope");
     let row = a.src.rows()[0].clone();
@@ -53,7 +53,7 @@ fn test_ws_8_back_forgets_the_scope() {
 
 #[test]
 fn test_ws_8_rebound_key_closes() {
-    // [WS-8][SR-13] 開くキーを `t` に割り当て直す → `t` で開き、もう一度の `t` で閉じる。
+    // [utest -> req~workspace.drawer-open~1, req~workspace.drawer-close~1, req~screen.keys-vim-and-arrows-remap~1] 開くキーを `t` に割り当て直す → `t` で開き、もう一度の `t` で閉じる。
     let (_tmp, mut a) = boot("ws8_rebind");
     let w = keymap::rebind(
         &mut a.keys,

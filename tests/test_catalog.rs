@@ -35,7 +35,7 @@ fn own(n: &[&str]) -> Vec<String> {
 
 #[test]
 fn test_sr_38_catalog_matches_config() {
-    // [SR-38] カタログの項目と値の名前が本体の設定と同じ(どれかが増減・改名したら落ちる)。
+    // [utest -> req~screen.style-catalog-sync~1] カタログの項目と値の名前が本体の設定と同じ(どれかが増減・改名したら落ちる)。
     let n = names();
     let themes: Vec<String> = Theme::ALL.iter().map(|t| t.name().to_string()).collect();
     assert_eq!(strs(&n["themes"]), themes);
@@ -55,7 +55,7 @@ fn test_sr_38_catalog_matches_config() {
 
 #[test]
 fn test_sr_38_catalog_presets_match() {
-    // [SR-38] カタログの組の中身が Style::of と同じ。既定(組・テーマ・auto の2つ・nerd_font)も同じ。
+    // [utest -> req~screen.style-catalog-sync~1] カタログの組の中身が Style::of と同じ。既定(組・テーマ・auto の2つ・nerd_font)も同じ。
     let n = names();
     for name in Preset::NAMES {
         let s = Style::of(Preset::parse(name).unwrap());
@@ -95,7 +95,7 @@ fn test_sr_38_catalog_presets_match() {
 
 #[test]
 fn test_sr_38_catalog_is_self_contained() {
-    // [SR-38] 1つのファイルで、外の何にも頼らない(外の URL・読み込みが無い)。
+    // [utest -> req~screen.style-catalog-offline~1] 1つのファイルで、外の何にも頼らない(外の URL・読み込みが無い)。
     let html = catalog();
     for bad in ["http://", "https://", "<link", " src=", "@import"] {
         assert!(!html.contains(bad), "外の読み込み: {bad}");

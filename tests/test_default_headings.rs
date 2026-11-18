@@ -1,5 +1,5 @@
-//! [BV-24] displayName の無い列の見出しは Obsidian の既定(式の名前・`file name` など)。
-//! specs/_changes/2026-10-07-default-headings.md。本物の実行ファイルの `--print` で確かめる。
+//! [base-view.default-headings] displayName の無い列の見出しは Obsidian の既定(式の名前・`file name` など)。
+//! specs/_history/decidespec/_changes/2026-10-07-default-headings.md。本物の実行ファイルの `--print` で確かめる。
 
 use std::path::PathBuf;
 use std::process::Command;
@@ -50,6 +50,7 @@ fn header(name: &str, base: &str) -> String {
         .to_string()
 }
 
+// [stest -> req~base-view.default-headings-obsidian~1]
 #[test]
 fn test_bv_24_default_headings() {
     let base = "formulas:\n  価格: price * 2\nviews:\n  - type: table\n    name: t\n    order:\n      - file.name\n      - formula.価格\n      - status\n      - file.ctime\n      - file.mtime\n      - file.ext\n      - file.folder\n";
@@ -59,6 +60,7 @@ fn test_bv_24_default_headings() {
     );
 }
 
+// [stest -> req~base-view.default-headings-obsidian~1]
 #[test]
 fn test_bv_24_display_name_wins() {
     let base = "formulas:\n  価格: price * 2\nproperties:\n  file.name:\n    displayName: 名前\n  formula.価格:\n    displayName: 値段\nviews:\n  - type: table\n    name: t\n    order:\n      - file.name\n      - formula.価格\n";

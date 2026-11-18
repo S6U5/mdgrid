@@ -13,6 +13,7 @@ use super::input::Input;
 use super::keymap::{self, Action, Binding, Mode};
 use super::nav::Prompt;
 use super::review::Review;
+use super::screens::Screen;
 use super::settings::Draft;
 use super::view;
 use mdgrid::changes::Changes;
@@ -258,6 +259,20 @@ pub struct App {
     pub(crate) tree_spec: Option<(mdgrid::folder_tree::TreeSpec, String)>,
     /// 木の画面(TR-1。folder_tree.rs)。開いている間だけ。
     pub(crate) folder_tree: Option<super::folder_tree::FolderTree>,
+    /// GA-1: 印に書いたガントの設定と、警告の場所(`table[n].gantt`)。
+    pub(crate) gantt_spec: Option<(mdgrid::gantt::GanttSpec, String)>,
+    /// GA-2: ガントの画面(開いている間だけ。gantt.rs)。
+    pub(crate) gantt: Option<super::gantt::Gantt>,
+    /// KB-1: 印に書いたカンバンの設定と、警告の場所(`table[n].kanban`)。
+    pub(crate) kanban_spec: Option<(mdgrid::kanban::KanbanSpec, String)>,
+    /// KB-2: カンバンの画面(開いている間だけ。kanban.rs)。
+    pub(crate) kanban: Option<super::kanban::Kanban>,
+    /// CH-1: 印に書いたグラフの設定と、それぞれの警告の場所(`table[n].chart` か `table[n].chart[k]`)。
+    pub(crate) chart_specs: Vec<(mdgrid::chart::ChartSpec, String)>,
+    /// CH-2: グラフの画面(開いている間だけ。chart.rs)。
+    pub(crate) chart: Option<super::chart::Chart>,
+    /// 画面の型の設定の列を確かめたか(列が出そろったときに1回。screens.rs の `check_screen_columns`)。
+    pub(crate) columns_checked: bool,
     /// TR-5: URL を開く口(試験では差し替える)。
     pub(crate) opener: Box<dyn super::external::Opener>,
     pub quit: bool,
@@ -384,6 +399,13 @@ impl App {
             relmap: None,
             tree_spec: None,
             folder_tree: None,
+            gantt_spec: None,
+            gantt: None,
+            kanban_spec: None,
+            kanban: None,
+            chart_specs: Vec::new(),
+            chart: None,
+            columns_checked: false,
             opener: super::external::default_opener(),
             quit: false,
         };
@@ -452,8 +474,14 @@ impl App {
             }
         }
         if self.progress.done {
-            // TR-2: 階層の列が表に無ければ警告して木を出さない(列は読み終えてから分かる)。
-            self.check_tree_column();
+            // TR-2・GA-1・KB-1: 画面の型の設定の列を確かめる(列は読み終えてから分かる。行の無い表では、行が
+            // できてから。設定を外した型の画面は閉じる)。
+            self.check_screen_columns();
+            // 読み込みの途中で開いた画面を、出そろった行で組み直す。
+            self.rebuild_tree();
+            self.rebuild_gantt();
+            self.rebuild_kanban();
+            self.rebuild_chart();
             self.select_pending();
             // BV-2: 推した根で0行なら、探した場所を一度出す(黙って空の表にしない)。
             if let Some(root) = self.guessed_root.take() {
@@ -509,8 +537,16 @@ impl App {
             // WB-17: 外で、ためた値と同じ値に直されたセルは外す。
             self.changes.drop_same(self.src.as_ref(), &changed);
             self.refresh();
+            // TR-2・GA-1・KB-1: 行の無かった表に外でノートができたら、画面の型の設定の列を確かめる。
+            self.check_screen_columns();
             // TR-1: 木の画面を開いていれば、今のビューを通った行で組み直す。
             self.rebuild_tree();
+            // GA-5: ガントの画面を開いていれば組み直す。
+            self.rebuild_gantt();
+            // KB-5: カンバンの画面を開いていれば組み直す。
+            self.rebuild_kanban();
+            // CH-8: グラフの画面を開いていれば数え直す。
+            self.rebuild_chart();
             if self.review.is_some() {
                 self.reopen_review_keeping_overlay();
             }
@@ -709,11 +745,19 @@ impl App {
             Mode::FilterWin | Mode::FilterText => self.filters_action(action),
             Mode::Relations => self.relmap_action(action),
             Mode::Tree => self.tree_action(action),
+            Mode::Gantt => self.gantt_action(action),
+            Mode::Kanban => self.kanban_action(action),
+            Mode::Chart => self.chart_action(action),
             Mode::Table => self.table_action(action),
         }
         if std::mem::take(&mut self.regrid) {
             self.refresh();
+            // KB-4: カンバンの画面では、札を動かした・取り消したあとに組み直す(札は動かした先のレーンで選んだまま)。
+            self.rebuild_kanban();
         }
+        // TR-2・GA-1・KB-1: 行の無かった表に行ができたら(新しいノートを作ったあとなど)、画面の型の設定の列を
+        // 確かめる。動作の知らせのあとに警告を足すので、知らせに上書きされない。
+        self.check_screen_columns();
         self.scroll_into_view();
         // SR-12: 終わるときに見た目の状態を書く。
         if self.quit {
@@ -875,6 +919,12 @@ impl App {
             Action::RelationMap => self.open_relmap(),
             // ---- 木の画面(folder_tree.rs。TR-1・TR-5) ----
             Action::TreeView => self.open_tree(),
+            // ---- ガントの画面(gantt.rs。GA-2) ----
+            Action::GanttView => self.open_gantt(),
+            // ---- カンバンの画面(kanban.rs。KB-2) ----
+            Action::KanbanView => self.open_kanban(),
+            // ---- グラフの画面(chart.rs。CH-2) ----
+            Action::ChartView => self.open_chart(),
             Action::OpenUrl => self.open_url_here(),
             // ---- 親子(NV-27。grid.rs) ----
             Action::ToggleTree => self.toggle_tree(),
@@ -903,7 +953,7 @@ impl App {
     }
 
     /// 取り消し・やり直しで値が変わった行を、元の位置に留める(NV-12)。`before` は前にためた変更のあった行。
-    fn keep_in_place(&mut self, before: Vec<RowId>) {
+    pub(crate) fn keep_in_place(&mut self, before: Vec<RowId>) {
         self.stay.extend(before);
         self.stay.extend(self.changes.rows());
         self.regrid = true;
@@ -999,6 +1049,54 @@ impl App {
                 }
                 // REL-12: 一覧・盤・つながった行のクリック。
                 self.relmap_click(x, y);
+                return;
+            }
+            Mode::Gantt => {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
+                    self.close_gantt();
+                    self.open_drawer();
+                    return;
+                }
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
+                }
+                // GA-4: 行のクリック。
+                self.gantt_click(x, y);
+                return;
+            }
+            Mode::Kanban => {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
+                    self.close_kanban();
+                    self.open_drawer();
+                    return;
+                }
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
+                }
+                // KB-3: 札と見出しのクリック。
+                self.kanban_click(x, y);
+                return;
+            }
+            Mode::Chart => {
+                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
+                if super::bands::crumb_at(self, x, y) {
+                    self.close_chart();
+                    self.open_drawer();
+                    return;
+                }
+                // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
+                if let Some(b) = super::bands::header_button_at(self, x, y) {
+                    self.message = None;
+                    return self.press_header_button(b);
+                }
+                // CH-8: 項目のクリック。
+                self.chart_click(x, y);
                 return;
             }
             Mode::Tree => {
@@ -1164,6 +1262,15 @@ impl App {
             // TR-7: 木の画面では、選んでいる欄で上下に選ぶ(行の操作の窓が開いていれば窓の中)。
             (Mode::Tree, true) => Action::Down,
             (Mode::Tree, false) => Action::Up,
+            // GA-4: ガントの画面では行を上下に選ぶ。
+            (Mode::Gantt, true) => Action::Down,
+            (Mode::Gantt, false) => Action::Up,
+            // KB-3: カンバンの画面では選んでいるレーンの札を上下に選ぶ。
+            (Mode::Kanban, true) => Action::Down,
+            (Mode::Kanban, false) => Action::Up,
+            // CH-8: グラフの画面では選びを1つ動かす。
+            (Mode::Chart, true) => Action::Down,
+            (Mode::Chart, false) => Action::Up,
             _ => return,
         };
         self.apply(a);
@@ -1172,6 +1279,15 @@ impl App {
     /// 横のホイール(SR-6)。表では `h`・`l` と同じに左右の列へ。ほかの画面では何もしない。
     pub fn hwheel(&mut self, right: bool) {
         if self.mode == Mode::Table {
+            self.apply(if right { Action::Right } else { Action::Left });
+        } else if self.mode == Mode::Gantt {
+            // GA-4: ガントでは時間軸を動かす。
+            self.gantt_hwheel(right);
+        } else if self.mode == Mode::Kanban {
+            // KB-3: カンバンではレーンを移る。
+            self.kanban_hwheel(right);
+        } else if self.mode == Mode::Chart {
+            // CH-8: グラフでは選びを左右に動かす。
             self.apply(if right { Action::Right } else { Action::Left });
         }
     }
@@ -1214,12 +1330,9 @@ impl App {
             // CE-25: ビューの帯を出さないときの「+ 新規」。
             H::New => self.apply(Action::NewNote),
             H::Settings => {
-                if self.mode == Mode::Relations {
-                    self.relmap = None;
-                    self.set_mode(Mode::Table);
-                }
-                if self.mode == Mode::Tree {
-                    self.close_tree();
+                // 表でない画面の型からは、表の画面に戻ってから開く。
+                if Screen::of_mode(self.mode).is_some_and(|s| s != Screen::Table) {
+                    self.close_screen();
                 }
                 self.apply(Action::ViewSettings);
             }

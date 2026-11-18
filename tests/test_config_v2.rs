@@ -1,4 +1,4 @@
-//! config-v2(specs/_changes/2026-10-10-config-v2.md)の受け入れ: 旧い書き方の読み取りと --migrate-config(CLI-20)、
+//! config-v2(specs/_history/decidespec/_changes/2026-10-10-config-v2.md)の受け入れ: 旧い書き方の読み取りと --migrate-config(CLI-20)、
 //! 警告の形(CLI-3)、--print-config --resolved(CLI-21)、範囲ごとの上書き(SR-44)。本物の実行ファイルで確かめる。
 //! 環境変数は子の環境だけで変える。
 
@@ -63,7 +63,7 @@ const OLD: &str = "theme = \"auto\"\ntheme_light = \"paper\"\nborders = \"ascii\
 
 #[test]
 fn test_cli_20_old_names_are_read_with_warnings() {
-    // [CLI-20] 0.3.0 の書き方は新しい道筋として読み、旧い名前ごとに移った先を警告する。
+    // [stest -> req~cli.legacy-config-apply~1] 0.3.0 の書き方は新しい道筋として読み、旧い名前ごとに移った先を警告する。
     let (c, w) = parse(OLD).unwrap();
     let r = c.resolved();
     assert_eq!(
@@ -105,7 +105,7 @@ fn test_cli_20_old_names_are_read_with_warnings() {
 
 #[test]
 fn test_cli_20_migrate_config_prints_the_new_layout() {
-    // [CLI-20] --migrate-config は新しい形の文を出し、ファイルは書かない。出した文は警告なしで同じ振る舞い。
+    // [stest -> req~cli.legacy-config-migrate~1, req~cli.legacy-config-migrate-note~1] --migrate-config は新しい形の文を出し、ファイルは書かない。出した文は警告なしで同じ振る舞い。
     let t = Tmp::new("migrate");
     let cfg = t.write("config/mdgrid/config.toml", OLD);
     let out = stdout(&t.run(&["--migrate-config"]));
@@ -137,7 +137,7 @@ fn test_cli_20_migrate_config_prints_the_new_layout() {
 
 #[test]
 fn test_cli_3_warning_shape_in_every_file() {
-    // [CLI-3] 警告はどのファイルでも「ファイルの名前: 項目の道筋: 理由」。
+    // [stest -> req~cli.config-file-warning-form~1] 警告はどのファイルでも「ファイルの名前: 項目の道筋: 理由」。
     let (_, w) = parse("[look.style]\nstatus = \"neon\"\n").unwrap();
     assert!(
         w[0].starts_with("config.toml: look.style.status: "),
@@ -157,7 +157,7 @@ fn test_cli_3_warning_shape_in_every_file() {
 
 #[test]
 fn test_cli_21_print_resolved_names_the_origin() {
-    // [CLI-21][SR-44] 印・views.toml・config.toml を重ねた値を、出どころのコメント付きで出す。読み直せる。
+    // [stest -> req~cli.resolved-config-origin~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~1] 印・views.toml・config.toml を重ねた値を、出どころのコメント付きで出す。読み直せる。
     let t = Tmp::new("resolved");
     t.write("config/mdgrid/config.toml", "[look]\ntheme = \"sumi\"\n");
     t.write("notes/tasks/a.md", "---\nx: 1\n---\n");
@@ -202,7 +202,7 @@ fn test_cli_21_print_resolved_names_the_origin() {
 
 #[test]
 fn test_cli_11_print_config_names_scopes() {
-    // [CLI-11] --print-config は区画ごとに出し、各項目に書ける範囲を添える。旧い名前は出さない。
+    // [stest -> req~cli.print-config-output~1] --print-config は区画ごとに出し、各項目に書ける範囲を添える。旧い名前は出さない。
     let t = Tmp::new("print");
     let out = stdout(&t.run(&["--print-config"]));
     for sec in [

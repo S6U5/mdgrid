@@ -1,5 +1,5 @@
-//! 5回目の点検の C-8・C-9・C-10(specs/_changes/2026-10-06-cli-polish.md)。本物の実行ファイルで確かめる。
-//! [CLI-16] --sort の知らない列は理由1行と終了コード 2。[CLI-17] --apply が読まない列の直しを知らせ、文言を正す。
+//! 5回目の点検の C-8・C-9・C-10(specs/_history/decidespec/_changes/2026-10-06-cli-polish.md)。本物の実行ファイルで確かめる。
+//! [cli.print-filter-sort] --sort の知らない列は理由1行と終了コード 2。[cli.apply] --apply が読まない列の直しを知らせ、文言を正す。
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -47,6 +47,7 @@ fn err(o: &Output) -> String {
     String::from_utf8_lossy(&o.stderr).into_owned()
 }
 
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_sort_unknown_column() {
     let root = vault("sort");
@@ -70,6 +71,7 @@ fn test_cli_16_sort_unknown_column() {
     assert_eq!(o.status.code(), Some(2));
 }
 
+// [stest -> req~cli.apply-ignored-columns~1]
 #[test]
 fn test_cli_17_ignored_columns_noted() {
     let root = vault("ign");
@@ -84,6 +86,7 @@ fn test_cli_17_ignored_columns_noted() {
     assert!(!err(&o).contains("file.name"), "{}", err(&o));
 }
 
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-reject-all~1]
 #[test]
 fn test_cli_17_wording() {
     let root = vault("word");

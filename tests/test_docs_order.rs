@@ -144,7 +144,7 @@ fn hits(files: &[PathBuf], words: &[&str], found: fn(&str, &str) -> bool) -> Vec
 
 #[test]
 fn test_sr_50_manual_index_toc_in_reading_order() {
-    // [SR-50] 説明書の目次(ja の `## 目次`・en の `## Contents`)のリンクは
+    // [utest -> req~screen.docs-order-toc~1] 説明書の目次(ja の `## 目次`・en の `## Contents`)のリンクは
     // views → getting-started → tasks → concepts → appearance → faq の順(間にほかの行があってもよい)。
     for (lang, heading) in [("ja", "目次"), ("en", "Contents")] {
         let path = root().join("docs/manual").join(lang).join("index.md");
@@ -167,7 +167,7 @@ fn test_sr_50_manual_index_toc_in_reading_order() {
 
 #[test]
 fn test_sr_50_pages_py_pages_in_reading_order() {
-    // [SR-50] サイトの説明書の章(scripts/pages.py の PAGES)は index.md の次が views.md で、
+    // [utest -> req~screen.docs-order-toc~1] サイトの説明書の章(scripts/pages.py の PAGES)は index.md の次が views.md で、
     // そのあと getting-started → tasks → concepts → appearance → faq の順。themes.md はどこでもよい。
     let py = std::fs::read_to_string(root().join("scripts/pages.py")).unwrap();
     let pages = pages_list(&py);
@@ -189,7 +189,7 @@ fn test_sr_50_pages_py_pages_in_reading_order() {
 
 #[test]
 fn test_sr_50_no_hype_words_ja() {
-    // [SR-50] 日本語の説明書(docs/manual/ja/*.md)・README.ja.md・scripts/pages.py の日本語の文言に、
+    // [utest -> req~screen.docs-order-style~1] 日本語の説明書(docs/manual/ja/*.md)・README.ja.md・scripts/pages.py の日本語の文言に、
     // 大げさな語(強力・シームレス・直感的・画期的・最適・豊富)が無い。見つけた行を全部出す。
     let mut files = manual_pages("ja");
     files.push(root().join("README.ja.md"));
@@ -205,7 +205,7 @@ fn test_sr_50_no_hype_words_ja() {
 
 #[test]
 fn test_sr_50_no_hype_words_en() {
-    // [SR-50] 英語の説明書(docs/manual/en/*.md)・README.md・scripts/pages.py に、大げさな語
+    // [utest -> req~screen.docs-order-style~1] 英語の説明書(docs/manual/en/*.md)・README.md・scripts/pages.py に、大げさな語
     // (seamless・robust・powerful・intuitive・leverage・empower・delve・crucial・pivotal。
     // 単語として、大文字小文字は問わず、活用も含む)が無い。見つけた行を全部出す。
     let mut files = manual_pages("en");

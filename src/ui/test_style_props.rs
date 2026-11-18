@@ -49,7 +49,7 @@ proptest! {
         col in 0usize..4,
         open in any::<bool>(),
     ) {
-        // [SR-36][SR-40][SR-41] 札を作る値(くり返す status)とリスト、どの形でも、表の行は幅 w に収まる。
+        // [utest -> req~screen.style-parts-choose~1, req~screen.color-overrides-roles~1, req~screen.color-overrides-format~1, req~screen.value-colors-apply~1] 札を作る値(くり返す status)とリスト、どの形でも、表の行は幅 w に収まる。
         let tmp = Tmp::new("sr36_props");
         let n = statuses.len().max(tags.len());
         for i in 0..n {

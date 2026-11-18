@@ -58,7 +58,7 @@ fn on(a: &mut App, wbs: Option<Wbs>) {
 
 #[test]
 fn test_nv_28_numbers_progress_and_labels() {
-    // [NV-28] 1 設計 · 50%、1.1 画面 · 50%、1.1.1 部品 · 完了、1.1.2 ボタン · 未着手、1.2 API · 作業中。
+    // [utest -> req~navigation.wbs-leaf-label~1] 1 設計 · 50%、1.1 画面 · 50%、1.1.1 部品 · 完了、1.1.2 ボタン · 未着手、1.2 API · 作業中。
     let (_t, mut a) = notes("nv28a");
     on(&mut a, Some(map()));
     let s = screen(&a);
@@ -75,7 +75,7 @@ fn test_nv_28_numbers_progress_and_labels() {
 
 #[test]
 fn test_nv_28_unmapped_counts_zero_and_off_hides() {
-    // [NV-28] API を対応表に無い blocked に → 0% と数えて設計は (100+0+0)/3 = 33%、ラベルなし。
+    // [utest -> req~navigation.wbs-leaf-label~1, req~navigation.wbs-parent-percent~1, req~navigation.wbs-needs-tree~1] API を対応表に無い blocked に → 0% と数えて設計は (100+0+0)/3 = 33%、ラベルなし。
     // 親子をオフ → 番号と進み具合が消える。WBS だけオフでも消える。
     let (t, mut a) = notes("nv28b");
     t.write(
@@ -99,7 +99,7 @@ fn test_nv_28_unmapped_counts_zero_and_off_hides() {
 
 #[test]
 fn test_nv_28_settings_builds_the_table() {
-    // [NV-28] 設定の画面の親子の区画: 親子と WBS をオン → 値の行(件数つき)。done に「100 完了」を打つ →
+    // [utest -> req~navigation.wbs-on~1, req~navigation.wbs-map~1, req~navigation.wbs-map-values~1, req~navigation.wbs-leaf-label~1, req~navigation.wbs-needs-tree~1] 設定の画面の親子の区画: 親子と WBS をオン → 値の行(件数つき)。done に「100 完了」を打つ →
     // 「→ 100% 完了」。反映 → 表に番号と「部品 · 完了」。割合が数でない → 理由を出して入力のまま。
     let (_t, mut a) = notes("nv28c");
     ch(&mut a, 'o');
@@ -163,7 +163,7 @@ fn test_nv_28_settings_builds_the_table() {
 
 #[test]
 fn test_nv_28_saved_with_native_view() {
-    // [NV-28] WBS と対応表は mdgrid のビューの設定として views.toml に残り、読み直すと同じ。
+    // [utest -> req~navigation.wbs-apply~1, req~navigation.wbs-save~1] WBS と対応表は mdgrid のビューの設定として views.toml に残り、読み直すと同じ。
     let mut s = mdgrid::settings::Settings {
         tree: Some("parent".into()),
         wbs: Some(map()),

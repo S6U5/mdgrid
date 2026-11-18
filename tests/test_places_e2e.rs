@@ -6,6 +6,7 @@ mod pty;
 
 use pty::{TempDir, Tui};
 
+// [stest -> req~cli.places-list-order~1]
 #[test]
 fn test_cli_19_no_args_lists_and_switches() {
     let home = TempDir::new("places-e2e");
@@ -38,7 +39,7 @@ fn test_cli_19_no_args_lists_and_switches() {
 
 #[test]
 fn test_cli_1_no_places_opens_cwd() {
-    // [CLI-1] 登録が無ければ、今までどおり今のフォルダを開く(一覧は出さない)。
+    // [stest -> req~cli.launch-marker-open~1, req~cli.launch-raw-no-marker~1] 登録が無ければ、今までどおり今のフォルダを開く(一覧は出さない)。
     let home = TempDir::new("places-e2e-none");
     let h = home.path();
     std::fs::create_dir_all(h.join("config")).unwrap();

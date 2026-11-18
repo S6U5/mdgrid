@@ -19,7 +19,7 @@ fn md(t: &str) -> (String, bool) {
 
 #[test]
 fn test_bv_22_extract_wikilink_forms() {
-    // [BV-22] [[名前]]・[[名前|表示]]・[[名前#見出し]]・![[名前]] の行き先は名前
+    // [utest -> req~base-view.links-eval-links~1] [[名前]]・[[名前|表示]]・[[名前#見出し]]・![[名前]] の行き先は名前
     assert_eq!(
         targets("[[b]] [[c|表示]] [[d#見出し]] ![[e]] [[f#^blk|x]]"),
         vec![wiki("b"), wiki("c"), wiki("d"), wiki("e"), wiki("f")]
@@ -28,7 +28,7 @@ fn test_bv_22_extract_wikilink_forms() {
 
 #[test]
 fn test_bv_22_extract_markdown_links() {
-    // [BV-22] [文字](相対のパス.md)。外のアドレスと見出しだけのリンクは拾わない。%20 は空白に戻す
+    // [utest -> req~base-view.links-eval-links~1] [文字](相対のパス.md)。外のアドレスと見出しだけのリンクは拾わない。%20 は空白に戻す
     assert_eq!(
         targets(
             "[x](sub/c.md) [y](https://e.com/a.md) [z](#h) [w](<my note.md>) [v](a%20b.md#h \"t\")"
@@ -39,14 +39,14 @@ fn test_bv_22_extract_markdown_links() {
 
 #[test]
 fn test_bv_22_extract_skips_code() {
-    // [BV-22] コードの区画とインラインのコードの中は拾わない
+    // [utest -> req~base-view.links-eval-resolve~1] コードの区画とインラインのコードの中は拾わない
     let text = "```\n[[x]]\n```\n`[[y]]` [[b]]\n~~~\n[z](z.md)\n~~~\n``[[q]]``\n";
     assert_eq!(targets(text), vec![wiki("b")]);
 }
 
 #[test]
 fn test_bv_22_extract_ignores_empty_and_unclosed() {
-    // [BV-22] [[]]・閉じない [[・自分の見出し [[#h]] は拾わない
+    // [utest -> req~base-view.links-eval-links~1] [[]]・閉じない [[・自分の見出し [[#h]] は拾わない
     assert_eq!(targets("[[]] [[#h]] [[open"), Vec::<(String, bool)>::new());
 }
 
@@ -61,7 +61,7 @@ fn index(notes: &[(&str, &str)]) -> Index {
 
 #[test]
 fn test_bv_22_resolve_path_then_nearest_name() {
-    // [BV-22] 根からのパス → 無ければ同じ名前のうち根に近い・パスの短いもの → 無ければ文字のまま
+    // [utest -> req~base-view.links-eval-resolve~1] 根からのパス → 無ければ同じ名前のうち根に近い・パスの短いもの → 無ければ文字のまま
     let ix = index(&[
         ("a.md", "[[b]] [[x/deep/b]] [[無い]] [[img.png]]"),
         ("x/deep/b.md", ""),
@@ -72,7 +72,7 @@ fn test_bv_22_resolve_path_then_nearest_name() {
 
 #[test]
 fn test_bv_22_resolve_markdown_link_relative_to_note() {
-    // [BV-22] [文字](相対のパス.md) はノートのフォルダからの相対、無ければ根から
+    // [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1] [文字](相対のパス.md) はノートのフォルダからの相対、無ければ根から
     let ix = index(&[
         ("p/a.md", "[x](c.md) [y](q/d.md) [z](../e.md)"),
         ("p/c.md", ""),
@@ -84,7 +84,7 @@ fn test_bv_22_resolve_markdown_link_relative_to_note() {
 
 #[test]
 fn test_bv_22_backlinks_and_has_link() {
-    // [BV-22] 被リンクは行き先 → 元(パスの順、重ならない)。解けないリンクは被リンクに出ない
+    // [utest -> req~base-view.links-eval-resolve~1] 被リンクは行き先 → 元(パスの順、重ならない)。解けないリンクは被リンクに出ない
     let ix = index(&[
         ("a.md", "[[b]] [[b|again]] [[無い]]"),
         ("b.md", "[[c]]"),
@@ -101,7 +101,7 @@ fn test_bv_22_backlinks_and_has_link() {
 
 #[test]
 fn test_bv_22_has_link_to_non_note_file_by_path() {
-    // [BV-22] .base のような .md でないファイル: 根からのパスか、ファイルの名前で書いたリンクに当たる
+    // [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-this~1] .base のような .md でないファイル: 根からのパスか、ファイルの名前で書いたリンクに当たる
     let ix = index(&[
         ("a.md", "[[Projects.base]]"),
         ("b.md", "[[P/Projects.base]]"),
@@ -114,7 +114,7 @@ fn test_bv_22_has_link_to_non_note_file_by_path() {
 
 #[test]
 fn test_bv_22_links_toward_non_note_file() {
-    // [BV-22] .base のようなノートでないファイルを名前かパスで指すリンクは、そのファイルのパスにそろえる
+    // [utest -> req~base-view.links-eval-resolve~1, req~base-view.links-eval-this~1] .base のようなノートでないファイルを名前かパスで指すリンクは、そのファイルのパスにそろえる
     let ix = index(&[
         ("a.md", "[[Projects.base]] [[Projects]] [[b]]"),
         ("b.md", ""),

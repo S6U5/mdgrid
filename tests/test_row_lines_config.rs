@@ -1,6 +1,6 @@
 //! 表の行を伸ばす設定 `display.row_extra_lines`(CV-8)の読み込みと書き出し(SR-21)の受け入れ試験。
 //! 0〜9 の整数。既定 0。範囲の外・整数でない値は警告して既定。`--print-config` の `[display]` は15項目(2026-10-15-note-path で note_path、2026-10-15-note-name で note_name、2026-10-15-tab-wrap で tab_wrap、2026-10-15-tab-wrap-below で tab_wrap_gap が増えた)。
-//! 記録: specs/_changes/2026-10-12-row-lines.md(タスク #1)。環境変数は書き換えない(子の環境だけ)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-row-lines.md(タスク #1)。環境変数は書き換えない(子の環境だけ)。
 
 use mdgrid::config::parse;
 use std::process::Command;
@@ -13,7 +13,7 @@ fn display_debug(text: &str) -> (String, Vec<String>) {
 
 #[test]
 fn test_cv_8_config_default_is_zero() {
-    // [CV-8] 書かなければ 0。
+    // [stest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-zero~1, req~cell-view.row-lines-settings-toggle~1, req~cell-view.row-lines-view-override~1, req~cell-view.row-lines-out-of-range~1] 書かなければ 0。
     let (d, w) = display_debug("");
     assert!(w.is_empty(), "{w:?}");
     assert!(d.contains("row_extra_lines: 0"), "{d}");
@@ -21,7 +21,7 @@ fn test_cv_8_config_default_is_zero() {
 
 #[test]
 fn test_cv_8_config_reads_value() {
-    // [CV-8][SR-21] `[display] row_extra_lines = 2` → 2(警告なし)。上限の 9 も読める。
+    // [stest -> req~cell-view.row-lines-extend~1, req~screen.display-config-keys~1] `[display] row_extra_lines = 2` → 2(警告なし)。上限の 9 も読める。
     for n in [2, 9] {
         let (d, w) = display_debug(&format!("[display]\nrow_extra_lines = {n}\n"));
         assert!(w.is_empty(), "{n}: {w:?}");
@@ -31,7 +31,7 @@ fn test_cv_8_config_reads_value() {
 
 #[test]
 fn test_cv_8_config_out_of_range_warns() {
-    // [CV-8] `row_extra_lines = 12`・`-1`・`1.5`・`"two"` → 警告して既定の 0。
+    // [stest -> req~cell-view.row-lines-out-of-range~1] `row_extra_lines = 12`・`-1`・`1.5`・`"two"` → 警告して既定の 0。
     for v in ["12", "-1", "1.5", "\"two\""] {
         let (d, w) = display_debug(&format!("[display]\nrow_extra_lines = {v}\n"));
         assert_eq!(w.len(), 1, "{v}: {w:?}");
@@ -42,7 +42,7 @@ fn test_cv_8_config_out_of_range_warns() {
 
 #[test]
 fn test_cv_8_config_view_override_is_known() {
-    // [CV-8][SR-21] ビューごとの上書き(SR-20)の項目として知られている。
+    // [stest -> req~cell-view.row-lines-view-override~1, req~screen.display-config-view-diff~1] ビューごとの上書き(SR-20)の項目として知られている。
     assert!(
         mdgrid::display::OVERRIDE_KEYS.contains(&"row_extra_lines"),
         "{:?}",
@@ -52,7 +52,7 @@ fn test_cv_8_config_view_override_is_known() {
 
 #[test]
 fn test_sr_21_row_extra_lines_in_print_config() {
-    // [SR-21][CV-8] --print-config の [display] に row_extra_lines = 0 が出て、項目は15。
+    // [stest -> req~screen.display-config-keys~1, req~cell-view.row-lines-view-override~1] --print-config の [display] に row_extra_lines = 0 が出て、項目は15。
     let nowhere =
         std::env::temp_dir().join(format!("mdgrid-row-lines-none-{}", std::process::id()));
     let out = Command::new(env!("CARGO_BIN_EXE_mdgrid"))

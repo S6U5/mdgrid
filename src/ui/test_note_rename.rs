@@ -32,7 +32,7 @@ fn notes(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_ce_34_rename_and_stage_link_rewrites() {
-    // [CE-34] 会議 → 会議(10月)。ファイルの名前が変わり、行は新しい名前で選ばれたまま。
+    // [utest -> req~cell-edit.rename-note-menu~1, req~cell-edit.rename-note-links~1] 会議 → 会議(10月)。ファイルの名前が変わり、行は新しい名前で選ばれたまま。
     // メモの project、日記の related の要素と see を書き換える変更が3件ためられる。会議室は書き換えない。
     let (t, mut a) = notes("ce34a");
     select(&mut a, "会議");
@@ -82,7 +82,7 @@ fn test_ce_34_rename_and_stage_link_rewrites() {
 
 #[test]
 fn test_ce_34_refuses_bad_names_and_pending_rows() {
-    // [CE-34] / を含む名前・もうある名前は断り、ファイルはそのまま。ためた変更のある行は始めない。
+    // [utest -> req~cell-edit.rename-note-refuse-existing~1, req~cell-edit.rename-note-refuse-pending~1, req~cell-edit.rename-note-refuse-unsafe~1] / を含む名前・もうある名前は断り、ファイルはそのまま。ためた変更のある行は始めない。
     let (t, mut a) = notes("ce34b");
     select(&mut a, "会議");
     rename(&mut a, "a/b");
@@ -115,7 +115,7 @@ fn test_ce_34_refuses_bad_names_and_pending_rows() {
 
 #[test]
 fn test_ce_34_menu_offers_rename_note() {
-    // [CE-34] 操作の一覧の行の節に「ノートの名前を変える」が出る。
+    // [utest -> req~cell-edit.rename-note-menu~1, req~cell-edit.rename-note-readonly~1, req~cell-edit.rename-note-links~1] 操作の一覧の行の節に「ノートの名前を変える」が出る。
     let (_t, mut a) = notes("ce34c");
     select(&mut a, "会議");
     let items = super::menu::items(&a);

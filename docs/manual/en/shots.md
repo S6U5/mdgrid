@@ -767,3 +767,11 @@ examples/people was made with the people starter: a People table (role, organiza
 ![Open a CSV file](images/csv-table.svg)
 
 Pass a .csv or .tsv file: the first line names the columns and the rest are rows. Editing, the diff before saving, filters, sorting and groups work as they do for a folder of notes.
+
+## The gantt screen
+
+Keys: `C`
+
+![The gantt screen](images/gantt.svg)
+
+C on a table with a gantt setting (or date columns named like start and due): the rows of the current view as bars from the start date to the due date, with today marked. + and - switch the unit between day, week and month.

@@ -1,5 +1,5 @@
-//! まとまりの見出しの上の空き(SR-30)の受け入れの試験。記録: specs/_changes/2026-10-07-group-gap.md のタスク 1。
-//! 仕様: specs/screen/spec.md の SR-30。
+//! まとまりの見出しの上の空き(SR-30)の受け入れの試験。記録: specs/_history/decidespec/_changes/2026-10-07-group-gap.md のタスク 1。
+//! 仕様: specs/_history/decidespec/screen/spec.md の SR-30。
 //!
 //! 材料は5つのノート(status が todo 3・done 2)。status でまとめると、まとまりは done(2行)・todo(3行)の順。
 
@@ -62,7 +62,7 @@ fn line_of(a: &App, i: usize) -> String {
 
 #[test]
 fn test_sr_30_gap_above_second_heading_only() {
-    // [SR-30] 2つ目の見出しの上に空きの行が1つ。1つ目の見出しの上には無い。
+    // [utest -> req~screen.group-gap-line~1, req~screen.group-gap-not-row~1] 2つ目の見出しの上に空きの行が1つ。1つ目の見出しの上には無い。
     let (_t, a) = open("ggon", "[display]\ngroup_gap = true\n", true);
     assert_eq!(a.groups.len(), 2);
     assert_eq!(a.slots[0], Slot::Head(0), "1つ目の見出しが先頭");
@@ -77,7 +77,7 @@ fn test_sr_30_gap_above_second_heading_only() {
 
 #[test]
 fn test_sr_30_cursor_skips_gap() {
-    // [SR-30] 1つ目のまとまりの最後の行で j → 空きを飛ばして2つ目の見出し。k で戻る。
+    // [utest -> req~screen.group-gap-not-row~1, req~screen.group-gap-cursor~1] 1つ目のまとまりの最後の行で j → 空きを飛ばして2つ目の見出し。k で戻る。
     let (_t, mut a) = open("ggcur", "[display]\ngroup_gap = true\n", true);
     let h1 = head_at(&a, 1);
     a.row = h1 - 2; // 1つ目のまとまりの最後の行
@@ -94,7 +94,7 @@ fn test_sr_30_cursor_skips_gap() {
 
 #[test]
 fn test_sr_30_click_on_gap_keeps_selection() {
-    // [SR-30] 空きの行をクリックしても選びは変わらない。
+    // [utest -> req~screen.group-gap-click~1] 空きの行をクリックしても選びは変わらない。
     let (_t, mut a) = open("ggclick", "[display]\ngroup_gap = true\n", true);
     let gap = gap_at(&a)[0];
     a.row = 1;
@@ -108,7 +108,7 @@ fn test_sr_30_click_on_gap_keeps_selection() {
 
 #[test]
 fn test_sr_30_default_has_no_gap() {
-    // [SR-30] group_gap の無い設定 → 今と同じ(空きは無い)。
+    // [utest -> req~screen.group-gap-line~1, req~screen.group-gap-config~1, req~screen.group-gap-per-view~1] group_gap の無い設定 → 今と同じ(空きは無い)。
     let (_t, a) = open("ggoff", "", true);
     assert!(gap_at(&a).is_empty());
     assert_eq!(a.slots.len(), 5 + 2);
@@ -117,7 +117,7 @@ fn test_sr_30_default_has_no_gap() {
 
 #[test]
 fn test_sr_30_no_groups_no_gap() {
-    // [SR-30] まとまりの無いビューでは、group_gap が true でも空きは出ない。
+    // [utest -> req~screen.group-gap-line~1] まとまりの無いビューでは、group_gap が true でも空きは出ない。
     let (_t, a) = open("ggnogroup", "[display]\ngroup_gap = true\n", false);
     assert!(a.groups.is_empty());
     assert!(gap_at(&a).is_empty());
@@ -125,7 +125,7 @@ fn test_sr_30_no_groups_no_gap() {
 
 #[test]
 fn test_sr_30_view_override_and_row_numbers() {
-    // [SR-30][SR-20] 設定に無くても、ビューの上書きで空きを出せる。行番号は空きを数えず 1〜5 が続く。
+    // [utest -> req~screen.group-gap-not-row~1, req~screen.display-options-config~1, req~screen.display-options-per-view~1] 設定に無くても、ビューの上書きで空きを出せる。行番号は空きを数えず 1〜5 が続く。
     let (_t, mut a) = open("ggview", "[display]\nrow_numbers = true\n", true);
     assert!(gap_at(&a).is_empty());
     let base = a.display;
@@ -142,7 +142,7 @@ fn test_sr_30_view_override_and_row_numbers() {
 
 #[test]
 fn test_sr_30_print_config_and_views_key() {
-    // [SR-30] `--print-config` の [display] に group_gap = false。views.toml の上書きの項目にもある。
+    // [utest -> req~screen.group-gap-per-view~1] `--print-config` の [display] に group_gap = false。views.toml の上書きの項目にもある。
     let c = mdgrid::config::Config::default();
     assert!(!c.resolved().display.group_gap);
     let (c, w) = mdgrid::config::parse("[display]\ngroup_gap = true\n").unwrap();

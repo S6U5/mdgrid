@@ -1,6 +1,6 @@
 //! 列の決まりの設定 `[rules.<列>]`(CE-36)の読み取り・範囲の重ね・警告と、問題の判定 `problem`、
 //! 理由の文(CV-9)の受け入れ試験。
-//! 記録: specs/_changes/2026-10-14-type-check.md(タスク #1)。実装を見ずに、記録の「設計」と公開の口だけから書いた。
+//! 記録: specs/_history/decidespec/_changes/2026-10-14-type-check.md(タスク #1)。実装を見ずに、記録の「設計」と公開の口だけから書いた。
 
 use mdgrid::config::parse;
 use mdgrid::frontmatter::Value;
@@ -30,7 +30,7 @@ fn rule(required: bool, values: &[&str]) -> Rule {
 
 #[test]
 fn test_ce_36_rules_read_without_warnings() {
-    // [CE-36] `required` と `values` を読み、決まった値の rules に列ごとに入る(警告なし)。
+    // [utest -> req~cell-edit.rules-values~1, req~cell-edit.rules-scopes~1, req~cell-edit.rules-file-formula~1] `required` と `values` を読み、決まった値の rules に列ごとに入る(警告なし)。
     let text = "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\n\n[rules.owner]\nrequired = true\n";
     let (c, w) = parse(text).expect("読める");
     assert!(w.is_empty(), "{w:?}");
@@ -45,7 +45,7 @@ fn test_ce_36_rules_read_without_warnings() {
 
 #[test]
 fn test_ce_36_narrow_scope_overrides_per_item() {
-    // [CE-36] 範囲ごとに項目ごとに重ね、狭い範囲が勝つ(SR-44)。表の範囲の values が全体の values に代わり、
+    // [utest -> req~cell-edit.rules-scopes~1] 範囲ごとに項目ごとに重ね、狭い範囲が勝つ(SR-44)。表の範囲の values が全体の values に代わり、
     // 表の範囲に書いていない required は全体のものが残る。表では doing も違反になる。
     let (c, w) =
         parse("[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\n")
@@ -83,7 +83,7 @@ fn test_ce_36_narrow_scope_overrides_per_item() {
 
 #[test]
 fn test_ce_36_file_and_formula_columns_warn_and_are_unused() {
-    // [CE-36] `file.*`・`formula.*` の列の決まりは警告して使わない。
+    // [utest -> req~cell-edit.rules-file-formula~1] `file.*`・`formula.*` の列の決まりは警告して使わない。
     let (c, w) = parse(
         "[rules.\"file.name\"]\nrequired = true\n\n[rules.\"formula.x\"]\nvalues = [\"a\"]\n",
     )
@@ -103,7 +103,7 @@ fn test_ce_36_file_and_formula_columns_warn_and_are_unused() {
 
 #[test]
 fn test_ce_36_wrong_value_types_warn_and_item_is_unused() {
-    // [CE-36] 型の違う値(required が文字・values が配列でない)は警告し、その項目を使わない。
+    // [utest -> req~cell-edit.rules-bad-items~1] 型の違う値(required が文字・values が配列でない)は警告し、その項目を使わない。
     // ほかの項目はそのまま使う。
     let (c, w) = parse(
         "[rules.status]\nrequired = \"yes\"\nvalues = [\"a\"]\n\n[rules.owner]\nrequired = true\nvalues = \"todo\"\n",
@@ -128,7 +128,7 @@ fn test_ce_36_wrong_value_types_warn_and_item_is_unused() {
 
 #[test]
 fn test_ce_36_unknown_item_and_non_string_values_warn() {
-    // [CE-36] 知らない項目は警告する。values に文字でない要素があれば警告する。
+    // [utest -> req~cell-edit.rules-values~1, req~cell-edit.rules-bad-items~1] 知らない項目は警告する。values に文字でない要素があれば警告する。
     let (_, w) = parse("[rules.status]\nfoo = 1\n").expect("止めない");
     assert!(
         w.iter().any(|x| x.contains("rules.status.foo")),
@@ -143,7 +143,7 @@ fn test_ce_36_unknown_item_and_non_string_values_warn() {
 
 #[test]
 fn test_ce_36_required_violations() {
-    // [CE-36] required: キーが無い・null・空の文字列・空のリストは違反、値があれば違反でない。
+    // [utest -> req~cell-edit.rules-required~1] required: キーが無い・null・空の文字列・空のリストは違反、値があれば違反でない。
     let r = rule(true, &[]);
     assert_eq!(problem(Kind::Text, Some(&r), None), Some(Reason::Required));
     assert_eq!(
@@ -167,7 +167,7 @@ fn test_ce_36_required_violations() {
 
 #[test]
 fn test_ce_36_values_compare_text_case_sensitive() {
-    // [CE-36] values: 値の文字がどれかでなければ違反。大文字小文字を区別する。キーが無いのは values の違反でない。
+    // [utest -> req~cell-edit.rules-values~1] values: 値の文字がどれかでなければ違反。大文字小文字を区別する。キーが無いのは values の違反でない。
     let r = rule(false, &["todo", "doing", "done"]);
     assert_eq!(problem(Kind::Text, Some(&r), Some(&s("done"))), None);
     assert_eq!(
@@ -183,7 +183,7 @@ fn test_ce_36_values_compare_text_case_sensitive() {
 
 #[test]
 fn test_ce_36_values_check_each_list_item() {
-    // [CE-36] リストの値は各要素の文字を values と比べ、1つでも外れれば違反。
+    // [utest -> req~cell-edit.rules-values~1] リストの値は各要素の文字を values と比べ、1つでも外れれば違反。
     let r = rule(false, &["a", "b"]);
     let ok = Value::List(vec![s("a"), s("b")]);
     let bad = Value::List(vec![s("a"), s("c")]);
@@ -196,7 +196,7 @@ fn test_ce_36_values_check_each_list_item() {
 
 #[test]
 fn test_ce_36_values_compare_numbers_and_bools_as_text() {
-    // [CE-36] 数は `3` のように、真偽は `true`・`false` の文字で values と比べる。
+    // [utest -> req~cell-edit.rules-required~1] 数は `3` のように、真偽は `true`・`false` の文字で values と比べる。
     let n = rule(false, &["1", "3"]);
     assert_eq!(problem(Kind::Number, Some(&n), Some(&Value::Int(3))), None);
     assert_eq!(
@@ -216,7 +216,7 @@ fn test_ce_36_values_compare_numbers_and_bools_as_text() {
 
 #[test]
 fn test_ce_36_type_mismatch_comes_first() {
-    // [CE-36] 型が合わない値は、決まりにも外れていても理由は型(CV-2 の印と同じ判定)。決まりが無くても型を見る。
+    // [utest -> req~cell-edit.rules-no-block~1] 型が合わない値は、決まりにも外れていても理由は型(CV-2 の印と同じ判定)。決まりが無くても型を見る。
     let r = rule(true, &["todo"]);
     assert_eq!(
         problem(Kind::Date, Some(&r), Some(&s("someday"))),
@@ -235,7 +235,7 @@ fn test_ce_36_type_mismatch_comes_first() {
 
 #[test]
 fn test_cv_9_reason_texts_in_japanese() {
-    // [CV-9] 理由を「型が合わない(〇〇ではない)」「必須のキーが無い」「選べる値ではない」の3つで言い分ける。
+    // [utest -> req~cell-view.problems-reasons~1] 理由を「型が合わない(〇〇ではない)」「必須のキーが無い」「選べる値ではない」の3つで言い分ける。
     let _g = scoped(Lang::Ja);
     let names = [
         (Kind::Text, "テキスト"),
@@ -257,7 +257,7 @@ fn test_cv_9_reason_texts_in_japanese() {
 
 #[test]
 fn test_cv_9_reason_texts_follow_language() {
-    // [CV-9] 理由の文は今の言語で出る(英語では日本語の字を含まず、3つが互いに違う)。
+    // [utest -> req~cell-view.problems-reasons~1] 理由の文は今の言語で出る(英語では日本語の字を含まず、3つが互いに違う)。
     let _g = scoped(Lang::En);
     let texts = [
         Reason::Type(Kind::Date).text(),

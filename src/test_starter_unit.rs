@@ -1,6 +1,6 @@
 //! 台帳のスターター(ST-1・ST-2・ST-3・ST-4)の単体の試験。`src/starter.rs` の中として
 //! `#[cfg(test)] #[path = "test_starter_unit.rs"] mod tests;` で取り込む。実装を見ずに書いた。
-//! 仕様: specs/starter/spec.md、記録: specs/_changes/2026-10-24-starter.md。
+//! 仕様: specs/_history/decidespec/starter/spec.md、記録: specs/_history/decidespec/_changes/2026-10-24-starter.md。
 //!
 //! 材料(作った値): ユーザーのスターター `kanban` を一時フォルダの設定の置き場 `config/starters/kanban/` に書く。
 //!
@@ -155,7 +155,7 @@ fn must_fail<T>(r: Result<T, String>, what: &str) -> String {
 
 #[test]
 fn test_st_1_reads_manifest_ledger_and_samples() {
-    // [ST-1] starter.toml・ledger/・samples/ を持つユーザーのスターターが読め、名前と説明は言語ごとに、
+    // [utest -> req~starter.shape-layout~1] starter.toml・ledger/・samples/ を持つユーザーのスターターが読め、名前と説明は言語ごとに、
     // ファイルは部分(印と雛形 / 見本)と台帳の根からの相対パスと中身をそのまま持つ。
     let t = Tmp::new("read");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
@@ -203,7 +203,7 @@ fn test_st_1_reads_manifest_ledger_and_samples() {
 
 #[test]
 fn test_st_1_no_manifest_means_folder_name_and_empty_description() {
-    // [ST-1] starter.toml が無ければ、名前はフォルダの名前、説明は空(どの言語でも)。読めはする。
+    // [utest -> req~starter.shape-name~1] starter.toml が無ければ、名前はフォルダの名前、説明は空(どの言語でも)。読めはする。
     let t = Tmp::new("nomanifest");
     let dir = user_starter(&t.0.join("config"), "kanban", None, false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -220,7 +220,7 @@ fn test_st_1_no_manifest_means_folder_name_and_empty_description() {
 
 #[test]
 fn test_st_1_missing_language_falls_back_to_en_then_folder_name() {
-    // [ST-1] その言語の名前・説明が無ければ en のもの、en も無ければフォルダの名前と空の説明。
+    // [utest -> req~starter.shape-name~1] その言語の名前・説明が無ければ en のもの、en も無ければフォルダの名前と空の説明。
     let t = Tmp::new("fallback");
     let cfg = t.0.join("config");
     let en_only = user_starter(
@@ -251,7 +251,7 @@ fn test_st_1_missing_language_falls_back_to_en_then_folder_name() {
 
 #[test]
 fn test_st_1_lang_variant_replaces_whole_ledger_and_samples() {
-    // [ST-1] ledger.ja/・samples.ja/ があれば、ja のときはその中身だけを使い、ledger/・samples/ は重ねない。
+    // [utest -> req~starter.shape-layout~1, req~starter.shape-lang-variant~1] ledger.ja/・samples.ja/ があれば、ja のときはその中身だけを使い、ledger/・samples/ は重ねない。
     // en(接尾なし)は ledger/・samples/ だけ。
     let t = Tmp::new("variant");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), true);
@@ -301,7 +301,7 @@ fn test_st_1_lang_variant_replaces_whole_ledger_and_samples() {
 
 #[test]
 fn test_st_1_no_variant_for_language_uses_plain_ledger() {
-    // [ST-1] ledger.ja/ が無ければ、ja で作っても ledger/・samples/ の中身(英語が正本)。
+    // [utest -> req~starter.shape-layout~1] ledger.ja/ が無ければ、ja で作っても ledger/・samples/ の中身(英語が正本)。
     let t = Tmp::new("novariant");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -322,7 +322,7 @@ fn test_st_1_no_variant_for_language_uses_plain_ledger() {
 
 #[test]
 fn test_st_2_builtin_four_in_name_order_with_every_language() {
-    // [ST-2] 組み込みは bookmarks・people・reading・tasks の4つで名前の順。どれも Origin::Builtin で、名前と説明を
+    // [utest -> req~starter.builtin-list~1] 組み込みは bookmarks・people・reading・tasks の4つで名前の順。どれも Origin::Builtin で、名前と説明を
     // 文言の台帳の全言語に持ち、印 .mdgrid/workspace.toml と雛形(.mdgrid/templates/)と見本を持つ。
     let all = builtin();
     assert_eq!(st_names(&all), ["bookmarks", "people", "reading", "tasks"]);
@@ -362,7 +362,7 @@ fn test_st_2_builtin_four_in_name_order_with_every_language() {
 
 #[test]
 fn test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings() {
-    // [ST-2] 組み込みの全部 × 全言語を一時フォルダに作る(見本あり・なし)と、印の読み込み(read_marker)・
+    // [utest -> req~starter.builtin-no-warning~1] 組み込みの全部 × 全言語を一時フォルダに作る(見本あり・なし)と、印の読み込み(read_marker)・
     // open(marker_open)・木の設定(marker_tree)の警告が空で、open が印の表(根の中)を指す。
     // 返したパスは書いたファイルと一致し、見本ありなら .mdgrid/ の外にノートがある。
     let t = Tmp::new("builtin");
@@ -415,7 +415,7 @@ fn test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings
 
 #[test]
 fn test_st_2_builtin_marker_has_no_name_so_the_folder_names_the_workspace() {
-    // [ST-2] 組み込みの印に name は書かない(仕様の前提): 作った先のフォルダの名前がワークスペースの名前になる(WS-7)。
+    // [utest -> req~starter.builtin-same-shape~1] 組み込みの印に name は書かない(仕様の前提): 作った先のフォルダの名前がワークスペースの名前になる(WS-7)。
     let t = Tmp::new("noname");
     for s in &builtin() {
         let root = t.0.join(format!("my-{}", s.name));
@@ -429,7 +429,7 @@ fn test_st_2_builtin_marker_has_no_name_so_the_folder_names_the_workspace() {
 
 #[test]
 fn test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_builtin() {
-    // [ST-3] 一覧はユーザーのものを名前の順に先に、組み込みをその後に。同じ名前(tasks)はユーザーのものだけ。
+    // [utest -> req~starter.user-order~1, req~starter.user-shadow~1] 一覧はユーザーのものを名前の順に先に、組み込みをその後に。同じ名前(tasks)はユーザーのものだけ。
     let t = Tmp::new("list");
     let cfg = t.0.join("config");
     user_starter(&cfg, "zeta", Some(MANIFEST), false);
@@ -463,7 +463,7 @@ fn test_st_3_list_user_first_in_name_order_then_builtin_and_same_name_hides_buil
 
 #[test]
 fn test_st_3_list_without_config_dir_is_builtin_only() {
-    // [ST-3] 設定の置き場が無い(None・無いフォルダ・starters/ の無いフォルダ)なら組み込みだけで、警告なし。
+    // [utest -> req~starter.user-list~1, req~starter.user-no-side-effect~1] 設定の置き場が無い(None・無いフォルダ・starters/ の無いフォルダ)なら組み込みだけで、警告なし。
     let t = Tmp::new("nodir");
     let builtin_names: Vec<String> = builtin().iter().map(|s| s.name.clone()).collect();
     for (what, dir) in [
@@ -487,7 +487,7 @@ fn test_st_3_list_without_config_dir_is_builtin_only() {
 
 #[test]
 fn test_st_3_broken_manifest_warns_in_cli_3_shape_and_is_skipped() {
-    // [ST-3] 壊れた starter.toml は `starters/kanban/starter.toml:` で始まる警告1つで飛ばし、ほかは出る。
+    // [utest -> req~starter.user-skip-broken~1] 壊れた starter.toml は `starters/kanban/starter.toml:` で始まる警告1つで飛ばし、ほかは出る。
     // read_user も同じ形の Err。
     let t = Tmp::new("broken");
     let cfg = t.0.join("config");
@@ -514,7 +514,7 @@ fn test_st_3_broken_manifest_warns_in_cli_3_shape_and_is_skipped() {
 
 #[test]
 fn test_st_3_starter_without_marker_warns_and_is_skipped() {
-    // [ST-3] ledger/.mdgrid/workspace.toml の無いスターターは読めないので、警告して飛ばす(名前が警告に出る)。
+    // [utest -> req~starter.user-skip-broken~1] ledger/.mdgrid/workspace.toml の無いスターターは読めないので、警告して飛ばす(名前が警告に出る)。
     let t = Tmp::new("nomarker");
     let cfg = t.0.join("config");
     let dir = cfg.join("starters/nomarker");
@@ -535,7 +535,7 @@ fn test_st_3_starter_without_marker_warns_and_is_skipped() {
 
 #[test]
 fn test_st_3_find_by_name() {
-    // [ST-3] find は名前で引く。無い名前は None。同じ名前はユーザーのもの。
+    // [utest -> req~starter.user-shadow~1] find は名前で引く。無い名前は None。同じ名前はユーザーのもの。
     let t = Tmp::new("find");
     let cfg = t.0.join("config");
     user_starter(&cfg, "tasks", Some(MANIFEST), false);
@@ -554,7 +554,7 @@ fn test_st_3_find_by_name() {
 
 #[test]
 fn test_st_4_create_copies_ledger_as_is_without_samples() {
-    // [ST-4] with_samples が偽なら ledger/ の中身(印と雛形)だけを同じ相対パスで書き、雛形の {date}・{name} は文字のまま。
+    // [utest -> req~starter.init-ledger~1, req~starter.init-ledger-verbatim~1] with_samples が偽なら ledger/ の中身(印と雛形)だけを同じ相対パスで書き、雛形の {date}・{name} は文字のまま。
     let t = Tmp::new("create");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -577,7 +577,7 @@ fn test_st_4_create_copies_ledger_as_is_without_samples() {
 
 #[test]
 fn test_st_4_create_with_samples_fills_sample_vars_only() {
-    // [ST-4] with_samples が真なら見本も書き、見本の {date}・{date+3}・{date-10}・{time} は CE-32 の変数として埋める。
+    // [utest -> req~starter.init-sample-vars~1, req~starter.init-ledger-verbatim~1] with_samples が真なら見本も書き、見本の {date}・{date+3}・{date-10}・{time} は CE-32 の変数として埋める。
     // 雛形は同じ呼び出しでも文字のまま。
     let t = Tmp::new("samples");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
@@ -602,7 +602,7 @@ fn test_st_4_create_with_samples_fills_sample_vars_only() {
 
 #[test]
 fn test_st_4_create_refuses_when_any_target_exists_and_writes_nothing() {
-    // [ST-4] 書く先に同じパスのファイルが1つでもあれば Err(そのファイルの名前が入る)で、どれも書かず、あるものも変えない。
+    // [utest -> req~starter.init-no-overwrite~1] 書く先に同じパスのファイルが1つでもあれば Err(そのファイルの名前が入る)で、どれも書かず、あるものも変えない。
     let t = Tmp::new("exists");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -640,7 +640,7 @@ fn test_st_4_create_refuses_when_any_target_exists_and_writes_nothing() {
 
 #[test]
 fn test_st_4_create_without_samples_ignores_existing_sample_path() {
-    // [ST-4] 書く先だけを見る: with_samples が偽なら、見本のパスにファイルがあっても印と雛形は書ける。
+    // [utest -> req~starter.init-ledger~1, req~starter.init-no-overwrite~1, req~starter.init-report~1] 書く先だけを見る: with_samples が偽なら、見本のパスにファイルがあっても印と雛形は書ける。
     let t = Tmp::new("skip-sample");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -656,7 +656,7 @@ fn test_st_4_create_without_samples_ignores_existing_sample_path() {
 
 #[test]
 fn test_st_4_create_makes_a_missing_root() {
-    // [ST-4] 根のフォルダが無ければ(深くても)作る。
+    // [utest -> req~starter.init-ledger~1] 根のフォルダが無ければ(深くても)作る。
     let t = Tmp::new("mkroot");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));

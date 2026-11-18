@@ -124,7 +124,7 @@ fn has_key(keys: &[(String, String, String)], mode: &str, key: &str, action: &st
 
 #[test]
 fn test_cli_3_empty_config_gives_defaults() {
-    // [CLI-3] 設定が無くても(空の文字列)既定で動く。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1] 設定が無くても(空の文字列)既定で動く。
     let (c, warnings) = parse("").expect("空の設定は読める");
     assert!(warnings.is_empty(), "空の設定で警告: {:?}", warnings);
     assert_eq!(c.resolved().candidates, 20);
@@ -136,7 +136,7 @@ fn test_cli_3_empty_config_gives_defaults() {
 
 #[test]
 fn test_cli_3_reads_each_item() {
-    // [CLI-3] 候補の数・読み直しの間隔・Ambiguous の幅・色を読む。
+    // [utest -> req~cli.config-file-items~1] 候補の数・読み直しの間隔・Ambiguous の幅・色を読む。
     let text =
         "poll_ms = 500\n\n[edit]\ncandidates = 30\n\n[terminal]\nambiguous_wide = true\ncolor = false\n";
     let (c, warnings) = parse(text).expect("読める");
@@ -150,7 +150,7 @@ fn test_cli_3_reads_each_item() {
 
 #[test]
 fn test_cli_3_partial_config_keeps_other_defaults() {
-    // [CLI-3] 書いていない項目は既定のまま。
+    // [utest -> req~cli.config-file-items~1, req~cli.config-file-warn-only~1] 書いていない項目は既定のまま。
     let (c, _) = parse("poll_ms = 250\n").expect("読める");
     assert_eq!(c.poll_ms, 250);
     assert_eq!(c.resolved().candidates, 20);
@@ -160,7 +160,7 @@ fn test_cli_3_partial_config_keeps_other_defaults() {
 
 #[test]
 fn test_sr_13_keys_rebind_and_none() {
-    // [SR-13] キーの割り当て直しと "none" での取り外しが (モード, キー, 動作) に写る。
+    // [utest -> req~screen.keys-vim-and-arrows-bases~1, req~screen.keys-vim-and-arrows-remap~1] キーの割り当て直しと "none" での取り外しが (モード, キー, 動作) に写る。
     let text = r#"
 [keys.table]
 j = "none"
@@ -190,7 +190,7 @@ j = "none"
 
 #[test]
 fn test_cli_3_unknown_item_warns_and_continues() {
-    // [CLI-3] 知らない項目は警告にとどめ、止めない。警告の文に項目の名前が出る。
+    // [utest -> req~cli.config-file-warn-only~1] 知らない項目は警告にとどめ、止めない。警告の文に項目の名前が出る。
     let text = "frobnicate = true\n\n[edit]\ncandidates = 5\n";
     let (c, warnings) = parse(text).expect("知らない項目があっても Ok");
     assert_eq!(c.resolved().candidates, 5, "知っている項目は読む");
@@ -203,7 +203,7 @@ fn test_cli_3_unknown_item_warns_and_continues() {
 
 #[test]
 fn test_cli_3_broken_toml_is_err() {
-    // [CLI-3] 壊れた TOML は Err(理由1行)。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~1] 壊れた TOML は Err(理由1行)。
     for text in [
         "[edit]\ncandidates = = 3\n",
         "[keys.table\nj = \"down\"\n",
@@ -225,7 +225,7 @@ fn test_cli_3_broken_toml_is_err() {
 
 #[test]
 fn test_cli_3_config_path_follows_xdg_config_home() {
-    // [CLI-3] 置き場は $XDG_CONFIG_HOME/mdgrid/config.toml、無ければ ~/.config/mdgrid/config.toml。
+    // [utest -> req~cli.config-file-location~1] 置き場は $XDG_CONFIG_HOME/mdgrid/config.toml、無ければ ~/.config/mdgrid/config.toml。
     // 環境変数を触るのはこのテストだけ。終わったら元に戻す。
     let saved_xdg = std::env::var_os("XDG_CONFIG_HOME");
     let saved_home = std::env::var_os("HOME");
@@ -266,7 +266,7 @@ fn test_cli_3_config_path_follows_xdg_config_home() {
 
 #[test]
 fn test_sr_11_save_then_load_round_trip() {
-    // [SR-11] 保存した見た目の状態を読み戻せる。
+    // [utest -> req~screen.state-separate~1] 保存した見た目の状態を読み戻せる。
     let t = TempDir::new("roundtrip");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -284,7 +284,7 @@ fn test_sr_11_save_then_load_round_trip() {
 
 #[test]
 fn test_sr_11_load_missing_is_empty() {
-    // [SR-11] 保存が無いときは既定(空)。
+    // [utest -> req~screen.state-separate~1] 保存が無いときは既定(空)。
     let t = TempDir::new("missing");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -293,7 +293,7 @@ fn test_sr_11_load_missing_is_empty() {
 
 #[test]
 fn test_sr_11_save_writes_nothing_outside_dir() {
-    // [SR-11] 見た目の状態はノートのフォルダ(target のフォルダ)に書かない。dir の中にだけ作る。
+    // [utest -> req~screen.state-separate~1] 見た目の状態はノートのフォルダ(target のフォルダ)に書かない。dir の中にだけ作る。
     let t = TempDir::new("outside");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -324,7 +324,7 @@ fn test_sr_11_save_writes_nothing_outside_dir() {
 
 #[test]
 fn test_sr_12_state_is_per_target_and_view() {
-    // [SR-12] 対象のパスとビューの名前ごとに別の状態。
+    // [utest -> req~screen.state-store-key~1] 対象のパスとビューの名前ごとに別の状態。
     let t = TempDir::new("per");
     let dir = t.mkdir("state");
     let a = t.mkdir("a");
@@ -345,7 +345,7 @@ fn test_sr_12_state_is_per_target_and_view() {
 
 #[test]
 fn test_sr_12_broken_state_file_gives_default() {
-    // [SR-12] 状態のファイルが壊れていたら捨てて既定(空)。パニックしない。
+    // [utest -> req~screen.state-store-broken~1] 状態のファイルが壊れていたら捨てて既定(空)。パニックしない。
     let t = TempDir::new("broken");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -370,7 +370,7 @@ fn test_sr_12_broken_state_file_gives_default() {
 
 #[test]
 fn test_sr_12_apply_state_reconciles_columns() {
-    // [SR-12] 状態の並びと隠す列は今ある列にだけ当て、状態に無い列は右に足し、無くなった列は落ちる。
+    // [utest -> req~screen.state-store-columns~1] 状態の並びと隠す列は今ある列にだけ当て、状態に無い列は右に足し、無くなった列は落ちる。
     let columns = s(&["a", "b", "c", "d"]);
     // x は今の列に無い(無くなった列)。d は状態に無い(増えた列)。
     let st = state(&["c", "x", "b", "a"], &["b", "x"], &[], &[], None);
@@ -381,7 +381,7 @@ fn test_sr_12_apply_state_reconciles_columns() {
 
 #[test]
 fn test_sr_12_apply_state_empty_keeps_columns() {
-    // [SR-12] 状態が空なら今の列の並びのまま、隠す列なし。
+    // [utest -> req~screen.state-store-columns~1] 状態が空なら今の列の並びのまま、隠す列なし。
     let columns = s(&["title", "status", "due"]);
     let (order, hidden) = apply_state(&columns, &state(&[], &[], &[], &[], None));
     assert_eq!(order, columns);
@@ -390,7 +390,7 @@ fn test_sr_12_apply_state_empty_keeps_columns() {
 
 #[test]
 fn test_sr_12_apply_state_new_columns_appended_in_current_order() {
-    // [SR-12] 状態に無い列が複数あれば、今の列の順で右に足す。
+    // [utest -> req~screen.state-store-columns~1] 状態に無い列が複数あれば、今の列の順で右に足す。
     let columns = s(&["a", "b", "c", "d", "e"]);
     let (order, hidden) = apply_state(&columns, &state(&["d", "b"], &[], &[], &[], None));
     assert_eq!(order, s(&["d", "b", "a", "c", "e"]));

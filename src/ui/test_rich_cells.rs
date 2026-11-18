@@ -57,7 +57,7 @@ fn row(a: &App, name: &str) -> String {
 
 #[test]
 fn test_sr_35_rich_cells() {
-    // [SR-35] 色のある表示: 真偽は ☑ ☐、リストの要素と status の値は札、見出しに型の印。値の文字は見せる。
+    // [utest -> req~screen.rich-cells-parts~1] 色のある表示: 真偽は ☑ ☐、リストの要素と status の値は札、見出しに型の印。値の文字は見せる。
     let tmp = notes("sr35_rich");
     let a = with(&tmp, ColorMode::Rgb, "");
     let h = head(&a);
@@ -75,7 +75,7 @@ fn test_sr_35_rich_cells() {
 
 #[test]
 fn test_sr_35_chip_colors_stable() {
-    // [SR-35] 札は値ごとに決まった色の地(同じ値は同じ色)。地の色が付く。
+    // [utest -> req~screen.rich-cells-value-color~1] 札は値ごとに決まった色の地(同じ値は同じ色)。地の色が付く。
     let tmp = notes("sr35_color");
     let mut a = with(&tmp, ColorMode::Rgb, "");
     a.resize(80, 24);
@@ -106,7 +106,7 @@ fn test_sr_35_chip_colors_stable() {
 
 #[test]
 fn test_sr_35_plain_without_color_or_setting() {
-    // [SR-35] 色なしと cells = "plain" では今の見た目(true・[a, b]・印なし)。
+    // [utest -> req~screen.rich-cells-plain~1] 色なしと cells = "plain" では今の見た目(true・[a, b]・印なし)。
     let tmp = notes("sr35_plain");
     for a in [
         with(&tmp, ColorMode::None, ""),
@@ -124,7 +124,7 @@ fn test_sr_35_plain_without_color_or_setting() {
 
 #[test]
 fn test_sr_35_per_part_and_column() {
-    // [SR-35] 部品の種類ごと(checkbox = false)と列ごと(status は文字、memo は札)。列が種類より優先。
+    // [utest -> req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] 部品の種類ごと(checkbox = false)と列ごと(status は文字、memo は札)。列が種類より優先。
     let tmp = notes("sr35_cols");
     let a = with(
         &tmp,
@@ -154,7 +154,7 @@ fn test_sr_35_per_part_and_column() {
 
 #[test]
 fn test_sr_35_search_matches_value_text() {
-    // [SR-35] 検索は見せる文字(☑)でなく値の文字(true)でも一致する。
+    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1, req~screen.rich-cells-values-kept~1] 検索は見せる文字(☑)でなく値の文字(true)でも一致する。
     let tmp = notes("sr35_search");
     let mut a = with(&tmp, ColorMode::Rgb, "");
     a.search = Some("true".into());

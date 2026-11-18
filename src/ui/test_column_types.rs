@@ -1,5 +1,5 @@
 //! 列の型を設定 `[types]` と見出しの型の印から選び直す(CE-35・CE-2)の受け入れ試験。
-//! 記録: specs/_changes/2026-10-13-column-types.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-13-column-types.md(タスク #1)。
 //!
 //! 仮定(実装役に渡す): パレットの命令の名前は `column_type`。型の窓のモードの名前は `ColumnType`。
 //! 窓の項目は「自動(推定の型)」・テキスト・数・チェック・日付・日時・リストの順。選んだ型は views.toml の
@@ -81,7 +81,7 @@ fn choose(a: &mut App, name: &str) {
 
 #[test]
 fn test_ce_35_types_setting_wins_over_inference() {
-    // [CE-35][CE-2] `[types] due = "number"` → 推定(日付)より設定が勝ち、日付の値に `!`。
+    // [utest -> req~cell-edit.type-config-types~1, req~cell-edit.column-type-order~1] `[types] due = "number"` → 推定(日付)より設定が勝ち、日付の値に `!`。
     let (_t, a) = boot("ce35_cfg", "[types]\ndue = \"number\"\n", ColorMode::None);
     assert_eq!(a.kind_of("due"), mdgrid::types::Kind::Number);
     assert!(screen(&a).contains("!2026-10-01"), "{}", screen(&a));
@@ -89,7 +89,7 @@ fn test_ce_35_types_setting_wins_over_inference() {
 
 #[test]
 fn test_ce_35_unknown_type_warns() {
-    // [CE-35] 知らない型の名前 → 警告して、その列は推定のまま。
+    // [utest -> req~cell-edit.type-config-unknown~1] 知らない型の名前 → 警告して、その列は推定のまま。
     let (c, w) = mdgrid::config::parse("[types]\ndue = \"when\"\n").unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
     assert!(w[0].contains("types.due"), "{w:?}");
@@ -98,7 +98,7 @@ fn test_ce_35_unknown_type_warns() {
 
 #[test]
 fn test_ce_35_menu_lists_types_and_writes_table_scope() {
-    // [CE-35] パレットの column_type → 型の窓。「数」を選ぶ → views.toml の表に due = "number"、表に効く。
+    // [utest -> req~cell-edit.type-config-dialog-write~1, req~cell-edit.type-config-notes-untouched~1] パレットの column_type → 型の窓。「数」を選ぶ → views.toml の表に due = "number"、表に効く。
     let (t, mut a) = boot("ce35_menu", "", ColorMode::None);
     assert_eq!(a.kind_of("due"), mdgrid::types::Kind::Date);
     open_menu(&mut a);
@@ -129,7 +129,7 @@ fn test_ce_35_menu_lists_types_and_writes_table_scope() {
 
 #[test]
 fn test_ce_35_auto_returns_to_inference() {
-    // [CE-35] 「自動」を選ぶ → 推定の型に戻り、views.toml から due が消える。
+    // [utest -> req~cell-edit.type-config-auto~1] 「自動」を選ぶ → 推定の型に戻り、views.toml から due が消える。
     let (t, mut a) = boot("ce35_auto", "", ColorMode::None);
     open_menu(&mut a);
     choose(&mut a, "数");
@@ -141,7 +141,7 @@ fn test_ce_35_auto_returns_to_inference() {
 
 #[test]
 fn test_ce_35_header_mark_click_opens_menu() {
-    // [CE-35][SR-35] 色を使う表示の見出しの型の印(日付の ◷)をクリック → 型の窓。見出しの名前のクリックは
+    // [utest -> req~cell-edit.type-config-dialog~1, req~cell-edit.type-config-dialog-write~1, req~screen.rich-cells-parts~1] 色を使う表示の見出しの型の印(日付の ◷)をクリック → 型の窓。見出しの名前のクリックは
     // 今までどおり並べ替え(NV-3)。
     let (_t, mut a) = boot("ce35_click", "[look.style]\nicons = true\n", ColorMode::Rgb);
     let s = screen(&a);
@@ -162,7 +162,7 @@ fn test_ce_35_header_mark_click_opens_menu() {
 
 #[test]
 fn test_ce_35_not_for_computed_columns() {
-    // [CE-35] file.* の列では型の窓を出さない(理由を出す)。
+    // [utest -> req~cell-edit.type-config-file-formula~1] file.* の列では型の窓を出さない(理由を出す)。
     let (_t, mut a) = boot("ce35_file", "", ColorMode::None);
     a.cols.push("file.name".into());
     a.kinds.push(mdgrid::types::Kind::Text);

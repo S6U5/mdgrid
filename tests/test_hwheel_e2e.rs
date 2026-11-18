@@ -9,7 +9,7 @@ use pty::{assert_gone, TempDir, Tui};
 
 #[test]
 fn test_sr_6_hwheel_e2e_terminal_reports() {
-    // [SR-6] 横のホイールの右 → 2列目、左 → 1列目、shift+ホイールの下 → 2列目。
+    // [stest -> req~screen.mouse-h-wheel~1] 横のホイールの右 → 2列目、左 → 1列目、shift+ホイールの下 → 2列目。
     let home = TempDir::new("sr6-hwheel");
     let v = home.path().join("vault");
     for d in ["config", "state"] {

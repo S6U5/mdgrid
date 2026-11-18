@@ -98,7 +98,7 @@ fn apply(a: &mut App) {
 
 #[test]
 fn test_sr_44_workspace_and_table_overrides_at_start() {
-    // [SR-44] config.toml の sumi、印の nord、印の表の項目の dracula → tasks は dracula、projects は nord。
+    // [utest -> req~screen.profile-scopes-order~1] config.toml の sumi、印の nord、印の表の項目の dracula → tasks は dracula、projects は nord。
     // views.toml の表の項目は印の表の項目より先(同じ範囲では画面が書いたもの)。
     let marker = "name = \"N\"\n[look]\ntheme = \"nord\"\n[[table]]\npath = \"tasks\"\n[table.look]\ntheme = \"dracula\"\n[[table]]\npath = \"projects\"\n";
     let tmp = tables("sr44start", Some(marker));
@@ -123,7 +123,7 @@ fn test_sr_44_workspace_and_table_overrides_at_start() {
 
 #[test]
 fn test_sr_43_save_to_this_table_shows_origin_and_reset() {
-    // [SR-43] 保存先「この表」でテーマ nord を反映 → views.toml の対象の [table.look]、横に「(この表)」、
+    // [utest -> req~screen.look-section-save~1, req~screen.look-section-clear~1] 保存先「この表」でテーマ nord を反映 → views.toml の対象の [table.look]、横に「(この表)」、
     // ほかの表と ui.toml は変わらない。「この範囲の上書きを外す」→ その表も既定。
     let tmp = tables("sr43table", None);
     let mut a = boot_at(&tmp, "tasks", "");
@@ -155,7 +155,7 @@ fn test_sr_43_save_to_this_table_shows_origin_and_reset() {
 
 #[test]
 fn test_sr_43_save_to_app_workspace() {
-    // [SR-43] workspaces.toml のワークスペースなら「このワークスペース」で [workspace.look] に書く。
+    // [utest -> req~screen.look-section-save~1, req~screen.look-section-marker~1] workspaces.toml のワークスペースなら「このワークスペース」で [workspace.look] に書く。
     let tmp = tables("sr43ws", None);
     std::fs::write(
         tmp.0.join("config/workspaces.toml"),
@@ -180,7 +180,7 @@ fn test_sr_43_save_to_app_workspace() {
 
 #[test]
 fn test_sr_43_marker_workspace_is_not_written() {
-    // [SR-43] 印のワークスペースを保存先にして反映 → 理由を出し、印は変わらない。
+    // [utest -> req~screen.look-section-marker~1] 印のワークスペースを保存先にして反映 → 理由を出し、印は変わらない。
     let marker = "name = \"N\"\n";
     let tmp = tables("sr43marker", Some(marker));
     let mut a = boot_at(&tmp, "tasks", "");
@@ -201,7 +201,7 @@ fn test_sr_43_marker_workspace_is_not_written() {
 
 #[test]
 fn test_sr_43_save_to_this_view() {
-    // [SR-43] 保存先「このビュー」は、ビューの設定に残し、開き直しても効く。
+    // [utest -> req~screen.look-section-save~1] 保存先「このビュー」は、ビューの設定に残し、開き直しても効く。
     let tmp = tables("sr43view", None);
     let mut a = boot_at(&tmp, "tasks", "");
     choose(&mut a, 0, "このビュー");
@@ -217,7 +217,7 @@ fn test_sr_43_save_to_this_view() {
 
 #[test]
 fn test_sr_34_tabs_never_and_cycle() {
-    // [SR-34] display.tabs = "never" → タブが無い(SR-1 でタブはビューの帯の中。帯の行は検索の欄のために残る)。
+    // [utest -> req~screen.tabs-setting-auto-single~1, req~screen.tabs-setting-cycle~1] display.tabs = "never" → タブが無い(SR-1 でタブはビューの帯の中。帯の行は検索の欄のために残る)。
     // 表示の区画のタブの項目は always → auto → never の順。
     let tmp = tables("sr34never", None);
     let a = boot_at(&tmp, "tasks", "[display]\ntabs = \"never\"\n");

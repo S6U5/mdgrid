@@ -1,5 +1,5 @@
-//! 書き戻しの性質の試験(Q-8。WB-1・WB-5・WB-6・WB-7)。仕様: specs/write-back/spec.md。
-//! 変更の記録: specs/_changes/2026-10-03-writeback-props.md。
+//! 書き戻しの性質の試験(Q-8。WB-1・WB-5・WB-6・WB-7)。仕様: specs/_history/decidespec/write-back/spec.md。
+//! 変更の記録: specs/_history/decidespec/_changes/2026-10-03-writeback-props.md。
 //!
 //! ランダムに作ったノートと値で、公開の口(`frontmatter::parse`・`writeback::apply`)だけを使って確かめる。
 //! ノートは試験の側で組み立てるので、各キーの行のバイトの位置と閉じの区切りの位置は試験の側で分かっている。
@@ -552,7 +552,7 @@ proptest! {
 
     #[test]
     fn test_wb_1_props_existing_scalar_key((note, i) in note_with_scalar(), w in written()) {
-        // [WB-1] [WB-6]
+        // [utest -> req~write-back.byte-range-value~1, req~write-back.verify-before-replace~1]
         let before = &note.bytes;
         let key = &note.keys[i];
         let fm_before = parse(before);
@@ -643,7 +643,7 @@ proptest! {
 
     #[test]
     fn test_wb_6_props_written_value_reads_back((note, i) in note_with_scalar(), w in written()) {
-        // [WB-6] 2つのキーを1度に書いても、両方が意図した値になり、ほかは変わらない。
+        // [utest -> req~write-back.verify-before-replace~1] 2つのキーを1度に書いても、両方が意図した値になり、ほかは変わらない。
         let scalars = note.scalar_indices();
         let j = scalars[(scalars.iter().position(|&x| x == i).unwrap() + 1) % scalars.len()];
         prop_assume!(!w.has_newline());
@@ -677,7 +677,7 @@ proptest! {
 
     #[test]
     fn test_wb_1_props_added_key_is_one_line(note in note(), w in written()) {
-        // [WB-1] [WB-3] 元のバイトはそのまま残り、閉じの区切りの前に1行だけ増える。
+        // [utest -> req~write-back.byte-range-null~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~1] 元のバイトはそのまま残り、閉じの区切りの前に1行だけ増える。
         prop_assume!(!w.has_newline());
         let before = &note.bytes;
         let fm_before = parse(before).unwrap();
@@ -706,7 +706,7 @@ proptest! {
         (note, i) in note_with_scalar(),
         random in value_string(),
     ) {
-        // [WB-7]
+        // [utest -> req~write-back.quoting-type-safe~1]
         let key = &note.keys[i];
         let ValueSpec::Scalar { quote, .. } = &note.values[i] else { unreachable!() };
         let mut values: Vec<String> = RISKY.iter().map(|s| s.to_string()).collect();
@@ -767,7 +767,7 @@ proptest! {
         ],
         w in written(),
     ) {
-        // [WB-5] 読み取りと書き戻しは、どんなバイト列でも panic せずに結果か Err を返す。
+        // [write-back.refuse-unsafe-notes] 読み取りと書き戻しは、どんなバイト列でも panic せずに結果か Err を返す。
         let _ = parse(&bytes);
         let _ = apply(&bytes, &[edit("a", w.new_value())]);
         let _ = apply(&bytes, &[edit("status", NewValue::Str("x".into())), edit("b", NewValue::List(vec!["y".into()]))]);
@@ -781,7 +781,7 @@ proptest! {
         kind in 0u8..4,
         w in written(),
     ) {
-        // [WB-5] 正しいノートを1か所壊しても panic しない。読めて書けたなら、書いたキーは読み直せる。
+        // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~1] 正しいノートを1か所壊しても panic しない。読めて書けたなら、書いたキーは読み直せる。
         let mut b = note.bytes.clone();
         let p = pos.index(b.len());
         match kind {
@@ -806,7 +806,7 @@ proptest! {
         (note, i) in note_with_scalar(),
         kind in 0u8..5,
     ) {
-        // [WB-5]
+        // [utest -> req~write-back.refuse-unsafe-read-only~1]
         let b = &note.bytes;
         let (broken, reason) = match kind {
             0 => {

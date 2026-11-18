@@ -1,6 +1,6 @@
 # git-cliff の設定(git-cliff 2.11 以上。replace_regex を使う)。https://git-cliff.org/docs/configuration
 # コミットの書き出し(`実装:`・`修正:` など。半角と全角のコロン)を CHANGELOG の節に写す。
-# 変更の記録: specs/_changes/2026-10-03-cliff.md。CHANGELOG.md はリリースの作業(Q-6)で生成する。
+# 変更の記録: specs/_history/decidespec/_changes/2026-10-03-cliff.md。CHANGELOG.md はリリースの作業(Q-6)で生成する。
 
 [changelog]
 header = """

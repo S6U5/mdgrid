@@ -7,7 +7,7 @@ use mdgrid::source::markdown::Markdown;
 
 #[test]
 fn test_bv_16_rebuild_when_loaded_doubles() {
-    // [BV-16] 1000 ノートを 100 ずつ読む → 表の行は最初の一束で出て、倍ごとに増え、最後に 1000。
+    // [utest -> req~base-view.large-load~1] 1000 ノートを 100 ずつ読む → 表の行は最初の一束で出て、倍ごとに増え、最後に 1000。
     let tmp = Tmp::new("bv16_throttle");
     for i in 0..1000 {
         tmp.write(&format!("n{i:04}.md"), "---\nx: 1\n---\n");

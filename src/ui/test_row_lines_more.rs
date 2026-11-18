@@ -1,6 +1,6 @@
 //! 伸ばした行(CV-8)の飾りと位置の残り: 列の区切りと一行おきの色を高さ全部に、札は1行、その場の操作の窓は
 //! 行の1行目から、ビューごとの上書きが表に効く。
-//! 記録: specs/_changes/2026-10-12-row-lines.md(照合の指摘3)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-row-lines.md(照合の指摘3)。
 
 use super::startup::Startup;
 use super::test_screen::{text, Tmp};
@@ -67,7 +67,7 @@ fn notes() -> Vec<(&'static str, String)> {
 
 #[test]
 fn test_cv_8_column_lines_cover_whole_row() {
-    // [CV-8] 列の区切り線は、伸ばした行の2行目・3行目にも1行目と同じ桁に引く。
+    // [utest -> req~cell-view.row-lines-continuation~1, req~cell-view.row-lines-full-height~1] 列の区切り線は、伸ばした行の2行目・3行目にも1行目と同じ桁に引く。
     let (_t, a) = boot(
         "cv8m_cols",
         &notes(),
@@ -97,7 +97,7 @@ fn test_cv_8_column_lines_cover_whole_row() {
 
 #[test]
 fn test_cv_8_zebra_covers_whole_row() {
-    // [CV-8] 一行おきの色は、伸ばした行(2番目のノート。色の付く行)の高さ全部に付き、次の行には付かない。
+    // [utest -> req~cell-view.row-lines-full-height~1] 一行おきの色は、伸ばした行(2番目のノート。色の付く行)の高さ全部に付き、次の行には付かない。
     let (_t, a) = boot(
         "cv8m_zebra",
         &[
@@ -124,7 +124,7 @@ fn test_cv_8_zebra_covers_whole_row() {
 
 #[test]
 fn test_cv_8_chips_stay_one_line() {
-    // [CV-8] リストの値の札は折り返さない: 札の列が狭くても、ほかが短ければ行は1行のまま。
+    // [utest -> req~cell-view.row-lines-single-parts~1] リストの値の札は折り返さない: 札の列が狭くても、ほかが短ければ行は1行のまま。
     let notes = vec![
         (
             "a.md",
@@ -151,7 +151,7 @@ fn test_cv_8_chips_stay_one_line() {
 
 #[test]
 fn test_cv_8_menu_window_from_first_line() {
-    // [CV-8] その場の操作の窓(と候補の窓)の位置の基は、伸ばした行の1行目。
+    // [utest -> req~cell-view.row-lines-edit-first-line~1] その場の操作の窓(と候補の窓)の位置の基は、伸ばした行の1行目。
     let (_t, mut a) = boot(
         "cv8m_menu",
         &notes(),
@@ -173,7 +173,7 @@ fn test_cv_8_menu_window_from_first_line() {
 
 #[test]
 fn test_cv_8_view_override_applies() {
-    // [CV-8][SR-20] 設定は 0 でも、ビューの設定の上書きが 2 なら、そのビューの行は伸びる。
+    // [utest -> req~cell-view.row-lines-view-override~1, req~screen.display-options-config~1, req~screen.display-options-per-view~1] 設定は 0 でも、ビューの設定の上書きが 2 なら、そのビューの行は伸びる。
     let (_t, mut a) = boot("cv8m_view", &notes(), "", ColorMode::None);
     let before = lines(&a);
     assert!(

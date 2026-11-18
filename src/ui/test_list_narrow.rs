@@ -1,6 +1,6 @@
-//! [CE-3] 自由入力で打っている間は、打った文字を含む候補を選んでいない形で出し続け、↑↓ で選べる。
-//! [SR-24] 操作の一覧が窓に入らずに流れるときは、下の縁に「選んでいる番号/項目の数」を出す。
-//! specs/_changes/2026-10-06-list-narrow.md。
+//! [cell-edit.value-list] 自由入力で打っている間は、打った文字を含む候補を選んでいない形で出し続け、↑↓ で選べる。
+//! [screen.action-menu] 操作の一覧が窓に入らずに流れるときは、下の縁に「選んでいる番号/項目の数」を出す。
+//! specs/_history/decidespec/_changes/2026-10-06-list-narrow.md。
 
 use super::test_action_menu::shot;
 use super::test_screen::{ch, col_named, ctrl, make, press, screen, typing};
@@ -26,6 +26,7 @@ fn open(name: &str) -> (super::test_screen::Tmp, App) {
     (t, a)
 }
 
+// [utest -> req~cell-edit.value-list-narrow~1]
 #[test]
 fn test_ce_3_narrow_shows_matches_without_selection() {
     let (_t, mut a) = open("ce3n_show");
@@ -40,6 +41,7 @@ fn test_ce_3_narrow_shows_matches_without_selection() {
     assert_eq!(pending(&a), Some(NewValue::Str("do".into())));
 }
 
+// [utest -> req~cell-edit.value-list-narrow-pick~1]
 #[test]
 fn test_ce_3_narrow_down_picks_match() {
     let (_t, mut a) = open("ce3n_pick");
@@ -58,6 +60,7 @@ fn test_ce_3_narrow_down_picks_match() {
     assert_eq!(pending(&a), Some(NewValue::Str("doing".into())));
 }
 
+// [utest -> req~cell-edit.value-list-type-replaces~1, req~cell-edit.value-list-narrow~1]
 #[test]
 fn test_ce_3_narrow_no_match_hides_and_revert_restores() {
     let (_t, mut a) = open("ce3n_none");
@@ -76,6 +79,7 @@ fn test_ce_3_narrow_no_match_hides_and_revert_restores() {
     assert!(s.contains("│  waiting"), "{s}");
 }
 
+// [utest -> req~screen.action-menu-sections~1, req~screen.action-menu-too-low~1, req~screen.action-menu-bulk-hidden~1]
 #[test]
 fn test_sr_24_menu_position_shown_when_scrolled() {
     let (_t, mut a) = make("sr24pos", NOTES);
@@ -88,6 +92,7 @@ fn test_sr_24_menu_position_shown_when_scrolled() {
     assert!(s.text.lines().any(|l| l.contains("╰2/")), "{s}");
 }
 
+// [utest -> req~screen.action-menu-open-key~1, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-enter~1, req~screen.action-menu-bulk-hidden~1]
 #[test]
 fn test_sr_24_menu_position_hidden_when_all_fit() {
     let (_t, mut a) = make("sr24all", NOTES);
@@ -97,6 +102,7 @@ fn test_sr_24_menu_position_hidden_when_all_fit() {
     assert!(!s.text.lines().any(|l| l.contains("╰1/")), "{s}");
 }
 
+// [utest -> req~cell-edit.value-list-type-replaces~1]
 #[test]
 fn test_ce_3_narrow_up_picks_last_and_typing_replaces() {
     let (_t, mut a) = open("ce3n_up");

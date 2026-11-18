@@ -61,7 +61,7 @@ fn place(name: &str, group: &str, path: PathBuf) -> Place {
 
 #[test]
 fn test_cli_18_register_from_palette() {
-    // [CLI-18] 「この表を登録」→ 名前の欄に今のフォルダの名前 → 名前を打つ → 分類を新しく打つ → places.toml。
+    // [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-hand-written~1] 「この表を登録」→ 名前の欄に今のフォルダの名前 → 名前を打つ → 分類を新しく打つ → places.toml。
     let tmp = vault("pl_reg");
     let mut a = boot(&tmp);
     palette(&mut a, "この表を登録");
@@ -96,7 +96,7 @@ fn test_cli_18_register_from_palette() {
 
 #[test]
 fn test_cli_18_pick_existing_group_and_overwrite() {
-    // [CLI-18] 分類は今の分類から選べる(空のまま ↓ で選ぶ)。同じ名前は y で置き換え、ほかの答えでやめる。
+    // [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-replace-confirm~1] 分類は今の分類から選べる(空のまま ↓ で選ぶ)。同じ名前は y で置き換え、ほかの答えでやめる。
     let tmp = vault("pl_over");
     let cfg = tmp.0.join("config");
     places::save(&cfg, place("タスク", "仕事", PathBuf::from("/old"))).unwrap();
@@ -138,7 +138,7 @@ fn test_cli_18_pick_existing_group_and_overwrite() {
 
 #[test]
 fn test_cli_18_empty_name_stays() {
-    // [CLI-18] 名前が空なら理由を出して名前の欄に残る。
+    // [utest -> req~cli.places-palette~1, req~cli.places-replace-confirm~1] 名前が空なら理由を出して名前の欄に残る。
     let tmp = vault("pl_empty");
     let mut a = boot(&tmp);
     palette(&mut a, "この表を登録");
@@ -150,7 +150,7 @@ fn test_cli_18_empty_name_stays() {
 
 #[test]
 fn test_cli_19_open_list_and_switch() {
-    // [CLI-19] 一覧は分類ごと(places.toml の順で分類が出た順)、先頭に今のフォルダ。打つと絞る(大文字小文字を
+    // [utest -> req~cli.places-list-order~1, req~cli.places-list-filter~1, req~cli.places-list-missing-path~1] 一覧は分類ごと(places.toml の順で分類が出た順)、先頭に今のフォルダ。打つと絞る(大文字小文字を
     // 問わない)。無いパスは理由を出して一覧に残る。在る表を選ぶと終わって開き直す(switch_to)。
     let tmp = vault("pl_open");
     let cfg = tmp.0.join("config");
@@ -182,7 +182,7 @@ fn test_cli_19_open_list_and_switch() {
 
 #[test]
 fn test_cli_19_here_closes_list() {
-    // [CLI-19] 先頭の「今のフォルダ」は一覧を閉じるだけ。
+    // [utest -> req~cli.places-list-order~1] 先頭の「今のフォルダ」は一覧を閉じるだけ。
     let tmp = vault("pl_here");
     places::save(&tmp.0.join("config"), place("x", "", tmp.notes())).unwrap();
     let mut a = boot(&tmp);
@@ -194,7 +194,7 @@ fn test_cli_19_here_closes_list() {
 
 #[test]
 fn test_cli_19_pending_changes_ask_first() {
-    // [CLI-19][WB-11] ためた変更があれば、保存する・捨てる・戻るを確かめる。戻ると移らない。
+    // [utest -> req~cli.places-list-pending~1, req~write-back.quit-confirm~1] ためた変更があれば、保存する・捨てる・戻るを確かめる。戻ると移らない。
     let tmp = vault("pl_pending");
     let other = tmp.0.join("Other");
     std::fs::create_dir_all(&other).unwrap();
@@ -224,7 +224,7 @@ fn test_cli_19_pending_changes_ask_first() {
 
 #[test]
 fn test_cli_19_no_places_message() {
-    // [CLI-19] 登録が無ければ一覧を出さず、登録のしかたを出す。
+    // [utest -> req~cli.places-list-order~1] 登録が無ければ一覧を出さず、登録のしかたを出す。
     let tmp = vault("pl_none");
     let mut a = boot(&tmp);
     palette(&mut a, "登録した表を開く");

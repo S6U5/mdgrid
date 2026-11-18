@@ -60,7 +60,7 @@ fn link(s: &str) -> Link {
 
 #[test]
 fn test_rel_1_forms_and_resolution() {
-    // [REL-1] 3つの書き方を読む。行き先は相対 → 根からのパス → 名前の順。
+    // [utest -> req~relations.link-forms-kinds~1, req~relations.link-forms-resolve~1] 3つの書き方を読む。行き先は相対 → 根からのパス → 名前の順。
     let t = workspace("forms");
     let root = Notes::scan(&t.0);
     let note = t.0.join("tasks/Build relation view.md");
@@ -104,7 +104,7 @@ fn test_rel_1_forms_and_resolution() {
 
 #[test]
 fn test_rel_1_plain_words_are_not_links() {
-    // [REL-1] どのノートも指さない文字・1語・外のアドレスはリンクにしない。
+    // [utest -> req~relations.link-forms-kinds~1, req~relations.link-forms-plain-text~1] どのノートも指さない文字・1語・外のアドレスはリンクにしない。
     let t = workspace("words");
     t.write("done.md", "---\n---\n");
     let root = Notes::scan(&t.0);
@@ -123,7 +123,7 @@ fn test_rel_1_plain_words_are_not_links() {
 
 #[test]
 fn test_rel_1_target_outside_root() {
-    // [REL-1] 行き先は開いた表のフォルダの外(ほかの表)にあってもよい。
+    // [utest -> req~relations.link-forms-kinds~1, req~relations.link-forms-outside~1] 行き先は開いた表のフォルダの外(ほかの表)にあってもよい。
     let t = workspace("outside");
     let tasks = Notes::scan(&t.0.join("tasks"));
     let projects = Notes::scan(&t.0.join("projects"));
@@ -143,7 +143,7 @@ fn test_rel_1_target_outside_root() {
 
 #[test]
 fn test_rel_2_display_names() {
-    // [REL-2][REL-10] 見せる名前は表示の文字か行き先の名前。行き先が無ければ書いた名前。
+    // [utest -> req~relations.link-display~1, req~relations.broken-link~1] 見せる名前は表示の文字か行き先の名前。行き先が無ければ書いた名前。
     let t = workspace("display");
     let mdgrid = t.0.join("projects/mdgrid.md");
     assert_eq!(
@@ -166,7 +166,7 @@ fn test_rel_2_display_names() {
 
 #[test]
 fn test_rel_3_format_matches_form() {
-    // [REL-3] 書く形は列の形に合わせる。名前が探す表の全部で1つなら [[名前]]、重なれば相対のパス。
+    // [utest -> req~relations.link-input-form~1] 書く形は列の形に合わせる。名前が探す表の全部で1つなら [[名前]]、重なれば相対のパス。
     let t = workspace("format");
     let note = t.0.join("tasks/Add backlinks.md");
     let mdgrid = t.0.join("projects/mdgrid.md");
@@ -206,7 +206,7 @@ fn test_rel_3_format_matches_form() {
 
 #[test]
 fn test_rel_3_link_column() {
-    // [REL-3] 過半数がリンクの列はリンクの列。形と行き先のフォルダはいちばん多いもの。
+    // [utest -> req~relations.link-input-candidates~1, req~relations.link-input-same-name~1] 過半数がリンクの列はリンクの列。形と行き先のフォルダはいちばん多いもの。
     let t = workspace("column");
     let root = Notes::scan(&t.0);
     let n = |r: &str| t.0.join(r);
@@ -244,7 +244,7 @@ fn tables(t: &Tmp) -> Vec<Table> {
 
 #[test]
 fn test_rel_5_backlinks() {
-    // [REL-5] つながった行: どの表のどの列から指しているか。3つの書き方のどれでも。
+    // [utest -> req~relations.backlinks-list~1] つながった行: どの表のどの列から指しているか。3つの書き方のどれでも。
     let t = workspace("back");
     let mut got = backlinks(&t.0.join("projects/mdgrid.md"), &tables(&t));
     got.sort_by(|a, b| a.note.cmp(&b.note));
@@ -274,7 +274,7 @@ fn test_rel_5_backlinks() {
 
 #[test]
 fn test_rel_6_edges() {
-    // [REL-6] 表どうしのつながりを設定なしで見つける。リストは多対多。どの表にも無い行き先は数えない。
+    // [utest -> req~relations.table-links-detect~1, req~relations.table-links-loose~1] 表どうしのつながりを設定なしで見つける。リストは多対多。どの表にも無い行き先は数えない。
     let t = workspace("edges");
     let mut e = edges(&tables(&t));
     e.sort_by(|a, b| (&a.from, &a.column).cmp(&(&b.from, &b.column)));
@@ -316,7 +316,7 @@ fn test_rel_6_edges() {
 
 #[test]
 fn test_rel_1_percent_with_multibyte_does_not_panic() {
-    // [REL-1] `%` のあとが多バイトの文字・途中で切れた `%` でも落ちない(壊れた値も読める)。
+    // [utest -> req~relations.link-forms-plain-text~1] `%` のあとが多バイトの文字・途中で切れた `%` でも落ちない(壊れた値も読める)。
     for v in [
         "[x](a%あb.md)",
         "[x](%E3%81)",
@@ -332,7 +332,7 @@ fn test_rel_1_percent_with_multibyte_does_not_panic() {
 
 #[test]
 fn test_rel_1_registered_base_uses_vault_root() {
-    // [REL-1] 登録した `.base` の表は、開いたときと同じく保管庫の根(.obsidian のある上のフォルダ)を探す。
+    // [utest -> req~relations.link-forms-resolve~1, req~relations.link-forms-same-open~1, req~relations.link-forms-outside~1] 登録した `.base` の表は、開いたときと同じく保管庫の根(.obsidian のある上のフォルダ)を探す。
     let t = workspace("base");
     std::fs::create_dir_all(t.0.join(".obsidian")).unwrap();
     t.write("Bases/tasks.base", "views: []\n");

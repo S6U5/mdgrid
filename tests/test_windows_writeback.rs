@@ -1,6 +1,6 @@
-//! Windows の書き戻しの安全(WB-5・WB-8・WB-14)。仕様: specs/write-back/spec.md。
+//! Windows の書き戻しの安全(WB-5・WB-8・WB-14)。仕様: specs/_history/decidespec/write-back/spec.md。
 //! ほかのアプリが開いているノート、読み取り専用の属性、日本語の名前を Windows で確かめる
-//! (specs/_changes/2026-10-15-windows-target.md)。ハードリンクの見分けは Windows では未対応(docs/todo.md の O-11)。
+//! (specs/_history/decidespec/_changes/2026-10-15-windows-target.md)。ハードリンクの見分けは Windows では未対応(docs/todo.md の O-11)。
 #![cfg(windows)]
 
 use mdgrid::writeback::{baseline, save, Edit, NewValue, SaveError};
@@ -68,7 +68,7 @@ fn set_readonly(p: &Path, on: bool) {
 
 #[test]
 fn test_wb_8_windows_note_held_open_by_another_app() {
-    // [WB-8] [WB-14] ほかのアプリが削除の共有なしで開いているノートへの保存は、名前の変更で置き換えられれば
+    // [utest -> req~write-back.atomic-replace-temp~1, req~write-back.keep-on-stop~1] ほかのアプリが削除の共有なしで開いているノートへの保存は、名前の変更で置き換えられれば
     // 書き終えた中身に、置き換えられなければ誤りで止まって元のまま。どちらでも一時ファイルを残さず、
     // 閉じたあとのやり直しで書ける。
     let dir = TempDir::new("held");
@@ -96,7 +96,7 @@ fn test_wb_8_windows_note_held_open_by_another_app() {
 
 #[test]
 fn test_wb_5_windows_read_only_attribute_is_not_written() {
-    // [WB-5] 読み取り専用の属性のノート(unix の chmod 444 に当たる)は書かずに止め、元のまま。
+    // [utest -> req~write-back.refuse-unsafe-perm-lost~1] 読み取り専用の属性のノート(unix の chmod 444 に当たる)は書かずに止め、元のまま。
     let dir = TempDir::new("readonly");
     let note = dir.write("note.md", NOTE);
     let base = baseline(&note).unwrap();
@@ -110,7 +110,7 @@ fn test_wb_5_windows_read_only_attribute_is_not_written() {
 
 #[test]
 fn test_wb_8_windows_japanese_name() {
-    // [WB-8] 日本語と空白を含む名前のノートも、一時ファイルと名前の変更で書ける。
+    // [utest -> req~write-back.atomic-replace-temp~1] 日本語と空白を含む名前のノートも、一時ファイルと名前の変更で書ける。
     let dir = TempDir::new("ja");
     let note = dir.write("会議 メモ.md", NOTE);
     let base = baseline(&note).unwrap();

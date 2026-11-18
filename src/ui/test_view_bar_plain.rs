@@ -1,5 +1,5 @@
 //! ビューの帯の既定を線なし・上下に余白の3行にし、box は中を塗らず、1行は compact にする(SR-1・NV-23)
-//! 受け入れの試験。記録: specs/_changes/2026-10-12-search-box.md(タスク #5)。
+//! 受け入れの試験。記録: specs/_history/decidespec/_changes/2026-10-12-search-box.md(タスク #5)。
 
 use super::keymap::Mode;
 use super::startup::Startup;
@@ -67,7 +67,7 @@ fn col(l: &str, t: &str) -> Option<usize> {
 
 #[test]
 fn test_nv_23_plain_default_blank_rows_around() {
-    // [NV-23][SR-1] 既定 → 2行目と4行目は空き(線も無い)、3行目にタブ・欄・ボタン、5行目が見出し。
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~screen.layout-order~1] 既定 → 2行目と4行目は空き(線も無い)、3行目にタブ・欄・ボタン、5行目が見出し。
     let (_t, a) = boot("plaindef", "", ColorMode::None);
     let l = lines(&a);
     let s = l.join("\n");
@@ -89,7 +89,7 @@ fn test_nv_23_plain_default_blank_rows_around() {
 
 #[test]
 fn test_nv_23_plain_window_right_below_bar() {
-    // [NV-23][NV-24] 既定で並べ替えを押す → 窓の上の縁は4行目(帯の下の余白の行)か5行目。帯の真ん中の行は隠さない。
+    // [utest -> req~navigation.search-box-padding-default~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-window-below~1, req~navigation.sort-window-open~1] 既定で並べ替えを押す → 窓の上の縁は4行目(帯の下の余白の行)か5行目。帯の真ん中の行は隠さない。
     let (_t, mut a) = boot("plainwin", "", ColorMode::None);
     let l = lines(&a);
     let x = col(&l[2], "並べ替え").unwrap();
@@ -106,7 +106,7 @@ fn test_nv_23_plain_window_right_below_bar() {
 
 #[test]
 fn test_nv_23_box_inside_not_filled() {
-    // [NV-23] `buttons = "box"` → 線で囲み、線の中(欄の字の後ろの空き)は地の色で塗らない。囲まない既定では
+    // [utest -> req~navigation.search-box-style~1] `buttons = "box"` → 線で囲み、線の中(欄の字の後ろの空き)は地の色で塗らない。囲まない既定では
     // 欄の空きに地の色(か下線)がある。
     let (_t, a) = boot(
         "boxnofill",
@@ -139,7 +139,7 @@ fn test_nv_23_box_inside_not_filled() {
 
 #[test]
 fn test_nv_23_compact_one_row() {
-    // [NV-23] `bar_padding = 0`(2026-10-12-bar-padding で `buttons = "compact"` から替えた)→ 余白なしの1行、
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-buttons~1, req~navigation.search-box-button-keys~1, req~navigation.search-box-narrow~1, req~navigation.search-box-half-fallback~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1] `bar_padding = 0`(2026-10-12-bar-padding で `buttons = "compact"` から替えた)→ 余白なしの1行、
     // 3行目が見出し。
     let (_t, a) = boot("compact", "[display]\nbar_padding = 0\n", ColorMode::None);
     let l = lines(&a);

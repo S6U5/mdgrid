@@ -1,5 +1,5 @@
 //! 詳細の表示の本文の先頭(NV-6・SR-9・SR-23)の受け入れ試験。
-//! 記録: specs/_changes/2026-10-06-detail-body.md のタスク #1。
+//! 記録: specs/_history/decidespec/_changes/2026-10-06-detail-body.md のタスク #1。
 use super::keymap::Mode;
 use super::test_screen::*;
 use super::{draw, view, width};
@@ -26,7 +26,7 @@ fn head_at(s: &str, head: &str) -> Option<usize> {
 
 #[test]
 fn test_nv_6_body_heading_and_first_lines() {
-    // [NV-6] 本文のあるノートで `K` → プロパティの下に「本文」の見出しと本文の先頭の行。
+    // [utest -> req~navigation.detail-body~1] 本文のあるノートで `K` → プロパティの下に「本文」の見出しと本文の先頭の行。
     let (_t, _a, s) = detail_screen(&[("a.md", WITH_BODY)], "nv6body");
     let h = head_at(&s, "本文").unwrap_or_else(|| panic!("本文の見出しが無い: {s}"));
     let status = s.lines().position(|l| l.contains("status")).unwrap();
@@ -45,7 +45,7 @@ fn test_nv_6_body_heading_and_first_lines() {
 
 #[test]
 fn test_nv_6_body_none_without_body() {
-    // [NV-6] 本文の無いノート(フロントマターだけ)では見出しを出さない。空行だけの本文も無いのと同じ。
+    // [utest -> req~navigation.detail-body~1] 本文の無いノート(フロントマターだけ)では見出しを出さない。空行だけの本文も無いのと同じ。
     for (i, n) in ["---\ntitle: a\n---\n", "---\ntitle: a\n---\n\n  \n\n"]
         .iter()
         .enumerate()
@@ -57,7 +57,7 @@ fn test_nv_6_body_none_without_body() {
 
 #[test]
 fn test_nv_6_body_whole_note_without_frontmatter() {
-    // [NV-6] フロントマターの無いノートは全体が本文。
+    // [utest -> req~navigation.detail-body~1] フロントマターの無いノートは全体が本文。
     let (_t, _a, s) = detail_screen(
         &[
             ("a.md", "一行目の本文\n二行目の本文\n"),
@@ -73,7 +73,7 @@ fn test_nv_6_body_whole_note_without_frontmatter() {
 
 #[test]
 fn test_nv_6_body_capped_at_20_lines() {
-    // [NV-6] 25 行の本文は先頭の 20 行と「…」。
+    // [utest -> req~navigation.detail-body~1] 25 行の本文は先頭の 20 行と「…」。
     let mut n = String::from("---\nt: x\n---\n");
     for i in 1..=25 {
         n.push_str(&format!("本文の行{i:02}\n"));
@@ -105,7 +105,7 @@ fn test_nv_6_body_capped_at_20_lines() {
 
 #[test]
 fn test_nv_6_body_no_control_chars_and_fits() {
-    // [NV-6] [SR-9] 本文の制御文字(エスケープ)は画面に出さず、80 桁と 40 桁で全行が幅以下。
+    // [utest -> req~navigation.detail-body~1, req~cell-view.grapheme-width-fit~1] 本文の制御文字(エスケープ)は画面に出さず、80 桁と 40 桁で全行が幅以下。
     let long = "とても長い本文の行が続いて画面の幅を超えていく。".repeat(5);
     let n = format!("---\ntitle: x\n---\n赤い\u{1b}[31m文字\u{7}\n{long}\n");
     let (_t, mut a) = make("nv6ctl", &[("a.md", n.as_str())]);
@@ -134,7 +134,7 @@ fn test_nv_6_body_no_control_chars_and_fits() {
 
 #[test]
 fn test_nv_6_body_arrows_stay_on_properties() {
-    // [NV-6] ↑↓ はプロパティの間だけを動き、本文の行に止まらない。
+    // [utest -> req~navigation.detail-body~1] ↑↓ はプロパティの間だけを動き、本文の行に止まらない。
     let (_t, mut a, _) = detail_screen(&[("a.md", WITH_BODY)], "nv6arrows");
     let n = {
         let d = a.detail.as_ref().unwrap();
@@ -160,7 +160,7 @@ fn test_nv_6_body_arrows_stay_on_properties() {
 
 #[test]
 fn test_nv_6_body_heading_english() {
-    // [NV-6] [SR-23] 英語の画面では見出しが "Body"。
+    // [utest -> req~navigation.detail-body~1, req~screen.locales-two-languages~1, req~screen.locales-auto~1, req~screen.locales-ledger~1] 英語の画面では見出しが "Body"。
     let _g = scoped(Lang::En);
     let (_t, _a, s) = detail_screen(
         &[("a.md", "---\ntitle: meeting\n---\nfirst line of the body\n")],

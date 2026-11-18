@@ -105,7 +105,7 @@ fn line_of<'a>(s: &'a str, name: &str) -> &'a str {
 
 #[test]
 fn test_rel_2_names_in_cells() {
-    // [REL-2] リンクは行き先のノートの名前で見せる(3つの書き方のどれでも。リストは並べる)。普通の値はそのまま。
+    // [utest -> req~relations.link-display~1] リンクは行き先のノートの名前で見せる(3つの書き方のどれでも。リストは並べる)。普通の値はそのまま。
     let tmp = workspace("rel_names");
     let a = boot_tasks(&tmp);
     let s = screen(&a);
@@ -131,7 +131,7 @@ fn test_rel_2_names_in_cells() {
 
 #[test]
 fn test_rel_10_missing_target_marked() {
-    // [REL-10] 行き先の無い [[…]] は、書いた名前に印 `?` を付けて見せる。リストの要素も。
+    // [utest -> req~relations.broken-link~1] 行き先の無い [[…]] は、書いた名前に印 `?` を付けて見せる。リストの要素も。
     let tmp = workspace("rel_missing");
     let a = boot_tasks(&tmp);
     let s = screen(&a);
@@ -142,7 +142,7 @@ fn test_rel_10_missing_target_marked() {
 
 #[test]
 fn test_rel_3_pick_from_target_folder() {
-    // [REL-3] リンクの列の候補は行き先のフォルダのノートの名前。選ぶと列の形(ここでは [[…]])で書く。
+    // [utest -> req~relations.link-input-candidates~1] リンクの列の候補は行き先のフォルダのノートの名前。選ぶと列の形(ここでは [[…]])で書く。
     let tmp = workspace("rel_pick");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "project");
@@ -168,7 +168,7 @@ fn test_rel_3_pick_from_target_folder() {
 
 #[test]
 fn test_rel_3_list_column_many_to_many() {
-    // [REL-3] リンクのリストの列(多対多)は、行き先のフォルダのノートを名前で並べ、複数を付けられる。
+    // [utest -> req~relations.link-input-candidates~1, req~relations.link-input-list~1] リンクのリストの列(多対多)は、行き先のフォルダのノートを名前で並べ、複数を付けられる。
     let tmp = workspace("rel_many");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "related");
@@ -194,7 +194,7 @@ fn test_rel_3_list_column_many_to_many() {
 
 #[test]
 fn test_rel_1_plain_text_column_unchanged() {
-    // [REL-1] リンクでない列(status)は今までどおりの候補と見せ方。
+    // [utest -> req~relations.link-forms-plain-text~1] リンクでない列(status)は今までどおりの候補と見せ方。
     let tmp = workspace("rel_plain");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "status");

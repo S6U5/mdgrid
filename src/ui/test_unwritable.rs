@@ -1,5 +1,5 @@
 //! 書かないノート(異常系)の画面の試験(WB-5。関係: WB-3・CE-8・CE-10・SR-15)。材料は test_screen の Tmp を使う。
-//! 記録: specs/_changes/2026-10-02-abnormal-tests.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-02-abnormal-tests.md。
 //!
 //! WB-5 の7つの形のノートと、書ける3つ(普通のノート・フロントマターの無いノート(WB-3)・空のフロントマターの
 //! ノート(WB-3。2026-10-02 empty-frontmatter-config で書ける側へ移した))を1つのフォルダに置き、
@@ -104,7 +104,7 @@ fn report(stage: &str, fails: Vec<String>) {
 
 #[test]
 fn test_wb_5_enter_does_not_open_and_shows_reason() {
-    // [WB-5] [CE-8] 7つの形のノートの status のセルで Enter → 入力が開かず(Mode::Table のまま)、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~1] 7つの形のノートの status のセルで Enter → 入力が開かず(Mode::Table のまま)、
     // メッセージ行に「読むだけ」と形ごとの理由(ほかの形の言葉を含まない)、ためる変更は 0。
     // 書ける側(普通のノート・フロントマターの無いノート・空のフロントマターのノート(WB-3))は入力が開く。
     let (_t, mut a) = setup("wb5enter");
@@ -161,7 +161,7 @@ fn test_wb_5_enter_does_not_open_and_shows_reason() {
 
 #[test]
 fn test_wb_5_read_only_cell_drawn_with_hash() {
-    // [WB-5] [SR-15] 7つの形のノートの status のセルは、表の描画で先頭に `#`(読むだけの印)。書ける側には付かない。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-view.not-color-only~1] 7つの形のノートの status のセルは、表の描画で先頭に `#`(読むだけの印)。書ける側には付かない。
     let (_t, a) = setup("wb5hash");
     let s = screen(&a);
     let mut fails = Vec::new();
@@ -196,7 +196,7 @@ fn test_wb_5_read_only_cell_drawn_with_hash() {
 
 #[test]
 fn test_wb_5_bulk_skips_read_only_rows_and_keeps_bytes() {
-    // [WB-5] [CE-10] [WB-3] 全部の行を選んで status に done → 読むだけの行(7つの形。ハードリンクは2行)を飛ばし、
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.add-frontmatter-at-head~1] 全部の行を選んで status に done → 読むだけの行(7つの形。ハードリンクは2行)を飛ばし、
     // 「N行を飛ばした(理由)」に形ごとの理由が全部出る。ためるのは書ける3行(フロントマターの無いノート・空のフロントマターのノートも)だけ。
     // 保存の流れを通しても、読むだけのファイルのバイトは1バイトも変わらない。
     let (t, mut a) = setup("wb5bulk");

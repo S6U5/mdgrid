@@ -1,4 +1,4 @@
-//! [BV-6][BV-7] 式によく使うメソッド・フィールド・関数(specs/_changes/2026-10-06-common-methods.md)。
+//! [base-view.expr-eval][base-view.unsupported] 式によく使うメソッド・フィールド・関数(specs/_history/decidespec/_changes/2026-10-06-common-methods.md)。
 //! 意味は Obsidian のヘルプ(https://obsidian.md/help/bases/functions)の小さな例のとおり。
 //! 型の合わない受け手・引数は Null。
 
@@ -52,6 +52,7 @@ fn list(xs: &[Val]) -> Val {
 
 // ---- 文字 ----
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_upper_filter_is_true() {
     assert_eq!(run("status.upper() == \"ACTIVE\""), Val::Bool(true));
@@ -59,12 +60,14 @@ fn test_bv_6_method_upper_filter_is_true() {
     assert_eq!(run("(5).upper()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_lower() {
     assert_eq!(run("\"Hello\".lower()"), s("hello"));
     assert_eq!(run("[1].lower()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_title() {
     assert_eq!(run("\"hello world\".title()"), s("Hello World"));
@@ -72,12 +75,14 @@ fn test_bv_6_method_title() {
     assert_eq!(run("(5).title()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_trim() {
     assert_eq!(run("\"  a b  \".trim()"), s("a b"));
     assert_eq!(run("(5).trim()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_starts_with_ends_with() {
     assert_eq!(run("\"hello\".startsWith(\"he\")"), Val::Bool(true));
@@ -88,6 +93,7 @@ fn test_bv_6_method_starts_with_ends_with() {
     assert_eq!(run("(5).endsWith(\"5\")"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_slice_string() {
     assert_eq!(run("\"hello\".slice(1, 4)"), s("ell"));
@@ -97,6 +103,7 @@ fn test_bv_6_method_slice_string() {
     assert_eq!(run("\"hello\".slice(\"a\")"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_replace_all_string_pattern() {
     assert_eq!(run("\"a,b,c,d\".replace(\",\", \"-\")"), s("a-b-c-d"));
@@ -104,6 +111,7 @@ fn test_bv_6_method_replace_all_string_pattern() {
     assert_eq!(run("(5).replace(\"5\", \"6\")"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_split() {
     assert_eq!(
@@ -116,6 +124,7 @@ fn test_bv_6_method_split() {
     assert_eq!(run("[1].split(\",\")"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_reverse_string() {
     assert_eq!(run("\"abc\".reverse()"), s("cba"));
@@ -123,6 +132,7 @@ fn test_bv_6_method_reverse_string() {
 
 // ---- 数 ----
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_round() {
     assert_eq!(run("(2.5).round()"), n(3.0));
@@ -133,6 +143,7 @@ fn test_bv_6_method_round() {
     assert_eq!(run("\"2\".round()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_floor_ceil_abs() {
     assert_eq!(run("(2.7).floor()"), n(2.0));
@@ -146,6 +157,7 @@ fn test_bv_6_method_floor_ceil_abs() {
 
 // ---- 日付・日時 ----
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_date_fields() {
     let t = "date(\"2026-10-06T07:08:09\")";
@@ -163,6 +175,7 @@ fn test_bv_6_method_date_fields() {
     assert_eq!(run("(5).month"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_date_and_time() {
     assert_eq!(run("date(\"2026-10-06T07:08:09\").date()"), Val::Date(D));
@@ -173,6 +186,7 @@ fn test_bv_6_method_date_and_time() {
     assert_eq!(run("(5).time()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_format() {
     let t = "date(\"2026-10-06T07:08:09\")";
@@ -199,6 +213,7 @@ fn test_bv_6_method_format() {
 
 // ---- リスト ----
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_join() {
     assert_eq!(run("[1, \"a\", true].join(\"-\")"), s("1-a-true"));
@@ -207,6 +222,7 @@ fn test_bv_6_method_join() {
     assert_eq!(run("\"a\".join(\",\")"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_unique() {
     assert_eq!(
@@ -216,6 +232,7 @@ fn test_bv_6_method_unique() {
     assert_eq!(run("\"a\".unique()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_sort() {
     assert_eq!(run("[3, 1, 2].sort()"), list(&[n(1.0), n(2.0), n(3.0)]));
@@ -223,18 +240,21 @@ fn test_bv_6_method_sort() {
     assert_eq!(run("(5).sort()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_reverse_list() {
     assert_eq!(run("[1, 2, 3].reverse()"), list(&[n(3.0), n(2.0), n(1.0)]));
     assert_eq!(run("(5).reverse()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_flat() {
     assert_eq!(run("[1, [2, 3]].flat()"), list(&[n(1.0), n(2.0), n(3.0)]));
     assert_eq!(run("\"a\".flat()"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_slice_list() {
     assert_eq!(run("[1, 2, 3, 4].slice(1, 3)"), list(&[n(2.0), n(3.0)]));
@@ -244,6 +264,7 @@ fn test_bv_6_method_slice_list() {
 
 // ---- 関数 ----
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_max_min_functions() {
     assert_eq!(run("max(1, 5, 3)"), n(5.0));
@@ -253,6 +274,7 @@ fn test_bv_6_method_max_min_functions() {
     assert_eq!(run("min(null, 1)"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_method_list_function() {
     assert_eq!(run("list(\"a\")"), list(&[s("a")]));
@@ -264,7 +286,7 @@ fn test_bv_6_method_list_function() {
 
 #[test]
 fn test_bv_6_method_still_unsupported_names() {
-    // [BV-7] 足していない名前は今までどおり未対応
+    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.expr-eval~1] 足していない名前は今までどおり未対応
     for src in [
         "\"a\".relative()",
         "(1).toFixed(2)",

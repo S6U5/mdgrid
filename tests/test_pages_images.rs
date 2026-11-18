@@ -5,7 +5,7 @@ use std::path::Path;
 
 #[test]
 fn test_sr_38_pages_manual_images_only_scenes() {
-    // [SR-38] 説明書のページの `![…](…)` は、どれも `images/` の下を指す。
+    // [utest -> req~screen.style-catalog-page~1, req~screen.style-catalog-colors~1, req~screen.style-catalog-offline~1] 説明書のページの `![…](…)` は、どれも `images/` の下を指す。
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     for l in ["ja", "en"] {
         for e in std::fs::read_dir(root.join("docs/manual").join(l)).unwrap() {

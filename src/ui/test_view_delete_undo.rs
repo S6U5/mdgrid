@@ -61,7 +61,7 @@ fn delete_current(a: &mut App, answer: &str) {
 
 #[test]
 fn test_bv_18_delete_confirm_and_undo() {
-    // [BV-18] 「メモ」を開いて削除 → y を打たなければ消さない。y で消える。表で u → 同じ位置に戻る。
+    // [utest -> req~base-view.save-view-undo-delete~1] 「メモ」を開いて削除 → y を打たなければ消さない。y で消える。表で u → 同じ位置に戻る。
     let tmp = setup("bv18undo");
     let mut a = boot(&tmp);
     a.select_view_named("メモ");
@@ -91,7 +91,7 @@ fn test_bv_18_delete_confirm_and_undo() {
 
 #[test]
 fn test_bv_18_undo_restores_tab_prefs_and_default() {
-    // [BV-18] 区画から開いていない「後」を消す → タブの順・隠す・既定も、u で消す前に戻る。
+    // [utest -> req~base-view.save-view-undo-delete~1] 区画から開いていない「後」を消す → タブの順・隠す・既定も、u で消す前に戻る。
     let tmp = setup("bv18prefs");
     let dir = tmp.0.join("config");
     let target = tmp.notes().join("tasks.base");
@@ -131,7 +131,7 @@ fn test_bv_18_undo_restores_tab_prefs_and_default() {
 
 #[test]
 fn test_bv_18_cell_change_after_delete_undone_first() {
-    // [BV-18] 消したあとにセルの変更をためたら、u はまずその変更を戻し、次の u でビューを戻す。
+    // [utest -> req~base-view.save-view-overwrite~1, req~base-view.save-view-delete~1, req~base-view.save-view-delete-confirm~1, req~base-view.save-view-undo-delete~1] 消したあとにセルの変更をためたら、u はまずその変更を戻し、次の u でビューを戻す。
     let tmp = setup("bv18order");
     let mut a = boot(&tmp);
     a.select_view_named("メモ");

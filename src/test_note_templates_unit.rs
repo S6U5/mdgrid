@@ -1,5 +1,5 @@
-//! [CE-32] 雛形の変数と本文の雛形、[CE-27] required・hidden の読み書き。
-//! specs/_changes/2026-10-07-new-note-form.md。
+//! [cell-edit.template-vars] 雛形の変数と本文の雛形、[cell-edit.new-note-config] required・hidden の読み書き。
+//! specs/_history/decidespec/_changes/2026-10-07-new-note-form.md。
 
 use super::{build_with, expand, NewNote, Vars};
 use crate::types;
@@ -14,6 +14,7 @@ fn vars() -> Vars {
     }
 }
 
+// [utest -> req~cell-edit.template-vars-list~1]
 #[test]
 fn test_ce_32_template_variables() {
     let v = vars();
@@ -32,6 +33,7 @@ fn test_ce_32_template_variables() {
     assert_eq!(expand("a {b", &v), "a {b");
 }
 
+// [utest -> req~cell-edit.template-vars-list~1, req~cell-edit.template-vars-body~1, req~cell-edit.template-vars-hidden~1]
 #[test]
 fn test_ce_32_hidden_created_and_body() {
     let rule = NewNote {
@@ -71,6 +73,7 @@ fn test_ce_32_hidden_created_and_body() {
     );
 }
 
+// [utest -> req~cell-edit.new-note-config-required~1]
 #[test]
 fn test_ce_27_required_hidden_body_round_trip() {
     let t: toml::Value = toml::from_str(

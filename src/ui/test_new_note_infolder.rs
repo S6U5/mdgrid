@@ -1,5 +1,5 @@
-//! [CE-25] `.base` のビューで作るノートは、絞り込みの `file.inFolder("X")` のフォルダに作り、
-//! 作った行がビューに残る(specs/_changes/2026-10-06-new-note-infolder.md)。
+//! [cell-edit.new-note] `.base` のビューで作るノートは、絞り込みの `file.inFolder("X")` のフォルダに作り、
+//! 作った行がビューに残る(specs/_history/decidespec/_changes/2026-10-06-new-note-infolder.md)。
 
 use super::startup::Startup;
 use super::test_screen::{ch, ctrl, screen, typing, Tmp};
@@ -50,6 +50,7 @@ fn create(a: &mut App, name: &str) {
     ctrl(a, 's');
 }
 
+// [utest -> req~cell-edit.new-note-filter-values~1]
 #[test]
 fn test_ce_25_infolder_creates_in_view_folder() {
     let (tmp, mut a) = boot("ce25_infolder", "");
@@ -71,6 +72,7 @@ fn test_ce_25_infolder_creates_in_view_folder() {
     );
 }
 
+// [utest -> req~cell-edit.new-note-default-folder~1]
 #[test]
 fn test_ce_25_infolder_keeps_configured_subfolder() {
     let (tmp, mut a) = boot(
@@ -85,6 +87,7 @@ fn test_ce_25_infolder_keeps_configured_subfolder() {
     );
 }
 
+// [utest -> req~cell-edit.new-note-subfolder~1, req~cell-edit.new-note-default-folder~1]
 #[test]
 fn test_ce_25_infolder_overrides_folder_outside_view() {
     let (tmp, mut a) = boot("ce25_infolder_out", "[new_note]\nfolder = \"inbox\"\n");

@@ -1,11 +1,12 @@
-//! [CE-21][CV-2] 時差つきの日時のセルでカレンダーを開くと、元の日から始め、時刻(時差を含む)を保つ。
-//! specs/_changes/2026-10-06-datetime-offsets.md。
+//! [cell-edit.calendar-keys][cell-view.type-mismatch] 時差つきの日時のセルでカレンダーを開くと、元の日から始め、時刻(時差を含む)を保つ。
+//! specs/_history/decidespec/_changes/2026-10-06-datetime-offsets.md。
 
 use super::test_screen::{col_named, press, Tmp};
 use super::*;
 use mdgrid::source::NewValue;
 use ratatui::crossterm::event::KeyCode;
 
+// [utest -> req~cell-edit.calendar-keys-empty-month~1]
 #[test]
 fn test_ce_21_offset_time_kept() {
     let tmp = Tmp::new("ce21off");
@@ -34,6 +35,7 @@ fn test_ce_21_offset_time_kept() {
     );
 }
 
+// [utest -> req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-keep-time~1]
 #[test]
 fn test_ce_21_space_separated_written_with_t() {
     use super::entry::parse;

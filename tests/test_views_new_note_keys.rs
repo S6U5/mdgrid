@@ -1,9 +1,10 @@
-//! [CE-27][CE-33] views.toml の new_note の mode・required・hidden・body は知っている項目(警告しない)で、
-//! 保存し直すと消した値は戻らない。specs/_changes/2026-10-07-views-new-note-keys.md。
+//! [cell-edit.new-note-config][cell-edit.new-note-mode] views.toml の new_note の mode・required・hidden・body は知っている項目(警告しない)で、
+//! 保存し直すと消した値は戻らない。specs/_history/decidespec/_changes/2026-10-07-views-new-note-keys.md。
 
 use mdgrid::newnote::NewNote;
 use mdgrid::views::{load_views, save_views, NativeView};
 
+// [utest -> req~cell-edit.new-note-config-required~1]
 #[test]
 fn test_ce_27_views_new_note_new_keys() {
     let nanos = std::time::SystemTime::now()

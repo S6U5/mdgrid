@@ -7,6 +7,7 @@ use super::cell::shown;
 use super::glyphs::{glyph, Glyph};
 use super::grid::Slot;
 use super::keymap::{self, Mode};
+use super::screens::{Screen, OTHERS};
 use super::view::{pad, HELD_MARK};
 use super::width::{fit, sanitize, width, Align};
 use mdgrid::display::{ButtonsMode, Item};
@@ -109,13 +110,47 @@ pub(crate) fn crumb_at(app: &App, x: u16, y: u16) -> bool {
 
 /// 関係マップの画面か(画面の型のメニューを関係マップから開いている間も)。
 pub(crate) fn on_relmap(app: &App) -> bool {
-    app.mode == Mode::Relations || (app.mode == Mode::ScreenMenu && app.relmap.is_some())
+    app.on_screen(Screen::Relations)
 }
 
 /// TR-1: 木の画面か(画面の型のメニューとパレットを木から開いている間も)。
 pub(crate) fn on_tree(app: &App) -> bool {
-    app.mode == Mode::Tree
-        || (matches!(app.mode, Mode::ScreenMenu | Mode::Palette) && app.folder_tree.is_some())
+    app.on_screen(Screen::Tree)
+}
+
+/// GA-2: ガントの画面か(画面の型のメニューとパレットをガントから開いている間も)。
+pub(crate) fn on_gantt(app: &App) -> bool {
+    app.on_screen(Screen::Gantt)
+}
+
+/// KB-2: カンバンの画面か(画面の型のメニューとパレットをカンバンから開いている間も)。
+pub(crate) fn on_kanban(app: &App) -> bool {
+    app.on_screen(Screen::Kanban)
+}
+
+/// グラフの画面を見ているか(CH-2。画面の型のメニューとパレットをグラフから開いている間も)。
+pub(crate) fn on_chart(app: &App) -> bool {
+    app.on_screen(Screen::Chart)
+}
+
+/// 今見ている画面の型(画面の型のメニューとパレットを開いている間は開いた元の型)。
+fn on_which(app: &App) -> Screen {
+    OTHERS
+        .into_iter()
+        .find(|s| app.on_screen(*s))
+        .unwrap_or(Screen::Table)
+}
+
+/// 表でない画面の型(関係マップ・木・ガント・カンバン)か。そこから `?` で開いたヘルプの間も(ヘルプは開いた元の
+/// モードを持つ)。
+fn on_other_screen(app: &App) -> bool {
+    let from_help = app.mode == Mode::Help
+        && app
+            .help
+            .as_ref()
+            .and_then(|h| Screen::of_mode(h.from))
+            .is_some_and(|s| s != Screen::Table);
+    on_which(app) != Screen::Table || from_help
 }
 
 /// ボタンの見た目(NV-23。ビューの帯とヘッダーのボタンで同じ)。`on` は効いているか。
@@ -185,21 +220,8 @@ const SETTINGS_MIN_W: usize = 79;
 
 /// 画面の型のメニューのボタンの文字(前後に空白1つ): 表の画面「▦ 表 ▾」、関係マップ「◇ 関係マップ ▾」。
 fn menu_button_text(app: &App) -> String {
-    if on_relmap(app) {
-        format!(
-            " {} {} ▾ ",
-            glyph(app, Glyph::RelMap),
-            Msg::ScreenRelMap.text()
-        )
-    } else if on_tree(app) {
-        format!(" {} {} ▾ ", glyph(app, Glyph::Tree), Msg::ScreenTree.text())
-    } else {
-        format!(
-            " {} {} ▾ ",
-            glyph(app, Glyph::Table),
-            Msg::TabScreenTable.text()
-        )
-    }
+    let (g, name) = on_which(app).label();
+    format!(" {} {name} ▾ ", glyph(app, g))
 }
 
 /// 設定のボタンの (文字, キー): 「キー ⚙ 設定」(キーはビューの設定のキー。割り当てが無ければ添えない)。
@@ -1320,7 +1342,7 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             | Mode::Drawer
             | Mode::FilterWin
             | Mode::FilterText
-    ) || (app.mode == Mode::ScreenMenu && app.relmap.is_none() && app.folder_tree.is_none())
+    ) || (app.mode == Mode::ScreenMenu && app.screen() == Screen::Table)
     {
         let pos = match app.slots.get(app.row) {
             None | Some(Slot::Gap) => Msg::FooterRow.fill(&[&0, &0]),
@@ -1447,13 +1469,19 @@ pub(crate) fn message(app: &App, w: usize) -> Line<'static> {
                     Msg::HintReview.text().into()
                 });
             }
-            if app.view_error.is_some() {
-                return Some(Msg::HintViewError.text().into());
-            }
             let notes = || {
                 (!app.notes.is_empty())
                     .then(|| Msg::HintUnsupported.fill(&[&app.notes.join(" / ")]))
             };
+            // GA-2・TR-1・REL-7: ほかの画面の型(ガント・木・関係マップと、そこから開いたヘルプ)では、表の案内を出さず、
+            // ビューの未対応の理由だけを出す。開けないビューの案内は表の欄と `[` `]` を指すので出さない(関係マップは
+            // 行が無くても開ける)。
+            if on_other_screen(app) {
+                return notes();
+            }
+            if app.view_error.is_some() {
+                return Some(Msg::HintViewError.text().into());
+            }
             if let Some(g) = app.cur_head() {
                 let n = app.groups.get(g).map_or(0, |(_, r)| r.len());
                 return Some(Msg::HintHeadRow.fill(&[&n])).or_else(notes);

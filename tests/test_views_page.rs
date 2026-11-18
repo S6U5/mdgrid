@@ -110,7 +110,7 @@ fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
 
 #[test]
 fn test_sr_49_views_pages_images_are_scenes() {
-    // [SR-49] 見せ方の一覧(日英)があり、画像はどれも撮る場面の id を指し(README の GIF の駒 gif-* は使わない)、
+    // [utest -> req~screen.views-page-entry~1, req~screen.views-page-items~1] 見せ方の一覧(日英)があり、画像はどれも撮る場面の id を指し(README の GIF の駒 gif-* は使わない)、
     // 8つの見せ方に1枚ずつで少なくとも 8 枚ある。
     let ids = scene_ids();
     for lang in ["ja", "en"] {
@@ -145,7 +145,7 @@ fn test_sr_49_views_pages_images_are_scenes() {
 
 #[test]
 fn test_sr_49_views_pages_headings_cover_eight_views() {
-    // [SR-49] 見出しに、表・ビューのタブ・まとまり(グループ)・木・関係マップ・値の分布・絞り込みの帯・
+    // [utest -> req~screen.views-page-items~1] 見出しに、表・ビューのタブ・まとまり(グループ)・木・関係マップ・値の分布・絞り込みの帯・
     // テーマ(と部品の形)の8つの見せ方がそれぞれある(en は大文字小文字を問わない)。
     let want: [(&str, &[&str]); 2] = [
         (
@@ -190,7 +190,7 @@ fn test_sr_49_views_pages_headings_cover_eight_views() {
 
 #[test]
 fn test_sr_49_views_pages_links_resolve() {
-    // [SR-49] くわしい節へのリンクなど、相対のリンク(http で始まらず、# だけでないもの)の行き先は、
+    // [utest -> req~screen.views-page-entry~1] くわしい節へのリンクなど、相対のリンク(http で始まらず、# だけでないもの)の行き先は、
     // `#` より前の部分が docs/manual/<lang>/ からの相対で在るファイル(../../catalog/index.html のような docs の下も可)。
     // 画像(images/)はリポに置かないので別の試験で場面の id として見る。
     for lang in ["ja", "en"] {
@@ -226,7 +226,7 @@ fn test_sr_49_views_pages_links_resolve() {
 
 #[test]
 fn test_sr_49_scenarios_have_tree_scene() {
-    // [SR-49] 木の見せ方の画像のため、台本に id = "tree" の場面があり、キー T で木に切り替えて撮る。
+    // [utest -> req~screen.views-page-entry~1] 木の見せ方の画像のため、台本に id = "tree" の場面があり、キー T で木に切り替えて撮る。
     let shots = shots();
     let tree = shots
         .iter()
@@ -245,7 +245,7 @@ fn test_sr_49_scenarios_have_tree_scene() {
 
 #[test]
 fn test_sr_49_pages_py_builds_views_and_links_from_landing() {
-    // [SR-49] サイトを組む scripts/pages.py は views.md を本に入れ(PAGES)、入口の「見て選ぶ」の文言(TEXT の ja・en の
+    // [utest -> req~screen.views-page-link~1] サイトを組む scripts/pages.py は views.md を本に入れ(PAGES)、入口の「見て選ぶ」の文言(TEXT の ja・en の
     // "views")とカード(landing() の views.html)から一覧へ行ける。
     let py = std::fs::read_to_string(root().join("scripts/pages.py")).unwrap();
     let pages = section(&py, "PAGES = [", "]");
@@ -274,7 +274,7 @@ fn test_sr_49_pages_py_builds_views_and_links_from_landing() {
 
 #[test]
 fn test_sr_49_manual_index_links_views_page() {
-    // [SR-49] 説明書の目次(ja・en の index.md)から views.md へ行ける。
+    // [utest -> req~screen.views-page-link~1] 説明書の目次(ja・en の index.md)から views.md へ行ける。
     for lang in ["ja", "en"] {
         let p = root().join("docs/manual").join(lang).join("index.md");
         let text = std::fs::read_to_string(&p).unwrap();

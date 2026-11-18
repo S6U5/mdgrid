@@ -23,7 +23,7 @@ fn boot(name: &str, color: ColorMode, cfg: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_41_value_color_in_every_chip_shape() {
-    // [SR-41] chip・soft・pill の札も、決めた値の色を地にする。
+    // [utest -> req~screen.value-colors-apply~1] chip・soft・pill の札も、決めた値の色を地にする。
     for status in ["chip", "soft", "pill"] {
         let cfg = format!(
             "[terminal]\nnerd_font = true\n\n[look.style]\nstatus = \"{status}\"\n\n[look.colors.values]\nDone = \"#2f9e66\"\n"
@@ -40,7 +40,7 @@ fn test_sr_41_value_color_in_every_chip_shape() {
 
 #[test]
 fn test_sr_40_no_color_ignores_colors() {
-    // [SR-40] --no-color(色なし)では [colors] も [colors.values] も効かない(色の指定が無い)。
+    // [utest -> req~screen.color-overrides-no-color~1] --no-color(色なし)では [colors] も [colors.values] も効かない(色の指定が無い)。
     let (_t, a) = boot(
         "sr40_nocolor",
         ColorMode::None,

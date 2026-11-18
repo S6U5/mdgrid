@@ -8,6 +8,7 @@
 pub mod base;
 pub mod cells;
 pub mod changes;
+pub mod chart;
 pub mod clock;
 pub mod colors;
 pub mod config;
@@ -16,7 +17,9 @@ pub mod display;
 pub mod expr;
 pub mod folder_tree;
 pub mod frontmatter;
+pub mod gantt;
 pub mod i18n;
+pub mod kanban;
 pub mod ledger;
 pub mod legacy;
 pub mod links;
@@ -83,3 +86,7 @@ mod test_csv_identity;
 #[cfg(test)]
 #[path = "test_body_path_unit.rs"]
 mod test_body_path;
+
+#[cfg(test)]
+#[path = "test_chart_unit.rs"]
+mod test_chart;

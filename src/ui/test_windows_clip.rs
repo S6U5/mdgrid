@@ -1,10 +1,10 @@
-//! Windows の OS のクリップボード(OUT-1。specs/_changes/2026-10-15-windows-target.md)。
+//! Windows の OS のクリップボード(OUT-1。specs/_history/decidespec/_changes/2026-10-15-windows-target.md)。
 
 use super::*;
 
 #[test]
 fn test_out_1_windows_uses_clip() {
-    // [OUT-1] Windows は clip に Windows の文字の形で渡す。macOS・ほかの Unix は今までどおり。
+    // [utest -> req~output.copy-both-targets~1] Windows は clip に Windows の文字の形で渡す。macOS・ほかの Unix は今までどおり。
     assert_eq!(
         clip_commands("windows"),
         &[("clip", &[] as &[&str], ClipInput::WindowsText)]
@@ -21,7 +21,7 @@ fn test_out_1_windows_uses_clip() {
 
 #[test]
 fn test_out_1_windows_text_is_utf16le_bom_crlf() {
-    // [OUT-1] clip には BOM つきの UTF-16LE。改行は CRLF にし、元の CRLF は二重にしない。日本語も1字ずつ。
+    // [utest -> req~output.copy-tsv~1] clip には BOM つきの UTF-16LE。改行は CRLF にし、元の CRLF は二重にしない。日本語も1字ずつ。
     let got = ClipInput::WindowsText.encode("a\tあ\nb\r\n");
     let mut want = vec![0xFF, 0xFE];
     for u in "a\tあ\r\nb\r\n".encode_utf16() {

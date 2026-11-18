@@ -1,0 +1,147 @@
+# forge-gate が trace-gate の guards から作った CI(手で直さない。直すと forge_gate.py check が止める)。
+# 変えるときは trace-gate.json・roles.json・forge-gate.json を直して forge_gate.py init を走らせる。
+# PR では base の側の写しを取り出して走らせる(検査される変更が検査器を書き換えても効かないように)。写しの更新は、取り込んだ次の PR から効く。
+# uses: はコミットのハッシュで固めてある(公式のリリースのタグと照合した版。どれも Node 24 で動く)。上げは .github/dependabot.yml の PR で受け、人が差分を見る。
+name: trace-gate
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches: ["main"]
+
+# 費用を抑える: 同じ PR の古い実行だけを取り消す。main への push はコミットごとに別の group にして取り消さない
+# (同じ group では、待っている実行が新しい実行に追い出される)。仕事は guards の検査ごとの仕事と test と、設定で入れた e2e だけにする。
+# merge queue を使うなら、必須の検査は merge_group の契機で走る(比べる先は merge group の base)。
+# 下書きの PR は飛ばさない(エージェントの PR は下書きのことがあり、飛ばすと結果が返らず、飛ばした必須の検査は成功として扱われる)。
+# 変わった所だけで走らせる絞り(paths)は入れない。要求の正本だけを変えた PR で検査が飛ぶと抜け道になるため。
+concurrency:
+  group: trace-gate-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: 写しを選ぶ(PR と merge queue では base の版。検査される変更が写しを書き換えても効かないように)
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: |
+          if [ -n "$BASE" ] && git show "$BASE:./tools/trace_gate.py" > "$RUNNER_TEMP/trace_gate.py" 2>/dev/null; then
+            echo "base の tools/trace_gate.py を使う"
+          else
+            cp tools/trace_gate.py "$RUNNER_TEMP/trace_gate.py"
+          fi
+      - name: "trace_gate.py check"
+        run: python3 "$RUNNER_TEMP"/trace_gate.py check
+      - name: "trace_gate.py check --base {base}"
+        if: github.event_name != 'push'
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: python3 "$RUNNER_TEMP"/trace_gate.py check --base "$BASE"
+      - name: "trace_gate.py ledger --out trace-gate-ledger.json"
+        if: always()
+        run: python3 "$RUNNER_TEMP"/trace_gate.py ledger --out trace-gate-ledger.json || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: "trace-gate-ledger"
+          path: "trace-gate-ledger.json"
+          if-no-files-found: error
+      - name: "注釈とジョブの要約(check --format github。合否には使わない)"
+        if: always()
+        run: python3 "$RUNNER_TEMP"/trace_gate.py check --format github || true
+
+  weaken:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: 写しを選ぶ(PR と merge queue では base の版。検査される変更が写しを書き換えても効かないように)
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: |
+          if [ -n "$BASE" ] && git show "$BASE:./tools/trace_gate.py" > "$RUNNER_TEMP/trace_gate.py" 2>/dev/null; then
+            echo "base の tools/trace_gate.py を使う"
+          else
+            cp tools/trace_gate.py "$RUNNER_TEMP/trace_gate.py"
+          fi
+      - name: "trace_gate.py weaken --base {base} --head {head}"
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: python3 "$RUNNER_TEMP"/trace_gate.py weaken --base "$BASE" --head HEAD
+      - name: "準備 1(forge-gate.json の test.setup)"
+        if: success() || failure()
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: "stable"
+      - name: "準備 2(forge-gate.json の test.setup)"
+        if: success() || failure()
+        uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+      - name: "準備 3(forge-gate.json の test.setup)"
+        if: success() || failure()
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        with:
+          tool: "nextest@0.9"
+      - name: "base のテストを head のコードで走らせる(reverse-run。断言の失敗は人が見る)"
+        if: success() || failure()
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: |
+          python3 "$RUNNER_TEMP"/trace_gate.py reverse-run --base "$BASE" --cmd 'cargo nextest run --profile ci --locked; s=$?; cp target/nextest/ci/junit.xml {junit}; exit $s' --format json > "$RUNNER_TEMP/reverse-run.json"
+          python3 -c 'import json, sys; f = [x["message"] for x in json.load(open(sys.argv[1], encoding="utf-8"))["findings"] if x["rule"] == "base-test-failed"]; print("\n".join(f) or "base のテストは head のコードで断言の失敗で落ちなかった"); sys.exit(1 if f else 0)' "$RUNNER_TEMP/reverse-run.json"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: 写しを選ぶ(PR と merge queue では base の版。検査される変更が写しを書き換えても効かないように)
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: |
+          if [ -n "$BASE" ] && git show "$BASE:./tools/trace_gate.py" > "$RUNNER_TEMP/trace_gate.py" 2>/dev/null; then
+            echo "base の tools/trace_gate.py を使う"
+          else
+            cp tools/trace_gate.py "$RUNNER_TEMP/trace_gate.py"
+          fi
+      - name: "準備 1(forge-gate.json の test.setup)"
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: "stable"
+      - name: "準備 2(forge-gate.json の test.setup)"
+        uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+      - name: "準備 3(forge-gate.json の test.setup)"
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        with:
+          tool: "nextest@0.9"
+      - name: "テスト(forge-gate.json の test.run。結果を junit.xml に)"
+        run: |
+          cargo nextest run --profile ci --locked; s=$?; cp target/nextest/ci/junit.xml junit.xml; exit $s
+      - name: "印のあるテストと走らせた結果の照らし(check --junit)"
+        if: always()
+        run: python3 "$RUNNER_TEMP"/trace_gate.py check --junit junit.xml
+      - name: "注釈とジョブの要約(check --junit --format github。合否には使わない)"
+        if: always()
+        run: python3 "$RUNNER_TEMP"/trace_gate.py check --junit junit.xml --format github || true
+      - name: "新しい P0 が実装前に落ちるか(f2p-run)"
+        if: github.event_name != 'push'
+        env:
+          BASE: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_sha || github.base_ref && format('origin/{0}', github.base_ref) || '' }}
+        run: python3 "$RUNNER_TEMP"/trace_gate.py f2p-run --base "$BASE" --cmd 'cargo nextest run --profile ci --locked; s=$?; cp target/nextest/ci/junit.xml {junit}; exit $s'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: "junit"
+          path: "junit.xml"
+          if-no-files-found: error

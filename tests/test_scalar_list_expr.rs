@@ -1,5 +1,5 @@
-//! [BV-6] リストの型の列で1つの値で書かれたセルは、式では1つの要素のリスト(Obsidian と同じ)。
-//! specs/_changes/2026-10-06-scalar-list-expr.md。本物の実行ファイルの --print で確かめる。
+//! [base-view.expr-eval] リストの型の列で1つの値で書かれたセルは、式では1つの要素のリスト(Obsidian と同じ)。
+//! specs/_history/decidespec/_changes/2026-10-06-scalar-list-expr.md。本物の実行ファイルの --print で確かめる。
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -44,6 +44,7 @@ fn print(root: &Path, filter: &str, formula: &str) -> String {
     String::from_utf8(out.stdout).unwrap()
 }
 
+// [stest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_scalar_list_contains_is_element_match() {
     let root = vault("contains");

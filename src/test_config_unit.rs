@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_sr_8_blank_is_same_as_empty() {
-    // [SR-8] 空白だけの値も空とみなし、次の候補へ進む。
+    // [utest -> req~screen.editor-choice~1, req~screen.editor-fallback~1, req~screen.editor-no-shell~1] 空白だけの値も空とみなし、次の候補へ進む。
     assert_eq!(resolve_editor(None, Some(" "), Some("nvim")), "nvim");
     assert_eq!(resolve_editor(Some("  "), Some("\t"), Some("nvim")), "nvim");
     assert_eq!(
@@ -33,7 +33,7 @@ fn example(item: &Item) -> String {
 
 #[test]
 fn test_cli_12_every_item_is_read() {
-    // [CLI-12] 項目の表(ITEMS)の道筋はどれも parse が読む: どの型にも合わない値で、その項目の型の警告が出る
+    // [utest -> req~cli.config-docs~1] 項目の表(ITEMS)の道筋はどれも parse が読む: どの型にも合わない値で、その項目の型の警告が出る
     // (表にあって読み取りの無い項目は、知らない項目の警告も型の警告も出ないので、ここで落ちる)。
     for item in ITEMS {
         let text = at(item, "[[1]]");
@@ -50,7 +50,7 @@ fn test_cli_12_every_item_is_read() {
 
 #[test]
 fn test_cli_12_items_have_descriptions() {
-    // [CLI-12] 項目の表の各行に型・英語と日本語の説明・例がある。既定で書かない項目は、例だけを出す項目。
+    // [utest -> req~cli.config-docs~1] 項目の表の各行に型・英語と日本語の説明・例がある。既定で書かない項目は、例だけを出す項目。
     for item in ITEMS {
         assert!(
             !item.ty.is_empty()
@@ -95,7 +95,7 @@ fn test_cli_12_items_have_descriptions() {
 
 #[test]
 fn test_sr_11_save_state_removes_stale_tmp_files() {
-    // [SR-11] 前の保存が途中で止まって残した同じ name の一時ファイルは、次の保存で消える。
+    // [utest -> req~screen.state-separate~1] 前の保存が途中で止まって残した同じ name の一時ファイルは、次の保存で消える。
     // ほかの name の一時ファイルと状態のファイルには触らない。
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -147,7 +147,7 @@ fn test_sr_11_save_state_removes_stale_tmp_files() {
 
 #[test]
 fn test_ce_22_config_date_items_wrong_types_warn() {
-    // [CE-22][CE-21][CLI-3] 文字列でない dates.format・week_start、大文字の "Mon" は警告にして既定のまま。
+    // [utest -> req~cell-edit.date-format-display~1, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-week-start~1, req~cell-edit.calendar-keys-keep-time~1, req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 文字列でない dates.format・week_start、大文字の "Mon" は警告にして既定のまま。
     use crate::types::{DateFormat, WeekStart};
     let (c, w) = parse("[dates]\nformat = 1\nweek_start = \"Mon\"\n").unwrap();
     let r = c.resolved();
@@ -164,7 +164,7 @@ fn test_ce_22_config_date_items_wrong_types_warn() {
 
 #[test]
 fn test_nv_23_config_search_bar() {
-    // [NV-23][CLI-3] 検索の欄は既定で出す。`[display] search_bar = false` で出さない。型の違う値は警告にして既定のまま。
+    // [utest -> req~navigation.search-box-padding-default~1, req~navigation.search-box-hide~1, req~cli.config-file-warn-only~1] 検索の欄は既定で出す。`[display] search_bar = false` で出さない。型の違う値は警告にして既定のまま。
     let bar = |text: &str| {
         let (c, w) = parse(text).unwrap();
         (c.resolved().display.search_bar, w)

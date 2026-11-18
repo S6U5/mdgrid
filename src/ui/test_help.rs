@@ -12,7 +12,7 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_sr_5_help_golden() {
-    // [SR-5] 表で `?` → ヘルプを重ね、先頭に表のモードで押せるキー、その下に全部の節。
+    // [utest -> req~screen.help~1] 表で `?` → ヘルプを重ね、先頭に表のモードで押せるキー、その下に全部の節。
     let (_t, mut a) = make("sr5", NOTES);
     ch(&mut a, '?');
     assert_eq!(a.mode, Mode::Help);
@@ -29,7 +29,7 @@ fn test_sr_5_help_golden() {
     press(&mut a, KeyCode::Char('G'));
     let s = screen(&a);
     assert!(s.contains(" 印") && s.contains("行の左"), "{s}");
-    // [SR-9] ヘルプも全行が幅以下。
+    // [utest -> req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] ヘルプも全行が幅以下。
     assert_fits(&mut a);
     // Esc で閉じて表へ戻る。
     press(&mut a, KeyCode::Esc);
@@ -38,7 +38,7 @@ fn test_sr_5_help_golden() {
 
 #[test]
 fn test_sr_5_help_from_review_shows_review_keys() {
-    // [SR-5] 保存の確認で `?` → 先頭はそのモードのキー。閉じると保存の確認に戻る。
+    // [utest -> req~screen.help~1] 保存の確認で `?` → 先頭はそのモードのキー。閉じると保存の確認に戻る。
     let (_t, mut a) = make("sr5r", NOTES);
     press(&mut a, KeyCode::Backspace);
     ctrl(&mut a, 's');
@@ -60,7 +60,7 @@ fn test_sr_5_help_from_review_shows_review_keys() {
 
 #[test]
 fn test_sr_14_palette_save_first_golden() {
-    // [SR-14] `:` で「save」と打つ → 保存が候補の先頭で、横に ^S。
+    // [utest -> req~screen.palette-fuzzy~1] `:` で「save」と打つ → 保存が候補の先頭で、横に ^S。
     let (_t, mut a) = make("sr14", NOTES);
     ch(&mut a, ':');
     assert_eq!(a.mode, Mode::Palette);
@@ -79,9 +79,9 @@ fn test_sr_14_palette_save_first_golden() {
         "{s}"
     );
     golden("sr_14", &s);
-    // [SR-17] 端末のカーソルは入力の位置(ヘッダーのすぐ下。2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
+    // [utest -> req~screen.ime-cursor~1] 端末のカーソルは入力の位置(ヘッダーのすぐ下。2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
     assert_eq!(view::cursor(&a), Some((6, super::bands::head_y(&a) + 1)));
-    // [SR-9] パレットも全行が幅以下。
+    // [utest -> req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] パレットも全行が幅以下。
     assert_fits(&mut a);
     // Esc で閉じる。
     press(&mut a, KeyCode::Esc);
@@ -90,7 +90,7 @@ fn test_sr_14_palette_save_first_golden() {
 
 #[test]
 fn test_sr_14_palette_fuzzy_and_ctrl_p() {
-    // [SR-14] Ctrl+P でも開く。表示名(日本語)でも探せる。飛び飛びの一致も拾う。
+    // [utest -> req~screen.palette-fuzzy~1, req~screen.palette-keys~1] Ctrl+P でも開く。表示名(日本語)でも探せる。飛び飛びの一致も拾う。
     let (_t, mut a) = make("sr14b", NOTES);
     ctrl(&mut a, 'p');
     assert_eq!(a.mode, Mode::Palette);
@@ -123,7 +123,7 @@ fn test_sr_14_palette_fuzzy_and_ctrl_p() {
 
 #[test]
 fn test_nv_7_goto_line() {
-    // [NV-7] `:120` → 120行目が選ばれる。
+    // [utest -> req~navigation.jump~1] `:120` → 120行目が選ばれる。
     let tmp = Tmp::new("nv7");
     for i in 1..=150 {
         tmp.write(&format!("n{i:03}.md"), &format!("---\nn: {i}\n---\n"));
@@ -148,7 +148,7 @@ fn test_nv_7_goto_line() {
 
 #[test]
 fn test_sr_16_palette_w_and_q() {
-    // [SR-16] パレットの `w` は保存(差分の確認へ)、`q` は終了(ためた変更があれば終了の確認)。
+    // [utest -> req~screen.key-modes-palette-commands~1] パレットの `w` は保存(差分の確認へ)、`q` は終了(ためた変更があれば終了の確認)。
     let (_t, mut a) = make("sr16", NOTES);
     ch(&mut a, ':');
     ch(&mut a, 'w');
@@ -178,7 +178,7 @@ fn test_sr_16_palette_w_and_q() {
 
 #[test]
 fn test_sr_4_added_key_shows_everywhere() {
-    // [SR-4] キーの表に1つ足す → 振り分け・下の帯・ヘルプ・パレットに同時に出る。
+    // [utest -> req~screen.key-table~1] キーの表に1つ足す → 振り分け・下の帯・ヘルプ・パレットに同時に出る。
     let (_t, mut a) = make("sr4", NOTES);
     a.keys.insert(
         0,
@@ -215,7 +215,7 @@ fn test_sr_4_added_key_shows_everywhere() {
 
 #[test]
 fn test_sr_5_help_stays_when_review_rebuilt() {
-    // [SR-5] [WB-16] 保存の確認でヘルプを出している間に外の変更が見つかっても、ヘルプは消えない。
+    // [utest -> req~screen.help~1, req~write-back.external-save-choice~1] 保存の確認でヘルプを出している間に外の変更が見つかっても、ヘルプは消えない。
     // 閉じると作り直した保存の確認に戻る。
     let (t, mut a) = make(
         "sr5p",

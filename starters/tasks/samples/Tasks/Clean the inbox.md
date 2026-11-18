@@ -2,6 +2,7 @@
 status: done
 priority: p3
 tags: [admin]
+start: {date-10}
 created: {date-10}
 done_at: {date-1}
 ---

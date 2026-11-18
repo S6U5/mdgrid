@@ -1,5 +1,5 @@
-//! [CE-21] 日時のカレンダーで日を選んでも、秒つきの時刻は元の値のまま(落とさない)。
-//! specs/_changes/2026-10-06-calendar-seconds.md。
+//! [cell-edit.calendar-keys] 日時のカレンダーで日を選んでも、秒つきの時刻は元の値のまま(落とさない)。
+//! specs/_history/decidespec/_changes/2026-10-06-calendar-seconds.md。
 
 use super::test_screen::{col_named, press, Tmp};
 use super::*;
@@ -30,6 +30,7 @@ fn pick_next_day(value: &str, name: &str) -> (String, Option<NewValue>) {
     (text, v)
 }
 
+// [utest -> req~cell-edit.calendar-keys-keep-time~1]
 #[test]
 fn test_ce_21_calendar_keeps_seconds() {
     let (text, v) = pick_next_day("2026-10-30T09:00:15", "ce21sec");

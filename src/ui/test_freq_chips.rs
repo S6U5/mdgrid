@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn test_sr_35_freq_values_use_chip_colors() {
-    // [SR-35][NV-9] status(札の列)で % → 選んでいない項目の値に、表と同じ札の地の色。色なしでは付けない。
+    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1, req~navigation.frequency-open~1, req~navigation.frequency-order~1, req~navigation.frequency-enter~1, req~navigation.frequency-scope~1] status(札の列)で % → 選んでいない項目の値に、表と同じ札の地の色。色なしでは付けない。
     let tmp = Tmp::new("sr35_freq");
     for (n, s) in [("a", "todo"), ("b", "doing"), ("c", "todo"), ("d", "done")] {
         tmp.write(&format!("{n}.md"), &format!("---\nstatus: {s}\n---\n"));

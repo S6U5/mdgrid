@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn test_sr_35_selects_reused_and_renewed() {
-    // [SR-35] 絞り込み(表の行は同じ)では前の判定を使い、ノートが増えて行の数が変われば数え直す。
+    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1] 絞り込み(表の行は同じ)では前の判定を使い、ノートが増えて行の数が変われば数え直す。
     let tmp = Tmp::new("sr35_cache");
     for (n, s) in [("a", "todo"), ("b", "doing"), ("c", "todo")] {
         tmp.write(

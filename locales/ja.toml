@@ -1574,3 +1574,163 @@ RsnTreeNeedPath = "path(階層の列)が無いので、木を出さない"
 RsnTreeEmptySep = "区切りが空なので、木を出さない"
 ## {0} は列。
 RsnTreeNoColumn = "表に列 {0} が無いので、木を出さない"
+
+# ---- ガント(GA-1〜GA-7。gantt.rs) ----
+ModeGantt = "ガント"
+SecInGantt = "ガントの中"
+ScreenGantt = "ガント"
+KeyGanttView = "表とガントを切り替える"
+KeyGanttRun = "表でこの行を見る"
+KeyGanttNext = "次の行"
+KeyGanttPrev = "前の行"
+KeyGanttLater = "時間軸を後ろへ"
+KeyGanttEarlier = "時間軸を前へ"
+KeyGanttZoomIn = "単位を細かく(月 → 週 → 日)"
+KeyGanttZoomOut = "単位を粗く(日 → 週 → 月)"
+KeyGanttToday = "今日へ"
+CmdGanttView = "ガントを開く"
+## {0} は始まりの列、{1} は終わりの列(か日数の列)、{2} は単位。
+GanttTitle = "ガント: {0} → {1}({2})"
+GanttInferred = "推定"
+## GA-1: 印に gantt の設定が無いとき、棒の始まりとみなす列の名前(空白区切り。大文字小文字を問わない)。訳ではなく、どの言語の画面でも全部の言語の名前を使う。
+GanttStartNames = "開始"
+## GA-1: 印に gantt の設定が無いとき、棒の終わりとみなす列の名前(空白区切り)。訳ではない。
+GanttEndNames = "期限 終了"
+GanttUnitDay = "日"
+GanttUnitWeek = "週"
+GanttUnitMonth = "月"
+GanttNotSet = "この表にはガントの設定が無く、日付の列からも推定できない(ワークスペースの印の [[table]] に gantt = { start = \"<列>\", end = \"<列>\" } を書く)"
+GanttNoRows = "ガントに出す行が無い"
+GanttNoDates = "ガントの列に日付を持つ行が無い"
+RsnGanttNotTable = "{ start = \"<列>\", end = \"<列>\" } の形の表でないので、ガントを出さない"
+RsnGanttNeedStart = "start(始まりの列)が無いので、ガントを出さない"
+RsnGanttNeedEnd = "end(終わりの列)か days(日数の列)が無いので、ガントを出さない"
+## {0} は列。
+RsnGanttNoColumn = "表に列 {0} が無いので、ガントを出さない"
+
+# ---- カンバン(KB-1〜KB-6。kanban.rs) ----
+ModeKanban = "カンバン"
+SecInKanban = "カンバンの中"
+ScreenKanban = "カンバン"
+KeyKanbanView = "表とカンバンを切り替える"
+KeyKanbanRun = "表でこの行を見る"
+KeyKanbanNext = "次の札"
+KeyKanbanPrev = "前の札"
+KeyKanbanLeft = "左のレーンへ"
+KeyKanbanRight = "右のレーンへ"
+KeyMoveCardLeft = "札を左のレーンへ動かす(状態の値を書き換える)"
+KeyMoveCardRight = "札を右のレーンへ動かす(状態の値を書き換える)"
+CmdKanbanView = "カンバンを開く"
+## {0} は状態の列。
+KanbanTitle = "カンバン: {0}"
+## {0} は状態の列。
+KanbanTitleInferred = "カンバン: {0}(推定)"
+## KB-1: 印に kanban の設定が無いとき、状態の列とみなす列の名前(空白区切り。大文字小文字を問わない)。訳ではなく、どの言語の画面でも全部の言語の名前を使う。
+KanbanColumnNames = "状態 ステータス 段階"
+## KB-2: 値の無い行のレーンの名前。
+KanbanNoValue = "(なし)"
+KanbanNotSet = "この表にはカンバンの設定が無く、状態の列も推定できない(ワークスペースの印の [[table]] に kanban = { column = \"<列>\" } を書く)"
+KanbanNoRows = "カンバンに出す行が無い"
+KanbanNoLaneLeft = "左にレーンが無い"
+KanbanNoLaneRight = "右にレーンが無い"
+KanbanToNoValue = "(なし) のレーンへは動かさない(値を消すのは表で)"
+KanbanNoCard = "このレーンに札が無い"
+## {0} は列。CE-29 のキーの名前の変更か削除をためた列の札は動かさない。
+KanbanKeyPending = "列 {0} にキーの名前の変更か削除をためているので、札を動かさない(表で保存するか取り消す)"
+## {0} は札の名前、{1} は前の値、{2} は新しい値。
+KanbanMoved = "{0}: {1} → {2}(未保存)"
+RsnKanbanNotTable = "{ column = \"<列>\" } の形の表でないので、カンバンを出さない"
+RsnKanbanNeedColumn = "column(状態の列)が無いので、カンバンを出さない"
+## {0} は列。
+RsnKanbanNoColumn = "表に列 {0} が無いので、カンバンを出さない"
+## {0} は列。
+RsnKanbanListColumn = "列 {0} はリストなので、カンバンを出さない(1行が複数のレーンに入るため)"
+
+# ---- グラフ(CH-1〜CH-9。chart.rs) ----
+ModeChart = "グラフ"
+SecInChart = "グラフの中"
+ScreenChart = "グラフ"
+KeyChartView = "表とグラフを切り替える"
+KeyChartRun = "この値で表を絞る(散布図はその行へ)"
+KeyChartNext = "次の項目"
+KeyChartPrev = "前の項目"
+KeyChartRight = "右の項目"
+KeyChartLeft = "左の項目"
+KeyChartKindNext = "次の種類(棒 → 積み上げ棒 → 折れ線 → 散布図 → ヒートマップ)"
+KeyChartKindPrev = "前の種類"
+KeyChartX = "分ける列を次へ"
+KeyChartY = "値を次へ(件数 → 数の列)"
+KeyChartAgg = "集め方を次へ(合計 → 平均 → 最小 → 最大)"
+KeyChartBy = "内訳の列を次へ"
+KeyChartZoomIn = "日付の単位を細かく(月 → 週 → 日)"
+KeyChartZoomOut = "日付の単位を粗く(日 → 週 → 月)"
+KeyChartPrevSaved = "印に書いた前のグラフ"
+KeyChartNextSaved = "印に書いた次のグラフ"
+KeyChartCumulative = "累積に切り替える(折れ線)"
+KeyChartPercent = "割合に切り替える(積み上げ棒)"
+CmdChartView = "グラフを開く"
+ChartKindBar = "棒"
+ChartKindStacked = "積み上げ棒"
+ChartKindLine = "折れ線"
+ChartKindScatter = "散布図"
+ChartKindHeatmap = "ヒートマップ"
+ChartCount = "件数"
+ChartAggSum = "合計"
+ChartAggAvg = "平均"
+ChartAggMin = "最小"
+ChartAggMax = "最大"
+## {0} は値の列、{1} は集め方(合計など)。
+ChartValueOf = " {0} の{1}"
+ChartTitlePrefix = "グラフ: "
+## {0} は種類、{1} は分ける列、{2} は値(件数・estimate の合計など)。
+ChartTitle = "{0} · {1} ごとの{2}"
+## {0} は種類(散布図)、{1} は横の列、{2} は縦の列。
+ChartTitleScatter = "{0} · {1} × {2}"
+## {0} は印に書いたグラフの名前。題の「グラフ: 」のあとに入る。
+ChartTitleNamed = "{0} · "
+## {0} は内訳の列。
+ChartTitleBy = " · 内訳 {0}"
+## {0} は日付の区切りの単位(日・週・月)。
+ChartTitleUnit = " · 単位 {0}"
+ChartTitleCumulative = " · 累積"
+ChartTitlePercent = " · 割合"
+ChartTitleInferred = " (推定)"
+## {0} は数えた行の数。
+ChartRows = "{0} 行"
+## {0} は外した行の数(分ける列か値の列が読めない行)。
+ChartSkipped = " · 外した {0} 行"
+## {0} は折れ線にしなかった内訳の数。
+ChartSeriesDropped = " · 線にしない内訳 {0} 個"
+ChartNoValue = "(なし)"
+ChartOther = "その他"
+ChartNoColumns = "この表にはグラフにする列が無い"
+ChartNoRows = "グラフに出す行が無い"
+## {0} は種類。{1} は理由。
+ChartKindSkipped = "{0}にできない: {1}"
+ChartNeedAxis = "日付か数の列が無い"
+ChartNeedScatter = "数か日付の列が2つ無い"
+ChartNeedBy = "内訳にできる文字・チェックボックス・リストの列が無い"
+ChartNoFilter = "日付と数の区切りでは絞らない(表の絞り込みで範囲を書く)"
+ChartLineNoFilter = "折れ線の区切りでは絞らない(表の絞り込みで範囲を書く)"
+ChartNoPoint = "選んでいる点が無い"
+ChartOtherNoFilter = "「その他」は複数の値をまとめた列なので絞らない(b で内訳の列を替えるか、表で絞る)"
+## {0} は最初の日付、{1} は最後の日付。
+ChartTooWide = "日付の範囲が広すぎてグラフにできない({0} 〜 {1}。表の絞り込みで範囲を狭める)"
+ChartNoItem = "選んでいる項目が無い"
+ChartNoRow = "グラフでは行を選んでいないので、この動作は表で行を選んでからする"
+ChartOneSaved = "印に書いたグラフが2つ以上無い"
+ChartNoUnit = "日付の列で分けていないので、単位は変えない"
+ChartUnitNoRoom = "これより細かくすると区切りが収まらない"
+ChartNotLine = "累積は折れ線だけ"
+ChartNotStacked = "割合は積み上げ棒だけ"
+ChartAggForCount = "件数のときは集め方を選べない(y で値の列を選ぶ)"
+ChartNoNumber = "値にできる数の列が無い"
+ChartNoOtherY = "ほかに縦にできる数か日付の列が無い"
+ChartByNotBar = "棒には内訳を付けない(Tab で積み上げ棒へ)"
+ChartNoOtherBy = "ほかに内訳にできる列が無い"
+ChartNoOtherX = "ほかに分けられる列が無い"
+## {0} は単位。
+ChartUnit = "単位: {0}"
+RsnChartNotTable = "{ kind = \"<種類>\", x = \"<列>\" } の形の表でないので、このグラフを出さない"
+## {0} は列。
+RsnChartNoColumn = "表に列 {0} が無いので、このグラフを出さない"

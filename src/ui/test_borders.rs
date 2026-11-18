@@ -41,7 +41,7 @@ fn list_screen(a: &mut App) -> String {
 
 #[test]
 fn test_sr_32_rounded_by_default() {
-    // [SR-32] 既定は、角の丸いつながった罫線。
+    // [utest -> req~screen.frames~1] 既定は、角の丸いつながった罫線。
     let (_t, mut a) = boot("sr32_round", "");
     let s = list_screen(&mut a);
     assert!(s.contains('│') && s.contains('╰'), "{s}");
@@ -55,7 +55,7 @@ fn test_sr_32_rounded_by_default() {
 
 #[test]
 fn test_sr_32_ascii_by_setting() {
-    // [SR-32] borders = "ascii" なら + - |。
+    // [utest -> req~screen.frames~1] borders = "ascii" なら + - |。
     let (_t, mut a) = boot("sr32_ascii", "[look.style]\nframes = \"ascii\"\n");
     let s = list_screen(&mut a);
     assert!(s.contains("|>") && s.contains('+'), "{s}");
@@ -64,7 +64,7 @@ fn test_sr_32_ascii_by_setting() {
 
 #[test]
 fn test_sr_32_ascii_when_ambiguous_wide() {
-    // [SR-32][CV-6] あいまいな幅を2とする設定では、列がずれないように ASCII。
+    // [utest -> req~screen.frames~1, req~cell-view.ambiguous-width~1] あいまいな幅を2とする設定では、列がずれないように ASCII。
     let (_t, mut a) = boot("sr32_wide", "[terminal]\nambiguous_wide = true\n");
     let s = list_screen(&mut a);
     assert!(s.contains("|>") && !s.contains('│'), "{s}");
@@ -72,7 +72,7 @@ fn test_sr_32_ascii_when_ambiguous_wide() {
 
 #[test]
 fn test_sr_32_bad_value_warns() {
-    // [SR-32] 知らない値は警告にして既定(罫線)。
+    // [utest -> req~screen.frames~1] 知らない値は警告にして既定(罫線)。
     let (c, warnings) = mdgrid::config::parse("[look.style]\nframes = \"double\"\n").unwrap();
     assert_eq!(warnings.len(), 1, "{warnings:?}");
     assert_eq!(c.resolved().style.frames, mdgrid::style::Frames::Rounded);

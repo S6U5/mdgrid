@@ -1,5 +1,5 @@
-//! [SC-17] CSV・TSV の表では、ノートだけの機能を出さずに断り、`a` で末尾に行を足す。
-//! specs/_changes/2026-10-10-csv-source.md。
+//! [scope.csv-features] CSV・TSV の表では、ノートだけの機能を出さずに断り、`a` で末尾に行を足す。
+//! specs/_history/decidespec/_changes/2026-10-10-csv-source.md。
 
 use super::app::App;
 use super::keymap::{Action, Mode};
@@ -28,7 +28,7 @@ fn disk(t: &Tmp) -> String {
 
 #[test]
 fn test_sc_17_note_only_actions_refused() {
-    // [SC-17] エディタで開く・名前の変更・キーの名前の変更と削除・列を足す・関係マップ・親子の並べ方 → 理由を出して何もしない。
+    // [utest -> req~scope.csv-features-note-only~1] エディタで開く・名前の変更・キーの名前の変更と削除・列を足す・関係マップ・親子の並べ方 → 理由を出して何もしない。
     let (t, mut a) = open("sc17no", LEDGER);
     for act in Action::NOTE_ONLY {
         a.apply(*act);
@@ -46,7 +46,7 @@ fn test_sc_17_note_only_actions_refused() {
 
 #[test]
 fn test_sc_17_note_only_actions_hidden() {
-    // [SC-17] 操作の一覧とパレットに、ノートだけの動作を出さない。
+    // [utest -> req~scope.csv-features-note-only~1] 操作の一覧とパレットに、ノートだけの動作を出さない。
     let (_t, a) = open("sc17hide", LEDGER);
     let items = super::menu::items(&a);
     assert!(!items.is_empty());
@@ -63,7 +63,7 @@ fn test_sc_17_note_only_actions_hidden() {
 
 #[test]
 fn test_sc_17_add_row() {
-    // [SC-17] `a` → ファイルの末尾に空の行が書かれ、その行の1列目の入力が開く。打って保存 → その値だけが入る。
+    // [utest -> req~scope.csv-features-edit~1, req~scope.csv-features-add-row~1] `a` → ファイルの末尾に空の行が書かれ、その行の1列目の入力が開く。打って保存 → その値だけが入る。
     let (t, mut a) = open("sc17add", LEDGER);
     ch(&mut a, 'a');
     assert_eq!(disk(&t), "name,qty\r\nりんご,3\r\nみかん,12\r\n,\r\n");
@@ -80,7 +80,7 @@ fn test_sc_17_add_row() {
 
 #[test]
 fn test_sc_17_add_row_keeps_pending_edits() {
-    // [SC-17][WB-4] 直しをためたまま行を足しても、ためた直しは外の変更として止まらずに書ける。
+    // [utest -> req~scope.csv-features-note-only~1, req~write-back.conflict-stop~1] 直しをためたまま行を足しても、ためた直しは外の変更として止まらずに書ける。
     let (t, mut a) = open("sc17keep", LEDGER);
     edit_cell(&mut a, 0, "qty", "5");
     ch(&mut a, 'a');
@@ -94,7 +94,7 @@ fn test_sc_17_add_row_keeps_pending_edits() {
 
 #[test]
 fn test_sc_17_single_column_empty_row_kept() {
-    // [SC-17] 1列の表に空の行を足しても、空の行として読み飛ばされず行になる。
+    // [utest -> req~scope.csv-features-edit~1, req~scope.csv-features-add-row~1] 1列の表に空の行を足しても、空の行として読み飛ばされず行になる。
     let (t, mut a) = open("sc17one", "name\nx\n");
     ch(&mut a, 'a');
     assert_eq!(disk(&t), "name\nx\n\"\"\n");
@@ -103,7 +103,7 @@ fn test_sc_17_single_column_empty_row_kept() {
 
 #[test]
 fn test_sc_17_no_note_label_column() {
-    // [SC-17] 左の欄に「ノート」の見出しと行の名前(1列目と同じ値)を重ねて出さない。
+    // [utest -> req~scope.csv-features-note-only~1] 左の欄に「ノート」の見出しと行の名前(1列目と同じ値)を重ねて出さない。
     let (_t, a) = open("sc17label", LEDGER);
     let s = screen(&a);
     let dy = super::view::data_y(&a);
@@ -115,7 +115,7 @@ fn test_sc_17_no_note_label_column() {
 
 #[test]
 fn test_sc_17_add_row_shown_with_pending_edits() {
-    // [SC-17][NV-12] 直した行を留めている間に行を足しても、足した行が表に出る。
+    // [utest -> req~scope.csv-features-edit~1, req~scope.csv-features-print~1, req~scope.csv-features-add-row~1, req~navigation.keep-edited-rows~1] 直した行を留めている間に行を足しても、足した行が表に出る。
     let (_t, mut a) = open("sc17shown", "id,status\nA,x\nB,y\n");
     edit_cell(&mut a, 1, "status", "z");
     ch(&mut a, 'a');

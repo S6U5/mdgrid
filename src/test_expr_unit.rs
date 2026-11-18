@@ -34,14 +34,14 @@ fn run(src: &str) -> Val {
 
 #[test]
 fn test_date_range_constants() {
-    // [BV-6] 扱う日付の範囲の端
+    // [utest -> req~base-view.expr-eval~1] 扱う日付の範囲の端
     assert_eq!(parse_date("0000-01-01"), Some(MIN_DAY));
     assert_eq!(parse_date("9999-12-31"), Some(MAX_DAY));
 }
 
 #[test]
 fn test_deep_nesting_is_syntax_not_panic() {
-    // [BV-7] 深い入れ子・長い鎖・前置の演算子の連なりは止まらずに Syntax
+    // [utest -> req~base-view.unsupported-filters~1] 深い入れ子・長い鎖・前置の演算子の連なりは止まらずに Syntax
     for src in [
         "(".repeat(100_000) + "1" + &")".repeat(100_000),
         "!".repeat(100_000) + "true",
@@ -60,7 +60,7 @@ fn test_deep_nesting_is_syntax_not_panic() {
 
 #[test]
 fn test_numbers_do_not_panic() {
-    // [BV-6] 0 での割り算・あふれは Null
+    // [utest -> req~base-view.expr-eval~1] 0 での割り算・あふれは Null
     assert_eq!(run("1 / 0"), Val::Null);
     assert_eq!(run("0 / 0"), Val::Null);
     assert_eq!(run("5 % 0"), Val::Null);
@@ -78,7 +78,7 @@ fn test_numbers_do_not_panic() {
 
 #[test]
 fn test_months_clamp_to_month_end() {
-    // [BV-6] 月を足して月の終わりを越えたら、その月の最後の日
+    // [utest -> req~base-view.expr-eval~1] 月を足して月の終わりを越えたら、その月の最後の日
     assert_eq!(
         run("date(\"2026-01-31\") + \"1M\""),
         Val::Date(parse_date("2026-02-28").unwrap())
@@ -103,7 +103,7 @@ fn test_months_clamp_to_month_end() {
 
 #[test]
 fn test_datetime_and_bad_strings() {
-    // [BV-6] 日時の文字列、読めない日付と期間は Null
+    // [utest -> req~base-view.expr-eval~1] 日時の文字列、読めない日付と期間は Null
     assert_eq!(
         run("date(\"2026-10-01T01:02:03\")"),
         Val::DateTime(20727 * 86_400 + 3723)
@@ -121,7 +121,7 @@ fn test_datetime_and_bad_strings() {
 
 #[test]
 fn test_has_tag_case_and_unsupported_first_wins() {
-    // [BV-6] タグは大文字小文字を区別しない。[BV-7] 文法の誤りが未対応より先
+    // [utest -> req~base-view.expr-eval~1] タグは大文字小文字を区別しない。[utest -> req~base-view.unsupported-filters~1, req~base-view.unsupported-column-readonly~1] 文法の誤りが未対応より先
     assert_eq!(run("file.hasTag(\"#proj\")"), Val::Bool(true));
     assert_eq!(run("file.hasTag(\"proj/sub\")"), Val::Bool(true));
     assert!(matches!(parse("foo(1) +"), Err(ExprError::Syntax(_))));
@@ -135,7 +135,7 @@ fn test_has_tag_case_and_unsupported_first_wins() {
 
 #[test]
 fn test_duration_times_number_is_duration() {
-    // [BV-6] 期間を左にした * / は期間(Obsidian のヘルプ: duration('1d') * 2)
+    // [utest -> req~base-view.expr-eval~1] 期間を左にした * / は期間(Obsidian のヘルプ: duration('1d') * 2)
     assert_eq!(
         run("today() + duration('1d') * 2 == today() + \"2d\""),
         Val::Bool(true)
@@ -152,7 +152,7 @@ fn test_duration_times_number_is_duration() {
 
 #[test]
 fn test_filter_shape_mtime_within_days() {
-    // [BV-6] filters の形: file.mtime > now() - duration('1d') * 7
+    // [utest -> req~base-view.expr-eval~1] filters の形: file.mtime > now() - duration('1d') * 7
     let map: HashMap<String, Value> = HashMap::new();
     let prop = move |k: &str| map.get(k).cloned();
     let formula = |_: &str| None;

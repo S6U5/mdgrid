@@ -1,6 +1,6 @@
 //! mdgrid 独自のビュー(native-views)の核の受け入れテスト(タスク 1)。
 //! BV-17・BV-19・BV-20(と BV-3・BV-13・CLI-3)。
-//! 仕様: specs/base-view/spec.md、specs/cli/spec.md。
+//! 仕様: specs/_history/decidespec/base-view/spec.md、specs/_history/decidespec/cli/spec.md。
 //! 形: docs/design.md の「mdgrid のビュー(BV-17〜BV-20)」の `src/views.rs`
 //! (NativeView・load_views・save_views・to_base・from_base、views.toml の形)。
 //! 実装を見ずに、公開のインターフェースだけを使う。
@@ -248,7 +248,7 @@ fn simple_view(name: &str) -> NativeView {
 
 #[test]
 fn test_bv_17_save_then_load_returns_same_views() {
-    // [BV-17] [BV-20] save_views → load_views で、名前・order・hidden・filters_expr・settings が同じビューが戻る。
+    // [utest -> req~base-view.own-views-tabs~1, req~base-view.views-toml-layout~1, req~base-view.views-toml-view-state~1] save_views → load_views で、名前・order・hidden・filters_expr・settings が同じビューが戻る。
     let t = TempDir::new("roundtrip");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -276,7 +276,7 @@ fn test_bv_17_save_then_load_returns_same_views() {
 
 #[test]
 fn test_bv_20_views_are_per_target_and_other_targets_are_kept() {
-    // [BV-17] [BV-20] 対象(フォルダ)ごとに別のビュー。対象 A を書き直しても対象 B のビューは残る。
+    // [utest -> req~base-view.own-views-tabs~1, req~base-view.views-toml-layout~1, req~base-view.views-toml-view-state~1] 対象(フォルダ)ごとに別のビュー。対象 A を書き直しても対象 B のビューは残る。
     let t = TempDir::new("pertarget");
     let conf = t.mkdir("config");
     let a = t.mkdir("notes-a");
@@ -309,7 +309,7 @@ fn test_bv_20_views_are_per_target_and_other_targets_are_kept() {
 
 #[test]
 fn test_bv_17_does_not_write_into_note_folder() {
-    // [BV-17] [BV-20] 定義は設定の置き場の views.toml にだけ書き、ノートのフォルダには書かない。
+    // [utest -> req~base-view.own-views-no-note-files~1, req~base-view.views-toml-layout~1] 定義は設定の置き場の views.toml にだけ書き、ノートのフォルダには書かない。
     let t = TempDir::new("nowrite");
     let conf = t.mkdir("config");
     let v = vault("nowrite-vault");
@@ -334,7 +334,7 @@ fn test_bv_17_does_not_write_into_note_folder() {
 #[cfg(unix)]
 #[test]
 fn test_bv_20_target_is_keyed_by_real_path() {
-    // [BV-20] 対象は実体のパスで引く。シンボリックリンクで渡しても同じビュー。
+    // [utest -> req~base-view.views-toml-layout~1] 対象は実体のパスで引く。シンボリックリンクで渡しても同じビュー。
     let t = TempDir::new("symlink");
     let conf = t.mkdir("config");
     let real = t.mkdir("real-notes");
@@ -373,7 +373,7 @@ fn toml_str(s: &str) -> String {
 
 #[test]
 fn test_bv_20_hand_written_views_toml_is_read() {
-    // [BV-20] [BV-17] 設計の形で手で書いた views.toml が読める。settings を省いた・空のビューは既定の設定。
+    // [utest -> req~base-view.views-toml-layout~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1, req~base-view.own-views-beyond-base~1] 設計の形で手で書いた views.toml が読める。settings を省いた・空のビューは既定の設定。
     let t = TempDir::new("handwritten");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -433,7 +433,7 @@ path = {o}
 
 #[test]
 fn test_bv_20_unknown_key_warns_but_views_load() {
-    // [BV-20] [CLI-3] 知らない項目 `color = 1` → 警告の文にその名前が出て、ビューは読める。
+    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 知らない項目 `color = 1` → 警告の文にその名前が出て、ビューは読める。
     let t = TempDir::new("unknown");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -465,7 +465,7 @@ path = {p}
 
 #[test]
 fn test_bv_20_broken_toml_warns_and_returns_no_views() {
-    // [BV-20] 壊れた views.toml → 警告の文が出て、ビューは空で、パニックしない。
+    // [utest -> req~base-view.views-toml-broken~1, req~base-view.views-toml-atomic-save~1, req~base-view.views-toml-readonly~1] 壊れた views.toml → 警告の文が出て、ビューは空で、パニックしない。
     let t = TempDir::new("broken");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -484,7 +484,7 @@ fn test_bv_20_broken_toml_warns_and_returns_no_views() {
 
 #[test]
 fn test_bv_20_missing_file_is_empty_without_warning() {
-    // [BV-20] [CLI-3] views.toml が無い(置き場のフォルダも無い)→ 空で警告なし。
+    // [utest -> req~base-view.views-toml-layout~1, req~cli.config-file-location~1, req~cli.config-file-warning-form~1] views.toml が無い(置き場のフォルダも無い)→ 空で警告なし。
     let t = TempDir::new("missing");
     let notes = t.mkdir("notes");
     let conf = t.path().join("no-such-config");
@@ -498,7 +498,7 @@ fn test_bv_20_missing_file_is_empty_without_warning() {
 
 #[test]
 fn test_bv_19_to_base_builds_same_rows_as_native_view() {
-    // [BV-19] Drop・Keep・Contains・Cmp・並べ替え・グループ・filters_expr・order・hidden を持つビューを書き出す
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-dropped~1] Drop・Keep・Contains・Cmp・並べ替え・グループ・filters_expr・order・hidden を持つビューを書き出す
     // → base::parse で読める YAML になり、build すると mdgrid のビューと同じ行・同じまとまりが出る。
     let v = vault("export");
     let view = full_view();
@@ -546,7 +546,7 @@ fn test_bv_19_to_base_builds_same_rows_as_native_view() {
 
 #[test]
 fn test_bv_19_to_base_simple_filters_expr_and_desc_group() {
-    // [BV-19] filters_expr だけのビューと、まとまりの降順も書き出せて同じ行が出る。
+    // [utest -> req~base-view.export-base-write~1] filters_expr だけのビューと、まとまりの降順も書き出せて同じ行が出る。
     let v = vault("export-simple");
     let mut view = simple_view("未完了");
     view.order = names(&["file.name", "status"]);
@@ -575,7 +575,7 @@ fn test_bv_19_to_base_simple_filters_expr_and_desc_group() {
 
 #[test]
 fn test_bv_19_to_base_reports_dropped_parts() {
-    // [BV-19] `.base` で表せない部分(グループの「空を隠す」。NV-21)を持つビュー
+    // [utest -> req~base-view.export-base-dropped~1] `.base` で表せない部分(グループの「空を隠す」。NV-21)を持つビュー
     // → 書き出しはでき(parse できる)、落とした説明が空でない。
     let mut view = full_view();
     view.settings.group = Group::By {
@@ -595,7 +595,7 @@ fn test_bv_19_to_base_reports_dropped_parts() {
 
 #[test]
 fn test_bv_3_to_base_and_from_base_write_no_files() {
-    // [BV-3] [BV-19] 書き出しは文字列を返すだけで、ファイルを書かない。取り込みも書かない。
+    // [utest -> req~base-view.base-untouched~1, req~base-view.export-base-new-file~1] 書き出しは文字列を返すだけで、ファイルを書かない。取り込みも書かない。
     let v = vault("nofile");
     let existing = v.write(
         "existing.base",
@@ -648,7 +648,7 @@ views:
 
 #[test]
 fn test_bv_19_from_base_maps_fields() {
-    // [BV-19] 全体の filters とビューの filters は filters_expr に、order・sort・groupBy は対応する欄に入る。
+    // [utest -> req~base-view.export-base-dropped~1] 全体の filters とビューの filters は filters_expr に、order・sort・groupBy は対応する欄に入る。
     // NativeView に欄の無い limit は落とした説明に出る。
     let b = base::parse(IMPORT_BASE).expect("parse");
     let (nv, dropped) = from_base(&b, 0);
@@ -696,7 +696,7 @@ fn test_bv_19_from_base_maps_fields() {
 
 #[test]
 fn test_bv_19_from_base_then_to_base_keeps_rows() {
-    // [BV-19] 取り込んだビューを書き出す → 元のビュー(limit を除く)と同じ行・まとまり。
+    // [utest -> req~base-view.export-base-write~1] 取り込んだビューを書き出す → 元のビュー(limit を除く)と同じ行・まとまり。
     // filters の or も filters_expr に落とさずに入っている。
     let v = vault("import");
     let b = base::parse(IMPORT_BASE).expect("parse");

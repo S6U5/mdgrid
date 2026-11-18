@@ -244,7 +244,7 @@ impl App {
                     .map(|(i, _)| i)
             })
             .unwrap_or(0);
-        self.folder_tree = None;
+        self.leave_screens();
         let mut rm = RelMap {
             infos,
             links,

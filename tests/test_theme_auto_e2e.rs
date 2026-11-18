@@ -8,7 +8,7 @@ use pty::{TempDir, Tui};
 
 #[test]
 fn test_sr_39_e2e_auto_theme_without_answer_starts() {
-    // [SR-39] 疑似端末は OSC 11 に答えない → 分からない(暗い地)として起動し、表が出る。
+    // [stest -> req~screen.theme-auto-detect~1] 疑似端末は OSC 11 に答えない → 分からない(暗い地)として起動し、表が出る。
     let home = TempDir::new("sr39_auto");
     let notes = home.path().join("notes");
     std::fs::create_dir_all(&notes).unwrap();

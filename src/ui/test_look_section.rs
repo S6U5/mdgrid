@@ -108,7 +108,7 @@ fn apply(a: &mut App) {
 
 #[test]
 fn test_sr_43_choose_apply_and_save() {
-    // [SR-43] 左に「見た目 sumi」、保存先は「全体」。dracula と dozy-pink を選ぶ → 「未反映 1」、反映 → 画面の
+    // [utest -> req~screen.look-section-save~1] 左に「見た目 sumi」、保存先は「全体」。dracula と dozy-pink を選ぶ → 「未反映 1」、反映 → 画面の
     // テーマと組が変わり、ui.toml に残る。開き直すと区画の写しはその値で、出どころは「全体」。
     let tmp = setup("sr43a");
     let mut a = boot(&tmp, false);
@@ -141,7 +141,7 @@ fn test_sr_43_choose_apply_and_save() {
 
 #[test]
 fn test_sr_43_templates_save_use_delete_and_reset() {
-    // [SR-43] 今の写しを「夜」で保存 → ui.toml の [templates] と一覧に出る。別の組にしてから「夜」を当てる → 写しが
+    // [utest -> req~screen.look-section-save~1, req~screen.look-section-template-save~1, req~screen.look-section-template-delete~1, req~screen.look-section-clear~1] 今の写しを「夜」で保存 → ui.toml の [templates] と一覧に出る。別の組にしてから「夜」を当てる → 写しが
     // 夜の見た目に。d で消す。この範囲の上書きを外す → ui.toml の見た目が消え、テンプレートは残る。
     let tmp = setup("sr43b");
     let mut a = boot(&tmp, false);
@@ -199,7 +199,7 @@ fn test_sr_43_templates_save_use_delete_and_reset() {
 
 #[test]
 fn test_sr_43_readonly_applies_without_writing() {
-    // [SR-43][WB-15] 読むだけでも反映で画面には効くが、ui.toml は書かない。テンプレートの保存は理由を出す。
+    // [utest -> req~screen.look-section-readonly~1, req~cli.readonly~1] 読むだけでも反映で画面には効くが、ui.toml は書かない。テンプレートの保存は理由を出す。
     let tmp = setup("sr43c");
     let mut a = boot(&tmp, true);
     choose(&mut a, 1, "gruvbox");

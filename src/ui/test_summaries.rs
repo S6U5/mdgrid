@@ -87,7 +87,7 @@ fn x_of(line: &str, word: &str) -> usize {
 
 #[test]
 fn test_bv_14_summary_row_under_table() {
-    // [BV-14] 表の下・下の帯の上に1行。集計した列の下に「名前 値」。型の合わない値は数えない。
+    // [utest -> req~base-view.summaries-builtin~1] 表の下・下の帯の上に1行。集計した列の下に「名前 値」。型の合わない値は数えない。
     let tmp = vault("bv14row");
     let app = open(&tmp, BASE, None);
     assert_eq!(app.rows.len(), 4);
@@ -109,7 +109,7 @@ fn test_bv_14_summary_row_under_table() {
 
 #[test]
 fn test_bv_14_summary_aligned_to_columns() {
-    // [BV-14] 集計は列の位置にそろう(数の列は右寄せ、ほかは左寄せ)。
+    // [utest -> req~base-view.summaries-builtin~1] 集計は列の位置にそろう(数の列は右寄せ、ほかは左寄せ)。
     let tmp = vault("bv14align");
     let app = open(&tmp, BASE, None);
     let s = screen(&app);
@@ -139,7 +139,7 @@ fn test_bv_14_summary_aligned_to_columns() {
 
 #[test]
 fn test_bv_14_filter_changes_values() {
-    // [BV-14] 絞り込み(NV-2)で行が減ると、集計の値も変わる。解くと戻る。
+    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-filtered~1] 絞り込み(NV-2)で行が減ると、集計の値も変わる。解くと戻る。
     let tmp = vault("bv14filter");
     let mut app = open(&tmp, BASE, None);
     ch(&mut app, '\\');
@@ -159,7 +159,7 @@ fn test_bv_14_filter_changes_values() {
 
 #[test]
 fn test_bv_14_no_summaries_no_row() {
-    // [BV-14] 集計の無いビューでは集計の行を出さない(表の行の数も減らない)。
+    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-filtered~1] 集計の無いビューでは集計の行を出さない(表の行の数も減らない)。
     let tmp = vault("bv14none");
     let mut app = open(&tmp, BASE, None);
     let with = app.data_height();
@@ -174,7 +174,7 @@ fn test_bv_14_no_summaries_no_row() {
 
 #[test]
 fn test_bv_14_formula_summary_unsupported_view_opens() {
-    // [BV-14][BV-7] 式で書いた集計は未対応の理由が出て、ビューは開く。組み込みの集計は出る。
+    // [utest -> req~base-view.summaries-unsupported~1, req~base-view.unsupported-filters~1] 式で書いた集計は未対応の理由が出て、ビューは開く。組み込みの集計は出る。
     let tmp = vault("bv14formula");
     let app = open(&tmp, BASE, Some("Formula"));
     assert!(app.view_error.is_none(), "{:?}", app.view_error);
@@ -194,7 +194,7 @@ fn test_bv_14_formula_summary_unsupported_view_opens() {
 
 #[test]
 fn test_bv_14_grouped_view_total_and_reason() {
-    // [BV-14] まとまりごとの集計は未対応の理由を出し、表全体の集計を1行出す。
+    // [utest -> req~base-view.summaries-unsupported~1] まとまりごとの集計は未対応の理由を出し、表全体の集計を1行出す。
     let tmp = vault("bv14group");
     let app = open(&tmp, BASE, Some("Grouped"));
     assert!(app.view_error.is_none());
@@ -206,7 +206,7 @@ fn test_bv_14_grouped_view_total_and_reason() {
 
 #[test]
 fn test_bv_14_english_names() {
-    // [BV-14][SR-23] 英語の画面では見出しも英語(Summary)、集計の名前も英語。
+    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-names~1, req~screen.locales-two-languages~1, req~screen.locales-auto~1] 英語の画面では見出しも英語(Summary)、集計の名前も英語。
     let _g = scoped(Lang::En);
     let tmp = vault("bv14en");
     let app = open(&tmp, BASE, None);
@@ -222,7 +222,7 @@ fn test_bv_14_english_names() {
 
 #[test]
 fn test_bv_14_japanese_names() {
-    // [BV-14][SR-23] 日本語の画面では、Obsidian の名前の代わりに日本語の名前で出す。
+    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-names~1, req~screen.locales-two-languages~1] 日本語の画面では、Obsidian の名前の代わりに日本語の名前で出す。
     let _g = scoped(Lang::Ja);
     let tmp = vault("bv14ja");
     let app = open(&tmp, BASE, None);
@@ -235,7 +235,7 @@ fn test_bv_14_japanese_names() {
 
 #[test]
 fn test_bv_14_fits_narrow_terminals() {
-    // [BV-14][SR-9] 80 桁と狭い端末で、どの行も幅を超えない。
+    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-filtered~1, req~base-view.summaries-type-mismatch~1, req~cell-view.grapheme-width-fit~1] 80 桁と狭い端末で、どの行も幅を超えない。
     let tmp = vault("bv14fit");
     let mut app = open(&tmp, BASE, None);
     assert_fits(&mut app);

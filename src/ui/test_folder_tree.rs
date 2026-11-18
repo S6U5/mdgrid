@@ -131,7 +131,7 @@ fn table_row(a: &mut App, name: &str) {
 
 #[test]
 fn test_tr_1_menu_offers_tree_and_switches() {
-    // [TR-1] 印に階層の列を書いた表で「▦ 表 ▾」を押す → 窓に「木」。選ぶ → 木の画面。
+    // [utest -> req~tree.screen-type~1, req~tree.screen-menu~1] 印に階層の列を書いた表で「▦ 表 ▾」を押す → 窓に「木」。選ぶ → 木の画面。
     let (_t, mut a) = boot("tr1menu");
     assert_eq!(a.message, None, "警告が無い");
     let s = screen(&a);
@@ -170,7 +170,7 @@ fn test_tr_1_menu_offers_tree_and_switches() {
 
 #[test]
 fn test_tr_1_no_tree_without_setting() {
-    // [TR-1] 設定の無い表 → 窓に「木」が無く、T は理由を出して表のまま。
+    // [utest -> req~tree.screen-menu~1] 設定の無い表 → 窓に「木」が無く、T は理由を出して表のまま。
     let (_t, mut a) = boot_with("tr1none", NOTES, "");
     a.apply(Action::Escape);
     a.open_screen_menu();
@@ -189,7 +189,7 @@ fn test_tr_1_no_tree_without_setting() {
 
 #[test]
 fn test_tr_1_tree_uses_view_rows() {
-    // [TR-1] 今の表のビューを通った行だけ: status が active の行だけのビュー → archived の行(gamma)は木に出ない。
+    // [utest -> req~tree.screen-view-rows~1] 今の表のビューを通った行だけ: status が active の行だけのビュー → archived の行(gamma)は木に出ない。
     let tmp = Tmp::new("tr1view");
     for (n, t) in NOTES {
         tmp.write(n, t);
@@ -234,7 +234,7 @@ fn test_tr_1_tree_uses_view_rows() {
 
 #[test]
 fn test_tr_2_empty_separator_warns_and_no_tree() {
-    // [TR-2] separator = "" → 警告1行で、メニューに「木」が出ない。
+    // [utest -> req~tree.config-invalid~1] separator = "" → 警告1行で、メニューに「木」が出ない。
     let (_t, mut a) = boot_with(
         "tr2sep",
         NOTES,
@@ -252,7 +252,7 @@ fn test_tr_2_empty_separator_warns_and_no_tree() {
 
 #[test]
 fn test_tr_2_missing_column_warns_and_no_tree() {
-    // [TR-2] path の列が表に無い → 読み終えたときに CLI-3 の形の警告で、木を出さない。
+    // [utest -> req~tree.config-invalid~1] path の列が表に無い → 読み終えたときに CLI-3 の形の警告で、木を出さない。
     let (_t, mut a) = boot_with("tr2col", NOTES, "tree = { path = \"place\" }");
     let m = a.message.clone().unwrap_or_default();
     assert!(
@@ -266,7 +266,7 @@ fn test_tr_2_missing_column_warns_and_no_tree() {
 
 #[test]
 fn test_tr_2_custom_separator() {
-    // [TR-2] separator を書けばその区切りで切る。
+    // [utest -> req~tree.config-path~1] separator を書けばその区切りで切る。
     let notes: &[(&str, &str)] = &[
         ("a.md", "---\nfolder: x/y\n---\n"),
         ("b.md", "---\nfolder: x\n---\n"),
@@ -288,7 +288,7 @@ fn test_tr_2_custom_separator() {
 
 #[test]
 fn test_tr_3_tree_counts_fold_and_none() {
-    // [TR-3] 左の木: bar(3)・開発(3)・Web(1)・other(1)・(なし)(1)。開発を閉じる → Web が隠れ、数は3のまま。
+    // [utest -> req~tree.folders-count~1, req~tree.folders-toggle~1] 左の木: bar(3)・開発(3)・Web(1)・other(1)・(なし)(1)。開発を閉じる → Web が隠れ、数は3のまま。
     let (_t, mut a) = boot("tr3");
     ch(&mut a, 'T');
     let s = screen(&a);
@@ -332,7 +332,7 @@ fn test_tr_3_tree_counts_fold_and_none() {
 
 #[test]
 fn test_tr_4_rows_by_order_and_enter_jumps() {
-    // [TR-4] 開発 を選ぶ → order の小さい順(数でない・空は後ろ)。行で Enter → 表の画面でその行。
+    // [utest -> req~tree.rows-direct~1, req~tree.rows-order~1] 開発 を選ぶ → order の小さい順(数でない・空は後ろ)。行で Enter → 表の画面でその行。
     let mut notes = NOTES.to_vec();
     notes.push(("zeta.md", "---\nfolder: bar > 開発\norder: abc\n---\n"));
     notes.push(("omega.md", "---\nfolder: bar > 開発\n---\n"));
@@ -364,7 +364,7 @@ fn test_tr_4_rows_by_order_and_enter_jumps() {
 
 #[test]
 fn test_tr_4_opens_at_current_row() {
-    // [TR-4] 表で選んでいる行があれば、木はそのフォルダとその行を選んで開く。
+    // [utest -> req~tree.rows-direct~1] 表で選んでいる行があれば、木はそのフォルダとその行を選んで開く。
     let (_t, mut a) = boot("tr4cur");
     table_row(&mut a, "gamma");
     ch(&mut a, 'T');
@@ -374,7 +374,7 @@ fn test_tr_4_opens_at_current_row() {
 
 #[test]
 fn test_tr_5_open_url_shows_and_passes_value() {
-    // [TR-5] url が https の行で「URL を開く」→ 帯に URL、開く口に渡る。file・javascript の行は開かない。
+    // [utest -> req~tree.open-url-action~1, req~tree.open-url-scheme~1] url が https の行で「URL を開く」→ 帯に URL、開く口に渡る。file・javascript の行は開かない。
     let (_t, mut a) = boot("tr5");
     let log = OpenLog::default();
     let seen = log.0.clone();
@@ -455,7 +455,7 @@ fn goto_folder_any(a: &mut App, name: &str) {
 
 #[test]
 fn test_tr_6_layout_by_width() {
-    // [TR-6] 幅 160・100 は並べ、60 は1つずつ(タブと Tab で切り替え)。どの幅でも行は幅に収まる。
+    // [utest -> req~tree.layout-width~1, req~tree.layout-legible~1] 幅 160・100 は並べ、60 は1つずつ(タブと Tab で切り替え)。どの幅でも行は幅に収まる。
     let (_t, mut a) = boot("tr6");
     ch(&mut a, 'T');
     goto_folder(&mut a, "開発");
@@ -490,7 +490,7 @@ fn fits(a: &App, w: u16) {
 
 #[test]
 fn test_tr_7_mouse() {
-    // [TR-7] 開発 の印のクリック → 閉じる。Web をクリック → 選ぶ。右の行のクリック2回 → 表のその行へ。ホイールで上下。
+    // [utest -> req~tree.mouse-toggle~1, req~tree.mouse-row-reclick~1, req~tree.mouse-wheel~1] 開発 の印のクリック → 閉じる。Web をクリック → 選ぶ。右の行のクリック2回 → 表のその行へ。ホイールで上下。
     let (_t, mut a) = boot("tr7");
     ch(&mut a, 'T');
     let s = screen(&a);

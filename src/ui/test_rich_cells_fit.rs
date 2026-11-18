@@ -24,7 +24,7 @@ fn row_a(a: &App) -> String {
 
 #[test]
 fn test_sr_35_chips_overflow_counts_the_rest() {
-    // [SR-35] 幅 10 に ui・perf・web → ` ui ` のあとに `+2`。perf は途中で切らない。
+    // [utest -> req~screen.rich-cells-value-color~1] 幅 10 に ui・perf・web → ` ui ` のあとに `+2`。perf は途中で切らない。
     let (_t, a) = app("sr35f_more", "[ui, perf, web]", 10);
     let r = row_a(&a);
     assert!(r.contains(" ui ") && r.contains("+2"), "{r}");
@@ -33,7 +33,7 @@ fn test_sr_35_chips_overflow_counts_the_rest() {
 
 #[test]
 fn test_sr_35_chips_all_fit() {
-    // [SR-35] 入りきれば全部の札(+N は無い)。
+    // [utest -> req~screen.rich-cells-value-color~1] 入りきれば全部の札(+N は無い)。
     let (_t, a) = app("sr35f_all", "[ui, perf]", 20);
     let r = row_a(&a);
     assert!(
@@ -44,7 +44,7 @@ fn test_sr_35_chips_all_fit() {
 
 #[test]
 fn test_sr_35_first_chip_too_wide_is_cut() {
-    // [SR-35] 1つ目の札が入らなければ、その札を `…` で切って見せる。
+    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1] 1つ目の札が入らなければ、その札を `…` で切って見せる。
     let (_t, a) = app("sr35f_cut", "[documentation]", 8);
     let r = row_a(&a);
     assert!(r.contains("docu") && r.contains('…'), "{r}");

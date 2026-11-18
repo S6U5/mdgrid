@@ -1,5 +1,5 @@
 //! 見本 examples/ai-human(人と AI のタスクを分けて見る)を開く試験。
-//! 記録: specs/_changes/2026-10-07-example-ai-human.md のタスク 1(見本は 2026-10-15 に英語の制作会社のタスクに作り直した)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-07-example-ai-human.md のタスク 1(見本は 2026-10-15 に英語の制作会社のタスクに作り直した)。
 //!
 //! 見本は一時フォルダに写してから開く(リポの examples の中は書かない)。
 //! 分け方は cellops と同じ: `actor: human` か、`human_gate` が none 以外なら人。

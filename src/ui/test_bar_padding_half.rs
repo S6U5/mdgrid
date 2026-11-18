@@ -1,5 +1,5 @@
 //! ビューの帯とヘッダーの上の余白を 0.5 刻みにし、既定を 0.5 にして、端数を半分の塗りの字で描く
-//! (SR-1・NV-23)受け入れの試験。記録: specs/_changes/2026-10-12-search-box.md(タスク #6)。
+//! (SR-1・NV-23)受け入れの試験。記録: specs/_history/decidespec/_changes/2026-10-12-search-box.md(タスク #6)。
 
 use super::startup::Startup;
 use super::test_screen::{text, Tmp};
@@ -46,7 +46,7 @@ fn lines(a: &App) -> Vec<String> {
 
 #[test]
 fn test_sr_1_half_default_layout() {
-    // [SR-1][NV-23] 色ありの既定 → 1行目は上の余白、2行目がヘッダー、3行目が帯の上の余白、4行目がビューの帯、
+    // [utest -> req~screen.layout-order~1, req~screen.layout-half-padding~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-half-fallback~1] 色ありの既定 → 1行目は上の余白、2行目がヘッダー、3行目が帯の上の余白、4行目がビューの帯、
     // 5行目が帯の下の余白、6行目が列の見出し。
     // 2026-10-12-half-row-inverse: テーマが画面の地を塗らず、端末の地の色も分からない(試験には端末が無い)
     // ので、0.5 の余白は1行の空き行に切り上げ、地の色も敷かない。端末の地の色が分かるときの半行の描き方は
@@ -73,7 +73,7 @@ fn test_sr_1_half_default_layout() {
 
 #[test]
 fn test_sr_1_half_no_color_rounds_up() {
-    // [SR-1][NV-23] 色なしの既定 → 0.5 は1行に切り上げ: 1・3・5行目が空き、2行目がヘッダー、4行目が帯、
+    // [utest -> req~screen.layout-order~1, req~screen.layout-half-padding~1, req~navigation.search-box-half-fallback~1] 色なしの既定 → 0.5 は1行に切り上げ: 1・3・5行目が空き、2行目がヘッダー、4行目が帯、
     // 6行目が見出し。半分の塗りの字は使わない。
     let (_t, a) = boot("halfnocolor", "", ColorMode::None);
     let l = lines(&a);
@@ -88,7 +88,7 @@ fn test_sr_1_half_no_color_rounds_up() {
 
 #[test]
 fn test_sr_1_half_zero_paddings() {
-    // [SR-1][NV-23] `top_padding = 0`・`bar_padding = 0` → 1行目がヘッダー、2行目が帯、3行目が見出し。
+    // [utest -> req~screen.layout-order~1, req~screen.layout-top-padding~1, req~screen.layout-half-padding~1, req~screen.layout-no-view-bar~1, req~navigation.search-box-key-glyph~1] `top_padding = 0`・`bar_padding = 0` → 1行目がヘッダー、2行目が帯、3行目が見出し。
     let (_t, a) = boot(
         "halfzero",
         "[display]\ntop_padding = 0\nbar_padding = 0\n",
@@ -103,7 +103,7 @@ fn test_sr_1_half_zero_paddings() {
 
 #[test]
 fn test_nv_23_half_one_and_a_half() {
-    // [NV-23] `top_padding = 0`・`bar_padding = 1.5` → 1行目がヘッダー、2・3行目が空き、4行目が帯、
+    // [utest -> req~navigation.search-box-half-fallback~1] `top_padding = 0`・`bar_padding = 1.5` → 1行目がヘッダー、2・3行目が空き、4行目が帯、
     // 5・6行目が空き、7行目が見出し(2026-10-12-half-row-inverse: 端末の地の色が分からないので、端数の半行は
     // 1行の空き行に切り上げる。半行で描くときは test_half_row_inverse_termbg.rs)。
     let (_t, a) = boot(
@@ -124,7 +124,7 @@ fn test_nv_23_half_one_and_a_half() {
 
 #[test]
 fn test_nv_23_half_ambiguous_wide_rounds_up() {
-    // [NV-23] あいまいな字を全角として数える設定 → 半分の塗りの字を使わず、端数は1行の空きに切り上げる。
+    // [utest -> req~navigation.search-box-half-fallback~1] あいまいな字を全角として数える設定 → 半分の塗りの字を使わず、端数は1行の空きに切り上げる。
     let (_t, a) = boot(
         "halfamb",
         "[terminal]\nambiguous_wide = true\n",

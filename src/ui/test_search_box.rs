@@ -1,5 +1,5 @@
 //! 検索の欄と絞り込み・並べ替えのボタンを線で四角く囲む3行のビューの帯(SR-1・NV-23)の受け入れの試験。
-//! 記録: specs/_changes/2026-10-12-search-box.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-search-box.md(タスク #1)。
 
 use super::keymap::Mode;
 use super::startup::Startup;
@@ -63,7 +63,7 @@ fn col(l: &str, t: &str) -> Option<usize> {
 
 #[test]
 fn test_nv_23_box_default_three_rows() {
-    // [NV-23][SR-1] 80×24 で `buttons = "box"`(2026-10-12-view-bar-plain で既定は plain になった)→ 2〜4行目がビューの帯。2行目と4行目に囲みの線の角が3つずつ(検索の欄・
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~screen.layout-order~1] 80×24 で `buttons = "box"`(2026-10-12-view-bar-plain で既定は plain になった)→ 2〜4行目がビューの帯。2行目と4行目に囲みの線の角が3つずつ(検索の欄・
     // 絞り込み・並べ替え)、3行目に「既定の表」・「\ 検索…」・「| 絞り込み」・「S 並べ替え」・分類・列、
     // 5行目が列の見出し。
     let (_t, a) = boot_config("boxdef", "[display]\nbuttons = \"box\"\n");
@@ -87,7 +87,7 @@ fn test_nv_23_box_default_three_rows() {
 
 #[test]
 fn test_nv_23_box_surrounds_search_field() {
-    // [NV-23] 検索の欄の囲み: 上の線の角と下の線の角が、真ん中の行の縦の線と同じ桁で、欄の字はその内側。
+    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1] 検索の欄の囲み: 上の線の角と下の線の角が、真ん中の行の縦の線と同じ桁で、欄の字はその内側。
     let (_t, a) = boot_config("boxfield", "[display]\nbuttons = \"box\"\n");
     let l = lines(&a);
     let s = l.join("\n");
@@ -110,7 +110,7 @@ fn test_nv_23_box_surrounds_search_field() {
 
 #[test]
 fn test_nv_23_box_typing_shows_word_inside() {
-    // [NV-23][NV-2] `\` で「a」と打つ → 3行目の囲みの中に語、5行目は見出しのまま。
+    // [utest -> req~navigation.search-box-half-glyphs~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~navigation.search-incremental~1, req~navigation.search-over-base~1] `\` で「a」と打つ → 3行目の囲みの中に語、5行目は見出しのまま。
     let (_t, mut a) = boot_config("boxtype", "[display]\nbuttons = \"box\"\n");
     ch(&mut a, '\\');
     typing(&mut a, "do");
@@ -122,7 +122,7 @@ fn test_nv_23_box_typing_shows_word_inside() {
 
 #[test]
 fn test_nv_23_box_window_below_bottom_line() {
-    // [NV-23][NV-24] 並べ替えのボタンを押す → 窓の上の縁は囲みの下の線(4行目)のすぐ下の5行目。
+    // [utest -> req~navigation.search-box-window-below~1, req~navigation.sort-window-open~1] 並べ替えのボタンを押す → 窓の上の縁は囲みの下の線(4行目)のすぐ下の5行目。
     let (_t, mut a) = boot_config("boxwin", "[display]\nbuttons = \"box\"\n");
     let l = lines(&a);
     let x = col(&l[2], "並べ替え").unwrap();
@@ -138,7 +138,7 @@ fn test_nv_23_box_window_below_bottom_line() {
 
 #[test]
 fn test_nv_23_box_click_any_row_of_box() {
-    // [NV-23] 囲みの上の線を押しても、そのボタン(絞り込み)の窓が開く。
+    // [utest -> req~navigation.search-box-style~1, req~navigation.search-box-window-below~1] 囲みの上の線を押しても、そのボタン(絞り込み)の窓が開く。
     let (_t, mut a) = boot_config("boxclick", "[display]\nbuttons = \"box\"\n");
     let l = lines(&a);
     let x = col(&l[2], "絞り込み").unwrap();
@@ -148,7 +148,7 @@ fn test_nv_23_box_click_any_row_of_box() {
 
 #[test]
 fn test_nv_23_flat_setting_one_row() {
-    // [NV-23] `display.bar_padding = 0`(2026-10-12-bar-padding で `buttons = "flat"`・"compact" から替えた)→ 囲みが無く、ビューの帯は2行目だけ、3行目が見出し。
+    // [utest -> req~navigation.search-box-button-keys~1, req~navigation.search-box-narrow~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1] `display.bar_padding = 0`(2026-10-12-bar-padding で `buttons = "flat"`・"compact" から替えた)→ 囲みが無く、ビューの帯は2行目だけ、3行目が見出し。
     let (_t, a) = boot_config("boxflat", "[display]\nbar_padding = 0\n");
     let l = lines(&a);
     let s = l.join("\n");
@@ -162,7 +162,7 @@ fn test_nv_23_flat_setting_one_row() {
 
 #[test]
 fn test_nv_23_box_low_terminal_one_row() {
-    // [NV-23] 高さ 14(16行に満たない)→ box でも囲まず1行。
+    // [utest -> req~navigation.search-box-low-height~1] 高さ 14(16行に満たない)→ box でも囲まず1行。
     let (_t, mut a) = boot_config("boxlow", "[display]\nbuttons = \"box\"\n");
     a.resize(80, 14);
     let l = lines(&a);
@@ -174,7 +174,7 @@ fn test_nv_23_box_low_terminal_one_row() {
 
 #[test]
 fn test_nv_23_box_off_when_search_hidden() {
-    // [NV-23][SR-20] 検索の欄を出さない → 囲みも出さず、ビューの帯は1行(タブとボタン)。
+    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-hide~1, req~screen.display-options-config~1] 検索の欄を出さない → 囲みも出さず、ビューの帯は1行(タブとボタン)。
     let (_t, a) = boot_config(
         "boxnosearch",
         "[display]\ntabs = \"always\"\nsearch_bar = false\nbuttons = \"box\"\n",

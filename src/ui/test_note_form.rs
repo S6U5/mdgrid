@@ -1,4 +1,4 @@
-//! 新しいノートのフォーム(CE-26・CE-27・CE-32)。specs/_changes/2026-10-07-new-note-form.md。
+//! 新しいノートのフォーム(CE-26・CE-27・CE-32)。specs/_history/decidespec/_changes/2026-10-07-new-note-form.md。
 //! 今日は 2026-10-02 に固定する。
 
 use super::keymap::Mode;
@@ -55,6 +55,7 @@ fn read(tmp: &Tmp, name: &str) -> String {
     std::fs::read_to_string(tmp.notes().join(name)).unwrap_or_default()
 }
 
+// [utest -> req~cell-edit.new-note-form-source~1]
 #[test]
 fn test_ce_26_form_shows_fields_and_creates() {
     let tmp = vault("ce26form");
@@ -77,6 +78,7 @@ fn test_ce_26_form_shows_fields_and_creates() {
     assert!(!t.contains("priority"), "{t}");
 }
 
+// [utest -> req~cell-edit.new-note-form-ask~1]
 #[test]
 fn test_ce_26_form_defaults_to_visible_columns_and_back() {
     let tmp = vault("ce26cols");
@@ -98,6 +100,7 @@ fn test_ce_26_form_defaults_to_visible_columns_and_back() {
     assert!(read(&tmp, "y.md").contains("title: 題"));
 }
 
+// [utest -> req~cell-edit.new-note-form-bad-name~1]
 #[test]
 fn test_ce_26_form_name_problem_shown_on_field() {
     let tmp = vault("ce26exists");
@@ -116,6 +119,7 @@ fn test_ce_26_form_name_problem_shown_on_field() {
     );
 }
 
+// [utest -> req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-hidden~1, req~cell-edit.new-note-config-set-vars~1, req~cell-edit.new-note-config-filter-first~1]
 #[test]
 fn test_ce_27_required_and_date_template() {
     let tmp = vault("ce27req");
@@ -143,6 +147,7 @@ fn test_ce_27_required_and_date_template() {
     );
 }
 
+// [utest -> req~cell-edit.template-vars-body~1, req~cell-edit.template-vars-hidden~1]
 #[test]
 fn test_ce_32_hidden_created_and_body_template() {
     let tmp = vault("ce32body");
