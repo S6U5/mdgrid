@@ -35,10 +35,25 @@ Markdown のノートのフォルダを、コマンド1つで表として開け�
 
 ビルド済みのバイナリ。 [GitHub の Releases](https://github.com/S6U5/mdgrid/releases) の各リリースに、Linux(x86_64・aarch64)、macOS(Intel・Apple シリコン)、Windows(x86_64)のアーカイブがあります。展開して `mdgrid` を `PATH` の通った場所に置きます。シェルの補完(`completions/`)と man ページ(`mdgrid.1`)も入っています。
 
+Homebrew で(macOS と Linux)。
+
+```sh
+brew install s6u5/tap/mdgrid
+```
+
 crates.io から。 Rust 1.90 以上で:
 
 ```sh
 cargo install mdgrid --locked
+```
+
+これはソースからビルドするので数分かかります。[cargo-binstall](https://github.com/cargo-bins/cargo-binstall) があれば、`cargo binstall mdgrid` でリリースのビルド済みのバイナリが入ります。
+
+Nix で。 入れずにその場で動かすか、プロファイルに入れます。
+
+```sh
+nix run github:S6U5/mdgrid -- ~/notes/Tasks
+nix profile install github:S6U5/mdgrid
 ```
 
 ソースから。
@@ -48,8 +63,6 @@ git clone https://github.com/S6U5/mdgrid.git
 cd mdgrid
 cargo install --path . --locked
 ```
-
-Homebrew にはまだありません。
 
 ## はじめる
 

@@ -2,14 +2,17 @@
 
 [日本語](../ja/getting-started.md) · [Contents](index.md)
 
-Pick one of three ways to install. The rest of the page is one path: open the sample, edit a cell, save.
+There are several ways to install; pick one. The rest of the page is one path: open the sample, edit a cell, save.
 
 ## Install
 
-mdgrid is a single executable written in Rust. Download an archive for your OS from the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page, or install it with Rust 1.90 or newer:
+mdgrid is a single executable written in Rust. Download an archive for your OS from the [GitHub Releases](https://github.com/S6U5/mdgrid/releases) page, or use the tool you already have:
 
 ```sh
-cargo install mdgrid --locked
+brew install s6u5/tap/mdgrid        # Homebrew (macOS, Linux)
+cargo install mdgrid --locked       # Rust 1.90 or newer; builds from source in a few minutes
+cargo binstall mdgrid               # cargo-binstall; fetches the prebuilt binary
+nix profile install github:S6U5/mdgrid   # Nix (to just try it: nix run github:S6U5/mdgrid)
 ```
 
 To build from a clone of the repository instead, run `cargo build --release` to get `target/release/mdgrid`. The examples below use `target/release/mdgrid`; with an installed `mdgrid`, just type `mdgrid`.
