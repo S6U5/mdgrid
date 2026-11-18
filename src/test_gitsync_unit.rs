@@ -160,10 +160,10 @@ fn test_push_sends_the_commit_to_the_remote() {
     let remote = Tmp::new("remote");
     g(&remote.0, &["init", "--quiet", "--bare", "-b", "main"]);
     let t = repo("push");
-    g(
-        &t.0,
-        &["remote", "add", "origin", remote.0.to_str().unwrap()],
-    );
+    // Windows の実体のパスの頭(`\\?\`)は、git がリモートの場所として読めないので外す。
+    let url = remote.0.to_str().unwrap();
+    let url = url.strip_prefix(r"\\?\").unwrap_or(url);
+    g(&t.0, &["remote", "add", "origin", url]);
     g(&t.0, &["push", "--quiet", "-u", "origin", "main"]);
     std::fs::write(t.0.join("a.md"), "a2\n").unwrap();
     let done = run(Level::Push, &[t.0.join("a.md")], "x").unwrap();
