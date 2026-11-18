@@ -215,7 +215,7 @@
 ### 組み込みの tasks が持つオプションの並び(今の tasks-ai を「tasks + オプション」に畳むか、別のスターターのまま残すか)
 `tbd~starter.option-builtin-list`
 - 決める人: 人
-- 仮: tasks に ai(担当で分ける)・routines(ルーチンの表とリンクの列)・screens(ガント・カンバン・グラフ)・priority-words(優先度を high・medium・low に)。tasks-ai は「tasks に ai と routines を付けたもの」の別名として残す
+- 仮: tasks に ai(担当で分ける)・routines(ルーチンの表とリンクの列)・screens(ガント・カンバン・グラフ)・priority-words(優先度を high・medium・low に。選ばなければ p1〜p3 のまま: 2026-11-18 に人が決めた)。tasks-ai は「tasks に ai と routines を付けたもの」の別名として残す
 
 ### 本文の雛形と見本のノートは、今までどおり台帳に写すか、台帳に無ければスターターのものを使うか
 `tbd~starter.layer-files`
