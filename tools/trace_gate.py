@@ -71,7 +71,7 @@ from collections import Counter
 from functools import lru_cache
 
 TOOL_NAME = "trace-gate"
-TOOL_VERSION = "0.33.0"
+TOOL_VERSION = "0.33.2"
 LEDGER_FORMAT = "trace-gate-ledger"
 FINDINGS_FORMAT = "trace-gate-findings"
 FORMAT_VERSION = 1
@@ -6217,15 +6217,21 @@ def cmd_reverse_run(args, root, cfg):
             git(root, "worktree", "add", "--detach", "--quiet", wt, head)
             added = True
             wroot = os.path.normpath(os.path.join(wt, prefix))
+            removed, copied = set(), set()
             for rel in walk_files(wroot):  # head のテストの側を捨て、base のテストの側を写す
                 if test_side(rel, cfg):
                     os.remove(os.path.join(wroot, *rel.split("/")))
+                    removed.add(rel)
             for rel in git_files_at(root, args.base):
                 if test_side(rel, cfg):
                     dst = os.path.join(wroot, *rel.split("/"))
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     with open(dst, "wb") as f:  # データのファイルはバイト列のまま写す
                         f.write(subprocess.run(["git", "-C", root, "show", "%s:./%s" % (args.base, rel)], capture_output=True, check=True).stdout)
+                    copied.add(rel)
+            for rel in sorted(removed - copied):  # Rust はコードの側が #[path] や mod でテストのファイルを指すので、消すとビルドできない。空のファイルで残す
+                if rel.endswith(".rs"):
+                    open(os.path.join(wroot, *rel.split("/")), "wb").close()
             junit = os.path.join(tmp, "reverse.xml")
             run_test_command(args.cmd, wroot, junit, args.timeout, "head(base のテスト)")
             doc = junit_doc(junit)[0]
