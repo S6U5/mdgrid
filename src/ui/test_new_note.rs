@@ -435,7 +435,7 @@ fn test_ce_26_ask_number_then_date_with_calendar() {
 
 #[test]
 fn test_ce_26_empty_answer_is_not_written() {
-    // [utest -> req~cell-edit.new-note-form-ask~1, req~cell-edit.new-note-form-skip-empty~1, req~cell-edit.new-note-form-required~1] priority を空で Enter → priority の行は無い。
+    // [utest -> req~cell-edit.new-note-form-ask~1, req~cell-edit.new-note-form-skip-empty~1] priority を空で Enter → priority の行は無い。
     let tmp = vault("ce26empty");
     let cfg = config("[new_note]\nask = [\"priority\", \"due\"]\n");
     let mut a = boot(&tmp, cfg, false);

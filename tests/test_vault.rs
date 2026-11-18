@@ -115,7 +115,7 @@ fn test_bv_1_folder_without_config_loads_all_markdown_notes() {
 
 #[test]
 fn test_bv_1_notes_are_sorted_by_path() {
-    // [utest -> req~base-view.source-base-file~1, req~base-view.source-folder~1] notes() は path の昇順
+    // [utest -> req~base-view.source-folder~1] notes() は path の昇順
     let t = TempDir::new("bv1sort");
     for name in ["c.md", "a.md", "b/z.md", "b/a.md"] {
         t.write(name, b"x\n");
@@ -128,7 +128,7 @@ fn test_bv_1_notes_are_sorted_by_path() {
 
 #[test]
 fn test_bv_1_skips_obsidian_git_and_trash() {
-    // [utest -> req~base-view.source-base-file~1, req~base-view.source-folder~1] .obsidian/・.git/・.trash/ の下は探さない
+    // [utest -> req~base-view.source-folder~1] .obsidian/・.git/・.trash/ の下は探さない
     let t = TempDir::new("bv1skip");
     let n = t.write("note.md", b"x\n");
     t.write(".obsidian/workspace.md", b"x\n");

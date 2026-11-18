@@ -222,7 +222,7 @@ fn cycle_to(a: &mut App, want: &str) {
 
 #[test]
 fn test_sr_29_note_path_name_shows_only_names() {
-    // [utest -> req~screen.note-column-path~1, req~screen.note-column-keeps-tree~1, req~screen.note-path-scopes~1] note_path = "name" で todo/alpha.md・archive/todo/beta.md → 欄は alpha・beta。見出しは残る。
+    // [utest -> req~screen.note-column-path~1, req~screen.note-path-scopes~1] note_path = "name" で todo/alpha.md・archive/todo/beta.md → 欄は alpha・beta。見出しは残る。
     let tmp = ledger("sr29np_name");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"name\"\n"));
     assert_names_only(&a);
@@ -251,7 +251,7 @@ fn test_sr_29_note_path_full_keeps_common_folder() {
 
 #[test]
 fn test_sr_29_note_path_name_search_matches_folder() {
-    // [utest -> req~screen.note-column-full-path-elsewhere~1, req~navigation.search-esc~1, req~navigation.search-over-base~1] "name" でも、`\` の検索で archive と打つと archive/todo/beta.md の行が当たる(検索は根からの
+    // [utest -> req~screen.note-column-full-path-elsewhere~1, req~navigation.search-over-base~1] "name" でも、`\` の検索で archive と打つと archive/todo/beta.md の行が当たる(検索は根からの
     // パスのまま)。当たった行の欄は名前だけ。
     let tmp = ledger("sr29np_search");
     let mut a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"name\"\n"));
@@ -270,7 +270,7 @@ fn test_sr_29_note_path_name_search_matches_folder() {
 
 #[test]
 fn test_sr_29_note_path_off_hides_names_and_heading() {
-    // [utest -> req~screen.note-column-marks-only~1, req~screen.note-column-keeps-tree~1, req~screen.note-path-per-view~1] note_path = "off" → 欄に名前も見出し「ノート」も出ない(file.name の列のときと同じ)。
+    // [utest -> req~screen.note-column-marks-only~1, req~screen.note-path-per-view~1] note_path = "off" → 欄に名前も見出し「ノート」も出ない(file.name の列のときと同じ)。
     // 値の列は残る。
     let tmp = ledger("sr29np_off");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
@@ -288,7 +288,7 @@ fn test_sr_29_note_path_off_hides_names_and_heading() {
 
 #[test]
 fn test_sr_29_note_path_off_keeps_marks() {
-    // [utest -> req~screen.note-column-marks-only~1, req~screen.note-column-keeps-tree~1, req~write-back.external-keep-pending~1] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
+    // [utest -> req~screen.note-column-marks-only~1, req~write-back.external-keep-pending~1] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
     let tmp = ledger("sr29np_offmark");
     let mut a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
     let i = a

@@ -464,7 +464,7 @@ fn test_nv_29_readonly_filters_without_writing() {
 
 #[test]
 fn test_nv_29_names_find_and_search() {
-    // [utest -> req~navigation.find~1, req~navigation.search-esc~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1, req~navigation.filter-window-live~1, req~navigation.filter-window-count~1] `/` の呼び名は「探す」(ヘルプと下の帯)、上の欄で打っている間の下の帯のモード名は「検索」。
+    // [utest -> req~navigation.find~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1] `/` の呼び名は「探す」(ヘルプと下の帯)、上の欄で打っている間の下の帯のモード名は「検索」。
     assert_eq!(Mode::Search.label(), "探す");
     assert_eq!(Mode::Filter.label(), "検索");
     let (_t, mut a) = boot("nv29names");

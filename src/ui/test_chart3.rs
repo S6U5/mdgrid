@@ -176,7 +176,7 @@ fn test_ch_5_by_draws_one_line_per_value_with_distinct_points() {
 
 #[test]
 fn test_ch_5_rows_without_dates_are_excluded() {
-    // [utest -> req~chart.line-points~1, req~chart.line-series~1] 日付の無い行(epsilon)は数えず「外した 1 行」。点は2つのまま。
+    // [utest -> req~chart.line-points~1] 日付の無い行(epsilon)は数えず「外した 1 行」。点は2つのまま。
     let mut notes = month_notes();
     notes.extend(md(&[("epsilon", "status: todo")]));
     let (_t, mut a) = boot("ch5nodate", &notes, TYPES, LINE_MONTH);

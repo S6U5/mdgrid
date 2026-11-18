@@ -84,7 +84,7 @@ fn test_sr_8_config_editor_default_is_absent() {
 
 #[test]
 fn test_sr_8_config_empty_editor_no_warning_and_absent() {
-    // [utest -> req~screen.editor-choice~1, req~cli.config-file-items~1, req~cli.config-file-templates~1] 設定の editor = "" は警告なしに読め、無いのと同じ。
+    // [utest -> req~screen.editor-choice~1, req~cli.config-file-items~1] 設定の editor = "" は警告なしに読め、無いのと同じ。
     let (c, warnings) = parse("editor = \"\"\n").expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
     assert_eq!(
@@ -117,7 +117,7 @@ fn test_sr_8_config_editor_not_string_warns() {
 
 #[test]
 fn test_sr_8_config_editor_keeps_other_items() {
-    // [utest -> req~screen.editor-reload~1, req~screen.editor-args~1, req~cli.config-file-items~1, req~cli.config-file-ui-keeps-config~1] editor を足しても、ほかの項目の読み取りは変わらない。
+    // [utest -> req~screen.editor-reload~1, req~screen.editor-args~1, req~cli.config-file-items~1] editor を足しても、ほかの項目の読み取りは変わらない。
     let (c, warnings) = parse("editor = \"code -w\"\n\n[edit]\ncandidates = 7\n").expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
     assert_eq!(c.editor.as_deref(), Some("code -w"));

@@ -450,7 +450,7 @@ fn named(name: &str) -> NativeView {
 
 #[test]
 fn test_bv_20_save_refuses_broken_file() {
-    // [utest -> req~base-view.views-toml-broken~1, req~base-view.views-toml-atomic-save~1] 壊れた views.toml には書かず、中身はそのまま。
+    // [utest -> req~base-view.views-toml-broken~1] 壊れた views.toml には書かず、中身はそのまま。
     let t = Tmp::new("broken");
     let p = t.0.join(FILE_NAME);
     std::fs::write(&p, "[[target]\n").unwrap();

@@ -504,7 +504,7 @@ fn test_ch_4_long_values_stay_inside_frame_every_kind() {
 
 #[test]
 fn test_ch_2_tab_inferring_breakdown_marks_title_inferred() {
-    // [utest -> req~chart.open-first~1, req~chart.open-infer~1, req~chart.open-count~1, req~chart.open-title-inferred~1] #9: 全部の鍵を書いた印のグラフ(kind = "bar", x = "status")は題に推定が無い。Tab で積み上げ棒へ移り、
+    // [utest -> req~chart.open-infer~1, req~chart.open-title-inferred~1] #9: 全部の鍵を書いた印のグラフ(kind = "bar", x = "status")は題に推定が無い。Tab で積み上げ棒へ移り、
     // 内訳(assignee)を推し量ったら、題に「推定」。
     let notes = md(&[
         ("alpha", "status: todo\nassignee: alice"),

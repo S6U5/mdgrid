@@ -363,7 +363,7 @@ fn test_bv_19_import_nameless_view_gets_name() {
 
 #[test]
 fn test_bv_20_rename_moves_and_delete_removes_state() {
-    // [utest -> req~base-view.views-toml-atomic-save~1, req~base-view.views-toml-view-state~1, req~screen.state-store-key~1] 名前の変更は状態を新しい名前へ移し(古い名前の状態は残さない)、削除はその状態を消す。
+    // [utest -> req~base-view.views-toml-view-state~1, req~screen.state-store-key~1] 名前の変更は状態を新しい名前へ移し(古い名前の状態は残さない)、削除はその状態を消す。
     let tmp = vault("nvstate_files");
     let mut a = boot(&tmp);
     goto(&mut a, "全部");

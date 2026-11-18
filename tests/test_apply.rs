@@ -169,7 +169,7 @@ fn test_cli_17_locked_cell_is_a_problem() {
     assert_eq!(std::fs::read(root.join("notes/c.md")).unwrap(), bom);
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1, req~cli.apply-reject-all~1, req~cli.apply-reject-reasons~1, req~cli.apply-list-cell~1]
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1, req~cli.apply-reject-all~1, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_flag_combinations() {
     let root = vault("flags");

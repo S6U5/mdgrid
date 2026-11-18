@@ -123,7 +123,7 @@ fn test_cli_13_completions_powershell() {
     completions("powershell");
 }
 
-// [stest -> req~cli.completions-man-shells~1, req~cli.completions-man-unknown-shell~1]
+// [stest -> req~cli.completions-man-shells~1]
 #[test]
 fn test_cli_13_completions_all_shells_differ() {
     // 5つのシェルの出力はそれぞれのシェルの形で、同じものの使い回しではない。

@@ -397,7 +397,7 @@ fn test_ga_2_month_wbs_fill_counts_chars() {
 
 #[test]
 fn test_ga_2_month_today_keeps_digits_reversed() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-milestone~1, req~cell-view.not-color-only~1] 月の単位で、今日(10/06)の字は10月のマスの1字目で月の数「10」の「1」に重なる → 数は消えず
+    // [utest -> req~gantt.open-bars~1, req~cell-view.not-color-only~1] 月の単位で、今日(10/06)の字は10月のマスの1字目で月の数「10」の「1」に重なる → 数は消えず
     // (見出しに ▾ は出ない)、その字を反転で示す(色なし)。11月の数は反転しない。
     let (_t, mut a) = boot("ga2montoday", MONTH_NOTES);
     open_month(&mut a);
@@ -419,7 +419,7 @@ fn test_ga_2_month_today_keeps_digits_reversed() {
 
 #[test]
 fn test_ga_2_day_header_mondays_only() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-today~1, req~gantt.open-milestone~1] 日の単位(原点 10/01・木)の見出しの下の行は、月曜の字にその日の数だけ: 10/05 に「5」、10/12 に「12」、
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-today~1] 日の単位(原点 10/01・木)の見出しの下の行は、月曜の字にその日の数だけ: 10/05 に「5」、10/12 に「12」、
     // 10/19 に「19」、10/26 に「26」(11月より先の月曜も同じ形)。ほかの日の数は無く、今日 10/06(火)の字に ▾。
     let note = "---\nstart: 2026-10-01\ndue: 2026-10-31\n---\n";
     let (_t, mut a) = boot("ga2dayhdr", &[("alpha.md", note)]);
@@ -757,7 +757,7 @@ fn test_ga_4_today_month_left_of_half() {
 
 #[test]
 fn test_ga_2_no_table_hint_head_row() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-no-dates~1] 表で見出しの行を選んだまま `C` → ガントのメッセージ行に「見出しの行」の案内が出ない。Esc で表に戻ると
+    // [utest -> req~gantt.open-bars~1] 表で見出しの行を選んだまま `C` → ガントのメッセージ行に「見出しの行」の案内が出ない。Esc で表に戻ると
     // 案内はまた出る。ガントの操作の知らせ(子の無い行で Z →「この行に子の行は無い」)は今どおり出る。
     let list = [
         (

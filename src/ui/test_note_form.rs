@@ -119,7 +119,7 @@ fn test_ce_26_form_name_problem_shown_on_field() {
     );
 }
 
-// [utest -> req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-hidden~1, req~cell-edit.new-note-config-set-vars~1, req~cell-edit.new-note-config-filter-first~1]
+// [utest -> req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set-vars~1, req~cell-edit.new-note-config-filter-first~1]
 #[test]
 fn test_ce_27_required_and_date_template() {
     let tmp = vault("ce27req");

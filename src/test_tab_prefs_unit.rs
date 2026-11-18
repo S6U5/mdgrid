@@ -45,7 +45,7 @@ fn test_nv_26_tab_prefs_round_trip_keeps_views() {
 
 #[test]
 fn test_nv_26_tab_prefs_default_removes_keys() {
-    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-delete~1, req~navigation.view-tabs-save~1] 既定に戻すと項目を消す。対象の表が無ければ既定を書いても表を作らない。
+    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-save~1] 既定に戻すと項目を消す。対象の表が無ければ既定を書いても表を作らない。
     let d = dir("def");
     let t = d.join("notes");
     views::save_tab_prefs(&d, &t, &TabPrefs::default()).unwrap();

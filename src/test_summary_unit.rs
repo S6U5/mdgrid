@@ -46,7 +46,7 @@ fn test_bv_14_names_parse_and_key() {
 
 #[test]
 fn test_bv_14_labels_english_and_japanese() {
-    // [utest -> req~base-view.summaries-names~1, req~screen.locales-two-languages~1, req~screen.locales-list~1] 見せ方の名前は英語と日本語。英語は Obsidian の名前と同じ。
+    // [utest -> req~base-view.summaries-names~1, req~screen.locales-two-languages~1] 見せ方の名前は英語と日本語。英語は Obsidian の名前と同じ。
     {
         let _g = scoped(Lang::En);
         for sm in Summary::ALL {

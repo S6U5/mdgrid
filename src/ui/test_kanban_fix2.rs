@@ -553,7 +553,7 @@ fn rename_status(a: &mut App) {
 
 #[test]
 fn test_kb_2_pending_key_rename_keeps_cards_in_their_value_lanes() {
-    // [utest -> req~kanban.open-lanes~1, req~kanban.open-lane-order~1, req~kanban.open-card-order~1] #11: status のキーの名前の変更をためても、「→ phase」のレーンはできず、札は元の値のレーン
+    // [utest -> req~kanban.open-lanes~1, req~kanban.open-lane-order~1] #11: status のキーの名前の変更をためても、「→ phase」のレーンはできず、札は元の値のレーン
     // (alpha は todo、beta は doing)にある。
     let (_t, mut a) = boot("kbfx11l", RENAME_NOTES, RULES, KANBAN);
     rename_status(&mut a);

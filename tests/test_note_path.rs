@@ -62,7 +62,7 @@ fn test_sr_46_unknown_value_warns_and_keeps_default() {
 
 #[test]
 fn test_sr_46_known_item_and_view_override_key() {
-    // [stest -> req~screen.note-path-scopes~1, req~screen.display-config-keys~1, req~screen.display-config-view-diff~1, req~cli.config-docs~1] `display.note_path` は設定の項目の表にあり、ビューの上書きの項目でもある。
+    // [stest -> req~screen.note-path-scopes~1, req~screen.display-config-keys~1, req~cli.config-docs~1] `display.note_path` は設定の項目の表にあり、ビューの上書きの項目でもある。
     assert!(KEYS.contains(&"display.note_path"), "{KEYS:?}");
     assert!(
         mdgrid::display::OVERRIDE_KEYS.contains(&"note_path"),

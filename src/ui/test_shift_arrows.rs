@@ -40,7 +40,7 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_ce_23_table_shift_left_right_is_left_right() {
-    // [utest -> req~cell-edit.calendar-month-keys-shift~1, req~cell-edit.calendar-month-keys-rebind~1, req~screen.key-table~1] 表では Shift+←→ も左右の列へ動く(表に Shift+←→ の割り当てが無い)。
+    // [utest -> req~cell-edit.calendar-month-keys-shift~1, req~screen.key-table~1] 表では Shift+←→ も左右の列へ動く(表に Shift+←→ の割り当てが無い)。
     let setup = |n: &str| {
         let (t, mut a) = make(n, NOTES);
         col_named(&mut a, "title");
@@ -73,7 +73,7 @@ fn test_ce_24_table_shift_up_down_still_selects_range() {
 
 #[test]
 fn test_ce_23_settings_buttons_shift_left_right() {
-    // [utest -> req~cell-edit.calendar-month-keys-shift~1, req~cell-edit.calendar-month-keys-rebind~1] ビューの設定の画面のボタンの行で、Shift+←→ も ←→ と同じにボタンを動く。
+    // [utest -> req~cell-edit.calendar-month-keys-shift~1] ビューの設定の画面のボタンの行で、Shift+←→ も ←→ と同じにボタンを動く。
     let setup = |n: &str| {
         let (t, mut a) = st::folder(n);
         st::open(&mut a);
@@ -94,7 +94,7 @@ fn test_ce_23_settings_buttons_shift_left_right() {
 
 #[test]
 fn test_ce_23_chips_shift_left_right() {
-    // [utest -> req~cell-edit.calendar-month-keys-shift~1, req~cell-edit.calendar-month-keys-rebind~1] 設定の帯の中で、Shift+←→ も ←→ と同じに項目を動く。
+    // [utest -> req~cell-edit.calendar-month-keys-shift~1] 設定の帯の中で、Shift+←→ も ←→ と同じに項目を動く。
     let setup = |n: &str| {
         let (t, mut a) = st::folder(n);
         st::open(&mut a);
@@ -190,7 +190,7 @@ fn test_ce_23_text_input_shift_left_right_moves_cursor() {
 
 #[test]
 fn test_ce_24_no_calendar_shift_up_down_is_up_down() {
-    // [utest -> req~cell-edit.calendar-year-keys~1, req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] 日付の列でもカレンダーが出ていない(幅 30)ときは、Shift+↑↓ は ↑↓ と同じで、日付は変わらない。
+    // [utest -> req~cell-edit.calendar-year-keys~1, req~cell-view.grapheme-width-fit~1] 日付の列でもカレンダーが出ていない(幅 30)ときは、Shift+↑↓ は ↑↓ と同じで、日付は変わらない。
     let setup = |n: &str| {
         let tmp = Tmp::new(n);
         std::fs::create_dir_all(tmp.notes().join(".obsidian")).unwrap();

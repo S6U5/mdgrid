@@ -23,7 +23,7 @@ fn table(path: PathBuf) -> WsTable {
 
 #[test]
 fn test_ws_1_broken_file_is_not_rewritten() {
-    // [utest -> req~workspace.app-side-file~1, req~workspace.app-side-no-note-write~1, req~workspace.app-side-bad-entry~1] 読めない workspaces.toml(壊れた TOML・読めない行)には足さず・外さず、ファイルはそのまま。
+    // [utest -> req~workspace.app-side-file~1, req~workspace.app-side-bad-entry~1] 読めない workspaces.toml(壊れた TOML・読めない行)には足さず・外さず、ファイルはそのまま。
     let d = tmp("broken");
     for text in [
         "[[workspace]\nname = \"A\"\n",
@@ -71,7 +71,7 @@ fn test_ws_1_home_and_relative_paths() {
 
 #[test]
 fn test_ws_7_broken_marker_warns() {
-    // [utest -> req~workspace.marker-root~1, req~workspace.marker-form~1, req~workspace.marker-auto-tables~1, req~workspace.marker-open~1, req~workspace.marker-open-unknown~1] 印が読めなければ、自動の表で続けつつ、範囲に警告を残す(黙って使わない)。
+    // [utest -> req~workspace.marker-form~1, req~workspace.marker-auto-tables~1, req~workspace.marker-open~1, req~workspace.marker-open-unknown~1] 印が読めなければ、自動の表で続けつつ、範囲に警告を残す(黙って使わない)。
     let d = tmp("marker");
     std::fs::create_dir_all(d.join("tasks")).unwrap();
     std::fs::write(d.join("tasks/a.md"), "---\nx: 1\n---\n").unwrap();

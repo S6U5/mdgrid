@@ -134,7 +134,7 @@ fn overwrite_seen_only_when_hash_matches() {
 
 #[test]
 fn save_rows_writes_only_given_rows() {
-    // [utest -> req~write-back.pending-mark~1, req~write-back.keep-on-stop~1] 指定の行だけを書き、ほかの行のためた変更は残す。
+    // [utest -> req~write-back.keep-on-stop~1] 指定の行だけを書き、ほかの行のためた変更は残す。
     let (dir, _first, r) = setup("rows");
     std::fs::write(dir.0.join("q.md"), R).unwrap();
     let mut src = Markdown::open(std::slice::from_ref(&dir.0)).unwrap();

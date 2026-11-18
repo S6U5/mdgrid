@@ -296,7 +296,7 @@ fn test_ga_2_band_indexed_levels_far_apart() {
 
 #[test]
 fn test_ga_2_band_weekday_vs_weekend_across_month() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-milestone~1, req~gantt.open-no-dates~1, req~gantt.open-no-color~1] 24 ビットで、default 以外の全部のテーマについて、帯の月の平日と帯の無い月の土日の地が、RGB のどれかの成分で
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-no-color~1] 24 ビットで、default 以外の全部のテーマについて、帯の月の平日と帯の無い月の土日の地が、RGB のどれかの成分で
     // 8 以上違う。月の境が週末に当たる 2026-07-31(金)と 08-01(土)を使う(どちらの月が帯でも、帯の平日と帯なしの土日か、
     // その逆がここで隣り合う)。帯の付く月は、7月(07-29・水)と8月(08-05・水)の平日の地を、窓の地(名前の欄の空き)と
     // 比べて決める。見出しの上の行と選んでいない行(gamma)で。
@@ -443,7 +443,7 @@ fn test_rel_7_no_view_error_hint() {
 
 #[test]
 fn test_ga_2_classic_today_digit_same_in_band() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~gantt.open-milestone~1, req~cell-view.not-color-only~1] classic の見た目([look] mode = "classic")と default 以外の全部のテーマ、24 ビットで、日の単位の見出しの
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~cell-view.not-color-only~1] classic の見た目([look] mode = "classic")と default 以外の全部のテーマ、24 ビットで、日の単位の見出しの
     // 下の行の今日の字が月曜の日の数に重なるとき(今日を 2026-10-05(月)と 2026-11-02(月)にする)、帯のある月の今日の数の
     // 字と、帯の無い月の今日の数の字の、地と文字の色が同じ(どちらも選びの色)。帯のある月かどうかは、その週の水曜(今日の
     // 2日あと)の見出しの下の行の地を、窓の地(名前の欄の空き)と比べて見る。

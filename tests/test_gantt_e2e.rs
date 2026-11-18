@@ -35,7 +35,7 @@ const TODAY: (&str, &str) = ("MDGRID_TODAY", "2026-10-06");
 #[test]
 fn test_ga_1_c_opens_gantt_and_enter_returns_e2e() {
     // [stest -> req~gantt.config-start-end~1, req~gantt.config-days~1, req~gantt.config-infer~1] gantt = { start, end } の表で C → ガントの画面(ヘッダーに「ガント ▾」)。
-    // [stest -> req~gantt.open-bars~1, req~gantt.open-today~1, req~gantt.open-milestone~1, req~gantt.open-no-dates~1] alpha の行は `█` が7つ、beta の行は `◆`、今日の列に `┊`。
+    // [stest -> req~gantt.open-bars~1, req~gantt.open-today~1] alpha の行は `█` が7つ、beta の行は `◆`、今日の列に `┊`。
     // [stest -> req~gantt.keys-today~1, req~gantt.keys-enter~1, req~gantt.keys-back~1] Enter で表に戻る。q で終わる(終了コード 0)。
     let home = root("gantt-e2e", "gantt = { start = \"start\", end = \"due\" }");
     let mut tui = Tui::spawn(&["t"], home.path(), &[TODAY]);

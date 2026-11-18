@@ -332,7 +332,7 @@ fn test_rel_1_percent_with_multibyte_does_not_panic() {
 
 #[test]
 fn test_rel_1_registered_base_uses_vault_root() {
-    // [utest -> req~relations.link-forms-resolve~1, req~relations.link-forms-same-open~1, req~relations.link-forms-outside~1] 登録した `.base` の表は、開いたときと同じく保管庫の根(.obsidian のある上のフォルダ)を探す。
+    // [utest -> req~relations.link-forms-resolve~1, req~relations.link-forms-outside~1] 登録した `.base` の表は、開いたときと同じく保管庫の根(.obsidian のある上のフォルダ)を探す。
     let t = workspace("base");
     std::fs::create_dir_all(t.0.join(".obsidian")).unwrap();
     t.write("Bases/tasks.base", "views: []\n");

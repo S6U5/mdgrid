@@ -142,7 +142,7 @@ fn test_rel_8_menu_esc_closes_without_change() {
 
 #[test]
 fn test_rel_8_menu_back_to_table() {
-    // [utest -> req~relations.screen-menu-open~1, req~relations.screen-menu-switch~1, req~relations.screen-menu-key-hint~1] 関係マップで「関係マップ ▾」を押して「表」を選ぶ → 表の画面。R のキーは窓なしで切り替える。
+    // [utest -> req~relations.screen-menu-open~1, req~relations.screen-menu-switch~1] 関係マップで「関係マップ ▾」を押して「表」を選ぶ → 表の画面。R のキーは窓なしで切り替える。
     let (_t, mut a) = boot_linked("hmback");
     ch(&mut a, 'R');
     assert_eq!(a.mode, Mode::Relations, "R は窓なしで切り替える");
@@ -199,7 +199,7 @@ fn test_ce_25_new_same_place_in_relations() {
 
 #[test]
 fn test_nv_23_no_settings_in_view_bar() {
-    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-settings-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-half-fill~1, req~navigation.search-box-style~1, req~navigation.search-box-hide~1] ビューの帯に ⚙ も「設定」も無い。分類・列は残る。
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-settings-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-style~1, req~navigation.search-box-hide~1] ビューの帯に ⚙ も「設定」も無い。分類・列は残る。
     let (_t, a) = make("hmnogear", NOTES);
     let bar = line(&a, mid(&a));
     assert!(!bar.contains('⚙') && !bar.contains("設定"), "{bar:?}");

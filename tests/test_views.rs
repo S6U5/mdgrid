@@ -465,7 +465,7 @@ path = {p}
 
 #[test]
 fn test_bv_20_broken_toml_warns_and_returns_no_views() {
-    // [utest -> req~base-view.views-toml-broken~1, req~base-view.views-toml-atomic-save~1, req~base-view.views-toml-readonly~1] 壊れた views.toml → 警告の文が出て、ビューは空で、パニックしない。
+    // [utest -> req~base-view.views-toml-broken~1, req~base-view.views-toml-readonly~1] 壊れた views.toml → 警告の文が出て、ビューは空で、パニックしない。
     let t = TempDir::new("broken");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");

@@ -153,7 +153,7 @@ const TREE_NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_ga_4_click_selects_the_clicked_row_when_scrolled() {
-    // [utest -> req~gantt.keys-mouse-click~1, req~gantt.keys-mouse-click-again~1, req~gantt.keys-mouse-wheel~1] 行が窓より多く、下まで動かして流れた状態でも、クリックした行(その行そのもの)を選ぶ。
+    // [utest -> req~gantt.keys-mouse-click~1, req~gantt.keys-mouse-click-again~1] 行が窓より多く、下まで動かして流れた状態でも、クリックした行(その行そのもの)を選ぶ。
     // 枠の下の縁の行をクリックしても選びは変わらない。
     let many: Vec<(String, String)> = (0..30)
         .map(|i| {
@@ -441,7 +441,7 @@ fn test_ga_1_huge_days_do_not_overflow() {
 
 #[test]
 fn test_ga_4_palette_action_applies_to_the_selected_row() {
-    // [utest -> req~gantt.keys-enter~1, req~gantt.keys-mouse-click-again~1, req~gantt.keys-mouse-wheel~1] ガントで j で beta を選び、パレットから表の動作(行に印)を選ぶ → 表に戻って beta が選ばれ、印は beta に付く
+    // [utest -> req~gantt.keys-enter~1, req~gantt.keys-mouse-click-again~1] ガントで j で beta を選び、パレットから表の動作(行に印)を選ぶ → 表に戻って beta が選ばれ、印は beta に付く
     // (表で選んでいた alpha ではない)。
     let (_t, mut a) = boot("ga4pal", TREE_NOTES, GANTT);
     assert_eq!(lab(&a), "alpha");

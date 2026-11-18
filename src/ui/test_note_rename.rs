@@ -153,7 +153,7 @@ fn test_ce_34_refuses_duplicate_key_note() {
 
 #[test]
 fn test_ce_34_menu_offers_rename_note() {
-    // [utest -> req~cell-edit.rename-note-menu~1, req~cell-edit.rename-note-readonly~1, req~cell-edit.rename-note-links~1] 操作の一覧の行の節に「ノートの名前を変える」が出る。
+    // [utest -> req~cell-edit.rename-note-menu~1, req~cell-edit.rename-note-links~1] 操作の一覧の行の節に「ノートの名前を変える」が出る。
     let (_t, mut a) = notes("ce34c");
     select(&mut a, "会議");
     let items = super::menu::items(&a);

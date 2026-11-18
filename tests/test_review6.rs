@@ -59,7 +59,7 @@ fn test_bv_23_hidden_folder_inside_vault() {
     assert_eq!(rows(&run(&root, &["v", "--print"], None)), 1);
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-yes-write~1, req~cli.apply-reject-all~1, req~cli.apply-reject-reasons~1, req~cli.apply-ignored-columns~1, req~cli.apply-empty-cell~1, req~cli.apply-list-cell~1]
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-yes-write~1, req~cli.apply-reject-all~1, req~cli.apply-ignored-columns~1, req~cli.apply-empty-cell~1, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_two_headers_same_column() {
     let root = dir("twohead");
@@ -109,7 +109,7 @@ fn test_cli_17_json_empty_list_and_big_int() {
     );
 }
 
-// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-bad-expr~1, req~cli.print-filter-sort-own-view~1]
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-bad-expr~1]
 #[test]
 fn test_cli_16_sort_column_with_colon() {
     let root = dir("colon");

@@ -161,7 +161,7 @@ fn test_bv_1_folder_rows_labels_and_columns() {
 
 #[test]
 fn test_bv_1_rows_limited_to_given_folder_labels_from_root() {
-    // [utest -> req~base-view.source-base-file~1, req~base-view.source-folder~1] 根が渡したフォルダより上でも、行は渡したフォルダの下のノートだけ。
+    // [utest -> req~base-view.source-folder~1] 根が渡したフォルダより上でも、行は渡したフォルダの下のノートだけ。
     // label は根(.obsidian/ を持つ上のフォルダ)からの相対パス。
     let dir = TempDir::new("source-bv1-root");
     std::fs::create_dir_all(dir.path().join(".obsidian")).unwrap();

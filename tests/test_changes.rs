@@ -159,7 +159,7 @@ fn test_wb_9_pending_not_written_until_save() {
     assert_eq!(read(&dir, "a.md"), A);
     assert_eq!(read(&dir, "b.md"), B);
 
-    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-mark~1, req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] 保存 → 両ファイルが書かれ、未保存 0
+    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] 保存 → 両ファイルが書かれ、未保存 0
     let res = ch.save(&mut src);
     assert_eq!(res.len(), 2);
     assert!(matches!(outcome_of(&res, &a), Outcome::Saved));
@@ -200,7 +200,7 @@ fn test_wb_10_undo_redo_single_set() {
 
 #[test]
 fn test_wb_10_undo_restores_previous_pending_value() {
-    // [utest -> req~write-back.redo-pending~1, req~write-back.undo-keys~1] 同じセルを2度直して取り消す → 1度目のためた値に戻る。
+    // [utest -> req~write-back.redo-pending~1] 同じセルを2度直して取り消す → 1度目のためた値に戻る。
     let (_dir, src) = setup("wb10b");
     let a = row(&src, "a.md");
     let mut ch = Changes::new();

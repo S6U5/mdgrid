@@ -42,7 +42,7 @@ fn test_cv_8_config_out_of_range_warns() {
 
 #[test]
 fn test_cv_8_config_view_override_is_known() {
-    // [stest -> req~cell-view.row-lines-view-override~1, req~screen.display-config-view-diff~1] ビューごとの上書き(SR-20)の項目として知られている。
+    // [stest -> req~cell-view.row-lines-view-override~1] ビューごとの上書き(SR-20)の項目として知られている。
     assert!(
         mdgrid::display::OVERRIDE_KEYS.contains(&"row_extra_lines"),
         "{:?}",

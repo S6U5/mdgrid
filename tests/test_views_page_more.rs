@@ -355,7 +355,7 @@ fn test_sr_49_views_headings_name_each_view_exactly() {
 
 #[test]
 fn test_sr_49_views_anchors_point_at_headings() {
-    // [utest -> req~screen.views-page-entry~1, req~screen.views-page-items~1, req~screen.views-page-keep~1] views.md の相対リンクに `#錨` が付いているとき、その錨は行き先の .md の見出しを mdBook の id
+    // [utest -> req~screen.views-page-entry~1, req~screen.views-page-items~1] views.md の相対リンクに `#錨` が付いているとき、その錨は行き先の .md の見出しを mdBook の id
     // (小文字、空白は `-`、英数と仮名・漢字と `-`・`_` 以外の記号は落とす)に直したものの中にある。
     // 行き先の無い `#錨` だけのリンクは、このページ自身の見出しで見る。
     // id の作り方は、既存のリンク(tasks.md#base-を開く など)が指す見出しと同じ形になることで確かめる。

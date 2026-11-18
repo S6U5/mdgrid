@@ -77,7 +77,7 @@ fn test_ce_28_existing_name_moves_there() {
     assert_eq!(a.cols[a.col], "status");
 }
 
-// [utest -> req~cell-edit.add-column-start~1, req~cell-edit.add-column-empty~1, req~cell-edit.add-column-write~1, req~cell-edit.add-column-session~1, req~cell-edit.add-column-bad-name~1, req~cell-edit.add-column-existing~1, req~cell-edit.add-column-readonly~1]
+// [utest -> req~cell-edit.add-column-write~1, req~cell-edit.add-column-session~1, req~cell-edit.add-column-bad-name~1, req~cell-edit.add-column-existing~1, req~cell-edit.add-column-readonly~1]
 #[test]
 fn test_ce_28_readonly_does_not_add() {
     let (_t, mut a) = make("ce28ro", NOTES);

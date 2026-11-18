@@ -454,7 +454,7 @@ fn test_sr_23_lib_config_warnings_are_english() {
 
 #[test]
 fn test_sr_23_lib_config_warnings_stay_japanese_under_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-location~1, req~cli.config-file-ui-keeps-config~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] scoped(Ja) では今の日本語の警告。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] scoped(Ja) では今の日本語の警告。
     let _g = scoped(Lang::Ja);
     for text in ["unknownitem = 1\n", "[edit]\nadd_frontmatter = \"no\"\n"] {
         let (_c, w) = parse_config(text).expect("警告にとどまる");
@@ -641,7 +641,7 @@ const BROKEN_VIEWS: &str = "[[target]\npath = \"/x\n  [[target.view]]\n  name = 
 
 #[test]
 fn test_sr_23_lib_views_warnings_are_english() {
-    // [stest -> req~screen.locales-no-translate~1, req~base-view.views-toml-unknown-items~1, req~base-view.views-toml-atomic-save~1] 英語のとき、views.toml の知らない項目(名前はそのまま)と壊れたファイルの警告が英語。
+    // [stest -> req~screen.locales-no-translate~1, req~base-view.views-toml-unknown-items~1] 英語のとき、views.toml の知らない項目(名前はそのまま)と壊れたファイルの警告が英語。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
 
