@@ -1,5 +1,5 @@
 //! 表の上のパンくずのヘッダーとビューの帯(SR-1・SR-42・NV-23・NV-24・NV-29・WS-8)の受け入れ試験。
-//! 記録: specs/_changes/2026-10-11-view-bar.md(タスク #2)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-11-view-bar.md(タスク #2)。
 //!
 //! 内部の状態のフィールドや新しい関数には頼らず、キー・クリック・描いた画面の文字・`mode`・`settings`・
 //! 行・`switch_to` で確かめる。置いた仮定(記録の「不明点と仮定」に沿う):
@@ -279,7 +279,7 @@ fn boot_work(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_1_view_bar_rows() {
-    // [SR-1] 80×24 で起動 → 1行目がヘッダー、2行目にビューのタブ・検索の欄・絞り込み・並べ替えが同じ行、
+    // [utest -> req~screen.layout-order~1] 80×24 で起動 → 1行目がヘッダー、2行目にビューのタブ・検索の欄・絞り込み・並べ替えが同じ行、
     // 3行目が列の見出し(条件が無いとき)。
     let (_t, a) = boot("sr1bar");
     let s = scr(&a);
@@ -306,7 +306,7 @@ fn test_sr_1_view_bar_rows() {
 
 #[test]
 fn test_sr_1_view_bar_with_condition_then_chips() {
-    // [SR-1][NV-16] 条件が効いているとき → 3行目が設定の帯、4行目が列の見出し。
+    // [utest -> req~screen.layout-order~1, req~navigation.settings-bar-items~1] 条件が効いているとき → 3行目が設定の帯、4行目が列の見出し。
     let (_t, mut a) = boot("sr1chips");
     ch(&mut a, '|');
     hide_done(&mut a);
@@ -327,7 +327,7 @@ fn test_sr_1_view_bar_with_condition_then_chips() {
 
 #[test]
 fn test_sr_1_view_bar_hidden_when_tabs_and_search_hidden() {
-    // [SR-1][SR-20] タブ(`tabs = "never"`)と検索の欄(`search_bar = false`)を両方隠す → ビューの帯の行ごと
+    // [utest -> req~screen.layout-no-view-bar~1, req~screen.display-options-config~1] タブ(`tabs = "never"`)と検索の欄(`search_bar = false`)を両方隠す → ビューの帯の行ごと
     // 出さず、2行目が列の見出し。
     let (_t, a) = boot_config(
         "sr1hide",
@@ -344,7 +344,7 @@ fn test_sr_1_view_bar_hidden_when_tabs_and_search_hidden() {
 
 #[test]
 fn test_sr_1_view_bar_tabs_hidden_keeps_search_and_buttons() {
-    // [SR-1][SR-34] タブだけ隠す(`tabs = "never"`)→ ビューの帯は残り、検索の欄とボタンが2行目、3行目が見出し。
+    // [utest -> req~screen.layout-order~1, req~screen.layout-hide-parts~1, req~screen.layout-no-view-bar~1, req~screen.tabs-setting-values~1, req~screen.tabs-setting-auto-single~1] タブだけ隠す(`tabs = "never"`)→ ビューの帯は残り、検索の欄とボタンが2行目、3行目が見出し。
     let (_t, a) = boot_config("sr1tabs", "[display]\ntabs = \"never\"\n");
     let s = scr(&a);
     let bar = line(&a, BAR);
@@ -359,7 +359,7 @@ fn test_sr_1_view_bar_tabs_hidden_keeps_search_and_buttons() {
 
 #[test]
 fn test_nv_23_view_bar_buttons_in_order_with_keys() {
-    // [NV-23] 2行目に「\ 検索」の欄、その右に 絞り込み・並べ替え・分類・列、右の端に「+ 新規」がこの順。
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-button-keys~1, req~navigation.search-box-narrow~1] 2行目に「\ 検索」の欄、その右に 絞り込み・並べ替え・分類・列、右の端に「+ 新規」がこの順。
     // キーのあるボタンにキーが添えてある(「| 絞り込み」「S 並べ替え」「a + 新規」)。設定の ⚙ は
     // 2026-10-12-header-menu で1行目の「o ⚙ 設定」に移り、2行目には無い。
     let (_t, a) = boot("nv23order");
@@ -380,7 +380,7 @@ fn test_nv_23_view_bar_buttons_in_order_with_keys() {
 
 #[test]
 fn test_nv_23_view_bar_search_word_and_count() {
-    // [NV-23][NV-2] 「会議」で絞る → ビューの帯の検索の欄に語と「3/5行」。ボタンは残る。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-style~1, req~navigation.search-input-place~1, req~navigation.search-over-base~1, req~navigation.search-naming~1] 「会議」で絞る → ビューの帯の検索の欄に語と「3/5行」。ボタンは残る。
     let (_t, mut a) = make(
         "nv23word",
         &[
@@ -407,7 +407,7 @@ fn test_nv_23_view_bar_search_word_and_count() {
 
 #[test]
 fn test_nv_23_view_bar_group_button_opens_settings_at_group() {
-    // [NV-23] 「分類」をクリック → ビューの設定の画面の分類の区画。
+    // [utest -> req~navigation.search-box-settings-buttons~1] 「分類」をクリック → ビューの設定の画面の分類の区画。
     let (_t, mut a) = boot("nv23group");
     click_text(&mut a, BAR, "分類");
     assert_eq!(a.mode, Mode::Settings, "{}", scr(&a));
@@ -416,7 +416,7 @@ fn test_nv_23_view_bar_group_button_opens_settings_at_group() {
 
 #[test]
 fn test_nv_23_view_bar_columns_button_opens_settings_at_columns() {
-    // [NV-23] 「列」をクリック → ビューの設定の画面の列の区画。
+    // [utest -> req~navigation.search-box-key-glyph~1, req~navigation.search-box-settings-buttons~1] 「列」をクリック → ビューの設定の画面の列の区画。
     let (_t, mut a) = boot("nv23cols");
     let bar = line(&a, BAR);
     // 「列」は「分類」より右にあるもの(見出しなどの字と取り違えない)。
@@ -432,7 +432,7 @@ fn test_nv_23_view_bar_columns_button_opens_settings_at_columns() {
 
 #[test]
 fn test_nv_23_view_bar_gear_opens_settings() {
-    // [NV-23][SR-42] ⚙(2026-10-12-header-menu で1行目の右の端に移った)をクリック → ビューの設定の画面。
+    // [utest -> req~navigation.search-box-new~1, req~navigation.search-box-settings-buttons~1, req~screen.breadcrumb-right-buttons~1] ⚙(2026-10-12-header-menu で1行目の右の端に移った)をクリック → ビューの設定の画面。
     let (_t, mut a) = boot("nv23gear");
     click_text(&mut a, HEAD, "⚙");
     assert_eq!(a.mode, Mode::Settings, "{}", scr(&a));
@@ -440,7 +440,7 @@ fn test_nv_23_view_bar_gear_opens_settings() {
 
 #[test]
 fn test_nv_23_view_bar_narrow_drops_gear_columns_group() {
-    // [NV-23] 幅 60 → 列・分類が無く、今のタブ・検索の欄・絞り込み・並べ替え・「+ 新規」は出る。80 なら全部
+    // [utest -> req~navigation.search-box-narrow~1] 幅 60 → 列・分類が無く、今のタブ・検索の欄・絞り込み・並べ替え・「+ 新規」は出る。80 なら全部
     // 出る(⚙ は 2026-10-12-header-menu で帯から外れた)。
     let (_t, mut a) = boot("nv23narrow");
     let wide = line(&a, BAR);
@@ -463,7 +463,7 @@ fn test_nv_23_view_bar_narrow_drops_gear_columns_group() {
 
 #[test]
 fn test_nv_23_view_bar_click_search_field_enters() {
-    // [NV-23] ビューの帯の検索の欄をクリック → 欄に入る(打つモード)。
+    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-label~1, req~navigation.search-box-hide~1] ビューの帯の検索の欄をクリック → 欄に入る(打つモード)。
     let (_t, mut a) = boot("nv23click");
     click_text(&mut a, BAR, "検索");
     assert_eq!(a.mode, Mode::Filter, "{}", scr(&a));
@@ -471,7 +471,7 @@ fn test_nv_23_view_bar_click_search_field_enters() {
 
 #[test]
 fn test_nv_23_view_bar_tab_click_switches_view() {
-    // [NV-23][SR-1] ビューが3つの `.base` で、ビューの帯(検索の欄と同じ行)のタブ「完了」をクリック → ビューが変わる。
+    // [utest -> req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-window-below~1, req~screen.layout-order~1, req~screen.layout-hide-parts~1, req~screen.layout-no-view-bar~1] ビューが3つの `.base` で、ビューの帯(検索の欄と同じ行)のタブ「完了」をクリック → ビューが変わる。
     let tmp = super::test_grid::vault("nv23tab");
     let mut a = super::test_grid::open(&tmp, super::test_grid::TASKS, None);
     let bar = line(&a, BAR);
@@ -489,7 +489,7 @@ fn test_nv_23_view_bar_tab_click_switches_view() {
 
 #[test]
 fn test_nv_24_view_bar_sort_window_below_button() {
-    // [NV-24] 「並べ替え」を押す → 窓がボタンのすぐ下の行に出て、左の端がボタンの左の端の近く(右の端に寄せない)。
+    // [utest -> req~navigation.sort-window-open~1] 「並べ替え」を押す → 窓がボタンのすぐ下の行に出て、左の端がボタンの左の端の近く(右の端に寄せない)。
     let (_t, mut a) = boot("nv24place");
     let bx = col_in(&a, BAR, "並べ替え").unwrap_or_else(|| panic!("2行目に並べ替え:\n{}", scr(&a)));
     a.click(bx + 1, BAR);
@@ -505,7 +505,7 @@ fn test_nv_24_view_bar_sort_window_below_button() {
 
 #[test]
 fn test_nv_29_table_window_below_button() {
-    // [NV-29] 「絞り込み」を押す → 窓がボタンのすぐ下の行に出て、左の端がボタンの左の端の近く。
+    // [utest -> req~navigation.filter-window-open~1] 「絞り込み」を押す → 窓がボタンのすぐ下の行に出て、左の端がボタンの左の端の近く。
     let (_t, mut a) = boot("nv29place");
     let bx = col_in(&a, BAR, "絞り込み").unwrap_or_else(|| panic!("2行目に絞り込み:\n{}", scr(&a)));
     a.click(bx + 1, BAR);
@@ -524,7 +524,7 @@ fn test_nv_29_table_window_below_button() {
 
 #[test]
 fn test_nv_29_table_rows_have_column_op_value_remove() {
-    // [NV-29] 条件を2つ足した窓で、各条件の行に 列・比べ方・値・× がこの順に並ぶ。
+    // [utest -> req~navigation.filter-window-open~1, req~navigation.filter-window-edit~1, req~navigation.filter-window-inline~1] 条件を2つ足した窓で、各条件の行に 列・比べ方・値・× がこの順に並ぶ。
     let (_t, a) = two_conditions("nv29rows");
     let st = cond_row(&a, "status");
     assert!(
@@ -542,7 +542,7 @@ fn test_nv_29_table_rows_have_column_op_value_remove() {
 
 #[test]
 fn test_nv_29_table_edit_op_in_place() {
-    // [NV-29] status の条件の行で → を押して比べ方の欄を選び Enter → 種類を選ぶ段。「含む」を選んで「ing」と
+    // [utest -> req~navigation.filter-window-edit~1, req~navigation.filter-window-inline~1] status の条件の行で → を押して比べ方の欄を選び Enter → 種類を選ぶ段。「含む」を選んで「ing」と
     // 打って Enter → その条件が Contains("ing") に変わり、条件の数は増えない(priority の条件はそのまま)。
     let (_t, mut a) = two_conditions("nv29op");
     select(&mut a, "status");
@@ -575,7 +575,7 @@ fn test_nv_29_table_edit_op_in_place() {
 
 #[test]
 fn test_nv_29_table_edit_column_in_place() {
-    // [NV-29] status の条件の行で ← を押して列の欄を選び Enter → 列を選ぶ段。memo を選び、種類「空である」→
+    // [utest -> req~navigation.filter-window-edit~1] status の条件の行で ← を押して列の欄を選び Enter → 列を選ぶ段。memo を選び、種類「空である」→
     // その条件が memo の空であるに変わり、条件の数は増えない。
     let (_t, mut a) = two_conditions("nv29col");
     select(&mut a, "status");
@@ -601,7 +601,7 @@ fn test_nv_29_table_edit_column_in_place() {
 
 #[test]
 fn test_nv_29_table_edit_value_field() {
-    // [NV-29] 値の欄で Enter → 値の一覧(status の隠す条件。done にチェック)か、値の入力(priority ≥ 3 は「3」)。
+    // [utest -> req~navigation.filter-window-edit~1] 値の欄で Enter → 値の一覧(status の隠す条件。done にチェック)か、値の入力(priority ≥ 3 は「3」)。
     let (_t, mut a) = two_conditions("nv29val");
     select(&mut a, "status");
     field(&mut a, 2);
@@ -637,7 +637,7 @@ fn test_nv_29_table_edit_value_field() {
 
 #[test]
 fn test_sr_42_crumb_scope_and_table() {
-    // [SR-42][WS-6] ワークスペース Work の tasks を開く → 1行目の左が「w Work › tasks ▾」と行数。
+    // [utest -> req~screen.breadcrumb-path~1, req~workspace.scope-order-crumb~1] ワークスペース Work の tasks を開く → 1行目の左が「w Work › tasks ▾」と行数。
     // 「ワークスペース」のボタンは無い。「設定」は 2026-10-12-header-menu で右の端のボタンになった。
     let (_tmp, a) = boot_work("sr42crumb");
     let head = line(&a, HEAD);
@@ -652,7 +652,7 @@ fn test_sr_42_crumb_scope_and_table() {
 
 #[test]
 fn test_sr_42_crumb_click_toggles_drawer() {
-    // [SR-42][WS-8] パンくずの範囲の名前をクリック → 引き出しが開き、もう一度で閉じる。表の名前でも開く。
+    // [utest -> req~screen.breadcrumb-drawer~1, req~workspace.drawer-open~1, req~workspace.drawer-from-map~1] パンくずの範囲の名前をクリック → 引き出しが開き、もう一度で閉じる。表の名前でも開く。
     let (_tmp, mut a) = boot_work("sr42click");
     click_text(&mut a, HEAD, "Work");
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
@@ -666,7 +666,7 @@ fn test_sr_42_crumb_click_toggles_drawer() {
 
 #[test]
 fn test_sr_42_crumb_same_column_in_relations() {
-    // [SR-42] 関係マップでもパンくずは同じ桁。押すと表の画面に戻って引き出しが開く。
+    // [utest -> req~screen.breadcrumb-relation-map~1] 関係マップでもパンくずは同じ桁。押すと表の画面に戻って引き出しが開く。
     let (_tmp, mut a) = boot_work("sr42rel");
     let x = col_in(&a, HEAD, "Work ›").unwrap_or_else(|| panic!("{}", scr(&a)));
     ch(&mut a, 'R');
@@ -679,7 +679,7 @@ fn test_sr_42_crumb_same_column_in_relations() {
 
 #[test]
 fn test_sr_42_crumb_without_scope() {
-    // [SR-42] 範囲が無い(登録した表だけ)→ 「›」が無く、表の名前と行数。
+    // [utest -> req~screen.breadcrumb-path~1, req~screen.breadcrumb-relation-map~1] 範囲が無い(登録した表だけ)→ 「›」が無く、表の名前と行数。
     let tmp = workspace("sr42none");
     let a = boot_tasks(&tmp);
     assert!(a.scope.is_none());
@@ -695,7 +695,7 @@ fn test_sr_42_crumb_without_scope() {
 
 #[test]
 fn test_ws_8_crumb_drawer_switches_table() {
-    // [WS-8][SR-42] パンくずの範囲の名前から開いた引き出しで Projects をクリック → その表へ移る。
+    // [utest -> req~workspace.drawer-switch~1, req~workspace.drawer-open~1, req~workspace.drawer-from-map~1, req~screen.breadcrumb-drawer~1] パンくずの範囲の名前から開いた引き出しで Projects をクリック → その表へ移る。
     let (tmp, mut a) = boot_work("ws8crumb");
     click_text(&mut a, HEAD, "Work");
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));

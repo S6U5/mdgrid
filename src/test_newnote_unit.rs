@@ -9,7 +9,7 @@ fn edit(key: &str, value: NewValue) -> Edit {
 
 #[test]
 fn test_ce_25_fixed_values_from_expr() {
-    // [CE-25] `&&` の項・逆向きの `==`・note["…"] も拾い、`||`・`!=`・file.* は拾わない。
+    // [utest -> req~cell-edit.new-note-filter-values~1] `&&` の項・逆向きの `==`・note["…"] も拾い、`||`・`!=`・file.* は拾わない。
     let e = expr::parse(r#"status == "todo" && 3 == note["優先"] && tags.contains("a")"#).unwrap();
     assert_eq!(
         e.fixed_values(),
@@ -31,7 +31,7 @@ fn test_ce_25_fixed_values_from_expr() {
 
 #[test]
 fn test_ce_25_prefill_merges_list_and_skips_file_columns() {
-    // [CE-25] 同じリストの列の値は合わせ、file.* の列は入れない。数の式は数で入れる。
+    // [utest -> req~cell-edit.new-note-start-keys~1, req~cell-edit.new-note-folder-pick~1] 同じリストの列の値は合わせ、file.* の列は入れない。数の式は数で入れる。
     let kinds: HashMap<String, Kind> = [("tags".to_string(), Kind::List)].into_iter().collect();
     let s = Settings {
         filters: vec![
@@ -66,7 +66,7 @@ fn test_ce_25_prefill_merges_list_and_skips_file_columns() {
 
 #[test]
 fn test_ce_26_answer_replaces_set_value() {
-    // [CE-26] 聞いた値は設定の値を置き換え、空なら(空のまま進めた)その列を書かない。
+    // [utest -> req~cell-edit.new-note-form-skip-empty~1] 聞いた値は設定の値を置き換え、空なら(空のまま進めた)その列を書かない。
     let rule = NewNote {
         set: vec![("kind".to_string(), NewValue::Str("memo".to_string()))],
         ..NewNote::default()
@@ -91,7 +91,7 @@ fn test_ce_26_answer_replaces_set_value() {
 
 #[test]
 fn test_ce_27_set_values_round_trip_through_toml() {
-    // [CE-27] set の値は TOML の値と行き来できる(Null は空の並びになる)。
+    // [utest -> req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-filter-first~1] set の値は TOML の値と行き来できる(Null は空の並びになる)。
     for v in [
         NewValue::Str("x".into()),
         NewValue::Int(2),
@@ -120,7 +120,7 @@ fn test_ce_27_set_values_round_trip_through_toml() {
 
 #[test]
 fn test_ce_25_note_path_trims_and_refuses_folder_name() {
-    // [CE-25] 名前の前後の空白は除く。フォルダで終わる名前は断る。
+    // [utest -> req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-refuse-existing~1] 名前の前後の空白は除く。フォルダで終わる名前は断る。
     let root = Path::new("/no/such/root");
     assert_eq!(
         note_path(root, "", "  メモ  ").unwrap(),
@@ -171,7 +171,7 @@ fn names_in(dir: &Path) -> Vec<String> {
 
 #[test]
 fn test_ce_25_spaced_dotdot_does_not_escape() {
-    // [CE-25] 空白で囲んだ `..` も外に出る部品として断り、外に何も作らない(フォルダの設定も同じ)。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-start-keys~1, req~cell-edit.new-note-name~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-folder-root~1, req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-readonly~1] 空白で囲んだ `..` も外に出る部品として断り、外に何も作らない(フォルダの設定も同じ)。
     let t = Tmp::new("escape");
     let root = t.0.join("vault");
     std::fs::create_dir_all(&root).unwrap();
@@ -192,7 +192,7 @@ fn test_ce_25_spaced_dotdot_does_not_escape() {
 
 #[test]
 fn test_ce_25_obsidian_bad_chars_and_dot_parts_are_refused() {
-    // [CE-25] Obsidian が許さない文字・`\`・`.` で始まる部品(.obsidian・.git・.trash も)は理由つきで断る。
+    // [utest -> req~cell-edit.new-note-relmap-button~1] Obsidian が許さない文字・`\`・`.` で始まる部品(.obsidian・.git・.trash も)は理由つきで断る。
     let root = Path::new("/no/such/root");
     for name in [
         "a#b",
@@ -227,7 +227,7 @@ fn test_ce_25_obsidian_bad_chars_and_dot_parts_are_refused() {
 
 #[test]
 fn test_ce_27_views_date_survives_load_save_load() {
-    // [CE-27] [BV-17] views.toml の set の日付は、読む → 保存 → 読む のあとも日付のまま書かれる。
+    // [utest -> req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-set-vars~1, req~base-view.own-views-no-note-files~1, req~base-view.own-views-beyond-base~1] views.toml の set の日付は、読む → 保存 → 読む のあとも日付のまま書かれる。
     let t = Tmp::new("views-date");
     let conf = t.0.join("config");
     let notes = t.0.join("notes");
@@ -272,7 +272,7 @@ fn fm_value(bytes: &[u8], key: &str) -> Option<crate::frontmatter::Value> {
 
 #[test]
 fn test_ce_25_expr_prefill_keeps_row_in_view() {
-    // [CE-25] 式から拾った値は書いてある型のまま入れ、作ったノートで式が真になる(ビューに残る)。
+    // [utest -> req~cell-edit.new-note-filter-values~1] 式から拾った値は書いてある型のまま入れ、作ったノートで式が真になる(ビューに残る)。
     let kinds: HashMap<String, Kind> = [
         ("code".to_string(), Kind::Number),
         ("done".to_string(), Kind::Checkbox),
@@ -320,7 +320,7 @@ fn test_ce_25_expr_prefill_keeps_row_in_view() {
 
 #[test]
 fn test_ce_25_settings_prefill_keeps_row_in_view() {
-    // [CE-25] 設定の条件(Keep・Cmp ==)から入れた値で、作ったノートが settings::matches で残る。
+    // [utest -> req~cell-edit.new-note-filter-values~1] 設定の条件(Keep・Cmp ==)から入れた値で、作ったノートが settings::matches で残る。
     let cases = [
         ("status", Kind::Text, Op::Keep(vec![Some("todo".into())])),
         ("tags", Kind::List, Op::Keep(vec![Some("会議".into())])),
@@ -357,7 +357,7 @@ fn test_ce_25_settings_prefill_keeps_row_in_view() {
 
 #[test]
 fn test_ce_25_has_tag_goes_into_tags() {
-    // [CE-25] `file.hasTag("会議")` は tags の列に入れる(先頭の # は除く)。引数が2つなら決まらない。
+    // [utest -> req~cell-edit.new-note-filter-values~1] `file.hasTag("会議")` は tags の列に入れる(先頭の # は除く)。引数が2つなら決まらない。
     let pre = prefill(
         &Settings::default(),
         &[r##"file.hasTag("#会議")"##.to_string()],
@@ -379,7 +379,7 @@ fn test_ce_25_has_tag_goes_into_tags() {
 
 #[test]
 fn test_ce_27_bad_ask_and_set_columns_warn_and_drop() {
-    // [CE-27] ask・set の file.*・formula.* と ask の重なりは警告して捨てる。
+    // [utest -> req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-filter-first~1] ask・set の file.*・formula.* と ask の重なりは警告して捨てる。
     let (c, w) = crate::config::parse(
         "[new_note]\nask = [\"a\", \"file.name\", \"a\", \"formula.x\"]\n[new_note.set]\n\"file.name\" = \"x\"\nb = 1\n",
     )
@@ -392,7 +392,7 @@ fn test_ce_27_bad_ask_and_set_columns_warn_and_drop() {
 
 #[test]
 fn test_ce_26_empty_answer_drops_preset_values() {
-    // [CE-26] 聞く項目を空のまま進めたら、絞り込みの値も set の値も書かない(ほかの列は残す)。
+    // [utest -> req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-skip-empty~1] 聞く項目を空のまま進めたら、絞り込みの値も set の値も書かない(ほかの列は残す)。
     let rule = NewNote {
         ask: vec!["status".to_string(), "kind".to_string()],
         set: vec![

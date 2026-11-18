@@ -1,5 +1,5 @@
 //! タスク 15 の受け入れテスト(CE-9・WB-5 のハードリンク)。
-//! 仕様: specs/cell-edit/spec.md の CE-9、specs/write-back/spec.md の WB-5。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md の CE-9、specs/_history/decidespec/write-back/spec.md の WB-5。
 
 use mdgrid::frontmatter::{parse, ReadOnly, Value};
 use mdgrid::writeback::{apply, baseline, save, Edit, EditError, NewValue, SaveError};
@@ -73,7 +73,7 @@ const DONE: &[u8] = b"---\ntitle: t\nstatus: done\npriority: 3\n---\nbody\n";
 
 #[test]
 fn ce_9_null_writes_key_with_nothing_after_colon() {
-    // [CE-9] 値を空にすると `status:` の行が残り、他のバイトは同じ。
+    // [utest -> req~cell-edit.empty-is-null~1] 値を空にすると `status:` の行が残り、他のバイトは同じ。
     let after = apply(DONE, &[edit("status", NewValue::Null)]).expect("apply");
     assert_eq!(
         String::from_utf8_lossy(&after),
@@ -83,7 +83,7 @@ fn ce_9_null_writes_key_with_nothing_after_colon() {
 
 #[test]
 fn ce_9_null_keeps_key_and_reads_back_as_null() {
-    // [CE-9] キーは消えず、読み直すと Null。他のキーの値は変わらない。
+    // [utest -> req~cell-edit.empty-is-null~1] キーは消えず、読み直すと Null。他のキーの値は変わらない。
     let after = apply(DONE, &[edit("status", NewValue::Null)]).expect("apply");
     assert_eq!(value_of(&after, "status"), Value::Null);
     assert_eq!(value_of(&after, "title"), Value::Str("t".into()));
@@ -99,7 +99,7 @@ fn ce_9_null_keeps_key_and_reads_back_as_null() {
 
 #[test]
 fn ce_9_null_on_fixture_plain() {
-    // [CE-9] 材料の plain.md(status: draft)でも `status:` になる。
+    // [utest -> req~cell-edit.empty-is-null~1] 材料の plain.md(status: draft)でも `status:` になる。
     let after = apply(&fixture("plain.md"), &[edit("status", NewValue::Null)]).expect("apply");
     assert_eq!(
         String::from_utf8_lossy(&after),
@@ -109,7 +109,7 @@ fn ce_9_null_on_fixture_plain() {
 
 #[test]
 fn ce_9_null_keeps_crlf() {
-    // [CE-9] CRLF の材料でも行末の改行コードは保たれる。
+    // [utest -> req~cell-edit.empty-is-null~1] CRLF の材料でも行末の改行コードは保たれる。
     let after = apply(&fixture("crlf.md"), &[edit("status", NewValue::Null)]).expect("apply");
     assert_eq!(
         String::from_utf8_lossy(&after),
@@ -120,7 +120,7 @@ fn ce_9_null_keeps_crlf() {
 
 #[test]
 fn ce_9_null_for_missing_key_appends_key_line() {
-    // [CE-9] キーの無いノートに Null を足すと `key:` の1行が足される。
+    // [utest -> req~cell-edit.empty-is-null~1] キーの無いノートに Null を足すと `key:` の1行が足される。
     let after = apply(&fixture("plain.md"), &[edit("due", NewValue::Null)]).expect("apply");
     assert_eq!(
         String::from_utf8_lossy(&after),
@@ -131,7 +131,7 @@ fn ce_9_null_for_missing_key_appends_key_line() {
 
 #[test]
 fn ce_9_null_for_missing_key_keeps_crlf() {
-    // [CE-9] CRLF の材料に足す `key:` の行も CRLF で終わる。
+    // [utest -> req~cell-edit.empty-is-null~1] CRLF の材料に足す `key:` の行も CRLF で終わる。
     let after = apply(&fixture("crlf.md"), &[edit("due", NewValue::Null)]).expect("apply");
     assert_eq!(
         String::from_utf8_lossy(&after),
@@ -141,7 +141,7 @@ fn ce_9_null_for_missing_key_keeps_crlf() {
 
 #[test]
 fn ce_9_save_writes_key_with_nothing_after_colon() {
-    // [CE-9] save 経由でもファイルが `status:` になる。
+    // [utest -> req~cell-edit.empty-is-null~1] save 経由でもファイルが `status:` になる。
     let dir = TempDir::new("ce9-save");
     let note = dir.write("note.md", DONE);
     let base = baseline(&note).unwrap();
@@ -159,7 +159,7 @@ fn ce_9_save_writes_key_with_nothing_after_colon() {
 #[cfg(unix)]
 #[test]
 fn wb_5_save_refuses_hard_linked_note_with_reason() {
-    // [WB-5] ハードリンクのあるノートは書かず、理由は ReadOnly::HardLink。両方のファイルが元のまま。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1] ハードリンクのあるノートは書かず、理由は ReadOnly::HardLink。両方のファイルが元のまま。
     let dir = TempDir::new("wb5-hardlink");
     let original = fixture("plain.md");
     let note = dir.write("note.md", &original);
@@ -185,7 +185,7 @@ fn wb_5_save_refuses_hard_linked_note_with_reason() {
 #[cfg(unix)]
 #[test]
 fn wb_5_save_refuses_hard_linked_note_even_for_null() {
-    // [WB-5] [CE-9] Null の書き込みでもハードリンクのあるノートは書かない。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~cell-edit.empty-is-null~1] Null の書き込みでもハードリンクのあるノートは書かない。
     let dir = TempDir::new("wb5-hardlink-null");
     let note = dir.write("note.md", DONE);
     let other = dir.path().join("other.md");

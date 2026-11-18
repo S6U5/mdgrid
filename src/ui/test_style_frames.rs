@@ -7,7 +7,7 @@ use ratatui::style::Color;
 
 #[test]
 fn test_sr_33_frame_accent_in_every_frame_shape() {
-    // [SR-33][SR-36] frames = square・heavy でも、候補の窓の角と縦の線はアクセントの色。
+    // [utest -> req~screen.modern-look-frames~1, req~screen.modern-look-parts~1, req~screen.style-parts-default~1] frames = square・heavy でも、候補の窓の角と縦の線はアクセントの色。
     let tmp = Tmp::new("sr33_frames");
     for (n, s) in [("a", "todo"), ("b", "doing"), ("c", "todo")] {
         tmp.write(

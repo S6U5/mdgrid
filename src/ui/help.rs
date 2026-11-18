@@ -508,12 +508,8 @@ impl App {
     pub(crate) fn close_palette(&mut self) {
         self.palette = None;
         self.nv.ask = None;
-        // TR-5: 木の画面から開いたパレットは、閉じると木に戻る。
-        let back = if self.folder_tree.is_some() {
-            Mode::Tree
-        } else {
-            Mode::Table
-        };
+        // TR-5: 木(ほかの表でない画面の型)から開いたパレットは、閉じるとその画面に戻る。
+        let back = self.screen().mode();
         self.set_mode(back);
     }
 
@@ -545,7 +541,11 @@ impl App {
                     self.close_palette();
                     match target {
                         Target::Run(a) => self.apply(a),
-                        Target::Goto(n) => self.goto_line(n),
+                        // NV-7: 行へ跳ぶのは表の行なので、表でない画面の型からは表の画面に戻ってから。
+                        Target::Goto(n) => {
+                            self.close_screen();
+                            self.goto_line(n)
+                        }
                     }
                 }
             },

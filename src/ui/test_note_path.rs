@@ -1,6 +1,6 @@
 //! ノートの欄のフォルダの出し方 `display.note_path`(SR-29・SR-46)の画面の受け入れ試験。
 //! `"common"`(既定。共通のフォルダを除く)・`"name"`(名前だけ)・`"full"`(根からのパス)・`"off"`(提案中の4つ目。
-//! 欄に名前も見出しも出さず、行の印だけ)。記録 specs/_changes/2026-10-15-note-path.md(タスク #1)。
+//! 欄に名前も見出しも出さず、行の印だけ)。記録 specs/_history/decidespec/_changes/2026-10-15-note-path.md(タスク #1)。
 //! 実装を見ずに、設定の TOML・画面の文字・キーで確かめる(行と桁の位置は決め打ちしない)。
 //! 状態と mdgrid のビューの置き場は一時フォルダ(`<一時>/state`・`<一時>/config`)。
 //!
@@ -222,7 +222,7 @@ fn cycle_to(a: &mut App, want: &str) {
 
 #[test]
 fn test_sr_29_note_path_name_shows_only_names() {
-    // [SR-29][SR-46] note_path = "name" で todo/alpha.md・archive/todo/beta.md → 欄は alpha・beta。見出しは残る。
+    // [utest -> req~screen.note-column-path~1, req~screen.note-column-keeps-tree~1, req~screen.note-path-scopes~1] note_path = "name" で todo/alpha.md・archive/todo/beta.md → 欄は alpha・beta。見出しは残る。
     let tmp = ledger("sr29np_name");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"name\"\n"));
     assert_names_only(&a);
@@ -233,7 +233,7 @@ fn test_sr_29_note_path_name_shows_only_names() {
 
 #[test]
 fn test_sr_29_note_path_full_keeps_common_folder() {
-    // [SR-29][SR-46] note_path = "full" で Tasks/alpha.md・Tasks/beta.md(全部が同じフォルダ)→ 欄は
+    // [utest -> req~screen.note-column-path~1, req~screen.note-path-scopes~1, req~screen.note-path-per-view~1] note_path = "full" で Tasks/alpha.md・Tasks/beta.md(全部が同じフォルダ)→ 欄は
     // Tasks/alpha・Tasks/beta(共通のフォルダも除かない)。`.md` は除く。
     let tmp = tasks("sr29np_full");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"full\"\n"));
@@ -251,7 +251,7 @@ fn test_sr_29_note_path_full_keeps_common_folder() {
 
 #[test]
 fn test_sr_29_note_path_name_search_matches_folder() {
-    // [SR-29][NV-2] "name" でも、`\` の検索で archive と打つと archive/todo/beta.md の行が当たる(検索は根からの
+    // [utest -> req~screen.note-column-full-path-elsewhere~1, req~navigation.search-esc~1, req~navigation.search-over-base~1] "name" でも、`\` の検索で archive と打つと archive/todo/beta.md の行が当たる(検索は根からの
     // パスのまま)。当たった行の欄は名前だけ。
     let tmp = ledger("sr29np_search");
     let mut a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"name\"\n"));
@@ -270,7 +270,7 @@ fn test_sr_29_note_path_name_search_matches_folder() {
 
 #[test]
 fn test_sr_29_note_path_off_hides_names_and_heading() {
-    // [SR-29][SR-46] note_path = "off" → 欄に名前も見出し「ノート」も出ない(file.name の列のときと同じ)。
+    // [utest -> req~screen.note-column-marks-only~1, req~screen.note-column-keeps-tree~1, req~screen.note-path-per-view~1] note_path = "off" → 欄に名前も見出し「ノート」も出ない(file.name の列のときと同じ)。
     // 値の列は残る。
     let tmp = ledger("sr29np_off");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
@@ -288,7 +288,7 @@ fn test_sr_29_note_path_off_hides_names_and_heading() {
 
 #[test]
 fn test_sr_29_note_path_off_keeps_marks() {
-    // [SR-29][WB-16] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
+    // [utest -> req~screen.note-column-marks-only~1, req~screen.note-column-keeps-tree~1, req~write-back.external-keep-pending~1] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
     let tmp = ledger("sr29np_offmark");
     let mut a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
     let i = a
@@ -309,7 +309,7 @@ fn test_sr_29_note_path_off_keeps_marks() {
 
 #[test]
 fn test_sr_46_config_name_applies_to_every_table() {
-    // [SR-46] config.toml の `[display] note_path = "name"` → フォルダの表も `.base` のどのビューも名前だけ。
+    // [utest -> req~screen.note-path-scopes~1] config.toml の `[display] note_path = "name"` → フォルダの表も `.base` のどのビューも名前だけ。
     let tmp = ledger("sr46every");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"name\"\n"));
     assert_names_only(&a);
@@ -322,7 +322,7 @@ fn test_sr_46_config_name_applies_to_every_table() {
 
 #[test]
 fn test_sr_46_unknown_value_keeps_default_look() {
-    // [SR-46][CLI-3] note_path = "short" → `config.toml: display.note_path:` で始まる警告と既定の見た目
+    // [utest -> req~screen.note-path-unknown~1, req~cli.config-file-warning-form~1] note_path = "short" → `config.toml: display.note_path:` で始まる警告と既定の見た目
     // (共通のフォルダの無い表なので todo/alpha・archive/todo/beta)。
     let tmp = ledger("sr46short");
     let (c, w) = parse("[display]\nnote_path = \"short\"\n").unwrap();
@@ -339,7 +339,7 @@ fn test_sr_46_unknown_value_keeps_default_look() {
 
 #[test]
 fn test_sr_46_settings_cycles_four_values() {
-    // [SR-46][NV-18] ビューの設定の「表示」の区画で「ノートのパス」を common → name → full → off → common と
+    // [utest -> req~screen.note-path-per-view~1, req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~1, req~navigation.settings-layout-pending~1] ビューの設定の「表示」の区画で「ノートのパス」を common → name → full → off → common と
     // 順に切り替える。既定は common。
     let tmp = ledger("sr46cycle");
     let mut a = boot_folder(&tmp, cfg_ok(""));
@@ -362,7 +362,7 @@ fn test_sr_46_settings_cycles_four_values() {
 
 #[test]
 fn test_sr_46_settings_full_applies_to_that_view_only() {
-    // [SR-46][NV-13] `.base` のビュー「一」の設定の画面で「ノートのパス」を full にして反映 → 「一」だけ
+    // [utest -> req~screen.note-path-scopes~1, req~screen.note-path-per-view~1, req~navigation.view-settings~1] `.base` のビュー「一」の設定の画面で「ノートのパス」を full にして反映 → 「一」だけ
     // Tasks/alpha・Tasks/beta。「二」は既定(共通のフォルダを除いて alpha・beta)のまま。
     let tmp = tasks("sr46view");
     let mut a = boot_base(&tmp, cfg_ok(""));
@@ -395,7 +395,7 @@ fn test_sr_46_settings_full_applies_to_that_view_only() {
 
 #[test]
 fn test_sr_46_saved_native_view_keeps_note_path() {
-    // [SR-46][BV-17] 「ノートのパス」を full にして、mdgrid のビュー「フル」として保存 → そのビューだけ根からの
+    // [utest -> req~screen.note-path-per-view~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1] 「ノートのパス」を full にして、mdgrid のビュー「フル」として保存 → そのビューだけ根からの
     // パス。終了して開き直しても同じで、設定の画面の項目も full。
     let tmp = tasks("sr46save");
     let mut a = boot_folder(&tmp, cfg_ok(""));

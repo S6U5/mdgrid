@@ -7,7 +7,7 @@ use ratatui::style::Modifier;
 
 #[test]
 fn test_sr_36_value_list_keeps_pill_shape() {
-    // [SR-36] status = "pill" と nerd_font → 候補の doing・todo が丸い端つき。選んでいる候補(今の値)も札の地のまま、太字と下線。
+    // [utest -> req~screen.style-parts-default~1, req~screen.style-parts-pill~1, req~screen.style-parts-nerd-font~1] status = "pill" と nerd_font → 候補の doing・todo が丸い端つき。選んでいる候補(今の値)も札の地のまま、太字と下線。
     let tmp = Tmp::new("sr36_list_pill");
     for (n, s) in [("a", "todo"), ("b", "doing"), ("c", "todo")] {
         tmp.write(
@@ -49,7 +49,7 @@ fn test_sr_36_value_list_keeps_pill_shape() {
 
 #[test]
 fn test_sr_36_picking_cell_keeps_parts() {
-    // [SR-36] saas で status のセルで Enter(候補が開く)→ セルは淡い札のまま。文字を打つと入力の欄になる。
+    // [utest -> req~screen.style-parts-preset~1] saas で status のセルで Enter(候補が開く)→ セルは淡い札のまま。文字を打つと入力の欄になる。
     let tmp = Tmp::new("sr36_picking");
     for (n, s) in [("a", "doing"), ("b", "todo"), ("c", "doing")] {
         tmp.write(
@@ -80,7 +80,7 @@ fn test_sr_36_picking_cell_keeps_parts() {
 
 #[test]
 fn test_sr_36_tint_rounds_with_nerd_font() {
-    // [SR-36] 淡い札(tint)は nerd_font のとき両端が丸い端の字(幅は同じ)。無ければ空白。
+    // [utest -> req~screen.style-parts-pill~1, req~screen.style-parts-nerd-font~1] 淡い札(tint)は nerd_font のとき両端が丸い端の字(幅は同じ)。無ければ空白。
     let tmp = Tmp::new("sr36_tint_caps");
     for (n, s) in [("a", "doing"), ("b", "todo"), ("c", "doing")] {
         tmp.write(

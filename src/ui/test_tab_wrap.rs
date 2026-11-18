@@ -1,6 +1,6 @@
 //! ビューのタブが帯の行に入らないとき、タブを全部、検索の欄の行の下に要る行の数だけ並べる設定
 //! `display.tab_wrap`(NV-31)の受け入れ試験。記録: specs/_proposals/2026-10-15-tab-wrap.md・
-//! specs/_changes/2026-10-15-tab-wrap-below.md。
+//! specs/_history/decidespec/_changes/2026-10-15-tab-wrap-below.md。
 //!
 //! 内部の状態のフィールドや新しい関数には頼らず、設定の文字・端末の大きさ・クリック・描いた画面の文字・
 //! 今のビューの名前で確かめる。置いた仮定:
@@ -144,7 +144,7 @@ fn current(a: &App) -> String {
 
 #[test]
 fn test_nv_31_narrow_wraps_all_tabs() {
-    // [NV-31] tab_wrap = true で幅 60 → 検索の欄の行の下に行が足され、7つのタブの名前が全部見え、検索の欄と
+    // [utest -> req~navigation.tab-wrap-below~1] tab_wrap = true で幅 60 → 検索の欄の行の下に行が足され、7つのタブの名前が全部見え、検索の欄と
     // 「絞り込み」も見える。足した行のぶん表は下がる。
     let (_t, a) = boot("nv31_wrap", WRAP, 60);
     let s = scr(&a);
@@ -183,7 +183,7 @@ fn test_nv_31_narrow_wraps_all_tabs() {
 
 #[test]
 fn test_nv_31_all_tabs_below_bar() {
-    // [NV-31] 折り返す幅(60〜140 を 10 刻み)のどれでも、7つのタブが全部見える。折り返したときは、帯の真ん中の
+    // [utest -> req~navigation.tab-wrap-below~1] 折り返す幅(60〜140 を 10 刻み)のどれでも、7つのタブが全部見える。折り返したときは、帯の真ん中の
     // 行にタブが無く(検索の欄が左の端寄り)、タブの行は真ん中の行のすぐ下から間を空けずに続き、先頭のタブ
     // (今のビュー「[未完了]」)から左の端に並ぶ。折り返す幅が1つはある。
     let mut wrapped_somewhere = false;
@@ -228,7 +228,7 @@ fn test_nv_31_all_tabs_below_bar() {
 
 #[test]
 fn test_nv_31_click_wrapped_tab_selects_view() {
-    // [NV-31] 足した行のタブをクリック → そのビューになる。
+    // [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-click~1] 足した行のタブをクリック → そのビューになる。
     let (_t, mut a) = boot("nv31_click", WRAP, 60);
     let s = scr(&a);
     let mid = search_row(&s);
@@ -245,7 +245,7 @@ fn test_nv_31_click_wrapped_tab_selects_view() {
 
 #[test]
 fn test_nv_31_wide_same_as_off() {
-    // [NV-31] 幅 200 ではタブが入りきるので、tab_wrap = true でも false と同じ画面(足す行は無い)。
+    // [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-fits~1] 幅 200 ではタブが入りきるので、tab_wrap = true でも false と同じ画面(足す行は無い)。
     let (_t, a) = boot("nv31_wide_on", WRAP, 200);
     let (_t2, b) = boot("nv31_wide_off", NO_WRAP, 200);
     let s = scr(&a);
@@ -260,6 +260,7 @@ fn test_nv_31_wide_same_as_off() {
     }
 }
 
+// [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-fits~1]
 #[test]
 fn test_nv_31_off_keeps_current_tab_only() {
     // [NV-31・NV-23] tab_wrap = false(既定)で幅 60 → 今のタブだけ(今のでないタブは省く)。既定の設定も同じ。

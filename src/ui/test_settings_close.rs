@@ -6,7 +6,7 @@ use ratatui::crossterm::event::KeyCode;
 
 #[test]
 fn test_nv_13_close_without_changes_says_closed() {
-    // [NV-13] 何も変えずに Esc → 「閉じた」。列を1つ隠してから Esc → 「取り消した」で表は元のまま。
+    // [utest -> req~navigation.view-settings~1] 何も変えずに Esc → 「閉じた」。列を1つ隠してから Esc → 「取り消した」で表は元のまま。
     let (_t, mut a) = folder("nv13close");
     open(&mut a);
     press(&mut a, KeyCode::Esc);

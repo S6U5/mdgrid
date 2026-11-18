@@ -1,5 +1,5 @@
 //! 画面の文言の言語(SR-23)の受け入れ試験(タスク4: 残りのリテラルの検査)。
-//! 記録: specs/_changes/2026-10-03-language.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-03-language.md。
 //!
 //! src の下の .rs のうち、試験のファイル(名前が `test_` で始まるもの)と文言の表(src/i18n.rs)を除いたものを読み、
 //! コメント(`//`・`///`・`//!`・`/* */`)を除いた文字列のリテラル(`"…"`・`r"…"`・`r#"…"#`。`b` の付くものも)に
@@ -240,6 +240,7 @@ fn rs_files(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
+// [utest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1]
 #[test]
 fn test_sr_23_literal_scanner() {
     // 切り出しの道具の確かめ: コメントを除き、\" と '"' を誤らない。
@@ -273,7 +274,7 @@ fn test_sr_23_literal_scanner() {
 
 #[test]
 fn test_sr_23_no_japanese_literals() {
-    // [SR-23] lib・ui・main の文字列のリテラルに日本語が残っていない(文言は src/i18n.rs の表に置く)。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-ledger~1, req~screen.locales-no-translate~1] lib・ui・main の文字列のリテラルに日本語が残っていない(文言は src/i18n.rs の表に置く)。
     // 訳さないものは ALLOWED で許す。
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
     let mut files = Vec::new();

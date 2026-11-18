@@ -1,6 +1,6 @@
 //! 日付の形・打ち込み・月の格子・月の足し引き・設定の受け入れテスト(date-picker のタスク 1)。
 //! CE-5・CE-21・CE-22・CLI-3。
-//! 仕様: specs/cell-edit/spec.md(CE-5・CE-21・CE-22)、specs/cli/spec.md(CLI-3)。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md(CE-5・CE-21・CE-22)、specs/_history/decidespec/cli/spec.md(CLI-3)。
 //! 形: docs/design.md の「日付のカレンダーと日付の形(CE-20〜CE-22)」の核。
 //! 実装を見ずに書いた。日数は 1970-01-01 からの日数(types::parse_date・format_date と同じ)。
 //!
@@ -51,7 +51,7 @@ fn input_err(s: &str, f: &DateFormat, today: i64) {
 
 #[test]
 fn test_ce_22_date_format_parse_accepts_common_patterns() {
-    // [CE-22] よくある形が読め、その形で見せられる。2026-10-05 は月曜。
+    // [utest -> req~cell-edit.date-format-display~1] よくある形が読め、その形で見せられる。2026-10-05 は月曜。
     let day = d("2026-10-05");
     let cases = [
         ("YYYY-MM-DD", "2026-10-05"),
@@ -70,7 +70,7 @@ fn test_ce_22_date_format_parse_accepts_common_patterns() {
 
 #[test]
 fn test_ce_22_date_format_single_digit_parts() {
-    // [CE-22] M・D は0で埋めず、MM・DD は0で埋める。
+    // [utest -> req~cell-edit.date-format-display~1] M・D は0で埋めず、MM・DD は0で埋める。
     let day = d("2026-01-05");
     assert_eq!(fmt("YYYY年M月D日").format(day), "2026年1月5日");
     assert_eq!(fmt("M/D").format(day), "1/5");
@@ -80,7 +80,7 @@ fn test_ce_22_date_format_single_digit_parts() {
 
 #[test]
 fn test_ce_22_date_format_weekday_names() {
-    // [CE-22] ddd は曜日の短い名前。2026-10-04(日)〜2026-10-10(土)。
+    // [utest -> req~cell-edit.date-format-display~1] ddd は曜日の短い名前。2026-10-04(日)〜2026-10-10(土)。
     let f = fmt("YYYY/MM/DD (ddd)");
     let names = ["日", "月", "火", "水", "木", "金", "土"];
     for (i, name) in names.iter().enumerate() {
@@ -96,7 +96,7 @@ fn test_ce_22_date_format_weekday_names() {
 
 #[test]
 fn test_ce_22_date_format_iso_is_default_shape() {
-    // [CE-22] iso() は YYYY-MM-DD(ノートに書く形と同じ)。
+    // [utest -> req~cell-edit.date-format-write~1] iso() は YYYY-MM-DD(ノートに書く形と同じ)。
     let iso = DateFormat::iso();
     assert_eq!(iso.format(d("2026-10-05")), "2026-10-05");
     assert_eq!(iso.format(d("1970-01-01")), "1970-01-01");
@@ -107,7 +107,7 @@ fn test_ce_22_date_format_iso_is_default_shape() {
 
 #[test]
 fn test_ce_22_date_format_parse_rejects_bad_patterns() {
-    // [CE-22] 読めない形は Err(理由1行で空でない)。空・部品の無い形・知らない部品。
+    // [utest -> req~cell-edit.date-format-display~1] 読めない形は Err(理由1行で空でない)。空・部品の無い形・知らない部品。
     for p in ["", "   ", "-/.", "年月日", "QQ", "YYYY-QQ-DD"] {
         match DateFormat::parse(p) {
             Err(e) => {
@@ -129,7 +129,7 @@ fn test_ce_22_date_format_parse_rejects_bad_patterns() {
 
 #[test]
 fn test_ce_22_input_iso_accepted_under_any_format() {
-    // [CE-22][CE-5] YYYY-MM-DD はどの設定の形でも読める。
+    // [utest -> req~cell-edit.date-format-display~1, req~cell-edit.date-input-forms~1, req~cell-edit.date-input-type-replaces~1] YYYY-MM-DD はどの設定の形でも読める。
     let today = d("2026-10-02");
     let want = Some(d("2026-11-03"));
     for p in [
@@ -153,7 +153,7 @@ fn test_ce_22_input_iso_accepted_under_any_format() {
 
 #[test]
 fn test_ce_22_input_configured_format_accepted() {
-    // [CE-22] 設定の形で打っても読める。
+    // [utest -> req~cell-edit.date-format-display~1, req~cell-edit.date-format-input~1, req~cell-edit.date-format-write~1] 設定の形で打っても読める。
     let today = d("2026-10-02");
     let want = Some(d("2026-11-03"));
     assert_eq!(input_ok("2026/11/03", &fmt("YYYY/MM/DD"), today), want);
@@ -164,7 +164,7 @@ fn test_ce_22_input_configured_format_accepted() {
 
 #[test]
 fn test_ce_22_input_yearless_format_uses_todays_year() {
-    // [CE-22] 年の無い形は今年(today の年)。
+    // [utest -> req~cell-edit.date-format-display~1] 年の無い形は今年(today の年)。
     let f = fmt("M/D");
     assert_eq!(input_ok("11/3", &f, d("2026-10-02")), Some(d("2026-11-03")));
     assert_eq!(input_ok("11/3", &f, d("2027-05-20")), Some(d("2027-11-03")));
@@ -177,7 +177,7 @@ fn test_ce_22_input_yearless_format_uses_todays_year() {
 
 #[test]
 fn test_ce_22_input_roundtrips_formatted_text() {
-    // [CE-22] 設定の形で見せた文字をそのまま打てば、同じ日に戻る(カレンダーで動かした入力ボックスの文字を確定する場合)。
+    // [utest -> req~cell-edit.date-format-display~1, req~cell-edit.date-format-write~1] 設定の形で見せた文字をそのまま打てば、同じ日に戻る(カレンダーで動かした入力ボックスの文字を確定する場合)。
     let today = d("2026-10-02");
     for p in [
         "YYYY-MM-DD",
@@ -204,7 +204,7 @@ fn test_ce_22_input_roundtrips_formatted_text() {
 
 #[test]
 fn test_ce_5_input_relative_days_from_today() {
-    // [CE-5] +N・-N は today からの日数。設定の形によらない。
+    // [utest -> req~cell-edit.date-input-forms~1, req~cell-edit.date-input-invalid~1, req~cell-edit.date-input-type-replaces~1] +N・-N は today からの日数。設定の形によらない。
     let today = d("2026-10-02");
     for f in [DateFormat::iso(), fmt("YYYY/MM/DD"), fmt("M/D")] {
         assert_eq!(input_ok("+3", &f, today), Some(d("2026-10-05")));
@@ -215,7 +215,7 @@ fn test_ce_5_input_relative_days_from_today() {
 
 #[test]
 fn test_ce_5_input_empty_is_none() {
-    // [CE-5] 空は Ok(None)(null にする。CE-9)。空白だけも空とみなす(前後の空白は許す)。
+    // [utest -> req~cell-edit.date-input-type-replaces~1] 空は Ok(None)(null にする。CE-9)。空白だけも空とみなす(前後の空白は許す)。
     let today = d("2026-10-02");
     for f in [DateFormat::iso(), fmt("YYYY/MM/DD")] {
         assert_eq!(input_ok("", &f, today), None);
@@ -225,7 +225,7 @@ fn test_ce_5_input_empty_is_none() {
 
 #[test]
 fn test_ce_5_input_rejects_invalid_dates() {
-    // [CE-5][CE-22] 実在しない日付・読めない打ち込みは Err(理由が空でない)。
+    // [utest -> req~cell-edit.date-input-invalid~1, req~cell-edit.date-format-display~1, req~cell-edit.date-format-input~1] 実在しない日付・読めない打ち込みは Err(理由が空でない)。
     let today = d("2026-10-02");
     let iso = DateFormat::iso();
     let slash = fmt("YYYY/MM/DD");
@@ -241,7 +241,7 @@ fn test_ce_5_input_rejects_invalid_dates() {
 
 #[test]
 fn test_ce_5_input_allows_surrounding_whitespace() {
-    // [CE-5][CE-22] 前後の空白は許す。
+    // [utest -> req~cell-edit.date-input-forms~1, req~cell-edit.date-input-type-replaces~1, req~cell-edit.date-format-display~1] 前後の空白は許す。
     let today = d("2026-10-02");
     let slash = fmt("YYYY/MM/DD");
     assert_eq!(
@@ -261,7 +261,7 @@ fn test_ce_5_input_allows_surrounding_whitespace() {
 
 #[test]
 fn test_ce_22_input_with_weekday_format() {
-    // [CE-22] 曜日つきの形: 正しい曜日つきで打てば読め、YYYY-MM-DD も読める。
+    // [utest -> req~cell-edit.date-format-display~1] 曜日つきの形: 正しい曜日つきで打てば読め、YYYY-MM-DD も読める。
     // 曜日が違うときの扱い(日付で決めるか Err か)は確かめない。
     let today = d("2026-10-02");
     let f = fmt("YYYY/MM/DD (ddd)");
@@ -312,7 +312,7 @@ fn check_grid(year: i32, month: u32, start: WeekStart, sun_start: bool, ndays: u
 
 #[test]
 fn test_ce_21_month_grid_october_2026_sunday_start() {
-    // [CE-21] 2026-10-01 は木曜。日曜始まりで1週目は [None×4, 1, 2, 3]。
+    // [utest -> req~cell-edit.calendar-keys-week-start~1] 2026-10-01 は木曜。日曜始まりで1週目は [None×4, 1, 2, 3]。
     let grid = month_grid(2026, 10, WeekStart::Sun);
     assert_eq!(grid[0], [None, None, None, None, Some(1), Some(2), Some(3)]);
     assert!(grid.len() == 5 || grid.len() == 6, "週の数: {}", grid.len());
@@ -321,7 +321,7 @@ fn test_ce_21_month_grid_october_2026_sunday_start() {
 
 #[test]
 fn test_ce_21_month_grid_october_2026_monday_start() {
-    // [CE-21] 設定で月曜始まり → 1列目が月。1週目は [None×3, 1, 2, 3, 4]。
+    // [utest -> req~cell-edit.calendar-keys-week-start~1] 設定で月曜始まり → 1列目が月。1週目は [None×3, 1, 2, 3, 4]。
     let grid = month_grid(2026, 10, WeekStart::Mon);
     assert_eq!(
         grid[0],
@@ -333,7 +333,7 @@ fn test_ce_21_month_grid_october_2026_monday_start() {
 
 #[test]
 fn test_ce_21_month_grid_leap_february() {
-    // [CE-21] 閏年の2月は29日、平年は28日。
+    // [utest -> req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-today~1, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-keep-time~1] 閏年の2月は29日、平年は28日。
     check_grid(2024, 2, WeekStart::Sun, true, 29);
     check_grid(2024, 2, WeekStart::Mon, false, 29);
     check_grid(2026, 2, WeekStart::Sun, true, 28);
@@ -344,7 +344,7 @@ fn test_ce_21_month_grid_leap_february() {
 
 #[test]
 fn test_ce_21_month_grid_various_months() {
-    // [CE-21] いろいろな月で、日がちょうど1回ずつ、曜日の列が合う。
+    // [utest -> req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-week-start~1] いろいろな月で、日がちょうど1回ずつ、曜日の列が合う。
     let lens = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     for (i, n) in lens.iter().enumerate() {
         let m = i as u32 + 1;
@@ -361,7 +361,7 @@ fn test_ce_21_month_grid_various_months() {
 
 #[test]
 fn test_ce_21_add_months_same_day_or_month_end() {
-    // [CE-21] PageDown・PageUp: 翌月・前月の同じ日、無ければ月末。
+    // [utest -> req~cell-edit.calendar-keys-move~1] PageDown・PageUp: 翌月・前月の同じ日、無ければ月末。
     assert_eq!(add_months(d("2026-10-30"), 1), d("2026-11-30"));
     assert_eq!(add_months(d("2026-10-31"), 1), d("2026-11-30"));
     assert_eq!(add_months(d("2026-01-31"), 1), d("2026-02-28"));
@@ -373,7 +373,7 @@ fn test_ce_21_add_months_same_day_or_month_end() {
 
 #[test]
 fn test_ce_21_add_months_crosses_years() {
-    // [CE-21] 年をまたぐ。
+    // [utest -> req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-week-start~1, req~cell-edit.calendar-keys-keep-time~1] 年をまたぐ。
     assert_eq!(add_months(d("2026-12-15"), 1), d("2027-01-15"));
     assert_eq!(add_months(d("2026-01-15"), -1), d("2025-12-15"));
     assert_eq!(add_months(d("2026-10-05"), 12), d("2027-10-05"));
@@ -385,7 +385,7 @@ fn test_ce_21_add_months_crosses_years() {
 
 #[test]
 fn test_cli_3_config_reads_date_format_and_week_start() {
-    // [CLI-3][CE-22][CE-21] date_format と week_start を設定ファイルから読む。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cell-edit.date-format-display~1, req~cell-edit.calendar-keys-week-start~1] date_format と week_start を設定ファイルから読む。
     let text = "[dates]\nformat = \"YYYY/MM/DD\"\nweek_start = \"mon\"\n";
     let (c, warnings) = parse_config(text).expect("読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
@@ -408,7 +408,7 @@ fn test_cli_3_config_reads_date_format_and_week_start() {
 
 #[test]
 fn test_cli_3_config_date_defaults() {
-    // [CLI-3][CE-22][CE-21] 無ければ既定(YYYY-MM-DD・日曜始まり)。今までどおり 2026-10-05 と見せる。
+    // [utest -> req~cli.config-file-location~1, req~cell-edit.date-format-display~1, req~cell-edit.calendar-keys-week-start~1] 無ければ既定(YYYY-MM-DD・日曜始まり)。今までどおり 2026-10-05 と見せる。
     let (c, warnings) = parse_config("").expect("空の設定は読める");
     assert!(warnings.is_empty(), "警告: {:?}", warnings);
     assert_eq!(
@@ -423,7 +423,7 @@ fn test_cli_3_config_date_defaults() {
 
 #[test]
 fn test_cli_3_config_bad_date_format_warns_and_uses_default() {
-    // [CLI-3][CE-22] 読めない date_format → Ok で警告し、既定の形を使う。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-defaults~1, req~cli.config-file-warning-form~1, req~cell-edit.date-format-display~1] 読めない date_format → Ok で警告し、既定の形を使う。
     for bad in ["QQ", "", "-/."] {
         let text = format!("[dates]\nformat = \"{bad}\"\n");
         let (c, warnings) = parse_config(&text).expect("読めない date_format でも Ok");
@@ -441,7 +441,7 @@ fn test_cli_3_config_bad_date_format_warns_and_uses_default() {
 
 #[test]
 fn test_cli_3_config_unknown_week_start_warns() {
-    // [CLI-3][CE-21] 知らない week_start → Ok で警告し、既定(日曜)。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1, req~cell-edit.calendar-keys-week-start~1] 知らない week_start → Ok で警告し、既定(日曜)。
     let (c, warnings) =
         parse_config("[dates]\nweek_start = \"tue\"\n").expect("知らない week_start でも Ok");
     assert!(

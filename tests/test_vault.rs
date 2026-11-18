@@ -90,7 +90,7 @@ fn bump_mtime(p: &Path, secs: u64) {
 
 #[test]
 fn test_bv_1_folder_without_config_loads_all_markdown_notes() {
-    // [BV-1] 設定も .base も無いフォルダ → 全ノートが入り、.md 以外は入らない
+    // [utest -> req~base-view.source-folder~1] 設定も .base も無いフォルダ → 全ノートが入り、.md 以外は入らない
     let t = TempDir::new("bv1");
     let a = t.write("a.md", b"---\nstatus: todo\n---\nA\n");
     let b = t.write("sub/b.md", b"---\ntitle: B\n---\n");
@@ -115,7 +115,7 @@ fn test_bv_1_folder_without_config_loads_all_markdown_notes() {
 
 #[test]
 fn test_bv_1_notes_are_sorted_by_path() {
-    // [BV-1] notes() は path の昇順
+    // [utest -> req~base-view.source-base-file~1, req~base-view.source-folder~1] notes() は path の昇順
     let t = TempDir::new("bv1sort");
     for name in ["c.md", "a.md", "b/z.md", "b/a.md"] {
         t.write(name, b"x\n");
@@ -128,7 +128,7 @@ fn test_bv_1_notes_are_sorted_by_path() {
 
 #[test]
 fn test_bv_1_skips_obsidian_git_and_trash() {
-    // [BV-1] .obsidian/・.git/・.trash/ の下は探さない
+    // [utest -> req~base-view.source-base-file~1, req~base-view.source-folder~1] .obsidian/・.git/・.trash/ の下は探さない
     let t = TempDir::new("bv1skip");
     let n = t.write("note.md", b"x\n");
     t.write(".obsidian/workspace.md", b"x\n");
@@ -142,7 +142,7 @@ fn test_bv_1_skips_obsidian_git_and_trash() {
 
 #[test]
 fn test_bv_2_root_is_nearest_parent_with_obsidian() {
-    // [BV-2] .obsidian/ を持つ最寄りの上のフォルダが根になる
+    // [utest -> req~base-view.root-folder-nearest~1] .obsidian/ を持つ最寄りの上のフォルダが根になる
     let t = TempDir::new("bv2up");
     t.mkdir("vault/.obsidian");
     let inner = t.mkdir("vault/projects/x");
@@ -152,7 +152,7 @@ fn test_bv_2_root_is_nearest_parent_with_obsidian() {
 
 #[test]
 fn test_bv_2_root_is_given_folder_without_obsidian() {
-    // [BV-2] .obsidian/ が無ければ渡したフォルダが根
+    // [utest -> req~base-view.root-folder-nearest~1] .obsidian/ が無ければ渡したフォルダが根
     let t = TempDir::new("bv2plain");
     let inner = t.mkdir("plain/sub");
     let r = roots(std::slice::from_ref(&inner)).unwrap();
@@ -161,7 +161,7 @@ fn test_bv_2_root_is_given_folder_without_obsidian() {
 
 #[test]
 fn test_bv_2_two_folders_side_by_side_load_both() {
-    // [BV-2] 2つのリポのフォルダを並べて渡す → 両方のノートが入る
+    // [utest -> req~base-view.root-folder-multiple~1] 2つのリポのフォルダを並べて渡す → 両方のノートが入る
     let t = TempDir::new("bv2two");
     let a = t.write("repo_a/docs/one.md", b"---\nk: 1\n---\n");
     let b = t.write("repo_b/two.md", b"---\nk: 2\n---\n");
@@ -177,7 +177,7 @@ fn test_bv_2_two_folders_side_by_side_load_both() {
 
 #[test]
 fn test_bv_2_nested_roots_merge_into_one() {
-    // [BV-2] ほかの根の中に入る根は1つにまとめる
+    // [utest -> req~base-view.root-folder-multiple~1] ほかの根の中に入る根は1つにまとめる
     let t = TempDir::new("bv2nest");
     let outer = t.mkdir("outer");
     let inner = t.mkdir("outer/inner");
@@ -187,7 +187,7 @@ fn test_bv_2_nested_roots_merge_into_one() {
 
 #[test]
 fn test_bv_2_unreadable_path_is_error() {
-    // [BV-2] 読めないパスは Err
+    // [utest -> req~base-view.root-folder-multiple~1] 読めないパスは Err
     let t = TempDir::new("bv2err");
     assert!(roots(&[t.path().join("does-not-exist")]).is_err());
 }
@@ -196,7 +196,7 @@ fn test_bv_2_unreadable_path_is_error() {
 
 #[test]
 fn test_bv_11_same_folder_twice_gives_one_note_each() {
-    // [BV-11] 同じフォルダを2回渡す → ノートは1つずつ
+    // [utest -> req~base-view.dedupe-real-path~1] 同じフォルダを2回渡す → ノートは1つずつ
     let t = TempDir::new("bv11twice");
     let a = t.write("v/a.md", b"a\n");
     let b = t.write("v/b.md", b"b\n");
@@ -208,7 +208,7 @@ fn test_bv_11_same_folder_twice_gives_one_note_each() {
 #[cfg(unix)]
 #[test]
 fn test_bv_11_symlink_to_same_folder_gives_one_note_each() {
-    // [BV-11] 同じフォルダを2回と、そこを指すシンボリックリンク → ノートは1つずつ(path は実体)
+    // [utest -> req~base-view.dedupe-real-path~1] 同じフォルダを2回と、そこを指すシンボリックリンク → ノートは1つずつ(path は実体)
     let t = TempDir::new("bv11link");
     let a = t.write("real/a.md", b"a\n");
     let b = t.write("real/sub/b.md", b"b\n");
@@ -223,7 +223,7 @@ fn test_bv_11_symlink_to_same_folder_gives_one_note_each() {
 #[cfg(unix)]
 #[test]
 fn test_bv_11_symlink_inside_root_is_followed_once() {
-    // [BV-11] 根の中のリンクが同じノートを指す → 1つ(path は実体)。リンクの輪は無視する
+    // [utest -> req~base-view.dedupe-real-path~1] 根の中のリンクが同じノートを指す → 1つ(path は実体)。リンクの輪は無視する
     let t = TempDir::new("bv11inner");
     let a = t.write("real/a.md", b"a\n");
     std::os::unix::fs::symlink(t.path().join("real"), t.path().join("alias")).unwrap();
@@ -239,7 +239,7 @@ fn test_bv_11_symlink_inside_root_is_followed_once() {
 
 #[test]
 fn test_bv_9_poll_reloads_only_the_changed_note() {
-    // [BV-9] 外でノートを1つ直す → poll の changed にそれだけが入り、bytes が新しい
+    // [utest -> req~base-view.watch-poll~1] 外でノートを1つ直す → poll の changed にそれだけが入り、bytes が新しい
     let t = TempDir::new("bv9");
     let a = t.write("a.md", b"---\nstatus: todo\n---\n");
     let b = t.write("b.md", b"---\nstatus: todo\n---\n");
@@ -270,7 +270,7 @@ fn test_bv_9_poll_reloads_only_the_changed_note() {
 
 #[test]
 fn test_bv_9_paused_poll_does_nothing() {
-    // [BV-9] 編集中(pause(true))は読み直さない。再開すると反映される
+    // [utest -> req~base-view.watch-poll~1, req~base-view.watch-pause~1] 編集中(pause(true))は読み直さない。再開すると反映される
     let t = TempDir::new("bv9pause");
     let old = b"---\nk: 1\n---\n";
     let a = t.write("a.md", old);
@@ -296,7 +296,7 @@ fn test_bv_9_paused_poll_does_nothing() {
 
 #[test]
 fn test_bv_9_poll_reports_added_and_removed() {
-    // [BV-9] 追加・削除は added・removed
+    // [utest -> req~base-view.watch-poll~1, req~base-view.watch-notify-aux~1, req~base-view.watch-pause~1, req~base-view.watch-round-robin~1] 追加・削除は added・removed
     let t = TempDir::new("bv9addrm");
     let a = t.write("a.md", b"a\n");
     let b = t.write("b.md", b"b\n");
@@ -316,7 +316,7 @@ fn test_bv_9_poll_reports_added_and_removed() {
 
 #[test]
 fn test_bv_9_same_size_change_detected_by_mtime() {
-    // [BV-9] 大きさが同じでも更新時刻が変われば読み直す
+    // [utest -> req~base-view.watch-poll~1] 大きさが同じでも更新時刻が変われば読み直す
     let t = TempDir::new("bv9mtime");
     let a = t.write("a.md", b"---\nk: 1\n---\n");
     let mut v = open_loaded(&[t.path().to_path_buf()]);
@@ -335,7 +335,7 @@ fn pb(names: &[&str]) -> Vec<PathBuf> {
 
 #[test]
 fn test_bv_10_selection_stays_on_same_note() {
-    // [BV-10] 同じ行が残ればその位置
+    // [utest -> req~base-view.keep-selection~1] 同じ行が残ればその位置
     let old = pb(&["/v/a.md", "/v/b.md", "/v/c.md"]);
     assert_eq!(reselect(&old, 1, &old), Some(1));
     // 前に行が増えても、同じノートを選んだまま
@@ -345,7 +345,7 @@ fn test_bv_10_selection_stays_on_same_note() {
 
 #[test]
 fn test_bv_10_removed_note_selects_next_row() {
-    // [BV-10] 選んだ行のノートを消す → 同じ添字(下の行)が選ばれる
+    // [utest -> req~base-view.keep-selection~1] 選んだ行のノートを消す → 同じ添字(下の行)が選ばれる
     let old = pb(&["/v/a.md", "/v/b.md", "/v/c.md"]);
     let new = pb(&["/v/a.md", "/v/c.md"]);
     assert_eq!(reselect(&old, 1, &new), Some(1));
@@ -353,7 +353,7 @@ fn test_bv_10_removed_note_selects_next_row() {
 
 #[test]
 fn test_bv_10_removed_last_note_selects_last_row() {
-    // [BV-10] 末尾を超えたら末尾
+    // [utest -> req~base-view.keep-selection~1] 末尾を超えたら末尾
     let old = pb(&["/v/a.md", "/v/b.md", "/v/c.md"]);
     let new = pb(&["/v/a.md", "/v/b.md"]);
     assert_eq!(reselect(&old, 2, &new), Some(1));
@@ -361,7 +361,7 @@ fn test_bv_10_removed_last_note_selects_last_row() {
 
 #[test]
 fn test_bv_10_empty_gives_none() {
-    // [BV-10] 行が0なら None
+    // [utest -> req~base-view.keep-selection~1] 行が0なら None
     let old = pb(&["/v/a.md"]);
     assert_eq!(reselect(&old, 0, &[]), None);
 }
@@ -370,7 +370,7 @@ fn test_bv_10_empty_gives_none() {
 
 #[test]
 fn test_bv_16_load_is_incremental_and_cancellable() {
-    // [BV-16] 読み込みを待たずに始まり、少しずつ増え、中止すると読んだ分が残る
+    // [utest -> req~base-view.large-load~1] 読み込みを待たずに始まり、少しずつ増え、中止すると読んだ分が残る
     let t = TempDir::new("bv16");
     for i in 0..300 {
         t.write(
@@ -402,7 +402,7 @@ fn test_bv_16_load_is_incremental_and_cancellable() {
 
 #[test]
 fn test_bv_16_load_finishes_with_all_notes() {
-    // [BV-16] 最後まで読めば done=true で全ノート
+    // [utest -> req~base-view.large-load~1] 最後まで読めば done=true で全ノート
     let t = TempDir::new("bv16all");
     for i in 0..300 {
         t.write(&format!("d{}/n{:03}.md", i % 7, i), b"x\n");
@@ -426,7 +426,7 @@ fn test_bv_16_load_finishes_with_all_notes() {
 
 #[test]
 fn test_wb_13_sync_conflict_files_are_marked() {
-    // [WB-13] 競合ファイルは conflict=true、普通のノートは false
+    // [utest -> req~write-back.sync-conflict~1] 競合ファイルは conflict=true、普通のノートは false
     let t = TempDir::new("wb13");
     let normal = t.write("note.md", b"---\nk: 1\n---\n");
     let sync = t.write("note.sync-conflict-20260930-1.md", b"---\nk: 2\n---\n");

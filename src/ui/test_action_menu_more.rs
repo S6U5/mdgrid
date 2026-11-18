@@ -1,5 +1,5 @@
 //! その場の操作の一覧(SR-24)と前置きのキーの案内(SR-25)の受け入れの試験の続き(実装とレビューで見つけた形)。
-//! 記録: specs/_changes/2026-10-05-action-menu.md。実装を見ずに、画面の文字と App の公開の口で確かめる。
+//! 記録: specs/_history/decidespec/_changes/2026-10-05-action-menu.md。実装を見ずに、画面の文字と App の公開の口で確かめる。
 //! 道具は test_action_menu のもの(窓の枠の内側の桁だけを一覧の行として読む)。
 
 use super::keymap::{Action, Mode};
@@ -25,7 +25,7 @@ fn open_menu_24(a: &mut App, row: usize) -> (Shot, Shot) {
 
 #[test]
 fn test_sr_25_more_esc_after_prefix_keeps_marks() {
-    // [SR-25] [NV-5] 2行に印を付けて `g` のあと Esc → 前置きを取り消すだけで、印は残る
+    // [utest -> req~screen.prefix-hints-esc-only~1, req~navigation.select-rows~1] 2行に印を付けて `g` のあと Esc → 前置きを取り消すだけで、印は残る
     // (表の Esc の「選択を解く」まで走らない)。帯は元に戻る。
     let (_t, mut a) = make("sr25marks", NOTES);
     col_named(&mut a, "status");
@@ -44,7 +44,7 @@ fn test_sr_25_more_esc_after_prefix_keeps_marks() {
 
 #[test]
 fn test_sr_25_more_esc_after_prefix_in_menu_keeps_menu() {
-    // [SR-25] [SR-24] 一覧を開いて `g` のあと Esc → 前置きを取り消すだけで、一覧は開いたまま。
+    // [utest -> req~screen.prefix-hints-esc-only~1, req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 一覧を開いて `g` のあと Esc → 前置きを取り消すだけで、一覧は開いたまま。
     let (_t, mut a) = make("sr25menuesc", NOTES);
     let (before, _) = open_menu_24(&mut a, 0);
     assert_eq!(a.mode, menu_mode(), "x で一覧が開かない");
@@ -61,7 +61,7 @@ fn test_sr_25_more_esc_after_prefix_in_menu_keeps_menu() {
 
 #[test]
 fn test_sr_25_more_prefix_in_menu_band_returns() {
-    // [SR-25] 一覧で `g` `g` → 続きを押したら帯は元に戻る(帯に出した続きは、続きを押せば実行されて案内が消える)。
+    // [utest -> req~screen.prefix-hints-restore~1, req~screen.prefix-hints-esc-only~1] 一覧で `g` `g` → 続きを押したら帯は元に戻る(帯に出した続きは、続きを押せば実行されて案内が消える)。
     // 一覧が開いたままなら一覧の帯に、閉じたなら表の帯に戻っている。
     let (_t, mut a) = make("sr25menugg", NOTES);
     open_menu_24(&mut a, 0);
@@ -87,7 +87,7 @@ fn test_sr_25_more_prefix_in_menu_band_returns() {
 
 #[test]
 fn test_sr_24_more_low_terminal_does_not_open() {
-    // [SR-24] 端末が低くて窓が入らない(80×8)とき `x` → 一覧のモードにならず、メッセージ行に理由が出る。
+    // [utest -> req~screen.action-menu-too-low~1] 端末が低くて窓が入らない(80×8)とき `x` → 一覧のモードにならず、メッセージ行に理由が出る。
     let (_t, mut a) = make("sr24low", NOTES);
     col_named(&mut a, "status");
     a.resize(80, 8);
@@ -111,7 +111,7 @@ fn test_sr_24_more_low_terminal_does_not_open() {
 
 #[test]
 fn test_sr_24_more_click_item_runs_it() {
-    // [SR-24] 一覧の項目(並べ替え)を左クリック → その操作が実行され(`s` と同じ並び)、一覧が閉じる。
+    // [utest -> req~screen.action-menu-click-item~1, req~screen.action-menu-click-outside~1] 一覧の項目(並べ替え)を左クリック → その操作が実行され(`s` と同じ並び)、一覧が閉じる。
     let want = sorted_by_s("sr24click-s");
     let (_t, mut a) = make("sr24click", NOTES);
     let sort = label_of(&a, Action::by_name("sort_column").unwrap());
@@ -129,7 +129,7 @@ fn test_sr_24_more_click_item_runs_it() {
 
 #[test]
 fn test_sr_24_more_click_outside_closes_only() {
-    // [SR-24] 一覧の外(画面の左上の角)を左クリック → 一覧を閉じるだけで、何も実行しない
+    // [utest -> req~screen.action-menu-click-outside~1] 一覧の外(画面の左上の角)を左クリック → 一覧を閉じるだけで、何も実行しない
     // (並び・位置・ためる変更・エディタの頼みが変わらない)。
     let (_t, mut a) = make("sr24clickout", NOTES);
     let (before, after) = open_menu_24(&mut a, 1);
@@ -150,7 +150,7 @@ fn test_sr_24_more_click_outside_closes_only() {
 
 #[test]
 fn test_sr_24_more_formula_column_has_no_bulk_item() {
-    // [SR-24] [CE-10] 式の列(読むだけ)のセルで2行に印を付けて `x` → 「選んだ行にまとめて入れる」が無い。
+    // [utest -> req~screen.action-menu-sections~1, req~screen.action-menu-bulk-hidden~1, req~cell-edit.bulk-set-skip-read-only~1] 式の列(読むだけ)のセルで2行に印を付けて `x` → 「選んだ行にまとめて入れる」が無い。
     let tmp = vault("sr24formula");
     let mut a = open(
         &tmp,

@@ -7,7 +7,7 @@ use super::*;
 
 #[test]
 fn test_ce_25_relmap_new_note_after_load() {
-    // [CE-25] 開き直した App は、読み込みが終わった時に一度だけ名前の欄を出す(途中では出さない)。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-relmap-start~1, req~cell-edit.new-note-filter-values~1] 開き直した App は、読み込みが終わった時に一度だけ名前の欄を出す(途中では出さない)。
     let tmp = workspace("ce25_after_load");
     let src = mdgrid::source::markdown::Markdown::open(&[tmp.notes()]).unwrap();
     let mut a = App::new(Box::new(src), ColorMode::Rgb);
@@ -24,7 +24,7 @@ fn test_ce_25_relmap_new_note_after_load() {
 
 #[test]
 fn test_ce_25_relmap_new_note_cancel_clears() {
-    // [CE-25] 終わりの確認に入ったあと取りやめたら、移ったあとの名前の欄の頼みも消す。
+    // [utest -> req~cell-edit.new-note-folder-pick~1] 終わりの確認に入ったあと取りやめたら、移ったあとの名前の欄の頼みも消す。
     let tmp = workspace("ce25_cancel");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);

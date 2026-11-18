@@ -1,5 +1,5 @@
-//! [CLI-23] `--check` の残りの確かめ方: `.md` を渡したらそのノートだけ、ビューの絞り込みで列の型が変わらない。
-//! 記録: specs/_changes/2026-10-14-type-check.md(タスク 4)、specs/_decisions/2026-10-14-check-kinds.md。
+//! [cli.check] `--check` の残りの確かめ方: `.md` を渡したらそのノートだけ、ビューの絞り込みで列の型が変わらない。
+//! 記録: specs/_history/decidespec/_changes/2026-10-14-type-check.md(タスク 4)、specs/_history/decidespec/_decisions/2026-10-14-check-kinds.md。
 //! 本物の実行ファイルで確かめる。作業のフォルダの作り方と動かし方は tests/test_check_cli.rs(錠あり)から写した。
 
 use std::path::{Path, PathBuf};
@@ -54,7 +54,7 @@ const TYPES_AND_REQUIRED: &str = "[types]\ndue = \"date\"\n\n[rules.status]\nreq
 
 #[test]
 fn test_cli_23_md_arg_checks_only_that_note() {
-    // [CLI-23] `.md` を渡すと(CLI-15 と同じく)そのノートの行だけを確かめる。
+    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~1] `.md` を渡すと(CLI-15 と同じく)そのノートの行だけを確かめる。
     // ほかのノートに問題があっても出ず、渡したノートに問題が無ければ終了コード 0。
     let ok = "---\ntitle: OK\ndue: 2026-10-02\nstatus: todo\n---\n";
     let bad_type = "---\ntitle: X\ndue: someday\nstatus: todo\n---\n";
@@ -90,7 +90,7 @@ fn test_cli_23_md_arg_checks_only_that_note() {
 
 #[test]
 fn test_cli_23_view_filter_keeps_column_kind() {
-    // [CLI-23] ビューの絞り込みで確かめる行が z.md だけになっても、列の型は画面と同じく
+    // [stest -> req~cli.check-problems~1, req~cli.check-column-type~1] ビューの絞り込みで確かめる行が z.md だけになっても、列の型は画面と同じく
     // 読み込んだ全部のノート(a・b・c は日付)からの推定で「日付」に決まり、z.md の `due: someday` が問題になる。
     // (z.md だけから推定すると文字の列になり、問題にならない。)設定に [types] は書かない。
     let date_a = "---\ntitle: A\ndue: 2026-10-01\n---\n";

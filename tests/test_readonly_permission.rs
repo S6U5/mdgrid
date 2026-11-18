@@ -1,7 +1,7 @@
 //! 書き込みの権限が無いノートを読むだけにする(readonly-permission)の受け入れテスト。WB-5(関係: WB-14・CE-10)。
-//! 仕様: specs/write-back/spec.md の WB-5・WB-14、specs/cell-edit/spec.md の CE-10。
-//! 記録: specs/_changes/2026-10-03-readonly-permission.md。
-//! 決定: specs/_decisions/2026-10-03-readonly-permission.md。
+//! 仕様: specs/_history/decidespec/write-back/spec.md の WB-5・WB-14、specs/_history/decidespec/cell-edit/spec.md の CE-10。
+//! 記録: specs/_history/decidespec/_changes/2026-10-03-readonly-permission.md。
+//! 決定: specs/_history/decidespec/_decisions/2026-10-03-readonly-permission.md。
 //!
 //! 実装を見ずに、仕様と公開のインターフェース(tests/test_unwritable.rs・tests/test_changes.rs と同じ口)だけから書いた。
 //! 権限の理由は読み取りの層の ReadOnly には足さず、開く側(Source)の読むだけの理由として持つ(記録の「設計」)ので、
@@ -119,7 +119,7 @@ fn done() -> NewValue {
 
 #[test]
 fn test_wb_5_permission_0444_note_cells_are_locked_with_reason() {
-    // [WB-5] 0444 のノートと普通のノートを一緒に開く → 0444 のノートのセル(status・title・無いキー)は lock が Some で、
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1] 0444 のノートと普通のノートを一緒に開く → 0444 のノートのセル(status・title・無いキー)は lock が Some で、
     // 理由に「書き込めない権限」を含む。普通のノートは lock が None(行ごとの lock が漏れない)。
     // Changes::set は Skip(理由はセルの lock と同じ)で何もためない。普通のノートはためる。
     if running_as_root() {
@@ -175,7 +175,7 @@ fn test_wb_5_permission_0444_note_cells_are_locked_with_reason() {
 
 #[test]
 fn test_wb_5_permission_revoked_after_pending_stops_save_and_keeps_changes() {
-    // [WB-5] [WB-14] 0644 のノートの status をためる → 外で chmod 444 → 保存 → その行は Saved にならず
+    // [utest -> req~write-back.refuse-unsafe-perm-lost~1, req~write-back.keep-on-stop~1] 0644 のノートの status をためる → 外で chmod 444 → 保存 → その行は Saved にならず
     // (Failed か Changed)、ファイルのバイトと権限(0444)は前と同じ。未保存の数は減らない。
     // 隣の書けるノートは書かれる。
     if running_as_root() {
@@ -241,7 +241,7 @@ fn test_wb_5_permission_revoked_after_pending_stops_save_and_keeps_changes() {
 
 #[test]
 fn test_wb_5_permission_writeback_save_refuses_0444() {
-    // [WB-5] writeback::save を 0444 のファイルに直接呼ぶ → Err で、ファイルのバイトと権限は前と同じ。
+    // [utest -> req~write-back.refuse-unsafe-perm-lost~1] writeback::save を 0444 のファイルに直接呼ぶ → Err で、ファイルのバイトと権限は前と同じ。
     // 基準は 0644 のうちに取り、そのあと chmod 444(ためたあとに権限が無くなった形)でも、
     // 0444 のまま基準を取っても、どちらも書かない。
     if running_as_root() {
@@ -288,7 +288,7 @@ fn test_wb_5_permission_writeback_save_refuses_0444() {
 
 #[test]
 fn test_wb_5_permission_set_many_skips_0444_rows() {
-    // [WB-5] [CE-10] 0444 のノート2つと普通のノート2つを選んで set_many → 0444 の2行は飛ばされ、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1] 0444 のノート2つと普通のノート2つを選んで set_many → 0444 の2行は飛ばされ、
     // 飛ばした数(2)と理由(セルの lock と同じで「書き込めない権限」を含む)が返る。ためるのは書ける2行だけ。
     // 保存しても 0444 のファイルは変わらない。
     if running_as_root() {

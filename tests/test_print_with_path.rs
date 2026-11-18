@@ -1,6 +1,6 @@
 //! タスク 1(print-with-path)の受け入れ: `--print --with-path`(CLI-14。関係: CLI-5・CLI-4・OUT-3)。
-//! 仕様: specs/cli/spec.md の CLI-14、specs/output/spec.md の OUT-3(`--pick path` のパスの形)、
-//! specs/_changes/2026-10-06-print-with-path.md。
+//! 仕様: specs/_history/decidespec/cli/spec.md の CLI-14、specs/_history/decidespec/output/spec.md の OUT-3(`--pick path` のパスの形)、
+//! specs/_history/decidespec/_changes/2026-10-06-print-with-path.md。
 //! 実装を見ずに書いた。本物の実行ファイルを動かし、標準出力はパイプ(`Command::output`)。
 //!
 //! パスの形(OUT-3): 起動の引数のフォルダ(.base ならそのフォルダ)の文字に、ノートの相対のパスを
@@ -421,7 +421,7 @@ fn s(x: &str) -> String {
 
 #[test]
 fn test_cli_14_csv_with_path_first_column_is_note_path() {
-    // [CLI-14] [OUT-3] フォルダ `--print --with-path` → 見出しの行の先頭が `path`、各行の先頭のセルが
+    // [stest -> req~cli.with-path-column~1, req~output.pick-path~1] フォルダ `--print --with-path` → 見出しの行の先頭が `path`、各行の先頭のセルが
     // 「引数のフォルダ + / + ノートの相対」、行の数はノートの数(4)、終了コード 0。
     let t = make_folder_vault("csv");
     let out = run_in(&t, &["notes", "--print", "--with-path"]);
@@ -444,7 +444,7 @@ fn test_cli_14_csv_with_path_first_column_is_note_path() {
 
 #[test]
 fn test_cli_14_rows_without_frontmatter_are_told_apart_by_path() {
-    // [CLI-14] フロントマターの無いノート(b.md)と空のノート(c.md)の行は、パスの列以外が空でも、
+    // [stest -> req~cli.with-path-column~1] フロントマターの無いノート(b.md)と空のノート(c.md)の行は、パスの列以外が空でも、
     // パスで見分けられる(パスは行ごとに違い、それぞれの行がある)。
     let t = make_folder_vault("nofm");
     let out = run_in(&t, &["notes", "--print", "--with-path"]);
@@ -463,7 +463,7 @@ fn test_cli_14_rows_without_frontmatter_are_told_apart_by_path() {
 
 #[test]
 fn test_cli_14_without_flag_output_has_no_path_column() {
-    // [CLI-14] [CLI-5] `--with-path` を付けない → path の列は無い(今のまま)。
+    // [stest -> req~cli.with-path-column~1, req~cli.print-rows~1, req~cli.print-columns~1, req~cli.print-no-write~1, req~cli.print-fail~1] `--with-path` を付けない → path の列は無い(今のまま)。
     // 付けたときの出力から先頭の列を除くと、付けないときの出力と同じ(行の中身と並びは変わらない)。
     let t = make_folder_vault("plain");
     let plain = ok_stdout(&run_in(&t, &["notes", "--print"]), "--print");
@@ -497,7 +497,7 @@ fn test_cli_14_without_flag_output_has_no_path_column() {
 
 #[test]
 fn test_cli_14_json_with_path_first_key_is_path() {
-    // [CLI-14] `--format json --with-path` → 各オブジェクトの最初の鍵が `path`、値はノートのパス(文字列)。
+    // [stest -> req~cli.with-path-column~1, req~cli.with-path-json-first~1, req~cli.with-path-name-clash~1] `--format json --with-path` → 各オブジェクトの最初の鍵が `path`、値はノートのパス(文字列)。
     let t = make_folder_vault("json");
     let out = run_in(&t, &["notes", "--print", "--format", "json", "--with-path"]);
     let text = ok_stdout(&out, "--format json --with-path");
@@ -528,7 +528,7 @@ fn test_cli_14_json_with_path_first_key_is_path() {
 
 #[test]
 fn test_cli_14_md_with_path_first_header_column_is_path() {
-    // [CLI-14] `--format md --with-path` → 見出しの行の最初の列が path、区切りの行のあとの各行の先頭はパス。
+    // [stest -> req~cli.with-path-column~1] `--format md --with-path` → 見出しの行の最初の列が path、区切りの行のあとの各行の先頭はパス。
     let t = make_folder_vault("md");
     let out = run_in(&t, &["notes", "--print", "--format", "md", "--with-path"]);
     let text = ok_stdout(&out, "--format md --with-path");
@@ -550,7 +550,7 @@ fn test_cli_14_md_with_path_first_header_column_is_path() {
 
 #[test]
 fn test_cli_14_base_with_path_is_relative_to_base_folder() {
-    // [CLI-14] [OUT-3] `.base` を渡す → パスは「.base のあるフォルダの文字 + / + ノートの相対」。
+    // [stest -> req~cli.with-path-column~1, req~output.pick-path~1] `.base` を渡す → パスは「.base のあるフォルダの文字 + / + ノートの相対」。
     // file.inFolder("Tasks") で notes/other.md は外れる。
     let t = make_base_vault("base");
     let out = run_in(&t, &["notes/tasks.base", "--print", "--with-path"]);
@@ -575,7 +575,7 @@ fn test_cli_14_base_with_path_is_relative_to_base_folder() {
 
 #[test]
 fn test_cli_14_with_path_without_print_fails_with_one_line_and_code_2() {
-    // [CLI-14] [CLI-4] `--print` の無い `--with-path` → 理由1行・終了コード 2・標準出力は空。
+    // [stest -> req~cli.with-path-needs-print~1, req~cli.fail-fast~1] `--print` の無い `--with-path` → 理由1行・終了コード 2・標準出力は空。
     // 画面を出さずに終わる(標準出力はパイプ。疑似端末でないので、画面を出そうとしても待たない)。
     let t = make_folder_vault("noprint");
     let out = run_in(&t, &["notes", "--with-path"]);

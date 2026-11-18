@@ -1,5 +1,5 @@
-//! [CE-3] リストを開いた直後(選び直したあとも)に文字を打つと、今の値を消して打った文字から自由入力を始める
-//! (決定 specs/_decisions/2026-10-06-list-type-replaces.md)。
+//! [cell-edit.value-list] リストを開いた直後(選び直したあとも)に文字を打つと、今の値を消して打った文字から自由入力を始める
+//! (決定 specs/_history/decidespec/_decisions/2026-10-06-list-type-replaces.md)。
 
 use super::test_screen::{ctrl, make, press, typing, Tmp};
 use super::*;
@@ -28,6 +28,7 @@ fn pending(a: &App) -> Option<NewValue> {
     a.changes.pending(r, "status").cloned()
 }
 
+// [utest -> req~cell-edit.value-list-free-input~1, req~cell-edit.value-list-none~1]
 #[test]
 fn test_ce_3_type_replaces_current_value() {
     let (_t, mut a) = three();
@@ -38,6 +39,7 @@ fn test_ce_3_type_replaces_current_value() {
     assert_eq!(pending(&a), Some(NewValue::Str("blocked".into())));
 }
 
+// [utest -> req~cell-edit.value-list-none~1]
 #[test]
 fn test_ce_3_type_replaces_after_moving_in_list() {
     let (_t, mut a) = three();
@@ -47,6 +49,7 @@ fn test_ce_3_type_replaces_after_moving_in_list() {
     assert_eq!(a.input.as_ref().unwrap().text, "x");
 }
 
+// [utest -> req~cell-edit.value-list-none~1]
 #[test]
 fn test_ce_3_type_continues_after_cursor_key() {
     let (_t, mut a) = three();
@@ -57,6 +60,7 @@ fn test_ce_3_type_continues_after_cursor_key() {
     assert_eq!(a.input.as_ref().unwrap().text, "doing!");
 }
 
+// [utest -> req~cell-edit.value-list-none~1, req~cell-edit.value-list-type-replaces~1]
 #[test]
 fn test_ce_3_type_continues_after_revert() {
     let (_t, mut a) = three();

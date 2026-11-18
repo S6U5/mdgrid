@@ -2,7 +2,7 @@
 //! 塗るとき(SR-26)は、ほかの行と同じテーマの画面の地の色になる(NV-23・SR-1)試験。
 //! 2026-10-12-half-row-inverse で、半行はセルの地を帯の色で塗り、外側の半分を画面の地の色の字で消す描き方に
 //! なったので、画面の地の色は字の色(fg)で確かめる。
-//! 記録: specs/_changes/2026-10-12-search-box.md(タスク #6)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-search-box.md(タスク #6)。
 
 use super::startup::Startup;
 use super::test_screen::{text, Tmp};
@@ -87,20 +87,20 @@ fn check(name: &str, theme: &str) {
 
 #[test]
 fn test_nv_23_half_theme_background_solarized_light() {
-    // [NV-23][SR-1][SR-26] 明るいテーマ(solarized-light)→ 上の余白の ▄ の行と帯の上下の ▄・▀ の行の地は、
+    // [utest -> req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~screen.layout-half-padding~1, req~screen.themes-paint~1] 明るいテーマ(solarized-light)→ 上の余白の ▄ の行と帯の上下の ▄・▀ の行の地は、
     // ほかの行と同じテーマの画面の地(端末の地の色の筋が出ない)。
     check("halfsol", "solarized-light");
 }
 
 #[test]
 fn test_nv_23_half_theme_background_nord() {
-    // [NV-23][SR-1][SR-26] 暗いテーマ(nord)でも同じ。
+    // [utest -> req~navigation.search-box-key-glyph~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-screen-bg~1, req~screen.layout-top-padding~1, req~screen.layout-half-padding~1, req~screen.themes-color-only~1] 暗いテーマ(nord)でも同じ。
     check("halfnord", "nord");
 }
 
 #[test]
 fn test_nv_23_half_theme_background_none_without_theme() {
-    // [NV-23] テーマが画面の地を塗らない既定 → 2026-10-12-half-row-inverse で、端末の地の色が分からない
+    // [utest -> req~navigation.search-box-screen-bg~1, req~navigation.search-box-half-fallback~1] テーマが画面の地を塗らない既定 → 2026-10-12-half-row-inverse で、端末の地の色が分からない
     // (試験には端末が無い)ときは半分の塗りの字を使わず、端数を1行の空き行に切り上げる(端末の地の色の筋も
     // 出ない)。半行の行が無く、余白の行の地も塗らない。
     let (_t, a) = boot("halfplain", "");

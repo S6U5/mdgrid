@@ -74,7 +74,7 @@ fn home(tag: &str) -> TempDir {
 
 #[test]
 fn test_st_5_palette_creates_a_ledger_from_a_starter_and_opens_it_e2e() {
-    // [ST-5] `:` → 「スターターから台帳を作る」→ reading → 作る場所(既定 reading)→ y → 読書の表が開き、
+    // [stest -> req~starter.palette-create~1] `:` → 「スターターから台帳を作る」→ reading → 作る場所(既定 reading)→ y → 読書の表が開き、
     // タブに「読みたい」がある。q で終えると、作った台帳のファイルがある。
     let home = home("starter-e2e");
     let h = home.path();
@@ -110,7 +110,7 @@ fn test_st_5_palette_creates_a_ledger_from_a_starter_and_opens_it_e2e() {
 
 #[test]
 fn test_st_5_tilde_folder_is_under_the_home_folder_e2e() {
-    // [ST-5] 作る場所の欄の既定(スターターの名前)を消して `~/books` と打つ → HOME の下の books に作り、
+    // [stest -> req~starter.palette-create~1] 作る場所の欄の既定(スターターの名前)を消して `~/books` と打つ → HOME の下の books に作り、
     // 開いたフォルダの下に `~` という名前のフォルダはできない。n で見本は入れない。
     let home = home("starter-e2e-tilde");
     let h = home.path();
@@ -157,7 +157,7 @@ fn test_st_5_tilde_folder_is_under_the_home_folder_e2e() {
 
 #[test]
 fn test_st_6_opening_a_made_ledger_changes_no_bytes_e2e() {
-    // [ST-6] 組み込みの4つから見本つきで作った台帳を、開いて(表が描かれるまで待って)閉じても、印・雛形・見本の
+    // [stest -> req~starter.same-as-manual-bytes~1] 組み込みの4つから見本つきで作った台帳を、開いて(表が描かれるまで待って)閉じても、印・雛形・見本の
     // バイトが1つも変わらない。
     let home = home("starter-e2e-bytes");
     let h = home.path();

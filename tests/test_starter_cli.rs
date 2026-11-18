@@ -2,7 +2,7 @@
 //! 台帳のスターター(ST-2・ST-3・ST-4)を本物の実行ファイルで確かめる: `--starters` の一覧(ST-3)、
 //! `[<フォルダ>] --init-workspace --starter <名前> [--with-samples]` で作る(ST-4)、組み込みから作った台帳が
 //! 警告なしに読め `--print` が見本の行を出し `--check` が 0(ST-2)。実装を見ずに書いた。
-//! 仕様: specs/starter/spec.md、記録: specs/_changes/2026-10-24-starter.md。
+//! 仕様: specs/_history/decidespec/starter/spec.md、記録: specs/_history/decidespec/_changes/2026-10-24-starter.md。
 //! 画面を出さない起動なので、標準出力はパイプで受ける(疑似端末は使わない)。
 //!
 //! 材料(作った値): ユーザーのスターター `kanban` を設定の置き場 `config/mdgrid/starters/kanban/` に書く。
@@ -222,7 +222,7 @@ fn assert_lists_files(stdout: &str, files: &BTreeMap<String, Vec<u8>>, what: &st
 
 #[test]
 fn test_st_3_starters_lists_builtin_without_config_dir() {
-    // [ST-3] 設定の置き場が無くても --starters は組み込みの4つを名前の順に、名前と説明を1行ずつ標準出力に出し、
+    // [stest -> req~starter.user-list~1] 設定の置き場が無くても --starters は組み込みの4つを名前の順に、名前と説明を1行ずつ標準出力に出し、
     // 終了コード 0。画面を開かず、ファイルは書かない。HOME も XDG_CONFIG_HOME も無いときも同じ。
     let t = TempDir::new("st-list-builtin");
     let h = t.path();
@@ -254,7 +254,7 @@ fn test_st_3_starters_lists_builtin_without_config_dir() {
 
 #[test]
 fn test_st_3_user_starters_first_in_name_order_and_hide_builtin_of_same_name() {
-    // [ST-3] 設定の置き場の starters/<名前>/ のものは名前の順に先に出て、同じ名前(tasks)の組み込みは出ない。
+    // [stest -> req~starter.user-list~1, req~starter.user-skip-broken~1, req~starter.user-no-side-effect~1] 設定の置き場の starters/<名前>/ のものは名前の順に先に出て、同じ名前(tasks)の組み込みは出ない。
     // 説明は今の言語(ja と en で変わる)。starter.toml の無いものはフォルダの名前で出る。ファイルは書かない。
     let t = home("st-list-user");
     let h = t.path();
@@ -312,7 +312,7 @@ fn test_st_3_user_starters_first_in_name_order_and_hide_builtin_of_same_name() {
 
 #[test]
 fn test_st_3_broken_manifest_warns_one_line_and_others_are_listed() {
-    // [ST-3] 壊れた starter.toml は `starters/kanban/starter.toml:` で始まる警告1行(CLI-3 の形)で飛ばし、
+    // [stest -> req~starter.user-skip-broken~1] 壊れた starter.toml は `starters/kanban/starter.toml:` で始まる警告1行(CLI-3 の形)で飛ばし、
     // ほかのユーザーのものと組み込みは出る。終了コード 0。
     let t = home("st-list-broken");
     let h = t.path();
@@ -337,7 +337,7 @@ fn test_st_3_broken_manifest_warns_one_line_and_others_are_listed() {
 
 #[test]
 fn test_st_3_starter_without_marker_warns_and_is_skipped() {
-    // [ST-3] ledger/.mdgrid/workspace.toml の無いスターターは読めないので、警告(名前が入る)して飛ばす。
+    // [stest -> req~starter.user-skip-broken~1] ledger/.mdgrid/workspace.toml の無いスターターは読めないので、警告(名前が入る)して飛ばす。
     let t = home("st-list-nomarker");
     let h = t.path();
     let dir = h.join("config/mdgrid/starters/nomarker");
@@ -354,7 +354,7 @@ fn test_st_3_starter_without_marker_warns_and_is_skipped() {
 
 #[test]
 fn test_st_3_starters_does_not_combine_with_other_commands() {
-    // [ST-3] --starters は一覧だけ: --init-workspace や --print と一緒には組めず、理由1行と終了コード 2。何も書かない。
+    // [stest -> req~starter.user-list~1, req~starter.user-no-side-effect~1] --starters は一覧だけ: --init-workspace や --print と一緒には組めず、理由1行と終了コード 2。何も書かない。
     let t = home("st-list-conflict");
     let h = t.path();
     for args in [
@@ -375,7 +375,7 @@ fn test_st_3_starters_does_not_combine_with_other_commands() {
 
 #[test]
 fn test_st_4_init_with_starter_writes_ledger_only_and_lists_files() {
-    // [ST-4] `books --init-workspace --starter reading`: 無いフォルダ books を作り、印 .mdgrid/workspace.toml と
+    // [stest -> req~starter.init-report~1] `books --init-workspace --starter reading`: 無いフォルダ books を作り、印 .mdgrid/workspace.toml と
     // .mdgrid/templates/ の雛形を書き、見本は書かない。作ったファイルを1行ずつ標準出力に出し、終了コード 0。
     let t = home("st-init");
     let h = t.path();
@@ -402,7 +402,7 @@ fn test_st_4_init_with_starter_writes_ledger_only_and_lists_files() {
 
 #[test]
 fn test_st_4_without_folder_uses_the_current_folder() {
-    // [ST-4] フォルダを渡さなければ今のフォルダに作る(WS-7 と同じ)。
+    // [stest -> req~starter.init-ledger~1] フォルダを渡さなければ今のフォルダに作る(WS-7 と同じ)。
     let t = home("st-init-cwd");
     let h = t.path();
     let here = h.join("here");
@@ -418,7 +418,7 @@ fn test_st_4_without_folder_uses_the_current_folder() {
 
 #[test]
 fn test_st_4_with_samples_fills_sample_vars_and_keeps_template_vars() {
-    // [ST-4] --with-samples と MDGRID_TODAY=2026-10-06: 見本のノートが書かれ、見本の {date-10} は 2026-09-26 で、
+    // [stest -> req~starter.init-sample-vars~1, req~starter.init-ledger-verbatim~1, req~starter.init-report~1] --with-samples と MDGRID_TODAY=2026-10-06: 見本のノートが書かれ、見本の {date-10} は 2026-09-26 で、
     // 変数は残らない。雛形の {date} は文字のまま。作ったファイル(見本も)を1行ずつ出す。
     let t = home("st-samples");
     let h = t.path();
@@ -469,7 +469,7 @@ fn test_st_4_with_samples_fills_sample_vars_and_keeps_template_vars() {
 
 #[test]
 fn test_st_4_user_starter_samples_get_exact_values() {
-    // [ST-4] ユーザーのスターター(作った値)で、見本の {date}・{date+3}・{date-10}・{time} が CE-32 の変数として埋まり、
+    // [stest -> req~starter.init-sample-vars~1, req~starter.init-ledger-verbatim~1] ユーザーのスターター(作った値)で、見本の {date}・{date+3}・{date-10}・{time} が CE-32 の変数として埋まり、
     // 印と雛形は1バイトも変えずに写る。MDGRID_TODAY=2026-10-06 なので今は 00:00。
     let t = home("st-samples-user");
     let h = t.path();
@@ -504,7 +504,7 @@ fn test_st_4_user_starter_samples_get_exact_values() {
 
 #[test]
 fn test_st_4_second_run_fails_with_2_and_changes_nothing() {
-    // [ST-4] 書く先に同じパスのファイルが1つでもあれば、どれも書かずに理由1行と終了コード 2(WS-7 と同じく上書きしない)。
+    // [stest -> req~starter.init-no-overwrite~1] 書く先に同じパスのファイルが1つでもあれば、どれも書かずに理由1行と終了コード 2(WS-7 と同じく上書きしない)。
     // もう一度(見本あり・なし)・見本の1つだけが先にある・印だけが先にある、のどれも。
     let t = home("st-twice");
     let h = t.path();
@@ -572,7 +572,7 @@ fn test_st_4_second_run_fails_with_2_and_changes_nothing() {
 
 #[test]
 fn test_st_4_unknown_starter_one_line_names_starters_flag() {
-    // [ST-4] --starter nope → 理由1行(nope と、--starters で一覧を見られること)と終了コード 2。フォルダも作らない。
+    // [stest -> req~starter.init-bad-args~1] --starter nope → 理由1行(nope と、--starters で一覧を見られること)と終了コード 2。フォルダも作らない。
     let t = home("st-unknown");
     let h = t.path();
     let o = run(h, h, &["books", "--init-workspace", "--starter", "nope"]);
@@ -588,7 +588,7 @@ fn test_st_4_unknown_starter_one_line_names_starters_flag() {
 
 #[test]
 fn test_st_4_flag_misuse_is_one_line_and_code_2() {
-    // [ST-4] --init-workspace の無い --starter、--starter の無い --with-samples、値の無い --starter、
+    // [stest -> req~starter.init-no-overwrite~1, req~starter.init-bad-args~1] --init-workspace の無い --starter、--starter の無い --with-samples、値の無い --starter、
     // 2つ以上のフォルダは、CLI-4 と同じく理由1行と終了コード 2。何も作らない。
     let t = home("st-misuse");
     let h = t.path();
@@ -635,7 +635,7 @@ fn test_st_4_flag_misuse_is_one_line_and_code_2() {
 
 #[test]
 fn test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean() {
-    // [ST-2] 4つの組み込みから見本つきで作る(ja と en): --print-config --resolved の標準エラーに mdgrid: の行が無く、
+    // [stest -> req~starter.builtin-no-warning~1] 4つの組み込みから見本つきで作る(ja と en): --print-config --resolved の標準エラーに mdgrid: の行が無く、
     // --print --with-path が見本の行(パスが .md)を出し、--check の終了コードが 0。LANG=en_US.UTF-8 でも同じ。
     let t = home("st-builtin-cli");
     let h = t.path();

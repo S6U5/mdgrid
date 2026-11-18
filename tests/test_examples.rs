@@ -1,6 +1,6 @@
 //! 見本のルートフォルダ(examples/quirks と examples/studio)を開く試験(記録 2026-10-01-examples のタスク 1、
 //! 見本を作り直した記録 2026-10-15-examples-studio)。
-//! BV-1・BV-3・BV-5・BV-7・SC-8・CE-16。仕様: specs/base-view/spec.md、specs/scope/spec.md。
+//! BV-1・BV-3・BV-5・BV-7・SC-8・CE-16。仕様: specs/_history/decidespec/base-view/spec.md、specs/_history/decidespec/scope/spec.md。
 //!
 //! 見本は一時フォルダに写してから開く(リポの examples の中は書かない)。
 //! 見本が仕様や実装の変更で開けなくなったら、ここで気づく。
@@ -119,7 +119,7 @@ fn view_index(b: &Base, name: &str) -> usize {
 
 #[test]
 fn test_examples_open_folder() {
-    // [BV-1] フォルダで開く → タスク・メモの全ノート(フロントマターの無いノート・重複キー・競合ファイルも)が行に入る。
+    // [utest -> req~base-view.source-folder~1] フォルダで開く → タスク・メモの全ノート(フロントマターの無いノート・重複キー・競合ファイルも)が行に入る。
     let (_dir, vault) = sample("examples-folder");
     let mut md = Markdown::open(std::slice::from_ref(&vault)).expect("Markdown::open");
     load_all(&mut md);
@@ -136,16 +136,16 @@ fn test_examples_open_folder() {
     }
     assert_eq!(base::default_grid(src).rows.len(), TASKS + NOTES);
 
-    // [WB-3] フロントマターの無いノートと空のフロントマターのノートは、書ける(lock なし、値は無し)。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートと空のフロントマターのノートは、書ける(lock なし、値は無し)。
     for label in ["Notes/Snack list.md", "Notes/Blank.md"] {
         let plain = row_of(src, label);
         assert!(src.get(&plain, "status").lock.is_none(), "{label}");
         assert_eq!(src.get(&plain, "status").value, None, "{label}");
     }
-    // [WB-5] 同じキーが2回あるノートは読むだけ。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1] 同じキーが2回あるノートは読むだけ。
     let dup = row_of(src, "Notes/Weekly review.md");
     assert!(src.get(&dup, "status").lock.is_some());
-    // [WB-13] 同期の競合ファイルに印。
+    // [utest -> req~write-back.sync-conflict~1] 同期の競合ファイルに印。
     let conflict = row_of(src, "Notes/Ideas.sync-conflict-20260930-1.md");
     assert!(src.mark(&conflict).is_some());
     assert!(src.mark(&row_of(src, "Notes/Ideas.md")).is_none());
@@ -161,7 +161,7 @@ fn test_examples_open_folder() {
         Some(Value::Str(String::new()))
     );
     assert_eq!(get("Tasks/Clean up the contact list.md", "status"), None);
-    // [CE-8] ネストした map・ブロックスカラーは読むだけ。
+    // [utest -> req~cell-edit.read-only-forms~1] ネストした map・ブロックスカラーは読むだけ。
     assert!(src
         .get(
             &row_of(src, "Tasks/Clean up the contact list.md"),
@@ -173,7 +173,7 @@ fn test_examples_open_folder() {
         .get(&row_of(src, "Tasks/Service the studio bikes.md"), "steps")
         .lock
         .is_some());
-    // [CE-16] リストの値は書ける形なら編集できる: 1行のフロー(tags)も縦のリスト(packing)も lock なし。
+    // [utest -> req~cell-edit.list-items-candidates~1] リストの値は書ける形なら編集できる: 1行のフロー(tags)も縦のリスト(packing)も lock なし。
     assert!(src
         .get(&row_of(src, "Tasks/Sort the receipts.md"), "tags")
         .lock
@@ -182,7 +182,7 @@ fn test_examples_open_folder() {
         .get(&row_of(src, "Tasks/Pack for the offsite.md"), "packing")
         .lock
         .is_none());
-    // [CE-16] [CE-19] tags の候補はルートフォルダの中の要素と件数、件数の多い順。
+    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-candidates-order~1] tags の候補はルートフォルダの中の要素と件数、件数の多い順。
     let tags = src.list_candidates("tags");
     assert_eq!(tags.first(), Some(&("office".to_string(), 6)), "{tags:?}");
     assert!(tags.contains(&("money".to_string(), 3)), "{tags:?}");
@@ -207,7 +207,7 @@ fn test_examples_base_views() {
     let names: Vec<&str> = b.views.iter().map(|v| v.name.as_str()).collect();
     assert_eq!(names, ["Doing", "By status", "Due", "Unsupported", "Cards"]);
 
-    // [BV-5] table のビューは全部 build できる。全体の filters でタスクのノートだけ。
+    // [utest -> req~base-view.table-keys~1] table のビューは全部 build できる。全体の filters でタスクのノートだけ。
     for (i, v) in b.views.iter().enumerate() {
         if v.kind != "table" {
             continue;
@@ -252,7 +252,7 @@ fn test_examples_base_views() {
     let pos = g.rows.iter().position(|r| *r == late).unwrap();
     assert!(pos >= TASKS - 2, "someday at {pos}");
 
-    // [BV-7] Unsupported: build は Ok、該当の列は全行 Unsupported、notes に理由。
+    // [utest -> req~base-view.unsupported-column-mark~1] Unsupported: build は Ok、該当の列は全行 Unsupported、notes に理由。
     let g = build(&b, view_index(&b, "Unsupported"), src).unwrap();
     assert_eq!(g.rows.len(), TASKS);
     for col in ["formula.hours_fixed", "formula.embeds"] {
@@ -269,11 +269,11 @@ fn test_examples_base_views() {
     let r = row_of(src, "Tasks/Collect the tax documents.md");
     assert!(matches!(cell(&b, src, &r, "hours"), Shown::Prop(_)));
 
-    // [SC-8] カード(type: cards)は開かない。
+    // [utest -> req~scope.table-only~1] カード(type: cards)は開かない。
     let e = build(&b, view_index(&b, "Cards"), src).unwrap_err();
     assert!(e.contains("cards"), "{e}");
 
-    // [BV-3] 操作の前後で `.base` のバイトが同じ。
+    // [utest -> req~base-view.base-untouched~1] 操作の前後で `.base` のバイトが同じ。
     assert_eq!(std::fs::read(&base_path).unwrap(), before);
 }
 
@@ -287,7 +287,7 @@ const STUDIO_TODAY: i64 = 20732;
 
 #[test]
 fn test_examples_showcase() {
-    // [CLI-3] [BV-1] [BV-5] [CE-22] [CE-16]
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~1, req~base-view.source-folder~1, req~base-view.table-keys~1, req~cell-edit.date-format-display~1, req~cell-edit.date-format-write~1, req~cell-edit.list-items-candidates~1]
     let (_dir, examples) = sample_of(".", "examples-showcase");
 
     // 設定は警告なしで読め、日付の形・週の始まり・検索の欄・キーの割り当て直しが入る。
@@ -334,7 +334,7 @@ fn test_examples_showcase() {
     for col in cols {
         assert!(src.columns().iter().any(|c| c == col), "column {col}");
     }
-    // [CE-16] リストの列は縦の形(depends_on)も1行の形(tags)も編集でき、候補は複数で、重なる要素がある。
+    // [utest -> req~cell-edit.list-items-candidates~1] リストの列は縦の形(depends_on)も1行の形(tags)も編集でき、候補は複数で、重なる要素がある。
     let task = row_of(src, "Tasks/Build the menu page.md");
     assert!(src.get(&task, "tags").lock.is_none());
     assert!(src.get(&task, "depends_on").lock.is_none());

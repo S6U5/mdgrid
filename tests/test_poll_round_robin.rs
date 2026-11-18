@@ -1,5 +1,5 @@
-//! [BV-9] ノートが 2,000 を超える保管庫では1回の見回りで見るノートを限って順に回すが、
-//! 変わった・消えたノートは2回の見回りのうちに分かる(specs/_changes/2026-10-06-poll-round-robin.md)。
+//! [base-view.watch] ノートが 2,000 を超える保管庫では1回の見回りで見るノートを限って順に回すが、
+//! 変わった・消えたノートは2回の見回りのうちに分かる(specs/_history/decidespec/_changes/2026-10-06-poll-round-robin.md)。
 
 use mdgrid::vault::{roots, Vault};
 use std::path::{Path, PathBuf};
@@ -36,6 +36,7 @@ fn big(name: &str, n: usize) -> (PathBuf, Vault) {
     (dir, v)
 }
 
+// [utest -> req~base-view.watch-pause~1]
 #[test]
 fn test_bv_9_round_robin_change_found_within_two_polls() {
     let (dir, mut v) = big("change", 2500);
@@ -58,6 +59,7 @@ fn test_bv_9_round_robin_change_found_within_two_polls() {
     assert_eq!(names.len(), 2, "ほかは変わらない: {names:?}");
 }
 
+// [utest -> req~base-view.watch-round-robin~1]
 #[test]
 fn test_bv_9_round_robin_removed_found_within_two_polls() {
     let (dir, mut v) = big("removed", 2500);

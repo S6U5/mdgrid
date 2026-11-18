@@ -12,7 +12,7 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_nv_29_low_terminal_step_closes_with_reason() {
-    // [NV-29] 条件の並びは入るが、列を選ぶ段は入らない低い端末 → 段へ進むと、見えないまま動かさずに閉じて理由。
+    // [utest -> req~navigation.filter-window-open~1] 条件の並びは入るが、列を選ぶ段は入らない低い端末 → 段へ進むと、見えないまま動かさずに閉じて理由。
     // 高さは、窓(条件の並び)がやっと入る低さ(SR-1 で窓の上のビューの帯の位置が変わっても同じ意味になるように、
     // 低い方から試して最初に窓が開く高さを使う。前の配置では 9)。
     let (_t, mut a) = make("nv29low", NOTES);
@@ -42,7 +42,7 @@ fn test_nv_29_low_terminal_step_closes_with_reason() {
 
 #[test]
 fn test_nv_29_old_mode_names_keep_meaning() {
-    // [NV-1][NV-2] 呼び直す前の表示名を書いた設定は、前のモードのまま読む(`検索`・`Search` は `/`、
+    // [utest -> req~navigation.find~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1, req~navigation.filter-window-palette~1] 呼び直す前の表示名を書いた設定は、前のモードのまま読む(`検索`・`Search` は `/`、
     // `絞り込み`・`Filter` は上の欄)。新しい名前と設定の名前も引ける。
     assert_eq!(Mode::by_name("検索"), Some(Mode::Search));
     assert_eq!(Mode::by_name("Search"), Some(Mode::Search));

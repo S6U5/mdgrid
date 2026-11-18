@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn test_sr_35_first_chip_whole_before_count() {
-    // [SR-35] 幅 9 に launch・writing → ` launch ` を丸ごと(+1 は入らないので出さない)。
+    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] 幅 9 に launch・writing → ` launch ` を丸ごと(+1 は入らないので出さない)。
     let tmp = Tmp::new("sr35w_first");
     tmp.write("a.md", "---\ntags: [launch, writing]\n---\n");
     tmp.write("b.md", "---\ntags: [x]\n---\n");

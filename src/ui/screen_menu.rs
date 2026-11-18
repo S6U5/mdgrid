@@ -8,6 +8,7 @@
 use super::app::App;
 use super::keymap::{self, Action, Mode};
 use super::popup;
+use super::screens::{Screen, OTHERS};
 use super::width::{fit, width, Align};
 use mdgrid::i18n::Msg;
 use ratatui::style::{Modifier, Style};
@@ -20,55 +21,35 @@ pub(crate) struct ScreenMenu {
     pub sel: usize,
 }
 
-/// 画面の型。
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Screen {
-    Table,
-    Relations,
-    /// TR-1: 木(表に木の設定があるときだけ)。
-    Tree,
-}
-
-/// 窓に並べる型(表と、つながる表があれば関係マップ。関係マップの画面ではいつも)。
+/// 窓に並べる型(表と、つながる表があれば関係マップ、設定か推定で開ける木・ガント・カンバン。今の型はいつも)。
 fn screens(app: &App) -> Vec<Screen> {
-    let rel = app.src.notes() && (!app.link_places().is_empty() || app.relmap.is_some());
+    let cur = app.screen();
     let mut out = vec![Screen::Table];
-    if rel {
-        out.push(Screen::Relations);
-    }
-    if app.tree_ready() || app.folder_tree.is_some() {
-        out.push(Screen::Tree);
+    for s in OTHERS {
+        let ready = match s {
+            Screen::Relations => {
+                app.src.notes() && (!app.link_places().is_empty() || app.relmap.is_some())
+            }
+            Screen::Tree => app.tree_ready(),
+            Screen::Gantt => app.gantt_ready(),
+            Screen::Kanban => app.kanban_ready(),
+            Screen::Chart => app.chart_ready(),
+            Screen::Table => false,
+        };
+        if ready || (cur == s && s != Screen::Relations) {
+            out.push(s);
+        }
     }
     out
 }
 
-/// 今の型。
-fn current(app: &App) -> Screen {
-    if app.relmap.is_some() {
-        Screen::Relations
-    } else if app.folder_tree.is_some() {
-        Screen::Tree
-    } else {
-        Screen::Table
-    }
-}
-
 /// 型の (名前, 切り替えのキー)。SR-45: アイコンを使うときは名前の頭に型の記号。
 fn entry(app: &App, s: Screen) -> (String, Option<String>) {
-    use super::glyphs::{glyph, nerd_on, Glyph};
-    let (g, name, key) = match s {
-        Screen::Table => (Glyph::Table, Msg::TabScreenTable.text(), None),
-        Screen::Relations => (
-            Glyph::RelMap,
-            Msg::ScreenRelMap.text(),
-            keymap::key_for(&app.keys, Mode::Table, Action::RelationMap),
-        ),
-        Screen::Tree => (
-            Glyph::Tree,
-            Msg::ScreenTree.text(),
-            keymap::key_for(&app.keys, Mode::Table, Action::TreeView),
-        ),
-    };
+    use super::glyphs::{glyph, nerd_on};
+    let (g, name) = s.label();
+    let key = s
+        .switch_action()
+        .and_then(|a| keymap::key_for(&app.keys, Mode::Table, a));
     let name = if nerd_on(app) {
         format!("{} {name}", glyph(app, g))
     } else {
@@ -124,9 +105,11 @@ fn window(app: &App) -> Option<Geom> {
 impl App {
     /// REL-8: 画面の型のメニューを開く(表の画面か関係マップから)。
     pub(crate) fn open_screen_menu(&mut self) {
+        // 前の操作のメッセージは、窓を開いた時点で役目を終える(クリックで開くときと同じ)。
+        self.message = None;
         let sel = screens(self)
             .iter()
-            .position(|s| *s == current(self))
+            .position(|s| *s == self.screen())
             .unwrap_or(0);
         self.screen_menu = Some(ScreenMenu { sel });
         if window(self).is_none() {
@@ -137,16 +120,10 @@ impl App {
         self.set_mode(Mode::ScreenMenu);
     }
 
-    /// 窓を閉じて、開く前の画面(表の画面か関係マップ)に戻る。
+    /// 窓を閉じて、開く前の画面(表の画面か、表でない型の画面)に戻る。
     pub(crate) fn close_screen_menu(&mut self) {
         self.screen_menu = None;
-        let back = if self.relmap.is_some() {
-            Mode::Relations
-        } else if self.folder_tree.is_some() {
-            Mode::Tree
-        } else {
-            Mode::Table
-        };
+        let back = self.screen().mode();
         self.set_mode(back);
     }
 
@@ -172,27 +149,19 @@ impl App {
         self.set_mode(Mode::ScreenMenu);
     }
 
-    /// 選んだ型に切り替える(今の型なら何もしない)。
+    /// 選んだ型に切り替える(今の型なら何もしない)。ほかの型の状態を閉じて表の画面に戻ってから開く。
     fn switch_screen(&mut self, to: Screen) {
-        if to == current(self) {
+        if to == self.screen() {
             return;
         }
+        self.close_screen();
         match to {
-            Screen::Table => {
-                self.relmap = None;
-                self.folder_tree = None;
-                self.set_mode(Mode::Table);
-            }
-            Screen::Relations => {
-                self.folder_tree = None;
-                self.set_mode(Mode::Table);
-                self.open_relmap();
-            }
-            Screen::Tree => {
-                self.relmap = None;
-                self.set_mode(Mode::Table);
-                self.open_tree();
-            }
+            Screen::Table => {}
+            Screen::Relations => self.open_relmap(),
+            Screen::Tree => self.open_tree(),
+            Screen::Gantt => self.open_gantt(),
+            Screen::Kanban => self.open_kanban(),
+            Screen::Chart => self.open_chart(),
         }
     }
 
@@ -225,7 +194,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     };
     let tw = g.iw - 2;
     let fr = popup::frame(app);
-    let now = current(app);
+    let now = app.screen();
     let mut out: Vec<(String, Style)> = vec![(
         popup::top_edge(fr, Msg::ScreenMenuTitle.text(), tw),
         Style::default(),

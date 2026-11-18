@@ -1,5 +1,5 @@
 //! タスク 1(links-this)の受け入れ: リンク・被リンク・`.base` を開いたときの this(BV-22。関係: BV-6・BV-7)。
-//! 仕様: specs/base-view/spec.md の BV-22、specs/_changes/2026-10-06-links-this.md の「不明点と仮定」。
+//! 仕様: specs/_history/decidespec/base-view/spec.md の BV-22、specs/_history/decidespec/_changes/2026-10-06-links-this.md の「不明点と仮定」。
 //! 本物の実行ファイルの `--print --format json` で、一時の保管庫(根に `.obsidian/`)と `.base` を作って確かめる。
 //!
 //! 仮定(記録のとおり): リンクの値は行き先のノートの根からのパス(拡張子なし)の文字。解けないリンクは書いた文字のまま。
@@ -98,7 +98,7 @@ fn names(out: &str) -> Vec<String> {
 
 #[test]
 fn test_bv_22_links_wikilink_and_markdown_link() {
-    // [BV-22] a.md の本文に [[b]] と [x](sub/c.md) → a の file.links に b と sub/c
+    // [stest -> req~base-view.links-eval-links~1] a.md の本文に [[b]] と [x](sub/c.md) → a の file.links に b と sub/c
     let d = TempDir::new("basic");
     d.write("a.md", "本文 [[b]] と [x](sub/c.md)\n");
     d.write("b.md", "b\n");
@@ -113,7 +113,7 @@ fn test_bv_22_links_wikilink_and_markdown_link() {
 
 #[test]
 fn test_bv_22_link_forms_alias_heading_embed() {
-    // [BV-22] [[b|表示]]・[[b#見出し]]・![[d]] は行き先 b・d(同じ行き先は1つ)
+    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1] [[b|表示]]・[[b#見出し]]・![[d]] は行き先 b・d(同じ行き先は1つ)
     let d = TempDir::new("forms");
     d.write("a.md", "[[b|表示]] と [[b#見出し]]\n\n![[d]]\n");
     d.write("b.md", "b\n");
@@ -127,7 +127,7 @@ fn test_bv_22_link_forms_alias_heading_embed() {
 
 #[test]
 fn test_bv_22_links_in_code_are_not_counted() {
-    // [BV-22] コードの区画とインラインのコードの中のリンクは拾わない
+    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1] コードの区画とインラインのコードの中のリンクは拾わない
     let d = TempDir::new("code");
     d.write(
         "a.md",
@@ -146,7 +146,7 @@ fn test_bv_22_links_in_code_are_not_counted() {
 
 #[test]
 fn test_bv_22_unresolved_link_stays_text() {
-    // [BV-22] [[無い]] は文字 "無い" のまま入る
+    // [stest -> req~base-view.links-eval-resolve~1] [[無い]] は文字 "無い" のまま入る
     let d = TempDir::new("unresolved");
     d.write("a.md", "[[無い]]\n");
     d.write("b.md", "b\n");
@@ -159,7 +159,7 @@ fn test_bv_22_unresolved_link_stays_text() {
 
 #[test]
 fn test_bv_22_same_name_resolves_nearest_root() {
-    // [BV-22] 同じ名前のノートが複数 → 根に近い・パスの短いもの
+    // [stest -> req~base-view.links-eval-resolve~1] 同じ名前のノートが複数 → 根に近い・パスの短いもの
     let d = TempDir::new("same-name");
     d.write("a.md", "[[b]]\n");
     d.write("x/deep/b.md", "b1\n");
@@ -183,7 +183,7 @@ fn test_bv_22_same_name_resolves_nearest_root() {
 
 #[test]
 fn test_bv_22_backlinks_and_has_link() {
-    // [BV-22] file.backlinks はそのノートを指すノートのリスト、file.hasLink(x) は x を指すか(決定 links-backlinks)。
+    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-backlinks~1, req~base-view.links-eval-this~1] file.backlinks はそのノートを指すノートのリスト、file.hasLink(x) は x を指すか(決定 links-backlinks)。
     let d = TempDir::new("backlinks");
     d.write("a.md", "[[b]]\n");
     d.write("c.md", "---\nrel: \"[[b]]\"\n---\n");
@@ -221,7 +221,7 @@ fn test_bv_22_backlinks_and_has_link() {
 
 #[test]
 fn test_bv_22_links_contains_name() {
-    // [BV-22] file.links.contains("b") は a で真(b を指さないノートは偽)
+    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-has-link~1, req~base-view.links-eval-this~1] file.links.contains("b") は a で真(b を指さないノートは偽)
     let d = TempDir::new("contains");
     d.write("a.md", "[[b]]\n");
     d.write("b.md", "b\n");
@@ -236,7 +236,7 @@ fn test_bv_22_links_contains_name() {
 
 #[test]
 fn test_bv_22_frontmatter_links() {
-    // [BV-22] フロントマターの値の [[…]] も file.links に入る
+    // [stest -> req~base-view.links-eval-links~1] フロントマターの値の [[…]] も file.links に入る
     let d = TempDir::new("frontmatter");
     d.write(
         "a.md",
@@ -269,7 +269,7 @@ views:
 
 #[test]
 fn test_bv_22_this_file_name_and_folder() {
-    // [BV-22] Projects.base を開いたときの this はその .base: this.file.name・this.file.folder
+    // [stest -> req~base-view.links-eval-this~1] Projects.base を開いたときの this はその .base: this.file.name・this.file.folder
     let d = TempDir::new("this");
     d.write("P/a.md", "a\n");
     d.write("other.md", "o\n");
@@ -281,7 +281,7 @@ fn test_bv_22_this_file_name_and_folder() {
 
 #[test]
 fn test_bv_22_in_folder_of_this() {
-    // [BV-22] file.inFolder(this.file.folder) → .base と同じフォルダ(とその下)のノートだけ
+    // [stest -> req~base-view.links-eval-this~1] file.inFolder(this.file.folder) → .base と同じフォルダ(とその下)のノートだけ
     let d = TempDir::new("infolder");
     d.write("P/a.md", "a\n");
     d.write("P/sub/b.md", "b\n");
@@ -293,7 +293,7 @@ fn test_bv_22_in_folder_of_this() {
 
 #[test]
 fn test_bv_22_links_contains_this_file() {
-    // [BV-22] file.links.contains(this.file) → .base を指すノートだけ(名前でもパスでも)
+    // [stest -> req~base-view.links-eval-this~1] file.links.contains(this.file) → .base を指すノートだけ(名前でもパスでも)
     let d = TempDir::new("contains-this");
     d.write("a.md", "[[Projects.base]] を見る\n");
     d.write("b.md", "[[P/Projects.base|一覧]]\n");
@@ -306,7 +306,7 @@ fn test_bv_22_links_contains_this_file() {
 
 #[test]
 fn test_bv_22_this_without_base_file_is_unsupported() {
-    // [BV-22][BV-7] this の無いところ(`.base` のファイルを渡していない)では、this を使う絞り込みは開かず理由に this、
+    // [stest -> req~base-view.links-eval-this~1, req~base-view.unsupported-filters~1] this の無いところ(`.base` のファイルを渡していない)では、this を使う絞り込みは開かず理由に this、
     // this を使う formula の列は未対応
     use mdgrid::base;
     use mdgrid::source::markdown::Markdown;

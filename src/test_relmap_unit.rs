@@ -65,7 +65,7 @@ fn workspace(name: &str) -> (Tmp, Vec<Table>) {
 
 #[test]
 fn test_rel_7_read_tables_and_links() {
-    // [REL-7] 表の形(行の数・多い順の列)と、つながりとリンクの組。
+    // [utest -> req~relations.map~1] 表の形(行の数・多い順の列)と、つながりとリンクの組。
     let (_t, tables) = workspace("read");
     let (infos, links) = read(&tables);
     let tasks = &infos[0];
@@ -104,7 +104,7 @@ fn text(m: &Map) -> String {
 
 #[test]
 fn test_rel_7_layout_connects_boxes() {
-    // [REL-7] 層は元が左・行き先が右。箱は重ならず、矢印は行き先の箱の題の行の左に入る。数の札が付く。
+    // [utest -> req~relations.map~1] 層は元が左・行き先が右。箱は重ならず、矢印は行き先の箱の題の行の左に入る。数の札が付く。
     let (_t, tables) = workspace("layout");
     let (infos, links) = read(&tables);
     let m = layout(&infos, &links, false);
@@ -145,7 +145,7 @@ fn test_rel_7_layout_connects_boxes() {
 
 #[test]
 fn test_rel_7_ascii_lines() {
-    // [REL-7][SR-32] ASCII の盤は罫線を使わない。
+    // [utest -> req~relations.map~1, req~screen.frames~1] ASCII の盤は罫線を使わない。
     let (_t, tables) = workspace("ascii");
     let (infos, links) = read(&tables);
     let s = text(&layout(&infos, &links, true));
@@ -155,7 +155,7 @@ fn test_rel_7_ascii_lines() {
 
 #[test]
 fn test_rel_7_back_and_self_links_do_not_panic() {
-    // [REL-7] 輪(行き先が左か同じ層)と自分を指すつながりでも並べられる。
+    // [utest -> req~relations.map~1] 輪(行き先が左か同じ層)と自分を指すつながりでも並べられる。
     let t = Tmp::new("cycle");
     t.write("a/x.md", "---\nnext: \"[[y]]\"\n---\n");
     t.write("b/y.md", "---\nback: \"[[x]]\"\nself: \"[[z]]\"\n---\n");
@@ -173,7 +173,7 @@ fn test_rel_7_back_and_self_links_do_not_panic() {
 
 #[test]
 fn test_rel_7_empty_workspace() {
-    // [REL-7] 表もつながりも無ければ空の盤。
+    // [utest -> req~relations.map~1] 表もつながりも無ければ空の盤。
     let m = layout(&[], &[], false);
     assert!(m.boxes.is_empty());
 }
@@ -188,7 +188,7 @@ fn show_sample() {
 
 #[test]
 fn test_rel_7_control_chars_are_not_drawn() {
-    // [REL-7][SR-10] ノートの列の名前に制御文字があっても、盤には `?` で描く(端末を操作させない)。
+    // [utest -> req~relations.map~1, req~cell-view.no-color-env~1, req~cell-view.no-color-term-dumb~1, req~cell-view.no-color-not-tty~1] ノートの列の名前に制御文字があっても、盤には `?` で描く(端末を操作させない)。
     let infos = vec![TableInfo {
         name: "T\u{1b}[31m".into(),
         dir: PathBuf::from("/t"),

@@ -1,6 +1,6 @@
 //! mdgrid のビュー(native-views)の画面の受け入れ試験(タスク 2)。BV-17〜BV-20
 //! (と NV-13〜NV-22・WB-15・BV-3・BV-13・SR-12)。
-//! 仕様: specs/base-view/spec.md、決定 specs/_decisions/2026-10-02-native-views.md と -details.md、
+//! 仕様: specs/_history/decidespec/base-view/spec.md、決定 specs/_history/decidespec/_decisions/2026-10-02-native-views.md と -details.md、
 //! 設計 docs/design.md の「mdgrid のビュー(BV-17〜BV-20)」。実装を見ずに、画面の文字とキーとファイルで確かめる。
 //!
 //! 仮定(実装役に渡す):
@@ -387,7 +387,7 @@ fn save_as(a: &mut App, name: &str) {
 
 #[test]
 fn test_bv_17_tabs_list_default_and_saved_views() {
-    // [BV-17] `.base` の無いフォルダで、画面からビューを2つ作る → タブに「既定の表」と2つの名前が並び、
+    // [utest -> req~base-view.own-views-tabs~1] `.base` の無いフォルダで、画面からビューを2つ作る → タブに「既定の表」と2つの名前が並び、
     // 切り替えると絞り込みが変わる。終了して開き直すと同じ。ノートのフォルダに新しいファイルは無い。
     let tmp = vault("bv17tabs");
     let notes_before = snapshot(&tmp.notes());
@@ -443,7 +443,7 @@ fn test_bv_17_tabs_list_default_and_saved_views() {
 
 #[test]
 fn test_bv_17_hand_written_views_toml_becomes_tabs() {
-    // [BV-17] 設定の置き場の views.toml を手で書く → タブになり、選ぶとその絞り込みと列で表を組む。
+    // [utest -> req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1] 設定の置き場の views.toml を手で書く → タブになり、選ぶとその絞り込みと列で表を組む。
     // 書き足して開き直す → タブが増える。ノートのフォルダには何も書かない。
     let tmp = vault("bv17hand");
     let notes_before = snapshot(&tmp.notes());
@@ -504,7 +504,7 @@ path = {path}
 
 #[test]
 fn test_bv_17_no_new_files_in_notes_folder() {
-    // [BV-17] 保存・上書き・名前の変更・削除をひととおりしても、ノートのフォルダに新しいファイルは無く
+    // [utest -> req~base-view.own-views-tabs~1, req~base-view.own-views-no-note-files~1] 保存・上書き・名前の変更・削除をひととおりしても、ノートのフォルダに新しいファイルは無く
     // (バイトも同じ)、書くのは設定の置き場の views.toml だけ。
     let tmp = vault("bv17nofile");
     let notes_before = snapshot(&tmp.notes());
@@ -535,7 +535,7 @@ fn test_bv_17_no_new_files_in_notes_folder() {
 
 #[test]
 fn test_bv_18_save_as_adds_tab() {
-    // [BV-18][NV-13] `o` で done を外し「名前を付けて保存」で「未完了」→ タブに「未完了」が増え、
+    // [utest -> req~base-view.save-view-save-as~1, req~navigation.view-settings~1] `o` で done を外し「名前を付けて保存」で「未完了」→ タブに「未完了」が増え、
     // views.toml にその設定で残る。
     let tmp = vault("bv18save");
     let mut a = boot_folder(&tmp, false);
@@ -558,7 +558,7 @@ fn test_bv_18_save_as_adds_tab() {
 
 #[test]
 fn test_bv_18_overwrite_survives_restart() {
-    // [BV-18] 保存したビュー「未完了」で、別の絞り込みにして「上書き」→ 開き直しても上書きした見せ方。
+    // [utest -> req~base-view.save-view-overwrite~1] 保存したビュー「未完了」で、別の絞り込みにして「上書き」→ 開き直しても上書きした見せ方。
     let tmp = vault("bv18over");
     prepare(&tmp, &tmp.notes(), &[view("未完了", drop_done())]);
     let mut a = boot_folder(&tmp, false);
@@ -583,7 +583,7 @@ fn test_bv_18_overwrite_survives_restart() {
 
 #[test]
 fn test_bv_18_rename_changes_tab() {
-    // [BV-18] 「名前の変更」で「未完了」を「残り」に → タブの名前が変わり、開き直しても同じ。
+    // [utest -> req~base-view.save-view-overwrite~1, req~base-view.save-view-rename~1] 「名前の変更」で「未完了」を「残り」に → タブの名前が変わり、開き直しても同じ。
     let tmp = vault("bv18rename");
     prepare(&tmp, &tmp.notes(), &[view("未完了", drop_done())]);
     let mut a = boot_folder(&tmp, false);
@@ -610,7 +610,7 @@ fn test_bv_18_rename_changes_tab() {
 
 #[test]
 fn test_bv_18_delete_removes_tab() {
-    // [BV-18] 「未完了」と「本」があるとき、「未完了」を「削除」→ タブから消え、「本」は残る。開き直しても同じ。
+    // [utest -> req~base-view.save-view-overwrite~1] 「未完了」と「本」があるとき、「未完了」を「削除」→ タブから消え、「本」は残る。開き直しても同じ。
     let tmp = vault("bv18del");
     prepare(
         &tmp,
@@ -640,9 +640,9 @@ fn test_bv_18_delete_removes_tab() {
 
 #[test]
 fn test_bv_19_export_writes_new_base_and_reports_dropped() {
-    // [BV-19] 絞り込み・並べ替え・グループ(空を隠す)のあるビューをパレットの「.base に書き出す」で
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-new-file~1] 絞り込み・並べ替え・グループ(空を隠す)のあるビューをパレットの「.base に書き出す」で
     // 新しい名前に書き出す → `.base` が1つ増え、読めて、開くと同じ行が出る。表せない「空を隠す」は
-    // 落としたと知らせる。[BV-3] 既存の `.base` とノートのバイトは同じ。
+    // 落としたと知らせる。[utest -> req~base-view.base-untouched~1] 既存の `.base` とノートのバイトは同じ。
     let tmp = vault("bv19export");
     base_path(&tmp);
     let settings = Settings {
@@ -720,7 +720,7 @@ fn test_bv_19_export_writes_new_base_and_reports_dropped() {
 
 #[test]
 fn test_bv_19_export_refuses_existing_base() {
-    // [BV-19][BV-3] 書き出しで既存の `.base` の名前(tasks.base)を選ぶ → 書かずに理由。
+    // [utest -> req~base-view.export-base-new-file~1, req~base-view.base-untouched~1] 書き出しで既存の `.base` の名前(tasks.base)を選ぶ → 書かずに理由。
     // ノートのフォルダのどのファイルも同じで、新しいファイルも無い。
     let tmp = vault("bv19exist");
     base_path(&tmp);
@@ -742,7 +742,7 @@ fn test_bv_19_export_refuses_existing_base() {
 
 #[test]
 fn test_bv_19_import_base_view_adds_tab() {
-    // [BV-19] パレットの「.base のビューを取り込む」で tasks.base の「進行」を取り込む → mdgrid のビューの
+    // [utest -> req~base-view.export-base-import~1] パレットの「.base のビューを取り込む」で tasks.base の「進行」を取り込む → mdgrid のビューの
     // タブ「進行」が増え、`.base` の filters(doing を外す)が効く。views.toml に入り、`.base` は同じ。
     let tmp = vault("bv19import");
     let bp = base_path(&tmp);
@@ -779,7 +779,7 @@ fn test_bv_19_import_base_view_adds_tab() {
 
 #[test]
 fn test_bv_20_broken_views_toml_warns_and_starts_without_tabs() {
-    // [BV-20] views.toml を手で壊す → 起動して警告、mdgrid のビューのタブは出ず、既定の表で開く。
+    // [utest -> req~base-view.views-toml-broken~1] views.toml を手で壊す → 起動して警告、mdgrid のビューのタブは出ず、既定の表で開く。
     // 壊れたファイルは書き換えない。
     let tmp = vault("bv20broken");
     std::fs::create_dir_all(conf_dir(&tmp)).unwrap();
@@ -801,7 +801,7 @@ fn test_bv_20_broken_views_toml_warns_and_starts_without_tabs() {
 
 #[test]
 fn test_bv_20_unknown_key_warns_and_reads() {
-    // [BV-20][CLI-3] 知らない項目 `color = 1` → 警告して、そのビューはタブに出る。
+    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 知らない項目 `color = 1` → 警告して、そのビューはタブに出る。
     let tmp = vault("bv20unknown");
     std::fs::create_dir_all(conf_dir(&tmp)).unwrap();
     let real = std::fs::canonicalize(tmp.notes()).unwrap();
@@ -820,7 +820,7 @@ fn test_bv_20_unknown_key_warns_and_reads() {
 
 #[test]
 fn test_bv_20_base_views_come_first() {
-    // [BV-20][BV-13] `.base` と mdgrid のビューの両方がある対象 → タブは `.base` のビューが先、
+    // [utest -> req~base-view.views-toml-tab-order~1, req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~1] `.base` と mdgrid のビューの両方がある対象 → タブは `.base` のビューが先、
     // 起動は先頭(`.base` の最初のビュー)。mdgrid のビューに切り替えるとその見せ方。
     let tmp = vault("bv20order");
     let bp = base_path(&tmp);
@@ -846,7 +846,7 @@ fn test_bv_20_base_views_come_first() {
 
 #[test]
 fn test_bv_20_readonly_writes_nothing() {
-    // [BV-20][WB-15] `--readonly` で開く → mdgrid のビューのタブは読むが、保存・上書き・書き出しをしても
+    // [utest -> req~base-view.views-toml-layout~1, req~base-view.views-toml-readonly~1, req~cli.readonly~1] `--readonly` で開く → mdgrid のビューのタブは読むが、保存・上書き・書き出しをしても
     // 何も書かれず、「読むだけ」と出る(保存の操作を出さないのでもよい)。views.toml・ノート・状態の置き場は同じ。
     let tmp = vault("bv20ro");
     base_path(&tmp);

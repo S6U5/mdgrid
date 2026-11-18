@@ -333,7 +333,7 @@ fn pages_list(py: &str) -> Vec<String> {
 
 #[test]
 fn test_sr_51_features_pages_images_are_scenes() {
-    // [SR-51] できることの一覧(ja・en)があり、画像はどれも `images/<id>.svg` で、id は撮る場面(台本)の id
+    // [utest -> req~screen.features-page-entry~1] できることの一覧(ja・en)があり、画像はどれも `images/<id>.svg` で、id は撮る場面(台本)の id
     // (README の GIF の駒 gif-* は画面の一覧に出ないので使わない)。12 の機能に1枚ずつで少なくとも 12 枚ある。
     let ids = scene_ids();
     for lang in ["ja", "en"] {
@@ -370,7 +370,7 @@ fn test_sr_51_features_pages_images_are_scenes() {
 
 #[test]
 fn test_sr_51_features_sections_have_image_and_link() {
-    // [SR-51] features.md(ja・en)を見出しで節に区切り、12 の機能の節それぞれに、場面の画像
+    // [utest -> req~screen.features-page-entry~1, req~screen.features-page-items~1] features.md(ja・en)を見出しで節に区切り、12 の機能の節それぞれに、場面の画像
     // (`![…](images/<id>.svg)`)が1枚以上と、くわしい節へのリンク(http でなく、# だけでなく、index.md・
     // features.md 自身・他言語・画像でない行き先)が1本以上ある。ページ全体の数では、1つの節に集まっていても
     // 通ってしまうので、節ごとに見る。
@@ -405,7 +405,7 @@ fn test_sr_51_features_sections_have_image_and_link() {
 
 #[test]
 fn test_sr_51_features_headings_name_each_feature_exactly() {
-    // [SR-51] 12 の語は、見出しの文(半角か全角の括弧 `(…)` の中を除いた残り)との完全一致か、語のあとに区切りが
+    // [utest -> req~screen.features-page-items~1] 12 の語は、見出しの文(半角か全角の括弧 `(…)` の中を除いた残り)との完全一致か、語のあとに区切りが
     // 続く先頭一致でだけ当たる(tests/test_views_page_more.rs の names_view と同じ規則)。`まとめて直す` は
     // 見出し `まとめて直す`(と `まとめて直す: …`)だけで、`まとめて直すには` では通らない。en は大文字小文字を
     // 問わず、`Link tables` は `Link tables` と `Link tables (relations)` だけで、`Linked tables` では通らない。
@@ -444,7 +444,7 @@ fn test_sr_51_features_headings_name_each_feature_exactly() {
 
 #[test]
 fn test_sr_51_features_links_resolve() {
-    // [SR-51] くわしい節へのリンクなど、相対のリンク(http で始まらず、# だけでないもの)の行き先は、
+    // [utest -> req~screen.features-page-entry~1] くわしい節へのリンクなど、相対のリンク(http で始まらず、# だけでないもの)の行き先は、
     // `#` より前の部分が docs/manual/<lang>/ からの相対で在るファイル(../../catalog/index.html のような docs の下も可)。
     // 画像(images/)はリポに置かないので、場面の id として別の試験で見る。
     for lang in ["ja", "en"] {
@@ -480,7 +480,7 @@ fn test_sr_51_features_links_resolve() {
 
 #[test]
 fn test_sr_51_features_anchors_point_at_headings() {
-    // [SR-51] features.md の相対リンクに `#錨` が付いているとき、その錨は行き先の .md の見出しを mdBook の id
+    // [utest -> req~screen.features-page-items~1] features.md の相対リンクに `#錨` が付いているとき、その錨は行き先の .md の見出しを mdBook の id
     // (小文字、空白は `-`、英数と仮名・漢字と `-`・`_` 以外の記号は落とす)に直したものの中にある。
     // 行き先の無い `#錨` だけのリンクは、このページ自身の見出しで見る。
     // id の作り方は、手引きの既存の見出し(スターターから台帳を作る・.base を開く など)と同じ形になることで確かめる。
@@ -548,7 +548,7 @@ fn test_sr_51_features_anchors_point_at_headings() {
 
 #[test]
 fn test_sr_51_scenarios_have_starter_pick_scene() {
-    // [SR-51] 「スターターから台帳を作る」の画像のため、台本に id = "starter-pick" の場面があり、
+    // [utest -> req~screen.features-page-items~1] 「スターターから台帳を作る」の画像のため、台本に id = "starter-pick" の場面があり、
     // keys でコマンドパレットを開き(":")、"starter" と打って(text:starter)スターターの候補を出して撮る。
     let shots = shots();
     let shot = shots
@@ -574,7 +574,7 @@ fn test_sr_51_scenarios_have_starter_pick_scene() {
 
 #[test]
 fn test_sr_51_pages_py_builds_features_after_views_and_links_from_landing() {
-    // [SR-51] サイトを組む scripts/pages.py は features.md を本に入れ(PAGES)、その位置は views.md の直後。
+    // [utest -> req~screen.features-page-link~1] サイトを組む scripts/pages.py は features.md を本に入れ(PAGES)、その位置は views.md の直後。
     // 入口の「見て選ぶ」の文言(TEXT の ja・en の "features" と "features_desc")とカード(landing() の
     // features.html)から一覧へ行ける。
     let py = std::fs::read_to_string(root().join("scripts/pages.py")).unwrap();
@@ -607,7 +607,7 @@ fn test_sr_51_pages_py_builds_features_after_views_and_links_from_landing() {
 
 #[test]
 fn test_sr_51_manual_index_links_features_page_after_views() {
-    // [SR-51] 説明書の目次(ja の `## 目次`・en の `## Contents`)から features.md へ行け、その行は
+    // [utest -> req~screen.features-page-file~1, req~screen.features-page-entry~1, req~screen.features-page-items~1, req~screen.features-page-link~1] 説明書の目次(ja の `## 目次`・en の `## Contents`)から features.md へ行け、その行は
     // views.md の行のあと、getting-started.md の行の前(間にほかの行があってもよい)。
     for (lang, heading) in [("ja", "目次"), ("en", "Contents")] {
         let p = root().join("docs/manual").join(lang).join("index.md");

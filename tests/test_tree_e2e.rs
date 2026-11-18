@@ -46,8 +46,8 @@ fn name_count(s: &str, name: &str, count: &str) -> bool {
 
 #[test]
 fn test_tr_1_tree_screen_counts_and_jump_e2e() {
-    // [TR-1] T で木の画面。[TR-3] 左に bar(3)・開発(3)・Web(1)・other(1)・(なし)(1)。[TR-6] 80 桁では並べる。
-    // [TR-4] 開発 の行は order の順(beta 10・alpha 20)。行で Enter → 表の画面でその行。
+    // [stest -> req~tree.screen-type~1, req~tree.screen-view-rows~1] T で木の画面。[stest -> req~tree.folders-pane~1, req~tree.folders-count~1, req~tree.folders-none~1] 左に bar(3)・開発(3)・Web(1)・other(1)・(なし)(1)。[stest -> req~tree.layout-width~1] 80 桁では並べる。
+    // [stest -> req~tree.rows-direct~1, req~tree.rows-order~1] 開発 の行は order の順(beta 10・alpha 20)。行で Enter → 表の画面でその行。
     let home = root(
         "tree-e2e",
         "tree = { path = \"folder\", order = \"order\" }",
@@ -100,7 +100,7 @@ fn test_tr_1_tree_screen_counts_and_jump_e2e() {
 
 #[test]
 fn test_tr_2_empty_separator_warns_e2e() {
-    // [TR-2] separator = "" → 警告1行(CLI-3 の形)で、T は木を開かない。
+    // [stest -> req~tree.config-invalid~1] separator = "" → 警告1行(CLI-3 の形)で、T は木を開かない。
     let home = root(
         "tree-e2e-sep",
         "tree = { path = \"folder\", separator = \"\" }",

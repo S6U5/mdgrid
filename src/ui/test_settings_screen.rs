@@ -238,7 +238,7 @@ fn hide_done(a: &mut App) {
 
 #[test]
 fn test_nv_13_apply_and_cancel() {
-    // [NV-13] 設定の画面で status の done を隠す → 反映の前は表に done の行が残り、反映で消える。
+    // [utest -> req~navigation.view-settings~1] 設定の画面で status の done を隠す → 反映の前は表に done の行が残り、反映で消える。
     // 取り消し(Esc・ボタン)で閉じる → 表は開く前のまま。
     let (_t, mut a) = folder("nv13");
     let before = labels(&a);
@@ -277,7 +277,7 @@ fn test_nv_13_apply_and_cancel() {
 
 #[test]
 fn test_nv_13_palette_opens_settings() {
-    // [NV-13][SR-14] パレットの動作 `view_settings` からも開ける。キーは表のモードの `o`。
+    // [utest -> req~navigation.view-settings~1, req~screen.palette-keys~1] パレットの動作 `view_settings` からも開ける。キーは表のモードの `o`。
     let (_t, mut a) = folder("nv13pal");
     assert_eq!(
         keymap::lookup(&a.keys, Mode::Table, "o"),
@@ -294,7 +294,7 @@ fn test_nv_13_palette_opens_settings() {
 
 #[test]
 fn test_nv_16_band_lists_settings() {
-    // [NV-16] status の done を外して反映 → 表の上に「status」と「done」を含む項目。表は1行下がる。
+    // [utest -> req~navigation.settings-bar-items~1, req~navigation.settings-bar-empty~1] status の done を外して反映 → 表の上に「status」と「done」を含む項目。表は1行下がる。
     // 何も効いていなければ帯を出さない。
     let (_t, mut a) = folder("nv16");
     let s = screen(&a);
@@ -329,8 +329,8 @@ fn test_nv_16_band_lists_settings() {
 
 #[test]
 fn test_nv_18_settings_screen_golden() {
-    // [NV-18] 左に区画の一覧(列・フィルター・並べ替え・グループ・表示と今の状態)、右に選んだ区画の中身、
-    // 上の右に「未反映 N」と反映・取り消し、下に既定に戻す。[SR-9] 全行が幅以下。
+    // [utest -> req~navigation.settings-layout-sections~1] 左に区画の一覧(列・フィルター・並べ替え・グループ・表示と今の状態)、右に選んだ区画の中身、
+    // 上の右に「未反映 N」と反映・取り消し、下に既定に戻す。[utest -> req~cell-view.grapheme-width-fit~1] 全行が幅以下。
     let tmp = vault("nv18");
     let mut a = boot(&tmp, None, false);
     open(&mut a);
@@ -409,7 +409,7 @@ fn test_nv_18_settings_screen_golden() {
 
 #[test]
 fn test_nv_18_values_picker_golden() {
-    // [NV-18][NV-19] 値の一覧は件数つき、キーの無いノートは「(空)」。方式の行で 残す・隠す を切り替える。
+    // [utest -> req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pending~1, req~navigation.filter-conditions-checklist~1] 値の一覧は件数つき、キーの無いノートは「(空)」。方式の行で 残す・隠す を切り替える。
     let (_t, mut a) = folder("nv18v");
     open(&mut a);
     section(&mut a, Sec::Filters);
@@ -435,14 +435,14 @@ fn test_nv_18_values_picker_golden() {
 
 #[test]
 fn test_nv_14_keep_only_book_from_screen() {
-    // [NV-14] 種別の列の 本 だけを残す → 本 の行だけ。
+    // [utest -> req~navigation.settings-filter~1] 種別の列の 本 だけを残す → 本 の行だけ。
     let (_t, mut a) = folder("nv14");
     open(&mut a);
     add_values(&mut a, "種別", &[Some("本")], true);
     assert_eq!(draft(&a).s.filters[0].op, Op::Keep(vec![Some("本".into())]));
     apply_btn(&mut a);
     assert_eq!(labels(&a), ["b.md", "c.md", "f.md"]);
-    // [NV-14] キーの無いノートは「(空)」として選べる。
+    // [utest -> req~navigation.settings-filter~1] キーの無いノートは「(空)」として選べる。
     open(&mut a);
     section(&mut a, Sec::Filters);
     sel_to(&mut a, 0);
@@ -454,7 +454,7 @@ fn test_nv_14_keep_only_book_from_screen() {
 
 #[test]
 fn test_nv_14_filter_by_key_not_in_view() {
-    // [NV-14] ビューの列に無いノートのキー(status)でも、列を選んで隠せる。
+    // [utest -> req~navigation.settings-filter~1] ビューの列に無いノートのキー(status)でも、列を選んで隠せる。
     let tmp = vault("nv14key");
     let mut a = boot(&tmp, Some("名前だけ"), false);
     assert_eq!(a.cols, ["title"]);
@@ -467,7 +467,7 @@ fn test_nv_14_filter_by_key_not_in_view() {
 
 #[test]
 fn test_nv_19_compare_and_contains_from_screen() {
-    // [NV-19] priority `≥ 3`(値を打つ)と title の「会議」を含む を並べる → 両方を満たす行だけ。
+    // [utest -> req~navigation.filter-conditions-more~1, req~navigation.filter-conditions-all~1] priority `≥ 3`(値を打つ)と title の「会議」を含む を並べる → 両方を満たす行だけ。
     // 日付の列に読めない値を打つと閉じずに理由。
     let (_t, mut a) = folder("nv19");
     open(&mut a);
@@ -518,7 +518,7 @@ fn test_nv_19_compare_and_contains_from_screen() {
 
 #[test]
 fn test_nv_15_group_off_and_by_column() {
-    // [NV-15] groupBy のある `.base` のビューで「しない」→ 見出しの行が消える。種別を選ぶ → 種別ごとの見出し。
+    // [utest -> req~navigation.settings-group~1] groupBy のある `.base` のビューで「しない」→ 見出しの行が消える。種別を選ぶ → 種別ごとの見出し。
     // `.base` のバイトは同じ。
     let tmp = vault("nv15");
     let mut a = boot(&tmp, None, false);
@@ -547,7 +547,7 @@ fn test_nv_15_group_off_and_by_column() {
     let heads: Vec<&str> = a.groups.iter().map(|(h, _)| h.as_str()).collect();
     assert_eq!(heads, ["メモ", "会議", "本"]);
     assert!(screen(&a).contains("▾ 種別: 本(3件)"), "{}", screen(&a));
-    // [NV-21] 並びを降順に。
+    // [utest -> req~navigation.group-options~1] 並びを降順に。
     open(&mut a);
     section(&mut a, Sec::Group);
     sel_to(&mut a, 4);
@@ -560,7 +560,7 @@ fn test_nv_15_group_off_and_by_column() {
 
 #[test]
 fn test_nv_21_hide_empty_group_from_screen() {
-    // [NV-21] status でまとめ、空を隠す → `(空)` の見出しと行が出ない。
+    // [utest -> req~navigation.group-options~1] status でまとめ、空を隠す → `(空)` の見出しと行が出ない。
     let (_t, mut a) = folder("nv21");
     open(&mut a);
     section(&mut a, Sec::Group);
@@ -585,7 +585,7 @@ fn test_nv_21_hide_empty_group_from_screen() {
 
 #[test]
 fn test_nv_20_layers() {
-    // [NV-20] `.base` の filters(doing を外す)の上に、設定で done を外す → done でも doing でもない行だけ。
+    // [utest -> req~navigation.settings-layering-sort-ops~1] `.base` の filters(doing を外す)の上に、設定で done を外す → done でも doing でもない行だけ。
     // `\` の簡易の絞り込みがさらに絞る。設定で並べた列と別の列を `s` で並べると `s` が勝ち、外すと設定の並び。
     let tmp = vault("nv20");
     let mut a = boot(&tmp, Some("進行"), false);
@@ -630,7 +630,7 @@ fn test_nv_20_layers() {
 
 #[test]
 fn test_nv_20_edited_row_stays_until_move() {
-    // [NV-20][NV-12] done を外した表で done に直した行は、保存か移動まで残る。
+    // [utest -> req~navigation.settings-layering-keep-edited~1, req~navigation.keep-edited-rows~1] done を外した表で done に直した行は、保存か移動まで残る。
     let (_t, mut a) = folder("nv20stay");
     hide_done(&mut a);
     assert_eq!(labels(&a)[0], "a.md");
@@ -651,7 +651,7 @@ fn test_nv_20_edited_row_stays_until_move() {
 
 #[test]
 fn test_nv_20_edited_row_released_on_save() {
-    // [NV-20][NV-12] done を外した表で done に直した行は、保存すると留めが外れて表から消える。
+    // [utest -> req~navigation.settings-layering-keep-edited~1, req~navigation.keep-edited-rows~1] done を外した表で done に直した行は、保存すると留めが外れて表から消える。
     let (_t, mut a) = folder("nv20save");
     hide_done(&mut a);
     a.row = 0;
@@ -679,7 +679,7 @@ fn test_nv_20_edited_row_released_on_save() {
 
 #[test]
 fn test_nv_22_reset_to_default() {
-    // [NV-22] 設定を戻す → 帯が消え、`.base` のままの表(列も `.base` の順で全部)。
+    // [utest -> req~navigation.settings-reset-default~1] 設定を戻す → 帯が消え、`.base` のままの表(列も `.base` の順で全部)。
     let tmp = vault("nv22reset");
     let mut a = boot(&tmp, None, false);
     let rows0 = labels(&a);
@@ -710,7 +710,7 @@ fn test_nv_22_reset_to_default() {
 
 #[test]
 fn test_nv_22_remove_one_from_band() {
-    // [NV-22] 帯の「status: done を除く」を外す → done の行が戻る。キー(`f` → ←→ → Backspace)とクリック。
+    // [utest -> req~navigation.settings-reset-bar-item~1] 帯の「status: done を除く」を外す → done の行が戻る。キー(`f` → ←→ → Backspace)とクリック。
     let (_t, mut a) = folder("nv22band");
     let all = labels(&a);
     open(&mut a);
@@ -754,7 +754,7 @@ fn test_nv_22_remove_one_from_band() {
 
 #[test]
 fn test_nv_22_readonly_applies_but_writes_nothing() {
-    // [NV-22][WB-15] `--readonly` で設定を反映 → 表は変わり、ノート・`.base`・状態の置き場のどれも書かれない。
+    // [utest -> req~navigation.settings-reset-readonly-no-write~1, req~cli.readonly~1] `--readonly` で設定を反映 → 表は変わり、ノート・`.base`・状態の置き場のどれも書かれない。
     let tmp = vault("nv22ro");
     base_path(&tmp);
     let before = snapshot(&tmp.notes());
@@ -776,7 +776,7 @@ fn test_nv_22_readonly_applies_but_writes_nothing() {
 
 #[test]
 fn test_nv_17_settings_survive_restart_per_view() {
-    // [NV-17] 設定を反映して終了 → 同じ `.base` の同じビューで開き直すと同じ設定。ほかのビューは既定。
+    // [utest -> req~navigation.settings-remember~1] 設定を反映して終了 → 同じ `.base` の同じビューで開き直すと同じ設定。ほかのビューは既定。
     // `.base` とノートのフォルダは変わらない。
     let tmp = vault("nv17");
     base_path(&tmp);
@@ -808,7 +808,7 @@ fn test_nv_17_settings_survive_restart_per_view() {
 
 #[test]
 fn test_nv_19_formula_kind_stable_across_restart() {
-    // [NV-19][NV-17] formula の列の型は `.base` の結果の行の全部から決める: `dbl ≥ 3` と昇順を設定して開き直しても、
+    // [utest -> req~navigation.filter-conditions-more~1, req~navigation.filter-conditions-all~1, req~navigation.settings-remember~1] formula の列の型は `.base` の結果の行の全部から決める: `dbl ≥ 3` と昇順を設定して開き直しても、
     // 操作のあとも、数で比べた同じ結果(文字で比べない)。
     let tmp = vault("nv19formula");
     std::fs::write(
@@ -845,7 +845,7 @@ fn test_nv_19_formula_kind_stable_across_restart() {
 
 #[test]
 fn test_nv_18_apply_keeps_selected_column_by_name() {
-    // [NV-18] status を選んだまま左の title を隠して反映 → 選んだ列は status のまま。
+    // [utest -> req~navigation.settings-layout-pane~1, req~navigation.settings-layout-pending~1] status を選んだまま左の title を隠して反映 → 選んだ列は status のまま。
     // 選んでいた列を隠したら、最寄りの(右の)列。
     let (_t, mut a) = folder("nv18sel");
     col_named(&mut a, "status");
@@ -872,7 +872,7 @@ fn test_nv_18_apply_keeps_selected_column_by_name() {
 
 #[test]
 fn test_sr_9_settings_screen_fits_narrow() {
-    // [SR-9] 狭い端末でも設定の画面・帯・値の入力の行は幅以下。
+    // [utest -> req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] 狭い端末でも設定の画面・帯・値の入力の行は幅以下。
     let (_t, mut a) = folder("sr9set");
     hide_done(&mut a);
     open(&mut a);
@@ -891,7 +891,7 @@ fn test_sr_9_settings_screen_fits_narrow() {
 
 #[test]
 fn test_nv_18_click_items_and_buttons() {
-    // [NV-18] 左の一覧のクリックで区画を選び、項目のクリックで選んで決め、上の「反映」のクリックで押す。
+    // [utest -> req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~1, req~navigation.settings-layout-buttons~1, req~navigation.settings-layout-pending~1] 左の一覧のクリックで区画を選び、項目のクリックで選んで決め、上の「反映」のクリックで押す。
     let (_t, mut a) = folder("nv18click");
     open(&mut a);
     // 左の一覧の「フィルター」をクリック → 右がフィルターの区画(列の区画から移る)。
@@ -934,8 +934,8 @@ fn test_nv_18_click_items_and_buttons() {
 
 #[test]
 fn test_sr_16_settings_keys() {
-    // [SR-16] 設定の値の入力のモードには文字1つのキーを割り当てない(打った文字は値に入る)。
-    // [SR-4] 設定の画面の下の帯のキーは表から。
+    // [utest -> req~screen.key-modes-per-mode~1] 設定の値の入力のモードには文字1つのキーを割り当てない(打った文字は値に入る)。
+    // [utest -> req~screen.key-table~1] 設定の画面の下の帯のキーは表から。
     for b in keymap::BINDINGS
         .iter()
         .filter(|b| b.mode == Mode::SettingsText)

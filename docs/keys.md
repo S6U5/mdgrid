@@ -84,6 +84,9 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
 | `T` | `tree_view` | Open the tree view (when the table has a tree setting in the workspace marker) |
+| `C` | `gantt_view` | Open the gantt screen (when the workspace marker has a gantt setting, or the date columns can be inferred) |
+| `B` | `kanban_view` | Open the kanban screen (when the workspace marker has a kanban setting, or a status column can be inferred) |
+| `P` | `chart_view` | Open the chart screen (on a table with columns) |
 | `Z` | `toggle_tree` | Fold or unfold the child rows (when the view arranges rows by parent) |
 | `A` | `add_column` | Add a column for a key no note has yet (type its name); saving writes the key only to the notes you fill in |
 | `H` | `move_column_left` | Move the column to the left |
@@ -459,7 +462,7 @@ Choosing **Table** in the screen type menu at the top right (**◇ Relation map 
 
 ## `screen_menu`
 
-The screen type menu (the **▦ Table ▾** button at the top right; on the relation map it reads **◇ Relation map ▾**). It opens right below the button and lists the screen types: Table, Relation map when there are linked tables, and Tree when the workspace marker gives the table a tree setting. The current type is marked with `●`, and a type that has a key shows it at the right (`R` for the relation map, `T` for the tree). Selecting a type switches to it. `R` and `T` switch without opening the menu.
+The screen type menu (the **▦ Table ▾** button at the top right; on the relation map it reads **◇ Relation map ▾**). It opens right below the button and lists the screen types: Table, Relation map when there are linked tables, Tree when the workspace marker gives the table a tree setting, Gantt and Kanban when their columns are set in the marker or can be inferred, and Chart when the table has columns. The current type is marked with `●`, and a type that has a key shows it at the right (`R` for the relation map, `T` for the tree, `C` for the gantt, `B` for the kanban, `P` for the chart). Selecting a type switches to it. `R`, `T`, `C`, `B` and `P` switch without opening the menu.
 
 | Key | Action | Description |
 |---|---|---|
@@ -517,6 +520,111 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 | `:` | `palette` | Command palette (closing it returns to the tree) |
 | `?` | `help` | Show the help |
 
+## `gantt`
+
+The gantt screen (`C`, `:gantt_view`, or **Gantt** in the screen type menu at the top right). It is offered on a table whose `[[table]]` in the workspace marker has `gantt = { start = "<column>", end = "<column>" }` (`days = "<column>"` instead of `end` also works), or, without a setting, on a table whose date columns can be inferred by name (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了). See [Configuration](config.md). The rows of the current view are listed with their names on the left and a time axis with bars on the right. The unit is a day, a week or a month; on opening, the finest unit that fits the range of the rows in the width. Today's column is marked (`┊` in the rows, and `▾` in the header, or the header digit shown reversed when today falls on it). In the month unit a month takes three characters, one for each third of the month. With a color theme (not `default`), the background of the time axis alternates by month (by year in the month unit), and weekends get a slightly stronger tint in the day unit. A row with only one of the two dates shows `◆`; a row with neither shows no bar. With parent/child rows in the view settings, the order, indent and folding are the same as in the table, and so are the WBS numbers and progress (`█` and `░` in the bar); a parent without dates gets the span of its descendants. The screen is read-only; dates are edited in the table.
+
+The mouse works too: click a row to select it, click the selected row again to move to that row in the table. The wheel selects up and down; the horizontal wheel moves the time axis.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Show the row in the table |
+| `Esc` | `close` | Back to the table |
+| `C` | `gantt_view` | Back to the table |
+| `q` | `close` | Back to the table |
+| `j` | `down` | Next row |
+| `Down` | `down` | Next row |
+| `k` | `up` | Previous row |
+| `Up` | `up` | Previous row |
+| `l` | `right` | Scroll the time axis later |
+| `Right` | `right` | Scroll the time axis later |
+| `h` | `left` | Scroll the time axis earlier |
+| `Left` | `left` | Scroll the time axis earlier |
+| `+` | `zoom_in` | Finer unit (month → week → day) |
+| `-` | `zoom_out` | Coarser unit (day → week → month) |
+| `t` | `today` | Go to today |
+| `Z` | `toggle_tree` | Fold or unfold the child rows of the selected row |
+| `Space` | `toggle_tree` | Fold or unfold the child rows of the selected row |
+| `:` | `palette` | The command palette (closing it returns to the gantt) |
+| `?` | `help` | Show the help |
+
+## `kanban`
+
+The kanban screen (`B`, `:kanban_view`, or **Kanban** in the screen type menu at the top right). It is offered on a table whose `[[table]]` in the workspace marker has `kanban = { column = "<column>" }`, or, without a setting, on a table with a column named status, state, stage, 状態, ステータス or 段階 (any case; a list column is never picked). See [Configuration](config.md). The rows of the current view become cards in lanes, one lane per value of the column. The lanes follow the allowed values of the column (`[rules.<column>] values`), then any other value in the order the rows show it, and last **(none)** for rows without a value; a value with no rows still gets an empty lane. Each lane header shows the value and the number of cards, and each card shows the row's name. When the lanes don't fit the width, the screen slides to keep the selected lane visible and marks the hidden side with `‹` or `›`. The selected card has `>`, and a card with pending changes has `*`.
+
+`H` and `L` move the selected card to the lane on the left or right: the row's value in the column becomes that lane's value, as a pending change like an edit in the table (`*`, and the unsaved count goes up). Nothing is written until you save; `Ctrl+s` goes back to the table and opens the review of the pending changes. `u` undoes a move. Cards are not moved into **(none)** (clear the value in the table), and nothing moves when mdgrid was opened with `--readonly` or the cell is read-only; the message line says why.
+
+The mouse works too: click a card to select it, click the selected card again to move to that row in the table, and click a lane header to select the lane. The wheel selects cards up and down; the horizontal wheel moves between lanes.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Show the card's row in the table |
+| `Esc` | `close` | Back to the table |
+| `B` | `kanban_view` | Back to the table |
+| `q` | `close` | Back to the table |
+| `j` | `down` | Next card |
+| `Down` | `down` | Next card |
+| `k` | `up` | Previous card |
+| `Up` | `up` | Previous card |
+| `l` | `right` | Lane to the right |
+| `Right` | `right` | Lane to the right |
+| `h` | `left` | Lane to the left |
+| `Left` | `left` | Lane to the left |
+| `L` | `move_card_right` | Move the card to the lane on the right (rewrites the status) |
+| `H` | `move_card_left` | Move the card to the lane on the left (rewrites the status) |
+| `u` | `undo` | Undo the last change |
+| `Ctrl+z` | `undo` | Undo the last change |
+| `U` | `redo` | Redo the change you undid |
+| `Ctrl+r` | `redo` | Redo the change you undid |
+| `Ctrl+s` | `save` | Back to the table and review the pending changes before saving |
+| `:` | `palette` | The command palette (closing it returns to the kanban) |
+| `?` | `help` | Show the help |
+
+## `chart`
+
+The chart screen (`P`, `:chart_view`, or **Chart** in the screen type menu at the top right). It is offered on any table with columns. It counts the rows of the current view by the values of a column, or totals a number column, and shows them as a bar, stacked bar, line, scatter or heatmap chart. With `chart = { kind = "bar", x = "status" }` (an array for several charts) in the table's `[[table]]` of the workspace marker, the chart opens that way (see [Configuration](config.md)). Without a setting it opens as bars, splitting by the first of: a status column (status, state and so on), a column with allowed values (`[rules.<column>] values`), a checkbox column, a list column, a date column, the first column; the value is the count. **(inferred)** at the end of the title marks a guessed column.
+
+How rows split depends on the column type. Text and checkbox columns split by value, list columns by element (a row can count in several items), and rows without a value go to **(none)**. Date columns split into days, weeks or months, with empty ranges shown as 0. Number columns split into equal ranges (up to 10), which makes a histogram. Rows whose date or number cannot be read, and rows whose summed value is not a number, are left out, and the line under the title says **N left out**.
+
+- **Bar**: one horizontal bar per item; the largest value fills the bar.
+- **Stacked bar**: bars split by the values of a breakdown column (the top five and **other**). `%` turns each bar into percentages. Fill characters (`█` `▓` `▒` `░` `▞`) tell the parts apart without color.
+- **Line**: joins the value of each date or number range. `c` makes it cumulative. With a breakdown column there is one line per value (up to five), told apart by point characters (`*` `+` `o` `x` `#`).
+- **Scatter**: one point per row, with a number or date column across and another one up. `j` and `k` pick a point; `Enter` goes to its row in the table.
+- **Heatmap**: the value for each pair of the split column (down) and the breakdown column (across), as a number and a shade (` ` `░` `▒` `▓` `█`).
+
+On the screen, `Tab` changes the kind, `x` the column to split by, `y` the value (count or the sum of a number column), `a` the aggregate, `b` the breakdown column, and `+` `-` the date unit. These changes stay on the screen; the marker is not rewritten. When a kind has no fitting column, it is skipped with a reason on the message line. With several charts in the marker, `[` and `]` move between them. `Enter` on a bar, stacked bar or heatmap cell narrows the table to the rows with that value and goes back to it (the same filter as `Enter` in the `%` frequency table; date and number ranges do not narrow). Values are not edited here.
+
+The mouse works too: click an item to select it, and click the selected item again for the same as `Enter`. The wheel moves the selection.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Narrow the table to this value (a scatter goes to the point's row in the table) |
+| `Esc` | `close` | Back to the table |
+| `P` | `chart_view` | Back to the table |
+| `q` | `close` | Back to the table |
+| `j` | `down` | Next item |
+| `Down` | `down` | Next item |
+| `k` | `up` | Previous item |
+| `Up` | `up` | Previous item |
+| `l` | `right` | Item to the right (a line's range, a heatmap column) |
+| `Right` | `right` | Item to the right |
+| `h` | `left` | Item to the left |
+| `Left` | `left` | Item to the left |
+| `Tab` | `chart_kind_next` | Next kind (bar → stacked → line → scatter → heatmap) |
+| `Shift+Tab` | `chart_kind_prev` | Previous kind |
+| `x` | `chart_x` | Next column to split by |
+| `y` | `chart_y` | Next value (count → number columns) |
+| `a` | `chart_agg` | Next aggregate (sum → average → min → max) |
+| `b` | `chart_by` | Next breakdown column |
+| `+` | `chart_finer` | Finer date unit (month → week → day) |
+| `-` | `chart_coarser` | Coarser date unit (day → week → month) |
+| `[` | `chart_prev_saved` | Previous chart in the marker |
+| `]` | `chart_next_saved` | Next chart in the marker |
+| `c` | `chart_cumulative` | Toggle cumulative (line) |
+| `%` | `chart_percent` | Toggle percentages (stacked bar) |
+| `:` | `palette` | The command palette (closing it returns to the chart) |
+| `?` | `help` | Show help |
+
 ## Actions
 
 Every action name you can write in the keys section of the config file. Each one works only in the modes where it appears in the tables above.
@@ -559,6 +667,25 @@ Every action name you can write in the keys section of the config file. Each one
 - `relation_map` — switch between the table and the relation map
 - `toggle_tree` — fold or unfold the child rows of the selected row
 - `tree_view` — switch between the table and the tree view
+- `gantt_view` — switch between the table and the gantt screen
+- `zoom_in` — finer unit of the gantt time axis (month → week → day)
+- `zoom_out` — coarser unit of the gantt time axis (day → week → month)
+- `kanban_view` — switch between the table and the kanban screen
+- `move_card_left` — move the kanban card to the lane on the left (rewrites the status)
+- `move_card_right` — move the kanban card to the lane on the right (rewrites the status)
+- `chart_view` — switch between the table and the chart screen
+- `chart_kind_next` — next chart kind (bar → stacked → line → scatter → heatmap)
+- `chart_kind_prev` — previous chart kind
+- `chart_x` — next column to split the chart by
+- `chart_y` — next chart value (count → number columns)
+- `chart_agg` — next chart aggregate (sum → average → min → max)
+- `chart_by` — next breakdown column of the chart
+- `chart_finer` — finer date unit of the chart (month → week → day)
+- `chart_coarser` — coarser date unit of the chart (day → week → month)
+- `chart_prev_saved` — previous chart in the marker
+- `chart_next_saved` — next chart in the marker
+- `chart_cumulative` — toggle a cumulative line
+- `chart_percent` — toggle percentages of a stacked bar
 - `open_url` — open the http or https URL of the selected row in the browser (in the table, from the palette and the action menu)
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
@@ -599,7 +726,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `next_month` — next month in the date calendar
 - `prev_year` — previous year in the date calendar
 - `next_year` — next year in the date calendar
-- `today` — set today's date
+- `today` — set today's date (in the Gantt view, scroll the time axis to today)
 - `create_note_edit` — create the note from the new note form and open it in the editor
 - `create_note` — create the note now from any field of the new note form
 - `time_focus` — switch between the day and the time field of the datetime calendar

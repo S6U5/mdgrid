@@ -12,7 +12,7 @@ fn note() -> String {
 
 #[test]
 fn test_nv_6_detail_wraps_long_value() {
-    // [NV-6] `K` で全プロパティを縦に。長い値は折り返して全文。
+    // [utest -> req~navigation.detail-wrap~1, req~navigation.detail-body~1] `K` で全プロパティを縦に。長い値は折り返して全文。
     let n = note();
     let (_t, mut a) = make(
         "nv6",
@@ -43,7 +43,7 @@ fn test_nv_6_detail_wraps_long_value() {
 
 #[test]
 fn test_sr_16_detail_keys_edit_and_close() {
-    // [SR-16] 詳細の表示で Enter = 選んだプロパティの編集、Esc と `K` = 閉じる。表で `K` = 詳細、Space = 行の印。
+    // [utest -> req~screen.key-modes-per-mode~1, req~screen.key-modes-table-defaults~1, req~screen.key-modes-detail-defaults~1] 詳細の表示で Enter = 選んだプロパティの編集、Esc と `K` = 閉じる。表で `K` = 詳細、Space = 行の印。
     assert_eq!(lookup(BINDINGS, Mode::Table, "K"), Some(Action::Detail));
     assert_eq!(lookup(BINDINGS, Mode::Table, "Space"), Some(Action::Mark));
     assert_eq!(lookup(BINDINGS, Mode::Table, "Esc"), Some(Action::Escape));
@@ -85,7 +85,7 @@ fn test_sr_16_detail_keys_edit_and_close() {
 
 #[test]
 fn test_ce_1_click_inside_detail_input_keeps_editing() {
-    // [CE-1] [NV-6] 詳細の表示からの編集で、入力ボックスの中のクリックは確定しない。外のクリックは確定する。
+    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-click-commit~1, req~cell-edit.inline-click-invalid~1, req~navigation.detail-edit~1] 詳細の表示からの編集で、入力ボックスの中のクリックは確定しない。外のクリックは確定する。
     let n = note();
     let (_t, mut a) = make("ce1detail", &[("a.md", n.as_str())]);
     ch(&mut a, 'K');

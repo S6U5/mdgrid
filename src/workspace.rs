@@ -1,4 +1,4 @@
-//! ワークスペース(specs/workspace/spec.md): 表をまとめる範囲。
+//! ワークスペース(specs/_history/decidespec/workspace/spec.md): 表をまとめる範囲。
 //!
 //! - アプリの側(WS-1): 設定のフォルダの `workspaces.toml`(`[[workspace]]` に `name` と `[[workspace.table]]`)。
 //! - フォルダの印(WS-7): `.mdgrid/workspace.toml`(`name` と `[[table]]`。`path` は根からの相対)。表を書かなければ
@@ -180,9 +180,12 @@ fn read_tables(
             let name = text("name")
                 .filter(|s| !s.is_empty())
                 .unwrap_or_else(|| "base".to_string());
-            // TR-2: 印の `tree`(木の設定)は開くときに marker_tree が読む。
+            // TR-2・GA-1・KB-1・CH-1: 印の `tree`(木)・`gantt`(ガント)・`kanban`(カンバン)・`chart`(グラフ)の設定は
+            // 開くときに marker_tree・marker_gantt・marker_kanban・marker_chart が読む。
             let skip: &[&str] = if file.starts_with(MARKER_DIR) {
-                &["name", "path", "view", "base", "tree"]
+                &[
+                    "name", "path", "view", "base", "tree", "gantt", "kanban", "chart",
+                ]
             } else {
                 &["name", "path", "view", "base"]
             };
@@ -214,7 +217,7 @@ fn read_tables(
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| stem_of(&p));
         let skip: &[&str] = if file.starts_with(MARKER_DIR) {
-            &["name", "path", "view", "tree"]
+            &["name", "path", "view", "tree", "gantt", "kanban", "chart"]
         } else {
             &["name", "path", "view"]
         };
@@ -386,6 +389,38 @@ pub fn inline_base(path: &Path) -> Option<(String, PathBuf)> {
 /// 警告の場所(`table[n].tree`)。印が無い・その表が無い・`tree` が無いなら None。書き方が違えば CLI-3 の形で
 /// 警告して None(表でない・`path` が無い・区切りが空)。`order` が文字でなければ警告して無いものとする。
 pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, String)>, Vec<String>) {
+    marker_setting(opened, "tree", read_tree)
+}
+
+/// GA-1: 開いたものの表に、印の `[[table]]` で書いたガントの設定(`gantt = { start, end, days }`)と、警告の場所
+/// (`table[n].gantt`)。印が無い・その表が無い・`gantt` が無いなら None。書き方が違えば CLI-3 の形で警告して
+/// None(表でない・`start` が無い・`end` も `days` も無い)。
+pub fn marker_gantt(opened: &Path) -> (Option<(crate::gantt::GanttSpec, String)>, Vec<String>) {
+    marker_setting(opened, "gantt", read_gantt)
+}
+
+/// KB-1: 開いたものの表に、印の `[[table]]` で書いたカンバンの設定(`kanban = { column }`)と、警告の場所
+/// (`table[n].kanban`)。印が無い・その表が無い・`kanban` が無いなら None。書き方が違えば CLI-3 の形で警告して
+/// None(表でない・`column` が無い)。
+pub fn marker_kanban(opened: &Path) -> (Option<(crate::kanban::KanbanSpec, String)>, Vec<String>) {
+    marker_setting(opened, "kanban", read_kanban)
+}
+
+/// CH-1: 開いたものの表に、印の `[[table]]` で書いたグラフの設定(`chart = { … }` か、その配列)と、それぞれの
+/// 警告の場所(`table[n].chart` か `table[n].chart[k]`)。印が無い・その表が無い・`chart` が無いなら空。書き方が
+/// 違うグラフは CLI-3 の形で警告して外す。
+pub fn marker_chart(opened: &Path) -> (Vec<(crate::chart::ChartSpec, String)>, Vec<String>) {
+    let (specs, warns) = marker_setting(opened, "chart", read_charts);
+    (specs.map(|(v, _)| v).unwrap_or_default(), warns)
+}
+
+/// GA-7: 画面の型ごとの設定の共通の読み方。開いたもの(フォルダか .base)と `real_path` で同じ `[[table]]` を探し、
+/// その鍵 `key`(`tree`・`gantt`・`kanban`)の値を `read` で読む。警告の場所は `table[n].<key>`。
+fn marker_setting<T>(
+    opened: &Path,
+    key: &str,
+    read: impl Fn(&toml::Value, &str, &str, &mut Vec<String>) -> Option<T>,
+) -> (Option<(T, String)>, Vec<String>) {
     let mut warns = Vec::new();
     let start = if opened.extension().is_some_and(|x| x == "base") {
         opened.parent().unwrap_or(opened).to_path_buf()
@@ -411,7 +446,7 @@ pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, Stri
         .unwrap_or_default();
     for (k, item) in items.iter().enumerate() {
         let Some(t) = item.as_table() else { continue };
-        let Some(tree) = t.get("tree") else { continue };
+        let Some(value) = t.get(key) else { continue };
         let text = |key: &str| {
             t.get(key)
                 .and_then(|v| v.as_str())
@@ -434,11 +469,241 @@ pub fn marker_tree(opened: &Path) -> (Option<(crate::folder_tree::TreeSpec, Stri
         if real_path(&path) != real_path(opened) {
             continue;
         }
-        let at = format!("table[{}].tree", k + 1);
-        let spec = read_tree(tree, &label, &at, &mut warns);
+        let at = format!("table[{}].{key}", k + 1);
+        let spec = read(value, &label, &at, &mut warns);
         return (spec.map(|s| (s, at)), warns);
     }
     (None, warns)
+}
+
+/// CH-1: `chart` の値(表か表の配列)を読む。書き方の違うグラフは警告して外し、残りを返す。
+fn read_charts(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<Vec<(crate::chart::ChartSpec, String)>> {
+    use crate::profile::{not, warn};
+    let items: Vec<(&toml::Value, String)> = match v {
+        toml::Value::Array(a) => a
+            .iter()
+            .enumerate()
+            .map(|(k, x)| (x, format!("{at}[{}]", k + 1)))
+            .collect(),
+        other => vec![(other, at.to_string())],
+    };
+    let mut out = Vec::new();
+    for (item, at) in items {
+        let Some(t) = item.as_table() else {
+            warn(warns, file, &at, not(Msg::WantTable));
+            continue;
+        };
+        if let Some(spec) = read_chart(t, file, &at, warns) {
+            out.push((spec, at));
+        }
+    }
+    Some(out)
+}
+
+/// CH-1: グラフ1つ `{ kind, x, y, agg, by, unit, cumulative, name }` を読む。知らない鍵・知らない値・型の違う値は
+/// 警告して、そのグラフを外す(None)。
+fn read_chart(
+    t: &toml::Table,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::chart::ChartSpec> {
+    use crate::chart::{Agg, ChartKind, ChartSpec};
+    use crate::gantt::Unit;
+    use crate::profile::{not, not_one_of, warn};
+    const KEYS: [&str; 8] = ["name", "kind", "x", "y", "agg", "by", "unit", "cumulative"];
+    let mut ok = true;
+    for k in t.keys() {
+        if !KEYS.contains(&k.as_str()) {
+            warn(
+                warns,
+                file,
+                &format!("{at}.{k}"),
+                Msg::RsnUnknown.text().to_string(),
+            );
+            ok = false;
+        }
+    }
+    let mut text = |key: &str, ok: &mut bool| -> Option<String> {
+        match t.get(key) {
+            Some(toml::Value::String(s)) => Some(s.trim().to_string()).filter(|s| !s.is_empty()),
+            None => None,
+            Some(_) => {
+                warn(warns, file, &format!("{at}.{key}"), not(Msg::WantString));
+                *ok = false;
+                None
+            }
+        }
+    };
+    let name = text("name", &mut ok);
+    let x = text("x", &mut ok);
+    let y = text("y", &mut ok);
+    let by = text("by", &mut ok);
+    let kind_s = text("kind", &mut ok);
+    let agg_s = text("agg", &mut ok);
+    let unit_s = text("unit", &mut ok);
+    let kind = kind_s.and_then(|s| {
+        let k = ChartKind::parse(&s);
+        if k.is_none() {
+            let names: Vec<&str> = ChartKind::ALL.iter().map(|k| k.name()).collect();
+            warn(warns, file, &format!("{at}.kind"), not_one_of(&names));
+            ok = false;
+        }
+        k
+    });
+    let agg = agg_s.and_then(|s| {
+        let a = Agg::parse(&s);
+        if a.is_none() {
+            let names: Vec<&str> = Agg::ALL.iter().map(|a| a.name()).collect();
+            warn(warns, file, &format!("{at}.agg"), not_one_of(&names));
+            ok = false;
+        }
+        a
+    });
+    let unit = unit_s.and_then(|s| {
+        let u = match s.to_lowercase().as_str() {
+            "day" => Some(Unit::Day),
+            "week" => Some(Unit::Week),
+            "month" => Some(Unit::Month),
+            _ => None,
+        };
+        if u.is_none() {
+            warn(
+                warns,
+                file,
+                &format!("{at}.unit"),
+                not_one_of(&["day", "week", "month"]),
+            );
+            ok = false;
+        }
+        u
+    });
+    let cumulative = match t.get("cumulative") {
+        Some(toml::Value::Boolean(b)) => *b,
+        None => false,
+        Some(_) => {
+            warn(warns, file, &format!("{at}.cumulative"), not(Msg::WantBool));
+            ok = false;
+            false
+        }
+    };
+    ok.then_some(ChartSpec {
+        name,
+        kind,
+        x,
+        y,
+        agg,
+        by,
+        unit,
+        cumulative,
+    })
+}
+
+/// KB-1: `kanban = { column = "<列>" }` を読む。
+fn read_kanban(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::kanban::KanbanSpec> {
+    use crate::profile::{not, warn};
+    let Some(t) = v.as_table() else {
+        warn(warns, file, at, Msg::RsnKanbanNotTable.text().to_string());
+        return None;
+    };
+    for k in t.keys() {
+        if k != "column" {
+            warn(
+                warns,
+                file,
+                &format!("{at}.{k}"),
+                Msg::RsnUnknown.text().to_string(),
+            );
+        }
+    }
+    let column = match t.get("column") {
+        Some(toml::Value::String(s)) if !s.trim().is_empty() => Some(s.trim().to_string()),
+        Some(toml::Value::String(_)) | None => None,
+        Some(_) => {
+            warn(warns, file, &format!("{at}.column"), not(Msg::WantString));
+            return None;
+        }
+    };
+    let Some(column) = column else {
+        warn(
+            warns,
+            file,
+            &format!("{at}.column"),
+            Msg::RsnKanbanNeedColumn.text().to_string(),
+        );
+        return None;
+    };
+    Some(crate::kanban::KanbanSpec { column })
+}
+
+/// GA-1: `gantt = { start = "<列>", end = "<列>", days = "<列>" }` を読む(`end` か `days` のどちらか)。
+fn read_gantt(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::gantt::GanttSpec> {
+    use crate::profile::{not, warn};
+    let Some(t) = v.as_table() else {
+        warn(warns, file, at, Msg::RsnGanttNotTable.text().to_string());
+        return None;
+    };
+    for k in t.keys() {
+        if !["start", "end", "days"].contains(&k.as_str()) {
+            warn(
+                warns,
+                file,
+                &format!("{at}.{k}"),
+                Msg::RsnUnknown.text().to_string(),
+            );
+        }
+    }
+    let text = |key: &str, warns: &mut Vec<String>| -> Option<String> {
+        match t.get(key) {
+            None => None,
+            Some(toml::Value::String(s)) if !s.trim().is_empty() => Some(s.trim().to_string()),
+            Some(toml::Value::String(_)) => None,
+            Some(_) => {
+                warn(warns, file, &format!("{at}.{key}"), not(Msg::WantString));
+                None
+            }
+        }
+    };
+    let Some(start) = text("start", warns) else {
+        warn(
+            warns,
+            file,
+            &format!("{at}.start"),
+            Msg::RsnGanttNeedStart.text().to_string(),
+        );
+        return None;
+    };
+    let end = text("end", warns);
+    let days = text("days", warns);
+    if end.is_none() && days.is_none() {
+        warn(
+            warns,
+            file,
+            &format!("{at}.end"),
+            Msg::RsnGanttNeedEnd.text().to_string(),
+        );
+        return None;
+    }
+    Some(crate::gantt::GanttSpec {
+        start: Some(start),
+        end,
+        days,
+    })
 }
 
 /// 比べるための実体のパス。無いファイル(WS-9 の `[table.base]` の `.base`)は、フォルダの側を実体のパスに直して

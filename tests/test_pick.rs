@@ -1,7 +1,7 @@
 #![cfg(unix)]
 //! タスク 2(print-pick)の受け入れ: `--pick path|<列の名前>`(OUT-3・SR-10・WB-15)。
-//! 仕様: specs/output/spec.md の OUT-3、specs/cell-view/spec.md の SR-10、
-//! specs/_changes/2026-10-03-print-pick.md の「不明点と仮定」。
+//! 仕様: specs/_history/decidespec/output/spec.md の OUT-3、specs/_history/decidespec/cell-view/spec.md の SR-10、
+//! specs/_history/decidespec/_changes/2026-10-03-print-pick.md の「不明点と仮定」。
 //! 実装(src/main.rs・src/ui)を見ずに、要件と公開の振る舞い(USAGE・docs/keys.md・README)だけで書いた。
 //!
 //! - 画面は端末(`/dev/tty`)、結果は標準出力。疑似端末の道具(tests/pty/mod.rs)の上に
@@ -185,14 +185,14 @@ fn assert_two_marked_paths(sink: Sink, tag: &str) {
 
 #[test]
 fn test_out_3_pick_path_prints_marked_rows_in_table_order() {
-    // [OUT-3] 2行に印を付けて Enter → 2つのパスが表の並びの順に1行ずつ、終了コード 0。
+    // [stest -> req~output.pick-path~1] 2行に印を付けて Enter → 2つのパスが表の並びの順に1行ずつ、終了コード 0。
     // 引数を相対(`notes`)で渡したので、パスは「引数の文字 + 相対」(下のフォルダは `sub/` つき)。
     assert_two_marked_paths(Sink::File, "path-marked");
 }
 
 #[test]
 fn test_out_3_pick_path_without_marks_prints_selected_row() {
-    // [OUT-3] 印なしで Enter → 選んでいる行の1行。
+    // [stest -> req~output.pick-path~1] 印なしで Enter → 選んでいる行の1行。
     let env = Env::new("path-cursor");
     let mut t = open(&env, &["notes", "--pick", "path"], Sink::File);
     t.send_settle("jj"); // c.md
@@ -205,7 +205,7 @@ fn test_out_3_pick_path_without_marks_prints_selected_row() {
 
 #[test]
 fn test_out_3_pick_path_with_absolute_argument_prints_absolute_path() {
-    // [OUT-3] 引数を絶対のパスで渡す → 出るパスは「引数の文字 + 相対」= 絶対。
+    // [stest -> req~output.pick-path~1, req~output.pick-column~1] 引数を絶対のパスで渡す → 出るパスは「引数の文字 + 相対」= 絶対。
     let env = Env::new("path-abs");
     let vault = env.vault();
     let arg = vault.to_str().unwrap();
@@ -238,7 +238,7 @@ fn pick_column_of_a_b_d(tag: &str, column: &str) -> String {
 
 #[test]
 fn test_out_3_pick_column_prints_values_one_per_line() {
-    // [OUT-3] `--pick status` → 値が1行ずつ(表の並びの順)。
+    // [stest -> req~output.pick-column~1] `--pick status` → 値が1行ずつ(表の並びの順)。
     assert_eq!(
         pick_column_of_a_b_d("col-status", "status"),
         "todo\ndoing\ntodo\n"
@@ -247,19 +247,19 @@ fn test_out_3_pick_column_prints_values_one_per_line() {
 
 #[test]
 fn test_out_3_pick_list_column_joins_with_comma_space() {
-    // [OUT-3] リストの列 → リストを `, ` でつなぐ(画面の印は付けない素の文字)。
+    // [stest -> req~output.pick-column~1] リストの列 → リストを `, ` でつなぐ(画面の印は付けない素の文字)。
     assert_eq!(pick_column_of_a_b_d("col-tags", "tags"), "a, b\nc\nz\n");
 }
 
 #[test]
 fn test_out_3_pick_column_newline_becomes_space_and_missing_is_empty() {
-    // [OUT-3] 改行を含む値は空白に。キーの無いセルは空の1行。
+    // [stest -> req~output.pick-column~1] 改行を含む値は空白に。キーの無いセルは空の1行。
     assert_eq!(pick_column_of_a_b_d("col-memo", "memo"), "x y\nplain\n\n");
 }
 
 #[test]
 fn test_out_3_pick_date_column_is_iso_regardless_of_date_format() {
-    // [OUT-3] 日付は設定の date_format でなく YYYY-MM-DD。キーの無いセルは空の1行。
+    // [stest -> req~output.pick-column~1, req~output.pick-cancel~1] 日付は設定の date_format でなく YYYY-MM-DD。キーの無いセルは空の1行。
     assert_eq!(pick_column_of_a_b_d("col-due", "due"), "2026-11-01\n\n\n");
 }
 
@@ -267,7 +267,7 @@ fn test_out_3_pick_date_column_is_iso_regardless_of_date_format() {
 
 #[test]
 fn test_out_3_q_cancels_with_no_output_and_exit_1() {
-    // [OUT-3] `q` → 何も出さず終了コード 1。
+    // [stest -> req~output.pick-cancel~1] `q` → 何も出さず終了コード 1。
     let env = Env::new("cancel-q");
     let mut t = open(&env, &["notes", "--pick", "path"], Sink::File);
     t.send("q");
@@ -279,7 +279,7 @@ fn test_out_3_q_cancels_with_no_output_and_exit_1() {
 
 #[test]
 fn test_out_3_esc_without_marks_cancels_with_exit_1() {
-    // [OUT-3] 印も範囲も無いときの Esc → 何も出さず終了コード 1。
+    // [stest -> req~output.pick-cancel~1] 印も範囲も無いときの Esc → 何も出さず終了コード 1。
     let env = Env::new("cancel-esc");
     let mut t = open(&env, &["notes", "--pick", "path"], Sink::File);
     t.send("\x1b");
@@ -291,7 +291,7 @@ fn test_out_3_esc_without_marks_cancels_with_exit_1() {
 
 #[test]
 fn test_out_3_esc_with_marks_only_clears_marks() {
-    // [OUT-3] 印があるときの Esc は印を解くだけで終わらない。続けて Enter → 選んでいる行の1行。
+    // [stest -> req~output.pick-path~1] 印があるときの Esc は印を解くだけで終わらない。続けて Enter → 選んでいる行の1行。
     let env = Env::new("esc-marks");
     let mut t = open(&env, &["notes", "--pick", "path"], Sink::File);
     t.send_settle(" "); // a.md に印、b.md へ
@@ -314,7 +314,7 @@ fn test_out_3_esc_with_marks_only_clears_marks() {
 
 #[test]
 fn test_out_3_unknown_column_exits_2_with_one_line_reason_without_screen() {
-    // [OUT-3] 表に無い列の名前 → 画面を出さずにすぐ、理由1行と終了コード 2(キーは何も送らない)。
+    // [stest -> req~output.pick-path~1, req~output.pick-unknown-column~1] 表に無い列の名前 → 画面を出さずにすぐ、理由1行と終了コード 2(キーは何も送らない)。
     let env = Env::new("unknown-col");
     let mut t = spawn(&env, &["notes", "--pick", "無い列"], Sink::File);
     let code = t.wait_exit();
@@ -342,7 +342,7 @@ fn test_out_3_unknown_column_exits_2_with_one_line_reason_without_screen() {
 
 #[test]
 fn test_out_3_pick_works_when_stdout_is_pipe() {
-    // [OUT-3][SR-10] 標準出力がパイプ(`| cat`)でも、ファイルのときと同じ結果。
+    // [stest -> req~output.pick-pipe~1, req~cell-view.no-color-pipe-print-pick~1] 標準出力がパイプ(`| cat`)でも、ファイルのときと同じ結果。
     assert_two_marked_paths(Sink::Pipe, "pipe");
 }
 
@@ -350,7 +350,7 @@ fn test_out_3_pick_works_when_stdout_is_pipe() {
 
 #[test]
 fn test_out_3_pick_opens_readonly_and_writes_nothing() {
-    // [OUT-3][WB-15] 読むだけで開く: セルを空にし(Backspace)、保存(Ctrl+S)を試みても、
+    // [stest -> req~output.pick-open~1, req~cli.readonly~1] 読むだけで開く: セルを空にし(Backspace)、保存(Ctrl+S)を試みても、
     // 「読むだけ」と出て、終わったあと保管庫のファイルのバイトが同じ(増えも減りもしない)。
     let env = Env::new("readonly");
     let before = env.snapshot();

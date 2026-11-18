@@ -47,7 +47,7 @@ fn open_map(w: u16, h: u16, name: &str) -> (super::test_screen::Tmp, App) {
 
 #[test]
 fn test_rel_12_click_selects_and_opens() {
-    // [REL-12] 左の一覧の行で選び、選んだ表をもう一度で開く。盤の箱でも選ぶ。枠は何もしない。
+    // [utest -> req~relations.map-mouse-select-table~1, req~relations.map-mouse-open-table~1] 左の一覧の行で選び、選んだ表をもう一度で開く。盤の箱でも選ぶ。枠は何もしない。
     let (_t, mut a) = open_map(160, 40, "rmc_open");
     assert_eq!(sel_name(&a), "Tasks");
     let (x, y) = find(&a, "Projects", 0);
@@ -74,7 +74,7 @@ fn test_rel_12_click_selects_and_opens() {
 
 #[test]
 fn test_rel_12_click_link_and_linked_row() {
-    // [REL-12] 盤の線・矢印・札でつながりを選ぶ。下のつながった行で、その元のノートを開く。
+    // [utest -> req~relations.map-mouse-select-link~1, req~relations.map-mouse-open-note~1] 盤の線・矢印・札でつながりを選ぶ。下のつながった行で、その元のノートを開く。
     let (_t, mut a) = open_map(160, 40, "rmc_link");
     // 盤のセルからつながりの1つ(線か矢印)の位置を探し、画面の位置に直す(盤は窓に収まるのでずらしは無い)。
     let rm = a.relmap.as_ref().unwrap();
@@ -112,7 +112,7 @@ fn test_rel_12_click_link_and_linked_row() {
 
 #[test]
 fn test_rel_12_narrow_list_and_wheel() {
-    // [REL-12] 狭い画面(1つの段組み)では、つながりの行のクリックでそれを選ぶ。ホイールで表を上下に選ぶ。
+    // [utest -> req~relations.map-mouse-wheel~1] 狭い画面(1つの段組み)では、つながりの行のクリックでそれを選ぶ。ホイールで表を上下に選ぶ。
     let (_t, mut a) = open_map(70, 24, "rmc_narrow");
     let before = a.relmap.as_ref().unwrap().sel;
     a.wheel(true);

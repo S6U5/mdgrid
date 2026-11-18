@@ -15,7 +15,7 @@ const HAND: &str = "# よく使う表\n\n[[place]]\nname = \"Tasks\"\ngroup = \"
 
 #[test]
 fn test_cli_18_add_keeps_hand_written_text() {
-    // [CLI-18] 足すときは末尾に付け、コメント・空行・~ のパスはそのまま。読み直すと3つ。
+    // [utest -> req~cli.places-store~1] 足すときは末尾に付け、コメント・空行・~ のパスはそのまま。読み直すと3つ。
     let out = upsert(HAND, &place("New", "", "/x/new"));
     assert!(out.starts_with(HAND), "{out}");
     assert!(
@@ -29,7 +29,7 @@ fn test_cli_18_add_keeps_hand_written_text() {
 
 #[test]
 fn test_cli_18_replace_only_that_block() {
-    // [CLI-18] 同じ名前は、その区画の中身だけを置き換える。前置きのコメント「# 趣味の表」とほかの区画は残る。
+    // [utest -> req~cli.places-store~1, req~cli.places-replace-confirm~1] 同じ名前は、その区画の中身だけを置き換える。前置きのコメント「# 趣味の表」とほかの区画は残る。
     let out = upsert(HAND, &place("Tasks", "Job", "/x/t"));
     assert!(
         out.contains("# よく使う表\n") && out.contains("# 趣味の表\n[[place]]\nname = \"Books\""),
@@ -53,7 +53,7 @@ fn test_cli_18_replace_only_that_block() {
 
 #[test]
 fn test_cli_18_broken_block_is_kept() {
-    // [CLI-18] 読めない区画(path の無い行)は文字のまま残り、ほかの登録は効く。空のファイルにも足せる。
+    // [utest -> req~cli.places-bad-line~1, req~cli.places-no-note-write~1] 読めない区画(path の無い行)は文字のまま残り、ほかの登録は効く。空のファイルにも足せる。
     let text = "[[place]]\nname = \"NoPath\"\n";
     let out = upsert(text, &place("A", "", "/a"));
     assert!(out.starts_with(text), "{out}");

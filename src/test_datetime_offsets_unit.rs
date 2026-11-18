@@ -1,5 +1,5 @@
-//! [CV-2][CE-2][BV-6] Z・時差・空白の区切り・小数の秒の日時を日時として読み、時差は地域の時刻に直す。
-//! specs/_changes/2026-10-06-datetime-offsets.md。
+//! [cell-view.type-mismatch][cell-edit.column-type][base-view.expr-eval] Z・時差・空白の区切り・小数の秒の日時を日時として読み、時差は地域の時刻に直す。
+//! specs/_history/decidespec/_changes/2026-10-06-datetime-offsets.md。
 
 use super::{date_or_datetime, fits, infer, parse_date, parse_datetime, parse_datetime_at, Kind};
 use crate::frontmatter::Value;
@@ -8,6 +8,7 @@ fn s(x: &str) -> Value {
     Value::Str(x.into())
 }
 
+// [utest -> req~cell-view.type-mismatch~1]
 #[test]
 fn test_cv_2_datetime_offsets_fit() {
     for v in [
@@ -33,6 +34,7 @@ fn test_cv_2_datetime_offsets_fit() {
     assert_eq!(infer([s("2026-10-05T21:44:59Z")].iter()), Kind::DateTime);
 }
 
+// [utest -> req~cell-view.type-mismatch~1]
 #[test]
 fn test_cv_2_datetime_offsets_convert_to_local() {
     let jst = 9 * 3600;
@@ -58,6 +60,7 @@ fn test_cv_2_datetime_offsets_convert_to_local() {
     );
 }
 
+// [utest -> req~cell-view.type-mismatch~1]
 #[test]
 fn test_cv_2_datetime_offsets_write_shape_unchanged() {
     // 書くときに囲まない形(WB-18)は今までどおり `T` の区切りで時差なしだけ。

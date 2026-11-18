@@ -121,7 +121,7 @@ fn check(l: Lang) {
 
 #[test]
 fn test_cli_12_english_doc_type_default_example() {
-    // [CLI-12] docs/config.md の各項目の Type・Default の行と例が、実装の表と同じ。
+    // [utest -> req~cli.config-docs~1] docs/config.md の各項目の Type・Default の行と例が、実装の表と同じ。
     check(Lang {
         rel: "docs/config.md",
         ty_prefix: "- Type: ",
@@ -135,7 +135,7 @@ fn test_cli_12_english_doc_type_default_example() {
 
 #[test]
 fn test_cli_12_japanese_doc_type_default_example() {
-    // [CLI-12] docs/config.ja.md の各項目の 型・既定 の行と例が、実装の表と同じ。
+    // [utest -> req~cli.config-docs~1] docs/config.ja.md の各項目の 型・既定 の行と例が、実装の表と同じ。
     check(Lang {
         rel: "docs/config.ja.md",
         ty_prefix: "- 型: ",
@@ -164,7 +164,7 @@ fn behaves_as_default(c: &Config) -> bool {
 
 #[test]
 fn test_cli_12_table_defaults_are_real_defaults() {
-    // [CLI-12] [CLI-11] 表の既定値の表記は、その1行だけを(区画の見出しの下に)読んでも警告なしで既定と同じ振る舞い
+    // [utest -> req~cli.config-docs~1, req~cli.print-config-output~1, req~cli.print-config-reads-back~1] 表の既定値の表記は、その1行だけを(区画の見出しの下に)読んでも警告なしで既定と同じ振る舞い
     // (表の既定値を実装と違えたら、文書を直す前にここで落ちる)。既定の無い項目は既定では None・空。
     for item in ITEMS {
         match item.default {

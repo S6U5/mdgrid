@@ -33,7 +33,7 @@ fn write_two(tmp: &super::test_screen::Tmp) {
 
 #[test]
 fn test_ws_2_add_and_remove_from_palette() {
-    // [WS-2] 「この表をワークスペースに足す」→ 新しい名前を打つ → workspaces.toml に入り、範囲になる。外すと消える。
+    // [utest -> req~workspace.palette~1] 「この表をワークスペースに足す」→ 新しい名前を打つ → workspaces.toml に入り、範囲になる。外すと消える。
     let tmp = workspace("ws_add");
     let cfg = tmp.0.join("config");
     let mut a = boot_tasks(&tmp);
@@ -78,7 +78,7 @@ fn test_ws_2_add_and_remove_from_palette() {
 
 #[test]
 fn test_ws_2_pick_existing_and_open() {
-    // [WS-2] 足す先は今の名前から選べる。「ワークスペースを開く」→ 名前 → 表 → その表へ移る(範囲はそのワークスペース)。
+    // [utest -> req~workspace.palette~1] 足す先は今の名前から選べる。「ワークスペースを開く」→ 名前 → 表 → その表へ移る(範囲はそのワークスペース)。
     let tmp = workspace("ws_open");
     write_two(&tmp);
     let mut a = boot_tasks(&tmp);
@@ -105,7 +105,7 @@ fn test_ws_2_pick_existing_and_open() {
 
 #[test]
 fn test_ws_2_open_none_says_how() {
-    // [WS-2] ワークスペースが無ければ、作り方を出して一覧を開かない。
+    // [utest -> req~workspace.palette~1] ワークスペースが無ければ、作り方を出して一覧を開かない。
     let tmp = workspace("ws_none");
     let mut a = boot_tasks(&tmp);
     palette(&mut a, "ワークスペースを開く");
@@ -119,7 +119,7 @@ fn test_ws_2_open_none_says_how() {
 
 #[test]
 fn test_ws_4_scope_limits_tables_and_relmap() {
-    // [WS-4] tasks を含む Work の表(tasks・projects)だけが範囲。Hobby の members は関係マップに出ない。
+    // [utest -> req~workspace.scope-use~1] tasks を含む Work の表(tasks・projects)だけが範囲。Hobby の members は関係マップに出ない。
     let tmp = workspace("ws_scope");
     write_two(&tmp);
     let mut a = boot_tasks(&tmp);
@@ -134,7 +134,7 @@ fn test_ws_4_scope_limits_tables_and_relmap() {
 
 #[test]
 fn test_ws_6_header_shows_workspace() {
-    // [WS-6] 書いたワークスペースの範囲なら、ヘッダー(パンくず「範囲 › 表」。SR-42)にその名前。範囲が無ければ
+    // [utest -> req~workspace.scope-order-rank~1, req~workspace.scope-order-crumb~1] 書いたワークスペースの範囲なら、ヘッダー(パンくず「範囲 › 表」。SR-42)にその名前。範囲が無ければ
     // 出さない(パンくずは表の名前だけ)。前の配置の「· ワークスペース Work」は、パンくずの「Work › 」に置き換わった(頭に引き出しのキー w)。
     let tmp = workspace("ws_header");
     let a = boot_tasks(&tmp);
@@ -181,7 +181,7 @@ fn boot_projects(tmp: &super::test_screen::Tmp) -> App {
 
 #[test]
 fn test_ws_4_linked_rows_follow_scope() {
-    // [WS-4][REL-5] つながった行は範囲の表から探す。tasks を含む Work なら出る。tasks の無い範囲なら出ない。
+    // [utest -> req~workspace.scope-use~1, req~relations.backlinks-scope~1] つながった行は範囲の表から探す。tasks を含む Work なら出る。tasks の無い範囲なら出ない。
     let tmp = workspace("ws_back");
     write_two(&tmp);
     let mut a = boot_projects(&tmp);

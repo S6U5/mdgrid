@@ -62,6 +62,25 @@ name = "tasks"
 path = "tasks.base"
 ```
 
+A `[[table]]` in the marker can also set up the gantt screen (`C`; `gantt` in [Keys](keys.md)): `gantt = { start = "<column>", end = "<column>" }`, or `days = "<column>"` (the length in days) instead of `end`. Without the setting, mdgrid infers the columns from the names of the date columns (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了) and the screen title says so. A `gantt` that is not a table, has no `start`, or has neither `end` nor `days` is a warning and the setting is dropped; a column the table does not have is reported once the notes are read. The screen types all take the same shape (`<type> = { <column names> }`), and the screen type menu lists only the types that have a setting or an inference.
+
+A `[[table]]` in the marker can also set up the kanban screen (`B`; `kanban` in [Keys](keys.md)): `kanban = { column = "<column>" }`. The rows become cards in lanes, one lane per value of that column, in the order of the column's allowed values (`[rules.<column>] values`), then any other value as the rows show it, and last **(none)** for rows without a value. Without the setting, mdgrid infers the column from its name (status, state, stage, 状態, ステータス, 段階; any case) and the screen title says so. A list column is never inferred, and naming one in the setting is a warning, because a row would sit in several lanes. A `kanban` that is not a table or has no `column` is a warning and the setting is dropped; a column the table does not have is reported once the notes are read.
+
+A `[[table]]` in the marker can also set up the chart screen (`P`; `chart` in [Keys](keys.md)): `chart = { kind = "bar", x = "status" }`. Every key is optional. `kind` is the kind (`bar`, `stacked`, `line`, `scatter`, `heatmap`; bar when left out), `x` the column to split by, `y` a number column for the value (a count when left out; for a scatter, the vertical column, a number or a date), `agg` the aggregate (`count`, `sum`, `avg`, `min`, `max`; sum when `y` is given), `by` the breakdown column (needed by stacked bars and heatmaps and guessed when left out; optional for lines and scatters), `unit` the date range (`day`, `week`, `month`; the finest that fits when left out), `cumulative = true` a cumulative line, and `name` a name for the title. For several charts, write an array (`chart = [ { … }, { … } ]`) and move between them with `[` and `]` on the screen:
+
+```toml
+[[table]]
+name = "tasks"
+path = "tasks"
+chart = [
+  { name = "By status", x = "status" },
+  { name = "Due by month", kind = "line", x = "due", unit = "month" },
+  { name = "Owner and status", kind = "heatmap", x = "assignee", by = "status" },
+]
+```
+
+Left-out columns are guessed (the split column is the first of: a status column, a column with allowed values, a checkbox, a list, a date, the first column). A chart with an unknown key or value, or a column name that is not a string, is a warning and is left out; a chart naming a column the table does not have is reported and left out once the notes are read. Kinds and columns changed on the screen are not written back to the marker.
+
 A `[[table]]` in the marker can also set up the tree view (`T`; `tree` in [Keys](keys.md)): `tree = { path = "<column>", separator = "<separator>", order = "<column>" }`. The value of the `path` column, split at `separator` (default ` > `), is where the row sits in the tree, and the `order` column (optional) sorts the rows in a folder. When the column holds a list, its first item is used. A `path` column the table does not have, an empty separator, or a `tree` that is not a table is a warning (in the form `.mdgrid/workspace.toml: table[1].tree.separator: …`), and the tree is not offered.
 
 ```toml

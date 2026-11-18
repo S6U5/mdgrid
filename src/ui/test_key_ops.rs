@@ -1,5 +1,5 @@
-//! [CE-29][WB-1] 列のキーの名前の変更と削除を、全部のノートにためる変更としてまとめて行う。
-//! specs/_changes/2026-10-06-key-rename-delete.md。
+//! [cell-edit.rename-delete-key][write-back.byte-range] 列のキーの名前の変更と削除を、全部のノートにためる変更としてまとめて行う。
+//! specs/_history/decidespec/_changes/2026-10-06-key-rename-delete.md。
 
 use super::keymap::{Action, Mode};
 use super::test_screen::{ch, col_named, ctrl, make, press, read, typing};
@@ -19,6 +19,7 @@ fn at(a: &App, name: &str, col: &str) -> Option<NewValue> {
     a.changes.pending(&a.rows[i], col).cloned()
 }
 
+// [utest -> req~cell-edit.rename-delete-key-skip-existing~1, req~cell-edit.rename-delete-key-skip-unsafe~1, req~cell-edit.rename-delete-key-undo~1]
 #[test]
 fn test_ce_29_rename_key_in_all_notes() {
     let (t, mut a) = make("ce29ren", NOTES);
@@ -54,6 +55,7 @@ fn test_ce_29_rename_key_in_all_notes() {
     assert_eq!(read(&t, "d.md"), NOTES[3].1);
 }
 
+// [utest -> req~cell-edit.rename-delete-key-confirm~1]
 #[test]
 fn test_ce_29_delete_key_after_y() {
     let notes: &[(&str, &str)] = &[
@@ -82,6 +84,7 @@ fn test_ce_29_delete_key_after_y() {
     assert_eq!(read(&t, "c.md"), notes[2].1);
 }
 
+// [utest -> req~cell-edit.rename-delete-key-confirm~1]
 #[test]
 fn test_ce_29_not_in_readonly_or_bad_names() {
     let (_t, mut a) = make("ce29ro", NOTES);
@@ -97,6 +100,7 @@ fn test_ce_29_not_in_readonly_or_bad_names() {
     assert_eq!(a.changes.count(), 0);
 }
 
+// [utest -> req~cell-edit.rename-delete-key-skip-existing~1, req~cell-edit.rename-delete-key-skip-unsafe~1, req~cell-edit.rename-delete-key-confirm~1, req~cell-edit.rename-delete-key-diff~1]
 #[test]
 fn test_ce_29_pending_edit_is_not_dropped() {
     let (_t, mut a) = make("ce29pend", NOTES);

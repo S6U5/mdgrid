@@ -1,4 +1,4 @@
-//! 日時の列のカレンダーの時刻の欄(CE-30・CE-31)。specs/_changes/2026-10-07-time-picker.md。
+//! 日時の列のカレンダーの時刻の欄(CE-30・CE-31)。specs/_history/decidespec/_changes/2026-10-07-time-picker.md。
 //! 今日は 2026-10-02 に固定する。
 
 use super::test_screen::{col_named, ctrl, press, screen, Tmp};
@@ -49,6 +49,7 @@ fn open(a: &mut App, row: usize) {
     assert!(calendar::shown(a), "{}", screen(a));
 }
 
+// [utest -> req~cell-edit.datetime-calendar-time-field~1, req~cell-edit.datetime-calendar-keep-date-only~1, req~cell-edit.datetime-calendar-typing~1]
 #[test]
 fn test_ce_30_time_picker_moves_and_commits() {
     let (_t, mut a) = vault(
@@ -91,6 +92,7 @@ fn test_ce_30_time_picker_moves_and_commits() {
     assert_eq!(pending(&a, 1), date("2026-10-30T18:30"));
 }
 
+// [utest -> req~cell-edit.time-keys-midnight~1]
 #[test]
 fn test_ce_31_time_picker_details() {
     let (_t, mut a) = vault(
@@ -136,6 +138,7 @@ fn test_ce_31_time_picker_details() {
     assert!(screen(&a).contains("^O 時刻"), "{}", screen(&a));
 }
 
+// [utest -> req~cell-edit.time-keys-bulk~1]
 #[test]
 fn test_ce_31_bulk_time_goes_to_every_row() {
     // CE-10: 一括の編集で時刻を動かしたら、全部の行にその時刻。

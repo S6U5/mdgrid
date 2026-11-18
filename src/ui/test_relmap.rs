@@ -18,7 +18,7 @@ use ratatui::crossterm::event::KeyCode;
 
 #[test]
 fn test_rel_7_map_shows_boxes_and_arrows() {
-    // [REL-7] R で関係マップ: 表の箱(名前・行の数・列)と、つながりの列から行き先の箱への矢印。
+    // [utest -> req~relations.map~1] R で関係マップ: 表の箱(名前・行の数・列)と、つながりの列から行き先の箱への矢印。
     let tmp = workspace("rm_boxes");
     let mut a = boot_tasks(&tmp);
     a.resize(140, 36);
@@ -46,7 +46,7 @@ fn test_rel_7_map_shows_boxes_and_arrows() {
 
 #[test]
 fn test_rel_7_select_link_and_open_table() {
-    // [REL-7] ←→ でその表のつながりを選び、↓ で表を選び、Enter でその表へ移る。
+    // [utest -> req~relations.map~1] ←→ でその表のつながりを選び、↓ で表を選び、Enter でその表へ移る。
     let tmp = workspace("rm_open");
     let mut a = boot_tasks(&tmp);
     a.resize(140, 36);
@@ -73,7 +73,7 @@ fn test_rel_7_select_link_and_open_table() {
 
 #[test]
 fn test_rel_8_screen_tabs_switch() {
-    // [REL-8] 登録した表があれば、上の端の右に画面の型のメニュー(2026-10-12-header-menu でタブから変わった)。
+    // [utest -> req~relations.screen-menu-open~1] 登録した表があれば、上の端の右に画面の型のメニュー(2026-10-12-header-menu でタブから変わった)。
     // メニューの窓の項目のクリックで関係マップ・表を切り替える。
     let tmp = workspace("rm_tabs");
     let mut a = boot_tasks(&tmp);
@@ -128,7 +128,7 @@ fn mdgrid_width(s: &str) -> usize {
 
 #[test]
 fn test_rel_8_no_tabs_without_places() {
-    // [REL-8] 登録した表が無ければタブは出さない(今までのヘッダー)。
+    // [utest -> req~relations.screen-menu-open~1] 登録した表が無ければタブは出さない(今までのヘッダー)。
     let tmp = super::test_screen::Tmp::new("rm_notabs");
     tmp.write("a.md", "---\nx: 1\n---\n");
     let src = mdgrid::source::markdown::Markdown::open(&[tmp.notes()]).unwrap();
@@ -147,7 +147,7 @@ fn test_rel_8_no_tabs_without_places() {
 
 #[test]
 fn test_rel_9_layout_by_width() {
-    // [REL-9] 幅 140 は3つ(表・マップ・詳細)、100 は2つ(マップ・詳細)、70 は一覧だけ。どの幅でも行の幅は端末の幅。
+    // [utest -> req~relations.layout-adapt~1] 幅 140 は3つ(表・マップ・詳細)、100 は2つ(マップ・詳細)、70 は一覧だけ。どの幅でも行の幅は端末の幅。
     let tmp = workspace("rm_widths");
     let mut a = boot_tasks(&tmp);
     for (w, tables, detail, list) in [
@@ -177,7 +177,7 @@ fn test_rel_9_layout_by_width() {
 
 #[test]
 fn test_rel_9_linked_records_when_tall() {
-    // [REL-9] 高さ 30 以上なら、選んだつながりのつながった行を下に出す。低ければ出さない。
+    // [utest -> req~relations.layout-adapt~1] 高さ 30 以上なら、選んだつながりのつながった行を下に出す。低ければ出さない。
     let tmp = workspace("rm_tall");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 36);
@@ -195,7 +195,7 @@ fn test_rel_9_linked_records_when_tall() {
 
 #[test]
 fn test_rel_7_no_tables_message() {
-    // [REL-7] 表が1つも無ければ開かずに理由。
+    // [utest -> req~relations.map~1] 表が1つも無ければ開かずに理由。
     let tmp = super::test_screen::Tmp::new("rm_none");
     let src = mdgrid::source::markdown::Markdown::open(&[tmp.notes()]).unwrap();
     let mut a = App::new(Box::new(src), ColorMode::None);

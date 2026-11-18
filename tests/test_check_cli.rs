@@ -1,7 +1,7 @@
-//! [CLI-23] `mdgrid <フォルダ> --check`: 画面を出さずに、型(CE-2・CE-35)と決まり(CE-36)に合わない値を
+//! [cli.check] `mdgrid <フォルダ> --check`: 画面を出さずに、型(CE-2・CE-35)と決まり(CE-36)に合わない値を
 //! 1つ1行 `<パス>:<行>: <列>: <理由>`(キーが無いときは `<パス>: <列>: <理由>`)で標準出力に出し、
 //! 問題の数を標準エラーに出す。終了コードは 問題なし 0・あり 1・起動できない 2。ノートは書き換えない。
-//! 記録: specs/_changes/2026-10-14-type-check.md(タスク #4)。本物の実行ファイルで確かめる。
+//! 記録: specs/_history/decidespec/_changes/2026-10-14-type-check.md(タスク #4)。本物の実行ファイルで確かめる。
 //!
 //! 子の作業のフォルダを一時フォルダにし、引数を `notes` で渡すので、パスは `notes/a.md` の形(OUT-3 と同じ)。
 //! 言語は .cargo/config.toml の [env] の日本語のまま。設定は `--config` の一時のファイルで渡し、
@@ -67,7 +67,7 @@ fn lines(o: &Output) -> Vec<String> {
 
 #[test]
 fn test_cli_23_reports_type_and_required_problems() {
-    // [CLI-23] 型の違反(行あり)と必須のキーの無いノート(行なし)を、パスの順に1行ずつ出し、
+    // [stest -> req~cli.check-problems~1] 型の違反(行あり)と必須のキーの無いノート(行なし)を、パスの順に1行ずつ出し、
     // 標準エラーに「問題 2」、終了コード 1。ノートのバイトは変わらない。
     let root = vault(
         "report",
@@ -100,7 +100,7 @@ fn test_cli_23_reports_type_and_required_problems() {
 
 #[test]
 fn test_cli_23_no_problems_prints_nothing_and_exits_0() {
-    // [CLI-23] 直したあと → 標準出力に何も出さず、終了コード 0。
+    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~1] 直したあと → 標準出力に何も出さず、終了コード 0。
     let root = vault(
         "clean",
         &[("a.md", A_OK), ("b.md", B_OK)],
@@ -113,7 +113,7 @@ fn test_cli_23_no_problems_prints_nothing_and_exits_0() {
 
 #[test]
 fn test_cli_23_missing_path_exits_2() {
-    // [CLI-23] 無いパス → 理由を1行出して終了コード 2(CLI-4 と同じ)。
+    // [stest -> req~cli.check-fail~1] 無いパス → 理由を1行出して終了コード 2(CLI-4 と同じ)。
     let root = vault("missing", &[("a.md", A_OK)], TYPES_AND_REQUIRED);
     let o = check(&root, "nothere");
     assert_eq!(o.status.code(), Some(2), "{}\n{}", out(&o), err(&o));
@@ -125,7 +125,7 @@ fn test_cli_23_missing_path_exits_2() {
 
 #[test]
 fn test_cli_23_values_violation_lines_in_line_order() {
-    // [CLI-23] values に無い値は「選べる値ではない」。1つのノートの2つの問題は行の順。
+    // [stest -> req~cli.check-problems~1] values に無い値は「選べる値ではない」。1つのノートの2つの問題は行の順。
     // values に合う値(done)は出ない。
     let cfg = "[types]\ndue = \"date\"\n\n[rules.status]\nvalues = [\"todo\", \"done\"]\n";
     let c = "---\nstatus: wip\ndue: later\n---\n";

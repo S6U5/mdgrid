@@ -1,5 +1,5 @@
-//! [WB-5][BV-1][BV-6] JSON・フローの形のフロントマターは、読むだけのまま値を見せ、file.tags にも入れる。
-//! specs/_changes/2026-10-06-flow-frontmatter.md。本物の実行ファイルで確かめる。
+//! [write-back.refuse-unsafe-notes][base-view.source][base-view.expr-eval] JSON・フローの形のフロントマターは、読むだけのまま値を見せ、file.tags にも入れる。
+//! specs/_history/decidespec/_changes/2026-10-06-flow-frontmatter.md。本物の実行ファイルで確かめる。
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -43,6 +43,7 @@ fn run(root: &Path, args: &[&str], stdin: Option<&str>) -> Output {
     child.wait_with_output().unwrap()
 }
 
+// [stest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-action-menu~1]
 #[test]
 fn test_wb_5_flow_frontmatter_values_shown() {
     let root = vault("show");
@@ -70,6 +71,7 @@ fn test_wb_5_flow_frontmatter_values_shown() {
     assert_eq!(s.lines().count(), 3, "{s}");
 }
 
+// [stest -> req~write-back.refuse-unsafe-read-only~1]
 #[test]
 fn test_wb_5_flow_frontmatter_stays_read_only() {
     let root = vault("ro");

@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_sr_9_width_and_truncate() {
-    // [SR-9] 全角は2、結合文字は前の文字とまとめて1、ESC は見える文字に置き換える。
+    // [utest -> req~cell-view.grapheme-width-fit~1] 全角は2、結合文字は前の文字とまとめて1、ESC は見える文字に置き換える。
     assert_eq!(width("あい"), 4);
     assert_eq!(width("e\u{301}"), 1);
     assert_eq!(sanitize("a\u{1b}[31m"), "a␛[31m");

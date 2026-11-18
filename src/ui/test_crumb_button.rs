@@ -1,5 +1,5 @@
 //! ヘッダーのパンくずを、キーと ▾ を添えた引き出しのボタンにする(SR-42)受け入れの試験。
-//! 記録: specs/_changes/2026-10-12-crumb-button.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-crumb-button.md(タスク #1)。
 
 use super::keymap::Mode;
 use super::startup::Startup;
@@ -91,7 +91,7 @@ fn boot_config(name: &str, toml: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_42_crumb_button_key_and_arrow() {
-    // [SR-42] ワークスペース Work の tasks → 1行目の左が「w Work › tasks ▾  3行」。
+    // [utest -> req~screen.breadcrumb-path~1] ワークスペース Work の tasks → 1行目の左が「w Work › tasks ▾  3行」。
     let (_t, a) = boot_work("crumbbtn");
     let h = head(&a);
     let left = h.trim_start();
@@ -104,7 +104,7 @@ fn test_sr_42_crumb_button_key_and_arrow() {
 
 #[test]
 fn test_sr_42_crumb_button_looks_like_a_button() {
-    // [SR-42] 名前から ▾ までが1つのボタンの見た目(同じ見た目)で、行の数とは見た目が違う。頭のキーの字は
+    // [utest -> req~screen.breadcrumb-button-look~1] 名前から ▾ までが1つのボタンの見た目(同じ見た目)で、行の数とは見た目が違う。頭のキーの字は
     // 太字で名前と違う見た目(2026-10-12-header-menu。NV-23 と同じ)。
     let (_t, a) = boot_work("crumbstyle");
     let b = buf(&a);
@@ -129,7 +129,7 @@ fn test_sr_42_crumb_button_looks_like_a_button() {
 
 #[test]
 fn test_sr_42_crumb_button_click_key_and_arrow() {
-    // [SR-42][WS-8] キーの字を押す → 引き出しが開く。▾ を押す → 閉じる。行の数は押しても開かない。
+    // [utest -> req~screen.breadcrumb-path~1, req~screen.breadcrumb-drawer~1, req~screen.breadcrumb-button-look~1, req~screen.breadcrumb-right-buttons~1, req~workspace.drawer-close~1, req~workspace.drawer-from-map~1] キーの字を押す → 引き出しが開く。▾ を押す → 閉じる。行の数は押しても開かない。
     let (_t, mut a) = boot_work("crumbclick");
     let x_key = col(&a, "w Work").unwrap();
     let x_arrow = col(&a, "▾").unwrap();
@@ -144,7 +144,7 @@ fn test_sr_42_crumb_button_click_key_and_arrow() {
 
 #[test]
 fn test_sr_42_crumb_button_without_scope() {
-    // [SR-42] 範囲が無い → 「w tasks ▾  3行」(「›」なし)。
+    // [utest -> req~screen.breadcrumb-path~1] 範囲が無い → 「w tasks ▾  3行」(「›」なし)。
     let tmp = workspace("crumbnone");
     let a = boot_tasks(&tmp);
     assert!(a.scope.is_none());
@@ -158,7 +158,7 @@ fn test_sr_42_crumb_button_without_scope() {
 
 #[test]
 fn test_sr_42_crumb_button_follows_rebound_key() {
-    // [SR-42][SR-13] 引き出しのキーを W に割り当て直す → 「W notes ▾」。外す → キーなしで「notes ▾」。
+    // [utest -> req~screen.breadcrumb-button-look~1, req~screen.keys-vim-and-arrows-remap~1] 引き出しのキーを W に割り当て直す → 「W notes ▾」。外す → キーなしで「notes ▾」。
     let (_t, a) = boot_config(
         "crumbrebind",
         "[keys.table]\nw = \"none\"\nW = \"workspace_drawer\"\n",

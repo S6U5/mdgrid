@@ -1,5 +1,5 @@
-//! [WB-5][BV-1] BOM つきのノートは、読むだけ(理由つき)のまま、読める値を見せる。
-//! specs/_changes/2026-10-06-bom-values.md。
+//! [write-back.refuse-unsafe-notes][base-view.source] BOM つきのノートは、読むだけ(理由つき)のまま、読める値を見せる。
+//! specs/_history/decidespec/_changes/2026-10-06-bom-values.md。
 
 use super::keymap::Mode;
 use super::test_screen::{col_named, ctrl, make, press};
@@ -8,6 +8,7 @@ use ratatui::crossterm::event::KeyCode;
 
 const BOM: &str = "\u{FEFF}---\nstatus: draft\nowner: ken\n---\nbody\n";
 
+// [utest -> req~write-back.refuse-unsafe-perm-lost~1]
 #[test]
 fn test_wb_5_bom_values_shown_read_only() {
     let (t, mut a) = make(

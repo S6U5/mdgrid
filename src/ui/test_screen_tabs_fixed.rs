@@ -26,7 +26,7 @@ fn drawn(a: &App, x: u16) -> String {
 
 #[test]
 fn test_rel_8_tabs_do_not_move_between_screens() {
-    // [REL-8][SR-42] 「+ 新規」が出る表から関係マップへ移っても、設定のボタンの描く位置と押せる位置は同じで、
+    // [utest -> req~relations.screen-menu-open~1, req~screen.breadcrumb-right-buttons~1, req~screen.breadcrumb-relation-map~1, req~screen.breadcrumb-narrow~1] 「+ 新規」が出る表から関係マップへ移っても、設定のボタンの描く位置と押せる位置は同じで、
     // 画面の型のメニューのボタンは右の端(設定のボタンの左)がそろう(ボタンの字は型の名前で変わる)。
     let tmp = workspace("tabs_fixed");
     let mut a = boot_tasks(&tmp);

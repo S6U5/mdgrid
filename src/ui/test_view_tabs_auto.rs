@@ -50,7 +50,7 @@ fn row_of(s: &str, text: &str) -> usize {
 
 #[test]
 fn test_sr_34_auto_hides_single_tab() {
-    // [SR-34] 既定(always)はタブの行に既定の表。auto でビューが1つなら、タブの行もヘッダーの名前も無く、表が1行上がる。
+    // [utest -> req~screen.tabs-setting-auto-single~1] 既定(always)はタブの行に既定の表。auto でビューが1つなら、タブの行もヘッダーの名前も無く、表が1行上がる。
     // SR-1 でタブは検索の欄と同じ行(ビューの帯)にあり、行ごと消えるのは検索の欄も出さないとき。前の「タブの行」
     // と同じ形にするため、両方とも検索の欄を出さない設定で比べる。
     let tmp = folder("sr34_auto");
@@ -81,7 +81,7 @@ fn test_sr_34_auto_hides_single_tab() {
 
 #[test]
 fn test_sr_34_auto_shows_tabs_with_two_views() {
-    // [SR-34] auto でも、ビューを保存して2つ以上になればタブの行を出す。
+    // [utest -> req~screen.tabs-setting-values~1] auto でも、ビューを保存して2つ以上になればタブの行を出す。
     let tmp = folder("sr34_two");
     save_views(
         &tmp.0.join("config"),
@@ -100,7 +100,7 @@ fn test_sr_34_auto_shows_tabs_with_two_views() {
 
 #[test]
 fn test_sr_34_unknown_value_warns() {
-    // [SR-34] 知らない値は警告して always。
+    // [utest -> req~screen.tabs-setting-values~1] 知らない値は警告して always。
     let (c, w) = mdgrid::config::parse("[display]\ntabs = \"sometimes\"\n").unwrap();
     assert_eq!(c.resolved().display.tabs, mdgrid::display::TabsMode::Always);
     assert_eq!(w.len(), 1, "{w:?}");
@@ -109,7 +109,7 @@ fn test_sr_34_unknown_value_warns() {
 
 #[test]
 fn test_sr_23_default_tab_english_name() {
-    // [SR-23] 英語の既定の表の名前は Default table(ノートでない表にも通じる名前)。前の名前 Default と All notes は
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1] 英語の既定の表の名前は Default table(ノートでない表にも通じる名前)。前の名前 Default と All notes は
     // 別名として受け、ビューの名前には使えない。
     let _g = mdgrid::i18n::scoped(mdgrid::i18n::Lang::En);
     let tmp = folder("sr34_en");

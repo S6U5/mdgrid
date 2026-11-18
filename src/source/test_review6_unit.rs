@@ -1,8 +1,9 @@
-//! [CE-2] types.json の型を大文字小文字を外して引く表(specs/_changes/2026-10-06-review6-fixes.md)。
+//! [cell-edit.column-type] types.json の型を大文字小文字を外して引く表(specs/_history/decidespec/_changes/2026-10-06-review6-fixes.md)。
 //! 大文字小文字だけ違う宣言の型が食い違えば、同じ名前の無い列はテキストで読むだけ(BV-12 と同じ)。
 
 use super::*;
 
+// [utest -> req~cell-edit.column-type-order~1]
 #[test]
 fn test_ce_2_types_case_variants_conflict() {
     let nanos = std::time::SystemTime::now()

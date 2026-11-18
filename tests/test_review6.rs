@@ -1,6 +1,6 @@
-//! レビューの直し(specs/_changes/2026-10-06-review6-fixes.md)。本物の実行ファイルで確かめる。
-//! [BV-23] 保管庫の中の隠しフォルダを直接渡すと、その中を探す。[CLI-17] 同じ列に当たる2つの見出し・
-//! JSON の空の文字のリスト・大きすぎる整数。[CLI-16] `:` を含む列の名前の --sort。
+//! レビューの直し(specs/_history/decidespec/_changes/2026-10-06-review6-fixes.md)。本物の実行ファイルで確かめる。
+//! [base-view.skip-hidden] 保管庫の中の隠しフォルダを直接渡すと、その中を探す。[cli.apply] 同じ列に当たる2つの見出し・
+//! JSON の空の文字のリスト・大きすぎる整数。[cli.print-filter-sort] `:` を含む列の名前の --sort。
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -46,6 +46,7 @@ fn rows(o: &Output) -> usize {
     String::from_utf8_lossy(&o.stdout).lines().skip(1).count()
 }
 
+// [stest -> req~base-view.skip-hidden-dirs~1]
 #[test]
 fn test_bv_23_hidden_folder_inside_vault() {
     let root = dir("hidden");
@@ -58,6 +59,7 @@ fn test_bv_23_hidden_folder_inside_vault() {
     assert_eq!(rows(&run(&root, &["v", "--print"], None)), 1);
 }
 
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-yes-write~1, req~cli.apply-reject-all~1, req~cli.apply-reject-reasons~1, req~cli.apply-ignored-columns~1, req~cli.apply-empty-cell~1, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_two_headers_same_column() {
     let root = dir("twohead");
@@ -79,6 +81,7 @@ fn test_cli_17_two_headers_same_column() {
     );
 }
 
+// [stest -> req~cli.apply-dry-run~1, req~cli.apply-reject-all~1, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_json_empty_list_and_big_int() {
     let root = dir("json");
@@ -106,6 +109,7 @@ fn test_cli_17_json_empty_list_and_big_int() {
     );
 }
 
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-bad-expr~1, req~cli.print-filter-sort-own-view~1]
 #[test]
 fn test_cli_16_sort_column_with_colon() {
     let root = dir("colon");

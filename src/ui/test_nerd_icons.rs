@@ -1,6 +1,6 @@
 //! アイコン用のフォントの記号を設定で使う(SR-45)の受け入れ試験。既定は今の字の記号、`terminal.nerd_icons = true`
 //! では設定のボタン・画面の型のボタンと窓・列の見出しの型の印・カレンダーの題に Nerd Font の記号。
-//! 記録: specs/_changes/2026-10-13-nerd-icons.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-13-nerd-icons.md(タスク #1)。
 
 use super::startup::Startup;
 use super::test_screen::{press, text, Tmp};
@@ -54,7 +54,7 @@ fn pua(s: &str) -> bool {
 
 #[test]
 fn test_sr_45_default_plain_glyphs() {
-    // [SR-45] 既定は今の字の記号(⚙・▦・◷)で、私用の領域の字は出さない。
+    // [utest -> req~screen.nerd-icons-setting~1, req~screen.nerd-icons-symbols~1] 既定は今の字の記号(⚙・▦・◷)で、私用の領域の字は出さない。
     let (_t, a) = boot("sr45_plain", "");
     let s = screen(&a);
     assert!(s.contains("⚙ 設定") && s.contains("▦ 表 ▾"), "{s}");
@@ -64,7 +64,7 @@ fn test_sr_45_default_plain_glyphs() {
 
 #[test]
 fn test_sr_45_nerd_icons_in_header_and_marks() {
-    // [SR-45] nerd_icons = true → 設定のボタン・表のボタン・日付の列の見出しに Nerd Font の記号。字の記号は出ない。
+    // [utest -> req~screen.nerd-icons-setting~1, req~screen.nerd-icons-symbols~1, req~screen.nerd-icons-width~1] nerd_icons = true → 設定のボタン・表のボタン・日付の列の見出しに Nerd Font の記号。字の記号は出ない。
     let (_t, a) = boot("sr45_nerd", "[terminal]\nnerd_icons = true\n");
     let s = screen(&a);
     assert!(s.contains(&format!("{GEAR} 設定")), "{s}");
@@ -81,7 +81,7 @@ fn test_sr_45_nerd_icons_in_header_and_marks() {
 
 #[test]
 fn test_sr_45_nerd_icons_calendar_title() {
-    // [SR-45] 日付のセルで Enter → カレンダーの題の頭にカレンダーの記号。既定では付けない。
+    // [utest -> req~screen.nerd-icons-setting~1, req~screen.nerd-icons-symbols~1, req~screen.nerd-icons-no-emoji~1] 日付のセルで Enter → カレンダーの題の頭にカレンダーの記号。既定では付けない。
     let (_t, mut a) = boot("sr45_cal", "[terminal]\nnerd_icons = true\n");
     press(&mut a, KeyCode::Enter);
     let s = screen(&a);
@@ -97,7 +97,7 @@ fn test_sr_45_nerd_icons_calendar_title() {
 
 #[test]
 fn test_sr_45_nerd_icons_in_screen_menu() {
-    // [SR-45] 画面の型の窓の項目にも記号(表)。
+    // [utest -> req~screen.nerd-icons-symbols~1] 画面の型の窓の項目にも記号(表)。
     let (_t, mut a) = boot("sr45_menu", "[terminal]\nnerd_icons = true\n");
     a.open_screen_menu();
     let s = screen(&a);
@@ -109,7 +109,7 @@ fn test_sr_45_nerd_icons_in_screen_menu() {
 
 #[test]
 fn test_sr_45_nerd_icons_every_type_mark() {
-    // [SR-45] 数・リスト・チェックの見出しの印も Nerd Font の記号(字の記号 # ⋮ ✓ は出ない)。
+    // [utest -> req~screen.nerd-icons-symbols~1] 数・リスト・チェックの見出しの印も Nerd Font の記号(字の記号 # ⋮ ✓ は出ない)。
     let tmp = Tmp::new("sr45_kinds");
     tmp.write("a.md", "---\nn: 3\ntags: [x, y]\ndone: true\n---\n");
     let (config, w) =
@@ -146,7 +146,7 @@ fn test_sr_45_nerd_icons_every_type_mark() {
 
 #[test]
 fn test_sr_45_nerd_icons_relmap_button() {
-    // [SR-45] 関係マップの画面の型のボタンにも記号(U+F0E8)。
+    // [utest -> req~screen.nerd-icons-symbols~1] 関係マップの画面の型のボタンにも記号(U+F0E8)。
     use super::test_relations::{boot_tasks, workspace};
     use super::test_screen::ch;
     let tmp = workspace("sr45_rel");
@@ -160,7 +160,7 @@ fn test_sr_45_nerd_icons_relmap_button() {
 
 #[test]
 fn test_sr_45_nerd_icons_ambiguous_wide_click() {
-    // [SR-45][CV-6][CE-35] あいまいな字を全角として数える設定でも、行が画面の幅を超えず、見出しの印のクリックは
+    // [utest -> req~screen.nerd-icons-width~1, req~cell-view.ambiguous-width~1, req~cell-edit.type-config-dialog~1] あいまいな字を全角として数える設定でも、行が画面の幅を超えず、見出しの印のクリックは
     // 型の窓、設定のボタンのクリックは設定の画面に当たる。
     let (_t, mut a) = boot(
         "sr45_amb",

@@ -10,7 +10,7 @@ fn parse(text: &str) -> (Resolved, crate::config::Config, Vec<String>) {
 
 #[test]
 fn test_sr_36_style_presets_and_overrides() {
-    // [SR-36] 既定は sumi。look.preset で組をまとめて選び、[look.style] の項目はその上に重ねる。
+    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1] 既定は sumi。look.preset で組をまとめて選び、[look.style] の項目はその上に重ねる。
     let (r, _, w) = parse("");
     assert!(w.is_empty());
     assert_eq!(r.style, Style::of(Preset::Sumi));
@@ -35,7 +35,7 @@ fn test_sr_36_style_presets_and_overrides() {
 
 #[test]
 fn test_sr_36_style_bad_values_warn() {
-    // [SR-36] 知らない値・知らない項目・型の違いは警告して既定のまま。
+    // [utest -> req~screen.style-parts-unknown~1] 知らない値・知らない項目・型の違いは警告して既定のまま。
     for text in [
         "[look.style]\nstatus = \"sparkle\"\n",
         "[look]\npreset = \"neon\"\n",
@@ -51,7 +51,7 @@ fn test_sr_36_style_bad_values_warn() {
 
 #[test]
 fn test_sr_37_new_themes_and_sr_39_auto() {
-    // [SR-37] 新しいテーマの名前を受ける。[SR-39] look.theme の "auto" と明暗の表。
+    // [utest -> req~screen.calm-themes-add~1] 新しいテーマの名前を受ける。[utest -> req~screen.theme-auto-pick~1, req~screen.theme-auto-partial~1] look.theme の "auto" と明暗の表。
     use crate::theme::Theme;
     for name in ["sumi", "slate", "saas", "saas-dark", "paper"] {
         let (r, _, w) = parse(&format!("[look]\ntheme = \"{name}\"\n"));
@@ -80,7 +80,7 @@ fn test_sr_37_new_themes_and_sr_39_auto() {
 
 #[test]
 fn test_sr_38_names_are_listed() {
-    // [SR-38] カタログと突き合わせる名前の並び(設定の項目と、各部品の値)。
+    // [utest -> req~screen.style-catalog-sync~1] カタログと突き合わせる名前の並び(設定の項目と、各部品の値)。
     assert_eq!(KEYS.len(), 10);
     assert!(Status::NAMES.contains(&"dot") && Tags::NAMES.contains(&"dots"));
     assert!(Preset::NAMES.contains(&"classic") && Links::NAMES.contains(&"accent"));

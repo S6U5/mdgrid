@@ -1,4 +1,4 @@
-//! [SR-48] 計算の列の見出しの頭に ƒ を付けて、ノートのキーの列と見分ける(画面だけ。--print は変えない)。
+//! [screen.formula-mark] 計算の列の見出しの頭に ƒ を付けて、ノートのキーの列と見分ける(画面だけ。--print は変えない)。
 #![cfg(unix)]
 
 mod pty;
@@ -24,7 +24,7 @@ fn sample(root: &std::path::Path) {
 
 #[test]
 fn test_sr_48_formula_header_has_mark() {
-    // [SR-48] 画面の見出し: 計算の列は「ƒ 担当」、ノートのキーの列(title・actor)には ƒ が付かない。
+    // [stest -> req~screen.formula-mark-prefix~1] 画面の見出し: 計算の列は「ƒ 担当」、ノートのキーの列(title・actor)には ƒ が付かない。
     let t = TempDir::new("fmark");
     let root = t.path();
     sample(root);
@@ -44,7 +44,7 @@ fn test_sr_48_formula_header_has_mark() {
 
 #[test]
 fn test_sr_48_formula_mark_without_color() {
-    // [SR-48] 色を使わない表示(--no-color)でも ƒ が付く。
+    // [stest -> req~screen.formula-mark-prefix~1] 色を使わない表示(--no-color)でも ƒ が付く。
     let t = TempDir::new("fmark-nocolor");
     let root = t.path();
     sample(root);
@@ -58,7 +58,7 @@ fn test_sr_48_formula_mark_without_color() {
 
 #[test]
 fn test_sr_48_print_header_unchanged() {
-    // [SR-48] --print の見出しは変えない(担当のまま)。
+    // [stest -> req~screen.formula-mark-print~1] --print の見出しは変えない(担当のまま)。
     let t = TempDir::new("fmark-print");
     let root = t.path();
     sample(root);

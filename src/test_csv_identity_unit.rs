@@ -1,5 +1,5 @@
-//! [SC-16][WB-4][WB-16] CSV の行の鍵は行の位置でなく、変わらない行の番号。外で行が足されたり消えたりしても、
-//! 直しを別の行に書かない。specs/_changes/2026-10-10-csv-source.md。
+//! [scope.csv-write-back][write-back.conflict-stop][write-back.external-change] CSV の行の鍵は行の位置でなく、変わらない行の番号。外で行が足されたり消えたりしても、
+//! 直しを別の行に書かない。specs/_history/decidespec/_changes/2026-10-10-csv-source.md。
 
 use crate::source::csv::Csv;
 use crate::source::{Edit, EditError, NewValue, RowId, SaveError, Source};
@@ -41,6 +41,7 @@ fn outside(p: &std::path::Path, text: &str) {
         .unwrap();
 }
 
+// [utest -> req~scope.csv-write-back-conflict~1]
 #[test]
 fn test_sc_16_row_inserted_outside_keeps_the_edited_row() {
     // 開いたあとに外で先頭に行が足される → B の直しは B に当たる(差分も、読み直して書くときも)。
@@ -62,6 +63,7 @@ fn test_sc_16_row_inserted_outside_keeps_the_edited_row() {
     );
 }
 
+// [utest -> req~scope.csv-write-back-bytes~1, req~scope.csv-write-back-conflict~1]
 #[test]
 fn test_sc_16_row_changed_outside_is_not_written() {
     // 直した行そのものが外で変わった(または消えた)→ 別の行には書かず、理由を出して止める。
@@ -86,6 +88,7 @@ fn test_sc_16_row_changed_outside_is_not_written() {
     assert_eq!(std::fs::read_to_string(&p).unwrap(), "id,v\nA,1\nC,3\n");
 }
 
+// [utest -> req~scope.csv-write-back-bytes~1, req~scope.csv-write-back-conflict~1]
 #[test]
 fn test_sc_16_row_keys_survive_own_writes() {
     // 自分で書いた(値の直し・末尾に足す)あとも、行の鍵は同じ行を指す。

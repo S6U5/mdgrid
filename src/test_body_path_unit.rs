@@ -1,4 +1,4 @@
-//! [CE-32] 本文の雛形(body)は開いたフォルダの中のファイルだけを読む。specs/_changes/2026-10-10-body-path.md。
+//! [cell-edit.template-vars] 本文の雛形(body)は開いたフォルダの中のファイルだけを読む。specs/_history/decidespec/_changes/2026-10-10-body-path.md。
 
 use crate::newnote::{body_path, read_body};
 
@@ -16,6 +16,7 @@ fn root(name: &str) -> std::path::PathBuf {
     d
 }
 
+// [utest -> req~cell-edit.template-vars-body~1]
 #[test]
 fn test_ce_32_body_inside_folder_is_read() {
     let d = root("in");
@@ -34,6 +35,7 @@ fn test_ce_32_body_inside_folder_is_read() {
     let _ = std::fs::remove_dir_all(&d);
 }
 
+// [utest -> req~cell-edit.template-vars-body~1]
 #[test]
 fn test_ce_32_body_outside_folder_is_refused() {
     let d = root("out");
@@ -53,6 +55,7 @@ fn test_ce_32_body_outside_folder_is_refused() {
     let _ = std::fs::remove_dir_all(&d);
 }
 
+// [utest -> req~cell-edit.template-vars-hidden~1]
 #[cfg(unix)]
 #[test]
 fn test_ce_32_body_symlink_out_of_folder_is_refused() {

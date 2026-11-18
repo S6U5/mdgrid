@@ -1,5 +1,5 @@
 //! 下に並べたタブの行(NV-31)の置き場と、検索の欄の行との間の空き行の設定 `display.tab_wrap_gap` の受け入れ試験。
-//! 記録: specs/_changes/2026-10-15-tab-wrap-below.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-15-tab-wrap-below.md。
 //!
 //! 内部の状態のフィールドには頼らず、設定の文字・端末の大きさ・クリック・描いた画面の文字で確かめる。置いた仮定:
 //! - ビューの帯の真ん中の行は、検索の欄「\ 検索」のある行(NV-23)。
@@ -96,7 +96,7 @@ const GAP: &str = "[display]\ntab_wrap = true\ntab_wrap_gap = true\n";
 
 #[test]
 fn test_nv_31_tabs_right_below_search_by_default() {
-    // [NV-31] 囲まない帯(既定)・余白 1・幅 60 で折り返す → タブの行は検索の欄の行のすぐ下から間を空けずに続き、
+    // [utest -> req~navigation.tab-wrap-below~1] 囲まない帯(既定)・余白 1・幅 60 で折り返す → タブの行は検索の欄の行のすぐ下から間を空けずに続き、
     // 検索の欄の行とヘッダーの間は余白の1行。ほかのタブの行の下は余白の空き行。
     let (_t, a) = boot("nv31_below_plain", WRAP, 60);
     let s = scr(&a);
@@ -115,7 +115,7 @@ fn test_nv_31_tabs_right_below_search_by_default() {
 
 #[test]
 fn test_nv_31_gap_puts_one_empty_row() {
-    // [NV-31] tab_wrap_gap = true → 検索の欄の行とタブの行の間に空き行が1つ。表は既定よりちょうど1行下がる。
+    // [utest -> req~navigation.tab-wrap-gap~1] tab_wrap_gap = true → 検索の欄の行とタブの行の間に空き行が1つ。表は既定よりちょうど1行下がる。
     let (_t, a) = boot("nv31_gap_on", GAP, 60);
     let (_t2, b) = boot("nv31_gap_off", WRAP, 60);
     let s = scr(&a);
@@ -134,7 +134,7 @@ fn test_nv_31_gap_puts_one_empty_row() {
 
 #[test]
 fn test_nv_31_gap_without_wrap_changes_nothing() {
-    // [NV-31] 折り返さないとき(幅 200、または tab_wrap = false)は tab_wrap_gap があっても空き行を入れない。
+    // [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-gap-idle~1] 折り返さないとき(幅 200、または tab_wrap = false)は tab_wrap_gap があっても空き行を入れない。
     for (w, gap, plain) in [
         (200, GAP, WRAP),
         (
@@ -151,7 +151,7 @@ fn test_nv_31_gap_without_wrap_changes_nothing() {
 
 #[test]
 fn test_nv_31_zero_padding_tabs_below() {
-    // [NV-31] 余白 0 → 検索の欄の行はヘッダーのすぐ下、タブの行はそのすぐ下。
+    // [utest -> req~navigation.tab-wrap-below~1] 余白 0 → 検索の欄の行はヘッダーのすぐ下、タブの行はそのすぐ下。
     let (_t, a) = boot(
         "nv31_below_zero",
         "[display]\ntab_wrap = true\nbar_padding = 0\n",
@@ -165,7 +165,7 @@ fn test_nv_31_zero_padding_tabs_below() {
 
 #[test]
 fn test_nv_31_click_tab_below_after_gap() {
-    // [NV-31] 余白 2・tab_wrap_gap で、下に並べたタブをクリック → そのビュー。空き行のクリックでは変わらない。
+    // [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-click~1] 余白 2・tab_wrap_gap で、下に並べたタブをクリック → そのビュー。空き行のクリックでは変わらない。
     let (_t, mut a) = boot(
         "nv31_below_click",
         "[display]\ntab_wrap = true\ntab_wrap_gap = true\nbar_padding = 2\n",
@@ -193,7 +193,7 @@ fn test_nv_31_click_tab_below_after_gap() {
 
 #[test]
 fn test_nv_31_box_tabs_below_bottom_line() {
-    // [NV-31] 囲む帯(box)・余白 1 → タブの行は囲みの下の線の行の下(検索の欄の行との間に線の行が1つ)。
+    // [utest -> req~navigation.tab-wrap-gap~1, req~navigation.tab-wrap-box~1] 囲む帯(box)・余白 1 → タブの行は囲みの下の線の行の下(検索の欄の行との間に線の行が1つ)。
     let (_t, a) = boot(
         "nv31_below_box",
         "[display]\ntab_wrap = true\nbuttons = \"box\"\n",

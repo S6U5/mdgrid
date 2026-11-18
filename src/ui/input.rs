@@ -458,7 +458,7 @@ impl App {
     }
 
     /// セルを1行の入力で直せるなら入力の最初の文字、直せなければ理由(メッセージ行の文)。
-    fn editable(&self, row: &RowId, col: &str) -> Result<String, String> {
+    pub(crate) fn editable(&self, row: &RowId, col: &str) -> Result<String, String> {
         if let Some(v) = self.changes.pending(row, col) {
             return Ok(new_value_text(v));
         }

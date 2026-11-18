@@ -5,7 +5,7 @@ use super::test_settings_screen::{folder, open};
 
 #[test]
 fn test_nv_18_head_drops_hint_when_narrow() {
-    // [NV-18] 広い画面では案内まで出る。80桁で未反映の数が出ると案内を省き、「…」で切れた文を出さない。
+    // [utest -> req~navigation.settings-layout-pending~1] 広い画面では案内まで出る。80桁で未反映の数が出ると案内を省き、「…」で切れた文を出さない。
     let (_t, mut a) = folder("nv18head");
     a.resize(120, 24);
     open(&mut a);

@@ -1,6 +1,6 @@
 //! 型の決まらない列の日付を囲まずに書く(untyped-date)の画面の受け入れ試験(WB-18。関係: WB-7・CE-2・CE-26・WB-9)。
-//! 仕様: specs/write-back/spec.md の WB-18。記録: specs/_changes/2026-10-03-new-note-rest.md のタスク 1。
-//! 決定: specs/_decisions/2026-10-03-untyped-date.md。
+//! 仕様: specs/_history/decidespec/write-back/spec.md の WB-18。記録: specs/_history/decidespec/_changes/2026-10-03-new-note-rest.md のタスク 1。
+//! 決定: specs/_history/decidespec/_decisions/2026-10-03-untyped-date.md。
 //! 実装を見ずに、キー・画面・ファイルで確かめる。今日は 2026-10-03 に固定する。
 //!
 //! 「型の決まらない列」= 型の設定(CE-2 の types.json)が無く、読み込んだどのノートにも空でない値が無い列。
@@ -149,7 +149,7 @@ fn save_all(a: &mut App) {
 
 #[test]
 fn test_wb_18_untyped_new_note_date_unquoted() {
-    // [WB-18][CE-26] どのノートにも無い deadline を聞いて 2026-10-05 → `deadline: 2026-10-05`(囲まない)。
+    // [utest -> req~write-back.date-quoting-untyped~1, req~cell-edit.new-note-form-typed~1, req~cell-edit.new-note-form-skip-empty~1] どのノートにも無い deadline を聞いて 2026-10-05 → `deadline: 2026-10-05`(囲まない)。
     let tmp = vault("wb18nnd");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"deadline\"]\n"));
     let text = new_note_with_answer(&tmp, &mut a, "締め切り", "2026-10-05");
@@ -161,7 +161,7 @@ fn test_wb_18_untyped_new_note_date_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_new_note_not_only_date_quoted() {
-    // [WB-18][WB-7] 同じ列に `2026-10-05 ごろ`(日付の形だけでない)→ 囲む。
+    // [utest -> req~write-back.date-quoting-untyped~1, req~write-back.quoting-keep-style~1, req~write-back.quoting-type-safe~1] 同じ列に `2026-10-05 ごろ`(日付の形だけでない)→ 囲む。
     let tmp = vault("wb18nnq");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"deadline\"]\n"));
     let text = new_note_with_answer(&tmp, &mut a, "締め切り", "2026-10-05 ごろ");
@@ -170,7 +170,7 @@ fn test_wb_18_untyped_new_note_not_only_date_quoted() {
 
 #[test]
 fn test_wb_18_untyped_new_note_datetime_unquoted() {
-    // [WB-18][CE-26] 日時の形 `2026-10-05T09:30` → `deadline: 2026-10-05T09:30`(囲まない)。
+    // [utest -> req~write-back.date-quoting-untyped~1, req~cell-edit.new-note-form-typed~1, req~cell-edit.new-note-form-skip-empty~1, req~cell-edit.new-note-form-bad-name~1] 日時の形 `2026-10-05T09:30` → `deadline: 2026-10-05T09:30`(囲まない)。
     let tmp = vault("wb18nnt");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"deadline\"]\n"));
     let text = new_note_with_answer(&tmp, &mut a, "締め切り", "2026-10-05T09:30");
@@ -182,7 +182,7 @@ fn test_wb_18_untyped_new_note_datetime_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_new_note_typed_text_quoted() {
-    // [WB-18][CE-2][WB-7] 型の設定で text と宣言した列は、どのノートにも値が無くても型が決まっている
+    // [utest -> req~write-back.date-quoting-untyped~1, req~cell-edit.column-type-order~1, req~write-back.quoting-type-safe~1] 型の設定で text と宣言した列は、どのノートにも値が無くても型が決まっている
     // → 2026-10-05 は囲む。
     let tmp = vault("wb18nntx");
     types_json(&tmp, r#"{"types": {"deadline": "text"}}"#);
@@ -195,7 +195,7 @@ fn test_wb_18_untyped_new_note_typed_text_quoted() {
 
 #[test]
 fn test_wb_18_untyped_cell_empty_values_only_unquoted() {
-    // [WB-18] あるノートに `deadline:`(空)だけがある列 → 型が決まらない。
+    // [utest -> req~write-back.date-quoting-plain~1, req~write-back.date-quoting-untyped~1] あるノートに `deadline:`(空)だけがある列 → 型が決まらない。
     // 空のセルと、キーの無いノートのセルに 2026-10-05 → 保存すると囲まない。
     let tmp = Tmp::new("wb18cell");
     tmp.write("a.md", "---\ntitle: 会議\ndeadline:\n---\n");
@@ -222,7 +222,7 @@ fn test_wb_18_untyped_cell_empty_values_only_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_cell_base_order_only_unquoted() {
-    // [WB-18] `.base` の order にあるが、どのノートにも無いキー deadline → 型が決まらない。
+    // [utest -> req~write-back.date-quoting-untyped~1] `.base` の order にあるが、どのノートにも無いキー deadline → 型が決まらない。
     // セルに 2026-10-05 → 保存すると `deadline: 2026-10-05` の1行が足される(囲まない)。
     let tmp = vault("wb18base");
     let base = "views:\n  - type: table\n    name: 表\n    order: [title, deadline]\n";
@@ -241,7 +241,7 @@ fn test_wb_18_untyped_cell_base_order_only_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_cell_text_column_quoted() {
-    // [WB-18][WB-7] あるノートに `memo: hello` → memo はテキストと決まった列。
+    // [utest -> req~write-back.date-quoting-text-column~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-type-safe~1] あるノートに `memo: hello` → memo はテキストと決まった列。
     // 2026-10-05 を書く → 今どおり囲む(値のあるセルも、キーの無いノートのセルも)。
     let tmp = Tmp::new("wb18text");
     tmp.write("a.md", "---\ntitle: 会議\nmemo: hello\n---\n");
@@ -261,7 +261,7 @@ fn test_wb_18_untyped_cell_text_column_quoted() {
 
 #[test]
 fn test_wb_18_untyped_cell_typed_text_quoted() {
-    // [WB-18][CE-2][WB-7] 型の設定で deadline を text と宣言。ノートには `deadline:`(空)だけ
+    // [utest -> req~write-back.date-quoting-untyped~1, req~write-back.date-quoting-text-column~1, req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1, req~write-back.quoting-type-safe~1] 型の設定で deadline を text と宣言。ノートには `deadline:`(空)だけ
     // → 型は決まっている(text)ので、2026-10-05 は囲む。
     let tmp = Tmp::new("wb18ttx");
     types_json(&tmp, r#"{"types": {"deadline": "text"}}"#);

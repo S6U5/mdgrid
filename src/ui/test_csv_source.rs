@@ -1,4 +1,4 @@
-//! [SC-15][SC-16] CSV・TSV を表として開き、直した値だけを書き戻す。specs/_changes/2026-10-10-csv-source.md。
+//! [scope.csv-open][scope.csv-write-back] CSV・TSV を表として開き、直した値だけを書き戻す。specs/_history/decidespec/_changes/2026-10-10-csv-source.md。
 
 use super::app::App;
 use super::keymap::Mode;
@@ -33,7 +33,7 @@ fn disk(t: &Tmp, file: &str) -> String {
 
 #[test]
 fn test_sc_15_open_csv_as_table() {
-    // [SC-15] 1行目が列、2行目からが行。値は文字のまま(先頭の 0 は消さない)、数は数。列の数が合わない行は理由つきで読むだけ。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~1, req~scope.csv-open-ragged-rows~1] 1行目が列、2行目からが行。値は文字のまま(先頭の 0 は消さない)、数は数。列の数が合わない行は理由つきで読むだけ。
     let (_t, a) = open("sc15", "台帳.csv", LEDGER);
     assert_eq!(a.src.columns(), ["name", "qty", "code", "note"]);
     assert_eq!(a.rows.len(), 3);
@@ -53,7 +53,7 @@ fn test_sc_15_open_csv_as_table() {
 
 #[test]
 fn test_sc_15_unreadable_csv_reason() {
-    // [SC-15] UTF-8 でない・空のファイルは開かず理由。
+    // [utest -> req~scope.csv-open-unreadable~1] UTF-8 でない・空のファイルは開かず理由。
     let t = Tmp::new("sc15bad");
     std::fs::write(t.notes().join("sjis.csv"), b"name\n\x82\xa0\n").unwrap();
     t.write("empty.csv", "");
@@ -64,7 +64,7 @@ fn test_sc_15_unreadable_csv_reason() {
 
 #[test]
 fn test_sc_16_save_only_edited_cells() {
-    // [SC-16] 2つの行の値を直して保存 → その値のバイトだけが変わり、BOM・CRLF・引用符・ほかの行はそのまま。
+    // [utest -> req~scope.csv-write-back-bytes~1] 2つの行の値を直して保存 → その値のバイトだけが変わり、BOM・CRLF・引用符・ほかの行はそのまま。
     let (t, mut a) = open("sc16", "台帳.csv", LEDGER);
     let apple = row_of(&a, "りんご");
     let orange = row_of(&a, "みかん");
@@ -94,7 +94,7 @@ fn test_sc_16_save_only_edited_cells() {
 
 #[test]
 fn test_sc_16_external_change_refused() {
-    // [SC-16][WB-4] 開いたあとに外でファイルが変わったら、書かずに止める。
+    // [utest -> req~scope.csv-write-back-conflict~1, req~write-back.conflict-stop~1] 開いたあとに外でファイルが変わったら、書かずに止める。
     let (t, mut a) = open("sc16ext", "a.tsv", "name\tqty\nx\t1\n");
     edit_cell(&mut a, 0, "qty", "2");
     let p = t.notes().join("a.tsv");
@@ -121,7 +121,7 @@ fn test_sc_16_external_change_refused() {
 
 #[test]
 fn test_sc_16_external_change_stops_whole_file() {
-    // [SC-16][WB-16] ためたまま外でファイルが変わる → 保存は止まり、ファイルの見出しに印。d で2行の直しをまとめて捨てる。
+    // [utest -> req~scope.csv-write-back-bytes~1, req~write-back.external-save-choice~1] ためたまま外でファイルが変わる → 保存は止まり、ファイルの見出しに印。d で2行の直しをまとめて捨てる。
     let (t, mut a) = open("sc16stop", "a.csv", "name,qty\nx,1\ny,2\n");
     edit_cell(&mut a, 0, "qty", "5");
     edit_cell(&mut a, 1, "qty", "6");

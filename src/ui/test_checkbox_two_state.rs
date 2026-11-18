@@ -1,5 +1,5 @@
-//! [CE-4] チェックボックスの Enter は真と偽の切り替え。空かキーの無いノートは真に。空にするのは BS・Delete だけ。
-//! specs/_changes/2026-10-06-checkbox-two-state.md(決定 specs/_decisions/2026-10-06-checkbox-two-state.md)。
+//! [cell-edit.checkbox] チェックボックスの Enter は真と偽の切り替え。空かキーの無いノートは真に。空にするのは BS・Delete だけ。
+//! specs/_history/decidespec/_changes/2026-10-06-checkbox-two-state.md(決定 specs/_history/decidespec/_decisions/2026-10-06-checkbox-two-state.md)。
 
 use super::keymap::Mode;
 use super::test_screen::{col_named, ctrl, make, press, read};
@@ -30,6 +30,7 @@ fn toggle(a: &mut App) {
     assert_eq!(a.mode, Mode::Table);
 }
 
+// [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1]
 #[test]
 fn test_ce_4_two_state_false_and_true() {
     let (_t, mut a) = make("ce4two", NOTES);
@@ -45,6 +46,7 @@ fn test_ce_4_two_state_false_and_true() {
     assert_eq!(at(&a, "b.md"), None);
 }
 
+// [utest -> req~cell-edit.checkbox-clear~1]
 #[test]
 fn test_ce_4_two_state_keyless_and_empty() {
     let (t, mut a) = make("ce4twoe", NOTES);

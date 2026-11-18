@@ -1,5 +1,5 @@
 //! その場の操作の一覧(SR-24)・前置きのキーの案内(SR-25)・その英語の画面(SR-23)の、照合で見つけた
-//! 試験の欠けを埋める試験。記録: specs/_changes/2026-10-05-action-menu.md のタスク #2。
+//! 試験の欠けを埋める試験。記録: specs/_history/decidespec/_changes/2026-10-05-action-menu.md のタスク #2。
 //! 道具は test_action_menu のもの(窓の枠の内側の桁だけを一覧の行として読む)。
 
 use super::keymap::{self, Action, Mode};
@@ -106,14 +106,14 @@ fn check_view_section(lang: &str, notes: &[(&str, &str)]) {
 
 #[test]
 fn test_sr_24_gaps_view_section_ja() {
-    // [SR-24] status のセルで `x` → 節「ビューとファイル」の見出しがあり、その下に
+    // [utest -> req~screen.action-menu-sections~1] status のセルで `x` → 節「ビューとファイル」の見出しがあり、その下に
     // 新しいノート・ビューの設定・.base に書き出す・保存が並ぶ。
     check_view_section("ja", NOTES);
 }
 
 #[test]
 fn test_sr_24_gaps_view_section_en() {
-    // [SR-24] [SR-23] 英語の画面では節の見出しが "View and file" で、その下に New note・View settings・
+    // [utest -> req~screen.action-menu-hide-unavailable~1, req~screen.locales-two-languages~1] 英語の画面では節の見出しが "View and file" で、その下に New note・View settings・
     // Export to .base・Save が並ぶ。
     let _g = scoped(Lang::En);
     assert_eq!(Msg::MenuSecView.text(), "View and file");
@@ -124,7 +124,7 @@ fn test_sr_24_gaps_view_section_en() {
 
 #[test]
 fn test_sr_24_gaps_readonly_launch_hides_save_new_export() {
-    // [SR-24] [WB-15] 読むだけの起動(--readonly)で `x` → 一覧に保存・新しいノート・.base に書き出すが無い
+    // [utest -> req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~cli.readonly~1] 読むだけの起動(--readonly)で `x` → 一覧に保存・新しいノート・.base に書き出すが無い
     // (ビューの設定は残る)。対照: 読むだけでない起動では3つともある。
     let [new_note, view, export, save] = view_items();
 
@@ -157,7 +157,7 @@ fn test_sr_24_gaps_readonly_launch_hides_save_new_export() {
 
 #[test]
 fn test_sr_25_gaps_menu_ignores_prefix_without_menu_item() {
-    // [SR-25] [SR-24] 設定で `[keys.table] "z z" = "bottom"` を足す。表の上では `z` で帯に「z →」の案内が出る。
+    // [utest -> req~screen.prefix-hints-menu~1, req~screen.action-menu-open-key~1, req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~screen.action-menu-enter~1, req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 設定で `[keys.table] "z z" = "bottom"` を足す。表の上では `z` で帯に「z →」の案内が出る。
     // 一覧の上では、末尾の行は一覧の項目に無いので `z` は前置きとして受けない: 一覧のまま、帯に「z →」が出ず、
     // `z` `z` で末尾の行へ動かない。
     let toml = "[keys.table]\n\"z z\" = \"bottom\"\n";
@@ -201,7 +201,7 @@ fn test_sr_25_gaps_menu_ignores_prefix_without_menu_item() {
 
 #[test]
 fn test_sr_25_gaps_english_prefix_hint() {
-    // [SR-25] [SR-23] 英語の画面で、表で `g` → 下の帯が「g →」と英語の表示名 "First row" を含む。
+    // [utest -> req~screen.prefix-hints-show~1, req~screen.prefix-hints-esc-only~1, req~screen.locales-two-languages~1] 英語の画面で、表で `g` → 下の帯が「g →」と英語の表示名 "First row" を含む。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr25gapsen", EN_NOTES);
     ch(&mut a, 'g');
@@ -220,7 +220,7 @@ fn test_sr_25_gaps_english_prefix_hint() {
 
 #[test]
 fn test_sr_24_gaps_resize_low_closes_menu() {
-    // [SR-24] 一覧を開いたまま端末を低くして(80×8)窓が入らなくなる → 一覧を閉じて表に戻り、開くときと
+    // [utest -> req~screen.action-menu-too-low~1] 一覧を開いたまま端末を低くして(80×8)窓が入らなくなる → 一覧を閉じて表に戻り、開くときと
     // 同じ理由をメッセージ行に出す。そのあとのキー(`j`)は表のキーとして効く(見えない一覧に取られない)。
     let (_t, mut a) = make("sr24gapslow", NOTES);
     a.row = 0;
@@ -243,7 +243,7 @@ fn test_sr_24_gaps_resize_low_closes_menu() {
 
 #[test]
 fn test_sr_24_gaps_resize_still_fits_keeps_menu() {
-    // [SR-24] 対照: 一覧を開いたまま端末の大きさが変わっても、窓が入るうち(100×50)は一覧のまま。
+    // [utest -> req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 対照: 一覧を開いたまま端末の大きさが変わっても、窓が入るうち(100×50)は一覧のまま。
     let (_t, mut a) = make("sr24gapsfit", NOTES);
     col_named(&mut a, "status");
     ch(&mut a, 'x');

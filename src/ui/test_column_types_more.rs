@@ -1,6 +1,6 @@
 //! 列の型(CE-35)の照合の指摘の試験: セルの入力が設定の型に従う、「自動」が広い範囲の型を外す、読むだけの起動でも
 //! パレットから開く、計算の列の見出しの印は並べ替えのまま、設定で文字でない型にした列は札にしない。
-//! 記録: specs/_changes/2026-10-13-column-types.md(タスク #5)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-13-column-types.md(タスク #5)。
 
 use super::startup::Startup;
 use super::test_screen::{ch, press, typing, Tmp};
@@ -43,7 +43,7 @@ fn col(a: &mut App, name: &str) {
 
 #[test]
 fn test_ce_35_input_follows_set_type() {
-    // [CE-35] `[types] flag = "checkbox"` → キーの無い行で Enter は切り替え(チェックの入力)になる。
+    // [utest -> req~cell-edit.type-config-types~1, req~cell-edit.type-config-dialog-write~1] `[types] flag = "checkbox"` → キーの無い行で Enter は切り替え(チェックの入力)になる。
     let (_t, mut a) = boot("ce35m_input", "[types]\nflag = \"checkbox\"\n", false);
     col(&mut a, "flag");
     a.row = a.rows.iter().position(|r| r.0.ends_with("b.md")).unwrap();
@@ -54,7 +54,7 @@ fn test_ce_35_input_follows_set_type() {
 
 #[test]
 fn test_ce_35_auto_undoes_wider_type() {
-    // [CE-35] 全体の設定で due = "number" のとき、型の窓で「自動」→ 表に due = "auto" を書き、推定(日付)に戻る。
+    // [utest -> req~cell-edit.type-config-auto~1] 全体の設定で due = "number" のとき、型の窓で「自動」→ 表に due = "auto" を書き、推定(日付)に戻る。
     let (t, mut a) = boot("ce35m_auto", "[types]\ndue = \"number\"\n", false);
     col(&mut a, "due");
     assert_eq!(a.kind_of("due"), Kind::Number);
@@ -70,7 +70,7 @@ fn test_ce_35_auto_undoes_wider_type() {
 
 #[test]
 fn test_ce_35_palette_in_readonly() {
-    // [CE-35] 読むだけの起動でも、パレットの column_type で型の窓が開く(ノートは書かない)。
+    // [utest -> req~cell-edit.type-config-notes-untouched~1] 読むだけの起動でも、パレットの column_type で型の窓が開く(ノートは書かない)。
     let (_t, mut a) = boot("ce35m_ro", "", true);
     col(&mut a, "due");
     ch(&mut a, ':');
@@ -81,7 +81,7 @@ fn test_ce_35_palette_in_readonly() {
 
 #[test]
 fn test_ce_35_set_type_not_chips() {
-    // [CE-35][SR-35] 札になる列(st)を number にすると札にしない。
+    // [utest -> req~cell-edit.type-config-types~1, req~cell-edit.type-config-auto~1, req~cell-edit.type-config-unknown~1, req~screen.rich-cells-value-color~1, req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] 札になる列(st)を number にすると札にしない。
     let (_t, mut a) = boot("ce35m_chip", "", false);
     assert!(a.is_select("st"), "前提: st は札の列");
     a.set_column_type("st", Some(Kind::Number));

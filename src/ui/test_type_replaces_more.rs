@@ -1,5 +1,5 @@
-//! [CE-5][CE-7] 日付と数の入力でも、開いた直後に打つと今の値を置き換える
-//! (決定 specs/_decisions/2026-10-06-type-replaces-date-number.md)。
+//! [cell-edit.date-input][cell-edit.number] 日付と数の入力でも、開いた直後に打つと今の値を置き換える
+//! (決定 specs/_history/decidespec/_decisions/2026-10-06-type-replaces-date-number.md)。
 
 use super::test_screen::{col_named, make, press, typing};
 use super::*;
@@ -10,6 +10,7 @@ fn pending(a: &App, col: &str) -> Option<NewValue> {
     a.changes.pending(&a.rows[0], col).cloned()
 }
 
+// [utest -> req~cell-edit.date-input-type-replaces~1]
 #[test]
 fn test_ce_5_type_replaces_plus_days() {
     let (_t, mut a) = make(
@@ -32,6 +33,7 @@ fn test_ce_5_type_replaces_plus_days() {
     );
 }
 
+// [utest -> req~cell-edit.date-input-type-replaces~1]
 #[test]
 fn test_ce_5_type_replaces_continues_after_backspace() {
     let (_t, mut a) = make("ce5_left", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
@@ -43,6 +45,7 @@ fn test_ce_5_type_replaces_continues_after_backspace() {
     assert_eq!(a.input.as_ref().unwrap().text, "2026-10-06");
 }
 
+// [utest -> req~cell-edit.number-type-replaces~1]
 #[test]
 fn test_ce_7_type_replaces_number() {
     let (_t, mut a) = make(

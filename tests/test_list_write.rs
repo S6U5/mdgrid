@@ -1,6 +1,6 @@
 //! リストの値の付け外し(タスク 1: 書き戻しと候補の核)の受け入れテスト。
 //! CE-16・CE-18・CE-19・CE-8・CE-9・WB-1・WB-6・WB-7・WB-17。
-//! 仕様: specs/cell-edit/spec.md、specs/write-back/spec.md。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md、specs/_history/decidespec/write-back/spec.md。
 //! 形: docs/design.md「リストの値の付け外し(CE-16〜CE-19)」(NewValue::List・apply・
 //! Source::list_candidates・Cell.lock・same_value)。
 //!
@@ -145,7 +145,7 @@ fn cands(items: &[(&str, usize)]) -> Vec<(String, usize)> {
 
 #[test]
 fn test_ce_18_flow_list_add_keeps_form() {
-    // [CE-18] `tags: [a, b]` に c を足す → `tags: [a, b, c]`。他のバイトは同じ。
+    // [utest -> req~cell-edit.list-layout~1] `tags: [a, b]` に c を足す → `tags: [a, b, c]`。他のバイトは同じ。
     let before = "---\ntitle: t\ntags: [a, b]\nstatus: draft\n---\nbody\n";
     let after = apply_list(before, "tags", &["a", "b", "c"]);
     assert_eq!(
@@ -157,7 +157,7 @@ fn test_ce_18_flow_list_add_keeps_form() {
 
 #[test]
 fn test_ce_18_flow_list_remove_and_reorder() {
-    // [CE-18] 外す・並べ替える → 1行のフローのまま、区切りは ", "。
+    // [utest -> req~cell-edit.list-layout~1] 外す・並べ替える → 1行のフローのまま、区切りは ", "。
     let before = "---\ntags: [a, b, c]\nstatus: draft\n---\nbody\n";
     assert_eq!(
         apply_list(before, "tags", &["a", "c"]),
@@ -171,7 +171,7 @@ fn test_ce_18_flow_list_remove_and_reorder() {
 
 #[test]
 fn test_ce_18_flow_list_keeps_trailing_comment_and_crlf() {
-    // [CE-18] [WB-1] 行末のコメントと CRLF は残る。変わるのは値の範囲だけ。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-value~1, req~write-back.byte-range-null~1, req~write-back.byte-range-delete-key~1] 行末のコメントと CRLF は残る。変わるのは値の範囲だけ。
     let before = "---\r\ntags: [a, b]  # memo\r\nstatus: draft\r\n---\r\nbody\r\n";
     assert_eq!(
         apply_list(before, "tags", &["a", "b", "c"]),
@@ -181,7 +181,7 @@ fn test_ce_18_flow_list_keeps_trailing_comment_and_crlf() {
 
 #[test]
 fn test_ce_18_empty_flow_list_stays_flow() {
-    // [CE-18] 1行のフローの空のリスト `[]` に足す → 元の書き方(1行のフロー)を保つ。
+    // [utest -> req~cell-edit.list-layout~1] 1行のフローの空のリスト `[]` に足す → 元の書き方(1行のフロー)を保つ。
     let before = "---\ntags: []\nstatus: draft\n---\n";
     assert_eq!(
         apply_list(before, "tags", &["a"]),
@@ -191,7 +191,7 @@ fn test_ce_18_empty_flow_list_stays_flow() {
 
 #[test]
 fn test_ce_18_string_onto_flow_list_is_not_editable() {
-    // [CE-18] リストに文字列(NewValue::Str)を当てると書き方が変わるので、書かない。
+    // [utest -> req~cell-edit.list-layout~1] リストに文字列(NewValue::Str)を当てると書き方が変わるので、書かない。
     let src = b"---\ntags: [a, b]\n---\n";
     assert!(matches!(
         apply(src, &[edit("tags", NewValue::Str("x".into()))]),
@@ -206,7 +206,7 @@ const BLOCK0: &str = "---\ntitle: t\ntags:\n- a\n- b\nstatus: draft\n---\nbody\n
 
 #[test]
 fn test_ce_18_block_list_indent_2_add_remove_reorder() {
-    // [CE-18] 字下げ2の `- a` の縦のリスト: 足す・外す・並べ替える → 同じ字下げの行、ほかの行は1バイトも変わらない。
+    // [utest -> req~cell-edit.list-layout~1] 字下げ2の `- a` の縦のリスト: 足す・外す・並べ替える → 同じ字下げの行、ほかの行は1バイトも変わらない。
     let after = apply_list(BLOCK2, "tags", &["a", "b", "c"]);
     assert_eq!(
         after,
@@ -226,7 +226,7 @@ fn test_ce_18_block_list_indent_2_add_remove_reorder() {
 
 #[test]
 fn test_ce_18_block_list_indent_0_add_remove_reorder() {
-    // [CE-18] 字下げ0の `- a` の縦のリストも、字下げ0のまま。
+    // [utest -> req~cell-edit.list-layout~1] 字下げ0の `- a` の縦のリストも、字下げ0のまま。
     let after = apply_list(BLOCK0, "tags", &["a", "b", "c"]);
     assert_eq!(
         after,
@@ -246,7 +246,7 @@ fn test_ce_18_block_list_indent_0_add_remove_reorder() {
 
 #[test]
 fn test_ce_18_block_list_at_end_of_frontmatter() {
-    // [CE-18] 縦のリストがフロントマターの最後のキーでも、閉じの区切りと本文はそのまま。
+    // [utest -> req~cell-edit.list-layout~1] 縦のリストがフロントマターの最後のキーでも、閉じの区切りと本文はそのまま。
     let before = "---\nstatus: draft\ntags:\n  - a\n---\nbody\n";
     assert_eq!(
         apply_list(before, "tags", &["a", "b"]),
@@ -256,7 +256,7 @@ fn test_ce_18_block_list_at_end_of_frontmatter() {
 
 #[test]
 fn test_ce_18_block_list_keeps_crlf() {
-    // [CE-18] [WB-1] CRLF のノート: 足した行も CRLF、ほかの行は1バイトも変わらない。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-value~1, req~write-back.byte-range-added-newline~1] CRLF のノート: 足した行も CRLF、ほかの行は1バイトも変わらない。
     let before = "---\r\ntitle: t\r\ntags:\r\n  - a\r\n  - b\r\nstatus: draft\r\n---\r\nbody\r\n";
     assert_eq!(
         apply_list(before, "tags", &["a", "b", "c"]),
@@ -270,7 +270,7 @@ fn test_ce_18_block_list_keeps_crlf() {
 
 #[test]
 fn test_ce_18_block_list_with_quoted_elements_reads_back() {
-    // [CE-18] [WB-7] 引用符つきの要素の縦のリストも書ける。読み直すと意図した並び、ほかのキーは同じ。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.quoting-type-safe~1] 引用符つきの要素の縦のリストも書ける。読み直すと意図した並び、ほかのキーは同じ。
     let before = "---\ntags:\n  - \"a\"\n  - 'b'\nstatus: draft\n---\nbody\n";
     let after = apply_list(before, "tags", &["a", "b", "c"]);
     assert_reads_back(before, &after, "tags", &["a", "b", "c"]);
@@ -282,7 +282,7 @@ fn test_ce_18_block_list_with_quoted_elements_reads_back() {
 
 #[test]
 fn test_ce_18_missing_key_adds_obsidian_block_form() {
-    // [CE-18] キーが無いノートに [a] → `tags:` と `  - a` の2行が閉じの区切りの前に足される。
+    // [utest -> req~cell-edit.list-layout~1] キーが無いノートに [a] → `tags:` と `  - a` の2行が閉じの区切りの前に足される。
     let before = "---\ntitle: t\nstatus: draft\n---\nbody\n";
     let after = apply_list(before, "tags", &["a"]);
     assert_eq!(
@@ -300,7 +300,7 @@ fn test_ce_18_missing_key_adds_obsidian_block_form() {
 
 #[test]
 fn test_ce_18_missing_key_crlf() {
-    // [CE-18] [WB-1] 足す行の改行コードはファイルに合わせる。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.byte-range-added-newline~1] 足す行の改行コードはファイルに合わせる。
     let before = "---\r\ntitle: t\r\n---\r\nbody\r\n";
     assert_eq!(
         apply_list(before, "tags", &["a"]),
@@ -310,7 +310,7 @@ fn test_ce_18_missing_key_crlf() {
 
 #[test]
 fn test_ce_18_null_and_empty_string_become_block_form() {
-    // [CE-18] `tags:`(Null)・`tags: ""` のノートに [a] → `tags:` の次の行から `  - a`。
+    // [utest -> req~cell-edit.list-layout~1] `tags:`(Null)・`tags: ""` のノートに [a] → `tags:` の次の行から `  - a`。
     for before in [
         "---\ntags:\ntitle: t\n---\nbody\n",
         "---\ntags: \"\"\ntitle: t\n---\nbody\n",
@@ -333,7 +333,7 @@ fn test_ce_18_null_and_empty_string_become_block_form() {
 
 #[test]
 fn test_ce_19_remove_all_keeps_key() {
-    // [CE-19] [CE-9] 全部外す(空の Vec)→ 縦のリストも1行のフローも `tags:` になり、キーは残る。
+    // [utest -> req~cell-edit.list-candidates-empty~1, req~cell-edit.empty-is-null~1] 全部外す(空の Vec)→ 縦のリストも1行のフローも `tags:` になり、キーは残る。
     assert_eq!(
         apply_list(BLOCK2, "tags", &[]),
         "---\ntitle: t\ntags:\nstatus: draft\n---\nbody\n"
@@ -365,7 +365,7 @@ fn test_ce_19_remove_all_keeps_key() {
 
 #[test]
 fn test_ce_19_risky_elements_are_quoted() {
-    // [CE-19] [WB-7] `no`・`123`・`a: b`・`#x` のような要素はクオートされ、読み直すと文字列。
+    // [utest -> req~cell-edit.list-candidates-quoting~1, req~write-back.quoting-type-safe~1] `no`・`123`・`a: b`・`#x` のような要素はクオートされ、読み直すと文字列。
     let risky = [
         "no", "yes", "on", "123", "1.5", "a: b", "#x", "x #y", "true", "null", "[z]",
     ];
@@ -389,7 +389,7 @@ fn test_ce_19_risky_elements_are_quoted() {
 
 #[test]
 fn test_ce_19_newline_in_element_is_rejected() {
-    // [CE-19] [WB-7] 改行を含む要素は受け付けない。
+    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~write-back.quoting-no-newline~1] 改行を含む要素は受け付けない。
     let r = apply(
         b"---\ntags: [a]\n---\n",
         &[edit("tags", list(&["a", "x\ny"]))],
@@ -399,7 +399,7 @@ fn test_ce_19_newline_in_element_is_rejected() {
 
 #[test]
 fn test_ce_19_ce_8_list_forms_are_not_editable() {
-    // [CE-19] [CE-8] 複数行のフロー・アンカーや別名・入れ子の要素・要素の中のコメントのリストは書かない。
+    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~1] 複数行のフロー・アンカーや別名・入れ子の要素・要素の中のコメントのリストは書かない。
     let cases = [
         "---\ntags: [a,\n  b]\n---\n",
         "---\ntags: &t [a, b]\n---\n",
@@ -431,7 +431,7 @@ fn test_ce_19_ce_8_list_forms_are_not_editable() {
 
 #[test]
 fn test_ce_18_save_writes_same_form_and_passes_reread_check() {
-    // [CE-18] [WB-6] save でも apply と同じ書き方で書かれ、読み直しの検査を通る。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.verify-before-replace~1] save でも apply と同じ書き方で書かれ、読み直しの検査を通る。
     let dir = TempDir::new("list-save");
     let cases: Vec<(&str, &str, Vec<&str>, &str)> = vec![
         (
@@ -483,7 +483,7 @@ fn test_ce_18_save_writes_same_form_and_passes_reread_check() {
 
 #[test]
 fn test_ce_18_source_save_and_preview_write_list() {
-    // [CE-18] [WB-6] Source 越しの preview と save でも同じ書き方。保存のあと get はリストの値。
+    // [utest -> req~cell-edit.list-layout~1, req~write-back.verify-before-replace~1] Source 越しの preview と save でも同じ書き方。保存のあと get はリストの値。
     let dir = TempDir::new("list-source-save");
     let p = dir.write("a.md", BLOCK2.as_bytes());
     let mut md = open(dir.path());
@@ -512,7 +512,7 @@ fn test_ce_18_source_save_and_preview_write_list() {
 
 #[test]
 fn test_ce_16_list_candidates_counts_and_order() {
-    // [CE-16] [CE-19] 候補は要素と件数。件数の多い順、同じ件数は文字の順。
+    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-candidates-order~1] 候補は要素と件数。件数の多い順、同じ件数は文字の順。
     // tags は先頭の # を除く。渡したフォルダの外(根の下)のノートの要素も入る(BV-2)。
     let dir = TempDir::new("list-cands");
     std::fs::create_dir_all(dir.path().join(".obsidian")).unwrap();
@@ -546,7 +546,7 @@ fn test_ce_16_list_candidates_counts_and_order() {
 
 #[test]
 fn test_ce_16_list_candidates_follow_saved_values() {
-    // [CE-16] 保存で足した要素は、そのあとの候補に入る(候補は今ある要素)。
+    // [utest -> req~cell-edit.list-items-candidates~1] 保存で足した要素は、そのあとの候補に入る(候補は今ある要素)。
     let dir = TempDir::new("list-cands-save");
     dir.write("a.md", b"---\ntags: [x]\n---\n");
     dir.write("b.md", b"---\ntags: [x, y]\n---\n");
@@ -569,8 +569,8 @@ fn test_ce_16_list_candidates_follow_saved_values() {
 
 #[test]
 fn test_ce_16_writable_list_cells_have_no_lock() {
-    // [CE-16] リストの値のセルは、書ける形なら lock なし。
-    // [CE-8] 書けない形(複数行のフロー・アンカー・入れ子の要素)は理由つきで読むだけ。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-narrow~1] リストの値のセルは、書ける形なら lock なし。
+    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(複数行のフロー・アンカー・入れ子の要素)は理由つきで読むだけ。
     let dir = TempDir::new("list-lock");
     dir.write("flow.md", b"---\ntags: [a, b]\n---\n");
     dir.write("empty_flow.md", b"---\ntags: []\n---\n");
@@ -620,7 +620,7 @@ fn test_ce_16_writable_list_cells_have_no_lock() {
 
 #[test]
 fn test_wb_17_list_set_back_to_original_is_not_pending() {
-    // [WB-17] [CE-16] リストを直してから元と同じ並びに戻す → ためない。今と同じ並びを入れる → ためない。
+    // [utest -> req~write-back.revert-drops-pending~1, req~cell-edit.list-items-toggle~1] リストを直してから元と同じ並びに戻す → ためない。今と同じ並びを入れる → ためない。
     // 並びが違えば別の値としてためる。
     let note = "---\ntitle: t\ntags:\n  - x\n  - y\n---\nbody\n";
     let dir = TempDir::new("list-wb17");
@@ -651,7 +651,7 @@ fn test_wb_17_list_set_back_to_original_is_not_pending() {
 
 #[test]
 fn test_wb_17_list_on_missing_or_null_is_pending() {
-    // [WB-17] キーが無い・Null のセルに空でないリスト → ためる。Null のセルに空のリスト → 書いても
+    // [utest -> req~write-back.revert-not-written~1] キーが無い・Null のセルに空でないリスト → ためる。Null のセルに空のリスト → 書いても
     // `tags:` のままなので、ためない扱いでも保存でバイトが変わらないことを確かめる。
     let dir = TempDir::new("list-wb17-null");
     let pm = dir.write("m.md", b"---\ntitle: t\n---\n");
@@ -672,7 +672,7 @@ fn test_wb_17_list_on_missing_or_null_is_pending() {
 
 #[test]
 fn test_wb_17_empty_list_on_missing_key_is_not_pending() {
-    // [WB-17] [CE-18] キーの無いセルに空の並びを set → `key:` を足さず、ためない(count 0)。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1, req~cell-edit.list-layout~1] キーの無いセルに空の並びを set → `key:` を足さず、ためない(count 0)。
     let dir = TempDir::new("list-wb17-missing-empty");
     let p = dir.write("m.md", b"---\ntitle: t\n---\n");
     let mut md = open(dir.path());

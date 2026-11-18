@@ -23,7 +23,7 @@ fn nord() -> Option<ThemeSpec> {
 
 #[test]
 fn test_ws_1_workspace_and_table_profiles() {
-    // [WS-1] ワークスペースと表の項目に表のプロファイルを書ける。アプリ全体の項目は警告して無視。
+    // [utest -> req~workspace.app-side-file~1] ワークスペースと表の項目に表のプロファイルを書ける。アプリ全体の項目は警告して無視。
     let text = "[[workspace]]\nname = \"P\"\n\n[workspace.look]\ntheme = \"nord\"\n\n[[workspace.table]]\nname = \"T\"\npath = \"/t\"\n\n[workspace.table.look]\ntheme = \"dracula\"\n\n[workspace.table.terminal]\ncolor = false\n";
     let (list, w) = parse(text);
     assert_eq!(w.len(), 1, "{w:?}");
@@ -44,7 +44,7 @@ fn test_ws_1_workspace_and_table_profiles() {
 
 #[test]
 fn test_ws_7_marker_profiles() {
-    // [WS-7] 印の最上位にワークスペースのプロファイル、[[table]] の [table.look] に表のもの。範囲の層になる。
+    // [utest -> req~workspace.marker-form~1] 印の最上位にワークスペースのプロファイル、[[table]] の [table.look] に表のもの。範囲の層になる。
     let root = tmp("marker");
     std::fs::create_dir_all(root.join("tasks")).unwrap();
     std::fs::create_dir_all(root.join("projects")).unwrap();
@@ -79,7 +79,7 @@ fn test_ws_7_marker_profiles() {
 
 #[test]
 fn test_sr_44_detected_scope_has_no_workspace_layer() {
-    // [SR-44] 検知した範囲にはワークスペースの範囲が無い。
+    // [utest -> req~screen.profile-scopes-workspace~1] 検知した範囲にはワークスペースの範囲が無い。
     let root = tmp("detect");
     std::fs::create_dir_all(root.join(".obsidian")).unwrap();
     std::fs::create_dir_all(root.join("tasks")).unwrap();
@@ -92,7 +92,7 @@ fn test_sr_44_detected_scope_has_no_workspace_layer() {
 
 #[test]
 fn test_sr_43_save_profile_keeps_comments() {
-    // [SR-43] 画面からワークスペースのプロファイルを書くと、その区画の見た目だけを置き換え、手で書いたコメント・
+    // [utest -> req~screen.look-section-save~1] 画面からワークスペースのプロファイルを書くと、その区画の見た目だけを置き換え、手で書いたコメント・
     // ほかのワークスペース・表はそのまま。外すと消える。
     let dir = tmp("save");
     let text = "# my workspaces\n[[workspace]]\nname = \"P\"\n# keep me\nuse = \"old\"\n\n[workspace.look]\ntheme = \"gruvbox\"\n\n[[workspace.table]]\n# table note\nname = \"T\"\npath = \"/t\"\n\n[[workspace]]\nname = \"Q\"\n";
@@ -124,7 +124,7 @@ fn test_sr_43_save_profile_keeps_comments() {
 
 #[test]
 fn test_ws_2_add_keeps_table_profile() {
-    // [WS-2][SR-44] 同じ表を足し直しても、手で書いた表のプロファイルは残る。
+    // [utest -> req~workspace.palette~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~1] 同じ表を足し直しても、手で書いた表のプロファイルは残る。
     let dir = tmp("add");
     // どの OS でも絶対パスになるよう、一時フォルダの下の表を指す。
     let table = dir.join("t");

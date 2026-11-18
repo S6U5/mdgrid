@@ -2,7 +2,7 @@
 
 #[test]
 fn test_nv_28_numbers_and_progress() {
-    // [NV-28] 設計(1)の下に画面(1.1。その下に部品 1.1.1・ボタン 1.1.2)と API(1.2)、メモ(2)。
+    // [utest -> req~navigation.wbs-leaf-label~1, req~navigation.wbs-parent-percent~1] 設計(1)の下に画面(1.1。その下に部品 1.1.1・ボタン 1.1.2)と API(1.2)、メモ(2)。
     // 進み具合: 部品 100・ボタン 0・API 50 → 画面 50%、設計 50%((100+0+50)/3)。
     let rows = ["設計", "画面", "部品", "ボタン", "API", "メモ"];
     let pairs = [

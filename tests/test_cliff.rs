@@ -1,5 +1,5 @@
 //! コミットの書き出しを git-cliff で CHANGELOG の節に写す設定(cliff.toml)の試験。
-//! 変更の記録: specs/_changes/2026-10-03-cliff.md(タスク 1)。関係する要件: なし(開発の道具)。
+//! 変更の記録: specs/_history/decidespec/_changes/2026-10-03-cliff.md(タスク 1)。関係する要件: なし(開発の道具)。
 //! git-cliff はこの環境に無いので、cliff.toml を TOML として読み、commit_parsers の
 //! message の頭(`^<書き出し>` に半角と全角のコロンの文字の組が続く形。公開リポから取り込む Dependabot の
 //! `Bump …` のように、コロンの無い題は `^<語> `(語と空白)の形)と `git log` の書き出しを突き合わせる。

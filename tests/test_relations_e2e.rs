@@ -6,6 +6,7 @@ mod pty;
 
 use pty::{TempDir, Tui};
 
+// [stest -> req~relations.follow-link-open~1]
 #[test]
 fn test_rel_4_open_target_switches_table_and_selects_row() {
     let home = TempDir::new("rel-e2e");

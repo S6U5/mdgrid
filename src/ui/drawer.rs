@@ -194,10 +194,7 @@ fn window(app: &App) -> Option<Geom> {
 impl App {
     /// WS-8: 引き出しを開く(関係マップからは表の画面に戻ってから)。並べるものが無い・端末が小さければ理由。
     pub(crate) fn open_drawer(&mut self) {
-        if self.relmap.is_some() {
-            self.relmap = None;
-        }
-        self.folder_tree = None;
+        self.leave_screens();
         if self.mode != Mode::Table {
             self.set_mode(Mode::Table);
         }

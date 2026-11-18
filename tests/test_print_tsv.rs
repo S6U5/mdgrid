@@ -1,8 +1,9 @@
-//! [CLI-5] `--print --format tsv`: 見出しの行つきのタブ区切り。セルの中のタブと改行は空白。
-//! specs/_changes/2026-10-07-export-table.md。
+//! [cli.print] `--print --format tsv`: 見出しの行つきのタブ区切り。セルの中のタブと改行は空白。
+//! specs/_history/decidespec/_changes/2026-10-07-export-table.md。
 
 use std::process::Command;
 
+// [stest -> req~cli.print-fail~1]
 #[test]
 fn test_cli_5_print_tsv() {
     let nanos = std::time::SystemTime::now()

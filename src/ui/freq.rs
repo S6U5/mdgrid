@@ -54,8 +54,23 @@ fn value_text(v: &Option<String>) -> String {
     sanitize(&shown_value(v.as_deref().unwrap_or("")))
 }
 
+/// 列 `col` の値の鍵 `value` の行だけにする同じ値の絞り込みの条件(NV-19 の数え方。リストの列は要素で絞り、
+/// ヘッダーを「含む」の形にする)。
+pub(crate) fn same_cond(app: &App, col: &str, value: String) -> Same {
+    let list = app
+        .rows
+        .iter()
+        .any(|r| matches!(app.setting_value(r, col), Some(Value::List(_))));
+    Same {
+        col: col.to_string(),
+        value,
+        by_keys: true,
+        list,
+    }
+}
+
 /// 項目の見せ方(REL-2): リンクはセルと同じに行き先の名前(その値を持つ最初の行から解く)、ほかは値のまま。
-fn labels(app: &App, col: &str, items: &[(Option<String>, usize)]) -> Vec<String> {
+pub(crate) fn labels(app: &App, col: &str, items: &[(Option<String>, usize)]) -> Vec<String> {
     let mut first: HashMap<String, RowId> = HashMap::new();
     for r in &app.rows {
         if let Some(v) = app.setting_value(r, col) {
@@ -165,23 +180,22 @@ impl App {
             return;
         };
         let v = key.clone().unwrap_or_default();
-        let label = format!("{} = {}", self.title(&f.col), shown_value(&v));
-        // リストの列か(ヘッダーを「含む」の形にする)。
-        let list = self
-            .rows
-            .iter()
-            .any(|r| matches!(self.setting_value(r, &f.col), Some(Value::List(_))));
-        let cond = Same {
-            col: f.col,
-            value: v,
-            by_keys: true,
-            list,
-        };
         // 今の同じ値の絞り込みに重ねる(数えた行 = 今の行なので、件数と絞ったあとの行の数が合う)。
-        if !self.same.contains(&cond) {
-            self.same.push(cond);
+        self.push_same(vec![(f.col, v)]);
+    }
+
+    /// 値の鍵 `(列, 値)` の行だけに絞る条件を、今の同じ値の絞り込みに重ねて知らせる(NV-9 の頻度表と CH-8 の
+    /// グラフの `Enter`)。値は NV-19 の数え方の鍵で、空の文字は値の無い行。リストの列は要素で絞る。
+    pub(crate) fn push_same(&mut self, conds: Vec<(String, String)>) {
+        let mut labels = Vec::new();
+        for (col, v) in conds {
+            labels.push(format!("{} = {}", self.title(&col), shown_value(&v)));
+            let cond = same_cond(self, &col, v);
+            if !self.same.contains(&cond) {
+                self.same.push(cond);
+            }
         }
-        self.message = Some(Msg::SameFilterOn.fill(&[&label]));
+        self.message = Some(Msg::SameFilterOn.fill(&[&labels.join(" · ")]));
         self.relayout();
     }
 

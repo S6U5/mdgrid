@@ -36,6 +36,30 @@ Write `tree = { path = "folder" }` on the table in the workspace file (`.mdgrid/
 
 [The `tree` setting](../../config.md), [Create a ledger from a starter](tasks.md#create-a-ledger-from-a-starter)
 
+## Gantt
+
+![The gantt screen](images/gantt.svg)
+
+`C` turns the rows of the current view into bars on a time axis. The start and end columns come from `gantt = { start = "start", end = "due" }` in the workspace marker, or, without a setting, are inferred from date columns named like `start` and `due`. With parent/child rows and WBS in the view settings, the order, numbers and progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month, `t` goes to today. The gantt screen is there from 0.4.0.
+
+The `gantt` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
+
+## Kanban
+
+![The kanban screen](images/kanban.svg)
+
+`B` lays out the rows of the current view as cards in lanes, one lane per status. The lanes follow the allowed values of the column (`[rules.status] values`), so todo, doing, waiting and done line up in that order, and a status with no cards still has its empty lane to move a card into. `H` and `L` move the selected card to the next lane and change its status; like an edit in the table, the change waits as unsaved until you save. The column comes from `kanban = { column = "status" }` in the workspace marker, or is inferred from a column named like `status`. The kanban screen is there from 0.4.0.
+
+The `kanban` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
+
+## Chart
+
+![The chart screen](images/chart.svg)
+
+`P` counts the rows of the current view and draws a chart: tasks per status, estimates summed per owner, due dates per month, at a glance and without counting the table. There are five kinds, bar, stacked bar, line, scatter and heatmap; `Tab` switches between them, `x` picks the column to split by, `y` the value (a count or the sum of a number column) and `b` the breakdown column. Splitting by a number column gives counts per range (a histogram), and `%` on a stacked bar shows percentages. `Enter` on a bar narrows the table to the rows with that value. Charts you look at often can go in the workspace marker as `chart = { kind = "line", x = "due", unit = "month" }`, and with several of them `[` and `]` move between them; without a setting the screen guesses from columns such as status. The chart screen is there from 0.4.0.
+
+The `chart` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
+
 ## Parent/child indent and WBS
 
 If notes carry `parent: "[[Parent]]"`, the parent/child section of the view settings indents children under their parent. `Z` folds and opens. Turn on WBS in the same section and rows get `1.2.1` numbers and a progress figure from the status column (a parent shows the average of its descendants). The sample notes have no parents, so there is no screen here; the [release recording](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) shows it moving.

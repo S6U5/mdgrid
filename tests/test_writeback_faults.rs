@@ -1,5 +1,5 @@
 //! タスク 16 の受け入れテスト(失敗を仕込む: WB-6・WB-8)。
-//! 仕様: specs/write-back/spec.md の WB-6・WB-8。
+//! 仕様: specs/_history/decidespec/write-back/spec.md の WB-6・WB-8。
 //! 形: docs/design.md の「核の公開のインターフェース」の `Faults` と `save_with`。
 
 use mdgrid::frontmatter::{parse, Value};
@@ -89,7 +89,7 @@ fn only_note() -> Vec<String> {
 
 #[test]
 fn wb_8_save_with_default_faults_writes_like_save() {
-    // [WB-8] Faults::default() の save_with は save と同じく書け、一時ファイルを残さない。
+    // [utest -> req~write-back.atomic-replace-temp~1] Faults::default() の save_with は save と同じく書け、一時ファイルを残さない。
     let dir = TempDir::new("faults-default");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -117,7 +117,7 @@ fn wb_8_save_with_default_faults_writes_like_save() {
 
 #[test]
 fn wb_8_save_with_default_faults_returns_usable_baseline() {
-    // [WB-8] 返った新しい基準で続けて save_with できる。
+    // [utest -> req~write-back.atomic-replace-symlink~1] 返った新しい基準で続けて save_with できる。
     let dir = TempDir::new("faults-default-chain");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -140,7 +140,7 @@ fn wb_8_save_with_default_faults_returns_usable_baseline() {
 
 #[test]
 fn wb_6_corrupt_fails_verify_and_keeps_original() {
-    // [WB-6] 一時ファイルの値を1バイト壊すと読み直しの検査で止まり、元のファイルは同じバイト、一時ファイルは残らない。
+    // [utest -> req~write-back.verify-before-replace~1] 一時ファイルの値を1バイト壊すと読み直しの検査で止まり、元のファイルは同じバイト、一時ファイルは残らない。
     let dir = TempDir::new("wb6-corrupt");
     let original = fixture("plain.md");
     let note = dir.write("note.md", &original);
@@ -160,7 +160,7 @@ fn wb_6_corrupt_fails_verify_and_keeps_original() {
 
 #[test]
 fn wb_6_corrupt_with_trailing_comment_keeps_original() {
-    // [WB-6] 行末コメントのある材料でも、壊れた一時ファイルで元のファイルを置き換えない。
+    // [utest -> req~write-back.verify-before-replace~1] 行末コメントのある材料でも、壊れた一時ファイルで元のファイルを置き換えない。
     let dir = TempDir::new("wb6-corrupt-rich");
     let original = fixture("trailing_comment.md");
     let note = dir.write("note.md", &original);
@@ -188,7 +188,7 @@ fn wb_6_corrupt_with_trailing_comment_keeps_original() {
 
 #[test]
 fn wb_6_after_corrupt_failure_a_clean_save_succeeds() {
-    // [WB-6] 失敗のあと、元の基準のまま失敗なしで保存し直せる(元のファイルが変わっていない)。
+    // [utest -> req~write-back.verify-before-replace~1] 失敗のあと、元の基準のまま失敗なしで保存し直せる(元のファイルが変わっていない)。
     let dir = TempDir::new("wb6-retry");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -213,7 +213,7 @@ fn wb_6_after_corrupt_failure_a_clean_save_succeeds() {
 
 #[test]
 fn wb_6_misquote_fails_verify_and_keeps_original() {
-    // [WB-6] 値の書き方を誤らせる(文字列の `true` をクオートせず書く → 真偽値に読める)と、
+    // [utest -> req~write-back.verify-before-replace~1] 値の書き方を誤らせる(文字列の `true` をクオートせず書く → 真偽値に読める)と、
     // 結果の読み直しの検査(対象のキーが意図した値か)で止まり、元のファイルは同じバイト、一時ファイルは残らない。
     let dir = TempDir::new("wb6-misquote");
     let original = fixture("plain.md");
@@ -247,7 +247,7 @@ fn wb_6_misquote_fails_verify_and_keeps_original() {
 
 #[test]
 fn wb_6_misquote_on_added_key_fails_verify() {
-    // [WB-6] 足すキーでも、誤った書き方は読み直しの検査で止まる。
+    // [utest -> req~write-back.verify-before-replace~1] 足すキーでも、誤った書き方は読み直しの検査で止まる。
     let dir = TempDir::new("wb6-misquote-add");
     let original = fixture("plain.md");
     let note = dir.write("note.md", &original);
@@ -269,7 +269,7 @@ fn wb_6_misquote_on_added_key_fails_verify() {
 
 #[test]
 fn wb_12_change_just_before_rename_stops_save() {
-    // [WB-12] fsync のあと名前を変える前に外で書き換わる → 直前の再検査で Changed。
+    // [utest -> req~write-back.new-baseline-recheck~1] fsync のあと名前を変える前に外で書き換わる → 直前の再検査で Changed。
     // 外の内容が残り、一時ファイルは残らない。
     let dir = TempDir::new("wb12-before-rename");
     let note = dir.write("note.md", &fixture("plain.md"));
@@ -310,7 +310,7 @@ fn assert_io_failure_keeps_original(name: &str, faults: Faults) {
 
 #[test]
 fn wb_8_fail_write_keeps_original_and_no_temp() {
-    // [WB-8] 一時ファイルへの書き込みの途中で落ちても、元のファイルは同じで、一時ファイルは残らない。
+    // [utest -> req~write-back.atomic-replace-temp~1] 一時ファイルへの書き込みの途中で落ちても、元のファイルは同じで、一時ファイルは残らない。
     assert_io_failure_keeps_original(
         "wb8-fail-write",
         Faults {
@@ -322,7 +322,7 @@ fn wb_8_fail_write_keeps_original_and_no_temp() {
 
 #[test]
 fn wb_8_fail_fsync_keeps_original_and_no_temp() {
-    // [WB-8] fsync で落ちても、元のファイルは同じで、一時ファイルは残らない。
+    // [utest -> req~write-back.atomic-replace-temp~1] fsync で落ちても、元のファイルは同じで、一時ファイルは残らない。
     assert_io_failure_keeps_original(
         "wb8-fail-fsync",
         Faults {
@@ -354,7 +354,7 @@ fn assert_io_failure_keeps_permissions(name: &str, faults: Faults) {
 #[cfg(unix)]
 #[test]
 fn wb_8_fail_write_keeps_permissions() {
-    // [WB-8] 書き込みの失敗のあとも、元のファイルの権限は保たれる。
+    // [utest -> req~write-back.atomic-replace-temp~1, req~write-back.atomic-replace-mode~1] 書き込みの失敗のあとも、元のファイルの権限は保たれる。
     assert_io_failure_keeps_permissions(
         "wb8-fail-write-perm",
         Faults {
@@ -367,7 +367,7 @@ fn wb_8_fail_write_keeps_permissions() {
 #[cfg(unix)]
 #[test]
 fn wb_8_fail_fsync_keeps_permissions() {
-    // [WB-8] fsync の失敗のあとも、元のファイルの権限は保たれる。
+    // [utest -> req~write-back.atomic-replace-mode~1] fsync の失敗のあとも、元のファイルの権限は保たれる。
     assert_io_failure_keeps_permissions(
         "wb8-fail-fsync-perm",
         Faults {
@@ -380,7 +380,7 @@ fn wb_8_fail_fsync_keeps_permissions() {
 #[cfg(unix)]
 #[test]
 fn wb_8_fail_fsync_on_symlink_keeps_link_and_target() {
-    // [WB-8] シンボリックリンクのノートで fsync が落ちても、リンクはリンクのまま、先のファイルは同じ。
+    // [utest -> req~write-back.atomic-replace-symlink~1] シンボリックリンクのノートで fsync が落ちても、リンクはリンクのまま、先のファイルは同じ。
     let dir = TempDir::new("wb8-fsync-link");
     let original = fixture("plain.md");
     let target = dir.write("target.md", &original);
@@ -405,7 +405,7 @@ fn wb_8_fail_fsync_on_symlink_keeps_link_and_target() {
 
 #[test]
 fn wb_8_after_io_failure_a_clean_save_succeeds() {
-    // [WB-8] 書き込みの失敗のあと、元の基準のまま失敗なしで保存し直せる。
+    // [utest -> req~write-back.atomic-replace-temp~1] 書き込みの失敗のあと、元の基準のまま失敗なしで保存し直せる。
     let dir = TempDir::new("wb8-retry");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();

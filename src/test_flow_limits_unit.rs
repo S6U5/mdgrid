@@ -1,5 +1,5 @@
-//! [WB-5][BV-1] フローの形のフロントマターは、大きさと入れ子の深さの上限を超えたら読まない(落ちない)。
-//! specs/_changes/2026-10-06-flow-frontmatter-limits.md。
+//! [write-back.refuse-unsafe-notes][base-view.source] フローの形のフロントマターは、大きさと入れ子の深さの上限を超えたら読まない(落ちない)。
+//! specs/_history/decidespec/_changes/2026-10-06-flow-frontmatter-limits.md。
 
 use super::flow_frontmatter;
 
@@ -7,6 +7,7 @@ fn note(inner: &str) -> Vec<u8> {
     format!("---\n{inner}\n---\nbody\n").into_bytes()
 }
 
+// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
 #[test]
 fn test_wb_5_flow_limits_deep_nesting_is_refused() {
     // 10 万段の入れ子: 読み手の再帰に渡さず None(スタックを使い切らない)。
@@ -16,18 +17,21 @@ fn test_wb_5_flow_limits_deep_nesting_is_refused() {
     assert!(flow_frontmatter(&note(&deep_map)).is_none());
 }
 
+// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
 #[test]
 fn test_wb_5_flow_limits_large_is_refused() {
     let big = format!("{{a: \"{}\"}}", "x".repeat(70 * 1024));
     assert!(flow_frontmatter(&note(&big)).is_none());
 }
 
+// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-action-menu~1]
 #[test]
 fn test_wb_5_flow_limits_normal_still_read() {
     let fm = flow_frontmatter(&note("{tags: [a, \"[[x]]\"], s: \"{{not nesting}}\"}")).unwrap();
     assert_eq!(fm.entries.len(), 2);
 }
 
+// [utest -> req~write-back.refuse-unsafe-read-only~1]
 #[test]
 fn test_wb_5_flow_limits_deep_base_is_refused() {
     // .base の読み取りも同じ上限(ブロックの入れ子も数える)。

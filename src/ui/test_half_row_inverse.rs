@@ -1,5 +1,5 @@
 //! 半行の余白を、帯の色はセルの地の色で塗り、外側を画面の地の色の半分の塗りの字で消す描き方(NV-23)の
-//! 受け入れの試験。記録: specs/_changes/2026-10-12-search-box.md(タスク #7)。
+//! 受け入れの試験。記録: specs/_history/decidespec/_changes/2026-10-12-search-box.md(タスク #7)。
 
 use super::startup::Startup;
 use super::test_screen::{text, Tmp};
@@ -51,7 +51,7 @@ fn filled(l: &str, c: char) -> bool {
 
 #[test]
 fn test_nv_23_half_inverse_with_painted_background() {
-    // [NV-23] 画面の地を塗るテーマ(Nord)→ ビューの帯の上の半行は `▀`、下の半行は `▄` で、どちらもセルの地は
+    // [utest -> req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1] 画面の地を塗るテーマ(Nord)→ ビューの帯の上の半行は `▀`、下の半行は `▄` で、どちらもセルの地は
     // 帯の行と同じ色、字の色は画面の地の色(表の下の空いた所の地と同じ)。
     let (_t, a) = boot(
         "invnord",
@@ -83,7 +83,7 @@ fn test_nv_23_half_inverse_with_painted_background() {
 
 #[test]
 fn test_nv_23_half_inverse_top_padding_with_painted_background() {
-    // [NV-23][SR-1] 同じテーマで、ヘッダーの上の半行(1行目)も `▄` でなく、セルの地はヘッダーの行と同じ色、
+    // [utest -> req~navigation.search-box-half-glyphs~1, req~screen.layout-top-padding~1, req~screen.layout-half-padding~1] 同じテーマで、ヘッダーの上の半行(1行目)も `▄` でなく、セルの地はヘッダーの行と同じ色、
     // 外側の上半分を画面の地の色の `▀` で消す。
     let (_t, a) = boot(
         "invtop",
@@ -103,7 +103,7 @@ fn test_nv_23_half_inverse_top_padding_with_painted_background() {
 
 #[test]
 fn test_nv_23_half_inverse_unknown_background_rounds_up() {
-    // [NV-23] テーマが画面の地を塗らず、端末の地の色も分からない(試験には端末が無い)→ 半分の塗りの字を
+    // [utest -> req~navigation.search-box-screen-bg~1, req~navigation.search-box-half-fallback~1] テーマが画面の地を塗らず、端末の地の色も分からない(試験には端末が無い)→ 半分の塗りの字を
     // 使わず、端数を1行の空き行に切り上げる。
     let (_t, a) = boot("invunknown", "");
     let b = buf(&a);

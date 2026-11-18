@@ -78,7 +78,7 @@ fn bottom(a: &App) -> (String, String) {
 
 #[test]
 fn test_ce_26_cleared_filter_value_is_not_written() {
-    // [CE-26][CE-25] 「status が todo」のビューで status を聞く → 前もって todo が入って出る。空にして進める
+    // [utest -> req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-filter-values~1] 「status が todo」のビューで status を聞く → 前もって todo が入って出る。空にして進める
     // → status は書かない。作った行はビューから外れるので「見えない」と知らせる。
     let tmp = vault("nnm_clear");
     std::fs::create_dir_all(tmp.0.join("config")).unwrap();
@@ -128,7 +128,7 @@ fn test_ce_26_cleared_filter_value_is_not_written() {
 
 #[test]
 fn test_ce_25_palette_after_key_removed() {
-    // [CE-25][SR-14] `a` を外しても、パレットの「新しいノート」から始められる。
+    // [utest -> req~cell-edit.new-note-start-keys~1, req~screen.palette-fuzzy~1] `a` を外しても、パレットの「新しいノート」から始められる。
     let tmp = vault("nnm_pal");
     let mut a = boot(&tmp, config("[keys.table]\n\"a\" = \"none\"\n"));
     ch(&mut a, 'a');
@@ -150,7 +150,7 @@ fn test_ce_25_palette_after_key_removed() {
 
 #[test]
 fn test_ce_26_shift_tab_goes_back_to_name() {
-    // [CE-26] 聞く項目で Shift+Tab → 名前の欄に戻る(打った名前のまま)。直して進めると、その名前で作る。
+    // [utest -> req~cell-edit.new-note-form-move~1] 聞く項目で Shift+Tab → 名前の欄に戻る(打った名前のまま)。直して進めると、その名前で作る。
     let tmp = vault("nnm_back");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"priority\"]\n"));
     ch(&mut a, 'a');
@@ -175,7 +175,7 @@ fn test_ce_26_shift_tab_goes_back_to_name() {
 
 #[test]
 fn test_ce_25_bands_show_new_note_keys() {
-    // [CE-25][SR-1] 下の帯は新しいノートの入力のキー(次へ・やめる)。メッセージ行にセルの案内は出さない。
+    // [utest -> req~cell-edit.new-note-folder-pick~1, req~screen.layout-order~1] 下の帯は新しいノートの入力のキー(次へ・やめる)。メッセージ行にセルの案内は出さない。
     // チェックの項目の案内に「↑↓ でリスト」は出さない。
     let tmp = vault("nnm_bands");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"done\"]\n"));
@@ -204,7 +204,7 @@ fn test_ce_25_bands_show_new_note_keys() {
 
 #[test]
 fn test_ce_25_low_terminal_does_not_start() {
-    // [CE-25][SR-9] 欄を出せない低い端末では始めず、理由を出す。
+    // [utest -> req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-refuse-existing~1, req~cell-view.grapheme-width-control-chars~1] 欄を出せない低い端末では始めず、理由を出す。
     let tmp = vault("nnm_low");
     let mut a = boot(&tmp, Config::default());
     a.resize(80, 6);
@@ -215,7 +215,7 @@ fn test_ce_25_low_terminal_does_not_start() {
 
 #[test]
 fn test_ce_25_two_folders_have_no_button() {
-    // [CE-25] フォルダを2つ開いても「+ 新規」を出し、`a` は名前の欄の前に作る場所を選ぶ欄を出す
+    // [utest -> req~cell-edit.new-note-folder-pick~1] フォルダを2つ開いても「+ 新規」を出し、`a` は名前の欄の前に作る場所を選ぶ欄を出す
     // (new-note-folders・new-note-folders-order。前の振る舞い「出さず理由を出す」から変えた)。
     let tmp = vault("nnm_two");
     let other = tmp.0.join("other");
@@ -236,7 +236,7 @@ fn test_ce_25_two_folders_have_no_button() {
 
 #[test]
 fn test_ce_25_guide_shows_real_folder() {
-    // [CE-25] 案内の行には実際のフォルダ(相対パスで開いても実際の名前)を出す。
+    // [utest -> req~cell-edit.new-note-place~1, req~cell-edit.new-note-subfolder~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-refuse-outside~1] 案内の行には実際のフォルダ(相対パスで開いても実際の名前)を出す。
     let tmp = vault("nnm_guide");
     let mut a = boot(&tmp, Config::default());
     ch(&mut a, 'a');

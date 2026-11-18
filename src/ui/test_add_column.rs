@@ -1,5 +1,5 @@
-//! [CE-28] まだどのノートにも無いキーの列を名前を打って足す。値を入れたノートにだけキーの行を足す。
-//! specs/_changes/2026-10-06-add-column.md。
+//! [cell-edit.add-column] まだどのノートにも無いキーの列を名前を打って足す。値を入れたノートにだけキーの行を足す。
+//! specs/_history/decidespec/_changes/2026-10-06-add-column.md。
 
 use super::keymap::Mode;
 use super::test_screen::{ch, ctrl, make, press, read, typing};
@@ -18,6 +18,7 @@ fn add(a: &mut App, name: &str) {
     press(a, KeyCode::Enter);
 }
 
+// [utest -> req~cell-edit.add-column-write~1, req~cell-edit.add-column-session~1]
 #[test]
 fn test_ce_28_add_column_and_write_one_note() {
     let (t, mut a) = make("ce28", NOTES);
@@ -50,6 +51,7 @@ fn test_ce_28_add_column_and_write_one_note() {
     assert_eq!(read(&t, other), orig);
 }
 
+// [utest -> req~cell-edit.add-column-bad-name~1]
 #[test]
 fn test_ce_28_bad_names_are_refused() {
     let (_t, mut a) = make("ce28bad", NOTES);
@@ -65,6 +67,7 @@ fn test_ce_28_bad_names_are_refused() {
     }
 }
 
+// [utest -> req~cell-edit.add-column-existing~1]
 #[test]
 fn test_ce_28_existing_name_moves_there() {
     let (_t, mut a) = make("ce28have", NOTES);
@@ -74,6 +77,7 @@ fn test_ce_28_existing_name_moves_there() {
     assert_eq!(a.cols[a.col], "status");
 }
 
+// [utest -> req~cell-edit.add-column-start~1, req~cell-edit.add-column-empty~1, req~cell-edit.add-column-write~1, req~cell-edit.add-column-session~1, req~cell-edit.add-column-bad-name~1, req~cell-edit.add-column-existing~1, req~cell-edit.add-column-readonly~1]
 #[test]
 fn test_ce_28_readonly_does_not_add() {
     let (_t, mut a) = make("ce28ro", NOTES);

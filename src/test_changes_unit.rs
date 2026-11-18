@@ -50,7 +50,7 @@ fn s(v: &str) -> NewValue {
 
 #[test]
 fn undo_keeps_external_mark() {
-    // [WB-16] [WB-10] 外で変更 → undo → まだためた変更があれば印は残る。
+    // [utest -> req~write-back.external-keep-pending~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1] 外で変更 → undo → まだためた変更があれば印は残る。
     let (dir, mut src, r) = setup("ext");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -75,7 +75,7 @@ fn undo_keeps_external_mark() {
 
 #[test]
 fn undo_keeps_overwrite_base() {
-    // [WB-4] [WB-16] overwrite → undo → 基準は overwrite で取ったもの。保存は止まらない。
+    // [utest -> req~write-back.conflict-stop~1, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~1] overwrite → undo → 基準は overwrite で取ったもの。保存は止まらない。
     let (dir, mut src, r) = setup("ow");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -101,7 +101,7 @@ fn undo_keeps_overwrite_base() {
 
 #[test]
 fn overwrite_seen_only_when_hash_matches() {
-    // [WB-16] [WB-9] 見せた内容のハッシュと同じときだけ基準を進める。違えば基準も印も変えず、保存は止まる。
+    // [utest -> req~write-back.external-keep-pending~1, req~write-back.external-save-choice~1, req~write-back.pending-hold~1] 見せた内容のハッシュと同じときだけ基準を進める。違えば基準も印も変えず、保存は止まる。
     let (dir, mut src, r) = setup("seen");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -134,7 +134,7 @@ fn overwrite_seen_only_when_hash_matches() {
 
 #[test]
 fn save_rows_writes_only_given_rows() {
-    // [WB-9] [WB-14] 指定の行だけを書き、ほかの行のためた変更は残す。
+    // [utest -> req~write-back.pending-mark~1, req~write-back.keep-on-stop~1] 指定の行だけを書き、ほかの行のためた変更は残す。
     let (dir, _first, r) = setup("rows");
     std::fs::write(dir.0.join("q.md"), R).unwrap();
     let mut src = Markdown::open(std::slice::from_ref(&dir.0)).unwrap();
@@ -163,7 +163,7 @@ fn save_rows_writes_only_given_rows() {
 
 #[test]
 fn same_value_compares_types() {
-    // [WB-17] 型つきで比べる。Int・Float は数として同じ。数と文字、Null と空の文字列は違う。
+    // [utest -> req~write-back.revert-drops-pending~1] 型つきで比べる。Int・Float は数として同じ。数と文字、Null と空の文字列は違う。
     assert!(same_value(&NewValue::Null, &Value::Null));
     assert!(same_value(&s("a"), &Value::Str("a".into())));
     assert!(!same_value(&s("a "), &Value::Str("a".into())));
@@ -188,7 +188,7 @@ fn same_value_compares_types() {
 
 #[test]
 fn same_value_date_compares_with_read_string() {
-    // [WB-17][WB-18] 日付は読んだ文字列と比べる(素の日付も Str で読まれる)。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1, req~write-back.date-quoting-plain~1, req~write-back.date-quoting-untyped~1] 日付は読んだ文字列と比べる(素の日付も Str で読まれる)。
     let d = |v: &str| NewValue::Date(v.into());
     assert!(same_value(
         &d("2026-10-05"),
@@ -204,7 +204,7 @@ fn same_value_date_compares_with_read_string() {
 
 #[test]
 fn same_value_compares_lists_by_strings() {
-    // [WB-17] [CE-19] List は要素の文字列の並びで比べる。空の並びは Null・空の文字列と同じ(書いても `key:`
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1, req~cell-edit.list-candidates-empty~1, req~cell-edit.list-candidates-unkeepable~1] List は要素の文字列の並びで比べる。空の並びは Null・空の文字列と同じ(書いても `key:`
     // にしかならないか、書くと `key: ""` が `key:` に変わるので書かない)。
     let list = |items: &[&str]| NewValue::List(items.iter().map(|s| s.to_string()).collect());
     let strs =
@@ -228,7 +228,7 @@ fn same_value_compares_lists_by_strings() {
 
 #[test]
 fn int_float_compare_without_rounding() {
-    // [WB-17] 2^53 を超える整数は f64 に丸めて比べない。小数が整数値で i64 の範囲の中のときだけ同じ。
+    // [utest -> req~write-back.revert-drops-pending~1] 2^53 を超える整数は f64 に丸めて比べない。小数が整数値で i64 の範囲の中のときだけ同じ。
     let big = 1i64 << 53;
     assert!(same_value(&NewValue::Int(big), &Value::Float(big as f64)));
     let (over, near) = (big + 1, big as f64);
@@ -253,7 +253,7 @@ fn int_float_compare_without_rounding() {
 
 #[test]
 fn external_change_to_same_value_drops_pending() {
-    // [WB-17] [WB-16] ためた値と同じ値に外で直された → 読み直したあとは外れ(印も外れ)、保存で何も書かない。undo で戻る。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~1] ためた値と同じ値に外で直された → 読み直したあとは外れ(印も外れ)、保存で何も書かない。undo で戻る。
     let (dir, mut src, r) = setup("extsame");
     let file = || std::fs::read_to_string(dir.0.join("r.md")).unwrap();
     let first = "---\ndue: 2026-09-30\ntitle: D\n---\nbody\n";
@@ -293,7 +293,7 @@ fn external_change_to_same_value_drops_pending() {
 
 #[test]
 fn overwrite_seen_drops_same_and_keeps_other_cells() {
-    // [WB-17] [WB-16] 見せた内容の上に書くとき、読み直した値と同じセルは外し、違うセルだけを書く(クオートを付けない)。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~1] 見せた内容の上に書くとき、読み直した値と同じセルは外し、違うセルだけを書く(クオートを付けない)。
     let (dir, mut src, r) = setup("owsame");
     let first = "---\ndue: 2026-09-30\ntitle: D\n---\nbody\n";
     edit_outside(&dir, first);
@@ -319,7 +319,7 @@ fn overwrite_seen_drops_same_and_keeps_other_cells() {
 
 #[test]
 fn set_each_applies_per_row_values_as_one_step() {
-    // [WB-17] [CE-4] [CE-10] 行ごとの値(None = 外す)を1手で当てる。重ねた行は最初だけ。外すものもためるものも無ければ手を積まない。
+    // [utest -> req~write-back.revert-drops-pending~1, req~cell-edit.checkbox-toggle~1, req~cell-edit.bulk-set-same-value~1] 行ごとの値(None = 外す)を1手で当てる。重ねた行は最初だけ。外すものもためるものも無ければ手を積まない。
     let (dir, _first, r) = setup("each");
     std::fs::write(dir.0.join("q.md"), R).unwrap();
     let mut src = Markdown::open(std::slice::from_ref(&dir.0)).unwrap();
@@ -356,7 +356,7 @@ fn set_each_applies_per_row_values_as_one_step() {
 
 #[test]
 fn drop_same_keeps_redo() {
-    // [WB-17] [WB-10] 外の変化で積む手(drop_same)は、やり直しの積みを消さない。
+    // [utest -> req~write-back.revert-undoable~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1, req~write-back.redo-keys~1] 外の変化で積む手(drop_same)は、やり直しの積みを消さない。
     let (dir, mut src, r) = setup("keepredo");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -378,7 +378,7 @@ fn drop_same_keeps_redo() {
 
 #[test]
 fn undo_after_overwrite_does_not_requote_same_value() {
-    // [WB-17] overwrite で外れた同じ値のセルが undo で戻っても、保存では書かない(クオートだけが変わらない)。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1] overwrite で外れた同じ値のセルが undo で戻っても、保存では書かない(クオートだけが変わらない)。
     let (dir, mut src, r) = setup("owundo");
     edit_outside(&dir, "---\ndue: 2026-09-30\ntitle: D\n---\nbody\n");
     src.changed();
@@ -407,7 +407,7 @@ fn undo_after_overwrite_does_not_requote_same_value() {
 
 #[test]
 fn save_drops_row_whose_cells_all_match_read() {
-    // [WB-17] ためたセルが全部読んだ値と同じ行は、書かずにためる変更から外す。差分にも出さない。
+    // [utest -> req~write-back.revert-drops-pending~1] ためたセルが全部読んだ値と同じ行は、書かずにためる変更から外す。差分にも出さない。
     let (dir, mut src, r) = setup("allsame");
     edit_outside(&dir, "---\ndue: 2026-09-30\ntitle: D\n---\nbody\n");
     src.changed();
@@ -431,7 +431,7 @@ fn save_drops_row_whose_cells_all_match_read() {
 
 #[test]
 fn revert_empties_row_state_and_undo_restores_mark() {
-    // [WB-17] [WB-16] 元の値に戻すと行の基準と印も消え、undo で元の基準と印に戻る(取り消しの決まりと同じ)。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~1] 元の値に戻すと行の基準と印も消え、undo で元の基準と印に戻る(取り消しの決まりと同じ)。
     let (dir, mut src, r) = setup("revert");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -455,7 +455,7 @@ fn revert_empties_row_state_and_undo_restores_mark() {
 
 #[test]
 fn undo_discard_restores_mark_and_base() {
-    // [WB-16] 捨てるを取り消す → 元の基準と印に戻る(保存は止まる)。
+    // [utest -> req~write-back.external-save-choice~1] 捨てるを取り消す → 元の基準と印に戻る(保存は止まる)。
     let (dir, mut src, r) = setup("discard");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -474,7 +474,7 @@ fn undo_discard_restores_mark_and_base() {
 
 #[test]
 fn scalar_onto_list_cell_is_skip() {
-    // [CE-16] [CE-18] 書けるリストのセル(値がリスト・列の型がリストで値が空)にリストでない値 → Skip(理由つき)。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-layout~1] 書けるリストのセル(値がリスト・列の型がリストで値が空)にリストでない値 → Skip(理由つき)。
     // リストと空にする(Null)は当てられる。
     let (dir, _src, _r) = setup("listcell");
     std::fs::write(dir.0.join("l.md"), "---\ntags: [a]\n---\n").unwrap();

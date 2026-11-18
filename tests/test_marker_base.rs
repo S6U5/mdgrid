@@ -1,8 +1,8 @@
 #![cfg(unix)]
 //! タスク 3(marker-base)の受け入れ: 印 `.mdgrid/workspace.toml` の `[[table]]` に `.base` と同じ中身を
 //! `[table.base]` で書くこと(WS-9)と、その中の `where`(WS-10)。
-//! 仕様: specs/workspace/spec.md の WS-9・WS-10、specs/_changes/2026-10-15-marker-base.md、
-//! specs/_decisions/2026-10-15-marker-base.md・2026-10-15-marker-where.md。
+//! 仕様: specs/_history/decidespec/workspace/spec.md の WS-9・WS-10、specs/_history/decidespec/_changes/2026-10-15-marker-base.md、
+//! specs/_history/decidespec/_decisions/2026-10-15-marker-base.md・2026-10-15-marker-where.md。
 //! 実装のあとに独立の試験役が書いた。本物の実行ファイルを動かす。行は主に `--print --with-path` の標準出力
 //! (パイプ)で確かめ、ビューのタブと警告は疑似端末(tests/pty/mod.rs)の画面で確かめる。
 //!
@@ -198,7 +198,7 @@ fn screen_warns(root: &Path, prefix: &str) {
 
 #[test]
 fn test_ws_9_marker_base_print_first_view() {
-    // [WS-9] 根に `.base` を置かず、印に中身を書いた表 → `--print` が最初のビュー(未完了)の行で、
+    // [stest -> req~workspace.marker-base-inline~1] 根に `.base` を置かず、印に中身を書いた表 → `--print` が最初のビュー(未完了)の行で、
     // 見出しに表示名「題名」と計算の列「担当」。AGENTS.md の行は無い。
     let h = home("mb-print");
     let root = h.path().join("led");
@@ -231,7 +231,7 @@ fn test_ws_9_marker_base_print_first_view() {
 
 #[test]
 fn test_ws_9_marker_base_view_option() {
-    // [WS-9] `--view 終わった` → done の行だけ(計算の列も効く)。無いビューは理由と 0 以外。
+    // [stest -> req~workspace.marker-base-inline~1] `--view 終わった` → done の行だけ(計算の列も効く)。無いビューは理由と 0 以外。
     let h = home("mb-view");
     let root = h.path().join("led");
     ledger(&root);
@@ -257,6 +257,7 @@ fn test_ws_9_marker_base_view_option() {
     assert!(err(&o).contains("無い"), "{}", err(&o));
 }
 
+// [stest -> req~workspace.marker-base-inline~1]
 #[test]
 fn test_ws_9_marker_base_check_runs_on_base_rows() {
     // [WS-9・CLI-23] `--check` も印の中身の表で動く: 最初のビューの行(todo/ の a)の問題は出し、
@@ -293,7 +294,7 @@ fn test_ws_9_marker_base_check_runs_on_base_rows() {
 
 #[test]
 fn test_ws_9_marker_base_bytes_unchanged() {
-    // [WS-9] 書いた中身は mdgrid が書き換えない: --print・--view・--check・画面の前後で印のバイトが同じ。
+    // [stest -> req~workspace.marker-base-inline~1, req~workspace.marker-base-untouched~1] 書いた中身は mdgrid が書き換えない: --print・--view・--check・画面の前後で印のバイトが同じ。
     // 印の根に `台帳.base` のファイルも作らない。
     let h = home("mb-bytes");
     let root = h.path();
@@ -316,7 +317,7 @@ fn test_ws_9_marker_base_bytes_unchanged() {
 
 #[test]
 fn test_ws_9_marker_base_screen_tabs_and_groups() {
-    // [WS-9] 画面: タブに「未完了」「終わった」があり、未完了の行(甲・乙・戊)が出て、AGENTS.md の行は無い。
+    // [stest -> req~workspace.marker-base-inline~1] 画面: タブに「未完了」「終わった」があり、未完了の行(甲・乙・戊)が出て、AGENTS.md の行は無い。
     // 担当(AI・人)でまとまりに分かれる(まとまりの名前が画面に出る)。
     let h = home("mb-screen");
     let root = h.path();
@@ -344,7 +345,7 @@ fn test_ws_9_marker_base_screen_tabs_and_groups() {
 
 #[test]
 fn test_ws_9_marker_base_and_path_warns_uses_base() {
-    // [WS-9] `base` と `path = "x.base"` を両方書く → `.mdgrid/workspace.toml: table[1].path:` で始まる警告で、
+    // [stest -> req~workspace.marker-base-inline~1, req~workspace.marker-base-both~1] `base` と `path = "x.base"` を両方書く → `.mdgrid/workspace.toml: table[1].path:` で始まる警告で、
     // `base` を使う(x.base は無いが、未完了のビューの行が出る)。
     let h = home("mb-both");
     let root = h.path();
@@ -359,6 +360,7 @@ fn test_ws_9_marker_base_and_path_warns_uses_base() {
     screen_warns(root, ".mdgrid/workspace.toml: table[1].path:");
 }
 
+// [stest -> req~workspace.marker-base-invalid~1]
 #[test]
 fn test_ws_9_marker_base_unreadable_views_fails() {
     // [WS-9・BV-1] `[table.base] views = "x"` のような読めない中身 → 理由1行と 0 以外の終了コード。
@@ -383,6 +385,7 @@ fn test_ws_9_marker_base_unreadable_views_fails() {
     }
 }
 
+// [stest -> req~workspace.marker-base-inline~1, req~workspace.marker-base-invalid~1]
 #[test]
 fn test_ws_9_marker_base_not_a_table_fails() {
     // [WS-9・BV-1] `base = "x"`(表でない中身)も `.base` として読めない中身なので、理由を出して開かない
@@ -411,7 +414,7 @@ const IN_TODO: &str = "filters = 'file.inFolder(\"todo\")'";
 
 #[test]
 fn test_ws_10_where_view_values_any() {
-    // [WS-10] ビューに `where = { status = ["todo", "doing"] }` → todo と doing の行だけ。
+    // [stest -> req~workspace.marker-where-match~1, req~workspace.marker-where-filters-and~1] ビューに `where = { status = ["todo", "doing"] }` → todo と doing の行だけ。
     let h = home("mw-any");
     let root = h.path().join("led");
     ledger(&root);
@@ -424,7 +427,7 @@ fn test_ws_10_where_view_values_any() {
 
 #[test]
 fn test_ws_10_where_two_keys_all() {
-    // [WS-10] `where = { status = ["done"], repo = ["tasks"] }` → done で repo が tasks の行だけ。
+    // [stest -> req~workspace.marker-where-keys-and~1] `where = { status = ["done"], repo = ["tasks"] }` → done で repo が tasks の行だけ。
     let h = home("mw-two");
     let root = h.path().join("led");
     ledger(&root);
@@ -440,7 +443,7 @@ fn test_ws_10_where_two_keys_all() {
 
 #[test]
 fn test_ws_10_where_top_level_every_view() {
-    // [WS-10] 最上位の `where = { kind = ["todo"] }` → どのビューも kind が todo の行だけ
+    // [stest -> req~workspace.marker-where-match~1] 最上位の `where = { kind = ["todo"] }` → どのビューも kind が todo の行だけ
     // (ビューの where と重なれば両方)。
     let h = home("mw-top");
     let root = h.path().join("led");
@@ -458,7 +461,7 @@ fn test_ws_10_where_top_level_every_view() {
 
 #[test]
 fn test_ws_10_where_list_column_by_element() {
-    // [WS-10] tags が `[a, b]` のノートに `where = { tags = ["b"] }` → 残る(要素のどれかが当たれば残す)。
+    // [stest -> req~workspace.marker-where-match~1] tags が `[a, b]` のノートに `where = { tags = ["b"] }` → 残る(要素のどれかが当たれば残す)。
     let h = home("mw-list");
     let root = h.path().join("led");
     ledger(&root);
@@ -478,7 +481,7 @@ fn test_ws_10_where_list_column_by_element() {
 
 #[test]
 fn test_ws_10_where_number_and_bool_values() {
-    // [WS-10] 値の配列の要素は数と真偽でもよい: `prio = [1]` → a、`flag = [true]` → c。
+    // [stest -> req~workspace.marker-where-match~1] 値の配列の要素は数と真偽でもよい: `prio = [1]` → a、`flag = [true]` → c。
     let h = home("mw-num");
     let root = h.path().join("led");
     ledger(&root);
@@ -495,7 +498,7 @@ fn test_ws_10_where_number_and_bool_values() {
 
 #[test]
 fn test_ws_10_where_and_filters_both() {
-    // [WS-10] 同じ所の `filters` と `where` → 両方を満たす行だけ。ビュー: `filters = 'repo == "tasks"'` と
+    // [stest -> req~workspace.marker-where-filters-and~1] 同じ所の `filters` と `where` → 両方を満たす行だけ。ビュー: `filters = 'repo == "tasks"'` と
     // `where = { status = ["todo", "done"] }` → a と c。最上位: inFolder("todo") と where の両方で AGENTS.md は無い。
     let h = home("mw-both");
     let root = h.path().join("led");
@@ -519,7 +522,7 @@ fn test_ws_10_where_and_filters_both() {
 
 #[test]
 fn test_ws_10_where_empty_array_warns_and_does_not_narrow() {
-    // [WS-10] ビューの `where = { status = [] }` → `.mdgrid/workspace.toml: table[1].base.views[1].where.status:`
+    // [stest -> req~workspace.marker-where-invalid~1] ビューの `where = { status = [] }` → `.mdgrid/workspace.toml: table[1].base.views[1].where.status:`
     // で始まる警告と、その鍵で絞らない表(todo/ の5行)。
     let h = home("mw-empty");
     let root = h.path();
@@ -534,7 +537,7 @@ fn test_ws_10_where_empty_array_warns_and_does_not_narrow() {
 
 #[test]
 fn test_ws_10_where_not_array_warns_and_does_not_narrow() {
-    // [WS-10] 最上位の `where = { status = "todo" }`(配列でない値)→ `.mdgrid/workspace.toml:
+    // [stest -> req~workspace.marker-where-invalid~1] 最上位の `where = { status = "todo" }`(配列でない値)→ `.mdgrid/workspace.toml:
     // table[1].base.where.status:` で始まる警告と、その鍵で絞らない表。ほかの鍵(repo)は効く。
     let h = home("mw-scalar");
     let root = h.path();

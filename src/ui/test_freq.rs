@@ -1,4 +1,4 @@
-//! 列の値の頻度表(NV-9)の受け入れの試験。記録: specs/_changes/2026-10-06-frequency-table.md のタスク #1。
+//! 列の値の頻度表(NV-9)の受け入れの試験。記録: specs/_history/decidespec/_changes/2026-10-06-frequency-table.md のタスク #1。
 //!
 //! 実装より先に、実装を見ずに書いた。前提にしたもの(記録の「設計」):
 //! モード `Mode::Freq`(設定の名前 `freq`)、動作の名前 `frequency`、表のモードの既定のキー `%`。
@@ -124,7 +124,7 @@ fn above_message(s: &str) -> String {
 
 #[test]
 fn test_nv_9_percent_key_is_frequency() {
-    // [NV-9] [SR-16] 表のモードの既定 `%` = frequency。
+    // [utest -> req~navigation.frequency-open~1, req~navigation.frequency-scope~1, req~screen.key-modes-per-mode~1, req~screen.key-modes-no-dup~1, req~screen.key-modes-table-defaults~1] 表のモードの既定 `%` = frequency。
     let (_t, a) = make("nv9key", TAGS);
     assert_eq!(
         keymap::lookup(&a.keys, Mode::Table, "%"),
@@ -140,7 +140,7 @@ fn test_nv_9_percent_key_is_frequency() {
 
 #[test]
 fn test_nv_9_tags_counts_order_and_percent() {
-    // [NV-9] tags の列で `%` → 窓に「会議 3 (60%)」「家 2 (40%)」「(空) 1 (20%)」が多い順。
+    // [utest -> req~navigation.frequency-open~1, req~navigation.frequency-order~1] tags の列で `%` → 窓に「会議 3 (60%)」「家 2 (40%)」「(空) 1 (20%)」が多い順。
     // リストの値は要素ごとに数え、値の無い行は「(空)」。割合は全行(5行)に対する。
     let (_t, mut a) = make("nv9tags", TAGS);
     assert_eq!(names(&a).len(), 5);
@@ -165,7 +165,7 @@ fn test_nv_9_tags_counts_order_and_percent() {
 
 #[test]
 fn test_nv_9_window_keeps_table_outside() {
-    // [NV-9] 窓は表の上に重ねる: 窓を開いても表の行(ノートの名前)の一部は見えたまま。
+    // [utest -> req~navigation.frequency-open~1] 窓は表の上に重ねる: 窓を開いても表の行(ノートの名前)の一部は見えたまま。
     let (_t, mut a) = make("nv9outside", TAGS);
     let (_, after) = open(&mut a, "tags");
     // SR-29: 左の欄の名前は `.md` を除いたもの。
@@ -183,7 +183,7 @@ fn test_nv_9_window_keeps_table_outside() {
 
 #[test]
 fn test_nv_9_status_plain_values() {
-    // [NV-9] 普通の値の列(status)でも同じ: done 2 が todo 1 より上(件数の多い順)。
+    // [utest -> req~navigation.frequency-order~1] 普通の値の列(status)でも同じ: done 2 が todo 1 より上(件数の多い順)。
     let (_t, mut a) = make("nv9status", STATUS);
     let (lines, after) = open(&mut a, "status");
     let done = item_at(&lines, "done", 2).unwrap_or_else(|| panic!("「done 2」が無い:\n{after}"));
@@ -201,7 +201,7 @@ fn test_nv_9_status_plain_values() {
 
 #[test]
 fn test_nv_9_same_count_in_value_order() {
-    // [NV-9] 同じ件数は値の順: x・y・z が1件ずつ → x, y, z の順。
+    // [utest -> req~navigation.frequency-order~1] 同じ件数は値の順: x・y・z が1件ずつ → x, y, z の順。
     let (_t, mut a) = make(
         "nv9tie",
         &[
@@ -219,7 +219,7 @@ fn test_nv_9_same_count_in_value_order() {
 
 #[test]
 fn test_nv_9_counts_rows_after_view_filter() {
-    // [NV-9] 数えるのは今のビューの絞り込みのあとの行: `,` で done だけにしてから `%` → done 2(100%)、
+    // [utest -> req~navigation.frequency-enter~1, req~navigation.frequency-scope~1] 数えるのは今のビューの絞り込みのあとの行: `,` で done だけにしてから `%` → done 2(100%)、
     // todo は無い。
     let (_t, mut a) = make("nv9filtered", STATUS);
     a.row = names(&a).iter().position(|n| n == "b.md").unwrap();
@@ -249,7 +249,7 @@ fn test_nv_9_counts_rows_after_view_filter() {
 
 #[test]
 fn test_nv_9_enter_on_first_filters_to_value() {
-    // [NV-9] [NV-16] 窓の最初の項目(会議)で Enter → 窓が閉じて表のモード、tags に会議を持つ行だけになり、
+    // [utest -> req~navigation.frequency-enter~1, req~navigation.settings-bar-items~1] 窓の最初の項目(会議)で Enter → 窓が閉じて表のモード、tags に会議を持つ行だけになり、
     // 上の設定の帯に条件(会議)が出る。
     let (_t, mut a) = make("nv9enter", TAGS);
     // 表の行より上(ヘッダー・ビューの帯・設定の帯・列の見出し。SR-1)。行の数は `view::data_y` から。
@@ -283,7 +283,7 @@ fn test_nv_9_enter_on_first_filters_to_value() {
 
 #[test]
 fn test_nv_9_down_enter_filters_to_second_value() {
-    // [NV-9] [NV-16] ↓ で2つ目(家)を選んで Enter → 家を持つ行だけ、上の帯に条件(家)。
+    // [utest -> req~navigation.frequency-enter~1, req~navigation.settings-bar-empty~1] ↓ で2つ目(家)を選んで Enter → 家を持つ行だけ、上の帯に条件(家)。
     let (_t, mut a) = make("nv9down", TAGS);
     open(&mut a, "tags");
     press(&mut a, KeyCode::Down);
@@ -297,7 +297,7 @@ fn test_nv_9_down_enter_filters_to_second_value() {
 
 #[test]
 fn test_nv_9_jk_move_in_window() {
-    // [NV-9] 窓の中は `j` `k` でも動く: `j` 2回・`k` 1回で2つ目(家)→ Enter で家の行だけ。
+    // [utest -> req~navigation.frequency-enter~1] 窓の中は `j` `k` でも動く: `j` 2回・`k` 1回で2つ目(家)→ Enter で家の行だけ。
     let (_t, mut a) = make("nv9jk", TAGS);
     open(&mut a, "tags");
     ch(&mut a, 'j');
@@ -310,7 +310,7 @@ fn test_nv_9_jk_move_in_window() {
 
 #[test]
 fn test_nv_9_empty_item_filters_rows_without_value() {
-    // [NV-9] 「(空)」(3つ目)で Enter → 値の無い行(e.md)だけ。
+    // [utest -> req~navigation.frequency-enter~1] 「(空)」(3つ目)で Enter → 値の無い行(e.md)だけ。
     let (_t, mut a) = make("nv9empty", TAGS);
     open(&mut a, "tags");
     press(&mut a, KeyCode::Down);
@@ -322,7 +322,7 @@ fn test_nv_9_empty_item_filters_rows_without_value() {
 
 #[test]
 fn test_nv_9_status_enter_same_as_comma() {
-    // [NV-9] [NV-8] status の頻度表で done(先頭)を Enter → `,` を done のセルで押したのと同じ行と同じ帯。
+    // [utest -> req~navigation.frequency-enter~1, req~navigation.same-value~1] status の頻度表で done(先頭)を Enter → `,` を done のセルで押したのと同じ行と同じ帯。
     let (_t, mut want) = make("nv9comma-want", STATUS);
     want.row = names(&want).iter().position(|n| n == "b.md").unwrap();
     col_named(&mut want, "status");
@@ -354,7 +354,7 @@ fn test_nv_9_status_enter_same_as_comma() {
 
 #[test]
 fn test_nv_9_esc_closes_without_change() {
-    // [NV-9] Esc → 何もせず閉じる: 表のモード、行の数・並び・位置・表の画面が同じ。
+    // [utest -> req~navigation.frequency-esc~1] Esc → 何もせず閉じる: 表のモード、行の数・並び・位置・表の画面が同じ。
     let (_t, mut a) = make("nv9esc", TAGS);
     col_named(&mut a, "tags");
     a.row = 1;
@@ -380,7 +380,7 @@ fn test_nv_9_esc_closes_without_change() {
 
 #[test]
 fn test_nv_9_english_window_has_no_japanese() {
-    // [NV-9] [SR-23] 英語の画面で `%` → 窓の見出しと「(空)」に当たる文字に日本語が無い。
+    // [utest -> req~navigation.frequency-open~1, req~navigation.frequency-order~1, req~navigation.frequency-enter~1, req~screen.locales-two-languages~1] 英語の画面で `%` → 窓の見出しと「(空)」に当たる文字に日本語が無い。
     // 値の無い行の項目(1件・20%)はある。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("nv9en", EN_TAGS);
@@ -420,7 +420,7 @@ fn test_nv_9_english_window_has_no_japanese() {
 
 #[test]
 fn test_nv_9_english_action_label_not_japanese() {
-    // [NV-9] [SR-23] 英語の画面で、frequency の表示名(キーの表・パレット・一覧に出る名前)が日本語でない。
+    // [utest -> req~navigation.frequency-open~1, req~screen.locales-two-languages~1] 英語の画面で、frequency の表示名(キーの表・パレット・一覧に出る名前)が日本語でない。
     let _g = scoped(Lang::En);
     let (_t, a) = make("nv9enlabel", EN_TAGS);
     let label = label_of(&a, freq_action());
@@ -432,7 +432,7 @@ fn test_nv_9_english_action_label_not_japanese() {
 
 #[test]
 fn test_nv_9_rebound_key_opens() {
-    // [NV-9] [SR-4] 設定 `[keys.table] "!" = "frequency"` → `!` でも開く。
+    // [utest -> req~navigation.frequency-open~1, req~screen.key-table~1] 設定 `[keys.table] "!" = "frequency"` → `!` でも開く。
     let (_t, mut a) = make("nv9rebind", TAGS);
     let (cfg, _) = config::parse("[keys.table]\n\"!\" = \"frequency\"\n").expect("読める設定");
     a.configure(&cfg);
@@ -454,7 +454,7 @@ fn test_nv_9_rebound_key_opens() {
 
 #[test]
 fn test_nv_9_palette_opens() {
-    // [NV-9] [SR-14] パレットで frequency を実行 → 頻度表が開く。
+    // [utest -> req~navigation.frequency-open~1, req~screen.palette-fuzzy~1] パレットで frequency を実行 → 頻度表が開く。
     let (_t, mut a) = make("nv9pal", TAGS);
     col_named(&mut a, "tags");
     ch(&mut a, ':');
@@ -483,7 +483,7 @@ fn menu_items(lines: &[String]) -> Vec<String> {
 
 #[test]
 fn test_nv_9_action_menu_column_section_has_item() {
-    // [NV-9] [SR-24] tags のセルで `x` → 「列」の節に頻度表の項目(キー `%` を添える)。Enter で開ける。
+    // [utest -> req~navigation.frequency-open~1, req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-bulk-hidden~1] tags のセルで `x` → 「列」の節に頻度表の項目(キー `%` を添える)。Enter で開ける。
     let (_t, mut a) = make("nv9menu", TAGS);
     let label = label_of(&a, freq_action());
     a.row = 0;
@@ -528,7 +528,7 @@ fn test_nv_9_action_menu_column_section_has_item() {
 
 #[test]
 fn test_nv_9_action_menu_item_key_opens() {
-    // [NV-9] [SR-24] 一覧で行に添えたキー `%` を押す → 頻度表が開く。
+    // [utest -> req~navigation.frequency-open~1, req~screen.action-menu-item-key~1] 一覧で行に添えたキー `%` を押す → 頻度表が開く。
     let (_t, mut a) = make("nv9menukey", TAGS);
     col_named(&mut a, "tags");
     ch(&mut a, 'x');

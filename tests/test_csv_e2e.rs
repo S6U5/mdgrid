@@ -1,6 +1,6 @@
 #![cfg(unix)]
-//! [SC-15][SC-16][SC-17] 本物の実行ファイルで CSV・TSV を開いて直す(疑似端末 80×24)。
-//! specs/_changes/2026-10-10-csv-source.md のタスク 5。
+//! [scope.csv-open][scope.csv-write-back][scope.csv-features] 本物の実行ファイルで CSV・TSV を開いて直す(疑似端末 80×24)。
+//! specs/_history/decidespec/_changes/2026-10-10-csv-source.md のタスク 5。
 
 mod pty;
 
@@ -20,7 +20,7 @@ fn home(tag: &str) -> TempDir {
 
 #[test]
 fn test_sc_16_e2e_edit_and_save_csv() {
-    // [SC-15][SC-16] `mdgrid 台帳.csv` → 表。qty を直して保存 → その値だけが変わり、CRLF と引用符はそのまま。
+    // [stest -> req~scope.csv-open-quotes~1, req~scope.csv-write-back-bytes~1] `mdgrid 台帳.csv` → 表。qty を直して保存 → その値だけが変わり、CRLF と引用符はそのまま。
     let h = home("csv-edit");
     let mut t = Tui::spawn(&["台帳.csv"], h.path(), &[]);
     t.wait_for("りんご");
@@ -41,7 +41,7 @@ fn test_sc_16_e2e_edit_and_save_csv() {
 
 #[test]
 fn test_sc_17_e2e_editor_refused_and_add_row() {
-    // [SC-17] `e`(エディタで開く)は理由を出して断る。`a` → 末尾に1行足して1列目を打てる。
+    // [stest -> req~scope.csv-features-note-only~1] `e`(エディタで開く)は理由を出して断る。`a` → 末尾に1行足して1列目を打てる。
     let h = home("csv-add");
     let mut t = Tui::spawn(&["台帳.csv"], h.path(), &[]);
     t.wait_for("りんご");
@@ -61,7 +61,7 @@ fn test_sc_17_e2e_editor_refused_and_add_row() {
 
 #[test]
 fn test_sc_15_e2e_print_and_unreadable() {
-    // [SC-15] `--print` は CSV の行を出す。UTF-8 でないファイルは理由1行と 0 以外の終了コード。
+    // [stest -> req~scope.csv-open-unreadable~1] `--print` は CSV の行を出す。UTF-8 でないファイルは理由1行と 0 以外の終了コード。
     let h = home("csv-print");
     std::fs::write(h.path().join("sjis.csv"), b"name\n\x82\xa0\n").unwrap();
     let bin = env!("CARGO_BIN_EXE_mdgrid");

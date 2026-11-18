@@ -1,8 +1,9 @@
-//! [BV-6] タグのキーは大文字小文字を問わず `tags` と `tag`(Obsidian と同じ)。file.hasTag と file.tags で拾う。
-//! specs/_changes/2026-10-06-tag-keys.md。本物の実行ファイルの --print で確かめる。
+//! [base-view.expr-eval] タグのキーは大文字小文字を問わず `tags` と `tag`(Obsidian と同じ)。file.hasTag と file.tags で拾う。
+//! specs/_history/decidespec/_changes/2026-10-06-tag-keys.md。本物の実行ファイルの --print で確かめる。
 
 use std::process::Command;
 
+// [stest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_tag_keys_any_case() {
     let nanos = std::time::SystemTime::now()

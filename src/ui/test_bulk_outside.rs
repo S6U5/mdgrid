@@ -1,5 +1,5 @@
-//! [CE-10] 印を付けた行の外で編集を始めたら、この行だけを直すことと、入らない印の行の数を知らせる
-//! (specs/_changes/2026-10-06-bulk-outside-note.md)。印の行の上で始めたときは今までどおり一括。
+//! [cell-edit.bulk-set] 印を付けた行の外で編集を始めたら、この行だけを直すことと、入らない印の行の数を知らせる
+//! (specs/_history/decidespec/_changes/2026-10-06-bulk-outside-note.md)。印の行の上で始めたときは今までどおり一括。
 
 use super::keymap::Mode;
 use super::test_screen::{make, press, Tmp};
@@ -26,6 +26,7 @@ fn mark_1_and_3(a: &mut App) {
     assert_eq!(a.row, 3, "行4に立つ");
 }
 
+// [utest -> req~cell-edit.bulk-set-skip-read-only~1]
 #[test]
 fn test_ce_10_outside_selection_tells_marked_rows_are_left_out() {
     let (_t, mut a) = four();
@@ -36,6 +37,7 @@ fn test_ce_10_outside_selection_tells_marked_rows_are_left_out() {
     assert!(m.contains("この行だけ") && m.contains('2'), "知らせ: {m:?}");
 }
 
+// [utest -> req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1]
 #[test]
 fn test_ce_10_inside_selection_has_no_outside_note() {
     let (_t, mut a) = four();
@@ -50,6 +52,7 @@ fn test_ce_10_inside_selection_has_no_outside_note() {
     assert!(!m.contains("この行だけ"), "印の行の上では知らせない: {m:?}");
 }
 
+// [utest -> req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1]
 #[test]
 fn test_ce_10_no_marks_no_outside_note() {
     let (_t, mut a) = four();

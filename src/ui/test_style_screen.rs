@@ -63,7 +63,7 @@ fn row_y(a: &App, name: &str) -> u16 {
 
 #[test]
 fn test_sr_36_default_sumi_screen() {
-    // [SR-36] 既定(sumi)の色のある表示: status は点と文字(点だけに色)、tags は `·` で区切る、真偽は ✓、
+    // [utest -> req~screen.style-parts-default~1] 既定(sumi)の色のある表示: status は点と文字(点だけに色)、tags は `·` で区切る、真偽は ✓、
     // 見出しに型の印なし、見出しの下に線(下線)、今の行は背景の色で今のセルは反転も札もしない。
     let tmp = notes("sr36_sumi");
     let mut a = with(&tmp, ColorMode::Rgb, "");
@@ -106,7 +106,7 @@ fn test_sr_36_default_sumi_screen() {
 
 #[test]
 fn test_sr_36_overrides_each_part() {
-    // [SR-36] 部品ごとの上書き: status = "chip" は今までの札、tags = "hash"、check = "bracket"、
+    // [utest -> req~screen.style-parts-choose~1] 部品ごとの上書き: status = "chip" は今までの札、tags = "hash"、check = "bracket"、
     // icons = true は見出しの印。
     let tmp = notes("sr36_over");
     let a = with(
@@ -127,7 +127,7 @@ fn test_sr_36_overrides_each_part() {
 
 #[test]
 fn test_sr_36_preset_saas_tints_and_segments() {
-    // [SR-36] preset = "saas": status は淡い地の札(点つき)、リストも淡い地の札。
+    // [utest -> req~screen.style-parts-preset~1] preset = "saas": status は淡い地の札(点つき)、リストも淡い地の札。
     let tmp = notes("sr36_saas");
     let mut a = with(&tmp, ColorMode::Rgb, "[look]\npreset = \"saas\"\n");
     a.col = a.cols.iter().position(|c| c == "done").unwrap();
@@ -141,7 +141,7 @@ fn test_sr_36_preset_saas_tints_and_segments() {
 
 #[test]
 fn test_sr_36_pill_needs_nerd_font() {
-    // [SR-36] pill は nerd_font のときだけ丸い端。無ければ soft(▐ ▌)。
+    // [utest -> req~screen.style-parts-pill~1] pill は nerd_font のときだけ丸い端。無ければ soft(▐ ▌)。
     let tmp = notes("sr36_pill");
     let a = with(&tmp, ColorMode::Rgb, "[look.style]\ntags = \"pill\"\n");
     assert!(row(&a, "b").contains("▐docs▌"), "{}", row(&a, "b"));
@@ -159,7 +159,7 @@ fn test_sr_36_pill_needs_nerd_font() {
 
 #[test]
 fn test_sr_36_cross_tints_column() {
-    // [SR-36] select = "cross": 今の列を、ほかの行でも淡く塗る。
+    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1, req~screen.style-parts-nerd-auto~1] select = "cross": 今の列を、ほかの行でも淡く塗る。
     let tmp = notes("sr36_cross");
     let mut a = with(&tmp, ColorMode::Rgb, "[look.style]\nselect = \"cross\"\n");
     a.col = a.cols.iter().position(|c| c == "done").unwrap();
@@ -173,7 +173,7 @@ fn test_sr_36_cross_tints_column() {
 
 #[test]
 fn test_sr_36_rules_and_frames() {
-    // [SR-36] rules = "columns" は列の区切り線、frames = "square" は角の四角い窓。
+    // [utest -> req~screen.style-parts-choose~1] rules = "columns" は列の区切り線、frames = "square" は角の四角い窓。
     let tmp = notes("sr36_frames");
     let mut a = with(
         &tmp,
@@ -191,7 +191,7 @@ fn test_sr_36_rules_and_frames() {
 
 #[test]
 fn test_sr_36_no_color_keeps_text() {
-    // [SR-36][SR-35] 色を使わない表示では部品にしない(今の見た目)。
+    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1, req~screen.style-parts-default~1, req~screen.rich-cells-plain~1] 色を使わない表示では部品にしない(今の見た目)。
     let tmp = notes("sr36_plain");
     let a = with(&tmp, ColorMode::None, "[look]\npreset = \"saas\"\n");
     let b = row(&a, "b");

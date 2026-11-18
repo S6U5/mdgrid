@@ -1,8 +1,9 @@
-//! [BV-22][BV-7] 外から来るリンクの文字で止まらず、長い行でも時間が延びない
-//! (specs/_changes/2026-10-06-links-stem-panic.md)。
+//! [base-view.links-eval][base-view.unsupported] 外から来るリンクの文字で止まらず、長い行でも時間が延びない
+//! (specs/_history/decidespec/_changes/2026-10-06-links-stem-panic.md)。
 
 use super::*;
 
+// [utest -> req~base-view.links-eval-resolve~1]
 #[test]
 fn test_bv_22_no_panic_multibyte_tail() {
     // 末尾が多バイトの文字の行き先(拡張子 `.md` の判定で文字の途中を切らない)。
@@ -24,6 +25,7 @@ fn test_bv_22_no_panic_multibyte_tail() {
     assert_eq!(stem("x.MD"), "x");
 }
 
+// [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-backlinks~1, req~base-view.links-eval-has-link~1, req~base-view.links-eval-this~1]
 #[test]
 fn test_bv_22_no_panic_long_hostile_lines_are_fast() {
     let n = 200_000;

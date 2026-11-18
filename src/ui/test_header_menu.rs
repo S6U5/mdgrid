@@ -1,6 +1,6 @@
 //! 設定を右上の別のボタンに、画面の型をメニューに、「+ 新規」をビューの帯に移し、ボタンのキーの字を
 //! 目立たせる(SR-1・SR-42・NV-23・REL-8・CE-25)受け入れの試験。
-//! 記録: specs/_changes/2026-10-12-header-menu.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-header-menu.md(タスク #1)。
 //!
 //! 新しいモードの名前には頼らず、モード(表・関係マップ・設定)・描いた画面の文字・見た目で確かめる。
 
@@ -77,7 +77,7 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_sr_42_settings_top_right_after_menu() {
-    // [SR-42][SR-1] 1行目の右の端に「▦ 表 ▾」と「o ⚙ 設定」がこの順。「+ 新規」は1行目に無い。
+    // [utest -> req~screen.breadcrumb-right-buttons~1, req~screen.layout-order~1] 1行目の右の端に「▦ 表 ▾」と「o ⚙ 設定」がこの順。「+ 新規」は1行目に無い。
     let (_t, a) = boot_linked("hmtopright");
     let h = line(&a, head(&a));
     let m = h.find("▦ 表 ▾").unwrap_or_else(|| panic!("{h:?}"));
@@ -89,7 +89,7 @@ fn test_sr_42_settings_top_right_after_menu() {
 
 #[test]
 fn test_sr_42_settings_button_opens_settings() {
-    // [SR-42] 「⚙ 設定」をクリック → ビューの設定の画面。関係マップから押しても、表の画面に戻って開く。
+    // [utest -> req~screen.breadcrumb-relation-map~1] 「⚙ 設定」をクリック → ビューの設定の画面。関係マップから押しても、表の画面に戻って開く。
     let (_t, mut a) = boot_linked("hmsettings");
     click_head(&mut a, "設定");
     assert_eq!(a.mode, Mode::Settings, "{}", scr(&a));
@@ -103,7 +103,7 @@ fn test_sr_42_settings_button_opens_settings() {
 
 #[test]
 fn test_sr_42_settings_dropped_first_when_narrow() {
-    // [SR-42] 幅 60 → 設定のボタンが無く、パンくずと「表 ▾」は出る。
+    // [utest -> req~screen.breadcrumb-narrow~1] 幅 60 → 設定のボタンが無く、パンくずと「表 ▾」は出る。
     let (_t, mut a) = boot_linked("hmnarrow");
     a.resize(60, 24);
     let h = line(&a, head(&a));
@@ -116,7 +116,7 @@ fn test_sr_42_settings_dropped_first_when_narrow() {
 
 #[test]
 fn test_rel_8_menu_lists_types_and_switches() {
-    // [REL-8] 「▦ 表 ▾」を押す → 窓に「表」と「関係マップ」。関係マップを選ぶ → 関係マップの画面で、
+    // [utest -> req~relations.screen-menu-open~1, req~relations.screen-menu-switch~1] 「▦ 表 ▾」を押す → 窓に「表」と「関係マップ」。関係マップを選ぶ → 関係マップの画面で、
     // ボタンは「関係マップ ▾」。
     let (_t, mut a) = boot_linked("hmmenu");
     click_head(&mut a, "表 ▾");
@@ -131,7 +131,7 @@ fn test_rel_8_menu_lists_types_and_switches() {
 
 #[test]
 fn test_rel_8_menu_esc_closes_without_change() {
-    // [REL-8] 窓を開いて Esc → 窓が閉じ、表の画面のまま。
+    // [utest -> req~relations.screen-menu-close~1] 窓を開いて Esc → 窓が閉じ、表の画面のまま。
     let (_t, mut a) = boot_linked("hmesc");
     click_head(&mut a, "表 ▾");
     assert_ne!(a.mode, Mode::Table);
@@ -142,7 +142,7 @@ fn test_rel_8_menu_esc_closes_without_change() {
 
 #[test]
 fn test_rel_8_menu_back_to_table() {
-    // [REL-8] 関係マップで「関係マップ ▾」を押して「表」を選ぶ → 表の画面。R のキーは窓なしで切り替える。
+    // [utest -> req~relations.screen-menu-open~1, req~relations.screen-menu-switch~1, req~relations.screen-menu-key-hint~1] 関係マップで「関係マップ ▾」を押して「表」を選ぶ → 表の画面。R のキーは窓なしで切り替える。
     let (_t, mut a) = boot_linked("hmback");
     ch(&mut a, 'R');
     assert_eq!(a.mode, Mode::Relations, "R は窓なしで切り替える");
@@ -164,7 +164,7 @@ fn test_rel_8_menu_back_to_table() {
 
 #[test]
 fn test_rel_8_menu_without_links_has_only_table() {
-    // [REL-8] つながる表が無い → ボタンは出て、窓には「表」だけ(関係マップは無い)。
+    // [utest -> req~relations.screen-menu-open~1] つながる表が無い → ボタンは出て、窓には「表」だけ(関係マップは無い)。
     let (_t, mut a) = make("hmnolink", NOTES);
     assert!(line(&a, head(&a)).contains("表 ▾"), "{}", scr(&a));
     click_head(&mut a, "表 ▾");
@@ -175,7 +175,7 @@ fn test_rel_8_menu_without_links_has_only_table() {
 
 #[test]
 fn test_ce_25_new_in_view_bar_right_end() {
-    // [CE-25][NV-23][SR-1] ビューの帯(2026-10-12-search-box・view-bar-plain の3行の帯では真ん中の行)の右の端に
+    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-relmap-button~1, req~navigation.search-box-place~1, req~navigation.search-box-new~1, req~navigation.search-box-key-glyph~1, req~navigation.search-box-padding-default~1, req~screen.layout-order~1] ビューの帯(2026-10-12-search-box・view-bar-plain の3行の帯では真ん中の行)の右の端に
     // 「a + 新規」。クリック → 名前の欄が開く。
     let (_t, mut a) = make("hmnew", NOTES);
     let y = mid(&a);
@@ -187,7 +187,7 @@ fn test_ce_25_new_in_view_bar_right_end() {
 
 #[test]
 fn test_ce_25_new_same_place_in_relations() {
-    // [CE-25] 関係マップでも「+ 新規」は表の画面と同じ行(ビューの帯の真ん中の行。2026-10-12-relmap-new-row)・同じ桁。
+    // [utest -> req~cell-edit.new-note-relmap-button~1] 関係マップでも「+ 新規」は表の画面と同じ行(ビューの帯の真ん中の行。2026-10-12-relmap-new-row)・同じ桁。
     let (_t, mut a) = boot_linked("hmnewrel");
     let x = col_in(&a, mid(&a), "+ 新規").unwrap_or_else(|| panic!("{}", scr(&a)));
     ch(&mut a, 'R');
@@ -199,7 +199,7 @@ fn test_ce_25_new_same_place_in_relations() {
 
 #[test]
 fn test_nv_23_no_settings_in_view_bar() {
-    // [NV-23] ビューの帯に ⚙ も「設定」も無い。分類・列は残る。
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-settings-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-half-fill~1, req~navigation.search-box-style~1, req~navigation.search-box-hide~1] ビューの帯に ⚙ も「設定」も無い。分類・列は残る。
     let (_t, a) = make("hmnogear", NOTES);
     let bar = line(&a, mid(&a));
     assert!(!bar.contains('⚙') && !bar.contains("設定"), "{bar:?}");
@@ -210,7 +210,7 @@ fn test_nv_23_no_settings_in_view_bar() {
 
 #[test]
 fn test_nv_23_key_char_looks_different() {
-    // [NV-23][SR-42] ボタンの頭のキーの字は太字で、名前の字と見た目が違う(ビューの帯の S、ヘッダーの o・w)。
+    // [utest -> req~navigation.search-box-key-glyph~1, req~screen.breadcrumb-button-look~1, req~screen.breadcrumb-right-buttons~1] ボタンの頭のキーの字は太字で、名前の字と見た目が違う(ビューの帯の S、ヘッダーの o・w)。
     let (_t, a) = boot_linked("hmkey");
     let b = buf(&a);
     for (y, t) in [

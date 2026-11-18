@@ -1,4 +1,4 @@
-//! リレーションの画面の側(`impl App` の続き。specs/relations/spec.md): リンクの値を名前で見せる(REL-2・REL-10)、
+//! リレーションの画面の側(`impl App` の続き。specs/_history/decidespec/relations/spec.md): リンクの値を名前で見せる(REL-2・REL-10)、
 //! リンクの列の候補(REL-3)。行き先の解き方は核の mdgrid::relations。
 //!
 //! 探す表は、今の表(読み込んだノート)と登録した表(CLI-18)。行き先の解決の結果は覚えておき、読み込んだ

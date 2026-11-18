@@ -1,5 +1,5 @@
-//! [SC-17] CSV・TSV の表で、ほかの道から入るノートだけの機能も出さない(照合で見つけた点)。
-//! specs/_changes/2026-10-10-csv-source.md。
+//! [scope.csv-features] CSV・TSV の表で、ほかの道から入るノートだけの機能も出さない(照合で見つけた点)。
+//! specs/_history/decidespec/_changes/2026-10-10-csv-source.md。
 
 use super::app::App;
 use super::keymap::{Action, Mode};
@@ -22,7 +22,7 @@ fn open(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sc_17_settings_without_tree_section() {
-    // [SC-17] ビューの設定に「親子」の区画を出さず、Tab で巡っても入らない。
+    // [utest -> req~scope.csv-features-views~1, req~scope.csv-features-note-only~1] ビューの設定に「親子」の区画を出さず、Tab で巡っても入らない。
     let (_t, mut a) = open("sc17set");
     a.apply(Action::ViewSettings);
     assert_eq!(a.mode, Mode::Settings);
@@ -39,7 +39,7 @@ fn test_sc_17_settings_without_tree_section() {
 
 #[test]
 fn test_sc_17_relation_map_and_new_note_paths() {
-    // [SC-17] 関係マップは、どの道(タブのクリックなど)から開こうとしても断る。新しいノートの道は末尾に行を足す。
+    // [utest -> req~scope.csv-features-add-row~1, req~scope.csv-features-note-only~1] 関係マップは、どの道(タブのクリックなど)から開こうとしても断る。新しいノートの道は末尾に行を足す。
     let (t, mut a) = open("sc17rel");
     a.open_relmap();
     assert_eq!(a.mode, Mode::Table);
@@ -54,7 +54,7 @@ fn test_sc_17_relation_map_and_new_note_paths() {
 
 #[test]
 fn test_sc_17_csv_tables_left_out_of_links_and_map() {
-    // [SC-17] 登録した表に CSV があっても、リンクと関係マップの範囲(ノートの表)には入れない。表の一覧には残る。
+    // [utest -> req~scope.csv-features-note-only~1] 登録した表に CSV があっても、リンクと関係マップの範囲(ノートの表)には入れない。表の一覧には残る。
     let (t, mut a) = open("sc17links");
     let place = |name: &str, path: std::path::PathBuf| mdgrid::places::Place {
         name: name.into(),

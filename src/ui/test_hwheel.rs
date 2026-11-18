@@ -12,7 +12,7 @@ fn wide(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_6_hwheel_moves_columns_in_table() {
-    // [SR-6] 表で横のホイールを右 → 右の列、左 → 左の列、一番左で左 → そのまま。
+    // [utest -> req~screen.mouse-h-wheel~1] 表で横のホイールを右 → 右の列、左 → 左の列、一番左で左 → そのまま。
     let (_t, mut a) = wide("hwheel_table");
     let first = a.col;
     a.hwheel(true);
@@ -26,7 +26,7 @@ fn test_sr_6_hwheel_moves_columns_in_table() {
 
 #[test]
 fn test_sr_6_hwheel_keeps_selected_visible() {
-    // [SR-6] [SR-3] 列が画面に収まらない表で右へ流し続ける → 選んだセルが見える位置まで表が流れる。
+    // [utest -> req~screen.mouse-h-wheel~1, req~screen.h-scroll-follow~1] 列が画面に収まらない表で右へ流し続ける → 選んだセルが見える位置まで表が流れる。
     let (_t, mut a) = wide("hwheel_scroll");
     for _ in 0..10 {
         a.hwheel(true);
@@ -38,7 +38,7 @@ fn test_sr_6_hwheel_keeps_selected_visible() {
 
 #[test]
 fn test_sr_6_hwheel_shift_wheel_in_table() {
-    // [SR-6] 表で shift+ホイールの下 → 右の列、上 → 左の列。行は動かない。
+    // [utest -> req~screen.mouse-h-wheel~1] 表で shift+ホイールの下 → 右の列、上 → 左の列。行は動かない。
     let (_t, mut a) = make(
         "hwheel_shift",
         &[
@@ -55,7 +55,7 @@ fn test_sr_6_hwheel_shift_wheel_in_table() {
 
 #[test]
 fn test_sr_6_hwheel_ignored_outside_table() {
-    // [SR-6] ヘルプで横のホイール → 何も変わらない。shift+ホイールの下 → ヘルプが下へ流れる(縦のまま)。
+    // [utest -> req~screen.mouse-h-wheel-other~1, req~screen.mouse-shift-wheel-other~1] ヘルプで横のホイール → 何も変わらない。shift+ホイールの下 → ヘルプが下へ流れる(縦のまま)。
     let (_t, mut a) = make("hwheel_help", &[("a.md", "---\ntitle: a\n---\n")]);
     ch(&mut a, '?');
     assert_eq!(a.mode, Mode::Help);

@@ -1,0 +1,4 @@
+# CI(forge-gate の test の仕事)が、nextest の JUnit XML を target/nextest/ci/junit.xml に書くための設定。
+# trace-gate の check --junit が、印のあるテストが走ったかをこの XML で照らす。
+[profile.ci.junit]
+path = "junit.xml"

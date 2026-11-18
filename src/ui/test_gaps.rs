@@ -97,7 +97,7 @@ const BASE_COPY: &str = "formulas:\n  num: '1 + 2'\nviews:\n  - type: table\n   
 
 #[test]
 fn test_out_1_y_with_selection_copies_rows_with_header() {
-    // [OUT-1] 2行を選んで(Space×2)`y` → 見出しつきのタブ区切り2行が OSC 52 で出る(Ctrl+C も同じ)。
+    // [utest -> req~output.copy-tsv~1] 2行を選んで(Space×2)`y` → 見出しつきのタブ区切り2行が OSC 52 で出る(Ctrl+C も同じ)。
     // 計算の列(file.*・formula.*)は画面と同じ値で写す。
     let tmp = vault("out1y");
     let mut a = open(&tmp, BASE_COPY, None);
@@ -123,7 +123,7 @@ fn test_out_1_y_with_selection_copies_rows_with_header() {
 
 #[test]
 fn test_out_1_y_copies_computed_column_value() {
-    // [OUT-1] 選択が無ければ `y` は今のセル1つ。計算の列のセルは画面と同じ値(空にしない)。
+    // [utest -> req~output.copy-both-targets~1] 選択が無ければ `y` は今のセル1つ。計算の列のセルは画面と同じ値(空にしない)。
     let tmp = vault("out1f");
     let mut a = open(&tmp, BASE_COPY, None);
     let log = memory(&mut a);
@@ -140,7 +140,7 @@ fn test_out_1_y_copies_computed_column_value() {
 
 #[test]
 fn test_sr_10_dumb_term_draws_no_emoji() {
-    // [SR-10] `TERM=dumb` では色に加えて絵文字も出さない(値の中の絵文字は同じ幅の `?` に)。
+    // [utest -> req~cell-view.no-color-term-dumb~1] `TERM=dumb` では色に加えて絵文字も出さない(値の中の絵文字は同じ幅の `?` に)。
     // `NO_COLOR` だけなら絵文字はそのまま。
     let notes = &[
         ("a.md", "---\ntitle: 🍎りんご\nok: ✅\n---\n"),
@@ -176,7 +176,7 @@ fn test_sr_10_dumb_term_draws_no_emoji() {
 
 #[test]
 fn test_bv_10_deleted_selected_note_picks_nearest_row() {
-    // [BV-10] 画面の経路(poll → refresh)で、選んだノートを消すと下の行、末尾なら前の行が選ばれる。
+    // [utest -> req~base-view.keep-selection~1] 画面の経路(poll → refresh)で、選んだノートを消すと下の行、末尾なら前の行が選ばれる。
     // 核の vault::reselect と同じ決まり(SC-14 のため画面は鍵で探し、無ければ同じ添字を末尾で抑える)。
     let (t, mut a) = make(
         "bv10near",
@@ -211,7 +211,7 @@ fn test_bv_10_deleted_selected_note_picks_nearest_row() {
 
 #[test]
 fn test_bv_12_conflicting_type_cell_enter_is_read_only() {
-    // [BV-12] 2つの根で types.json の型が食い違う列 → テキストで表示し、Enter は入力を開かず読むだけの理由を出す。
+    // [utest -> req~base-view.types-conflict~1] 2つの根で types.json の型が食い違う列 → テキストで表示し、Enter は入力を開かず読むだけの理由を出す。
     let tmp = Tmp::new("bv12ui");
     for (root, ty, due) in [("A", "date", "2026-10-01"), ("B", "text", "later")] {
         let r = tmp.notes().join(root);
@@ -256,7 +256,7 @@ fn loaded_on_screen(s: &str) -> usize {
 
 #[test]
 fn test_bv_16_ten_thousand_notes_first_screen_fast() {
-    // [BV-16] 1万ノート → 最初の読み込みの1歩のあと1秒以内に画面が出て、進捗(読み込み中 N/1万)が増えて画面に出る。
+    // [utest -> req~base-view.large-load~1] 1万ノート → 最初の読み込みの1歩のあと1秒以内に画面が出て、進捗(読み込み中 N/1万)が増えて画面に出る。
     let tmp = Tmp::new("bv16big");
     for i in 0..10_000 {
         std::fs::write(
@@ -293,7 +293,7 @@ fn test_bv_16_ten_thousand_notes_first_screen_fast() {
 
 #[test]
 fn test_sc_8_other_view_type_shows_unsupported_reason() {
-    // [SC-8] table 以外のビュー(list・map・kanban・cards)を選ぶと開かず、画面に未対応の理由が出る。
+    // [utest -> req~scope.table-only~1] table 以外のビュー(list・map・kanban・cards)を選ぶと開かず、画面に未対応の理由が出る。
     let tmp = vault("sc8ui");
     let text = "views:\n  - type: table\n    name: 表\n  - type: list\n    name: L\n  - type: map\n    name: M\n  - type: kanban\n    name: K\n  - type: cards\n    name: C\n";
     let mut a = open(&tmp, text, None);
@@ -316,7 +316,7 @@ fn test_sc_8_other_view_type_shows_unsupported_reason() {
 
 #[test]
 fn test_wb_13_sync_conflict_row_marked_and_explained() {
-    // [WB-13] `note.sync-conflict-20260930-1.md` のある表 → その行に印 `!`、選ぶとメッセージ行に案内。
+    // [utest -> req~write-back.sync-conflict~1] `note.sync-conflict-20260930-1.md` のある表 → その行に印 `!`、選ぶとメッセージ行に案内。
     let (_t, mut a) = make(
         "wb13ui",
         &[
@@ -351,7 +351,7 @@ fn test_wb_13_sync_conflict_row_marked_and_explained() {
 
 #[test]
 fn test_cv_1_null_is_dim_but_empty_string_and_missing_are_not() {
-    // [CV-1] null の `∅` は薄い表示(DIM)、空の文字列の `""` とキーの無い空欄は薄くしない。
+    // [utest -> req~cell-view.null-empty-missing~1] null の `∅` は薄い表示(DIM)、空の文字列の `""` とキーの無い空欄は薄くしない。
     let (_t, mut a) = make(
         "cv1dim",
         &[
@@ -381,7 +381,7 @@ fn test_cv_1_null_is_dim_but_empty_string_and_missing_are_not() {
 
 #[test]
 fn test_cv_3_detail_shows_every_line_of_multiline_value() {
-    // [CV-3] 改行を含む値は表では1行目と `…⏎`、`K` の詳細の表示では1行目も2行目も出る。
+    // [utest -> req~cell-view.multiline~1] 改行を含む値は表では1行目と `…⏎`、`K` の詳細の表示では1行目も2行目も出る。
     let (_t, mut a) = make(
         "cv3detail",
         &[(
@@ -406,7 +406,7 @@ fn test_cv_3_detail_shows_every_line_of_multiline_value() {
 
 #[test]
 fn test_cv_5_width_from_visible_rows_changes_on_scroll() {
-    // [CV-5] スクロールの外(24行より下)の行にだけ長い値 → 最初の列の幅は見えている行の短い値から決まり、
+    // [utest -> req~cell-view.column-width~1] スクロールの外(24行より下)の行にだけ長い値 → 最初の列の幅は見えている行の短い値から決まり、
     // スクロールしてその行が見えると広がる。
     let tmp = Tmp::new("cv5scroll");
     for i in 0..30 {
@@ -429,7 +429,7 @@ fn test_cv_5_width_from_visible_rows_changes_on_scroll() {
 
 #[test]
 fn test_nv_1_nv_8_highlight_is_drawn_on_cells() {
-    // [NV-1] 検索の一致のセルに下線。[NV-8] `*` で同じ値の行のそのセルに下線。一致しないセルには付かない。
+    // [utest -> req~navigation.find~1] 検索の一致のセルに下線。[utest -> req~navigation.same-value~1] `*` で同じ値の行のそのセルに下線。一致しないセルには付かない。
     let (_t, mut a) = make(
         "nv1hl",
         &[
@@ -464,7 +464,7 @@ fn test_nv_1_nv_8_highlight_is_drawn_on_cells() {
 
 #[test]
 fn test_sr_17_terminal_cursor_after_draw_is_at_input() {
-    // [SR-17] 入力ボックスでは、draw のあと端末のカーソルが入力の位置にある(IME の変換の窓がそこに出る)。
+    // [utest -> req~screen.ime-cursor~1] 入力ボックスでは、draw のあと端末のカーソルが入力の位置にある(IME の変換の窓がそこに出る)。
     let (_t, mut a) = make("sr17cur", &[("a.md", "---\ntitle: abc\n---\n")]);
     col_named(&mut a, "title");
     press(&mut a, KeyCode::Enter);

@@ -1,5 +1,5 @@
-//! [SC-17] CSV の `--print --with-path` の path は「ファイル#行の番号」で、`--apply` で同じ行に戻せる。
-//! specs/_changes/2026-10-10-csv-source.md。
+//! [scope.csv-features] CSV の `--print --with-path` の path は「ファイル#行の番号」で、`--apply` で同じ行に戻せる。
+//! specs/_history/decidespec/_changes/2026-10-10-csv-source.md。
 
 use std::process::Command;
 
@@ -27,6 +27,7 @@ fn mdgrid(d: &std::path::Path, args: &[&str]) -> std::process::Output {
         .unwrap()
 }
 
+// [stest -> req~scope.csv-features-print~1, req~scope.csv-features-add-row~1]
 #[test]
 fn test_sc_17_with_path_and_apply_roundtrip() {
     let d = dir("rt");

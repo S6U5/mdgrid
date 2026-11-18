@@ -1,5 +1,5 @@
-//! [BV-6] 式の number()(Obsidian のヘルプの number(input))と、1秒に満たない期間の見せ方
-//! (specs/_changes/2026-10-06-number-fn.md)。
+//! [base-view.expr-eval] 式の number()(Obsidian のヘルプの number(input))と、1秒に満たない期間の見せ方
+//! (specs/_history/decidespec/_changes/2026-10-06-number-fn.md)。
 
 use super::*;
 use std::collections::HashMap;
@@ -29,6 +29,7 @@ fn run(src: &str) -> Val {
     eval(&parse(src).expect(src), &env)
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_number_days_between_dates() {
     assert_eq!(
@@ -37,6 +38,7 @@ fn test_bv_6_number_days_between_dates() {
     );
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_number_kinds() {
     assert_eq!(run("number(\"3.5\")"), Val::Num(3.5));
@@ -47,6 +49,7 @@ fn test_bv_6_number_kinds() {
     assert_eq!(run("number(\"abc\")"), Val::Null);
 }
 
+// [utest -> req~base-view.expr-eval~1]
 #[test]
 fn test_bv_6_number_sub_second_duration_shows_ms() {
     let v = run("(date(\"2026-10-07\") - date(\"2026-10-06\")) / 86400000");

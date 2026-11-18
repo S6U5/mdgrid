@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn test_sr_36_nerd_auto() {
-    // [SR-36] TERM_PROGRAM が ghostty・WezTerm(大文字・小文字によらない)なら描ける。ほか・無し・tmux は描けない。
+    // [utest -> req~screen.style-parts-nerd-auto~1] TERM_PROGRAM が ghostty・WezTerm(大文字・小文字によらない)なら描ける。ほか・無し・tmux は描けない。
     for (t, want) in [
         (Some("ghostty"), true),
         (Some("WezTerm"), true),
@@ -23,7 +23,7 @@ fn test_sr_36_nerd_auto() {
 
 #[test]
 fn test_sr_36_nerd_font_setting() {
-    // [SR-36] 既定は "auto"。true・false は auto を外す。ほかの値は警告して既定(auto)のまま。
+    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-nerd-font~1, req~screen.style-parts-unknown~1] 既定は "auto"。true・false は auto を外す。ほかの値は警告して既定(auto)のまま。
     use crate::config::NerdFont;
     let nerd = |text: &str| {
         let (c, w) = crate::config::parse(text).unwrap();
