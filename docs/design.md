@@ -694,7 +694,7 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 - GitHub Releases のアーカイブと crates.io(`cargo install`): release.yml の build・release・crates のジョブ。
 - cargo binstall: `Cargo.toml` の `[package.metadata.binstall]` に、アーカイブの URL と中の実行ファイルの場所を書く。binstall は crates.io に出た版の Cargo.toml を読むので、指定はその版を出したときから効く。
-- Nix: リポの根の `flake.nix`(nixpkgs の `rustPlatform.buildRustPackage`。依存は `Cargo.lock` から取るのでハッシュの書き換えは要らない)。ソースは crate と同じファイルだけを渡し、試験は回さない(試験は `cargo test` の CI が見る)。`flake.lock` は nixpkgs の版を留めるので、`rust-version` を上げて nixpkgs の Rust が足りなくなったら `nix flake update` で進める。ci.yml の nix のジョブが `nix flake check` でビルドを見る。
+- Nix: リポの根の `flake.nix`(nixpkgs の `rustPlatform.buildRustPackage`。依存は `Cargo.lock` から取るのでハッシュの書き換えは要らない)。ソースは crate と同じファイルだけを渡し、試験は回さない(試験は `cargo test` の CI が見る)。`flake.lock` は nixpkgs の版を留めるので、`rust-version` を上げて nixpkgs の Rust が足りなくなったら `nix flake update` で進める。ci.yml の nix のジョブが `nix flake check` でビルドを見る。タグを付けない `github:S6U5/mdgrid` は main の先頭(まだ出していない変更も入る)なので、README と説明書は `github:S6U5/mdgrid/v<版>` とタグを付けて書き、ほかの入れ方と同じくリリースした版が入るようにする。版を上げたら文書の番号も直す(`tests/test_install_docs.rs` が `Cargo.toml` の版との食い違いを見る)。
 - まだ無いもの: Homebrew(tap を持つと、formula を書き換えるトークンと守るリポが1つ増えるので見送った。人の判断、2026-11-18)、Windows の Scoop・winget、Linux の .deb・.rpm・AUR、1行のインストーラ。
 
 ## セッション(CLI-6〜CLI-10)
