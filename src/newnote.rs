@@ -61,8 +61,6 @@ pub struct Vars {
     pub name: String,
     /// 作る場所のフォルダ(開いたフォルダからの相対。根なら空)。
     pub folder: String,
-    /// このノートの `{uuid}` と `{uid}`(`Ids::new` で作る。空なら変数を文字のまま残す)。
-    pub ids: Ids,
 }
 
 /// 1つのノートの `{uuid}`・`{uid}` の値。名前の雛形・前もって入れる値・本文の雛形で同じ値を使う
@@ -115,7 +113,12 @@ impl Ids {
 /// CE-32: 雛形の変数を埋める: `{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{time}`・`{now}`・`{weekday}`・
 /// `{name}`・`{folder}`・`{uuid}`・`{uid}`。知らない変数と読めない形は文字のまま残す。
 pub fn expand(s: &str, v: &Vars) -> String {
-    expand_with(s, |var| var_value(var, v))
+    expand_ids(s, v, &Ids::default())
+}
+
+/// `expand` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める(空の値なら文字のまま残す)。
+pub fn expand_ids(s: &str, v: &Vars, ids: &Ids) -> String {
+    expand_with(s, |var| var_value(var, v, ids))
 }
 
 /// `{変数}` を `value` の返す文字に置き換える。None の変数と閉じていない `{` は文字のまま残す。
@@ -144,7 +147,7 @@ fn expand_with(s: &str, value: impl Fn(&str) -> Option<String>) -> String {
     out
 }
 
-fn var_value(var: &str, v: &Vars) -> Option<String> {
+fn var_value(var: &str, v: &Vars, ids: &Ids) -> Option<String> {
     let hm = format!("{:02}:{:02}", v.minutes / 60, v.minutes % 60);
     Some(match var {
         "date" => types::format_date(v.today),
@@ -152,8 +155,8 @@ fn var_value(var: &str, v: &Vars) -> Option<String> {
         "now" => format!("{}T{hm}", types::format_date(v.today)),
         "name" => v.name.clone(),
         "folder" => v.folder.clone(),
-        "uuid" if !v.ids.uuid.is_empty() => v.ids.uuid.clone(),
-        "uid" if !v.ids.uid.is_empty() => v.ids.uid.clone(),
+        "uuid" if !ids.uuid.is_empty() => ids.uuid.clone(),
+        "uid" if !ids.uid.is_empty() => ids.uid.clone(),
         "weekday" => {
             // 1970-01-01 は木曜。
             let k = (v.today + 4).rem_euclid(7) as usize;
@@ -185,10 +188,17 @@ fn var_value(var: &str, v: &Vars) -> Option<String> {
 
 /// CE-32: 入れる値の文字の部分の変数を埋める(リストは要素ごと)。
 pub fn expand_value(value: &NewValue, v: &Vars) -> NewValue {
+    expand_value_ids(value, v, &Ids::default())
+}
+
+/// `expand_value` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+pub fn expand_value_ids(value: &NewValue, v: &Vars, ids: &Ids) -> NewValue {
     match value {
-        NewValue::Str(s) => NewValue::Str(expand(s, v)),
-        NewValue::Date(s) => NewValue::Date(expand(s, v)),
-        NewValue::List(items) => NewValue::List(items.iter().map(|s| expand(s, v)).collect()),
+        NewValue::Str(s) => NewValue::Str(expand_ids(s, v, ids)),
+        NewValue::Date(s) => NewValue::Date(expand_ids(s, v, ids)),
+        NewValue::List(items) => {
+            NewValue::List(items.iter().map(|s| expand_ids(s, v, ids)).collect())
+        }
         other => other.clone(),
     }
 }
@@ -438,12 +448,11 @@ pub fn expand_name(template: &str, today: i64) -> String {
 pub fn expand_name_ids(template: &str, today: i64, ids: &Ids) -> String {
     let v = Vars {
         today,
-        ids: ids.clone(),
         ..Vars::default()
     };
     expand_with(template, |var| match var {
         "time" | "now" | "name" | "folder" => None,
-        _ => var_value(var, &v),
+        _ => var_value(var, &v, ids),
     })
 }
 
@@ -782,20 +791,32 @@ pub fn build_with(
     vars: &Vars,
     body: Option<&str>,
 ) -> Result<Vec<u8>, String> {
+    build_with_ids(rule, prefill, answers, vars, &Ids::default(), body)
+}
+
+/// `build_with` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+pub fn build_with_ids(
+    rule: &NewNote,
+    prefill: &[Edit],
+    answers: &[Edit],
+    vars: &Vars,
+    ids: &Ids,
+    body: Option<&str>,
+) -> Result<Vec<u8>, String> {
     let mut r = rule.clone();
     for (_, v) in &mut r.set {
-        *v = expand_value(v, vars);
+        *v = expand_value_ids(v, vars, ids);
     }
     let prefill: Vec<Edit> = prefill
         .iter()
         .map(|e| Edit {
             key: e.key.clone(),
-            value: expand_value(&e.value, vars),
+            value: expand_value_ids(&e.value, vars, ids),
         })
         .collect();
     let mut out = build(&r, &prefill, answers)?;
     if let Some(b) = body {
-        out.extend_from_slice(expand(b, vars).as_bytes());
+        out.extend_from_slice(expand_ids(b, vars, ids).as_bytes());
     }
     Ok(out)
 }

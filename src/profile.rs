@@ -1032,6 +1032,8 @@ pub struct Resolved {
     pub types: BTreeMap<String, Kind>,
     /// `[rules.<列>]`(CE-36): 範囲を重ねた列の決まり。
     pub rules: BTreeMap<String, Rule>,
+    /// `[rules.<列>.then]`(cell-edit.then): 列 → 一緒に入れる値。狭い範囲に書けば、その列の分が丸ごと代わる。
+    pub then: BTreeMap<String, rules::Then>,
     /// 項目の道筋 → 出どころ(既定の項目は無い)。
     pub origins: BTreeMap<String, Origin>,
 }
@@ -1053,6 +1055,7 @@ impl Default for Resolved {
             new_note: NewNote::default(),
             types: BTreeMap::new(),
             rules: BTreeMap::new(),
+            then: BTreeMap::new(),
             origins: BTreeMap::new(),
         }
     }
@@ -1135,7 +1138,8 @@ impl Resolved {
             if l.values.is_some() {
                 self.mark(&format!("rules.{col}.values"), o);
             }
-            if l.then.is_some() {
+            if let Some(t) = &l.then {
+                self.then.insert(col.clone(), t.clone());
                 self.mark(&format!("rules.{col}.then"), o);
             }
         }
@@ -1207,7 +1211,7 @@ impl Resolved {
                 let l = RuleLayer {
                     required: Some(r.required),
                     values: r.values.clone(),
-                    then: (!r.then.is_empty()).then(|| r.then.clone()),
+                    then: self.then.get(c).filter(|t| !t.is_empty()).cloned(),
                 };
                 (c.clone(), l)
             })

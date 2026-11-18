@@ -418,9 +418,10 @@ impl App {
         }
         // 答えた欄はその答えで、まだなら前もって入れる値(変数を埋めて)で始める。
         let vars = self.note_vars(f);
-        let preset = value
-            .or_else(|| f.answer_of(&col).cloned())
-            .or_else(|| f.preset(&col).map(|v| newnote::expand_value(v, &vars)));
+        let preset = value.or_else(|| f.answer_of(&col).cloned()).or_else(|| {
+            f.preset(&col)
+                .map(|v| newnote::expand_value_ids(v, &vars, &f.ids))
+        });
         let kind = self.col_type(&col);
         if kind == Kind::List {
             // CE-16: リストの列はリストの選択で(前もって入れる値は付いた要素にする)。
@@ -632,7 +633,6 @@ impl App {
             minutes: self.now.rem_euclid(86_400) / 60,
             name: name.rsplit('/').next().unwrap_or(name).to_string(),
             folder: f.rule.folder.trim().trim_matches('/').to_string(),
-            ids: f.ids.clone(),
         }
     }
 
@@ -699,7 +699,12 @@ impl App {
         let src = self.src.as_ref();
         let mut rule = f.rule.clone();
         for (k, v) in &mut rule.set {
-            *v = as_date(src, k, self.col_type(k), newnote::expand_value(v, &vars));
+            *v = as_date(
+                src,
+                k,
+                self.col_type(k),
+                newnote::expand_value_ids(v, &vars, &f.ids),
+            );
         }
         let prefill: Vec<Edit> = f
             .prefill
@@ -710,7 +715,7 @@ impl App {
                     src,
                     &e.key,
                     self.col_type(&e.key),
-                    newnote::expand_value(&e.value, &vars),
+                    newnote::expand_value_ids(&e.value, &vars, &f.ids),
                 ),
             })
             .collect();
@@ -727,7 +732,8 @@ impl App {
             .cloned()
             .collect();
         let made = newnote::note_path(&f.root, &f.rule.folder, &f.name).and_then(|path| {
-            let bytes = newnote::build_with(&rule, &prefill, &answers, &vars, body.as_deref())?;
+            let bytes =
+                newnote::build_with_ids(&rule, &prefill, &answers, &vars, &f.ids, body.as_deref())?;
             newnote::create(&path, &bytes)
                 .map_err(|e| Msg::NoteCannotCreate.fill(&[&path.display(), &e]))?;
             Ok(path)
@@ -1071,7 +1077,7 @@ fn value_text(app: &App, f: &Flow, row: Option<usize>) -> (String, bool) {
             };
             let text = format!(
                 "{}  {from}",
-                new_value_text(&newnote::expand_value(v, &vars))
+                new_value_text(&newnote::expand_value_ids(v, &vars, &f.ids))
             );
             (text, false)
         }

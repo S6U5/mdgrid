@@ -11,7 +11,6 @@ fn vars() -> Vars {
         minutes: 20 * 60 + 15,
         name: "打ち合わせ".into(),
         folder: "Tasks".into(),
-        ..Vars::default()
     }
 }
 

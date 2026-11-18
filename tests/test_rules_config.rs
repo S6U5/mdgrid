@@ -25,7 +25,6 @@ fn rule(required: bool, values: &[&str]) -> Rule {
         } else {
             strings(values)
         },
-        then: Default::default(),
     }
 }
 
