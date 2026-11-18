@@ -12,14 +12,14 @@
 //! #[derive(Clone, Debug, Default, PartialEq)]
 //! pub struct NewNote {
 //!     pub folder: String,                 // 既定のフォルダ(開いたフォルダからの相対。空 = 開いたフォルダ)
-//!     pub name: String,                   // 名前の雛形(`{date}` = 今日)。空が既定
+//!     pub name: String,                   // 名前の雛形(`{date}`・`{date:形}` など日付の変数)。空が既定
 //!     pub ask: Vec<String>,               // 名前のあとに聞く列の並び
 //!     pub set: Vec<(String, NewValue)>,   // [new_note.set] の 列 = 値
 //! }
 //! /// 作る場所の検査。root/folder/name に `.md` を補ったパス(root.join(...) の形)。
 //! /// `..` で外に出る・絶対パス・空・制御文字・既にある → Err(理由)。
 //! pub fn note_path(root: &Path, folder: &str, name: &str) -> Result<PathBuf, String>;
-//! /// 名前の雛形の `{date}` を今日(1970-01-01 からの日数)の YYYY-MM-DD にする。
+//! /// 名前の雛形の日付の変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{weekday}`)を今日で埋める。
 //! pub fn expand_name(template: &str, today: i64) -> String;
 //! /// 絞り込み(設定の条件と式の文字列)のうち値が1つに決まるものを、前もって入れる編集にする。
 //! /// 列の型は kinds(無い列は Text)。
@@ -699,6 +699,15 @@ fn test_ce_27_name_template_date_is_today() {
     assert_eq!(expand_name("議事録 {date}", today()), "議事録 2026-10-02");
     assert_eq!(expand_name("", today()), "");
     assert_eq!(expand_name("メモ", today()), "メモ");
+}
+
+#[test]
+fn test_ce_32_name_template_takes_the_date_variables() {
+    // [utest -> req~cell-edit.template-vars-list~1, req~cell-edit.template-vars-unknown~1] 名前の雛形にも日付の変数を書け、知らない変数は文字のまま。
+    assert_eq!(expand_name("{date:YYYYMMDD}_", today()), "20261002_");
+    assert_eq!(expand_name("{date+7} ", today()), "2026-10-09 ");
+    assert_eq!(expand_name("{date-1} ", today()), "2026-10-01 ");
+    assert_eq!(expand_name("{unknown}", today()), "{unknown}");
 }
 
 #[test]

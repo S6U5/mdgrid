@@ -32,6 +32,11 @@ fn files(root: &Path) -> BTreeMap<String, Vec<u8>> {
 
 /// 組み込みのスターター `name` から、`h` の下の `name` に見本つきで作る(画面なし。今日は 2026-10-06)。
 fn make(h: &Path, name: &str) {
+    make_in(h, name, "ja_JP.UTF-8");
+}
+
+/// `make` と同じで、言語を `lang` にする。
+fn make_in(h: &Path, name: &str, lang: &str) {
     let root = h.join(name);
     let o = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
         .args([
@@ -43,7 +48,7 @@ fn make(h: &Path, name: &str) {
         ])
         .current_dir(h)
         .env("HOME", h)
-        .env("LANG", "ja_JP.UTF-8")
+        .env("LANG", lang)
         .env_remove("LC_ALL")
         .env_remove("LC_MESSAGES")
         .env("XDG_CONFIG_HOME", h.join("config"))
@@ -175,5 +180,42 @@ fn test_st_6_opening_a_made_ledger_changes_no_bytes_e2e() {
             before,
             "{name}: 開いて閉じたあとに変わったファイルがある"
         );
+    }
+}
+
+#[test]
+fn test_st_2_tasks_starter_prefixes_new_notes_and_hides_the_prefix_e2e() {
+    // [stest -> req~starter.tasks-name-prefix~1] tasks から作った台帳は、新しいノートの名前を今日の8桁と `_` で始め、ノートの欄にはその頭を出さない。
+    // 観点: 日本語と英語の変種の両方。頭の無い名前はそのまま出る。
+    for (lang, word) in [
+        ("ja_JP.UTF-8", "請求書を送る"),
+        ("en_US.UTF-8", "Send the invoice"),
+    ] {
+        let home = TempDir::new("starter-prefix");
+        let h = home.path();
+        std::fs::create_dir_all(h.join("state")).unwrap();
+        make_in(h, "tasks", lang);
+        let note = "---\nstatus: todo\n---\n";
+        std::fs::write(h.join(format!("tasks/Tasks/20261006_{word}.md")), note).unwrap();
+        std::fs::write(h.join("tasks/Tasks/メモ.md"), note).unwrap();
+        let mut tui = Tui::spawn(
+            &["tasks"],
+            h,
+            &[("MDGRID_TODAY", "2026-10-06"), ("LANG", lang)],
+        );
+        tui.wait_until("表が出る", |s| s.contains(word) && s.contains("メモ"));
+        assert!(
+            !tui.screen().contains("20261006_"),
+            "{lang}: ノートの欄に頭の日付が出ている\n{}",
+            tui.screen()
+        );
+        tui.send("a");
+        tui.wait_until("名前の欄に今日の8桁と _", |s| {
+            s.contains("20261006_")
+        });
+        tui.send_settle("\x1b");
+        tui.wait_until("窓が閉じる", |s| !s.contains("20261006_"));
+        tui.send("q");
+        assert_eq!(tui.wait_exit(), 0, "{lang}");
     }
 }

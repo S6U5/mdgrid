@@ -3,10 +3,11 @@
 # when you open this folder (open). This is your copy: rename columns, add views, change the values.
 open = "Tasks"
 
-# A blank line between the status groups; the note column shows the file name only.
+# A blank row between the status groups. The note column shows only the file name, without the date that new notes get in front (20261118_).
 [display]
 group_gap = true
 note_path = "name"
+note_name = '^\d{8}_'
 
 # Column types: dates sort as dates, open a calendar when edited, and mark values of the wrong shape.
 [types]
@@ -23,9 +24,10 @@ values = ["todo", "doing", "waiting", "done"]
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# New note (a): asks for the due date and the priority, fills in the rest, and starts the body from the template.
+# New note (a): the name starts with today's date (20261118_); it asks for the due date and the priority, fills in the rest, and starts the body from the template.
 [new_note]
 folder = "Tasks"
+name = "{date:YYYYMMDD}_"
 ask = ["due", "priority"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"

@@ -640,7 +640,7 @@ add_frontmatter = false
 How a new note is made from the table ("+ New" at the right end of the view bar, or `a`). Every part is optional.
 
 - `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the root folder) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
-- `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`).
+- `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`); `{date:YYYYMMDD}_` starts the name with `20261118_`.
 - `ask`: the columns shown as fields in the new note form, in order. Without `ask`, the form shows the columns visible in the table. Each field is edited with the input for its type; a field left empty is not written. `Ctrl+S` creates the note from any field.
 - `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
 - `hidden`: columns written into every new note without a field in the form (with `[new_note.set]`, for values such as the creation date).
@@ -660,6 +660,8 @@ Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may
 | `{weekday}` | the day of the week |
 | `{name}` | the note's name |
 | `{folder}` | the folder the note is made in |
+
+In `name`, only the date variables (`{date}`, `{date:…}`, `{date+N}`, `{date-N}`, `{weekday}`) are filled; the others stay as written, because the name is not decided yet and a time has a `:` that a file name cannot hold.
 
 Filter conditions of the view that fix a single value (such as `status == "todo"` or a tag) are written first and win over `[new_note.set]`. `[new_note]` is one item: a narrower place that writes it (a workspace, a table, or a mdgrid view under `[table.view.new_note]` in `views.toml`) replaces it whole.
 

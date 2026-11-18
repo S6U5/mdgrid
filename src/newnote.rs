@@ -66,6 +66,11 @@ pub struct Vars {
 /// CE-32: 雛形の変数を埋める: `{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{time}`・`{now}`・`{weekday}`・
 /// `{name}`・`{folder}`。知らない変数と読めない形は文字のまま残す。
 pub fn expand(s: &str, v: &Vars) -> String {
+    expand_with(s, |var| var_value(var, v))
+}
+
+/// `{変数}` を `value` の返す文字に置き換える。None の変数と閉じていない `{` は文字のまま残す。
+fn expand_with(s: &str, value: impl Fn(&str) -> Option<String>) -> String {
     let mut out = String::new();
     let mut rest = s;
     while let Some(i) = rest.find('{') {
@@ -76,7 +81,7 @@ pub fn expand(s: &str, v: &Vars) -> String {
             return out;
         };
         let var = &after[..j];
-        match var_value(var, v) {
+        match value(var) {
             Some(text) => out.push_str(&text),
             None => {
                 out.push('{');
@@ -371,9 +376,20 @@ pub fn rule_for(config: &Config, view: Option<&NativeView>) -> NewNote {
         .unwrap_or_else(|| config.resolved().new_note)
 }
 
-/// 名前の雛形の `{date}` を今日(1970-01-01 からの日数)の YYYY-MM-DD にする(CE-27)。
+/// 名前の雛形の日付の変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{weekday}`)を今日(1970-01-01 からの
+/// 日数)で埋める(CE-27・CE-32)。`{time}`・`{now}`(名前に書けない `:` が入る)と `{name}`・`{folder}`(名前を
+/// 決める前で値が無い)、知らない変数は文字のまま残す(仮決め: tbd~name-template-other-vars)。
 pub fn expand_name(template: &str, today: i64) -> String {
-    template.replace("{date}", &types::format_date(today))
+    let v = Vars {
+        today,
+        minutes: 0,
+        name: String::new(),
+        folder: String::new(),
+    };
+    expand_with(template, |var| match var {
+        "time" | "now" | "name" | "folder" => None,
+        _ => var_value(var, &v),
+    })
 }
 
 /// Obsidian がファイルとフォルダの名前に許さない文字(`\` も)。
