@@ -57,7 +57,12 @@ chart = [
 [table.base]
 filters = { and = ['file.inFolder("Tasks")'] }
 
+# Time left: how far the due date is from today ("in 3 days", "5 days ago"), worked out each time and never written to the note.
+[table.base.formulas]
+left = 'due.relative()'
+
 [table.base.properties]
+"formula.left" = { displayName = "Time left" }
 "note.status" = { displayName = "Status" }
 "note.start" = { displayName = "Start" }
 "note.due" = { displayName = "Due" }
@@ -71,7 +76,7 @@ filters = { and = ['file.inFolder("Tasks")'] }
 type = "table"
 name = "Open"
 filters = 'status != "done"'
-order = ["status", "due", "priority", "tags"]
+order = ["status", "due", "formula.left", "priority", "tags"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
 
@@ -79,7 +84,7 @@ sort = [{ property = "priority", direction = "ASC" }, { property = "due", direct
 type = "table"
 name = "Overdue"
 filters = { and = ['status != "done"', 'due < today()'] }
-order = ["status", "due", "priority", "tags"]
+order = ["status", "due", "formula.left", "priority", "tags"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]

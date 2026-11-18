@@ -287,15 +287,56 @@ fn test_bv_6_method_list_function() {
 #[test]
 fn test_bv_6_method_still_unsupported_names() {
     // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.expr-eval~1] 足していない名前は今までどおり未対応
-    for src in [
-        "\"a\".relative()",
-        "(1).toFixed(2)",
-        "[1].map(1)",
-        "x.year()",
-    ] {
+    for src in ["(1).toFixed(2)", "[1].map(1)", "x.year()"] {
         assert!(
             matches!(parse(src), Err(ExprError::Unsupported(_))),
             "{src}"
         );
     }
+}
+
+// ---- relative(): 今日・今からの隔たり ----
+
+// [utest -> req~base-view.relative-days~1]
+#[test]
+fn test_relative_of_a_date_counts_days_from_today() {
+    // 今日(2026-10-06)から1か月に満たない日付は、日の数で言う。
+    assert_eq!(run("date(\"2026-10-20\").relative()"), s("あと14日"));
+    assert_eq!(run("date(\"2026-10-07\").relative()"), s("あと1日"));
+    assert_eq!(run("date(\"2026-10-06\").relative()"), s("今日"));
+    assert_eq!(run("date(\"2026-10-01\").relative()"), s("5日前"));
+    assert_eq!(run("date(\"2026-11-05\").relative()"), s("あと30日"));
+}
+
+// [utest -> req~base-view.relative-months~1]
+#[test]
+fn test_relative_of_a_date_counts_calendar_months_and_years() {
+    // 暦で1か月以上は月の数、12か月以上は年の数で言う(端数は切り捨てる)。
+    assert_eq!(run("date(\"2026-11-06\").relative()"), s("あと1か月"));
+    assert_eq!(run("date(\"2027-01-15\").relative()"), s("あと3か月"));
+    assert_eq!(run("date(\"2026-09-06\").relative()"), s("1か月前"));
+    assert_eq!(run("date(\"2026-09-07\").relative()"), s("29日前"));
+    assert_eq!(run("date(\"2027-10-05\").relative()"), s("あと11か月"));
+    assert_eq!(run("date(\"2027-10-06\").relative()"), s("あと1年"));
+    assert_eq!(run("date(\"2024-03-01\").relative()"), s("2年前"));
+}
+
+// [utest -> req~base-view.relative-time~1]
+#[test]
+fn test_relative_of_a_datetime_under_a_day_counts_hours_and_minutes() {
+    // 日時は今(2026-10-06 00:00)から測り、1日に満たなければ時間、1時間に満たなければ分、1分に満たなければ「今」。
+    assert_eq!(run("date(\"2026-10-06T03:20\").relative()"), s("あと3時間"));
+    assert_eq!(run("date(\"2026-10-06T00:20\").relative()"), s("あと20分"));
+    assert_eq!(run("date(\"2026-10-05T23:15\").relative()"), s("45分前"));
+    assert_eq!(run("date(\"2026-10-06T00:00:30\").relative()"), s("今"));
+    assert_eq!(run("date(\"2026-10-08T12:00\").relative()"), s("あと2日"));
+}
+
+// [utest -> req~base-view.relative-not-a-date~1]
+#[test]
+fn test_relative_of_a_value_that_is_not_a_date_is_null() {
+    // 日付・日時でない値の relative() は null。
+    assert_eq!(run("\"a\".relative()"), Val::Null);
+    assert_eq!(run("(5).relative()"), Val::Null);
+    assert_eq!(run("status.relative()"), Val::Null);
 }

@@ -79,6 +79,11 @@
 - なぜ: 過ぎた期限を、表を目で追わずに見つけられるようにするため
 - 受け入れ: 今日が 2026-10-10 で、`tasks` から作った台帳の `Tasks/` に、`status: todo`・`due: 2026-10-09` のノート、`status: todo`・`due: 2026-10-10` のノート、`status: done`・`due: 2026-10-01` のノート、`status: todo` で due の無いノートを置く → 「期限切れ」のタブの行は、due が 2026-10-09 の1件だけ。`LANG=en_US.UTF-8` で作った台帳の Overdue のタブでも同じ。
 
+#### 組み込みのスターター `tasks` から作った台帳の最初のタブは、期限の隣に、今日から期限までの隔たりの列「残り」(英語は Time left)を出すべき
+`req~starter.tasks-left-column~1` P1
+- なぜ: 期限の近さを、日付を今日と見比べずに読めるようにするため
+- 受け入れ: 今日が 2026-10-06 で、`tasks` から作った台帳の `Tasks/` に `due: 2026-10-09`・`due: 2026-10-01`・due の無いノートを置く → 最初のタブの「残り」の列は、順に `あと3日`・`5日前`・空。`LANG=en_US.UTF-8` で作った台帳では Time left の列に `in 3 days`・`5 days ago`・空。
+
 #### ユーザーのスターターは、設定の置き場(cli.config-file)の `starters/<名前>/` に、組み込みと同じ形で置けるべき
 `req~starter.user-place~1` P1
 - 受け入れ: 設定の置き場の `starters/kanban/` に組み込みと同じ形のスターターを置く → `--starters` に kanban が出る。

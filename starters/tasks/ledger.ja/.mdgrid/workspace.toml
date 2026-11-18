@@ -56,7 +56,12 @@ chart = [
 [table.base]
 filters = { and = ['file.inFolder("Tasks")'] }
 
+# 残り: 今日から期限までの隔たり(「あと3日」「5日前」)。見るたびに計算し、ノートには書かない。
+[table.base.formulas]
+left = 'due.relative()'
+
 [table.base.properties]
+"formula.left" = { displayName = "残り" }
 "note.status" = { displayName = "状態" }
 "note.start" = { displayName = "開始" }
 "note.due" = { displayName = "期限" }
@@ -70,7 +75,7 @@ filters = { and = ['file.inFolder("Tasks")'] }
 type = "table"
 name = "未完了"
 filters = 'status != "done"'
-order = ["status", "due", "priority", "tags"]
+order = ["status", "due", "formula.left", "priority", "tags"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
 
@@ -78,7 +83,7 @@ sort = [{ property = "priority", direction = "ASC" }, { property = "due", direct
 type = "table"
 name = "期限切れ"
 filters = { and = ['status != "done"', 'due < today()'] }
-order = ["status", "due", "priority", "tags"]
+order = ["status", "due", "formula.left", "priority", "tags"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]

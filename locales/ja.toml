@@ -1752,3 +1752,20 @@ ChartUnit = "単位: {0}"
 RsnChartNotTable = "{ kind = \"<種類>\", x = \"<列>\" } の形の表でないので、このグラフを出さない"
 ## {0} は列。
 RsnChartNoColumn = "表に列 {0} が無いので、このグラフを出さない"
+
+# ---- expr: relative()(base-view.relative。今日・今からの隔たり) ----
+RelToday = "今日"
+RelNow = "今"
+## {0} は隔たり(`RelDays` など)。
+RelIn = "あと{0}"
+RelAgo = "{0}前"
+RelMinutes = "{0}分"
+RelMinutesOne = "{0}分"
+RelHours = "{0}時間"
+RelHoursOne = "{0}時間"
+RelDays = "{0}日"
+RelDaysOne = "{0}日"
+RelMonths = "{0}か月"
+RelMonthsOne = "{0}か月"
+RelYears = "{0}年"
+RelYearsOne = "{0}年"

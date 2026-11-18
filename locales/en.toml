@@ -1753,3 +1753,20 @@ ChartUnit = "unit: {0}"
 RsnChartNotTable = "not a table like { kind = \"<kind>\", x = \"<column>\" }, so this chart is left out"
 ## {0} is the column.
 RsnChartNoColumn = "the table has no column {0}, so this chart is left out"
+
+# ---- expr: relative()(base-view.relative。今日・今からの隔たり) ----
+RelToday = "today"
+RelNow = "now"
+## {0} は隔たり(`RelDays` など)。
+RelIn = "in {0}"
+RelAgo = "{0} ago"
+RelMinutes = "{0} minutes"
+RelMinutesOne = "{0} minute"
+RelHours = "{0} hours"
+RelHoursOne = "{0} hour"
+RelDays = "{0} days"
+RelDaysOne = "{0} day"
+RelMonths = "{0} months"
+RelMonthsOne = "{0} month"
+RelYears = "{0} years"
+RelYearsOne = "{0} year"

@@ -86,6 +86,7 @@ pub const METHODS: &[&str] = &[
     "date",
     "time",
     "format",
+    "relative",
     "join",
     "unique",
     "sort",
@@ -369,6 +370,8 @@ enum Meth {
     /// 日付・日時の時刻の文字 `HH:mm:ss`。
     Time,
     Format,
+    /// 日付・日時の、今日・今からの隔たりの文(`relative`)。
+    Relative,
     Join,
     Unique,
     Sort,
@@ -484,6 +487,7 @@ fn meth_spec(name: &str) -> Option<(Meth, usize, usize)> {
         "date" => (Meth::Date, 0, 0),
         "time" => (Meth::Time, 0, 0),
         "format" => (Meth::Format, 1, 1),
+        "relative" => (Meth::Relative, 0, 0),
         "join" => (Meth::Join, 1, 1),
         "unique" => (Meth::Unique, 0, 0),
         "sort" => (Meth::Sort, 0, 0),
@@ -1462,6 +1466,10 @@ fn ev(n: &Node, cx: &Cx) -> Val {
         Node::Method(recv, m, args) => {
             let r = ev(recv, cx);
             let args: Vec<Val> = args.iter().map(|a| ev(a, cx)).collect();
+            if *m == Meth::Relative {
+                // 今日・今に依るので、環境の時計で数える(ほかのメソッドは値だけで決まる)。
+                return relative(&r, cx.env.today, cx.env.now).map_or(Val::Null, Val::Str);
+            }
             method(&r, *m, &args)
         }
         Node::Field(x, f) => field(&ev(x, cx), *f),
@@ -1741,6 +1749,56 @@ fn num_method(x: f64, m: Meth, args: &[Val]) -> Option<Val> {
         Meth::Ceil => num(x.ceil()),
         Meth::Abs => num(x.abs()),
         _ => return None,
+    })
+}
+
+/// `relative()`(base-view.relative。言い回しと数え方は仮決め: tbd~relative-wording): 日付は今日から、日時は今からの隔たりを、今の言語の文にする。日付・日時で
+/// なければ None。1分に満たなければ「今」、1時間に満たなければ分、1日に満たなければ時間(日時だけ)。日が同じなら
+/// 「今日」。暦で1か月に満たなければ日、12か月に満たなければ月、それより先は年(端数は切り捨てる)。
+fn relative(w: &Val, today: i64, now: i64) -> Option<String> {
+    use crate::i18n::Msg;
+    let say = |n: i64, unit: Msg, future: bool| {
+        let span = unit.fill(&[&n]);
+        if future { Msg::RelIn } else { Msg::RelAgo }.fill(&[&span])
+    };
+    let days = match *w {
+        Val::Date(d) => d.checked_sub(today)?,
+        Val::DateTime(s) => {
+            let diff = s.checked_sub(now)?;
+            let (future, abs) = (diff > 0, diff.checked_abs()?);
+            if abs < 60 {
+                return Some(Msg::RelNow.text().to_string());
+            }
+            if abs < 3600 {
+                return Some(say(abs / 60, Msg::RelMinutes, future));
+            }
+            if abs < DAY_SECS {
+                return Some(say(abs / 3600, Msg::RelHours, future));
+            }
+            diff / DAY_SECS
+        }
+        _ => return None,
+    };
+    if days == 0 {
+        return Some(Msg::RelToday.text().to_string());
+    }
+    let future = days > 0;
+    let (y1, m1, d1) = civil(today)?;
+    let (y2, m2, d2) = civil(today.checked_add(days)?)?;
+    let mut months = (y2 - y1) * 12 + (i64::from(m2) - i64::from(m1));
+    // 日が届いていない月は数えない(0 に向けて1つ戻す)。
+    if future && d2 < d1 {
+        months -= 1;
+    } else if !future && d2 > d1 {
+        months += 1;
+    }
+    let months = months.abs();
+    Some(if months >= 12 {
+        say(months / 12, Msg::RelYears, future)
+    } else if months >= 1 {
+        say(months, Msg::RelMonths, future)
+    } else {
+        say(days.abs(), Msg::RelDays, future)
     })
 }
 
