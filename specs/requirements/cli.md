@@ -139,9 +139,9 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 `req~cli.with-path-json-first~1` P1
 - 受け入れ: `--print --with-path --format json` → 各オブジェクトの最初が `"path"`。
 
-#### `--print --with-path` の json で、ビューに同じ見出し `path` の列があれば、cli.print の重なりの決まりで見分けるべき
-`req~cli.with-path-name-clash~1` P1
-- 受け入れ: 見出し `path` の列のあるビューで `--print --with-path --format json` → 足した `path` とビューの `path` の列が、同じオブジェクトの別の鍵で出る(期待値は未確定)。
+#### `--print --with-path` の json で、ビューに同じ見出し `path` の列があれば、先頭に足した `path` を鍵 `path` に、ビューの列を鍵 `path (<その列の id>)` に出し、それでも重なれば後ろに ` #<列の番号>`(1から)を添えるべき
+`req~cli.with-path-name-clash~2` P1
+- 受け入れ: `.base` の無いフォルダで、ノートのキー `path`(値 `中の値`)を持つノートを `--print --with-path --format json` → オブジェクトに、鍵 `path`(足したノートのパス)と鍵 `path (path)`(値 `中の値`)の両方がある。
 
 #### `--print` の無い `--with-path` は、cli.fail-fast と同じく理由1行と終了コード 2 にするべき
 `req~cli.with-path-needs-print~1` P1
@@ -531,11 +531,6 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 - 受け入れ: path のフォルダが無い行を選んで Enter → 理由が出て、その表は開かない。
 
 ## 未確定事項
-
-### `--print --with-path` の json で、足した `path` とビューの同じ見出しの列を、どの形の鍵で見分けるか(cli.with-path-name-clash が指す cli.print の重なりの決まりが、cli.print の文に無い)
-`tbd~cli.with-path-name-clash`
-- 決める人: 人
-- 仮: 今の実装の形(見出しが前の列と重なれば `見出し (id)`、それでも重なれば後ろに `#列の番号`)
 
 ### `--new-note` に `--view <名前>` を添えたとき、そのビューの絞り込みで値が1つに決まる列(cell-edit.new-note-filter-values)と、ビューごとの新しいノートの設定(cell-edit.new-note-form-per-view)を使うか
 `tbd~cli.new-note-view-values`

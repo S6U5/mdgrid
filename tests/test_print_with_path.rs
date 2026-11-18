@@ -527,6 +527,33 @@ fn test_cli_14_json_with_path_first_key_is_path() {
 // ---- 4. md ----
 
 #[test]
+fn test_cli_14_json_with_path_and_path_key_are_told_apart() {
+    // [stest -> req~cli.with-path-name-clash~2] ノートにキー `path` があるとき `--format json --with-path` → 足したノートのパスは鍵 `path`、ノートの `path` の値は鍵 `path (path)`。
+    let t = TempDir::new("clash");
+    let notes = t.mkdir("notes");
+    std::fs::write(
+        notes.join("a.md"),
+        "---\ntitle: 一つ目\npath: 中の値\n---\n",
+    )
+    .unwrap();
+    let out = run_in(&t, &["notes", "--print", "--format", "json", "--with-path"]);
+    let text = ok_stdout(&out, "--format json --with-path");
+    let Json::Arr(items) = JsonParser::parse(&text) else {
+        panic!("配列でない: {text}");
+    };
+    assert_eq!(items.len(), 1, "{text}");
+    match items[0].get("path") {
+        Some(Json::Str(p)) => assert!(p.ends_with("a.md"), "鍵 path はノートのパス: {p}"),
+        other => panic!("鍵 path の値は文字列: {other:?}"),
+    }
+    assert_eq!(
+        items[0].get("path (path)"),
+        Some(&Json::Str(s("中の値"))),
+        "ノートの path の値は鍵 `path (path)`: {text}"
+    );
+}
+
+#[test]
 fn test_cli_14_md_with_path_first_header_column_is_path() {
     // [stest -> req~cli.with-path-column~1] `--format md --with-path` → 見出しの行の最初の列が path、区切りの行のあとの各行の先頭はパス。
     let t = make_folder_vault("md");
