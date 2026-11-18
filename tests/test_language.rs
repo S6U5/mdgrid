@@ -244,7 +244,7 @@ fn test_sr_23_missing_path_reason_en() {
 
 #[test]
 fn test_sr_23_missing_path_reason_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1, req~screen.locales-list~1, req~screen.locales-no-translate~1] LANG=ja で無いパス → 日本語(今と同じ文)、終了コード 2。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1, req~screen.locales-no-translate~1] LANG=ja で無いパス → 日本語(今と同じ文)、終了コード 2。
     let out = run("missing-ja", JA, None, &["no-such-dir-xyz"]);
     let line = one_error_line(&out, "LANG=ja 無いパス");
     assert!(
@@ -288,7 +288,7 @@ fn test_sr_23_unknown_option_en() {
 
 #[test]
 fn test_sr_23_unknown_option_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-list~1] LANG=ja で知らないオプション → 日本語の1行(今と同じ)、終了コード 2。
+    // [stest -> req~screen.locales-two-languages~1] LANG=ja で知らないオプション → 日本語の1行(今と同じ)、終了コード 2。
     let out = run("unknown-ja", JA, None, &["--no-such-option-xyz"]);
     let line = one_error_line(&out, "LANG=ja 知らないオプション");
     assert!(
@@ -301,7 +301,7 @@ fn test_sr_23_unknown_option_ja() {
 
 #[test]
 fn test_sr_23_print_config_has_language_auto() {
-    // [stest -> req~screen.locales-setting~1, req~screen.locales-list~1, req~cli.print-config-reads-back~1] --print-config に language = "auto" の行があり、読み直すと既定と同じ。
+    // [stest -> req~screen.locales-setting~1, req~cli.print-config-reads-back~1] --print-config に language = "auto" の行があり、読み直すと既定と同じ。
     let out = run("print-config", EN, None, &["--print-config"]);
     let text = stdout_ok(&out, "--print-config");
     assert!(

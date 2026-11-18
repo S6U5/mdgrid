@@ -610,7 +610,7 @@ fn test_ga_4_enter_on_row_hidden_in_table_stays_with_reason() {
 
 #[test]
 fn test_ga_4_palette_action_on_row_hidden_in_table_does_not_touch_other_row() {
-    // [utest -> req~gantt.keys-today~1, req~gantt.keys-mouse-click~1, req~gantt.keys-mouse-click-again~1, req~gantt.keys-mouse-wheel~1] #2: 表で畳んだまとまりの行(beta)をガントで選んでパレットから clear → 表の今の行(alpha)の status を
+    // [utest -> req~gantt.keys-today~1, req~gantt.keys-mouse-click~1, req~gantt.keys-mouse-click-again~1] #2: 表で畳んだまとまりの行(beta)をガントで選んでパレットから clear → 表の今の行(alpha)の status を
     // 空にしない。ガントのまま理由1行で、ためた変更は無い。
     let (_t, mut a) = gantt_on_hidden_row("gafix2p");
     a.message = None;
@@ -781,7 +781,7 @@ fn forty() -> Vec<(String, String)> {
 
 #[test]
 fn test_kb_2_kanban_opened_while_loading_is_rebuilt_when_loading_ends() {
-    // [utest -> req~kanban.open-lanes~1, req~kanban.open-card-order~1] #6: 読み込みの途中(40 のうち一部)で B → 読み終えたら、カンバンを組み直して全部の行(40)を札にする。
+    // [utest -> req~kanban.open-lanes~1] #6: 読み込みの途中(40 のうち一部)で B → 読み終えたら、カンバンを組み直して全部の行(40)を札にする。
     let owned = forty();
     let notes: Vec<(&str, &str)> = owned
         .iter()

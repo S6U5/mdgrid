@@ -29,7 +29,7 @@ fn test_sr_5_help_golden() {
     press(&mut a, KeyCode::Char('G'));
     let s = screen(&a);
     assert!(s.contains(" 印") && s.contains("行の左"), "{s}");
-    // [utest -> req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] ヘルプも全行が幅以下。
+    // [utest -> req~cell-view.grapheme-width-fit~1] ヘルプも全行が幅以下。
     assert_fits(&mut a);
     // Esc で閉じて表へ戻る。
     press(&mut a, KeyCode::Esc);
@@ -81,7 +81,7 @@ fn test_sr_14_palette_save_first_golden() {
     golden("sr_14", &s);
     // [utest -> req~screen.ime-cursor~1] 端末のカーソルは入力の位置(ヘッダーのすぐ下。2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
     assert_eq!(view::cursor(&a), Some((6, super::bands::head_y(&a) + 1)));
-    // [utest -> req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] パレットも全行が幅以下。
+    // [utest -> req~cell-view.grapheme-width-fit~1] パレットも全行が幅以下。
     assert_fits(&mut a);
     // Esc で閉じる。
     press(&mut a, KeyCode::Esc);

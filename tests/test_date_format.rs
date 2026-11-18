@@ -333,7 +333,7 @@ fn test_ce_21_month_grid_october_2026_monday_start() {
 
 #[test]
 fn test_ce_21_month_grid_leap_february() {
-    // [utest -> req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-today~1, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-keep-time~1] 閏年の2月は29日、平年は28日。
+    // [utest -> req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-keep-time~1] 閏年の2月は29日、平年は28日。
     check_grid(2024, 2, WeekStart::Sun, true, 29);
     check_grid(2024, 2, WeekStart::Mon, false, 29);
     check_grid(2026, 2, WeekStart::Sun, true, 28);

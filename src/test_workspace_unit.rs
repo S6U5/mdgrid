@@ -43,7 +43,7 @@ fn names(ts: &[WsTable]) -> Vec<String> {
 
 #[test]
 fn test_ws_1_read_write_round_trip() {
-    // [utest -> req~workspace.app-side-file~1, req~workspace.app-side-no-note-write~1] workspaces.toml を読み書きする。表を足す・置き換える・外す・ワークスペースごと消す。
+    // [utest -> req~workspace.app-side-file~1] workspaces.toml を読み書きする。表を足す・置き換える・外す・ワークスペースごと消す。
     let t = Tmp::new("rw");
     let cfg = t.0.join("config");
     notes(&t, "tasks");

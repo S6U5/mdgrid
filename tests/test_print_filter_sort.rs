@@ -102,7 +102,7 @@ fn test_cli_16_sort_desc_and_several_keys() {
     assert_eq!(names(&out), ["b.md", "d.md", "c.md", "a.md"]);
 }
 
-// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-folder~1, req~cli.print-filter-sort-own-view~1]
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_several_filters_all_hold() {
     let root = vault("and");

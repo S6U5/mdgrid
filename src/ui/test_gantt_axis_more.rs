@@ -399,7 +399,7 @@ fn test_ga_2_month_point_once_at_year_9999() {
 
 #[test]
 fn test_ga_2_no_table_hint_under_help() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~gantt.open-no-dates~1, req~gantt.open-no-color~1] 表で見出しの行を選んだまま `C` でガントにし、`?` でヘルプを開く → メッセージ行(描く行の最後の行)に
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~gantt.open-no-color~1] 表で見出しの行を選んだまま `C` でガントにし、`?` でヘルプを開く → メッセージ行(描く行の最後の行)に
     // 「見出しの行」の案内が出ない。
     let list = [
         (

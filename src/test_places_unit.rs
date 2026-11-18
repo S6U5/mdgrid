@@ -34,7 +34,7 @@ fn test_cli_18_places_round_trip() {
     let _ = std::fs::remove_dir_all(&d);
 }
 
-// [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-replace-confirm~1, req~cli.places-hand-written~1, req~cli.places-tilde~1, req~cli.places-bad-line~1, req~cli.places-no-note-write~1]
+// [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-replace-confirm~1, req~cli.places-tilde~1, req~cli.places-bad-line~1, req~cli.places-no-note-write~1]
 #[test]
 fn test_cli_18_missing_file_is_empty() {
     let d = tmp("none");

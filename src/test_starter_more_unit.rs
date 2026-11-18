@@ -83,7 +83,7 @@ fn test_st_4_create_refuses_when_a_folder_on_the_way_is_a_link() {
 
 #[test]
 fn test_st_1_ledger_variant_without_marker_is_refused() {
-    // [utest -> req~starter.shape-layout~1, req~starter.shape-no-schema~1, req~starter.shape-name~1, req~starter.user-skip-broken~1] ledger.ja/ に印が無いスターターは読めない(変種は丸ごと差し替えるので、日本語で作ると印の無い
+    // [utest -> req~starter.shape-layout~1, req~starter.shape-name~1, req~starter.user-skip-broken~1] ledger.ja/ に印が無いスターターは読めない(変種は丸ごと差し替えるので、日本語で作ると印の無い
     // 台帳ができるため)。警告は CLI-3 の形で、無い印のパスを名指す。
     let t = Tmp::new("variant");
     let cfg = t.0.join("config");

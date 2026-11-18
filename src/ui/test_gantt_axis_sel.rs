@@ -372,7 +372,7 @@ fn test_ga_2_band_levels_far_from_selection() {
 
 #[test]
 fn test_ga_2_band_levels_ordered_from_ground() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~gantt.open-today~1, req~gantt.open-milestone~1, req~gantt.open-no-dates~1, req~gantt.open-no-color~1] 24 ビットと 256 色で、default 以外の全部のテーマについて、地から各段への差(成分の差の最大。256 色は xterm の
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~gantt.open-today~1, req~gantt.open-no-color~1] 24 ビットと 256 色で、default 以外の全部のテーマについて、地から各段への差(成分の差の最大。256 色は xterm の
     // RGB に戻す)が 土日 < 帯 < 帯の上の土日 の順(帯が主で、土日は控えめ)。
     for theme in themes() {
         for color in [ColorMode::Rgb, ColorMode::Indexed] {

@@ -469,7 +469,7 @@ fn test_ce_10_bulk_datetime_keeps_each_rows_time() {
 
 #[test]
 fn test_ce_21_narrow_terminal_types_only() {
-    // [utest -> req~cell-edit.calendar-keys-too-small~1, req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] 幅 30 の端末 → カレンダーが出ず、←→ は文字のカーソル、打ち込みはできる。
+    // [utest -> req~cell-edit.calendar-keys-too-small~1, req~cell-view.grapheme-width-fit~1] 幅 30 の端末 → カレンダーが出ず、←→ は文字のカーソル、打ち込みはできる。
     let (_t, mut a) = vault("ce21w30", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
     a.resize(30, 24);
     col_named(&mut a, "due");
@@ -529,7 +529,7 @@ fn test_ce_21_calendar_above_when_no_room_below() {
 
 #[test]
 fn test_ce_21_keys_only_for_dates() {
-    // [utest -> req~cell-edit.calendar-keys-today~1, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-empty-month~1, req~cell-edit.calendar-keys-keep-time~1, req~screen.key-table~1] 今日に戻す・空にするのキーは日付・日時の入力だけ。テキストの入力では理由を出して何もしない。
+    // [utest -> req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-empty-month~1, req~cell-edit.calendar-keys-keep-time~1, req~screen.key-table~1] 今日に戻す・空にするのキーは日付・日時の入力だけ。テキストの入力では理由を出して何もしない。
     let (_t, mut a) = vault(
         "ce21text",
         &[("a.md", "---\ntitle: 会議\ndue: 2026-10-05\n---\n")],

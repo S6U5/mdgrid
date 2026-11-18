@@ -92,7 +92,7 @@ fn test_sc_15_lone_cr_refused() {
 
 #[test]
 fn test_sc_15_duplicate_and_empty_headers() {
-    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-delimiter~1, req~scope.csv-open-unreadable~1] 同じ名前の列と名前の無い列も、別の列として読み書きする(取り違えない)。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~1] 同じ名前の列と名前の無い列も、別の列として読み書きする(取り違えない)。
     let p = tmp("dup", "a,a,\n1,2,3\n");
     let mut src = Csv::open(&p).unwrap();
     assert_eq!(src.columns(), ["a", "a#2", "#3"]);

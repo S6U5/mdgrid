@@ -204,7 +204,7 @@ fn test_ce_25_bands_show_new_note_keys() {
 
 #[test]
 fn test_ce_25_low_terminal_does_not_start() {
-    // [utest -> req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-refuse-existing~1, req~cell-view.grapheme-width-control-chars~1] 欄を出せない低い端末では始めず、理由を出す。
+    // [utest -> req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-refuse-existing~1] 欄を出せない低い端末では始めず、理由を出す。
     let tmp = vault("nnm_low");
     let mut a = boot(&tmp, Config::default());
     a.resize(80, 6);

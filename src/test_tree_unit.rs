@@ -63,7 +63,7 @@ fn test_nv_27_order_missing_parent_and_cycles_go_top() {
 
 #[test]
 fn test_nv_27_order_empty_and_flat() {
-    // [utest -> req~navigation.parent-child-rows~1, req~navigation.parent-child-sibling-order~1, req~navigation.parent-child-orphans~1, req~navigation.parent-child-save~1] 空の並び・親の無い並びはそのまま。
+    // [utest -> req~navigation.parent-child-rows~1, req~navigation.parent-child-sibling-order~1, req~navigation.parent-child-orphans~1] 空の並び・親の無い並びはそのまま。
     assert!(run(&[], &[]).is_empty());
     assert_eq!(run(&["a", "b"], &[]), [("a", 0, false), ("b", 0, false)]);
 }

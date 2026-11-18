@@ -357,7 +357,7 @@ fn test_sr_27_default_zebra_is_unchanged() {
 
 #[test]
 fn test_sr_27_theme_names() {
-    // [utest -> req~screen.theme-names-list~1, req~screen.theme-names-unknown~1, req~screen.calm-themes-color-only~1] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
+    // [utest -> req~screen.theme-names-list~1, req~screen.theme-names-unknown~1] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
     let names = [
         ("default", Theme::Default),
         ("nord", Theme::Nord),

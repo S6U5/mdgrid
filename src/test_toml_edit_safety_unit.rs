@@ -79,7 +79,7 @@ fn test_ws_1_trailing_table_and_inline_form_survive() {
 
 #[test]
 fn test_cli_18_place_header_with_comment_keeps_neighbour() {
-    // [utest -> req~cli.places-store~1, req~cli.places-replace-confirm~1, req~cli.places-hand-written~1] `[[place]] # work` も見出し。A を置き換えても B は残る。
+    // [utest -> req~cli.places-store~1, req~cli.places-replace-confirm~1] `[[place]] # work` も見出し。A を置き換えても B は残る。
     let text =
         "[[place]]\nname = \"A\"\npath = \"/a\"\n\n[[place]] # work\nname = \"B\"\npath = \"/b\"\n";
     let out = places::upsert(

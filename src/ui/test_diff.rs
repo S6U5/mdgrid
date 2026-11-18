@@ -7,7 +7,7 @@ fn s(x: &str) -> String {
 
 #[test]
 fn test_wb_9_line_diff_with_context() {
-    // [utest -> req~write-back.pending-mark~1] 値だけが変わった行を `-` / `+`、前後1行の文脈。離れた2か所は省略の印で区切る。
+    // 値だけが変わった行を `-` / `+`、前後1行の文脈。離れた2か所は省略の印で区切る。
     let before = "---\ntitle: a\nstatus: todo\ndue: x\nk1: 1\nk2: 2\nk3: 3\nlast: z\n---\nbody\n";
     let after = "---\ntitle: a\nstatus: done\ndue: x\nk1: 1\nk2: 2\nk3: 3\nlast: y\n---\nbody\n";
     assert_eq!(

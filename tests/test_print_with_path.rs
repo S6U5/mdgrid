@@ -463,7 +463,7 @@ fn test_cli_14_rows_without_frontmatter_are_told_apart_by_path() {
 
 #[test]
 fn test_cli_14_without_flag_output_has_no_path_column() {
-    // [stest -> req~cli.with-path-column~1, req~cli.print-rows~1, req~cli.print-columns~1, req~cli.print-no-write~1, req~cli.print-fail~1] `--with-path` を付けない → path の列は無い(今のまま)。
+    // [stest -> req~cli.with-path-column~1, req~cli.print-rows~1, req~cli.print-no-write~1, req~cli.print-fail~1] `--with-path` を付けない → path の列は無い(今のまま)。
     // 付けたときの出力から先頭の列を除くと、付けないときの出力と同じ(行の中身と並びは変わらない)。
     let t = make_folder_vault("plain");
     let plain = ok_stdout(&run_in(&t, &["notes", "--print"]), "--print");
@@ -497,7 +497,7 @@ fn test_cli_14_without_flag_output_has_no_path_column() {
 
 #[test]
 fn test_cli_14_json_with_path_first_key_is_path() {
-    // [stest -> req~cli.with-path-column~1, req~cli.with-path-json-first~1, req~cli.with-path-name-clash~1] `--format json --with-path` → 各オブジェクトの最初の鍵が `path`、値はノートのパス(文字列)。
+    // [stest -> req~cli.with-path-column~1, req~cli.with-path-json-first~1] `--format json --with-path` → 各オブジェクトの最初の鍵が `path`、値はノートのパス(文字列)。
     let t = make_folder_vault("json");
     let out = run_in(&t, &["notes", "--print", "--format", "json", "--with-path"]);
     let text = ok_stdout(&out, "--format json --with-path");

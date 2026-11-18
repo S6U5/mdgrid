@@ -61,7 +61,7 @@ fn place(name: &str, group: &str, path: PathBuf) -> Place {
 
 #[test]
 fn test_cli_18_register_from_palette() {
-    // [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-hand-written~1] 「この表を登録」→ 名前の欄に今のフォルダの名前 → 名前を打つ → 分類を新しく打つ → places.toml。
+    // [utest -> req~cli.places-store~1, req~cli.places-palette~1] 「この表を登録」→ 名前の欄に今のフォルダの名前 → 名前を打つ → 分類を新しく打つ → places.toml。
     let tmp = vault("pl_reg");
     let mut a = boot(&tmp);
     palette(&mut a, "この表を登録");
@@ -150,7 +150,7 @@ fn test_cli_18_empty_name_stays() {
 
 #[test]
 fn test_cli_19_open_list_and_switch() {
-    // [utest -> req~cli.places-list-order~1, req~cli.places-list-filter~1, req~cli.places-list-missing-path~1] 一覧は分類ごと(places.toml の順で分類が出た順)、先頭に今のフォルダ。打つと絞る(大文字小文字を
+    // [utest -> req~cli.places-list-order~1, req~cli.places-list-missing-path~1] 一覧は分類ごと(places.toml の順で分類が出た順)、先頭に今のフォルダ。打つと絞る(大文字小文字を
     // 問わない)。無いパスは理由を出して一覧に残る。在る表を選ぶと終わって開き直す(switch_to)。
     let tmp = vault("pl_open");
     let cfg = tmp.0.join("config");

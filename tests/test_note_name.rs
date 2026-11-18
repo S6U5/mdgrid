@@ -94,7 +94,7 @@ fn test_sr_47_views_override_reads_regex() {
 
 #[test]
 fn test_sr_47_views_override_bad_regex_warns_view_kept() {
-    // [stest -> req~screen.note-name-invalid~1, req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-ui-keeps-config~1] ビューの上書きの読めない正規表現・文字列でない値 → 警告1つで上書きを持たない。ビューは捨てない。
+    // [stest -> req~screen.note-name-invalid~1, req~cli.config-file-location~1, req~cli.config-file-items~1] ビューの上書きの読めない正規表現・文字列でない値 → 警告1つで上書きを持たない。ビューは捨てない。
     for (i, v) in ["note_name = '(x'", "note_name = 3"].iter().enumerate() {
         let (conf, notes) = views_toml(&format!("bad{i}"), v);
         let (views, warns) = mdgrid::views::load_views(&conf, &notes);

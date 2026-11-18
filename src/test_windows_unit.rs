@@ -54,7 +54,7 @@ fn test_cli_3_windows_xdg_first_and_none() {
 
 #[test]
 fn test_cli_3_windows_state_in_localappdata() {
-    // [utest -> req~cli.config-file-location~1, req~cli.config-file-ui-keeps-config~1, req~screen.state-store-key~1] 見た目の状態は Windows では %LOCALAPPDATA%\mdgrid\(端末ごと。ローミングしない)。
+    // [utest -> req~cli.config-file-location~1, req~screen.state-store-key~1] 見た目の状態は Windows では %LOCALAPPDATA%\mdgrid\(端末ごと。ローミングしない)。
     let env = env_of(&[("APPDATA", ROAMING), ("LOCALAPPDATA", LOCAL)]);
     assert_eq!(
         state_dir_in(&env, true),

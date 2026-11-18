@@ -872,7 +872,7 @@ fn test_nv_18_apply_keeps_selected_column_by_name() {
 
 #[test]
 fn test_sr_9_settings_screen_fits_narrow() {
-    // [utest -> req~cell-view.grapheme-width-fit~1, req~cell-view.grapheme-width-control-chars~1] 狭い端末でも設定の画面・帯・値の入力の行は幅以下。
+    // [utest -> req~cell-view.grapheme-width-fit~1] 狭い端末でも設定の画面・帯・値の入力の行は幅以下。
     let (_t, mut a) = folder("sr9set");
     hide_done(&mut a);
     open(&mut a);

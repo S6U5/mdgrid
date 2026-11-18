@@ -80,7 +80,7 @@ fn test_sc_17_typed_input_date_and_checkbox() {
 
 #[test]
 fn test_sc_17_bulk_edit_and_undo() {
-    // [utest -> req~scope.csv-features-edit~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1, req~write-back.undo-keys~1, req~write-back.redo-keys~1] 印を付けた2行の qty をまとめて直し、取り消すと戻る。やり直して保存 → 2行だけ変わる。
+    // [utest -> req~scope.csv-features-edit~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1, req~write-back.redo-keys~1] 印を付けた2行の qty をまとめて直し、取り消すと戻る。やり直して保存 → 2行だけ変わる。
     let (t, mut a) = open("sc17bulk");
     a.row = row(&a, "A");
     col_named(&mut a, "qty");
@@ -107,7 +107,7 @@ fn test_sc_17_bulk_edit_and_undo() {
 
 #[test]
 fn test_sc_17_filter_and_sort() {
-    // [utest -> req~scope.csv-features-views~1, req~navigation.header-sort-cycle~1, req~navigation.find~1] 絞り込み(検索の欄)と並べ替え(列の見出しの s)。
+    // [utest -> req~scope.csv-features-views~1, req~navigation.find~1] 絞り込み(検索の欄)と並べ替え(列の見出しの s)。
     let (_t, mut a) = open("sc17find");
     ch(&mut a, '\\');
     typing(&mut a, "東京");

@@ -7,7 +7,7 @@ use super::super::ColorMode;
 use mdgrid::source::NewValue;
 use ratatui::crossterm::event::KeyCode;
 
-// [utest -> req~cell-edit.list-candidates-mark~1, req~cell-edit.list-candidates-scalar-open~1]
+// [utest -> req~cell-edit.list-candidates-scalar-open~1]
 #[test]
 fn test_ce_19_scalar_list_opens_as_one_item() {
     let tmp = Tmp::new("ce19scalar");
