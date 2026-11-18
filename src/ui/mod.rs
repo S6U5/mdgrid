@@ -55,6 +55,7 @@ pub mod starter;
 pub mod startup;
 pub mod termbg;
 pub mod theme;
+mod then;
 pub mod type_menu;
 pub mod view;
 pub mod view_tabs;
@@ -300,6 +301,8 @@ mod test_look;
 #[cfg(test)]
 mod test_modern_rest;
 #[cfg(test)]
+mod test_note_bodies;
+#[cfg(test)]
 mod test_note_body_outside;
 #[cfg(test)]
 mod test_note_editor;
@@ -377,6 +380,8 @@ mod test_tab_wrap;
 mod test_tab_wrap_below;
 #[cfg(test)]
 mod test_theme_meaning;
+#[cfg(test)]
+mod test_then;
 #[cfg(test)]
 mod test_time_picker;
 #[cfg(test)]

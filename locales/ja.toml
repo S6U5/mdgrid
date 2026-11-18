@@ -809,6 +809,8 @@ NoteFormWhere = "{0} に作る"
 NoteHintKindNumber = "数"
 NoteHintKindList = "[リスト]"
 NoteFieldName = "名前"
+## cell-edit.body-choose。新しいノートの窓の、本文の雛形を選ぶ欄の見出し。
+NoteFieldBody = "雛形"
 NoteFromFilter = "(絞り込みから)"
 NoteFromConfig = "(設定から)"
 ## CE-27。
@@ -1752,3 +1754,29 @@ ChartUnit = "単位: {0}"
 RsnChartNotTable = "{ kind = \"<種類>\", x = \"<列>\" } の形の表でないので、このグラフを出さない"
 ## {0} は列。
 RsnChartNoColumn = "表に列 {0} が無いので、このグラフを出さない"
+
+# ---- expr: relative()(base-view.relative。今日・今からの隔たり) ----
+# 向き(先・前)と単位の組ごとに1文を持つ(語順や格が向きで変わる言語でも、文を丸ごと訳せるように)。
+# {0} は数。`…One` は数が 1 のときの文。
+RelToday = "今日"
+RelNow = "今"
+RelInMinutes = "あと{0}分"
+RelInMinutesOne = "あと{0}分"
+RelAgoMinutes = "{0}分前"
+RelAgoMinutesOne = "{0}分前"
+RelInHours = "あと{0}時間"
+RelInHoursOne = "あと{0}時間"
+RelAgoHours = "{0}時間前"
+RelAgoHoursOne = "{0}時間前"
+RelInDays = "あと{0}日"
+RelInDaysOne = "あと{0}日"
+RelAgoDays = "{0}日前"
+RelAgoDaysOne = "{0}日前"
+RelInMonths = "あと{0}か月"
+RelInMonthsOne = "あと{0}か月"
+RelAgoMonths = "{0}か月前"
+RelAgoMonthsOne = "{0}か月前"
+RelInYears = "あと{0}年"
+RelInYearsOne = "あと{0}年"
+RelAgoYears = "{0}年前"
+RelAgoYearsOne = "{0}年前"

@@ -640,12 +640,12 @@ add_frontmatter = false
 How a new note is made from the table ("+ New" at the right end of the view bar, or `a`). Every part is optional.
 
 - `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the root folder) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
-- `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`).
+- `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`); `{date:YYYYMMDD}_` starts the name with `20261118_`.
 - `ask`: the columns shown as fields in the new note form, in order. Without `ask`, the form shows the columns visible in the table. Each field is edited with the input for its type; a field left empty is not written. `Ctrl+S` creates the note from any field.
 - `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
 - `hidden`: columns written into every new note without a field in the form (with `[new_note.set]`, for values such as the creation date).
 - `mode`: `"form"` (default: the form with every field) or `"editor"` (ask only the name, create the note with the preset values and the body template, then open it in the editor right away). From the form, `Ctrl+E` also creates the note and opens it in the editor.
-- `body`: a template file (relative to the opened folder) whose contents become the body of the new note.
+- `body`: a template file (relative to the opened folder) whose contents become the body of the new note. If it names a folder, the form gets a "template" field after the name, and you pick one of the folder's `.md` files (the first by name if you do not pick; "(empty)" for no body).
 - `[new_note.set]`: values written into every new note (column = value): a string, number, boolean, date, or an array of them (written as a vertical list).
 
 Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may use these variables; unknown ones are left as they are:
@@ -660,6 +660,12 @@ Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may
 | `{weekday}` | the day of the week |
 | `{name}` | the note's name |
 | `{folder}` | the folder the note is made in |
+| `{uuid}` | a new UUID for this note (version 4, like `3f2b8c1e-9a4d-4e7b-8c21-5d6f7a8b9c0d`) |
+| `{uid}` | a new short id for this note (8 characters: a lowercase letter, then digits and lowercase letters, like `k3f9x2ab`) |
+
+`{uuid}` and `{uid}` keep one value within a note, so `name = "{uid}_"` together with `id = "{uid}"` in `[new_note.set]` gives the file name and the frontmatter the same id. Add the column to `hidden` to fill it without showing a field.
+
+In `name`, only the date variables (`{date}`, `{date:…}`, `{date+N}`, `{date-N}`, `{weekday}`) and the id variables (`{uuid}`, `{uid}`) are filled; the others stay as written, because the name is not decided yet and a time has a `:` that a file name cannot hold.
 
 Filter conditions of the view that fix a single value (such as `status == "todo"` or a tag) are written first and win over `[new_note.set]`. `[new_note]` is one item: a narrower place that writes it (a workspace, a table, or a mdgrid view under `[table.view.new_note]` in `views.toml`) replaces it whole.
 
@@ -698,16 +704,21 @@ estimate = "number"
 
 ### `rules`
 
-- Type: `table of tables (column = { required = boolean, values = [string, …] })`
+- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } } })`
 - Default: `{}`
 - Scope: global, workspace, table, view
 
-Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Rules never change notes and never stop you writing a value. A column with `values` offers them in the cell input. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
+Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Checking a rule never changes a note and never stops you writing a value. A column with `values` offers them in the cell input. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
+
+`then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today.
 
 ```toml
 [rules.status]
 required = true
 values = ["todo", "doing", "done"]
+
+[rules.status.then]
+done = { done_at = "{date}" }
 ```
 
 ## `[keys]` — key bindings

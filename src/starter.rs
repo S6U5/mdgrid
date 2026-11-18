@@ -397,7 +397,7 @@ pub fn create(
                     .unwrap_or_default()
                     .to_string();
                 let folder = f.rel.parent().map(rel_str).unwrap_or_default();
-                newnote::expand(
+                newnote::expand_ids(
                     &f.text,
                     &newnote::Vars {
                         today,
@@ -405,6 +405,7 @@ pub fn create(
                         name,
                         folder,
                     },
+                    &newnote::Ids::new(),
                 )
             }
         };

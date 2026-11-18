@@ -63,9 +63,66 @@ pub struct Vars {
     pub folder: String,
 }
 
+/// 1つのノートの `{uuid}`・`{uid}` の値。名前の雛形・前もって入れる値・本文の雛形で同じ値を使う
+/// (形は仮決め: tbd~id-variable-forms)。
+#[derive(Clone, Debug, Default)]
+pub struct Ids {
+    /// 版4の UUID(小文字の16進を 8-4-4-4-12 に区切った36字)。
+    pub uuid: String,
+    /// 英小文字で始まる、数字と英小文字の8字(頭を字にするのは、YAML で数に読まれないため)。
+    pub uid: String,
+}
+
+impl Ids {
+    /// OS の乱数から新しく作る。乱数を取れなければ空(変数は文字のまま残る)。
+    pub fn new() -> Ids {
+        let mut b = [0u8; 16];
+        if getrandom::fill(&mut b).is_err() {
+            return Ids::default();
+        }
+        b[6] = (b[6] & 0x0f) | 0x40;
+        b[8] = (b[8] & 0x3f) | 0x80;
+        let hex: String = b.iter().map(|x| format!("{x:02x}")).collect();
+        let uuid = format!(
+            "{}-{}-{}-{}-{}",
+            &hex[..8],
+            &hex[8..12],
+            &hex[12..16],
+            &hex[16..20],
+            &hex[20..]
+        );
+        const CHARS: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let mut uid = String::new();
+        while uid.len() < 8 {
+            let mut r = [0u8; 16];
+            if getrandom::fill(&mut r).is_err() {
+                return Ids::default();
+            }
+            for x in r {
+                // 偏りを避けて、範囲の外の値は捨てる(頭の1字は英字の26、残りは36)。
+                let n = if uid.is_empty() { 26 } else { 36 };
+                if uid.len() < 8 && (x as usize) < 256 / n * n {
+                    uid.push(CHARS[x as usize % n] as char);
+                }
+            }
+        }
+        Ids { uuid, uid }
+    }
+}
+
 /// CE-32: 雛形の変数を埋める: `{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{time}`・`{now}`・`{weekday}`・
-/// `{name}`・`{folder}`。知らない変数と読めない形は文字のまま残す。
+/// `{name}`・`{folder}`・`{uuid}`・`{uid}`。知らない変数と読めない形は文字のまま残す。
 pub fn expand(s: &str, v: &Vars) -> String {
+    expand_ids(s, v, &Ids::default())
+}
+
+/// `expand` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める(空の値なら文字のまま残す)。
+pub fn expand_ids(s: &str, v: &Vars, ids: &Ids) -> String {
+    expand_with(s, |var| var_value(var, v, ids))
+}
+
+/// `{変数}` を `value` の返す文字に置き換える。None の変数と閉じていない `{` は文字のまま残す。
+fn expand_with(s: &str, value: impl Fn(&str) -> Option<String>) -> String {
     let mut out = String::new();
     let mut rest = s;
     while let Some(i) = rest.find('{') {
@@ -76,7 +133,7 @@ pub fn expand(s: &str, v: &Vars) -> String {
             return out;
         };
         let var = &after[..j];
-        match var_value(var, v) {
+        match value(var) {
             Some(text) => out.push_str(&text),
             None => {
                 out.push('{');
@@ -90,7 +147,7 @@ pub fn expand(s: &str, v: &Vars) -> String {
     out
 }
 
-fn var_value(var: &str, v: &Vars) -> Option<String> {
+fn var_value(var: &str, v: &Vars, ids: &Ids) -> Option<String> {
     let hm = format!("{:02}:{:02}", v.minutes / 60, v.minutes % 60);
     Some(match var {
         "date" => types::format_date(v.today),
@@ -98,6 +155,8 @@ fn var_value(var: &str, v: &Vars) -> Option<String> {
         "now" => format!("{}T{hm}", types::format_date(v.today)),
         "name" => v.name.clone(),
         "folder" => v.folder.clone(),
+        "uuid" if !ids.uuid.is_empty() => ids.uuid.clone(),
+        "uid" if !ids.uid.is_empty() => ids.uid.clone(),
         "weekday" => {
             // 1970-01-01 は木曜。
             let k = (v.today + 4).rem_euclid(7) as usize;
@@ -129,10 +188,17 @@ fn var_value(var: &str, v: &Vars) -> Option<String> {
 
 /// CE-32: 入れる値の文字の部分の変数を埋める(リストは要素ごと)。
 pub fn expand_value(value: &NewValue, v: &Vars) -> NewValue {
+    expand_value_ids(value, v, &Ids::default())
+}
+
+/// `expand_value` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+pub fn expand_value_ids(value: &NewValue, v: &Vars, ids: &Ids) -> NewValue {
     match value {
-        NewValue::Str(s) => NewValue::Str(expand(s, v)),
-        NewValue::Date(s) => NewValue::Date(expand(s, v)),
-        NewValue::List(items) => NewValue::List(items.iter().map(|s| expand(s, v)).collect()),
+        NewValue::Str(s) => NewValue::Str(expand_ids(s, v, ids)),
+        NewValue::Date(s) => NewValue::Date(expand_ids(s, v, ids)),
+        NewValue::List(items) => {
+            NewValue::List(items.iter().map(|s| expand_ids(s, v, ids)).collect())
+        }
         other => other.clone(),
     }
 }
@@ -371,9 +437,23 @@ pub fn rule_for(config: &Config, view: Option<&NativeView>) -> NewNote {
         .unwrap_or_else(|| config.resolved().new_note)
 }
 
-/// 名前の雛形の `{date}` を今日(1970-01-01 からの日数)の YYYY-MM-DD にする(CE-27)。
+/// 名前の雛形の日付の変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{weekday}`)を今日(1970-01-01 からの
+/// 日数)で埋める(CE-27・CE-32)。`{time}`・`{now}`(名前に書けない `:` が入る)と `{name}`・`{folder}`(名前を
+/// 決める前で値が無い)、知らない変数は文字のまま残す(仮決め: tbd~name-template-other-vars)。
 pub fn expand_name(template: &str, today: i64) -> String {
-    template.replace("{date}", &types::format_date(today))
+    expand_name_ids(template, today, &Ids::default())
+}
+
+/// `expand_name` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+pub fn expand_name_ids(template: &str, today: i64, ids: &Ids) -> String {
+    let v = Vars {
+        today,
+        ..Vars::default()
+    };
+    expand_with(template, |var| match var {
+        "time" | "now" | "name" | "folder" => None,
+        _ => var_value(var, &v, ids),
+    })
 }
 
 /// Obsidian がファイルとフォルダの名前に許さない文字(`\` も)。
@@ -427,6 +507,30 @@ pub fn read_body(root: &Path, body: &str) -> Result<Option<String>, String> {
     std::fs::read_to_string(&real)
         .map(Some)
         .map_err(|e| Msg::NoteBodyUnreadable.fill(&[&real.display(), &e]))
+}
+
+/// `[new_note] body` がフォルダのとき、その直下の `.md` の名前(`.md` なし。名前の順)。フォルダでない・外を指す・
+/// 読めないときと、`.md` が1つも無いときは空(cell-edit.body-choose)。
+pub fn body_choices(root: &Path, body: &str) -> Vec<String> {
+    let Ok(Some(dir)) = body_path(root, body) else {
+        return Vec::new();
+    };
+    let Ok(rd) = std::fs::read_dir(&dir) else {
+        return Vec::new();
+    };
+    let mut names: Vec<String> = rd
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| p.is_file() && p.extension().is_some_and(|x| x == "md"))
+        .filter_map(|p| p.file_stem().and_then(|s| s.to_str()).map(str::to_string))
+        .collect();
+    names.sort();
+    names
+}
+
+/// `body` のフォルダの中の雛形 `name` の、開いたフォルダからの相対のパス。
+pub fn body_choice_path(body: &str, name: &str) -> String {
+    format!("{}/{name}.md", body.trim().trim_end_matches('/'))
 }
 
 /// `read_body` の確かめ: 雛形の実体のパス(開いたフォルダの中にあると確かめたもの)。
@@ -687,20 +791,32 @@ pub fn build_with(
     vars: &Vars,
     body: Option<&str>,
 ) -> Result<Vec<u8>, String> {
+    build_with_ids(rule, prefill, answers, vars, &Ids::default(), body)
+}
+
+/// `build_with` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+pub fn build_with_ids(
+    rule: &NewNote,
+    prefill: &[Edit],
+    answers: &[Edit],
+    vars: &Vars,
+    ids: &Ids,
+    body: Option<&str>,
+) -> Result<Vec<u8>, String> {
     let mut r = rule.clone();
     for (_, v) in &mut r.set {
-        *v = expand_value(v, vars);
+        *v = expand_value_ids(v, vars, ids);
     }
     let prefill: Vec<Edit> = prefill
         .iter()
         .map(|e| Edit {
             key: e.key.clone(),
-            value: expand_value(&e.value, vars),
+            value: expand_value_ids(&e.value, vars, ids),
         })
         .collect();
     let mut out = build(&r, &prefill, answers)?;
     if let Some(b) = body {
-        out.extend_from_slice(expand(b, vars).as_bytes());
+        out.extend_from_slice(expand_ids(b, vars, ids).as_bytes());
     }
     Ok(out)
 }

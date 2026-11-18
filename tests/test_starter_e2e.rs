@@ -32,6 +32,11 @@ fn files(root: &Path) -> BTreeMap<String, Vec<u8>> {
 
 /// 組み込みのスターター `name` から、`h` の下の `name` に見本つきで作る(画面なし。今日は 2026-10-06)。
 fn make(h: &Path, name: &str) {
+    make_in(h, name, "ja_JP.UTF-8");
+}
+
+/// `make` と同じで、言語を `lang` にする。
+fn make_in(h: &Path, name: &str, lang: &str) {
     let root = h.join(name);
     let o = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
         .args([
@@ -43,7 +48,7 @@ fn make(h: &Path, name: &str) {
         ])
         .current_dir(h)
         .env("HOME", h)
-        .env("LANG", "ja_JP.UTF-8")
+        .env("LANG", lang)
         .env_remove("LC_ALL")
         .env_remove("LC_MESSAGES")
         .env("XDG_CONFIG_HOME", h.join("config"))
@@ -176,4 +181,71 @@ fn test_st_6_opening_a_made_ledger_changes_no_bytes_e2e() {
             "{name}: 開いて閉じたあとに変わったファイルがある"
         );
     }
+}
+
+#[test]
+fn test_st_2_tasks_starter_prefixes_new_notes_and_hides_the_prefix_e2e() {
+    // [stest -> req~starter.tasks-name-prefix~1] tasks から作った台帳は、新しいノートの名前を今日の8桁と `_` で始め、ノートの欄にはその頭を出さない。
+    // 観点: 日本語と英語の変種の両方。頭の無い名前はそのまま出る。
+    for (lang, word) in [
+        ("ja_JP.UTF-8", "請求書を送る"),
+        ("en_US.UTF-8", "Send the invoice"),
+    ] {
+        let home = TempDir::new("starter-prefix");
+        let h = home.path();
+        std::fs::create_dir_all(h.join("state")).unwrap();
+        make_in(h, "tasks", lang);
+        let note = "---\nstatus: todo\n---\n";
+        std::fs::write(h.join(format!("tasks/Tasks/20261006_{word}.md")), note).unwrap();
+        std::fs::write(h.join("tasks/Tasks/メモ.md"), note).unwrap();
+        let mut tui = Tui::spawn(
+            &["tasks"],
+            h,
+            &[("MDGRID_TODAY", "2026-10-06"), ("LANG", lang)],
+        );
+        tui.wait_until("表が出る", |s| s.contains(word) && s.contains("メモ"));
+        assert!(
+            !tui.screen().contains("20261006_"),
+            "{lang}: ノートの欄に頭の日付が出ている\n{}",
+            tui.screen()
+        );
+        tui.send("a");
+        tui.wait_until("名前の欄に今日の8桁と _", |s| {
+            s.contains("20261006_")
+        });
+        tui.send_settle("\x1b");
+        tui.wait_until("窓が閉じる", |s| !s.contains("20261006_"));
+        tui.send("q");
+        assert_eq!(tui.wait_exit(), 0, "{lang}");
+    }
+}
+
+#[test]
+fn test_st_2_tasks_starter_fills_the_done_date_e2e() {
+    // [stest -> req~starter.tasks-done-at~1] tasks から作った台帳で状態を done にして保存すると、ノートの done_at に今日が書かれる。
+    let home = TempDir::new("starter-done-at");
+    let h = home.path();
+    std::fs::create_dir_all(h.join("state")).unwrap();
+    make_in(h, "tasks", "ja_JP.UTF-8");
+    // 見本のノートは除き、札を1枚だけにする。
+    std::fs::remove_dir_all(h.join("tasks/Tasks")).unwrap();
+    std::fs::create_dir_all(h.join("tasks/Tasks")).unwrap();
+    let note = h.join("tasks/Tasks/請求書を送る.md");
+    std::fs::write(&note, "---\nstatus: todo\ndone_at:\n---\n").unwrap();
+    let mut tui = Tui::spawn(&["tasks"], h, &[("MDGRID_TODAY", "2026-10-06")]);
+    tui.wait_until("表が出る", |s| s.contains("請求書を送る"));
+    // カンバンで todo の札を、doing・waiting を通って done のレーンへ動かす。
+    tui.send("B");
+    tui.wait_until("カンバン", |s| s.contains("done"));
+    for lane in ["doing", "waiting", "done"] {
+        tui.send("L");
+        tui.wait_until("札が動く", |s| s.contains(&format!("→ {lane}")));
+    }
+    tui.wait_until("未保存", |s| s.contains("未保存 2"));
+    tui.send("\x13");
+    tui.wait_for("+done_at: 2026-10-06");
+    tui.send("\r");
+    let body = pty::wait_file(&note, &tui, |s| s.contains("done_at: 2026"));
+    assert_eq!(body, "---\nstatus: done\ndone_at: 2026-10-06\n---\n");
+    tui.stop();
 }

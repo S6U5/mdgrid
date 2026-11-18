@@ -3,10 +3,11 @@
 # when you open this folder (open). This is your copy: rename columns, add views, change the values.
 open = "Tasks"
 
-# A blank line between the status groups; the note column shows the file name only.
+# A blank row between the status groups. The note column shows only the file name, without the date that new notes get in front (20261118_).
 [display]
 group_gap = true
 note_path = "name"
+note_name = '^\d{8}_'
 
 # Column types: dates sort as dates, open a calendar when edited, and mark values of the wrong shape.
 [types]
@@ -20,12 +21,17 @@ tags = "list"
 [rules.status]
 values = ["todo", "doing", "waiting", "done"]
 
+# Setting the status to done fills in the done date with today.
+[rules.status.then]
+done = { done_at = "{date}" }
+
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# New note (a): asks for the due date and the priority, fills in the rest, and starts the body from the template.
+# New note (a): the name starts with today's date (20261118_); it asks for the due date and the priority, fills in the rest, and starts the body from the template.
 [new_note]
 folder = "Tasks"
+name = "{date:YYYYMMDD}_"
 ask = ["due", "priority"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
@@ -51,7 +57,12 @@ chart = [
 [table.base]
 filters = { and = ['file.inFolder("Tasks")'] }
 
+# Time left: how far the due date is from today ("in 3 days", "5 days ago"), worked out each time and never written to the note.
+[table.base.formulas]
+left = 'due.relative()'
+
 [table.base.properties]
+"formula.left" = { displayName = "Time left" }
 "note.status" = { displayName = "Status" }
 "note.start" = { displayName = "Start" }
 "note.due" = { displayName = "Due" }
@@ -60,14 +71,21 @@ filters = { and = ['file.inFolder("Tasks")'] }
 "note.created" = { displayName = "Created" }
 "note.done_at" = { displayName = "Done" }
 
-# Tabs by status ([ and ] switch them).
+# Tabs ([ and ] switch them): one per status, plus Overdue for unfinished tasks past their due date. Open also shows notes that have no status yet.
 [[table.base.views]]
 type = "table"
 name = "Open"
-where = { status = ["todo", "doing", "waiting"] }
-order = ["status", "due", "priority", "tags"]
+filters = 'status != "done"'
+order = ["status", "due", "formula.left", "priority", "tags"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "Overdue"
+filters = { and = ['status != "done"', 'due < today()'] }
+order = ["status", "due", "formula.left", "priority", "tags"]
+sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
