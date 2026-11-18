@@ -119,7 +119,8 @@ fn test_ce_34_refuses_unsafe_note() {
     let (t, a0) = make("ce34u", &[("固定.md", "---\na: 1\n---\n")]);
     drop(a0);
     let p = t.notes().join("固定.md");
-    let mut perm = std::fs::metadata(&p).unwrap().permissions();
+    let orig = std::fs::metadata(&p).unwrap().permissions();
+    let mut perm = orig.clone();
     perm.set_readonly(true);
     std::fs::set_permissions(&p, perm).unwrap();
     let mut a = super::test_screen::app_of(&t, ColorMode::None);
@@ -130,11 +131,8 @@ fn test_ce_34_refuses_unsafe_note() {
     assert!(!m.contains("に変えた"), "{m}");
     assert!(p.exists() && !t.notes().join("改名.md").exists());
     assert_eq!(std::fs::read_to_string(&p).unwrap(), "---\na: 1\n---\n");
-    // 読み取り専用の属性のファイルは Windows で消せないので、片付けの前に戻す。
-    let mut perm = std::fs::metadata(&p).unwrap().permissions();
-    #[allow(clippy::permissions_set_readonly_false)]
-    perm.set_readonly(false);
-    std::fs::set_permissions(&p, perm).unwrap();
+    // 読み取り専用の属性のファイルは Windows で消せないので、片付けの前に元の権限へ戻す。
+    std::fs::set_permissions(&p, orig).unwrap();
 }
 
 #[test]
