@@ -41,6 +41,15 @@ crates.io から。 Rust 1.90 以上で:
 cargo install mdgrid --locked
 ```
 
+これはソースからビルドするので数分かかります。[cargo-binstall](https://github.com/cargo-bins/cargo-binstall) があれば、`cargo binstall mdgrid` でリリースのビルド済みのバイナリが入ります。
+
+Nix で。 入れずにその場で動かすか、プロファイルに入れます。
+
+```sh
+nix run github:S6U5/mdgrid -- ~/notes/Tasks
+nix profile install github:S6U5/mdgrid
+```
+
 ソースから。
 
 ```sh

@@ -16,6 +16,15 @@ homepage = "https://s6u5.github.io/mdgrid/"
 documentation = "https://s6u5.github.io/mdgrid/manual/en/"
 publish = true
 
+# cargo binstall: where the release archives are (.github/workflows/release.yml names them) and where the binary sits inside.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-v{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+
 [lib]
 path = "src/lib.rs"
 
