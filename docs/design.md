@@ -688,6 +688,15 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - CHANGELOG: コミットの書き方(`実装:`・`修正:` などの書き出し)は今のままにし、リポの根の `cliff.toml`(git-cliff)で書き出しを CHANGELOG の節に写す(`実装`・`追加` → Features、`修正` → Fixes、`文書`・公開リポの PR の題の `docs` → Documentation、`specs` → Specification、ほかは出さない)。CHANGELOG.md はリリースの作業(Q-6)で生成する。新しい書き出しを使うときは cliff.toml に足す(tests/test_cliff.rs が履歴の書き出しの漏れを見る)。
 - TUI 本体(配る実行ファイルの言語・フレームワーク)は Rust だけにし、cellops のような Node との二重持ちはしない。試験の道具はこの限りでなく、通しの試験(本物の疑似端末で起動 → 操作 → 画面とファイルを確かめる)には Node の Microsoft tui-test を `e2e/` に分けて使ってよい(人の判断、2026-10-01)。単体の試験とゴールデンは `cargo test` に置く。
 
+## 配布(入れ方)
+
+入れ方はどれも、タグを push すると走る `.github/workflows/release.yml` の成果物から出る。アーカイブの名前(`mdgrid-<タグ>-<target>.tar.gz`、Windows は `.zip`)と中の並び(同じ名前のフォルダの下に `mdgrid`・`mdgrid.1`・`completions/`)を変えるときは、下の binstall の指定も同じ変更で直す。
+
+- GitHub Releases のアーカイブと crates.io(`cargo install`): release.yml の build・release・crates のジョブ。
+- cargo binstall: `Cargo.toml` の `[package.metadata.binstall]` に、アーカイブの URL と中の実行ファイルの場所を書く。binstall は crates.io に出た版の Cargo.toml を読むので、指定はその版を出したときから効く。
+- Nix: リポの根の `flake.nix`(nixpkgs の `rustPlatform.buildRustPackage`。依存は `Cargo.lock` から取るのでハッシュの書き換えは要らない)。ソースは crate と同じファイルだけを渡し、試験は回さない(試験は `cargo test` の CI が見る)。`flake.lock` は nixpkgs の版を留めるので、`rust-version` を上げて nixpkgs の Rust が足りなくなったら `nix flake update` で進める。ci.yml の nix のジョブが `nix flake check` でビルドを見る。タグを付けない `github:S6U5/mdgrid` は main の先頭(まだ出していない変更も入る)なので、README と説明書は `github:S6U5/mdgrid/v<版>` とタグを付けて書き、ほかの入れ方と同じくリリースした版が入るようにする。版を上げたら文書の番号も直す(`tests/test_install_docs.rs` が `Cargo.toml` の版との食い違いを見る)。
+- まだ無いもの: Homebrew(tap を持つと、formula を書き換えるトークンと守るリポが1つ増えるので見送った。人の判断、2026-11-18)、Windows の Scoop・winget、Linux の .deb・.rpm・AUR、1行のインストーラ。
+
 ## セッション(CLI-6〜CLI-10)
 
 表示に名前を付けたもの。起動の引数と同じ「起動の指定」(`Launch`)に名前を付けて、設定の置き場の `sessions.toml` に置く(ノートのフォルダ・`.base` には書かない)。核(base・changes・ui)はセッションを知らず、`Launch` だけを受ける。絞り込みは画面で掛けた種類のまま持つ(`text` = NV-2、`value` = NV-8、のちに `expr` = NV-10)。画面からの保存はパレットのコマンドで、既定のキーは割り当てない。書くときは一時ファイル → 名前の変更。形式と、選ばなかった案(`.base` として書き出す・`config.toml` に混ぜる)は変更の記録 specs/_history/decidespec/_changes/2026-10-01-sessions.md にある。

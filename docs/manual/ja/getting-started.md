@@ -2,14 +2,16 @@
 
 [English](../en/getting-started.md) · [目次](index.md)
 
-入れ方は3つから1つ選びます。見本を開いて、最初のセルを直して保存するまでが、このページの道です。
+入れ方はいくつかあるので、1つ選びます。見本を開いて、最初のセルを直して保存するまでが、このページの道です。
 
 ## 入れる
 
-mdgrid は Rust 製の単体の実行ファイルです。[GitHub の Releases](https://github.com/S6U5/mdgrid/releases) から OS に合うアーカイブを落とすか、Rust 1.90 以上で次を実行して入れます。
+mdgrid は Rust 製の単体の実行ファイルです。[GitHub の Releases](https://github.com/S6U5/mdgrid/releases) から OS に合うアーカイブを落とすか、手元にある道具で入れます。
 
 ```sh
-cargo install mdgrid --locked
+cargo install mdgrid --locked       # Rust 1.90 以上。ソースからビルドするので数分かかる
+cargo binstall mdgrid               # cargo-binstall。ビルド済みのバイナリが入る
+nix profile install github:S6U5/mdgrid/v0.4.0   # Nix(試すだけなら nix run github:S6U5/mdgrid/v0.4.0)
 ```
 
 リポを clone して作るときは `cargo build --release` で `target/release/mdgrid` ができます。下の例は `target/release/mdgrid` で書いています。入れた `mdgrid` なら `mdgrid` だけで動きます。
