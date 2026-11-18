@@ -148,7 +148,7 @@ fn test_nv_7_goto_line() {
 
 #[test]
 fn test_sr_16_palette_w_and_q() {
-    // [utest -> req~screen.key-modes-palette-commands~1] パレットの `w` は保存(差分の確認へ)、`q` は終了(ためた変更があれば終了の確認)。
+    // [utest -> req~screen.key-modes-palette-commands~2] パレットの `w` は保存(差分の確認へ)、`q` は終了(ためた変更があれば終了の確認)。
     let (_t, mut a) = make("sr16", NOTES);
     ch(&mut a, ':');
     ch(&mut a, 'w');
@@ -174,6 +174,63 @@ fn test_sr_16_palette_w_and_q() {
     ch(&mut a, 'q');
     press(&mut a, KeyCode::Enter);
     assert!(a.quit);
+}
+
+#[test]
+fn test_palette_wq_saves_and_quits() {
+    // [utest -> req~screen.key-modes-palette-commands~2] 未保存 1 で `wq` → 差分の確認、確定で書いて終わる。戻ると書かず終わらない。`x` も同じ。
+    let (t, mut a) = make("wq", NOTES);
+    let files = |t: &Tmp| -> Vec<Vec<u8>> {
+        let mut p: Vec<_> = std::fs::read_dir(t.notes())
+            .unwrap()
+            .map(|e| e.unwrap().path())
+            .filter(|p| p.is_file())
+            .collect();
+        p.sort();
+        p.iter().map(|p| std::fs::read(p).unwrap()).collect()
+    };
+    let before = files(&t);
+    press(&mut a, KeyCode::Backspace);
+    assert_eq!(a.changes.count(), 1);
+    ch(&mut a, ':');
+    typing(&mut a, "wq");
+    assert_eq!(candidates(&a, "wq")[0].target, Target::SaveQuit);
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Confirm);
+    // 戻る → 書かず、終わらず、表に戻る。
+    press(&mut a, KeyCode::Esc);
+    assert_eq!(a.mode, Mode::Table);
+    assert!(!a.quit);
+    assert_eq!(a.changes.count(), 1);
+    assert_eq!(files(&t), before);
+    // `x` → 差分の確認、確定で書いて終わる。
+    ch(&mut a, ':');
+    ch(&mut a, 'x');
+    assert_eq!(candidates(&a, "x")[0].target, Target::SaveQuit);
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Confirm);
+    press(&mut a, KeyCode::Enter);
+    assert!(a.quit);
+    assert_eq!(a.changes.count(), 0);
+    assert_ne!(files(&t), before);
+}
+
+#[test]
+fn test_palette_wq_without_changes_and_readonly() {
+    // [utest -> req~screen.key-modes-palette-commands~2] ためた変更が無いときの `wq` はそのまま終わる。読むだけでは候補に出ない。
+    let (_t, mut a) = make("wq0", NOTES);
+    ch(&mut a, ':');
+    typing(&mut a, "wq");
+    press(&mut a, KeyCode::Enter);
+    assert!(a.quit);
+    let (_t, mut r) = make("wqro", NOTES);
+    r.readonly = true;
+    assert!(candidates(&r, "wq")
+        .iter()
+        .all(|c| c.target != Target::SaveQuit));
+    assert!(candidates(&r, "x")
+        .iter()
+        .all(|c| c.target != Target::SaveQuit));
 }
 
 #[test]
