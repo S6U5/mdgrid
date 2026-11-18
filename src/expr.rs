@@ -1757,10 +1757,14 @@ fn num_method(x: f64, m: Meth, args: &[Val]) -> Option<Val> {
 /// 「今日」。暦で1か月に満たなければ日、12か月に満たなければ月、それより先は年(端数は切り捨てる)。
 fn relative(w: &Val, today: i64, now: i64) -> Option<String> {
     use crate::i18n::Msg;
-    let say = |n: i64, unit: Msg, future: bool| {
-        let span = unit.fill(&[&n]);
-        if future { Msg::RelIn } else { Msg::RelAgo }.fill(&[&span])
-    };
+    // 向きと単位の組ごとの文(言語の台帳。語順や格が向きで変わる言語でも訳せるように、組み立てない)。
+    let say =
+        |n: i64, unit: (Msg, Msg), future: bool| if future { unit.0 } else { unit.1 }.fill(&[&n]);
+    const MINUTES: (Msg, Msg) = (Msg::RelInMinutes, Msg::RelAgoMinutes);
+    const HOURS: (Msg, Msg) = (Msg::RelInHours, Msg::RelAgoHours);
+    const DAYS: (Msg, Msg) = (Msg::RelInDays, Msg::RelAgoDays);
+    const MONTHS: (Msg, Msg) = (Msg::RelInMonths, Msg::RelAgoMonths);
+    const YEARS: (Msg, Msg) = (Msg::RelInYears, Msg::RelAgoYears);
     let days = match *w {
         Val::Date(d) => d.checked_sub(today)?,
         Val::DateTime(s) => {
@@ -1770,10 +1774,10 @@ fn relative(w: &Val, today: i64, now: i64) -> Option<String> {
                 return Some(Msg::RelNow.text().to_string());
             }
             if abs < 3600 {
-                return Some(say(abs / 60, Msg::RelMinutes, future));
+                return Some(say(abs / 60, MINUTES, future));
             }
             if abs < DAY_SECS {
-                return Some(say(abs / 3600, Msg::RelHours, future));
+                return Some(say(abs / 3600, HOURS, future));
             }
             diff / DAY_SECS
         }
@@ -1794,11 +1798,11 @@ fn relative(w: &Val, today: i64, now: i64) -> Option<String> {
     }
     let months = months.abs();
     Some(if months >= 12 {
-        say(months / 12, Msg::RelYears, future)
+        say(months / 12, YEARS, future)
     } else if months >= 1 {
-        say(months, Msg::RelMonths, future)
+        say(months, MONTHS, future)
     } else {
-        say(days.abs(), Msg::RelDays, future)
+        say(days.abs(), DAYS, future)
     })
 }
 

@@ -340,3 +340,24 @@ fn test_relative_of_a_value_that_is_not_a_date_is_null() {
     assert_eq!(run("(5).relative()"), Val::Null);
     assert_eq!(run("status.relative()"), Val::Null);
 }
+
+// [utest -> req~base-view.relative-days~1, req~base-view.relative-months~1]
+#[test]
+fn test_relative_in_english_uses_the_singular_for_one() {
+    // 英語では、数が 1 のときは単数("in 1 day")、ほかは複数("in 14 days")で言う。
+    let _lang = crate::i18n::scoped(crate::i18n::Lang::En);
+    assert_eq!(run("date(\"2026-10-07\").relative()"), s("in 1 day"));
+    assert_eq!(run("date(\"2026-10-20\").relative()"), s("in 14 days"));
+    assert_eq!(run("date(\"2026-10-05\").relative()"), s("1 day ago"));
+    assert_eq!(run("date(\"2026-10-01\").relative()"), s("5 days ago"));
+    assert_eq!(run("date(\"2026-10-06\").relative()"), s("today"));
+    assert_eq!(run("date(\"2026-11-06\").relative()"), s("in 1 month"));
+    assert_eq!(run("date(\"2027-01-15\").relative()"), s("in 3 months"));
+    assert_eq!(run("date(\"2027-10-06\").relative()"), s("in 1 year"));
+    assert_eq!(run("date(\"2024-03-01\").relative()"), s("2 years ago"));
+    assert_eq!(run("date(\"2026-10-06T01:00\").relative()"), s("in 1 hour"));
+    assert_eq!(
+        run("date(\"2026-10-05T23:59\").relative()"),
+        s("1 minute ago")
+    );
+}

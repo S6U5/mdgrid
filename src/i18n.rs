@@ -112,13 +112,12 @@ impl Msg {
     }
 
     /// 今の言語の文の `{n}` を `args[n]` で置き換える。ほかの `{` と、値の無い番号はそのまま残す。
-    /// 差し込んだ値の中はもう見ない。英語で、数の差し込み(`singular`)の値が `1` なら単数の文を使う。
+    /// 差し込んだ値の中はもう見ない。数の差し込み(`singular`)の値が `1` なら、今の言語の単数の文を使う。
     pub fn fill(self, args: &[&dyn Display]) -> String {
         let lang = current();
-        let src = match (lang, self.singular()) {
-            (Lang::En, Some((n, one))) if args.get(n).is_some_and(|v| v.to_string() == "1") => {
-                one.en()
-            }
+        // 数が 1 のときの文は、どの言語でも台帳の `…One` を使う(単数を分けない言語は、同じ文を書いておく)。
+        let src = match self.singular() {
+            Some((n, one)) if args.get(n).is_some_and(|v| v.to_string() == "1") => one.get(lang),
             _ => self.get(lang),
         };
         fill_in(src, args)
@@ -129,6 +128,16 @@ impl Msg {
     pub const fn singular(self) -> Option<(usize, Msg)> {
         match self {
             Msg::HelpHead => Some((2, Msg::HelpHeadOne)),
+            Msg::RelInMinutes => Some((0, Msg::RelInMinutesOne)),
+            Msg::RelAgoMinutes => Some((0, Msg::RelAgoMinutesOne)),
+            Msg::RelInHours => Some((0, Msg::RelInHoursOne)),
+            Msg::RelAgoHours => Some((0, Msg::RelAgoHoursOne)),
+            Msg::RelInDays => Some((0, Msg::RelInDaysOne)),
+            Msg::RelAgoDays => Some((0, Msg::RelAgoDaysOne)),
+            Msg::RelInMonths => Some((0, Msg::RelInMonthsOne)),
+            Msg::RelAgoMonths => Some((0, Msg::RelAgoMonthsOne)),
+            Msg::RelInYears => Some((0, Msg::RelInYearsOne)),
+            Msg::RelAgoYears => Some((0, Msg::RelAgoYearsOne)),
             Msg::GotoPastEnd => Some((1, Msg::GotoPastEndOne)),
             Msg::HeaderRows => Some((0, Msg::HeaderRow)),
             Msg::BarCount => Some((1, Msg::BarCountOne)),
