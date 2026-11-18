@@ -404,6 +404,7 @@ pub fn create(
                         minutes,
                         name,
                         folder,
+                        ids: newnote::Ids::new(),
                     },
                 )
             }

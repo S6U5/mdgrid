@@ -73,6 +73,8 @@ pub(crate) struct Flow {
     error: Option<(usize, String)>,
     /// CE-33: 作ったらエディタで開く(mode = "editor" か Ctrl+E)。
     open_editor: bool,
+    /// このノートの `{uuid}`・`{uid}`(窓を開いたときに作り、名前・値・本文で同じ値を使う)。
+    ids: newnote::Ids,
 }
 
 impl Flow {
@@ -175,7 +177,8 @@ impl App {
         for e in &mut prefill {
             e.value = date_if_untyped(src, &e.key, std::mem::replace(&mut e.value, NewValue::Null));
         }
-        let text = newnote::expand_name(&rule.name, self.today);
+        let ids = newnote::Ids::new();
+        let text = newnote::expand_name_ids(&rule.name, self.today, &ids);
         // CE-26: 窓の欄は、設定の ask があればその列、無ければ表で見えている列(書けない列と hidden は除く)。
         let source: Vec<String> = if rule.ask.is_empty() {
             self.cols.clone()
@@ -202,6 +205,7 @@ impl App {
             finish: false,
             error: None,
             open_editor,
+            ids,
         });
         if choosing {
             self.open_place(0);
@@ -257,7 +261,7 @@ impl App {
         }
         f.choosing = false;
         let text = if f.name.is_empty() {
-            newnote::expand_name(&f.rule.name, today)
+            newnote::expand_name_ids(&f.rule.name, today, &f.ids)
         } else {
             f.name.clone()
         };
@@ -580,6 +584,7 @@ impl App {
             minutes: self.now.rem_euclid(86_400) / 60,
             name: name.rsplit('/').next().unwrap_or(name).to_string(),
             folder: f.rule.folder.trim().trim_matches('/').to_string(),
+            ids: f.ids.clone(),
         }
     }
 

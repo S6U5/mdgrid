@@ -660,8 +660,12 @@ Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may
 | `{weekday}` | the day of the week |
 | `{name}` | the note's name |
 | `{folder}` | the folder the note is made in |
+| `{uuid}` | a new UUID for this note (version 4, like `3f2b8c1e-9a4d-4e7b-8c21-5d6f7a8b9c0d`) |
+| `{uid}` | a new short id for this note (8 characters: a lowercase letter, then digits and lowercase letters, like `k3f9x2ab`) |
 
-In `name`, only the date variables (`{date}`, `{date:…}`, `{date+N}`, `{date-N}`, `{weekday}`) are filled; the others stay as written, because the name is not decided yet and a time has a `:` that a file name cannot hold.
+`{uuid}` and `{uid}` keep one value within a note, so `name = "{uid}_"` together with `id = "{uid}"` in `[new_note.set]` gives the file name and the frontmatter the same id. Add the column to `hidden` to fill it without showing a field.
+
+In `name`, only the date variables (`{date}`, `{date:…}`, `{date+N}`, `{date-N}`, `{weekday}`) and the id variables (`{uuid}`, `{uid}`) are filled; the others stay as written, because the name is not decided yet and a time has a `:` that a file name cannot hold.
 
 Filter conditions of the view that fix a single value (such as `status == "todo"` or a tag) are written first and win over `[new_note.set]`. `[new_note]` is one item: a narrower place that writes it (a workspace, a table, or a mdgrid view under `[table.view.new_note]` in `views.toml`) replaces it whole.
 

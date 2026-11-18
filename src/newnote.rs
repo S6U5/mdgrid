@@ -61,10 +61,59 @@ pub struct Vars {
     pub name: String,
     /// 作る場所のフォルダ(開いたフォルダからの相対。根なら空)。
     pub folder: String,
+    /// このノートの `{uuid}` と `{uid}`(`Ids::new` で作る。空なら変数を文字のまま残す)。
+    pub ids: Ids,
+}
+
+/// 1つのノートの `{uuid}`・`{uid}` の値。名前の雛形・前もって入れる値・本文の雛形で同じ値を使う
+/// (形は仮決め: tbd~id-variable-forms)。
+#[derive(Clone, Debug, Default)]
+pub struct Ids {
+    /// 版4の UUID(小文字の16進を 8-4-4-4-12 に区切った36字)。
+    pub uuid: String,
+    /// 英小文字で始まる、数字と英小文字の8字(頭を字にするのは、YAML で数に読まれないため)。
+    pub uid: String,
+}
+
+impl Ids {
+    /// OS の乱数から新しく作る。乱数を取れなければ空(変数は文字のまま残る)。
+    pub fn new() -> Ids {
+        let mut b = [0u8; 16];
+        if getrandom::fill(&mut b).is_err() {
+            return Ids::default();
+        }
+        b[6] = (b[6] & 0x0f) | 0x40;
+        b[8] = (b[8] & 0x3f) | 0x80;
+        let hex: String = b.iter().map(|x| format!("{x:02x}")).collect();
+        let uuid = format!(
+            "{}-{}-{}-{}-{}",
+            &hex[..8],
+            &hex[8..12],
+            &hex[12..16],
+            &hex[16..20],
+            &hex[20..]
+        );
+        const CHARS: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let mut uid = String::new();
+        while uid.len() < 8 {
+            let mut r = [0u8; 16];
+            if getrandom::fill(&mut r).is_err() {
+                return Ids::default();
+            }
+            for x in r {
+                // 偏りを避けて、範囲の外の値は捨てる(頭の1字は英字の26、残りは36)。
+                let n = if uid.is_empty() { 26 } else { 36 };
+                if uid.len() < 8 && (x as usize) < 256 / n * n {
+                    uid.push(CHARS[x as usize % n] as char);
+                }
+            }
+        }
+        Ids { uuid, uid }
+    }
 }
 
 /// CE-32: 雛形の変数を埋める: `{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{time}`・`{now}`・`{weekday}`・
-/// `{name}`・`{folder}`。知らない変数と読めない形は文字のまま残す。
+/// `{name}`・`{folder}`・`{uuid}`・`{uid}`。知らない変数と読めない形は文字のまま残す。
 pub fn expand(s: &str, v: &Vars) -> String {
     expand_with(s, |var| var_value(var, v))
 }
@@ -103,6 +152,8 @@ fn var_value(var: &str, v: &Vars) -> Option<String> {
         "now" => format!("{}T{hm}", types::format_date(v.today)),
         "name" => v.name.clone(),
         "folder" => v.folder.clone(),
+        "uuid" if !v.ids.uuid.is_empty() => v.ids.uuid.clone(),
+        "uid" if !v.ids.uid.is_empty() => v.ids.uid.clone(),
         "weekday" => {
             // 1970-01-01 は木曜。
             let k = (v.today + 4).rem_euclid(7) as usize;
@@ -380,11 +431,15 @@ pub fn rule_for(config: &Config, view: Option<&NativeView>) -> NewNote {
 /// 日数)で埋める(CE-27・CE-32)。`{time}`・`{now}`(名前に書けない `:` が入る)と `{name}`・`{folder}`(名前を
 /// 決める前で値が無い)、知らない変数は文字のまま残す(仮決め: tbd~name-template-other-vars)。
 pub fn expand_name(template: &str, today: i64) -> String {
+    expand_name_ids(template, today, &Ids::default())
+}
+
+/// `expand_name` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+pub fn expand_name_ids(template: &str, today: i64, ids: &Ids) -> String {
     let v = Vars {
         today,
-        minutes: 0,
-        name: String::new(),
-        folder: String::new(),
+        ids: ids.clone(),
+        ..Vars::default()
     };
     expand_with(template, |var| match var {
         "time" | "now" | "name" | "folder" => None,
