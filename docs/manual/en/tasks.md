@@ -97,6 +97,16 @@ Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it
 - mdgrid does not create notes outside the opened folders or over an existing name, and not at all with `--readonly`.
 - The fields, required fields, preset values (with variables such as `{date+7}` or `{now}`), hidden values such as a creation date, a body template, and whether to use the form or go straight to the editor (`mode = "editor"`) are set in [`new_note`](../../config.md#new_note).
 
+You can also create a note from the command line, without the screen. Scripts and AI agents can add tasks this way.
+
+```sh
+mdgrid ~/notes/tasks --new-note "Buy milk" --set due=2026-11-20 --set priority=p1 --set tags=home,errand
+```
+
+- It uses the same settings as the form (the folder, preset values and body template of `new_note`) and prints the path of the note it created.
+- `--set column=value` is the same as typing into a field of the form, and can be repeated. The value is read by the column type. Separate list items with commas; an empty value (`--set status=`) leaves the column out.
+- For an existing name, a name outside the folder, a value that does not fit the type, or an empty required column, it creates nothing, prints one line with the reason and exits with code 2.
+
 ## Open a .base file
 
 ```sh

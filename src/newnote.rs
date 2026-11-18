@@ -491,7 +491,7 @@ pub fn note_path(root: &Path, folder: &str, name: &str) -> Result<PathBuf, Strin
 }
 
 /// 文字の値を列の型の値にする。読めなければ None。
-fn typed(kind: Kind, s: &str) -> Option<NewValue> {
+pub fn typed(kind: Kind, s: &str) -> Option<NewValue> {
     match kind {
         Kind::Text => (!s.is_empty()).then(|| NewValue::Str(s.to_string())),
         Kind::Number => {
