@@ -71,7 +71,7 @@ from collections import Counter
 from functools import lru_cache
 
 TOOL_NAME = "trace-gate"
-TOOL_VERSION = "0.33.2"
+TOOL_VERSION = "0.33.3"
 LEDGER_FORMAT = "trace-gate-ledger"
 FINDINGS_FORMAT = "trace-gate-findings"
 FORMAT_VERSION = 1
@@ -3415,7 +3415,7 @@ def cmd_ledger(args, root, cfg):
                 % (TOOL_NAME, clip(header["previous_tool_version"], 30), TOOL_VERSION)
             )
     text = dump_lines(pairs)
-    if args.out:
+    if args.out and args.out != "-":  # - は標準出力(「-」という名前のファイルを作らない)
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(text)
         sys.stderr.write("台帳を書いた: %s(%s)\n" % (args.out, summary_line(res)))
