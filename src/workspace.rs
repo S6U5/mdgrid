@@ -237,11 +237,97 @@ fn inline_file_name(name: &str) -> String {
     format!("{}.base", name.replace(['/', '\\'], "_"))
 }
 
+/// 印の文(starter.layer-marker)。印に `starter = "<名前>"` があれば、そのスターターの印と `options` の
+/// オプションを下に重ね、印に自分で書いた項目を上に重ねた TOML の文を返す(`starter`・`options`・`starter_lang` の
+/// 行は外す)。`starter` が無い印・読めない印は、ファイルの文をそのまま返す。印のファイルは書き換えない。
+/// 警告は、無いスターター(印に書いた中身だけで開く)と無いオプション(そのオプションだけ飛ばす)。
+fn marker_source(root: &Path) -> (String, Vec<String>) {
+    let file = root.join(MARKER_DIR).join(MARKER_FILE);
+    let text = std::fs::read_to_string(&file).unwrap_or_default();
+    let Ok(mut own) = text.parse::<toml::Table>() else {
+        return (text, Vec::new());
+    };
+    let Some(starter) = own.remove("starter") else {
+        return (text, Vec::new());
+    };
+    let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+    let mut warns = Vec::new();
+    let options: Vec<String> = match own.remove("options") {
+        None => Vec::new(),
+        Some(toml::Value::Array(a)) if a.iter().all(|v| v.is_str()) => a
+            .iter()
+            .filter_map(|v| v.as_str().map(str::to_string))
+            .collect(),
+        Some(_) => {
+            crate::profile::warn(
+                &mut warns,
+                &label,
+                "options",
+                crate::profile::not(Msg::WantStringList),
+            );
+            Vec::new()
+        }
+    };
+    let lang = match own.remove("starter_lang") {
+        Some(toml::Value::String(l)) if !l.trim().is_empty() => l.trim().to_string(),
+        _ => crate::i18n::current().code().to_string(),
+    };
+    let flat = |t: &toml::Table| toml::to_string(t).unwrap_or_default();
+    let Some(name) = starter.as_str().map(str::trim) else {
+        crate::profile::warn(
+            &mut warns,
+            &label,
+            "starter",
+            crate::profile::not(Msg::WantString),
+        );
+        return (flat(&own), warns);
+    };
+    let dir = config::config_path().and_then(|p| p.parent().map(Path::to_path_buf));
+    let (list, _) = crate::starter::list(dir.as_deref());
+    let Some(s) = crate::starter::find(&list, name) else {
+        crate::profile::warn(
+            &mut warns,
+            &label,
+            "starter",
+            Msg::RsnStarterUnknown.fill(&[&name]),
+        );
+        return (flat(&own), warns);
+    };
+    let (mut base, unknown) = crate::starter::base_marker(s, &lang, &options);
+    for o in unknown {
+        crate::profile::warn(
+            &mut warns,
+            &label,
+            "options",
+            Msg::RsnOptionUnknown.fill(&[&o, &name]),
+        );
+    }
+    crate::starter::merge(&mut base, &own);
+    (flat(&base), warns)
+}
+
+/// 印が元にするスターターの `ledger/` のファイルの文(starter.layer-files。本文の雛形が台帳に無いときに使う)。
+/// 印に `starter` が無い・そのスターターが無い・そのファイルが無いなら None。
+pub fn starter_file(root: &Path, rel: &Path) -> Option<String> {
+    let file = root.join(MARKER_DIR).join(MARKER_FILE);
+    let own: toml::Table = std::fs::read_to_string(&file).ok()?.parse().ok()?;
+    let name = own.get("starter")?.as_str()?.trim();
+    let lang = match own.get("starter_lang").and_then(|v| v.as_str()) {
+        Some(l) if !l.trim().is_empty() => l.trim().to_string(),
+        _ => crate::i18n::current().code().to_string(),
+    };
+    let dir = config::config_path().and_then(|p| p.parent().map(Path::to_path_buf));
+    let (list, _) = crate::starter::list(dir.as_deref());
+    crate::starter::ledger_text(crate::starter::find(&list, name)?, &lang, rel)
+}
+
 /// WS-9: 印の文から、中身を書いた表の名前と中身(`.base` として読める文)を並べる。警告は捨てる(印を読むときに出す)。
 fn inline_tables(root: &Path) -> Vec<(String, String)> {
-    let file = root.join(MARKER_DIR).join(MARKER_FILE);
-    let Some(table) = std::fs::read_to_string(&file)
-        .ok()
+    let Some(table) = root
+        .join(MARKER_DIR)
+        .join(MARKER_FILE)
+        .is_file()
+        .then(|| marker_source(root).0)
         .and_then(|t| t.parse::<toml::Table>().ok())
     else {
         return Vec::new();
@@ -430,10 +516,12 @@ fn marker_setting<T>(
     let Some(root) = find_marker(&start) else {
         return (None, warns);
     };
-    let file = root.join(MARKER_DIR).join(MARKER_FILE);
     // 壊れた TOML は範囲を決めるときに read_marker が知らせる。
-    let Some(table) = std::fs::read_to_string(&file)
-        .ok()
+    let Some(table) = root
+        .join(MARKER_DIR)
+        .join(MARKER_FILE)
+        .is_file()
+        .then(|| marker_source(&root).0)
         .and_then(|t| t.parse::<toml::Table>().ok())
     else {
         return (None, warns);
@@ -1336,8 +1424,7 @@ fn has_notes(dir: &Path) -> bool {
 /// フォルダの印を読む(WS-7)。`root` は印のある根。
 pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
     let file = root.join(MARKER_DIR).join(MARKER_FILE);
-    let mut warns = Vec::new();
-    let text = std::fs::read_to_string(&file).unwrap_or_default();
+    let (text, mut warns) = marker_source(root);
     let table: toml::Table = match text.parse() {
         Ok(t) => t,
         Err(e) => {
@@ -1403,10 +1490,12 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
 /// `open` が無い・印が無いなら None。印の表のどれも指さないときは警告(CLI-3 の形)して None。
 pub fn marker_open(root: &Path) -> (Option<WsTable>, Vec<String>) {
     let file = root.join(MARKER_DIR).join(MARKER_FILE);
-    let mut warns = Vec::new();
-    let Ok(text) = std::fs::read_to_string(&file) else {
+    let warns = Vec::new();
+    if !file.is_file() {
         return (None, warns);
-    };
+    }
+    let text = marker_source(root).0;
+    let mut warns = warns;
     // 壊れた TOML は範囲を決めるときに read_marker が知らせる。
     let Ok(table) = text.parse::<toml::Table>() else {
         return (None, warns);

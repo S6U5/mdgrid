@@ -213,6 +213,8 @@ RsnNeedName = "重ならない name の文字列が要るので無視した"
 RsnNeedPath = "path の文字列が要るので無視した"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "印に {0} という表は無いので、フォルダをそのまま開いた(ある表: {1})"
+RsnStarterUnknown = "スターター {0} は無いので、印に書いた中身だけで開いた(mdgrid --starters で一覧)"
+RsnOptionUnknown = "スターター {1} にオプション {0} は無いので、飛ばした"
 RsnNeedNamePath = "name と path の文字列が要り、name は重ねられないので無視した"
 RsnDuplicateValue = "同じ値が2回書かれている(どれか1つを使う)"
 WantColor = "色(\"#rrggbb\"・\"#rgb\" か色の名前)"

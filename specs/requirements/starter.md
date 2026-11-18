@@ -145,27 +145,27 @@
 - なぜ: スターターから作った台帳と手で書いた台帳の間に差を作らないため
 - 受け入れ: 組み込みの印に知らない項目が無い(starter.builtin の警告なしで確かめる)。
 
-### スターターを元に重ねる(次の段。まだ作っていない。P2)
+### スターターを元に重ねる
 
-今は、スターターの中身を台帳に丸ごと写す(starter.init-ledger)。次の段では、台帳の印に「元にするスターターとオプション」だけを書き、実行ファイルの中のスターターをその下に毎回重ねる(2026-11-18 に人が決めた向き)。印に自分で書いた項目が常に勝つ。この段を作るときは、写す形を前提にした starter.init-ledger・starter.init-ledger-verbatim・starter.same-as-manual-keys・starter.builtin-same-shape の版を上げて書き直す。
+台帳の印に「元にするスターターとオプション」だけを書き、実行ファイルの中のスターター(と設定の置き場の自分のスターター)をその下に毎回重ねる(2026-11-18 に人が決めた向き)。印に自分で書いた項目が常に勝つ。読む側(重ねて開く)は作った(P1)。作る側は今も丸ごと写す(starter.init-ledger)ままで、重ねる形の印は手で書く。作る側・選ぶ画面・書き出し・知らせは次の段(P2)で、そのときに、写す形を前提にした starter.init-ledger・starter.init-ledger-verbatim・starter.same-as-manual-keys・starter.builtin-same-shape の版を上げて書き直す。
 
 #### 台帳の印に `starter = "<名前>"` と `options = ["<名前>", …]` を書くと、そのスターターとオプションの中身(印の項目・表・ビュー)を元にして開くべき
-`req~starter.layer-marker~1` P2
+`req~starter.layer-marker~1` P1
 - なぜ: スターターが新しくなったときに、台帳を書き換えずに取り込めるようにするため
-- 受け入れ: 印が `starter = "tasks"` と `options = ["ai"]` の2行だけの台帳 → tasks にオプション ai を付けたときの表・ビュー・値の候補で開く。`starter` の無い印 → 今までどおり印に書いた中身だけ(読んで判定)。
+- 受け入れ: 印が `starter = "tasks"` と `options = ["ai"]` の2行だけの台帳 → tasks にオプション ai を付けたときの表・ビュー・値の候補で開く。`starter` の無い印 → 今までどおり印に書いた中身だけ。
 
 #### スターターから来た項目と印に自分で書いた項目が同じとき、印の項目が勝つべき
-`req~starter.layer-own-wins~1` P2
+`req~starter.layer-own-wins~1` P1
 - なぜ: 自分の直しが、スターターの更新で消えないようにするため
-- 受け入れ: スターター tasks の `[rules.priority] values = ["p1", "p2", "p3"]`、印に `[rules.priority] values = ["high", "medium", "low"]` → 優先度の候補は high・medium・low。印に書いていない `[rules.status]` はスターターの値のまま(読んで判定)。
+- 受け入れ: スターター tasks の `[rules.priority] values = ["p1", "p2", "p3"]`、印に `[rules.priority] values = ["high", "medium", "low"]` → 優先度の候補は high・medium・low。印に書いていない `[rules.status]` はスターターの値のまま。
 
 #### スターターの表とビューは名前で印の表とビューに突き合わせ、同じ名前は項目ごとに印が勝ち、印にだけある表とビューは後ろに足すべき
-`req~starter.layer-tables~1` P2
-- 受け入れ: 印に `[[table]] name = "タスク"` と `kanban = { column = "phase" }` だけ → 表「タスク」のカンバンの列は phase、ビューはスターターのもの。印に新しい名前のビュー「今週」→ スターターのビューの後ろに「今週」のタブ(読んで判定)。
+`req~starter.layer-tables~1` P1
+- 受け入れ: 印に `[[table]] name = "タスク"` と `kanban = { column = "phase" }` だけ → 表「タスク」のカンバンの列は phase、ビューはスターターのもの。印に新しい名前のビュー「今週」→ スターターのビューの後ろに「今週」のタブ。
 
 #### mdgrid を新しい版にすると、印を1バイトも書き換えずに、新しいスターターの中身が効くべき
-`req~starter.layer-update~1` P2
-- 受け入れ: 印が `starter = "tasks"` と自分の上書きだけの台帳を、スターター tasks にビューが1つ増えた版で開く → 増えたビューのタブが出て、印のバイトは前と同じ(読んで判定)。
+`req~starter.layer-update~1` P1
+- 受け入れ: 印が `starter = "tasks"` と自分の上書きだけの台帳を、スターター tasks にビューが1つ増えた版で開く → 増えたビューのタブが出て、印のバイトは前と同じ。
 
 #### 元にしたスターターの中身が前に開いたときから変わっていたら、開いたときに1回だけ、変わったことを1行で知らせるべき
 `req~starter.layer-notice~1` P2
@@ -176,13 +176,22 @@
 `req~starter.layer-origin~1` P2
 - 受け入れ: 印が `starter = "tasks"`・`options = ["ai"]` の台帳 → オプション ai から来た `[rules.actor]` の出どころのコメントに `tasks` と `ai`、印に書いた項目の出どころは印(読んで判定)。
 
-#### スターターは、付け外しできる部品(オプション)を `options/<名前>/` に、スターターと同じ形(印の断片・雛形・見本)で持てるべき
-`req~starter.option-shape~1` P2
-- 受け入れ: `starters/tasks/options/ai/ledger/.mdgrid/workspace.toml`(`[rules.actor]` と担当で分けるビュー)と `starter.toml` の `[options.ai]`(言語ごとの名前と説明)→ `--starters` が tasks の行の下にオプション ai を名前と説明つきで出す(読んで判定)。
+#### スターターは、付け外しできる部品(オプション)を `options/<名前>.toml`(印に重ねる断片)に持て、`options/<名前>.<言語>.toml` があればその言語ではそれを使うべき
+`req~starter.option-shape~1` P1
+- 受け入れ: `starters/kb/options/who.toml`(`[rules.actor]` と、表 Board のビュー All に actor の列を足し、ビュー AI を足す断片)→ 印に `options = ["who"]` と書いた台帳で、All に actor の列が出て、ビュー AI が使える。`options` に書かなければ、どちらも無い。
+
+#### 印の `starter_lang = "<言語>"` で、元にするスターターの言語の変種を決められ、無ければ今の言語の変種を使うべき
+`req~starter.layer-lang~1` P1
+- なぜ: 表とビューの名前が言語で変わると、印の `open` や自分の上書きの名前が当たらなくなるため
+- 受け入れ: `ledger.ja/` のあるスターターで、`LANG` が ja・`starter_lang` なし → ja の変種。`starter_lang = "en"` → `LANG` が ja でも接尾の無い `ledger/`。
+
+#### 新しいノートの本文の雛形は、台帳に同じパスのファイルがあればそれを、無ければ元にするスターターの `ledger/` の同じパスのファイルを使うべき
+`req~starter.layer-files~1` P1
+- 受け入れ: スターターの `[new_note] body = ".mdgrid/templates/card.md"`(中身 `# {name}`)、台帳にそのファイルが無い → 新しいノート x の本文は `# x`。台帳に同じパスで `mine {name}` を置く → 新しいノート y の本文は `mine y`。
 
 #### 印の `options` に、そのスターターに無い名前があるときは、cli.config-file の形で警告して、そのオプションだけを飛ばすべき
-`req~starter.option-unknown~1` P2
-- 受け入れ: `starter = "tasks"`・`options = ["ai", "nope"]` → `options` の nope を言う警告1行で、ai は効く(読んで判定)。
+`req~starter.option-unknown~1` P1
+- 受け入れ: `starter = "tasks"`・`options = ["ai", "nope"]` → `options` の nope を言う警告1行で、ai は効く。
 
 #### パレットの「スターターから台帳を作る」は、スターターを選んだあとに、そのスターターのオプションを名前と説明の一覧から印を付けて選べるべき
 `req~starter.pick-options~1` P2
@@ -202,8 +211,8 @@
 - 受け入れ: `starter = "tasks"`・`options = ["ai"]` と自分の上書きのある台帳で書き出す → 差分を見せ、確かめてから書く。書いたあとの `--print` の出力と `--print-config --resolved` の値は書く前と同じで、印に `starter` と `options` の行は無い(読んで判定)。
 
 #### 印の `starter` が指すスターターが無いときは、警告して、印に自分で書いた中身だけで開くべき
-`req~starter.retire-missing~1` P2
-- 受け入れ: `starter = "nope"` の台帳 → `starter` の nope を言う警告1行で、印に書いた表とビューだけで開く。ノートと印のバイトは変わらない(読んで判定)。
+`req~starter.retire-missing~1` P1
+- 受け入れ: `starter = "nope"` の台帳 → `starter` の nope を言う警告1行で、印に書いた表とビューだけで開く。ノートと印のバイトは変わらない。
 
 ## 未確定事項
 
@@ -216,11 +225,6 @@
 `tbd~starter.option-builtin-list`
 - 決める人: 人
 - 仮: tasks に ai(担当で分ける)・routines(ルーチンの表とリンクの列)・screens(ガント・カンバン・グラフ)・priority-words(優先度を high・medium・low に。選ばなければ p1〜p3 のまま: 2026-11-18 に人が決めた)。tasks-ai は「tasks に ai と routines を付けたもの」の別名として残す
-
-### 本文の雛形と見本のノートは、今までどおり台帳に写すか、台帳に無ければスターターのものを使うか
-`tbd~starter.layer-files`
-- 決める人: 人
-- 仮: 雛形は、台帳に同じパスのファイルがあればそれ、無ければスターターのものを使う。見本のノートは、頼まれたときに今までどおり台帳に写す
 
 ### スターターのビューや表を、印の側から出さないようにする書き方(上書きは足すことと置き換えることしかできない)
 `tbd~starter.layer-hide`

@@ -1,0 +1,36 @@
+# Option ai: split tasks by who does them (actor: human, ai or both). Groups the first tab by owner and adds the "People only" and "AI only" tabs.
+[rules.actor]
+values = ["human", "ai", "both"]
+
+[new_note]
+ask = ["actor", "due", "priority", "url"]
+
+[[table]]
+name = "Tasks"
+
+[table.base.formulas]
+"Owner" = 'if(actor == "ai", "🤖 For an agent", if(actor == "both", "🤝 A person and an agent", "👤 Needs a person"))'
+
+[table.base.properties]
+"note.actor" = { displayName = "Actor" }
+"formula.Owner" = { displayName = "Owner" }
+
+[[table.base.views]]
+name = "Open"
+groupBy = { property = "formula.Owner", direction = "ASC" }
+
+[[table.base.views]]
+type = "table"
+name = "People only"
+filters = { and = ['actor != "ai"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "due", "priority", "tags", "url"]
+sort = [{ property = "due", direction = "ASC" }, { property = "priority", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "AI only"
+filters = { and = ['actor == "ai" || actor == "both"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "priority", "due", "tags", "url"]
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]

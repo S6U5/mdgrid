@@ -1,0 +1,3 @@
+# オプション priority-words: 優先度を p1・p2・p3 でなく、言葉(high・medium・low)にする。
+[rules.priority]
+values = ["high", "medium", "low"]

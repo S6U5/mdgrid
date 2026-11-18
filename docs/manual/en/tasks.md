@@ -302,6 +302,21 @@ In the screen, **Create a ledger from a starter** in the command palette (`:`) d
 
 `tasks-ai` is a ledger for work shared between people and AI agents. A task's `actor` (human, ai or both) splits it into the "People only" and "AI only" tabs, and the charts by status and by actor (`P`), the Gantt (`C`) and the Kanban (`B`) open as they are. A second table, "Routines", holds repeating work; the task for one round links to it from its `routine` column (switch tables with `w` or the breadcrumb, and press `R` to see the links). mdgrid does not create the next round: a person or an agent adds it, for example with `--new-note`.
 
+Instead of copying a whole starter, a ledger's marker can just name the starter it is based on. What you write in the marker always wins, and the starter fills in the rest. When a newer mdgrid ships a newer starter, the new content takes effect without rewriting the marker.
+
+```toml
+# <ledger>/.mdgrid/workspace.toml
+starter = "tasks"
+options = ["ai"]          # parts of the starter: tasks has ai (split by who does it) and priority-words (high, medium, low)
+starter_lang = "en"       # fix the language of the table and view names (default: the current language)
+
+# Below are your own overrides; they win over the same items of the starter.
+[rules.priority]
+values = ["p1", "p2", "p3", "p4"]
+```
+
+Tables and views are matched by name: items you write in a view of the same name change only those items, and a view with a new name is added after the starter's. If the starter or an option cannot be found, mdgrid prints one warning line and opens with what the marker itself says. For now you write this kind of marker by hand (`--init-workspace --starter` still copies everything).
+
 Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones (`starter.toml`, `ledger/`, `samples/`). The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `ledger/`.
 
 ## Use with other commands

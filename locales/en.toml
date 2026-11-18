@@ -214,6 +214,8 @@ RsnNeedName = "needs a name (string) that does not repeat (ignored)"
 RsnNeedPath = "needs a path (string) (ignored)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "no table named {0} in the marker (tables: {1}); opened the folder as it is"
+RsnStarterUnknown = "no starter named {0}; opened with what the marker itself says (mdgrid --starters lists them)"
+RsnOptionUnknown = "starter {1} has no option {0}; skipped it"
 RsnNeedNamePath = "needs a name and a path (strings), and the name must not repeat (ignored)"
 RsnDuplicateValue = "the same value is written twice (one of them is used)"
 WantColor = "a color (\"#rrggbb\", \"#rgb\" or a color name)"

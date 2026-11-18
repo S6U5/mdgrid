@@ -623,6 +623,8 @@ fn resolve_table(
         &apps,
         &config.workspace_detect,
     ) {
+        // 印の警告(知らない項目・無いスターターやオプション)は、画面を出さないコマンドでも出す。
+        warnings.extend(scope.warnings.iter().cloned());
         layers.extend(scope.layer());
         layers.extend(scope.table_layer(&first));
     }
