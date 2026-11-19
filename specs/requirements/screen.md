@@ -62,6 +62,11 @@
 `req~screen.h-scroll-drag-width~1` P1
 - 受け入れ: 列の見出しの右の境界を押して右へ5桁ドラッグ → その列の幅が5桁広がる。
 
+#### 列の幅は、表の行のセルの右の境界のドラッグでも変えてよい
+`req~screen.cell-drag-width~1` P1
+- なぜ: 見出しまで手を戻さずに、読んでいるセルのそばで幅を直せるように
+- 受け入れ: 表の2行目で title の列のセルの右の境界を押して右へ5桁ドラッグ → title の列の幅が5桁広がる。境界を押して動かさずに離す → 幅も、選んでいる行と列も変わらない。
+
 #### 表の左のノートの欄は、末尾の `.md` を除いた名前(screen.note-name の `display.note_name` があればそれで抜き出すか削ったもの)を、設定 `display.note_path`(screen.note-path)に従ったフォルダとともに出すべき
 `req~screen.note-column-path~1` P1
 - 受け入れ: `Tasks/a.md`・`Tasks/b.md` だけの表 → 欄は `a`・`b`(`"common"`(既定)は読み込んだ全部の行に共通のフォルダを除いたパス)。`Tasks/a.md`・`Notes/c.md` → `Tasks/a`・`Notes/c`。`note_path = "name"`(フォルダを除いた名前だけ)で `todo/a.md`・`archive/todo/b.md` → `a`・`b`。`note_path = "full"`(根からのパス)で `Tasks/a.md`・`Tasks/b.md` → `Tasks/a`・`Tasks/b`。

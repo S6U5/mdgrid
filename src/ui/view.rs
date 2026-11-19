@@ -386,9 +386,11 @@ pub(crate) fn pad(spans: Vec<Span<'static>>, w: usize, style: Style) -> Line<'st
     Line::from(out)
 }
 
-/// (x, y) が列の見出しの行の、列の右の境界(区切りの空白)なら、その列のドラッグ(SR-3)。
+/// (x, y) が列の見出しの行か表の行の、列の右の境界(区切りの空白)なら、その列のドラッグ
+/// (SR-3・screen.cell-drag-width)。
 pub fn boundary_at(app: &App, x: u16, y: u16) -> Option<Drag> {
-    if y as usize != data_y(app) - 1 {
+    let (y, dy) = (y as usize, data_y(app));
+    if y + 1 < dy || y >= dy + app.data_height() {
         return None;
     }
     let (lay, cols) = visible_layout(app);

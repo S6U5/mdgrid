@@ -350,6 +350,52 @@ fn test_sr_3_resize_column_keys_and_drag() {
     assert_eq!(view::layout(&app).widths[j], 7);
 }
 
+/// 表の行のセルの右の境界を押して右へ5桁ドラッグすると、その列の幅が5桁広がる。
+// [utest -> req~screen.cell-drag-width~1]
+#[test]
+fn test_cell_boundary_drag_widens_column() {
+    let tmp = vault("celldrag");
+    let src = Markdown::open(&[tmp.notes()]).unwrap();
+    let mut app = App::new(Box::new(src), ColorMode::None);
+    load(&mut app);
+    col_named(&mut app, "title");
+    let j = app.col;
+    let w0 = view::layout(&app).widths[j];
+    // 表の2行目。境界の桁は見出しの行で探す(列の位置はどの行も同じ)。
+    let hy = view::data_y(&app) as u16 - 1;
+    let y = hy + 2;
+    let x = (0..80u16)
+        .find(|&x| view::boundary_at(&app, x, hy).is_some_and(|d| d.col == j))
+        .unwrap();
+    app.click(x, y);
+    app.drag(x + 5);
+    app.release();
+    assert_eq!(view::layout(&app).widths[j], w0 + 5);
+    assert_fits(&screen(&app));
+}
+
+/// セルの右の境界を押して動かさずに離すと、幅も、選んでいる行と列も変わらない。
+// [utest -> req~screen.cell-drag-width~1]
+#[test]
+fn test_cell_boundary_press_without_move_changes_nothing() {
+    let tmp = vault("celldrag0");
+    let src = Markdown::open(&[tmp.notes()]).unwrap();
+    let mut app = App::new(Box::new(src), ColorMode::None);
+    load(&mut app);
+    col_named(&mut app, "title");
+    let (row, j) = (app.row, app.col);
+    let w0 = view::layout(&app).widths[j];
+    let hy = view::data_y(&app) as u16 - 1;
+    let x = (0..80u16)
+        .find(|&x| view::boundary_at(&app, x, hy).is_some_and(|d| d.col == j))
+        .unwrap();
+    app.click(x, hy + 2);
+    app.release();
+    assert_eq!(view::layout(&app).widths[j], w0);
+    assert_eq!((app.row, app.col), (row, j));
+    assert_eq!(app.mode, super::keymap::Mode::Table);
+}
+
 #[test]
 fn test_cli_2_view_option_opens_named_view() {
     // [utest -> req~cli.options~2] `--view 完了` で2つ目のビューで開く。[utest -> req~cli.launch-marker-open~1, req~cli.launch-marker-headless~1] `.base` のパスを受ける。

@@ -384,7 +384,7 @@ pub fn save_with(path: &Path, base: &Baseline, edits: &[Edit], faults: &Faults) 
 
 起動(タスク 8): `mdgrid [<.base | フォルダ> …] [--view <名前>] [--readonly] [--no-color] [--config <パス>] [--print-config] [--completions <シェル>] [--man] [--help] [--version]`(CLI-1・CLI-2。`--print-config` は CLI-11 で、`config::default_toml()` を出して終了コード 0。`--completions`・`--man` は CLI-13 で、`clap_complete`・`clap_mangen` が clap の定義から作ったものを出して終了コード 0。どちらも画面を出さないので、標準出力がパイプでも動く)。`.base` を渡したら `Markdown::open_vault`。設定(CLI-3)を読み、警告はメッセージ行に出す。キーの割り当て直し(SR-13)は、設定の `(モード, キー, 動作)` で表を上書きした写しを作る(`"none"` で外す)。起動で開くビューは `.base` の先頭のビュー(`--view` があればそれ。BV-13)で、前に選んだビューは起動に使わない。見た目の状態(SR-11・SR-12)は、ビューごとに、そのビューを開いたときに読んで列の順・隠す列・幅・畳んだまとまりに当て、終了とビューの切り替えで書く。`--readonly`(WB-15)では編集・空にする・保存の動作を表から外し、保存のキーで「読むだけで開いている」と出す。在る `.md` のファイル(拡張子の大文字小文字を問わない)を渡したら(CLI-15)、`main::md_to_folder` が `check_paths` の前にそのフォルダ(親が空なら `.`)に置き換え、`--print`・`--pick` もその置き換えたフォルダを起動の引数とみなす(`--pick path` の形も)。画面では `App::select_after_load` に覚え、読み込みが終わったとき(取りやめを含む)に一度だけその行を選ぶ(途中で選ぶと並べ替えで行が動き画面が跳ねるので、途中では選ばない)。無い `.md` は置き換えず、CLI-4 の理由1行にする。
 
-見せ方(タスク 9 の残り): ビューのタブ(BV-13。`[` `]` か Tab の帯のクリックで切り替え)、未対応の列の薄い `?` と、選んだときの下の帯の説明(BV-7)、型の合わない値の `!`(CV-2)、East Asian Ambiguous の幅(CV-6。設定 `ambiguous_wide`。`width.rs` で ○● などを2と数える)、列の幅の `<` `>` とドラッグ(SR-3・NV-4)。
+見せ方(タスク 9 の残り): ビューのタブ(BV-13。`[` `]` か Tab の帯のクリックで切り替え)、未対応の列の薄い `?` と、選んだときの下の帯の説明(BV-7)、型の合わない値の `!`(CV-2)、East Asian Ambiguous の幅(CV-6。設定 `ambiguous_wide`。`width.rs` で ○● などを2と数える)、列の幅の `<` `>` とドラッグ(SR-3・NV-4。境界は見出しの行でも表の行でも掴める。screen.cell-drag-width)。
 
 ## ビューの設定(NV-13〜NV-22)
 
