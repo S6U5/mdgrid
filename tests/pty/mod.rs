@@ -11,6 +11,7 @@
 //! このファイルには要件の ID を書かない(錠の対象にしない)。
 
 use std::io::{Read, Write};
+use std::num::NonZeroU16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -21,6 +22,9 @@ use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize}
 pub const LIMIT: Duration = Duration::from_secs(10);
 pub const ROWS: u16 = 24;
 pub const COLS: u16 = 80;
+/// vt100 の画面の大きさ(0 にできない型で受ける)。
+const SCREEN_ROWS: NonZeroU16 = NonZeroU16::new(ROWS).unwrap();
+const SCREEN_COLS: NonZeroU16 = NonZeroU16::new(COLS).unwrap();
 
 /// 試験ごとの一時フォルダ。Drop で消す。
 pub struct TempDir(PathBuf);
@@ -166,7 +170,7 @@ impl Tui {
         drop(pair.slave);
         let mut rd = pair.master.try_clone_reader().unwrap();
         let writer = Arc::new(Mutex::new(pair.master.take_writer().unwrap()));
-        let parser = Arc::new(Mutex::new(vt100::Parser::new(ROWS, COLS, 0)));
+        let parser = Arc::new(Mutex::new(vt100::Parser::new(SCREEN_ROWS, SCREEN_COLS, 0)));
         let done = Arc::new(AtomicBool::new(false));
         let (p2, d2, w2) = (parser.clone(), done.clone(), writer.clone());
         // 読む糸: 子の側の端が全部閉じると read が 0 か誤りを返して終わる。
