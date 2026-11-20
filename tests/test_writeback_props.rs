@@ -83,7 +83,7 @@ impl std::fmt::Debug for Note {
             .field("text", &String::from_utf8_lossy(&self.bytes))
             .field("ranges", &self.ranges)
             .field("end", &self.end)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -709,7 +709,7 @@ proptest! {
         // [utest -> req~write-back.quoting-type-safe~1]
         let key = &note.keys[i];
         let ValueSpec::Scalar { quote, .. } = &note.values[i] else { unreachable!() };
-        let mut values: Vec<String> = RISKY.iter().map(|s| s.to_string()).collect();
+        let mut values: Vec<String> = RISKY.iter().map(std::string::ToString::to_string).collect();
         if !random.contains(['\n', '\r']) {
             values.push(random);
         }

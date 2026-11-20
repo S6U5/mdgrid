@@ -96,7 +96,7 @@ fn test_sr_23_table_is_not_empty() {
 #[test]
 fn test_sr_23_every_msg_has_en_and_ja() {
     // [utest -> req~screen.locales-ledger~1] 英語と日本語のどちらかが欠けた文言があれば落ちる。
-    for m in Msg::ALL.iter() {
+    for m in Msg::ALL {
         assert!(!m.en().trim().is_empty(), "{m:?} の英語が空");
         assert!(!m.ja().trim().is_empty(), "{m:?} の日本語が空");
     }
@@ -105,7 +105,7 @@ fn test_sr_23_every_msg_has_en_and_ja() {
 #[test]
 fn test_sr_23_placeholders_match() {
     // [utest -> req~screen.locales-ledger~1] 差し込みの番号 `{n}` の集合が英語と日本語で同じ。
-    for m in Msg::ALL.iter() {
+    for m in Msg::ALL {
         assert_eq!(
             placeholders(m.en()),
             placeholders(m.ja()),
@@ -119,7 +119,7 @@ fn test_sr_23_placeholders_match() {
 #[test]
 fn test_sr_23_english_has_no_japanese() {
     // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1] 英語の文言に日本語の文字(ひらがな・カタカナ・漢字・「・」「「」「」」)が無い。
-    for m in Msg::ALL.iter() {
+    for m in Msg::ALL {
         let bad: String = m.en().chars().filter(|c| is_japanese_char(*c)).collect();
         assert!(
             bad.is_empty(),
@@ -134,13 +134,13 @@ fn test_sr_23_fill_replaces_every_placeholder() {
     // [utest -> req~screen.locales-ledger~1, req~screen.locales-no-translate~1] fill は `{n}` を n 番目の値で置き換え、番号の差し込みを残さない。
     for lang in [Lang::En, Lang::Ja] {
         let _g = scoped(lang);
-        for m in Msg::ALL.iter() {
+        for m in Msg::ALL {
             let src = match lang {
                 Lang::En => m.en(),
                 Lang::Ja => m.ja(),
             };
             let nums = placeholders(src);
-            let n = nums.iter().max().map(|x| *x as usize + 1).unwrap_or(0);
+            let n = nums.iter().max().map_or(0, |x| *x as usize + 1);
             let vals: Vec<String> = (0..n).map(|i| format!("<V{i}>")).collect();
             let args: Vec<&dyn std::fmt::Display> =
                 vals.iter().map(|v| v as &dyn std::fmt::Display).collect();

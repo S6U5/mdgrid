@@ -208,7 +208,10 @@ fn test_sr_43_save_to_this_view() {
     choose(&mut a, 2, "grid");
     apply(&mut a);
     assert_eq!(a.style.preset.name(), "grid");
-    assert_eq!(a.settings.look.preset.map(|p| p.name()), Some("grid"));
+    assert_eq!(
+        a.settings.look.preset.map(mdgrid::style::Preset::name),
+        Some("grid")
+    );
     a.persist_state();
     let b = boot_at(&tmp, "tasks", "");
     assert_eq!(b.style.preset.name(), "grid");

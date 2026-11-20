@@ -64,8 +64,7 @@ impl App {
             .to_string_lossy()
             .lines()
             .next()
-            .map(std::path::PathBuf::from)
-            .unwrap_or_else(|| target.to_path_buf());
+            .map_or_else(|| target.to_path_buf(), std::path::PathBuf::from);
         if let Some(sc) = &self.scope {
             layers.extend(sc.layer());
             layers.extend(sc.table_layer(&first));

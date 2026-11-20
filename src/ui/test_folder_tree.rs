@@ -310,7 +310,7 @@ fn test_tr_3_tree_counts_fold_and_none() {
         let first: String = after
             .trim_start()
             .chars()
-            .take_while(|c| c.is_ascii_digit())
+            .take_while(char::is_ascii_digit)
             .collect();
         assert_eq!(first, n, "{name}: {l}");
     }

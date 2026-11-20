@@ -147,21 +147,20 @@ impl Walk {
 
     /// フォルダの中の項目を最大 `DIR_CHUNK` 個見て、見つけたノートを `out` に足す。
     fn step(&mut self, out: &mut VecDeque<Pending>) {
-        let mut cur = match self.current.take() {
-            Some(c) => c,
-            None => {
-                let Some((dir, root, rel_dir)) = self.dirs.pop_front() else {
-                    return;
-                };
-                let Ok(entries) = fs::read_dir(&dir) else {
-                    return;
-                };
-                OpenDir {
-                    entries,
-                    dir,
-                    root,
-                    rel_dir,
-                }
+        let mut cur = if let Some(c) = self.current.take() {
+            c
+        } else {
+            let Some((dir, root, rel_dir)) = self.dirs.pop_front() else {
+                return;
+            };
+            let Ok(entries) = fs::read_dir(&dir) else {
+                return;
+            };
+            OpenDir {
+                entries,
+                dir,
+                root,
+                rel_dir,
             }
         };
         for _ in 0..DIR_CHUNK {
@@ -651,18 +650,17 @@ impl Vault {
 
     pub fn reload(&mut self, path: &Path) -> io::Result<()> {
         let real = path.canonicalize()?;
-        let (rel, found) = match find(&self.notes, &real) {
-            Ok(i) => (self.notes[i].rel.clone(), self.notes[i].found.clone()),
-            Err(_) => {
-                let under_root = self.roots.iter().find_map(|r| rel_of(&real, r));
-                let found = if under_root.is_some() {
-                    vec![real.clone()]
-                } else {
-                    Vec::new()
-                };
-                let rel = under_root.unwrap_or_else(|| real.to_string_lossy().into_owned());
-                (rel, found)
-            }
+        let (rel, found) = if let Ok(i) = find(&self.notes, &real) {
+            (self.notes[i].rel.clone(), self.notes[i].found.clone())
+        } else {
+            let under_root = self.roots.iter().find_map(|r| rel_of(&real, r));
+            let found = if under_root.is_some() {
+                vec![real.clone()]
+            } else {
+                Vec::new()
+            };
+            let rel = under_root.unwrap_or_else(|| real.to_string_lossy().into_owned());
+            (rel, found)
         };
         let note = read_note(real, rel, found)?;
         insert(&mut self.notes, note);

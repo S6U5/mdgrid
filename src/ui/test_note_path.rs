@@ -40,14 +40,14 @@ fn tasks(name: &str) -> Tmp {
 }
 
 /// ビューが2つの `.base`(どちらも status の列だけ。file.name の列は無い)。
-const BASE: &str = r#"views:
+const BASE: &str = r"views:
   - type: table
     name: 一
     order: [status]
   - type: table
     name: 二
     order: [status]
-"#;
+";
 
 /// 設定の TOML を読む(警告が無いことも確かめる)。
 fn cfg_ok(text: &str) -> Config {

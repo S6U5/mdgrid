@@ -84,8 +84,7 @@ fn is_selected(s: &str, name: &str) -> bool {
     let start = l[..i]
         .char_indices()
         .rfind(|(_, c)| matches!(c, '│' | '┃' | '|'))
-        .map(|(j, c)| j + c.len_utf8())
-        .unwrap_or(0);
+        .map_or(0, |(j, c)| j + c.len_utf8());
     l[start..i].contains('>')
 }
 

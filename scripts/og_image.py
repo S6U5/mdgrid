@@ -17,9 +17,8 @@ import base64
 import html
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
-
 import pages
+from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 W, H = pages.OG_W, pages.OG_H
@@ -47,17 +46,26 @@ h1{{font-size:{size}px;line-height:1.3;font-weight:700;letter-spacing:-.01em;}}
 def main() -> None:
     with sync_playwright() as p:
         b = p.chromium.launch()
-        for lang, hero, out in (("en", "docs/assets/hero.png", "docs/assets/og.png"), ("ja", "docs/assets/ja/hero.png", "docs/assets/ja/og.png")):
+        for lang, hero, out in (
+            ("en", "docs/assets/hero.png", "docs/assets/og.png"),
+            ("ja", "docs/assets/ja/hero.png", "docs/assets/ja/og.png"),
+        ):
             pg = b.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
             pg.set_content(
                 CARD.format(
-                    lang=lang, w=W, h=H, shot=SHOT_W, img=round(SHOT_W * HERO_W / DARK_W),
+                    lang=lang,
+                    w=W,
+                    h=H,
+                    shot=SHOT_W,
+                    img=round(SHOT_W * HERO_W / DARK_W),
                     size=42,
                     h1="<br>".join(html.escape(x) for x in pages.HOME[lang]["h1"]),
                     hero=base64.b64encode((ROOT / hero).read_bytes()).decode(),
                 )
             )
-            pg.wait_for_function("document.fonts.status === 'loaded' && [...document.images].every(i => i.complete)")
+            pg.wait_for_function(
+                "document.fonts.status === 'loaded' && [...document.images].every(i => i.complete)"
+            )
             pg.screenshot(path=str(ROOT / out))
             pg.close()
             print(out)

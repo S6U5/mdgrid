@@ -122,9 +122,7 @@ fn snapshot(dir: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
 }
 
 fn state_files(tmp: &Tmp) -> usize {
-    std::fs::read_dir(state_dir(tmp))
-        .map(|d| d.flatten().count())
-        .unwrap_or(0)
+    std::fs::read_dir(state_dir(tmp)).map_or(0, |d| d.flatten().count())
 }
 
 /// SR-9: どの行も幅以下。

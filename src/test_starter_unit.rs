@@ -349,9 +349,10 @@ fn test_st_2_builtin_four_in_name_order_with_every_language() {
             s.name
         );
         assert!(
-            ledger
-                .iter()
-                .any(|r| r.starts_with(".mdgrid/templates/") && r.ends_with(".md")),
+            ledger.iter().any(|r| r.starts_with(".mdgrid/templates/")
+                && std::path::Path::new(r)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))),
             "{}: 雛形が無い: {ledger:?}",
             s.name
         );
@@ -388,8 +389,10 @@ fn test_st_2_builtin_every_language_creates_a_ledger_that_reads_without_warnings
                     "{tag}: 返したパスと書いたファイル"
                 );
                 assert_eq!(
-                    made.iter()
-                        .any(|r| r.ends_with(".md") && !r.starts_with(".mdgrid/")),
+                    made.iter().any(|r| std::path::Path::new(r)
+                        .extension()
+                        .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+                        && !r.starts_with(".mdgrid/")),
                     with_samples,
                     "{tag}: 見本は with_samples のときだけ: {made:?}"
                 );

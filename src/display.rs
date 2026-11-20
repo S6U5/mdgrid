@@ -180,7 +180,9 @@ impl NoteName {
         if pattern.is_empty() {
             return Ok(None);
         }
-        let mut names = note_names().lock().unwrap_or_else(|e| e.into_inner());
+        let mut names = note_names()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         if let Some(i) = names.iter().position(|(p, _)| p == pattern) {
             return Ok(Some(NoteName(i as u32)));
         }
@@ -191,7 +193,9 @@ impl NoteName {
 
     /// 書いた正規表現の文字。
     pub fn pattern(self) -> String {
-        let names = note_names().lock().unwrap_or_else(|e| e.into_inner());
+        let names = note_names()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         names
             .get(self.0 as usize)
             .map(|(p, _)| p.clone())
@@ -201,7 +205,9 @@ impl NoteName {
     /// 名前に当てる(SR-47): 一致すれば、組 `name` か1つ目の組の部分、組が無ければ一致した部分を除いた残り。
     /// 一致しないときと、結果が空になるときは名前のまま。
     pub fn apply(self, name: &str) -> String {
-        let names = note_names().lock().unwrap_or_else(|e| e.into_inner());
+        let names = note_names()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let Some((_, re)) = names.get(self.0 as usize) else {
             return name.to_string();
         };

@@ -65,8 +65,22 @@ from html import escape
 # --------------------------------------------------------------------------- terminal
 
 PALETTE = [
-    "#1e1e1e", "#cd3131", "#0dbc79", "#e5e510", "#2472c8", "#bc3fbc", "#11a8cd", "#e5e5e5",
-    "#666666", "#f14c4c", "#23d18b", "#f5f543", "#3b8eea", "#d670d6", "#29b8db", "#ffffff",
+    "#1e1e1e",
+    "#cd3131",
+    "#0dbc79",
+    "#e5e510",
+    "#2472c8",
+    "#bc3fbc",
+    "#11a8cd",
+    "#e5e5e5",
+    "#666666",
+    "#f14c4c",
+    "#23d18b",
+    "#f5f543",
+    "#3b8eea",
+    "#d670d6",
+    "#29b8db",
+    "#ffffff",
 ]
 DEFAULT_FG = "#d4d4d4"
 DEFAULT_BG = "#1e1e1e"
@@ -78,9 +92,9 @@ def color256(n):
     if n < 232:
         n -= 16
         steps = [0, 95, 135, 175, 215, 255]
-        return "#%02x%02x%02x" % (steps[n // 36], steps[(n // 6) % 6], steps[n % 6])
+        return f"#{steps[n // 36]:02x}{steps[(n // 6) % 6]:02x}{steps[n % 6]:02x}"
     v = 8 + (n - 232) * 10
-    return "#%02x%02x%02x" % (v, v, v)
+    return f"#{v:02x}{v:02x}{v:02x}"
 
 
 def char_width(ch):
@@ -90,7 +104,7 @@ def char_width(ch):
 
 
 class Cell:
-    __slots__ = ("ch", "fg", "bg", "bold", "dim", "italic", "under", "rev", "cont")
+    __slots__ = ("bg", "bold", "ch", "cont", "dim", "fg", "italic", "rev", "under")
 
     def __init__(self):
         self.ch = " "
@@ -111,7 +125,9 @@ class Screen:
         self.saved = (0, 0)
         self.top, self.bottom = 0, rows - 1
         self.replies = []  # bytes to send back to the app (cursor position reports)
-        self.hidden_half = False  # the next space is the hidden right half of a widened emoji
+        self.hidden_half = (
+            False  # the next space is the hidden right half of a widened emoji
+        )
         self.buf = ""
 
     def blank(self):
@@ -124,7 +140,13 @@ class Screen:
     def styled(self, ch):
         c = Cell()
         c.ch, c.fg, c.bg = ch, self.fg, self.bg
-        c.bold, c.dim, c.italic, c.under, c.rev = self.bold, self.dim, self.italic, self.under, self.rev
+        c.bold, c.dim, c.italic, c.under, c.rev = (
+            self.bold,
+            self.dim,
+            self.italic,
+            self.under,
+            self.rev,
+        )
         return c
 
     def erase_cell(self):
@@ -176,7 +198,12 @@ class Screen:
             # Emoji presentation selector: ratatui (unicode-width) counts "✈️" as two cells, so the
             # previous character becomes wide and the selector itself takes no cell.
             x = self.x - 1
-            if 0 <= x and self.x < self.cols and not row[x].cont and not row[self.x].cont:
+            if (
+                0 <= x
+                and self.x < self.cols
+                and not row[x].cont
+                and not row[self.x].cont
+            ):
                 row[x].ch += ch
                 cont = self.styled("")
                 cont.cont = True
@@ -186,8 +213,13 @@ class Screen:
             else:
                 self.attach(ch)
             return
-        if (ch == " " and self.x < self.cols and row[self.x].cont and self.x > 0
-                and row[self.x - 1].ch.endswith("\ufe0f")):
+        if (
+            ch == " "
+            and self.x < self.cols
+            and row[self.x].cont
+            and self.x > 0
+            and row[self.x - 1].ch.endswith("\ufe0f")
+        ):
             # ratatui sometimes repaints the hidden right half of such an emoji with a space;
             # keep the emoji (a terminal that draws it one cell wide shows that space instead).
             self.x += 1
@@ -247,7 +279,11 @@ class Screen:
         return i + 2
 
     def csi(self, private, params, final):
-        args = [int(p) if p.isdigit() else 0 for p in params.replace(":", ";").split(";")] if params else []
+        args = (
+            [int(p) if p.isdigit() else 0 for p in params.replace(":", ";").split(";")]
+            if params
+            else []
+        )
 
         def arg(n, default=1):
             v = args[n] if len(args) > n else 0
@@ -285,7 +321,7 @@ class Screen:
                 rows = range(self.y + 1, self.rows)
             elif mode == 1:
                 self.erase_line(1)
-                rows = range(0, self.y)
+                rows = range(self.y)
             for r in rows:
                 self.grid[r] = [self.erase_cell() for _ in range(self.cols)]
         elif final == "K":
@@ -295,13 +331,13 @@ class Screen:
                 self.grid[self.y][c] = self.erase_cell()
         elif final == "P":
             row = self.grid[self.y]
-            del row[self.x:self.x + arg(0)]
+            del row[self.x : self.x + arg(0)]
             row.extend(self.erase_cell() for _ in range(self.cols - len(row)))
         elif final == "@":
             row = self.grid[self.y]
             for _ in range(arg(0)):
                 row.insert(self.x, self.erase_cell())
-            del row[self.cols:]
+            del row[self.cols :]
         elif final == "r":
             self.top = arg(0) - 1
             self.bottom = min(self.rows - 1, arg(1, self.rows) - 1)
@@ -313,14 +349,20 @@ class Screen:
         elif final == "m":
             self.sgr(args or [0])
         elif final == "n" and arg(0) == 6:
-            self.replies.append(("\x1b[%d;%dR" % (self.y + 1, self.x + 1)).encode())
+            self.replies.append(f"\x1b[{self.y + 1};{self.x + 1}R".encode())
         elif final == "c":
             self.replies.append(b"\x1b[?1;2c")
 
     def erase_line(self, mode):
         row = self.grid[self.y]
         x = min(self.x, self.cols - 1)
-        cols = range(x, self.cols) if mode == 0 else range(0, x + 1) if mode == 1 else range(self.cols)
+        cols = (
+            range(x, self.cols)
+            if mode == 0
+            else range(x + 1)
+            if mode == 1
+            else range(self.cols)
+        )
         for c in cols:
             row[c] = self.erase_cell()
 
@@ -365,7 +407,7 @@ class Screen:
                     col = color256(a[i + 2])
                     i += 2
                 elif a[i + 1] == 2 and i + 4 < len(a):
-                    col = "#%02x%02x%02x" % tuple(a[i + 2:i + 5])
+                    col = "#{:02x}{:02x}{:02x}".format(*tuple(a[i + 2 : i + 5]))
                     i += 4
                 else:
                     col = None
@@ -384,16 +426,22 @@ class Screen:
         return "\n".join(lines) + "\n"
 
     def contains(self, needle):
-        return needle in "\n".join("".join(c.ch for c in row if not c.cont) for row in self.grid)
+        return needle in "\n".join(
+            "".join(c.ch for c in row if not c.cont) for row in self.grid
+        )
 
     def svg(self, cell_w=8.4, cell_h=18, font=14):
         w, h = self.cols * cell_w + 16, self.rows * cell_h + 16
         out = [
-            '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d">' % (w, h, w, h),
-            '<rect width="100%%" height="100%%" fill="%s" rx="6"/>' % DEFAULT_BG,
-            '<g font-family="Menlo, Consolas, \'DejaVu Sans Mono\', \'Noto Sans Mono CJK JP\', monospace" '
-            'font-size="%d" xml:space="preserve">' % font,
+            # %d と同じく、小数は整数に切り捨てて書く。
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{int(w)}" height="{int(h)}" viewBox="0 0 {int(w)} {int(h)}">',
+            f'<rect width="100%" height="100%" fill="{DEFAULT_BG}" rx="6"/>',
+            (
+                "<g font-family=\"Menlo, Consolas, 'DejaVu Sans Mono', 'Noto Sans Mono CJK JP', monospace\" "
+                f'font-size="{int(font)}" xml:space="preserve">'
+            ),
         ]
+
         def colors(cell):
             if cell.rev:
                 return (cell.bg or DEFAULT_BG), (cell.fg or DEFAULT_FG)
@@ -413,15 +461,16 @@ class Screen:
                 while c < self.cols and (row[c].cont or colors(row[c])[1] == bg):
                     c += 1
                 if bg:
-                    out.append('<rect x="%.1f" y="%d" width="%.1f" height="%d" fill="%s"/>'
-                               % (8 + start * cell_w, y, (c - start) * cell_w, cell_h, bg))
+                    out.append(
+                        f'<rect x="{8 + start * cell_w:.1f}" y="{int(y)}" width="{(c - start) * cell_w:.1f}" height="{int(cell_h)}" fill="{bg}"/>'
+                    )
             for c, cell in enumerate(row):
                 if cell.cont:
                     continue
                 fg = colors(cell)[0]
                 span = 2 if c + 1 < self.cols and row[c + 1].cont else 1
                 if cell.ch.strip():
-                    attrs = ' fill="%s"' % fg
+                    attrs = f' fill="{fg}"'
                     if cell.bold:
                         attrs += ' font-weight="bold"'
                     if cell.dim:
@@ -430,8 +479,9 @@ class Screen:
                         attrs += ' font-style="italic"'
                     if cell.under:
                         attrs += ' text-decoration="underline"'
-                    out.append('<text x="%.1f" y="%.1f" textLength="%.1f" lengthAdjust="spacingAndGlyphs"%s>%s</text>'
-                               % (8 + c * cell_w, y + cell_h * 0.75, span * cell_w, attrs, escape(cell.ch)))
+                    out.append(
+                        f'<text x="{8 + c * cell_w:.1f}" y="{y + cell_h * 0.75:.1f}" textLength="{span * cell_w:.1f}" lengthAdjust="spacingAndGlyphs"{attrs}>{escape(cell.ch)}</text>'
+                    )
         out.append("</g></svg>")
         return "\n".join(out) + "\n"
 
@@ -439,13 +489,37 @@ class Screen:
 # --------------------------------------------------------------------------- keys
 
 NAMED = {
-    "Enter": "\r", "Esc": "\x1b", "Tab": "\t", "S-Tab": "\x1b[Z", "Backspace": "\x7f",
-    "Delete": "\x1b[3~", "Up": "\x1b[A", "Down": "\x1b[B", "Right": "\x1b[C", "Left": "\x1b[D",
-    "S-Up": "\x1b[1;2A", "S-Down": "\x1b[1;2B", "S-Right": "\x1b[1;2C", "S-Left": "\x1b[1;2D",
-    "Home": "\x1b[H", "End": "\x1b[F", "PageUp": "\x1b[5~", "PageDown": "\x1b[6~", "Space": " ",
-    "F1": "\x1bOP", "F2": "\x1bOQ", "F3": "\x1bOR", "F4": "\x1bOS", "F5": "\x1b[15~",
-    "F6": "\x1b[17~", "F7": "\x1b[18~", "F8": "\x1b[19~", "F9": "\x1b[20~", "F10": "\x1b[21~",
-    "F11": "\x1b[23~", "F12": "\x1b[24~",
+    "Enter": "\r",
+    "Esc": "\x1b",
+    "Tab": "\t",
+    "S-Tab": "\x1b[Z",
+    "Backspace": "\x7f",
+    "Delete": "\x1b[3~",
+    "Up": "\x1b[A",
+    "Down": "\x1b[B",
+    "Right": "\x1b[C",
+    "Left": "\x1b[D",
+    "S-Up": "\x1b[1;2A",
+    "S-Down": "\x1b[1;2B",
+    "S-Right": "\x1b[1;2C",
+    "S-Left": "\x1b[1;2D",
+    "Home": "\x1b[H",
+    "End": "\x1b[F",
+    "PageUp": "\x1b[5~",
+    "PageDown": "\x1b[6~",
+    "Space": " ",
+    "F1": "\x1bOP",
+    "F2": "\x1bOQ",
+    "F3": "\x1bOR",
+    "F4": "\x1bOS",
+    "F5": "\x1b[15~",
+    "F6": "\x1b[17~",
+    "F7": "\x1b[18~",
+    "F8": "\x1b[19~",
+    "F9": "\x1b[20~",
+    "F10": "\x1b[21~",
+    "F11": "\x1b[23~",
+    "F12": "\x1b[24~",
 }
 
 
@@ -460,10 +534,11 @@ def key_bytes(key):
         return b"\x1b" + key_bytes(key[2:])
     if len(key) >= 1:
         return key.encode()
-    raise ValueError("unknown key: %r" % key)
+    raise ValueError(f"unknown key: {key!r}")
 
 
 # --------------------------------------------------------------------------- running
+
 
 class Child:
     """The app in a pseudo-terminal. Always killed on close()."""
@@ -500,8 +575,8 @@ class Child:
                 text = data.decode("utf-8")
                 self.decoder_rest = b""
             except UnicodeDecodeError as e:
-                text = data[:e.start].decode("utf-8")
-                self.decoder_rest = data[e.start:]
+                text = data[: e.start].decode("utf-8")
+                self.decoder_rest = data[e.start :]
             self.screen.feed(text)
             for reply in self.screen.replies:
                 os.write(self.fd, reply)
@@ -564,9 +639,16 @@ def stage_root(app):
         os.makedirs(root, mode=0o700)
         return root
     import stat as _stat
-    if _stat.S_ISLNK(st.st_mode) or not _stat.S_ISDIR(st.st_mode) or st.st_uid != os.getuid():
-        raise RuntimeError("stage_dir %s exists and is not a directory owned by you; remove it or "
-                           "choose another path" % root)
+
+    if (
+        _stat.S_ISLNK(st.st_mode)
+        or not _stat.S_ISDIR(st.st_mode)
+        or st.st_uid != os.getuid()
+    ):
+        raise RuntimeError(
+            f"stage_dir {root} exists and is not a directory owned by you; remove it or "
+            "choose another path"
+        )
     shutil.rmtree(root)
     os.makedirs(root, mode=0o700)
     return root
@@ -585,7 +667,11 @@ def stage(app, cwd, argv):
             os.makedirs(os.path.dirname(dst) or root, exist_ok=True)
             shutil.copy2(src, dst)
     prog = argv[0]
-    if not os.path.isabs(prog) and os.sep in prog and os.path.exists(os.path.join(cwd, prog)):
+    if (
+        not os.path.isabs(prog)
+        and os.sep in prog
+        and os.path.exists(os.path.join(cwd, prog))
+    ):
         argv = [os.path.join(cwd, prog)] + argv[1:]
     return root, argv
 
@@ -593,11 +679,16 @@ def stage(app, cwd, argv):
 def unstage(root):
     """Remove the stage folder (only what stage() created: a real directory owned by this user)."""
     import stat as _stat
+
     try:
         st = os.lstat(root)
     except FileNotFoundError:
         return
-    if _stat.S_ISDIR(st.st_mode) and not _stat.S_ISLNK(st.st_mode) and st.st_uid == os.getuid():
+    if (
+        _stat.S_ISDIR(st.st_mode)
+        and not _stat.S_ISLNK(st.st_mode)
+        and st.st_uid == os.getuid()
+    ):
         shutil.rmtree(root, ignore_errors=True)
 
 
@@ -614,11 +705,20 @@ def load(path):
 
 
 def base_env(isolate, extra, tmp):
-    env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "TERM": "xterm-256color",
-           "COLORTERM": "truecolor", "LANG": os.environ.get("LANG", "C.UTF-8")}
+    env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "TERM": "xterm-256color",
+        "COLORTERM": "truecolor",
+        "LANG": os.environ.get("LANG", "C.UTF-8"),
+    }
     if isolate:
-        for k, sub in (("HOME", "home"), ("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
-                       ("XDG_DATA_HOME", "data"), ("XDG_CACHE_HOME", "cache")):
+        for k, sub in (
+            ("HOME", "home"),
+            ("XDG_CONFIG_HOME", "config"),
+            ("XDG_STATE_HOME", "state"),
+            ("XDG_DATA_HOME", "data"),
+            ("XDG_CACHE_HOME", "cache"),
+        ):
             d = os.path.join(tmp, sub)
             os.makedirs(d, exist_ok=True)
             env[k] = d
@@ -634,8 +734,13 @@ def main():
     ap.add_argument("--out", default="manual")
     ap.add_argument("--lang", default=None, help="sub-folder of --out (e.g. ja, en)")
     ap.add_argument("--only", default=None, help="take only the shot with this id")
-    ap.add_argument("--env", action="append", default=[], metavar="KEY=VALUE",
-                    help="extra environment for the app (repeatable), e.g. --env LANG=en_US.UTF-8")
+    ap.add_argument(
+        "--env",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="extra environment for the app (repeatable), e.g. --env LANG=en_US.UTF-8",
+    )
     a = ap.parse_args()
     cli_env = dict(e.split("=", 1) for e in a.env)
 
@@ -658,8 +763,11 @@ def main():
         child = None
         staged = None
         try:
-            env = base_env(app.get("isolate", True),
-                           {**app.get("env", {}), **shot.get("env", {}), **cli_env}, tmp)
+            env = base_env(
+                app.get("isolate", True),
+                {**app.get("env", {}), **shot.get("env", {}), **cli_env},
+                tmp,
+            )
             run_cwd, argv = cwd, list(shot.get("command", command))
             if app.get("stage"):
                 run_cwd, argv = stage(app, cwd, argv)
@@ -667,18 +775,22 @@ def main():
             child = Child(argv, rows, cols, env, run_cwd)
             ready = pick(shot.get("ready", app.get("ready")), a.lang) or None
             if not child.wait_for(ready, timeout):
-                raise RuntimeError("the app did not show %r" % ready)
+                raise RuntimeError(f"the app did not show {ready!r}")
             for key in shot.get("keys", []):
                 child.send(key)
             wait = pick(shot.get("wait"), a.lang) or None
             if not child.wait_for(wait, timeout):
-                raise RuntimeError("the screen did not show %r" % wait)
-            with open(os.path.join(images, shot["id"] + ".svg"), "w", encoding="utf-8") as f:
+                raise RuntimeError(f"the screen did not show {wait!r}")
+            with open(
+                os.path.join(images, shot["id"] + ".svg"), "w", encoding="utf-8"
+            ) as f:
                 f.write(child.screen.svg())
-            with open(os.path.join(images, shot["id"] + ".txt"), "w", encoding="utf-8") as f:
+            with open(
+                os.path.join(images, shot["id"] + ".txt"), "w", encoding="utf-8"
+            ) as f:
                 f.write(child.screen.text())
             print("shot:", shot["id"])
-        except Exception as e:  # keep going; report at the end
+        except Exception as e:  # noqa: BLE001 - keep going with the other shots; report at the end
             failed.append((shot["id"], str(e)))
             print("FAILED:", shot["id"], e, file=sys.stderr)
         finally:
@@ -709,16 +821,24 @@ def write_gallery(out, app, shots, failed, lang=None):
     lines = ["# " + (pick(app.get("title"), lang) or "Manual"), ""]
     if app.get("intro"):
         lines += [pick(app["intro"], lang).strip(), ""]
-    lines += ["<!-- generated by app-manual/tui_shot.py: the screenshot gallery. The manual's chapters link to images/. -->", ""]
+    lines += [
+        "<!-- generated by app-manual/tui_shot.py: the screenshot gallery. The manual's chapters link to images/. -->",
+        "",
+    ]
     for s in shots:
         title = pick(s.get("title"), lang) or s["id"]
         lines += ["## " + title, ""]
         if s.get("keys"):
-            lines += [keys_label + ": " + " ".join("`%s`" % k for k in s["keys"] if not k.startswith("sleep:")), ""]
+            lines += [
+                keys_label
+                + ": "
+                + " ".join(f"`{k}`" for k in s["keys"] if not k.startswith("sleep:")),
+                "",
+            ]
         if s["id"] in bad:
             lines += ["(this screenshot could not be taken)", ""]
         else:
-            lines += ["![%s](images/%s.svg)" % (title, s["id"]), ""]
+            lines += ["![{}](images/{}.svg)".format(title, s["id"]), ""]
         if s.get("text"):
             lines += [pick(s["text"], lang).strip(), ""]
     with open(os.path.join(out, "shots.md"), "w", encoding="utf-8") as f:

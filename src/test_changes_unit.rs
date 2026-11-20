@@ -206,7 +206,9 @@ fn same_value_date_compares_with_read_string() {
 fn same_value_compares_lists_by_strings() {
     // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1, req~cell-edit.list-candidates-empty~1, req~cell-edit.list-candidates-unkeepable~1] List は要素の文字列の並びで比べる。空の並びは Null・空の文字列と同じ(書いても `key:`
     // にしかならないか、書くと `key: ""` が `key:` に変わるので書かない)。
-    let list = |items: &[&str]| NewValue::List(items.iter().map(|s| s.to_string()).collect());
+    let list = |items: &[&str]| {
+        NewValue::List(items.iter().map(std::string::ToString::to_string).collect())
+    };
     let strs =
         |items: &[&str]| Value::List(items.iter().map(|s| Value::Str(s.to_string())).collect());
     assert!(same_value(&list(&["a", "b"]), &strs(&["a", "b"])));

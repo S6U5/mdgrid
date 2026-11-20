@@ -77,7 +77,7 @@ fn make_folder_vault(name: &str) -> TempDir {
 fn folder_paths() -> BTreeSet<String> {
     ["notes/a.md", "notes/b.md", "notes/c.md", "notes/sub/d.md"]
         .iter()
-        .map(|p| p.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 
@@ -136,7 +136,7 @@ fn stderr_lines(out: &Output) -> Vec<String> {
     String::from_utf8_lossy(&out.stderr)
         .lines()
         .filter(|l| !l.trim().is_empty())
-        .map(|l| l.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 
@@ -170,7 +170,7 @@ fn parse_csv(s: &str) -> Vec<Vec<String>> {
             }
             at_field_start = false;
             match chars.peek() {
-                Some(',') | Some('\n') | None => {}
+                Some(',' | '\n') | None => {}
                 other => panic!("引用符のあとに区切りが無い: {other:?} in {s:?}"),
             }
             continue;
@@ -592,7 +592,7 @@ fn test_cli_14_base_with_path_is_relative_to_base_folder() {
     let paths: BTreeSet<String> = rows[1..].iter().map(|r| r[0].clone()).collect();
     let want: BTreeSet<String> = ["notes/Tasks/x.md", "notes/Tasks/y.md"]
         .iter()
-        .map(|p| p.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
     assert_eq!(paths, want, "パスは .base のフォルダからの形: {text}");
     assert_eq!(rows.len(), 3, "見出しと2行: {text}");
@@ -614,7 +614,7 @@ fn test_cli_14_with_path_without_print_fails_with_one_line_and_code_2() {
         String::from_utf8_lossy(&out.stderr)
     );
     let lines = stderr_lines(&out);
-    assert_eq!(lines.len(), 1, "標準エラーは理由1行: {:?}", lines);
+    assert_eq!(lines.len(), 1, "標準エラーは理由1行: {lines:?}");
     assert!(
         lines[0].contains("--with-path"),
         "理由は --with-path を名指す: {:?}",

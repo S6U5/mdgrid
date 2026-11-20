@@ -126,27 +126,26 @@ pub fn build(entries: &[Entry], none_name: &str) -> Tree {
             let mut parent: Option<usize> = None;
             for d in 0..e.path.len() {
                 let key = key_of(&e.path[..=d]);
-                let f = match at.get(&key) {
-                    Some(&f) => f,
-                    None => {
-                        folders.push(Folder {
-                            name: e.path[d].clone(),
-                            key: key.clone(),
-                            parent,
-                            kids: Vec::new(),
-                            rows: Vec::new(),
-                            count: 0,
-                            depth: d,
-                            none: false,
-                        });
-                        let f = folders.len() - 1;
-                        at.insert(key, f);
-                        match parent {
-                            Some(p) => folders[p].kids.push(f),
-                            None => roots.push(f),
-                        }
-                        f
+                let f = if let Some(&f) = at.get(&key) {
+                    f
+                } else {
+                    folders.push(Folder {
+                        name: e.path[d].clone(),
+                        key: key.clone(),
+                        parent,
+                        kids: Vec::new(),
+                        rows: Vec::new(),
+                        count: 0,
+                        depth: d,
+                        none: false,
+                    });
+                    let f = folders.len() - 1;
+                    at.insert(key, f);
+                    match parent {
+                        Some(p) => folders[p].kids.push(f),
+                        None => roots.push(f),
                     }
+                    f
                 };
                 parent = Some(f);
             }

@@ -131,7 +131,7 @@ fn test_sr_19_file_name_cell_click_opens_editor() {
     let mut a = open(&tmp, BASE_FILE, None);
     col_named(&mut a, "title");
     let start = a.row;
-    let other = if start == 0 { 1 } else { 0 };
+    let other = usize::from(start == 0);
     let (x, y) = cell_xy(&a, other, "file.name");
     a.click(x, y);
     assert_eq!(a.row, other);

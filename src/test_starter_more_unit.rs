@@ -66,9 +66,8 @@ fn test_st_4_create_refuses_when_a_folder_on_the_way_is_a_link() {
     std::fs::create_dir_all(&root).unwrap();
     std::fs::create_dir_all(&outside).unwrap();
     std::os::unix::fs::symlink(&outside, root.join("board")).unwrap();
-    let e = match create(&root, &s, Lang::En, true, now()) {
-        Ok(_) => panic!("リンクの下に書いた"),
-        Err(e) => e,
+    let Err(e) = create(&root, &s, Lang::En, true, now()) else {
+        panic!("リンクの下に書いた")
     };
     assert!(e.contains("board"), "理由にリンクのパス: {e}");
     assert!(
@@ -92,9 +91,8 @@ fn test_st_1_ledger_variant_without_marker_is_refused() {
         &dir.join("ledger.ja/.mdgrid/templates/fuda.md"),
         "# {name}\n",
     );
-    let e = match read_user(&dir) {
-        Ok(_) => panic!("印の無い変種を読んだ"),
-        Err(e) => e,
+    let Err(e) = read_user(&dir) else {
+        panic!("印の無い変種を読んだ")
     };
     assert!(
         e.starts_with("starters/kanban: ledger.ja/.mdgrid/workspace.toml:"),
@@ -119,8 +117,7 @@ fn test_st_3_non_file_entries_in_a_starter_are_skipped() {
     let ok = std::process::Command::new("mkfifo")
         .arg(&fifo)
         .status()
-        .map(|s| s.success())
-        .unwrap_or(false);
+        .is_ok_and(|s| s.success());
     if !ok {
         eprintln!("mkfifo が無いので飛ばす");
         return;
@@ -178,9 +175,8 @@ fn test_st_3_unreadable_file_warning_names_the_file_in_cli_3_shape() {
     let cfg = t.0.join("config");
     let dir = kanban(&cfg);
     std::fs::write(dir.join("ledger/bad.md"), [0xff, 0xfe, 0x00, 0x41]).unwrap();
-    let e = match read_user(&dir) {
-        Ok(_) => panic!("UTF-8 でないファイルを読んだ"),
-        Err(e) => e,
+    let Err(e) = read_user(&dir) else {
+        panic!("UTF-8 でないファイルを読んだ")
     };
     assert!(e.starts_with("starters/kanban: ledger/bad.md: "), "{e}");
     assert!(!e.contains(": : "), "道筋が空でない: {e}");

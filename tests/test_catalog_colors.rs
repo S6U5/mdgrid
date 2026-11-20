@@ -25,7 +25,7 @@ fn test_sr_38_catalog_colors() {
     let n = names();
     let roles: Vec<String> = mdgrid::colors::ROLES
         .iter()
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
     assert_eq!(strs(&n["colorRoles"]), roles);
     let named: Vec<String> = mdgrid::colors::NAMED

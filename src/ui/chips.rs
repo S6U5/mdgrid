@@ -19,7 +19,7 @@ const PAIRS: [([u8; 3], [u8; 3]); 8] = [
 /// 値の文字の指紋(FNV-1a)。同じ値はいつも同じ色。
 fn hash(s: &str) -> u64 {
     s.bytes().fold(0xcbf2_9ce4_8422_2325, |h, b| {
-        (h ^ b as u64).wrapping_mul(0x0100_0000_01b3)
+        (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)
     })
 }
 
@@ -118,7 +118,7 @@ fn hue(app: &App, item: &str) -> [u8; 3] {
 }
 
 fn mixc(a: [u8; 3], b: [u8; 3], t: f32) -> [u8; 3] {
-    let m = |x: u8, y: u8| (x as f32 * (1.0 - t) + y as f32 * t).round() as u8;
+    let m = |x: u8, y: u8| (f32::from(x) * (1.0 - t) + f32::from(y) * t).round() as u8;
     [m(a[0], b[0]), m(a[1], b[1]), m(a[2], b[2])]
 }
 
@@ -148,7 +148,7 @@ fn tint(app: &App, item: &str) -> Option<Style> {
 /// 透けない札(SR-36 の solid): 値の色をそのまま地にし、文字は地の明るさで黒か白。
 fn solid(app: &App, item: &str) -> Option<Style> {
     let h = hue(app, item);
-    let lum = 0.2126 * h[0] as f32 + 0.7152 * h[1] as f32 + 0.0722 * h[2] as f32;
+    let lum = 0.2126 * f32::from(h[0]) + 0.7152 * f32::from(h[1]) + 0.0722 * f32::from(h[2]);
     let fg = if lum > 150.0 {
         [20, 20, 24]
     } else {
@@ -347,7 +347,7 @@ fn tint_caps(app: &App, t: Option<Style>) -> Option<(Seg, Seg)> {
 
 /// 地 `bg` の上で読める文字の色(明るい地には黒、暗い地には白)。
 fn contrast(bg: [u8; 3]) -> [u8; 3] {
-    let lum = 0.2126 * bg[0] as f32 + 0.7152 * bg[1] as f32 + 0.0722 * bg[2] as f32;
+    let lum = 0.2126 * f32::from(bg[0]) + 0.7152 * f32::from(bg[1]) + 0.0722 * f32::from(bg[2]);
     if lum > 150.0 {
         [20, 20, 24]
     } else {

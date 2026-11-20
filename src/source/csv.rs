@@ -174,7 +174,7 @@ impl Csv {
             .iter()
             .map(|r| {
                 old.get_mut(&bytes[r.start..r.end])
-                    .and_then(|q| q.pop_front())
+                    .and_then(std::collections::VecDeque::pop_front)
             })
             .collect()
     }

@@ -649,8 +649,7 @@ fn bottom_edge(s: &str) -> String {
 /// `line` の中で `key` のあとに `word` が出る(キーの表記と語が並ぶ)。
 fn key_then_word(line: &str, key: &str, word: &str) -> bool {
     line.find(key)
-        .map(|i| line[i + key.len()..].contains(word))
-        .unwrap_or(false)
+        .is_some_and(|i| line[i + key.len()..].contains(word))
 }
 
 #[test]

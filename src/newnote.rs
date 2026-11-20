@@ -133,13 +133,12 @@ fn expand_with(s: &str, value: impl Fn(&str) -> Option<String>) -> String {
             return out;
         };
         let var = &after[..j];
-        match value(var) {
-            Some(text) => out.push_str(&text),
-            None => {
-                out.push('{');
-                out.push_str(var);
-                out.push('}');
-            }
+        if let Some(text) = value(var) {
+            out.push_str(&text);
+        } else {
+            out.push('{');
+            out.push_str(var);
+            out.push('}');
         }
         rest = &after[j + 1..];
     }
@@ -849,7 +848,7 @@ pub fn create(path: &Path, bytes: &[u8]) -> io::Result<()> {
         .write(true)
         .create_new(true)
         .open(path)?;
-    let r = f.write_all(bytes).and_then(|_| f.sync_all());
+    let r = f.write_all(bytes).and_then(|()| f.sync_all());
     if r.is_err() {
         drop(f);
         let _ = std::fs::remove_file(path);

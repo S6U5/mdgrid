@@ -55,7 +55,7 @@ fn test_ws_1_read_write_round_trip() {
             name: "Tasks".into(),
             path: t.0.join("tasks"),
             view: None,
-            profile: Default::default(),
+            profile: Profile::default(),
         },
     )
     .unwrap();
@@ -66,7 +66,7 @@ fn test_ws_1_read_write_round_trip() {
             name: "Projects".into(),
             path: t.0.join("projects"),
             view: Some("Open".into()),
-            profile: Default::default(),
+            profile: Profile::default(),
         },
     )
     .unwrap();
@@ -83,7 +83,7 @@ fn test_ws_1_read_write_round_trip() {
             name: "Todo".into(),
             path: t.0.join("tasks"),
             view: None,
-            profile: Default::default(),
+            profile: Profile::default(),
         },
     )
     .unwrap();
@@ -186,16 +186,16 @@ fn test_ws_6_resolve_order() {
                     name: "Tasks".into(),
                     path: tasks.clone(),
                     view: None,
-                    profile: Default::default(),
+                    profile: Profile::default(),
                 },
                 WsTable {
                     name: "Projects".into(),
                     path: t.0.join("vault/projects"),
                     view: None,
-                    profile: Default::default(),
+                    profile: Profile::default(),
                 },
             ],
-            profile: Default::default(),
+            profile: Profile::default(),
         },
         Workspace {
             name: "Hobby".into(),
@@ -203,9 +203,9 @@ fn test_ws_6_resolve_order() {
                 name: "Books".into(),
                 path: t.0.join("vault/books"),
                 view: None,
-                profile: Default::default(),
+                profile: Profile::default(),
             }],
-            profile: Default::default(),
+            profile: Profile::default(),
         },
     ];
     let modes = [Detect::Vault];

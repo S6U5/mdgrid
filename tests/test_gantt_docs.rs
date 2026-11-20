@@ -62,8 +62,8 @@ fn sections(text: &str) -> Vec<Section> {
         };
         let body: Vec<String> = lines[i + 1..]
             .iter()
-            .take_while(|l| !heading_of(l).is_some_and(|(lv, _)| lv <= level))
-            .map(|l| l.to_string())
+            .take_while(|l| heading_of(l).is_none_or(|(lv, _)| lv > level))
+            .map(std::string::ToString::to_string)
             .collect();
         out.push(Section {
             heading: heading.to_string(),
@@ -242,7 +242,7 @@ fn test_ga_6_tasks_starter_has_gantt_setting_and_start_column() {
         assert!(
             tables
                 .iter()
-                .any(|t| t.get("gantt").is_some_and(|g| g.is_table())),
+                .any(|t| t.get("gantt").is_some_and(toml::Value::is_table)),
             "{} の [[table]] に gantt の表が無い",
             rel(&p)
         );

@@ -97,6 +97,6 @@ fn test_ws_5_migrate_config_rewrites_old_values() {
         assert!(out.contains("\".obsidian\""), "{out}");
         let (c, w) = parse(&out).expect("読める");
         assert!(w.is_empty(), "読み直して警告なし: {w:?}\n{out}");
-        assert_eq!(format!("{:?}", c.workspace_detect).contains("Vault"), true);
+        assert!(format!("{:?}", c.workspace_detect).contains("Vault"));
     }
 }

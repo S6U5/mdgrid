@@ -197,15 +197,12 @@ fn decode_line(line: &str, out: &mut Vec<u8>) -> bool {
             i += 4;
             ends_with_newline_marker = true;
         } else if rest.len() >= 4 && rest[0] == b'<' && rest[3] == b'>' {
-            match (hex_digit(rest[1]), hex_digit(rest[2])) {
-                (Some(h), Some(l)) => {
-                    out.push(h * 16 + l);
-                    i += 4;
-                }
-                _ => {
-                    out.push(b[i]);
-                    i += 1;
-                }
+            if let (Some(h), Some(l)) = (hex_digit(rest[1]), hex_digit(rest[2])) {
+                out.push(h * 16 + l);
+                i += 4;
+            } else {
+                out.push(b[i]);
+                i += 1;
             }
         } else {
             out.push(b[i]);
@@ -339,7 +336,7 @@ fn test_wb_19_reason_names_are_distinct() {
     // [utest -> req~write-back.safety-docs-write~1] 試験の側の前提: 腕の名前はすべて違う。
     let names = all_names();
     let mut sorted = names.clone();
-    sorted.sort();
+    sorted.sort_unstable();
     sorted.dedup();
     assert_eq!(sorted.len(), names.len(), "{names:?}");
 }
@@ -482,7 +479,7 @@ fn test_wb_19_marker_decoding() {
     // 試験の側の道具の確かめ: 印の置き換え。
     let lines: Vec<String> = ["<BOM>---", "a: <FF><FE>x<CRLF>", "b: <zz> <C>", "---"]
         .iter()
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
     let mut want = vec![0xEF, 0xBB, 0xBF];
     want.extend_from_slice(b"---\na: ");

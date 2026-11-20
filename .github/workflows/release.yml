@@ -34,10 +34,14 @@ jobs:
       - run: cargo build --release --locked --target ${{ matrix.target }}
       - name: Package
         shell: bash
+        # The target comes in through the environment, not pasted into the script (GitHub's advice for
+        # expressions in `run`), so the shell and actionlint read it as a variable.
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
           set -euo pipefail
-          name="mdgrid-${GITHUB_REF_NAME}-${{ matrix.target }}"
-          bin="target/${{ matrix.target }}/release/mdgrid"
+          name="mdgrid-${GITHUB_REF_NAME}-${TARGET}"
+          bin="target/${TARGET}/release/mdgrid"
           [ -f "$bin.exe" ] && bin="$bin.exe"
           mkdir -p "dist/$name/completions"
           cp "$bin" README.md LICENSE-MIT LICENSE-APACHE "dist/$name/"
@@ -46,7 +50,7 @@ jobs:
           done
           "$bin" --man > "dist/$name/mdgrid.1"
           cd dist
-          if [[ "${{ matrix.target }}" == *windows* ]]; then
+          if [[ "$TARGET" == *windows* ]]; then
             7z a -tzip "$name.zip" "$name" > /dev/null
             archive="$name.zip"
           else

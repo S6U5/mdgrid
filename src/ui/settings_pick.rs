@@ -189,7 +189,7 @@ impl App {
                             col,
                             sel: 0,
                             edit: None,
-                        })
+                        });
                     }
                     Purpose::Sort => {
                         if d.s.sorts.iter().any(|(c, _)| *c == col) {
@@ -255,7 +255,7 @@ impl App {
                 _ => self.put_cond(col, Op::NotEmpty, edit),
             },
             Pick::Cmp { col, sel, edit } => {
-                let op = CMPS.get(sel).map(|c| c.0).unwrap_or(CmpOp::Eq);
+                let op = CMPS.get(sel).map_or(CmpOp::Eq, |c| c.0);
                 self.open_text(col, TextKind::Cmp(op), String::new(), edit);
             }
             Pick::Values {

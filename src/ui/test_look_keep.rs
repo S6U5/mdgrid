@@ -7,7 +7,7 @@ use super::*;
 use ratatui::crossterm::event::KeyCode;
 
 fn boot(tmp: &Tmp, config: mdgrid::config::Config) -> App {
-    let p = tmp.notes().to_path_buf();
+    let p = tmp.notes().clone();
     let t = crate::open_target(std::slice::from_ref(&p), None).unwrap();
     let mut app = App::new(Box::new(t.src), ColorMode::None);
     app.resize(100, 26);

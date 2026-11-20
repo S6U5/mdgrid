@@ -213,7 +213,7 @@ impl App {
         let mut out = own;
         for r in &self.rows {
             let has_kids = self.tree.get(r).is_some_and(|n| n.has_kids);
-            if has_kids && !out.get(r).is_some_and(|b| b.is_some()) {
+            if has_kids && !out.get(r).is_some_and(mdgrid::gantt::Bar::is_some) {
                 out.insert(r.clone(), span.get(r).copied().unwrap_or_default());
             }
         }
@@ -257,18 +257,15 @@ impl App {
             .fold(None, |acc: Option<(i64, i64)>, (s, e)| {
                 Some(acc.map_or((s, e), |(a, b)| (a.min(s), b.max(e))))
             });
-        let (unit, origin) = match bounds {
-            Some((first, last)) => {
-                let unit = gantt::fit_unit(first, last, cols);
-                (unit, gantt::floor_unit(first, unit))
-            }
-            None => {
-                self.message = Some(Msg::GanttNoDates.text().into());
-                let unit = Unit::Day;
-                let today = gantt::floor_unit(self.today, unit);
-                let back = i64::try_from(cols / TODAY_AT).unwrap_or(0);
-                (unit, gantt::cell_start(-back, today, unit))
-            }
+        let (unit, origin) = if let Some((first, last)) = bounds {
+            let unit = gantt::fit_unit(first, last, cols);
+            (unit, gantt::floor_unit(first, unit))
+        } else {
+            self.message = Some(Msg::GanttNoDates.text().into());
+            let unit = Unit::Day;
+            let today = gantt::floor_unit(self.today, unit);
+            let back = i64::try_from(cols / TODAY_AT).unwrap_or(0);
+            (unit, gantt::cell_start(-back, today, unit))
         };
         let sel = self
             .cur_row()

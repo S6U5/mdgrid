@@ -102,17 +102,14 @@ impl App {
             target: s.target,
             shown: false,
         });
-        match s.base {
-            Some((base, name, view)) => {
-                // BV-13: 起動は先頭のビュー(`--view` があればそれ)。
-                self.set_base(base, name, view.unwrap_or(0));
-            }
-            None => {
-                self.cols.clear();
-                self.hidden.clear();
-                self.restore_state();
-                self.refresh();
-            }
+        if let Some((base, name, view)) = s.base {
+            // BV-13: 起動は先頭のビュー(`--view` があればそれ)。
+            self.set_base(base, name, view.unwrap_or(0));
+        } else {
+            self.cols.clear();
+            self.hidden.clear();
+            self.restore_state();
+            self.refresh();
         }
         // NV-25・BV-13: 既定のビューがあれば開く(無くなっていれば警告せず先頭のまま)。`--view` と登録した表の
         // ビューは、このあと main が名前で選び直す。
@@ -180,21 +177,18 @@ impl App {
 
     fn restore_state_only(&mut self) {
         let slot = self.store.as_ref().map(|st| self.state_slot(&st.dir));
-        match (&mut self.store, slot) {
-            (Some(st), Some((dir, view))) => {
-                self.saved = config::load_state(&dir, &st.target, &view);
-                st.shown = true;
-                // NV-17: ビューの設定もビューごとの状態から。
-                self.settings = self.saved.settings.clone();
-                for (c, w) in &self.saved.widths {
-                    self.widths.insert(c.clone(), (*w).max(1) as usize);
-                }
-                self.folded.extend(self.saved.folded.iter().cloned());
+        if let (Some(st), Some((dir, view))) = (&mut self.store, slot) {
+            self.saved = config::load_state(&dir, &st.target, &view);
+            st.shown = true;
+            // NV-17: ビューの設定もビューごとの状態から。
+            self.settings = self.saved.settings.clone();
+            for (c, w) in &self.saved.widths {
+                self.widths.insert(c.clone(), (*w).max(1) as usize);
             }
-            _ => {
-                self.saved = ViewState::default();
-                self.settings = Default::default();
-            }
+            self.folded.extend(self.saved.folded.iter().cloned());
+        } else {
+            self.saved = ViewState::default();
+            self.settings = Default::default();
         }
         if let Some(nv) = self.native_view().cloned() {
             let fp = super::native_views::fingerprint(&nv);

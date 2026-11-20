@@ -220,19 +220,18 @@ impl Pick {
 
     /// 新規の要素を足して付ける。同じ要素が候補にあればそれを付ける(2つ足さない)。
     fn add(&mut self, name: String) {
-        let i = match self.find_same(&name) {
-            Some(i) => i,
-            None => {
-                self.cands.push(Cand {
-                    name: name.clone(),
-                    count: 0,
-                    mark: Mark::None,
-                    initial: Mark::None,
-                    added: true,
-                    label: None,
-                });
-                self.cands.len() - 1
-            }
+        let i = if let Some(i) = self.find_same(&name) {
+            i
+        } else {
+            self.cands.push(Cand {
+                name: name.clone(),
+                count: 0,
+                mark: Mark::None,
+                initial: Mark::None,
+                added: true,
+                label: None,
+            });
+            self.cands.len() - 1
         };
         self.attach(i);
     }
@@ -686,7 +685,7 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
 fn query_view(q: &str, room: usize) -> String {
     let mut s = sanitize(q);
     while width(&s) + 1 > room && !s.is_empty() {
-        let first = s.graphemes(true).next().map(str::len).unwrap_or(0);
+        let first = s.graphemes(true).next().map_or(0, str::len);
         s.drain(..first);
     }
     s

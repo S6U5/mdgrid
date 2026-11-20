@@ -328,7 +328,7 @@ fn unchanged(cell: &Cell, cur: Option<&Value>) -> bool {
             s.replace("\r\n", "\n") == now.replace("\r\n", "\n")
         }
         Cell::Json(v) => {
-            let now = cur.map(value_json).unwrap_or_else(|| "null".into());
+            let now = cur.map_or_else(|| "null".into(), value_json);
             serde_json::from_str::<serde_json::Value>(&now).is_ok_and(|n| &n == v)
         }
     }

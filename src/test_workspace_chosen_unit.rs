@@ -19,16 +19,16 @@ fn test_ws_6_chosen_without_the_table_warns() {
             name: "T".into(),
             path: d.join("tasks"),
             view: None,
-            profile: Default::default(),
+            profile: Profile::default(),
         }],
-        profile: Default::default(),
+        profile: Profile::default(),
     }];
     let s = resolve(&d.join("other"), Some("W"), &apps, &[])
         .unwrap()
         .unwrap();
     assert_eq!(s.source, Source::Chosen);
     assert_eq!(s.warnings.len(), 1, "{:?}", s.warnings);
-    assert!(s.warnings[0].contains("other") && s.warnings[0].contains("W"));
+    assert!(s.warnings[0].contains("other") && s.warnings[0].contains('W'));
     let s = resolve(&d.join("tasks"), Some("W"), &apps, &[])
         .unwrap()
         .unwrap();

@@ -112,8 +112,8 @@ fn test_sr_11_save_state_removes_stale_tmp_files() {
     std::fs::create_dir_all(&notes).unwrap();
 
     let name = state_file_name(&target_key(&notes), "表");
-    let stale1 = dir.join(format!(".{}.tmp.99999", name));
-    let stale2 = dir.join(format!(".{}.tmp.12345", name));
+    let stale1 = dir.join(format!(".{name}.tmp.99999"));
+    let stale2 = dir.join(format!(".{name}.tmp.12345"));
     let other = dir.join(format!(".{}.tmp.1", state_file_name("/other", "表")));
     for p in [&stale1, &stale2, &other] {
         std::fs::write(p, "half").unwrap();

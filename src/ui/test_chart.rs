@@ -456,7 +456,7 @@ impl Chart {
                 }
             }
         }
-        out.sort();
+        out.sort_unstable();
         out
     }
 

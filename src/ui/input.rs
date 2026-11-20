@@ -51,7 +51,7 @@ fn input_text(v: Option<&Value>) -> Option<String> {
         Some(Value::Bool(b)) => b.to_string(),
         Some(Value::Int(i)) => i.to_string(),
         Some(Value::Float(f)) => format!("{f:?}"),
-        Some(Value::List(_)) | Some(Value::Other) => return None,
+        Some(Value::List(_) | Value::Other) => return None,
     })
 }
 
@@ -389,7 +389,7 @@ impl App {
             Kind::Number | Kind::Date | Kind::DateTime => self
                 .rule_candidates(&col, kind)
                 .map(|c| List::new(&c, cur.as_ref(), !mismatch)),
-            _ => None,
+            Kind::List => None,
         };
         // CE-22: 日付は設定の形で見せる(4桁の年が無い形なら `YYYY-MM-DD`。型の合わない値はそのまま)。
         let raw = initial;
@@ -775,7 +775,7 @@ pub(crate) fn input_box(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Opt
     // カーソルの左は、カーソルの1桁が収まるまで先頭から落とす。
     let mut before = sanitize(&input.text[..input.cursor]);
     while width(&before) + 1 > w && !before.is_empty() {
-        let first = before.graphemes(true).next().map(str::len).unwrap_or(0);
+        let first = before.graphemes(true).next().map_or(0, str::len);
         before.drain(..first);
     }
     let after = sanitize(&input.text[input.cursor..]);

@@ -163,7 +163,7 @@ impl App {
 
     /// タブの前半(`.base` のビューか既定の表)の数。
     pub(crate) fn base_tabs(&self) -> usize {
-        self.base.as_ref().map(|b| b.base.views.len()).unwrap_or(1)
+        self.base.as_ref().map_or(1, |b| b.base.views.len())
     }
 
     /// タブの名前(BV-13・BV-20): `.base` のビュー(`.base` なしなら既定の表)、続けて mdgrid のビュー。
@@ -208,7 +208,7 @@ impl App {
     pub(crate) fn view_index(&self) -> usize {
         match self.nv.at {
             Some(i) => self.base_tabs() + i,
-            None => self.base.as_ref().map(|b| b.view).unwrap_or(0),
+            None => self.base.as_ref().map_or(0, |b| b.view),
         }
     }
 
@@ -311,9 +311,9 @@ impl App {
         };
         nv.hidden = cols.iter().filter(|c| !c.1).map(|c| c.0.clone()).collect();
         if from_base {
-            nv.settings.filters = s.filters.clone();
+            nv.settings.filters.clone_from(&s.filters);
             if !s.sorts.is_empty() {
-                nv.settings.sorts = s.sorts.clone();
+                nv.settings.sorts.clone_from(&s.sorts);
             }
             if s.group != Group::Inherit {
                 nv.settings.group = s.group.clone();
@@ -393,6 +393,8 @@ impl App {
         if self.name_problem(list, name, None).is_none() {
             return name.to_string();
         }
+        // 一覧は有限なので、重ならない番号が必ず見つかって止まる。
+        #[allow(clippy::maybe_infinite_iter)]
         (2..)
             .map(|k| format!("{name} ({k})"))
             .find(|n| self.name_problem(list, n, None).is_none())
@@ -415,7 +417,7 @@ impl App {
                 result = config::save_state(&dir, &st.target, new, &s);
             }
         }
-        let result = result.and_then(|_| config::remove_state(&dir, &st.target, old));
+        let result = result.and_then(|()| config::remove_state(&dir, &st.target, old));
         if let Err(e) = result {
             self.message = Some(Msg::StateCannotMove.fill(&[&e]));
         }
@@ -468,9 +470,9 @@ impl App {
     /// 名前の入力を決めた(名前を付けて保存・名前の変更)。名前が使えなければ入力のまま理由を出す。
     pub(crate) fn commit_view_name(&mut self, kind: TextKind, name: String) {
         if kind == TextKind::Rename {
-            self.rename_view(name)
+            self.rename_view(name);
         } else {
-            self.save_as_view(name)
+            self.save_as_view(name);
         }
     }
 
@@ -480,7 +482,7 @@ impl App {
             return;
         };
         let (mut nv, dropped) = self.as_native(&d.s, &d.cols, false);
-        nv.name = name.clone();
+        nv.name.clone_from(&name);
         let res = self.edit_views(|app, list| {
             if let Some(e) = app.name_problem(list, &nv.name, None) {
                 return Err(e);
@@ -507,7 +509,7 @@ impl App {
         };
         let (mut nv, _) = self.as_native(&d.s, &d.cols, false);
         let name = self.nv.views[k].name.clone();
-        nv.name = name.clone();
+        nv.name.clone_from(&name);
         // 幅と畳んだまとまりを書いておく(上書きの後は書かずに定義から組む)。
         self.persist_state();
         let res = self.edit_views(|_, list| {
@@ -542,7 +544,7 @@ impl App {
                 return Err(e);
             }
             match list.iter_mut().find(|v| v.name == old) {
-                Some(v) => v.name = name.clone(),
+                Some(v) => v.name.clone_from(&name),
                 None => return Err(Msg::ViewGoneRename.fill(&[&old])),
             }
             Ok(())

@@ -214,7 +214,7 @@ fn test_bv_22_backlinks_and_has_link() {
     let out = print("file.name == \"b.md\"", &["file.name", "file.backlinks"]);
     let row = out.lines().nth(1).unwrap_or_default();
     assert!(
-        row.contains("a") && row.contains("c"),
+        row.contains('a') && row.contains('c'),
         "b の被リンク: {out}"
     );
 }
@@ -251,7 +251,7 @@ fn test_bv_22_frontmatter_links() {
     );
 }
 
-const THIS_BASE: &str = r#"formulas:
+const THIS_BASE: &str = r"formulas:
   名前: 'this.file.name'
   場所: 'this.file.folder'
 views:
@@ -265,7 +265,7 @@ views:
     sort:
       - property: file.path
         direction: ASC
-"#;
+";
 
 #[test]
 fn test_bv_22_this_file_name_and_folder() {

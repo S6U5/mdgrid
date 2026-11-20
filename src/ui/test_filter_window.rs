@@ -84,8 +84,10 @@ fn bar_line(a: &App) -> (usize, String) {
         .enumerate()
         .take(view::data_y(a))
         .find(|(_, l)| l.contains("検索"))
-        .map(|(i, l)| (i, l.to_string()))
-        .unwrap_or_else(|| panic!("検索の欄が無い:\n{s}"))
+        .map_or_else(
+            || panic!("検索の欄が無い:\n{s}"),
+            |(i, l)| (i, l.to_string()),
+        )
 }
 
 /// 検索の欄の行の「絞り込み」のボタン(の文字の真ん中)をクリックする。

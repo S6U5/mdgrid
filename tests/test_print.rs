@@ -57,7 +57,7 @@ impl Drop for TempDir {
     }
 }
 
-const BASE: &str = r#"formulas:
+const BASE: &str = r"formulas:
   謎: 'nosuchfunc(priority)'
 views:
   - type: table
@@ -105,7 +105,7 @@ views:
     sort:
       - property: priority
         direction: DESC
-"#;
+";
 
 /// 保管庫のフォルダ(notes/)を作り、ノートと tasks.base を書く。(一時フォルダ, 保管庫, .base のパス)
 fn make_vault(name: &str) -> (TempDir, PathBuf, PathBuf) {
@@ -166,7 +166,7 @@ fn stderr_lines(out: &Output) -> Vec<String> {
     String::from_utf8_lossy(&out.stderr)
         .lines()
         .filter(|l| !l.trim().is_empty())
-        .map(|l| l.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 
@@ -180,7 +180,7 @@ fn assert_fails_with_one_line(out: &Output, what: &str, mentions: &str) {
         String::from_utf8_lossy(&out.stderr)
     );
     let lines = stderr_lines(out);
-    assert_eq!(lines.len(), 1, "{what}: 標準エラーは理由1行: {:?}", lines);
+    assert_eq!(lines.len(), 1, "{what}: 標準エラーは理由1行: {lines:?}");
     assert!(
         lines[0].contains(mentions),
         "{what}: 理由は {mentions:?} を名指す: {:?}",
@@ -223,7 +223,7 @@ fn parse_csv(s: &str) -> Vec<Vec<String>> {
             }
             at_field_start = false;
             match chars.peek() {
-                Some(',') | Some('\n') | None => {}
+                Some(',' | '\n') | None => {}
                 other => panic!("引用符のあとに区切りが無い: {other:?} in {s:?}"),
             }
             continue;

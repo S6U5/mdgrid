@@ -1,0 +1,11 @@
+# Python の lint と書式(scripts/ の道具)。scripts/lint.sh と ci.sh が回す。
+# tools/trace_gate.py は人がプラグインから取り込む検査器の写しなので触らない(AGENTS.md)。
+# Python のファイルだけを見る(新しい ruff は Markdown の中のコードも読もうとする)。
+include = ["*.py"]
+extend-exclude = ["tools/trace_gate.py"]
+# macOS の python3(Xcode の 3.9)でも動かす。
+target-version = "py39"
+
+[lint]
+# ruff の既定の規則に、import の並びを足す。
+extend-select = ["I"]

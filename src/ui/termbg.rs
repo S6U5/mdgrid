@@ -36,12 +36,12 @@ pub(crate) fn rgb_from_osc11(reply: &str) -> Option<[u8; 3]> {
     }
     let mut out = [0u8; 3];
     for (k, part) in parts.iter().enumerate() {
-        let hex: String = part.chars().take_while(|c| c.is_ascii_hexdigit()).collect();
+        let hex: String = part.chars().take_while(char::is_ascii_hexdigit).collect();
         if hex.is_empty() || hex.len() > 4 {
             return None;
         }
-        let max = (16u32.pow(hex.len() as u32) - 1) as f64;
-        let v = u32::from_str_radix(&hex, 16).ok()? as f64 / max;
+        let max = f64::from(16u32.pow(hex.len() as u32) - 1);
+        let v = f64::from(u32::from_str_radix(&hex, 16).ok()?) / max;
         out[k] = (v * 255.0).round() as u8;
     }
     Some(out)
@@ -98,7 +98,7 @@ fn query(wait: Duration) -> Option<String> {
                 revents: 0,
             };
             // SAFETY: p は1つの有効な pollfd で、呼んでいる間だけ借りる。
-            let n = unsafe { poll(&mut p, 1, left.as_millis().clamp(1, 1000) as c_int) };
+            let n = unsafe { poll(&raw mut p, 1, left.as_millis().clamp(1, 1000) as c_int) };
             if n <= 0 {
                 break;
             }

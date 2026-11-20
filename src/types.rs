@@ -544,7 +544,7 @@ impl DateFormat {
                 }
                 Part::Year4 => y = i64::from(take_digits(&mut rest, 4, 4)?),
                 Part::Year2 => {
-                    y = today_y.div_euclid(100) * 100 + i64::from(take_digits(&mut rest, 2, 2)?)
+                    y = today_y.div_euclid(100) * 100 + i64::from(take_digits(&mut rest, 2, 2)?);
                 }
                 Part::Month(_) => m = take_digits(&mut rest, 1, 2)?,
                 Part::Day(_) => d = take_digits(&mut rest, 1, 2)?,
@@ -684,8 +684,8 @@ fn days_from_civil(y: i64, m: u32, d: u32) -> i64 {
     let y = if m <= 2 { y - 1 } else { y };
     let era = y.div_euclid(400);
     let yoe = y - era * 400;
-    let m = m as i64;
-    let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + d as i64 - 1;
+    let m = i64::from(m);
+    let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + i64::from(d) - 1;
     let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
     era * 146_097 + doe - 719_468
 }

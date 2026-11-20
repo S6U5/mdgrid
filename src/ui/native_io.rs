@@ -241,7 +241,7 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::OpenLink { items, .. }) => items,
         Some(Ask::LinkedRows { items, .. }) => items,
         Some(Ask::RestoreNote { items, .. }) => items,
-        Some(Ask::WsRemove(items)) | Some(Ask::WsOpen(items)) => items,
+        Some(Ask::WsRemove(items) | Ask::WsOpen(items)) => items,
         Some(Ask::WsTable { items, .. }) => items,
         Some(Ask::StarterPick { items, .. }) => items,
         Some(Ask::WsPick(names)) => {
@@ -554,7 +554,7 @@ impl App {
     }
 
     fn ask_run(&mut self, query: &str) {
-        let sel = self.palette.as_ref().map(|p| p.sel).unwrap_or(0);
+        let sel = self.palette.as_ref().map_or(0, |p| p.sel);
         let picked = ask_items(self, query).1.get(sel).copied();
         match &self.nv.ask {
             Some(Ask::ExportName) => self.export_to(query),
@@ -576,22 +576,22 @@ impl App {
             }
             Some(Ask::RenameKey(from)) => {
                 let from = from.clone();
-                self.rename_key_to(&from, query)
+                self.rename_key_to(&from, query);
             }
             Some(Ask::RenameNote(row)) => {
                 let row = row.clone();
-                self.rename_note_to(&row, query)
+                self.rename_note_to(&row, query);
             }
             Some(Ask::DeleteNote { row, .. }) => {
                 let row = row.clone();
-                self.confirm_delete_note(row, query.trim().eq_ignore_ascii_case("y"))
+                self.confirm_delete_note(row, query.trim().eq_ignore_ascii_case("y"));
             }
             Some(Ask::RestoreNote { notes, .. }) => {
                 let Some(item) = picked.and_then(|k| notes.get(k)).cloned() else {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                self.restore_note(item)
+                self.restore_note(item);
             }
             Some(Ask::DeleteKey(key, _)) => {
                 let key = key.clone();
@@ -616,7 +616,7 @@ impl App {
                 match parsed {
                     Err(e) => self.message = Some(Msg::ImportUnreadable.fill(&[&rel, &e])),
                     Ok(b) if b.views.is_empty() => {
-                        self.message = Some(Msg::ImportNoViews.fill(&[&rel]))
+                        self.message = Some(Msg::ImportNoViews.fill(&[&rel]));
                     }
                     Ok(b) => {
                         // 名前の無いビューも選べるように、候補には番号を出す。
@@ -678,11 +678,11 @@ impl App {
                     return;
                 };
                 let pick = picks[k];
-                self.switch_place(pick)
+                self.switch_place(pick);
             }
             Some(Ask::PlaceName(place)) => {
                 let place = place.clone();
-                self.place_named(place, query)
+                self.place_named(place, query);
             }
             Some(Ask::PlaceGroup { place, groups }) => {
                 let values = super::places::group_items(groups, query).1;
@@ -690,40 +690,39 @@ impl App {
                     return;
                 };
                 let place = place.clone();
-                self.place_grouped(place, group)
+                self.place_grouped(place, group);
             }
-            Some(Ask::OpenLink { targets: paths, .. })
-            | Some(Ask::LinkedRows { notes: paths, .. }) => {
+            Some(Ask::OpenLink { targets: paths, .. } | Ask::LinkedRows { notes: paths, .. }) => {
                 let Some(p) = picked.and_then(|k| paths.get(k)).cloned() else {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                self.open_note(&p)
+                self.open_note(&p);
             }
             Some(Ask::WsName) => {
                 let name = query.trim().to_string();
-                self.ws_add_current(&name)
+                self.ws_add_current(&name);
             }
             Some(Ask::WsPick(names)) => {
                 let values = super::workspace::pick_items(names, query).1;
                 let Some(name) = picked.and_then(|k| values.get(k)).cloned() else {
                     return;
                 };
-                self.ws_add_current(&name)
+                self.ws_add_current(&name);
             }
             Some(Ask::WsRemove(items)) => {
                 let Some(name) = picked.and_then(|k| items.get(k)).cloned() else {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                self.ws_remove_current(&name)
+                self.ws_remove_current(&name);
             }
             Some(Ask::WsOpen(items)) => {
                 let Some(name) = picked.and_then(|k| items.get(k)).cloned() else {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                self.ws_open_tables(&name)
+                self.ws_open_tables(&name);
             }
             Some(Ask::WsTable { ws, places, .. }) => {
                 let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {
@@ -731,7 +730,7 @@ impl App {
                     return;
                 };
                 let ws = ws.clone();
-                self.ws_switch(ws, place)
+                self.ws_switch(ws, place);
             }
             Some(Ask::PlaceOverwrite(place)) => {
                 let place = place.clone();
@@ -748,11 +747,11 @@ impl App {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                self.starter_picked(s)
+                self.starter_picked(s);
             }
             Some(Ask::StarterDir(s)) => {
                 let s = (**s).clone();
-                self.starter_dir(s, query)
+                self.starter_dir(s, query);
             }
             Some(Ask::StarterSamples { starter, root }) => {
                 let (s, root) = ((**starter).clone(), root.clone());
@@ -781,7 +780,10 @@ impl App {
         let Some(dir) = self.export_dir() else {
             return;
         };
-        let file = if name.ends_with(".base") {
+        let file = if std::path::Path::new(name)
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("base"))
+        {
             name.to_string()
         } else {
             format!("{name}.base")

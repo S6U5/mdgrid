@@ -75,7 +75,7 @@ fn test_sr_14_palette_save_first_golden() {
         .nth(super::bands::head_y(&a) as usize + 2)
         .unwrap();
     assert!(
-        line.starts_with(">") && line.contains("保存") && line.contains("^S"),
+        line.starts_with('>') && line.contains("保存") && line.contains("^S"),
         "{s}"
     );
     golden("sr_14", &s);

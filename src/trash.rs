@@ -76,7 +76,7 @@ pub fn put(root: &Path, path: &Path, now: i64) -> io::Result<Trashed> {
     let moved = at
         .parent()
         .map_or(Ok(()), std::fs::create_dir_all)
-        .and_then(|_| std::fs::rename(path, &at));
+        .and_then(|()| std::fs::rename(path, &at));
     if let Err(e) = moved {
         if let Some(parent) = at.parent() {
             prune(parent, &base);

@@ -213,13 +213,11 @@ fn cond_row(a: &App, col: &str) -> String {
     let s = scr(a);
     s.lines()
         .find(|l| {
-            l.find(['│', '|'])
-                .map(|i| {
-                    l[i..]
-                        .trim_start_matches(['│', '|', ' ', '>'])
-                        .starts_with(col)
-                })
-                .unwrap_or(false)
+            l.find(['│', '|']).is_some_and(|i| {
+                l[i..]
+                    .trim_start_matches(['│', '|', ' ', '>'])
+                    .starts_with(col)
+            })
         })
         .unwrap_or_else(|| panic!("条件の行「{col}」が無い:\n{s}"))
         .to_string()
@@ -705,8 +703,7 @@ fn test_ws_8_crumb_drawer_switches_table() {
         .enumerate()
         .skip(1)
         .find(|(_, l)| l.contains("Projects"))
-        .map(|(i, _)| i as u16)
-        .unwrap_or_else(|| panic!("引き出しに Projects:\n{s}"));
+        .map_or_else(|| panic!("引き出しに Projects:\n{s}"), |(i, _)| i as u16);
     click_text(&mut a, y, "Projects");
     assert_ne!(a.mode, Mode::Drawer);
     assert_eq!(

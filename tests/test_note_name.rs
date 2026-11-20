@@ -10,7 +10,13 @@ use std::process::Command;
 /// 設定の TOML を読み、決まった `note_name` の正規表現の文字(無ければ None)と警告を返す。
 fn note_name(text: &str) -> (Option<String>, Vec<String>) {
     let (c, w) = parse(text).expect("読める");
-    (c.resolved().display.note_name.map(|n| n.pattern()), w)
+    (
+        c.resolved()
+            .display
+            .note_name
+            .map(mdgrid::display::NoteName::pattern),
+        w,
+    )
 }
 
 // ---- SR-47: [display] note_name を読む ----
@@ -87,7 +93,11 @@ fn test_sr_47_views_override_reads_regex() {
     let (views, warns) = mdgrid::views::load_views(&conf, &notes);
     assert!(warns.is_empty(), "{warns:?}");
     assert_eq!(views.len(), 1);
-    let n = views[0].settings.display.note_name.map(|n| n.pattern());
+    let n = views[0]
+        .settings
+        .display
+        .note_name
+        .map(mdgrid::display::NoteName::pattern);
     assert_eq!(n.as_deref(), Some("_draft$"));
     let _ = std::fs::remove_dir_all(conf.parent().unwrap());
 }

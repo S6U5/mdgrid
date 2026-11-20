@@ -245,7 +245,7 @@ fn get<'a, 'b>(y: &'a Yaml<'b>, key: &str) -> Option<&'a Yaml<'b>> {
 }
 
 /// スカラーの文字列(数・真偽も文字にする)。null・マップ・リストは None。
-fn text_of(y: &Yaml) -> Option<String> {
+fn text_of(y: &Yaml<'_>) -> Option<String> {
     match untag(y) {
         Yaml::Value(Scalar::String(s)) => Some(s.to_string()),
         Yaml::Value(Scalar::Integer(n)) => Some(n.to_string()),
@@ -256,14 +256,14 @@ fn text_of(y: &Yaml) -> Option<String> {
     }
 }
 
-fn dir_of(y: Option<&Yaml>) -> Dir {
+fn dir_of(y: Option<&Yaml<'_>>) -> Dir {
     match y.and_then(text_of) {
         Some(s) if s.eq_ignore_ascii_case("desc") => Dir::Desc,
         _ => Dir::Asc,
     }
 }
 
-fn view_of(y: &Yaml) -> View {
+fn view_of(y: &Yaml<'_>) -> View {
     let order = get(y, "order")
         .and_then(|o| o.as_sequence())
         .map(|s| {
@@ -317,7 +317,7 @@ fn view_of(y: &Yaml) -> View {
 }
 
 /// filters の YAML → 木。文字列は式、マップは and・or・not(複数あれば AND でつなぐ)。
-fn filter_of(y: &Yaml) -> Filter {
+fn filter_of(y: &Yaml<'_>) -> Filter {
     let y = untag(y);
     if let Some(src) = text_of(y) {
         let e = expr::parse(&src);
@@ -331,7 +331,7 @@ fn filter_of(y: &Yaml) -> Filter {
     };
     let mut parts = Vec::new();
     for (k, v) in m {
-        let list = |v: &Yaml| -> Vec<Filter> {
+        let list = |v: &Yaml<'_>| -> Vec<Filter> {
             match untag(v).as_sequence() {
                 Some(s) => s.iter().map(filter_of).collect(),
                 None => vec![filter_of(v)],
@@ -449,7 +449,7 @@ impl Filter {
     }
 
     /// 葉は真偽の規則(if と同じ。Null・false・0・空の文字列は偽)で判定。空の and・or・not は真(絞らない)。
-    fn pass(&self, ctx: &Ctx) -> bool {
+    fn pass(&self, ctx: &Ctx<'_>) -> bool {
         match self {
             Filter::And(xs) => xs.iter().all(|x| x.pass(ctx)),
             Filter::Or(xs) => xs.is_empty() || xs.iter().any(|x| x.pass(ctx)),
@@ -609,7 +609,7 @@ impl Spec {
         }
     }
 
-    fn key(&self, ctx: &Ctx) -> Key {
+    fn key(&self, ctx: &Ctx<'_>) -> Key {
         let v = match self {
             Spec::Prop(col, kind) => return prop_key((ctx.prop)(col).as_ref(), *kind),
             Spec::Formula(name) => ctx.formula(name).unwrap_or(Val::Null),

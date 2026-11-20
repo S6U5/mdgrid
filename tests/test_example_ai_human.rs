@@ -120,7 +120,7 @@ fn test_example_ai_human_groups_people_first() {
     let want: Vec<String> = HUMAN
         .iter()
         .chain(AI.iter())
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
     assert_eq!(got, want);
 }
@@ -131,8 +131,8 @@ fn test_example_ai_human_split_views() {
     let mut ai = names(&print_view("AI only"));
     human.sort();
     ai.sort();
-    let mut want_h: Vec<String> = HUMAN.iter().map(|s| s.to_string()).collect();
-    let mut want_a: Vec<String> = AI.iter().map(|s| s.to_string()).collect();
+    let mut want_h: Vec<String> = HUMAN.iter().map(std::string::ToString::to_string).collect();
+    let mut want_a: Vec<String> = AI.iter().map(std::string::ToString::to_string).collect();
     want_h.sort();
     want_a.sort();
     // human_gate が none 以外(pay・sign・submit・send)か actor: human なら人。

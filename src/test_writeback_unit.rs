@@ -39,7 +39,7 @@ fn floats_keep_their_type_in_yaml_1_1_and_1_2() {
 fn write_list(src: &str, items: &[&str]) -> String {
     let e = Edit {
         key: "tags".into(),
-        value: NewValue::List(items.iter().map(|s| s.to_string()).collect()),
+        value: NewValue::List(items.iter().map(std::string::ToString::to_string).collect()),
     };
     let out = apply(src.as_bytes(), &[e]).unwrap_or_else(|e| panic!("{src:?} {items:?}: {e:?}"));
     String::from_utf8(out).unwrap()

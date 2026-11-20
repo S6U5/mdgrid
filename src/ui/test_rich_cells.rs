@@ -105,6 +105,8 @@ fn test_sr_35_chip_colors_stable() {
 }
 
 #[test]
+// 2つの App をまとめて回す試験なので、配列が大きくなる(試験だけ)。
+#[allow(clippy::large_stack_arrays)]
 fn test_sr_35_plain_without_color_or_setting() {
     // [utest -> req~screen.rich-cells-plain~1] 色なしと cells = "plain" では今の見た目(true・[a, b]・印なし)。
     let tmp = notes("sr35_plain");

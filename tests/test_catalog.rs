@@ -30,7 +30,7 @@ fn strs(v: &Value) -> Vec<String> {
 }
 
 fn own(n: &[&str]) -> Vec<String> {
-    n.iter().map(|s| s.to_string()).collect()
+    n.iter().map(std::string::ToString::to_string).collect()
 }
 
 #[test]

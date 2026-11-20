@@ -66,3 +66,11 @@ jobs:
       - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
       - run: nix flake check -L
       - run: nix run . -- --version
+
+  lint-scripts:
+    # Python, shell scripts and workflows, with the tools pinned by flake.lock (flake.nix devShells).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - run: nix develop -c sh scripts/lint.sh

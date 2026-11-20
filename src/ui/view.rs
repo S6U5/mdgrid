@@ -317,9 +317,8 @@ pub(crate) fn label(app: &App, row: &RowId) -> String {
             let tail = match app.wbs_pct.get(row) {
                 Some(p) => Some(format!("{p}%")),
                 None => app.settings.wbs.as_ref().and_then(|w| {
-                    let v = match app.prop(row, &w.key) {
-                        Some(mdgrid::source::Value::Str(s)) => s,
-                        _ => return None,
+                    let Some(mdgrid::source::Value::Str(v)) = app.prop(row, &w.key) else {
+                        return None;
                     };
                     w.of(v.trim())
                         .filter(|m| !m.label.is_empty())
@@ -440,7 +439,10 @@ fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'stat
         },
         None => Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
     };
-    let sep_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
+    let sep_st = look
+        .as_ref()
+        .map(super::look::Look::faint)
+        .unwrap_or_default();
     let sep = col_sep(app);
     let cross = look
         .as_ref()
@@ -549,7 +551,10 @@ fn data_row(
         Some(l) if sel_row || lead == "+" => l.key(),
         _ => Style::default(),
     };
-    let sep_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
+    let sep_st = look
+        .as_ref()
+        .map(super::look::Look::faint)
+        .unwrap_or_default();
     // SR-36: 選びの形。印の文字は変えない(SR-33)。
     let select = super::look::select(app);
     use mdgrid::style::Select;
@@ -574,7 +579,7 @@ fn data_row(
     // 入力ボックスが列より広く右の列に重なれば、1行目はそこまで(2行目より下は続ける)。
     let mut covered = false;
     for &(j, cw) in cols {
-        for m in more.iter_mut() {
+        for m in &mut more {
             m.push(Span::styled(sep, sep_st));
         }
         let mut cell = vec![Span::styled(sep, sep_st)];
@@ -592,7 +597,7 @@ fn data_row(
             // (色を使わないときは太字と下線だけ。太字と下線はテーマの強い色の目印。SR-26)。
             let st = input_style(app);
             cell.push(Span::styled(fit(&b.text, b.w, Align::Left), st));
-            for m in more.iter_mut() {
+            for m in &mut more {
                 m.push(Span::raw(" ".repeat(cw)));
             }
             if !covered {
@@ -655,7 +660,7 @@ fn data_row(
             CellPart::Chips { items, list } if keep_parts => {
                 // CV-8: 札は1行のまま。
                 chip_spans(app, items, *list, cw, st, &mut cell);
-                for m in more.iter_mut() {
+                for m in &mut more {
                     m.push(Span::styled(" ".repeat(cw), blank(st)));
                 }
                 if !covered {
@@ -1005,28 +1010,24 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
         }
     }
     if app.slots.is_empty() {
-        match &app.view_error {
-            // BV-7: 開けないビューの理由は、表の欄に折り返して全部見せる。
-            Some(e) => {
-                let mut rest = sanitize(&Msg::ViewCannotOpen.fill(&[&e]));
-                while !rest.is_empty() && lines.len() < h.saturating_sub(2) {
-                    let mut head = take(&rest, w);
-                    if head.is_empty() {
-                        // 幅に1文字も入らない(狭すぎる)ときも1つずつ進める。
-                        head = rest.graphemes(true).next().unwrap_or_default().to_string();
-                    }
-                    rest.drain(..head.len());
-                    lines.push(Line::from(fit(&head, w, Align::Left)));
+        if let Some(e) = &app.view_error {
+            let mut rest = sanitize(&Msg::ViewCannotOpen.fill(&[&e]));
+            while !rest.is_empty() && lines.len() < h.saturating_sub(2) {
+                let mut head = take(&rest, w);
+                if head.is_empty() {
+                    // 幅に1文字も入らない(狭すぎる)ときも1つずつ進める。
+                    head = rest.graphemes(true).next().unwrap_or_default().to_string();
                 }
+                rest.drain(..head.len());
+                lines.push(Line::from(fit(&head, w, Align::Left)));
             }
-            None => {
-                let note = if app.progress.done {
-                    Msg::NoNotes.text()
-                } else {
-                    Msg::TableLoading.text()
-                };
-                lines.push(Line::from(fit(note, w, Align::Left)));
-            }
+        } else {
+            let note = if app.progress.done {
+                Msg::NoNotes.text()
+            } else {
+                Msg::TableLoading.text()
+            };
+            lines.push(Line::from(fit(note, w, Align::Left)));
         }
     }
     // BV-14: 集計の行は表の下の端(下の帯の上)。集計の無いビューでは出さない。

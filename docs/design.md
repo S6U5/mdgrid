@@ -770,3 +770,12 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **なぜ**: ファイルごとに実行ファイルを作ると、リンクと、macOS が新しい実行ファイルを初めて起動するときの検査が、ファイルの数(115)だけ掛かっていた。検査は1つで最大 120 秒、2回目は 0.02 秒(実測)。束ねる前は `ci.sh` の試験の部分だけで 27 分を超えていた。束ねたあとは、組み直した直後の1回目が 441 秒(新しい実行ファイル5つの検査)、2回目は `cargo test` で 36 秒、`cargo nextest run` で 18 秒。残る待ちは、端末のアプリを macOS のシステム設定の「デベロッパツール」に入れると消える。
 - **足し忘れ**: `autotests = false` なので、新しい試験のファイルは `tests/all.rs` に `#[path]` の2行を足す。足し忘れたファイルは、`tests/all.rs` の `every_test_file_is_built` が落とす。
 - **プロセス全体の値**: 束ねた試験は1つのプロセスの中で並んで走る。環境変数・今のフォルダ・言語の設定のようなプロセス全体の値を書き換える試験は、`test_config` と同じく別の `[[test]]` にする(nextest は試験ごとに別のプロセスで走らせるのでぶつからないが、`cargo test` は同じプロセスの糸で走らせる)。
+
+## lint と書式(2026-11-21)
+
+- **道具はリポが持つ**: `flake.nix` の `devShells.default` に、Rust(cargo・rustc・clippy・rustfmt・cargo-nextest・cargo-deny)、Python(python3・ruff)、シェル(shellcheck・shfmt)、GitHub Actions(actionlint)の道具を並べる。版は `flake.lock` が固めるので、どのマシンと CI でも同じになり、mdgrid を開発しないマシンには何も入らない(dotfiles には入れない)。`nix develop` か direnv の `use flake` で入る。
+- **Rust**: `Cargo.toml` の `[lints]` で、clippy の既定の組に `pedantic` を足し、`rust_2018_idioms` も入れる。このアプリに合わないもの(画面の座標の数の型の変換、公開しない API の文書、日本語の文書で誤検知の多い `doc_markdown` など)は、`Cargo.toml` に理由を書いて外す。`dbg!`・`todo!`・`unimplemented!` は止め、`unsafe` には `// SAFETY:` を書かせる。関数の引数の形を変える直し(`needless_pass_by_value`・`ref_option`)は呼ぶ側も変わるので、いったん外して、あとの PR の候補にする。rustfmt は既定のまま(Rust の標準の形)。
+- **Python**: `ruff.toml`。ruff の既定の規則に import の並び(`I`)を足し、書式も ruff。macOS の python3(3.9)で動く道具があるので、書き換えは 3.9 の文法まで。`tools/trace_gate.py` は人が取り込む写しなので対象外。
+- **シェル**: shellcheck と shfmt(字下げ2文字、`case` の中も字下げ)。
+- **Actions**: actionlint(`.github/actionlint.yaml`)。forge-gate が作る `trace-gate.yml` は手で直せないので、わざとの書き方の知らせ(SC2016)だけを許す。`run` の中に `${{ }}` を直に埋めず、`env` で渡す。
+- **回し方**: `nix develop` の中で回す(clippy は版ごとに新しい検査が入るので、`flake.lock` の rustc と CI の安定版にそろえる。手元の別の版の clippy では、知らない検査の名前の警告が出ることがある)。Rust は `ci.sh` の fmt と clippy、それ以外は `scripts/lint.sh`(`--fix` で直せるものを直す)。CI は `lint` のジョブ(Rust)と `lint-scripts` のジョブ(`nix develop -c sh scripts/lint.sh`)。

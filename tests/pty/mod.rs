@@ -103,13 +103,12 @@ impl FakeEditor {
     pub fn wait_args(&self, tui: &Tui) -> Vec<String> {
         let start = Instant::now();
         while !self.log.exists() {
-            if start.elapsed() > LIMIT {
-                panic!(
-                    "偽のエディタ {} が呼ばれない。画面:\n{}",
-                    self.script.display(),
-                    tui.screen()
-                );
-            }
+            assert!(
+                start.elapsed() <= LIMIT,
+                "偽のエディタ {} が呼ばれない。画面:\n{}",
+                self.script.display(),
+                tui.screen()
+            );
             std::thread::sleep(Duration::from_millis(50));
         }
         std::fs::read_to_string(&self.log)
@@ -236,9 +235,10 @@ impl Tui {
             if cond(&s) {
                 return;
             }
-            if start.elapsed() > LIMIT {
-                panic!("{what} を待って時間切れ。画面:\n{s}");
-            }
+            assert!(
+                start.elapsed() <= LIMIT,
+                "{what} を待って時間切れ。画面:\n{s}"
+            );
             std::thread::sleep(Duration::from_millis(50));
         }
     }
@@ -276,9 +276,11 @@ impl Tui {
             if let Some(code) = self.try_exit() {
                 return code;
             }
-            if start.elapsed() > LIMIT {
-                panic!("子が終わらない。画面:\n{}", self.screen());
-            }
+            assert!(
+                start.elapsed() <= LIMIT,
+                "子が終わらない。画面:\n{}",
+                self.screen()
+            );
             std::thread::sleep(Duration::from_millis(50));
         }
     }
@@ -332,13 +334,12 @@ pub fn wait_file(path: &Path, tui: &Tui, cond: impl Fn(&str) -> bool) -> String 
         if cond(&s) {
             return s;
         }
-        if start.elapsed() > LIMIT {
-            panic!(
-                "{} が期待の中身にならない: {s:?}\n画面:\n{}",
-                path.display(),
-                tui.screen()
-            );
-        }
+        assert!(
+            start.elapsed() <= LIMIT,
+            "{} が期待の中身にならない: {s:?}\n画面:\n{}",
+            path.display(),
+            tui.screen()
+        );
         std::thread::sleep(Duration::from_millis(50));
     }
 }

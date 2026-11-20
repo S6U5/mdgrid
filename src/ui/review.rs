@@ -104,7 +104,7 @@ impl App {
 
     /// 保存の確認の画面を(作り直して)開く(WB-9)。ためた変更が無ければ表に戻る。
     pub(crate) fn open_review(&mut self) {
-        let sel = self.review.as_ref().map(|r| r.sel).unwrap_or(0);
+        let sel = self.review.as_ref().map_or(0, |r| r.sel);
         let items: Vec<ReviewItem> = self
             .changes
             .previews(self.src.as_ref())

@@ -339,8 +339,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
         app.keys
             .iter()
             .find(|b| b.mode == Mode::Table && b.action == a)
-            .map(|b| b.text())
-            .unwrap_or(a.name())
+            .map_or(a.name(), super::keymap::Binding::text)
     };
     match q {
         "w" if !app.readonly => out.push(cand(
@@ -403,8 +402,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
         let label = commands
             .iter()
             .find(|c| c.action == a)
-            .map(|c| c.text())
-            .unwrap_or_else(|| label_of(a));
+            .map_or_else(|| label_of(a), |c| c.text());
         out.push(cand(Target::Run(a), label.into(), a.name()));
     }
     out
@@ -551,7 +549,7 @@ impl App {
                         // NV-7: 行へ跳ぶのは表の行なので、表でない画面の型からは表の画面に戻ってから。
                         Target::Goto(n) => {
                             self.close_screen();
-                            self.goto_line(n)
+                            self.goto_line(n);
                         }
                         // 終了の確認で「保存する」を選んだのと同じ道(差分の確認 → 確定で書いて終わる)。
                         // ためた変更が無ければそのまま終わる。`q` と同じく、表を移る予約は捨てる。

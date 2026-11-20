@@ -524,7 +524,7 @@ impl App {
         };
         let total = n * m;
         let start = self.row * m + here;
-        let first = if inclusive { 0 } else { 1 };
+        let first = usize::from(!inclusive);
         for step in first..=total {
             let p = if forward {
                 (start + step) % total

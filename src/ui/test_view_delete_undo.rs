@@ -77,7 +77,7 @@ fn test_bv_18_delete_confirm_and_undo() {
     assert_eq!(names(&tmp), ["未完了", "後"]);
     assert_eq!(a.mode, Mode::Table);
     assert!(
-        a.message.as_deref().unwrap_or("").contains("u"),
+        a.message.as_deref().unwrap_or("").contains('u'),
         "{:?}",
         a.message
     );

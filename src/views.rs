@@ -304,7 +304,7 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
                     &FILE_NAME,
                     &p,
                     &(j + 1),
-                    &config::squash_ws(&e.to_string()),
+                    &config::squash_ws(&e.clone()),
                 ])),
             }
         }
@@ -412,7 +412,10 @@ pub fn load_tab_prefs(dir: &Path, target: &Path) -> TabPrefs {
     TabPrefs {
         order: names_of(t.get("tab_order")),
         hidden: names_of(t.get("hidden_tabs")),
-        hint: t.get("tab_hint").and_then(|v| v.as_bool()).unwrap_or(true),
+        hint: t
+            .get("tab_hint")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true),
     }
 }
 
@@ -471,17 +474,16 @@ fn edit_target(
             .and_then(|p| p.as_str())
             .is_some_and(|p| same_target(p, &key))
     });
-    let t = match pos {
-        Some(i) => &mut targets[i],
-        None => {
-            if !create {
-                return Ok(());
-            }
-            let mut t = toml::Table::new();
-            t.insert("path".into(), toml::Value::String(key.clone()));
-            targets.push(toml::Value::Table(t));
-            targets.last_mut().expect("just pushed")
+    let t = if let Some(i) = pos {
+        &mut targets[i]
+    } else {
+        if !create {
+            return Ok(());
         }
+        let mut t = toml::Table::new();
+        t.insert("path".into(), toml::Value::String(key.clone()));
+        targets.push(toml::Value::Table(t));
+        targets.last_mut().expect("just pushed")
     };
     if let toml::Value::Table(t) = t {
         f(t);
@@ -904,7 +906,7 @@ fn cmp_expr(
                 notes.push(approx(col, Msg::ApproxCmpListJoined.text()));
             }
             notes.push(approx(col, Msg::ApproxCmpMapEmpty.text()));
-            if !s.trim().chars().next().is_some_and(|c| c > '9') {
+            if s.trim().chars().next().is_none_or(|c| c <= '9') {
                 notes.push(approx(col, Msg::ApproxCmpDateTimePadded.text()));
             }
             format!(

@@ -8,7 +8,7 @@ fn put(src: &str, items: &[&str]) -> Result<String, EditError> {
         src.as_bytes(),
         &[Edit {
             key: "tags".into(),
-            value: NewValue::List(items.iter().map(|s| s.to_string()).collect()),
+            value: NewValue::List(items.iter().map(std::string::ToString::to_string).collect()),
         }],
     )
     .map(|b| String::from_utf8(b).unwrap())

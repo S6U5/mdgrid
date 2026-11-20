@@ -204,13 +204,11 @@ fn names(tmp: &Tmp) -> Vec<String> {
 
 /// mdgrid のビューの状態のファイルの数(状態の置き場の中の別のフォルダ)。
 fn native_states(tmp: &Tmp) -> usize {
-    std::fs::read_dir(tmp.0.join("state").join(native_views::STATE_DIR))
-        .map(|rd| {
-            rd.flatten()
-                .filter(|e| e.file_name().to_string_lossy().ends_with(".toml"))
-                .count()
-        })
-        .unwrap_or(0)
+    std::fs::read_dir(tmp.0.join("state").join(native_views::STATE_DIR)).map_or(0, |rd| {
+        rd.flatten()
+            .filter(|e| e.file_name().to_string_lossy().ends_with(".toml"))
+            .count()
+    })
 }
 
 /// 設定の画面で「名前を付けて保存」。

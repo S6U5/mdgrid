@@ -168,7 +168,7 @@ fn rows_of(h: &Path, root: &Path, extra: &[&str]) -> Vec<String> {
 
 /// 期待の名前の並び。
 fn want(xs: &[&str]) -> Vec<String> {
-    xs.iter().map(|x| x.to_string()).collect()
+    xs.iter().map(std::string::ToString::to_string).collect()
 }
 
 /// `where` の試験の印: `[table.base]` に `top`(最上位の中身)と、`views`(`[[table.base.views]]` の中身の並び)。

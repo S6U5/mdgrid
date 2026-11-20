@@ -48,7 +48,7 @@ fn run(root: &Path, args: &[&str], stdin: Option<&str>) -> Output {
 fn snapshot(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
     fn walk(d: &Path, out: &mut Vec<(PathBuf, Vec<u8>)>) {
         let mut es: Vec<_> = std::fs::read_dir(d).unwrap().flatten().collect();
-        es.sort_by_key(|e| e.path());
+        es.sort_by_key(std::fs::DirEntry::path);
         for e in es {
             let p = e.path();
             if p.is_dir() {

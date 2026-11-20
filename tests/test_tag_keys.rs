@@ -41,6 +41,6 @@ fn test_bv_6_tag_keys_any_case() {
     );
     let text = String::from_utf8(out.stdout).unwrap();
     let mut rows: Vec<&str> = text.lines().skip(1).collect();
-    rows.sort();
+    rows.sort_unstable();
     assert_eq!(rows, ["a.md", "b.md", "c.md", "d.md"], "{text}");
 }

@@ -309,8 +309,7 @@ fn test_sr_23_print_config_has_language_auto() {
             let l = l.trim();
             l.starts_with("language")
                 && l.split_once('=')
-                    .map(|(k, v)| k.trim() == "language" && v.trim() == "\"auto\"")
-                    .unwrap_or(false)
+                    .is_some_and(|(k, v)| k.trim() == "language" && v.trim() == "\"auto\"")
         }),
         "--print-config に language = \"auto\" の行が無い\n---\n{text}"
     );

@@ -583,13 +583,12 @@ pub fn apply(
                 if label.is_none() && *hide_empty {
                     continue;
                 }
-                match index.get(&label) {
-                    Some(&i) => order[i].2.push(r),
-                    None => {
-                        index.insert(label.clone(), order.len());
-                        let key = sort_key(v.as_ref(), gkind);
-                        order.push((label, key, vec![r]));
-                    }
+                if let Some(&i) = index.get(&label) {
+                    order[i].2.push(r);
+                } else {
+                    index.insert(label.clone(), order.len());
+                    let key = sort_key(v.as_ref(), gkind);
+                    order.push((label, key, vec![r]));
                 }
             }
             // まとまりの並び: 値の順(向きつき)。型の合わない値はその後ろ(文字の順)、空は最後。

@@ -235,10 +235,9 @@ fn test_ce_27_views_date_survives_load_save_load() {
     std::fs::create_dir_all(&notes).unwrap();
     let key = crate::config::target_key(&notes);
     let text = format!(
-        "[[target]]\npath = {:?}\n\n[[target.view]]\nname = \"v\"\n\
+        "[[target]]\npath = {key:?}\n\n[[target.view]]\nname = \"v\"\n\
          [target.view.new_note]\nfuture = 1\n[target.view.new_note.set]\nd = 2026-10-05\n\
-         t = 2026-10-05T09:00:00\n",
-        key
+         t = 2026-10-05T09:00:00\n"
     );
     std::fs::write(conf.join("views.toml"), text).unwrap();
     let (views, w) = crate::views::load_views(&conf, &notes);

@@ -248,7 +248,11 @@ fn every_test_file_is_built() {
     let mut missing = Vec::new();
     for e in std::fs::read_dir(&dir).unwrap() {
         let name = e.unwrap().file_name().to_string_lossy().into_owned();
-        if !(name.starts_with("test_") && name.ends_with(".rs")) {
+        if !(name.starts_with("test_")
+            && std::path::Path::new(&name)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("rs")))
+        {
             continue;
         }
         let bundled = all.contains(&format!("#[path = \"{name}\"]"));

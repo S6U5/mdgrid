@@ -529,7 +529,7 @@ fn test_sr_22_doc_action_names_rebind_in_config() {
             );
             let got = lookup(&table, Mode::Table, &key);
             assert_eq!(
-                got.map(|a| a.name()),
+                got.map(super::keymap::Action::name),
                 Some(name.as_str()),
                 "[SR-22] {} の `{name}` を [keys.{}] {cfg_key} に書いても、そのキーで引けない",
                 lang.file,

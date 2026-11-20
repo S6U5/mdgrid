@@ -108,8 +108,8 @@ impl Markdown {
             vault: Vault::open_keeping(roots, real.clone()),
             folders: real,
             parsed: HashMap::new(),
-            inferred: Default::default(),
-            link_index: Default::default(),
+            inferred: std::cell::RefCell::default(),
+            link_index: std::cell::RefCell::default(),
             declared_lower: lower_declared(&types::merge(&per_root)),
             declared: types::merge(&per_root),
             columns: Vec::new(),
@@ -176,7 +176,7 @@ impl Markdown {
             Some((b, e)) if !b.is_empty() => (b.to_string(), e.to_string()),
             _ => (name.clone(), String::new()),
         };
-        let mtime = meta.modified().map(unix_secs).unwrap_or(0);
+        let mtime = meta.modified().map_or(0, unix_secs);
         Some(FileInfo {
             name,
             basename,
@@ -185,7 +185,7 @@ impl Markdown {
             folder,
             size: meta.len(),
             mtime,
-            ctime: meta.created().map(unix_secs).unwrap_or(mtime),
+            ctime: meta.created().map_or(mtime, unix_secs),
             tags: Vec::new(),
         })
     }
@@ -320,8 +320,7 @@ fn parse_note(note: &Note, row: bool) -> Parsed {
     let fm = frontmatter::parse(&note.bytes);
     let ctime = std::fs::metadata(&note.path)
         .and_then(|m| m.created())
-        .map(unix_secs)
-        .unwrap_or_else(|_| unix_secs(note.stamp.mtime));
+        .map_or_else(|_| unix_secs(note.stamp.mtime), unix_secs);
     let shown = match &fm {
         Err(ReadOnly::Bom) => frontmatter::parse(&note.bytes[3..]).ok(),
         // C-4: JSON・フローの形は YAML の読み手で値だけを読む(書かない)。
@@ -666,9 +665,10 @@ impl Source for Markdown {
         self.folders
             .iter()
             .map(|f| {
-                f.file_name()
-                    .map(|n| n.to_string_lossy().into_owned())
-                    .unwrap_or_else(|| f.to_string_lossy().into_owned())
+                f.file_name().map_or_else(
+                    || f.to_string_lossy().into_owned(),
+                    |n| n.to_string_lossy().into_owned(),
+                )
             })
             .collect::<Vec<_>>()
             .join(", ")
@@ -697,8 +697,7 @@ impl Source for Markdown {
 
     fn label(&self, row: &RowId) -> String {
         self.note(row)
-            .map(|n| n.rel.clone())
-            .unwrap_or_else(|| row.0.clone())
+            .map_or_else(|| row.0.clone(), |n| n.rel.clone())
     }
 
     fn mark(&self, row: &RowId) -> Option<String> {
@@ -812,8 +811,7 @@ impl Source for Markdown {
             .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, Msg::RowNotLoaded.text()))?;
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs() as i64)
-            .unwrap_or(0);
+            .map_or(0, |d| d.as_secs() as i64);
         let item = crate::trash::put(&root, &path, now)?;
         self.vault.forget(&path);
         self.rebuild(std::slice::from_ref(&path));

@@ -20,7 +20,7 @@ fn folder_app(tmp: &Tmp) -> App {
 // [utest -> req~screen.note-column-path~1]
 #[test]
 fn test_sr_29_common_folder() {
-    let f = |v: &[&str]| common_folder(v.iter().map(|s| s.to_string()));
+    let f = |v: &[&str]| common_folder(v.iter().map(std::string::ToString::to_string));
     assert_eq!(f(&["Tasks/a.md", "Tasks/b.md"]), "Tasks/");
     assert_eq!(f(&["Tasks/x/a.md", "Tasks/y/b.md"]), "Tasks/");
     assert_eq!(f(&["Tasks/a.md", "Notes/c.md"]), "");

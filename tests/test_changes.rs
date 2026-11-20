@@ -132,16 +132,13 @@ fn test_wb_9_pending_not_written_until_save() {
     rows.sort();
     let mut want = vec![a.clone(), b.clone()];
     want.sort();
-    assert!(rows == want);
+    assert_eq!(rows, want);
 
     // [utest -> req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] 保存の前の差分: 2行分の (before, after)
     let pv = ch.previews(&src);
     assert_eq!(pv.len(), 2);
     for p in pv {
-        let p = match p {
-            Ok(p) => p,
-            Err(_) => panic!("previews が Err"),
-        };
+        let Ok(p) = p else { panic!("previews が Err") };
         let before = String::from_utf8(p.before.clone()).unwrap();
         let after = String::from_utf8(p.after.clone()).unwrap();
         assert!(!p.external);
@@ -318,7 +315,7 @@ fn test_ce_10_set_many_skips_unreadable_frontmatter() {
         s("done"),
     );
     assert_eq!(skips.len(), 1);
-    assert!(skips[0].row == u);
+    assert_eq!(skips[0].row, u);
     assert!(!skips[0].reason.is_empty());
     assert_eq!(ch.count(), 2);
     assert!(ch.pending(&u, "status").is_none());
@@ -360,7 +357,7 @@ fn test_ce_10_set_on_read_only_cell_is_skip() {
         assert!(src.get(r, col).lock.is_some(), "{col}");
         match ch.set(&src, r, col, s("z")) {
             Err(skip) => {
-                assert!(skip.row == *r);
+                assert_eq!(skip.row, *r);
                 assert!(!skip.reason.is_empty());
             }
             Ok(()) => panic!("読むだけのセル {col} にためた"),
@@ -377,7 +374,7 @@ fn test_ce_10_set_on_read_only_cell_is_skip() {
     }
     match ch.set(&src, &n, "status", s("done")) {
         Err(skip) => {
-            assert!(skip.row == n);
+            assert_eq!(skip.row, n);
             assert!(!skip.reason.is_empty());
         }
         Ok(()) => panic!("読めないフロントマターのノートにためた"),
@@ -421,7 +418,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert_eq!(pv.len(), 1);
     match &pv[0] {
         Ok(p) => assert!(p.external),
-        Err(_) => panic!("previews が Err"),
+        Err(e) => panic!("previews が Err: {e:?}"),
     }
 
     let res = ch.save(&mut src);

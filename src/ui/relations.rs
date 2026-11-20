@@ -319,8 +319,7 @@ impl App {
                     let value = existing
                         .iter()
                         .find(|(p, _)| p == &t)
-                        .map(|(_, e)| e.clone())
-                        .unwrap_or_else(|| self.link_value(&row, form, &t));
+                        .map_or_else(|| self.link_value(&row, form, &t), |(_, e)| e.clone());
                     (value, name)
                 })
                 .collect(),

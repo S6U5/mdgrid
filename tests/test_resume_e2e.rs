@@ -80,13 +80,12 @@ impl FakeHerdr {
             if let Some(c) = self.calls().into_iter().find(|c| cond(c)) {
                 return c;
             }
-            if start.elapsed() > Duration::from_secs(10) {
-                panic!(
-                    "偽の Herdr の呼び出しが来ない: {:?}\n画面:\n{}",
-                    self.calls(),
-                    tui.screen()
-                );
-            }
+            assert!(
+                start.elapsed() <= Duration::from_secs(10),
+                "偽の Herdr の呼び出しが来ない: {:?}\n画面:\n{}",
+                self.calls(),
+                tui.screen()
+            );
             std::thread::sleep(Duration::from_millis(50));
         }
     }
@@ -142,7 +141,7 @@ fn test_herdr_report_follow_and_release() {
         "--seq",
     ]
     .iter()
-    .map(|s| s.to_string())
+    .map(std::string::ToString::to_string)
     .collect();
     want.push(seq_of(&first).to_string());
     want.extend(["--", "mdgrid", &base, "--view", "進行中"].map(String::from));

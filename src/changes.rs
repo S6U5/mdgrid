@@ -260,7 +260,10 @@ impl Changes {
 
     /// 未保存の数 = ためた (行, 列) の数。
     pub fn count(&self) -> usize {
-        self.cells.values().map(|m| m.len()).sum()
+        self.cells
+            .values()
+            .map(std::collections::BTreeMap::len)
+            .sum()
     }
 
     pub fn rows(&self) -> Vec<RowId> {

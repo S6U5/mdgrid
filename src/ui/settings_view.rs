@@ -347,8 +347,10 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
                 Msg::SetGroupOff.fill(&[&radio(d.s.group == Group::Off)]),
                 Msg::SetGroupBy.fill(&[
                     &radio(by.is_some()),
-                    &by.map(|c| sanitize(&app.title(c)))
-                        .unwrap_or_else(|| Msg::SetGroupPickColumn.into()),
+                    &by.map_or_else(
+                        || Msg::SetGroupPickColumn.into(),
+                        |c| sanitize(&app.title(c)),
+                    ),
                 ]),
                 format!(
                     "{}  {}",
@@ -645,7 +647,7 @@ fn pick_rows(app: &App, d: &Draft, p: &Pick, ph: usize) -> Vec<Row> {
         }
         Pick::Kind { col, .. } => (
             Msg::PickKindOf.fill(&[&sanitize(&app.title(col))]),
-            KINDS.iter().map(|k| k.to_string()).collect(),
+            KINDS.iter().map(std::string::ToString::to_string).collect(),
         ),
         Pick::Cmp { col, .. } => (
             Msg::PickCmpOf.fill(&[&sanitize(&app.title(col))]),
@@ -667,8 +669,7 @@ fn pick_rows(app: &App, d: &Draft, p: &Pick, ph: usize) -> Vec<Row> {
             items.extend(counts.iter().map(|(k, n)| {
                 let label = k
                     .as_deref()
-                    .map(sanitize)
-                    .unwrap_or_else(|| Msg::EmptyHeading.into());
+                    .map_or_else(|| Msg::EmptyHeading.into(), sanitize);
                 Msg::PickValueRow.fill(&[&check(checked.contains(k)), &label, n])
             }));
             (Msg::PickValuesOf.fill(&[&sanitize(&app.title(col))]), items)

@@ -372,33 +372,32 @@ impl App {
         let cols = self.chart_cols();
         let kind = spec.kind.unwrap_or(ChartKind::Bar);
         let mut inferred = false;
-        let x = match &spec.x {
-            Some(x) => x.clone(),
-            None => {
-                inferred = true;
-                let axis = matches!(kind, ChartKind::Line | ChartKind::Scatter);
-                // 書いた y(散布図の縦)と by(内訳)の列は、分ける列に選ばない(同じ列になって描けない・1色に
-                // ならないように)。
-                let taken: Vec<&str> = [
-                    (kind == ChartKind::Scatter)
-                        .then_some(spec.y.as_deref())
-                        .flatten(),
-                    kind.takes_by().then_some(spec.by.as_deref()).flatten(),
-                ]
-                .into_iter()
-                .flatten()
+        let x = if let Some(x) = &spec.x {
+            x.clone()
+        } else {
+            inferred = true;
+            let axis = matches!(kind, ChartKind::Line | ChartKind::Scatter);
+            // 書いた y(散布図の縦)と by(内訳)の列は、分ける列に選ばない(同じ列になって描けない・1色に
+            // ならないように)。
+            let taken: Vec<&str> = [
+                (kind == ChartKind::Scatter)
+                    .then_some(spec.y.as_deref())
+                    .flatten(),
+                kind.takes_by().then_some(spec.by.as_deref()).flatten(),
+            ]
+            .into_iter()
+            .flatten()
+            .collect();
+            let rest: Vec<ColInfo> = cols
+                .iter()
+                .filter(|c| !taken.contains(&c.name.as_str()))
+                .cloned()
                 .collect();
-                let rest: Vec<ColInfo> = cols
-                    .iter()
-                    .filter(|c| !taken.contains(&c.name.as_str()))
-                    .cloned()
-                    .collect();
-                let pick = if axis { first_axis(&rest, None) } else { None };
-                // 折れ線・散布図に合う列が無ければ推定の列にし、描けない理由は chart_unfit が出す。
-                pick.or_else(|| chart::infer_x(&rest))
-                    .or_else(|| chart::infer_x(&cols))
-                    .unwrap_or_default()
-            }
+            let pick = if axis { first_axis(&rest, None) } else { None };
+            // 折れ線・散布図に合う列が無ければ推定の列にし、描けない理由は chart_unfit が出す。
+            pick.or_else(|| chart::infer_x(&rest))
+                .or_else(|| chart::infer_x(&cols))
+                .unwrap_or_default()
         };
         let agg = match (&spec.y, spec.agg) {
             (None, _) | (_, Some(Agg::Count)) => Agg::Count,
@@ -599,7 +598,7 @@ impl App {
             })
         };
         // 行ごとの (分ける値, 内訳の鍵, 値)。読めない行は外す。
-        let mut rows: Vec<RowVals> = Vec::new();
+        let mut rows: Vec<RowVals<'_>> = Vec::new();
         for row in &self.rows {
             let xv = if x_date {
                 self.chart_day(row, &r.x).map(|d| XV::Num(d as f64))
@@ -1066,17 +1065,14 @@ impl App {
             return;
         };
         if let Some(c) = self.chart.as_mut() {
-            match next {
-                Some(y) => {
-                    c.cur.y = Some(y);
-                    if c.cur.agg == Agg::Count {
-                        c.cur.agg = Agg::Sum;
-                    }
+            if let Some(y) = next {
+                c.cur.y = Some(y);
+                if c.cur.agg == Agg::Count {
+                    c.cur.agg = Agg::Sum;
                 }
-                None => {
-                    c.cur.y = None;
-                    c.cur.agg = Agg::Count;
-                }
+            } else {
+                c.cur.y = None;
+                c.cur.agg = Agg::Count;
             }
         }
         self.chart_recount();

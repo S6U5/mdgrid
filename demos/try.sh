@@ -21,33 +21,46 @@ cp -R examples "$work/"
 mkdir -p "$work/config/mdgrid" "$work/state"
 export MDGRID_TODAY="${MDGRID_TODAY:-2026-10-06}"
 case "$what" in
-  studio) dir="$work/examples/studio"; target="Tasks.base" ;;
+  studio)
+    dir="$work/examples/studio"
+    target="Tasks.base"
+    ;;
   workspace)
     s="$work/examples/studio"
     printf '[[workspace]]\nname = "Work"\n\n[[workspace.table]]\nname = "Tasks"\npath = "%s/Tasks"\n\n[[workspace.table]]\nname = "Projects"\npath = "%s/Projects"\n\n[[workspace]]\nname = "Team"\n\n[[workspace.table]]\nname = "People"\npath = "%s/People"\n' \
-      "$s" "$s" "$s" > "$work/config/mdgrid/workspaces.toml"
+      "$s" "$s" "$s" >"$work/config/mdgrid/workspaces.toml"
     dir="$s"
     set -- -w Work "$@"
     target="Tasks"
     ;;
   configs)
     cp "$work/examples/configs/studio.toml" "$work/config/mdgrid/config.toml"
-    dir="$work/examples/studio"; target="Tasks.base"
+    dir="$work/examples/studio"
+    target="Tasks.base"
     ;;
-  quirks) dir="$work/examples/quirks"; target="." ;;
+  quirks)
+    dir="$work/examples/quirks"
+    target="."
+    ;;
   ai-human)
     cp "$work/examples/ai-human/config.toml" "$work/config/mdgrid/config.toml"
-    dir="$work/examples/ai-human"; target="Tasks.base"
+    dir="$work/examples/ai-human"
+    target="Tasks.base"
     ;;
   places)
-    sed "s|examples/|$work/examples/|" "$work/examples/places/mdgrid/places.toml" > "$work/config/mdgrid/places.toml"
-    dir="$work/examples"; target=""
+    sed "s|examples/|$work/examples/|" "$work/examples/places/mdgrid/places.toml" >"$work/config/mdgrid/places.toml"
+    dir="$work/examples"
+    target=""
     ;;
   starter)
     XDG_CONFIG_HOME="$work/config" XDG_STATE_HOME="$work/state" "$ROOT/target/release/mdgrid" "$work/books" --init-workspace --starter reading --with-samples >/dev/null
-    dir="$work/books"; target="."
+    dir="$work/books"
+    target="."
     ;;
-  *) echo "unknown sample: $what (studio, workspace, configs, quirks, ai-human, places, starter)" >&2; exit 2 ;;
+  *)
+    echo "unknown sample: $what (studio, workspace, configs, quirks, ai-human, places, starter)" >&2
+    exit 2
+    ;;
 esac
 cd "$dir"
 if [ -n "$target" ]; then

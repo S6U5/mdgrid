@@ -85,7 +85,8 @@ fn test_sr_28_highlight_background_uses_theme_color() {
     let found = (0..a2.height).any(|y| (0..a2.width).any(|x| buf[(x, y)].bg == want));
     assert!(found, "強調の地がテーマの色");
     // 地で読める: 文字との明るさの差が大きい。
-    let lum = |c: [u8; 3]| 0.2126 * c[0] as f64 + 0.7152 * c[1] as f64 + 0.0722 * c[2] as f64;
+    let lum =
+        |c: [u8; 3]| 0.2126 * f64::from(c[0]) + 0.7152 * f64::from(c[1]) + 0.0722 * f64::from(c[2]);
     assert!((lum(p.hl_bg) - lum(p.fg)).abs() > 80.0);
 }
 
@@ -101,7 +102,8 @@ fn test_sr_28_default_theme_keeps_colors() {
 #[test]
 fn test_sr_28_every_theme_has_readable_meaning_colors() {
     // 意味の色は地と明るさがはっきり違う(地に溶けない)。
-    let lum = |c: [u8; 3]| 0.2126 * c[0] as f64 + 0.7152 * c[1] as f64 + 0.0722 * c[2] as f64;
+    let lum =
+        |c: [u8; 3]| 0.2126 * f64::from(c[0]) + 0.7152 * f64::from(c[1]) + 0.0722 * f64::from(c[2]);
     for t in mdgrid::theme::Theme::ALL {
         let Some(p) = t.palette() else { continue };
         for (what, c) in [("add", p.add), ("del", p.del), ("pending", p.pending)] {

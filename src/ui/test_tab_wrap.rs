@@ -110,7 +110,7 @@ fn search_row(s: &str) -> usize {
 fn bar_part(s: &str) -> Vec<String> {
     s.lines()
         .take(row_of(s, "会議のメモ"))
-        .map(|l| l.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 

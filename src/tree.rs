@@ -62,7 +62,7 @@ pub fn order<T: Clone + Eq + Hash>(rows: &[T], parent: impl Fn(&T) -> Option<T>)
         .map(|r| (r, 0))
         .collect();
     while let Some((r, d)) = stack.pop() {
-        let ks = kids.get(r).map(Vec::as_slice).unwrap_or(&[]);
+        let ks = kids.get(r).map_or(&[][..], Vec::as_slice);
         out.push(Node {
             row: r.clone(),
             depth: d,

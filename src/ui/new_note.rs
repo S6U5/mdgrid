@@ -516,7 +516,10 @@ impl App {
         if self.note.flow.is_none() {
             return false;
         }
-        let searching = self.pick.as_ref().is_some_and(|p| p.searching());
+        let searching = self
+            .pick
+            .as_ref()
+            .is_some_and(super::listpick::Pick::searching);
         match action {
             Action::Cancel => self.cancel_note(),
             Action::CreateNote => self.note_create_now(),
@@ -577,7 +580,11 @@ impl App {
         }
         // CE-3: 候補のリストが出ていれば選んだ値(「なし」は空の答え)。
         // CE-20・CE-21: カレンダーで選んだ日はその日。ほかは入力の文字を列の型で読む(CE-2)。
-        let picked = i.list.as_ref().filter(|l| !l.free).map(|l| l.chosen());
+        let picked = i
+            .list
+            .as_ref()
+            .filter(|l| !l.free)
+            .map(super::list::List::chosen);
         let value = match picked
             .map(Choice::Value)
             .or_else(|| calendar::choice(&i, self.today, &self.date_format))
@@ -1027,9 +1034,10 @@ pub(crate) fn hint(app: &App) -> Option<Option<String>> {
 /// 窓の題(上の縁に出す): 「新しいノート · <フォルダ> に作る」。作る場所を選んでいる間は選んでいるフォルダ。
 fn title(app: &App, f: &Flow) -> String {
     let name = |p: &Path| {
-        p.file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_else(|| p.display().to_string())
+        p.file_name().map_or_else(
+            || p.display().to_string(),
+            |n| n.to_string_lossy().into_owned(),
+        )
     };
     let place = if f.choosing {
         let sel = app
@@ -1142,8 +1150,11 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let dim = Style::default().add_modifier(Modifier::DIM);
     // SR-33: モダンな見た目では、縁はアクセントの色、今の欄の印もアクセントの色。
     let look = super::look::look(app);
-    let bst = look.as_ref().map(|l| l.border()).unwrap_or_default();
-    let mark_st = look.as_ref().map(|l| l.key()).unwrap_or(bold);
+    let bst = look
+        .as_ref()
+        .map(super::look::Look::border)
+        .unwrap_or_default();
+    let mark_st = look.as_ref().map_or(bold, super::look::Look::key);
     let edge = |l: char, r: char, text: &str| {
         let t = super::width::take(text, inner);
         format!("{l}{t}{}{r}", hz.to_string().repeat(inner - width(&t)))
@@ -1216,7 +1227,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         g.left,
         vec![
             Span::styled(vt.to_string(), bst),
-            Span::styled(keys, look.as_ref().map(|l| l.faint()).unwrap_or(dim)),
+            Span::styled(keys, look.as_ref().map_or(dim, super::look::Look::faint)),
             Span::styled(vt.to_string(), bst),
         ],
         w,
@@ -1264,9 +1275,10 @@ pub(crate) fn places(src: &dyn Source, target: &Path, base: bool) -> Vec<PathBuf
 
 /// 一覧の1行: フォルダの名前(最後の部分)。
 fn place_name(p: &Path) -> String {
-    p.file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_else(|| p.display().to_string())
+    p.file_name().map_or_else(
+        || p.display().to_string(),
+        |n| n.to_string_lossy().into_owned(),
+    )
 }
 
 /// 「+ 新規」のボタンを出すか(読むだけ(WB-15)と、作る場所(開いたフォルダ)が無いときは出さない)。

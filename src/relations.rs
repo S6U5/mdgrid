@@ -147,7 +147,7 @@ fn md_files(root: &Path) -> Vec<String> {
             continue;
         };
         let mut entries: Vec<_> = rd.flatten().collect();
-        entries.sort_by_key(|e| e.file_name());
+        entries.sort_by_key(std::fs::DirEntry::file_name);
         for e in entries {
             if out.len() >= MAX_NOTES {
                 return out;
@@ -294,8 +294,8 @@ pub fn count_name(name: &str, notes: &[&Notes]) -> usize {
 
 /// `from`(フォルダ)から `to`(ファイル)への相対パス(`/` 区切り)。
 pub fn relative(from: &Path, to: &Path) -> String {
-    let a: Vec<Component> = from.components().collect();
-    let b: Vec<Component> = to.components().collect();
+    let a: Vec<Component<'_>> = from.components().collect();
+    let b: Vec<Component<'_>> = to.components().collect();
     let common = a.iter().zip(&b).take_while(|(x, y)| x == y).count();
     let mut parts: Vec<String> = Vec::new();
     for _ in common..a.len() {

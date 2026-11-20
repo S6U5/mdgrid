@@ -205,7 +205,7 @@ pub fn append(bytes: &[u8], file: &CsvFile, values: &[String]) -> Vec<u8> {
     }
     let cols = file.header.len().max(values.len());
     let line: Vec<String> = (0..cols)
-        .map(|i| encode(values.get(i).map(String::as_str).unwrap_or(""), file.delim))
+        .map(|i| encode(values.get(i).map_or("", String::as_str), file.delim))
         .collect();
     let mut line = line.join(&(file.delim as char).to_string());
     // 空の行は行にしない(読み飛ばす)ので、値が全部空の1列の行は `""` と書く。

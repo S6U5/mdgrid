@@ -111,7 +111,7 @@ fn boot(tag: &str, notes: &[(&str, &str)], top: &str, line: &str) -> (Tmp, App) 
 fn assert_rules(a: &App) {
     let want: Vec<String> = ["todo", "doing", "waiting", "done"]
         .iter()
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
     assert_eq!(
         a.prof
@@ -274,8 +274,7 @@ fn card(s: &str, name: &str) -> Option<Card> {
             let start = l[..i]
                 .char_indices()
                 .rfind(|(_, c)| SEPS.contains(c))
-                .map(|(j, c)| j + c.len_utf8())
-                .unwrap_or(0);
+                .map_or(0, |(j, c)| j + c.len_utf8());
             return Some(Card {
                 x: width(&l[..i]),
                 y,
@@ -295,10 +294,10 @@ fn lane_of(s: &str, name: &str) -> String {
     let (hy, hs) = heading_row(s).unwrap_or_else(|| panic!("レーンの見出しの行が無い:\n{s}"));
     let c = card_or_panic(s, name);
     let k = slot_at(s.lines().nth(hy).unwrap(), c.x);
-    hs.iter()
-        .find(|h| h.slot == k)
-        .map(|h| h.value.clone())
-        .unwrap_or_else(|| panic!("札 {name}(桁 {})の上にレーンの見出しが無い:\n{s}", c.x))
+    hs.iter().find(|h| h.slot == k).map_or_else(
+        || panic!("札 {name}(桁 {})の上にレーンの見出しが無い:\n{s}", c.x),
+        |h| h.value.clone(),
+    )
 }
 
 /// `>` の付いた札の名前(選んでいる札)。
@@ -306,7 +305,7 @@ fn selected(s: &str) -> Vec<String> {
     NAMES
         .iter()
         .filter(|n| card(s, n).is_some_and(|c| c.marks.contains('>')))
-        .map(|n| n.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 

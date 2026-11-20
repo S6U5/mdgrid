@@ -26,7 +26,7 @@ fn pending(a: &App, row: usize, col: &str) -> Option<NewValue> {
 
 fn list(items: &[&str]) -> Option<NewValue> {
     Some(NewValue::List(
-        items.iter().map(|s| s.to_string()).collect(),
+        items.iter().map(std::string::ToString::to_string).collect(),
     ))
 }
 

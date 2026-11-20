@@ -194,7 +194,7 @@ fn lex(src: &str) -> Result<Vec<Tok>, String> {
             while i < cs.len() && cs[i].is_ascii_digit() {
                 i += 1;
             }
-            if i < cs.len() && cs[i] == '.' && cs.get(i + 1).is_some_and(|n| n.is_ascii_digit()) {
+            if i < cs.len() && cs[i] == '.' && cs.get(i + 1).is_some_and(char::is_ascii_digit) {
                 i += 1;
                 while i < cs.len() && cs[i].is_ascii_digit() {
                     i += 1;
@@ -692,13 +692,12 @@ impl Parser {
                 self.pos += 1;
                 if self.eat(&Tok::LParen) {
                     let (args, da) = self.args()?;
-                    match meth_spec(&name) {
-                        Some((m, lo, hi)) => {
-                            arity(&name, args.len(), lo, hi)?;
-                            d = deeper(d.max(da))?;
-                            n = Node::Method(Box::new(n), m, args);
-                        }
-                        None => (n, d) = self.unsupported(format!(".{name}()")),
+                    if let Some((m, lo, hi)) = meth_spec(&name) {
+                        arity(&name, args.len(), lo, hi)?;
+                        d = deeper(d.max(da))?;
+                        n = Node::Method(Box::new(n), m, args);
+                    } else {
+                        (n, d) = self.unsupported(format!(".{name}()"));
                     }
                 } else if let Some(f) = field_spec(&name) {
                     d = deeper(d)?;
@@ -1367,12 +1366,12 @@ fn collect_fixed(n: &Node, out: &mut Vec<Fixed>) {
 // ---- 評価 ----
 
 /// 評価。型の合わない演算は Null。filters は Val::Bool(true) のときだけ行を残す。
-pub fn eval(e: &Expr, env: &Env) -> Val {
+pub fn eval(e: &Expr, env: &Env<'_>) -> Val {
     eval_with(e, env, &Links::default())
 }
 
 /// リンクの索引と this を添えた評価(BV-22)。`eval` はどちらも無いもの(`file.links` などは Null)。
-pub fn eval_with(e: &Expr, env: &Env, links: &Links) -> Val {
+pub fn eval_with(e: &Expr, env: &Env<'_>, links: &Links<'_>) -> Val {
     ev(&e.node, &Cx { env, links })
 }
 
@@ -1394,7 +1393,7 @@ fn str_list(items: &[String]) -> Val {
     Val::List(items.iter().map(|s| Val::Str(s.clone())).collect())
 }
 
-fn link_val(f: FileField, fi: &FileInfo, cx: &Cx) -> Val {
+fn link_val(f: FileField, fi: &FileInfo, cx: &Cx<'_>) -> Val {
     match (f, cx.links.index) {
         (FileField::Links, Some(ix)) => match cx.links.this {
             // `file.links.contains(this.file)`: .base を指すリンクは this.file と同じ値にする(BV-22)。
@@ -1407,7 +1406,7 @@ fn link_val(f: FileField, fi: &FileInfo, cx: &Cx) -> Val {
     }
 }
 
-fn ev(n: &Node, cx: &Cx) -> Val {
+fn ev(n: &Node, cx: &Cx<'_>) -> Val {
     match n {
         Node::Lit(v) => v.clone(),
         // 重さを足しながら作り、上限を超えたところでやめる(全部を作ってから測らない)。
@@ -1500,7 +1499,7 @@ fn file_val(f: FileField, fi: &FileInfo) -> Val {
     }
 }
 
-fn call(f: Func, args: &[Node], cx: &Cx) -> Val {
+fn call(f: Func, args: &[Node], cx: &Cx<'_>) -> Val {
     let arg = |i: usize| args.get(i).map_or(Val::Null, |a| ev(a, cx));
     match f {
         Func::If => {
@@ -1927,15 +1926,12 @@ fn format_when(day: i64, t: i64, fmt: &str) -> Option<String> {
             }
         }
         let rest: String = cs[i..cs.len().min(i + 4)].iter().collect();
-        match tokens.iter().find(|(k, _)| rest.starts_with(k)) {
-            Some((k, v)) => {
-                out.push_str(v);
-                i += k.len();
-            }
-            None => {
-                out.push(cs[i]);
-                i += 1;
-            }
+        if let Some((k, v)) = tokens.iter().find(|(k, _)| rest.starts_with(k)) {
+            out.push_str(v);
+            i += k.len();
+        } else {
+            out.push(cs[i]);
+            i += 1;
         }
     }
     Some(out)

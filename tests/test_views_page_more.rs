@@ -113,8 +113,8 @@ fn sections(text: &str) -> Vec<Section> {
         };
         let body: Vec<String> = lines[i + 1..]
             .iter()
-            .take_while(|l| !heading_of(l).is_some_and(|(lv, _)| lv <= level))
-            .map(|l| l.to_string())
+            .take_while(|l| heading_of(l).is_none_or(|(lv, _)| lv > level))
+            .map(std::string::ToString::to_string)
             .collect();
         out.push(Section {
             heading: heading.to_string(),
@@ -176,7 +176,12 @@ fn count_scene_images(lines: &[String]) -> usize {
     lines
         .iter()
         .flat_map(|l| line_links(l))
-        .filter(|(img, t)| *img && t.starts_with("images/") && t.ends_with(".svg"))
+        .filter(|(img, t)| {
+            *img && t.starts_with("images/")
+                && std::path::Path::new(t)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("svg"))
+        })
         .count()
 }
 

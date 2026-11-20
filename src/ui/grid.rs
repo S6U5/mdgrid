@@ -574,13 +574,12 @@ impl App {
             if !natural.contains_key(&r) && !alive.contains(&r) {
                 continue;
             }
-            let si = match segs.iter().position(|(sh, _)| *sh == h) {
-                Some(i) => i,
-                None => {
-                    let at = g.min(segs.len());
-                    segs.insert(at, (h.clone(), Vec::new()));
-                    at
-                }
+            let si = if let Some(i) = segs.iter().position(|(sh, _)| *sh == h) {
+                i
+            } else {
+                let at = g.min(segs.len());
+                segs.insert(at, (h.clone(), Vec::new()));
+                at
             };
             let rs = &mut segs[si].1;
             let at = k.min(rs.len());

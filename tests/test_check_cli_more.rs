@@ -126,7 +126,7 @@ fn test_cli_23_view_filter_keeps_column_kind() {
     let printed = String::from_utf8_lossy(&p.stdout).into_owned();
     assert!(p.status.success(), "{}", String::from_utf8_lossy(&p.stderr));
     assert!(
-        printed.contains("Z") && !printed.contains("2026-10-01"),
+        printed.contains('Z') && !printed.contains("2026-10-01"),
         "{printed}"
     );
 

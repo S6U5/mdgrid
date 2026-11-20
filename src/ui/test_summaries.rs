@@ -39,7 +39,7 @@ fn vault(name: &str) -> Tmp {
     tmp
 }
 
-const BASE: &str = r#"summaries:
+const BASE: &str = r"summaries:
   customAverage: 'values.mean()'
 views:
   - type: table
@@ -66,7 +66,7 @@ views:
     order: [title, estimate]
     summaries:
       estimate: Sum
-"#;
+";
 
 /// 今の言語の「集計の名前 値」。
 fn t(sm: Summary, v: &str) -> String {

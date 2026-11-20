@@ -43,7 +43,7 @@ impl ColorMode {
             return ColorMode::None;
         }
         match env("COLORTERM").as_deref() {
-            Some("truecolor") | Some("24bit") => ColorMode::Rgb,
+            Some("truecolor" | "24bit") => ColorMode::Rgb,
             _ => ColorMode::Indexed,
         }
     }
@@ -299,10 +299,10 @@ impl App {
             rows: Vec::new(),
             groups: Vec::new(),
             folded: HashSet::new(),
-            tree: Default::default(),
+            tree: HashMap::default(),
             tree_folded: HashSet::new(),
-            wbs_num: Default::default(),
-            wbs_pct: Default::default(),
+            wbs_num: HashMap::default(),
+            wbs_pct: HashMap::default(),
             view_trash: None,
             note_undo: Vec::new(),
             note_redo: Vec::new(),
@@ -439,7 +439,7 @@ impl App {
         self.nerd_font = self.prof.nerd.resolve(self.prof.term_program.as_deref());
         self.nerd_icons = c.terminal.nerd_icons;
         self.herdr = c.terminal.herdr;
-        self.workspace_detect = c.workspace_detect.clone();
+        self.workspace_detect.clone_from(&c.workspace_detect);
         self.poll_ms = c.poll_ms;
         if !c.terminal.color {
             self.color = ColorMode::None;
@@ -736,7 +736,7 @@ impl App {
                     && !self.detail_input_action(action)
                     && !self.calendar_action(action)
                 {
-                    self.input_action(action)
+                    self.input_action(action);
                 }
                 self.calendar_follow();
             }
@@ -745,7 +745,7 @@ impl App {
             Mode::Chips => self.chips_action(action),
             Mode::ListPick => {
                 if !self.new_note_pick_action(action) {
-                    self.list_pick_action(action)
+                    self.list_pick_action(action);
                 }
             }
             Mode::Menu => self.menu_action(action),
@@ -851,10 +851,10 @@ impl App {
                 None => self.open_edit(),
             },
             Action::Save => {
-                if !self.drop_same_pending() {
-                    self.message = Some(Msg::NothingToSave.text().into());
-                } else {
+                if self.drop_same_pending() {
                     self.open_review();
+                } else {
+                    self.message = Some(Msg::NothingToSave.text().into());
                 }
             }
             Action::Clear => self.clear(),
