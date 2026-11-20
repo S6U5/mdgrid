@@ -2,7 +2,7 @@
 //! 登録した表(CLI-1・CLI-19)の本物の実行ファイルでの確かめ: 引数なしで起動すると一覧が重なり、
 //! 選んだ表で開き直す。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 

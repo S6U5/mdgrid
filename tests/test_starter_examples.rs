@@ -4,7 +4,7 @@
 //! `mdgrid examples/bookmarks --init-workspace --starter bookmarks --with-samples`(英語で。見本の日付は固定なので
 //! いつ作っても同じ)。
 
-mod pty;
+use crate::pty;
 
 use pty::TempDir;
 use std::collections::BTreeMap;

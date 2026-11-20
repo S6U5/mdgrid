@@ -24,7 +24,7 @@
 //! 表の並び(`.base` の無いフォルダの既定)は a.md・b.md・c.md・sub/d.md と仮定した
 //! (`--print` の出力の行の順と同じ)。
 
-mod pty;
+use crate::pty;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};

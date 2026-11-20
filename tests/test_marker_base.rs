@@ -21,7 +21,7 @@
 //! 行の並びは問わない。印の警告(CLI-3 の形)は画面のメッセージ行で確かめる(`--print` の標準エラーに
 //! 出るかは仕様が決めていない)。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 use std::path::Path;

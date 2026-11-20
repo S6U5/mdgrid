@@ -3,7 +3,7 @@
 //! 記録: specs/_history/decidespec/_changes/2026-11-06-chart.md(タスク 1)。実装の前に書いた。
 //! 行番号や字の位置は決め打ちせず、題「グラフ:」・種類の名前・項目の名前・下の帯の位置(「1/6行」)で見る。
 
-mod pty;
+use crate::pty;
 
 use pty::{assert_gone, TempDir, Tui};
 

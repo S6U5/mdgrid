@@ -3,7 +3,7 @@
 //! 期待値は specs/requirements/cell-edit.md の cell-edit.delete-note-menu・cell-edit.new-note-undo・
 //! cell-edit.trash-restore-list の受け入れの例から。
 
-mod pty;
+use crate::pty;
 
 use std::path::{Path, PathBuf};
 

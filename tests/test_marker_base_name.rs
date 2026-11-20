@@ -1,7 +1,7 @@
 #![cfg(unix)]
 //! [workspace.marker-base] 印の表に中身を書いた表は、ヘッダーに表の名前だけを出す(無い `.base` のファイルの名前を見せない)。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 

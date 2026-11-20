@@ -1,7 +1,7 @@
 //! [screen.formula-mark] 計算の列の見出しの頭に ƒ を付けて、ノートのキーの列と見分ける(画面だけ。--print は変えない)。
 #![cfg(unix)]
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 use std::process::Command;

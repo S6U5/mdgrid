@@ -2,7 +2,7 @@
 //! TR-2: 印の `[table.base]`(WS-9。`path` の無い表)で、根を `mdgrid .` で開いても木の画面が出る(端末 80×24)。
 //! 値は作ったもの。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 

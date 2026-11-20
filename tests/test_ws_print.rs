@@ -1,7 +1,7 @@
 #![cfg(unix)]
 //! `-w` は `--print` でも名前を確かめる(WS-3): 無い名前は理由1行と 0 以外の終了コード、パスが無ければ最初の表。
 
-mod pty;
+use crate::pty;
 
 use pty::TempDir;
 use std::path::Path;

@@ -2,7 +2,7 @@
 //! [scope.csv-open][scope.csv-write-back][scope.csv-features] 本物の実行ファイルで CSV・TSV を開いて直す(疑似端末 80×24)。
 //! specs/_history/decidespec/_changes/2026-10-10-csv-source.md のタスク 5。
 
-mod pty;
+use crate::pty;
 
 use pty::{wait_file, TempDir, Tui};
 use std::process::Command;

@@ -3,6 +3,8 @@ name = "mdgrid"
 version = "0.5.0"
 edition = "2021"
 rust-version = "1.90"
+# 結合の試験は tests/all.rs と tests/test_config.rs の2つの実行ファイルにまとめる(下の [[test]]。tests/all.rs の頭)。
+autotests = false
 description = "Browse and edit Markdown frontmatter as a table in the terminal"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -35,6 +37,16 @@ path = "src/main.rs"
 [lints.clippy]
 # 錠のある試験(tests/test_root_folder.rs)の assert_eq!(…, true) を書き換えないため(specs/_history/decidespec/_changes/2026-10-14-fmt-view-bar-cases.md)
 bool_assert_comparison = "allow"
+
+# 結合の試験の実行ファイル(autotests = false)。tests/all.rs が tests/ の試験のファイルを `#[path]` で束ねる。
+[[test]]
+name = "all"
+path = "tests/all.rs"
+
+# 環境変数(HOME・XDG_CONFIG_HOME)を書き換えるので、ほかの試験と同じ実行ファイルで並べて走らせない。
+[[test]]
+name = "test_config"
+path = "tests/test_config.rs"
 
 [dependencies]
 ratatui = "0.30.2"

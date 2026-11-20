@@ -20,7 +20,7 @@
 //! - 作ったファイルの行は、そのファイルの相対パス(`.mdgrid/workspace.toml` など)を含む。1ファイル1行。
 //! - 引数の誤りの理由は `mdgrid: ` で始まる1行で、関わる旗の名前のどれかを含む。
 
-mod pty;
+use crate::pty;
 
 use pty::TempDir;
 use std::collections::BTreeMap;
