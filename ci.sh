@@ -4,7 +4,14 @@ set -e
 cd "$(dirname "$0")"
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
-cargo test
+# テスト。cargo-nextest があれば、ファイルをまたいで並べて走らせ、落ちても残りを全部走らせる(CI と同じ道具)。
+# nextest は doc の試験を走らせないので、それだけ cargo test --doc で回す。無ければ cargo test。
+if command -v cargo-nextest >/dev/null 2>&1; then
+  cargo nextest run --no-fail-fast
+  cargo test --doc
+else
+  cargo test
+fi
 # 依存の検査。ライセンス・重複と版の指定・出どころは落とし、勧告(advisories)は今は警告だけ。
 command -v cargo-deny >/dev/null 2>&1 || cargo install cargo-deny --locked
 cargo deny check licenses bans sources

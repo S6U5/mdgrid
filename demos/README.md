@@ -32,6 +32,7 @@ sh demos/record.sh places     # 1本だけ
 | `relmap.tape` → [demo-relmap.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-relmap.gif) | 関係マップ(ER 図): 表の箱とつながりの矢印、タブとキーで切り替え |
 | `workspace.tape` → [demo-workspace.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-workspace.gif) | ワークスペース: 表をまとめ(`--add-to`)、一覧(`--workspaces`)、`-w` で開き、リンクと関係マップはその表で |
 | `view-tabs.tape` → [demo-view-tabs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-view-tabs.gif) | 設定の画面の「ビュー」の区画でタブを整える(隠す・順・既定・切り替えの案内) |
+| `continue.tape` → [demo-continue.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-continue.gif) | ビューを移って終え、`mdgrid --continue` で同じ表とビューに戻る(tmux などの復元で使う) |
 | `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
 | `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
 | `gantt.tape` → [demo-gantt.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-gantt.gif) | ガント: タスクの台帳を `C` で時間軸の横棒にし、`-` `+` で単位、`t` で今日へ |

@@ -247,6 +247,19 @@ nerd_font = true
 nerd_icons = true
 ```
 
+### `terminal.herdr`
+
+- 型: `真偽値`
+- 既定: `true`
+- 範囲: 全体だけ
+
+[Herdr](https://herdr.dev) の窓で、今見ている表とビューで開き直す命令を Herdr に伝える。別の表やビューへ移るたびに伝え直す。Herdr のサーバーが止まって立て直したとき(パソコンを再起動したあとなど)、Herdr は同じ窓でその命令を走らせるので、mdgrid が同じ表とビューで戻ってくる。自分で mdgrid を終えたときは窓を返すので、開き直さない。`false` で Herdr を呼ばない。Herdr の外では何もしない。命令を受け取れない道具には `mdgrid --continue` がある([説明書](manual/ja/features.md))。
+
+```toml
+[terminal]
+herdr = false
+```
+
 ## `[workspace]` — ワークスペース
 
 ### `workspace.detect`

@@ -11,6 +11,7 @@
   - [Shape a view and save it](#shape-a-view-and-save-it)
   - [Give a folder its own command](#give-a-folder-its-own-command)
   - [Register the tables you use and switch between them](#register-the-tables-you-use-and-switch-between-them)
+  - [Come back to the same table when the terminal is restored](#come-back-to-the-same-table-when-the-terminal-is-restored)
   - [Link tables with relations](#link-tables-with-relations)
   - [Group tables into workspaces](#group-tables-into-workspaces)
   - [Use with other commands](#use-with-other-commands)
@@ -249,6 +250,25 @@ view = "Reading"
 ```
 
 A leading `~` in `path` means your home folder. Rows that cannot be read (no `name` or `path`, or a repeated name) are skipped with a warning. Notes are never written.
+
+## Come back to the same table when the terminal is restored
+
+Some tools put your terminal panes back after a restart of the computer. When such a tool restores a pane, mdgrid can reopen the same table and view you had. Only the table and the view come back: the selected row, the scroll position and unsaved changes do not.
+
+Inside a [Herdr](https://herdr.dev) pane this works without any setup. mdgrid tells Herdr the command that reopens the current table and view, and tells it again whenever you move to another table or view. When the Herdr server stops and starts again, Herdr runs that command in the same pane. When you quit with `q` yourself, mdgrid hands the pane back, so nothing is reopened. Herdr lists it among its agents as `mdgrid`. To turn this off:
+
+```toml
+[terminal]
+herdr = false
+```
+
+For tools that cannot take a command from mdgrid, such as tmux, use `mdgrid --continue`. mdgrid remembers the last table and view for each folder it was started in (in `~/.local/state/mdgrid/`), and `mdgrid --continue` in that folder goes back there. If nothing is remembered, or the table is gone, it opens as plain `mdgrid` does. With the tmux plugin [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect), put this in `~/.tmux.conf` and restoring runs `mdgrid --continue` in the pane that had mdgrid:
+
+```tmux
+set -g @resurrect-processes '"~mdgrid->mdgrid --continue"'
+```
+
+Add `--readonly` to `--continue` to open read-only. It cannot be combined with paths or `--view`.
 
 ## Link tables with relations
 

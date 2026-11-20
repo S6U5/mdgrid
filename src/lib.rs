@@ -31,6 +31,7 @@ pub mod print;
 pub mod profile;
 pub mod relations;
 pub mod relmap;
+pub mod resume;
 pub mod rules;
 pub mod schema;
 pub mod settings;

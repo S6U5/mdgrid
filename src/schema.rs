@@ -214,6 +214,18 @@ pub const ITEMS: &[Item] = &[
              絵文字は使わない。",
     },
     Item {
+        path: "terminal.herdr",
+        ty: "boolean",
+        ty_ja: "真偽値",
+        default: Some("true"),
+        example: "[terminal]\nherdr = false",
+        scope: Scope::Global,
+        en: "Inside a Herdr pane, tell Herdr the command that reopens the current table and view, so that\n\
+             Herdr opens it again after its server restarts. false never calls Herdr.",
+        ja: "Herdr の窓で、今の表とビューで開き直す命令を Herdr に伝え、Herdr のサーバーを立て直したときに\
+             開き直してもらう。false で Herdr を呼ばない。",
+    },
+    Item {
         path: "workspace.detect",
         ty: "array of strings",
         ty_ja: "文字列の並び",

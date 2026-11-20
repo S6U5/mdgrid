@@ -121,6 +121,8 @@ pub struct App {
     pub(crate) nerd_font: bool,
     /// SR-45: アイコン用のフォントの記号を使う(`terminal.nerd_icons`)。
     pub(crate) nerd_icons: bool,
+    /// resume.herdr-config-off: Herdr の窓で開き直す命令を伝える(`terminal.herdr`)。
+    pub(crate) herdr: bool,
     /// SR-44: 範囲ごとの層と決まった値(ui/profile.rs)。
     pub(crate) prof: super::profile::Prof,
     /// SR-40・SR-41: 色の上書き。
@@ -333,6 +335,7 @@ impl App {
             style: Default::default(),
             nerd_font: false,
             nerd_icons: false,
+            herdr: true,
             prof: Default::default(),
             colors: Default::default(),
             today,
@@ -435,6 +438,7 @@ impl App {
         self.prof.nerd = self.prof.ui.nerd_font.unwrap_or(c.terminal.nerd_font);
         self.nerd_font = self.prof.nerd.resolve(self.prof.term_program.as_deref());
         self.nerd_icons = c.terminal.nerd_icons;
+        self.herdr = c.terminal.herdr;
         self.workspace_detect = c.workspace_detect.clone();
         self.poll_ms = c.poll_ms;
         if !c.terminal.color {

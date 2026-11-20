@@ -3,6 +3,7 @@
 mod apply;
 mod diff;
 mod edit;
+mod reopen;
 mod ui;
 mod ws_cli;
 
@@ -13,6 +14,7 @@ use mdgrid::base::{self, Base};
 use mdgrid::config::{self, Config};
 use mdgrid::i18n::{self, Lang, Language, Msg};
 use mdgrid::print;
+use mdgrid::resume::Reopen;
 use mdgrid::source::csv::Csv;
 use mdgrid::source::markdown::Markdown;
 use mdgrid::source::{Source, Value};
@@ -147,6 +149,9 @@ struct Cli {
     /// 色なしで出す
     #[arg(long)]
     no_color: bool,
+    /// 今のフォルダで最後に開いていた表とビューで開く(無ければ引数なしと同じ。resume.continue)
+    #[arg(long = "continue", conflicts_with_all = ["paths", "view", "workspace", "raw", "print", "pick", "check", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    resume: bool,
     /// この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)
     #[arg(long, value_name = Msg::ValuePath.ja(), allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
     config: Option<PathBuf>,
@@ -496,6 +501,35 @@ impl Cli {
         }
         out
     }
+}
+
+/// resume.continue: `--continue` を、今のフォルダの最後の画面の表の引数に読み替え、覚えたビューの名前を返す。
+/// 最後の画面が無い・壊れている・表がもう無いときは `--continue` を外すだけ(引数なしの起動。resume.continue-fallback)。
+/// 引数が読めない(`--continue` とパスを一緒に渡したなど)ときは何もしない(あとで理由1行。resume.continue-conflict)。
+fn continue_args(args: &mut Vec<OsString>) -> Option<String> {
+    let cli = parse_cli(args).ok()?;
+    if !cli.resume {
+        return None;
+    }
+    args.retain(|a| a != "--continue");
+    let dir = config::state_dir()?;
+    let here = std::env::current_dir().ok()?;
+    let mut last = mdgrid::resume::load_last(&dir, &here)?;
+    if !last.paths.iter().all(|p| mdgrid::workspace::openable(p)) {
+        return None;
+    }
+    // 起動で渡した旗は、覚えた旗と重ねない(同じ旗を2回渡すと読めない)。
+    if cli.readonly {
+        last.readonly = false;
+    }
+    if cli.no_color {
+        last.no_color = false;
+    }
+    if cli.config.is_some() {
+        last.config = None;
+    }
+    args.extend(last.args(false).into_iter().map(OsString::from));
+    last.view
 }
 
 /// 引数を読む(CLI-1)。読めなければ理由を1行で返す(CLI-4)。パスが無ければ今のフォルダ(`.`)。
@@ -860,6 +894,8 @@ fn main() -> ExitCode {
     // SR-23: 引数の誤りは設定を読む前に出るので、まず環境から決める。
     i18n::set_default(i18n::resolve(Language::Auto, |k| std::env::var(k).ok()));
     let mut args: Vec<OsString> = std::env::args_os().skip(1).collect();
+    // resume.continue: 今のフォルダの最後の画面の表に読み替える(ビューは開いてから選ぶ)。無ければ引数なしの起動。
+    let continue_view = continue_args(&mut args);
     // CLI-1: `--raw` は印の `open` を使わない(命令の旗でもオプションでもないので、先に読んでおく)。
     // `-w` だけ(パスなし)かは、命令の旗(`--print` など)を除いた位置の引数で見る。
     let (raw, no_paths) = parse_cli(&args).map_or((false, true), |c| (c.raw, c.paths.is_empty()));
@@ -1009,6 +1045,10 @@ fn main() -> ExitCode {
     if let Some(v) = &marker_view {
         app.select_view_named(v);
     }
+    // resume.continue-fallback: 覚えたビューは開いてから選ぶ(もう無ければ先頭のビューと理由)。
+    if let Some(v) = &continue_view {
+        app.select_view_named(v);
+    }
     // SR-10: `--pick` は画面を端末(`/dev/tty`)に出すので、標準出力は見ない。
     let tty = match pick {
         Some(_) => check_dev_tty(),
@@ -1022,7 +1062,19 @@ fn main() -> ExitCode {
         if no_args && !marker && opts.workspace.is_none() && !app.registered.is_empty() {
             app.start_open_places(true);
         }
-        return run_switching(app, editor, &opts);
+        let resumer = reopen::Resumer::new(
+            Reopen::new(
+                &paths,
+                opts.workspace.clone(),
+                opts.readonly,
+                opts.no_color,
+                opts.config.as_deref(),
+            ),
+            app.herdr,
+            config::state_dir(),
+            std::env::current_dir().ok(),
+        );
+        return run_switching(app, editor, &opts, resumer);
     };
     // OUT-3: 列の名前は、ノートを読み終えてから表の列で確かめる(無ければ画面を出さずに理由1行)。
     let column = match what {
@@ -1041,7 +1093,7 @@ fn main() -> ExitCode {
     };
     app.start_choosing();
     app.copy_to_tty();
-    if let Err(e) = run(&mut app, &editor, Screen::Tty) {
+    if let Err(e) = run(&mut app, &editor, Screen::Tty, &mut |_| {}) {
         return fail(&Msg::TerminalError.fill(&[&e]));
     }
     // 画面を戻したあとで、結果を標準出力へ。取りやめは何も出さず終了コード 1。
@@ -1131,7 +1183,12 @@ fn open_app(
     pick: bool,
     marker_warns: Vec<String>,
 ) -> Result<(App, String), String> {
-    let target = open_target(paths, view)?;
+    // cli.view-own-views: `--view` は `.base` のビューを先に引き、無ければ開いてから mdgrid のビューを探す。
+    let mut target = open_target(paths, None)?;
+    if let (Some(v), Some((b, _, idx))) = (view, &mut target.base) {
+        *idx = b.views.iter().position(|x| x.name == v);
+    }
+    let own_view = view.filter(|_| !matches!(&target.base, Some((_, _, Some(_)))));
     let (config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
     // WS-7: 印の `open` の警告も起動の警告に並べる。
     warnings.extend(marker_warns);
@@ -1179,18 +1236,38 @@ fn open_app(
         base: target.base,
     });
     app.guessed_root = target.guessed_root;
+    if let Some(v) = own_view {
+        if !app.has_view_named(v) {
+            let names = app.view_names();
+            let have = if names.is_empty() {
+                Msg::NoViews.text().to_string()
+            } else {
+                Msg::ViewsAre.fill(&[&names.join(", ")])
+            };
+            return Err(Msg::NoSuchView.fill(&[&v, &have]));
+        }
+        app.select_view_named(v);
+    }
     Ok((app, editor))
 }
 
 /// 画面を出す。一覧で別の表を選んで終わったら(CLI-19)、その表で開き直して続ける。開けなければ
 /// 前の表に戻って理由を出す。
-fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
+fn run_switching(
+    mut app: App,
+    mut editor: String,
+    opts: &Options,
+    mut resumer: reopen::Resumer,
+) -> ExitCode {
     let mut opts = opts.clone();
     loop {
-        if let Err(e) = run(&mut app, &editor, Screen::Stdout) {
+        if let Err(e) = run(&mut app, &editor, Screen::Stdout, &mut |a| resumer.tick(a)) {
+            resumer.finish();
             return fail(&Msg::TerminalError.fill(&[&e]));
         }
         let Some(place) = app.switch_to.take() else {
+            // resume.herdr-release: 自分で終えた窓は Herdr に返す(立て直しで開き直さない)。
+            resumer.finish();
             // write-back.git-when: 終了のときに、まだ git に渡していないノートを流す(失敗は1行で知らせる)。
             if let Some(e) = app.git_flush_at_quit() {
                 eprintln!("mdgrid: {e}");
@@ -1224,6 +1301,14 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
                 if let Some(v) = &place.view {
                     app.select_view_named(v);
                 }
+                // resume.herdr-follow: 移った表で開き直す命令にする(ビューは次の tick で画面から取る)。
+                resumer.switch(Reopen::new(
+                    std::slice::from_ref(&place.path),
+                    opts.workspace.clone(),
+                    opts.readonly,
+                    opts.no_color,
+                    opts.config.as_deref(),
+                ));
             }
             Err(e) => {
                 app.quit = false;
@@ -1864,7 +1949,8 @@ fn restore(screen: Screen) {
 }
 
 /// `editor` はノートを開くエディタ(SR-8。`config::resolve_editor` で決めたもの)。`screen` は画面の書き先。
-fn run(app: &mut App, editor: &str, screen: Screen) -> io::Result<()> {
+/// `tick` は、イベントをさばくたびに今の画面を渡す(resume.herdr-follow・resume.last-screen-save)。
+fn run(app: &mut App, editor: &str, screen: Screen, tick: &mut dyn FnMut(&App)) -> io::Result<()> {
     // NV-23: 余白の端数を描くのに端末の地の色が要るときだけ、画面を出す前に端末に問い合わせる(短く待つ)。
     // 答えはプロセスで1回だけ問い合わせて覚える(表を開き直しても問い合わせない)。色を使わない設定では
     // 問い合わせない(明暗の問い合わせ `prof.probe` を置かない設定と同じ)。
@@ -1880,7 +1966,7 @@ fn run(app: &mut App, editor: &str, screen: Screen) -> io::Result<()> {
     // ここから先は、`?` で抜けても Drop で端末を戻す(パニックのフックと二重に戻しても害は無い)。
     let _guard = Restore(screen);
     enter(screen)?;
-    event_loop(app, editor, screen)
+    event_loop(app, editor, screen, tick)
 }
 
 /// 画面の準備(raw・代替画面・マウス)。起動と $EDITOR から戻ったときに呼ぶ。
@@ -1916,11 +2002,17 @@ fn clear_screen(term: &mut Term, screen: Screen) -> io::Result<()> {
     }
 }
 
-fn event_loop(app: &mut App, editor: &str, screen: Screen) -> io::Result<()> {
+fn event_loop(
+    app: &mut App,
+    editor: &str,
+    screen: Screen,
+    tick: &mut dyn FnMut(&App),
+) -> io::Result<()> {
     let mut term = Terminal::new(CrosstermBackend::new(screen.writer()?))?;
     clear_screen(&mut term, screen)?;
     let mut last_poll = Instant::now();
     loop {
+        tick(app);
         if !app.loaded() {
             app.load_step(LOAD_BUDGET);
         } else if last_poll.elapsed() >= app.poll_interval() {
@@ -1958,6 +2050,7 @@ fn event_loop(app: &mut App, editor: &str, screen: Screen) -> io::Result<()> {
             });
         }
         if app.quit {
+            tick(app);
             return Ok(());
         }
     }
