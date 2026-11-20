@@ -17,7 +17,7 @@
 //!
 //! 表の並び(`.base` の無いフォルダの既定)は a.md・b.md・c.md と仮定した。
 
-mod pty;
+use crate::pty;
 
 use std::path::Path;
 use std::process::{Command, Output};

@@ -1,7 +1,7 @@
 #![cfg(unix)]
 //! [workspace.marker-base][workspace.drawer] 印に中身を書いた表へ、引き出しでほかの表から戻れる。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 

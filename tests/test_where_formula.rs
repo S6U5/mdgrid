@@ -2,7 +2,7 @@
 //! [workspace.marker-where] 印の表の `where` の鍵に計算の列(`formula.x`)を書ける。台帳の期限のタブ(計算の列で期限の区分を
 //! 1回定義し、タブで区分を選ぶ)の境目もここで確かめる。
 
-mod pty;
+use crate::pty;
 
 use pty::TempDir;
 use std::path::Path;

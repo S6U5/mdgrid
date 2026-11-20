@@ -3,7 +3,7 @@
 //! --remove-from・--remove-workspace・--init-workspace、`-w` で最初の表を開く、無い名前は理由1行。
 //! 旗なので、`workspace` という名前のフォルダはそのまま開ける。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 use std::path::Path;

@@ -20,7 +20,7 @@
 //! 仮定(仕様に書かれていない細部): `--with-path` のパスの頭(`./` やフォルダの名前)は問わず、
 //! 末尾の相対のパスで行を見分ける。行の並びは問わない。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 use std::path::Path;

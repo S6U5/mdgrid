@@ -2,7 +2,7 @@
 //! SR-43 の受け入れ(本物の実行ファイル): 設定の置き場の look.toml の見た目を、起動のとき config.toml に重ねる。
 //! 組 slate はリストを `#a` の形で見せる(SR-36)ので、画面の文字で組が効いたと分かる。壊れた look.toml は警告。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 

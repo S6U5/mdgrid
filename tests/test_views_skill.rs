@@ -3,7 +3,7 @@
 //! スキルに書いた印の例を見本のフォルダに置き、警告なしに読めて、印の表の行が出ることを確かめる
 //! (古い書き方や読めない設定を AI に教えないため)。
 
-mod pty;
+use crate::pty;
 
 use pty::TempDir;
 use std::path::Path;

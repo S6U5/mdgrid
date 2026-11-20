@@ -8,7 +8,7 @@
 //!   XDG_STATE_HOME(どれも一時フォルダ)と、試験ごとに決めた VISUAL・EDITOR だけを渡す。
 //! - 子は Drop で kill と wait をする(落ちても止まる)。画面の待ちは 10 秒で落ちる。
 
-mod pty;
+use crate::pty;
 
 use std::path::{Path, PathBuf};
 use std::time::Duration;

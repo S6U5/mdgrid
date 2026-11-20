@@ -2,7 +2,7 @@
 //! スターターから台帳を作る(ST-5)と、作った台帳を開いて閉じてもバイトが変わらないこと(ST-6)の、本物の実行ファイル
 //! での確かめ(端末 80×24)。値は作ったもの。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 use std::collections::BTreeMap;

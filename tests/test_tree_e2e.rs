@@ -1,7 +1,7 @@
 #![cfg(unix)]
 //! 木の画面(TR-1・TR-2・TR-3・TR-4・TR-6)の、本物の実行ファイルでの確かめ(端末 80×24)。値は作ったもの。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 

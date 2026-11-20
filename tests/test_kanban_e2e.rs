@@ -3,7 +3,7 @@
 //! 記録: specs/_history/decidespec/_changes/2026-11-02-kanban.md(タスク 6)。実装の前に書いた。
 //! 行番号や字の位置は決め打ちせず、題「カンバン」・レーンの値・札の名前・下の帯の位置(「表 5/5行」)で見る。
 
-mod pty;
+use crate::pty;
 
 use pty::{assert_gone, TempDir, Tui};
 use unicode_width::UnicodeWidthStr;

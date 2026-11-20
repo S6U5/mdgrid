@@ -2,7 +2,7 @@
 //! 開き直し(specs/requirements/resume.md)と、画面の `--view` で mdgrid のビューを探すこと(cli.view-own-views)を、
 //! 本物の実行ファイルで確かめる(疑似端末 80×24)。Herdr の道具は、受け取った引数をログに書く偽の道具にする。
 
-mod pty;
+use crate::pty;
 
 use pty::{TempDir, Tui};
 use std::path::{Path, PathBuf};
