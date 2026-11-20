@@ -402,6 +402,13 @@ wait = { en = "read-only", ja = "読むだけ" }
 text = { en = "--readonly never writes: no editing, no saving, no new notes, and view settings are not remembered.", ja = "--readonly では何も書かない。編集・保存・新しいノートができず、ビューの設定も覚えない。" }
 
 [[shot]]
+id = "resume"
+title = { en = "Back on the same table and view", ja = "同じ表とビューに戻る" }
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base", "--view", "By status"]
+wait = { en = "By status", ja = "By status" }
+text = { en = "Herdr reopens the table and view mdgrid told it; mdgrid --continue goes back to the last one opened in this folder.", ja = "Herdr は mdgrid が伝えた表とビューで開き直す。mdgrid --continue は、このフォルダで最後に開いた表とビューへ戻る。" }
+
+[[shot]]
 id = "view-filter-values"
 title = { en = "Filter by picking values", ja = "値を選んで絞る" }
 keys = ["o", "Enter", "Enter", "Enter", "Down", "Down", "Down", "Space"]

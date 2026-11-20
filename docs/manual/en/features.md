@@ -146,6 +146,14 @@ With `--readonly`, editing, saving and creating notes are off and nothing is wri
 
 [When you cannot edit](tasks.md#when-you-cannot-edit), [Write-back safety](../../safety.md)
 
+## Come back after the terminal is restored
+
+![Back on the same table and view](images/resume.svg)
+
+In a Herdr pane, mdgrid reopens the same table and view when the Herdr server restarts. Elsewhere, such as in tmux, `mdgrid --continue` goes back to the last table and view opened in that folder.
+
+[Come back to the same table when the terminal is restored](tasks.md#come-back-to-the-same-table-when-the-terminal-is-restored)
+
 ## Choose a look
 
 ![The sample configuration](images/showcase-table.svg)

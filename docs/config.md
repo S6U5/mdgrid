@@ -247,6 +247,19 @@ Use icon glyphs from a Nerd Font for the settings button (gear), the screen type
 nerd_icons = true
 ```
 
+### `terminal.herdr`
+
+- Type: `boolean`
+- Default: `true`
+- Scope: global only
+
+Inside a [Herdr](https://herdr.dev) pane, tell Herdr the command that reopens the table and view you are looking at, and tell it again whenever you move to another table or view. When the Herdr server stops and starts again (after a restart of the computer, for example), Herdr runs that command in the same pane, so mdgrid comes back on the same table and view. When you quit mdgrid yourself, the pane is handed back and nothing is reopened. `false` never calls Herdr. Outside Herdr this item does nothing. See also `mdgrid --continue` in the [manual](manual/en/features.md).
+
+```toml
+[terminal]
+herdr = false
+```
+
 ## `[workspace]` — workspaces
 
 ### `workspace.detect`

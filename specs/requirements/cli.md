@@ -61,6 +61,11 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 `req~cli.options~2` P1
 - 受け入れ: `--view 進行中` → そのビューで開く。
 
+#### 画面を出す起動(`--pick` も)の `--view <名前>` は、`.base` のビューに無ければ mdgrid のビュー(base-view.own-views-tabs)からも名前で探して開き、どちらにも無ければ、ある名前を並べた理由1行と終了コード 2 で終わるべき
+`req~cli.view-own-views~1` P1
+- なぜ: 開き直す命令(resume.reopen-args)で mdgrid のビューも戻せるようにするため(`--print` はもう mdgrid のビューも探す。cli.print-stdout)
+- 受け入れ: views.toml にビュー「進行中」のある、`.base` の無いフォルダ notes で `mdgrid notes --view 進行中` → 「進行中」のタブで開く。`mdgrid notes --view 無い` → `進行中` を並べた理由1行と終了コード 2。
+
 #### 設定ファイルは TOML で、OS の設定の置き場(`XDG_CONFIG_HOME` か、macOS でも `~/.config/mdgrid/config.toml`。Windows では `XDG_CONFIG_HOME` が無ければ `%APPDATA%\mdgrid\config.toml`)に1つ置くべき
 `req~cli.config-file-location~1` P1
 - 受け入れ: Windows で `XDG_CONFIG_HOME` が無く `APPDATA` が `C:\Users\a\AppData\Roaming` → `C:\Users\a\AppData\Roaming\mdgrid\config.toml`。`XDG_CONFIG_HOME` が絶対パスならそちら、相対パスは無視して `APPDATA`。どちらも無い・空 → 置き場なし(既定で動く)。

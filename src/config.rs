@@ -73,6 +73,8 @@ pub struct Terminal {
     pub nerd_font: NerdFont,
     /// SR-45: アイコン用のフォント(Nerd Font)の記号を使う(既定 false)。
     pub nerd_icons: bool,
+    /// resume.herdr-config-off: Herdr の窓で、開き直す命令を伝える(既定 true。tbd~resume.herdr-config-name)。
+    pub herdr: bool,
 }
 
 impl Default for Terminal {
@@ -82,6 +84,7 @@ impl Default for Terminal {
             ambiguous_wide: false,
             nerd_font: NerdFont::Auto,
             nerd_icons: false,
+            herdr: true,
         }
     }
 }
@@ -210,6 +213,10 @@ fn read_terminal(v: &toml::Value, t: &mut Terminal, file: &str, w: &mut Vec<Stri
             },
             "nerd_icons" => match v.as_bool() {
                 Some(b) => t.nerd_icons = b,
+                None => warn(w, file, &p, not(Msg::WantBool)),
+            },
+            "herdr" => match v.as_bool() {
+                Some(b) => t.herdr = b,
                 None => warn(w, file, &p, not(Msg::WantBool)),
             },
             _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
@@ -445,6 +452,8 @@ pub fn app_toml(c: &Config) -> String {
         "nerd_icons",
         toml::Value::Boolean(c.terminal.nerd_icons),
     ));
+    out.push_str(src(c.terminal.herdr == d.terminal.herdr));
+    out.push_str(&line("herdr", toml::Value::Boolean(c.terminal.herdr)));
     out.push_str("\n[workspace]\n");
     out.push_str(src(c.workspace_detect == d.workspace_detect));
     let detect = c

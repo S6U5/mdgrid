@@ -150,6 +150,23 @@ impl App {
         (!name.is_empty()).then_some(name)
     }
 
+    /// resume.reopen-args: 開き直す命令に添えるビューの名前。今のビューの名前に加え、mdgrid のビューのある
+    /// フォルダで既定の表を見ているときは既定の表の名前(既定のビュー NV-25 に置き換わらないように)。
+    pub(crate) fn resume_view(&self) -> Option<String> {
+        self.current_view_name().or_else(|| {
+            (self.base.is_none() && !self.nv.views.is_empty())
+                .then(|| Msg::DefaultTabName.text().to_string())
+        })
+    }
+
+    /// cli.view-own-views: その名前のビュー(`.base` のビューか mdgrid のビュー)があるか。既定の表は、
+    /// `select_view_named` と同じく前の名前や別の言語の名前でもよい。
+    pub(crate) fn has_view_named(&self, name: &str) -> bool {
+        let names = self.view_names();
+        names.iter().any(|v| v == name)
+            || (super::native_views::is_default_tab(name) && self.base.is_none())
+    }
+
     /// 名前の欄で決めた: 分類の欄へ。
     pub(crate) fn place_named(&mut self, mut place: Place, query: &str) {
         let name = query.trim();
