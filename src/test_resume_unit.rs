@@ -111,7 +111,10 @@ fn test_reopen_args_order_of_all_flags() {
             "--readonly".into(),
             "--no-color".into(),
             "--config".into(),
-            here.join("conf").join("my.toml").to_string_lossy().into_owned(),
+            here.join("conf")
+                .join("my.toml")
+                .to_string_lossy()
+                .into_owned(),
         ]
     );
     // `--continue` で読み替える引数は、ビューを除いた同じ並び(ビューは開いてから選ぶ)。
