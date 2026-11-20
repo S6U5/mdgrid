@@ -42,7 +42,7 @@ fn find(a: &App, t: &str, from_y: u16) -> (u16, u16) {
 
 #[test]
 fn test_sr_40_accent_override() {
-    // [SR-40] sumi に accent を上書き → 列の見出しがその色。地は sumi のまま。default テーマでも accent は効く。
+    // [utest -> req~screen.color-overrides-roles~1, req~screen.color-overrides-rest~1, req~screen.color-overrides-default-theme~1] sumi に accent を上書き → 列の見出しがその色。地は sumi のまま。default テーマでも accent は効く。
     let (_t, a) = boot(
         "sr40_accent",
         "[look]\ntheme = \"sumi\"\n\n[look.colors]\naccent = \"#e0a458\"\n",
@@ -64,7 +64,7 @@ fn test_sr_40_accent_override() {
 
 #[test]
 fn test_sr_41_value_colors() {
-    // [SR-41] [colors.values] の日本語の値 進行中 → 点がその色。決めていない done は今までの意味の色。
+    // [utest -> req~screen.value-colors-apply~1] [colors.values] の日本語の値 進行中 → 点がその色。決めていない done は今までの意味の色。
     let (_t, a) = boot(
         "sr41_values",
         "[look.colors.values]\n\"進行中\" = \"#d6a85c\"\n",
@@ -80,7 +80,7 @@ fn test_sr_41_value_colors() {
 
 #[test]
 fn test_sr_36_solid() {
-    // [SR-36] status = "solid" → 値の色をそのまま地に塗った札(淡くない)。nerd_font なら両端が丸い端の字。
+    // [utest -> req~screen.style-parts-choose~1] status = "solid" → 値の色をそのまま地に塗った札(淡くない)。nerd_font なら両端が丸い端の字。
     let (_t, a) = boot(
         "sr36_solid",
         "[look.style]\nstatus = \"solid\"\n\n[look.colors.values]\ndone = \"#2f9e66\"\n",

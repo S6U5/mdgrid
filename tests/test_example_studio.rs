@@ -1,5 +1,5 @@
 //! 見本 examples/studio(架空の制作会社 Northwind Studio)のつながりを確かめる試験。
-//! REL-1・REL-5・REL-6・WS-7。仕様: specs/relations/spec.md、specs/workspace/spec.md。
+//! REL-1・REL-5・REL-6・WS-7。仕様: specs/_history/decidespec/relations/spec.md、specs/_history/decidespec/workspace/spec.md。
 //!
 //! 見本は読むだけ(書かない)。リンクを足したり名前を変えたりして行き先が無くなったら、ここで気づく。
 
@@ -34,7 +34,7 @@ fn edge(from: &str, column: &str, to: &str, many: bool) -> Edge {
 
 #[test]
 fn test_example_studio_marker_tables() {
-    // [WS-7] 印に書いた5つの表。Tasks は .base(ビューを持つ)、ほかはフォルダ。
+    // [utest -> req~workspace.marker-form~1, req~workspace.marker-auto-tables~1, req~workspace.marker-open~1, req~workspace.marker-open-view~1] 印に書いた5つの表。Tasks は .base(ビューを持つ)、ほかはフォルダ。
     let (ws, _) = workspace::read_marker(&studio());
     let names: Vec<&str> = ws.tables.iter().map(|t| t.name.as_str()).collect();
     assert_eq!(
@@ -46,7 +46,7 @@ fn test_example_studio_marker_tables() {
 
 #[test]
 fn test_example_studio_edges() {
-    // [REL-6] 設定なしで見つかるつながり。リストの列(team・attendees・depends_on)は多対多。
+    // [utest -> req~relations.table-links-detect~1] 設定なしで見つかるつながり。リストの列(team・attendees・depends_on)は多対多。
     let mut got = edges(&tables());
     got.sort_by(|a, b| (&a.from, &a.column).cmp(&(&b.from, &b.column)));
     assert_eq!(
@@ -67,7 +67,7 @@ fn test_example_studio_edges() {
 
 #[test]
 fn test_example_studio_every_link_resolves() {
-    // [REL-1] 見本のリンクは全部、行き先のノートがある(REL-10 の ? の印が出ない)。
+    // [utest -> req~relations.link-forms-kinds~1] 見本のリンクは全部、行き先のノートがある(REL-10 の ? の印が出ない)。
     let root = studio();
     let notes = Notes::scan(&root);
     let all = [&notes];
@@ -93,7 +93,7 @@ fn test_example_studio_every_link_resolves() {
 
 #[test]
 fn test_example_studio_linked_rows_of_a_project() {
-    // [REL-5] 案件を指す行: タスクの project と、会議の project。
+    // [utest -> req~relations.backlinks-list~1, req~relations.backlinks-scope~1] 案件を指す行: タスクの project と、会議の project。
     let target = studio().join("Projects/Clinic Booking App.md");
     let mut got: Vec<(String, Option<String>, String)> = backlinks(&target, &tables())
         .into_iter()

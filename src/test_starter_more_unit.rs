@@ -57,7 +57,7 @@ fn now() -> (i64, i64) {
 #[cfg(unix)]
 #[test]
 fn test_st_4_create_refuses_when_a_folder_on_the_way_is_a_link() {
-    // [ST-4] 既にある根の中で、見本の置き場 board/ がリンク(台帳の外を指す)なら、理由を出してどれも書かない
+    // [utest -> req~starter.init-no-overwrite~1] 既にある根の中で、見本の置き場 board/ がリンク(台帳の外を指す)なら、理由を出してどれも書かない
     // (create_dir_all がリンクをたどって外に書くのを防ぐ)。リンクの先にも何も書かれない。
     let t = Tmp::new("link");
     let s = read_user(&kanban(&t.0.join("config"))).unwrap_or_else(|e| panic!("{e}"));
@@ -83,7 +83,7 @@ fn test_st_4_create_refuses_when_a_folder_on_the_way_is_a_link() {
 
 #[test]
 fn test_st_1_ledger_variant_without_marker_is_refused() {
-    // [ST-1][ST-3] ledger.ja/ に印が無いスターターは読めない(変種は丸ごと差し替えるので、日本語で作ると印の無い
+    // [utest -> req~starter.shape-layout~1, req~starter.shape-name~1, req~starter.user-skip-broken~1] ledger.ja/ に印が無いスターターは読めない(変種は丸ごと差し替えるので、日本語で作ると印の無い
     // 台帳ができるため)。警告は CLI-3 の形で、無い印のパスを名指す。
     let t = Tmp::new("variant");
     let cfg = t.0.join("config");
@@ -111,7 +111,7 @@ fn test_st_1_ledger_variant_without_marker_is_refused() {
 #[cfg(unix)]
 #[test]
 fn test_st_3_non_file_entries_in_a_starter_are_skipped() {
-    // [ST-3] 設定の置き場のスターターの中の FIFO(ファイルでないもの)は読まない(読むと一覧が止まる)。
+    // [utest -> req~starter.user-skip-broken~1, req~starter.user-no-side-effect~1] 設定の置き場のスターターの中の FIFO(ファイルでないもの)は読まない(読むと一覧が止まる)。
     let t = Tmp::new("fifo");
     let cfg = t.0.join("config");
     let dir = kanban(&cfg);
@@ -135,7 +135,7 @@ fn test_st_3_non_file_entries_in_a_starter_are_skipped() {
 
 #[test]
 fn test_st_3_hidden_folders_in_starters_are_not_starters() {
-    // [ST-3] `starters/.git` のような隠しフォルダは、スターターとして読まず、警告も出さない。
+    // [utest -> req~starter.user-shadow~1, req~starter.user-skip-broken~1, req~starter.user-no-side-effect~1] `starters/.git` のような隠しフォルダは、スターターとして読まず、警告も出さない。
     let t = Tmp::new("hidden");
     let cfg = t.0.join("config");
     kanban(&cfg);
@@ -149,7 +149,7 @@ fn test_st_3_hidden_folders_in_starters_are_not_starters() {
 #[cfg(unix)]
 #[test]
 fn test_st_3_a_linked_starter_folder_is_read() {
-    // [ST-3] `starters/<名前>` がシンボリックリンク(dotfiles の置き方)でも、そのスターターは読める。
+    // [utest -> req~starter.user-skip-broken~1, req~starter.user-no-side-effect~1] `starters/<名前>` がシンボリックリンク(dotfiles の置き方)でも、そのスターターは読める。
     // 中のファイルのリンクは、読む側で飛ばすまま。
     let t = Tmp::new("linked");
     let cfg = t.0.join("config");
@@ -172,7 +172,7 @@ fn test_st_3_a_linked_starter_folder_is_read() {
 
 #[test]
 fn test_st_3_unreadable_file_warning_names_the_file_in_cli_3_shape() {
-    // [ST-3] UTF-8 でないファイルのあるスターターは、`starters/<名前>: <中の相対パス>: 理由` の形で警告して飛ばす
+    // [utest -> req~starter.user-skip-broken~1] UTF-8 でないファイルのあるスターターは、`starters/<名前>: <中の相対パス>: 理由` の形で警告して飛ばす
     // (道筋が空の「: :」にしない)。
     let t = Tmp::new("notext");
     let cfg = t.0.join("config");

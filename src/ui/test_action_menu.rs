@@ -1,5 +1,5 @@
 //! その場の操作の一覧(SR-24)と、前置きのキーの続きの案内(SR-25)の受け入れの試験。
-//! 記録: specs/_changes/2026-10-05-action-menu.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-05-action-menu.md。
 //!
 //! 実装より先に、実装を見ずに書いた。まだ無い動作とモードは名前で引く(`Action::by_name("action_menu")`・
 //! `Mode::by_name("menu")`)。一覧の中身は、窓の枠(開く前と後で変わった桁のうち、四隅が角の文字の矩形)の
@@ -219,7 +219,7 @@ pub(super) fn band(s: &str) -> String {
 
 #[test]
 fn test_sr_24_x_opens_menu_with_sections_and_keys() {
-    // [SR-24] 表のモードの既定 `x` = action_menu。status のセルで `x` → 一覧のモードになり、
+    // [utest -> req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1] 表のモードの既定 `x` = action_menu。status のセルで `x` → 一覧のモードになり、
     // 「セル」「列」「行」の節の見出しと、「編集  Enter」「この列で並べ替え  s」の行が出る。
     let (_t, mut a) = make("sr24open", NOTES);
     assert_eq!(
@@ -250,7 +250,7 @@ fn test_sr_24_x_opens_menu_with_sections_and_keys() {
 
 #[test]
 fn test_sr_24_table_rows_stay_outside_window() {
-    // [SR-24] 一覧は表の上に重ねる窓で、窓の外の表は消さない: 窓の行の、窓より左の桁には開く前と同じ
+    // [utest -> req~screen.action-menu-overlay~1] 一覧は表の上に重ねる窓で、窓の外の表は消さない: 窓の行の、窓より左の桁には開く前と同じ
     // 表の文字(b.md・c.md の行)が残る。
     let (_t, mut a) = make("sr24outside", NOTES);
     let (before, after) = open_menu(&mut a, 0);
@@ -272,7 +272,7 @@ fn test_sr_24_table_rows_stay_outside_window() {
 
 #[test]
 fn test_sr_24_enter_on_sort_item_sorts_like_s() {
-    // [SR-24] 一覧の並びは SR-24 の文の順(セル: 編集・空にする・コピー・エディタで開く・詳細、
+    // [utest -> req~screen.action-menu-sections~1] 一覧の並びは SR-24 の文の順(セル: 編集・空にする・コピー・エディタで開く・詳細、
     // 列: この列で並べ替え …)。書けるセルでは先頭から ↓ 5回で「この列で並べ替え」。
     // Enter → 一覧が閉じ、`s` を直接押したのと同じ並びになる。
     let want = sorted_by_s("sr24enter-s");
@@ -292,7 +292,7 @@ fn test_sr_24_enter_on_sort_item_sorts_like_s() {
 
 #[test]
 fn test_sr_24_jk_move_in_menu() {
-    // [SR-24] 一覧の中は `j` `k` でも動く: `j` 6回・`k` 1回で「この列で並べ替え」→ Enter で `s` と同じ。
+    // [utest -> req~screen.action-menu-enter~1] 一覧の中は `j` `k` でも動く: `j` 6回・`k` 1回で「この列で並べ替え」→ Enter で `s` と同じ。
     let want = sorted_by_s("sr24jk-s");
     let (_t, mut a) = make("sr24jk", NOTES);
     open_menu(&mut a, 0);
@@ -308,7 +308,7 @@ fn test_sr_24_jk_move_in_menu() {
 
 #[test]
 fn test_sr_24_item_key_runs_action() {
-    // [SR-24] 一覧で行に添えたキー `s` を押す → 「この列で並べ替え」を実行して閉じる(`s` と同じ並び)。
+    // [utest -> req~screen.action-menu-item-key~1] 一覧で行に添えたキー `s` を押す → 「この列で並べ替え」を実行して閉じる(`s` と同じ並び)。
     let want = sorted_by_s("sr24key-s");
     let (_t, mut a) = make("sr24key", NOTES);
     open_menu(&mut a, 0);
@@ -320,7 +320,7 @@ fn test_sr_24_item_key_runs_action() {
 
 #[test]
 fn test_sr_24_readonly_cell_hides_edit_and_clear() {
-    // [SR-24] [WB-5] 読むだけのセル(BOM のノート)で `x` → 一覧に「編集」「空にする」が無い。
+    // [utest -> req~screen.action-menu-hide-unavailable~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-action-menu~1] 読むだけのセル(BOM のノート)で `x` → 一覧に「編集」「空にする」が無い。
     // 対照: 書けるノートのセルでは両方ある。
     let (_t, mut a) = make(
         "sr24ro",
@@ -373,7 +373,7 @@ fn test_sr_24_readonly_cell_hides_edit_and_clear() {
 
 #[test]
 fn test_sr_24_esc_closes_without_doing_anything() {
-    // [SR-24] Esc → 何もせず閉じて表に戻る(ためる変更 0、並びも位置も同じ、表の画面も同じ)。
+    // [utest -> req~screen.action-menu-esc~1, req~screen.action-menu-too-low~1] Esc → 何もせず閉じて表に戻る(ためる変更 0、並びも位置も同じ、表の画面も同じ)。
     let (_t, mut a) = make("sr24esc", NOTES);
     col_named(&mut a, "status");
     a.row = 1;
@@ -394,7 +394,7 @@ fn test_sr_24_esc_closes_without_doing_anything() {
 
 #[test]
 fn test_sr_24_rebound_key_opens_menu() {
-    // [SR-24] [SR-4] 設定 `[keys.table] "m" = "action_menu"` → `m` で一覧が開く。
+    // [utest -> req~screen.action-menu-open-key~1, req~screen.action-menu-too-low~1, req~screen.key-table~1] 設定 `[keys.table] "m" = "action_menu"` → `m` で一覧が開く。
     let tmp = Tmp::new("sr24rebind");
     for (n, t) in NOTES {
         tmp.write(n, t);
@@ -414,7 +414,7 @@ fn test_sr_24_rebound_key_opens_menu() {
 
 #[test]
 fn test_sr_24_bulk_item_only_with_marks() {
-    // [SR-24] 印の無いとき「選んだ行にまとめて入れる」は無く、2行に印(Space)を付けると出る。
+    // [utest -> req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~screen.action-menu-bulk-hidden~1] 印の無いとき「選んだ行にまとめて入れる」は無く、2行に印(Space)を付けると出る。
     let (_t, mut a) = make("sr24bulk", NOTES);
     let (before, after) = open_menu(&mut a, 0);
     assert_eq!(a.mode, menu_mode(), "x で一覧が開かない");
@@ -442,7 +442,7 @@ fn test_sr_24_bulk_item_only_with_marks() {
 
 #[test]
 fn test_sr_24_english_menu_has_no_japanese() {
-    // [SR-24] [SR-23] 英語の画面で `x` → 一覧に日本語の文字が無い。
+    // [utest -> req~screen.action-menu-hide-unavailable~1, req~screen.action-menu-overlay~1, req~screen.locales-two-languages~1] 英語の画面で `x` → 一覧に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr24en", EN_NOTES);
     let (before, after) = open_menu(&mut a, 0);
@@ -461,7 +461,7 @@ fn test_sr_24_english_menu_has_no_japanese() {
 
 #[test]
 fn test_sr_25_prefix_g_shows_next_keys_then_moves() {
-    // [SR-25] 表で `g` → 下の帯が続きのキーの案内(`g` と「先頭の行」)になる。続けて `g` → 先頭の行へ動き、
+    // [utest -> req~screen.prefix-hints-show~1, req~screen.prefix-hints-restore~1] 表で `g` → 下の帯が続きのキーの案内(`g` と「先頭の行」)になる。続けて `g` → 先頭の行へ動き、
     // 帯が元(「Enter 編集」などの形)に戻る。
     let (_t, mut a) = make("sr25g", NOTES);
     a.row = 2;
@@ -498,7 +498,7 @@ fn test_sr_25_prefix_g_shows_next_keys_then_moves() {
 
 #[test]
 fn test_sr_25_prefix_then_esc_restores_band() {
-    // [SR-25] `g` のあと Esc → 動かず、帯が元に戻る。
+    // [utest -> req~screen.prefix-hints-restore~1] `g` のあと Esc → 動かず、帯が元に戻る。
     let (_t, mut a) = make("sr25esc", NOTES);
     a.row = 2;
     a.scroll_into_view();
@@ -522,7 +522,7 @@ fn test_sr_25_prefix_then_esc_restores_band() {
 
 #[test]
 fn test_sr_25_configured_prefix_shows_hint() {
-    // [SR-25] 設定で `[keys.table] "z z" = "bottom"` を足す → `z` で帯に `z` と「末尾の行」。続けて `z` → 末尾の行。
+    // [utest -> req~screen.prefix-hints-show~1, req~screen.prefix-hints-restore~1, req~screen.prefix-hints-menu~1] 設定で `[keys.table] "z z" = "bottom"` を足す → `z` で帯に `z` と「末尾の行」。続けて `z` → 末尾の行。
     let tmp = Tmp::new("sr25z");
     for (n, t) in NOTES {
         tmp.write(n, t);

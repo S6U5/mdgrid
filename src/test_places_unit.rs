@@ -21,7 +21,7 @@ fn place(name: &str, group: &str, path: &str) -> Place {
 
 #[test]
 fn test_cli_18_places_round_trip() {
-    // [CLI-18] 登録して読み戻す。同じ名前は置き換え、ほかは後ろに足す。ビューも残る。
+    // [utest -> req~cli.places-store~1, req~cli.places-replace-confirm~1] 登録して読み戻す。同じ名前は置き換え、ほかは後ろに足す。ビューも残る。
     let d = tmp("round");
     save(&d, place("タスク", "仕事", "/n/Tasks")).unwrap();
     let mut b = place("本", "趣味", "/n/Books");
@@ -34,6 +34,7 @@ fn test_cli_18_places_round_trip() {
     let _ = std::fs::remove_dir_all(&d);
 }
 
+// [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-replace-confirm~1, req~cli.places-tilde~1, req~cli.places-bad-line~1, req~cli.places-no-note-write~1]
 #[test]
 fn test_cli_18_missing_file_is_empty() {
     let d = tmp("none");
@@ -43,7 +44,7 @@ fn test_cli_18_missing_file_is_empty() {
 
 #[test]
 fn test_cli_18_bad_rows_warn_and_skip() {
-    // [CLI-18] path の無い行・名前の重なり・表でない値は、警告にして飛ばす。ほかは読む。
+    // [utest -> req~cli.places-bad-line~1] path の無い行・名前の重なり・表でない値は、警告にして飛ばす。ほかは読む。
     let _l = scoped(Lang::Ja);
     let text = r#"
 [[place]]
@@ -70,6 +71,7 @@ view = ""
     assert!(warns[1].starts_with("places.toml: place[3]: "), "{warns:?}");
 }
 
+// [utest -> req~cli.places-store~1, req~cli.places-bad-line~1]
 #[test]
 fn test_cli_18_broken_toml_warns() {
     let _l = scoped(Lang::Ja);
@@ -81,7 +83,7 @@ fn test_cli_18_broken_toml_warns() {
 
 #[test]
 fn test_cli_18_tilde_is_home() {
-    // [CLI-18] 先頭の `~` はホームのフォルダ。途中の `~` はそのまま。
+    // [utest -> req~cli.places-tilde~1] 先頭の `~` はホームのフォルダ。途中の `~` はそのまま。
     let Some(home) = std::env::var_os("HOME").map(PathBuf::from) else {
         return;
     };
@@ -94,7 +96,7 @@ fn test_cli_18_tilde_is_home() {
 
 #[test]
 fn test_cli_19_grouped_order() {
-    // [CLI-19] 分類は最初に出た順にまとめ、分類の中は places.toml の順。
+    // [utest -> req~cli.places-list-order~1] 分類は最初に出た順にまとめ、分類の中は places.toml の順。
     let ps = vec![
         place("a", "仕事", "/a"),
         place("b", "趣味", "/b"),

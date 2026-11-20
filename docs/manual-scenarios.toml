@@ -92,6 +92,20 @@ wait = { ja = "作った", en = "created" }
 text = { ja = "名前を打って Ctrl+S で、すぐにファイルができる(Enter は次の欄へ)。作った行が選ばれる。", en = "Type a name and press Ctrl+S: the file is created at once (Enter moves to the next field), and its row is selected." }
 
 [[shot]]
+id = "delete-note"
+title = { ja = "ノートを消す前の確かめ", en = "Confirming before a note is deleted" }
+keys = [":", "text:delete_note", "Enter"]
+wait = { ja = "消すノート", en = "Note to delete" }
+text = { ja = "「ノートを消す」は、名前を示して確かめる。y と Enter でごみ箱(.trash/)へ動かし、ほかの答えと Esc では何もしない。", en = "\"Delete the note\" shows the name and asks first. Type y and Enter to move it to the trash (.trash/); any other answer, or Esc, does nothing." }
+
+[[shot]]
+id = "trash-restore"
+title = { ja = "ごみ箱から戻す", en = "Restore from the trash" }
+keys = [":", "text:delete_note", "Enter", "text:y", "Enter", ":", "text:restore_note", "Enter"]
+wait = { ja = "ごみ箱から戻すノート", en = "Note to restore" }
+text = { ja = "ごみ箱のノートが、名前・元の場所・消した日時つきで並ぶ。選んで Enter で元の場所に戻る。", en = "The notes in the trash are listed with their name, original place and the time they were deleted. Pick one and press Enter to put it back." }
+
+[[shot]]
 id = "palette-search"
 title = { en = "Find a command by name", ja = "コマンドを名前で探す" }
 keys = [":", "text:save"]
@@ -791,7 +805,7 @@ id = "starter-tasks"
 title = { en = "The tasks starter", ja = "タスクのスターター" }
 command = ["./target/release/mdgrid", "examples/tasks"]
 ready = "Tasks"
-text = { en = "examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Doing, Waiting, Done), due date, priority and tags.", ja = "examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・進行中・待ち・完了)、期限、優先度、タグ。" }
+text = { en = "examples/tasks was made with `--init-workspace --starter tasks --with-samples`: one note per task, tabs by status (Open, Overdue, Doing, Waiting, Done), due date, priority and tags.", ja = "examples/tasks は `--init-workspace --starter tasks --with-samples` で作った台帳。1件1ノートのタスクで、状態のタブ(未完了・期限切れ・進行中・待ち・完了)、期限、優先度、タグ。" }
 
 [[shot]]
 id = "starter-reading"
@@ -815,3 +829,30 @@ title = { en = "Open a CSV file", ja = "CSV のファイルを開く" }
 command = ["./target/release/mdgrid", "examples/studio/equipment.csv"]
 ready = "equipment"
 text = { en = "Pass a .csv or .tsv file: the first line names the columns and the rest are rows. Editing, the diff before saving, filters, sorting and groups work as they do for a folder of notes.", ja = ".csv か .tsv のファイルを渡すと、1行目が列の名前、2行目からが行の表で開く。値の直し・保存の前の差分・絞り込み・並べ替え・グループ分けは、ノートのフォルダと同じ。" }
+
+[[shot]]
+id = "gantt"
+title = { en = "The gantt screen", ja = "ガントの画面" }
+command = ["./target/release/mdgrid", "examples/tasks"]
+ready = "Tasks"
+keys = ["C"]
+wait = { en = "Gantt:", ja = "ガント:" }
+text = { en = "C on a table with a gantt setting (or date columns named like start and due): the rows of the current view as bars from the start date to the due date, with today marked. + and - switch the unit between day, week and month.", ja = "ガントの設定(か start・due のような日付の列)のある表で C。今のビューの行が開始から期限までの横棒になり、今日に印が付く。+ と - で日・週・月の単位を切り替える。" }
+
+[[shot]]
+id = "kanban"
+title = { en = "The kanban screen", ja = "カンバンの画面" }
+command = ["./target/release/mdgrid", "examples/tasks"]
+ready = "Tasks"
+keys = ["B"]
+wait = { en = "Kanban:", ja = "カンバン:" }
+text = { en = "B on a table with a status column: the rows of the current view as cards, one lane per status in the order of the allowed values. H and L move a card to the next lane and rewrite its status as an unsaved change.", ja = "状態の列のある表で B。今のビューの行が、決まりの値の順に並んだ状態ごとのレーンの札になる。H と L で札を隣のレーンへ動かすと、状態が未保存の変更として書き換わる。" }
+
+[[shot]]
+id = "chart"
+title = { en = "The chart screen", ja = "グラフの画面" }
+command = ["./target/release/mdgrid", "examples/tasks"]
+ready = "Tasks"
+keys = ["P"]
+wait = { en = "Chart:", ja = "グラフ:" }
+text = { en = "P on a table: the rows of the current view counted into a chart. The tasks starter opens its first chart from the marker, tasks per status; Tab switches between bar, stacked bar, line, scatter and heatmap, and x, y and b choose the columns.", ja = "表で P。今のビューの行を数えたグラフになる。タスクのスターターは印に書いた最初のグラフ(状態ごとの数)で開く。Tab で棒・積み上げ棒・折れ線・散布図・ヒートマップを切り替え、x・y・b で列を選び直す。" }

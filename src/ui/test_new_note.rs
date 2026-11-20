@@ -1,6 +1,6 @@
 //! 表から新しいノートを作る(new-note)の画面の受け入れ試験(タスク 2)。CE-25・CE-26・CE-27
 //! (関係: CE-2・CE-20・CE-16・WB-15・SR-4・SR-14)。
-//! 仕様: specs/cell-edit/spec.md、記録 specs/_changes/2026-10-02-new-note.md。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md、記録 specs/_history/decidespec/_changes/2026-10-02-new-note.md。
 //! 画面の実装を見ずに、キー・クリック・画面の文字・ファイルで確かめる。今日は 2026-10-02 に固定する。
 //!
 //! 仮定(実装役に渡す):
@@ -222,7 +222,7 @@ fn goto_tab(a: &mut App, name: &str) {
 
 #[test]
 fn test_ce_25_header_button_click_creates_note() {
-    // [CE-25] ビューの帯の行の右の端に「+ 新規」。クリックで名前の欄 → 名前を打って Enter →
+    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-name~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-filter-values~1] ビューの帯の行の右の端に「+ 新規」。クリックで名前の欄 → 名前を打って Enter →
     // 開いたフォルダに `<名前>.md` ができ、表にその行が出て選ばれている。未保存は増えない。
     let tmp = vault("ce25click");
     let mut a = boot(&tmp, Config::default(), false);
@@ -240,7 +240,7 @@ fn test_ce_25_header_button_click_creates_note() {
 
 #[test]
 fn test_ce_25_key_a_creates_note() {
-    // [CE-25][CE-27] 表のモードの `a` で名前の欄。作るのは新しいファイルだけで、中身は空(値が無いので)。
+    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~cell-edit.new-note-config-key~1, req~cell-edit.new-note-config-set~1, req~cell-edit.new-note-config-filter-first~1] 表のモードの `a` で名前の欄。作るのは新しいファイルだけで、中身は空(値が無いので)。
     let tmp = vault("ce25a");
     let mut a = boot(&tmp, Config::default(), false);
     let before = snapshot(&tmp.notes());
@@ -265,7 +265,7 @@ fn test_ce_25_key_a_creates_note() {
 
 #[test]
 fn test_ce_25_palette_creates_note() {
-    // [CE-25][SR-14] パレット(`:`)の「新しいノート」でも名前の欄が開く。
+    // [utest -> req~cell-edit.new-note-start-keys~1, req~screen.palette-fuzzy~1] パレット(`:`)の「新しいノート」でも名前の欄が開く。
     let tmp = vault("ce25pal");
     let mut a = boot(&tmp, Config::default(), false);
     palette(&mut a, "新しいノート");
@@ -277,7 +277,7 @@ fn test_ce_25_palette_creates_note() {
 
 #[test]
 fn test_ce_25_view_filter_value_is_prefilled_and_row_stays() {
-    // [CE-25] 「status が todo」のビュー(Keep の値1つ)で作る → `---\nstatus: todo\n---\n` で、
+    // [utest -> req~cell-edit.new-note-filter-values~1] 「status が todo」のビュー(Keep の値1つ)で作る → `---\nstatus: todo\n---\n` で、
     // 行がそのビューに残って選ばれる。
     let tmp = vault("ce25view");
     std::fs::create_dir_all(conf_dir(&tmp)).unwrap();
@@ -303,7 +303,7 @@ fn test_ce_25_view_filter_value_is_prefilled_and_row_stays() {
 
 #[test]
 fn test_ce_25_subfolder_name_creates_folder() {
-    // [CE-25] `プロジェクト/新しい` → 下のフォルダ(無ければ作る)に作る。
+    // [utest -> req~cell-edit.new-note-subfolder~1] `プロジェクト/新しい` → 下のフォルダ(無ければ作る)に作る。
     let tmp = vault("ce25sub");
     let mut a = boot(&tmp, Config::default(), false);
     ch(&mut a, 'a');
@@ -314,7 +314,7 @@ fn test_ce_25_subfolder_name_creates_folder() {
 
 #[test]
 fn test_ce_25_existing_name_refused_and_retype() {
-    // [CE-25][WB-2] 既にある名前 → 作らず理由をメッセージに出し、欄は開いたまま。打ち直して作れる。
+    // [utest -> req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-readonly~1, req~cell-edit.new-note-no-overwrite~1, req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1] 既にある名前 → 作らず理由をメッセージに出し、欄は開いたまま。打ち直して作れる。
     let tmp = vault("ce25dup");
     let mut a = boot(&tmp, Config::default(), false);
     let before = snapshot(&tmp.notes());
@@ -335,7 +335,7 @@ fn test_ce_25_existing_name_refused_and_retype() {
 
 #[test]
 fn test_ce_25_outside_folder_refused() {
-    // [CE-25] `../外` → 開いたフォルダの外には作らず、理由を出し、欄は開いたまま。
+    // [utest -> req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-refuse-outside~1] `../外` → 開いたフォルダの外には作らず、理由を出し、欄は開いたまま。
     let tmp = vault("ce25out");
     let mut a = boot(&tmp, Config::default(), false);
     let before = snapshot(&tmp.0);
@@ -353,7 +353,7 @@ fn test_ce_25_outside_folder_refused() {
 
 #[test]
 fn test_ce_25_esc_creates_nothing() {
-    // [CE-25] 名前を打って Esc → 何も作らず表に戻る。
+    // [utest -> req~cell-edit.new-note-name~1, req~cell-edit.new-note-folder-pick~1] 名前を打って Esc → 何も作らず表に戻る。
     let tmp = vault("ce25esc");
     let mut a = boot(&tmp, Config::default(), false);
     let before = snapshot(&tmp.notes());
@@ -370,7 +370,7 @@ fn test_ce_25_esc_creates_nothing() {
 
 #[test]
 fn test_ce_25_readonly_creates_nothing() {
-    // [CE-25][WB-15] `--readonly` では `a` もクリックも作らず「読むだけ」と出す。
+    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-readonly~1, req~cli.readonly~1] `--readonly` では `a` もクリックも作らず「読むだけ」と出す。
     let tmp = vault("ce25ro");
     let mut a = boot(&tmp, Config::default(), true);
     let before = snapshot(&tmp.notes());
@@ -394,7 +394,7 @@ fn test_ce_25_readonly_creates_nothing() {
 
 #[test]
 fn test_ce_26_ask_number_then_date_with_calendar() {
-    // [CE-26][CE-2][CE-20] `ask = ["priority","due"]` → 名前の Enter のあと priority の入力、
+    // [utest -> req~cell-edit.new-note-form-typed~1, req~cell-edit.column-type-order~1, req~cell-edit.calendar~1] `ask = ["priority","due"]` → 名前の Enter のあと priority の入力、
     // Enter で due の入力(カレンダーが出る)、Enter で作る。priority と due(囲まない日付)が入る。
     let tmp = vault("ce26ask");
     let cfg = config("[new_note]\nask = [\"priority\", \"due\"]\n");
@@ -435,7 +435,7 @@ fn test_ce_26_ask_number_then_date_with_calendar() {
 
 #[test]
 fn test_ce_26_empty_answer_is_not_written() {
-    // [CE-26] priority を空で Enter → priority の行は無い。
+    // [utest -> req~cell-edit.new-note-form-ask~1, req~cell-edit.new-note-form-skip-empty~1] priority を空で Enter → priority の行は無い。
     let tmp = vault("ce26empty");
     let cfg = config("[new_note]\nask = [\"priority\", \"due\"]\n");
     let mut a = boot(&tmp, cfg, false);
@@ -454,7 +454,7 @@ fn test_ce_26_empty_answer_is_not_written() {
 
 #[test]
 fn test_ce_26_esc_while_asking_creates_nothing() {
-    // [CE-26] 聞いている途中の Esc → 何も作らない。
+    // [utest -> req~cell-edit.new-note-form-move~1] 聞いている途中の Esc → 何も作らない。
     let tmp = vault("ce26esc");
     let cfg = config("[new_note]\nask = [\"priority\"]\n");
     let mut a = boot(&tmp, cfg, false);
@@ -479,7 +479,7 @@ fn test_ce_26_esc_while_asking_creates_nothing() {
 
 #[test]
 fn test_ce_27_name_template_has_today() {
-    // [CE-27] `name = "{date} "` → 名前の欄が今日の日付と空白で始まる。続けて打った名前で作る。
+    // [utest -> req~cell-edit.new-note-config-name~1] `name = "{date} "` → 名前の欄が今日の日付と空白で始まる。続けて打った名前で作る。
     let tmp = vault("ce27name");
     let cfg = config("[new_note]\nname = \"{date} \"\n");
     let mut a = boot(&tmp, cfg, false);
@@ -499,7 +499,7 @@ fn test_ce_27_name_template_has_today() {
 
 #[test]
 fn test_ce_27_rebind_n_to_new_note() {
-    // [CE-27][SR-4] `[keys.table] "n" = "new_note"` → `n` でも名前の欄が開く。
+    // [utest -> req~cell-edit.new-note-config-action~1, req~cell-edit.new-note-config-name~1, req~screen.key-table~1] `[keys.table] "n" = "new_note"` → `n` でも名前の欄が開く。
     let tmp = vault("ce27key");
     let cfg = config("[keys.table]\n\"n\" = \"new_note\"\n");
     let mut a = boot(&tmp, cfg, false);
@@ -516,7 +516,7 @@ fn test_ce_27_rebind_n_to_new_note() {
 
 #[test]
 fn test_ce_27_help_lists_new_note() {
-    // [CE-27][SR-5] ヘルプに新しいノートの行(`a` と「新しいノート」)がある。
+    // [utest -> req~cell-edit.new-note-config-key~1, req~screen.help~1] ヘルプに新しいノートの行(`a` と「新しいノート」)がある。
     let tmp = vault("ce27help");
     let mut a = boot(&tmp, Config::default(), false);
     ch(&mut a, '?');

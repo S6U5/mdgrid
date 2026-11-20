@@ -1,6 +1,6 @@
 //! 画面の文言を言語ごとの台帳(locales/*.toml)に置く(SR-23)の受け入れ試験。
 //! 台帳の文言の名前・並び・文が、実行ファイルの文言(`Msg`)と同じで、`src/i18n.rs` に文言の文が残っていない。
-//! 記録: specs/_changes/2026-10-13-locales.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-13-locales.md(タスク #1)。
 
 use mdgrid::i18n::Msg;
 use std::path::Path;
@@ -32,7 +32,7 @@ fn ledger(code: &str) -> Vec<(String, String)> {
 
 #[test]
 fn test_sr_23_locales_en_matches_msgs() {
-    // [SR-23] 英語の台帳の名前と並びと文が、Msg の全部と同じ。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-ledger~1] 英語の台帳の名前と並びと文が、Msg の全部と同じ。
     let en = ledger("en");
     assert_eq!(en.len(), Msg::ALL.len());
     for ((k, v), m) in en.iter().zip(Msg::ALL.iter()) {
@@ -43,7 +43,7 @@ fn test_sr_23_locales_en_matches_msgs() {
 
 #[test]
 fn test_sr_23_locales_ja_matches_msgs() {
-    // [SR-23] 日本語の台帳も同じ名前・並びで、文が Msg の日本語と同じ。
+    // [utest -> req~screen.locales-ledger~1] 日本語の台帳も同じ名前・並びで、文が Msg の日本語と同じ。
     let ja = ledger("ja");
     assert_eq!(ja.len(), Msg::ALL.len());
     for ((k, v), m) in ja.iter().zip(Msg::ALL.iter()) {
@@ -54,7 +54,7 @@ fn test_sr_23_locales_ja_matches_msgs() {
 
 #[test]
 fn test_sr_23_locales_not_in_source() {
-    // [SR-23] src/i18n.rs に文言の表(`msgs!`)が残っていない。
+    // [utest -> req~screen.locales-two-languages~1] src/i18n.rs に文言の表(`msgs!`)が残っていない。
     let src = std::fs::read_to_string(root().join("src/i18n.rs")).unwrap();
     assert!(!src.contains("msgs! {"), "文言の表は台帳へ");
     assert!(

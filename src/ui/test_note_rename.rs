@@ -32,7 +32,7 @@ fn notes(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_ce_34_rename_and_stage_link_rewrites() {
-    // [CE-34] 会議 → 会議(10月)。ファイルの名前が変わり、行は新しい名前で選ばれたまま。
+    // [utest -> req~cell-edit.rename-note-menu~1, req~cell-edit.rename-note-links~1] 会議 → 会議(10月)。ファイルの名前が変わり、行は新しい名前で選ばれたまま。
     // メモの project、日記の related の要素と see を書き換える変更が3件ためられる。会議室は書き換えない。
     let (t, mut a) = notes("ce34a");
     select(&mut a, "会議");
@@ -82,7 +82,7 @@ fn test_ce_34_rename_and_stage_link_rewrites() {
 
 #[test]
 fn test_ce_34_refuses_bad_names_and_pending_rows() {
-    // [CE-34] / を含む名前・もうある名前は断り、ファイルはそのまま。ためた変更のある行は始めない。
+    // [utest -> req~cell-edit.rename-note-refuse-existing~1, req~cell-edit.rename-note-refuse-pending~1] / を含む名前・もうある名前は断り、ファイルはそのまま。ためた変更のある行は始めない。
     let (t, mut a) = notes("ce34b");
     select(&mut a, "会議");
     rename(&mut a, "a/b");
@@ -114,8 +114,46 @@ fn test_ce_34_refuses_bad_names_and_pending_rows() {
 }
 
 #[test]
+fn test_ce_34_refuses_unsafe_note() {
+    // [utest -> req~cell-edit.rename-note-refuse-unsafe~1] 読むだけのノート(書き込めない権限。write-back.refuse-unsafe-notes)の行でノートの名前を変える → 断り、理由が出て、ファイルの名前もバイトもそのまま。
+    let (t, a0) = make("ce34u", &[("固定.md", "---\na: 1\n---\n")]);
+    drop(a0);
+    let p = t.notes().join("固定.md");
+    let orig = std::fs::metadata(&p).unwrap().permissions();
+    let mut perm = orig.clone();
+    perm.set_readonly(true);
+    std::fs::set_permissions(&p, perm).unwrap();
+    let mut a = super::test_screen::app_of(&t, ColorMode::None);
+    select(&mut a, "固定");
+    rename(&mut a, "改名");
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("書き込めない") || m.contains("読むだけ"), "{m}");
+    assert!(!m.contains("に変えた"), "{m}");
+    assert!(p.exists() && !t.notes().join("改名.md").exists());
+    assert_eq!(std::fs::read_to_string(&p).unwrap(), "---\na: 1\n---\n");
+    // 読み取り専用の属性のファイルは Windows で消せないので、片付けの前に元の権限へ戻す。
+    std::fs::set_permissions(&p, orig).unwrap();
+}
+
+#[test]
+fn test_ce_34_refuses_duplicate_key_note() {
+    // [utest -> req~cell-edit.rename-note-refuse-unsafe~1] 受け入れの例のとおり、`a: 1\na: 2` を持つノート(読むだけ)の行でノートの名前を変える → 断り、ファイルの名前もバイトもそのまま。
+    let (t, mut a) = make("ce34d", &[("重複.md", "---\na: 1\na: 2\n---\n")]);
+    select(&mut a, "重複");
+    rename(&mut a, "改名");
+    let m = a.message.clone().unwrap_or_default();
+    assert!(!m.contains("に変えた"), "{m}");
+    let p = t.notes().join("重複.md");
+    assert!(p.exists() && !t.notes().join("改名.md").exists());
+    assert_eq!(
+        std::fs::read_to_string(&p).unwrap(),
+        "---\na: 1\na: 2\n---\n"
+    );
+}
+
+#[test]
 fn test_ce_34_menu_offers_rename_note() {
-    // [CE-34] 操作の一覧の行の節に「ノートの名前を変える」が出る。
+    // [utest -> req~cell-edit.rename-note-menu~1, req~cell-edit.rename-note-links~1] 操作の一覧の行の節に「ノートの名前を変える」が出る。
     let (_t, mut a) = notes("ce34c");
     select(&mut a, "会議");
     let items = super::menu::items(&a);

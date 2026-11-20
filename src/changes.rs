@@ -80,6 +80,19 @@ impl Step {
     }
 }
 
+/// 一緒に入れる値(cell-edit.then): 直した値の文字 → 同じ行にためる (列, 値)。
+pub type Follow = BTreeMap<String, Vec<(String, NewValue)>>;
+
+/// 一緒に入れる値を引く鍵(直した値の文字)。文字・真偽・整数・日付の値だけ。
+fn follow_key(v: &NewValue) -> Option<String> {
+    match v {
+        NewValue::Str(s) | NewValue::Date(s) => Some(s.clone()),
+        NewValue::Bool(b) => Some(b.to_string()),
+        NewValue::Int(n) => Some(n.to_string()),
+        _ => None,
+    }
+}
+
 /// ためる変更: (行, 列) → 新しい値、行ごとの基準、取り消しとやり直しの積み、外で変更の印。
 #[derive(Debug, Default)]
 pub struct Changes {
@@ -87,6 +100,8 @@ pub struct Changes {
     states: BTreeMap<RowId, RowState>,
     undo: Vec<Step>,
     redo: Vec<Step>,
+    /// 利用者の手でやり直しの積みを消した回数(ノートの作成・削除のやり直しが古くなったかを画面が見る)。
+    cleared: u64,
 }
 
 impl Changes {
@@ -107,6 +122,22 @@ impl Changes {
         let change = self.plan(src, row, col, Some(&v), &mut bases)?;
         self.commit(change.into_iter().collect(), bases, true);
         Ok(())
+    }
+
+    /// `set` と同じで、一緒に入れる値 `follow` も同じ1手でためる(`set_each_then`)。
+    pub fn set_then(
+        &mut self,
+        src: &dyn Source,
+        row: &RowId,
+        col: &str,
+        v: NewValue,
+        follow: &Follow,
+    ) -> Result<(), Skip> {
+        let items = [(row.clone(), Some(v))];
+        match self.set_each_then(src, col, &items, follow).pop() {
+            Some(s) => Err(s),
+            None => Ok(()),
+        }
     }
 
     /// 複数の行に同じ値を1手でためる。直せない行は飛ばして返す(CE-10)。
@@ -130,6 +161,19 @@ impl Changes {
         col: &str,
         items: &[(RowId, Option<NewValue>)],
     ) -> Vec<Skip> {
+        self.set_each_then(src, col, items, &Follow::new())
+    }
+
+    /// `set_each` と同じで、`col` をある値にためた行には、`follow`(値の文字 → 一緒に入れる (列, 値))の値も同じ1手で
+    /// ためる(cell-edit.then)。ためた値を別の値に直したか外したときは、前の値で一緒に入れた列のためた値を外す。
+    /// 一緒に入れる列が直せないセルなら、その列だけ飛ばす(理由は返さない)。
+    pub fn set_each_then(
+        &mut self,
+        src: &dyn Source,
+        col: &str,
+        items: &[(RowId, Option<NewValue>)],
+        follow: &Follow,
+    ) -> Vec<Skip> {
         let mut bases = BTreeMap::new();
         let mut cells = Vec::new();
         let mut skips = Vec::new();
@@ -139,7 +183,30 @@ impl Changes {
                 continue;
             }
             match self.plan(src, row, col, v.as_ref(), &mut bases) {
-                Ok(Some(c)) => cells.push(c),
+                Ok(Some(c)) => {
+                    let of = |v: &Option<NewValue>| {
+                        v.as_ref()
+                            .and_then(follow_key)
+                            .and_then(|k| follow.get(&k))
+                            .map(Vec::as_slice)
+                            .unwrap_or_default()
+                    };
+                    let (old, new) = (of(&c.before), of(&c.after));
+                    cells.push(c);
+                    for (fc, fv) in new.iter().filter(|(fc, _)| fc != col) {
+                        if let Ok(Some(c)) = self.plan(src, row, fc, Some(fv), &mut bases) {
+                            cells.push(c);
+                        }
+                    }
+                    for (fc, _) in old {
+                        if fc == col || new.iter().any(|(c, _)| c == fc) {
+                            continue;
+                        }
+                        if let Ok(Some(c)) = self.plan(src, row, fc, None, &mut bases) {
+                            cells.push(c);
+                        }
+                    }
+                }
                 Ok(None) => {}
                 Err(s) => skips.push(s),
             }
@@ -164,6 +231,27 @@ impl Changes {
         self.apply(&mut step, true);
         self.undo.push(step);
         true
+    }
+
+    /// 取り消せる手の数(画面が、ノートの作成・削除の手との前後を決めるのに使う)。
+    pub fn undo_depth(&self) -> usize {
+        self.undo.len()
+    }
+
+    /// やり直せる手の数。
+    pub fn redo_depth(&self) -> usize {
+        self.redo.len()
+    }
+
+    /// 利用者の新しい手でやり直しの積みを消した回数。
+    pub fn redo_epoch(&self) -> u64 {
+        self.cleared
+    }
+
+    /// 新しい手(ノートの作成・削除)のあと: やり直しの積みを消す(ためる変更の新しい手と同じ)。
+    pub fn clear_redo(&mut self) {
+        self.redo.clear();
+        self.cleared += 1;
     }
 
     pub fn pending(&self, row: &RowId, col: &str) -> Option<&NewValue> {
@@ -560,7 +648,7 @@ impl Changes {
         }
         self.undo.push(Step { cells, rows });
         if clear_redo {
-            self.redo.clear();
+            self.clear_redo();
         }
     }
 

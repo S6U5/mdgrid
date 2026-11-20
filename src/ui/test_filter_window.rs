@@ -1,5 +1,5 @@
 //! 絞り込みの窓(NV-29)と、上の欄の「検索」・`/` の「探す」の呼び分け(NV-1・NV-2・NV-23・NV-24)の受け入れ試験。
-//! 記録: specs/_changes/2026-10-11-filter-button.md(タスク #1)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-11-filter-button.md(タスク #1)。
 //!
 //! 窓の中の状態のフィールドには頼らず、キー・クリック・画面の文字・`mode`・`settings.filters`・行の数・
 //! `message` で確かめる。窓の段取りは記録の仮定のとおり: 条件の並びと最後の「+ 絞り込みを足す」→ Enter で
@@ -161,7 +161,7 @@ fn filter_menu() -> Action {
 
 #[test]
 fn test_nv_29_buttons_filter_then_sort_at_right_end() {
-    // [NV-29][NV-23][NV-24] 検索の欄の右に「絞り込み」と「並べ替え」がこの順に並ぶ。欄の頭は「検索」のまま。
+    // [utest -> req~navigation.filter-window-open~1, req~navigation.search-box-buttons~1, req~navigation.search-box-button-keys~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~navigation.sort-window-open~1] 検索の欄の右に「絞り込み」と「並べ替え」がこの順に並ぶ。欄の頭は「検索」のまま。
     // SR-1: 欄とボタンはビューの帯(タブと同じ行)にあり、ボタンは欄の右に 絞り込み・並べ替え・分類… の順。
     let (_t, a) = boot("nv29btn");
     let (y, line) = bar_line(&a);
@@ -202,7 +202,7 @@ fn test_nv_29_buttons_filter_then_sort_at_right_end() {
 
 #[test]
 fn test_nv_29_click_opens_window_and_hide_done() {
-    // [NV-29] 「絞り込み」を押す → 窓が開き「+ 絞り込みを足す」。status の done を隠す → すぐ done の行が消え、
+    // [utest -> req~navigation.filter-window-open~1] 「絞り込み」を押す → 窓が開き「+ 絞り込みを足す」。status の done を隠す → すぐ done の行が消え、
     // ボタンに「絞り込み 1」、上の帯に「status: done を除く」。設定のフィルターそのものが変わる(NV-20)。
     let (_t, mut a) = boot("nv29open");
     assert_eq!(a.rows.len(), 6);
@@ -228,7 +228,7 @@ fn test_nv_29_click_opens_window_and_hide_done() {
 
 #[test]
 fn test_nv_29_compare_adds_and_remove_restores() {
-    // [NV-29] done を隠した上に priority の `≥ 3` を足す → 両方を満たす行だけ、ボタンは「絞り込み 2」。
+    // [utest -> req~navigation.filter-window-edit~1] done を隠した上に priority の `≥ 3` を足す → 両方を満たす行だけ、ボタンは「絞り込み 2」。
     // 窓で条件を外す(d)→ 外した分だけ戻り、全部外すと元の行。
     let (_t, mut a) = boot("nv29cmp");
     click_filter_button(&mut a);
@@ -272,7 +272,7 @@ fn test_nv_29_compare_adds_and_remove_restores() {
 
 #[test]
 fn test_nv_29_bad_operand_is_refused_with_reason() {
-    // [NV-29] 比べる値が列の型(数)で読めない → 理由を出し、条件を足さない(値を打つ段のまま)。
+    // [utest -> req~navigation.filter-window-open~1, req~navigation.filter-window-edit~1, req~navigation.filter-window-inline~1] 比べる値が列の型(数)で読めない → 理由を出し、条件を足さない(値を打つ段のまま)。
     // 打ち直せば足せる。値が空の Enter も足さない。
     let (_t, mut a) = boot("nv29bad");
     click_filter_button(&mut a);
@@ -301,7 +301,7 @@ fn test_nv_29_bad_operand_is_refused_with_reason() {
 
 #[test]
 fn test_nv_29_contains_and_empty_kinds() {
-    // [NV-29] 種類の「含む」は値を打って Enter、「空である」はすぐ足す。値を打つ段の Esc は足さずに窓へ戻る。
+    // [utest -> req~navigation.filter-window-edit~1] 種類の「含む」は値を打って Enter、「空である」はすぐ足す。値を打つ段の Esc は足さずに窓へ戻る。
     let (_t, mut a) = boot("nv29kinds");
     click_filter_button(&mut a);
     start_add(&mut a, "status", "含む");
@@ -338,7 +338,7 @@ fn test_nv_29_contains_and_empty_kinds() {
 
 #[test]
 fn test_nv_29_close_by_outside_click_and_esc() {
-    // [NV-29] 窓の外のクリックで閉じる。Esc でも閉じる。閉じても足した条件は効いたまま。
+    // [utest -> req~navigation.filter-window-close~1, req~navigation.filter-window-palette~1] 窓の外のクリックで閉じる。Esc でも閉じる。閉じても足した条件は効いたまま。
     let (_t, mut a) = boot("nv29close");
     click_filter_button(&mut a);
     assert_eq!(a.mode, Mode::FilterWin);
@@ -357,7 +357,7 @@ fn test_nv_29_close_by_outside_click_and_esc() {
 
 #[test]
 fn test_nv_29_palette_and_menu_open_window() {
-    // [NV-29] パレットの動作 filter_menu(読むだけでも出る)。検索の欄を出さない設定では操作の一覧からも開ける。
+    // [utest -> req~navigation.filter-window-palette~1] パレットの動作 filter_menu(読むだけでも出る)。検索の欄を出さない設定では操作の一覧からも開ける。
     let act = filter_menu();
     assert_eq!(act.name(), "filter_menu");
     assert!(
@@ -382,7 +382,7 @@ fn test_nv_29_palette_and_menu_open_window() {
 
 #[test]
 fn test_nv_29_narrow_terminal_hides_button_but_palette_opens() {
-    // [NV-29] 端末が狭く、ボタンが入らない → 「絞り込み」のボタンを出さない(右の端を押しても窓は開かない)。
+    // [utest -> req~navigation.filter-window-palette~1] 端末が狭く、ボタンが入らない → 「絞り込み」のボタンを出さない(右の端を押しても窓は開かない)。
     // パレットの filter_menu では開ける。
     let (_t, mut a) = boot("nv29narrow");
     a.resize(30, 24);
@@ -415,7 +415,7 @@ fn test_nv_29_narrow_terminal_hides_button_but_palette_opens() {
 
 #[test]
 fn test_nv_29_kept_after_restart() {
-    // [NV-29][SR-12] 窓で足した条件は、終了して開き直しても同じ(ボタンも「絞り込み 1」)。
+    // [utest -> req~navigation.filter-window-save~1, req~screen.state-store-columns~1, req~screen.state-store-header-sort~1] 窓で足した条件は、終了して開き直しても同じ(ボタンも「絞り込み 1」)。
     let tmp = notes_tmp("nv29keep");
     let mut a = boot_with_state(&tmp, "", false);
     click_filter_button(&mut a);
@@ -431,7 +431,7 @@ fn test_nv_29_kept_after_restart() {
 
 #[test]
 fn test_nv_29_readonly_filters_without_writing() {
-    // [NV-29] 読むだけの起動でも絞れる。ノートも状態も書かない。
+    // [utest -> req~navigation.filter-window-readonly~1] 読むだけの起動でも絞れる。ノートも状態も書かない。
     let tmp = notes_tmp("nv29ro");
     let before: Vec<Vec<u8>> = NOTES
         .iter()
@@ -464,7 +464,7 @@ fn test_nv_29_readonly_filters_without_writing() {
 
 #[test]
 fn test_nv_29_names_find_and_search() {
-    // [NV-1][NV-2] `/` の呼び名は「探す」(ヘルプと下の帯)、上の欄で打っている間の下の帯のモード名は「検索」。
+    // [utest -> req~navigation.find~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1] `/` の呼び名は「探す」(ヘルプと下の帯)、上の欄で打っている間の下の帯のモード名は「検索」。
     assert_eq!(Mode::Search.label(), "探す");
     assert_eq!(Mode::Filter.label(), "検索");
     let (_t, mut a) = boot("nv29names");
@@ -495,7 +495,7 @@ fn test_nv_29_names_find_and_search() {
 
 #[test]
 fn test_nv_29_english_bar_lead_is_search() {
-    // [NV-23][NV-2] 英語の画面では、上の欄の頭は Search、`/` は Find。
+    // [utest -> req~navigation.search-box-label~1, req~navigation.search-box-buttons~1, req~navigation.search-box-key-glyph~1, req~navigation.search-box-settings-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1] 英語の画面では、上の欄の頭は Search、`/` は Find。
     let _g = mdgrid::i18n::scoped(mdgrid::i18n::Lang::En);
     let (_t, a) = boot("nv29en");
     let s = scr(&a);

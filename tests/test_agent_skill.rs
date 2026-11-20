@@ -1,5 +1,5 @@
-//! [CLI-22] AI エージェント向けのスキル(SKILL.md)とプラグインのマニフェスト。
-//! specs/_changes/2026-10-14-agent-skill.md。スキルの `sh` の囲みを本物の実行ファイルで動かし、
+//! [cli.agent-skill] AI エージェント向けのスキル(SKILL.md)とプラグインのマニフェスト。
+//! specs/_history/decidespec/_changes/2026-10-14-agent-skill.md。スキルの `sh` の囲みを本物の実行ファイルで動かし、
 //! マニフェストの版が Cargo.toml の版と揃うことを確かめる。
 
 use std::path::{Path, PathBuf};
@@ -25,6 +25,7 @@ fn find_mdgrid<'a>(index: &'a serde_json::Value, rel: &str) -> &'a serde_json::V
         .unwrap_or_else(|| panic!("{rel} に name が mdgrid のプラグインがありません"))
 }
 
+// [stest -> req~cli.agent-skill-plugin~1, req~cli.agent-skill-version~1]
 #[test]
 fn test_cli_22_plugin_versions_match_crate() {
     let crate_version = env!("CARGO_PKG_VERSION");
@@ -160,6 +161,7 @@ fn command(root: &Path, program: &str) -> std::process::Command {
     c
 }
 
+// [stest -> req~cli.agent-skill-examples-run~1]
 #[cfg(unix)]
 #[test]
 fn test_cli_22_skill_examples_run() {

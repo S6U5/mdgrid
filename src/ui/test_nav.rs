@@ -29,7 +29,7 @@ fn header_x(app: &App, title: &str) -> u16 {
 
 #[test]
 fn test_nv_1_search_smartcase_and_n() {
-    // [NV-1] `/Todo` は大文字小文字を区別、`/todo` は区別しない。`n` `N` で前後の一致へ。[SR-13] `/` `n` `N`。
+    // [utest -> req~navigation.find~1] `/Todo` は大文字小文字を区別、`/todo` は区別しない。`n` `N` で前後の一致へ。[utest -> req~screen.keys-vim-and-arrows-bases~1] `/` `n` `N`。
     let (_t, mut a) = make(
         "nv1",
         &[
@@ -73,7 +73,7 @@ fn test_nv_1_search_smartcase_and_n() {
 
 #[test]
 fn test_nv_2_quick_filter_and_esc() {
-    // [NV-2] `\` で「会議」と打つ → 「会議」を含む行だけ。Esc で元に戻る。.base の絞り込みに重ねて効く。
+    // [utest -> req~navigation.search-incremental~1, req~navigation.search-over-base~1] `\` で「会議」と打つ → 「会議」を含む行だけ。Esc で元に戻る。.base の絞り込みに重ねて効く。
     let (_t, mut a) = make(
         "nv2",
         &[
@@ -126,7 +126,7 @@ const NUMS: &str = "views:\n  - type: table\n    name: 全部\n    order: [n, ti
 
 #[test]
 fn test_nv_3_temporary_sort_keeps_base() {
-    // [NV-3] 見出しを2回 → 降順、3回 → .base の並びに戻る。並べ替えはビューの設定の並べ替えとして当てる。
+    // [utest -> req~navigation.header-sort-save~1, req~navigation.header-sort-base-untouched~1] 見出しを2回 → 降順、3回 → .base の並びに戻る。並べ替えはビューの設定の並べ替えとして当てる。
     // .base のバイトは変わらない。
     let tmp = Tmp::new("nv3");
     tmp.write("a.md", "---\nn: 2\ntitle: a\n---\n");
@@ -168,7 +168,7 @@ fn test_nv_3_temporary_sort_keeps_base() {
 
 #[test]
 fn test_nv_4_hide_show_move_freeze() {
-    // [NV-4] 列を隠す・戻す、並びを変える、左の列を固定する。
+    // [utest -> req~navigation.columns~1] 列を隠す・戻す、並びを変える、左の列を固定する。
     let (_t, mut a) = make(
         "nv4",
         &[(
@@ -221,7 +221,7 @@ fn test_nv_4_hide_show_move_freeze() {
 
 #[test]
 fn test_nv_5_marks_range_all_and_esc() {
-    // [NV-5] Space を3行 → 下の帯に「選択 3」。`v` と Shift+矢印で範囲、Ctrl+A で全部、Esc で解く。
+    // [utest -> req~navigation.select-rows~1] Space を3行 → 下の帯に「選択 3」。`v` と Shift+矢印で範囲、Ctrl+A で全部、Esc で解く。
     let notes: Vec<(String, String)> = (0..5)
         .map(|i| (format!("n{i}.md"), format!("---\nn: {i}\n---\n")))
         .collect();
@@ -265,7 +265,7 @@ fn test_nv_5_marks_range_all_and_esc() {
 
 #[test]
 fn test_nv_7_column_ends_and_half_page() {
-    // [NV-7] `0` `$` で列の先頭・末尾、Ctrl+D / Ctrl+U で半画面。
+    // [utest -> req~navigation.jump~1] `0` `$` で列の先頭・末尾、Ctrl+D / Ctrl+U で半画面。
     let tmp = Tmp::new("nv7half");
     for i in 0..40 {
         tmp.write(
@@ -295,7 +295,7 @@ const STATUS: &[(&str, &str)] = &[
 
 #[test]
 fn test_nv_8_same_value_highlight_and_filter() {
-    // [NV-8] status が done のセルで `,` → done の行だけ。`*` は同じ値の行を強調。[SR-18] `*`・`,`。
+    // [utest -> req~navigation.same-value~1] status が done のセルで `,` → done の行だけ。`*` は同じ値の行を強調。[utest -> req~screen.default-keys~1] `*`・`,`。
     let (_t, mut a) = make("nv8", STATUS);
     col_named(&mut a, "status");
     ch(&mut a, '*');
@@ -315,7 +315,7 @@ fn test_nv_8_same_value_highlight_and_filter() {
 
 #[test]
 fn test_sr_17_marks_act_as_comma_and_slash() {
-    // [SR-17] 表で `、` → `,`(同じ値の行だけに絞る)と同じ動き。`・` → `/`(検索)と同じ動き。
+    // [utest -> req~screen.ime-punct~1] 表で `、` → `,`(同じ値の行だけに絞る)と同じ動き。`・` → `/`(検索)と同じ動き。
     let (_t, mut a) = make("sr17nv", STATUS);
     col_named(&mut a, "status");
     ch(&mut a, '、');
@@ -329,7 +329,7 @@ fn test_sr_17_marks_act_as_comma_and_slash() {
 
 #[test]
 fn test_sr_18_esc_clears_selection_then_filter() {
-    // [SR-18] Esc は、選択があれば選択を、無ければ簡易の絞り込みを解く。
+    // [utest -> req~screen.default-keys~1] Esc は、選択があれば選択を、無ければ簡易の絞り込みを解く。
     let (_t, mut a) = make("sr18esc", STATUS);
     ch(&mut a, '\\');
     typing(&mut a, "done");
@@ -346,7 +346,7 @@ fn test_sr_18_esc_clears_selection_then_filter() {
 
 #[test]
 fn test_nv_12_edited_row_stays_until_save() {
-    // [NV-12] status で絞ったビューで done(完了)に直す → 行は残り、印が付く。保存で消える。
+    // [utest -> req~navigation.keep-edited-rows~1] status で絞ったビューで done(完了)に直す → 行は残り、印が付く。保存で消える。
     let tmp = vault("nv12");
     let mut a = open(&tmp, TASKS, None);
     assert_eq!(labels(&a), ["a.md", "c.md"]);
@@ -381,7 +381,7 @@ fn test_nv_12_edited_row_stays_until_save() {
 
 #[test]
 fn test_nv_12_move_releases_held_row() {
-    // [NV-12] 移動の操作で、留めていた行は本来の位置へ(選んだ行は保つ)。並べ替えにもためた値が効く。
+    // [utest -> req~navigation.keep-edited-rows~1] 移動の操作で、留めていた行は本来の位置へ(選んだ行は保つ)。並べ替えにもためた値が効く。
     let tmp = Tmp::new("nv12mv");
     tmp.write("a.md", "---\nn: 1\n---\n");
     tmp.write("b.md", "---\nn: 2\n---\n");
@@ -406,7 +406,7 @@ fn test_nv_12_move_releases_held_row() {
 
 #[test]
 fn test_out_1_copy_selected_rows() {
-    // [OUT-1] 選んだ2行を `Y` → 見出しつきのタブ区切り(見出しの行 + 2行)。
+    // [utest -> req~output.copy-tsv~1] 選んだ2行を `Y` → 見出しつきのタブ区切り(見出しの行 + 2行)。
     let (_t, mut a) = make("out1sel", STATUS);
     let log = Rc::new(RefCell::new(MemoryLog::default()));
     a.clipboard = Box::new(Memory(log.clone()));
@@ -422,7 +422,7 @@ fn test_out_1_copy_selected_rows() {
 
 #[test]
 fn test_sr_6_click_selects_then_edits() {
-    // [SR-6] 別の行のセルを1回クリック → 選ぶだけ。選んだ行のセルのクリック → 編集。ホイールで上下。
+    // [utest -> req~screen.mouse-click-select~1, req~screen.mouse-click-edit~1] 別の行のセルを1回クリック → 選ぶだけ。選んだ行のセルのクリック → 編集。ホイールで上下。
     let (_t, mut a) = make("sr6", STATUS);
     let x = header_x(&a, "status");
     let y = view::data_y(&a) as u16 + 1;
@@ -446,7 +446,7 @@ fn wide_cols(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_nv_4_frozen_columns_keep_selected_visible() {
-    // [NV-4] [SR-3] 3列目で `F`、続けて `$` → 選んだ b5 が画面に出る(固定は一時的に減らす)。
+    // [utest -> req~navigation.columns~1, req~screen.h-scroll-follow~1] 3列目で `F`、続けて `$` → 選んだ b5 が画面に出る(固定は一時的に減らす)。
     // 空にするのも入力ボックスも、見えている b5 に効く。
     let (_t, mut a) = wide_cols("nv4frz");
     col_named(&mut a, "a3");
@@ -477,7 +477,7 @@ fn test_nv_4_frozen_columns_keep_selected_visible() {
 
 #[test]
 fn test_nv_4_freeze_refused_on_narrow_terminal() {
-    // [NV-4] [SR-3] 狭い端末で、固定した列だけで画面を超える `F` は断って理由を出す。
+    // [utest -> req~navigation.columns~1, req~screen.h-scroll-follow~1] 狭い端末で、固定した列だけで画面を超える `F` は断って理由を出す。
     // 広い端末で固定してから狭くしても、選んだ列は見える。
     let (_t, mut a) = wide_cols("nv4narrow");
     a.resize(40, 24);
@@ -500,7 +500,7 @@ fn test_nv_4_freeze_refused_on_narrow_terminal() {
 
 #[test]
 fn test_sr_3_hidden_cell_not_edited() {
-    // [SR-3] 選んだセルが画面に描かれていなければ、空にする・編集を始めない(見えないセルに書かない)。
+    // [utest -> req~screen.h-scroll-follow~1] 選んだセルが画面に描かれていなければ、空にする・編集を始めない(見えないセルに書かない)。
     let (_t, mut a) = make("sr3guard", STATUS);
     col_named(&mut a, "status");
     a.top = 2; // 選んだ行(0)を画面の外に置く(守りの試験のため直接)。
@@ -513,7 +513,7 @@ fn test_sr_3_hidden_cell_not_edited() {
 
 #[test]
 fn test_nv_4_show_column_restores_frozen() {
-    // [NV-4] 固定した a, b のうち a を隠して戻すと、固定も2列に戻る。
+    // [utest -> req~navigation.columns~1] 固定した a, b のうち a を隠して戻すと、固定も2列に戻る。
     let (_t, mut a) = make("nv4show", &[("a.md", "---\na: 1\nb: 2\nc: 3\n---\n")]);
     col_named(&mut a, "b");
     ch(&mut a, 'F');
@@ -533,7 +533,7 @@ fn test_nv_4_show_column_restores_frozen() {
 
 #[test]
 fn test_nv_12_goto_line_after_release() {
-    // [NV-12] [NV-7] 留めた行があるときの `:120` は、先に並び直してから 120 行目へ移る。
+    // [utest -> req~navigation.keep-edited-rows~1, req~navigation.jump~1] 留めた行があるときの `:120` は、先に並び直してから 120 行目へ移る。
     let tmp = Tmp::new("nv12goto");
     for i in 1..=150 {
         tmp.write(&format!("n{i:03}.md"), &format!("---\nn: {i}\n---\n"));

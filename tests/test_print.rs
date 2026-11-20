@@ -1,5 +1,5 @@
 //! タスク 1(print-pick)の受け入れ: `--print [--format csv|json|md] [--view <名前>]`(CLI-5・SR-10)。
-//! 仕様: specs/cli/spec.md の CLI-5、specs/_changes/2026-10-03-print-pick.md の「不明点と仮定」。
+//! 仕様: specs/_history/decidespec/cli/spec.md の CLI-5、specs/_history/decidespec/_changes/2026-10-03-print-pick.md の「不明点と仮定」。
 //! 実装を見ずに書いた。本物の実行ファイルを動かし、標準出力はパイプ(`Command::output`)。
 //!
 //! 材料の保管庫(一時フォルダ)のノート:
@@ -497,7 +497,7 @@ fn s(x: &str) -> String {
 
 #[test]
 fn test_cli_5_default_csv_header_rows_and_rfc4180() {
-    // [CLI-5] [SR-10] 形を指定しない → csv。見出しの行は order の並び、行は絞り込み(done == false)と
+    // [stest -> req~cli.print-rows~1, req~cell-view.no-color-env~1, req~cell-view.no-color-not-tty~1, req~cell-view.no-color-pipe-print-pick~1] 形を指定しない → csv。見出しの行は order の並び、行は絞り込み(done == false)と
     // 並べ替え(priority DESC)のあと。カンマ・引用符・改行を含む値は RFC 4180 で括る。改行は LF。
     let (t, _notes, base) = make_vault("csv");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print"]);
@@ -554,7 +554,7 @@ fn test_cli_5_default_csv_header_rows_and_rfc4180() {
 
 #[test]
 fn test_cli_5_group_by_only_orders_rows_without_heading_rows() {
-    // [CLI-5] グループ分けは並びだけに効き、見出しの行は出さない。
+    // [stest -> req~cli.print-rows~1] グループ分けは並びだけに効き、見出しの行は出さない。
     // status ASC のまとまり(doing・done・todo)、まとまりの中は priority ASC。
     let (t, _notes, base) = make_vault("group");
     let out = run_in(
@@ -579,7 +579,7 @@ fn test_cli_5_group_by_only_orders_rows_without_heading_rows() {
 
 #[test]
 fn test_cli_5_json_array_of_objects_with_json_types() {
-    // [CLI-5] json は列の名前を鍵にしたオブジェクトの配列。数・真偽・null・リストは JSON の型、日付は文字列。
+    // [stest -> req~cli.print-json~1] json は列の名前を鍵にしたオブジェクトの配列。数・真偽・null・リストは JSON の型、日付は文字列。
     let (t, _notes, base) = make_vault("json");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print", "--format", "json"]);
     let text = ok_stdout(&out, "--format json");
@@ -649,7 +649,7 @@ fn test_cli_5_json_array_of_objects_with_json_types() {
 
 #[test]
 fn test_cli_5_md_table_with_separator_escaped_pipe_and_spaces_for_newlines() {
-    // [CLI-5] md は見出しの行と区切りの行のある表。セルの中の縦棒は `\|`、改行は空白。
+    // [stest -> req~cli.print-md~1] md は見出しの行と区切りの行のある表。セルの中の縦棒は `\|`、改行は空白。
     let (t, _notes, base) = make_vault("md");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print", "--format", "md"]);
     let text = ok_stdout(&out, "--format md");
@@ -693,7 +693,7 @@ fn test_cli_5_md_table_with_separator_escaped_pipe_and_spaces_for_newlines() {
 
 #[test]
 fn test_cli_5_unsupported_formula_column_is_empty_or_null_with_one_warning() {
-    // [CLI-5] [BV-7] 評価できない列は csv で空、json で null、md で空。標準エラーに1行。終了コード 0。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-unsupported-empty~1, req~cli.print-unsupported-warn~1, req~cli.print-fail~1, req~base-view.unsupported-column-mark~1] 評価できない列は csv で空、json で null、md で空。標準エラーに1行。終了コード 0。
     let (t, _notes, base) = make_vault("unsupported");
     let b = base.to_str().unwrap();
 
@@ -736,7 +736,7 @@ fn test_cli_5_unsupported_formula_column_is_empty_or_null_with_one_warning() {
 
 #[test]
 fn test_cli_5_unknown_format_fails_with_one_line_and_code_2() {
-    // [CLI-5] [CLI-4] `--format xml` → 理由1行・終了コード 2・標準出力は空。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-fail~1, req~cli.fail-fast~1] `--format xml` → 理由1行・終了コード 2・標準出力は空。
     let (t, _notes, base) = make_vault("xml");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print", "--format", "xml"]);
     assert_fails_with_one_line(&out, "--format xml", "xml");
@@ -744,7 +744,7 @@ fn test_cli_5_unknown_format_fails_with_one_line_and_code_2() {
 
 #[test]
 fn test_cli_5_missing_path_fails_with_one_line_and_code_2() {
-    // [CLI-5] [CLI-4] 起動できない(無いパス)→ 理由1行・終了コード 2。
+    // [stest -> req~cli.print-fail~1, req~cli.fail-fast~1] 起動できない(無いパス)→ 理由1行・終了コード 2。
     let t = TempDir::new("nopath");
     let missing = t.path().join("無いフォルダ");
     let out = run_in(&t, &[missing.to_str().unwrap(), "--print"]);
@@ -755,7 +755,7 @@ fn test_cli_5_missing_path_fails_with_one_line_and_code_2() {
 
 #[test]
 fn test_cli_5_view_option_selects_another_base_view() {
-    // [CLI-5] `--view 期限順` → そのビューの絞り込み(priority < 3)・並べ替え(due ASC)・列(due, title)。
+    // [stest -> req~cli.print-rows~1] `--view 期限順` → そのビューの絞り込み(priority < 3)・並べ替え(due ASC)・列(due, title)。
     let (t, _notes, base) = make_vault("view");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print", "--view", "期限順"]);
     let rows = parse_csv(&ok_stdout(&out, "--view 期限順"));
@@ -772,7 +772,7 @@ fn test_cli_5_view_option_selects_another_base_view() {
 
 #[test]
 fn test_cli_5_unknown_view_fails_with_one_line_and_code_2() {
-    // [CLI-5] 無いビューの名前 → 理由1行・終了コード 2・標準出力は空。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-fail~1] 無いビューの名前 → 理由1行・終了コード 2・標準出力は空。
     let (t, _notes, base) = make_vault("noview");
     let out = run_in(
         &t,
@@ -783,7 +783,7 @@ fn test_cli_5_unknown_view_fails_with_one_line_and_code_2() {
 
 #[test]
 fn test_cli_5_view_option_falls_back_to_mdgrid_view_in_views_toml() {
-    // [CLI-5] [BV-17] `.base` を使わずフォルダを開き、`--view` に views.toml の mdgrid のビューの名前。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-no-write~1, req~base-view.own-views-tabs~1] `.base` を使わずフォルダを開き、`--view` に views.toml の mdgrid のビューの名前。
     // その order と filters_expr で出す(並べ替えの指定は無いので、行は集合で比べる)。
     let (t, notes, base) = make_vault("native");
     std::fs::remove_file(&base).unwrap();
@@ -821,7 +821,7 @@ path = "{p}"
 
 #[test]
 fn test_cli_5_print_does_not_modify_or_create_files_in_vault() {
-    // [CLI-5] [WB-15] 3つの形で出したあとも、保管庫のファイルのバイトと更新時刻は同じで、新しいファイルが無い。
+    // [stest -> req~cli.print-no-write~1, req~cli.readonly~1] 3つの形で出したあとも、保管庫のファイルのバイトと更新時刻は同じで、新しいファイルが無い。
     let (t, notes, base) = make_vault("readonly");
     // 更新時刻の比べを確かにするため、書いてから少し間を空ける。
     std::thread::sleep(std::time::Duration::from_millis(50));

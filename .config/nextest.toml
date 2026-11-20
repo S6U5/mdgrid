@@ -1,0 +1,9 @@
+# CI(forge-gate の test の仕事)が、nextest の JUnit XML を target/nextest/ci/junit.xml に書くための設定。
+# trace-gate の check --junit が、印のあるテストが走ったかをこの XML で照らす。
+# 落ちても残りのテストを全部走らせる。trace-gate の f2p-run は、base の版に head のテストを写して走らせるので、
+# 最初の失敗で打ち切ると、新しい P0 のテストが走る前に終わって「base の結果に無い」になる。
+[profile.ci]
+fail-fast = false
+
+[profile.ci.junit]
+path = "junit.xml"

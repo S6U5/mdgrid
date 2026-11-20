@@ -6,7 +6,7 @@ fn args(a: &[&str]) -> Vec<OsString> {
 
 #[test]
 fn test_cli_1_paths_or_current_folder() {
-    // [CLI-1] 引数が無ければ今のフォルダ、あればフォルダの並び。
+    // [utest -> req~cli.launch-marker-open~1] 引数が無ければ今のフォルダ、あればフォルダの並び。
     assert_eq!(parse_args(&[]), Ok(Command::Run(vec![PathBuf::from(".")])));
     assert_eq!(
         parse_args(&args(&["a", "b"])),
@@ -22,7 +22,7 @@ fn test_cli_1_paths_or_current_folder() {
 
 #[test]
 fn test_cli_1_no_args_opens_current_folder_default_table() {
-    // [CLI-1] 引数なし → 今のフォルダの既定の表。parse_args(&[]) から check_paths → open_target → App まで
+    // [utest -> req~cli.launch-marker-open~1] 引数なし → 今のフォルダの既定の表。parse_args(&[]) から check_paths → open_target → App まで
     // main と同じ道を通す。今のフォルダ(`.`)は試験の間で共有されるので、`.` の解決だけを一時フォルダに差し替える。
     assert_eq!(parse_args(&[]), Ok(Command::Run(vec![PathBuf::from(".")])));
     let t = TempDir::new("cli1");
@@ -60,7 +60,7 @@ fn test_cli_1_no_args_opens_current_folder_default_table() {
 
 #[test]
 fn test_cli_4_missing_path_one_line_reason() {
-    // [CLI-4] 無いパス・知らないオプションは理由1行(終了コード 2 は fail が返す)。
+    // [utest -> req~cli.fail-fast~1] 無いパス・知らないオプションは理由1行(終了コード 2 は fail が返す)。
     let e = check_paths(&[PathBuf::from("/no/such/mdgrid/path")]).unwrap_err();
     assert!(e.contains("/no/such/mdgrid/path"));
     assert!(!e.contains('\n'));
@@ -74,7 +74,7 @@ fn test_cli_4_missing_path_one_line_reason() {
 
 #[test]
 fn test_sr_10_not_a_terminal() {
-    // [SR-10] 標準の入出力が端末でなければ、画面を出さず理由1行。
+    // [utest -> req~cell-view.no-color-not-tty~1] 標準の入出力が端末でなければ、画面を出さず理由1行。
     assert!(check_tty(true, true).is_ok());
     for (i, o) in [(false, true), (true, false), (false, false)] {
         let e = check_tty(i, o).unwrap_err();
@@ -106,7 +106,7 @@ impl Drop for TempDir {
 
 #[test]
 fn test_cli_2_options() {
-    // [CLI-2] `--readonly`・`--no-color`・`--config <パス>`・`--view <名前>` を受け、残りはパス。
+    // [utest -> req~cli.options~2] `--readonly`・`--no-color`・`--config <パス>`・`--view <名前>` を受け、残りはパス。
     // `--` の後ろはパスのまま。値の無い `--config` は理由1行。
     let mut a = args(&[
         "notes",
@@ -144,7 +144,7 @@ fn test_cli_2_options() {
 
 #[test]
 fn test_cli_11_print_config_arg() {
-    // [CLI-11] [CLI-2] `--print-config` は既定の設定を出す命令。`--` の後ろならパス。
+    // [utest -> req~cli.print-config-output~1, req~cli.options~2] `--print-config` は既定の設定を出す命令。`--` の後ろならパス。
     assert_eq!(
         parse_args(&args(&["--print-config"])),
         Ok(Command::PrintConfig)
@@ -158,7 +158,7 @@ fn test_cli_11_print_config_arg() {
 
 #[test]
 fn test_cli_2_config_path() {
-    // [CLI-2] `--config <パス>` の設定を読む(既定の置き場より先)。無いパスは理由1行。
+    // [utest -> req~cli.options~2] `--config <パス>` の設定を読む(既定の置き場より先)。無いパスは理由1行。
     let t = TempDir::new("cfg");
     let p = t.0.join("my.toml");
     std::fs::write(&p, "[edit]\ncandidates = 7\n").unwrap();
@@ -175,7 +175,7 @@ fn test_cli_2_config_path() {
 
 #[test]
 fn test_cli_3_config_missing_unknown_broken() {
-    // [CLI-3] 設定の無い環境 → 既定。知らない項目 → 警告して読む。壊れた TOML → 理由1行と終了コード 2。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1, req~cli.config-file-warning-form~1] 設定の無い環境 → 既定。知らない項目 → 警告して読む。壊れた TOML → 理由1行と終了コード 2。
     let t = TempDir::new("cli3");
     let (c, w) = load_config(None, Some(t.0.join("mdgrid/config.toml"))).unwrap();
     assert_eq!(c, Config::default());
@@ -198,7 +198,7 @@ fn test_cli_3_config_missing_unknown_broken() {
 
 #[test]
 fn test_sr_12_state_target_per_open_target() {
-    // [SR-12] 状態の対象: `.base` のパス、フォルダ1つならそのパス、複数ならその組み合わせ。
+    // [utest -> req~screen.state-store-key~1] 状態の対象: `.base` のパス、フォルダ1つならそのパス、複数ならその組み合わせ。
     let b = PathBuf::from("v/tasks.base");
     assert_eq!(state_target(std::slice::from_ref(&b)), b);
     assert_eq!(state_target(&[PathBuf::from("a")]), PathBuf::from("a"));

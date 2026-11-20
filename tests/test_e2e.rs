@@ -111,7 +111,7 @@ fn wait_back_to_table(t: &Tui) {
 
 #[test]
 fn test_sr_8_e2e_config_editor_with_args_gets_note_path_as_one_arg() {
-    // [SR-8] 設定の editor = "<偽のエディタ> --flag"。空白を含むノートの名前でも、パスは1つの引数。
+    // [stest -> req~screen.editor-reload~1, req~screen.editor-path-one-arg~1] 設定の editor = "<偽のエディタ> --flag"。空白を含むノートの名前でも、パスは1つの引数。
     // 戻ったら画面が戻り、ノートを読み直す。
     let env = Env::new("sr8-args");
     let ed = env.fake_editor("fake-editor", Some("---\nstatus: edited\n---\nbody\n"));
@@ -133,7 +133,7 @@ fn test_sr_8_e2e_config_editor_with_args_gets_note_path_as_one_arg() {
 
 #[test]
 fn test_sr_8_e2e_visual_before_editor_without_config() {
-    // [SR-8] 設定が無く VISUAL と EDITOR が両方ある → VISUAL。
+    // [stest -> req~screen.editor-choice~1] 設定が無く VISUAL と EDITOR が両方ある → VISUAL。
     let env = Env::new("sr8-visual");
     let vis = env.fake_editor("visual-editor", None);
     let edi = env.fake_editor("editor-editor", None);
@@ -149,7 +149,7 @@ fn test_sr_8_e2e_visual_before_editor_without_config() {
 
 #[test]
 fn test_sr_8_e2e_config_editor_before_visual_and_editor() {
-    // [SR-8] 既定の置き場の設定に editor があれば、VISUAL・EDITOR より先。
+    // [stest -> req~screen.editor-choice~1, req~screen.editor-fallback~1] 既定の置き場の設定に editor があれば、VISUAL・EDITOR より先。
     let env = Env::new("sr8-config");
     let cfg_ed = env.fake_editor("config-editor", None);
     let vis = env.fake_editor("visual-editor", None);
@@ -191,7 +191,7 @@ fn assert_gamma_editable(t: &mut Tui) {
 
 #[test]
 fn test_wb_3_e2e_add_frontmatter_false_makes_cell_readonly_with_reason() {
-    // [WB-3] add_frontmatter = false → フロントマターの無いノートのセルは読むだけで理由が出る。
+    // [stest -> req~write-back.add-frontmatter-setting~1] add_frontmatter = false → フロントマターの無いノートのセルは読むだけで理由が出る。
     let env = Env::new("wb3-false");
     let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = false\n");
     let mut t = open(&env, &["--config", cfg.to_str().unwrap()], &[]);
@@ -205,7 +205,7 @@ fn test_wb_3_e2e_add_frontmatter_false_makes_cell_readonly_with_reason() {
 
 #[test]
 fn test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save() {
-    // [WB-3] 既定(設定なし)ではフロントマターの無いノートのセルに書け、保存で先頭に足される。
+    // [stest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] 既定(設定なし)ではフロントマターの無いノートのセルに書け、保存で先頭に足される。
     let env = Env::new("wb3-default");
     let mut t = open(&env, &[], &[]);
     go_row(&mut t, 2);
@@ -226,7 +226,7 @@ fn test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save() {
 
 #[test]
 fn test_cli_2_e2e_config_flag_wins_over_default_location_false() {
-    // [CLI-2][CLI-3] 既定の置き場に add_frontmatter = true、--config に false → --config が効く。
+    // [stest -> req~cli.options~2, req~cli.config-file-location~1] 既定の置き場に add_frontmatter = true、--config に false → --config が効く。
     let env = Env::new("cli2-false");
     env.write_default_config("[edit]\nadd_frontmatter = true\n");
     let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = false\n");
@@ -237,7 +237,7 @@ fn test_cli_2_e2e_config_flag_wins_over_default_location_false() {
 
 #[test]
 fn test_cli_2_e2e_config_flag_wins_over_default_location_true() {
-    // [CLI-2][CLI-3] 逆向き: 既定の置き場に false、--config に true → 書ける。
+    // [stest -> req~cli.options~2, req~cli.config-file-location~1] 逆向き: 既定の置き場に false、--config に true → 書ける。
     let env = Env::new("cli2-true");
     env.write_default_config("[edit]\nadd_frontmatter = false\n");
     let cfg = env.write_config("c.toml", "[edit]\nadd_frontmatter = true\n");
@@ -248,7 +248,7 @@ fn test_cli_2_e2e_config_flag_wins_over_default_location_true() {
 
 #[test]
 fn test_cli_2_e2e_default_location_is_read_without_flag() {
-    // [CLI-3] --config が無ければ既定の置き場($XDG_CONFIG_HOME/mdgrid/config.toml)を読む。
+    // [stest -> req~cli.config-file-location~1] --config が無ければ既定の置き場($XDG_CONFIG_HOME/mdgrid/config.toml)を読む。
     // 上の2つが「置き場を読まない」ことで通ってしまわないための対照。
     let env = Env::new("cli3-default");
     env.write_default_config("[edit]\nadd_frontmatter = false\n");

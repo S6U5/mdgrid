@@ -23,7 +23,7 @@ fn real(p: std::path::PathBuf) -> std::path::PathBuf {
 
 #[test]
 fn test_rel_4_open_target_in_other_table() {
-    // [REL-4] リンクのセルから「行き先を開く」→ 行き先を含む登録した表に移り、その行を選ぶ(main が開き直す)。
+    // [utest -> req~relations.follow-link-open~1] リンクのセルから「行き先を開く」→ 行き先を含む登録した表に移り、その行を選ぶ(main が開き直す)。
     let tmp = workspace("rel_open");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "project");
@@ -39,7 +39,7 @@ fn test_rel_4_open_target_in_other_table() {
 
 #[test]
 fn test_rel_4_open_target_in_same_table() {
-    // [REL-4] 行き先が今の表の中なら、開き直さずにその行へ移る。
+    // [utest -> req~relations.follow-link-open~1, req~relations.follow-link-unsaved~1, req~relations.follow-link-missing~1] 行き先が今の表の中なら、開き直さずにその行へ移る。
     let tmp = workspace("rel_open_same");
     let dir = tmp.notes();
     let src = Markdown::open(std::slice::from_ref(&dir)).unwrap();
@@ -70,7 +70,7 @@ fn test_rel_4_open_target_in_same_table() {
 
 #[test]
 fn test_rel_4_no_target_reason() {
-    // [REL-4] 行き先の無いリンクは理由を出して移らない。
+    // [utest -> req~relations.follow-link-missing~1] 行き先の無いリンクは理由を出して移らない。
     let tmp = workspace("rel_open_none");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "b docs", "project");
@@ -85,7 +85,7 @@ fn test_rel_4_no_target_reason() {
 
 #[test]
 fn test_rel_4_choose_among_targets() {
-    // [REL-4] セルの行き先が2つ以上なら、選ぶ一覧を出す。
+    // [utest -> req~relations.follow-link-open~1, req~relations.follow-link-missing~1] セルの行き先が2つ以上なら、選ぶ一覧を出す。
     let tmp = workspace("rel_open_many");
     std::fs::write(
         tmp.notes().join("tasks/d both.md"),
@@ -108,7 +108,7 @@ fn test_rel_4_choose_among_targets() {
 
 #[test]
 fn test_rel_4_pending_changes_ask_first() {
-    // [REL-4][WB-11] 保存していない変更があれば、移る前に確かめる。戻ると移らない。
+    // [utest -> req~relations.follow-link-unsaved~1, req~write-back.quit-confirm~1] 保存していない変更があれば、移る前に確かめる。戻ると移らない。
     let tmp = workspace("rel_open_pending");
     let mut a = boot_tasks(&tmp);
     let row = row_of(&a, "c test");
@@ -129,7 +129,7 @@ fn test_rel_4_pending_changes_ask_first() {
 
 #[test]
 fn test_rel_4_menu_has_open_link_on_link_cell() {
-    // [REL-4][SR-24] 操作の一覧: リンクのセルにだけ「行き先を開く」。
+    // [utest -> req~relations.follow-link-open~1, req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1] 操作の一覧: リンクのセルにだけ「行き先を開く」。
     let tmp = workspace("rel_menu");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "project");
@@ -140,7 +140,7 @@ fn test_rel_4_menu_has_open_link_on_link_cell() {
 
 #[test]
 fn test_rel_5_linked_rows_lists_table_and_column() {
-    // [REL-5] つながった行: どの表のどの列から指しているかを並べ、選ぶとそのノートの表へ移る。
+    // [utest -> req~relations.backlinks-list~1] つながった行: どの表のどの列から指しているかを並べ、選ぶとそのノートの表へ移る。
     let tmp = workspace("rel_back");
     let cfg = tmp.0.join("config");
     std::fs::create_dir_all(&cfg).unwrap();
@@ -194,7 +194,7 @@ fn test_rel_5_linked_rows_lists_table_and_column() {
 
 #[test]
 fn test_rel_5_no_linked_rows_message() {
-    // [REL-5] 指しているノートが無ければ、理由を出す。
+    // [utest -> req~relations.backlinks-list~1] 指しているノートが無ければ、理由を出す。
     let tmp = workspace("rel_back_none");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "c test", "status");
@@ -209,7 +209,7 @@ fn test_rel_5_no_linked_rows_message() {
 
 #[test]
 fn test_rel_3_same_name_in_other_table_written_as_path() {
-    // [REL-3] 別の表に同じ名前のノートがあれば、取り違えないようにパスで書く(開くと選んだノートへ)。
+    // [utest -> req~relations.link-input-same-name~1] 別の表に同じ名前のノートがあれば、取り違えないようにパスで書く(開くと選んだノートへ)。
     let tmp = workspace("rel_same_name");
     // 登録した別の表(members)に同じ名前のノート。
     std::fs::write(tmp.notes().join("members/Other Project.md"), "---\n---\n").unwrap();
@@ -232,7 +232,7 @@ fn test_rel_3_same_name_in_other_table_written_as_path() {
 
 #[test]
 fn test_rel_4_hidden_row_in_same_table_gives_reason() {
-    // [REL-4] 行き先が今の表にあるのに絞り込みで隠れていれば、開き直さずに理由を出す。
+    // [utest -> req~relations.follow-link-open~1, req~relations.follow-link-missing~1] 行き先が今の表にあるのに絞り込みで隠れていれば、開き直さずに理由を出す。
     let tmp = workspace("rel_hidden");
     let dir = tmp.notes();
     let src = Markdown::open(std::slice::from_ref(&dir)).unwrap();
@@ -266,7 +266,7 @@ fn test_rel_4_hidden_row_in_same_table_gives_reason() {
 
 #[test]
 fn test_rel_10_resolves_again_after_save() {
-    // [REL-10][REL-1] 保存のあとは解き直す(行き先を作ったら印が消える)。
+    // [utest -> req~relations.broken-link~1, req~relations.link-forms-kinds~1, req~relations.link-forms-resolve~1, req~relations.link-forms-outside~1] 保存のあとは解き直す(行き先を作ったら印が消える)。
     let tmp = workspace("rel_resolve_again");
     let a = boot_tasks(&tmp);
     let row = row_of(&a, "b docs");
@@ -283,7 +283,7 @@ fn test_rel_10_resolves_again_after_save() {
 
 #[test]
 fn test_rel_5_menu_offers_linked_rows_with_registered_tables() {
-    // [REL-5][SR-24] 登録した表があれば、操作の一覧に「つながった行」を出す。
+    // [utest -> req~relations.backlinks-scope~1, req~screen.action-menu-hide-unavailable~1, req~screen.action-menu-too-low~1] 登録した表があれば、操作の一覧に「つながった行」を出す。
     let tmp = workspace("rel_menu_back");
     let a = boot_tasks(&tmp);
     assert!(menu::item_actions(&a).contains(&Action::LinkedRows));

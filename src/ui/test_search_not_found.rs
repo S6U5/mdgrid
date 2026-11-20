@@ -1,10 +1,11 @@
-//! [NV-1] `/` で一致の無い語を Enter で確定しても、「見つからない: 語」がメッセージ行に残る
-//! (specs/_changes/2026-10-06-english-wording.md)。
+//! [navigation.find] `/` で一致の無い語を Enter で確定しても、「見つからない: 語」がメッセージ行に残る
+//! (specs/_history/decidespec/_changes/2026-10-06-english-wording.md)。
 
 use super::keymap::Mode;
 use super::test_screen::{ch, make, press, typing};
 use ratatui::crossterm::event::KeyCode;
 
+// [utest -> req~navigation.find~1]
 #[test]
 fn test_nv_1_not_found_stays_after_enter() {
     let (_t, mut a) = make("nv1_nf", &[("a.md", "---\nstatus: todo\n---\n")]);
@@ -19,6 +20,7 @@ fn test_nv_1_not_found_stays_after_enter() {
     );
 }
 
+// [utest -> req~navigation.find~1]
 #[test]
 fn test_nv_1_found_has_no_not_found() {
     let (_t, mut a) = make("nv1_f", &[("a.md", "---\nstatus: todo\n---\n")]);

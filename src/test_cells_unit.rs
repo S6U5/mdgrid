@@ -10,7 +10,7 @@ fn parse(text: &str) -> (Cells, crate::style::Style, Vec<String>) {
 
 #[test]
 fn test_sr_35_cells_string_and_table() {
-    // [SR-35] look.cells は全体の切り替え。部品の種類ごとは [look.style] の文字のままの形、列ごとは [look.columns]。
+    // [utest -> req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] look.cells は全体の切り替え。部品の種類ごとは [look.style] の文字のままの形、列ごとは [look.columns]。
     // 列の設定が部品の形より優先。
     let (c, s, w) = parse("");
     assert!(w.is_empty());
@@ -37,7 +37,7 @@ fn test_sr_35_cells_string_and_table() {
 
 #[test]
 fn test_sr_35_cells_bad_values_warn() {
-    // [SR-35] 知らない値は警告して既定(rich)のまま。
+    // [utest -> req~screen.rich-cells-parts~1] 知らない値は警告して既定(rich)のまま。
     for text in [
         "[look]\ncells = \"fancy\"\n",
         "[look.style]\ncheck = \"yes\"\n",
@@ -52,7 +52,7 @@ fn test_sr_35_cells_bad_values_warn() {
 
 #[test]
 fn test_sr_35_select_detection() {
-    // [SR-35] 種類の少ない短い文字の列: くり返しがあり、違う値が少なく、短い。
+    // [utest -> req~screen.rich-cells-parts~1] 種類の少ない短い文字の列: くり返しがあり、違う値が少なく、短い。
     assert!(looks_like_select(
         ["todo", "doing", "todo", "done", "todo", "doing"].into_iter()
     ));

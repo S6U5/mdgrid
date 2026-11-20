@@ -45,7 +45,7 @@ fn links(text: &str) -> Vec<String> {
 
 #[test]
 fn test_sr_38_pages_manual_images_are_scenes() {
-    // [SR-38] 説明書(日英)が指す images/X.svg は、どれも撮る場面の id。場面の id は重ならない。
+    // [utest -> req~screen.style-catalog-offline~1] 説明書(日英)が指す images/X.svg は、どれも撮る場面の id。場面の id は重ならない。
     let ids = scene_ids();
     let set: HashSet<&String> = ids.iter().collect();
     assert_eq!(set.len(), ids.len(), "場面の id が重なっている");
@@ -77,7 +77,7 @@ fn test_sr_38_pages_manual_images_are_scenes() {
 
 #[test]
 fn test_sr_38_pages_manual_links_resolve() {
-    // [SR-38] 説明書のページから docs/ の中を指すリンク(画像と見本の保管庫の外)は、在るファイルを指す。
+    // [utest -> req~screen.style-catalog-page~1, req~screen.style-catalog-offline~1] 説明書のページから docs/ の中を指すリンク(画像と見本の保管庫の外)は、在るファイルを指す。
     for l in ["ja", "en"] {
         let dir = root().join("docs/manual").join(l);
         for e in std::fs::read_dir(&dir).unwrap() {
@@ -106,7 +106,7 @@ fn test_sr_38_pages_manual_links_resolve() {
 
 #[test]
 fn test_sr_38_pages_workflow_shoots_and_builds() {
-    // [SR-38] workflow は本物の mdgrid を作って画面を撮り、scripts/pages.py で site/ を作って上げる。
+    // [utest -> req~screen.style-catalog-page~1] workflow は本物の mdgrid を作って画面を撮り、scripts/pages.py で site/ を作って上げる。
     // 画面の画像はリポに入れない(.gitignore)。
     let wf = std::fs::read_to_string(root().join(".github/workflows/pages.yml")).unwrap();
     for want in [

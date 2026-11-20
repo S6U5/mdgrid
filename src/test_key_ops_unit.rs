@@ -1,5 +1,5 @@
-//! [WB-1][WB-2] キーの名前の変更はキーの文字だけ、キーの削除はキーの行と値の続きの行だけを変える(CE-29)。
-//! specs/_changes/2026-10-06-key-rename-delete.md。
+//! [write-back.byte-range][write-back.frontmatter-only] キーの名前の変更はキーの文字だけ、キーの削除はキーの行と値の続きの行だけを変える(CE-29)。
+//! specs/_history/decidespec/_changes/2026-10-06-key-rename-delete.md。
 
 use super::{apply, Edit, EditError};
 use crate::source::NewValue;
@@ -26,6 +26,7 @@ fn delete(src: &str, key: &str) -> Result<String, EditError> {
     .map(|b| String::from_utf8(b).unwrap())
 }
 
+// [utest -> req~write-back.byte-range-value~1, req~write-back.byte-range-null~1, req~write-back.byte-range-rename-key~1]
 #[test]
 fn test_wb_1_key_ops_rename_keeps_other_bytes() {
     let src = "---\na: 1\nb: [x, y]\nc0: z\n---\nbody\n";
@@ -57,6 +58,7 @@ fn test_wb_1_key_ops_rename_refuses_existing_name() {
     assert!(rename("---\na: 1\n---\n", "a", "x\ny").is_err());
 }
 
+// [utest -> req~write-back.byte-range-delete-key~1]
 #[test]
 fn test_wb_1_key_ops_delete_block_list_keeps_next_comment() {
     let src = "---\ntitle: t\ntags:\n  - x\n  - y\n\n# about b\nb: 2\n---\nbody\n";
@@ -66,6 +68,7 @@ fn test_wb_1_key_ops_delete_block_list_keeps_next_comment() {
     );
 }
 
+// [utest -> req~write-back.byte-range-value~1, req~write-back.byte-range-add-frontmatter~1, req~write-back.byte-range-added-newline~1, req~write-back.byte-range-delete-key~1]
 #[test]
 fn test_wb_1_key_ops_delete_multiline_and_last() {
     let src = "---\nnote: |\n  l1\n  l2\nb: 1 # c\n---\n";
@@ -87,6 +90,7 @@ fn test_wb_1_key_ops_delete_multiline_and_last() {
     );
 }
 
+// [utest -> req~write-back.byte-range-rename-key~1, req~write-back.byte-range-delete-key~1]
 #[test]
 fn test_wb_1_key_ops_review_cases() {
     // アンカーを使われているキーは消さない(読めない YAML にしない)。

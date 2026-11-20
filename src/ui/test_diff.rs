@@ -7,7 +7,7 @@ fn s(x: &str) -> String {
 
 #[test]
 fn test_wb_9_line_diff_with_context() {
-    // [WB-9] 値だけが変わった行を `-` / `+`、前後1行の文脈。離れた2か所は省略の印で区切る。
+    // 値だけが変わった行を `-` / `+`、前後1行の文脈。離れた2か所は省略の印で区切る。
     let before = "---\ntitle: a\nstatus: todo\ndue: x\nk1: 1\nk2: 2\nk3: 3\nlast: z\n---\nbody\n";
     let after = "---\ntitle: a\nstatus: done\ndue: x\nk1: 1\nk2: 2\nk3: 3\nlast: y\n---\nbody\n";
     assert_eq!(
@@ -24,7 +24,7 @@ fn test_wb_9_line_diff_with_context() {
             Same(s("---")),
         ]
     );
-    // [WB-3] キーを足す1行だけ。CRLF は見せない。
+    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-key-empty-frontmatter~1] キーを足す1行だけ。CRLF は見せない。
     let before = "---\r\na: 1\r\n---\r\n";
     let after = "---\r\na: 1\r\nb: x\r\n---\r\n";
     assert_eq!(

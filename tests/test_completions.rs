@@ -90,12 +90,14 @@ fn fish_has_long(text: &str, opt: &str) -> bool {
     })
 }
 
+// [stest -> req~cli.completions-man-shells~1]
 #[test]
 fn test_cli_13_completions_bash() {
     let text = completions("bash");
     assert!(text.contains("complete"), "bash の補完に complete が無い");
 }
 
+// [stest -> req~cli.completions-man-shells~1]
 #[test]
 fn test_cli_13_completions_zsh() {
     let text = completions("zsh");
@@ -121,6 +123,7 @@ fn test_cli_13_completions_powershell() {
     completions("powershell");
 }
 
+// [stest -> req~cli.completions-man-shells~1]
 #[test]
 fn test_cli_13_completions_all_shells_differ() {
     // 5つのシェルの出力はそれぞれのシェルの形で、同じものの使い回しではない。
@@ -148,6 +151,7 @@ fn test_cli_13_completions_missing_value() {
     assert_one_line_error(&out, "値の無い --completions");
 }
 
+// [stest -> req~cli.completions-man-roff~1]
 #[test]
 fn test_cli_13_man() {
     let out = run(&["--man"]);
@@ -169,6 +173,7 @@ fn test_cli_13_man() {
     }
 }
 
+// [stest -> req~cli.completions-man-shells~1, req~cli.completions-man-roff~1]
 #[test]
 fn test_cli_13_help_lists_new_options() {
     let out = run(&["--help"]);
@@ -186,6 +191,7 @@ fn test_cli_13_help_lists_new_options() {
     assert!(text.contains("--man"), "--help に --man が無い");
 }
 
+// [stest -> req~cli.completions-man-roff~1]
 #[test]
 fn test_cli_13_man_after_double_dash_is_path() {
     // `--` の後ろの `--man` はパスとして扱う。`--man` という名前のものが無い空のフォルダで動かす。

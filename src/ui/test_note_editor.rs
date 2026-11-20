@@ -1,4 +1,4 @@
-//! [CE-33] 新しいノートをフォームかエディタかで作る。specs/_changes/2026-10-07-new-note-editor.md。
+//! [cell-edit.new-note-mode] 新しいノートをフォームかエディタかで作る。specs/_history/decidespec/_changes/2026-10-07-new-note-editor.md。
 
 use super::keymap::Mode;
 use super::startup::Startup;
@@ -32,6 +32,7 @@ fn boot(tmp: &Tmp, toml: &str) -> App {
     app
 }
 
+// [utest -> req~cell-edit.new-note-mode-editor-ask~1, req~cell-edit.new-note-mode-editor-open~1]
 #[test]
 fn test_ce_33_editor_mode_creates_and_opens() {
     let tmp = Tmp::new("ce33editor");
@@ -52,6 +53,7 @@ fn test_ce_33_editor_mode_creates_and_opens() {
     assert!(a.wants_editor());
 }
 
+// [utest -> req~cell-edit.new-note-mode-select~1, req~cell-edit.new-note-mode-editor-open~1, req~cell-edit.new-note-mode-form-ctrl-e~1]
 #[test]
 fn test_ce_33_form_ctrl_e_creates_and_opens() {
     let tmp = Tmp::new("ce33ctrle");
@@ -71,6 +73,7 @@ fn test_ce_33_form_ctrl_e_creates_and_opens() {
     assert!(!b.wants_editor());
 }
 
+// [utest -> req~cell-edit.new-note-mode-select~1]
 #[test]
 fn test_ce_33_bad_mode_warns_and_uses_form() {
     let (c, warnings) = mdgrid::config::parse("[new_note]\nmode = \"vim\"\n").unwrap();

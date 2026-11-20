@@ -1,5 +1,5 @@
 //! 画面の文言の言語(SR-23)の受け入れ試験(タスク4: 残りの画面のメッセージと確認の画面)。
-//! 記録: specs/_changes/2026-10-03-language.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-03-language.md。
 //! 画面の実装を見ずに、`mdgrid::i18n::scoped` でこのスレッドだけ言語を変え、80×24 の画面の文字で確かめる。
 //! 試験の環境は .cargo/config.toml で日本語に固定されている。
 //!
@@ -190,7 +190,7 @@ fn sel_to(a: &mut App, to: usize) {
 
 #[test]
 fn test_sr_23_ui_more_save_confirm_english() {
-    // [SR-23] 英語では、セルを直して Ctrl+S で開く保存の確認(差分)の画面と、保存したあとのメッセージに日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、セルを直して Ctrl+S で開く保存の確認(差分)の画面と、保存したあとのメッセージに日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr23save", EN_NOTES);
     edit_cell(&mut a, 0, "status", "doing");
@@ -216,7 +216,7 @@ fn test_sr_23_ui_more_save_confirm_english() {
 
 #[test]
 fn test_sr_23_ui_more_quit_confirm_english() {
-    // [SR-23] 英語では、未保存の変更があるときの `q` の終了の確認に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、未保存の変更があるときの `q` の終了の確認に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr23quit", EN_NOTES);
     edit_cell(&mut a, 0, "status", "doing");
@@ -233,7 +233,7 @@ fn test_sr_23_ui_more_quit_confirm_english() {
 
 #[test]
 fn test_sr_23_ui_more_input_hints_english() {
-    // [SR-23] 英語では、数・日付・テキストのセルの入力の案内と、読めない値の理由に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、数・日付・テキストのセルの入力の案内と、読めない値の理由に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = date_vault(
         "sr23input",
@@ -292,7 +292,7 @@ fn test_sr_23_ui_more_input_hints_english() {
 
 #[test]
 fn test_sr_23_ui_more_list_pick_english() {
-    // [SR-23] 英語では、tags の列で開くリストの選択(候補・件数・新規・案内)に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、tags の列で開くリストの選択(候補・件数・新規・案内)に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make(
         "sr23pick",
@@ -315,7 +315,7 @@ fn test_sr_23_ui_more_list_pick_english() {
 
 #[test]
 fn test_sr_23_ui_more_detail_english() {
-    // [SR-23] 英語では、`K` の詳細の表示の見出しと行に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、`K` の詳細の表示の見出しと行に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make(
         "sr23detail",
@@ -338,7 +338,7 @@ fn test_sr_23_ui_more_detail_english() {
 
 #[test]
 fn test_sr_23_ui_more_view_settings_english() {
-    // [SR-23] 英語では、`o`(docs/keys.md の view_settings)のビューの設定の画面・列の選び手・値の一覧・
+    // [utest -> req~screen.locales-two-languages~1] 英語では、`o`(docs/keys.md の view_settings)のビューの設定の画面・列の選び手・値の一覧・
     // 反映のあとの表の上の帯とメッセージに日本語の文字が無い。
     let _g = scoped(Lang::En);
     let tmp = vault_of("sr23set", EN_VAULT);
@@ -397,7 +397,7 @@ fn test_sr_23_ui_more_view_settings_english() {
 
 #[test]
 fn test_sr_23_ui_more_new_note_name_english() {
-    // [SR-23] 英語では、`a` で開く新しいノートの名前の欄と、`../x` で作れない理由に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1] 英語では、`a` で開く新しいノートの名前の欄と、`../x` で作れない理由に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let tmp = vault_of("sr23note", EN_NOTES);
     let mut a = boot(&tmp);
@@ -418,7 +418,7 @@ fn test_sr_23_ui_more_new_note_name_english() {
 
 #[test]
 fn test_sr_23_ui_more_read_only_reason_english() {
-    // [SR-23] 英語では、読むだけのセル(2行にまたがるフローのリスト)を選んだときの下の帯・メッセージ行の理由と、
+    // [utest -> req~screen.locales-two-languages~1] 英語では、読むだけのセル(2行にまたがるフローのリスト)を選んだときの下の帯・メッセージ行の理由と、
     // そこで Backspace を押したときの理由に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make(
@@ -444,7 +444,7 @@ fn test_sr_23_ui_more_read_only_reason_english() {
 
 #[test]
 fn test_sr_23_ui_more_default_tab_english() {
-    // [SR-23] 英語では、mdgrid のビューがあるときのタブの「既定の表」に当たる名前に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、mdgrid のビューがあるときのタブの「既定の表」に当たる名前に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let tmp = vault_of("sr23tab", EN_NOTES);
     let conf = tmp.0.join("config");
@@ -498,7 +498,7 @@ fn test_sr_23_ui_more_default_tab_english() {
 
 #[test]
 fn test_sr_23_ui_more_japanese_unchanged() {
-    // [SR-23] 同じ画面を日本語で開くと今の日本語のまま(終了の確認と、ビューの設定の画面)。
+    // [utest -> req~screen.locales-two-languages~1] 同じ画面を日本語で開くと今の日本語のまま(終了の確認と、ビューの設定の画面)。
     let _g = scoped(Lang::Ja);
 
     // 終了の確認(WB-11 と同じ文字)。

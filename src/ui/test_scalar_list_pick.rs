@@ -1,5 +1,5 @@
-//! [CE-19] リストの列の1つの文字列(`tags: x`)は、1つの要素のリストとして開き、確定でリストになる。
-//! specs/_changes/2026-10-07-scalar-list-edit.md。
+//! [cell-edit.list-candidates] リストの列の1つの文字列(`tags: x`)は、1つの要素のリストとして開き、確定でリストになる。
+//! specs/_history/decidespec/_changes/2026-10-07-scalar-list-edit.md。
 
 use super::super::keymap::Mode;
 use super::super::test_screen::{app_of, col_named, press, typing, Tmp};
@@ -7,6 +7,7 @@ use super::super::ColorMode;
 use mdgrid::source::NewValue;
 use ratatui::crossterm::event::KeyCode;
 
+// [utest -> req~cell-edit.list-candidates-scalar-open~1]
 #[test]
 fn test_ce_19_scalar_list_opens_as_one_item() {
     let tmp = Tmp::new("ce19scalar");

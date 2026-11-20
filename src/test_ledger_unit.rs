@@ -1,5 +1,5 @@
 //! 文言の台帳の読み方と確かめ方(SR-23)。build.rs と同じ関数で、欠け・余り・空・差し込みの番号の食い違いを
-//! 誤りにする(ビルドはこの誤りで落ちる)。記録: specs/_changes/2026-10-13-locales.md(タスク #2)。
+//! 誤りにする(ビルドはこの誤りで落ちる)。記録: specs/_history/decidespec/_changes/2026-10-13-locales.md(タスク #2)。
 
 use super::*;
 
@@ -11,7 +11,7 @@ fn en() -> Vec<Entry> {
 
 #[test]
 fn test_sr_23_ledger_reads_keys_docs_in_order() {
-    // [SR-23] 名前・説明(`##`)・文を行の順に読む。`#` の行は区切りで説明にしない。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-ledger~1, req~screen.locales-no-translate~1] 名前・説明(`##`)・文を行の順に読む。`#` の行は区切りで説明にしない。
     let e = en();
     assert_eq!(e.len(), 2);
     assert_eq!(
@@ -25,7 +25,7 @@ fn test_sr_23_ledger_reads_keys_docs_in_order() {
 
 #[test]
 fn test_sr_23_ledger_complete_has_no_problems() {
-    // [SR-23] 同じ名前と番号の台帳は誤りなし。
+    // [utest -> req~screen.locales-ledger~1] 同じ名前と番号の台帳は誤りなし。
     let ja = parse(
         "ja.toml",
         "Hello = \"こんにちは {0}\"\nBye = \"さようなら\"\n",
@@ -37,7 +37,7 @@ fn test_sr_23_ledger_complete_has_no_problems() {
 
 #[test]
 fn test_sr_23_ledger_missing_and_extra() {
-    // [SR-23] 欠け・余り → 名前を示す誤り。
+    // [utest -> req~screen.locales-ledger~1] 欠け・余り → 名前を示す誤り。
     let ja = parse("ja.toml", "Hello = \"こんにちは {0}\"\nExtra = \"余り\"\n").unwrap();
     let p = check(&en(), "ja.toml", &ja);
     assert!(
@@ -49,7 +49,7 @@ fn test_sr_23_ledger_missing_and_extra() {
 
 #[test]
 fn test_sr_23_ledger_placeholder_mismatch() {
-    // [SR-23] 差し込みの番号の組が英語と違う → 誤り。
+    // [utest -> req~screen.locales-ledger~1] 差し込みの番号の組が英語と違う → 誤り。
     let ja = parse(
         "ja.toml",
         "Hello = \"こんにちは {1}\"\nBye = \"さようなら\"\n",
@@ -65,7 +65,7 @@ fn test_sr_23_ledger_placeholder_mismatch() {
 
 #[test]
 fn test_sr_23_ledger_empty_and_bad_lines() {
-    // [SR-23] 空の文・名前の形・2つある名前・1行に1つでない書き方 → 誤り。
+    // [utest -> req~screen.locales-ledger~1] 空の文・名前の形・2つある名前・1行に1つでない書き方 → 誤り。
     let ja = parse("ja.toml", "Hello = \" \"\nBye = \"x\"\n").unwrap();
     assert!(check(&en(), "ja.toml", &ja)
         .iter()
@@ -85,7 +85,7 @@ fn test_sr_23_ledger_empty_and_bad_lines() {
 
 #[test]
 fn test_sr_23_ledger_placeholders() {
-    // [SR-23] `{数字}` だけを番号に数える。
+    // [utest -> req~screen.locales-ledger~1] `{数字}` だけを番号に数える。
     let p = placeholders("{0} {12} {x} {} {3");
     assert_eq!(p.into_iter().collect::<Vec<_>>(), vec![0, 12]);
 }

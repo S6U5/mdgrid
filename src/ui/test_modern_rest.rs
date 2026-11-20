@@ -22,7 +22,7 @@ fn reversed_cells(a: &App) -> usize {
 
 #[test]
 fn test_sr_33_no_reverse_left_in_modern() {
-    // [SR-33] モダンな見た目では、ビューの設定の画面にも反転が無い。classic では反転のまま(選びの印)。
+    // [utest -> req~screen.modern-look-frames~1, req~screen.modern-look-parts~1, req~screen.modern-look-colors~1, req~screen.modern-look-classic~1] モダンな見た目では、ビューの設定の画面にも反転が無い。classic では反転のまま(選びの印)。
     let tmp = notes("sr33_rest");
     let mut a = app_of(&tmp, ColorMode::Rgb);
     ch(&mut a, 'o');
@@ -37,7 +37,7 @@ fn test_sr_33_no_reverse_left_in_modern() {
 
 #[test]
 fn test_sr_33_help_keys_accent() {
-    // [SR-33] モダンな見た目のヘルプでは、キーの欄(Enter)をアクセントの色にする。文字は同じ。
+    // [utest -> req~screen.modern-look-frames~1, req~screen.modern-look-parts~1] モダンな見た目のヘルプでは、キーの欄(Enter)をアクセントの色にする。文字は同じ。
     let tmp = notes("sr33_help");
     let mut a = app_of(&tmp, ColorMode::Rgb);
     ch(&mut a, '?');

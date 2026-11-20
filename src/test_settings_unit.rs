@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_nv_19_datetime_cmp_reads_time() {
-    // [NV-19] 日時の列は時刻まで比べ、日付だけの値は 00:00。
+    // [utest -> req~navigation.filter-conditions-more~1] 日時の列は時刻まで比べ、日付だけの値は 00:00。
     let c = Cond {
         col: "at".to_string(),
         op: Op::Cmp(CmpOp::Gt, "2026-10-01T09:00".to_string()),
@@ -17,7 +17,7 @@ fn test_nv_19_datetime_cmp_reads_time() {
 
 #[test]
 fn test_nv_19_bad_operand_keeps_nothing() {
-    // [NV-19] 比較の値が列の型で読めなければ、どの行も残らない。
+    // [utest -> req~navigation.filter-conditions-more~1] 比較の値が列の型で読めなければ、どの行も残らない。
     let c = Cond {
         col: "n".to_string(),
         op: Op::Cmp(CmpOp::Ge, "abc".to_string()),
@@ -27,7 +27,7 @@ fn test_nv_19_bad_operand_keeps_nothing() {
 
 #[test]
 fn test_nv_19_value_keys_display() {
-    // [NV-19] 表示の文字列: Int は "3"、Float は Rust の表記、Bool は "true"/"false"。
+    // [utest -> req~navigation.filter-conditions-all~1] 表示の文字列: Int は "3"、Float は Rust の表記、Bool は "true"/"false"。
     assert_eq!(
         value_keys(Some(&Value::Int(3))),
         vec![Some("3".to_string())]
@@ -44,7 +44,7 @@ fn test_nv_19_value_keys_display() {
 
 #[test]
 fn test_nv_17_keys_toml_form() {
-    // [NV-17] Keep・Drop の値は `{ value = "..." }` と `{ empty = true }` の表の配列で書く。
+    // [utest -> req~navigation.settings-remember~1] Keep・Drop の値は `{ value = "..." }` と `{ empty = true }` の表の配列で書く。
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
     struct W {
         s: Settings,
@@ -66,7 +66,7 @@ fn test_nv_17_keys_toml_form() {
 
 #[test]
 fn test_nv_15_inherit_drops_emptied_groups() {
-    // [NV-15] Inherit で絞ってまとまりが空になったら、その見出しは出さない。
+    // [utest -> req~navigation.settings-group~1] Inherit で絞ってまとまりが空になったら、その見出しは出さない。
     let rows: Vec<RowId> = ["a", "b", "c"]
         .iter()
         .map(|s| RowId(s.to_string()))
@@ -89,7 +89,7 @@ fn test_nv_15_inherit_drops_emptied_groups() {
 
 #[test]
 fn test_nv_19_ne_on_list_needs_every_element_unequal() {
-    // [NV-19] リストの値に ≠ を当てる → 等しい要素が1つでもあれば残らない。
+    // [utest -> req~navigation.filter-conditions-checklist~1, req~navigation.filter-conditions-more~1] リストの値に ≠ を当てる → 等しい要素が1つでもあれば残らない。
     let c = Cond {
         col: "tags".to_string(),
         op: Op::Cmp(CmpOp::Ne, "会議".to_string()),
@@ -108,7 +108,7 @@ fn test_nv_19_ne_on_list_needs_every_element_unequal() {
 
 #[test]
 fn test_nv_15_sort_list_value_in_non_list_column_skips_empty_elements() {
-    // [NV-15] List でない列のリストの値は、空でない最初の要素で並べる([null, "b"] は "b")。
+    // [utest -> req~navigation.settings-group~1] List でない列のリストの値は、空でない最初の要素で並べる([null, "b"] は "b")。
     let rows: Vec<RowId> = ["x", "y"].iter().map(|s| RowId(s.to_string())).collect();
     let get = |r: &RowId, _: &str| -> Option<Value> {
         Some(if r.0 == "x" {
@@ -127,7 +127,7 @@ fn test_nv_15_sort_list_value_in_non_list_column_skips_empty_elements() {
 
 #[test]
 fn test_nv_17_broken_settings_keep_other_state() {
-    // [NV-17] 状態のファイルの settings の表が壊れていても、ほかの見た目の状態は読め、設定だけ既定。
+    // [utest -> req~navigation.settings-remember~1] 状態のファイルの settings の表が壊れていても、ほかの見た目の状態は読め、設定だけ既定。
     let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()

@@ -199,7 +199,7 @@ fn group_by(col: &str, dir: Dir, hide_empty: bool) -> Group {
 
 #[test]
 fn test_nv_14_drop_done_hides_done_rows() {
-    // [NV-14] status の done を外す → done の行が消える。
+    // [utest -> req~navigation.settings-filter~1] status の done を外す → done の行が消える。
     assert_eq!(
         filtered(vec![cond("status", Op::Drop(some(&["done"])))]),
         names(&["r1", "r3", "r4"])
@@ -208,7 +208,7 @@ fn test_nv_14_drop_done_hides_done_rows() {
 
 #[test]
 fn test_nv_14_keep_only_book_in_other_column() {
-    // [NV-14] status 以外の列(種別)でも効く。本 だけを残す → 本 の行だけ。
+    // [utest -> req~navigation.settings-filter~1] status 以外の列(種別)でも効く。本 だけを残す → 本 の行だけ。
     assert_eq!(
         filtered(vec![cond("種別", Op::Keep(some(&["本"])))]),
         names(&["r1", "r3", "r5"])
@@ -217,7 +217,7 @@ fn test_nv_14_keep_only_book_in_other_column() {
 
 #[test]
 fn test_nv_14_empty_value_can_be_kept_or_dropped() {
-    // [NV-14] キーの無い行は「(空)」(None)として選べる。
+    // [utest -> req~navigation.settings-filter~1] キーの無い行は「(空)」(None)として選べる。
     assert_eq!(
         filtered(vec![cond("status", Op::Keep(vec![None]))]),
         names(&["r3"])
@@ -238,7 +238,7 @@ fn test_nv_14_empty_value_can_be_kept_or_dropped() {
 
 #[test]
 fn test_nv_14_keep_works_on_number_column() {
-    // [NV-14] 数の列でも、値(表示の文字列)を選んで残せる。
+    // [utest -> req~navigation.settings-filter~1] 数の列でも、値(表示の文字列)を選んで残せる。
     assert_eq!(
         filtered(vec![cond("priority", Op::Keep(some(&["3"])))]),
         names(&["r3"])
@@ -247,7 +247,7 @@ fn test_nv_14_keep_works_on_number_column() {
 
 #[test]
 fn test_nv_14_matches_single_value() {
-    // [NV-14] matches は1つの値に条件を当てる。
+    // [utest -> req~navigation.settings-filter~1] matches は1つの値に条件を当てる。
     let drop_done = cond("status", Op::Drop(some(&["done"])));
     assert!(!matches(&drop_done, Some(&str_v("done")), Kind::Text));
     assert!(matches(&drop_done, Some(&str_v("todo")), Kind::Text));
@@ -261,7 +261,7 @@ fn test_nv_14_matches_single_value() {
 
 #[test]
 fn test_nv_14_no_filters_keeps_all_rows_in_order() {
-    // [NV-14] 条件が無ければ行はそのまま。
+    // [utest -> req~navigation.settings-filter~1] 条件が無ければ行はそのまま。
     let (rows, groups) = run(&Settings::default());
     assert_eq!(ids(&rows), names(&["r1", "r2", "r3", "r4", "r5"]));
     assert!(groups.is_empty());
@@ -271,7 +271,7 @@ fn test_nv_14_no_filters_keeps_all_rows_in_order() {
 
 #[test]
 fn test_nv_19_value_keys() {
-    // [NV-19] 値の鍵: 空は [None]、リストは要素ごと。
+    // [utest -> req~navigation.filter-conditions-checklist~1] 値の鍵: 空は [None]、リストは要素ごと。
     assert_eq!(value_keys(None), vec![None]);
     assert_eq!(value_keys(Some(&Value::Null)), vec![None]);
     assert_eq!(value_keys(Some(&str_v(""))), vec![None]);
@@ -285,7 +285,7 @@ fn test_nv_19_value_keys() {
 
 #[test]
 fn test_nv_19_value_counts_status() {
-    // [NV-19] 値の一覧は件数つき、空は None、件数の多い順。
+    // [utest -> req~navigation.filter-conditions-checklist~1, req~navigation.filter-conditions-all~1] 値の一覧は件数つき、空は None、件数の多い順。
     let t = table();
     let vals: Vec<Option<Value>> = t
         .rows
@@ -303,7 +303,7 @@ fn test_nv_19_value_counts_status() {
 
 #[test]
 fn test_nv_19_value_counts_list_per_element() {
-    // [NV-19] リストの値は要素ごとに数える。空のリストは「(空)」。
+    // [utest -> req~navigation.filter-conditions-checklist~1] リストの値は要素ごとに数える。空のリストは「(空)」。
     let t = table();
     let vals: Vec<Option<Value>> = t
         .rows
@@ -325,7 +325,7 @@ fn test_nv_19_value_counts_list_per_element() {
 
 #[test]
 fn test_nv_19_keep_list_element() {
-    // [NV-19] tags の値の一覧で 会議 だけにチェック → 会議 を要素に持つ行だけ。
+    // [utest -> req~navigation.filter-conditions-checklist~1] tags の値の一覧で 会議 だけにチェック → 会議 を要素に持つ行だけ。
     assert_eq!(
         filtered(vec![cond("tags", Op::Keep(some(&["会議"])))]),
         names(&["r1", "r4"])
@@ -339,7 +339,7 @@ fn test_nv_19_keep_list_element() {
 
 #[test]
 fn test_nv_19_contains_is_case_insensitive() {
-    // [NV-19] テキストの「含む・含まない」は大文字小文字を区別しない。
+    // [utest -> req~navigation.filter-conditions-more~1] テキストの「含む・含まない」は大文字小文字を区別しない。
     assert_eq!(
         filtered(vec![cond("title", Op::Contains("report".to_string()))]),
         names(&["r1", "r4"])
@@ -356,7 +356,7 @@ fn test_nv_19_contains_is_case_insensitive() {
 
 #[test]
 fn test_nv_19_number_cmp() {
-    // [NV-19] 数の比較: priority ≥ 3。型の合わない値("high")は残らない。
+    // [utest -> req~navigation.filter-conditions-more~1] 数の比較: priority ≥ 3。型の合わない値("high")は残らない。
     assert_eq!(
         filtered(vec![cond("priority", Op::Cmp(CmpOp::Ge, "3".to_string()))]),
         names(&["r1", "r3", "r5"])
@@ -386,7 +386,7 @@ fn test_nv_19_number_cmp() {
 
 #[test]
 fn test_nv_19_date_cmp_drops_mismatched_and_empty() {
-    // [NV-19] 日付の列の `< 2026-10-01` → それより前の行だけ。`someday` と空は残らない。
+    // [utest -> req~navigation.filter-conditions-more~1] 日付の列の `< 2026-10-01` → それより前の行だけ。`someday` と空は残らない。
     assert_eq!(
         filtered(vec![cond(
             "due",
@@ -409,7 +409,7 @@ fn test_nv_19_date_cmp_drops_mismatched_and_empty() {
 
 #[test]
 fn test_nv_19_empty_and_not_empty() {
-    // [NV-19] 「空である・空でない」。キーなし・空のリスト・空の文字列は空。
+    // [utest -> req~navigation.filter-conditions-more~1] 「空である・空でない」。キーなし・空のリスト・空の文字列は空。
     assert_eq!(filtered(vec![cond("status", Op::Empty)]), names(&["r3"]));
     assert_eq!(
         filtered(vec![cond("status", Op::NotEmpty)]),
@@ -421,7 +421,7 @@ fn test_nv_19_empty_and_not_empty() {
 
 #[test]
 fn test_nv_19_conditions_are_and() {
-    // [NV-19] priority `≥ 3` と status の done を外す を並べる → 両方を満たす行だけ。
+    // [utest -> req~navigation.filter-conditions-all~1] priority `≥ 3` と status の done を外す を並べる → 両方を満たす行だけ。
     assert_eq!(
         filtered(vec![
             cond("priority", Op::Cmp(CmpOp::Ge, "3".to_string())),
@@ -442,7 +442,7 @@ fn test_nv_19_conditions_are_and() {
 
 #[test]
 fn test_nv_15_inherit_keeps_given_groups() {
-    // [NV-15] Inherit は渡された groups(`.base` の groupBy の結果)のまま。
+    // [utest -> req~navigation.settings-group~1] Inherit は渡された groups(`.base` の groupBy の結果)のまま。
     let given = vec![("A".to_string(), 0..2), ("B".to_string(), 2..5)];
     let (rows, groups) = run_with_groups(&Settings::default(), given.clone());
     assert_eq!(ids(&rows), names(&["r1", "r2", "r3", "r4", "r5"]));
@@ -451,7 +451,7 @@ fn test_nv_15_inherit_keeps_given_groups() {
 
 #[test]
 fn test_nv_15_off_removes_groups() {
-    // [NV-15] 「しない」を選ぶ → 見出しが消える(.base の groupBy より優先)。
+    // [utest -> req~navigation.settings-group~1] 「しない」を選ぶ → 見出しが消える(.base の groupBy より優先)。
     let given = vec![("A".to_string(), 0..2), ("B".to_string(), 2..5)];
     let s = Settings {
         group: Group::Off,
@@ -464,7 +464,7 @@ fn test_nv_15_off_removes_groups() {
 
 #[test]
 fn test_nv_15_group_by_column_values() {
-    // [NV-15] 種別の列を選ぶ → 種別ごとの見出しと範囲。まとまりの中は元の順(安定)。
+    // [utest -> req~navigation.settings-group~1] 種別の列を選ぶ → 種別ごとの見出しと範囲。まとまりの中は元の順(安定)。
     let given = vec![("A".to_string(), 0..5)];
     let s = Settings {
         group: group_by("種別", Dir::Asc, false),
@@ -494,7 +494,7 @@ fn test_nv_15_group_by_column_values() {
 
 #[test]
 fn test_nv_15_group_by_list_column_does_not_lose_rows() {
-    // [NV-15] まとまりは全部の行を覆う(範囲が隙間なく続く)。
+    // [utest -> req~navigation.settings-group~1] まとまりは全部の行を覆う(範囲が隙間なく続く)。
     let s = Settings {
         group: group_by("status", Dir::Asc, false),
         ..Settings::default()
@@ -513,7 +513,7 @@ fn test_nv_15_group_by_list_column_does_not_lose_rows() {
 
 #[test]
 fn test_nv_15_sort_by_number_asc_desc() {
-    // [NV-15] 並べ替え: 数として並べ、型の合わない値は Asc でも Desc でも後ろ。
+    // [utest -> req~navigation.settings-group~1] 並べ替え: 数として並べ、型の合わない値は Asc でも Desc でも後ろ。
     assert_eq!(
         sorted(vec![("priority", Dir::Asc)]),
         names(&["r2", "r3", "r5", "r1", "r4"])
@@ -526,7 +526,7 @@ fn test_nv_15_sort_by_number_asc_desc() {
 
 #[test]
 fn test_nv_15_sort_by_date_puts_mismatched_and_empty_last() {
-    // [NV-15] 日付の並べ替え: `someday` と空は後ろ(Desc でも)。
+    // [utest -> req~navigation.settings-group~1] 日付の並べ替え: `someday` と空は後ろ(Desc でも)。
     let asc = sorted(vec![("due", Dir::Asc)]);
     assert_eq!(asc[..3].to_vec(), names(&["r1", "r5", "r2"]));
     let mut tail = asc[3..].to_vec();
@@ -542,7 +542,7 @@ fn test_nv_15_sort_by_date_puts_mismatched_and_empty_last() {
 
 #[test]
 fn test_nv_15_sort_is_stable_and_empty_last() {
-    // [NV-15] 並べ替えは安定(同じ値は元の順)。空は Desc でも後ろ。
+    // [utest -> req~navigation.settings-group~1] 並べ替えは安定(同じ値は元の順)。空は Desc でも後ろ。
     assert_eq!(
         sorted(vec![("種別", Dir::Asc)]),
         names(&["r1", "r3", "r5", "r2", "r4"])
@@ -555,7 +555,7 @@ fn test_nv_15_sort_is_stable_and_empty_last() {
 
 #[test]
 fn test_nv_15_multiple_sorts() {
-    // [NV-15] 複数の列で並べる: 種別 ↑ → priority ↓。
+    // [utest -> req~navigation.settings-group~1] 複数の列で並べる: 種別 ↑ → priority ↓。
     assert_eq!(
         sorted(vec![("種別", Dir::Asc), ("priority", Dir::Desc)]),
         names(&["r1", "r5", "r3", "r2", "r4"])
@@ -564,7 +564,7 @@ fn test_nv_15_multiple_sorts() {
 
 #[test]
 fn test_nv_15_group_by_with_sort_inside_groups() {
-    // [NV-15] まとまりの中は sorts の順。
+    // [utest -> req~navigation.settings-group~1] まとまりの中は sorts の順。
     let s = Settings {
         sorts: vec![("priority".to_string(), Dir::Desc)],
         group: group_by("種別", Dir::Asc, false),
@@ -581,7 +581,7 @@ fn test_nv_15_group_by_with_sort_inside_groups() {
 
 #[test]
 fn test_nv_15_filter_then_group() {
-    // [NV-15] 絞った行だけをまとめる。
+    // [utest -> req~navigation.settings-group~1] 絞った行だけをまとめる。
     let s = Settings {
         filters: vec![cond("status", Op::Drop(some(&["done"])))],
         group: group_by("種別", Dir::Asc, false),
@@ -603,7 +603,7 @@ fn test_nv_15_filter_then_group() {
 
 #[test]
 fn test_nv_21_hide_empty_group() {
-    // [NV-21] status でグループ分けし、空を隠す → (空) の見出しと行が出ない。
+    // [utest -> req~navigation.group-options~1] status でグループ分けし、空を隠す → (空) の見出しと行が出ない。
     let s = Settings {
         group: group_by("status", Dir::Asc, true),
         ..Settings::default()
@@ -630,7 +630,7 @@ fn test_nv_21_hide_empty_group() {
 
 #[test]
 fn test_nv_21_group_dir_desc_reverses_groups() {
-    // [NV-21] まとまりの並び: Asc は doing → done → todo、Desc は逆。
+    // [utest -> req~navigation.group-options~1] まとまりの並び: Asc は doing → done → todo、Desc は逆。
     let order = |dir: Dir| -> Vec<String> {
         let s = Settings {
             group: group_by("status", dir, true),
@@ -650,7 +650,7 @@ fn test_nv_21_group_dir_desc_reverses_groups() {
 
 #[test]
 fn test_nv_16_settings_default_and_chips() {
-    // [NV-16] [NV-17] 既定の設定は is_default、帯の項目は無い。
+    // [utest -> req~navigation.settings-bar-items~1, req~navigation.settings-remember~1] 既定の設定は is_default、帯の項目は無い。
     let d = Settings::default();
     assert!(d.is_default());
     assert!(d.chips().is_empty());
@@ -759,7 +759,7 @@ fn full_settings() -> Settings {
 
 #[test]
 fn test_nv_17_settings_round_trip_in_view_state() {
-    // [NV-17] 設定は見た目の状態に覚え、次に同じものを開いたときに同じ値に戻る。
+    // [utest -> req~navigation.settings-remember~1] 設定は見た目の状態に覚え、次に同じものを開いたときに同じ値に戻る。
     let t = TempDir::new("roundtrip");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -785,7 +785,7 @@ fn test_nv_17_settings_round_trip_in_view_state() {
 
 #[test]
 fn test_nv_17_round_trip_keeps_empty_value_choice() {
-    // [NV-17] 「(空)」(None)を選んだ条件も覚えて戻る。
+    // [utest -> req~navigation.settings-remember~1] 「(空)」(None)を選んだ条件も覚えて戻る。
     let t = TempDir::new("emptychoice");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -804,7 +804,7 @@ fn test_nv_17_round_trip_keeps_empty_value_choice() {
 
 #[test]
 fn test_nv_17_settings_are_per_view() {
-    // [NV-17] ビューごとに覚える。
+    // [utest -> req~navigation.settings-remember~1] ビューごとに覚える。
     let t = TempDir::new("perview");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");
@@ -817,7 +817,7 @@ fn test_nv_17_settings_are_per_view() {
 
 #[test]
 fn test_nv_17_old_state_file_without_settings_loads() {
-    // [NV-17] settings のキーが無い古い形の状態のファイルも読め、settings は既定。
+    // [utest -> req~navigation.settings-remember~1] settings のキーが無い古い形の状態のファイルも読め、settings は既定。
     let t = TempDir::new("oldform");
     let dir = t.mkdir("state");
     let notes = t.mkdir("notes");

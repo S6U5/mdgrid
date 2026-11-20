@@ -169,7 +169,7 @@ fn pend(a: &mut App) {
 
 #[test]
 fn test_ws_8_no_drawer_by_default() {
-    // [WS-8] 普段の画面に引き出しの帯は無い(ほかのワークスペースの名前も、範囲のほかの表の名前も出ない)。
+    // [utest -> req~workspace.drawer-hidden~1, req~workspace.drawer-others~1, req~workspace.drawer-expand~1] 普段の画面に引き出しの帯は無い(ほかのワークスペースの名前も、範囲のほかの表の名前も出ない)。
     let (_tmp, a) = boot_work("ws8_default");
     assert_eq!(a.mode, Mode::Table);
     let s = scr(&a);
@@ -181,7 +181,7 @@ fn test_ws_8_no_drawer_by_default() {
 
 #[test]
 fn test_ws_8_w_opens_scope_tables_with_mark() {
-    // [WS-8] `w` で開く → 左の端に今の範囲の表(Tasks・Projects)が並び、その下にほかのワークスペース Hobby の
+    // [utest -> req~workspace.drawer-others~1] `w` で開く → 左の端に今の範囲の表(Tasks・Projects)が並び、その下にほかのワークスペース Hobby の
     // 見出しだけ(Books は畳まれて出ない)。今の表 Tasks には、選びの位置と関係なく印がある。
     let (_tmp, mut a) = boot_work("ws8_open");
     ch(&mut a, 'w');
@@ -211,7 +211,7 @@ fn test_ws_8_w_opens_scope_tables_with_mark() {
 
 #[test]
 fn test_ws_8_palette_opens() {
-    // [WS-8] パレットの動作 workspace_drawer でも開く。
+    // [utest -> req~workspace.drawer-open~1] パレットの動作 workspace_drawer でも開く。
     let (_tmp, mut a) = boot_work("ws8_palette");
     ch(&mut a, ':');
     typing(&mut a, "workspace_drawer");
@@ -222,7 +222,7 @@ fn test_ws_8_palette_opens() {
 
 #[test]
 fn test_ws_8_enter_switches_and_closes() {
-    // [WS-8] Projects を Enter → switch_to が Projects、範囲は Work のまま。引き出しは閉じ、変更が無いのですぐ移る。
+    // [utest -> req~workspace.drawer-close~1, req~workspace.drawer-unsaved~1] Projects を Enter → switch_to が Projects、範囲は Work のまま。引き出しは閉じ、変更が無いのですぐ移る。
     let (tmp, mut a) = boot_work("ws8_enter");
     ch(&mut a, 'w');
     ch(&mut a, 'g');
@@ -238,7 +238,7 @@ fn test_ws_8_enter_switches_and_closes() {
 
 #[test]
 fn test_ws_8_current_table_just_closes() {
-    // [WS-8] 今の表 Tasks を選ぶ → 開き直さず閉じるだけ。
+    // [utest -> req~workspace.drawer-close~1] 今の表 Tasks を選ぶ → 開き直さず閉じるだけ。
     let (_tmp, mut a) = boot_work("ws8_current");
     ch(&mut a, 'w');
     click_on(&mut a, "Tasks");
@@ -248,7 +248,7 @@ fn test_ws_8_current_table_just_closes() {
 
 #[test]
 fn test_ws_8_other_workspace_heading_then_click() {
-    // [WS-8] 見出し Hobby を開くと Books が並ぶ → Books をクリック → Books の表へ、範囲は Hobby。
+    // [utest -> req~workspace.drawer-switch~1, req~workspace.drawer-expand~1] 見出し Hobby を開くと Books が並ぶ → Books をクリック → Books の表へ、範囲は Hobby。
     let (tmp, mut a) = boot_work("ws8_other");
     ch(&mut a, 'w');
     ch(&mut a, 'G');
@@ -269,7 +269,7 @@ fn test_ws_8_other_workspace_heading_then_click() {
 
 #[test]
 fn test_ws_8_heading_fold_keys() {
-    // [WS-8] 見出しは l で開き h で畳む。畳むと Books は消える。
+    // [utest -> req~workspace.drawer-open~1, req~workspace.drawer-others~1, req~workspace.drawer-expand~1] 見出しは l で開き h で畳む。畳むと Books は消える。
     let (_tmp, mut a) = boot_work("ws8_fold");
     ch(&mut a, 'w');
     ch(&mut a, 'G');
@@ -282,7 +282,7 @@ fn test_ws_8_heading_fold_keys() {
 
 #[test]
 fn test_ws_8_esc_and_w_close_without_change() {
-    // [WS-8] 開いて Esc → 何も変わらずに閉じる(画面も選びも前と同じ)。もう一度 `w` で開き、`w` でも閉じる。
+    // [utest -> req~workspace.drawer-close~1] 開いて Esc → 何も変わらずに閉じる(画面も選びも前と同じ)。もう一度 `w` で開き、`w` でも閉じる。
     let (_tmp, mut a) = boot_work("ws8_esc");
     let before = scr(&a);
     let (row, col) = (a.row, a.col);
@@ -303,7 +303,7 @@ fn test_ws_8_esc_and_w_close_without_change() {
 
 #[test]
 fn test_ws_8_click_outside_closes() {
-    // [WS-8] 引き出しの外(表の右の側)をクリック → 閉じるだけで、移らない。
+    // [utest -> req~workspace.drawer-close~1] 引き出しの外(表の右の側)をクリック → 閉じるだけで、移らない。
     let (_tmp, mut a) = boot_work("ws8_outside");
     ch(&mut a, 'w');
     assert_eq!(a.mode, Mode::Drawer);
@@ -315,7 +315,7 @@ fn test_ws_8_click_outside_closes() {
 
 #[test]
 fn test_ws_8_click_row_switches() {
-    // [WS-8] 表の行 Projects をクリック → その表へ移る。
+    // [utest -> req~workspace.drawer-switch~1, req~workspace.drawer-unsaved~1] 表の行 Projects をクリック → その表へ移る。
     let (tmp, mut a) = boot_work("ws8_click");
     ch(&mut a, 'w');
     click_on(&mut a, "Projects");
@@ -329,7 +329,7 @@ fn test_ws_8_click_row_switches() {
 
 #[test]
 fn test_ws_8_pending_changes_ask_then_back() {
-    // [WS-8][CLI-19] ためた変更があるときに Projects を選ぶ → 保存か取りやめの確かめ。Esc で戻ると移らない。
+    // [utest -> req~workspace.drawer-unsaved~1, req~cli.places-list-pending~1] ためた変更があるときに Projects を選ぶ → 保存か取りやめの確かめ。Esc で戻ると移らない。
     let (_tmp, mut a) = boot_work("ws8_pending");
     pend(&mut a);
     ch(&mut a, 'w');
@@ -346,7 +346,7 @@ fn test_ws_8_pending_changes_ask_then_back() {
 
 #[test]
 fn test_ws_8_pending_changes_save_then_switch() {
-    // [WS-8][CLI-19] ためた変更があるときに Projects を選ぶ → s → 保存の確認で Enter → 書いてから移る。
+    // [utest -> req~workspace.drawer-unsaved~1, req~cli.places-list-pending~1] ためた変更があるときに Projects を選ぶ → s → 保存の確認で Enter → 書いてから移る。
     let (tmp, mut a) = boot_work("ws8_save");
     pend(&mut a);
     let row = a.src.rows()[0].clone();
@@ -368,7 +368,7 @@ fn test_ws_8_pending_changes_save_then_switch() {
 
 #[test]
 fn test_ws_8_registered_tables_when_no_workspace() {
-    // [WS-8] ワークスペースが無く登録した表だけ → 登録した表(Projects・Members・Tasks)が並ぶ。見出しは無い。
+    // [utest -> req~workspace.drawer-non-ws~1] ワークスペースが無く登録した表だけ → 登録した表(Projects・Members・Tasks)が並ぶ。見出しは無い。
     // 選ぶと、その表へ移る(範囲の選び方は今のまま。ワークスペースの名前は付けない)。
     let tmp = workspace("ws8_registered");
     let mut a = boot_tasks(&tmp);
@@ -390,7 +390,7 @@ fn test_ws_8_registered_tables_when_no_workspace() {
 
 #[test]
 fn test_ws_8_nothing_to_list_says_why() {
-    // [WS-8] 並べる表もほかのワークスペースも無い → 引き出しを開かず、理由を出す。
+    // [utest -> req~workspace.drawer-others~1, req~workspace.drawer-expand~1, req~workspace.drawer-non-ws~1] 並べる表もほかのワークスペースも無い → 引き出しを開かず、理由を出す。
     let tmp = workspace("ws8_bare");
     let mut a = boot_bare(&tmp);
     ch(&mut a, 'w');
@@ -404,7 +404,7 @@ fn test_ws_8_nothing_to_list_says_why() {
 
 #[test]
 fn test_ws_8_from_relmap_header_button() {
-    // [WS-8][SR-42] 関係マップでヘッダーのパンくずの「Work」(前の配置のボタン「▾ Work」)を押す → 表の画面に
+    // [utest -> req~workspace.drawer-from-map~1, req~screen.breadcrumb-drawer~1, req~screen.breadcrumb-relation-map~1] 関係マップでヘッダーのパンくずの「Work」(前の配置のボタン「▾ Work」)を押す → 表の画面に
     // 戻って引き出しが開く。もう一度同じ所を押すと閉じる。
     let (_tmp, mut a) = boot_work("ws8_relmap");
     ch(&mut a, 'R');

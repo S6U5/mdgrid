@@ -1,5 +1,5 @@
-//! [BV-23] 隠しフォルダ(`.` で始まる)と node_modules の下のノートは探さない。渡したフォルダそのものは探す。
-//! specs/_changes/2026-10-06-skip-hidden-dirs.md。本物の実行ファイルの --print で確かめる。
+//! [base-view.skip-hidden] 隠しフォルダ(`.` で始まる)と node_modules の下のノートは探さない。渡したフォルダそのものは探す。
+//! specs/_history/decidespec/_changes/2026-10-06-skip-hidden-dirs.md。本物の実行ファイルの --print で確かめる。
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -38,6 +38,7 @@ fn print(root: &Path, target: &Path) -> String {
     String::from_utf8(out.stdout).unwrap()
 }
 
+// [stest -> req~base-view.skip-hidden-dirs~1]
 #[test]
 fn test_bv_23_skips_hidden_and_node_modules() {
     let root = dir("skip");
@@ -51,6 +52,7 @@ fn test_bv_23_skips_hidden_and_node_modules() {
     );
 }
 
+// [stest -> req~base-view.skip-hidden-dirs~1, req~base-view.skip-hidden-given~1]
 #[test]
 fn test_bv_23_given_hidden_folder_is_searched() {
     let root = dir("given");

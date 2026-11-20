@@ -1,7 +1,7 @@
 //! 表から新しいノートを作る(new-note)のタスク1(核)の受け入れテスト。CE-25・CE-26・CE-27
 //! (関係 WB-2・WB-3・CE-2・BV-17・CLI-12)。画面(「+ 新規」・`a`・パレット・`--readonly`)は次のタスク。
-//! 仕様: specs/cell-edit/spec.md。記録: specs/_changes/2026-10-02-new-note.md。
-//! 決定: specs/_decisions/2026-10-02-new-note.md・2026-10-02-new-note-details.md。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md。記録: specs/_history/decidespec/_changes/2026-10-02-new-note.md。
+//! 決定: specs/_history/decidespec/_decisions/2026-10-02-new-note.md・2026-10-02-new-note-details.md。
 //!
 //! 実装を見ずに、仕様と既存の公開の形(writeback・settings・views・config)だけから書いた。
 //!
@@ -12,14 +12,14 @@
 //! #[derive(Clone, Debug, Default, PartialEq)]
 //! pub struct NewNote {
 //!     pub folder: String,                 // 既定のフォルダ(開いたフォルダからの相対。空 = 開いたフォルダ)
-//!     pub name: String,                   // 名前の雛形(`{date}` = 今日)。空が既定
+//!     pub name: String,                   // 名前の雛形(`{date}`・`{date:形}` など日付の変数)。空が既定
 //!     pub ask: Vec<String>,               // 名前のあとに聞く列の並び
 //!     pub set: Vec<(String, NewValue)>,   // [new_note.set] の 列 = 値
 //! }
 //! /// 作る場所の検査。root/folder/name に `.md` を補ったパス(root.join(...) の形)。
 //! /// `..` で外に出る・絶対パス・空・制御文字・既にある → Err(理由)。
 //! pub fn note_path(root: &Path, folder: &str, name: &str) -> Result<PathBuf, String>;
-//! /// 名前の雛形の `{date}` を今日(1970-01-01 からの日数)の YYYY-MM-DD にする。
+//! /// 名前の雛形の日付の変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{weekday}`)を今日で埋める。
 //! pub fn expand_name(template: &str, today: i64) -> String;
 //! /// 絞り込み(設定の条件と式の文字列)のうち値が1つに決まるものを、前もって入れる編集にする。
 //! /// 列の型は kinds(無い列は Text)。
@@ -203,7 +203,7 @@ fn toml_str(s: &str) -> String {
 
 #[test]
 fn test_ce_25_plain_name_is_md_in_open_folder() {
-    // [CE-25] 「会議の準備」→ 開いたフォルダの `会議の準備.md`。
+    // [utest -> req~cell-edit.new-note-place~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-refuse-existing~1] 「会議の準備」→ 開いたフォルダの `会議の準備.md`。
     let t = TempDir::new("plain");
     let p = note_path(t.path(), "", "会議の準備").expect("作れる名前");
     assert_eq!(p, t.path().join("会議の準備.md"));
@@ -211,7 +211,7 @@ fn test_ce_25_plain_name_is_md_in_open_folder() {
 
 #[test]
 fn test_ce_25_md_suffix_is_not_doubled() {
-    // [CE-25] `a.md` と打っても `a.md.md` にしない。
+    // [utest -> req~cell-edit.new-note-name~1, req~cell-edit.new-note-place~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-filter-values~1] `a.md` と打っても `a.md.md` にしない。
     let t = TempDir::new("suffix");
     let p = note_path(t.path(), "", "a.md").expect("作れる名前");
     assert_eq!(p, t.path().join("a.md"));
@@ -219,7 +219,7 @@ fn test_ce_25_md_suffix_is_not_doubled() {
 
 #[test]
 fn test_ce_25_subfolder_name_goes_into_subfolder() {
-    // [CE-25] `プロジェクト/新しい` → `プロジェクト/新しい.md`(フォルダはまだ無くてよい)。
+    // [utest -> req~cell-edit.new-note-subfolder~1] `プロジェクト/新しい` → `プロジェクト/新しい.md`(フォルダはまだ無くてよい)。
     let t = TempDir::new("sub");
     let p = note_path(t.path(), "", "プロジェクト/新しい").expect("作れる名前");
     assert_eq!(p, t.path().join("プロジェクト").join("新しい.md"));
@@ -231,7 +231,7 @@ fn test_ce_25_subfolder_name_goes_into_subfolder() {
 
 #[test]
 fn test_ce_25_outside_absolute_empty_are_refused() {
-    // [CE-25] `../外`・絶対パス・空・制御文字 → 作らず理由(Err)。
+    // [utest -> req~cell-edit.new-note-refuse-outside~1] `../外`・絶対パス・空・制御文字 → 作らず理由(Err)。
     let t = TempDir::new("outside");
     let abs = t.path().join("abs").to_string_lossy().to_string();
     for name in [
@@ -264,7 +264,7 @@ fn test_ce_25_outside_absolute_empty_are_refused() {
 
 #[test]
 fn test_ce_25_existing_name_is_refused() {
-    // [CE-25] [WB-2] 既にある名前(`.md` を補っても・付けても)→ 作らず理由。ファイルは変わらない。
+    // [utest -> req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-no-overwrite~1, req~write-back.frontmatter-only-no-replace~1] 既にある名前(`.md` を補っても・付けても)→ 作らず理由。ファイルは変わらない。
     let t = TempDir::new("exists");
     let before = "---\nstatus: done\n---\n本文\n".as_bytes().to_vec();
     t.write("会議の準備.md", &before);
@@ -286,7 +286,7 @@ fn test_ce_25_existing_name_is_refused() {
 
 #[test]
 fn test_ce_25_create_makes_missing_folder_and_writes_bytes() {
-    // [CE-25] 下のフォルダが無ければ作り、中身を書く。
+    // [utest -> req~cell-edit.new-note-subfolder~1] 下のフォルダが無ければ作り、中身を書く。
     let t = TempDir::new("create");
     let p = note_path(t.path(), "", "プロジェクト/新しい").unwrap();
     create(&p, b"---\nstatus: todo\n---\n").expect("作れる");
@@ -298,7 +298,7 @@ fn test_ce_25_create_makes_missing_folder_and_writes_bytes() {
 
 #[test]
 fn test_ce_25_create_never_overwrites_existing_file() {
-    // [CE-25] [WB-2] 検査のあとにできたファイルも create_new で守る: Err で、1バイトも変わらない。
+    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-no-replace~1] 検査のあとにできたファイルも create_new で守る: Err で、1バイトも変わらない。
     let t = TempDir::new("race");
     let p = note_path(t.path(), "", "a").unwrap();
     let before = b"---\nstatus: done\n---\n# own\n".to_vec();
@@ -323,7 +323,7 @@ fn test_ce_25_create_never_overwrites_existing_file() {
 
 #[test]
 fn test_ce_25_status_todo_from_settings_keep() {
-    // [CE-25] [WB-3] 設定の条件「status が todo」(Keep の値1つ)→ `---\nstatus: todo\n---\n`。
+    // [utest -> req~cell-edit.new-note-filter-values~1, req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] 設定の条件「status が todo」(Keep の値1つ)→ `---\nstatus: todo\n---\n`。
     let pre = prefill(
         &settings(vec![cond("status", keep(&["todo"]))]),
         &[],
@@ -336,7 +336,7 @@ fn test_ce_25_status_todo_from_settings_keep() {
 
 #[test]
 fn test_ce_25_status_todo_from_settings_cmp_eq() {
-    // [CE-25] 設定の条件の比較 `==`(Cmp Eq)も値が1つに決まる。
+    // [utest -> req~cell-edit.new-note-filter-values~1] 設定の条件の比較 `==`(Cmp Eq)も値が1つに決まる。
     let pre = prefill(
         &settings(vec![cond("status", Op::Cmp(CmpOp::Eq, "todo".to_string()))]),
         &[],
@@ -348,7 +348,7 @@ fn test_ce_25_status_todo_from_settings_cmp_eq() {
 
 #[test]
 fn test_ce_25_status_todo_from_expr() {
-    // [CE-25] 式の絞り込み `status == "todo"` → `---\nstatus: todo\n---\n`。
+    // [utest -> req~cell-edit.new-note-filter-values~1] 式の絞り込み `status == "todo"` → `---\nstatus: todo\n---\n`。
     let pre = prefill(
         &Settings::default(),
         &exprs(&[r#"status == "todo""#]),
@@ -361,7 +361,7 @@ fn test_ce_25_status_todo_from_expr() {
 
 #[test]
 fn test_ce_25_tag_condition_is_vertical_list() {
-    // [CE-25] [WB-3] タグの条件 → `tags:\n  - 会議`(縦の形)。式 `tags.contains("会議")` と、リストの列の Keep の値1つ。
+    // [utest -> req~cell-edit.new-note-filter-values~1, req~write-back.add-key-at-end~1] タグの条件 → `tags:\n  - 会議`(縦の形)。式 `tags.contains("会議")` と、リストの列の Keep の値1つ。
     let k = kinds(&[("tags", Kind::List)]);
     let from_expr = prefill(
         &Settings::default(),
@@ -378,7 +378,7 @@ fn test_ce_25_tag_condition_is_vertical_list() {
 
 #[test]
 fn test_ce_25_typed_cmp_eq_values_are_written_by_kind() {
-    // [CE-25] [CE-2] 数の列の `== 3` は数(素)、日付の列の `== 2026-10-05` は日付(囲まない)。
+    // [utest -> req~cell-edit.new-note-folder-pick~1, req~cell-edit.column-type-order~1] 数の列の `== 3` は数(素)、日付の列の `== 2026-10-05` は日付(囲まない)。
     let k = kinds(&[("priority", Kind::Number), ("due", Kind::Date)]);
     let pre = prefill(
         &settings(vec![
@@ -399,7 +399,7 @@ fn test_ce_25_typed_cmp_eq_values_are_written_by_kind() {
 
 #[test]
 fn test_ce_25_ambiguous_conditions_are_not_prefilled() {
-    // [CE-25] 値が1つに決まらない条件(Keep の値2つ・`!=`・`>`・含む・空でない)は入れない。
+    // [utest -> req~cell-edit.new-note-filter-values~1] 値が1つに決まらない条件(Keep の値2つ・`!=`・`>`・含む・空でない)は入れない。
     let k = kinds(&[("priority", Kind::Number)]);
     let pre = prefill(
         &settings(vec![
@@ -417,7 +417,7 @@ fn test_ce_25_ambiguous_conditions_are_not_prefilled() {
 
 #[test]
 fn test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique() {
-    // [CE-25] 決まる条件と決まらない条件が混ざれば、決まるものだけ入れる。
+    // [utest -> req~cell-edit.new-note-filter-values~1] 決まる条件と決まらない条件が混ざれば、決まるものだけ入れる。
     let k = kinds(&[("tags", Kind::List), ("priority", Kind::Number)]);
     let pre = prefill(
         &settings(vec![
@@ -437,7 +437,7 @@ fn test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique() {
 
 #[test]
 fn test_ce_25_whole_flow_writes_new_note_only() {
-    // [CE-25] [WB-2] 「status が todo」のビューで「会議の準備」→ `会議の準備.md` が `---\nstatus: todo\n---\n` で
+    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-top-level~1, req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1] 「status が todo」のビューで「会議の準備」→ `会議の準備.md` が `---\nstatus: todo\n---\n` で
     // 作られ、ほかのファイルは変わらない。
     let t = TempDir::new("flow");
     t.write("既存.md", "---\nstatus: todo\n---\n本文\n".as_bytes());
@@ -470,7 +470,7 @@ fn test_ce_25_whole_flow_writes_new_note_only() {
 
 #[test]
 fn test_ce_26_set_values_are_written() {
-    // [CE-26] [new_note.set] の値(tags に inbox)が縦のリストで入る。
+    // [utest -> req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-skip-empty~1] [new_note.set] の値(tags に inbox)が縦のリストで入る。
     let rule = NewNote {
         set: vec![("tags".to_string(), list(&["inbox"]))],
         ..NewNote::default()
@@ -481,7 +481,7 @@ fn test_ce_26_set_values_are_written() {
 
 #[test]
 fn test_ce_26_filter_value_wins_over_set_value_same_column() {
-    // [CE-26] [CE-27] 同じ列なら絞り込みの値が設定の値より先(作った行がビューに残る)。キーは1回だけ。
+    // [utest -> req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-config-filter-first~1] 同じ列なら絞り込みの値が設定の値より先(作った行がビューに残る)。キーは1回だけ。
     let rule = NewNote {
         set: vec![
             ("status".to_string(), s("inbox")),
@@ -504,7 +504,7 @@ fn test_ce_26_filter_value_wins_over_set_value_same_column() {
 
 #[test]
 fn test_ce_26_asked_values_are_written_by_kind() {
-    // [CE-26] [CE-2] 聞いた値は型に合った書き方: 日付は囲まない、リストは縦、数は素。
+    // [utest -> req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-typed~1, req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1] 聞いた値は型に合った書き方: 日付は囲まない、リストは縦、数は素。
     let rule = NewNote {
         ask: vec![
             "priority".to_string(),
@@ -545,7 +545,7 @@ fn test_ce_26_asked_values_are_written_by_kind() {
 
 #[test]
 fn test_ce_26_empty_answers_are_not_written() {
-    // [CE-26] 聞いた値が空なら、その項目は書かない(空の文字列・Null・空のリスト)。
+    // [utest -> req~cell-edit.new-note-form-skip-empty~1] 聞いた値が空なら、その項目は書かない(空の文字列・Null・空のリスト)。
     let rule = NewNote {
         ask: vec![
             "priority".to_string(),
@@ -570,7 +570,7 @@ fn test_ce_26_empty_answers_are_not_written() {
 
 #[test]
 fn test_ce_26_view_rule_replaces_config_rule() {
-    // [CE-26] [BV-17] ビューに new_note があれば設定の代わりにそれ、無ければ設定の new_note。
+    // [utest -> req~cell-edit.new-note-form-ask~1, req~base-view.own-views-tabs~1] ビューに new_note があれば設定の代わりにそれ、無ければ設定の new_note。
     let config = parse_ok("[new_note]\nfolder = \"inbox\"\nask = [\"priority\"]\n");
     let view_rule = NewNote {
         folder: "会議".to_string(),
@@ -597,7 +597,7 @@ fn test_ce_26_view_rule_replaces_config_rule() {
 
 #[test]
 fn test_ce_27_config_new_note_is_read_without_warnings() {
-    // [CE-27] [CLI-3] `[new_note]` の folder・name・ask・[new_note.set] を読み、知らない項目の警告は出ない。
+    // [utest -> req~cell-edit.new-note-config-folder~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set-vars~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~1] `[new_note]` の folder・name・ask・[new_note.set] を読み、知らない項目の警告は出ない。
     let c = parse_ok(
         r#"
 [new_note]
@@ -633,7 +633,7 @@ level = 2
 
 #[test]
 fn test_ce_27_default_config_has_empty_rule() {
-    // [CE-27] 設定に new_note が無ければ既定(開いたフォルダ・雛形なし・聞かない・入れない)。
+    // [utest -> req~cell-edit.new-note-config-folder~1] 設定に new_note が無ければ既定(開いたフォルダ・雛形なし・聞かない・入れない)。
     let c = parse_ok("");
     assert_eq!(c.resolved().new_note, NewNote::default());
     assert_eq!(Config::default().resolved().new_note, NewNote::default());
@@ -643,7 +643,7 @@ fn test_ce_27_default_config_has_empty_rule() {
 
 #[test]
 fn test_ce_27_wrong_types_warn_and_do_not_stop() {
-    // [CE-27] [CLI-3] 型の違う値は警告にして、止めない。
+    // [utest -> req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-filter-first~1, req~cli.config-file-warn-only~1] 型の違う値は警告にして、止めない。
     for bad in [
         "new_note = 3\n",
         "[new_note]\nask = \"priority\"\n",
@@ -672,7 +672,7 @@ fn test_ce_27_wrong_types_warn_and_do_not_stop() {
 
 #[test]
 fn test_ce_27_config_folder_is_default_place() {
-    // [CE-25] [CE-27] 設定の folder が既定の場所。名前の下のフォルダはその下。
+    // [utest -> req~cell-edit.new-note-place~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-filter-values~1, req~cell-edit.new-note-config-folder~1] 設定の folder が既定の場所。名前の下のフォルダはその下。
     let t = TempDir::new("folder");
     let c = parse_ok("[new_note]\nfolder = \"inbox\"\n");
     let rule = rule_for(&c, None);
@@ -694,7 +694,7 @@ fn test_ce_27_config_folder_is_default_place() {
 
 #[test]
 fn test_ce_27_name_template_date_is_today() {
-    // [CE-27] `name = "{date} "` → 今日の日付 `2026-10-02 `。
+    // [utest -> req~cell-edit.new-note-config-name~1] `name = "{date} "` → 今日の日付 `2026-10-02 `。
     assert_eq!(expand_name("{date} ", today()), "2026-10-02 ");
     assert_eq!(expand_name("議事録 {date}", today()), "議事録 2026-10-02");
     assert_eq!(expand_name("", today()), "");
@@ -702,8 +702,17 @@ fn test_ce_27_name_template_date_is_today() {
 }
 
 #[test]
+fn test_ce_32_name_template_takes_the_date_variables() {
+    // [utest -> req~cell-edit.template-vars-list~1, req~cell-edit.template-vars-unknown~1] 名前の雛形にも日付の変数を書け、知らない変数は文字のまま。
+    assert_eq!(expand_name("{date:YYYYMMDD}_", today()), "20261002_");
+    assert_eq!(expand_name("{date+7} ", today()), "2026-10-09 ");
+    assert_eq!(expand_name("{date-1} ", today()), "2026-10-01 ");
+    assert_eq!(expand_name("{unknown}", today()), "{unknown}");
+}
+
+#[test]
 fn test_ce_27_views_toml_new_note_is_read() {
-    // [CE-27] [BV-17] views.toml の `[target.view.new_note]` を同じ形で読み、警告は出ない。
+    // [utest -> req~cell-edit.new-note-config-view~1, req~base-view.own-views-toml~1] views.toml の `[target.view.new_note]` を同じ形で読み、警告は出ない。
     let t = TempDir::new("views");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -750,7 +759,7 @@ path = {p}
 
 #[test]
 fn test_ce_27_views_new_note_survives_save_and_load() {
-    // [CE-27] [BV-17] ビューを保存して読み直しても new_note は消えない。
+    // [utest -> req~cell-edit.new-note-config-folder~1, req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set~1, req~cell-edit.new-note-config-view~1, req~base-view.own-views-toml~1, req~base-view.own-views-beyond-base~1] ビューを保存して読み直しても new_note は消えない。
     let t = TempDir::new("views-roundtrip");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -779,7 +788,7 @@ fn test_ce_27_views_new_note_survives_save_and_load() {
 
 #[test]
 fn test_ce_27_new_note_is_a_documented_config_item() {
-    // [CE-27] [CLI-12] 設定の項目の表(文書・--print-config の元)に new_note がある。
+    // [utest -> req~cell-edit.new-note-config-view~1, req~cli.config-docs~1] 設定の項目の表(文書・--print-config の元)に new_note がある。
     assert!(
         ITEMS.iter().any(|i| i.path == "new_note"),
         "ITEMS に new_note がある"

@@ -1,6 +1,6 @@
-//! 4回目の点検の直し(specs/_changes/2026-10-06-audit4-first.md)。
-//! [WB-20] `+++` の TOML のフロントマターのノートは読むだけ。[SR-3] 読み込みの途中で動かしていなければ、
-//! 読み終えたとき先頭にいる。[NV-9] 1% 未満の割合は小数1桁。
+//! 4回目の点検の直し(specs/_history/decidespec/_changes/2026-10-06-audit4-first.md)。
+//! [write-back.toml-frontmatter] `+++` の TOML のフロントマターのノートは読むだけ。[screen.h-scroll] 読み込みの途中で動かしていなければ、
+//! 読み終えたとき先頭にいる。[navigation.frequency] 1% 未満の割合は小数1桁。
 
 use super::keymap::Mode;
 use super::test_screen::{col_named, ctrl, press, Tmp};
@@ -10,6 +10,7 @@ use ratatui::crossterm::event::KeyCode;
 
 const TOML: &str = "+++\ntitle = \"toml\"\n+++\nbody\n";
 
+// [utest -> req~write-back.toml-frontmatter~1]
 #[test]
 fn test_wb_20_toml_frontmatter_is_read_only() {
     let tmp = Tmp::new("wb20");
@@ -40,6 +41,7 @@ fn read_file(tmp: &Tmp, name: &str) -> String {
     std::fs::read_to_string(tmp.notes().join(name)).unwrap()
 }
 
+// [utest -> req~screen.h-scroll-follow~1, req~screen.h-scroll-drag-width~1]
 #[test]
 fn test_sr_3_load_keeps_top() {
     let tmp = Tmp::new("sr3top");
@@ -61,6 +63,7 @@ fn test_sr_3_load_keeps_top() {
     assert_eq!(a.top, 0);
 }
 
+// [utest -> req~navigation.frequency-order~1]
 #[test]
 fn test_nv_9_small_percent() {
     use super::freq::pct_text;
@@ -71,6 +74,7 @@ fn test_nv_9_small_percent() {
     assert_eq!(pct_text(0, 5), "(0%)");
 }
 
+// [utest -> req~write-back.toml-frontmatter~1]
 #[test]
 fn test_wb_20_writeback_refuses_toml() {
     use mdgrid::source::NewValue;

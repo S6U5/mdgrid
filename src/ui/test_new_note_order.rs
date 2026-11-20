@@ -1,5 +1,5 @@
-//! [CE-26] 作る場所を選ぶ欄(CE-25)があるときの順: 作る場所 → 名前 → 入力させる項目
-//! (決定 specs/_decisions/2026-10-03-new-note-folders-order.md)。
+//! [cell-edit.new-note-form] 作る場所を選ぶ欄(CE-25)があるときの順: 作る場所 → 名前 → 入力させる項目
+//! (決定 specs/_history/decidespec/_decisions/2026-10-03-new-note-folders-order.md)。
 
 use super::keymap::Mode;
 use super::startup::Startup;
@@ -40,6 +40,7 @@ fn boot_ask(name: &str) -> (Tmp, App) {
     (tmp, app)
 }
 
+// [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-ask~1]
 #[test]
 fn test_ce_26_place_then_name_then_asked_items() {
     let (tmp, mut a) = boot_ask("ce26_order");

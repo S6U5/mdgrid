@@ -6,7 +6,7 @@ use super::*;
 
 #[test]
 fn test_sr_33_detail_selected_row_tinted() {
-    // [SR-33] K で詳細 → 選んでいる項目(先頭の status)の行の地は、選びの背景の色。
+    // [utest -> req~screen.modern-look-select~1, req~screen.modern-look-colors~1] K で詳細 → 選んでいる項目(先頭の status)の行の地は、選びの背景の色。
     let tmp = Tmp::new("sr33_detail");
     tmp.write("a.md", "---\nstatus: todo\ndue: 2026-10-01\n---\nbody\n");
     let mut a = app_of(&tmp, ColorMode::Rgb);

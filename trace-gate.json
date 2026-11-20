@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "requirements": [
+    "specs/requirements/*.md"
+  ],
+  "tests": [
+    "tests/**/*.rs",
+    "src/**/test_*.rs"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/target/**"
+  ],
+  "parts": {
+    "ci": true,
+    "hook": true,
+    "weaken": true,
+    "f2p": true,
+    "approvals": true,
+    "upstream": true
+  },
+  "assert_helpers": {
+    "rust": [
+      "check",
+      "check_bindings",
+      "check_action_names",
+      "check_descriptions",
+      "check_view_section",
+      "check_grid",
+      "input_err",
+      "report",
+      "section_lines",
+      "unsupported_with",
+      "syntax_error"
+    ]
+  },
+  "sections": true,
+  "renames": "specs/requirements/renames.md",
+  "test_config": [
+    "**/conftest.py",
+    "**/pytest.toml",
+    "**/.pytest.toml",
+    "**/pytest.ini",
+    "**/.pytest.ini",
+    "**/tox.ini",
+    "**/.coveragerc",
+    "**/vitest.config.*",
+    "**/vitest.workspace.*",
+    "**/vitest.setup.*",
+    "**/jest.config.*",
+    "**/jest.setup.*",
+    "**/playwright.config.*",
+    "**/.mocharc*",
+    "**/karma.conf.*",
+    "**/phpunit.xml",
+    "**/phpunit.xml.dist",
+    "**/.config/nextest.toml",
+    "trace-gate.json",
+    ".cargo/config.toml"
+  ]
+}

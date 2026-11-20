@@ -1,5 +1,5 @@
 #![cfg(unix)]
-//! [WS-10] 印の表の `where` の鍵に計算の列(`formula.x`)を書ける。台帳の期限のタブ(計算の列で期限の区分を
+//! [workspace.marker-where] 印の表の `where` の鍵に計算の列(`formula.x`)を書ける。台帳の期限のタブ(計算の列で期限の区分を
 //! 1回定義し、タブで区分を選ぶ)の境目もここで確かめる。
 
 mod pty;
@@ -105,7 +105,7 @@ fn titles(o: &Output) -> Vec<String> {
 
 #[test]
 fn test_ws_10_where_formula_column() {
-    // [WS-10] `where = { "formula.期限" = ["期限切れ"] }` → 計算の列の値で絞る(期限が昨日の行だけ)。
+    // [stest -> req~workspace.marker-where-match~1] `where = { "formula.期限" = ["期限切れ"] }` → 計算の列の値で絞る(期限が昨日の行だけ)。
     let t = TempDir::new("where-formula");
     let root = t.path();
     sample(root);
@@ -121,7 +121,7 @@ fn test_ws_10_where_formula_column() {
 
 #[test]
 fn test_ws_10_due_tabs_boundaries() {
-    // [WS-10] 7日以内まで = 期限切れ・今日・7日以内 で、終えていないもの。今日から7日目は入り、8日目と期限の無い行は入らない。
+    // [stest -> req~workspace.marker-where-invalid~1] 7日以内まで = 期限切れ・今日・7日以内 で、終えていないもの。今日から7日目は入り、8日目と期限の無い行は入らない。
     let t = TempDir::new("where-due");
     let root = t.path();
     sample(root);

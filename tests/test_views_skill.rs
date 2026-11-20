@@ -1,5 +1,5 @@
 #![cfg(unix)]
-//! [CLI-24] 印でビューと表を決める手引きのスキル(plugins/mdgrid/skills/mdgrid-views/SKILL.md)。
+//! [cli.views-skill] 印でビューと表を決める手引きのスキル(plugins/mdgrid/skills/mdgrid-views/SKILL.md)。
 //! スキルに書いた印の例を見本のフォルダに置き、警告なしに読めて、印の表の行が出ることを確かめる
 //! (古い書き方や読めない設定を AI に教えないため)。
 
@@ -60,7 +60,7 @@ fn sample(root: &Path) {
 
 #[test]
 fn test_cli_24_skill_marker_example_reads_without_warnings() {
-    // [CLI-24] スキルの印の例は警告なしに読める(--print-config --resolved の標準エラーに mdgrid: の行が無い)。
+    // [stest -> req~cli.views-skill-example-reads~1] スキルの印の例は警告なしに読める(--print-config --resolved の標準エラーに mdgrid: の行が無い)。
     let t = TempDir::new("views-skill-warn");
     let root = t.path();
     sample(root);
@@ -72,7 +72,7 @@ fn test_cli_24_skill_marker_example_reads_without_warnings() {
 
 #[test]
 fn test_cli_24_skill_marker_example_opens_its_views() {
-    // [CLI-24] 印の例で開くと、Open のビューは todo の行だけ、Done のビューは done の行だけ。README.md の行は無い。
+    // [stest -> req~cli.views-skill-example-prints~1] 印の例で開くと、Open のビューは todo の行だけ、Done のビューは done の行だけ。README.md の行は無い。
     let t = TempDir::new("views-skill-rows");
     let root = t.path();
     sample(root);
@@ -101,7 +101,7 @@ fn test_cli_24_skill_marker_example_opens_its_views() {
 
 #[test]
 fn test_cli_24_skill_names_the_checklist() {
-    // [CLI-24] 手順に、型・選ぶ列の値・where・名前を隠さない・確かめ方が書いてある。
+    // [stest -> req~cli.views-skill-checklist~1] 手順に、型・選ぶ列の値・where・名前を隠さない・確かめ方が書いてある。
     let s = skill_text();
     for word in [
         "[types]",

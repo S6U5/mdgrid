@@ -5,7 +5,7 @@
 //! 色はテーマ(SR-26)の色の表から。既定のテーマ(色の表なし)は、端末の地の色を変えない控えめな組。
 
 use super::app::{App, ColorMode};
-use mdgrid::theme::{to_indexed, Palette};
+use mdgrid::theme::{indexed_rgb, to_indexed, Palette};
 use ratatui::style::{Color, Modifier, Style};
 
 /// モダンな見た目の色。
@@ -56,6 +56,78 @@ pub(crate) fn bar_bg(app: &App) -> Option<Color> {
         None if indexed => Color::Indexed(234),
         None => Color::Rgb(30, 30, 36),
     })
+}
+
+/// GA-2: ガントの時間軸の地の帯の色。`level` の 1 の位(1)は月か年ごとに交互に敷く帯、2 の位(2)は日の単位の
+/// 土日(帯の上にも重ねる)。0・色を使わない表示(SR-15)・テーマが default(色の表なし。端末の地を変えない。SR-40、
+/// 決定 gantt-bands-default-theme)では None。
+///
+/// 色はテーマの地を明暗の逆へ寄せる。段は土日 → 帯 → 帯の上の土日の順に決め、帯は土日より、帯の上の土日は帯より
+/// 地から遠くする(帯が主で、土日は控えめ)。寄せ幅は土日 9・帯 18・帯の上の土日 27 から始め(前の段より 9 は先)、
+/// 地・選びの地・決めた段のどれとも RGB の成分で 8 以上離れる所まで寄せる。選びの地は、今日の数の反転と選んでいる行の
+/// 地(モダンでも classic でも最後は `sel_bg`)で、帯と近いと帯の月で今日の印が見えない(sumi・slate)。
+/// 256 色では、番号が違っても色がほぼ同じ組(立方体の 188 = 215 と灰の 253 = 218 など)があるので、番号を色に戻して
+/// (`theme::indexed_rgb`)比べる。一行おきの色(24 ビットの (58, 58, 58)、256 色の 237)は `theme::paint` が塗り
+/// 替えるので使わない。最初は地と選びの地の間で作ったが、2つが近いテーマで差が数しか出なかった。
+pub(crate) fn axis_band(app: &App, level: u8) -> Option<Color> {
+    let indexed = match app.color {
+        ColorMode::None => return None,
+        ColorMode::Indexed => true,
+        ColorMode::Rgb => false,
+    };
+    let p = app.palette()?;
+    let level = usize::from(level.min(3));
+    if level == 0 {
+        return None;
+    }
+    let light = p.bg.iter().map(|x| u32::from(*x)).sum::<u32>() > 3 * 128;
+    let shift = |d: i32| -> [u8; 3] {
+        p.bg.map(|x| {
+            let v = i32::from(x) + if light { -d } else { d };
+            u8::try_from(v.clamp(0, 255)).unwrap_or(0)
+        })
+    };
+    let far = |a: [u8; 3], b: [u8; 3]| (0..3).any(|i| a[i].abs_diff(b[i]) >= 8);
+    // (段, 始めの寄せ幅): 土日 → 帯 → 帯の上の土日。
+    const ORDER: [(usize, i32); 3] = [(2, 9), (1, 18), (3, 27)];
+    if !indexed {
+        let mut taken = vec![p.bg, p.sel_bg];
+        let mut prev = 0;
+        for (l, start) in ORDER {
+            let mut d = start.max(prev + 9);
+            let mut c = shift(d);
+            while (c == [58, 58, 58] || !taken.iter().all(|t| far(c, *t))) && d < 160 {
+                d += 1;
+                c = shift(d);
+            }
+            if l == level {
+                return Some(Color::Rgb(c[0], c[1], c[2]));
+            }
+            taken.push(c);
+            prev = d;
+        }
+        return None;
+    }
+    let far_n = |a: u8, b: u8| match (indexed_rgb(a), indexed_rgb(b)) {
+        (Some(x), Some(y)) => far(x, y),
+        _ => a != b,
+    };
+    let mut taken = vec![to_indexed(p.bg), to_indexed(p.sel_bg)];
+    let mut prev = 0;
+    for (l, start) in ORDER {
+        let mut d = start.max(prev + 9);
+        let mut n = to_indexed(shift(d));
+        while (n == 237 || !taken.iter().all(|t| far_n(n, *t))) && d < 160 {
+            d += 2;
+            n = to_indexed(shift(d));
+        }
+        if l == level {
+            return Some(Color::Indexed(n));
+        }
+        taken.push(n);
+        prev = d;
+    }
+    None
 }
 
 /// NV-23: 画面の地の色。テーマが画面の地を塗るときはその色、塗らないときは端末の地の色(問い合わせた答え。

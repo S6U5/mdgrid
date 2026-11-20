@@ -1,5 +1,5 @@
 //! 書き戻しの安全の文書(safety-docs)の受け入れ: WB-19(と WB-1〜WB-8・WB-12・WB-16 を書くこと)。
-//! 仕様: specs/write-back/spec.md の WB-19。記録: specs/_changes/2026-10-03-safety-docs.md。
+//! 仕様: specs/_history/decidespec/write-back/spec.md の WB-19。記録: specs/_history/decidespec/_changes/2026-10-03-safety-docs.md。
 //! 実装(src/frontmatter.rs・src/writeback.rs の中身)を見ずに、公開の型と関数だけから書いた。
 //!
 //! 使う公開の口: `mdgrid::frontmatter::{parse, ReadOnly}`、`mdgrid::source::markdown::Markdown`
@@ -336,7 +336,7 @@ fn lock_of(src: &dyn Source, label: &str, col: &str) -> Option<String> {
 
 #[test]
 fn test_wb_19_reason_names_are_distinct() {
-    // [WB-19] 試験の側の前提: 腕の名前はすべて違う。
+    // [utest -> req~write-back.safety-docs-write~1] 試験の側の前提: 腕の名前はすべて違う。
     let names = all_names();
     let mut sorted = names.clone();
     sorted.sort();
@@ -346,7 +346,7 @@ fn test_wb_19_reason_names_are_distinct() {
 
 #[test]
 fn test_wb_19_every_read_only_reason_is_documented() {
-    // [WB-19] 英・日それぞれで、ReadOnly のすべての腕に `` ### `<名前>` `` の小見出しがある。
+    // [utest -> req~write-back.safety-docs-write~1, req~write-back.safety-docs-reason-test~1] 英・日それぞれで、ReadOnly のすべての腕に `` ### `<名前>` `` の小見出しがある。
     for (path, title) in docs() {
         let got: Vec<String> = examples(path, title)
             .into_iter()
@@ -365,7 +365,7 @@ fn test_wb_19_every_read_only_reason_is_documented() {
 
 #[test]
 fn test_wb_19_examples_parse_to_their_reason() {
-    // [WB-19] 各例(hard_link を除く)を parse に通すと、その名前の ReadOnly で Err になる。
+    // [utest -> req~write-back.safety-docs-write~1, req~write-back.safety-docs-example-test~1] 各例(hard_link を除く)を parse に通すと、その名前の ReadOnly で Err になる。
     for (path, title) in docs() {
         for (n, bytes, _) in examples(path, title) {
             let Some(bytes) = bytes else { continue };
@@ -387,7 +387,7 @@ fn test_wb_19_examples_parse_to_their_reason() {
 
 #[test]
 fn test_wb_19_examples_are_read_only_when_opened() {
-    // [WB-19] [WB-3] [WB-5] 各例を Source で開く。no_frontmatter・empty_frontmatter は既定で書け、
+    // [utest -> req~write-back.safety-docs-example-test~1, req~write-back.add-frontmatter-setting~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1] 各例を Source で開く。no_frontmatter・empty_frontmatter は既定で書け、
     // add_frontmatter = false で読むだけ(理由つき)。ほかの形は既定でも false でも読むだけ(理由つき)。
     for (path, title) in docs() {
         let exs: Vec<(String, Vec<u8>)> = examples(path, title)
@@ -427,7 +427,7 @@ fn test_wb_19_examples_are_read_only_when_opened() {
 
 #[test]
 fn test_wb_19_setting_dependent_forms_mention_add_frontmatter() {
-    // [WB-19] [WB-3] no_frontmatter・empty_frontmatter の説明は add_frontmatter の設定に触れる。
+    // [utest -> req~write-back.safety-docs-write~1, req~write-back.add-frontmatter-setting~1] no_frontmatter・empty_frontmatter の説明は add_frontmatter の設定に触れる。
     for (path, title) in docs() {
         for (n, _, text) in examples(path, title) {
             if depends_on_setting(&n) {
@@ -442,7 +442,7 @@ fn test_wb_19_setting_dependent_forms_mention_add_frontmatter() {
 
 #[test]
 fn test_wb_19_sections_present() {
-    // [WB-19] 変える範囲・読むだけのノート・外の変更・書き込みの手順の節がある。書き込みの手順は fsync に触れる。
+    // [utest -> req~write-back.safety-docs-write~1] 変える範囲・読むだけのノート・外の変更・書き込みの手順の節がある。書き込みの手順は fsync に触れる。
     for (i, path) in [EN, JA].into_iter().enumerate() {
         let doc = repo_file(path);
         for sec in [SEC_CHANGES, SEC_READ_ONLY, SEC_EXTERNAL, SEC_WRITE] {
@@ -463,7 +463,7 @@ fn test_wb_19_sections_present() {
 
 #[test]
 fn test_wb_19_docs_link_each_other() {
-    // [WB-19] 英は日本語へ、日は英語へリンクする。
+    // [utest -> req~write-back.safety-docs-write~1] 英は日本語へ、日は英語へリンクする。
     let en = repo_file(EN);
     let ja = repo_file(JA);
     assert!(
@@ -476,6 +476,7 @@ fn test_wb_19_docs_link_each_other() {
     );
 }
 
+// [utest -> req~write-back.safety-docs-example-test~1]
 #[test]
 fn test_wb_19_marker_decoding() {
     // 試験の側の道具の確かめ: 印の置き換え。

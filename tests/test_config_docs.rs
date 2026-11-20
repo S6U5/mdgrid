@@ -1,5 +1,5 @@
 //! タスク 2(oss-config)の受け入れ: `--print-config`(CLI-11・CLI-2)と、設定の文書・実装・書き出しの
-//! 突き合わせ(CLI-12・CLI-3)。config-v2(specs/_changes/2026-10-10-config-v2.md)で、項目を区画ごとの道筋
+//! 突き合わせ(CLI-12・CLI-3)。config-v2(specs/_history/decidespec/_changes/2026-10-10-config-v2.md)で、項目を区画ごとの道筋
 //! (`look.theme` など)にした。環境変数は書き換えない。
 //!
 //! 文書の形: docs/config.md(英語)と docs/config.ja.md(日本語)で、項目ごとに見出し `### \`道筋\`` を1つ置き、
@@ -121,14 +121,14 @@ fn behaves_as_default(c: &Config) -> bool {
 
 #[test]
 fn test_cli_11_print_config_exits_zero() {
-    // [CLI-11] 標準出力に TOML を出し、終了コード 0。
+    // [stest -> req~cli.print-config-output~1] 標準出力に TOML を出し、終了コード 0。
     let text = print_config();
     assert!(!text.trim().is_empty(), "--print-config の出力が空");
 }
 
 #[test]
 fn test_cli_11_output_reads_back_without_warnings_as_default() {
-    // [CLI-11] 出したものはそのまま設定として警告なしで読め、既定と同じ。
+    // [stest -> req~cli.print-config-reads-back~1] 出したものはそのまま設定として警告なしで読め、既定と同じ。
     let text = print_config();
     let (c, warnings) = parse(&text).expect("--print-config の出力は設定として読める");
     assert!(
@@ -144,7 +144,7 @@ fn test_cli_11_output_reads_back_without_warnings_as_default() {
 
 #[test]
 fn test_cli_11_output_has_every_item_with_comment() {
-    // [CLI-11] 出力に全項目と、説明のコメント(`#`)と、書ける範囲(`# Scope:`)がある。
+    // [stest -> req~cli.print-config-output~1, req~cli.print-config-scopes~1] 出力に全項目と、説明のコメント(`#`)と、書ける範囲(`# Scope:`)がある。
     let text = print_config();
     let lines: Vec<&str> = text.lines().collect();
     for item in ITEMS {
@@ -173,7 +173,7 @@ fn test_cli_11_output_has_every_item_with_comment() {
 
 #[test]
 fn test_cli_11_output_values_are_defaults() {
-    // [CLI-11] 書き出しの値の行は既定値。区画ごとに1つずつ読んでも、既定と同じ振る舞い。
+    // [stest -> req~cli.print-config-reads-back~1] 書き出しの値の行は既定値。区画ごとに1つずつ読んでも、既定と同じ振る舞い。
     let text = print_config();
     let table: toml::Table = text.parse().expect("TOML として読める");
     for (name, value) in &table {
@@ -192,7 +192,7 @@ fn test_cli_11_output_values_are_defaults() {
 
 #[test]
 fn test_cli_2_help_mentions_print_config() {
-    // [CLI-2] [CLI-11] --help に --print-config が出る。
+    // [stest -> req~cli.options~2, req~cli.print-config-output~1] --help に --print-config が出る。
     let out = run(&["--help"]);
     assert_eq!(out.status.code(), Some(0));
     let help = String::from_utf8_lossy(&out.stdout);
@@ -206,7 +206,7 @@ fn test_cli_2_help_mentions_print_config() {
 
 #[test]
 fn test_cli_12_keys_cover_known_items() {
-    // [CLI-12] 実装の項目の一覧に、今ある設定の項目(CLI-3・SR-13・SR-8 ほか)が区画の道筋で入っている。
+    // [stest -> req~cli.config-docs~1] 実装の項目の一覧に、今ある設定の項目(CLI-3・SR-13・SR-8 ほか)が区画の道筋で入っている。
     let set = keys_set();
     for name in [
         "keys",
@@ -228,7 +228,7 @@ fn test_cli_12_keys_cover_known_items() {
 
 #[test]
 fn test_cli_12_parse_knows_every_key() {
-    // [CLI-12] [CLI-3] KEYS の項目はどれも設定の読み取りが知っている(知らない項目の警告にならない)。
+    // [stest -> req~cli.config-docs~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] KEYS の項目はどれも設定の読み取りが知っている(知らない項目の警告にならない)。
     let (_, w) = parse("zz_not_a_config_item = 0\n").expect("読める");
     assert_eq!(w.len(), 1, "知らない項目の警告が1つ出る: {:?}", w);
     let unknown = w[0].rsplit(": ").next().unwrap().to_string();
@@ -249,7 +249,7 @@ fn test_cli_12_parse_knows_every_key() {
 
 #[test]
 fn test_cli_12_english_doc_matches_keys() {
-    // [CLI-12] docs/config.md の項目と実装の項目が同じ集合。
+    // [stest -> req~cli.config-docs~1] docs/config.md の項目と実装の項目が同じ集合。
     let doc = doc_items("docs/config.md");
     let keys = keys_set();
     assert_eq!(
@@ -263,7 +263,7 @@ fn test_cli_12_english_doc_matches_keys() {
 
 #[test]
 fn test_cli_12_japanese_doc_matches_keys() {
-    // [CLI-12] docs/config.ja.md の項目と実装の項目が同じ集合。
+    // [stest -> req~cli.config-docs~1] docs/config.ja.md の項目と実装の項目が同じ集合。
     let doc = doc_items("docs/config.ja.md");
     let keys = keys_set();
     assert_eq!(
@@ -277,7 +277,7 @@ fn test_cli_12_japanese_doc_matches_keys() {
 
 #[test]
 fn test_cli_12_print_config_matches_keys() {
-    // [CLI-12] --print-config の項目(コメントアウトの例も含む)と実装の項目が同じ集合。値の行の区画は、どれも実装の区画。
+    // [stest -> req~cli.config-docs~1] --print-config の項目(コメントアウトの例も含む)と実装の項目が同じ集合。値の行の区画は、どれも実装の区画。
     let text = print_config();
     let printed: BTreeSet<String> = KEYS
         .iter()
@@ -311,7 +311,7 @@ fn test_cli_12_print_config_matches_keys() {
 
 #[test]
 fn test_cli_12_docs_list_old_names() {
-    // [CLI-12][CLI-20] 文書に、旧い名前と移った先の対応の表がある(実装の表 LEGACY と同じ行)。
+    // [stest -> req~cli.config-docs~1, req~cli.legacy-config-apply~1] 文書に、旧い名前と移った先の対応の表がある(実装の表 LEGACY と同じ行)。
     for rel in ["docs/config.md", "docs/config.ja.md"] {
         let text = repo_file(rel);
         for (old, new) in mdgrid::schema::LEGACY {

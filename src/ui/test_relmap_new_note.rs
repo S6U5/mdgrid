@@ -24,7 +24,7 @@ fn button_x(a: &App) -> Option<u16> {
 
 #[test]
 fn test_ce_25_relmap_new_note() {
-    // [CE-25] 関係マップでも「+ 新規」が表の画面と同じ桁に出る。今の表(Tasks)を選んで押す → 表の画面で名前の欄。
+    // [utest -> req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-relmap-start~1] 関係マップでも「+ 新規」が表の画面と同じ桁に出る。今の表(Tasks)を選んで押す → 表の画面で名前の欄。
     let tmp = workspace("ce25_relmap");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);
@@ -40,7 +40,7 @@ fn test_ce_25_relmap_new_note() {
 
 #[test]
 fn test_ce_25_relmap_new_note_other_table() {
-    // [CE-25] ほかの表(Projects)を選んで a → その表へ移り、開いたら名前の欄(main が start_new_note)。
+    // [utest -> req~cell-edit.new-note-relmap-start~1] ほかの表(Projects)を選んで a → その表へ移り、開いたら名前の欄(main が start_new_note)。
     let tmp = workspace("ce25_relmap_other");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);

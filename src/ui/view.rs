@@ -268,35 +268,41 @@ fn visible_rows(app: &App) -> Vec<&RowId> {
 /// 留めている行(NV-12)の印。
 pub(crate) const HELD_MARK: char = '~';
 
+/// 行のノートの名前(SR-29・SR-46・SR-47: `.md` を除き、フォルダは note_path に従い、名前の正規表現を当てる)。
+/// 字下げ・印(`!` `~` ▾ ▸)と WBS の番号は付けない(カンバンの札など、名前だけを見せる所で使う)。
+pub(crate) fn note_name(app: &App, row: &RowId) -> String {
+    let full = app.src.label(row);
+    let s = match note_path(app) {
+        NotePath::Full => full.as_str(),
+        NotePath::Name => full.rsplit('/').next().unwrap_or(&full),
+        _ => full
+            .strip_prefix(app.built.label_prefix.as_str())
+            .unwrap_or(&full),
+    };
+    let s = s.strip_suffix(".md").unwrap_or(s);
+    // SR-47: 名前の正規表現は、フォルダを除いた最後の名前の部分に当てる。
+    match app.settings.display.over(&app.display).note_name {
+        Some(re) => {
+            let (dir, base) = match s.rsplit_once('/') {
+                Some((d, b)) => (format!("{d}/"), b),
+                None => (String::new(), s),
+            };
+            sanitize(&format!("{dir}{}", re.apply(base)))
+        }
+        None => sanitize(s),
+    }
+}
+
 /// 行の表示名。外で変わった行・同期の競合ファイルには `!`、値を直して元の位置に留めている行には `~`
 /// を付ける(色に頼らない)。
-fn label(app: &App, row: &RowId) -> String {
+pub(crate) fn label(app: &App, row: &RowId) -> String {
     let flag = app.changes.external(row) || app.src.mark(row).is_some();
     // SR-29・SR-46: `.md` を除き、フォルダは note_path に従う(既定は共通のフォルダを除く)。file.name の列が
     // あるときと off のときは名前は出さず、印だけ。
     let mut name = if label_hidden(app) {
         String::new()
     } else {
-        let full = app.src.label(row);
-        let s = match note_path(app) {
-            NotePath::Full => full.as_str(),
-            NotePath::Name => full.rsplit('/').next().unwrap_or(&full),
-            _ => full
-                .strip_prefix(app.built.label_prefix.as_str())
-                .unwrap_or(&full),
-        };
-        let s = s.strip_suffix(".md").unwrap_or(s);
-        // SR-47: 名前の正規表現は、フォルダを除いた最後の名前の部分に当てる。
-        match app.settings.display.over(&app.display).note_name {
-            Some(re) => {
-                let (dir, base) = match s.rsplit_once('/') {
-                    Some((d, b)) => (format!("{d}/"), b),
-                    None => (String::new(), s),
-                };
-                sanitize(&format!("{dir}{}", re.apply(base)))
-            }
-            None => sanitize(s),
-        }
+        note_name(app, row)
     };
     // NV-27: 親子で並べていれば、深さ1つごとに2桁字下げし、子を持つ行に ▾(開いている)か ▸(畳んでいる)。
     if let Some(n) = app.tree.get(row) {
@@ -349,7 +355,7 @@ pub(crate) fn tree_mark_at(app: &App, row: &RowId, x: usize) -> bool {
     (x0..x0 + 2).contains(&x)
 }
 
-fn pending_color(mode: ColorMode) -> Option<Color> {
+pub(crate) fn pending_color(mode: ColorMode) -> Option<Color> {
     match mode {
         ColorMode::None => None,
         ColorMode::Indexed => Some(Color::Indexed(214)),
@@ -951,6 +957,15 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     }
     if super::bands::on_tree(app) {
         return super::folder_tree::render(app, w, h);
+    }
+    if super::bands::on_gantt(app) {
+        return super::gantt::render(app, w, h);
+    }
+    if super::bands::on_kanban(app) {
+        return super::kanban::render(app, w, h);
+    }
+    if super::bands::on_chart(app) {
+        return super::chart::render(app, w, h);
     }
     if let (Mode::Confirm, Some(r)) = (app.mode, &app.review) {
         return render_review(app, r, w, h);

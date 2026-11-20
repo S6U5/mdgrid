@@ -1,7 +1,7 @@
 #![cfg(unix)]
 //! タスク 1(open-md-file)の受け入れ: 起動の引数に `.md` のファイルを渡す(CLI-15)。
-//! 仕様: specs/cli/spec.md の CLI-15(関係: CLI-1・CLI-4、specs/output/spec.md の OUT-3)、
-//! specs/_changes/2026-10-06-open-md-file.md の「不明点と仮定」。
+//! 仕様: specs/_history/decidespec/cli/spec.md の CLI-15(関係: CLI-1・CLI-4、specs/_history/decidespec/output/spec.md の OUT-3)、
+//! specs/_history/decidespec/_changes/2026-10-06-open-md-file.md の「不明点と仮定」。
 //! 実装(src/main.rs・src/ui)を見ずに、要件だけで書いた。本物の実行ファイルを動かす。
 //!
 //! - `--print` と失敗は `Command::output`(標準出力はパイプ。設定と状態の置き場は一時フォルダ)。
@@ -104,7 +104,7 @@ fn assert_selected(t: &Tui, note: &str) {
 
 #[test]
 fn test_cli_15_print_md_file_prints_its_row() {
-    // [CLI-15] `notes/b.md --print` → `notes --print` と同じ列で、b の1行だけ、終了コード 0。
+    // [stest -> req~cli.open-md-print-rows~1] `notes/b.md --print` → `notes --print` と同じ列で、b の1行だけ、終了コード 0。
     let home = make_home("print");
     let folder = run_in(home.path(), &["notes", "--print"]);
     assert_eq!(folder.status.code(), Some(0));
@@ -129,7 +129,7 @@ fn test_cli_15_print_md_file_prints_its_row() {
 
 #[test]
 fn test_cli_15_print_two_md_files() {
-    // [CLI-15] `notes/a.md notes/b.md --print` → a と b の2行。
+    // [stest -> req~cli.open-md-print-rows~1] `notes/a.md notes/b.md --print` → a と b の2行。
     let home = make_home("print-two");
     let file = run_in(home.path(), &["notes/a.md", "notes/b.md", "--print"]);
     assert_eq!(file.status.code(), Some(0));
@@ -141,7 +141,7 @@ fn test_cli_15_print_two_md_files() {
 
 #[test]
 fn test_cli_15_print_md_file_extension_is_case_insensitive() {
-    // [CLI-15] 拡張子の大文字小文字を問わない(change record の仮定)。
+    // [stest -> req~cli.open-md-missing~1] 拡張子の大文字小文字を問わない(change record の仮定)。
     let home = make_home("print-upper");
     std::fs::rename(
         home.path().join("notes/b.md"),
@@ -164,7 +164,7 @@ fn test_cli_15_print_md_file_extension_is_case_insensitive() {
 
 #[test]
 fn test_cli_15_missing_md_file_fails_with_one_line_and_code_2() {
-    // [CLI-15][CLI-4] 在らない `.md` → 理由1行、終了コード 2、標準出力は空。
+    // [stest -> req~cli.open-md-missing~1, req~cli.fail-fast~1] 在らない `.md` → 理由1行、終了コード 2、標準出力は空。
     let home = make_home("missing");
     for extra in [&[][..], &["--print"][..]] {
         let mut args = vec!["notes/無い.md"];
@@ -196,7 +196,7 @@ fn test_cli_15_missing_md_file_fails_with_one_line_and_code_2() {
 
 #[test]
 fn test_cli_15_folder_selects_first_row_for_comparison() {
-    // [CLI-1] 比べ: フォルダを開くと最初の行(a.md)が選ばれている。
+    // [stest -> req~cli.launch-marker-headless~1] 比べ: フォルダを開くと最初の行(a.md)が選ばれている。
     let home = make_home("tui-folder");
     let t = open(home.path(), &["notes"]);
     assert_selected(&t, "a.md");
@@ -205,7 +205,7 @@ fn test_cli_15_folder_selects_first_row_for_comparison() {
 
 #[test]
 fn test_cli_15_md_file_opens_folder_and_selects_its_row() {
-    // [CLI-15] `notes/c.md` → notes の表が開き、c.md の行が選ばれている。
+    // [stest -> req~cli.open-md-select~1] `notes/c.md` → notes の表が開き、c.md の行が選ばれている。
     let home = make_home("tui-file");
     let t = open(home.path(), &["notes/c.md"]);
     assert!(
@@ -218,7 +218,7 @@ fn test_cli_15_md_file_opens_folder_and_selects_its_row() {
 
 #[test]
 fn test_cli_15_readonly_md_file_selects_its_row() {
-    // [CLI-15] `--readonly notes/b.md` でも b.md の行が選ばれている。
+    // [stest -> req~cli.open-md-select~1] `--readonly notes/b.md` でも b.md の行が選ばれている。
     let home = make_home("tui-readonly");
     let t = open(home.path(), &["--readonly", "notes/b.md"]);
     assert_selected(&t, "b.md");

@@ -93,7 +93,7 @@ fn widen_title(a: &mut App, times: usize) {
 
 #[test]
 fn test_bv_20_column_widths_per_native_view() {
-    // [BV-20][SR-12] mdgrid のビュー「全部」で title の幅を変える → ほかのビュー(既定の表・「まとめ」)には
+    // [utest -> req~base-view.views-toml-view-state~1, req~screen.state-store-key~1] mdgrid のビュー「全部」で title の幅を変える → ほかのビュー(既定の表・「まとめ」)には
     // 当たらず、「全部」に戻ると同じ幅。終了して開き直しても同じ。
     let tmp = vault("nvstate_width");
     let mut a = boot(&tmp);
@@ -121,7 +121,7 @@ fn test_bv_20_column_widths_per_native_view() {
 
 #[test]
 fn test_bv_20_folded_groups_per_native_view() {
-    // [BV-20][SR-12] mdgrid のビュー「まとめ」で先頭のまとまりを畳む → ほかのビューに移って戻っても、
+    // [utest -> req~base-view.views-toml-view-state~1, req~screen.state-store-key~1] mdgrid のビュー「まとめ」で先頭のまとまりを畳む → ほかのビューに移って戻っても、
     // 開き直しても畳んだまま。ビューの設定(グループ)は定義から当たる。
     let tmp = vault("nvstate_fold");
     let mut a = boot(&tmp);
@@ -146,8 +146,8 @@ fn test_bv_20_folded_groups_per_native_view() {
 
 #[test]
 fn test_bv_19_commands_in_help_and_palette() {
-    // [BV-19][SR-5][SR-14] キーの無いコマンドもヘルプに出て、パレットで名前から引ける。
-    // [WB-15] 読むだけではパレットに出さない(書くコマンド)。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-import~1, req~base-view.export-base-dropped~1, req~base-view.export-base-new-file~1, req~screen.help~1, req~screen.palette-fuzzy~1, req~screen.palette-keys~1] キーの無いコマンドもヘルプに出て、パレットで名前から引ける。
+    // [utest -> req~cli.readonly~1] 読むだけではパレットに出さない(書くコマンド)。
     let tmp = vault("nvstate_help");
     let mut a = boot(&tmp);
     let help: Vec<String> = help::help_lines(&a, keymap::Mode::Table, 79)
@@ -168,7 +168,7 @@ fn test_bv_19_commands_in_help_and_palette() {
 
 #[test]
 fn test_bv_20_rename_keeps_width() {
-    // [BV-20][SR-12] 名前を変えても、幅はそのビューに残る(新しい名前の状態に移す)。
+    // [utest -> req~base-view.views-toml-view-state~1, req~screen.state-store-key~1] 名前を変えても、幅はそのビューに残る(新しい名前の状態に移す)。
     let tmp = vault("nvstate_rename");
     let mut a = boot(&tmp);
     goto(&mut a, "全部");
@@ -241,7 +241,7 @@ fn keep_book() -> Cond {
 
 #[test]
 fn test_bv_19_export_dir_of_relative_base() {
-    // [BV-19] `mdgrid tasks.base` のように相対パスで開いても、置き場は今のフォルダ。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-import~1] `mdgrid tasks.base` のように相対パスで開いても、置き場は今のフォルダ。
     assert_eq!(
         native_io::export_dir_of(Path::new("tasks.base")),
         Some(PathBuf::from("."))
@@ -255,7 +255,7 @@ fn test_bv_19_export_dir_of_relative_base() {
 
 #[test]
 fn test_bv_18_two_apps_keep_each_others_views() {
-    // [BV-18][BV-20] 2つの mdgrid が同じ対象を開いて、それぞれ保存しても、ほかの保存したビューは消えない。
+    // [utest -> req~base-view.save-view-overwrite~1, req~base-view.save-view-delete-confirm~1, req~base-view.views-toml-view-state~1] 2つの mdgrid が同じ対象を開いて、それぞれ保存しても、ほかの保存したビューは消えない。
     // 読み直しで増えたビューはタブにも出る。
     let tmp = vault("nvstate_two");
     let mut a = boot(&tmp);
@@ -284,7 +284,7 @@ fn test_bv_18_two_apps_keep_each_others_views() {
 
 #[test]
 fn test_bv_20_applied_settings_and_columns_survive_tabs_and_restart() {
-    // [BV-20][NV-17] mdgrid のビューで反映した設定と、表で動かした・隠した列は、タブを行き来しても
+    // [utest -> req~base-view.views-toml-layout~1, req~navigation.settings-remember~1] mdgrid のビューで反映した設定と、表で動かした・隠した列は、タブを行き来しても
     // 開き直しても残り、その間はタブに `*`。上書きすると定義と同じになり `*` は消える。
     let tmp = vault("nvstate_overlay");
     let mut a = boot(&tmp);
@@ -330,7 +330,7 @@ fn test_bv_20_applied_settings_and_columns_survive_tabs_and_restart() {
 
 #[test]
 fn test_bv_18_save_as_keeps_moved_columns() {
-    // [BV-18][NV-4] 既定の表で H/L で列を動かしてから「名前を付けて保存」→ その並びで残る。
+    // [utest -> req~base-view.save-view-save-as~1, req~navigation.columns~1] 既定の表で H/L で列を動かしてから「名前を付けて保存」→ その並びで残る。
     // 動かしていなければ並びは空(あとで増えたキーも出る)。
     let tmp = vault("nvstate_order");
     let mut a = boot(&tmp);
@@ -349,7 +349,7 @@ fn test_bv_18_save_as_keeps_moved_columns() {
 
 #[test]
 fn test_bv_19_import_nameless_view_gets_name() {
-    // [BV-19] 名前の無い .base のビューを取り込む → 「ファイル名 番号」の名前で増える(空の名前にしない)。
+    // [utest -> req~base-view.export-base-import~1] 名前の無い .base のビューを取り込む → 「ファイル名 番号」の名前で増える(空の名前にしない)。
     let tmp = vault("nvstate_noname");
     tmp.write("x.base", "views:\n  - type: table\n    order: [title]\n");
     let mut a = boot(&tmp);
@@ -363,7 +363,7 @@ fn test_bv_19_import_nameless_view_gets_name() {
 
 #[test]
 fn test_bv_20_rename_moves_and_delete_removes_state() {
-    // [BV-20][SR-12] 名前の変更は状態を新しい名前へ移し(古い名前の状態は残さない)、削除はその状態を消す。
+    // [utest -> req~base-view.views-toml-view-state~1, req~screen.state-store-key~1] 名前の変更は状態を新しい名前へ移し(古い名前の状態は残さない)、削除はその状態を消す。
     let tmp = vault("nvstate_files");
     let mut a = boot(&tmp);
     goto(&mut a, "全部");
@@ -387,7 +387,7 @@ fn test_bv_20_rename_moves_and_delete_removes_state() {
 
 #[test]
 fn test_wb_15_readonly_hides_view_buttons_and_commands() {
-    // [WB-15][BV-18] 読むだけでは設定の画面の mdgrid のビューのボタンと、ヘルプの書き出し・取り込みを出さない。
+    // [utest -> req~cli.readonly~1, req~base-view.save-view-save-as~1, req~base-view.save-view-overwrite~1] 読むだけでは設定の画面の mdgrid のビューのボタンと、ヘルプの書き出し・取り込みを出さない。
     let tmp = vault("nvstate_ro");
     let mut a = boot(&tmp);
     a.readonly = true;
@@ -408,7 +408,7 @@ fn test_wb_15_readonly_hides_view_buttons_and_commands() {
 
 #[test]
 fn test_nv_18_left_right_follow_button_rows() {
-    // [NV-18] ←→ は画面の同じ行のボタンの中で動く。上の右は反映・取り消し、下は既定に戻すと
+    // [utest -> req~navigation.settings-layout-pane~1, req~navigation.settings-layout-buttons~1] ←→ は画面の同じ行のボタンの中で動く。上の右は反映・取り消し、下は既定に戻すと
     // mdgrid のビューのボタン(取り消し → 既定に戻す には飛ばない)。
     let tmp = vault("nvstate_lr");
     let mut a = boot(&tmp);
@@ -430,7 +430,7 @@ fn test_nv_18_left_right_follow_button_rows() {
 
 #[test]
 fn test_bv_20_readonly_view_buttons_say_read_only() {
-    // [BV-20][WB-15] 読むだけでボタンを直に押しても、「読むだけ」と出て views.toml も状態も書かない。
+    // [utest -> req~base-view.views-toml-readonly~1, req~base-view.views-toml-view-state~1, req~cli.readonly~1] 読むだけでボタンを直に押しても、「読むだけ」と出て views.toml も状態も書かない。
     let tmp = vault("nvstate_ro_press");
     let mut a = boot(&tmp);
     a.readonly = true;

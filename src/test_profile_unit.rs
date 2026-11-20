@@ -23,7 +23,7 @@ fn resolve_all(layers: &[Layer]) -> Resolved {
 
 #[test]
 fn test_sr_44_narrow_place_wins() {
-    // [SR-44] 狭い範囲が勝つ: 全体 sumi、ワークスペース nord、表 dracula → dracula。表が無ければ nord。
+    // [utest -> req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~1, req~screen.profile-scopes-theme-cut~1] 狭い範囲が勝つ: 全体 sumi、ワークスペース nord、表 dracula → dracula。表が無ければ nord。
     let global = layer(Place::Config, "config.toml", "[look]\ntheme = \"sumi\"\n");
     let ws = layer(Place::Workspace, "ws", "[look]\ntheme = \"nord\"\n");
     let table = layer(
@@ -44,7 +44,7 @@ fn test_sr_44_narrow_place_wins() {
 
 #[test]
 fn test_sr_44_preset_drops_wider_parts_and_theme_drops_wider_roles() {
-    // [SR-44] 組を書いた範囲は、広い範囲の部品の形を使わない。テーマを書いた範囲は、広い範囲の役割の色を使わない
+    // [utest -> req~screen.profile-scopes-preset-cut~1, req~screen.profile-scopes-theme-cut~1] 組を書いた範囲は、広い範囲の部品の形を使わない。テーマを書いた範囲は、広い範囲の役割の色を使わない
     // (値の色は使う)。同じ範囲の部品の形と役割の色は使う。
     let global = layer(
         Place::Config,
@@ -88,7 +88,7 @@ fn test_sr_44_preset_drops_wider_parts_and_theme_drops_wider_roles() {
 
 #[test]
 fn test_sr_44_template_is_laid_under_the_place() {
-    // [SR-44] use はテンプレートをその範囲の値の下に敷く。無い名前とテンプレートの中の use は警告。
+    // [utest -> req~screen.profile-scopes-use~1] use はテンプレートをその範囲の値の下に敷く。無い名前とテンプレートの中の use は警告。
     let mut night = Profile::default();
     night.look.theme = Some(ThemeSpec::Named(Theme::Dracula));
     night.look.preset = Some(Preset::DozyPink);
@@ -122,7 +122,7 @@ fn test_sr_44_template_is_laid_under_the_place() {
 
 #[test]
 fn test_sr_44_global_items_are_refused_in_other_places() {
-    // [SR-44] アプリ全体の項目はほかの範囲に書けば警告して無視する。知らない項目も警告。
+    // [utest -> req~screen.profile-scopes-app-only~1] アプリ全体の項目はほかの範囲に書けば警告して無視する。知らない項目も警告。
     let t: toml::Table =
         "language = \"en\"\nfoo = 1\n[terminal]\ncolor = false\n[look]\ntheme = \"nord\"\n"
             .parse()
@@ -140,7 +140,7 @@ fn test_sr_44_global_items_are_refused_in_other_places() {
 
 #[test]
 fn test_sr_44_profile_round_trips() {
-    // [SR-44] 画面が書くプロファイルは、書いて読むと同じ。
+    // [utest -> req~screen.profile-scopes-order~1] 画面が書くプロファイルは、書いて読むと同じ。
     let mut p = Profile {
         use_: Some("夜".into()),
         ..Profile::default()
@@ -168,7 +168,7 @@ fn test_sr_44_profile_round_trips() {
 
 #[test]
 fn test_cli_21_resolved_toml_names_the_origin() {
-    // [CLI-21] 決まった値の文は、各項目の上に出どころのコメント。読み直せる。
+    // [utest -> req~cli.resolved-config-origin~1] 決まった値の文は、各項目の上に出どころのコメント。読み直せる。
     let ws = layer(
         Place::Workspace,
         "N (.mdgrid/workspace.toml)",

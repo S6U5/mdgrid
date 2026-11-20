@@ -1,5 +1,5 @@
-//! 在る値と探した範囲を黙らせない(specs/_changes/2026-10-06-trust-notices.md)。
-//! [CV-2] 64ビットに入らない整数は --print でも元の文字。[BV-2] `.obsidian/` の無い場所の `.base` が
+//! 在る値と探した範囲を黙らせない(specs/_history/decidespec/_changes/2026-10-06-trust-notices.md)。
+//! [cell-view.type-mismatch] 64ビットに入らない整数は --print でも元の文字。[base-view.root-folder] `.obsidian/` の無い場所の `.base` が
 //! 0行のときは、探した根を stderr に出す。本物の実行ファイルの --print で確かめる。
 
 use std::path::{Path, PathBuf};
@@ -30,6 +30,7 @@ fn print(root: &Path, target: &Path) -> Output {
         .unwrap()
 }
 
+// [stest -> req~cell-view.type-mismatch~1]
 #[test]
 fn test_cv_2_big_int_prints_original_text() {
     let root = dir("bigint");
@@ -49,6 +50,7 @@ fn test_cv_2_big_int_prints_original_text() {
 const BASE: &str =
     "filters:\n  and:\n    - file.inFolder(\"Projects\")\nviews:\n  - type: table\n    name: v\n";
 
+// [stest -> req~base-view.root-folder-nearest~1]
 #[test]
 fn test_bv_2_vault_root_named_when_empty_without_obsidian() {
     // Bases/Tasks.base と Projects/a.md。.obsidian が無いので根は Bases になり、0行。
@@ -64,6 +66,7 @@ fn test_bv_2_vault_root_named_when_empty_without_obsidian() {
     assert!(err.contains("Bases"), "探した根の場所: {err}");
 }
 
+// [stest -> req~base-view.root-folder-nearest~1, req~base-view.root-folder-multiple~1]
 #[test]
 fn test_bv_2_vault_root_silent_with_obsidian_or_rows() {
     // .obsidian があれば根は上になり行が出る。知らせは出さない。

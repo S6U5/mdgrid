@@ -1,5 +1,5 @@
-//! [CE-19] リストの列で1つの文字列で書かれた値(`tags: x`)は1つの要素のリストとして開き、
-//! 確定したらフローのリストに書き換える。specs/_changes/2026-10-07-scalar-list-edit.md。
+//! [cell-edit.list-candidates] リストの列で1つの文字列で書かれた値(`tags: x`)は1つの要素のリストとして開き、
+//! 確定したらフローのリストに書き換える。specs/_history/decidespec/_changes/2026-10-07-scalar-list-edit.md。
 
 use mdgrid::writeback::{apply, Edit, EditError, NewValue};
 
@@ -14,6 +14,7 @@ fn put(src: &str, items: &[&str]) -> Result<String, EditError> {
     .map(|b| String::from_utf8(b).unwrap())
 }
 
+// [utest -> req~cell-edit.list-candidates-scalar-write~1, req~cell-edit.list-candidates-unkeepable~1]
 #[test]
 fn test_ce_19_scalar_list_is_rewritten_as_flow_list() {
     // 足す: 値だけが `[..]` になり、行のほかのバイト(行末のコメント・CRLF)はそのまま。
@@ -46,6 +47,7 @@ fn test_ce_19_scalar_list_is_rewritten_as_flow_list() {
     );
 }
 
+// [utest -> req~cell-edit.list-candidates-unkeepable~1]
 #[test]
 fn test_ce_19_scalar_list_non_string_stays_read_only() {
     // 文字列でない1つの値とブロックの文字は書かない(書くと型か書き方が変わる)。

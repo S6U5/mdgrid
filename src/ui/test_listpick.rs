@@ -69,7 +69,7 @@ fn space(a: &mut App) {
 
 #[test]
 fn test_ce_16_open_filter_and_add() {
-    // [CE-16] tags のセルで Enter → 保管庫の中のタグの一覧。[CE-19] 件数の多い順、同じ件数は文字の順、今の値に [x]。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] tags のセルで Enter → 保管庫の中のタグの一覧。[utest -> req~cell-edit.list-candidates-order~1, req~cell-edit.list-candidates-match~1] 件数の多い順、同じ件数は文字の順、今の値に [x]。
     let (_t, mut a) = make("ce16", TAGS);
     open_tags(&mut a, 2);
     assert_eq!(
@@ -85,7 +85,7 @@ fn test_ce_16_open_filter_and_add() {
     let s = screen(&a);
     assert!(s.contains("+ 新規: 会") && !s.contains("旅行"), "{s}");
     golden("ce_16_filter", &s);
-    // [SR-17] 端末のカーソルは検索の入力の位置。
+    // [utest -> req~screen.ime-cursor~1] 端末のカーソルは検索の入力の位置。
     let (x, y) = view::cursor(&a).unwrap();
     let line = s.lines().nth(y as usize).unwrap();
     assert!(line.contains("検索: 会"), "{line}");
@@ -128,7 +128,7 @@ fn test_ce_16_open_filter_and_add() {
 
 #[test]
 fn test_ce_19_hash_and_no_duplicates() {
-    // [CE-19] tags の列で `#会議` と打つ → 会議 として扱い、既にあれば足さない(新規を出さない)。
+    // [utest -> req~cell-edit.list-candidates-match~1, req~cell-edit.list-candidates-no-dup~1] tags の列で `#会議` と打つ → 会議 として扱い、既にあれば足さない(新規を出さない)。
     let (_t, mut a) = make("ce19hash", TAGS);
     open_tags(&mut a, 2);
     typing(&mut a, "#会議");
@@ -156,7 +156,7 @@ fn test_ce_19_hash_and_no_duplicates() {
     assert_eq!(shown(&a), vec!["[x] 新規 0"]);
     press(&mut a, KeyCode::Tab);
     assert_eq!(pending(&a, 2, "tags"), list(&["会議", "新規"]));
-    // [CE-16] 打った文字は大文字小文字を区別しない部分一致。全角の文字は全角のまま入る(SR-17)。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1] 打った文字は大文字小文字を区別しない部分一致。全角の文字は全角のまま入る(SR-17)。
     let (_t2, mut b) = make(
         "ce19case",
         &[
@@ -177,7 +177,7 @@ fn test_ce_19_hash_and_no_duplicates() {
 
 #[test]
 fn test_ce_19_remove_all_writes_key() {
-    // [CE-19] 要素を全部外して保存 → `tags:` の行が残る(キーは消さない。CE-9)。
+    // [utest -> req~cell-edit.list-candidates-empty~1] 要素を全部外して保存 → `tags:` の行が残る(キーは消さない。CE-9)。
     let (t, mut a) = make("ce19empty", TAGS);
     open_tags(&mut a, 2);
     space(&mut a);
@@ -192,7 +192,7 @@ fn test_ce_19_remove_all_writes_key() {
 
 #[test]
 fn test_ce_19_read_only_list_not_opened() {
-    // [CE-19] [CE-8] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
+    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~1] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
     let (_t, mut a) = make(
         "ce19lock",
         &[
@@ -209,7 +209,7 @@ fn test_ce_19_read_only_list_not_opened() {
 
 #[test]
 fn test_ce_1_esc_and_ce_11_revert() {
-    // [CE-1] Esc → 何もためずに表へ。
+    // [utest -> req~cell-edit.inline-enter-esc~1, req~cell-edit.inline-click-invalid~1] Esc → 何もためずに表へ。
     let (_t, mut a) = make("ce16esc", TAGS);
     open_tags(&mut a, 2);
     space(&mut a);
@@ -218,7 +218,7 @@ fn test_ce_1_esc_and_ce_11_revert() {
     assert_eq!(a.mode, Mode::Table);
     assert!(a.pick.is_none());
     assert_eq!(a.changes.count(), 0);
-    // [CE-11] Ctrl+R → 開いたときの状態に戻る(足した新規も消える)。そのまま確定しても何も書かない。
+    // [utest -> req~cell-edit.revert-and-tab~1] Ctrl+R → 開いたときの状態に戻る(足した新規も消える)。そのまま確定しても何も書かない。
     open_tags(&mut a, 2);
     space(&mut a);
     typing(&mut a, "新規");
@@ -249,7 +249,7 @@ const BULK: &[(&str, &str)] = &[
 
 #[test]
 fn test_ce_17_bulk_add_and_remove() {
-    // [CE-17] 3行を選び、tags に 会議 を足す → 3行とも足され、元のタグは残る。
+    // [utest -> req~cell-edit.list-bulk~1] 3行を選び、tags に 会議 を足す → 3行とも足され、元のタグは残る。
     let (t, mut a) = make("ce17", BULK);
     col_named(&mut a, "tags");
     for _ in 0..3 {
@@ -302,7 +302,7 @@ fn test_ce_17_bulk_add_and_remove() {
     ctrl(&mut a, 'z');
     assert_eq!(pending(&a, 0, "tags"), list(&["本", "秋", "会議"]));
     ctrl(&mut a, 'r');
-    // [CE-18] 保存の差分とファイル: フローは1行のまま、縦のリストは同じ字下げで1行増える。
+    // [utest -> req~cell-edit.list-layout~1] 保存の差分とファイル: フローは1行のまま、縦のリストは同じ字下げで1行増える。
     ctrl(&mut a, 's');
     assert_eq!(a.mode, Mode::Confirm);
     let s = screen(&a);
@@ -317,8 +317,8 @@ fn test_ce_17_bulk_add_and_remove() {
 
 #[test]
 fn test_ce_17_bulk_skips_read_only_rows() {
-    // [CE-17] [CE-10] 選んだ行のうち書けない行(読めないフロントマターのノート。WB-5)は飛ばし、数と理由を出す。
-    // [WB-3] フロントマターの無いノート(d.md)は飛ばさず、ためる変更になる。
+    // [utest -> req~cell-edit.list-bulk~1, req~cell-edit.bulk-set-skip-read-only~1] 選んだ行のうち書けない行(読めないフロントマターのノート。WB-5)は飛ばし、数と理由を出す。
+    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(d.md)は飛ばさず、ためる変更になる。
     let (_t, mut a) = make(
         "ce17skip",
         &[
@@ -352,7 +352,7 @@ fn test_ce_17_bulk_skips_read_only_rows() {
 
 #[test]
 fn test_nv_6_detail_enter_opens_pick() {
-    // [NV-6] 詳細の表示の Enter からも開き、Esc で詳細の表示へ戻る。
+    // [utest -> req~navigation.detail-edit~1] 詳細の表示の Enter からも開き、Esc で詳細の表示へ戻る。
     let (_t, mut a) = make("ce16detail", TAGS);
     a.row = 2;
     col_named(&mut a, "tags");
@@ -375,7 +375,7 @@ fn test_nv_6_detail_enter_opens_pick() {
 
 #[test]
 fn test_sr_9_window_fits_small_terminal() {
-    // [SR-9] 候補の窓は画面の幅と高さに収める(下に入らなければ上、どちらも狭ければ候補を減らす)。
+    // [utest -> req~cell-view.grapheme-width-fit~1] 候補の窓は画面の幅と高さに収める(下に入らなければ上、どちらも狭ければ候補を減らす)。
     let notes: Vec<(String, String)> = (0..30)
         .map(|i| {
             (
@@ -414,7 +414,7 @@ fn test_sr_9_window_fits_small_terminal() {
 
 #[test]
 fn test_sr_16_list_pick_keys() {
-    // [SR-4] [SR-16] リストの選択のキーは表にあり、文字1つのキーは割り当てない(打つ文字は検索に入る)。
+    // [utest -> req~screen.key-table~1, req~screen.key-modes-per-mode~1] リストの選択のキーは表にあり、文字1つのキーは割り当てない(打つ文字は検索に入る)。
     let keys: Vec<_> = BINDINGS
         .iter()
         .filter(|b| b.mode == Mode::ListPick)
@@ -458,7 +458,7 @@ fn typed_tags(name: &str, notes: &[(&str, &str)]) -> (Tmp, App) {
 
 #[test]
 fn test_ce_16_tab_never_opens_line_input_on_list() {
-    // [CE-16] [CE-11] (a) Tab で隣へ移る道: 書けるリストのセルならリストの選択を開き、1行の入力は開かない。
+    // [utest -> req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1, req~cell-edit.revert-and-tab~1] (a) Tab で隣へ移る道: 書けるリストのセルならリストの選択を開き、1行の入力は開かない。
     let (_t, mut a) = make(
         "ce16tab",
         &[
@@ -495,7 +495,7 @@ fn test_ce_16_tab_never_opens_line_input_on_list() {
 
 #[test]
 fn test_ce_17_bulk_when_current_row_cannot_open() {
-    // [CE-17] (b) 一括で今の行が開けない(`tags: 2024` は文字列でない1つの値)→ 1行の入力は開かず、
+    // [utest -> req~cell-edit.list-bulk~1] (b) 一括で今の行が開けない(`tags: 2024` は文字列でない1つの値)→ 1行の入力は開かず、
     // リストの選択を開いて開けない行を飛ばす。
     let (_t, mut a) = typed_tags(
         "ce17cur",
@@ -526,7 +526,7 @@ fn test_ce_17_bulk_when_current_row_cannot_open() {
 
 #[test]
 fn test_ce_19_read_only_shapes_have_reasons() {
-    // [CE-19] [CE-8] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
+    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~1] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
     let (_t, mut a) = typed_tags(
         "ce19shapes",
         &[
@@ -554,7 +554,7 @@ fn test_ce_19_read_only_shapes_have_reasons() {
 
 #[test]
 fn test_ce_16_space_in_search() {
-    // [CE-16] 検索が空でなければ Space は空白として入る。aliases の列で `new item` と打って Enter
+    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-new~1] 検索が空でなければ Space は空白として入る。aliases の列で `new item` と打って Enter
     // → `new item` が1つの要素として足される。
     let (_t, mut a) = make(
         "ce16space",
@@ -572,7 +572,7 @@ fn test_ce_16_space_in_search() {
     assert_eq!(shown(&a), vec!["+new item"]);
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::ListPick);
-    // [CE-19] tags 以外の列は大文字小文字を区別する(`meeting` は新規)。
+    // [utest -> req~cell-edit.list-candidates-match~1] tags 以外の列は大文字小文字を区別する(`meeting` は新規)。
     typing(&mut a, "meeting");
     assert_eq!(shown(&a), vec!["+meeting", "[ ] Meeting 1"]);
     press(&mut a, KeyCode::Esc);
@@ -586,7 +586,7 @@ fn test_ce_16_space_in_search() {
 
 #[test]
 fn test_ce_19_tags_case_insensitive_new() {
-    // [CE-19] tags の列では、`Meeting` があるとき `meeting` は新規を出さず、既にある Meeting を選ぶ。
+    // [utest -> req~cell-edit.list-candidates-match~1, req~cell-edit.list-candidates-no-dup~1, req~cell-edit.list-candidates-scalar-open~1, req~cell-edit.list-candidates-unkeepable~1] tags の列では、`Meeting` があるとき `meeting` は新規を出さず、既にある Meeting を選ぶ。
     let (_t, mut a) = make(
         "ce19tagcase",
         &[
@@ -604,7 +604,7 @@ fn test_ce_19_tags_case_insensitive_new() {
 
 #[test]
 fn test_sr_3_commit_only_when_cell_drawn() {
-    // [SR-3] 表から開いたリストの選択は、選んだセルが見えていなければ確定しない(理由を出して閉じない)。
+    // [utest -> req~screen.h-scroll-follow~1] 表から開いたリストの選択は、選んだセルが見えていなければ確定しない(理由を出して閉じない)。
     let (_t, mut a) = make("sr3pick", TAGS);
     open_tags(&mut a, 2);
     space(&mut a);
@@ -621,7 +621,7 @@ fn test_sr_3_commit_only_when_cell_drawn() {
 
 #[test]
 fn test_ce_17_bulk_enter_in_search_only_attaches() {
-    // [CE-17] [CE-19] 一括で、全部の行が持つ 会議 を打って Enter 2回 → 付けるだけなので何も変わらない。
+    // [utest -> req~cell-edit.list-bulk~1, req~cell-edit.list-candidates-no-dup~1, req~cell-edit.list-candidates-unkeepable~1] 一括で、全部の行が持つ 会議 を打って Enter 2回 → 付けるだけなので何も変わらない。
     let (_t, mut a) = make("ce17enter", TAGS);
     col_named(&mut a, "tags");
     for _ in 0..3 {
@@ -649,7 +649,7 @@ fn test_ce_17_bulk_enter_in_search_only_attaches() {
 
 #[test]
 fn test_ce_19_tags_case_prefers_held_spelling() {
-    // [CE-19] tags で Meeting(2件)と、この行が持つ meeting がある → `meeting` と打つと行が持つ meeting を選び、
+    // [utest -> req~cell-edit.list-candidates-order~1, req~cell-edit.list-candidates-match~1, req~cell-edit.list-candidates-no-dup~1] tags で Meeting(2件)と、この行が持つ meeting がある → `meeting` と打つと行が持つ meeting を選び、
     // Enter・Tab で同じ要素を2つにしない。一覧から Meeting を付けても、大文字小文字違いで持つので足さない。
     let (_t, mut a) = make(
         "ce19held",

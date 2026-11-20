@@ -1,4 +1,4 @@
-//! [SR-31] セルの入力欄と新しいノートの窓の見た目。specs/_changes/2026-10-08-edit-screen-design.md。
+//! [screen.input-box] セルの入力欄と新しいノートの窓の見た目。specs/_history/decidespec/_changes/2026-10-08-edit-screen-design.md。
 
 use super::startup::Startup;
 use super::test_screen::{buffer, ch, col_named, make, press, screen, Tmp};
@@ -12,6 +12,7 @@ const NOTES: &[(&str, &str)] = &[
     ("b.md", "---\nstatus: done\nn: 2\n---\n"),
 ];
 
+// [utest -> req~screen.input-box-fill~1, req~screen.input-box-width~1, req~screen.input-box-form-frame~1]
 #[test]
 fn test_sr_31_input_box_is_wide_and_filled() {
     let (_t, mut a) = make("sr31input", NOTES);
@@ -57,6 +58,7 @@ fn boot(name: &str) -> (Tmp, App) {
     (tmp, a)
 }
 
+// [utest -> req~screen.input-box-form-frame~1, req~screen.input-box-form-hints~1, req~screen.input-box-ascii~1]
 #[test]
 fn test_sr_31_note_form_box_and_hints() {
     let (_t, mut a) = boot("sr31form");

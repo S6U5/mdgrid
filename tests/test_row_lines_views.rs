@@ -1,6 +1,6 @@
 //! 表の行を伸ばす設定 `display.row_extra_lines`(CV-8)のビューごとの上書き(views.toml の settings.display)。
 //! 0〜9 の整数でなければ警告して既定(上書きを持たない)。ビューそのものは捨てない。
-//! 記録: specs/_changes/2026-10-12-row-lines.md(タスク #6。照合の指摘)。環境変数は書き換えない。
+//! 記録: specs/_history/decidespec/_changes/2026-10-12-row-lines.md(タスク #6。照合の指摘)。環境変数は書き換えない。
 
 fn views_toml(name: &str, display: &str) -> (std::path::PathBuf, std::path::PathBuf) {
     let root = std::env::temp_dir().join(format!(
@@ -29,7 +29,7 @@ fn views_toml(name: &str, display: &str) -> (std::path::PathBuf, std::path::Path
 
 #[test]
 fn test_cv_8_views_override_reads_value() {
-    // [CV-8] ビューごとの上書き(views.toml の settings.display)の `row_extra_lines = 2` → 2、警告なし。
+    // [utest -> req~cell-view.row-lines-view-override~1] ビューごとの上書き(views.toml の settings.display)の `row_extra_lines = 2` → 2、警告なし。
     let (conf, notes) = views_toml("ok", "row_extra_lines = 2");
     let (views, warns) = mdgrid::views::load_views(&conf, &notes);
     assert!(warns.is_empty(), "{warns:?}");
@@ -39,7 +39,7 @@ fn test_cv_8_views_override_reads_value() {
 
 #[test]
 fn test_cv_8_views_override_out_of_range_warns() {
-    // [CV-8] ビューごとの上書きの `row_extra_lines` が範囲の外・整数でない → 警告して既定(上書きを持たない)。
+    // [utest -> req~cell-view.row-lines-view-override~1, req~cell-view.row-lines-out-of-range~1] ビューごとの上書きの `row_extra_lines` が範囲の外・整数でない → 警告して既定(上書きを持たない)。
     // ビューそのものは捨てない。
     for v in ["12", "-1", "300", "1.5", "\"two\""] {
         let (conf, notes) = views_toml("bad", &format!("row_extra_lines = {v}"));

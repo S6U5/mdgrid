@@ -24,7 +24,7 @@ fn outline(t: &Tree, folded: &HashSet<String>) -> Vec<String> {
 
 #[test]
 fn test_tr_2_split_by_separator() {
-    // [TR-2] 区切り(省略は ` > `)で切った段が置き場の階層。前後の空白と空の段は捨てる。
+    // [utest -> req~tree.config-path~1] 区切り(省略は ` > `)で切った段が置き場の階層。前後の空白と空の段は捨てる。
     assert_eq!(split("bar > 開発 > Web", " > "), vec!["bar", "開発", "Web"]);
     assert_eq!(split("a/b", "/"), vec!["a", "b"]);
     assert_eq!(split("  ", " > "), Vec::<String>::new());
@@ -33,7 +33,7 @@ fn test_tr_2_split_by_separator() {
 
 #[test]
 fn test_tr_3_tree_counts_and_none() {
-    // [TR-3] 途中の階層もフォルダにし、下の階層までの行の数を添え、空の行は根の「(なし)」(最後)。
+    // [utest -> req~tree.folders-count~1] 途中の階層もフォルダにし、下の階層までの行の数を添え、空の行は根の「(なし)」(最後)。
     let rows = vec![
         e("bar > 開発", "10", "a"),
         e("bar > 開発", "20", "b"),
@@ -63,7 +63,7 @@ fn test_tr_3_tree_counts_and_none() {
 
 #[test]
 fn test_tr_3_same_name_under_other_parents() {
-    // [TR-3] 同じ名前のフォルダは、親が違えば別のフォルダ。フォルダは名前の順。
+    // [utest -> req~tree.folders-intermediate~1, req~tree.folders-same-name~1] 同じ名前のフォルダは、親が違えば別のフォルダ。フォルダは名前の順。
     let rows = vec![
         e("zeta > Web", "", "a"),
         e("alpha > Web", "", "b"),
@@ -98,7 +98,7 @@ fn test_tr_3_same_name_under_other_parents() {
 
 #[test]
 fn test_tr_4_rows_by_order_then_name() {
-    // [TR-4] フォルダの直下の行は order の小さい順。数でない値と空は後ろ、同じ値はノートの名前の順。
+    // [utest -> req~tree.rows-order~1] フォルダの直下の行は order の小さい順。数でない値と空は後ろ、同じ値はノートの名前の順。
     let rows = vec![
         e("開発", "", "empty"),
         e("開発", "20", "twenty"),
@@ -127,7 +127,7 @@ fn test_tr_4_rows_by_order_then_name() {
 
 #[test]
 fn test_tr_5_web_url_only_http() {
-    // [TR-5] http・https だけを開いてよい URL とし、ほかの形は開かない。
+    // [utest -> req~tree.open-url-scheme~1] http・https だけを開いてよい URL とし、ほかの形は開かない。
     assert_eq!(web_url("https://example.com"), Some("https://example.com"));
     assert_eq!(
         web_url("  http://example.com/a?b=1 "),
@@ -174,7 +174,7 @@ impl Drop for Root {
 
 #[test]
 fn test_tr_2_marker_tree_reads_path_order_and_default_separator() {
-    // [TR-2] 印の [[table]] の tree = { path, order }。区切りの省略は ` > `。
+    // [utest -> req~tree.config-path~1, req~tree.config-empty-table~1] 印の [[table]] の tree = { path, order }。区切りの省略は ` > `。
     let r = Root::new(
         "read",
         "[[table]]\nname = \"BM\"\npath = \"bm\"\ntree = { path = \"folder\", order = \"order\" }\n",
@@ -202,7 +202,7 @@ fn test_tr_2_marker_tree_reads_path_order_and_default_separator() {
 
 #[test]
 fn test_tr_2_empty_separator_warns_and_no_tree() {
-    // [TR-2] 区切りが空の文字なら、CLI-3 の形の警告1行で、木を出さない。
+    // [utest -> req~tree.config-invalid~1] 区切りが空の文字なら、CLI-3 の形の警告1行で、木を出さない。
     let r = Root::new(
         "sep",
         "[[table]]\npath = \"bm\"\ntree = { path = \"folder\", separator = \"\" }\n",

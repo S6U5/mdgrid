@@ -39,7 +39,7 @@ python3 scripts/public_sync.py install-hook
 ## ふだんの手順
 
 1. `python3 scripts/public_sync.py status`: 公開リポを取ってきて、印を進め、まだ取り込んでいない公開リポの変更、まだ書き出していない手元のコミット、今書き出すと変わる量を出す。
-2. 取り込みがあれば、手元の main で `python3 scripts/public_sync.py import`。ぶつかったら直して `git cherry-pick --continue` し、もう一度 `import`。`specs/` の生成の区画と `specs/test-locks.json` は手元の側を取り、`check.py --write` で作り直す(公開リポの側は手元の履歴が無いので、生成の区画が手元と違う)。誤って入った物(`__pycache__/` など)は取り込みのコミットから外す。作業ツリーに別の作業の未コミットの変更があるときは、それに触らないように進める(git は、上書きになる cherry-pick を自分で止める)。
+2. 取り込みがあれば、手元の main で `python3 scripts/public_sync.py import`。ぶつかったら直して `git cherry-pick --continue` し、もう一度 `import`。`specs/_history/decidespec/` は 2026-11-17 に凍結した記録なので、ぶつかったら手元の側を取る。要求の正本 `specs/requirements/` がぶつかったら直し、`python3 tools/trace_gate.py check` を通す。誤って入った物(`__pycache__/` など)は取り込みのコミットから外す。作業ツリーに別の作業の未コミットの変更があるときは、それに触らないように進める(git は、上書きになる cherry-pick を自分で止める)。
 3. 書き出すときは `python3 scripts/public_sync.py export <名前> --dry-run` で変わるファイルを見てから、`python3 scripts/public_sync.py export <名前> -m '<PR の題>' -m '<本文>' --pr`。`--pr` は PR が無ければ作る。直しを足すときは、手元の main を直して同じ名前でもう一度 `export` する(同じブランチに次のコミットとして積む)。
 4. 人が公開リポで PR をマージしたら、次の `status` で印が進む。
 
@@ -48,4 +48,4 @@ python3 scripts/public_sync.py install-hook
 ## 伏せ字のままの所と、公開リポにだけある所
 
 - 公開リポの過去の履歴(マージ済みのコミット)には、クラウドのセッションが書いた承認の証拠の ID が残ることがある。履歴は書き換えない。次の書き出しで、今の木からは消える。
-- 公開リポの `specs/` の生成の区画は、書き出しのたびに手元の版に揃う。公開リポの側で `check.py --write` を回すと、また手元と違う中身になる(取り込みのときに手元の側を取る)。
+- 公開リポの `specs/_history/decidespec/` は、書き出しのたびに手元の版に揃う(凍結した記録で、どちらの側でも書き換えない)。

@@ -11,6 +11,7 @@ pub mod detail;
 // 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
 pub(crate) use crate::diff;
 pub mod add_row;
+pub mod chart;
 pub mod display;
 pub mod drawer;
 pub mod entry;
@@ -19,10 +20,12 @@ pub mod external;
 pub mod filters;
 pub mod folder_tree;
 pub mod freq;
+pub mod gantt;
 pub(crate) mod glyphs;
 pub mod grid;
 pub mod help;
 pub mod input;
+pub mod kanban;
 pub mod keymap;
 pub mod list;
 pub mod listpick;
@@ -34,6 +37,7 @@ pub mod native_views;
 pub mod nav;
 pub mod new_note;
 pub mod note_rename;
+pub mod note_trash;
 pub mod places;
 pub mod popup;
 pub(crate) mod profile;
@@ -42,6 +46,7 @@ pub mod relmap;
 pub mod review;
 pub(crate) mod rows;
 pub mod screen_menu;
+pub(crate) mod screens;
 pub mod settings;
 pub mod settings_pick;
 pub mod settings_view;
@@ -50,6 +55,7 @@ pub mod starter;
 pub mod startup;
 pub mod termbg;
 pub mod theme;
+mod then;
 pub mod type_menu;
 pub mod view;
 pub mod view_tabs;
@@ -191,6 +197,18 @@ mod test_calendar;
 #[cfg(test)]
 mod test_calendar_seconds;
 #[cfg(test)]
+mod test_chart;
+#[cfg(test)]
+mod test_chart2;
+#[cfg(test)]
+mod test_chart3;
+#[cfg(test)]
+mod test_chart_fix;
+#[cfg(test)]
+mod test_chart_fix2;
+#[cfg(test)]
+mod test_chart_fix3;
+#[cfg(test)]
 mod test_checkbox;
 #[cfg(test)]
 mod test_checkbox_two_state;
@@ -231,7 +249,7 @@ mod test_external;
 #[cfg(test)]
 mod test_filter_window;
 #[cfg(test)]
-// 錠のある試験のファイルの use を書き換えないため(specs/_changes/2026-10-14-fmt-view-bar-cases.md)。
+// 錠のある試験のファイルの use を書き換えないため(specs/_history/decidespec/_changes/2026-10-14-fmt-view-bar-cases.md)。
 #[allow(unused_imports)]
 mod test_filter_window_more;
 #[cfg(test)]
@@ -239,11 +257,37 @@ mod test_folder_tree;
 #[cfg(test)]
 mod test_freq_chips;
 #[cfg(test)]
+mod test_gantt;
+#[cfg(test)]
+mod test_gantt_axis;
+#[cfg(test)]
+mod test_gantt_axis_fix;
+#[cfg(test)]
+mod test_gantt_axis_more;
+#[cfg(test)]
+mod test_gantt_axis_sel;
+#[cfg(test)]
+mod test_gantt_more;
+#[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]
 mod test_half_explicit_rounds_up;
 #[cfg(test)]
 mod test_header_buttons;
+#[cfg(test)]
+mod test_kanban;
+#[cfg(test)]
+mod test_kanban_fix;
+#[cfg(test)]
+mod test_kanban_fix2;
+#[cfg(test)]
+mod test_kanban_fix3;
+#[cfg(test)]
+mod test_kanban_fix4;
+#[cfg(test)]
+mod test_kanban_fix5;
+#[cfg(test)]
+mod test_kanban_fix6;
 #[cfg(test)]
 mod test_key_ops;
 #[cfg(test)]
@@ -256,6 +300,8 @@ mod test_load_throttle;
 mod test_look;
 #[cfg(test)]
 mod test_modern_rest;
+#[cfg(test)]
+mod test_note_bodies;
 #[cfg(test)]
 mod test_note_body_outside;
 #[cfg(test)]
@@ -335,6 +381,8 @@ mod test_tab_wrap_below;
 #[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
+mod test_then;
+#[cfg(test)]
 mod test_time_picker;
 #[cfg(test)]
 mod test_trust_notices;
@@ -363,6 +411,8 @@ mod test_csv_note_only_more;
 mod test_csv_source;
 #[cfg(test)]
 mod test_csv_usable;
+#[cfg(test)]
+mod test_empty_screens;
 #[cfg(test)]
 #[allow(clippy::manual_contains, clippy::cloned_ref_to_slice_refs)]
 mod test_freq;
@@ -434,6 +484,8 @@ mod test_note_name;
 mod test_note_path;
 #[cfg(test)]
 mod test_note_rename;
+#[cfg(test)]
+mod test_note_trash;
 #[cfg(test)]
 mod test_pending_shape;
 #[cfg(test)]

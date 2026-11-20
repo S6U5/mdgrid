@@ -1,4 +1,4 @@
-//! フロントマターの読み取りの受け入れテスト(CE-8・WB-5)。仕様: specs/cell-edit/spec.md、specs/write-back/spec.md。
+//! フロントマターの読み取りの受け入れテスト(CE-8・WB-5)。仕様: specs/_history/decidespec/cell-edit/spec.md、specs/_history/decidespec/write-back/spec.md。
 
 use mdgrid::frontmatter::{parse, Entry, Frontmatter, ReadOnly, Shape, Value};
 
@@ -25,7 +25,7 @@ fn assert_read_only_entry(file: &str, key: &str, shape: Shape) {
 
 #[test]
 fn ce_8_nested_map_is_read_only() {
-    // [CE-8]
+    // [utest -> req~cell-edit.read-only-forms~1]
     assert_read_only_entry("nested_map.md", "meta", Shape::Nested);
     // 隣の第1階層のキーは書ける。
     let fm = parse(&fixture("nested_map.md")).unwrap();
@@ -34,7 +34,7 @@ fn ce_8_nested_map_is_read_only() {
 
 #[test]
 fn ce_8_block_scalars_are_read_only() {
-    // [CE-8]
+    // [utest -> req~cell-edit.read-only-forms~1]
     assert_read_only_entry("block_scalar.md", "literal", Shape::BlockScalar);
     assert_read_only_entry("block_scalar.md", "folded", Shape::BlockScalar);
     let fm = parse(&fixture("block_scalar.md")).unwrap();
@@ -43,14 +43,14 @@ fn ce_8_block_scalars_are_read_only() {
 
 #[test]
 fn ce_8_anchor_and_alias_are_read_only() {
-    // [CE-8]
+    // [utest -> req~cell-edit.read-only-forms~1]
     assert_read_only_entry("anchor.md", "base", Shape::Anchor);
     assert_read_only_entry("anchor.md", "alias", Shape::Anchor);
 }
 
 #[test]
 fn ce_18_block_list_span_only_when_writable() {
-    // [CE-18] 書ける形のブロックのリスト(要素が1行の素のスカラーか引用符つきの値だけ)には、要素の行の範囲がある。
+    // [utest -> req~cell-edit.list-layout~1] 書ける形のブロックのリスト(要素が1行の素のスカラーか引用符つきの値だけ)には、要素の行の範囲がある。
     let bytes = fixture("block_list.md");
     let fm = parse(&bytes).unwrap();
     let e = entry(&fm, "tags");
@@ -68,7 +68,7 @@ fn ce_18_block_list_span_only_when_writable() {
         "span stays inside the list: {text:?}"
     );
 
-    // [CE-8] 書けない形(要素の間のコメント・空行、入れ子の要素)には範囲が無い。値は読める。
+    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(要素の間のコメント・空行、入れ子の要素)には範囲が無い。値は読める。
     for src in [
         "---\ntags:\n  - one\n  # memo\n  - two\nstatus: draft\n---\n",
         "---\ntags:\n  - one\n\n  - two\nstatus: draft\n---\n",
@@ -96,7 +96,7 @@ fn ce_18_block_list_span_only_when_writable() {
 
 #[test]
 fn ce_8_editable_shapes_have_value_span() {
-    // [CE-8]
+    // [utest -> req~cell-edit.read-only-forms~1]
     let bytes = fixture("quoted.md");
     let fm = parse(&bytes).unwrap();
     let dq = entry(&fm, "dq");
@@ -123,7 +123,7 @@ fn ce_8_editable_shapes_have_value_span() {
 
 #[test]
 fn wb_5_duplicate_key_is_read_only() {
-    // [WB-5]
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
     assert_eq!(
         parse(&fixture("duplicate_key.md")),
         Err(ReadOnly::DuplicateKey("a".into()))
@@ -132,13 +132,13 @@ fn wb_5_duplicate_key_is_read_only() {
 
 #[test]
 fn wb_5_bom_is_read_only() {
-    // [WB-5]
+    // [utest -> req~write-back.refuse-unsafe-read-only~1]
     assert_eq!(parse(&fixture("bom.md")), Err(ReadOnly::Bom));
 }
 
 #[test]
 fn wb_5_invalid_yaml_is_read_only() {
-    // [WB-5]
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
     assert_eq!(
         parse(&fixture("invalid_yaml.md")),
         Err(ReadOnly::InvalidYaml)
@@ -147,19 +147,19 @@ fn wb_5_invalid_yaml_is_read_only() {
 
 #[test]
 fn wb_5_unclosed_is_read_only() {
-    // [WB-5]
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
     assert_eq!(parse(&fixture("unclosed.md")), Err(ReadOnly::Unclosed));
 }
 
 #[test]
 fn wb_5_not_utf8_is_read_only() {
-    // [WB-5]
+    // [utest -> req~write-back.refuse-unsafe-read-only~1]
     assert_eq!(parse(&fixture("not_utf8.md")), Err(ReadOnly::NotUtf8));
 }
 
 #[test]
 fn wb_5_mixed_newlines_is_read_only() {
-    // [WB-5]
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
     assert_eq!(
         parse(&fixture("mixed_newlines.md")),
         Err(ReadOnly::MixedNewlines)
@@ -168,7 +168,7 @@ fn wb_5_mixed_newlines_is_read_only() {
 
 #[test]
 fn wb_3_empty_frontmatter_is_detected_and_writable() {
-    // [WB-3] 空のフロントマター(`---` が2行だけ)は parse で EmptyFrontmatter と見分ける(読むだけではない)。
+    // [utest -> req~write-back.add-key-empty-frontmatter~1] 空のフロントマター(`---` が2行だけ)は parse で EmptyFrontmatter と見分ける(読むだけではない)。
     // 既定では書け、2つの区切りの間にキーの行を足す。
     let bytes = fixture("empty_frontmatter.md");
     assert_eq!(parse(&bytes), Err(ReadOnly::EmptyFrontmatter));
@@ -185,7 +185,7 @@ fn wb_3_empty_frontmatter_is_detected_and_writable() {
 
 #[test]
 fn wb_3_no_frontmatter_is_detected() {
-    // [WB-3]
+    // [utest -> req~write-back.add-frontmatter-newline~1]
     assert_eq!(
         parse(&fixture("no_frontmatter.md")),
         Err(ReadOnly::NoFrontmatter)
@@ -194,7 +194,6 @@ fn wb_3_no_frontmatter_is_detected() {
 
 #[test]
 fn wb_2_end_points_at_first_closing_delimiter() {
-    // [WB-2]
     let bytes = fixture("dash_line.md");
     let fm = parse(&bytes).unwrap();
     let head = b"---\ntitle: t\nstatus: draft\n";
@@ -207,7 +206,7 @@ fn wb_2_end_points_at_first_closing_delimiter() {
 
 #[test]
 fn wb_1_crlf_and_japanese_key_spans() {
-    // [WB-1]
+    // [utest -> req~write-back.byte-range-value~1, req~write-back.byte-range-null~1]
     let bytes = fixture("crlf.md");
     let fm = parse(&bytes).unwrap();
     let st = entry(&fm, "status");
@@ -223,7 +222,7 @@ fn wb_1_crlf_and_japanese_key_spans() {
 
 #[test]
 fn ce_2_quoted_number_like_values_are_strings() {
-    // [CE-2]
+    // [utest -> req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1]
     let fm = parse(&fixture("number_like.md")).unwrap();
     assert_eq!(entry(&fm, "num").value, Value::Str("123".into()));
     assert_eq!(entry(&fm, "no_str").value, Value::Str("no".into()));

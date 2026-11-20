@@ -1,7 +1,8 @@
-//! [WB-5] 読めない YAML の理由に、ファイルの行と誤りの文を添える(specs/_changes/2026-10-06-yaml-error-detail.md)。
+//! [write-back.refuse-unsafe-notes] 読めない YAML の理由に、ファイルの行と誤りの文を添える(specs/_history/decidespec/_changes/2026-10-06-yaml-error-detail.md)。
 
 use super::yaml_error;
 
+// [utest -> req~write-back.refuse-unsafe-read-only~1]
 #[test]
 fn test_wb_5_yaml_error_unclosed_flow_list() {
     let (line, msg) = yaml_error(b"---\ntitle: x\ntags: [a, b\n---\nbody\n").expect("誤り");
@@ -12,6 +13,7 @@ fn test_wb_5_yaml_error_unclosed_flow_list() {
     assert!(!msg.is_empty());
 }
 
+// [utest -> req~write-back.refuse-unsafe-read-only~1]
 #[test]
 fn test_wb_5_yaml_error_none_for_valid_yaml() {
     assert_eq!(yaml_error(b"---\ntitle: x\ntags: [a, b]\n---\n"), None);

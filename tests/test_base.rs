@@ -1,6 +1,6 @@
 //! `.base` の table ビューの受け入れテスト(タスク 6)。
 //! BV-3・BV-4・BV-5・BV-7・BV-8・BV-13・SC-8・CV-2(並べ替え)・BV-1(default_grid)。
-//! 仕様: specs/base-view/spec.md、specs/scope/spec.md、specs/cell-view/spec.md。
+//! 仕様: specs/_history/decidespec/base-view/spec.md、specs/_history/decidespec/scope/spec.md、specs/_history/decidespec/cell-view/spec.md。
 //! 形: docs/design.md の「核の公開のインターフェース(残り: タスク 5・6・8)」の src/base.rs。
 //!
 //! 材料は一時フォルダの保管庫(`.obsidian/` を持つ)に数個のノートと `.base` を書き、
@@ -173,7 +173,7 @@ fn titles(g: &Grid) -> Vec<String> {
 
 #[test]
 fn test_bv_4_global_and_view_filters_are_anded() {
-    // [BV-4] 全体の filters `file.hasTag("a")` とビューの `status == "done"` を AND でつなぐ。
+    // [utest -> req~base-view.filters~1] 全体の filters `file.hasTag("a")` とビューの `status == "done"` を AND でつなぐ。
     let dir = vault("base-bv4");
     let text = r#"filters:
   and:
@@ -209,7 +209,7 @@ views:
 
 #[test]
 fn test_bv_4_nested_and_or_not() {
-    // [BV-4] and・or・not の入れ子。
+    // [utest -> req~base-view.filters~1] and・or・not の入れ子。
     // or( and(status == "todo", priority >= 3), not(file.hasTag("a")) ) → e(todo・3)と c(tag a なし)。
     let dir = vault("base-bv4-nested");
     let text = r#"views:
@@ -235,7 +235,7 @@ fn test_bv_4_nested_and_or_not() {
 
 #[test]
 fn test_bv_5_order_and_display_name_give_column_ids_and_titles() {
-    // [BV-5] order の順に列。id はノートのキーなら素の名前(`note.status` も `status`)、
+    // [utest -> req~base-view.table-keys~1] order の順に列。id はノートのキーなら素の名前(`note.status` も `status`)、
     // ほかは `file.name`・`formula.x`。title は properties の displayName、無ければ id。
     let dir = vault("base-bv5-order");
     let text = r#"formulas:
@@ -270,7 +270,7 @@ views:
 
 #[test]
 fn test_bv_5_parse_reads_view_fields() {
-    // [BV-5] parse が type・name・order・sort・groupBy・limit を View に読む。
+    // [utest -> req~base-view.table-keys~1] parse が type・name・order・sort・groupBy・limit を View に読む。
     let text = r#"views:
   - type: table
     name: Main
@@ -306,7 +306,7 @@ fn test_bv_5_parse_reads_view_fields() {
 
 #[test]
 fn test_bv_5_sort_multiple_keys_asc_desc() {
-    // [BV-5] sort の順に並べる: priority DESC、同じなら file.name ASC。
+    // [utest -> req~base-view.table-keys~1] sort の順に並べる: priority DESC、同じなら file.name ASC。
     let dir = vault("base-bv5-sort");
     let text = r#"views:
   - type: table
@@ -348,7 +348,7 @@ fn test_bv_5_sort_multiple_keys_asc_desc() {
 
 #[test]
 fn test_bv_5_group_by_headings_ranges_and_order_within_group() {
-    // [BV-5] groupBy: {property: status, direction: ASC} → status ごとのまとまりで並び、
+    // [utest -> req~base-view.table-keys~1] groupBy: {property: status, direction: ASC} → status ごとのまとまりで並び、
     // まとまりの中は sort(priority ASC、同じなら file.name ASC)。
     let dir = vault("base-bv5-group");
     let text = r#"views:
@@ -414,7 +414,7 @@ fn test_bv_5_group_by_headings_ranges_and_order_within_group() {
 
 #[test]
 fn test_bv_5_limit_applies_after_sort() {
-    // [BV-5] limit は並べ替えの後に効く。
+    // [utest -> req~base-view.table-keys~1] limit は並べ替えの後に効く。
     let dir = vault("base-bv5-limit");
     let text = r#"views:
   - type: table
@@ -438,7 +438,7 @@ fn test_bv_5_limit_applies_after_sort() {
 
 #[test]
 fn test_bv_13_three_views_change_rows_and_columns() {
-    // [BV-13] views が3つ → build(0/1/2) で行と列が変わる。
+    // [utest -> req~base-view.view-switch-tabs~1] views が3つ → build(0/1/2) で行と列が変わる。
     let dir = vault("base-bv13");
     let text = r#"views:
   - type: table
@@ -489,7 +489,7 @@ fn test_bv_13_three_views_change_rows_and_columns() {
 
 #[test]
 fn test_sc_8_cards_view_is_err() {
-    // [SC-8] table 以外のビュー(cards)は開かず、理由を返す。table のビューは開ける。
+    // [utest -> req~scope.table-only~1] table 以外のビュー(cards)は開かず、理由を返す。table のビューは開ける。
     let dir = vault("base-sc8");
     let text = r#"views:
   - type: cards
@@ -513,7 +513,7 @@ fn test_sc_8_cards_view_is_err() {
 
 #[test]
 fn test_sc_8_list_map_kanban_views_are_err() {
-    // [SC-8] list・map・kanban のビューも開かず、型の名前つきで未対応の理由を返す。
+    // [utest -> req~scope.table-only~1] list・map・kanban のビューも開かず、型の名前つきで未対応の理由を返す。
     let dir = vault("base-sc8-more");
     let text = r#"views:
   - type: list
@@ -539,7 +539,7 @@ fn test_sc_8_list_map_kanban_views_are_err() {
 
 #[test]
 fn test_bv_7_unsupported_function_in_filters_is_err_with_name() {
-    // [BV-7] 評価できない filters のビューは開かず、関数名つきの理由を返す。推測で行を作らない。
+    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1] 評価できない filters のビューは開かず、関数名つきの理由を返す。推測で行を作らない。
     let dir = vault("base-bv7-filter");
     let text = r#"views:
   - type: table
@@ -558,7 +558,7 @@ fn test_bv_7_unsupported_function_in_filters_is_err_with_name() {
 
 #[test]
 fn test_bv_7_unsupported_function_in_global_filters_is_err() {
-    // [BV-7] 全体の filters に未対応の関数があっても同じ。
+    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~1, req~base-view.unsupported-cell-band~1] 全体の filters に未対応の関数があっても同じ。
     let dir = vault("base-bv7-global");
     let text = r#"filters:
   or:
@@ -577,7 +577,7 @@ views:
 
 #[test]
 fn test_bv_7_unsupported_formula_column_is_marked() {
-    // [BV-7] 評価できない式の列: build は Ok、セルは Shown::Unsupported、notes に説明。
+    // [utest -> req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 評価できない式の列: build は Ok、セルは Shown::Unsupported、notes に説明。
     let dir = vault("base-bv7-formula");
     let text = r#"formulas:
   fixed: 'priority.toFixed(2)'
@@ -621,7 +621,7 @@ views:
 
 #[test]
 fn test_bv_5_formula_columns_are_computed() {
-    // [BV-5] [BV-6] formulas の列は Shown::Computed、ノートのキーの列は Shown::Prop。
+    // [utest -> req~base-view.table-keys~1, req~base-view.expr-eval~1] formulas の列は Shown::Computed、ノートのキーの列は Shown::Prop。
     let dir = vault("base-formula");
     let text = r#"formulas:
   double: 'priority * 2'
@@ -668,7 +668,7 @@ views:
 
 #[test]
 fn test_bv_8_unknown_keys_are_ignored() {
-    // [BV-8] ビューと全体に独自のキーを足しても parse でき、ビューも開ける。
+    // [utest -> req~base-view.unknown-keys~1] ビューと全体に独自のキーを足しても parse でき、ビューも開ける。
     let dir = vault("base-bv8");
     let text = r#"myGlobalKey: 42
 summaries:
@@ -700,7 +700,7 @@ views:
 
 #[test]
 fn test_bv_3_base_file_bytes_unchanged() {
-    // [BV-3] build・cell の前後で `.base` のバイトと更新時刻が同じ。
+    // [utest -> req~base-view.base-untouched~1] build・cell の前後で `.base` のバイトと更新時刻が同じ。
     let dir = vault("base-bv3");
     let text = r#"# comment kept
 filters:
@@ -760,7 +760,7 @@ views:
 
 #[test]
 fn test_cv_2_mismatched_date_sorts_last_both_directions() {
-    // [CV-2] date の列に `someday` が混ざる → 昇順でも降順でも末尾。
+    // [utest -> req~cell-view.type-mismatch~1] date の列に `someday` が混ざる → 昇順でも降順でも末尾。
     let dir = vault("base-cv2");
     let text = r#"views:
   - type: table
@@ -800,7 +800,7 @@ fn test_cv_2_mismatched_date_sorts_last_both_directions() {
 
 #[test]
 fn test_bv_1_default_grid_uses_source_columns_and_rows() {
-    // [BV-1] default_grid: 列は src.columns()、行は src.rows()、グループなし。
+    // [utest -> req~base-view.source-folder~1] default_grid: 列は src.columns()、行は src.rows()、グループなし。
     let dir = vault("base-default");
     let mut md = Markdown::open(&[dir.path().to_path_buf()]).expect("open");
     load_all(&mut md);

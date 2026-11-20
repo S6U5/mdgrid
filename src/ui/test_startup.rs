@@ -135,7 +135,7 @@ fn state_files(tmp: &Tmp) -> usize {
 
 #[test]
 fn test_sr_13_unbind_j_leaves_down_arrow() {
-    // [SR-13] 設定で `j` を外すと ↓ だけが効く。`"ctrl+n" = "down"` で足したキーも効く。
+    // [utest -> req~screen.keys-vim-and-arrows-remap~1] 設定で `j` を外すと ↓ だけが効く。`"ctrl+n" = "down"` で足したキーも効く。
     let tmp = notes("sr13");
     let mut a = boot_toml(&tmp, "[keys.table]\nj = \"none\"\n\"ctrl+n\" = \"down\"\n");
     assert_eq!(a.message, None, "警告は無い");
@@ -156,7 +156,7 @@ fn test_sr_13_unbind_j_leaves_down_arrow() {
 
 #[test]
 fn test_sr_13_rebind_replaces_and_mode_names() {
-    // [SR-13] 同じキーに別の動作を書けば置き換える。モードは英語の名前でも表示名(SR-16 の名前)でも書ける。
+    // [utest -> req~screen.keys-vim-and-arrows-both~1, req~screen.keys-vim-and-arrows-bases~1] 同じキーに別の動作を書けば置き換える。モードは英語の名前でも表示名(SR-16 の名前)でも書ける。
     let tmp = notes("sr13b");
     let mut a = boot_toml(
         &tmp,
@@ -176,7 +176,7 @@ fn test_sr_13_rebind_replaces_and_mode_names() {
 
 #[test]
 fn test_sr_13_unknown_mode_key_action_warned() {
-    // [SR-13] 知らないモード・キー・動作、そのモードで使えない動作はメッセージ行に警告して、起動は止めない。
+    // [utest -> req~screen.keys-vim-and-arrows-remap~1] 知らないモード・キー・動作、そのモードで使えない動作はメッセージ行に警告して、起動は止めない。
     let tmp = notes("sr13w");
     let mut a = boot_toml(
         &tmp,
@@ -202,7 +202,7 @@ fn test_sr_13_unknown_mode_key_action_warned() {
 
 #[test]
 fn test_sr_16_conflicting_binding_warned_not_applied() {
-    // [SR-13][SR-16] 同じモードの同じキーに2つの動作(表記の違う同じキー)、前置きと重なるキーは警告して当てない。
+    // [utest -> req~screen.keys-vim-and-arrows-both~1, req~screen.keys-vim-and-arrows-remap~1, req~screen.key-modes-no-dup~1] 同じモードの同じキーに2つの動作(表記の違う同じキー)、前置きと重なるキーは警告して当てない。
     // 割り当て直したあとも、モードごとにキーの重複が無い。
     let tmp = notes("sr16");
     let a = boot_toml(
@@ -234,7 +234,7 @@ fn test_sr_16_conflicting_binding_warned_not_applied() {
 
 #[test]
 fn test_sr_13_parse_key_notation() {
-    // [SR-13] キーの表記を表のキーの名前に読む。
+    // [utest -> req~screen.keys-vim-and-arrows-bases~1] キーの表記を表のキーの名前に読む。
     let ok = |s: &str| keymap::parse_key(s).unwrap();
     assert_eq!(ok("j"), "j");
     assert_eq!(ok("G"), "G");
@@ -263,7 +263,7 @@ fn test_sr_13_parse_key_notation() {
 
 #[test]
 fn test_cli_3_no_config_defaults_and_unknown_item_warned() {
-    // [CLI-3] 設定が無ければ既定で動く。知らない項目は警告をメッセージ行に出して起動する。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1] 設定が無ければ既定で動く。知らない項目は警告をメッセージ行に出して起動する。
     let tmp = notes("cli3");
     let a = boot(&tmp);
     assert_eq!(a.message, None);
@@ -280,7 +280,7 @@ fn test_cli_3_no_config_defaults_and_unknown_item_warned() {
 
 #[test]
 fn test_cli_3_applies_items() {
-    // [CLI-3][BV-9] poll_ms は読み直しの間隔、candidates・ambiguous_wide・color を当てる。
+    // [utest -> req~cli.config-file-items~1, req~base-view.watch-poll~1, req~base-view.watch-pause~1] poll_ms は読み直しの間隔、candidates・ambiguous_wide・color を当てる。
     let tmp = notes("cli3b");
     let a = boot_with(
         &tmp,
@@ -298,7 +298,7 @@ fn test_cli_3_applies_items() {
 
 #[test]
 fn test_cli_2_no_color() {
-    // [CLI-2][SR-10] `--no-color` で、色の出せる端末でも色を出さない(ためる変更のセルも)。
+    // [utest -> req~cli.options~2, req~cell-view.no-color-env~1, req~cell-view.no-color-pipe-print-pick~1] `--no-color` で、色の出せる端末でも色を出さない(ためる変更のセルも)。
     let tmp = notes("nocolor");
     let mut a = boot_with(
         &tmp,
@@ -335,7 +335,7 @@ fn test_cli_2_no_color() {
 
 #[test]
 fn test_wb_15_readonly_writes_nothing() {
-    // [WB-15] `--readonly` では Ctrl+S で「読むだけ」と出し、何も書かない。Backspace・Enter の編集も効かない。
+    // [utest -> req~cli.readonly~1] `--readonly` では Ctrl+S で「読むだけ」と出し、何も書かない。Backspace・Enter の編集も効かない。
     // 保存・空にするのキーは下の帯・ヘルプ・パレットに出さない。見た目の状態も書かない。
     let tmp = notes("wb15");
     let before = snapshot(&tmp.notes());
@@ -388,7 +388,7 @@ fn test_wb_15_readonly_writes_nothing() {
 
 #[test]
 fn test_nv_4_hidden_column_survives_restart() {
-    // [NV-4][SR-12] 列を隠して終了 → 同じ対象で開き直すと隠したまま。`+` で元の位置に戻る。
+    // [utest -> req~navigation.columns~1, req~screen.state-store-header-sort~1] 列を隠して終了 → 同じ対象で開き直すと隠したまま。`+` で元の位置に戻る。
     let tmp = notes("nv4");
     let mut a = boot(&tmp);
     let cols = a.cols.clone();
@@ -407,7 +407,7 @@ fn test_nv_4_hidden_column_survives_restart() {
 
 #[test]
 fn test_sr_11_state_not_in_note_folder() {
-    // [SR-11] 列の幅を変えて終了 → ノートのフォルダに新しいファイルが無い(状態は状態の置き場に)。
+    // [utest -> req~screen.state-separate~1] 列の幅を変えて終了 → ノートのフォルダに新しいファイルが無い(状態は状態の置き場に)。
     let tmp = notes("sr11");
     let before = snapshot(&tmp.notes());
     let mut a = boot(&tmp);
@@ -418,7 +418,7 @@ fn test_sr_11_state_not_in_note_folder() {
     ch(&mut a, 'q');
     assert_eq!(snapshot(&tmp.notes()), before);
     assert_eq!(state_files(&tmp), 1);
-    // [SR-12] 幅は開き直しても残る。
+    // [utest -> req~screen.state-store-broken~1] 幅は開き直しても残る。
     let mut b = boot(&tmp);
     col_named(&mut b, "title");
     assert_eq!(view::layout(&b).widths[b.col], w0 + 2);
@@ -426,7 +426,7 @@ fn test_sr_11_state_not_in_note_folder() {
 
 #[test]
 fn test_sr_12_broken_state_starts_with_defaults() {
-    // [SR-12] 状態のファイルを壊して起動 → 既定で起動し、エラーで止まらない。
+    // [utest -> req~screen.state-store-broken~1] 状態のファイルを壊して起動 → 既定で起動し、エラーで止まらない。
     let tmp = notes("sr12broken");
     let default_cols = boot(&tmp).cols;
     let mut a = boot(&tmp);
@@ -447,7 +447,7 @@ fn test_sr_12_broken_state_starts_with_defaults() {
 
 #[test]
 fn test_sr_12_temporary_sort_not_kept() {
-    // [SR-12][NV-3] 見出しからの並べ替えは設定の並べ替えとして残す。列の並び(H・L)も残す。
+    // [utest -> req~screen.state-store-header-sort~1, req~navigation.header-sort-save~1] 見出しからの並べ替えは設定の並べ替えとして残す。列の並び(H・L)も残す。
     let tmp = notes("sr12sort");
     let mut a = boot(&tmp);
     col_named(&mut a, "status");
@@ -465,8 +465,8 @@ fn test_sr_12_temporary_sort_not_kept() {
 
 #[test]
 fn test_sr_12_new_base_column_added_right_and_view_kept() {
-    // [SR-12] 状態の並びは今の `.base` の列にだけ当て、`.base` に増えた列は右に足す。
-    // 状態は `.base` のパスとビューの名前ごと。[BV-13] 開き直すと先頭のビュー(`--view` があればそちら)で、
+    // [utest -> req~screen.state-store-key~1, req~screen.state-store-columns~1] 状態の並びは今の `.base` の列にだけ当て、`.base` に増えた列は右に足す。
+    // 状態は `.base` のパスとビューの名前ごと。[utest -> req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~1] 開き直すと先頭のビュー(`--view` があればそちら)で、
     // 前に選んだビューは起動に使わない。
     let tmp = vault("sr12base");
     base_path(&tmp, TASKS);
@@ -512,7 +512,7 @@ fn test_sr_12_new_base_column_added_right_and_view_kept() {
 
 #[test]
 fn test_sr_13_cannot_unbind_every_exit() {
-    // [SR-13][SR-16] 抜ける動作のキーを全部外す・置き換える設定は当てず、既定のキーを残して警告する
+    // [utest -> req~screen.keys-vim-and-arrows-bases~1, req~screen.keys-vim-and-arrows-remap~1, req~screen.key-modes-per-mode~1] 抜ける動作のキーを全部外す・置き換える設定は当てず、既定のキーを残して警告する
     // (終了・パレット・ヘルプを閉じる・入力の取り消しの手段が無くならない)。
     let tmp = notes("sr13exit");
     let mut a = boot_toml(
@@ -551,7 +551,7 @@ fn test_sr_13_cannot_unbind_every_exit() {
 
 #[test]
 fn test_sr_12_state_hiding_every_column_keeps_one() {
-    // [SR-12][NV-4] 状態で全部の列を隠していても、列の無い表では起動しない(最後の列は隠せない)。
+    // [utest -> req~screen.state-store-broken~1, req~screen.state-store-columns~1, req~navigation.columns~1] 状態で全部の列を隠していても、列の無い表では起動しない(最後の列は隠せない)。
     let tmp = notes("sr12all");
     let cols = boot(&tmp).cols;
     let mut a = boot(&tmp);
@@ -572,7 +572,7 @@ fn test_sr_12_state_hiding_every_column_keeps_one() {
 
 #[test]
 fn test_sr_12_view_named_empty_not_overwritten() {
-    // [SR-12] 空の名前のビューの状態も、そのビューの名前ごとに残る。[BV-13] 起動は先頭のビュー。
+    // [utest -> req~screen.state-store-key~1] 空の名前のビューの状態も、そのビューの名前ごとに残る。[utest -> req~base-view.view-switch-startup~1] 起動は先頭のビュー。
     let tmp = vault("sr12empty");
     let text = TASKS.replace("name: 完了", "name: \"\"");
     base_path(&tmp, &text);
@@ -597,7 +597,7 @@ fn test_sr_12_view_named_empty_not_overwritten() {
 
 #[test]
 fn test_bv_13_startup_opens_first_view() {
-    // [BV-13] 起動は先頭のビュー。別のビューを選んで終えても、次の起動は先頭のビューで、
+    // [utest -> req~base-view.view-switch-startup~1] 起動は先頭のビュー。別のビューを選んで終えても、次の起動は先頭のビューで、
     // `--view` があればそのビュー。見た目の状態(SR-12)はビューごとの列の順に使い続ける。
     let tmp = vault("bv13start");
     base_path(&tmp, TASKS);

@@ -1,8 +1,9 @@
-//! [CV-2] 64ビットに入らない整数は、元の文字のまま読む(在る値をマップの印・null にしない)。
-//! specs/_changes/2026-10-06-trust-notices.md。
+//! [cell-view.type-mismatch] 64ビットに入らない整数は、元の文字のまま読む(在る値をマップの印・null にしない)。
+//! specs/_history/decidespec/_changes/2026-10-06-trust-notices.md。
 
 use super::{resolve_plain, Value};
 
+// [utest -> req~cell-view.type-mismatch~1]
 #[test]
 fn test_cv_2_big_int_kept_as_text() {
     for s in [
@@ -16,6 +17,7 @@ fn test_cv_2_big_int_kept_as_text() {
     }
 }
 
+// [utest -> req~cell-view.type-mismatch~1]
 #[test]
 fn test_cv_2_big_int_boundary_still_int() {
     assert_eq!(resolve_plain("9223372036854775807"), Value::Int(i64::MAX));

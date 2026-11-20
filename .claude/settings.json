@@ -1,32 +1,12 @@
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.decidespec/scripts/flow_guard.py\""
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.decidespec/scripts/flow_guard.py\" --session-start"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.decidespec/scripts/flow_guard.py\" --stop"
+            "command": "python3 -c \"import json,re,sys;d=json.load(sys.stdin);L=[x.strip() for x in (d.get('last_assistant_message') or '').splitlines() if x.strip()];p=next((x for x in L[::-1] if not re.match(r'([-*+]|\\d+[.)]|\\(\\w\\))\\s',x)),L[-1] if L else '');q=re.search(r'？|\\?(\\s|\\Z)|(ください|下さい|ますか|ですか|でしょうか|ませんか)([。．.!！]|\\Z)',p) or re.search(r'(?i)\\b(should i|shall i|do you want|would you like|let me know)\\b',p);sys.exit(10 if d.get('background_tasks') else 11 if q else 12 if d.get('stop_hook_active') else 13)\"; s=$?; [ $s -eq 10 ] && exit 0; r=1; [ $s -eq 13 ] && r=2; echo 'trace-gate: check を走らせた(結果は標準エラー)'; python3 \"$CLAUDE_PROJECT_DIR\"/tools/trace_gate.py check --root \"$CLAUDE_PROJECT_DIR\" >&2; c=$?; [ $c -eq 0 ] && exit 0; exit $r",
+            "timeout": 120
           }
         ]
       }

@@ -16,6 +16,15 @@ homepage = "https://s6u5.github.io/mdgrid/"
 documentation = "https://s6u5.github.io/mdgrid/manual/en/"
 publish = true
 
+# cargo binstall: where the release archives are (.github/workflows/release.yml names them) and where the binary sits inside.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-v{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+
 [lib]
 path = "src/lib.rs"
 
@@ -24,7 +33,7 @@ name = "mdgrid"
 path = "src/main.rs"
 
 [lints.clippy]
-# 錠のある試験(tests/test_root_folder.rs)の assert_eq!(…, true) を書き換えないため(specs/_changes/2026-10-14-fmt-view-bar-cases.md)
+# 錠のある試験(tests/test_root_folder.rs)の assert_eq!(…, true) を書き換えないため(specs/_history/decidespec/_changes/2026-10-14-fmt-view-bar-cases.md)
 bool_assert_comparison = "allow"
 
 [dependencies]
@@ -44,6 +53,8 @@ clap_mangen = "0.3.3"
 time = { version = "0.3.55", default-features = false, features = ["std", "local-offset"] }
 # --apply(CLI-17)で、--print --format json の形を読む。
 serde_json = "1"
+# 雛形の変数 {uuid}・{uid}(cell-edit.template-vars-uuid)の乱数を OS から取る。
+getrandom = "0.3"
 
 [build-dependencies]
 # 文言の台帳(locales/*.toml)を読む(SR-23。build.rs)。依存の toml と同じ版。

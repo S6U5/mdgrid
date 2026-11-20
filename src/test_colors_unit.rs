@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn test_sr_40_colors() {
-    // [SR-40] #rrggbb・#rgb・名前を読み、役割を上書き。知らない役割・読めない色は警告して無視。
+    // [utest -> req~screen.color-overrides-rest~1, req~screen.color-overrides-invalid~1] #rrggbb・#rgb・名前を読み、役割を上書き。知らない役割・読めない色は警告して無視。
     assert_eq!(parse_color("#e0a458"), Some([0xe0, 0xa4, 0x58]));
     assert_eq!(parse_color("#fa0"), Some([0xff, 0xaa, 0x00]));
     assert_eq!(parse_color("Orange"), Some([234, 140, 52]));
@@ -31,7 +31,7 @@ fn test_sr_40_colors() {
 
 #[test]
 fn test_sr_41_value_colors_read() {
-    // [SR-41] 値の色は大文字・小文字と前後の空白によらず引ける。日本語の値も。読めない色は警告。
+    // [utest -> req~screen.value-colors-match~1] 値の色は大文字・小文字と前後の空白によらず引ける。日本語の値も。読めない色は警告。
     let (c, w) = crate::config::parse(
         "[look.colors.values]\n\"進行中\" = \"#d6a85c\"\nDone = \"green\"\nbad = \"nope\"\n",
     )

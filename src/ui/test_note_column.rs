@@ -1,5 +1,5 @@
-//! [SR-29] 左のノートの欄: 全部の行に共通のフォルダと `.md` を除き、file.name の列があれば名前と見出しを出さない。
-//! specs/_changes/2026-10-07-note-column.md。
+//! [screen.note-column] 左のノートの欄: 全部の行に共通のフォルダと `.md` を除き、file.name の列があれば名前と見出しを出さない。
+//! specs/_history/decidespec/_changes/2026-10-07-note-column.md。
 
 use super::grid::common_folder;
 use super::test_grid::open;
@@ -17,6 +17,7 @@ fn folder_app(tmp: &Tmp) -> App {
     a
 }
 
+// [utest -> req~screen.note-column-path~1]
 #[test]
 fn test_sr_29_common_folder() {
     let f = |v: &[&str]| common_folder(v.iter().map(|s| s.to_string()));
@@ -29,6 +30,7 @@ fn test_sr_29_common_folder() {
     assert_eq!(f(&[]), "");
 }
 
+// [utest -> req~screen.note-column-path~1]
 #[test]
 fn test_sr_29_note_column_drops_common_folder_and_md() {
     let tmp = Tmp::new("sr29common");
@@ -51,6 +53,7 @@ fn test_sr_29_note_column_drops_common_folder_and_md() {
     assert!(s.contains("Tasks/a ") && s.contains("Notes/c "), "{s}");
 }
 
+// [utest -> req~screen.note-column-marks-only~1]
 #[test]
 fn test_sr_29_name_column_hides_names_but_keeps_marks() {
     let tmp = Tmp::new("sr29name");

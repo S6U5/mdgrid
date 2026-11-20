@@ -16,7 +16,7 @@ fn place(name: &str, group: &str, path: &str, view: Option<&str>) -> Place {
 
 #[test]
 fn test_cli_19_list_paths_aligned() {
-    // [CLI-19] 名前の長さが違っても、パスは同じ桁から。全角の名前も幅で数える。ビューはパスのあと。
+    // [utest -> req~cli.places-list-order~1, req~cli.places-list-missing-path~1] 名前の長さが違っても、パスは同じ桁から。全角の名前も幅で数える。ビューはパスのあと。
     let list = [
         place("タスク", "仕事", "/n/tasks", None),
         place("A very long table name", "", "/n/long", Some("Open")),

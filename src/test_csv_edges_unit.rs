@@ -1,4 +1,4 @@
-//! [SC-15][SC-16] CSV の読み書きの端(照合で見つけた点)。specs/_changes/2026-10-10-csv-source.md。
+//! [scope.csv-open][scope.csv-write-back] CSV の読み書きの端(照合で見つけた点)。specs/_history/decidespec/_changes/2026-10-10-csv-source.md。
 
 use crate::csvfile::{encode, parse, set_many};
 use crate::source::csv::Csv;
@@ -36,7 +36,7 @@ fn save(src: &mut Csv, edits: &[(usize, Edit)]) {
 
 #[test]
 fn test_sc_16_single_column_clear_keeps_rows() {
-    // [SC-16] 1列の表で値を空にしても行は消えず(`""`)、同じ保存の後ろの行への直しは、その行に書く。
+    // [utest -> req~scope.csv-write-back-bytes~1] 1列の表で値を空にしても行は消えず(`""`)、同じ保存の後ろの行への直しは、その行に書く。
     let p = tmp("one", "name\nx\ny\nz\nw\n");
     let mut src = Csv::open(&p).unwrap();
     save(
@@ -55,7 +55,7 @@ fn test_sc_16_single_column_clear_keeps_rows() {
 
 #[test]
 fn test_sc_16_many_edits_use_original_positions() {
-    // [SC-16] 長さの変わる直しを前の行に当てても、後ろの行の直しは正しい値の位置に入る。
+    // [utest -> req~scope.csv-write-back-bytes~1] 長さの変わる直しを前の行に当てても、後ろの行の直しは正しい値の位置に入る。
     let f = parse(b"a,b\n1,2\n3,4\n", b',').unwrap();
     let out = set_many(
         b"a,b\n1,2\n3,4\n",
@@ -75,14 +75,14 @@ fn test_sc_16_many_edits_use_original_positions() {
 
 #[test]
 fn test_sc_16_quote_only_when_needed() {
-    // [SC-16] 引用符で囲むのは区切り・引用符・改行が入るときだけ(先頭・末尾の空白は囲まない)。
+    // [utest -> req~scope.csv-write-back-quote~1] 引用符で囲むのは区切り・引用符・改行が入るときだけ(先頭・末尾の空白は囲まない)。
     assert_eq!(encode(" a ", b','), " a ");
     assert_eq!(encode("a\r\nb", b','), "\"a\r\nb\"");
 }
 
 #[test]
 fn test_sc_15_lone_cr_refused() {
-    // [SC-15] CR だけの改行のファイルは、読まずに理由(LF・CRLF でないと書き戻しで改行の形を守れない)。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-quotes~1, req~scope.csv-open-unreadable~1] CR だけの改行のファイルは、読まずに理由(LF・CRLF でないと書き戻しで改行の形を守れない)。
     let e = parse(b"a,b\r1,2\r", b',').unwrap_err();
     assert!(e.contains("CR"), "{e}");
     // 引用符の中の CR は値。
@@ -92,7 +92,7 @@ fn test_sc_15_lone_cr_refused() {
 
 #[test]
 fn test_sc_15_duplicate_and_empty_headers() {
-    // [SC-15] 同じ名前の列と名前の無い列も、別の列として読み書きする(取り違えない)。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~1] 同じ名前の列と名前の無い列も、別の列として読み書きする(取り違えない)。
     let p = tmp("dup", "a,a,\n1,2,3\n");
     let mut src = Csv::open(&p).unwrap();
     assert_eq!(src.columns(), ["a", "a#2", "#3"]);
@@ -105,7 +105,7 @@ fn test_sc_15_duplicate_and_empty_headers() {
 
 #[test]
 fn test_sc_16_float_stays_decimal() {
-    // [SC-16] 小数の値は小数の形で書く(2.0 を 2 にしない)。
+    // [utest -> req~scope.csv-write-back-bytes~1] 小数の値は小数の形で書く(2.0 を 2 にしない)。
     let p = tmp("float", "x\n1.5\n");
     let mut src = Csv::open(&p).unwrap();
     save(&mut src, &[(0, edit("x", NewValue::Float(2.0)))]);
@@ -114,7 +114,7 @@ fn test_sc_16_float_stays_decimal() {
 
 #[test]
 fn test_sc_16_preview_against_changed_file_matches_write() {
-    // [SC-16][WB-16] 外で行が足されたファイルにも、見せた差分のとおりに当てる(行を1度だけ読んだ位置で)。
+    // [utest -> req~scope.csv-write-back-diff~1, req~scope.csv-write-back-conflict~1, req~write-back.external-save-choice~1] 外で行が足されたファイルにも、見せた差分のとおりに当てる(行を1度だけ読んだ位置で)。
     let p = tmp("prev", "id,v\nA,1\nB,2\n");
     let src = Csv::open(&p).unwrap();
     std::fs::write(&p, "id,v\nA,1\nB,2\nC,3\n").unwrap();

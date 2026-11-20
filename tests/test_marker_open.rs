@@ -1,8 +1,8 @@
 #![cfg(unix)]
 //! タスク 1(marker-open)の受け入れ: 印 `.mdgrid/workspace.toml` の最上位の `open`(WS-7)と、
 //! 印の根のフォルダを開いたときにその表を開くこと・`--raw`(CLI-1)。
-//! 仕様: specs/cli/spec.md の CLI-1、specs/workspace/spec.md の WS-7、
-//! specs/_changes/2026-10-15-marker-open.md、specs/_decisions/2026-10-15-marker-open.md。
+//! 仕様: specs/_history/decidespec/cli/spec.md の CLI-1、specs/_history/decidespec/workspace/spec.md の WS-7、
+//! specs/_history/decidespec/_changes/2026-10-15-marker-open.md、specs/_history/decidespec/_decisions/2026-10-15-marker-open.md。
 //! 実装を見ずに書いた。本物の実行ファイルを動かす。画面を出さない起動(`--print`)も `open` を同じに
 //! 使う(CLI-1)ので、開いた表の行は主に `--print --with-path` の標準出力(パイプ)で確かめ、
 //! 一覧(CLI-19)を重ねないことと `--raw` の画面は疑似端末(tests/pty/mod.rs)で確かめる。
@@ -143,7 +143,7 @@ fn assert_default_table(s: &str, what: &str) {
 
 #[test]
 fn test_cli_1_marker_open_no_args_in_root() {
-    // [CLI-1] 根で引数なし(`--print --with-path`)→ tasks.base の表。AGENTS.md の行は無い。
+    // [stest -> req~cli.launch-marker-open~1] 根で引数なし(`--print --with-path`)→ tasks.base の表。AGENTS.md の行は無い。
     let h = home("mo-noargs");
     let root = h.path().join("led");
     ledger(&root);
@@ -158,7 +158,7 @@ fn test_cli_1_marker_open_no_args_in_root() {
 
 #[test]
 fn test_cli_1_marker_open_dot() {
-    // [CLI-1] 根で `mdgrid .` → tasks.base の表。
+    // [stest -> req~cli.launch-marker-open~1, req~cli.launch-marker-headless~1, req~cli.launch-raw~1] 根で `mdgrid .` → tasks.base の表。
     let h = home("mo-dot");
     let root = h.path().join("led");
     ledger(&root);
@@ -172,7 +172,7 @@ fn test_cli_1_marker_open_dot() {
 
 #[test]
 fn test_cli_1_marker_open_root_path_from_elsewhere() {
-    // [CLI-1] ほかのフォルダから根のパスを渡す(相対と絶対)→ tasks.base の表。
+    // [stest -> req~cli.launch-marker-open~1] ほかのフォルダから根のパスを渡す(相対と絶対)→ tasks.base の表。
     let h = home("mo-path");
     let root = h.path().join("led");
     ledger(&root);
@@ -192,7 +192,7 @@ fn test_cli_1_marker_open_root_path_from_elsewhere() {
 
 #[test]
 fn test_cli_1_marker_open_print_first_view_rows() {
-    // [CLI-1] 根で `mdgrid --print` → tasks.base の最初のビュー(「全部」)の行。案内の行は無い。
+    // [stest -> req~cli.launch-marker-open~1, req~cli.launch-marker-headless~1] 根で `mdgrid --print` → tasks.base の最初のビュー(「全部」)の行。案内の行は無い。
     let h = home("mo-print");
     let root = h.path().join("led");
     ledger(&root);
@@ -205,7 +205,7 @@ fn test_cli_1_marker_open_print_first_view_rows() {
 
 #[test]
 fn test_cli_1_marker_open_raw_gives_default_table() {
-    // [CLI-1] 根で `mdgrid --raw` と `mdgrid . --raw` → AGENTS.md の行もある既定の表。
+    // [stest -> req~cli.launch-raw~1] 根で `mdgrid --raw` と `mdgrid . --raw` → AGENTS.md の行もある既定の表。
     // `mdgrid --raw --print` → 既定の表の行(案内もある)。
     let h = home("mo-raw");
     let root = h.path().join("led");
@@ -227,7 +227,7 @@ fn test_cli_1_marker_open_raw_gives_default_table() {
 
 #[test]
 fn test_cli_1_marker_open_raw_without_marker_changes_nothing() {
-    // [CLI-1] 印の無いフォルダでの `--raw` は何も変えない(出力が `--raw` 無しと同じ)。
+    // [stest -> req~cli.launch-raw-no-marker~1] 印の無いフォルダでの `--raw` は何も変えない(出力が `--raw` 無しと同じ)。
     let h = home("mo-raw-none");
     let root = h.path().join("led");
     ledger(&root);
@@ -242,7 +242,7 @@ fn test_cli_1_marker_open_raw_without_marker_changes_nothing() {
 
 #[test]
 fn test_cli_1_marker_open_subfolder_does_not_search_up() {
-    // [CLI-1] 下の todo/ を開く(引数で渡す・todo で引数なし)→ todo の既定の表。印は上へたどらない。
+    // [stest -> req~cli.launch-marker-open~1] 下の todo/ を開く(引数で渡す・todo で引数なし)→ todo の既定の表。印は上へたどらない。
     // 印の表はビュー「済だけ」(b だけ)なので、上へたどれば a の行が消えて見分けられる。
     let h = home("mo-sub");
     let root = h.path().join("led");
@@ -262,7 +262,7 @@ fn test_cli_1_marker_open_subfolder_does_not_search_up() {
 
 #[test]
 fn test_cli_1_marker_open_two_folders_ignore_marker() {
-    // [CLI-1] 根と別のフォルダの2つを渡す → 2つの既定の表(AGENTS.md の行もある)。
+    // [stest -> req~cli.launch-marker-skip~1] 根と別のフォルダの2つを渡す → 2つの既定の表(AGENTS.md の行もある)。
     let h = home("mo-two");
     let root = h.path().join("led");
     ledger(&root);
@@ -281,6 +281,7 @@ fn test_cli_1_marker_open_two_folders_ignore_marker() {
     assert!(has_row(&s, "other/o.md"), "{s}");
 }
 
+// [stest -> req~cli.launch-marker-open~1, req~cli.launch-marker-skip~1, req~cli.launch-raw~1]
 #[test]
 fn test_cli_1_marker_open_md_file_ignores_marker() {
     // [CLI-1・CLI-15] `mdgrid AGENTS.md` → 根の既定の表の AGENTS.md の行(印の表には無い行)。
@@ -298,7 +299,7 @@ fn test_cli_1_marker_open_md_file_ignores_marker() {
 
 #[test]
 fn test_cli_1_marker_open_screen_skips_places_list() {
-    // [CLI-1] places.toml に登録があっても、根で引数なしの起動は一覧(CLI-19)を出さずに印の表を開く。
+    // [stest -> req~cli.launch-marker-open~1] places.toml に登録があっても、根で引数なしの起動は一覧(CLI-19)を出さずに印の表を開く。
     let h = home("mo-places");
     let root = h.path();
     ledger(root);
@@ -326,7 +327,7 @@ fn test_cli_1_marker_open_screen_skips_places_list() {
 
 #[test]
 fn test_cli_1_marker_open_screen_raw_shows_default_table() {
-    // [CLI-1] 根で `mdgrid --raw`(画面)→ AGENTS.md の行もある既定の表。
+    // [stest -> req~cli.launch-raw~1] 根で `mdgrid --raw`(画面)→ AGENTS.md の行もある既定の表。
     let h = home("mo-raw-screen");
     let root = h.path();
     ledger(root);
@@ -343,7 +344,7 @@ fn test_cli_1_marker_open_screen_raw_shows_default_table() {
 
 #[test]
 fn test_ws_7_marker_open_written_table_view() {
-    // [WS-7] `open = "台帳"` と `[[table]] name = "台帳"`・`path = "tasks.base"`・`view = "済だけ"`
+    // [stest -> req~workspace.marker-open-view~1] `open = "台帳"` と `[[table]] name = "台帳"`・`path = "tasks.base"`・`view = "済だけ"`
     // → `mdgrid led` が tasks.base の「済だけ」のビュー(b だけ)。`--view 全部` を添えればそちら。
     let h = home("mo-view");
     let root = h.path().join("led");
@@ -370,7 +371,7 @@ fn test_ws_7_marker_open_written_table_view() {
 
 #[test]
 fn test_ws_7_marker_open_auto_table_by_folder_name() {
-    // [WS-7] 表を書かない印に `open = "todo"` → 自動の表 todo を開く(memo と AGENTS.md の行は無い)。
+    // [stest -> req~workspace.marker-auto-tables~1, req~workspace.marker-open~1, req~workspace.marker-init~1] 表を書かない印に `open = "todo"` → 自動の表 todo を開く(memo と AGENTS.md の行は無い)。
     let h = home("mo-auto");
     let root = h.path().join("led");
     ledger(&root);
@@ -389,7 +390,7 @@ fn test_ws_7_marker_open_auto_table_by_folder_name() {
 
 #[test]
 fn test_ws_7_marker_open_unknown_name_warns_and_opens_default() {
-    // [WS-7] `open = "無い"` → `.mdgrid/workspace.toml: open:` で始まる警告(標準エラー)と、根の既定の表。
+    // [stest -> req~workspace.marker-open-unknown~1] `open = "無い"` → `.mdgrid/workspace.toml: open:` で始まる警告(標準エラー)と、根の既定の表。
     let h = home("mo-unknown");
     let root = h.path().join("led");
     ledger(&root);
@@ -412,7 +413,7 @@ fn test_ws_7_marker_open_unknown_name_warns_and_opens_default() {
 
 #[test]
 fn test_ws_7_marker_open_screen_uses_view() {
-    // [WS-7] 画面でも、印の表の `view`(「済だけ」)で開く(`--print` と同じ行)。
+    // [stest -> req~workspace.marker-open-view~1] 画面でも、印の表の `view`(「済だけ」)で開く(`--print` と同じ行)。
     let h = home("mo-view-screen");
     let root = h.path();
     ledger(root);

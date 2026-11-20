@@ -1,5 +1,5 @@
 //! ためる変更(タスク 7)の受け入れテスト(WB-4・WB-9・WB-10・WB-14・WB-16・CE-9・CE-10・SR-18)。
-//! 仕様: specs/write-back/spec.md、specs/cell-edit/spec.md、specs/screen/spec.md。
+//! 仕様: specs/_history/decidespec/write-back/spec.md、specs/_history/decidespec/cell-edit/spec.md、specs/_history/decidespec/screen/spec.md。
 //! 公開のインターフェース: docs/design.md「核の公開のインターフェース(縦切りの続き: タスク 4・18・15・7)」。
 
 use mdgrid::changes::{Changes, Outcome};
@@ -112,7 +112,7 @@ fn outcome_of<'a>(res: &'a [(RowId, Outcome)], r: &RowId) -> &'a Outcome {
 
 #[test]
 fn test_wb_9_pending_not_written_until_save() {
-    // [WB-9] 2つのセルを直す → ファイルは変わらず未保存 2。差分を2ファイル分見せ、保存で書かれる。
+    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-diff-confirm~1] 2つのセルを直す → ファイルは変わらず未保存 2。差分を2ファイル分見せ、保存で書かれる。
     let (dir, src) = setup("wb9");
     let mut src = src;
     let a = row(&src, "a.md");
@@ -122,7 +122,7 @@ fn test_wb_9_pending_not_written_until_save() {
     assert!(ch.set(&src, &a, "status", s("done")).is_ok());
     assert!(ch.set(&src, &b, "status", s("wip")).is_ok());
 
-    // [WB-9] ファイルのバイトは変わらない
+    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-diff-confirm~1] ファイルのバイトは変わらない
     assert_eq!(read(&dir, "a.md"), A);
     assert_eq!(read(&dir, "b.md"), B);
     assert_eq!(ch.count(), 2);
@@ -134,7 +134,7 @@ fn test_wb_9_pending_not_written_until_save() {
     want.sort();
     assert!(rows == want);
 
-    // [WB-9] 保存の前の差分: 2行分の (before, after)
+    // [utest -> req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] 保存の前の差分: 2行分の (before, after)
     let pv = ch.previews(&src);
     assert_eq!(pv.len(), 2);
     for p in pv {
@@ -159,7 +159,7 @@ fn test_wb_9_pending_not_written_until_save() {
     assert_eq!(read(&dir, "a.md"), A);
     assert_eq!(read(&dir, "b.md"), B);
 
-    // [WB-9] 保存 → 両ファイルが書かれ、未保存 0
+    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] 保存 → 両ファイルが書かれ、未保存 0
     let res = ch.save(&mut src);
     assert_eq!(res.len(), 2);
     assert!(matches!(outcome_of(&res, &a), Outcome::Saved));
@@ -177,7 +177,7 @@ fn test_wb_9_pending_not_written_until_save() {
 
 #[test]
 fn test_wb_10_undo_redo_single_set() {
-    // [WB-10] 直して取り消す → 元に戻り未保存 0。やり直しで戻る。
+    // [utest -> req~write-back.undo-pending~1, req~write-back.redo-pending~1] 直して取り消す → 元に戻り未保存 0。やり直しで戻る。
     let (dir, src) = setup("wb10");
     let a = row(&src, "a.md");
     let mut ch = Changes::new();
@@ -200,7 +200,7 @@ fn test_wb_10_undo_redo_single_set() {
 
 #[test]
 fn test_wb_10_undo_restores_previous_pending_value() {
-    // [WB-10] 同じセルを2度直して取り消す → 1度目のためた値に戻る。
+    // [utest -> req~write-back.redo-pending~1] 同じセルを2度直して取り消す → 1度目のためた値に戻る。
     let (_dir, src) = setup("wb10b");
     let a = row(&src, "a.md");
     let mut ch = Changes::new();
@@ -219,7 +219,7 @@ fn test_wb_10_undo_restores_previous_pending_value() {
 
 #[test]
 fn test_wb_10_set_many_is_one_step() {
-    // [WB-10] [CE-10] まとめて入れた変更は1手で取り消される。
+    // [utest -> req~write-back.undo-pending~1, req~write-back.redo-pending~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1] まとめて入れた変更は1手で取り消される。
     let (_dir, src) = setup("wb10many");
     let a = row(&src, "a.md");
     let b = row(&src, "b.md");
@@ -250,7 +250,7 @@ fn test_wb_10_set_many_is_one_step() {
 
 #[test]
 fn test_ce_9_null_keeps_key_line() {
-    // [CE-9] 値を空(null)にして保存 → `status:` の行が残る。`status: null` ではない。
+    // [utest -> req~cell-edit.empty-is-null~1] 値を空(null)にして保存 → `status:` の行が残る。`status: null` ではない。
     let (dir, src) = setup("ce9");
     let mut src = src;
     let a = row(&src, "a.md");
@@ -276,7 +276,7 @@ fn test_ce_9_null_keeps_key_line() {
 
 #[test]
 fn test_sr_18_null_on_missing_key_does_nothing() {
-    // [SR-18] キーの無いセルを空にする(Backspace)→ 何もせず、キーを足さない。未保存 0。
+    // [utest -> req~screen.default-keys~1] キーの無いセルを空にする(Backspace)→ 何もせず、キーを足さない。未保存 0。
     let (dir, src) = setup("sr18");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -300,8 +300,8 @@ fn test_sr_18_null_on_missing_key_does_nothing() {
 
 #[test]
 fn test_ce_10_set_many_skips_unreadable_frontmatter() {
-    // [CE-10] 3行のうち1行が読めないフロントマターのノート(WB-5。閉じない) → 2つためて、1行を飛ばし理由を返す。
-    // [WB-3] フロントマターの無いノートは飛ばさず、ためる変更になる。
+    // [utest -> req~cell-edit.bulk-set-skip-read-only~1] 3行のうち1行が読めないフロントマターのノート(WB-5。閉じない) → 2つためて、1行を飛ばし理由を返す。
+    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートは飛ばさず、ためる変更になる。
     let (dir, src) = setup_with(
         "ce10",
         &[("a.md", A), ("nofm.md", NOFM), ("bad.md", UNCLOSED)],
@@ -328,16 +328,16 @@ fn test_ce_10_set_many_skips_unreadable_frontmatter() {
     // 保存前の差分は2ファイル。読めないノートは変わらない。
     assert_eq!(ch.previews(&src).len(), 2);
     assert_eq!(read(&dir, "bad.md"), UNCLOSED);
-    // [WB-9] ためただけでは、フロントマターの無いノートも書かない。
+    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] ためただけでは、フロントマターの無いノートも書かない。
     assert_eq!(read(&dir, "nofm.md"), NOFM);
 }
 
 #[test]
 fn test_ce_10_set_on_read_only_cell_is_skip() {
-    // [CE-10] 読むだけのセル(ネストした map・複数行のフローのリスト・読めないフロントマターのノート(WB-5))に
+    // [utest -> req~cell-edit.bulk-set-skip-read-only~1] 読むだけのセル(ネストした map・複数行のフローのリスト・読めないフロントマターのノート(WB-5))に
     // set → Err(Skip)。
-    // [CE-16] 書ける形のブロックのリスト(a.md の tags)は読むだけでない。
-    // [WB-3] フロントマターの無いノートのセルは読むだけでなく、ためられる。
+    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1] 書ける形のブロックのリスト(a.md の tags)は読むだけでない。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは読むだけでなく、ためられる。
     let (_dir, src) = setup_with(
         "ce10ro",
         &[
@@ -384,7 +384,7 @@ fn test_ce_10_set_on_read_only_cell_is_skip() {
     }
     assert_eq!(ch.count(), 0);
     assert!(!ch.undo(), "飛ばしただけでは手を積まない");
-    // [WB-3] フロントマターの無いノートは lock なしで、ためる変更になる。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートは lock なしで、ためる変更になる。
     assert!(src.get(&nofm, "status").lock.is_none());
     assert!(ch.set(&src, &nofm, "status", s("done")).is_ok());
     assert_eq!(ch.count(), 1);
@@ -397,8 +397,8 @@ const B_EXT: &str = "---\nstatus: todo\ntitle: B changed outside\n---\nbody b\n"
 
 #[test]
 fn test_wb_16_external_change_after_set_marks_and_stops_save() {
-    // [WB-16] ためたあと外で直す → 印が付き、ためた変更は残る。
-    // [WB-4] 保存 → 書かずに止まる(Changed)。[WB-14] 未保存の数は減らない。
+    // [utest -> req~write-back.external-save-choice~1] ためたあと外で直す → 印が付き、ためた変更は残る。
+    // [utest -> req~write-back.conflict-stop~1] 保存 → 書かずに止まる(Changed)。[utest -> req~write-back.keep-on-stop~1] 未保存の数は減らない。
     let (dir, src) = setup("wb16");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -416,7 +416,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert!(matches!(ch.pending(&b, "status"), Some(NewValue::Str(v)) if v == "done"));
     assert_eq!(ch.count(), 1);
 
-    // [WB-16] 差分には印が出る
+    // [utest -> req~write-back.external-save-choice~1] 差分には印が出る
     let pv = ch.previews(&src);
     assert_eq!(pv.len(), 1);
     match &pv[0] {
@@ -434,7 +434,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert_eq!(ch.count(), 1);
     assert!(matches!(ch.pending(&b, "status"), Some(NewValue::Str(v)) if v == "done"));
 
-    // [WB-4] [WB-16] 外の変更の上に書く → 選んだ時点の内容を基準にし、印が消え、保存は通る
+    // [utest -> req~write-back.conflict-stop-overwrite-choice~1, req~write-back.external-save-choice~1] 外の変更の上に書く → 選んだ時点の内容を基準にし、印が消え、保存は通る
     ch.overwrite(&mut src, &b).expect("overwrite");
     assert!(!ch.external(&b));
     assert_eq!(ch.count(), 1);
@@ -448,7 +448,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
 
 #[test]
 fn test_wb_4_external_change_after_overwrite_stops_again() {
-    // [WB-4] 外の変更の上に書くを選んでから書くまでにまた外で変わった → 止まる。
+    // [utest -> req~write-back.conflict-stop~1] 外の変更の上に書くを選んでから書くまでにまた外で変わった → 止まる。
     let (dir, src) = setup("wb4again");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -470,7 +470,7 @@ fn test_wb_4_external_change_after_overwrite_stops_again() {
 
 #[test]
 fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
-    // [WB-4] [WB-16] ためたあとの読み直しでは保存の基準を変えない。
+    // [utest -> req~write-back.conflict-stop~1, req~write-back.external-save-choice~1] ためたあとの読み直しでは保存の基準を変えない。
     // 外で変わった行の別のキーにさらにためても、基準は最初にためた時点のまま → 保存は止まる。
     let (dir, src) = setup("wb4keepbase");
     let mut src = src;
@@ -501,7 +501,7 @@ fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
 
 #[test]
 fn test_wb_4_external_change_before_set_is_reloaded() {
-    // [WB-4] [WB-16] ためる前に外で直した → 読み直され、印は付かず、保存は止まらない。
+    // [utest -> req~write-back.conflict-stop~1, req~write-back.external-reload~1, req~write-back.external-keep-pending~1] ためる前に外で直した → 読み直され、印は付かず、保存は止まらない。
     let (dir, src) = setup("wb4before");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -526,7 +526,7 @@ fn test_wb_4_external_change_before_set_is_reloaded() {
 
 #[test]
 fn test_wb_4_same_size_change_is_detected_by_mtime_and_hash() {
-    // [WB-4] 大きさが同じ外の変更でも、更新時刻(ずらす)と中身のハッシュで止まる。
+    // [utest -> req~write-back.conflict-stop~1] 大きさが同じ外の変更でも、更新時刻(ずらす)と中身のハッシュで止まる。
     let (dir, src) = setup("wb4same");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -553,7 +553,7 @@ fn test_wb_4_same_size_change_is_detected_by_mtime_and_hash() {
 
 #[test]
 fn test_wb_16_discard_drops_row_changes() {
-    // [WB-16] ためた変更を捨てる → その行の変更が消え、ほかの行は残る。1手として取り消せる。
+    // [utest -> req~write-back.external-save-choice~1] ためた変更を捨てる → その行の変更が消え、ほかの行は残る。1手として取り消せる。
     let (dir, src) = setup("wb16discard");
     let mut src = src;
     let a = row(&src, "a.md");
@@ -596,7 +596,7 @@ fn test_wb_16_discard_drops_row_changes() {
 
 #[test]
 fn test_wb_14_partial_save_keeps_stopped_rows() {
-    // [WB-14] 2行ためて1行だけ外で変える → 1行 Saved・1行 Changed。未保存は残った分だけ。
+    // [utest -> req~write-back.keep-on-stop~1] 2行ためて1行だけ外で変える → 1行 Saved・1行 Changed。未保存は残った分だけ。
     let (dir, src) = setup("wb14");
     let mut src = src;
     let a = row(&src, "a.md");
@@ -662,7 +662,7 @@ fn setup_with(name: &str, notes: &[(&str, &str)]) -> (TempDir, Markdown) {
 
 #[test]
 fn test_wb_17_set_back_to_original_drops_pending() {
-    // [WB-17] status: todo を done に直す → 未保存 1。もう一度 todo → 未保存 0・ためていない・差分に出ない。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-undoable~1] status: todo を done に直す → 未保存 1。もう一度 todo → 未保存 0・ためていない・差分に出ない。
     // 外す操作も1手: undo → done に戻って未保存 1、redo → 未保存 0。
     let (dir, src) = setup("wb17revert");
     let mut src = src;
@@ -684,7 +684,7 @@ fn test_wb_17_set_back_to_original_drops_pending() {
         "[WB-17] 元の値に戻したセルが差分に出る"
     );
 
-    // [WB-17] 外す操作も取り消し・やり直しの1手
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-undoable~1] 外す操作も取り消し・やり直しの1手
     assert!(ch.undo());
     assert_eq!(ch.count(), 1);
     assert!(matches!(ch.pending(&a, "status"), Some(NewValue::Str(v)) if v == "done"));
@@ -692,7 +692,7 @@ fn test_wb_17_set_back_to_original_drops_pending() {
     assert_eq!(ch.count(), 0);
     assert!(ch.pending(&a, "status").is_none());
 
-    // [WB-17] 保存しても何も書かない
+    // [utest -> req~write-back.revert-drops-pending~1] 保存しても何も書かない
     let res = ch.save(&mut src);
     assert!(res.is_empty(), "[WB-17] 変更が無いのに保存の結果に行がある");
     assert_eq!(read(&dir, "a.md"), A);
@@ -700,7 +700,7 @@ fn test_wb_17_set_back_to_original_drops_pending() {
 
 #[test]
 fn test_wb_17_same_value_on_clean_cell_is_noop() {
-    // [WB-17] ためていないセルに今と同じ値 → ためず、手も積まない。
+    // [utest -> req~write-back.revert-drops-pending~1] ためていないセルに今と同じ値 → ためず、手も積まない。
     let (dir, src) = setup("wb17same");
     let a = row(&src, "a.md");
     let mut ch = Changes::new();
@@ -714,7 +714,7 @@ fn test_wb_17_same_value_on_clean_cell_is_noop() {
 
 #[test]
 fn test_wb_17_unquoted_date_revert_keeps_bytes() {
-    // [WB-17] クオートの無い日付を別の日付にしてから元の日付に戻して保存 → ファイルは1バイトも変わらない。
+    // [utest -> req~write-back.revert-not-written~1] クオートの無い日付を別の日付にしてから元の日付に戻して保存 → ファイルは1バイトも変わらない。
     let note = "---\ndue: 2026-09-30\ntitle: D\n---\nbody d\n";
     let (dir, src) = setup_with("wb17date", &[("d.md", note)]);
     let mut src = src;
@@ -737,7 +737,7 @@ fn test_wb_17_unquoted_date_revert_keeps_bytes() {
 
 #[test]
 fn test_wb_17_value_types_compared() {
-    // [WB-17] 数の 3 に Int(3)・Float(3.0) → ためない。文字の "3" に Int(3) → ためる(型が違う)。
+    // [utest -> req~write-back.revert-drops-pending~1] 数の 3 に Int(3)・Float(3.0) → ためない。文字の "3" に Int(3) → ためる(型が違う)。
     // Null の値に Null → ためない。空の文字列 "" に Null → ためる。
     let note = "---\npriority: 3\ntitle: \"3\"\nempty:\nblank: \"\"\n---\nbody n\n";
     let (dir, src) = setup_with("wb17types", &[("n.md", note)]);
@@ -781,7 +781,7 @@ fn test_wb_17_value_types_compared() {
 
 #[test]
 fn test_wb_17_set_many_skips_same_value_rows() {
-    // [WB-17] [CE-10] 3行のうち1行が元と同じ値 → その行はためず、ほかの2行だけ。
+    // [utest -> req~write-back.revert-drops-pending~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1] 3行のうち1行が元と同じ値 → その行はためず、ほかの2行だけ。
     let (_dir, src) = setup("wb17many");
     let a = row(&src, "a.md");
     let b = row(&src, "b.md");
@@ -805,7 +805,7 @@ fn test_wb_17_set_many_skips_same_value_rows() {
 
 #[test]
 fn test_wb_17_compares_with_value_read_after_external_change() {
-    // [WB-17] 外で読み直したあとは、新しく読んだ値と比べる。
+    // [utest -> req~write-back.revert-drops-pending~1] 外で読み直したあとは、新しく読んだ値と比べる。
     let (dir, src) = setup("wb17ext");
     let mut src = src;
     let b = row(&src, "b.md");

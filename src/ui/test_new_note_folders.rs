@@ -1,5 +1,5 @@
 //! フォルダを2つ以上開いたときに作る場所を選ぶ欄(new-note-rest のタスク 2)の画面の受け入れ試験。CE-25
-//! (関係: WB-15)。仕様: specs/cell-edit/spec.md、記録 specs/_changes/2026-10-03-new-note-rest.md。
+//! (関係: WB-15)。仕様: specs/_history/decidespec/cell-edit/spec.md、記録 specs/_history/decidespec/_changes/2026-10-03-new-note-rest.md。
 //! 画面の実装を見ずに、キー・クリック・画面の文字・ファイルで確かめる。
 //!
 //! 仮定(実装役に渡す):
@@ -145,7 +145,7 @@ fn assert_created_and_selected(a: &App, path: &Path) {
 
 #[test]
 fn test_ce_25_folders_pick_second_creates_there() {
-    // [CE-25] A・B を開く → ビューの帯の右の端に「+ 新規」(2026-10-12-header-menu でヘッダーから移った)。`a` → A と B の一覧(A に印)。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-folder-root~1, req~cell-edit.new-note-relmap-button~1] A・B を開く → ビューの帯の右の端に「+ 新規」(2026-10-12-header-menu でヘッダーから移った)。`a` → A と B の一覧(A に印)。
     // ↓ で B → Enter → 名前の欄 → 「メモ」Enter → `B/メモ.md` ができ、A には作らない。その行が選ばれる。
     let tmp = two_folders("ce25f_pick");
     let mut a = boot_ab(&tmp, false);
@@ -175,7 +175,7 @@ fn test_ce_25_folders_pick_second_creates_there() {
 
 #[test]
 fn test_ce_25_folders_default_is_first() {
-    // [CE-25] 「+ 新規」のクリック → 一覧(既定は最初の A)。動かさずに Enter → 「メモ」→ `A/メモ.md`。
+    // [utest -> req~cell-edit.new-note-folder-pick~1] 「+ 新規」のクリック → 一覧(既定は最初の A)。動かさずに Enter → 「メモ」→ `A/メモ.md`。
     let tmp = two_folders("ce25f_default");
     let mut a = boot_ab(&tmp, false);
     click_label(&mut a, "+ 新規");
@@ -192,7 +192,7 @@ fn test_ce_25_folders_default_is_first() {
 
 #[test]
 fn test_ce_25_folders_order_follows_arguments() {
-    // [CE-25] 一覧は開いた引数の順で、既定は最初の引数のフォルダ。B・A の順で開く → B に印。
+    // [utest -> req~cell-edit.new-note-folder-pick~1] 一覧は開いた引数の順で、既定は最初の引数のフォルダ。B・A の順で開く → B に印。
     let tmp = two_folders("ce25f_order");
     let mut a = boot(&tmp, &[dir(&tmp, B), dir(&tmp, A)], false);
     ch(&mut a, 'a');
@@ -208,7 +208,7 @@ fn test_ce_25_folders_order_follows_arguments() {
 
 #[test]
 fn test_ce_25_folders_esc_creates_nothing() {
-    // [CE-25] 一覧で Esc → 何も作らず表に戻る。
+    // [utest -> req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-readonly~1] 一覧で Esc → 何も作らず表に戻る。
     let tmp = two_folders("ce25f_esc");
     let mut a = boot_ab(&tmp, false);
     let before = snapshot(&tmp.notes());
@@ -224,7 +224,7 @@ fn test_ce_25_folders_esc_creates_nothing() {
 
 #[test]
 fn test_ce_25_folders_single_folder_goes_straight_to_name() {
-    // [CE-25] フォルダが1つなら一覧を出さず、すぐ名前の欄(今の振る舞いを守る)。
+    // [utest -> req~cell-edit.new-note-folder-pick~1] フォルダが1つなら一覧を出さず、すぐ名前の欄(今の振る舞いを守る)。
     let tmp = two_folders("ce25f_single");
     let only = dir(&tmp, A);
     let mut a = boot(&tmp, std::slice::from_ref(&only), false);
@@ -244,7 +244,7 @@ fn test_ce_25_folders_single_folder_goes_straight_to_name() {
 
 #[test]
 fn test_ce_25_folders_readonly_does_not_start() {
-    // [CE-25][WB-15] `--readonly` では2つ以上でも始めない(一覧も名前の欄も出さず、何も作らない)。
+    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-readonly~1, req~cli.readonly~1] `--readonly` では2つ以上でも始めない(一覧も名前の欄も出さず、何も作らない)。
     let tmp = two_folders("ce25f_ro");
     let mut a = boot_ab(&tmp, true);
     let before = snapshot(&tmp.notes());

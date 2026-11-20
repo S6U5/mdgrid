@@ -34,7 +34,7 @@ filters = 'file.inFolder(\"items\")'\n";
 
 #[test]
 fn test_tr_2_base_only_table_has_tree() {
-    // [TR-2] `path` の無い `[table.base]` の表を開く(根を開いて open で選ぶ)→ 木の設定が読める。
+    // [utest -> req~tree.config-path~1] `path` の無い `[table.base]` の表を開く(根を開いて open で選ぶ)→ 木の設定が読める。
     let r = Root::new("plain", BASE_ONLY);
     // 印の open が選ぶ表のパス(ファイルは無い。read_marker の道筋のまま)。
     let (t, _) = marker_open(&r.0);
@@ -49,7 +49,7 @@ fn test_tr_2_base_only_table_has_tree() {
 
 #[test]
 fn test_tr_2_base_only_table_by_other_spelling_of_root() {
-    // [TR-2] 開いたパスが実体のパスと違う書き方(`items/..` を挟む・相対の `.` から)でも、同じ表なら木の設定が読める
+    // [utest -> req~tree.config-path~1, req~tree.config-empty-table~1] 開いたパスが実体のパスと違う書き方(`items/..` を挟む・相対の `.` から)でも、同じ表なら木の設定が読める
     // (ファイルの無い `.base` は実体のパスに直せないので、フォルダの側を直して比べる)。
     let r = Root::new("spelling", BASE_ONLY);
     let opened = r.0.join("items").join("..").join("ブックマーク.base");

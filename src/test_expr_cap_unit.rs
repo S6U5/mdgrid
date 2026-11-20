@@ -1,4 +1,4 @@
-//! [BV-7] 式で作る文字が上限を超えるときは null(資源を使い切らせない。specs/_changes/2026-10-06-expr-string-cap.md)。
+//! [base-view.unsupported] 式で作る文字が上限を超えるときは null(資源を使い切らせない。specs/_history/decidespec/_changes/2026-10-06-expr-string-cap.md)。
 
 use super::*;
 use std::collections::HashMap;
@@ -29,6 +29,7 @@ fn run_with(src: &str, x: &str) -> Val {
     eval(&parse(src).expect(src), &env)
 }
 
+// [utest -> req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1]
 #[test]
 fn test_bv_7_string_cap_replace_empty_pattern() {
     let big = "a".repeat(2000);
@@ -41,6 +42,7 @@ fn test_bv_7_string_cap_replace_empty_pattern() {
     );
 }
 
+// [utest -> req~base-view.unsupported-column-mark~1]
 #[test]
 fn test_bv_7_string_cap_concat() {
     let half = "a".repeat(600 * 1024);

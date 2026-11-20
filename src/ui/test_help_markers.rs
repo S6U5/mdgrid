@@ -1,4 +1,4 @@
-//! [SR-5][SR-23] ヘルプの最後に、セルと行の印の意味を並べる(決定 specs/_decisions/2026-10-06-help-markers.md)。
+//! [screen.help][screen.locales] ヘルプの最後に、セルと行の印の意味を並べる(決定 specs/_history/decidespec/_decisions/2026-10-06-help-markers.md)。
 
 use super::keymap::Mode;
 use super::test_screen::*;
@@ -16,6 +16,7 @@ fn help_end(name: &str) -> String {
     screen(&a)
 }
 
+// [utest -> req~screen.help~1]
 #[test]
 fn test_sr_5_markers_section_at_end_ja() {
     let s = help_end("sr5marks_ja");
@@ -38,6 +39,7 @@ fn test_sr_5_markers_section_at_end_ja() {
     assert!(last.contains('~'), "最後は ~ の行: {last:?}\n{s}");
 }
 
+// [utest -> req~screen.help~1]
 #[test]
 fn test_sr_5_markers_section_at_end_en() {
     let _g = scoped(Lang::En);

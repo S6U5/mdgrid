@@ -93,7 +93,7 @@ fn find_word(buf: &Buffer, word: &str) -> (u16, u16) {
 
 #[test]
 fn test_sr_33_modern_popup_uses_background() {
-    // [SR-33] 既定(modern)の色のある表示: 選んだ候補は反転でなく背景の色と太字、枠はアクセントの色。
+    // [utest -> req~screen.modern-look-select~1] 既定(modern)の色のある表示: 選んだ候補は反転でなく背景の色と太字、枠はアクセントの色。
     let (_t, a) = with_list("sr33_pop", "", ColorMode::Rgb);
     let buf = buffer(&a);
     let (x, y) = find_word(&buf, ">*todo");
@@ -107,7 +107,7 @@ fn test_sr_33_modern_popup_uses_background() {
 
 #[test]
 fn test_sr_33_footer_keys_accent_labels_dim() {
-    // [SR-33] 下の帯: 反転しない。キーはアクセントの太字、説明は薄い色。
+    // [utest -> req~screen.modern-look-parts~1] 下の帯: 反転しない。キーはアクセントの太字、説明は薄い色。
     // SR-36: 帯のキーの形は classic の組(keys)で。
     let (_t, a) = boot(
         "sr33_band",
@@ -126,7 +126,7 @@ fn test_sr_33_footer_keys_accent_labels_dim() {
 
 #[test]
 fn test_sr_33_table_selection_is_tinted() {
-    // [SR-33] 表: 今の行は背景の色、今のセルは札(アクセントの背景)。反転しない。
+    // [utest -> req~screen.modern-look-select~1, req~screen.modern-look-parts~1] 表: 今の行は背景の色、今のセルは札(アクセントの背景)。反転しない。
     // SR-36: 選びの形は classic の組(fill)で。
     let (_t, a) = boot(
         "sr33_table",
@@ -146,7 +146,7 @@ fn test_sr_33_table_selection_is_tinted() {
 
 #[test]
 fn test_sr_33_classic_and_no_color_keep_reverse() {
-    // [SR-33] look = "classic" と色なしは今まで(反転)。
+    // [utest -> req~screen.modern-look-classic~1] look = "classic" と色なしは今まで(反転)。
     for (name, toml, color) in [
         (
             "sr33_classic",
@@ -176,7 +176,7 @@ fn test_sr_33_classic_and_no_color_keep_reverse() {
 
 #[test]
 fn test_sr_33_text_is_the_same_in_every_look() {
-    // [SR-33][SR-26] どの見た目でも画面の文字は同じ(表・候補の窓)。
+    // [utest -> req~screen.modern-look-classic~1, req~screen.modern-look-same-text~1, req~screen.themes-color-only~1] どの見た目でも画面の文字は同じ(表・候補の窓)。
     let (_t, modern) = with_list("sr33_same_m", "", ColorMode::Rgb);
     let (_u, classic) = with_list(
         "sr33_same_c",
@@ -200,7 +200,7 @@ fn test_sr_33_text_is_the_same_in_every_look() {
 
 #[test]
 fn test_sr_33_bad_value_warns() {
-    // [SR-33] 知らない値は警告にして既定(modern)。
+    // [utest -> req~screen.modern-look-frames~1, req~screen.modern-look-classic~1] 知らない値は警告にして既定(modern)。
     let (c, w) = mdgrid::config::parse("[look]\nmode = \"fancy\"\n").unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
     assert!(!c.resolved().classic);

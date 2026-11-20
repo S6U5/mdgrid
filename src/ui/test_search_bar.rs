@@ -47,7 +47,7 @@ fn bar_off(app: &mut App) {
 
 #[test]
 fn test_nv_23_bar_is_shown_empty_at_start() {
-    // [NV-23] 起動 → タブの下に検索の欄が空で出ている(案内は薄く。キーはキーの表から。SR-4)。
+    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-hits~1, req~navigation.search-box-buttons~1, req~navigation.search-box-key-glyph~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~navigation.search-box-hide~1] 起動 → タブの下に検索の欄が空で出ている(案内は薄く。キーはキーの表から。SR-4)。
     let (_t, a) = sixteen("nv23start");
     let s = screen(&a);
     let lines: Vec<&str> = s.lines().collect();
@@ -79,7 +79,7 @@ fn test_nv_23_bar_is_shown_empty_at_start() {
 
 #[test]
 fn test_nv_23_bar_shows_word_and_count() {
-    // [NV-23] 「会議」で絞る → 欄に「会議」と「3/16行」。打っている間は語の後ろに `▏`。
+    // [utest -> req~navigation.search-box-hits~1] 「会議」で絞る → 欄に「会議」と「3/16行」。打っている間は語の後ろに `▏`。
     let (_t, mut a) = sixteen("nv23count");
     ch(&mut a, '\\');
     typing(&mut a, "会議");
@@ -99,7 +99,7 @@ fn test_nv_23_bar_shows_word_and_count() {
 
 #[test]
 fn test_nv_23_config_off_hides_bar_and_uses_bottom_line() {
-    // [NV-23] 設定で欄を消す → 欄が無く、表が帯の行の数だけ広い(2026-10-12-search-box・view-bar-plain で帯は3行
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-hide~1] 設定で欄を消す → 欄が無く、表が帯の行の数だけ広い(2026-10-12-search-box・view-bar-plain で帯は3行
     // なので3行)。`\` を押せば最下行で打てる。
     let (_t, mut a) = sixteen("nv23off");
     let h_on = a.data_height();
@@ -133,7 +133,7 @@ fn test_nv_23_config_off_hides_bar_and_uses_bottom_line() {
 
 #[test]
 fn test_nv_2_backslash_enters_bar_and_esc_restores() {
-    // [NV-2] `\` で上の欄に入り「会議」と打つ → 「会議」を含む行だけ。Esc で元に戻る。
+    // [utest -> req~navigation.search-incremental~1, req~navigation.search-input-place~1] `\` で上の欄に入り「会議」と打つ → 「会議」を含む行だけ。Esc で元に戻る。
     let (_t, mut a) = sixteen("nv2bar");
     ch(&mut a, '\\');
     assert_eq!(a.mode, Mode::Filter);
@@ -146,7 +146,7 @@ fn test_nv_2_backslash_enters_bar_and_esc_restores() {
     assert!(!s.lines().nth(22).unwrap().starts_with('\\'), "{s}");
     let (_, sy) = search_at(&a);
     assert!(s.lines().nth(sy as usize).unwrap().contains("会議"), "{s}");
-    // [SR-17] 端末のカーソルは欄の語の末尾(「検索: 会議」の「会議」の後ろ。「会議」は幅 4)。
+    // [utest -> req~screen.ime-cursor~1] 端末のカーソルは欄の語の末尾(「検索: 会議」の「会議」の後ろ。「会議」は幅 4)。
     let (wx, wy) = find_at(&a, "検索: 会議").unwrap();
     let end = (wx + width::width("検索: 会議") as u16, wy);
     assert_eq!(view::cursor(&a), Some(end));
@@ -163,7 +163,7 @@ fn test_nv_2_backslash_enters_bar_and_esc_restores() {
 
 #[test]
 fn test_nv_23_click_bar_enters_and_enter_keeps_filter() {
-    // [NV-23] 欄のクリックで欄に入る。Enter で欄を抜けても絞り込みは残り、表のキーが効く。
+    // [utest -> req~navigation.search-box-hits~1] 欄のクリックで欄に入る。Enter で欄を抜けても絞り込みは残り、表のキーが効く。
     let (_t, mut a) = sixteen("nv23click");
     let (sx, sy) = search_at(&a);
     a.click(sx + 6, sy);
@@ -198,7 +198,7 @@ fn test_nv_23_click_bar_enters_and_enter_keeps_filter() {
 
 #[test]
 fn test_nv_23_row_click_hits_right_row_below_bar() {
-    // [NV-23] [SR-6] 帯が1行増えても、行のクリックは見えている行を選ぶ。設定の帯(NV-16)が重なっても同じ。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-hide~1, req~screen.mouse-click-select~1] 帯が1行増えても、行のクリックは見えている行を選ぶ。設定の帯(NV-16)が重なっても同じ。
     let (_t, mut a) = sixteen("nv23hit");
     let dy = view::data_y(&a) as u16;
     let (_, sy) = search_at(&a);
@@ -251,7 +251,7 @@ fn test_nv_23_row_click_hits_right_row_below_bar() {
 
 #[test]
 fn test_nv_23_bar_fits_narrow_terminals() {
-    // [SR-9] 狭い端末でも、欄を含む全行が幅を超えない(打っている間・絞った後・案内・East Asian Ambiguous を幅2)。
+    // [utest -> req~cell-view.grapheme-width-fit~1, req~navigation.search-box-hits~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-half-glyphs~1] 狭い端末でも、欄を含む全行が幅を超えない(打っている間・絞った後・案内・East Asian Ambiguous を幅2)。
     let (_t, mut a) = sixteen("nv23narrow");
     let check = |a: &mut App| {
         for (w, h) in [(80u16, 24u16), (30, 10), (14, 6), (9, 5), (5, 4), (3, 3)] {
@@ -288,7 +288,7 @@ fn test_nv_23_bar_fits_narrow_terminals() {
 
 #[test]
 fn test_nv_23_low_terminal_bar_not_drawn_ignores_click() {
-    // [NV-23] 低い端末では検索の欄が描かれない(欄のある行は下の帯)。下の帯のクリックで絞り込みの入力に入らない。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~navigation.search-box-low-height~1, req~navigation.search-box-hide~1] 低い端末では検索の欄が描かれない(欄のある行は下の帯)。下の帯のクリックで絞り込みの入力に入らない。
     // `\` で打つときは最下行に語を出し、カーソルも最下行に置く(SR-17)。
     // SR-1 で欄はビューの帯(行 1)に入ったので、欄の行が下の帯になる高さは 4(前は欄が行 2 で高さ 5)。
     let (_t, mut a) = sixteen("nv23low");

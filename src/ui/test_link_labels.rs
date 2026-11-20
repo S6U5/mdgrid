@@ -1,4 +1,4 @@
-//! リンクの値の見せ方と行き先の表の不具合の直し(specs/_changes/2026-10-15-link-labels.md)。
+//! リンクの値の見せ方と行き先の表の不具合の直し(specs/_history/decidespec/_changes/2026-10-15-link-labels.md)。
 //! REL-2: まとまりの見出しと頻度表(`%`)も、セルと同じに行き先の名前で見せる。
 //! REL-4: `.base` の表から、`.base` の外のフォルダのノートへのリンクを開ける。
 //! REL-7: 一部のフォルダだけの範囲で、関係マップに今の表の根のフォルダの余分な箱を出さない。
@@ -106,7 +106,7 @@ fn real(p: PathBuf) -> PathBuf {
 
 #[test]
 fn test_rel_2_group_heading_shows_link_names() {
-    // [REL-2] リンクの列でまとめた見出しは、`[[…]]` でなく行き先の名前。行き先の無いものは `?` を付ける。
+    // [utest -> req~relations.link-display~1] リンクの列でまとめた見出しは、`[[…]]` でなく行き先の名前。行き先の無いものは `?` を付ける。
     let tmp = workspace("ll_heading");
     let mut a = boot_tasks(&tmp);
     a.settings.group = Group::By {
@@ -127,7 +127,7 @@ fn test_rel_2_group_heading_shows_link_names() {
 
 #[test]
 fn test_rel_2_list_group_heading_shows_link_names() {
-    // [REL-2] リストのリンクの列でまとめた見出しも、要素ごとに名前(`, ` でつなぐ)。
+    // [utest -> req~relations.link-display~1] リストのリンクの列でまとめた見出しも、要素ごとに名前(`, ` でつなぐ)。
     let tmp = workspace("ll_heading_list");
     let mut a = boot_tasks(&tmp);
     a.settings.group = Group::By {
@@ -143,7 +143,7 @@ fn test_rel_2_list_group_heading_shows_link_names() {
 
 #[test]
 fn test_rel_2_frequency_shows_link_names() {
-    // [REL-2] `%` の件数の表も、リンクは行き先の名前で見せる(絞り込みは元の値のまま)。
+    // [utest -> req~relations.link-display~1] `%` の件数の表も、リンクは行き先の名前で見せる(絞り込みは元の値のまま)。
     let tmp = workspace("ll_freq");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "related");
@@ -167,7 +167,7 @@ fn test_rel_2_frequency_shows_link_names() {
 
 #[test]
 fn test_rel_4_open_link_from_base_to_registered_table() {
-    // [REL-4] `.base` の表(ルートフォルダを読む)から、`.base` の外のフォルダのノートへのリンクを開くと、
+    // [utest -> req~relations.follow-link-open~1] `.base` の表(ルートフォルダを読む)から、`.base` の外のフォルダのノートへのリンクを開くと、
     // 「隠れている」でなく、行き先を含む登録した表に移る。
     let tmp = vault("ll_base_open");
     let mut a = boot_base(&tmp);
@@ -192,7 +192,7 @@ fn test_rel_4_open_link_from_base_to_registered_table() {
 
 #[test]
 fn test_rel_4_open_link_from_base_without_registered_tables() {
-    // [REL-4] 範囲に行き先を含む表が無ければ、行き先のフォルダを開く。
+    // [utest -> req~relations.follow-link-open~1] 範囲に行き先を含む表が無ければ、行き先のフォルダを開く。
     let tmp = vault("ll_base_open_none");
     let mut a = boot_base(&tmp);
     choose(&mut a, &tmp, &[("Tasks", "Tasks.base")]);
@@ -205,7 +205,7 @@ fn test_rel_4_open_link_from_base_without_registered_tables() {
 
 #[test]
 fn test_rel_4_base_row_hidden_by_view_filter_gives_reason() {
-    // [REL-4] 行き先が `.base` の表のノートで、ビューの絞り込みで隠れているだけなら、今までどおり理由を出す。
+    // [utest -> req~relations.follow-link-open~1, req~relations.follow-link-missing~1] 行き先が `.base` の表のノートで、ビューの絞り込みで隠れているだけなら、今までどおり理由を出す。
     let tmp = vault("ll_base_hidden");
     let mut a = boot_base(&tmp);
     goto(&mut a, "d dep", "depends");
@@ -233,7 +233,7 @@ fn relmap_names(a: &mut App) -> Vec<String> {
 
 #[test]
 fn test_rel_7_partial_workspace_has_no_extra_table() {
-    // [REL-7] ルートフォルダの下の一部のフォルダだけを表にした範囲で、その1つを開くと、関係マップの箱は
+    // [utest -> req~relations.map~1] ルートフォルダの下の一部のフォルダだけを表にした範囲で、その1つを開くと、関係マップの箱は
     // その表だけ(ルートフォルダの残りのノートの余分な箱が出ない)。今の表の箱を選ぶ。
     let tmp = vault("ll_partial");
     let mut a = boot_folder(&tmp);
@@ -256,7 +256,7 @@ fn test_rel_7_partial_workspace_has_no_extra_table() {
 
 #[test]
 fn test_rel_7_folder_inside_base_table_has_no_extra_table() {
-    // [REL-7] 今のフォルダが範囲の `.base` の表(ルートフォルダ)の中なら、今の表の箱を足さず、`.base` の箱を選ぶ。
+    // [utest -> req~relations.map~1] 今のフォルダが範囲の `.base` の表(ルートフォルダ)の中なら、今の表の箱を足さず、`.base` の箱を選ぶ。
     let tmp = vault("ll_inside_base");
     let mut a = boot_folder(&tmp);
     choose(

@@ -51,6 +51,12 @@ pub enum Mode {
     ColumnType,
     /// 木の画面(TR-1。folder_tree.rs)。
     Tree,
+    /// ガントの画面(GA-2。gantt.rs)。
+    Gantt,
+    /// カンバンの画面(KB-2。kanban.rs)。
+    Kanban,
+    /// グラフの画面(CH-2。chart.rs)。
+    Chart,
 }
 
 impl Mode {
@@ -80,6 +86,9 @@ impl Mode {
             Mode::ScreenMenu => Msg::ModeScreenMenu,
             Mode::ColumnType => Msg::ModeColumnType,
             Mode::Tree => Msg::ModeTree,
+            Mode::Gantt => Msg::ModeGantt,
+            Mode::Kanban => Msg::ModeKanban,
+            Mode::Chart => Msg::ModeChart,
         }
     }
 
@@ -114,10 +123,13 @@ impl Mode {
             Mode::ScreenMenu => "screen_menu",
             Mode::ColumnType => "column_type",
             Mode::Tree => "tree",
+            Mode::Gantt => "gantt",
+            Mode::Kanban => "kanban",
+            Mode::Chart => "chart",
         }
     }
 
-    pub const ALL: [Mode; 23] = [
+    pub const ALL: [Mode; 26] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -141,6 +153,9 @@ impl Mode {
         Mode::ScreenMenu,
         Mode::ColumnType,
         Mode::Tree,
+        Mode::Gantt,
+        Mode::Kanban,
+        Mode::Chart,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
@@ -283,6 +298,10 @@ pub enum Action {
     RenameKey,
     /// CE-34: 選んだ行のノートの名前を変える。
     RenameNote,
+    /// cell-edit.delete-note-menu: 選んだ行のノートをごみ箱へ動かす。
+    DeleteNote,
+    /// cell-edit.trash-restore-list: ごみ箱のノートを選んで元の場所へ戻す。
+    RestoreNote,
     /// CE-29: 列のキーを、全部のノートから消す。
     DeleteKey,
     /// CE-35: 列の型を選び直す窓を開く。
@@ -347,6 +366,44 @@ pub enum Action {
     TreeView,
     /// TR-5: 行の http・https の URL を OS の既定のブラウザで開く。
     OpenUrl,
+    /// GA-2: 表とガントの画面を切り替える。
+    GanttView,
+    /// GA-4: ガントの時間軸の単位を細かく(月 → 週 → 日)。
+    ZoomIn,
+    /// GA-4: ガントの時間軸の単位を粗く(日 → 週 → 月)。
+    ZoomOut,
+    /// KB-2: 表とカンバンの画面を切り替える。
+    KanbanView,
+    /// KB-4: カンバンの札を左のレーンへ動かす(状態の値を書き換える)。
+    MoveCardLeft,
+    /// KB-4: カンバンの札を右のレーンへ動かす(状態の値を書き換える)。
+    MoveCardRight,
+    /// CH-2: 表とグラフの画面を切り替える。
+    ChartView,
+    /// CH-8: グラフの種類を次へ(棒 → 積み上げ棒 → 折れ線 → 散布図 → ヒートマップ)。
+    ChartKindNext,
+    /// CH-8: グラフの種類を前へ。
+    ChartKindPrev,
+    /// CH-8: グラフの分ける列を次へ。
+    ChartX,
+    /// CH-8: グラフの値を次へ(件数 → 数の列)。
+    ChartY,
+    /// CH-8: グラフの集め方を次へ(合計 → 平均 → 最小 → 最大)。
+    ChartAgg,
+    /// CH-8: グラフの内訳の列を次へ。
+    ChartBy,
+    /// CH-8: グラフの日付の単位を細かく(月 → 週 → 日)。
+    ChartFiner,
+    /// CH-8: グラフの日付の単位を粗く(日 → 週 → 月)。
+    ChartCoarser,
+    /// CH-8: 印に書いた前のグラフ。
+    ChartPrevSaved,
+    /// CH-8: 印に書いた次のグラフ。
+    ChartNextSaved,
+    /// CH-5: 折れ線の累積を切り替える。
+    ChartCumulative,
+    /// CH-4: 積み上げ棒の割合を切り替える。
+    ChartPercent,
 }
 
 impl Action {
@@ -434,6 +491,8 @@ impl Action {
             Action::AddColumn => "add_column",
             Action::RenameKey => "rename_key",
             Action::RenameNote => "rename_note",
+            Action::DeleteNote => "delete_note",
+            Action::RestoreNote => "restore_note",
             Action::DeleteKey => "delete_key",
             Action::ColumnType => "column_type",
             Action::MoveColumnLeft => "move_column_left",
@@ -473,13 +532,59 @@ impl Action {
             Action::Freq => "frequency",
             Action::TreeView => "tree_view",
             Action::OpenUrl => "open_url",
+            Action::GanttView => "gantt_view",
+            Action::ZoomIn => "zoom_in",
+            Action::ZoomOut => "zoom_out",
+            Action::KanbanView => "kanban_view",
+            Action::MoveCardLeft => "move_card_left",
+            Action::MoveCardRight => "move_card_right",
+            Action::ChartView => "chart_view",
+            Action::ChartKindNext => "chart_kind_next",
+            Action::ChartKindPrev => "chart_kind_prev",
+            Action::ChartX => "chart_x",
+            Action::ChartY => "chart_y",
+            Action::ChartAgg => "chart_agg",
+            Action::ChartBy => "chart_by",
+            Action::ChartFiner => "chart_finer",
+            Action::ChartCoarser => "chart_coarser",
+            Action::ChartPrevSaved => "chart_prev_saved",
+            Action::ChartNextSaved => "chart_next_saved",
+            Action::ChartCumulative => "chart_cumulative",
+            Action::ChartPercent => "chart_percent",
         }
     }
+
+    /// 表の選んでいる行・セルに効く動作。表でない画面の型(ガント・カンバン)からパレットで選んだとき、その画面で
+    /// 選んでいる行を表で選べなければしない(表の別の行に効かせない)。ほかの動作(終わる・探す・絞る・画面の型の
+    /// 切り替え・新しいノート・列の操作など)は表の今の行のまま効かせる。
+    pub const ROW_TARGET: &[Action] = &[
+        Action::Edit,
+        Action::Clear,
+        Action::Copy,
+        Action::CopyRow,
+        Action::OpenEditor,
+        Action::Mark,
+        Action::Visual,
+        Action::ExtendUp,
+        Action::ExtendDown,
+        Action::HighlightSame,
+        Action::FilterSame,
+        Action::RenameNote,
+        Action::DeleteNote,
+        Action::OpenLink,
+        Action::LinkedRows,
+        Action::ToggleTree,
+        Action::Menu,
+        Action::Detail,
+        Action::OpenUrl,
+    ];
 
     /// SC-17: ノートだけの動作(行がノートでない表(CSV など)では出さず、キーでも断る)。
     pub const NOTE_ONLY: &[Action] = &[
         Action::OpenEditor,
         Action::RenameNote,
+        Action::DeleteNote,
+        Action::RestoreNote,
         Action::RenameKey,
         Action::DeleteKey,
         Action::AddColumn,
@@ -587,6 +692,9 @@ const IN_SCREEN_MENU: Msg = Msg::SecInScreenMenu;
 const IN_COLUMN_TYPE: Msg = Msg::SecInColumnType;
 const IN_FILTERS: Msg = Msg::SecInFilters;
 const IN_TREE: Msg = Msg::SecInTree;
+const IN_GANTT: Msg = Msg::SecInGantt;
+const IN_KANBAN: Msg = Msg::SecInKanban;
+const IN_CHART: Msg = Msg::SecInChart;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -638,6 +746,9 @@ pub const COMMANDS: &[Command] = &[
     cmd(Action::DeleteKey, Msg::CmdDeleteKey, SHAPE),
     // CE-34: ノートの名前の変更(既定のキーなし。パレットと操作の一覧から)。
     cmd(Action::RenameNote, Msg::CmdRenameNote, NOTE),
+    // cell-edit.delete-note-menu・cell-edit.trash-restore-list: ノートをごみ箱へ動かす・ごみ箱から戻す(既定のキーなし)。
+    cmd(Action::DeleteNote, Msg::CmdDeleteNote, NOTE),
+    cmd(Action::RestoreNote, Msg::CmdRestoreNote, NOTE),
     // CE-25: 新しいノートはキー(既定 `a`)もあるが、割り当て直して外してもパレットから始められるように。
     cmd(Action::NewNote, Msg::KeyNewNote, NOTE),
     // ST-5: スターターから台帳を作る(ファイルを書くので読むだけでは出さない)。
@@ -662,6 +773,12 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
     // TR-5: 行の URL を開く(既定のキーなし。木の中では `o`。操作の一覧からも)。
     cmd(Action::OpenUrl, Msg::CmdOpenUrl, OUTSIDE),
+    // GA-2: ガントの画面(画面の型のメニューとパレットからも)。
+    cmd(Action::GanttView, Msg::CmdGanttView, FIND),
+    // KB-2: カンバンの画面(画面の型のメニューとパレットからも)。
+    cmd(Action::KanbanView, Msg::CmdKanbanView, FIND),
+    // CH-2: グラフの画面(画面の型のメニューとパレットからも)。
+    cmd(Action::ChartView, Msg::CmdChartView, FIND),
     // WS-2: ワークスペース(ノートを書かない。workspaces.toml だけ)。
     cmd(Action::WsNew, Msg::CmdWsNew, FILE),
     cmd(Action::WsAdd, Msg::CmdWsAdd, FILE),
@@ -746,6 +863,12 @@ pub const BINDINGS: &[Binding] = &[
     b("R", Action::RelationMap, Msg::KeyRelationMap, FIND, 0),
     // TR-1: 木の画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
     b("T", Action::TreeView, Msg::KeyTreeView, FIND, 0),
+    // GA-2: ガントの画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
+    b("C", Action::GanttView, Msg::KeyGanttView, FIND, 0),
+    // KB-2: カンバンの画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
+    b("B", Action::KanbanView, Msg::KeyKanbanView, FIND, 0),
+    // CH-2: グラフの画面(画面の型のメニューとパレットからも。窓を開かずに切り替える)。
+    b("P", Action::ChartView, Msg::KeyChartView, FIND, 0),
     b("Z", Action::ToggleTree, Msg::KeyToggleTree, SHAPE, 0),
     b("A", Action::AddColumn, Msg::KeyAddColumn, SHAPE, 0),
     b(
@@ -2363,6 +2486,490 @@ pub const BINDINGS: &[Binding] = &[
         0,
     ),
     m(Mode::Tree, "?", Action::Help, Msg::KeyHelp, IN_TREE, 0),
+    // GA-2〜GA-5: ガントの画面。↑↓ で行、←→ で時間軸、+- で単位、t で今日、Z で畳む・開く、Enter で表のその行へ。
+    m(
+        Mode::Gantt,
+        "Enter",
+        Action::Run,
+        Msg::KeyGanttRun,
+        IN_GANTT,
+        1,
+    ),
+    m(
+        Mode::Gantt,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_GANTT,
+        2,
+    ),
+    m(
+        Mode::Gantt,
+        "C",
+        Action::GanttView,
+        Msg::KeyRelBack,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "q",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "j",
+        Action::Down,
+        Msg::KeyGanttNext,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Down",
+        Action::Down,
+        Msg::KeyGanttNext,
+        IN_GANTT,
+        0,
+    ),
+    m(Mode::Gantt, "k", Action::Up, Msg::KeyGanttPrev, IN_GANTT, 0),
+    m(
+        Mode::Gantt,
+        "Up",
+        Action::Up,
+        Msg::KeyGanttPrev,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "l",
+        Action::Right,
+        Msg::KeyGanttLater,
+        IN_GANTT,
+        3,
+    ),
+    m(
+        Mode::Gantt,
+        "Right",
+        Action::Right,
+        Msg::KeyGanttLater,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "h",
+        Action::Left,
+        Msg::KeyGanttEarlier,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Left",
+        Action::Left,
+        Msg::KeyGanttEarlier,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "+",
+        Action::ZoomIn,
+        Msg::KeyGanttZoomIn,
+        IN_GANTT,
+        4,
+    ),
+    m(
+        Mode::Gantt,
+        "-",
+        Action::ZoomOut,
+        Msg::KeyGanttZoomOut,
+        IN_GANTT,
+        5,
+    ),
+    m(
+        Mode::Gantt,
+        "t",
+        Action::Today,
+        Msg::KeyGanttToday,
+        IN_GANTT,
+        6,
+    ),
+    m(
+        Mode::Gantt,
+        "Z",
+        Action::ToggleTree,
+        Msg::KeyToggleTree,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Space",
+        Action::ToggleTree,
+        Msg::KeyToggleTree,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_GANTT,
+        0,
+    ),
+    m(Mode::Gantt, "?", Action::Help, Msg::KeyHelp, IN_GANTT, 0),
+    // KB-2〜KB-5: カンバンの画面。↑↓ で札、←→ でレーン、H L で札を動かす(状態の値を書き換える)、u で取り消し、
+    // Ctrl+s で表の保存の確かめ、Enter で表のその行へ。
+    m(
+        Mode::Kanban,
+        "Enter",
+        Action::Run,
+        Msg::KeyKanbanRun,
+        IN_KANBAN,
+        1,
+    ),
+    m(
+        Mode::Kanban,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_KANBAN,
+        2,
+    ),
+    m(
+        Mode::Kanban,
+        "B",
+        Action::KanbanView,
+        Msg::KeyRelBack,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "q",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "j",
+        Action::Down,
+        Msg::KeyKanbanNext,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "Down",
+        Action::Down,
+        Msg::KeyKanbanNext,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "k",
+        Action::Up,
+        Msg::KeyKanbanPrev,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "Up",
+        Action::Up,
+        Msg::KeyKanbanPrev,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "l",
+        Action::Right,
+        Msg::KeyKanbanRight,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "Right",
+        Action::Right,
+        Msg::KeyKanbanRight,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "h",
+        Action::Left,
+        Msg::KeyKanbanLeft,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "Left",
+        Action::Left,
+        Msg::KeyKanbanLeft,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "L",
+        Action::MoveCardRight,
+        Msg::KeyMoveCardRight,
+        IN_KANBAN,
+        3,
+    ),
+    m(
+        Mode::Kanban,
+        "H",
+        Action::MoveCardLeft,
+        Msg::KeyMoveCardLeft,
+        IN_KANBAN,
+        4,
+    ),
+    m(Mode::Kanban, "u", Action::Undo, Msg::KeyUndo, IN_KANBAN, 5),
+    m(
+        Mode::Kanban,
+        "Ctrl+z",
+        Action::Undo,
+        Msg::KeyUndo,
+        IN_KANBAN,
+        0,
+    ),
+    m(Mode::Kanban, "U", Action::Redo, Msg::KeyRedo, IN_KANBAN, 0),
+    m(
+        Mode::Kanban,
+        "Ctrl+r",
+        Action::Redo,
+        Msg::KeyRedo,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "Ctrl+s",
+        Action::Save,
+        Msg::KeySave,
+        IN_KANBAN,
+        6,
+    ),
+    m(
+        Mode::Kanban,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_KANBAN,
+        0,
+    ),
+    m(Mode::Kanban, "?", Action::Help, Msg::KeyHelp, IN_KANBAN, 0),
+    // CH-2〜CH-8: グラフの画面。↑↓ ←→ で選び、Tab で種類、x y a b で列と値、+ - で日付の単位、[ ] で印のグラフ、
+    // c で累積、% で割合、Enter でその値の行だけに絞って表へ。
+    m(
+        Mode::Chart,
+        "Enter",
+        Action::Run,
+        Msg::KeyChartRun,
+        IN_CHART,
+        1,
+    ),
+    m(
+        Mode::Chart,
+        "Esc",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_CHART,
+        2,
+    ),
+    m(
+        Mode::Chart,
+        "P",
+        Action::ChartView,
+        Msg::KeyRelBack,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "q",
+        Action::Close,
+        Msg::KeyRelBack,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "j",
+        Action::Down,
+        Msg::KeyChartNext,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "Down",
+        Action::Down,
+        Msg::KeyChartNext,
+        IN_CHART,
+        0,
+    ),
+    m(Mode::Chart, "k", Action::Up, Msg::KeyChartPrev, IN_CHART, 0),
+    m(
+        Mode::Chart,
+        "Up",
+        Action::Up,
+        Msg::KeyChartPrev,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "l",
+        Action::Right,
+        Msg::KeyChartRight,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "Right",
+        Action::Right,
+        Msg::KeyChartRight,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "h",
+        Action::Left,
+        Msg::KeyChartLeft,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "Left",
+        Action::Left,
+        Msg::KeyChartLeft,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "Tab",
+        Action::ChartKindNext,
+        Msg::KeyChartKindNext,
+        IN_CHART,
+        3,
+    ),
+    m(
+        Mode::Chart,
+        "Shift+Tab",
+        Action::ChartKindPrev,
+        Msg::KeyChartKindPrev,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "x",
+        Action::ChartX,
+        Msg::KeyChartX,
+        IN_CHART,
+        4,
+    ),
+    m(
+        Mode::Chart,
+        "y",
+        Action::ChartY,
+        Msg::KeyChartY,
+        IN_CHART,
+        5,
+    ),
+    m(
+        Mode::Chart,
+        "a",
+        Action::ChartAgg,
+        Msg::KeyChartAgg,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "b",
+        Action::ChartBy,
+        Msg::KeyChartBy,
+        IN_CHART,
+        6,
+    ),
+    m(
+        Mode::Chart,
+        "+",
+        Action::ChartFiner,
+        Msg::KeyChartZoomIn,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "-",
+        Action::ChartCoarser,
+        Msg::KeyChartZoomOut,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "[",
+        Action::ChartPrevSaved,
+        Msg::KeyChartPrevSaved,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "]",
+        Action::ChartNextSaved,
+        Msg::KeyChartNextSaved,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "c",
+        Action::ChartCumulative,
+        Msg::KeyChartCumulative,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "%",
+        Action::ChartPercent,
+        Msg::KeyChartPercent,
+        IN_CHART,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_CHART,
+        0,
+    ),
+    m(Mode::Chart, "?", Action::Help, Msg::KeyHelp, IN_CHART, 0),
 ];
 
 /// 全角の英数字・記号と `、`・`・` を、同じキーの位置の半角に直す(SR-17)。
@@ -2672,6 +3279,9 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::ScreenMenu, &[Action::Close]),
     (Mode::ColumnType, &[Action::Close]),
     (Mode::Tree, &[Action::Close]),
+    (Mode::Gantt, &[Action::Close]),
+    (Mode::Kanban, &[Action::Close]),
+    (Mode::Chart, &[Action::Close]),
 ];
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する

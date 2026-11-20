@@ -17,7 +17,7 @@ fn screen(a: &App) -> String {
 
 #[test]
 fn test_rel_9_narrow_list_scrolls_to_selection() {
-    // [REL-9][REL-12] 窓より一覧が長くても、選んだつながりの行は見え、その行のクリックで選べる。
+    // [utest -> req~relations.layout-adapt~1, req~relations.map-mouse-select-link~1, req~relations.map-mouse-open-note~1] 窓より一覧が長くても、選んだつながりの行は見え、その行のクリックで選べる。
     let tmp = workspace("rm_scroll");
     let mut a = boot_tasks(&tmp);
     a.resize(70, 12);

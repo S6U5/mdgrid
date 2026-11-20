@@ -108,6 +108,9 @@ DEMOS = [
     ("demo-view-tabs.gif", "ビューのタブを整える", "Arranging view tabs"),
     ("demo-look.gif", "見た目を選んで保存", "Picking and saving a look"),
     ("demo-tree.gif", "親子の字下げ", "Parent/child indent"),
+    ("demo-gantt.gif", "ガント", "Gantt"),
+    ("demo-kanban.gif", "カンバン", "Kanban"),
+    ("demo-chart.gif", "グラフ", "Chart"),
     ("demo-wbs.gif", "WBS", "WBS"),
     ("demo-themes.gif", "色のテーマ", "Color themes"),
 ]
@@ -526,7 +529,7 @@ HOME = {
         "scene_h": "空のフォルダから、台帳の形で始める。",
         "scene_p": "4つのスターターが入っています。印と雛形と見本を書き出すので、最初の1枚から表で見られます。ノートがもうあるなら、そのフォルダを渡すだけです。",
         "scenes": [
-            ("tasks", "タスク", "1件1ノートのタスク", "未完了・進行中・待ち・完了のタブと、期限、優先度、タグ。終わったものの status を done にするのは、セルで Enter を押して選ぶだけ。", "starter-tasks"),
+            ("tasks", "タスク", "1件1ノートのタスク", "未完了・期限切れ・進行中・待ち・完了のタブと、期限、優先度、タグ。終わったものの status を done にするのは、セルで Enter を押して選ぶだけ。", "starter-tasks"),
             ("reading", "読書", "本・記事・映画・講演の記録", "読みたい・読んでいる・読んだのタブと、種類・著者・評価の列。rating を付け忘れたノートは、空のセルが並ぶのですぐ見つかります。", "starter-reading"),
             ("people", "人と会議", "人の表と、会議の表", "会議のノートの出席者が、人のノートへのリンクになります。R を押すと、2つの表とつながりが図で見えます。", "starter-people"),
             ("bookmarks", "ブックマーク", "フォルダで眺めるブックマーク", "folder の列からフォルダの木を組みます。T で木が開き、右に選んだフォルダの行。Enter で URL を開けます。", "tree"),

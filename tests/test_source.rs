@@ -1,7 +1,7 @@
 //! 読み込み口(Source)の受け入れテスト(タスク 18)。
 //! SC-14・BV-1・CV-1・WB-3・WB-4・WB-5・WB-12・CE-8・CE-16・CE-18。
-//! 仕様: specs/scope/spec.md、specs/base-view/spec.md、specs/write-back/spec.md、
-//! specs/cell-edit/spec.md、specs/cell-view/spec.md。形: docs/design.md の src/source.rs。
+//! 仕様: specs/_history/decidespec/scope/spec.md、specs/_history/decidespec/base-view/spec.md、specs/_history/decidespec/write-back/spec.md、
+//! specs/_history/decidespec/cell-edit/spec.md、specs/_history/decidespec/cell-view/spec.md。形: docs/design.md の src/source.rs。
 //!
 //! 核がこの口だけで使えること(SC-14)を確かめるため、Markdown::open のあとは
 //! すべて `&dyn Source` / `&mut dyn Source` 越しに呼ぶ。
@@ -125,8 +125,8 @@ fn cell(src: &dyn Source, label: &str, col: &str) -> Cell {
 
 #[test]
 fn test_bv_1_folder_rows_labels_and_columns() {
-    // [BV-1] フォルダだけを渡す → ノートを行、フロントマターのキーの和を列にした既定の表。
-    // [SC-14] Markdown::open のあとは &dyn Source だけで使う。
+    // [utest -> req~base-view.source-folder~1] フォルダだけを渡す → ノートを行、フロントマターのキーの和を列にした既定の表。
+    // [utest -> req~scope.source-adapters-markdown-first~1] Markdown::open のあとは &dyn Source だけで使う。
     let dir = TempDir::new("source-bv1");
     dir.write("a.md", b"---\ntitle: A\nstatus: draft\n---\nbody\n");
     dir.write("sub/b.md", b"---\nstatus: done\npriority: 2\n---\nbody\n");
@@ -161,7 +161,7 @@ fn test_bv_1_folder_rows_labels_and_columns() {
 
 #[test]
 fn test_bv_1_rows_limited_to_given_folder_labels_from_root() {
-    // [BV-1] 根が渡したフォルダより上でも、行は渡したフォルダの下のノートだけ。
+    // [utest -> req~base-view.source-folder~1] 根が渡したフォルダより上でも、行は渡したフォルダの下のノートだけ。
     // label は根(.obsidian/ を持つ上のフォルダ)からの相対パス。
     let dir = TempDir::new("source-bv1-root");
     std::fs::create_dir_all(dir.path().join(".obsidian")).unwrap();
@@ -183,8 +183,8 @@ fn test_bv_1_rows_limited_to_given_folder_labels_from_root() {
 
 #[test]
 fn test_cv_1_get_distinguishes_value_missing_and_null() {
-    // [CV-1] null・空の文字列・キーが無い、を区別できる。
-    // [WB-3] キーが無いセルは lock なし(末尾に1行足せる)。
+    // [utest -> req~cell-view.null-empty-missing~1] null・空の文字列・キーが無い、を区別できる。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1] キーが無いセルは lock なし(末尾に1行足せる)。
     let dir = TempDir::new("source-cv1");
     dir.write("a.md", b"---\ntitle: A\nstatus: draft\n---\n");
     dir.write("b.md", b"---\ntitle: B\nstatus: null\n---\n");
@@ -214,7 +214,7 @@ fn test_cv_1_get_distinguishes_value_missing_and_null() {
 
 #[test]
 fn test_wb_3_no_frontmatter_note_is_writable() {
-    // [WB-3] フロントマターの無いノートは先頭にフロントマターを足して書ける → そのセルは lock なし。
+    // [utest -> req~write-back.add-frontmatter-at-head~1] フロントマターの無いノートは先頭にフロントマターを足して書ける → そのセルは lock なし。
     // file.* の列は CE-8 で lock あり、理由つき。
     let dir = TempDir::new("source-wb3");
     dir.copy_fixture("plain.md");
@@ -238,7 +238,7 @@ fn test_wb_3_no_frontmatter_note_is_writable() {
 
 #[test]
 fn test_wb_5_duplicate_key_note_is_locked() {
-    // [WB-5] 同じキーが2回あるノートは読むだけ、理由つき。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1] 同じキーが2回あるノートは読むだけ、理由つき。
     let dir = TempDir::new("source-wb5");
     dir.copy_fixture("duplicate_key.md");
 
@@ -253,7 +253,7 @@ fn test_wb_5_duplicate_key_note_is_locked() {
 
 #[test]
 fn test_ce_8_block_scalar_and_nested_are_locked() {
-    // [CE-8] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
+    // [utest -> req~cell-edit.read-only-forms~1] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
     let dir = TempDir::new("source-ce8");
     dir.copy_fixture("block_scalar.md");
     dir.copy_fixture("nested_map.md");
@@ -281,8 +281,8 @@ fn test_ce_8_block_scalar_and_nested_are_locked() {
 
 #[test]
 fn test_ce_16_list_values_are_editable_unless_ce_8_form() {
-    // [CE-16] リストの値の列(tags)は、書ける形なら lock なし。フローのリストもブロックのリストも。
-    // [CE-8] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] リストの値の列(tags)は、書ける形なら lock なし。フローのリストもブロックのリストも。
+    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
     let dir = TempDir::new("source-ce16");
     dir.copy_fixture("flow_list.md");
     dir.copy_fixture("block_list.md");
@@ -319,7 +319,7 @@ fn test_ce_16_list_values_are_editable_unless_ce_8_form() {
 
 #[test]
 fn test_ce_18_list_save_keeps_form_through_source() {
-    // [CE-18] Source 越しの保存: フローは1行のまま、ブロックは同じ字下げの行が増え、ほかのバイトは同じ。
+    // [utest -> req~cell-edit.list-layout~1] Source 越しの保存: フローは1行のまま、ブロックは同じ字下げの行が増え、ほかのバイトは同じ。
     let dir = TempDir::new("source-ce18");
     let flow = dir.copy_fixture("flow_list.md");
     let block = dir.copy_fixture("block_list.md");
@@ -362,7 +362,7 @@ fn test_ce_18_list_save_keeps_form_through_source() {
 
 #[test]
 fn test_preview_returns_before_and_after_without_touching_file() {
-    // [SC-14] 保存の前の差分: (今のバイト, 編集後のバイト)。ファイルは変わらない。
+    // [utest -> req~scope.source-adapters-core~1] 保存の前の差分: (今のバイト, 編集後のバイト)。ファイルは変わらない。
     let dir = TempDir::new("source-preview");
     let p = dir.copy_fixture("plain.md");
     let original = std::fs::read(&p).unwrap();
@@ -387,7 +387,7 @@ fn test_preview_returns_before_and_after_without_touching_file() {
 
 #[test]
 fn test_wb_12_save_then_save_again_with_returned_stamp() {
-    // [WB-12] 保存で返った基準を使えば、同じノートの別のキーを続けて保存できる。
+    // [utest -> req~write-back.new-baseline-after-write~1] 保存で返った基準を使えば、同じノートの別のキーを続けて保存できる。
     let dir = TempDir::new("source-wb12");
     let p = dir.copy_fixture("plain.md");
 
@@ -414,7 +414,7 @@ fn test_wb_12_save_then_save_again_with_returned_stamp() {
 
 #[test]
 fn test_wb_4_external_change_after_stamp_stops_save() {
-    // [WB-4] 基準を取ったあとに外でファイルが変わる → SaveError::Changed、ファイルは外の内容のまま。
+    // [utest -> req~write-back.conflict-stop~1] 基準を取ったあとに外でファイルが変わる → SaveError::Changed、ファイルは外の内容のまま。
     let dir = TempDir::new("source-wb4");
     let p = dir.copy_fixture("plain.md");
 
@@ -442,7 +442,7 @@ fn test_wb_4_external_change_after_stamp_stops_save() {
 
 #[test]
 fn test_wb_4_reload_then_save_over_external_change() {
-    // [WB-4] 外の変更の上に書く: reload のあとの stamp は今のファイルの内容で、その基準なら保存できる。
+    // [utest -> req~write-back.conflict-stop-overwrite-choice~1] 外の変更の上に書く: reload のあとの stamp は今のファイルの内容で、その基準なら保存できる。
     // ためたキーの値だけが書かれ、外の変更は残る。
     let dir = TempDir::new("source-wb4-reload");
     let p = dir.copy_fixture("plain.md");
@@ -478,7 +478,7 @@ fn test_wb_4_reload_then_save_over_external_change() {
 
 #[test]
 fn test_changed_reports_externally_edited_row_and_rereads() {
-    // [SC-14] 外での変化(BV-9 のポーリング): 直したノートの RowId が返り、get が新しい値になる。
+    // [utest -> req~scope.source-adapters-core~1] 外での変化(BV-9 のポーリング): 直したノートの RowId が返り、get が新しい値になる。
     let dir = TempDir::new("source-changed");
     let p = dir.copy_fixture("plain.md");
     dir.copy_fixture("quoted.md");

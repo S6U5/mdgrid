@@ -10,7 +10,7 @@ Four starters are built in, and each one is a sample of a way to use mdgrid. The
 
 ![The tasks starter](images/starter-tasks.svg)
 
-Tasks. One note per task, with status tabs (Open, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you.
+Tasks. One note per task, with status tabs (Open, Overdue, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you. The name of a new note starts with today's date, like `20261118_`, so you can make a task with the same title on another day; the table hides that date and shows only the title. Setting the status to `done` fills the done date (`done_at`) with today. Next to the due date, the "Time left" column says how near it is: "in 3 days", "5 days ago". With its `start` and `due` columns, `C` shows it as a Gantt too.
 
 ![The tree screen](images/tree.svg)
 
@@ -62,9 +62,17 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 
 ![Create a note](images/new-note.svg)
 
-`a` (or "+ New" at the right end of the view bar) opens a form with the name and one field per column and writes one note. The folder, the file name and the body template come from the workspace marker.
+`a` (or "+ New" at the right end of the view bar) opens a form with the name and one field per column and writes one note. The folder, the file name and the body template come from the workspace marker. It can also start the file name with today's date or a short id (`{uid}`), and put a UUID (`{uuid}`) in the frontmatter. Keep several body templates in a folder and the form lets you pick one.
 
 [Create a note](tasks.md#create-a-note)
+
+## Delete a note and bring it back
+
+![Restore from the trash](images/trash-restore.svg)
+
+Press `u` right after creating a note by mistake and it moves to the trash; `Ctrl+R` brings it back. "Delete the note" does the same for a note that was already there. The file is never erased, so "Restore from the trash" still returns it to its place after you close mdgrid.
+
+[Delete a note and bring it back](tasks.md#delete-a-note-and-bring-it-back)
 
 ## Shape a view and save it
 
@@ -73,6 +81,30 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 `o` sets the columns, filters, sorting, grouping and display; save it under a name and it becomes a tab. Choose "Set as default view" and the folder opens on that view next time.
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it)
+
+## See the schedule as a gantt
+
+![The gantt screen](images/gantt.svg)
+
+`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
+
+[Gantt in the list of views](views.md#gantt), [Key bindings](../../keys.md)
+
+## Move tasks across a kanban board
+
+![The kanban screen](images/kanban.svg)
+
+`B` shows every status at once: one lane per status, the tasks as cards. Press `L` on a todo card and it moves to doing, with its status rewritten as an unsaved change; `u` takes it back, and `Ctrl+s` shows the diff before anything is written. The lanes follow the allowed values of the status column, so an empty status still has a lane to move into.
+
+[Kanban in the list of views](views.md#kanban), [Key bindings](../../keys.md)
+
+## See the numbers in a chart
+
+![The chart screen](images/chart.svg)
+
+`P` turns the rows of the current view into a chart: how many tasks per status, how many due dates per month, how much estimate per owner. `Tab` switches between bar, stacked bar, line, scatter and heatmap, and `x`, `y` and `b` choose the columns. `Enter` on a bar takes you back to the table with only the rows of that value, so you can go from the numbers straight to fixing the rows.
+
+[Chart in the list of views](views.md#chart), [Key bindings](../../keys.md)
 
 ## Open a .base file
 

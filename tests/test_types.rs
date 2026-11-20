@@ -1,6 +1,6 @@
 //! 列の型・候補・ファイルの属性の受け入れテスト(タスク 5)。
 //! CE-2・CE-3・CE-5・CV-2・BV-12。
-//! 仕様: specs/cell-edit/spec.md、specs/base-view/spec.md、specs/cell-view/spec.md。
+//! 仕様: specs/_history/decidespec/cell-edit/spec.md、specs/_history/decidespec/base-view/spec.md、specs/_history/decidespec/cell-view/spec.md。
 //! 形: docs/design.md の「核の公開のインターフェース(残り: タスク 5・6・8)」の
 //! src/types.rs と src/source.rs(kind・candidates・file)。
 
@@ -99,7 +99,7 @@ fn infer_of(values: &[Value]) -> Kind {
 
 #[test]
 fn test_ce_2_read_types_json_maps_names() {
-    // [CE-2] types.json の型の名前を Kind に写す。multitext・tags・aliases は List、知らない名前は Text
+    // [utest -> req~cell-edit.column-type-order~1] types.json の型の名前を Kind に写す。multitext・tags・aliases は List、知らない名前は Text
     let json = br#"{"types": {
         "title": "text", "count": "number", "done": "checkbox",
         "due": "date", "at": "datetime",
@@ -121,7 +121,7 @@ fn test_ce_2_read_types_json_maps_names() {
 
 #[test]
 fn test_ce_2_read_types_json_broken_is_empty() {
-    // [CE-2] 読めない・壊れている types.json は空(起動は止めない)
+    // [utest -> req~cell-edit.column-type-order~1] 読めない・壊れている types.json は空(起動は止めない)
     assert!(read_types_json(b"{\"types\": {\"due\": \"date\"").is_empty());
     assert!(read_types_json(b"not json at all").is_empty());
     assert!(read_types_json(b"").is_empty());
@@ -132,7 +132,7 @@ fn test_ce_2_read_types_json_broken_is_empty() {
 
 #[test]
 fn test_ce_2_infer_skips_empty_values() {
-    // [CE-2] Null・空の文字列・空のリストは飛ばし、最初の空でない値で決める
+    // [utest -> req~cell-edit.column-type-order~1] Null・空の文字列・空のリストは飛ばし、最初の空でない値で決める
     let vals = vec![
         Value::Null,
         st(""),
@@ -145,46 +145,46 @@ fn test_ce_2_infer_skips_empty_values() {
 
 #[test]
 fn test_ce_2_infer_nothing_is_text() {
-    // [CE-2] 空でない値が何も無ければ Text
+    // [utest -> req~cell-edit.column-type-order~1] 空でない値が何も無ければ Text
     assert_eq!(infer_of(&[]), Kind::Text);
     assert_eq!(infer_of(&[Value::Null, st("")]), Kind::Text);
 }
 
 #[test]
 fn test_ce_2_infer_date() {
-    // [CE-2] YYYY-MM-DD の文字列 → Date
+    // [utest -> req~cell-edit.column-type-mixed-datetime~1] YYYY-MM-DD の文字列 → Date
     assert_eq!(infer_of(&[st("2026-10-01")]), Kind::Date);
 }
 
 #[test]
 fn test_ce_2_infer_datetime() {
-    // [CE-2] YYYY-MM-DDTHH:MM(秒は任意)→ DateTime
+    // [utest -> req~cell-edit.column-type-mixed-datetime~1] YYYY-MM-DDTHH:MM(秒は任意)→ DateTime
     assert_eq!(infer_of(&[st("2026-10-01T09:30")]), Kind::DateTime);
     assert_eq!(infer_of(&[st("2026-10-01T09:30:15")]), Kind::DateTime);
 }
 
 #[test]
 fn test_ce_2_infer_number() {
-    // [CE-2] Int・Float → Number
+    // [utest -> req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1] Int・Float → Number
     assert_eq!(infer_of(&[Value::Int(3)]), Kind::Number);
     assert_eq!(infer_of(&[Value::Float(1.5)]), Kind::Number);
 }
 
 #[test]
 fn test_ce_2_infer_checkbox() {
-    // [CE-2] Bool → Checkbox
+    // [utest -> req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1] Bool → Checkbox
     assert_eq!(infer_of(&[Value::Bool(false)]), Kind::Checkbox);
 }
 
 #[test]
 fn test_ce_2_infer_list() {
-    // [CE-2] 空でないリスト → List
+    // [utest -> req~cell-edit.column-type-order~1] 空でないリスト → List
     assert_eq!(infer_of(&[Value::List(vec![st("a")])]), Kind::List);
 }
 
 #[test]
 fn test_ce_2_infer_text() {
-    // [CE-2] ほかの文字列 → Text。最初の空でない値だけで決める(後ろの日付は見ない)
+    // [utest -> req~cell-edit.column-type-order~1] ほかの文字列 → Text。最初の空でない値だけで決める(後ろの日付は見ない)
     assert_eq!(infer_of(&[st("someday")]), Kind::Text);
     assert_eq!(infer_of(&[st("someday"), st("2026-10-01")]), Kind::Text);
 }
@@ -193,7 +193,7 @@ fn test_ce_2_infer_text() {
 
 #[test]
 fn test_cv_2_fits_date_column() {
-    // [CV-2] date の列: 実在する日付は合い、someday や実在しない日付は合わない
+    // [utest -> req~cell-view.type-mismatch~1] date の列: 実在する日付は合い、someday や実在しない日付は合わない
     assert!(fits(Kind::Date, &st("2026-10-01")));
     assert!(!fits(Kind::Date, &st("someday")));
     assert!(!fits(Kind::Date, &st("2026-02-30")));
@@ -202,7 +202,7 @@ fn test_cv_2_fits_date_column() {
 
 #[test]
 fn test_cv_2_fits_null_and_empty_always() {
-    // [CV-2] Null と空の文字列はどの型にも合う
+    // [utest -> req~cell-view.type-mismatch~1] Null と空の文字列はどの型にも合う
     for k in [
         Kind::Text,
         Kind::Number,
@@ -218,7 +218,7 @@ fn test_cv_2_fits_null_and_empty_always() {
 
 #[test]
 fn test_cv_2_fits_other_kinds() {
-    // [CV-2] 数・真偽の列に合う値と合わない値
+    // [utest -> req~cell-view.type-mismatch~1] 数・真偽の列に合う値と合わない値
     assert!(fits(Kind::Number, &Value::Int(1)));
     assert!(fits(Kind::Number, &Value::Float(2.5)));
     assert!(!fits(Kind::Number, &st("abc")));
@@ -230,7 +230,7 @@ fn test_cv_2_fits_other_kinds() {
 
 #[test]
 fn test_bv_12_merge_conflict() {
-    // [BV-12] 同じキーで型が食い違えば Conflict。一致・片方だけなら One
+    // [utest -> req~base-view.types-conflict~1] 同じキーで型が食い違えば Conflict。一致・片方だけなら One
     let a = kinds(&[
         ("due", Kind::Date),
         ("count", Kind::Number),
@@ -249,7 +249,7 @@ fn test_bv_12_merge_conflict() {
 
 #[test]
 fn test_bv_12_merge_single_root() {
-    // [BV-12] 根が1つなら全部 One
+    // [utest -> req~base-view.types-conflict~1] 根が1つなら全部 One
     let m = merge(&[kinds(&[("due", Kind::Date)])]);
     assert!(matches!(m.get("due"), Some(Declared::One(Kind::Date))));
 }
@@ -258,7 +258,7 @@ fn test_bv_12_merge_single_root() {
 
 #[test]
 fn test_ce_5_parse_and_format_date_roundtrip() {
-    // [CE-5] 日付は 1970-01-01 からの日数。読み書きが往復する
+    // [utest -> req~cell-edit.date-input-type-replaces~1] 日付は 1970-01-01 からの日数。読み書きが往復する
     assert_eq!(parse_date("1970-01-01"), Some(0));
     assert_eq!(parse_date("1970-01-02"), Some(1));
     assert_eq!(parse_date("2026-10-01"), Some(20727));
@@ -278,7 +278,7 @@ fn test_ce_5_parse_and_format_date_roundtrip() {
 
 #[test]
 fn test_ce_5_parse_date_rejects_nonexistent() {
-    // [CE-5] 実在しない日付は None
+    // [utest -> req~cell-edit.date-input-invalid~1] 実在しない日付は None
     assert_eq!(parse_date("2026-02-30"), None);
     assert_eq!(parse_date("2026-02-29"), None);
     assert_eq!(parse_date("2100-02-29"), None);
@@ -291,7 +291,7 @@ fn test_ce_5_parse_date_rejects_nonexistent() {
 
 #[test]
 fn test_ce_2_kind_follows_types_json() {
-    // [CE-2] types.json があればそれに従う(値が someday でも date の列)
+    // [utest -> req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1] types.json があればそれに従う(値が someday でも date の列)
     let t = TempDir::new("types-json");
     t.write(".obsidian/types.json", br#"{"types": {"due": "date"}}"#);
     t.write("a.md", b"---\ndue: someday\ncount: 3\n---\n");
@@ -305,7 +305,7 @@ fn test_ce_2_kind_follows_types_json() {
 
 #[test]
 fn test_ce_2_kind_infers_without_types_json() {
-    // [CE-2] types.json が無ければ読んだ全行の値から推定する
+    // [utest -> req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1] types.json が無ければ読んだ全行の値から推定する
     let t = TempDir::new("types-infer");
     t.mkdir(".obsidian");
     t.write("a.md", b"---\ndue:\ndone: true\nn: 1.5\n---\n");
@@ -320,7 +320,7 @@ fn test_ce_2_kind_infers_without_types_json() {
 
 #[test]
 fn test_bv_12_kind_conflict_between_roots() {
-    // [BV-12] 2つの根で types.json の型が食い違えば Text で lock あり
+    // [utest -> req~base-view.types-conflict~1] 2つの根で types.json の型が食い違えば Text で lock あり
     let t = TempDir::new("types-conflict");
     let a = t.mkdir("A");
     let b = t.mkdir("B");
@@ -341,7 +341,7 @@ fn test_bv_12_kind_conflict_between_roots() {
     let n = md.kind("n");
     assert_eq!(n.kind, Kind::Number);
     assert!(n.lock.is_none());
-    // [BV-12] 食い違う列のセルは、どちらの根の行でも Cell.lock が Some(読むだけ)。食い違わない列は None。
+    // [utest -> req~base-view.types-conflict~1] 食い違う列のセルは、どちらの根の行でも Cell.lock が Some(読むだけ)。食い違わない列は None。
     let rows = md.rows();
     assert_eq!(rows.len(), 2);
     for r in &rows {
@@ -362,7 +362,7 @@ fn sorted_strs(vals: &[Value]) -> Vec<String> {
 
 #[test]
 fn test_ce_3_candidates_distinct_without_null_and_empty() {
-    // [CE-3] status が todo・doing・done だけなら3つ(Null と空は除く)
+    // [utest -> req~cell-edit.value-list-open~1, req~cell-edit.value-list-none~1] status が todo・doing・done だけなら3つ(Null と空は除く)
     let t = TempDir::new("cand");
     t.mkdir(".obsidian");
     t.write("a.md", b"---\nstatus: todo\n---\n");
@@ -382,7 +382,7 @@ fn test_ce_3_candidates_distinct_without_null_and_empty() {
 
 #[test]
 fn test_ce_3_candidates_over_max_is_none() {
-    // [CE-3] 異なる値が上限を超えたら None。ちょうど上限なら Some
+    // [utest -> req~cell-edit.value-list-open~1] 異なる値が上限を超えたら None。ちょうど上限なら Some
     let t = TempDir::new("cand-max");
     t.mkdir(".obsidian");
     for i in 0..5 {
@@ -398,7 +398,7 @@ fn test_ce_3_candidates_over_max_is_none() {
 
 #[test]
 fn test_ce_3_candidates_include_notes_outside_given_folder() {
-    // [CE-3] 渡したフォルダの外(根の下)のノートの値も候補に入る
+    // [utest -> req~cell-edit.value-list-open~1] 渡したフォルダの外(根の下)のノートの値も候補に入る
     let t = TempDir::new("cand-root");
     t.mkdir("vault/.obsidian");
     let sub = t.mkdir("vault/sub");
@@ -417,7 +417,7 @@ fn test_ce_3_candidates_include_notes_outside_given_folder() {
 
 #[test]
 fn test_bv_6_file_info_fields_and_tags() {
-    // [BV-6] file.* の属性(name・basename・ext・path・folder・size)と tags
+    // [utest -> req~base-view.expr-eval~1] file.* の属性(name・basename・ext・path・folder・size)と tags
     let t = TempDir::new("fileinfo");
     t.mkdir(".obsidian");
     let body = b"---\ntags: [proj, area/work]\n---\nText with #idea and #a/b here.\n";

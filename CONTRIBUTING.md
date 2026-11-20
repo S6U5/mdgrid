@@ -16,16 +16,16 @@ Security problems: see [SECURITY.md](SECURITY.md) instead of opening a public is
 
 ## Proposing a feature
 
-Open an issue with the feature template and describe the problem first, then the change you have in mind. mdgrid tries to stay a table of frontmatter (see [specs/scope](specs/scope/spec.md)), so ideas that turn it into a different kind of screen may be declined, with the reason.
+Open an issue with the feature template and describe the problem first, then the change you have in mind. mdgrid tries to stay a table of frontmatter (see [specs/requirements/scope.md](specs/requirements/scope.md)), so ideas that turn it into a different kind of screen may be declined, with the reason.
 
 ## How changes are made
 
-The specification is the source of truth: [specs/](specs/README.md), one `spec.md` per capability, with requirement IDs such as `SR-24`. The specs and the change records are written in Japanese; you do not need to read them to send a fix, and a maintainer will help map your change to the requirements.
+The requirements are the source of truth: [specs/requirements/](specs/requirements/README.md), one file per capability and one line per requirement, named like `req~screen.action-menu~1`. They are written in Japanese; you do not need to read them to send a fix, and a maintainer will help map your change to the requirements.
 
-- A change in behavior starts as a proposal in `specs/_proposals/`, which is accepted or rejected in `specs/_decisions/`.
-- Each code change has a change record in `specs/_changes/` that lists its tasks, the files it touches, and how it was verified.
-- Tests name the requirement they check, as `test_sr_24_…` or `[SR-24]` in the test body.
-- Tests that guard requirements decided by a person are locked (`specs/test-locks.json`). Do not edit a locked test file; add a new test file instead.
+- A change in behavior changes the requirement line in the same pull request, and a person reviews it.
+- Tests name the requirement they check in a comment, as `// [utest -> req~screen.action-menu~1]`.
+- Run `python3 tools/trace_gate.py check` before you finish; it fails when a mark points to an unknown requirement or a critical (P0) requirement has no real test.
+- The specs, change records and decisions written before 2026-11-17 are kept unchanged in `specs/_history/decidespec/`. Old IDs such as `SR-24` map to the new names in [specs/requirements/renames.md](specs/requirements/renames.md).
 
 Design notes (how, not what) are in [docs/design.md](docs/design.md).
 

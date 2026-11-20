@@ -41,6 +41,17 @@ crates.io から。 Rust 1.90 以上で:
 cargo install mdgrid --locked
 ```
 
+これはソースからビルドするので数分かかります。[cargo-binstall](https://github.com/cargo-bins/cargo-binstall) があれば、`cargo binstall mdgrid` でリリースのビルド済みのバイナリが入ります。
+
+Nix で。 入れずにその場で動かすか、プロファイルに入れます。
+
+```sh
+nix run github:S6U5/mdgrid/v0.4.0 -- ~/notes/Tasks
+nix profile install github:S6U5/mdgrid/v0.4.0
+```
+
+タグを付けると、リリースした版が入ります。付けない `github:S6U5/mdgrid` は、main ブランチの開発中の版です。
+
 ソースから。
 
 ```sh
@@ -246,7 +257,7 @@ alias standup='mdgrid ~/notes/タスク.base --view 担当ごと'
 
 ## 作り方
 
-仕様の正本は [specs/](specs/README.md) にあり、変更はどれも提案と決定の記録を通ります。人が決めた要件を守る試験には錠が掛かっていて、黙って弱めることはできません。
+要求の正本は [specs/requirements/](specs/requirements/README.md) にあり、1行に1つの要求を書いています。テストはどれも、確かめる要求をコメントで名指しし、小さな検査器が、大事な要求に本物のテストがあるか、テストを弱めた変更が人の目に回るかを確かめます。
 
 ## ライセンス
 

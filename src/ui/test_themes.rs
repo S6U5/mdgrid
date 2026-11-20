@@ -1,5 +1,5 @@
 //! 画面のテーマ(SR-26・SR-27)の受け入れの試験。
-//! 記録: specs/_changes/2026-10-06-themes.md(設計の節の公開のインターフェースと色の表)。
+//! 記録: specs/_history/decidespec/_changes/2026-10-06-themes.md(設計の節の公開のインターフェースと色の表)。
 //!
 //! 実装より先に、実装を見ずに書いた。テーマは `mdgrid::theme::{Theme, Palette, to_indexed}`、
 //! 設定は `mdgrid::config::parse` の最上位の `theme`(`Config.theme`)。
@@ -109,7 +109,7 @@ fn reversed_on(buf: &Buffer, y: u16) -> Vec<u16> {
 
 #[test]
 fn test_sr_26_nord_paints_background_selection_and_band() {
-    // [SR-26] theme = "nord" → 左上の背景が #2e3440、選んでいるセルの背景が #5e81ac(反転は外れる)、
+    // [utest -> req~screen.themes-paint~1] theme = "nord" → 左上の背景が #2e3440、選んでいるセルの背景が #5e81ac(反転は外れる)、
     // 下の帯の背景が #3b4252。
     let tmp = vault("thnord");
     let base = buffer(&plain(&tmp, ColorMode::Rgb));
@@ -171,7 +171,7 @@ fn test_sr_26_nord_paints_background_selection_and_band() {
 
 #[test]
 fn test_sr_26_every_theme_keeps_the_text() {
-    // [SR-26] 7つのどのテーマでも、画面の文字はテーマなしと1字も違わない(色だけを変える)。
+    // [utest -> req~screen.themes-color-only~1] 7つのどのテーマでも、画面の文字はテーマなしと1字も違わない(色だけを変える)。
     let tmp = vault("thtext");
     // 2026-10-12-half-row-inverse: 画面の地の色が分かる(テーマが画面の地を塗る)ときだけ、余白の端数を半分の
     // 塗りの字(`▀`・`▄`)の行で描き、分からないテーマなしでは同じ行の数の空き行にする(色の飾りの違い)ので、
@@ -200,7 +200,7 @@ fn test_sr_26_every_theme_keeps_the_text() {
 
 #[test]
 fn test_sr_26_every_theme_but_default_paints() {
-    // [SR-26] default 以外の6つは、左上の地をテーマの bg で塗る。
+    // [utest -> req~screen.themes-paint~1] default 以外の6つは、左上の地をテーマの bg で塗る。
     let tmp = vault("thall");
     for t in Theme::ALL {
         let a = themed(
@@ -218,7 +218,7 @@ fn test_sr_26_every_theme_but_default_paints() {
 
 #[test]
 fn test_sr_26_palettes_follow_the_mockups() {
-    // [SR-26] 色の表(見本の試作の値)。順: bg fg header sel_bg sel_fg band_bg band_fg colhead strong
+    // [utest -> req~screen.themes-choose~1] 色の表(見本の試作の値)。順: bg fg header sel_bg sel_fg band_bg band_fg colhead strong
     // zebra_bg zebra_fg mark。
     let table: [(&str, [u32; 12]); 6] = [
         (
@@ -282,7 +282,7 @@ fn test_sr_26_palettes_follow_the_mockups() {
 
 #[test]
 fn test_sr_26_zebra_uses_theme_colors() {
-    // [SR-26][SR-20] 一行おきの色(zebra = true)は、テーマの zebra_bg・zebra_fg で塗る。
+    // [utest -> req~screen.themes-paint~1, req~screen.display-options-config~1] 一行おきの色(zebra = true)は、テーマの zebra_bg・zebra_fg で塗る。
     let tmp = vault("thzebra");
     let a = themed(
         &tmp,
@@ -313,7 +313,7 @@ fn test_sr_26_zebra_uses_theme_colors() {
 
 #[test]
 fn test_sr_27_default_is_unchanged() {
-    // [SR-27] 設定なしと theme = "default" の画面は、テーマの機能が無いときと各セルまで同じ。
+    // [utest -> req~screen.theme-names-list~1, req~screen.theme-names-no-color~1] 設定なしと theme = "default" の画面は、テーマの機能が無いときと各セルまで同じ。
     let tmp = vault("thdefault");
     for color in [ColorMode::Rgb, ColorMode::Indexed, ColorMode::None] {
         let want = buffer(&plain(&tmp, color));
@@ -341,7 +341,7 @@ fn test_sr_27_default_is_unchanged() {
 
 #[test]
 fn test_sr_27_default_zebra_is_unchanged() {
-    // [SR-27][SR-20] 既定のテーマの一行おきの色は今と同じ。
+    // [utest -> req~screen.theme-names-list~1, req~screen.display-options-config~1, req~screen.display-options-zebra-no-color~1] 既定のテーマの一行おきの色は今と同じ。
     let tmp = vault("thdefzebra");
     let mut a = app_of(&tmp, ColorMode::Rgb);
     let c = cfg("[look]\nmode = \"classic\"\ntheme = \"default\"\n\n[display]\nzebra = true\n");
@@ -357,7 +357,7 @@ fn test_sr_27_default_zebra_is_unchanged() {
 
 #[test]
 fn test_sr_27_theme_names() {
-    // [SR-27][SR-37] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
+    // [utest -> req~screen.theme-names-list~1, req~screen.theme-names-unknown~1] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
     let names = [
         ("default", Theme::Default),
         ("nord", Theme::Nord),
@@ -393,7 +393,7 @@ fn test_sr_27_theme_names() {
 
 #[test]
 fn test_sr_27_unknown_theme_warns_and_falls_back() {
-    // [SR-27][CLI-3] look.theme = "neon" → 警告に `look.theme` と出て、既定の見た目で起動。
+    // [utest -> req~screen.theme-names-unknown~1, req~cli.config-file-warn-only~1] look.theme = "neon" → 警告に `look.theme` と出て、既定の見た目で起動。
     let (c, warnings) =
         config::parse("[look]\ntheme = \"neon\"\n").expect("知らない名前でも読める");
     assert_eq!(c.resolved().theme.pick(None), Theme::Default);
@@ -424,7 +424,7 @@ fn test_sr_27_unknown_theme_warns_and_falls_back() {
 
 #[test]
 fn test_sr_27_no_color_ignores_theme() {
-    // [SR-27][SR-10] 色を使わない表示(NO_COLOR と同じ ColorMode::None)では、theme = "dracula" でも色の指定が無い。
+    // [utest -> req~screen.theme-names-no-color~1, req~cell-view.no-color-env~1] 色を使わない表示(NO_COLOR と同じ ColorMode::None)では、theme = "dracula" でも色の指定が無い。
     let tmp = vault("thnocolor");
     let a = themed(&tmp, ColorMode::None, "[look]\ntheme = \"dracula\"\n");
     let buf = buffer(&a);
@@ -439,7 +439,7 @@ fn test_sr_27_no_color_ignores_theme() {
 
 #[test]
 fn test_sr_27_color_false_ignores_theme() {
-    // [SR-27] 設定の color = false でも、テーマを書いても色の指定が無い。
+    // [utest -> req~screen.theme-names-no-color~1] 設定の color = false でも、テーマを書いても色の指定が無い。
     let tmp = vault("thcolorfalse");
     for color in [ColorMode::Rgb, ColorMode::Indexed] {
         let a = themed(
@@ -459,7 +459,7 @@ fn test_sr_27_color_false_ignores_theme() {
 
 #[test]
 fn test_sr_27_indexed_uses_256_colors() {
-    // [SR-27][SR-15] トゥルーカラーに対応しない端末(ColorMode::Indexed)では、近い 256 色の番号で塗る。
+    // [utest -> req~screen.theme-names-256~1, req~cell-view.not-color-only~1] トゥルーカラーに対応しない端末(ColorMode::Indexed)では、近い 256 色の番号で塗る。
     let tmp = vault("thindexed");
     let base = buffer(&plain(&tmp, ColorMode::Indexed));
     let a = themed(&tmp, ColorMode::Indexed, "[look]\ntheme = \"nord\"\n");
@@ -493,7 +493,7 @@ fn test_sr_27_indexed_uses_256_colors() {
 
 #[test]
 fn test_sr_27_to_indexed_picks_nearest() {
-    // [SR-27][SR-15] to_indexed は xterm の 256 色の表(16〜255 の色の立方体と灰色)で最も近い番号。
+    // [utest -> req~screen.theme-names-256~1, req~cell-view.not-color-only~1] to_indexed は xterm の 256 色の表(16〜255 の色の立方体と灰色)で最も近い番号。
     assert_eq!(to_indexed([0, 0, 0]), 16);
     assert_eq!(to_indexed([255, 255, 255]), 231);
     assert_eq!(to_indexed([255, 0, 0]), 196);

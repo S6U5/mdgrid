@@ -123,7 +123,7 @@ pub(super) fn col_named(app: &mut App, name: &str) {
 
 #[test]
 fn test_sr_1_five_bands() {
-    // [SR-1] ヘッダー(フォルダの名前と行数)・タブ・表・下の帯(モード・位置・未保存・キー)・メッセージ行。
+    // [utest -> req~screen.layout-order~1, req~screen.layout-bottom-bar~1] ヘッダー(フォルダの名前と行数)・タブ・表・下の帯(モード・位置・未保存・キー)・メッセージ行。
     let (_t, app) = make(
         "sr1",
         &[
@@ -147,7 +147,7 @@ fn test_sr_1_five_bands() {
 
 #[test]
 fn test_cv_1_null_empty_missing() {
-    // [CV-1] null は `∅`、空の文字列は `""`、キーが無いときは空欄。
+    // [utest -> req~cell-view.null-empty-missing~1] null は `∅`、空の文字列は `""`、キーが無いときは空欄。
     let (_t, app) = make(
         "cv1",
         &[
@@ -163,7 +163,7 @@ fn test_cv_1_null_empty_missing() {
 
 #[test]
 fn test_cv_3_newline_value() {
-    // [CV-3] 改行を含む値は1行目と `…⏎`。
+    // [utest -> req~cell-view.multiline~1] 改行を含む値は1行目と `…⏎`。
     let (_t, app) = make(
         "cv3",
         &[("a.md", "---\ntitle: a\nmemo: |\n  一行目\n  二行目\n---\n")],
@@ -175,7 +175,7 @@ fn test_cv_3_newline_value() {
 
 #[test]
 fn test_cv_4_numbers_right_aligned() {
-    // [CV-4] 数の列は右寄せ、チェックボックスの列は中央寄せ。
+    // [utest -> req~cell-view.align~1] 数の列は右寄せ、チェックボックスの列は中央寄せ。
     let (_t, app) = make(
         "cv4",
         &[
@@ -191,7 +191,7 @@ fn test_cv_4_numbers_right_aligned() {
 
 #[test]
 fn test_cv_5_long_value_capped() {
-    // [CV-5] 列の幅の上限は画面の幅の3割(79 桁の3割 = 23)、はみ出す値は `…`。
+    // [utest -> req~cell-view.column-width~1] 列の幅の上限は画面の幅の3割(79 桁の3割 = 23)、はみ出す値は `…`。
     let long = "長い説明の文章がここに続いていて画面の三割を超えてしまう";
     let (_t, app) = make(
         "cv5",
@@ -208,7 +208,7 @@ fn test_cv_5_long_value_capped() {
 
 #[test]
 fn test_sr_9_lines_fit_and_no_escape() {
-    // [SR-9] 全角・絵文字・結合文字・制御文字の値でも、全行が幅以下で、ESC を出さない。
+    // [utest -> req~cell-view.grapheme-width-fit~1] 全角・絵文字・結合文字・制御文字の値でも、全行が幅以下で、ESC を出さない。
     let (_t, mut app) = make(
         "sr9",
         &[
@@ -276,7 +276,7 @@ fn test_sr_9_lines_fit_and_no_escape() {
 
 #[test]
 fn test_sr_13_j_and_down_same() {
-    // [SR-13] `j` と ↓ で同じ動き。[SR-17] 全角の ｊ も同じ。
+    // [utest -> req~screen.keys-vim-and-arrows-both~1, req~screen.keys-vim-and-arrows-remap~1] `j` と ↓ で同じ動き。[utest -> req~screen.ime-fullwidth~1] 全角の ｊ も同じ。
     let notes: Vec<(String, String)> = (0..5)
         .map(|i| (format!("n{i}.md"), format!("---\nn: {i}\n---\n")))
         .collect();
@@ -298,7 +298,7 @@ fn test_sr_13_j_and_down_same() {
     assert_eq!(a.row, 4);
     ch(&mut a, 'ｋ');
     assert_eq!(a.row, 3);
-    // [SR-16] 前置き `g` のあとの表に無いキーは、前置きを捨ててそのキーだけで引く。
+    // [utest -> req~screen.key-modes-no-dup~1] 前置き `g` のあとの表に無いキーは、前置きを捨ててそのキーだけで引く。
     ch(&mut a, 'g');
     ch(&mut a, 'k');
     assert_eq!(a.row, 2);
@@ -310,7 +310,7 @@ fn test_sr_13_j_and_down_same() {
 
 #[test]
 fn test_sr_17_fullwidth_and_marks() {
-    // [SR-17] 全角の ｊ は j、`、` は `,`、`・` は `/` として引く(`,`・`/` の動作はタスク 10)。
+    // [utest -> req~screen.ime-fullwidth~1] 全角の ｊ は j、`、` は `,`、`・` は `/` として引く(`,`・`/` の動作はタスク 10)。
     let (_t, mut a) = make(
         "sr17",
         &[("a.md", "---\nx: 1\n---\n"), ("b.md", "---\nx: 2\n---\n")],
@@ -324,7 +324,7 @@ fn test_sr_17_fullwidth_and_marks() {
 
 #[test]
 fn test_sr_18_backspace_and_undo() {
-    // [SR-18] Backspace でセルを空にする(ためる変更)→「未保存 1」。[WB-10] `u` で戻して「未保存 0」、`U` でやり直し。
+    // [utest -> req~screen.default-keys~1] Backspace でセルを空にする(ためる変更)→「未保存 1」。[utest -> req~write-back.redo-keys~1] `u` で戻して「未保存 0」、`U` でやり直し。
     let (_t, mut a) = make(
         "sr18",
         &[
@@ -336,7 +336,7 @@ fn test_sr_18_backspace_and_undo() {
     press(&mut a, KeyCode::Backspace);
     assert_eq!(a.changes.count(), 1);
     assert!(screen(&a).contains("未保存 1"));
-    // [SR-1] 狭い端末でも「未保存 N」は切れない。
+    // [utest -> req~screen.layout-order~1, req~screen.layout-bottom-bar~1] 狭い端末でも「未保存 N」は切れない。
     let narrow = view::render(&a, 12, 23);
     let foot: String = narrow[21]
         .spans
@@ -353,12 +353,12 @@ fn test_sr_18_backspace_and_undo() {
     assert_eq!(a.changes.count(), 0);
     a.key(KeyEvent::new(KeyCode::Char('r'), KeyModifiers::CONTROL));
     assert_eq!(a.changes.count(), 1);
-    // [SR-18] 未保存があると `q` では終わらない(終了の確認 WB-11)。
+    // [utest -> req~screen.default-keys~1] 未保存があると `q` では終わらない(終了の確認 WB-11)。
     ch(&mut a, 'q');
     assert!(!a.quit);
     press(&mut a, KeyCode::Esc);
     ch(&mut a, 'u');
-    // [SR-18] キーの無いセル(b の status)で Backspace → 何も変わらない。
+    // [utest -> req~screen.default-keys~1] キーの無いセル(b の status)で Backspace → 何も変わらない。
     ch(&mut a, 'j');
     press(&mut a, KeyCode::Delete);
     assert_eq!(a.changes.count(), 0);
@@ -368,7 +368,7 @@ fn test_sr_18_backspace_and_undo() {
 
 #[test]
 fn test_sr_18_read_only_cell_reason() {
-    // [SR-18] 読むだけのセルでは理由を出して何もしない。[SR-15] 選ぶとメッセージ行に理由。
+    // [utest -> req~screen.default-keys~1] 読むだけのセルでは理由を出して何もしない。[utest -> req~cell-view.not-color-only~1] 選ぶとメッセージ行に理由。
     // 材料は CE-8 の読むだけの形(2行にまたがるフローのリスト)。1行の `[a, b]` は CE-16 で書ける。
     let (_t, mut a) = make(
         "sr18ro",
@@ -380,13 +380,13 @@ fn test_sr_18_read_only_cell_reason() {
     col_named(&mut a, "tags");
     let s = screen(&a);
     assert!(s.lines().nth(22).unwrap().contains("読むだけ"), "{s}");
-    // [SR-15] 読むだけのセルは薄い表示に加えて `#` の印(NO_COLOR でも見分けられる)。
+    // [utest -> req~cell-view.not-color-only~1] 読むだけのセルは薄い表示に加えて `#` の印(NO_COLOR でも見分けられる)。
     // 複数行の値の中身の見せ方は CV の決まりなので問わず、セルの先頭の `#` だけを見る。
     let cell_text = |line: &str, name: &str| line.split(name).nth(1).unwrap().trim().to_string();
     let dy = view::data_y(&a);
     let ro = cell_text(s.lines().nth(dy).unwrap(), "a ");
     assert!(ro.starts_with('#'), "{s}");
-    // [CE-16] 書ける形のリスト(1行の `[a, b]`)には `#` の印が無い。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-new~1] 書ける形のリスト(1行の `[a, b]`)には `#` の印が無い。
     let rw = cell_text(s.lines().nth(dy + 1).unwrap(), "b ");
     assert_eq!(rw, "[a, b]", "{s}");
     press(&mut a, KeyCode::Backspace);
@@ -396,7 +396,7 @@ fn test_sr_18_read_only_cell_reason() {
 
 #[test]
 fn test_sr_3_selected_column_stays_visible() {
-    // [SR-3] 列が画面に収まらない表で右へ移り続けても、選んだ列が見える。
+    // [utest -> req~screen.h-scroll-follow~1] 列が画面に収まらない表で右へ移り続けても、選んだ列が見える。
     let mut fm = String::from("---\n");
     for i in 0..20 {
         fm.push_str(&format!("prop{i:02}: value-of-property-{i:02}\n"));
@@ -424,7 +424,7 @@ fn test_sr_3_selected_column_stays_visible() {
 
 #[test]
 fn test_sr_10_no_color() {
-    // [SR-10] NO_COLOR のとき色を出さない(ためる変更のセルも)。TERM=dumb も色なし。
+    // [utest -> req~cell-view.no-color-env~1, req~cell-view.no-color-term-dumb~1] NO_COLOR のとき色を出さない(ためる変更のセルも)。TERM=dumb も色なし。
     let env = |pairs: &'static [(&'static str, &'static str)]| {
         move |k: &str| {
             pairs
@@ -442,7 +442,7 @@ fn test_sr_10_no_color() {
         ColorMode::detect(env(&[("COLORTERM", "truecolor")])),
         ColorMode::Rgb
     );
-    // [SR-15] COLORTERM が無ければ 256 色。
+    // [utest -> req~cell-view.not-color-only~1] COLORTERM が無ければ 256 色。
     assert_eq!(
         ColorMode::detect(env(&[("TERM", "xterm")])),
         ColorMode::Indexed
@@ -459,7 +459,7 @@ fn test_sr_10_no_color() {
 
 #[test]
 fn test_sr_15_pending_mark_and_256_colors() {
-    // [SR-15] ためる変更のセルは色に加えて `*`。COLORTERM の無い端末では 256 色。
+    // [utest -> req~cell-view.not-color-only~1] ためる変更のセルは色に加えて `*`。COLORTERM の無い端末では 256 色。
     let tmp = Tmp::new("sr15");
     tmp.write("a.md", "---\nstatus: x\n---\n");
     tmp.write("b.md", "---\nstatus: y\n---\n");
@@ -481,7 +481,7 @@ fn test_sr_15_pending_mark_and_256_colors() {
 
 #[test]
 fn test_bv_10_selection_kept_after_reload() {
-    // [BV-10] 外でノートが消えても、選んだノートの行を選んだまま。
+    // [utest -> req~base-view.keep-selection~1] 外でノートが消えても、選んだノートの行を選んだまま。
     let (t, mut a) = make(
         "bv10",
         &[
@@ -506,7 +506,7 @@ fn test_bv_10_selection_kept_after_reload() {
 
 #[test]
 fn test_bv_16_cancel_load() {
-    // [BV-16] 読み込みの途中で Ctrl+G → 止まり、読んだ分の表が残る。
+    // [utest -> req~base-view.large-load~1] 読み込みの途中で Ctrl+G → 止まり、読んだ分の表が残る。
     let tmp = Tmp::new("bv16");
     for i in 0..50 {
         tmp.write(&format!("n{i:02}.md"), "---\nx: 1\n---\n");
@@ -514,7 +514,7 @@ fn test_bv_16_cancel_load() {
     let src = Markdown::open(&[tmp.notes()]).unwrap();
     let mut a = App::new(Box::new(src), ColorMode::None);
     a.load_step(10);
-    // [SR-4] 中止のキーの表示はキーの表から引く。
+    // [utest -> req~screen.key-table~1] 中止のキーの表示はキーの表から引く。
     // ヘッダーの行(2026-10-12-bar-padding-half の上の余白の分だけ下がる)。
     let top = screen(&a)
         .lines()
@@ -570,12 +570,12 @@ const TWO: &[(&str, &str)] = &[
 
 #[test]
 fn test_ce_1_enter_type_enter_pending() {
-    // [CE-1] Enter → その場の入力ボックス → 打って Enter でためる変更。[WB-9] ファイルは変わらず「未保存 1」。
+    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-pending~1] Enter → その場の入力ボックス → 打って Enter でためる変更。[utest -> req~write-back.pending-hold~1] ファイルは変わらず「未保存 1」。
     let (t, mut a) = make("ce1", TWO);
     col_named(&mut a, "status");
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, keymap::Mode::Edit);
-    // [SR-17] 端末のカーソルは入力の位置(値の末尾)に置く。
+    // [utest -> req~screen.ime-cursor~1] 端末のカーソルは入力の位置(値の末尾)に置く。
     let (cx, cy) = view::cursor(&a).unwrap();
     assert_eq!(cy as usize, view::data_y(&a));
     let row = screen(&a)
@@ -609,7 +609,7 @@ fn test_ce_1_enter_type_enter_pending() {
 
 #[test]
 fn test_ce_1_esc_cancels() {
-    // [CE-1] Esc で取り消し: 何もためない。
+    // [utest -> req~cell-edit.inline-enter-esc~1] Esc で取り消し: 何もためない。
     let (t, mut a) = make("ce1esc", TWO);
     col_named(&mut a, "status");
     press(&mut a, KeyCode::Enter);
@@ -623,7 +623,7 @@ fn test_ce_1_esc_cancels() {
 
 #[test]
 fn test_ce_1_click_outside_commits() {
-    // [CE-1] 入力の外をクリック → 確定してためる変更。入力の中のクリックは何もしない。
+    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-click-commit~1, req~cell-edit.inline-click-invalid~1] 入力の外をクリック → 確定してためる変更。入力の中のクリックは何もしない。
     let (_t, mut a) = make("ce1click", TWO);
     col_named(&mut a, "status");
     press(&mut a, KeyCode::Enter);
@@ -631,26 +631,26 @@ fn test_ce_1_click_outside_commits() {
     let (cx, cy) = view::cursor(&a).unwrap();
     a.click(cx - 1, cy);
     assert_eq!(a.mode, keymap::Mode::Edit);
-    // [SR-6] 別の行のセルのクリック → 確定して、その行を選ぶだけ(編集は始めない)。
+    // [utest -> req~screen.mouse-click-select~1, req~screen.mouse-click-edit~1] 別の行のセルのクリック → 確定して、その行を選ぶだけ(編集は始めない)。
     a.click(cx - 1, cy + 1);
     assert_eq!(a.mode, keymap::Mode::Table);
     assert_eq!(a.changes.count(), 1);
     assert_eq!(a.row, 1);
-    // [SR-6] 選んだ行のセルのクリック → 編集を始める。
+    // [utest -> req~screen.mouse-click-edit~1] 選んだ行のセルのクリック → 編集を始める。
     a.click(cx - 1, cy + 1);
     assert_eq!(a.mode, keymap::Mode::Edit);
 }
 
 #[test]
 fn test_ce_11_revert_and_tab() {
-    // [CE-11] 編集中の Ctrl+R で編集前の値に戻す。
+    // [utest -> req~cell-edit.revert-and-tab~1] 編集中の Ctrl+R で編集前の値に戻す。
     let (_t, mut a) = make("ce11", TWO);
     col_named(&mut a, "title");
     press(&mut a, KeyCode::Enter);
     typing(&mut a, "-changed");
     ctrl(&mut a, 'r');
     assert_eq!(a.input.as_ref().unwrap().text, "a");
-    // [CE-11] Tab → 確定して右のセルの入力が開く。
+    // [utest -> req~cell-edit.revert-and-tab~1] Tab → 確定して右のセルの入力が開く。
     typing(&mut a, "2");
     press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, keymap::Mode::Edit);
@@ -667,7 +667,7 @@ fn test_ce_11_revert_and_tab() {
 
 #[test]
 fn test_ce_12_newline_value_not_opened() {
-    // [CE-12] 改行を含む値は1行の入力を開かず、案内を出す。
+    // [utest -> req~cell-edit.multiline-guard~1] 改行を含む値は1行の入力を開かず、案内を出す。
     let (_t, mut a) = make(
         "ce12",
         &[
@@ -695,11 +695,11 @@ fn test_ce_12_newline_value_not_opened() {
 
 #[test]
 fn test_ce_8_read_only_not_opened() {
-    // [CE-8] [WB-5] 読むだけのセルでは開かず、理由をメッセージ行に。
-    // [CE-19] CE-8 の形のリスト(複数行にまたがるフロー)も開かずに理由。
+    // [utest -> req~cell-edit.read-only-forms~1, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
+    // [utest -> req~cell-edit.list-candidates-read-only~1] CE-8 の形のリスト(複数行にまたがるフロー)も開かずに理由。
     // 書ける形のリスト(d.md の `tags: [x, y]`)の画面の振る舞いはタスク 2(リストの選択の画面)で
-    // 確かめる。ここでは核の Cell.lock が無いことだけを見る [CE-16]。
-    // [WB-3] フロントマターの無いノート(e.md)は読むだけでなく、入力が開く。
+    // 確かめる。ここでは核の Cell.lock が無いことだけを見る [utest -> req~cell-edit.list-items-candidates~1]。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(e.md)は読むだけでなく、入力が開く。
     let (_t, mut a) = make(
         "ce8",
         &[
@@ -726,12 +726,12 @@ fn test_ce_8_read_only_not_opened() {
         assert!(msg.contains("読むだけ") && msg.contains(want), "{msg}");
     }
     assert_eq!(a.changes.count(), 0);
-    // [CE-16] 書ける形のリストのセルは読むだけでない(lock なし)。
+    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1] 書ける形のリストのセルは読むだけでない(lock なし)。
     let d = a.rows[3].clone();
     assert_eq!(a.src.label(&d), "d.md");
     let c = a.src.get(&d, "tags");
     assert!(c.lock.is_none(), "writable list is locked: {:?}", c.lock);
-    // [WB-3] フロントマターの無いノートのセルは lock なしで、Enter で入力が開く(読むだけの理由は出ない)。
+    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは lock なしで、Enter で入力が開く(読むだけの理由は出ない)。
     let e = a.rows[4].clone();
     assert_eq!(a.src.label(&e), "e.md");
     let c = a.src.get(&e, "title");
@@ -753,7 +753,7 @@ fn test_ce_8_read_only_not_opened() {
 
 #[test]
 fn test_ce_9_empty_commit_writes_null() {
-    // [CE-9] 空で確定 → 保存で `key:`(キーは残す)。
+    // [utest -> req~cell-edit.empty-is-null~1] 空で確定 → 保存で `key:`(キーは残す)。
     let (t, mut a) = make("ce9", &[("a.md", "---\nstatus: done\ntitle: a\n---\n")]);
     col_named(&mut a, "status");
     press(&mut a, KeyCode::Enter);
@@ -780,7 +780,7 @@ pub(super) fn edit_cell(a: &mut App, row: usize, col: &str, text: &str) {
 
 #[test]
 fn test_wb_9_review_then_save() {
-    // [WB-9] 2つのセルを直す → ファイルは変わらず「未保存 2」。Ctrl+S → 2ファイルの差分 → 確定で書かれ「未保存 0」。
+    // [utest -> req~write-back.pending-hold~1, req~write-back.pending-diff-confirm~1] 2つのセルを直す → ファイルは変わらず「未保存 2」。Ctrl+S → 2ファイルの差分 → 確定で書かれ「未保存 0」。
     let (t, mut a) = make("wb9", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_cell(&mut a, 1, "title", "新しい題");
@@ -816,7 +816,7 @@ fn test_wb_9_review_then_save() {
 
 #[test]
 fn test_wb_17_revert_clears_pending() {
-    // [WB-17] status を done に直して todo に戻す → 「未保存 0」、セルに `*` が無い、Ctrl+S は確認を開かず「変更が無い」。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-undoable~1] status を done に直して todo に戻す → 「未保存 0」、セルに `*` が無い、Ctrl+S は確認を開かず「変更が無い」。
     let (t, mut a) = make("wb17", TWO);
     edit_cell(&mut a, 0, "status", "done");
     assert_eq!(a.changes.count(), 1);
@@ -831,7 +831,7 @@ fn test_wb_17_revert_clears_pending() {
     assert_eq!(a.mode, keymap::Mode::Table);
     assert_eq!(a.message.as_deref(), Some("保存する変更が無い"));
     assert_eq!(read(&t, "a.md"), TWO[0].1);
-    // [WB-17] 外す操作も1手: `u` で done に戻る。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-undoable~1] 外す操作も1手: `u` で done に戻る。
     ch(&mut a, 'u');
     assert_eq!(a.changes.count(), 1);
     assert!(screen(&a).contains("未保存 1"));
@@ -839,7 +839,7 @@ fn test_wb_17_revert_clears_pending() {
 
 #[test]
 fn test_wb_17_external_same_value_clears_pending() {
-    // [WB-17] status に done をためたまま、外で同じ done に直す → poll → 「未保存 0」・`*` なし。`u` で戻る。
+    // [utest -> req~write-back.revert-drops-pending~1] status に done をためたまま、外で同じ done に直す → poll → 「未保存 0」・`*` なし。`u` で戻る。
     let (t, mut a) = make("wb17ext", TWO);
     edit_cell(&mut a, 0, "status", "done");
     assert!(screen(&a).contains("未保存 1"));
@@ -857,7 +857,7 @@ fn test_wb_17_external_same_value_clears_pending() {
 
 #[test]
 fn test_wb_17_save_drops_same_before_review() {
-    // [WB-17] 読んだ値と同じセルだけがためてある(上書きで外れたものを `u` で戻した)→ Ctrl+S は確認を開かず
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1] 読んだ値と同じセルだけがためてある(上書きで外れたものを `u` で戻した)→ Ctrl+S は確認を開かず
     // 「保存する変更が無い」、未保存 0、ファイルは変わらない。
     let (t, mut a) = make("wb17save", TWO);
     edit_cell(&mut a, 0, "status", "done");
@@ -879,7 +879,7 @@ fn test_wb_17_save_drops_same_before_review() {
 
 #[test]
 fn test_wb_9_review_back_keeps_changes() {
-    // [WB-9] 差分の画面で Esc → 書かずに表へ戻り、ためた変更は残る。
+    // [utest -> req~write-back.pending-save~1, req~write-back.pending-diff-confirm~1] 差分の画面で Esc → 書かずに表へ戻り、ためた変更は残る。
     let (t, mut a) = make("wb9back", TWO);
     edit_cell(&mut a, 0, "status", "done");
     ctrl(&mut a, 's');
@@ -904,7 +904,7 @@ pub(super) fn edit_outside(tmp: &Tmp, name: &str, text: &str) {
 
 #[test]
 fn test_wb_16_external_change_overwrite() {
-    // [WB-16] status をためたまま外で title を直す → 行に印。保存 → 止まり、差分の画面に印と2つの選択肢。
+    // [utest -> req~write-back.external-save-choice~1] status をためたまま外で title を直す → 行に印。保存 → 止まり、差分の画面に印と2つの選択肢。
     let (t, mut a) = make("wb16", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_cell(&mut a, 1, "status", "done");
@@ -915,7 +915,7 @@ fn test_wb_16_external_change_overwrite() {
     ctrl(&mut a, 's');
     let s = screen(&a);
     assert!(s.contains("!a.md") && s.contains("外で変更"), "{s}");
-    // [WB-14] 確定 → a は止まり(未保存は残る)、b は書ける。画面に残って選ばせる。
+    // [utest -> req~write-back.keep-on-stop~1] 確定 → a は止まり(未保存は残る)、b は書ける。画面に残って選ばせる。
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, keymap::Mode::Confirm);
     assert_eq!(a.changes.count(), 1);
@@ -938,7 +938,7 @@ fn test_wb_16_external_change_overwrite() {
 
 #[test]
 fn test_wb_16_external_change_discard() {
-    // [WB-16] ためた変更を捨てる → その行の変更が消え、ファイルは外の変更のまま。
+    // [utest -> req~write-back.external-save-choice~1] ためた変更を捨てる → その行の変更が消え、ファイルは外の変更のまま。
     let (t, mut a) = make("wb16d", TWO);
     edit_cell(&mut a, 0, "status", "done");
     let outside = "---\ntitle: a outside\nstatus: todo\n---\n本文 a\n";
@@ -953,7 +953,7 @@ fn test_wb_16_external_change_discard() {
 
 #[test]
 fn test_wb_11_quit_confirm() {
-    // [WB-11] 未保存 1 で `q` → 保存する・捨てる・戻る の確認。
+    // [utest -> req~write-back.quit-confirm~1] 未保存 1 で `q` → 保存する・捨てる・戻る の確認。
     let (t, mut a) = make("wb11", TWO);
     edit_cell(&mut a, 0, "status", "done");
     ch(&mut a, 'q');
@@ -981,7 +981,7 @@ fn test_wb_11_quit_confirm() {
 
 #[test]
 fn test_wb_11_quit_save() {
-    // [WB-11] 保存する → 差分の画面 → 確定で書いて終わる。
+    // [utest -> req~write-back.quit-confirm~1] 保存する → 差分の画面 → 確定で書いて終わる。
     let (t, mut a) = make("wb11s", TWO);
     edit_cell(&mut a, 0, "status", "done");
     ch(&mut a, 'q');
@@ -994,7 +994,7 @@ fn test_wb_11_quit_save() {
 
 #[test]
 fn test_wb_16_overwrite_only_selected_file() {
-    // [WB-16] `o` は選んだファイルだけを書き、残りのためた変更は Enter に任せる(画面に残る)。
+    // [utest -> req~write-back.external-save-choice~1] `o` は選んだファイルだけを書き、残りのためた変更は Enter に任せる(画面に残る)。
     let (t, mut a) = make("wb16one", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_cell(&mut a, 1, "status", "done");
@@ -1015,7 +1015,7 @@ fn test_wb_16_overwrite_only_selected_file() {
 
 #[test]
 fn test_wb_16_overwrite_refuses_unseen_content() {
-    // [WB-16] [WB-9] 差分を見せたあとにまた外で変わったら、`o` は書かずに差分を作り直す。
+    // [utest -> req~write-back.external-save-choice~1, req~write-back.pending-hold~1, req~write-back.pending-diff-confirm~1] 差分を見せたあとにまた外で変わったら、`o` は書かずに差分を作り直す。
     let (t, mut a) = make("wb16seen", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_outside(
@@ -1047,7 +1047,7 @@ fn test_wb_16_overwrite_refuses_unseen_content() {
 
 #[test]
 fn test_bv_9_no_poll_while_editing() {
-    // [BV-9] [CE-1] 編集中は外の変化を当てない(入力ボックスが別のセルに移らない)。閉じたあとの poll で当てる。
+    // [utest -> req~base-view.watch-pause~1, req~cell-edit.inline-input~1, req~cell-edit.inline-enter-esc~1, req~cell-edit.inline-click-invalid~1] 編集中は外の変化を当てない(入力ボックスが別のセルに移らない)。閉じたあとの poll で当てる。
     let (t, mut a) = make("bv9edit", TWO);
     col_named(&mut a, "status");
     press(&mut a, KeyCode::Enter);
@@ -1070,7 +1070,7 @@ fn test_bv_9_no_poll_while_editing() {
 
 #[test]
 fn test_ce_11_tab_skips_read_only() {
-    // [CE-11] Tab で読むだけのセルは飛ばし、同じ行の次の直せるセルの入力を開く。
+    // [utest -> req~cell-edit.revert-and-tab~1] Tab で読むだけのセルは飛ばし、同じ行の次の直せるセルの入力を開く。
     // 読むだけの材料は CE-8 の形(複数行にまたがるフローのリスト)。1行の `[x]` は CE-16 で書ける。
     let (_t, mut a) = make(
         "ce11ro",

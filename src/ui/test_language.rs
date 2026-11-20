@@ -1,5 +1,5 @@
 //! 画面の文言の言語(SR-23)の受け入れ試験(タスク3: キーの表示名・下の帯・ヘルプ・パレット・「+ 新規」・カレンダー)。
-//! 記録: specs/_changes/2026-10-03-language.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-03-language.md。
 //! 画面の実装を見ずに、`mdgrid::i18n::scoped` でこのスレッドだけ言語を変え、80×24 の画面の文字で確かめる。
 //! 試験の環境は .cargo/config.toml で日本語に固定されている。
 //!
@@ -154,7 +154,7 @@ fn calendar_box(a: &App) -> Vec<String> {
 
 #[test]
 fn test_sr_23_ui_band_english() {
-    // [SR-23] 英語では、表の下の帯(モード・位置・未保存・今押せるキー)に日本語の文字が無く、キーの横は英語の語。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、表の下の帯(モード・位置・未保存・今押せるキー)に日本語の文字が無く、キーの横は英語の語。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr23band", EN_NOTES);
     let s = screen(&a);
@@ -179,7 +179,7 @@ fn test_sr_23_ui_band_english() {
 
 #[test]
 fn test_sr_23_ui_help_english() {
-    // [SR-23] 英語では、ヘルプ(`?`)の見出しと各行の説明に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、ヘルプ(`?`)の見出しと各行の説明に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr23help", EN_NOTES);
     ch(&mut a, '?');
@@ -221,7 +221,7 @@ fn palette_lines(s: &str) -> Vec<String> {
 
 #[test]
 fn test_sr_23_ui_palette_english() {
-    // [SR-23] 英語では、パレット(`:`)の候補の説明に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、パレット(`:`)の候補の説明に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = make("sr23pal", EN_NOTES);
     ch(&mut a, ':');
@@ -307,7 +307,7 @@ fn header_button_clicks(name: &str) -> String {
 
 #[test]
 fn test_sr_23_ui_new_note_button_english() {
-    // [SR-23] 英語では、ビューの帯の「+ 新規」が英語の文字になり、そのクリックの当たりが英語の幅で合う。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、ビューの帯の「+ 新規」が英語の文字になり、そのクリックの当たりが英語の幅で合う。
     let _g = scoped(Lang::En);
     let label = header_button_clicks("sr23new");
     assert!(!has_ja(&label), "ヘッダーのボタンが英語: {label:?}");
@@ -321,7 +321,7 @@ fn test_sr_23_ui_new_note_button_english() {
 
 #[test]
 fn test_sr_23_ui_calendar_english() {
-    // [SR-23] 英語では、日付の列で開くカレンダーの見出し(月・曜日)と縁の案内に日本語の文字が無い。
+    // [utest -> req~screen.locales-two-languages~1] 英語では、日付の列で開くカレンダーの見出し(月・曜日)と縁の案内に日本語の文字が無い。
     let _g = scoped(Lang::En);
     let (_t, mut a) = date_vault(
         "sr23cal",
@@ -362,7 +362,7 @@ fn test_sr_23_ui_calendar_english() {
 
 #[test]
 fn test_sr_23_ui_japanese_unchanged() {
-    // [SR-23] 同じ操作を日本語で行うと、今の日本語の画面(既存の golden)のまま。
+    // [utest -> req~screen.locales-two-languages~1] 同じ操作を日本語で行うと、今の日本語の画面(既存の golden)のまま。
     let _g = scoped(Lang::Ja);
 
     // 下の帯: sr_1 と同じ。

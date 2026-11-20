@@ -1,5 +1,5 @@
-//! [CLI-16] --print の --filter(式。何度でも、全部を満たす)と --sort(列[:asc|:desc]。何度でも、渡した順)。
-//! specs/_changes/2026-10-06-print-filter-sort.md。本物の実行ファイルで確かめる。
+//! [cli.print-filter-sort] --print の --filter(式。何度でも、全部を満たす)と --sort(列[:asc|:desc]。何度でも、渡した順)。
+//! specs/_history/decidespec/_changes/2026-10-06-print-filter-sort.md。本物の実行ファイルで確かめる。
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -62,6 +62,7 @@ fn names(out: &Output) -> Vec<String> {
         .collect()
 }
 
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_folder_filter_and_sort() {
     let root = vault("folder");
@@ -81,6 +82,7 @@ fn test_cli_16_folder_filter_and_sort() {
     assert_eq!(names(&out), ["d.md", "c.md", "b.md"]);
 }
 
+// [stest -> req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1]
 #[test]
 fn test_cli_16_sort_desc_and_several_keys() {
     let root = vault("desc");
@@ -100,6 +102,7 @@ fn test_cli_16_sort_desc_and_several_keys() {
     assert_eq!(names(&out), ["b.md", "d.md", "c.md", "a.md"]);
 }
 
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_several_filters_all_hold() {
     let root = vault("and");
@@ -121,6 +124,7 @@ fn test_cli_16_several_filters_all_hold() {
     assert_eq!(names(&out), ["b.md", "c.md", "d.md"]);
 }
 
+// [stest -> req~cli.print-filter-sort-base-sort~1]
 #[test]
 fn test_cli_16_base_view_filter_is_combined() {
     let root = vault("base");
@@ -141,6 +145,7 @@ fn test_cli_16_base_view_filter_is_combined() {
     assert_eq!(names(&out), ["d.md", "b.md"]);
 }
 
+// [stest -> req~cli.print-filter-sort-folder~1, req~cli.print-filter-sort-bad-expr~1]
 #[test]
 fn test_cli_16_bad_expression_and_sort_fail() {
     let root = vault("bad");
@@ -155,6 +160,7 @@ fn test_cli_16_bad_expression_and_sort_fail() {
     assert_eq!(out.status.code(), Some(2));
 }
 
+// [stest -> req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_without_flags_unchanged() {
     let root = vault("same");

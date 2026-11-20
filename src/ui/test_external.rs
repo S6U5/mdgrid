@@ -21,7 +21,7 @@ pub(super) fn editor_lock() -> MutexGuard<'static, ()> {
 
 #[test]
 fn test_sr_8_editor_argv_split() {
-    // [SR-8] 引数つきの EDITOR は空白で分け、ノートのパスは(空白を含んでも)1つの引数。シェルは通さない。
+    // [utest -> req~screen.editor-no-shell~1, req~screen.editor-path-one-arg~1] 引数つきの EDITOR は空白で分け、ノートのパスは(空白を含んでも)1つの引数。シェルは通さない。
     let p = Path::new("/tmp/my notes/a b.md");
     assert_eq!(
         editor_argv("code -w", p).unwrap(),
@@ -51,7 +51,7 @@ fn test_sr_8_editor_argv_split() {
 
 #[test]
 fn test_sr_8_editor_quotes_and_escapes() {
-    // [SR-8] 空白を含むエディタのパスは引用符か `\` で書ける(POSIX の単語分けの一部。シェルは通さない)。
+    // [utest -> req~screen.editor-no-shell~1, req~screen.editor-path-one-arg~1] 空白を含むエディタのパスは引用符か `\` で書ける(POSIX の単語分けの一部。シェルは通さない)。
     let p = Path::new("/n/a b.md");
     let want = vec![
         OsString::from("/Applications/My Editor"),
@@ -112,7 +112,7 @@ fn script(tmp: &Tmp) -> String {
 #[cfg(unix)]
 #[test]
 fn test_sr_8_editor_reload() {
-    // [SR-8] `e` で選んだ行のノートを開く → 戻ると読み直して行が新しい値になる。
+    // [utest -> req~screen.editor-reload~1, req~screen.editor-path-one-arg~1] `e` で選んだ行のノートを開く → 戻ると読み直して行が新しい値になる。
     // パスに空白を含むノートでも、パスは1つの引数で届く。
     let _lock = editor_lock();
     let (t, mut a) = make(
@@ -147,7 +147,7 @@ fn test_sr_8_editor_reload() {
 #[cfg(unix)]
 #[test]
 fn test_sr_8_editor_with_pending_marks_external() {
-    // [SR-8] [WB-16] ためた変更のある行をエディタで変えたら、外の変更と同じに「外で変更」の印。
+    // [utest -> req~screen.editor-open~1, req~screen.editor-choice~1, req~write-back.external-keep-pending~1, req~write-back.external-mark~1, req~write-back.external-save-choice~1] ためた変更のある行をエディタで変えたら、外の変更と同じに「外で変更」の印。
     let _lock = editor_lock();
     let (t, mut a) = make("sr8b", &[("a.md", "---\nstatus: 前\ntitle: t\n---\n")]);
     // エディタは title のキーを消すので、空にするためた値は WB-17・SR-18 で外れる。status を空にしてためる。
@@ -162,8 +162,36 @@ fn test_sr_8_editor_with_pending_marks_external() {
 }
 
 #[test]
+fn test_wb_11_external_change_keeps_pending_and_shows_outside_value() {
+    // [utest -> req~write-back.external-keep-pending~1] status をためたまま外で title を直す → 表の title は外で直した値になり、status のためた値と「未保存 1」は残る。
+    let (t, mut a) = make(
+        "wb11kp",
+        &[("a.md", "---\ntitle: a\nstatus: todo\n---\nbody\n")],
+    );
+    edit_cell(&mut a, 0, "status", "done");
+    edit_outside(
+        &t,
+        "a.md",
+        "---\ntitle: 外で直した\nstatus: todo\n---\nbody\n",
+    );
+    a.poll();
+    let row = a.rows[0].clone();
+    assert_eq!(
+        a.src.get(&row, "title").value,
+        Some(mdgrid::source::Value::Str("外で直した".into()))
+    );
+    assert_eq!(
+        a.changes.pending(&row, "status"),
+        Some(&mdgrid::source::NewValue::Str("done".into()))
+    );
+    assert_eq!(a.changes.count(), 1);
+    let s = screen(&a);
+    assert!(s.contains("外で直した") && s.contains("未保存 1"), "{s}");
+}
+
+#[test]
 fn test_sr_8_editor_missing_program() {
-    // [SR-8] 起動できなければ止まらずに知らせる。端末は戻す。
+    // [utest -> req~screen.editor-fallback~1] 起動できなければ止まらずに知らせる。端末は戻す。
     let _lock = editor_lock();
     let (_t, mut a) = make("sr8c", &[("a.md", "---\ns: 1\n---\n")]);
     ch(&mut a, 'e');
@@ -182,7 +210,7 @@ fn test_sr_8_editor_missing_program() {
 
 #[test]
 fn test_out_1_base64_and_osc52() {
-    // [OUT-1] base64 は標準の字母と `=` の埋め。OSC 52 は ESC ] 52 ; c ; <base64> BEL。
+    // [utest -> req~output.copy-both-targets~1] base64 は標準の字母と `=` の埋め。OSC 52 は ESC ] 52 ; c ; <base64> BEL。
     assert_eq!(base64(b""), "");
     assert_eq!(base64(b"f"), "Zg==");
     assert_eq!(base64(b"fo"), "Zm8=");
@@ -197,7 +225,7 @@ fn test_out_1_base64_and_osc52() {
 
 #[test]
 fn test_out_1_osc52_tmux_and_limit() {
-    // [OUT-1] tmux の中では DCS のパススルーでも送る(中の ESC は2重)。
+    // [utest -> req~output.copy-tsv~1, req~output.copy-both-targets~1, req~output.copy-one-side-fails~1] tmux の中では DCS のパススルーでも送る(中の ESC は2重)。
     let seqs = osc52_seqs("a\tb", true).unwrap();
     assert_eq!(seqs.len(), 2);
     assert_eq!(seqs[0], b"\x1b]52;c;YQli\x07".to_vec());
@@ -221,7 +249,7 @@ fn test_out_1_osc52_tmux_and_limit() {
 #[cfg(unix)]
 #[test]
 fn test_out_1_clipboard_command_hang_times_out() {
-    // [OUT-1] 標準入力を読まずに止まるコマンドでも、画面を固めずに打ち切って知らせる(64KB を超える文字)。
+    // [utest -> req~output.copy-one-side-fails~1] 標準入力を読まずに止まるコマンドでも、画面を固めずに打ち切って知らせる(64KB を超える文字)。
     let big = "x".repeat(300_000);
     let start = std::time::Instant::now();
     let e = pipe_to("sleep", &["5"], &big, std::time::Duration::from_millis(300)).unwrap_err();
@@ -251,7 +279,7 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_out_1_copy_cell_and_row() {
-    // [OUT-1] `y` と Ctrl+C は選んだセルを見出しつきのタブ区切り1行で、OSC 52 と OS のクリップボードの両方へ。
+    // [utest -> req~output.copy-tsv~1] `y` と Ctrl+C は選んだセルを見出しつきのタブ区切り1行で、OSC 52 と OS のクリップボードの両方へ。
     let (_t, mut a) = make("out1", NOTES);
     let log = memory(&mut a, false);
     col_named(&mut a, "status");
@@ -281,7 +309,7 @@ fn test_out_1_copy_cell_and_row() {
 
 #[test]
 fn test_out_1_one_side_fails_still_copies() {
-    // [OUT-1] OS のクリップボードが失敗しても止まらず、OSC 52 は出してメッセージ行で知らせる。
+    // [utest -> req~output.copy-one-side-fails~1] OS のクリップボードが失敗しても止まらず、OSC 52 は出してメッセージ行で知らせる。
     let (_t, mut a) = make("out1b", NOTES);
     let log = memory(&mut a, true);
     ch(&mut a, 'y');
@@ -292,7 +320,7 @@ fn test_out_1_one_side_fails_still_copies() {
 
 #[test]
 fn test_sr_18_ctrl_c_copies_while_loading() {
-    // [SR-18] [OUT-1] 読み込み中に Ctrl+C → コピーになり、読み込みは止まらない。
+    // [utest -> req~screen.default-keys~1, req~output.copy-one-side-fails~1] 読み込み中に Ctrl+C → コピーになり、読み込みは止まらない。
     let tmp = Tmp::new("sr18c");
     for i in 0..50 {
         tmp.write(&format!("n{i:02}.md"), &format!("---\nn: {i}\n---\n"));
@@ -316,7 +344,7 @@ fn test_sr_18_ctrl_c_copies_while_loading() {
 #[cfg(unix)]
 #[test]
 fn test_sr_8_sigint_while_editor_does_not_kill_mdgrid() {
-    // [SR-8] エディタを待つ間に Ctrl+C(SIGINT)・SIGQUIT が mdgrid に届いても落ちない(ためた変更が消えない)。
+    // [utest -> req~screen.editor-reload~1, req~screen.editor-fallback~1] エディタを待つ間に Ctrl+C(SIGINT)・SIGQUIT が mdgrid に届いても落ちない(ためた変更が消えない)。
     // 子のスクリプトが親(この試験のプロセス)に SIGINT と SIGQUIT を送る。子は既定の扱いに戻っている。
     let _lock = editor_lock();
     let (t, mut a) = make("sr8s", &[("a.md", "---\nstatus: 前\ntitle: t\n---\n")]);
@@ -338,7 +366,7 @@ fn test_sr_8_sigint_while_editor_does_not_kill_mdgrid() {
 #[cfg(unix)]
 #[test]
 fn test_sr_8_nested_ignore_restores_only_on_last_drop() {
-    // [SR-8] 無視は数で数える。重ねた無視の先のほうを落としても無視のまま、両方落とすと元に戻る
+    // [utest -> req~screen.editor-reload~1, req~screen.editor-fallback~1, req~screen.editor-no-shell~1, req~screen.editor-path-one-arg~1] 無視は数で数える。重ねた無視の先のほうを落としても無視のまま、両方落とすと元に戻る
     // (並列の試験が互いの無視を早く戻して、エディタ待ちの間の SIGINT で落ちないため)。
     use super::external::sig::{is_ignored, Ignore, SIGINT, SIGQUIT};
     let _lock = editor_lock();

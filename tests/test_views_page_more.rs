@@ -294,7 +294,7 @@ fn hype_words(lang: Option<&str>, text: &str) -> Vec<&'static str> {
 
 #[test]
 fn test_sr_49_views_sections_have_image_and_link() {
-    // [SR-49] views.md(ja・en)を見出しで節に区切り、8つの見せ方の節それぞれに、場面の画像
+    // [utest -> req~screen.views-page-entry~1] views.md(ja・en)を見出しで節に区切り、8つの見せ方の節それぞれに、場面の画像
     // (`![…](images/<id>.svg)`)が1枚以上と、くわしい節へのリンク(http でなく、# だけでなく、index.md・
     // 他言語・画像でない行き先)が1本以上ある。ページ全体の数では、1つの節に集まっていても通ってしまう。
     for (lang, words) in VIEWS {
@@ -328,7 +328,7 @@ fn test_sr_49_views_sections_have_image_and_link() {
 
 #[test]
 fn test_sr_49_views_headings_name_each_view_exactly() {
-    // [SR-49] 8つの語は、見出しの文(半角か全角の括弧 `(…)` の中を除いた残り)との完全一致か、語のあとに区切りが続く
+    // [utest -> req~screen.views-page-items~1] 8つの語は、見出しの文(半角か全角の括弧 `(…)` の中を除いた残り)との完全一致か、語のあとに区切りが続く
     // 先頭一致でだけ当たる。`表` は見出し `表`(と `表: …`)だけで、`表示` や `木の設定` のような別の見出しでは
     // 通らない。en は大文字小文字を問わず、`Table` は `Table`、`Tree` は `Tree` だけ。
     assert!(names_view("表", "表") && names_view("表: ノートが行", "表"));
@@ -355,7 +355,7 @@ fn test_sr_49_views_headings_name_each_view_exactly() {
 
 #[test]
 fn test_sr_49_views_anchors_point_at_headings() {
-    // [SR-49] views.md の相対リンクに `#錨` が付いているとき、その錨は行き先の .md の見出しを mdBook の id
+    // [utest -> req~screen.views-page-entry~1, req~screen.views-page-items~1] views.md の相対リンクに `#錨` が付いているとき、その錨は行き先の .md の見出しを mdBook の id
     // (小文字、空白は `-`、英数と仮名・漢字と `-`・`_` 以外の記号は落とす)に直したものの中にある。
     // 行き先の無い `#錨` だけのリンクは、このページ自身の見出しで見る。
     // id の作り方は、既存のリンク(tasks.md#base-を開く など)が指す見出しと同じ形になることで確かめる。
@@ -422,7 +422,7 @@ fn test_sr_49_views_anchors_point_at_headings() {
 
 #[test]
 fn test_sr_50_scenarios_no_hype_words() {
-    // [SR-50] 画面の一覧の文言のもとになる台本(docs/manual-scenarios.toml)の title・text・intro(ja・en)に、
+    // [utest -> req~screen.docs-order-style~1] 画面の一覧の文言のもとになる台本(docs/manual-scenarios.toml)の title・text・intro(ja・en)に、
     // 大げさな語(日本語: 強力・シームレス・直感的・画期的・最適・豊富 / 英語: seamless・robust・powerful・intuitive・
     // leverage・empower・delve・crucial・pivotal。語の頭で区切り、大文字小文字は問わない)が無い。
     let p = root().join("docs/manual-scenarios.toml");

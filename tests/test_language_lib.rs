@@ -1,5 +1,5 @@
-//! language(specs/_changes/2026-10-03-language.md)タスク2の受け入れ: lib の文言(読むだけ・未対応・警告・誤り)が
-//! 今の言語で出る(SR-23。specs/screen/spec.md)。
+//! language(specs/_history/decidespec/_changes/2026-10-03-language.md)タスク2の受け入れ: lib の文言(読むだけ・未対応・警告・誤り)が
+//! 今の言語で出る(SR-23。specs/_history/decidespec/screen/spec.md)。
 //!
 //! 実装を見ずに、記録の「設計」・`mdgrid::i18n` の公開の口・既存の試験の使い方(tests/test_unwritable.rs・
 //! tests/test_readonly_permission.rs・tests/test_empty_frontmatter.rs・tests/test_base.rs・tests/test_views.rs・
@@ -308,7 +308,7 @@ fn setup(f: &Form, tag: &str) -> (TempDir, Markdown) {
 
 #[test]
 fn test_sr_23_lib_read_only_reasons_are_english() {
-    // [SR-23] [WB-5] [WB-3] 英語のとき、読むだけの形のどれも、セル(status・title・無いキー)の lock の理由が空でなく、
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1, req~screen.locales-ledger~1, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-skip-broken~1] 英語のとき、読むだけの形のどれも、セル(status・title・無いキー)の lock の理由が空でなく、
     // 日本語の文字を含まない。重なったキーの名前はそのまま差し込まれる。形ごとの理由は互いに違う。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
@@ -355,7 +355,7 @@ fn test_sr_23_lib_read_only_reasons_are_english() {
 
 #[test]
 fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
-    // [SR-23] [WB-5] 同じノートを scoped(Ja) で開くと、今の日本語の文(形に固有の言葉を含む。権限は「書き込めない権限」)。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1] 同じノートを scoped(Ja) で開くと、今の日本語の文(形に固有の言葉を含む。権限は「書き込めない権限」)。
     // 英語の文とは違う。
     let mut fails = Vec::new();
     for f in forms() {
@@ -393,7 +393,7 @@ fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
 
 #[test]
 fn test_sr_23_lib_changes_skip_reason_matches_lock_in_english() {
-    // [SR-23] [CE-8] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
+    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~1] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
     for f in forms() {
@@ -426,7 +426,7 @@ fn test_sr_23_lib_changes_skip_reason_matches_lock_in_english() {
 
 #[test]
 fn test_sr_23_lib_config_warnings_are_english() {
-    // [SR-23] [CLI-3] 英語のとき、設定の知らない項目と型の違う値の警告は英語で、キーの名前はそのまま出る。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 英語のとき、設定の知らない項目と型の違う値の警告は英語で、キーの名前はそのまま出る。
     let cases = [
         ("unknownitem = 1\n", "unknownitem"),
         ("[edit]\nadd_frontmatter = \"no\"\n", "add_frontmatter"),
@@ -454,7 +454,7 @@ fn test_sr_23_lib_config_warnings_are_english() {
 
 #[test]
 fn test_sr_23_lib_config_warnings_stay_japanese_under_ja() {
-    // [SR-23] [CLI-3] scoped(Ja) では今の日本語の警告。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] scoped(Ja) では今の日本語の警告。
     let _g = scoped(Lang::Ja);
     for text in ["unknownitem = 1\n", "[edit]\nadd_frontmatter = \"no\"\n"] {
         let (_c, w) = parse_config(text).expect("警告にとどまる");
@@ -511,7 +511,7 @@ views:
 
 #[test]
 fn test_sr_23_lib_base_errors_are_english() {
-    // [SR-23] [BV-7] [SC-8] 英語のとき、未対応の関数を使った filters の理由(関数名はそのまま)、未対応のビューの型の理由、
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~scope.table-only~1] 英語のとき、未対応の関数を使った filters の理由(関数名はそのまま)、未対応のビューの型の理由、
     // 無いビューの理由、評価できない列の notes とセルの理由が英語。
     let dir = TempDir::new("base-en");
     let _g = scoped(Lang::En);
@@ -564,7 +564,7 @@ fn test_sr_23_lib_base_errors_are_english() {
 
 #[test]
 fn test_sr_23_lib_base_errors_stay_japanese_under_ja() {
-    // [SR-23] [BV-7] [SC-8] scoped(Ja) では今の日本語の理由(未対応の型は「未対応」を含む)。
+    // [stest -> req~screen.locales-two-languages~1, req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~scope.table-only~1] scoped(Ja) では今の日本語の理由(未対応の型は「未対応」を含む)。
     let dir = TempDir::new("base-ja");
     let _g = scoped(Lang::Ja);
     let (md, b) = open_base(&dir, BASE_TEXT);
@@ -578,7 +578,7 @@ fn test_sr_23_lib_base_errors_stay_japanese_under_ja() {
 
 #[test]
 fn test_sr_23_lib_date_errors_are_english() {
-    // [SR-23] [CE-22] [CE-5] 英語のとき、読めない日付の形と、読めない・実在しない日付の打ち込みの理由が英語。
+    // [stest -> req~screen.locales-auto~1, req~screen.locales-ledger~1, req~cell-edit.date-format-display~1, req~cell-edit.date-input-invalid~1] 英語のとき、読めない日付の形と、読めない・実在しない日付の打ち込みの理由が英語。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
     match DateFormat::parse("QQ") {
@@ -602,7 +602,7 @@ fn test_sr_23_lib_date_errors_are_english() {
 
 #[test]
 fn test_sr_23_lib_date_errors_stay_japanese_under_ja() {
-    // [SR-23] [CE-22] scoped(Ja) では今の日本語の理由。
+    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.date-format-display~1] scoped(Ja) では今の日本語の理由。
     let _g = scoped(Lang::Ja);
     // DateFormat に Debug があるとは仮定しない(tests/test_date_format.rs と同じ)ので match で取り出す。
     match DateFormat::parse("QQ") {
@@ -641,7 +641,7 @@ const BROKEN_VIEWS: &str = "[[target]\npath = \"/x\n  [[target.view]]\n  name = 
 
 #[test]
 fn test_sr_23_lib_views_warnings_are_english() {
-    // [SR-23] [BV-20] 英語のとき、views.toml の知らない項目(名前はそのまま)と壊れたファイルの警告が英語。
+    // [stest -> req~screen.locales-no-translate~1, req~base-view.views-toml-unknown-items~1] 英語のとき、views.toml の知らない項目(名前はそのまま)と壊れたファイルの警告が英語。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
 
@@ -667,7 +667,7 @@ fn test_sr_23_lib_views_warnings_are_english() {
 
 #[test]
 fn test_sr_23_lib_views_warnings_stay_japanese_under_ja() {
-    // [SR-23] [BV-20] scoped(Ja) では今の日本語の警告。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~base-view.views-toml-unknown-items~1] scoped(Ja) では今の日本語の警告。
     let _g = scoped(Lang::Ja);
     let t = TempDir::new("views-unknown-ja");
     let w = views_warnings(&t, None);
@@ -738,7 +738,7 @@ fn stderr_lines(out: &Output) -> Vec<String> {
 
 #[test]
 fn test_sr_23_lib_print_warning_is_english_with_lang_en() {
-    // [SR-23] [CLI-5] LANG=en_US.UTF-8 で `--print` → 評価できない列の警告(標準エラーに1行)が英語。終了コード 0。
+    // [stest -> req~screen.locales-two-languages~1, req~cli.print-unsupported-warn~1] LANG=en_US.UTF-8 で `--print` → 評価できない列の警告(標準エラーに1行)が英語。終了コード 0。
     let out = run_print("print-en", "en_US.UTF-8");
     assert_eq!(
         out.status.code(),
@@ -753,7 +753,7 @@ fn test_sr_23_lib_print_warning_is_english_with_lang_en() {
 
 #[test]
 fn test_sr_23_lib_print_warning_is_japanese_with_lang_ja() {
-    // [SR-23] [CLI-5] LANG=ja_JP.UTF-8 では今と同じ日本語の警告。
+    // [stest -> req~screen.locales-two-languages~1, req~cli.print-unsupported-warn~1] LANG=ja_JP.UTF-8 では今と同じ日本語の警告。
     let out = run_print("print-ja", "ja_JP.UTF-8");
     assert_eq!(
         out.status.code(),

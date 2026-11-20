@@ -1,5 +1,5 @@
 //! 画面のテーマ(SR-26・SR-27)の塗り分けの続き(レビューの指摘: zebra の行の選択・印・太字と、列の見出しの色の範囲)。
-//! 記録: specs/_changes/2026-10-06-themes.md。
+//! 記録: specs/_history/decidespec/_changes/2026-10-06-themes.md。
 
 use super::test_screen::{app_of, buffer, col_named, press, text, Tmp};
 use super::*;
@@ -65,7 +65,7 @@ fn bold_underlined(buf: &Buffer, y: u16) -> Vec<u16> {
 
 #[test]
 fn test_sr_26_zebra_row_selection_mark_and_bold() {
-    // [SR-26][SR-20] zebra = true で偶数番目の行を選ぶ → 選んでいるセルは選択の色(反転は外れる)、
+    // [utest -> req~screen.themes-paint~1, req~screen.themes-color-only~1, req~screen.display-options-config~1] zebra = true で偶数番目の行を選ぶ → 選んでいるセルは選択の色(反転は外れる)、
     // 左端の `>` は mark、名前の太字は strong、ほかの文字は zebra_fg、地は zebra_bg。
     let tmp = vault("thmzebsel");
     let zebra = "[display]\nzebra = true\n";
@@ -121,7 +121,7 @@ fn test_sr_26_zebra_row_selection_mark_and_bold() {
 
 #[test]
 fn test_sr_26_colhead_only_on_the_column_heading_row() {
-    // [SR-26] 列の見出しの行の太字+下線は colhead。
+    // [utest -> req~screen.themes-paint~1] 列の見出しの行の太字+下線は colhead。
     let tmp = vault("thmcolhead");
     let base = buffer(&configured(&tmp, ""));
     let a = configured(&tmp, "[look]\ntheme = \"nord\"\n");
@@ -142,7 +142,7 @@ fn test_sr_26_colhead_only_on_the_column_heading_row() {
 
 #[test]
 fn test_sr_26_input_box_is_strong_not_colhead() {
-    // [SR-26] 編集の入力ボックス(太字+下線)は列の見出しの色でなく strong。
+    // [utest -> req~screen.themes-paint~1] 編集の入力ボックス(太字+下線)は列の見出しの色でなく strong。
     let tmp = vault("thminput");
     let cfg = "[edit]\ncandidates = 0\n";
     let mut b = configured(&tmp, cfg);
@@ -166,7 +166,7 @@ fn test_sr_26_input_box_is_strong_not_colhead() {
 
 #[test]
 fn test_sr_26_search_hit_name_is_strong_not_colhead() {
-    // [SR-26] 検索に一致した今の行の名前(太字+下線)も strong。
+    // [utest -> req~screen.themes-paint~1] 検索に一致した今の行の名前(太字+下線)も strong。
     let tmp = vault("thmsearch");
     let mut b = configured(&tmp, "");
     let mut a = configured(&tmp, "[look]\ntheme = \"nord\"\n");

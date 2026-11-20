@@ -1,5 +1,5 @@
 //! 式(src/expr.rs)の受け入れテスト(タスク 6)。
-//! BV-6・BV-7。仕様: specs/base-view/spec.md。形: docs/design.md の src/expr.rs と FileInfo。
+//! BV-6・BV-7。仕様: specs/_history/decidespec/base-view/spec.md。形: docs/design.md の src/expr.rs と FileInfo。
 //! 各例は Obsidian のヘルプ(bases/syntax・bases/functions)の意味を写した小さな例。
 //!
 //! 今日は 2026-10-01(1970-01-01 から 20727 日)に固定する。
@@ -81,11 +81,11 @@ fn ev(src: &str) -> Val {
     eval(&must_parse(src), &env)
 }
 
-fn t(src: &str) {
+fn assert_true(src: &str) {
     assert_eq!(ev(src), Val::Bool(true), "{src}");
 }
 
-fn f(src: &str) {
+fn assert_false(src: &str) {
     assert_eq!(ev(src), Val::Bool(false), "{src}");
 }
 
@@ -97,34 +97,34 @@ fn s(v: &str) -> Val {
 
 #[test]
 fn test_bv_6_comparison() {
-    // [BV-6] 比較 == != < <= > >=。== と != はどの型にも使える。
-    t("1 == 1");
-    t("1 == 1.0");
-    f("1 == 2");
-    t("1 != 2");
-    t("1 < 2");
-    t("2 <= 2");
-    f("3 > 4");
-    t("4 >= 3");
-    t("\"a\" == 'a'");
-    t("\"a\" != \"b\"");
-    t("true == true");
+    // [utest -> req~base-view.expr-eval~1] 比較 == != < <= > >=。== と != はどの型にも使える。
+    assert_true("1 == 1");
+    assert_true("1 == 1.0");
+    assert_false("1 == 2");
+    assert_true("1 != 2");
+    assert_true("1 < 2");
+    assert_true("2 <= 2");
+    assert_false("3 > 4");
+    assert_true("4 >= 3");
+    assert_true("\"a\" == 'a'");
+    assert_true("\"a\" != \"b\"");
+    assert_true("true == true");
 }
 
 #[test]
 fn test_bv_6_logic() {
-    // [BV-6] 論理 && || !
-    t("true && true");
-    f("true && false");
-    t("false || true");
-    f("!true");
-    t("!false");
-    t("1 < 2 && 2 < 3");
+    // [utest -> req~base-view.expr-eval~1] 論理 && || !
+    assert_true("true && true");
+    assert_false("true && false");
+    assert_true("false || true");
+    assert_false("!true");
+    assert_true("!false");
+    assert_true("1 < 2 && 2 < 3");
 }
 
 #[test]
 fn test_bv_6_arithmetic() {
-    // [BV-6] 算術 + - * / %
+    // [utest -> req~base-view.expr-eval~1] 算術 + - * / %
     assert_eq!(ev("1 + 2"), Val::Num(3.0));
     assert_eq!(ev("5 - 7"), Val::Num(-2.0));
     assert_eq!(ev("3 * 4"), Val::Num(12.0));
@@ -135,20 +135,20 @@ fn test_bv_6_arithmetic() {
 
 #[test]
 fn test_bv_6_precedence_and_parens() {
-    // [BV-6] 優先順位と括弧。* は + より強く、&& は || より強い。- は左から。
+    // [utest -> req~base-view.expr-eval~1] 優先順位と括弧。* は + より強く、&& は || より強い。- は左から。
     assert_eq!(ev("1 + 2 * 3"), Val::Num(7.0));
     assert_eq!(ev("(1 + 2) * 3"), Val::Num(9.0));
     assert_eq!(ev("1 - 2 - 3"), Val::Num(-4.0));
     assert_eq!(ev("8 / 2 / 2"), Val::Num(2.0));
-    t("true || false && false");
-    f("(true || false) && false");
-    t("1 + 1 == 2");
-    f("!(1 < 2)");
+    assert_true("true || false && false");
+    assert_false("(true || false) && false");
+    assert_true("1 + 1 == 2");
+    assert_false("!(1 < 2)");
 }
 
 #[test]
 fn test_bv_6_literals() {
-    // [BV-6] 文字列・数・true・false・null・リスト
+    // [utest -> req~base-view.expr-eval~1] 文字列・数・true・false・null・リスト
     assert_eq!(ev("'abc'"), s("abc"));
     assert_eq!(ev("\"abc\""), s("abc"));
     assert_eq!(ev("12.5"), Val::Num(12.5));
@@ -161,21 +161,21 @@ fn test_bv_6_literals() {
 
 #[test]
 fn test_bv_6_note_references() {
-    // [BV-6] `status`・`note.status`・`note["a b"]`
+    // [utest -> req~base-view.expr-eval~1] `status`・`note.status`・`note["a b"]`
     assert_eq!(ev("status"), s("done"));
     assert_eq!(ev("note.status"), s("done"));
     assert_eq!(ev("note[\"a b\"]"), s("spaced"));
     assert_eq!(ev("note[\"status\"]"), s("done"));
-    t("status == \"done\"");
+    assert_true("status == \"done\"");
     assert_eq!(ev("count + 1"), Val::Num(4.0));
     assert_eq!(ev("price * 2"), Val::Num(5.0));
-    t("flag");
+    assert_true("flag");
     assert_eq!(ev("due"), Val::Date(TODAY - 1));
 }
 
 #[test]
 fn test_bv_6_missing_key_is_null() {
-    // [BV-6] 存在しないキー・formula は Null
+    // [utest -> req~base-view.expr-eval~1] 存在しないキー・formula は Null
     assert_eq!(ev("nokey"), Val::Null);
     assert_eq!(ev("note.nokey"), Val::Null);
     assert_eq!(ev("note[\"no key\"]"), Val::Null);
@@ -185,22 +185,22 @@ fn test_bv_6_missing_key_is_null() {
 
 #[test]
 fn test_bv_6_file_references() {
-    // [BV-6] file.name ほか FileInfo の項目
+    // [utest -> req~base-view.expr-eval~1] file.name ほか FileInfo の項目
     assert_eq!(ev("file.name"), s("a b.md"));
     assert_eq!(ev("file.basename"), s("a b"));
     assert_eq!(ev("file.ext"), s("md"));
     assert_eq!(ev("file.path"), s("notes/sub/a b.md"));
     assert_eq!(ev("file.folder"), s("notes/sub"));
     assert_eq!(ev("file.size"), Val::Num(123.0));
-    t("file.tags.contains(\"proj\")");
+    assert_true("file.tags.contains(\"proj\")");
     // mtime・ctime は日時。今より前で、mtime は ctime より後。
-    t("file.mtime < now()");
-    t("file.ctime < file.mtime");
+    assert_true("file.mtime < now()");
+    assert_true("file.ctime < file.mtime");
 }
 
 #[test]
 fn test_bv_6_formula_reference() {
-    // [BV-6] formula.x
+    // [utest -> req~base-view.expr-eval~1] formula.x
     assert_eq!(ev("formula.x"), Val::Num(42.0));
     assert_eq!(ev("formula.x + 1"), Val::Num(43.0));
     assert_eq!(ev("formula.label"), s("hi"));
@@ -210,7 +210,7 @@ fn test_bv_6_formula_reference() {
 
 #[test]
 fn test_bv_6_if() {
-    // [BV-6] if(c, a, b?): 真なら a、偽なら b、b が無ければ Null
+    // [utest -> req~base-view.expr-eval~1] if(c, a, b?): 真なら a、偽なら b、b が無ければ Null
     assert_eq!(ev("if(1 > 2, \"a\", \"b\")"), s("b"));
     assert_eq!(ev("if(status == \"done\", \"yes\", \"no\")"), s("yes"));
     assert_eq!(ev("if(false, \"a\")"), Val::Null);
@@ -219,7 +219,7 @@ fn test_bv_6_if() {
 
 #[test]
 fn test_bv_6_date_today_now() {
-    // [BV-6] date("2026-09-30")・today()・now()
+    // [utest -> req~base-view.expr-eval~1] date("2026-09-30")・today()・now()
     assert_eq!(ev("date(\"2026-09-30\")"), Val::Date(TODAY - 1));
     assert_eq!(ev("today()"), Val::Date(TODAY));
     assert_eq!(ev("now()"), Val::DateTime(NOW));
@@ -227,7 +227,7 @@ fn test_bv_6_date_today_now() {
 
 #[test]
 fn test_bv_6_date_plus_duration() {
-    // [BV-6] 日付 + 期間の文字列("1d"・"2 weeks")と、日付 − 期間
+    // [utest -> req~base-view.expr-eval~1] 日付 + 期間の文字列("1d"・"2 weeks")と、日付 − 期間
     assert_eq!(ev("date(\"2026-09-30\") + \"1d\""), Val::Date(TODAY));
     assert_eq!(ev("today() + \"2 weeks\""), Val::Date(TODAY + 14));
     assert_eq!(ev("today() - \"1d\""), Val::Date(TODAY - 1));
@@ -243,7 +243,7 @@ fn test_bv_6_date_plus_duration() {
 
 #[test]
 fn test_bv_6_date_minus_date_is_millis() {
-    // [BV-6] 日付 − 日付 = 期間(ミリ秒)
+    // [utest -> req~base-view.expr-eval~1] 日付 − 日付 = 期間(ミリ秒)
     assert_eq!(
         ev("date(\"2026-10-01\") - date(\"2026-09-30\")"),
         Val::Duration(DAY_MS)
@@ -254,53 +254,53 @@ fn test_bv_6_date_minus_date_is_millis() {
 
 #[test]
 fn test_bv_6_date_comparison() {
-    // [BV-6] 日付の比較
-    t("date(\"2026-09-30\") < today()");
-    t("due < today()");
-    f("due > today()");
-    t("due == date(\"2026-09-30\")");
-    t("today() + \"1d\" > today()");
-    t("today() <= today()");
+    // [utest -> req~base-view.expr-eval~1] 日付の比較
+    assert_true("date(\"2026-09-30\") < today()");
+    assert_true("due < today()");
+    assert_false("due > today()");
+    assert_true("due == date(\"2026-09-30\")");
+    assert_true("today() + \"1d\" > today()");
+    assert_true("today() <= today()");
 }
 
 #[test]
 fn test_bv_6_has_tag() {
-    // [BV-6] file.hasTag: いずれかのタグがあれば true。入れ子 `a/b` は親 `a` でも当たる(Obsidian のヘルプ)。
-    t("file.hasTag(\"proj\")");
-    t("file.hasTag(\"a\")");
-    t("file.hasTag(\"a/b\")");
-    f("file.hasTag(\"b\")");
-    f("file.hasTag(\"pro\")");
-    t("file.hasTag(\"nope\", \"proj\")");
-    f("file.hasTag(\"nope\", \"other\")");
+    // [utest -> req~base-view.expr-eval~1] file.hasTag: いずれかのタグがあれば true。入れ子 `a/b` は親 `a` でも当たる(Obsidian のヘルプ)。
+    assert_true("file.hasTag(\"proj\")");
+    assert_true("file.hasTag(\"a\")");
+    assert_true("file.hasTag(\"a/b\")");
+    assert_false("file.hasTag(\"b\")");
+    assert_false("file.hasTag(\"pro\")");
+    assert_true("file.hasTag(\"nope\", \"proj\")");
+    assert_false("file.hasTag(\"nope\", \"other\")");
 }
 
 #[test]
 fn test_bv_6_in_folder() {
-    // [BV-6] file.inFolder: そのフォルダか、その下のフォルダにあれば true
-    t("file.inFolder(\"notes\")");
-    t("file.inFolder(\"notes/sub\")");
-    f("file.inFolder(\"note\")");
-    f("file.inFolder(\"other\")");
+    // [utest -> req~base-view.expr-eval~1] file.inFolder: そのフォルダか、その下のフォルダにあれば true
+    assert_true("file.inFolder(\"notes\")");
+    assert_true("file.inFolder(\"notes/sub\")");
+    assert_false("file.inFolder(\"note\")");
+    assert_false("file.inFolder(\"other\")");
 }
 
 #[test]
 fn test_bv_6_has_property() {
-    // [BV-6] file.hasProperty
-    t("file.hasProperty(\"status\")");
-    t("file.hasProperty(\"a b\")");
-    f("file.hasProperty(\"nokey\")");
+    // [utest -> req~base-view.expr-eval~1] file.hasProperty
+    assert_true("file.hasProperty(\"status\")");
+    assert_true("file.hasProperty(\"a b\")");
+    assert_false("file.hasProperty(\"nokey\")");
 }
 
 #[test]
 fn test_bv_6_string_methods() {
-    // [BV-6] 文字列の .contains・.isEmpty・.length
-    t("\"hello\".contains(\"ell\")");
-    f("\"hello\".contains(\"xyz\")");
-    t("status.contains(\"on\")");
-    t("\"\".isEmpty()");
-    f("\"a\".isEmpty()");
-    t("empty.isEmpty()");
+    // [utest -> req~base-view.expr-eval~1] 文字列の .contains・.isEmpty・.length
+    assert_true("\"hello\".contains(\"ell\")");
+    assert_false("\"hello\".contains(\"xyz\")");
+    assert_true("status.contains(\"on\")");
+    assert_true("\"\".isEmpty()");
+    assert_false("\"a\".isEmpty()");
+    assert_true("empty.isEmpty()");
     assert_eq!(ev("\"hello\".length"), Val::Num(5.0));
     assert_eq!(ev("status.length"), Val::Num(4.0));
     assert_eq!(ev("(1 + 2).toString()"), s("3"));
@@ -308,23 +308,23 @@ fn test_bv_6_string_methods() {
 
 #[test]
 fn test_bv_6_list_methods() {
-    // [BV-6] リストの .contains・.containsAll・.containsAny・.isEmpty・.length
-    t("list.contains(\"x\")");
-    f("list.contains(\"w\")");
-    t("list.containsAll(\"x\", \"z\")");
-    f("list.containsAll(\"x\", \"w\")");
-    t("list.containsAny(\"w\", \"y\")");
-    f("list.containsAny(\"v\", \"w\")");
-    f("list.isEmpty()");
-    t("[].isEmpty()");
+    // [utest -> req~base-view.expr-eval~1] リストの .contains・.containsAll・.containsAny・.isEmpty・.length
+    assert_true("list.contains(\"x\")");
+    assert_false("list.contains(\"w\")");
+    assert_true("list.containsAll(\"x\", \"z\")");
+    assert_false("list.containsAll(\"x\", \"w\")");
+    assert_true("list.containsAny(\"w\", \"y\")");
+    assert_false("list.containsAny(\"v\", \"w\")");
+    assert_false("list.isEmpty()");
+    assert_true("[].isEmpty()");
     assert_eq!(ev("list.length"), Val::Num(3.0));
     assert_eq!(ev("[1, 2].length"), Val::Num(2.0));
-    t("[1, 2, 3].contains(2)");
+    assert_true("[1, 2, 3].contains(2)");
 }
 
 #[test]
 fn test_bv_6_type_mismatch_is_null() {
-    // [BV-6] 型の合わない演算は Null
+    // [utest -> req~base-view.expr-eval~1] 型の合わない演算は Null
     assert_eq!(ev("\"abc\" * 2"), Val::Null);
     assert_eq!(ev("\"abc\" - 1"), Val::Null);
     assert_eq!(ev("[1] / 2"), Val::Null);
@@ -334,7 +334,7 @@ fn test_bv_6_type_mismatch_is_null() {
 
 #[test]
 fn test_bv_6_to_val() {
-    // [BV-6] フロントマターの値 → Val。`YYYY-MM-DD` の文字列は Date。
+    // [utest -> req~base-view.expr-eval~1] フロントマターの値 → Val。`YYYY-MM-DD` の文字列は Date。
     assert_eq!(
         to_val(&Value::Str("2026-10-01".to_string())),
         Val::Date(TODAY)
@@ -379,7 +379,7 @@ fn syntax_error(src: &str) {
 
 #[test]
 fn test_bv_7_unknown_function_is_unsupported() {
-    // [BV-7] 知らない関数・メソッドは parse で Unsupported、名前を含む
+    // [utest -> req~base-view.unsupported-no-guess~1] 知らない関数・メソッドは parse で Unsupported、名前を含む
     unsupported_with("foo(1)", "foo");
     unsupported_with("list.map(value + 1)", "map");
     unsupported_with("status == \"a\" && bar(status)", "bar");
@@ -388,13 +388,13 @@ fn test_bv_7_unknown_function_is_unsupported() {
 
 #[test]
 fn test_bv_7_uncomputable_file_property_is_unsupported() {
-    // [BV-7] Obsidian にはあるが mdgrid が計算できない file の項目(バックリンク)は、推測で値を作らず未対応と出す
+    // [utest -> req~base-view.unsupported-no-guess~1] Obsidian にはあるが mdgrid が計算できない file の項目(バックリンク)は、推測で値を作らず未対応と出す
     unsupported_with("file.embeds.length", "embeds");
 }
 
 #[test]
 fn test_bv_7_syntax_errors() {
-    // [BV-7] 文法の誤りは Syntax
+    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 文法の誤りは Syntax
     syntax_error("1 +");
     syntax_error("(1 + 2");
     syntax_error("\"abc");

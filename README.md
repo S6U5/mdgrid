@@ -41,6 +41,17 @@ From crates.io. With Rust 1.90 or newer:
 cargo install mdgrid --locked
 ```
 
+That builds from source and takes a few minutes. With [cargo-binstall](https://github.com/cargo-bins/cargo-binstall), `cargo binstall mdgrid` fetches the prebuilt binary from the release instead.
+
+Nix. Run it without installing, or add it to your profile:
+
+```sh
+nix run github:S6U5/mdgrid/v0.4.0 -- ~/notes/Tasks
+nix profile install github:S6U5/mdgrid/v0.4.0
+```
+
+The tag pins a release. Without it (`github:S6U5/mdgrid`) you get the development version on the main branch.
+
 From source.
 
 ```sh
@@ -246,7 +257,7 @@ Found a bug or have an idea? [Open an issue](https://github.com/S6U5/mdgrid/issu
 
 ## How it is developed
 
-The specification lives in [specs/](specs/README.md) and every change goes through a recorded proposal and decision (in Japanese). Tests that guard requirements decided by a person are locked, so they cannot be weakened silently.
+The requirements live in [specs/requirements/](specs/requirements/README.md), one line per requirement (in Japanese). Each test names the requirement it checks in a comment, and a small checker makes sure every critical requirement has a real test and that weakened tests go to a person for review.
 
 ## License
 

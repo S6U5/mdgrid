@@ -1,14 +1,10 @@
 name: Demos
 
 # Record the feature tours in demos/*.tape as GIFs with VHS. The release workflow calls this and attaches
-# the GIFs to the release; pull requests that change the tapes run it too, to catch a broken tape early.
-# The GIFs are never committed.
+# the GIFs to the release. It does not run on pull requests: a run takes about 45 minutes, tapes rarely
+# change, and a broken tape shows up when the release records them. The GIFs are never committed.
 on:
   workflow_call:
-  pull_request:
-    paths:
-      - "demos/**"
-      - ".github/workflows/demos.yml"
 
 permissions:
   contents: read
@@ -22,7 +18,7 @@ jobs:
   record:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
           toolchain: stable
@@ -39,7 +35,7 @@ jobs:
           vhs --version
       - name: Record
         run: sh demos/record.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: demos
           path: demos/out/*.gif

@@ -1,4 +1,4 @@
-//! [CLI-17] --apply のレビューで見つけた形(specs/_changes/2026-10-06-apply.md の照合)。
+//! [cli.apply] --apply のレビューで見つけた形(specs/_history/decidespec/_changes/2026-10-06-apply.md の照合)。
 //! 書き出したものをそのまま戻すと何も書かない(混ざった型・空の文字・`, ` を含む要素・大きな整数・
 //! 型の合わない値・入れ子の値)。見出しの読み違い・打ち間違い・重なった行・今日からの日数は理由にする。
 
@@ -111,6 +111,7 @@ fn test_cli_17_round_trip_odd_values_writes_nothing() {
     }
 }
 
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1]
 #[test]
 fn test_cli_17_round_trip_sample_vaults_writes_nothing() {
     let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -135,6 +136,7 @@ fn test_cli_17_round_trip_sample_vaults_writes_nothing() {
     }
 }
 
+// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1]
 #[test]
 fn test_cli_17_crlf_csv_with_multiline_cell() {
     let root = dir("crlf");
@@ -151,6 +153,7 @@ fn test_cli_17_crlf_csv_with_multiline_cell() {
     assert_eq!(snapshot(&root), before);
 }
 
+// [stest -> req~cli.apply-changed-cells~1]
 #[test]
 fn test_cli_17_header_problems() {
     let root = dir("head");
@@ -191,6 +194,7 @@ fn test_cli_17_header_problems() {
     assert_eq!(snapshot(&root)[0], before[0], "a.md は変わらない");
 }
 
+// [stest -> req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_duplicates_relative_dates_and_lists() {
     let root = dir("dup");

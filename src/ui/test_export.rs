@@ -1,4 +1,4 @@
-//! 画面の表の書き出し(OUT-2・OUT-5)。specs/_changes/2026-10-07-export-table.md。
+//! 画面の表の書き出し(OUT-2・OUT-5)。specs/_history/decidespec/_changes/2026-10-07-export-table.md。
 
 use super::keymap::Mode;
 use super::test_screen::{ch, col_named, press, typing, Tmp};
@@ -26,6 +26,7 @@ fn out(tmp: &Tmp, name: &str) -> std::path::PathBuf {
     tmp.notes().parent().unwrap().join(name)
 }
 
+// [utest -> req~output.export-shown~1, req~output.export-format~1]
 #[test]
 fn test_out_2_export_shown_table() {
     let (tmp, mut a) = app("out2shown");
@@ -68,6 +69,7 @@ fn test_out_2_export_shown_table() {
     assert_eq!(super::test_screen::read(&tmp, "a.md"), NOTES[0].1);
 }
 
+// [utest -> req~output.export-path-column~1, req~output.export-path-apply~1]
 #[test]
 fn test_out_5_export_matches_print_with_path() {
     // 絞りも並べ替えもしない既定の表では、`--print --with-path` と同じ中身(だから --apply で戻せる)。
@@ -94,6 +96,7 @@ fn test_out_5_export_matches_print_with_path() {
     assert_eq!(got, print::render(&want, print::Format::Json));
 }
 
+// [utest -> req~output.export-path-name~1, req~output.export-path-overwrite~1]
 #[test]
 fn test_out_5_overwrite_asks_and_home() {
     let (tmp, mut a) = app("out5over");

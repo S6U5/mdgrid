@@ -1,6 +1,6 @@
 //! 日付の列を囲まずに書く(date-unquoted)の受け入れテスト(WB-18・WB-17・WB-6・WB-7・CE-22)。
-//! 仕様: specs/write-back/spec.md の WB-18、specs/cell-edit/spec.md の CE-22。
-//! 形: specs/_changes/2026-10-02-date-unquoted.md の「設計」と docs/design.md「書き戻し(write-back)」の
+//! 仕様: specs/_history/decidespec/write-back/spec.md の WB-18、specs/_history/decidespec/cell-edit/spec.md の CE-22。
+//! 形: specs/_history/decidespec/_changes/2026-10-02-date-unquoted.md の「設計」と docs/design.md「書き戻し(write-back)」の
 //! `NewValue::Date(String)`。
 
 use mdgrid::changes::{Changes, Outcome};
@@ -115,20 +115,20 @@ fn read(dir: &TempDir, name: &str) -> String {
 
 #[test]
 fn test_wb_18_plain_date_stays_unquoted() {
-    // [WB-18] `due: 2026-10-05` に Date("2026-11-03") → `due: 2026-11-03`。他のバイトは同じ。
+    // [utest -> req~write-back.date-quoting-plain~1, req~write-back.date-quoting-keep-quotes~1, req~write-back.date-quoting-untyped~1, req~write-back.date-quoting-text-column~1] `due: 2026-10-05` に Date("2026-11-03") → `due: 2026-11-03`。他のバイトは同じ。
     let note = "---\ntitle: A  # c\ndue: 2026-10-05\ntags:\n  - x\n---\nbody\n";
     let out = apply_str(note, "due", date("2026-11-03"));
     assert_eq!(
         out, "---\ntitle: A  # c\ndue: 2026-11-03\ntags:\n  - x\n---\nbody\n",
         "[WB-18] 素の日付を囲んだか、他のバイトが変わった"
     );
-    // [WB-6] 読み直すと値の文字列は 2026-11-03
+    // [utest -> req~write-back.verify-before-replace~1] 読み直すと値の文字列は 2026-11-03
     assert_reads_as(out.as_bytes(), "due", "2026-11-03");
 }
 
 #[test]
 fn test_wb_18_quoted_date_keeps_quotes() {
-    // [WB-18] 元が囲んであれば元の引用符を保つ。
+    // [utest -> req~write-back.date-quoting-keep-quotes~1] 元が囲んであれば元の引用符を保つ。
     let dq = apply_str("---\ndue: \"2026-10-05\"\n---\n", "due", date("2026-11-03"));
     assert_eq!(dq, "---\ndue: \"2026-11-03\"\n---\n", "[WB-18] 二重引用符");
     assert_reads_as(dq.as_bytes(), "due", "2026-11-03");
@@ -140,12 +140,12 @@ fn test_wb_18_quoted_date_keeps_quotes() {
 
 #[test]
 fn test_wb_18_missing_key_adds_unquoted_line() {
-    // [WB-18] キーの無いノート → `due: 2026-11-03` の1行が足される(囲まない)。
+    // [utest -> req~write-back.date-quoting-plain~1] キーの無いノート → `due: 2026-11-03` の1行が足される(囲まない)。
     let note = "---\ntitle: A\nstatus: todo\n---\nbody\n";
     let out = apply_str(note, "due", date("2026-11-03"));
     let added: Vec<&str> = out.lines().filter(|l| l.starts_with("due")).collect();
     assert_eq!(added, vec!["due: 2026-11-03"], "[WB-18] 足した行: {out:?}");
-    // [WB-1] 足した1行を除けば元と同じ
+    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~1, req~write-back.byte-range-added-newline~1, req~write-back.byte-range-rename-key~1] 足した1行を除けば元と同じ
     assert_eq!(
         out.replacen("due: 2026-11-03\n", "", 1),
         note,
@@ -156,7 +156,7 @@ fn test_wb_18_missing_key_adds_unquoted_line() {
 
 #[test]
 fn test_wb_18_null_and_empty_written_unquoted() {
-    // [WB-18] `due:`(Null)と `due: ""` → 囲まない。
+    // [utest -> req~write-back.date-quoting-plain~1, req~write-back.date-quoting-text-column~1] `due:`(Null)と `due: ""` → 囲まない。
     let null = apply_str("---\ndue:\ntitle: A\n---\n", "due", date("2026-11-03"));
     assert_eq!(
         null, "---\ndue: 2026-11-03\ntitle: A\n---\n",
@@ -174,7 +174,7 @@ fn test_wb_18_null_and_empty_written_unquoted() {
 
 #[test]
 fn test_wb_18_datetime_unquoted() {
-    // [WB-18] 日時 `at: 2026-10-05T09:00` に Date("2026-11-03T09:00") → 囲まない。
+    // [utest -> req~write-back.date-quoting-plain~1, req~write-back.date-quoting-keep-quotes~1, req~write-back.date-quoting-untyped~1] 日時 `at: 2026-10-05T09:00` に Date("2026-11-03T09:00") → 囲まない。
     let out = apply_str(
         "---\nat: 2026-10-05T09:00\n---\n",
         "at",
@@ -186,7 +186,7 @@ fn test_wb_18_datetime_unquoted() {
 
 #[test]
 fn test_wb_18_not_a_date_is_error() {
-    // [WB-18] 日付の形に合わない Date は Err(書かない)。
+    // [utest -> req~write-back.date-quoting-plain~1, req~write-back.date-quoting-keep-quotes~1, req~write-back.date-quoting-untyped~1] 日付の形に合わない Date は Err(書かない)。
     let note = "---\ndue: 2026-10-05\n---\n";
     for bad in ["someday", "2026-02-30", "", "2026-11-03 # x", "2026-13-01"] {
         assert!(
@@ -198,7 +198,7 @@ fn test_wb_18_not_a_date_is_error() {
 
 #[test]
 fn test_wb_18_text_column_still_quoted() {
-    // [WB-18][WB-7] Str("2026-11-03") をテキストの列に当てる → これまでどおり囲む。
+    // [utest -> req~write-back.date-quoting-text-column~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-type-safe~1] Str("2026-11-03") をテキストの列に当てる → これまでどおり囲む。
     let out = apply_str(
         "---\nmemo: hello\n---\n",
         "memo",
@@ -225,7 +225,7 @@ fn test_wb_18_text_column_still_quoted() {
 
 #[test]
 fn test_wb_18_save_writes_unquoted() {
-    // [WB-18][WB-6] save でも素の日付は囲まずに書き、読み直しの検査を通る。
+    // [utest -> req~write-back.date-quoting-plain~1, req~write-back.date-quoting-untyped~1, req~write-back.verify-before-replace~1] save でも素の日付は囲まずに書き、読み直しの検査を通る。
     let dir = TempDir::new("wb18save");
     let plain = dir.write("plain.md", b"---\ndue: 2026-10-05\ntitle: A\n---\nbody\n");
     let base = baseline(&plain).unwrap();
@@ -249,7 +249,7 @@ fn test_wb_18_save_writes_unquoted() {
         "---\ntitle: A\ndue: 2026-11-03\n---\n"
     );
 
-    // [WB-18] 日付でない Date は save も止め、ファイルは変わらない
+    // [utest -> req~write-back.date-quoting-keep-quotes~1] 日付でない Date は save も止め、ファイルは変わらない
     let bad = dir.write("bad.md", b"---\ndue: 2026-10-05\n---\n");
     let base = baseline(&bad).unwrap();
     assert!(save(&bad, &base, &[edit("due", date("someday"))]).is_err());
@@ -260,7 +260,7 @@ fn test_wb_18_save_writes_unquoted() {
 
 #[test]
 fn test_wb_18_changes_save_date_unquoted() {
-    // [WB-18][CE-22] Markdown を開いて Changes で Date を set して save → ファイルは囲まない形。
+    // [utest -> req~write-back.date-quoting-keep-quotes~1, req~cell-edit.date-format-display~1] Markdown を開いて Changes で Date を set して save → ファイルは囲まない形。
     let d = "---\ndue: 2026-10-05\ntitle: D\n---\nbody d\n";
     let q = "---\ndue: \"2026-10-05\"\ntitle: Q\n---\nbody q\n";
     let (dir, src) = setup_with("wb18changes", &[("d.md", d), ("q.md", q)]);
@@ -292,7 +292,7 @@ fn test_wb_18_changes_save_date_unquoted() {
 
 #[test]
 fn test_wb_17_same_date_not_pending() {
-    // [WB-17] 元と同じ日付を Date で set → ためない。別の日付にしてから戻しても、ためない。
+    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1] 元と同じ日付を Date で set → ためない。別の日付にしてから戻しても、ためない。
     let d = "---\ndue: 2026-10-05\ntitle: D\n---\nbody d\n";
     let (dir, src) = setup_with("wb17date18", &[("d.md", d)]);
     let mut src = src;

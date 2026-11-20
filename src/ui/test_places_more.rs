@@ -59,7 +59,7 @@ fn with_view(tmp: &Tmp, name: &str) {
 
 #[test]
 fn test_cli_18_readonly_registers_without_touching_notes() {
-    // [CLI-18][WB-15] 読むだけで開いても登録でき、書くのは places.toml だけ(ノートはそのまま)。
+    // [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-no-note-write~1, req~cli.readonly~1] 読むだけで開いても登録でき、書くのは places.toml だけ(ノートはそのまま)。
     let tmp = vault("plm_ro");
     let mut a = boot(&tmp, true);
     palette(&mut a, "この表を登録");
@@ -78,7 +78,7 @@ fn test_cli_18_readonly_registers_without_touching_notes() {
 
 #[test]
 fn test_cli_18_default_name_is_current_view() {
-    // [CLI-18] 名前の既定は今のビューの名前で、登録にもそのビューが入る。
+    // [utest -> req~cli.places-palette~1] 名前の既定は今のビューの名前で、登録にもそのビューが入る。
     let tmp = vault("plm_view");
     with_view(&tmp, "やること");
     let mut a = boot(&tmp, false);
@@ -94,7 +94,7 @@ fn test_cli_18_default_name_is_current_view() {
 
 #[test]
 fn test_cli_19_reopen_selects_registered_view() {
-    // [CLI-19] 開き直した表で、登録のビューを名前で選ぶ(main が開き直したあとに呼ぶ)。無ければ理由を出して先頭。
+    // [utest -> req~cli.places-list-order~1, req~cli.places-list-open~1, req~cli.places-list-pending~1, req~cli.places-list-missing-path~1] 開き直した表で、登録のビューを名前で選ぶ(main が開き直したあとに呼ぶ)。無ければ理由を出して先頭。
     let tmp = vault("plm_sel");
     with_view(&tmp, "やること");
     let mut a = boot(&tmp, false);
@@ -108,7 +108,7 @@ fn test_cli_19_reopen_selects_registered_view() {
 
 #[test]
 fn test_cli_19_save_then_switch() {
-    // [CLI-19][WB-11] ためた変更があるとき、s → 保存の確認で Enter → 書いてから終わり、選んだ表へ移る。
+    // [utest -> req~cli.places-list-pending~1, req~write-back.quit-confirm~1] ためた変更があるとき、s → 保存の確認で Enter → 書いてから終わり、選んだ表へ移る。
     let tmp = vault("plm_save");
     let other = tmp.0.join("Other");
     std::fs::create_dir_all(&other).unwrap();

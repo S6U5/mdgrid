@@ -1,4 +1,4 @@
-//! [BV-7] 式で作るリストの重さが上限を超えるときは null(specs/_changes/2026-10-06-expr-list-cap.md)。
+//! [base-view.unsupported] 式で作るリストの重さが上限を超えるときは null(specs/_history/decidespec/_changes/2026-10-06-expr-list-cap.md)。
 
 use super::*;
 use std::collections::HashMap;
@@ -29,6 +29,7 @@ fn run_with(src: &str, x: &str) -> Val {
     eval(&parse(src).expect(src), &env)
 }
 
+// [utest -> req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1]
 #[test]
 fn test_bv_7_list_cap_literal_doubling() {
     let half = "a".repeat(600 * 1024);
@@ -41,6 +42,7 @@ fn test_bv_7_list_cap_literal_doubling() {
     );
 }
 
+// [utest -> req~base-view.unsupported-column-mark~1]
 #[test]
 fn test_bv_7_list_cap_split_and_flat() {
     let big = "a".repeat(200 * 1024);

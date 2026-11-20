@@ -143,6 +143,8 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         // CE-34: ノートの名前を変える(読むだけの起動では出さない)。
         if !app.readonly {
             want.push((Section::Row, Action::RenameNote, false));
+            // cell-edit.delete-note-menu: ノートを消す(ごみ箱へ動かす)。
+            want.push((Section::Row, Action::DeleteNote, false));
         }
         // TR-5: この行に http・https の URL があれば、URL を開く。
         if app.cur_row().is_some_and(|r| app.row_url(&r).is_some()) {

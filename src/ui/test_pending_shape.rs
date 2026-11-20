@@ -7,7 +7,7 @@ use mdgrid::source::NewValue;
 
 #[test]
 fn test_sr_35_pending_bool_and_list_use_parts() {
-    // [SR-35] done を true にためる → `*✓`(生の `*true` でない)。tags に足す → `*a · b`(`*[a, b]` でない)。
+    // [utest -> req~screen.rich-cells-per-kind~1] done を true にためる → `*✓`(生の `*true` でない)。tags に足す → `*a · b`(`*[a, b]` でない)。
     let tmp = Tmp::new("sr35pending");
     tmp.write("a.md", "---\ndone: false\ntags: [a]\n---\n");
     tmp.write("b.md", "---\ndone: true\ntags: [b]\n---\n");

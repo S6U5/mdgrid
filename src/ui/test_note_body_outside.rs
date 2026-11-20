@@ -1,5 +1,5 @@
-//! [CE-32] 画面から新しいノートを作るとき、開いたフォルダの外を指す本文の雛形は読まずに理由を出し、
-//! ノートを作らない。specs/_changes/2026-10-10-body-path.md。
+//! [cell-edit.template-vars] 画面から新しいノートを作るとき、開いたフォルダの外を指す本文の雛形は読まずに理由を出し、
+//! ノートを作らない。specs/_history/decidespec/_changes/2026-10-10-body-path.md。
 
 use super::startup::Startup;
 use super::test_screen::{ch, ctrl, typing, Tmp};
@@ -29,6 +29,7 @@ fn boot(tmp: &Tmp, toml: &str) -> App {
     app
 }
 
+// [utest -> req~cell-edit.template-vars-body~1]
 #[test]
 fn test_ce_32_body_outside_refused_on_screen() {
     let tmp = Tmp::new("ce32out");

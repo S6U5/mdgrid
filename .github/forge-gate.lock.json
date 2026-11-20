@@ -1,0 +1,20 @@
+{
+  "format": "forge-gate-lock",
+  "format_version": 1,
+  "tool": "forge-gate",
+  "tool_version": "0.6.0",
+  "files": [
+    {
+      "path": ".github/CODEOWNERS",
+      "sha256": "958bc2e02ff9db986307d91212e1b8afcb292bb3731ef6adf5023a588e3061b5"
+    },
+    {
+      "path": ".github/rulesets/trace-gate.json",
+      "sha256": "c7b4a9a3427f704db2452854418b72192be5ccfe4b68dbb991f08b065207065d"
+    },
+    {
+      "path": ".github/workflows/trace-gate.yml",
+      "sha256": "40a2d4a5ea688690633a8e9b48d81473e11f801eb78f271b1f6bdeec0ee633f3"
+    }
+  ]
+}

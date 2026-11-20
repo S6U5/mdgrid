@@ -113,6 +113,7 @@ An operation on types that do not fit gives `null` instead of stopping.
 - `date()`: a date or date-time as a date (the time dropped).
 - `time()`: the time of a date or date-time as `HH:mm:ss` (`00:00:00` for a date).
 - `format(pattern)`: a date or date-time as text. The pattern uses Moment's tokens (English names): `YYYY` `YY` `Q` `MMMM` `MMM` `MM` `M` `DDDD` `DDD` `DD` `Do` `D` `dddd` `ddd` `dd` `d` `e` `E` `HH` `H` `hh` `h` `A` `a` `mm` `ss` `SSS` `X` `x`, ISO weeks `GGGG` `WW` `W`, and Sunday-start weeks `gggg` `ww` `w` (the week with January 1 is week 1). Other characters, and anything inside `[...]`, are copied as they are.
+- `relative()`: how far a date is from today, or a date-time from now, as text in mdgrid's language: `in 14 days`, `5 days ago`, `today`, `in 3 months`, `in 1 year`. Less than a calendar month is counted in days, less than twelve months in months, and beyond that in years; a part of a month or year is dropped. A date-time less than a day away is counted in hours, less than an hour in minutes, and less than a minute is `now`. Anything that is not a date gives `null`. The wording is mdgrid's own and may differ from what Obsidian shows, so use it to show a column and compare dates with `<` and `today()` in filters.
 - `join(separator)`: the items of a list as text joined by the separator.
 - `unique()`: a list without repeated items (the first of each is kept).
 - `sort()`: a list from smallest to largest.
@@ -189,7 +190,7 @@ The built-in summaries, as in Obsidian. Values of another type are not counted. 
 
 mdgrid does not evaluate the following. It never guesses a result for them.
 
-- Every other function and method from Obsidian, for example `link()`, `icon()`, `image()`, and methods such as `map()`, `filter()`, `reduce()`, `relative()`, `toFixed()`, `repeat()`, `asFile()`, and `linksTo()`, and a regular expression given to `replace()` or `split()`. Obsidian's list may grow; anything not listed on this page is treated as unsupported.
+- Every other function and method from Obsidian, for example `link()`, `icon()`, `image()`, and methods such as `map()`, `filter()`, `reduce()`, `toFixed()`, `repeat()`, `asFile()`, and `linksTo()`, and a regular expression given to `replace()` or `split()`. Obsidian's list may grow; anything not listed on this page is treated as unsupported.
 - `file` properties `file.embeds`, `file.properties` and `file.file`, and the function `link()`.
 - `this` other than `this.file` and its values listed under [this](#this), and `this` for a base embedded in a note (mdgrid only opens `.base` files).
 - Formula summaries: the top-level `summaries` (for example `customAverage: 'values.mean()'`) and a view summary that names one, or any name that is not a built-in summary. The view still opens; the bottom line lists it after `unsupported:` (`未対応:` in Japanese) and the other summaries are shown.
@@ -199,7 +200,7 @@ mdgrid does not evaluate the following. It never guesses a result for them.
 
 What you see when mdgrid meets one of these (the examples are the English messages; the Japanese screen says the same in Japanese):
 
-- In `filters` (top level or view): the view does not open. The table area shows the reason with the name, for example `(this view cannot be opened: cannot evaluate the filters of view "Open": unsupported function or field .relative() (expression: due.relative() == "yesterday"))`, and the bottom line says the view cannot be opened. Other views still open; switch with `[` `]`.
+- In `filters` (top level or view): the view does not open. The table area shows the reason with the name, for example `(this view cannot be opened: cannot evaluate the filters of view "Open": unsupported function or field .toFixed() (expression: price.toFixed(2) == "1.00"))`, and the bottom line says the view cannot be opened. Other views still open; switch with `[` `]`.
 - In a column (`formula.*` or `file.*` in `order`): every cell of that column shows a dim `?` instead of a value and cannot be edited. The dim `?` is distinct from an empty cell (missing key) and from a real `?` value. Selecting such a cell shows the unsupported expression on the bottom line (so you can tell even when the terminal cannot draw dim text), and the column is listed after `unsupported:` on the bottom line.
 - In `sort` or `groupBy`: the key is treated as empty for every row, and the bottom line notes that the view cannot be sorted by it.
 - A formula that refers to a missing formula or to itself in a loop counts as unsupported in the same way.
