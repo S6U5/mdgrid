@@ -21,7 +21,7 @@ The output reads back without warnings and behaves exactly like having no file. 
 
 ## Two kinds of items
 
-- **Whole-app items** (scope "global only"): the top-level `language`, `editor` and `poll_ms`, and the sections `[terminal]`, `[workspace]`, `[keys]` and `[templates]`. They are written only in `config.toml` (`ui.toml` may hold `[terminal] nerd_font`).
+- **Whole-app items** (scope "global only"): the top-level `language`, `editor` and `poll_ms`, and the sections `[terminal]`, `[workspace]`, `[git]`, `[keys]` and `[templates]`. They are written only in `config.toml` (`ui.toml` may hold `[terminal] nerd_font`).
 - **The table profile** (scope "global, workspace, table, view"): `use`, `[look]`, `[display]`, `[dates]`, `[edit]` and `[new_note]`. The same shape can be written in every place below, and narrower places override wider ones.
 
 ## Overrides per workspace, table and view
@@ -91,7 +91,7 @@ path = "Bookmarks"
 tree = { path = "folder", order = "order" }
 ```
 
-A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
+A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `tasks-ai`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
 
 ```
 starters/kanban/
@@ -260,6 +260,49 @@ When the table you open is in no written workspace (`-w`, a `.mdgrid/workspace.t
 ```toml
 [workspace]
 detect = [".obsidian", ".git"]
+```
+
+## `[git]` — git after a save
+
+When your notes live in a git repository, mdgrid can hand the notes it wrote to git after a save. By default it does nothing. Only the notes mdgrid wrote (or created) are handed over; other changed or staged files never enter the commit. This section goes in `config.toml` only (not in a ledger's marker, so that a copied ledger cannot make mdgrid push).
+
+### `git.auto`
+
+- Type: `"off", "add", "commit" or "push"`
+- Default: `"off"`
+- Scope: global only
+
+How far to go. `"off"` does nothing. `"add"` stages the notes it wrote. `"commit"` also commits them (only those notes). `"push"` also pushes. Folders that are not git repositories are left alone. If git fails (no push target, for example), mdgrid says so in one line and the save itself stays done.
+
+```toml
+[git]
+auto = "commit"
+```
+
+### `git.when`
+
+- Type: `"save" or "quit"`
+- Default: `"save"`
+- Scope: global only
+
+When it runs. `"save"` runs after every save (one commit per save). `"quit"` runs once when mdgrid exits (one commit for the session). Notes created from the screen count too, and notes still waiting at exit are handled then with either setting.
+
+```toml
+[git]
+when = "quit"
+```
+
+### `git.message`
+
+- Type: `"auto" or "ask"`
+- Default: `"auto"`
+- Scope: global only
+
+The commit message. `"auto"` writes "mdgrid: update N notes" on the first line, then a blank line and the paths from the repository root, one per line. `"ask"` opens a one-line field after each save and uses what you type as the first line (Enter on an empty field uses the automatic message; Esc skips the commit and leaves the notes for the commit at exit).
+
+```toml
+[git]
+message = "ask"
 ```
 
 ## `[look]` — theme, parts and colors

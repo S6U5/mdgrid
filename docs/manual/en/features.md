@@ -134,7 +134,7 @@ Pick "Create a ledger from a starter" from the palette (`:`), or run `--init-wor
 
 ![Pick rows for another command](images/pick.svg)
 
-`--print` writes the table as CSV, TSV, JSON or Markdown; edit the CSV in a spreadsheet and bring it back with `--apply`; `--pick` hands the paths of the chosen notes to the next command. A `.csv` or `.tsv` file opens directly as a ledger. For AI agents there is a skill that teaches these commands.
+`--print` writes the table as CSV, TSV, JSON or Markdown; edit the CSV in a spreadsheet and bring it back with `--apply`; `--pick` hands the paths of the chosen notes to the next command; `--new-note` adds one note in the same shape as the form. A `.csv` or `.tsv` file opens directly as a ledger. For AI agents there is a skill that teaches these commands.
 
 [Use with other commands](tasks.md#use-with-other-commands), [Open a CSV or TSV as a ledger](tasks.md#open-a-csv-or-tsv-as-a-ledger)
 

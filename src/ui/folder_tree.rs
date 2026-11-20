@@ -169,7 +169,7 @@ impl App {
     fn tree_column_ok(&self, spec: &TreeSpec) -> bool {
         spec.path.starts_with("formula.")
             || spec.path.starts_with("file.")
-            || self.src.columns().contains(&spec.path)
+            || self.has_column(&spec.path)
     }
 
     /// TR-2: 読み終えたときに、階層の列が表に無ければ CLI-3 の形で警告し、木を出さない。

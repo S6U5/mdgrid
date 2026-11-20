@@ -501,8 +501,26 @@ fn strip_md(s: &str) -> &str {
 /// 実体の場所を確かめられない(無い・行き先の無いリンク)ものは読まずに理由。読むのは確かめた実体のパス。
 /// `.obsidian/templates/…` のような `.` で始まるフォルダは受ける。
 pub fn read_body(root: &Path, body: &str) -> Result<Option<String>, String> {
-    let Some(real) = body_path(root, body)? else {
-        return Ok(None);
+    let real = match body_path(root, body) {
+        Ok(Some(real)) => real,
+        Ok(None) => return Ok(None),
+        Err(e) => {
+            // starter.layer-files: 台帳に雛形のファイルが無ければ、印が元にするスターターの同じパスのものを使う。
+            let rel = Path::new(body.trim());
+            let plain = !rel.is_absolute()
+                && rel.components().all(|c| {
+                    matches!(
+                        c,
+                        std::path::Component::Normal(_) | std::path::Component::CurDir
+                    )
+                });
+            if plain && std::fs::symlink_metadata(root.join(rel)).is_err() {
+                if let Some(text) = crate::workspace::starter_file(root, rel) {
+                    return Ok(Some(text));
+                }
+            }
+            return Err(e);
+        }
     };
     std::fs::read_to_string(&real)
         .map(Some)
@@ -595,7 +613,7 @@ pub fn note_path(root: &Path, folder: &str, name: &str) -> Result<PathBuf, Strin
 }
 
 /// 文字の値を列の型の値にする。読めなければ None。
-fn typed(kind: Kind, s: &str) -> Option<NewValue> {
+pub fn typed(kind: Kind, s: &str) -> Option<NewValue> {
     match kind {
         Kind::Text => (!s.is_empty()).then(|| NewValue::Str(s.to_string())),
         Kind::Number => {

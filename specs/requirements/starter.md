@@ -39,25 +39,30 @@
 `req~starter.shape-lang-variant~1` P1
 - 受け入れ: `ledger.ja/` があり言語が ja → `ledger/` は使わず `ledger.ja/` の中身だけ。
 
-#### mdgrid は組み込みのスターター `tasks`・`bookmarks`・`reading`・`people` を実行ファイルの中に持つべき
-`req~starter.builtin-list~1` P1
-- 受け入れ: 設定の置き場が無い → 組み込みのスターターは `tasks`(タスク)・`bookmarks`(ブックマーク)・`reading`(読書・視聴の記録)・`people`(人・連絡先・会議メモ)の4つで、どれからも `--init-workspace --starter` で作れる。
+#### mdgrid は組み込みのスターター `tasks`・`tasks-ai`・`bookmarks`・`reading`・`people` を実行ファイルの中に持つべき
+`req~starter.builtin-list~2` P1
+- 受け入れ: 設定の置き場が無い → 組み込みのスターターは `tasks`(タスク)・`tasks-ai`(人と AI で分けるタスクとルーチン)・`bookmarks`(ブックマーク)・`reading`(読書・視聴の記録)・`people`(人・連絡先・会議メモ)の5つで、どれからも `--init-workspace --starter` で作れる。
 
 #### 組み込みのスターターは、ユーザーのスターター(starter.user)と同じ形・同じ読み方の見本とし、組み込みだけに効く特例を作らないべき
 `req~starter.builtin-same-shape~1` P1
 - 受け入れ: 組み込みの `reading` と同じ中身を設定の置き場の `starters/reading2/` に置く → `--init-workspace --starter reading2` で、`--starter reading` と同じパスと中身の印と雛形ができる。
 
 #### 組み込みのスターターは、どの言語の変種でも、印が警告なしに読めるべき(印の読み込み・木の設定・`open` の警告が空)
-`req~starter.builtin-no-warning~1` P1
-- 受け入れ: 4つの組み込みから見本つきで作る → `--print-config --resolved` の標準エラーに `mdgrid:` の行が無い。`LANG=en_US.UTF-8` でも同じ。
+`req~starter.builtin-no-warning~2` P1
+- 受け入れ: 5つの組み込みのどれからでも見本つきで作る → `--print-config --resolved` の標準エラーに `mdgrid:` の行が無い。`LANG=en_US.UTF-8` でも同じ。
+
+#### 組み込みのスターターから見本なしで作った台帳は、どの言語の変種でも、行が無いことの知らせ・警告を出さずに開けるべき(Obsidian を使わないフォルダで `.obsidian/` の話をしない)
+`req~starter.builtin-empty-quiet~1` P1
+- なぜ: 印のある台帳の根は印のフォルダで、`.obsidian/` から推した根ではないため
+- 受け入れ: 5つの組み込みのどれからでも見本なしで作る(上のどこにも `.obsidian/` が無い)→ `--print` の標準エラーが空で、終了コード 0。`LANG=en_US.UTF-8` でも同じ。印の無い場所の `.base` が 0 行のときは、今までどおり探した根を標準エラーに出す(base-view.root-folder-nearest)。
 
 #### 組み込みのスターターは、どの言語の変種でも、印の `open` が印の表を指すべき
-`req~starter.builtin-open~1` P1
-- 受け入れ: 4つの組み込みから見本つきで作る → `--print` が見本の行を出す。`LANG=en_US.UTF-8` でも同じ。
+`req~starter.builtin-open~2` P1
+- 受け入れ: 5つの組み込みのどれからでも見本つきで作る → `--print` が見本の行を出す。`LANG=en_US.UTF-8` でも同じ。
 
 #### 組み込みのスターターの見本のノートは、どの言語の変種でも `--check` で問題 0 になるべき
-`req~starter.builtin-samples-check~1` P1
-- 受け入れ: 4つの組み込みから見本つきで作る → `--check` の問題が 0。`LANG=en_US.UTF-8` でも同じ。
+`req~starter.builtin-samples-check~2` P1
+- 受け入れ: 5つの組み込みのどれからでも見本つきで作る → `--check` の問題が 0。`LANG=en_US.UTF-8` でも同じ。
 
 #### 組み込みのスターター `tasks` から作った台帳は、新しいノートの名前を今日の日付8桁と `_` で始め、ノートの欄にはその頭の部分を出さないべき
 `req~starter.tasks-name-prefix~1` P1
@@ -97,8 +102,8 @@
 - 受け入れ: `starters/tasks/` を置く → tasks は1つで、ユーザーのもの。
 
 #### `mdgrid --starters` は、スターターの名前と今の言語の1行の説明を1行ずつ標準出力に出して終了コード 0 で終わり、設定の置き場が無くても組み込みを出すべき
-`req~starter.user-list~1` P1
-- 受け入れ: 置き場なし → `--starters` が組み込みの4つを、名前と説明の1行ずつ標準出力に出し、終了コード 0。
+`req~starter.user-list~2` P1
+- 受け入れ: 置き場なし → `--starters` が組み込みの5つを、名前と説明の1行ずつ標準出力に出し、終了コード 0。
 
 #### 読めないスターター(壊れた `starter.toml`・`ledger/.mdgrid/workspace.toml` の無いもの)は、cli.config-file の形で警告して飛ばすべき
 `req~starter.user-skip-broken~1` P1
@@ -140,8 +145,8 @@
 - 受け入れ: `mdgrid books --init-workspace --starter reading` → 標準出力に、作ったファイル(印と雛形)が1行に1つずつ出て、画面は出ない。
 
 #### コマンドのパレット(screen.palette)の「スターターから台帳を作る」で、スターター・作る場所・見本の有無を答えると、starter.init と同じに作り、その台帳の印の `open` の表(無ければ根)を開くべき
-`req~starter.palette-create~1` P1
-- 受け入れ: `:` → 「スターター」→ 一覧(名前と説明。打った字で絞る)に組み込みの4つ → reading を Enter → 「作る場所」の欄に `reading`(既定は開いたフォルダの下のスターターの名前)が入っているのを `~/notes/books`(開いたフォルダからの相対・`~`・絶対のパスを打てる)に直して Enter → 「見本のノートも入れる?(y/n)」→ `y` → books の Reading の表が開き、パンくずに books。
+`req~starter.palette-create~2` P1
+- 受け入れ: `:` → 「スターター」→ 一覧(名前と説明。打った字で絞る)に組み込みの5つ → reading を Enter → 「作る場所」の欄に `reading`(既定は開いたフォルダの下のスターターの名前)が入っているのを `~/notes/books`(開いたフォルダからの相対・`~`・絶対のパスを打てる)に直して Enter → 「見本のノートも入れる?(y/n)」→ `y` → books の Reading の表が開き、パンくずに books。
 
 #### パレットの「スターターから台帳を作る」は、ためた変更があれば、cli.places-list と同じく保存か取りやめを確かめるべき
 `req~starter.palette-unsaved~1` P1
@@ -165,7 +170,96 @@
 - なぜ: スターターから作った台帳と手で書いた台帳の間に差を作らないため
 - 受け入れ: 組み込みの印に知らない項目が無い(starter.builtin の警告なしで確かめる)。
 
+### スターターを元に重ねる
+
+台帳の印に「元にするスターターとオプション」だけを書き、実行ファイルの中のスターター(と設定の置き場の自分のスターター)をその下に毎回重ねる(2026-11-18 に人が決めた向き)。印に自分で書いた項目が常に勝つ。読む側(重ねて開く)は作った(P1)。作る側は今も丸ごと写す(starter.init-ledger)ままで、重ねる形の印は手で書く。作る側・選ぶ画面・書き出し・知らせは次の段(P2)で、そのときに、写す形を前提にした starter.init-ledger・starter.init-ledger-verbatim・starter.same-as-manual-keys・starter.builtin-same-shape の版を上げて書き直す。
+
+#### 台帳の印に `starter = "<名前>"` と `options = ["<名前>", …]` を書くと、そのスターターとオプションの中身(印の項目・表・ビュー)を元にして開くべき
+`req~starter.layer-marker~1` P1
+- なぜ: スターターが新しくなったときに、台帳を書き換えずに取り込めるようにするため
+- 受け入れ: 印が `starter = "tasks"` と `options = ["ai"]` の2行だけの台帳 → tasks にオプション ai を付けたときの表・ビュー・値の候補で開く。`starter` の無い印 → 今までどおり印に書いた中身だけ。
+
+#### スターターから来た項目と印に自分で書いた項目が同じとき、印の項目が勝つべき
+`req~starter.layer-own-wins~1` P1
+- なぜ: 自分の直しが、スターターの更新で消えないようにするため
+- 受け入れ: スターター tasks の `[rules.priority] values = ["p1", "p2", "p3"]`、印に `[rules.priority] values = ["high", "medium", "low"]` → 優先度の候補は high・medium・low。印に書いていない `[rules.status]` はスターターの値のまま。
+
+#### スターターの表とビューは名前で印の表とビューに突き合わせ、同じ名前は項目ごとに印が勝ち、印にだけある表とビューは後ろに足すべき
+`req~starter.layer-tables~1` P1
+- 受け入れ: 印に `[[table]] name = "タスク"` と `kanban = { column = "phase" }` だけ → 表「タスク」のカンバンの列は phase、ビューはスターターのもの。印に新しい名前のビュー「今週」→ スターターのビューの後ろに「今週」のタブ。
+
+#### mdgrid を新しい版にすると、印を1バイトも書き換えずに、新しいスターターの中身が効くべき
+`req~starter.layer-update~1` P1
+- 受け入れ: 印が `starter = "tasks"` と自分の上書きだけの台帳を、スターター tasks にビューが1つ増えた版で開く → 増えたビューのタブが出て、印のバイトは前と同じ。
+
+#### 元にしたスターターの中身が前に開いたときから変わっていたら、開いたときに1回だけ、変わったことを1行で知らせるべき
+`req~starter.layer-notice~1` P2
+- なぜ: 版を上げたときに、黙って見え方が変わらないようにするため
+- 受け入れ: スターターにビューが1つ増えた版で初めて開く → 「スターター tasks が新しくなった」の1行。閉じてもう一度開く → 知らせは出ない(読んで判定)。
+
+#### `--print-config --resolved` は、スターターから来た項目の出どころに、スターターとオプションの名前を出すべき
+`req~starter.layer-origin~1` P2
+- 受け入れ: 印が `starter = "tasks"`・`options = ["ai"]` の台帳 → オプション ai から来た `[rules.actor]` の出どころのコメントに `tasks` と `ai`、印に書いた項目の出どころは印(読んで判定)。
+
+#### スターターは、付け外しできる部品(オプション)を `options/<名前>.toml`(印に重ねる断片)に持て、`options/<名前>.<言語>.toml` があればその言語ではそれを使うべき
+`req~starter.option-shape~1` P1
+- 受け入れ: `starters/kb/options/who.toml`(`[rules.actor]` と、表 Board のビュー All に actor の列を足し、ビュー AI を足す断片)→ 印に `options = ["who"]` と書いた台帳で、All に actor の列が出て、ビュー AI が使える。`options` に書かなければ、どちらも無い。
+
+#### 印の `starter_lang = "<言語>"` で、元にするスターターの言語の変種を決められ、無ければ今の言語の変種を使うべき
+`req~starter.layer-lang~1` P1
+- なぜ: 表とビューの名前が言語で変わると、印の `open` や自分の上書きの名前が当たらなくなるため
+- 受け入れ: `ledger.ja/` のあるスターターで、`LANG` が ja・`starter_lang` なし → ja の変種。`starter_lang = "en"` → `LANG` が ja でも接尾の無い `ledger/`。
+
+#### 新しいノートの本文の雛形は、台帳に同じパスのファイルがあればそれを、無ければ元にするスターターの `ledger/` の同じパスのファイルを使うべき
+`req~starter.layer-files~1` P1
+- 受け入れ: スターターの `[new_note] body = ".mdgrid/templates/card.md"`(中身 `# {name}`)、台帳にそのファイルが無い → 新しいノート x の本文は `# x`。台帳に同じパスで `mine {name}` を置く → 新しいノート y の本文は `mine y`。
+
+#### 印の `options` に、そのスターターに無い名前があるときは、cli.config-file の形で警告して、そのオプションだけを飛ばすべき
+`req~starter.option-unknown~1` P1
+- 受け入れ: `starter = "tasks"`・`options = ["ai", "nope"]` → `options` の nope を言う警告1行で、ai は効く。
+
+#### パレットの「スターターから台帳を作る」は、スターターを選んだあとに、そのスターターのオプションを名前と説明の一覧から印を付けて選べるべき
+`req~starter.pick-options~1` P2
+- 受け入れ: tasks を選ぶ → オプションの一覧(ai・routines など。名前と1行の説明)→ Space で ai に印 → Enter → 作る場所 → 作った印に `starter = "tasks"` と `options = ["ai"]`。オプションの無いスターターでは、この段を出さない。どの段の Esc も取りやめで何も作らない(読んで判定)。
+
+#### `--init-workspace --starter <名前>` に `--option <名前>`(何度でも)を添えて、オプションを選べるべき
+`req~starter.pick-options-cli~1` P2
+- 受け入れ: `mdgrid t --init-workspace --starter tasks --option ai --option routines` → 印に `options = ["ai", "routines"]`。無い名前の `--option nope` → 理由1行と終了コード 2 で何も作らない(読んで判定)。
+
+#### パレットの「この台帳のオプションを変える」で、元にしたスターターのオプションをあとから付け外しでき、印の `options` の行だけを、差分を見せてから書き換えるべき
+`req~starter.pick-change~1` P2
+- 受け入れ: `options = ["ai"]` の台帳で routines に印を付ける → 差分(`options` の1行)を見せ、確かめてから印に `options = ["ai", "routines"]`。印のほかの行のバイトは同じ。読むだけの起動(cli.readonly)ではパレットに出さない(読んで判定)。
+
+#### パレットとコマンド(`--flatten-starter`)の「スターターの中身を印に書き出す」で、今効いている中身を全部印に書いて `starter` と `options` の行を外し、手で書いた台帳にできるべき
+`req~starter.flatten~1` P2
+- なぜ: スターターから離れて自分で持ちたい人と、スターターが無くなるときのため
+- 受け入れ: `starter = "tasks"`・`options = ["ai"]` と自分の上書きのある台帳で書き出す → 差分を見せ、確かめてから書く。書いたあとの `--print` の出力と `--print-config --resolved` の値は書く前と同じで、印に `starter` と `options` の行は無い(読んで判定)。
+
+#### 印の `starter` が指すスターターが無いときは、警告して、印に自分で書いた中身だけで開くべき
+`req~starter.retire-missing~1` P1
+- 受け入れ: `starter = "nope"` の台帳 → `starter` の nope を言う警告1行で、印に書いた表とビューだけで開く。ノートと印のバイトは変わらない。
+
 ## 未確定事項
+
+### 組み込みのスターターをやめるとき、その台帳をどうやって手で書いた台帳に落とすか(中身は実行ファイルにしか無いので、無くなった版では書き出せない)
+`tbd~starter.retire-builtin`
+- 決める人: 人
+- 仮: やめるスターターは、一覧(`--starters`・パレット)から外したあとも1つ先の版まで実行ファイルに残し、その台帳を開いたときに「印に書き出す」(starter.flatten)を勧める1行を出す
+
+### 組み込みの tasks が持つオプションの並び(今の tasks-ai を「tasks + オプション」に畳むか、別のスターターのまま残すか)
+`tbd~starter.option-builtin-list`
+- 決める人: 人
+- 仮: tasks に ai(担当で分ける)・routines(ルーチンの表とリンクの列)・screens(ガント・カンバン・グラフ)・priority-words(優先度を high・medium・low に。選ばなければ p1〜p3 のまま: 2026-11-18 に人が決めた)。tasks-ai は「tasks に ai と routines を付けたもの」の別名として残す
+
+### スターターのビューや表を、印の側から出さないようにする書き方(上書きは足すことと置き換えることしかできない)
+`tbd~starter.layer-hide`
+- 決める人: 人
+- 仮: 印の表・ビューに `hidden = true` を書くと、同じ名前のスターターの表・ビューを出さない
+
+### `starter` の行を知らない旧い版の mdgrid で、重ねる形の台帳を開いたときの振る舞い
+`tbd~starter.layer-old-version`
+- 決める人: 人
+- 仮: 旧い版は知らない項目として警告し、印に書いた中身だけで開く(旧い版と行き来する人は starter.flatten で書き出しておく)
 
 ### 組み込みの `tasks` の見本のノートの名前にも、日付8桁と `_` の頭を付けるか
 `tbd~starter-sample-name-prefix`

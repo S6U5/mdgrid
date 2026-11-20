@@ -28,11 +28,11 @@ done = { done_at = "{date}" }
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# New note (a): the name starts with today's date (20261118_); it asks for the due date and the priority, fills in the rest, and starts the body from the template.
+# New note (a): the name starts with today's date (20261118_); it asks for the due date, the priority and a URL, fills in the rest, and starts the body from the template.
 [new_note]
 folder = "Tasks"
 name = "{date:YYYYMMDD}_"
-ask = ["due", "priority"]
+ask = ["due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
 
@@ -68,6 +68,7 @@ left = 'due.relative()'
 "note.due" = { displayName = "Due" }
 "note.priority" = { displayName = "Priority" }
 "note.tags" = { displayName = "Tags" }
+"note.url" = { displayName = "URL" }
 "note.created" = { displayName = "Created" }
 "note.done_at" = { displayName = "Done" }
 
@@ -76,7 +77,7 @@ left = 'due.relative()'
 type = "table"
 name = "Open"
 filters = 'status != "done"'
-order = ["status", "due", "formula.left", "priority", "tags"]
+order = ["status", "due", "formula.left", "priority", "tags", "url"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
 
@@ -91,19 +92,19 @@ sort = [{ property = "due", direction = "ASC" }]
 type = "table"
 name = "Doing"
 where = { status = ["doing"] }
-order = ["due", "priority", "tags"]
+order = ["due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "Waiting"
 where = { status = ["waiting"] }
-order = ["due", "priority", "tags"]
+order = ["due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "Done"
 where = { status = ["done"] }
-order = ["done_at", "priority", "tags"]
+order = ["done_at", "priority", "tags", "url"]
 sort = [{ property = "done_at", direction = "DESC" }]

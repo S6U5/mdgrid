@@ -237,6 +237,32 @@ fn starters(codes: &[String]) {
                 Some((k, l)) => (k, Some(l)),
                 None => (part.as_str(), None),
             };
+            if kind == "options" && lang.is_none() {
+                // オプション(starter.option-shape): `<名前>.toml` と `<名前>.<言語>.toml` の印の断片。
+                let mut files = Vec::new();
+                walk_files(&p, &p, &mut files);
+                files.sort();
+                for rel in files {
+                    let rel = rel.to_string_lossy().into_owned();
+                    println!("cargo:rerun-if-changed=starters/{name}/options/{rel}");
+                    let path = p.join(&rel);
+                    let ok = rel.ends_with(".toml")
+                        && !rel.contains('/')
+                        && std::fs::read_to_string(&path)
+                            .ok()
+                            .is_some_and(|t| t.parse::<toml::Table>().is_ok());
+                    if !ok {
+                        problems.push(format!("{label}/options/{rel}: must be a TOML file"));
+                        continue;
+                    }
+                    let abs = format!("/starters/{name}/options/{rel}");
+                    let _ = writeln!(
+                        out,
+                        "            BuiltinFile {{ part: \"options\", rel: {rel:?}, text: include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), {abs:?})) }},"
+                    );
+                }
+                continue;
+            }
             if kind != "ledger" && kind != "samples" {
                 problems.push(format!(
                     "{label}/{part}: only ledger/, ledger.<lang>/, samples/ and samples.<lang>/ are allowed"

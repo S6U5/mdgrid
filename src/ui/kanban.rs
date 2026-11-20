@@ -151,7 +151,7 @@ impl App {
     /// 設定の列が使えないなら理由(表に無い・リストの列)。使えれば None。
     fn kanban_column_ok(&self, col: &str) -> Option<String> {
         let computed = col.starts_with("formula.") || col.starts_with("file.");
-        if !computed && !self.src.columns().iter().any(|x| x == col) {
+        if !computed && !self.has_column(col) {
             return Some(Msg::RsnKanbanNoColumn.fill(&[&col]));
         }
         if self.col_type(col) == Kind::List {
@@ -255,11 +255,12 @@ impl App {
             self.message = Some(why.unwrap_or_else(|| Msg::KanbanNotSet.text().into()));
             return;
         };
-        if self.rows.is_empty() {
+        let mut lanes = self.kanban_lanes(&spec);
+        // kanban.open-empty-lanes: 行が無くても、列の決まりに値があれば空のレーンで開く(レーンが1つも無ければ理由)。
+        if self.rows.is_empty() && lanes.is_empty() {
             self.message = Some(Msg::KanbanNoRows.text().into());
             return;
         }
-        let mut lanes = self.kanban_lanes(&spec);
         let mut lane = 0;
         if let Some(cur) = self.cur_row() {
             for (i, l) in lanes.iter_mut().enumerate() {

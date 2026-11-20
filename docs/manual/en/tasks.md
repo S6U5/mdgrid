@@ -48,6 +48,17 @@ Date and time columns add a time field under the calendar (here on the meetings 
 
 mdgrid writes only the values you changed. A missing key gets one added line, and a note without frontmatter gets frontmatter added at the top (the body is untouched). If a note changed on disk before you save, the review shows it and lets you choose to write over it (`o`). The details are in [Write-back safety](../../safety.md).
 
+If your notes live in a git repository, mdgrid can go on to git after a save. Set it in the config file (`config.toml`); by default it does nothing.
+
+```toml
+[git]
+auto = "commit"    # off, add, commit or push (how far to go)
+when = "save"      # save (after every save) or quit (once at exit)
+message = "auto"   # auto (an automatic message) or ask (a one-line field after each save)
+```
+
+Only the notes mdgrid wrote (or created from the screen) enter the commit; other changed files are left alone. If git fails, the save stays done and one line says why. The items are described under [`[git]`](../../config.md#git--git-after-a-save).
+
 ## Find, filter and sort
 
 | To | Keys |
@@ -96,6 +107,16 @@ Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it
 - In a view filtered to a single value, such as `status == "doing"`, the new note gets that value and stays in the view.
 - mdgrid does not create notes outside the opened folders or over an existing name, and not at all with `--readonly`.
 - The fields, required fields, preset values (with variables such as `{date+7}` or `{now}`), hidden values such as a creation date, a body template, and whether to use the form or go straight to the editor (`mode = "editor"`) are set in [`new_note`](../../config.md#new_note).
+
+You can also create a note from the command line, without the screen. Scripts and AI agents can add tasks this way.
+
+```sh
+mdgrid ~/notes/tasks --new-note "Buy milk" --set due=2026-11-20 --set priority=p1 --set tags=home,errand
+```
+
+- It uses the same settings as the form (the folder, preset values and body template of `new_note`) and prints the path of the note it created.
+- `--set column=value` is the same as typing into a field of the form, and can be repeated. The value is read by the column type. Separate list items with commas; an empty value (`--set status=`) leaves the column out.
+- For an existing name, a name outside the folder, a value that does not fit the type, or an empty required column, it creates nothing, prints one line with the reason and exits with code 2.
 
 ## Delete a note and bring it back
 
@@ -291,7 +312,7 @@ Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/works
 
 ## Create a ledger from a starter
 
-The common kinds of ledger (tasks, bookmarks, a reading log, people and meetings) can start from a **starter**: a marker and note templates ready to use. `mdgrid --starters` lists them; `mdgrid <folder> --init-workspace --starter <name>` writes one (`--with-samples` adds a few sample notes). The folder is created if missing, and if any target file already exists nothing is written.
+The common kinds of ledger (tasks, tasks shared with AI agents, bookmarks, a reading log, people and meetings) can start from a **starter**: a marker and note templates ready to use. `mdgrid --starters` lists them; `mdgrid <folder> --init-workspace --starter <name>` writes one (`--with-samples` adds a few sample notes). The folder is created if missing, and if any target file already exists nothing is written.
 
 ```sh
 mdgrid --starters
@@ -300,6 +321,23 @@ mdgrid ~/notes/books
 ```
 
 In the screen, **Create a ledger from a starter** in the command palette (`:`) does the same: pick a starter, type the folder to create (relative to the open folder; the starter's name by default), answer `y`/`n` for the samples, and the new ledger opens. Esc cancels at any step.
+
+`tasks-ai` is a ledger for work shared between people and AI agents. A task's `actor` (human, ai or both) splits it into the "People only" and "AI only" tabs, and the charts by status and by actor (`P`), the Gantt (`C`) and the Kanban (`B`) open as they are. A second table, "Routines", holds repeating work; the task for one round links to it from its `routine` column (switch tables with `w` or the breadcrumb, and press `R` to see the links). mdgrid does not create the next round: a person or an agent adds it, for example with `--new-note`.
+
+Instead of copying a whole starter, a ledger's marker can just name the starter it is based on. What you write in the marker always wins, and the starter fills in the rest. When a newer mdgrid ships a newer starter, the new content takes effect without rewriting the marker.
+
+```toml
+# <ledger>/.mdgrid/workspace.toml
+starter = "tasks"
+options = ["ai"]          # parts of the starter: tasks has ai (split by who does it) and priority-words (high, medium, low)
+starter_lang = "en"       # fix the language of the table and view names (default: the current language)
+
+# Below are your own overrides; they win over the same items of the starter.
+[rules.priority]
+values = ["p1", "p2", "p3", "p4"]
+```
+
+Tables and views are matched by name: items you write in a view of the same name change only those items, and a view with a new name is added after the starter's. If the starter or an option cannot be found, mdgrid prints one warning line and opens with what the marker itself says. For now you write this kind of marker by hand (`--init-workspace --starter` still copies everything).
 
 Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones (`starter.toml`, `ledger/`, `samples/`). The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `ledger/`.
 

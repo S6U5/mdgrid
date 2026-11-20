@@ -41,7 +41,7 @@ fn files_under(root: &Path) -> Vec<String> {
 
 #[test]
 fn test_st_5_two_open_folders_refuse_to_create() {
-    // [utest -> req~starter.palette-create~1] フォルダを2つ開いている(`nv.target` は実体のパスを改行で連ねたもの)ときは、作る場所の基準が決められないので
+    // [utest -> req~starter.palette-create~2] フォルダを2つ開いている(`nv.target` は実体のパスを改行で連ねたもの)ときは、作る場所の基準が決められないので
     // 理由を出して始めず、何も作らない(改行入りの名前のフォルダを掘らない)。
     let tmp = workspace("st_two");
     let dirs = [tmp.notes().join("tasks"), tmp.notes().join("projects")];
@@ -81,7 +81,7 @@ fn test_st_5_two_open_folders_refuse_to_create() {
 
 #[test]
 fn test_st_5_folder_is_relative_to_the_open_folder_unless_home_or_absolute() {
-    // [utest -> req~starter.palette-create~1] 相対は開いたフォルダから。`~foo/x` は `~` の展開でなく相対(プロセスの作業フォルダに作らない)。
+    // [utest -> req~starter.palette-create~2] 相対は開いたフォルダから。`~foo/x` は `~` の展開でなく相対(プロセスの作業フォルダに作らない)。
     // 絶対はそのまま。`~` と `~/x` はホーム(無ければ文字のまま)。
     let base = Path::new("/base/notes");
     assert_eq!(resolve_dir(base, "books"), base.join("books"));

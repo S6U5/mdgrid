@@ -798,7 +798,7 @@ id = "starter-pick"
 title = { en = "Create a ledger from a starter", ja = "スターターから台帳を作る" }
 keys = [":", "text:starter", "Enter"]
 wait = { en = "starter:", ja = "スターター:" }
-text = { en = "The command palette's \"Create a ledger from a starter\" lists the built-in starters (tasks, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.", ja = "パレットの「スターターから台帳を作る」で、組み込み(tasks・bookmarks・reading・people)と自分のスターターが並ぶ。選んで、作る場所と見本を入れるかを答えると、新しい表が開く。" }
+text = { en = "The command palette's \"Create a ledger from a starter\" lists the built-in starters (tasks, tasks-ai, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.", ja = "パレットの「スターターから台帳を作る」で、組み込み(tasks・bookmarks・reading・people)と自分のスターターが並ぶ。選んで、作る場所と見本を入れるかを答えると、新しい表が開く。" }
 
 [[shot]]
 id = "starter-tasks"

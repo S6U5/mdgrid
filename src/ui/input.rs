@@ -372,17 +372,8 @@ impl App {
             // REL-3: リンクの列は、行き先のフォルダのノートを候補にする(見せるのは名前、書くのはリンク)。
             Kind::Text => self.link_list(&base, &col, cur.as_ref()).or_else(|| {
                 // CE-36: 選べる値(決まりの values)があれば、数の上限によらずその値を候補に。
-                let allowed = self
-                    .prof
-                    .resolved
-                    .rules
-                    .get(&col)
-                    .and_then(|r| r.values.clone());
-                match allowed {
-                    Some(vs) => {
-                        let c: Vec<Value> = vs.into_iter().map(Value::Str).collect();
-                        Some(List::new(&c, cur.as_ref(), !mismatch))
-                    }
+                match self.rule_candidates(&col, kind) {
+                    Some(c) => Some(List::new(&c, cur.as_ref(), !mismatch)),
                     None => self
                         .src
                         .candidates(&col, self.candidates)
@@ -395,29 +386,9 @@ impl App {
                 !mismatch,
             )),
             // CE-36: 数・日付・日時の列も、選べる値があればその型の値にして候補に(型に合わない値は並べない)。
-            Kind::Number | Kind::Date | Kind::DateTime => {
-                let allowed = self
-                    .prof
-                    .resolved
-                    .rules
-                    .get(&col)
-                    .and_then(|r| r.values.clone());
-                allowed.map(|vs| {
-                    let c: Vec<Value> = vs
-                        .into_iter()
-                        .map(|v| match kind {
-                            Kind::Number => v
-                                .parse::<i64>()
-                                .map(Value::Int)
-                                .or_else(|_| v.parse::<f64>().map(Value::Float))
-                                .unwrap_or(Value::Str(v)),
-                            _ => Value::Str(v),
-                        })
-                        .filter(|v| types::fits(kind, v))
-                        .collect();
-                    List::new(&c, cur.as_ref(), !mismatch)
-                })
-            }
+            Kind::Number | Kind::Date | Kind::DateTime => self
+                .rule_candidates(&col, kind)
+                .map(|c| List::new(&c, cur.as_ref(), !mismatch)),
             _ => None,
         };
         // CE-22: 日付は設定の形で見せる(4桁の年が無い形なら `YYYY-MM-DD`。型の合わない値はそのまま)。
@@ -447,6 +418,28 @@ impl App {
             cal,
         });
         self.set_mode(Mode::Edit);
+    }
+
+    /// CE-36: 列の決まりの選べる値(`[rules.<列>] values`)を、その列の型の候補にする。決まりに `values` が
+    /// 無ければ None。数・日付・日時の列では、型に合わない値を並べない。セルの編集と新しいノートの窓で使う
+    /// (どのノートにもまだ無い列でも、決まりの値は候補になる)。
+    pub(crate) fn rule_candidates(&self, col: &str, kind: Kind) -> Option<Vec<Value>> {
+        let vs = self.prof.resolved.rules.get(col)?.values.clone()?;
+        Some(match kind {
+            Kind::Number | Kind::Date | Kind::DateTime => vs
+                .into_iter()
+                .map(|v| match kind {
+                    Kind::Number => v
+                        .parse::<i64>()
+                        .map(Value::Int)
+                        .or_else(|_| v.parse::<f64>().map(Value::Float))
+                        .unwrap_or(Value::Str(v)),
+                    _ => Value::Str(v),
+                })
+                .filter(|v| types::fits(kind, v))
+                .collect(),
+            _ => vs.into_iter().map(Value::Str).collect(),
+        })
     }
 
     /// セルの今の値(ためた値があればそれ)。キーが無ければ None。

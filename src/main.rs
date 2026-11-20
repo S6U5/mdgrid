@@ -71,6 +71,8 @@ enum Command {
     Pick(Vec<PathBuf>, Pick),
     /// WS-3・WS-7: ワークスペースの操作(画面を出さない)。
     Workspace(ws_cli::Op),
+    /// cli.new-note-create: 画面を出さずに新しいノートを作る(開くフォルダと名前と `列=値` の並び)。
+    NewNote(Vec<PathBuf>, String, Vec<String>),
     Run(Vec<PathBuf>),
 }
 
@@ -202,6 +204,12 @@ struct Cli {
     /// スターターの一覧(名前と1行の説明)を出す(ST-3)
     #[arg(long, conflicts_with_all = ["print", "pick", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace"])]
     starters: bool,
+    /// 画面を出さずに、フォルダ(無ければ今のフォルダ)に新しいノートを作る(設定の [new_note] を使い、作ったパスを出す)
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["print", "pick", "apply", "check", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters"])]
+    new_note: Option<String>,
+    /// --new-note で、その列の値を入れる(列=値。何度でも。リストの列は , で区切る)
+    #[arg(long, value_name = Msg::ValueSet.ja(), requires = "new_note", allow_hyphen_values = true)]
+    set: Vec<String>,
     /// 設定の全項目を既定値と説明付きの TOML で出す
     #[arg(long)]
     print_config: bool,
@@ -391,6 +399,8 @@ impl Cli {
                     paths,
                     self.starter.map(|s| (s, self.with_samples)),
                 ))
+            } else if let Some(name) = self.new_note {
+                Command::NewNote(paths, name, self.set)
             } else if self.check {
                 Command::Check(paths)
             } else if let Some(file) = self.apply {
@@ -464,6 +474,12 @@ impl Cli {
         }
         for s in &self.sort {
             out.push(format!("--sort={s}").into());
+        }
+        if let Some(n) = &self.new_note {
+            out.push(format!("--new-note={n}").into());
+        }
+        for s in &self.set {
+            out.push(format!("--set={s}").into());
         }
         if let Some(s) = self.completions.and_then(|s| s.to_possible_value()) {
             out.push("--completions".into());
@@ -607,6 +623,8 @@ fn resolve_table(
         &apps,
         &config.workspace_detect,
     ) {
+        // 印の警告(知らない項目・無いスターターやオプション)は、画面を出さないコマンドでも出す。
+        warnings.extend(scope.warnings.iter().cloned());
         layers.extend(scope.layer());
         layers.extend(scope.table_layer(&first));
     }
@@ -784,7 +802,9 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
         None => Markdown::open_vault(bp),
     }
     .map_err(|e| Msg::CannotOpen.fill(&[&e]))?;
+    // BV-2: 印に中身を書いた表(WS-9)の根は印のフォルダで、推した根ではない(starter.builtin-empty-quiet)。
     let guessed_root = match src.roots() {
+        _ if inline.is_some() => None,
         [r] if !r.ancestors().any(|a| a.join(".obsidian").is_dir()) => Some(r.clone()),
         _ => None,
     };
@@ -937,6 +957,9 @@ fn main() -> ExitCode {
             let (p, opts) = marker_for_print(p, &opts, use_marker);
             let paths = md_to_folder(p).0;
             return print_view(&paths, &opts, ViewOut::Check, &[], &[], &only);
+        }
+        Ok(Command::NewNote(p, name, sets)) => {
+            return new_note_cli(&p, &opts, use_marker, &name, &sets)
         }
         Ok(Command::Apply(p, file, yes)) => {
             return apply_file(&md_to_folder(p).0, &opts, &file, yes)
@@ -1168,6 +1191,10 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
             return fail(&Msg::TerminalError.fill(&[&e]));
         }
         let Some(place) = app.switch_to.take() else {
+            // write-back.git-when: 終了のときに、まだ git に渡していないノートを流す(失敗は1行で知らせる)。
+            if let Some(e) = app.git_flush_at_quit() {
+                eprintln!("mdgrid: {e}");
+            }
             return ExitCode::SUCCESS;
         };
         // REL-4・REL-5: 開き直したあとに選ぶノート。
@@ -1187,7 +1214,9 @@ fn run_switching(mut app: App, mut editor: String, opts: &Options) -> ExitCode {
             false,
             Vec::new(),
         ) {
-            Ok((next, ed)) => {
+            Ok((mut next, ed)) => {
+                // 別の表へ移っても、まだ git に渡していないノートは持ち越す。
+                next.git_pending = std::mem::take(&mut app.git_pending);
                 app = next;
                 editor = ed;
                 app.select_after_load = select;
@@ -1455,6 +1484,138 @@ fn check_rows(
         c if c == ExitCode::SUCCESS => ExitCode::from(1),
         c => c,
     }
+}
+
+/// `--new-note`(cli.new-note-create): 画面を出さずに、画面の新しいノートと同じ設定(`[new_note]` の folder・
+/// set・hidden・body と雛形の変数)でノートを1つ作り、作ったパスを1行出す。`--set 列=値` は窓の答えと同じに扱う
+/// (列の型で読む。空の値はその列を書かない)。作れなければ何も書かずに理由1行と終了コード 2。
+/// ビューの絞り込みの値は使わない(`tbd~cli.new-note-view-values`)。名前は必ず渡す(`tbd~cli.new-note-name-template`)。
+fn new_note_cli(
+    paths: &[PathBuf],
+    opts: &Options,
+    use_marker: bool,
+    name: &str,
+    sets: &[String],
+) -> ExitCode {
+    use mdgrid::newnote;
+    use mdgrid::source::{Edit, NewValue};
+    use mdgrid::types::{self, Kind};
+    let [root] = paths else {
+        return fail(Msg::NewNoteCliOne.text());
+    };
+    if let Err(e) = check_paths(paths) {
+        return fail(&e);
+    }
+    if !root.is_dir() {
+        return fail(Msg::NewNoteCliOne.text());
+    }
+    let (config, mut warnings) = match load_config(opts.config.as_deref(), config::config_path()) {
+        Ok(c) => c,
+        Err(e) => return fail(&e),
+    };
+    // 設定は画面と同じ範囲で重ねる: 印の `open` の表があればその表の範囲(`--raw` なら フォルダそのもの)。
+    let (table, _) = marker_for_print(paths.to_vec(), opts, use_marker);
+    let (resolved, w) = resolve_table(&config, &table, opts);
+    warnings.extend(w);
+    // 列の型は画面と同じ順(設定 → ノートからの推定)。
+    let mut src = match Markdown::open(paths) {
+        Ok(s) => s,
+        Err(e) => return fail(&Msg::CannotOpen.fill(&[&e])),
+    };
+    while !src.load(LOAD_BUDGET).done {}
+    let kind = |c: &str| match resolved.types.get(c) {
+        Some(k) => *k,
+        None => src.kind(c).kind,
+    };
+    let mut answers: Vec<Edit> = Vec::new();
+    for s in sets {
+        let Some((col, v)) = s.split_once('=') else {
+            return fail(&Msg::NewNoteCliBadSet.fill(&[s]));
+        };
+        let col = col.trim();
+        if col.is_empty() || newnote::not_a_key(col) {
+            return fail(&Msg::NewNoteCliBadSet.fill(&[s]));
+        }
+        let k = kind(col);
+        let value = if v.trim().is_empty() {
+            NewValue::Null
+        } else if k == Kind::List {
+            NewValue::List(
+                v.split(',')
+                    .map(str::trim)
+                    .filter(|x| !x.is_empty())
+                    .map(String::from)
+                    .collect(),
+            )
+        } else {
+            match newnote::typed(k, v) {
+                Some(x) => x,
+                None => return fail(&Msg::NewNoteCliBadValue.fill(&[&col, &v])),
+            }
+        };
+        answers.retain(|e| e.key != col);
+        answers.push(Edit {
+            key: col.to_string(),
+            value,
+        });
+    }
+    let mut rule = resolved.new_note.clone();
+    let (today, now) = print::today_now(|k| std::env::var(k).ok());
+    let bare = name.trim();
+    let bare = bare.strip_suffix(".md").unwrap_or(bare);
+    let vars = newnote::Vars {
+        today,
+        minutes: now.rem_euclid(86_400) / 60,
+        name: bare.rsplit('/').next().unwrap_or(bare).to_string(),
+        folder: rule.folder.trim().trim_matches('/').to_string(),
+    };
+    // 前もって入れる値の変数を埋め、日付・日時の列の文字は日付として書く(画面と同じ)。
+    for (key, v) in &mut rule.set {
+        *v = match newnote::expand_value(v, &vars) {
+            NewValue::Str(s)
+                if types::date_or_datetime(&s)
+                    && matches!(kind(key), Kind::Date | Kind::DateTime) =>
+            {
+                NewValue::Date(s)
+            }
+            v => mdgrid::source::date_if_untyped(&src, key, v),
+        };
+    }
+    let path = match newnote::note_path(root, &rule.folder, name) {
+        Ok(p) => p,
+        Err(e) => return fail(&e),
+    };
+    let empty = |v: Option<&NewValue>| match v {
+        None | Some(NewValue::Null) => true,
+        Some(NewValue::Str(s)) => s.trim().is_empty(),
+        Some(NewValue::List(items)) => items.is_empty(),
+        _ => false,
+    };
+    let missing = rule.required.iter().find(|c| {
+        let answered = answers.iter().find(|e| &e.key == *c).map(|e| &e.value);
+        let preset = rule.set.iter().find(|(k, _)| k == *c).map(|(_, v)| v);
+        empty(answered.or(preset))
+    });
+    if let Some(c) = missing {
+        return fail(&Msg::NewNoteCliRequired.fill(&[c]));
+    }
+    let body = match newnote::read_body(root, &rule.body) {
+        Ok(b) => b,
+        Err(e) => return fail(&e),
+    };
+    let bytes = match newnote::build_with(&rule, &[], &answers, &vars, body.as_deref()) {
+        Ok(b) => b,
+        Err(e) => return fail(&e),
+    };
+    if let Err(e) = newnote::create(&path, &bytes) {
+        return fail(&Msg::NoteCannotCreate.fill(&[&path.display(), &e]));
+    }
+    for w in &warnings {
+        eprintln!("mdgrid: {w}");
+    }
+    emit(Ok(
+        format!("{}\n", slash(path.display().to_string())).into_bytes()
+    ))
 }
 
 /// `--apply`(CLI-17): CSV・JSON を読み、全部を確かめてから、差分を出す(`--yes` なら書く)。

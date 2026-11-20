@@ -26,6 +26,8 @@ const MARKER: &str = ".mdgrid/workspace.toml";
 pub enum Part {
     Ledger,
     Sample,
+    /// 付け外しできる部品(starter.option-shape): `options/<名前>.toml`(と `<名前>.<言語>.toml`)の印の断片。
+    Option,
 }
 
 impl Part {
@@ -39,6 +41,8 @@ impl Part {
         let part = match kind {
             "ledger" => Part::Ledger,
             "samples" => Part::Sample,
+            // オプションの言語はファイルの名前に書く(フォルダに接尾は付けない)。
+            "options" if lang.is_none() => Part::Option,
             _ => return None,
         };
         Some((part, lang))
@@ -308,6 +312,114 @@ pub fn list(config_dir: Option<&Path>) -> (Vec<Starter>, Vec<String>) {
     (out, warns)
 }
 
+/// オプションのファイルの名前(`ai.toml`・`ai.ja.toml`)から、オプションの名前と言語。`.toml` でなければ None。
+fn option_of(rel: &Path) -> Option<(String, Option<String>)> {
+    if rel.components().count() != 1 {
+        return None;
+    }
+    let stem = rel.to_str()?.strip_suffix(".toml")?;
+    match stem.split_once('.') {
+        Some((n, l)) if !n.is_empty() && !l.is_empty() => {
+            Some((n.to_string(), Some(l.to_string())))
+        }
+        Some(_) => None,
+        None if !stem.is_empty() => Some((stem.to_string(), None)),
+        None => None,
+    }
+}
+
+/// スターターの持つオプションの名前(名前の順。starter.option-shape)。
+pub fn option_names(s: &Starter) -> Vec<String> {
+    let mut out: Vec<String> = s
+        .files
+        .iter()
+        .filter(|f| f.part == Part::Option)
+        .filter_map(|f| option_of(&f.rel).map(|(n, _)| n))
+        .collect();
+    out.sort();
+    out.dedup();
+    out
+}
+
+/// `part` の、台帳の根からの相対パス `rel` のファイル(その言語の変種があればそれ、無ければ接尾の無いもの)。
+fn ledger_file<'a>(s: &'a Starter, lang: &str, rel: &Path) -> Option<&'a StarterFile> {
+    let has_variant = s
+        .files
+        .iter()
+        .any(|f| f.part == Part::Ledger && f.lang.as_deref() == Some(lang));
+    let want = has_variant.then_some(lang);
+    s.files
+        .iter()
+        .find(|f| f.part == Part::Ledger && f.lang.as_deref() == want && f.rel == rel)
+}
+
+/// スターターの `ledger/` のファイルの文(本文の雛形など。starter.layer-files)。
+pub fn ledger_text(s: &Starter, lang: &str, rel: &Path) -> Option<String> {
+    ledger_file(s, lang, rel).map(|f| f.text.clone())
+}
+
+/// 台帳の印の下に重ねる元(starter.layer-marker): スターターの印(その言語の変種)に、オプションの断片を
+/// `options` の順に重ねた表。スターターに無いオプションの名前を一緒に返す(呼ぶ側が警告する)。
+pub fn base_marker(s: &Starter, lang: &str, options: &[String]) -> (toml::Table, Vec<String>) {
+    let mut base: toml::Table = ledger_file(s, lang, Path::new(MARKER))
+        .and_then(|f| f.text.parse().ok())
+        .unwrap_or_default();
+    let mut unknown = Vec::new();
+    for name in options {
+        let pick = |want: Option<&str>| {
+            s.files.iter().find(|f| {
+                f.part == Part::Option
+                    && option_of(&f.rel).is_some_and(|(n, l)| n == *name && l.as_deref() == want)
+            })
+        };
+        match pick(Some(lang)).or_else(|| pick(None)) {
+            Some(f) => {
+                if let Ok(t) = f.text.parse::<toml::Table>() {
+                    merge(&mut base, &t);
+                }
+            }
+            None => unknown.push(name.clone()),
+        }
+    }
+    (base, unknown)
+}
+
+/// `over` を `base` の上に重ねる(starter.layer-own-wins・starter.layer-tables): 表は項目ごとに重ね、同じ項目は
+/// `over` が勝つ。`table` と `views` の並びは `name` で突き合わせ、同じ名前は項目ごとに重ね、`over` にだけある
+/// ものは後ろに足す。ほかの並びと値は丸ごと `over` のものにする。
+pub fn merge(base: &mut toml::Table, over: &toml::Table) {
+    for (k, v) in over {
+        match (base.get_mut(k), v) {
+            (Some(toml::Value::Table(a)), toml::Value::Table(b)) => merge(a, b),
+            (Some(toml::Value::Array(a)), toml::Value::Array(b))
+                if (k == "table" || k == "views") && named(a) && named(b) =>
+            {
+                for item in b {
+                    let (Some(bt), Some(name)) = (item.as_table(), name_of(item)) else {
+                        continue;
+                    };
+                    match a.iter_mut().find(|x| name_of(x) == Some(name)) {
+                        Some(toml::Value::Table(at)) => merge(at, bt),
+                        _ => a.push(item.clone()),
+                    }
+                }
+            }
+            _ => {
+                base.insert(k.clone(), v.clone());
+            }
+        }
+    }
+}
+
+fn name_of(v: &toml::Value) -> Option<&str> {
+    v.as_table()?.get("name")?.as_str()
+}
+
+/// 並びの全部が、`name` を持つ表か。
+fn named(a: &[toml::Value]) -> bool {
+    a.iter().all(|v| name_of(v).is_some())
+}
+
 /// 名前で引く。
 pub fn find<'a>(list: &'a [Starter], name: &str) -> Option<&'a Starter> {
     list.iter().find(|s| s.name == name)
@@ -389,7 +501,8 @@ pub fn create(
     let mut made = Vec::new();
     for (p, f) in plan {
         let text = match f.part {
-            Part::Ledger => f.text.clone(),
+            // オプションは台帳に写さない(picked が選ばない)。
+            Part::Ledger | Part::Option => f.text.clone(),
             Part::Sample => {
                 let name = p
                     .file_stem()

@@ -1,0 +1,36 @@
+# オプション ai: 誰がやるか(actor: human・ai・both)でタスクを分ける。最初のタブを担当でまとめ、「人だけ」「AI だけ」のタブを足す。
+[rules.actor]
+values = ["human", "ai", "both"]
+
+[new_note]
+ask = ["actor", "due", "priority", "url"]
+
+[[table]]
+name = "タスク"
+
+[table.base.formulas]
+"担当" = 'if(actor == "ai", "🤖 エージェントのタスク", if(actor == "both", "🤝 人とエージェント", "👤 人のタスク"))'
+
+[table.base.properties]
+"note.actor" = { displayName = "誰が" }
+"formula.担当" = { displayName = "担当" }
+
+[[table.base.views]]
+name = "未完了"
+groupBy = { property = "formula.担当", direction = "ASC" }
+
+[[table.base.views]]
+type = "table"
+name = "人だけ"
+filters = { and = ['actor != "ai"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "due", "priority", "tags", "url"]
+sort = [{ property = "due", direction = "ASC" }, { property = "priority", direction = "ASC" }]
+
+[[table.base.views]]
+type = "table"
+name = "AI だけ"
+filters = { and = ['actor == "ai" || actor == "both"'] }
+where = { status = ["todo", "doing", "waiting"] }
+order = ["status", "actor", "priority", "due", "tags", "url"]
+sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]

@@ -116,10 +116,9 @@ impl App {
 
     /// 設定の列が表にあるか(ノートのキーの列か、計算の列・ファイルの列)。
     fn gantt_columns_ok(&self, spec: &GanttSpec) -> bool {
-        let cols = self.src.columns();
-        spec.columns().iter().all(|c| {
-            c.starts_with("formula.") || c.starts_with("file.") || cols.iter().any(|x| x == c)
-        })
+        spec.columns()
+            .iter()
+            .all(|c| c.starts_with("formula.") || c.starts_with("file.") || self.has_column(c))
     }
 
     /// GA-1: この表でガントを出せるか。
@@ -129,10 +128,8 @@ impl App {
 
     /// 設定の列のうち表に無い最初の列(`start`・`end`・`days` の鍵と列の名前)。
     fn gantt_missing(&self, spec: &GanttSpec) -> Option<(&'static str, String)> {
-        let cols = self.src.columns();
-        let is_missing = |c: &str| {
-            !(c.starts_with("formula.") || c.starts_with("file.") || cols.iter().any(|x| x == c))
-        };
+        let is_missing =
+            |c: &str| !(c.starts_with("formula.") || c.starts_with("file.") || self.has_column(c));
         [
             ("start", &spec.start),
             ("end", &spec.end),

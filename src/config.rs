@@ -100,6 +100,8 @@ pub struct Config {
     pub terminal: Terminal,
     /// WS-5: ワークスペースの検知(`workspace.detect`。既定は `.obsidian` だけ)。
     pub workspace_detect: Vec<crate::workspace::Detect>,
+    /// write-back.git-*: 保存のあとの git(`[git]`。既定は何もしない)。
+    pub git: crate::gitsync::Git,
     /// 全体の表のプロファイル(config.toml に書いたもの)。
     pub profile: Profile,
     /// `[templates.<名前>]`(書いた順)。
@@ -115,6 +117,7 @@ impl Default for Config {
             keys: Vec::new(),
             terminal: Terminal::default(),
             workspace_detect: vec![crate::workspace::Detect::Vault],
+            git: crate::gitsync::Git::default(),
             profile: Profile::default(),
             templates: Vec::new(),
         }
@@ -171,6 +174,7 @@ pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), Stri
             },
             "terminal" => read_terminal(value, &mut c.terminal, file, &mut w),
             "workspace" => read_workspace(value, &mut c, file, &mut w),
+            "git" => read_git(value, &mut c.git, file, &mut w),
             "keys" => read_keys(value, &mut c.keys, file, &mut w),
             "templates" => c.templates = read_templates(value, file, &mut w),
             _ => warn(&mut w, file, name, Msg::RsnUnknown.text().to_string()),
@@ -207,6 +211,33 @@ fn read_terminal(v: &toml::Value, t: &mut Terminal, file: &str, w: &mut Vec<Stri
             "nerd_icons" => match v.as_bool() {
                 Some(b) => t.nerd_icons = b,
                 None => warn(w, file, &p, not(Msg::WantBool)),
+            },
+            _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
+        }
+    }
+}
+
+/// `[git]`(write-back.git-*): `auto`・`when`・`message`。知らない値は警告して既定のまま。
+fn read_git(v: &toml::Value, g: &mut crate::gitsync::Git, file: &str, w: &mut Vec<String>) {
+    use crate::gitsync::{Level, Message, When};
+    let Some(tab) = v.as_table() else {
+        return warn(w, file, "git", not(Msg::WantTable));
+    };
+    for (k, v) in tab {
+        let p = format!("git.{k}");
+        let s = v.as_str();
+        match k.as_str() {
+            "auto" => match s.and_then(Level::parse) {
+                Some(x) => g.auto = x,
+                None => warn(w, file, &p, not(Msg::WantGitAuto)),
+            },
+            "when" => match s.and_then(When::parse) {
+                Some(x) => g.when = x,
+                None => warn(w, file, &p, not(Msg::WantGitWhen)),
+            },
+            "message" => match s.and_then(Message::parse) {
+                Some(x) => g.message = x,
+                None => warn(w, file, &p, not(Msg::WantGitMessage)),
             },
             _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
         }
@@ -422,6 +453,16 @@ pub fn app_toml(c: &Config) -> String {
         .map(|m| toml::Value::String(m.name().into()))
         .collect();
     out.push_str(&line("detect", toml::Value::Array(detect)));
+    out.push_str("\n[git]\n");
+    out.push_str(src(c.git.auto == d.git.auto));
+    out.push_str(&line("auto", toml::Value::String(c.git.auto.name().into())));
+    out.push_str(src(c.git.when == d.git.when));
+    out.push_str(&line("when", toml::Value::String(c.git.when.name().into())));
+    out.push_str(src(c.git.message == d.git.message));
+    out.push_str(&line(
+        "message",
+        toml::Value::String(c.git.message.name().into()),
+    ));
     if !c.keys.is_empty() {
         let mut modes = toml::Table::new();
         for (mode, key, action) in &c.keys {

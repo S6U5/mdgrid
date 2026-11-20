@@ -30,7 +30,7 @@ If the task table of "Northwind Studio" appears, it worked. `j` and `k` move, `E
 
 ## On your own notes
 
-Four starters are built in: tasks, bookmarks, reading, and people with meetings. Each writes a marker, templates and samples into an empty folder, so you start with a table already shaped.
+Five starters are built in: tasks, tasks shared with AI agents (with routines), bookmarks, reading, and people with meetings. Each writes a marker, templates and samples into an empty folder, so you start with a table already shaped.
 
 ```sh
 mdgrid ~/books --init-workspace --starter reading --with-samples

@@ -21,6 +21,7 @@ pub mod filters;
 pub mod folder_tree;
 pub mod freq;
 pub mod gantt;
+mod gitflow;
 pub(crate) mod glyphs;
 pub mod grid;
 pub mod help;
@@ -227,6 +228,8 @@ mod test_column_types_more;
 #[cfg(test)]
 mod test_datetime_offsets;
 #[cfg(test)]
+mod test_declared_columns;
+#[cfg(test)]
 mod test_default_view;
 #[cfg(test)]
 mod test_detail;
@@ -269,6 +272,8 @@ mod test_gantt_axis_sel;
 #[cfg(test)]
 mod test_gantt_more;
 #[cfg(test)]
+mod test_gitflow;
+#[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]
 mod test_half_explicit_rounds_up;
@@ -300,6 +305,8 @@ mod test_load_throttle;
 mod test_look;
 #[cfg(test)]
 mod test_modern_rest;
+#[cfg(test)]
+mod test_new_note_rule_values;
 #[cfg(test)]
 mod test_note_bodies;
 #[cfg(test)]

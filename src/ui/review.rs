@@ -197,6 +197,13 @@ impl App {
             parts.push(Msg::ReviewFailed.fill(&[&failed.len(), &failed.join(", ")]));
         }
         let msg = parts.join(Msg::SentenceSep.text());
+        // write-back.git-*: 書けたノートを覚える(git に渡すのは、表に戻ったあと)。
+        for (row, out) in &results {
+            if matches!(out, Outcome::Saved) {
+                let file = self.src.locate(row).0;
+                self.git_note(file);
+            }
+        }
         if stopped.is_empty() && !(one && self.changes.count() > 0) {
             // 止まった行が無ければ表に戻る(書けなかった変更は残る)。
             if self.changes.count() == 0 && self.quit_after_save {
@@ -207,6 +214,7 @@ impl App {
             self.set_mode(Mode::Table);
             self.refresh();
             self.message = Some(msg);
+            self.git_after_write();
         } else {
             self.open_review();
             self.refresh();

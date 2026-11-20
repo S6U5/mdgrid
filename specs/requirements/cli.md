@@ -349,6 +349,40 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 `req~cli.views-skill-example-prints~1` P1
 - 受け入れ: スキルの印の例を、todo・archive/todo のノートと README.md のあるフォルダに置く → `--print` が Open のビューの行だけで README.md の行が無い。`--print --view Done` が done の行だけ。
 
+#### `mdgrid [<フォルダ>] --new-note <名前>` は、画面を出さずに、そのフォルダ(無ければ今のフォルダ)を開いたフォルダとして、画面の新しいノート(cell-edit.new-note-name)と同じ設定(cell-edit.new-note-config の `folder`・`set`・`hidden`・`body` と cell-edit.template-vars の変数)で `<名前>.md` を作るべき
+`req~cli.new-note-create~1` P1
+- なぜ: スクリプトや AI のエージェントが、画面と同じ形のノートを足せるようにするため
+- 受け入れ: 印に `[new_note] folder = "Tasks"`・`body`(雛形 `# {name}`)・`[new_note.set] status = "todo"`・`created = "{date}"` のある台帳 `t` で、`MDGRID_TODAY=2026-11-18 mdgrid t --new-note "Buy milk"` → `t/Tasks/Buy milk.md` ができ、フロントマターに `status: todo` と `created: 2026-11-18`、本文は `# Buy milk` で始まる。設定も印も無いフォルダ → 空の `<名前>.md`。
+
+#### `--new-note` の `--set <列>=<値>`(何度でも)は、新しいノートの窓で答えた値(cell-edit.new-note-form-fields)と同じに扱い、値を列の型(cell-edit.column-type)で読むべき
+`req~cli.new-note-set~1` P1
+- 受け入れ: `--set due=2026-12-01 --set points=3 --set tags=home,errand`(due が日付・points が数・tags がリストの列)→ `due: 2026-12-01`・`points: 3` と、要素 home・errand のリストの tags。`--set status=`(空の値)→ `set` に status があっても status を書かない(cell-edit.new-note-form-skip-empty)。数の列に `--set points=many`・日付の列に `--set due=someday`・`=` の無い `--set due` → 理由1行と終了コード 2 で作らない。
+
+#### `--new-note` は、作ったノートのパスを、渡したフォルダにつないだ形で1行だけ標準出力に出し、終了コード 0 で終わるべき
+`req~cli.new-note-report~1` P1
+- なぜ: 続くコマンドが、作ったノートをそのまま開いたり書き足したりできるようにするため
+- 受け入れ: `mdgrid t --new-note "Buy milk"`(`folder = "Tasks"`)→ 標準出力は `t/Tasks/Buy milk.md` の1行、標準エラーは空、終了コード 0。
+
+#### `--new-note` は、既にある名前では作らず、既にあるファイルを1バイトも変えずに、理由1行と終了コード 2 で終わらなければならない
+`req~cli.new-note-no-overwrite~1` P0
+- 受け入れ: `t/Tasks/Buy milk.md` がある台帳で `mdgrid t --new-note "Buy milk" --set priority=p1` → 理由1行(そのパスを言う)と終了コード 2 で、`Buy milk.md` のバイトは前と同じ。
+
+#### `--new-note` は、開いたフォルダの外(`..` や絶対パス)を指す名前では作らず、理由1行と終了コード 2 で終わるべき(cell-edit.new-note-refuse-outside と同じ)
+`req~cli.new-note-refuse-outside~1` P1
+- 受け入れ: `--new-note ../x`・絶対パスの名前 → 理由1行と終了コード 2 で、フォルダの外に何もできない。`--new-note sub/x` → 作る場所の下の `sub/x.md` ができる(cell-edit.new-note-subfolder)。
+
+#### `--new-note` は、設定の `required` の列(cell-edit.new-note-config)が空のときは作らず、その列の名前を言う理由1行と終了コード 2 で終わるべき
+`req~cli.new-note-required~1` P1
+- 受け入れ: `required = ["priority"]` の台帳で `mdgrid t --new-note a` → 理由1行(priority を言う)と終了コード 2 で作らない。`--set priority=p2` を添える → 作る。
+
+#### `--new-note` の無い `--set`・2つ以上のフォルダ・`--print` などほかの命令との組・空の名前は、cli.fail-fast と同じく理由1行と終了コード 2 にするべき
+`req~cli.new-note-bad-args~1` P1
+- 受け入れ: `mdgrid t --set priority=p1` → 理由1行と終了コード 2。`mdgrid t u --new-note x` → 理由1行と終了コード 2 で、どちらのフォルダにも作らない。
+
+#### `--help` は、`--new-note` と `--set` を、どの言語でも出すべき
+`req~cli.new-note-help~1` P1
+- 受け入れ: `LANG=ja_JP.UTF-8` と `LANG=en_US.UTF-8` の `mdgrid --help` → どちらにも `--new-note` と `--set` の行がある。
+
 ### セッション
 
 #### 表の表示を名前を付けたセッションとして保存し、`mdgrid -s <名前>`(`--session <名前>`)で、その表示のまま起動できるべき
@@ -498,3 +532,12 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 
 ## 未確定事項
 
+### `--new-note` に `--view <名前>` を添えたとき、そのビューの絞り込みで値が1つに決まる列(cell-edit.new-note-filter-values)と、ビューごとの新しいノートの設定(cell-edit.new-note-form-per-view)を使うか
+`tbd~cli.new-note-view-values`
+- 決める人: 人
+- 仮: 使わない(`--new-note` は台帳の `[new_note]` だけを見る。`--view` を添えても変わらない)
+
+### `--new-note` の名前を省いたとき、設定の名前の雛形(`[new_note] name = "{date}"`)から名前を作るか
+`tbd~cli.new-note-name-template`
+- 決める人: 人
+- 仮: 作らない(名前は必ず渡す。空の名前は理由1行と終了コード 2)
