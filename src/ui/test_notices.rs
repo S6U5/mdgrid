@@ -170,7 +170,7 @@ fn test_notice_note_item_lines() {
     )
     .unwrap();
     let conf = format!(
-        "{OVERDUE}[[notices]]\nnote = \"{}\"\nlines = 2\n[[notices]]\nnote = \"{}\"\n",
+        "{OVERDUE}[[notices]]\nnote = '{}'\nlines = 2\n[[notices]]\nnote = '{}'\n",
         inbox.display(),
         t.notes().join("none.md").display()
     );
@@ -190,7 +190,7 @@ fn test_notice_layout_counts_line_and_more() {
     let conf = format!(
         "{OVERDUE}[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {{count}} 件\"\n\
          [[notices]]\ncond = \"overdue\"\ntext = \"今日まで {{count}} 件\"\n\
-         [[notices]]\nnote = \"{}\"\nlines = 5\n",
+         [[notices]]\nnote = '{}'\nlines = 5\n",
         inbox.display()
     );
     let _g = with_conf(&mut a, &conf);
@@ -311,7 +311,7 @@ fn test_notice_open_note_asks_editor() {
     let (t, mut a) = make("notice-open", TASKS);
     let inbox = t.notes().join("inbox.md");
     std::fs::write(&inbox, "- 金曜に請求書\n").unwrap();
-    let conf = format!("{OVERDUE}[[notices]]\nnote = \"{}\"\n", inbox.display());
+    let conf = format!("{OVERDUE}[[notices]]\nnote = '{}'\n", inbox.display());
     let _g = with_conf(&mut a, &conf);
     a.apply(Action::FocusNotice);
     press(&mut a, KeyCode::Enter);

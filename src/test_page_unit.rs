@@ -224,7 +224,7 @@ fn test_page_save_app_workspace() {
     let tasks = t.path().join("notes/tasks");
     let projects = t.path().join("notes/projects");
     let before = format!(
-        "# 手で書いた\n[[workspace]]\nname = \"work\"\n\n[[workspace.table]]\nname = \"tasks\"\npath = \"{}\"\n\n[[workspace.table]]\nname = \"projects\"\npath = \"{}\"\n\n[[workspace]]\nname = \"home\"\n",
+        "# 手で書いた\n[[workspace]]\nname = \"work\"\n\n[[workspace.table]]\nname = \"tasks\"\npath = '{}'\n\n[[workspace.table]]\nname = \"projects\"\npath = '{}'\n\n[[workspace]]\nname = \"home\"\n",
         tasks.display(),
         projects.display()
     );

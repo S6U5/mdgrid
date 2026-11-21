@@ -71,7 +71,7 @@ fn home(tag: &str, pages: &str) -> TempDir {
     w(
         "config/mdgrid/workspaces.toml",
         &format!(
-            "[[workspace]]\nname = \"work\"\n\n[[workspace.table]]\nname = \"tasks\"\npath = \"{}\"\n\n[[workspace.table]]\nname = \"projects\"\npath = \"{}\"\n\n[[workspace.table]]\nname = \"a\"\npath = \"{}\"\n\n[[workspace.table]]\nname = \"b\"\npath = \"{}\"\n{pages}",
+            "[[workspace]]\nname = \"work\"\n\n[[workspace.table]]\nname = \"tasks\"\npath = '{}'\n\n[[workspace.table]]\nname = \"projects\"\npath = '{}'\n\n[[workspace.table]]\nname = \"a\"\npath = '{}'\n\n[[workspace.table]]\nname = \"b\"\npath = '{}'\n{pages}",
             n.join("tasks.base").display(),
             n.join("projects.base").display(),
             n.join("tasks").display(),
