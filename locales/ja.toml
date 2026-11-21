@@ -4,7 +4,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--raw] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --check [--view <名前>]\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace [--starter <名前> [--with-samples]]\n        mdgrid [<フォルダ>] --new-note <名前> [--set <列>=<値>]…\n        mdgrid --continue [--readonly] [--no-color] [--config <パス>]\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n  印 .mdgrid/workspace.toml の open に表を書いたフォルダは、その表を開く。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --raw                   印の open の表ではなく、フォルダそのものを開く\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              今のフォルダで最後に開いていた表とビューで開く(無ければ引数なしと同じ。\n                          tmux などで窓を立て直すときに使う)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --check                 画面を出さずに、ビューの行の型と決まり([rules])に合わない値を1行ずつ出す\n                          (パス:行: 列: 理由。あれば終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --starter <名前>        --init-workspace で、そのスターター(組み込みか、設定のフォルダの starters/<名前>)から\n                          台帳(印とノートの雛形)を作る\n  --with-samples          --starter で、見本のノートも入れる\n  --starters              スターターの一覧(名前と1行の説明)を1行ずつ出す\n  --new-note <名前>       画面を出さずに、フォルダ(無ければ今のフォルダ)に新しいノート <名前>.md を作る\n                          (設定の [new_note] の folder・set・雛形を使い、作ったパスを1行出す。上書きしない)\n  --set <列>=<値>         --new-note で、その列の値を入れる(何度でも。リストの列は , で区切る。空の値は書かない)\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
+Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--page <名前>] [--raw] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --check [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --count [--view <名前>] [--filter <式>]…\n        mdgrid [<.base | フォルダ> …] --notices\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace [--starter <名前> [--with-samples]]\n        mdgrid [<フォルダ>] --new-note <名前> [--set <列>=<値>]…\n        mdgrid --continue [--readonly] [--no-color] [--config <パス>]\n        mdgrid -s <名前> [--readonly] [--no-color] [--config <パス>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n  印 .mdgrid/workspace.toml の open に表を書いたフォルダは、その表を開く。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --page <名前>           そのワークスペースのページ([[page]])を、表を縦に並べた形で開く\n  --raw                   印の open の表ではなく、フォルダそのものを開く\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              今のフォルダで最後に開いていた表とビューで開く(無ければ引数なしと同じ。\n                          tmux などで窓を立て直すときに使う)\n  -s, --session <名前>    その名前で保存したセッションの表示(表・ビュー・絞り込み・並び・列)で開く\n                          (パレットの「セッションを保存」で作る)\n  --sessions              保存したセッション(sessions.toml)の名前と開くフォルダを1行ずつ出す\n  --recent                画面で開いた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の\n                          1件1行で出す(最大 20 件)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --count                 画面を出さずに、ビューの行の数(--filter のあと)を出す\n  --show-hidden           --print・--pick・--count で、hide = true の名前の条件([conditions])で隠す行も出す\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n  --notices               画面を出さずに、通知の欄([[notices]])の項目を1行ずつ出す(tmux の帯や\n                          シェルのプロンプトに)\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --check                 画面を出さずに、ビューの行の型と決まり([rules])に合わない値を1行ずつ出す\n                          (パス:行: 列: 理由。あれば終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --starter <名前>        --init-workspace で、そのスターター(組み込みか、設定のフォルダの starters/<名前>)から\n                          台帳(印とノートの雛形)を作る\n  --with-samples          --starter で、見本のノートも入れる\n  --starters              スターターの一覧(名前と1行の説明)を1行ずつ出す\n  --new-note <名前>       画面を出さずに、フォルダ(無ければ今のフォルダ)に新しいノート <名前>.md を作る\n                          (設定の [new_note] の folder・set・雛形を使い、作ったパスを1行出す。上書きしない)\n  --set <列>=<値>         --new-note で、その列の値を入れる(何度でも。リストの列は , で区切る。空の値は書かない)\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "パス"
@@ -163,6 +163,8 @@ DateNotReal = "実在しない日付: {0}"
 DateWeekdayMismatch = "曜日が日付と合わない: {0}({1} は {2})"
 ## {1} は使える形を `ListSep` で並べたもの。
 DateUnreadable = "日付として読めない: {0}({1})"
+## cell-edit.date-words: 読めない打ち込みの理由に並べる、日付の言葉の例。
+DateWordsForm = "明日 などの言葉"
 DateEmptyClears = "空で消す"
 DateOutOfRange = "日付の範囲(0000-01-01〜9999-12-31)の外: {0}"
 
@@ -175,7 +177,8 @@ WantBool = "true か false"
 WantDateFormat = "日付の形の文字列"
 WantWeekStart = "\"sun\" か \"mon\""
 WantString = "文字列"
-WantLanguage = "\"auto\"・\"en\"・\"ja\" のどれか"
+## {0} は使える値(auto と台帳のある言語の符号)の並び。
+WantLanguage = "{0} のどれか"
 WantLook = "\"modern\" か \"classic\""
 WantCells = "\"rich\" か \"plain\""
 WantCellsColumns = "列 = \"rich\"・\"plain\"・\"chip\" の表"
@@ -211,6 +214,35 @@ RsnBadColumn = "`{0}` は書けない列か重なりなので無視した"
 RsnBadNoteMode = "\"{0}\" は \"form\" でも \"editor\" でもないので窓で作る"
 RsnNeedName = "重ならない name の文字列が要るので無視した"
 RsnNeedPath = "path の文字列が要るので無視した"
+## condition.invalid: 条件の名前の決まり。
+RsnCondName = "条件の名前は英字で始め、英数字・_・- だけにする(使わない)"
+RsnCondNeedExpr = "expr(文字列)が要る(使わない)"
+## {0} は式を読めない理由。
+RsnCondExpr = "式を読めないので、この条件は使わない: {0}"
+## {0} は輪の道筋(a → b → a)。
+RsnCondCycle = "条件どうしが輪になって呼び合う({0})ので、どれも使わない"
+## {0} は数字、{1} は先にその数字を書いた条件。
+RsnCondKeyDup = "キー {0} は条件「{1}」が先に使っている(このキーは使わない)"
+## condition.digit-remap: {0} は数字。
+RsnCondKeyTaken = "キー {0} は [keys.table] でほかの動作に割り当ててある(このキーは使わない)"
+## {0} は使えない条件の名前。
+RsnCondUses = "使えない条件「{0}」を使うので、この条件は使わない"
+## {0} は未対応の関数・項目。
+CondUnsupported = "未対応の関数・項目 {0}"
+WantDigit = "1 から 9 の整数"
+## condition.unknown-name: {0} は無い名前、{1} はある名前の並び。
+CondUnknown = "条件「{0}」はありません(ある名前: {1})"
+CondNoNames = "なし"
+## notice.opt-in: [[notices]] の形。
+WantNoticeArray = "表の並び([[notices]])"
+RsnNoticeKind = "cond(名前の条件の件数)か note(ノートの行)のどちらかが要る(使わない)"
+WantNoticeScope = "\"table\"・\"workspace\" か表の名前の並び"
+## notice.count-item: {0} は書いていない条件の名前。
+RsnNoticeNoCond = "[conditions] に条件「{0}」が無い(使わない)"
+## notice.note-item: {0} はノートのファイルの名前。
+NoticeNoNote = "{0} がありません"
+## notice.layout: {0} は欄に入らない行の数。
+NoticeMore = "ほか {0} 行"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "印に {0} という表は無いので、フォルダをそのまま開いた(ある表: {1})"
 RsnStarterUnknown = "スターター {0} は無いので、印に書いた中身だけで開いた(mdgrid --starters で一覧)"
@@ -372,6 +404,7 @@ ExprArityAtLeast = "{0} 以上"
 ExprArityRange = "{0}〜{1}"
 ## {0} は関数、{1} は渡した数、{2} は求める数。
 ExprArity = "{0} の引数の数が違う({1} 個。{2} 個のはず)"
+ExprCondArg = "cond() には引用符で囲んだ条件の名前を1つ渡す(例: cond(\"soon\"))"
 ExprTrailing = "式の後ろに余計なものがある: {0}"
 
 # ---- newnote: 新しいノートの設定と作れない理由(CE-25・CE-26・CE-27) ----
@@ -408,6 +441,16 @@ PrintNativeView = "mdgrid のビュー「{0}」: {1}"
 
 # ---- settings: 設定の帯の項目(NV-16) ----
 ChipSort = "並べ替え: {0} {1}"
+## condition.digit-stack: {0} は数字、{1} は条件の見せる名前。
+ChipCondOn = "{0} {1}"
+## condition.hide-always: {0} は見せる名前、{1} は隠した行の数。
+ChipCondHide = "{0} を隠す {1}"
+ChipCondShown = "{0} を出す"
+## condition.view-settings: {0} は見せる名前。
+ChipNamedKeep = "{0} だけ"
+ChipNamedHide = "{0} を隠す"
+## navigation.expr-filter: {0} は式。
+ChipExpr = "式: {0}"
 ChipGroupOff = "グループ: なし"
 ChipGroup = "グループ: {0} {1}"
 ChipHideEmpty = "(空を隠す)"
@@ -476,6 +519,7 @@ SecInPrompt = "探す・検索の入力"
 SecInDetail = "詳細の表示の中"
 SecInSettings = "ビューの設定の中"
 SecInChips = "設定の帯の中"
+SecInNotice = "通知の欄の中"
 SecInPick = "リストの選択の中"
 SecNative = "mdgrid のビュー(パレットのコマンド)"
 SecNote = "ノートを作る(パレットのコマンド)"
@@ -562,6 +606,9 @@ KeyQuickFilter = "検索"
 KeyHighlightSame = "同じ値の行を強調"
 KeyFilterSame = "同じ値の行だけ"
 KeyFrequency = "頻度表"
+KeyCondition = "名前の条件の入れ切り"
+KeyFocusNotice = "通知の欄へ"
+KeyNoticeOpen = "項目へ移る"
 KeyFreqRun = "この値の行だけ"
 KeyMark = "行の印"
 KeyVisual = "範囲で選ぶ"
@@ -607,6 +654,7 @@ KeyToggle = "切り替え"
 KeyBackCancel = "戻る・取り消し"
 KeyNextSection = "次の区画"
 KeyPrevSection = "前の区画"
+KeyGoToSection = "番号の区画へ"
 KeyMoveItemUp = "上へ動かす"
 KeyMoveItemDown = "下へ動かす"
 KeyDelete = "消す"
@@ -788,6 +836,9 @@ CalTimeOnly = "時刻は日時の列の入力だけ"
 CalTodayKey = "{0} 今日"
 CalClearKey = "{0} 空"
 CalDateOnly = "この操作は日付・日時の列の入力だけ"
+## cell-edit.date-words-preview: 日付の言葉を打っているあいだ、入力の欄の横に出す読み。{0} は `YYYY-MM-DD`、{1} は曜日(`Ddd*`)。
+DateWordsDay = "{0}({1})"
+DateWordsUnreadable = "読めない"
 
 # ---- ui/new_note: 新しいノート(CE-25・CE-26・CE-27) ----
 NoteButton = "+ 新規"
@@ -1094,8 +1145,15 @@ KeyOpComputed = "file.* と formula.* の列はノートのキーでない"
 KeyOpBadName = "キーの名前は、空・改行を含む・file. か formula. で始まる名前にできない"
 ## CE-28。
 AskNewColumn = "新しい列(キーの名前): "
+## navigation.expr-filter: 式の入力の前置き。
+AskExprFilter = "式: "
+## notice.jump: 当たる行のある表の一覧の前置き。
+AskNoticeTables = "開く表: "
+## {0} は式を使えない理由。
+ExprFilterBad = "この式では絞れない: {0}"
 ## OUT-2。
 CmdExportTable = "表をファイルに書き出す"
+CmdExprFilter = "式で絞り込む"
 AskExportTable = "表を書き出す ファイルの名前(.csv .tsv .json .md): "
 ## OUT-5。{0} はパス。
 AskExportOverwrite = "{0} はもうある。上書きする? y と打って Enter: "
@@ -1210,6 +1268,11 @@ SetColumns = "列(表示と順)"
 SetDisplay = "表示"
 SetFilters = "フィルター(全部を満たす行だけ)"
 SetAddFilter = "+ 条件を足す"
+## condition.view-settings: {0} は条件の見せる名前、{1} は掛け方。
+SetNamedRow = "条件 {0}: {1}"
+SetNamedOff = "掛けない"
+SetNamedKeep = "当たる行だけ"
+SetNamedHide = "当たる行を隠す"
 SetSorts = "並べ替え(上の列が先)"
 SetAddSort = "+ 並べ替えを足す"
 SetGroup = "グループ"
@@ -1287,6 +1350,8 @@ SetHintSorts = "{0} で足す・向きを変える、{1} / {2} で順、{3} で�
 SetHintGroup = "{0} で選ぶ(空を隠す・並びは列で分けるとき)"
 SetHintDisplay = "{0} で出す・出さないを切り替え(このビューだけ。反映で表に効く)"
 SetHintButtons = "{0} で押す。反映するまで表は変わらない"
+## 左の区画の一覧にいるとき(navigation.settings-sections-keys)。{0}・{1}・{2} はキー、{3} は数字のキーの範囲(`1-8` など)。
+SetHintNav = "{0} / {1} で区画を選ぶ、{2} で項目へ、{3} でその番号の区画へ"
 SetNativeName = "mdgrid のビュー / {0}"
 SetHead = " ビューの設定  {0}  反映するまで表は変わらない"
 SetHeadShort = " ビューの設定  {0}"
@@ -1377,6 +1442,34 @@ PlaceNewGroup = "+ 新しい分類: {0}"
 PlaceMulti = "登録できない: フォルダを複数開いている(フォルダ1つか .base を登録する)"
 ## {0} はビューの名前。
 PlaceNoView = "ビュー {0} が無いので先頭のビューを出した"
+
+# ---- recent: 最近開いた表(cli.recent-*) ----
+CmdOpenRecent = "最近開いた表"
+## 引数なしの起動の一覧の分類の名前。
+RecentGroup = "最近"
+RecentNone = "最近開いた表はまだ無い(画面で開いた表を覚える)"
+AskOpenRecent = "最近開いた表: "
+
+# ---- favorites・switch: お気に入りのワークスペースと切り替え(workspace.favorite-*・workspace.switch-*) ----
+CmdWsSwitch = "ワークスペースを切り替える"
+CmdWsFavorite = "今のワークスペースをお気に入りにする"
+KeyDrawerFavorite = "お気に入りに入れる・外す"
+## {0} はワークスペースの名前。
+WsFavoriteAdded = "{0} をお気に入りに入れた"
+WsFavoriteRemoved = "{0} をお気に入りから外した"
+WsFavoriteNoWorkspace = "お気に入りにできない: 今の表はワークスペース(workspaces.toml か印)に入っていない"
+WsFavoriteHeadOnly = "お気に入りには、ワークスペースの見出しで入れる(今のワークスペースはパレットの「今のワークスペースをお気に入りにする」)"
+## {0} は workspaces.toml の favorites に書いた名前かパス。
+RsnFavoriteGone = "{0} というワークスペースも印の根も無いので、切り替えの一覧に出さない"
+SwitchTitle = " ワークスペース "
+## {0} は最初に開いた所の名前。
+SwitchOrigin = "最初に開いた所: {0}"
+SwitchHint = "お気に入りが無い: 引き出し({0})の見出しで {1} か、パレットの「今のワークスペースをお気に入りにする」で入れる"
+SwitchNoRoom = "端末が小さく、切り替えの一覧を出せない"
+KeySwitchRun = "選んだ所へ移る"
+KeySwitchNumber = "その番号のワークスペースへ移る"
+ModeSwitch = "ワークスペースの切り替え"
+SecInSwitch = "切り替えの一覧の中"
 
 # ---- workspace: ワークスペース(WS-1〜WS-7) ----
 ## {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
@@ -1685,8 +1778,48 @@ RsnKanbanNoColumn = "表に列 {0} が無いので、カンバンを出さない
 ## {0} は列。
 RsnKanbanListColumn = "列 {0} はリストなので、カンバンを出さない(1行が複数のレーンに入るため)"
 
+# ---- vim モード(screen.vim-*。vim.rs) ----
+ModeInputNormal = "入力の欄のノーマル"
+SecInInputNormal = "入力の欄のノーマルのモード(vim)"
+## screen.vim-mode-shown: 下の帯に出す入力の欄のモード。
+VimInsert = "-- 挿入 --"
+VimNormal = "-- ノーマル --"
+## 挿入のモードの Esc の案内。
+KeyVimToNormal = "ノーマルへ"
+KeyWordNext = "次の語の頭へ"
+KeyWordPrev = "語の頭へ戻る"
+KeyWordEnd = "語の終わりへ"
+KeyInsert = "カーソルの前に挿入"
+KeyAppend = "カーソルの後ろに挿入"
+KeyInsertStart = "頭に挿入"
+KeyAppendEnd = "末尾に挿入"
+KeyDeleteUnder = "カーソルの字を消す"
+KeyDeleteWord = "次の語の頭まで消す"
+KeyDeleteWordBack = "語の頭まで消す"
+KeyDeleteToEnd = "末尾まで消す"
+KeyChangeWord = "語の終わりまで替える"
+KeyChangeToEnd = "末尾まで替える"
+KeyChangeLine = "全部替える"
+KeyPaste = "写した値を入れる"
+KeyRepeat = "直前の値をもう一度"
+PasteNothing = "まだ何も写していない(y でセル、Y で行を写す)"
+PasteNoCell = "値を入れるセルが無い"
+PasteNoRow = "値を入れる行が無い"
+## {0} は行の数。
+PasteRows = "写した行の値を {0} 行に入れた(未保存)"
+RepeatNothing = "繰り返す値がまだ無い(先にセルに値を入れる)"
+## screen.quit-discard: パレットの q!。
+PaletteDiscardQuit = "変更を捨てて終わる"
+## screen.vim-dd: 複数のノートの削除。{0} はノートの数、{1} は名前、{2} は指しているノートの数。
+DeleteNotesWhich = "消すノート({0} 件): {1}"
+DeleteNotesWhichLinks = "消すノート({0} 件): {1}({2} 個のノートが指している)"
+DeleteNotesDone = "{0} 件のノートをごみ箱へ動かした(u で戻す)"
+## {0} はノートの数。
+RestoreNotesDone = "{0} 件のノートを元の場所へ戻した"
+
 # ---- グラフ(CH-1〜CH-9。chart.rs) ----
 ModeChart = "グラフ"
+ModeNotice = "通知の欄"
 SecInChart = "グラフの中"
 ScreenChart = "グラフ"
 KeyChartView = "表とグラフを切り替える"
@@ -1799,3 +1932,215 @@ RelInYears = "あと{0}年"
 RelInYearsOne = "あと{0}年"
 RelAgoYears = "{0}年前"
 RelAgoYearsOne = "{0}年前"
+
+# ---- ui/across: ワークスペースを横断して探す(navigation.across-*) ----
+## パレットのコマンドの名前(navigation.across-option)。
+CmdAcrossSearch = "ワークスペースを横断して探す"
+## 語の入力の前置き。
+AskAcross = "横断して探す: "
+## まだ探していないときの案内。{0} は範囲の表の数。
+AcrossHint = "Enter で範囲の表({0})の全部の行から探す"
+## navigation.across-progress: 読んでいる間の進み。{0} は読み終えた表の数、{1} は全部の数。
+AcrossProgress = "{0} / {1} を読みました"
+## 表ごとのまとまりの見出し。{0} は表の名前、{1} は当たった行の数。
+AcrossGroup = "{0}({1})"
+## navigation.across-results: どこにも当たらないとき。
+AcrossNoHits = "当たる行がありません"
+## navigation.across-progress: 読めなかった表。{0} は表の名前を並べたもの。
+AcrossUnreadable = "読めなかった表: {0}"
+AcrossNoTables = "探す表がありません(ワークスペースを開くか、表を登録する)"
+AcrossNoWord = "探す語を打つ"
+
+# ---- session: 名前を付けたセッション(cli.session-*。src/session.rs・src/ui/sessions.rs) ----
+## {0} はファイルのパス、{1} は理由。
+SessionsUnreadable = "{0} が読めない: {1}"
+## {0} はファイル、{1} は行、{2} は理由。
+SessionsBadToml = "{0} が読めない({1} 行目): {2}"
+## {0} は要る項目。
+RsnSessionNeeds = "{0} が要るので無視した"
+SessionNameEmpty = "セッションの名前が空"
+SessionNameBad = "セッションの名前には、タブや改行などの制御の文字を使えない"
+## {0} は名前、{1} はある名前の並び。
+SessionUnknown = "セッション「{0}」はありません(ある名前: {1})"
+## {0} は名前。
+SessionNoneSaved = "セッション「{0}」はありません(保存したセッションはまだ無い。パレットの「セッションを保存」で作る)"
+## {0} はセッション、{1} はパス。
+SessionMissingPath = "セッション「{0}」の開くフォルダ {1} が無い"
+## {0} はセッション。
+SessionNoPaths = "セッション「{0}」に開くフォルダ(folders)が無い"
+SessionWithPaths = "-s(--session)とパスの引数は一緒に使えない(開く表はセッションが決める)"
+CmdSaveSession = "セッションを保存"
+AskSessionName = "セッションの名前: "
+## {0} はセッション。
+AskSessionOverwrite = "セッション「{0}」はもうある。置き換える?(y/n) "
+## {0} はセッション。
+SessionSaved = "セッション「{0}」を保存した(mdgrid -s {0} で開く)"
+## {0} は理由。
+SessionSaveError = "sessions.toml を書けない: {0}"
+SessionNoConfigDir = "セッションを保存できない: 設定のフォルダが無い"
+## {0} は列の並び。
+SessionMissingColumns = "セッションの列 {0} は今の表に無いので飛ばした"
+## {0} は理由。
+SessionBadExpr = "セッションの式の絞り込みは使わない: {0}"
+## {0} は条件。
+SessionNoCond = "セッションの名前の条件「{0}」は設定に無いので使わない"
+
+# ---- schema: 設定の項目の説明(--print-config のコメント。screen.locales-all-in-ledger) ----
+## --print-config の頭の説明(行ごとに "# " を付けて出す)。
+CfgPrintHead = "mdgrid の設定。全部の項目を既定の値で書いたもの。\n置き場: $XDG_CONFIG_HOME/mdgrid/config.toml(無ければ ~/.config/mdgrid/config.toml。\nWindows では %APPDATA%\\mdgrid\\config.toml)。\n「全体だけ」の項目はアプリ全体のもの。ほかは表のプロファイルで、ワークスペース・表・ビューごとにも\n書ける。\n起動のオプション: mdgrid --help。全部の説明: mdgrid のリポの docs/config.ja.md。"
+## --print-config の書ける範囲の行。{0} は範囲の名前(CfgScopeGlobal・CfgScopeProfile)。
+CfgScopeLine = "範囲: {0}。"
+CfgScopeGlobal = "全体だけ"
+CfgScopeProfile = "全体・ワークスペース・表・ビュー"
+## --print-config の例の見出し。
+CfgExampleLine = "例:"
+## 設定の項目 `language` の説明(行の区切りは --print-config のコメントの行)。
+CfgLanguage = "画面と起動の文言とこの説明の言語。\"auto\" か言語の符号(en・ja・de・es・fr・ko・pt-BR・zh-CN・zh-TW)。\n\"auto\" は LC_ALL・LC_MESSAGES・LANG の順で最初の空でない値から、言語と地域が合う台帳、無ければ言語が\n合う台帳を選び、どれも合わなければ英語。"
+## 設定の項目 `editor` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditor = "選んだノートを開くエディタ(引数つきでよい。例 \"code -w\"。シェルは通さない)。無いか空(空白だけも)なら $VISUAL、$EDITOR、vi(Windows は notepad)の順。"
+## 設定の項目 `poll_ms` の説明(行の区切りは --print-config のコメントの行)。
+CfgPollMs = "mdgrid の外で変わったノートを読み直す間隔(ミリ秒)。"
+## 設定の項目 `use` の説明(行の区切りは --print-config のコメントの行)。
+CfgUse = "テンプレート [templates.<名前>] を、この場所に書いた値の下に敷く。"
+## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
+CfgTypes = "列ごとの型。ルートフォルダの型の設定(.obsidian/types.json)と、値からの推定より優先する。\"auto\" は推定に戻す(狭い範囲で広い範囲の型を外せる)。型はセルの入力・合わない値の ! の印・並べ替え・列の見出しの型の印に効く。ノートは書き換えない。見出しの型の印のクリック、パレットか操作の一覧の column_type で型を選ぶと、views.toml の表に書く。"
+## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
+CfgRules = "列ごとの決まり。列の型と合わせて確かめる。required = true は、キーが無い・null・空の文字列・空のリストを問題にする。values は選べる値の並び(リストは各要素がこのどれか。大文字小文字を区別する)。狭い範囲が項目ごとに勝つ。問題には ! の印が付き、下の帯に数が出て、! と @ で跳べ、mdgrid --check で並べて出せる。決まりの確かめはノートを書き換えず、値を書くことも止めない。values のある列は、セルの入力の候補にその値を並べる。then は、その列をある値に直したとき、同じ行のほかの列にも値を入れる(値 = { 列 = 入れる文字 }。{date} などの雛形の変数を書け、空の文字はその列を空にする)。直した値と同じ変更としてたまり、一緒に取り消せる。計算の列(file.*・formula.*)には書けない。"
+## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalColor = "色を使う。false で色なし(NO_COLOR・--no-color と同じ)。"
+## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalAmbiguousWide = "East Asian Ambiguous の文字(○・※ など)を幅2として扱う。端末が幅2で描くなら true。このとき窓の枠はいつも ASCII。"
+## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdFont = "丸い札の端(Nerd Font の字)を描いてよいか。true は端末の字形が Nerd Font。\"auto\" は、その字を字体に頼らず自分で描く端末(Ghostty・WezTerm)のときだけ(ほかの端末で字が化けないように)。描けなければ \"pill\" は \"soft\" で描く。"
+## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdIcons = "設定のボタン・画面の型のボタンと窓・列の見出しの型の印・カレンダーの題に、アイコン用のフォント(Nerd Font)の記号を使う。端末の字形が Nerd Font のときだけ true にする。既定は字の記号(⚙・▦・◇・#・◷・⋮・◉・✓)。絵文字は使わない。"
+## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalHerdr = "Herdr の窓で、今の表とビューで開き直す命令を Herdr に伝え、Herdr のサーバーを立て直したときに開き直してもらう。false で Herdr を呼ばない。"
+## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。
+CfgWorkspaceDetect = "書いたワークスペースに入らない表を開いたとき、上にたどって、この目印のフォルダを持つ最寄りのフォルダ(ルートフォルダ)をワークスペースとみなす: \".obsidian\"(.obsidian/ のあるフォルダ)か \".git\"(git のリポ)。直下の、ノートのあるフォルダが関係マップの表になる。[] で検知しない。旧い値 \"vault\"・\"git\" も同じ意味で読み、警告する。"
+## 設定の項目 `git.auto` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitAuto = "git のリポの中のノートを書いたあと、git をどこまで進めるか: \"off\" は何もしない、\"add\" は書いたノートをステージする、\"commit\" はさらにコミットする(書いたノートだけ。ほかの変更中のファイルやステージ済みのファイルは入れない)、\"push\" はさらに push する。git のリポでないフォルダでは何もしない。git が失敗したら1行で知らせ、保存そのものは済んだままにする。"
+## 設定の項目 `git.when` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitWhen = "git.auto をいつ走らせるか: \"save\" は保存のたび(保存1回が1つのコミット)、\"quit\" は終了のときに1回(その起動の分をまとめて1つのコミット)。終了のときに残っているノートは、どちらでもそこで流す。"
+## 設定の項目 `git.message` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitMessage = "コミットの文: \"auto\" は「mdgrid: N 件のノートを更新」とパスの一覧を書く。\"ask\" は保存のたびに1行の欄を出す(空なら自動の文。Esc はコミットせず、終了のときのコミットに回す)。"
+## 設定の項目 `look.theme` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookTheme = "画面の色のテーマ。\"default\" は端末の色のまま。表 { light = …, dark = … } は端末の地の明るさで選び、\"auto\" は { light = \"saas\", dark = \"sumi\" } と同じ。色なしでは効かない。256 色の端末では近い色で塗る。"
+## 設定の項目 `look.preset` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookPreset = "部品の形の組。[look.style] で部品を1つずつ上書きする。狭い範囲に書いた組は、広い範囲の部品の形を使わない。"
+## 設定の項目 `look.mode` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookMode = "色を使うときの見た目: \"modern\"(lazygit のように、選びは背景の色、枠とキーはアクセントの色、説明は薄い色)か \"classic\"(反転)。画面の文字は同じ。色なしではどちらも classic。"
+## 設定の項目 `look.cells` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookCells = "色を使うときの表のセルの見せ方: \"rich\"(真偽・リスト・くり返す短い値・リンク・列の型の印を [look.style] の形の部品で見せる)か \"plain\"(文字のまま)。色を使わない表示ではいつも文字のまま。"
+## 設定の項目 `look.style` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookStyle = "組の部品の形を1つずつ上書きする: status(\"dot\"・\"shape\"・\"text\"・\"pill\"・\"tint\"・\"solid\"・\"soft\"・\"chip\"・\"plain\")・tags(\"dots\"・\"hash\"・\"brackets\"・\"pill\"・\"tint\"・\"solid\"・\"soft\"・\"chip\"・\"plain\")・check(\"box\"・\"tick\"・\"bracket\"・\"text\")・select(\"bar\"・\"cross\"・\"tint\"・\"outline\"・\"fill\"・\"reverse\")・rules(\"none\"・\"header\"・\"columns\"・\"grid\")・tabs(\"underline\"・\"pill\"・\"segment\"・\"brackets\"・\"dim\")・frames(\"rounded\"・\"square\"・\"heavy\"・\"ascii\"・\"none\")・band(\"keys\"・\"boxed\"・\"quiet\")・links(\"accent\"・\"plain\")・icons(true か false)。\"plain\"(check は \"text\")はその部品を文字のままにする。docs/catalog/index.html で全部の形を見比べ、この表を作れる。"
+## 設定の項目 `look.columns` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColumns = "列ごとの見せ方: \"rich\"・\"plain\"・\"chip\"(自動で札にならない列も札に)。列の設定は部品の形より優先。"
+## 設定の項目 `look.colors` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColors = "テーマの色を役割ごとに上書きする: background・text・header・selection・selection_text・band・band_text・accent・strong・zebra・zebra_text・mark・added・removed・pending・highlight。[look.colors.values] は値ごとの色(大文字・小文字によらない)で、部品のどの形でも使う。色は \"#rrggbb\"・\"#rgb\" か名前(black・white・gray・red・orange・yellow・green・teal・cyan・blue・purple・magenta・pink・brown)。theme = \"default\" では accent・selection と値の色だけを使う。狭い範囲に書いたテーマは、広い範囲の役割の色を使わない。"
+## 設定の項目 `display.row_numbers` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowNumbers = "各行の左に、今の表示の並びの 1・2・3… の行番号。"
+## 設定の項目 `display.zebra` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayZebra = "一行おきに背景の色を付ける(色を使わない表示では付けない)。"
+## 設定の項目 `display.column_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayColumnLines = "列の間に │ を引く。"
+## 設定の項目 `display.group_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayGroupGap = "2つ目からのまとまりの見出しの上に空きの行を1つ入れる。"
+## 設定の項目 `display.tabs` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabs = "ビューのタブの行: \"always\"(いつも)・\"auto\"(ビューが2つ以上のときだけ。1つなら、その行も表に使う)・\"never\"(出さない)。どれでもタブの切り替えのキーは効く。"
+## 設定の項目 `display.search_bar` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplaySearchBar = "表の上に検索の欄を出す。false なら出さず、簡易の絞り込みは最下行で打つ。"
+## 設定の項目 `display.chips` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayChips = "効いているビューの設定の帯を出す。隠しても f で帯の項目を選べる。"
+## 設定の項目 `display.buttons` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayButtons = "ビューの帯の検索の欄と絞り込み・並べ替えのボタンの描き方: \"plain\"(地の色で示す)か \"box\"(それぞれを帯の上下の余白の行に引いた線で四角く囲む。中は塗らない)。余白が無い(display.bar_padding = 0)と線は描かない。"
+## 設定の項目 `display.bar_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayBarPadding = "ビューの帯の上下の余白の行の数: 0・0.5・1・1.5・2(1 と 1.0 のどちらも書ける)。0 なら帯は余白なしの1行。0.5 の端数は、帯の地の色で塗り外側の半分を画面の地の色の半分の塗りの字(上は ▀、下は ▄)で消した行で描き、帯の行に地の色を敷く。画面の地の色が分からない(テーマが画面の地を塗らず、端末も答えない)ときと、色を使わない表示と terminal.ambiguous_wide = true では、端数を1行の空き行に切り上げる。端末の高さが16行に満たないときと、検索の欄を出さないときは、いつも 0。ほかの値は警告して既定にする。"
+## 設定の項目 `display.top_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTopPadding = "ヘッダーの上の余白の行の数: 0・0.5・1・1.5・2。端数は display.bar_padding と同じく描く(ヘッダーの上に ▀ の行、ヘッダーの行に帯の地の色)。端末の高さが16行に満たないときは、いつも 0。"
+## 設定の項目 `display.row_extra_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowExtraLines = "表の行を伸ばす行の数: 長い値や改行のある値は列の幅で折り返し、行を最大で「1 + この数」の行の高さまで伸ばす(行ごとに要るだけの高さ)。入りきらない分は最後に …。0 ならどの行も1行で、改行は …⏎ で示す。ほかの値は警告して既定にする。"
+## 設定の項目 `display.note_path` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNotePath = "左のノートの欄の出し方: \"common\" は全部の行に共通のフォルダを除き、\"name\" は名前だけ、\"full\" は根からのパス、\"off\" は名前を出さない(行の印だけ)。ほかの値は警告して既定にする。"
+## 設定の項目 `display.tab_wrap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrap = "ビューのタブがビューの帯の行に入らないとき、タブを全部、検索の欄とボタンの行の下に要る行の数だけ並べ、全部のタブを見せる(足した行のぶん表は下がる)。false なら1行のままで、狭い画面では今のでないタブを省く。"
+## 設定の項目 `display.tab_wrap_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrapGap = "tab_wrap でタブを下に並べたとき、検索の欄の行とその下のタブの行の間に空き行を1つ入れる。"
+## 設定の項目 `display.note_name` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNoteName = "ノートの欄の名前に当てる正規表現(note_path のあと。フォルダがあれば最後の名前の部分だけ)。一致したら、名前の付いた組 name、無ければ1つ目の組、組が無ければ一致した部分を除いた残りを出す。一致しない名前と、空になる名前はそのまま。\"\" は何もしない。読めない正規表現は警告して使わない。"
+## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesFormat = "表の日付の見せ方と打ち込みの形。部品は YYYY・YY・MM・M・DD・D・ddd(曜日)と英数字でない区切り。ノートにはいつも YYYY-MM-DD で書く。"
+## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesWeekStart = "日付のカレンダーの週の始まり。"
+## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditCandidates = "テキストのセルの編集で出す値の候補の上限。異なる値がこれより多い列は候補を出さない。"
+## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditAddFrontmatter = "フロントマターの無いノートと空のフロントマターのノートにも書く(フロントマターかキーの行を足す)。false ならこの2つは読むだけ。"
+## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
+CfgNewNote = "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・name(名前の雛形)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。"
+## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeys = "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type・tree・gantt・kanban・chart・notice・switch・input_normal(vim モード)。動作の名前はコマンドのパレット(:)に出る。"
+## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeysVim = "vim モード。入力の欄を挿入のモードで始め、Esc でノーマルのモードにする(h l 0 $ w b e・i a I A・x X dw db d$ D dd・cw c$ C cc・u)。表には dd(ノートを消す)・p(y・Y で写した値を入れる)・.(直前の値をもう一度)を足す。false ではキーを今のまま変えない。"
+## 設定の項目 `search.across` の説明(行の区切りは --print-config のコメントの行)。
+CfgSearchAcross = "コマンドのパレットに「ワークスペースを横断して探す」を足す。今のワークスペース(か登録した表)の全部の表の全部の行から語を探し、当たった行を表ごとに並べる。false(既定)ではパレットは今のまま。"
+## 設定の項目 `templates` の説明(行の区切りは --print-config のコメントの行)。
+CfgTemplates = "名前を付けたプロファイルの断片([look]・[display]・[dates]・[edit]・[new_note])。どの範囲でもuse = \"<名前>\" で、その範囲の値の下に敷く。同じ名前は ui.toml のものが config.toml より先。"
+## 設定の項目 `conditions` の説明(行の区切りは --print-config のコメントの行)。
+CfgConditions = "名前を付けた条件: 1回書いた式(expr)を名前で使う。どの式でも cond(\"<名前>\")、数字のキー(key = 1〜9)で当たる行だけにする、ビューの設定のフィルターの区画、hide = true でどの表でも当たる行を隠す。label は見せる名前。"
+## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotices = "ヘッダーの上の通知の欄(項目を書いたときだけ出す)。件数の項目は、名前の条件([conditions])に当たる行を今の表・ワークスペース・名前を挙げた表で数える。連絡の項目は、ノートの本文の頭の行を出す。mdgrid --notices も同じ行を出す。"
+
+# ---- stack: 縦に並べた表とページ(stack.*) ----
+SecStack = "縦に並べる"
+KeyStackDown = "下の表へ"
+KeyStackUp = "上の表へ"
+KeyStackClose = "この表を閉じる"
+KeyStackGrow = "この表を1行高く"
+KeyStackShrink = "この表を1行低く"
+KeyStackCloseSave = "保存して閉じる"
+KeyStackCloseDiscard = "捨てて閉じる"
+CmdStackAdd = "下に表を並べる"
+CmdPageSave = "並べ方に名前を付けて残す"
+## {0} は並べられる表の数。
+StackMax = "並べられる表は {0} つまで"
+StackNoRoom = "端末が低く、もう1つ表を並べられない(表ごとに見出しと 3 行が要る)"
+StackNoTables = "並べられる表が無い(今の範囲の表は、もう並べてある)"
+StackCloseOnly = "表が1つだけなので閉じられない"
+StackSingle = "並べた表が無い"
+StackGrowLimit = "これより高くできない(ほかの表は見出しと 3 行を残す)"
+StackShrinkLimit = "これより低くできない(見出しと 3 行を残す)"
+StackCollapsed = "端末が低く、高さを変えられない"
+## {0} は表、{1} は変更の数。
+StackCloseBand = " {0} に未保存の変更が {1} ある。閉じる前にどうするか選ぶ"
+StackCloseBandOne = " {0} に未保存の変更が {1} ある。閉じる前にどうするか選ぶ"
+## {0} は表。
+StackClosed = "{0} を閉じた"
+AskStackTable = "下に並べる表: "
+AskPageName = "ページの名前: "
+## {0} はページ、{1} はファイル。
+PageSaved = "ページ「{0}」を {1} に残した"
+PageSaveError = "ページを残せなかった: {0}"
+PageSaveUnsure = "書き足した文を読み直すと違ったので、書かなかった(手で書いた所を確かめる)"
+PageNotWorkspace = "今の範囲がワークスペースでないので、ページを残せない(:workspace_new でワークスペースを作る)"
+PageNoStack = "並べた表が無いので、ページにするものが無い(:stack_add で表を並べる)"
+## {0} は表。
+PageTableOutside = "表 {0} は今のワークスペースに無いので、ページを残せない"
+PageNameBad = "ページの名前が空か、改行を含む"
+## {0} はページ、{1} はページの名前の並び。
+PageUnknown = "ページ「{0}」はありません(ある名前: {1})"
+PageNone = "ページ「{0}」はありません(このワークスペースにページはありません)"
+## {0} はページ、{1} は理由。
+PageOpenFailed = "ページ「{0}」の表のうち開けないものがあった: {1}"
+DrawerPage = "ページ"
+## {0} は表(並べた表の保存の確認の見出し)。
+ReviewTableHead = " ── {0} ──"
+WantPageList = "ページの並び([[page]])"
+WantPageTables = "{ table = \"<表>\", view = \"<ビュー>\", height = <比> } の表の並び"
+RsnPageNeedTable = "table(表の名前)が要るので無視した"
+## {0} は表、{1} はワークスペースの表。
+RsnPageNoTable = "表 {0} はワークスペースに無いので飛ばした(ある表: {1})"
+## {0} はページ。
+RsnPageEmpty = "ページ {0} に開ける表が無いので、このページは使わない"
+## `--pick` の起動で「下に表を並べる」を選んだとき。
+StackPick = "--pick では表を並べない(1つの表から選んで終わる)"

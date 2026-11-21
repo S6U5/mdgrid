@@ -5,7 +5,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "Usage: mdgrid [<.base | folder | .md | .csv> ...] [--view <name>] [-w <name>] [--raw] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder | .md> ...] --check [--view <name>]\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid [<folder | .base> ...] --add-to <name> [--as <table name>] | --remove-from <name>\n        mdgrid [<folder> ...] --init-workspace [--starter <name> [--with-samples]]\n        mdgrid [<folder>] --new-note <name> [--set <column>=<value>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <path>]\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <name>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the root folder). Given a .md file, open its folder with that note selected.\n  Given a .csv or .tsv file, open it as a table: one row per line, the first line\n  names the columns.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any). A folder with a marker .mdgrid/workspace.toml that names\n  a table in \"open\" opens that table instead.\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  -w, --workspace <name>  use that workspace (workspaces.toml) for links and the relation map;\n                          with no path, open its first table\n  --raw                   open the folder itself, not the table named in its marker's \"open\"\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              open the table and view last shown in this folder (as with no\n                          arguments if there is none; for tmux and similar window restores)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --check                 print the values that do not fit the column type or a rule\n                          ([rules]), one per line (path:line: column: reason; exit code 1\n                          if there are any)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --workspaces            list the workspaces (workspaces.toml)\n  --add-to <name>         add the given tables (default: this folder) to that workspace,\n                          creating it if needed; --as <name> names the table\n  --remove-from <name>    remove the given tables (default: this folder) from that workspace\n  --remove-workspace <name>  delete that workspace (notes are not touched)\n  --init-workspace        put a workspace marker .mdgrid/workspace.toml in the folder\n                          (default: this folder)\n  --starter <name>        with --init-workspace, create a ledger (marker, note templates) from that\n                          starter: a built-in one, or starters/<name> in the config folder\n  --with-samples          with --starter, add the starter's sample notes too\n  --starters              list the starters, one per line (name and a one-line description)\n  --new-note <name>       create a new note <name>.md in the folder (default: this folder) without the\n                          screen, using [new_note] (folder, set, template); prints the created path\n                          and never overwrites\n  --set <column>=<value>  with --new-note, put that value in the column (repeatable; separate list\n                          items with commas; an empty value writes nothing)\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version"
+Usage = "Usage: mdgrid [<.base | folder | .md | .csv> ...] [--view <name>] [-w <name>] [--page <name>] [--raw] [--readonly] [--no-color] [--config <path>]\n        mdgrid [<.base | folder | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <name>]\n                 [--filter <expression>]... [--sort <column>[:desc]]...\n        mdgrid [<.base | folder | .md> ...] --pick path|<column> [--view <name>]\n        mdgrid [<.base | folder | .md> ...] --check [--view <name>]\n        mdgrid [<.base | folder | .md> ...] --count [--view <name>] [--filter <expression>]...\n        mdgrid [<.base | folder> ...] --notices\n        mdgrid [<.base | folder> ...] --apply <path> [--yes]\n        mdgrid [<folder | .base> ...] --add-to <name> [--as <table name>] | --remove-from <name>\n        mdgrid [<folder> ...] --init-workspace [--starter <name> [--with-samples]]\n        mdgrid [<folder>] --new-note <name> [--set <column>=<value>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <path>]\n        mdgrid -s <name> [--readonly] [--no-color] [--config <path>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <name>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Open a table of the Markdown notes in a folder: one row per note, one column per\n  front matter key. Given a .base, open its table view (notes are looked up under\n  the root folder). Given a .md file, open its folder with that note selected.\n  Given a .csv or .tsv file, open it as a table: one row per line, the first line\n  names the columns.\n  With no arguments, open the current folder (with the list of tables registered in\n  places.toml on top, if any). A folder with a marker .mdgrid/workspace.toml that names\n  a table in \"open\" opens that table instead.\n\n  --view <name>           open that view of the .base (the first view if omitted;\n                          --print also looks up mdgrid views)\n  -w, --workspace <name>  use that workspace (workspaces.toml) for links and the relation map;\n                          with no path, open its first table\n  --page <name>           open that page ([[page]]) of the workspace, with its tables stacked\n  --raw                   open the folder itself, not the table named in its marker's \"open\"\n  --readonly              open read-only (no editing, no saving)\n  --no-color              draw without colors\n  --config <path>         read this configuration file\n                          (default: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              open the table and view last shown in this folder (as with no\n                          arguments if there is none; for tmux and similar window restores)\n  -s, --session <name>    open the session saved under that name (its table, view, filters,\n                          sort and columns; save one with \"Save session\" in the palette)\n  --sessions              list the saved sessions (sessions.toml): name and folder, one per line\n  --recent                print the tables recently opened on the screen, newest first, one per\n                          line as \"path<TAB>view name<TAB>last opened\" (up to 20)\n  --print                 print the view's table to standard output without the screen\n                          (notes are not changed)\n  --format <format>       format for --print (csv, tsv, json, md; default csv)\n  --with-path             add a first column \"path\" to --print with each row's note path\n                          (the same path as --pick path)\n  --filter <expression>   keep only the rows where the .base expression is true\n                          (repeatable; with a .base view, combined with its filters)\n  --sort <column>[:desc]  sort --print by this column (repeatable; replaces the sort\n                          of the view)\n  --count                 print the number of rows of the view (after --filter) without the screen\n  --show-hidden           with --print, --pick or --count, keep the rows hidden by conditions with\n                          hide = true ([conditions])\n  --notices               print the items of the notice box ([[notices]]) one per line, without the\n                          screen (for a tmux status line or a shell prompt)\n  --pick <path|column>    show the screen read-only on the terminal; Enter prints the path\n                          or the column value of the marked rows (or the selected row),\n                          one per line, to standard output and exits\n                          (q or Esc cancels with exit code 1)\n  --check                 print the values that do not fit the column type or a rule\n                          ([rules]), one per line (path:line: column: reason; exit code 1\n                          if there are any)\n  --apply <path>          read a CSV or JSON in the --print --with-path form (- for stdin)\n                          and change the cells that differ; shows the diff only\n  --yes                   with --apply, write the changes\n  --workspaces            list the workspaces (workspaces.toml)\n  --add-to <name>         add the given tables (default: this folder) to that workspace,\n                          creating it if needed; --as <name> names the table\n  --remove-from <name>    remove the given tables (default: this folder) from that workspace\n  --remove-workspace <name>  delete that workspace (notes are not touched)\n  --init-workspace        put a workspace marker .mdgrid/workspace.toml in the folder\n                          (default: this folder)\n  --starter <name>        with --init-workspace, create a ledger (marker, note templates) from that\n                          starter: a built-in one, or starters/<name> in the config folder\n  --with-samples          with --starter, add the starter's sample notes too\n  --starters              list the starters, one per line (name and a one-line description)\n  --new-note <name>       create a new note <name>.md in the folder (default: this folder) without the\n                          screen, using [new_note] (folder, set, template); prints the created path\n                          and never overwrites\n  --set <column>=<value>  with --new-note, put that value in the column (repeatable; separate list\n                          items with commas; an empty value writes nothing)\n  --print-config          print every configuration item as TOML with its default value\n                          and a description (docs/config.md)\n  --completions <shell>   print shell completions (bash, zsh, fish, elvish, powershell)\n  --man                   print the man page (roff)\n  --help                  print this help\n  --version               print the version"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "path"
@@ -164,6 +164,8 @@ DateNotReal = "no such date: {0}"
 DateWeekdayMismatch = "the weekday does not match the date: {0} ({1} is {2})"
 ## {1} は使える形を `ListSep` で並べたもの。
 DateUnreadable = "not a date: {0} ({1})"
+## cell-edit.date-words: 読めない打ち込みの理由に並べる、日付の言葉の例。
+DateWordsForm = "words like tomorrow"
 DateEmptyClears = "empty to clear"
 DateOutOfRange = "outside the date range (0000-01-01 to 9999-12-31): {0}"
 
@@ -176,7 +178,8 @@ WantBool = "true or false"
 WantDateFormat = "a date format string"
 WantWeekStart = "\"sun\" or \"mon\""
 WantString = "a string"
-WantLanguage = "one of \"auto\", \"en\", \"ja\""
+## {0} は使える値(auto と台帳のある言語の符号)の並び。
+WantLanguage = "one of {0}"
 WantLook = "\"modern\" or \"classic\""
 WantCells = "\"rich\" or \"plain\""
 WantCellsColumns = "a table of column = \"rich\", \"plain\" or \"chip\""
@@ -212,6 +215,35 @@ RsnBadColumn = "`{0}` is not a writable column, or a duplicate (ignored)"
 RsnBadNoteMode = "\"{0}\" is not \"form\" or \"editor\"; using the form"
 RsnNeedName = "needs a name (string) that does not repeat (ignored)"
 RsnNeedPath = "needs a path (string) (ignored)"
+## condition.invalid: 条件の名前の決まり。
+RsnCondName = "a condition name starts with a letter and uses only letters, digits, _ and - (ignored)"
+RsnCondNeedExpr = "needs expr (a string) (ignored)"
+## {0} は式を読めない理由。
+RsnCondExpr = "cannot read the expression (the condition is not used): {0}"
+## {0} は輪の道筋(a → b → a)。
+RsnCondCycle = "the conditions call each other in a loop ({0}); none of them is used"
+## {0} は数字、{1} は先にその数字を書いた条件。
+RsnCondKeyDup = "key {0} is already used by the condition \"{1}\" (this key is ignored)"
+## condition.digit-remap: {0} は数字。
+RsnCondKeyTaken = "key {0} is assigned to another action in [keys.table] (this key is ignored)"
+## {0} は使えない条件の名前。
+RsnCondUses = "uses the condition \"{0}\", which cannot be used (the condition is not used)"
+## {0} は未対応の関数・項目。
+CondUnsupported = "unsupported function or field {0}"
+WantDigit = "an integer from 1 to 9"
+## condition.unknown-name: {0} は無い名前、{1} はある名前の並び。
+CondUnknown = "no condition \"{0}\" (conditions: {1})"
+CondNoNames = "none"
+## notice.opt-in: [[notices]] の形。
+WantNoticeArray = "an array of tables ([[notices]])"
+RsnNoticeKind = "needs either cond (a count of a named condition) or note (lines of a note) (ignored)"
+WantNoticeScope = "\"table\", \"workspace\" or an array of table names"
+## notice.count-item: {0} は書いていない条件の名前。
+RsnNoticeNoCond = "no condition \"{0}\" in [conditions] (ignored)"
+## notice.note-item: {0} はノートのファイルの名前。
+NoticeNoNote = "{0} is missing"
+## notice.layout: {0} は欄に入らない行の数。
+NoticeMore = "{0} more lines"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "no table named {0} in the marker (tables: {1}); opened the folder as it is"
 RsnStarterUnknown = "no starter named {0}; opened with what the marker itself says (mdgrid --starters lists them)"
@@ -373,6 +405,7 @@ ExprArityAtLeast = "{0} or more"
 ExprArityRange = "{0} to {1}"
 ## {0} は関数、{1} は渡した数、{2} は求める数。
 ExprArity = "wrong number of arguments for {0} ({1} given, expected {2})"
+ExprCondArg = "cond() takes one condition name in quotes, as in cond(\"soon\")"
 ExprTrailing = "extra input after the expression: {0}"
 
 # ---- newnote: 新しいノートの設定と作れない理由(CE-25・CE-26・CE-27) ----
@@ -409,6 +442,16 @@ PrintNativeView = "mdgrid view \"{0}\": {1}"
 
 # ---- settings: 設定の帯の項目(NV-16) ----
 ChipSort = "sort: {0} {1}"
+## condition.digit-stack: {0} は数字、{1} は条件の見せる名前。
+ChipCondOn = "{0} {1}"
+## condition.hide-always: {0} は見せる名前、{1} は隠した行の数。
+ChipCondHide = "hiding {0}: {1}"
+ChipCondShown = "showing {0}"
+## condition.view-settings: {0} は見せる名前。
+ChipNamedKeep = "only {0}"
+ChipNamedHide = "hide {0}"
+## navigation.expr-filter: {0} は式。
+ChipExpr = "expression: {0}"
 ChipGroupOff = "group: none"
 ChipGroup = "group: {0} {1}"
 ChipHideEmpty = " (hide empty)"
@@ -477,6 +520,7 @@ SecInPrompt = "Find and search input"
 SecInDetail = "In details"
 SecInSettings = "In view settings"
 SecInChips = "In the settings band"
+SecInNotice = "In the notice box"
 SecInPick = "In the list picker"
 SecNative = "mdgrid views (palette commands)"
 SecNote = "Create notes (palette commands)"
@@ -563,6 +607,9 @@ KeyQuickFilter = "Search"
 KeyHighlightSame = "Highlight same value"
 KeyFilterSame = "Only same value"
 KeyFrequency = "Value counts"
+KeyCondition = "Toggle a named condition"
+KeyFocusNotice = "Go to the notice box"
+KeyNoticeOpen = "Open the item"
 KeyFreqRun = "Only this value"
 KeyMark = "Mark row"
 KeyVisual = "Select range"
@@ -608,6 +655,7 @@ KeyToggle = "Toggle"
 KeyBackCancel = "Back/cancel"
 KeyNextSection = "Next section"
 KeyPrevSection = "Previous section"
+KeyGoToSection = "Go to the numbered section"
 KeyMoveItemUp = "Move up"
 KeyMoveItemDown = "Move down"
 KeyDelete = "Delete"
@@ -789,6 +837,9 @@ CalTimeOnly = "the time can be set only in datetime inputs"
 CalTodayKey = "{0} today"
 CalClearKey = "{0} clear"
 CalDateOnly = "this works only in date and datetime inputs"
+## cell-edit.date-words-preview: 日付の言葉を打っているあいだ、入力の欄の横に出す読み。{0} は `YYYY-MM-DD`、{1} は曜日(`Ddd*`)。
+DateWordsDay = "{0} ({1})"
+DateWordsUnreadable = "not a date"
 
 # ---- ui/new_note: 新しいノート(CE-25・CE-26・CE-27) ----
 NoteButton = "+ New"
@@ -1095,8 +1146,15 @@ KeyOpComputed = "file.* and formula.* columns are not keys in the notes"
 KeyOpBadName = "a key name cannot be empty, contain a line break, or start with file. or formula."
 ## CE-28。
 AskNewColumn = "New column (key name): "
+## navigation.expr-filter: 式の入力の前置き。
+AskExprFilter = "Expression: "
+## notice.jump: 当たる行のある表の一覧の前置き。
+AskNoticeTables = "Open a table: "
+## {0} は式を使えない理由。
+ExprFilterBad = "cannot filter by this expression: {0}"
 ## OUT-2。
 CmdExportTable = "Export the table to a file"
+CmdExprFilter = "Filter by an expression"
 AskExportTable = "Export the table, file name (.csv .tsv .json .md): "
 ## OUT-5。{0} はパス。
 AskExportOverwrite = "{0} exists. Overwrite? Type y and Enter: "
@@ -1211,6 +1269,11 @@ SetColumns = "Columns (shown and order)"
 SetDisplay = "Display"
 SetFilters = "Filters (rows matching all)"
 SetAddFilter = "+ Add condition"
+## condition.view-settings: {0} は条件の見せる名前、{1} は掛け方。
+SetNamedRow = "condition {0}: {1}"
+SetNamedOff = "off"
+SetNamedKeep = "only these"
+SetNamedHide = "hide these"
 SetSorts = "Sort (top column first)"
 SetAddSort = "+ Add sort"
 SetGroup = "Group"
@@ -1288,6 +1351,8 @@ SetHintSorts = "{0} add / change direction, {1} / {2} order, {3} delete"
 SetHintGroup = "{0} choose (hide empty and order apply when grouping by a column)"
 SetHintDisplay = "{0} show/hide (this view only; Apply to use it in the table)"
 SetHintButtons = "{0} press. The table does not change until Apply"
+## 左の区画の一覧にいるとき(navigation.settings-sections-keys)。{0}・{1}・{2} はキー、{3} は数字のキーの範囲(`1-8` など)。
+SetHintNav = "{0} / {1} choose a section, {2} go to its items, {3} go to that section"
 SetNativeName = "mdgrid view / {0}"
 SetHead = " View settings  {0}  the table does not change until Apply"
 SetHeadShort = " View settings  {0}"
@@ -1378,6 +1443,34 @@ PlaceNewGroup = "+ new group: {0}"
 PlaceMulti = "cannot register: several folders are open (register one folder or a .base)"
 ## {0} はビューの名前。
 PlaceNoView = "the view {0} is not here, so the first view is shown"
+
+# ---- recent: 最近開いた表(cli.recent-*) ----
+CmdOpenRecent = "Recent tables"
+## 引数なしの起動の一覧の分類の名前。
+RecentGroup = "Recent"
+RecentNone = "no recent tables yet (tables you open on the screen are remembered)"
+AskOpenRecent = "Recent tables: "
+
+# ---- favorites・switch: お気に入りのワークスペースと切り替え(workspace.favorite-*・workspace.switch-*) ----
+CmdWsSwitch = "Switch workspace"
+CmdWsFavorite = "Add the current workspace to favorites"
+KeyDrawerFavorite = "Add to or remove from favorites"
+## {0} はワークスペースの名前。
+WsFavoriteAdded = "added {0} to favorites"
+WsFavoriteRemoved = "removed {0} from favorites"
+WsFavoriteNoWorkspace = "cannot add to favorites: this table is not in a workspace (workspaces.toml or a marker)"
+WsFavoriteHeadOnly = "add favorites on a workspace heading (for the current workspace, use \"Add the current workspace to favorites\" in the palette)"
+## {0} は workspaces.toml の favorites に書いた名前かパス。
+RsnFavoriteGone = "there is no workspace or marker root {0}, so it is left out of the switch list"
+SwitchTitle = " Workspaces "
+## {0} は最初に開いた所の名前。
+SwitchOrigin = "Where you started: {0}"
+SwitchHint = "no favorites yet: press {1} on a workspace heading in the drawer ({0}), or use \"Add the current workspace to favorites\" in the palette"
+SwitchNoRoom = "the terminal is too small for the switch list"
+KeySwitchRun = "Go to the selected one"
+KeySwitchNumber = "Go to the workspace with that number"
+ModeSwitch = "Switch"
+SecInSwitch = "In the switch list"
 
 # ---- workspace: ワークスペース(WS-1〜WS-7) ----
 ## {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
@@ -1686,8 +1779,48 @@ RsnKanbanNoColumn = "the table has no column {0}, so no kanban"
 ## {0} is the column.
 RsnKanbanListColumn = "column {0} is a list, so no kanban (a row would sit in several lanes)"
 
+# ---- vim モード(screen.vim-*。vim.rs) ----
+ModeInputNormal = "Input normal"
+SecInInputNormal = "In an input box, normal mode (vim)"
+## screen.vim-mode-shown: the mode of an input box shown in the bottom band.
+VimInsert = "-- INSERT --"
+VimNormal = "-- NORMAL --"
+## The key hint of Esc in insert mode.
+KeyVimToNormal = "Normal mode"
+KeyWordNext = "Start of the next word"
+KeyWordPrev = "Back to a word start"
+KeyWordEnd = "End of the word"
+KeyInsert = "Insert before"
+KeyAppend = "Insert after"
+KeyInsertStart = "Insert at the start"
+KeyAppendEnd = "Insert at the end"
+KeyDeleteUnder = "Delete this char"
+KeyDeleteWord = "Delete a word"
+KeyDeleteWordBack = "Delete back a word"
+KeyDeleteToEnd = "Delete to the end"
+KeyChangeWord = "Change a word"
+KeyChangeToEnd = "Change to the end"
+KeyChangeLine = "Change the whole text"
+KeyPaste = "Put the copied value"
+KeyRepeat = "Repeat the last value"
+PasteNothing = "nothing copied yet (y copies a cell, Y a row)"
+PasteNoCell = "no cell to put the value in"
+PasteNoRow = "no row to put the values in"
+## {0} is the number of rows.
+PasteRows = "put the copied row into {0} row(s) (unsaved)"
+RepeatNothing = "no value to repeat yet (set a cell first)"
+## screen.quit-discard: the palette's q!.
+PaletteDiscardQuit = "Discard the changes and quit"
+## screen.vim-dd: deleting several notes. {0} is the number of notes, {1} their names, {2} the number of notes that link to them.
+DeleteNotesWhich = "Notes to delete ({0}): {1}"
+DeleteNotesWhichLinks = "Notes to delete ({0}): {1} ({2} note(s) link to them)"
+DeleteNotesDone = "moved {0} notes to the trash (u to bring them back)"
+## {0} is the number of notes.
+RestoreNotesDone = "restored {0} notes to where they were"
+
 # ---- Chart (CH-1 to CH-9. chart.rs) ----
 ModeChart = "Chart"
+ModeNotice = "Notice box"
 SecInChart = "In the chart"
 ScreenChart = "Chart"
 KeyChartView = "Switch between the table and the chart"
@@ -1800,3 +1933,215 @@ RelInYears = "in {0} years"
 RelInYearsOne = "in {0} year"
 RelAgoYears = "{0} years ago"
 RelAgoYearsOne = "{0} year ago"
+
+# ---- ui/across: ワークスペースを横断して探す(navigation.across-*) ----
+## パレットのコマンドの名前(navigation.across-option)。
+CmdAcrossSearch = "Search across the workspace"
+## 語の入力の前置き。
+AskAcross = "Search across tables: "
+## まだ探していないときの案内。{0} は範囲の表の数。
+AcrossHint = "Enter searches every row of the tables in scope ({0})"
+## navigation.across-progress: 読んでいる間の進み。{0} は読み終えた表の数、{1} は全部の数。
+AcrossProgress = "read {0} / {1}"
+## 表ごとのまとまりの見出し。{0} は表の名前、{1} は当たった行の数。
+AcrossGroup = "{0} ({1})"
+## navigation.across-results: どこにも当たらないとき。
+AcrossNoHits = "No rows match"
+## navigation.across-progress: 読めなかった表。{0} は表の名前を並べたもの。
+AcrossUnreadable = "could not read: {0}"
+AcrossNoTables = "no tables to search: open a workspace or register tables"
+AcrossNoWord = "type a word to search for"
+
+# ---- session: 名前を付けたセッション(cli.session-*。src/session.rs・src/ui/sessions.rs) ----
+## {0} is the file path, {1} the reason.
+SessionsUnreadable = "cannot read {0}: {1}"
+## {0} is the file, {1} the line, {2} the reason.
+SessionsBadToml = "cannot read {0} (line {1}): {2}"
+## {0} is the item that is needed.
+RsnSessionNeeds = "ignored: {0} is needed"
+SessionNameEmpty = "the session name is empty"
+SessionNameBad = "a session name cannot have tabs, line breaks or other control characters"
+## {0} is the name, {1} the saved names.
+SessionUnknown = "there is no session {0} (sessions: {1})"
+## {0} is the name.
+SessionNoneSaved = "there is no session {0} (no session is saved yet; save one with \"Save session\" in the palette)"
+## {0} is the session, {1} the path.
+SessionMissingPath = "the session {0} opens {1}, which does not exist"
+## {0} is the session.
+SessionNoPaths = "the session {0} has no folder to open (folders)"
+SessionWithPaths = "-s (--session) cannot be used with paths (the session decides what to open)"
+CmdSaveSession = "Save session"
+AskSessionName = "Session name: "
+## {0} is the session.
+AskSessionOverwrite = "The session {0} exists. Replace it? (y/n) "
+## {0} is the session.
+SessionSaved = "saved the session {0} (open it with mdgrid -s {0})"
+## {0} is the reason.
+SessionSaveError = "cannot write sessions.toml: {0}"
+SessionNoConfigDir = "cannot save the session: no config folder"
+## {0} is the list of columns.
+SessionMissingColumns = "the session's columns {0} are not in this table, so they are skipped"
+## {0} is the reason.
+SessionBadExpr = "the session's expression filter is not used: {0}"
+## {0} is the condition.
+SessionNoCond = "the session's named condition {0} is not in the config, so it is not used"
+
+# ---- schema: 設定の項目の説明(--print-config のコメント。screen.locales-all-in-ledger) ----
+## --print-config の頭の説明(行ごとに "# " を付けて出す)。
+CfgPrintHead = "mdgrid configuration with every item at its default value.\nLocation: $XDG_CONFIG_HOME/mdgrid/config.toml (or ~/.config/mdgrid/config.toml;\non Windows %APPDATA%\\mdgrid\\config.toml).\nItems marked \"global only\" belong to the whole app; the others form the table profile and can\nalso be written per workspace, table and view.\nOptions: mdgrid --help. Full reference: docs/config.md in the mdgrid repository."
+## --print-config の書ける範囲の行。{0} は範囲の名前(CfgScopeGlobal・CfgScopeProfile)。
+CfgScopeLine = "Scope: {0}."
+CfgScopeGlobal = "global only"
+CfgScopeProfile = "global, workspace, table, view"
+## --print-config の例の見出し。
+CfgExampleLine = "Example:"
+## 設定の項目 `language` の説明(行の区切りは --print-config のコメントの行)。
+CfgLanguage = "Language of the screen, startup messages and these descriptions: \"auto\" or a language code\n(en, ja, de, es, fr, ko, pt-BR, zh-CN, zh-TW). \"auto\" follows LC_ALL, LC_MESSAGES and LANG (the\nfirst non-empty one): the language and region that match, else the language, otherwise English."
+## 設定の項目 `editor` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditor = "Editor that opens the selected note (arguments allowed, e.g. \"code -w\"; run without\na shell). Unset or blank: $VISUAL, then $EDITOR, then vi (notepad on Windows)."
+## 設定の項目 `poll_ms` の説明(行の区切りは --print-config のコメントの行)。
+CfgPollMs = "Interval in milliseconds for re-reading notes changed outside mdgrid."
+## 設定の項目 `use` の説明(行の区切りは --print-config のコメントの行)。
+CfgUse = "Lay the template [templates.<name>] under the values written in this place."
+## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
+CfgTypes = "The type of single columns. It wins over the root folder's type settings (.obsidian/types.json)\nand over guessing from the values; \"auto\" goes back to guessing (a narrower scope can undo a\nwider one). The type sets the cell input, the ! mark on values that do not fit, sorting and the\ntype mark of the column heading. Notes are not changed. Clicking the type mark of a heading, or\ncolumn_type in the palette or the action menu, picks a type and writes it to the table in\nviews.toml."
+## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
+CfgRules = "Rules for single columns, checked together with the column type. required = true makes a\nmissing key, null, an empty string or an empty list a problem; values lists the allowed values\n(each item of a list must be one of them, case-sensitive). A narrower scope wins item by item.\nProblems get the ! mark, the bottom band counts them, ! and @ jump between them, and\nmdgrid --check lists them. Checking a rule never changes a note or stops you writing a value; a\ncolumn with values offers them in the cell input. then fills other columns of the same row when\nyou set the column to a value (value = { column = text }; template variables such as {date}\nwork, an empty text clears the column); it is staged with your edit and undone with it.\nComputed columns (file.*, formula.*) cannot have rules."
+## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalColor = "Use colors. false draws without colors (same as NO_COLOR or --no-color)."
+## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalAmbiguousWide = "Treat East Asian Ambiguous characters (such as ○ and ※) as two columns wide.\nSet true if your terminal draws them wide. Window frames are then always ASCII."
+## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdFont = "Whether round pill ends (Nerd Font glyphs) can be drawn. true: your terminal font is a Nerd\nFont. \"auto\": only in terminals that draw these glyphs themselves (Ghostty, WezTerm), so\nnothing breaks elsewhere. Without round ends, \"pill\" is drawn as \"soft\"."
+## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdIcons = "Use icon glyphs from a Nerd Font for the settings button, the screen type button and menu, the\ntype marks of column headings and the calendar title. Set true only if your terminal font is a\nNerd Font; by default plain characters are used (⚙, ▦, ◇, #, ◷, ⋮, ◉, ✓). Emoji are never used."
+## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalHerdr = "Inside a Herdr pane, tell Herdr the command that reopens the current table and view, so that\nHerdr opens it again after its server restarts. false never calls Herdr."
+## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。
+CfgWorkspaceDetect = "When the table you open is in no written workspace, treat the nearest folder above it that\nhas one of these marker folders as a workspace (the root folder): \".obsidian\" (a folder with\n.obsidian/) or \".git\" (a git repository). Its folders with notes become the tables of the\nrelation map. [] turns detection off. The old values \"vault\" and \"git\" are read the same\nway, with a warning."
+## 設定の項目 `git.auto` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitAuto = "How far mdgrid goes with git after it writes notes in a git repository: \"off\" does nothing,\n\"add\" stages the notes it wrote, \"commit\" also commits them (only those notes, never other\nchanged or staged files), \"push\" also pushes. Folders that are not git repositories are\nleft alone. A git failure is reported in one line and the save itself stays done."
+## 設定の項目 `git.when` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitWhen = "When git.auto runs: \"save\" after every save (one commit per save), \"quit\" once when mdgrid\nexits (one commit for the session). Notes still waiting at exit are always handled then."
+## 設定の項目 `git.message` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitMessage = "The commit message: \"auto\" writes \"mdgrid: update N notes\" and the paths; \"ask\" opens a\none-line field after each save (empty uses the automatic message, Esc leaves the notes for\nthe commit at exit)."
+## 設定の項目 `look.theme` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookTheme = "Color theme of the screen. \"default\" keeps the terminal's own colors. A table\n{ light = ..., dark = ... } picks by the terminal's background; \"auto\" is\n{ light = \"saas\", dark = \"sumi\" }. Ignored without colors; 256-color terminals get\nthe nearest colors."
+## 設定の項目 `look.preset` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookPreset = "A whole set of part shapes. [look.style] overrides single parts. A preset written in a\nnarrower place drops the part shapes written in wider places."
+## 設定の項目 `look.mode` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookMode = "The look when colors are on: \"modern\" (lazygit-like: tinted selection, accent borders and keys,\ndim labels) or \"classic\" (inverse video). The text on screen is the same; without colors both\nlook like classic."
+## 設定の項目 `look.cells` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookCells = "How table cells look when colors are on: \"rich\" (booleans, lists, short repeated values,\nlinks and column type marks drawn as parts in the shapes of [look.style]) or \"plain\" (the\ntext as it is). Without colors cells are always plain."
+## 設定の項目 `look.style` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookStyle = "Override single part shapes of the preset: status (\"dot\", \"shape\", \"text\", \"pill\", \"tint\",\n\"solid\", \"soft\", \"chip\", \"plain\"), tags (\"dots\", \"hash\", \"brackets\", \"pill\", \"tint\",\n\"solid\", \"soft\", \"chip\", \"plain\"), check (\"box\", \"tick\", \"bracket\", \"text\"), select\n(\"bar\", \"cross\", \"tint\", \"outline\", \"fill\", \"reverse\"), rules (\"none\", \"header\",\n\"columns\", \"grid\"), tabs (\"underline\", \"pill\", \"segment\", \"brackets\", \"dim\"), frames\n(\"rounded\", \"square\", \"heavy\", \"ascii\", \"none\"), band (\"keys\", \"boxed\", \"quiet\"), links\n(\"accent\", \"plain\") and icons (true or false). \"plain\" (\"text\" for check) keeps that part as\ntext. docs/catalog/index.html shows every choice and writes this table for you."
+## 設定の項目 `look.columns` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColumns = "How single columns look: \"rich\", \"plain\" or \"chip\" (chips even if the column is not\ndetected as one). A column setting wins over the part shapes."
+## 設定の項目 `look.colors` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColors = "Override the theme's colors by role: background, text, header, selection, selection_text,\nband, band_text, accent, strong, zebra, zebra_text, mark, added, removed, pending and\nhighlight. [look.colors.values] sets a color per value (case-insensitive), used by every part\nshape. Colors are \"#rrggbb\", \"#rgb\" or a name (black, white, gray, red, orange,\nyellow, green, teal, cyan, blue, purple, magenta, pink, brown). With theme = \"default\",\nonly accent, selection and value colors are used. A theme written in a narrower place drops\nthe role colors written in wider places."
+## 設定の項目 `display.row_numbers` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowNumbers = "Numbers 1, 2, 3... on the left of each row, in the shown order."
+## 設定の項目 `display.zebra` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayZebra = "Shade every other row (not without colors)."
+## 設定の項目 `display.column_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayColumnLines = "Draw │ between columns."
+## 設定の項目 `display.group_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayGroupGap = "An empty line above every group heading but the first."
+## 設定の項目 `display.tabs` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabs = "The row of view tabs: \"always\", \"auto\" (only with two or more views; with one view the\ntable gets that row) or \"never\". The tab keys work either way."
+## 設定の項目 `display.search_bar` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplaySearchBar = "Show a search bar above the table. false hides it; the quick filter is then typed\non the bottom line."
+## 設定の項目 `display.chips` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayChips = "Show the band of active view settings. f still picks its items when hidden."
+## 設定の項目 `display.buttons` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayButtons = "How the search bar and the Filter and Sort buttons in the view bar are drawn: \"plain\"\n(shown by their background) or \"box\" (each in a box drawn with lines on the padding lines\nof the view bar, not filled). With no padding (display.bar_padding = 0) no lines are drawn."
+## 設定の項目 `display.bar_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayBarPadding = "Padding above and below the view bar, in lines: 0, 0.5, 1, 1.5 or 2 (1 and 1.0 both work).\n0 draws the view bar on one line. A half line gets the view bar's background color with its\nouter half covered by half blocks (▀ above, ▄ below) in the screen's background color (the\ntheme's, or the terminal's, asked once at startup); when that is unknown, without colors, and\nwith terminal.ambiguous_wide = true, it is rounded up to an empty line.\nTerminals shorter than 16 lines, and a hidden search bar, always use 0. Other values are\nwarned about and the default is used."
+## 設定の項目 `display.top_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTopPadding = "Padding above the header, in lines: 0, 0.5, 1, 1.5 or 2. A half line is drawn like\ndisplay.bar_padding (▀ above the header, which then gets the view bar's background color).\nTerminals shorter than 16 lines always use 0."
+## 設定の項目 `display.row_extra_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowExtraLines = "How many extra lines a table row may grow by: a row holding a long value or a value with\nline breaks wraps it at the column width and grows up to 1 + this many lines (each row only\nas tall as it needs). What does not fit ends with …. 0 keeps every row on one line, with\nline breaks shown as …⏎. Other values are warned about and the default is used."
+## 設定の項目 `display.note_path` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNotePath = "How the note column on the left shows each note: \"common\" drops the folder shared by every row,\n\"name\" shows only the name, \"full\" the path from the root, and \"off\" no name (only the row marks).\nOther values are warned about and the default is used."
+## 設定の項目 `display.tab_wrap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrap = "When the view tabs do not fit on the row of the view bar, move them all to rows below the search box\nand the buttons, as many rows as they need, so every tab stays visible (the table moves down by those\nrows). false keeps one row and leaves out other tabs when the screen is narrow."
+## 設定の項目 `display.tab_wrap_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrapGap = "With tab_wrap, put one empty row between the row of the search box and the rows of tabs below it."
+## 設定の項目 `display.note_name` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNoteName = "A regular expression applied to the name in the note column (after note_path; with folders, to the last\npart only). When it matches, show the group named name, or else the first group, or else the name with\nthe match removed. A name that does not match, or would become empty, is shown as it is. \"\" sets\nnothing. An expression that cannot be read is warned about and not used."
+## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesFormat = "How dates are shown and typed in the table. Parts: YYYY, YY, MM, M, DD, D, ddd\n(weekday) and non-alphanumeric separators. Notes are always written as YYYY-MM-DD."
+## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesWeekStart = "First day of the week in the date calendar."
+## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditCandidates = "Maximum number of value candidates offered when editing a text cell.\nColumns with more distinct values offer no candidates."
+## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditAddFrontmatter = "Allow writing to notes with no front matter or an empty one (a front matter or a key\nline is added). false makes those notes read-only."
+## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
+CfgNewNote = "How a new note is made from the table: mode (\"form\": a form with every field, or\n\"editor\": create and open in the editor), folder (relative to the opened folder), name (name\ntemplate), ask (the form's columns; default: the visible columns), required (columns that must\nbe filled), hidden (columns written without a field), body (a body template file) and\n[new_note.set] (column = value). Templates may use {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} and {folder}. Values from the view's filter come first.\nThe table is one item: a narrower place that writes it replaces it whole."
+## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeys = "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\nfilter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch,\ninput_normal (vim mode). Action names are shown in the command palette (:)."
+## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeysVim = "vim mode: input boxes start in insert mode and Esc switches them to normal mode (h l 0 $ w b e,\ni a I A, x X dw db d$ D dd, cw c$ C cc, u). The table gets dd (delete the note), p (put the value\ncopied with y or Y) and . (repeat the last value). false keeps every key as it is."
+## 設定の項目 `search.across` の説明(行の区切りは --print-config のコメントの行)。
+CfgSearchAcross = "Add \"Search across the workspace\" to the command palette: it looks for a word in every row of every\ntable in the current workspace (or the registered tables) and lists the matching rows per table.\nfalse (the default) leaves the palette as it is."
+## 設定の項目 `templates` の説明(行の区切りは --print-config のコメントの行)。
+CfgTemplates = "Named pieces of a profile ([look], [display], [dates], [edit], [new_note]). use = \"<name>\" in\nany place lays one under that place's values. ui.toml's template wins over config.toml's of\nthe same name."
+## 設定の項目 `conditions` の説明(行の区切りは --print-config のコメントの行)。
+CfgConditions = "Named conditions: an expression (expr) written once and used by name. cond(\"<name>\") in any\nexpression, a digit key (key = 1-9) that shows only the matching rows, the filter section of the\nview settings, and hide = true to hide the matching rows in every table. label is the name shown."
+## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotices = "The notice box above the header, shown only when items are written. A count item counts the rows that\nmatch a named condition ([conditions]) in the table, the workspace or named tables; a note item shows\nthe first lines of a note's body. mdgrid --notices prints the same lines."
+
+# ---- stack: tables stacked top to bottom and pages (stack.*) ----
+SecStack = "Stacked tables"
+KeyStackDown = "Table below"
+KeyStackUp = "Table above"
+KeyStackClose = "Close this table"
+KeyStackGrow = "Make this table a row taller"
+KeyStackShrink = "Make this table a row shorter"
+KeyStackCloseSave = "Save and close"
+KeyStackCloseDiscard = "Discard and close"
+CmdStackAdd = "Stack a table below"
+CmdPageSave = "Save the arrangement as a page"
+## {0} is the most tables that can be stacked.
+StackMax = "up to {0} tables can be stacked"
+StackNoRoom = "the terminal is too short to stack another table (each table needs its title and 3 rows)"
+StackNoTables = "no other table to stack (the tables of this scope are already stacked)"
+StackCloseOnly = "only one table is open, so it cannot be closed"
+StackSingle = "no tables are stacked"
+StackGrowLimit = "this table cannot get taller (the other tables keep their title and 3 rows)"
+StackShrinkLimit = "this table cannot get shorter (it keeps its title and 3 rows)"
+StackCollapsed = "the terminal is too short to change the heights"
+## {0} is the table, {1} the number of changes.
+StackCloseBand = " {0} has {1} unsaved changes. Choose what to do before closing it"
+StackCloseBandOne = " {0} has {1} unsaved change. Choose what to do before closing it"
+## {0} is the table.
+StackClosed = "closed {0}"
+AskStackTable = "Table to stack below: "
+AskPageName = "Page name: "
+## {0} is the page, {1} the file.
+PageSaved = "saved page \"{0}\" to {1}"
+PageSaveError = "could not save the page: {0}"
+PageSaveUnsure = "the file read back differently after the edit, so nothing was written (check the hand-written parts)"
+PageNotWorkspace = "the current scope is not a workspace, so the page cannot be saved (create one with :workspace_new)"
+PageNoStack = "no tables are stacked, so there is nothing to save as a page (stack one with :stack_add)"
+## {0} is the table.
+PageTableOutside = "table {0} is not in the current workspace, so the page cannot be saved"
+PageNameBad = "the page name is empty or has a line break"
+## {0} is the page, {1} the names of the pages.
+PageUnknown = "no page \"{0}\" (pages: {1})"
+PageNone = "no page \"{0}\" (this workspace has no pages)"
+## {0} is the page, {1} the reasons.
+PageOpenFailed = "some tables of page \"{0}\" could not be opened: {1}"
+DrawerPage = "page"
+## {0} is the table (headings of the save review when tables are stacked).
+ReviewTableHead = " ── {0} ──"
+WantPageList = "a list of pages ([[page]])"
+WantPageTables = "a list of { table = \"<table>\", view = \"<view>\", height = <ratio> } tables"
+RsnPageNeedTable = "it needs table (the name of a table), so it was ignored"
+## {0} is the table, {1} the tables of the workspace.
+RsnPageNoTable = "table {0} is not in the workspace, so it was skipped (tables: {1})"
+## {0} is the page.
+RsnPageEmpty = "page {0} has no table to open, so it is not used"
+## When "Stack a table below" is chosen while picking with `--pick`.
+StackPick = "tables are not stacked with --pick (it picks from one table and ends)"

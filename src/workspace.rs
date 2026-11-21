@@ -952,8 +952,14 @@ fn parse_in(text: &str, base: Option<&Path>) -> (Vec<Workspace>, Vec<String>) {
             (FILE_NAME, "workspace.table"),
             &mut warns,
         );
-        let profile =
-            Profile::read_scoped(t, FILE_NAME, "workspace", &["name", "table"], &mut warns);
+        // stack.page-store: ページ(`[[workspace.page]]`)は app_pages が読む。
+        let profile = Profile::read_scoped(
+            t,
+            FILE_NAME,
+            "workspace",
+            &["name", "table", crate::page::KEY],
+            &mut warns,
+        );
         out.push(Workspace {
             name,
             tables,
@@ -1067,19 +1073,59 @@ pub fn add(dir: &Path, ws: &str, table: WsTable) -> io::Result<()> {
         None => w.tables.push(table.clone()),
     }
     let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
-    let new = checked(edit_add(&text, dir, ws, &table), dir, &list);
+    let new = checked(edit_add(&text, dir, ws, &table), &text, dir, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())
 }
 
 /// 文字のまま書き換えた結果を読み直し、狙った並び(`want`)と違えば(手で書いた形を読み違えたとき)、
-/// 並びから書き直した文字にする(コメントは消えるが、ほかの項目を壊さない)。
-fn checked(new: String, dir: &Path, want: &[Workspace]) -> String {
+/// 並びから書き直した文字にする(コメントは消えるが、ほかの項目を壊さない)。ページ(stack.page-store)は
+/// 並び(`Workspace`)に無いので、書き直すときは前の文(`old`)のページの値をそのまま写す。
+fn checked(new: String, old: &str, dir: &Path, want: &[Workspace]) -> String {
     let (got, warns) = parse_in(&new, Some(dir));
     if warns.is_empty() && got == want {
         new
     } else {
-        to_toml(want)
+        // workspace.favorite-store: 最上位の `favorites` は書き直しでも残す。
+        let fav = crate::favorites::line_of(&new).map(|l| l + "\n");
+        fav.unwrap_or_default() + &keep_pages(to_toml(want), old)
     }
+}
+
+/// 並びから書き直した文(`fresh`)の各ワークスペースに、前の文(`old`)の同じ名前のワークスペースのページの値を写す。
+fn keep_pages(fresh: String, old: &str) -> String {
+    let Ok(old) = old.parse::<toml::Table>() else {
+        return fresh;
+    };
+    let Ok(mut new) = fresh.parse::<toml::Table>() else {
+        return fresh;
+    };
+    let pages_of = |name: &str| {
+        old.get("workspace")?
+            .as_array()?
+            .iter()
+            .filter_map(toml::Value::as_table)
+            .find(|w| w.get("name").and_then(toml::Value::as_str).map(str::trim) == Some(name))?
+            .get(crate::page::KEY)
+            .cloned()
+    };
+    let mut copied = false;
+    if let Some(list) = new.get_mut("workspace").and_then(toml::Value::as_array_mut) {
+        for w in list.iter_mut().filter_map(toml::Value::as_table_mut) {
+            let name = w
+                .get("name")
+                .and_then(toml::Value::as_str)
+                .unwrap_or_default()
+                .to_string();
+            if let Some(p) = pages_of(&name) {
+                w.insert(crate::page::KEY.into(), p);
+                copied = true;
+            }
+        }
+    }
+    if !copied {
+        return fresh;
+    }
+    toml::to_string(&new).unwrap_or(fresh)
 }
 
 /// 表を外す(`path` があれば)か、ワークスペースごと消す(WS-2・WS-3)。何も消さなければ偽。
@@ -1098,7 +1144,7 @@ pub fn remove(dir: &Path, ws: &str, path: Option<&Path>) -> io::Result<bool> {
         return Ok(false);
     }
     let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
-    let new = checked(edit_remove(&text, dir, ws, path), dir, &list);
+    let new = checked(edit_remove(&text, dir, ws, path), &text, dir, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())?;
     Ok(true)
 }
@@ -1107,6 +1153,10 @@ pub fn remove(dir: &Path, ws: &str, path: Option<&Path>) -> io::Result<bool> {
 
 const WS_HEAD: &str = "[[workspace]]";
 const TABLE_HEAD: &str = "[[workspace.table]]";
+/// stack.page-store: ワークスペースのページの区画の見出し。
+const PAGE_HEAD: &str = "[[workspace.page]]";
+/// stack.page-store: 印のページの区画の見出し。
+const MARKER_PAGE_HEAD: &str = "[[page]]";
 
 /// 区画: 見出しの行(start)から、中身の終わり(end。末尾のコメントと空行は含めない)まで。
 #[derive(Clone, Copy)]
@@ -1122,6 +1172,8 @@ fn blocks(lines: &[&str], from: usize, to: usize, head: &str) -> Vec<Block> {
     let inner = |h: &str| {
         if head == WS_HEAD {
             h.starts_with("[workspace.") || h.starts_with("[[workspace.")
+        } else if head == PAGE_HEAD {
+            h.starts_with("[workspace.page.")
         } else {
             h.starts_with("[workspace.table.")
         }
@@ -1203,7 +1255,7 @@ pub fn save_profile(dir: &Path, ws: &str, profile: &Profile) -> io::Result<()> {
     };
     w.profile = profile.clone();
     let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
-    let new = checked(edit_profile(&text, ws, profile), dir, &list);
+    let new = checked(edit_profile(&text, ws, profile), &text, dir, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())
 }
 
@@ -1451,7 +1503,14 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
         &mut warns,
     );
     // WS-7: `open`(根を開いたときの表)は marker_open が読む。
-    let profile = Profile::read_scoped(&table, &label, "", &["name", "table", "open"], &mut warns);
+    // stack.page-store: ページ(`[[page]]`)は marker_pages が読む。
+    let profile = Profile::read_scoped(
+        &table,
+        &label,
+        "",
+        &["name", "table", "open", crate::page::KEY],
+        &mut warns,
+    );
     // 印はノートと一緒に配られるので、根の外を指す表は使わない(開いただけで外のフォルダを読ませない)。
     let real_root = std::fs::canonicalize(root).unwrap_or_else(|_| root.to_path_buf());
     // WS-9: 中身を印に書いた表は、根に置いたとみなす `.base` なので外を指さない。
@@ -1659,6 +1718,220 @@ pub fn resolve(
         }
     }
     Ok(None)
+}
+
+// ---- ページ(stack.page-store・stack.page-save・stack.page-save-marker) ----
+
+/// ページの置き場(範囲がワークスペースのときだけ。検知した範囲と登録した表には無い)。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PageHome {
+    /// 設定のフォルダの workspaces.toml の、このワークスペース。
+    App { dir: PathBuf, ws: String },
+    /// この根の印(`.mdgrid/workspace.toml`)。
+    Marker(PathBuf),
+}
+
+/// 範囲のページの置き場(`opened` は開いた表のパス、`config_dir` は設定のフォルダ)。
+pub fn page_home(scope: &Scope, opened: &Path, config_dir: Option<&Path>) -> Option<PageHome> {
+    match scope.source {
+        Source::Chosen | Source::App => Some(PageHome::App {
+            dir: config_dir?.to_path_buf(),
+            ws: scope.name.clone(),
+        }),
+        Source::Marker => {
+            let start = if opened.extension().is_some_and(|x| x == "base") {
+                opened.parent().unwrap_or(opened)
+            } else {
+                opened
+            };
+            find_marker(start).map(PageHome::Marker)
+        }
+        Source::Detected(_) => None,
+    }
+}
+
+/// 置き場のページを読む(stack.page-store)。読めない行は警告して飛ばす。
+pub fn load_pages(home: &PageHome) -> (Vec<crate::page::Page>, Vec<String>) {
+    match home {
+        PageHome::App { dir, ws } => app_pages(dir, ws),
+        PageHome::Marker(root) => marker_pages(root),
+    }
+}
+
+/// workspaces.toml のワークスペース `ws` のページ(`[[workspace.page]]`)。
+pub fn app_pages(dir: &Path, ws: &str) -> (Vec<crate::page::Page>, Vec<String>) {
+    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    pages_in(&text, dir, ws)
+}
+
+/// workspaces.toml の文から、ワークスペース `ws` のページを読む。
+fn pages_in(text: &str, dir: &Path, ws: &str) -> (Vec<crate::page::Page>, Vec<String>) {
+    let mut warns = Vec::new();
+    // 壊れた TOML とワークスペースの誤りは load が知らせる。
+    let Ok(table) = text.parse::<toml::Table>() else {
+        return (Vec::new(), warns);
+    };
+    let (list, _) = parse_in(text, Some(dir));
+    let known: Vec<String> = list
+        .iter()
+        .find(|w| w.name == ws)
+        .map(|w| w.tables.iter().map(|t| t.name.clone()).collect())
+        .unwrap_or_default();
+    let item = table
+        .get("workspace")
+        .and_then(toml::Value::as_array)
+        .and_then(|a| {
+            a.iter()
+                .filter_map(toml::Value::as_table)
+                .find(|w| w.get("name").and_then(toml::Value::as_str).map(str::trim) == Some(ws))
+        });
+    let pages = crate::page::read(
+        item.and_then(|w| w.get(crate::page::KEY)),
+        &known,
+        (FILE_NAME, "workspace.page"),
+        &mut warns,
+    );
+    (pages, warns)
+}
+
+/// 印のページ(`[[page]]`。スターターの印を下に重ねた文から)。
+pub fn marker_pages(root: &Path) -> (Vec<crate::page::Page>, Vec<String>) {
+    let mut warns = Vec::new();
+    let Ok(table) = marker_source(root).0.parse::<toml::Table>() else {
+        return (Vec::new(), warns);
+    };
+    let known: Vec<String> = read_marker(root)
+        .0
+        .tables
+        .iter()
+        .map(|t| t.name.clone())
+        .collect();
+    let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+    let pages = crate::page::read(
+        table.get(crate::page::KEY),
+        &known,
+        (&label, crate::page::KEY),
+        &mut warns,
+    );
+    (pages, warns)
+}
+
+/// ページを置き場に書く(同じ名前のページがあれば置き換える。stack.page-save)。
+pub fn save_page(home: &PageHome, page: &crate::page::Page) -> io::Result<()> {
+    match home {
+        PageHome::App { dir, ws } => save_app_page(dir, ws, page),
+        PageHome::Marker(root) => save_marker_page(root, page),
+    }
+}
+
+/// 区画の中のページの名前(読めなければ None)。`path` は区画の文を読んだ表の中のページの並びの道筋。
+fn page_block_name(lines: &[&str], b: Block, path: &[&str]) -> Option<String> {
+    let t: toml::Table = lines[b.start..b.end].concat().parse().ok()?;
+    let mut v = &toml::Value::Table(t);
+    for k in path {
+        v = v.get(k)?;
+    }
+    v.as_array()?
+        .first()?
+        .get("name")?
+        .as_str()
+        .map(|s| s.trim().to_string())
+}
+
+/// workspaces.toml のワークスペースにページを足すか置き換える。並びとほかのページは文字のまま残し、読み直して
+/// 書いたページがあり、ワークスペースと表が前と同じときだけ書く(読み違えたら書かずに理由)。
+fn save_app_page(dir: &Path, ws: &str, page: &crate::page::Page) -> io::Result<()> {
+    let list = load_for_edit(dir)?;
+    if !list.iter().any(|w| w.name == ws) {
+        return Err(io::Error::other(Msg::WsUnknown.fill(&[&ws])));
+    }
+    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let mut owned: Vec<String> = text.split_inclusive('\n').map(str::to_string).collect();
+    if let Some(last) = owned.last_mut() {
+        if !last.ends_with('\n') {
+            last.push('\n');
+        }
+    }
+    let lines: Vec<&str> = owned.iter().map(String::as_str).collect();
+    let n = lines.len();
+    let Some(b) = blocks(&lines, 0, n, WS_HEAD)
+        .into_iter()
+        .find(|b| block_name(&lines, *b).as_deref() == Some(ws))
+    else {
+        return Err(io::Error::other(Msg::WsUnknown.fill(&[&ws])));
+    };
+    let piece = crate::page::text(page, PAGE_HEAD);
+    let same = blocks(&lines, b.start + 1, b.end, PAGE_HEAD)
+        .into_iter()
+        .find(|pb| {
+            page_block_name(&lines, *pb, &["workspace", crate::page::KEY]).as_deref()
+                == Some(page.name.as_str())
+        });
+    let mut out = owned.clone();
+    match same {
+        Some(pb) => {
+            out.splice(pb.start..pb.end, [piece]);
+        }
+        None => {
+            out.splice(b.end..b.end, ["\n".to_string(), piece]);
+        }
+    }
+    let new = out.concat();
+    let (got, warns) = parse_in(&new, Some(dir));
+    let (pages, _) = pages_in(&new, dir, ws);
+    if !warns.is_empty() || got != list || !pages.contains(page) {
+        return Err(io::Error::other(Msg::PageSaveUnsure.text()));
+    }
+    config::write_atomic(dir, FILE_NAME, new.as_bytes())
+}
+
+/// 印にページを足すか置き換える(stack.page-save-marker)。足すときはファイルの末尾に区画を足すだけで、ほかの
+/// 行・並び・コメントは1字も変えない。読み直して書いたページがあるときだけ書く。
+fn save_marker_page(root: &Path, page: &crate::page::Page) -> io::Result<()> {
+    let file = root.join(MARKER_DIR).join(MARKER_FILE);
+    let text = std::fs::read_to_string(&file)?;
+    let piece = crate::page::text(page, MARKER_PAGE_HEAD);
+    let lines: Vec<&str> = text.split_inclusive('\n').collect();
+    let inner = |h: &str| h.starts_with("[page.") || h.starts_with("[[page.");
+    let same = config::toml_blocks(&lines, 0, lines.len(), MARKER_PAGE_HEAD, &inner)
+        .into_iter()
+        .map(|(start, end)| Block { start, end })
+        .find(|pb| {
+            page_block_name(&lines, *pb, &[crate::page::KEY]).as_deref() == Some(page.name.as_str())
+        });
+    let new = if let Some(pb) = same {
+        let mut out: Vec<String> = lines.iter().map(|l| (*l).to_string()).collect();
+        out.splice(pb.start..pb.end, [piece]);
+        out.concat()
+    } else {
+        let mut out = text.clone();
+        if !out.is_empty() {
+            if !out.ends_with('\n') {
+                out.push('\n');
+            }
+            if !out.ends_with("\n\n") {
+                out.push('\n');
+            }
+        }
+        out.push_str(&piece);
+        out
+    };
+    let ok = new.parse::<toml::Table>().is_ok_and(|t| {
+        let known: Vec<String> = page.tables.iter().map(|x| x.table.clone()).collect();
+        let mut w = Vec::new();
+        let label = format!("{MARKER_DIR}/{MARKER_FILE}");
+        crate::page::read(
+            t.get(crate::page::KEY),
+            &known,
+            (&label, crate::page::KEY),
+            &mut w,
+        )
+        .contains(page)
+    });
+    if !ok {
+        return Err(io::Error::other(Msg::PageSaveUnsure.text()));
+    }
+    config::write_atomic(&root.join(MARKER_DIR), MARKER_FILE, new.as_bytes())
 }
 
 #[cfg(test)]

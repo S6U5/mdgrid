@@ -570,11 +570,19 @@ impl App {
     pub(crate) fn copy_cell(&mut self) {
         let sel = self.selection();
         if !sel.is_empty() {
+            // screen.vim-paste: 行を写したのと同じ(`p` は選んだ行の先頭の行の値を入れる)。
+            self.remember_row_yank(&sel[0]);
             let t = self.rows_tsv(&sel);
             return self.send_copy(&t, &Msg::CopyWhatSelected.fill(&[&sel.len()]));
         }
         match self.cell_tsv() {
-            Some(t) => self.send_copy(&t, Msg::CopyWhatCell.text()),
+            Some(t) => {
+                // screen.vim-paste: mdgrid の中でも、写したセルの値を覚える。
+                if let Some((row, col)) = self.selected() {
+                    self.remember_cell_yank(&row, &col);
+                }
+                self.send_copy(&t, Msg::CopyWhatCell.text());
+            }
             None => self.message = Some(Msg::CopyNoCell.text().into()),
         }
     }
@@ -583,11 +591,14 @@ impl App {
     pub(crate) fn copy_row(&mut self) {
         let sel = self.selection();
         if !sel.is_empty() {
+            // screen.vim-paste: 選んだ行の先頭の行の値を覚える。
+            self.remember_row_yank(&sel[0]);
             let t = self.rows_tsv(&sel);
             return self.send_copy(&t, &Msg::CopyWhatSelected.fill(&[&sel.len()]));
         }
         match self.cur_row() {
             Some(r) => {
+                self.remember_row_yank(&r);
                 let t = self.rows_tsv(&[r]);
                 self.send_copy(&t, Msg::CopyWhatRow.text());
             }
@@ -615,15 +626,18 @@ impl App {
         }
     }
 
-    /// エディタで開くよう頼まれているか。
+    /// エディタで開くよう頼まれているか(表の行か、通知の欄の連絡のノート)。
     pub fn wants_editor(&self) -> bool {
-        self.editor_request.is_some()
+        self.editor_request.is_some() || self.editor_note.is_some()
     }
 
     /// 頼まれた行のノートを `editor`(設定の editor・$VISUAL・$EDITOR から `config::resolve_editor` で決めた値)で開く(SR-8)。
     /// `term(true)` で端末を戻してから起動し、終わったら `term(false)` で画面に戻して、ノートを読み直す。
     /// 中身が変わっていれば外の変更と同じに扱う(ためた変更があれば「外で変更」の印。WB-16)。
     pub fn open_editor(&mut self, editor: &str, term: &mut dyn FnMut(bool) -> io::Result<()>) {
+        if let Some(path) = self.editor_note.take() {
+            return self.open_note_editor(editor, &path, term);
+        }
         let Some(row) = self.editor_request.take() else {
             return;
         };
@@ -667,6 +681,45 @@ impl App {
             }
             self.refresh();
         }
+        self.message = Some(msg);
+    }
+}
+
+impl App {
+    /// notice.open-note: 通知の欄の連絡のノート(表の行でなくてよい)をエディタで開き、戻ったら欄を読み直す。
+    fn open_note_editor(
+        &mut self,
+        editor: &str,
+        path: &std::path::Path,
+        term: &mut dyn FnMut(bool) -> io::Result<()>,
+    ) {
+        let argv = match editor_argv(editor, path) {
+            Ok(a) => a,
+            Err(e) => {
+                self.message = Some(Msg::EditorBadSetting.fill(&[&e]));
+                return;
+            }
+        };
+        if let Err(e) = term(true) {
+            let _ = term(false);
+            self.message = Some(Msg::EditorNoTerminal.fill(&[&e]));
+            return;
+        }
+        let status = run_editor(&argv);
+        let back = term(false);
+        let label = path.file_name().map_or_else(
+            || path.display().to_string(),
+            |n| n.to_string_lossy().into_owned(),
+        );
+        let mut msg = match &status {
+            Err(e) => Msg::EditorCannotStart.fill(&[&argv[0].to_string_lossy(), &e]),
+            Ok(s) if !s.success() => Msg::EditorFailed.fill(&[&s, &label]),
+            Ok(_) => Msg::EditorReturned.fill(&[&label]),
+        };
+        if let Err(e) = back {
+            msg.push_str(&Msg::EditorTermNotRestored.fill(&[&e]));
+        }
+        self.notice_refresh();
         self.message = Some(msg);
     }
 }

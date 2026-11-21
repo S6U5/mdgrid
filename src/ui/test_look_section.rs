@@ -114,7 +114,8 @@ fn test_sr_43_choose_apply_and_save() {
     let mut a = boot(&tmp, false);
     look_section(&mut a, 0);
     let s = screen(&a);
-    assert!(s.contains("見た目      sumi"), "{s}");
+    // 左の一覧の名前の頭に番号(navigation.settings-sections-digits)。
+    assert!(s.contains("8 見た目    sumi"), "{s}");
     assert!(s.contains("▾ 全体"), "{s}");
     assert!(s.contains("▾ default  (既定)"), "{s}");
     choose(&mut a, 1, "dracula");

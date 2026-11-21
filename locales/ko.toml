@@ -1,0 +1,2147 @@
+# mdgrid の画面と起動の文言の台帳: 英語(SR-23)。文言の名前と並びの正本。
+# 1行に1つ `名前 = "文"`(TOML の基本の文字列)。`##` の行は次の文言の説明(コードの文書になる)、`#` の行は区切り。
+# 差し込みは `{0}`・`{1}` の番号。ほかの言語の台帳は同じ名前を全部持ち、同じ番号を使う(欠け・余り・空・番号の
+# 食い違いはビルドで落ちる。build.rs・src/ledger.rs)。
+
+
+# ---- main: 使い方(CLI-2) ----
+Usage = "사용법: mdgrid [<.base | 폴더 | .md | .csv> ...] [--view <이름>] [-w <이름>] [--page <이름>] [--raw] [--readonly] [--no-color] [--config <경로>]\n        mdgrid [<.base | 폴더 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <이름>]\n                 [--filter <식>]... [--sort <열>[:desc]]...\n        mdgrid [<.base | 폴더 | .md> ...] --pick path|<열> [--view <이름>]\n        mdgrid [<.base | 폴더 | .md> ...] --check [--view <이름>]\n        mdgrid [<.base | 폴더 | .md> ...] --count [--view <이름>] [--filter <식>]...\n        mdgrid [<.base | 폴더> ...] --notices\n        mdgrid [<.base | 폴더> ...] --apply <경로> [--yes]\n        mdgrid [<폴더 | .base> ...] --add-to <이름> [--as <표 이름>] | --remove-from <이름>\n        mdgrid [<폴더> ...] --init-workspace [--starter <이름> [--with-samples]]\n        mdgrid [<폴더>] --new-note <이름> [--set <열>=<값>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <경로>]\n        mdgrid -s <이름> [--readonly] [--no-color] [--config <경로>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <이름>\n        mdgrid --print-config\n        mdgrid --completions <셸>\n        mdgrid --man\n\n  폴더 안의 Markdown 노트를 표로 연다. 노트 하나가 한 행, 프런트매터의 키 하나가\n  한 열이 된다. .base를 주면 그 table 뷰로 연다(노트는 루트 폴더 아래에서 찾는다).\n  .md 파일을 주면 그 폴더를 열고 그 노트를 선택한다.\n  .csv나 .tsv 파일을 주면 표로 연다. 한 줄이 한 행이고,\n  첫 줄이 열 이름이 된다.\n  인수가 없으면 현재 폴더를 연다(places.toml에 등록한 표가 있으면 그 목록을 위에\n  띄운다). 마커 .mdgrid/workspace.toml의 \"open\"에 표를 적은 폴더는\n  대신 그 표를 연다.\n\n  --view <이름>           .base의 그 뷰로 연다(생략하면 첫 뷰.\n                          --print는 mdgrid 뷰도 찾는다)\n  -w, --workspace <이름>  링크와 관계도의 범위로 그 워크스페이스(workspaces.toml)를 쓴다.\n                          경로가 없으면 그 첫 표를 연다\n  --page <이름>           워크스페이스의 그 페이지([[page]])를, 표를 세로로 쌓아 연다\n  --raw                   마커의 \"open\"에 적힌 표가 아니라 폴더 자체를 연다\n  --readonly              읽기 전용으로 연다(편집도 저장도 하지 않는다)\n  --no-color              색 없이 그린다\n  --config <경로>         이 설정 파일을 읽는다\n                          (기본값: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              이 폴더에서 마지막으로 보던 표와 뷰로 연다(없으면 인수 없이\n                          연 것과 같다. tmux 등에서 창을 되살릴 때 쓴다)\n  -s, --session <이름>    그 이름으로 저장한 세션(표, 뷰, 필터, 정렬, 열)으로 연다\n                          (팔레트의 \"세션 저장\"으로 저장한다)\n  --sessions              저장한 세션(sessions.toml)의 이름과 폴더를 한 줄에 하나씩 출력한다\n  --recent                화면에서 최근에 연 표를 최신순으로, 한 줄에 하나씩\n                          \"경로<TAB>뷰 이름<TAB>마지막으로 연 때\" 형식으로 출력한다(최대 20개)\n  --print                 화면 없이 뷰의 표를 표준 출력에 출력한다\n                          (노트는 바꾸지 않는다)\n  --format <형식>         --print의 형식(csv, tsv, json, md. 기본값 csv)\n  --with-path             --print의 첫 열에 각 행의 노트 경로 \"path\"를 더한다\n                          (--pick path와 같은 경로)\n  --filter <식>           .base 식이 참인 행만 남긴다\n                          (반복 가능. .base 뷰에서는 뷰의 필터와 함께 적용)\n  --sort <열>[:desc]      --print를 이 열로 정렬한다(반복 가능. 뷰의 정렬을\n                          대신한다)\n  --count                 화면 없이 뷰의 행 수(--filter 적용 후)를 출력한다\n  --show-hidden           --print, --pick, --count에서 hide = true인 조건([conditions])이\n                          숨긴 행도 남긴다\n  --notices               화면 없이 알림 칸([[notices]])의 항목을 한 줄에 하나씩 출력한다\n                          (tmux 상태 줄이나 셸 프롬프트용)\n  --pick <path|열>        터미널에 화면을 읽기 전용으로 띄운다. Enter를 누르면\n                          표시한 행(없으면 선택한 행)의 경로나 열 값을\n                          한 줄에 하나씩 표준 출력에 내고 끝난다\n                          (q나 Esc로 취소하면 종료 코드 1)\n  --check                 열 형식이나 규칙([rules])에 맞지 않는 값을\n                          한 줄에 하나씩 출력한다(경로:줄: 열: 이유. 하나라도 있으면\n                          종료 코드 1)\n  --apply <경로>          --print --with-path 형식의 CSV나 JSON(-는 표준 입력)을 읽어\n                          값이 다른 셀을 바꾼다. 차이만 보여 준다\n  --yes                   --apply에서 변경을 실제로 쓴다\n  --workspaces            워크스페이스(workspaces.toml) 목록을 출력한다\n  --add-to <이름>         지정한 표(기본값: 이 폴더)를 그 워크스페이스에 더한다.\n                          없으면 만든다. --as <이름>으로 표 이름을 정한다\n  --remove-from <이름>    지정한 표(기본값: 이 폴더)를 그 워크스페이스에서 뺀다\n  --remove-workspace <이름>  그 워크스페이스를 지운다(노트는 건드리지 않는다)\n  --init-workspace        폴더에 워크스페이스 마커 .mdgrid/workspace.toml을 둔다\n                          (기본값: 이 폴더)\n  --starter <이름>        --init-workspace에서 그 스타터로 대장(마커, 노트 템플릿)을\n                          만든다. 내장 스타터나 설정 폴더의 starters/<이름>\n  --with-samples          --starter에서 스타터의 견본 노트도 더한다\n  --starters              스타터 목록(이름과 한 줄 설명)을 한 줄에 하나씩 출력한다\n  --new-note <이름>       화면 없이 폴더(기본값: 이 폴더)에 새 노트 <이름>.md를 만든다.\n                          [new_note](folder, set, template)를 쓰고, 만든 경로를 출력한다.\n                          덮어쓰지 않는다\n  --set <열>=<값>         --new-note에서 그 열에 값을 넣는다(반복 가능. 목록 항목은\n                          쉼표로 구분. 빈 값은 아무것도 쓰지 않는다)\n  --print-config          모든 설정 항목을 기본값과 설명을 붙인 TOML로 출력한다\n                          (docs/config.md)\n  --completions <셸>      셸 자동 완성을 출력한다(bash, zsh, fish, elvish, powershell)\n  --man                   man 페이지(roff)를 출력한다\n  --help                  이 도움말을 출력한다\n  --version               버전을 출력한다"
+
+# ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
+ValuePath = "경로"
+ValueName = "이름"
+ValueFormat = "형식"
+ValuePick = "path|열"
+ValueShell = "셸"
+ValueExpr = "식"
+ValueSort = "열[:desc]"
+ValueSet = "열=값"
+
+# ---- main: 引数の誤り(CLI-4。clap の誤りを1行に直す) ----
+CliUnknownOption = "알 수 없는 옵션: {0} (--help 참고)"
+## {0} はオプション、{1} は無いもの(`CliWhat*`)。
+CliMissingValue = "{0}에 {1} 필요"
+CliWhatView = "뷰 이름"
+CliWhatConfig = "설정 파일 경로"
+CliWhatShell = "셸 이름"
+CliWhatFormat = "형식 이름"
+CliWhatPick = "출력할 것(path 또는 열 이름)"
+CliWhatValue = "값"
+CliUnknownValue = "{0}에 알 수 없는 값: {1} (쓸 수 있는 값: {2})"
+## 並べた値の区切り。
+ListSep = ", "
+CliInvalidUtf8 = "인수가 올바른 UTF-8이 아님"
+CliConflict = "{0}와(과) {1}은(는) 함께 쓸 수 없음 (--help 참고)"
+CliRequired = "{0}이(가) 필요함 (--help 참고)"
+## {0} は渡された旗、{1} はそれに要るもの(`--format`・`--with-path` に `--print`)。
+CliRequiredBy = "{0}에는 {1}이(가) 필요함 (--help 참고)"
+CliTakesNoValue = "{0}은(는) 값을 받지 않음: {1} (--help 참고)"
+CliBadArgument = "인수를 읽을 수 없음: {0} (--help 참고)"
+CliUnreadable = "인수 목록을 읽을 수 없음: {0} (--help 참고)"
+
+# ---- main: 起動できない理由(CLI-4・SR-10) ----
+CannotWriteOutput = "출력할 수 없음: {0}"
+ConfigUnreadable = "설정을 읽을 수 없음: {0} ({1})"
+PathUnopenable = "경로를 열 수 없음: {0} ({1})"
+CsvAlone = ".csv나 .tsv는 단독으로 지정해야 함(폴더나 다른 파일과 함께 불가): {0}"
+BaseAlone = ".base는 단독으로 지정해야 함(폴더나 다른 .base와 함께 불가): {0}"
+NotAFolder = "폴더가 아님: {0}"
+ViewNeedsBase = "--view {0}: .base를 열 때만 쓸 수 있음"
+CannotOpen = "열 수 없음: {0}"
+BaseUnreadable = ".base를 읽을 수 없음: {0} ({1})"
+## {0} はビューの名前、{1} は `ViewsAre` か `NoViews`。
+NoSuchView = "뷰 \"{0}\" 없음 ({1})"
+ViewsAre = "있는 뷰: {0}"
+NoViews = "뷰가 없음"
+NotATerminal = "표준 입출력이 터미널이 아니어서 화면을 띄울 수 없음"
+NoDevTty = "터미널(/dev/tty)을 열 수 없어 화면을 띄울 수 없음 ({0})"
+TerminalError = "터미널 오류: {0}"
+PickNoColumn = "--pick: \"{0}\" 열이 표에 없음 (있는 열: {1})"
+
+# ---- source/markdown: 読むだけの理由(WB-3・WB-5・CE-8・CE-16・CE-19・BV-12) ----
+LockNoFrontmatterSetting = "프런트매터 없음(설정에 따라 추가하지 않음)"
+LockEmptyFrontmatterSetting = "빈 프런트매터(설정에 따라 채우지 않음)"
+LockTypesConflict = "types.json의 이 열 형식이 루트마다 다름(읽기 전용)"
+LockNoFrontmatter = "프런트매터 없음"
+LockEmptyFrontmatter = "프런트매터가 비어 있음"
+LockBom = "파일이 BOM으로 시작함"
+
+# ---- --apply(CLI-17) ----
+## {0} は JSON の読み取りの誤り。
+ApplyBadJson = "JSON을 읽을 수 없음: {0}"
+## {0} は何番目のオブジェクトか。
+ApplyNoPath = "{0}번째 항목에 \"path\"가 없음(--with-path를 붙여 출력할 것)"
+ApplyBadCsv = "CSV를 읽을 수 없음: 따옴표로 묶은 필드가 닫히지 않음"
+ApplyNoPathColumn = "CSV에 \"path\" 열이 없음(--with-path를 붙여 출력할 것)"
+## {0} は行、{1} は欄の数、{2} は見出しの欄の数。
+ApplyCsvWidth = "{0}번째 줄의 필드가 {1}개(헤더는 {2}개)"
+ApplyNotList = "값은 텍스트, 숫자, true/false, null, 텍스트 목록 중 하나여야 함"
+## {0} は行、{1} は path。
+ApplyUnknownPath = "{0}번째 줄: {1}에 노트가 없음"
+## {0} は行、{1} は path、{2} は列、{3} は理由。
+ApplyBadValue = "{0}번째 줄: {1}: {2}: {3}"
+## {0} は行、{1} は path、{2} は列、{3} は読むだけの理由。
+ApplyLocked = "{0}번째 줄: {1}: {2}에 쓸 수 없음({3})"
+## {0} はノート。
+ApplyChangedOutside = "{0}: mdgrid 밖에서 바뀌어 쓰지 않음"
+## {0} は変わるファイルの数。
+ApplyDryRun = "파일 {0}개가 바뀜. 아직 아무것도 쓰지 않음(쓰려면 --yes 추가)"
+## {0} は数。
+ApplyDryRunOne = "파일 {0}개가 바뀜. 아직 아무것도 쓰지 않음(쓰려면 --yes 추가)"
+## {0} は捨てた直しの数、{1} は列の名前。
+ApplyIgnored = "쓸 수 없는 열의 수정 {0}건은 무시함({1})"
+ApplyIgnoredOne = "쓸 수 없는 열의 수정 {0}건은 무시함({1})"
+## CLI-16。{0} は列の名前。
+CliUnknownSort = "--sort {0}: 뷰에도 노트에도 없는 열"
+ApplyNoChanges = "변경 없음: 모든 값이 노트와 같음"
+## {0} はファイル、{1} は誤り。
+ApplyUnreadable = "{0}을(를) 읽을 수 없음: {1}"
+ApplyProblems = "위의 문제 때문에 아무것도 쓰지 않음"
+## {0} は見出し。
+ApplyDuplicateHeader = "헤더에 {0} 열이 두 번 나옴"
+## {0} は見出し。
+ApplyUnknownColumn = "{0} 열은 뷰에 없고, 그 키를 가진 노트도 없음(철자 확인)"
+## {0} は見出し。
+ApplyAmbiguousColumn = "{0} 열이 두 열로 읽힘(표시 이름과 다른 열의 키)"
+## {0} は行、{1} は path。
+ApplyAmbiguousPath = "{0}번째 줄: {1}이(가) 지정한 폴더마다 다른 노트를 가리킴(한 폴더 기준의 경로로 쓸 것)"
+## {0} は行、{1} は path、{2} は列、{3} は先に書いた行。
+ApplyDuplicateRow = "{0}번째 줄: {1}: {2}은(는) {3}번째 줄에서 이미 설정함"
+## {0} は値。
+ApplyDateForm = "날짜는 YYYY-MM-DD로 쓸 것(\"{0}\")"
+ApplyListAmbiguous = "이 목록에는 \", \"나 앞뒤 공백이 든 항목이 있어 CSV로는 고칠 수 없음(--format json 사용)"
+## {0} は数。
+ApplyBigNumber = "{0}은(는) 64비트 정수에 들어가지 않음(반올림됨)"
+ApplyReadonly = "--apply는 노트를 쓰므로 --readonly와 함께 쓸 수 없음"
+## CLI-16。{0} は渡した --sort の値。
+CliBadSort = "--sort {0}: 열 이름을 쓰고, 필요하면 뒤에 :asc나 :desc를 붙일 것"
+## CLI-16。{0} はビューの名前。
+CliFilterNativeView = "--filter와 --sort는 .base 뷰나 폴더에 쓰며, mdgrid 뷰 \"{0}\"에는 쓸 수 없음"
+LockToml = "프런트매터가 YAML이 아닌 TOML(+++)임"
+LockNotUtf8 = "파일이 UTF-8이 아님"
+LockMixedNewlines = "줄바꿈 문자가 섞여 있음"
+## {0} は重なったキー。
+LockDuplicateKey = "같은 키가 두 번 나옴({0})"
+LockUnclosed = "프런트매터가 닫히지 않음"
+LockHardLink = "파일에 하드 링크가 있음"
+LockInvalidYaml = "읽을 수 없는 형식(읽기 전용)"
+LockInvalidYamlAt = "{0}번째 줄의 YAML을 읽을 수 없음: {1}(읽기 전용)"
+LockFileAttr = "파일 속성(읽기 전용)"
+LockFormulaColumn = "수식 열(읽기 전용)"
+## WB-5。`writeback::NO_PERMISSION` は日本語。
+NoPermission = "쓰기 권한 없음"
+ListBlankBetween = "항목 사이에 빈 줄이 있는 목록"
+ListCommentBetween = "항목 사이에 주석이 있는 목록"
+ListTrailingComment = "항목 뒤에 주석이 있는 목록"
+ListIndent = "들여쓰기가 다른 항목이 있는 목록"
+ListTabAfterDash = "`-` 뒤에 탭이 있는 목록"
+ListMultiLine = "여러 줄에 걸친 항목이 있는 목록"
+ListNested = "중첩된 항목이 있는 목록"
+ListNonString = "문자열이 아닌 항목이 있는 목록"
+ValueNested = "중첩된 값"
+ValueMultiLine = "여러 줄 값"
+ValueAnchor = "앵커가 붙은 값"
+ValueTagged = "태그가 붙은 값"
+ValueUnwritable = "다시 쓸 수 없는 형태의 값"
+RowNotLoaded = "읽지 않은 행"
+SyncConflictFile = "동기화 충돌 파일"
+CannotRead = "읽을 수 없음: {0}"
+
+# ---- changes: ためられない理由(CE-8・CE-16・CE-18) ----
+NoBaseAfterReload = "다시 읽은 행의 기준이 없음"
+SkipListCell = "목록 셀에는 값 하나를 쓸 수 없음(항목을 더하거나 빼기)"
+SkipNotLoaded = "아직 읽지 않음"
+
+# ---- types: 日付の形と日付の打ち込み(CE-5・CE-22) ----
+## {0} は形(引用符つき)、{1} は理由。
+DateFormatBad = "날짜 형식 {0}을(를) 읽을 수 없음: {1}"
+DateFormatBadChar = "{0}은(는) 쓸 수 없음(쓸 수 있는 부분은 YYYY, YY, MM, M, DD, D, ddd와 영숫자가 아닌 구분 문자)"
+DateFormatMonthDay = "월(MM 또는 M)과 일(DD 또는 D)이 하나씩 필요함"
+DateFormatYearWeekday = "연도와 요일은 하나까지"
+DateFormatAdjacent = "M과 D는 다른 숫자 부분과 구분 문자 없이 붙일 수 없음"
+DateNotReal = "없는 날짜: {0}"
+## {0} は打ち込み、{1} は日付、{2} は曜日(訳さない)。
+DateWeekdayMismatch = "요일이 날짜와 맞지 않음: {0} ({1}은(는) {2})"
+## {1} は使える形を `ListSep` で並べたもの。
+DateUnreadable = "날짜가 아님: {0} ({1})"
+## cell-edit.date-words: 読めない打ち込みの理由に並べる、日付の言葉の例。
+DateWordsForm = "tomorrow 같은 말"
+DateEmptyClears = "비우면 지움"
+DateOutOfRange = "날짜 범위(0000-01-01~9999-12-31) 밖: {0}"
+
+# ---- config: 設定の警告(CLI-3) ----
+ConfigTomlLine = "설정 TOML을 읽을 수 없음({0}번째 줄): {1}"
+ConfigToml = "설정 TOML을 읽을 수 없음: {0}"
+WantIntAtLeast0 = "0 이상의 정수"
+WantIntAtLeast1 = "1 이상의 정수"
+WantBool = "true 또는 false"
+WantDateFormat = "날짜 형식 문자열"
+WantWeekStart = "\"sun\" 또는 \"mon\""
+WantString = "문자열"
+## {0} は使える値(auto と台帳のある言語の符号)の並び。
+WantLanguage = "{0} 중 하나"
+WantLook = "\"modern\" 또는 \"classic\""
+WantCells = "\"rich\" 또는 \"plain\""
+WantCellsColumns = "열 = \"rich\", \"plain\", \"chip\" 형식의 테이블"
+WantColStyle = "\"rich\", \"plain\", \"chip\" 중 하나"
+WantTheme = "\"auto\", \"default\", \"nord\", \"solarized-light\", \"dracula\", \"gruvbox\", \"pink-monster\", \"dozy-pink\", \"sumi\", \"slate\", \"saas\", \"saas-dark\", \"paper\" 중 하나(또는 { light, dark } 테이블)"
+## {0} は候補の並び。
+WantOneOf = "{0} 중 하나"
+WantTable = "테이블"
+WantTabs = "\"always\", \"auto\", \"never\" 중 하나"
+WantButtons = "\"plain\" 또는 \"box\""
+WantBarPadding = "0~2 사이의 0.5 단위(0, 0.5, 1, 1.5, 2)"
+WantRowExtraLines = "0~9의 정수"
+## {0} は正規表現を読めない理由。
+RsnBadRegex = "정규 표현식을 읽을 수 없음(무시함): {0}"
+## WS-9: 印の表に path と base の両方。
+RsnBaseOverPath = "path와 base가 모두 있음. base를 쓰고 path는 무시함"
+WantValuesArray = "문자열, 숫자, 불리언으로 된 비어 있지 않은 배열"
+WantNotePath = "\"common\", \"name\", \"full\", \"off\" 중 하나"
+## 設定の警告(CLI-3)。{0} はファイルの名前、{1} は項目の道筋、{2} は理由。
+SettingWarn = "{0}: {1}: {2}"
+## 値の出どころ(SR-44)の、ビューの設定の範囲。
+OriginView = "뷰 설정"
+## {0} は求める型(Want*)。
+RsnNot = "{0}이(가) 아님(무시함)"
+RsnUnknown = "알 수 없는 항목(무시함)"
+## {0} は新しい道筋(CLI-20)。
+RsnMoved = "옛 이름이 `{0}`(으)로 바뀜(그 이름으로 읽음)"
+RsnGlobalOnly = "config.toml에만 쓸 수 있음(무시함)"
+RsnNoTemplate = "\"{0}\" 템플릿이 없음(무시함)"
+RsnNestedUse = "템플릿 안에서 다른 템플릿을 쓸 수 없음(무시함)"
+RsnBadDateFormat = "{0}. 기본값 YYYY-MM-DD를 씀"
+RsnBadColumn = "`{0}`은(는) 쓸 수 있는 열이 아니거나 중복임(무시함)"
+RsnBadNoteMode = "\"{0}\"은(는) \"form\"도 \"editor\"도 아님. 입력 창을 씀"
+RsnNeedName = "겹치지 않는 name(문자열)이 필요함(무시함)"
+RsnNeedPath = "path(문자열)가 필요함(무시함)"
+## condition.invalid: 条件の名前の決まり。
+RsnCondName = "조건 이름은 영문자로 시작하고 영문자, 숫자, _, -만 쓸 수 있음(무시함)"
+RsnCondNeedExpr = "expr(문자열)가 필요함(무시함)"
+## {0} は式を読めない理由。
+RsnCondExpr = "식을 읽을 수 없음(이 조건은 쓰지 않음): {0}"
+## {0} は輪の道筋(a → b → a)。
+RsnCondCycle = "조건끼리 순환하며 서로를 부름({0}). 모두 쓰지 않음"
+## {0} は数字、{1} は先にその数字を書いた条件。
+RsnCondKeyDup = "키 {0}은(는) 이미 조건 \"{1}\"에서 씀(이 키는 무시함)"
+## condition.digit-remap: {0} は数字。
+RsnCondKeyTaken = "키 {0}은(는) [keys.table]에서 다른 동작에 할당됨(이 키는 무시함)"
+## {0} は使えない条件の名前。
+RsnCondUses = "쓸 수 없는 조건 \"{0}\"을(를) 씀(이 조건은 쓰지 않음)"
+## {0} は未対応の関数・項目。
+CondUnsupported = "지원하지 않는 함수 또는 필드 {0}"
+WantDigit = "1부터 9까지의 정수"
+## condition.unknown-name: {0} は無い名前、{1} はある名前の並び。
+CondUnknown = "조건 \"{0}\" 없음(조건: {1})"
+CondNoNames = "없음"
+## notice.opt-in: [[notices]] の形。
+WantNoticeArray = "테이블 배열([[notices]])"
+RsnNoticeKind = "cond(이름 붙은 조건의 건수)나 note(노트의 줄) 중 하나가 필요함(무시함)"
+WantNoticeScope = "\"table\", \"workspace\" 또는 표 이름 배열"
+## notice.count-item: {0} は書いていない条件の名前。
+RsnNoticeNoCond = "[conditions]에 \"{0}\" 조건이 없음(무시함)"
+## notice.note-item: {0} はノートのファイルの名前。
+NoticeNoNote = "{0} 없음"
+## notice.layout: {0} は欄に入らない行の数。
+NoticeMore = "외 {0}줄"
+## {0} は open に書いた名前、{1} は印の表の名前の並び。
+RsnOpenUnknown = "마커에 {0}(이)라는 표가 없음(표: {1}). 폴더를 그대로 열었음"
+RsnStarterUnknown = "{0}(이)라는 스타터가 없음. 마커에 적힌 내용만으로 열었음(목록은 mdgrid --starters)"
+RsnOptionUnknown = "스타터 {1}에 옵션 {0}이(가) 없음. 건너뜀"
+RsnNeedNamePath = "name과 path(문자열)가 필요하고, name은 겹치면 안 됨(무시함)"
+RsnDuplicateValue = "같은 값이 두 번 적혀 있음(하나만 씀)"
+WantColor = "색(\"#rrggbb\", \"#rgb\" 또는 색 이름)"
+WantNerdFont = "true, false 또는 \"auto\""
+WantKeysTable = "[keys.<모드>] 테이블"
+WantKeyActionTable = "키 = 동작 형식의 테이블"
+WantActionName = "동작 이름 문자열"
+WantNewNoteTable = "[new_note] 테이블"
+WantColumnNames = "열 이름 문자열 목록"
+WantColumnValueTable = "열 = 값 형식의 테이블"
+WantSetValue = "문자열, 숫자, 불리언, 날짜 또는 그 목록"
+WantDisplayTable = "[display] 테이블"
+
+# ---- views: views.toml の警告と誤り(BV-20) ----
+## {0} はファイル、{1} は行、{2} は TOML の誤り(英語のまま)。
+ViewsTomlLine = "{0}을(를) 읽을 수 없어({1}번째 줄) mdgrid 뷰를 불러오지 않음: {2}"
+## SR-43: 見た目の区画。
+NavLook = "모양"
+DescLook = "테마, 부품 모양, 둥근 칩 끝(look.toml에 저장)"
+LookScope = "저장 위치"
+LookTheme = "테마"
+LookPreset = "부품"
+LookNerd = "둥근 칩 끝"
+LookTemplates = "템플릿"
+LookSaveTemplate = "+ 이 모양을 템플릿으로 저장"
+LookResetRow = "이 위치의 덮어쓰기 제거"
+LookNerdAuto = "auto (터미널에 맞춤)"
+LookNerdOn = "true (켬, Nerd Font)"
+LookNerdOff = "false (끔)"
+LookPickOf = "선택: {0}"
+LookTemplateUsed = "템플릿 \"{0}\" 사용(적용하면 보임)"
+LookTemplateSaved = "템플릿 \"{0}\" 저장함"
+LookTemplateDeleted = "템플릿 \"{0}\" 삭제함"
+## {0} は範囲の名前。
+LookReset = "{0}에 적힌 테마와 부품을 제거함"
+## {0} はテンプレートの名前。
+LookTemplateInConfig = "템플릿 \"{0}\"은(는) config.toml에 있음. 지우려면 config.toml을 고칠 것"
+LookMarkerReadOnly = "워크스페이스 마커(.mdgrid/workspace.toml)는 노트 폴더 안에 있어 mdgrid가 쓰지 않음. 모양은 마커에 직접 적을 것"
+OriginDefault = "기본값"
+OriginConfig = "config.toml"
+OriginGlobal = "전체"
+OriginWorkspace = "이 워크스페이스"
+OriginTable = "이 표"
+OriginThisView = "이 뷰"
+TextLookTemplate = "템플릿 이름"
+SetHintLook = "{0} 선택·사용  {1} 템플릿 삭제(적용하면 모양이 보임)"
+## SR-43: look.toml の警告。
+LookBroken = "{0}: 읽을 수 없음({1}). config.toml의 모양을 씀"
+LookTemplateNoName = "{0}: name이 없는 템플릿(무시함)"
+ViewsToml = "{0}을(를) 읽을 수 없어 mdgrid 뷰를 불러오지 않음: {1}"
+ViewsNotUtf8 = "{0}이(가) UTF-8이 아니어서 mdgrid 뷰를 불러오지 않음"
+ViewsTargetNotArray = "{0}의 `target`을 무시함: [[target]] 테이블 배열이 아님"
+## {1} は1から数えた番号。
+ViewsTargetNotTable = "{0}의 {1}번째 target을 무시함: 테이블이 아님"
+ViewsTargetNoPath = "{0}의 {1}번째 target을 무시함: path(문자열)가 없음"
+ViewsViewNotArray = "{0}의 target `{1}`의 view를 무시함: [[target.view]] 테이블 배열이 아님"
+ViewsViewNotTable = "{0}의 target `{1}`의 {2}번째 뷰를 무시함: 테이블이 아님"
+ViewsViewUnreadable = "{0}의 target `{1}`의 {2}번째 뷰를 무시함: 읽을 수 없음: {3}"
+ViewsSaveNotUtf8 = "{0}이(가) UTF-8이 아니어서 쓰지 않음"
+ViewsSaveBroken = "{0} (쓰지 않음)"
+ViewsSaveTargetNotArray = "{0}의 `target`이 테이블 배열이 아니어서 쓰지 않음"
+ViewsNotATable = "뷰를 테이블로 바꿀 수 없음"
+
+# ---- views: .base への書き出しの近似と落としたもの(BV-19・SR-20) ----
+ExportEmptyNote = "{0}의 \"비어 있음\" 판정: 값이 맵이나 중첩 목록이면 식에서는 비어 보여 행이 달라질 수 있음"
+## {0} は列、{1} は `Approx*`。
+ExportApprox = "{0} 조건은 근사: {1}"
+ApproxDateValue = "날짜·일시 형태의 값 \"{0}\"은(는) 날짜·시각으로 비교함(앞뒤에 공백이 있거나 같은 일시를 다르게 쓴 값도 맞음)"
+ApproxMapValue = "값 \"{…}\"(맵이나 중첩 목록)은 식으로 맞출 수 없음"
+ApproxContainsDateTime = "\"{0}\"은(는) 초까지 채운 일시 값(…T10:00:00)에서 찾음"
+ApproxContainsJoined = "\"{0}\"은(는) 목록 항목을 이어 붙인 텍스트에서 찾으므로 항목 경계에 걸쳐서도 맞음"
+ApproxContainsMap = "맵과 중첩 목록 값(settings에서는 \"{…}\")은 식으로 같은 방식으로 찾을 수 없음"
+ApproxCmpList = "목록 값(형식이 맞지 않는 값)은 식에서 남지 않음(settings는 항목마다 비교함)"
+ApproxCmpDateLoose = "앞뒤 공백이 있는 값, 공백으로 구분된 값, Z가 붙은 값도 날짜나 일시로 읽음(settings에서는 형식이 맞지 않는 값)"
+ApproxCmpUnknownType = "열 형식을 알 수 없어 \"{0}\"과(와) 텍스트로 비교함(숫자나 날짜 열이면 settings에서는 남는 행이 없음)"
+ApproxCmpListJoined = "목록 값은 항목별이 아니라 항목을 이어 붙인 텍스트로 비교함"
+ApproxCmpMapEmpty = "맵과 중첩 목록 값(settings에서는 \"{…}\")은 식에서 비어 보여 남지 않음"
+ApproxCmpDateTimePadded = "일시 값은 초까지 채워서 비교함(…T10:00:00)"
+## {0} は formula の名前を `ListSep` と `formula.` でつないだもの。
+ExportFormulaRefs = "formula.{0}을(를) 참조하지만 mdgrid 뷰에는 formulas가 없어 내보내지 않음(참조는 남겼지만 계산할 수 없음)"
+ExportHiddenDropped = "숨긴 열({0})을 뺌: 열 순서(order)가 비어 있어 .base로 나타낼 수 없음"
+ExportHideEmptyDropped = "그룹({0})의 \"빈 그룹 숨김\"을 뺌(NV-21): .base groupBy로 나타낼 수 없음"
+ExportDisplayDropped = "표시 전환(행 번호, 줄무늬 등. SR-20)을 뺌: .base에는 없음"
+ImportNoView = ".base에 뷰 {0} 없음"
+ImportNoType = "뷰에 type이 없어 table로 가져옴"
+ImportTypeAsTable = "type: {0} 뷰를 table로 가져옴"
+ImportLimitDropped = "limit: {0}(행 수 상한)을 뺌: mdgrid 뷰에는 없음"
+ImportFormulasDropped = "formulas({0})를 뺌: mdgrid 뷰에는 없음(formula.*를 쓰는 열과 식은 계산할 수 없음)"
+ImportDisplayNameDropped = "properties의 displayName({0})을 뺌: mdgrid 뷰에는 없음"
+
+# ---- base: .base の誤りと評価できない理由(BV-7・SC-8) ----
+BaseYaml = ".base의 YAML을 읽을 수 없음: {0}"
+BaseNotMap = ".base의 최상위가 맵이 아님"
+## {0} は深さの上限。
+BaseTooDeep = "YAML이 {0}단계보다 깊게 중첩됨"
+BaseAliasTooBig = ".base의 별칭(*)을 펼치면 너무 큼(최대 {0}개 노드)"
+BaseFilterShape = "filters를 읽을 수 없음(식 문자열이나 and, or, not 맵이어야 함)"
+BaseFilterUnknown = "알 수 없는 filters 형태: {0}(and, or, not이어야 함)"
+## {0} は関数・項目、{1} は式。
+BaseUnsupported = "지원하지 않는 함수 또는 필드 {0}(식: {1})"
+BaseExprSyntax = "식을 읽을 수 없음: {0}(식: {1})"
+BaseInExpr = "{0}(식: {1})"
+BaseFilterKept = "filters 식은 mdgrid에서 계산할 수 없음(남겼지만 뷰를 열 수 없음): {0}"
+BaseFilterDropped = "filters에서 읽을 수 없는 부분을 뺌: {0}"
+BaseFormulaCycle = "formula.{0}이(가) 순환함"
+BaseFormulaMissing = "formula.{0}이(가) formulas에 없음"
+BaseUnsupportedField = "지원하지 않는 필드 {0}"
+BaseBadColumn = "열을 읽을 수 없음: {0}"
+BaseNoViewIndex = "뷰 {0} 없음"
+BaseViewNoType = "뷰 \"{0}\"에 type이 없음"
+## {0} は型、{1} はビューの名前。
+BaseViewUnsupported = "{0} 뷰 \"{1}\"은(는) 지원하지 않음(mdgrid는 table 뷰만 보여 줌)"
+BaseGlobalFilters = "전체 filters를 계산할 수 없음: {0}"
+BaseViewFilters = "뷰 \"{0}\"의 filters를 계산할 수 없음: {1}"
+BaseCannotSort = "{0}(으)로 정렬할 수 없음(빈 값으로 취급): {1}"
+## 空のグループの見出し(base・settings)。
+EmptyHeading = "(빈 값)"
+## {0} は列、{1} は集計の名前、{2} は最上位の summaries の式。
+BaseSummaryFormula = "{0}의 집계: 수식 집계 {1}은(는) 지원하지 않음({2})"
+## {0} は列、{1} は集計の名前。
+BaseSummaryUnknown = "{0}의 집계: 알 수 없는 집계 {1}"
+BaseSummaryGroups = "그룹별 집계는 지원하지 않음(집계 행은 표 전체)"
+
+# ---- summary: 組み込みの集計の名前(BV-14。英語は Obsidian の名前) ----
+SummaryAverage = "평균"
+SummaryMin = "최소"
+SummaryMax = "최대"
+SummarySum = "합계"
+SummaryRange = "범위"
+SummaryMedian = "중앙값"
+SummaryStddev = "표준편차"
+SummaryEarliest = "가장 이른"
+SummaryLatest = "가장 늦은"
+SummaryChecked = "체크됨"
+SummaryUnchecked = "체크 안 됨"
+SummaryEmpty = "빈 값"
+SummaryFilled = "채운 값"
+SummaryUnique = "고윳값"
+## 集計の行の、ノートの列の見出し。
+SummaryRow = "집계"
+
+# ---- expr: 式の読み取りの誤り ----
+ExprBadNumber = "숫자가 아님: {0}"
+ExprNameAfterNumber = "숫자 바로 뒤에 이름이 있음: {0}{1}"
+ExprUnclosedString = "문자열이 닫히지 않음"
+ExprBadChar = "예상하지 못한 문자: {0}"
+ExprTooDeep = "식이 너무 깊게 중첩됨"
+ExprMissing = "{0} 없음"
+ExprCommaOrRParen = "`,` 또는 `)`"
+ExprCommaOrRBrack = "`,` 또는 `]`"
+ExprNoNameAfterDot = "`.` 뒤에 이름이 없음"
+ExprUnexpectedEnd = "식이 너무 일찍 끝남"
+ExprUnexpectedToken = "여기에 올 수 없는 토큰: {0}"
+ExprArityAtLeast = "{0} 이상"
+ExprArityRange = "{0}~{1}"
+## {0} は関数、{1} は渡した数、{2} は求める数。
+ExprArity = "{0}의 인수 개수가 틀림(받은 수: {1}, 필요한 수: {2})"
+ExprCondArg = "cond()에는 따옴표로 묶은 조건 이름 하나를 줌(예: cond(\"soon\"))"
+ExprTrailing = "식 뒤에 남는 입력이 있음: {0}"
+
+# ---- newnote: 新しいノートの設定と作れない理由(CE-25・CE-26・CE-27) ----
+NewNoteNotTable = "new_note가 테이블이 아님"
+NewNoteNotString = "new_note.{0}이(가) 문자열이 아님"
+NewNoteAskNotArray = "new_note.ask가 배열이 아님"
+NewNoteAskNonString = "new_note.ask에 문자열이 아닌 값이 있음"
+NewNoteSetNotTable = "new_note.set이 테이블이 아님"
+NewNoteSetBadValue = "new_note.set의 `{0}`이(가) 문자열, 숫자, 불리언, 날짜 또는 그 목록이 아님"
+## {0} は `NewNoteWhat*`。
+NewNoteControl = "{0}에 제어 문자가 있음"
+NewNoteAbsolute = "{0}: 절대 경로(연 폴더 밖)여서 노트를 만들지 않음"
+NewNoteBadChar = "{0}: Obsidian에서 쓸 수 없는 `{1}`이(가) 있어 노트를 만들지 않음"
+NewNoteDotDot = "{0}: `..`이(가) 있어(연 폴더 밖) 노트를 만들지 않음"
+NewNoteDotPart = "{0}의 `{1}`이(가) `.`로 시작해(읽을 때 건너뜀) 노트를 만들지 않음"
+NewNoteWhatFolder = "설정된 폴더"
+NewNoteWhatName = "이름"
+NewNoteEmptyName = "이름이 비어 있어 노트를 만들지 않음"
+NewNoteNameIsFolder = "이름이 폴더로 끝나서 노트를 만들지 않음"
+NewNoteExists = "{0}이(가) 이미 있어 노트를 만들지 않음"
+NewNoteEmptyKey = "열 이름이 빈 값은 쓸 수 없음: {0}"
+NewNoteNewline = "값에 줄바꿈이 있어 노트를 만들지 않음"
+NewNoteNotEditable = "쓸 수 없는 값이 있어 노트를 만들지 않음: {0}"
+NewNoteCannotBuild = "새 노트의 내용을 만들 수 없음: {0}"
+## CLI の --new-note。{0} は --set の引数、列の名前。{1} は値。
+NewNoteCliOne = "--new-note는 노트를 하나 만듦: 폴더는 하나만 줄 것"
+NewNoteCliBadSet = "--set {0}: 열=값 형식으로 쓸 것"
+NewNoteCliBadValue = "--set {0}={1}: 값이 {0} 열의 형식에 맞지 않아 아무것도 만들지 않음"
+NewNoteCliRequired = "{0} 열은 필수: --set {0}=<값> 없이는 만들지 않음"
+
+# ---- print: --print の誤り(CLI-5) ----
+PrintNoViews = ".base에 뷰가 없음"
+PrintNativeView = "mdgrid 뷰 \"{0}\": {1}"
+
+# ---- settings: 設定の帯の項目(NV-16) ----
+ChipSort = "정렬: {0} {1}"
+## condition.digit-stack: {0} は数字、{1} は条件の見せる名前。
+ChipCondOn = "{0} {1}"
+## condition.hide-always: {0} は見せる名前、{1} は隠した行の数。
+ChipCondHide = "{0} 숨김: {1}"
+ChipCondShown = "{0} 표시"
+## condition.view-settings: {0} は見せる名前。
+ChipNamedKeep = "{0}만"
+ChipNamedHide = "{0} 숨김"
+## navigation.expr-filter: {0} は式。
+ChipExpr = "식: {0}"
+ChipGroupOff = "그룹: 없음"
+ChipGroup = "그룹: {0} {1}"
+ChipHideEmpty = " (빈 그룹 숨김)"
+CondOnly = "{0}만"
+CondExcept = "{0} 제외"
+CondContains = "\"{0}\" 포함"
+CondNotContains = "\"{0}\" 미포함"
+CondEmpty = "비어 있음"
+CondNotEmpty = "비어 있지 않음"
+
+# ---- display: 「表示」の節の項目(SR-21) ----
+DisplayRowNumbers = "행 번호"
+DisplayZebra = "줄무늬"
+DisplayColumnLines = "열 구분선"
+DisplayGroupGap = "그룹 간격"
+DisplayTabs = "탭"
+DisplaySearchBar = "검색 창"
+DisplayChips = "설정 표시줄"
+DisplayButtons = "뷰 표시줄 버튼"
+DisplayBarPadding = "표시줄 여백"
+DisplayTopPadding = "위쪽 여백"
+DisplayRowExtraLines = "행 높이 늘리기"
+DisplayNotePath = "노트 경로"
+
+# ---- ui/keymap: モードの表示名(SR-16。下の帯・ヘルプ・警告) ----
+ModeTable = "표"
+ModeEdit = "편집"
+ModeConfirm = "저장 확인"
+ModeQuit = "종료 확인"
+ModeHelp = "도움말"
+ModePalette = "팔레트"
+## NV-1・NV-2(2026-10-11): 呼び直す前の `/` と上の欄のモードの表示名(書いた設定を前のモードに読む)。
+OldModeSearch = "검색"
+OldModeFilter = "필터"
+ModeSearch = "찾기"
+ModeFilter = "검색"
+ModeDetail = "상세 보기"
+ModeSettings = "뷰 설정"
+ModeSettingsText = "설정 입력"
+ModeChips = "설정 표시줄"
+ModeListPick = "목록 선택"
+ModeMenu = "동작 메뉴"
+ModeFreq = "값 빈도"
+ModeSorts = "정렬"
+ModeFilterWin = "필터"
+ModeFilterText = "필터 값"
+ModeDrawer = "표 목록"
+ModeRelations = "관계도"
+ModeScreenMenu = "화면 유형"
+
+# ---- ui/keymap: ヘルプの節(SR-5) ----
+SecMove = "이동"
+SecEdit = "편집"
+SecFile = "저장과 종료"
+SecInput = "입력 상자"
+SecReview = "저장 확인"
+SecQuit = "종료 확인"
+SecFind = "도움말과 명령"
+SecOutside = "편집기와 복사"
+SecInHelp = "도움말에서"
+SecInPalette = "팔레트에서"
+SecShape = "표 배치"
+SecSearch = "검색과 필터"
+SecSelect = "선택과 상세"
+SecInPrompt = "찾기·검색 입력"
+SecInDetail = "상세 보기에서"
+SecInSettings = "뷰 설정에서"
+SecInChips = "설정 표시줄에서"
+SecInNotice = "알림 칸에서"
+SecInPick = "목록 선택에서"
+SecNative = "mdgrid 뷰(팔레트 명령)"
+SecNote = "노트 만들기(팔레트 명령)"
+SecInMenu = "동작 메뉴에서"
+SecInFreq = "값 빈도에서"
+SecInSorts = "정렬 창에서"
+SecInFilters = "필터 창에서"
+SecInDrawer = "표 목록에서"
+SecInRelMap = "관계도에서"
+SecInScreenMenu = "화면 유형 메뉴에서"
+
+# ---- ui/keymap: キーの表示名(SR-4。下の帯・ヘルプ・パレット) ----
+KeyUp = "위"
+KeyDown = "아래"
+KeyLeft = "왼쪽"
+KeyRight = "오른쪽"
+KeyFirstColumn = "첫 열"
+KeyLastColumn = "마지막 열"
+KeyPageUp = "한 화면 위"
+KeyPageDown = "한 화면 아래"
+KeyHalfPageUp = "반 화면 위"
+KeyHalfPageDown = "반 화면 아래"
+KeyFirstRow = "첫 행"
+KeyLastRow = "마지막 행"
+KeyNextCell = "다음 셀"
+KeyPrevCell = "이전 셀"
+KeyEdit = "편집"
+KeyClear = "비우기"
+## 表の取り消し(undo)。
+KeyUndo = "실행 취소"
+KeyRedo = "다시 실행"
+KeyNewNote = "새 노트"
+KeySave = "저장"
+KeyQuit = "종료"
+KeyCancelLoad = "불러오기 중지"
+KeyHelp = "도움말"
+KeyCommands = "명령"
+KeyOpenEditor = "편집기로 열기"
+KeyCopyCell = "셀 복사"
+KeyCopyRow = "행 복사"
+KeyPrevView = "이전 뷰"
+KeyNextView = "다음 뷰"
+KeyNarrower = "열 좁히기"
+KeyWider = "열 넓히기"
+KeySort = "이 열로 정렬"
+KeySortsRun = "방향 바꾸기 / 추가"
+KeyScreenMenuRun = "그 화면으로 전환"
+## NV-24: 並べ替えの窓。
+CmdSortMenu = "정렬…"
+## NV-25: 既定のビュー。
+CmdSetDefaultView = "이 뷰를 기본 뷰로 설정"
+DefaultViewSet = "다음부터 \"{0}\" 뷰를 먼저 엶"
+DefaultViewCleared = "다음부터 첫 번째 뷰를 먼저 엶"
+SortButton = " 정렬 "
+SortTitle = " 정렬 "
+SortPickTitle = " 정렬 추가: 열 "
+SortAsc = "오름차순"
+SortDesc = "내림차순"
+SortAdd = "+ 정렬 추가"
+SortNoRoom = "터미널이 너무 작아 정렬 창을 띄울 수 없음"
+## NV-29: 絞り込みの窓。
+CmdFilterMenu = "필터…"
+FilterButton = " 필터 "
+## {0} は条件の数。
+FilterButtonN = " 필터 {0} "
+FilterTitle = " 필터 "
+FilterPickColumn = " 필터 기준: 열 "
+FilterAdd = "+ 필터 추가"
+FilterNoRoom = "터미널이 너무 작아 필터 창을 띄울 수 없음"
+KeyFiltersRun = "변경 / 추가 / 선택"
+KeyFiltersCell = "칸 선택(열 / 비교 / 값)"
+KeyFiltersCheck = "값 체크 / 방식 전환"
+SortNoColumn = "모든 열이 이미 정렬에 들어 있음"
+KeyHideColumn = "열 숨기기"
+KeyShowColumn = "숨긴 열 표시"
+KeyAddColumn = "열 추가(새 키)"
+KeyMoveColumnLeft = "열을 왼쪽으로"
+KeyMoveColumnRight = "열을 오른쪽으로"
+KeyFreeze = "여기까지 열 고정"
+KeySearch = "찾기"
+KeySearchNext = "다음 일치"
+KeySearchPrev = "이전 일치"
+KeyQuickFilter = "검색"
+KeyHighlightSame = "같은 값 강조"
+KeyFilterSame = "같은 값만"
+KeyFrequency = "값 빈도"
+KeyCondition = "이름 붙은 조건 켜고 끄기"
+KeyFocusNotice = "알림 칸으로 이동"
+KeyNoticeOpen = "항목 열기"
+KeyFreqRun = "이 값만"
+KeyMark = "행 표시"
+KeyVisual = "범위 선택"
+KeyExtendUp = "위로 넓히기"
+KeyExtendDown = "아래로 넓히기"
+KeySelectAll = "모두 선택"
+KeyEscape = "선택·검색 해제"
+KeyDetail = "상세 보기"
+KeyViewSettings = "뷰 설정"
+KeyFocusChips = "설정 표시줄 선택"
+KeyCommit = "확정"
+## 入力の取り消し(cancel)。
+KeyCancel = "취소"
+KeyCommitNext = "확정 후 오른쪽"
+KeyCommitPrev = "확정 후 왼쪽"
+KeyRevert = "원래 값"
+KeyClearInput = "입력 지우기"
+KeyListUpWeek = "이전 항목/주"
+KeyListDownWeek = "다음 항목/주"
+KeyLeftDay = "왼쪽/전날"
+KeyRightDay = "오른쪽/다음 날"
+KeyDatePrevMonth = "날짜: 이전 달"
+KeyDateNextMonth = "날짜: 다음 달"
+KeyLeftMonth = "왼쪽/이전 달"
+KeyRightMonth = "오른쪽/다음 달"
+KeyListUpYear = "이전 항목/해"
+KeyListDownYear = "다음 항목/해"
+KeyDateToday = "날짜: 오늘"
+KeyDateClear = "날짜: 비우고 확정"
+KeyTimeFocus = "일시: 날짜와 시각 전환"
+## 入力の文字のカーソルの先頭・末尾。
+KeyCursorHome = "텍스트 처음"
+KeyCursorEnd = "텍스트 끝"
+KeyDeleteBack = "앞 글자 지우기"
+KeyDeleteForward = "뒤 글자 지우기"
+KeyFilterClear = "필터 해제"
+KeyClose = "닫기"
+## 詳細の表示・ヘルプの先頭・末尾。
+KeyTop = "맨 위"
+KeyBottom = "맨 아래"
+KeyDecide = "확인"
+KeyToggle = "전환"
+KeyBackCancel = "뒤로/취소"
+KeyNextSection = "다음 구역"
+KeyPrevSection = "이전 구역"
+KeyGoToSection = "번호의 구역으로 이동"
+KeyMoveItemUp = "위로 이동"
+KeyMoveItemDown = "아래로 이동"
+KeyDelete = "삭제"
+KeyBack = "뒤로"
+KeyRemove = "제거"
+KeyLeftItem = "왼쪽 항목"
+KeyRightItem = "오른쪽 항목"
+KeyBackToTable = "표로 돌아가기"
+KeyPickRun = "확정(검색 중에는 추가)"
+KeyPickToggle = "전환(검색 중에는 공백)"
+KeyPickRevert = "열었을 때로 되돌리기"
+KeyPrevItem = "이전 항목"
+KeyNextItem = "다음 항목"
+## 保存の確認で全部を書く。
+KeySaveAll = "모두 저장"
+KeyNextFile = "다음 파일"
+KeyPrevFile = "이전 파일"
+KeyOverwrite = "바깥 변경 위에 이 파일 쓰기"
+KeyDiscardRow = "보류 중인 변경 버리기"
+## 終了の確認で保存する。
+KeyQuitSave = "저장하고 종료"
+KeyQuitDiscard = "버리고 종료"
+KeyScrollDown = "아래로 스크롤"
+KeyScrollUp = "위로 스크롤"
+KeyRun = "실행"
+## 読むだけのときの表の Enter(SR-2)。
+KeyToggleGroup = "그룹 열기/닫기"
+## `--pick` のときの表の Enter(OUT-3)。
+KeyPickFinish = "선택하고 끝내기"
+## その場の操作の一覧を開く(SR-24)。
+KeyActionMenu = "동작 메뉴"
+CmdExportBase = ".base로 내보내기"
+CmdRenameKey = "키 이름 바꾸기"
+CmdRenameNote = "노트 이름 바꾸기"
+CmdDeleteNote = "노트 삭제"
+CmdRestoreNote = "휴지통에서 복원"
+CmdDeleteKey = "키 삭제"
+CmdImportBase = ".base 뷰 가져오기"
+
+# ---- ui/keymap: キーの読み取りと割り当て直しの警告(SR-13・SR-16) ----
+KeyErrEmpty = "키가 비어 있음"
+KeyErrModifier = "알 수 없는 보조 키 `{0}`"
+KeyErrSpace = "스페이스 키는 `space`로 쓸 것"
+KeyErrShiftChar = "shift+{0} 대신 shift로 입력되는 문자를 쓸 것"
+KeyErrNoKey = "`{0}`에 키가 없음"
+KeyErrUnknown = "알 수 없는 키 `{0}`"
+KeyErrSpaceModifier = "space에는 보조 키를 붙일 수 없음"
+KeyErrShiftSame = "shift+{0}은(는) 구별할 수 없음"
+## {0} はモード、{1} は動作の名前を `` `、` `` でつないだもの、{2} は戻したキー。
+RebindExitKept = "설정대로면 {0} 모드에 `{1}` 키가 하나도 남지 않아, 설정을 적용하지 않고 기본 키 {2}을(를) 유지함"
+RebindUnknownMode = "설정의 `keys.{0}`은(는) 알 수 없는 모드라 무시함(모드: {1})"
+RebindBadKey = "설정의 `{0}`은(는) 읽을 수 없는 키라 무시함({1})"
+RebindNoPrefix = "설정의 `{0}`은(는) {1} 모드에서 접두 키가 될 수 없어 무시함"
+RebindUnknownAction = "설정의 `{0}`의 동작 `{1}`을(를) 알 수 없어 무시함"
+RebindNotInMode = "설정의 `{0}`의 동작 `{1}`은(는) {2} 모드에서 쓸 수 없어 무시함"
+## {0} は設定の場所を `ListSep` で並べたもの、{1} はモード、{2} はキー。
+RebindSameKey = "설정의 {0}이(가) {1} 모드의 같은 키 `{2}`에 두 동작을 할당해 모두 적용하지 않음(SR-16)"
+## {2} はぶつかるキー、{3} はその動作の名前。
+RebindPrefixClash = "설정의 `{0}`이(가) {1} 모드의 키 `{2}`({3})와 접두가 겹쳐 무시함(SR-16. 먼저 \"none\"으로 그 키를 지울 것)"
+
+# ---- ui/help: ヘルプとパレット(SR-5・SR-14・NV-7) ----
+HelpNow = " 지금 쓸 수 있는 키({0})"
+## SR-5: ヘルプの最後の印の節。
+HelpMarks = " 기호"
+HelpMarksCell = "  셀 안"
+HelpMarksRow = "  행 왼쪽"
+MarkNull = "null: 키는 있고 값이 없음"
+MarkEmptyStr = "빈 문자열"
+MarkBlank = "노트에 그 키가 없음"
+MarkBlankSign = "(빈칸)"
+MarkMisfit = "열 형식에 맞지 않는 값"
+MarkPending = "바뀌었지만 아직 저장 안 됨"
+MarkLock = "읽기 전용(선택하면 이유가 보임)"
+MarkUnsupported = "mdgrid가 계산할 수 없는 수식"
+MarkMultiline = "값에 줄바꿈이 있음(첫 줄만 표시)"
+MarkRowCurrent = "지금 있는 행"
+MarkRowMarked = "표시한 행(Space, v)"
+MarkRowExternal = "mdgrid 밖에서 바뀜, 또는 동기화 충돌 파일"
+MarkRowHeld = "편집함. 저장하거나 이동할 때까지 제자리에 머묾"
+## {0}-{1} は見えている行、{2} は全部の行の数。
+HelpHead = " 도움말  {0}-{1}/{2}줄  모든 키(키 표에서)"
+## `HelpHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HelpHeadOne = " 도움말  {0}-{1}/{2}줄  모든 키(키 표에서)"
+PaletteGoto = "{0}번째 줄로 이동"
+## パレットの `wq`・`x`。
+PaletteSaveQuit = "저장하고 종료"
+PaletteEmpty = "  (맞는 명령 없음)"
+PaletteNoMatch = "맞는 명령 없음: {0}"
+GotoNoRows = "행이 없음"
+GotoPastEnd = "{0}번째 줄은 없음(전체 {1}행). 마지막 행으로 이동함"
+## `GotoPastEnd` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GotoPastEndOne = "{0}번째 줄은 없음(전체 {1}행). 마지막 행으로 이동함"
+GotoFolded = "{0}번째 줄은 접힌 그룹 안에 있음(그룹 머리글로 이동함)"
+
+# ---- ui/bands: ヘッダー・タブ・検索の欄・設定の帯・下の帯・メッセージ行(SR-1・SR-15・NV-23・NV-16) ----
+HeaderRows = "{0}행"
+## `HeaderRows` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HeaderRow = "{0}행"
+## {1} は定義と違えば `*`。
+HeaderView = "  뷰 {0}{1}"
+HeaderLoading = "  불러오는 중 {0}/{1}"
+HeaderCancelKey = " ({0}: 중지)"
+HeaderCancelled = "  불러오기 중지됨"
+HeaderFilter = "  검색 \"{0}\""
+HeaderSame = "  같은 값 {0}={1}"
+## リストの列の要素で絞ったとき(NV-9)。{0} は列、{1} は値。
+HeaderSameHas = "  {0}에 {1} 포함"
+HeaderHidden = "  숨긴 열 {0}"
+TabDefault = " 기본 표 "
+TabSwitch = "  [ ] 전환"
+BarLead = " 검색: "
+## NV-23: ビューの帯の検索の欄の名前と、語が無いときの印。
+BarName = "검색"
+BarEmpty = "…"
+## NV-23: ビューの帯の分類・列のボタン。
+ViewGroup = "그룹"
+ViewColumns = "열"
+BarCount = "  {0}/{1}행"
+## `BarCount` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BarCountOne = "  {0}/{1}행"
+BarKey = "({0}: 검색)"
+BarClick = "(클릭해서 검색)"
+ChipsLead = " 설정:"
+ChipsRemoveKey = "  {0}: 제거"
+ChipsSelectKey = "  {0}: 선택"
+FooterUnsaved = " 저장 안 됨 {0}"
+FooterSelected = "  선택 {0}"
+FooterRow = "{0}/{1}행"
+FooterHead = "그룹 {0}/{1}"
+FooterCol = " {0}/{1}열"
+FooterUnsupported = "  ?=지원하지 않는 수식"
+HintReviewExternal = "밖에서 바뀜: o는 바깥 변경 위에 이 파일을 쓰고, d는 보류 중인 변경을 버림"
+HintReview = "Enter는 모두 씀. Esc는 표로 돌아감(보류 중인 변경은 남음)"
+HintViewError = "이 뷰는 열 수 없음(이유는 표 영역에). [ ]: 다른 뷰"
+## {0} は理由を ` / ` でつないだもの。
+HintUnsupported = "지원하지 않음: {0}"
+## BV-2: `.base` の上に `.obsidian/` が無く、0行のとき。{0} は探した根。
+VaultRootGuessed = "행이 없음: .base 위에 .obsidian/ 폴더가 없어 {0} 아래에서만 노트를 찾음"
+HintHeadRow = "그룹 머리글({0}행). Enter로 열기/닫기"
+## `HintHeadRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HintHeadRowOne = "그룹 머리글({0}행). Enter로 열기/닫기"
+HintExternalNote = "노트가 밖에서 바뀜(보류 중인 변경은 유지됨)"
+## {0} は印。
+HintHeld = "{0}: 편집한 값으로는 이 행이 여기 오지 않음. 저장하거나 이동하면 다시 정렬됨"
+HintUnsupportedFormula = "지원하지 않는 수식(값 표시 안 함): {0}"
+HintReadOnly = "읽기 전용: {0}"
+QuitBand = " 저장하지 않은 변경 {0}건. 종료하기 전에 처리 방법을 선택"
+
+# ---- ui/calendar: カレンダー(CE-20・CE-21・CE-23・CE-24) ----
+## {0} は年、{1} は月(`Month*`)。
+CalTitle = " {0}년 {1} "
+Month1 = "1월"
+Month2 = "2월"
+Month3 = "3월"
+Month4 = "4월"
+Month5 = "5월"
+Month6 = "6월"
+Month7 = "7월"
+Month8 = "8월"
+Month9 = "9월"
+Month10 = "10월"
+Month11 = "11월"
+Month12 = "12월"
+WdSun = "일"
+WdMon = "월"
+WdTue = "화"
+WdWed = "수"
+WdThu = "목"
+WdFri = "금"
+WdSat = "토"
+CalMonthKeys = "{0} 월"
+CalYearKeys = "{0} 년"
+## CE-31: 時刻の欄への切り替えのキー。
+CalTimeKey = "{0} 시각"
+## CE-30: 時刻の欄の見出し。
+CalTime = "시각"
+## CE-30: 時刻の欄は日時の列だけ。
+CalTimeOnly = "시각은 일시 입력에서만 설정할 수 있음"
+CalTodayKey = "{0} 오늘"
+CalClearKey = "{0} 비우기"
+CalDateOnly = "날짜·일시 입력에서만 작동함"
+## cell-edit.date-words-preview: 日付の言葉を打っているあいだ、入力の欄の横に出す読み。{0} は `YYYY-MM-DD`、{1} は曜日(`Ddd*`)。
+DateWordsDay = "{0} ({1})"
+DateWordsUnreadable = "날짜 아님"
+
+# ---- ui/new_note: 新しいノート(CE-25・CE-26・CE-27) ----
+NoteButton = "+ 새로"
+NoteNoPlace = "만들 위치(연 폴더)를 알 수 없어 노트를 만들지 않음"
+NoteTooLow = "터미널이 낮아 새 노트 입력란을 띄울 수 없어 시작하지 않음(터미널을 더 높게 할 것)"
+NoteFirstPlace = "위치가 첫 항목임"
+NoteFirstName = "이름이 첫 항목임"
+## {0} はパス、{1} は理由。
+NoteCannotCreate = "{0}을(를) 만들 수 없어 노트를 만들지 않음: {1}"
+NoteUnreadable = "만들었지만 읽을 수 없음: {0}"
+NoteCreated = "만듦: {0}"
+NoteCreatedHidden = "만듦: {0}(현재 필터나 접힌 그룹 때문에 보이지 않음)"
+NoteCancelled = "새 노트 취소(아무것도 만들지 않음)"
+NoteLeadPlace = " 새 노트  위치: "
+NoteLeadName = " 새 노트  이름: "
+NoteLeadCol = " 새 노트  {0}: "
+NoteCreate = "만들기"
+## CE-26: 新しいノートの窓。
+KeyCreateNote = "입력 창으로 만들기"
+## CE-33。
+KeyCreateNoteEdit = "만들고 편집기로 열기"
+NoteEditShort = "편집기"
+NoteFormTitle = " 새 노트 "
+NoteFieldPlace = "위치"
+## SR-31。{0} はフォルダの名前。
+NoteFormWhere = "{0}에 만들기"
+NoteHintKindNumber = "숫자"
+NoteHintKindList = "[목록]"
+NoteFieldName = "이름"
+## cell-edit.body-choose: the label of the field that picks the body template.
+NoteFieldBody = "템플릿"
+NoteFromFilter = "(필터에서)"
+NoteFromConfig = "(설정에서)"
+## CE-27。
+NoteRequiredEmpty = "필수: 채워야 노트를 만듦"
+## CE-32。{0} はパス、{1} は理由。
+NoteBodyOutside = "본문 템플릿 {0}은(는) 연 폴더 안의 파일이어야 함"
+NoteBodyUnreadable = "본문 템플릿 {0}을(를) 읽을 수 없음: {1}"
+NoteNext = "다음"
+NoteToggle = "전환"
+NoteStop = "취소"
+NotePrevField = "이전 항목"
+NoteHintPlace = "↑↓ 위치 선택, Enter 확정"
+NoteHintFree = "자유 입력, 비우면 쓰지 않음(↑↓ 목록으로)"
+NoteHintList = "↑↓ 선택, Enter 확정, 입력하면 자유 입력(*=현재 값), 없음 = 쓰지 않음"
+NoteHintNumber = "숫자: 숫자로 읽히는 값, 비우면 쓰지 않음"
+NoteHintCheckbox = "true 또는 false, 비우면 쓰지 않음"
+## {0} は使える形。
+NoteHintDate = "날짜: {0}, +3 / -2(오늘부터), 비우면 쓰지 않음"
+NoteHintDateTime = "일시: YYYY-MM-DDTHH:MM, {0}, +3, 비우면 쓰지 않음"
+## {0}/{1} は何番目か、{2} はパス。
+NoteGuidePlace = "   위치 선택 {0}/{1}: {2}"
+## {0} はフォルダの名前、{1} はパス。
+NoteGuideWhere = "{0}에 만들기 ({1})"
+## {0} は名前、{1}/{2} は何番目か。
+NoteGuideField = "{0}의 항목 {1}/{2}(비우면 쓰지 않음)"
+
+# ---- ui/app: 表の操作のメッセージ(WB-1・SR-12) ----
+NothingToSave = "저장할 변경 없음"
+NothingToUndo = "실행 취소할 것 없음"
+NothingToRedo = "다시 실행할 것 없음"
+LoadAlreadyDone = "불러오기가 이미 끝남"
+LoadStopped = "불러오기 중지({0}개 읽음)"
+
+# ---- ui/columns: 一時的な並べ替え・列を隠す・固定(NV-4) ----
+SortedAsc = "{0} 기준 오름차순 정렬(.base는 그대로)"
+SortedDesc = "{0} 기준 내림차순 정렬(.base는 그대로)"
+SortCleared = "정렬 해제(.base 순서)"
+LastColumnHide = "마지막 열은 숨길 수 없음"
+ColumnHidden = "열 숨김: {0}(+로 다시 표시)"
+NoHiddenColumns = "숨긴 열 없음"
+ColumnShown = "열 표시: {0}"
+FreezeCleared = "열 고정 해제"
+FreezeTooWide = "왼쪽 {0}열이 화면에 다 들어가지 않아 고정하지 않음(열을 좁히거나 더 왼쪽 열을 선택)"
+## `FreezeTooWide` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FreezeTooWideOne = "왼쪽 {0}열이 화면에 다 들어가지 않아 고정하지 않음(열을 좁히거나 더 왼쪽 열을 선택)"
+Frozen = "왼쪽 {0}열 고정"
+## `Frozen` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FrozenOne = "왼쪽 {0}열 고정"
+
+# ---- ui/detail: 詳細の表示(SR-10) ----
+DetailNoRow = "상세를 볼 행을 선택(그룹 머리글은 안 됨)"
+DetailHead = " 상세  {0}  {1}/{2}"
+DetailBody = "본문"
+
+# ---- ui/display: 隠した設定の帯の条件(SR-20・NV-22) ----
+ChipRemoved = "표시줄 조건 제거: {0}"
+## 2つの知らせをつなぐ。
+TwoMessages = "{0}. {1}"
+HiddenChip = "숨긴 표시줄 조건 {0}/{1}: [{2}]  {3}: 제거"
+
+# ---- ui/entry: セルの入力の読み方と案内(CE-2・CE-5・CE-7・CE-22) ----
+EntryNotNumber = "숫자가 아님: {0}(숫자를 넣거나, 비우면 지움)"
+EntryNotBool = "true나 false가 아님: {0}(비우면 지움)"
+## {1} は打ち込める日付の形。
+EntryNotDateTime = "날짜가 아님: {0}(YYYY-MM-DDTHH:MM 또는 {1}, +3, -2, 비우면 지움)"
+EditBulkLead = "일괄 {0}행: "
+## `EditBulkLead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditBulkLeadOne = "일괄 {0}행: "
+## CE-10: 印を付けた行の外で編集を始めたとき。
+EditOnlyThisRow = "이 행만 편집: 표시한 {0}행은 포함하지 않음(표시한 행에서 Enter를 누르면 모두 편집)"
+## `EditOnlyThisRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditOnlyThisRowOne = "이 행만 편집: 표시한 {0}행은 포함하지 않음(표시한 행에서 Enter를 누르면 그 행을 편집)"
+EditMismatch = "현재 값이 열 형식에 맞지 않음. "
+EditHintList = "↑↓ 선택, Enter 확정, 입력하면 자유 입력(*=현재 값)"
+EditHintNumber = "숫자: 숫자로 읽히는 값, 비우면 지움"
+EditHintCheckbox = "true 또는 false, 비우면 지움(↑↓ 목록)"
+EditHintDate = "날짜: {0}, +3 / -2(오늘부터), 비우면 지움"
+EditHintDateTime = "일시: YYYY-MM-DDTHH:MM, {0}, +3, 비우면 지움"
+EditHintBackToList = " (↑↓ 목록으로)"
+## CE-3: 打った文字で絞った候補を見せているとき。
+EditHintPickNarrowed = " (↑↓ 맞는 값 선택)"
+
+# ---- ui/external: コピーとエディタ(OUT-1・SR-8) ----
+## 試験のビルドの偽のクリップボードが返す誤り。
+ClipTestFailure = "테스트 실패"
+ClipNoCommand = "{0}을(를) 찾을 수 없음"
+ClipNoOsClipboard = "이 OS의 클립보드로 보낼 수 없음"
+## 並べた理由の区切り。
+ReasonSep = "; "
+ClipTimeout = "OS 클립보드가 응답하지 않음"
+ClipCannotPass = "텍스트를 넘길 수 없음: {0}"
+ClipExitCode = "종료 상태 {0}"
+## {0} は base64 のバイト数、{1} は上限。
+Osc52TooLong = "너무 길어서 보내지 않음(base64로 {0}바이트, 상한 {1})"
+WordsTrailingBackslash = "끝의 \\ 뒤에 아무것도 없음"
+WordsUnclosedSingle = "닫히지 않은 '"
+WordsUnclosedDouble = "닫히지 않은 \""
+CopyWhatSelected = "선택한 {0}행"
+## `CopyWhatSelected` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+CopyWhatSelectedOne = "선택한 {0}행"
+CopyWhatCell = "셀"
+CopyWhatRow = "행"
+CopyNoCell = "복사할 셀이 없음"
+CopyNoRow = "복사할 행이 없음"
+## {0} は `CopyWhat*`、{1} は誤り。
+CopiedBoth = "{0} 복사함(OSC 52와 OS 클립보드)"
+CopiedOscOnly = "{0} 복사함(OSC 52만. OS 클립보드로 보낼 수 없음: {1})"
+CopiedOsOnly = "{0} 복사함(OS 클립보드만. OSC 52를 보낼 수 없음: {1})"
+CopyFailed = "복사할 수 없음(OSC 52: {0}; OS 클립보드: {1})"
+EditorNoRow = "열 행이 없음"
+EditorBadSetting = "편집기 설정을 읽을 수 없음: {0}"
+EditorNoTerminal = "터미널을 되돌릴 수 없어 편집기를 열지 않음: {0}"
+## {0} はコマンド、{1} は誤り。
+EditorCannotStart = "편집기를 시작할 수 없음: {0} ({1})"
+## {0} は終了の状態、{1} はノート。
+EditorFailed = "편집기가 실패로 끝남({0}): {1}"
+EditorReturned = "편집기에서 돌아옴: {0}"
+EditorTermNotRestored = ". 터미널을 되돌릴 수 없음: {0}"
+EditorCannotReload = ". 다시 읽을 수 없음: {0}"
+
+# ---- ui/startup・list・grid・view: 表の画面(WB-15・SR-12・BV-5・BV-7・CE-10) ----
+OpenedReadOnly = "읽기 전용으로 열림(--readonly: 편집도 저장도 안 함)"
+StateUnwritable = "뷰 상태를 쓸 수 없음: {0}"
+## リストの候補の「なし」(Null)。
+NoneLabel = "(없음)"
+InputClosedRowGone = "편집한 행이 표에서 빠져 입력을 닫음({0}. 확정하지 않은 텍스트는 버림)"
+## ノートの列の見出し。
+NoteColumn = "노트"
+## {0} は選びの印、{1} は開閉の印、{2} は列の名前と `: `、{3} は値、{4} は件数。
+HeadingRow = "{0}{1} {2}{3} ({4})"
+ViewCannotOpen = "(이 뷰는 열 수 없음: {0})"
+NoNotes = "(노트 없음)"
+TableLoading = "(불러오는 중…)"
+
+# ---- ui/input: セルの編集と一括の設定(CE-1・CE-9・CE-10・CE-11・SR-3) ----
+CellNotDrawn = "선택한 셀이 화면에 보이지 않아 편집하지 않음(터미널을 넓히거나 열을 좁힐 것)"
+CellNotDrawnEsc = "선택한 셀이 화면에 보이지 않아 편집하지 않음(터미널을 넓히거나 열을 좁힐 것)(Esc로 취소)"
+## 読むだけの理由の前置き(一括で飛ばした理由では外す)。
+ReadOnlyLead = "읽기 전용: "
+BulkFoldedOut = ". {0}행은 접힌 그룹 안에 있어 제외함"
+## `BulkFoldedOut` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkFoldedOutOne = ". {0}행은 접힌 그룹 안에 있어 제외함"
+## {1} は理由を ` / ` でつないだもの。
+BulkSkipped = ". {0}행 건너뜀({1})"
+## `BulkSkipped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSkippedOne = ". {0}행 건너뜀({1})"
+NeighborRowGone = "편집한 행이 표에서 빠져 다음 셀을 열지 않음({0})"
+BulkNoEditable = "선택한 행에 편집할 수 있는 셀이 없음({0})"
+EditMultiLine = "줄바꿈이 있는 값은 한 줄 입력으로 편집할 수 없음(편집기로 열 것. 이후 버전에서 지원)"
+EditNotOneLine = "이 값은 한 줄 입력으로 편집할 수 없음"
+NoEditableRight = "이 행의 오른쪽에 편집할 수 있는 셀이 없음({0})"
+NoEditableLeft = "이 행의 왼쪽에 편집할 수 있는 셀이 없음({0})"
+NoCellRight = "이 행의 오른쪽에 셀이 없음"
+NoCellLeft = "이 행의 왼쪽에 셀이 없음"
+CannotCommit = "확정할 수 없음: {0}"
+BulkSet = "일괄: {0}행에 설정함"
+## `BulkSet` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetOne = "일괄: {0}행에 설정함"
+BulkSame = " ({0}행은 이미 같은 값)"
+## `BulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSameOne = " ({0}행은 이미 같은 값)"
+BulkTypeMismatch = "형식 불일치"
+## 一括で空にしたときの {1}。
+BulkStateEmpty = "빈 값"
+BulkSetTo = "일괄: {0}행을 {1}(으)로 설정함"
+## `BulkSetTo` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetToOne = "일괄: {0}행을 {1}(으)로 설정함"
+CannotClear = "비울 수 없음: {0}"
+
+# ---- ui/listpick: リストの選択(CE-16・CE-17・CE-19) ----
+NotAList = "목록 값이 아님"
+PickNotDrawn = "선택한 셀이 화면에 보이지 않아 확정하지 않음(터미널을 넓히거나 Esc로 취소)"
+PickBulkDone = "일괄: {0}행 편집함"
+## `PickBulkDone` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkDoneOne = "일괄: {0}행 편집함"
+PickBulkSame = " ({0}행은 변경 없음)"
+## `PickBulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkSameOne = " ({0}행은 변경 없음)"
+## {0}・{1} はキー。
+PickKeysSearching = "{0} 추가(새 항목은 만들어 추가), {1} 확정"
+PickKeys = "{0} 전환, {1} 확정"
+## {1} は `PickKeys*`。
+PickHintBulk = "일괄 {0}행([x]=모든 행 [-]=일부 행 [ ]=없음). {1}"
+## `PickHintBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickHintBulkOne = "일괄 {0}행([x]=모든 행 [-]=일부 행 [ ]=없음). {1}"
+PickHint = "입력해서 좁히기([x]=설정됨). {0}"
+PickNew = "+ 새로: {0}"
+## 候補の件数。
+PickCount = "{0}"
+PickSearchLead = "검색: "
+## {0} は列、{1} は行の数、{2} は位置。
+PickTitleBulk = "{0} {1}행 {2}"
+## `PickTitleBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickTitleBulkOne = "{0} {1}행 {2}"
+PickNoMatch = " (맞는 항목 없음)"
+
+# ---- ui/menu: その場の操作の一覧(SR-24)の節と、キーの無い項目 ----
+MenuSecCell = "셀"
+MenuSecColumn = "열"
+MenuSecRow = "행"
+MenuSecView = "뷰와 파일"
+MenuBulk = "선택한 행에 일괄 설정"
+MenuNoRoom = "터미널이 너무 작아 동작 메뉴를 띄울 수 없음"
+
+# ---- ui/freq: 列の値の頻度表(NV-9) ----
+## {0} は列の名前。
+FreqTitle = "값 빈도: {0}"
+FreqNoRoom = "터미널이 너무 작아 값 빈도를 띄울 수 없음"
+FreqNoColumn = "값을 셀 열을 선택"
+FreqNoRows = "셀 행이 없음"
+FreqLoading = "노트를 불러오는 중에는 값을 셀 수 없음"
+FreqClosed = "행이 바뀌어 값 빈도를 닫음"
+FreqStacked = "같은 값 필터 안에서 셈. Enter로 더 좁힘"
+
+# ---- ui/native_io: .base への書き出しと取り込み(BV-19・BV-20) ----
+AskExportName = ".base로 내보내기, 파일 이름: "
+AskImportFile = "가져올 .base: "
+AskImportView = "{0}의 뷰: "
+AskExportWhere = "  {0} 아래에 새 .base를 씀(이미 있는 이름에는 쓰지 않음)"
+AskNoMatch = "  (맞는 것 없음)"
+ExportNoDir = "내보낼 폴더를 알 수 없음"
+ImportNoDir = ".base 파일을 찾을 폴더를 알 수 없음"
+ImportNoFiles = "{0} 아래에 .base가 없음"
+AskCancelled = "취소함"
+## SC-15: CSV・TSV を読めない理由。
+CsvNotUtf8 = "파일이 UTF-8이 아님(UTF-8로 저장하면 열 수 있음)"
+CsvUnclosedQuote = "{0}번째 줄에서 연 따옴표가 닫히지 않음"
+CsvNoHeader = "파일이 비어 있음(첫 줄에 열 이름이 있어야 함)"
+CsvCrOnly = "{0}번째 줄이 CR만으로 끝남(줄 끝을 LF나 CRLF로 저장하면 열 수 있음)"
+CsvRowChanged = "이 행은 mdgrid 밖에서 바뀌었거나 지워짐. 변경을 다른 행에 쓰지 않음"
+CsvColumnCount = "이 줄은 값이 {0}개인데 열은 {1}개라 읽기 전용"
+## SC-17: CSV・TSV ではしない操作。
+CsvNoteOnly = "CSV/TSV 표에서는 쓸 수 없음(노트에서 작동함)"
+CsvRowAdded = "{0} 끝에 행을 추가함"
+CsvNoKeyOps = "CSV 열은 여기서 이름을 바꾸거나 지울 수 없음"
+CsvNoSuchColumn = "CSV에 {0}(이)라는 열이 없음"
+## CE-34: ノートの名前の変更。
+AskRenameNote = "노트의 새 이름: "
+RenameNoteBad = "노트 이름은 비울 수 없고 / 나 \\ 를 넣을 수 없음"
+RenameNoteExists = "{0}이(가) 이미 있음"
+RenameNoteReadOnly = "읽기 전용 노트라 이름을 바꿀 수 없음"
+RenameNotePending = "먼저 이 노트의 변경을 저장하거나 실행 취소할 것"
+RenameNoteDone = "{0}(으)로 이름을 바꿈"
+RenameNoteLinks = "{0}(으)로 이름을 바꿈. 옛 이름을 가리키는 링크 {1}개를 보류 중인 변경으로 고쳐 씀(Ctrl+S로 검토)"
+RenameNoteFailed = "이름을 바꿀 수 없었음: {0}"
+## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
+AskDeleteNote = "휴지통으로 옮길까요? y를 입력하고 Enter: "
+DeleteNoteWhich = "삭제할 노트: {0}"
+DeleteNoteWhichLinks = "삭제할 노트: {0}(이 노트를 링크하는 노트 {1}개)"
+DeleteNotePending = "먼저 이 노트의 변경을 저장하거나 실행 취소할 것"
+DeleteNoteDone = "{0}을(를) 휴지통으로 옮김(u로 되돌림)"
+DeleteNoteFailed = "휴지통으로 옮길 수 없었음(노트는 그대로): {0}"
+## cell-edit.trash-restore-*: ごみ箱から戻す。{0} はノートの名前か元の場所。
+AskRestoreNote = "휴지통에서 복원할 노트: "
+TrashEmpty = "휴지통이 비어 있음"
+RestoreNoteDone = "{0}을(를) 원래 위치로 복원함"
+RestoreNoteHidden = "{0}을(를) 원래 위치로 복원함(현재 필터 때문에 보이지 않음)"
+RestoreNoteExists = "{0}이(가) 이미 있어 복원하지 않음(노트는 휴지통에 그대로)"
+RestoreNoteFailed = "휴지통에서 복원할 수 없었음: {0}"
+AskRenameKey = "{0}의 새 이름: "
+## CE-29。{0} はキー、{1} はノートの数。
+AskDeleteKey = "노트 {1}개에서 {0}을(를) 삭제할까요? y를 입력하고 Enter: "
+## CE-29。{0} は古い名前、{1} は新しい名前、{2} はノートの数。
+KeyRenamed = "노트 {2}개에서 {0}의 이름을 {1}(으)로 바꿈(Ctrl+S로 저장)"
+## CE-29。{0} はキー、{1} はノートの数。
+KeyDeleted = "노트 {1}개에서 {0}을(를) 삭제함(Ctrl+S로 저장)"
+## CE-29。{0} は新しい名前。
+KeyOpExists = "키 {0}이(가) 이미 있음"
+## CE-29。{0} はキー。
+KeyOpNoNotes = "키 {0}을(를) 가진 노트가 없음"
+KeyOpPending = "그 셀에 저장하지 않은 편집이 있음(먼저 저장하거나 실행 취소)"
+KeyOpComputed = "file.*와 formula.* 열은 노트의 키가 아님"
+KeyOpBadName = "키 이름은 비우거나, 줄바꿈을 넣거나, file. 또는 formula.로 시작할 수 없음"
+## CE-28。
+AskNewColumn = "새 열(키 이름): "
+## navigation.expr-filter: 式の入力の前置き。
+AskExprFilter = "식: "
+## notice.jump: 当たる行のある表の一覧の前置き。
+AskNoticeTables = "열 표: "
+## {0} は式を使えない理由。
+ExprFilterBad = "이 식으로는 필터할 수 없음: {0}"
+## OUT-2。
+CmdExportTable = "표를 파일로 내보내기"
+CmdExprFilter = "식으로 필터"
+AskExportTable = "표 내보내기, 파일 이름(.csv .tsv .json .md): "
+## OUT-5。{0} はパス。
+AskExportOverwrite = "{0}이(가) 이미 있음. 덮어쓸까요? y를 입력하고 Enter: "
+## OUT-2。
+ExportTableBadExt = "파일 이름은 .csv, .tsv, .json, .md 중 하나로 끝나야 함"
+## OUT-5。{0} は行の数、{1} はパス。
+ExportTableDone = "{1}에 {0}행을 씀"
+## OUT-5。{0} はパス、{1} は理由。
+ExportTableFailed = "{0}에 쓸 수 없었음: {1}"
+AddColumnBad = "열 이름은 비우거나, 줄바꿈을 넣거나, file. 또는 formula.로 시작할 수 없음"
+## {0} は列の名前。
+AddColumnAdded = "{0} 열 추가: 저장할 때 값을 넣은 노트에만 키가 써짐"
+ImportNoMatchFile = "맞는 .base 없음"
+ImportUnreadable = "{0}을(를) 읽을 수 없음: {1}"
+ImportNoViews = "{0}에 뷰가 없음"
+ImportUnnamed = "(이름 없음 {0})"
+ImportNoMatchView = "맞는 뷰 없음"
+## {0} はファイル、{1} は元のビュー、{2} は新しい名前、{3} は `DroppedNote` か空。
+Imported = "{0}의 뷰 \"{1}\"을(를) mdgrid 뷰 \"{2}\"(으)로 가져옴{3}"
+ExportNameEmpty = "파일 이름을 입력(예: todo.base)"
+ExportNameOnly = "파일 이름만 입력(연 폴더 아래에 씀)"
+ExportExists = "{0}이(가) 이미 있어 쓰지 않음(기존 .base 파일은 덮어쓰지 않음. 다른 이름을 쓸 것)"
+CannotWriteFile = "{0}에 쓸 수 없음: {1}"
+## {0} はビュー、{1} はファイル、{2} は `DroppedNote` か空。
+Exported = "뷰 \"{0}\"을(를) {1}(으)로 내보냄{2}"
+
+# ---- ui/native_views: mdgrid のビュー(BV-13・BV-18・BV-20) ----
+## `.base` なしで開いたときの先頭のタブの名前(日本語は名前の検査とビューの状態にも使う)。
+DefaultTabName = "기본 표"
+## {0} は落とした・近似の部分を ` / ` でつないだもの。
+DroppedNote = ". 빼거나 근사한 부분: {0}"
+OnlyOneView = "뷰가 하나뿐임(.base를 열거나, 뷰 설정의 \"다른 이름으로 저장\"으로 전환할 뷰를 만들 것)"
+NoViewToSwitch = "전환할 뷰가 없음"
+SwitchedView = "뷰 \"{0}\"(으)로 전환함"
+ViewsNoDir = "mdgrid 뷰를 둘 곳(설정 폴더)을 알 수 없어 mdgrid 뷰를 저장할 수 없음"
+ViewNameEmpty = "이름이 비어 있음(이름을 입력)"
+ViewNameFixed = "\"{0}\"은(는) 기본 표나 .base 뷰의 이름임(다른 이름을 쓸 것)"
+ViewNameTaken = "mdgrid 뷰 \"{0}\"이(가) 이미 있음(다른 이름을 쓰거나, 바꾸려면 그 뷰에서 \"덮어쓰기\")"
+## 空の名前で保存したビューの名前。
+ViewDefaultName = "뷰"
+StateCannotMove = "뷰 상태를 옮길 수 없음: {0}"
+## {0} は既定の表の名前、{1} は押したボタン、{2} は「名前を付けて保存」のボタン。
+ViewButtonFixed = "\"{1}\"은(는) {0}·.base 뷰에는 쓸 수 없음(mdgrid 뷰로 만들려면 \"{2}\")"
+ViewSavedAs = "mdgrid 뷰 \"{0}\"(으)로 저장함{1}"
+ViewGoneOverwrite = "\"{0}\"이(가) 다른 곳에서 삭제되어 덮어쓸 수 없음"
+ViewOverwritten = "mdgrid 뷰 \"{0}\"을(를) 덮어씀"
+ViewGoneRename = "\"{0}\"이(가) 다른 곳에서 삭제되어 이름을 바꿀 수 없음"
+RenameUnapplied = " (설정 화면에서 바꾼 것은 적용하지 않음)"
+## {2} は `RenameUnapplied` か空。
+ViewRenamed = "뷰 이름을 \"{0}\"에서 \"{1}\"(으)로 바꿈{2}"
+ViewDeleted = "mdgrid 뷰 \"{0}\"을(를) 삭제함"
+## BV-18: 削除の確かめと取り消し。
+TextDeleteView = "뷰 \"{0}\"을(를) 삭제할까요? y를 입력하고 Enter(u로 되돌릴 수 있음)"
+ViewDeletedUndo = "mdgrid 뷰 \"{0}\"을(를) 삭제함(표에서 u를 누르면 되돌림)"
+ViewDeleteKept = "뷰 \"{0}\"을(를) 남김"
+ViewRestored = "mdgrid 뷰 \"{0}\"을(를) 되돌림"
+
+# ---- ui/settings: ビューの設定の画面(NV-13・NV-15・NV-19・NV-22) ----
+BtnApply = "적용"
+## ビューの設定の「取り消し」のボタン。
+BtnCancel = "취소"
+BtnReset = "초기화"
+BtnSaveAs = "다른 이름으로 저장"
+BtnOverwrite = "덮어쓰기"
+BtnRename = "이름 변경"
+BtnDelete = "삭제"
+KindValues = "값 목록에서 선택"
+## NV-29: 絞り込みの窓の表の形の比べ方(値の一覧の残す・隠す)。
+OpKeep = "남김"
+OpDrop = "숨김"
+KindContains = "포함"
+KindNotContains = "포함하지 않음"
+KindCompare = "비교(= ≠ < ≤ > ≥)"
+KindEmpty = "비어 있음"
+KindNotEmpty = "비어 있지 않음"
+CmpEq = "=  같음"
+CmpNe = "≠  같지 않음"
+CmpLt = "<  보다 작음 / 이전"
+CmpLe = "≤  이하 / 그날까지"
+CmpGt = ">  보다 큼 / 이후"
+CmpGe = "≥  이상 / 그날부터"
+PurposeFilter = "필터"
+PurposeSort = "정렬"
+PurposeGroup = "그룹"
+PurposeTree = "부모"
+PurposeWbsKey = "진행도"
+## NV-28: WBS の行。
+TreeWbsRow = "WBS"
+TreeWbsKeyRow = "진행도 키"
+WbsValueRow = "{0} ({1})"
+TextWbsValue = "{0}의 비율과 라벨(예: 100 완료. -는 제거)"
+WbsBadPercent = "비율을 먼저 0~100의 숫자로 입력: {0}"
+## NV-27: 親子の区画。
+NavTree = "계층"
+DescTree = "부모 키에 적힌 노트 아래에 자식 노트를 놓음"
+TreeOnRow = "부모 기준으로 배치"
+TreeKeyRow = "부모 키"
+SetHintTree = "{0} 전환 또는 키 선택(적용하면 쓰임. 표에서 Z로 부모 접기)"
+DirAsc = "↑ 오름차순"
+DirDesc = "↓ 내림차순"
+GroupOnlyByColumn = "열로 나눌 때 쓸 수 있음(먼저 \"열로 나누기\"에서 열을 선택)"
+NotRemovable = "이 항목은 제거할 수 없음"
+SettingsClosed = "뷰 설정을 닫음"
+SettingsCancelled = "뷰 설정 취소(표는 그대로)"
+SettingsReset = "기본값으로 되돌림(적용하면 표에 반영)"
+SettingsAppliedReadOnly = "뷰 설정을 적용함(읽기 전용이라 기억하지 않음)"
+SettingsApplied = "뷰 설정을 적용함"
+ChipsEmpty = "설정 표시줄이 비어 있음({0}: 뷰 설정 열기)"
+
+# ---- ui/settings_view: ビューの設定の画面の描画(NV-18・SR-20) ----
+SetColumns = "열(표시와 순서)"
+SetDisplay = "표시"
+SetFilters = "필터(모두 맞는 행만)"
+SetAddFilter = "+ 조건 추가"
+## condition.view-settings: {0} は条件の見せる名前、{1} は掛け方。
+SetNamedRow = "조건 {0}: {1}"
+SetNamedOff = "끔"
+SetNamedKeep = "맞는 행만"
+SetNamedHide = "맞는 행 숨김"
+SetSorts = "정렬(위쪽 열 우선)"
+SetAddSort = "+ 정렬 추가"
+SetGroup = "그룹"
+## NV-18: 左の区画の一覧・説明・スイッチ・未反映の数。
+NavColumns = "열"
+NavFilters = "필터"
+NavSorts = "정렬"
+NavGroup = "그룹"
+NavDisplay = "표시"
+NavGroupOff = "끔"
+NavHideEmpty = "빈 그룹 숨기기"
+DescColumns = "보여 줄 열과 그 순서를 정함"
+DescFilters = "모든 조건에 맞는 행만 보여 줌"
+DescSorts = "위의 규칙이 우선. 같으면 다음 규칙으로"
+DescGroup = "열 값에 따라 행을 나눔"
+DescDisplay = "표 주위에 보여 줄 것"
+SwShown = "표시"
+SwHidden = "숨김"
+SwOn = "켬"
+SwOff = "끔"
+SwAuto = "자동"
+## NV-23: ビューの帯のボタンの描き方(plain・box・compact)。
+SwPlain = "선 없음"
+SwBox = "테두리"
+## {0} は帯の上下の余白の行の数(NV-23)。
+SwPadding = "{0}줄"
+SetPending = "미적용 {0}"
+## NV-26: ビューの区画(タブの順・出す隠す・既定・名前・削除・切り替えの案内)。
+NavViews = "뷰"
+DescViews = "표 위의 탭. 바꾸면 바로 저장됨"
+TabHintRow = "전환 안내([ ])"
+TabDefaultMark = "기본"
+TabMenuOf = "탭 \"{0}\""
+TabMenuDefault = "기본으로 설정"
+TabMenuUndefault = "기본 해제(첫 탭을 엶)"
+TabMenuRename = "이름 변경"
+TabMenuDelete = "삭제"
+TabCurrentHide = "보고 있는 뷰는 숨길 수 없음. 먼저 다른 탭으로 전환할 것"
+TabBaseFixed = "\"{0}\"은(는) .base 뷰나 기본 표라서 이름을 바꾸거나 삭제할 수 없음"
+TabHidden = "탭 \"{0}\" 숨김"
+TabShown = "탭 \"{0}\" 표시"
+TabMoved = "탭 \"{0}\" 이동"
+TabHintOn = "전환 안내 표시"
+TabHintOff = "전환 안내 숨김"
+SetHintViews = "{0} 표시/숨김  {1} / {2} 순서  {3} 기본·이름·삭제(바로 저장)"
+SetGroupInheritBase = ".base 그대로"
+SetGroupInheritDefault = "기본값(그룹 없음)"
+## {0} はラジオの印。
+SetGroupOff = "{0} 없음"
+## {0} はラジオの印、{1} は列か `SetGroupPickColumn`。
+SetGroupBy = "{0} 열로 나누기: {1}"
+SetGroupPickColumn = "(열 선택)"
+## {0} はチェックの印。
+SetGroupHideEmpty = "{0} 빈 그룹 숨기기"
+SetGroupOrder = "그룹 순서: {0}"
+## {0} は目的(`Purpose*`)。
+PickColumnFor = "{0} 기준 열 선택"
+PickKindOf = "{0} 조건 종류"
+PickCmpOf = "{0} 비교 방법"
+PickModeKeep = "방식: 체크한 값의 행만 남김"
+PickModeHide = "방식: 체크한 값의 행을 숨김"
+## {0} はチェックの印、{1} は値、{2} は件数。
+PickValueRow = "{0} {1}  {2}"
+PickValuesOf = "{0}의 값(건수)"
+TextContains = "{0}에 포함된 텍스트"
+TextNotContains = "{0}에 포함되지 않은 텍스트"
+TextSaveAs = "새 mdgrid 뷰 이름"
+TextRename = "뷰의 새 이름"
+## {0}・{1}・{2} はキー。
+SetHintValues = "{0} 체크 / 방식 전환, {1} 확정, {2} 뒤로"
+SetHintPick = "{0} 선택, {1} 뒤로"
+SetHintColumns = "{0} 표시/숨김, {1} / {2} 이동"
+SetHintFilters = "{0} 조건 추가/편집, {1} 남김/숨김 전환, {2} 삭제"
+SetHintSorts = "{0} 추가 / 방향 바꾸기, {1} / {2} 순서, {3} 삭제"
+SetHintGroup = "{0} 선택(빈 그룹 숨기기와 순서는 열로 나눌 때 적용)"
+SetHintDisplay = "{0} 표시/숨김(이 뷰만. 적용하면 표에 반영)"
+SetHintButtons = "{0} 누르기. 적용하기 전까지 표는 바뀌지 않음"
+## 左の区画の一覧にいるとき(navigation.settings-sections-keys)。{0}・{1}・{2} はキー、{3} は数字のキーの範囲(`1-8` など)。
+SetHintNav = "{0} / {1} 구역 선택, {2} 항목으로, {3} 그 구역으로"
+SetNativeName = "mdgrid 뷰 / {0}"
+SetHead = " 뷰 설정  {0}  적용하기 전까지 표는 바뀌지 않음"
+SetHeadShort = " 뷰 설정  {0}"
+
+# ---- ui/settings_pick: ビューの設定の選び手と値の入力(NV-14・NV-19) ----
+PickInProgress = "선택 중({0}: 뒤로)"
+SortAlready = "{0}은(는) 이미 정렬에 있음"
+NoValueChecked = "체크한 값이 없음({0}: 체크)"
+ValueEmpty = "값이 비어 있음({0}: 뒤로)"
+OperandNumber = "숫자를 입력(예: 3). \"{0}\"은(는) 숫자가 아님"
+OperandDate = "날짜를 YYYY-MM-DD로 입력. \"{0}\"을(를) 읽을 수 없음"
+OperandDateTime = "일시를 YYYY-MM-DDTHH:MM으로 입력. \"{0}\"을(를) 읽을 수 없음"
+
+# ---- ui/nav: 選択・同じ値・検索(NV-1・NV-5・NV-8・OUT-3) ----
+PickNoEditor = "--pick으로 고르는 동안은 읽기 전용(편집기 없음. Enter로 선택, q로 취소)"
+VisualHint = "범위 선택: 이동한 뒤 v로 확정(Esc로 해제)"
+SelectedAll = "모든 행 선택({0})"
+SelectionCleared = "선택 해제"
+FilterCleared = "검색 해제"
+NoRowToSelect = "선택할 행이 없음"
+SelectValueCell = "값 셀을 선택"
+## {0} は列、{1} は値、{2} は行の数。
+HighlightSame = "같은 값의 행 강조: {0} = {1}({2}행)"
+## `HighlightSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HighlightSameOne = "같은 값의 행 강조: {0} = {1}({2}행)"
+SameFilterCleared = "같은 값 필터 해제({0})"
+SameFilterOn = "같은 값의 행만: {0}(Esc로 해제)"
+NotFound = "찾을 수 없음"
+NoSearchTerm = "찾을 말이 없음(/로 찾기)"
+NotFoundTerm = "찾을 수 없음: {0}"
+WrappedToTop = "끝에서 처음으로 돌아감"
+WrappedToBottom = "처음에서 끝으로 돌아감"
+
+# ---- ui/review: 保存の確認(WB-9・WB-16) ----
+ReviewReadOnly = "읽기 전용({0})"
+ReviewNewline = "줄바꿈이 있는 값은 쓸 수 없음"
+ReviewVerify = "쓴 결과 검사에서 멈춤({0})"
+ReviewChanged = "밖에서 바뀜"
+ReviewIo = "쓸 수 없음({0})"
+ReviewDiscarded = "보류 중인 변경을 버림: {0}"
+ReviewSaved = "파일 {0}개 저장함"
+## `ReviewSaved` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewSavedOne = "파일 {0}개 저장함"
+## {0} はファイルを `, ` でつないだもの。
+ReviewSavedList = " ({0})"
+ReviewStopped = "밖에서 바뀐 파일 {0}개는 멈춤({1})"
+## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewStoppedOne = "밖에서 바뀐 파일 {0}개는 멈춤({1})"
+ReviewFailed = "파일 {0}개를 쓸 수 없었음({1})"
+## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewFailedOne = "파일 {0}개를 쓸 수 없었음({1})"
+## 文と文の区切り。
+SentenceSep = ". "
+ReviewNotExternal = "{0}은(는) 밖에서 바뀌지 않음(Enter로 저장)"
+ReviewNoDiff = "{0}을(를) 쓸 수 없음(차이를 만들 수 없음)"
+ReviewCannotReload = "다시 읽을 수 없음: {0} ({1})"
+ReviewChangedAgain = "{0}이(가) 밖에서 또 바뀜. 차이를 확인하고 o를 다시 누를 것"
+ReviewExternalHead = "  밖에서 바뀜: o 바깥 변경 위에 이 파일 쓰기 / d 보류 중인 변경 버리기"
+ReviewDiffError = "   쓸 수 없음: {0}"
+ReviewHead = " 저장 확인  파일 {0}개  쓰기 전 차이(- 현재 파일 / + 쓴 뒤)"
+## `ReviewHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewHeadOne = " 저장 확인  파일 {0}개  쓰기 전 차이(- 현재 파일 / + 쓴 뒤)"
+
+# ---- places: 登録した表(CLI-18・CLI-19) ----
+## {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
+PlacesBadToml = "places.toml을 읽을 수 없어({0}번째 줄) 등록한 표를 불러오지 않음: {1}"
+PlaceOpen = "등록한 표 열기"
+PlaceRegister = "이 표 등록"
+## 一覧の先頭(引数なしの起動のとき)。
+PlaceHere = "이 폴더(여기 그대로)"
+PlaceNoGroup = "(분류 없음)"
+PlaceNone = "아직 등록한 표가 없음. 팔레트의 \"이 표 등록\"으로 등록할 수 있음"
+## {0} はパス。
+PlaceMissing = "열 수 없음: {0}이(가) 없음"
+PlaceAskName = "이 표의 이름: "
+PlaceAskGroup = "분류(고르거나 새로 입력, 비우면 분류 없음): "
+## {0} は名前。
+PlaceAskOverwrite = "{0}은(는) 이미 등록됨. 바꿀까요? (y/n) "
+## {0} は名前、{1} は分類。
+PlaceSaved = "{0}을(를) {1}에 등록함"
+PlaceSavedNoGroup = "{0}을(를) 등록함"
+## {0} は誤り。
+PlaceSaveError = "places.toml을 쓸 수 없음: {0}"
+PlaceNoConfigDir = "등록할 수 없음: 설정 폴더가 없음"
+PlaceEmptyName = "이름이 비어 있음"
+## {0} は打った分類。
+PlaceNewGroup = "+ 새 분류: {0}"
+PlaceMulti = "등록할 수 없음: 여러 폴더가 열려 있음(폴더 하나나 .base를 등록할 것)"
+## {0} はビューの名前。
+PlaceNoView = "뷰 {0}이(가) 여기 없어 첫 뷰를 보여 줌"
+
+# ---- recent: 最近開いた表(cli.recent-*) ----
+CmdOpenRecent = "최근 표"
+## 引数なしの起動の一覧の分類の名前。
+RecentGroup = "최근"
+RecentNone = "아직 최근 표가 없음(화면에서 연 표를 기억함)"
+AskOpenRecent = "최근 표: "
+
+# ---- favorites・switch: お気に入りのワークスペースと切り替え(workspace.favorite-*・workspace.switch-*) ----
+CmdWsSwitch = "워크스페이스 전환"
+CmdWsFavorite = "현재 워크스페이스를 즐겨찾기에 추가"
+KeyDrawerFavorite = "즐겨찾기에 추가/제거"
+## {0} はワークスペースの名前。
+WsFavoriteAdded = "{0}을(를) 즐겨찾기에 추가함"
+WsFavoriteRemoved = "{0}을(를) 즐겨찾기에서 제거함"
+WsFavoriteNoWorkspace = "즐겨찾기에 추가할 수 없음: 이 표는 워크스페이스(workspaces.toml이나 마커)에 속하지 않음"
+WsFavoriteHeadOnly = "즐겨찾기는 워크스페이스 머리글에서 추가(현재 워크스페이스는 팔레트의 \"현재 워크스페이스를 즐겨찾기에 추가\")"
+## {0} は workspaces.toml の favorites に書いた名前かパス。
+RsnFavoriteGone = "{0}(이)라는 워크스페이스나 마커 루트가 없어 전환 목록에서 뺌"
+SwitchTitle = " 워크스페이스 "
+## {0} は最初に開いた所の名前。
+SwitchOrigin = "시작한 곳: {0}"
+SwitchHint = "즐겨찾기가 아직 없음: 표 목록({0})의 워크스페이스 머리글에서 {1}을(를) 누르거나, 팔레트의 \"현재 워크스페이스를 즐겨찾기에 추가\"를 쓸 것"
+SwitchNoRoom = "터미널이 너무 작아 전환 목록을 띄울 수 없음"
+KeySwitchRun = "선택한 곳으로 이동"
+KeySwitchNumber = "그 번호의 워크스페이스로 이동"
+ModeSwitch = "전환"
+SecInSwitch = "전환 목록에서"
+
+# ---- workspace: ワークスペース(WS-1〜WS-7) ----
+## {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
+WsBadToml = "{0}을(를) 읽을 수 없어({1}번째 줄) 워크스페이스를 불러오지 않음: {2}"
+## {0} はパス。
+WsInitExists = "{0}이(가) 이미 있음"
+## {0} は名前。
+WsUnknown = "{0}(이)라는 워크스페이스가 없음(목록은 mdgrid --workspaces)"
+## {0} はワークスペースの名前。
+HeaderWorkspace = "  · 워크스페이스 {0}"
+CmdWsNew = "이 표로 워크스페이스 만들기"
+CmdWsAdd = "이 표를 워크스페이스에 추가"
+CmdWsRemove = "이 표를 워크스페이스에서 제거"
+CmdWsOpen = "워크스페이스 열기"
+## WS-8: 表の一覧の引き出し。
+CmdWsDrawer = "표 목록(표 전환)"
+KeyWsDrawer = "표 목록"
+KeyDrawerRun = "표 열기 / 접기"
+KeyDrawerOpen = "워크스페이스 펼치기"
+KeyDrawerFold = "워크스페이스 접기"
+DrawerRegistered = " 등록한 표 "
+DrawerEmpty = "보여 줄 표가 없음: :workspace_new로 워크스페이스를 만들거나 :register_place로 표를 등록할 것"
+DrawerNoRoom = "터미널이 너무 작아 표 목록을 띄울 수 없음"
+AskWsName = "워크스페이스 이름: "
+## write-back.git-*: 保存のあとの git。{0} はノートの数、失敗の理由。
+GitAutoMessage = "mdgrid: 노트 {0}개 업데이트"
+GitAutoMessageOne = "mdgrid: 노트 1개 업데이트"
+GitAdded = "git: {0}개 스테이징함"
+GitCommitted = "git: {0}개 커밋함"
+GitPushed = "git: {0}개 커밋하고 push함"
+GitFailed = "git 실패(저장은 끝남): {0}"
+AskGitMessage = "커밋 메시지(비우면 자동 메시지): "
+AskWsPick = "워크스페이스(고르거나 새로 입력): "
+AskWsRemove = "제거할 워크스페이스: "
+AskWsOpen = "열 워크스페이스: "
+## {0} はワークスペースの名前。
+AskWsTable = "{0}에서 열 표: "
+## {0} は打った名前。
+WsNewItem = "+ 새 워크스페이스: {0}"
+## {0} は表、{1} はワークスペース。
+WsAdded = "{0}을(를) 워크스페이스 {1}에 추가함"
+WsRemoved = "{0}을(를) 워크스페이스 {1}에서 제거함"
+WsNotIn = "이 표는 어느 워크스페이스에도 없음"
+WsNone = "아직 워크스페이스가 없음: :workspace_new로 만들 것"
+WsEmpty = "워크스페이스 {0}에 표가 없음"
+WsMulti = "추가할 수 없음: 여러 폴더가 열려 있음(폴더 하나나 .base를 추가할 것)"
+WsNoConfigDir = "워크스페이스를 바꿀 수 없음: 설정 폴더가 없음"
+## {0} は誤り。
+WsSaveError = "workspaces.toml을 쓸 수 없음: {0}"
+WsCliAsOne = "--as는 표 하나에 이름을 붙임: 경로는 하나만 줄 것"
+## {0} はパス。
+WsCliNoPath = "그런 파일이나 폴더가 없음: {0}"
+## {0} はワークスペース、{1} はパス。
+WsCliNotIn = "워크스페이스 {0}에 표 {1}이(가) 없음"
+## {0} はワークスペース。
+WsCliDeleted = "워크스페이스 {0}을(를) 지움"
+## {0} は作ったファイル。
+WsCliInit = "만듦: {0}"
+WsCliNone = "워크스페이스가 없음(mdgrid <경로> --add-to <이름>으로 만듦)"
+## {0} は読めなかった理由。
+WsFixFirst = "바꾸지 않음: 먼저 workspaces.toml을 고칠 것({0})"
+## {0} は開いた表、{1} はワークスペース。
+WsNotInChosen = "{0}은(는) 워크스페이스 {1}에 없음(링크는 {1}의 표와 이 표에서 찾음)"
+## {0} はパス。
+WsMarkerOutside = "마커가 있는 폴더 밖의 표는 무시함: {0}"
+WantDetect = "\".obsidian\"과 \".git\"의 목록"
+WantGitAuto = "\"off\", \"add\", \"commit\", \"push\" 중 하나"
+WantGitWhen = "\"save\" 또는 \"quit\""
+WantGitMessage = "\"auto\" 또는 \"ask\""
+
+# ---- starter: 台帳のスターター(ST-1〜ST-6) ----
+## {0} は名前。
+StarterUnknown = "{0}(이)라는 스타터가 없음(목록은 mdgrid --starters)"
+StarterOne = "--starter는 대장을 하나 만듦: 폴더는 하나만 줄 것"
+## ST-3: 一覧で、ユーザーのスターターに添える。
+StarterUser = "(사용자)"
+## {0} はパス。
+StarterNotFolder = "{0}은(는) 폴더가 아니라 파일임"
+## {0} はパス。
+StarterLink = "{0}은(는) 심볼릭 링크라 아무것도 쓰지 않음(대장 밖을 가리킬 수 있음)"
+## ST-3: 読めないスターターを飛ばす理由(CLI-3 の形の理由の部分)。
+StarterNoLedger = "없어서 이 스타터는 건너뜀"
+StarterNotText = "UTF-8 텍스트가 아니어서 이 스타터는 건너뜀"
+## {0} は TOML の誤り(英語のまま)。
+StarterBadToml = "올바른 TOML이 아니어서 이 스타터는 건너뜀: {0}"
+## {0} は作った台帳の根、{1} はスターターの名前、{2} はファイルの数。
+StarterMade = "스타터 {1}(으)로 {0}을(를) 만듦(파일 {2}개)"
+CmdStarterNew = "스타터로 대장 만들기"
+AskStarterPick = "스타터: "
+AskStarterDir = "만들 폴더: "
+## {0} は基準のフォルダ。
+AskStarterWhere = "{0} 기준"
+AskStarterSamples = "견본 노트도 넣을까요? (y/n) "
+StarterDirEmpty = "만들 폴더를 입력"
+StarterMulti = "만들 수 없음: 여러 폴더가 열려 있음(폴더 하나나 .base를 열 것)"
+
+# ---- relmap: 関係マップ(REL-7〜REL-9) ----
+KeyRelationMap = "관계도"
+TreeOff = "부모 기준으로 배치하지 않음(뷰 설정({0})의 \"계층\"에서 켤 것)"
+TreeNoKids = "이 행에는 자식 행이 없음"
+KeyToggleTree = "자식 행 접기"
+KeyRelOpen = "표 열기"
+KeyRelBack = "표로 돌아가기"
+KeyRelNextTable = "다음 표"
+KeyRelPrevTable = "이전 표"
+KeyRelNextLink = "다음 링크"
+KeyRelPrevLink = "이전 링크"
+RelMapTitle = "관계도"
+RelMapTables = "표"
+RelMapDetail = "상세"
+RelMapLinked = "연결된 행"
+RelMapKind = "종류"
+RelMapManyToOne = "다대일 N:1"
+RelMapManyToMany = "다대다 N:N"
+RelMapColumn = "열"
+RelMapTarget = "대상"
+RelMapLinks = "링크"
+RelMapReverse = "역방향"
+RelMapTop = "최다 링크"
+RelMapRows = "행"
+RelMapNoLinks = "이 표에서 나가거나 들어오는 링크가 없음."
+RelMapNoTables = "관계도에 넣을 표가 없음: 먼저 표를 등록할 것(:register_place)"
+TabScreenTable = "표"
+## SR-42: ヘッダーの近道のボタン。
+HeaderWsButton = " 워크스페이스 "
+HeaderWsNamed = " ▾ {0} "
+HeaderSettingsButton = " 설정 "
+## REL-8: 画面の型のメニュー(ヘッダーのボタンと窓)。
+ScreenRelMap = "관계도"
+ScreenMenuTitle = " 보기 방식 "
+ScreenMenuNoRoom = "터미널이 너무 작아 화면 유형 메뉴를 띄울 수 없음"
+## SR-42: ヘッダーの右の端の設定のボタン。
+HeaderSettings = "설정"
+
+# ---- relations: リレーション(REL-4・REL-5) ----
+CmdOpenLink = "링크 대상 열기"
+CmdLinkedRows = "연결된 행(여기를 링크하는 노트)"
+AskOpenLink = "열 대상: "
+AskLinkedRows = "연결된 행: "
+RelNoTarget = "이 셀에는 노트로 가는 링크가 없음"
+## {0} はノートの名前。
+RelNoBacklinks = "{0}을(를) 링크하는 노트가 없음"
+## {0} はノートの名前。
+RelHidden = "{0}은(는) 이 표에 있지만 필터나 접힌 그룹 때문에 숨겨져 있음"
+## {0} はパス。
+RelMissing = "열 수 없음: {0}이(가) 없음"
+
+# ---- 列の型(CE-35。`[types]` と型の窓) ----
+WantTypesTable = "열 = 형식 형태의 테이블"
+WantType = "\"text\", \"number\", \"checkbox\", \"date\", \"datetime\", \"list\", \"auto\" 중 하나"
+
+# ---- 列の型の窓(CE-35。type_menu.rs) ----
+ModeColumnType = "열 형식"
+SecInColumnType = "열 형식 메뉴에서"
+KeyColumnTypeRun = "그 형식 사용"
+CmdColumnType = "열 형식 바꾸기"
+## {0} は列の名前。
+TypeMenuTitle = "{0}의 형식"
+## {0} は推定の型の名前。
+TypeAuto = "자동({0})"
+TypeText = "텍스트"
+TypeNumber = "숫자"
+TypeCheckbox = "체크박스"
+TypeDate = "날짜"
+TypeDateTime = "날짜와 시각"
+TypeList = "목록"
+## {0} は列の名前。
+TypeComputed = "{0}은(는) 계산 열이라 형식을 바꿀 수 없음"
+## {0} は列の名前、{1} は型の名前。
+TypeSet = "{0}: 형식 {1}(views.toml의 표에 씀)"
+TypeSetNoSave = "{0}: 형식 {1}(views.toml을 둘 곳이 없어 이번 실행에서만)"
+
+# ---- types: 曜日の短い名前(日付の形の ddd。CE-22) ----
+DddSun = "일"
+DddMon = "월"
+DddTue = "화"
+DddWed = "수"
+DddThu = "목"
+DddFri = "금"
+DddSat = "토"
+
+# ---- problems: type and rule checks (CE-36, CV-9, NV-30, CLI-23) ----
+WantRulesTable = "열마다 하나의 테이블([rules.<열>])"
+WantRuleTable = "required와 values의 테이블"
+WantStringList = "문자열 목록"
+RsnRuleComputed = "계산 열에는 규칙을 둘 수 없음(무시함)"
+## {0} is the name of the type (Date, Number …).
+ProblemType = "형식이 맞지 않음(필요한 형식: {0})"
+ProblemRequired = "필수 키가 없음"
+ProblemNotAllowed = "허용된 값이 아님"
+## {0} is the column, {1} the reason.
+ProblemAt = "{0}: {1}"
+NoProblems = "문제 없음"
+## {0} is the number of problems.
+FooterProblems = "  문제 {0}"
+HeaderProblems = "  문제가 있는 행만"
+ProblemsOnlyOn = "문제가 있는 행만 표시"
+ProblemsOnlyOff = "모든 행을 다시 표시"
+KeyNextProblem = "다음 문제"
+KeyPrevProblem = "이전 문제"
+CmdProblemsOnly = "문제가 있는 행만(전환)"
+## {0} is the number of problems.
+CheckCount = "문제 {0}개"
+## TR-1 to TR-7: the tree view.
+ModeTree = "트리"
+SecInTree = "트리에서"
+ScreenTree = "트리"
+KeyTreeView = "표와 트리 전환"
+KeyTreeRun = "폴더 열기/닫기 / 표에서 행 보기"
+KeyTreeToggle = "폴더 열기/닫기"
+KeyTreeIn = "폴더 열기 / 행으로"
+KeyTreeOut = "폴더 닫기 / 폴더로"
+KeyTreePane = "폴더와 행 사이 전환"
+KeyTreeNext = "다음 폴더나 행"
+KeyTreePrev = "이전 폴더나 행"
+KeyTreeMenu = "행 동작"
+KeyOpenUrl = "URL 열기"
+CmdOpenUrl = "행의 URL을 브라우저로 열기"
+TreeFolders = "폴더"
+TreeRows = "행"
+TreeNone = "(없음)"
+TreeEmptyFolder = "이 폴더 바로 아래에는 행이 없음"
+TreeNoRows = "트리에 넣을 행이 없음"
+TreeNotSet = "이 표에는 트리 설정이 없음(워크스페이스 마커의 그 [[table]]에 tree = { path = \"<열>\" }을 적을 것)"
+TreeNoUrl = "이 행에 http나 https URL이 없음"
+TreeShowInTable = "표에서 이 행 보기"
+TreeRowHidden = "표에 그 행이 보이지 않음(접힌 그룹 안이거나 필터로 빠짐)"
+## {0} is the URL.
+UrlOpening = "여는 중: {0}"
+## {0} is the URL, {1} the reason.
+UrlOpenFailed = "{0}을(를) 열 수 없었음: {1}"
+RsnTreeNotTable = "{ path = \"<열>\" } 형태의 테이블이 아니어서 트리 없음"
+RsnTreeNeedPath = "path(폴더가 적힌 열)가 없어서 트리 없음"
+RsnTreeEmptySep = "구분자가 비어 있어서 트리 없음"
+## {0} is the column.
+RsnTreeNoColumn = "표에 {0} 열이 없어서 트리 없음"
+
+# ---- ガント(GA-1〜GA-7。gantt.rs) ----
+ModeGantt = "간트"
+SecInGantt = "간트에서"
+ScreenGantt = "간트"
+KeyGanttView = "표와 간트 전환"
+KeyGanttRun = "표에서 이 행 보기"
+KeyGanttNext = "다음 행"
+KeyGanttPrev = "이전 행"
+KeyGanttLater = "시간축을 뒤로"
+KeyGanttEarlier = "시간축을 앞으로"
+KeyGanttZoomIn = "더 작은 단위(월 → 주 → 일)"
+KeyGanttZoomOut = "더 큰 단위(일 → 주 → 월)"
+KeyGanttToday = "오늘로 이동"
+CmdGanttView = "간트 열기"
+## {0} is the start column, {1} the end column (or the days column), {2} the unit.
+GanttTitle = "간트: {0} → {1} ({2})"
+GanttInferred = "추정"
+## GA-1: column names taken as the start of a bar when the marker has no gantt setting (space-separated, any case). Not a translation: every language's list applies on every screen.
+GanttStartNames = "시작 시작일"
+## GA-1: column names taken as the end of a bar when the marker has no gantt setting (space-separated, any case). Not a translation.
+GanttEndNames = "마감 마감일 종료 종료일 기한"
+GanttUnitDay = "일"
+GanttUnitWeek = "주"
+GanttUnitMonth = "월"
+GanttNotSet = "이 표에는 간트 설정이 없고, 추정할 날짜 열도 없음(워크스페이스 마커의 그 [[table]]에 gantt = { start = \"<열>\", end = \"<열>\" }을 적을 것)"
+GanttNoRows = "간트에 넣을 행이 없음"
+GanttNoDates = "간트 열에 날짜가 있는 행이 없음"
+RsnGanttNotTable = "{ start = \"<열>\", end = \"<열>\" } 형태의 테이블이 아니어서 간트 없음"
+RsnGanttNeedStart = "start(시작일 열)가 없어서 간트 없음"
+RsnGanttNeedEnd = "end(종료일)도 days(일수)도 없어서 간트 없음"
+## {0} is the column.
+RsnGanttNoColumn = "표에 {0} 열이 없어서 간트 없음"
+
+# ---- Kanban (KB-1 to KB-6, kanban.rs) ----
+ModeKanban = "칸반"
+SecInKanban = "칸반에서"
+ScreenKanban = "칸반"
+KeyKanbanView = "표와 칸반 전환"
+KeyKanbanRun = "표에서 이 행 보기"
+KeyKanbanNext = "다음 카드"
+KeyKanbanPrev = "이전 카드"
+KeyKanbanLeft = "왼쪽 레인"
+KeyKanbanRight = "오른쪽 레인"
+KeyMoveCardLeft = "카드를 왼쪽 레인으로 이동(상태를 고쳐 씀)"
+KeyMoveCardRight = "카드를 오른쪽 레인으로 이동(상태를 고쳐 씀)"
+CmdKanbanView = "칸반 열기"
+## {0} is the status column.
+KanbanTitle = "칸반: {0}"
+## {0} is the status column.
+KanbanTitleInferred = "칸반: {0}(추정)"
+## KB-1: column names taken as the status column when the marker has no kanban setting (space-separated, any case). Not a translation: every language's list applies on every screen.
+KanbanColumnNames = "상태 단계"
+## KB-2: the name of the lane for rows without a value.
+KanbanNoValue = "(없음)"
+KanbanNotSet = "이 표에는 칸반 설정이 없고, 추정할 상태 열도 없음(워크스페이스 마커의 그 [[table]]에 kanban = { column = \"<열>\" }을 적을 것)"
+KanbanNoRows = "칸반에 넣을 행이 없음"
+KanbanNoLaneLeft = "왼쪽에 레인이 없음"
+KanbanNoLaneRight = "오른쪽에 레인이 없음"
+KanbanToNoValue = "(없음) 레인으로는 카드를 옮기지 않음(값은 표에서 지울 것)"
+KanbanNoCard = "이 레인에 카드가 없음"
+## {0} is the column. A card whose column has a pending key rename or removal (CE-29) is not moved.
+KanbanKeyPending = "{0} 열에 보류 중인 키 이름 변경이나 삭제가 있어 카드를 옮기지 않음(표에서 저장하거나 실행 취소할 것)"
+## {0} is the card's name, {1} the old value, {2} the new value.
+KanbanMoved = "{0}: {1} → {2}(저장 안 됨)"
+RsnKanbanNotTable = "{ column = \"<열>\" } 형태의 테이블이 아니어서 칸반 없음"
+RsnKanbanNeedColumn = "column(상태 열)이 없어서 칸반 없음"
+## {0} is the column.
+RsnKanbanNoColumn = "표에 {0} 열이 없어서 칸반 없음"
+## {0} is the column.
+RsnKanbanListColumn = "{0} 열이 목록이라 칸반 없음(한 행이 여러 레인에 들어가게 됨)"
+
+# ---- vim モード(screen.vim-*。vim.rs) ----
+ModeInputNormal = "입력 노멀"
+SecInInputNormal = "입력 상자의 노멀 모드(vim)"
+## screen.vim-mode-shown: the mode of an input box shown in the bottom band.
+VimInsert = "-- 삽입 --"
+VimNormal = "-- 노멀 --"
+## The key hint of Esc in insert mode.
+KeyVimToNormal = "노멀 모드"
+KeyWordNext = "다음 단어 처음"
+KeyWordPrev = "단어 처음으로 뒤로"
+KeyWordEnd = "단어 끝"
+KeyInsert = "앞에 삽입"
+KeyAppend = "뒤에 삽입"
+KeyInsertStart = "처음에 삽입"
+KeyAppendEnd = "끝에 삽입"
+KeyDeleteUnder = "이 글자 지우기"
+KeyDeleteWord = "단어 지우기"
+KeyDeleteWordBack = "앞 단어 지우기"
+KeyDeleteToEnd = "끝까지 지우기"
+KeyChangeWord = "단어 바꾸기"
+KeyChangeToEnd = "끝까지 바꾸기"
+KeyChangeLine = "전체 바꾸기"
+KeyPaste = "복사한 값 넣기"
+KeyRepeat = "마지막 값 반복"
+PasteNothing = "아직 복사한 것이 없음(y로 셀, Y로 행 복사)"
+PasteNoCell = "값을 넣을 셀이 없음"
+PasteNoRow = "값을 넣을 행이 없음"
+## {0} is the number of rows.
+PasteRows = "복사한 행을 {0}행에 넣음(저장 안 됨)"
+RepeatNothing = "아직 반복할 값이 없음(먼저 셀에 값을 넣을 것)"
+## screen.quit-discard: the palette's q!.
+PaletteDiscardQuit = "변경을 버리고 종료"
+## screen.vim-dd: deleting several notes. {0} is the number of notes, {1} their names, {2} the number of notes that link to them.
+DeleteNotesWhich = "삭제할 노트({0}개): {1}"
+DeleteNotesWhichLinks = "삭제할 노트({0}개): {1}(이 노트들을 링크하는 노트 {2}개)"
+DeleteNotesDone = "노트 {0}개를 휴지통으로 옮김(u로 되돌림)"
+## {0} is the number of notes.
+RestoreNotesDone = "노트 {0}개를 원래 위치로 복원함"
+
+# ---- Chart (CH-1 to CH-9. chart.rs) ----
+ModeChart = "차트"
+ModeNotice = "알림 칸"
+SecInChart = "차트에서"
+ScreenChart = "차트"
+KeyChartView = "표와 차트 전환"
+KeyChartRun = "이 값으로 표 좁히기(산점도는 그 행으로)"
+KeyChartNext = "다음 항목"
+KeyChartPrev = "이전 항목"
+KeyChartRight = "오른쪽 항목"
+KeyChartLeft = "왼쪽 항목"
+KeyChartKindNext = "다음 종류(막대 → 누적 막대 → 선 → 산점도 → 히트맵)"
+KeyChartKindPrev = "이전 종류"
+KeyChartX = "다음 분류 열"
+KeyChartY = "다음 값(건수 → 숫자 열)"
+KeyChartAgg = "다음 집계(합계 → 평균 → 최소 → 최대)"
+KeyChartBy = "다음 세부 분류 열"
+KeyChartZoomIn = "더 작은 날짜 단위(월 → 주 → 일)"
+KeyChartZoomOut = "더 큰 날짜 단위(일 → 주 → 월)"
+KeyChartPrevSaved = "마커에 적힌 이전 차트"
+KeyChartNextSaved = "마커에 적힌 다음 차트"
+KeyChartCumulative = "누적 전환(선)"
+KeyChartPercent = "비율 전환(누적 막대)"
+CmdChartView = "차트 열기"
+ChartKindBar = "막대"
+ChartKindStacked = "누적 막대"
+ChartKindLine = "선"
+ChartKindScatter = "산점도"
+ChartKindHeatmap = "히트맵"
+ChartCount = "건수"
+ChartAggSum = "합계"
+ChartAggAvg = "평균"
+ChartAggMin = "최소"
+ChartAggMax = "최대"
+## {0} is the value column, {1} the aggregate (sum and so on).
+ChartValueOf = "{0}의 {1}"
+ChartTitlePrefix = "차트: "
+## {0} is the kind, {1} the column to split by, {2} the value (count, sum of estimate and so on).
+ChartTitle = "{0} · {1}별 {2}"
+## {0} is the kind (scatter), {1} the horizontal column, {2} the vertical one.
+ChartTitleScatter = "{0} · {1} × {2}"
+## {0} is the name of the chart in the marker. It comes after "Chart: ".
+ChartTitleNamed = "{0} · "
+## {0} is the breakdown column.
+ChartTitleBy = " · {0}별 세부"
+## {0} is the unit of the date ranges (day, week, month).
+ChartTitleUnit = " · {0} 단위"
+ChartTitleCumulative = " · 누적"
+ChartTitlePercent = " · 비율"
+ChartTitleInferred = " (추정)"
+## {0} is the number of rows counted.
+ChartRows = "{0}행"
+## {0} is the number of rows left out (the split or value column could not be read).
+ChartSkipped = " · {0}행 제외"
+## {0} is the number of breakdown values not drawn as lines.
+ChartSeriesDropped = " · 그리지 않은 세부 값 {0}개"
+ChartNoValue = "(없음)"
+ChartOther = "기타"
+ChartNoColumns = "이 표에는 차트로 만들 열이 없음"
+ChartNoRows = "차트에 넣을 행이 없음"
+## {0} is the kind, {1} the reason.
+ChartKindSkipped = "{0} 표시 불가: {1}"
+ChartNeedAxis = "날짜나 숫자 열이 없음"
+ChartNeedScatter = "숫자나 날짜 열이 두 개 미만"
+ChartNeedBy = "세부 분류에 쓸 텍스트, 체크박스, 목록 열이 없음"
+ChartNoFilter = "날짜와 숫자 범위로는 표를 좁히지 않음(범위는 표의 필터에 적을 것)"
+ChartLineNoFilter = "선 그래프의 구간으로는 표를 좁히지 않음(범위는 표의 필터에 적을 것)"
+ChartNoPoint = "선택한 점이 없음"
+ChartOtherNoFilter = "\"기타\"는 여러 값을 묶은 것이라 표를 좁히지 않음(b로 세부 분류를 바꾸거나 표를 필터할 것)"
+## {0} is the first date, {1} the last.
+ChartTooWide = "날짜 범위가 너무 넓어 차트로 만들 수 없음({0}~{1}. 표의 필터로 좁힐 것)"
+ChartNoItem = "선택한 항목이 없음"
+ChartNoRow = "차트에는 선택한 행이 없음. 이 동작은 표에서 행을 선택한 뒤 할 것"
+ChartOneSaved = "마커에 적힌 차트가 두 개 미만"
+ChartNoUnit = "날짜 열로 나누지 않아 단위는 그대로"
+ChartUnitNoRoom = "더 작은 단위는 들어가지 않음"
+ChartNotLine = "누적은 선 그래프에만 씀"
+ChartNotStacked = "비율은 누적 막대에만 씀"
+ChartAggForCount = "건수에는 집계 방법이 없음(y로 값 열을 선택)"
+ChartNoNumber = "값으로 쓸 숫자 열이 없음"
+ChartNoOtherY = "세로축에 쓸 다른 숫자나 날짜 열이 없음"
+ChartByNotBar = "막대에는 세부 분류가 없음(Tab으로 누적 막대로)"
+ChartNoOtherBy = "세부 분류에 쓸 다른 열이 없음"
+ChartNoOtherX = "나눌 다른 열이 없음"
+## {0} is the unit.
+ChartUnit = "단위: {0}"
+RsnChartNotTable = "{ kind = \"<종류>\", x = \"<열>\" } 형태의 테이블이 아니어서 이 차트는 뺌"
+## {0} is the column.
+RsnChartNoColumn = "표에 {0} 열이 없어서 이 차트는 뺌"
+
+# ---- expr: relative()(base-view.relative。今日・今からの隔たり) ----
+# 向き(先・前)と単位の組ごとに1文を持つ(語順や格が向きで変わる言語でも、文を丸ごと訳せるように)。
+# {0} は数。`…One` は数が 1 のときの文。
+RelToday = "오늘"
+RelNow = "지금"
+RelInMinutes = "{0}분 후"
+RelInMinutesOne = "{0}분 후"
+RelAgoMinutes = "{0}분 전"
+RelAgoMinutesOne = "{0}분 전"
+RelInHours = "{0}시간 후"
+RelInHoursOne = "{0}시간 후"
+RelAgoHours = "{0}시간 전"
+RelAgoHoursOne = "{0}시간 전"
+RelInDays = "{0}일 후"
+RelInDaysOne = "{0}일 후"
+RelAgoDays = "{0}일 전"
+RelAgoDaysOne = "{0}일 전"
+RelInMonths = "{0}개월 후"
+RelInMonthsOne = "{0}개월 후"
+RelAgoMonths = "{0}개월 전"
+RelAgoMonthsOne = "{0}개월 전"
+RelInYears = "{0}년 후"
+RelInYearsOne = "{0}년 후"
+RelAgoYears = "{0}년 전"
+RelAgoYearsOne = "{0}년 전"
+
+# ---- ui/across: ワークスペースを横断して探す(navigation.across-*) ----
+## パレットのコマンドの名前(navigation.across-option)。
+CmdAcrossSearch = "워크스페이스 전체에서 검색"
+## 語の入力の前置き。
+AskAcross = "표 전체에서 검색: "
+## まだ探していないときの案内。{0} は範囲の表の数。
+AcrossHint = "Enter로 범위 안 표({0})의 모든 행에서 검색"
+## navigation.across-progress: 読んでいる間の進み。{0} は読み終えた表の数、{1} は全部の数。
+AcrossProgress = "{0} / {1} 읽음"
+## 表ごとのまとまりの見出し。{0} は表の名前、{1} は当たった行の数。
+AcrossGroup = "{0} ({1})"
+## navigation.across-results: どこにも当たらないとき。
+AcrossNoHits = "맞는 행이 없음"
+## navigation.across-progress: 読めなかった表。{0} は表の名前を並べたもの。
+AcrossUnreadable = "읽을 수 없었음: {0}"
+AcrossNoTables = "검색할 표가 없음: 워크스페이스를 열거나 표를 등록할 것"
+AcrossNoWord = "검색할 말을 입력"
+
+# ---- session: 名前を付けたセッション(cli.session-*。src/session.rs・src/ui/sessions.rs) ----
+## {0} is the file path, {1} the reason.
+SessionsUnreadable = "{0}을(를) 읽을 수 없음: {1}"
+## {0} is the file, {1} the line, {2} the reason.
+SessionsBadToml = "{0}을(를) 읽을 수 없음({1}번째 줄): {2}"
+## {0} is the item that is needed.
+RsnSessionNeeds = "무시함: {0}이(가) 필요함"
+SessionNameEmpty = "세션 이름이 비어 있음"
+SessionNameBad = "세션 이름에는 탭, 줄바꿈 등 제어 문자를 쓸 수 없음"
+## {0} is the name, {1} the saved names.
+SessionUnknown = "세션 {0}이(가) 없음(세션: {1})"
+## {0} is the name.
+SessionNoneSaved = "세션 {0}이(가) 없음(저장한 세션이 아직 없음. 팔레트의 \"세션 저장\"으로 저장할 것)"
+## {0} is the session, {1} the path.
+SessionMissingPath = "세션 {0}이(가) 여는 {1}이(가) 없음"
+## {0} is the session.
+SessionNoPaths = "세션 {0}에 열 폴더(folders)가 없음"
+SessionWithPaths = "-s(--session)는 경로와 함께 쓸 수 없음(무엇을 열지는 세션이 정함)"
+CmdSaveSession = "세션 저장"
+AskSessionName = "세션 이름: "
+## {0} is the session.
+AskSessionOverwrite = "세션 {0}이(가) 이미 있음. 바꿀까요? (y/n) "
+## {0} is the session.
+SessionSaved = "세션 {0}을(를) 저장함(열기: mdgrid -s {0})"
+## {0} is the reason.
+SessionSaveError = "sessions.toml을 쓸 수 없음: {0}"
+SessionNoConfigDir = "세션을 저장할 수 없음: 설정 폴더가 없음"
+## {0} is the list of columns.
+SessionMissingColumns = "세션의 열 {0}이(가) 이 표에 없어 건너뜀"
+## {0} is the reason.
+SessionBadExpr = "세션의 식 필터는 쓰지 않음: {0}"
+## {0} is the condition.
+SessionNoCond = "세션의 이름 붙은 조건 {0}이(가) 설정에 없어 쓰지 않음"
+
+# ---- schema: 設定の項目の説明(--print-config のコメント。screen.locales-all-in-ledger) ----
+## --print-config の頭の説明(行ごとに "# " を付けて出す)。
+CfgPrintHead = "모든 항목을 기본값으로 적은 mdgrid 설정.\n위치: $XDG_CONFIG_HOME/mdgrid/config.toml(또는 ~/.config/mdgrid/config.toml.\nWindows에서는 %APPDATA%\\mdgrid\\config.toml).\n\"전체 전용\" 항목은 앱 전체에 속함. 나머지는 표 프로필이며\n워크스페이스, 표, 뷰마다 적을 수도 있음.\n옵션: mdgrid --help. 전체 설명: mdgrid 저장소의 docs/config.md."
+## --print-config の書ける範囲の行。{0} は範囲の名前(CfgScopeGlobal・CfgScopeProfile)。
+CfgScopeLine = "범위: {0}."
+CfgScopeGlobal = "전체 전용"
+CfgScopeProfile = "전체, 워크스페이스, 표, 뷰"
+## --print-config の例の見出し。
+CfgExampleLine = "예:"
+## 設定の項目 `language` の説明(行の区切りは --print-config のコメントの行)。
+CfgLanguage = "화면, 시작 메시지, 이 설명의 언어: \"auto\" 또는 언어 코드\n(en, ja, de, es, fr, ko, pt-BR, zh-CN, zh-TW). \"auto\"는 LC_ALL, LC_MESSAGES, LANG 중\n처음으로 비어 있지 않은 값을 따름: 언어와 지역이 맞는 것, 없으면 언어가 맞는 것, 둘 다 없으면 영어."
+## 設定の項目 `editor` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditor = "선택한 노트를 여는 편집기(인수 가능, 예: \"code -w\". 셸을 거치지 않고\n실행). 없거나 비어 있으면 $VISUAL, 그다음 $EDITOR, 그다음 vi(Windows는 notepad)."
+## 設定の項目 `poll_ms` の説明(行の区切りは --print-config のコメントの行)。
+CfgPollMs = "mdgrid 밖에서 바뀐 노트를 다시 읽는 간격(밀리초)."
+## 設定の項目 `use` の説明(行の区切りは --print-config のコメントの行)。
+CfgUse = "이 위치에 적은 값 아래에 템플릿 [templates.<이름>]을 깔아 둠."
+## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
+CfgTypes = "열 하나하나의 형식. 루트 폴더의 형식 설정(.obsidian/types.json)과\n값으로 하는 추정보다 우선함. \"auto\"는 추정으로 되돌림(좁은 범위에서 넓은 범위의 형식을\n취소할 수 있음). 형식은 셀 입력, 맞지 않는 값의 ! 표시, 정렬, 열 머리글의 형식 표시에\n쓰임. 노트는 바꾸지 않음. 머리글의 형식 표시를 클릭하거나, 팔레트나 동작 메뉴의\ncolumn_type으로 형식을 고르면 views.toml의\n표에 적음."
+## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
+CfgRules = "열 하나하나의 규칙. 열 형식과 함께 검사함. required = true는 키가 없거나 null,\n빈 문자열, 빈 목록이면 문제로 봄. values는 허용하는 값의 목록\n(목록 값은 각 항목이 이 중 하나여야 하며, 대소문자를 구별함). 좁은 범위가 항목마다 우선함.\n문제에는 ! 표시가 붙고, 아래 표시줄에 개수가 나오며, !와 @로 문제 사이를 이동하고,\nmdgrid --check로 목록을 볼 수 있음. 규칙 검사는 노트를 바꾸거나 값 쓰기를 막지 않음.\nvalues가 있는 열은 셀 입력에서 그 값을 후보로 보여 줌. then은 그 열을 어떤 값으로 바꿀 때\n같은 행의 다른 열도 채움(값 = { 열 = 텍스트 }. {date} 같은 템플릿 변수를\n쓸 수 있고, 빈 텍스트는 그 열을 비움). 편집과 함께 보류되고 함께 실행 취소됨.\n계산 열(file.*, formula.*)에는 규칙을 둘 수 없음."
+## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalColor = "색을 씀. false면 색 없이 그림(NO_COLOR나 --no-color와 같음)."
+## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalAmbiguousWide = "East Asian Ambiguous 문자(○, ※ 등)를 너비 2로 취급함.\n터미널이 이 문자를 넓게 그리면 true로 설정. 이때 창 테두리는 항상 ASCII."
+## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdFont = "둥근 칩 끝(Nerd Font 글리프)을 그려도 되는지. true: 터미널 글꼴이 Nerd\nFont임. \"auto\": 이 글리프를 직접 그리는 터미널(Ghostty, WezTerm)에서만 그려서\n다른 곳에서 깨지지 않게 함. 둥근 끝이 없으면 \"pill\"은 \"soft\"로 그림."
+## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdIcons = "설정 버튼, 화면 유형 버튼과 메뉴, 열 머리글의 형식 표시, 캘린더 제목에\nNerd Font의 아이콘 글리프를 씀. 터미널 글꼴이 Nerd Font일 때만 true로 설정.\n기본값은 일반 문자(⚙, ▦, ◇, #, ◷, ⋮, ◉, ✓). 이모지는 쓰지 않음."
+## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalHerdr = "Herdr 창 안에서는 현재 표와 뷰를 다시 여는 명령을 Herdr에 알려,\nHerdr 서버가 다시 시작된 뒤 다시 열게 함. false면 Herdr를 부르지 않음."
+## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。
+CfgWorkspaceDetect = "여는 표가 적어 둔 워크스페이스에 없으면, 그 위로 올라가며 다음 표시 폴더 중 하나를\n가진 가장 가까운 폴더를 워크스페이스(루트 폴더)로 봄: \".obsidian\"(.obsidian/이 있는\n폴더) 또는 \".git\"(git 저장소). 그 안의 노트가 있는 폴더가 관계도의 표가 됨.\n[]는 감지를 끔. 옛 값 \"vault\"와 \"git\"도 경고와 함께\n같은 뜻으로 읽음."
+## 設定の項目 `git.auto` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitAuto = "git 저장소 안의 노트를 쓴 뒤 git을 어디까지 진행할지: \"off\"는 아무것도 안 함,\n\"add\"는 쓴 노트를 스테이징, \"commit\"은 커밋까지(그 노트만. 다른 변경 파일이나\n스테이징된 파일은 넣지 않음), \"push\"는 push까지. git 저장소가 아닌 폴더는\n건드리지 않음. git이 실패하면 한 줄로 알리고, 저장 자체는 끝난 그대로 둠."
+## 設定の項目 `git.when` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitWhen = "git.auto를 실행할 때: \"save\"는 저장할 때마다(저장 한 번에 커밋 하나), \"quit\"은 mdgrid를\n끝낼 때 한 번(실행 한 번에 커밋 하나). 종료할 때 남은 노트는 어느 쪽이든 그때 처리함."
+## 設定の項目 `git.message` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitMessage = "커밋 메시지: \"auto\"는 \"mdgrid: 노트 N개 업데이트\"와 경로를 적음. \"ask\"는 저장할 때마다\n한 줄 입력란을 띄움(비우면 자동 메시지, Esc는 그 노트를\n종료할 때의 커밋으로 넘김)."
+## 設定の項目 `look.theme` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookTheme = "화면의 색 테마. \"default\"는 터미널 자체의 색을 그대로 씀. 테이블\n{ light = ..., dark = ... }는 터미널 배경에 따라 고름. \"auto\"는\n{ light = \"saas\", dark = \"sumi\" }와 같음. 색이 없으면 무시됨. 256색 터미널에서는\n가장 가까운 색을 씀."
+## 設定の項目 `look.preset` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookPreset = "부품 모양 한 벌. [look.style]은 부품을 하나씩 덮어씀. 좁은 위치에 적은 프리셋은\n넓은 위치에 적은 부품 모양을 버림."
+## 設定の項目 `look.mode` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookMode = "색을 쓸 때의 모양: \"modern\"(lazygit 같은 모양: 색을 입힌 선택, 강조색 테두리와 키,\n흐린 설명) 또는 \"classic\"(반전 표시). 화면의 글자는 같음. 색이 없으면 둘 다\nclassic처럼 보임."
+## 設定の項目 `look.cells` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookCells = "색을 쓸 때 표 셀의 모양: \"rich\"(불리언, 목록, 반복되는 짧은 값,\n링크, 열 형식 표시를 [look.style]의 모양으로 된 부품으로 그림) 또는 \"plain\"(텍스트\n그대로). 색이 없으면 셀은 항상 plain."
+## 設定の項目 `look.style` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookStyle = "프리셋의 부품 모양을 하나씩 덮어씀: status(\"dot\", \"shape\", \"text\", \"pill\", \"tint\",\n\"solid\", \"soft\", \"chip\", \"plain\"), tags(\"dots\", \"hash\", \"brackets\", \"pill\", \"tint\",\n\"solid\", \"soft\", \"chip\", \"plain\"), check(\"box\", \"tick\", \"bracket\", \"text\"), select\n(\"bar\", \"cross\", \"tint\", \"outline\", \"fill\", \"reverse\"), rules(\"none\", \"header\",\n\"columns\", \"grid\"), tabs(\"underline\", \"pill\", \"segment\", \"brackets\", \"dim\"), frames\n(\"rounded\", \"square\", \"heavy\", \"ascii\", \"none\"), band(\"keys\", \"boxed\", \"quiet\"), links\n(\"accent\", \"plain\"), icons(true 또는 false). \"plain\"(check는 \"text\")은 그 부품을\n텍스트로 둠. docs/catalog/index.html에서 모든 선택지를 보고 이 테이블을 만들 수 있음."
+## 設定の項目 `look.columns` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColumns = "열 하나하나의 모양: \"rich\", \"plain\", \"chip\"(칩으로 감지되지 않는 열도 칩으로).\n열 설정은 부품 모양보다 우선함."
+## 設定の項目 `look.colors` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColors = "테마의 색을 역할별로 덮어씀: background, text, header, selection, selection_text,\nband, band_text, accent, strong, zebra, zebra_text, mark, added, removed, pending,\nhighlight. [look.colors.values]는 값마다 색을 정하며(대소문자 무시), 모든 부품\n모양에 쓰임. 색은 \"#rrggbb\", \"#rgb\" 또는 이름(black, white, gray, red, orange,\nyellow, green, teal, cyan, blue, purple, magenta, pink, brown). theme = \"default\"에서는\naccent, selection, 값의 색만 씀. 좁은 위치에 적은 테마는\n넓은 위치에 적은 역할 색을 버림."
+## 設定の項目 `display.row_numbers` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowNumbers = "각 행 왼쪽에 보이는 순서대로 1, 2, 3... 번호."
+## 設定の項目 `display.zebra` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayZebra = "한 줄 걸러 배경색을 입힘(색이 없으면 안 함)."
+## 設定の項目 `display.column_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayColumnLines = "열 사이에 │를 그음."
+## 設定の項目 `display.group_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayGroupGap = "첫 번째를 뺀 모든 그룹 머리글 위에 빈 줄 하나."
+## 設定の項目 `display.tabs` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabs = "뷰 탭 줄: \"always\", \"auto\"(뷰가 둘 이상일 때만. 뷰가 하나면 그 줄을\n표가 씀) 또는 \"never\". 탭 키는 어느 쪽이든 작동함."
+## 設定の項目 `display.search_bar` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplaySearchBar = "표 위에 검색 창을 보여 줌. false면 숨기고, 빠른 필터는\n맨 아래 줄에서 입력함."
+## 設定の項目 `display.chips` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayChips = "적용 중인 뷰 설정의 표시줄을 보여 줌. 숨겨도 f로 항목을 고를 수 있음."
+## 設定の項目 `display.buttons` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayButtons = "뷰 표시줄의 검색 창과 필터·정렬 버튼을 그리는 방식: \"plain\"\n(배경색으로 보여 줌) 또는 \"box\"(뷰 표시줄의 여백 줄에 그은 선으로 각각 둘러쌈.\n안은 칠하지 않음). 여백이 없으면(display.bar_padding = 0) 선을 그리지 않음."
+## 設定の項目 `display.bar_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayBarPadding = "뷰 표시줄 위아래 여백의 줄 수: 0, 0.5, 1, 1.5, 2(1과 1.0 모두 됨).\n0이면 뷰 표시줄을 한 줄로 그림. 반 줄은 뷰 표시줄의 배경색으로 칠하고 바깥쪽 절반을\n화면 배경색의 반 블록 문자(위는 ▀, 아래는 ▄)로 덮음(화면 배경색은 테마의 색이나\n시작할 때 한 번 물어본 터미널의 색). 그 색을 모르거나, 색이 없거나,\nterminal.ambiguous_wide = true이면 빈 줄 하나로 올림.\n높이가 16줄보다 작은 터미널과 검색 창을 숨긴 경우는 항상 0. 다른 값은\n경고하고 기본값을 씀."
+## 設定の項目 `display.top_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTopPadding = "헤더 위 여백의 줄 수: 0, 0.5, 1, 1.5, 2. 반 줄은\ndisplay.bar_padding처럼 그림(헤더 위에 ▀, 헤더는 뷰 표시줄의 배경색이 됨).\n높이가 16줄보다 작은 터미널은 항상 0."
+## 設定の項目 `display.row_extra_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowExtraLines = "표의 행이 더 늘어날 수 있는 줄 수: 긴 값이나 줄바꿈이 있는 값이 든 행은\n열 너비에서 줄을 바꾸고 최대 1 + 이 값만큼의 줄까지 늘어남(각 행은 필요한 만큼만\n높아짐). 다 들어가지 않으면 …로 끝남. 0이면 모든 행을 한 줄로 두고\n줄바꿈은 …⏎로 표시. 다른 값은 경고하고 기본값을 씀."
+## 設定の項目 `display.note_path` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNotePath = "왼쪽 노트 열에 각 노트를 보여 주는 방식: \"common\"은 모든 행에 공통인 폴더를 빼고,\n\"name\"은 이름만, \"full\"은 루트부터의 경로, \"off\"는 이름 없이(행 표시만).\n다른 값은 경고하고 기본값을 씀."
+## 設定の項目 `display.tab_wrap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrap = "뷰 탭이 뷰 표시줄의 줄에 다 들어가지 않으면, 탭을 모두 검색 창과 버튼 아래 줄로\n필요한 만큼 옮겨 모든 탭이 보이게 함(표는 그 줄 수만큼 내려감).\nfalse면 한 줄을 유지하고, 화면이 좁으면 다른 탭을 생략함."
+## 設定の項目 `display.tab_wrap_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrapGap = "tab_wrap일 때 검색 창 줄과 그 아래 탭 줄 사이에 빈 줄 하나를 둠."
+## 設定の項目 `display.note_name` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNoteName = "노트 열의 이름에 적용하는 정규 표현식(note_path 다음에 적용. 폴더가 있으면 마지막\n부분에만). 일치하면 이름이 name인 그룹, 없으면 첫 번째 그룹, 그것도 없으면 일치한 부분을\n뺀 이름을 보여 줌. 일치하지 않거나 비게 되는 이름은 그대로 보여 줌. \"\"는\n아무것도 설정하지 않음. 읽을 수 없는 식은 경고하고 쓰지 않음."
+## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesFormat = "표에서 날짜를 보여 주고 입력하는 형식. 부분: YYYY, YY, MM, M, DD, D, ddd\n(요일)와 영숫자가 아닌 구분 문자. 노트에는 항상 YYYY-MM-DD로 씀."
+## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesWeekStart = "날짜 캘린더에서 한 주의 첫날."
+## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditCandidates = "텍스트 셀을 편집할 때 보여 줄 값 후보의 최대 개수.\n서로 다른 값이 이보다 많은 열은 후보를 보여 주지 않음."
+## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditAddFrontmatter = "프런트매터가 없거나 비어 있는 노트에도 쓰기를 허용함(프런트매터나 키\n줄을 추가함). false면 그런 노트는 읽기 전용."
+## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
+CfgNewNote = "표에서 새 노트를 만드는 방법: mode(\"form\": 모든 입력란이 있는 입력 창, 또는\n\"editor\": 만들고 편집기로 열기), folder(연 폴더 기준 상대 경로), name(이름\n템플릿), ask(입력 창의 열. 기본값: 보이는 열), required(반드시 채워야 하는\n열), hidden(입력란 없이 적는 열), body(본문 템플릿 파일),\n[new_note.set](열 = 값). 템플릿에는 {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name}, {folder}를 쓸 수 있음. 뷰 필터의 값이 먼저 들어감.\n이 테이블은 한 항목임: 더 좁은 위치에 적으면 통째로 바뀜."
+## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeys = "모드별 키 다시 할당: [keys.<모드>] 아래에 키 = 동작 이름을 적음.\n\"none\"은 그 키를 없앰. 모드: table, edit, review, quit, help, palette, search,\nfilter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch,\ninput_normal(vim 모드). 동작 이름은 명령 팔레트(:)에 나옴."
+## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeysVim = "vim 모드: 입력 상자가 삽입 모드로 시작하고 Esc로 노멀 모드로 바뀜(h l 0 $ w b e,\ni a I A, x X dw db d$ D dd, cw c$ C cc, u). 표에는 dd(노트 삭제), p(y나 Y로\n복사한 값 넣기), .(마지막 값 반복)이 추가됨. false면 모든 키를 그대로 둠."
+## 設定の項目 `search.across` の説明(行の区切りは --print-config のコメントの行)。
+CfgSearchAcross = "명령 팔레트에 \"워크스페이스 전체에서 검색\"을 추가함: 현재 워크스페이스(또는 등록한 표)의\n모든 표의 모든 행에서 말을 찾아, 맞는 행을 표별로 보여 줌.\nfalse(기본값)면 팔레트는 그대로."
+## 設定の項目 `templates` の説明(行の区切りは --print-config のコメントの行)。
+CfgTemplates = "이름을 붙인 프로필 조각([look], [display], [dates], [edit], [new_note]). 어느 위치에서든\nuse = \"<이름>\"으로 그 위치의 값 아래에 깔 수 있음. 같은 이름이면 ui.toml의 템플릿이\nconfig.toml의 것보다 우선함."
+## 設定の項目 `conditions` の説明(行の区切りは --print-config のコメントの行)。
+CfgConditions = "이름 붙은 조건: 한 번 적은 식(expr)을 이름으로 씀. 어느 식에서든 cond(\"<이름>\"),\n맞는 행만 보여 주는 숫자 키(key = 1-9), 뷰 설정의 필터 구역, 모든 표에서 맞는 행을 숨기는\nhide = true에 쓸 수 있음. label은 보여 줄 이름."
+## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotices = "헤더 위의 알림 칸. 항목을 적었을 때만 보임. 건수 항목은 이름 붙은 조건([conditions])에\n맞는 행을 현재 표, 워크스페이스, 이름을 든 표에서 셈. 노트 항목은 노트 본문의\n첫 줄들을 보여 줌. mdgrid --notices는 같은 줄을 출력함."
+
+# ---- stack: tables stacked top to bottom and pages (stack.*) ----
+SecStack = "세로로 쌓은 표"
+KeyStackDown = "아래 표"
+KeyStackUp = "위 표"
+KeyStackClose = "이 표 닫기"
+KeyStackGrow = "이 표를 한 줄 높이기"
+KeyStackShrink = "이 표를 한 줄 낮추기"
+KeyStackCloseSave = "저장하고 닫기"
+KeyStackCloseDiscard = "버리고 닫기"
+CmdStackAdd = "아래에 표 쌓기"
+CmdPageSave = "배치를 페이지로 저장"
+## {0} is the most tables that can be stacked.
+StackMax = "표는 {0}개까지 쌓을 수 있음"
+StackNoRoom = "터미널이 너무 낮아 표를 더 쌓을 수 없음(표마다 제목과 3행이 필요함)"
+StackNoTables = "쌓을 다른 표가 없음(이 범위의 표는 이미 쌓여 있음)"
+StackCloseOnly = "열린 표가 하나뿐이라 닫을 수 없음"
+StackSingle = "쌓인 표가 없음"
+StackGrowLimit = "이 표는 더 높일 수 없음(다른 표는 제목과 3행을 유지함)"
+StackShrinkLimit = "이 표는 더 낮출 수 없음(제목과 3행을 유지함)"
+StackCollapsed = "터미널이 너무 낮아 높이를 바꿀 수 없음"
+## {0} is the table, {1} the number of changes.
+StackCloseBand = " {0}에 저장하지 않은 변경 {1}건이 있음. 닫기 전에 처리 방법을 선택"
+StackCloseBandOne = " {0}에 저장하지 않은 변경 {1}건이 있음. 닫기 전에 처리 방법을 선택"
+## {0} is the table.
+StackClosed = "{0} 닫음"
+AskStackTable = "아래에 쌓을 표: "
+AskPageName = "페이지 이름: "
+## {0} is the page, {1} the file.
+PageSaved = "페이지 \"{0}\"을(를) {1}에 저장함"
+PageSaveError = "페이지를 저장할 수 없었음: {0}"
+PageSaveUnsure = "고친 뒤 다시 읽은 파일이 달라 아무것도 쓰지 않음(손으로 쓴 부분을 확인할 것)"
+PageNotWorkspace = "현재 범위가 워크스페이스가 아니어서 페이지를 저장할 수 없음(:workspace_new로 만들 것)"
+PageNoStack = "쌓인 표가 없어 페이지로 저장할 것이 없음(:stack_add로 표를 쌓을 것)"
+## {0} is the table.
+PageTableOutside = "표 {0}이(가) 현재 워크스페이스에 없어 페이지를 저장할 수 없음"
+PageNameBad = "페이지 이름이 비어 있거나 줄바꿈이 있음"
+## {0} is the page, {1} the names of the pages.
+PageUnknown = "페이지 \"{0}\" 없음(페이지: {1})"
+PageNone = "페이지 \"{0}\" 없음(이 워크스페이스에는 페이지가 없음)"
+## {0} is the page, {1} the reasons.
+PageOpenFailed = "페이지 \"{0}\"의 표 중 일부를 열 수 없었음: {1}"
+DrawerPage = "페이지"
+## {0} is the table (headings of the save review when tables are stacked).
+ReviewTableHead = " ── {0} ──"
+WantPageList = "페이지 목록([[page]])"
+WantPageTables = "{ table = \"<표>\", view = \"<뷰>\", height = <비율> } 테이블 목록"
+RsnPageNeedTable = "table(표 이름)이 필요해 무시함"
+## {0} is the table, {1} the tables of the workspace.
+RsnPageNoTable = "표 {0}이(가) 워크스페이스에 없어 건너뜀(표: {1})"
+## {0} is the page.
+RsnPageEmpty = "페이지 {0}에 열 표가 없어 쓰지 않음"
+## When "Stack a table below" is chosen while picking with `--pick`.
+StackPick = "--pick에서는 표를 쌓지 않음(한 표에서 골라 끝냄)"

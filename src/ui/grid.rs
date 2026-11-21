@@ -478,7 +478,12 @@ impl App {
         } else {
             vec![(String::new(), rows)]
         };
-        let narrowed = self.filter.is_some() || !self.same.is_empty() || self.only_problems;
+        // condition.hide-always: いつも隠す条件の行は、絞る前の行に数えない(`.base` の絞り込みと同じ段)。
+        self.drop_hidden(&mut segs);
+        let narrowed = self.filter.is_some()
+            || !self.same.is_empty()
+            || self.only_problems
+            || self.cond_narrowing();
         // NV-23: 検索の欄の「N/M行」の M(絞る前の行の数)。
         self.unfiltered = segs.iter().map(|(_, rs)| rs.len()).sum();
         for (_, rs) in &mut segs {

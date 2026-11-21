@@ -21,7 +21,7 @@ use super::view::visible_layout;
 use super::width::width;
 use mdgrid::i18n::Msg;
 use mdgrid::source::{NewValue, RowId, Value};
-use mdgrid::types::{self, DateFormat, Kind, WeekStart};
+use mdgrid::types::{self, DateFormat, DateInput, Kind, WeekStart};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 
@@ -110,8 +110,8 @@ fn valid_datetime(s: &str) -> bool {
     types::fits(Kind::DateTime, &Value::Str(s.to_string()))
 }
 
-/// 入力の文字を日と時刻の部分に分ける(CE-5・CE-22 の形)。日付として読めなければ None。
-fn split(entry: Entry, text: &str, today: i64, fmt: &DateFormat) -> Option<(i64, String)> {
+/// 入力の文字を日と時刻の部分に分ける(CE-5・CE-22 の形と日付の言葉。cell-edit.date-words)。日付として読めなければ None。
+fn split(entry: Entry, text: &str, today: i64, how: DateInput<'_>) -> Option<(i64, String)> {
     let t = text.trim();
     if entry == Entry::DateTime {
         // 時刻として正しくない後ろの部分は時刻にしない(読めない打ち込みとして entry.rs が理由を出す)。
@@ -121,7 +121,7 @@ fn split(entry: Entry, text: &str, today: i64, fmt: &DateFormat) -> Option<(i64,
             return Some((d, time.to_string()));
         }
     }
-    match types::parse_date_input(t, fmt, today) {
+    match types::parse_date_input(t, how, today) {
         Ok(Some(d)) => Some((d, String::new())),
         _ => None,
     }
@@ -171,8 +171,8 @@ impl Choice {
 
 /// 日付・日時の入力の確定の値。入力の文字の読み方(entry.rs)に任せるときは None。
 /// カレンダーで選んだまま(文字を打っていない)なら選んでいる日の日数から書く(文字を読み直して年を補わない)。
-/// 日時の列で時刻を打っていなければ、日だけを決めて時刻は行ごとの元の値を保つ。
-pub(crate) fn choice(i: &Input, today: i64, fmt: &DateFormat) -> Option<Choice> {
+/// 日時の列で時刻を打っていなければ、日だけを決めて時刻は行ごとの元の値を保つ(日付の言葉でも。cell-edit.date-words-datetime)。
+pub(crate) fn choice(i: &Input, today: i64, how: DateInput<'_>) -> Option<Choice> {
     let c = i.cal.as_ref()?;
     if i.text.trim().is_empty() {
         return None;
@@ -190,7 +190,7 @@ pub(crate) fn choice(i: &Input, today: i64, fmt: &DateFormat) -> Option<Choice> 
         if i.entry != Entry::DateTime {
             return None;
         }
-        match split(i.entry, &i.text, today, fmt) {
+        match split(i.entry, &i.text, today, how) {
             Some((d, time)) if time.is_empty() => d,
             _ => return None,
         }
@@ -673,10 +673,14 @@ impl App {
         c.seen.clone_from(&i.text);
     }
 
-    /// 打った文字が日付として読めれば、カレンダーをその日へ動かす(CE-20)。
+    /// 打った文字が日付として読めれば、カレンダーをその日へ動かす(CE-20。日付の言葉でも。cell-edit.date-words-preview)。
     /// 日時は打った時刻を覚え、打ち込みに時刻が無ければ元の値の時刻を保つ(CE-21)。
     pub(crate) fn calendar_follow(&mut self) {
-        let (today, fmt) = (self.today, &self.date_format);
+        let today = self.today;
+        let how = DateInput {
+            fmt: &self.date_format,
+            week: self.week_start,
+        };
         let Some(i) = &mut self.input else {
             return;
         };
@@ -688,7 +692,7 @@ impl App {
         }
         c.seen.clone_from(&i.text);
         c.picked = false;
-        if let Some((d, time)) = split(i.entry, &i.text, today, fmt) {
+        if let Some((d, time)) = split(i.entry, &i.text, today, how) {
             c.sel = d;
             c.time_typed = !time.is_empty();
             c.time = if time.is_empty() {

@@ -68,6 +68,8 @@ impl App {
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
             warnings.push(e);
         }
+        // stack.page-store: 範囲のページ(読めない行は警告して飛ばす。stack.rs)。
+        warnings.extend(self.load_pages(&s.target, s.config_dir.as_deref()));
         // TR-2: 印に書いた木の設定(書き方が違えば警告して木を出さない)。
         let (tree, warns) = mdgrid::workspace::marker_tree(&s.target);
         self.tree_spec = tree;

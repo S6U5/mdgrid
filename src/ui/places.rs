@@ -7,6 +7,7 @@ use super::native_io::Ask;
 use super::width::width;
 use mdgrid::i18n::Msg;
 use mdgrid::places::{self, Place};
+use mdgrid::recent::Recent;
 use std::path::Path;
 
 /// 一覧の行の印(分類と名前の間)。
@@ -72,8 +73,43 @@ pub(crate) fn group_items(groups: &[String], query: &str) -> (Vec<String>, Vec<S
     (shown, values)
 }
 
+/// cli.recent-list: 最近開いた表の一覧の行「名前 · ビュー   最後に開いた日時   置き場のフォルダ」。名前の欄を一覧の
+/// 中のいちばん広いものにそろえる(長いフォルダで日時が切れないように、フォルダは最後)。
+pub(crate) fn recent_labels(list: &[Recent]) -> Vec<String> {
+    let heads: Vec<String> = list
+        .iter()
+        .map(|r| {
+            let name = mdgrid::workspace::stem_of(&r.path);
+            match &r.view {
+                Some(v) => format!("{name} · {v}"),
+                None => name,
+            }
+        })
+        .collect();
+    let hw = heads.iter().map(|h| width(h)).max().unwrap_or(0);
+    list.iter()
+        .zip(&heads)
+        .map(|(r, h)| {
+            let hp = " ".repeat(hw - width(h));
+            let dir = r.path.parent().map(short).unwrap_or_default();
+            format!("{h}{hp}   {}   {dir}", r.at)
+        })
+        .collect()
+}
+
+/// 覚えた表を開く登録の形(名前はフォルダか `.base` の名前)。
+fn recent_place(r: &Recent, group: &str) -> Place {
+    Place {
+        name: mdgrid::workspace::stem_of(&r.path),
+        group: group.to_string(),
+        path: r.path.clone(),
+        view: r.view.clone(),
+    }
+}
+
 impl App {
-    /// CLI-19: 登録した表の一覧を出す。`here` なら先頭に「今のフォルダ」(引数なしの起動)。
+    /// CLI-19: 登録した表の一覧を出す。`here` なら先頭に「今のフォルダ」(引数なしの起動)と、その次に「最近」の分類で
+    /// 最近開いた表を新しい順に 5 件まで(cli.recent-in-launch-list。無ければ分類を出さない)。
     pub(crate) fn start_open_places(&mut self, here: bool) {
         if self.registered.is_empty() {
             self.message = Some(Msg::PlaceNone.into());
@@ -86,15 +122,59 @@ impl App {
             items.push(Msg::PlaceHere.text().to_string());
             picks.push(None);
         }
-        let shown: Vec<&Place> = order.iter().map(|&i| &self.registered[i]).collect();
-        items.extend(labels(&shown));
-        picks.extend(order.into_iter().map(Some));
+        let mut shown: Vec<Place> = Vec::new();
+        if here {
+            let group = Msg::RecentGroup.text();
+            shown.extend(
+                self.recent_others()
+                    .iter()
+                    .take(mdgrid::recent::LAUNCH_LIMIT)
+                    .map(|r| recent_place(r, group)),
+            );
+        }
+        shown.extend(order.into_iter().map(|i| self.registered[i].clone()));
+        items.extend(labels(&shown.iter().collect::<Vec<_>>()));
+        picks.extend(shown.into_iter().map(Some));
         self.open_ask(Ask::OpenPlace { items, picks });
     }
 
+    /// 覚えた表のうち、今開いている表でないもの(新しい順。無くなった表は外す。cli.recent-missing)。
+    pub(crate) fn recent_others(&self) -> Vec<Recent> {
+        let Some(store) = &self.store else {
+            return Vec::new();
+        };
+        let here = super::drawer::here(self);
+        mdgrid::recent::present(&store.dir)
+            .into_iter()
+            .filter(|r| {
+                !here
+                    .as_ref()
+                    .is_some_and(|h| mdgrid::workspace::same_path(&r.path, h))
+            })
+            .collect()
+    }
+
+    /// cli.recent-list: パレットの「最近開いた表」。覚えた表を新しい順に並べる(今の表は除く)。
+    pub(crate) fn start_open_recent(&mut self) {
+        let list = self.recent_others();
+        if list.is_empty() {
+            self.message = Some(Msg::RecentNone.into());
+            return;
+        }
+        let items = recent_labels(&list);
+        let places = list.iter().map(|r| recent_place(r, "")).collect();
+        self.open_ask(Ask::OpenRecent { items, places });
+    }
+
+    /// 引数なしの起動の一覧(先頭に「今のフォルダ」のある登録した表の一覧)を開いているか。開いている間は、
+    /// 今のフォルダを最近開いた表に覚えない(選んだ表を開いたことにする。src/reopen.rs)。
+    pub(crate) fn launch_list_open(&self) -> bool {
+        matches!(&self.nv.ask, Some(Ask::OpenPlace { picks, .. }) if picks.iter().any(Option::is_none))
+    }
+
     /// CLI-19: 一覧で選んだ表へ移る。無いパスは理由を出して一覧に残る。今のフォルダは一覧を閉じるだけ。
-    pub(crate) fn switch_place(&mut self, pick: Option<usize>) {
-        let Some(place) = pick.and_then(|i| self.registered.get(i)).cloned() else {
+    pub(crate) fn switch_place(&mut self, pick: Option<Place>) {
+        let Some(place) = pick else {
             self.close_palette();
             return;
         };

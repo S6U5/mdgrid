@@ -423,6 +423,10 @@ enum Node {
     Method(Box<Node>, Meth, Vec<Node>),
     Field(Box<Node>, Field),
     Index(Box<Node>, Box<Node>),
+    /// condition.expr-call: 名前の条件(置き換えた式)が真か。値が `true` のときだけ真で、ほかは偽。
+    IsTrue(Box<Node>),
+    /// 条件どうしの参照(`parse_open` の中だけ。置き換え(`inline`)の前で、評価はされない)。
+    CondRef(String),
     /// 未対応の場所(parse は Unsupported を返すので評価されない)。
     Bad,
 }
@@ -435,6 +439,11 @@ struct Parser {
     pos: usize,
     nest: usize,
     unsupported: Option<String>,
+    /// condition.define: 条件の式を読む途中(`cond("x")` を置き換えずに `CondRef` で残し、名前を `refs` に集める)。
+    open: bool,
+    refs: Vec<String>,
+    /// condition.unknown-name: 最初に出会った無い名前。
+    no_cond: Option<String>,
 }
 
 // 名前の判定は、まず一覧の定数(FUNCTIONS・METHODS・FILE_FIELDS)で絞る。定数に無い名前は
@@ -782,6 +791,9 @@ impl Parser {
         }
         if self.eat(&Tok::LParen) {
             let (args, da) = self.args()?;
+            if name == "cond" {
+                return self.cond(&args);
+            }
             return match func_spec(&name) {
                 Some((f, lo, hi)) => {
                     arity(&name, args.len(), lo, hi)?;
@@ -843,6 +855,95 @@ impl Parser {
     }
 }
 
+impl Parser {
+    /// condition.expr-call: `cond("名前")` を、名前の条件の式(真かどうか)に置き換える。
+    /// 引数は引用符で囲んだ名前1つだけ。条件の式を読む途中(`open`)は置き換えずに参照として残す。
+    fn cond(&mut self, args: &[Node]) -> Pr {
+        let [Node::Lit(Val::Str(name))] = args else {
+            return Err(Msg::ExprCondArg.text().to_string());
+        };
+        if self.open {
+            self.refs.push(name.clone());
+            return Ok((Node::CondRef(name.clone()), 1));
+        }
+        if let Some(e) = crate::condition::lookup(name) {
+            let d = deeper(node_depth(&e.node))?;
+            Ok((Node::IsTrue(Box::new(e.node)), d))
+        } else {
+            if self.no_cond.is_none() {
+                self.no_cond = Some(name.clone());
+            }
+            Ok((Node::Bad, 1))
+        }
+    }
+}
+
+/// 構文木の深さ(置き換えた条件の式の深さを数える。parse の深さの上限 MAX_DEPTH と同じ数え方)。
+fn node_depth(n: &Node) -> usize {
+    let max = |xs: &[Node]| xs.iter().map(node_depth).max().unwrap_or(0);
+    1 + match n {
+        Node::Lit(_)
+        | Node::Prop(_)
+        | Node::File(_)
+        | Node::Formula(_)
+        | Node::This(_)
+        | Node::CondRef(_)
+        | Node::Bad => 0,
+        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) | Node::IsTrue(x) => node_depth(x),
+        Node::Bin(_, a, b) | Node::Index(a, b) => node_depth(a).max(node_depth(b)),
+        Node::List(xs) | Node::Call(_, xs) => max(xs),
+        Node::Method(r, _, xs) => node_depth(r).max(max(xs)),
+    }
+}
+
+/// `CondRef` を `get` の式(真かどうか)に置き換えた木。`get` に無い名前があれば Err(その名前)。
+fn inline_node(n: &Node, get: &dyn Fn(&str) -> Option<Expr>) -> Result<Node, String> {
+    let one = |x: &Node| inline_node(x, get).map(Box::new);
+    let many = |xs: &[Node]| {
+        xs.iter()
+            .map(|x| inline_node(x, get))
+            .collect::<Result<Vec<_>, _>>()
+    };
+    Ok(match n {
+        Node::CondRef(name) => match get(name) {
+            Some(e) => Node::IsTrue(Box::new(e.node)),
+            None => return Err(name.clone()),
+        },
+        Node::Lit(_)
+        | Node::Prop(_)
+        | Node::File(_)
+        | Node::Formula(_)
+        | Node::This(_)
+        | Node::Bad => n.clone(),
+        Node::Not(x) => Node::Not(one(x)?),
+        Node::Neg(x) => Node::Neg(one(x)?),
+        Node::IsTrue(x) => Node::IsTrue(one(x)?),
+        Node::Field(x, f) => Node::Field(one(x)?, *f),
+        Node::Bin(op, a, b) => Node::Bin(*op, one(a)?, one(b)?),
+        Node::Index(a, b) => Node::Index(one(a)?, one(b)?),
+        Node::List(xs) => Node::List(many(xs)?),
+        Node::Call(f, xs) => Node::Call(*f, many(xs)?),
+        Node::Method(r, m, xs) => Node::Method(one(r)?, *m, many(xs)?),
+    })
+}
+
+/// condition.define: 条件の式を読む。`cond("x")` は置き換えずに残し、出会った名前を順に返す。
+pub(crate) fn parse_open(src: &str) -> Result<(Expr, Vec<String>), ExprError> {
+    let mut p = Parser::new(src, true)?;
+    let e = p.finish()?;
+    Ok((e, p.refs))
+}
+
+/// condition.define: `parse_open` で残した参照を `get` の式で置き換える。無い名前は Err(その名前)。
+/// 置き換えたあとの深さが上限を超えるときは Err(理由)。
+pub(crate) fn inline(e: &Expr, get: &dyn Fn(&str) -> Option<Expr>) -> Result<Expr, String> {
+    let node = inline_node(&e.node, get)?;
+    if node_depth(&node) > MAX_DEPTH {
+        return Err(Msg::ExprTooDeep.text().to_string());
+    }
+    Ok(Expr { node })
+}
+
 fn arity(name: &str, n: usize, lo: usize, hi: usize) -> Result<(), String> {
     if n < lo || n > hi {
         let want = if lo == hi {
@@ -859,24 +960,40 @@ fn arity(name: &str, n: usize, lo: usize, hi: usize) -> Result<(), String> {
 }
 
 /// 字句解析 → 構文木。未対応の関数・メソッド・項目は Unsupported(BV-7)。文法の誤りが先。
+/// `cond("名前")` は今の名前の条件(condition::lookup)の式に置き換え、無い名前は NoCondition。
 pub fn parse(src: &str) -> Result<Expr, ExprError> {
-    let toks = lex(src).map_err(ExprError::Syntax)?;
-    let mut p = Parser {
-        toks,
-        pos: 0,
-        nest: 0,
-        unsupported: None,
-    };
-    let (node, _) = p.expr().map_err(ExprError::Syntax)?;
-    if p.pos != p.toks.len() {
-        return Err(ExprError::Syntax(
-            Msg::ExprTrailing.fill(&[&format!("{:?}", p.toks[p.pos])]),
-        ));
+    Parser::new(src, false)?.finish()
+}
+
+impl Parser {
+    fn new(src: &str, open: bool) -> Result<Parser, ExprError> {
+        Ok(Parser {
+            toks: lex(src).map_err(ExprError::Syntax)?,
+            pos: 0,
+            nest: 0,
+            unsupported: None,
+            open,
+            refs: Vec::new(),
+            no_cond: None,
+        })
     }
-    if let Some(name) = p.unsupported {
-        return Err(ExprError::Unsupported(name));
+
+    fn finish(&mut self) -> Result<Expr, ExprError> {
+        let (node, _) = self.expr().map_err(ExprError::Syntax)?;
+        if self.pos != self.toks.len() {
+            return Err(ExprError::Syntax(
+                Msg::ExprTrailing.fill(&[&format!("{:?}", self.toks[self.pos])]),
+            ));
+        }
+        // condition.unknown-name: 無い名前の条件は、読めない式として理由(無い名前とある名前)を出す。
+        if let Some(name) = self.no_cond.take() {
+            return Err(ExprError::Syntax(crate::condition::unknown_reason(&name)));
+        }
+        if let Some(name) = self.unsupported.take() {
+            return Err(ExprError::Unsupported(name));
+        }
+        Ok(Expr { node })
     }
-    Ok(Expr { node })
 }
 
 // ---- 日付と期間 ----
@@ -1167,6 +1284,11 @@ fn to_text(v: &Val) -> String {
     }
 }
 
+/// filters と名前の条件(condition)が行を残す値か: `true` だけ(BV-6)。
+pub fn passes(v: &Val) -> bool {
+    matches!(v, Val::Bool(true))
+}
+
 fn truthy(v: &Val) -> bool {
     match v {
         Val::Null => false,
@@ -1312,8 +1434,13 @@ impl Expr {
 fn uses_this(n: &Node) -> bool {
     match n {
         Node::This(_) => true,
-        Node::Lit(_) | Node::Prop(_) | Node::File(_) | Node::Formula(_) | Node::Bad => false,
-        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) => uses_this(x),
+        Node::Lit(_)
+        | Node::Prop(_)
+        | Node::File(_)
+        | Node::Formula(_)
+        | Node::CondRef(_)
+        | Node::Bad => false,
+        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) | Node::IsTrue(x) => uses_this(x),
         Node::Bin(_, a, b) | Node::Index(a, b) => uses_this(a) || uses_this(b),
         Node::List(xs) | Node::Call(_, xs) => xs.iter().any(uses_this),
         Node::Method(r, _, xs) => uses_this(r) || xs.iter().any(uses_this),
@@ -1478,7 +1605,8 @@ fn ev(n: &Node, cx: &Cx<'_>) -> Val {
             }
             _ => Val::Null,
         },
-        Node::Bad => Val::Null,
+        Node::IsTrue(x) => Val::Bool(matches!(ev(x, cx), Val::Bool(true))),
+        Node::CondRef(_) | Node::Bad => Val::Null,
     }
 }
 

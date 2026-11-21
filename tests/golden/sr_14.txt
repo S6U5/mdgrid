@@ -2,11 +2,11 @@
  w notes ▾  2行                                              ▦ 表 ▾   o ⚙ 設定
 : save
 > 保存                     save             ^S
+  セッションを保存         save_session
+  並べ方に名前を付けて残す page_save
   この表をワークスペース…  workspace_remove
+  今のワークスペースをお…  workspace_favor…
   既定のビューにする       set_default_view
-
- b      買い物     完了
-
 
 
 

@@ -203,6 +203,8 @@ pub(crate) struct Draft {
     /// 列の選び手に出す列: 表の列(隠した列も)と、ビューに無いノートのキー(NV-14: どの列でも)。
     pub keys: Vec<String>,
     pub sec: Sec,
+    /// キーが左の区画の一覧に効くか(偽なら右の項目。navigation.settings-sections-focus。settings_nav.rs)。
+    pub nav: bool,
     /// 区画ごとに選んだ項目。
     pub sel: [usize; 9],
     pub pick: Option<Pick>,
@@ -223,9 +225,30 @@ pub(crate) struct Draft {
     /// WBS の写し(オフの間も覚えておく)と、進み具合のキーの値と件数(NV-28)。
     pub wbs: mdgrid::settings::Wbs,
     pub wbs_vals: Vec<(String, usize)>,
+    /// condition.view-settings: フィルターの区画に並べる名前の条件(名前, 見せる名前。書いた順)。
+    pub conds: Vec<(String, String)>,
 }
 
 impl Draft {
+    /// condition.view-settings: 名前の条件の掛け方を 掛けない → だけ → 隠す → 掛けない と巡らせる。
+    pub(crate) fn cycle_named(&mut self, name: &str) {
+        match self.s.named.iter().position(|n| n.name == name) {
+            None => self.s.named.push(mdgrid::settings::Named {
+                name: name.to_string(),
+                hide: false,
+            }),
+            Some(k) if !self.s.named[k].hide => self.s.named[k].hide = true,
+            Some(k) => {
+                self.s.named.remove(k);
+            }
+        }
+    }
+
+    /// condition.view-settings: 名前の条件の掛け方(None は掛けない、Some(true) は隠す)。
+    pub(crate) fn named_state(&self, name: &str) -> Option<bool> {
+        self.s.named.iter().find(|n| n.name == name).map(|n| n.hide)
+    }
+
     /// WBS の写しを、オンなら設定にも当てる。
     pub(crate) fn sync_wbs(&mut self) {
         if self.s.wbs.is_some() {
@@ -243,7 +266,7 @@ impl Draft {
     pub(crate) fn len(&self, sec: Sec) -> usize {
         match sec {
             Sec::Columns => self.cols.len(),
-            Sec::Filters => self.s.filters.len() + 1,
+            Sec::Filters => self.s.filters.len() + 1 + self.conds.len(),
             Sec::Sorts => self.s.sorts.len() + 1,
             Sec::Group => GROUP_ITEMS,
             Sec::Display => mdgrid::display::ITEMS.len(),
@@ -284,6 +307,7 @@ impl Draft {
 
     pub(crate) fn select(&mut self, sec: Sec, i: usize) {
         self.sec = sec;
+        self.nav = false;
         self.sel[sec as usize] = i;
     }
 
@@ -388,6 +412,7 @@ impl App {
             cols,
             keys,
             sec: Sec::Filters,
+            nav: false,
             sel: [0; 9],
             pick: None,
             text: None,
@@ -404,6 +429,13 @@ impl App {
                 .unwrap_or_else(|| "parent".into()),
             wbs: wbs.clone(),
             wbs_vals: self.wbs_values(&wbs),
+            conds: self
+                .cond
+                .all
+                .list()
+                .iter()
+                .map(|c| (c.name.clone(), c.shown().to_string()))
+                .collect(),
         });
         self.set_mode(Mode::Settings);
     }
@@ -422,6 +454,9 @@ impl App {
         if self.draft.as_ref().is_some_and(|d| d.pick.is_some()) {
             return self.pick_action(action);
         }
+        if self.settings_nav_action(action) {
+            return;
+        }
         let secs = secs(self.src.notes());
         let Some(d) = self.draft.as_mut() else {
             return;
@@ -432,6 +467,8 @@ impl App {
             Action::NextSection | Action::PrevSection => {
                 let k = secs.iter().position(|s| *s == sec).unwrap_or(0);
                 let n = secs.len();
+                // これまでどおり、巡った先の区画の項目へ(左の一覧にいても)。
+                d.nav = false;
                 d.sec = secs[if action == Action::NextSection {
                     (k + 1) % n
                 } else {
@@ -465,6 +502,15 @@ impl App {
         match sec {
             Sec::Columns => self.toggle_column(i),
             Sec::Filters => {
+                // condition.view-settings: 名前の条件の行は 掛けない → だけ → 隠す → 掛けない と巡る。
+                if let Some((name, _)) = i
+                    .checked_sub(d.s.filters.len() + 1)
+                    .and_then(|k| d.conds.get(k))
+                {
+                    let name = name.clone();
+                    d.cycle_named(&name);
+                    return;
+                }
                 if i >= d.s.filters.len() {
                     d.pick = Some(Pick::Column {
                         purpose: Purpose::Filter,
@@ -619,6 +665,13 @@ impl App {
             Sec::Filters if i < d.s.filters.len() => {
                 d.s.filters.remove(i);
             }
+            Sec::Filters if i > d.s.filters.len() => {
+                let k = i - d.s.filters.len() - 1;
+                if let Some((name, _)) = d.conds.get(k) {
+                    let name = name.clone();
+                    d.s.named.retain(|n| n.name != name);
+                }
+            }
             Sec::Sorts if i < d.s.sorts.len() => {
                 d.s.sorts.remove(i);
             }
@@ -751,7 +804,7 @@ impl App {
 
     /// `f`: 設定の帯の項目を選ぶ。
     pub(crate) fn focus_chips(&mut self) {
-        if self.settings.no_conditions() {
+        if self.bar_empty() {
             let o = self.key_of(Mode::Table, Action::ViewSettings);
             self.message = Some(Msg::ChipsEmpty.fill(&[&o]));
             return;
@@ -763,7 +816,7 @@ impl App {
 
     /// 設定の帯の中の動作。
     pub(crate) fn chips_action(&mut self, action: Action) {
-        let n = self.settings.chips().len();
+        let n = self.bar_chips().len();
         match action {
             Action::Left => {
                 self.chip = self.chip.saturating_sub(1);
@@ -782,30 +835,38 @@ impl App {
             Action::Help => self.open_help(),
             _ => {}
         }
-        if self.mode == Mode::Chips && self.settings.no_conditions() {
+        if self.mode == Mode::Chips && self.bar_empty() {
             self.set_mode(Mode::Table);
         }
     }
 
-    /// 帯の i 番目の項目の条件を外す(NV-22)。項目の順は フィルター → 並べ替え → グループ(`chips()`)。
+    /// 帯の i 番目の項目の条件を外す(NV-22)。項目の順は フィルター → 名前の条件 → 並べ替え → グループ
+    /// (`Settings::chips`)→ 数字のキーの条件・いつも隠す条件・式(conds.rs の `cond_chips`)。
     pub(crate) fn remove_chip(&mut self, i: usize) {
-        let Some(text) = self.settings.chips().get(i).cloned() else {
+        let Some(text) = self.bar_chips().get(i).cloned() else {
             return;
         };
         let nf = self.settings.filters.len();
+        let nn = self.settings.named.len();
         let ns = self.settings.sorts.len();
+        let ng = usize::from(self.settings.group != Group::Inherit);
         if i < nf {
             self.settings.filters.remove(i);
-        } else if i < nf + ns {
-            self.settings.sorts.remove(i - nf);
-        } else {
+        } else if i < nf + nn {
+            self.settings.named.remove(i - nf);
+        } else if i < nf + nn + ns {
+            self.settings.sorts.remove(i - nf - nn);
+        } else if i < nf + nn + ns + ng {
             self.settings.group = Group::Inherit;
+        } else {
+            // condition・navigation.expr-filter: 名前の条件と式の項目(conds.rs)。
+            self.remove_cond_chip(i - nf - nn - ns - ng);
         }
-        self.chip = self.chip.min(self.settings.chips().len().saturating_sub(1));
+        self.chip = self.chip.min(self.bar_chips().len().saturating_sub(1));
         self.stay.clear();
         self.regrid = true;
         self.persist_state();
-        if self.settings.no_conditions() && self.mode == Mode::Chips {
+        if self.bar_empty() && self.mode == Mode::Chips {
             self.set_mode(Mode::Table);
         }
         self.removed_chip_message(&text);

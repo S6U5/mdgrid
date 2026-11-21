@@ -4,6 +4,7 @@
 //! (`config::default_toml`)・文書との突き合わせの試験・カタログの試験がこれを使う。旧い名前(0.3.0 まで)と
 //! 移った先の対応も `LEGACY` に持ち、読み取りの写し(`legacy::lift`)と文書の表の試験が使う。
 
+use crate::i18n::Msg;
 /// 書ける範囲(CLI-11・SR-44)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Scope {
@@ -14,20 +15,27 @@ pub enum Scope {
 }
 
 impl Scope {
-    /// 文書の「書ける範囲」の行と `--print-config` のコメント(英語)。
-    pub fn en(self) -> &'static str {
+    /// 範囲の名前の文言(screen.locales-all-in-ledger)。
+    pub fn msg(self) -> Msg {
         match self {
-            Scope::Global => "global only",
-            Scope::Profile => "global, workspace, table, view",
+            Scope::Global => Msg::CfgScopeGlobal,
+            Scope::Profile => Msg::CfgScopeProfile,
         }
+    }
+
+    /// 文書の「書ける範囲」の行(英語。docs/config.md と突き合わせる)。
+    pub fn en(self) -> &'static str {
+        self.msg().en()
     }
 
     /// 文書の「書ける範囲」の行(日本語)。
     pub fn ja(self) -> &'static str {
-        match self {
-            Scope::Global => "全体だけ",
-            Scope::Profile => "全体・ワークスペース・表・ビュー",
-        }
+        self.msg().ja()
+    }
+
+    /// `--print-config` の「書ける範囲」の行(今の言語)。
+    pub fn text(self) -> &'static str {
+        self.msg().text()
     }
 }
 
@@ -46,10 +54,12 @@ pub struct Item {
     pub example: &'static str,
     /// 書ける範囲。
     pub scope: Scope,
-    /// 英語の説明(`--print-config` のコメント)。
+    /// 英語の説明(台帳の `msg` の英語。文書との突き合わせの試験が使う)。
     pub en: &'static str,
-    /// 日本語の説明。
+    /// 日本語の説明(台帳の `msg` の日本語)。
     pub ja: &'static str,
+    /// 説明の文言(screen.locales-all-in-ledger。`--print-config` は今の言語で出す)。
+    pub msg: Msg,
 }
 
 impl Item {
@@ -69,9 +79,10 @@ impl Item {
         }
     }
 
-    /// 表の項目(`[look.style]` のように、その道筋の見出しで書く項目)か。
+    /// 表の項目(`[look.style]` のように、その道筋の見出しで書く項目。表の並び `[[notices]]` も)か。
     pub fn is_table(&self) -> bool {
         self.example.starts_with(&format!("[{}", self.path))
+            || self.example.starts_with(&format!("[[{}", self.path))
     }
 }
 
@@ -79,15 +90,14 @@ impl Item {
 pub const ITEMS: &[Item] = &[
     Item {
         path: "language",
-        ty: "string (\"auto\", \"en\" or \"ja\")",
-        ty_ja: "文字列(\"auto\"・\"en\"・\"ja\")",
+        ty: "string (\"auto\" or a language code such as \"en\" or \"ja\")",
+        ty_ja: "文字列(\"auto\" か、\"en\"・\"ja\" などの言語の符号)",
         default: Some("\"auto\""),
         example: "language = \"en\"",
         scope: Scope::Global,
-        en: "Language of the screen and startup messages. \"auto\" follows LC_ALL, LC_MESSAGES\n\
-             and LANG (the first non-empty one): Japanese if it starts with ja, otherwise English.",
-        ja: "画面と起動の文言の言語。\"auto\" は LC_ALL・LC_MESSAGES・LANG の順で最初の空でない値が\
-             ja で始まれば日本語、ほかは英語。",
+        en: Msg::CfgLanguage.en(),
+        ja: Msg::CfgLanguage.ja(),
+        msg: Msg::CfgLanguage,
     },
     Item {
         path: "editor",
@@ -96,10 +106,9 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "editor = \"nvim\"",
         scope: Scope::Global,
-        en: "Editor that opens the selected note (arguments allowed, e.g. \"code -w\"; run without\n\
-             a shell). Unset or blank: $VISUAL, then $EDITOR, then vi (notepad on Windows).",
-        ja: "選んだノートを開くエディタ(引数つきでよい。例 \"code -w\"。シェルは通さない)。\
-             無いか空(空白だけも)なら $VISUAL、$EDITOR、vi(Windows は notepad)の順。",
+        en: Msg::CfgEditor.en(),
+        ja: Msg::CfgEditor.ja(),
+        msg: Msg::CfgEditor,
     },
     Item {
         path: "poll_ms",
@@ -108,8 +117,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("1000"),
         example: "poll_ms = 2000",
         scope: Scope::Global,
-        en: "Interval in milliseconds for re-reading notes changed outside mdgrid.",
-        ja: "mdgrid の外で変わったノートを読み直す間隔(ミリ秒)。",
+        en: Msg::CfgPollMs.en(),
+        ja: Msg::CfgPollMs.ja(),
+        msg: Msg::CfgPollMs,
     },
     Item {
         path: "use",
@@ -118,8 +128,9 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "use = \"night\"",
         scope: Scope::Profile,
-        en: "Lay the template [templates.<name>] under the values written in this place.",
-        ja: "テンプレート [templates.<名前>] を、この場所に書いた値の下に敷く。",
+        en: Msg::CfgUse.en(),
+        ja: Msg::CfgUse.ja(),
+        msg: Msg::CfgUse,
     },
     Item {
         path: "types",
@@ -128,16 +139,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("{}"),
         example: "[types]\ndue = \"date\"\nestimate = \"number\"",
         scope: Scope::Profile,
-        en: "The type of single columns. It wins over the root folder's type settings (.obsidian/types.json)\n\
-             and over guessing from the values; \"auto\" goes back to guessing (a narrower scope can undo a\n\
-             wider one). The type sets the cell input, the ! mark on values that do not fit, sorting and the\n\
-             type mark of the column heading. Notes are not changed. Clicking the type mark of a heading, or\n\
-             column_type in the palette or the action menu, picks a type and writes it to the table in\n\
-             views.toml.",
-        ja: "列ごとの型。ルートフォルダの型の設定(.obsidian/types.json)と、値からの推定より優先する。\"auto\" は推定に\
-             戻す(狭い範囲で広い範囲の型を外せる)。型はセルの入力・合わない値の ! の印・並べ替え・列の見出しの型の印に\
-             効く。ノートは書き換えない。見出しの型の印のクリック、パレットか操作の一覧の column_type で型を選ぶと、\
-             views.toml の表に書く。",
+        en: Msg::CfgTypes.en(),
+        ja: Msg::CfgTypes.ja(),
+        msg: Msg::CfgTypes,
     },
     Item {
         path: "rules",
@@ -146,22 +150,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("{}"),
         example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }",
         scope: Scope::Profile,
-        en: "Rules for single columns, checked together with the column type. required = true makes a\n\
-             missing key, null, an empty string or an empty list a problem; values lists the allowed values\n\
-             (each item of a list must be one of them, case-sensitive). A narrower scope wins item by item.\n\
-             Problems get the ! mark, the bottom band counts them, ! and @ jump between them, and\n\
-             mdgrid --check lists them. Checking a rule never changes a note or stops you writing a value; a\n\
-             column with values offers them in the cell input. then fills other columns of the same row when\n\
-             you set the column to a value (value = { column = text }; template variables such as {date}\n\
-             work, an empty text clears the column); it is staged with your edit and undone with it.\n\
-             Computed columns (file.*, formula.*) cannot have rules.",
-        ja: "列ごとの決まり。列の型と合わせて確かめる。required = true は、キーが無い・null・空の文字列・空のリストを問題に\
-             する。values は選べる値の並び(リストは各要素がこのどれか。大文字小文字を区別する)。狭い範囲が項目ごとに勝つ。\
-             問題には ! の印が付き、下の帯に数が出て、! と @ で跳べ、mdgrid --check で並べて出せる。決まりの確かめは\
-             ノートを書き換えず、値を書くことも止めない。values のある列は、セルの入力の候補にその値を並べる。then は、\
-             その列をある値に直したとき、同じ行のほかの列にも値を入れる(値 = { 列 = 入れる文字 }。{date} などの雛形の\
-             変数を書け、空の文字はその列を空にする)。直した値と同じ変更としてたまり、一緒に取り消せる。計算の列\
-             (file.*・formula.*)には書けない。",
+        en: Msg::CfgRules.en(),
+        ja: Msg::CfgRules.ja(),
+        msg: Msg::CfgRules,
     },
     Item {
         path: "terminal.color",
@@ -170,8 +161,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("true"),
         example: "[terminal]\ncolor = false",
         scope: Scope::Global,
-        en: "Use colors. false draws without colors (same as NO_COLOR or --no-color).",
-        ja: "色を使う。false で色なし(NO_COLOR・--no-color と同じ)。",
+        en: Msg::CfgTerminalColor.en(),
+        ja: Msg::CfgTerminalColor.ja(),
+        msg: Msg::CfgTerminalColor,
     },
     Item {
         path: "terminal.ambiguous_wide",
@@ -180,10 +172,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[terminal]\nambiguous_wide = true",
         scope: Scope::Global,
-        en: "Treat East Asian Ambiguous characters (such as ○ and ※) as two columns wide.\n\
-             Set true if your terminal draws them wide. Window frames are then always ASCII.",
-        ja: "East Asian Ambiguous の文字(○・※ など)を幅2として扱う。端末が幅2で描くなら true。\
-             このとき窓の枠はいつも ASCII。",
+        en: Msg::CfgTerminalAmbiguousWide.en(),
+        ja: Msg::CfgTerminalAmbiguousWide.ja(),
+        msg: Msg::CfgTerminalAmbiguousWide,
     },
     Item {
         path: "terminal.nerd_font",
@@ -192,12 +183,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"auto\""),
         example: "[terminal]\nnerd_font = true",
         scope: Scope::Global,
-        en: "Whether round pill ends (Nerd Font glyphs) can be drawn. true: your terminal font is a Nerd\n\
-             Font. \"auto\": only in terminals that draw these glyphs themselves (Ghostty, WezTerm), so\n\
-             nothing breaks elsewhere. Without round ends, \"pill\" is drawn as \"soft\".",
-        ja: "丸い札の端(Nerd Font の字)を描いてよいか。true は端末の字形が Nerd Font。\"auto\" は、その字を\
-             字体に頼らず自分で描く端末(Ghostty・WezTerm)のときだけ(ほかの端末で字が化けないように)。\
-             描けなければ \"pill\" は \"soft\" で描く。",
+        en: Msg::CfgTerminalNerdFont.en(),
+        ja: Msg::CfgTerminalNerdFont.ja(),
+        msg: Msg::CfgTerminalNerdFont,
     },
     Item {
         path: "terminal.nerd_icons",
@@ -206,12 +194,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[terminal]\nnerd_icons = true",
         scope: Scope::Global,
-        en: "Use icon glyphs from a Nerd Font for the settings button, the screen type button and menu, the\n\
-             type marks of column headings and the calendar title. Set true only if your terminal font is a\n\
-             Nerd Font; by default plain characters are used (⚙, ▦, ◇, #, ◷, ⋮, ◉, ✓). Emoji are never used.",
-        ja: "設定のボタン・画面の型のボタンと窓・列の見出しの型の印・カレンダーの題に、アイコン用のフォント(Nerd Font)の\
-             記号を使う。端末の字形が Nerd Font のときだけ true にする。既定は字の記号(⚙・▦・◇・#・◷・⋮・◉・✓)。\
-             絵文字は使わない。",
+        en: Msg::CfgTerminalNerdIcons.en(),
+        ja: Msg::CfgTerminalNerdIcons.ja(),
+        msg: Msg::CfgTerminalNerdIcons,
     },
     Item {
         path: "terminal.herdr",
@@ -220,10 +205,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("true"),
         example: "[terminal]\nherdr = false",
         scope: Scope::Global,
-        en: "Inside a Herdr pane, tell Herdr the command that reopens the current table and view, so that\n\
-             Herdr opens it again after its server restarts. false never calls Herdr.",
-        ja: "Herdr の窓で、今の表とビューで開き直す命令を Herdr に伝え、Herdr のサーバーを立て直したときに\
-             開き直してもらう。false で Herdr を呼ばない。",
+        en: Msg::CfgTerminalHerdr.en(),
+        ja: Msg::CfgTerminalHerdr.ja(),
+        msg: Msg::CfgTerminalHerdr,
     },
     Item {
         path: "workspace.detect",
@@ -232,15 +216,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("[\".obsidian\"]"),
         example: "[workspace]\ndetect = [\".obsidian\", \".git\"]",
         scope: Scope::Global,
-        en: "When the table you open is in no written workspace, treat the nearest folder above it that\n\
-             has one of these marker folders as a workspace (the root folder): \".obsidian\" (a folder with\n\
-             .obsidian/) or \".git\" (a git repository). Its folders with notes become the tables of the\n\
-             relation map. [] turns detection off. The old values \"vault\" and \"git\" are read the same\n\
-             way, with a warning.",
-        ja: "書いたワークスペースに入らない表を開いたとき、上にたどって、この目印のフォルダを持つ最寄りのフォルダ\
-             (ルートフォルダ)をワークスペースとみなす: \".obsidian\"(.obsidian/ のあるフォルダ)か \".git\"(git のリポ)。\
-             直下の、ノートのあるフォルダが関係マップの表になる。[] で検知しない。旧い値 \"vault\"・\"git\" も\
-             同じ意味で読み、警告する。",
+        en: Msg::CfgWorkspaceDetect.en(),
+        ja: Msg::CfgWorkspaceDetect.ja(),
+        msg: Msg::CfgWorkspaceDetect,
     },
     Item {
         path: "git.auto",
@@ -249,14 +227,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"off\""),
         example: "[git]\nauto = \"commit\"",
         scope: Scope::Global,
-        en: "How far mdgrid goes with git after it writes notes in a git repository: \"off\" does nothing,\n\
-             \"add\" stages the notes it wrote, \"commit\" also commits them (only those notes, never other\n\
-             changed or staged files), \"push\" also pushes. Folders that are not git repositories are\n\
-             left alone. A git failure is reported in one line and the save itself stays done.",
-        ja: "git のリポの中のノートを書いたあと、git をどこまで進めるか: \"off\" は何もしない、\"add\" は書いた\
-             ノートをステージする、\"commit\" はさらにコミットする(書いたノートだけ。ほかの変更中のファイルや\
-             ステージ済みのファイルは入れない)、\"push\" はさらに push する。git のリポでないフォルダでは何もしない。\
-             git が失敗したら1行で知らせ、保存そのものは済んだままにする。",
+        en: Msg::CfgGitAuto.en(),
+        ja: Msg::CfgGitAuto.ja(),
+        msg: Msg::CfgGitAuto,
     },
     Item {
         path: "git.when",
@@ -265,10 +238,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"save\""),
         example: "[git]\nwhen = \"quit\"",
         scope: Scope::Global,
-        en: "When git.auto runs: \"save\" after every save (one commit per save), \"quit\" once when mdgrid\n\
-             exits (one commit for the session). Notes still waiting at exit are always handled then.",
-        ja: "git.auto をいつ走らせるか: \"save\" は保存のたび(保存1回が1つのコミット)、\"quit\" は終了のときに\
-             1回(その起動の分をまとめて1つのコミット)。終了のときに残っているノートは、どちらでもそこで流す。",
+        en: Msg::CfgGitWhen.en(),
+        ja: Msg::CfgGitWhen.ja(),
+        msg: Msg::CfgGitWhen,
     },
     Item {
         path: "git.message",
@@ -277,11 +249,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"auto\""),
         example: "[git]\nmessage = \"ask\"",
         scope: Scope::Global,
-        en: "The commit message: \"auto\" writes \"mdgrid: update N notes\" and the paths; \"ask\" opens a\n\
-             one-line field after each save (empty uses the automatic message, Esc leaves the notes for\n\
-             the commit at exit).",
-        ja: "コミットの文: \"auto\" は「mdgrid: N 件のノートを更新」とパスの一覧を書く。\"ask\" は保存のたびに1行の\
-             欄を出す(空なら自動の文。Esc はコミットせず、終了のときのコミットに回す)。",
+        en: Msg::CfgGitMessage.en(),
+        ja: Msg::CfgGitMessage.ja(),
+        msg: Msg::CfgGitMessage,
     },
     Item {
         path: "look.theme",
@@ -290,12 +260,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"default\""),
         example: "[look]\ntheme = { light = \"paper\", dark = \"sumi\" }",
         scope: Scope::Profile,
-        en: "Color theme of the screen. \"default\" keeps the terminal's own colors. A table\n\
-             { light = ..., dark = ... } picks by the terminal's background; \"auto\" is\n\
-             { light = \"saas\", dark = \"sumi\" }. Ignored without colors; 256-color terminals get\n\
-             the nearest colors.",
-        ja: "画面の色のテーマ。\"default\" は端末の色のまま。表 { light = …, dark = … } は端末の地の明るさで選び、\
-             \"auto\" は { light = \"saas\", dark = \"sumi\" } と同じ。色なしでは効かない。256 色の端末では近い色で塗る。",
+        en: Msg::CfgLookTheme.en(),
+        ja: Msg::CfgLookTheme.ja(),
+        msg: Msg::CfgLookTheme,
     },
     Item {
         path: "look.preset",
@@ -304,10 +271,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"sumi\""),
         example: "[look]\npreset = \"saas\"",
         scope: Scope::Profile,
-        en: "A whole set of part shapes. [look.style] overrides single parts. A preset written in a\n\
-             narrower place drops the part shapes written in wider places.",
-        ja: "部品の形の組。[look.style] で部品を1つずつ上書きする。狭い範囲に書いた組は、\
-             広い範囲の部品の形を使わない。",
+        en: Msg::CfgLookPreset.en(),
+        ja: Msg::CfgLookPreset.ja(),
+        msg: Msg::CfgLookPreset,
     },
     Item {
         path: "look.mode",
@@ -316,11 +282,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"modern\""),
         example: "[look]\nmode = \"classic\"",
         scope: Scope::Profile,
-        en: "The look when colors are on: \"modern\" (lazygit-like: tinted selection, accent borders and keys,\n\
-             dim labels) or \"classic\" (inverse video). The text on screen is the same; without colors both\n\
-             look like classic.",
-        ja: "色を使うときの見た目: \"modern\"(lazygit のように、選びは背景の色、枠とキーはアクセントの色、説明は薄い色)\
-             か \"classic\"(反転)。画面の文字は同じ。色なしではどちらも classic。",
+        en: Msg::CfgLookMode.en(),
+        ja: Msg::CfgLookMode.ja(),
+        msg: Msg::CfgLookMode,
     },
     Item {
         path: "look.cells",
@@ -329,11 +293,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"rich\""),
         example: "[look]\ncells = \"plain\"",
         scope: Scope::Profile,
-        en: "How table cells look when colors are on: \"rich\" (booleans, lists, short repeated values,\n\
-             links and column type marks drawn as parts in the shapes of [look.style]) or \"plain\" (the\n\
-             text as it is). Without colors cells are always plain.",
-        ja: "色を使うときの表のセルの見せ方: \"rich\"(真偽・リスト・くり返す短い値・リンク・列の型の印を [look.style] の\
-             形の部品で見せる)か \"plain\"(文字のまま)。色を使わない表示ではいつも文字のまま。",
+        en: Msg::CfgLookCells.en(),
+        ja: Msg::CfgLookCells.ja(),
+        msg: Msg::CfgLookCells,
     },
     Item {
         path: "look.style",
@@ -342,21 +304,9 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "[look.style]\nstatus = \"chip\"\nselect = \"cross\"",
         scope: Scope::Profile,
-        en: "Override single part shapes of the preset: status (\"dot\", \"shape\", \"text\", \"pill\", \"tint\",\n\
-             \"solid\", \"soft\", \"chip\", \"plain\"), tags (\"dots\", \"hash\", \"brackets\", \"pill\", \"tint\",\n\
-             \"solid\", \"soft\", \"chip\", \"plain\"), check (\"box\", \"tick\", \"bracket\", \"text\"), select\n\
-             (\"bar\", \"cross\", \"tint\", \"outline\", \"fill\", \"reverse\"), rules (\"none\", \"header\",\n\
-             \"columns\", \"grid\"), tabs (\"underline\", \"pill\", \"segment\", \"brackets\", \"dim\"), frames\n\
-             (\"rounded\", \"square\", \"heavy\", \"ascii\", \"none\"), band (\"keys\", \"boxed\", \"quiet\"), links\n\
-             (\"accent\", \"plain\") and icons (true or false). \"plain\" (\"text\" for check) keeps that part as\n\
-             text. docs/catalog/index.html shows every choice and writes this table for you.",
-        ja: "組の部品の形を1つずつ上書きする: status(\"dot\"・\"shape\"・\"text\"・\"pill\"・\"tint\"・\"solid\"・\"soft\"・\"chip\"・\
-             \"plain\")・tags(\"dots\"・\"hash\"・\"brackets\"・\"pill\"・\"tint\"・\"solid\"・\"soft\"・\"chip\"・\"plain\")・check(\"box\"・\
-             \"tick\"・\"bracket\"・\"text\")・select(\"bar\"・\"cross\"・\"tint\"・\"outline\"・\"fill\"・\"reverse\")・rules(\"none\"・\
-             \"header\"・\"columns\"・\"grid\")・tabs(\"underline\"・\"pill\"・\"segment\"・\"brackets\"・\"dim\")・frames(\
-             \"rounded\"・\"square\"・\"heavy\"・\"ascii\"・\"none\")・band(\"keys\"・\"boxed\"・\"quiet\")・links(\"accent\"・\"plain\")・\
-             icons(true か false)。\"plain\"(check は \"text\")はその部品を文字のままにする。\
-             docs/catalog/index.html で全部の形を見比べ、この表を作れる。",
+        en: Msg::CfgLookStyle.en(),
+        ja: Msg::CfgLookStyle.ja(),
+        msg: Msg::CfgLookStyle,
     },
     Item {
         path: "look.columns",
@@ -365,9 +315,9 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "[look.columns]\nstatus = \"plain\"\nowner = \"chip\"",
         scope: Scope::Profile,
-        en: "How single columns look: \"rich\", \"plain\" or \"chip\" (chips even if the column is not\n\
-             detected as one). A column setting wins over the part shapes.",
-        ja: "列ごとの見せ方: \"rich\"・\"plain\"・\"chip\"(自動で札にならない列も札に)。列の設定は部品の形より優先。",
+        en: Msg::CfgLookColumns.en(),
+        ja: Msg::CfgLookColumns.ja(),
+        msg: Msg::CfgLookColumns,
     },
     Item {
         path: "look.colors",
@@ -376,19 +326,9 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "[look.colors]\naccent = \"#e0a458\"\n\n[look.colors.values]\ndone = \"green\"",
         scope: Scope::Profile,
-        en: "Override the theme's colors by role: background, text, header, selection, selection_text,\n\
-             band, band_text, accent, strong, zebra, zebra_text, mark, added, removed, pending and\n\
-             highlight. [look.colors.values] sets a color per value (case-insensitive), used by every part\n\
-             shape. Colors are \"#rrggbb\", \"#rgb\" or a name (black, white, gray, red, orange,\n\
-             yellow, green, teal, cyan, blue, purple, magenta, pink, brown). With theme = \"default\",\n\
-             only accent, selection and value colors are used. A theme written in a narrower place drops\n\
-             the role colors written in wider places.",
-        ja: "テーマの色を役割ごとに上書きする: background・text・header・selection・selection_text・band・\
-             band_text・accent・strong・zebra・zebra_text・mark・added・removed・pending・highlight。\
-             [look.colors.values] は値ごとの色(大文字・小文字によらない)で、部品のどの形でも使う。色は \"#rrggbb\"・\
-             \"#rgb\" か名前(black・white・gray・red・orange・yellow・green・teal・cyan・blue・purple・magenta・\
-             pink・brown)。theme = \"default\" では accent・selection と値の色だけを使う。狭い範囲に書いたテーマは、\
-             広い範囲の役割の色を使わない。",
+        en: Msg::CfgLookColors.en(),
+        ja: Msg::CfgLookColors.ja(),
+        msg: Msg::CfgLookColors,
     },
     Item {
         path: "display.row_numbers",
@@ -397,8 +337,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\nrow_numbers = true",
         scope: Scope::Profile,
-        en: "Numbers 1, 2, 3... on the left of each row, in the shown order.",
-        ja: "各行の左に、今の表示の並びの 1・2・3… の行番号。",
+        en: Msg::CfgDisplayRowNumbers.en(),
+        ja: Msg::CfgDisplayRowNumbers.ja(),
+        msg: Msg::CfgDisplayRowNumbers,
     },
     Item {
         path: "display.zebra",
@@ -407,8 +348,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\nzebra = true",
         scope: Scope::Profile,
-        en: "Shade every other row (not without colors).",
-        ja: "一行おきに背景の色を付ける(色を使わない表示では付けない)。",
+        en: Msg::CfgDisplayZebra.en(),
+        ja: Msg::CfgDisplayZebra.ja(),
+        msg: Msg::CfgDisplayZebra,
     },
     Item {
         path: "display.column_lines",
@@ -417,8 +359,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\ncolumn_lines = true",
         scope: Scope::Profile,
-        en: "Draw │ between columns.",
-        ja: "列の間に │ を引く。",
+        en: Msg::CfgDisplayColumnLines.en(),
+        ja: Msg::CfgDisplayColumnLines.ja(),
+        msg: Msg::CfgDisplayColumnLines,
     },
     Item {
         path: "display.group_gap",
@@ -427,8 +370,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\ngroup_gap = true",
         scope: Scope::Profile,
-        en: "An empty line above every group heading but the first.",
-        ja: "2つ目からのまとまりの見出しの上に空きの行を1つ入れる。",
+        en: Msg::CfgDisplayGroupGap.en(),
+        ja: Msg::CfgDisplayGroupGap.ja(),
+        msg: Msg::CfgDisplayGroupGap,
     },
     Item {
         path: "display.tabs",
@@ -437,10 +381,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"always\""),
         example: "[display]\ntabs = \"auto\"",
         scope: Scope::Profile,
-        en: "The row of view tabs: \"always\", \"auto\" (only with two or more views; with one view the\n\
-             table gets that row) or \"never\". The tab keys work either way.",
-        ja: "ビューのタブの行: \"always\"(いつも)・\"auto\"(ビューが2つ以上のときだけ。1つなら、その行も表に使う)・\
-             \"never\"(出さない)。どれでもタブの切り替えのキーは効く。",
+        en: Msg::CfgDisplayTabs.en(),
+        ja: Msg::CfgDisplayTabs.ja(),
+        msg: Msg::CfgDisplayTabs,
     },
     Item {
         path: "display.search_bar",
@@ -449,9 +392,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("true"),
         example: "[display]\nsearch_bar = false",
         scope: Scope::Profile,
-        en: "Show a search bar above the table. false hides it; the quick filter is then typed\n\
-             on the bottom line.",
-        ja: "表の上に検索の欄を出す。false なら出さず、簡易の絞り込みは最下行で打つ。",
+        en: Msg::CfgDisplaySearchBar.en(),
+        ja: Msg::CfgDisplaySearchBar.ja(),
+        msg: Msg::CfgDisplaySearchBar,
     },
     Item {
         path: "display.chips",
@@ -460,8 +403,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("true"),
         example: "[display]\nchips = false",
         scope: Scope::Profile,
-        en: "Show the band of active view settings. f still picks its items when hidden.",
-        ja: "効いているビューの設定の帯を出す。隠しても f で帯の項目を選べる。",
+        en: Msg::CfgDisplayChips.en(),
+        ja: Msg::CfgDisplayChips.ja(),
+        msg: Msg::CfgDisplayChips,
     },
     Item {
         path: "display.buttons",
@@ -470,12 +414,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"plain\""),
         example: "[display]\nbuttons = \"box\"",
         scope: Scope::Profile,
-        en: "How the search bar and the Filter and Sort buttons in the view bar are drawn: \"plain\"\n\
-             (shown by their background) or \"box\" (each in a box drawn with lines on the padding lines\n\
-             of the view bar, not filled). With no padding (display.bar_padding = 0) no lines are drawn.",
-        ja: "ビューの帯の検索の欄と絞り込み・並べ替えのボタンの描き方: \"plain\"(地の色で示す)か \"box\"(それぞれを\
-             帯の上下の余白の行に引いた線で四角く囲む。中は塗らない)。余白が無い(display.bar_padding = 0)と線は\
-             描かない。",
+        en: Msg::CfgDisplayButtons.en(),
+        ja: Msg::CfgDisplayButtons.ja(),
+        msg: Msg::CfgDisplayButtons,
     },
     Item {
         path: "display.bar_padding",
@@ -484,18 +425,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("1"),
         example: "[display]\nbar_padding = 0.5",
         scope: Scope::Profile,
-        en: "Padding above and below the view bar, in lines: 0, 0.5, 1, 1.5 or 2 (1 and 1.0 both work).\n\
-             0 draws the view bar on one line. A half line gets the view bar's background color with its\n\
-             outer half covered by half blocks (▀ above, ▄ below) in the screen's background color (the\n\
-             theme's, or the terminal's, asked once at startup); when that is unknown, without colors, and\n\
-             with terminal.ambiguous_wide = true, it is rounded up to an empty line.\n\
-             Terminals shorter than 16 lines, and a hidden search bar, always use 0. Other values are\n\
-             warned about and the default is used.",
-        ja: "ビューの帯の上下の余白の行の数: 0・0.5・1・1.5・2(1 と 1.0 のどちらも書ける)。0 なら帯は余白なしの1行。\
-             0.5 の端数は、帯の地の色で塗り外側の半分を画面の地の色の半分の塗りの字(上は ▀、下は ▄)で消した行で描き、\
-             帯の行に地の色を敷く。画面の地の色が分からない(テーマが画面の地を塗らず、端末も答えない)ときと、色を\
-             使わない表示と terminal.ambiguous_wide = true では、端数を1行の空き行に切り上げる。端末の高さが16行に満たないときと、\
-             検索の欄を出さないときは、いつも 0。ほかの値は警告して既定にする。",
+        en: Msg::CfgDisplayBarPadding.en(),
+        ja: Msg::CfgDisplayBarPadding.ja(),
+        msg: Msg::CfgDisplayBarPadding,
     },
     Item {
         path: "display.top_padding",
@@ -504,11 +436,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("1"),
         example: "[display]\ntop_padding = 0",
         scope: Scope::Profile,
-        en: "Padding above the header, in lines: 0, 0.5, 1, 1.5 or 2. A half line is drawn like\n\
-             display.bar_padding (▀ above the header, which then gets the view bar's background color).\n\
-             Terminals shorter than 16 lines always use 0.",
-        ja: "ヘッダーの上の余白の行の数: 0・0.5・1・1.5・2。端数は display.bar_padding と同じく描く(ヘッダーの上に ▀ の行、\
-             ヘッダーの行に帯の地の色)。端末の高さが16行に満たないときは、いつも 0。",
+        en: Msg::CfgDisplayTopPadding.en(),
+        ja: Msg::CfgDisplayTopPadding.ja(),
+        msg: Msg::CfgDisplayTopPadding,
     },
     Item {
         path: "display.row_extra_lines",
@@ -517,13 +447,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("0"),
         example: "[display]\nrow_extra_lines = 2",
         scope: Scope::Profile,
-        en: "How many extra lines a table row may grow by: a row holding a long value or a value with\n\
-             line breaks wraps it at the column width and grows up to 1 + this many lines (each row only\n\
-             as tall as it needs). What does not fit ends with …. 0 keeps every row on one line, with\n\
-             line breaks shown as …⏎. Other values are warned about and the default is used.",
-        ja: "表の行を伸ばす行の数: 長い値や改行のある値は列の幅で折り返し、行を最大で「1 + この数」の行の高さまで\
-             伸ばす(行ごとに要るだけの高さ)。入りきらない分は最後に …。0 ならどの行も1行で、改行は …⏎ で示す。\
-             ほかの値は警告して既定にする。",
+        en: Msg::CfgDisplayRowExtraLines.en(),
+        ja: Msg::CfgDisplayRowExtraLines.ja(),
+        msg: Msg::CfgDisplayRowExtraLines,
     },
     Item {
         path: "display.note_path",
@@ -532,11 +458,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"common\""),
         example: "[display]\nnote_path = \"name\"",
         scope: Scope::Profile,
-        en: "How the note column on the left shows each note: \"common\" drops the folder shared by every row,\n\
-             \"name\" shows only the name, \"full\" the path from the root, and \"off\" no name (only the row marks).\n\
-             Other values are warned about and the default is used.",
-        ja: "左のノートの欄の出し方: \"common\" は全部の行に共通のフォルダを除き、\"name\" は名前だけ、\"full\" は根からのパス、\
-             \"off\" は名前を出さない(行の印だけ)。ほかの値は警告して既定にする。",
+        en: Msg::CfgDisplayNotePath.en(),
+        ja: Msg::CfgDisplayNotePath.ja(),
+        msg: Msg::CfgDisplayNotePath,
     },
     Item {
         path: "display.tab_wrap",
@@ -545,11 +469,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\ntab_wrap = true",
         scope: Scope::Profile,
-        en: "When the view tabs do not fit on the row of the view bar, move them all to rows below the search box\n\
-             and the buttons, as many rows as they need, so every tab stays visible (the table moves down by those\n\
-             rows). false keeps one row and leaves out other tabs when the screen is narrow.",
-        ja: "ビューのタブがビューの帯の行に入らないとき、タブを全部、検索の欄とボタンの行の下に要る行の数だけ並べ、\
-             全部のタブを見せる(足した行のぶん表は下がる)。false なら1行のままで、狭い画面では今のでないタブを省く。",
+        en: Msg::CfgDisplayTabWrap.en(),
+        ja: Msg::CfgDisplayTabWrap.ja(),
+        msg: Msg::CfgDisplayTabWrap,
     },
     Item {
         path: "display.tab_wrap_gap",
@@ -558,8 +480,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("false"),
         example: "[display]\ntab_wrap = true\ntab_wrap_gap = true",
         scope: Scope::Profile,
-        en: "With tab_wrap, put one empty row between the row of the search box and the rows of tabs below it.",
-        ja: "tab_wrap でタブを下に並べたとき、検索の欄の行とその下のタブの行の間に空き行を1つ入れる。",
+        en: Msg::CfgDisplayTabWrapGap.en(),
+        ja: Msg::CfgDisplayTabWrapGap.ja(),
+        msg: Msg::CfgDisplayTabWrapGap,
     },
     Item {
         path: "display.note_name",
@@ -568,13 +491,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"\""),
         example: "[display]\nnote_name = '^\\d{8}_'",
         scope: Scope::Profile,
-        en: "A regular expression applied to the name in the note column (after note_path; with folders, to the last\n\
-             part only). When it matches, show the group named name, or else the first group, or else the name with\n\
-             the match removed. A name that does not match, or would become empty, is shown as it is. \"\" sets\n\
-             nothing. An expression that cannot be read is warned about and not used.",
-        ja: "ノートの欄の名前に当てる正規表現(note_path のあと。フォルダがあれば最後の名前の部分だけ)。一致したら、\
-             名前の付いた組 name、無ければ1つ目の組、組が無ければ一致した部分を除いた残りを出す。一致しない名前と、\
-             空になる名前はそのまま。\"\" は何もしない。読めない正規表現は警告して使わない。",
+        en: Msg::CfgDisplayNoteName.en(),
+        ja: Msg::CfgDisplayNoteName.ja(),
+        msg: Msg::CfgDisplayNoteName,
     },
     Item {
         path: "dates.format",
@@ -583,10 +502,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"YYYY-MM-DD\""),
         example: "[dates]\nformat = \"YYYY/MM/DD (ddd)\"",
         scope: Scope::Profile,
-        en: "How dates are shown and typed in the table. Parts: YYYY, YY, MM, M, DD, D, ddd\n\
-             (weekday) and non-alphanumeric separators. Notes are always written as YYYY-MM-DD.",
-        ja: "表の日付の見せ方と打ち込みの形。部品は YYYY・YY・MM・M・DD・D・ddd(曜日)と英数字でない区切り。\
-             ノートにはいつも YYYY-MM-DD で書く。",
+        en: Msg::CfgDatesFormat.en(),
+        ja: Msg::CfgDatesFormat.ja(),
+        msg: Msg::CfgDatesFormat,
     },
     Item {
         path: "dates.week_start",
@@ -595,8 +513,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("\"sun\""),
         example: "[dates]\nweek_start = \"mon\"",
         scope: Scope::Profile,
-        en: "First day of the week in the date calendar.",
-        ja: "日付のカレンダーの週の始まり。",
+        en: Msg::CfgDatesWeekStart.en(),
+        ja: Msg::CfgDatesWeekStart.ja(),
+        msg: Msg::CfgDatesWeekStart,
     },
     Item {
         path: "edit.candidates",
@@ -605,9 +524,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("20"),
         example: "[edit]\ncandidates = 30",
         scope: Scope::Profile,
-        en: "Maximum number of value candidates offered when editing a text cell.\n\
-             Columns with more distinct values offer no candidates.",
-        ja: "テキストのセルの編集で出す値の候補の上限。異なる値がこれより多い列は候補を出さない。",
+        en: Msg::CfgEditCandidates.en(),
+        ja: Msg::CfgEditCandidates.ja(),
+        msg: Msg::CfgEditCandidates,
     },
     Item {
         path: "edit.add_frontmatter",
@@ -616,10 +535,9 @@ pub const ITEMS: &[Item] = &[
         default: Some("true"),
         example: "[edit]\nadd_frontmatter = false",
         scope: Scope::Profile,
-        en: "Allow writing to notes with no front matter or an empty one (a front matter or a key\n\
-             line is added). false makes those notes read-only.",
-        ja: "フロントマターの無いノートと空のフロントマターのノートにも書く(フロントマターかキーの行を足す)。\
-             false ならこの2つは読むだけ。",
+        en: Msg::CfgEditAddFrontmatter.en(),
+        ja: Msg::CfgEditAddFrontmatter.ja(),
+        msg: Msg::CfgEditAddFrontmatter,
     },
     Item {
         path: "new_note",
@@ -628,18 +546,9 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "[new_note]\nfolder = \"inbox\"\nname = \"{date} \"\nask = [\"priority\", \"due\"]\nrequired = [\"due\"]\nhidden = [\"created\"]\nbody = \"templates/note.md\"\n\n[new_note.set]\ntags = [\"inbox\"]\ndue = \"{date+7}\"\ncreated = \"{now}\"",
         scope: Scope::Profile,
-        en: "How a new note is made from the table: mode (\"form\": a form with every field, or\n\
-             \"editor\": create and open in the editor), folder (relative to the opened folder), name (name\n\
-             template), ask (the form's columns; default: the visible columns), required (columns that must\n\
-             be filled), hidden (columns written without a field), body (a body template file) and\n\
-             [new_note.set] (column = value). Templates may use {date}, {date+7}, {date:YYYY/MM/DD},\n\
-             {time}, {now}, {weekday}, {name} and {folder}. Values from the view's filter come first.\n\
-             The table is one item: a narrower place that writes it replaces it whole.",
-        ja: "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・\
-             folder(開いたフォルダからの相対)・name(名前の雛形)・ask(窓に出す列。既定は見えている列)・\
-             required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・\
-             [new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・\
-             {name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。",
+        en: Msg::CfgNewNote.en(),
+        ja: Msg::CfgNewNote.ja(),
+        msg: Msg::CfgNewNote,
     },
     Item {
         path: "keys",
@@ -648,13 +557,31 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "[keys.table]\n\"ctrl+f\" = \"search\"\n\"x\" = \"none\"",
         scope: Scope::Global,
-        en: "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\
-             \"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\n\
-             filter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree, gantt, kanban, chart. Action\n\
-             names are shown in the command palette (:).",
-        ja: "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\
-             \"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・\
-             filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type・tree・gantt・kanban・chart。動作の名前はコマンドのパレット(:)に出る。",
+        en: Msg::CfgKeys.en(),
+        ja: Msg::CfgKeys.ja(),
+        msg: Msg::CfgKeys,
+    },
+    Item {
+        path: "keys.vim",
+        ty: "boolean",
+        ty_ja: "真偽値",
+        default: Some("false"),
+        example: "[keys]\nvim = true",
+        scope: Scope::Global,
+        en: Msg::CfgKeysVim.en(),
+        ja: Msg::CfgKeysVim.ja(),
+        msg: Msg::CfgKeysVim,
+    },
+    Item {
+        path: "search.across",
+        ty: "boolean",
+        ty_ja: "真偽値",
+        default: Some("false"),
+        example: "[search]\nacross = true",
+        scope: Scope::Global,
+        en: Msg::CfgSearchAcross.en(),
+        ja: Msg::CfgSearchAcross.ja(),
+        msg: Msg::CfgSearchAcross,
     },
     Item {
         path: "templates",
@@ -663,11 +590,31 @@ pub const ITEMS: &[Item] = &[
         default: None,
         example: "[templates.night.look]\ntheme = \"dracula\"\npreset = \"dozy-pink\"",
         scope: Scope::Global,
-        en: "Named pieces of a profile ([look], [display], [dates], [edit], [new_note]). use = \"<name>\" in\n\
-             any place lays one under that place's values. ui.toml's template wins over config.toml's of\n\
-             the same name.",
-        ja: "名前を付けたプロファイルの断片([look]・[display]・[dates]・[edit]・[new_note])。どの範囲でも\
-             use = \"<名前>\" で、その範囲の値の下に敷く。同じ名前は ui.toml のものが config.toml より先。",
+        en: Msg::CfgTemplates.en(),
+        ja: Msg::CfgTemplates.ja(),
+        msg: Msg::CfgTemplates,
+    },
+    Item {
+        path: "conditions",
+        ty: "table of tables ([conditions.<name>] with expr, label, key, hide)",
+        ty_ja: "表の表([conditions.<名前>] の下に expr・label・key・hide)",
+        default: None,
+        example: "[conditions.soon]\nexpr = 'due <= today() + \"7d\"'\nkey = 1\n\n[conditions.far]\nexpr = 'start > today() + \"30d\" && !(due <= today() + \"7d\")'\nhide = true\nkey = 9",
+        scope: Scope::Global,
+        en: Msg::CfgConditions.en(),
+        ja: Msg::CfgConditions.ja(),
+        msg: Msg::CfgConditions,
+    },
+    Item {
+        path: "notices",
+        ty: "array of tables ([[notices]] with cond, text, scope, show_zero, or note, lines)",
+        ty_ja: "表の並び([[notices]] の下に cond・text・scope・show_zero か note・lines)",
+        default: None,
+        example: "[[notices]]\ncond = \"overdue\"\ntext = \"{count} overdue\"\nscope = \"workspace\"\n\n[[notices]]\nnote = \"~/notes/inbox.md\"\nlines = 2\n\n[conditions.overdue]\nexpr = 'due < today() && status != \"done\"'",
+        scope: Scope::Global,
+        en: Msg::CfgNotices.en(),
+        ja: Msg::CfgNotices.ja(),
+        msg: Msg::CfgNotices,
     },
 ];
 
@@ -698,7 +645,9 @@ pub const SECTIONS: &[&str] = &[
     "edit",
     "new_note",
     "keys",
+    "search",
     "templates",
+    "conditions",
 ];
 
 /// 表のプロファイルの最上位の名前(どの範囲でも書ける)。
@@ -716,6 +665,9 @@ pub const GLOBAL_KEYS: &[&str] = &[
     "git",
     "keys",
     "templates",
+    "conditions",
+    "notices",
+    "search",
 ];
 
 /// 旧い名前(0.3.0 まで)と移った先(CLI-20)。左は旧い道筋、右は新しい道筋。docs の旧い名前の表と突き合わせる。

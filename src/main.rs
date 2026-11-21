@@ -11,6 +11,7 @@ use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{CommandFactory, Parser, ValueEnum, ValueHint};
 use clap_complete::Shell;
 use mdgrid::base::{self, Base};
+use mdgrid::condition;
 use mdgrid::config::{self, Config};
 use mdgrid::i18n::{self, Lang, Language, Msg};
 use mdgrid::print;
@@ -32,6 +33,7 @@ use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::{Duration, Instant};
+use ui::stack::StackRequest;
 use ui::startup::Startup;
 use ui::{App, ColorMode};
 
@@ -69,12 +71,18 @@ enum Command {
     Print(Vec<PathBuf>, PrintFormat, bool, Vec<String>, Vec<String>),
     /// CLI-23: 画面を出さずに、ビューの行の問題(型と決まりに合わない値)を出す(開くパス)。
     Check(Vec<PathBuf>),
+    /// condition.count: 画面を出さずに、ビューの行の数を出す(開くパスと絞り込みの式)。
+    Count(Vec<PathBuf>, Vec<String>),
+    /// notice.cli: 画面を出さずに、通知の欄の項目を出す(開くパス)。
+    Notices(Vec<PathBuf>),
     /// OUT-3: 画面(`/dev/tty`)で選んだ行のパスか列の値を出す(開くパスと出すもの)。
     Pick(Vec<PathBuf>, Pick),
     /// WS-3・WS-7: ワークスペースの操作(画面を出さない)。
     Workspace(ws_cli::Op),
     /// cli.new-note-create: 画面を出さずに新しいノートを作る(開くフォルダと名前と `列=値` の並び)。
     NewNote(Vec<PathBuf>, String, Vec<String>),
+    /// cli.recent-cli: 画面を出さずに、最近開いた表を出す。
+    Recent,
     Run(Vec<PathBuf>),
 }
 
@@ -143,6 +151,9 @@ struct Cli {
     /// 印の open の表ではなく、フォルダそのものを開く(CLI-1)
     #[arg(long)]
     raw: bool,
+    /// ワークスペースのページ([[page]])を、表を縦に並べた形で開く(stack.page-cli)
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note"])]
+    page: Option<String>,
     /// 読むだけで開く(編集も保存もしない)
     #[arg(long)]
     readonly: bool,
@@ -150,8 +161,17 @@ struct Cli {
     #[arg(long)]
     no_color: bool,
     /// 今のフォルダで最後に開いていた表とビューで開く(無ければ引数なしと同じ。resume.continue)
-    #[arg(long = "continue", conflicts_with_all = ["paths", "view", "workspace", "raw", "print", "pick", "check", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(long = "continue", conflicts_with_all = ["paths", "view", "workspace", "raw", "page", "print", "pick", "check", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     resume: bool,
+    /// その名前で保存したセッション(sessions.toml)の表示で開く(表・ビュー・絞り込み・並び・列。cli.session-save)
+    #[arg(short = 's', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "raw", "resume", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    session: Option<String>,
+    /// 保存したセッション(sessions.toml)の名前と開くフォルダを1行ずつ出す(cli.session-screen-list)
+    #[arg(long, conflicts_with_all = ["paths", "session", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    sessions: bool,
+    /// 画面で開いた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の1行ずつ出す(cli.recent-cli)
+    #[arg(long, conflicts_with_all = ["paths", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    recent: bool,
     /// この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)
     #[arg(long, value_name = Msg::ValuePath.ja(), allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
     config: Option<PathBuf>,
@@ -164,8 +184,8 @@ struct Cli {
     /// --print の表の先頭に各行のノートのパスの列(path)を足す
     #[arg(long, requires = "print")]
     with_path: bool,
-    /// .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)
-    #[arg(long, value_name = Msg::ValueExpr.ja(), requires = "print", allow_hyphen_values = true)]
+    /// .base の式が真の行だけを --print・--count に出す(何度でも。.base のビューでは、その絞り込みと両方)
+    #[arg(long, value_name = Msg::ValueExpr.ja(), allow_hyphen_values = true)]
     filter: Vec<String>,
     /// --print をこの列で並べる(列[:asc|:desc]。何度でも。ビューの並べ替えの代わり)
     #[arg(long, value_name = Msg::ValueSort.ja(), requires = "print", allow_hyphen_values = true)]
@@ -173,6 +193,15 @@ struct Cli {
     /// 画面を出さずに、ビューの行の型と決まりに合わない値を1行ずつ出す(あれば終了コード 1)
     #[arg(long, conflicts_with_all = ["print", "pick"])]
     check: bool,
+    /// 画面を出さずに、ビューの行の数を出す(condition.count)
+    #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply"])]
+    count: bool,
+    /// --print・--pick・--count で、いつも隠す名前の条件(hide)を当てない(condition.show-hidden-cli)
+    #[arg(long)]
+    show_hidden: bool,
+    /// 画面を出さずに、通知の欄([[notices]])の項目を1行ずつ出す(notice.cli)
+    #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply", "count"])]
+    notices: bool,
     /// --print の形の CSV・JSON(- で標準入力)の値をノートに当てる(既定は差分だけ。--yes で書く)
     #[arg(long, value_name = Msg::ValuePath.ja(), conflicts_with_all = ["print", "pick"], allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
     apply: Option<PathBuf>,
@@ -240,8 +269,21 @@ struct Cli {
 
 /// 引数を clap で読む。読めなければ理由を1行で返す(CLI-4)。
 fn parse_cli(args: &[OsString]) -> Result<Cli, String> {
-    Cli::try_parse_from(std::iter::once(OsString::from("mdgrid")).chain(args.iter().cloned()))
-        .map_err(|e| clap_reason(&e, args))
+    let cli =
+        Cli::try_parse_from(std::iter::once(OsString::from("mdgrid")).chain(args.iter().cloned()))
+            .map_err(|e| clap_reason(&e, args))?;
+    // condition.count・condition.show-hidden-cli: 2つの旗のどちらかが要る旗は、clap の requires で書けないので手で確かめる。
+    if !cli.filter.is_empty() && !cli.print && !cli.count {
+        return Err(Msg::CliRequiredBy.fill(&[&"--filter", &"--print | --count"]));
+    }
+    if cli.show_hidden && !cli.print && !cli.count && cli.pick.is_none() {
+        return Err(Msg::CliRequiredBy.fill(&[&"--show-hidden", &"--print | --pick | --count"]));
+    }
+    // cli.session-errors: `-s` とパスの引数は、どちらを開くか曖昧なので一緒に受けない。
+    if cli.session.is_some() && !cli.paths.is_empty() {
+        return Err(Msg::SessionWithPaths.text().into());
+    }
+    Ok(cli)
 }
 
 /// clap の値の名前(`Cli` の `value_name`。文は文言の表)。
@@ -383,6 +425,8 @@ impl Cli {
             Command::Completions(s)
         } else if self.man {
             Command::Man
+        } else if self.recent {
+            Command::Recent
         } else if self.workspaces {
             Command::Workspace(ws_cli::Op::List)
         } else if self.starters {
@@ -410,6 +454,10 @@ impl Cli {
                 Command::Check(paths)
             } else if let Some(file) = self.apply {
                 Command::Apply(paths, file, self.yes)
+            } else if self.count {
+                Command::Count(paths, self.filter)
+            } else if self.notices {
+                Command::Notices(paths)
             } else if self.print {
                 Command::Print(
                     paths,
@@ -438,11 +486,14 @@ impl Cli {
             (self.man, "--man"),
             (self.print, "--print"),
             (self.check, "--check"),
+            (self.count, "--count"),
+            (self.notices, "--notices"),
             (self.with_path, "--with-path"),
             (self.workspaces, "--workspaces"),
             (self.init_workspace, "--init-workspace"),
             (self.with_samples, "--with-samples"),
             (self.starters, "--starters"),
+            (self.recent, "--recent"),
         ] {
             if on {
                 out.push(OsString::from(flag));
@@ -610,7 +661,12 @@ fn load_config(
         || config::CONFIG_FILE.to_string(),
         |n| n.to_string_lossy().into_owned(),
     );
-    config::parse_named(&text, &name).map_err(|e| format!("{}: {}", path.display(), e))
+    let (mut c, w) =
+        config::parse_named(&text, &name).map_err(|e| format!("{}: {}", path.display(), e))?;
+    // notice.note-item: 連絡のノートの `~` はホーム、相対は設定のファイルのフォルダから。
+    let home = std::env::var_os("HOME").map(PathBuf::from);
+    mdgrid::notice::resolve_notes(&mut c.notices, path.parent(), home.as_deref());
+    Ok((c, w))
 }
 
 /// 設定ファイルの文(CLI-20 の `--migrate-config`)。`--config` のパスか既定の置き場。無ければ空。
@@ -885,6 +941,16 @@ fn language(explicit: Option<&Path>, default: Option<PathBuf>) -> Lang {
     i18n::resolve(setting, |k| std::env::var(k).ok())
 }
 
+/// condition.define: 設定の名前の条件(警告は捨てる。設定を読むところで同じ警告が出る)。
+fn conditions(explicit: Option<&Path>, default: Option<PathBuf>) -> condition::Conditions {
+    explicit
+        .map(Path::to_path_buf)
+        .or(default)
+        .and_then(|p| std::fs::read_to_string(p).ok())
+        .map(|t| condition::peek(&t))
+        .unwrap_or_default()
+}
+
 fn main() -> ExitCode {
     // BV-6・CE-21: 今日と今は地域の時刻。時差は糸がまだ1本のうちに決める(time はそうでないと断る)。
     print::set_local_offset(
@@ -898,15 +964,58 @@ fn main() -> ExitCode {
     // CLI-1: `--raw` は印の `open` を使わない(命令の旗でもオプションでもないので、先に読んでおく)。
     // `-w` だけ(パスなし)かは、命令の旗(`--print` など)を除いた位置の引数で見る。
     let (raw, no_paths) = parse_cli(&args).map_or((false, true), |c| (c.raw, c.paths.is_empty()));
+    // condition.show-hidden-cli: `--show-hidden`(`--print`・`--pick`・`--count` と一緒のときだけ受ける)。
+    let show_hidden = parse_cli(&args).is_ok_and(|c| c.show_hidden);
+    // cli.session-save・cli.session-screen-list: `-s <名前>` と `--sessions`(オプションと同じく、先に読んでおく)。
+    let (session_name, list_sessions) =
+        parse_cli(&args).map_or((None, false), |c| (c.session, c.sessions));
+    // stack.page-cli: `--page <名前>`(オプションでも命令の旗でもないので、先に読んでおく)。
+    let page = parse_cli(&args).ok().and_then(|c| c.page);
     let opts = match take_options(&mut args) {
         Ok(o) => o,
         Err(e) => return fail(&e),
     };
     // SR-23: 設定の language で決め直す(--help と起動できない理由もこの言語)。
     i18n::set_default(language(opts.config.as_deref(), config::config_path()));
+    // condition.define: 名前の条件を、表(`.base` の式)を読む前に置く(`cond("名前")` がどこでも効くように)。
+    condition::install(std::sync::Arc::new(conditions(
+        opts.config.as_deref(),
+        config::config_path(),
+    )));
+    // `--help`・`--version` は、ほかの命令と同じくセッションより先にする(残りの引数に旗のまま残っている)。
+    let asks_usage = args.iter().any(|a| a == "--help" || a == "--version");
+    // cli.session-screen-list: 保存したセッションの一覧(画面を出さない)。
+    if list_sessions && !asks_usage {
+        return sessions_cli();
+    }
+    // cli.session-save・cli.session-errors: セッションを名前で引き、開くパスを引数の代わりにする(読むだけも足す)。
+    let session = match session_name
+        .as_deref()
+        .filter(|_| !asks_usage)
+        .map(find_session)
+    {
+        None => None,
+        Some(Ok(s)) => Some(s),
+        Some(Err(e)) => return fail(&e),
+    };
+    let opts = match &session {
+        Some((s, _)) => Options {
+            readonly: opts.readonly || s.readonly,
+            ..opts
+        },
+        None => opts,
+    };
+    if let Some((s, _)) = &session {
+        let paths = s.open_paths();
+        if paths.iter().any(|p| p.to_string_lossy().starts_with('-')) {
+            args.push("--".into());
+        }
+        args.extend(paths.into_iter().map(PathBuf::into_os_string));
+    }
     let no_args = args.is_empty();
     // CLI-1: `-w` だけで(パスなしで)開くワークスペースの最初の表には、印の `open` を使わない。
-    let use_marker = !(raw || opts.workspace.is_some() && no_paths);
+    // セッションは開いた表そのものを持つので、フォルダの印の `open` に置き換えない。
+    let use_marker = !(raw || opts.workspace.is_some() && no_paths) && session.is_none();
     let (paths, pick) = match parse_args(&args) {
         Ok(Command::Help) => {
             println!("{}", usage());
@@ -956,6 +1065,8 @@ fn main() -> ExitCode {
         // CLI-13・SR-10: 画面を出さないので、標準出力がパイプでも出す。
         Ok(Command::Completions(shell)) => return emit(Ok(completions(shell))),
         Ok(Command::Man) => return emit(man_page()),
+        // cli.recent-cli・SR-10: 画面を出さないので、標準出力がパイプでも出す。
+        Ok(Command::Recent) => return emit(Ok(recent_lines().into_bytes())),
         // WS-3・SR-10: 画面を出さないので、標準出力がパイプでも出す。
         Ok(Command::Workspace(op)) => {
             return match ws_cli::run(op, config_dir().as_deref()) {
@@ -977,7 +1088,46 @@ fn main() -> ExitCode {
             };
             let (p, opts) = marker_for_print(p, &opts, use_marker);
             let out = ViewOut::Print(f.lib(), w);
-            return print_view(&md_to_folder(p).0, &opts, out, &filter, &sort, &only);
+            return print_view(
+                &md_to_folder(p).0,
+                &opts,
+                show_hidden,
+                out,
+                &filter,
+                &sort,
+                &only,
+            );
+        }
+        Ok(Command::Count(p, filter)) => {
+            let only = md_files(&p);
+            let p = match &opts.workspace {
+                Some(name) => match workspace_paths(name, p, no_args) {
+                    Ok(p) => p,
+                    Err(e) => return fail(&e),
+                },
+                None => p,
+            };
+            let (p, opts) = marker_for_print(p, &opts, use_marker);
+            return print_view(
+                &md_to_folder(p).0,
+                &opts,
+                show_hidden,
+                ViewOut::Count,
+                &filter,
+                &[],
+                &only,
+            );
+        }
+        Ok(Command::Notices(p)) => {
+            let p = match &opts.workspace {
+                Some(name) => match workspace_paths(name, p, no_args) {
+                    Ok(p) => p,
+                    Err(e) => return fail(&e),
+                },
+                None => p,
+            };
+            let (p, opts) = marker_for_print(p, &opts, use_marker);
+            return notices_cli(&md_to_folder(p).0, &opts);
         }
         Ok(Command::Check(p)) => {
             // CLI-15: 渡した `.md` のノートだけを確かめる(`--print` と同じ。pre-commit で変えたノートだけを渡せる)。
@@ -991,7 +1141,7 @@ fn main() -> ExitCode {
             };
             let (p, opts) = marker_for_print(p, &opts, use_marker);
             let paths = md_to_folder(p).0;
-            return print_view(&paths, &opts, ViewOut::Check, &[], &[], &only);
+            return print_view(&paths, &opts, false, ViewOut::Check, &[], &[], &only);
         }
         Ok(Command::NewNote(p, name, sets)) => {
             return new_note_cli(&p, &opts, use_marker, &name, &sets)
@@ -1039,14 +1189,33 @@ fn main() -> ExitCode {
         Ok(a) => a,
         Err(e) => return fail(&e),
     };
-    app.select_after_load = select;
-    // WS-7: 印の表の `view` は、登録した表と同じく開いてから選ぶ(`.base` のビューでも mdgrid のビューでもよい)。
-    if let Some(v) = &marker_view {
-        app.select_view_named(v);
+    if let Some(name) = &page {
+        // stack.page-cli: 開いた表の範囲のページを、表を縦に並べた形で開く(無い名前は画面を出さずに理由)。
+        app = match open_page(&app, name, &opts) {
+            Ok(a) => a,
+            Err(e) => return fail(&e),
+        };
+    } else {
+        app.select_after_load = select;
+        // condition.show-hidden-cli: `--pick --show-hidden` は、いつも隠す名前の条件を当てない。
+        if show_hidden {
+            app.show_hidden_conditions();
+        }
+        // WS-7: 印の表の `view` は、登録した表と同じく開いてから選ぶ(`.base` のビューでも mdgrid のビューでもよい)。
+        if let Some(v) = &marker_view {
+            app.select_view_named(v);
+        }
+        // resume.continue-fallback: 覚えたビューは開いてから選ぶ(もう無ければ先頭のビューと理由)。
+        if let Some(v) = &continue_view {
+            app.select_view_named(v);
+        }
     }
-    // resume.continue-fallback: 覚えたビューは開いてから選ぶ(もう無ければ先頭のビューと理由)。
-    if let Some(v) = &continue_view {
-        app.select_view_named(v);
+    // cli.session-save: セッションのビューを開いてから選び(もう無ければ先頭のビューと理由)、表示を当てる。
+    if let Some((s, warns)) = session {
+        if let Some(v) = &s.view {
+            app.select_view_named(v);
+        }
+        app.apply_session(&s, warns);
     }
     // SR-10: `--pick` は画面を端末(`/dev/tty`)に出すので、標準出力は見ない。
     let tty = match pick {
@@ -1058,9 +1227,16 @@ fn main() -> ExitCode {
     }
     let Some(what) = pick else {
         // CLI-1・CLI-19: 引数なしで起動し、登録した表があれば一覧を重ねて始める。
-        if no_args && !marker && opts.workspace.is_none() && !app.registered.is_empty() {
+        if no_args
+            && !marker
+            && opts.workspace.is_none()
+            && page.is_none()
+            && !app.registered.is_empty()
+        {
             app.start_open_places(true);
         }
+        // workspace.switch-origin: 起動したときに開いた所(切り替えの一覧の「最初に開いた所」)。
+        app.mark_origin(opts.workspace.clone());
         let resumer = reopen::Resumer::new(
             Reopen::new(
                 &paths,
@@ -1109,6 +1285,48 @@ fn main() -> ExitCode {
         out.push('\n');
     }
     emit(Ok(out.into_bytes()))
+}
+
+/// cli.session-screen-list: 保存したセッションの名前と開くフォルダを1行ずつ出す(無ければ何も出さない)。
+/// sessions.toml の警告は標準エラーへ、壊れていれば理由1行と終了コード 2。
+fn sessions_cli() -> ExitCode {
+    let Some(dir) = config_dir() else {
+        return ExitCode::SUCCESS;
+    };
+    match mdgrid::session::load(&dir) {
+        Ok((list, warns)) => {
+            for w in &warns {
+                eprintln!("mdgrid: {w}");
+            }
+            emit(Ok(mdgrid::session::list_text(&list).into_bytes()))
+        }
+        Err(e) => fail(&e),
+    }
+}
+
+/// cli.session-save・cli.session-errors: 名前のセッションと sessions.toml の警告。無い名前・壊れたファイル・
+/// 開くフォルダが無いときは理由1行。
+fn find_session(name: &str) -> Result<(mdgrid::session::Session, Vec<String>), String> {
+    let (list, warns) = match config_dir() {
+        Some(d) => mdgrid::session::load(&d)?,
+        None => (Vec::new(), Vec::new()),
+    };
+    let Some(s) = list.iter().find(|s| s.name == name).cloned() else {
+        let names: Vec<&str> = list.iter().map(|s| s.name.as_str()).collect();
+        return Err(if names.is_empty() {
+            Msg::SessionNoneSaved.fill(&[&name])
+        } else {
+            Msg::SessionUnknown.fill(&[&name, &names.join(Msg::ListSep.text())])
+        });
+    };
+    let paths = s.open_paths();
+    if paths.is_empty() {
+        return Err(Msg::SessionNoPaths.fill(&[&name]));
+    }
+    if let Some(p) = paths.iter().find(|p| !mdgrid::workspace::openable(p)) {
+        return Err(Msg::SessionMissingPath.fill(&[&name, &mdgrid::session::home_short(p)]));
+    }
+    Ok((s, warns))
 }
 
 /// 印の表(CLI-1・WS-7): 開くフォルダが1つで印の根なら、印の `open` の表に置き換える(`--raw` のときは呼ばない)。
@@ -1264,6 +1482,46 @@ fn run_switching(
             resumer.finish();
             return fail(&Msg::TerminalError.fill(&[&e]));
         }
+        // stack.add・stack.page-open: 表を開いて今の表の下に並べる・ページを開く。開けなければ理由を出して戻る。
+        if let Some(req) = app.stack_request.take() {
+            app.quit = false;
+            match req {
+                StackRequest::Add(place) => match open_app(
+                    std::slice::from_ref(&place.path),
+                    None,
+                    &opts,
+                    false,
+                    Vec::new(),
+                ) {
+                    Ok((mut next, _)) => {
+                        if let Some(v) = &place.view {
+                            next.select_view_named(v);
+                        }
+                        next.place_name = Some(place.name.clone());
+                        app.stack_push(next);
+                    }
+                    Err(e) => app.message = Some(e),
+                },
+                StackRequest::Page(name) => match open_page(&app, &name, &opts) {
+                    Ok(mut next) => {
+                        next.git_pending = std::mem::take(&mut app.git_pending);
+                        app = next;
+                        resumer.switch(Reopen::new(
+                            &ui::stack::target_paths(&app),
+                            opts.workspace.clone(),
+                            opts.readonly,
+                            opts.no_color,
+                            opts.config.as_deref(),
+                        ));
+                    }
+                    Err(e) => {
+                        app.set_mode(ui::keymap::Mode::Table);
+                        app.message = Some(e);
+                    }
+                },
+            }
+            continue;
+        }
         let Some(place) = app.switch_to.take() else {
             // resume.herdr-release: 自分で終えた窓は Herdr に返す(立て直しで開き直さない)。
             resumer.finish();
@@ -1273,10 +1531,20 @@ fn run_switching(
             }
             return ExitCode::SUCCESS;
         };
+        // workspace.switch-target: 移る前の表とビューを覚えて、次の表へ持ち越す(切り替えの一覧の移る先)。
+        app.leave_visit();
+        let visits = std::mem::take(&mut app.visits);
         // REL-4・REL-5: 開き直したあとに選ぶノート。
         let select = app.switch_select.take();
         // CE-25: 関係マップの「+ 新規」で移ったら、開いた表で名前の欄を出す。
         let new_note = std::mem::take(&mut app.switch_new_note);
+        let cond = app.switch_cond.take();
+        // navigation.across-open: 横断の検索から移った表は、同じ語で検索する(移る先の表に向けたものだけ)。
+        let search = app
+            .switch_search
+            .take()
+            .filter(|(p, _)| *p == place.path)
+            .map(|(_, w)| w);
         // WS-2: ワークスペースを開いて移ったら、以後の範囲はそのワークスペース。
         if let Some(ws) = app.switch_workspace.take() {
             opts.workspace = Some(ws);
@@ -1293,12 +1561,24 @@ fn run_switching(
             Ok((mut next, ed)) => {
                 // 別の表へ移っても、まだ git に渡していないノートは持ち越す。
                 next.git_pending = std::mem::take(&mut app.git_pending);
+                next.visits = visits;
                 app = next;
                 editor = ed;
                 app.select_after_load = select;
                 app.new_note_after_load = new_note;
+                // notice.jump: 通知の欄から移った表は、その名前の条件で絞る。
+                if let Some(c) = cond {
+                    app.narrow_by_condition(&c);
+                }
+                if let Some(w) = search {
+                    app.search_for(&w);
+                }
                 if let Some(v) = &place.view {
                     app.select_view_named(v);
+                }
+                // workspace.switch-origin: 起動の一覧で選んで移ったら、移った先を最初に開いた所にする。
+                if std::mem::take(&mut app.visits.retarget) {
+                    app.mark_origin(opts.workspace.clone());
                 }
                 // resume.herdr-follow: 移った表で開き直す命令にする(ビューは次の tick で画面から取る)。
                 resumer.switch(Reopen::new(
@@ -1311,11 +1591,75 @@ fn run_switching(
             }
             Err(e) => {
                 app.quit = false;
+                app.visits = visits;
+                app.visits.retarget = false;
                 app.set_mode(ui::keymap::Mode::Table);
                 app.message = Some(e);
             }
         }
     }
+}
+
+/// cli.recent-cli: 最近開いた表の行(新しい順。無くなった表は外す。見た目の状態の置き場が無ければ空)。
+fn recent_lines() -> String {
+    let mut out = String::new();
+    if let Some(dir) = config::state_dir() {
+        for r in mdgrid::recent::present(&dir) {
+            out.push_str(&r.line());
+            out.push('\n');
+        }
+    }
+    out
+}
+
+/// stack.page-open・stack.page-cli: 範囲のページ `name` を、表を縦に並べた形で開く。`app` は範囲とページを読んだ
+/// 表(ページの表はそれぞれ開き直す)。無い名前は「ある名前」を添えた理由。開けない表は飛ばしてメッセージ行に
+/// 出し、1つも開けなければ理由。
+fn open_page(app: &App, name: &str, opts: &Options) -> Result<App, String> {
+    let Some(page) = app.pages.iter().find(|p| p.name == name) else {
+        let names: Vec<&str> = app.pages.iter().map(|p| p.name.as_str()).collect();
+        return Err(if names.is_empty() {
+            Msg::PageNone.fill(&[&name])
+        } else {
+            Msg::PageUnknown.fill(&[&name, &names.join(", ")])
+        });
+    };
+    let tables = app.scope.as_ref().map_or(&[][..], |s| s.tables.as_slice());
+    let mut apps = Vec::new();
+    let mut weights = Vec::new();
+    let mut errs = Vec::new();
+    for t in &page.tables {
+        let Some(wt) = tables.iter().find(|x| x.name == t.table) else {
+            continue;
+        };
+        match open_app(
+            std::slice::from_ref(&wt.path),
+            None,
+            opts,
+            false,
+            Vec::new(),
+        ) {
+            Ok((mut a, _)) => {
+                if let Some(v) = t.view.as_ref().or(wt.view.as_ref()) {
+                    a.select_view_named(v);
+                }
+                a.place_name = Some(t.table.clone());
+                apps.push(a);
+                weights.push(t.height);
+            }
+            Err(e) => errs.push(format!("{}: {e}", t.table)),
+        }
+    }
+    let failed = Msg::PageOpenFailed.fill(&[&name, &errs.join(" / ")]);
+    let mut out =
+        App::stack_of(apps, weights, Some(name.to_string())).ok_or_else(|| failed.clone())?;
+    if !errs.is_empty() {
+        out.message = Some(match out.message.take() {
+            Some(m) => format!("{m} / {failed}"),
+            None => failed,
+        });
+    }
+    Ok(out)
 }
 
 /// `--pick path` の1行(OUT-3): ノートの実体のパスが起動の引数のフォルダ(`.base` ならそのフォルダ)を
@@ -1368,6 +1712,129 @@ fn config_dir() -> Option<PathBuf> {
 enum ViewOut {
     Print(print::Format, bool),
     Check,
+    /// condition.count: 行の数。
+    Count,
+}
+
+/// notice.cli: 画面を出さずに、通知の欄の項目を1行ずつ出す。表は画面と同じ道で開き(範囲も同じ)、
+/// 読むだけ・色なしにする。項目が無ければ何も出さない。
+fn notices_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
+    let opts = Options {
+        no_color: true,
+        readonly: true,
+        ..opts.clone()
+    };
+    let (mut app, _) = match open_app(paths, opts.view.as_deref(), &opts, true, Vec::new()) {
+        Ok(a) => a,
+        Err(e) => return fail(&e),
+    };
+    while !app.loaded() {
+        app.load_step(LOAD_BUDGET);
+    }
+    let lines = app.notice_report();
+    let mut out = String::new();
+    for l in lines {
+        out.push_str(&l);
+        out.push('\n');
+    }
+    emit(Ok(out.into_bytes()))
+}
+
+/// notice.scope・notice.count-rows・notice.unreadable: 表ごとに、表の行(`.base` の最上位の絞り込みと、
+/// いつも隠す条件 `hides` のあと)のうち `cond` に当たる行を数える。開けない表は理由にする。
+/// 通知の欄(裏の糸)と `--notices` が使う。
+pub(crate) fn count_tables(
+    places: &[(String, PathBuf)],
+    cond: &mdgrid::expr::Expr,
+    hides: &[mdgrid::expr::Expr],
+    today: i64,
+    now: i64,
+) -> Vec<(String, PathBuf, Result<usize, String>)> {
+    places
+        .iter()
+        .map(|(name, path)| {
+            let counted = open_target(std::slice::from_ref(path), None).map(|t| {
+                let mut src = t.src;
+                while !src.load(LOAD_BUDGET).done {}
+                let base = t.base.map(|(b, _, _)| b);
+                let prop = |r: &mdgrid::source::RowId, k: &str| src.get(r, k).value;
+                let hits = |r: &mdgrid::source::RowId, e: &mdgrid::expr::Expr| {
+                    let v = match &base {
+                        Some(b) => b.eval_row(src.as_ref(), &prop, r, e, today, now),
+                        None => base::eval_plain(src.as_ref(), &prop, r, e, today, now),
+                    };
+                    mdgrid::expr::passes(&v)
+                };
+                src.rows()
+                    .iter()
+                    .filter(|r| {
+                        base.as_ref()
+                            .is_none_or(|b| b.keeps(src.as_ref(), &prop, r, today, now))
+                    })
+                    .filter(|r| !hides.iter().any(|e| hits(r, e)))
+                    .filter(|r| hits(r, cond))
+                    .count()
+            });
+            (name.clone(), path.clone(), counted)
+        })
+        .collect()
+}
+
+/// condition.hide-everywhere・condition.view-settings: いつも隠す名前の条件に当たる行と、mdgrid のビューに
+/// 掛けた名前の条件に合わない行を、表から除く(画面の grid.rs の重ねと同じ判定)。
+fn drop_by_conditions(
+    table: &mut print::Table,
+    view: print::ViewDef<'_>,
+    src: &dyn Source,
+    show_hidden: bool,
+    today: i64,
+    now: i64,
+) {
+    let conds = condition::current();
+    let hide: Vec<&mdgrid::expr::Expr> = if show_hidden {
+        Vec::new()
+    } else {
+        conds
+            .list()
+            .iter()
+            .filter(|c| c.hide)
+            .filter_map(|c| conds.expr(&c.name))
+            .collect()
+    };
+    let named: Vec<(Option<&mdgrid::expr::Expr>, bool)> = match view {
+        print::ViewDef::Native(nv) => nv
+            .settings
+            .named
+            .iter()
+            .map(|n| (conds.expr(&n.name), n.hide))
+            .collect(),
+        _ => Vec::new(),
+    };
+    if hide.is_empty() && named.is_empty() {
+        return;
+    }
+    let prop = |r: &mdgrid::source::RowId, k: &str| src.get(r, k).value;
+    let hits = |r: &mdgrid::source::RowId, e: &mdgrid::expr::Expr| {
+        let v = match view {
+            print::ViewDef::Base(b, _) => b.eval_row(src, &prop, r, e, today, now),
+            _ => base::eval_plain(src, &prop, r, e, today, now),
+        };
+        mdgrid::expr::passes(&v)
+    };
+    let keep: Vec<bool> = table
+        .row_ids
+        .iter()
+        .map(|r| {
+            !hide.iter().any(|e| hits(r, e))
+                && named
+                    .iter()
+                    .all(|(e, h)| e.is_some_and(|e| hits(r, e)) != *h)
+        })
+        .collect();
+    let mut k = keep.iter();
+    table.rows.retain(|_| *k.next().unwrap_or(&false));
+    let mut k = keep.iter();
+    table.row_ids.retain(|_| *k.next().unwrap_or(&false));
 }
 
 /// `--print`(CLI-5): ノートを全部読んでから、ビューの表を標準出力に出す。画面の見た目の状態は使わず、
@@ -1377,6 +1844,7 @@ enum ViewOut {
 fn print_view(
     paths: &[PathBuf],
     opts: &Options,
+    show_hidden: bool,
     out: ViewOut,
     filter: &[String],
     sort: &[String],
@@ -1384,7 +1852,7 @@ fn print_view(
 ) -> ExitCode {
     let (format, with_path) = match out {
         ViewOut::Print(f, w) => (f, w),
-        ViewOut::Check => (print::Format::Csv, false),
+        ViewOut::Check | ViewOut::Count => (print::Format::Csv, false),
     };
     // CLI-16: `列[:asc|:desc]` を先に読む(読めなければ理由1行)。
     let mut sorts = Vec::new();
@@ -1495,6 +1963,15 @@ fn print_view(
         table.rows.retain(|_| *k.next().unwrap_or(&false));
         let mut k = keep.iter();
         table.row_ids.retain(|_| *k.next().unwrap_or(&false));
+    }
+    // condition.hide-everywhere・condition.view-settings: いつも隠す名前の条件(`--show-hidden` で当てない)と、
+    // mdgrid のビューに掛けた名前の条件。
+    drop_by_conditions(&mut table, view, src.as_ref(), show_hidden, today, now);
+    if out == ViewOut::Count {
+        for w in warnings.iter().chain(&table.warnings) {
+            eprintln!("mdgrid: {w}");
+        }
+        return emit(Ok(format!("{}\n", table.rows.len()).into_bytes()));
     }
     if out == ViewOut::Check {
         return check_rows(paths, opts, &config, src.as_ref(), &table.row_ids, warnings);
@@ -1932,12 +2409,30 @@ fn check_dev_tty() -> Result<(), String> {
         .map_err(|e| Msg::NoDevTty.fill(&[&e]))
 }
 
+/// screen.vim-mode-shown: vim モードでカーソルの形を変えたか(変えたときだけ、戻すときに端末の既定の形に戻す)。
+static CURSOR_SHAPED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// カーソルの形を端末に送る(vim モードの入力の欄の挿入は棒、ノーマルは四角)。
+fn set_cursor_shape(out: &mut impl Write, shape: ui::vim::CursorShape) -> io::Result<()> {
+    use ui::vim::CursorShape;
+    CURSOR_SHAPED.store(true, std::sync::atomic::Ordering::SeqCst);
+    let style = match shape {
+        CursorShape::Default => cursor::SetCursorStyle::DefaultUserShape,
+        CursorShape::Bar => cursor::SetCursorStyle::SteadyBar,
+        CursorShape::Block => cursor::SetCursorStyle::SteadyBlock,
+    };
+    execute!(out, style)
+}
+
 /// 端末を戻す(通常の終わりとパニックの両方から呼ぶ)。
 fn restore(screen: Screen) {
     let _ = terminal::disable_raw_mode();
     let Ok(mut out) = screen.writer() else {
         return;
     };
+    if CURSOR_SHAPED.load(std::sync::atomic::Ordering::SeqCst) {
+        let _ = execute!(out, cursor::SetCursorStyle::DefaultUserShape);
+    }
     let _ = out.write_all(b"\x1b[?1006l\x1b[?1002l");
     let _ = execute!(
         out,
@@ -2010,8 +2505,14 @@ fn event_loop(
     let mut term = Terminal::new(CrosstermBackend::new(screen.writer()?))?;
     clear_screen(&mut term, screen)?;
     let mut last_poll = Instant::now();
+    // screen.vim-mode-shown: 送ったカーソルの形(vim モードでなければ変えない)。
+    let mut shape = ui::vim::CursorShape::Default;
     loop {
         tick(app);
+        // notice.background: 裏の糸で数えた通知の欄の数を拾う。
+        app.notice_poll();
+        // navigation.across-progress: 横断の検索で読み終えた表の結果を拾う。
+        app.across_poll();
         if !app.loaded() {
             app.load_step(LOAD_BUDGET);
         } else if last_poll.elapsed() >= app.poll_interval() {
@@ -2021,11 +2522,21 @@ fn event_loop(
         let size = term.size()?;
         app.resize(size.width, size.height);
         execute!(term.backend_mut(), BeginSynchronizedUpdate)?;
-        term.draw(|f| ui::draw(f, app))?;
+        term.draw(|f| ui::draw_screen(f, app))?;
         execute!(term.backend_mut(), EndSynchronizedUpdate)?;
+        if app.cursor_shape() != shape {
+            shape = app.cursor_shape();
+            set_cursor_shape(term.backend_mut(), shape)?;
+        }
 
         let wait = if app.loaded() {
-            app.poll_interval().saturating_sub(last_poll.elapsed())
+            let w = app.poll_interval().saturating_sub(last_poll.elapsed());
+            // navigation.across-progress: 横断の検索で読んでいる間は、結果と進みをすぐ出すよう短く待つ。
+            if app.across_busy() {
+                w.min(Duration::from_millis(50))
+            } else {
+                w
+            }
         } else {
             Duration::ZERO
         };

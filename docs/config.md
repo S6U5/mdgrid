@@ -7,7 +7,7 @@ mdgrid reads one TOML file:
 - `$XDG_CONFIG_HOME/mdgrid/config.toml`, or `~/.config/mdgrid/config.toml` when `XDG_CONFIG_HOME` is unset (also on macOS). On Windows, when `XDG_CONFIG_HOME` is unset: `%APPDATA%\mdgrid\config.toml`.
 - `mdgrid --config <path>` reads that file instead.
 
-The same folder also holds files that mdgrid writes itself: `ui.toml` (what you pick on the screen, such as the theme in the "Look" section of the view settings), `views.toml` (mdgrid views and per-table settings), `workspaces.toml` (workspaces) and `places.toml` (registered tables; see [Register the tables you use](manual/en/tasks.md#register-the-tables-you-use-and-switch-between-them)). mdgrid never rewrites `config.toml`.
+The same folder also holds files that mdgrid writes itself: `ui.toml` (what you pick on the screen, such as the theme in the "Look" section of the view settings), `views.toml` (mdgrid views and per-table settings), `workspaces.toml` (workspaces and favorites; see [Switch between favorite workspaces](manual/en/tasks.md#switch-between-favorite-workspaces)), `places.toml` (registered tables; see [Register the tables you use](manual/en/tasks.md#register-the-tables-you-use-and-switch-between-them)) and `sessions.toml` (named sessions; see [Save what you see as a session](manual/en/tasks.md#save-what-you-see-as-a-session)). mdgrid never rewrites `config.toml`.
 
 Every item is optional. Without a file mdgrid runs with the defaults. Unknown items, values of the wrong type and items written in a place that cannot hold them produce a warning on the message line and are ignored; mdgrid still starts. Every warning has the form `file: item path: reason`. A broken TOML file stops mdgrid with a one-line reason.
 
@@ -21,7 +21,7 @@ The output reads back without warnings and behaves exactly like having no file. 
 
 ## Two kinds of items
 
-- **Whole-app items** (scope "global only"): the top-level `language`, `editor` and `poll_ms`, and the sections `[terminal]`, `[workspace]`, `[git]`, `[keys]` and `[templates]`. They are written only in `config.toml` (`ui.toml` may hold `[terminal] nerd_font`).
+- **Whole-app items** (scope "global only"): the top-level `language`, `editor` and `poll_ms`, and the sections `[terminal]`, `[workspace]`, `[git]`, `[keys]`, `[search]` and `[templates]`. They are written only in `config.toml` (`ui.toml` may hold `[terminal] nerd_font`).
 - **The table profile** (scope "global, workspace, table, view"): `use`, `[look]`, `[display]`, `[dates]`, `[edit]` and `[new_note]`. The same shape can be written in every place below, and narrower places override wider ones.
 
 ## Overrides per workspace, table and view
@@ -91,6 +91,18 @@ path = "Bookmarks"
 tree = { path = "folder", order = "order" }
 ```
 
+A workspace can also hold **pages**: named arrangements of tables stacked top to bottom (`[[page]]` in a marker, `[[workspace.page]]` under the workspace in `workspaces.toml`). Write `name` and the list `tables`, top first; each entry names a table of the scope in `table`, the view to open in `view` (default: the table's usual view) and a height ratio in `height` (an integer of 1 or more; default 1). **Save the arrangement as a page** in the command palette writes the same shape (replacing a page of the same name); in a marker it only appends at the end of the file and leaves every other line and comment as it was. Pages are listed above the tables in the table list drawer, and `mdgrid -w <workspace> --page <name>` (for a marker workspace, `mdgrid <folder> --page <name>`) opens one. A row that cannot be read (a page with no name, a table that is not in the scope, …) is a warning in the form `.mdgrid/workspace.toml: page[1].tables[2].table: …` and is skipped.
+
+```toml
+# notes/.mdgrid/workspace.toml — in the morning, compare today's tasks with the active projects
+[[page]]
+name = "morning"
+tables = [
+  { table = "tasks", view = "Today", height = 2 },
+  { table = "projects", view = "Active", height = 1 },
+]
+```
+
 A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `tasks-ai`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
 
 ```
@@ -147,11 +159,11 @@ The items below are the full list. Tests check that this list (paths, the `Type`
 
 ### `language`
 
-- Type: `string ("auto", "en" or "ja")`
+- Type: `string ("auto" or a language code such as "en" or "ja")`
 - Default: `"auto"`
 - Scope: global only
 
-Language of the screen and the startup messages (`--help`, reasons for not starting, warnings). `"auto"` looks at `LC_ALL`, `LC_MESSAGES` and `LANG` in this order and uses the first one that is not empty: Japanese if it starts with `ja`, otherwise English (also when none is set). `"en"` and `"ja"` choose the language regardless of the environment. Note values, column names, the contents of `.base` files and file names are never translated. Errors in the command line arguments are reported before the configuration is read, so they follow the environment.
+Language of the screen and the startup messages (`--help`, reasons for not starting, warnings). The languages are English (`en`), Japanese (`ja`), German (`de`), Spanish (`es`), French (`fr`), Korean (`ko`), Brazilian Portuguese (`pt-BR`), Simplified Chinese (`zh-CN`) and Traditional Chinese (`zh-TW`). `"auto"` looks at `LC_ALL`, `LC_MESSAGES` and `LANG` in this order and uses the first one that is not empty: the language whose language and region match (`zh_TW.UTF-8` gives `zh-TW`), else the one whose language matches (`de_AT.UTF-8` gives `de`; Chinese without Taiwan, Hong Kong or Macau gives `zh-CN`, and any Portuguese gives `pt-BR`), otherwise English (also when none is set). A language code chooses that language regardless of the environment; an unknown code is warned about and read as `"auto"`. Note values, column names, the contents of `.base` files and file names are never translated. Errors in the command line arguments are reported before the configuration is read, so they follow the environment.
 
 ```toml
 language = "en"
@@ -253,7 +265,7 @@ nerd_icons = true
 - Default: `true`
 - Scope: global only
 
-Inside a [Herdr](https://herdr.dev) pane, tell Herdr the command that reopens the table and view you are looking at, and tell it again whenever you move to another table or view. When the Herdr server stops and starts again (after a restart of the computer, for example), Herdr runs that command in the same pane, so mdgrid comes back on the same table and view. When you quit mdgrid yourself, the pane is handed back and nothing is reopened. `false` never calls Herdr. Outside Herdr this item does nothing. See also `mdgrid --continue` in the [manual](manual/en/features.md).
+Inside a [Herdr](https://herdr.dev) pane, tell Herdr the command that reopens the table and view you are looking at, and tell it again whenever you move to another table or view. When the Herdr server stops and starts again (after a restart of the computer, for example), Herdr runs that command in the same pane, so mdgrid comes back on the same table and view. When you quit mdgrid yourself, the pane is handed back and nothing is reopened. The Herdr sidebar shows the table and view as the pane title (such as `Tasks · In progress`, using the name you gave a workspace table), and the title goes away when you quit. `false` never calls Herdr, so no title either. Outside Herdr this item does nothing. See also `mdgrid --continue` in the [manual](manual/en/features.md).
 
 ```toml
 [terminal]
@@ -787,12 +799,48 @@ done = { done_at = "{date}" }
 
 Rebind keys per mode; without this item the built-in key bindings are used. Under `[keys.<mode>]`, write `key = "action name"`. The action name `"none"` removes the key. Keys are written like `"j"`, `"ctrl+s"`, `"shift+tab"`; a space separates a prefix key sequence such as `"g g"`.
 
-Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`, `relations`, `drawer`, `filter_window`, `filter_input`, `screen_menu`, `column_type`, `tree`. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
+Modes: `table`, `edit`, `review`, `quit`, `help`, `palette`, `search`, `filter`, `detail`, `settings`, `settings_input`, `chips`, `list_select`, `menu`, `freq`, `sorts`, `relations`, `drawer`, `filter_window`, `filter_input`, `screen_menu`, `column_type`, `tree`, `gantt`, `kanban`, `chart`, `notice`, `switch`, and `input_normal` in vim mode. Action names are shown in the command palette (`:`); [keys.md](keys.md) lists every default key and action name per mode. Unknown modes, keys, or actions produce a warning and are skipped.
 
 ```toml
 [keys.table]
 "ctrl+f" = "search"
 "x" = "none"
+```
+
+### `keys.vim`
+
+- Type: `boolean`
+- Default: `false`
+- Scope: global only
+
+Turns on vim mode. Every input box (a cell, search, the palette, a settings value, the name of a new note) starts in insert mode, where you type as usual. Esc switches it to normal mode, where `h` `l` `0` `$` `w` `b` `e` move, `i` `a` `I` `A` go back to insert mode, `x` `X` `dw` `db` `d$` `D` `dd` delete, `cw` `c$` `C` `cc` change and `u` undoes. Esc in normal mode cancels the input, and Enter confirms in both modes. The bottom band shows `-- INSERT --` or `-- NORMAL --`, and the cursor is a bar or a block.
+
+The table gets three keys: `dd` moves the notes of the marked rows (or the selected row) to the trash after confirming their names, `p` puts the value you copied with `y` (a cell) or `Y` (a row), and `.` puts the value you last set in a cell into the same column of the selected row. Digits stay free for other keys and are never counts. The palette's `q!` (quit without saving) works with or without vim mode.
+
+With `false` (the default) every key works as before. The added keys are in [keys.md](keys.md#input_normal), and you can rebind or remove them under `[keys.table]` and `[keys.input_normal]`.
+
+```toml
+[keys]
+vim = true
+```
+
+## `[search]` — searching across tables
+
+### `search.across`
+
+- Type: `boolean`
+- Default: `false`
+- Scope: global only
+
+Adds "Search across the workspace" to the command palette (`:`). Use it when you remember a row but not which table you wrote it in. Type a word and press Enter: mdgrid reads every table in the current workspace (or your registered tables when no workspace is open) in the background and lists the matching rows per table, each with the note name and the column and value that matched. A row matches the same way as the search box (`\`): the note name or a value contains the word, ignoring case unless the word has a capital letter.
+
+Results appear as each table is read, with "read 3 / 5" until all are done; Esc stops and leaves the table as it was. Tables that cannot be read are skipped and named at the end. Pick a row and press Enter to open its table with the word in the search box and that row selected; if you have unsaved changes, mdgrid asks first, as when switching tables from the drawer.
+
+With `false` (the default) the palette does not show the command, so people who don't need it see nothing new.
+
+```toml
+[search]
+across = true
 ```
 
 ## `[templates]` — templates
@@ -809,4 +857,61 @@ Named pieces of a profile (`[look]`, `[display]`, `[dates]`, `[edit]`, `[new_not
 [templates.night.look]
 theme = "dracula"
 preset = "dozy-pink"
+```
+
+## `[conditions]` — named conditions
+
+### `conditions`
+
+- Type: `table of tables ([conditions.<name>] with expr, label, key, hide)`
+- Default: none
+- Scope: global only
+
+Give a name to a condition you use often, such as "due within a week", and write it once. `expr` is an expression in the same language as the filters of a `.base` file. A name starts with a letter and uses only letters, digits, `_` and `-`. Then use the condition by name:
+
+- in any expression as `cond("<name>")` (true when the row matches): `--print --filter`, `--count --filter`, the expression filter of the screen, a `.base` file, or another condition;
+- with `key = 1` … `9`: that digit key shows only the matching rows, and pressing it again shows all rows (more than one digit narrows to the rows that match all of them);
+- in the filter section of the view settings (`o`), to keep only the matching rows or to hide them in that view;
+- with `hide = true`: the matching rows are hidden in every table and screen and in `--print`, `--pick` and `--count`; the settings band shows the condition and how many rows it hides, the digit key of the condition shows them again, and `--show-hidden` prints them.
+
+In the example, `far` hides the plans that start more than 30 days from now, unless they are due within a week. `label` is the name shown on the settings band and in the help (`label = "Due soon"`). A column the table does not have reads as empty, so one condition works for tables with different columns. A name that is not allowed, an expression that cannot be read, conditions that call each other in a loop, and a digit that another condition already uses produce a warning and are skipped.
+
+```toml
+[conditions.soon]
+expr = 'due <= today() + "7d"'
+key = 1
+
+[conditions.far]
+expr = 'start > today() + "30d" && !(due <= today() + "7d")'
+hide = true
+key = 9
+```
+
+## `[[notices]]` — the notice box
+
+### `notices`
+
+- Type: `array of tables ([[notices]] with cond, text, scope, show_zero, or note, lines)`
+- Default: none
+- Scope: global only
+
+A small box above the header that shows what you want to notice, such as how many tasks are overdue. It appears only when you write items here; nothing changes for anyone else. Each `[[notices]]` is one item, shown in the order written:
+
+- A count item counts the rows that match a [named condition](#conditions--named-conditions) (`cond`). `text` is the sentence with `{count}` replaced by the number (default: the condition's label and the number). `scope` picks what to count: `"table"` (the open table, the default), `"workspace"` (every table of the current workspace) or a list of table names. Rows are counted after the table's own filter and the conditions with `hide = true`, not after the view, search or digit keys. An item with 0 rows is left out unless `show_zero = true`.
+- A note item shows the first `lines` non-empty lines (default 1) of a note's body (`note`; `~` is the home folder, a relative path starts at the folder of the config file).
+
+Count items share the first line, separated by ` · `; each note line gets its own line; the box is at most 3 lines. Move into the box with its key, pick an item and press `Enter`: a count item narrows the table to that condition (or lists the tables that have matching rows), a note item opens the note in your editor. `mdgrid --notices` prints the same items, one per line, for a tmux status line, a shell prompt or the Herdr sidebar.
+
+```toml
+[[notices]]
+cond = "overdue"
+text = "{count} overdue"
+scope = "workspace"
+
+[[notices]]
+note = "~/notes/inbox.md"
+lines = 2
+
+[conditions.overdue]
+expr = 'due < today() && status != "done"'
 ```

@@ -545,6 +545,33 @@ impl<'a> Ctx<'a> {
     }
 }
 
+/// condition: `.base` の無い表で、行 `row` で式 `e` を評価する(formula は無い)。
+pub fn eval_plain(
+    src: &dyn Source,
+    prop: &dyn Fn(&RowId, &str) -> Option<Value>,
+    row: &RowId,
+    e: &Expr,
+    today: i64,
+    now: i64,
+) -> Val {
+    let index = src.link_index();
+    let links = Links {
+        index: index.as_deref(),
+        this: None,
+    };
+    let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
+    let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
+    let formula = |_: &str| None;
+    let env = Env {
+        prop: &p,
+        file: &file,
+        formula: &formula,
+        today,
+        now,
+    };
+    expr::eval_with(e, &env, &links)
+}
+
 /// 読んでいない行の代わりの属性(表示名だけ)。
 fn fallback_file(src: &dyn Source, row: &RowId) -> FileInfo {
     let path = src.label(row);
@@ -881,6 +908,11 @@ impl Base {
         }
     }
 
+    /// BV-22: this(この `.base` のファイル)を持つか(`.base` を直接開いたとき)。
+    pub fn has_this(&self) -> bool {
+        self.this.is_some()
+    }
+
     pub fn set_this(&mut self, this: Option<FileInfo>) {
         self.this = this;
     }
@@ -918,6 +950,32 @@ impl Base {
             return true;
         }
         keep
+    }
+
+    /// condition: 行 `row` で式 `e` を評価する(この `.base` の formula と this を引ける)。
+    /// 評価できない formula に出会った式は Null。
+    pub fn eval_row(
+        &self,
+        src: &dyn Source,
+        prop: &dyn Fn(&RowId, &str) -> Option<Value>,
+        row: &RowId,
+        e: &Expr,
+        today: i64,
+        now: i64,
+    ) -> Val {
+        let index = src.link_index();
+        let links = Links {
+            index: index.as_deref(),
+            this: self.this.as_ref(),
+        };
+        let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
+        let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
+        let ctx = Ctx::new(self, &p, &file, &links, today, now);
+        let v = ctx.eval(e);
+        if ctx.bad.borrow_mut().take().is_some() {
+            return Val::Null;
+        }
+        v
     }
 
     /// ビューを組み立てる(BV-4・BV-5・BV-13)。table 以外(SC-8)・評価できない filters(BV-7)は Err(理由)。

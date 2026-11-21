@@ -3,8 +3,22 @@
 # language code of locales/ (en is required).
 [name]
 en = "People and meetings"
+es = "Personas y reuniones"
 ja = "人と会議"
+zh-TW = "人員與會議"
+zh-CN = "人员与会议"
+ko = "사람과 회의"
+pt-BR = "Pessoas e reuniões"
+de = "Personen und Meetings"
+fr = "Personnes et réunions"
 
 [description]
 en = "One note per person (role, organization, contact) and per meeting (when, attendees, next actions); R maps the links"
+es = "Una nota por persona (cargo, organización, contacto) y por reunión (cuándo, asistentes, próximos pasos); R muestra el mapa de enlaces"
 ja = "1件1ノートの人(役割・所属・連絡先)と会議(日時・出席者・次の行動)。R でつながりを見る"
+zh-TW = "每人一則筆記（職務、組織、聯絡方式），每場會議一則（時間、出席者、後續行動）；按 R 檢視連結關係"
+zh-CN = "每人一篇笔记（角色、组织、联系方式），每次会议一篇（时间、参会者、后续行动）；R 显示关联"
+ko = "사람(역할, 소속, 연락처)과 회의(일시, 참석자, 다음 할 일)마다 노트 하나. R로 링크 관계도"
+pt-BR = "Uma nota por pessoa (papel, organização, contato) e por reunião (quando, participantes, próximas ações); R mapeia os links"
+de = "Eine Notiz je Person (Rolle, Organisation, Kontakt) und je Meeting (Zeitpunkt, Teilnehmende, nächste Schritte); R zeigt die Verknüpfungen"
+fr = "Une note par personne (rôle, organisation, contact) et par réunion (date, participants, prochaines actions) ; R montre les liens"

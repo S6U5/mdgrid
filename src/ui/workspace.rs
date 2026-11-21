@@ -194,6 +194,8 @@ impl App {
         if let Some(e) = self.resolve_scope(&target, &detect) {
             self.message = Some(e);
         }
+        // stack.page-store: 範囲が変われば、ページも読み直す(警告は起動のときに出したので出さない)。
+        self.load_pages(&target, Some(dir));
         self.links.invalidate();
     }
 

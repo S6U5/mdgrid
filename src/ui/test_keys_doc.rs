@@ -14,11 +14,13 @@
 //! - 末尾に動作の名前の一覧の節。英語は `## Actions`、日本語は `## 動作の名前`。
 //!   その節では、バッククォートを含む行ごとに最初の `` `name` `` を1つの動作の名前とする
 //!   (`- \`down\`` の箇条書きでも、`` | `down` | ... | `` の表でもよい。表の頭と区切りの行は数えない)。
-//!   一覧は `BINDINGS` に出る動作の名前の全部で、多くも少なくもない。パレットだけの動作(`COMMANDS` にだけあるもの)は求めない。
+//!   一覧は `BINDINGS` と vim モードの `VIM_BINDINGS` に出る動作の名前の全部で、多くも少なくもない。
+//!   パレットだけの動作(`COMMANDS` にだけあるもの)は求めない。
+//! - vim モードのキー(`VIM_BINDINGS`)も、`table` の節(`###` の小見出しの下でよい)と `input_normal` の節に書く。
 //!   それを書くなら別の `##` の節か、一覧の節の中の `###` の小見出しの下に置く(どちらも数えない)。
 //! - 上の見出し以外の `##` の節(使い方の前置きなど)は数えない。
 //! - 英語の文書には `](keys.ja.md)` のリンク、日本語の文書には `](keys.md)` のリンクがある。
-use super::keymap::{lookup, parse_key, rebind, Action, Binding, Mode, BINDINGS};
+use super::keymap::{defaults, lookup, parse_key, rebind, Action, Binding, Mode, BINDINGS};
 use std::collections::{BTreeMap, BTreeSet};
 
 struct Lang {
@@ -281,8 +283,8 @@ fn parse_doc(lang: &Lang) -> Doc {
 type Triple = (String, String, String);
 
 fn table_triples() -> BTreeSet<Triple> {
-    BINDINGS
-        .iter()
+    // vim モードのキー(`VIM_BINDINGS`。screen.vim-remap)も文書に出す。
+    defaults()
         .map(|b| {
             (
                 b.mode.name().to_string(),
@@ -296,10 +298,7 @@ fn table_triples() -> BTreeSet<Triple> {
 /// 割り当て直し(SR-13)に書ける動作の名前 = キーの表に出る動作の名前。
 /// パレットだけの動作(`COMMANDS` にだけあるもの)は設定に書けないので一覧に求めない。
 fn all_action_names() -> BTreeSet<String> {
-    BINDINGS
-        .iter()
-        .map(|b| b.action.name().to_string())
-        .collect()
+    defaults().map(|b| b.action.name().to_string()).collect()
 }
 
 fn fmt_triples<'a>(it: impl Iterator<Item = &'a Triple>) -> String {

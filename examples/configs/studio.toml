@@ -42,6 +42,30 @@ created = "{now}"
 required = true
 values = ["todo", "doing", "done"]
 
+# Named conditions: write a condition once and use it by name. The digit key
+# shows only the matching rows (press it again for all rows); cond("late") works
+# in any expression, such as `mdgrid --count --filter 'cond("late")'`.
+[conditions.week]
+expr = 'due <= today() + "7d" && status != "done"'
+label = "Due this week"
+key = 1
+
+[conditions.late]
+expr = 'due < today() && status != "done"'
+label = "Late"
+key = 2
+
+# The notice box above the header: how many tasks are late, in this table.
+# `mdgrid --notices` prints the same line for a status bar.
+[[notices]]
+cond = "late"
+text = "{count} late"
+
+# Add "Search across the workspace" to the palette (:): a word is looked up in
+# every table of the studio workspace, and the matching rows are listed per table.
+[search]
+across = true
+
 # Colors per value, used in every theme.
 [look.colors.values]
 todo = "gray"

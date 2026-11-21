@@ -16,7 +16,7 @@ fn variant(code: &str) -> String {
         .map(|p| {
             let mut c = p.chars();
             c.next()
-                .map(|f| f.to_ascii_uppercase().to_string() + c.as_str())
+                .map(|f| f.to_ascii_uppercase().to_string() + &c.as_str().to_ascii_lowercase())
                 .unwrap_or_default()
         })
         .collect()
@@ -41,11 +41,14 @@ fn main() {
     let mut ledgers = Vec::new();
     for code in &codes {
         let name = format!("locales/{code}.toml");
-        if !code
-            .chars()
-            .all(|c| c.is_ascii_lowercase() || c == '-' || c == '_')
-            || code.is_empty()
-        {
+        // 言語の符号(`en`・`ja`)か、言語と地域(`zh-TW`・`pt-BR`)。言語は小文字、地域は `-` のあと。
+        let mut parts = code.split('-');
+        let lang_ok = parts
+            .next()
+            .is_some_and(|l| !l.is_empty() && l.chars().all(|c| c.is_ascii_lowercase()));
+        let region_ok =
+            parts.all(|r| !r.is_empty() && r.chars().all(|c| c.is_ascii_alphanumeric()));
+        if !(lang_ok && region_ok) {
             problems.push(format!(
                 "{name}: the file name must be a language code like en or ja"
             ));
@@ -86,6 +89,9 @@ fn main() {
     for (_, v) in &langs {
         let _ = writeln!(out, "    {v},");
     }
+    // screen.locales-all-in-ledger: 試しの言語。英語の文の頭に「⟦」を付けたもの。`ALL` には入れず、環境変数
+    // `MDGRID_PSEUDO_LOCALE` を付けたときだけ選ぶ(台帳の外の文言が画面に残っていないかを試験で見るため)。
+    out.push_str("    /// 試しの言語(英語の文の頭に `⟦`。`ALL` に入れない)。\n    Pseudo,\n");
     out.push_str("}\n\nimpl Lang {\n    /// 全部の言語(英語が先頭)。\n    pub const ALL: &'static [Lang] = &[");
     for (_, v) in &langs {
         let _ = write!(out, "Lang::{v}, ");
@@ -94,6 +100,7 @@ fn main() {
     for (c, v) in &langs {
         let _ = writeln!(out, "            Lang::{v} => {c:?},");
     }
+    out.push_str("            Lang::Pseudo => \"x-pseudo\",\n");
     out.push_str("        }\n    }\n}\n\n");
     // 設定の言語。
     out.push_str("/// 設定の `language`(SR-23)。既定は `Auto`(環境に従う)。ほかは台帳の言語。\n");
@@ -131,7 +138,7 @@ fn main() {
         let _ = write!(
             out,
             "\n    /// `{code}` の文(locales/{code}.toml)。\n    pub const fn {f}(self) -> &'static str {{\n        match self {{\n",
-            f = code.replace('-', "_")
+            f = code.replace('-', "_").to_ascii_lowercase()
         );
         for e in base {
             let t = &l.iter().find(|x| x.key == e.key).expect("checked").text;
@@ -140,14 +147,26 @@ fn main() {
         out.push_str("        }\n    }\n");
         let _ = v;
     }
+    // 試しの言語の文(英語の文の頭に `⟦`)。
+    out.push_str("\n    /// 試しの言語の文(英語の文の頭に `⟦`。screen.locales-all-in-ledger)。\n    pub const fn pseudo(self) -> &'static str {\n        match self {\n");
+    for e in base {
+        let _ = writeln!(
+            out,
+            "            Msg::{} => {:?},",
+            e.key,
+            format!("⟦{}", e.text)
+        );
+    }
+    out.push_str("        }\n    }\n");
     out.push_str("\n    /// `lang` の文。\n    pub const fn get(self, lang: Lang) -> &'static str {\n        match lang {\n");
     for (code, v) in &langs {
         let _ = writeln!(
             out,
             "            Lang::{v} => self.{}(),",
-            code.replace('-', "_")
+            code.replace('-', "_").to_ascii_lowercase()
         );
     }
+    out.push_str("            Lang::Pseudo => self.pseudo(),\n");
     out.push_str("        }\n    }\n}\n");
     let dest = Path::new(&std::env::var("OUT_DIR").expect("OUT_DIR")).join("locales.rs");
     std::fs::write(dest, out).expect("write locales.rs");

@@ -17,7 +17,11 @@ include!(concat!(env!("OUT_DIR"), "/locales.rs"));
 impl Language {
     /// 設定の値(`"auto"` か台帳の言語の符号 `"en"`・`"ja"` など)を読む。ほかは None。
     pub fn parse(s: &str) -> Option<Language> {
-        Language::ALL.iter().copied().find(|l| l.name() == s)
+        // screen.locales-setting: 言語の符号は大文字小文字を問わない(`zh-tw` も `zh-TW`)。
+        Language::ALL
+            .iter()
+            .copied()
+            .find(|l| l.name().eq_ignore_ascii_case(s))
     }
 
     /// 設定の値の名前。
@@ -29,27 +33,66 @@ impl Language {
     }
 }
 
+/// 試しの言語(screen.locales-all-in-ledger)を選ぶ環境変数。空でなければ、どの設定よりも先に試しの言語にする。
+pub const PSEUDO_VAR: &str = "MDGRID_PSEUDO_LOCALE";
+
 /// `auto` で見る環境変数(この順で最初の空でない値)。
 pub const LOCALE_VARS: [&str; 3] = ["LC_ALL", "LC_MESSAGES", "LANG"];
 
-/// 設定が言語ならそれ。Auto なら `LOCALE_VARS` の順で最初の空でない値が、英語のほかの台帳の言語の符号
-/// (`ja` など)で始まればその言語、ほか(どれも無いときも)は En。`env` は環境変数の名前から値を引く(試験で差し替える)。
+/// 設定が言語ならそれ。Auto なら `LOCALE_VARS` の順で最初の空でない値から台帳の言語を選び(`locale_index`)、
+/// 合う台帳が無いとき(どれも無いときも)は En。`env` は環境変数の名前から値を引く(試験で差し替える)。
 pub fn resolve(setting: Language, env: impl Fn(&str) -> Option<String>) -> Lang {
+    // screen.locales-all-in-ledger: 試しの言語(文言の頭に `⟦`)は、環境変数で頼んだときだけ。設定より先。
+    if env(PSEUDO_VAR).is_some_and(|v| !v.is_empty()) {
+        return Lang::Pseudo;
+    }
     if let Some(l) = setting.lang() {
         return l;
     }
+    let codes: Vec<&str> = Lang::ALL.iter().map(|l| l.code()).collect();
     LOCALE_VARS
         .iter()
         .filter_map(|name| env(name))
         .find(|v| !v.is_empty())
-        .and_then(|v| {
-            Lang::ALL
-                .iter()
-                .copied()
-                .filter(|l| *l != Lang::En)
-                .find(|l| v.starts_with(l.code()))
-        })
+        .and_then(|v| locale_index(&v, &codes))
+        .and_then(|i| Lang::ALL.get(i).copied())
         .unwrap_or(Lang::En)
+}
+
+/// screen.locales-auto: 環境変数の値(`zh_TW.UTF-8`・`pt_BR`・`de_AT@euro` など)に合う台帳の符号の添字。
+/// 言語と地域が合う台帳(`zh-TW`)、無ければ言語が合う台帳を選ぶ。言語だけで合わせるとき、中国語は
+/// 地域が TW・HK・MO なら繁体字(`zh-TW`)、ほかは簡体字(`zh-CN`)、ポルトガル語は `pt-BR` を先にする。
+/// 合う台帳が無ければ None(`C`・`POSIX` も)。
+pub fn locale_index(value: &str, codes: &[&str]) -> Option<usize> {
+    let base = value.split(['.', '@']).next().unwrap_or_default().trim();
+    let mut parts = base.split(['_', '-']);
+    let lang = parts.next().unwrap_or_default().to_ascii_lowercase();
+    let region = parts.next().map(str::to_ascii_uppercase);
+    if lang.is_empty() || lang == "c" || lang == "posix" {
+        return None;
+    }
+    let find = |code: &str| codes.iter().position(|c| c.eq_ignore_ascii_case(code));
+    if let Some(r) = &region {
+        if let Some(i) = find(&format!("{lang}-{r}")) {
+            return Some(i);
+        }
+    }
+    let preferred = match (lang.as_str(), region.as_deref()) {
+        ("zh", Some("TW" | "HK" | "MO")) => Some("zh-TW"),
+        ("zh", _) => Some("zh-CN"),
+        ("pt", _) => Some("pt-BR"),
+        _ => None,
+    };
+    if let Some(i) = preferred.and_then(find) {
+        return Some(i);
+    }
+    find(&lang).or_else(|| {
+        codes.iter().position(|c| {
+            c.split('-')
+                .next()
+                .is_some_and(|l| l.eq_ignore_ascii_case(&lang))
+        })
+    })
 }
 
 /// 大域の既定(0 は未設定、ほかは `Lang::ALL` の添字 + 1)。

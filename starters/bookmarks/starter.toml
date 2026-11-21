@@ -3,8 +3,22 @@
 # palette, one per language code of locales/ (en is required).
 [name]
 en = "Bookmarks"
+es = "Marcadores"
 ja = "ブックマーク"
+zh-TW = "書籤"
+zh-CN = "书签"
+ko = "북마크"
+pt-BR = "Favoritos"
+de = "Lesezeichen"
+fr = "Signets"
 
 [description]
 en = "One note per bookmark with its folder written as \"bar > Dev > Web\"; T shows the folder tree, o opens the URL"
+es = "Una nota por marcador con su carpeta escrita como \"bar > Dev > Web\"; T muestra el árbol de carpetas, o abre la URL"
 ja = "1件1ノートのブックマーク。置き場を「bar > 開発 > Web」の列に書き、T で木、o で URL を開く"
+zh-TW = "每個書籤一則筆記，所在資料夾寫成「bar > Dev > Web」；按 T 顯示資料夾樹，按 o 開啟 URL"
+zh-CN = "每个书签一篇笔记，所在文件夹写成 \"bar > Dev > Web\"；T 显示文件夹树，o 打开 URL"
+ko = "북마크 하나에 노트 하나. 폴더를 \"bar > Dev > Web\"처럼 적고, T로 폴더 트리, o로 URL 열기"
+pt-BR = "Uma nota por favorito, com a pasta escrita como \"bar > Dev > Web\"; T mostra a árvore de pastas, o abre a URL"
+de = "Eine Notiz je Lesezeichen, ihr Ordner als \"bar > Dev > Web\" geschrieben; T zeigt den Ordnerbaum, o öffnet die URL"
+fr = "Une note par signet, avec son dossier écrit \"bar > Dev > Web\" ; T affiche l'arbre des dossiers, o ouvre l'URL"
