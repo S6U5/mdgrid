@@ -1008,14 +1008,7 @@ pub fn to_toml(list: &[Workspace]) -> String {
 
 /// ホームのフォルダの下なら `~/…` で書く(手で書いた `~` を、書き直しで失わない)。
 fn home_short(p: &Path) -> String {
-    if let Some(home) = config::home_dir() {
-        if let Ok(rest) = p.strip_prefix(&home) {
-            if !rest.as_os_str().is_empty() {
-                return format!("~/{}", rest.to_string_lossy());
-            }
-        }
-    }
-    p.to_string_lossy().into_owned()
+    config::home_short(p)
 }
 
 /// 書き直す前に読む。読めない行があれば書かない(書き直すとその行が消えるため)。

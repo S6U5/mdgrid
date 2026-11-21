@@ -365,14 +365,7 @@ fn strs_text(list: &[String]) -> String {
 
 /// ホームのフォルダの下なら `~/…` で書く(dotfiles で別のマシンに持っていけるように)。
 pub fn home_short(p: &Path) -> String {
-    if let Some(home) = config::home_dir() {
-        if let Ok(rest) = p.strip_prefix(&home) {
-            if !rest.as_os_str().is_empty() {
-                return format!("~/{}", rest.to_string_lossy());
-            }
-        }
-    }
-    p.to_string_lossy().into_owned()
+    config::home_short(p)
 }
 
 /// セッション1つの区画の文(`[sessions.<名前>]` と、その絞り込み・並びの `[[...]]`)。

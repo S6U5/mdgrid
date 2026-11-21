@@ -675,6 +675,23 @@ pub fn state_dir() -> Option<PathBuf> {
 }
 
 /// ホームのフォルダ: $HOME、無ければ Windows では %USERPROFILE%(先頭の `~` の読み替えと短い見せ方)。
+/// ホームのフォルダの下なら `~/…` で書く。`~/` の後ろの区切りはどの OS でも `/`(Windows でも `~/notes/tasks`。
+/// 書いた設定を別のマシンへ持っていけるように。読むときは `~/` の後ろをホームにつなぐので、Windows でも `/` のまま読める)。
+pub fn home_short(p: &Path) -> String {
+    if let Some(home) = home_dir() {
+        if let Ok(rest) = p.strip_prefix(&home) {
+            if !rest.as_os_str().is_empty() {
+                let parts: Vec<String> = rest
+                    .components()
+                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                    .collect();
+                return format!("~/{}", parts.join("/"));
+            }
+        }
+    }
+    p.to_string_lossy().into_owned()
+}
+
 pub fn home_dir() -> Option<PathBuf> {
     home_dir_in(&|k| std::env::var_os(k), cfg!(windows))
 }
