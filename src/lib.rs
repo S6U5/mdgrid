@@ -11,10 +11,13 @@ pub mod changes;
 pub mod chart;
 pub mod clock;
 pub mod colors;
+pub mod condition;
 pub mod config;
 pub mod csvfile;
+pub mod datewords;
 pub mod display;
 pub mod expr;
+pub mod favorites;
 pub mod folder_tree;
 pub mod frontmatter;
 pub mod gantt;
@@ -26,14 +29,18 @@ pub mod legacy;
 pub mod links;
 pub(crate) mod mdtext;
 pub mod newnote;
+pub mod notice;
+pub mod page;
 pub mod places;
 pub mod print;
 pub mod profile;
+pub mod recent;
 pub mod relations;
 pub mod relmap;
 pub mod resume;
 pub mod rules;
 pub mod schema;
+pub mod session;
 pub mod settings;
 pub mod source;
 pub mod starter;
@@ -53,6 +60,14 @@ pub(crate) mod yaml_guard;
 #[cfg(test)]
 #[path = "test_toml_edit_safety_unit.rs"]
 mod test_toml_edit_safety;
+
+#[cfg(test)]
+#[path = "test_condition_unit.rs"]
+mod test_condition_unit;
+
+#[cfg(test)]
+#[path = "test_locale_pick_unit.rs"]
+mod test_locale_pick_unit;
 
 #[cfg(test)]
 #[path = "test_tab_prefs_unit.rs"]
@@ -93,3 +108,7 @@ mod test_body_path;
 #[cfg(test)]
 #[path = "test_chart_unit.rs"]
 mod test_chart;
+
+#[cfg(test)]
+#[path = "test_datewords_unit.rs"]
+mod test_datewords;

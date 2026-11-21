@@ -44,13 +44,26 @@ pub(crate) fn data_y(app: &App) -> usize {
 pub(crate) fn table_height(app: &App, area_h: usize) -> usize {
     area_h.saturating_sub(
         super::bands::top_rows(app)
-            + CHROME
+            + chrome(app)
             + tab_rows(app)
             + bar_rows(app)
             + chip_rows(app)
             + summary_rows(app),
     )
 }
+
+/// 表の上下にある帯の数。縦に並べた表の区画(stack.*)では、見出しの1行と列の見出しだけ(下の帯とメッセージ行は
+/// 画面に1つずつ)。
+fn chrome(app: &App) -> usize {
+    if super::stack::in_region(app) {
+        CHROME - TAIL
+    } else {
+        CHROME
+    }
+}
+
+/// 下の帯とメッセージ行の数。
+const TAIL: usize = 2;
 
 /// 集計の行の数(BV-14)。集計の無いビューでは 0。
 pub(crate) fn summary_rows(app: &App) -> usize {
@@ -1031,12 +1044,18 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
         }
     }
     // BV-14: 集計の行は表の下の端(下の帯の上)。集計の無いビューでは出さない。
-    let body = h.saturating_sub(2 + summary_rows(app));
+    // stack.*: 縦に並べた表の区画は、下の帯とメッセージ行を持たない(画面に1つずつ。stack.rs)。
+    let tail = if super::stack::in_region(app) {
+        0
+    } else {
+        TAIL
+    };
+    let body = h.saturating_sub(tail + summary_rows(app));
     while lines.len() < body {
         lines.push(Line::from(" ".repeat(w)));
     }
     lines.truncate(body);
-    if summary_rows(app) > 0 && lines.len() + 2 < h {
+    if summary_rows(app) > 0 && lines.len() + tail < h {
         lines.push(summary_row(app, &lay, &cols));
     }
     // CE-25: 新しいノートの欄は表の下の端に(カレンダーとリストの選択の窓はこの上に重なる)。
@@ -1045,6 +1064,8 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     super::list::overlay(app, &mut lines, w);
     // CE-20: 日付のカレンダーも入力ボックスの下(入らなければ上)に重ねる。
     super::calendar::overlay(app, &mut lines, w);
+    // cell-edit.date-words-preview: 日付の言葉の読みは入力の欄の横に重ねる(date_words.rs)。
+    super::date_words::overlay(app, &mut lines, w);
     // CE-16: リストの選択の窓はセルの下(入らなければ上)に重ねる。
     super::listpick::overlay(app, &mut lines, w);
     // SR-24: その場の操作の一覧の窓もセルの下(入らなければ上)に重ねる。
@@ -1059,6 +1080,8 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     super::drawer::overlay(app, &mut lines, w);
     // REL-8: 画面の型のメニューはヘッダーのボタンのすぐ下に重ねる(screen_menu.rs)。
     super::screen_menu::overlay(app, &mut lines, w);
+    // workspace.switch-open: お気に入りのワークスペースの切り替えの一覧。
+    super::switch::overlay(app, &mut lines, w);
     // CE-35: 列の型の窓は列の見出しのすぐ下に重ねる(type_menu.rs)。
     super::type_menu::overlay(app, &mut lines, w);
     if app.mode == Mode::Quit {
@@ -1067,8 +1090,10 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     if app.mode == Mode::Palette {
         super::help::palette_overlay(app, &mut lines, w);
     }
-    lines.push(footer(app, w));
-    lines.push(message(app, w));
+    if tail > 0 {
+        lines.push(footer(app, w));
+        lines.push(message(app, w));
+    }
     lines.truncate(h);
     lines
 }

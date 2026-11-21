@@ -74,6 +74,14 @@ If notes carry `parent: "[[Parent]]"`, the parent/child section of the view sett
 
 [The relation map](concepts.md#the-relation-map)
 
+## Stacked tables
+
+![Stack tables](images/stack.svg)
+
+Up to four different tables share the screen, one above the other. Each has a title line, "table · view · rows", and keys act only on the table marked with `▶`. `Ctrl+w` `j` and `k` move between them, and an arrangement can be saved by name as a page.
+
+[Stack tables](tasks.md#stack-tables)
+
 ## Value counts
 
 ![Count the values of a column](images/demo-freq.svg)

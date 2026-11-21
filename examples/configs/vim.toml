@@ -1,0 +1,5 @@
+# vim mode (docs/config.md, keys.vim). Input boxes start in insert mode and Esc switches them to normal mode;
+# the table gets dd, p and . as well. Try it from the repository root:
+#   mdgrid --config examples/configs/vim.toml examples/studio/Tasks --readonly
+[keys]
+vim = true

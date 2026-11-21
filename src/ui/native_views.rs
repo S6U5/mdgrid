@@ -32,9 +32,13 @@ pub(crate) const STATE_DIR: &str = "views";
 /// 書いてある設定(places.toml の view など)が読めるよう別名として受ける。
 pub(crate) const OLD_DEFAULT_TABS: &[&str] = &["Default", "All notes"];
 
-/// 既定の表の名前か(今と前の、英日のどの名前でも)。ビューの名前には使えず、選ぶときは既定の表を指す。
+/// 既定の表の名前か(台帳のどの言語の名前でも、前の英語の名前でも)。ビューの名前には使えず、選ぶときは既定の表を指す。
 pub(crate) fn is_default_tab(name: &str) -> bool {
-    name == DEFAULT_TAB || name == Msg::DefaultTabName.en() || OLD_DEFAULT_TABS.contains(&name)
+    name == DEFAULT_TAB
+        || mdgrid::i18n::Lang::ALL
+            .iter()
+            .any(|l| Msg::DefaultTabName.get(*l) == name)
+        || OLD_DEFAULT_TABS.contains(&name)
 }
 
 /// mdgrid のビューの状態。

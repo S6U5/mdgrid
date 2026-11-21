@@ -57,6 +57,13 @@ pub enum Mode {
     Kanban,
     /// グラフの画面(CH-2。chart.rs)。
     Chart,
+    /// 通知の欄(notice.focus。notices.rs)。
+    Notice,
+    /// vim モードの入力の欄のノーマルのモード(screen.vim-normal-keys。vim.rs)。`App::mode` にはならず、
+    /// 入力の欄がノーマルのモードの間、キーを先にこのモードの表で引く。
+    InputNormal,
+    /// お気に入りのワークスペースの切り替えの一覧(workspace.switch-*。switch.rs)。
+    Switch,
 }
 
 impl Mode {
@@ -89,6 +96,9 @@ impl Mode {
             Mode::Gantt => Msg::ModeGantt,
             Mode::Kanban => Msg::ModeKanban,
             Mode::Chart => Msg::ModeChart,
+            Mode::Notice => Msg::ModeNotice,
+            Mode::InputNormal => Msg::ModeInputNormal,
+            Mode::Switch => Msg::ModeSwitch,
         }
     }
 
@@ -126,10 +136,13 @@ impl Mode {
             Mode::Gantt => "gantt",
             Mode::Kanban => "kanban",
             Mode::Chart => "chart",
+            Mode::Notice => "notice",
+            Mode::InputNormal => "input_normal",
+            Mode::Switch => "switch",
         }
     }
 
-    pub const ALL: [Mode; 26] = [
+    pub const ALL: [Mode; 29] = [
         Mode::Table,
         Mode::Edit,
         Mode::Palette,
@@ -156,6 +169,9 @@ impl Mode {
         Mode::Gantt,
         Mode::Kanban,
         Mode::Chart,
+        Mode::Notice,
+        Mode::InputNormal,
+        Mode::Switch,
     ];
 
     /// 設定のモードの名前を引く。英語の名前(`table`)と、どちらの言語の表示名(`表`・`Table`)も受ける
@@ -171,10 +187,11 @@ impl Mode {
         } else {
             None
         };
+        // 今の表示名は台帳のどの言語でも受ける(前の表示名は英日の設定の名残なので英日だけ)。
         old.or_else(|| {
             Mode::ALL
                 .into_iter()
-                .find(|m| m.name() == name || m.msg().ja() == name || m.msg().en() == name)
+                .find(|m| m.name() == name || Lang::ALL.iter().any(|l| m.msg().get(*l) == name))
         })
     }
 
@@ -316,6 +333,9 @@ pub enum Action {
     FocusChips,
     NextSection,
     PrevSection,
+    /// navigation.settings-sections-digits: ビューの設定の画面で、左の一覧の番号(1〜9)の区画へ移る。
+    /// 名前は番号ごと(`go_to_section_3`)。ヘルプでは1行にまとめる(help.rs)。
+    GoToSection(u8),
     Toggle,
     MoveItemUp,
     MoveItemDown,
@@ -404,7 +424,83 @@ pub enum Action {
     ChartCumulative,
     /// CH-4: 積み上げ棒の割合を切り替える。
     ChartPercent,
+    /// condition.digit-keys: 数字のキー(`key`)を書いた名前の条件を入れ切りする。
+    Cond1,
+    Cond2,
+    Cond3,
+    Cond4,
+    Cond5,
+    Cond6,
+    Cond7,
+    Cond8,
+    Cond9,
+    /// navigation.expr-filter: 式で絞り込む(パレット)。
+    ExprFilter,
+    /// notice.focus: 通知の欄へ移る。
+    FocusNotice,
+    // vim モード(screen.vim-*。vim.rs)。入力の欄のノーマルのモードの動き・挿入への移り・消す・替える。
+    WordNext,
+    WordPrev,
+    WordEnd,
+    Insert,
+    Append,
+    InsertStart,
+    AppendEnd,
+    DeleteWord,
+    DeleteWordBack,
+    DeleteToEnd,
+    ChangeWord,
+    ChangeToEnd,
+    ChangeLine,
+    /// screen.vim-paste: mdgrid の中で最後に写した値を入れる。
+    Paste,
+    /// screen.vim-repeat: 直前に1つのセルに入れた値を、選んでいる行の同じ列にもう一度入れる。
+    Repeat,
+    /// navigation.across-option: ワークスペースを横断して探す(パレットだけ。設定の `[search] across` のときだけ出す)。
+    AcrossSearch,
+    /// cli.session-screen-save: 今の表示を名前を付けたセッションとして保存する(パレットから)。
+    SaveSession,
+    /// cli.recent-list: 最近開いた表の一覧を出して開く(パレット)。
+    OpenRecent,
+    /// workspace.switch-open: お気に入りのワークスペースの切り替えの一覧を開く。
+    WsSwitch,
+    /// workspace.favorite-mark: お気に入りに入れる・外す(引き出しの見出しと、パレットの今のワークスペース)。
+    WsFavorite,
+    /// workspace.switch-keys: 切り替えの一覧で、その番号(1〜9)の項目を選ぶ。名前は番号ごと(`choose_3`)。
+    Choose(u8),
+    // 縦に並べる(stack.*。stack.rs)。表の間の移りと高さは `Ctrl+w` の前置き(tbd~stack.window-keys)。
+    /// stack.add: 今の範囲の表を選んで、今の表の下に並べる(パレットから)。
+    StackAdd,
+    /// stack.close: 選んでいる表を並べた表から外す。
+    StackClose,
+    /// stack.focus: 下・上の表へ移る。
+    StackDown,
+    StackUp,
+    /// stack.resize: 選んでいる表を1行高く・低く。
+    StackGrow,
+    StackShrink,
+    /// stack.page-save: 並べた形に名前を付けて、今のワークスペースのページとして残す(パレットから)。
+    PageSave,
 }
+
+/// `Choose(1)`〜`Choose(9)` の名前(動作ごとに違う名前。workspace.switch-keys)。
+const CHOOSE: [&str; 9] = [
+    "choose_1", "choose_2", "choose_3", "choose_4", "choose_5", "choose_6", "choose_7", "choose_8",
+    "choose_9",
+];
+
+/// `GoToSection(1)`〜`GoToSection(9)` の名前(動作ごとに違う名前。SR-14・SR-13)。
+const GO_TO_SECTION: [&str; 9] = [
+    "go_to_section_1",
+    "go_to_section_2",
+    "go_to_section_3",
+    "go_to_section_4",
+    "go_to_section_5",
+    "go_to_section_6",
+    "go_to_section_7",
+    "go_to_section_8",
+    "go_to_section_9",
+];
 
 impl Action {
     /// パレットで探す動作の名前(SR-14。英語の小文字)。
@@ -503,12 +599,27 @@ impl Action {
             Action::FocusChips => "focus_chips",
             Action::NextSection => "next_section",
             Action::PrevSection => "prev_section",
+            Action::GoToSection(n) => GO_TO_SECTION
+                .get(usize::from(n).wrapping_sub(1))
+                .copied()
+                .unwrap_or("go_to_section"),
             Action::Toggle => "toggle",
             Action::MoveItemUp => "move_item_up",
             Action::MoveItemDown => "move_item_down",
             Action::RemoveItem => "remove_item",
             Action::ExportBase => "export_base",
             Action::ExportTable => "export_table",
+            Action::Cond1 => "condition_1",
+            Action::Cond2 => "condition_2",
+            Action::Cond3 => "condition_3",
+            Action::Cond4 => "condition_4",
+            Action::Cond5 => "condition_5",
+            Action::Cond6 => "condition_6",
+            Action::Cond7 => "condition_7",
+            Action::Cond8 => "condition_8",
+            Action::Cond9 => "condition_9",
+            Action::ExprFilter => "expr_filter",
+            Action::FocusNotice => "notice",
             Action::SortMenu => "sort_menu",
             Action::FilterMenu => "filter_menu",
             Action::SetDefaultView => "set_default_view",
@@ -551,6 +662,37 @@ impl Action {
             Action::ChartNextSaved => "chart_next_saved",
             Action::ChartCumulative => "chart_cumulative",
             Action::ChartPercent => "chart_percent",
+            Action::WordNext => "word_next",
+            Action::WordPrev => "word_prev",
+            Action::WordEnd => "word_end",
+            Action::Insert => "insert",
+            Action::Append => "append",
+            Action::InsertStart => "insert_start",
+            Action::AppendEnd => "append_end",
+            Action::DeleteWord => "delete_word",
+            Action::DeleteWordBack => "delete_word_back",
+            Action::DeleteToEnd => "delete_to_end",
+            Action::ChangeWord => "change_word",
+            Action::ChangeToEnd => "change_to_end",
+            Action::ChangeLine => "change_line",
+            Action::Paste => "paste",
+            Action::Repeat => "repeat",
+            Action::AcrossSearch => "across_search",
+            Action::SaveSession => "save_session",
+            Action::OpenRecent => "open_recent",
+            Action::WsSwitch => "workspace_switch",
+            Action::WsFavorite => "workspace_favorite",
+            Action::Choose(n) => CHOOSE
+                .get(usize::from(n).wrapping_sub(1))
+                .copied()
+                .unwrap_or("choose"),
+            Action::StackAdd => "stack_add",
+            Action::StackClose => "stack_close",
+            Action::StackDown => "stack_down",
+            Action::StackUp => "stack_up",
+            Action::StackGrow => "stack_grow",
+            Action::StackShrink => "stack_shrink",
+            Action::PageSave => "page_save",
         }
     }
 
@@ -577,6 +719,9 @@ impl Action {
         Action::Menu,
         Action::Detail,
         Action::OpenUrl,
+        // screen.vim-paste・screen.vim-repeat: 選んでいるセル・行に入れる。
+        Action::Paste,
+        Action::Repeat,
     ];
 
     /// SC-17: ノートだけの動作(行がノートでない表(CSV など)では出さず、キーでも断る)。
@@ -595,9 +740,26 @@ impl Action {
         Action::ExportBase,
     ];
 
+    /// condition.digit-keys: 数字のキーの動作の数字(1〜9)。
+    pub fn cond_digit(self) -> Option<u8> {
+        const DIGITS: [Action; 9] = [
+            Action::Cond1,
+            Action::Cond2,
+            Action::Cond3,
+            Action::Cond4,
+            Action::Cond5,
+            Action::Cond6,
+            Action::Cond7,
+            Action::Cond8,
+            Action::Cond9,
+        ];
+        DIGITS.iter().position(|a| *a == self).map(|i| i as u8 + 1)
+    }
+
     /// 動作を名前(`Action::name`)で引く(SR-13 の設定)。表にある動作だけ。
+    /// 動作を名前(`Action::name`)で引く(SR-13 の設定)。表(vim モードのキーの表を含む)にある動作だけ。
     pub fn by_name(name: &str) -> Option<Action> {
-        BINDINGS.iter().map(|b| b.action).find(|a| a.name() == name)
+        defaults().map(|b| b.action).find(|a| a.name() == name)
     }
 }
 
@@ -633,9 +795,11 @@ impl Binding {
 
 /// 日本語なら表の日本語(`ja`。表の写しで書き換えた名前も含む)、ほかの言語なら文言の表から。
 fn shown(ja: &'static str, msg: Msg) -> &'static str {
-    match i18n::current() {
-        Lang::Ja => ja,
-        lang @ Lang::En => msg.get(lang),
+    let lang = i18n::current();
+    if lang == Lang::Ja {
+        ja
+    } else {
+        msg.get(lang)
     }
 }
 
@@ -680,6 +844,7 @@ const IN_PROMPT: Msg = Msg::SecInPrompt;
 const IN_DETAIL: Msg = Msg::SecInDetail;
 const IN_SETTINGS: Msg = Msg::SecInSettings;
 const IN_CHIPS: Msg = Msg::SecInChips;
+const IN_NOTICE: Msg = Msg::SecInNotice;
 const IN_PICK: Msg = Msg::SecInPick;
 const NATIVE: Msg = Msg::SecNative;
 const NOTE: Msg = Msg::SecNote;
@@ -695,6 +860,9 @@ const IN_TREE: Msg = Msg::SecInTree;
 const IN_GANTT: Msg = Msg::SecInGantt;
 const IN_KANBAN: Msg = Msg::SecInKanban;
 const IN_CHART: Msg = Msg::SecInChart;
+const IN_INPUT_NORMAL: Msg = Msg::SecInInputNormal;
+const IN_SWITCH: Msg = Msg::SecInSwitch;
+const STACK: Msg = Msg::SecStack;
 
 /// パレットのコマンド(BV-19・CE-25)。キーの無い動作と、キーを外してもパレットから使える動作。
 /// パレットの候補とヘルプはこの表からも作る。読むだけ(WB-15)では書くコマンドなので出さない
@@ -741,6 +909,8 @@ pub const COMMANDS: &[Command] = &[
     cmd(Action::SetDefaultView, Msg::CmdSetDefaultView, NATIVE),
     // OUT-2: 画面の表の書き出し(既定のキーなし。パレットから)。
     cmd(Action::ExportTable, Msg::CmdExportTable, OUTSIDE),
+    // navigation.expr-filter: 式で絞り込む。
+    cmd(Action::ExprFilter, Msg::CmdExprFilter, SEARCH),
     // CE-29: キーの名前の変更と削除(既定のキーなし。パレットと操作の一覧から)。
     cmd(Action::RenameKey, Msg::CmdRenameKey, SHAPE),
     cmd(Action::DeleteKey, Msg::CmdDeleteKey, SHAPE),
@@ -769,6 +939,8 @@ pub const READ_COMMANDS: &[Command] = &[
     // NV-29: 絞り込みの窓(キー `|` を外しても、検索の欄を隠しても開けるように)。
     cmd(Action::FilterMenu, Msg::CmdFilterMenu, SHAPE),
     cmd(Action::RegisterPlace, Msg::PlaceRegister, FILE),
+    // cli.session-screen-save: 今の表示をセッションとして保存する(sessions.toml だけを書き、ノートは書かない)。
+    cmd(Action::SaveSession, Msg::CmdSaveSession, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
     // TR-5: 行の URL を開く(既定のキーなし。木の中では `o`。操作の一覧からも)。
@@ -785,6 +957,18 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::WsRemove, Msg::CmdWsRemove, FILE),
     cmd(Action::WsOpen, Msg::CmdWsOpen, FILE),
     cmd(Action::WsDrawer, Msg::CmdWsDrawer, FILE),
+    // navigation.across-option: ワークスペースを横断して探す(ノートを書かない。設定の `[search] across` が偽なら、
+    // パレットとヘルプに出さない。`App::command_shown`)。
+    cmd(Action::AcrossSearch, Msg::CmdAcrossSearch, SEARCH),
+    // cli.recent-list・workspace.switch-open・workspace.favorite-mark: ノートを書かない(覚えた表は見た目の状態の
+    // 置き場、お気に入りは workspaces.toml)ので、読むだけの起動でも。
+    cmd(Action::OpenRecent, Msg::CmdOpenRecent, FILE),
+    cmd(Action::WsSwitch, Msg::CmdWsSwitch, FILE),
+    cmd(Action::WsFavorite, Msg::CmdWsFavorite, FILE),
+    // stack.add・stack.close・stack.page-save: 縦に並べる(ノートは書かない。ページは workspaces.toml か印に書く)。
+    cmd(Action::StackAdd, Msg::CmdStackAdd, STACK),
+    cmd(Action::StackClose, Msg::KeyStackClose, STACK),
+    cmd(Action::PageSave, Msg::CmdPageSave, STACK),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。
@@ -898,6 +1082,18 @@ pub const BINDINGS: &[Binding] = &[
     b("@", Action::PrevProblem, Msg::KeyPrevProblem, SEARCH, 0),
     // NV-9: 選んでいる列の値の頻度表(選んだ値で絞る)。
     b("%", Action::Freq, Msg::KeyFrequency, SEARCH, 0),
+    // condition.digit-keys: 数字のキーを書いた名前の条件の入れ切り(条件の無い数字はヘルプにも出さない)。
+    b("1", Action::Cond1, Msg::KeyCondition, SEARCH, 0),
+    b("2", Action::Cond2, Msg::KeyCondition, SEARCH, 0),
+    b("3", Action::Cond3, Msg::KeyCondition, SEARCH, 0),
+    b("4", Action::Cond4, Msg::KeyCondition, SEARCH, 0),
+    b("5", Action::Cond5, Msg::KeyCondition, SEARCH, 0),
+    b("6", Action::Cond6, Msg::KeyCondition, SEARCH, 0),
+    b("7", Action::Cond7, Msg::KeyCondition, SEARCH, 0),
+    b("8", Action::Cond8, Msg::KeyCondition, SEARCH, 0),
+    b("9", Action::Cond9, Msg::KeyCondition, SEARCH, 0),
+    // notice.focus: 通知の欄へ移る(tbd~notice.focus-key。仮に m)。
+    b("m", Action::FocusNotice, Msg::KeyFocusNotice, SEARCH, 0),
     // 選択と詳細(NV-5・NV-6・SR-16・SR-18)
     b("Space", Action::Mark, Msg::KeyMark, SELECT, 0),
     b("v", Action::Visual, Msg::KeyVisual, SELECT, 0),
@@ -915,6 +1111,19 @@ pub const BINDINGS: &[Binding] = &[
     // ビューの設定と帯(NV-13・NV-16・NV-22)
     b("o", Action::ViewSettings, Msg::KeyViewSettings, SHAPE, 0),
     b("f", Action::FocusChips, Msg::KeyFocusChips, SHAPE, 0),
+    // stack.focus・stack.close・stack.resize: 縦に並べた表の間を移る・閉じる・高さを変える(vim の窓の操作に
+    // 合わせた `Ctrl+w` の前置き。tbd~stack.window-keys の仮)。
+    b("Ctrl+w j", Action::StackDown, Msg::KeyStackDown, STACK, 0),
+    b("Ctrl+w k", Action::StackUp, Msg::KeyStackUp, STACK, 0),
+    b("Ctrl+w c", Action::StackClose, Msg::KeyStackClose, STACK, 0),
+    b("Ctrl+w +", Action::StackGrow, Msg::KeyStackGrow, STACK, 0),
+    b(
+        "Ctrl+w -",
+        Action::StackShrink,
+        Msg::KeyStackShrink,
+        STACK,
+        0,
+    ),
     // 編集(CE-1・CE-11・SR-16)。文字のキーは割り当てない(入力に使う)。
     m(
         Mode::Edit,
@@ -1267,6 +1476,79 @@ pub const BINDINGS: &[Binding] = &[
         IN_SETTINGS,
         0,
     ),
+    // navigation.settings-sections-digits: 左の一覧の番号の区画へ。
+    m(
+        Mode::Settings,
+        "1",
+        Action::GoToSection(1),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "2",
+        Action::GoToSection(2),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "3",
+        Action::GoToSection(3),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "4",
+        Action::GoToSection(4),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "5",
+        Action::GoToSection(5),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "6",
+        Action::GoToSection(6),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "7",
+        Action::GoToSection(7),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "8",
+        Action::GoToSection(8),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
+    m(
+        Mode::Settings,
+        "9",
+        Action::GoToSection(9),
+        Msg::KeyGoToSection,
+        IN_SETTINGS,
+        0,
+    ),
     m(
         Mode::Settings,
         "j",
@@ -1479,6 +1761,96 @@ pub const BINDINGS: &[Binding] = &[
         5,
     ),
     m(Mode::Chips, "?", Action::Help, Msg::KeyHelp, IN_CHIPS, 0),
+    // 通知の欄の中(notice.focus・notice.jump)
+    m(
+        Mode::Notice,
+        "h",
+        Action::Left,
+        Msg::KeyLeftItem,
+        IN_NOTICE,
+        2,
+    ),
+    m(
+        Mode::Notice,
+        "Left",
+        Action::Left,
+        Msg::KeyLeftItem,
+        IN_NOTICE,
+        2,
+    ),
+    m(
+        Mode::Notice,
+        "l",
+        Action::Right,
+        Msg::KeyRightItem,
+        IN_NOTICE,
+        3,
+    ),
+    m(
+        Mode::Notice,
+        "Right",
+        Action::Right,
+        Msg::KeyRightItem,
+        IN_NOTICE,
+        3,
+    ),
+    m(
+        Mode::Notice,
+        "k",
+        Action::Up,
+        Msg::KeyLeftItem,
+        IN_NOTICE,
+        0,
+    ),
+    m(
+        Mode::Notice,
+        "Up",
+        Action::Up,
+        Msg::KeyLeftItem,
+        IN_NOTICE,
+        0,
+    ),
+    m(
+        Mode::Notice,
+        "j",
+        Action::Down,
+        Msg::KeyRightItem,
+        IN_NOTICE,
+        0,
+    ),
+    m(
+        Mode::Notice,
+        "Down",
+        Action::Down,
+        Msg::KeyRightItem,
+        IN_NOTICE,
+        0,
+    ),
+    m(
+        Mode::Notice,
+        "Enter",
+        Action::Run,
+        Msg::KeyNoticeOpen,
+        IN_NOTICE,
+        1,
+    ),
+    m(
+        Mode::Notice,
+        "Esc",
+        Action::Close,
+        Msg::KeyBackToTable,
+        IN_NOTICE,
+        4,
+    ),
+    m(
+        Mode::Notice,
+        "m",
+        Action::Close,
+        Msg::KeyBackToTable,
+        IN_NOTICE,
+        4,
+    ),
+    m(Mode::Notice, "?", Action::Help, Msg::KeyHelp, IN_NOTICE, 0),
     // リストの選択の中(CE-16・CE-17・CE-19・CE-11)。文字1つのキーは割り当てない(打つ文字は検索に入る)。
     // 検索が空のとき Space=付け外し・Enter=確定。検索中は Space=空白・Enter=選んだ候補を付けるだけ
     // (既に付いていれば何もしない。新規なら足す)で検索を空に戻す。Tab はいつでも確定。
@@ -2970,7 +3342,245 @@ pub const BINDINGS: &[Binding] = &[
         0,
     ),
     m(Mode::Chart, "?", Action::Help, Msg::KeyHelp, IN_CHART, 0),
+    // workspace.switch-open: お気に入りのワークスペースの切り替えの一覧(表・関係マップ・木・ガント・カンバン・グラフの
+    // どの画面からでも。パレットの「ワークスペースを切り替える」からも)。
+    b("W", Action::WsSwitch, Msg::CmdWsSwitch, FILE, 0),
+    m(
+        Mode::Relations,
+        "W",
+        Action::WsSwitch,
+        Msg::CmdWsSwitch,
+        IN_RELMAP,
+        0,
+    ),
+    m(
+        Mode::Tree,
+        "W",
+        Action::WsSwitch,
+        Msg::CmdWsSwitch,
+        IN_TREE,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "W",
+        Action::WsSwitch,
+        Msg::CmdWsSwitch,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Kanban,
+        "W",
+        Action::WsSwitch,
+        Msg::CmdWsSwitch,
+        IN_KANBAN,
+        0,
+    ),
+    m(
+        Mode::Chart,
+        "W",
+        Action::WsSwitch,
+        Msg::CmdWsSwitch,
+        IN_CHART,
+        0,
+    ),
+    // 関係マップからもパレット(ほかの画面の型と同じ。パレットの「ワークスペースを切り替える」を開けるように)。
+    m(
+        Mode::Relations,
+        ":",
+        Action::Palette,
+        Msg::KeyCommands,
+        IN_RELMAP,
+        0,
+    ),
+    // workspace.favorite-mark: 引き出しのワークスペースの見出しで、お気に入りに入れる・外す。
+    m(
+        Mode::Drawer,
+        "f",
+        Action::WsFavorite,
+        Msg::KeyDrawerFavorite,
+        IN_DRAWER,
+        0,
+    ),
+    // 切り替えの一覧の中(workspace.switch-keys。switch.rs)。数字でその番号のワークスペースへ、Enter で選んだ所へ。
+    m(
+        Mode::Switch,
+        "Enter",
+        Action::Run,
+        Msg::KeySwitchRun,
+        IN_SWITCH,
+        1,
+    ),
+    m(
+        Mode::Switch,
+        "Esc",
+        Action::Close,
+        Msg::KeyClose,
+        IN_SWITCH,
+        2,
+    ),
+    m(
+        Mode::Switch,
+        "q",
+        Action::Close,
+        Msg::KeyClose,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "j",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "Down",
+        Action::Down,
+        Msg::KeyNextItem,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "k",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "Up",
+        Action::Up,
+        Msg::KeyPrevItem,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "1",
+        Action::Choose(1),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "2",
+        Action::Choose(2),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "3",
+        Action::Choose(3),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "4",
+        Action::Choose(4),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "5",
+        Action::Choose(5),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "6",
+        Action::Choose(6),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "7",
+        Action::Choose(7),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "8",
+        Action::Choose(8),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "9",
+        Action::Choose(9),
+        Msg::KeySwitchNumber,
+        IN_SWITCH,
+        0,
+    ),
 ];
+
+const fn n(key: &'static str, action: Action, msg: Msg, rank: u8) -> Binding {
+    m(Mode::InputNormal, key, action, msg, IN_INPUT_NORMAL, rank)
+}
+
+/// vim モード(screen.vim-*。vim.rs)で足すキー。設定の `[keys]` の `vim = true` のときだけ、`BINDINGS` の写しに
+/// 足す(`App::configure`。割り当て直しより先)。表の画面の `dd`・`p`・`.` と、入力の欄のノーマルのモード
+/// (`input_normal`)のキー。数字は回数にしない(screen.vim-no-count。数字だけのキーは名前の条件の切り替え)。
+pub const VIM_BINDINGS: &[Binding] = &[
+    // screen.vim-dd: パレットの「ノートを消す」と同じ動作(範囲を選んでいるときは前置きの `d` だけで。vim.rs)。
+    b("d d", Action::DeleteNote, Msg::CmdDeleteNote, EDIT, 0),
+    b("p", Action::Paste, Msg::KeyPaste, EDIT, 0),
+    b(".", Action::Repeat, Msg::KeyRepeat, EDIT, 0),
+    // screen.vim-normal-keys: 動き。
+    n("h", Action::CursorLeft, Msg::KeyLeft, 0),
+    n("l", Action::CursorRight, Msg::KeyRight, 0),
+    n("0", Action::CursorHome, Msg::KeyCursorHome, 0),
+    n("$", Action::CursorEnd, Msg::KeyCursorEnd, 0),
+    n("w", Action::WordNext, Msg::KeyWordNext, 0),
+    n("b", Action::WordPrev, Msg::KeyWordPrev, 0),
+    n("e", Action::WordEnd, Msg::KeyWordEnd, 0),
+    // 挿入への移り。
+    n("i", Action::Insert, Msg::KeyInsert, 1),
+    n("a", Action::Append, Msg::KeyAppend, 2),
+    n("I", Action::InsertStart, Msg::KeyInsertStart, 0),
+    n("A", Action::AppendEnd, Msg::KeyAppendEnd, 0),
+    // 消す。
+    n("x", Action::DeleteForward, Msg::KeyDeleteUnder, 3),
+    n("X", Action::DeleteBack, Msg::KeyDeleteBack, 0),
+    n("d w", Action::DeleteWord, Msg::KeyDeleteWord, 0),
+    n("d b", Action::DeleteWordBack, Msg::KeyDeleteWordBack, 0),
+    n("d $", Action::DeleteToEnd, Msg::KeyDeleteToEnd, 0),
+    n("D", Action::DeleteToEnd, Msg::KeyDeleteToEnd, 0),
+    n("d d", Action::ClearInput, Msg::KeyClearInput, 0),
+    // 替える。
+    n("c w", Action::ChangeWord, Msg::KeyChangeWord, 0),
+    n("c $", Action::ChangeToEnd, Msg::KeyChangeToEnd, 0),
+    n("C", Action::ChangeToEnd, Msg::KeyChangeToEnd, 0),
+    n("c c", Action::ChangeLine, Msg::KeyChangeLine, 0),
+    // 取り消し。
+    n("u", Action::Undo, Msg::KeyUndo, 4),
+];
+
+/// 既定のキーの全部(`BINDINGS` と vim モードの `VIM_BINDINGS`)。割り当て直し(SR-13)で、動作の名前と、その動作が
+/// 使えるモードを引くのに使う。
+pub fn defaults() -> impl Iterator<Item = &'static Binding> {
+    BINDINGS.iter().chain(VIM_BINDINGS)
+}
 
 /// 全角の英数字・記号と `、`・`・` を、同じキーの位置の半角に直す(SR-17)。
 pub fn halfwidth(c: char) -> char {
@@ -3247,7 +3857,7 @@ fn parse_one_key(tok: &str) -> Result<String, String> {
 /// 設定のキーの名前を表の `&'static str` にする。既定の表にある名前はそれを使い、無ければ1回だけ確保する
 /// (起動のときに設定の行の数だけ。表は App が終わるまで使う)。
 fn intern(key: String) -> &'static str {
-    match BINDINGS.iter().find(|b| b.key == key) {
+    match defaults().find(|b| b.key == key) {
         Some(b) => b.key,
         None => Box::leak(key.into_boxed_str()),
     }
@@ -3268,6 +3878,7 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::Settings, &[Action::Cancel]),
     (Mode::SettingsText, &[Action::Cancel]),
     (Mode::Chips, &[Action::Close]),
+    (Mode::Notice, &[Action::Close]),
     (Mode::ListPick, &[Action::Cancel]),
     (Mode::Menu, &[Action::Close]),
     (Mode::Freq, &[Action::Close]),
@@ -3282,7 +3893,17 @@ const EXITS: &[(Mode, &[Action])] = &[
     (Mode::Gantt, &[Action::Close]),
     (Mode::Kanban, &[Action::Close]),
     (Mode::Chart, &[Action::Close]),
+    (Mode::Switch, &[Action::Close]),
 ];
+
+/// モードの抜ける動作(`EXITS`)。vim モードの入力の欄では、挿入のモードでこの動作のキー(既定は Esc)を押すと
+/// ノーマルのモードに移る(screen.vim-input-modes。vim.rs)。
+pub fn exits(mode: Mode) -> &'static [Action] {
+    EXITS
+        .iter()
+        .find(|(m, _)| *m == mode)
+        .map_or(&[], |(_, a)| *a)
+}
 
 /// 割り当て直しで抜ける動作のキーが0本になったら、その動作の既定のキーを戻して警告する
 /// (外す・置き換える設定を当てない)。戻すキーに当てた別の動作と、戻すキーを前置きにする並びは外す。
@@ -3364,7 +3985,8 @@ pub fn rebind(table: &mut Vec<Binding>, binds: &[(String, String, String)]) -> V
             warnings.push(Msg::RebindUnknownAction.fill(&[at, &a]));
             continue;
         };
-        let Some(def) = BINDINGS.iter().find(|b| b.mode == m && b.action == action) else {
+        // vim モードのキー(`VIM_BINDINGS`)の動作も、そのモードで割り当て直せる(screen.vim-remap)。
+        let Some(def) = defaults().find(|b| b.mode == m && b.action == action) else {
             warnings.push(Msg::RebindNotInMode.fill(&[at, &a, &m.label()]));
             continue;
         };

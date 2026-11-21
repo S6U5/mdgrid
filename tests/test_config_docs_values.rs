@@ -185,6 +185,8 @@ fn test_cli_12_table_defaults_are_real_defaults() {
                 "editor" => assert_eq!(d.editor, None),
                 "keys" => assert!(d.keys.is_empty()),
                 "templates" => assert!(d.templates.is_empty()),
+                "conditions" => assert!(d.conditions.is_empty()),
+                "notices" => assert!(d.notices.is_empty()),
                 "use" => assert_eq!(d.profile.use_, None),
                 "look.style" => assert!(d.profile.look.style.is_empty()),
                 "look.columns" => assert!(d.profile.look.columns.is_empty()),

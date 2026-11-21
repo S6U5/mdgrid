@@ -7,7 +7,7 @@ use super::view::{footer, message};
 use super::width::{fit, sanitize, Align};
 use mdgrid::changes::Outcome;
 use mdgrid::i18n::Msg;
-use mdgrid::source::{content_hash, RowId};
+use mdgrid::source::{content_hash, RowId, Source};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 
@@ -22,6 +22,8 @@ pub(crate) struct ReviewItem {
     pub diff: Result<Vec<DiffLine>, String>,
     /// 見せた差分の元の内容(今のファイル)のハッシュ。WB-16 の `o` で、見せた内容の上にだけ書く。
     pub seen: Option<[u8; 32]>,
+    /// stack.save-all: 縦に並べた表の保存では、その行を読んだ表の名前(表ごとの見出し)。並べていなければ None。
+    pub table: Option<String>,
 }
 
 /// 保存の確認の画面の状態。
@@ -37,19 +39,21 @@ pub(crate) use crate::edit::{edit_error_text, save_error_text};
 impl App {
     /// 保存の確認と終了の確認の動作。
     pub(crate) fn review_action(&mut self, action: Action) {
+        // stack.close-pending: 並べた表を閉じる確かめ(stack.rs)。
+        if self.stack_review_action(action) {
+            return;
+        }
         match action {
             Action::SaveAll => self.save(),
             Action::Back => {
                 self.review = None;
                 self.quit_after_save = false;
-                // CLI-19: 戻ったら、一覧で選んだ表へは移らない。
-                self.switch_to = None;
-                self.switch_select = None;
-                self.switch_new_note = false;
-                // WS-8: 移る先の範囲の旗も捨てる(あとで別の道で移るときに、前の選びの範囲を拾わない)。
-                self.switch_workspace = None;
-                self.switch_leave_workspace = false;
-                self.set_mode(Mode::Table);
+                // CLI-19・WS-8: 戻ったら、一覧で選んだ表へは移らない(範囲の旗・移った先の条件と検索の語も捨てる)。
+                self.drop_switch();
+                self.visits.retarget = false;
+                // workspace.switch-unsaved: 表でない画面の型から移ろうとして取りやめたら、その画面に戻る。
+                let back = self.screen().mode();
+                self.set_mode(back);
             }
             Action::NextFile => {
                 if let Some(r) = &mut self.review {
@@ -64,8 +68,10 @@ impl App {
             Action::Overwrite => self.overwrite(),
             Action::DiscardRow => {
                 if let Some(unit) = self.review_row() {
-                    let label = self.src.label(&unit);
-                    let rows = self.changes.rows_in(self.src.as_ref(), &unit);
+                    let (label, rows) = {
+                        let (changes, src) = self.save_parts();
+                        (src.label(&unit), changes.rows_in(&src, &unit))
+                    };
                     self.changes.discard_rows(&rows);
                     self.after_review_change(Msg::ReviewDiscarded.fill(&[&label]));
                 }
@@ -105,27 +111,48 @@ impl App {
     /// 保存の確認の画面を(作り直して)開く(WB-9)。ためた変更が無ければ表に戻る。
     pub(crate) fn open_review(&mut self) {
         let sel = self.review.as_ref().map_or(0, |r| r.sel);
-        let items: Vec<ReviewItem> = self
-            .changes
-            .previews(self.src.as_ref())
-            .into_iter()
-            .map(|p| match p {
-                Ok(p) => ReviewItem {
-                    label: self.src.label(&p.row),
-                    external: p.external,
-                    diff: Ok(diff(&p.before, &p.after)),
-                    seen: Some(content_hash(&p.before)),
-                    row: p.row,
-                },
-                Err((row, e)) => ReviewItem {
-                    label: self.src.label(&row),
-                    external: self.changes.external_unit(self.src.as_ref(), &row),
-                    diff: Err(edit_error_text(&e)),
-                    seen: None,
-                    row,
-                },
-            })
-            .collect();
+        // stack.close-pending: 並べた表を閉じる確かめからは、その表だけの変更。
+        let only = self.stack_closing_rows();
+        // stack.save-all: 並べた表では、全部の表のためた変更を、表ごとに見出しを付けて並べた順に。
+        let mut items: Vec<(usize, ReviewItem)> = {
+            let (changes, src) = self.save_parts();
+            let many = src.many();
+            let only: Option<Vec<RowId>> =
+                only.map(|rows| rows.iter().map(|r| src.unit(r)).collect());
+            changes
+                .previews(&src)
+                .into_iter()
+                .map(|p| {
+                    let row = match &p {
+                        Ok(p) => p.row.clone(),
+                        Err((row, _)) => row.clone(),
+                    };
+                    let (at, name) = src.place(&row);
+                    let item = match p {
+                        Ok(p) => ReviewItem {
+                            label: src.label(&p.row),
+                            external: p.external,
+                            diff: Ok(diff(&p.before, &p.after)),
+                            seen: Some(content_hash(&p.before)),
+                            row: p.row,
+                            table: many.then_some(name),
+                        },
+                        Err((row, e)) => ReviewItem {
+                            label: src.label(&row),
+                            external: changes.external_unit(&src, &row),
+                            diff: Err(edit_error_text(&e)),
+                            seen: None,
+                            row,
+                            table: many.then_some(name),
+                        },
+                    };
+                    (at, item)
+                })
+                .filter(|(_, i)| only.as_ref().is_none_or(|o| o.contains(&i.row)))
+                .collect()
+        };
+        items.sort_by_key(|(at, _)| *at);
+        let items: Vec<ReviewItem> = items.into_iter().map(|(_, i)| i).collect();
         if items.is_empty() {
             self.review = None;
             self.set_mode(Mode::Table);
@@ -144,9 +171,10 @@ impl App {
     /// 保存の確認を開く前に、ためた行の読んだ値と同じセルを外す(WB-17。undo で戻ったセルなど)。
     /// 書くものが残れば true。
     pub(crate) fn drop_same_pending(&mut self) -> bool {
-        let rows = self.changes.rows();
-        self.changes.drop_same(self.src.as_ref(), &rows);
-        self.changes.count() > 0
+        let (changes, src) = self.save_parts();
+        let rows = changes.rows();
+        changes.drop_same(&src, &rows);
+        changes.count() > 0
     }
 
     /// 保存の確認の画面で変更を減らしたあと:残りがあれば差分を作り直し、無ければ表へ。
@@ -167,7 +195,15 @@ impl App {
     fn save(&mut self) {
         // REL-1: 保存で値が変わるので、リンクの行き先を解き直す。
         self.links.invalidate();
-        let results = self.changes.save(self.src.as_mut());
+        // stack.save-all: 並べた表の全部の変更を書く(閉じる確かめからは、その表だけの変更)。
+        let only = self.stack_closing_rows();
+        let results = {
+            let (changes, mut src) = self.save_parts();
+            match &only {
+                Some(rows) => changes.save_rows(&mut src, rows),
+                None => changes.save(&mut src),
+            }
+        };
         self.report(results, false);
     }
 
@@ -175,11 +211,19 @@ impl App {
     fn report(&mut self, results: Vec<(RowId, Outcome)>, one: bool) {
         // NV-12: 保存したら、留めていた行を本来の位置へ。
         self.stay.clear();
+        // stack.save-all: 並べた表では、その行を読んだ表の名前とファイル。
+        let places: Vec<(String, std::path::PathBuf)> = {
+            let (_, src) = self.save_parts();
+            results
+                .iter()
+                .map(|(row, _)| (src.label(row), src.locate(row).0))
+                .collect()
+        };
         let mut saved = Vec::new();
         let mut stopped = Vec::new();
         let mut failed = Vec::new();
-        for (row, out) in &results {
-            let label = self.src.label(row);
+        for ((_, out), (label, _)) in results.iter().zip(&places) {
+            let label = label.clone();
             match out {
                 Outcome::Saved => saved.push(label),
                 Outcome::Changed => stopped.push(label),
@@ -197,13 +241,21 @@ impl App {
             parts.push(Msg::ReviewFailed.fill(&[&failed.len(), &failed.join(", ")]));
         }
         let msg = parts.join(Msg::SentenceSep.text());
+        // notice.refresh: 書いたら通知の欄を数え直す。
+        if !saved.is_empty() {
+            self.notice.dirty = true;
+        }
         // write-back.git-*: 書けたノートを覚える(git に渡すのは、表に戻ったあと)。
-        for (row, out) in &results {
+        for ((_, out), (_, file)) in results.iter().zip(places) {
             if matches!(out, Outcome::Saved) {
-                let file = self.src.locate(row).0;
                 self.git_note(file);
             }
         }
+        let written: Vec<RowId> = results
+            .iter()
+            .filter(|(_, o)| matches!(o, Outcome::Saved))
+            .map(|(r, _)| r.clone())
+            .collect();
         if stopped.is_empty() && !(one && self.changes.count() > 0) {
             // 止まった行が無ければ表に戻る(書けなかった変更は残る)。
             if self.changes.count() == 0 && self.quit_after_save {
@@ -220,6 +272,8 @@ impl App {
             self.refresh();
             self.message = Some(msg);
         }
+        // stack.save-all・stack.close-pending: 書いた行をほかの並べた表でも読み直し、閉じる確かめの表を閉じる。
+        self.stack_after_save(&written);
     }
 
     /// WB-16 の「外の変更の上に書く」: 選んだファイルだけを、見せた差分の元の内容を基準にして書く。
@@ -232,8 +286,11 @@ impl App {
             return;
         };
         let (row, seen) = (item.row.clone(), item.seen);
-        let label = self.src.label(&row);
-        if !self.changes.external_unit(self.src.as_ref(), &row) {
+        let (label, external) = {
+            let (changes, src) = self.save_parts();
+            (src.label(&row), changes.external_unit(&src, &row))
+        };
+        if !external {
             self.message = Some(Msg::ReviewNotExternal.fill(&[&label]));
             return;
         }
@@ -242,14 +299,18 @@ impl App {
             return;
         };
         // 単位の中の行を、どれも見せた内容を基準にする(1つでも見せた内容と違えば書かない)。
-        let rows = self.changes.rows_in(self.src.as_ref(), &row);
-        let mut res = Ok(true);
-        for r in &rows {
-            res = self.changes.overwrite_seen(self.src.as_mut(), r, seen);
-            if !matches!(res, Ok(true)) {
-                break;
+        let res = {
+            let (changes, mut src) = self.save_parts();
+            let rows = changes.rows_in(&src, &row);
+            let mut res = Ok(true);
+            for r in &rows {
+                res = changes.overwrite_seen(&mut src, r, seen);
+                if !matches!(res, Ok(true)) {
+                    break;
+                }
             }
-        }
+            res
+        };
         match res {
             Err(e) => self.message = Some(Msg::ReviewCannotReload.fill(&[&label, &e])),
             Ok(false) => {
@@ -258,7 +319,10 @@ impl App {
                 self.message = Some(Msg::ReviewChangedAgain.fill(&[&label]));
             }
             Ok(true) => {
-                let results = self.changes.save_rows(self.src.as_mut(), &[row]);
+                let results = {
+                    let (changes, mut src) = self.save_parts();
+                    changes.save_rows(&mut src, &[row])
+                };
                 self.report(results, true);
             }
         }
@@ -282,9 +346,18 @@ fn review_body(app: &App, r: &Review, w: usize) -> (Vec<Line<'static>>, Vec<usiz
     let mut out = Vec::new();
     let mut heads = Vec::new();
     let bold = Style::default().add_modifier(Modifier::BOLD);
+    let mut table: Option<&str> = None;
     for (k, item) in r.items.iter().enumerate() {
         if k > 0 {
             out.push(Line::from(" ".repeat(w)));
+        }
+        // stack.save-all: 縦に並べた表の保存では、表が変わるところに表の見出し。
+        if let Some(t) = item.table.as_deref().filter(|t| table != Some(*t)) {
+            table = Some(t);
+            out.push(Line::from(Span::styled(
+                fit(&sanitize(&Msg::ReviewTableHead.fill(&[&t])), w, Align::Left),
+                bold.add_modifier(Modifier::UNDERLINED),
+            )));
         }
         heads.push(out.len());
         let mut head = format!(

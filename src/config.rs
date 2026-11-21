@@ -100,6 +100,8 @@ pub struct Config {
     pub poll_ms: u64,
     /// (モード, キーの表記 "j"・"ctrl+s"・"shift+tab", 動作の名前か "none")。SR-13。
     pub keys: Vec<(String, String, String)>,
+    /// screen.vim-setting: vim モード(`[keys]` の `vim`。tbd~screen.vim-setting-name。既定は偽)。
+    pub vim: bool,
     pub terminal: Terminal,
     /// WS-5: ワークスペースの検知(`workspace.detect`。既定は `.obsidian` だけ)。
     pub workspace_detect: Vec<crate::workspace::Detect>,
@@ -109,6 +111,12 @@ pub struct Config {
     pub profile: Profile,
     /// `[templates.<名前>]`(書いた順)。
     pub templates: Templates,
+    /// condition.define: `[conditions.<名前>]`(使える条件だけ。書いた順)。
+    pub conditions: std::sync::Arc<crate::condition::Conditions>,
+    /// notice.opt-in: `[[notices]]`(書いた順)。連絡の項目のパスは読んだまま(main が設定のフォルダで直す)。
+    pub notices: Vec<crate::notice::Item>,
+    /// navigation.across-option: `[search]` の `across`(パレットの「ワークスペースを横断して探す」。既定は偽)。
+    pub search_across: bool,
 }
 
 impl Default for Config {
@@ -118,11 +126,15 @@ impl Default for Config {
             editor: None,
             poll_ms: 1000,
             keys: Vec::new(),
+            vim: false,
             terminal: Terminal::default(),
             workspace_detect: vec![crate::workspace::Detect::Vault],
             git: crate::gitsync::Git::default(),
             profile: Profile::default(),
             templates: Vec::new(),
+            conditions: std::sync::Arc::default(),
+            notices: Vec::new(),
+            search_across: false,
         }
     }
 }
@@ -162,10 +174,19 @@ pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), Stri
             continue;
         }
         match name.as_str() {
-            "language" => match value.as_str().and_then(Language::parse) {
-                Some(l) => c.language = l,
-                None => warn(&mut w, file, name, not(Msg::WantLanguage)),
-            },
+            "language" => {
+                if let Some(l) = value.as_str().and_then(Language::parse) {
+                    c.language = l;
+                } else {
+                    // screen.locales-setting: 使える値は auto と台帳のある言語の符号。
+                    let names: Vec<String> = Language::ALL
+                        .iter()
+                        .map(|l| format!("\"{}\"", l.name()))
+                        .collect();
+                    let want = Msg::WantLanguage.fill(&[&names.join(", ")]);
+                    warn(&mut w, file, name, Msg::RsnNot.fill(&[&want]));
+                }
+            }
             "editor" => match value.as_str() {
                 // 空(空白だけも)は無いのと同じ(SR-8)。
                 Some(e) => c.editor = (!e.trim().is_empty()).then(|| e.to_string()),
@@ -178,11 +199,39 @@ pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), Stri
             "terminal" => read_terminal(value, &mut c.terminal, file, &mut w),
             "workspace" => read_workspace(value, &mut c, file, &mut w),
             "git" => read_git(value, &mut c.git, file, &mut w),
-            "keys" => read_keys(value, &mut c.keys, file, &mut w),
+            "keys" => read_keys(value, &mut c.keys, &mut c.vim, file, &mut w),
             "templates" => c.templates = read_templates(value, file, &mut w),
+            "notices" => c.notices = crate::notice::read(value, file, &mut w),
+            "search" => read_search(value, &mut c.search_across, file, &mut w),
+            "conditions" => {
+                let specs = crate::condition::in_written_order(
+                    crate::condition::read(value, file, &mut w),
+                    text,
+                );
+                c.conditions =
+                    std::sync::Arc::new(crate::condition::Conditions::build(specs, file, &mut w));
+            }
             _ => warn(&mut w, file, name, Msg::RsnUnknown.text().to_string()),
         }
     }
+    // notice.count-item: 書いていない条件の件数の項目は、警告して使わない。
+    let conds = c.conditions.clone();
+    let mut kept = Vec::new();
+    for (i, item) in std::mem::take(&mut c.notices).into_iter().enumerate() {
+        if let crate::notice::Item::Count { cond, .. } = &item {
+            if conds.get(cond).is_none() {
+                warn(
+                    &mut w,
+                    file,
+                    &format!("notices[{}].cond", i + 1),
+                    Msg::RsnNoticeNoCond.fill(&[cond]),
+                );
+                continue;
+            }
+        }
+        kept.push(item);
+    }
+    c.notices = kept;
     Ok((c, w))
 }
 
@@ -217,6 +266,23 @@ fn read_terminal(v: &toml::Value, t: &mut Terminal, file: &str, w: &mut Vec<Stri
             },
             "herdr" => match v.as_bool() {
                 Some(b) => t.herdr = b,
+                None => warn(w, file, &p, not(Msg::WantBool)),
+            },
+            _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
+        }
+    }
+}
+
+/// `[search]`(navigation.across-option): `across`(真偽)。知らない項目と型の違う値は警告して既定のまま。
+fn read_search(v: &toml::Value, across: &mut bool, file: &str, w: &mut Vec<String>) {
+    let Some(tab) = v.as_table() else {
+        return warn(w, file, "search", not(Msg::WantTable));
+    };
+    for (k, v) in tab {
+        let p = format!("search.{k}");
+        match k.as_str() {
+            "across" => match v.as_bool() {
+                Some(b) => *across = b,
                 None => warn(w, file, &p, not(Msg::WantBool)),
             },
             _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
@@ -279,6 +345,7 @@ fn read_workspace(v: &toml::Value, c: &mut Config, file: &str, w: &mut Vec<Strin
 fn read_keys(
     value: &toml::Value,
     keys: &mut Vec<(String, String, String)>,
+    vim: &mut bool,
     file: &str,
     w: &mut Vec<String>,
 ) {
@@ -286,6 +353,14 @@ fn read_keys(
         return warn(w, file, "keys", not(Msg::WantKeysTable));
     };
     for (mode, binds) in modes {
+        // screen.vim-setting: `[keys]` の `vim`(真偽)は、モードの表でなく vim モードの入り切り。
+        if mode == "vim" {
+            match binds.as_bool() {
+                Some(b) => *vim = b,
+                None => warn(w, file, "keys.vim", not(Msg::WantBool)),
+            }
+            continue;
+        }
         let Some(binds) = binds.as_table() else {
             warn(
                 w,
@@ -363,14 +438,13 @@ pub fn peek_language(text: &str) -> Language {
 /// `--print-config` の出力(CLI-11): 全項目を区画ごとに、既定値と英語の説明と書ける範囲のコメント付きで並べた TOML。
 /// 既定で書かない項目(`editor`・`use`・表の項目)は書き方の例をコメントで出す。読み直すと警告なしで既定と同じ。
 pub fn default_toml() -> String {
-    let mut out = String::from(
-        "# mdgrid configuration with every item at its default value.\n\
-         # Location: $XDG_CONFIG_HOME/mdgrid/config.toml (or ~/.config/mdgrid/config.toml;\n\
-         # on Windows %APPDATA%\\mdgrid\\config.toml).\n\
-         # Items marked \"global only\" belong to the whole app; the others form the table profile and can\n\
-         # also be written per workspace, table and view.\n\
-         # Options: mdgrid --help. Full reference: docs/config.md in the mdgrid repository.\n",
-    );
+    // screen.locales-all-in-ledger: 頭の説明・項目の説明・範囲・例の見出しは台帳から今の言語で出す。
+    let mut out = String::new();
+    for line in Msg::CfgPrintHead.text().lines() {
+        out.push_str("# ");
+        out.push_str(line);
+        out.push('\n');
+    }
     let mut section = "";
     for item in ITEMS {
         let sec = item.section();
@@ -379,18 +453,21 @@ pub fn default_toml() -> String {
             section = sec;
         }
         out.push('\n');
-        for line in item.en.lines() {
+        for line in item.msg.text().lines() {
             out.push_str("# ");
             out.push_str(line.trim());
             out.push('\n');
         }
-        out.push_str(&format!("# Scope: {}.\n", item.scope.en()));
+        out.push_str(&format!(
+            "# {}\n",
+            Msg::CfgScopeLine.fill(&[&item.scope.text()])
+        ));
         match item.default {
             // 表の項目(`types` の既定 `{}` など)は、既定があっても書き方の例を出す(区画の見出しにする)。
             Some(v) if !item.is_table() => out.push_str(&format!("{} = {}\n", item.leaf(), v)),
             // 区画の下の項目の例は、区画の見出しの行を除いて出す(今の区画の中)。
             None if !item.is_table() && !sec.is_empty() => {
-                out.push_str("# Example:\n");
+                out.push_str(&format!("# {}\n", Msg::CfgExampleLine.text()));
                 for line in item.example.lines().skip(1) {
                     out.push_str("# ");
                     out.push_str(line);
@@ -398,7 +475,7 @@ pub fn default_toml() -> String {
                 }
             }
             _ => {
-                out.push_str("# Example:\n");
+                out.push_str(&format!("# {}\n", Msg::CfgExampleLine.text()));
                 for line in item.example.lines() {
                     out.push_str("# ");
                     out.push_str(line);
@@ -472,6 +549,12 @@ pub fn app_toml(c: &Config) -> String {
         "message",
         toml::Value::String(c.git.message.name().into()),
     ));
+    out.push_str("\n[search]\n");
+    out.push_str(src(c.search_across == d.search_across));
+    out.push_str(&line("across", toml::Value::Boolean(c.search_across)));
+    out.push_str("\n[keys]\n");
+    out.push_str(src(c.vim == d.vim));
+    out.push_str(&line("vim", toml::Value::Boolean(c.vim)));
     if !c.keys.is_empty() {
         let mut modes = toml::Table::new();
         for (mode, key, action) in &c.keys {
@@ -592,6 +675,23 @@ pub fn state_dir() -> Option<PathBuf> {
 }
 
 /// ホームのフォルダ: $HOME、無ければ Windows では %USERPROFILE%(先頭の `~` の読み替えと短い見せ方)。
+/// ホームのフォルダの下なら `~/…` で書く。`~/` の後ろの区切りはどの OS でも `/`(Windows でも `~/notes/tasks`。
+/// 書いた設定を別のマシンへ持っていけるように。読むときは `~/` の後ろをホームにつなぐので、Windows でも `/` のまま読める)。
+pub fn home_short(p: &Path) -> String {
+    if let Some(home) = home_dir() {
+        if let Ok(rest) = p.strip_prefix(&home) {
+            if !rest.as_os_str().is_empty() {
+                let parts: Vec<String> = rest
+                    .components()
+                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                    .collect();
+                return format!("~/{}", parts.join("/"));
+            }
+        }
+    }
+    p.to_string_lossy().into_owned()
+}
+
 pub fn home_dir() -> Option<PathBuf> {
     home_dir_in(&|k| std::env::var_os(k), cfg!(windows))
 }

@@ -104,13 +104,14 @@ fn test_nv_26_hide_order_default_persist() {
     let mut a = boot(&tmp, false);
     views_section(&mut a, 0);
     let s = screen(&a);
-    assert!(s.contains("ビュー       5/5"), "{s}");
+    // 左の一覧の名前の頭に番号(navigation.settings-sections-digits)。
+    assert!(s.contains("7 ビュー     5/5"), "{s}");
     assert!(s.contains("変えるとすぐ保存する"), "{s}");
     let i = row_of(&a, "全部");
     a.draft.as_mut().unwrap().sel[Sec::Views as usize] = i;
     ch(&mut a, ' ');
     assert_eq!(a.message.as_deref(), Some("タブ「全部」を隠した"));
-    assert!(screen(&a).contains("ビュー       4/5"));
+    assert!(screen(&a).contains("7 ビュー     4/5"));
     assert!(
         toml(&tmp).contains("hidden_tabs = [\"全部\"]"),
         "{}",
@@ -241,7 +242,7 @@ fn test_nv_26_rename_delete_follow_prefs() {
     let t = toml(&tmp);
     assert!(!t.contains("メモ"), "{t}");
     assert_eq!(rows(&a).len(), 4);
-    assert!(screen(&a).contains("ビュー       4/4"), "{}", screen(&a));
+    assert!(screen(&a).contains("7 ビュー     4/4"), "{}", screen(&a));
 }
 
 #[test]

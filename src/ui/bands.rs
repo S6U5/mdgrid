@@ -31,6 +31,14 @@ fn header_text(app: &App) -> String {
             text.push_str(&Msg::HeaderView.fill(&[&sanitize(v), &dirty]));
         }
     }
+    text.push_str(&header_extra(app));
+    text
+}
+
+/// ヘッダーの名前と行の数のあとに添えるもの(読み込み・画面の中だけの絞り込み・隠した列)。縦に並べた表の
+/// 見出し(stack.title)にも同じ形で添える。
+pub(crate) fn header_extra(app: &App) -> String {
+    let mut text = String::new();
     if !app.progress.done {
         let total = app
             .progress
@@ -100,7 +108,8 @@ fn table_name(app: &App) -> String {
 
 /// SR-42: (x, y) がヘッダーのパンくず(範囲と表の名前)か。押すと表の一覧の引き出し(WS-8)。
 pub(crate) fn crumb_at(app: &App, x: u16, y: u16) -> bool {
-    if y != head_y(app) {
+    // stack.title: 縦に並べた表の区画の見出しは、パンくずを持たない。
+    if y != head_y(app) || super::stack::in_region(app) {
         return false;
     }
     let x = x as usize;
@@ -285,7 +294,8 @@ pub(crate) fn header_new_shown(app: &App) -> bool {
 
 /// SR-42・REL-8: (x, y) がヘッダーの右の端のボタンなら、そのボタン。
 pub(crate) fn header_button_at(app: &App, x: u16, y: u16) -> Option<HeaderButton> {
-    if y != head_y(app) {
+    // stack.title: 縦に並べた表の区画の見出しは、ボタンを持たない。
+    if y != head_y(app) || super::stack::in_region(app) {
         return None;
     }
     let (w, _) = super::popup::screen(app);
@@ -306,6 +316,10 @@ pub(crate) fn menu_anchor(app: &App) -> Option<usize> {
 }
 
 pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
+    // stack.title: 縦に並べた表の区画では、表の名前・ビュー・行の数の見出しの1行。
+    if super::stack::in_region(app) {
+        return super::stack::title_line(app, w);
+    }
     let text = header_text(app);
     let bold = Style::default().add_modifier(Modifier::BOLD);
     let look = super::look::look(app);
@@ -540,10 +554,14 @@ fn top_pad(app: &App) -> (usize, bool) {
         .rows(half_ok(app))
 }
 
-/// SR-1: ヘッダーの上の余白の行の数(表の画面と関係マップ)。
+/// SR-1: ヘッダーの上の余白の行の数(表の画面と関係マップ)。通知の欄(notice.layout)はその上に重ねて数える。
 pub(crate) fn top_rows(app: &App) -> usize {
+    // stack.title: 縦に並べた表の区画は、見出しの1行から始まる(上の余白と通知の欄を持たない)。
+    if super::stack::in_region(app) {
+        return 0;
+    }
     let (n, half) = top_pad(app);
-    n + usize::from(half)
+    app.notice_rows() + n + usize::from(half)
 }
 
 /// SR-1: ヘッダーの画面の行。
@@ -594,8 +612,13 @@ fn half_line(app: &App, c: char, w: usize, bg: Option<ratatui::style::Color>) ->
 
 /// SR-1: ヘッダーの上の余白の行(空き行と、ヘッダーに接する半行。セルの地を帯の色で塗り、上の半分を画面の地の色の `▀` で消す)。
 pub(crate) fn top_lines(app: &App, w: usize) -> Vec<Line<'static>> {
+    if super::stack::in_region(app) {
+        return Vec::new();
+    }
     let (n, half) = top_pad(app);
-    let mut out: Vec<Line<'static>> = (0..n).map(|_| Line::from(" ".repeat(w))).collect();
+    // notice.layout: 通知の欄はいちばん上(余白の上)。
+    let mut out = super::notices::notice_band(app, w);
+    out.extend((0..n).map(|_| Line::from(" ".repeat(w))));
     if half {
         out.push(half_line(app, '▀', w, half_bg(app)));
     }
@@ -1238,7 +1261,7 @@ pub fn bar_at(app: &App, x: u16, y: u16) -> bool {
 
 /// 設定の帯(NV-16)の行の数: 効いている設定が無いか、帯を隠せば 0(帯を出さない。SR-20)、あれば 1。
 pub(crate) fn chip_rows(app: &App) -> usize {
-    usize::from(app.shows(Item::Chips) && !app.settings.no_conditions())
+    usize::from(app.shows(Item::Chips) && !app.bar_empty())
 }
 
 /// 設定の帯の画面の行(検索の欄があればその下)。
@@ -1256,7 +1279,7 @@ fn chips_lead() -> &'static str {
 fn chip_spans(app: &App) -> Vec<(usize, String, usize)> {
     let mut out = Vec::new();
     let mut x = width(chips_lead()) + 1;
-    for (i, c) in app.settings.chips().iter().enumerate() {
+    for (i, c) in app.bar_chips().iter().enumerate() {
         let t = format!("[{}]", sanitize(c));
         let tw = width(&t);
         out.push((x, t, i));
@@ -1327,6 +1350,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
         text.push_str(&Msg::FooterSelected.fill(&[&n]));
     }
     text.push_str(&format!("  {}", app.mode.label()));
+    // screen.vim-mode-shown: vim モードの入力の欄では、今のモード(挿入・ノーマル)を添える。
+    if let Some(m) = app.vim_mode_text() {
+        text.push_str(&format!(" {m}"));
+    }
     if matches!(
         app.mode,
         Mode::Table
@@ -1364,7 +1391,11 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
     // SR-25: 前置きのキーを待っている間は「`前置き` → 続きのキー 表示名 …」(続きか Esc で元に戻る)。
     let hints = match &app.prefix {
         Some(p) => prefix_hints(app, p),
-        None => super::new_note::hints(app).unwrap_or_else(|| keymap::hints(&app.keys, app.mode)),
+        None => super::new_note::hints(app)
+            .or_else(|| app.vim_hints())
+            // stack.close-pending: 並べた表を閉じる確かめでは、閉じる言葉のキー。
+            .or_else(|| super::stack::close_hints(app))
+            .unwrap_or_else(|| keymap::hints(&app.keys, app.mode)),
     };
     let head = text.clone();
     let mut shown: Vec<String> = Vec::new();
@@ -1410,8 +1441,17 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
 
 /// NV-30: (x, y) が下の帯の問題の数か(押すと問題のある行だけに絞る・外す)。
 pub(crate) fn problems_at(app: &App, x: u16, y: u16) -> bool {
-    // 描く高さは端末の最下行を空けた高さ(ui::draw)で、下の帯はその下から2行目。
-    if app.built.problems == 0 || y as usize + 3 != app.size.1 as usize {
+    // 描く高さは端末の最下行を空けた高さ(ui::draw)で、下の帯はその下から2行目。縦に並べた表の区画は下の帯を
+    // 持たない(画面の下の帯は stack.rs が見る)。
+    if y as usize + 3 != app.size.1 as usize || super::stack::in_region(app) {
+        return false;
+    }
+    problems_x(app, x)
+}
+
+/// NV-30: 桁 x が下の帯の問題の数か(行は呼ぶ側が見る)。
+pub(crate) fn problems_x(app: &App, x: u16) -> bool {
+    if app.built.problems == 0 {
         return false;
     }
     let x0 = width(&Msg::FooterUnsaved.fill(&[&app.changes.count()]));
@@ -1426,7 +1466,8 @@ pub(crate) fn problems_at(app: &App, x: u16, y: u16) -> bool {
 /// (一覧の上のほかのキーは表のモードのキーとして読むので)。
 fn prefix_hints(app: &App, prefix: &str) -> Vec<String> {
     let mut out = vec![format!("{} →", keymap::display(prefix))];
-    let own = keymap::continuations(&app.keys, app.mode, prefix);
+    // vim モードの入力の欄のノーマルのモードでは、`input_normal` の前置き(`d`・`c`)の続き。
+    let own = keymap::continuations(&app.keys, app.key_mode(), prefix);
     out.extend(own.into_iter().map(|(_, s)| s));
     if app.mode == Mode::Menu {
         let items = super::menu::item_actions(app);
@@ -1536,13 +1577,13 @@ pub(crate) fn prompt_cursor(app: &App) -> Option<(u16, u16)> {
 
 /// 終了の確認(WB-11)。表の中ほどに帯で重ねる。キーはキーの表から(SR-4)。
 pub(crate) fn quit_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
-    let keys = keymap::hints(&app.keys, Mode::Quit).join("   ");
-    let band_lines = [
-        String::new(),
-        Msg::QuitBand.fill(&[&app.changes.count()]),
-        format!("   {keys}"),
-        String::new(),
-    ];
+    // stack.close-pending: 並べた表を閉じる確かめでは、その表の変更の数と閉じる言葉のキー。
+    let keys = super::stack::close_hints(app)
+        .unwrap_or_else(|| keymap::hints(&app.keys, Mode::Quit))
+        .join("   ");
+    let head = super::stack::close_band(app)
+        .unwrap_or_else(|| Msg::QuitBand.fill(&[&app.changes.count()]));
+    let band_lines = [String::new(), head, format!("   {keys}"), String::new()];
     // lines は表の部分(ヘッダーから表の末尾まで)。表の中ほどに重ねる。
     let start = (lines.len() / 2)
         .saturating_sub(band_lines.len() / 2)

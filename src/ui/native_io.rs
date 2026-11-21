@@ -36,6 +36,14 @@ pub(crate) enum Ask {
     GitMessage,
     /// 画面の表を書き出すファイルの名前(OUT-2)。
     ExportTable,
+    /// navigation.expr-filter: 絞り込む式(候補なし。空で決めると式の絞り込みを解く)。
+    ExprFilter,
+    /// notice.jump: 名前の条件に当たる行のある表(「表の名前 数」)。選ぶとその条件で絞って開く。
+    NoticeTables {
+        items: Vec<String>,
+        places: Vec<mdgrid::places::Place>,
+        cond: String,
+    },
     /// 既にあるファイルへの上書きの確かめ(OUT-5)。続けて `y`。
     ExportOverwrite(PathBuf),
     /// 名前を変えるキー(CE-29)。続けて新しい名前。
@@ -44,9 +52,10 @@ pub(crate) enum Ask {
     DeleteKey(String, usize),
     /// 名前を変えるノート(CE-34)。続けて新しい名前。
     RenameNote(mdgrid::source::RowId),
-    /// 消すノートと、そのノートを指しているノートの数(cell-edit.delete-note-confirm)。続けて `y`。
+    /// 消すノート(vim モードでは印を付けた行の全部。screen.vim-dd)と、そのノートを指しているノートの数
+    /// (cell-edit.delete-note-confirm)。続けて `y`。
     DeleteNote {
-        row: mdgrid::source::RowId,
+        rows: Vec<mdgrid::source::RowId>,
         links: usize,
     },
     /// ごみ箱のノートの一覧(cell-edit.trash-restore-list)。選ぶと元の場所へ戻す。
@@ -62,10 +71,10 @@ pub(crate) enum Ask {
         base: Box<Base>,
         names: Vec<String>,
     },
-    /// 登録した表の一覧(CLI-19)。`picks` は行ごとの `App.registered` の添字(None は今のフォルダ)。
+    /// 登録した表の一覧(CLI-19)。`picks` は行ごとの開く表(None は今のフォルダ。最近開いた表も入る)。
     OpenPlace {
         items: Vec<String>,
-        picks: Vec<Option<usize>>,
+        picks: Vec<Option<mdgrid::places::Place>>,
     },
     /// 登録する名前(CLI-18)。
     PlaceName(mdgrid::places::Place),
@@ -112,6 +121,24 @@ pub(crate) enum Ask {
         starter: Box<mdgrid::starter::Starter>,
         root: PathBuf,
     },
+    /// navigation.across-*: 横断して探す語。下に進みと表ごとの結果を出す(状態は `App.across`。across.rs)。
+    Across,
+    /// cli.session-screen-save: 保存するセッションの名前(候補なし)。
+    SessionName,
+    /// cli.session-screen-overwrite: 同じ名前のセッションの置き換えの確かめ。続けて `y`。
+    SessionOverwrite(Box<mdgrid::session::Session>),
+    /// 最近開いた表(cli.recent-list)。`places` は `items` と同じ並び。
+    OpenRecent {
+        items: Vec<String>,
+        places: Vec<mdgrid::places::Place>,
+    },
+    /// stack.add: 下に並べる表(今の範囲の表のうち、まだ並べていないもの)。
+    StackTable {
+        items: Vec<String>,
+        places: Vec<mdgrid::places::Place>,
+    },
+    /// stack.page-save: 残すページの名前(候補なし)。
+    PageName,
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -205,6 +232,8 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::NewColumn) => Msg::AskNewColumn.into(),
         Some(Ask::GitMessage) => Msg::AskGitMessage.into(),
         Some(Ask::ExportTable) => Msg::AskExportTable.into(),
+        Some(Ask::ExprFilter) => Msg::AskExprFilter.into(),
+        Some(Ask::NoticeTables { .. }) => Msg::AskNoticeTables.into(),
         Some(Ask::ExportOverwrite(p)) => {
             Msg::AskExportOverwrite.fill(&[&sanitize(&p.display().to_string())])
         }
@@ -229,6 +258,12 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::StarterPick { .. }) => Msg::AskStarterPick.into(),
         Some(Ask::StarterDir(_)) => Msg::AskStarterDir.into(),
         Some(Ask::StarterSamples { .. }) => Msg::AskStarterSamples.into(),
+        Some(Ask::Across) => Msg::AskAcross.into(),
+        Some(Ask::SessionName) => Msg::AskSessionName.into(),
+        Some(Ask::SessionOverwrite(s)) => Msg::AskSessionOverwrite.fill(&[&sanitize(&s.name)]),
+        Some(Ask::OpenRecent { .. }) => Msg::AskOpenRecent.into(),
+        Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
+        Some(Ask::PageName) => Msg::AskPageName.into(),
     }
 }
 
@@ -244,6 +279,9 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::WsRemove(items) | Ask::WsOpen(items)) => items,
         Some(Ask::WsTable { items, .. }) => items,
         Some(Ask::StarterPick { items, .. }) => items,
+        Some(Ask::NoticeTables { items, .. }) => items,
+        Some(Ask::OpenRecent { items, .. }) => items,
+        Some(Ask::StackTable { items, .. }) => items,
         Some(Ask::WsPick(names)) => {
             // WS-2: 打った語は新しいワークスペースにもなる(places の分類と同じ形)。
             let shown = super::workspace::pick_items(names, query).0;
@@ -271,22 +309,34 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         w,
     )];
     let room = lines.len().saturating_sub(3).clamp(1, ASK_ROWS);
-    if matches!(
+    if let Ask::Across = ask {
+        // navigation.across-results・navigation.across-progress: 進みと表ごとの結果(across.rs)。
+        out.extend(super::across::across_lines(
+            app,
+            w,
+            lines.len().saturating_sub(4),
+        ));
+    } else if matches!(
         ask,
         Ask::PlaceName(_)
             | Ask::PlaceOverwrite(_)
             | Ask::WsName
             | Ask::GitMessage
             | Ask::StarterSamples { .. }
+            | Ask::SessionName
+            | Ask::SessionOverwrite(_)
+            | Ask::PageName
     ) {
         // 候補の無い入力。
-    } else if let Ask::DeleteNote { row, links } = ask {
+    } else if let Ask::DeleteNote { rows, links } = ask {
         // cell-edit.delete-note-confirm: 消すノートの名前を、問いの下の1行に出す(長い名前で問いが切れないように)。
-        let label = app.src.label(row);
-        let t = if *links == 0 {
-            Msg::DeleteNoteWhich.fill(&[&label])
-        } else {
-            Msg::DeleteNoteWhichLinks.fill(&[&label, links])
+        let labels: Vec<String> = rows.iter().map(|r| app.src.label(r)).collect();
+        let all = labels.join(Msg::ListSep.text());
+        let t = match (labels.as_slice(), *links) {
+            ([label], 0) => Msg::DeleteNoteWhich.fill(&[label]),
+            ([label], n) => Msg::DeleteNoteWhichLinks.fill(&[label, &n]),
+            (_, 0) => Msg::DeleteNotesWhich.fill(&[&labels.len(), &all]),
+            (_, n) => Msg::DeleteNotesWhichLinks.fill(&[&labels.len(), &all, &n]),
         };
         out.push(Line::from(fit(&sanitize(&t), w, Align::Left)));
     } else if let Ask::ExportName | Ask::StarterDir(_) = ask {
@@ -533,7 +583,11 @@ impl App {
             .as_ref()
             .map(|p| p.query.clone())
             .unwrap_or_default();
-        let n = ask_items(self, &query).1.len();
+        let n = match self.nv.ask {
+            // navigation.across-results: ↑↓ は結果の当たった行を選ぶ。
+            Some(Ask::Across) => self.across_hit_count(),
+            _ => ask_items(self, &query).1.len(),
+        };
         let Some(p) = &mut self.palette else {
             return self.close_palette();
         };
@@ -565,6 +619,16 @@ impl App {
                 self.git_flush(Some(&first));
             }
             Some(Ask::ExportTable) => self.export_table_to(query),
+            Some(Ask::ExprFilter) => self.run_expr_filter(query),
+            Some(Ask::Across) => self.across_run(query, sel),
+            Some(Ask::NoticeTables { places, cond, .. }) => {
+                let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                let cond = cond.clone();
+                self.notice_open_table(place, cond);
+            }
             Some(Ask::ExportOverwrite(path)) => {
                 let path = path.clone();
                 self.close_palette();
@@ -582,9 +646,9 @@ impl App {
                 let row = row.clone();
                 self.rename_note_to(&row, query);
             }
-            Some(Ask::DeleteNote { row, .. }) => {
-                let row = row.clone();
-                self.confirm_delete_note(row, query.trim().eq_ignore_ascii_case("y"));
+            Some(Ask::DeleteNote { rows, .. }) => {
+                let rows = rows.clone();
+                self.confirm_delete_note(rows, query.trim().eq_ignore_ascii_case("y"));
             }
             Some(Ask::RestoreNote { notes, .. }) => {
                 let Some(item) = picked.and_then(|k| notes.get(k)).cloned() else {
@@ -677,8 +741,20 @@ impl App {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                let pick = picks[k];
+                // workspace.switch-origin: 起動の一覧(先頭に今のフォルダ)で選んで移ったら、移った先を最初に開いた所に。
+                let launch = picks.iter().any(Option::is_none);
+                let pick = picks[k].clone();
                 self.switch_place(pick);
+                if launch && self.switch_to.is_some() {
+                    self.visits.retarget = true;
+                }
+            }
+            Some(Ask::OpenRecent { places, .. }) => {
+                let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.switch_place(Some(place));
             }
             Some(Ask::PlaceName(place)) => {
                 let place = place.clone();
@@ -762,6 +838,27 @@ impl App {
                     _ => self.message = Some(Msg::AskCancelled.into()),
                 }
             }
+            // cli.session-screen-save・cli.session-screen-overwrite: 名前 → (同じ名前があれば)置き換えの確かめ → 書く。
+            Some(Ask::SessionName) => self.session_named(query),
+            Some(Ask::SessionOverwrite(s)) => {
+                let s = (**s).clone();
+                if query.trim().eq_ignore_ascii_case("y") {
+                    self.save_session(&s);
+                } else {
+                    self.close_palette();
+                    self.message = Some(Msg::AskCancelled.into());
+                }
+            }
+            // stack.add: 選んだ表を今の表の下に並べる(stack.rs)。
+            Some(Ask::StackTable { places, .. }) => {
+                let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.stack_add_picked(place);
+            }
+            // stack.page-save: 打った名前でページを残す(stack.rs)。
+            Some(Ask::PageName) => self.page_save_to(query),
             None => self.close_palette(),
         }
     }

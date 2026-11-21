@@ -34,6 +34,8 @@ pub(crate) enum Target {
     Goto(usize),
     /// `wq`・`x`: 保存して終わる(差分の確認 → 確定で書いて終わる)。
     SaveQuit,
+    /// `q!`: ためた変更を確かめずに捨てて終わる(screen.quit-discard)。
+    DiscardQuit,
 }
 
 /// パレットの候補。
@@ -50,18 +52,56 @@ const PALETTE_ROWS: usize = 8;
 /// ヘルプのキーの欄の幅。
 const KEY_W: usize = 14;
 
-/// 1つのモードのキーを、動作ごとに(キーを空白でつないで)まとめる。表の順。
-fn entries(keys: &[Binding], pick: impl Fn(&Binding) -> bool) -> Vec<(String, &'static str, u8)> {
-    let mut out: Vec<(Mode, Action, String, &'static str, u8)> = Vec::new();
+/// 1つのモードのキーを、動作ごとに(キーを空白でつないで)まとめる。表の順。番号の区画へ移る動作(1〜9)は
+/// 1つにまとめ、続いた数字のキーは `1-9` と縮める(キーの欄に入るように)。
+/// condition.digit-hints: 数字のキーは条件の見せる名前にし、条件の無い数字は出さない。
+fn entries(
+    app: &App,
+    keys: &[Binding],
+    pick: impl Fn(&Binding) -> bool,
+) -> Vec<(String, String, u8)> {
+    let group = |a: Action| match a {
+        Action::GoToSection(_) => Action::GoToSection(0),
+        Action::Choose(_) => Action::Choose(0),
+        a => a,
+    };
+    let mut out: Vec<(Mode, Action, String, String, u8)> = Vec::new();
     for b in keys.iter().filter(|b| pick(b)) {
-        if let Some(e) = out.iter_mut().find(|e| e.0 == b.mode && e.1 == b.action) {
+        let label = match app.cond_label(b.action) {
+            Some(l) => l,
+            None if b.action.cond_digit().is_some() => continue,
+            None => b.text().to_string(),
+        };
+        if let Some(e) = out
+            .iter_mut()
+            .find(|e| e.0 == b.mode && group(e.1) == group(b.action))
+        {
             e.2.push(' ');
             e.2.push_str(&keymap::display(b.key));
         } else {
-            out.push((b.mode, b.action, keymap::display(b.key), b.text(), b.rank));
+            out.push((b.mode, b.action, keymap::display(b.key), label, b.rank));
         }
     }
-    out.into_iter().map(|(_, _, k, l, r)| (k, l, r)).collect()
+    out.into_iter()
+        .map(|(_, _, k, l, r)| (digit_run(&k).unwrap_or(k), l, r))
+        .collect()
+}
+
+/// 3つ以上続いた数字のキーだけの並び(`1 2 3 … 9`)を `1-9` にする。ほかは None。
+fn digit_run(keys: &str) -> Option<String> {
+    let d: Vec<u32> = keys
+        .split(' ')
+        .map(|k| {
+            let mut c = k.chars();
+            match (c.next(), c.next()) {
+                (Some(x), None) => x.to_digit(10),
+                _ => None,
+            }
+        })
+        .collect::<Option<_>>()?;
+    let (first, last) = (*d.first()?, *d.last()?);
+    let run = d.len() >= 3 && d.windows(2).all(|w| w[1] == w[0] + 1);
+    run.then(|| format!("{first}-{last}"))
 }
 
 /// 読むだけ(WB-15)で出さない、パレットのコマンド(書く動作)か。キーの表にあっても出さない。
@@ -70,8 +110,8 @@ fn write_command(app: &App, a: Action) -> bool {
 }
 
 /// 項目を2列(狭ければ1列)に並べる。
-fn columns(items: &[(String, &'static str, u8)], w: usize) -> Vec<String> {
-    let cell = |(k, l, _): &(String, &'static str, u8), cw: usize| {
+fn columns(items: &[(String, String, u8)], w: usize) -> Vec<String> {
+    let cell = |(k, l, _): &(String, String, u8), cw: usize| {
         fit(
             &format!("{} {}", fit(&sanitize(k), KEY_W, Align::Left), l),
             cw,
@@ -130,7 +170,7 @@ pub(crate) fn help_lines(app: &App, from: Mode, w: usize) -> Vec<(String, bool)>
 /// ヘルプの本文と、行ごとの種類。
 fn help_rows(app: &App, from: Mode, w: usize) -> Vec<(String, Kind)> {
     let mut out = Vec::new();
-    let mut now = entries(&app.keys, |b| {
+    let mut now = entries(app, &app.keys, |b| {
         b.mode == from && !write_command(app, b.action)
     });
     now.sort_by_key(|(_, _, r)| if *r == 0 { u8::MAX } else { *r });
@@ -150,7 +190,7 @@ fn help_rows(app: &App, from: Mode, w: usize) -> Vec<(String, Kind)> {
     for (s, shown) in sections {
         out.push((String::new(), Kind::Plain));
         out.push((format!(" {shown}"), Kind::Head));
-        let items = entries(&app.keys, |b| {
+        let items = entries(app, &app.keys, |b| {
             b.section == s && !write_command(app, b.action)
         });
         if items.is_empty() {
@@ -166,7 +206,7 @@ fn help_rows(app: &App, from: Mode, w: usize) -> Vec<(String, Kind)> {
     // BV-19: キーの無いパレットのコマンド(キーの欄は `:` のあとに打つ名前)。
     let mut cmd_sections: Vec<(&'static str, &'static str)> = Vec::new();
     // 読むだけ(WB-15)では書くコマンドなので出さない(パレットと同じ。ノートを書かない登録した表のは出す)。
-    for c in keymap::commands(app.readonly) {
+    for c in keymap::commands(app.readonly).filter(|c| app.command_shown(c.action)) {
         if !cmd_sections.iter().any(|(s, _)| *s == c.section) {
             cmd_sections.push((c.section, c.section_text()));
         }
@@ -174,9 +214,9 @@ fn help_rows(app: &App, from: Mode, w: usize) -> Vec<(String, Kind)> {
     for (s, shown) in cmd_sections {
         out.push((String::new(), Kind::Plain));
         out.push((format!(" {shown}"), Kind::Head));
-        let items: Vec<(String, &'static str, u8)> = keymap::commands(app.readonly)
-            .filter(|c| c.section == s)
-            .map(|c| (format!(":{}", c.action.name()), c.text(), 0))
+        let items: Vec<(String, String, u8)> = keymap::commands(app.readonly)
+            .filter(|c| c.section == s && app.command_shown(c.action))
+            .map(|c| (format!(":{}", c.action.name()), c.text().to_string(), 0))
             .collect();
         // 名前が長いので1列に並べる(2列では切れる)。
         out.extend(
@@ -322,7 +362,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
     let cand = |target: Target, label: String, name: &str| {
         let keys = match target {
             Target::Run(a) => keymap::keys_of(&app.keys, Mode::Table, a).join(" "),
-            Target::Goto(_) | Target::SaveQuit => String::new(),
+            Target::Goto(_) | Target::SaveQuit | Target::DiscardQuit => String::new(),
         };
         Cand {
             target,
@@ -335,26 +375,30 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
         let n = q.parse().unwrap_or(usize::MAX);
         out.push(cand(Target::Goto(n), Msg::PaletteGoto.fill(&[&n]), q));
     }
-    let label_of = |a: Action| {
+    let label_of = |a: Action| -> String {
+        if let Some(l) = app.cond_label(a) {
+            return l;
+        }
         app.keys
             .iter()
             .find(|b| b.mode == Mode::Table && b.action == a)
             .map_or(a.name(), super::keymap::Binding::text)
+            .to_string()
     };
     match q {
-        "w" if !app.readonly => out.push(cand(
-            Target::Run(Action::Save),
-            label_of(Action::Save).into(),
-            "w",
-        )),
-        "q" => out.push(cand(
-            Target::Run(Action::Quit),
-            label_of(Action::Quit).into(),
-            "q",
-        )),
+        "w" if !app.readonly => {
+            out.push(cand(Target::Run(Action::Save), label_of(Action::Save), "w"));
+        }
+        "q" => out.push(cand(Target::Run(Action::Quit), label_of(Action::Quit), "q")),
         "wq" | "x" if !app.readonly => out.push(cand(
             Target::SaveQuit,
             Msg::PaletteSaveQuit.text().into(),
+            q,
+        )),
+        // screen.quit-discard: vim と同じ打ち方で、ためた変更を書かずにすぐ終わる(vim モードによらない)。
+        "q!" => out.push(cand(
+            Target::DiscardQuit,
+            Msg::PaletteDiscardQuit.text().into(),
             q,
         )),
         _ => {}
@@ -363,6 +407,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
     for b in app.keys.iter().filter(|b| b.mode == Mode::Table) {
         let a = b.action;
         if a == Action::Palette
+            || (a.cond_digit().is_some() && app.cond_label(a).is_none())
             || write_command(app, a)
             || (!app.src.notes() && Action::NOTE_ONLY.contains(&a))
             || scored.iter().any(|s| s.2 == a)
@@ -370,7 +415,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
         {
             continue;
         }
-        let best = [score(q, a.name()), score(q, label_of(a))]
+        let best = [score(q, a.name()), score(q, &label_of(a))]
             .into_iter()
             .flatten()
             .max();
@@ -382,6 +427,7 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
     let mut commands: Vec<&keymap::Command> = Vec::new();
     for c in keymap::commands(app.readonly)
         .filter(|c| app.src.notes() || !Action::NOTE_ONLY.contains(&c.action))
+        .filter(|c| app.command_shown(c.action))
     {
         let best = [score(q, c.action.name()), score(q, c.text())]
             .into_iter()
@@ -402,8 +448,8 @@ pub(crate) fn candidates(app: &App, query: &str) -> Vec<Cand> {
         let label = commands
             .iter()
             .find(|c| c.action == a)
-            .map_or_else(|| label_of(a), |c| c.text());
-        out.push(cand(Target::Run(a), label.into(), a.name()));
+            .map_or_else(|| label_of(a), |c| c.text().to_string());
+        out.push(cand(Target::Run(a), label, a.name()));
     }
     out
 }
@@ -511,6 +557,10 @@ impl App {
     }
 
     pub(crate) fn close_palette(&mut self) {
+        // navigation.across-progress: 横断の検索の入力を閉じたら(Esc・行を開く)、読んでいる途中でも止める。
+        if matches!(self.nv.ask, Some(super::native_views::Ask::Across)) {
+            self.across_stop();
+        }
         self.palette = None;
         self.nv.ask = None;
         // TR-5: 木(ほかの表でない画面の型)から開いたパレットは、閉じるとその画面に戻る。
@@ -555,12 +605,14 @@ impl App {
                         // ためた変更が無ければそのまま終わる。`q` と同じく、表を移る予約は捨てる。
                         Target::SaveQuit => {
                             self.close_screen();
-                            self.switch_to = None;
-                            self.switch_select = None;
-                            self.switch_new_note = false;
-                            self.switch_workspace = None;
-                            self.switch_leave_workspace = false;
+                            self.drop_switch();
                             self.review_action(Action::QuitSave);
+                        }
+                        // screen.quit-discard: 確かめずに終わる(ノートは書かない)。表を移る予約も捨てる。
+                        Target::DiscardQuit => {
+                            self.close_screen();
+                            self.drop_switch();
+                            self.quit = true;
                         }
                     }
                 }

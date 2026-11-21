@@ -356,6 +356,7 @@ pub(crate) fn render_detail(app: &App, w: usize, h: usize) -> Vec<Line<'static>>
         lines.push(Line::from(" ".repeat(w)));
     }
     lines.truncate(h.saturating_sub(2));
+    super::date_words::overlay(app, &mut lines, w);
     super::list::overlay(app, &mut lines, w);
     super::listpick::overlay(app, &mut lines, w);
     lines.push(footer(app, w));

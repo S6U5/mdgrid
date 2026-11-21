@@ -31,11 +31,11 @@ pub(crate) enum NoteAt {
     Gone(Trashed),
 }
 
-/// ノートの作成・削除の1手。
+/// ノートの作成・削除の1手。印を付けた行をまとめて消したとき(screen.vim-dd)は、複数のノートで1手。
 #[derive(Debug, Clone)]
 pub(crate) struct NoteOp {
     pub(crate) kind: NoteOpKind,
-    pub(crate) at: NoteAt,
+    pub(crate) at: Vec<NoteAt>,
     /// 積んだときの、ためる変更の手の数(取り消しの積みなら取り消せる手、やり直しの積みならやり直せる手)。
     mark: usize,
     /// やり直しの積みに置いたときの `Changes::redo_epoch`(違えば、新しい手で古くなっている)。
@@ -65,12 +65,12 @@ impl App {
     /// cell-edit.new-note-undo: 作ったノートを、取り消しの1手として積む(ノートの表だけ)。
     pub(crate) fn note_created(&mut self, row: RowId) {
         if self.src.notes() {
-            self.push_note_op(NoteOpKind::Created, NoteAt::Live(row));
+            self.push_note_op(NoteOpKind::Created, vec![NoteAt::Live(row)]);
         }
     }
 
     /// 新しい手を積む(やり直しの積みは、ためる変更の新しい手と同じく消える)。
-    fn push_note_op(&mut self, kind: NoteOpKind, at: NoteAt) {
+    fn push_note_op(&mut self, kind: NoteOpKind, at: Vec<NoteAt>) {
         self.note_redo.clear();
         self.changes.clear_redo();
         self.note_undo.push(NoteOp {
@@ -82,32 +82,49 @@ impl App {
     }
 
     /// cell-edit.delete-note-menu: 「ノートを消す」。続けて、名前を示して確かめる。
+    /// screen.vim-dd: vim モードでは、印を付けた行(印が無ければ選んでいる行)をまとめて消す(`dd`・範囲の `d`・
+    /// パレットのどれでも同じ)。vim モードでなければ、今までどおり選んでいる行だけ。
     pub(crate) fn start_delete_note(&mut self) {
         if self.readonly {
             self.message = Some(READONLY.into());
             return;
         }
-        let Some(row) = self.cur_row() else {
-            return;
+        let mut rows = if self.vim.on {
+            self.selection()
+        } else {
+            Vec::new()
         };
+        if rows.is_empty() {
+            rows.extend(self.cur_row());
+        }
+        if rows.is_empty() {
+            return;
+        }
         // cell-edit.delete-note-refuse-pending: ためた変更を、ノートごと黙って捨てない。
-        if self.changes.rows().contains(&row) {
+        let pending = self.changes.rows();
+        if rows.iter().any(|r| pending.contains(r)) {
             self.message = Some(Msg::DeleteNotePending.into());
             return;
         }
-        let links = self.links_to(&stem(Path::new(&row.0)), &row);
-        self.open_ask(Ask::DeleteNote { row, links });
+        let links = self.links_to(&rows);
+        self.open_ask(Ask::DeleteNote { rows, links });
     }
 
     /// cell-edit.delete-note-links: リンクは書き換えず、指しているノートの数を確かめの問いに添える。
-    /// 開いている表のノートのうち、フロントマターの値に `[[name]]`・`[[name|…]]`・`[[name#…]]` を持つものの数。
-    fn links_to(&self, name: &str, except: &RowId) -> usize {
-        let hit = |s: &str| super::note_rename::rewrite_links(s, name, "\u{0}").is_some();
+    /// 開いている表の、消すノートでないノートのうち、フロントマターの値に `[[name]]`・`[[name|…]]`・`[[name#…]]`
+    /// (name は消すノートのどれか)を持つものの数。
+    fn links_to(&self, rows: &[RowId]) -> usize {
+        let names: Vec<String> = rows.iter().map(|r| stem(Path::new(&r.0))).collect();
+        let hit = |s: &str| {
+            names
+                .iter()
+                .any(|n| super::note_rename::rewrite_links(s, n, "\u{0}").is_some())
+        };
         let cols = self.src.columns();
         self.src
             .rows()
             .iter()
-            .filter(|r| *r != except)
+            .filter(|r| !rows.contains(r))
             .filter(|r| {
                 cols.iter().any(|c| match self.prop(r, c) {
                     Some(Value::Str(s)) => hit(&s),
@@ -120,28 +137,55 @@ impl App {
             .count()
     }
 
-    /// cell-edit.delete-note-confirm: 確かめの答え。`y` のときだけごみ箱へ動かす。
-    pub(crate) fn confirm_delete_note(&mut self, row: RowId, yes: bool) {
+    /// cell-edit.delete-note-confirm: 確かめの答え。`y` のときだけごみ箱へ動かす。複数のノート(screen.vim-dd)は
+    /// 1手にまとめ、`u` 1回で全部を戻す。
+    pub(crate) fn confirm_delete_note(&mut self, rows: Vec<RowId>, yes: bool) {
         self.close_palette();
         if !yes {
             self.message = Some(Msg::AskCancelled.into());
             return;
         }
         // 確かめの間にためた変更ができることは無いが、動かす直前にもう一度見る。
-        if self.changes.rows().contains(&row) {
+        let pending = self.changes.rows();
+        if rows.iter().any(|r| pending.contains(r)) {
             self.message = Some(Msg::DeleteNotePending.into());
             return;
         }
-        let label = sanitize(&self.src.label(&row));
-        match self.src.trash(&row) {
-            Ok(item) => {
-                self.push_note_op(NoteOpKind::Deleted, NoteAt::Gone(item));
-                self.after_note_gone();
-                self.message = Some(Msg::DeleteNoteDone.fill(&[&label]));
+        // 消したあとは、消した行のうち一番上の位置(= その下の行)を選ぶ。
+        let at = rows
+            .iter()
+            .filter_map(|r| {
+                let i = self.rows.iter().position(|x| x == r)?;
+                self.slots.iter().position(|s| *s == Slot::Row(i))
+            })
+            .min()
+            .unwrap_or(self.row);
+        let mut gone = Vec::new();
+        let mut failed = None;
+        let mut label = String::new();
+        for row in &rows {
+            label = sanitize(&self.src.label(row));
+            match self.src.trash(row) {
+                Ok(item) => gone.push(NoteAt::Gone(item)),
+                // cell-edit.delete-note-trash-only: 動かせなければ、ノートは元の場所のまま。
+                Err(e) => {
+                    failed.get_or_insert(e);
+                }
             }
-            // cell-edit.delete-note-trash-only: 動かせなければ、ノートは元の場所のまま。
-            Err(e) => self.message = Some(Msg::DeleteNoteFailed.fill(&[&e])),
         }
+        let n = gone.len();
+        if n > 0 {
+            self.push_note_op(NoteOpKind::Deleted, gone);
+            self.anchor = None;
+            self.marked.retain(|r| !rows.contains(r));
+            self.row = at;
+            self.after_note_gone();
+        }
+        self.message = Some(match (failed, n) {
+            (Some(e), _) => Msg::DeleteNoteFailed.fill(&[&e]),
+            (None, 1) => Msg::DeleteNoteDone.fill(&[&label]),
+            (None, _) => Msg::DeleteNotesDone.fill(&[&n]),
+        });
     }
 
     /// 行が1つ無くなったあと: 表を作り直し、同じ位置(= 下の行。最後の行だったら上の行)を選ぶ。
@@ -215,18 +259,39 @@ impl App {
         }
     }
 
-    /// 手を当てる(`forward` = やり直し)。当てられたら、逆向きに使える手を返す。
+    /// 手を当てる(`forward` = やり直し)。当てられたら、逆向きに使える手を返す。複数のノートの手は、当てられた
+    /// ノートだけを残す(当てられなかったノートの理由はメッセージ行に出してある)。
     fn run_note_op(&mut self, op: NoteOp, forward: bool) -> Option<NoteOp> {
-        let at = match &op.at {
-            NoteAt::Live(row) => NoteAt::Gone(self.op_to_trash(row)?),
-            NoteAt::Gone(item) => NoteAt::Live(self.op_restore(item)?),
-        };
-        // 作成の取り消しと削除のやり直しはごみ箱へ、作成のやり直しと削除の取り消しは元の場所へ。
-        debug_assert_eq!(
-            matches!(at, NoteAt::Gone(_)),
-            (op.kind == NoteOpKind::Created) != forward
-        );
-        Some(NoteOp { at, ..op })
+        let n = op.at.len();
+        let mut done = Vec::new();
+        for a in &op.at {
+            let to = match a {
+                NoteAt::Live(row) => self.op_to_trash(row).map(NoteAt::Gone),
+                NoteAt::Gone(item) => self.op_restore(item).map(NoteAt::Live),
+            };
+            // 作成の取り消しと削除のやり直しはごみ箱へ、作成のやり直しと削除の取り消しは元の場所へ。
+            debug_assert!(to
+                .as_ref()
+                .is_none_or(|t| matches!(t, NoteAt::Gone(_))
+                    == ((op.kind == NoteOpKind::Created) != forward)));
+            done.extend(to);
+        }
+        if done.is_empty() {
+            return None;
+        }
+        if n > 1 && done.len() == n {
+            match done.first() {
+                Some(NoteAt::Gone(_)) => self.message = Some(Msg::DeleteNotesDone.fill(&[&n])),
+                // 戻した中の最初のノートの行を選ぶ。
+                Some(NoteAt::Live(first)) => {
+                    let first = first.clone();
+                    self.after_note_back(&first);
+                    self.message = Some(Msg::RestoreNotesDone.fill(&[&n]));
+                }
+                None => {}
+            }
+        }
+        Some(NoteOp { at: done, ..op })
     }
 
     /// `u`: 一番新しい手がノートの作成・削除なら、それを取り消して true(取り消せず理由を出したときも true)。
@@ -239,10 +304,13 @@ impl App {
             return false;
         }
         // そのノートにためた変更が残っていれば(保存で手の数が減ったあとなど)、先にそちらを戻す。
-        if let NoteAt::Live(row) = &top.at {
-            if self.changes.rows().contains(row) {
-                return false;
-            }
+        let pending = self.changes.rows();
+        if top
+            .at
+            .iter()
+            .any(|a| matches!(a, NoteAt::Live(row) if pending.contains(row)))
+        {
+            return false;
         }
         let Some(op) = self.note_undo.pop() else {
             return false;
@@ -308,9 +376,13 @@ impl App {
         if self.op_restore(&item).is_none() {
             return;
         }
-        // 戻したノートを指していた手は、もう当てられない。
-        let stale = |o: &NoteOp| matches!(&o.at, NoteAt::Gone(t) if t.at == item.at);
-        self.note_undo.retain(|o| !stale(o));
-        self.note_redo.retain(|o| !stale(o));
+        // 戻したノートを指していた手は、もう当てられない(複数のノートの手からは、そのノートだけを外す)。
+        let stale = |a: &NoteAt| matches!(a, NoteAt::Gone(t) if t.at == item.at);
+        for ops in [&mut self.note_undo, &mut self.note_redo] {
+            for o in ops.iter_mut() {
+                o.at.retain(|a| !stale(a));
+            }
+            ops.retain(|o| !o.at.is_empty());
+        }
     }
 }

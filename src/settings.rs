@@ -94,6 +94,18 @@ pub struct Settings {
     /// NV-28: WBS の番号と進み具合(None は出さない。親子で並べているときだけ効く)。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wbs: Option<Wbs>,
+    /// condition.view-settings: 名前の条件で残す・隠す(全部を満たす行だけ。行の判定は画面と `--print` の側)。
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub named: Vec<Named>,
+}
+
+/// condition.view-settings: ビューに掛ける名前の条件。
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct Named {
+    pub name: String,
+    /// true は当たる行を隠す、false は当たる行だけを残す。
+    pub hide: bool,
 }
 
 /// NV-28: 進み具合のキーと、値ごとの割合とラベルの対応表。
@@ -139,12 +151,25 @@ impl Settings {
     /// 行に効く条件(フィルター・並べ替え・グループ)が無いか(設定の帯の項目が無い。NV-16)。
     /// 見せ方の上書き(`display`)は問わない。
     pub fn no_conditions(&self) -> bool {
-        self.filters.is_empty() && self.sorts.is_empty() && self.group == Group::Inherit
+        self.filters.is_empty()
+            && self.named.is_empty()
+            && self.sorts.is_empty()
+            && self.group == Group::Inherit
     }
 
     /// 表の上の帯の項目(NV-16)。1条件 = 1項目。
     pub fn chips(&self) -> Vec<String> {
         let mut out: Vec<String> = self.filters.iter().map(cond_text).collect();
+        for n in &self.named {
+            let shown = crate::condition::current()
+                .get(&n.name)
+                .map_or_else(|| n.name.clone(), |c| c.shown().to_string());
+            out.push(if n.hide {
+                Msg::ChipNamedHide.fill(&[&shown])
+            } else {
+                Msg::ChipNamedKeep.fill(&[&shown])
+            });
+        }
         for (col, dir) in &self.sorts {
             out.push(Msg::ChipSort.fill(&[col, &arrow(*dir)]));
         }

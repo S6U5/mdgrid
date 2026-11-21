@@ -38,6 +38,7 @@ impl Format {
 }
 
 /// 表を組むビュー。
+#[derive(Clone, Copy)]
 pub enum ViewDef<'a> {
     /// `.base` なしの既定の表(BV-1)。
     Default,

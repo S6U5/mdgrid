@@ -215,9 +215,13 @@ fn test_cli_11_print_config_names_scopes() {
     ] {
         assert!(out.lines().any(|l| l == sec), "{sec} が無い\n{out}");
     }
+    // screen.locales-all-in-ledger: 範囲の行は台帳の文言で、今の言語(試験の子も同じ言語)で出る。
+    let scope =
+        |m: mdgrid::i18n::Msg| format!("# {}", mdgrid::i18n::Msg::CfgScopeLine.fill(&[&m.text()]));
     assert!(
-        out.contains("# Scope: global only.")
-            && out.contains("# Scope: global, workspace, table, view.")
+        out.contains(&scope(mdgrid::i18n::Msg::CfgScopeGlobal))
+            && out.contains(&scope(mdgrid::i18n::Msg::CfgScopeProfile)),
+        "{out}"
     );
     for old in ["theme_light", "borders =", "view_tabs", "workspace_detect"] {
         assert!(!out.contains(old), "旧い名前 {old} が出ている\n{out}");

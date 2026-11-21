@@ -5,15 +5,24 @@
 - [Task guides](#task-guides)
   - [Edit values and save](#edit-values-and-save)
   - [Find, filter and sort](#find-filter-and-sort)
+  - [Filter with named conditions](#filter-with-named-conditions)
+  - [Notices above the table](#notices-above-the-table)
+  - [Search across the workspace](#search-across-the-workspace)
   - [Edit many rows at once](#edit-many-rows-at-once)
+  - [Type dates in words](#type-dates-in-words)
+  - [Edit with vim keys](#edit-with-vim-keys)
   - [Create a note](#create-a-note)
   - [Open a .base file](#open-a-base-file)
   - [Shape a view and save it](#shape-a-view-and-save-it)
   - [Give a folder its own command](#give-a-folder-its-own-command)
   - [Register the tables you use and switch between them](#register-the-tables-you-use-and-switch-between-them)
+  - [Save what you see as a session](#save-what-you-see-as-a-session)
   - [Come back to the same table when the terminal is restored](#come-back-to-the-same-table-when-the-terminal-is-restored)
+  - [Go back to a recent table](#go-back-to-a-recent-table)
+  - [Switch between favorite workspaces](#switch-between-favorite-workspaces)
   - [Link tables with relations](#link-tables-with-relations)
   - [Group tables into workspaces](#group-tables-into-workspaces)
+  - [Stack tables](#stack-tables)
   - [Use with other commands](#use-with-other-commands)
   - [Choose a theme](#choose-a-theme)
   - [When you cannot edit](#when-you-cannot-edit)
@@ -24,7 +33,7 @@
 
 1. Select a cell and press `Enter`. The input depends on the column's type:
    - Text: pick from the values other notes have in this column (when there are at most `candidates` distinct values, 20 by default; otherwise just type), or type a new one.
-   - Date: a calendar opens. `←` `→` move by day, `↑` `↓` by week, `PageUp` and `PageDown` by month. You can also type `2026-10-15`, or `+3` for three days from today. `Ctrl+T` is today.
+   - Date: a calendar opens. `←` `→` move by day, `↑` `↓` by week, `PageUp` and `PageDown` by month. You can also type `2026-10-15`, `+3` for three days from today, or words such as `next fri` ([Type dates in words](#type-dates-in-words)). `Ctrl+T` is today.
    - Date and time: the same calendar, with a time field under it. `Ctrl+O` switches to the time field, where `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour. Changing only the day keeps each note's time; you can also type `2026-10-15T09:30`.
    - List (such as `tags`): toggle values from the list of values found in the root folder.
    - Checkbox: each `Enter` cycles empty → true → false → empty.これ
@@ -80,6 +89,73 @@ Search ignores case when the word is all lowercase. `Esc` clears the selection f
 
 A sort is kept for the current view, so the table opens in the same order next time (the `.base` file is not changed). In the sort window you can add a rule (`Enter`, then pick a column), flip its direction (`Enter`), remove it (`d`) and reorder (`K`, `J`); every change applies right away. The quick filter `\` is temporary. To keep more, see [Shape a view and save it](#shape-a-view-and-save-it).
 
+## Filter with named conditions
+
+Write a condition you use often once, with a name, under `[conditions]` in the config. The [configuration reference](../../config.md#conditions--named-conditions) has every item.
+
+```toml
+[conditions.week]
+expr = 'due <= today() + "7d" && status != "done"'
+label = "Due this week"
+key = 1
+```
+
+| To | Do |
+|---|---|
+| keep only the matching rows, or all rows again | press the condition's digit key (`1` above); two digits keep the rows that match both |
+| combine it with other expressions | call it by name in an expression, as in `cond("week") && priority > 1` |
+| filter by an expression now | `:`, pick "Filter by an expression", type it and press `Enter` (an empty one clears it) |
+| always apply it in a view | in the filter section of `o`, set the condition to "only these" or "hide these" and apply |
+| hide the matching rows everywhere | add `hide = true`; the settings band shows how many are hidden, and the condition's digit key shows them again |
+| print how many rows match | `mdgrid --count --filter 'cond("week")'` (for a tmux status line or a shell prompt) |
+
+Digit keys and the expression filter stay on when you switch views, and clear when you go to another table or open mdgrid again. Removing the item from the settings band clears them too.
+
+![Narrow with a named condition](images/conditions.svg)
+
+## Notices above the table
+
+Write `[[notices]]` in the config to get a notice box above the header. A count item counts the rows that match a [named condition](#filter-with-named-conditions); a note item shows the first lines of a note's body. The [configuration reference](../../config.md#notices--the-notice-box) has every item.
+
+```toml
+[[notices]]
+cond = "overdue"
+text = "{count} overdue"
+scope = "workspace"
+
+[[notices]]
+note = "~/notes/inbox.md"
+lines = 2
+```
+
+| To | Do |
+|---|---|
+| move into the box | `m` (or click it); `Left` and `Right` pick an item, `Esc` goes back to the table |
+| see the rows | `Enter` on a count item: it narrows this table to the condition, or lists the tables with matching rows when it counts other tables too |
+| add to your note | `Enter` on a note item opens the note in your editor; the box is read again when you come back |
+| print it elsewhere | `mdgrid --notices` (one item per line, for a tmux status line, a shell prompt or the Herdr sidebar) |
+
+The numbers are counted again when you open the table, after a save, when a note changes outside mdgrid and when the date changes. Items that count other tables show the table first and count in the background, with "…" until they are done.
+
+![The notice box](images/notices.svg)
+
+## Search across the workspace
+
+When you can't remember which table a row is in, search every table of the [workspace](#group-tables-into-workspaces) at once. Without a workspace open, mdgrid searches your [registered tables](#register-the-tables-you-use-and-switch-between-them). Turn it on in the config first; without it the palette doesn't show the command.
+
+```toml
+[search]
+across = true
+```
+
+1. Open the palette with `:` and pick "Search across the workspace" (`across_search`).
+2. Type a word and press `Enter`. Results show up as each table is read, with "read 3 / 5" until all are done.
+3. Pick a row with `Up` and `Down` and press `Enter`. Its table opens with the word in the search box and that row selected.
+
+The results are grouped per table, and each row shows the note name and the column and value that matched. A row matches the same way as in the search box (`\`): without a capital letter in the word, case doesn't matter. `Esc` stops at any point and leaves you in the table you were in. Tables that cannot be read are skipped and named at the end. If you have unsaved changes, mdgrid asks whether to save first, as when you switch tables from the drawer.
+
+![Search across the workspace](images/across.svg)
+
 ## Edit many rows at once
 
 To rename a note, use **Rename the note** in the action menu (`x`) or the palette (`:`). Links to the old name (`[[old name]]`) are rewritten as pending changes; review the diff with `Ctrl+S` and save.
@@ -93,6 +169,58 @@ In a list column, a value every row has shows as `[x]` and a value only some row
 ![Add or remove list items on several rows](images/bulk-tags.svg)
 
 Nothing is written until you save, so the `Ctrl+S` diff lets you check all of it at once.
+
+## Type dates in words
+
+Date and datetime cells take date words as well as `2026-10-15` and `+3`. Type `next fr` and the field shows "not a date" next to it; add `i` and it changes to `2026-11-27 (Fri)`, with the calendar on that day. `Enter` makes it a pending change. If the words cannot be read, `Enter` keeps the field open and nothing is written to the note.
+
+![Type a date in words](images/date-words.svg)
+
+These are the words it reads, with the day each one gives when today is Saturday 2026-11-21. Japanese words work in any screen language.
+
+| Type | Day |
+|---|---|
+| `today`, `tomorrow`, `yesterday`, `今日`, `明日`, `明後日`, `昨日` | 11-21, 11-22, 11-20, 11-21, 11-22, 11-23, 11-20 |
+| `in 3 days`, `3d`, `+3d`, `3日後` | three days later (11-24) |
+| `3 days ago`, `-2d`, `2日前` | that many days before (`-2d` is 11-19) |
+| `in 2 weeks`, `+2w`, `2週間後` | two weeks later (12-05) |
+| `in 1 month`, `+1m`, `1か月後`, `+1y`, `1年後` | the same day of the month (or the month's last day) |
+| `fri`, `friday`, `金曜`, `金曜日` | the first Friday after today (11-27) |
+| `this fri`, `今週の金曜` | Friday of this week (11-20) |
+| `next fri`, `来週の金曜` | Friday of next week (11-27) |
+| `next week`, `来週` | the first day of next week (11-22) |
+| `next month`, `来月` | the first day of next month (12-01) |
+| `eom`, `end of month`, `月末` | the last day of this month (11-30) |
+| `end of next month`, `来月末` | the last day of next month (12-31) |
+
+Weeks follow the [`dates.week_start`](../../config.md#datesweek_start) setting (Sunday by default). With `week_start = "mon"`, `this mon` typed on Sunday 11-22 gives 11-16.
+
+In a datetime column, words change only the day and keep the time: `tomorrow` in a `2026-11-21T15:00` cell gives `2026-11-22T15:00`.
+
+The same words work when you edit marked rows at once. In a filter value (`due` "< before" `tomorrow`, for example), the words become a date when you type them, using today's date, and the condition keeps that date: opening it tomorrow still filters on the same day.
+
+## Edit with vim keys
+
+If your fingers know vim, Esc closing the input and having no way to delete a word get in the way every time you fix a cell. Put this in your config file (`~/.config/mdgrid/config.toml`) and mdgrid's input boxes get vim's two modes:
+
+```toml
+[keys]
+vim = true
+```
+
+Every one-line input box (a cell after `Enter`, the `/` find box, the `\` search box, the `:` palette, the name of a new note) opens in insert mode, and you type as usual. Esc keeps the box open and switches to normal mode: the bottom band changes from `-- INSERT --` to `-- NORMAL --` and the cursor becomes a block.
+
+In normal mode, `h` `l` `0` `$` move by character and `w` `b` `e` by word. Words break where vim breaks them. `x` `X` `D` `dd` delete, `cw` `C` `cc` delete and let you type again, and `i` `a` `I` `A` go back to insert mode. `u` undoes your edits in the box one at a time. Esc again cancels the input, and Enter confirms in either mode.
+
+The table gets three keys too.
+
+- `dd` moves the note of the selected row to the trash after confirming its name. If you marked rows with `Space` or selected a range with `v`, it moves all of them (with a range selected, `d` alone is enough). One `u` brings them all back.
+- `p` puts the value you last copied in mdgrid: a cell copied with `y` goes into the selected cell, a row copied with `Y` into the columns of the same name. `file.name` and computed columns stay as they are.
+- `.` puts the value you last set in a single cell into the same column of the selected row. Set status to `done`, then `j` `.` `j` `.` marks the next rows done as well.
+
+Values put with `p` and `.` are pending changes, so you check them in the `Ctrl+S` diff before anything is written. Counts such as `5j` are not used; digit keys are left for other features. The added keys are listed in [Key bindings](../../keys.md#input_normal), and you can rebind or remove them under `[keys.table]` and `[keys.input_normal]` like any other key.
+
+The palette's `q!` throws the pending changes away and quits without asking. It works with or without vim mode.
 
 ## Create a note
 
@@ -177,7 +305,7 @@ Pass one `.csv` or `.tsv` file and mdgrid opens it as a table: the first line na
 
 ## Shape a view and save it
 
-`o` opens the view settings. `Tab` moves between sections:
+`o` opens the view settings. The sections are listed on the left with numbers, and the right side shows the items of the one you picked. Press `3` to jump straight to Sort, or `Tab` to step through them in order. `h` moves into the list, where `j` and `k` pick a section and the right side follows along; `l` or `Enter` takes you back to the items. The side your keys work on has the `>` mark. The sections:
 
 - Columns: which columns to show, and their order
 - Filters: add conditions. Choosing a column lists its values with counts, and you tick the values to keep or hide
@@ -251,11 +379,52 @@ view = "Reading"
 
 A leading `~` in `path` means your home folder. Rows that cannot be read (no `name` or `path`, or a repeated name) are skipped with a warning. Notes are never written.
 
+## Save what you see as a session
+
+Once a week you look at the tasks in progress that mention a meeting, sorted by due date. Building that again every time gets old. Give the filters, sort and columns a name as a session, and `mdgrid -s standup` opens the table just like that.
+
+Narrow and sort the table and set the columns, then choose **Save session** in the palette (`:`) and type a name. If the name is taken, mdgrid asks before replacing it. Saving works on a table opened with `--readonly` too, since notes are never written.
+
+![Save a session](images/session-save.svg)
+
+A session holds the open table (a folder or a `.base`) and its view, the `\` filter, same-value filters, the expression filter, the conditions turned on with number keys (and the hide conditions you turned off), the sort, the order of the visible columns, the hidden columns, and whether the table was opened read-only. Cell values are not in it. The notes are read each time you open it, so values changed after saving show up as they are now.
+
+```sh
+mdgrid -s standup     # open that session
+mdgrid --sessions     # list the saved sessions, name and folder, one per line
+```
+
+Sessions live in `sessions.toml` in the config folder (`~/.config/mdgrid/sessions.toml`). You can write it by hand, or keep it in your dotfiles and take it to another machine:
+
+```toml
+[sessions.standup]
+folders = ["~/notes/Tasks"]
+columns = ["title", "status", "due"]
+hidden = ["priority"]
+
+[[sessions.standup.filters]]
+kind = "value"      # a same-value filter; also text (\ words), expr, cond (number-key condition), show (hide condition turned off)
+key = "status"
+value = "doing"
+
+[[sessions.standup.sort]]
+key = "due"
+dir = "asc"
+```
+
+A name with characters other than ASCII letters, numbers, `-` and `_` goes in quotes, as in `[sessions."進行中"]` (a TOML rule). `~` is your home folder. Unknown items are skipped with a warning, and so are columns of the session that the table no longer has. An unknown name, a broken `sessions.toml` or a missing folder stops mdgrid with a one-line reason. `-s` cannot be combined with paths.
+
+When you quit a table opened from a session, its columns and sort stay in the look mdgrid remembers for that folder, as with any change made on the screen. To change a session, save it again under the same name.
+
 ## Come back to the same table when the terminal is restored
 
 Some tools put your terminal panes back after a restart of the computer. When such a tool restores a pane, mdgrid can reopen the same table and view you had. Only the table and the view come back: the selected row, the scroll position and unsaved changes do not.
 
-Inside a [Herdr](https://herdr.dev) pane this works without any setup. mdgrid tells Herdr the command that reopens the current table and view, and tells it again whenever you move to another table or view. When the Herdr server stops and starts again, Herdr runs that command in the same pane. When you quit with `q` yourself, mdgrid hands the pane back, so nothing is reopened. Herdr lists it among its agents as `mdgrid`. To turn this off:
+Inside a [Herdr](https://herdr.dev) pane this works without any setup. mdgrid tells Herdr the command that reopens the current table and view, and tells it again whenever you move to another table or view. When the Herdr server stops and starts again, Herdr runs that command in the same pane. When you quit with `q` yourself, mdgrid hands the pane back, so nothing is reopened. Herdr lists it among its agents as `mdgrid`.
+
+With several mdgrid panes open, the Herdr sidebar tells them apart. Each pane title shows the table and view, such as `Tasks · In progress`. It changes when you switch views and goes away when you quit with `q`. For a workspace table the title uses the name you gave it; otherwise it uses the `.base` file name or the folder name. A table with only one view shows just the table name.
+
+To turn this off:
 
 ```toml
 [terminal]
@@ -269,6 +438,54 @@ set -g @resurrect-processes '"~mdgrid->mdgrid --continue"'
 ```
 
 Add `--readonly` to `--continue` to open read-only. It cannot be combined with paths or `--view`.
+
+## Go back to a recent table
+
+mdgrid remembers the tables (folders or `.base` files) you open on the screen, with the view you were on, newest first, up to 20. It is there so you can come back to a table you never registered or put in a workspace.
+
+**Recent tables** in the palette (`:`) lists them. Each line has the table name and view, when you last opened it, and its folder. Type to narrow, and press Enter to open the table in the view you last had on it. The table you have open now is not listed. With unsaved changes, you are asked to save or discard first.
+
+![Recent tables](images/recent.svg)
+
+If you have registered tables, plain `mdgrid` with no arguments lists up to five recent tables too, under "Recent", right after "this folder (stay here)".
+
+In the shell, `mdgrid --recent` prints them one per line, with the path, the view name and when you last opened it, separated by tabs:
+
+```sh
+$ mdgrid --recent
+/home/u/notes/tasks.base	In progress	2026-11-21 09:30
+/home/u/notes/projects		2026-11-20 18:02
+```
+
+To pick one with fzf and open it in that view:
+
+```sh
+line=$(mdgrid --recent | fzf) &&
+  view=$(printf '%s\n' "$line" | cut -f2) &&
+  mdgrid "$(printf '%s\n' "$line" | cut -f1)" ${view:+--view "$view"}
+```
+
+The list is kept with the screen state (`~/.local/state/mdgrid/recent.toml`); nothing is written to your note folders. Folders and `.base` files that are gone are dropped before the list or `--recent` shows them.
+
+## Switch between favorite workspaces
+
+When you go back and forth between workspaces, say one for work and one for a hobby, put them in your favorites. In the table list drawer (`w`), select the heading of another workspace and press `f`: the heading gets a `★`, and `f` again takes it out. For the workspace you are in, use **Add the current workspace to favorites** in the palette (if it is already a favorite, this takes it out).
+
+On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. Esc closes the list and leaves you where you were.
+
+![Switch workspace](images/switch.svg)
+
+You land on the table and view you last had open in that workspace during this run. The first time, it opens the table named in the marker's `open`, or the first table.
+
+Once you have moved away from where you started (a plain folder, a `.base`, a detected root folder or a workspace), the list starts with **Where you started**. Choosing it takes you back to the table you started with, in the view you last had on it. Wherever you go, unsaved changes are offered for saving or discarding first.
+
+Favorites are kept in order in `favorites` at the top of `workspaces.toml`: a workspace from `workspaces.toml` by its name, a marker workspace by the path of its root. You can write it by hand:
+
+```toml
+favorites = ["Work", "Hobby", "~/lab"]
+```
+
+Nothing is written to note folders or workspace markers. An entry whose workspace was removed, or whose marker root is gone, is left out of the list with a warning.
 
 ## Link tables with relations
 
@@ -329,6 +546,41 @@ To keep the workspace with the notes instead (for example in a repository you sh
 To open a chosen table whenever the root folder is opened, write `open = "<table name>"` at the top level of the marker (the `name` of a `[[table]]`, or the folder name of an automatic table). For example, a ledger folder with a README or AGENTS.md next to its notes can open only its `.base`. Add `--raw` to see every note in the folder.
 
 Which tables are in scope, first match wins: `-w` → the nearest `.mdgrid/workspace.toml` above the opened folder → the first workspace in `workspaces.toml` that holds the table → detection → the registered tables. Detection is set by `[workspace] detect` in the config (default `[".obsidian"]`; the old values `"vault"` and `"git"` are still read): the nearest root folder (a folder with `.obsidian/`), and with `".git"` also the repository root, counts as an unnamed workspace of the folders right under it. `detect = []` turns it off.
+
+## Stack tables
+
+When you want to keep an eye on the projects while you work through the tasks, you can put the other table below the current one on the same screen instead of switching back and forth.
+
+1. In the table screen, choose **Stack a table below** in the palette (`:`) and pick a table of the current workspace. It is placed below the current table, and the screen is split top and bottom.
+2. Each table has a title line, "table · view · rows", and the table your keys act on is marked with `▶`. `Ctrl+w` `j` and `k` move to the table below and above. Clicking a row or a title moves there too.
+3. Finding with `/`, searching with `\`, filters, sorting, views with `[` `]`, editing a cell and a new note with `a` all act only on the `▶` table.
+4. `Ctrl+w` `+` and `-` make the selected table a row taller or shorter, and `Ctrl+w` `c` (**Close this table** in the palette) takes it out.
+
+Up to four tables can be stacked, and each needs its title and 3 rows. When the terminal gets too short, the tables other than the selected one fold to their title line, from the bottom up. Switching to the Gantt, kanban, chart or tree screen, and opening help or the palette, shows only the selected table on the whole screen; going back brings the stack back.
+
+Edits pile up in one set of changes, whichever table you edit in. When two tables show the same note, a value you change in one shows as pending in the other, and `Ctrl+S` writes both edits at once. The save review lists the changes of every table with a heading per table and writes them all when you confirm. Closing a table that has pending changes asks whether to save or discard them.
+
+### Save an arrangement as a page
+
+Give a pair you compare often a name with **Save the arrangement as a page** in the palette, and it becomes a page of the current workspace. A page remembers the tables, their views and the height ratios, and is listed above the tables in the table list drawer (`w`). Choosing it opens the tables stacked. From the shell:
+
+```sh
+mdgrid -w work --page morning            # a workspace in workspaces.toml
+mdgrid ~/notes --page morning            # a workspace marker .mdgrid/workspace.toml
+```
+
+Pages live in the workspace in `workspaces.toml` or in the marker `.mdgrid/workspace.toml`, so you can write or edit them by hand. Saving from the screen only appends to the end of a marker, leaving every other line and comment as it was.
+
+```toml
+[[workspace.page]]       # [[page]] in a marker
+name = "morning"
+tables = [
+  { table = "Tasks", view = "Today", height = 2 },
+  { table = "Projects", view = "Active", height = 1 },
+]
+```
+
+In a Herdr pane, the pane title is the page name while a page is open, and restoring the pane opens the same page again. `mdgrid --continue` does the same. An arrangement stacked on the spot has no name, so it comes back as the selected table and view.
 
 ## Create a ledger from a starter
 

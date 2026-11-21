@@ -23,3 +23,12 @@ path = "People"
 [[table]]
 name = "Meetings"
 path = "Meetings"
+
+# A page (stack.page-store): Tasks (This week) above Projects. Open it from the table list (w) or with
+# `mdgrid examples/studio --page Morning`.
+[[page]]
+name = "Morning"
+tables = [
+  { table = "Tasks", view = "This week", height = 2 },
+  { table = "Projects", height = 1 },
+]

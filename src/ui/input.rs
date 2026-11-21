@@ -531,9 +531,9 @@ impl App {
             None if bulk && !i.touched => None,
             None if !bulk && i.text == i.initial => None,
             // CE-20・CE-21: カレンダーで選んだ日・日時の日だけの打ち込みは calendar.rs が決める。
-            None => match super::calendar::choice(&i, self.today, &self.date_format) {
+            None => match super::calendar::choice(&i, self.today, self.date_input()) {
                 Some(c) => Some(c),
-                None => match parse(i.entry, &i.text, self.today, &self.date_format) {
+                None => match parse(i.entry, &i.text, self.today, self.date_input()) {
                     Ok(v) => Some(Choice::Value(v)),
                     Err(e) => {
                         self.message = Some(e);
@@ -575,8 +575,10 @@ impl App {
             let v = v.value(self, row, col);
             let follow = self.follow(col);
             self.changes
-                .set_then(self.src.as_ref(), row, col, v, &follow)
+                .set_then(self.src.as_ref(), row, col, v.clone(), &follow)
                 .map_err(|s| Msg::CannotCommit.fill(&[&s.reason]))?;
+            // screen.vim-repeat: 1つのセルに入れた値を `.` で繰り返せるように覚える。
+            self.remember_set(col, &v);
             // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
             self.stay.insert(row.clone());
             self.regrid = true;
@@ -650,6 +652,10 @@ impl App {
                 self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
                 return;
             }
+            // screen.vim-repeat: 1つのセルに入れた値を `.` で繰り返せるように覚える。
+            if let Some(v) = &items[0].1 {
+                self.remember_set(col, v);
+            }
             // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
             self.stay.insert(row.clone());
             self.regrid = true;
@@ -721,6 +727,8 @@ impl App {
             .set_then(self.src.as_ref(), &row, &col, NewValue::Null, &follow)
         {
             Ok(()) => {
+                // screen.vim-repeat: 空にしたことも `.` で繰り返せる。
+                self.remember_set(&col, &NewValue::Null);
                 self.stay.insert(row);
                 self.regrid = true;
             }
@@ -792,19 +800,22 @@ pub(crate) fn input_box(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Opt
 
 /// 端末のカーソルを置く位置(SR-17: 入力ボックスでは入力の位置。変換の窓がそこに出る)。
 pub fn cursor(app: &App) -> Option<(u16, u16)> {
-    match app.mode {
-        Mode::Palette => return super::help::palette_cursor(app),
-        Mode::Search | Mode::Filter => return super::view::prompt_cursor(app),
-        Mode::SettingsText => return super::settings_view::text_cursor(app),
-        Mode::FilterText => return super::filters::text_cursor(app),
+    let at = match app.mode {
+        Mode::Palette => super::help::palette_cursor(app),
+        Mode::Search | Mode::Filter => super::view::prompt_cursor(app),
+        Mode::SettingsText => super::settings_view::text_cursor(app),
+        Mode::FilterText => super::filters::text_cursor(app),
         Mode::Settings | Mode::Chips => return None,
         Mode::ListPick => return super::listpick::pick_cursor(app),
         Mode::Edit if app.detail.is_some() => return super::detail::detail_cursor(app),
-        _ => {}
-    }
-    let (lay, cols) = visible_layout(app);
-    let b = input_box(app, &lay, &cols)?;
-    Some((b.cursor_x as u16, b.y as u16))
+        _ => {
+            let (lay, cols) = visible_layout(app);
+            let b = input_box(app, &lay, &cols)?;
+            return Some((b.cursor_x as u16, b.y as u16));
+        }
+    };
+    // screen.vim-normal-keys: カーソルを持たない欄では、vim のカーソルの所まで戻す(vim.rs)。
+    at.map(|p| app.vim_cursor_shift(p))
 }
 
 /// (x, y) が入力ボックスの中か(CE-1)。

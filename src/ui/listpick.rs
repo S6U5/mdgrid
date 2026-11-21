@@ -514,11 +514,13 @@ impl App {
             let new = p.result(orig);
             if new != *orig {
                 let v = NewValue::List(new);
-                if let Err(s) = self.changes.set(self.src.as_ref(), row, &p.col, v) {
+                if let Err(s) = self.changes.set(self.src.as_ref(), row, &p.col, v.clone()) {
                     self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
                     self.pick = Some(p);
                     return;
                 }
+                // screen.vim-repeat: 1つのセルに入れた値を `.` で繰り返せるように覚える。
+                self.remember_set(&p.col, &v);
                 // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
                 self.stay.insert(row.clone());
                 self.regrid = true;

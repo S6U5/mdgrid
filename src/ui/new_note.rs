@@ -587,11 +587,11 @@ impl App {
             .map(super::list::List::chosen);
         let value = match picked
             .map(Choice::Value)
-            .or_else(|| calendar::choice(&i, self.today, &self.date_format))
+            .or_else(|| calendar::choice(&i, self.today, self.date_input()))
         {
             Some(Choice::Value(v)) => v,
             Some(Choice::Day(d)) => NewValue::Date(types::format_date(d)),
-            None => match parse(i.entry, &i.text, self.today, &self.date_format) {
+            None => match parse(i.entry, &i.text, self.today, self.date_input()) {
                 Ok(v) => v,
                 Err(e) => {
                     self.message = Some(e);

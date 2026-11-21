@@ -118,7 +118,7 @@ fn test_sr_23_placeholders_match() {
 
 #[test]
 fn test_sr_23_english_has_no_japanese() {
-    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1] 英語の文言に日本語の文字(ひらがな・カタカナ・漢字・「・」「「」「」」)が無い。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2] 英語の文言に日本語の文字(ひらがな・カタカナ・漢字・「・」「「」「」」)が無い。
     for m in Msg::ALL {
         let bad: String = m.en().chars().filter(|c| is_japanese_char(*c)).collect();
         assert!(
@@ -132,13 +132,11 @@ fn test_sr_23_english_has_no_japanese() {
 #[test]
 fn test_sr_23_fill_replaces_every_placeholder() {
     // [utest -> req~screen.locales-ledger~1, req~screen.locales-no-translate~1] fill は `{n}` を n 番目の値で置き換え、番号の差し込みを残さない。
-    for lang in [Lang::En, Lang::Ja] {
+    // screen.locales-languages: 台帳の全部の言語で確かめる(言語を足しても試験を書き足さずに済むように)。
+    for &lang in Lang::ALL {
         let _g = scoped(lang);
         for m in Msg::ALL {
-            let src = match lang {
-                Lang::En => m.en(),
-                Lang::Ja => m.ja(),
-            };
+            let src = m.get(lang);
             let nums = placeholders(src);
             let n = nums.iter().max().map_or(0, |x| *x as usize + 1);
             let vals: Vec<String> = (0..n).map(|i| format!("<V{i}>")).collect();
@@ -166,7 +164,7 @@ fn test_sr_23_fill_replaces_every_placeholder() {
 
 #[test]
 fn test_sr_23_resolve_ja_locale() {
-    // [utest -> req~screen.locales-auto~1] ja で始まれば日本語。
+    // [utest -> req~screen.locales-auto~2] ja で始まれば日本語。
     assert_eq!(auto(&[("LANG", "ja_JP.UTF-8")]), Lang::Ja);
     assert_eq!(auto(&[("LANG", "ja")]), Lang::Ja);
     assert_eq!(auto(&[("LC_MESSAGES", "ja_JP.UTF-8")]), Lang::Ja);
@@ -175,11 +173,11 @@ fn test_sr_23_resolve_ja_locale() {
 
 #[test]
 fn test_sr_23_resolve_other_locale_is_english() {
-    // [utest -> req~screen.locales-auto~1] それ以外(どれも無いときも)英語。
+    // [utest -> req~screen.locales-auto~2] それ以外(どれも無いときも)英語。
     assert_eq!(auto(&[("LANG", "en_US.UTF-8")]), Lang::En);
     assert_eq!(auto(&[("LANG", "C")]), Lang::En);
     assert_eq!(auto(&[("LANG", "POSIX")]), Lang::En);
-    assert_eq!(auto(&[("LANG", "fr_FR.UTF-8")]), Lang::En);
+    assert_eq!(auto(&[("LANG", "nl_NL.UTF-8")]), Lang::En);
     assert_eq!(auto(&[]), Lang::En);
     assert_eq!(auto(&[("LANG", "")]), Lang::En);
     assert_eq!(
@@ -190,7 +188,7 @@ fn test_sr_23_resolve_other_locale_is_english() {
 
 #[test]
 fn test_sr_23_resolve_order() {
-    // [utest -> req~screen.locales-auto~1] LC_ALL が LC_MESSAGES と LANG より先、LC_MESSAGES が LANG より先。
+    // [utest -> req~screen.locales-auto~2] LC_ALL が LC_MESSAGES と LANG より先、LC_MESSAGES が LANG より先。
     assert_eq!(
         auto(&[
             ("LC_ALL", "ja_JP.UTF-8"),
@@ -224,7 +222,7 @@ fn test_sr_23_resolve_order() {
 
 #[test]
 fn test_sr_23_resolve_skips_empty() {
-    // [utest -> req~screen.locales-auto~1] 空の値は飛ばして次を見る。
+    // [utest -> req~screen.locales-auto~2] 空の値は飛ばして次を見る。
     assert_eq!(auto(&[("LC_ALL", ""), ("LANG", "ja_JP.UTF-8")]), Lang::Ja);
     assert_eq!(
         auto(&[("LC_ALL", ""), ("LC_MESSAGES", ""), ("LANG", "ja_JP.UTF-8")]),
@@ -243,7 +241,7 @@ fn test_sr_23_resolve_skips_empty() {
 
 #[test]
 fn test_sr_23_resolve_setting_wins_over_env() {
-    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~1] 設定の en・ja は環境より先。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2] 設定の en・ja は環境より先。
     let ja_env = [
         ("LC_ALL", "ja_JP.UTF-8"),
         ("LC_MESSAGES", "ja_JP.UTF-8"),
@@ -288,7 +286,7 @@ fn test_sr_23_scoped_switches_and_restores() {
 
 #[test]
 fn test_sr_23_scoped_en_outside_is_test_env_ja() {
-    // [utest -> req~screen.locales-auto~1] 試験の環境は日本語に固定(.cargo/config.toml の [env])。scoped(En) の中は英語、
+    // [utest -> req~screen.locales-auto~2] 試験の環境は日本語に固定(.cargo/config.toml の [env])。scoped(En) の中は英語、
     // 外と guard を落としたあとは日本語。
     let first = Msg::ALL[0];
     assert_eq!(first.text(), first.ja(), "試験の環境の既定は日本語");

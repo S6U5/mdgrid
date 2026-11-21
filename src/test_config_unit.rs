@@ -76,7 +76,9 @@ fn test_cli_12_items_have_descriptions() {
             "look.colors",
             "new_note",
             "keys",
-            "templates"
+            "templates",
+            "conditions",
+            "notices",
         ]
     );
     // 例はどれも警告なしに読める(use の例は、そのテンプレートを足して読む)。

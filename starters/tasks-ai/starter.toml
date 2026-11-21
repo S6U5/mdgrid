@@ -2,8 +2,22 @@
 # [name] and [description] are the words shown by `mdgrid --starters` and in the palette, one per language code of locales/ (en is required).
 [name]
 en = "Tasks with AI"
+es = "Tareas con IA"
 ja = "タスク(人と AI)"
+zh-TW = "任務（人與 AI）"
+zh-CN = "任务（人与 AI）"
+ko = "할 일(사람과 AI)"
+pt-BR = "Tarefas com IA"
+de = "Aufgaben mit KI"
+fr = "Tâches avec l'IA"
 
 [description]
 en = "Tasks split by who does them (a person, an agent, or both), with routines, charts, Gantt and Kanban"
+es = "Tareas repartidas según quién las hace (una persona, un agente o ambos), con rutinas, gráficos, Gantt y Kanban"
 ja = "担当(人・AI・両方)で分けるタスクと、ルーチンの表。グラフ・ガント・カンバンつき"
+zh-TW = "依執行者（人、AI 代理或兩者）區分的任務與例行工作，附圖表、甘特圖與看板"
+zh-CN = "按执行者（人、智能体或两者）划分的任务，附例行事项、图表、甘特图和看板"
+ko = "담당(사람, 에이전트, 둘 다)으로 나눈 할 일과 루틴. 차트, 간트, 칸반 포함"
+pt-BR = "Tarefas divididas por quem as faz (uma pessoa, um agente ou ambos), com rotinas, gráficos, Gantt e Kanban"
+de = "Aufgaben, aufgeteilt nach Zuständigkeit (Person, Agent oder beide), mit Routinen, Diagrammen, Gantt und Kanban"
+fr = "Tâches réparties selon qui les fait (une personne, un agent ou les deux), avec routines, graphiques, Gantt et Kanban"

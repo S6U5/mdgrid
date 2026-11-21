@@ -70,6 +70,10 @@ impl App {
 
     /// 簡易の絞り込み(NV-2)と同じ値の絞り込み(NV-8)を通るか。
     pub(crate) fn passes(&self, row: &RowId) -> bool {
+        // condition.digit-stack・navigation.expr-filter・condition.view-settings(conds.rs)。
+        if !self.cond_passes(row) {
+            return false;
+        }
         // NV-30: 問題のある行だけ(見えている列で)。
         if self.only_problems && !self.cols.iter().any(|c| self.problem(row, c).is_some()) {
             return false;
@@ -388,7 +392,7 @@ impl App {
         self.refresh_if_needed();
     }
 
-    fn prompt_changed(&mut self) {
+    pub(crate) fn prompt_changed(&mut self) {
         let Some(p) = &self.prompt else {
             return;
         };

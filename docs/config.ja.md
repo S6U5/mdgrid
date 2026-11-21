@@ -7,7 +7,7 @@ mdgrid は TOML のファイルを1つ読む:
 - `$XDG_CONFIG_HOME/mdgrid/config.toml`。`XDG_CONFIG_HOME` が無ければ `~/.config/mdgrid/config.toml`(macOS でも同じ)。Windows では `XDG_CONFIG_HOME` が無ければ `%APPDATA%\mdgrid\config.toml`。
 - `mdgrid --config <パス>` なら、そのファイルを読む。
 
-同じフォルダには mdgrid が書くファイルも置く: `ui.toml`(画面で選んだもの。ビューの設定の「見た目」の区画のテーマなど)、`views.toml`(mdgrid のビューと表ごとの設定)、`workspaces.toml`(ワークスペース)、`places.toml`(登録した表。[使う表を登録して切り替える](manual/ja/tasks.md#使う表を登録して切り替える))。mdgrid は `config.toml` を書き換えない。
+同じフォルダには mdgrid が書くファイルも置く: `ui.toml`(画面で選んだもの。ビューの設定の「見た目」の区画のテーマなど)、`views.toml`(mdgrid のビューと表ごとの設定)、`workspaces.toml`(ワークスペースとお気に入り。[お気に入りのワークスペースを行き来する](manual/ja/tasks.md#お気に入りのワークスペースを行き来する))、`places.toml`(登録した表。[使う表を登録して切り替える](manual/ja/tasks.md#使う表を登録して切り替える))、`sessions.toml`(名前を付けたセッション。[表示をセッションとして保存する](manual/ja/tasks.md#表示をセッションとして保存する))。mdgrid は `config.toml` を書き換えない。
 
 どの項目も書かなくてよい。ファイルが無ければ既定で動く。知らない項目・型の違う値・その場所に書けない項目は、メッセージ行に警告を出して無視し、起動は止めない。警告はどれも「ファイル: 項目の道筋: 理由」の形。壊れた TOML は理由を1行出して止まる。
 
@@ -21,7 +21,7 @@ mdgrid --print-config > ~/.config/mdgrid/config.toml
 
 ## 2種類の項目
 
-- **アプリ全体の項目**(範囲「全体だけ」): 最上位の `language`・`editor`・`poll_ms` と、区画 `[terminal]`・`[workspace]`・`[git]`・`[keys]`・`[templates]`。`config.toml` にだけ書く(`ui.toml` には `[terminal] nerd_font` を書ける)。
+- **アプリ全体の項目**(範囲「全体だけ」): 最上位の `language`・`editor`・`poll_ms` と、区画 `[terminal]`・`[workspace]`・`[git]`・`[keys]`・`[search]`・`[templates]`。`config.toml` にだけ書く(`ui.toml` には `[terminal] nerd_font` を書ける)。
 - **表のプロファイル**(範囲「全体・ワークスペース・表・ビュー」): `use`・`[look]`・`[display]`・`[dates]`・`[edit]`・`[new_note]`。下のどの場所にも同じ形で書け、狭い範囲が広い範囲を上書きする。
 
 ## ワークスペース・表・ビューごとの上書き
@@ -91,6 +91,18 @@ path = "Bookmarks"
 tree = { path = "folder", order = "order" }
 ```
 
+ワークスペースには、縦に並べた表の形に名前を付けた**ページ**も書ける(印は `[[page]]`、`workspaces.toml` はそのワークスペースの `[[workspace.page]]`)。`name` と、上から並べる表の並び `tables` を書き、表ごとに範囲の表の名前 `table`・開くビュー `view`(省略は表のいつものビュー)・高さの比 `height`(1 以上の整数。省略は 1)を書く。画面のパレットの **並べ方に名前を付けて残す** も同じ形で書き足し(同じ名前なら置き換え)、印にはファイルの末尾に足すだけで、ほかの行とコメントは変えない。ページは表の一覧の引き出しの表の上に並び、`mdgrid -w <ワークスペース> --page <名前>`(印のワークスペースなら `mdgrid <フォルダ> --page <名前>`)でも開ける。読めない行(名前の無いページ・範囲に無い表の名前など)は `.mdgrid/workspace.toml: page[1].tables[2].table: …` の形で警告して飛ばす。
+
+```toml
+# notes/.mdgrid/workspace.toml — 朝はタスクの今日と進行中のプロジェクトを上下に見比べる
+[[page]]
+name = "朝"
+tables = [
+  { table = "tasks", view = "今日", height = 2 },
+  { table = "projects", view = "進行中", height = 1 },
+]
+```
+
 印は手で書かなくてもよい。**スターター**は、よくある台帳の印とノートの雛形(と少しの見本のノート)をひとまとめにしたもので、`mdgrid <フォルダ> --init-workspace --starter <名前>` が新しいフォルダに書く: フォルダが無ければ作り、`--with-samples` で見本のノートも入れ、上書きはしない(書く先のファイルが1つでもあれば何も書かない)。`mdgrid --starters` で一覧が1行ずつ出る: 組み込みの `tasks`・`tasks-ai`・`bookmarks`・`reading`・`people` と、自分のもの。画面ではパレットの **スターターから台帳を作る** が同じこと(選んで、作る場所を打ち、見本を入れるかを答える)。自分のスターターは設定のフォルダの `starters/<名前>/` に、組み込みと同じ形で置く:
 
 ```
@@ -147,11 +159,11 @@ starters/kanban/
 
 ### `language`
 
-- 型: `文字列("auto"・"en"・"ja")`
+- 型: `文字列("auto" か、"en"・"ja" などの言語の符号)`
 - 既定: `"auto"`
 - 範囲: 全体だけ
 
-画面と起動の文言(`--help`・起動できない理由・警告)の言語。`"auto"` は `LC_ALL`・`LC_MESSAGES`・`LANG` の順で最初の空でない値を見て、`ja` で始まれば日本語、ほか(どれも無いときも)は英語。`"en"`・`"ja"` は環境に依らずその言語。ノートの値・列の名前・`.base` の中身・ファイルの名前は訳さない。起動の引数の誤りは設定を読む前に出るので、環境に従う。
+mdgrid の画面と起動の文言(`--help`・起動できない理由・警告)の言語。言語は英語(`en`)・日本語(`ja`)・ドイツ語(`de`)・スペイン語(`es`)・フランス語(`fr`)・韓国語(`ko`)・ブラジルのポルトガル語(`pt-BR`)・中国語の簡体字(`zh-CN`)・繁体字(`zh-TW`)。`"auto"` は `LC_ALL`・`LC_MESSAGES`・`LANG` の順で最初の空でない値から、言語と地域が合う言語(`zh_TW.UTF-8` なら `zh-TW`)、無ければ言語が合う言語(`de_AT.UTF-8` なら `de`。中国語は台湾・香港・マカオでなければ `zh-CN`、ポルトガル語はどれも `pt-BR`)を選び、どれも合わなければ英語にする(どれも無いときも)。言語の符号を書くと環境によらずその言語。知らない符号は警告して `"auto"` と同じにする。ノートの値・列の名前・`.base` の中身・ファイルの名前は訳さない。引数の誤りは設定を読む前に出すので、環境に従う。
 
 ```toml
 language = "en"
@@ -253,7 +265,7 @@ nerd_icons = true
 - 既定: `true`
 - 範囲: 全体だけ
 
-[Herdr](https://herdr.dev) の窓で、今見ている表とビューで開き直す命令を Herdr に伝える。別の表やビューへ移るたびに伝え直す。Herdr のサーバーが止まって立て直したとき(パソコンを再起動したあとなど)、Herdr は同じ窓でその命令を走らせるので、mdgrid が同じ表とビューで戻ってくる。自分で mdgrid を終えたときは窓を返すので、開き直さない。`false` で Herdr を呼ばない。Herdr の外では何もしない。命令を受け取れない道具には `mdgrid --continue` がある([説明書](manual/ja/features.md))。
+[Herdr](https://herdr.dev) の窓で、今見ている表とビューで開き直す命令を Herdr に伝える。別の表やビューへ移るたびに伝え直す。Herdr のサーバーが止まって立て直したとき(パソコンを再起動したあとなど)、Herdr は同じ窓でその命令を走らせるので、mdgrid が同じ表とビューで戻ってくる。自分で mdgrid を終えたときは窓を返すので、開き直さない。Herdr のサイドバーには、窓の題として今の表とビューの名前(`タスク · 進行中` のように。ワークスペースの表なら表に付けた名前)が出て、終えると消える。`false` で Herdr を呼ばない(題も出さない)。Herdr の外では何もしない。命令を受け取れない道具には `mdgrid --continue` がある([説明書](manual/ja/features.md))。
 
 ```toml
 [terminal]
@@ -787,12 +799,48 @@ done = { done_at = "{date}" }
 
 モードごとにキーを割り当て直す。書かなければ組み込みのキーの割り当て。`[keys.<モード>]` の下に `キー = "動作の名前"` と書く。動作の名前 `"none"` でそのキーを外す。キーは `"j"`・`"ctrl+s"`・`"shift+tab"` のように書き、`"g g"` のような続けて押すキーは空白で区切る。
 
-モード: `table`・`edit`・`review`・`quit`・`help`・`palette`・`search`・`filter`・`detail`・`settings`・`settings_input`・`chips`・`list_select`・`menu`・`freq`・`sorts`・`relations`・`drawer`・`filter_window`・`filter_input`・`screen_menu`・`column_type`・`tree`。動作の名前はコマンドのパレット(`:`)に出る。モードごとの既定のキーと動作の名前の全部は [keys.ja.md](keys.ja.md) にある。知らないモード・キー・動作は警告して飛ばす。
+モード: `table`・`edit`・`review`・`quit`・`help`・`palette`・`search`・`filter`・`detail`・`settings`・`settings_input`・`chips`・`list_select`・`menu`・`freq`・`sorts`・`relations`・`drawer`・`filter_window`・`filter_input`・`screen_menu`・`column_type`・`tree`・`gantt`・`kanban`・`chart`・`notice`・`switch`、vim モードの `input_normal`。動作の名前はコマンドのパレット(`:`)に出る。モードごとの既定のキーと動作の名前の全部は [keys.ja.md](keys.ja.md) にある。知らないモード・キー・動作は警告して飛ばす。
 
 ```toml
 [keys.table]
 "ctrl+f" = "search"
 "x" = "none"
+```
+
+### `keys.vim`
+
+- 型: `真偽値`
+- 既定: `false`
+- 範囲: 全体だけ
+
+vim モードにする。入力の欄(セル・探す・検索・パレット・設定の値・新しいノートの名前)は挿入のモードで始まり、いつもどおり打てる。Esc でノーマルのモードに移り、`h` `l` `0` `$` `w` `b` `e` で動き、`i` `a` `I` `A` で挿入に戻り、`x` `X` `dw` `db` `d$` `D` `dd` で消し、`cw` `c$` `C` `cc` で替え、`u` で取り消す。ノーマルのモードの Esc で入力を取りやめ、Enter はどちらのモードでも決める。下の帯に `-- 挿入 --` か `-- ノーマル --` が出て、カーソルは棒か四角になる。
+
+表には3つのキーが足される。`dd` は印を付けた行(印が無ければ選んでいる行)のノートを、名前を確かめてからごみ箱へ動かす。`p` は `y`(セル)か `Y`(行)で写した値を入れ、`.` は直前にセルに入れた値を、選んでいる行の同じ列にもう一度入れる。数字は回数にせず、ほかのキーのために空けておく。パレットの `q!`(保存せずに終わる)は vim モードによらず使える。
+
+`false`(既定)ではキーは今までどおり。足すキーは [keys.ja.md](keys.ja.md#input_normal) にあり、`[keys.table]` と `[keys.input_normal]` で割り当て直したり外したりできる。
+
+```toml
+[keys]
+vim = true
+```
+
+## `[search]` — 表を横断して探す
+
+### `search.across`
+
+- 型: `真偽値`
+- 既定: `false`
+- 範囲: 全体だけ
+
+コマンドのパレット(`:`)に「ワークスペースを横断して探す」を足す。どの表に書いたか覚えていない行を、表を1つずつ開かずに見つけるときに使う。語を打って Enter を押すと、今のワークスペースの表の全部(ワークスペースを開いていなければ登録した表)を裏で読み、当たった行を表ごとに、ノートの名前と、当たった列と値を添えて並べる。当て方は検索の欄(`\`)と同じで、ノートの名前か値が語を含めば当たり、語に大文字が無ければ大文字小文字を区別しない。
+
+結果は読み終えた表から出し、読み終えるまで「3 / 5 を読みました」と見せる。Esc で止めると、元の表の画面のまま戻る。読めない表は飛ばし、結果の終わりに名前を出す。行を選んで Enter を押すと、その表を開き、検索の欄に同じ語を入れてその行を選ぶ。ためた変更があれば、引き出しで表を移るときと同じく先に確かめる。
+
+`false`(既定)ではパレットにこのコマンドを出さず、使わない人の画面は変わらない。
+
+```toml
+[search]
+across = true
 ```
 
 ## `[templates]` — テンプレート
@@ -809,4 +857,61 @@ done = { done_at = "{date}" }
 [templates.night.look]
 theme = "dracula"
 preset = "dozy-pink"
+```
+
+## `[conditions]` — 名前を付けた条件
+
+### `conditions`
+
+- 型: `表の表([conditions.<名前>] の下に expr・label・key・hide)`
+- 既定: なし
+- 範囲: 全体だけ
+
+「期限が1週間以内」のように、よく使う条件に名前を付けて1回だけ書く。`expr` は `.base` の絞り込みと同じ書き方の式。名前は英字で始め、英数字・`_`・`-` だけにする。書いた条件は、名前で次のように使える。
+
+- どの式でも `cond("<名前>")`(行が当たれば真): `--print --filter`・`--count --filter`・画面の式の絞り込み・`.base`・ほかの条件の式。
+- `key = 1` 〜 `9`: その数字のキーで当たる行だけにし、もう一度押すと全部に戻す(2つ以上入れると、全部に当たる行だけ)。
+- ビューの設定(`o`)のフィルターの区画: そのビューで、当たる行だけを残すか、当たる行を隠す。
+- `hide = true`: どの表と画面でも、`--print`・`--pick`・`--count` でも、当たる行を隠す。設定の帯に条件と隠した行の数が出て、その条件の数字のキーで出し直せる。`--show-hidden` を添えると出力にも出す。
+
+例の `far` は、始まりが30日より先の予定を隠す。ただし期限が1週間以内なら出す。`label` は設定の帯とヘルプに出す名前(`label = "期限が近い"`)。表に無い列は値の無い列として読むので、1つの条件を列の違う表にも使える。決まりに外れた名前・読めない式・輪になって呼び合う条件・ほかの条件が先に使っている数字は、警告して使わない。
+
+```toml
+[conditions.soon]
+expr = 'due <= today() + "7d"'
+key = 1
+
+[conditions.far]
+expr = 'start > today() + "30d" && !(due <= today() + "7d")'
+hide = true
+key = 9
+```
+
+## `[[notices]]` — 通知の欄
+
+### `notices`
+
+- 型: `表の並び([[notices]] の下に cond・text・scope・show_zero か note・lines)`
+- 既定: なし
+- 範囲: 全体だけ
+
+期限切れのタスクの数のように、目に入れておきたいことをヘッダーの上の小さな欄に出す。ここに項目を書いたときだけ出て、書かない人の画面は変わらない。`[[notices]]` の1つが1項目で、書いた順に並ぶ。
+
+- 件数の項目は、[名前を付けた条件](#conditions--名前を付けた条件)(`cond`)に当たる行を数える。`text` は `{count}` を数に置き換える文(無ければ条件の見せる名前と数)。`scope` は数える範囲で、`"table"`(開いている表。既定)・`"workspace"`(今のワークスペースの表の全部)・表の名前の並びから選ぶ。数えるのは、表の絞り込みと `hide = true` の条件を当てたあとの行で、ビュー・検索・数字のキーには左右されない。0 件の項目は出さない(`show_zero = true` なら出す)。
+- 連絡の項目は、ノート(`note`。先頭の `~` はホーム、相対なら設定のファイルのフォルダから)の本文の空でない行を頭から `lines` 行(既定 1)出す。
+
+件数の項目は1行目に ` · ` でつなぎ、連絡の行は1行ずつで、欄は3行まで。欄へはキーで移り、項目を選んで `Enter` を押すと、件数の項目はその条件で表を絞り(ほかの表を数える項目なら、当たる行のある表を並べる)、連絡の項目はノートをエディタで開く。`mdgrid --notices` は同じ項目を1行ずつ出す(tmux の帯・シェルのプロンプト・Herdr のサイドバーに)。
+
+```toml
+[[notices]]
+cond = "overdue"
+text = "{count} overdue"
+scope = "workspace"
+
+[[notices]]
+note = "~/notes/inbox.md"
+lines = 2
+
+[conditions.overdue]
+expr = 'due < today() && status != "done"'
 ```

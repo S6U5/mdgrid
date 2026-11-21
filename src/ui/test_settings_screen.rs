@@ -355,8 +355,10 @@ fn test_nv_18_settings_screen_golden() {
     sel_to(&mut a, i);
     ch(&mut a, ' ');
     let s = screen(&a);
+    // 区画の名前の頭に番号(navigation.settings-sections-digits)。キーは右の項目に効くので、左に選びの印は無い
+    // (navigation.settings-sections-focus)。
     for want in [
-        "> 列",
+        "  1 列",
         "3/4",
         "フィルター",
         "並べ替え",
@@ -895,9 +897,10 @@ fn test_nv_18_click_items_and_buttons() {
     // 左の一覧の「フィルター」をクリック → 右がフィルターの区画(列の区画から移る)。
     section(&mut a, Sec::Columns);
     let s = screen(&a);
+    // 一覧の行は頭に印の2桁と番号(「  2 フィルター」。navigation.settings-sections-digits)。
     let y = s
         .lines()
-        .position(|l| l.find("フィルター").is_some_and(|i| i < 4))
+        .position(|l| l.find("フィルター").is_some_and(|i| i < 8))
         .unwrap_or_else(|| panic!("一覧に「フィルター」が無い:\n{s}"));
     a.click(3, y as u16);
     assert_eq!(draft(&a).sec, Sec::Filters);

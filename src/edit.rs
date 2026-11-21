@@ -1,10 +1,10 @@
 //! 値の打ち込みの読み方と、書けない理由の文。画面(ui)と `--apply`(apply.rs)が共有する(画面に頼らない)。
 //! 型ごとの入力の読み方(CE-2・CE-5・CE-7・CV-2): 日付は `YYYY-MM-DD`・設定の形(CE-22)・今日からの日数
-//! (`+3`・`-2`)・空、数は数として読める値だけ。読めなければ理由を返す。
+//! (`+3`・`-2`)・日付の言葉(cell-edit.date-words)・空、数は数として読める値だけ。読めなければ理由を返す。
 
 use mdgrid::i18n::Msg;
 use mdgrid::source::{EditError, NewValue, SaveError, Value};
-use mdgrid::types::{self, DateFormat, Kind};
+use mdgrid::types::{self, DateFormat, DateInput, Kind};
 
 /// 入力の種類(列の型から。CE-2)。確定のときの読み方を決める。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,13 +17,15 @@ pub(crate) enum Entry {
 }
 
 /// 入力の文字を列の型で読む(CE-5・CE-7・CE-22・CV-2)。空は Null(CE-9)。読めなければ理由。
-/// 日付は `types::parse_date_input`(`fmt` は設定の日付の形)で読む。
-pub(crate) fn parse(
+/// 日付は `types::parse_date_input` で読む。`how` は設定の日付の形か、形と週の始まり(日付の言葉の
+/// 「今週」「来週」の区切り。cell-edit.date-words-weekday)。
+pub(crate) fn parse<'a>(
     entry: Entry,
     text: &str,
     today: i64,
-    fmt: &DateFormat,
+    how: impl Into<DateInput<'a>>,
 ) -> Result<NewValue, String> {
+    let how = how.into();
     let t = text.trim();
     if t.is_empty() {
         return Ok(NewValue::Null);
@@ -60,13 +62,13 @@ pub(crate) fn parse(
                 };
                 return Ok(NewValue::Date(t));
             }
-            // CE-5・CE-22: `YYYY-MM-DD`・設定の形・`+3`・`-2`。ノートに書くのはいつも `YYYY-MM-DD`。
+            // CE-5・CE-22: `YYYY-MM-DD`・設定の形・`+3`・`-2`・日付の言葉。ノートに書くのはいつも `YYYY-MM-DD`。
             // WB-18: 日付の列の値は NewValue::Date(元が囲んでいなければ囲まずに書く)。
-            match types::parse_date_input(t, fmt, today) {
+            match types::parse_date_input(t, how, today) {
                 Ok(Some(d)) => Ok(NewValue::Date(types::format_date(d))),
                 Ok(None) => Ok(NewValue::Null),
                 Err(e) if entry == Entry::DateTime && is_date_unreadable(&e) => {
-                    Err(Msg::EntryNotDateTime.fill(&[&t, &date_forms(fmt)]))
+                    Err(Msg::EntryNotDateTime.fill(&[&t, &date_forms(how.fmt)]))
                 }
                 Err(e) => Err(e),
             }

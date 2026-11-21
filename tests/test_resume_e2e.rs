@@ -115,6 +115,20 @@ fn seq_of(c: &[String]) -> u64 {
     c[at + 1].parse().unwrap()
 }
 
+fn is_metadata(c: &[String]) -> bool {
+    c.get(1).map(String::as_str) == Some("report-metadata")
+}
+
+/// `report-metadata` の `--title` の値(題を消す呼び出しなら None)。
+fn title_of(c: &[String]) -> Option<&str> {
+    let at = c.iter().position(|a| a == "--title")?;
+    c.get(at + 1).map(String::as_str)
+}
+
+fn is_clear_title(c: &[String]) -> bool {
+    is_metadata(c) && c.iter().any(|a| a == "--clear-title")
+}
+
 #[test]
 fn test_herdr_report_follow_and_release() {
     // [stest -> req~resume.herdr-report~1, req~resume.herdr-follow~1, req~resume.herdr-release~1] Herdr の窓で `.base` のビュー「進行中」を開く → report-agent で開き直す命令を伝え、ビューを「全部」へ移ると 2 秒以内に伝え直し、行を動かしても伝え直さず、q で release-agent を呼んでから終わる。
@@ -332,6 +346,106 @@ fn test_herdr_skipped_for_pick() {
     assert_eq!(t.wait_exit(), 1);
     std::thread::sleep(Duration::from_millis(300));
     assert!(!herdr.log.exists(), "{:?}", herdr.calls());
+}
+
+#[test]
+fn test_herdr_title_follows_view_and_clears() {
+    // [stest -> req~resume.herdr-title~1, req~resume.herdr-title-clear~1] Herdr の窓で tasks.base をビュー「進行中」で開く → report-metadata で題「tasks · 進行中」を伝え、「全部」へ移ると「tasks · 全部」に替わる。q で終える → --clear-title のあとに release-agent。`herdr = false` → 題も伝えない。
+    let h = home("resume-title");
+    let herdr = fake_herdr(h.path(), "");
+    let mut t = spawn(
+        &["notes/tasks.base", "--view", "進行中"],
+        h.path(),
+        &herdr.env(),
+    );
+    t.wait_for("doing");
+    let first = herdr.wait(&t, |c| is_metadata(c) && title_of(c).is_some());
+    let mut want: Vec<String> = [
+        "pane",
+        "report-metadata",
+        "w1:p1",
+        "--source",
+        "mdgrid",
+        "--agent",
+        "mdgrid",
+        "--title",
+        "tasks · 進行中",
+        "--seq",
+    ]
+    .iter()
+    .map(std::string::ToString::to_string)
+    .collect();
+    want.push(seq_of(&first).to_string());
+    assert_eq!(first, want);
+
+    t.send("]");
+    herdr.wait(&t, |c| title_of(c) == Some("tasks · 全部"));
+
+    t.send("q");
+    assert_eq!(t.wait_exit(), 0);
+    let calls = herdr.calls();
+    let clear = calls
+        .iter()
+        .position(|c| is_clear_title(c))
+        .unwrap_or_else(|| panic!("--clear-title が無い: {calls:?}"));
+    let release = calls
+        .iter()
+        .position(|c| is_release(c))
+        .unwrap_or_else(|| panic!("release-agent が無い: {calls:?}"));
+    assert!(clear < release, "{calls:?}");
+    assert_eq!(release, calls.len() - 1, "{calls:?}");
+
+    // `[terminal] herdr = false` → 題も伝えない(道具を1回も呼ばない)。
+    std::fs::write(
+        h.path().join("config/mdgrid/config.toml"),
+        "[terminal]\nherdr = false\n",
+    )
+    .unwrap();
+    std::fs::remove_file(&herdr.log).unwrap();
+    let mut t = spawn(
+        &["notes/tasks.base", "--view", "進行中"],
+        h.path(),
+        &herdr.env(),
+    );
+    t.wait_for("doing");
+    t.send_settle("]");
+    t.send("q");
+    assert_eq!(t.wait_exit(), 0);
+    assert!(!herdr.log.exists(), "{:?}", herdr.calls());
+}
+
+#[test]
+fn test_herdr_title_form() {
+    // [stest -> req~resume.herdr-title-form~1] ワークスペースの表 `name = "タスク"` の notes/tasks.base を「進行中」で開く → 題「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ビューが1つの `.base`(ビューのタブを出さない表)→ 表の名前だけ。
+    let h = home("resume-title-form");
+    let base = real(&h.path().join("notes/tasks.base"));
+    std::fs::write(
+        h.path().join("config/mdgrid/workspaces.toml"),
+        format!("[[workspace]]\nname = \"仕事\"\n\n[[workspace.table]]\nname = \"タスク\"\npath = \"{base}\"\n"),
+    )
+    .unwrap();
+    std::fs::write(
+        h.path().join("notes/one.base"),
+        "views:\n  - type: table\n    name: ひとつ\n",
+    )
+    .unwrap();
+    let herdr = fake_herdr(h.path(), "");
+    for (args, want) in [
+        (
+            &["notes/tasks.base", "--view", "進行中"][..],
+            "タスク · 進行中",
+        ),
+        (&["notes"][..], "notes"),
+        (&["notes/one.base"][..], "one"),
+    ] {
+        let _ = std::fs::remove_file(&herdr.log);
+        let mut t = spawn(args, h.path(), &herdr.env());
+        t.wait_for("doing");
+        let call = herdr.wait(&t, |c| is_metadata(c) && title_of(c).is_some());
+        assert_eq!(title_of(&call), Some(want), "{args:?}");
+        t.send("q");
+        assert_eq!(t.wait_exit(), 0);
+    }
 }
 
 /// 最後の画面のファイル(state/mdgrid/last/*.toml)の中身を全部つなげたもの。

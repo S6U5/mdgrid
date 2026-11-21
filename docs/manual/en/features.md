@@ -50,6 +50,14 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 
 [Edit many rows at once](tasks.md#edit-many-rows-at-once)
 
+## Type dates in words
+
+![Type a date in words](images/date-words.svg)
+
+Type `tomorrow`, `next fri`, `eom` or `+2w` in a due date cell and you get that day, without counting on the calendar. As you type, the date it reads as appears next to the field, such as `2026-10-16 (Fri)`, and the calendar moves there, so you can check it before pressing Enter. Japanese words such as `明日` and `来週の金曜` work too, whatever language the screen is in. The same words work when you edit many rows at once and in filter values.
+
+[Type dates in words](tasks.md#type-dates-in-words)
+
 ## Find, filter and sort
 
 ![Quick filter](images/quick-filter.svg)
@@ -57,6 +65,30 @@ Mark rows with `Space` and set one value on all of them. Tags can be added or re
 `\` narrows the rows as you type, `/` searches, `s` sorts by the column. Keep only the rows with the same value, count a column's values and keep one (`%`), hide the columns you do not need.
 
 [Find, filter and sort](tasks.md#find-filter-and-sort)
+
+## Filter with named conditions
+
+![Narrow with a named condition](images/conditions.svg)
+
+Give a name to a condition such as "due within a week" and write it once in the config. One digit key then keeps only the matching rows, and `cond("name")` works in any expression. You can also hide rows you rarely need, such as plans far in the future, in every table. `mdgrid --count` prints how many rows match.
+
+[Filter with named conditions](tasks.md#filter-with-named-conditions)
+
+## Notices above the table
+
+![The notice box](images/notices.svg)
+
+Show how many tasks are overdue, or a few lines you wrote yourself, in a small box above the header. Only people who write it in the config see it. Jump from the box straight to the rows, and print the same notices with `mdgrid --notices` for a tmux status line.
+
+[Notices above the table](tasks.md#notices-above-the-table)
+
+## Search across the workspace
+
+![Search across the workspace](images/across.svg)
+
+Was that estimate in a task, or in a project note? Instead of opening one table after another, type the word into "Search across the workspace" in the palette. The matching rows from every table in the workspace show up per table, with the column and value that matched, and picking one opens its table with that row selected. The command is there only for people who turn it on in the config.
+
+[Search across the workspace](tasks.md#search-across-the-workspace)
 
 ## Create a note
 
@@ -78,7 +110,7 @@ Press `u` right after creating a note by mistake and it moves to the trash; `Ctr
 
 ![View settings](images/view-settings.svg)
 
-`o` sets the columns, filters, sorting, grouping and display; save it under a name and it becomes a tab. Choose "Set as default view" and the folder opens on that view next time.
+`o` sets the columns, filters, sorting, grouping and display; save it under a name and it becomes a tab. The sections are numbered, so `3` takes you straight to sorting. Choose "Set as default view" and the folder opens on that view next time.
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it)
 
@@ -150,9 +182,41 @@ With `--readonly`, editing, saving and creating notes are off and nothing is wri
 
 ![Back on the same table and view](images/resume.svg)
 
-In a Herdr pane, mdgrid reopens the same table and view when the Herdr server restarts. Elsewhere, such as in tmux, `mdgrid --continue` goes back to the last table and view opened in that folder.
+In a Herdr pane, mdgrid reopens the same table and view when the Herdr server restarts, and the sidebar shows the table and view as the pane title. Elsewhere, such as in tmux, `mdgrid --continue` goes back to the last table and view opened in that folder.
 
 [Come back to the same table when the terminal is restored](tasks.md#come-back-to-the-same-table-when-the-terminal-is-restored)
+
+## Save what you see as a session
+
+![Save a session](images/session-save.svg)
+
+Give a name to the filters, sort and columns you built, and `mdgrid -s <name>` opens the table just like that. Only the setup is saved; cell values are read from the notes each time. `mdgrid --sessions` lists the names you saved.
+
+[Save what you see as a session](tasks.md#save-what-you-see-as-a-session)
+
+## Go back to a recent table
+
+![Recent tables](images/recent.svg)
+
+Go back to a table you never registered, in the view you were on. mdgrid remembers the last 20 tables you opened on the screen, newest first. **Recent tables** in the palette lists them with the view, when you last opened each and its folder. Plain `mdgrid` also shows the five newest under "Recent". In the shell, `mdgrid --recent` prints one per line, ready for fzf.
+
+[Go back to a recent table](tasks.md#go-back-to-a-recent-table)
+
+## Switch between favorite workspaces
+
+![Switch workspace](images/switch.svg)
+
+Put the workspaces you go back and forth between, say work and a hobby, in your favorites. From the table, the gantt, the kanban or any other screen, `W` opens the list and one digit takes you there, to the table and view you last had open in that workspace. If you started in a plain folder, **Where you started** at the top of the list takes you back.
+
+[Switch between favorite workspaces](tasks.md#switch-between-favorite-workspaces), [Key bindings](../../keys.md#switch)
+
+## Use it in nine languages
+
+![The screen in French](images/language-fr.svg)
+
+The screen, `--help`, warnings and the `--print-config` descriptions come in English, Japanese, Chinese (Simplified and Traditional), Korean, Spanish, French, German and Brazilian Portuguese. The language follows `LANG` and similar variables, or the `language` setting. Note values, column names and file names are never translated.
+
+[The language setting](../../config.md#language)
 
 ## Choose a look
 
@@ -169,3 +233,19 @@ Color themes, the shape of chips and checkboxes, row numbers and column lines, t
 Vim keys and arrow keys both work. `x` lists what you can do on the cell, `:` finds a command by name, `?` lists every key. All of them can be rebound.
 
 [Key bindings](../../keys.md)
+
+## Edit with vim keys
+
+![Edit with vim keys](images/vim-normal.svg)
+
+Write `vim = true` under `[keys]` in the config, and every input box gets vim's two modes. You start typing as usual; Esc switches to normal mode, where `w` and `b` jump by word and `dw` or `cw` fix a whole word. In the table, `dd` moves a note to the trash, `p` puts the value you copied with `y`, and `.` puts the last value into the next row too.
+
+[Edit with vim keys](tasks.md#edit-with-vim-keys), [Key bindings](../../keys.md#input_normal)
+
+## Stack tables
+
+![Stack tables](images/stack.svg)
+
+Compare two tables, such as tasks and projects, on one screen without switching back and forth. **Stack a table below** in the palette lists the tables of the current workspace and puts the one you pick below the current table. `Ctrl+w` `j` and `k` move between them, and finding, filtering, views and edits act only on the table marked with `▶`. Edits from every table pile up in one set of changes, and `Ctrl+S` shows one diff with a heading per table before it writes. Give an arrangement you like a name and it becomes a page you can open from the drawer or with `mdgrid -w <workspace> --page <name>`.
+
+[Stack tables](tasks.md#stack-tables), [Key bindings](../../keys.md#table)

@@ -46,6 +46,8 @@ enum Row {
     },
     /// ほかのワークスペースの見出し。
     Head { name: String, open: bool },
+    /// stack.page-open: 今の範囲のページ(表の上に並べる)。`current` は開いているページ。
+    Page { name: String, current: bool },
 }
 
 /// 並べる行: 今の範囲の表、そのあとにほかのワークスペースの見出し(開いていればその表)。
@@ -59,6 +61,14 @@ fn rows(app: &App, d: &Drawer) -> Vec<Row> {
     };
     // 今の範囲と同じ名前のワークスペースは見出しに出さない(印・検知の範囲も名前で比べる)。
     let own = app.scope.as_ref().map(|s| s.name.as_str());
+    // stack.page-open: 今の範囲のページを表の上に。
+    let page = app.stack.as_ref().and_then(|s| s.page.as_deref());
+    for p in &app.pages {
+        out.push(Row::Page {
+            name: p.name.clone(),
+            current: page == Some(p.name.as_str()),
+        });
+    }
     let places = app.scope_places();
     let cur = current_index(app, &places);
     for (i, place) in places.into_iter().enumerate() {
@@ -112,7 +122,7 @@ fn current_index(app: &App, places: &[Place]) -> Option<usize> {
 }
 
 /// 今の表の実体のパス。フォルダを複数開いていれば無し。
-fn here(app: &App) -> Option<std::path::PathBuf> {
+pub(crate) fn here(app: &App) -> Option<std::path::PathBuf> {
     let target = app.nv.target.clone();
     if target.to_string_lossy().contains('\n') {
         return None;
@@ -145,7 +155,21 @@ fn label(app: &App, r: &Row) -> String {
                 (true, true) => "-",
                 (false, true) => "+",
             };
-            format!("{arrow} {}", sanitize(name))
+            // workspace.favorite-mark: お気に入りのワークスペースの見出しに印。
+            let star = match (app.is_favorite_name(name), plain) {
+                (false, _) => "",
+                (true, false) => " ★",
+                (true, true) => " *",
+            };
+            format!("{arrow} {}{star}", sanitize(name))
+        }
+        Row::Page { name, current } => {
+            let mark = match (*current, plain) {
+                (false, _) => "  ",
+                (true, false) => "● ",
+                (true, true) => "* ",
+            };
+            format!("{mark}{} · {}", sanitize(name), Msg::DrawerPage.text())
         }
     }
 }
@@ -195,6 +219,10 @@ impl App {
     /// WS-8: 引き出しを開く(関係マップからは表の画面に戻ってから)。並べるものが無い・端末が小さければ理由。
     pub(crate) fn open_drawer(&mut self) {
         self.leave_screens();
+        // workspace.favorite-mark: 見出しの印のために、お気に入りを読み直す(ほかの窓で変えたかもしれない)。
+        if let Some(dir) = &self.nv.dir {
+            self.favorites = mdgrid::favorites::entries(dir);
+        }
         if self.mode != Mode::Table {
             self.set_mode(Mode::Table);
         }
@@ -206,9 +234,15 @@ impl App {
         }
         d.sel = list
             .iter()
-            .position(|r| matches!(r, Row::Table { current: true, .. }))
+            .position(|r| matches!(r, Row::Page { current: true, .. }))
+            .or_else(|| {
+                list.iter()
+                    .position(|r| matches!(r, Row::Table { current: true, .. }))
+            })
             .unwrap_or(0);
         self.drawer = Some(d);
+        // stack.*: 縦に並べた表では、引き出しは選んでいる表を画面いっぱいに出して重ねる。
+        self.fit_stack_size();
         if window(self).is_none() {
             self.drawer = None;
             self.message = Some(Msg::DrawerNoRoom.text().into());
@@ -251,6 +285,11 @@ impl App {
                 return self.drawer_choose(place, ws, child);
             }
             (Action::Run, Some(Row::Head { name, open })) => toggle(&mut d, name, !open),
+            // stack.page-open: ページを選ぶと、その並べた形で開く(開いているページなら閉じるだけ)。
+            (Action::Run, Some(Row::Page { name, .. })) => {
+                self.close_drawer();
+                return self.open_page_request(name);
+            }
             (Action::Right, Some(Row::Head { name, .. })) => toggle(&mut d, name, true),
             (Action::Left, Some(Row::Head { name, .. })) => toggle(&mut d, name, false),
             // 見出しの下の表で ← → その見出しを畳み、見出しを選ぶ。
@@ -271,6 +310,13 @@ impl App {
                 toggle(&mut d, name, false);
             }
             (Action::Close | Action::WsDrawer, _) => return self.close_drawer(),
+            // workspace.favorite-mark: 見出しのワークスペースをお気に入りに入れる・外す(見出しでないところでは案内)。
+            (Action::WsFavorite, Some(Row::Head { name, .. })) => {
+                self.toggle_favorite(&name, &name);
+            }
+            (Action::WsFavorite, _) => {
+                self.message = Some(Msg::WsFavoriteHeadOnly.text().into());
+            }
             _ => {}
         }
         self.drawer = Some(d);

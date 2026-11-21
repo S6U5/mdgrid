@@ -168,6 +168,14 @@ pub struct App {
     pub(crate) same_mark: Option<(String, String)>,
     /// NV-30: 問題(CV-9)のある行だけに絞る。
     pub(crate) only_problems: bool,
+    /// 名前の条件と式の絞り込み(condition・navigation.expr-filter。conds.rs)。
+    pub(crate) cond: super::conds::CondState,
+    /// 通知の欄(notice。notices.rs)。
+    pub(crate) notice: super::notices::NoticeState,
+    /// notice.open-note: エディタで開く連絡のノート(表の行でないもの)。
+    pub(crate) editor_note: Option<std::path::PathBuf>,
+    /// ワークスペースを横断して探す(navigation.across-*。across.rs)。
+    pub(crate) across: super::across::AcrossState,
     /// 検索・簡易の絞り込みの入力(下の行)。
     pub(crate) prompt: Option<Prompt>,
     /// 一時的な並べ替え(列, 降順か)(NV-3。.base は変えない)。
@@ -258,6 +266,10 @@ pub struct App {
     pub switch_select: Option<std::path::PathBuf>,
     /// CE-25: 関係マップの「+ 新規」で表を開き直したら、名前の欄を出す。
     pub switch_new_note: bool,
+    /// notice.jump: 移った表で入れる名前の条件。
+    pub switch_cond: Option<String>,
+    /// navigation.across-open: 移った表(パス)で検索の欄に入れる語。移る先と違う表では使わない。
+    pub switch_search: Option<(std::path::PathBuf, String)>,
     /// リンクの行き先を解く表と、解いた結果(REL-1。relations.rs)。
     pub(crate) links: super::relations::Links,
     /// 関係マップ(REL-7。relmap.rs)。開いている間だけ。
@@ -282,6 +294,27 @@ pub struct App {
     pub(crate) columns_checked: bool,
     /// TR-5: URL を開く口(試験では差し替える)。
     pub(crate) opener: Box<dyn super::external::Opener>,
+    /// screen.vim-*: vim モード(設定の `[keys]` の `vim`)の状態と、写した値・直前に入れた値(vim.rs)。
+    pub(crate) vim: super::vim::Vim,
+    /// cli.session-*: 開いたセッションと、読み終えたら確かめる列(sessions.rs)。
+    pub(crate) session: super::sessions::SessionState,
+    /// workspace.switch-*: 開いている切り替えの一覧(switch.rs)。
+    pub(crate) switcher: Option<super::switch::Switcher>,
+    /// workspace.switch-origin・workspace.switch-target: この起動で見た表と、最初に開いた所(main が次の App に渡す)。
+    pub visits: super::switch::Visits,
+    /// workspace.favorite-mark: お気に入り(workspaces.toml の favorites を書いたままの文字。引き出しの印に使う)。
+    pub(crate) favorites: Vec<String>,
+    /// stack.*: 縦に並べた表(選んでいる表の App だけが持つ。stack.rs)。
+    pub(crate) stack: Option<Box<super::stack::Stack>>,
+    /// stack.*: 並べた表の1つ(並べた画面では、区画の中で描く)。
+    pub(crate) stacked: bool,
+    /// stack.add・stack.page-open: 画面を抜けて main に頼むこと(表を開いて並べる・ページを開く)。
+    pub stack_request: Option<super::stack::StackRequest>,
+    /// stack.add・stack.page-open: 範囲の表を選んで開いたときの、その表の名前(見出しとページに使う)。
+    pub place_name: Option<String>,
+    /// stack.page-store: 今の範囲のページと、その置き場(範囲がワークスペースのときだけ)。
+    pub(crate) pages: Vec<mdgrid::page::Page>,
+    pub(crate) page_home: Option<mdgrid::workspace::PageHome>,
     pub quit: bool,
 }
 
@@ -360,6 +393,10 @@ impl App {
             same: Vec::new(),
             same_mark: None,
             only_problems: false,
+            cond: Default::default(),
+            notice: Default::default(),
+            editor_note: None,
+            across: Default::default(),
             prompt: None,
             sort: None,
             hidden: Vec::new(),
@@ -406,6 +443,8 @@ impl App {
             switch_to: None,
             switch_select: None,
             switch_new_note: false,
+            switch_cond: None,
+            switch_search: None,
             links: Default::default(),
             relmap: None,
             tree_spec: None,
@@ -418,6 +457,17 @@ impl App {
             chart: None,
             columns_checked: false,
             opener: super::external::default_opener(),
+            vim: Default::default(),
+            session: Default::default(),
+            switcher: None,
+            visits: Default::default(),
+            favorites: Vec::new(),
+            stack: None,
+            stacked: false,
+            stack_request: None,
+            place_name: None,
+            pages: Vec::new(),
+            page_home: None,
             quit: false,
         };
         // CE-25: 作る場所の既定は読み込み口が開いたフォルダ(起動の設定 `start` が対象から決め直す)。
@@ -448,10 +498,33 @@ impl App {
         self.prof.scope.clear();
         let warnings = self.apply_profile();
         self.keys = keymap::BINDINGS.to_vec();
+        // screen.vim-setting: vim モードのキーは、設定で入れたときだけ表に足す(割り当て直しより先。screen.vim-remap)。
+        self.vim.on = c.vim;
+        if c.vim {
+            self.keys.extend(keymap::VIM_BINDINGS.iter().cloned());
+        }
         let mut warnings = warnings;
         warnings.extend(keymap::rebind(&mut self.keys, &c.keys));
+        warnings.extend(self.configure_conditions(c.conditions.clone()));
+        self.configure_notices(c.notices.clone());
+        // navigation.across-option: 横断の検索は設定で入れたときだけ。
+        self.across.on = c.search_across;
         self.scroll_into_view();
         warnings
+    }
+
+    /// 表を移る予約を全部捨てる(保存の確かめから戻ったとき・終了のとき。CLI-19・WS-8)。移った先で当てる
+    /// 名前の条件(notice.jump)と横断の検索の語(navigation.across-open)も捨てる。
+    pub(crate) fn drop_switch(&mut self) {
+        self.switch_to = None;
+        self.switch_select = None;
+        self.switch_new_note = false;
+        self.switch_workspace = None;
+        self.switch_leave_workspace = false;
+        self.switch_search = None;
+        self.switch_cond = None;
+        // stack.page-open・stack.add: 開こうとした表やページも開かない。
+        self.stack_request = None;
     }
 
     /// 外での変化を見る間隔(BV-9。設定 `poll_ms`)。
@@ -460,11 +533,13 @@ impl App {
     }
 
     pub fn loaded(&self) -> bool {
-        self.progress.done
+        // stack.add: 並べた表は、どれも読み終えるまで読み込みを進める。
+        self.progress.done && self.stack_loaded()
     }
 
     /// 読み込みを少し進める(BV-16)。描画のたびに呼ぶ。
     pub fn load_step(&mut self, budget: usize) {
+        self.stack_load_step(budget);
         if self.progress.done {
             return;
         }
@@ -495,6 +570,8 @@ impl App {
             self.rebuild_kanban();
             self.rebuild_chart();
             self.select_pending();
+            // notice.refresh: 今の表の行が出そろったら、通知の欄を数え直す。
+            self.notice.dirty = true;
             // BV-2: 推した根で0行なら、探した場所を一度出す(黙って空の表にしない)。
             if let Some(root) = self.guessed_root.take() {
                 if self.rows.is_empty() && self.message.is_none() {
@@ -514,6 +591,8 @@ impl App {
         if std::mem::take(&mut self.new_note_after_load) {
             self.start_new_note();
         }
+        // cli.session-content-columns-first: セッションの列のうち今の表に無いものを知らせる(列が出そろってから)。
+        self.check_session_columns();
     }
 
     /// ノート(パス)の行を選ぶ。見えない・無いなら何もしないで偽(CLI-15・REL-4)。
@@ -538,11 +617,23 @@ impl App {
     /// 外での変化を見る(BV-9)。ためた変更のある行には印を付け(WB-16)、選んだ行は保つ(BV-10)。
     /// 編集中は見ない(列や行が消えて入力ボックスが別のセルに移らないように)。入力を閉じたあとの poll で当てる。
     pub fn poll(&mut self) {
+        // stack.shared-pending: 並べたほかの表の外の変化も、1つのためた変更に印を付ける。
+        self.stack_poll();
         if matches!(self.mode, Mode::Edit | Mode::ListPick) {
             return;
         }
+        // notice.refresh: 日付が変わったら、今日を進めて組み直し、通知の欄を数え直す。
+        let (today, now) = mdgrid::clock::today_now(|k| std::env::var(k).ok());
+        if today != self.today {
+            self.today = today;
+            self.now = now;
+            self.refresh();
+            self.notice_refresh();
+        }
         let changed = self.src.changed();
         if !changed.is_empty() {
+            // notice.refresh: 外の変更を読んだら数え直す。
+            self.notice.dirty = true;
             // REL-1: 外で変わったら、リンクの行き先を解き直す。
             self.links.invalidate();
             self.changes.note_external(&changed);
@@ -566,6 +657,15 @@ impl App {
     }
 
     pub fn resize(&mut self, w: u16, h: u16) {
+        // stack.limit・stack.resize: 並べた表は、区画ごとの大きさにする(stack.rs)。
+        if self.stack.is_some() {
+            return self.stack_resize(w, h);
+        }
+        self.resize_to(w, h);
+    }
+
+    /// 自分の画面の大きさにする(並べた表では、区画の大きさか画面いっぱい)。
+    pub(crate) fn resize_to(&mut self, w: u16, h: u16) {
         if self.size != (w, h) {
             self.size = (w, h);
             self.scroll_into_view();
@@ -633,6 +733,10 @@ impl App {
         let Some(name) = keymap::key_name(&ev) else {
             return;
         };
+        // screen.vim-*: vim モードの入力の欄(挿入・ノーマルのモード)と、表の範囲の `d`(vim.rs)。
+        if self.vim_key(&ev, &name) {
+            return;
+        }
         if self.mode.takes_text() {
             // 表にあるキーは動作に、無い文字は入力に(全角のまま入れる。SR-17 の読み替えは表のモードだけ)。
             let found = keymap::lookup(&self.keys, self.mode, &name).or_else(|| {
@@ -707,6 +811,14 @@ impl App {
                 self.close_drawer();
                 true
             }
+            // workspace.switch-open: 切り替えの一覧は、開いたキー(割り当て直したものも)でも閉じる。
+            None if self.mode == Mode::Switch
+                && keymap::lookup(&self.keys, self.screen().mode(), &name)
+                    == Some(Action::WsSwitch) =>
+            {
+                self.close_switcher();
+                true
+            }
             None => false,
         }
     }
@@ -722,7 +834,20 @@ impl App {
             self.message = Some(Msg::CsvNoteOnly.text().into());
             return;
         }
+        // workspace.switch-open・workspace.favorite-mark: どの画面の型からでも(パレットから選んだときも)、
+        // 画面を閉じずに切り替えの一覧を開く・今のワークスペースをお気に入りにする。
+        if super::screens::Screen::of_mode(self.mode).is_some() {
+            match action {
+                Action::WsSwitch => return self.open_switcher(),
+                Action::WsFavorite => return self.favorite_current(),
+                _ => {}
+            }
+        }
+        // stack.*: 縦に並べる動作(表の画面と、パレットを開いた元の画面の型から。stack.rs)。
+        let stacked =
+            super::screens::Screen::of_mode(self.mode).is_some() && self.stack_action(action);
         match self.mode {
+            _ if stacked => {}
             Mode::Help => return self.help_action(action),
             Mode::Palette => return self.palette_action(action),
             Mode::Search | Mode::Filter => self.prompt_action(action),
@@ -743,6 +868,7 @@ impl App {
             Mode::Confirm | Mode::Quit => self.review_action(action),
             Mode::Settings | Mode::SettingsText => self.settings_action(action),
             Mode::Chips => self.chips_action(action),
+            Mode::Notice => self.notice_action(action),
             Mode::ListPick => {
                 if !self.new_note_pick_action(action) {
                     self.list_pick_action(action);
@@ -760,7 +886,10 @@ impl App {
             Mode::Gantt => self.gantt_action(action),
             Mode::Kanban => self.kanban_action(action),
             Mode::Chart => self.chart_action(action),
+            Mode::Switch => self.switcher_action(action),
             Mode::Table => self.table_action(action),
+            // 入力の欄のノーマルのモードのキーは vim.rs が引いて当てる(`App::mode` にはならない)。
+            Mode::InputNormal => {}
         }
         if std::mem::take(&mut self.regrid) {
             self.refresh();
@@ -771,9 +900,10 @@ impl App {
         // 確かめる。動作の知らせのあとに警告を足すので、知らせに上書きされない。
         self.check_screen_columns();
         self.scroll_into_view();
-        // SR-12: 終わるときに見た目の状態を書く。
+        // SR-12: 終わるときに見た目の状態を書く(stack.*: 並べたほかの表も)。
         if self.quit {
             self.persist_state();
+            self.stack_persist();
         }
     }
 
@@ -886,11 +1016,7 @@ impl App {
                 }
             }
             Action::Quit => {
-                self.switch_to = None;
-                self.switch_select = None;
-                self.switch_new_note = false;
-                self.switch_workspace = None;
-                self.switch_leave_workspace = false;
+                self.drop_switch();
                 self.begin_quit();
             }
             Action::CancelLoad => {
@@ -931,6 +1057,10 @@ impl App {
             // ---- 登録した表(places.rs。CLI-18・CLI-19) ----
             Action::OpenPlace => self.start_open_places(false),
             Action::RegisterPlace => self.start_register_place(),
+            // ---- 名前を付けたセッション(sessions.rs。cli.session-screen-save) ----
+            Action::SaveSession => self.start_save_session(),
+            // ---- 最近開いた表(places.rs。cli.recent-list) ----
+            Action::OpenRecent => self.start_open_recent(),
             // ---- リレーション(relations.rs。REL-4・REL-5) ----
             Action::OpenLink => self.start_open_link(),
             Action::LinkedRows => self.start_linked_rows(),
@@ -959,6 +1089,9 @@ impl App {
             Action::RenameKey => self.start_rename_key(),
             // CE-35: 列の型を選び直す窓。
             Action::ColumnType => self.open_type_menu(),
+            // ---- vim モードの写した値を入れる・直前の値をもう一度(vim.rs。screen.vim-paste・screen.vim-repeat) ----
+            Action::Paste => self.vim_paste(),
+            Action::Repeat => self.vim_repeat(),
             Action::RenameNote => self.start_rename_note(),
             Action::DeleteNote => self.start_delete_note(),
             Action::RestoreNote => self.start_restore_note(),
@@ -969,6 +1102,23 @@ impl App {
             Action::Menu => self.open_menu(),
             // ---- 列の値の頻度表(freq.rs。NV-9) ----
             Action::Freq => self.open_freq(),
+            // condition.digit-keys: 数字のキーの条件の入れ切り。
+            Action::Cond1
+            | Action::Cond2
+            | Action::Cond3
+            | Action::Cond4
+            | Action::Cond5
+            | Action::Cond6
+            | Action::Cond7
+            | Action::Cond8
+            | Action::Cond9 => {
+                if let Some(d) = action.cond_digit() {
+                    self.toggle_digit(d);
+                }
+            }
+            Action::ExprFilter => self.open_expr_filter(),
+            Action::FocusNotice => self.focus_notice(),
+            Action::AcrossSearch => self.start_across(),
             _ => {}
         }
     }
@@ -981,8 +1131,17 @@ impl App {
     }
 
     pub(crate) fn set_mode(&mut self, mode: Mode) {
+        // screen.vim-input-modes: 入力の欄を開いたら挿入のモードから。絞り込みの窓の値の入力は、打つたびに同じ
+        // モードを当て直すので、モードが変わったときだけ。
+        if mode != self.mode || mode != Mode::FilterText {
+            self.vim.reset_input();
+        }
         self.mode = mode;
         self.prefix = None;
+        // stack.*: 並べた表で、画面いっぱいの窓との間を行き来したら大きさを合わせ直す(stack.rs)。
+        if self.stack.is_some() {
+            self.fit_stack_size();
+        }
     }
 
     /// マウスのクリック(端末の桁と行。0 始まり)。キーと同じ意図に直して `apply` に渡す。
@@ -992,6 +1151,18 @@ impl App {
     /// タブの帯はビューの切り替え(BV-13)、検索の欄は簡易の絞り込みの入力(NV-23)、
     /// 列の見出しの境界はドラッグの始まり(SR-3)。
     pub fn click(&mut self, x: u16, y: u16) {
+        // stack.focus: 並べた表では、見出しの行はその表を選ぶだけ、ほかの表の行はその表を選んでからその行を選ぶ。
+        // 選んでいる表の区画の中は、区画の中の位置で今までどおりに受ける(stack.rs)。
+        let Some(y) = self.stack_point(x, y, true) else {
+            return;
+        };
+        // notice.focus: 通知の欄の行のクリックは、欄へ移ってその項目を選ぶ(選んでいる項目なら移る)。
+        if matches!(self.mode, Mode::Table | Mode::Notice) && usize::from(y) < self.notice_rows() {
+            return self.notice_click(x, y);
+        }
+        if self.mode == Mode::Notice {
+            self.set_mode(Mode::Table);
+        }
         match self.mode {
             // CE-25: 新しいノートの入力では、カレンダーの日のクリックだけを受ける(外のクリックで作らない)。
             Mode::Edit if self.note.flow.is_some() => {
@@ -1047,6 +1218,8 @@ impl App {
             Mode::Drawer => return self.drawer_click(x, y),
             // REL-8: 画面の型のメニューの行のクリックで切り替え、外のクリックで閉じる。
             Mode::ScreenMenu => return self.screen_menu_click(x, y),
+            // workspace.switch-open: 切り替えの一覧の行のクリックで移り、外のクリックで閉じる。
+            Mode::Switch => return self.switcher_click(x, y),
             Mode::ColumnType => return self.type_menu_click(x, y),
             // NV-29: 絞り込みの窓の行のクリック、外のクリックで閉じる。
             Mode::FilterWin | Mode::FilterText => return self.filters_click(x, y),
@@ -1273,6 +1446,8 @@ impl App {
             (Mode::Drawer, false) => Action::Up,
             (Mode::ScreenMenu, true) => Action::Down,
             (Mode::ScreenMenu, false) => Action::Up,
+            (Mode::Switch, true) => Action::Down,
+            (Mode::Switch, false) => Action::Up,
             (Mode::ColumnType, true) => Action::Down,
             (Mode::ColumnType, false) => Action::Up,
             (Mode::FilterWin, true) => Action::Down,

@@ -134,18 +134,6 @@ fn col_text(app: &App, id: &str) -> String {
     }
 }
 
-/// 左の一覧に並べる区画(Tab の順。ボタンは上と下に置くので一覧には出さない)。
-const NAV: [Sec; 8] = [
-    Sec::Columns,
-    Sec::Filters,
-    Sec::Sorts,
-    Sec::Group,
-    Sec::Tree,
-    Sec::Display,
-    Sec::Views,
-    Sec::Look,
-];
-
 /// 右に中身を見せる区画(ボタンを選んでいる間は、その前の「表示」)。
 fn shown_sec(d: &Draft) -> Sec {
     if d.sec == Sec::Buttons {
@@ -173,8 +161,8 @@ fn badge(app: &App, d: &Draft, sec: Sec) -> String {
     let none = || "—".to_string();
     match sec {
         Sec::Columns => format!("{}/{}", d.cols.iter().filter(|c| c.1).count(), d.cols.len()),
-        Sec::Filters if d.s.filters.is_empty() => none(),
-        Sec::Filters => d.s.filters.len().to_string(),
+        Sec::Filters if d.s.filters.is_empty() && d.s.named.is_empty() => none(),
+        Sec::Filters => (d.s.filters.len() + d.s.named.len()).to_string(),
         Sec::Sorts if d.s.sorts.is_empty() => none(),
         Sec::Sorts => d.s.sorts.len().to_string(),
         Sec::Group => match &d.s.group {
@@ -225,23 +213,30 @@ fn pending(app: &App, d: &Draft) -> usize {
     .count()
 }
 
-/// 左の区画の一覧(1行おき)。
+/// キーが左の区画の一覧に効いているか(navigation.settings-sections-focus。選び手を開いている間は右)。
+fn nav_focus(d: &Draft) -> bool {
+    d.nav && d.pick.is_none()
+}
+
+/// 左の区画の一覧(1行おき)。区画の名前の頭に数字のキーの番号(navigation.settings-sections-digits)。
+/// 選びの印 `>` は、キーが左に効いているときだけ選んだ区画に付ける(右に効いていれば右の項目に)。
+/// SC-17: 行がノートでない表(CSV など)では親子(NV-27)の区画を出さない(番号は詰める)。
 fn nav_rows(app: &App, d: &Draft, nw: usize) -> Vec<(String, Option<Sec>, bool)> {
     let cur = shown_sec(d);
+    let focus = nav_focus(d);
     let mut out = Vec::new();
-    // SC-17: 行がノートでない表(CSV など)では親子(NV-27)の区画を出さない。
-    for sec in NAV
+    for (k, sec) in super::settings_nav::nav_secs(app.src.notes())
         .into_iter()
-        .filter(|s| app.src.notes() || *s != Sec::Tree)
+        .enumerate()
     {
         let on = sec == cur;
-        let name = sec_name(sec).to_string();
+        let name = format!("{} {}", k + 1, sec_name(sec));
         let b = badge(app, d, sec);
         let room = nw.saturating_sub(3 + width(&b) + 1);
         out.push((
             format!(
                 "{}{} {}",
-                if on { "> " } else { "  " },
+                if on && focus { "> " } else { "  " },
                 fit(&name, room, Align::Left),
                 b
             ),
@@ -273,8 +268,10 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
         return pick_rows(app, d, p, ph);
     }
     let sec = shown_sec(d);
-    let focus = d.sec == sec;
-    let sel = |i: usize| focus && d.at(sec) == i;
+    // 選んだ項目は左の一覧にいる間も覚えて流す位置に使い、印 `>` はキーが右に効くときだけ(sections-focus)。
+    let cur = d.sec == sec;
+    let focus = cur && !nav_focus(d);
+    let sel = |i: usize| cur && d.at(sec) == i;
     let mut head = vec![
         Row::head(sec_name(sec), focus),
         Row::desc(sec_desc(sec)),
@@ -309,6 +306,20 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
                 Hit::Item(Sec::Filters, n),
                 sel(n),
             ));
+            // condition.view-settings: 名前の条件(掛けない・だけ・隠す)。
+            for (k, (name, shown)) in d.conds.iter().enumerate() {
+                let state = match d.named_state(name) {
+                    None => Msg::SetNamedOff,
+                    Some(false) => Msg::SetNamedKeep,
+                    Some(true) => Msg::SetNamedHide,
+                };
+                let i = n + 1 + k;
+                v.push(Row::item(
+                    Msg::SetNamedRow.fill(&[&sanitize(shown), &state.text()]),
+                    Hit::Item(Sec::Filters, i),
+                    sel(i),
+                ));
+            }
             v
         }
         Sec::Sorts => {
@@ -579,7 +590,10 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
     };
     let at = items.iter().position(|r| r.sel).unwrap_or(0);
     let room = ph.saturating_sub(head.len());
-    head.extend(window(items, at, room));
+    head.extend(window(items, at, room).into_iter().map(|mut r| {
+        r.sel &= focus;
+        r
+    }));
     head
 }
 
@@ -743,8 +757,12 @@ pub(crate) fn text_prompt(app: &App, col: &str, kind: TextKind) -> String {
 
 fn text_line(app: &App, d: &Draft) -> Option<String> {
     let t = d.text.as_ref()?;
+    // cell-edit.date-words-preview: 日付の列の比べる値は、打った言葉の読みを値の後ろに出す。
+    let words = super::date_words::operand_preview(app, &t.col, t.kind, &t.text)
+        .map(|p| format!("  {p}"))
+        .unwrap_or_default();
     Some(format!(
-        "{}: {}",
+        "{}: {}{words}",
         text_prompt(app, &t.col, t.kind),
         sanitize(&t.text)
     ))
@@ -759,6 +777,21 @@ fn hint(app: &App, d: &Draft) -> String {
             Pick::Values { .. } => Msg::SetHintValues.fill(&[&sp, &en, &esc]),
             _ => Msg::SetHintPick.fill(&[&en, &esc]),
         };
+    }
+    if nav_focus(d) {
+        let n = super::settings_nav::nav_secs(app.src.notes()).len();
+        let n = u8::try_from(n).unwrap_or(9).min(9);
+        let digits = format!(
+            "{}-{}",
+            k(Action::GoToSection(1)),
+            k(Action::GoToSection(n))
+        );
+        return Msg::SetHintNav.fill(&[
+            &k(Action::Down),
+            &k(Action::Up),
+            &k(Action::Right),
+            &digits,
+        ]);
     }
     let (up, down, rm) = (
         k(Action::MoveItemUp),
@@ -858,8 +891,12 @@ pub(crate) fn render_settings(app: &App, w: usize, h: usize) -> Vec<Line<'static
         let left = match nav.get(k) {
             Some((t, _, on)) => {
                 let mut st = Style::default();
+                // 選んだ区画は太字。キーが左に効いていれば反転も(印 `>` と合わせて。sections-focus)。
                 if *on {
-                    st = st.add_modifier(Modifier::BOLD | Modifier::REVERSED);
+                    st = st.add_modifier(Modifier::BOLD);
+                }
+                if *on && nav_focus(d) {
+                    st = st.add_modifier(Modifier::REVERSED);
                 }
                 Span::styled(fit(t, nw, Align::Left), st)
             }
@@ -936,8 +973,7 @@ impl App {
             };
             if let Some(d) = self.draft.as_mut() {
                 d.pick = None;
-                d.sec = Sec::Buttons;
-                d.sel[Sec::Buttons as usize] = i;
+                d.select(Sec::Buttons, i);
             }
             return self.apply(Action::Run);
         }
@@ -946,12 +982,13 @@ impl App {
             return;
         }
         if x < nw {
-            // 左の一覧: その区画へ(選び手は閉じる)。
+            // 左の一覧: その区画へ(選び手は閉じる)。キーも左の一覧に効く(sections-focus)。
             if let Some((_, Some(sec), _)) = nav_rows(self, d, nw).get(y - TOP) {
                 let sec = *sec;
                 if let Some(d) = self.draft.as_mut() {
                     d.pick = None;
                     d.sec = sec;
+                    d.nav = true;
                 }
             }
             return;
@@ -969,8 +1006,7 @@ impl App {
             Hit::Item(_, _) if picking => return,
             Hit::Item(sec, i) => {
                 if let Some(d) = self.draft.as_mut() {
-                    d.sec = sec;
-                    d.sel[sec as usize] = i;
+                    d.select(sec, i);
                 }
                 // ビューの区画: タブの行は選び手(Enter)、末尾の案内の行は切り替え。
                 let views_toggle = sec == Sec::Views

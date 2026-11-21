@@ -215,9 +215,10 @@ impl App {
         }
     }
 
-    /// その型の画面を見ているか(画面の型のメニューとパレットをその型から開いている間も)。
+    /// その型の画面を見ているか(画面の型のメニュー・パレット・切り替えの一覧をその型から開いている間も)。
     pub(crate) fn on_screen(&self, s: Screen) -> bool {
         self.mode == s.mode()
-            || (matches!(self.mode, Mode::ScreenMenu | Mode::Palette) && self.screen() == s)
+            || (matches!(self.mode, Mode::ScreenMenu | Mode::Palette | Mode::Switch)
+                && self.screen() == s)
     }
 }
