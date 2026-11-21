@@ -391,39 +391,39 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 ### セッション
 
 #### 表の表示を名前を付けたセッションとして保存し、`mdgrid -s <名前>`(`--session <名前>`)で、その表示のまま起動できるべき
-`req~cli.session-save~1` P2
+`req~cli.session-save~1` P1
 - 受け入れ: フォルダを開き、絞り込み・並び・列を決めて名前 `進行中` で保存して終了 → `mdgrid -s 進行中` で同じフォルダ・同じ絞り込み・並び・列の表が開く。無い名前 `mdgrid -s 無い` → 理由1行と終了コード 2。
 
 #### セッションは、開くフォルダ(1つ以上)、`.base` のパスとビューの名前(任意)、画面で掛けた絞り込み、並び、列の並びと隠す列、読むだけで開くか(`--readonly`)を持つべき
-`req~cli.session-content-fields~1` P2
-- 受け入れ: `.base` の無いフォルダで status のセルが「進行中」の行だけに絞り(navigation.same-value)、`\` で「会議」と打って絞り(navigation.search)、`due` の昇順、`title`・`status`・`due` の3列にして保存 → 起動し直すと同じ3列・同じ並び・同じ2つの絞り込み(絞り込みは検索 navigation.search・同じ値の絞り込み navigation.same-value。次の段の式の絞り込み navigation.expr-filter は入ったら同じく。並びは一時的な並べ替え navigation.header-sort も、保存したときのものを持つ)。
+`req~cli.session-content-fields~2` P1
+- 受け入れ: `.base` の無いフォルダで status のセルが「進行中」の行だけに絞り(navigation.same-value)、`\` で「会議」と打って絞り(navigation.search)、`due` の昇順、`title`・`status`・`due` の3列にして保存 → 起動し直すと同じ3列・同じ並び・同じ2つの絞り込み(絞り込みは検索 navigation.search・同じ値の絞り込み navigation.same-value・式の絞り込み navigation.expr-filter・数字のキーで入れた条件 condition.digit-keys(いつも隠す条件を止めたことも含む。condition.hide-toggle)。並びは一時的な並べ替え navigation.header-sort も、保存したときのものを持つ)。
 
 #### セッションで開いたときは、列の並びと隠す列を、screen.state-store の見た目の状態より先に当てるべき
-`req~cli.session-content-columns-first~1` P2
+`req~cli.session-content-columns-first~1` P1
 - 受け入れ: 見た目の状態で `due` を隠した表を、`title`・`status`・`due` の3列のセッションで開く → 3列が出る。セッションにあって今の表に無い列 → その列だけ飛ばして警告。
 
 #### セッションで開いたときは、表の行と値を、値をセッションに写さず、起動のたびに今のノートから作り直すべき
-`req~cli.session-content-fresh-values~1` P2
+`req~cli.session-content-fresh-values~1` P1
 - 受け入れ: セッション `進行中` を保存したあとノートの値を直して `mdgrid -s 進行中` → あとから直したノートの値が出る。
 
 #### セッションは、ノートのフォルダや `.base` に書かず(screen.state-separate・base-view.base-untouched・write-back.frontmatter-only と同じ理由)、設定の置き場(cli.config-file)の `sessions.toml` に名前ごとに置くべきで、人が手で書いてもよく、知らない項目は警告にとどめるべき
-`req~cli.session-store~1` P2
+`req~cli.session-store~1` P1
 - 受け入れ: 保存したあと、ノートのフォルダに新しいファイルが無く、`~/.config/mdgrid/sessions.toml` に `[sessions.進行中]` がある。手で `color = "red"` を足す → 起動して警告。
 
 #### 画面から、今の表示を名前を付けてセッションとして保存できるべき
-`req~cli.session-screen-save~1` P2
+`req~cli.session-screen-save~1` P1
 - 受け入れ: 画面で今の表示を名前 `進行中` で保存 → sessions.toml に `[sessions.進行中]` ができる。
 
 #### 画面からセッションを保存するときに同じ名前があれば、上書きしてよいか確かめるべき
-`req~cli.session-screen-overwrite~1` P2
+`req~cli.session-screen-overwrite~1` P1
 - 受け入れ: 同じ名前で2回保存 → 2回目に上書きの確認が出て、断ると元のまま。
 
 #### `mdgrid --sessions` は、保存したセッションの名前と開くフォルダを1行ずつ出して終わるべき
-`req~cli.session-screen-list~1` P2
+`req~cli.session-screen-list~1` P1
 - 受け入れ: `--sessions` → `進行中	~/notes/tasks` の形の行が並び、終了コード 0。セッションが1つも無い → 何も出さず終了コード 0。
 
 #### 無い名前・壊れた `sessions.toml`・セッションの開くフォルダが無いときは、cli.fail-fast と同じく理由を1行で出して終了コード 2 で終わり、どちらを開くか曖昧になる `-s` とパスの引数を一緒に渡されたときも同じにするべき
-`req~cli.session-errors~1` P2
+`req~cli.session-errors~1` P1
 - 受け入れ: `mdgrid -s 無い` → `セッション「無い」はありません(ある名前: 進行中)` の1行と終了コード 2。`mdgrid -s 進行中 ~/notes` → 理由1行と終了コード 2。
 
 #### `--print` には、`--filter <式>`(base-view.expr-eval の式。何度でも渡せ、全部を満たす行だけ)を添えてよい
@@ -534,6 +534,34 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### 登録した表の一覧の、無いパスの行は、理由を出して開かないべき
 `req~cli.places-list-missing-path~1` P1
 - 受け入れ: path のフォルダが無い行を選んで Enter → 理由が出て、その表は開かない。
+
+### 最近開いた表
+
+#### 画面で開いた表(フォルダか `.base` と、そのとき見ていたビュー)を、新しい順に 20 件まで、ノートのフォルダではなく見た目の状態の置き場(screen.state-store)に覚えるべき
+`req~cli.recent-record~1` P1
+- なぜ: 登録(cli.places)やワークスペースに入れていない表にも、あとから戻れるようにするため(2026-11-20 に人が選んだ)
+- 受け入れ: tasks を開き、projects に移り、また tasks を開く → 最近の並びは tasks・projects の順で、tasks は1件だけ。21 個目の表を開く → いちばん古い1件が消える。ノートのフォルダに新しいファイルは無い。
+- 確かめ: stest
+
+#### パレットの「最近開いた表」で、覚えた表を新しい順に(表の名前・置き場のフォルダ・最後に開いた日時を添えて)並べ、選んだ表を最後に見ていたビューで開くべき
+`req~cli.recent-list~1` P1
+- なぜ: 名前や置き場を思い出さずに、さっきまで見ていた表へ戻るため
+- 受け入れ: tasks(進行中)・projects の順に覚えている → 一覧の1行目が tasks → 選ぶ → tasks の進行中。打った字で一覧を絞れる(cli.places-list-filter と同じ)。ためた変更があれば cli.places-list-pending と同じく確かめる。
+
+#### 引数なしで起動して登録した表の一覧(cli.places-list-order)を出すときは、「今のフォルダ」の次に「最近」の分類を置き、最近開いた表を新しい順に 5 件まで並べるべき
+`req~cli.recent-in-launch-list~1` P1
+- なぜ: 起動してすぐ、昨日の続きの表を選べるようにするため
+- 受け入れ: places.toml に 仕事(タスク)、最近が projects・books → 引数なしの起動で `今のフォルダ`・`最近`・`projects`・`books`・`仕事`・`タスク` の一覧。最近が無い → 「最近」の分類を出さない。
+
+#### `mdgrid --recent` は、画面を出さずに、覚えた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の1件1行で出し、終了コード 0 で終わるべき
+`req~cli.recent-cli~1` P1
+- なぜ: シェルの道具(fzf など)で選んで `mdgrid <パス> --view <名前>` に渡せるようにするため
+- 受け入れ: `mdgrid --recent` → `/home/u/notes/tasks.base	進行中	2026-11-21 09:30` の形の行。覚えた表が無い → 何も出さず終了コード 0。標準出力がパイプでも同じ。
+
+#### 覚えた表のパスが無くなっていたら、一覧と `--recent` に出さず、覚えた並びから外すべき
+`req~cli.recent-missing~1` P1
+- なぜ: 開けない表を選ばせないため
+- 受け入れ: 覚えた projects のフォルダを消してから「最近開いた表」→ projects が無い。
 
 ## 未確定事項
 
