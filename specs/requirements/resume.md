@@ -2,7 +2,7 @@
 
 ## 目的
 
-端末の道具(Herdr・tmux など)が、止まったあとに窓を立て直すとき、mdgrid を同じ表とビューで開き直せるようにする。Herdr には、mdgrid が今の表とビューで開き直す命令をそのつど伝える。命令を受け取れない道具(tmux の復元のプラグインなど)のために、起動したフォルダごとに最後の画面を覚え、`mdgrid --continue` でそこへ戻れるようにする。
+端末の道具(Herdr・tmux など)が、止まったあとに窓を立て直すとき、mdgrid を同じ表とビューで開き直せるようにする。Herdr には、mdgrid が今の表とビューで開き直す命令をそのつど伝える。命令を受け取れない道具(tmux の復元のプラグインなど)のために、起動したフォルダごとに最後の画面を覚え、`mdgrid --continue` でそこへ戻れるようにする。Herdr のサイドバーには、窓の題として今の表とビューの名前を出す(2026-11-21 に足した)。
 
 要求を足す・変える・消すときは、PR で人がレビューして承認する(AI だけで要求を変えない)。要求の文の「しなければならない・するべき・してよい」の読み方は [README.md](README.md)。2026-11-20 に足した。
 
@@ -10,7 +10,7 @@
 
 - 採らない: 選んでいた行・画面の型(ガント・カンバンなど)・スクロールの位置を戻すこと(2026-11-20 に人が「表とビューまで」と決めた)。
 - 採らない: 保存していない変更を戻すこと(mdgrid が止まると、ためた変更も消える)。
-- 名前を付けて表示を残して開くのは、セッション(cli.session-save。次の段)。ここは名前の無い「最後の画面」だけを持つ。
+- 名前を付けて表示を残して開くのは、セッション(cli.session-save)。ここは名前の無い「最後の画面」だけを持つ。
 
 ## 要求
 
@@ -60,6 +60,24 @@
 `req~resume.herdr-skip-pick~1` P1
 - なぜ: 選んで終わる一度きりの画面を、立て直しで開き直さないため
 - 受け入れ: Herdr の窓で `--pick path` を開いて Esc で取りやめる → Herdr の道具は呼ばれない。
+
+### Herdr のサイドバーに表とビューの名前を出す
+
+#### Herdr の窓では、開き直す命令を伝えるとき(resume.herdr-report・resume.herdr-follow)に、Herdr の道具の `pane report-metadata` で、窓の題を今の表とビューの名前にするべき
+`req~resume.herdr-title~1` P1
+- なぜ: Herdr のサイドバーに並ぶ mdgrid の窓が、どれも「mdgrid」としか出ず、どの窓がどの表かを見分けられないため(2026-11-20 に人が挙げた)
+- 受け入れ: `HERDR_ENV=1`・`HERDR_PANE_ID=w1:p1` の窓で tasks.base をビュー「進行中」で開く → Herdr の道具が `pane report-metadata w1:p1 --source mdgrid --agent mdgrid --title "tasks · 進行中" --seq <数>` の引数で呼ばれる。ビューを「全部」へ移る → 題が「tasks · 全部」に替わる。`[terminal]` の `herdr = false`(resume.herdr-config-off)→ 題も伝えない。
+- 確かめ: stest
+
+#### 窓の題の表の名前は、ワークスペースの表なら表の `name`、そうでなければ `.base` のファイル名(拡張子を除く)かフォルダの名前とし、ビューのタブを出さない表(ビューが1つ)では表の名前だけにし、ページ(stack.page-open)ではページの名前にするべき
+`req~resume.herdr-title-form~1` P1
+- なぜ: サイドバーの狭い幅でも、人が付けた名前で見分けられるようにするため
+- 受け入れ: ワークスペースの表 `name = "タスク"` の notes/tasks → 題「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ページ「朝」→ 「朝」。
+
+#### 画面を終えるときは、窓を返す(resume.herdr-release)前に、`pane report-metadata` の `--clear-title` で題を消すべき
+`req~resume.herdr-title-clear~1` P1
+- なぜ: mdgrid を終えたあとの窓(シェル)に、古い表の名前が残らないようにするため
+- 受け入れ: `q` で終える → `--clear-title` の呼び出しのあとに `pane release-agent` が呼ばれる。
 
 ### 最後の画面を覚えて `--continue` で開き直す
 

@@ -206,7 +206,7 @@ fn test_bv_14_grouped_view_total_and_reason() {
 
 #[test]
 fn test_bv_14_english_names() {
-    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-names~1, req~screen.locales-two-languages~1, req~screen.locales-auto~1] 英語の画面では見出しも英語(Summary)、集計の名前も英語。
+    // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-names~1, req~screen.locales-two-languages~1, req~screen.locales-auto~2] 英語の画面では見出しも英語(Summary)、集計の名前も英語。
     let _g = scoped(Lang::En);
     let tmp = vault("bv14en");
     let app = open(&tmp, BASE, None);
