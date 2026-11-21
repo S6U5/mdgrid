@@ -63,6 +63,34 @@
         default = mdgrid;
       });
 
+      # The tools for working on mdgrid: `nix develop`, or `use flake` with direnv. Their versions come from
+      # flake.lock, so every machine and CI get the same ones, and a machine that does not work on mdgrid
+      # gets none of them. ./ci.sh runs the same checks with these tools.
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          # `pkgs.` on each: `cargo` in this file is Cargo.toml's [package], and a `with pkgs;` would not win over it.
+          packages = [
+            # Rust: build, lint, format, tests, dependency checks.
+            pkgs.cargo
+            pkgs.rustc
+            pkgs.clippy
+            pkgs.rustfmt
+            pkgs.cargo-nextest
+            pkgs.cargo-deny
+            # Python: scripts/ and the trace-gate checker (tools/trace_gate.py).
+            pkgs.python3
+            pkgs.ruff
+            # git for the tests of saving with git (write-back.git-*): on macOS, /usr/bin/git asks Xcode for the
+            # real git, which a Nix shell's SDK settings hide ("tool 'git' not found").
+            pkgs.git
+            # Shell scripts and GitHub Actions workflows.
+            pkgs.shellcheck
+            pkgs.shfmt
+            pkgs.actionlint
+          ];
+        };
+      });
+
       # `nix flake check` builds the package.
       checks = forAllSystems (pkgs: {
         inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) mdgrid;

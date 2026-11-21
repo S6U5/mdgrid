@@ -271,7 +271,7 @@ views:
 #[test]
 fn test_bv_5_parse_reads_view_fields() {
     // [utest -> req~base-view.table-keys~1] parse が type・name・order・sort・groupBy・limit を View に読む。
-    let text = r#"views:
+    let text = r"views:
   - type: table
     name: Main
     order:
@@ -286,7 +286,7 @@ fn test_bv_5_parse_reads_view_fields() {
       property: status
       direction: ASC
     limit: 2
-"#;
+";
     let b = base::parse(text).unwrap_or_else(|e| panic!("parse: {e}"));
     assert_eq!(b.views.len(), 1);
     let v = &b.views[0];
@@ -308,7 +308,7 @@ fn test_bv_5_parse_reads_view_fields() {
 fn test_bv_5_sort_multiple_keys_asc_desc() {
     // [utest -> req~base-view.table-keys~1] sort の順に並べる: priority DESC、同じなら file.name ASC。
     let dir = vault("base-bv5-sort");
-    let text = r#"views:
+    let text = r"views:
   - type: table
     name: Sorted
     order:
@@ -329,7 +329,7 @@ fn test_bv_5_sort_multiple_keys_asc_desc() {
         direction: ASC
       - property: file.name
         direction: DESC
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
 
@@ -351,7 +351,7 @@ fn test_bv_5_group_by_headings_ranges_and_order_within_group() {
     // [utest -> req~base-view.table-keys~1] groupBy: {property: status, direction: ASC} → status ごとのまとまりで並び、
     // まとまりの中は sort(priority ASC、同じなら file.name ASC)。
     let dir = vault("base-bv5-group");
-    let text = r#"views:
+    let text = r"views:
   - type: table
     name: Grouped
     order:
@@ -375,7 +375,7 @@ fn test_bv_5_group_by_headings_ranges_and_order_within_group() {
     sort:
       - property: file.name
         direction: ASC
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
 
@@ -416,7 +416,7 @@ fn test_bv_5_group_by_headings_ranges_and_order_within_group() {
 fn test_bv_5_limit_applies_after_sort() {
     // [utest -> req~base-view.table-keys~1] limit は並べ替えの後に効く。
     let dir = vault("base-bv5-limit");
-    let text = r#"views:
+    let text = r"views:
   - type: table
     name: Top
     limit: 2
@@ -427,7 +427,7 @@ fn test_bv_5_limit_applies_after_sort() {
         direction: DESC
       - property: file.name
         direction: ASC
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
     let g = build(&b, 0, src);
@@ -491,7 +491,7 @@ fn test_bv_13_three_views_change_rows_and_columns() {
 fn test_sc_8_cards_view_is_err() {
     // [utest -> req~scope.table-only~1] table 以外のビュー(cards)は開かず、理由を返す。table のビューは開ける。
     let dir = vault("base-sc8");
-    let text = r#"views:
+    let text = r"views:
   - type: cards
     name: Cards
     order:
@@ -500,7 +500,7 @@ fn test_sc_8_cards_view_is_err() {
     name: Table
     order:
       - file.name
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
     assert_eq!(b.views[0].kind, "cards");
@@ -515,7 +515,7 @@ fn test_sc_8_cards_view_is_err() {
 fn test_sc_8_list_map_kanban_views_are_err() {
     // [utest -> req~scope.table-only~1] list・map・kanban のビューも開かず、型の名前つきで未対応の理由を返す。
     let dir = vault("base-sc8-more");
-    let text = r#"views:
+    let text = r"views:
   - type: list
     name: L
   - type: map
@@ -524,7 +524,7 @@ fn test_sc_8_list_map_kanban_views_are_err() {
     name: K
   - type: table
     name: T
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
     for (i, kind) in ["list", "map", "kanban"].iter().enumerate() {
@@ -579,7 +579,7 @@ views:
 fn test_bv_7_unsupported_formula_column_is_marked() {
     // [utest -> req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 評価できない式の列: build は Ok、セルは Shown::Unsupported、notes に説明。
     let dir = vault("base-bv7-formula");
-    let text = r#"formulas:
+    let text = r"formulas:
   fixed: 'priority.toFixed(2)'
   double: 'priority * 2'
 views:
@@ -589,7 +589,7 @@ views:
       - file.name
       - formula.fixed
       - formula.double
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
     let g = build(&b, 0, src);
@@ -670,7 +670,7 @@ views:
 fn test_bv_8_unknown_keys_are_ignored() {
     // [utest -> req~base-view.unknown-keys~1] ビューと全体に独自のキーを足しても parse でき、ビューも開ける。
     let dir = vault("base-bv8");
-    let text = r#"myGlobalKey: 42
+    let text = r"myGlobalKey: 42
 summaries:
   custom: 'values.mean()'
 views:
@@ -686,7 +686,7 @@ views:
     order:
       - file.name
       - status
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
     assert_eq!(b.views.len(), 1);
@@ -762,7 +762,7 @@ views:
 fn test_cv_2_mismatched_date_sorts_last_both_directions() {
     // [utest -> req~cell-view.type-mismatch~1] date の列に `someday` が混ざる → 昇順でも降順でも末尾。
     let dir = vault("base-cv2");
-    let text = r#"views:
+    let text = r"views:
   - type: table
     name: Asc
     order:
@@ -779,7 +779,7 @@ fn test_cv_2_mismatched_date_sorts_last_both_directions() {
     sort:
       - property: due
         direction: DESC
-"#;
+";
     let (md, b, _) = open_base(&dir, text);
     let src: &dyn Source = &md;
 

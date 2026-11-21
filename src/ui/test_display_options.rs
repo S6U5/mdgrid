@@ -154,14 +154,14 @@ fn table_lines(app: &App) -> Vec<String> {
 /// 行の頭の選択の印と空白を除いたあとの数(行番号)。数で始まらなければ None。
 fn lead_number(line: &str) -> Option<usize> {
     let rest = line.trim_start_matches([' ', '>', '+']);
-    let digits: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+    let digits: String = rest.chars().take_while(char::is_ascii_digit).collect();
     if digits.is_empty() {
         return None;
     }
     // 数のあとは区切り(空白か区切り線)で、ノートの名前とくっつかない。
     let after = rest[digits.len()..].chars().next();
     assert!(
-        matches!(after, Some(' ') | Some('│') | Some('>') | Some('+')),
+        matches!(after, Some(' ' | '│' | '>' | '+')),
         "行番号のあとに区切りが無い: {line:?}"
     );
     digits.parse().ok()

@@ -476,7 +476,7 @@ fn menu_items(lines: &[String]) -> Vec<String> {
     lines
         .iter()
         .skip(1)
-        .filter(|l| !l.trim().is_empty() && !heads.iter().any(|h| has_section(&[l.to_string()], h)))
+        .filter(|l| !l.trim().is_empty() && !heads.iter().any(|h| has_section(&[(*l).clone()], h)))
         .cloned()
         .collect()
 }
@@ -503,7 +503,7 @@ fn test_nv_9_action_menu_column_section_has_item() {
     let next = [Msg::MenuSecRow.text(), Msg::MenuSecView.text()];
     let section: Vec<&String> = lines[at + 1..]
         .iter()
-        .take_while(|l| !next.iter().any(|h| has_section(&[l.to_string()], h)))
+        .take_while(|l| !next.iter().any(|h| has_section(&[(*l).clone()], h)))
         .collect();
     let pct = keymap::display("%");
     assert!(

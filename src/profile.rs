@@ -1190,7 +1190,7 @@ impl Resolved {
         }
         p.look.columns = self.cells.columns.clone();
         p.look.roles = self.colors.roles;
-        p.look.values = self.colors.values.clone();
+        p.look.values.clone_from(&self.colors.values);
         p.display = DisplayOverride::all(&self.display);
         p.dates.format = Some(self.date_format.clone());
         p.dates.week_start = Some(self.week_start);
@@ -1285,7 +1285,7 @@ pub fn resolved_toml(r: &Resolved) -> String {
             let p = join(path, k);
             match v {
                 toml::Value::Table(s) if !(path == "look" && k == "theme") => {
-                    subs.push((p, s.clone()))
+                    subs.push((p, s.clone()));
                 }
                 _ => {
                     out.push_str(&format!("# {}\n", origin(&p)));

@@ -703,9 +703,10 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
         used += 2 + cw;
         cols.push((c.clone(), cw, vals));
     }
-    let faint = super::look::look(app)
-        .map(|l| l.faint())
-        .unwrap_or_else(|| Style::default().add_modifier(Modifier::BOLD));
+    let faint = super::look::look(app).map_or_else(
+        || Style::default().add_modifier(Modifier::BOLD),
+        |l| l.faint(),
+    );
     let mut out = Vec::new();
     let mut h = format!(" {}", fit(head, nw, Align::Left));
     for (c, cw, _) in &cols {

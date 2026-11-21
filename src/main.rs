@@ -606,10 +606,10 @@ fn load_config(
     };
     let text = std::fs::read_to_string(&path)
         .map_err(|e| Msg::ConfigUnreadable.fill(&[&path.display(), &e]))?;
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_else(|| config::CONFIG_FILE.to_string());
+    let name = path.file_name().map_or_else(
+        || config::CONFIG_FILE.to_string(),
+        |n| n.to_string_lossy().into_owned(),
+    );
     config::parse_named(&text, &name).map_err(|e| format!("{}: {}", path.display(), e))
 }
 
@@ -850,9 +850,10 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
         Some(_) => bp.file_stem(),
         None => bp.file_name(),
     };
-    let name = shown
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_else(|| bp.display().to_string());
+    let name = shown.map_or_else(
+        || bp.display().to_string(),
+        |n| n.to_string_lossy().into_owned(),
+    );
     Ok(Target {
         src: Box::new(src),
         base: Some((base, name, idx)),
@@ -887,9 +888,7 @@ fn language(explicit: Option<&Path>, default: Option<PathBuf>) -> Lang {
 fn main() -> ExitCode {
     // BV-6・CE-21: 今日と今は地域の時刻。時差は糸がまだ1本のうちに決める(time はそうでないと断る)。
     print::set_local_offset(
-        time::UtcOffset::current_local_offset()
-            .map(|o| o.whole_seconds() as i64)
-            .unwrap_or(0),
+        time::UtcOffset::current_local_offset().map_or(0, |o| i64::from(o.whole_seconds())),
     );
     // SR-23: 引数の誤りは設定を読む前に出るので、まず環境から決める。
     i18n::set_default(i18n::resolve(Language::Auto, |k| std::env::var(k).ok()));
@@ -907,7 +906,7 @@ fn main() -> ExitCode {
     i18n::set_default(language(opts.config.as_deref(), config::config_path()));
     let no_args = args.is_empty();
     // CLI-1: `-w` だけで(パスなしで)開くワークスペースの最初の表には、印の `open` を使わない。
-    let use_marker = !raw && !(opts.workspace.is_some() && no_paths);
+    let use_marker = !(raw || opts.workspace.is_some() && no_paths);
     let (paths, pick) = match parse_args(&args) {
         Ok(Command::Help) => {
             println!("{}", usage());
@@ -1223,7 +1222,7 @@ fn open_app(
     }
     app.no_emoji = ui::dumb_terminal(|k| std::env::var(k).ok());
     // WS-6: -w で選んだワークスペースは範囲を決める前に渡す。
-    app.workspace_choice = opts.workspace.clone();
+    app.workspace_choice.clone_from(&opts.workspace);
     app.start(Startup {
         config,
         warnings,
@@ -1361,7 +1360,7 @@ fn slash(p: String) -> String {
 
 /// mdgrid のビュー(views.toml)の置き場。config.toml と同じフォルダ(BV-17・BV-20)。
 fn config_dir() -> Option<PathBuf> {
-    config::config_path().and_then(|p| p.parent().map(|d| d.to_path_buf()))
+    config::config_path().and_then(|p| p.parent().map(std::path::Path::to_path_buf))
 }
 
 /// ビューの行から出すもの: 表(CLI-5。形と、先頭にパスの列を足すか(CLI-14))か、問題(CLI-23)。
@@ -2063,10 +2062,10 @@ fn handle(app: &mut App, ev: Event) {
         Event::Mouse(m) => match m.kind {
             // SR-6: shift を押したホイールは、表では横のホイールと同じ(横を送らない端末とマウスのため)。
             MouseEventKind::ScrollDown if m.modifiers.contains(KeyModifiers::SHIFT) => {
-                app.shift_wheel(true)
+                app.shift_wheel(true);
             }
             MouseEventKind::ScrollUp if m.modifiers.contains(KeyModifiers::SHIFT) => {
-                app.shift_wheel(false)
+                app.shift_wheel(false);
             }
             MouseEventKind::ScrollDown => app.wheel(true),
             MouseEventKind::ScrollUp => app.wheel(false),

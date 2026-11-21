@@ -66,7 +66,9 @@ fn test_sr_21_row_extra_lines_in_print_config() {
     let table: toml::Table = text.parse().expect("TOML");
     let display = table["display"].as_table().expect("[display]");
     assert_eq!(
-        display.get("row_extra_lines").and_then(|v| v.as_integer()),
+        display
+            .get("row_extra_lines")
+            .and_then(toml::Value::as_integer),
         Some(0),
         "{text}"
     );

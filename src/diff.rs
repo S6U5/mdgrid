@@ -31,7 +31,7 @@ fn lines(b: &[u8]) -> Vec<String> {
         .map(|l| l.strip_suffix('\r').unwrap_or(l).to_string())
         .collect();
     // 末尾の改行のあとの空の1行は除く。
-    if out.last().is_some_and(|l| l.is_empty()) {
+    if out.last().is_some_and(std::string::String::is_empty) {
         out.pop();
     }
     out

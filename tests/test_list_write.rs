@@ -56,7 +56,7 @@ impl Drop for TempDir {
 // ---- 助け ----
 
 fn list(items: &[&str]) -> NewValue {
-    NewValue::List(items.iter().map(|s| s.to_string()).collect())
+    NewValue::List(items.iter().map(std::string::ToString::to_string).collect())
 }
 
 fn edit(key: &str, value: NewValue) -> Edit {

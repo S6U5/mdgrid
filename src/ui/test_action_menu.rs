@@ -157,8 +157,10 @@ pub(super) fn label_of(a: &App, action: Action) -> String {
     a.keys
         .iter()
         .find(|b| b.mode == Mode::Table && b.action == action)
-        .map(|b| b.text().to_string())
-        .unwrap_or_else(|| panic!("表のモードに {action:?} が無い"))
+        .map_or_else(
+            || panic!("表のモードに {action:?} が無い"),
+            |b| b.text().to_string(),
+        )
 }
 
 /// status のセルを選んで、`x` で一覧を開く。開く前と後の 100×50 の画面を返す。

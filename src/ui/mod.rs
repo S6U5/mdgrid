@@ -74,7 +74,7 @@ use std::num::NonZeroU16;
 use unicode_segmentation::UnicodeSegmentation;
 
 /// 画面を描く。最下行と右端の1桁は空ける(端末の自動折り返しを避ける)。
-pub fn draw(frame: &mut Frame, app: &App) {
+pub fn draw(frame: &mut Frame<'_>, app: &App) {
     let full = frame.area();
     let area = Rect {
         x: full.x,

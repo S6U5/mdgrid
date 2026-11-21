@@ -271,8 +271,7 @@ fn test_ga_2_week_today_keeps_the_month_digits() {
     assert_eq!(cell.symbol(), "0", "{low}");
     assert!(
         cell.modifier.contains(ratatui::style::Modifier::REVERSED),
-        "{:?}",
-        cell
+        "{cell:?}"
     );
     // 今日の週でない月の数は反転しない。
     let x11 = cpos(&low, "11").unwrap();

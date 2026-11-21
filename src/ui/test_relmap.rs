@@ -93,8 +93,10 @@ fn test_rel_8_screen_tabs_switch() {
         .enumerate()
         .skip(1)
         .find(|(_, l)| l.contains("関係マップ"))
-        .map(|(y, l)| (y, l.to_string()))
-        .unwrap_or_else(|| panic!("窓に関係マップ:\n{}", screen(&a)));
+        .map_or_else(
+            || panic!("窓に関係マップ:\n{}", screen(&a)),
+            |(y, l)| (y, l.to_string()),
+        );
     let x = mdgrid_width(&line[..line.find("関係マップ").unwrap()]) + 1;
     a.click(x as u16, y as u16);
     assert_eq!(a.mode, Mode::Relations, "{}", screen(&a));
@@ -112,8 +114,10 @@ fn test_rel_8_screen_tabs_switch() {
         .enumerate()
         .skip(1)
         .find(|(_, l)| l.contains("> ● 関係マップ"))
-        .map(|(y, _)| (y, ()))
-        .unwrap_or_else(|| panic!("窓の今の型(関係マップ)に印:\n{}", screen(&a)));
+        .map_or_else(
+            || panic!("窓の今の型(関係マップ)に印:\n{}", screen(&a)),
+            |(y, _)| (y, ()),
+        );
     // 表の項目は今の型(関係マップ)の上の行。
     let (y, line) = (y - 1, screen(&a).lines().nth(y - 1).unwrap().to_string());
     assert!(line.contains("  表"), "{line}");

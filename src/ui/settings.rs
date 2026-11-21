@@ -442,10 +442,10 @@ impl App {
             Action::Down => d.sel[sec as usize] = (i + 1).min(len.saturating_sub(1)),
             // ←→ は画面の同じ行のボタンの中で動く。
             Action::Left if sec == Sec::Buttons => {
-                d.sel[sec as usize] = i.saturating_sub(1).max(d.button_row(i).start)
+                d.sel[sec as usize] = i.saturating_sub(1).max(d.button_row(i).start);
             }
             Action::Right if sec == Sec::Buttons => {
-                d.sel[sec as usize] = (i + 1).min(d.button_row(i).end.saturating_sub(1))
+                d.sel[sec as usize] = (i + 1).min(d.button_row(i).end.saturating_sub(1));
             }
             Action::Run => self.settings_run(false),
             Action::Toggle => self.settings_run(true),
@@ -490,7 +490,7 @@ impl App {
                     d.pick = Some(Pick::Column {
                         purpose: Purpose::Sort,
                         sel: 0,
-                    })
+                    });
                 }
             },
             Sec::Group => match i {

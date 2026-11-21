@@ -63,7 +63,7 @@ fn test_sr_8_value_with_args_kept_whole() {
 fn test_sr_8_config_reads_editor_string() {
     // [utest -> req~screen.editor-choice~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 設定の editor = "nvim" を読み、知らない項目の警告は出ない。
     let (c, warnings) = parse("editor = \"nvim\"\n").expect("読める");
-    assert!(warnings.is_empty(), "警告: {:?}", warnings);
+    assert!(warnings.is_empty(), "警告: {warnings:?}");
     assert_eq!(c.editor.as_deref(), Some("nvim"));
     assert_eq!(
         resolve_editor(c.editor.as_deref(), Some("hx"), Some("vim")),
@@ -86,7 +86,7 @@ fn test_sr_8_config_editor_default_is_absent() {
 fn test_sr_8_config_empty_editor_no_warning_and_absent() {
     // [utest -> req~screen.editor-choice~1, req~cli.config-file-items~1] 設定の editor = "" は警告なしに読め、無いのと同じ。
     let (c, warnings) = parse("editor = \"\"\n").expect("読める");
-    assert!(warnings.is_empty(), "警告: {:?}", warnings);
+    assert!(warnings.is_empty(), "警告: {warnings:?}");
     assert_eq!(
         resolve_editor(c.editor.as_deref(), None, Some("vim")),
         "vim"
@@ -104,8 +104,7 @@ fn test_sr_8_config_editor_not_string_warns() {
         let (c, warnings) = parse(text).expect("型が違っても Ok");
         assert!(
             warnings.iter().any(|w| w.contains("editor")),
-            "{text:?} で editor の警告が無い: {:?}",
-            warnings
+            "{text:?} で editor の警告が無い: {warnings:?}"
         );
         assert_eq!(c.editor, None, "{text:?}");
         assert_eq!(
@@ -119,7 +118,7 @@ fn test_sr_8_config_editor_not_string_warns() {
 fn test_sr_8_config_editor_keeps_other_items() {
     // [utest -> req~screen.editor-reload~1, req~screen.editor-args~1, req~cli.config-file-items~1] editor を足しても、ほかの項目の読み取りは変わらない。
     let (c, warnings) = parse("editor = \"code -w\"\n\n[edit]\ncandidates = 7\n").expect("読める");
-    assert!(warnings.is_empty(), "警告: {:?}", warnings);
+    assert!(warnings.is_empty(), "警告: {warnings:?}");
     assert_eq!(c.editor.as_deref(), Some("code -w"));
     assert_eq!(c.resolved().candidates, 7);
 }

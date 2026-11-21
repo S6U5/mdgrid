@@ -289,7 +289,7 @@ pub(crate) fn input_view(app: &App, room: usize) -> Option<(String, usize)> {
     let input = app.input.as_ref()?;
     let mut before = sanitize(&input.text[..input.cursor]);
     while width(&before) + 1 > room && !before.is_empty() {
-        let first = before.graphemes(true).next().map(str::len).unwrap_or(0);
+        let first = before.graphemes(true).next().map_or(0, str::len);
         before.drain(..first);
     }
     let after = sanitize(&input.text[input.cursor..]);

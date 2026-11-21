@@ -206,13 +206,13 @@ impl<S: Source + ?Sized> Source for Box<S> {
         (**self).name()
     }
     fn set_add_frontmatter(&mut self, on: bool) {
-        (**self).set_add_frontmatter(on)
+        (**self).set_add_frontmatter(on);
     }
     fn load(&mut self, budget: usize) -> vault::Progress {
         (**self).load(budget)
     }
     fn cancel(&mut self) {
-        (**self).cancel()
+        (**self).cancel();
     }
     fn rows(&self) -> Vec<RowId> {
         (**self).rows()
@@ -279,7 +279,7 @@ impl<S: Source + ?Sized> Source for Box<S> {
         (**self).changed()
     }
     fn pause(&mut self, paused: bool) {
-        (**self).pause(paused)
+        (**self).pause(paused);
     }
     fn kind(&self, col: &str) -> ColumnKind {
         (**self).kind(col)

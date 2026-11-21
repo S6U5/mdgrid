@@ -339,7 +339,7 @@ impl App {
                 return Err(e);
             }
             match list.iter_mut().find(|v| v.name == old) {
-                Some(v) => v.name = name.clone(),
+                Some(v) => v.name.clone_from(&name),
                 None => return Err(Msg::ViewGoneRename.fill(&[&old])),
             }
             Ok(())
@@ -376,14 +376,12 @@ impl App {
         let Some(dir) = self.nv.dir.clone() else {
             return;
         };
-        let fix = |v: &mut Vec<String>| {
-            match new {
-                Some(n) => v
-                    .iter_mut()
-                    .filter(|x| *x == old)
-                    .for_each(|x| *x = n.into()),
-                None => v.retain(|x| x != old),
-            };
+        let fix = |v: &mut Vec<String>| match new {
+            Some(n) => v
+                .iter_mut()
+                .filter(|x| *x == old)
+                .for_each(|x| *x = n.into()),
+            None => v.retain(|x| x != old),
         };
         let mut p = self.nv.tabs.clone();
         fix(&mut p.order);

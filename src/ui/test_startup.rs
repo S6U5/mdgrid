@@ -53,7 +53,7 @@ const PLAIN: Opts<'static> = Opts {
 };
 
 /// main と同じ道筋(`App::new` → `start` → 読み込み)でフォルダを開く。
-fn boot_with(tmp: &Tmp, o: Opts) -> App {
+fn boot_with(tmp: &Tmp, o: Opts<'_>) -> App {
     let (config, warnings) = config::parse(o.toml).expect("読める設定");
     let src = Markdown::open(&[tmp.notes()]).unwrap();
     let mut app = App::new(Box::new(src), o.color);
@@ -126,9 +126,7 @@ fn snapshot(dir: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
 }
 
 fn state_files(tmp: &Tmp) -> usize {
-    std::fs::read_dir(state_dir(tmp))
-        .map(|d| d.flatten().count())
-        .unwrap_or(0)
+    std::fs::read_dir(state_dir(tmp)).map_or(0, |d| d.flatten().count())
 }
 
 // ---- キーの割り当て直し(SR-13・SR-16) ----

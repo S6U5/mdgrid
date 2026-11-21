@@ -59,7 +59,7 @@ fn stderr_lines(out: &Output) -> Vec<String> {
     String::from_utf8_lossy(&out.stderr)
         .lines()
         .filter(|l| !l.trim().is_empty())
-        .map(|l| l.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 
@@ -68,7 +68,7 @@ fn selected_lines(screen: &str) -> Vec<String> {
     screen
         .lines()
         .filter(|l| l.trim_start().starts_with('>'))
-        .map(|l| l.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 

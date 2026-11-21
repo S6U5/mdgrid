@@ -225,7 +225,7 @@ fn os_copy(text: &str) -> Result<(), String> {
         match pipe_bytes_to(prog, args, input.encode(text), CLIP_TIMEOUT) {
             Ok(()) => return Ok(()),
             Err(e) if e.kind() == io::ErrorKind::NotFound => {
-                errs.push(Msg::ClipNoCommand.fill(&[&prog]))
+                errs.push(Msg::ClipNoCommand.fill(&[&prog]));
             }
             Err(e) => errs.push(format!("{prog}: {e}")),
         }
@@ -443,7 +443,9 @@ pub(crate) mod sig {
     static STATE: Mutex<(usize, Vec<(c_int, usize)>)> = Mutex::new((0, Vec::new()));
 
     fn state() -> MutexGuard<'static, (usize, Vec<(c_int, usize)>)> {
-        STATE.lock().unwrap_or_else(|e| e.into_inner())
+        STATE
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     pub struct Ignore(());
@@ -488,6 +490,7 @@ pub(crate) mod sig {
         let _st = state();
         // SAFETY: 返った値(今の扱い)をすぐそのまま戻す。
         let cur = unsafe { signal(s, SIG_IGN) };
+        // SAFETY: 上で読んだ今の扱いを、そのまま戻すだけ(扱いは変わらない)。
         unsafe {
             signal(s, cur);
         }
@@ -651,16 +654,15 @@ impl App {
         }
         if status.is_ok() {
             self.data_gen += 1;
-            match self.src.reload(&row) {
-                Err(e) => msg.push_str(&Msg::EditorCannotReload.fill(&[&e])),
-                Ok(()) => {
-                    let after = self.src.stamp(&row).map(|s| s.hash);
-                    if after != before {
-                        let rows = std::slice::from_ref(&row);
-                        self.changes.note_external(rows);
-                        // WB-17: $EDITOR で、ためた値と同じ値に直したセルは外す。
-                        self.changes.drop_same(self.src.as_ref(), rows);
-                    }
+            if let Err(e) = self.src.reload(&row) {
+                msg.push_str(&Msg::EditorCannotReload.fill(&[&e]));
+            } else {
+                let after = self.src.stamp(&row).map(|s| s.hash);
+                if after != before {
+                    let rows = std::slice::from_ref(&row);
+                    self.changes.note_external(rows);
+                    // WB-17: $EDITOR で、ためた値と同じ値に直したセルは外す。
+                    self.changes.drop_same(self.src.as_ref(), rows);
                 }
             }
             self.refresh();

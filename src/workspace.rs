@@ -254,7 +254,7 @@ fn marker_source(root: &Path) -> (String, Vec<String>) {
     let mut warns = Vec::new();
     let options: Vec<String> = match own.remove("options") {
         None => Vec::new(),
-        Some(toml::Value::Array(a)) if a.iter().all(|v| v.is_str()) => a
+        Some(toml::Value::Array(a)) if a.iter().all(toml::Value::is_str) => a
             .iter()
             .filter_map(|v| v.as_str().map(str::to_string))
             .collect(),
@@ -1045,15 +1045,14 @@ fn real_or_virtual(p: &Path) -> PathBuf {
 /// 表を足す(WS-2・WS-3)。ワークスペースが無ければ作る。同じ表がもうあれば名前とビューを置き換える。
 pub fn add(dir: &Path, ws: &str, table: WsTable) -> io::Result<()> {
     let mut list = load_for_edit(dir)?;
-    let w = match list.iter().position(|w| w.name == ws) {
-        Some(i) => &mut list[i],
-        None => {
-            list.push(Workspace {
-                name: ws.to_string(),
-                ..Workspace::default()
-            });
-            list.last_mut().expect("just pushed")
-        }
+    let w = if let Some(i) = list.iter().position(|w| w.name == ws) {
+        &mut list[i]
+    } else {
+        list.push(Workspace {
+            name: ws.to_string(),
+            ..Workspace::default()
+        });
+        list.last_mut().expect("just pushed")
     };
     match w
         .tables
@@ -1062,8 +1061,8 @@ pub fn add(dir: &Path, ws: &str, table: WsTable) -> io::Result<()> {
     {
         // 手で書いた表のプロファイルは残す(名前とビューだけ置き換える)。
         Some(t) => {
-            t.name = table.name.clone();
-            t.view = table.view.clone();
+            t.name.clone_from(&table.name);
+            t.view.clone_from(&table.view);
         }
         None => w.tables.push(table.clone()),
     }
@@ -1268,10 +1267,13 @@ fn edit_profile(text: &str, ws: &str, p: &Profile) -> String {
         head.push(tables);
     }
     head.push("\n".into());
-    let mut out: Vec<String> = lines[..b.start].iter().map(|l| l.to_string()).collect();
+    let mut out: Vec<String> = lines[..b.start]
+        .iter()
+        .map(std::string::ToString::to_string)
+        .collect();
     out.extend(head);
     out.extend(keep[at..].iter().cloned());
-    out.extend(lines[b.end..].iter().map(|l| l.to_string()));
+    out.extend(lines[b.end..].iter().map(std::string::ToString::to_string));
     join(out)
 }
 
@@ -1292,7 +1294,7 @@ fn edit_add(text: &str, dir: &Path, ws: &str, t: &WsTable) -> String {
     let found = blocks(&lines, 0, n, WS_HEAD)
         .into_iter()
         .find(|b| block_name(&lines, *b).as_deref() == Some(ws));
-    let mut out: Vec<String> = lines.iter().map(|l| l.to_string()).collect();
+    let mut out: Vec<String> = lines.iter().map(std::string::ToString::to_string).collect();
     match found {
         None => {
             if !out.is_empty() {
@@ -1329,7 +1331,7 @@ fn edit_remove(text: &str, dir: &Path, ws: &str, path: Option<&Path>) -> String 
     else {
         return text.to_string();
     };
-    let mut out: Vec<String> = lines.iter().map(|l| l.to_string()).collect();
+    let mut out: Vec<String> = lines.iter().map(std::string::ToString::to_string).collect();
     match path {
         None => {
             out.drain(b.start..b.end);
@@ -1355,7 +1357,7 @@ pub fn auto_tables(root: &Path) -> Vec<WsTable> {
     };
     let mut out: Vec<WsTable> = Vec::new();
     let mut entries: Vec<_> = rd.flatten().collect();
-    entries.sort_by_key(|e| e.file_name());
+    entries.sort_by_key(std::fs::DirEntry::file_name);
     for e in entries {
         let name = e.file_name().to_string_lossy().into_owned();
         if name.starts_with('.') {
@@ -1515,18 +1517,17 @@ pub fn marker_open(root: &Path) -> (Option<WsTable>, Vec<String>) {
         }
     };
     let (ws, _) = read_marker(root);
-    match ws.tables.iter().find(|t| t.name == name) {
-        Some(t) => (Some(t.clone()), warns),
-        None => {
-            let names: Vec<&str> = ws.tables.iter().map(|t| t.name.as_str()).collect();
-            crate::profile::warn(
-                &mut warns,
-                &label,
-                "open",
-                Msg::RsnOpenUnknown.fill(&[&name, &names.join(", ")]),
-            );
-            (None, warns)
-        }
+    if let Some(t) = ws.tables.iter().find(|t| t.name == name) {
+        (Some(t.clone()), warns)
+    } else {
+        let names: Vec<&str> = ws.tables.iter().map(|t| t.name.as_str()).collect();
+        crate::profile::warn(
+            &mut warns,
+            &label,
+            "open",
+            Msg::RsnOpenUnknown.fill(&[&name, &names.join(", ")]),
+        );
+        (None, warns)
     }
 }
 

@@ -1,0 +1,7 @@
+# actionlint の設定(scripts/lint.sh が回す)。
+paths:
+  # forge-gate が作る写しで、手では直さない(forge-gate.json を直して作り直す)。わざと単引用符の中に
+  # $ を書いて、評価を後に回している所の知らせ(SC2016)だけを許す。
+  .github/workflows/trace-gate.yml:
+    ignore:
+      - 'SC2016'

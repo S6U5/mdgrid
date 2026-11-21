@@ -109,7 +109,7 @@ fn rows(app: &App, w: &FilterWin) -> (String, Vec<String>) {
         ),
         Some(Step::Kind { col, .. }) => (
             format!(" {} ", Msg::PickKindOf.fill(&[&t(col)])),
-            KINDS.iter().map(|k| k.to_string()).collect(),
+            KINDS.iter().map(std::string::ToString::to_string).collect(),
         ),
         Some(Step::Cmp { col, .. }) => (
             format!(" {} ", Msg::PickCmpOf.fill(&[&t(col)])),
@@ -131,8 +131,7 @@ fn rows(app: &App, w: &FilterWin) -> (String, Vec<String>) {
             items.extend(counts.iter().map(|(k, n)| {
                 let label = k
                     .as_deref()
-                    .map(sanitize)
-                    .unwrap_or_else(|| Msg::EmptyHeading.into());
+                    .map_or_else(|| Msg::EmptyHeading.into(), sanitize);
                 Msg::PickValueRow.fill(&[&check(checked.contains(k)), &label, n])
             }));
             (format!(" {} ", Msg::PickValuesOf.fill(&[&t(col)])), items)
@@ -225,10 +224,12 @@ fn kind_index(op: &Op) -> usize {
 fn selected(w: &FilterWin) -> usize {
     match &w.step {
         None => w.sel,
-        Some(Step::Column { sel, .. })
-        | Some(Step::Kind { sel, .. })
-        | Some(Step::Cmp { sel, .. })
-        | Some(Step::Values { sel, .. }) => *sel,
+        Some(
+            Step::Column { sel, .. }
+            | Step::Kind { sel, .. }
+            | Step::Cmp { sel, .. }
+            | Step::Values { sel, .. },
+        ) => *sel,
         Some(Step::Text { .. }) => 0,
     }
 }
@@ -236,10 +237,12 @@ fn selected(w: &FilterWin) -> usize {
 fn selected_mut(w: &mut FilterWin) -> Option<&mut usize> {
     match &mut w.step {
         None => Some(&mut w.sel),
-        Some(Step::Column { sel, .. })
-        | Some(Step::Kind { sel, .. })
-        | Some(Step::Cmp { sel, .. })
-        | Some(Step::Values { sel, .. }) => Some(sel),
+        Some(
+            Step::Column { sel, .. }
+            | Step::Kind { sel, .. }
+            | Step::Cmp { sel, .. }
+            | Step::Values { sel, .. },
+        ) => Some(sel),
         Some(Step::Text { .. }) => None,
     }
 }
@@ -271,8 +274,9 @@ fn window(app: &App) -> Option<Geom> {
     // NV-23: ビューの帯のボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
     // ボタンが描かれていなければ、ヘッダーの下に右の端にそろえて置く。
     let (bx, ay) = super::bands::button_anchor(app, super::bands::ViewButton::Filter)
-        .map(|(x, y)| (Some(x), y))
-        .unwrap_or((None, super::bands::head_y(app) as usize));
+        .map_or((None, super::bands::head_y(app) as usize), |(x, y)| {
+            (Some(x), y)
+        });
     let popup::Place { top, vis } = popup::place(ay, items.len(), limit)?;
     let sel = selected(w).min(items.len() - 1);
     Some(Geom {
@@ -407,7 +411,7 @@ impl App {
                 _ => return self.put_filter(w, col, Op::NotEmpty, edit),
             },
             (Some(Step::Cmp { col, sel, edit }), Action::Run | Action::Toggle) => {
-                let op = CMPS.get(sel).map(|c| c.0).unwrap_or(CmpOp::Eq);
+                let op = CMPS.get(sel).map_or(CmpOp::Eq, |c| c.0);
                 w.step = Some(text_step(col, TextKind::Cmp(op), edit));
             }
             (
@@ -495,7 +499,9 @@ impl App {
                             }
                             TextKind::Contains => Ok(Op::Contains(v)),
                             TextKind::NotContains => Ok(Op::NotContains(v)),
-                            TextKind::Cmp(o) => self.check_operand(&col, &v).map(|_| Op::Cmp(o, v)),
+                            TextKind::Cmp(o) => {
+                                self.check_operand(&col, &v).map(|()| Op::Cmp(o, v))
+                            }
                             _ => Err(String::new()),
                         };
                         match op {

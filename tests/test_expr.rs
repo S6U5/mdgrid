@@ -362,7 +362,7 @@ fn unsupported_with(src: &str, name: &str) {
             assert!(
                 m.contains(name),
                 "{src:?}: Unsupported({m:?}) に {name:?} が無い"
-            )
+            );
         }
         Err(ExprError::Syntax(m)) => panic!("{src:?} が Unsupported でなく Syntax({m:?})"),
         Ok(_) => panic!("{src:?} が parse できてしまった(Unsupported のはず)"),

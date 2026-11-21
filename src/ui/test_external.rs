@@ -16,7 +16,9 @@ use std::sync::{Mutex, MutexGuard};
 pub(super) static EDITOR_LOCK: Mutex<()> = Mutex::new(());
 
 pub(super) fn editor_lock() -> MutexGuard<'static, ()> {
-    EDITOR_LOCK.lock().unwrap_or_else(|e| e.into_inner())
+    EDITOR_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 #[test]

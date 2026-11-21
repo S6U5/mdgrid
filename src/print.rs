@@ -167,13 +167,14 @@ pub fn kind_in(
 fn formula_kind(col: &str, rows: &[RowId], cell: &dyn Fn(&RowId, &str) -> Shown) -> Kind {
     for row in rows {
         match cell(row, col) {
-            Shown::Computed(Val::Null) => continue,
-            Shown::Computed(Val::Str(s)) if s.is_empty() => continue,
-            Shown::Computed(Val::List(l)) if l.is_empty() => continue,
+            // 空の値と式でないセルは飛ばして、次の行を見る。
+            Shown::Computed(Val::Null) => {}
+            Shown::Computed(Val::Str(s)) if s.is_empty() => {}
+            Shown::Computed(Val::List(l)) if l.is_empty() => {}
             Shown::Computed(Val::Num(_)) => return Kind::Number,
             Shown::Computed(Val::Bool(_)) => return Kind::Checkbox,
             Shown::Computed(_) => return Kind::Text,
-            _ => continue,
+            _ => {}
         }
     }
     Kind::Text
@@ -193,7 +194,7 @@ pub fn synth(nv: &NativeView) -> Result<Base, String> {
 // ---- 表の組み立て ----
 
 /// ビューの表を組む(CLI-5)。ノートは読み終えていること。評価できない filters(BV-7)・table 以外は Err(理由)。
-pub fn table(src: &dyn Source, view: ViewDef, today: i64, now: i64) -> Result<Table, String> {
+pub fn table(src: &dyn Source, view: ViewDef<'_>, today: i64, now: i64) -> Result<Table, String> {
     let prop = |r: &RowId, k: &str| src.get(r, k).value;
     match view {
         ViewDef::Default => {
@@ -229,8 +230,7 @@ pub fn table(src: &dyn Source, view: ViewDef, today: i64, now: i64) -> Result<Ta
                         .columns
                         .iter()
                         .find(|c| c.id == id)
-                        .map(|c| c.title.clone())
-                        .unwrap_or_else(|| base::default_title(&id));
+                        .map_or_else(|| base::default_title(&id), |c| c.title.clone());
                     Column { id, title }
                 })
                 .collect();

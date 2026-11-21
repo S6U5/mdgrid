@@ -14,7 +14,7 @@ fn s(x: &str) -> Value {
 }
 
 fn strings(xs: &[&str]) -> Option<Vec<String>> {
-    Some(xs.iter().map(|x| x.to_string()).collect())
+    Some(xs.iter().map(std::string::ToString::to_string).collect())
 }
 
 fn rule(required: bool, values: &[&str]) -> Rule {

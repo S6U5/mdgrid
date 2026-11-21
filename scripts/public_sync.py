@@ -48,11 +48,15 @@ def git(*args, input=None, env=None, check=True):
         ["git", *args],
         input=input,
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
+        check=False,
     )
     if check and p.returncode != 0:
-        raise Fail("git %s: %s" % (" ".join(args), p.stderr.decode(errors="replace").strip()))
+        raise Fail(
+            "git {}: {}".format(
+                " ".join(args), p.stderr.decode(errors="replace").strip()
+            )
+        )
     return p
 
 
@@ -80,13 +84,12 @@ class Settings:
         url = git("remote", "get-url", self.remote, check=False).stdout.decode().strip()
         if not url:
             raise Fail(
-                "remote %s がありません。git remote add %s https://github.com/<owner>/<repo>.git"
-                % (self.remote, self.remote)
+                f"remote {self.remote} がありません。git remote add {self.remote} https://github.com/<owner>/<repo>.git"
             )
         self.url = url
         m = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?/?$", url)
         self.repo = m.group(1) if m else None
-        self.main = "refs/remotes/%s/main" % self.remote
+        self.main = f"refs/remotes/{self.remote}/main"
 
     def literals(self):
         return self.paths + self.words + self.forbid
@@ -118,7 +121,7 @@ def redacted_tree(commit, st):
     paths = [x.split(":", 1)[1] for x in p.stdout.decode().split("\0") if x]
     updates = []
     for path in paths:
-        blob = git("cat-file", "blob", "%s:%s" % (commit, path)).stdout
+        blob = git("cat-file", "blob", f"{commit}:{path}").stdout
         try:
             text = blob.decode("utf-8")
         except UnicodeDecodeError:
@@ -128,14 +131,19 @@ def redacted_tree(commit, st):
             continue
         sha = out("hash-object", "-w", "--stdin", input=new.encode("utf-8"))
         mode = out("ls-tree", commit, "--", path).split()[0]
-        updates.append("%s %s\t%s" % (mode, sha, path))
+        updates.append(f"{mode} {sha}\t{path}")
     if not updates:
         tree = out("rev-parse", commit + "^{tree}")
     else:
         with tempfile.TemporaryDirectory() as d:
             env = dict(os.environ, GIT_INDEX_FILE=os.path.join(d, "index"))
             git("read-tree", commit, env=env)
-            git("update-index", "--index-info", input=("\n".join(updates) + "\n").encode(), env=env)
+            git(
+                "update-index",
+                "--index-info",
+                input=("\n".join(updates) + "\n").encode(),
+                env=env,
+            )
             tree = out("write-tree", env=env)
     _tree_cache[commit] = tree
     return tree
@@ -160,10 +168,10 @@ def leaks(treeish, st):
 
 
 def fetch(st):
-    print("公開リポを取ってくる: %s" % st.remote, file=sys.stderr)
+    print(f"公開リポを取ってくる: {st.remote}", file=sys.stderr)
     git("fetch", "--quiet", "--prune", st.remote)
     if not rev(st.main):
-        raise Fail("%s がありません" % st.main)
+        raise Fail(f"{st.main} がありません")
 
 
 _pr_cache = {}
@@ -176,9 +184,9 @@ def pr_of(sha, st):
     info = None
     if st.repo:
         p = subprocess.run(
-            ["gh", "api", "repos/%s/commits/%s/pulls" % (st.repo, sha)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            ["gh", "api", f"repos/{st.repo}/commits/{sha}/pulls"],
+            capture_output=True,
+            check=False,
         )
         if p.returncode == 0:
             for pr in json.loads(p.stdout.decode() or "[]"):
@@ -195,8 +203,13 @@ def pr_of(sha, st):
 
 def imported(sha, st):
     p = git(
-        "log", st.branch, "--format=%H", "-1", "-F",
-        "--grep", "cherry picked from commit %s" % sha,
+        "log",
+        st.branch,
+        "--format=%H",
+        "-1",
+        "-F",
+        "--grep",
+        f"cherry picked from commit {sha}",
         check=False,
     )
     return bool(p.stdout.strip())
@@ -215,8 +228,10 @@ def classify(sha, st):
 def pending_github(st):
     cur = rev(REF_GITHUB)
     if not cur:
-        raise Fail("印 %s がありません。最初に init を使う(docs/public-sync.md)" % REF_GITHUB)
-    shas = out("rev-list", "--reverse", "--first-parent", "%s..%s" % (cur, st.main)).split()
+        raise Fail(
+            f"印 {REF_GITHUB} がありません。最初に init を使う(docs/public-sync.md)"
+        )
+    shas = out("rev-list", "--reverse", "--first-parent", f"{cur}..{st.main}").split()
     return shas
 
 
@@ -228,15 +243,14 @@ def advance(st):
         if kind == "pending":
             return shas[i:]
         if kind == "export":
-            ref = REF_EXPORTS + head[len(EXPORT_PREFIX):]
+            ref = REF_EXPORTS + head[len(EXPORT_PREFIX) :]
             local = rev(ref)
             if local:
                 git("update-ref", REF_LOCAL, local)
                 git("update-ref", "-d", ref)
             else:
                 print(
-                    "注意: %s は書き出しのブランチ %s から入ったが、手元に書き出しの印がない。手元の基準は動かさない"
-                    % (sha[:9], head),
+                    f"注意: {sha[:9]} は書き出しのブランチ {head} から入ったが、手元に書き出しの印がない。手元の基準は動かさない",
                     file=sys.stderr,
                 )
         git("update-ref", REF_GITHUB, sha)
@@ -246,8 +260,8 @@ def advance(st):
 def describe(sha, st):
     subject = out("log", "-1", "--format=%s", sha)
     pr = pr_of(sha, st)
-    where = "#%d %s" % (pr["number"], pr["head"]) if pr else "PR なし"
-    return "%s %s(%s)" % (sha[:9], subject, where)
+    where = f"#{pr['number']} {pr['head']}" if pr else "PR なし"
+    return f"{sha[:9]} {subject}({where})"
 
 
 # --- コマンド ------------------------------------------------------------
@@ -256,53 +270,66 @@ def describe(sha, st):
 def cmd_status(a, st):
     fetch(st)
     rest = advance(st)
-    print("== 公開リポの main で、まだ手元に取り込んでいないもの: %d" % len(rest))
+    print(f"== 公開リポの main で、まだ手元に取り込んでいないもの: {len(rest)}")
     for sha in rest:
         print("  " + describe(sha, st))
     local = rev(REF_LOCAL)
-    print("== 手元の %s で、まだ書き出していないコミット(%s..%s)" % (st.branch, local[:9], st.branch))
-    commits = out("log", "--format=%h %s", "%s..%s" % (local, st.branch)).splitlines()
+    print(
+        f"== 手元の {st.branch} で、まだ書き出していないコミット({local[:9]}..{st.branch})"
+    )
+    commits = out("log", "--format=%h %s", f"{local}..{st.branch}").splitlines()
     for line in commits[:30]:
         print("  " + line[:150])
     if len(commits) > 30:
-        print("  ほか %d" % (len(commits) - 30))
+        print(f"  ほか {len(commits) - 30}")
     if not commits:
         print("  なし")
     exports = out("for-each-ref", "--format=%(refname)", REF_EXPORTS).splitlines()
     if exports:
         print("== マージ待ちの書き出し")
         for ref in exports:
-            print("  " + EXPORT_PREFIX + ref[len(REF_EXPORTS):])
+            print("  " + EXPORT_PREFIX + ref[len(REF_EXPORTS) :])
     stat = out("diff", "--shortstat", st.main, redacted_tree(rev(st.branch), st))
     print("== 今書き出すと公開リポの main から変わるもの")
-    print("  " + stat + "(ファイルの一覧は export <名前> --dry-run)" if stat else "  なし(揃っている)")
+    print(
+        "  " + stat + "(ファイルの一覧は export <名前> --dry-run)"
+        if stat
+        else "  なし(揃っている)"
+    )
     return 0
 
 
 def cmd_export(a, st):
-    name = a.name[len(EXPORT_PREFIX):] if a.name.startswith(EXPORT_PREFIX) else a.name
+    name = a.name.removeprefix(EXPORT_PREFIX)
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9._-]+)*", name):
-        raise Fail("書き出しの名前は英数字・. _ - / だけにする: %s" % name)
+        raise Fail(f"書き出しの名前は英数字・. _ - / だけにする: {name}")
     branch = EXPORT_PREFIX + name
     source = rev(a.source)
     if not source:
-        raise Fail("%s がありません" % a.source)
+        raise Fail(f"{a.source} がありません")
     fetch(st)
     rest = advance(st)
     if rest:
         raise Fail(
-            "公開リポにまだ取り込んでいない変更がある。書き出すと消えるので、先に import して %s へ入れる:\n  "
-            % st.branch
+            f"公開リポにまだ取り込んでいない変更がある。書き出すと消えるので、先に import して {st.branch} へ入れる:\n  "
             + "\n  ".join(describe(sha, st) for sha in rest)
         )
-    if git("merge-base", "--is-ancestor", st.branch, source, check=False).returncode != 0:
-        raise Fail("%s に %s の取り込みが入っていない。先に %s をマージする" % (a.source, st.branch, st.branch))
-    remote_branch = "refs/remotes/%s/%s" % (st.remote, branch)
+    if (
+        git("merge-base", "--is-ancestor", st.branch, source, check=False).returncode
+        != 0
+    ):
+        raise Fail(
+            f"{a.source} に {st.branch} の取り込みが入っていない。先に {st.branch} をマージする"
+        )
+    remote_branch = f"refs/remotes/{st.remote}/{branch}"
     ours = rev(remote_branch) or rev(st.main)
     # 書き出す木 = 伏せ字にした手元の木。取り込み済みなので、公開リポの側だけの変更は無い
     tree = redacted_tree(source, st)
     if tree == out("rev-parse", ours + "^{tree}"):
-        print("書き出すものがない(%s と同じ)" % (branch if rev(remote_branch) else "公開リポの main"))
+        print(
+            "書き出すものがない(%s と同じ)"
+            % (branch if rev(remote_branch) else "公開リポの main")
+        )
         return 0
     bad = leaks(tree, st)
     if bad:
@@ -312,14 +339,16 @@ def cmd_export(a, st):
         )
     print(out("diff", "--stat", ours, tree))
     if a.dry_run:
-        print("試しだけ。木 %s(見る: git diff %s %s)" % (tree, ours[:9], tree[:9]))
+        print(f"試しだけ。木 {tree}(見る: git diff {ours[:9]} {tree[:9]})")
         return 0
     if not a.message:
         raise Fail("-m でコミットの文を渡す")
     msg = "\n\n".join(a.message) + "\n"
     commit = out("commit-tree", tree, "-p", ours, input=msg.encode())
-    print("push: %s → %s %s" % (commit[:9], st.remote, branch))
-    p = subprocess.run(["git", "push", st.remote, "%s:refs/heads/%s" % (commit, branch)])
+    print(f"push: {commit[:9]} → {st.remote} {branch}")
+    p = subprocess.run(
+        ["git", "push", st.remote, f"{commit}:refs/heads/{branch}"], check=False
+    )
     if p.returncode != 0:
         raise Fail("push できなかった")
     git("update-ref", REF_EXPORTS + name, source)
@@ -327,17 +356,46 @@ def cmd_export(a, st):
         if not st.repo:
             raise Fail("remote の URL から GitHub のリポが分からない")
         p = subprocess.run(
-            ["gh", "pr", "list", "-R", st.repo, "--head", branch, "--state", "open", "--json", "url"],
+            [
+                "gh",
+                "pr",
+                "list",
+                "-R",
+                st.repo,
+                "--head",
+                branch,
+                "--state",
+                "open",
+                "--json",
+                "url",
+            ],
             stdout=subprocess.PIPE,
+            check=False,
         )
         found = json.loads(p.stdout.decode() or "[]")
         if found:
-            print("PR はある: %s" % found[0]["url"])
+            print("PR はある: {}".format(found[0]["url"]))
         else:
             title = a.title or a.message[0]
-            args = ["gh", "pr", "create", "-R", st.repo, "--base", "main", "--head", branch, "--title", title]
-            args += ["--body-file", a.body_file] if a.body_file else ["--body", "\n\n".join(a.message[1:])]
-            if subprocess.run(args).returncode != 0:
+            args = [
+                "gh",
+                "pr",
+                "create",
+                "-R",
+                st.repo,
+                "--base",
+                "main",
+                "--head",
+                branch,
+                "--title",
+                title,
+            ]
+            args += (
+                ["--body-file", a.body_file]
+                if a.body_file
+                else ["--body", "\n\n".join(a.message[1:])]
+            )
+            if subprocess.run(args, check=False).returncode != 0:
                 raise Fail("PR を作れなかった")
     print("マージは人が公開リポで行う。マージのあとの status で、手元の基準が進む。")
     return 0
@@ -359,7 +417,7 @@ def cmd_import(a, st):
         print("取り込む: " + describe(sha, st))
         parents = out("rev-list", "--parents", "-n1", sha).split()[1:]
         args = ["cherry-pick", "-x"] + (["-m", "1"] if len(parents) > 1 else []) + [sha]
-        p = subprocess.run(["git", *args])
+        p = subprocess.run(["git", *args], check=False)
         if p.returncode != 0:
             print(
                 "\nぶつかった。直して git cherry-pick --continue のあと、もう一度 import する。"
@@ -369,7 +427,9 @@ def cmd_import(a, st):
                 file=sys.stderr,
             )
             return 1
-    print("取り込んだ。今のブランチが %s でなければ、%s へマージしたあとで status が印を進める。" % (st.branch, st.branch))
+    print(
+        f"取り込んだ。今のブランチが {st.branch} でなければ、{st.branch} へマージしたあとで status が印を進める。"
+    )
     advance(st)
     return 0
 
@@ -380,7 +440,7 @@ def cmd_init(a, st):
         raise Fail("--local と --github にコミットを渡す")
     git("update-ref", REF_LOCAL, local)
     git("update-ref", REF_GITHUB, github)
-    print("印を置いた: local=%s github=%s" % (local[:9], github[:9]))
+    print(f"印を置いた: local={local[:9]} github={github[:9]}")
     return 0
 
 
@@ -397,7 +457,7 @@ def cmd_install_hook(a, st):
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             if "public-sync" not in f.read():
-                raise Fail("%s が別の中身で既にある。手で合わせる" % path)
+                raise Fail(f"{path} が別の中身で既にある。手で合わせる")
     with open(path, "w", encoding="utf-8") as f:
         f.write(HOOK)
     os.chmod(path, 0o755)
@@ -415,22 +475,30 @@ def cmd_pre_push(a, st):
             continue
         sha = parts[1]
         for root in roots:
-            if git("merge-base", "--is-ancestor", root, sha, check=False).returncode == 0:
+            if (
+                git("merge-base", "--is-ancestor", root, sha, check=False).returncode
+                == 0
+            ):
                 print(
-                    "public-sync: %s は手元の履歴を含むので、公開リポへ push しない。"
-                    "python3 scripts/public_sync.py export を使う(docs/public-sync.md)" % parts[0],
+                    f"public-sync: {parts[0]} は手元の履歴を含むので、公開リポへ push しない。"
+                    "python3 scripts/public_sync.py export を使う(docs/public-sync.md)",
                     file=sys.stderr,
                 )
                 return 1
         bad = leaks(sha, st)
         if bad:
-            print("public-sync: 外に出さない文字列がある:\n  " + "\n  ".join(bad[:30]), file=sys.stderr)
+            print(
+                "public-sync: 外に出さない文字列がある:\n  " + "\n  ".join(bad[:30]),
+                file=sys.stderr,
+            )
             return 1
     return 0
 
 
 def main(argv):
-    ap = argparse.ArgumentParser(description="手元のリポと公開リポのあいだの書き出しと取り込み")
+    ap = argparse.ArgumentParser(
+        description="手元のリポと公開リポのあいだの書き出しと取り込み"
+    )
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("status")
     p = sub.add_parser("import")
@@ -464,7 +532,7 @@ def main(argv):
             "pre-push": cmd_pre_push,
         }[a.cmd](a, st)
     except Fail as e:
-        print("public-sync: %s" % e, file=sys.stderr)
+        print(f"public-sync: {e}", file=sys.stderr)
         return 1
 
 

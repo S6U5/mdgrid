@@ -121,8 +121,7 @@ impl List {
     pub(crate) fn chosen(&self) -> NewValue {
         self.items
             .get(self.sel)
-            .map(|i| i.value.clone())
-            .unwrap_or(NewValue::Null)
+            .map_or(NewValue::Null, |i| i.value.clone())
     }
 }
 

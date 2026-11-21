@@ -342,7 +342,10 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
     let f = popup::frame(app);
     // SR-33: モダンな見た目では、縁はアクセントの色、選んだ日と時刻は背景の色。
     let look = super::look::look(app);
-    let bst = look.as_ref().map(|l| l.border()).unwrap_or_default();
+    let bst = look
+        .as_ref()
+        .map(super::look::Look::border)
+        .unwrap_or_default();
     let sel_st = |base: Style| match &look {
         Some(l) => l.swap_reverse(base),
         None => base,
@@ -648,7 +651,7 @@ impl App {
         i.cursor = i.text.len();
         i.touched = true;
         i.fresh = false;
-        c.seen = i.text.clone();
+        c.seen.clone_from(&i.text);
     }
 
     /// 時刻の欄の時刻を動かし、入力ボックスの文字をその日時にする(CE-30・CE-31)。
@@ -667,7 +670,7 @@ impl App {
         i.cursor = i.text.len();
         i.touched = true;
         i.fresh = false;
-        c.seen = i.text.clone();
+        c.seen.clone_from(&i.text);
     }
 
     /// 打った文字が日付として読めれば、カレンダーをその日へ動かす(CE-20)。
@@ -683,7 +686,7 @@ impl App {
         if c.seen == i.text {
             return;
         }
-        c.seen = i.text.clone();
+        c.seen.clone_from(&i.text);
         c.picked = false;
         if let Some((d, time)) = split(i.entry, &i.text, today, fmt) {
             c.sel = d;

@@ -599,12 +599,12 @@ pub fn home_dir() -> Option<PathBuf> {
 /// 環境変数を読む関数(試験では作った値を渡す)。
 pub(crate) type Env<'a> = &'a dyn Fn(&str) -> Option<std::ffi::OsString>;
 
-pub(crate) fn config_path_in(env: Env, windows: bool) -> Option<PathBuf> {
+pub(crate) fn config_path_in(env: Env<'_>, windows: bool) -> Option<PathBuf> {
     base_dir_in(env, windows, "XDG_CONFIG_HOME", ".config", "APPDATA")
         .map(|d| d.join("mdgrid").join("config.toml"))
 }
 
-pub(crate) fn state_dir_in(env: Env, windows: bool) -> Option<PathBuf> {
+pub(crate) fn state_dir_in(env: Env<'_>, windows: bool) -> Option<PathBuf> {
     base_dir_in(
         env,
         windows,
@@ -615,13 +615,19 @@ pub(crate) fn state_dir_in(env: Env, windows: bool) -> Option<PathBuf> {
     .map(|d| d.join("mdgrid"))
 }
 
-pub(crate) fn home_dir_in(env: Env, windows: bool) -> Option<PathBuf> {
+pub(crate) fn home_dir_in(env: Env<'_>, windows: bool) -> Option<PathBuf> {
     let var = |k: &str| env(k).filter(|v| !v.is_empty()).map(PathBuf::from);
     var("HOME").or_else(|| if windows { var("USERPROFILE") } else { None })
 }
 
 /// `XDG_*`(絶対パスだけ)、無ければ Windows は `win`(`APPDATA` など)、ほかは `$HOME/<home_rel>`。
-fn base_dir_in(env: Env, windows: bool, xdg: &str, home_rel: &str, win: &str) -> Option<PathBuf> {
+fn base_dir_in(
+    env: Env<'_>,
+    windows: bool,
+    xdg: &str,
+    home_rel: &str,
+    win: &str,
+) -> Option<PathBuf> {
     // XDG の仕様どおり、絶対パスでない値は無視する。
     if let Some(v) = env(xdg) {
         let p = PathBuf::from(v);
@@ -675,7 +681,7 @@ fn state_file_name(target: &str, view: &str) -> String {
     let hash = crate::source::content_hash(&bytes);
     let mut name = String::with_capacity(64 + 5);
     for b in hash {
-        name.push_str(&format!("{:02x}", b));
+        name.push_str(&format!("{b:02x}"));
     }
     name.push_str(".toml");
     name
@@ -771,7 +777,7 @@ pub fn remove_state(dir: &Path, target: &Path, view: &str) -> io::Result<()> {
 /// 前の save_state が create と rename の間で止まって残した、同じ name の一時ファイル
 /// (`.{name}.tmp.*`)を消す。pid が違うので次の起動では名前で探す。消せなくても止めない。
 pub(crate) fn remove_stale_tmps(dir: &Path, name: &str) {
-    let prefix = format!(".{}.tmp.", name);
+    let prefix = format!(".{name}.tmp.");
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
     };

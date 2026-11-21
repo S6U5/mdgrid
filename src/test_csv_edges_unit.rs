@@ -63,7 +63,7 @@ fn test_sc_16_many_edits_use_original_positions() {
         &[
             (0, 0, "長い値, 引用".into()),
             (1, 1, "Z".into()),
-            (0, 1, "".into()),
+            (0, 1, String::new()),
         ],
     )
     .unwrap();

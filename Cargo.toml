@@ -34,9 +34,56 @@ path = "src/lib.rs"
 name = "mdgrid"
 path = "src/main.rs"
 
+# lint の決まり(docs/design.md「lint と書式」)。CI は clippy を -D warnings で回すので、warn も通らない。
+[lints.rust]
+rust_2018_idioms = { level = "warn", priority = -1 }
+
 [lints.clippy]
-# 錠のある試験(tests/test_root_folder.rs)の assert_eq!(…, true) を書き換えないため(specs/_history/decidespec/_changes/2026-10-14-fmt-view-bar-cases.md)
-bool_assert_comparison = "allow"
+# 既定の組に加えて pedantic を入れ、このアプリに合わないものだけを理由つきで外す。
+pedantic = { level = "warn", priority = -1 }
+# 端末の画面の座標(u16)・幅(usize)・数(i64・f64)を行き来するので、数の型の変換はどこにでも出る。値の範囲は画面の大きさで縛られる。
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+# アプリで、外へ公開する API ではないので、戻り値を使わせる印とエラーの節の文書は付けない。
+must_use_candidate = "allow"
+return_self_not_must_use = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+# 文書とコメントは日本語で、識別子をバッククォートで囲まない書き方を許す(日本語の中で誤検知が多い)。
+doc_markdown = "allow"
+# 同じ中身の腕も、要求ごとに分けて書くと読みやすい(どの値がどの要求かが見える)。
+match_same_arms = "allow"
+# 画面の座標(x・y・w・h)や試験の見本で、1文字の名前と似た名前を使う。
+many_single_char_names = "allow"
+similar_names = "allow"
+# 長い関数・多い真偽値の項目(設定の構造体)・文のあとの項目(試験の補助)・format! のつなぎは、分けると読みにくくなる所に限って使っている。
+too_many_lines = "allow"
+struct_excessive_bools = "allow"
+items_after_statements = "allow"
+format_push_string = "allow"
+# 構造体の更新(`..Default::default()`)と同じ書き方にそろえ、型の名前を読み込まずに書けるようにする。
+default_trait_access = "allow"
+# 値が同じかは、読み取った数そのものを比べる(計算の誤差を許す比べ方はしない)。
+float_cmp = "allow"
+# 「窓の外を押した(None)」と「空の項目を押した(Some(None))」のような三つの状態を、そのまま型で持つ。
+option_option = "allow"
+# 呼び方をそろえた関数(関数の表・試験の補助)は、いつも Some や Ok でも形を変えない。
+unnecessary_wraps = "allow"
+# HashMap の hasher を総称にするほどの所は無い。map と format! を collect でつなぐ方が読みやすい。
+implicit_hasher = "allow"
+format_collect = "allow"
+# 試験は `assert!(x.is_empty())` のまま書く(勧められる `assert_eq!(x, [] as [T; 0])` は読みにくい)。clippy 1.99 から。
+assert_is_empty = "allow"
+# 関数の引数の形を変える直し(値で受け取る → 参照、&Option<T> → Option<&T>)は、呼ぶ側も変わるので別の PR にする(docs/design.md「lint と書式」)。
+needless_pass_by_value = "allow"
+ref_option = "allow"
+# 消し忘れを止める。unsafe には理由(`// SAFETY:`)を書かせる。
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
+undocumented_unsafe_blocks = "warn"
 
 # 結合の試験の実行ファイル(autotests = false)。tests/all.rs が tests/ の試験のファイルを `#[path]` で束ねる。
 [[test]]

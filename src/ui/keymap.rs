@@ -635,7 +635,7 @@ impl Binding {
 fn shown(ja: &'static str, msg: Msg) -> &'static str {
     match i18n::current() {
         Lang::Ja => ja,
-        lang => msg.get(lang),
+        lang @ Lang::En => msg.get(lang),
     }
 }
 

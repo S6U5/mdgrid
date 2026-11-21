@@ -4,10 +4,17 @@
 #   sh demos/record.sh places     選んだものだけ(名前は demos/<名前>.tape)
 set -eu
 cd "$(dirname "$0")/.."
-command -v vhs >/dev/null 2>&1 || { echo "vhs が要る(brew install vhs)" >&2; exit 1; }
+command -v vhs >/dev/null 2>&1 || {
+  echo "vhs が要る(brew install vhs)" >&2
+  exit 1
+}
 cargo build --release -q
 if [ $# -eq 0 ]; then
-  set -- $(ls demos/*.tape | sed 's|demos/||; s|\.tape$||' | grep -v '^setup$')
+  # 台本の名前(setup は共通の準備なので除く)。
+  for tape in demos/*.tape; do
+    name=$(basename "$tape" .tape)
+    [ "$name" = setup ] || set -- "$@" "$name"
+  done
 fi
 for name in "$@"; do
   echo "撮る: $name"

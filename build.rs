@@ -67,12 +67,11 @@ fn main() {
     } else {
         problems.push("locales/en.toml: the English ledger is required".to_string());
     }
-    if !problems.is_empty() {
-        panic!(
-            "\nthe message ledgers (locales/*.toml) have problems:\n  - {}\n",
-            problems.join("\n  - ")
-        );
-    }
+    assert!(
+        problems.is_empty(),
+        "\nthe message ledgers (locales/*.toml) have problems:\n  - {}\n",
+        problems.join("\n  - ")
+    );
     let base = &ledgers[0].2;
     let langs: Vec<(String, String)> = ledgers
         .iter()
@@ -246,11 +245,12 @@ fn starters(codes: &[String]) {
                     let rel = rel.to_string_lossy().into_owned();
                     println!("cargo:rerun-if-changed=starters/{name}/options/{rel}");
                     let path = p.join(&rel);
-                    let ok = rel.ends_with(".toml")
+                    let ok = std::path::Path::new(&rel)
+                        .extension()
+                        .is_some_and(|ext| ext.eq_ignore_ascii_case("toml"))
                         && !rel.contains('/')
                         && std::fs::read_to_string(&path)
-                            .ok()
-                            .is_some_and(|t| t.parse::<toml::Table>().is_ok());
+                            .is_ok_and(|t| t.parse::<toml::Table>().is_ok());
                     if !ok {
                         problems.push(format!("{label}/options/{rel}: must be a TOML file"));
                         continue;
@@ -301,12 +301,11 @@ fn starters(codes: &[String]) {
         out.push_str("        ],\n    },\n");
     }
     out.push_str("];\n");
-    if !problems.is_empty() {
-        panic!(
-            "\nthe starters (starters/*) have problems:\n  - {}\n",
-            problems.join("\n  - ")
-        );
-    }
+    assert!(
+        problems.is_empty(),
+        "\nthe starters (starters/*) have problems:\n  - {}\n",
+        problems.join("\n  - ")
+    );
     let dest = Path::new(&std::env::var("OUT_DIR").expect("OUT_DIR")).join("starters.rs");
     std::fs::write(dest, out).expect("write starters.rs");
 }

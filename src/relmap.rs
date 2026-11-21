@@ -82,21 +82,20 @@ pub fn read(tables: &[Table]) -> (Vec<TableInfo>, Vec<Link>) {
                     let Some(to) = table_of(&target, tables) else {
                         continue;
                     };
-                    let k = match links
+                    let k = if let Some(k) = links
                         .iter()
                         .position(|e| e.from == t.name && e.column == col && e.to == to.name)
                     {
-                        Some(k) => k,
-                        None => {
-                            links.push(Link {
-                                from: t.name.clone(),
-                                column: col.clone(),
-                                to: to.name.clone(),
-                                many: false,
-                                pairs: Vec::new(),
-                            });
-                            links.len() - 1
-                        }
+                        k
+                    } else {
+                        links.push(Link {
+                            from: t.name.clone(),
+                            column: col.clone(),
+                            to: to.name.clone(),
+                            many: false,
+                            pairs: Vec::new(),
+                        });
+                        links.len() - 1
                     };
                     let e = &mut links[k];
                     e.many |= many;
@@ -282,7 +281,7 @@ fn clean(s: &str) -> String {
 fn clip(s: &str, w: usize) -> String {
     let s = &clean(s);
     if sw(s) <= w {
-        return s.to_string();
+        return s.clone();
     }
     let mut out = String::new();
     let mut used = 0;
@@ -493,7 +492,7 @@ pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
                     table: Some(i),
                     link,
                 },
-            )
+            );
         };
         let frame_row = |map: &mut Map, y: usize, l: char, r: char| {
             put(map, b.x, y, l, Role::Frame, None);
@@ -662,7 +661,7 @@ enum Dir {
 }
 
 fn dir(a: (usize, usize), b: (usize, usize)) -> Option<Dir> {
-    use std::cmp::Ordering::*;
+    use std::cmp::Ordering::{Equal, Greater, Less};
     match (b.0.cmp(&a.0), b.1.cmp(&a.1)) {
         (Greater, Equal) => Some(Dir::R),
         (Less, Equal) => Some(Dir::L),
@@ -674,7 +673,7 @@ fn dir(a: (usize, usize), b: (usize, usize)) -> Option<Dir> {
 
 /// 曲がり角の文字(来た向き → 行く向き)。
 fn corner(g: &Glyphs, from: Dir, to: Dir) -> char {
-    use Dir::*;
+    use Dir::{D, L, R, U};
     match (from, to) {
         (R, D) | (U, L) => g.rd,
         (R, U) | (D, L) => g.ru,

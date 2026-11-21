@@ -92,10 +92,9 @@ fn test_sr_38_pages_manual_links_resolve() {
                 }
                 let path = t.split('#').next().unwrap();
                 let target = dir.join(path);
-                let inside = target
-                    .canonicalize()
-                    .map(|c| c.starts_with(root().join("docs").canonicalize().unwrap()))
-                    .unwrap_or(true);
+                let inside = target.canonicalize().map_or(true, |c| {
+                    c.starts_with(root().join("docs").canonicalize().unwrap())
+                });
                 if inside {
                     assert!(target.exists(), "{} の {t} が無い", p.display());
                 }

@@ -129,7 +129,7 @@ fn s(v: &str) -> NewValue {
 }
 
 fn list(v: &[&str]) -> NewValue {
-    NewValue::List(v.iter().map(|x| x.to_string()).collect())
+    NewValue::List(v.iter().map(std::string::ToString::to_string).collect())
 }
 
 fn cond(col: &str, op: Op) -> Cond {
@@ -151,7 +151,7 @@ fn settings(filters: Vec<Cond>) -> Settings {
 }
 
 fn exprs(v: &[&str]) -> Vec<String> {
-    v.iter().map(|x| x.to_string()).collect()
+    v.iter().map(std::string::ToString::to_string).collect()
 }
 
 fn kinds(v: &[(&str, Kind)]) -> HashMap<String, Kind> {
@@ -191,7 +191,7 @@ fn sv(v: &str) -> Value {
 /// 設定の文(TOML)を読み、警告が無いことを確かめて Config を返す。
 fn parse_ok(toml: &str) -> Config {
     let (c, warns) = parse(toml).expect("設定の TOML が読める");
-    assert!(warns.is_empty(), "警告は無い: {:?}", warns);
+    assert!(warns.is_empty(), "警告は無い: {warns:?}");
     c
 }
 
@@ -247,8 +247,8 @@ fn test_ce_25_outside_absolute_empty_are_refused() {
     ] {
         let r = note_path(t.path(), "", name);
         match r {
-            Err(reason) => assert!(!reason.trim().is_empty(), "理由が空でない: {:?}", name),
-            Ok(p) => panic!("{:?} は作らない(Err)はずが {:?}", name, p),
+            Err(reason) => assert!(!reason.trim().is_empty(), "理由が空でない: {name:?}"),
+            Ok(p) => panic!("{name:?} は作らない(Err)はずが {p:?}"),
         }
     }
     assert!(
@@ -273,9 +273,7 @@ fn test_ce_25_existing_name_is_refused() {
         let r = note_path(t.path(), "", name);
         assert!(
             matches!(&r, Err(reason) if !reason.trim().is_empty()),
-            "{:?} は既にあるので断る: {:?}",
-            name,
-            r
+            "{name:?} は既にあるので断る: {r:?}"
         );
     }
     assert_eq!(
@@ -389,11 +387,10 @@ fn test_ce_25_typed_cmp_eq_values_are_written_by_kind() {
         &k,
     );
     let out = text(build(&NewNote::default(), &pre, &[]).expect("作れる"));
-    assert!(out.contains("\npriority: 3\n"), "数は素で書く: {:?}", out);
+    assert!(out.contains("\npriority: 3\n"), "数は素で書く: {out:?}");
     assert!(
         out.contains("\ndue: 2026-10-05\n"),
-        "日付は囲まない: {:?}",
-        out
+        "日付は囲まない: {out:?}"
     );
 }
 
@@ -428,7 +425,7 @@ fn test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique() {
         &k,
     );
     let mut keys: Vec<&str> = pre.iter().map(|e| e.key.as_str()).collect();
-    keys.sort();
+    keys.sort_unstable();
     assert_eq!(keys, vec!["status", "tags"]);
     let out = build(&NewNote::default(), &pre, &[]).expect("作れる");
     assert_eq!(value_of(&out, "status"), Some(sv("todo")));
@@ -495,8 +492,7 @@ fn test_ce_26_filter_value_wins_over_set_value_same_column() {
     assert_eq!(
         es.iter().filter(|(k, _)| k == "status").count(),
         1,
-        "status は1回だけ: {:?}",
-        es
+        "status は1回だけ: {es:?}"
     );
     assert_eq!(value_of(&out, "status"), Some(sv("todo")));
     assert_eq!(value_of(&out, "kind"), Some(sv("memo")));
@@ -522,24 +518,20 @@ fn test_ce_26_asked_values_are_written_by_kind() {
     let out = text(build(&rule, &[], &answers).expect("作れる"));
     assert!(
         out.starts_with("---\n") && out.ends_with("---\n"),
-        "本文は空: {:?}",
-        out
+        "本文は空: {out:?}"
     );
-    assert!(out.contains("\npriority: 3\n"), "数は素: {:?}", out);
+    assert!(out.contains("\npriority: 3\n"), "数は素: {out:?}");
     assert!(
         out.contains("\ndue: 2026-10-05\n"),
-        "日付は囲まない: {:?}",
-        out
+        "日付は囲まない: {out:?}"
     );
     assert!(
         out.contains("\npeople:\n  - 佐藤\n  - 鈴木\n"),
-        "リストは縦: {:?}",
-        out
+        "リストは縦: {out:?}"
     );
     assert!(
         out.contains("\ntags:\n  - inbox\n"),
-        "設定の値も入る: {:?}",
-        out
+        "設定の値も入る: {out:?}"
     );
 }
 
@@ -651,21 +643,18 @@ fn test_ce_27_wrong_types_warn_and_do_not_stop() {
         "[new_note]\nname = [\"x\"]\n",
         "[new_note]\nset = 1\n",
     ] {
-        let (_, warns) = parse(bad).unwrap_or_else(|e| panic!("{:?} で止まらない: {}", bad, e));
+        let (_, warns) = parse(bad).unwrap_or_else(|e| panic!("{bad:?} で止まらない: {e}"));
         assert!(
             warns.iter().any(|w| w.contains("new_note")
                 || w.contains("ask")
                 || w.contains("folder")
                 || w.contains("name")
                 || w.contains("set")),
-            "{:?} は警告になる: {:?}",
-            bad,
-            warns
+            "{bad:?} は警告になる: {warns:?}"
         );
         assert!(
             !warns.iter().any(|w| w.contains("知らない項目 `new_note`")),
-            "new_note は知る項目: {:?}",
-            warns
+            "new_note は知る項目: {warns:?}"
         );
     }
 }
@@ -742,7 +731,7 @@ path = {p}
     );
     std::fs::write(conf.join("views.toml"), text).unwrap();
     let (views, warns) = load_views(&conf, &notes);
-    assert!(warns.is_empty(), "警告は無い: {:?}", warns);
+    assert!(warns.is_empty(), "警告は無い: {warns:?}");
     assert_eq!(views.len(), 2);
     assert_eq!(
         views[0].new_note,
@@ -782,7 +771,7 @@ fn test_ce_27_views_new_note_survives_save_and_load() {
     ];
     save_views(&conf, &notes, &views).expect("save_views");
     let (back, warns) = load_views(&conf, &notes);
-    assert!(warns.is_empty(), "警告は無い: {:?}", warns);
+    assert!(warns.is_empty(), "警告は無い: {warns:?}");
     assert_eq!(back, views);
 }
 

@@ -132,7 +132,7 @@ fn ids(rows: &[RowId]) -> Vec<String> {
 }
 
 fn names(v: &[&str]) -> Vec<String> {
-    v.iter().map(|s| s.to_string()).collect()
+    v.iter().map(std::string::ToString::to_string).collect()
 }
 
 /// 設定を表に当てる(渡す groups は空)。
@@ -173,16 +173,15 @@ fn grouped(rows: &[RowId], groups: &[(String, Range<usize>)]) -> Vec<(String, Ve
     let mut next = 0;
     let mut out = Vec::new();
     for (h, r) in groups {
-        assert_eq!(r.start, next, "まとまりの範囲が続いていない: {:?}", groups);
-        assert!(r.end <= rows.len(), "範囲が行の外: {:?}", groups);
+        assert_eq!(r.start, next, "まとまりの範囲が続いていない: {groups:?}");
+        assert!(r.end <= rows.len(), "範囲が行の外: {groups:?}");
         next = r.end;
         out.push((h.clone(), ids(&rows[r.clone()])));
     }
     assert_eq!(
         next,
         rows.len(),
-        "まとまりが全部の行を覆っていない: {:?}",
-        groups
+        "まとまりが全部の行を覆っていない: {groups:?}"
     );
     out
 }
@@ -312,14 +311,14 @@ fn test_nv_19_value_counts_list_per_element() {
         .collect();
     let counts = value_counts(vals.iter().map(|v| v.as_ref()));
     let m: HashMap<Option<String>, usize> = counts.iter().cloned().collect();
-    assert_eq!(m.len(), 4, "会議・仕事・私用・空: {:?}", counts);
+    assert_eq!(m.len(), 4, "会議・仕事・私用・空: {counts:?}");
     assert_eq!(m.get(&Some("会議".to_string())), Some(&2));
     assert_eq!(m.get(&Some("仕事".to_string())), Some(&2));
     assert_eq!(m.get(&Some("私用".to_string())), Some(&1));
     assert_eq!(m.get(&None), Some(&1));
     // 件数の多い順。
     for w in counts.windows(2) {
-        assert!(w[0].1 >= w[1].1, "件数の多い順でない: {:?}", counts);
+        assert!(w[0].1 >= w[1].1, "件数の多い順でない: {counts:?}");
     }
 }
 
@@ -458,7 +457,7 @@ fn test_nv_15_off_removes_groups() {
         ..Settings::default()
     };
     let (rows, groups) = run_with_groups(&s, given);
-    assert!(groups.is_empty(), "見出しが残っている: {:?}", groups);
+    assert!(groups.is_empty(), "見出しが残っている: {groups:?}");
     assert_eq!(ids(&rows), names(&["r1", "r2", "r3", "r4", "r5"]));
 }
 
@@ -472,17 +471,17 @@ fn test_nv_15_group_by_column_values() {
     };
     let (rows, groups) = run_with_groups(&s, given);
     let g = grouped(&rows, &groups);
-    assert_eq!(g.len(), 3, "本・記事・空: {:?}", g);
+    assert_eq!(g.len(), 3, "本・記事・空: {g:?}");
     let find = |name: &str| {
         g.iter()
             .position(|(h, _)| h.contains(name))
-            .unwrap_or_else(|| panic!("{} の見出しが無い: {:?}", name, g))
+            .unwrap_or_else(|| panic!("{name} の見出しが無い: {g:?}"))
     };
     let book = find("本");
     let article = find("記事");
     assert_eq!(g[book].1, names(&["r1", "r3", "r5"]));
     assert_eq!(g[article].1, names(&["r2"]));
-    assert!(book < article, "昇順で 本 が 記事 の前: {:?}", g);
+    assert!(book < article, "昇順で 本 が 記事 の前: {g:?}");
     // 残りの1つは空のまとまり。
     let empty: Vec<_> = g
         .iter()
@@ -594,8 +593,7 @@ fn test_nv_15_filter_then_group() {
     assert_eq!(all, names(&["r1", "r3", "r4"]));
     assert!(
         g.iter().all(|(h, _)| !h.contains("記事")),
-        "記事 の行は消えた: {:?}",
-        g
+        "記事 の行は消えた: {g:?}"
     );
 }
 
@@ -614,8 +612,8 @@ fn test_nv_21_hide_empty_group() {
         !ids(&rows).contains(&"r3".to_string()),
         "空の行が残っている"
     );
-    assert_eq!(g.len(), 3, "doing・done・todo: {:?}", g);
-    assert!(g.iter().all(|(h, _)| !h.contains("(空)")), "{:?}", g);
+    assert_eq!(g.len(), 3, "doing・done・todo: {g:?}");
+    assert!(g.iter().all(|(h, _)| !h.contains("(空)")), "{g:?}");
 
     // 隠さなければ空のまとまりも出る。
     let s = Settings {
@@ -624,8 +622,8 @@ fn test_nv_21_hide_empty_group() {
     };
     let (rows, groups) = run(&s);
     let g = grouped(&rows, &groups);
-    assert_eq!(g.len(), 4, "{:?}", g);
-    assert!(g.iter().any(|(_, r)| r == &names(&["r3"])), "{:?}", g);
+    assert_eq!(g.len(), 4, "{g:?}");
+    assert!(g.iter().any(|(_, r)| r == &names(&["r3"])), "{g:?}");
 }
 
 #[test]
@@ -664,16 +662,15 @@ fn test_nv_16_settings_default_and_chips() {
     };
     assert!(!s.is_default());
     let chips = s.chips();
-    assert_eq!(chips.len(), 3, "1条件 = 1項目: {:?}", chips);
+    assert_eq!(chips.len(), 3, "1条件 = 1項目: {chips:?}");
     assert!(
         chips
             .iter()
             .any(|c| c.contains("status") && c.contains("done")),
-        "{:?}",
-        chips
+        "{chips:?}"
     );
-    assert!(chips.iter().any(|c| c.contains("due")), "{:?}", chips);
-    assert!(chips.iter().any(|c| c.contains("種別")), "{:?}", chips);
+    assert!(chips.iter().any(|c| c.contains("due")), "{chips:?}");
+    assert!(chips.iter().any(|c| c.contains("種別")), "{chips:?}");
 
     // グループ分けを「しない」も1項目。
     let off = Settings {
@@ -828,13 +825,12 @@ fn test_nv_17_old_state_file_without_settings_loads() {
     save_state(&dir, &notes, "表", &st).expect("保存できる");
 
     let files = list_files(&dir);
-    assert_eq!(files.len(), 1, "状態のファイルは1つ: {:?}", files);
+    assert_eq!(files.len(), 1, "状態のファイルは1つ: {files:?}");
     let text = std::fs::read_to_string(&files[0]).unwrap();
     let mut table: toml::Table = toml::from_str(&text).expect("状態のファイルは TOML");
     assert!(
         table.contains_key("settings"),
-        "settings のキーで書く: {}",
-        text
+        "settings のキーで書く: {text}"
     );
     table.remove("settings");
     assert!(!table.contains_key("settings"));

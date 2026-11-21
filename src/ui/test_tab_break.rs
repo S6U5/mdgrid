@@ -62,7 +62,7 @@ struct Opts<'a> {
 }
 
 /// `.base`(tasks.base)の文 `base` を、幅 `w`・高さ 24 で開く。
-fn boot(name: &str, base: &str, w: u16, o: Opts) -> (Tmp, App) {
+fn boot(name: &str, base: &str, w: u16, o: Opts<'_>) -> (Tmp, App) {
     let tmp = Tmp::new(name);
     for (n, t) in NOTES {
         tmp.write(n, t);
@@ -87,7 +87,7 @@ fn boot_marker(name: &str, marker: &str, w: u16) -> (Tmp, App) {
     (tmp, a)
 }
 
-fn start(tmp: &Tmp, p: PathBuf, w: u16, o: Opts) -> App {
+fn start(tmp: &Tmp, p: PathBuf, w: u16, o: Opts<'_>) -> App {
     let (config, warns) = mdgrid::config::parse(o.toml).unwrap();
     assert!(warns.is_empty(), "{warns:?}");
     let cdir = tmp.0.join("config");

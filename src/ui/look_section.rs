@@ -39,7 +39,7 @@ impl LookPick {
     /// 一行の見せ方(「dracula · dozy-pink」)。
     pub(crate) fn summary(p: &Profile) -> String {
         let names: Vec<String> = [
-            p.look.theme.map(|t| t.label()),
+            p.look.theme.map(mdgrid::profile::ThemeSpec::label),
             p.look.preset.map(|x| x.name().to_string()),
         ]
         .into_iter()
@@ -85,7 +85,12 @@ impl App {
     /// 保存先に選べる範囲(SR-43): 全体・(範囲があれば)このワークスペース・(置き場があれば)この表・このビュー。
     pub(crate) fn look_scopes(&self) -> Vec<Place> {
         let mut v = vec![Place::Ui];
-        if self.scope.as_ref().and_then(|s| s.label()).is_some() {
+        if self
+            .scope
+            .as_ref()
+            .and_then(mdgrid::workspace::Scope::label)
+            .is_some()
+        {
             v.push(Place::Workspace);
         }
         if self.nv.dir.is_some() {
@@ -174,8 +179,14 @@ impl App {
                 .into_iter()
                 .map(|p| place_label(p).to_string())
                 .collect(),
-            1 => theme_choices().into_iter().map(|t| t.label()).collect(),
-            2 => Preset::NAMES.iter().map(|s| s.to_string()).collect(),
+            1 => theme_choices()
+                .into_iter()
+                .map(mdgrid::profile::ThemeSpec::label)
+                .collect(),
+            2 => Preset::NAMES
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect(),
             _ => NerdFont::ALL.into_iter().map(nerd_label).collect(),
         }
     }
@@ -299,9 +310,10 @@ impl App {
         match place {
             Place::Ui => Some(&mut self.prof.ui.profile.look),
             Place::Workspace | Place::TableApp => {
-                let i = match self.prof.scope.iter().position(|l| l.origin.place == place) {
-                    Some(i) => i,
-                    None => {
+                let i =
+                    if let Some(i) = self.prof.scope.iter().position(|l| l.origin.place == place) {
+                        i
+                    } else {
                         let label = match place {
                             Place::Workspace => self.scope.as_ref()?.label()?,
                             _ => format!(
@@ -325,8 +337,7 @@ impl App {
                             },
                         );
                         at
-                    }
-                };
+                    };
                 Some(&mut self.prof.scope[i].profile.look)
             }
             _ => Some(&mut self.settings.look),

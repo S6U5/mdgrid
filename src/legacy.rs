@@ -74,7 +74,7 @@ pub fn lift(mut t: toml::Table, file: &str, w: &mut Vec<String>) -> toml::Table 
         }
     }
     // 旧い `look = "modern"|"classic"` は文字列(今の `[look]` は表)。
-    if t.get("look").is_some_and(|v| v.is_str()) {
+    if t.get("look").is_some_and(toml::Value::is_str) {
         let v = t.remove("look").unwrap_or(toml::Value::Boolean(false));
         put(&mut t, "look.mode", v);
         moved(w, file, "look", "look.mode");

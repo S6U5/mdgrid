@@ -17,7 +17,7 @@ fn table(path: PathBuf) -> WsTable {
         name: "T".into(),
         path,
         view: None,
-        profile: Default::default(),
+        profile: Profile::default(),
     }
 }
 
@@ -45,7 +45,7 @@ fn test_ws_1_home_and_relative_paths() {
         let list = vec![Workspace {
             name: "W".into(),
             tables: vec![table(home.join("notes/tasks"))],
-            profile: Default::default(),
+            profile: Profile::default(),
         }];
         assert!(
             to_toml(&list).contains("path = \"~/notes/tasks\""),

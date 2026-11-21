@@ -189,7 +189,12 @@ fn snapshot(root: &Path) -> BTreeMap<String, Vec<u8>> {
 fn sample_paths(files: &BTreeMap<String, Vec<u8>>) -> Vec<&String> {
     files
         .keys()
-        .filter(|k| !k.starts_with(".mdgrid/") && k.ends_with(".md"))
+        .filter(|k| {
+            !k.starts_with(".mdgrid/")
+                && std::path::Path::new(k)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+        })
         .collect()
 }
 
@@ -197,7 +202,12 @@ fn sample_paths(files: &BTreeMap<String, Vec<u8>>) -> Vec<&String> {
 fn template_paths(files: &BTreeMap<String, Vec<u8>>) -> Vec<&String> {
     files
         .keys()
-        .filter(|k| k.starts_with(".mdgrid/templates/") && k.ends_with(".md"))
+        .filter(|k| {
+            k.starts_with(".mdgrid/templates/")
+                && std::path::Path::new(k)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+        })
         .collect()
 }
 
@@ -696,7 +706,9 @@ fn test_st_2_builtin_ledgers_read_without_warnings_print_samples_and_check_clean
             assert!(!rows.is_empty(), "{tag}: 見本の行が無い: {}", out(&o));
             assert!(
                 rows.iter()
-                    .any(|r| r.split(',').next().unwrap_or("").ends_with(".md")),
+                    .any(|r| std::path::Path::new(r.split(',').next().unwrap_or(""))
+                        .extension()
+                        .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))),
                 "{tag}: 行の先頭が見本のパスでない: {rows:?}"
             );
             let o = run_lang(h, &root, lang, &[], &["--check"]);
@@ -777,7 +789,7 @@ fn test_st_2_tasks_first_tab_keeps_notes_without_a_status() {
             .into_iter()
             .filter(|n| text.contains(n))
             .collect();
-        names.sort();
+        names.sort_unstable();
         assert_eq!(
             names,
             ["a-priority-only", "b-no-frontmatter", "c-todo"],

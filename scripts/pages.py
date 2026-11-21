@@ -31,12 +31,13 @@ import html
 import json
 import os
 import re
-import subprocess
 import shutil
+import subprocess
 import sys
-import tomllib
 import urllib.parse
 from pathlib import Path
+
+import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
 LANGS = ("ja", "en")
@@ -124,12 +125,12 @@ NAMES = {"ja": "日本語", "en": "English"}
 KEY = "mdgrid-site-lang"
 
 # 言語の切り替え(data-pick)を押したら、選んだ言語を覚える(入口の振り分けが使う)。読み書きの失敗は無視。
-REMEMBER = """
-document.addEventListener("click", function (e) {
+REMEMBER = f"""
+document.addEventListener("click", function (e) {{
   var a = e.target.closest && e.target.closest("a[data-pick]");
-  if (a) { try { localStorage.setItem("%s", a.getAttribute("data-pick")); } catch (x) {} }
-});
-""" % KEY
+  if (a) {{ try {{ localStorage.setItem("{KEY}", a.getAttribute("data-pick")); }} catch (x) {{}} }}
+}});
+"""
 
 # 画面の一覧の絞り込み。
 FIND = """
@@ -148,7 +149,10 @@ def other_lang(l: str) -> str:
 def alternates(rel: str, default: str = SITE) -> str:
     """`rel` は ja の版のサイトの中の道筋(例 "ja/gallery.html")。ja・en と x-default の hreflang。
     x-default(`default`)は言語を決めて移るページ(入口は根、画面の一覧は gallery.html)。そのページも同じ組を示す。"""
-    out = [f'<link rel="alternate" hreflang="{l}" href="{SITE}{rel.replace("ja/", l + "/", 1)}">' for l in LANGS]
+    out = [
+        f'<link rel="alternate" hreflang="{l}" href="{SITE}{rel.replace("ja/", l + "/", 1)}">'
+        for l in LANGS
+    ]
     out.append(f'<link rel="alternate" hreflang="x-default" href="{default}">')
     return "\n".join(out)
 
@@ -187,22 +191,22 @@ MODE_KEY = "mdgrid-site-theme"
 # 描く前に: JS があることの印と、覚えた明るい・暗いの選択(ちらつかせない)。
 EARLY = (
     'document.documentElement.classList.add("js");'
-    'try{var m=localStorage.getItem("%s");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-theme",m)}catch(e){}'
-) % MODE_KEY
+    f'try{{var m=localStorage.getItem("{MODE_KEY}");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-theme",m)}}catch(e){{}}'
+)
 # 明るい・暗いの切り替え(上の帯のボタン)。選択は覚える。
-MODE = """
-(function () {
+MODE = f"""
+(function () {{
   var b = document.getElementById("mode");
   if (!b) return;
-  b.addEventListener("click", function () {
+  b.addEventListener("click", function () {{
     var r = document.documentElement, now = r.getAttribute("data-theme");
     if (!now) now = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     var next = now === "dark" ? "light" : "dark";
     r.setAttribute("data-theme", next);
-    try { localStorage.setItem("%s", next); } catch (e) {}
-  });
-})();
-""" % MODE_KEY
+    try {{ localStorage.setItem("{MODE_KEY}", next); }} catch (e) {{}}
+  }});
+}})();
+"""
 
 # 名前の横の印(表の枠と、選んだセル)。タブの印(favicon)にも同じ形を使う。
 LOGO = (
@@ -211,13 +215,27 @@ LOGO = (
 )
 FAVICON = "data:image/svg+xml," + urllib.parse.quote(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1e1e1e"/>'
-    '<g transform="translate(6 6)" color="#3fc3e6">' + LOGO.replace(' aria-hidden="true"', "").replace("<svg", '<svg width="20" height="20"') + "</g></svg>"
+    '<g transform="translate(6 6)" color="#3fc3e6">'
+    + LOGO.replace(' aria-hidden="true"', "").replace(
+        "<svg", '<svg width="20" height="20"'
+    )
+    + "</g></svg>"
 )
 ICON_COPY = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>'
 ICON_MODE = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg>'
 
 
-def page(lang: str, title: str, body: str, desc: str, url: str, head: str = "", script: str = "", top: str = "", wide: bool = False) -> str:
+def page(
+    lang: str,
+    title: str,
+    body: str,
+    desc: str,
+    url: str,
+    head: str = "",
+    script: str = "",
+    top: str = "",
+    wide: bool = False,
+) -> str:
     """1枚のページ。`url` はそのページの公開の URL(canonical とカードのタグに入れる)。`top` は上の帯、
     `wide` は幅いっぱいの段を自分で持つページ(入口)。"""
     main = body if wide else f'<div class="wrap">\n{body}\n</div>'
@@ -252,12 +270,16 @@ def lang_bar(lang: str, file: str) -> str:
         if l == lang:
             items.append(f'<span class="opt on" aria-current="true">{NAMES[l]}</span>')
         else:
-            items.append(f'<a class="opt" href="../{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}">{NAMES[l]}</a>')
+            items.append(
+                f'<a class="opt" href="../{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}">{NAMES[l]}</a>'
+            )
     return f'<div class="bar"><span class="muted">{t["lang"]}</span><div class="chips">{"".join(items)}</div></div>'
 
 
 def build(out: Path, shots_dir: Path) -> None:
-    scen = tomllib.loads((ROOT / "docs/manual-scenarios.toml").read_text(encoding="utf-8"))
+    scen = tomllib.loads(
+        (ROOT / "docs/manual-scenarios.toml").read_text(encoding="utf-8")
+    )
     verify = verification()  # 値がおかしければ、作り始める前に止める
     global ANALYTICS
     ANALYTICS = analytics()
@@ -268,7 +290,15 @@ def build(out: Path, shots_dir: Path) -> None:
     # カタログは1ファイルのまま(docs/ の元は変えない)。head に正規の URL とカードのタグだけを足す。
     # ?lang= を付けた URL も catalog/ に正規化する。
     catalog = catalog.replace(
-        "</head>", social("ja", head_text(catalog, "title"), head_text(catalog, "description"), SITE + "catalog/") + "\n</head>", 1
+        "</head>",
+        social(
+            "ja",
+            head_text(catalog, "title"),
+            head_text(catalog, "description"),
+            SITE + "catalog/",
+        )
+        + "\n</head>",
+        1,
     )
     if ANALYTICS:
         catalog = catalog.replace("</head>", ANALYTICS + "\n</head>", 1)
@@ -279,15 +309,21 @@ def build(out: Path, shots_dir: Path) -> None:
         # README の動きの GIF を作るためのコマ(gif-*)は、画面の一覧に出さない。
         if sid.startswith("gif-"):
             continue
-        missing = [l for l in LANGS if not (shots_dir / l / "images" / f"{sid}.svg").exists()]
+        missing = [
+            l for l in LANGS if not (shots_dir / l / "images" / f"{sid}.svg").exists()
+        ]
         if missing:
-            raise SystemExit(f"画面が無い: {sid}({shots_dir}/{missing[0]}/images。先に tui_shot.py で撮る)")
+            raise SystemExit(
+                f"画面が無い: {sid}({shots_dir}/{missing[0]}/images。先に tui_shot.py で撮る)"
+            )
         shots.append(s)
     for l in LANGS:
         d = out / "images" / l
         d.mkdir(parents=True)
         for s in shots:
-            shutil.copy(shots_dir / l / "images" / f"{s['id']}.svg", d / f"{s['id']}.svg")
+            shutil.copy(
+                shots_dir / l / "images" / f"{s['id']}.svg", d / f"{s['id']}.svg"
+            )
         book(l, out / "manual" / l, shots_dir / l / "images")
         decorate_book(l, out / "manual" / l)
 
@@ -302,9 +338,14 @@ def build(out: Path, shots_dir: Path) -> None:
 
     for l in LANGS:
         (out / "assets" / l).mkdir(parents=True)
-        src = ROOT / ("docs/assets/ja/demo.gif" if l == "ja" else "docs/assets/demo.gif")
+        src = ROOT / (
+            "docs/assets/ja/demo.gif" if l == "ja" else "docs/assets/demo.gif"
+        )
         shutil.copy(src, out / "assets" / l / "demo.gif")
-        shutil.copy(ROOT / ("docs/assets/ja/og.png" if l == "ja" else "docs/assets/og.png"), out / "assets" / l / "og.png")
+        shutil.copy(
+            ROOT / ("docs/assets/ja/og.png" if l == "ja" else "docs/assets/og.png"),
+            out / "assets" / l / "og.png",
+        )
     for l in LANGS:
         (out / l).mkdir()
         (out / l / "index.html").write_text(landing(l, shown, shots), encoding="utf-8")
@@ -323,7 +364,9 @@ def verification() -> str:
     if not v:
         return ""
     if not re.fullmatch(r"[A-Za-z0-9_-]+", v):
-        raise SystemExit("GOOGLE_SITE_VERIFICATION は英数字・-・_ だけにする(メタタグの content の値だけを入れる)")
+        raise SystemExit(
+            "GOOGLE_SITE_VERIFICATION は英数字・-・_ だけにする(メタタグの content の値だけを入れる)"
+        )
     return f'<meta name="google-site-verification" content="{v}">'
 
 
@@ -351,7 +394,9 @@ def analytics() -> str:
     if not v:
         return ""
     if not re.fullmatch(r"G-[A-Z0-9]+", v):
-        raise SystemExit("GA_MEASUREMENT_ID は G- で始まる測定 ID(例 G-ABC123XYZ)だけにする")
+        raise SystemExit(
+            "GA_MEASUREMENT_ID は G- で始まる測定 ID(例 G-ABC123XYZ)だけにする"
+        )
     return GTAG % (HOST, v, v)
 
 
@@ -363,7 +408,11 @@ BOOK_PARTS = {"toc.html", "404.html"}
 
 def folder_form(rel: str) -> str:
     """サイトの中の道筋を公開の URL の形にする(index.html はフォルダの形。canonical・hreflang・サイトの地図で同じ)。"""
-    return rel[: -len("index.html")] if rel == "index.html" or rel.endswith("/index.html") else rel
+    return (
+        rel[: -len("index.html")]
+        if rel == "index.html" or rel.endswith("/index.html")
+        else rel
+    )
 
 
 def sitemap(out: Path) -> int:
@@ -375,7 +424,9 @@ def sitemap(out: Path) -> int:
         rel = f.relative_to(out).as_posix()
         if rel in NOT_IN_SITEMAP or f.name in BOOK_PARTS:
             continue
-        if re.search(r'<meta[^>]+name="robots"[^>]+noindex', f.read_text(encoding="utf-8")):
+        if re.search(
+            r'<meta[^>]+name="robots"[^>]+noindex', f.read_text(encoding="utf-8")
+        ):
             continue
         urls.append(SITE + folder_form(rel))
     body = "".join(f"  <url><loc>{html.escape(u)}</loc></url>\n" for u in urls)
@@ -402,18 +453,18 @@ def chooser(file: str = "", verify: str = "") -> str:
         f'<p class="muted">{html.escape(TEXT[l]["lead"])}</p></a>'
         for l in LANGS
     )
-    route = """
-(function () {
+    route = f"""
+(function () {{
   var langs = ["ja", "en"], pick = null;
-  try { var q = new URLSearchParams(location.search).get("lang"); if (langs.indexOf(q) >= 0) pick = q; } catch (e) {}
-  if (!pick) { try { var s = localStorage.getItem("%s"); if (langs.indexOf(s) >= 0) pick = s; } catch (e) {} }
-  if (!pick) {
+  try {{ var q = new URLSearchParams(location.search).get("lang"); if (langs.indexOf(q) >= 0) pick = q; }} catch (e) {{}}
+  if (!pick) {{ try {{ var s = localStorage.getItem("{KEY}"); if (langs.indexOf(s) >= 0) pick = s; }} catch (e) {{}} }}
+  if (!pick) {{
     var nav = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
-    for (var i = 0; i < nav.length && !pick; i++) { var p = String(nav[i]).slice(0, 2).toLowerCase(); if (langs.indexOf(p) >= 0) pick = p; }
-  }
-  if (pick) location.replace(pick + "/%s" + location.hash);
-})();
-""" % (KEY, file)
+    for (var i = 0; i < nav.length && !pick; i++) {{ var p = String(nav[i]).slice(0, 2).toLowerCase(); if (langs.indexOf(p) >= 0) pick = p; }}
+  }}
+  if (pick) location.replace(pick + "/{file}" + location.hash);
+}})();
+"""
     body = f"""
 <h1>mdgrid</h1>
 <p class="muted">Choose a language · 言語を選ぶ</p>
@@ -423,7 +474,7 @@ def chooser(file: str = "", verify: str = "") -> str:
     if verify:
         head = verify + "\n" + head
     # 題には探す語を入れる(根の入口は検索の結果に出る)。前の画面の一覧の URL は画面の一覧の題。
-    title = f'{TEXT["en"]["gallery"]} · mdgrid' if file else ROOT_TITLE
+    title = f"{TEXT['en']['gallery']} · mdgrid" if file else ROOT_TITLE
     desc = TEXT["en"]["gallery_desc"] if file else TEXT["en"]["lead"]
     return page("en", title, body, desc, SITE + file, head, route)
 
@@ -437,26 +488,81 @@ HOME = {
         "sub": "Markdown のノートのフォルダや CSV を、ターミナルでデータベースのように開きます。絞る、並べる、まとめる、リンクでつなぐ。直した値だけを、元のファイルに書き戻します。",
         "start": "はじめかた",
         "try_link": "1分で試す",
-        "facts": ["Linux・macOS・Windows", "端末で動く実行ファイル1つ", "MIT / Apache-2.0"],
+        "facts": [
+            "Linux・macOS・Windows",
+            "端末で動く実行ファイル1つ",
+            "MIT / Apache-2.0",
+        ],
         "bin": "リリースから実行ファイルを取る",
         "rust": "cargo で入れるなら Rust 1.90 以上",
         "releases": "リリース",
         "steps": [
-            ("Markdown のフォルダ", "ノートが行に、フロントマターのキーが列に並ぶ。", "table", "mdgrid ~/notes/Tasks"),
-            ("CSV のファイル", "1行目が列の名前になる。.tsv も同じ。", "csv-table", "mdgrid equipment.csv"),
-            ("つながった表", "ノートのリンクが表をつなぐ。R で関係マップ。", "demo-relmap", "mdgrid ~/notes/Tasks"),
+            (
+                "Markdown のフォルダ",
+                "ノートが行に、フロントマターのキーが列に並ぶ。",
+                "table",
+                "mdgrid ~/notes/Tasks",
+            ),
+            (
+                "CSV のファイル",
+                "1行目が列の名前になる。.tsv も同じ。",
+                "csv-table",
+                "mdgrid equipment.csv",
+            ),
+            (
+                "つながった表",
+                "ノートのリンクが表をつなぐ。R で関係マップ。",
+                "demo-relmap",
+                "mdgrid ~/notes/Tasks",
+            ),
         ],
         # 見出し(*_h)は人が書き直す前提の、説明だけの仮の文。
         "db_eyebrow": "データベースとして",
         "db_h": "絞る・並べる・まとめる・1枚を見る",
         "db_p": "ファイルはそのままで、表の側だけが動きます。どれもキー1つか2つで、Esc で元の表に戻ります。",
         "db": [
-            ("filter", "絞る", "打った語で絞る", "\\ を押して打つと、その語を含む行だけが残ります。列の値を選んで絞ることも、条件をビューに残すこともできます。", "quick-filter"),
-            ("sort", "並べる", "列で並べ替える", "列の上で s。もう一度押すと逆順になります。ノートのファイルの並びは変わりません。", "sort-column"),
-            ("group", "まとめる", "値ごとのまとまり", "status ごと、project ごとに行をまとめます。見出しは畳めて、件数が付きます。", "demo-group"),
-            ("views", "ビュー", "見方に名前を付けて残す", "絞り込み・並べ替え・列の組をビューにして、タブで切り替えます。.base のビューもそのまま開きます。", "base-tabs"),
-            ("freq", "値の分布", "列の値を数える", "% で、その列にどの値が何件あるか。空のままのノートが何枚あるかも分かります。", "demo-freq"),
-            ("detail", "1枚を見る", "ノート1枚を、表から出ずに読む", "K で、選んだノートの全部のプロパティと本文が1枚に出ます。Enter でそのまま直せます。", "detail"),
+            (
+                "filter",
+                "絞る",
+                "打った語で絞る",
+                "\\ を押して打つと、その語を含む行だけが残ります。列の値を選んで絞ることも、条件をビューに残すこともできます。",
+                "quick-filter",
+            ),
+            (
+                "sort",
+                "並べる",
+                "列で並べ替える",
+                "列の上で s。もう一度押すと逆順になります。ノートのファイルの並びは変わりません。",
+                "sort-column",
+            ),
+            (
+                "group",
+                "まとめる",
+                "値ごとのまとまり",
+                "status ごと、project ごとに行をまとめます。見出しは畳めて、件数が付きます。",
+                "demo-group",
+            ),
+            (
+                "views",
+                "ビュー",
+                "見方に名前を付けて残す",
+                "絞り込み・並べ替え・列の組をビューにして、タブで切り替えます。.base のビューもそのまま開きます。",
+                "base-tabs",
+            ),
+            (
+                "freq",
+                "値の分布",
+                "列の値を数える",
+                "% で、その列にどの値が何件あるか。空のままのノートが何枚あるかも分かります。",
+                "demo-freq",
+            ),
+            (
+                "detail",
+                "1枚を見る",
+                "ノート1枚を、表から出ずに読む",
+                "K で、選んだノートの全部のプロパティと本文が1枚に出ます。Enter でそのまま直せます。",
+                "detail",
+            ),
         ],
         "more": "ほかに: 型ごとの入力(カレンダー・タグ・チェックボックス)、まとめて直す、親子の字下げと WBS、型と決まりの検査、英語と日本語の画面。",
         "rel_eyebrow": "リレーション",
@@ -480,24 +586,45 @@ HOME = {
         "ai_done": "リンクを直して、タスクを done にしました。右の表で確かめてください。",
         "ai_hint": "Enter 送る · Esc 止める",
         "ai_fits": [
-            ("1秒ごとに読み直す", "mdgrid の外でノートが変わると、表に出ます。間隔は設定の poll_ms で変えられます。"),
-            ("黙って上書きしない", "こちらが直している途中のノートを外で書き換えられたら、そのノートの保存は止まり、どちらを残すかを選べます。"),
-            ("エージェント向けのスキル", "mdgrid の CLI の使い方を教えるスキルを、リポの plugins/mdgrid に置いています。"),
+            (
+                "1秒ごとに読み直す",
+                "mdgrid の外でノートが変わると、表に出ます。間隔は設定の poll_ms で変えられます。",
+            ),
+            (
+                "黙って上書きしない",
+                "こちらが直している途中のノートを外で書き換えられたら、そのノートの保存は止まり、どちらを残すかを選べます。",
+            ),
+            (
+                "エージェント向けのスキル",
+                "mdgrid の CLI の使い方を教えるスキルを、リポの plugins/mdgrid に置いています。",
+            ),
         ],
         "ai_note": "左の pane は、説明のために作った架空のエージェントの画面です。tmux や WezTerm など、画面を割れる端末ならどれでも同じ置き方ができます。",
         "cli_eyebrow": "ターミナルの道具として",
         "cli_h": "ターミナルで完結する",
         "cli_fits": [
             ("tmux", "コピー(y)が、tmux の中からでも手元のクリップボードに届きます。"),
-            ("WezTerm・Ghostty", "丸い札などの飾りを、端末を見分けて自動で描きます。ほかの端末では崩れない形に。"),
-            ("エディタ", "e で、選んだノートをふだんのエディタで開きます。vim・Neovim・Helix・Emacs など $EDITOR に入れたもの、code -w も。閉じると表が読み直します。"),
+            (
+                "WezTerm・Ghostty",
+                "丸い札などの飾りを、端末を見分けて自動で描きます。ほかの端末では崩れない形に。",
+            ),
+            (
+                "エディタ",
+                "e で、選んだノートをふだんのエディタで開きます。vim・Neovim・Helix・Emacs など $EDITOR に入れたもの、code -w も。閉じると表が読み直します。",
+            ),
             ("マウス", "操作はキーが基本で、行やセルのクリックとホイールも効きます。"),
         ],
         "cli_p": "mdgrid は実行ファイル1つです。常駐するものも、別に立てるデータベースもありません。データはノートと CSV のファイルそのものなので、git で差分が追え、ふだんのエディタで同じフォルダを開いたままにできます。",
         "cli": [
             ("フォルダごとに1コマンド", "alias tasks='mdgrid ~/notes/Tasks'"),
-            ("表を標準出力へ(csv・tsv・json・md)", "mdgrid ~/notes/Tasks --print --format json | jq ."),
-            ("画面で選んだノートを、次のコマンドへ", "mdgrid ~/notes/Tasks --pick path | xargs -o vi"),
+            (
+                "表を標準出力へ(csv・tsv・json・md)",
+                "mdgrid ~/notes/Tasks --print --format json | jq .",
+            ),
+            (
+                "画面で選んだノートを、次のコマンドへ",
+                "mdgrid ~/notes/Tasks --pick path | xargs -o vi",
+            ),
             ("型と決まりに合わない値を探す", "mdgrid ~/notes/Tasks --check"),
             ("読むだけで開く", "mdgrid ~/notes/Tasks --readonly"),
         ],
@@ -519,20 +646,55 @@ HOME = {
         "try_eyebrow": "1分で試す",
         "try_h": "見本を開いて、1つ直すまで。",
         "try": [
-            ("入れる", "リリースのアーカイブを展開して PATH の通った所に置くのがいちばん早い道です。Rust があるなら次の1行でも入ります(ビルドに数分)。"),
-            ("見本を写して開く", "見本はリポの examples にあります。一時フォルダに写してから開くので、保存しても元の見本は変わりません。"),
+            (
+                "入れる",
+                "リリースのアーカイブを展開して PATH の通った所に置くのがいちばん早い道です。Rust があるなら次の1行でも入ります(ビルドに数分)。",
+            ),
+            (
+                "見本を写して開く",
+                "見本はリポの examples にあります。一時フォルダに写してから開くので、保存しても元の見本は変わりません。",
+            ),
             ("この表が出れば成功", "「Northwind Studio」のタスクの表です。"),
         ],
-        "try_keys": [("j k", "動く"), ("Enter", "直す"), ("Ctrl+S", "差分を見て保存"), ("q", "終わる")],
+        "try_keys": [
+            ("j k", "動く"),
+            ("Enter", "直す"),
+            ("Ctrl+S", "差分を見て保存"),
+            ("q", "終わる"),
+        ],
         "try_more": "入れ方のほかの道と画面の読み方",
         "scene_eyebrow": "自分の場面で",
         "scene_h": "空のフォルダから、台帳の形で始める。",
         "scene_p": "4つのスターターが入っています。印と雛形と見本を書き出すので、最初の1枚から表で見られます。ノートがもうあるなら、そのフォルダを渡すだけです。",
         "scenes": [
-            ("tasks", "タスク", "1件1ノートのタスク", "未完了・期限切れ・進行中・待ち・完了のタブと、期限、優先度、タグ。終わったものの status を done にするのは、セルで Enter を押して選ぶだけ。", "starter-tasks"),
-            ("reading", "読書", "本・記事・映画・講演の記録", "読みたい・読んでいる・読んだのタブと、種類・著者・評価の列。rating を付け忘れたノートは、空のセルが並ぶのですぐ見つかります。", "starter-reading"),
-            ("people", "人と会議", "人の表と、会議の表", "会議のノートの出席者が、人のノートへのリンクになります。R を押すと、2つの表とつながりが図で見えます。", "starter-people"),
-            ("bookmarks", "ブックマーク", "フォルダで眺めるブックマーク", "folder の列からフォルダの木を組みます。T で木が開き、右に選んだフォルダの行。Enter で URL を開けます。", "tree"),
+            (
+                "tasks",
+                "タスク",
+                "1件1ノートのタスク",
+                "未完了・期限切れ・進行中・待ち・完了のタブと、期限、優先度、タグ。終わったものの status を done にするのは、セルで Enter を押して選ぶだけ。",
+                "starter-tasks",
+            ),
+            (
+                "reading",
+                "読書",
+                "本・記事・映画・講演の記録",
+                "読みたい・読んでいる・読んだのタブと、種類・著者・評価の列。rating を付け忘れたノートは、空のセルが並ぶのですぐ見つかります。",
+                "starter-reading",
+            ),
+            (
+                "people",
+                "人と会議",
+                "人の表と、会議の表",
+                "会議のノートの出席者が、人のノートへのリンクになります。R を押すと、2つの表とつながりが図で見えます。",
+                "starter-people",
+            ),
+            (
+                "bookmarks",
+                "ブックマーク",
+                "フォルダで眺めるブックマーク",
+                "folder の列からフォルダの木を組みます。T で木が開き、右に選んだフォルダの行。Enter で URL を開けます。",
+                "tree",
+            ),
         ],
         "look_eyebrow": "見た目",
         "look_h": "色は、設定の1行。",
@@ -550,25 +712,80 @@ HOME = {
         "sub": "mdgrid opens a folder of Markdown notes, or a CSV file, like a database in your terminal. Filter, sort, group, and link tables. Only the values you change are written back to the files.",
         "start": "Get started",
         "try_link": "Try it in a minute",
-        "facts": ["Linux, macOS, Windows", "One binary, runs in the terminal", "MIT / Apache-2.0"],
+        "facts": [
+            "Linux, macOS, Windows",
+            "One binary, runs in the terminal",
+            "MIT / Apache-2.0",
+        ],
         "bin": "Get a binary from Releases",
         "rust": "cargo needs Rust 1.90 or newer",
         "releases": "Releases",
         "steps": [
-            ("A folder of Markdown", "Notes line up as rows, frontmatter keys as columns.", "table", "mdgrid ~/notes/Tasks"),
-            ("A CSV file", "The first line names the columns. .tsv works the same way.", "csv-table", "mdgrid equipment.csv"),
-            ("Linked tables", "Links between notes join the tables. Press R for the relation map.", "demo-relmap", "mdgrid ~/notes/Tasks"),
+            (
+                "A folder of Markdown",
+                "Notes line up as rows, frontmatter keys as columns.",
+                "table",
+                "mdgrid ~/notes/Tasks",
+            ),
+            (
+                "A CSV file",
+                "The first line names the columns. .tsv works the same way.",
+                "csv-table",
+                "mdgrid equipment.csv",
+            ),
+            (
+                "Linked tables",
+                "Links between notes join the tables. Press R for the relation map.",
+                "demo-relmap",
+                "mdgrid ~/notes/Tasks",
+            ),
         ],
         "db_eyebrow": "As a database",
         "db_h": "Filter, sort, group, and read one note",
         "db_p": "The files stay as they are; only the table moves. Each of these is a key or two away, and Esc brings the table back.",
         "db": [
-            ("filter", "Filter", "Filter by what you type", "Press \\ and type: only the rows containing that text remain. You can also filter by picking values of a column, and keep the conditions in a view.", "quick-filter"),
-            ("sort", "Sort", "Sort by a column", "Press s on a column, and again to reverse. The order of the note files does not change.", "sort-column"),
-            ("group", "Group", "Rows grouped by value", "Group rows by status or by project. Headings fold and carry a count.", "demo-group"),
-            ("views", "Views", "Name a way of looking and keep it", "Save filters, sorting and a set of columns as a view, and switch views with tabs. Views in a .base file open as they are.", "base-tabs"),
-            ("freq", "Value counts", "Count the values of a column", "Press % to see which values a column holds and how many notes have each, including how many are still empty.", "demo-freq"),
-            ("detail", "One note", "Read one note without leaving the table", "Press K to see every property and the body of the selected note on one screen. Enter edits right there.", "detail"),
+            (
+                "filter",
+                "Filter",
+                "Filter by what you type",
+                "Press \\ and type: only the rows containing that text remain. You can also filter by picking values of a column, and keep the conditions in a view.",
+                "quick-filter",
+            ),
+            (
+                "sort",
+                "Sort",
+                "Sort by a column",
+                "Press s on a column, and again to reverse. The order of the note files does not change.",
+                "sort-column",
+            ),
+            (
+                "group",
+                "Group",
+                "Rows grouped by value",
+                "Group rows by status or by project. Headings fold and carry a count.",
+                "demo-group",
+            ),
+            (
+                "views",
+                "Views",
+                "Name a way of looking and keep it",
+                "Save filters, sorting and a set of columns as a view, and switch views with tabs. Views in a .base file open as they are.",
+                "base-tabs",
+            ),
+            (
+                "freq",
+                "Value counts",
+                "Count the values of a column",
+                "Press % to see which values a column holds and how many notes have each, including how many are still empty.",
+                "demo-freq",
+            ),
+            (
+                "detail",
+                "One note",
+                "Read one note without leaving the table",
+                "Press K to see every property and the body of the selected note on one screen. Enter edits right there.",
+                "detail",
+            ),
         ],
         "more": "Also: typed inputs (calendar, tags, checkboxes), bulk edits, parent/child indent and WBS, type and rule checks, English and Japanese screens.",
         "rel_eyebrow": "Relations",
@@ -591,25 +808,55 @@ HOME = {
         "ai_done": "Links fixed and the task set to done. Have a look at the table on the right.",
         "ai_hint": "Enter to send · Esc to stop",
         "ai_fits": [
-            ("Rereads every second", "When a note changes outside mdgrid, the table shows it. The interval is the poll_ms setting."),
-            ("Never overwrites silently", "If a note you are editing is rewritten outside, saving stops for that note and you choose which version to keep."),
-            ("A skill for agents", "A skill that teaches agents the mdgrid CLI lives in plugins/mdgrid in the repository."),
+            (
+                "Rereads every second",
+                "When a note changes outside mdgrid, the table shows it. The interval is the poll_ms setting.",
+            ),
+            (
+                "Never overwrites silently",
+                "If a note you are editing is rewritten outside, saving stops for that note and you choose which version to keep.",
+            ),
+            (
+                "A skill for agents",
+                "A skill that teaches agents the mdgrid CLI lives in plugins/mdgrid in the repository.",
+            ),
         ],
         "ai_note": "The left pane is a made-up agent screen, drawn for this page. Any terminal that splits, such as tmux or WezTerm, works the same way.",
         "cli_eyebrow": "As a terminal tool",
         "cli_h": "Everything happens in the terminal",
         "cli_fits": [
-            ("tmux", "Copying with y reaches your local clipboard from inside tmux too."),
-            ("WezTerm, Ghostty", "Rounded chips and similar marks are drawn where the terminal is known to render them, and fall back to plain shapes elsewhere."),
-            ("Editors", "Press e to open the selected note in your editor: vim, Neovim, Helix, Emacs or whatever $EDITOR holds, and code -w too. Close it and the table rereads the note."),
-            ("Mouse", "Keys come first, and clicking rows and cells and the wheel work as well."),
+            (
+                "tmux",
+                "Copying with y reaches your local clipboard from inside tmux too.",
+            ),
+            (
+                "WezTerm, Ghostty",
+                "Rounded chips and similar marks are drawn where the terminal is known to render them, and fall back to plain shapes elsewhere.",
+            ),
+            (
+                "Editors",
+                "Press e to open the selected note in your editor: vim, Neovim, Helix, Emacs or whatever $EDITOR holds, and code -w too. Close it and the table rereads the note.",
+            ),
+            (
+                "Mouse",
+                "Keys come first, and clicking rows and cells and the wheel work as well.",
+            ),
         ],
         "cli_p": "mdgrid is a single binary. Nothing runs in the background and there is no database to set up. The data is the note and CSV files themselves, so git shows the diffs and your usual editor can keep the same folder open.",
         "cli": [
             ("One command per folder", "alias tasks='mdgrid ~/notes/Tasks'"),
-            ("Print the table to standard output (csv, tsv, json, md)", "mdgrid ~/notes/Tasks --print --format json | jq ."),
-            ("Hand the notes you pick to the next command", "mdgrid ~/notes/Tasks --pick path | xargs -o vi"),
-            ("Find values that do not fit the column type or a rule", "mdgrid ~/notes/Tasks --check"),
+            (
+                "Print the table to standard output (csv, tsv, json, md)",
+                "mdgrid ~/notes/Tasks --print --format json | jq .",
+            ),
+            (
+                "Hand the notes you pick to the next command",
+                "mdgrid ~/notes/Tasks --pick path | xargs -o vi",
+            ),
+            (
+                "Find values that do not fit the column type or a rule",
+                "mdgrid ~/notes/Tasks --check",
+            ),
             ("Open read-only", "mdgrid ~/notes/Tasks --readonly"),
         ],
         "cli_more": "Working with other commands",
@@ -630,20 +877,58 @@ HOME = {
         "try_eyebrow": "Try it in a minute",
         "try_h": "From the sample to your first edit.",
         "try": [
-            ("Install", "The quickest way is to unpack a release archive and put mdgrid on your PATH. With Rust, this one line works too (the build takes a few minutes)."),
-            ("Copy the sample and open it", "The samples live in the repository's examples folder. You open a copy in a temporary folder, so saving never changes the original."),
-            ("You should see this table", "It is the task table of \"Northwind Studio\"."),
+            (
+                "Install",
+                "The quickest way is to unpack a release archive and put mdgrid on your PATH. With Rust, this one line works too (the build takes a few minutes).",
+            ),
+            (
+                "Copy the sample and open it",
+                "The samples live in the repository's examples folder. You open a copy in a temporary folder, so saving never changes the original.",
+            ),
+            (
+                "You should see this table",
+                'It is the task table of "Northwind Studio".',
+            ),
         ],
-        "try_keys": [("j k", "move"), ("Enter", "edit"), ("Ctrl+S", "review and save"), ("q", "quit")],
+        "try_keys": [
+            ("j k", "move"),
+            ("Enter", "edit"),
+            ("Ctrl+S", "review and save"),
+            ("q", "quit"),
+        ],
         "try_more": "Other ways to install, and how to read the screen",
         "scene_eyebrow": "For your own notes",
         "scene_h": "Start from an empty folder, already shaped as a table.",
         "scene_p": "Four starters are built in. Each writes a marker, a note template and a few samples, so the first note already shows up in a table. If you have notes, just pass their folder.",
         "scenes": [
-            ("tasks", "Tasks", "One note per task", "Tabs for open, doing, waiting and done, with due date, priority and tags. Marking a task done is Enter on its status cell and one pick.", "starter-tasks"),
-            ("reading", "Reading", "Books, articles, films, talks", "Tabs for the queue, what you are on now and what is done, with columns for kind, author and rating. Notes with no rating stand out as empty cells.", "starter-reading"),
-            ("people", "People and meetings", "A people table and a meetings table", "The attendees of a meeting note link to people notes. Press R to see the two tables and the links between them.", "starter-people"),
-            ("bookmarks", "Bookmarks", "Bookmarks you browse by folder", "The folder column becomes a tree. Press T for the tree, with the rows of the selected folder on the right. Enter opens the URL.", "tree"),
+            (
+                "tasks",
+                "Tasks",
+                "One note per task",
+                "Tabs for open, doing, waiting and done, with due date, priority and tags. Marking a task done is Enter on its status cell and one pick.",
+                "starter-tasks",
+            ),
+            (
+                "reading",
+                "Reading",
+                "Books, articles, films, talks",
+                "Tabs for the queue, what you are on now and what is done, with columns for kind, author and rating. Notes with no rating stand out as empty cells.",
+                "starter-reading",
+            ),
+            (
+                "people",
+                "People and meetings",
+                "A people table and a meetings table",
+                "The attendees of a meeting note link to people notes. Press R to see the two tables and the links between them.",
+                "starter-people",
+            ),
+            (
+                "bookmarks",
+                "Bookmarks",
+                "Bookmarks you browse by folder",
+                "The folder column becomes a tree. Press T for the tree, with the rows of the selected folder on the right. Enter opens the URL.",
+                "tree",
+            ),
         ],
         "look_eyebrow": "Looks",
         "look_h": "Colors are one line of config.",
@@ -673,14 +958,21 @@ MODEL_STATUS = ["todo", "doing", "done"]
 
 def version() -> str:
     """Cargo.toml の版(入口に出す)。"""
-    return tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))["package"]["version"]
+    return tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))["package"][
+        "version"
+    ]
 
 
 def model_notes() -> list:
     """図のノート: ファイルの行そのものと、表に出す値(リンクの [[ ]] と引用符は外して名前だけ)。"""
     out = []
     for name in MODEL_NOTES:
-        lines = (ROOT / "examples/studio/Tasks" / f"{name}.md").read_text(encoding="utf-8").rstrip("\n").split("\n")
+        lines = (
+            (ROOT / "examples/studio/Tasks" / f"{name}.md")
+            .read_text(encoding="utf-8")
+            .rstrip("\n")
+            .split("\n")
+        )
         note = {"name": name, "path": f"Tasks/{name}.md", "lines": lines}
         for line in lines[1 : lines.index("---", 1)]:
             m = re.match(r"([A-Za-z_]+):\s*(.*)$", line)
@@ -695,7 +987,12 @@ def model_notes() -> list:
 def cmd(text: str, lang: str, prompt: str = "$ ") -> str:
     """コマンドの箱。行の頭の $ は写す文字に入れない。写すボタンは JS で動く(無ければ選んで写せる)。"""
     t = TEXT[lang]
-    lines = "\n".join(f'<span class="ps">{prompt}</span>{html.escape(l)}' if prompt else html.escape(l) for l in text.split("\n"))
+    lines = "\n".join(
+        f'<span class="ps">{prompt}</span>{html.escape(l)}'
+        if prompt
+        else html.escape(l)
+        for l in text.split("\n")
+    )
     return (
         f'<div class="cmd"><pre><code data-text="{html.escape(text)}">{lines}</code></pre>'
         f'<button type="button" data-copy data-done="{t["copied"]}">{ICON_COPY}<span>{t["copy"]}</span></button></div>'
@@ -729,15 +1026,23 @@ def model(lang: str, notes: list) -> str:
             ended = ended or not inside
             file_lines.append(f'<span class="l fm">{raw}</span>')
         elif inside and m:
-            file_lines.append(f'<span class="l"><span class="k" data-key="{m.group(1)}">{m.group(1)}</span>{html.escape(m.group(2))}</span>')
+            file_lines.append(
+                f'<span class="l"><span class="k" data-key="{m.group(1)}">{m.group(1)}</span>{html.escape(m.group(2))}</span>'
+            )
         else:
-            file_lines.append(f'<span class="l{"" if inside else " body"}">{html.escape(raw)}</span>')
+            file_lines.append(
+                f'<span class="l{"" if inside else " body"}">{html.escape(raw)}</span>'
+            )
     head = f'<th scope="col">{h["how_note_col"]}</th>' + "".join(
-        f'<th scope="col" data-col="{c}"{" class=num" if c == "priority" else ""}>{c}</th>' for c in MODEL_COLS
+        f'<th scope="col" data-col="{c}"{" class=num" if c == "priority" else ""}>{c}</th>'
+        for c in MODEL_COLS
     )
     rows = []
     for i, n in enumerate(notes):
-        opts = "".join(f'<option{" selected" if s == n["status"] else ""}>{s}</option>' for s in MODEL_STATUS)
+        opts = "".join(
+            f"<option{' selected' if s == n['status'] else ''}>{s}</option>"
+            for s in MODEL_STATUS
+        )
         rows.append(
             f'<tr{" class=sel" if i == 0 else ""}><td><button class="name" type="button" title="{html.escape(n["name"])}">{html.escape(n["name"])}</button></td>'
             f'<td data-col="status"><span class="pick" data-v="{n["status"]}"><i></i>'
@@ -748,7 +1053,13 @@ def model(lang: str, notes: list) -> str:
             f'<td class="num" data-col="priority">{html.escape(n.get("priority", ""))}</td></tr>'
         )
     say = html.escape(json.dumps(h["how_say"], ensure_ascii=False))
-    data = json.dumps([{"path": n["path"], "lines": n["lines"], "status": n["status"]} for n in notes], ensure_ascii=False).replace("</", "<\\/")
+    data = json.dumps(
+        [
+            {"path": n["path"], "lines": n["lines"], "status": n["status"]}
+            for n in notes
+        ],
+        ensure_ascii=False,
+    ).replace("</", "<\\/")
     return f"""<div id="model" data-say="{say}">
 <div class="model">
   <section class="pane file" aria-label="{h["how_file"]}"><header><b>{html.escape(first["path"])}</b><span>{h["how_file"]}</span></header>
@@ -779,7 +1090,9 @@ def landing(lang: str, shown, shots) -> str:
         for k, (title, text, sid, run) in enumerate(h["steps"])
     )
     under = f'<a href="{REPO}/releases/latest">{h["bin"]}</a> · {h["rust"]}'
-    facts = "".join(f"<li>{html.escape(x)}</li>" for x in [f"v{version()}"] + h["facts"])
+    facts = "".join(
+        f"<li>{html.escape(x)}</li>" for x in [f"v{version()}"] + h["facts"]
+    )
 
     # 1分で試す。
     keys = " ".join(f"<kbd>{k}</kbd> {html.escape(w)}" for k, w in h["try_keys"])
@@ -803,13 +1116,20 @@ def landing(lang: str, shown, shots) -> str:
         return f'<div class="tabs" role="tablist" aria-label="{html.escape(label)}">{tabs}</div>\n{panels}'
 
     db = tabset("db-", h["db_eyebrow"], h["db"])
-    starter = lambda sid: cmd(f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}", lang)
+    starter = lambda sid: cmd(
+        f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}",
+        lang,
+    )
     scenes = tabset("scene-", h["scene_eyebrow"], h["scenes"], starter)
 
     # 分割した画面: 左は架空のエージェントの画面(どの製品の画面も写さない。名前も sample-agent)、右は本物の画面。
     ai_steps = ""
     for what, arg, result in h["ai_log"]:
-        tail = f'<span class="res">└ {html.escape(result)}</span>' if result else '<span class="diff"><span class="del">- status: todo</span><span class="add">+ status: done</span></span>'
+        tail = (
+            f'<span class="res">└ {html.escape(result)}</span>'
+            if result
+            else '<span class="diff"><span class="del">- status: todo</span><span class="add">+ status: done</span></span>'
+        )
         ai_steps += f'<div class="act"><span class="lab">▸ {html.escape(what)}</span><span class="arg">{html.escape(arg)}</span>{tail}</div>'
     ai_log = (
         f'<div class="agent-ui"><p class="who">sample-agent v1.0 · ~/notes/ai-human</p>'
@@ -819,7 +1139,10 @@ def landing(lang: str, shown, shots) -> str:
     )
 
     # ターミナルの道具として: 本物のオプションの使い方を、1つの端末に並べる(# の行は説明。写すのはコマンドだけ)。
-    cli_lines = "\n".join(f'<span class="cm"># {html.escape(why)}</span>\n<span class="ps">$ </span>{html.escape(run)}' for why, run in h["cli"])
+    cli_lines = "\n".join(
+        f'<span class="cm"># {html.escape(why)}</span>\n<span class="ps">$ </span>{html.escape(run)}'
+        for why, run in h["cli"]
+    )
     cli_text = html.escape("\n".join(run for _, run in h["cli"]))
     cli = (
         f'<div class="cmd tall"><pre><code data-text="{cli_text}">{cli_lines}</code></pre>'
@@ -827,7 +1150,11 @@ def landing(lang: str, shown, shots) -> str:
     )
 
     # 見た目: テーマの場面(theme-*)を名前で並べ、押すと画面を差し替える。JS が無ければ画面の一覧のその場面へ行く。
-    looks = [(s["id"][len("theme-"):], s["title"][lang].split(": ", 1)[-1]) for s in shots if s["id"].startswith("theme-")]
+    looks = [
+        (s["id"][len("theme-") :], s["title"][lang].split(": ", 1)[-1])
+        for s in shots
+        if s["id"].startswith("theme-")
+    ]
     look_tabs = "".join(
         f'<a class="tab" role="button" href="gallery.html#theme-{lid}" data-look="{lid}" aria-pressed="{"true" if k == 0 else "false"}">{html.escape(name)}</a>'
         for k, (lid, name) in enumerate(looks)
@@ -843,7 +1170,9 @@ def landing(lang: str, shown, shots) -> str:
         f"<figcaption><b>{html.escape(d[i])}</b></figcaption></figure>"
         for d in shown
     )
-    card = lambda href, title, desc: f'<a class="card" href="{href}"><h3>{title}</h3><p class="muted">{html.escape(desc)}</p><span class="arrow" aria-hidden="true">→</span></a>'
+    card = lambda href, title, desc: (
+        f'<a class="card" href="{href}"><h3>{title}</h3><p class="muted">{html.escape(desc)}</p><span class="arrow" aria-hidden="true">→</span></a>'
+    )
     body = f"""
 <main>
 <header class="hero">
@@ -947,8 +1276,15 @@ def landing(lang: str, shown, shots) -> str:
   <a href="{man}">{t["manual"]}</a><a href="{REPO}">GitHub</a><a href="{REPO}/releases">{h["releases"]}</a><a href="https://crates.io/crates/mdgrid">crates.io</a></div></footer>
 """
     return page(
-        lang, f"mdgrid — {h['tagline']}", body, h["sub"], f"{SITE}{lang}/",
-        alternates("ja/") + "\n" + software_ld(lang), LANDING_JS, top=nav(lang, ""), wide=True,
+        lang,
+        f"mdgrid — {h['tagline']}",
+        body,
+        h["sub"],
+        f"{SITE}{lang}/",
+        alternates("ja/") + "\n" + software_ld(lang),
+        LANDING_JS,
+        top=nav(lang, ""),
+        wide=True,
     )
 
 
@@ -964,13 +1300,20 @@ def software_ld(lang: str) -> str:
         "inLanguage": lang,
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Linux, macOS, Windows",
-        "license": ["https://spdx.org/licenses/MIT.html", "https://spdx.org/licenses/Apache-2.0.html"],
+        "license": [
+            "https://spdx.org/licenses/MIT.html",
+            "https://spdx.org/licenses/Apache-2.0.html",
+        ],
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
         "downloadUrl": f"{REPO}/releases/latest",
         "sameAs": [REPO, "https://crates.io/crates/mdgrid"],
     }
     # </script> で閉じられないように、< を \u003c にして埋める。
-    return '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False).replace("<", "\\u003c") + "</script>"
+    return (
+        '<script type="application/ld+json">'
+        + json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+        + "</script>"
+    )
 
 
 def gallery(lang: str, shots) -> str:
@@ -979,12 +1322,16 @@ def gallery(lang: str, shots) -> str:
     for s in shots:
         sid = s["id"]
         # 題と説明は {ja, en} の表か、両方に同じ文字。
-        pick = lambda v: v.get(lang, sid) if isinstance(v, dict) else v
+        pick = lambda v, sid=sid: v.get(lang, sid) if isinstance(v, dict) else v
         title = pick(s.get("title", sid))
         text = pick(s.get("text", ""))
         keys = " ".join(s.get("keys", []))
-        search = " ".join([sid, keys, title, text]).lower()
-        k = f'<code class="muted">{t["keys"]}: {html.escape(keys)}</code>' if keys else ""
+        search = f"{sid} {keys} {title} {text}".lower()
+        k = (
+            f'<code class="muted">{t["keys"]}: {html.escape(keys)}</code>'
+            if keys
+            else ""
+        )
         figs.append(
             f'<figure id="{sid}" data-search="{html.escape(search)}">'
             f'<a href="../images/{lang}/{sid}.svg"><img loading="lazy" alt="{html.escape(title)}" src="../images/{lang}/{sid}.svg"></a>'
@@ -994,11 +1341,17 @@ def gallery(lang: str, shots) -> str:
 <h1>{t["gallery"]}</h1>
 <p class="muted">{html.escape(t["gallery_desc"])} {t["count"].format(n=len(shots))}</p>
 <input id="find" type="search" aria-label="{t["filter"]}" placeholder="{t["filter"]}">
-<div class="shots">{''.join(figs)}</div>
+<div class="shots">{"".join(figs)}</div>
 """
     return page(
-        lang, f'{t["gallery"]} · mdgrid', body, t["gallery_desc"], f"{SITE}{lang}/gallery.html",
-        alternates("ja/gallery.html", SITE + "gallery.html"), FIND, top=nav(lang, "gallery.html"),
+        lang,
+        f"{t['gallery']} · mdgrid",
+        body,
+        t["gallery_desc"],
+        f"{SITE}{lang}/gallery.html",
+        alternates("ja/gallery.html", SITE + "gallery.html"),
+        FIND,
+        top=nav(lang, "gallery.html"),
     )
 
 
@@ -1014,28 +1367,58 @@ def decorate_book(lang: str, dest: Path) -> None:
         alt = ""
         if name not in BOOK_PARTS and name != "print.html":
             alt = "\n".join(
-                [f'<link rel="alternate" hreflang="{l}" href="{SITE}manual/{l}/{shape}">' for l in LANGS]
-                + [f'<link rel="alternate" hreflang="x-default" href="{SITE}manual/en/{shape}">']
+                [
+                    f'<link rel="alternate" hreflang="{l}" href="{SITE}manual/{l}/{shape}">'
+                    for l in LANGS
+                ]
+                + [
+                    f'<link rel="alternate" hreflang="x-default" href="{SITE}manual/en/{shape}">'
+                ]
             )
             desc = first_paragraph(text) or TEXT[lang]["manual_desc"]
-            text, n = re.subn(r'<meta name="description" content="[^"]*">', lambda m: f'<meta name="description" content="{html.escape(desc)}">', text, count=1)
+            text, n = re.subn(
+                r'<meta name="description" content="[^"]*">',
+                lambda m, desc=desc: (
+                    f'<meta name="description" content="{html.escape(desc)}">'
+                ),
+                text,
+                count=1,
+            )
             if n == 0:
                 alt = f'<meta name="description" content="{html.escape(desc)}">\n' + alt
-            alt = social(lang, head_text(text, "title"), desc, f"{SITE}manual/{lang}/{shape}") + "\n" + alt
-        text = text.replace("</head>", (alt + "\n" if alt else "") + (ANALYTICS + "\n" if ANALYTICS else "") + "</head>", 1)
+            alt = (
+                social(
+                    lang, head_text(text, "title"), desc, f"{SITE}manual/{lang}/{shape}"
+                )
+                + "\n"
+                + alt
+            )
+        text = text.replace(
+            "</head>",
+            (alt + "\n" if alt else "")
+            + (ANALYTICS + "\n" if ANALYTICS else "")
+            + "</head>",
+            1,
+        )
         switch = (
             f'<a class="lang-switch" href="../{other}/{name}" hreflang="{other}" lang="{other}" data-pick="{other}" '
             f'title="{NAMES[other]}" style="font-size:14px;margin-inline-end:10px;text-decoration:none">{NAMES[other]}</a>'
         )
-        text = text.replace('<div class="right-buttons">', '<div class="right-buttons">' + switch, 1)
+        text = text.replace(
+            '<div class="right-buttons">', '<div class="right-buttons">' + switch, 1
+        )
         text = text.replace("</body>", f"<script>{REMEMBER}</script>\n</body>", 1)
         f.write_text(text, encoding="utf-8")
 
 
 def head_text(text: str, what: str) -> str:
     """HTML の head から、題(`title`)か説明文(`description`)の字を取る(無ければ空)。"""
-    pat = r"<title>(.*?)</title>" if what == "title" else r'<meta name="description" content="([^"]*)"'
-    m = re.search(pat, text, re.S)
+    pat = (
+        r"<title>(.*?)</title>"
+        if what == "title"
+        else r'<meta name="description" content="([^"]*)"'
+    )
+    m = re.search(pat, text, re.DOTALL)
     return html.unescape(m.group(1)).strip() if m else ""
 
 
@@ -1045,14 +1428,20 @@ DESC_MAX = {"ja": 120, "en": 160}
 def first_paragraph(text: str) -> str:
     """mdBook のページの本文の最初の段落(リンクだけの行は飛ばす)を、説明文の長さにして返す。長ければ文の切れ目で切り、
     切れ目が無ければ字数で切って … を付ける。"""
-    main = re.search(r"<main>(.*?)</main>", text, re.S)
-    for m in re.finditer(r"<p>(.*?)</p>", main.group(1) if main else "", re.S):
+    main = re.search(r"<main>(.*?)</main>", text, re.DOTALL)
+    for m in re.finditer(r"<p>(.*?)</p>", main.group(1) if main else "", re.DOTALL):
         p = " ".join(html.unescape(re.sub(r"<[^>]+>", "", m.group(1))).split())
         # リンクだけの行(章の頭の「English · 目次」など)は説明文にしない。
-        rest = html.unescape(re.sub(r"<[^>]+>", "", re.sub(r"<a\b.*?</a>", "", m.group(1), flags=re.S)))
+        rest = html.unescape(
+            re.sub(
+                r"<[^>]+>", "", re.sub(r"<a\b.*?</a>", "", m.group(1), flags=re.DOTALL)
+            )
+        )
         if len(re.sub(r"[\s·()()]", "", rest)) < 10:
             continue
-        limit = DESC_MAX["ja" if re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", p) else "en"]
+        limit = DESC_MAX[
+            "ja" if re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", p) else "en"
+        ]
         if len(p) <= limit:
             return p
         cut = max(p.rfind("。", 0, limit) + 1, p.rfind(". ", 0, limit) + 1)
@@ -1063,10 +1452,30 @@ def first_paragraph(text: str) -> str:
 # ---------- 説明書(mdBook) ----------
 
 # 本に入れるページ(題は各ページの最初の見出しから)。参照のページは docs/ の言語ごとの版を本の名前で入れる。
-PAGES = ["index.md", "views.md", "features.md", "getting-started.md", "tasks.md", "concepts.md", "appearance.md", "themes.md", "faq.md"]
+PAGES = [
+    "index.md",
+    "views.md",
+    "features.md",
+    "getting-started.md",
+    "tasks.md",
+    "concepts.md",
+    "appearance.md",
+    "themes.md",
+    "faq.md",
+]
 REFS = {
-    "ja": {"keys.md": "docs/keys.ja.md", "config.md": "docs/config.ja.md", "safety.md": "docs/safety.ja.md", "obsidian-bases.md": "docs/obsidian-bases.ja.md"},
-    "en": {"keys.md": "docs/keys.md", "config.md": "docs/config.md", "safety.md": "docs/safety.md", "obsidian-bases.md": "docs/obsidian-bases.md"},
+    "ja": {
+        "keys.md": "docs/keys.ja.md",
+        "config.md": "docs/config.ja.md",
+        "safety.md": "docs/safety.ja.md",
+        "obsidian-bases.md": "docs/obsidian-bases.ja.md",
+    },
+    "en": {
+        "keys.md": "docs/keys.md",
+        "config.md": "docs/config.md",
+        "safety.md": "docs/safety.md",
+        "obsidian-bases.md": "docs/obsidian-bases.md",
+    },
 }
 BOOK_TITLE = {"ja": "mdgrid の説明書", "en": "mdgrid manual"}
 REF_HEAD = {"ja": "参照", "en": "Reference"}
@@ -1134,10 +1543,17 @@ def book(lang: str, dest: Path, images: Path) -> None:
         rel = f"docs/manual/{lang}/{name}"
         text = (ROOT / rel).read_text(encoding="utf-8")
         # リポで読む人への「Pages で読める」の案内は、Pages の本では外す。
-        text = re.sub(r" · (画面つきでは|Read it with the screenshots at) .*$", "", text, flags=re.M)
+        text = re.sub(
+            r" · (画面つきでは|Read it with the screenshots at) .*$",
+            "",
+            text,
+            flags=re.MULTILINE,
+        )
         (src / "src" / name).write_text(rewrite(text, rel, lang), encoding="utf-8")
         title = first_heading(text, name)
-        summary.append(f"[{title}]({name})" if name == "index.md" else f"- [{title}]({name})")
+        summary.append(
+            f"[{title}]({name})" if name == "index.md" else f"- [{title}]({name})"
+        )
     summary += ["", f"# {REF_HEAD[lang]}", ""]
     for name, rel in REFS[lang].items():
         text = (ROOT / rel).read_text(encoding="utf-8")
@@ -1149,7 +1565,9 @@ def book(lang: str, dest: Path, images: Path) -> None:
         f'[output.html]\ngit-repository-url = "{REPO}"\nsite-url = "/mdgrid/manual/{lang}/"\n',
         encoding="utf-8",
     )
-    subprocess.run(["mdbook", "build", str(src), "--dest-dir", str(dest.resolve())], check=True)
+    subprocess.run(
+        ["mdbook", "build", str(src), "--dest-dir", str(dest.resolve())], check=True
+    )
 
 
 if __name__ == "__main__":

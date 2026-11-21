@@ -166,8 +166,7 @@ impl App {
                 .to_string_lossy()
                 .lines()
                 .next()
-                .map(std::path::PathBuf::from)
-                .unwrap_or_else(|| self.nv.target.clone());
+                .map_or_else(|| self.nv.target.clone(), std::path::PathBuf::from);
             let name = mdgrid::workspace::stem_of(&first);
             self.prof.scope.push(Layer {
                 origin: Origin::new(

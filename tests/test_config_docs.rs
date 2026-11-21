@@ -34,8 +34,8 @@ fn print_config() -> String {
 }
 
 fn keys_set() -> BTreeSet<String> {
-    let set: BTreeSet<String> = KEYS.iter().map(|k| k.to_string()).collect();
-    assert_eq!(set.len(), KEYS.len(), "KEYS に重複がある: {:?}", KEYS);
+    let set: BTreeSet<String> = KEYS.iter().map(std::string::ToString::to_string).collect();
+    assert_eq!(set.len(), KEYS.len(), "KEYS に重複がある: {KEYS:?}");
     set
 }
 
@@ -133,8 +133,7 @@ fn test_cli_11_output_reads_back_without_warnings_as_default() {
     let (c, warnings) = parse(&text).expect("--print-config の出力は設定として読める");
     assert!(
         warnings.is_empty(),
-        "読み直しで警告: {:?}\n---\n{text}",
-        warnings
+        "読み直しで警告: {warnings:?}\n---\n{text}"
     );
     assert!(
         behaves_as_default(&c),
@@ -180,7 +179,7 @@ fn test_cli_11_output_values_are_defaults() {
         let mut one = toml::Table::new();
         one.insert(name.clone(), value.clone());
         let (c, warnings) = parse(&one.to_string()).expect("読める");
-        assert!(warnings.is_empty(), "`{name}` で警告: {:?}", warnings);
+        assert!(warnings.is_empty(), "`{name}` で警告: {warnings:?}");
         assert!(
             behaves_as_default(&c),
             "`{name}` の書き出しの値が既定でない"
@@ -222,7 +221,7 @@ fn test_cli_12_keys_cover_known_items() {
         "look.theme",
         "templates",
     ] {
-        assert!(set.contains(name), "KEYS に `{name}` が無い: {:?}", set);
+        assert!(set.contains(name), "KEYS に `{name}` が無い: {set:?}");
     }
 }
 
@@ -230,7 +229,7 @@ fn test_cli_12_keys_cover_known_items() {
 fn test_cli_12_parse_knows_every_key() {
     // [stest -> req~cli.config-docs~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] KEYS の項目はどれも設定の読み取りが知っている(知らない項目の警告にならない)。
     let (_, w) = parse("zz_not_a_config_item = 0\n").expect("読める");
-    assert_eq!(w.len(), 1, "知らない項目の警告が1つ出る: {:?}", w);
+    assert_eq!(w.len(), 1, "知らない項目の警告が1つ出る: {w:?}");
     let unknown = w[0].rsplit(": ").next().unwrap().to_string();
     for item in ITEMS {
         let text = match item.section() {
@@ -282,7 +281,7 @@ fn test_cli_12_print_config_matches_keys() {
     let printed: BTreeSet<String> = KEYS
         .iter()
         .filter(|k| item_line(&text, k).is_some())
-        .map(|k| k.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
     assert_eq!(
         printed,

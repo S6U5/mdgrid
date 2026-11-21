@@ -75,8 +75,8 @@ fn test_ch_5_scale_shows_max_and_min() {
     let (_t, mut a) = boot("ch5scale", &month_notes(), TYPES, LINE_MONTH);
     let c = open(&mut a);
     let s = c.scale();
-    let max = s.iter().cloned().fold(f64::MIN, f64::max);
-    let min = s.iter().cloned().fold(f64::MAX, f64::min);
+    let max = s.iter().copied().fold(f64::MIN, f64::max);
+    let min = s.iter().copied().fold(f64::MAX, f64::min);
     assert_eq!(max, 3.0, "目盛りの最大: {s:?}\n{}", c.raw);
     assert!(min <= 1.0, "目盛りの最小: {s:?}\n{}", c.raw);
 }
@@ -92,7 +92,7 @@ fn test_ch_5_c_toggles_cumulative() {
     ch(&mut a, 'l');
     let c = chart(&a);
     assert_eq!(c.desc(), "2026-11: 4", "{}", c.raw);
-    let max = c.scale().iter().cloned().fold(f64::MIN, f64::max);
+    let max = c.scale().iter().copied().fold(f64::MIN, f64::max);
     assert_eq!(max, 4.0, "累積の目盛りの最大: {}", c.raw);
     ch(&mut a, 'c');
     assert_eq!(chart(&a).desc(), "2026-11: 1", "累積を外す");
@@ -834,6 +834,7 @@ fn test_ch_8_kind_names_cover_all_kinds() {
         seen.insert(chart(&a).kind());
         press(&mut a, KeyCode::Tab);
     }
-    let all: std::collections::BTreeSet<String> = KINDS.iter().map(|s| s.to_string()).collect();
+    let all: std::collections::BTreeSet<String> =
+        KINDS.iter().map(std::string::ToString::to_string).collect();
     assert_eq!(seen, all);
 }

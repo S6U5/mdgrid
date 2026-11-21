@@ -374,8 +374,8 @@ fn test_bv_16_load_is_incremental_and_cancellable() {
     let t = TempDir::new("bv16");
     for i in 0..300 {
         t.write(
-            &format!("n{:03}.md", i),
-            format!("---\ni: {}\n---\n", i).as_bytes(),
+            &format!("n{i:03}.md"),
+            format!("---\ni: {i}\n---\n").as_bytes(),
         );
     }
     let mut v = Vault::open(roots(&[t.path().to_path_buf()]).unwrap());
@@ -386,12 +386,12 @@ fn test_bv_16_load_is_incremental_and_cancellable() {
     assert!(p.loaded <= 10, "loaded = {}", p.loaded);
     assert!(!p.done);
     let n1 = v.notes().len();
-    assert!(n1 > 0 && n1 <= 10, "notes = {}", n1);
+    assert!(n1 > 0 && n1 <= 10, "notes = {n1}");
 
     let p2 = v.load(10);
     assert!(!p2.done);
     let n2 = v.notes().len();
-    assert!(n2 > n1 && n2 <= 20, "notes = {} -> {}", n1, n2);
+    assert!(n2 > n1 && n2 <= 20, "notes = {n1} -> {n2}");
 
     v.cancel();
     v.load(10);

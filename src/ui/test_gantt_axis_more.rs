@@ -37,7 +37,7 @@ const BAND_NOTES: &[(&str, &str)] = &[
 const HEAD_HINT: &str = "見出しの行";
 
 /// 集計が式(customAverage)で未対応のビューを1つ持つ `.base`(列は start・due)。
-const VIEW_BASE: &str = r#"summaries:
+const VIEW_BASE: &str = r"summaries:
   customAverage: 'values.mean()'
 views:
   - type: table
@@ -45,7 +45,7 @@ views:
     order: [start, due]
     summaries:
       due: customAverage
-"#;
+";
 
 // ---- 道具(test_gantt_axis.rs から写したもの) ----
 

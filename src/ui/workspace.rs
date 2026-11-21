@@ -19,8 +19,7 @@ impl App {
             .to_string_lossy()
             .lines()
             .next()
-            .map(PathBuf::from)
-            .unwrap_or_else(|| target.to_path_buf());
+            .map_or_else(|| target.to_path_buf(), PathBuf::from);
         match workspace::resolve(
             &first,
             self.workspace_choice.as_deref(),

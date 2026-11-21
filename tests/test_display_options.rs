@@ -201,7 +201,7 @@ fn test_sr_21_print_config_has_display() {
         .unwrap_or_else(|| panic!("--print-config に [display] の表が無い\n---\n{text}"));
     for (name, default) in DEFAULTS {
         assert_eq!(
-            display.get(name).and_then(|v| v.as_bool()),
+            display.get(name).and_then(toml::Value::as_bool),
             Some(default),
             "[display] の {name} が既定値 {default} で無い\n---\n{text}"
         );
@@ -229,7 +229,9 @@ fn test_sr_21_print_config_has_display() {
     }
     // 2026-10-12-row-lines で row_extra_lines(既定 0)が増えた。
     assert_eq!(
-        display.get("row_extra_lines").and_then(|v| v.as_integer()),
+        display
+            .get("row_extra_lines")
+            .and_then(toml::Value::as_integer),
         Some(0),
         "[display] の row_extra_lines\n---\n{text}"
     );

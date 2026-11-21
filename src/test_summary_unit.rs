@@ -193,10 +193,10 @@ fn test_bv_14_no_values_is_empty() {
 #[test]
 fn test_bv_14_many_values_one_pass() {
     // [utest -> req~base-view.summaries-builtin~1, req~base-view.summaries-filtered~1] 値が多くても計算できる(合計があふれたら空)。
-    let xs = (1..=100_000).map(|i| n(i as f64));
+    let xs = (1..=100_000).map(|i| n(f64::from(i)));
     assert_eq!(compute(Summary::Sum, xs), n(5_000_050_000.0));
     let big = vec![n(f64::MAX), n(f64::MAX)];
     assert_eq!(compute(Summary::Sum, big), Val::Null, "有限でない数は空");
-    let uniq = (0..50_000).map(|i| n((i % 1000) as f64));
+    let uniq = (0..50_000).map(|i| n(f64::from(i % 1000)));
     assert_eq!(compute(Summary::Unique, uniq), n(1000.0));
 }

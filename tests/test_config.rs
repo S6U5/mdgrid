@@ -79,7 +79,7 @@ fn list_files(root: &Path) -> Vec<String> {
 }
 
 fn s(v: &[&str]) -> Vec<String> {
-    v.iter().map(|x| x.to_string()).collect()
+    v.iter().map(std::string::ToString::to_string).collect()
 }
 
 fn state(
@@ -94,7 +94,7 @@ fn state(
         hidden: s(hidden),
         widths: widths.iter().map(|(k, w)| (k.to_string(), *w)).collect(),
         folded: s(folded),
-        view: view.map(|v| v.to_string()),
+        view: view.map(std::string::ToString::to_string),
         settings: Default::default(),
     }
 }
@@ -126,7 +126,7 @@ fn has_key(keys: &[(String, String, String)], mode: &str, key: &str, action: &st
 fn test_cli_3_empty_config_gives_defaults() {
     // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1] 設定が無くても(空の文字列)既定で動く。
     let (c, warnings) = parse("").expect("空の設定は読める");
-    assert!(warnings.is_empty(), "空の設定で警告: {:?}", warnings);
+    assert!(warnings.is_empty(), "空の設定で警告: {warnings:?}");
     assert_eq!(c.resolved().candidates, 20);
     assert_eq!(c.poll_ms, 1000);
     assert!(!c.terminal.ambiguous_wide);
@@ -140,7 +140,7 @@ fn test_cli_3_reads_each_item() {
     let text =
         "poll_ms = 500\n\n[edit]\ncandidates = 30\n\n[terminal]\nambiguous_wide = true\ncolor = false\n";
     let (c, warnings) = parse(text).expect("読める");
-    assert!(warnings.is_empty(), "警告: {:?}", warnings);
+    assert!(warnings.is_empty(), "警告: {warnings:?}");
     assert_eq!(c.resolved().candidates, 30);
     assert_eq!(c.poll_ms, 500);
     assert!(c.terminal.ambiguous_wide);
@@ -170,7 +170,7 @@ j = "none"
 "ctrl+r" = "revert"
 "#;
     let (c, warnings) = parse(text).expect("読める");
-    assert!(warnings.is_empty(), "警告: {:?}", warnings);
+    assert!(warnings.is_empty(), "警告: {warnings:?}");
     assert_eq!(c.keys.len(), 3, "keys: {:?}", c.keys);
     assert!(has_key(&c.keys, "table", "j", "none"), "keys: {:?}", c.keys);
     assert!(
@@ -196,8 +196,7 @@ fn test_cli_3_unknown_item_warns_and_continues() {
     assert_eq!(c.resolved().candidates, 5, "知っている項目は読む");
     assert!(
         warnings.iter().any(|w| w.contains("frobnicate")),
-        "警告に項目の名前が無い: {:?}",
-        warnings
+        "警告に項目の名前が無い: {warnings:?}"
     );
 }
 
@@ -211,14 +210,13 @@ fn test_cli_3_broken_toml_is_err() {
     ] {
         match parse(text) {
             Err(reason) => {
-                assert!(!reason.is_empty(), "理由が空: {:?}", text);
+                assert!(!reason.is_empty(), "理由が空: {text:?}");
                 assert!(
                     !reason.trim_end().contains('\n'),
-                    "理由が1行でない: {:?}",
-                    reason
+                    "理由が1行でない: {reason:?}"
                 );
             }
-            Ok(_) => panic!("壊れた TOML が Ok: {:?}", text),
+            Ok(_) => panic!("壊れた TOML が Ok: {text:?}"),
         }
     }
 }

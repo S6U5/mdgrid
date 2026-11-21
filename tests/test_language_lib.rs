@@ -547,7 +547,7 @@ fn test_sr_23_lib_base_errors_are_english() {
             for row in &g.rows {
                 match b.cell(src, &prop, row, "formula.fixed", TODAY, NOW) {
                     Shown::Unsupported(s) => {
-                        fails.extend(english_problem("Shown::Unsupported の理由", &s))
+                        fails.extend(english_problem("Shown::Unsupported の理由", &s));
                     }
                     other => fails.push(format!("formula.fixed が Unsupported でない: {other:?}")),
                 }
@@ -686,7 +686,7 @@ fn test_sr_23_lib_views_warnings_stay_japanese_under_ja() {
 
 // ---- 6. 実行ファイルの --print の警告 ----
 
-const PRINT_BASE: &str = r#"formulas:
+const PRINT_BASE: &str = r"formulas:
   mystery: 'nosuchfunc(priority)'
 views:
   - type: table
@@ -694,7 +694,7 @@ views:
     order:
       - title
       - formula.mystery
-"#;
+";
 
 /// notes/ に2つのノートと tasks.base を置き、`--print --view Broken` を子の環境の LANG で動かす。
 fn run_print(name: &str, lang: &str) -> Output {
@@ -732,7 +732,7 @@ fn stderr_lines(out: &Output) -> Vec<String> {
     String::from_utf8_lossy(&out.stderr)
         .lines()
         .filter(|l| !l.trim().is_empty())
-        .map(|l| l.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 

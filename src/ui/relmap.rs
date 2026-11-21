@@ -536,7 +536,10 @@ fn list_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
 /// 右の詳細の中身: 選んだつながり(無ければ選んだ表)。
 fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
     let look = super::look::look(app);
-    let key_st = look.as_ref().map(|l| l.faint()).unwrap_or_default();
+    let key_st = look
+        .as_ref()
+        .map(super::look::Look::faint)
+        .unwrap_or_default();
     let strong = match &look {
         Some(l) => l.key(),
         None => Style::default().add_modifier(Modifier::BOLD),
@@ -563,67 +566,64 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
         ])
     };
     let mut out = Vec::new();
-    match rm.link.map(|k| &rm.links[k]) {
-        Some(l) => {
-            out.push(Line::from(Span::styled(
-                fit(
-                    &sanitize(&format!("{}.{} → {}", l.from, l.column, l.to)),
-                    w,
-                    Align::Left,
-                ),
-                strong,
-            )));
-            out.push(Line::from(" ".repeat(w)));
-            out.push(row(
-                Msg::RelMapKind.text(),
-                if l.many {
-                    Msg::RelMapManyToMany.text().to_string()
-                } else {
-                    Msg::RelMapManyToOne.text().to_string()
-                },
-            ));
-            out.push(row(Msg::RelMapColumn.text(), l.column.clone()));
-            out.push(row(Msg::RelMapTarget.text(), l.to.clone()));
-            out.push(row(Msg::RelMapLinks.text(), l.pairs.len().to_string()));
-            // 逆向き: 行き先から元へ戻るつながり。
-            let back: Vec<String> = rm
-                .links
-                .iter()
-                .filter(|x| x.from == l.to && x.to == l.from)
-                .map(|x| x.column.clone())
-                .collect();
-            if !back.is_empty() {
-                out.push(row(Msg::RelMapReverse.text(), back.join(", ")));
-            }
-            out.push(Line::from(" ".repeat(w)));
-            out.push(Line::from(Span::styled(
-                fit(Msg::RelMapTop.text(), w, Align::Left),
-                strong,
-            )));
-            for (name, k) in relmap::top_targets(l, 5) {
-                let count = k.to_string();
-                let nw = w.saturating_sub(width(&count) + 2);
-                out.push(Line::from(format!(
-                    " {} {count}",
-                    fit(&sanitize(&name), nw, Align::Left)
-                )));
-            }
+    if let Some(l) = rm.link.map(|k| &rm.links[k]) {
+        out.push(Line::from(Span::styled(
+            fit(
+                &sanitize(&format!("{}.{} → {}", l.from, l.column, l.to)),
+                w,
+                Align::Left,
+            ),
+            strong,
+        )));
+        out.push(Line::from(" ".repeat(w)));
+        out.push(row(
+            Msg::RelMapKind.text(),
+            if l.many {
+                Msg::RelMapManyToMany.text().to_string()
+            } else {
+                Msg::RelMapManyToOne.text().to_string()
+            },
+        ));
+        out.push(row(Msg::RelMapColumn.text(), l.column.clone()));
+        out.push(row(Msg::RelMapTarget.text(), l.to.clone()));
+        out.push(row(Msg::RelMapLinks.text(), l.pairs.len().to_string()));
+        // 逆向き: 行き先から元へ戻るつながり。
+        let back: Vec<String> = rm
+            .links
+            .iter()
+            .filter(|x| x.from == l.to && x.to == l.from)
+            .map(|x| x.column.clone())
+            .collect();
+        if !back.is_empty() {
+            out.push(row(Msg::RelMapReverse.text(), back.join(", ")));
         }
-        None => {
-            let t = &rm.infos[rm.sel];
-            out.push(Line::from(Span::styled(
-                fit(&sanitize(&t.name), w, Align::Left),
-                strong,
+        out.push(Line::from(" ".repeat(w)));
+        out.push(Line::from(Span::styled(
+            fit(Msg::RelMapTop.text(), w, Align::Left),
+            strong,
+        )));
+        for (name, k) in relmap::top_targets(l, 5) {
+            let count = k.to_string();
+            let nw = w.saturating_sub(width(&count) + 2);
+            out.push(Line::from(format!(
+                " {} {count}",
+                fit(&sanitize(&name), nw, Align::Left)
             )));
-            out.push(row(Msg::RelMapRows.text(), t.rows.to_string()));
-            out.push(Line::from(fit(Msg::RelMapNoLinks.text(), w, Align::Left)));
-            for c in t.columns.iter().take(12) {
-                out.push(Line::from(fit(
-                    &format!(" {}", sanitize(c)),
-                    w,
-                    Align::Left,
-                )));
-            }
+        }
+    } else {
+        let t = &rm.infos[rm.sel];
+        out.push(Line::from(Span::styled(
+            fit(&sanitize(&t.name), w, Align::Left),
+            strong,
+        )));
+        out.push(row(Msg::RelMapRows.text(), t.rows.to_string()));
+        out.push(Line::from(fit(Msg::RelMapNoLinks.text(), w, Align::Left)));
+        for c in t.columns.iter().take(12) {
+            out.push(Line::from(fit(
+                &format!(" {}", sanitize(c)),
+                w,
+                Align::Left,
+            )));
         }
     }
     out

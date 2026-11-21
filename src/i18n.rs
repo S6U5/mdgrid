@@ -194,15 +194,12 @@ fn fill_in(src: &str, args: &[&dyn Display]) -> String {
             .then(|| after[..digits].parse::<usize>().ok())
             .flatten()
             .and_then(|n| args.get(n));
-        match arg {
-            Some(v) => {
-                out.push_str(&v.to_string());
-                rest = &after[digits + 1..];
-            }
-            None => {
-                out.push('{');
-                rest = after;
-            }
+        if let Some(v) = arg {
+            out.push_str(&v.to_string());
+            rest = &after[digits + 1..];
+        } else {
+            out.push('{');
+            rest = after;
         }
     }
     out.push_str(rest);

@@ -18,7 +18,7 @@ fn app(name: &str) -> (Tmp, App) {
         tmp.write(n, t);
     }
     let mut a = super::test_screen::app_of(&tmp, ColorMode::None);
-    a.nv.target = tmp.notes().to_path_buf();
+    a.nv.target = tmp.notes().clone();
     (tmp, a)
 }
 
@@ -49,7 +49,7 @@ fn test_out_2_export_shown_table() {
     );
     assert!(!text.contains("b.md"), "絞った行は出ない: {text}");
     assert!(
-        a.message.as_deref().unwrap().contains("2"),
+        a.message.as_deref().unwrap().contains('2'),
         "{:?}",
         a.message
     );
@@ -85,7 +85,7 @@ fn test_out_5_export_matches_print_with_path() {
             title: "path".into(),
         },
     );
-    let args = [tmp.notes().to_path_buf()];
+    let args = [tmp.notes().clone()];
     for (cells, id) in want.rows.iter_mut().zip(&want.row_ids) {
         let p = crate::pick_path(&args, std::path::Path::new(&id.0));
         cells.insert(

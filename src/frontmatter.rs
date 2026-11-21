@@ -74,29 +74,26 @@ fn split_lines(text: &str) -> Vec<Line<'_>> {
     let bytes = text.as_bytes();
     let mut start = 0;
     while start < bytes.len() {
-        match text[start..].find('\n') {
-            Some(i) => {
-                let nl_at = start + i;
-                let (content_end, newline) = if nl_at > start && bytes[nl_at - 1] == b'\r' {
-                    (nl_at - 1, "\r\n")
-                } else {
-                    (nl_at, "\n")
-                };
-                lines.push(Line {
-                    start,
-                    content: &text[start..content_end],
-                    newline,
-                });
-                start = nl_at + 1;
-            }
-            None => {
-                lines.push(Line {
-                    start,
-                    content: &text[start..],
-                    newline: "",
-                });
-                start = bytes.len();
-            }
+        if let Some(i) = text[start..].find('\n') {
+            let nl_at = start + i;
+            let (content_end, newline) = if nl_at > start && bytes[nl_at - 1] == b'\r' {
+                (nl_at - 1, "\r\n")
+            } else {
+                (nl_at, "\n")
+            };
+            lines.push(Line {
+                start,
+                content: &text[start..content_end],
+                newline,
+            });
+            start = nl_at + 1;
+        } else {
+            lines.push(Line {
+                start,
+                content: &text[start..],
+                newline: "",
+            });
+            start = bytes.len();
         }
     }
     lines
@@ -668,7 +665,7 @@ pub fn flow_frontmatter(bytes: &[u8]) -> Option<Frontmatter> {
     }
     crate::yaml_guard::check_aliases(inner).ok()?;
     let docs = Yaml::load_from_str(inner).ok()?;
-    fn scalar(y: &Yaml) -> Value {
+    fn scalar(y: &Yaml<'_>) -> Value {
         match y {
             Yaml::Tagged(_, inner) => scalar(inner),
             Yaml::Value(Scalar::Null) => Value::Null,
@@ -1039,7 +1036,7 @@ pub fn yaml_error(bytes: &[u8]) -> Option<(usize, String)> {
     let end = if rest.starts_with("---") {
         0
     } else {
-        rest.find("\n---").map(|i| i + 1).unwrap_or(rest.len())
+        rest.find("\n---").map_or(rest.len(), |i| i + 1)
     };
     for ev in saphyr_parser::Parser::new_from_str(&rest[..end]) {
         if let Err(e) = ev {

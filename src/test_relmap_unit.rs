@@ -179,7 +179,7 @@ fn test_rel_7_empty_workspace() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "見本の盤を手で見るための出力(cargo test -- --ignored show_sample)"]
 fn show_sample() {
     let (_t, tables) = workspace("show");
     let (infos, links) = read(&tables);
@@ -204,5 +204,5 @@ fn test_rel_7_control_chars_are_not_drawn() {
         many: false,
         pairs: Vec::new(),
     };
-    assert!(!link_text(&l).chars().any(|c| c.is_control()));
+    assert!(!link_text(&l).chars().any(char::is_control));
 }

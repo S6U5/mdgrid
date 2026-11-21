@@ -105,15 +105,17 @@ fn test_st_5_palette_lists_starters_then_folder_then_samples_then_opens() {
         "印: {files:?}"
     );
     assert!(
-        files
-            .iter()
-            .any(|f| f.starts_with(".mdgrid/templates/") && f.ends_with(".md")),
+        files.iter().any(|f| f.starts_with(".mdgrid/templates/")
+            && std::path::Path::new(f)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))),
         "雛形: {files:?}"
     );
     assert!(
-        files
-            .iter()
-            .any(|f| f.starts_with("Reading/") && f.ends_with(".md")),
+        files.iter().any(|f| f.starts_with("Reading/")
+            && std::path::Path::new(f)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))),
         "見本: {files:?}"
     );
     let to = a.switch_to.as_ref().expect("開き直す表");

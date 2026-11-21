@@ -176,6 +176,8 @@ fn key_line_numbers(src: &dyn Source, row: &RowId) -> BTreeMap<String, usize> {
     };
     keys.into_iter()
         .map(|k| {
+            // 行の数は1か所で短い区切りの中だけ数えるので、外の部品(bytecount)は使わない。
+            #[allow(clippy::naive_bytecount)]
             let line = bytes[..k.token.start]
                 .iter()
                 .filter(|b| **b == b'\n')

@@ -15,7 +15,7 @@
 - コミットの題は `cliff.toml` の `commit_parsers` の書き出しで始める(`追加:`・`改善:`・`修正:`・`文書:`・`specs:`・`試験:`・`設定:` など)。`tests/test_cliff.rs` が履歴の全部のコミットの題を確かめるので、決まった書き出しでない題が1つでも入ると、CI のテストが落ちる。初めてコミットする前に `git log --oneline -10` で今の書き方を見る。
 - 題の検査は履歴を読むので、コミットする前に回しても引っかからない。コミットしたあと、push の前に `cargo test --test all test_cliff` を回す(結合の試験は束ねてあるので、ファイルの名前で絞る)。push したあとに題を直すには履歴の書き換え(強制 push)が要り、人の許可なしにはできない。
 - push の前に `git fetch origin main` で main が進んでいないかを見て、進んでいればマージで取り込む(rebase と強制 push はしない)。取り込まないと、CI の `weaken` が main の側の変更を「このブランチが戻した」と数える。
-- 手元の Stop のフックが回すのは `tools/trace_gate.py check`(要求の書式とテストの印)だけ。fmt・clippy・テストは `./ci.sh` で回す。次の検査は CI でだけ回るので、当たりそうな変更をしたら push の前に手で回す。
+- 手元の Stop のフックが回すのは `tools/trace_gate.py check`(要求の書式とテストの印)だけ。fmt・clippy・テストと、Python・シェル・Actions の lint(`scripts/lint.sh`)は `./ci.sh` で回す。道具は `nix develop`(`flake.nix` の devShells)で入る。lint の決まり(clippy の pedantic と外した理由など)は docs/design.md「lint と書式」。次の検査は CI でだけ回るので、当たりそうな変更をしたら push の前に手で回す。
   - `python3 tools/trace_gate.py weaken --base origin/main --head HEAD`: 足した・変えた要求と、減らしたテストを並べる。要求を足した PR では必ず当たりが出て、人が見る合図になる(直す対象ではない)。
   - main のテストを今のコードで回す検査(`reverse-run`): テストが直に組み立てている構造体(`Rule`・`Vars` など)に項目を足すと、main のテストがコンパイルできなくなって落ちる。前からあるテストの期待を変える変更(未対応だった関数を対応にする、など)も、ここで人に回る。項目は構造体の外に持つか、前のテストの期待を変えることを PR の本文に書いて人に問う。
 

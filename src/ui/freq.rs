@@ -84,8 +84,7 @@ pub(crate) fn labels(app: &App, col: &str, items: &[(Option<String>, usize)]) ->
         .map(|(v, _)| {
             v.as_ref()
                 .and_then(|s| app.link_label(first.get(s)?, s))
-                .map(|t| sanitize(&t))
-                .unwrap_or_else(|| value_text(v))
+                .map_or_else(|| value_text(v), |t| sanitize(&t))
         })
         .collect()
 }

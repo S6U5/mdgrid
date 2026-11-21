@@ -148,7 +148,7 @@ fn doc_names(rel: &str, title: &str) -> BTreeSet<String> {
 }
 
 fn const_set(label: &str, list: &[&str]) -> BTreeSet<String> {
-    let set: BTreeSet<String> = list.iter().map(|s| s.to_string()).collect();
+    let set: BTreeSet<String> = list.iter().map(std::string::ToString::to_string).collect();
     assert_eq!(set.len(), list.len(), "{label} に重複がある: {list:?}");
     assert!(!set.is_empty(), "{label} が空");
     for n in &set {

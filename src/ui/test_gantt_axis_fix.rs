@@ -34,13 +34,13 @@ const BAND_NOTES: &[(&str, &str)] = &[
 ];
 
 /// 1つ目のビューの絞り込みが評価できない(開けない)`.base`。2つ目は開けるビュー。
-const BAD_BASE: &str = r#"views:
+const BAD_BASE: &str = r"views:
   - type: table
     name: 壊れた
     filters: 'bar(status)'
   - type: table
     name: 全部
-"#;
+";
 
 // ---- 道具(test_gantt_axis.rs・test_gantt_axis_more.rs から写したもの) ----
 

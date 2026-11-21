@@ -167,33 +167,30 @@ fn test_cli_12_table_defaults_are_real_defaults() {
     // [utest -> req~cli.config-docs~1, req~cli.print-config-output~1, req~cli.print-config-reads-back~1] 表の既定値の表記は、その1行だけを(区画の見出しの下に)読んでも警告なしで既定と同じ振る舞い
     // (表の既定値を実装と違えたら、文書を直す前にここで落ちる)。既定の無い項目は既定では None・空。
     for item in ITEMS {
-        match item.default {
-            Some(d) => {
-                let text = match item.section() {
-                    "" => format!("{} = {d}\n", item.leaf()),
-                    sec => format!("[{sec}]\n{} = {d}\n", item.leaf()),
-                };
-                let (c, w) = parse(&text).unwrap();
-                assert!(w.is_empty(), "`{}`: {w:?}", item.path);
-                assert!(
-                    behaves_as_default(&c),
-                    "`{}` の表の既定値が実装と違う",
-                    item.path
-                );
-            }
-            None => {
-                let d = Config::default();
-                match item.path {
-                    "editor" => assert_eq!(d.editor, None),
-                    "keys" => assert!(d.keys.is_empty()),
-                    "templates" => assert!(d.templates.is_empty()),
-                    "use" => assert_eq!(d.profile.use_, None),
-                    "look.style" => assert!(d.profile.look.style.is_empty()),
-                    "look.columns" => assert!(d.profile.look.columns.is_empty()),
-                    "look.colors" => assert!(d.profile.look.values.is_empty()),
-                    "new_note" => assert_eq!(d.profile.new_note, None),
-                    other => panic!("既定の無い項目 `{other}` の確かめ方を足す"),
-                }
+        if let Some(d) = item.default {
+            let text = match item.section() {
+                "" => format!("{} = {d}\n", item.leaf()),
+                sec => format!("[{sec}]\n{} = {d}\n", item.leaf()),
+            };
+            let (c, w) = parse(&text).unwrap();
+            assert!(w.is_empty(), "`{}`: {w:?}", item.path);
+            assert!(
+                behaves_as_default(&c),
+                "`{}` の表の既定値が実装と違う",
+                item.path
+            );
+        } else {
+            let d = Config::default();
+            match item.path {
+                "editor" => assert_eq!(d.editor, None),
+                "keys" => assert!(d.keys.is_empty()),
+                "templates" => assert!(d.templates.is_empty()),
+                "use" => assert_eq!(d.profile.use_, None),
+                "look.style" => assert!(d.profile.look.style.is_empty()),
+                "look.columns" => assert!(d.profile.look.columns.is_empty()),
+                "look.colors" => assert!(d.profile.look.values.is_empty()),
+                "new_note" => assert_eq!(d.profile.new_note, None),
+                other => panic!("既定の無い項目 `{other}` の確かめ方を足す"),
             }
         }
     }

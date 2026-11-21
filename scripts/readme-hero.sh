@@ -10,9 +10,18 @@ cd "$(dirname "$0")/.."
 PY="${PYTHON:-python3}"
 lang="${1:-en}"
 case "$lang" in
-  en) locale=en_US.UTF-8; out=docs/assets/hero.png ;;
-  ja) locale=ja_JP.UTF-8; out=docs/assets/ja/hero.png ;;
-  *) echo "usage: $0 [en|ja]" >&2; exit 2 ;;
+  en)
+    locale=en_US.UTF-8
+    out=docs/assets/hero.png
+    ;;
+  ja)
+    locale=ja_JP.UTF-8
+    out=docs/assets/ja/hero.png
+    ;;
+  *)
+    echo "usage: $0 [en|ja]" >&2
+    exit 2
+    ;;
 esac
 cargo build --release
 work=$(mktemp -d)
@@ -21,8 +30,14 @@ font="'JetBrainsMono Nerd Font Mono', "
 for variant in dark light; do
   mkdir -p "$work/$variant/mdgrid"
   case $variant in
-    dark) printf '[terminal]\nnerd_font = true\n\n[look]\ntheme = "sumi"\n' > "$work/$variant/mdgrid/config.toml"; bg="#16171b" ;;
-    light) printf '[terminal]\nnerd_font = true\n\n[look]\ntheme = "saas"\npreset = "saas"\n' > "$work/$variant/mdgrid/config.toml"; bg="#f6f7f9" ;;
+    dark)
+      printf '[terminal]\nnerd_font = true\n\n[look]\ntheme = "sumi"\n' >"$work/$variant/mdgrid/config.toml"
+      bg="#16171b"
+      ;;
+    light)
+      printf '[terminal]\nnerd_font = true\n\n[look]\ntheme = "saas"\npreset = "saas"\n' >"$work/$variant/mdgrid/config.toml"
+      bg="#f6f7f9"
+      ;;
   esac
   env -u LC_ALL -u LC_MESSAGES "$PY" "$TUI_SHOT" docs/manual-scenarios.toml --out "$work/shots-$variant" \
     --lang "$lang" --env LANG="$locale" --env COLORTERM=truecolor --env XDG_CONFIG_HOME="$work/$variant" \
@@ -30,7 +45,7 @@ for variant in dark light; do
   svg="$work/shots-$variant/$lang/images/table.svg"
   # The Nerd Font first (round pill ends), and the frame around the screen in the theme's background.
   # tui_shot draws unpainted cells (and the frame) in its default #1e1e1e; use the theme's background there.
-  sed -e "s/font-family=\"/font-family=\"$font/" -e "s/#1e1e1e/$bg/g" "$svg" > "$work/$variant.svg"
+  sed -e "s/font-family=\"/font-family=\"$font/" -e "s/#1e1e1e/$bg/g" "$svg" >"$work/$variant.svg"
   rsvg-convert -w 1000 "$work/$variant.svg" -o "$work/$variant.png"
 done
 # Side by side with a transparent gap (fits both the light and the dark GitHub page).

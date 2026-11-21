@@ -47,29 +47,28 @@ pub(crate) fn button(app: &App) -> String {
 
 /// 窓の1行の文字(決まり・足す行・列の候補)。
 fn rows(app: &App, w: &SortWin) -> (String, Vec<String>) {
-    match &w.picking {
-        Some((cols, _)) => (
+    if let Some((cols, _)) = &w.picking {
+        (
             Msg::SortPickTitle.text().to_string(),
             cols.iter().map(|c| sanitize(&app.title(c))).collect(),
-        ),
-        None => {
-            let mut out: Vec<String> = app
-                .settings
-                .sorts
-                .iter()
-                .map(|(c, d)| {
-                    let arrow = if *d == Dir::Desc { "↓" } else { "↑" };
-                    let dir = if *d == Dir::Desc {
-                        Msg::SortDesc.text()
-                    } else {
-                        Msg::SortAsc.text()
-                    };
-                    format!("{arrow} {}  {dir}", sanitize(&app.title(c)))
-                })
-                .collect();
-            out.push(Msg::SortAdd.text().to_string());
-            (Msg::SortTitle.text().to_string(), out)
-        }
+        )
+    } else {
+        let mut out: Vec<String> = app
+            .settings
+            .sorts
+            .iter()
+            .map(|(c, d)| {
+                let arrow = if *d == Dir::Desc { "↓" } else { "↑" };
+                let dir = if *d == Dir::Desc {
+                    Msg::SortDesc.text()
+                } else {
+                    Msg::SortAsc.text()
+                };
+                format!("{arrow} {}  {dir}", sanitize(&app.title(c)))
+            })
+            .collect();
+        out.push(Msg::SortAdd.text().to_string());
+        (Msg::SortTitle.text().to_string(), out)
     }
 }
 
@@ -99,8 +98,9 @@ fn window(app: &App) -> Option<Geom> {
     // NV-23: ビューの帯のボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
     // ボタンが描かれていなければ、ヘッダーの下に右の端にそろえて置く。
     let (bx, ay) = super::bands::button_anchor(app, super::bands::ViewButton::Sort)
-        .map(|(x, y)| (Some(x), y))
-        .unwrap_or((None, super::bands::head_y(app) as usize));
+        .map_or((None, super::bands::head_y(app) as usize), |(x, y)| {
+            (Some(x), y)
+        });
     let popup::Place { top, vis } = popup::place(ay, items.len(), limit)?;
     let sel = match &w.picking {
         Some((_, s)) => *s,

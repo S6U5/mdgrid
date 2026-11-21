@@ -179,7 +179,7 @@ fn test_nv_31_click_tab_below_after_gap() {
         .iter()
         .find(|v| format!("{line} ").contains(&format!(" {v} ")))
         .unwrap_or_else(|| panic!("今のでないタブが無い:\n{s}"));
-    let x = width::width(&line[..line.find(&format!(" {target} ")).unwrap() + 1]) as u16;
+    let x = width::width(&line[..=line.find(&format!(" {target} ")).unwrap()]) as u16;
     let before = a.view_names()[a.view_index()].clone();
     a.click(x, (rows[0] - 1) as u16);
     assert_eq!(

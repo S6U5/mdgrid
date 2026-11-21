@@ -78,7 +78,7 @@ impl App {
             return value_key(&super::grid::value_of(nv));
         }
         match self.cell(row, col) {
-            Shown::Prop(c) => c.value.as_ref().map(value_key).unwrap_or(SortKey::Empty),
+            Shown::Prop(c) => c.value.as_ref().map_or(SortKey::Empty, value_key),
             Shown::Computed(v) => val_key(&v),
             Shown::Unsupported(_) => SortKey::Empty,
         }

@@ -22,7 +22,7 @@ fn test_ch_3_narrow_number_bins_have_distinct_names() {
     let items = c.items();
     assert_eq!(items.len(), 10, "区間は 10: {}", c.raw);
     let mut names: Vec<&str> = items.iter().map(|(n, _)| n.as_str()).collect();
-    names.sort();
+    names.sort_unstable();
     names.dedup();
     assert_eq!(
         names.len(),

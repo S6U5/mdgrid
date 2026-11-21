@@ -174,7 +174,8 @@ fn test_cliff_toml_parses_with_commit_parsers() {
     let cliff = load_cliff();
     let git = table(&cliff, "git");
     assert_eq!(
-        git.get("conventional_commits").and_then(|v| v.as_bool()),
+        git.get("conventional_commits")
+            .and_then(toml::Value::as_bool),
         Some(false),
         "[git] の conventional_commits は false であること"
     );

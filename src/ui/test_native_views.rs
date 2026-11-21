@@ -186,7 +186,7 @@ fn sorted(mut v: Vec<String>) -> Vec<String> {
 }
 
 fn strs(v: &[&str]) -> Vec<String> {
-    v.iter().map(|s| s.to_string()).collect()
+    v.iter().map(std::string::ToString::to_string).collect()
 }
 
 fn snapshot(dir: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
@@ -832,7 +832,10 @@ fn test_bv_20_base_views_come_first() {
         .iter()
         .map(|n| t.find(n))
         .collect();
-    assert!(pos.iter().all(|p| p.is_some()), "4つのタブ: {t}");
+    assert!(
+        pos.iter().all(std::option::Option::is_some),
+        "4つのタブ: {t}"
+    );
     assert!(
         pos.windows(2).all(|w| w[0] < w[1]),
         ".base のビューが先: {t}"

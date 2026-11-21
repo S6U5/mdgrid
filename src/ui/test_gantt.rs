@@ -299,8 +299,7 @@ fn test_ga_2_bars_points_today_and_no_color() {
     );
     let today_x = delta
         .find('┊')
-        .map(|i| width(&delta[..i]))
-        .unwrap_or_else(|| panic!("今日の列の印 ┊:\n{s}"));
+        .map_or_else(|| panic!("今日の列の印 ┊:\n{s}"), |i| width(&delta[..i]));
     assert_eq!(
         char_at(&alpha, today_x),
         Some('█'),

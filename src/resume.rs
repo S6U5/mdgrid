@@ -134,8 +134,7 @@ impl Seq {
 pub fn now_us() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_micros() as u64)
-        .unwrap_or(0)
+        .map_or(0, |d| d.as_micros() as u64)
 }
 
 /// Herdr の窓(resume.herdr-report): 道具のパスと窓の ID。
@@ -177,7 +176,7 @@ impl Herdr {
             "--seq",
         ]
         .iter()
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .collect();
         out.push(seq.to_string());
         out.push("--".into());
@@ -198,7 +197,7 @@ impl Herdr {
             "--seq",
         ]
         .iter()
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .chain(std::iter::once(seq.to_string()))
         .collect()
     }

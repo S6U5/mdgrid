@@ -35,8 +35,7 @@ fn header_text(app: &App) -> String {
         let total = app
             .progress
             .total
-            .map(|t| t.to_string())
-            .unwrap_or_else(|| "?".into());
+            .map_or_else(|| "?".into(), |t| t.to_string());
         text.push_str(&Msg::HeaderLoading.fill(&[&app.progress.loaded, &total]));
         if let Some(k) = keymap::key_for(&app.keys, app.mode, keymap::Action::CancelLoad) {
             text.push_str(&Msg::HeaderCancelKey.fill(&[&k]));
@@ -414,10 +413,10 @@ fn search_shown(app: &App) -> bool {
 
 /// ビューの帯(SR-1)の行の数: タブか検索の欄を出すなら 1(3行の形(plain・box)なら 3)、両方隠せば 0。
 pub(crate) fn tab_rows(app: &App) -> usize {
-    if !(tabs_shown(app) || search_shown(app)) {
-        0
-    } else {
+    if tabs_shown(app) || search_shown(app) {
         1 + 2 * bar_padding(app) + wrap_rows(app)
+    } else {
+        0
     }
 }
 
@@ -434,7 +433,7 @@ fn tab_lines(app: &App) -> usize {
         /// 帯を置く途中(検索の欄が描かれるかを見るときに帯の行を引く)で、もう一度数えないための印。
         static COUNTING: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     }
-    if !(tab_wrap(app) || has_breaks(app)) || COUNTING.with(|c| c.get()) {
+    if !(tab_wrap(app) || has_breaks(app)) || COUNTING.with(std::cell::Cell::get) {
         return 0;
     }
     COUNTING.with(|c| c.set(true));
@@ -836,8 +835,7 @@ pub(crate) fn view_bar(app: &App, w: usize) -> ViewBar {
     })
     .collect();
     let mut new = super::new_note::button_shown(app).then(|| new_button_text(app).0);
-    let tabs_w =
-        |tabs: &[(usize, String, usize)]| tabs.last().map(|(x, t, _)| x + width(t)).unwrap_or(0);
+    let tabs_w = |tabs: &[(usize, String, usize)]| tabs.last().map_or(0, |(x, t, _)| x + width(t));
     let need = |tabs: &[(usize, String, usize)],
                 search_w: usize,
                 buttons: &[(String, ViewButton, bool)],

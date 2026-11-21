@@ -94,7 +94,7 @@ fn snapshot(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
 }
 
 fn names(v: &[&str]) -> Vec<String> {
-    v.iter().map(|s| s.to_string()).collect()
+    v.iter().map(std::string::ToString::to_string).collect()
 }
 
 fn some(v: &[&str]) -> Vec<Option<String>> {
@@ -270,7 +270,7 @@ fn test_bv_17_save_then_load_returns_same_views() {
     let views = vec![full_view(), second, simple_view("既定ふう")];
     save_views(&conf, &notes, &views).expect("save_views");
     let (back, warns) = load_views(&conf, &notes);
-    assert!(warns.is_empty(), "警告は無い: {:?}", warns);
+    assert!(warns.is_empty(), "警告は無い: {warns:?}");
     assert_eq!(back, views, "保存したビューが順も含めて戻る");
 }
 
@@ -295,7 +295,7 @@ fn test_bv_20_views_are_per_target_and_other_targets_are_kept() {
     // A を書き直す(1つに減らす)。
     save_views(&conf, &a, &[simple_view("A3")]).expect("save A again");
     let (va, warns) = load_views(&conf, &a);
-    assert!(warns.is_empty(), "{:?}", warns);
+    assert!(warns.is_empty(), "{warns:?}");
     assert_eq!(va, vec![simple_view("A3")], "A は全部書き直される");
     let (vb, _) = load_views(&conf, &b);
     assert_eq!(vb, vec![full_view()], "B のビューは残る");
@@ -304,7 +304,7 @@ fn test_bv_20_views_are_per_target_and_other_targets_are_kept() {
     let c = t.mkdir("notes-c");
     let (vc, warns) = load_views(&conf, &c);
     assert!(vc.is_empty());
-    assert!(warns.is_empty(), "{:?}", warns);
+    assert!(warns.is_empty(), "{warns:?}");
 }
 
 #[test]
@@ -321,14 +321,14 @@ fn test_bv_17_does_not_write_into_note_folder() {
 
     // 置き場には views.toml があり、ほかに残るもの(一時ファイル)は無い。
     let files: Vec<PathBuf> = snapshot(&conf).into_iter().map(|(p, _)| p).collect();
-    assert_eq!(files, vec![conf.join("views.toml")], "{:?}", files);
+    assert_eq!(files, vec![conf.join("views.toml")], "{files:?}");
     // 置き場の外(t の下の config 以外)に新しいファイルが無い。
     let outside: Vec<PathBuf> = snapshot(t.path())
         .into_iter()
         .map(|(p, _)| p)
         .filter(|p| !p.starts_with(&conf))
         .collect();
-    assert!(outside.is_empty(), "置き場の外にファイル: {:?}", outside);
+    assert!(outside.is_empty(), "置き場の外にファイル: {outside:?}");
 }
 
 #[cfg(unix)]
@@ -354,13 +354,11 @@ fn test_bv_20_target_is_keyed_by_real_path() {
     let canon = std::fs::canonicalize(&real).unwrap();
     assert!(
         text.contains(canon.to_str().unwrap()),
-        "実体のパスで書く: {}",
-        text
+        "実体のパスで書く: {text}"
     );
     assert!(
         !text.contains(link.to_str().unwrap()),
-        "リンクのパスで書かない: {}",
-        text
+        "リンクのパスで書かない: {text}"
     );
 }
 
@@ -412,8 +410,8 @@ path = {o}
     std::fs::write(conf.join("views.toml"), text).unwrap();
 
     let (views, warns) = load_views(&conf, &notes);
-    assert!(warns.is_empty(), "警告は無い: {:?}", warns);
-    assert_eq!(views.len(), 2, "{:?}", views);
+    assert!(warns.is_empty(), "警告は無い: {warns:?}");
+    assert_eq!(views.len(), 2, "{views:?}");
     assert_eq!(views[0].name, "未完了");
     assert_eq!(views[0].order, names(&["title", "status", "due"]));
     assert_eq!(views[0].hidden, names(&["due"]));
@@ -453,13 +451,12 @@ path = {p}
     );
     std::fs::write(conf.join("views.toml"), text).unwrap();
     let (views, warns) = load_views(&conf, &notes);
-    assert_eq!(views.len(), 1, "ビューは読める: {:?}", views);
+    assert_eq!(views.len(), 1, "ビューは読める: {views:?}");
     assert_eq!(views[0].name, "色つき");
     assert_eq!(views[0].order, names(&["title"]));
     assert!(
         warns.iter().any(|w| w.contains("color")),
-        "知らない項目の名前が警告に出る: {:?}",
-        warns
+        "知らない項目の名前が警告に出る: {warns:?}"
     );
 }
 
@@ -472,9 +469,9 @@ fn test_bv_20_broken_toml_warns_and_returns_no_views() {
     let broken = "[[target]\npath = \"/x\n  [[target.view]]\n  name = \n";
     std::fs::write(conf.join("views.toml"), broken).unwrap();
     let (views, warns) = load_views(&conf, &notes);
-    assert!(views.is_empty(), "{:?}", views);
+    assert!(views.is_empty(), "{views:?}");
     assert!(!warns.is_empty(), "壊れたファイルは警告");
-    assert!(warns.iter().all(|w| !w.trim().is_empty()), "{:?}", warns);
+    assert!(warns.iter().all(|w| !w.trim().is_empty()), "{warns:?}");
     // 読むだけでは壊れたファイルを書き換えない。
     assert_eq!(
         std::fs::read_to_string(conf.join("views.toml")).unwrap(),
@@ -490,7 +487,7 @@ fn test_bv_20_missing_file_is_empty_without_warning() {
     let conf = t.path().join("no-such-config");
     let (views, warns) = load_views(&conf, &notes);
     assert!(views.is_empty());
-    assert!(warns.is_empty(), "{:?}", warns);
+    assert!(warns.is_empty(), "{warns:?}");
     assert!(!conf.exists(), "読むだけでは置き場を作らない");
 }
 
@@ -505,8 +502,7 @@ fn test_bv_19_to_base_builds_same_rows_as_native_view() {
     let (yaml, dropped) = to_base(&view);
     assert!(
         dropped.is_empty(),
-        "全部表せるので落とした部分は無い: {:?}",
-        dropped
+        "全部表せるので落とした部分は無い: {dropped:?}"
     );
 
     let (md, b) = open_base_text(&v, "exported.base", &yaml);
@@ -557,7 +553,7 @@ fn test_bv_19_to_base_simple_filters_expr_and_desc_group() {
     };
     view.settings.sorts = vec![("file.name".to_string(), Dir::Asc)];
     let (yaml, dropped) = to_base(&view);
-    assert!(dropped.is_empty(), "{:?}", dropped);
+    assert!(dropped.is_empty(), "{dropped:?}");
     let (md, b) = open_base_text(&v, "simple.base", &yaml);
     let src: &dyn Source = &md;
     let g = build(&b, 0, src);
@@ -585,11 +581,7 @@ fn test_bv_19_to_base_reports_dropped_parts() {
     };
     let (yaml, dropped) = to_base(&view);
     assert!(!dropped.is_empty(), "落とした説明が出る: {yaml}");
-    assert!(
-        dropped.iter().all(|d| !d.trim().is_empty()),
-        "{:?}",
-        dropped
-    );
+    assert!(dropped.iter().all(|d| !d.trim().is_empty()), "{dropped:?}");
     base::parse(&yaml).unwrap_or_else(|e| panic!("落としても parse できる: {e}\n{yaml}"));
 }
 
@@ -682,8 +674,7 @@ fn test_bv_19_from_base_maps_fields() {
 
     assert!(
         dropped.iter().any(|d| d.contains("limit")),
-        "limit を落としたと知らせる: {:?}",
-        dropped
+        "limit を落としたと知らせる: {dropped:?}"
     );
 
     // filters の無いビュー: 全体の filters だけが入る。limit も無いので落とした部分は無い。
@@ -691,7 +682,7 @@ fn test_bv_19_from_base_maps_fields() {
     assert_eq!(nv2.name, "二つ目");
     assert_eq!(nv2.order, names(&["file.name"]));
     assert!(nv2.filters_expr.join("\n").contains(r#"file.hasTag("a")"#));
-    assert!(dropped2.is_empty(), "{:?}", dropped2);
+    assert!(dropped2.is_empty(), "{dropped2:?}");
 }
 
 #[test]
@@ -702,7 +693,7 @@ fn test_bv_19_from_base_then_to_base_keeps_rows() {
     let b = base::parse(IMPORT_BASE).expect("parse");
     let (nv, _) = from_base(&b, 0);
     let (yaml, dropped) = to_base(&nv);
-    assert!(dropped.is_empty(), "{:?}", dropped);
+    assert!(dropped.is_empty(), "{dropped:?}");
     let (md, round) = open_base_text(&v, "round.base", &yaml);
     let src: &dyn Source = &md;
     let g = build(&round, 0, src);
