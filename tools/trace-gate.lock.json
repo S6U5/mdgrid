@@ -2,9 +2,9 @@
 "format": "trace-gate-vendor-lock",
 "format_version": 1,
 "tool": "trace-gate",
-"tool_version": "0.33.3",
+"tool_version": "0.37.0",
 "files": [
 {"part": "trace-gate-hooks", "path": ".claude/settings.json", "sha256": "0165350f2f0d81d1a2465abe8ba920d2b53c9f6bd1a7e798f45fbfbcf12b4c04"},
-{"path": "tools/trace_gate.py", "sha256": "41570be2c5e4623dd583b114ee7fba83ba9b6d4860c4ebdb9040f98a875586aa"}
+{"path": "tools/trace_gate.py", "sha256": "61ae710daea68b55e800f989b599561917588412fa4f71c950b02d9e06c5d021"}
 ]
 }

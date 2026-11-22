@@ -71,7 +71,7 @@ from collections import Counter
 from functools import lru_cache
 
 TOOL_NAME = "trace-gate"
-TOOL_VERSION = "0.33.3"
+TOOL_VERSION = "0.37.0"
 LEDGER_FORMAT = "trace-gate-ledger"
 FINDINGS_FORMAT = "trace-gate-findings"
 FORMAT_VERSION = 1
@@ -214,7 +214,7 @@ UP_REF = re.compile(r"(?<![A-Za-z0-9_~])up~([a-z0-9][a-z0-9._-]*)")
 
 RULES = {
     # TG-1 要求の正本
-    "req-malformed": "形は「### 要求の題」の次の行に「`req~名前~版` P0」、続けて「- 受け入れ: 確かめられる1文」(1つ以上)と任意の「- なぜ:」「- 確かめ:」「- 扱い:」「- 出典:」を1欄1行で書く。名前は英小文字・数字・. - _。1行の形の要求は convert で新しい形に移す",
+    "req-malformed": "形は「### 要求の題」の次の行に「`req~名前~版` P0」、続けて「- Acceptance: 確かめられる1文」(1つ以上)と任意の「- Rationale:」「- Needs:」「- Disposition:」「- Input:」を1欄1行で書く(日本語の名前 受け入れ・なぜ・確かめ・扱い・出典 も読む)。名前は英小文字・数字・. - _。1行の形の要求と日本語の名前は convert で今の形に移す",
     "block-stray-text": "区切りの欄の後に、空の行を挟んで字下げした段落・表・コードがある。GitHub では受け入れの項目の中に見えるが、指紋に入らず、変えても版の上げ忘れに気づけない。要る文は受け入れの欄に1行で書くか、字下げを外して区切りの外の段落にする(表は見出しを付けて区切りの外の節へ)",
     "origin-deprecated": "【…】の印は前の版の出所の印で、もう使わない(消してよい。指紋は変わらない)。誰が決めたかは PR のレビューの承認で残す",
     "req-duplicate": "名前は1つの要求に1つ。消した要求の名前も使い回さない(古い印が別の要求に結びつくため)",
@@ -224,19 +224,21 @@ RULES = {
     "req-none": "設定の requirements が要求の正本を指しているか確かめる。要求が0件のまま通すと、何も見ずに通る",
     "inputs-present": "設定の tests か requirements に書いた置き場が何にも当たらない(グロブでない道が無い、グロブに当たるファイルが無い、当たったテストが全部 exclude で外れた)。置き場か exclude を直す(0件のまま通すと何も見ずに通る)",
     "open-dangling": "製品のコードのコメントに残った tbd~名前 が正本の未確定事項に無い。決まったなら仮置きのコメントを消し、残っているなら正本に未確定事項を書く",
+    "open-used-undecided": "製品のコードが、仮: の無い未確定事項 tbd~名前 を使っている。決める人に決めてもらって要求に書くか、仮に決めてよいなら 仮: に値を書く(仮が無いまま作ると、作る人ごとに推測が割れる)",
+    "spec-external-ref": "正本が別紙・別表を名前だけで指している。中身を正本に書くか、リポの中に置いて [名前](道) で指す(作る人や AI が別紙を持っていないと推測で作る)",
     "req-changed-same-version": "要求の文か受け入れ基準を変えたら版を上げる(誤字の直しでも、文が変われば版を上げる。指紋は空白しか寄せないため)",
     "req-changed": "人が中身を見て、要求の変更をレビューで承認する(AI だけで要求を変えない。優先度を上げたら、P0 の選び分けを人が決める)",
     "approval-stale": "承認した後に要求が変わった。人が中身を見て、端末で approve を走らせて承認し直すか、要求を戻す",
     "approval-malformed": "承認の記録の行は1行1つの JSON(name・version・fingerprint・by・date・meaning)。手で直さず、人が approve で書く",
     "approval-rewritten": "承認の記録は追記だけ。書き換えた・消した行を base の形に戻す(取り消すなら、人が新しい行で承認し直す)",
     "req-version-down": "版は上げる向きにだけ変える。戻したいなら新しい版で前の文を書く(下げると、新しい版の印が mark-future になるため)",
-    "upstream-unmapped": "上流の項目を、どれかの要求の 出典: に書くか、決めていないなら未確定事項(tbd~)の 根拠: に up~名前 を書いて保留にする。1行の形の要求の行は読まないので、残っていれば先に convert で移す",
+    "upstream-unmapped": "上流の項目を、どれかの要求の Input: に書くか、決めていないなら未確定事項(tbd~)の Basis: に up~名前 を書いて保留にする。1行の形の要求の行は読まないので、残っていれば先に convert で移す",
     "upstream-unknown": "出典の up~名前 を上流の正本の名前に合わせる(上流に無い決定を足すなら、上流の変更管理を通す)",
     "upstream-retired": "上流の項目が、扱いが廃止の要求からしか結ばれていない。上流の決定をやめるなら、上流の変更管理を通したかを確かめる",
     "upstream-title-stale": "出典の up~名前(題) の題を、上流の項目の文の頭の写しに直す(終わりを … で切ってよい)。上流の文を変えたなら、要求の側の写しも同じ変更で直す",
     "upstream-malformed": "形は「- `up~名前` 上流の項目の短い文」。名前は英小文字・数字・. - _ で、1つの項目に1つ",
     "open-duplicate": "未確定事項の ID は1つの問いに1つ。2つ目を消すか、別の問いなら別の名前にする(同じ ID の写しは weaken の比べを外すため)",
-    "open-malformed": "形は「### 決めていないこと」の次の行に「`tbd~名前`」、続けて「- 決める人: 人」(必須)と任意の「- 期限: YYYY-MM-DD か出来事」「- 仮: 値」「- 根拠: up~名前 や理由」「- 区分: 人が先に決める|仮に決めてよい」を1欄1行で書く。1行の形は convert で移す",
+    "open-malformed": "形は「### 決めていないこと」の次の行に「`tbd~名前`」、続けて「- Decider: 人」(必須)と任意の「- Due: YYYY-MM-DD か出来事」「- Provisional: 値」「- Basis: up~名前 や理由」「- Kind: 人が先に決める|仮に決めてよい」を1欄1行で書く(日本語の名前 決める人・期限・仮・根拠・区分 も読む)。1行の形と日本語の名前は convert で移す",
     "open-item": "出荷の前に、人が決めて要求に書き、未確定事項の区切りを消す",
     # TG-2 テストの印
     "mark-malformed": "形は「[utest -> req~名前~版]」(種類は utest・itest・stest・ctest。複数は , で区切る)",
@@ -248,8 +250,8 @@ RULES = {
     "test-focused": "`.only`・fit・fdescribe はほかのテストを黙って止める。コミットする前に外す",
     "test-empty": "要求の受け入れ基準を確かめる断言(assert・expect など)を書く(断言の無いテストは実装が誤っていても通るため)",
     "test-trivial": "いつも通るか型だけを見る断言しか無い。要求の受け入れ基準の値を比べる断言を書く(型の合う誤った値で通るため)",
-    "needs-missing": "要求の 確かめ: に書いた種類のテストを足す(確かめ: から種類を外すのは確かめを弱める要求の変更で、PR で人が承認し、weaken が needs-reduced で人に回す)",
-    "needs-unwanted": "要求の 確かめ: に無い種類の印。要るなら 確かめ: に足し、要らないならテストか印を見直す",
+    "needs-missing": "要求の Needs: に書いた種類のテストを足す(Needs: から種類を外すのは確かめを弱める要求の変更で、PR で人が承認し、weaken が needs-reduced で人に回す)",
+    "needs-unwanted": "要求の Needs: に無い種類の印。要るなら Needs: に足し、要らないならテストか印を見直す",
     "needs-reduced": "人が見て、要る確かめの種類を減らしてよいかを確かめる(減らすのは確かめを弱めること)",
     "p0-no-test": "P0 には、今の版の印を持ち、飛ばない(条件つきの skip も無い)断言のあるテストを1本以上置く(設定の quarantine で隔離したテストは数えない)。環境に頼る所は偽物で差し替えて閉じた形にする",
     "test-not-run": "印のあるテストを、全部が揃うと決めた CI のジョブで走らせる(結果に無いのは、集め方の外か、名前で外されたか)。設定の tests と JUnit の classname が同じテストを指しているかを照らす",
@@ -264,7 +266,8 @@ RULES = {
     "spec-heading-missing": "主題のファイルに `## 目的` と `## 要求` を置く(雛形の必須の見出し。任意の見出しは要るときだけ)",
     "spec-heading-order": "見出しを雛形の順(目的・範囲外・用語・要求・未確定事項)に並べる。足した見出しはどこに置いてもよい",
     "spec-line-misplaced": "要求の区切りは `## 要求` の下(まとまりは `###` で分ける)、未確定事項の区切りは `## 未確定事項` の下に置く",
-    "req-no-source": "要求を足す・変える前に、根拠の文書に調べを置き、要求の末尾に 出典: up~名前 を書く(取り入れは調べてから)",
+    "accept-not-parts": "受け入れ基準を `- Acceptance:` の下に字下げした `- Given:`(前の状態)・`- When:`(操作1つ)・`- Then:`(見える結果)で書く(require_accept_parts が true)。前の状態と操作の無い要求は Given と When を空にする。1行の文は convert で Then に移せる(指紋は変わらない)。境界は両側を場面に書く",
+    "req-no-source": "要求を足す・変える前に、根拠の文書に調べを置き、要求の末尾に Input: up~名前 を書く(取り入れは調べてから)",
     "part-below-floor": "下限の部品(リポの事実から出す)を切るなら、trace-gate.json の waivers に部品ごとの reason(理由)と until(期限)を書く。任意にした守りは入れられず、止めた守りは戻らないため",
     "waiver-expired": "期限の過ぎた切り替え。部品を戻すか、人が理由を見直して期限を延ばす(ふだんは知らせるだけで、切った部品が守る置き場を変えた PR の check --base だけ止める。暦が変わっただけで関係の無い PR を落とさないため。--base では基点と head の早い期限で判断するので、延ばすのはテストに触れない別の変更でする)",
     "retired-has-tests": "扱いが廃止の要求を指す印のテストを同じ変更で消すか、要求の扱いを戻す(廃止の要求は確かめない)",
@@ -286,6 +289,7 @@ RULES = {
     "name-unreserved": "人が見て、名前の表の行を消すか変えてよいかを確かめる(消すと、その名前の使い回しが止まらなくなる)",
     "gate-loosened": "人が見て、CI の置き場の変更が検査を緩めていないかを確かめる(走らせる検査器・引き金・手順を見る。緩めるなら理由を ADR に書く。|| true や --no-verify で落ちる検査を通さない)",
     "run-count-dropped": "人が見て、走らせた結果の集めたテストの減りと飛んだテストの増えが意図したもの(テストの消し・環境で飛ぶテスト)かを確かめる(印の無いテストを外す裏口は、テストのファイルの差分に出ないため)",
+    "test-unmarked": "足したテストに要求の印が無い。確かめている振る舞いの要求を書いて印を付けるか、要求に結ばないテスト(回帰の見本・既知の限界・補助)なら本体か docstring に [no-req: 理由] を書く",
     "test-renamed": "名前だけが変わった(本体と印は同じ)。弱めではないので、名前が振る舞いを言っているかだけ見る",
     "test-retired": "人が見て、要求の引退が決めたことかを確かめる(引退でなければ、要求とテストを戻す)",
     "test-file-deleted": "人が見て、消したテストが確かめていた要求に別のテストがあるかを確かめる",
@@ -456,6 +460,7 @@ CONFIG_KEYS = {
     "waivers": dict,
     "quarantine": dict,
     "require_sources": bool,
+    "require_accept_parts": bool,  # 受け入れの字下げの形を必須にする(既定は無し。init の雛形は true)
     "sections": bool,
     "adr": list,  # 足した ADR の形を check --base で見る置き場(既定は無し。古い写しは知らない鍵で 2 になるので、写しを更新してから足す)
     "assert_helpers": dict,  # 言語ごとの断言のヘルパーの名前(既定は無し。古い写しは知らない鍵で 2 になるので、写しを更新してから足す)
@@ -933,6 +938,7 @@ class Req(object):
         "text",
         "accepts",
         "accept",
+        "accept_forms",
         "path",
         "line",
         "fingerprint",
@@ -962,6 +968,30 @@ ID_LINE = re.compile(r"^\s*`req~(?P<name>" + NAME + r")~(?P<ver>[1-9][0-9]*)`[ \
 BULLET = re.compile(r"^\s*[-*+][ \t]+(?P<body>.*?)\s*$")
 FIELD = re.compile(r"^(?P<label>[^\s:：`]+)[:：][ \t]*(?P<value>.*)$")
 LABELS = ("なぜ", "受け入れ", "確かめ", "扱い", "出典")
+# 欄の英語の名前(正の形)と、中で使う日本語の名前の対。日本語の名前も同じ欄として読む(convert が英語の名前に替える)
+LABEL_ALIAS = {
+    "Rationale": "なぜ",
+    "Acceptance": "受け入れ",
+    "Needs": "確かめ",
+    "Disposition": "扱い",
+    "Input": "出典",
+    "Decider": "決める人",
+    "Due": "期限",
+    "Provisional": "仮",
+    "Basis": "根拠",
+    "Kind": "区分",
+    "Given": "前提",
+    "When": "もし",
+    "Then": "ならば",
+}
+LABEL_EN = {ja: en for en, ja in LABEL_ALIAS.items()}
+
+
+def canon_label(label):
+    """欄の名前を、中で使う日本語の名前にそろえる(英語の名前は対の日本語の名前に替え、ほかはそのまま)。"""
+    return LABEL_ALIAS.get(label, label)
+
+
 NEEDS_VALUE = re.compile(r"^((?:%s)(?:\s*[・,、]\s*(?:%s))*)$" % (KIND_ALT, KIND_ALT))
 TREAT_VALUE = re.compile(r"^(踏襲|変更|追加|廃止)\s*(?:[(（]\s*([^()（）\n]*?)\s*[)）])?$")
 ENDS = ("。", ".", "!", "?", "！", "？")
@@ -1028,6 +1058,78 @@ def block_boundary(line):
     )
 
 
+ACCEPT_PARTS = ("前提", "もし", "ならば")
+ACCEPT_JOIN = " → "
+
+
+def indent_of(line):
+    """行の頭の字下げの幅(タブは4つの空白と数える)。"""
+    s = line.expandtabs(4)
+    return len(s) - len(s.lstrip())
+
+
+def starts_accept_parts(lines, i, parent_indent):
+    """i の行が、`- 受け入れ:` より深く字下げした `- 前提:` などの箇条か(字下げの形の始まりか)。
+    それ以外の字下げ(折り返し・知らない箇条)は今までどおり read_fields が誤りにする。"""
+    if i >= len(lines) or not lines[i].strip() or indent_of(lines[i]) <= parent_indent:
+        return False
+    b = BULLET.match(lines[i])
+    f = FIELD.match(b.group("body")) if b else None
+    return bool(f and canon_label(f.group("label")) in ACCEPT_PARTS)
+
+
+def read_accept_parts(lines, i, parent_indent, no, errors):
+    """`- Acceptance:` の行(no)の次(i)から、それより深く字下げした `- Given:`・`- When:`・`- Then:`(日本語の名前 前提・もし・ならば も読む)を読む。
+    (次に読む行, 基準の文 か None)。字下げした行が無ければ i をそのまま返す。
+    3行とも書き、前の状態と操作の無い要求は Given と When を空のまま書く。Then は空にできない。
+    基準の文は、空でない部分を「前提 → もし → ならば」の順に → でつなぐ(1行に → で書いた形と同じ文字列なので、形を移しても指紋は変わらない。
+    Given と When が空なら Then の文だけになり、1行の文の受け入れ基準と同じ指紋になる)。"""
+    parts, order, start = {}, [], i
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip() or block_boundary(line) or indent_of(line) <= parent_indent:
+            break
+        sno = i + 1
+        i += 1
+        b = BULLET.match(line)
+        f = FIELD.match(b.group("body")) if b else None
+        if not f or canon_label(f.group("label")) not in ACCEPT_PARTS:
+            errors.append(
+                (
+                    sno,
+                    "Acceptance: の下の字下げは %s の箇条だけ(日本語の名前 %s も読む): %s"
+                    % ("・".join(LABEL_EN[x] + ":" for x in ACCEPT_PARTS), "・".join(x + ":" for x in ACCEPT_PARTS), clip(line.strip())),
+                )
+            )
+            continue
+        shown, value = f.group("label"), f.group("value").strip()
+        label = canon_label(shown)
+        if not value and label == ACCEPT_PARTS[-1]:
+            errors.append((sno, "%s: の中身が無い(Then は空にできない)" % shown))
+            continue
+        if label in parts:
+            errors.append((sno, "%s: は1つの受け入れに1つだけ書く(場面が複数なら `- Acceptance:` を分ける)" % shown))
+            continue
+        parts[label] = value
+        order.append(label)
+    if i == start:
+        return i, None
+    missing = [x for x in ACCEPT_PARTS if x not in parts]
+    if missing:
+        errors.append(
+            (
+                no,
+                "Acceptance: の字下げの形に %s が無い(%s を1行ずつ書き、前の状態と操作が無ければ Given と When は空のまま書く)"
+                % ("・".join(LABEL_EN[x] + ":" for x in missing), " → ".join(LABEL_EN[x] for x in ACCEPT_PARTS)),
+            )
+        )
+        return i, None
+    if order != list(ACCEPT_PARTS):
+        errors.append((no, "Acceptance: の字下げは %s の順に書く" % " → ".join(LABEL_EN[x] for x in ACCEPT_PARTS)))
+        return i, None
+    return i, ACCEPT_JOIN.join(parts[x] for x in ACCEPT_PARTS if parts[x])  # 空の Given・When は除く(Then だけなら1行の文と同じ指紋)
+
+
 def read_fields(lines, i, errors, labels=LABELS, multi=("受け入れ",)):
     """ID の行の次(i)から欄の箇条を読む。(次に読む行, 欄の辞書)。誤りは errors に (行, 文) で足す。
     labels は許すラベル、multi は2つ以上書けるラベル(値は配列)。
@@ -1052,19 +1154,40 @@ def read_fields(lines, i, errors, labels=LABELS, multi=("受け入れ",)):
         prev_field = True
         i += 1
         f = FIELD.match(b.group("body"))
-        label = f.group("label") if f else None
+        shown = f.group("label") if f else None
+        label = canon_label(shown) if f else None
         if label not in labels:
-            errors.append((no, "知らないラベルの欄(ラベルは %s のどれか): %s" % ("・".join(x + ":" for x in labels), clip(line.strip()))))
+            if label in ACCEPT_PARTS and "受け入れ" in multi:
+                errors.append((no, "%s: は `- Acceptance:` の下に字下げして書く: %s" % (shown, clip(line.strip()))))
+            else:
+                errors.append(
+                    (
+                        no,
+                        "知らないラベルの欄(ラベルは %s のどれか。日本語の名前 %s も読む): %s"
+                        % ("・".join(LABEL_EN[x] + ":" for x in labels), "・".join(x + ":" for x in labels), clip(line.strip())),
+                    )
+                )
             continue
         value = f.group("value").strip()
+        if label == "受け入れ" and label in multi and starts_accept_parts(lines, i, indent_of(line)):
+            # 字下げの形(前提・もし・ならば)。読めなかったときは None を置き、「受け入れ: の欄が無い」を重ねて出さない
+            i, joined = read_accept_parts(lines, i, indent_of(line), no, errors)
+            if value:
+                errors.append((no, "Acceptance: に1行の文と字下げの %s を両方書かない" % "・".join(LABEL_EN[x] + ":" for x in ACCEPT_PARTS)))
+                joined = None
+            fields[label].append(joined)
+            fields.setdefault("_forms", []).append("parts")
+            continue
         if not value:
-            errors.append((no, "%s: の中身が無い" % label))
+            errors.append((no, "%s: の中身が無い" % shown))
             continue
         if label in multi:
             fields[label].append(value)
+            if label == "受け入れ":
+                fields.setdefault("_forms", []).append("line")
             continue
         if label in fields:
-            errors.append((no, "%s: は1つの区切りに1つだけ書く" % label))
+            errors.append((no, "%s: は1つの区切りに1つだけ書く(%s: と %s: は同じ欄)" % (shown, LABEL_EN[label], label)))
             continue
         if label == "区分" and value not in OPEN_KINDS:
             errors.append((no, "区分: は %s のどちらか: %s" % ("・".join(OPEN_KINDS), clip(value))))
@@ -1133,6 +1256,7 @@ def parse_block(lines, i, head, path, findings):
     r.title, r.why, r.path, r.line = head[0], fields.get("なぜ"), path, no
     r.text = req_text(r.title, r.why)
     r.accepts = fields["受け入れ"]
+    r.accept_forms = fields.get("_forms", [])
     r.accept = "\n".join(r.accepts)
     r.needs = frozenset(re.findall(KIND_ALT, fields["確かめ"])) if "確かめ" in fields else None
     t = TREAT_VALUE.match(fields["扱い"]) if "扱い" in fields else None
@@ -1141,7 +1265,7 @@ def parse_block(lines, i, head, path, findings):
     r.ups, r.up_titles = up_refs(r.sources), up_titles(r.sources)
     r.fingerprint = fingerprint(r.text, r.accepts, r.treatment == "廃止")
     r.dupes = []  # 同じ名前の2つ目から後ろの (道, 行)。あれば名前は曖昧で、どちらも確かめたと数えない
-    if r.priority == "P0" and len(r.accepts) > 1:  # 欄の数だけを見る(1つの欄の文の中の基準の数は数えない)
+    if r.priority == "P0" and len(r.accepts) > 1 and "line" in r.accept_forms:  # 欄の数だけを見る。字下げの形の欄だけなら、場面ごとに分けた欄として出さない
         findings.append(
             Finding(
                 "p0-multi-criteria",
@@ -1201,7 +1325,7 @@ def bullet_labels(lines, i):
         b = BULLET.match(lines[i])
         f = FIELD.match(b.group("body")) if b else None
         if f:
-            out.add(f.group("label"))
+            out.add(canon_label(f.group("label")))
         i += 1
     return out
 
@@ -1247,11 +1371,11 @@ def parse_requirements(text, path, findings):
         elif head is not None:
             b = BULLET.match(line)
             f = FIELD.match(b.group("body")) if b else None
-            if f and f.group("label") in LABELS:
+            if f and canon_label(f.group("label")) in LABELS:
                 findings.append(Finding("req-malformed", path, head[1], "見出しの後に ID の行(`req~名前~版` P0)が無く、欄だけがある: %s" % clip(line.strip())))
                 while i < len(lines) and (not lines[i].strip() or BULLET.match(lines[i])) and not block_boundary(lines[i]):
                     i += 1
-            elif f and f.group("label") in OPEN_LABELS and "決める人" in bullet_labels(lines, i - 1):  # 決める人の無い - 根拠: などは普通の箇条
+            elif f and canon_label(f.group("label")) in OPEN_LABELS and "決める人" in bullet_labels(lines, i - 1):  # 決める人の無い - 根拠: などは普通の箇条
                 findings.append(Finding("open-malformed", path, head[1], "見出しの後に ID の行(`tbd~名前`)が無く、欄だけがある: %s" % clip(line.strip())))
                 while i < len(lines) and (not lines[i].strip() or BULLET.match(lines[i])) and not block_boundary(lines[i]):
                     i += 1
@@ -1427,11 +1551,45 @@ def requirement_files(root, cfg, files=None):
     return sorted(set(out))
 
 
+EXTERNAL_REF = re.compile(r"別紙|別表|別添|添付資料")
+MD_LINK = re.compile(r"\]\(([^)\s]+)\)")
+CODE_SPAN = re.compile(r"(`+)(.+?)\1")  # `道` と `` `道` `` の柵(同じ数の ` で閉じる)
+
+
+def check_external_refs(root, path, text, findings):
+    """正本が別紙・別表を名前だけで指していれば知らせる(警告)。リポの中の実在する道を [名前](道) か `道` で添えていれば知らせない。
+    コードの柵の中の行と、`…` の中だけに言葉がある行は見ない。"""
+    base = os.path.dirname(path)
+    fence = False
+    for no, line in enumerate(text.splitlines(), 1):
+        if line.lstrip().startswith(("```", "~~~")):
+            fence = not fence
+            continue
+        if fence or not EXTERNAL_REF.search(CODE_SPAN.sub("", line)):  # `別紙` のように柵の言葉として書いたものは参照と読まない
+            continue
+        targets = [t.split("#", 1)[0] for t in MD_LINK.findall(line)] + [m.group(2).strip(" `") for m in CODE_SPAN.finditer(line)]
+        if any(
+            t and not re.match(r"^[a-z]+://", t) and (os.path.exists(os.path.join(root, base, t)) or os.path.exists(os.path.join(root, t))) for t in targets
+        ):
+            continue
+        findings.append(
+            Finding(
+                "spec-external-ref",
+                path,
+                no,
+                "別紙・別表を名前だけで指している(リポの中の道が無い): %s" % clip(line.strip()),
+                key="%s:%d" % (path, no),
+                severity="warning",
+            )
+        )
+
+
 def load_requirements(root, cfg, findings, files=None):
     reqs, opens, paths = [], [], requirement_files(root, cfg, files)
     for p in paths:
         text = read_text(root, p)
         r, o = parse_requirements(text, p, findings)
+        check_external_refs(root, p, text, findings)
         if cfg.get("sections"):
             check_sections(text, p, findings)
         reqs.extend(r)
@@ -1453,6 +1611,12 @@ def load_requirements(root, cfg, findings, files=None):
             )
         else:
             first_open[o["id"]] = o
+    if cfg.get("require_accept_parts"):
+        for r in by_name.values():
+            if "line" in getattr(r, "accept_forms", []):
+                findings.append(
+                    Finding("accept-not-parts", r.path, r.line, "要求 %s の受け入れ基準に1行の文がある(require_accept_parts が true)" % r.id, key=r.name)
+                )
     if cfg.get("require_sources"):
         for r in by_name.values():
             if r.treatment != "廃止" and not r.ups:
@@ -2970,7 +3134,7 @@ def check_inputs(root, cfg, files, findings):
 
 def check_dangling_opens(root, cfg, files, opens, req_paths, findings):
     """製品のコードのコメントに残った tbd~名前 が、正本の未確定事項に無ければ知らせる(警告。決まったのに消し忘れた仮置きを拾う。テストは見ない)。"""
-    known = {o["id"][4:] for o in opens}
+    known = {o["id"][4:]: o for o in opens}
     skip = set(req_paths)
     for p in files:
         if p in skip or os.path.splitext(p)[1] not in DANGLING_EXTS or matches(p, cfg["exclude"]) or matches(p, cfg["upstream"]) or matches(p, cfg["tests"]):
@@ -2990,6 +3154,17 @@ def check_dangling_opens(root, cfg, files, opens, req_paths, findings):
                 name = m.group(1).rstrip(".")  # 文の終わりの . は名前に含めない(up_refs とそろえる)
                 if name and name not in known:
                     findings.append(Finding("open-dangling", p, no, "tbd~%s が正本の未確定事項に無い" % name, key="%s:%s" % (p, name), severity="warning"))
+                elif name and not known[name].get("provisional"):
+                    o = known[name]
+                    findings.append(
+                        Finding(
+                            "open-used-undecided",
+                            p,
+                            no,
+                            "tbd~%s は 仮: が無いまま製品のコードで使われている(決める人: %s)" % (name, o["decider"]),
+                            key="%s:%s" % (p, name),
+                        )
+                    )
 
 
 def analyze(root, cfg, base=None, strict_open=False, junit=None):
@@ -4477,6 +4652,28 @@ def upstream_item_changes(root, args, patterns, old_reqs, new_reqs):
     return out
 
 
+NO_REQ = re.compile(r"\[no-req:\s*[^\]\s][^\]]*\]")  # 要求に結ばないテストの印(理由が要る)
+
+
+def unmarked_added(path, a, b, findings):
+    """base の文 a に無く head の文 b にあるテスト(足されたテスト)のうち、要求の印も [no-req: 理由] も無いものを警告にする。
+    既にあるテストは見ない(入れた日に、既にあるリポで大量に出さないため)。"""
+    old = test_units(path, a) if a else {}
+    for name, (node, body, links, _) in sorted(test_units(path, b).items()):
+        if name in old or links or NO_REQ.search(body):
+            continue
+        findings.append(
+            Finding(
+                "test-unmarked",
+                path,
+                None,
+                "足したテスト %s に要求の印が無い(要求の無い振る舞いを確かめているおそれ)" % clip(node, 100),
+                key=node,
+                severity="warning",
+            )
+        )
+
+
 def weaken_scope(args, root, cfg, bcfg, skip=()):
     """1つの範囲(根かパッケージ)の base と head を比べる。skip の頭で始まる道は見ない(パッケージの側で見るため)。"""
     findings = []
@@ -4543,6 +4740,8 @@ def weaken_scope(args, root, cfg, bcfg, skip=()):
             findings.append(
                 Finding("suppress-added", new, line, "%s の %d 行目のあたりで、検査を黙らせる抑止のコメントが足された" % (new, line), key="%s:%d" % (new, line))
             )
+        if is_test(new):
+            unmarked_added(new, a, b, findings)
         if test_side_file(new):
             if st != "A" and test_side_file(old):
                 weaken_assert_swaps(new, a, b, LANG_BY_EXT[os.path.splitext(new)[1]], findings)
@@ -4726,8 +4925,9 @@ def junit_outcome(case):
                 return "passed"
             if child.get("type") == "testCodeFailure":
                 return "assert-fail" if NODE_ASSERT_CAUSE.search(child.text or "") else "exception"
-            if child.get("type") == "assert" or (child.get("type") == "test failure" and "panicked at" in (child.text or "")):
-                return rust_outcome(child, case)  # libtest の --format junit と、cargo-nextest(type="test failure" で本文に panic の文)
+            if child.get("type") == "assert" or ((child.get("type") or "").startswith("test failure") and "panicked at" in (child.text or "")):
+                # libtest の --format junit と、cargo-nextest(type は "test failure" か "test failure with exit code 101" など。本文に panic の文)
+                return rust_outcome(child, case)
             if ASSERT_FAIL.search(msg) or (not msg.strip() and ASSERT_FAIL.search(child.text or "")):
                 return "assert-fail"
             return "exception"
@@ -6445,17 +6645,40 @@ def parsed_open_key(o):
     return open_key(o["id"][4:], o["text"], fields, o["due"], up_refs(open_text(o)))
 
 
-def convert_text(text, path, compact=False):
-    """1行の形の要求と未確定事項の行を区切りの形に写す。(新しい文, 写した数 (要求, 未確定事項), 誤り [(行, 名前, 文)])。
+LABEL_PREFIX = re.compile(r"^(?P<bullet>\s*[-*+][ \t]+)(?P<label>[^\s:：`]+)[:：][ \t]*")
+
+
+def english_label(line, allowed):
+    """区切りの中の欄の行の日本語の名前を英語の名前に替えた行。替えなければ None。allowed はその区切りで許す日本語の名前。"""
+    m = LABEL_PREFIX.match(line)
+    if not m or m.group("label") not in allowed:
+        return None
+    rest = line[m.end() :]
+    return m.group("bullet") + LABEL_EN[m.group("label")] + (": " + rest if rest else ":")
+
+
+def then_only_parts(bullet, value):
+    """1行の文の受け入れ基準を、Given と When を空にした字下げの形の行に替える。bullet は `- ` までの行の頭。"""
+    head = bullet if bullet else "- "
+    sub = " " * (len(head.expandtabs(4)) - len(head.lstrip().expandtabs(4)) + 2) + "- "
+    return [head + "Acceptance:", sub + "Given:", sub + "When:", sub + "Then: " + value]
+
+
+def convert_text(text, path, compact=False, parts=False):
+    """1行の形の要求と未確定事項の行を区切りの形に写し、区切りの中の日本語の名前の欄を英語の名前に替える。
+    (新しい文, 数 (写した要求, 写した未確定事項, 名前を替えた欄の行), 誤り [(行, 名前, 文)])。
     写した後に読み直し、どの要求の名前・版・優先度・指紋・欄も、どの未確定事項の名前・題・欄の文・期限の日付・up~ も写す前と同じかを確かめる。
-    compact は区切りの間に空の行を足さない。"""
+    compact は区切りの間に空の行を足さない。parts(設定の require_accept_parts)なら、1行の文の受け入れ基準を、
+    Given と When を空にした字下げの形の Then に移す(Then だけの受け入れの文は1行の文と同じなので、指紋は変わらない)。"""
     lines = text.split("\n")
     out, errors, expected, open_expected, origin_line = [], [], [], [], {}
-    fence, group, pending, count, open_count = False, False, False, 0, 0
+    fence, group, pending, count, open_count, renamed = False, False, False, 0, 0, 0
+    inside = None  # 今いる区切りの許す日本語の名前(要求は LABELS、未確定事項は OPEN_LABELS)。区切りの外は None
     for idx, line in enumerate(lines):
         no = idx + 1
         if FENCE_RE.match(line):
             fence = not fence
+            inside = None
         elif not fence and REQ_HINT.match(line):
             d, err = legacy_line(line)
             if err:
@@ -6470,13 +6693,16 @@ def convert_text(text, path, compact=False):
                 "`req~%s~%d` %s%s" % (name, d["version"], d["priority"], " " + d["origin"] if d["origin"] else ""),
             ]
             if d["why"]:
-                block.append("- なぜ: " + d["why"])
-            block.append("- 受け入れ: " + d["accept"].strip())
-            block.extend("- %s: %s" % (label, d["raw"][label]) for label in ("確かめ", "扱い", "出典") if label in d["raw"])
+                block.append("- %s: %s" % (LABEL_EN["なぜ"], d["why"]))
+            if parts:
+                block.extend(then_only_parts("", d["accept"].strip()))
+            else:
+                block.append("- %s: %s" % (LABEL_EN["受け入れ"], d["accept"].strip()))
+            block.extend("- %s: %s" % (LABEL_EN[label], d["raw"][label]) for label in ("確かめ", "扱い", "出典") if label in d["raw"])
             if not compact and out and out[-1].strip():
                 out.append("")
             out.extend(block)
-            pending, count = not compact, count + 1
+            pending, count, inside = not compact, count + 1, None
             fp = fingerprint(d["text"], [d["accept"]], d["treatment"] == "廃止")
             expected.append(req_key(name, d["version"], d["priority"], fp, d["needs"], d["treatment"], d["reason"], d["raw"].get("出典")))
             continue
@@ -6489,13 +6715,29 @@ def convert_text(text, path, compact=False):
                 continue
             origin_line["tbd~" + d["name"]] = no
             block = ["%s %s" % ("####" if group else "###", d["title"]), "`tbd~%s`%s" % (d["name"], " " + d["origin"] if d["origin"] else "")]
-            block.extend("- %s: %s" % (label, d["fields"][label]) for label in OPEN_LABELS if label in d["fields"])
+            block.extend("- %s: %s" % (LABEL_EN[label], d["fields"][label]) for label in OPEN_LABELS if label in d["fields"])
             if not compact and out and out[-1].strip():
                 out.append("")
             out.extend(block)
-            pending, open_count = not compact, open_count + 1
+            pending, open_count, inside = not compact, open_count + 1, None
             open_expected.append(open_key(d["name"], d["title"], d["fields"], d["due"], d["ups"]))
             continue
+        if not fence and inside is not None:
+            if block_boundary(line) or (line.strip() and not BULLET.match(line)):
+                inside = None
+            else:
+                en = english_label(line, inside)
+                if en is not None:
+                    line, renamed = en, renamed + 1
+                if parts and inside is not OPEN_LABELS:  # 要求の区切りの中の1行の文の受け入れ基準
+                    m = LABEL_PREFIX.match(line)
+                    value = line[m.end() :].strip() if m else ""
+                    if m and canon_label(m.group("label")) == "受け入れ" and value:
+                        line, renamed = "\n".join(then_only_parts(m.group("bullet"), value)), renamed + 1
+        if not fence and ID_HINT.match(line):
+            inside = LABELS + ACCEPT_PARTS  # 受け入れの字下げの 前提・もし・ならば も替える
+        elif not fence and OPEN_ID_HINT.match(line):
+            inside = OPEN_LABELS
         if pending and line.strip():
             out.append("")
         pending = False
@@ -6506,8 +6748,8 @@ def convert_text(text, path, compact=False):
             rest = [x for x in lines[idx + 1 :] if x.strip()]
             group = not (rest and (ID_HINT.match(rest[0]) or OPEN_ID_HINT.match(rest[0])))  # 題の見出し(次が ID の行)でなく、まとまりの見出し
     new = "\n".join(out)
-    if errors or not (count or open_count):
-        return new, (count, open_count), errors
+    if errors or not (count or open_count or renamed):
+        return new, (count, open_count, renamed), errors
     before, after = [], []
     old_blocks, old_opens = parse_requirements(text, path, before)
     new_reqs, new_opens = parse_requirements(new, path, after)
@@ -6527,7 +6769,7 @@ def convert_text(text, path, compact=False):
         errors.append((0, "", "移した後に読めない区切りがある(移す前の要求の行のまわりを確かめる)"))
     if sum(f.rule == "open-malformed" for f in after) != sum(f.rule == "open-malformed" for f in before) - open_count:
         errors.append((0, "", "移した後に読めない未確定事項の区切りがある(移す前の行のまわりを確かめる)"))
-    return new, (count, open_count), sorted(set(errors)) if errors else errors
+    return new, (count, open_count, renamed), sorted(set(errors)) if errors else errors
 
 
 def cmd_convert(args, root, cfg):
@@ -6536,15 +6778,16 @@ def cmd_convert(args, root, cfg):
         targets = [(head + p, sroot, p) for head, sroot, scfg in scopes(root, cfg, pkgs) for p in requirement_files(sroot, scfg)]
     else:
         targets = [(p, root, p) for p in requirement_files(root, cfg)]
-    lines, changes, errors, total, open_total = [], [], [], 0, 0
+    lines, changes, errors, total, open_total, label_total = [], [], [], 0, 0, 0
     for shown, sroot, p in targets:
         text = read_text(sroot, p)
-        new, (count, open_count), errs = convert_text(text, shown)
+        new, (count, open_count, renamed), errs = convert_text(text, shown, parts=bool(cfg.get("require_accept_parts")))
         errors.extend((shown, no, name, msg) for no, name, msg in errs)
-        if (count or open_count) and not errs:
-            changes.append((shown, os.path.join(sroot, p), text, new, count, open_count))
+        if (count or open_count or renamed) and not errs:
+            changes.append((shown, os.path.join(sroot, p), text, new, count, open_count, renamed))
             total += count
             open_total += open_count
+            label_total += renamed
     if errors:
         for shown, no, name, msg in errors:
             shown_name = (" " + name if name.startswith("tbd~") else " req~" + name) if name else ""
@@ -6553,24 +6796,24 @@ def cmd_convert(args, root, cfg):
         sys.stdout.write("".join(esc(x) + "\n" for x in lines))
         return 1
     if not changes:
-        sys.stdout.write("trace-gate convert: 1行の形の要求と未確定事項の行は無い(移すものは無い)\n")
+        sys.stdout.write("trace-gate convert: 1行の形の要求と未確定事項の行も、日本語の名前の欄も無い(移すものは無い)\n")
         return 0
-    for shown, path, text, new, count, open_count in changes:
+    for shown, path, text, new, count, open_count, renamed in changes:
         if args.write:
             with open(path, "rb") as f:
                 crlf = b"\r\n" in f.read()
             with open(path, "w", encoding="utf-8", newline="\r\n" if crlf else "\n") as f:
                 f.write(new)
-            lines.append("書き換えた: %s(要求 %d 件・未確定事項 %d 件)" % (shown, count, open_count))
+            lines.append("書き換えた: %s(要求 %d 件・未確定事項 %d 件・欄の名前 %d 行)" % (shown, count, open_count, renamed))
         else:
             diff = difflib.unified_diff(text.split("\n"), new.split("\n"), "a/" + shown, "b/" + shown, lineterm="")
             lines.extend(diff)
     lines.append(
-        "trace-gate convert: %d ファイルの要求 %d 件・未確定事項 %d 件を%s(要求は名前・版・優先度・指紋・欄、未確定事項は名前・題・欄の文・期限の日付・up~ が変わらないことを確かめた)"
-        % (len(changes), total, open_total, "書き換えた" if args.write else "移せる。書くのは --write")
+        "trace-gate convert: %d ファイルの要求 %d 件・未確定事項 %d 件・日本語の名前の欄 %d 行を%s(要求は名前・版・優先度・指紋・欄、未確定事項は名前・題・欄の文・期限の日付・up~ が変わらないことを確かめた)"
+        % (len(changes), total, open_total, label_total, "書き換えた" if args.write else "移せる。書くのは --write")
     )
     lines.append(MOVE_NOTE)
-    added = (ln for _, _, text, new, _, _ in changes for ln in set(new.split("\n")) - set(text.split("\n")))
+    added = (ln for _, _, text, new, _, _, _ in changes for ln in set(new.split("\n")) - set(text.split("\n")))
     lines.append(TITLE_NOTE % sum(1 for ln in added if REQ_HEAD.match(ln) and len(REQ_HEAD.match(ln).group("title")) > 100))
     sys.stdout.write("".join(esc(x) + "\n" for x in lines))
     return 0
