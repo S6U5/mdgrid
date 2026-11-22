@@ -521,7 +521,7 @@ pub fn read_body(root: &Path, body: &str) -> Result<Option<String>, String> {
             return Err(e);
         }
     };
-    std::fs::read_to_string(&real)
+    crate::textfile::read_text(&real)
         .map(Some)
         .map_err(|e| Msg::NoteBodyUnreadable.fill(&[&real.display(), &e]))
 }

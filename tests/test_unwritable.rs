@@ -92,6 +92,17 @@ fn forms() -> Vec<Form> {
         "UTF-8 でない材料は fixtures と同じ"
     );
 
+    let mut not_text = b"PK\x03\x04\x14\x00\x00\x00\x08\x00".to_vec();
+    not_text.extend_from_slice(b"report.txt\x00\x00status: draft\n");
+    assert!(
+        std::str::from_utf8(&not_text).is_ok(),
+        "UTF-8 としては読める材料"
+    );
+    let mut utf16 = vec![0xFF, 0xFE];
+    for u in "---\ntitle: t\nstatus: draft\n---\nbody\n".encode_utf16() {
+        utf16.extend_from_slice(&u.to_le_bytes());
+    }
+
     let mut v = vec![
         Form {
             name: "同じキーが2回",
@@ -145,6 +156,26 @@ fn forms() -> Vec<Form> {
             parse: Err(ReadOnly::MixedNewlines),
             expect: Some(ReadOnly::MixedNewlines),
             keyword: "改行コード",
+            link: None,
+        },
+        // 名前だけ .md のほかのファイル(偽装した拡張子)。ZIP の頭の印と NUL で、UTF-8 としては読める。
+        Form {
+            name: "テキストでない(NUL を含む)",
+            file: "archive.md",
+            bytes: not_text,
+            parse: Err(ReadOnly::NotUtf8),
+            expect: Some(ReadOnly::NotUtf8),
+            keyword: "テキストでない",
+            link: None,
+        },
+        // UTF-16 の文(NUL を含むが、テキストでないとは取り違えない)。
+        Form {
+            name: "UTF-16",
+            file: "utf16.md",
+            bytes: utf16,
+            parse: Err(ReadOnly::NotUtf8),
+            expect: Some(ReadOnly::NotUtf8),
+            keyword: "UTF-16",
             link: None,
         },
     ];
@@ -266,7 +297,7 @@ fn report(stage: &str, fails: Vec<String>) {
 
 #[test]
 fn test_wb_5_parse_returns_expected_read_only() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1] frontmatter::parse が形ごとの ReadOnly を返す。ハードリンクはバイト列が普通なので Ok
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.refuse-not-text~1, req~write-back.refuse-utf16~1] frontmatter::parse が形ごとの ReadOnly を返す。ハードリンクはバイト列が普通なので Ok
     // (ハードリンクは save と Source が見る)。フロントマターの無いノートは NoFrontmatter(書ける側。WB-3)。
     let mut fails = Vec::new();
     for f in forms() {
@@ -282,7 +313,7 @@ fn test_wb_5_parse_returns_expected_read_only() {
 
 #[test]
 fn test_wb_5_cell_lock_has_form_specific_reason() {
-    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~2] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~2, req~write-back.refuse-not-text~1, req~write-back.refuse-utf16~1] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
     // ほかの形の言葉を含まない(理由を取り違えない)。7つの理由は互いに違う。書ける側(空のフロントマターを含む。WB-3)は lock が None。
     let all = forms();
     let words = keywords(&all);
@@ -353,7 +384,7 @@ fn test_wb_5_cell_lock_has_form_specific_reason() {
 
 #[test]
 fn test_wb_5_apply_is_err() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~1] writeback::apply(バイト列に編集を当てる)が形ごとの EditError::ReadOnly を返す。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~1, req~write-back.refuse-not-text~1] writeback::apply(バイト列に編集を当てる)が形ごとの EditError::ReadOnly を返す。
     // ハードリンクはバイト列だけでは分からないので apply は対象外(ファイルを見る save の段で確かめる)。
     // 書ける側は Ok で、status: done が入る。
     let mut fails = Vec::new();
@@ -382,7 +413,7 @@ fn test_wb_5_apply_is_err() {
 
 #[test]
 fn test_wb_5_writeback_save_refuses_and_keeps_bytes() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.verify-before-replace~1] writeback::save(ファイルに書く)が形ごとの ReadOnly で止まり、元のファイル(ハードリンクは
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.verify-before-replace~1, req~write-back.refuse-not-text~1] writeback::save(ファイルに書く)が形ごとの ReadOnly で止まり、元のファイル(ハードリンクは
     // 両方)が1バイトも変わらない。書ける側は書ける。
     let mut fails = Vec::new();
     for f in forms() {
@@ -470,7 +501,7 @@ fn test_wb_5_changes_set_is_skipped_with_reason() {
 
 #[test]
 fn test_wb_5_changes_set_many_skips_count_and_reason() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1] 形のノート(ハードリンクは両方の行)と ok.md を選んで set_many → 形の行は飛ばされ、
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.refuse-not-text~1] 形のノート(ハードリンクは両方の行)と ok.md を選んで set_many → 形の行は飛ばされ、
     // 飛ばした数と理由(セルの lock と同じ)が返り、ためるのは書ける行だけ。書ける側は飛ばさない(WB-3)。
     let mut fails = Vec::new();
     for f in forms() {
@@ -523,7 +554,7 @@ fn test_wb_5_changes_set_many_skips_count_and_reason() {
 
 #[test]
 fn test_wb_5_save_flow_keeps_bytes() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.verify-before-replace~1] set と set_many を試してから Changes::save(保存の流れ)を通しても、形のファイル
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.verify-before-replace~1, req~write-back.refuse-not-text~1] set と set_many を試してから Changes::save(保存の流れ)を通しても、形のファイル
     // (ハードリンクは両方)のバイトは1バイトも変わらず、保存の結果に形の行は出ない。隣の ok.md は書かれる。
     // 書ける側(フロントマターの無いノートは先頭にフロントマターを足して。WB-3)は書かれる。
     let mut fails = Vec::new();

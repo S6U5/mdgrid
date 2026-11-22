@@ -499,7 +499,8 @@ pub fn save_last(state_dir: &Path, folder: &Path, screen: &Reopen) -> std::io::R
 /// 最後の画面を読む。無い・壊れている・別のフォルダのもの → None(resume.continue-fallback)。
 pub fn load_last(state_dir: &Path, folder: &Path) -> Option<Reopen> {
     let key = folder_key(folder);
-    let text = std::fs::read_to_string(state_dir.join(LAST_DIR).join(last_file_name(&key))).ok()?;
+    let text =
+        crate::textfile::read_text(state_dir.join(LAST_DIR).join(last_file_name(&key))).ok()?;
     let file: LastFile = toml::from_str(&text).ok()?;
     (file.folder == key && !file.screen.paths.is_empty()).then_some(file.screen)
 }

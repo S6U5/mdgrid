@@ -25,6 +25,9 @@ pub enum ReadOnly {
     NoFrontmatter,
     EmptyFrontmatter,
     Bom,
+    /// UTF-8 のテキストとして読めない: UTF-8 でない、UTF-16 の BOM で始まる(write-back.refuse-utf16)、
+    /// 先頭の `SNIFF_LEN` バイトに NUL がある(名前だけ .md のほかのファイル。write-back.refuse-not-text)。
+    /// どれかは `text_kind` で見分け、理由の文言を分ける。
     NotUtf8,
     MixedNewlines,
     DuplicateKey(String),
@@ -107,6 +110,33 @@ pub fn parse(bytes: &[u8]) -> Result<Frontmatter, ReadOnly> {
     parse_full(bytes).map(|(fm, _)| fm)
 }
 
+/// ファイルが文字か否かを見る先頭の幅(バイト)。git がファイルを文字か否か見分けるのと同じ幅
+/// (write-back.refuse-not-text)。
+pub const SNIFF_LEN: usize = 8_000;
+
+/// 中身の種類(write-back.refuse-not-text・write-back.refuse-utf16)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TextKind {
+    /// 文字のファイル(UTF-8 として読めるかは別に見る)。
+    Text,
+    /// UTF-16 の BOM(`FF FE`・`FE FF`)で始まる。文字のファイルだが、mdgrid は読まない。
+    Utf16,
+    /// 先頭の `SNIFF_LEN` バイトに NUL がある。実行ファイル・圧縮ファイル・画像などの名前を .md に変えたもの。
+    /// UTF-8 の文には NUL が出ないので、ふつうのノートをここに入れない。
+    NotText,
+}
+
+/// `bytes`(ファイルの先頭からの中身。`SNIFF_LEN` より長くてもよい)の種類。
+pub fn text_kind(bytes: &[u8]) -> TextKind {
+    if bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]) {
+        TextKind::Utf16
+    } else if bytes[..bytes.len().min(SNIFF_LEN)].contains(&0) {
+        TextKind::NotText
+    } else {
+        TextKind::Text
+    }
+}
+
 /// ブロックのリストを書けない形にしている理由(CE-8・CE-19)。理由の文言は読み込み口が付ける。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ListIssue {
@@ -137,6 +167,10 @@ pub(crate) fn list_issue(bytes: &[u8], key: &str) -> Option<ListIssue> {
 
 /// parse と、エントリーごとのブロックのリストの書けない理由(並びは entries と同じ)。
 fn parse_full(bytes: &[u8]) -> Result<(Frontmatter, Vec<Option<ListIssue>>), ReadOnly> {
+    // 文字のファイルでないもの(UTF-16・NUL を含む)は、フロントマターの無いノートとして先頭に足さない。
+    if text_kind(bytes) != TextKind::Text {
+        return Err(ReadOnly::NotUtf8);
+    }
     if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
         return Err(ReadOnly::Bom);
     }

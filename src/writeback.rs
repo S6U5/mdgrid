@@ -944,7 +944,7 @@ pub fn save_with(
             hash: sha256(&new),
         };
         // 一時ファイルを読み直し、検査済みの内容と同じか確かめる(WB-6)。
-        let written = fs::read(&tmp_path)?;
+        let written = crate::textfile::read_bytes(&tmp_path)?;
         if written != new {
             return Err(SaveError::Edit(EditError::Verify(
                 "the temporary file differs from the checked content".into(),

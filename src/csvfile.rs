@@ -45,8 +45,11 @@ pub fn delim_of(path: &std::path::Path) -> u8 {
 
 /// バイトを読む。UTF-8 でない・列の名前の行が無いときは理由。
 pub fn parse(bytes: &[u8], delim: u8) -> Result<CsvFile, String> {
-    let text =
-        std::str::from_utf8(bytes).map_err(|_| crate::i18n::Msg::CsvNotUtf8.text().to_string())?;
+    // write-back.refuse-not-text-any-file: NUL を含む・UTF-16 のファイルは、UTF-8 として読めても台帳にしない。
+    let text = crate::textfile::check(bytes).map_err(|n| match n {
+        crate::textfile::NotText::NotUtf8 => crate::i18n::Msg::CsvNotUtf8.text().to_string(),
+        other => other.reason().to_string(),
+    })?;
     let start = if text.starts_with('\u{feff}') { 3 } else { 0 };
     let b = bytes;
     let mut records: Vec<Record> = Vec::new();

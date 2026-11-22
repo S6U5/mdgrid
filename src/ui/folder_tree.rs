@@ -346,6 +346,16 @@ impl App {
             self.message = Some(Msg::TreeNoUrl.text().into());
             return;
         };
+        // tree.open-url-disguised: 実行ファイルを指す URL と、向きを変える文字を含む URL は開かない。
+        if let Some(r) = folder_tree::url_refusal(&url) {
+            self.message = Some(match r {
+                folder_tree::UrlRefusal::Executable(ext) => {
+                    Msg::UrlRefuseExecutable.fill(&[&sanitize(&url), &ext])
+                }
+                folder_tree::UrlRefusal::Bidi => Msg::UrlRefuseBidi.fill(&[&sanitize(&url)]),
+            });
+            return;
+        }
         self.message = Some(Msg::UrlOpening.fill(&[&sanitize(&url)]));
         if let Err(e) = self.opener.open(&url) {
             self.message = Some(Msg::UrlOpenFailed.fill(&[&sanitize(&url), &e]));

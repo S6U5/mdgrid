@@ -48,7 +48,7 @@ struct File {
 
 /// 覚えた並び(新しい順)。無い・読めなければ空(見た目の状態と同じく、消えても困らない)。
 pub fn load(state_dir: &Path) -> Vec<Recent> {
-    std::fs::read_to_string(state_dir.join(FILE_NAME))
+    crate::textfile::read_text(state_dir.join(FILE_NAME))
         .ok()
         .and_then(|t| toml::from_str::<File>(&t).ok())
         .map(|f| f.table)

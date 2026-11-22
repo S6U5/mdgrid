@@ -5,6 +5,8 @@
 //!
 //! mdgrid の核(画面に依存しない)。設計は docs/design.md、仕様は specs/。
 
+#![cfg_attr(test, allow(clippy::disallowed_methods))]
+
 pub mod base;
 pub mod cells;
 pub mod changes;
@@ -46,6 +48,7 @@ pub mod source;
 pub mod starter;
 pub mod style;
 pub mod summary;
+pub mod textfile;
 pub mod theme;
 pub mod trash;
 pub mod tree;

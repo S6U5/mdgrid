@@ -4,6 +4,8 @@
 //! `OUT_DIR/locales.rs` に `Lang`・`Language`・`Msg`(と言語ごとの `const fn`)を書き、src/i18n.rs が `include!` する。
 //! 言語はファイルの名前(`en.toml` → `Lang::En`)。英語の台帳が文言の名前と並びの正本で、ほかの言語はそれに合わせる。
 
+#![allow(clippy::disallowed_methods)]
+
 #[path = "src/ledger.rs"]
 mod ledger;
 

@@ -862,3 +862,38 @@ fn test_ce_10_bulk_same_as_current_row() {
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.changes.count(), 0);
 }
+
+#[test]
+fn test_wb_refuse_not_text_bulk_skips() {
+    // [utest -> req~write-back.refuse-not-text~1, req~cell-edit.bulk-set-skip-read-only~1] 名前だけ .md のファイル(先頭に NUL)とふつうのノート2つを選んで status に done → ふつうの2つだけがたまり、
+    // 「1行を飛ばした(理由)」。保存しても archive.md は1バイトも変わらない。
+    const ARCHIVE: &str = "PK\u{3}\u{4}\u{14}\u{0}\u{0}\u{0}report.txt\u{0}\u{0}";
+    let (t, mut a) = make(
+        "ntbulk",
+        &[
+            ("a.md", "---\nstatus: todo\n---\n"),
+            ("archive.md", ARCHIVE),
+            ("c.md", "---\nstatus: doing\n---\n"),
+        ],
+    );
+    a.row = 0;
+    for _ in 0..3 {
+        press(&mut a, KeyCode::Char(' '));
+    }
+    set_done(&mut a);
+    assert_eq!(a.changes.count(), 2);
+    assert_eq!(pending(&a, row_of(&a, "archive.md"), "status"), None);
+    let msg = a.message.clone().unwrap();
+    assert!(
+        msg.contains("1行を飛ばした(テキストでないファイル(NUL を含む))"),
+        "{msg}"
+    );
+    ctrl(&mut a, 's');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(
+        std::fs::read(t.notes().join("archive.md")).unwrap(),
+        ARCHIVE.as_bytes()
+    );
+    assert!(read(&t, "a.md").contains("status: done"));
+    assert!(read(&t, "c.md").contains("status: done"));
+}

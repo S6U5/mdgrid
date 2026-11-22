@@ -221,7 +221,7 @@ fn check_view(v: &toml::Table, warns: &mut Vec<String>) {
 /// 止めない(BV-20・CLI-3)。ファイルが無ければ空で警告なし。読むだけでは何も作らない。
 pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
     let path = dir.join(FILE_NAME);
-    let bytes = match std::fs::read(&path) {
+    let bytes = match crate::textfile::read_bytes(&path) {
         Ok(b) => b,
         Err(e) if e.kind() == io::ErrorKind::NotFound => return (Vec::new(), Vec::new()),
         Err(e) => {
@@ -314,7 +314,7 @@ pub fn load_views(dir: &Path, target: &Path) -> (Vec<NativeView>, Vec<String>) {
 
 /// 対象 `target` の表(`[[table]]`)。無ければ・読めなければ None。
 fn target_table(dir: &Path, target: &Path) -> Option<toml::Table> {
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).ok()?;
+    let text = crate::textfile::read_text(dir.join(FILE_NAME)).ok()?;
     let table = parse_table(&text).ok()?;
     let key = config::target_key(target);
     table
@@ -454,7 +454,7 @@ fn edit_target(
 ) -> io::Result<()> {
     let path = dir.join(FILE_NAME);
     let key = config::target_key(target);
-    let mut table = match std::fs::read(&path) {
+    let mut table = match crate::textfile::read_bytes(&path) {
         Ok(bytes) => {
             let text = String::from_utf8(bytes)
                 .map_err(|_| invalid(Msg::ViewsSaveNotUtf8.fill(&[&FILE_NAME])))?;
@@ -543,7 +543,7 @@ fn keep_unknown_in(
 pub fn save_views(dir: &Path, target: &Path, views: &[NativeView]) -> io::Result<()> {
     let path = dir.join(FILE_NAME);
     let key = config::target_key(target);
-    let mut table = match std::fs::read(&path) {
+    let mut table = match crate::textfile::read_bytes(&path) {
         Ok(bytes) => {
             let text = String::from_utf8(bytes)
                 .map_err(|_| invalid(Msg::ViewsSaveNotUtf8.fill(&[&FILE_NAME])))?;

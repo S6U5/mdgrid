@@ -168,7 +168,7 @@ pub fn check(
 /// ノートのファイルのキーの行の番号(1始まり)。読めなければ空。
 fn key_line_numbers(src: &dyn Source, row: &RowId) -> BTreeMap<String, usize> {
     let (path, _) = src.locate(row);
-    let Ok(bytes) = std::fs::read(path) else {
+    let Ok(bytes) = crate::textfile::read_bytes(path) else {
         return BTreeMap::new();
     };
     let Some(keys) = crate::frontmatter::key_lines(&bytes) else {

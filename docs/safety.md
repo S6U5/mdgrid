@@ -88,6 +88,13 @@ title: Caf<E9>
 Meeting notes
 ```
 
+Two more cases are handled the same way, with their own reason:
+
+- A file that starts with a UTF-16 BOM (`FF FE` or `FE FF`). The reason is "the file is UTF-16". It is still a text file, so `e` opens it in the editor; saving it as UTF-8 fixes it.
+- A file with a NUL byte in its first 8,000 bytes. The reason is "not a text file (contains NUL bytes)". An executable, an archive or an image renamed to `.md` (a disguised extension) can still be valid UTF-8. mdgrid reads no values from such a file, does not add frontmatter to it as if it were a note without one, and `e` does not open it in the editor. A UTF-8 note never contains NUL, so an ordinary note is never treated this way.
+
+The same rule applies to every other file mdgrid reads (CSV and TSV ledgers, `.base` files, settings and workspace markers, new-note templates, the input of `--apply`). A file that is not text is not opened, the reason is shown, and the file is never rewritten.
+
 ### `mixed_newlines`
 
 The frontmatter mixes line endings (CRLF and LF), or has a stray CR inside a line. Only the lines from the opening `---` to the closing `---` are checked; the body may mix line endings freely.
