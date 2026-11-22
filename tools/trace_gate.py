@@ -71,7 +71,7 @@ from collections import Counter
 from functools import lru_cache
 
 TOOL_NAME = "trace-gate"
-TOOL_VERSION = "0.37.0"
+TOOL_VERSION = "0.38.0"
 LEDGER_FORMAT = "trace-gate-ledger"
 FINDINGS_FORMAT = "trace-gate-findings"
 FORMAT_VERSION = 1
@@ -220,7 +220,6 @@ RULES = {
     "req-duplicate": "名前は1つの要求に1つ。消した要求の名前も使い回さない(古い印が別の要求に結びつくため)",
     "name-reused": "名前の表(設定の renames)で付け替えた旧い名前か消した名前を、今の要求に使わない(古いテストの印が新しい意味の要求に黙って結びつくため)。新しい名前を付ける",
     "renames-malformed": "名前の表の行は「| `旧い名前` | `新しい名前` |」か「| `旧い名前` | 消した(理由) |」。旧い名前は1行に1つ、行は付け替えた順に足し、前の行の旧い名前を新しい名前に使わない",
-    "p0-multi-criteria": "P0 は受け入れの基準を1つにする(テストで1つの「はい/いいえ」に写し、P0 の確かめを薄めないため)。基準ごとに要求を分けるか、P0 でない基準を P1 の要求に移す(要求の変更は PR で人が承認する)",
     "req-none": "設定の requirements が要求の正本を指しているか確かめる。要求が0件のまま通すと、何も見ずに通る",
     "inputs-present": "設定の tests か requirements に書いた置き場が何にも当たらない(グロブでない道が無い、グロブに当たるファイルが無い、当たったテストが全部 exclude で外れた)。置き場か exclude を直す(0件のまま通すと何も見ずに通る)",
     "open-dangling": "製品のコードのコメントに残った tbd~名前 が正本の未確定事項に無い。決まったなら仮置きのコメントを消し、残っているなら正本に未確定事項を書く",
@@ -1265,17 +1264,6 @@ def parse_block(lines, i, head, path, findings):
     r.ups, r.up_titles = up_refs(r.sources), up_titles(r.sources)
     r.fingerprint = fingerprint(r.text, r.accepts, r.treatment == "廃止")
     r.dupes = []  # 同じ名前の2つ目から後ろの (道, 行)。あれば名前は曖昧で、どちらも確かめたと数えない
-    if r.priority == "P0" and len(r.accepts) > 1 and "line" in r.accept_forms:  # 欄の数だけを見る。字下げの形の欄だけなら、場面ごとに分けた欄として出さない
-        findings.append(
-            Finding(
-                "p0-multi-criteria",
-                path,
-                no,
-                "P0 の要求 %s に 受け入れ: の欄が %d つある(P0 は受け入れの基準を1つにする)" % (r.name, len(r.accepts)),
-                key=r.name,
-                severity="warning",
-            )
-        )
     return nxt, r
 
 
