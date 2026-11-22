@@ -703,8 +703,8 @@
 #### 親子のオン・オフとキーは、ビューの設定として反映で効くべき
 `req~navigation.parent-child-apply~1` P1
 - Acceptance:
-  - Given: 親子をオフにして反映
-  - When:
+  - Given:
+  - When: 親子をオフにして反映
   - Then: 今までの並び。
 
 #### 親子のオン・オフとキーは、見た目の状態と mdgrid のビュー(base-view.own-views)に残るべき
@@ -1043,8 +1043,8 @@
 #### 設定は、開いた対象とビューごとの見た目の状態(screen.state-separate・screen.state-store)に覚え、次に同じものを開いたときに当て、`.base` とノートには書かないべき
 `req~navigation.settings-remember~1` P1
 - Acceptance:
-  - Given: 設定を反映して終了
-  - When:
+  - Given:
+  - When: 設定を反映して終了
   - Then: 同じ `.base` の同じビューで開き直すと同じ設定。`.base` とノートのフォルダは変わらない。
 
 #### 設定の画面は、よくある表の道具の設定の画面に倣い、左に区画の一覧(表示する列(表示・非表示と順)・フィルター・並べ替え(複数の列と向き)・グループ分け・表示(screen.display-options))を、それぞれの今の状態(例「列 5/6」「並べ替え 2」)を添えて並べるべき
@@ -1090,8 +1090,8 @@
   - When: `o`
   - Then: 左の一覧が「1 列」「2 フィルター」「3 並べ替え」…。
 - Acceptance:
-  - Given: `3`
-  - When:
+  - Given:
+  - When: `3`
   - Then: 並べ替えの区画が選ばれ、右がその中身。
 - Acceptance:
   - Given: 区画の数より大きい数字
@@ -1287,8 +1287,8 @@
 `req~navigation.expr-filter-error~2` P1
 - Rationale: 打ち損じで今の絞り込みを失わず、どこを直せばよいかを人に伝えるため
 - Acceptance:
-  - Given: `due <=`
-  - When:
+  - Given:
+  - When: `due <=`
   - Then: 行は変わらず、メッセージ行に読めない理由、入力の欄に `due <=` が残る。
 - Acceptance:
   - Given: `cond("nosuch")`

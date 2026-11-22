@@ -163,8 +163,8 @@
 #### 開いたフォルダの外(`..` や絶対パス)を指す名前では、新しいノートを作らず理由を出すべき
 `req~cell-edit.new-note-refuse-outside~1` P1
 - Acceptance:
-  - Given: `../外`
-  - When:
+  - Given:
+  - When: `../外`
   - Then: 作らず理由。
 
 #### 既にある名前では、新しいノートを作らず理由を出すべき
@@ -455,8 +455,8 @@
 #### 自由入力で打っている間は、↑↓ で絞り込んだ候補の中から選べるべき(打った文字のまま Enter なら打った文字を書く)
 `req~cell-edit.value-list-narrow-pick~2` P1
 - Acceptance:
-  - Given: `do` のあと ↓
-  - When: doing を選び Enter
+  - Given:
+  - When: `do` のあと ↓ → doing を選び Enter
   - Then: doing。
 - Acceptance:
   - Given:
@@ -534,8 +534,8 @@
   - When: due のセルで Enter
   - Then: 入力ボックスの下に今の値の月のカレンダーが出て、今の値の日が選ばれている。
 - Acceptance:
-  - Given: → で次の日
-  - When: Enter
+  - Given:
+  - When: → で次の日 → Enter
   - Then: その日がためる変更。
 - Acceptance:
   - Given:
@@ -549,8 +549,8 @@
   - When:
   - Then: 2026-11-06。
 - Acceptance:
-  - Given: PageDown
-  - When:
+  - Given:
+  - When: PageDown
   - Then: 翌月の同じ日(無ければ月末)。
 
 #### カレンダーは、今日に戻す操作を持つべき
@@ -681,8 +681,8 @@
 #### 数値の列は、数として読める値だけを受け付けるべき
 `req~cell-edit.number-only~1` P1
 - Acceptance:
-  - Given: `12a`
-  - When:
+  - Given:
+  - When: `12a`
   - Then: 閉じずに不正を表示。
 
 #### 数値の入力を開いた直後に文字を打ったときは、今の数の続きでなく打った文字から入力を始めるべき
@@ -916,8 +916,8 @@
 #### 足す列の名前が空・`file.`・`formula.` で始まる・改行を含むときは、足さずに理由を出すべき
 `req~cell-edit.add-column-bad-name~1` P1
 - Acceptance:
-  - Given: `file.x`
-  - When:
+  - Given:
+  - When: `file.x`
   - Then: 理由が出て足さない。空の名前でも同じ。
 
 #### 足す列の名前がもうある列の名前なら、その列に移るべき
@@ -1214,8 +1214,8 @@
 #### ノートの新しい名前がもうあるファイルの名前なら、理由を出して断るべき
 `req~cell-edit.rename-note-refuse-existing~1` P0
 - Acceptance:
-  - Given: もうある名前
-  - When:
+  - Given:
+  - When: もうある名前
   - Then: 断って理由、どちらのファイルもそのまま。
 
 #### そのノートにためた変更がある間は、ノートの名前の変更を断るべき
@@ -1674,9 +1674,9 @@
 #### 選んだ範囲の値を、ためる変更として正規表現で置き換えてよい
 `req~cell-edit.regex-replace~1` P2
 - Acceptance:
-  - Given: `v1`
+  - Given:
   - When:
-  - Then: `v2` の置き換えで、選んだ行の値だけが変わる(読んで判定)。
+  - Then: `v1` → `v2` の置き換えで、選んだ行の値だけが変わる(読んで判定)。
 
 ## 未確定事項
 

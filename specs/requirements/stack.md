@@ -125,8 +125,8 @@
   - When: 下の projects に1件ためて `Ctrl+w` `c`
   - Then: 保存か取りやめの確認。
 - Acceptance:
-  - Given: 取りやめ
-  - When:
+  - Given:
+  - When: 取りやめ
   - Then: projects は並んだまま。
 
 ### 名前を付けて残す(ページ)

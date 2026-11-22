@@ -465,8 +465,8 @@
 `req~workspace.switch-keys~2` P1
 - Rationale: 一覧を開いて1打で移れるようにするため
 - Acceptance:
-  - Given: 一覧で `2`
-  - When:
+  - Given:
+  - When: 一覧で `2`
   - Then: 趣味へ移る。
 - Acceptance:
   - Given:
@@ -481,6 +481,6 @@
   - When: 未保存の変更があるときに一覧で趣味を選ぶ
   - Then: 保存の確かめ。
 - Acceptance:
-  - Given: 取りやめ
-  - When:
+  - Given:
+  - When: 取りやめ
   - Then: 元の画面のまま。

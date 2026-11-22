@@ -249,8 +249,8 @@
 #### 操作の一覧では、↑↓(`j` `k`)で選んで Enter で実行するべき
 `req~screen.action-menu-enter~1` P1
 - Acceptance:
-  - Given: 書けるセルで `x` のあと `j` 6回・`k` 1回
-  - When: 「この列で並べ替え」が選ばれ、Enter
+  - Given:
+  - When: 書けるセルで `x` のあと `j` 6回・`k` 1回 → 「この列で並べ替え」が選ばれ、Enter
   - Then: その列で並べ替わる。
 
 #### 操作の一覧は、Esc で閉じるべき
@@ -1167,8 +1167,8 @@
   - When: テーマ dracula・組 dozy-pink を選ぶ
   - Then: 上に「未反映 1」。
 - Acceptance:
-  - Given: 反映
-  - When:
+  - Given:
+  - When: 反映
   - Then: 画面の地が dracula の色、札が dozy-pink の形。
 
 #### 「見た目」の区画で反映した見た目は、選んだ範囲の画面が書く場所(全体は ui.toml、ワークスペースは workspaces.toml のそのワークスペース、表は views.toml の `[[table]]`、ビューはビューの設定)に残すべき(config.toml とワークスペースの印は人が書くファイルなので書き換えない)
@@ -1938,9 +1938,9 @@
 #### 説明書の目次(`docs/manual/<言語>/index.md`)と、サイトの説明書の章の並び(`scripts/pages.py` の `PAGES`)は、読む人の順に並べるべき: 誰のための道具で何がどう見えるか(index)→ 見せ方の一覧(views)→ はじめかた(getting-started。1分で試す道を1本)→ 作業の手引き(tasks)→ 考え方(concepts)→ 見た目(appearance・themes)→ 困ったとき(faq)→ 参照
 `req~screen.docs-order-toc~1` P1
 - Acceptance:
-  - Given: `docs/manual/ja/index.md` と `en/index.md` の目次のリンクが views
-  - When: getting-started → tasks → concepts → appearance
-  - Then: faq の順に並び、`PAGES` も同じ順である。
+  - Given:
+  - When:
+  - Then: `docs/manual/ja/index.md` と `en/index.md` の目次のリンクが views → getting-started → tasks → concepts → appearance → faq の順に並び、`PAGES` も同じ順である。
 
 #### 説明書とサイトの入口は短く保ち、詳しさは下のページへ送るべき
 `req~screen.docs-order-short-entry~1` P1

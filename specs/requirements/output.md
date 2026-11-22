@@ -49,12 +49,12 @@
 #### 画面の表の書き出しの形は、ファイル名の拡張子(`.csv`・`.tsv`・`.json`・`.md`)で選ぶべき
 `req~output.export-format~2` P1
 - Acceptance:
-  - Given: `out.tsv`
-  - When:
+  - Given:
+  - When: `out.tsv`
   - Then: タブ区切り。
 - Acceptance:
-  - Given: `out.txt`
-  - When:
+  - Given:
+  - When: `out.txt`
   - Then: 書かずに理由。
 
 #### 画面の表の書き出しの値の書き方は、`--print` の同じ形(cli.print)と同じにするべき
@@ -92,8 +92,8 @@
   - When:
   - Then: ホームの下に書く。
 - Acceptance:
-  - Given: `out.csv`
-  - When:
+  - Given:
+  - When: `out.csv`
   - Then: 起動したフォルダの下に書く。
 
 #### 画面の表の書き出しで、同じ名前のファイルが既にあれば、`y` で確かめてから上書きするべき

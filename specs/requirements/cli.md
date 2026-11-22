@@ -230,8 +230,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `mdgrid --man` は、man ページ(roff)を標準出力に出して終了コード 0 で終わってよい
 `req~cli.completions-man-roff~1` P1
 - Acceptance:
-  - Given: `--man`
-  - When:
+  - Given:
+  - When: `--man`
   - Then: `.TH` を含み、終了コード 0。
 
 #### `--completions` に知らないシェルの名前を渡したときは、cli.fail-fast と同じく理由1行と終了コード 2 にするべき
@@ -248,8 +248,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When:
   - Then: `--readonly` を含む。
 - Acceptance:
-  - Given: `--man`
-  - When:
+  - Given:
+  - When: `--man`
   - Then: `--print-config` を含む。
 
 #### `--print` に `--with-path` を付けたときは、表の先頭に見出し `path` の列を足し、各行にそのノートのパスを出すべき
