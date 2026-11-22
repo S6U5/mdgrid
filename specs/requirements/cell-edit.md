@@ -837,11 +837,20 @@
 ### 読むだけのセルと一括の編集
 
 #### ファイルの属性(`file.*`)・式の列(`formula.*`)・ネストした map・ブロックスカラー・アンカーや別名を使った値・タグつきの値(`!!str` など)・複数行にまたがる値(素のスカラー・引用符つきの値・フロー形式)のセルは、編集できないようにし、なぜ読むだけかを表示するべき
-`req~cell-edit.read-only-forms~1` P0
+`req~cell-edit.read-only-forms~2` P0
+- Disposition: 踏襲(形だけを Given・When・Then に移した。振る舞いは前の版のまま)
 - Acceptance:
-  - Given:
-  - When:
-  - Then: `file.mtime` の列で Enter → 読むだけと理由を表示。`title: !!str 12` と2行にまたがる `[a,\n b]` のセル → どちらも読むだけと理由。
+  - Given: `file.mtime` の列のセル
+  - When: Enter
+  - Then: 入力が開かず、読むだけと理由を表示。
+- Acceptance:
+  - Given: `title: !!str 12` のセル
+  - When: Enter
+  - Then: 入力が開かず、読むだけと理由を表示。
+- Acceptance:
+  - Given: 2行にまたがる `[a,\n b]` のセル
+  - When: Enter
+  - Then: 入力が開かず、読むだけと理由を表示。
 
 #### 選んだ複数の行の同じ列に、同じ値を、ためる変更としてまとめて入れられるべき
 `req~cell-edit.bulk-set-same-value~2` P1

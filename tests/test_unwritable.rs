@@ -282,7 +282,7 @@ fn test_wb_5_parse_returns_expected_read_only() {
 
 #[test]
 fn test_wb_5_cell_lock_has_form_specific_reason() {
-    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~1] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~2] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
     // ほかの形の言葉を含まない(理由を取り違えない)。7つの理由は互いに違う。書ける側(空のフロントマターを含む。WB-3)は lock が None。
     let all = forms();
     let words = keywords(&all);
@@ -421,7 +421,7 @@ fn test_wb_5_writeback_save_refuses_and_keeps_bytes() {
 
 #[test]
 fn test_wb_5_changes_set_is_skipped_with_reason() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~1] Changes::set は Skip(行と、セルの lock と同じ理由)を返し、何もためない。書ける側はためる。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~2] Changes::set は Skip(行と、セルの lock と同じ理由)を返し、何もためない。書ける側はためる。
     let mut fails = Vec::new();
     for f in forms() {
         let (_dir, src) = setup(&f, "set");

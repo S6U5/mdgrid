@@ -324,7 +324,7 @@ fn wb_5_hard_linked_note_is_not_written() {
 
 #[test]
 fn ce_8_apply_refuses_read_only_values() {
-    // [utest -> req~cell-edit.read-only-forms~1, req~write-back.frontmatter-only-top-level~1]
+    // [utest -> req~cell-edit.read-only-forms~2, req~write-back.frontmatter-only-top-level~1]
     for (file, key) in [
         ("nested_map.md", "meta"),
         ("block_scalar.md", "literal"),

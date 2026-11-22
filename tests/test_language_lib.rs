@@ -393,7 +393,7 @@ fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
 
 #[test]
 fn test_sr_23_lib_changes_skip_reason_matches_lock_in_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~1] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
+    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~2] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
     for f in forms() {

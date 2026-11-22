@@ -253,7 +253,7 @@ fn test_wb_5_duplicate_key_note_is_locked() {
 
 #[test]
 fn test_ce_8_block_scalar_and_nested_are_locked() {
-    // [utest -> req~cell-edit.read-only-forms~1] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
+    // [utest -> req~cell-edit.read-only-forms~2] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
     let dir = TempDir::new("source-ce8");
     dir.copy_fixture("block_scalar.md");
     dir.copy_fixture("nested_map.md");
@@ -282,7 +282,7 @@ fn test_ce_8_block_scalar_and_nested_are_locked() {
 #[test]
 fn test_ce_16_list_values_are_editable_unless_ce_8_form() {
     // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] リストの値の列(tags)は、書ける形なら lock なし。フローのリストもブロックのリストも。
-    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
+    // [utest -> req~cell-edit.read-only-forms~2] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
     let dir = TempDir::new("source-ce16");
     dir.copy_fixture("flow_list.md");
     dir.copy_fixture("block_list.md");

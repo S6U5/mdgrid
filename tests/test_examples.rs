@@ -161,7 +161,7 @@ fn test_examples_open_folder() {
         Some(Value::Str(String::new()))
     );
     assert_eq!(get("Tasks/Clean up the contact list.md", "status"), None);
-    // [utest -> req~cell-edit.read-only-forms~1] ネストした map・ブロックスカラーは読むだけ。
+    // [utest -> req~cell-edit.read-only-forms~2] ネストした map・ブロックスカラーは読むだけ。
     assert!(src
         .get(
             &row_of(src, "Tasks/Clean up the contact list.md"),

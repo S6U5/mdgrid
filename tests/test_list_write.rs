@@ -399,7 +399,7 @@ fn test_ce_19_newline_in_element_is_rejected() {
 
 #[test]
 fn test_ce_19_ce_8_list_forms_are_not_editable() {
-    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~1] 複数行のフロー・アンカーや別名・入れ子の要素・要素の中のコメントのリストは書かない。
+    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~2] 複数行のフロー・アンカーや別名・入れ子の要素・要素の中のコメントのリストは書かない。
     let cases = [
         "---\ntags: [a,\n  b]\n---\n",
         "---\ntags: &t [a, b]\n---\n",
@@ -570,7 +570,7 @@ fn test_ce_16_list_candidates_follow_saved_values() {
 #[test]
 fn test_ce_16_writable_list_cells_have_no_lock() {
     // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-narrow~1] リストの値のセルは、書ける形なら lock なし。
-    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(複数行のフロー・アンカー・入れ子の要素)は理由つきで読むだけ。
+    // [utest -> req~cell-edit.read-only-forms~2] 書けない形(複数行のフロー・アンカー・入れ子の要素)は理由つきで読むだけ。
     let dir = TempDir::new("list-lock");
     dir.write("flow.md", b"---\ntags: [a, b]\n---\n");
     dir.write("empty_flow.md", b"---\ntags: []\n---\n");

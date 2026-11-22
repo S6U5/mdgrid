@@ -25,7 +25,7 @@ fn assert_read_only_entry(file: &str, key: &str, shape: Shape) {
 
 #[test]
 fn ce_8_nested_map_is_read_only() {
-    // [utest -> req~cell-edit.read-only-forms~1]
+    // [utest -> req~cell-edit.read-only-forms~2]
     assert_read_only_entry("nested_map.md", "meta", Shape::Nested);
     // 隣の第1階層のキーは書ける。
     let fm = parse(&fixture("nested_map.md")).unwrap();
@@ -34,7 +34,7 @@ fn ce_8_nested_map_is_read_only() {
 
 #[test]
 fn ce_8_block_scalars_are_read_only() {
-    // [utest -> req~cell-edit.read-only-forms~1]
+    // [utest -> req~cell-edit.read-only-forms~2]
     assert_read_only_entry("block_scalar.md", "literal", Shape::BlockScalar);
     assert_read_only_entry("block_scalar.md", "folded", Shape::BlockScalar);
     let fm = parse(&fixture("block_scalar.md")).unwrap();
@@ -43,7 +43,7 @@ fn ce_8_block_scalars_are_read_only() {
 
 #[test]
 fn ce_8_anchor_and_alias_are_read_only() {
-    // [utest -> req~cell-edit.read-only-forms~1]
+    // [utest -> req~cell-edit.read-only-forms~2]
     assert_read_only_entry("anchor.md", "base", Shape::Anchor);
     assert_read_only_entry("anchor.md", "alias", Shape::Anchor);
 }
@@ -68,7 +68,7 @@ fn ce_18_block_list_span_only_when_writable() {
         "span stays inside the list: {text:?}"
     );
 
-    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(要素の間のコメント・空行、入れ子の要素)には範囲が無い。値は読める。
+    // [utest -> req~cell-edit.read-only-forms~2] 書けない形(要素の間のコメント・空行、入れ子の要素)には範囲が無い。値は読める。
     for src in [
         "---\ntags:\n  - one\n  # memo\n  - two\nstatus: draft\n---\n",
         "---\ntags:\n  - one\n\n  - two\nstatus: draft\n---\n",
@@ -96,7 +96,7 @@ fn ce_18_block_list_span_only_when_writable() {
 
 #[test]
 fn ce_8_editable_shapes_have_value_span() {
-    // [utest -> req~cell-edit.read-only-forms~1]
+    // [utest -> req~cell-edit.read-only-forms~2]
     let bytes = fixture("quoted.md");
     let fm = parse(&bytes).unwrap();
     let dq = entry(&fm, "dq");
