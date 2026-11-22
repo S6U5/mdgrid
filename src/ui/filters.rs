@@ -138,10 +138,16 @@ fn rows(app: &App, w: &FilterWin) -> (String, Vec<String>) {
         }
         Some(Step::Text {
             col, kind, text, ..
-        }) => (
-            format!(" {} ", text_prompt(app, col, *kind)),
-            vec![format!("{}{CARET}", sanitize(text))],
-        ),
+        }) => {
+            // cell-edit.date-words-preview: 日付の列の比べる値は、打った言葉の読みを値の後ろに出す。
+            let words = super::date_words::operand_preview(app, col, *kind, text)
+                .map(|p| format!("  {p}"))
+                .unwrap_or_default();
+            (
+                format!(" {} ", text_prompt(app, col, *kind)),
+                vec![format!("{}{CARET}{words}", sanitize(text))],
+            )
+        }
     }
 }
 
@@ -499,9 +505,7 @@ impl App {
                             }
                             TextKind::Contains => Ok(Op::Contains(v)),
                             TextKind::NotContains => Ok(Op::NotContains(v)),
-                            TextKind::Cmp(o) => {
-                                self.check_operand(&col, &v).map(|()| Op::Cmp(o, v))
-                            }
+                            TextKind::Cmp(o) => self.check_operand(&col, &v).map(|v| Op::Cmp(o, v)),
                             _ => Err(String::new()),
                         };
                         match op {

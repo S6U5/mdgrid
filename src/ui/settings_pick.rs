@@ -160,7 +160,8 @@ impl App {
                 _ => self.pick_run(),
             },
             Action::Run => self.pick_run(),
-            Action::NextSection | Action::PrevSection => {
+            // 選んでいる途中は区画を移らない(数字のキーも Tab と同じ。navigation.settings-sections-digits)。
+            Action::NextSection | Action::PrevSection | Action::GoToSection(_) => {
                 let esc = self.key_of(Mode::Settings, Action::Cancel);
                 self.message = Some(Msg::PickInProgress.fill(&[&esc]));
             }
@@ -327,13 +328,13 @@ impl App {
                     TextKind::DeleteView => return self.confirm_delete_view(t.col, v == "y"),
                     TextKind::Contains => Op::Contains(v),
                     TextKind::NotContains => Op::NotContains(v),
-                    TextKind::Cmp(o) => {
-                        if let Err(e) = self.check_operand(&t.col, &v) {
+                    TextKind::Cmp(o) => match self.check_operand(&t.col, &v) {
+                        Ok(v) => Op::Cmp(o, v),
+                        Err(e) => {
                             self.message = Some(e);
                             return;
                         }
-                        Op::Cmp(o, v)
-                    }
+                    },
                 };
                 if let Some(d) = self.draft.as_mut() {
                     d.text = None;
@@ -377,18 +378,28 @@ impl App {
         self.set_mode(Mode::Settings);
     }
 
-    /// 比べる値が列の型で読めるか(NV-19)。読めなければ理由。
-    pub(crate) fn check_operand(&self, col: &str, v: &str) -> Result<(), String> {
+    /// 比べる値を列の型で読み、条件に残す値を返す(NV-19)。読めなければ理由。
+    /// 日付・日時の列は、`YYYY-MM-DD`(日時は時刻つきも)のほかに、セルの打ち込みと同じ形(`+3`・設定の形・日付の言葉。
+    /// cell-edit.date-words)を今日から読み、`YYYY-MM-DD` にして残す(言葉のままは残さない。docs/design.md)。
+    pub(crate) fn check_operand(&self, col: &str, v: &str) -> Result<String, String> {
+        let typed = || {
+            types::parse_date_input(v, self.date_input(), self.today)
+                .ok()
+                .flatten()
+                .map(types::format_date)
+        };
         match self.column_kind(col) {
             Kind::Number if v.parse::<f64>().is_err() => Err(Msg::OperandNumber.fill(&[&v])),
-            Kind::Date if types::parse_date(v).is_none() => Err(Msg::OperandDate.fill(&[&v])),
+            Kind::Date if types::parse_date(v).is_none() => {
+                typed().ok_or_else(|| Msg::OperandDate.fill(&[&v]))
+            }
             Kind::DateTime
                 if types::parse_date(v).is_none()
                     && !types::fits(Kind::DateTime, &Value::Str(v.to_string())) =>
             {
-                Err(Msg::OperandDateTime.fill(&[&v]))
+                typed().ok_or_else(|| Msg::OperandDateTime.fill(&[&v]))
             }
-            _ => Ok(()),
+            _ => Ok(v.to_string()),
         }
     }
 }

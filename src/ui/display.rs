@@ -15,6 +15,12 @@ use ratatui::text::{Line, Span};
 impl App {
     /// 見せ方 `item` を今のビューで出すか(設定 → ビューの上書き)。
     pub(crate) fn shows(&self, item: Item) -> bool {
+        // stack.title: 縦に並べた表の区画は、ビューの帯(タブと検索の欄)と設定の帯を出さない(`[` `]`・`\\` は効く)。
+        if matches!(item, Item::Tabs | Item::SearchBar | Item::Chips)
+            && super::stack::in_region(self)
+        {
+            return false;
+        }
         self.settings.display.resolve(item, &self.display)
     }
 
@@ -209,7 +215,7 @@ impl App {
         if self.shows(Item::Chips) || self.mode != super::keymap::Mode::Chips {
             return;
         }
-        let chips = self.settings.chips();
+        let chips = self.bar_chips();
         let Some(c) = chips.get(self.chip) else {
             return;
         };

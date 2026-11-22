@@ -1,0 +1,2147 @@
+# mdgrid の画面と起動の文言の台帳: 英語(SR-23)。文言の名前と並びの正本。
+# 1行に1つ `名前 = "文"`(TOML の基本の文字列)。`##` の行は次の文言の説明(コードの文書になる)、`#` の行は区切り。
+# 差し込みは `{0}`・`{1}` の番号。ほかの言語の台帳は同じ名前を全部持ち、同じ番号を使う(欠け・余り・空・番号の
+# 食い違いはビルドで落ちる。build.rs・src/ledger.rs)。
+
+
+# ---- main: 使い方(CLI-2) ----
+Usage = "用法：  mdgrid [<.base | 資料夾 | .md | .csv> ...] [--view <名稱>] [-w <名稱>] [--page <名稱>] [--raw] [--readonly] [--no-color] [--config <路徑>]\n        mdgrid [<.base | 資料夾 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <名稱>]\n                 [--filter <運算式>]... [--sort <欄位>[:desc]]...\n        mdgrid [<.base | 資料夾 | .md> ...] --pick path|<欄位> [--view <名稱>]\n        mdgrid [<.base | 資料夾 | .md> ...] --check [--view <名稱>]\n        mdgrid [<.base | 資料夾 | .md> ...] --count [--view <名稱>] [--filter <運算式>]...\n        mdgrid [<.base | 資料夾> ...] --notices\n        mdgrid [<.base | 資料夾> ...] --apply <路徑> [--yes]\n        mdgrid [<資料夾 | .base> ...] --add-to <名稱> [--as <表格名稱>] | --remove-from <名稱>\n        mdgrid [<資料夾> ...] --init-workspace [--starter <名稱> [--with-samples]]\n        mdgrid [<資料夾>] --new-note <名稱> [--set <欄位>=<值>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <路徑>]\n        mdgrid -s <名稱> [--readonly] [--no-color] [--config <路徑>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名稱>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  開啟由資料夾中 Markdown 筆記組成的表格：每則筆記一列，每個 front matter\n  鍵一欄。指定 .base 時，開啟其表格檢視（筆記從根資料夾下尋找）。\n  指定 .md 檔案時，開啟其所在資料夾並選取該筆記。\n  指定 .csv 或 .tsv 檔案時，將其開啟為表格：每行一列，第一行為\n  欄位名稱。\n  不帶引數時開啟目前的資料夾（若 places.toml 有登錄的表格，會在上方\n  疊加其清單）。若資料夾的標記檔 .mdgrid/workspace.toml 在 \"open\" 指定了\n  表格，則改為開啟該表格。\n\n  --view <名稱>           開啟 .base 的該檢視（省略時為第一個檢視；\n                          --print 也會尋找 mdgrid 的檢視）\n  -w, --workspace <名稱>  以該工作區（workspaces.toml）作為連結與關聯圖的範圍；\n                          未指定路徑時開啟其第一個表格\n  --page <名稱>           開啟工作區的該頁面（[[page]]），其表格上下堆疊\n  --raw                   開啟資料夾本身，而非標記檔 \"open\" 指定的表格\n  --readonly              以唯讀開啟（不編輯、不儲存）\n  --no-color              不使用色彩繪製\n  --config <路徑>         讀取此設定檔\n                          （預設：$XDG_CONFIG_HOME/mdgrid/config.toml）\n  --continue              開啟此資料夾中最後顯示的表格與檢視（若沒有則與\n                          不帶引數相同；用於 tmux 等還原視窗的情境）\n  -s, --session <名稱>    開啟以該名稱儲存的工作階段（表格、檢視、篩選、\n                          排序與欄位；在命令面板以「儲存工作階段」儲存）\n  --sessions              列出已儲存的工作階段（sessions.toml）：名稱與資料夾，每行一筆\n  --recent                依新到舊輸出最近在畫面上開啟的表格，每行一筆，\n                          格式為 \"路徑<TAB>檢視名稱<TAB>最後開啟時間\"（最多 20 筆）\n  --print                 不顯示畫面，將檢視的表格輸出到標準輸出\n                          （不修改筆記）\n  --format <格式>         --print 的格式（csv、tsv、json、md；預設 csv）\n  --with-path             在 --print 前面加上 \"path\" 欄，內容為各列筆記的路徑\n                          （與 --pick path 的路徑相同）\n  --filter <運算式>       只保留 .base 運算式為真的列\n                          （可重複；用於 .base 檢視時與其篩選條件合併）\n  --sort <欄位>[:desc]    依此欄位排序 --print 的輸出（可重複；\n                          取代檢視的排序）\n  --count                 不顯示畫面，輸出檢視的列數（套用 --filter 之後）\n  --show-hidden           搭配 --print、--pick 或 --count 時，保留被 hide = true 的\n                          條件（[conditions]）隱藏的列\n  --notices               不顯示畫面，每行輸出一個通知欄（[[notices]]）的項目\n                          （用於 tmux 狀態列或 shell 提示字元）\n  --pick <path|欄位>      在終端機以唯讀顯示畫面；按 Enter 會將已標記的列\n                          （或選取的列）的路徑或欄位值，每行一個，\n                          輸出到標準輸出後結束\n                          （按 q 或 Esc 取消，結束碼為 1）\n  --check                 輸出不符合欄位型別或規則（[rules]）的值，\n                          每行一個（路徑:行: 欄位: 原因；若有問題，\n                          結束碼為 1）\n  --apply <路徑>          讀取 --print --with-path 格式的 CSV 或 JSON（- 表示標準輸入）\n                          並修改有差異的儲存格；只顯示差異\n  --yes                   搭配 --apply，寫入變更\n  --workspaces            列出工作區（workspaces.toml）\n  --add-to <名稱>         將指定的表格（預設：此資料夾）加入該工作區，\n                          必要時建立工作區；以 --as <名稱> 指定表格名稱\n  --remove-from <名稱>    從該工作區移除指定的表格（預設：此資料夾）\n  --remove-workspace <名稱>  刪除該工作區（不會動到筆記）\n  --init-workspace        在資料夾中放置工作區標記檔 .mdgrid/workspace.toml\n                          （預設：此資料夾）\n  --starter <名稱>        搭配 --init-workspace，從該起始範本建立帳本（標記檔、筆記範本）：\n                          內建的，或設定資料夾中的 starters/<名稱>\n  --with-samples          搭配 --starter，一併加入起始範本的範例筆記\n  --starters              列出起始範本，每行一個（名稱與一行說明）\n  --new-note <名稱>       不顯示畫面，在資料夾（預設：此資料夾）建立新筆記 <名稱>.md，\n                          依 [new_note]（folder、set、範本）建立；輸出建立的路徑，\n                          絕不覆寫\n  --set <欄位>=<值>       搭配 --new-note，將該值填入欄位（可重複；清單項目以\n                          逗號分隔；空值不寫入）\n  --print-config          以 TOML 輸出所有設定項目，附預設值\n                          與說明（docs/config.md）\n  --completions <shell>   輸出 shell 補全定義（bash、zsh、fish、elvish、powershell）\n  --man                   輸出 man 頁面（roff）\n  --help                  輸出此說明\n  --version               輸出版本"
+
+# ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
+ValuePath = "路徑"
+ValueName = "名稱"
+ValueFormat = "格式"
+ValuePick = "path|欄位"
+ValueShell = "shell"
+ValueExpr = "運算式"
+ValueSort = "欄位[:desc]"
+ValueSet = "欄位=值"
+
+# ---- main: 引数の誤り(CLI-4。clap の誤りを1行に直す) ----
+CliUnknownOption = "未知的選項：{0}（請見 --help）"
+## {0} はオプション、{1} は無いもの(`CliWhat*`)。
+CliMissingValue = "{0} 需要{1}"
+CliWhatView = "檢視名稱"
+CliWhatConfig = "設定檔路徑"
+CliWhatShell = "shell 名稱"
+CliWhatFormat = "格式名稱"
+CliWhatPick = "要輸出的內容（path 或欄位名稱）"
+CliWhatValue = "一個值"
+CliUnknownValue = "{0} 的值無效：{1}（可用的值：{2}）"
+## 並べた値の区切り。
+ListSep = "、"
+CliInvalidUtf8 = "引數不是有效的 UTF-8"
+CliConflict = "{0} 與 {1} 不能同時使用（請見 --help）"
+CliRequired = "需要 {0}（請見 --help）"
+## {0} は渡された旗、{1} はそれに要るもの(`--format`・`--with-path` に `--print`)。
+CliRequiredBy = "{0} 需要搭配 {1}（請見 --help）"
+CliTakesNoValue = "{0} 不接受值：{1}（請見 --help）"
+CliBadArgument = "無法讀取引數：{0}（請見 --help）"
+CliUnreadable = "無法讀取這些引數：{0}（請見 --help）"
+
+# ---- main: 起動できない理由(CLI-4・SR-10) ----
+CannotWriteOutput = "無法寫出輸出：{0}"
+ConfigUnreadable = "無法讀取設定：{0}（{1}）"
+PathUnopenable = "無法開啟路徑：{0}（{1}）"
+CsvAlone = ".csv 或 .tsv 必須單獨指定（不可與資料夾或其他檔案並列）：{0}"
+BaseAlone = ".base 必須單獨指定（不可與資料夾或其他 .base 並列）：{0}"
+NotAFolder = "不是資料夾：{0}"
+ViewNeedsBase = "--view {0} 只能在開啟 .base 時使用"
+CannotOpen = "無法開啟：{0}"
+BaseUnreadable = "無法讀取 .base：{0}（{1}）"
+## {0} はビューの名前、{1} は `ViewsAre` か `NoViews`。
+NoSuchView = "沒有檢視「{0}」（{1}）"
+ViewsAre = "現有檢視：{0}"
+NoViews = "沒有任何檢視"
+NotATerminal = "標準輸入與輸出不是終端機，無法顯示畫面"
+NoDevTty = "無法開啟終端機（/dev/tty），無法顯示畫面（{0}）"
+TerminalError = "終端機錯誤：{0}"
+PickNoColumn = "--pick 的欄位「{0}」不在表格中（現有欄位：{1}）"
+
+# ---- source/markdown: 読むだけの理由(WB-3・WB-5・CE-8・CE-16・CE-19・BV-12) ----
+LockNoFrontmatterSetting = "沒有 front matter（依設定不新增）"
+LockEmptyFrontmatterSetting = "front matter 為空（依設定不填入）"
+LockTypesConflict = "types.json 在各根目錄給此欄不同的型別（唯讀）"
+LockNoFrontmatter = "沒有 front matter"
+LockEmptyFrontmatter = "front matter 為空"
+LockBom = "檔案以 BOM 開頭"
+
+# ---- --apply(CLI-17) ----
+## {0} は JSON の読み取りの誤り。
+ApplyBadJson = "無法讀取 JSON：{0}"
+## {0} は何番目のオブジェクトか。
+ApplyNoPath = "第 {0} 項沒有 \"path\"（請加上 --with-path 輸出）"
+ApplyBadCsv = "無法讀取 CSV：有以引號括住的欄位未閉合"
+ApplyNoPathColumn = "CSV 沒有 \"path\" 欄（請加上 --with-path 輸出）"
+## {0} は行、{1} は欄の数、{2} は見出しの欄の数。
+ApplyCsvWidth = "第 {0} 行有 {1} 個欄位，標題列有 {2} 個"
+ApplyNotList = "值必須是文字、數字、true/false、null 或文字清單"
+## {0} は行、{1} は path。
+ApplyUnknownPath = "第 {0} 行：{1} 沒有筆記"
+## {0} は行、{1} は path、{2} は列、{3} は理由。
+ApplyBadValue = "第 {0} 行：{1}：{2}：{3}"
+## {0} は行、{1} は path、{2} は列、{3} は読むだけの理由。
+ApplyLocked = "第 {0} 行：{1}：{2} 無法寫入（{3}）"
+## {0} はノート。
+ApplyChangedOutside = "{0} 已在 mdgrid 外被修改，未寫入"
+## {0} は変わるファイルの数。
+ApplyDryRun = "將變更 {0} 個檔案；尚未寫入（加上 --yes 才會寫入）"
+## {0} は数。
+ApplyDryRunOne = "將變更 {0} 個檔案；尚未寫入（加上 --yes 才會寫入）"
+## {0} は捨てた直しの数、{1} は列の名前。
+ApplyIgnored = "已忽略無法寫入之欄位的 {0} 項修改（{1}）"
+ApplyIgnoredOne = "已忽略無法寫入之欄位的 {0} 項修改（{1}）"
+## CLI-16。{0} は列の名前。
+CliUnknownSort = "--sort {0}：檢視與筆記中都沒有此欄位"
+ApplyNoChanges = "沒有變更：所有值都與筆記相同"
+## {0} はファイル、{1} は誤り。
+ApplyUnreadable = "無法讀取 {0}：{1}"
+ApplyProblems = "因上述問題，未寫入任何內容"
+## {0} は見出し。
+ApplyDuplicateHeader = "欄位 {0} 在標題列出現兩次"
+## {0} は見出し。
+ApplyUnknownColumn = "欄位 {0} 不在檢視中，也沒有筆記有此鍵（請檢查拼字）"
+## {0} は見出し。
+ApplyAmbiguousColumn = "欄位 {0} 可能指兩個欄位（顯示名稱與另一欄的鍵）"
+## {0} は行、{1} は path。
+ApplyAmbiguousPath = "第 {0} 行：{1} 在指定的各資料夾下對應到不同筆記（請寫從單一資料夾起算的路徑）"
+## {0} は行、{1} は path、{2} は列、{3} は先に書いた行。
+ApplyDuplicateRow = "第 {0} 行：{1}：{2} 已在第 {3} 行設定"
+## {0} は値。
+ApplyDateForm = "日期請寫成 YYYY-MM-DD（「{0}」）"
+ApplyListAmbiguous = "此清單的項目含有「, 」或前後空白，無法從 CSV 編輯（請用 --format json）"
+## {0} は数。
+ApplyBigNumber = "{0} 超出 64 位元整數的範圍（會被捨入）"
+ApplyReadonly = "--apply 會寫入筆記，不能與 --readonly 同時使用"
+## CLI-16。{0} は渡した --sort の値。
+CliBadSort = "--sort {0}：請寫欄位名稱，後面可加上 :asc 或 :desc"
+## CLI-16。{0} はビューの名前。
+CliFilterNativeView = "--filter 與 --sort 只能用於 .base 檢視或資料夾，不能用於 mdgrid 檢視「{0}」"
+LockToml = "front matter 是 TOML（+++），不是 YAML"
+LockNotUtf8 = "檔案不是 UTF-8"
+LockMixedNewlines = "換行字元混用"
+## {0} は重なったキー。
+LockDuplicateKey = "同一個鍵出現兩次（{0}）"
+LockUnclosed = "front matter 未閉合"
+LockHardLink = "檔案有硬連結"
+LockInvalidYaml = "無法讀取的格式（唯讀）"
+LockInvalidYamlAt = "第 {0} 行的 YAML 無法讀取：{1}（唯讀）"
+LockFileAttr = "檔案屬性（唯讀）"
+LockFormulaColumn = "公式欄（唯讀）"
+## WB-5。`writeback::NO_PERMISSION` は日本語。
+NoPermission = "沒有寫入權限"
+ListBlankBetween = "項目之間有空行的清單"
+ListCommentBetween = "項目之間有註解的清單"
+ListTrailingComment = "項目後有註解的清單"
+ListIndent = "項目縮排不一致的清單"
+ListTabAfterDash = "`-` 後接 Tab 的清單"
+ListMultiLine = "有項目跨越多行的清單"
+ListNested = "有巢狀項目的清單"
+ListNonString = "有非字串項目的清單"
+ValueNested = "巢狀的值"
+ValueMultiLine = "多行的值"
+ValueAnchor = "含錨點的值"
+ValueTagged = "有標記的值"
+ValueUnwritable = "無法改寫的格式的值"
+RowNotLoaded = "此列尚未載入"
+SyncConflictFile = "同步衝突檔案"
+CannotRead = "無法讀取：{0}"
+
+# ---- changes: ためられない理由(CE-8・CE-16・CE-18) ----
+NoBaseAfterReload = "重新載入的列沒有比對基準"
+SkipListCell = "無法將單一值寫入清單儲存格（請改為新增或移除項目）"
+SkipNotLoaded = "尚未載入"
+
+# ---- types: 日付の形と日付の打ち込み(CE-5・CE-22) ----
+## {0} は形(引用符つき)、{1} は理由。
+DateFormatBad = "無法讀取日期格式 {0}：{1}"
+DateFormatBadChar = "{0} 無法使用（可用的部分為 YYYY、YY、MM、M、DD、D、ddd 與非英數字的分隔字元）"
+DateFormatMonthDay = "需要恰好一個月（MM 或 M）與一個日（DD 或 D）"
+DateFormatYearWeekday = "年與星期各最多一個"
+DateFormatAdjacent = "M 與 D 不能不加分隔字元而緊鄰其他數字部分"
+DateNotReal = "沒有這個日期：{0}"
+## {0} は打ち込み、{1} は日付、{2} は曜日(訳さない)。
+DateWeekdayMismatch = "星期與日期不符：{0}（{1} 是 {2}）"
+## {1} は使える形を `ListSep` で並べたもの。
+DateUnreadable = "不是日期：{0}（{1}）"
+## cell-edit.date-words: 読めない打ち込みの理由に並べる、日付の言葉の例。
+DateWordsForm = "tomorrow 之類的詞"
+DateEmptyClears = "留空即清除"
+DateOutOfRange = "超出日期範圍（0000-01-01 至 9999-12-31）：{0}"
+
+# ---- config: 設定の警告(CLI-3) ----
+ConfigTomlLine = "無法讀取設定的 TOML（第 {0} 行）：{1}"
+ConfigToml = "無法讀取設定的 TOML：{0}"
+WantIntAtLeast0 = "0 以上的整數"
+WantIntAtLeast1 = "1 以上的整數"
+WantBool = "true 或 false"
+WantDateFormat = "日期格式字串"
+WantWeekStart = "\"sun\" 或 \"mon\""
+WantString = "字串"
+## {0} は使える値(auto と台帳のある言語の符号)の並び。
+WantLanguage = "{0} 其中之一"
+WantLook = "\"modern\" 或 \"classic\""
+WantCells = "\"rich\" 或 \"plain\""
+WantCellsColumns = "欄位 = \"rich\"、\"plain\" 或 \"chip\" 的表"
+WantColStyle = "\"rich\"、\"plain\" 或 \"chip\""
+WantTheme = "\"auto\"、\"default\"、\"nord\"、\"solarized-light\"、\"dracula\"、\"gruvbox\"、\"pink-monster\"、\"dozy-pink\"、\"sumi\"、\"slate\"、\"saas\"、\"saas-dark\"、\"paper\" 其中之一（或 { light, dark } 表）"
+## {0} は候補の並び。
+WantOneOf = "{0} 其中之一"
+WantTable = "表"
+WantTabs = "\"always\"、\"auto\" 或 \"never\""
+WantButtons = "\"plain\" 或 \"box\""
+WantBarPadding = "0 到 2，以 0.5 為間隔（0、0.5、1、1.5 或 2）"
+WantRowExtraLines = "0 到 9 的整數"
+## {0} は正規表現を読めない理由。
+RsnBadRegex = "無法讀取正規表示式（已忽略）：{0}"
+## WS-9: 印の表に path と base の両方。
+RsnBaseOverPath = "同時寫了 path 與 base；使用 base，忽略 path"
+WantValuesArray = "由字串、數字或布林值組成的非空陣列"
+WantNotePath = "\"common\"、\"name\"、\"full\" 或 \"off\""
+## 設定の警告(CLI-3)。{0} はファイルの名前、{1} は項目の道筋、{2} は理由。
+SettingWarn = "{0}: {1}: {2}"
+## 値の出どころ(SR-44)の、ビューの設定の範囲。
+OriginView = "檢視設定"
+## {0} は求める型(Want*)。
+RsnNot = "不是{0}（已忽略）"
+RsnUnknown = "未知的項目（已忽略）"
+## {0} は新しい道筋(CLI-20)。
+RsnMoved = "舊名稱已移至 `{0}`（以新名稱讀取）"
+RsnGlobalOnly = "只能寫在 config.toml（已忽略）"
+RsnNoTemplate = "沒有名為「{0}」的樣板（已忽略）"
+RsnNestedUse = "樣板不能使用另一個樣板（已忽略）"
+RsnBadDateFormat = "{0}；改用預設的 YYYY-MM-DD"
+RsnBadColumn = "`{0}` 不是可寫入的欄位，或重複了（已忽略）"
+RsnBadNoteMode = "\"{0}\" 不是 \"form\" 或 \"editor\"；改用表單"
+RsnNeedName = "需要不重複的 name（字串）（已忽略）"
+RsnNeedPath = "需要 path（字串）（已忽略）"
+## condition.invalid: 条件の名前の決まり。
+RsnCondName = "條件名稱須以英文字母開頭，且只能使用英數字、_ 與 -（已忽略）"
+RsnCondNeedExpr = "需要 expr（字串）（已忽略）"
+## {0} は式を読めない理由。
+RsnCondExpr = "無法讀取運算式（不使用此條件）：{0}"
+## {0} は輪の道筋(a → b → a)。
+RsnCondCycle = "條件之間循環互相呼叫（{0}）；全部不使用"
+## {0} は数字、{1} は先にその数字を書いた条件。
+RsnCondKeyDup = "按鍵 {0} 已被條件「{1}」使用（忽略此按鍵）"
+## condition.digit-remap: {0} は数字。
+RsnCondKeyTaken = "按鍵 {0} 已在 [keys.table] 指派給其他動作（忽略此按鍵）"
+## {0} は使えない条件の名前。
+RsnCondUses = "使用了無法使用的條件「{0}」（不使用此條件）"
+## {0} は未対応の関数・項目。
+CondUnsupported = "不支援的函式或欄位 {0}"
+WantDigit = "1 到 9 的整數"
+## condition.unknown-name: {0} は無い名前、{1} はある名前の並び。
+CondUnknown = "沒有條件「{0}」（現有條件：{1}）"
+CondNoNames = "無"
+## notice.opt-in: [[notices]] の形。
+WantNoticeArray = "表的陣列（[[notices]]）"
+RsnNoticeKind = "需要 cond（具名條件的筆數）或 note（筆記的行）其中之一（已忽略）"
+WantNoticeScope = "\"table\"、\"workspace\" 或表格名稱的陣列"
+## notice.count-item: {0} は書いていない条件の名前。
+RsnNoticeNoCond = "[conditions] 中沒有條件「{0}」（已忽略）"
+## notice.note-item: {0} はノートのファイルの名前。
+NoticeNoNote = "找不到 {0}"
+## notice.layout: {0} は欄に入らない行の数。
+NoticeMore = "還有 {0} 行"
+## {0} は open に書いた名前、{1} は印の表の名前の並び。
+RsnOpenUnknown = "標記檔中沒有名為 {0} 的表格（現有表格：{1}）；已直接開啟資料夾"
+RsnStarterUnknown = "沒有名為 {0} 的起始範本；僅依標記檔本身的內容開啟（mdgrid --starters 可列出）"
+RsnOptionUnknown = "起始範本 {1} 沒有選項 {0}；已略過"
+RsnNeedNamePath = "需要 name 與 path（字串），且 name 不可重複（已忽略）"
+RsnDuplicateValue = "同一個值寫了兩次（使用其中一個）"
+WantColor = "色彩（\"#rrggbb\"、\"#rgb\" 或色彩名稱）"
+WantNerdFont = "true、false 或 \"auto\""
+WantKeysTable = "[keys.<模式>] 表"
+WantKeyActionTable = "按鍵 = 動作 的表"
+WantActionName = "動作名稱字串"
+WantNewNoteTable = "[new_note] 表"
+WantColumnNames = "欄位名稱字串的清單"
+WantColumnValueTable = "欄位 = 值 的表"
+WantSetValue = "字串、數字、布林值、日期，或它們的清單"
+WantDisplayTable = "[display] 表"
+
+# ---- views: views.toml の警告と誤り(BV-20) ----
+## {0} はファイル、{1} は行、{2} は TOML の誤り(英語のまま)。
+ViewsTomlLine = "無法讀取 {0}（第 {1} 行），不載入 mdgrid 檢視：{2}"
+## SR-43: 見た目の区画。
+NavLook = "外觀"
+DescLook = "主題、元件樣式與圓角膠囊（儲存至 look.toml）"
+LookScope = "儲存至"
+LookTheme = "主題"
+LookPreset = "元件"
+LookNerd = "圓角膠囊"
+LookTemplates = "樣板"
+LookSaveTemplate = "+ 將此外觀存為樣板"
+LookResetRow = "移除此處的覆寫"
+LookNerdAuto = "auto（依終端機）"
+LookNerdOn = "true（開啟，Nerd Font）"
+LookNerdOff = "false（關閉）"
+LookPickOf = "選擇：{0}"
+LookTemplateUsed = "已套用樣板「{0}」（按「套用」後生效）"
+LookTemplateSaved = "已儲存樣板「{0}」"
+LookTemplateDeleted = "已刪除樣板「{0}」"
+## {0} は範囲の名前。
+LookReset = "已移除為{0}設定的主題與元件"
+## {0} はテンプレートの名前。
+LookTemplateInConfig = "樣板「{0}」寫在 config.toml 中；請編輯 config.toml 來刪除"
+LookMarkerReadOnly = "工作區標記檔（.mdgrid/workspace.toml）位於筆記資料夾內，mdgrid 不會寫入；請手動在其中寫入外觀設定"
+OriginDefault = "預設"
+OriginConfig = "config.toml"
+OriginGlobal = "全域"
+OriginWorkspace = "此工作區"
+OriginTable = "此表格"
+OriginThisView = "此檢視"
+TextLookTemplate = "樣板名稱"
+SetHintLook = "{0} 選擇或套用  {1} 刪除樣板（按「套用」後生效）"
+## SR-43: look.toml の警告。
+LookBroken = "{0}：無法讀取（{1}）；改用 config.toml 的外觀"
+LookTemplateNoName = "{0}：沒有 name 的樣板（已忽略）"
+ViewsToml = "無法讀取 {0}，不載入 mdgrid 檢視：{1}"
+ViewsNotUtf8 = "{0} 不是 UTF-8，不載入 mdgrid 檢視"
+ViewsTargetNotArray = "已忽略 {0} 中的 `target`：不是 [[target]] 表的陣列"
+## {1} は1から数えた番号。
+ViewsTargetNotTable = "已忽略 {0} 中的第 {1} 個 target：不是表"
+ViewsTargetNoPath = "已忽略 {0} 中的第 {1} 個 target：沒有 path（字串）"
+ViewsViewNotArray = "已忽略 {0} 中 target `{1}` 的 view：不是 [[target.view]] 表的陣列"
+ViewsViewNotTable = "已忽略 {0} 中 target `{1}` 的第 {2} 個檢視：不是表"
+ViewsViewUnreadable = "已忽略 {0} 中 target `{1}` 的第 {2} 個檢視：無法讀取：{3}"
+ViewsSaveNotUtf8 = "{0} 不是 UTF-8，不寫入"
+ViewsSaveBroken = "{0}（未寫入）"
+ViewsSaveTargetNotArray = "{0} 中的 `target` 不是表的陣列，不寫入"
+ViewsNotATable = "無法將檢視轉為表"
+
+# ---- views: .base への書き出しの近似と落としたもの(BV-19・SR-20) ----
+ExportEmptyNote = "{0} 如何判定「空」：值為對應表或巢狀清單時，運算式可能視為空，列可能會不同"
+## {0} は列、{1} は `Approx*`。
+ExportApprox = "{0} 的條件為近似：{1}"
+ApproxDateValue = "日期或日期時間值「{0}」會以日期或時間比較（前後有空白、或同一日期時間的不同寫法也會符合）"
+ApproxMapValue = "值「{…}」（對應表或巢狀清單）無法以運算式比對"
+ApproxContainsDateTime = "「{0}」會在補齊到秒的日期時間值（…T10:00:00）中搜尋"
+ApproxContainsJoined = "「{0}」會在清單項目連接成的文字中搜尋，因此跨越項目邊界也會符合"
+ApproxContainsMap = "對應表與巢狀清單的值（settings 中為「{…}」）無法以運算式用相同方式搜尋"
+ApproxCmpList = "清單值（型別不符的值）不會被運算式保留（settings 會逐項比較）"
+ApproxCmpDateLoose = "前後有空白、以空白分隔、或帶 Z 的值，也會讀為日期或日期時間（在 settings 中為型別不符的值）"
+ApproxCmpUnknownType = "欄位型別不明，因此以文字與「{0}」比較（若是數字或日期欄，settings 不會保留任何列）"
+ApproxCmpListJoined = "清單值以項目連接成的文字比較，而非逐項比較"
+ApproxCmpMapEmpty = "對應表與巢狀清單的值（settings 中為「{…}」）在運算式中視為空，不會被保留"
+ApproxCmpDateTimePadded = "日期時間值會補齊到秒（…T10:00:00）再比較"
+## {0} は formula の名前を `ListSep` と `formula.` でつないだもの。
+ExportFormulaRefs = "參照了 formula.{0}，但 mdgrid 檢視沒有公式，因此未匯出（參照已保留，但無法求值）"
+ExportHiddenDropped = "已捨棄隱藏的欄位（{0}）：欄位順序（order）為空，.base 無法表示"
+ExportHideEmptyDropped = "已捨棄群組（{0}）的「隱藏空群組」（NV-21）：.base 的 groupBy 無法表示"
+ExportDisplayDropped = "已捨棄顯示切換（列號、斑馬紋等，SR-20）：.base 沒有這些設定"
+ImportNoView = ".base 沒有檢視 {0}"
+ImportNoType = "檢視沒有 type，因此以 table 匯入"
+ImportTypeAsTable = "已將 type: {0} 的檢視以 table 匯入"
+ImportLimitDropped = "已捨棄 limit: {0}（列數上限）：mdgrid 檢視沒有此設定"
+ImportFormulasDropped = "已捨棄 formulas（{0}）：mdgrid 檢視沒有公式（使用 formula.* 的欄位與運算式無法求值）"
+ImportDisplayNameDropped = "已捨棄 properties 的 displayName（{0}）：mdgrid 檢視沒有此設定"
+
+# ---- base: .base の誤りと評価できない理由(BV-7・SC-8) ----
+BaseYaml = "無法讀取 .base 的 YAML：{0}"
+BaseNotMap = ".base 的最上層不是對應表"
+## {0} は深さの上限。
+BaseTooDeep = "YAML 巢狀超過 {0} 層"
+BaseAliasTooBig = "展開 .base 中的別名（*）後過大（上限 {0} 個節點）"
+BaseFilterShape = "無法讀取 filters（應為運算式字串，或 and、or、not 的對應表）"
+BaseFilterUnknown = "未知的 filters 形式：{0}（應為 and、or、not）"
+## {0} は関数・項目、{1} は式。
+BaseUnsupported = "不支援的函式或欄位 {0}（運算式：{1}）"
+BaseExprSyntax = "無法讀取運算式：{0}（運算式：{1}）"
+BaseInExpr = "{0}（運算式：{1}）"
+BaseFilterKept = "mdgrid 無法求值 filters 的運算式（已保留，但無法開啟此檢視）：{0}"
+BaseFilterDropped = "已捨棄 filters 中無法讀取的部分：{0}"
+BaseFormulaCycle = "formula.{0} 循環參照"
+BaseFormulaMissing = "formula.{0} 不在 formulas 中"
+BaseUnsupportedField = "不支援的欄位 {0}"
+BaseBadColumn = "無法讀取欄位：{0}"
+BaseNoViewIndex = "沒有檢視 {0}"
+BaseViewNoType = "檢視「{0}」沒有 type"
+## {0} は型、{1} はビューの名前。
+BaseViewUnsupported = "不支援 {0} 檢視「{1}」（mdgrid 只顯示 table 檢視）"
+BaseGlobalFilters = "無法求值全域 filters：{0}"
+BaseViewFilters = "無法求值檢視「{0}」的 filters：{1}"
+BaseCannotSort = "無法依 {0} 排序（視為空）：{1}"
+## 空のグループの見出し(base・settings)。
+EmptyHeading = "（空）"
+## {0} は列、{1} は集計の名前、{2} は最上位の summaries の式。
+BaseSummaryFormula = "{0} 的摘要：不支援公式摘要 {1}（{2}）"
+## {0} は列、{1} は集計の名前。
+BaseSummaryUnknown = "{0} 的摘要：未知的摘要 {1}"
+BaseSummaryGroups = "不支援各群組的摘要（摘要列為整個表格）"
+
+# ---- summary: 組み込みの集計の名前(BV-14。英語は Obsidian の名前) ----
+SummaryAverage = "平均"
+SummaryMin = "最小"
+SummaryMax = "最大"
+SummarySum = "總和"
+SummaryRange = "範圍"
+SummaryMedian = "中位數"
+SummaryStddev = "標準差"
+SummaryEarliest = "最早"
+SummaryLatest = "最晚"
+SummaryChecked = "已勾選"
+SummaryUnchecked = "未勾選"
+SummaryEmpty = "空白"
+SummaryFilled = "已填"
+SummaryUnique = "不重複"
+## 集計の行の、ノートの列の見出し。
+SummaryRow = "摘要"
+
+# ---- expr: 式の読み取りの誤り ----
+ExprBadNumber = "不是數字：{0}"
+ExprNameAfterNumber = "數字後緊接著名稱：{0}{1}"
+ExprUnclosedString = "字串未閉合"
+ExprBadChar = "非預期的字元：{0}"
+ExprTooDeep = "運算式巢狀過深"
+ExprMissing = "缺少 {0}"
+ExprCommaOrRParen = "`,` 或 `)`"
+ExprCommaOrRBrack = "`,` 或 `]`"
+ExprNoNameAfterDot = "`.` 後面沒有名稱"
+ExprUnexpectedEnd = "運算式提前結束"
+ExprUnexpectedToken = "此處不能出現：{0}"
+ExprArityAtLeast = "{0} 個以上"
+ExprArityRange = "{0} 到 {1} 個"
+## {0} は関数、{1} は渡した数、{2} は求める数。
+ExprArity = "{0} 的引數數量錯誤（給了 {1} 個，應為 {2}）"
+ExprCondArg = "cond() 只接受一個以引號括住的條件名稱，例如 cond(\"soon\")"
+ExprTrailing = "運算式後有多餘的內容：{0}"
+
+# ---- newnote: 新しいノートの設定と作れない理由(CE-25・CE-26・CE-27) ----
+NewNoteNotTable = "new_note 不是表"
+NewNoteNotString = "new_note.{0} 不是字串"
+NewNoteAskNotArray = "new_note.ask 不是陣列"
+NewNoteAskNonString = "new_note.ask 有非字串的值"
+NewNoteSetNotTable = "new_note.set 不是表"
+NewNoteSetBadValue = "new_note.set 中的 `{0}` 不是字串、數字、布林值、日期或它們的清單"
+## {0} は `NewNoteWhat*`。
+NewNoteControl = "{0}含有控制字元"
+NewNoteAbsolute = "{0}是絕對路徑（在開啟的資料夾之外），因此不建立筆記"
+NewNoteBadChar = "{0}含有 Obsidian 不允許的 `{1}`，因此不建立筆記"
+NewNoteDotDot = "{0}含有 `..`（在開啟的資料夾之外），因此不建立筆記"
+NewNoteDotPart = "{0}中的 `{1}` 以 `.` 開頭（讀取時會略過），因此不建立筆記"
+NewNoteWhatFolder = "設定的資料夾"
+NewNoteWhatName = "名稱"
+NewNoteEmptyName = "名稱為空，因此不建立筆記"
+NewNoteNameIsFolder = "名稱以資料夾結尾，因此不建立筆記"
+NewNoteExists = "{0} 已存在，因此不建立筆記"
+NewNoteEmptyKey = "無法寫入欄位名稱為空的值：{0}"
+NewNoteNewline = "有值含有換行，因此不建立筆記"
+NewNoteNotEditable = "有值無法寫入，因此不建立筆記：{0}"
+NewNoteCannotBuild = "無法產生新筆記的內容：{0}"
+## CLI の --new-note。{0} は --set の引数、列の名前。{1} は値。
+NewNoteCliOne = "--new-note 只建立一則筆記：請指定一個資料夾"
+NewNoteCliBadSet = "--set {0}：請寫成 欄位=值"
+NewNoteCliBadValue = "--set {0}={1}：值不符合欄位 {0} 的型別，未建立任何內容"
+NewNoteCliRequired = "欄位 {0} 為必填：沒有 --set {0}=<值> 就不會建立"
+
+# ---- print: --print の誤り(CLI-5) ----
+PrintNoViews = ".base 沒有 views"
+PrintNativeView = "mdgrid 檢視「{0}」：{1}"
+
+# ---- settings: 設定の帯の項目(NV-16) ----
+ChipSort = "排序：{0} {1}"
+## condition.digit-stack: {0} は数字、{1} は条件の見せる名前。
+ChipCondOn = "{0} {1}"
+## condition.hide-always: {0} は見せる名前、{1} は隠した行の数。
+ChipCondHide = "隱藏 {0}：{1}"
+ChipCondShown = "顯示 {0}"
+## condition.view-settings: {0} は見せる名前。
+ChipNamedKeep = "僅 {0}"
+ChipNamedHide = "隱藏 {0}"
+## navigation.expr-filter: {0} は式。
+ChipExpr = "運算式：{0}"
+ChipGroupOff = "群組：無"
+ChipGroup = "群組：{0} {1}"
+ChipHideEmpty = "（隱藏空的）"
+CondOnly = "僅 {0}"
+CondExcept = "{0} 以外"
+CondContains = "包含「{0}」"
+CondNotContains = "不包含「{0}」"
+CondEmpty = "為空"
+CondNotEmpty = "不為空"
+
+# ---- display: 「表示」の節の項目(SR-21) ----
+DisplayRowNumbers = "列號"
+DisplayZebra = "斑馬紋"
+DisplayColumnLines = "欄分隔線"
+DisplayGroupGap = "群組間距"
+DisplayTabs = "分頁"
+DisplaySearchBar = "搜尋列"
+DisplayChips = "設定列"
+DisplayButtons = "檢視列按鈕"
+DisplayBarPadding = "檢視列留白"
+DisplayTopPadding = "上方留白"
+DisplayRowExtraLines = "加高列"
+DisplayNotePath = "筆記路徑"
+
+# ---- ui/keymap: モードの表示名(SR-16。下の帯・ヘルプ・警告) ----
+ModeTable = "表格"
+ModeEdit = "編輯"
+ModeConfirm = "儲存確認"
+ModeQuit = "確認結束"
+ModeHelp = "說明"
+ModePalette = "命令面板"
+## NV-1・NV-2(2026-10-11): 呼び直す前の `/` と上の欄のモードの表示名(書いた設定を前のモードに読む)。
+OldModeSearch = "搜尋"
+OldModeFilter = "篩選"
+ModeSearch = "尋找"
+ModeFilter = "搜尋"
+ModeDetail = "詳細資料"
+ModeSettings = "檢視設定"
+ModeSettingsText = "設定輸入"
+ModeChips = "設定列"
+ModeListPick = "清單選擇"
+ModeMenu = "動作選單"
+ModeFreq = "值的次數"
+ModeSorts = "排序"
+ModeFilterWin = "篩選"
+ModeFilterText = "篩選值"
+ModeDrawer = "表格清單"
+ModeRelations = "關聯"
+ModeScreenMenu = "畫面類型"
+
+# ---- ui/keymap: ヘルプの節(SR-5) ----
+SecMove = "移動"
+SecEdit = "編輯"
+SecFile = "儲存與結束"
+SecInput = "輸入框"
+SecReview = "儲存確認"
+SecQuit = "確認結束"
+SecFind = "說明與指令"
+SecOutside = "編輯器與複製"
+SecInHelp = "說明中"
+SecInPalette = "命令面板中"
+SecShape = "表格版面"
+SecSearch = "搜尋與篩選"
+SecSelect = "選取與詳細資料"
+SecInPrompt = "尋找與搜尋輸入"
+SecInDetail = "詳細資料中"
+SecInSettings = "檢視設定中"
+SecInChips = "設定列中"
+SecInNotice = "通知欄中"
+SecInPick = "清單選擇中"
+SecNative = "mdgrid 檢視（命令面板的指令）"
+SecNote = "建立筆記（命令面板的指令）"
+SecInMenu = "動作選單中"
+SecInFreq = "值的次數中"
+SecInSorts = "排序視窗中"
+SecInFilters = "篩選視窗中"
+SecInDrawer = "表格清單中"
+SecInRelMap = "關聯圖中"
+SecInScreenMenu = "畫面類型選單中"
+
+# ---- ui/keymap: キーの表示名(SR-4。下の帯・ヘルプ・パレット) ----
+KeyUp = "上"
+KeyDown = "下"
+KeyLeft = "左"
+KeyRight = "右"
+KeyFirstColumn = "第一欄"
+KeyLastColumn = "最後一欄"
+KeyPageUp = "上一頁"
+KeyPageDown = "下一頁"
+KeyHalfPageUp = "上半頁"
+KeyHalfPageDown = "下半頁"
+KeyFirstRow = "第一列"
+KeyLastRow = "最後一列"
+KeyNextCell = "下一格"
+KeyPrevCell = "上一格"
+KeyEdit = "編輯"
+KeyClear = "清除"
+## 表の取り消し(undo)。
+KeyUndo = "復原"
+KeyRedo = "重做"
+KeyNewNote = "新增筆記"
+KeySave = "儲存"
+KeyQuit = "結束"
+KeyCancelLoad = "停止載入"
+KeyHelp = "說明"
+KeyCommands = "指令"
+KeyOpenEditor = "用編輯器開啟"
+KeyCopyCell = "複製儲存格"
+KeyCopyRow = "複製列"
+KeyPrevView = "上一個檢視"
+KeyNextView = "下一個檢視"
+KeyNarrower = "縮窄欄位"
+KeyWider = "加寬欄位"
+KeySort = "依此欄排序"
+KeySortsRun = "反轉方向／新增"
+KeyScreenMenuRun = "切換到該畫面"
+## NV-24: 並べ替えの窓。
+CmdSortMenu = "排序…"
+## NV-25: 既定のビュー。
+CmdSetDefaultView = "設為預設檢視"
+DefaultViewSet = "之後會先開啟「{0}」"
+DefaultViewCleared = "之後會先開啟第一個檢視"
+SortButton = " 排序 "
+SortTitle = " 排序 "
+SortPickTitle = " 新增排序：欄位 "
+SortAsc = "遞增"
+SortDesc = "遞減"
+SortAdd = "+ 新增排序"
+SortNoRoom = "終端機太小，無法顯示排序視窗"
+## NV-29: 絞り込みの窓。
+CmdFilterMenu = "篩選…"
+FilterButton = " 篩選 "
+## {0} は条件の数。
+FilterButtonN = " 篩選 {0} "
+FilterTitle = " 篩選 "
+FilterPickColumn = " 篩選依據：欄位 "
+FilterAdd = "+ 新增篩選"
+FilterNoRoom = "終端機太小，無法顯示篩選視窗"
+KeyFiltersRun = "修改／新增／選擇"
+KeyFiltersCell = "選擇欄（欄位／比較／值）"
+KeyFiltersCheck = "勾選值／切換模式"
+SortNoColumn = "所有欄位都已在排序中"
+KeyHideColumn = "隱藏欄位"
+KeyShowColumn = "顯示隱藏的欄位"
+KeyAddColumn = "新增欄位（新的鍵）"
+KeyMoveColumnLeft = "欄位左移"
+KeyMoveColumnRight = "欄位右移"
+KeyFreeze = "凍結到此欄"
+KeySearch = "尋找"
+KeySearchNext = "下一個符合"
+KeySearchPrev = "上一個符合"
+KeyQuickFilter = "搜尋"
+KeyHighlightSame = "醒目標示相同值"
+KeyFilterSame = "僅相同值"
+KeyFrequency = "值的次數"
+KeyCondition = "切換具名條件"
+KeyFocusNotice = "移至通知欄"
+KeyNoticeOpen = "開啟該項目"
+KeyFreqRun = "僅此值"
+KeyMark = "標記列"
+KeyVisual = "選取範圍"
+KeyExtendUp = "向上延伸"
+KeyExtendDown = "向下延伸"
+KeySelectAll = "全選"
+KeyEscape = "清除選取／搜尋"
+KeyDetail = "詳細資料"
+KeyViewSettings = "檢視設定"
+KeyFocusChips = "選取設定列"
+KeyCommit = "確定"
+## 入力の取り消し(cancel)。
+KeyCancel = "取消"
+KeyCommitNext = "確定並右移"
+KeyCommitPrev = "確定並左移"
+KeyRevert = "原本的值"
+KeyClearInput = "清除輸入"
+KeyListUpWeek = "上一項／上一週"
+KeyListDownWeek = "下一項／下一週"
+KeyLeftDay = "左／前一天"
+KeyRightDay = "右／後一天"
+KeyDatePrevMonth = "日期：上個月"
+KeyDateNextMonth = "日期：下個月"
+KeyLeftMonth = "左／上個月"
+KeyRightMonth = "右／下個月"
+KeyListUpYear = "上一項／前一年"
+KeyListDownYear = "下一項／後一年"
+KeyDateToday = "日期：今天"
+KeyDateClear = "日期：清除並確定"
+KeyTimeFocus = "日期時間：切換日期與時間"
+## 入力の文字のカーソルの先頭・末尾。
+KeyCursorHome = "文字開頭"
+KeyCursorEnd = "文字結尾"
+KeyDeleteBack = "刪除前一個字"
+KeyDeleteForward = "刪除後一個字"
+KeyFilterClear = "清除篩選"
+KeyClose = "關閉"
+## 詳細の表示・ヘルプの先頭・末尾。
+KeyTop = "頂端"
+KeyBottom = "底端"
+KeyDecide = "確定"
+KeyToggle = "切換"
+KeyBackCancel = "返回／取消"
+KeyNextSection = "下一區"
+KeyPrevSection = "上一區"
+KeyGoToSection = "移至編號的區塊"
+KeyMoveItemUp = "上移"
+KeyMoveItemDown = "下移"
+KeyDelete = "刪除"
+KeyBack = "返回"
+KeyRemove = "移除"
+KeyLeftItem = "左邊的項目"
+KeyRightItem = "右邊的項目"
+KeyBackToTable = "回到表格"
+KeyPickRun = "確定（搜尋中為新增）"
+KeyPickToggle = "切換（搜尋中為空格）"
+KeyPickRevert = "回到開啟時的狀態"
+KeyPrevItem = "上一項"
+KeyNextItem = "下一項"
+## 保存の確認で全部を書く。
+KeySaveAll = "全部儲存"
+KeyNextFile = "下一個檔案"
+KeyPrevFile = "上一個檔案"
+KeyOverwrite = "以此檔案覆寫外部變更"
+KeyDiscardRow = "捨棄未儲存的變更"
+## 終了の確認で保存する。
+KeyQuitSave = "儲存並結束"
+KeyQuitDiscard = "捨棄並結束"
+KeyScrollDown = "向下捲動"
+KeyScrollUp = "向上捲動"
+KeyRun = "執行"
+## 読むだけのときの表の Enter(SR-2)。
+KeyToggleGroup = "展開／收合群組"
+## `--pick` のときの表の Enter(OUT-3)。
+KeyPickFinish = "選取並結束"
+## その場の操作の一覧を開く(SR-24)。
+KeyActionMenu = "動作選單"
+CmdExportBase = "匯出為 .base"
+CmdRenameKey = "重新命名鍵"
+CmdRenameNote = "重新命名筆記"
+CmdDeleteNote = "刪除筆記"
+CmdRestoreNote = "從垃圾桶還原"
+CmdDeleteKey = "刪除鍵"
+CmdImportBase = "匯入 .base 檢視"
+
+# ---- ui/keymap: キーの読み取りと割り当て直しの警告(SR-13・SR-16) ----
+KeyErrEmpty = "按鍵為空"
+KeyErrModifier = "未知的修飾鍵 `{0}`"
+KeyErrSpace = "空白鍵請寫成 `space`"
+KeyErrShiftChar = "shift+{0} 請寫成按 shift 後產生的字元"
+KeyErrNoKey = "`{0}` 中沒有按鍵"
+KeyErrUnknown = "未知的按鍵 `{0}`"
+KeyErrSpaceModifier = "space 不能加修飾鍵"
+KeyErrShiftSame = "無法區分 shift+{0}"
+## {0} はモード、{1} は動作の名前を `` `、` `` でつないだもの、{2} は戻したキー。
+RebindExitKept = "此設定會使{0}模式中沒有 `{1}` 的按鍵，因此未套用，保留預設按鍵 {2}"
+RebindUnknownMode = "設定中的 `keys.{0}` 不是已知的模式，已忽略（模式：{1}）"
+RebindBadKey = "設定中的 `{0}` 不是可讀取的按鍵，已忽略（{1}）"
+RebindNoPrefix = "設定中的 `{0}` 在{1}模式中不能作為前置鍵，已忽略"
+RebindUnknownAction = "設定中 `{0}` 的動作 `{1}` 未知，已忽略"
+RebindNotInMode = "設定中 `{0}` 的動作 `{1}` 不能在{2}模式中使用，已忽略"
+## {0} は設定の場所を `ListSep` で並べたもの、{1} はモード、{2} はキー。
+RebindSameKey = "設定中的 {0} 在{1}模式中把兩個動作指派給同一個按鍵 `{2}`，全部未套用（SR-16）"
+## {2} はぶつかるキー、{3} はその動作の名前。
+RebindPrefixClash = "設定中的 `{0}` 在{1}模式中與按鍵 `{2}`（{3}）的前置部分重疊，已忽略（SR-16；請先以 \"none\" 移除該按鍵）"
+
+# ---- ui/help: ヘルプとパレット(SR-5・SR-14・NV-7) ----
+HelpNow = " 可用按鍵（{0}）"
+## SR-5: ヘルプの最後の印の節。
+HelpMarks = " 標示"
+HelpMarksCell = "  儲存格中"
+HelpMarksRow = "  列的左側"
+MarkNull = "null：有此鍵，但沒有值"
+MarkEmptyStr = "空字串"
+MarkBlank = "筆記沒有此鍵"
+MarkBlankSign = "（空白）"
+MarkMisfit = "值不符合欄位型別"
+MarkPending = "已修改，尚未儲存"
+MarkLock = "唯讀（選取後可看原因）"
+MarkUnsupported = "mdgrid 無法求值的公式"
+MarkMultiline = "值含有換行（只顯示第一行）"
+MarkRowCurrent = "目前所在的列"
+MarkRowMarked = "已標記的列（Space、v）"
+MarkRowExternal = "在 mdgrid 外被修改，或為同步衝突檔案"
+MarkRowHeld = "已編輯；在儲存或移動前留在原位"
+## {0}-{1} は見えている行、{2} は全部の行の数。
+HelpHead = " 說明  {0}-{1}/{2} 行  所有按鍵（取自按鍵表）"
+## `HelpHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HelpHeadOne = " 說明  {0}-{1}/{2} 行  所有按鍵（取自按鍵表）"
+PaletteGoto = "移至第 {0} 列"
+## パレットの `wq`・`x`。
+PaletteSaveQuit = "儲存並結束"
+PaletteEmpty = "  （沒有符合的指令）"
+PaletteNoMatch = "沒有符合的指令：{0}"
+GotoNoRows = "沒有列"
+GotoPastEnd = "沒有第 {0} 列（共 {1} 列）。已移至最後一列"
+## `GotoPastEnd` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GotoPastEndOne = "沒有第 {0} 列（共 {1} 列）。已移至最後一列"
+GotoFolded = "第 {0} 列在收合的群組中（已移至其標題）"
+
+# ---- ui/bands: ヘッダー・タブ・検索の欄・設定の帯・下の帯・メッセージ行(SR-1・SR-15・NV-23・NV-16) ----
+HeaderRows = "{0} 列"
+## `HeaderRows` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HeaderRow = "{0} 列"
+## {1} は定義と違えば `*`。
+HeaderView = "  檢視 {0}{1}"
+HeaderLoading = "  載入中 {0}/{1}"
+HeaderCancelKey = "（按 {0} 停止）"
+HeaderCancelled = "  已停止載入"
+HeaderFilter = "  搜尋「{0}」"
+HeaderSame = "  相同值 {0}={1}"
+## リストの列の要素で絞ったとき(NV-9)。{0} は列、{1} は値。
+HeaderSameHas = "  {0} 包含 {1}"
+HeaderHidden = "  隱藏的欄位 {0}"
+TabDefault = " 預設表格 "
+TabSwitch = "  按 [ ] 切換"
+BarLead = " 搜尋："
+## NV-23: ビューの帯の検索の欄の名前と、語が無いときの印。
+BarName = "搜尋"
+BarEmpty = "…"
+## NV-23: ビューの帯の分類・列のボタン。
+ViewGroup = "群組"
+ViewColumns = "欄位"
+BarCount = "  {0}/{1} 列"
+## `BarCount` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BarCountOne = "  {0}/{1} 列"
+BarKey = "（按 {0} 搜尋）"
+BarClick = "（點一下搜尋）"
+ChipsLead = " 設定："
+ChipsRemoveKey = "  按 {0} 移除"
+ChipsSelectKey = "  按 {0} 選取"
+FooterUnsaved = " 未儲存 {0}"
+FooterSelected = "  已選取 {0}"
+FooterRow = "列 {0}/{1}"
+FooterHead = "群組 {0}/{1}"
+FooterCol = " 欄 {0}/{1}"
+FooterUnsupported = "  ?=不支援的公式"
+HintReviewExternal = "外部已變更：按 o 以此檔案覆寫外部變更，按 d 捨棄未儲存的變更"
+HintReview = "按 Enter 全部寫入。按 Esc 回到表格（未儲存的變更會保留）"
+HintViewError = "無法開啟此檢視（原因顯示在表格區）。按 [ ] 切換其他檢視"
+## {0} は理由を ` / ` でつないだもの。
+HintUnsupported = "不支援：{0}"
+## BV-2: `.base` の上に `.obsidian/` が無く、0行のとき。{0} は探した根。
+VaultRootGuessed = "沒有任何列：.base 上層沒有 .obsidian/ 資料夾，因此只在 {0} 下尋找筆記"
+HintHeadRow = "群組標題（{0} 列）。按 Enter 展開／收合"
+## `HintHeadRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HintHeadRowOne = "群組標題（{0} 列）。按 Enter 展開／收合"
+HintExternalNote = "筆記已在外部變更（未儲存的變更仍保留）"
+## {0} は印。
+HintHeld = "{0}：依編輯後的值，此列不應在這裡。儲存或移動後會重新排序"
+HintUnsupportedFormula = "不支援的公式（不顯示值）：{0}"
+HintReadOnly = "唯讀：{0}"
+QuitBand = " 有 {0} 項未儲存的變更。結束前請選擇處理方式"
+
+# ---- ui/calendar: カレンダー(CE-20・CE-21・CE-23・CE-24) ----
+## {0} は年、{1} は月(`Month*`)。
+CalTitle = " {0}年{1} "
+Month1 = "1月"
+Month2 = "2月"
+Month3 = "3月"
+Month4 = "4月"
+Month5 = "5月"
+Month6 = "6月"
+Month7 = "7月"
+Month8 = "8月"
+Month9 = "9月"
+Month10 = "10月"
+Month11 = "11月"
+Month12 = "12月"
+WdSun = "日"
+WdMon = "一"
+WdTue = "二"
+WdWed = "三"
+WdThu = "四"
+WdFri = "五"
+WdSat = "六"
+CalMonthKeys = "{0} 月"
+CalYearKeys = "{0} 年"
+## CE-31: 時刻の欄への切り替えのキー。
+CalTimeKey = "{0} 時間"
+## CE-30: 時刻の欄の見出し。
+CalTime = "時間"
+## CE-30: 時刻の欄は日時の列だけ。
+CalTimeOnly = "只有日期時間的輸入可以設定時間"
+CalTodayKey = "{0} 今天"
+CalClearKey = "{0} 清除"
+CalDateOnly = "此操作只能用於日期與日期時間的輸入"
+## cell-edit.date-words-preview: 日付の言葉を打っているあいだ、入力の欄の横に出す読み。{0} は `YYYY-MM-DD`、{1} は曜日(`Ddd*`)。
+DateWordsDay = "{0}（{1}）"
+DateWordsUnreadable = "不是日期"
+
+# ---- ui/new_note: 新しいノート(CE-25・CE-26・CE-27) ----
+NoteButton = "+ 新增"
+NoteNoPlace = "不知道建立的位置（開啟的資料夾），因此不建立筆記"
+NoteTooLow = "終端機高度不足，無法顯示新筆記的欄位，因此未開始（請加高終端機）"
+NoteFirstPlace = "位置是第一個欄位"
+NoteFirstName = "名稱是第一個欄位"
+## {0} はパス、{1} は理由。
+NoteCannotCreate = "無法建立 {0}，因此不建立筆記：{1}"
+NoteUnreadable = "已建立但無法讀取：{0}"
+NoteCreated = "已建立：{0}"
+NoteCreatedHidden = "已建立：{0}（目前的篩選或收合的群組中看不到）"
+NoteCancelled = "已取消新增筆記（未建立任何內容）"
+NoteLeadPlace = " 新筆記  位置："
+NoteLeadName = " 新筆記  名稱："
+NoteLeadCol = " 新筆記  {0}："
+NoteCreate = "建立"
+## CE-26: 新しいノートの窓。
+KeyCreateNote = "從表單建立"
+## CE-33。
+KeyCreateNoteEdit = "建立並用編輯器開啟"
+NoteEditShort = "編輯器"
+NoteFormTitle = " 新筆記 "
+NoteFieldPlace = "位置"
+## SR-31。{0} はフォルダの名前。
+NoteFormWhere = "建立於 {0}"
+NoteHintKindNumber = "數字"
+NoteHintKindList = "[清單]"
+NoteFieldName = "名稱"
+## cell-edit.body-choose: the label of the field that picks the body template.
+NoteFieldBody = "範本"
+NoteFromFilter = "（來自篩選）"
+NoteFromConfig = "（來自設定）"
+## CE-27。
+NoteRequiredEmpty = "必填：填入後才能建立筆記"
+## CE-32。{0} はパス、{1} は理由。
+NoteBodyOutside = "內文範本 {0} 必須是開啟的資料夾內的檔案"
+NoteBodyUnreadable = "無法讀取內文範本 {0}：{1}"
+NoteNext = "下一步"
+NoteToggle = "切換"
+NoteStop = "取消"
+NotePrevField = "上一個欄位"
+NoteHintPlace = "↑↓ 選擇位置，Enter 確定"
+NoteHintFree = "自由輸入，留空則不寫入（↑↓ 回到清單）"
+NoteHintList = "↑↓ 選擇，Enter 確定，直接輸入為自由輸入（*=目前的值），（空）= 不寫入"
+NoteHintNumber = "數字：可讀為數字的值，留空則不寫入"
+NoteHintCheckbox = "true 或 false，留空則不寫入"
+## {0} は使える形。
+NoteHintDate = "日期：{0}、+3 / -2（從今天起算），留空則不寫入"
+NoteHintDateTime = "日期時間：YYYY-MM-DDTHH:MM、{0}、+3，留空則不寫入"
+## {0}/{1} は何番目か、{2} はパス。
+NoteGuidePlace = "   選擇位置 {0}/{1}：{2}"
+## {0} はフォルダの名前、{1} はパス。
+NoteGuideWhere = "建立於 {0}（{1}）"
+## {0} は名前、{1}/{2} は何番目か。
+NoteGuideField = "{0} 的欄位 {1}/{2}（留空則不寫入）"
+
+# ---- ui/app: 表の操作のメッセージ(WB-1・SR-12) ----
+NothingToSave = "沒有要儲存的變更"
+NothingToUndo = "沒有可復原的動作"
+NothingToRedo = "沒有可重做的動作"
+LoadAlreadyDone = "已經載入完成"
+LoadStopped = "已停止載入（已讀取 {0} 筆）"
+
+# ---- ui/columns: 一時的な並べ替え・列を隠す・固定(NV-4) ----
+SortedAsc = "已依 {0} 遞增排序（.base 不變）"
+SortedDesc = "已依 {0} 遞減排序（.base 不變）"
+SortCleared = "已清除排序（.base 的順序）"
+LastColumnHide = "無法隱藏最後一個欄位"
+ColumnHidden = "已隱藏欄位：{0}（按 + 顯示）"
+NoHiddenColumns = "沒有隱藏的欄位"
+ColumnShown = "已顯示欄位：{0}"
+FreezeCleared = "已取消凍結欄位"
+FreezeTooWide = "左側 {0} 欄無法完整顯示在畫面上，因此未凍結（請縮窄欄位或選更左邊的欄位）"
+## `FreezeTooWide` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FreezeTooWideOne = "左側 {0} 欄無法完整顯示在畫面上，因此未凍結（請縮窄欄位或選更左邊的欄位）"
+Frozen = "已凍結左側 {0} 欄"
+## `Frozen` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+FrozenOne = "已凍結左側 {0} 欄"
+
+# ---- ui/detail: 詳細の表示(SR-10) ----
+DetailNoRow = "請選取一列以顯示詳細資料（群組標題除外）"
+DetailHead = " 詳細資料  {0}  {1}/{2}"
+DetailBody = "內文"
+
+# ---- ui/display: 隠した設定の帯の条件(SR-20・NV-22) ----
+ChipRemoved = "已移除設定列的條件：{0}"
+## 2つの知らせをつなぐ。
+TwoMessages = "{0}。{1}"
+HiddenChip = "隱藏的設定列條件 {0}/{1}：[{2}]  按 {3} 移除"
+
+# ---- ui/entry: セルの入力の読み方と案内(CE-2・CE-5・CE-7・CE-22) ----
+EntryNotNumber = "不是數字：{0}（請輸入數字，或留空以清除）"
+EntryNotBool = "不是 true 或 false：{0}（留空以清除）"
+## {1} は打ち込める日付の形。
+EntryNotDateTime = "不是日期：{0}（YYYY-MM-DDTHH:MM 或 {1}、+3、-2，留空以清除）"
+EditBulkLead = "批次 {0} 列："
+## `EditBulkLead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditBulkLeadOne = "批次 {0} 列："
+## CE-10: 印を付けた行の外で編集を始めたとき。
+EditOnlyThisRow = "只編輯此列：不含已標記的 {0} 列（在已標記的列上按 Enter 可全部編輯）"
+## `EditOnlyThisRow` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+EditOnlyThisRowOne = "只編輯此列：不含已標記的 {0} 列（在已標記的列上按 Enter 可一併編輯）"
+EditMismatch = "目前的值不符合欄位型別。"
+EditHintList = "↑↓ 選擇，Enter 確定，直接輸入為自由輸入（*=目前的值）"
+EditHintNumber = "數字：可讀為數字的值，留空以清除"
+EditHintCheckbox = "true 或 false，留空以清除（↑↓ 開啟清單）"
+EditHintDate = "日期：{0}、+3 / -2（從今天起算），留空以清除"
+EditHintDateTime = "日期時間：YYYY-MM-DDTHH:MM、{0}、+3，留空以清除"
+EditHintBackToList = "（↑↓ 回到清單）"
+## CE-3: 打った文字で絞った候補を見せているとき。
+EditHintPickNarrowed = "（↑↓ 選擇符合的值）"
+
+# ---- ui/external: コピーとエディタ(OUT-1・SR-8) ----
+## 試験のビルドの偽のクリップボードが返す誤り。
+ClipTestFailure = "測試失敗"
+ClipNoCommand = "找不到 {0}"
+ClipNoOsClipboard = "無法傳送到此作業系統的剪貼簿"
+## 並べた理由の区切り。
+ReasonSep = "；"
+ClipTimeout = "作業系統的剪貼簿沒有回應"
+ClipCannotPass = "無法傳遞文字：{0}"
+ClipExitCode = "結束狀態 {0}"
+## {0} は base64 のバイト数、{1} は上限。
+Osc52TooLong = "內容過長，未傳送（base64 為 {0} 位元組，上限 {1}）"
+WordsTrailingBackslash = "結尾的 \\ 後面沒有內容"
+WordsUnclosedSingle = "' 未閉合"
+WordsUnclosedDouble = "\" 未閉合"
+CopyWhatSelected = "選取的 {0} 列"
+## `CopyWhatSelected` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+CopyWhatSelectedOne = "選取的 {0} 列"
+CopyWhatCell = "儲存格"
+CopyWhatRow = "此列"
+CopyNoCell = "沒有可複製的儲存格"
+CopyNoRow = "沒有可複製的列"
+## {0} は `CopyWhat*`、{1} は誤り。
+CopiedBoth = "已複製{0}（OSC 52 與作業系統剪貼簿）"
+CopiedOscOnly = "已複製{0}（僅 OSC 52；無法傳送到作業系統剪貼簿：{1}）"
+CopiedOsOnly = "已複製{0}（僅作業系統剪貼簿；無法傳送 OSC 52：{1}）"
+CopyFailed = "無法複製（OSC 52：{0}；作業系統剪貼簿：{1}）"
+EditorNoRow = "沒有可開啟的列"
+EditorBadSetting = "無法讀取編輯器設定：{0}"
+EditorNoTerminal = "無法還原終端機，因此未開啟編輯器：{0}"
+## {0} はコマンド、{1} は誤り。
+EditorCannotStart = "無法啟動編輯器：{0}（{1}）"
+## {0} は終了の状態、{1} はノート。
+EditorFailed = "編輯器異常結束（{0}）：{1}"
+EditorReturned = "已從編輯器返回：{0}"
+EditorTermNotRestored = "。無法還原終端機：{0}"
+EditorCannotReload = "。無法重新載入：{0}"
+
+# ---- ui/startup・list・grid・view: 表の画面(WB-15・SR-12・BV-5・BV-7・CE-10) ----
+OpenedReadOnly = "以唯讀開啟（--readonly：不編輯、不儲存）"
+StateUnwritable = "無法寫入檢視狀態：{0}"
+## リストの候補の「なし」(Null)。
+NoneLabel = "（空）"
+InputClosedRowGone = "編輯中的列已離開表格，因此關閉輸入（{0}；未確定的文字已捨棄）"
+## ノートの列の見出し。
+NoteColumn = "筆記"
+## {0} は選びの印、{1} は開閉の印、{2} は列の名前と `: `、{3} は値、{4} は件数。
+HeadingRow = "{0}{1} {2}{3}（{4}）"
+ViewCannotOpen = "（無法開啟此檢視：{0}）"
+NoNotes = "（沒有筆記）"
+TableLoading = "（載入中…）"
+
+# ---- ui/input: セルの編集と一括の設定(CE-1・CE-9・CE-10・CE-11・SR-3) ----
+CellNotDrawn = "選取的儲存格不在畫面上，因此無法編輯（請加寬終端機或縮窄欄位）"
+CellNotDrawnEsc = "選取的儲存格不在畫面上，因此無法編輯（請加寬終端機或縮窄欄位）（按 Esc 取消）"
+## 読むだけの理由の前置き(一括で飛ばした理由では外す)。
+ReadOnlyLead = "唯讀："
+BulkFoldedOut = "。{0} 列在收合的群組中，因此未包含"
+## `BulkFoldedOut` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkFoldedOutOne = "。{0} 列在收合的群組中，因此未包含"
+## {1} は理由を ` / ` でつないだもの。
+BulkSkipped = "。已略過 {0} 列（{1}）"
+## `BulkSkipped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSkippedOne = "。已略過 {0} 列（{1}）"
+NeighborRowGone = "編輯中的列已離開表格，因此未開啟下一格（{0}）"
+BulkNoEditable = "選取的列中沒有可編輯的儲存格（{0}）"
+EditMultiLine = "含換行的值無法在單行輸入中編輯（請用編輯器開啟；將於之後的版本支援）"
+EditNotOneLine = "此值無法在單行輸入中編輯"
+NoEditableRight = "此列右側沒有可編輯的儲存格（{0}）"
+NoEditableLeft = "此列左側沒有可編輯的儲存格（{0}）"
+NoCellRight = "此列右側沒有儲存格"
+NoCellLeft = "此列左側沒有儲存格"
+CannotCommit = "無法確定：{0}"
+BulkSet = "批次：已設定 {0} 列"
+## `BulkSet` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetOne = "批次：已設定 {0} 列"
+BulkSame = "（{0} 列原本就是此值）"
+## `BulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSameOne = "（{0} 列原本就是此值）"
+BulkTypeMismatch = "型別不符"
+## 一括で空にしたときの {1}。
+BulkStateEmpty = "空"
+BulkSetTo = "批次：已將 {0} 列設為 {1}"
+## `BulkSetTo` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+BulkSetToOne = "批次：已將 {0} 列設為 {1}"
+CannotClear = "無法清除：{0}"
+
+# ---- ui/listpick: リストの選択(CE-16・CE-17・CE-19) ----
+NotAList = "不是清單值"
+PickNotDrawn = "選取的儲存格不在畫面上，因此無法確定（請加寬終端機，或按 Esc 取消）"
+PickBulkDone = "批次：已編輯 {0} 列"
+## `PickBulkDone` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkDoneOne = "批次：已編輯 {0} 列"
+PickBulkSame = "（{0} 列未變更）"
+## `PickBulkSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickBulkSameOne = "（{0} 列未變更）"
+## {0}・{1} はキー。
+PickKeysSearching = "{0} 加入（新項目會新增），{1} 確定"
+PickKeys = "{0} 切換，{1} 確定"
+## {1} は `PickKeys*`。
+PickHintBulk = "批次 {0} 列（[x]=全部列 [-]=部分列 [ ]=無）。{1}"
+## `PickHintBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickHintBulkOne = "批次 {0} 列（[x]=全部列 [-]=部分列 [ ]=無）。{1}"
+PickHint = "輸入以縮小範圍（[x]=已設定）。{0}"
+PickNew = "+ 新增：{0}"
+## 候補の件数。
+PickCount = "{0} 項"
+PickSearchLead = "搜尋："
+## {0} は列、{1} は行の数、{2} は位置。
+PickTitleBulk = "{0} {1} 列 {2}"
+## `PickTitleBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+PickTitleBulkOne = "{0} {1} 列 {2}"
+PickNoMatch = " （沒有符合的項目）"
+
+# ---- ui/menu: その場の操作の一覧(SR-24)の節と、キーの無い項目 ----
+MenuSecCell = "儲存格"
+MenuSecColumn = "欄"
+MenuSecRow = "列"
+MenuSecView = "檢視與檔案"
+MenuBulk = "設定到選取的列"
+MenuNoRoom = "終端機太小，無法顯示動作選單"
+
+# ---- ui/freq: 列の値の頻度表(NV-9) ----
+## {0} は列の名前。
+FreqTitle = "值的次數：{0}"
+FreqNoRoom = "終端機太小，無法顯示值的次數"
+FreqNoColumn = "請選取要計算值的欄位"
+FreqNoRows = "沒有可計算的列"
+FreqLoading = "筆記載入中，無法計算值"
+FreqClosed = "列已變更，因此關閉值的次數"
+FreqStacked = "已在相同值的篩選內計算；按 Enter 進一步縮小"
+
+# ---- ui/native_io: .base への書き出しと取り込み(BV-19・BV-20) ----
+AskExportName = "匯出為 .base，檔名："
+AskImportFile = "要匯入的 .base："
+AskImportView = "{0} 的檢視："
+AskExportWhere = "  在 {0} 下寫入新的 .base（不會寫入已存在的名稱）"
+AskNoMatch = "  （沒有符合的項目）"
+ExportNoDir = "不知道要匯出到哪個資料夾"
+ImportNoDir = "不知道要在哪個資料夾尋找 .base 檔案"
+ImportNoFiles = "{0} 下沒有 .base"
+AskCancelled = "已取消"
+## SC-15: CSV・TSV を読めない理由。
+CsvNotUtf8 = "檔案不是 UTF-8（另存為 UTF-8 即可開啟）"
+CsvUnclosedQuote = "第 {0} 行開始的引號未閉合"
+CsvNoHeader = "檔案是空的（第一行必須是欄位名稱）"
+CsvCrOnly = "第 {0} 行以單獨的 CR 結尾（將換行字元改為 LF 或 CRLF 後另存即可開啟）"
+CsvRowChanged = "此列已在 mdgrid 外被修改或移除；變更不會寫入其他列"
+CsvColumnCount = "此行有 {0} 個值，但有 {1} 個欄位；此行為唯讀"
+## SC-17: CSV・TSV ではしない操作。
+CsvNoteOnly = "CSV/TSV 表格無法使用（此功能用於筆記）"
+CsvRowAdded = "已在 {0} 的結尾新增一列"
+CsvNoKeyOps = "無法在此重新命名或移除 CSV 的欄位"
+CsvNoSuchColumn = "CSV 中沒有名為 {0} 的欄位"
+## CE-34: ノートの名前の変更。
+AskRenameNote = "筆記的新名稱："
+RenameNoteBad = "筆記名稱不能為空，也不能含有 / 或 \\"
+RenameNoteExists = "{0} 已存在"
+RenameNoteReadOnly = "此筆記為唯讀，無法重新命名"
+RenameNotePending = "請先儲存或復原此筆記的變更"
+RenameNoteDone = "已重新命名為 {0}"
+RenameNoteLinks = "已重新命名為 {0}；指向舊名稱的 {1} 個連結已改寫為未儲存的變更（按 Ctrl+S 檢閱）"
+RenameNoteFailed = "無法重新命名：{0}"
+## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
+AskDeleteNote = "移至垃圾桶？輸入 y 後按 Enter："
+DeleteNoteWhich = "要刪除的筆記：{0}"
+DeleteNoteWhichLinks = "要刪除的筆記：{0}（有 {1} 則筆記連結到它）"
+DeleteNotePending = "請先儲存或復原此筆記的變更"
+DeleteNoteDone = "已將 {0} 移至垃圾桶（按 u 復原）"
+DeleteNoteFailed = "無法移至垃圾桶（筆記未變動）：{0}"
+## cell-edit.trash-restore-*: ごみ箱から戻す。{0} はノートの名前か元の場所。
+AskRestoreNote = "要從垃圾桶還原的筆記："
+TrashEmpty = "垃圾桶是空的"
+RestoreNoteDone = "已將 {0} 還原到原本的位置"
+RestoreNoteHidden = "已將 {0} 還原到原本的位置（目前的篩選下看不到）"
+RestoreNoteExists = "{0} 已存在，因此未還原（筆記仍在垃圾桶中）"
+RestoreNoteFailed = "無法從垃圾桶還原：{0}"
+AskRenameKey = "將 {0} 重新命名為："
+## CE-29。{0} はキー、{1} はノートの数。
+AskDeleteKey = "要從 {1} 則筆記中刪除 {0} 嗎？輸入 y 後按 Enter："
+## CE-29。{0} は古い名前、{1} は新しい名前、{2} はノートの数。
+KeyRenamed = "將在 {2} 則筆記中把 {0} 重新命名為 {1}（按 Ctrl+S 儲存）"
+## CE-29。{0} はキー、{1} はノートの数。
+KeyDeleted = "將從 {1} 則筆記中刪除 {0}（按 Ctrl+S 儲存）"
+## CE-29。{0} は新しい名前。
+KeyOpExists = "鍵 {0} 已存在"
+## CE-29。{0} はキー。
+KeyOpNoNotes = "沒有筆記有鍵 {0}"
+KeyOpPending = "此儲存格有未儲存的編輯（請先儲存或復原）"
+KeyOpComputed = "file.* 與 formula.* 欄位不是筆記中的鍵"
+KeyOpBadName = "鍵名稱不能為空、不能含換行，也不能以 file. 或 formula. 開頭"
+## CE-28。
+AskNewColumn = "新欄位（鍵名稱）："
+## navigation.expr-filter: 式の入力の前置き。
+AskExprFilter = "運算式："
+## notice.jump: 当たる行のある表の一覧の前置き。
+AskNoticeTables = "開啟表格："
+## {0} は式を使えない理由。
+ExprFilterBad = "無法以此運算式篩選：{0}"
+## OUT-2。
+CmdExportTable = "將表格匯出為檔案"
+CmdExprFilter = "以運算式篩選"
+AskExportTable = "匯出表格，檔名（.csv .tsv .json .md）："
+## OUT-5。{0} はパス。
+AskExportOverwrite = "{0} 已存在。要覆寫嗎？輸入 y 後按 Enter："
+## OUT-2。
+ExportTableBadExt = "檔名必須以 .csv、.tsv、.json 或 .md 結尾"
+## OUT-5。{0} は行の数、{1} はパス。
+ExportTableDone = "已將 {0} 列寫入 {1}"
+## OUT-5。{0} はパス、{1} は理由。
+ExportTableFailed = "無法寫入 {0}：{1}"
+AddColumnBad = "欄位名稱不能為空、不能含換行，也不能以 file. 或 formula. 開頭"
+## {0} は列の名前。
+AddColumnAdded = "已新增欄位 {0}：儲存時只有填了值的筆記會寫入此鍵"
+ImportNoMatchFile = "沒有符合的 .base"
+ImportUnreadable = "無法讀取 {0}：{1}"
+ImportNoViews = "{0} 沒有 views"
+ImportUnnamed = "（未命名 {0}）"
+ImportNoMatchView = "沒有符合的檢視"
+## {0} はファイル、{1} は元のビュー、{2} は新しい名前、{3} は `DroppedNote` か空。
+Imported = "已將 {0} 的檢視「{1}」匯入為 mdgrid 檢視「{2}」{3}"
+ExportNameEmpty = "請輸入檔名（例如 todo.base）"
+ExportNameOnly = "只要輸入檔名（會寫在開啟的資料夾下）"
+ExportExists = "{0} 已存在，因此不寫入（不會覆寫既有的 .base 檔案；請用其他名稱）"
+CannotWriteFile = "無法寫入 {0}：{1}"
+## {0} はビュー、{1} はファイル、{2} は `DroppedNote` か空。
+Exported = "已將檢視「{0}」匯出到 {1}{2}"
+
+# ---- ui/native_views: mdgrid のビュー(BV-13・BV-18・BV-20) ----
+## `.base` なしで開いたときの先頭のタブの名前(日本語は名前の検査とビューの状態にも使う)。
+DefaultTabName = "預設表格"
+## {0} は落とした・近似の部分を ` / ` でつないだもの。
+DroppedNote = "。已捨棄或近似的部分：{0}"
+OnlyOneView = "只有一個檢視（開啟 .base，或在檢視設定中使用「另存新檔」即可切換）"
+NoViewToSwitch = "沒有可切換的檢視"
+SwitchedView = "已切換到檢視「{0}」"
+ViewsNoDir = "不知道 mdgrid 檢視的存放位置（設定資料夾），因此無法儲存 mdgrid 檢視"
+ViewNameEmpty = "名稱為空（請輸入名稱）"
+ViewNameFixed = "「{0}」是預設表格或 .base 檢視的名稱（請用其他名稱）"
+ViewNameTaken = "mdgrid 檢視「{0}」已存在（請用其他名稱，或在該檢視中使用「覆寫」來變更）"
+## 空の名前で保存したビューの名前。
+ViewDefaultName = "檢視"
+StateCannotMove = "無法移動檢視狀態：{0}"
+## {0} は既定の表の名前、{1} は押したボタン、{2} は「名前を付けて保存」のボタン。
+ViewButtonFixed = "{0} 或 .base 檢視無法使用「{1}」（請用「{2}」建立 mdgrid 檢視）"
+ViewSavedAs = "已儲存為 mdgrid 檢視「{0}」{1}"
+ViewGoneOverwrite = "「{0}」已在別處被刪除，無法覆寫"
+ViewOverwritten = "已覆寫 mdgrid 檢視「{0}」"
+ViewGoneRename = "「{0}」已在別處被刪除，無法重新命名"
+RenameUnapplied = "（設定畫面中的變更未套用）"
+## {2} は `RenameUnapplied` か空。
+ViewRenamed = "已將檢視從「{0}」重新命名為「{1}」{2}"
+ViewDeleted = "已刪除 mdgrid 檢視「{0}」"
+## BV-18: 削除の確かめと取り消し。
+TextDeleteView = "要刪除檢視「{0}」嗎？輸入 y 後按 Enter（可按 u 復原）"
+ViewDeletedUndo = "已刪除 mdgrid 檢視「{0}」（在表格中按 u 可復原）"
+ViewDeleteKept = "已保留檢視「{0}」"
+ViewRestored = "已復原 mdgrid 檢視「{0}」"
+
+# ---- ui/settings: ビューの設定の画面(NV-13・NV-15・NV-19・NV-22) ----
+BtnApply = "套用"
+## ビューの設定の「取り消し」のボタン。
+BtnCancel = "取消"
+BtnReset = "重設"
+BtnSaveAs = "另存新檔"
+BtnOverwrite = "覆寫"
+BtnRename = "重新命名"
+BtnDelete = "刪除"
+KindValues = "從值中選擇"
+## NV-29: 絞り込みの窓の表の形の比べ方(値の一覧の残す・隠す)。
+OpKeep = "僅"
+OpDrop = "隱藏"
+KindContains = "包含"
+KindNotContains = "不包含"
+KindCompare = "比較（= ≠ < ≤ > ≥）"
+KindEmpty = "為空"
+KindNotEmpty = "不為空"
+CmpEq = "=  等於"
+CmpNe = "≠  不等於"
+CmpLt = "<  小於／早於"
+CmpLe = "≤  最多／直到"
+CmpGt = ">  大於／晚於"
+CmpGe = "≥  至少／從"
+PurposeFilter = "篩選"
+PurposeSort = "排序"
+PurposeGroup = "群組"
+PurposeTree = "父項"
+PurposeWbsKey = "進度"
+## NV-28: WBS の行。
+TreeWbsRow = "WBS"
+TreeWbsKeyRow = "進度鍵"
+WbsValueRow = "{0}（{1}）"
+TextWbsValue = "{0} 的百分比與標籤（例如 100 完成；- 表示移除）"
+WbsBadPercent = "請先輸入 0 到 100 的數字作為百分比：{0}"
+## NV-27: 親子の区画。
+NavTree = "樹狀"
+DescTree = "將子筆記放在其父項鍵所指的筆記之下"
+TreeOnRow = "依父項排列"
+TreeKeyRow = "父項鍵"
+SetHintTree = "{0} 切換或選擇鍵（按「套用」後生效；在表格中按 Z 收合父項）"
+DirAsc = "↑ 遞增"
+DirDesc = "↓ 遞減"
+GroupOnlyByColumn = "依欄位分組時可用（請先用「依欄位分組」選擇欄位）"
+NotRemovable = "此項目無法移除"
+SettingsClosed = "已關閉檢視設定"
+SettingsCancelled = "已取消檢視設定（表格維持原樣）"
+SettingsReset = "已重設為預設（按「套用」後用於表格）"
+SettingsAppliedReadOnly = "已套用檢視設定（唯讀，因此不會記住）"
+SettingsApplied = "已套用檢視設定"
+ChipsEmpty = "設定列是空的（按 {0} 開啟檢視設定）"
+
+# ---- ui/settings_view: ビューの設定の画面の描画(NV-18・SR-20) ----
+SetColumns = "欄位（顯示與順序）"
+SetDisplay = "顯示"
+SetFilters = "篩選（符合全部條件的列）"
+SetAddFilter = "+ 新增條件"
+## condition.view-settings: {0} は条件の見せる名前、{1} は掛け方。
+SetNamedRow = "條件 {0}：{1}"
+SetNamedOff = "關閉"
+SetNamedKeep = "僅這些"
+SetNamedHide = "隱藏這些"
+SetSorts = "排序（上方的欄位優先）"
+SetAddSort = "+ 新增排序"
+SetGroup = "群組"
+## NV-18: 左の区画の一覧・説明・スイッチ・未反映の数。
+NavColumns = "欄位"
+NavFilters = "篩選"
+NavSorts = "排序"
+NavGroup = "群組"
+NavDisplay = "顯示"
+NavGroupOff = "關閉"
+NavHideEmpty = "隱藏空群組"
+DescColumns = "選擇要顯示的欄位與順序"
+DescFilters = "只顯示符合所有條件的列"
+DescSorts = "第一條規則優先；相同時依下一條規則"
+DescGroup = "依欄位的值將列分組"
+DescDisplay = "表格周圍要顯示的內容"
+SwShown = "顯示"
+SwHidden = "隱藏"
+SwOn = "開"
+SwOff = "關"
+SwAuto = "自動"
+## NV-23: ビューの帯のボタンの描き方(plain・box・compact)。
+SwPlain = "無框"
+SwBox = "加框"
+## {0} は帯の上下の余白の行の数(NV-23)。
+SwPadding = "{0} 行"
+SetPending = "{0} 項未套用"
+## NV-26: ビューの区画(タブの順・出す隠す・既定・名前・削除・切り替えの案内)。
+NavViews = "檢視"
+DescViews = "表格上方的分頁。變更會立即儲存"
+TabHintRow = "切換提示（[ ]）"
+TabDefaultMark = "預設"
+TabMenuOf = "分頁「{0}」"
+TabMenuDefault = "設為預設"
+TabMenuUndefault = "取消預設（開啟第一個分頁）"
+TabMenuRename = "重新命名"
+TabMenuDelete = "刪除"
+TabCurrentHide = "無法隱藏目前所在的檢視。請先切換到其他分頁"
+TabBaseFixed = "「{0}」是 .base 檢視或預設表格：無法重新命名或刪除"
+TabHidden = "已隱藏分頁「{0}」"
+TabShown = "已顯示分頁「{0}」"
+TabMoved = "已移動分頁「{0}」"
+TabHintOn = "顯示切換提示"
+TabHintOff = "隱藏切換提示"
+SetHintViews = "{0} 顯示／隱藏  {1} / {2} 順序  {3} 預設、重新命名、刪除（立即儲存）"
+SetGroupInheritBase = "同 .base"
+SetGroupInheritDefault = "預設（不分組）"
+## {0} はラジオの印。
+SetGroupOff = "{0} 無"
+## {0} はラジオの印、{1} は列か `SetGroupPickColumn`。
+SetGroupBy = "{0} 依欄位：{1}"
+SetGroupPickColumn = "（選擇欄位）"
+## {0} はチェックの印。
+SetGroupHideEmpty = "{0} 隱藏空群組"
+SetGroupOrder = "群組順序：{0}"
+## {0} は目的(`Purpose*`)。
+PickColumnFor = "選擇用於{0}的欄位"
+PickKindOf = "{0} 的條件類型"
+PickCmpOf = "{0} 的比較方式"
+PickModeKeep = "模式：只保留勾選值的列"
+PickModeHide = "模式：隱藏勾選值的列"
+## {0} はチェックの印、{1} は値、{2} は件数。
+PickValueRow = "{0} {1}  {2}"
+PickValuesOf = "{0} 的值（筆數）"
+TextContains = "{0} 包含的文字"
+TextNotContains = "{0} 不包含的文字"
+TextSaveAs = "新 mdgrid 檢視的名稱"
+TextRename = "檢視的新名稱"
+## {0}・{1}・{2} はキー。
+SetHintValues = "{0} 勾選／切換模式，{1} 確定，{2} 返回"
+SetHintPick = "{0} 選擇，{1} 返回"
+SetHintColumns = "{0} 顯示／隱藏，{1} / {2} 移動"
+SetHintFilters = "{0} 新增／編輯條件，{1} 切換保留／隱藏，{2} 刪除"
+SetHintSorts = "{0} 新增／變更方向，{1} / {2} 順序，{3} 刪除"
+SetHintGroup = "{0} 選擇（隱藏空群組與順序在依欄位分組時適用）"
+SetHintDisplay = "{0} 顯示／隱藏（僅此檢視；按「套用」後用於表格）"
+SetHintButtons = "{0} 按下。按「套用」前表格不會改變"
+## 左の区画の一覧にいるとき(navigation.settings-sections-keys)。{0}・{1}・{2} はキー、{3} は数字のキーの範囲(`1-8` など)。
+SetHintNav = "{0} / {1} 選擇區塊，{2} 進入其項目，{3} 移至該區塊"
+SetNativeName = "mdgrid 檢視 / {0}"
+SetHead = " 檢視設定  {0}  按「套用」前表格不會改變"
+SetHeadShort = " 檢視設定  {0}"
+
+# ---- ui/settings_pick: ビューの設定の選び手と値の入力(NV-14・NV-19) ----
+PickInProgress = "選擇中（按 {0} 返回）"
+SortAlready = "{0} 已在排序中"
+NoValueChecked = "沒有勾選任何值（按 {0} 勾選）"
+ValueEmpty = "值為空（按 {0} 返回）"
+OperandNumber = "請輸入數字（例如 3）。「{0}」不是數字"
+OperandDate = "日期請輸入為 YYYY-MM-DD。無法讀取「{0}」"
+OperandDateTime = "日期時間請輸入為 YYYY-MM-DDTHH:MM。無法讀取「{0}」"
+
+# ---- ui/nav: 選択・同じ値・検索(NV-1・NV-5・NV-8・OUT-3) ----
+PickNoEditor = "以 --pick 選取時為唯讀（不開啟編輯器；按 Enter 選取，按 q 取消）"
+VisualHint = "選取範圍：移動後按 v 確定（按 Esc 清除）"
+SelectedAll = "已選取所有列（{0}）"
+SelectionCleared = "已清除選取"
+FilterCleared = "已清除搜尋"
+NoRowToSelect = "沒有可選取的列"
+SelectValueCell = "請選取值的儲存格"
+## {0} は列、{1} は値、{2} は行の数。
+HighlightSame = "醒目標示相同值的列：{0} = {1}（{2} 列）"
+## `HighlightSame` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+HighlightSameOne = "醒目標示相同值的列：{0} = {1}（{2} 列）"
+SameFilterCleared = "已清除相同值篩選（{0}）"
+SameFilterOn = "僅相同值的列：{0}（按 Esc 清除）"
+NotFound = "找不到"
+NoSearchTerm = "沒有要尋找的內容（按 / 尋找）"
+NotFoundTerm = "找不到：{0}"
+WrappedToTop = "已從底端繞回頂端"
+WrappedToBottom = "已從頂端繞回底端"
+
+# ---- ui/review: 保存の確認(WB-9・WB-16) ----
+ReviewReadOnly = "唯讀（{0}）"
+ReviewNewline = "無法寫入含換行的值"
+ReviewVerify = "寫入結果的檢查未通過，已停止（{0}）"
+ReviewChanged = "外部已變更"
+ReviewIo = "無法寫入（{0}）"
+ReviewDiscarded = "已捨棄未儲存的變更：{0}"
+ReviewSaved = "已儲存 {0} 個檔案"
+## `ReviewSaved` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewSavedOne = "已儲存 {0} 個檔案"
+## {0} はファイルを `, ` でつないだもの。
+ReviewSavedList = "（{0}）"
+ReviewStopped = "已停止 {0} 個在外部變更的檔案（{1}）"
+## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewStoppedOne = "已停止 {0} 個在外部變更的檔案（{1}）"
+ReviewFailed = "無法寫入 {0} 個檔案（{1}）"
+## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewFailedOne = "無法寫入 {0} 個檔案（{1}）"
+## 文と文の区切り。
+SentenceSep = "。"
+ReviewNotExternal = "{0} 未在外部變更（按 Enter 儲存）"
+ReviewNoDiff = "{0} 無法寫入（無法產生差異）"
+ReviewCannotReload = "無法重新載入：{0}（{1}）"
+ReviewChangedAgain = "{0} 又在外部變更了。請檢查差異後再按一次 o"
+ReviewExternalHead = "  外部已變更：o 以此檔案覆寫外部變更 / d 捨棄未儲存的變更"
+ReviewDiffError = "   無法寫入：{0}"
+ReviewHead = " 儲存確認  {0} 個檔案  寫入前的差異（- 目前的檔案 / + 寫入後）"
+## `ReviewHead` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewHeadOne = " 儲存確認  {0} 個檔案  寫入前的差異（- 目前的檔案 / + 寫入後）"
+
+# ---- places: 登録した表(CLI-18・CLI-19) ----
+## {0} は行(無ければ空)、{1} は TOML の誤り(英語のまま)。
+PlacesBadToml = "無法讀取 places.toml（第 {0} 行），不載入已登錄的表格：{1}"
+PlaceOpen = "開啟已登錄的表格"
+PlaceRegister = "登錄此表格"
+## 一覧の先頭(引数なしの起動のとき)。
+PlaceHere = "此資料夾（留在這裡）"
+PlaceNoGroup = "（無分類）"
+PlaceNone = "尚無已登錄的表格。可在命令面板用「登錄此表格」登錄"
+## {0} はパス。
+PlaceMissing = "無法開啟：{0} 不存在"
+PlaceAskName = "此表格的名稱："
+PlaceAskGroup = "分類（選擇或輸入新的，留空為無）："
+## {0} は名前。
+PlaceAskOverwrite = "{0} 已登錄。要取代嗎？(y/n) "
+## {0} は名前、{1} は分類。
+PlaceSaved = "已將 {0} 登錄到 {1}"
+PlaceSavedNoGroup = "已登錄 {0}"
+## {0} は誤り。
+PlaceSaveError = "無法寫入 places.toml：{0}"
+PlaceNoConfigDir = "無法登錄：沒有設定資料夾"
+PlaceEmptyName = "名稱為空"
+## {0} は打った分類。
+PlaceNewGroup = "+ 新分類：{0}"
+PlaceMulti = "無法登錄：開啟了多個資料夾（請登錄單一資料夾或 .base）"
+## {0} はビューの名前。
+PlaceNoView = "這裡沒有檢視 {0}，因此顯示第一個檢視"
+
+# ---- recent: 最近開いた表(cli.recent-*) ----
+CmdOpenRecent = "最近的表格"
+## 引数なしの起動の一覧の分類の名前。
+RecentGroup = "最近"
+RecentNone = "尚無最近的表格（會記住在畫面上開啟的表格）"
+AskOpenRecent = "最近的表格："
+
+# ---- favorites・switch: お気に入りのワークスペースと切り替え(workspace.favorite-*・workspace.switch-*) ----
+CmdWsSwitch = "切換工作區"
+CmdWsFavorite = "將目前的工作區加入我的最愛"
+KeyDrawerFavorite = "加入或移出我的最愛"
+## {0} はワークスペースの名前。
+WsFavoriteAdded = "已將 {0} 加入我的最愛"
+WsFavoriteRemoved = "已將 {0} 移出我的最愛"
+WsFavoriteNoWorkspace = "無法加入我的最愛：此表格不在工作區中（workspaces.toml 或標記檔）"
+WsFavoriteHeadOnly = "請在工作區標題上加入我的最愛（目前的工作區請用命令面板的「將目前的工作區加入我的最愛」）"
+## {0} は workspaces.toml の favorites に書いた名前かパス。
+RsnFavoriteGone = "沒有工作區或標記根目錄 {0}，因此不列入切換清單"
+SwitchTitle = " 工作區 "
+## {0} は最初に開いた所の名前。
+SwitchOrigin = "起始位置：{0}"
+SwitchHint = "尚無我的最愛：在表格清單（{0}）的工作區標題上按 {1}，或用命令面板的「將目前的工作區加入我的最愛」"
+SwitchNoRoom = "終端機太小，無法顯示切換清單"
+KeySwitchRun = "前往選取的項目"
+KeySwitchNumber = "前往該編號的工作區"
+ModeSwitch = "切換"
+SecInSwitch = "切換清單中"
+
+# ---- workspace: ワークスペース(WS-1〜WS-7) ----
+## {0} はファイル、{1} は行(無ければ空)、{2} は TOML の誤り(英語のまま)。
+WsBadToml = "無法讀取 {0}（第 {1} 行），不載入其中的工作區：{2}"
+## {0} はパス。
+WsInitExists = "{0} 已存在"
+## {0} は名前。
+WsUnknown = "沒有名為 {0} 的工作區（mdgrid --workspaces 可列出）"
+## {0} はワークスペースの名前。
+HeaderWorkspace = "  · 工作區 {0}"
+CmdWsNew = "以此表格建立工作區"
+CmdWsAdd = "將此表格加入工作區"
+CmdWsRemove = "從工作區移除此表格"
+CmdWsOpen = "開啟工作區"
+## WS-8: 表の一覧の引き出し。
+CmdWsDrawer = "表格清單（切換表格）"
+KeyWsDrawer = "表格清單"
+KeyDrawerRun = "開啟表格／收合"
+KeyDrawerOpen = "展開工作區"
+KeyDrawerFold = "收合工作區"
+DrawerRegistered = " 已登錄的表格 "
+DrawerEmpty = "沒有可列出的表格：用 :workspace_new 建立工作區，或用 :register_place 登錄表格"
+DrawerNoRoom = "終端機太小，無法顯示表格清單"
+AskWsName = "工作區名稱："
+## write-back.git-*: 保存のあとの git。{0} はノートの数、失敗の理由。
+GitAutoMessage = "mdgrid: 更新 {0} 則筆記"
+GitAutoMessageOne = "mdgrid: 更新 1 則筆記"
+GitAdded = "git：已暫存 {0}"
+GitCommitted = "git：已提交 {0}"
+GitPushed = "git：已提交並推送 {0}"
+GitFailed = "git 失敗（已完成儲存）：{0}"
+AskGitMessage = "提交訊息（留空則自動產生）："
+AskWsPick = "工作區（選擇或輸入新的）："
+AskWsRemove = "從哪個工作區移除："
+AskWsOpen = "開啟哪個工作區："
+## {0} はワークスペースの名前。
+AskWsTable = "開啟 {0} 的哪個表格："
+## {0} は打った名前。
+WsNewItem = "+ 新工作區：{0}"
+## {0} は表、{1} はワークスペース。
+WsAdded = "已將 {0} 加入工作區 {1}"
+WsRemoved = "已將 {0} 從工作區 {1} 移除"
+WsNotIn = "此表格不在任何工作區中"
+WsNone = "尚無工作區：用 :workspace_new 建立"
+WsEmpty = "工作區 {0} 沒有表格"
+WsMulti = "無法加入：開啟了多個資料夾（請加入單一資料夾或 .base）"
+WsNoConfigDir = "無法變更工作區：沒有設定資料夾"
+## {0} は誤り。
+WsSaveError = "無法寫入 workspaces.toml：{0}"
+WsCliAsOne = "--as 只能為一個表格命名：請指定一個路徑"
+## {0} はパス。
+WsCliNoPath = "沒有這個檔案或資料夾：{0}"
+## {0} はワークスペース、{1} はパス。
+WsCliNotIn = "工作區 {0} 沒有表格 {1}"
+## {0} はワークスペース。
+WsCliDeleted = "已刪除工作區 {0}"
+## {0} は作ったファイル。
+WsCliInit = "已建立 {0}"
+WsCliNone = "沒有工作區（用 mdgrid <路徑> --add-to <名稱> 建立）"
+## {0} は読めなかった理由。
+WsFixFirst = "未變更：請先修正 workspaces.toml（{0}）"
+## {0} は開いた表、{1} はワークスペース。
+WsNotInChosen = "{0} 不在工作區 {1} 中（連結會使用 {1} 的表格與此表格）"
+## {0} はパス。
+WsMarkerOutside = "已忽略標記資料夾外的表格：{0}"
+WantDetect = "由 \".obsidian\" 與 \".git\" 組成的清單"
+WantGitAuto = "\"off\"、\"add\"、\"commit\"、\"push\" 其中之一"
+WantGitWhen = "\"save\" 或 \"quit\""
+WantGitMessage = "\"auto\" 或 \"ask\""
+
+# ---- starter: 台帳のスターター(ST-1〜ST-6) ----
+## {0} は名前。
+StarterUnknown = "沒有名為 {0} 的起始範本（mdgrid --starters 可列出）"
+StarterOne = "--starter 只建立一個帳本：請指定一個資料夾"
+## ST-3: 一覧で、ユーザーのスターターに添える。
+StarterUser = "（自訂）"
+## {0} はパス。
+StarterNotFolder = "{0} 是檔案，不是資料夾"
+## {0} はパス。
+StarterLink = "{0} 是符號連結，因此不寫入任何內容（它可能指向帳本之外）"
+## ST-3: 読めないスターターを飛ばす理由(CLI-3 の形の理由の部分)。
+StarterNoLedger = "找不到，因此略過此起始範本"
+StarterNotText = "不是 UTF-8 文字，因此略過此起始範本"
+## {0} は TOML の誤り(英語のまま)。
+StarterBadToml = "不是有效的 TOML，因此略過此起始範本：{0}"
+## {0} は作った台帳の根、{1} はスターターの名前、{2} はファイルの数。
+StarterMade = "已從起始範本 {1} 建立 {0}（{2} 個檔案）"
+CmdStarterNew = "從起始範本建立帳本"
+AskStarterPick = "起始範本："
+AskStarterDir = "要建立的資料夾："
+## {0} は基準のフォルダ。
+AskStarterWhere = "相對於 {0}"
+AskStarterSamples = "要一併加入範例筆記嗎？(y/n) "
+StarterDirEmpty = "請輸入要建立的資料夾"
+StarterMulti = "無法建立：開啟了多個資料夾（請開啟單一資料夾或 .base）"
+
+# ---- relmap: 関係マップ(REL-7〜REL-9) ----
+KeyRelationMap = "關聯圖"
+TreeOff = "列未依父項排列（請在檢視設定 {0} 中開啟）"
+TreeNoKids = "此列沒有子列"
+KeyToggleTree = "收合子列"
+KeyRelOpen = "開啟表格"
+KeyRelBack = "回到表格"
+KeyRelNextTable = "下一個表格"
+KeyRelPrevTable = "上一個表格"
+KeyRelNextLink = "下一個連結"
+KeyRelPrevLink = "上一個連結"
+RelMapTitle = "關聯圖"
+RelMapTables = "表格"
+RelMapDetail = "詳細資料"
+RelMapLinked = "連結的記錄"
+RelMapKind = "類型"
+RelMapManyToOne = "多對一 N:1"
+RelMapManyToMany = "多對多 N:N"
+RelMapColumn = "欄位"
+RelMapTarget = "目標"
+RelMapLinks = "連結"
+RelMapReverse = "反向"
+RelMapTop = "最多連結"
+RelMapRows = "列"
+RelMapNoLinks = "沒有連出或連入此表格的連結。"
+RelMapNoTables = "沒有可繪製的表格：請先登錄表格（:register_place）"
+TabScreenTable = "表格"
+## SR-42: ヘッダーの近道のボタン。
+HeaderWsButton = " 工作區 "
+HeaderWsNamed = " ▾ {0} "
+HeaderSettingsButton = " 設定 "
+## REL-8: 画面の型のメニュー(ヘッダーのボタンと窓)。
+ScreenRelMap = "關聯圖"
+ScreenMenuTitle = " 檢視方式 "
+ScreenMenuNoRoom = "終端機太小，無法顯示畫面類型選單"
+## SR-42: ヘッダーの右の端の設定のボタン。
+HeaderSettings = "設定"
+
+# ---- relations: リレーション(REL-4・REL-5) ----
+CmdOpenLink = "開啟連結目標"
+CmdLinkedRows = "連結的列（連結到此處的筆記）"
+AskOpenLink = "開啟哪個目標："
+AskLinkedRows = "連結的列："
+RelNoTarget = "此儲存格沒有指向筆記的連結"
+## {0} はノートの名前。
+RelNoBacklinks = "沒有筆記連結到 {0}"
+## {0} はノートの名前。
+RelHidden = "{0} 在此表格中，但被篩選或收合的群組隱藏"
+## {0} はパス。
+RelMissing = "無法開啟：{0} 不存在"
+
+# ---- 列の型(CE-35。`[types]` と型の窓) ----
+WantTypesTable = "欄位 = 型別 的表"
+WantType = "\"text\"、\"number\"、\"checkbox\"、\"date\"、\"datetime\"、\"list\" 或 \"auto\""
+
+# ---- 列の型の窓(CE-35。type_menu.rs) ----
+ModeColumnType = "欄位型別"
+SecInColumnType = "欄位型別選單中"
+KeyColumnTypeRun = "使用此型別"
+CmdColumnType = "變更欄位型別"
+## {0} は列の名前。
+TypeMenuTitle = "{0} 的型別"
+## {0} は推定の型の名前。
+TypeAuto = "自動（{0}）"
+TypeText = "文字"
+TypeNumber = "數字"
+TypeCheckbox = "核取方塊"
+TypeDate = "日期"
+TypeDateTime = "日期時間"
+TypeList = "清單"
+## {0} は列の名前。
+TypeComputed = "{0} 是計算欄位，無法變更型別"
+## {0} は列の名前、{1} は型の名前。
+TypeSet = "{0}：型別 {1}（已寫入 views.toml 的表）"
+TypeSetNoSave = "{0}：型別 {1}（僅限本次執行：沒有 views.toml 的存放位置）"
+
+# ---- types: 曜日の短い名前(日付の形の ddd。CE-22) ----
+DddSun = "週日"
+DddMon = "週一"
+DddTue = "週二"
+DddWed = "週三"
+DddThu = "週四"
+DddFri = "週五"
+DddSat = "週六"
+
+# ---- problems: type and rule checks (CE-36, CV-9, NV-30, CLI-23) ----
+WantRulesTable = "每個欄位一個表（[rules.<欄位>]）"
+WantRuleTable = "含 required 與 values 的表"
+WantStringList = "字串清單"
+RsnRuleComputed = "計算欄位不能設定規則，已忽略"
+## {0} is the name of the type (Date, Number …).
+ProblemType = "型別不符（應為{0}）"
+ProblemRequired = "缺少必填的鍵"
+ProblemNotAllowed = "不是允許的值"
+## {0} is the column, {1} the reason.
+ProblemAt = "{0}: {1}"
+NoProblems = "沒有問題"
+## {0} is the number of problems.
+FooterProblems = "  問題 {0}"
+HeaderProblems = "  僅有問題的列"
+ProblemsOnlyOn = "只顯示有問題的列"
+ProblemsOnlyOff = "再次顯示所有列"
+KeyNextProblem = "下一個問題"
+KeyPrevProblem = "上一個問題"
+CmdProblemsOnly = "僅有問題的列（切換）"
+## {0} is the number of problems.
+CheckCount = "{0} 個問題"
+## TR-1 to TR-7: the tree view.
+ModeTree = "樹狀"
+SecInTree = "樹狀中"
+ScreenTree = "樹狀"
+KeyTreeView = "在表格與樹狀之間切換"
+KeyTreeRun = "展開或收合資料夾／在表格中顯示該列"
+KeyTreeToggle = "展開或收合資料夾"
+KeyTreeIn = "展開資料夾／移至列"
+KeyTreeOut = "收合資料夾／移至資料夾"
+KeyTreePane = "在資料夾與列之間切換"
+KeyTreeNext = "下一個資料夾或列"
+KeyTreePrev = "上一個資料夾或列"
+KeyTreeMenu = "對該列的動作"
+KeyOpenUrl = "開啟 URL"
+CmdOpenUrl = "在瀏覽器開啟該列的 URL"
+TreeFolders = "資料夾"
+TreeRows = "列"
+TreeNone = "（無）"
+TreeEmptyFolder = "此資料夾下沒有直屬的列"
+TreeNoRows = "沒有可放入樹狀的列"
+TreeNotSet = "此表格沒有樹狀設定（請在工作區標記檔的 [[table]] 中寫 tree = { path = \"<欄位>\" }）"
+TreeNoUrl = "此列沒有 http 或 https 的 URL"
+TreeShowInTable = "在表格中顯示此列"
+TreeRowHidden = "該列未顯示在表格中（在收合的群組中，或被篩選掉）"
+## {0} is the URL.
+UrlOpening = "正在開啟 {0}"
+## {0} is the URL, {1} the reason.
+UrlOpenFailed = "無法開啟 {0}：{1}"
+RsnTreeNotTable = "不是 { path = \"<欄位>\" } 形式的表，因此不顯示樹狀"
+RsnTreeNeedPath = "沒有 path（含資料夾的欄位），因此不顯示樹狀"
+RsnTreeEmptySep = "分隔字元為空，因此不顯示樹狀"
+## {0} is the column.
+RsnTreeNoColumn = "表格沒有欄位 {0}，因此不顯示樹狀"
+
+# ---- ガント(GA-1〜GA-7。gantt.rs) ----
+ModeGantt = "甘特圖"
+SecInGantt = "甘特圖中"
+ScreenGantt = "甘特圖"
+KeyGanttView = "在表格與甘特圖之間切換"
+KeyGanttRun = "在表格中顯示該列"
+KeyGanttNext = "下一列"
+KeyGanttPrev = "上一列"
+KeyGanttLater = "時間軸往後捲動"
+KeyGanttEarlier = "時間軸往前捲動"
+KeyGanttZoomIn = "較細的單位（月 → 週 → 日）"
+KeyGanttZoomOut = "較粗的單位（日 → 週 → 月）"
+KeyGanttToday = "移至今天"
+CmdGanttView = "開啟甘特圖"
+## {0} is the start column, {1} the end column (or the days column), {2} the unit.
+GanttTitle = "甘特圖：{0} → {1}（{2}）"
+GanttInferred = "推測"
+## GA-1: column names taken as the start of a bar when the marker has no gantt setting (space-separated, any case). Not a translation: every language's list applies on every screen.
+GanttStartNames = "開始 開始日 開始日期 起始日"
+## GA-1: column names taken as the end of a bar when the marker has no gantt setting (space-separated, any case). Not a translation.
+GanttEndNames = "結束 結束日 結束日期 截止 截止日 到期日 期限"
+GanttUnitDay = "日"
+GanttUnitWeek = "週"
+GanttUnitMonth = "月"
+GanttNotSet = "此表格沒有甘特圖設定，也沒有可用來推測的日期欄位（請在工作區標記檔的 [[table]] 中寫 gantt = { start = \"<欄位>\", end = \"<欄位>\" }）"
+GanttNoRows = "沒有可放入甘特圖的列"
+GanttNoDates = "沒有任何列在甘特圖的欄位中有日期"
+RsnGanttNotTable = "不是 { start = \"<欄位>\", end = \"<欄位>\" } 形式的表，因此不顯示甘特圖"
+RsnGanttNeedStart = "沒有 start（開始日期的欄位），因此不顯示甘特圖"
+RsnGanttNeedEnd = "既沒有 end（結束日期）也沒有 days（天數），因此不顯示甘特圖"
+## {0} is the column.
+RsnGanttNoColumn = "表格沒有欄位 {0}，因此不顯示甘特圖"
+
+# ---- Kanban (KB-1 to KB-6, kanban.rs) ----
+ModeKanban = "看板"
+SecInKanban = "看板中"
+ScreenKanban = "看板"
+KeyKanbanView = "在表格與看板之間切換"
+KeyKanbanRun = "在表格中顯示該列"
+KeyKanbanNext = "下一張卡片"
+KeyKanbanPrev = "上一張卡片"
+KeyKanbanLeft = "左邊的泳道"
+KeyKanbanRight = "右邊的泳道"
+KeyMoveCardLeft = "將卡片移到左邊的泳道（改寫狀態）"
+KeyMoveCardRight = "將卡片移到右邊的泳道（改寫狀態）"
+CmdKanbanView = "開啟看板"
+## {0} is the status column.
+KanbanTitle = "看板：{0}"
+## {0} is the status column.
+KanbanTitleInferred = "看板：{0}（推測）"
+## KB-1: column names taken as the status column when the marker has no kanban setting (space-separated, any case). Not a translation: every language's list applies on every screen.
+KanbanColumnNames = "狀態 階段"
+## KB-2: the name of the lane for rows without a value.
+KanbanNoValue = "（無）"
+KanbanNotSet = "此表格沒有看板設定，也沒有可用來推測的狀態欄位（請在工作區標記檔的 [[table]] 中寫 kanban = { column = \"<欄位>\" }）"
+KanbanNoRows = "沒有可放入看板的列"
+KanbanNoLaneLeft = "左邊沒有泳道"
+KanbanNoLaneRight = "右邊沒有泳道"
+KanbanToNoValue = "卡片不會移到「（無）」泳道（請在表格中清除值）"
+KanbanNoCard = "此泳道沒有卡片"
+## {0} is the column. A card whose column has a pending key rename or removal (CE-29) is not moved.
+KanbanKeyPending = "欄位 {0} 有未儲存的鍵重新命名或刪除，因此不移動卡片（請在表格中儲存或復原）"
+## {0} is the card's name, {1} the old value, {2} the new value.
+KanbanMoved = "{0}：{1} → {2}（未儲存）"
+RsnKanbanNotTable = "不是 { column = \"<欄位>\" } 形式的表，因此不顯示看板"
+RsnKanbanNeedColumn = "沒有 column（狀態欄位），因此不顯示看板"
+## {0} is the column.
+RsnKanbanNoColumn = "表格沒有欄位 {0}，因此不顯示看板"
+## {0} is the column.
+RsnKanbanListColumn = "欄位 {0} 是清單，因此不顯示看板（一列會同時位於多個泳道）"
+
+# ---- vim モード(screen.vim-*。vim.rs) ----
+ModeInputNormal = "輸入一般模式"
+SecInInputNormal = "輸入框中的一般模式（vim）"
+## screen.vim-mode-shown: the mode of an input box shown in the bottom band.
+VimInsert = "-- 插入 --"
+VimNormal = "-- 一般 --"
+## The key hint of Esc in insert mode.
+KeyVimToNormal = "一般模式"
+KeyWordNext = "下一個字詞的開頭"
+KeyWordPrev = "回到字詞開頭"
+KeyWordEnd = "字詞結尾"
+KeyInsert = "在游標前插入"
+KeyAppend = "在游標後插入"
+KeyInsertStart = "在開頭插入"
+KeyAppendEnd = "在結尾插入"
+KeyDeleteUnder = "刪除此字元"
+KeyDeleteWord = "刪除一個字詞"
+KeyDeleteWordBack = "向前刪除一個字詞"
+KeyDeleteToEnd = "刪除到結尾"
+KeyChangeWord = "修改一個字詞"
+KeyChangeToEnd = "修改到結尾"
+KeyChangeLine = "修改全部文字"
+KeyPaste = "貼上複製的值"
+KeyRepeat = "重複上一個值"
+PasteNothing = "尚未複製任何內容（y 複製儲存格，Y 複製列）"
+PasteNoCell = "沒有可貼上值的儲存格"
+PasteNoRow = "沒有可貼上值的列"
+## {0} is the number of rows.
+PasteRows = "已將複製的列貼到 {0} 列（未儲存）"
+RepeatNothing = "尚無可重複的值（請先設定一個儲存格）"
+## screen.quit-discard: the palette's q!.
+PaletteDiscardQuit = "捨棄變更並結束"
+## screen.vim-dd: deleting several notes. {0} is the number of notes, {1} their names, {2} the number of notes that link to them.
+DeleteNotesWhich = "要刪除的筆記（{0}）：{1}"
+DeleteNotesWhichLinks = "要刪除的筆記（{0}）：{1}（有 {2} 則筆記連結到它們）"
+DeleteNotesDone = "已將 {0} 則筆記移至垃圾桶（按 u 復原）"
+## {0} is the number of notes.
+RestoreNotesDone = "已將 {0} 則筆記還原到原本的位置"
+
+# ---- Chart (CH-1 to CH-9. chart.rs) ----
+ModeChart = "圖表"
+ModeNotice = "通知欄"
+SecInChart = "圖表中"
+ScreenChart = "圖表"
+KeyChartView = "在表格與圖表之間切換"
+KeyChartRun = "以此值篩選表格（散佈圖則移至該列）"
+KeyChartNext = "下一個項目"
+KeyChartPrev = "上一個項目"
+KeyChartRight = "右邊的項目"
+KeyChartLeft = "左邊的項目"
+KeyChartKindNext = "下一種類型（長條 → 堆疊 → 折線 → 散佈 → 熱圖）"
+KeyChartKindPrev = "上一種類型"
+KeyChartX = "下一個分組欄位"
+KeyChartY = "下一個值（筆數 → 數字欄位）"
+KeyChartAgg = "下一種彙總（總和 → 平均 → 最小 → 最大）"
+KeyChartBy = "下一個細分欄位"
+KeyChartZoomIn = "較細的日期單位（月 → 週 → 日）"
+KeyChartZoomOut = "較粗的日期單位（日 → 週 → 月）"
+KeyChartPrevSaved = "標記檔中的上一個圖表"
+KeyChartNextSaved = "標記檔中的下一個圖表"
+KeyChartCumulative = "切換累計（折線）"
+KeyChartPercent = "切換百分比（堆疊）"
+CmdChartView = "開啟圖表"
+ChartKindBar = "長條圖"
+ChartKindStacked = "堆疊長條圖"
+ChartKindLine = "折線圖"
+ChartKindScatter = "散佈圖"
+ChartKindHeatmap = "熱圖"
+ChartCount = "筆數"
+ChartAggSum = "總和"
+ChartAggAvg = "平均"
+ChartAggMin = "最小"
+ChartAggMax = "最大"
+## {0} is the value column, {1} the aggregate (sum and so on).
+ChartValueOf = "{0} 的{1}"
+ChartTitlePrefix = "圖表："
+## {0} is the kind, {1} the column to split by, {2} the value (count, sum of estimate and so on).
+ChartTitle = "{0} · 依 {1} 的{2}"
+## {0} is the kind (scatter), {1} the horizontal column, {2} the vertical one.
+ChartTitleScatter = "{0} · {1} × {2}"
+## {0} is the name of the chart in the marker. It comes after "Chart: ".
+ChartTitleNamed = "{0} · "
+## {0} is the breakdown column.
+ChartTitleBy = " · 依 {0} 細分"
+## {0} is the unit of the date ranges (day, week, month).
+ChartTitleUnit = " · 每{0}"
+ChartTitleCumulative = " · 累計"
+ChartTitlePercent = " · 百分比"
+ChartTitleInferred = " （推測）"
+## {0} is the number of rows counted.
+ChartRows = "{0} 列"
+## {0} is the number of rows left out (the split or value column could not be read).
+ChartSkipped = " · 略過 {0} 列"
+## {0} is the number of breakdown values not drawn as lines.
+ChartSeriesDropped = " · 另有 {0} 個細分值未繪製"
+ChartNoValue = "（無）"
+ChartOther = "其他"
+ChartNoColumns = "此表格沒有可繪製圖表的欄位"
+ChartNoRows = "沒有可放入圖表的列"
+## {0} is the kind, {1} the reason.
+ChartKindSkipped = "無法顯示{0}：{1}"
+ChartNeedAxis = "沒有日期或數字欄位"
+ChartNeedScatter = "數字或日期欄位少於兩個"
+ChartNeedBy = "沒有可用於細分的文字、核取方塊或清單欄位"
+ChartNoFilter = "日期與數字的區間不會篩選表格（請在表格的篩選中寫入範圍）"
+ChartLineNoFilter = "折線的區間不會篩選表格（請在表格的篩選中寫入範圍）"
+ChartNoPoint = "沒有選取任何點"
+ChartOtherNoFilter = "「其他」合併了多個值，因此不會篩選表格（按 b 變更細分，或篩選表格）"
+## {0} is the first date, {1} the last.
+ChartTooWide = "日期範圍太寬，無法繪製圖表（{0} 至 {1}；請以表格的篩選縮小範圍）"
+ChartNoItem = "沒有選取任何項目"
+ChartNoRow = "圖表中沒有選取的列；請在表格中選取一列再執行此動作"
+ChartOneSaved = "標記檔中的圖表少於兩個"
+ChartNoUnit = "未依日期欄位分組，因此單位不變"
+ChartUnitNoRoom = "更細的單位會放不下"
+ChartNotLine = "累計僅適用於折線圖"
+ChartNotStacked = "百分比僅適用於堆疊長條圖"
+ChartAggForCount = "筆數沒有彙總方式（按 y 選擇值的欄位）"
+ChartNoNumber = "沒有可作為值的數字欄位"
+ChartNoOtherY = "沒有其他可作為縱軸的數字或日期欄位"
+ChartByNotBar = "長條圖沒有細分（按 Tab 切換到堆疊長條圖）"
+ChartNoOtherBy = "沒有其他可用於細分的欄位"
+ChartNoOtherX = "沒有其他可用於分組的欄位"
+## {0} is the unit.
+ChartUnit = "單位：{0}"
+RsnChartNotTable = "不是 { kind = \"<類型>\", x = \"<欄位>\" } 形式的表，因此略過此圖表"
+## {0} is the column.
+RsnChartNoColumn = "表格沒有欄位 {0}，因此略過此圖表"
+
+# ---- expr: relative()(base-view.relative。今日・今からの隔たり) ----
+# 向き(先・前)と単位の組ごとに1文を持つ(語順や格が向きで変わる言語でも、文を丸ごと訳せるように)。
+# {0} は数。`…One` は数が 1 のときの文。
+RelToday = "今天"
+RelNow = "現在"
+RelInMinutes = "{0} 分鐘後"
+RelInMinutesOne = "{0} 分鐘後"
+RelAgoMinutes = "{0} 分鐘前"
+RelAgoMinutesOne = "{0} 分鐘前"
+RelInHours = "{0} 小時後"
+RelInHoursOne = "{0} 小時後"
+RelAgoHours = "{0} 小時前"
+RelAgoHoursOne = "{0} 小時前"
+RelInDays = "{0} 天後"
+RelInDaysOne = "{0} 天後"
+RelAgoDays = "{0} 天前"
+RelAgoDaysOne = "{0} 天前"
+RelInMonths = "{0} 個月後"
+RelInMonthsOne = "{0} 個月後"
+RelAgoMonths = "{0} 個月前"
+RelAgoMonthsOne = "{0} 個月前"
+RelInYears = "{0} 年後"
+RelInYearsOne = "{0} 年後"
+RelAgoYears = "{0} 年前"
+RelAgoYearsOne = "{0} 年前"
+
+# ---- ui/across: ワークスペースを横断して探す(navigation.across-*) ----
+## パレットのコマンドの名前(navigation.across-option)。
+CmdAcrossSearch = "在整個工作區中搜尋"
+## 語の入力の前置き。
+AskAcross = "跨表格搜尋："
+## まだ探していないときの案内。{0} は範囲の表の数。
+AcrossHint = "按 Enter 搜尋範圍內表格（{0}）的每一列"
+## navigation.across-progress: 読んでいる間の進み。{0} は読み終えた表の数、{1} は全部の数。
+AcrossProgress = "已讀取 {0} / {1}"
+## 表ごとのまとまりの見出し。{0} は表の名前、{1} は当たった行の数。
+AcrossGroup = "{0}（{1}）"
+## navigation.across-results: どこにも当たらないとき。
+AcrossNoHits = "沒有符合的列"
+## navigation.across-progress: 読めなかった表。{0} は表の名前を並べたもの。
+AcrossUnreadable = "無法讀取：{0}"
+AcrossNoTables = "沒有可搜尋的表格：請開啟工作區或登錄表格"
+AcrossNoWord = "請輸入要搜尋的字詞"
+
+# ---- session: 名前を付けたセッション(cli.session-*。src/session.rs・src/ui/sessions.rs) ----
+## {0} is the file path, {1} the reason.
+SessionsUnreadable = "無法讀取 {0}：{1}"
+## {0} is the file, {1} the line, {2} the reason.
+SessionsBadToml = "無法讀取 {0}（第 {1} 行）：{2}"
+## {0} is the item that is needed.
+RsnSessionNeeds = "已忽略：需要 {0}"
+SessionNameEmpty = "工作階段名稱為空"
+SessionNameBad = "工作階段名稱不能含有 Tab、換行或其他控制字元"
+## {0} is the name, {1} the saved names.
+SessionUnknown = "沒有工作階段 {0}（現有工作階段：{1}）"
+## {0} is the name.
+SessionNoneSaved = "沒有工作階段 {0}（尚未儲存任何工作階段；可在命令面板用「儲存工作階段」儲存）"
+## {0} is the session, {1} the path.
+SessionMissingPath = "工作階段 {0} 要開啟的 {1} 不存在"
+## {0} is the session.
+SessionNoPaths = "工作階段 {0} 沒有要開啟的資料夾（folders）"
+SessionWithPaths = "-s（--session）不能與路徑一起使用（由工作階段決定要開啟的內容）"
+CmdSaveSession = "儲存工作階段"
+AskSessionName = "工作階段名稱："
+## {0} is the session.
+AskSessionOverwrite = "工作階段 {0} 已存在。要取代嗎？(y/n) "
+## {0} is the session.
+SessionSaved = "已儲存工作階段 {0}（用 mdgrid -s {0} 開啟）"
+## {0} is the reason.
+SessionSaveError = "無法寫入 sessions.toml：{0}"
+SessionNoConfigDir = "無法儲存工作階段：沒有設定資料夾"
+## {0} is the list of columns.
+SessionMissingColumns = "工作階段的欄位 {0} 不在此表格中，已略過"
+## {0} is the reason.
+SessionBadExpr = "不使用工作階段的運算式篩選：{0}"
+## {0} is the condition.
+SessionNoCond = "工作階段的具名條件 {0} 不在設定中，不使用"
+
+# ---- schema: 設定の項目の説明(--print-config のコメント。screen.locales-all-in-ledger) ----
+## --print-config の頭の説明(行ごとに "# " を付けて出す)。
+CfgPrintHead = "mdgrid 設定，所有項目皆為預設值。\n位置：$XDG_CONFIG_HOME/mdgrid/config.toml（或 ~/.config/mdgrid/config.toml；\nWindows 為 %APPDATA%\\mdgrid\\config.toml）。\n標示「僅全域」的項目屬於整個應用程式；其他項目構成表格設定組，也可以\n依工作區、表格與檢視分別寫入。\n選項：mdgrid --help。完整說明：mdgrid 儲存庫中的 docs/config.md。"
+## --print-config の書ける範囲の行。{0} は範囲の名前(CfgScopeGlobal・CfgScopeProfile)。
+CfgScopeLine = "範圍：{0}。"
+CfgScopeGlobal = "僅全域"
+CfgScopeProfile = "全域、工作區、表格、檢視"
+## --print-config の例の見出し。
+CfgExampleLine = "範例："
+## 設定の項目 `language` の説明(行の区切りは --print-config のコメントの行)。
+CfgLanguage = "畫面、啟動訊息與這些說明的語言：\"auto\" 或語言代碼\n（en、ja、de、es、fr、ko、pt-BR、zh-CN、zh-TW）。\"auto\" 依循 LC_ALL、LC_MESSAGES 與 LANG\n（第一個非空值）：選擇語言與地區相符者，其次為語言相符者，都不符則為英文。"
+## 設定の項目 `editor` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditor = "開啟所選筆記的編輯器（可帶引數，例如 \"code -w\"；不經過\nshell 執行）。未設定或空白時：依序為 $VISUAL、$EDITOR、vi（Windows 為 notepad）。"
+## 設定の項目 `poll_ms` の説明(行の区切りは --print-config のコメントの行)。
+CfgPollMs = "重新讀取在 mdgrid 外變更之筆記的間隔（毫秒）。"
+## 設定の項目 `use` の説明(行の区切りは --print-config のコメントの行)。
+CfgUse = "將樣板 [templates.<名稱>] 鋪在此處所寫的值之下。"
+## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
+CfgTypes = "單一欄位的型別。優先於根資料夾的型別設定（.obsidian/types.json）\n與從值推測的結果；\"auto\" 會回到推測（較窄的範圍可取消較寬範圍的\n設定）。型別決定儲存格的輸入方式、不符合之值的 ! 標示、排序與欄位標題的\n型別標示。不會修改筆記。點擊標題的型別標示，或在命令面板或動作選單使用\ncolumn_type，即可選擇型別並寫入 views.toml 的表。"
+## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
+CfgRules = "單一欄位的規則，與欄位型別一併檢查。required = true 會將缺少鍵、\nnull、空字串或空清單視為問題；values 列出允許的值（清單的每個項目都必須是\n其中之一，區分大小寫）。較窄的範圍逐項優先。\n問題會加上 ! 標示，底部列會計數，以 ! 與 @ 在問題之間跳轉，\nmdgrid --check 會列出問題。檢查規則絕不會修改筆記，也不會阻止你寫入值；\n有 values 的欄位會在儲存格輸入時提供這些值。then 會在你將該欄設為某個值時，\n填入同一列的其他欄位（值 = { 欄位 = 文字 }；可使用 {date} 等範本變數，\n空文字會清除該欄）；它會與你的編輯一起暫存，也一起復原。\n計算欄位（file.*、formula.*）不能設定規則。"
+## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalColor = "使用色彩。false 不使用色彩繪製（與 NO_COLOR 或 --no-color 相同）。"
+## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalAmbiguousWide = "將東亞模糊寬度字元（如 ○ 與 ※）視為兩格寬。\n若終端機將它們繪製為寬字元，請設為 true。此時視窗框線一律使用 ASCII。"
+## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdFont = "是否可繪製圓角膠囊（Nerd Font 字符）。true：終端機字型為 Nerd\nFont。\"auto\"：僅在會自行繪製這些字符的終端機（Ghostty、WezTerm）中使用，\n以免在其他終端機中顯示錯亂。無法繪製圓角時，\"pill\" 會以 \"soft\" 繪製。"
+## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalNerdIcons = "在設定按鈕、畫面類型按鈕與選單、欄位標題的型別標示與行事曆標題中，\n使用 Nerd Font 的圖示字符。僅在終端機字型為 Nerd Font 時設為 true；\n預設使用一般字元（⚙、▦、◇、#、◷、⋮、◉、✓）。絕不使用表情符號。"
+## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
+CfgTerminalHerdr = "在 Herdr 窗格中，告知 Herdr 重新開啟目前表格與檢視的指令，\n讓 Herdr 在其伺服器重新啟動後再次開啟。false 則絕不呼叫 Herdr。"
+## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。
+CfgWorkspaceDetect = "當開啟的表格不在任何已寫入的工作區中時，將其上層最近一個含有下列標記\n資料夾的資料夾視為工作區（根資料夾）：\".obsidian\"（含 .obsidian/ 的資料夾）\n或 \".git\"（git 儲存庫）。其中含有筆記的資料夾會成為關聯圖的表格。\n[] 會關閉偵測。舊值 \"vault\" 與 \"git\" 也以相同方式讀取，\n並顯示警告。"
+## 設定の項目 `git.auto` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitAuto = "mdgrid 在 git 儲存庫中寫入筆記後，要對 git 做到哪一步：\"off\" 不做任何事，\n\"add\" 暫存寫入的筆記，\"commit\" 另外提交（僅限這些筆記，絕不包含其他\n已變更或已暫存的檔案），\"push\" 另外推送。不是 git 儲存庫的資料夾\n不受影響。git 失敗時以一行回報，儲存本身仍然完成。"
+## 設定の項目 `git.when` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitWhen = "git.auto 的執行時機：\"save\" 每次儲存後（每次儲存一個提交），\"quit\" 在 mdgrid\n結束時執行一次（整個工作階段一個提交）。結束時仍在等待的筆記一律在此時處理。"
+## 設定の項目 `git.message` の説明(行の区切りは --print-config のコメントの行)。
+CfgGitMessage = "提交訊息：\"auto\" 寫入「mdgrid: 更新 N 則筆記」與路徑；\"ask\" 在每次儲存後\n開啟一行輸入欄（留空則使用自動訊息，按 Esc 則將筆記留到\n結束時的提交）。"
+## 設定の項目 `look.theme` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookTheme = "畫面的色彩主題。\"default\" 保留終端機本身的色彩。表\n{ light = ..., dark = ... } 依終端機的背景選擇；\"auto\" 即\n{ light = \"saas\", dark = \"sumi\" }。不使用色彩時無效；256 色終端機會使用\n最接近的色彩。"
+## 設定の項目 `look.preset` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookPreset = "一整組元件樣式。[look.style] 可覆寫個別元件。在較窄範圍寫入的樣式組\n會捨棄在較寬範圍寫入的元件樣式。"
+## 設定の項目 `look.mode` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookMode = "啟用色彩時的外觀：\"modern\"（類似 lazygit：著色的選取、強調色的框線與按鍵、\n淡色的標籤）或 \"classic\"（反白）。畫面上的文字相同；不使用色彩時兩者\n看起來都像 classic。"
+## 設定の項目 `look.cells` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookCells = "啟用色彩時表格儲存格的外觀：\"rich\"（布林值、清單、重複的短值、\n連結與欄位型別標示，以 [look.style] 的元件樣式繪製）或 \"plain\"（原樣顯示\n文字）。不使用色彩時，儲存格一律為 plain。"
+## 設定の項目 `look.style` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookStyle = "覆寫樣式組中的個別元件樣式：status（\"dot\"、\"shape\"、\"text\"、\"pill\"、\"tint\"、\n\"solid\"、\"soft\"、\"chip\"、\"plain\"）、tags（\"dots\"、\"hash\"、\"brackets\"、\"pill\"、\"tint\"、\n\"solid\"、\"soft\"、\"chip\"、\"plain\"）、check（\"box\"、\"tick\"、\"bracket\"、\"text\"）、select\n（\"bar\"、\"cross\"、\"tint\"、\"outline\"、\"fill\"、\"reverse\"）、rules（\"none\"、\"header\"、\n\"columns\"、\"grid\"）、tabs（\"underline\"、\"pill\"、\"segment\"、\"brackets\"、\"dim\"）、frames\n（\"rounded\"、\"square\"、\"heavy\"、\"ascii\"、\"none\"）、band（\"keys\"、\"boxed\"、\"quiet\"）、links\n（\"accent\"、\"plain\"）與 icons（true 或 false）。\"plain\"（check 為 \"text\"）會讓該元件\n保持為文字。docs/catalog/index.html 會展示所有選項，並為你寫出此表。"
+## 設定の項目 `look.columns` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColumns = "單一欄位的外觀：\"rich\"、\"plain\" 或 \"chip\"（即使該欄未被偵測為膠囊，\n也以膠囊顯示）。欄位的設定優先於元件樣式。"
+## 設定の項目 `look.colors` の説明(行の区切りは --print-config のコメントの行)。
+CfgLookColors = "依角色覆寫主題的色彩：background、text、header、selection、selection_text、\nband、band_text、accent、strong、zebra、zebra_text、mark、added、removed、pending 與\nhighlight。[look.colors.values] 依值設定色彩（不分大小寫），所有元件\n樣式都會使用。色彩為 \"#rrggbb\"、\"#rgb\" 或名稱（black、white、gray、red、orange、\nyellow、green、teal、cyan、blue、purple、magenta、pink、brown）。theme = \"default\" 時，\n只使用 accent、selection 與值的色彩。在較窄範圍寫入的主題會捨棄\n在較寬範圍寫入的角色色彩。"
+## 設定の項目 `display.row_numbers` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowNumbers = "依顯示順序，在每列左側標上 1、2、3...。"
+## 設定の項目 `display.zebra` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayZebra = "隔列加上底色（不使用色彩時不加）。"
+## 設定の項目 `display.column_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayColumnLines = "在欄位之間繪製 │。"
+## 設定の項目 `display.group_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayGroupGap = "除了第一個以外，每個群組標題上方空一行。"
+## 設定の項目 `display.tabs` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabs = "檢視分頁列：\"always\"、\"auto\"（只在有兩個以上的檢視時顯示；只有一個檢視時\n該行給表格使用）或 \"never\"。無論哪一種，分頁按鍵都能使用。"
+## 設定の項目 `display.search_bar` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplaySearchBar = "在表格上方顯示搜尋列。false 則隱藏；此時快速篩選改在\n最底行輸入。"
+## 設定の項目 `display.chips` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayChips = "顯示目前生效之檢視設定的設定列。隱藏時仍可用 f 選取其項目。"
+## 設定の項目 `display.buttons` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayButtons = "檢視列中搜尋列與篩選、排序按鈕的繪製方式：\"plain\"\n（以背景色呈現）或 \"box\"（在檢視列的留白行上以線條框起，\n不填色）。沒有留白（display.bar_padding = 0）時不繪製線條。"
+## 設定の項目 `display.bar_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayBarPadding = "檢視列上下的留白行數：0、0.5、1、1.5 或 2（1 與 1.0 皆可）。\n0 會將檢視列繪製在一行內。半行會填上檢視列的背景色，並以畫面背景色\n（主題的，或終端機的，於啟動時詢問一次）的半格方塊（上方 ▀、下方 ▄）蓋住外側一半；\n無法得知背景色時、不使用色彩時，以及 terminal.ambiguous_wide = true 時，\n會進位為一整個空行。\n終端機高度少於 16 行，或隱藏搜尋列時，一律使用 0。其他值會\n顯示警告並改用預設值。"
+## 設定の項目 `display.top_padding` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTopPadding = "標題列上方的留白行數：0、0.5、1、1.5 或 2。半行的繪製方式與\ndisplay.bar_padding 相同（標題列上方為 ▀，標題列則填上檢視列的背景色）。\n終端機高度少於 16 行時一律使用 0。"
+## 設定の項目 `display.row_extra_lines` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayRowExtraLines = "表格的列最多可額外增加幾行：含有長值或換行的列，會依欄寬折行，\n最多增高到 1 + 此數值的行數（每列只增高到所需的高度）。\n放不下的部分以 … 結尾。0 會讓每列都保持一行，\n換行顯示為 …⏎。其他值會顯示警告並改用預設值。"
+## 設定の項目 `display.note_path` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNotePath = "左側筆記欄顯示各筆記的方式：\"common\" 省略所有列共用的資料夾，\n\"name\" 只顯示名稱，\"full\" 顯示從根目錄起的路徑，\"off\" 不顯示名稱（只有列標示）。\n其他值會顯示警告並改用預設值。"
+## 設定の項目 `display.tab_wrap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrap = "檢視分頁放不進檢視列那一行時，將它們全部移到搜尋框與按鈕下方，\n需要幾行就用幾行，讓每個分頁都看得到（表格會因此往下移）。\nfalse 則維持一行，在畫面較窄時省略其他分頁。"
+## 設定の項目 `display.tab_wrap_gap` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayTabWrapGap = "使用 tab_wrap 時，在搜尋框那一行與其下方的分頁行之間空一行。"
+## 設定の項目 `display.note_name` の説明(行の区切りは --print-config のコメントの行)。
+CfgDisplayNoteName = "套用到筆記欄名稱的正規表示式（在 note_path 之後；有資料夾時只套用到\n最後一段）。符合時，顯示名為 name 的擷取群組，否則顯示第一個擷取群組，否則顯示\n移除符合部分後的名稱。不符合的名稱，或會變成空白的名稱，維持原樣。\"\" 表示\n不設定。無法讀取的運算式會顯示警告且不使用。"
+## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesFormat = "表格中日期的顯示與輸入格式。部分：YYYY、YY、MM、M、DD、D、ddd\n（星期）與非英數字的分隔字元。筆記中一律寫成 YYYY-MM-DD。"
+## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
+CfgDatesWeekStart = "日期行事曆中每週的第一天。"
+## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditCandidates = "編輯文字儲存格時提供的值候選數上限。\n不同值多於此數的欄位不提供候選。"
+## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
+CfgEditAddFrontmatter = "允許寫入沒有 front matter 或 front matter 為空的筆記（會新增 front matter 或\n鍵的那一行）。false 會讓這些筆記成為唯讀。"
+## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
+CfgNewNote = "從表格建立新筆記的方式：mode（\"form\"：含所有欄位的表單，或\n\"editor\"：建立後用編輯器開啟）、folder（相對於開啟的資料夾）、name（名稱\n範本）、ask（表單的欄位；預設：可見的欄位）、required（必須填寫的\n欄位）、hidden（不顯示欄位而直接寫入的欄位）、body（內文範本檔）與\n[new_note.set]（欄位 = 值）。範本可使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 與 {folder}。來自檢視篩選的值優先。\n此表為單一項目：在較窄範圍寫入時會整個取代。"
+## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeys = "依模式重新指派按鍵：在 [keys.<模式>] 下寫 按鍵 = 動作名稱。\n\"none\" 會移除該按鍵。模式：table、edit、review、quit、help、palette、search、\nfilter、detail、settings、settings_input、chips、list_select、menu、freq、sorts、relations、drawer、filter_window、filter_input、screen_menu、column_type、tree、gantt、kanban、chart、notice、switch、\ninput_normal（vim 模式）。動作名稱顯示在命令面板（:）中。"
+## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。
+CfgKeysVim = "vim 模式：輸入框以插入模式開始，按 Esc 切換到一般模式（h l 0 $ w b e、\ni a I A、x X dw db d$ D dd、cw c$ C cc、u）。表格可使用 dd（刪除筆記）、p（貼上\n以 y 或 Y 複製的值）與 .（重複上一個值）。false 則所有按鍵維持原樣。"
+## 設定の項目 `search.across` の説明(行の区切りは --print-config のコメントの行)。
+CfgSearchAcross = "在命令面板中加入「在整個工作區中搜尋」：在目前工作區（或已登錄的表格）中\n每個表格的每一列尋找字詞，並依表格列出符合的列。\nfalse（預設）則命令面板維持原樣。"
+## 設定の項目 `templates` の説明(行の区切りは --print-config のコメントの行)。
+CfgTemplates = "設定組的具名片段（[look]、[display]、[dates]、[edit]、[new_note]）。在任何範圍\n寫 use = \"<名稱>\" 即可將其鋪在該範圍的值之下。ui.toml 的樣板優先於\nconfig.toml 中同名的樣板。"
+## 設定の項目 `conditions` の説明(行の区切りは --print-config のコメントの行)。
+CfgConditions = "具名條件：寫一次的運算式（expr），以名稱使用。可用於任何運算式中的\ncond(\"<名稱>\")、只顯示符合列的數字鍵（key = 1-9）、檢視設定的篩選區塊，\n以及用 hide = true 在所有表格中隱藏符合的列。label 是顯示的名稱。"
+## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotices = "標題列上方的通知欄，僅在寫了項目時顯示。計數項目會在目前表格、工作區或指定的表格中，\n計算符合具名條件（[conditions]）的列數；筆記項目會顯示\n筆記內文的開頭幾行。mdgrid --notices 會輸出相同的行。"
+
+# ---- stack: tables stacked top to bottom and pages (stack.*) ----
+SecStack = "堆疊表格"
+KeyStackDown = "下方的表格"
+KeyStackUp = "上方的表格"
+KeyStackClose = "關閉此表格"
+KeyStackGrow = "此表格增高一行"
+KeyStackShrink = "此表格減低一行"
+KeyStackCloseSave = "儲存並關閉"
+KeyStackCloseDiscard = "捨棄並關閉"
+CmdStackAdd = "在下方堆疊表格"
+CmdPageSave = "將排列存為頁面"
+## {0} is the most tables that can be stacked.
+StackMax = "最多可堆疊 {0} 個表格"
+StackNoRoom = "終端機高度不足，無法再堆疊表格（每個表格需要標題與 3 列）"
+StackNoTables = "沒有其他可堆疊的表格（此範圍的表格都已堆疊）"
+StackCloseOnly = "只開啟了一個表格，因此無法關閉"
+StackSingle = "沒有堆疊的表格"
+StackGrowLimit = "此表格無法再增高（其他表格須保留標題與 3 列）"
+StackShrinkLimit = "此表格無法再減低（須保留標題與 3 列）"
+StackCollapsed = "終端機高度不足，無法變更高度"
+## {0} is the table, {1} the number of changes.
+StackCloseBand = " {0} 有 {1} 項未儲存的變更。關閉前請選擇處理方式"
+StackCloseBandOne = " {0} 有 {1} 項未儲存的變更。關閉前請選擇處理方式"
+## {0} is the table.
+StackClosed = "已關閉 {0}"
+AskStackTable = "要堆疊在下方的表格："
+AskPageName = "頁面名稱："
+## {0} is the page, {1} the file.
+PageSaved = "已將頁面「{0}」儲存到 {1}"
+PageSaveError = "無法儲存頁面：{0}"
+PageSaveUnsure = "編輯後重新讀取的檔案內容不一致，因此未寫入任何內容（請檢查手寫的部分）"
+PageNotWorkspace = "目前的範圍不是工作區，無法儲存頁面（用 :workspace_new 建立工作區）"
+PageNoStack = "沒有堆疊的表格，沒有可存為頁面的內容（用 :stack_add 堆疊表格）"
+## {0} is the table.
+PageTableOutside = "表格 {0} 不在目前的工作區中，無法儲存頁面"
+PageNameBad = "頁面名稱為空或含有換行"
+## {0} is the page, {1} the names of the pages.
+PageUnknown = "沒有頁面「{0}」（現有頁面：{1}）"
+PageNone = "沒有頁面「{0}」（此工作區沒有頁面）"
+## {0} is the page, {1} the reasons.
+PageOpenFailed = "頁面「{0}」中有部分表格無法開啟：{1}"
+DrawerPage = "頁面"
+## {0} is the table (headings of the save review when tables are stacked).
+ReviewTableHead = " ── {0} ──"
+WantPageList = "頁面的清單（[[page]]）"
+WantPageTables = "{ table = \"<表格>\", view = \"<檢視>\", height = <比例> } 表的清單"
+RsnPageNeedTable = "需要 table（表格名稱），已忽略"
+## {0} is the table, {1} the tables of the workspace.
+RsnPageNoTable = "表格 {0} 不在工作區中，已略過（現有表格：{1}）"
+## {0} is the page.
+RsnPageEmpty = "頁面 {0} 沒有可開啟的表格，因此不使用"
+## When "Stack a table below" is chosen while picking with `--pick`.
+StackPick = "使用 --pick 時不堆疊表格（它從單一表格選取後結束）"

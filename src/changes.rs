@@ -102,6 +102,8 @@ pub struct Changes {
     redo: Vec<Step>,
     /// 利用者の手でやり直しの積みを消した回数(ノートの作成・削除のやり直しが古くなったかを画面が見る)。
     cleared: u64,
+    /// 変えうる操作をした回数(stack.shared-pending: 並べたほかの表が、組み直すかを見る)。
+    gen: u64,
 }
 
 impl Changes {
@@ -118,6 +120,7 @@ impl Changes {
         col: &str,
         v: NewValue,
     ) -> Result<(), Skip> {
+        self.gen += 1;
         let mut bases = BTreeMap::new();
         let change = self.plan(src, row, col, Some(&v), &mut bases)?;
         self.commit(change.into_iter().collect(), bases, true);
@@ -133,6 +136,7 @@ impl Changes {
         v: NewValue,
         follow: &Follow,
     ) -> Result<(), Skip> {
+        self.gen += 1;
         let items = [(row.clone(), Some(v))];
         match self.set_each_then(src, col, &items, follow).pop() {
             Some(s) => Err(s),
@@ -148,6 +152,7 @@ impl Changes {
         col: &str,
         v: NewValue,
     ) -> Vec<Skip> {
+        self.gen += 1;
         let items: Vec<(RowId, Option<NewValue>)> =
             rows.iter().map(|r| (r.clone(), Some(v.clone()))).collect();
         self.set_each(src, col, &items)
@@ -161,6 +166,7 @@ impl Changes {
         col: &str,
         items: &[(RowId, Option<NewValue>)],
     ) -> Vec<Skip> {
+        self.gen += 1;
         self.set_each_then(src, col, items, &Follow::new())
     }
 
@@ -174,6 +180,7 @@ impl Changes {
         items: &[(RowId, Option<NewValue>)],
         follow: &Follow,
     ) -> Vec<Skip> {
+        self.gen += 1;
         let mut bases = BTreeMap::new();
         let mut cells = Vec::new();
         let mut skips = Vec::new();
@@ -215,7 +222,34 @@ impl Changes {
         skips
     }
 
+    /// 行と列ごとに違う値を1手でためる(screen.vim-paste の行の値)。直せないセルは飛ばして返す。重ねて渡した
+    /// (行, 列)は最初だけ。一緒に入れる値(`then`)は入れない(写した行の値をそのまま入れる)。
+    pub fn set_cells(
+        &mut self,
+        src: &dyn Source,
+        items: &[(RowId, String, NewValue)],
+    ) -> Vec<Skip> {
+        self.gen += 1;
+        let mut bases = BTreeMap::new();
+        let mut cells = Vec::new();
+        let mut skips = Vec::new();
+        let mut seen = BTreeSet::new();
+        for (row, col, v) in items {
+            if !seen.insert((row.clone(), col.clone())) {
+                continue;
+            }
+            match self.plan(src, row, col, Some(v), &mut bases) {
+                Ok(Some(c)) => cells.push(c),
+                Ok(None) => {}
+                Err(s) => skips.push(s),
+            }
+        }
+        self.commit(cells, bases, true);
+        skips
+    }
+
     pub fn undo(&mut self) -> bool {
+        self.gen += 1;
         let Some(mut step) = self.undo.pop() else {
             return false;
         };
@@ -225,6 +259,7 @@ impl Changes {
     }
 
     pub fn redo(&mut self) -> bool {
+        self.gen += 1;
         let Some(mut step) = self.redo.pop() else {
             return false;
         };
@@ -250,8 +285,15 @@ impl Changes {
 
     /// 新しい手(ノートの作成・削除)のあと: やり直しの積みを消す(ためる変更の新しい手と同じ)。
     pub fn clear_redo(&mut self) {
+        self.gen += 1;
         self.redo.clear();
         self.cleared += 1;
+    }
+
+    /// 変えうる操作(ためる・取り消し・保存・捨てるなど)をするたびに増える数(stack.shared-pending)。
+    /// 同じ数なら、ためた変更は前に見たときのまま。
+    pub fn generation(&self) -> u64 {
+        self.gen
     }
 
     pub fn pending(&self, row: &RowId, col: &str) -> Option<&NewValue> {
@@ -272,6 +314,7 @@ impl Changes {
 
     /// 外で変わった行を受け取り、ためた変更のある行に「外で変更」の印を付ける(WB-16)。
     pub fn note_external(&mut self, rows: &[RowId]) {
+        self.gen += 1;
         for row in rows {
             if let Some(st) = self.states.get_mut(row) {
                 st.external = true;
@@ -294,6 +337,7 @@ impl Changes {
     /// `note_external` は読んだ値を見られないので、外の変化を受けたら続けてこれを呼ぶ。
     /// 外の変化で積む手なので、やり直しの積みは消さない(利用者の操作ではない)。
     pub fn drop_same(&mut self, src: &dyn Source, rows: &[RowId]) {
+        self.gen += 1;
         let mut seen = BTreeSet::new();
         let mut cells = Vec::new();
         for row in rows {
@@ -378,6 +422,7 @@ impl Changes {
 
     /// 書く単位ごとに保存する。Saved の単位の変更は消え、基準は新しくなる。それ以外は残す(WB-14)。
     pub fn save(&mut self, src: &mut dyn Source) -> Vec<(RowId, Outcome)> {
+        self.gen += 1;
         let rows = self.rows();
         self.save_rows(src, &rows)
     }
@@ -385,6 +430,7 @@ impl Changes {
     /// 指定の行の書く単位だけを保存する(保存の確認の画面で1ファイルを選んで書くとき)。単位の中のためた変更は全部書く。
     /// 結果は単位ごと(形は save と同じ)。ためた変更の無い行と、重ねて渡した単位は飛ばす。
     pub fn save_rows(&mut self, src: &mut dyn Source, rows: &[RowId]) -> Vec<(RowId, Outcome)> {
+        self.gen += 1;
         let units = self.units(src);
         let mut out = Vec::new();
         let mut seen = BTreeSet::new();
@@ -452,6 +498,7 @@ impl Changes {
     /// 読み込み口が自分で書いた(ためた値に触れない書き込み。SC-17 の行を足す)あと、`old` を基準にしていた行の基準を
     /// `new` に進める。外で変わった印のある行は進めない(WB-16)。
     pub fn rebase(&mut self, old: &Stamp, new: &Stamp) {
+        self.gen += 1;
         for st in self.states.values_mut() {
             if !st.external && st.base.is_some_and(|b| b.hash == old.hash) {
                 st.base = Some(*new);
@@ -469,6 +516,7 @@ impl Changes {
 
     /// WB-16 の「外の変更の上に書く」: 今のファイルを読み直して基準にし、印を消す。
     pub fn overwrite(&mut self, src: &mut dyn Source, row: &RowId) -> std::io::Result<()> {
+        self.gen += 1;
         self.overwrite_if(src, row, None).map(|_| ())
     }
 
@@ -480,6 +528,7 @@ impl Changes {
         row: &RowId,
         seen: [u8; 32],
     ) -> std::io::Result<bool> {
+        self.gen += 1;
         self.overwrite_if(src, row, Some(seen))
     }
 
@@ -519,11 +568,13 @@ impl Changes {
 
     /// WB-16 の「ためた変更を捨てる」。その行の変更を1手として消す。
     pub fn discard(&mut self, row: &RowId) {
+        self.gen += 1;
         self.discard_rows(std::slice::from_ref(row));
     }
 
     /// 複数の行(1つの書く単位など)の変更を1手として消す。
     pub fn discard_rows(&mut self, rows: &[RowId]) {
+        self.gen += 1;
         let cells = rows
             .iter()
             .filter_map(|row| self.cells.get(row).map(|m| (row, m)))

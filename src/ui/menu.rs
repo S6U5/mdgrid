@@ -316,6 +316,10 @@ impl App {
     /// セルの右クリック(SR-24): そのセルを選んで一覧を開く。表のセルでなければ何もしない。
     /// 一覧を開いている間の右クリックは、開き直す。
     pub fn right_click(&mut self, x: u16, y: u16) {
+        // stack.focus: 並べた表では、ほかの表の行ならその表を選んでから(区画の中の位置で受ける。stack.rs)。
+        let Some(y) = self.stack_point(x, y, false) else {
+            return;
+        };
         match self.mode {
             Mode::Table => {}
             Mode::Menu => self.close_menu(),

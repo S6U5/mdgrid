@@ -41,6 +41,13 @@ keys = ["l", "l", "l", "Enter"]
 text = { ja = "日付の列ではカレンダーが開く。矢印で日を動かし、Enter で決める。", en = "Date columns open a calendar. Move with the arrow keys and press Enter." }
 
 [[shot]]
+id = "date-words"
+title = { ja = "日付を言葉で入れる", en = "Type a date in words" }
+keys = ["l", "l", "l", "Enter", "text:next fri"]
+wait = { ja = "2026-10-16(金)", en = "2026-10-16 (Fri)" }
+text = { ja = "日付のセルに `next fri`(`来週の金曜` でも同じ)と打つと、欄の横に読んだ日が出て、カレンダーがその日へ動く。Enter で決める。", en = "Type `next fri` in a date cell and the date it reads as appears next to the field, with the calendar on that day. Press Enter to set it." }
+
+[[shot]]
 id = "edit-tags"
 title = { ja = "タグを付け外しする", en = "Add and remove tags" }
 keys = ["l", "l", "l", "l", "l", "l", "l", "Enter"]
@@ -407,6 +414,73 @@ title = { en = "Back on the same table and view", ja = "同じ表とビューに
 command = ["./target/release/mdgrid", "examples/studio/Tasks.base", "--view", "By status"]
 wait = { en = "By status", ja = "By status" }
 text = { en = "Herdr reopens the table and view mdgrid told it; mdgrid --continue goes back to the last one opened in this folder.", ja = "Herdr は mdgrid が伝えた表とビューで開き直す。mdgrid --continue は、このフォルダで最後に開いた表とビューへ戻る。" }
+
+[[shot]]
+id = "session-save"
+title = { en = "Save a session", ja = "セッションを保存する" }
+keys = ["\\", "text:bakery", "Enter", ":", "text:save_session", "Enter", "text:bakery"]
+wait = { en = "Session name", ja = "セッションの名前" }
+text = { en = "Narrow the table with \\ and bakery, then save_session in the palette asks for a name. Later, mdgrid -s bakery opens the same table, filter and columns.", ja = "\\ と bakery で絞り、パレットの save_session で名前を聞かれる。あとで mdgrid -s bakery と打てば、同じ表・絞り込み・列のまま開く。" }
+
+[[shot]]
+id = "recent"
+title = { en = "Recent tables", ja = "最近開いた表" }
+command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
+env = { XDG_CONFIG_HOME = "/tmp/mdgrid-demo/examples/places" }
+ready = "Open"
+keys = ["sleep:0.5", ":", "text:open_place", "Enter", "text:projects", "Enter", "sleep:1.5", ":", "text:open_recent", "Enter"]
+wait = { en = "Recent tables:", ja = "最近開いた表:" }
+text = { en = "Opened Tasks, then Projects from the registered tables. The palette's open_recent lists the other tables opened on the screen, newest first, with the view, when, and the folder; Enter opens one in that view. mdgrid --recent prints the same list for the shell.", ja = "Tasks を開いてから、登録した表で Projects へ移った。パレットの open_recent で、画面で開いたほかの表が新しい順に、ビュー・日時・フォルダと並ぶ。Enter でそのビューで開く。シェルでは mdgrid --recent が同じ並びを出す。" }
+
+[[shot]]
+id = "switch"
+title = { en = "Switch between favorite workspaces", ja = "お気に入りのワークスペースを切り替える" }
+command = ["./target/release/mdgrid", "examples/quirks/Tasks"]
+env = { XDG_CONFIG_HOME = "/tmp/mdgrid-demo/examples/places" }
+ready = "Tasks"
+keys = ["sleep:0.5", "W", "1", "sleep:1.5", "W"]
+wait = { en = "Where you started", ja = "最初に開いた所" }
+text = { en = "examples/places/mdgrid/workspaces.toml has three favorites. Started in quirks, W then 1 moved to Studio; W again lists Where you started at the top to go back. Digits pick, Esc closes.", ja = "examples/places/mdgrid/workspaces.toml にお気に入りが3つ。quirks で起動し、W と 1 で Studio へ移った。もう一度 W で、先頭の「最初に開いた所」から戻れる。数字で選び、Esc で閉じる。" }
+
+[[shot]]
+id = "conditions"
+title = { en = "Narrow with a named condition", ja = "名前の条件で絞る" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
+keys = ["1"]
+wait = { en = "Due this week", ja = "Due this week" }
+text = { en = "The sample config names \"Due this week\" with key = 1. Press 1 to keep only those rows; the settings band shows the condition.", ja = "見本の設定は「Due this week」に key = 1 を付けている。1 でその行だけになり、設定の帯に条件が出る。" }
+
+[[shot]]
+id = "notices"
+title = { en = "The notice box", ja = "通知の欄" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
+wait = { en = "late", ja = "late" }
+text = { en = "The sample config counts the late tasks with [[notices]]. The box sits above the header; m moves into it and Enter narrows the table to those rows.", ja = "見本の設定は [[notices]] で遅れたタスクを数える。欄はヘッダーの上にあり、m で移って Enter でその行に絞る。" }
+
+[[shot]]
+id = "vim-normal"
+title = { ja = "vim のキーで直す", en = "Edit with vim keys" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/vim.toml", "examples/studio/Tasks"]
+keys = ["a", "text:Call Rosa about the menu", "Esc", "b", "b"]
+wait = { ja = "-- ノーマル --", en = "-- NORMAL --" }
+text = { ja = "examples/configs/vim.toml は vim = true。新しいノートの名前を打って Esc でノーマルのモードに移り、b で語を戻った。下の帯に -- ノーマル --。", en = "examples/configs/vim.toml sets vim = true. Type a new note's name, Esc to normal mode, and b to go back by words. The bottom band shows -- NORMAL --." }
+
+[[shot]]
+id = "across"
+title = { en = "Search across the workspace", ja = "ワークスペースを横断して探す" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
+keys = [":", "text:across_search", "Enter", "text:bakery", "Enter"]
+wait = { en = "Meetings (2)", ja = "Meetings(2)" }
+text = { en = "The sample config turns on [search] across. Searching for bakery lists the matching rows of every table in the studio workspace, with the column and value that matched; Enter opens the table with that row selected.", ja = "見本の設定は [search] の across を入れている。bakery で探すと、studio のワークスペースの表の全部から当たった行が、当たった列と値を添えて表ごとに並ぶ。Enter でその行を選んだ表が開く。" }
+
+[[shot]]
+id = "stack"
+title = { ja = "表を縦に並べる", en = "Stack tables" }
+command = ["./target/release/mdgrid", "examples/studio", "--page", "Morning"]
+ready = "Projects ·"
+keys = ["C-w", "j"]
+wait = { ja = "▶ Projects", en = "▶ Projects" }
+text = { ja = "見本の印のページ Morning は、Tasks の This week の下に Projects を並べる。Ctrl+w j で下の表に移ると、▶ の付いた表にだけキーが効く。", en = "The sample marker's page Morning stacks Projects below Tasks (This week). Ctrl+w j moves to the table below; keys act only on the table marked with ▶." }
 
 [[shot]]
 id = "view-filter-values"
@@ -863,3 +937,9 @@ ready = "Tasks"
 keys = ["P"]
 wait = { en = "Chart:", ja = "グラフ:" }
 text = { en = "P on a table: the rows of the current view counted into a chart. The tasks starter opens its first chart from the marker, tasks per status; Tab switches between bar, stacked bar, line, scatter and heatmap, and x, y and b choose the columns.", ja = "表で P。今のビューの行を数えたグラフになる。タスクのスターターは印に書いた最初のグラフ(状態ごとの数)で開く。Tab で棒・積み上げ棒・折れ線・散布図・ヒートマップを切り替え、x・y・b で列を選び直す。" }
+
+[[shot]]
+id = "language-fr"
+title = { en = "The screen in French", ja = "フランス語の画面" }
+env = { LANG = "fr_FR.UTF-8" }
+text = { en = "With LANG=fr_FR.UTF-8 the screen, the keys in the bottom band and the help are in French; the notes stay as they are.", ja = "LANG=fr_FR.UTF-8 で、画面・下の帯のキー・ヘルプがフランス語になる。ノートの中身はそのまま。" }

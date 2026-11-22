@@ -3,8 +3,22 @@
 # locales/ (en is required).
 [name]
 en = "Reading"
+es = "Lecturas"
 ja = "読書・視聴"
+zh-TW = "閱讀與觀看"
+zh-CN = "阅读与观看"
+ko = "독서·감상"
+pt-BR = "Leituras"
+de = "Lesen und Schauen"
+fr = "Lectures"
 
 [description]
 en = "One note per book, article, film or talk: queue, now, done; kind, author, rating, dates"
+es = "Una nota por libro, artículo, película o charla: pendiente, en curso, terminado; tipo, autor, valoración, fechas"
 ja = "1件1ノートの本・記事・映画・講演。読みたい・読んでいる・読んだ、種類・著者・評価・日付"
+zh-TW = "每本書、文章、影片或演講一則筆記：待讀、進行中、已完成；類型、作者、評分、日期"
+zh-CN = "每本书、文章、电影或讲座一篇笔记：想读、在读、读完；类型、作者、评分、日期"
+ko = "책, 글, 영화, 강연마다 노트 하나: 볼 것, 보는 중, 다 본 것. 종류, 저자, 평점, 날짜"
+pt-BR = "Uma nota por livro, artigo, filme ou palestra: na fila, agora, concluído; tipo, autor, avaliação, datas"
+de = "Eine Notiz je Buch, Artikel, Film oder Vortrag: geplant, aktuell, fertig; Art, Autor, Bewertung, Daten"
+fr = "Une note par livre, article, film ou conférence : à lire, en cours, terminé ; type, auteur, évaluation, dates"

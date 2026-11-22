@@ -1,0 +1,34 @@
+# A sample of favorite workspaces (workspace.favorite-*). Try it from the repository root:
+# `XDG_CONFIG_HOME=examples/places mdgrid examples/quirks/Tasks`, then press W and a number.
+# Relative paths are read from this folder.
+favorites = ["Studio", "Reading", "People"]
+
+[[workspace]]
+name = "Studio"
+
+[[workspace.table]]
+name = "Tasks"
+path = "../../studio/Tasks.base"
+view = "Open"
+
+[[workspace.table]]
+name = "Projects"
+path = "../../studio/Projects"
+
+[[workspace]]
+name = "Reading"
+
+[[workspace.table]]
+name = "Reading"
+path = "../../reading/Reading"
+
+[[workspace]]
+name = "People"
+
+[[workspace.table]]
+name = "People"
+path = "../../people/People"
+
+[[workspace.table]]
+name = "Meetings"
+path = "../../people/Meetings"

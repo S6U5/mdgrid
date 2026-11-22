@@ -7,7 +7,12 @@ pub mod calendar;
 pub mod cell;
 pub(crate) mod chips;
 pub mod columns;
+pub(crate) mod conds;
+mod date_words;
 pub mod detail;
+pub(crate) mod notices;
+// navigation.across-*: ワークスペースを横断して探す。
+pub(crate) mod across;
 // 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
 pub(crate) use crate::diff;
 pub mod add_row;
@@ -48,18 +53,23 @@ pub mod review;
 pub(crate) mod rows;
 pub mod screen_menu;
 pub(crate) mod screens;
+pub(crate) mod sessions;
 pub mod settings;
+pub mod settings_nav;
 pub mod settings_pick;
 pub mod settings_view;
 pub mod sorts;
+pub mod stack;
 pub mod starter;
 pub mod startup;
+pub mod switch;
 pub mod termbg;
 pub mod theme;
 mod then;
 pub mod type_menu;
 pub mod view;
 pub mod view_tabs;
+pub mod vim;
 pub mod width;
 pub mod workspace;
 
@@ -73,16 +83,45 @@ use ratatui::Frame;
 use std::num::NonZeroU16;
 use unicode_segmentation::UnicodeSegmentation;
 
-/// 画面を描く。最下行と右端の1桁は空ける(端末の自動折り返しを避ける)。
-pub fn draw(frame: &mut Frame<'_>, app: &App) {
+/// 描く範囲(最下行と右端の1桁を空けたもの)。
+fn draw_area(frame: &Frame<'_>) -> Rect {
     let full = frame.area();
-    let area = Rect {
+    Rect {
         x: full.x,
         y: full.y,
         width: full.width.saturating_sub(1),
         height: full.height.saturating_sub(1),
-    };
-    let mut lines = view::render(app, area.width as usize, area.height as usize);
+    }
+}
+
+/// 画面を描く。最下行と右端の1桁は空ける(端末の自動折り返しを避ける)。
+pub fn draw(frame: &mut Frame<'_>, app: &App) {
+    let area = draw_area(frame);
+    let lines = view::render(app, area.width as usize, area.height as usize);
+    paint(frame, app, lines, view::cursor(app));
+}
+
+/// 画面を描く(画面を回す側から)。縦に並べた表(stack.*)は、ほかの表をためた変更に合わせて組み直してから、
+/// 区画を上から並べて描く。並べていなければ `draw` と同じ。
+pub fn draw_screen(frame: &mut Frame<'_>, app: &mut App) {
+    if app.stack.is_none() || !stack::in_region(app) {
+        return draw(frame, app);
+    }
+    app.stack_sync();
+    let area = draw_area(frame);
+    let (lines, cursor) = stack::render(app, area.width as usize, area.height as usize);
+    paint(frame, app, lines, cursor);
+}
+
+/// 描いた行を画面に置き、テーマで塗り、入力のカーソルを置く。
+fn paint(
+    frame: &mut Frame<'_>,
+    app: &App,
+    mut lines: Vec<Line<'static>>,
+    cursor: Option<(u16, u16)>,
+) {
+    let full = frame.area();
+    let area = draw_area(frame);
     // SR-10: `TERM=dumb` では絵文字を出さない(同じ幅の `?` と空白に置き換えるので、桁はずれない)。
     if app.no_emoji {
         for line in &mut lines {
@@ -136,7 +175,7 @@ pub fn draw(frame: &mut Frame<'_>, app: &App) {
     theme::paint(frame.buffer_mut(), full, app);
     // SR-17: 入力ボックスでは端末のカーソルを入力の位置に置く(IME の変換の窓がそこに出る)。
     // 置かなければ ratatui がカーソルを隠す。
-    if let Some((x, y)) = view::cursor(app) {
+    if let Some((x, y)) = cursor {
         if x < area.width && y < area.height {
             frame.set_cursor_position((area.x + x, area.y + y));
         }
@@ -177,6 +216,8 @@ fn write_lines(buf: &mut Buffer, area: Rect, lines: &[Line<'static>]) {
     }
 }
 
+#[cfg(test)]
+mod test_across;
 #[cfg(test)]
 mod test_action_menu;
 #[cfg(test)]
@@ -225,6 +266,8 @@ mod test_colors_screen;
 mod test_column_types;
 #[cfg(test)]
 mod test_column_types_more;
+#[cfg(test)]
+mod test_date_words;
 #[cfg(test)]
 mod test_datetime_offsets;
 #[cfg(test)]
@@ -328,6 +371,8 @@ mod test_places_more;
 #[cfg(test)]
 mod test_problems;
 #[cfg(test)]
+mod test_recent;
+#[cfg(test)]
 mod test_relations;
 #[cfg(test)]
 mod test_relations_open;
@@ -408,6 +453,8 @@ mod test_bar_padding;
 mod test_bar_padding_half;
 #[cfg(test)]
 mod test_bar_padding_theme;
+#[cfg(test)]
+mod test_conditions;
 #[cfg(test)]
 mod test_crumb_button;
 #[cfg(test)]
@@ -494,6 +541,8 @@ mod test_note_rename;
 #[cfg(test)]
 mod test_note_trash;
 #[cfg(test)]
+mod test_notices;
+#[cfg(test)]
 mod test_pending_shape;
 #[cfg(test)]
 mod test_plural_en;
@@ -506,13 +555,19 @@ mod test_search_box;
 #[cfg(test)]
 mod test_search_not_found;
 #[cfg(test)]
+mod test_sessions;
+#[cfg(test)]
 mod test_settings_close;
 #[cfg(test)]
 mod test_settings_head;
 #[cfg(test)]
 mod test_settings_screen;
 #[cfg(test)]
+mod test_settings_sections;
+#[cfg(test)]
 mod test_shift_arrows;
+#[cfg(test)]
+mod test_stack;
 #[cfg(test)]
 mod test_starter;
 #[cfg(test)]
@@ -521,6 +576,8 @@ mod test_starter_more;
 mod test_startup;
 #[cfg(test)]
 mod test_summaries;
+#[cfg(test)]
+mod test_switch;
 #[cfg(test)]
 mod test_themes;
 #[cfg(test)]
@@ -545,5 +602,7 @@ mod test_view_bar_plain;
 mod test_view_delete_undo;
 #[cfg(test)]
 mod test_view_tabs;
+#[cfg(test)]
+mod test_vim;
 #[cfg(test)]
 mod test_wbs;

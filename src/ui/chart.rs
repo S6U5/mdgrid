@@ -2268,6 +2268,8 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     lines.truncate(body_end);
     // REL-8: 画面の型のメニューの窓(グラフから開いたとき)。
     super::screen_menu::overlay(app, &mut lines, w);
+    // workspace.switch-open: お気に入りのワークスペースの切り替えの一覧。
+    super::switch::overlay(app, &mut lines, w);
     // パレット(グラフから開いたとき)。
     if app.mode == Mode::Palette {
         super::help::palette_overlay(app, &mut lines, w);

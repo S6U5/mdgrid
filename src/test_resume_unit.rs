@@ -308,3 +308,208 @@ fn test_last_screen_broken_file_is_none() {
     std::fs::write(&file, "paths = [[[\n").unwrap();
     assert_eq!(load_last(&state, &notes), None);
 }
+
+fn pane() -> Herdr {
+    Herdr {
+        bin: PathBuf::from("/bin/herdr"),
+        pane: "w1:p1".into(),
+    }
+}
+
+/// 呼び出しの `--seq` の数。
+fn seq_in(call: &[String]) -> u64 {
+    let at = call.iter().position(|a| a == "--seq").unwrap();
+    call[at + 1].parse().unwrap()
+}
+
+/// 呼び出しの `--seq` の数を `N` に置き換える(数の大きさは別に確かめる)。
+fn without_seq(call: &[String]) -> Vec<String> {
+    let at = call.iter().position(|a| a == "--seq").unwrap();
+    let mut c = call.to_vec();
+    c[at + 1] = "N".into();
+    c
+}
+
+#[test]
+fn test_herdr_title_and_clear_args() {
+    // [utest -> req~resume.herdr-title-clear~1] 題を消すのは pane report-metadata w1:p1 --source mdgrid --agent mdgrid --clear-title --seq <数>。
+    // 観点(resume.herdr-title。確かめは stest なので印は付けない): 題を出すのは同じ呼び出しの --title "tasks · 進行中"。
+    let h = pane();
+    assert_eq!(
+        h.title_args(5, Some("tasks · 進行中")),
+        strings(&[
+            "pane",
+            "report-metadata",
+            "w1:p1",
+            "--source",
+            "mdgrid",
+            "--agent",
+            "mdgrid",
+            "--title",
+            "tasks · 進行中",
+            "--seq",
+            "5",
+        ])
+    );
+    assert_eq!(
+        h.title_args(6, None),
+        strings(&[
+            "pane",
+            "report-metadata",
+            "w1:p1",
+            "--source",
+            "mdgrid",
+            "--agent",
+            "mdgrid",
+            "--clear-title",
+            "--seq",
+            "6",
+        ])
+    );
+}
+
+#[test]
+fn test_herdr_title_sent_with_command_and_cleared_before_release() {
+    // [utest -> req~resume.herdr-title-clear~1] 終える → --clear-title の呼び出しのあとに release-agent。
+    // 観点(resume.herdr-title): 「進行中」で開く → 命令と一緒に題「tasks · 進行中」、「全部」へ移る → 題が「tasks · 全部」に替わる。
+    let h = pane();
+    let cmd = |v: &str| strings(&["mdgrid", "/n/tasks.base", "--view", v]);
+    let show = |v: &str| Want::Show {
+        argv: cmd(v),
+        title: format!("tasks · {v}"),
+    };
+    let now = 1_700_000_000_000_000;
+    let mut sent = Sent::default();
+    let first = sent.plan(&h, &show("進行中"), now);
+    let moved = sent.plan(&h, &show("全部"), now);
+    let end = sent.plan(&h, &Want::Release, now);
+    // 窓を初めて持つときは report-agent が先、持っている間は題が先(移った命令が届いたときには題も替わっている)。
+    let plain = |calls: &[Vec<String>]| calls.iter().map(|c| without_seq(c)).collect::<Vec<_>>();
+    assert_eq!(
+        plain(&first),
+        vec![
+            without_seq(&h.report_args(0, &cmd("進行中"))),
+            without_seq(&h.title_args(0, Some("tasks · 進行中"))),
+        ]
+    );
+    assert_eq!(
+        plain(&moved),
+        vec![
+            without_seq(&h.title_args(0, Some("tasks · 全部"))),
+            without_seq(&h.report_args(0, &cmd("全部"))),
+        ]
+    );
+    assert_eq!(
+        plain(&end),
+        vec![
+            without_seq(&h.title_args(0, None)),
+            without_seq(&h.release_args(0)),
+        ]
+    );
+    // resume.herdr-seq: 題の呼び出しも含めて、伝えた順に大きくなる。
+    let seqs: Vec<u64> = first
+        .iter()
+        .chain(&moved)
+        .chain(&end)
+        .map(|c| seq_in(c))
+        .collect();
+    assert!(seqs.windows(2).all(|w| w[0] < w[1]), "{seqs:?}");
+}
+
+#[test]
+fn test_herdr_title_unsendable_is_not_sent() {
+    // 観点(resume.herdr-unsendable の決まりを題にも当てる): 題に `'` か制御文字があれば題を伝えず、前の題があれば
+    // 消す(古い表の名前を残さない)。命令を受け付けられないときは、題を消してから窓を返し、新しい題は伝えない。
+    // 題を一度も伝えていなければ、終えるときも消さない。
+    let h = pane();
+    let now = 1_700_000_000_000_000;
+    let kinds = |calls: &[Vec<String>]| -> Vec<String> {
+        calls
+            .iter()
+            .map(|c| {
+                if c.contains(&"--clear-title".to_string()) {
+                    "clear".to_string()
+                } else if let Some(at) = c.iter().position(|a| a == "--title") {
+                    format!("title {}", c[at + 1])
+                } else {
+                    c[1].clone()
+                }
+            })
+            .collect()
+    };
+    let show = |path: &str, title: &str| Want::Show {
+        argv: strings(&["mdgrid", path, "--raw"]),
+        title: title.to_string(),
+    };
+    let mut sent = Sent::default();
+    assert_eq!(
+        kinds(&sent.plan(&h, &show("/n/notes", "notes"), now)),
+        ["report-agent", "title notes"]
+    );
+    assert_eq!(
+        kinds(&sent.plan(&h, &show("/n/bob", "Bob's"), now)),
+        ["clear", "report-agent"]
+    );
+    assert_eq!(
+        kinds(&sent.plan(&h, &show("/n/tab", "a\tb"), now)),
+        ["report-agent"]
+    );
+    assert_eq!(
+        kinds(&sent.plan(&h, &show("/n/notes", "notes"), now)),
+        ["title notes", "report-agent"]
+    );
+    assert_eq!(
+        kinds(&sent.plan(&h, &show("/n/it's", "it's"), now)),
+        ["clear", "release-agent"]
+    );
+    // 窓を返したあとは、また report-agent から。
+    assert_eq!(
+        kinds(&sent.plan(&h, &show("/n/notes", "notes"), now)),
+        ["report-agent", "title notes"]
+    );
+    let mut quiet = Sent::default();
+    assert_eq!(
+        kinds(&quiet.plan(&h, &show("/n/it's", "it's"), now)),
+        ["release-agent"]
+    );
+    assert_eq!(
+        kinds(&quiet.plan(&h, &Want::Release, now)),
+        ["release-agent"]
+    );
+}
+
+#[test]
+fn test_title_form_workspace_base_and_folder() {
+    // [utest -> req~resume.herdr-title-form~1] ワークスペースの表 `name = "タスク"` の notes/tasks → 「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ワークスペースに無い `.base` は拡張子を除いたファイル名で、ビューのタブを出さない表(ビューが1つ)は表の名前だけ。
+    let t = Tmp::new("title");
+    let notes = t.dir("notes");
+    let base = notes.join("tasks.base");
+    std::fs::write(&base, "views: []\n").unwrap();
+    let ws = |name: &str, path: &Path, view: Option<&str>| WsTable {
+        name: name.into(),
+        path: path.to_path_buf(),
+        view: view.map(str::to_string),
+        ..WsTable::default()
+    };
+    let tables = vec![ws("タスク", &base, None)];
+    let name = table_name(std::slice::from_ref(&base), &tables, Some("進行中"));
+    assert_eq!(title(&name, Some("進行中")), "タスク · 進行中");
+    let name = table_name(std::slice::from_ref(&notes), &[], None);
+    assert_eq!(title(&name, None), "notes");
+    let name = table_name(std::slice::from_ref(&base), &[], Some("進行中"));
+    assert_eq!(title(&name, Some("進行中")), "tasks · 進行中");
+    assert_eq!(title(&name, None), "tasks");
+    // 観点: 同じ表がワークスペースに2つ(ビュー違い)あれば、今のビューを持つ方の名前。無ければ先の方。
+    let tables = vec![
+        ws("タスク", &base, Some("進行中")),
+        ws("全部のタスク", &base, Some("全部")),
+    ];
+    assert_eq!(
+        table_name(std::slice::from_ref(&base), &tables, Some("全部")),
+        "全部のタスク"
+    );
+    assert_eq!(
+        table_name(std::slice::from_ref(&base), &tables, Some("ほか")),
+        "タスク"
+    );
+}

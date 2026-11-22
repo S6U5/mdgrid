@@ -81,7 +81,10 @@ fn item_line(text: &str, path: &str) -> Option<usize> {
     for (i, line) in text.lines().enumerate() {
         let t = line.trim_start().trim_start_matches('#').trim_start();
         if item.is_table() {
-            let header = t.starts_with(&format!("[{path}]")) || t.starts_with(&format!("[{path}."));
+            // 表の並び(`[[notices]]`)の見出しも項目の行。
+            let header = t.starts_with(&format!("[{path}]"))
+                || t.starts_with(&format!("[{path}."))
+                || t.starts_with(&format!("[[{path}]]"));
             if header && t.ends_with(']') {
                 return Some(i);
             }
@@ -157,8 +160,15 @@ fn test_cli_11_output_has_every_item_with_comment() {
             .take_while(|l| !l.trim().is_empty())
             .copied()
             .collect();
+        // screen.locales-all-in-ledger: 範囲の行の頭は台帳の文言(今の言語。試験の子も同じ言語)。
+        let lead = mdgrid::i18n::Msg::CfgScopeLine
+            .text()
+            .split("{0}")
+            .next()
+            .unwrap_or_default()
+            .to_string();
         assert!(
-            above.iter().any(|l| l.starts_with("# Scope: ")),
+            above.iter().any(|l| l.starts_with(&format!("# {lead}"))),
             "項目 `{}` に書ける範囲のコメントが無い\n---\n{text}",
             item.path
         );

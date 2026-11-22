@@ -7,6 +7,8 @@
 // 疑似端末の道具(tests/pty/mod.rs)は、ここで1回だけ読み、各ファイルは `use crate::pty;` で使う。
 mod pty;
 
+#[path = "test_across_e2e.rs"]
+mod test_across_e2e;
 #[path = "test_action_menu_e2e.rs"]
 mod test_action_menu_e2e;
 #[path = "test_add_frontmatter.rs"]
@@ -45,6 +47,8 @@ mod test_cliff;
 mod test_column_types_config;
 #[path = "test_completions.rs"]
 mod test_completions;
+#[path = "test_condition_e2e.rs"]
+mod test_condition_e2e;
 #[path = "test_config_docs.rs"]
 mod test_config_docs;
 #[path = "test_config_docs_values.rs"]
@@ -59,6 +63,8 @@ mod test_csv_e2e;
 mod test_date_format;
 #[path = "test_date_unquoted.rs"]
 mod test_date_unquoted;
+#[path = "test_date_words_e2e.rs"]
+mod test_date_words_e2e;
 #[path = "test_default_headings.rs"]
 mod test_default_headings;
 #[path = "test_display_options.rs"]
@@ -111,6 +117,8 @@ mod test_links;
 mod test_list_write;
 #[path = "test_locales.rs"]
 mod test_locales;
+#[path = "test_locales_e2e.rs"]
+mod test_locales_e2e;
 #[path = "test_look_e2e.rs"]
 mod test_look_e2e;
 #[path = "test_marker_base.rs"]
@@ -121,6 +129,8 @@ mod test_marker_base_name;
 mod test_marker_base_switch;
 #[path = "test_marker_open.rs"]
 mod test_marker_open;
+#[path = "test_modes_e2e.rs"]
+mod test_modes_e2e;
 #[path = "test_new_note.rs"]
 mod test_new_note;
 #[path = "test_new_note_cli.rs"]
@@ -133,6 +143,8 @@ mod test_note_name;
 mod test_note_path;
 #[path = "test_note_trash_e2e.rs"]
 mod test_note_trash_e2e;
+#[path = "test_notice_e2e.rs"]
+mod test_notice_e2e;
 #[path = "test_open_md_file.rs"]
 mod test_open_md_file;
 #[path = "test_pages.rs"]
@@ -157,6 +169,8 @@ mod test_print_tsv;
 mod test_print_with_path;
 #[path = "test_readonly_permission.rs"]
 mod test_readonly_permission;
+#[path = "test_recent_e2e.rs"]
+mod test_recent_e2e;
 #[path = "test_relations_e2e.rs"]
 mod test_relations_e2e;
 #[path = "test_resume_e2e.rs"]
@@ -179,12 +193,18 @@ mod test_safety_docs;
 mod test_scalar_list_edit;
 #[path = "test_scalar_list_expr.rs"]
 mod test_scalar_list_expr;
+#[path = "test_session_e2e.rs"]
+mod test_session_e2e;
 #[path = "test_settings.rs"]
 mod test_settings;
+#[path = "test_settings_sections_e2e.rs"]
+mod test_settings_sections_e2e;
 #[path = "test_skip_hidden.rs"]
 mod test_skip_hidden;
 #[path = "test_source.rs"]
 mod test_source;
+#[path = "test_stack_e2e.rs"]
+mod test_stack_e2e;
 #[path = "test_starter_cli.rs"]
 mod test_starter_cli;
 #[path = "test_starter_e2e.rs"]
@@ -193,6 +213,8 @@ mod test_starter_e2e;
 mod test_starter_examples;
 #[path = "test_starter_layer.rs"]
 mod test_starter_layer;
+#[path = "test_switch_e2e.rs"]
+mod test_switch_e2e;
 #[path = "test_tag_keys.rs"]
 mod test_tag_keys;
 #[path = "test_theme_auto_e2e.rs"]
@@ -219,6 +241,8 @@ mod test_views_page;
 mod test_views_page_more;
 #[path = "test_views_skill.rs"]
 mod test_views_skill;
+#[path = "test_vim_e2e.rs"]
+mod test_vim_e2e;
 #[path = "test_where_formula.rs"]
 mod test_where_formula;
 #[path = "test_windows_writeback.rs"]

@@ -132,13 +132,11 @@ fn test_sr_23_english_has_no_japanese() {
 #[test]
 fn test_sr_23_fill_replaces_every_placeholder() {
     // [utest -> req~screen.locales-ledger~1, req~screen.locales-no-translate~1] fill は `{n}` を n 番目の値で置き換え、番号の差し込みを残さない。
-    for lang in [Lang::En, Lang::Ja] {
+    // screen.locales-languages: 台帳の全部の言語で確かめる(言語を足しても試験を書き足さずに済むように)。
+    for &lang in Lang::ALL {
         let _g = scoped(lang);
         for m in Msg::ALL {
-            let src = match lang {
-                Lang::En => m.en(),
-                Lang::Ja => m.ja(),
-            };
+            let src = m.get(lang);
             let nums = placeholders(src);
             let n = nums.iter().max().map_or(0, |x| *x as usize + 1);
             let vals: Vec<String> = (0..n).map(|i| format!("<V{i}>")).collect();

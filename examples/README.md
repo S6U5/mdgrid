@@ -6,7 +6,7 @@ Every sample here belongs to the same made-up company, **Northwind Studio**: a s
 |---|---|
 | [studio/](studio) | The studio's tasks, projects, clients, people and meetings as five linked tables, with a `.base` of views, a workspace marker, column types and a CSV file. Start here. |
 | [quirks/](quirks) | Notes that are awkward to edit: no frontmatter, an empty one, a key written twice, a sync conflict, values of the wrong type, nested maps. What mdgrid shows and why it will not break them. |
-| [configs/](configs) | A config that turns many features on, for the studio. |
+| [configs/](configs) | A config that turns many features on, for the studio, and one that turns on vim mode. |
 | [ai-human/](ai-human/README.md) | The studio's admin tasks split into those an AI agent can finish and those that need a person. |
 | [places/](places) | Registered tables: the studio's tables and the other samples in one list. |
 | [themes/](themes) | One config per color theme. |
@@ -93,8 +93,12 @@ cp -R examples/bookmarks /tmp/bookmarks
 mdgrid /tmp/bookmarks                 # opens the Bookmarks table; press T
 ```
 
+[configs/vim.toml](configs/vim.toml) turns on vim mode only: input boxes get insert and normal modes, and the table gets `dd`, `p` and `.` ([keys.vim](../docs/config.md#keysvim)).
+
 ## places: registered tables
 
 `XDG_CONFIG_HOME=examples/places mdgrid` starts with the registered tables in [places/mdgrid/places.toml](places/mdgrid/places.toml): the studio's tasks (on the Open view), projects, meetings and equipment, and the other samples.
+
+The same folder has [places/mdgrid/workspaces.toml](places/mdgrid/workspaces.toml) with three favorite workspaces (Studio, Reading, People). `XDG_CONFIG_HOME=examples/places mdgrid examples/quirks/Tasks`, then `W` and a number, moves to one; `W` again lists **Where you started** at the top to come back.
 
 日本語: 見本はどれも、架空の小さな制作会社 Northwind Studio のもの。主役の [studio](studio) は、タスク・案件・顧客・人・会議の5つの表をフロントマターのリンクでつないだルートフォルダ。[quirks](quirks) は扱いにくいノート(フロントマター無し・重複キー・型の合わない値など)の見本、[configs](configs) は多くの機能を有効にした設定、[ai-human](ai-human/README.md) は人と AI のタスクを分ける見本。どれもリポの根で開き、保存するなら一時フォルダに写すか `--readonly` を付ける。

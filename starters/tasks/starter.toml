@@ -2,8 +2,22 @@
 # `mdgrid --starters` and in the palette, one per language code of locales/ (en is required).
 [name]
 en = "Tasks"
+es = "Tareas"
 ja = "タスク"
+zh-TW = "任務"
+zh-CN = "任务"
+ko = "할 일"
+pt-BR = "Tarefas"
+de = "Aufgaben"
+fr = "Tâches"
 
 [description]
 en = "One note per task: tabs by status (open, overdue, doing, waiting, done), due date, priority, tags"
+es = "Una nota por tarea: pestañas por estado (abiertas, vencidas, en curso, en espera, hechas), fecha límite, prioridad, etiquetas"
 ja = "1件1ノートのタスク。状態のタブ(未完了・期限切れ・進行中・待ち・完了)・期限・優先度・タグ"
+zh-TW = "每項任務一則筆記：依狀態分頁（未完成、逾期、進行中、等待中、已完成）、截止日、優先順序、標籤"
+zh-CN = "每个任务一篇笔记：按状态分标签页（未完成、已逾期、进行中、等待中、已完成）、截止日期、优先级、标签"
+ko = "할 일 하나에 노트 하나: 상태별 탭(미완료, 기한 지남, 진행 중, 대기, 완료), 마감일, 우선순위, 태그"
+pt-BR = "Uma nota por tarefa: abas por status (abertas, atrasadas, em andamento, aguardando, concluídas), prazo, prioridade, tags"
+de = "Eine Notiz je Aufgabe: Tabs nach Status (offen, überfällig, in Arbeit, wartend, erledigt), Fälligkeit, Priorität, Tags"
+fr = "Une note par tâche : onglets par statut (ouvertes, en retard, en cours, en attente, faites), échéance, priorité, étiquettes"

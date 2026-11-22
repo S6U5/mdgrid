@@ -314,7 +314,7 @@ fn leap(y: i64) -> bool {
     (y % 4 == 0 && y % 100 != 0) || y % 400 == 0
 }
 
-fn days_in_month(y: i64, m: u32) -> u32 {
+pub(crate) fn days_in_month(y: i64, m: u32) -> u32 {
     match m {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
         4 | 6 | 9 | 11 => 30,
@@ -361,12 +361,12 @@ pub fn format_date(days: i64) -> String {
 }
 
 /// 日数の (年, 月, 日)。`format_date` と同じく、とても大きな日数は丸めて計算する。
-fn ymd(days: i64) -> (i64, u32, u32) {
+pub(crate) fn ymd(days: i64) -> (i64, u32, u32) {
     civil_from_days(days.clamp(-CALC_LIMIT, CALC_LIMIT))
 }
 
 /// 曜日。0 = 日 … 6 = 土(1970-01-01 は木曜)。
-fn weekday_sun0(days: i64) -> usize {
+pub(crate) fn weekday_sun0(days: i64) -> usize {
     ((days.rem_euclid(7) + 4) % 7) as usize
 }
 
@@ -383,6 +383,11 @@ const WEEKDAY_NAMES: [Msg; 7] = [
 
 fn weekday_name(i: usize) -> &'static str {
     WEEKDAY_NAMES[i].text()
+}
+
+/// その日の曜日の短い名前(画面の言語。`ddd` と同じ)。日付の言葉の読みを見せる(cell-edit.date-words-preview)。
+pub fn weekday_short(days: i64) -> &'static str {
+    weekday_name(weekday_sun0(days))
 }
 
 /// 日付の形の部品(CE-22)。
@@ -582,9 +587,33 @@ fn take_digits(rest: &mut &str, min: usize, max: usize) -> Option<u32> {
     Some(v)
 }
 
-/// 日付の列の打ち込みを読む(CE-5・CE-22): `YYYY-MM-DD`、設定の形(年が無い形なら今年)、`+N`・`-N`(today から)。
+/// 日付の打ち込みの読み方(`parse_date_input`): 設定の日付の形(CE-22)と、週の始まり(日付の言葉の「今週」「来週」の
+/// 区切り。cell-edit.date-words-weekday)。`&DateFormat` からも作れ、そのときの週の始まりは既定(日曜)。
+#[derive(Clone, Copy, Debug)]
+pub struct DateInput<'a> {
+    pub fmt: &'a DateFormat,
+    pub week: WeekStart,
+}
+
+impl<'a> From<&'a DateFormat> for DateInput<'a> {
+    fn from(fmt: &'a DateFormat) -> Self {
+        DateInput {
+            fmt,
+            week: WeekStart::default(),
+        }
+    }
+}
+
+/// 日付の列の打ち込みを読む(CE-5・CE-22): `YYYY-MM-DD`、設定の形(年が無い形なら今年)、`+N`・`-N`(today から)、
+/// 日本語と英語の日付の言葉(`明日`・`next fri`・`+2w` など。cell-edit.date-words。言葉は datewords.rs)。
 /// 前後の空白は除く。空は Ok(None)(null にする。CE-9)。実在しない日付・読めない打ち込み・範囲の外は Err(理由1行)。
-pub fn parse_date_input(s: &str, fmt: &DateFormat, today: i64) -> Result<Option<i64>, String> {
+/// `how` は設定の日付の形か、形と週の始まり(`DateInput`)。
+pub fn parse_date_input<'a>(
+    s: &str,
+    how: impl Into<DateInput<'a>>,
+    today: i64,
+) -> Result<Option<i64>, String> {
+    let DateInput { fmt, week } = how.into();
     let t = s.trim();
     if t.is_empty() {
         return Ok(None);
@@ -601,11 +630,24 @@ pub fn parse_date_input(s: &str, fmt: &DateFormat, today: i64) -> Result<Option<
     if let Some(r) = fmt.read(t, today) {
         return r.map(Some);
     }
+    if let Some(d) = crate::datewords::read(t, today, week) {
+        return if date_in_range(d) {
+            Ok(Some(d))
+        } else {
+            Err(Msg::DateOutOfRange.fill(&[&t]))
+        };
+    }
     let mut forms: Vec<&str> = Vec::new();
     if fmt.pattern != "YYYY-MM-DD" {
         forms.push(&fmt.pattern);
     }
-    forms.extend(["YYYY-MM-DD", "+3", "-2", Msg::DateEmptyClears.text()]);
+    forms.extend([
+        "YYYY-MM-DD",
+        "+3",
+        "-2",
+        Msg::DateWordsForm.text(),
+        Msg::DateEmptyClears.text(),
+    ]);
     Err(Msg::DateUnreadable.fill(&[&t, &forms.join(Msg::ListSep.text())]))
 }
 
@@ -680,7 +722,7 @@ pub fn add_months(days: i64, n: i32) -> i64 {
 }
 
 // 日付と日数の変換(Howard Hinnant の days_from_civil / civil_from_days)。
-fn days_from_civil(y: i64, m: u32, d: u32) -> i64 {
+pub(crate) fn days_from_civil(y: i64, m: u32, d: u32) -> i64 {
     let y = if m <= 2 { y - 1 } else { y };
     let era = y.div_euclid(400);
     let yoe = y - era * 400;

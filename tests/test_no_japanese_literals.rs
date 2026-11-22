@@ -39,6 +39,13 @@ const ALLOWED: &[(&str, &str, &str)] = &[
         "Scope::Profile => \"",
         "書ける範囲の日本語の名前(文書と突き合わせる正本)",
     ),
+    // 日付の言葉(cell-edit.date-words)は、画面の言語によらず日本語と英語を読む打ち込みの語で、画面に出す文言ではないので
+    // 訳さない(screen.md の採らない: 日付の言葉も日本語と英語だけ)。datewords.rs は語の表と読み方だけで、文言は持たない。
+    (
+        "datewords.rs",
+        "",
+        "日付の言葉の語の表(打ち込みを読む語。訳さない)",
+    ),
     // man と補完の説明(clap の about・long_about)は日本語のまま(記録の仮定。英語にそろえるかは後で)。
     ("main.rs", "about = \"", "clap の about(man と補完の説明)"),
     (

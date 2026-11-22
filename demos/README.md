@@ -25,6 +25,7 @@ sh demos/record.sh places     # 1本だけ
 | Tape / 台本 → GIF | Shows / 見せること |
 |---|---|
 | `values.tape` → [demo-values.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-values.gif) | 型ごとの入力(リスト・日付・数・チェック・タグ)と保存の確認 |
+| `date-words.tape` → [demo-date-words.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-date-words.gif) | 日付を言葉で入れる: 期限のセルに `next fri`・`eom`・`+2w` と打つと、欄の横に読んだ日が出てカレンダーがその日へ動く |
 | `new-note.tape` → [demo-new-note.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-new-note.gif) | 新しいノートのフォーム(雛形の値・必須の欄・隠して入れる作成日) |
 | `export.tape` → [demo-export.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-export.gif) | 絞った表を CSV に書き出す・画面なしの `--print` |
 | `places.tape` → [demo-places.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-places.gif) | 登録した表を一覧から切り替えて開く・この表を登録する |
@@ -32,7 +33,11 @@ sh demos/record.sh places     # 1本だけ
 | `relmap.tape` → [demo-relmap.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-relmap.gif) | 関係マップ(ER 図): 表の箱とつながりの矢印、タブとキーで切り替え |
 | `workspace.tape` → [demo-workspace.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-workspace.gif) | ワークスペース: 表をまとめ(`--add-to`)、一覧(`--workspaces`)、`-w` で開き、リンクと関係マップはその表で |
 | `view-tabs.tape` → [demo-view-tabs.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-view-tabs.gif) | 設定の画面の「ビュー」の区画でタブを整える(隠す・順・既定・切り替えの案内) |
+| `stack.tape` → [demo-stack.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-stack.gif) | 表を縦に並べる: パレットの「下に表を並べる」で Projects を下に並べ、`Ctrl+w` `j`・`k` で移り、下の表だけを検索で絞り、`Ctrl+w` `+` で高くして `Ctrl+w` `c` で閉じる。印のページ Morning を `--page` で開く |
+| `vim.tape` → [demo-vim.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-vim.gif) | vim モード(`[keys]` の `vim = true`): 探す欄で Esc・`b`・`cw` と直す、`y` と `p` で値を写して `.` で繰り返す、`dd` でノートをごみ箱へ動かして `u` で戻す、パレットの `q!` で捨てて終わる |
+| `switch.tape` → [demo-switch.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-switch.gif) | お気に入りのワークスペースを `W` と数字で行き来し(カンバンからでも)、一覧の先頭の「最初に開いた所」で戻る。パレットの `open_recent` で最近開いた表へ、`mdgrid --recent` で同じ並びをシェルに出す |
 | `continue.tape` → [demo-continue.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-continue.gif) | ビューを移って終え、`mdgrid --continue` で同じ表とビューに戻る(tmux などの復元で使う) |
+| `sessions.tape` → [demo-sessions.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-sessions.gif) | セッション: `\` で絞った表示をパレットの `save_session` で名前を付けて保存し、`mdgrid --sessions` で一覧、`mdgrid -s bakery` で同じ表示のまま開く |
 | `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
 | `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
 | `gantt.tape` → [demo-gantt.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-gantt.gif) | ガント: タスクの台帳を `C` で時間軸の横棒にし、`-` `+` で単位、`t` で今日へ |
@@ -48,6 +53,7 @@ sh demos/record.sh places     # 1本だけ
 | `row-lines.tape` → [demo-row-lines.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-row-lines.gif) | 行を伸ばす設定(`[display] row_extra_lines = 2`): 長い値と改行のある値を折り返し、行を要るだけ伸ばす |
 | `column-types.tape` → [demo-column-types.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-column-types.gif) | 列の型を選び直す: パレットの `column_type`(か見出しの型の印のクリック)で型の窓を開き、型を選ぶと表に効く。「自動」で推定に戻る |
 | `problems.tape` → [demo-problems.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-problems.gif) | 型と決まりの問題: `[rules.<列>]` の必須と選べる値に合わない値に `!`、下の帯に数。`!` で次の問題へ跳び、`problems_only` で問題のある行だけ、`mdgrid --check` で CI から確かめる |
+| `settings-sections.tape` → [demo-settings-sections.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-settings-sections.gif) | 設定の画面の区画をキーで選ぶ: 番号のキー(`3`)で1打で移り、`h` で左の一覧に入って `k` で区画を選び、`l` で項目へ戻る(キーが効く側に `>` の印) |
 
 To add a tour, copy a tape, keep `Source demos/setup.tape` after the settings, and start mdgrid with a folder of the sample (`mdgrid Tasks`). The screens are in English on the studio sample (`examples/studio`, with today fixed at 2026-10-06). The font is BIZ UDGothic, a monospace font that also has Japanese glyphs.
 

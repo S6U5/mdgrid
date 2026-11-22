@@ -317,7 +317,13 @@ impl App {
                 self.set_mode(Mode::Table);
             }
             Action::Help => self.open_help(),
-            _ => {}
+            Action::Palette => self.open_palette(),
+            // パレットから選んだ関係マップに無い動作は、表の画面に戻ってする(ほかの画面の型と同じ)。
+            a => {
+                self.relmap = None;
+                self.set_mode(Mode::Table);
+                self.apply(a);
+            }
         }
     }
 
@@ -778,6 +784,12 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     }
     // REL-8: 画面の型のメニューの窓(関係マップから開いたとき)。
     super::screen_menu::overlay(app, &mut lines, w);
+    // workspace.switch-open: お気に入りのワークスペースの切り替えの一覧。
+    super::switch::overlay(app, &mut lines, w);
+    // パレット(関係マップから開いたとき)。
+    if app.mode == Mode::Palette {
+        super::help::palette_overlay(app, &mut lines, w);
+    }
     lines.push(super::bands::footer(app, w));
     lines.push(super::bands::message(app, w));
     lines

@@ -21,6 +21,7 @@ To rebind keys, add a `[keys.<mode>]` table to the config file and write `"key" 
 - Each mode always keeps a way out (for example, `quit` or `palette` in `table`, `cancel` in `edit`). If your config would remove every key for it, mdgrid keeps the default keys and shows a warning.
 - Unknown modes, keys, and actions are skipped with a warning.
 - Modes where you type text (`edit`, `palette`, `search`, `filter`, `settings_input`, `list_select`, `filter_input`) don't bind single letters by default and don't accept key sequences.
+- vim mode (`vim = true` under `[keys]`, see [`keys.vim`](config.md#keysvim)) adds the keys in the "vim mode" part of `table` and the `input_normal` mode. You rebind or remove them like any other key; without vim mode they are not there.
 
 In the `table` mode, full-width letters and symbols typed while a Japanese input method is on act like their half-width keys, and `、` and `・` act like `,` and `/`.
 
@@ -80,6 +81,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `S` | `sort_menu` | Open the sort window (same as the **Sort** button in the view bar) |
 | `\|` | `filter_menu` | Open the filter window (same as the **Filter** button in the view bar) |
 | `w` | `workspace_drawer` | Open the table list (same as clicking the scope or table name in the header breadcrumb) |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `-` | `hide_column` | Hide the column |
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
@@ -101,6 +103,16 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `!` | `next_problem` | Jump to the next problem: a value that does not fit the column type or a rule (`[rules]`); the reason shows below |
 | `@` | `prev_problem` | Jump to the previous problem |
 | `%` | `frequency` | Show how many rows have each value of the selected column, and pick one to show only those rows |
+| `1` | `condition_1` | Show only the rows that match the named condition with `key = 1` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `2` | `condition_2` | Show only the rows that match the named condition with `key = 2` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `3` | `condition_3` | Show only the rows that match the named condition with `key = 3` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `4` | `condition_4` | Show only the rows that match the named condition with `key = 4` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `5` | `condition_5` | Show only the rows that match the named condition with `key = 5` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `6` | `condition_6` | Show only the rows that match the named condition with `key = 6` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `7` | `condition_7` | Show only the rows that match the named condition with `key = 7` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `8` | `condition_8` | Show only the rows that match the named condition with `key = 8` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `m` | `notice` | Go to the notice box above the header (`[[notices]]`); does nothing when there is no box |
+| `9` | `condition_9` | Show only the rows that match the named condition with `key = 9` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
 | `Space` | `mark_row` | Mark or unmark the row, then move down |
 | `v` | `select_range` | Start selecting a range of rows; press again to mark the range |
 | `Shift+Up` | `extend_up` | Extend the selection up |
@@ -110,6 +122,21 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `K` | `detail` | Show every property of the selected note, and the first lines of its body |
 | `o` | `view_settings` | Open the view settings (filters, sort, grouping, columns) |
 | `f` | `focus_chips` | Move to the settings bar above the table |
+| `Ctrl+w j` | `stack_down` | With stacked tables, move to the table below (nothing happens at the bottom) |
+| `Ctrl+w k` | `stack_up` | With stacked tables, move to the table above (nothing happens at the top) |
+| `Ctrl+w c` | `stack_close` | Take the selected table out of the stack. If it alone has pending changes, ask whether to save or discard them |
+| `Ctrl+w +` | `stack_grow` | With stacked tables, make the selected table one row taller (the others keep their title and 3 rows) |
+| `Ctrl+w -` | `stack_shrink` | With stacked tables, make the selected table one row shorter |
+
+### vim mode
+
+With `vim = true` under `[keys]`, the table also has these keys. Digits are never counts: `5j` moves one row down.
+
+| Key | Action | Description |
+|---|---|---|
+| `d d` | `delete_note` | Move the notes of the marked rows (or the selected row) to the trash after confirming their names; while you select a range with `v`, `d` alone does it. `u` brings them back |
+| `p` | `paste` | Put the value you last copied in mdgrid as a pending change: a cell copied with `y` goes into the selected cell, a row copied with `Y` into the columns of the same name in the marked rows (or the selected row) |
+| `.` | `repeat` | Put the value you last set in a single cell into the same column of the selected row |
 
 ## `edit`
 
@@ -246,23 +273,32 @@ Typing a search term (`\`, the search bar above the table). Every keystroke show
 
 ## `settings`
 
-The view settings screen (`o`, or the **⚙ Settings** button at the top right), where you change filters, sorting, grouping, and columns.
+The view settings screen (`o`, or the **⚙ Settings** button at the top right), where you change filters, sorting, grouping, and columns. The sections are listed on the left with numbers, and the selected section's items are on the right. Keys work on one side at a time, the one with the `>` mark: `h` moves to the list on the left, `l` or `Enter` back to the items.
 
 | Key | Action | Description |
 |---|---|---|
-| `Enter` | `run` | Choose the selected item |
+| `Enter` | `run` | Choose the selected item (in the list on the left: go to the section's items) |
 | `Space` | `toggle` | Turn the selected item on or off |
 | `Esc` | `cancel` | Go back, or cancel |
 | `Tab` | `next_section` | Move to the next section |
 | `Shift+Tab` | `prev_section` | Move to the previous section |
-| `j` | `down` | Move down |
-| `Down` | `down` | Move down |
-| `k` | `up` | Move up |
-| `Up` | `up` | Move up |
-| `h` | `left` | Move left |
-| `Left` | `left` | Move left |
-| `l` | `right` | Move right |
-| `Right` | `right` | Move right |
+| `1` | `go_to_section_1` | Go to section 1 of the list on the left |
+| `2` | `go_to_section_2` | Go to section 2 of the list on the left |
+| `3` | `go_to_section_3` | Go to section 3 of the list on the left |
+| `4` | `go_to_section_4` | Go to section 4 of the list on the left |
+| `5` | `go_to_section_5` | Go to section 5 of the list on the left |
+| `6` | `go_to_section_6` | Go to section 6 of the list on the left |
+| `7` | `go_to_section_7` | Go to section 7 of the list on the left |
+| `8` | `go_to_section_8` | Go to section 8 of the list on the left |
+| `9` | `go_to_section_9` | Go to section 9 of the list on the left |
+| `j` | `down` | Move down (in the list on the left: the next section) |
+| `Down` | `down` | Move down (in the list on the left: the next section) |
+| `k` | `up` | Move up (in the list on the left: the previous section) |
+| `Up` | `up` | Move up (in the list on the left: the previous section) |
+| `h` | `left` | Move to the list of sections on the left (between buttons: move left) |
+| `Left` | `left` | Move to the list of sections on the left (between buttons: move left) |
+| `l` | `right` | From the list on the left, go to the section's items (between buttons: move right) |
+| `Right` | `right` | From the list on the left, go to the section's items (between buttons: move right) |
 | `K` | `move_item_up` | Move the item up |
 | `Shift+Up` | `move_item_up` | Move the item up |
 | `J` | `move_item_down` | Move the item down |
@@ -297,6 +333,25 @@ The settings bar above the table (`f`), which shows the view's filters and sorti
 | `Enter` | `view_settings` | Open the view settings |
 | `Esc` | `close` | Go back to the table |
 | `f` | `close` | Go back to the table |
+| `?` | `help` | Show the help |
+
+## `notice`
+
+The notice box above the header (`m`, or a click on it), with the items written in `[[notices]]`.
+
+| Key | Action | Description |
+|---|---|---|
+| `h` | `left` | Select the item on the left |
+| `Left` | `left` | Select the item on the left |
+| `l` | `right` | Select the item on the right |
+| `Right` | `right` | Select the item on the right |
+| `k` | `up` | Select the item on the left |
+| `Up` | `up` | Select the item on the left |
+| `j` | `down` | Select the item on the right |
+| `Down` | `down` | Select the item on the right |
+| `Enter` | `run` | Go to the item: narrow the table by the condition, list the tables with matching rows, or open the note in the editor |
+| `Esc` | `close` | Go back to the table |
+| `m` | `close` | Go back to the table |
 | `?` | `help` | Show the help |
 
 ## `list_select`
@@ -397,6 +452,7 @@ The table list (`w`, `:workspace_drawer`, or the scope or table name in the head
 | `Right` | `right` | Unfold the heading |
 | `h` | `left` | Fold the heading (on a table under a heading, fold that heading) |
 | `Left` | `left` | Fold the heading |
+| `f` | `workspace_favorite` | On a workspace heading, add it to favorites, or remove it (a favorite heading shows `★`) |
 
 Clicking a line does what `Enter` does; clicking outside the list (including the header breadcrumb) closes it.
 
@@ -456,6 +512,8 @@ The mouse works too: click a table (in the list or its box on the map) to select
 | `h` | `left` | Previous link of the selected table |
 | `Left` | `left` | Previous link of the selected table |
 | `a` | `new_note` | Open the selected table and start a new note (same as **+ New** at the right end of the second line) |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
+| `:` | `palette` | The command palette (closing it returns to the relation map) |
 | `?` | `help` | Show help |
 
 Choosing **Table** in the screen type menu at the top right (**◇ Relation map ▾**) goes back to the table. The **⚙ Settings** button at the top right goes back to the table and opens the view settings.
@@ -517,6 +575,7 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 | `Shift+Tab` | `prev_section` | Switch between the folders and the rows |
 | `o` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the URL is shown in the message line first; other values are never opened) |
 | `x` | `action_menu` | Actions on the selected row (open the URL, show the row in the table) |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | Command palette (closing it returns to the tree) |
 | `?` | `help` | Show the help |
 
@@ -545,6 +604,7 @@ The mouse works too: click a row to select it, click the selected row again to m
 | `t` | `today` | Go to today |
 | `Z` | `toggle_tree` | Fold or unfold the child rows of the selected row |
 | `Space` | `toggle_tree` | Fold or unfold the child rows of the selected row |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | The command palette (closing it returns to the gantt) |
 | `?` | `help` | Show the help |
 
@@ -577,6 +637,7 @@ The mouse works too: click a card to select it, click the selected card again to
 | `U` | `redo` | Redo the change you undid |
 | `Ctrl+r` | `redo` | Redo the change you undid |
 | `Ctrl+s` | `save` | Back to the table and review the pending changes before saving |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | The command palette (closing it returns to the kanban) |
 | `?` | `help` | Show the help |
 
@@ -622,8 +683,64 @@ The mouse works too: click an item to select it, and click the selected item aga
 | `]` | `chart_next_saved` | Next chart in the marker |
 | `c` | `chart_cumulative` | Toggle cumulative (line) |
 | `%` | `chart_percent` | Toggle percentages (stacked bar) |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | The command palette (closing it returns to the chart) |
 | `?` | `help` | Show help |
+
+## `switch`
+
+The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; add one with `f` on a heading in the drawer or with `:workspace_favorite`). The workspace you are in is marked with `●`. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
+
+| Key | Action | Description |
+|---|---|---|
+| `Enter` | `run` | Go to the selected workspace or to where you started |
+| `Esc` | `close` | Close the list and stay where you are |
+| `q` | `close` | Close the list and stay where you are |
+| `j` | `down` | Next line |
+| `Down` | `down` | Next line |
+| `k` | `up` | Previous line |
+| `Up` | `up` | Previous line |
+| `1` | `choose_1` | Go to favorite 1 |
+| `2` | `choose_2` | Go to favorite 2 |
+| `3` | `choose_3` | Go to favorite 3 |
+| `4` | `choose_4` | Go to favorite 4 |
+| `5` | `choose_5` | Go to favorite 5 |
+| `6` | `choose_6` | Go to favorite 6 |
+| `7` | `choose_7` | Go to favorite 7 |
+| `8` | `choose_8` | Go to favorite 8 |
+| `9` | `choose_9` | Go to favorite 9 |
+
+The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it.
+
+## `input_normal`
+
+Normal mode of an input box in vim mode (`vim = true` under `[keys]`). Every input box (cell, search, palette, settings value, new note name) starts in insert mode, where you type as usual; Esc switches to normal mode, and Esc again cancels. Enter confirms in both modes. The bottom band shows `-- INSERT --` or `-- NORMAL --`, and the cursor turns into a bar or a block. Words break where vim breaks them, also between kanji, hiragana and katakana. Keys not in this table (Enter, Esc, arrows, Ctrl keys) work as in the input box's own mode; other letters do nothing.
+
+| Key | Action | Description |
+|---|---|---|
+| `h` | `cursor_left` | Move left |
+| `l` | `cursor_right` | Move right |
+| `0` | `cursor_home` | Move to the start |
+| `$` | `cursor_end` | Move to the last character |
+| `w` | `word_next` | Move to the start of the next word |
+| `b` | `word_prev` | Move to the start of the word, or of the previous word |
+| `e` | `word_end` | Move to the end of the word |
+| `i` | `insert` | Insert before the cursor |
+| `a` | `append` | Insert after the cursor |
+| `I` | `insert_start` | Insert at the start |
+| `A` | `append_end` | Insert at the end |
+| `x` | `delete_forward` | Delete the character under the cursor |
+| `X` | `delete_back` | Delete the character before the cursor |
+| `d w` | `delete_word` | Delete to the start of the next word |
+| `d b` | `delete_word_back` | Delete back to the start of the word |
+| `d $` | `delete_to_end` | Delete to the end |
+| `D` | `delete_to_end` | Delete to the end |
+| `d d` | `clear_input` | Delete the whole text |
+| `c w` | `change_word` | Delete to the end of the word and insert |
+| `c $` | `change_to_end` | Delete to the end and insert |
+| `C` | `change_to_end` | Delete to the end and insert |
+| `c c` | `change_line` | Delete the whole text and insert |
+| `u` | `undo` | Undo the last change in the input box |
 
 ## Actions
 
@@ -700,9 +817,30 @@ Every action name you can write in the keys section of the config file. Each one
 - `next_problem` — jump to the next problem
 - `prev_problem` — jump to the previous problem
 - `frequency` — show the value counts of the column
+- `condition_1` — toggle the named condition with key 1
+- `condition_2` — toggle the named condition with key 2
+- `condition_3` — toggle the named condition with key 3
+- `condition_4` — toggle the named condition with key 4
+- `condition_5` — toggle the named condition with key 5
+- `condition_6` — toggle the named condition with key 6
+- `condition_7` — toggle the named condition with key 7
+- `condition_8` — toggle the named condition with key 8
+- `condition_9` — toggle the named condition with key 9
+- `notice` — go to the notice box
 - `sort_menu` — open the sort window
 - `filter_menu` — open the filter window
 - `workspace_drawer` — open or close the table list
+- `workspace_switch` — open or close the list of favorite workspaces to switch to
+- `workspace_favorite` — add a workspace to favorites or remove it (on a heading in the table list)
+- `choose_1` — in the switch list, go to favorite 1
+- `choose_2` — in the switch list, go to favorite 2
+- `choose_3` — in the switch list, go to favorite 3
+- `choose_4` — in the switch list, go to favorite 4
+- `choose_5` — in the switch list, go to favorite 5
+- `choose_6` — in the switch list, go to favorite 6
+- `choose_7` — in the switch list, go to favorite 7
+- `choose_8` — in the switch list, go to favorite 8
+- `choose_9` — in the switch list, go to favorite 9
 - `mark_row` — mark or unmark the row
 - `select_range` — select a range of rows
 - `extend_up` — extend the selection up
@@ -712,6 +850,11 @@ Every action name you can write in the keys section of the config file. Each one
 - `detail` — show every property of the note
 - `view_settings` — open the view settings
 - `focus_chips` — move to the settings bar
+- `stack_down` — with stacked tables, move to the table below
+- `stack_up` — with stacked tables, move to the table above
+- `stack_close` — take the selected table out of the stack (also "Close this table" in the palette)
+- `stack_grow` — with stacked tables, make the selected table one row taller
+- `stack_shrink` — with stacked tables, make the selected table one row shorter
 - `commit` — confirm the input
 - `cancel` — cancel the input, or go back
 - `commit_next` — confirm and move to the cell on the right
@@ -739,6 +882,15 @@ Every action name you can write in the keys section of the config file. Each one
 - `toggle` — turn the selected item on or off
 - `next_section` — move to the next section
 - `prev_section` — move to the previous section
+- `go_to_section_1` — go to section 1 of the list on the left in the view settings
+- `go_to_section_2` — go to section 2 of the list on the left in the view settings
+- `go_to_section_3` — go to section 3 of the list on the left in the view settings
+- `go_to_section_4` — go to section 4 of the list on the left in the view settings
+- `go_to_section_5` — go to section 5 of the list on the left in the view settings
+- `go_to_section_6` — go to section 6 of the list on the left in the view settings
+- `go_to_section_7` — go to section 7 of the list on the left in the view settings
+- `go_to_section_8` — go to section 8 of the list on the left in the view settings
+- `go_to_section_9` — go to section 9 of the list on the left in the view settings
 - `move_item_up` — move the item up
 - `move_item_down` — move the item down
 - `remove_item` — remove the item
@@ -750,6 +902,22 @@ Every action name you can write in the keys section of the config file. Each one
 - `discard_row` — discard the pending changes to the file
 - `quit_save` — save the changes, then quit
 - `quit_discard` — discard the changes and quit
+- `delete_note` — move the note of the selected row to the trash after confirming its name (also from the palette and the action menu `x`); in vim mode, `dd` and the palette move the notes of all marked rows; `u` brings them back
+- `paste` — put the value copied with `y` or `Y` (vim mode)
+- `repeat` — put the last value set in a single cell into the selected row (vim mode)
+- `word_next` — move to the start of the next word (vim mode)
+- `word_prev` — move to the start of the word or of the previous word (vim mode)
+- `word_end` — move to the end of the word (vim mode)
+- `insert` — insert before the cursor (vim mode)
+- `append` — insert after the cursor (vim mode)
+- `insert_start` — insert at the start (vim mode)
+- `append_end` — insert at the end (vim mode)
+- `delete_word` — delete to the start of the next word (vim mode)
+- `delete_word_back` — delete back to the start of the word (vim mode)
+- `delete_to_end` — delete to the end (vim mode)
+- `change_word` — change to the end of the word (vim mode)
+- `change_to_end` — change to the end (vim mode)
+- `change_line` — change the whole text (vim mode)
 
 ### Palette-only commands
 
@@ -760,6 +928,7 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `problems_only` — show only the rows with problems, or all rows again (also by clicking the problem count in the bottom band)
 - `open_place` — list the registered tables (`places.toml`) and open the one you pick
 - `register_place` — register the current table under a name and a group
+- `save_session` — save what you see now (table, view, filters, sort, columns) as a named session in `sessions.toml`; open it later with `mdgrid -s <name>`. If the name exists, it asks before replacing
 - `open_link` — open the note a link cell points to (its table, with its row selected)
 - `linked_rows` — list the notes that link to the current note, with the table and column they link from
 - `workspace_new` — create a workspace (`workspaces.toml`) with the current table
@@ -768,5 +937,7 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `workspace_open` — pick a workspace, then one of its tables, and open it within that workspace
 - `starter_new` — pick a starter (a built-in one or `starters/<name>` in the config folder), type the folder to create and whether to add the sample notes, and open the new ledger
 - `rename_note` — rename the note of the selected row (also in the action menu `x`); links to the old name are rewritten as pending changes
-- `delete_note` — move the note of the selected row to the trash (`.trash/` in the opened folder) after confirming its name (also in the action menu `x`); `u` brings it back
 - `restore_note` — pick a note in the trash and put it back where it was
+- `across_search` — search every table in the workspace for a word and open the table of the row you pick (only with `across = true` under `[search]`; see [config.md](config.md#searchacross))
+- `stack_add` — pick a table of the current scope and stack it below the current table (up to 4)
+- `page_save` — name the stacked arrangement (tables, views, height ratios) and save it as a page of the current workspace
