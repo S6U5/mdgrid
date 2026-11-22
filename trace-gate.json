@@ -3,7 +3,6 @@
   "requirements": [
     "specs/requirements/*.md"
   ],
-  "require_accept_parts": true,
   "tests": [
     "tests/**/*.rs",
     "src/**/test_*.rs"

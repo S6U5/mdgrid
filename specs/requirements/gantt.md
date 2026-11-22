@@ -25,227 +25,131 @@
 
 ### ワークスペースの印の `[[table]]` に `gantt = { start = "<列>", end = "<列>" }` を書いてよく、`start` と `end` の列の日付をその行の棒の始まりと終わりとみなすべき
 `req~gantt.config-start-end~1` P1
-- Acceptance:
-  - Given: `gantt = { start = "start", end = "due" }` の表
-  - When:
-  - Then: メニューに「ガント」が出て `C` で開き、start 2026-10-01・due 2026-10-07 の行の棒は 10/01〜10/07。
+- 受け入れ: `gantt = { start = "start", end = "due" }` の表 → メニューに「ガント」が出て `C` で開き、start 2026-10-01・due 2026-10-07 の行の棒は 10/01〜10/07。
 
 ### ガントの設定では、`end` の代わりに `days = "<列>"`(始まりからの日数)を書いてもよい
 `req~gantt.config-days~1` P1
-- Acceptance:
-  - Given: `gantt = { start = "start", days = "days" }` の表で start 2026-10-01・days 3 の行
-  - When:
-  - Then: 日の単位で3マスの棒(10/01〜10/03)。
+- 受け入れ: `gantt = { start = "start", days = "days" }` の表で start 2026-10-01・days 3 の行 → 日の単位で3マスの棒(10/01〜10/03)。
 
 ### ガントの設定が無いときは、始まりと終わりの列を日付の列の名前から推定してよい
 `req~gantt.config-infer~1` P1
-- Acceptance:
-  - Given: 設定なしで start と due の日付の列がある
-  - When:
-  - Then: 推定して開き、画面の題に推定した列を示す(推定する名前は、始まりが start・begin・from・開始、終わりが end・due・finish・until・to・期限・終了で、大文字小文字を問わない)。
+- 受け入れ: 設定なしで start と due の日付の列がある → 推定して開き、画面の題に推定した列を示す(推定する名前は、始まりが start・begin・from・開始、終わりが end・due・finish・until・to・期限・終了で、大文字小文字を問わない)。
 
 ### ガントの設定が無く、推定でも列が決まらないときは、理由を出してガントを出さないべき
 `req~gantt.config-infer-fail~1` P1
-- Acceptance:
-  - Given: 設定なしで日付の列が無い
-  - When:
-  - Then: 理由1行で開かない。
+- 受け入れ: 設定なしで日付の列が無い → 理由1行で開かない。
 
 ### ガントの設定の `start`・`end`・`days` の列が表に無いときは、cli.config-file の形で警告してガントを出さないべき
 `req~gantt.config-missing-column~1` P1
-- Acceptance:
-  - Given: `start = "none"`
-  - When:
-  - Then: 警告1行で、メニューに出ない。
+- 受け入れ: `start = "none"` → 警告1行で、メニューに出ない。
 
 ### 設定の `[types]`・`[rules.<列>]` に書いた列は、その列を持つノートが1件も無くても、ガントの設定の列として表にあると数えるべき
 `req~gantt.config-declared-column~1` P1
-- Rationale: スターターから作った台帳で、開始や期限をまだ書いていないノートだけのときに、設定で決めた列が無いと言わないようにするため
-- Acceptance:
-  - Given:
-  - When:
-  - Then: `[types] start = "date"`・`due = "date"`、`gantt = { start = "start", end = "due" }` の表に、start も due も持たないノートが1件 → 警告せず、`C` でガントが開く。`[types]` にも `[rules]` にもノートにも無い列 `begin` を `start` に書く → gantt.config-missing-column のとおり警告1行で開かない。
+- なぜ: スターターから作った台帳で、開始や期限をまだ書いていないノートだけのときに、設定で決めた列が無いと言わないようにするため
+- 受け入れ: `[types] start = "date"`・`due = "date"`、`gantt = { start = "start", end = "due" }` の表に、start も due も持たないノートが1件 → 警告せず、`C` でガントが開く。`[types]` にも `[rules]` にもノートにも無い列 `begin` を `start` に書く → gantt.config-missing-column のとおり警告1行で開かない。
 
 ### 行が1つも無い表(見本なしで作った台帳など)では、ガントの設定の列があるかを決めず、警告しないべき
 `req~gantt.config-empty-table~1` P1
-- Rationale: 表の列はノートのキーから作るので、行が無いと設定の列があるかを決められないため
-- Acceptance:
-  - Given: 行が1つも無い表
-  - When:
-  - Then: 読み終えても警告せず、画面の型のメニューに出て、開くと出す行が無いと理由1行。外からノートを足すと `C` で開く。
+- なぜ: 表の列はノートのキーから作るので、行が無いと設定の列があるかを決められないため
+- 受け入れ: 行が1つも無い表 → 読み終えても警告せず、画面の型のメニューに出て、開くと出す行が無いと理由1行。外からノートを足すと `C` で開く。
 
 ### `C`(か画面の型のメニューの「ガント」)で、今のビューの行(絞り込み・並べ替えのあと)を、左に行の名前、右に時間軸と横棒で見せるべき
 `req~gantt.open-bars~1` P1
-- Acceptance:
-  - Given:
-  - When: start 2026-10-01・due 2026-10-07 の行で `C`
-  - Then: 左に行の名前、右に日の単位で7マスの棒。
+- 受け入れ: start 2026-10-01・due 2026-10-07 の行で `C` → 左に行の名前、右に日の単位で7マスの棒。
 
 ### ガントの時間軸は日・週・月の単位を持ち、開くときは行の範囲が幅に収まる最も細かい単位にするべき
 `req~gantt.open-unit~1` P1
-- Acceptance:
-  - Given: 幅 100 で範囲 400 日
-  - When:
-  - Then: 週か月の単位で開く。
+- 受け入れ: 幅 100 で範囲 400 日 → 週か月の単位で開く。
 
 ### ガントは今日の列に印を付けるべき
 `req~gantt.open-today~1` P1
-- Acceptance:
-  - Given: MDGRID_TODAY=2026-10-06
-  - When:
-  - Then: 10/06 の列に今日の印。
+- 受け入れ: MDGRID_TODAY=2026-10-06 → 10/06 の列に今日の印。
 
 ### ガントでは、始まりか終わりの片方しか無い行は、その日に印(◆)を置くべき
 `req~gantt.open-milestone~1` P1
-- Acceptance:
-  - Given: due だけの行
-  - When:
-  - Then: その due の日に ◆が1つ。
+- 受け入れ: due だけの行 → その due の日に ◆が1つ。
 
 ### ガントでは、始まりも終わりも無い行は、棒なしで並べるべき
 `req~gantt.open-no-dates~1` P1
-- Acceptance:
-  - Given: start も due も無い行
-  - When:
-  - Then: ガントにその行の名前が出て、棒も ◆ も無い。
+- 受け入れ: start も due も無い行 → ガントにその行の名前が出て、棒も ◆ も無い。
 
 ### ガントは、色なしでも棒・印・今日・選んでいる行を見分けられるべき(cell-view.not-color-only)
 `req~gantt.open-no-color~1` P1
-- Acceptance:
-  - Given:
-  - When:
-  - Then: `--no-color` でも棒と印が文字で出る。
+- 受け入れ: `--no-color` でも棒と印が文字で出る。
 
 ### ビューの設定の親子(navigation.parent-child)が効いているときは、ガントの行も表と同じ並び・字下げ・畳みにするべき
 `req~gantt.tree-wbs-order~1` P1
-- Acceptance:
-  - Given:
-  - When:
-  - Then: parent で子2件の親 → ガントでも表と同じく親の下に子2件が字下げして並ぶ。表で親を畳んでから `C` → ガントでも子の行は出ない。
+- 受け入れ: parent で子2件の親 → ガントでも表と同じく親の下に子2件が字下げして並ぶ。表で親を畳んでから `C` → ガントでも子の行は出ない。
 
 ### WBS が効いていれば、ガントの行も表と同じ番号と進み具合を使うべき
 `req~gantt.tree-wbs-number~1` P1
-- Acceptance:
-  - Given:
-  - When: WBS の効いた表で `C`
-  - Then: ガントの各行の番号と進み具合が、表のその行の番号と進み具合と同じ。
+- 受け入れ: WBS の効いた表で `C` → ガントの各行の番号と進み具合が、表のその行の番号と進み具合と同じ。
 
 ### ガントの親の棒は、親に自分の日付があればそれ、無ければ子孫の始まりの最小から終わりの最大までにするべき
 `req~gantt.tree-wbs-parent-range~1` P1
-- Acceptance:
-  - Given: parent で子2件(10/01〜10/03、10/05〜10/07)、親に日付なし
-  - When:
-  - Then: 親の棒は 10/01〜10/07。
+- 受け入れ: parent で子2件(10/01〜10/03、10/05〜10/07)、親に日付なし → 親の棒は 10/01〜10/07。
 
 ### ガントの親の棒の塗りの長さは、WBS の進み具合の割合にするべき
 `req~gantt.tree-wbs-progress-fill~1` P1
-- Acceptance:
-  - Given: WBS で子の割合が 100 と 0
-  - When:
-  - Then: 親の棒の塗りは半分。
+- 受け入れ: WBS で子の割合が 100 と 0 → 親の棒の塗りは半分。
 
 ### ガントの画面では、`Z` で親の行を畳む・開く
 `req~gantt.tree-wbs-fold~1` P1
-- Acceptance:
-  - Given:
-  - When: `Z` で親を畳む → 子の行が消え、もう一度 `Z`
-  - Then: 子の行が戻る。
+- 受け入れ: `Z` で親を畳む → 子の行が消え、もう一度 `Z` → 子の行が戻る。
 
 ### ガントの画面では、`j` `k` で行を選ぶべき
 `req~gantt.keys-select~1` P1
-- Acceptance:
-  - Given:
-  - When: `C` → `j` `j` → 3行目が選ばれ、`k`
-  - Then: 2行目が選ばれる。
+- 受け入れ: `C` → `j` `j` → 3行目が選ばれ、`k` → 2行目が選ばれる。
 
 ### ガントの画面では、`h` `l` で時間軸を1単位動かすべき
 `req~gantt.keys-pan~1` P1
-- Acceptance:
-  - Given:
-  - When: `l` を3回 → 時間軸が3単位進み、`h` を1回
-  - Then: 1単位戻る。
+- 受け入れ: `l` を3回 → 時間軸が3単位進み、`h` を1回 → 1単位戻る。
 
 ### ガントの画面では、`+` `-` で時間軸の単位を細かく・粗くするべき
 `req~gantt.keys-zoom~1` P1
-- Acceptance:
-  - Given:
-  - When:
-  - Then: `-` → 日から週へ。`+` → 週から日へ。
+- 受け入れ: `-` → 日から週へ。`+` → 週から日へ。
 
 ### ガントの画面では、`t` で今日が見える位置に戻すべき
 `req~gantt.keys-today~1` P1
-- Acceptance:
-  - Given:
-  - When: MDGRID_TODAY=2026-10-06 で `l` を押して 10/06 が時間軸の外に出てから `t`
-  - Then: 10/06 の今日の印が見える。
+- 受け入れ: MDGRID_TODAY=2026-10-06 で `l` を押して 10/06 が時間軸の外に出てから `t` → 10/06 の今日の印が見える。
 
 ### ガントの画面では、`Enter` で表に戻ってその行を選ぶべき
 `req~gantt.keys-enter~1` P1
-- Acceptance:
-  - Given:
-  - When: `C` → `j` `j`
-  - Then: `Enter` で表の3行目が選ばれる。
+- 受け入れ: `C` → `j` `j` → `Enter` で表の3行目が選ばれる。
 
 ### ガントの画面では、`Esc`・`q`・`C` で表に戻るべき
 `req~gantt.keys-back~1` P1
-- Acceptance:
-  - Given:
-  - When: ガントで `Esc`
-  - Then: 表に戻る。`q`・`C` でも同じ。
+- 受け入れ: ガントで `Esc` → 表に戻る。`q`・`C` でも同じ。
 
 ### ガントの画面では、行のクリックでその行を選ぶべき
 `req~gantt.keys-mouse-click~1` P1
-- Acceptance:
-  - Given:
-  - When: 1行目を選んだガントで3行目をクリック
-  - Then: 3行目が選ばれる。
+- 受け入れ: 1行目を選んだガントで3行目をクリック → 3行目が選ばれる。
 
 ### ガントの画面では、選んでいる行をもう一度クリックすると、表のその行へ移るべき
 `req~gantt.keys-mouse-click-again~1` P1
-- Acceptance:
-  - Given:
-  - When: ガントで3行目をクリックして選び、もう一度クリック
-  - Then: 表に戻り、表の3行目が選ばれる。
+- 受け入れ: ガントで3行目をクリックして選び、もう一度クリック → 表に戻り、表の3行目が選ばれる。
 
 ### ガントの画面では、ホイールで行を動かすべき
 `req~gantt.keys-mouse-wheel~1` P1
-- Acceptance:
-  - Given:
-  - When: ガントでホイールを下へ回す
-  - Then: 選んでいる行が下の行へ動く。
+- 受け入れ: ガントでホイールを下へ回す → 選んでいる行が下の行へ動く。
 
 ### ガントの画面では、横のホイールで時間軸を動かすべき
 `req~gantt.keys-mouse-hwheel~1` P1
-- Acceptance:
-  - Given:
-  - When: ガントで横のホイールを右へ回す
-  - Then: 時間軸が進む。
+- 受け入れ: ガントで横のホイールを右へ回す → 時間軸が進む。
 
 ### ガントの画面では値を直せないべき(棒の端のドラッグや日付の入力はしない。日付は表で直す)
 `req~gantt.read-only-no-edit~1` P1
-- Acceptance:
-  - Given:
-  - When:
-  - Then: ガントで `Enter` 以外の編集のキーを押しても何も変わらない。
+- 受け入れ: ガントで `Enter` 以外の編集のキーを押しても何も変わらない。
 
 ### ガントを開いているあいだにノートが外で変わったら、組み直して同じ行を選び直すべき
 `req~gantt.read-only-external~1` P1
-- Acceptance:
-  - Given:
-  - When: 開いたまま外でノートの due を変える
-  - Then: 棒が変わり、選んでいた行は同じ。
+- 受け入れ: 開いたまま外でノートの due を変える → 棒が変わり、選んでいた行は同じ。
 
 ### 見せ方の一覧(screen.views-page)・できることの一覧(screen.features-page)・キーの文書(screen.keys-docs)・設定の文書にガントの項を持ち、組み込みの tasks のスターターに `start` の列と `gantt` の設定を同梱し、場面の台本にガントの場面を持つべき
 `req~gantt.docs~1` P1
-- Acceptance:
-  - Given:
-  - When:
-  - Then: docs/manual/ja・en の views.md に「ガント」の節(画像 images/gantt.svg)。starters/tasks の印に `gantt = { start = "start", end = "due" }`、見本のノートに start。docs/manual-scenarios.toml に id = "gantt"(読んで判定と)。
+- 受け入れ: docs/manual/ja・en の views.md に「ガント」の節(画像 images/gantt.svg)。starters/tasks の印に `gantt = { start = "start", end = "due" }`、見本のノートに start。docs/manual-scenarios.toml に id = "gantt"(読んで判定と)。
 
 ### 画面の型ごとの設定は、`[[table]]` に型の名前のキー(`tree`・`gantt`・以後の `kanban` など)で同じ形(列の名前を指す表)で書き、設定が無いときの推定の規則を型ごとに持ち、画面の型のメニューには設定か推定で開ける型だけを並べるべき
 `req~gantt.screen-config~1` P1
-- Rationale: 型が増えても台帳ごとの設定を増やさないため
-- Acceptance:
-  - Given:
-  - When:
-  - Then: 印に `tree` と `gantt` の両方がある表 → メニューに 表・木・ガント。どちらも無く日付の列が start・due の表 → 表・ガント(推定)。読んで判定: 設定の読み方が同じ形。
+- なぜ: 型が増えても台帳ごとの設定を増やさないため
+- 受け入れ: 印に `tree` と `gantt` の両方がある表 → メニューに 表・木・ガント。どちらも無く日付の列が start・due の表 → 表・ガント(推定)。読んで判定: 設定の読み方が同じ形。
