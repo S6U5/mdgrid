@@ -413,14 +413,10 @@
 ### 並べ替えと列
 
 #### 列の見出しから並べ替え(昇順 → 降順 → 解除)ができるべき
-`req~navigation.header-sort-cycle~2` P1
+`req~navigation.header-sort-cycle~1` P1
 - Acceptance:
   - Given:
-  - When: 見出しを2回
-  - Then: 降順
-- Acceptance:
-  - Given:
-  - When: 3回
+  - When: 見出しを2回 → 降順、3回
   - Then: `.base` の並びに戻る。
 
 #### 見出しからの並べ替えは、今のビューの設定の並べ替え(navigation.view-settings)として当て、見た目の状態(screen.state-store)に保存して、次に開いても同じ並びにするべき

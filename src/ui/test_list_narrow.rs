@@ -92,7 +92,7 @@ fn test_sr_24_menu_position_shown_when_scrolled() {
     assert!(s.text.lines().any(|l| l.contains("╰2/")), "{s}");
 }
 
-// [utest -> req~screen.action-menu-open-key~2, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-enter~2, req~screen.action-menu-bulk-hidden~1]
+// [utest -> req~screen.action-menu-open-key~2, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-enter~1, req~screen.action-menu-bulk-hidden~1]
 #[test]
 fn test_sr_24_menu_position_hidden_when_all_fit() {
     let (_t, mut a) = make("sr24all", NOTES);

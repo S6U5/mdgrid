@@ -192,7 +192,7 @@ fn test_ce_19_remove_all_writes_key() {
 
 #[test]
 fn test_ce_19_read_only_list_not_opened() {
-    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~2] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
+    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~1] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
     let (_t, mut a) = make(
         "ce19lock",
         &[
@@ -526,7 +526,7 @@ fn test_ce_17_bulk_when_current_row_cannot_open() {
 
 #[test]
 fn test_ce_19_read_only_shapes_have_reasons() {
-    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~2] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
+    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~1] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
     let (_t, mut a) = typed_tags(
         "ce19shapes",
         &[

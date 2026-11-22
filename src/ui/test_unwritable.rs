@@ -104,7 +104,7 @@ fn report(stage: &str, fails: Vec<String>) {
 
 #[test]
 fn test_wb_5_enter_does_not_open_and_shows_reason() {
-    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~2] 7つの形のノートの status のセルで Enter → 入力が開かず(Mode::Table のまま)、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~1] 7つの形のノートの status のセルで Enter → 入力が開かず(Mode::Table のまま)、
     // メッセージ行に「読むだけ」と形ごとの理由(ほかの形の言葉を含まない)、ためる変更は 0。
     // 書ける側(普通のノート・フロントマターの無いノート・空のフロントマターのノート(WB-3))は入力が開く。
     let (_t, mut a) = setup("wb5enter");

@@ -328,7 +328,7 @@ fn test_ga_1_days_column_and_datetime_values() {
 
 #[test]
 fn test_ga_3_z_keeps_the_selected_row() {
-    // [utest -> req~gantt.tree-wbs-fold~2] 親で Z → 子が消え、選びは親のまま。j で次の見える行(delta)。子の無い行で Z は理由。もう一度親で Z → 戻る。
+    // [utest -> req~gantt.tree-wbs-fold~1] 親で Z → 子が消え、選びは親のまま。j で次の見える行(delta)。子の無い行で Z は理由。もう一度親で Z → 戻る。
     let (_t, mut a) = boot("ga3zsel", TREE_NOTES, GANTT);
     tree_on(&mut a, None);
     ch(&mut a, 'C');

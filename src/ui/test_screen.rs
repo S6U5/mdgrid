@@ -695,7 +695,7 @@ fn test_ce_12_newline_value_not_opened() {
 
 #[test]
 fn test_ce_8_read_only_not_opened() {
-    // [utest -> req~cell-edit.read-only-forms~2, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
+    // [utest -> req~cell-edit.read-only-forms~1, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
     // [utest -> req~cell-edit.list-candidates-read-only~1] CE-8 の形のリスト(複数行にまたがるフロー)も開かずに理由。
     // 書ける形のリスト(d.md の `tags: [x, y]`)の画面の振る舞いはタスク 2(リストの選択の画面)で
     // 確かめる。ここでは核の Cell.lock が無いことだけを見る [utest -> req~cell-edit.list-items-candidates~1]。

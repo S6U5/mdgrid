@@ -380,7 +380,7 @@ fn test_ga_3_parent_bar_spans_children_and_wbs_fills() {
 
 #[test]
 fn test_ga_3_z_folds_children() {
-    // [utest -> req~gantt.tree-wbs-fold~2] 親の行で Z → 子の行が消える(表と同じ畳み)。もう一度 Z → 戻る。
+    // [utest -> req~gantt.tree-wbs-fold~1] 親の行で Z → 子の行が消える(表と同じ畳み)。もう一度 Z → 戻る。
     let (_t, mut a) = boot_with("ga3z", TREE_NOTES, GANTT);
     tree_on(&mut a, None);
     ch(&mut a, 'C');

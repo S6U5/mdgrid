@@ -96,7 +96,7 @@ fn test_delete_note_is_offered_in_the_action_menu() {
 
 #[test]
 fn test_delete_note_asks_with_the_name_and_esc_keeps_the_note() {
-    // [utest -> req~cell-edit.delete-note-confirm~2] 「メモ」を消すかを名前つきで聞かれ、Esc では `メモ.md` が同じバイトで残る。
+    // [utest -> req~cell-edit.delete-note-confirm~1] 「メモ」を消すかを名前つきで聞かれ、Esc では `メモ.md` が同じバイトで残る。
     let (t, mut a) = notes("dn-esc");
     select(&mut a, "メモ");
     a.apply(Action::DeleteNote);
@@ -111,7 +111,7 @@ fn test_delete_note_asks_with_the_name_and_esc_keeps_the_note() {
 
 #[test]
 fn test_delete_note_needs_y_and_other_answers_keep_the_note() {
-    // [utest -> req~cell-edit.delete-note-confirm~2] `y` 以外の打ち込み(空・n・yes)では消さず、`メモ.md` が同じバイトで残る。
+    // [utest -> req~cell-edit.delete-note-confirm~1] `y` 以外の打ち込み(空・n・yes)では消さず、`メモ.md` が同じバイトで残る。
     let (t, mut a) = notes("dn-n");
     for answer in ["", "n", "yes"] {
         delete(&mut a, "メモ", answer);

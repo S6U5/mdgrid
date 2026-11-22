@@ -248,11 +248,7 @@
   - Then: 名前の欄の入力が開いている。
 - Acceptance:
   - Given:
-  - When: 名前を打って Enter か Tab
-  - Then: priority の欄へ
-- Acceptance:
-  - Given:
-  - When: Shift+Tab
+  - When: 名前を打って Enter か Tab → priority の欄へ、Shift+Tab
   - Then: 名前の欄へ戻る。
 
 #### 新しいノートの窓の各欄は、型に合った入力(cell-edit.column-type)で直すべき
@@ -487,11 +483,7 @@
 `req~cell-edit.checkbox-empty-true~2` P1
 - Acceptance:
   - Given:
-  - When: キーの無いノートで Enter
-  - Then: `done: true`
-- Acceptance:
-  - Given:
-  - When: もう一度
+  - When: キーの無いノートで Enter → `done: true`、もう一度
   - Then: `done: false`。
 - Acceptance:
   - Given:
@@ -508,12 +500,16 @@
 #### 日付の列は、`YYYY-MM-DD` と、今日からの日数(`+3`)と、空(値を消す。キーは残して null と書く。cell-edit.empty-is-null)を受け付けるべき
 `req~cell-edit.date-input-forms~2` P1
 - Acceptance:
-  - Given: due のセルで `2026-11-03` → `due: 2026-11-03`、`+3`
-  - When:
-  - Then: 今日の3日後
+  - Given: due のセル
+  - When: `2026-11-03` と打って確定
+  - Then: `due: 2026-11-03`。
 - Acceptance:
-  - Given: 空で確定
-  - When:
+  - Given: due のセル
+  - When: `+3` と打って確定
+  - Then: 今日の3日後。
+- Acceptance:
+  - Given: due のセル
+  - When: 空で確定
   - Then: `due:` の行が残る。
 
 #### 日付の列は、実在しない日付を受け付けるべきでない
@@ -841,15 +837,11 @@
 ### 読むだけのセルと一括の編集
 
 #### ファイルの属性(`file.*`)・式の列(`formula.*`)・ネストした map・ブロックスカラー・アンカーや別名を使った値・タグつきの値(`!!str` など)・複数行にまたがる値(素のスカラー・引用符つきの値・フロー形式)のセルは、編集できないようにし、なぜ読むだけかを表示するべき
-`req~cell-edit.read-only-forms~2` P0
+`req~cell-edit.read-only-forms~1` P0
 - Acceptance:
   - Given:
-  - When: `file.mtime` の列で Enter
-  - Then: 読むだけと理由を表示。
-- Acceptance:
-  - Given: `title: !!str 12` と2行にまたがる `[a,\n b]` のセル
   - When:
-  - Then: どちらも読むだけと理由。
+  - Then: `file.mtime` の列で Enter → 読むだけと理由を表示。`title: !!str 12` と2行にまたがる `[a,\n b]` のセル → どちらも読むだけと理由。
 
 #### 選んだ複数の行の同じ列に、同じ値を、ためる変更としてまとめて入れられるべき
 `req~cell-edit.bulk-set-same-value~2` P1
@@ -1001,18 +993,10 @@
   - Then: が日を動かす。
 
 #### カレンダーで時刻を選んでいるときは、↑↓ で15分、Shift+↑↓ で1時間動かすべき
-`req~cell-edit.datetime-calendar-time-step~2` P1
+`req~cell-edit.datetime-calendar-time-step~1` P1
 - Acceptance:
   - Given:
-  - When: `at: 2026-10-30T09:00` のセルで時刻に切り替えて ↑
-  - Then: 09:15
-- Acceptance:
-  - Given:
-  - When: Shift+↑
-  - Then: 10:15
-- Acceptance:
-  - Given: 確定
-  - When:
+  - When: `at: 2026-10-30T09:00` のセルで時刻に切り替えて ↑ → 09:15、Shift+↑ → 10:15、確定
   - Then: `2026-10-30T10:15`。
 
 #### カレンダーで時刻を動かしたら、入力ボックスの文字もその時刻にするべき
@@ -1263,15 +1247,11 @@
   - Then: `メモ.md` が元の場所に無く、ごみ箱に同じバイトであり、表から「メモ」の行が無くなって下の行が選ばれる。
 
 #### ノートの削除は、消すノートの名前を示して確かめ、`y` のときだけ行わなければならない(ほかの打ち込みと Esc ではやめる)
-`req~cell-edit.delete-note-confirm~2` P0
+`req~cell-edit.delete-note-confirm~1` P0
 - Rationale: 押し間違いでノートを失わないため
 - Acceptance:
   - Given:
-  - When: 「メモ」の行で「ノートを消す」
-  - Then: 「メモ」を消すかを聞かれ
-- Acceptance:
-  - Given:
-  - When: Esc
+  - When: 「メモ」の行で「ノートを消す」→「メモ」を消すかを聞かれ、Esc
   - Then: `メモ.md` は元の場所に同じバイトで残る。
 
 #### ノートの削除は、ファイルを消さずにごみ箱へ動かさなければならず、動かせないときはノートを元の場所に残して理由を出さなければならない
@@ -1527,14 +1507,10 @@
   - Then: 「雛形」の欄は無い。
 
 #### 「雛形」の欄で選んだ雛形の中身を、変数を埋めて新しいノートの本文にし、雛形の名前はノートに書かないべき
-`req~cell-edit.body-choose-pick~2` P1
+`req~cell-edit.body-choose-pick~1` P1
 - Acceptance:
   - Given: `templates/idea.md` が `# {name}` と `## ねらい` の2つの見出し
-  - When:
-  - Then: 名前 `t`
-- Acceptance:
-  - Given:
-  - When: 雛形 `idea` で作る
+  - When: 名前 `t`、雛形 `idea` で作る
   - Then: `t.md` の本文は `# t` と `## ねらい` で、ノートのどこにも `idea` の字は無い。
 
 #### 「雛形」の欄で選ばずに作ったときは、名前の順で最初の雛形を本文にするべき

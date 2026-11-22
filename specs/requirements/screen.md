@@ -143,23 +143,23 @@
 #### Obsidian Bases の主なキー(Enter・Tab / Shift+Tab・Ctrl+C / Ctrl+Z・Backspace)も効かなければならない
 `req~screen.keys-vim-and-arrows-bases~2` P1
 - Acceptance:
-  - Given:
-  - When: 表で Enter
-  - Then: 選んだセルの編集
+  - Given: 表
+  - When: Enter
+  - Then: 選んだセルの編集。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: Tab / Shift+Tab
-  - Then: 右 / 左のセル
+  - Then: 右 / 左のセル。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: Ctrl+C
-  - Then: コピー
+  - Then: コピー。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: Ctrl+Z
-  - Then: 直前の変更の取り消し
+  - Then: 直前の変更の取り消し。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: Backspace
   - Then: 選んだセルを空にする。
 
@@ -247,14 +247,10 @@
   - Then: 「編集」「空にする」が無い。
 
 #### 操作の一覧では、↑↓(`j` `k`)で選んで Enter で実行するべき
-`req~screen.action-menu-enter~2` P1
+`req~screen.action-menu-enter~1` P1
 - Acceptance:
   - Given: 書けるセルで `x` のあと `j` 6回・`k` 1回
-  - When:
-  - Then: 「この列で並べ替え」が選ばれ
-- Acceptance:
-  - Given:
-  - When: Enter
+  - When: 「この列で並べ替え」が選ばれ、Enter
   - Then: その列で並べ替わる。
 
 #### 操作の一覧は、Esc で閉じるべき
@@ -407,32 +403,32 @@
 `req~screen.mouse-h-wheel~2` P1
 - Rationale: 縦しか拾わないと、収まらない列を指で流せないため
 - Acceptance:
-  - Given:
-  - When: 表で横のホイールを右
-  - Then: 右の列
+  - Given: 表
+  - When: 横のホイールを右
+  - Then: 右の列。
 - Acceptance:
-  - Given: 左
-  - When:
-  - Then: 左の列
-- Acceptance:
-  - Given: 一番左で左
-  - When:
-  - Then: そのまま。
-- Acceptance:
-  - Given:
-  - When: shift+ホイールの下
-  - Then: 右の列
-- Acceptance:
-  - Given: 上
-  - When:
+  - Given: 表
+  - When: 横のホイールを左
   - Then: 左の列。
 - Acceptance:
-  - Given: 列が画面に収まらない表で右へ流し続ける
-  - When:
+  - Given: 表の一番左の列
+  - When: 横のホイールを左
+  - Then: そのまま。
+- Acceptance:
+  - Given: 表
+  - When: shift+ホイールの下
+  - Then: 右の列。
+- Acceptance:
+  - Given: 表
+  - When: shift+ホイールの上
+  - Then: 左の列。
+- Acceptance:
+  - Given: 列が画面に収まらない表
+  - When: 右へ流し続ける
   - Then: 選んだセルが見える位置まで表が流れる(screen.h-scroll)。
 - Acceptance:
-  - Given:
-  - When: 本物の実行ファイルに端末の横のスクロールの報告(SGR の 67)を送る
+  - Given: 本物の実行ファイルの表
+  - When: 端末の横のスクロールの報告(SGR の 67)を送る
   - Then: 右の列。
 
 #### 表の画面でない画面(ヘルプなど)では、横のホイールで何もしないべき
@@ -520,19 +516,19 @@
 #### 表のモードの既定のキーは、Enter = 編集(グループの見出しの行では開閉、チェックボックスのセルでは切り替え)、Space = 行の印、`K` = 詳細の表示、Ctrl+R = やり直しにするべき
 `req~screen.key-modes-table-defaults~2` P1
 - Acceptance:
-  - Given:
-  - When: 表で Enter
-  - Then: セルの編集
+  - Given: 表
+  - When: Enter
+  - Then: セルの編集。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: Space
-  - Then: 行の印
+  - Then: 行の印。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: `K`
-  - Then: 詳細の表示
+  - Then: 詳細の表示。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: Ctrl+R
   - Then: やり直し。
 
@@ -553,25 +549,29 @@
 #### パレット(`:` で開く)は、行番号(`:120`)と `w`(保存)と `q`(終了)と `wq`・`x`(保存して終了)も受け付けるべき
 `req~screen.key-modes-palette-commands~3` P1
 - Acceptance:
-  - Given:
-  - When: `:120`
+  - Given: 表
+  - When: パレットで `:120`
   - Then: 120行目が選ばれる。
 - Acceptance:
-  - Given:
+  - Given: 表
   - When: パレットの `w`
-  - Then: 保存(差分の確認へ)
+  - Then: 保存(差分の確認へ)。
 - Acceptance:
-  - Given:
-  - When: `q`
+  - Given: 表
+  - When: パレットの `q`
   - Then: 終了(ためた変更があれば終了の確認)。
 - Acceptance:
-  - Given:
-  - When: 未保存 1 でパレットの `wq`
+  - Given: 未保存 1
+  - When: パレットの `wq`
   - Then: 差分の確認が出て、確定で書いて終わる(差分の確認から戻ると、書かず終わらず表に戻る)。`x` も同じ。
 - Acceptance:
-  - Given:
-  - When: ためた変更が無いときの `wq`
-  - Then: そのまま終わる。読むだけの起動(cli.readonly)では `wq`・`x` は `w` と同じく候補に出ない。
+  - Given: ためた変更が無い
+  - When: パレットの `wq`
+  - Then: そのまま終わる。
+- Acceptance:
+  - Given: 読むだけの起動(cli.readonly)
+  - When: パレットを開く
+  - Then: `wq`・`x` は `w` と同じく候補に出ない。
 
 #### 表のモードで、日本語入力(IME)が有効なまま打った全角の英数字と記号が届いたら、半角のキーとして扱うべき
 `req~screen.ime-fullwidth~1` P1
@@ -810,16 +810,16 @@
 #### 色を使う表示(cell-view.no-color)では、設定の `look.cells` が `"rich"`(既定)のとき、表のセルを値の型に合わせた部品で見せるべき: 真偽の値、リストの要素、種類の少ない短い文字の列(status など)の値、リンク(relations.link-display)、列の見出しの型の印を、screen.style-parts の形(`check`・`tags`・`status`・`links`・`icons`)で見せる
 `req~screen.rich-cells-parts~2` P1
 - Acceptance:
-  - Given: 色のある表示で、既定の組(sumi)では done(真偽)の列
-  - When:
-  - Then: `✓`/`·`、tags `[a, b]` → `a · b`
+  - Given: 色のある表示で、既定の組(sumi)
+  - When: done(真偽)・tags `[a, b]`・status(doing・todo・done が何行も)の列の表を出す
+  - Then: done の列は `✓`/`·`、tags は `a · b`、status は `● doing`、見出しに型の印なし。
 - Acceptance:
-  - Given: status(doing・todo・done が何行も)
-  - When:
-  - Then: `● doing`、見出しに型の印なし。組 classic では `☑`/`☐`・札の `a` と `b`・札の `doing`・`◷ due`。
+  - Given: 色のある表示で、組 classic
+  - When: 同じ表を出す
+  - Then: `☑`/`☐`・札の `a` と `b`・札の `doing`・`◷ due`。
 - Acceptance:
   - Given: `look.cells` の知らない値
-  - When:
+  - When: 起動する
   - Then: 警告して rich。
 
 #### 表のセルの部品の色は値ごとに決まった色にし、どの値も文字はそのまま見せる(色だけで値を伝えない。cell-view.not-color-only)
@@ -844,11 +844,11 @@
 `req~screen.rich-cells-per-column~2` P1
 - Acceptance:
   - Given: `[look.columns]` で `status = "plain"`
-  - When:
-  - Then: その列だけ文字のまま
+  - When: 表を出す
+  - Then: status の列だけ文字のまま。
 - Acceptance:
-  - Given: `owner = "chip"`
-  - When:
+  - Given: `[look.columns]` で `owner = "chip"`
+  - When: 表を出す
   - Then: owner の値が札。
 
 #### `look.cells = "plain"` と色を使わない表示では、表のセルを今の見た目にする
@@ -987,12 +987,12 @@
 #### `look.theme` の明暗の表の片方を省けば、省いた側はその既定(`light` は `saas`、`dark` は `sumi`)を使う
 `req~screen.theme-auto-partial~2` P1
 - Acceptance:
-  - Given: `theme = { light = "paper" }` で明るい地
-  - When:
-  - Then: paper
+  - Given: `theme = { light = "paper" }`
+  - When: 明るい地の端末で起動する
+  - Then: paper。
 - Acceptance:
-  - Given: 暗い地
-  - When:
+  - Given: `theme = { light = "paper" }`
+  - When: 暗い地の端末で起動する
   - Then: sumi。
 
 #### 端末の地の明るさは、環境変数 `COLORFGBG` か端末への問い合わせ(短い待ち時間で、答えが無ければ諦める)で決め、分からなければ暗い地とみなす
@@ -1175,11 +1175,7 @@
 `req~screen.look-section-save~2` P1
 - Acceptance:
   - Given:
-  - When: 保存先「全体」でテーマ dracula・組 dozy-pink を反映
-  - Then: ui.toml の `[look]` に theme = "dracula"・preset = "dozy-pink"
-- Acceptance:
-  - Given:
-  - When: 終了して開き直す
+  - When: 保存先「全体」でテーマ dracula・組 dozy-pink を反映 → ui.toml の `[look]` に theme = "dracula"・preset = "dozy-pink"、終了して開き直す
   - Then: 同じ見た目。
 - Acceptance:
   - Given:
@@ -1671,19 +1667,15 @@
 `req~screen.theme-meaning-colors-paint~2` P1
 - Acceptance:
   - Given: Solarized Light でためる変更のセル
-  - When:
+  - When: 表を出す
   - Then: 文字が #b58900。
 - Acceptance:
-  - Given:
-  - When: 差分の足した行
-  - Then: #859900
-- Acceptance:
-  - Given:
-  - When: 消した行
-  - Then: #dc322f。
+  - Given: Solarized Light
+  - When: 差分の確認を出す
+  - Then: 足した行が #859900、消した行が #dc322f。
 - Acceptance:
   - Given: テーマなし
-  - When:
+  - When: 表を出す
   - Then: 今までと同じ色。
 
 #### テーマのためる変更・差分・検索の一致の色は意味を足すだけで、印(下線・`+`・`-`)はテーマなしと同じに保つべき

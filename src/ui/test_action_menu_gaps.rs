@@ -157,7 +157,7 @@ fn test_sr_24_gaps_readonly_launch_hides_save_new_export() {
 
 #[test]
 fn test_sr_25_gaps_menu_ignores_prefix_without_menu_item() {
-    // [utest -> req~screen.prefix-hints-menu~1, req~screen.action-menu-open-key~2, req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~screen.action-menu-enter~2, req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 設定で `[keys.table] "z z" = "bottom"` を足す。表の上では `z` で帯に「z →」の案内が出る。
+    // [utest -> req~screen.prefix-hints-menu~1, req~screen.action-menu-open-key~2, req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~screen.action-menu-enter~1, req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 設定で `[keys.table] "z z" = "bottom"` を足す。表の上では `z` で帯に「z →」の案内が出る。
     // 一覧の上では、末尾の行は一覧の項目に無いので `z` は前置きとして受けない: 一覧のまま、帯に「z →」が出ず、
     // `z` `z` で末尾の行へ動かない。
     let toml = "[keys.table]\n\"z z\" = \"bottom\"\n";

@@ -153,14 +153,10 @@
   - Then: 親の棒の塗りは半分。
 
 ### ガントの画面では、`Z` で親の行を畳む・開く
-`req~gantt.tree-wbs-fold~2` P1
+`req~gantt.tree-wbs-fold~1` P1
 - Acceptance:
   - Given:
-  - When: `Z` で親を畳む
-  - Then: 子の行が消え
-- Acceptance:
-  - Given:
-  - When: もう一度 `Z`
+  - When: `Z` で親を畳む → 子の行が消え、もう一度 `Z`
   - Then: 子の行が戻る。
 
 ### ガントの画面では、`j` `k` で行を選ぶべき
@@ -171,14 +167,10 @@
   - Then: 2行目が選ばれる。
 
 ### ガントの画面では、`h` `l` で時間軸を1単位動かすべき
-`req~gantt.keys-pan~2` P1
+`req~gantt.keys-pan~1` P1
 - Acceptance:
   - Given:
-  - When: `l` を3回
-  - Then: 時間軸が3単位進み
-- Acceptance:
-  - Given:
-  - When: `h` を1回
+  - When: `l` を3回 → 時間軸が3単位進み、`h` を1回
   - Then: 1単位戻る。
 
 ### ガントの画面では、`+` `-` で時間軸の単位を細かく・粗くするべき

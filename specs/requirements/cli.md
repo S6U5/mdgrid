@@ -420,20 +420,16 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### 0.3.0 までの設定の書き方は、読んで新しい場所に当てるべき
 `req~cli.legacy-config-apply~2` P1
 - Acceptance:
-  - Given: 次の旧い名前で書いた設定
-  - When:
-  - Then: それぞれ移った先に書いたのと同じに効く: `color`・`ambiguous_wide`・`nerd_font` → `[terminal]`、`workspace_detect` → `workspace.detect`、`theme`・`theme_light`・`theme_dark` → `look.theme`(`"auto"` に明暗のどちらかを書いていれば明暗の表)、`look` → `look.mode`、`borders` → `look.style.frames`、`[style]` → `[look.style]`(`preset` は `look.preset`)、`cells` の文字列と `[cells] style` → `look.cells`
+  - Given: 次の旧い名前で書いた設定(Then の対応の左側)
+  - When: 起動する
+  - Then: それぞれ移った先に書いたのと同じに効く: `color`・`ambiguous_wide`・`nerd_font` → `[terminal]`、`workspace_detect` → `workspace.detect`、`theme`・`theme_light`・`theme_dark` → `look.theme`(`"auto"` に明暗のどちらかを書いていれば明暗の表)、`look` → `look.mode`、`borders` → `look.style.frames`、`[style]` → `[look.style]`(`preset` は `look.preset`)、`cells` の文字列と `[cells] style` → `look.cells`、`[cells]` の部品ごとの真偽 → `[look.style]` のその部品の `plain`(真偽は `check = "text"`、リンクは `links = "plain"`、印は `icons`)、`[cells.columns]` → `[look.columns]`、`[colors]` → `[look.colors]`、`view_tabs` → `display.tabs`、`[display] tabs = false` → `display.tabs = "never"`、`search_bar` → `display.search_bar`、`date_format`・`week_start` → `dates.format`・`dates.week_start`、`candidates`・`add_frontmatter` → `[edit]`。
 - Acceptance:
-  - Given: `[cells]` の部品ごとの真偽
-  - When:
-  - Then: `[look.style]` のその部品の `plain`(真偽は `check = "text"`、リンクは `links = "plain"`、印は `icons`)、`[cells.columns]` → `[look.columns]`、`[colors]` → `[look.colors]`、`view_tabs` → `display.tabs`、`[display] tabs = false` → `display.tabs = "never"`、`search_bar` → `display.search_bar`、`date_format`・`week_start` → `dates.format`・`dates.week_start`、`candidates`・`add_frontmatter` → `[edit]`。
-- Acceptance:
-  - Given: 例: `theme = "auto"` と `theme_light = "paper"`
-  - When:
-  - Then: 明るい地で paper。
+  - Given: `theme = "auto"` と `theme_light = "paper"`
+  - When: 明るい地の端末で起動する
+  - Then: paper。
 - Acceptance:
   - Given: `borders = "ascii"`
-  - When:
+  - When: 起動する
   - Then: 枠が ASCII。
 
 #### 0.3.0 までの書き方を読んだときは、項目ごとに「旧い名前は新しい道筋に移った」と警告するべき

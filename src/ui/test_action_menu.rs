@@ -294,7 +294,7 @@ fn test_sr_24_enter_on_sort_item_sorts_like_s() {
 
 #[test]
 fn test_sr_24_jk_move_in_menu() {
-    // [utest -> req~screen.action-menu-enter~2] 一覧の中は `j` `k` でも動く: `j` 6回・`k` 1回で「この列で並べ替え」→ Enter で `s` と同じ。
+    // [utest -> req~screen.action-menu-enter~1] 一覧の中は `j` `k` でも動く: `j` 6回・`k` 1回で「この列で並べ替え」→ Enter で `s` と同じ。
     let want = sorted_by_s("sr24jk-s");
     let (_t, mut a) = make("sr24jk", NOTES);
     open_menu(&mut a, 0);
