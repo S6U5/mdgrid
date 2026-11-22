@@ -162,7 +162,7 @@ mdgrid の公開のサイト(GitHub Pages)のうち、説明書の外に置く�
 
 #### 記事の文は `docs/writing.md` の決まりで書くべき
 `req~site.blog-style~1` P1
-- Rationale: 説明書と同じく、人が読んで温度のある文にし、AI の文の癖を抜くため(screen.docs-order-style と同じ決まり)
+- Rationale: 説明書と同じく、人が読んで温度のある文にし、AI の文の癖を抜くため(screen.docs-order-style と同じ決まり)。ただし製品の名前は、site.blog-fair の範囲(話の元になった製品と、同じファイルを開ける道具の例)では書いてよい(2026-11-22 に人が決めた)
 - Acceptance:
   - Given: `docs/blog/` の記事
   - When:
