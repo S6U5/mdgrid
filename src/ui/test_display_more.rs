@@ -43,7 +43,7 @@ fn with(name: &str, config: &str, color: ColorMode) -> (Tmp, App) {
 
 #[test]
 fn test_sr_20_column_lines_with_ambiguous_wide_keep_positions() {
-    // [utest -> req~screen.display-options-config~1, req~cell-view.ambiguous-width~1] `│` は Ambiguous。ambiguous_wide では幅1の `|` を引き、列の位置(描いた文字・クリック)がずれない。
+    // [utest -> req~screen.display-options-config~2, req~cell-view.ambiguous-width~1] `│` は Ambiguous。ambiguous_wide では幅1の `|` を引き、列の位置(描いた文字・クリック)がずれない。
     let (_t, mut a) = with(
         "dmamb",
         "[terminal]\nambiguous_wide = true\n\n[display]\ncolumn_lines = true\n",
@@ -73,7 +73,7 @@ fn test_sr_20_column_lines_with_ambiguous_wide_keep_positions() {
 
 #[test]
 fn test_sr_20_zebra_counts_note_rows_not_headings() {
-    // [utest -> req~screen.display-options-config~1] グループの見出しがあっても、ノートの行の番号 2・4・… に色。見出しの行には付けない。
+    // [utest -> req~screen.display-options-config~2] グループの見出しがあっても、ノートの行の番号 2・4・… に色。見出しの行には付けない。
     let (_t, mut a) = with("dmzebra", "[display]\nzebra = true\n", ColorMode::Indexed);
     a.settings.group = Group::By {
         col: "status".into(),
@@ -101,7 +101,7 @@ fn test_sr_20_zebra_counts_note_rows_not_headings() {
 
 #[test]
 fn test_sr_20_display_section_scrolls_on_low_screen() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-per-view~1, req~screen.display-options-hidden-keys~1, req~navigation.settings-layout-pane~1, req~navigation.settings-layout-switch~1] 低い画面では節の中を流し、選んだ項目(`>` の印)がいつも見える。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-per-view~1, req~screen.display-options-hidden-keys~2, req~navigation.settings-layout-pane~2, req~navigation.settings-layout-switch~1] 低い画面では節の中を流し、選んだ項目(`>` の印)がいつも見える。
     let (_t, mut a) = with("dmlow", "", ColorMode::None);
     a.resize(80, 14);
     ch(&mut a, 'o');
@@ -137,7 +137,7 @@ fn test_sr_20_display_section_scrolls_on_low_screen() {
 
 #[test]
 fn test_sr_20_hidden_chips_f_shows_selected_condition() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-hidden-keys~1, req~navigation.settings-reset-default~1, req~navigation.settings-reset-bar-item~1] 帯を隠していても、f と ←→ で選んだ条件が最下行に見え、外す前に分かる。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-hidden-keys~2, req~navigation.settings-reset-default~1, req~navigation.settings-reset-bar-item~1] 帯を隠していても、f と ←→ で選んだ条件が最下行に見え、外す前に分かる。
     let (_t, mut a) = with("dmchips", "[display]\nchips = false\n", ColorMode::None);
     a.settings.sorts.push(("status".into(), Dir::Desc));
     a.settings.group = Group::Off;
@@ -165,7 +165,7 @@ fn test_sr_20_hidden_chips_f_shows_selected_condition() {
 
 #[test]
 fn test_sr_20_hidden_tabs_header_shows_view_name() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-per-view~1, req~screen.display-options-hidden-keys~1, req~base-view.view-switch-tabs~1] タブを隠すと、ヘッダーに今のビューの名前。`]` で切り替えたらメッセージ行で知らせる。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-per-view~1, req~screen.display-options-hidden-keys~2, req~base-view.view-switch-tabs~1] タブを隠すと、ヘッダーに今のビューの名前。`]` で切り替えたらメッセージ行で知らせる。
     let tmp = vault("dmtabs");
     let p = tmp.notes().join("t.base");
     std::fs::write(

@@ -222,7 +222,7 @@ fn goto_tab(a: &mut App, name: &str) {
 
 #[test]
 fn test_ce_25_header_button_click_creates_note() {
-    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-name~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-filter-values~1] ビューの帯の行の右の端に「+ 新規」。クリックで名前の欄 → 名前を打って Enter →
+    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-name~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-relmap-button~2, req~cell-edit.new-note-filter-values~1] ビューの帯の行の右の端に「+ 新規」。クリックで名前の欄 → 名前を打って Enter →
     // 開いたフォルダに `<名前>.md` ができ、表にその行が出て選ばれている。未保存は増えない。
     let tmp = vault("ce25click");
     let mut a = boot(&tmp, Config::default(), false);
@@ -265,7 +265,7 @@ fn test_ce_25_key_a_creates_note() {
 
 #[test]
 fn test_ce_25_palette_creates_note() {
-    // [utest -> req~cell-edit.new-note-start-keys~1, req~screen.palette-fuzzy~1] パレット(`:`)の「新しいノート」でも名前の欄が開く。
+    // [utest -> req~cell-edit.new-note-start-keys~1, req~screen.palette-fuzzy~2] パレット(`:`)の「新しいノート」でも名前の欄が開く。
     let tmp = vault("ce25pal");
     let mut a = boot(&tmp, Config::default(), false);
     palette(&mut a, "新しいノート");
@@ -394,7 +394,7 @@ fn test_ce_25_readonly_creates_nothing() {
 
 #[test]
 fn test_ce_26_ask_number_then_date_with_calendar() {
-    // [utest -> req~cell-edit.new-note-form-typed~1, req~cell-edit.column-type-order~1, req~cell-edit.calendar~1] `ask = ["priority","due"]` → 名前の Enter のあと priority の入力、
+    // [utest -> req~cell-edit.new-note-form-typed~1, req~cell-edit.column-type-order~1, req~cell-edit.calendar~2] `ask = ["priority","due"]` → 名前の Enter のあと priority の入力、
     // Enter で due の入力(カレンダーが出る)、Enter で作る。priority と due(囲まない日付)が入る。
     let tmp = vault("ce26ask");
     let cfg = config("[new_note]\nask = [\"priority\", \"due\"]\n");
@@ -435,7 +435,7 @@ fn test_ce_26_ask_number_then_date_with_calendar() {
 
 #[test]
 fn test_ce_26_empty_answer_is_not_written() {
-    // [utest -> req~cell-edit.new-note-form-ask~1, req~cell-edit.new-note-form-skip-empty~1] priority を空で Enter → priority の行は無い。
+    // [utest -> req~cell-edit.new-note-form-ask~2, req~cell-edit.new-note-form-skip-empty~1] priority を空で Enter → priority の行は無い。
     let tmp = vault("ce26empty");
     let cfg = config("[new_note]\nask = [\"priority\", \"due\"]\n");
     let mut a = boot(&tmp, cfg, false);
@@ -454,7 +454,7 @@ fn test_ce_26_empty_answer_is_not_written() {
 
 #[test]
 fn test_ce_26_esc_while_asking_creates_nothing() {
-    // [utest -> req~cell-edit.new-note-form-move~1] 聞いている途中の Esc → 何も作らない。
+    // [utest -> req~cell-edit.new-note-form-move~2] 聞いている途中の Esc → 何も作らない。
     let tmp = vault("ce26esc");
     let cfg = config("[new_note]\nask = [\"priority\"]\n");
     let mut a = boot(&tmp, cfg, false);
@@ -516,7 +516,7 @@ fn test_ce_27_rebind_n_to_new_note() {
 
 #[test]
 fn test_ce_27_help_lists_new_note() {
-    // [utest -> req~cell-edit.new-note-config-key~1, req~screen.help~1] ヘルプに新しいノートの行(`a` と「新しいノート」)がある。
+    // [utest -> req~cell-edit.new-note-config-key~1, req~screen.help~2] ヘルプに新しいノートの行(`a` と「新しいノート」)がある。
     let tmp = vault("ce27help");
     let mut a = boot(&tmp, Config::default(), false);
     ch(&mut a, '?');

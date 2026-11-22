@@ -62,7 +62,7 @@ fn line_of(a: &App, i: usize) -> String {
 
 #[test]
 fn test_sr_30_gap_above_second_heading_only() {
-    // [utest -> req~screen.group-gap-line~1, req~screen.group-gap-not-row~1] 2つ目の見出しの上に空きの行が1つ。1つ目の見出しの上には無い。
+    // [utest -> req~screen.group-gap-line~2, req~screen.group-gap-not-row~1] 2つ目の見出しの上に空きの行が1つ。1つ目の見出しの上には無い。
     let (_t, a) = open("ggon", "[display]\ngroup_gap = true\n", true);
     assert_eq!(a.groups.len(), 2);
     assert_eq!(a.slots[0], Slot::Head(0), "1つ目の見出しが先頭");
@@ -108,7 +108,7 @@ fn test_sr_30_click_on_gap_keeps_selection() {
 
 #[test]
 fn test_sr_30_default_has_no_gap() {
-    // [utest -> req~screen.group-gap-line~1, req~screen.group-gap-config~1, req~screen.group-gap-per-view~1] group_gap の無い設定 → 今と同じ(空きは無い)。
+    // [utest -> req~screen.group-gap-line~2, req~screen.group-gap-config~1, req~screen.group-gap-per-view~1] group_gap の無い設定 → 今と同じ(空きは無い)。
     let (_t, a) = open("ggoff", "", true);
     assert!(gap_at(&a).is_empty());
     assert_eq!(a.slots.len(), 5 + 2);
@@ -117,7 +117,7 @@ fn test_sr_30_default_has_no_gap() {
 
 #[test]
 fn test_sr_30_no_groups_no_gap() {
-    // [utest -> req~screen.group-gap-line~1] まとまりの無いビューでは、group_gap が true でも空きは出ない。
+    // [utest -> req~screen.group-gap-line~2] まとまりの無いビューでは、group_gap が true でも空きは出ない。
     let (_t, a) = open("ggnogroup", "[display]\ngroup_gap = true\n", false);
     assert!(a.groups.is_empty());
     assert!(gap_at(&a).is_empty());
@@ -125,7 +125,7 @@ fn test_sr_30_no_groups_no_gap() {
 
 #[test]
 fn test_sr_30_view_override_and_row_numbers() {
-    // [utest -> req~screen.group-gap-not-row~1, req~screen.display-options-config~1, req~screen.display-options-per-view~1] 設定に無くても、ビューの上書きで空きを出せる。行番号は空きを数えず 1〜5 が続く。
+    // [utest -> req~screen.group-gap-not-row~1, req~screen.display-options-config~2, req~screen.display-options-per-view~1] 設定に無くても、ビューの上書きで空きを出せる。行番号は空きを数えず 1〜5 が続く。
     let (_t, mut a) = open("ggview", "[display]\nrow_numbers = true\n", true);
     assert!(gap_at(&a).is_empty());
     let base = a.display;

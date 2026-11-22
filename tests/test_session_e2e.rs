@@ -110,7 +110,7 @@ fn one_line_failure(o: &Output) -> String {
 
 #[test]
 fn test_session_list_on_the_command_line() {
-    // [stest -> req~cli.session-screen-list~1] `--sessions` → `進行中<TAB>~/notes/tasks` の形の行と終了コード 0。
+    // [stest -> req~cli.session-screen-list~2] `--sessions` → `進行中<TAB>~/notes/tasks` の形の行と終了コード 0。
     // セッションが1つも無い → 何も出さず終了コード 0。
     let h = home("ses-list", Some(SESSION));
     let o = run(h.path(), &["--sessions"]);
@@ -124,8 +124,8 @@ fn test_session_list_on_the_command_line() {
 
 #[test]
 fn test_session_unknown_name_fails() {
-    // [stest -> req~cli.session-errors~1] `mdgrid -s 無い` → 「セッション「無い」はありません(ある名前: 進行中)」の1行と終了コード 2。
-    // [stest -> req~cli.session-save~1] 無い名前 → 理由1行と終了コード 2。
+    // [stest -> req~cli.session-errors~2] `mdgrid -s 無い` → 「セッション「無い」はありません(ある名前: 進行中)」の1行と終了コード 2。
+    // [stest -> req~cli.session-save~2] 無い名前 → 理由1行と終了コード 2。
     let h = home("ses-unknown", Some(SESSION));
     let o = run(h.path(), &["-s", "無い"]);
     let e = one_line_failure(&o);
@@ -139,7 +139,7 @@ fn test_session_unknown_name_fails() {
 
 #[test]
 fn test_session_with_a_path_fails() {
-    // [stest -> req~cli.session-errors~1] `mdgrid -s 進行中 ~/notes` → どちらを開くか曖昧なので理由1行と終了コード 2。
+    // [stest -> req~cli.session-errors~2] `mdgrid -s 進行中 ~/notes` → どちらを開くか曖昧なので理由1行と終了コード 2。
     let h = home("ses-path", Some(SESSION));
     let notes = h.path().join("notes");
     let o = run(h.path(), &["-s", "進行中", &notes.to_string_lossy()]);
@@ -149,7 +149,7 @@ fn test_session_with_a_path_fails() {
 
 #[test]
 fn test_session_broken_file_and_missing_folder_fail() {
-    // [stest -> req~cli.session-errors~1] 壊れた sessions.toml・セッションの開くフォルダが無い → 理由1行と終了コード 2。
+    // [stest -> req~cli.session-errors~2] 壊れた sessions.toml・セッションの開くフォルダが無い → 理由1行と終了コード 2。
     let h = home("ses-broken", Some("[sessions.\"進行中\"\nfolders = 1\n"));
     let e = one_line_failure(&run(h.path(), &["-s", "進行中"]));
     assert!(e.contains("sessions.toml が読めない(1 行目)"), "{e}");
@@ -166,7 +166,7 @@ fn test_session_broken_file_and_missing_folder_fail() {
 
 #[test]
 fn test_session_flags_in_help() {
-    // [stest -> req~cli.session-save~1] 使い方に `-s <名前>`(`--session`)と `--sessions` がある(どの言語でも)。
+    // [stest -> req~cli.session-save~2] 使い方に `-s <名前>`(`--session`)と `--sessions` がある(どの言語でも)。
     let h = home("ses-help", None);
     for lang in ["ja_JP.UTF-8", "en_US.UTF-8"] {
         let o = Command::new(env!("CARGO_BIN_EXE_mdgrid"))
@@ -207,7 +207,7 @@ mod screen {
 
     #[test]
     fn test_session_opens_the_saved_view() {
-        // [stest -> req~cli.session-save~1] `mdgrid -s 進行中` で同じフォルダ・同じ絞り込み・並び・列の表が開く。
+        // [stest -> req~cli.session-save~2] `mdgrid -s 進行中` で同じフォルダ・同じ絞り込み・並び・列の表が開く。
         // [stest -> req~cli.session-content-fields~2] 同じ値の絞り込みと `\` の絞り込みの2つ・due の昇順・3列。
         // [stest -> req~cli.session-content-fresh-values~1] 保存したあとノートの値を直して開く → 直した値が出る。
         let h = home("ses-open", Some(SESSION));
@@ -254,7 +254,7 @@ mod screen {
     fn test_session_save_from_the_screen_then_open() {
         // [stest -> req~cli.session-screen-save~1] 画面で今の表示を名前 `進行中` で保存 → sessions.toml に `[sessions.進行中]`。
         // [stest -> req~cli.session-store~1] ノートのフォルダに新しいファイルが無い。
-        // [stest -> req~cli.session-save~1] 保存して終了 → `mdgrid -s 進行中` で同じ絞り込みの表が開く。
+        // [stest -> req~cli.session-save~2] 保存して終了 → `mdgrid -s 進行中` で同じ絞り込みの表が開く。
         let h = home("ses-screen", None);
         let mut t = Tui::spawn(&["notes/tasks"], h.path(), &[]);
         t.wait_for("shopping");

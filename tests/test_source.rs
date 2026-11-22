@@ -184,7 +184,7 @@ fn test_bv_1_rows_limited_to_given_folder_labels_from_root() {
 #[test]
 fn test_cv_1_get_distinguishes_value_missing_and_null() {
     // [utest -> req~cell-view.null-empty-missing~1] null・空の文字列・キーが無い、を区別できる。
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1] キーが無いセルは lock なし(末尾に1行足せる)。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2] キーが無いセルは lock なし(末尾に1行足せる)。
     let dir = TempDir::new("source-cv1");
     dir.write("a.md", b"---\ntitle: A\nstatus: draft\n---\n");
     dir.write("b.md", b"---\ntitle: B\nstatus: null\n---\n");
@@ -214,7 +214,7 @@ fn test_cv_1_get_distinguishes_value_missing_and_null() {
 
 #[test]
 fn test_wb_3_no_frontmatter_note_is_writable() {
-    // [utest -> req~write-back.add-frontmatter-at-head~1] フロントマターの無いノートは先頭にフロントマターを足して書ける → そのセルは lock なし。
+    // [utest -> req~write-back.add-frontmatter-at-head~2] フロントマターの無いノートは先頭にフロントマターを足して書ける → そのセルは lock なし。
     // file.* の列は CE-8 で lock あり、理由つき。
     let dir = TempDir::new("source-wb3");
     dir.copy_fixture("plain.md");
@@ -253,7 +253,7 @@ fn test_wb_5_duplicate_key_note_is_locked() {
 
 #[test]
 fn test_ce_8_block_scalar_and_nested_are_locked() {
-    // [utest -> req~cell-edit.read-only-forms~1] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
+    // [utest -> req~cell-edit.read-only-forms~2] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
     let dir = TempDir::new("source-ce8");
     dir.copy_fixture("block_scalar.md");
     dir.copy_fixture("nested_map.md");
@@ -281,8 +281,8 @@ fn test_ce_8_block_scalar_and_nested_are_locked() {
 
 #[test]
 fn test_ce_16_list_values_are_editable_unless_ce_8_form() {
-    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] リストの値の列(tags)は、書ける形なら lock なし。フローのリストもブロックのリストも。
-    // [utest -> req~cell-edit.read-only-forms~1] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] リストの値の列(tags)は、書ける形なら lock なし。フローのリストもブロックのリストも。
+    // [utest -> req~cell-edit.read-only-forms~2] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
     let dir = TempDir::new("source-ce16");
     dir.copy_fixture("flow_list.md");
     dir.copy_fixture("block_list.md");
@@ -319,7 +319,7 @@ fn test_ce_16_list_values_are_editable_unless_ce_8_form() {
 
 #[test]
 fn test_ce_18_list_save_keeps_form_through_source() {
-    // [utest -> req~cell-edit.list-layout~1] Source 越しの保存: フローは1行のまま、ブロックは同じ字下げの行が増え、ほかのバイトは同じ。
+    // [utest -> req~cell-edit.list-layout~2] Source 越しの保存: フローは1行のまま、ブロックは同じ字下げの行が増え、ほかのバイトは同じ。
     let dir = TempDir::new("source-ce18");
     let flow = dir.copy_fixture("flow_list.md");
     let block = dir.copy_fixture("block_list.md");

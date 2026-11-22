@@ -146,7 +146,7 @@ fn test_bv_20_folded_groups_per_native_view() {
 
 #[test]
 fn test_bv_19_commands_in_help_and_palette() {
-    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-import~1, req~base-view.export-base-dropped~1, req~base-view.export-base-new-file~1, req~screen.help~1, req~screen.palette-fuzzy~1, req~screen.palette-keys~1] キーの無いコマンドもヘルプに出て、パレットで名前から引ける。
+    // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-import~1, req~base-view.export-base-dropped~1, req~base-view.export-base-new-file~1, req~screen.help~2, req~screen.palette-fuzzy~2, req~screen.palette-keys~1] キーの無いコマンドもヘルプに出て、パレットで名前から引ける。
     // [utest -> req~cli.readonly~1] 読むだけではパレットに出さない(書くコマンド)。
     let tmp = vault("nvstate_help");
     let mut a = boot(&tmp);
@@ -406,7 +406,7 @@ fn test_wb_15_readonly_hides_view_buttons_and_commands() {
 
 #[test]
 fn test_nv_18_left_right_follow_button_rows() {
-    // [utest -> req~navigation.settings-layout-pane~1, req~navigation.settings-layout-buttons~1] ←→ は画面の同じ行のボタンの中で動く。上の右は反映・取り消し、下は既定に戻すと
+    // [utest -> req~navigation.settings-layout-pane~2, req~navigation.settings-layout-buttons~2] ←→ は画面の同じ行のボタンの中で動く。上の右は反映・取り消し、下は既定に戻すと
     // mdgrid のビューのボタン(取り消し → 既定に戻す には飛ばない)。
     let tmp = vault("nvstate_lr");
     let mut a = boot(&tmp);

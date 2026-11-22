@@ -25,7 +25,7 @@ fn open_menu_24(a: &mut App, row: usize) -> (Shot, Shot) {
 
 #[test]
 fn test_sr_25_more_esc_after_prefix_keeps_marks() {
-    // [utest -> req~screen.prefix-hints-esc-only~1, req~navigation.select-rows~1] 2行に印を付けて `g` のあと Esc → 前置きを取り消すだけで、印は残る
+    // [utest -> req~screen.prefix-hints-esc-only~2, req~navigation.select-rows~1] 2行に印を付けて `g` のあと Esc → 前置きを取り消すだけで、印は残る
     // (表の Esc の「選択を解く」まで走らない)。帯は元に戻る。
     let (_t, mut a) = make("sr25marks", NOTES);
     col_named(&mut a, "status");
@@ -44,7 +44,7 @@ fn test_sr_25_more_esc_after_prefix_keeps_marks() {
 
 #[test]
 fn test_sr_25_more_esc_after_prefix_in_menu_keeps_menu() {
-    // [utest -> req~screen.prefix-hints-esc-only~1, req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 一覧を開いて `g` のあと Esc → 前置きを取り消すだけで、一覧は開いたまま。
+    // [utest -> req~screen.prefix-hints-esc-only~2, req~screen.action-menu-overlay~1, req~screen.action-menu-too-low~1] 一覧を開いて `g` のあと Esc → 前置きを取り消すだけで、一覧は開いたまま。
     let (_t, mut a) = make("sr25menuesc", NOTES);
     let (before, _) = open_menu_24(&mut a, 0);
     assert_eq!(a.mode, menu_mode(), "x で一覧が開かない");
@@ -61,7 +61,7 @@ fn test_sr_25_more_esc_after_prefix_in_menu_keeps_menu() {
 
 #[test]
 fn test_sr_25_more_prefix_in_menu_band_returns() {
-    // [utest -> req~screen.prefix-hints-restore~1, req~screen.prefix-hints-esc-only~1] 一覧で `g` `g` → 続きを押したら帯は元に戻る(帯に出した続きは、続きを押せば実行されて案内が消える)。
+    // [utest -> req~screen.prefix-hints-restore~2, req~screen.prefix-hints-esc-only~2] 一覧で `g` `g` → 続きを押したら帯は元に戻る(帯に出した続きは、続きを押せば実行されて案内が消える)。
     // 一覧が開いたままなら一覧の帯に、閉じたなら表の帯に戻っている。
     let (_t, mut a) = make("sr25menugg", NOTES);
     open_menu_24(&mut a, 0);

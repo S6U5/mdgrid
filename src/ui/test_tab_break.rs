@@ -260,7 +260,7 @@ fn test_nv_32_break_two_rows_wide_no_wrap() {
 
 #[test]
 fn test_nv_32_click_lower_row_selects_view() {
-    // [utest -> req~navigation.tab-break-place~1] 下の行の D をクリック → D のビュー。上の行の B をクリック → B のビュー。
+    // [utest -> req~navigation.tab-break-place~2] 下の行の D をクリック → D のビュー。上の行の B をクリック → B のビュー。
     let (_t, mut a) = boot(
         "nv32_click",
         &base_text(&abcd(&[C])),
@@ -285,7 +285,7 @@ fn test_nv_32_click_lower_row_selects_view() {
 
 #[test]
 fn test_nv_32_gap_only_before_tab_rows() {
-    // [utest -> req~navigation.tab-break-place~1] tab_wrap_gap = true → 検索の欄の行とタブの行の間に空き行が1つで、2つのタブの行の間には
+    // [utest -> req~navigation.tab-break-place~2] tab_wrap_gap = true → 検索の欄の行とタブの行の間に空き行が1つで、2つのタブの行の間には
     // 空き行が無い。表は空き行の無いときよりちょうど1行下がる。
     let base = base_text(&abcd(&[C]));
     let (_t, a) = boot(
@@ -377,7 +377,7 @@ fn test_nv_32_narrow_wraps_within_row() {
 
 #[test]
 fn test_nv_32_first_tab_break_changes_nothing() {
-    // [utest -> req~navigation.tab-break-precedence~1, req~navigation.tab-break-place~1] 先頭の A にだけ tab_break → 今のまま(切れ目の無いときと同じ画面。幅 200 ではタブは真ん中の行、
+    // [utest -> req~navigation.tab-break-precedence~1, req~navigation.tab-break-place~2] 先頭の A にだけ tab_break → 今のまま(切れ目の無いときと同じ画面。幅 200 ではタブは真ん中の行、
     // 幅 60・tab_wrap = false では今のでないタブを省く NV-23 のまま)。
     for w in [200, 60] {
         let (_t, a) = boot(
@@ -428,7 +428,7 @@ fn test_nv_32_hidden_break_moves_to_next_shown() {
     assert_eq!(tab_lines(&s, ABCD).len(), 2, "{s}");
 }
 
-// [utest -> req~navigation.tab-break-place~1, req~navigation.tab-break-moves~1, req~navigation.tab-break-key-order~1]
+// [utest -> req~navigation.tab-break-place~2, req~navigation.tab-break-moves~1, req~navigation.tab-break-key-order~1]
 #[test]
 fn test_nv_32_break_moves_with_tab_order() {
     // [NV-32・NV-26] タブの順を D・C・A・B にする → 切れ目は C と一緒に動き、下の1行目に D、2行目に C・A・B。
@@ -478,7 +478,7 @@ fn test_nv_32_break_moves_with_tab_order() {
 
 #[test]
 fn test_nv_32_box_tabs_below_bottom_line() {
-    // [utest -> req~navigation.tab-break-place~1] 囲む帯(box)・余白 1 → タブの行は囲みの下の線の行の下(NV-31 と同じ置き場)。
+    // [utest -> req~navigation.tab-break-place~2] 囲む帯(box)・余白 1 → タブの行は囲みの下の線の行の下(NV-31 と同じ置き場)。
     let (_t, a) = boot(
         "nv32_box",
         &base_text(&abcd(&[C])),
@@ -495,7 +495,7 @@ fn test_nv_32_box_tabs_below_bottom_line() {
     assert_eq!(tab_row(&s, C), Some(mid + 3), "{s}");
 }
 
-// [utest -> req~navigation.tab-break-place~1, req~navigation.tab-break-no-tabs~1]
+// [utest -> req~navigation.tab-break-place~2, req~navigation.tab-break-no-tabs~1]
 #[test]
 fn test_nv_32_tabs_never_has_no_tab_rows() {
     // [NV-32・SR-34] tabs = "never" → タブの行は無く、切れ目の無いときと同じ画面。

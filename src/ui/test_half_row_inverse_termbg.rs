@@ -135,7 +135,7 @@ fn test_nv_23_half_termbg_no_color_still_rounds_up() {
 
 #[test]
 fn test_nv_23_half_termbg_rgb_from_osc11() {
-    // [utest -> req~navigation.search-box-screen-bg~1] 端末の答え(OSC 11)から地の色を読む: 4桁と2桁の16進、読めない答え。
+    // [utest -> req~navigation.search-box-screen-bg~2] 端末の答え(OSC 11)から地の色を読む: 4桁と2桁の16進、読めない答え。
     use super::termbg::rgb_from_osc11;
     assert_eq!(
         rgb_from_osc11("\x1b]11;rgb:0c0c/1e1e/ffff\x1b\\"),

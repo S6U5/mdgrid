@@ -131,7 +131,7 @@ fn is_clear_title(c: &[String]) -> bool {
 
 #[test]
 fn test_herdr_report_follow_and_release() {
-    // [stest -> req~resume.herdr-report~1, req~resume.herdr-follow~1, req~resume.herdr-release~1] Herdr の窓で `.base` のビュー「進行中」を開く → report-agent で開き直す命令を伝え、ビューを「全部」へ移ると 2 秒以内に伝え直し、行を動かしても伝え直さず、q で release-agent を呼んでから終わる。
+    // [stest -> req~resume.herdr-report~2, req~resume.herdr-follow~2, req~resume.herdr-release~1] Herdr の窓で `.base` のビュー「進行中」を開く → report-agent で開き直す命令を伝え、ビューを「全部」へ移ると 2 秒以内に伝え直し、行を動かしても伝え直さず、q で release-agent を呼んでから終わる。
     let h = home("resume-report");
     let herdr = fake_herdr(h.path(), "");
     let mut t = spawn(
@@ -196,14 +196,14 @@ fn test_herdr_report_follow_and_release() {
             "--seq"
         ]
     );
-    // [stest -> req~resume.herdr-seq~1] 伝えた数は、この順に大きくなる。
+    // [stest -> req~resume.herdr-seq~2] 伝えた数は、この順に大きくなる。
     let seqs: Vec<u64> = calls.iter().map(|c| seq_of(c)).collect();
     assert!(seqs.windows(2).all(|w| w[0] < w[1]), "{seqs:?}");
 }
 
 #[test]
 fn test_herdr_follow_switch_from_places_list() {
-    // [stest -> req~resume.herdr-follow~1, req~resume.reopen-args~1] 登録した表の一覧で別の表(フォルダ)へ移る → その表の絶対パスと --raw の命令を伝える。
+    // [stest -> req~resume.herdr-follow~2, req~resume.reopen-args~2] 登録した表の一覧で別の表(フォルダ)へ移る → その表の絶対パスと --raw の命令を伝える。
     let h = home("resume-places");
     std::fs::create_dir_all(h.path().join("shelf")).unwrap();
     std::fs::write(
@@ -237,7 +237,7 @@ fn test_herdr_follow_switch_from_places_list() {
 
 #[test]
 fn test_herdr_not_called_outside_herdr() {
-    // [stest -> req~resume.herdr-report~1] HERDR_ENV の無い窓(窓の ID と道具のパスはある)→ Herdr の道具は呼ばれない。
+    // [stest -> req~resume.herdr-report~2] HERDR_ENV の無い窓(窓の ID と道具のパスはある)→ Herdr の道具は呼ばれない。
     let h = home("resume-noenv");
     let herdr = fake_herdr(h.path(), "");
     let env: Vec<(&'static str, String)> = herdr.env().into_iter().skip(1).collect();
@@ -268,7 +268,7 @@ fn test_herdr_unsendable_folder_releases() {
 
 #[test]
 fn test_herdr_slow_tool_does_not_block() {
-    // [stest -> req~resume.herdr-no-wait~1] 呼ばれると 30 秒眠る道具 → 表が出てキーが効き、q から 5 秒以内に終わる。
+    // [stest -> req~resume.herdr-no-wait~2] 呼ばれると 30 秒眠る道具 → 表が出てキーが効き、q から 5 秒以内に終わる。
     let h = home("resume-slow");
     let herdr = fake_herdr(h.path(), "exec sleep 30");
     let mut t = spawn(&["notes/tasks.base"], h.path(), &herdr.env());
@@ -290,7 +290,7 @@ fn test_herdr_slow_tool_does_not_block() {
 
 #[test]
 fn test_herdr_failing_tool_is_quiet() {
-    // [stest -> req~resume.herdr-no-wait~1] 終了コード 1 で終わる道具 → 知らせの行に何も出さず、ビューを移っても伝え直して動き続ける。
+    // [stest -> req~resume.herdr-no-wait~2] 終了コード 1 で終わる道具 → 知らせの行に何も出さず、ビューを移っても伝え直して動き続ける。
     let h = home("resume-fail");
     let herdr = fake_herdr(h.path(), "");
     // ログに書いてから 1 で終わる道具にする。
@@ -312,7 +312,7 @@ fn test_herdr_failing_tool_is_quiet() {
 
 #[test]
 fn test_herdr_config_off() {
-    // [stest -> req~resume.herdr-config-off~1] `[terminal] herdr = false` → Herdr の窓でも道具は1回も呼ばれない。書かなければ呼ばれる(既定は true)。
+    // [stest -> req~resume.herdr-config-off~2] `[terminal] herdr = false` → Herdr の窓でも道具は1回も呼ばれない。書かなければ呼ばれる(既定は true)。
     let h = home("resume-off");
     std::fs::write(
         h.path().join("config/mdgrid/config.toml"),
@@ -350,7 +350,7 @@ fn test_herdr_skipped_for_pick() {
 
 #[test]
 fn test_herdr_title_follows_view_and_clears() {
-    // [stest -> req~resume.herdr-title~1, req~resume.herdr-title-clear~1] Herdr の窓で tasks.base をビュー「進行中」で開く → report-metadata で題「tasks · 進行中」を伝え、「全部」へ移ると「tasks · 全部」に替わる。q で終える → --clear-title のあとに release-agent。`herdr = false` → 題も伝えない。
+    // [stest -> req~resume.herdr-title~2, req~resume.herdr-title-clear~1] Herdr の窓で tasks.base をビュー「進行中」で開く → report-metadata で題「tasks · 進行中」を伝え、「全部」へ移ると「tasks · 全部」に替わる。q で終える → --clear-title のあとに release-agent。`herdr = false` → 題も伝えない。
     let h = home("resume-title");
     let herdr = fake_herdr(h.path(), "");
     let mut t = spawn(
@@ -416,7 +416,7 @@ fn test_herdr_title_follows_view_and_clears() {
 
 #[test]
 fn test_herdr_title_form() {
-    // [stest -> req~resume.herdr-title-form~1] ワークスペースの表 `name = "タスク"` の notes/tasks.base を「進行中」で開く → 題「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ビューが1つの `.base`(ビューのタブを出さない表)→ 表の名前だけ。
+    // [stest -> req~resume.herdr-title-form~2] ワークスペースの表 `name = "タスク"` の notes/tasks.base を「進行中」で開く → 題「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ビューが1つの `.base`(ビューのタブを出さない表)→ 表の名前だけ。
     let h = home("resume-title-form");
     let base = real(&h.path().join("notes/tasks.base"));
     std::fs::write(
@@ -462,7 +462,7 @@ fn last_screens(h: &Path) -> String {
 
 #[test]
 fn test_last_screen_and_continue() {
-    // [stest -> req~resume.last-screen-save~1, req~resume.continue~1] tasks.base のビュー「全部」に移って終える → 最後の画面に tasks.base と「全部」が書かれ、notes に新しいファイルは無い。同じフォルダで --continue → 「全部」で開く。別のフォルダの --continue には使わない。
+    // [stest -> req~resume.last-screen-save~1, req~resume.continue~2] tasks.base のビュー「全部」に移って終える → 最後の画面に tasks.base と「全部」が書かれ、notes に新しいファイルは無い。同じフォルダで --continue → 「全部」で開く。別のフォルダの --continue には使わない。
     let h = home("resume-continue");
     let mut t = Tui::spawn(&["notes/tasks.base"], h.path(), &[]);
     t.wait_for("doing");
@@ -517,7 +517,7 @@ fn test_last_screen_and_continue() {
 
 #[test]
 fn test_continue_fallback() {
-    // [stest -> req~resume.continue-fallback~1] 最後の画面が無い → 引数なしと同じ。壊れている → 同じ。覚えたビューを .base から消す → 表を開いて、ビューが無い理由を知らせの行に出す。
+    // [stest -> req~resume.continue-fallback~2] 最後の画面が無い → 引数なしと同じ。壊れている → 同じ。覚えたビューを .base から消す → 表を開いて、ビューが無い理由を知らせの行に出す。
     let h = home("resume-fallback");
     let herdr = fake_herdr(h.path(), "");
     let here = real(h.path());
@@ -580,7 +580,7 @@ fn run(h: &Path, args: &[&str]) -> std::process::Output {
 
 #[test]
 fn test_continue_conflicts() {
-    // [stest -> req~resume.continue-conflict~1] --continue とパス・--view・-w・--raw・--print・--pick を一緒に渡す → 理由1行と終了コード 2。
+    // [stest -> req~resume.continue-conflict~2] --continue とパス・--view・-w・--raw・--print・--pick を一緒に渡す → 理由1行と終了コード 2。
     let h = home("resume-conflict");
     for args in [
         &["--continue", "notes"][..],
@@ -600,7 +600,7 @@ fn test_continue_conflicts() {
 
 #[test]
 fn test_continue_with_readonly() {
-    // [stest -> req~resume.continue-conflict~1] `mdgrid --continue --readonly` → 最後の画面を読むだけで開く。
+    // [stest -> req~resume.continue-conflict~2] `mdgrid --continue --readonly` → 最後の画面を読むだけで開く。
     let h = home("resume-continue-ro");
     let mut t = Tui::spawn(&["notes/tasks.base"], h.path(), &[]);
     t.wait_for("doing");
@@ -636,7 +636,7 @@ fn own_view_home(tag: &str) -> TempDir {
 
 #[test]
 fn test_view_option_finds_own_views() {
-    // [stest -> req~cli.view-own-views~1] views.toml にビュー「進行中」のあるフォルダで `mdgrid notes2 --view 進行中` → 「進行中」のタブで開く。
+    // [stest -> req~cli.view-own-views~2] views.toml にビュー「進行中」のあるフォルダで `mdgrid notes2 --view 進行中` → 「進行中」のタブで開く。
     let h = own_view_home("resume-own-view");
     let herdr = fake_herdr(h.path(), "");
     let mut t = spawn(&["notes2", "--view", "進行中"], h.path(), &herdr.env());
@@ -650,7 +650,7 @@ fn test_view_option_finds_own_views() {
 
 #[test]
 fn test_view_option_unknown_name_fails() {
-    // [stest -> req~cli.view-own-views~1] `mdgrid notes2 --view 無い` → 「進行中」を並べた理由1行と終了コード 2。
+    // [stest -> req~cli.view-own-views~2] `mdgrid notes2 --view 無い` → 「進行中」を並べた理由1行と終了コード 2。
     let h = own_view_home("resume-own-view-missing");
     let o = run(h.path(), &["notes2", "--view", "無い"]);
     assert_eq!(o.status.code(), Some(2));

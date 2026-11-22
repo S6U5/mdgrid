@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn test_sr_36_dozy_pink_preset() {
-    // [utest -> req~screen.style-parts-preset~1] preset = "dozy-pink" → 丸い札の状態とタグ・左の線の選び・線なし・塗ったタブ。上書きもできる。
+    // [utest -> req~screen.style-parts-preset~2] preset = "dozy-pink" → 丸い札の状態とタグ・左の線の選び・線なし・塗ったタブ。上書きもできる。
     let (c, w) = crate::config::parse("[look]\npreset = \"dozy-pink\"\n").unwrap();
     assert!(w.is_empty(), "{w:?}");
     let s = c.resolved().style;

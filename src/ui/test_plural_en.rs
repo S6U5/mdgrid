@@ -15,7 +15,7 @@ fn header(s: &str, a: &super::app::App) -> String {
 
 #[test]
 fn test_sr_23_plural_header_one_row() {
-    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2, req~screen.locales-no-translate~1] 英語の画面で 1 ノートならヘッダーは `1 row`(`1 rows` でない)。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-no-translate~1] 英語の画面で 1 ノートならヘッダーは `1 row`(`1 rows` でない)。
     let _g = scoped(Lang::En);
     let (_t, a) = make("sr23one", &[("a.md", "---\ntitle: one\n---\n")]);
     let h = header(&screen(&a), &a);
@@ -25,7 +25,7 @@ fn test_sr_23_plural_header_one_row() {
 
 #[test]
 fn test_sr_23_plural_header_two_rows() {
-    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2, req~screen.locales-no-translate~1] 英語の画面で 2 ノートならヘッダーは `2 rows`。
+    // [utest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-no-translate~1] 英語の画面で 2 ノートならヘッダーは `2 rows`。
     let _g = scoped(Lang::En);
     let (_t, a) = make(
         "sr23two",

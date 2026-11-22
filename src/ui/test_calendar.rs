@@ -64,7 +64,7 @@ fn day(s: &str) -> NewValue {
 
 #[test]
 fn test_ce_20_calendar_select_and_type() {
-    // [utest -> req~cell-edit.calendar~1] due のセルで Enter → 入力ボックスの下に今の値の月のカレンダー、今の値の日が選ばれている。
+    // [utest -> req~cell-edit.calendar~2] due のセルで Enter → 入力ボックスの下に今の値の月のカレンダー、今の値の日が選ばれている。
     // → で次の日 → Enter → その日がためる変更。
     let (_t, mut a) = vault(
         "ce20",
@@ -113,7 +113,7 @@ fn test_ce_20_calendar_select_and_type() {
 
 #[test]
 fn test_ce_20_invalid_typing_keeps_input_and_esc_cancels() {
-    // [utest -> req~cell-edit.calendar~1] 打ち込みは今までどおり(CE-5): 実在しない日付は閉じずに理由。Esc で取り消し、Ctrl+R で編集前(CE-11)。
+    // [utest -> req~cell-edit.calendar~2] 打ち込みは今までどおり(CE-5): 実在しない日付は閉じずに理由。Esc で取り消し、Ctrl+R で編集前(CE-11)。
     let (_t, mut a) = vault("ce20bad", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -141,7 +141,7 @@ fn test_ce_20_invalid_typing_keeps_input_and_esc_cancels() {
 
 #[test]
 fn test_ce_20_click_a_day() {
-    // [utest -> req~cell-edit.calendar~1] カレンダーの日のクリックはその日を選ぶ(確定のクリックにしない)。
+    // [utest -> req~cell-edit.calendar~2] カレンダーの日のクリックはその日を選ぶ(確定のクリックにしない)。
     let (_t, mut a) = vault("ce20click", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -162,7 +162,7 @@ fn test_ce_20_click_a_day() {
 
 #[test]
 fn test_ce_21_moves_today_and_clear() {
-    // [utest -> req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-clear~1] 2026-10-30 で ↓ → 2026-11-06。↑ で戻る。← で1日戻る。
+    // [utest -> req~cell-edit.calendar-keys-move~2, req~cell-edit.calendar-keys-clear~1] 2026-10-30 で ↓ → 2026-11-06。↑ で戻る。← で1日戻る。
     let (_t, mut a) = vault(
         "ce21",
         &[
@@ -212,7 +212,7 @@ fn test_ce_21_moves_today_and_clear() {
 
 #[test]
 fn test_ce_21_monday_start() {
-    // [utest -> req~cell-edit.calendar-keys-week-start~1] 設定で月曜始まり → 1列目が月。
+    // [utest -> req~cell-edit.calendar-keys-week-start~2] 設定で月曜始まり → 1列目が月。
     let (_t, mut a) = vault(
         "ce21mon",
         &[("a.md", "---\ntitle: 会議\ndue: 2026-10-05\n---\n")],
@@ -306,7 +306,7 @@ fn test_ce_21_datetime_keeps_time() {
 
 #[test]
 fn test_ce_22_short_formats_keep_year() {
-    // [utest -> req~cell-edit.date-format-display~1, req~cell-edit.date-format-write~1, req~cell-edit.calendar~1] 設定の形に4桁の年が無くても、違う日を書かない。カレンダーの日は元の値の日数から作り、
+    // [utest -> req~cell-edit.date-format-display~2, req~cell-edit.date-format-write~1, req~cell-edit.calendar~2] 設定の形に4桁の年が無くても、違う日を書かない。カレンダーの日は元の値の日数から作り、
     // 矢印で選んだ日は日数から書く。入力ボックスは `YYYY-MM-DD`(表は設定の形のまま)。
     let (_t, mut a) = vault(
         "ce22short",
@@ -425,7 +425,7 @@ fn test_cv_2_datetime_mismatch_time_not_carried() {
 
 #[test]
 fn test_ce_10_bulk_datetime_keeps_each_rows_time() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1, req~cell-edit.calendar-keys-keep-time~1] 日時の列の一括: 日だけを変え、時刻は行ごとの元の値(元に時刻が無い行は時刻なし)。
+    // [utest -> req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1, req~cell-edit.calendar-keys-keep-time~1] 日時の列の一括: 日だけを変え、時刻は行ごとの元の値(元に時刻が無い行は時刻なし)。
     // 打ち込みで時刻を書いたときだけ、その時刻を全部の行に入れる。
     let (_t, mut a) = vault(
         "ce10dt",
@@ -501,7 +501,7 @@ fn test_ce_21_narrow_terminal_types_only() {
 
 #[test]
 fn test_ce_21_calendar_above_when_no_room_below() {
-    // [utest -> req~cell-edit.calendar~1, req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-keep-time~1] 下に入らなければ入力ボックスの上に出す。
+    // [utest -> req~cell-edit.calendar~2, req~cell-edit.calendar-keys-move~2, req~cell-edit.calendar-keys-marks~1, req~cell-edit.calendar-keys-keep-time~1] 下に入らなければ入力ボックスの上に出す。
     let notes: Vec<(String, String)> = (0..16)
         .map(|i| {
             (
@@ -554,7 +554,7 @@ fn test_ce_21_keys_only_for_dates() {
 
 #[test]
 fn test_ce_10_bulk_date_with_calendar() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1, req~cell-edit.calendar~1] 一括で日付の列に入れるときもカレンダーと同じ入力。
+    // [utest -> req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1, req~cell-edit.calendar~2] 一括で日付の列に入れるときもカレンダーと同じ入力。
     let (_t, mut a) = vault(
         "ce10cal",
         &[
@@ -575,7 +575,7 @@ fn test_ce_10_bulk_date_with_calendar() {
 
 #[test]
 fn test_ce_22_date_format_in_table_and_input() {
-    // [utest -> req~cell-edit.date-format-display~1, req~cell-edit.date-format-write~1] `date_format = "YYYY/MM/DD"` → 表の due が `2026/10/05`。`2026/11/03` と打っても
+    // [utest -> req~cell-edit.date-format-display~2, req~cell-edit.date-format-write~1] `date_format = "YYYY/MM/DD"` → 表の due が `2026/10/05`。`2026/11/03` と打っても
     // `2026-11-03` と打っても、ファイルには `due: 2026-11-03`。型の合わない値はそのまま `!`(CV-2)。
     let (t, mut a) = vault(
         "ce22",
@@ -609,7 +609,7 @@ fn test_ce_22_date_format_in_table_and_input() {
     assert_eq!(pending(&a, 1, "due"), Some(day("2026-11-03")));
     ctrl(&mut a, 's');
     press(&mut a, KeyCode::Enter);
-    // [utest -> req~write-back.date-quoting-plain~1] ファイルには表の見せ方の形ではなく `YYYY-MM-DD` で、元のとおり囲まずに書く。
+    // [utest -> req~write-back.date-quoting-plain~2] ファイルには表の見せ方の形ではなく `YYYY-MM-DD` で、元のとおり囲まずに書く。
     for n in ["a.md", "b.md"] {
         let body = read(&t, n);
         assert_eq!(body, "---\ndue: 2026-11-03\n---\n", "{n}");
@@ -654,7 +654,7 @@ fn key_then_word(line: &str, key: &str, word: &str) -> bool {
 
 #[test]
 fn test_ce_23_shift_left_right_moves_month() {
-    // [utest -> req~cell-edit.calendar-month-keys-shift~1] 2026-10-30 のセルでカレンダーを出し Shift+→ → 2026-11-30。そこから Shift+← を3回 → 2026-08-30。
+    // [utest -> req~cell-edit.calendar-month-keys-shift~2] 2026-10-30 のセルでカレンダーを出し Shift+→ → 2026-11-30。そこから Shift+← を3回 → 2026-08-30。
     let (_t, mut a) = vault("ce23", &[("a.md", "---\ndue: 2026-10-30\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -671,7 +671,7 @@ fn test_ce_23_shift_left_right_moves_month() {
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(pending(&a, 0, "due"), Some(day("2026-08-30")));
-    // [utest -> req~cell-edit.calendar-keys-move~1] PageDown はこれまでどおり1か月。
+    // [utest -> req~cell-edit.calendar-keys-move~2] PageDown はこれまでどおり1か月。
     press(&mut a, KeyCode::Enter);
     press(&mut a, KeyCode::PageDown);
     assert_eq!(text(&a), "2026-09-30");
@@ -682,7 +682,7 @@ fn test_ce_23_shift_left_right_moves_month() {
 
 #[test]
 fn test_ce_23_shift_left_clamps_to_month_end() {
-    // [utest -> req~cell-edit.calendar-month-keys-shift~1] 2026-03-31 で Shift+← → 2026-02-28(無ければ月末)。
+    // [utest -> req~cell-edit.calendar-month-keys-shift~2] 2026-03-31 で Shift+← → 2026-02-28(無ければ月末)。
     let (_t, mut a) = vault("ce23end", &[("a.md", "---\ndue: 2026-03-31\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -695,7 +695,7 @@ fn test_ce_23_shift_left_clamps_to_month_end() {
 
 #[test]
 fn test_ce_23_ce_24_keys_on_bottom_edge() {
-    // [utest -> req~cell-edit.calendar-month-keys-hint~1, req~cell-edit.calendar-year-keys~1] カレンダーの下の縁に `Shift+←→` と「月」、`Shift+↑↓` と「年」が並んで出る。
+    // [utest -> req~cell-edit.calendar-month-keys-hint~1, req~cell-edit.calendar-year-keys~2] カレンダーの下の縁に `Shift+←→` と「月」、`Shift+↑↓` と「年」が並んで出る。
     let (_t, mut a) = vault("ce23edge", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -709,7 +709,7 @@ fn test_ce_23_ce_24_keys_on_bottom_edge() {
 
 #[test]
 fn test_ce_23_no_calendar_shift_right_keeps_date() {
-    // [utest -> req~cell-edit.calendar-month-keys-shift~1, req~cell-view.grapheme-width-fit~1] カレンダーが出ていない(幅 30)ときは Shift+→ で日付が変わらない(文字のカーソルが動くだけ)。
+    // [utest -> req~cell-edit.calendar-month-keys-shift~2, req~cell-view.grapheme-width-fit~1] カレンダーが出ていない(幅 30)ときは Shift+→ で日付が変わらない(文字のカーソルが動くだけ)。
     let (_t, mut a) = vault("ce23w30", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
     a.resize(30, 24);
     col_named(&mut a, "due");
@@ -728,7 +728,7 @@ fn test_ce_23_no_calendar_shift_right_keeps_date() {
 
 #[test]
 fn test_ce_24_shift_up_down_moves_year() {
-    // [utest -> req~cell-edit.calendar-year-keys~1] 2026-10-30 で Shift+↓ → 2027-10-30。Shift+↑ → 1年前。
+    // [utest -> req~cell-edit.calendar-year-keys~2] 2026-10-30 で Shift+↓ → 2027-10-30。Shift+↑ → 1年前。
     let (_t, mut a) = vault("ce24", &[("a.md", "---\ndue: 2026-10-30\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -745,7 +745,7 @@ fn test_ce_24_shift_up_down_moves_year() {
 
 #[test]
 fn test_ce_24_leap_day_clamps() {
-    // [utest -> req~cell-edit.calendar-year-keys~1] 2028-02-29 で Shift+↓ → 2029-02-28。
+    // [utest -> req~cell-edit.calendar-year-keys~2] 2028-02-29 で Shift+↓ → 2029-02-28。
     let (_t, mut a) = vault("ce24leap", &[("a.md", "---\ndue: 2028-02-29\n---\n")]);
     col_named(&mut a, "due");
     press(&mut a, KeyCode::Enter);
@@ -758,7 +758,7 @@ fn test_ce_24_leap_day_clamps() {
 
 #[test]
 fn test_ce_24_ambiguous_wide_keeps_year_key() {
-    // [utest -> req~cell-edit.calendar-year-keys~1, req~cell-view.ambiguous-width~1, req~cell-view.grapheme-width-fit~1] 矢印を幅2と数える(ambiguous_wide)と1行に入らないので、縁の行を分けて「年」のキーも残す。
+    // [utest -> req~cell-edit.calendar-year-keys~2, req~cell-view.ambiguous-width~1, req~cell-view.grapheme-width-fit~1] 矢印を幅2と数える(ambiguous_wide)と1行に入らないので、縁の行を分けて「年」のキーも残す。
     let (_t, mut a) = vault("ce24wide", &[("a.md", "---\ndue: 2026-10-05\n---\n")]);
     configure(&mut a, "[terminal]\nambiguous_wide = true");
     col_named(&mut a, "due");

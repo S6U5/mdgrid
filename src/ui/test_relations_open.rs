@@ -129,7 +129,7 @@ fn test_rel_4_pending_changes_ask_first() {
 
 #[test]
 fn test_rel_4_menu_has_open_link_on_link_cell() {
-    // [utest -> req~relations.follow-link-open~1, req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1] 操作の一覧: リンクのセルにだけ「行き先を開く」。
+    // [utest -> req~relations.follow-link-open~1, req~screen.action-menu-open-key~2, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1] 操作の一覧: リンクのセルにだけ「行き先を開く」。
     let tmp = workspace("rel_menu");
     let mut a = boot_tasks(&tmp);
     goto(&mut a, "a build", "project");
@@ -266,7 +266,7 @@ fn test_rel_4_hidden_row_in_same_table_gives_reason() {
 
 #[test]
 fn test_rel_10_resolves_again_after_save() {
-    // [utest -> req~relations.broken-link~1, req~relations.link-forms-kinds~1, req~relations.link-forms-resolve~1, req~relations.link-forms-outside~1] 保存のあとは解き直す(行き先を作ったら印が消える)。
+    // [utest -> req~relations.broken-link~1, req~relations.link-forms-kinds~2, req~relations.link-forms-resolve~2, req~relations.link-forms-outside~1] 保存のあとは解き直す(行き先を作ったら印が消える)。
     let tmp = workspace("rel_resolve_again");
     let a = boot_tasks(&tmp);
     let row = row_of(&a, "b docs");

@@ -211,7 +211,7 @@ fn test_ce_25_plain_name_is_md_in_open_folder() {
 
 #[test]
 fn test_ce_25_md_suffix_is_not_doubled() {
-    // [utest -> req~cell-edit.new-note-name~1, req~cell-edit.new-note-place~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-filter-values~1] `a.md` と打っても `a.md.md` にしない。
+    // [utest -> req~cell-edit.new-note-name~1, req~cell-edit.new-note-place~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-relmap-button~2, req~cell-edit.new-note-filter-values~1] `a.md` と打っても `a.md.md` にしない。
     let t = TempDir::new("suffix");
     let p = note_path(t.path(), "", "a.md").expect("作れる名前");
     assert_eq!(p, t.path().join("a.md"));
@@ -321,7 +321,7 @@ fn test_ce_25_create_never_overwrites_existing_file() {
 
 #[test]
 fn test_ce_25_status_todo_from_settings_keep() {
-    // [utest -> req~cell-edit.new-note-filter-values~1, req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] 設定の条件「status が todo」(Keep の値1つ)→ `---\nstatus: todo\n---\n`。
+    // [utest -> req~cell-edit.new-note-filter-values~1, req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1] 設定の条件「status が todo」(Keep の値1つ)→ `---\nstatus: todo\n---\n`。
     let pre = prefill(
         &settings(vec![cond("status", keep(&["todo"]))]),
         &[],
@@ -562,7 +562,7 @@ fn test_ce_26_empty_answers_are_not_written() {
 
 #[test]
 fn test_ce_26_view_rule_replaces_config_rule() {
-    // [utest -> req~cell-edit.new-note-form-ask~1, req~base-view.own-views-tabs~1] ビューに new_note があれば設定の代わりにそれ、無ければ設定の new_note。
+    // [utest -> req~cell-edit.new-note-form-ask~2, req~base-view.own-views-tabs~1] ビューに new_note があれば設定の代わりにそれ、無ければ設定の new_note。
     let config = parse_ok("[new_note]\nfolder = \"inbox\"\nask = [\"priority\"]\n");
     let view_rule = NewNote {
         folder: "会議".to_string(),
@@ -589,7 +589,7 @@ fn test_ce_26_view_rule_replaces_config_rule() {
 
 #[test]
 fn test_ce_27_config_new_note_is_read_without_warnings() {
-    // [utest -> req~cell-edit.new-note-config-folder~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set-vars~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~1] `[new_note]` の folder・name・ask・[new_note.set] を読み、知らない項目の警告は出ない。
+    // [utest -> req~cell-edit.new-note-config-folder~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set-vars~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~2] `[new_note]` の folder・name・ask・[new_note.set] を読み、知らない項目の警告は出ない。
     let c = parse_ok(
         r#"
 [new_note]
@@ -701,7 +701,7 @@ fn test_ce_32_name_template_takes_the_date_variables() {
 
 #[test]
 fn test_ce_27_views_toml_new_note_is_read() {
-    // [utest -> req~cell-edit.new-note-config-view~1, req~base-view.own-views-toml~1] views.toml の `[target.view.new_note]` を同じ形で読み、警告は出ない。
+    // [utest -> req~cell-edit.new-note-config-view~1, req~base-view.own-views-toml~2] views.toml の `[target.view.new_note]` を同じ形で読み、警告は出ない。
     let t = TempDir::new("views");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -748,7 +748,7 @@ path = {p}
 
 #[test]
 fn test_ce_27_views_new_note_survives_save_and_load() {
-    // [utest -> req~cell-edit.new-note-config-folder~1, req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set~1, req~cell-edit.new-note-config-view~1, req~base-view.own-views-toml~1, req~base-view.own-views-beyond-base~1] ビューを保存して読み直しても new_note は消えない。
+    // [utest -> req~cell-edit.new-note-config-folder~1, req~cell-edit.new-note-config-name~1, req~cell-edit.new-note-config-ask~1, req~cell-edit.new-note-config-required~1, req~cell-edit.new-note-config-set~1, req~cell-edit.new-note-config-view~1, req~base-view.own-views-toml~2, req~base-view.own-views-beyond-base~1] ビューを保存して読み直しても new_note は消えない。
     let t = TempDir::new("views-roundtrip");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -777,7 +777,7 @@ fn test_ce_27_views_new_note_survives_save_and_load() {
 
 #[test]
 fn test_ce_27_new_note_is_a_documented_config_item() {
-    // [utest -> req~cell-edit.new-note-config-view~1, req~cli.config-docs~1] 設定の項目の表(文書・--print-config の元)に new_note がある。
+    // [utest -> req~cell-edit.new-note-config-view~1, req~cli.config-docs~2] 設定の項目の表(文書・--print-config の元)に new_note がある。
     assert!(
         ITEMS.iter().any(|i| i.path == "new_note"),
         "ITEMS に new_note がある"

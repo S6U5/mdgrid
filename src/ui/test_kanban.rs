@@ -657,7 +657,7 @@ fn test_kb_1_bad_setting_shape_warns() {
 
 #[test]
 fn test_kb_2_lanes_follow_rule_order_with_counts() {
-    // [utest -> req~kanban.open-lane-order~1] 決まり values = [todo, doing, waiting, done] で todo 2件・doing 1件・done 1件・状態なし1件 →
+    // [utest -> req~kanban.open-lane-order~2] 決まり values = [todo, doing, waiting, done] で todo 2件・doing 1件・done 1件・状態なし1件 →
     // レーンは todo (2)・doing (1)・waiting (0)・done (1)・(なし) (1) の順。札は自分の状態のレーンにあり、
     // レーンの中は表の行の順(alpha が beta の上)。
     let (_t, mut a) = boot("kb2order", NOTES, RULES, KANBAN);
@@ -691,7 +691,7 @@ fn test_kb_2_lanes_follow_rule_order_with_counts() {
 
 #[test]
 fn test_kb_2_values_outside_rules_come_before_none_in_row_order() {
-    // [utest -> req~kanban.open-lane-order~1] 決まりに無い値(review・blocked)の行がある → done と (なし) の間に、行に現れた順(名前の順で
+    // [utest -> req~kanban.open-lane-order~2] 決まりに無い値(review・blocked)の行がある → done と (なし) の間に、行に現れた順(名前の順で
     // kappa の review が lambda の blocked より先)でレーン。名前の順(blocked・review)ではない。
     let notes: &[(&str, &str)] = &[
         ("alpha.md", "---\nstatus: todo\n---\n"),
@@ -723,7 +723,7 @@ fn test_kb_2_values_outside_rules_come_before_none_in_row_order() {
 
 #[test]
 fn test_kb_2_without_rules_lanes_follow_row_order_and_no_none_lane() {
-    // [utest -> req~kanban.open-lane-order~1] 決まりの無い列 → レーンは行に現れた順(doing・todo・done。名前の順の doing・done・todo ではない)。
+    // [utest -> req~kanban.open-lane-order~2] 決まりの無い列 → レーンは行に現れた順(doing・todo・done。名前の順の doing・done・todo ではない)。
     // どの行にも値があるので「(なし)」のレーンは無い。
     let notes: &[(&str, &str)] = &[
         ("alpha.md", "---\nstatus: doing\n---\n"),
@@ -743,7 +743,7 @@ fn test_kb_2_without_rules_lanes_follow_row_order_and_no_none_lane() {
 
 #[test]
 fn test_kb_2_uses_view_rows_and_their_order() {
-    // [utest -> req~kanban.open-lanes~1, req~kanban.open-lane-order~1] 今のビューの行(絞り込み・並べ替えのあと。TR-1 と同じ)だけを札にする。n の小さい順に並べ、
+    // [utest -> req~kanban.open-lanes~1, req~kanban.open-lane-order~2] 今のビューの行(絞り込み・並べ替えのあと。TR-1 と同じ)だけを札にする。n の小さい順に並べ、
     // priority = p2 で絞る → 札は beta・alpha・delta だけで、todo のレーンは beta が alpha の上。
     // 値の無い epsilon は絞り込みで外れるので「(なし)」のレーンは無い。行の無い決まりの値もレーンにする。
     let notes: &[(&str, &str)] = &[
@@ -785,7 +785,7 @@ fn test_kb_2_uses_view_rows_and_their_order() {
 
 #[test]
 fn test_kb_2_narrow_width_scrolls_lanes_and_marks_hidden_side() {
-    // [utest -> req~kanban.open-lane-order~1, req~kanban.open-scroll~1, req~kanban.open-hidden-mark~1] 幅 40 で5つのレーン → 全部は入らない。選んでいるレーンがいつも見え、隠れたレーンのある側の
+    // [utest -> req~kanban.open-lane-order~2, req~kanban.open-scroll~1, req~kanban.open-hidden-mark~1] 幅 40 で5つのレーン → 全部は入らない。選んでいるレーンがいつも見え、隠れたレーンのある側の
     // 見出しの端に印(左は `‹`、右は `›`)。開いた直後は左の端(todo)で、右に隠れたレーンがある。
     let (_t, mut a) = boot_full(
         "kb2narrow",
@@ -889,7 +889,7 @@ fn test_kb_3_keys_move_and_enter_selects_that_row() {
 
 #[test]
 fn test_kb_3_arrow_keys_move_like_hjkl() {
-    // [utest -> req~kanban.keys-move~1, req~kanban.keys-enter~1, req~kanban.keys-back~1, req~kanban.keys-click-select~1, req~kanban.keys-click-open~1, req~kanban.keys-wheel~1] → ↓ ↑ ← は l j k h と同じ。
+    // [utest -> req~kanban.keys-move~1, req~kanban.keys-enter~1, req~kanban.keys-back~1, req~kanban.keys-click-select~1, req~kanban.keys-click-open~1, req~kanban.keys-wheel~2] → ↓ ↑ ← は l j k h と同じ。
     let (_t, mut a) = boot("kb3arrows", NOTES3, RULES, KANBAN);
     let s = open(&mut a);
     assert_eq!(selected(&s), ["alpha"], "{s}");
@@ -941,7 +941,7 @@ fn test_kb_3_mouse_click_selects_and_second_click_opens_row() {
 
 #[test]
 fn test_kb_3_wheel_moves_card_and_hwheel_moves_lane() {
-    // [utest -> req~kanban.keys-wheel~1] ホイールでレーンの中の札、横のホイールでレーンを動かす。
+    // [utest -> req~kanban.keys-wheel~2] ホイールでレーンの中の札、横のホイールでレーンを動かす。
     let (_t, mut a) = boot("kb3wheel", NOTES3, RULES, KANBAN);
     let s = open(&mut a);
     assert_eq!(selected(&s), ["alpha"], "{s}");
@@ -960,7 +960,7 @@ fn test_kb_3_wheel_moves_card_and_hwheel_moves_lane() {
 
 #[test]
 fn test_kb_3_click_lane_heading_selects_that_lane() {
-    // [utest -> req~kanban.keys-click-select~1, req~kanban.keys-wheel~1] レーンの見出しのクリックで、そのレーンを選ぶ(設計の「見出しのクリックでそのレーンを選ぶ」)。
+    // [utest -> req~kanban.keys-click-select~1, req~kanban.keys-wheel~2] レーンの見出しのクリックで、そのレーンを選ぶ(設計の「見出しのクリックでそのレーンを選ぶ」)。
     let (_t, mut a) = boot("kb3head", NOTES3, RULES, KANBAN);
     let s = open(&mut a);
     let (hy, hs) = heading_row(&s).unwrap();
@@ -1195,7 +1195,7 @@ fn test_kb_5_external_change_moves_card_and_keeps_selection() {
     assert_eq!(a.changes.count(), 0);
 }
 
-// [utest -> req~cell-edit.then-kanban~1]
+// [utest -> req~cell-edit.then-kanban~2]
 #[test]
 fn test_then_fills_the_other_column_when_a_card_moves_to_the_lane() {
     // todo の札を done のレーンまで動かすと、その行の done_at に今日がたまり、取り消し1回で前のレーンに戻って done_at も外れる。

@@ -203,7 +203,7 @@ fn test_st_1_reads_manifest_ledger_and_samples() {
 
 #[test]
 fn test_st_1_no_manifest_means_folder_name_and_empty_description() {
-    // [utest -> req~starter.shape-name~1] starter.toml が無ければ、名前はフォルダの名前、説明は空(どの言語でも)。読めはする。
+    // [utest -> req~starter.shape-name~2] starter.toml が無ければ、名前はフォルダの名前、説明は空(どの言語でも)。読めはする。
     let t = Tmp::new("nomanifest");
     let dir = user_starter(&t.0.join("config"), "kanban", None, false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -220,7 +220,7 @@ fn test_st_1_no_manifest_means_folder_name_and_empty_description() {
 
 #[test]
 fn test_st_1_missing_language_falls_back_to_en_then_folder_name() {
-    // [utest -> req~starter.shape-name~1] その言語の名前・説明が無ければ en のもの、en も無ければフォルダの名前と空の説明。
+    // [utest -> req~starter.shape-name~2] その言語の名前・説明が無ければ en のもの、en も無ければフォルダの名前と空の説明。
     let t = Tmp::new("fallback");
     let cfg = t.0.join("config");
     let en_only = user_starter(

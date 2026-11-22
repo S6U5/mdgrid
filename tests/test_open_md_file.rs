@@ -104,7 +104,7 @@ fn assert_selected(t: &Tui, note: &str) {
 
 #[test]
 fn test_cli_15_print_md_file_prints_its_row() {
-    // [stest -> req~cli.open-md-print-rows~1] `notes/b.md --print` → `notes --print` と同じ列で、b の1行だけ、終了コード 0。
+    // [stest -> req~cli.open-md-print-rows~2] `notes/b.md --print` → `notes --print` と同じ列で、b の1行だけ、終了コード 0。
     let home = make_home("print");
     let folder = run_in(home.path(), &["notes", "--print"]);
     assert_eq!(folder.status.code(), Some(0));
@@ -129,7 +129,7 @@ fn test_cli_15_print_md_file_prints_its_row() {
 
 #[test]
 fn test_cli_15_print_two_md_files() {
-    // [stest -> req~cli.open-md-print-rows~1] `notes/a.md notes/b.md --print` → a と b の2行。
+    // [stest -> req~cli.open-md-print-rows~2] `notes/a.md notes/b.md --print` → a と b の2行。
     let home = make_home("print-two");
     let file = run_in(home.path(), &["notes/a.md", "notes/b.md", "--print"]);
     assert_eq!(file.status.code(), Some(0));

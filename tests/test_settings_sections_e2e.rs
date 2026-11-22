@@ -46,7 +46,7 @@ fn right_head(s: &str, head: &str) -> bool {
 
 #[test]
 fn test_settings_sections_keys_e2e() {
-    // [stest -> req~navigation.settings-sections-keys~1] `o` で列の区画の項目にいる → `h` → 左の「列」が選ばれ、選びの印が左に移る。
+    // [stest -> req~navigation.settings-sections-keys~2] `o` で列の区画の項目にいる → `h` → 左の「列」が選ばれ、選びの印が左に移る。
     // `j` を2回 → 左は「並べ替え」で、右が並べ替えの中身。`l` → 右の並べ替えの1つ目の項目。Tab と Shift+Tab はこれまでどおり区画を巡る。
     let h = home("settings-sections");
     let mut t = Tui::spawn(&["vault"], h.path(), &[]);

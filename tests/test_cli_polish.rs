@@ -47,7 +47,7 @@ fn err(o: &Output) -> String {
     String::from_utf8_lossy(&o.stderr).into_owned()
 }
 
-// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-folder~1]
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~2, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_sort_unknown_column() {
     let root = vault("sort");

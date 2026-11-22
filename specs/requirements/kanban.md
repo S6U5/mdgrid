@@ -25,128 +25,241 @@
 
 ### ワークスペースの印の `[[table]]` に `kanban = { column = "<列>" }` を書いてよく、その列の値ごとに行を分けるべき
 `req~kanban.config-column~1` P1
-- 受け入れ: `kanban = { column = "status" }` の表 → 画面の型のメニューに「カンバン」が出て `B` で開く。
+- Acceptance:
+  - Given: `kanban = { column = "status" }` の表
+  - When:
+  - Then: 画面の型のメニューに「カンバン」が出て `B` で開く。
 
 ### カンバンの設定が無いときは、列の名前から分ける列を推定してよい(status・state・stage・状態・ステータス・段階。大文字小文字を問わない。リストの型の列は選ばない)
 `req~kanban.config-guess~1` P1
-- 受け入れ: 設定なしで status の列がある → 推定して開き、画面の題に推定と示す。
+- Acceptance:
+  - Given: 設定なしで status の列がある
+  - When:
+  - Then: 推定して開き、画面の題に推定と示す。
 
 ### カンバンの設定が無く、推定でも列が決まらないときは、理由を出してカンバンを出さないべき
 `req~kanban.config-guess-none~1` P1
-- 受け入れ: 設定なしで状態らしい列が無い → 理由1行で開かない。
+- Acceptance:
+  - Given: 設定なしで状態らしい列が無い
+  - When:
+  - Then: 理由1行で開かない。
 
 ### 設定の `column` の列が表に無いか、リストの型の列のときは、cli.config-file の形で警告してカンバンを出さないべき
 `req~kanban.config-bad-column~1` P1
-- なぜ: 1行が複数のレーンに属さないようにするため
-- 受け入れ: `column = "none"` → 警告1行で、メニューに出ない。
+- Rationale: 1行が複数のレーンに属さないようにするため
+- Acceptance:
+  - Given: `column = "none"`
+  - When:
+  - Then: 警告1行で、メニューに出ない。
 
 ### 設定の `[types]`・`[rules.<列>]` に書いた列は、その列を持つノートが1件も無くても、カンバンの設定の列として表にあると数えるべき
-`req~kanban.config-declared-column~1` P1
-- なぜ: 状態をまだ書いていないノートだけのときに、設定で決めた列が無いと言わないようにするため
-- 受け入れ: `[rules.status] values = ["todo", "doing", "done"]`、`kanban = { column = "status" }` の表に、status を持たないノートが1件 → 警告せず、`B` でカンバンが開き、レーン todo・doing・done が並ぶ。`column = "none"`(設定にもノートにも無い)→ kanban.config-bad-column のとおり警告1行。
+`req~kanban.config-declared-column~2` P1
+- Rationale: 状態をまだ書いていないノートだけのときに、設定で決めた列が無いと言わないようにするため
+- Acceptance:
+  - Given: `[rules.status] values = ["todo", "doing", "done"]`、`kanban = { column = "status" }` の表に、status を持たないノートが1件
+  - When:
+  - Then: 警告せず、`B` でカンバンが開き、レーン todo・doing・done が並ぶ。
+- Acceptance:
+  - Given: `column = "none"`(設定にもノートにも無い)
+  - When:
+  - Then: kanban.config-bad-column のとおり警告1行。
 
 ### 行が1つも無い表(見本なしで作った台帳など)では、カンバンの設定の列があるかを決めず、警告しないべき(画面の型のメニューには出し、開くときに出す行が無いと理由を出す)
 `req~kanban.config-empty-table~2` P1
-- なぜ: 行が1つも無い表では、列をノートのキーから作るため
-- 受け入れ: 行が1つも無い表 → 読み終えても警告せず、メニューに出て、開くと理由1行(列に決まりの値があるときは、kanban.open-empty-lanes のとおり空のレーンで開く)。外からノートを足すと `B` で開く。
+- Rationale: 行が1つも無い表では、列をノートのキーから作るため
+- Acceptance:
+  - Given: 行が1つも無い表
+  - When:
+  - Then: 読み終えても警告せず、メニューに出て、開くと理由1行(列に決まりの値があるときは、kanban.open-empty-lanes のとおり空のレーンで開く)。外からノートを足すと `B` で開く。
 
 ### 行が1つも無くても、カンバンの列に決まりの値(cell-edit.rules-values)があるときは、その値のレーンを札 0 枚で並べてカンバンを開くべき
-`req~kanban.open-empty-lanes~1` P1
-- なぜ: 見本なしで作った台帳でも、設定で決めた状態の並びを最初から見られるようにするため
-- 受け入れ: ノートが1件も無い表で `[rules.status] values = ["todo", "doing", "done"]`、`kanban = { column = "status" }` → `B` でカンバンが開き、レーン todo (0)・doing (0)・done (0) がこの順で並ぶ。札を動かすキーを押しても何もためない。決まりの値の無い列で行が1つも無い → kanban.config-empty-table のとおり開かずに理由1行。
+`req~kanban.open-empty-lanes~2` P1
+- Rationale: 見本なしで作った台帳でも、設定で決めた状態の並びを最初から見られるようにするため
+- Acceptance:
+  - Given: ノートが1件も無い表で `[rules.status] values = ["todo", "doing", "done"]`、`kanban = { column = "status" }`
+  - When:
+  - Then: `B` でカンバンが開き、レーン todo (0)・doing (0)・done (0) がこの順で並ぶ。札を動かすキーを押しても何もためない。
+- Acceptance:
+  - Given: 決まりの値の無い列で行が1つも無い
+  - When:
+  - Then: kanban.config-empty-table のとおり開かずに理由1行。
 
 ### `B`(か画面の型のメニューの「カンバン」)で、今のビューの行(絞り込み・並べ替えのあと。tree.screen と同じ)を、列の値ごとのレーン(縦の列)に札として並べて見せるべき
 `req~kanban.open-lanes~1` P1
-- 受け入れ: status が todo 2件・doing 1件のビューで `B` → todo のレーンに札2枚、doing のレーンに札1枚。絞り込みで外した行は札にならない。
+- Acceptance:
+  - Given:
+  - When: status が todo 2件・doing 1件のビューで `B`
+  - Then: todo のレーンに札2枚、doing のレーンに札1枚。絞り込みで外した行は札にならない。
 
 ### カンバンのレーンの順は、列の決まり(cell-edit.rules の `values`)があればその順、続いて決まりに無い値を行に現れた順、最後に値の無い行の「(なし)」にするべき
-`req~kanban.open-lane-order~1` P1
-- 受け入れ: 決まり `values = ["todo", "doing", "waiting", "done"]` の status で todo 2件・doing 1件・done 1件・状態なし1件 → レーンは todo(2)・doing(1)・waiting(0)・done(1)・(なし)(1) の順(行の無い waiting もレーンにする)。決まりに無い値 blocked の行がある → done と (なし) の間に blocked のレーン。状態なしの行が無い → (なし) のレーンは無い。
+`req~kanban.open-lane-order~2` P1
+- Acceptance:
+  - Given: 決まり `values = ["todo", "doing", "waiting", "done"]` の status で todo 2件・doing 1件・done 1件・状態なし1件
+  - When:
+  - Then: レーンは todo(2)・doing(1)・waiting(0)・done(1)・(なし)(1) の順(行の無い waiting もレーンにする)。
+- Acceptance:
+  - Given: 決まりに無い値 blocked の行がある
+  - When:
+  - Then: done と (なし) の間に blocked のレーン。
+- Acceptance:
+  - Given: 状態なしの行が無い
+  - When:
+  - Then: (なし) のレーンは無い。
 
 ### カンバンのレーンの見出しには、値と札の数を出すべき
 `req~kanban.open-lane-heading~1` P1
-- 受け入れ: status が todo の行が2件 → todo のレーンの見出しに、値 todo と札の数 2 が出る。
+- Acceptance:
+  - Given: status が todo の行が2件
+  - When:
+  - Then: todo のレーンの見出しに、値 todo と札の数 2 が出る。
 
 ### カンバンの札は、行の名前(表のノートの欄と同じ見せ方)の1行にするべき
 `req~kanban.open-card-label~1` P1
-- 受け入れ: 表のノートの欄に `会議` と出る行 → 札は `会議` の1行。
+- Acceptance:
+  - Given: 表のノートの欄に `会議` と出る行
+  - When:
+  - Then: 札は `会議` の1行。
 
 ### カンバンのレーンの中の札は、表の行の順に並べるべき
 `req~kanban.open-card-order~1` P1
-- 受け入れ: 表で上から alpha・beta の順に並ぶ todo の2件 → todo のレーンの札も alpha・beta の順。
+- Acceptance:
+  - Given: 表で上から alpha・beta の順に並ぶ todo の2件
+  - When:
+  - Then: todo のレーンの札も alpha・beta の順。
 
 ### カンバンのレーンが幅に収まらないときは、選んでいるレーンが見える所まで横にずらすべき
 `req~kanban.open-scroll~1` P1
-- 受け入れ: 幅 40 で5つのレーン → 選んでいるレーンが見える。
+- Acceptance:
+  - Given: 幅 40 で5つのレーン
+  - When:
+  - Then: 選んでいるレーンが見える。
 
 ### カンバンのレーンが幅に収まらないときは、隠れたレーンがあることを示すべき
 `req~kanban.open-hidden-mark~1` P1
-- 受け入れ: 幅 40 で5つのレーン → 隠れた側に印。
+- Acceptance:
+  - Given: 幅 40 で5つのレーン
+  - When:
+  - Then: 隠れた側に印。
 
 ### 色なしでも、カンバンの選んでいる札とレーン、ためる変更のある札を見分けられるべき(cell-view.not-color-only)
 `req~kanban.open-no-color~1` P1
-- 受け入れ: `--no-color` でも選んでいる札に `>`。
+- Acceptance:
+  - Given:
+  - When:
+  - Then: `--no-color` でも選んでいる札に `>`。
 
 ### カンバンの画面では、`j` `k` でレーンの中の札を選び、`h` `l` でレーンを移るべき
 `req~kanban.keys-move~1` P1
-- 受け入れ: `B` → `l` → `j` で、doing のレーンの2件目の札が選ばれる。
+- Acceptance:
+  - Given:
+  - When: `B` → `l`
+  - Then: `j` で、doing のレーンの2件目の札が選ばれる。
 
 ### カンバンの画面では、`Enter` で表に戻って、選んでいる札の行を選ぶべき
 `req~kanban.keys-enter~1` P1
-- 受け入れ: `B` → `l` → `j` → `Enter` で、表の doing の2件目の行が選ばれる。
+- Acceptance:
+  - Given:
+  - When: `B` → `l` → `j`
+  - Then: `Enter` で、表の doing の2件目の行が選ばれる。
 
 ### カンバンの画面では、`Esc`・`q`・`B` で表に戻るべき
 `req~kanban.keys-back~1` P1
-- 受け入れ: カンバンで `Esc`・`q`・`B` のどれか → 表に戻る。
+- Acceptance:
+  - Given:
+  - When: カンバンで `Esc`・`q`・`B` のどれか
+  - Then: 表に戻る。
 
 ### カンバンの画面では、札のクリックでその札を選ぶべき
 `req~kanban.keys-click-select~1` P1
-- 受け入れ: 札のクリック → その札を選ぶ。
+- Acceptance:
+  - Given:
+  - When: 札のクリック
+  - Then: その札を選ぶ。
 
 ### カンバンの画面では、選んでいる札をもう一度クリックすると、表のその行へ移るべき
 `req~kanban.keys-click-open~1` P1
-- 受け入れ: 選んでいる札をもう一度クリック → 表のその行が選ばれる。
+- Acceptance:
+  - Given:
+  - When: 選んでいる札をもう一度クリック
+  - Then: 表のその行が選ばれる。
 
 ### カンバンの画面では、ホイールで札を、横のホイールでレーンを動かすべき
-`req~kanban.keys-wheel~1` P1
-- 受け入れ: ホイール → レーンの中で選んでいる札が移る。横のホイール → 選んでいるレーンが移る。
+`req~kanban.keys-wheel~2` P1
+- Acceptance:
+  - Given:
+  - When: ホイール
+  - Then: レーンの中で選んでいる札が移る。
+- Acceptance:
+  - Given:
+  - When: 横のホイール
+  - Then: 選んでいるレーンが移る。
 
 ### カンバンの画面では、`H` `L` で選んでいる札を左・右のレーンへ動かし、その行の列の値を、動かした先のレーンの値に書き換えるべき
 `req~kanban.move-card~1` P1
-- 受け入れ: todo の札で `L` → 札が doing のレーンへ移り、その行の status が doing になる。
+- Acceptance:
+  - Given:
+  - When: todo の札で `L`
+  - Then: 札が doing のレーンへ移り、その行の status が doing になる。
 
 ### カンバンで札を動かした値の書き換えは、表のセルの直しと同じためる変更(未保存)にするべき
 `req~kanban.move-pending~1` P1
-- 受け入れ: todo の札で `L` → 下の帯の未保存が 1。
+- Acceptance:
+  - Given:
+  - When: todo の札で `L`
+  - Then: 下の帯の未保存が 1。
 
 ### カンバンで動かした札は、動かした先のレーンで選んだままにするべき
 `req~kanban.move-keep-selection~1` P1
-- 受け入れ: todo の札で `L` → doing のレーンへ移った札を選んだまま。
+- Acceptance:
+  - Given:
+  - When: todo の札で `L`
+  - Then: doing のレーンへ移った札を選んだまま。
 
 ### カンバンの画面では、`u` で札の動きを取り消すべき
 `req~kanban.move-undo~1` P1
-- 受け入れ: todo の札で `L` のあと `u` → todo に戻る。
+- Acceptance:
+  - Given:
+  - When: todo の札で `L` のあと `u`
+  - Then: todo に戻る。
 
 ### カンバンの画面では、`U` で取り消した札の動きをやり直すべき
 `req~kanban.move-redo~1` P1
-- 受け入れ: todo の札で `L`・`u` のあと `U` → 札が doing のレーンへ移る。
+- Acceptance:
+  - Given:
+  - When: todo の札で `L`・`u` のあと `U`
+  - Then: 札が doing のレーンへ移る。
 
 ### カンバンの画面では、`Ctrl+s` で表に戻って保存の確かめ(差分)を開くべき
 `req~kanban.move-save~1` P1
-- 受け入れ: todo の札で `L` のあと `Ctrl+s` → 表に戻り、保存の確かめ(差分)が開く。
+- Acceptance:
+  - Given:
+  - When: todo の札で `L` のあと `Ctrl+s`
+  - Then: 表に戻り、保存の確かめ(差分)が開く。
 
 ### カンバンの札は、「(なし)」のレーンへは動かさないべき(値を消すのは表で)
 `req~kanban.move-not-to-none~1` P1
-- 受け入れ: 右の隣が (なし) の札で `L` → 動かず理由1行。
+- Acceptance:
+  - Given:
+  - When: 右の隣が (なし) の札で `L`
+  - Then: 動かず理由1行。
 
 ### 読むだけのとき(`--readonly`、読むだけの列や行。cli.options・base-view.unsupported・base-view.types-conflict)は、カンバンの札を動かさずに理由を出すべき
 `req~kanban.move-readonly~1` P1
-- 受け入れ: `--readonly` で `L` → 動かず理由1行。
+- Acceptance:
+  - Given:
+  - When: `--readonly` で `L`
+  - Then: 動かず理由1行。
 
 ### カンバンを開いているあいだにノートが外で変わったら、組み直して同じ行の札を選び直すべき(札が別のレーンへ移っていればそのレーンで)
 `req~kanban.reload~1` P1
-- 受け入れ: 開いたまま外で status を todo から done に書き換える → 札が done のレーンに移り、選んだまま。
+- Acceptance:
+  - Given:
+  - When: 開いたまま外で status を todo から done に書き換える
+  - Then: 札が done のレーンに移り、選んだまま。
 
 ### 見せ方の一覧(screen.views-page)・できることの一覧(screen.features-page)・キーの文書(screen.keys-docs)・設定の文書にカンバンの項を持ち、組み込みの tasks のスターターに `kanban` の設定を同梱し、場面の台本にカンバンの場面を持つべき
 `req~kanban.docs~1` P1
-- 受け入れ: docs/manual/ja・en の views.md に「カンバン」の節(画像 images/kanban.svg)、features.md に札を動かして状態を直す項。starters/tasks の印に `kanban = { column = "status" }`。docs/manual-scenarios.toml に id = "kanban"(読んで判定と)。
+- Acceptance:
+  - Given:
+  - When:
+  - Then: docs/manual/ja・en の views.md に「カンバン」の節(画像 images/kanban.svg)、features.md に札を動かして状態を直す項。starters/tasks の印に `kanban = { column = "status" }`。docs/manual-scenarios.toml に id = "kanban"(読んで判定と)。

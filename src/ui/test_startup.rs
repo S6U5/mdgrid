@@ -154,7 +154,7 @@ fn test_sr_13_unbind_j_leaves_down_arrow() {
 
 #[test]
 fn test_sr_13_rebind_replaces_and_mode_names() {
-    // [utest -> req~screen.keys-vim-and-arrows-both~1, req~screen.keys-vim-and-arrows-bases~1] 同じキーに別の動作を書けば置き換える。モードは英語の名前でも表示名(SR-16 の名前)でも書ける。
+    // [utest -> req~screen.keys-vim-and-arrows-both~1, req~screen.keys-vim-and-arrows-bases~2] 同じキーに別の動作を書けば置き換える。モードは英語の名前でも表示名(SR-16 の名前)でも書ける。
     let tmp = notes("sr13b");
     let mut a = boot_toml(
         &tmp,
@@ -232,7 +232,7 @@ fn test_sr_16_conflicting_binding_warned_not_applied() {
 
 #[test]
 fn test_sr_13_parse_key_notation() {
-    // [utest -> req~screen.keys-vim-and-arrows-bases~1] キーの表記を表のキーの名前に読む。
+    // [utest -> req~screen.keys-vim-and-arrows-bases~2] キーの表記を表のキーの名前に読む。
     let ok = |s: &str| keymap::parse_key(s).unwrap();
     assert_eq!(ok("j"), "j");
     assert_eq!(ok("G"), "G");
@@ -296,7 +296,7 @@ fn test_cli_3_applies_items() {
 
 #[test]
 fn test_cli_2_no_color() {
-    // [utest -> req~cli.options~2, req~cell-view.no-color-env~1, req~cell-view.no-color-pipe-print-pick~1] `--no-color` で、色の出せる端末でも色を出さない(ためる変更のセルも)。
+    // [utest -> req~cli.options~2, req~cell-view.no-color-env~1, req~cell-view.no-color-pipe-print-pick~2] `--no-color` で、色の出せる端末でも色を出さない(ためる変更のセルも)。
     let tmp = notes("nocolor");
     let mut a = boot_with(
         &tmp,
@@ -464,7 +464,7 @@ fn test_sr_12_temporary_sort_not_kept() {
 #[test]
 fn test_sr_12_new_base_column_added_right_and_view_kept() {
     // [utest -> req~screen.state-store-key~1, req~screen.state-store-columns~1] 状態の並びは今の `.base` の列にだけ当て、`.base` に増えた列は右に足す。
-    // 状態は `.base` のパスとビューの名前ごと。[utest -> req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~1] 開き直すと先頭のビュー(`--view` があればそちら)で、
+    // 状態は `.base` のパスとビューの名前ごと。[utest -> req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~2] 開き直すと先頭のビュー(`--view` があればそちら)で、
     // 前に選んだビューは起動に使わない。
     let tmp = vault("sr12base");
     base_path(&tmp, TASKS);
@@ -510,7 +510,7 @@ fn test_sr_12_new_base_column_added_right_and_view_kept() {
 
 #[test]
 fn test_sr_13_cannot_unbind_every_exit() {
-    // [utest -> req~screen.keys-vim-and-arrows-bases~1, req~screen.keys-vim-and-arrows-remap~1, req~screen.key-modes-per-mode~1] 抜ける動作のキーを全部外す・置き換える設定は当てず、既定のキーを残して警告する
+    // [utest -> req~screen.keys-vim-and-arrows-bases~2, req~screen.keys-vim-and-arrows-remap~1, req~screen.key-modes-per-mode~1] 抜ける動作のキーを全部外す・置き換える設定は当てず、既定のキーを残して警告する
     // (終了・パレット・ヘルプを閉じる・入力の取り消しの手段が無くならない)。
     let tmp = notes("sr13exit");
     let mut a = boot_toml(
@@ -570,7 +570,7 @@ fn test_sr_12_state_hiding_every_column_keeps_one() {
 
 #[test]
 fn test_sr_12_view_named_empty_not_overwritten() {
-    // [utest -> req~screen.state-store-key~1] 空の名前のビューの状態も、そのビューの名前ごとに残る。[utest -> req~base-view.view-switch-startup~1] 起動は先頭のビュー。
+    // [utest -> req~screen.state-store-key~1] 空の名前のビューの状態も、そのビューの名前ごとに残る。[utest -> req~base-view.view-switch-startup~2] 起動は先頭のビュー。
     let tmp = vault("sr12empty");
     let text = TASKS.replace("name: 完了", "name: \"\"");
     base_path(&tmp, &text);
@@ -595,7 +595,7 @@ fn test_sr_12_view_named_empty_not_overwritten() {
 
 #[test]
 fn test_bv_13_startup_opens_first_view() {
-    // [utest -> req~base-view.view-switch-startup~1] 起動は先頭のビュー。別のビューを選んで終えても、次の起動は先頭のビューで、
+    // [utest -> req~base-view.view-switch-startup~2] 起動は先頭のビュー。別のビューを選んで終えても、次の起動は先頭のビューで、
     // `--view` があればそのビュー。見た目の状態(SR-12)はビューごとの列の順に使い続ける。
     let tmp = vault("bv13start");
     base_path(&tmp, TASKS);

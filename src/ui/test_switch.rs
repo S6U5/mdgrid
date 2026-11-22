@@ -113,7 +113,7 @@ fn test_switch_lists_favorites_in_order_with_numbers() {
 
 #[test]
 fn test_switch_opens_from_every_screen_and_esc_keeps_it() {
-    // [utest -> req~workspace.switch-keys~1] 表・カンバン・ガント・グラフ・関係マップ・木のどれからでも開き、Esc で元の画面のまま。
+    // [utest -> req~workspace.switch-keys~2] 表・カンバン・ガント・グラフ・関係マップ・木のどれからでも開き、Esc で元の画面のまま。
     let tmp = fixture("sw_every", &["work", "趣味"]);
     let mut a = boot(&tmp, "tasks", None);
     for (open, mode) in [
@@ -174,7 +174,7 @@ fn test_switch_without_favorites_shows_how_to_add() {
 
 #[test]
 fn test_switch_digit_moves_to_that_workspace() {
-    // [utest -> req~workspace.switch-keys~1] 一覧で `2` → 趣味へ移る(範囲は趣味)。
+    // [utest -> req~workspace.switch-keys~2] 一覧で `2` → 趣味へ移る(範囲は趣味)。
     let tmp = fixture("sw_digit", &["work", "趣味"]);
     let mut a = boot(&tmp, "tasks", None);
     ch(&mut a, 'W');
@@ -193,7 +193,7 @@ fn test_switch_digit_moves_to_that_workspace() {
 
 #[test]
 fn test_switch_target_last_seen_table_and_view() {
-    // [utest -> req~workspace.switch-target~1] work の projects(進行中)を見てから趣味へ移り、また work を選ぶ → projects の進行中。
+    // [utest -> req~workspace.switch-target~2] work の projects(進行中)を見てから趣味へ移り、また work を選ぶ → projects の進行中。
     let tmp = fixture("sw_target", &["work", "趣味"]);
     let mut p = boot(&tmp, "projects.base", None);
     p.select_view_named("進行中");
@@ -210,7 +210,7 @@ fn test_switch_target_last_seen_table_and_view() {
 
 #[test]
 fn test_switch_target_first_table_when_not_seen() {
-    // [utest -> req~workspace.switch-target~1] この起動でまだ開いていない趣味を選ぶ → 趣味の最初の表。印のワークスペースは印の表。
+    // [utest -> req~workspace.switch-target~2] この起動でまだ開いていない趣味を選ぶ → 趣味の最初の表。印のワークスペースは印の表。
     let tmp = fixture("sw_first", &["work", "趣味"]);
     let lab = real(tmp.notes().join("lab"));
     favorites::set(&tmp.0.join("config"), &favorites::marker_entry(&lab), true).unwrap();
@@ -275,7 +275,7 @@ fn test_switch_origin_returns_to_the_last_view_there() {
 
 #[test]
 fn test_switch_asks_before_leaving_unsaved_changes() {
-    // [utest -> req~workspace.switch-unsaved~1] 未保存の変更があるときに一覧で趣味を選ぶ → 保存の確かめ。取りやめ → 元の画面(カンバン)のまま。
+    // [utest -> req~workspace.switch-unsaved~2] 未保存の変更があるときに一覧で趣味を選ぶ → 保存の確かめ。取りやめ → 元の画面(カンバン)のまま。
     let tmp = fixture("sw_unsaved", &["work", "趣味"]);
     let mut a = boot(&tmp, "tasks", None);
     let row = a.src.rows()[0].clone();
@@ -301,7 +301,7 @@ fn test_switch_asks_before_leaving_unsaved_changes() {
 
 #[test]
 fn test_favorite_mark_in_drawer_heading() {
-    // [utest -> req~workspace.favorite-mark~1] 引き出しの「趣味」の見出しでお気に入りのキー → ★。もう一度 → ★ が消える。
+    // [utest -> req~workspace.favorite-mark~2] 引き出しの「趣味」の見出しでお気に入りのキー → ★。もう一度 → ★ が消える。
     let tmp = fixture("sw_mark", &[]);
     let mut a = boot(&tmp, "tasks", None);
     ch(&mut a, 'w');
@@ -323,7 +323,7 @@ fn test_favorite_mark_in_drawer_heading() {
 
 #[test]
 fn test_favorite_current_marker_workspace_from_palette() {
-    // [utest -> req~workspace.favorite-mark~1] 印のワークスペース lab を開いてパレットの「今のワークスペースをお気に入りにする」→ 切り替えの一覧に lab。
+    // [utest -> req~workspace.favorite-mark~2] 印のワークスペース lab を開いてパレットの「今のワークスペースをお気に入りにする」→ 切り替えの一覧に lab。
     let tmp = fixture("sw_marker", &[]);
     let mut a = boot(&tmp, "lab/x", None);
     ch(&mut a, ':');
@@ -345,7 +345,7 @@ fn test_favorite_current_marker_workspace_from_palette() {
 
 #[test]
 fn test_favorite_current_needs_a_workspace() {
-    // [utest -> req~workspace.favorite-mark~1] ワークスペースでない表では入れずに理由。
+    // [utest -> req~workspace.favorite-mark~2] ワークスペースでない表では入れずに理由。
     let tmp = fixture("sw_nows", &[]);
     let mut a = boot(&tmp, "scratch", None);
     a.apply(super::keymap::Action::WsFavorite);

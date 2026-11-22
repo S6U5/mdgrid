@@ -99,7 +99,7 @@ fn run(home: &Path, args: &[&str]) -> Output {
 
 #[test]
 fn test_stack_page_cli_unknown_name_exits_2() {
-    // [stest -> req~stack.page-cli~1] 無い名前 → 「ページ「夜」はありません(ある名前: 朝, 同じ)」の1行と終了コード 2。
+    // [stest -> req~stack.page-cli~2] 無い名前 → 「ページ「夜」はありません(ある名前: 朝, 同じ)」の1行と終了コード 2。
     let h = home("stack-page-cli", PAGES);
     let o = run(h.path(), &["-w", "work", "--page", "夜"]);
     assert_eq!(o.status.code(), Some(2));
@@ -113,7 +113,7 @@ fn test_stack_page_cli_unknown_name_exits_2() {
 
 #[test]
 fn test_stack_page_conflicts_with_print() {
-    // [stest -> req~stack.page-cli~1] `--page` は画面を出す起動だけ(`--print` とは一緒に受けない)。
+    // [stest -> req~stack.page-cli~2] `--page` は画面を出す起動だけ(`--print` とは一緒に受けない)。
     let h = home("stack-page-print", PAGES);
     let o = run(h.path(), &["-w", "work", "--page", "朝", "--print"]);
     assert_eq!(o.status.code(), Some(2));
@@ -180,7 +180,7 @@ mod screen {
 
     #[test]
     fn test_stack_page_save_on_screen() {
-        // [stest -> req~stack.page-save~1] tasks(今日)と projects(進行中)を並べ、名前「朝」で残す → workspaces.toml
+        // [stest -> req~stack.page-save~2] tasks(今日)と projects(進行中)を並べ、名前「朝」で残す → workspaces.toml
         // の work に `[[workspace.page]]`・`name = "朝"`・2つの表とビュー。
         let h = home("stack-page-save", "");
         let mut t = Tui::spawn(&["-w", "work"], h.path(), &[]);
@@ -201,7 +201,7 @@ mod screen {
 
     #[test]
     fn test_stack_page_cli_on_screen() {
-        // [stest -> req~stack.page-cli~1, req~stack.page-open~1] `mdgrid -w work --page 朝` → tasks と projects が並ぶ。
+        // [stest -> req~stack.page-cli~2, req~stack.page-open~1] `mdgrid -w work --page 朝` → tasks と projects が並ぶ。
         let h = home("stack-page-open", PAGES);
         let t = Tui::spawn(&["-w", "work", "--page", "朝"], h.path(), &[]);
         t.wait_until("ページの表", |s| {

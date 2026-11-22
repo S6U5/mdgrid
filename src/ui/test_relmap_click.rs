@@ -47,7 +47,7 @@ fn open_map(w: u16, h: u16, name: &str) -> (super::test_screen::Tmp, App) {
 
 #[test]
 fn test_rel_12_click_selects_and_opens() {
-    // [utest -> req~relations.map-mouse-select-table~1, req~relations.map-mouse-open-table~1] 左の一覧の行で選び、選んだ表をもう一度で開く。盤の箱でも選ぶ。枠は何もしない。
+    // [utest -> req~relations.map-mouse-select-table~2, req~relations.map-mouse-open-table~1] 左の一覧の行で選び、選んだ表をもう一度で開く。盤の箱でも選ぶ。枠は何もしない。
     let (_t, mut a) = open_map(160, 40, "rmc_open");
     assert_eq!(sel_name(&a), "Tasks");
     let (x, y) = find(&a, "Projects", 0);

@@ -62,7 +62,7 @@ fn assert_default_rows(l: &[String]) {
 
 #[test]
 fn test_sr_1_default_one_with_known_terminal_background() {
-    // [utest -> req~screen.layout-top-padding~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-fallback~1] 端末の地の色が分かっても、既定(top_padding・bar_padding とも 1)では半行を描かず、
+    // [utest -> req~screen.layout-top-padding~2, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-fallback~1] 端末の地の色が分かっても、既定(top_padding・bar_padding とも 1)では半行を描かず、
     // ヘッダーの上と帯の上下に1行ずつ空き行を置く(環境で見え方がぶれないように)。
     let (_t, a) = boot("pd1_term", "");
     assert_default_rows(&lines(&a));
@@ -70,14 +70,14 @@ fn test_sr_1_default_one_with_known_terminal_background() {
 
 #[test]
 fn test_nv_23_default_one_with_painting_theme() {
-    // [utest -> req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-half-fallback~1, req~screen.layout-order~1, req~screen.layout-top-padding~1, req~screen.layout-half-padding~1] 画面の地を塗るテーマでも、既定は同じ1行の空き行(テーマを見比べても配置が変わらない)。
+    // [utest -> req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~2, req~navigation.search-box-half-fallback~1, req~screen.layout-order~2, req~screen.layout-top-padding~2, req~screen.layout-half-padding~1] 画面の地を塗るテーマでも、既定は同じ1行の空き行(テーマを見比べても配置が変わらない)。
     let (_t, a) = boot("pd1_theme", "[look]\ntheme = \"nord\"\n");
     assert_default_rows(&lines(&a));
 }
 
 #[test]
 fn test_nv_23_default_one_half_still_selectable() {
-    // [utest -> req~navigation.search-box-key-glyph~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-half-fallback~1, req~navigation.search-box-style~1, req~screen.layout-half-padding~1] 0.5 は設定で選べば、地の色が分かるときは前のとおり半行で描く。
+    // [utest -> req~navigation.search-box-key-glyph~1, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-half-fallback~1, req~navigation.search-box-style~1, req~screen.layout-half-padding~1] 0.5 は設定で選べば、地の色が分かるときは前のとおり半行で描く。
     let (_t, a) = boot(
         "pd1_half",
         "[display]\ntop_padding = 0.5\nbar_padding = 0.5\n",

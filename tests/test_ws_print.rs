@@ -23,7 +23,7 @@ fn run(home: &Path, args: &[&str]) -> Output {
 
 #[test]
 fn test_ws_3_print_unknown_workspace_fails() {
-    // [stest -> req~workspace.cli-open~1] 無い名前 → 0 以外と理由。ある名前でパスなし → 最初の表(tasks)の行だけ。
+    // [stest -> req~workspace.cli-open~2] 無い名前 → 0 以外と理由。ある名前でパスなし → 最初の表(tasks)の行だけ。
     let h = TempDir::new("wsprint");
     let home = h.path();
     for (dir, note) in [("tasks", "a"), ("projects", "p")] {

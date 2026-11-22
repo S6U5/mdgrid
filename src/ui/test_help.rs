@@ -12,7 +12,7 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_sr_5_help_golden() {
-    // [utest -> req~screen.help~1] 表で `?` → ヘルプを重ね、先頭に表のモードで押せるキー、その下に全部の節。
+    // [utest -> req~screen.help~2] 表で `?` → ヘルプを重ね、先頭に表のモードで押せるキー、その下に全部の節。
     let (_t, mut a) = make("sr5", NOTES);
     ch(&mut a, '?');
     assert_eq!(a.mode, Mode::Help);
@@ -38,7 +38,7 @@ fn test_sr_5_help_golden() {
 
 #[test]
 fn test_sr_5_help_from_review_shows_review_keys() {
-    // [utest -> req~screen.help~1] 保存の確認で `?` → 先頭はそのモードのキー。閉じると保存の確認に戻る。
+    // [utest -> req~screen.help~2] 保存の確認で `?` → 先頭はそのモードのキー。閉じると保存の確認に戻る。
     let (_t, mut a) = make("sr5r", NOTES);
     press(&mut a, KeyCode::Backspace);
     ctrl(&mut a, 's');
@@ -60,7 +60,7 @@ fn test_sr_5_help_from_review_shows_review_keys() {
 
 #[test]
 fn test_sr_14_palette_save_first_golden() {
-    // [utest -> req~screen.palette-fuzzy~1] `:` で「save」と打つ → 保存が候補の先頭で、横に ^S。
+    // [utest -> req~screen.palette-fuzzy~2] `:` で「save」と打つ → 保存が候補の先頭で、横に ^S。
     let (_t, mut a) = make("sr14", NOTES);
     ch(&mut a, ':');
     assert_eq!(a.mode, Mode::Palette);
@@ -90,7 +90,7 @@ fn test_sr_14_palette_save_first_golden() {
 
 #[test]
 fn test_sr_14_palette_fuzzy_and_ctrl_p() {
-    // [utest -> req~screen.palette-fuzzy~1, req~screen.palette-keys~1] Ctrl+P でも開く。表示名(日本語)でも探せる。飛び飛びの一致も拾う。
+    // [utest -> req~screen.palette-fuzzy~2, req~screen.palette-keys~1] Ctrl+P でも開く。表示名(日本語)でも探せる。飛び飛びの一致も拾う。
     let (_t, mut a) = make("sr14b", NOTES);
     ctrl(&mut a, 'p');
     assert_eq!(a.mode, Mode::Palette);
@@ -148,7 +148,7 @@ fn test_nv_7_goto_line() {
 
 #[test]
 fn test_sr_16_palette_w_and_q() {
-    // [utest -> req~screen.key-modes-palette-commands~2] パレットの `w` は保存(差分の確認へ)、`q` は終了(ためた変更があれば終了の確認)。
+    // [utest -> req~screen.key-modes-palette-commands~3] パレットの `w` は保存(差分の確認へ)、`q` は終了(ためた変更があれば終了の確認)。
     let (_t, mut a) = make("sr16", NOTES);
     ch(&mut a, ':');
     ch(&mut a, 'w');
@@ -178,7 +178,7 @@ fn test_sr_16_palette_w_and_q() {
 
 #[test]
 fn test_palette_wq_saves_and_quits() {
-    // [utest -> req~screen.key-modes-palette-commands~2] 未保存 1 で `wq` → 差分の確認、確定で書いて終わる。戻ると書かず終わらない。`x` も同じ。
+    // [utest -> req~screen.key-modes-palette-commands~3] 未保存 1 で `wq` → 差分の確認、確定で書いて終わる。戻ると書かず終わらない。`x` も同じ。
     let (t, mut a) = make("wq", NOTES);
     let files = |t: &Tmp| -> Vec<Vec<u8>> {
         let mut p: Vec<_> = std::fs::read_dir(t.notes())
@@ -217,7 +217,7 @@ fn test_palette_wq_saves_and_quits() {
 
 #[test]
 fn test_palette_wq_without_changes_and_readonly() {
-    // [utest -> req~screen.key-modes-palette-commands~2] ためた変更が無いときの `wq` はそのまま終わる。読むだけでは候補に出ない。
+    // [utest -> req~screen.key-modes-palette-commands~3] ためた変更が無いときの `wq` はそのまま終わる。読むだけでは候補に出ない。
     let (_t, mut a) = make("wq0", NOTES);
     ch(&mut a, ':');
     typing(&mut a, "wq");
@@ -272,7 +272,7 @@ fn test_sr_4_added_key_shows_everywhere() {
 
 #[test]
 fn test_sr_5_help_stays_when_review_rebuilt() {
-    // [utest -> req~screen.help~1, req~write-back.external-save-choice~1] 保存の確認でヘルプを出している間に外の変更が見つかっても、ヘルプは消えない。
+    // [utest -> req~screen.help~2, req~write-back.external-save-choice~1] 保存の確認でヘルプを出している間に外の変更が見つかっても、ヘルプは消えない。
     // 閉じると作り直した保存の確認に戻る。
     let (t, mut a) = make(
         "sr5p",

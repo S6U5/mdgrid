@@ -28,7 +28,7 @@ fn wb_5_tab_indented_mapping_is_invalid_yaml() {
     assert_eq!(parse(src), Err(ReadOnly::InvalidYaml));
 }
 
-// [utest -> req~cell-edit.list-layout~1] フロー形式のリストに文字列を当てると書き方が変わるので、書かない(書き方を保つ)。
+// [utest -> req~cell-edit.list-layout~2] フロー形式のリストに文字列を当てると書き方が変わるので、書かない(書き方を保つ)。
 #[test]
 fn ce_18_string_onto_flow_list_is_not_editable() {
     let src = b"---\ntags: [a, b]\n---\n";

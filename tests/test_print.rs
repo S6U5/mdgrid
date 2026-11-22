@@ -497,7 +497,7 @@ fn s(x: &str) -> String {
 
 #[test]
 fn test_cli_5_default_csv_header_rows_and_rfc4180() {
-    // [stest -> req~cli.print-rows~1, req~cell-view.no-color-env~1, req~cell-view.no-color-not-tty~1, req~cell-view.no-color-pipe-print-pick~1] 形を指定しない → csv。見出しの行は order の並び、行は絞り込み(done == false)と
+    // [stest -> req~cli.print-rows~2, req~cell-view.no-color-env~1, req~cell-view.no-color-not-tty~1, req~cell-view.no-color-pipe-print-pick~2] 形を指定しない → csv。見出しの行は order の並び、行は絞り込み(done == false)と
     // 並べ替え(priority DESC)のあと。カンマ・引用符・改行を含む値は RFC 4180 で括る。改行は LF。
     let (t, _notes, base) = make_vault("csv");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print"]);
@@ -554,7 +554,7 @@ fn test_cli_5_default_csv_header_rows_and_rfc4180() {
 
 #[test]
 fn test_cli_5_group_by_only_orders_rows_without_heading_rows() {
-    // [stest -> req~cli.print-rows~1] グループ分けは並びだけに効き、見出しの行は出さない。
+    // [stest -> req~cli.print-rows~2] グループ分けは並びだけに効き、見出しの行は出さない。
     // status ASC のまとまり(doing・done・todo)、まとまりの中は priority ASC。
     let (t, _notes, base) = make_vault("group");
     let out = run_in(
@@ -693,7 +693,7 @@ fn test_cli_5_md_table_with_separator_escaped_pipe_and_spaces_for_newlines() {
 
 #[test]
 fn test_cli_5_unsupported_formula_column_is_empty_or_null_with_one_warning() {
-    // [stest -> req~cli.print-stdout~1, req~cli.print-unsupported-empty~1, req~cli.print-unsupported-warn~1, req~cli.print-fail~1, req~base-view.unsupported-column-mark~1] 評価できない列は csv で空、json で null、md で空。標準エラーに1行。終了コード 0。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-unsupported-empty~2, req~cli.print-unsupported-warn~1, req~cli.print-fail~2, req~base-view.unsupported-column-mark~2] 評価できない列は csv で空、json で null、md で空。標準エラーに1行。終了コード 0。
     let (t, _notes, base) = make_vault("unsupported");
     let b = base.to_str().unwrap();
 
@@ -736,7 +736,7 @@ fn test_cli_5_unsupported_formula_column_is_empty_or_null_with_one_warning() {
 
 #[test]
 fn test_cli_5_unknown_format_fails_with_one_line_and_code_2() {
-    // [stest -> req~cli.print-stdout~1, req~cli.print-fail~1, req~cli.fail-fast~1] `--format xml` → 理由1行・終了コード 2・標準出力は空。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-fail~2, req~cli.fail-fast~1] `--format xml` → 理由1行・終了コード 2・標準出力は空。
     let (t, _notes, base) = make_vault("xml");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print", "--format", "xml"]);
     assert_fails_with_one_line(&out, "--format xml", "xml");
@@ -744,7 +744,7 @@ fn test_cli_5_unknown_format_fails_with_one_line_and_code_2() {
 
 #[test]
 fn test_cli_5_missing_path_fails_with_one_line_and_code_2() {
-    // [stest -> req~cli.print-fail~1, req~cli.fail-fast~1] 起動できない(無いパス)→ 理由1行・終了コード 2。
+    // [stest -> req~cli.print-fail~2, req~cli.fail-fast~1] 起動できない(無いパス)→ 理由1行・終了コード 2。
     let t = TempDir::new("nopath");
     let missing = t.path().join("無いフォルダ");
     let out = run_in(&t, &[missing.to_str().unwrap(), "--print"]);
@@ -755,7 +755,7 @@ fn test_cli_5_missing_path_fails_with_one_line_and_code_2() {
 
 #[test]
 fn test_cli_5_view_option_selects_another_base_view() {
-    // [stest -> req~cli.print-rows~1] `--view 期限順` → そのビューの絞り込み(priority < 3)・並べ替え(due ASC)・列(due, title)。
+    // [stest -> req~cli.print-rows~2] `--view 期限順` → そのビューの絞り込み(priority < 3)・並べ替え(due ASC)・列(due, title)。
     let (t, _notes, base) = make_vault("view");
     let out = run_in(&t, &[base.to_str().unwrap(), "--print", "--view", "期限順"]);
     let rows = parse_csv(&ok_stdout(&out, "--view 期限順"));
@@ -772,7 +772,7 @@ fn test_cli_5_view_option_selects_another_base_view() {
 
 #[test]
 fn test_cli_5_unknown_view_fails_with_one_line_and_code_2() {
-    // [stest -> req~cli.print-stdout~1, req~cli.print-fail~1] 無いビューの名前 → 理由1行・終了コード 2・標準出力は空。
+    // [stest -> req~cli.print-stdout~1, req~cli.print-fail~2] 無いビューの名前 → 理由1行・終了コード 2・標準出力は空。
     let (t, _notes, base) = make_vault("noview");
     let out = run_in(
         &t,

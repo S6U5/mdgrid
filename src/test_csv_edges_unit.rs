@@ -82,7 +82,7 @@ fn test_sc_16_quote_only_when_needed() {
 
 #[test]
 fn test_sc_15_lone_cr_refused() {
-    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-quotes~1, req~scope.csv-open-unreadable~1] CR だけの改行のファイルは、読まずに理由(LF・CRLF でないと書き戻しで改行の形を守れない)。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-quotes~1, req~scope.csv-open-unreadable~2] CR だけの改行のファイルは、読まずに理由(LF・CRLF でないと書き戻しで改行の形を守れない)。
     let e = parse(b"a,b\r1,2\r", b',').unwrap_err();
     assert!(e.contains("CR"), "{e}");
     // 引用符の中の CR は値。
@@ -92,7 +92,7 @@ fn test_sc_15_lone_cr_refused() {
 
 #[test]
 fn test_sc_15_duplicate_and_empty_headers() {
-    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~1] 同じ名前の列と名前の無い列も、別の列として読み書きする(取り違えない)。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~2] 同じ名前の列と名前の無い列も、別の列として読み書きする(取り違えない)。
     let p = tmp("dup", "a,a,\n1,2,3\n");
     let mut src = Csv::open(&p).unwrap();
     assert_eq!(src.columns(), ["a", "a#2", "#3"]);

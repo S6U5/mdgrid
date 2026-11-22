@@ -157,7 +157,7 @@ fn test_recent_list_empty_message() {
 
 #[test]
 fn test_recent_in_launch_list_after_here() {
-    // [utest -> req~cli.recent-in-launch-list~1] places.toml に 仕事(タスク)、最近が projects・books → 今のフォルダ・最近(projects・books)・仕事 › タスク。
+    // [utest -> req~cli.recent-in-launch-list~2] places.toml に 仕事(タスク)、最近が projects・books → 今のフォルダ・最近(projects・books)・仕事 › タスク。
     let tmp = fixture("rc_launch");
     places::save(
         &tmp.0.join("config"),
@@ -188,7 +188,7 @@ fn test_recent_in_launch_list_after_here() {
 
 #[test]
 fn test_recent_in_launch_list_at_most_five_and_none() {
-    // [utest -> req~cli.recent-in-launch-list~1] 最近は 5 件まで。最近が無い → 「最近」の分類を出さない。
+    // [utest -> req~cli.recent-in-launch-list~2] 最近は 5 件まで。最近が無い → 「最近」の分類を出さない。
     let tmp = fixture("rc_launch5");
     let cfg = tmp.0.join("config");
     places::save(

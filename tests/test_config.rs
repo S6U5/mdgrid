@@ -160,7 +160,7 @@ fn test_cli_3_partial_config_keeps_other_defaults() {
 
 #[test]
 fn test_sr_13_keys_rebind_and_none() {
-    // [utest -> req~screen.keys-vim-and-arrows-bases~1, req~screen.keys-vim-and-arrows-remap~1] キーの割り当て直しと "none" での取り外しが (モード, キー, 動作) に写る。
+    // [utest -> req~screen.keys-vim-and-arrows-bases~2, req~screen.keys-vim-and-arrows-remap~1] キーの割り当て直しと "none" での取り外しが (モード, キー, 動作) に写る。
     let text = r#"
 [keys.table]
 j = "none"
@@ -202,7 +202,7 @@ fn test_cli_3_unknown_item_warns_and_continues() {
 
 #[test]
 fn test_cli_3_broken_toml_is_err() {
-    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~1] 壊れた TOML は Err(理由1行)。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~2] 壊れた TOML は Err(理由1行)。
     for text in [
         "[edit]\ncandidates = = 3\n",
         "[keys.table\nj = \"down\"\n",

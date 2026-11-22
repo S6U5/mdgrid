@@ -60,7 +60,7 @@ const STATUS_BASE: &str = r#"views:
 
 #[test]
 fn test_ce_3_list_of_candidates() {
-    // [utest -> req~cell-edit.value-list-open~1] status が todo・doing・done だけ → 3つと「なし」のリスト、今の値に印。
+    // [utest -> req~cell-edit.value-list-open~2] status が todo・doing・done だけ → 3つと「なし」のリスト、今の値に印。
     // ビューの絞り込みで見えていないノート(done)の値も候補に入る。
     let t = Tmp::new("ce3");
     t.write("a.md", "---\ntitle: 会議\nstatus: todo\n---\n");
@@ -95,7 +95,7 @@ fn test_ce_3_list_of_candidates() {
 
 #[test]
 fn test_ce_3_none_and_free_input() {
-    // [utest -> req~cell-edit.value-list-free-input~1, req~cell-edit.value-list-none~1, req~cell-edit.value-list-type-replaces~1, req~cell-edit.value-list-narrow~1, req~cell-edit.value-list-narrow-pick~1] 「なし」を選ぶと Null。打つと自由入力に切り替わり、↑↓ でリストに戻る。
+    // [utest -> req~cell-edit.value-list-free-input~1, req~cell-edit.value-list-none~1, req~cell-edit.value-list-type-replaces~2, req~cell-edit.value-list-narrow~2, req~cell-edit.value-list-narrow-pick~2] 「なし」を選ぶと Null。打つと自由入力に切り替わり、↑↓ でリストに戻る。
     let (_t, mut a) = make(
         "ce3free",
         &[
@@ -134,7 +134,7 @@ fn test_ce_3_none_and_free_input() {
 
 #[test]
 fn test_ce_3_too_many_candidates_is_free_input() {
-    // [utest -> req~cell-edit.value-list-open~1] 候補が上限(既定 20)を超える 21 個 → リストを出さず自由入力。
+    // [utest -> req~cell-edit.value-list-open~2] 候補が上限(既定 20)を超える 21 個 → リストを出さず自由入力。
     let notes: Vec<(String, String)> = (0..21)
         .map(|i| (format!("n{i:02}.md"), format!("---\nstatus: s{i}\n---\n")))
         .collect();
@@ -157,7 +157,7 @@ fn test_ce_3_too_many_candidates_is_free_input() {
 
 #[test]
 fn test_ce_4_enter_toggles_checkbox() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1, req~screen.key-modes-table-defaults~1, req~screen.key-modes-edit-defaults~1] `done: false` のセルで Enter → true のためる変更(入力は開かない)。true と false を切り替える。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2, req~screen.key-modes-table-defaults~2, req~screen.key-modes-edit-defaults~1] `done: false` のセルで Enter → true のためる変更(入力は開かない)。true と false を切り替える。
     let (t, mut a) = make(
         "ce4",
         &[
@@ -169,7 +169,7 @@ fn test_ce_4_enter_toggles_checkbox() {
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(pending(&a, 0, "done"), Some(NewValue::Bool(true)));
-    // もう一度で元の false に戻る。元の値に戻ったので、ためる変更から外れる([utest -> req~write-back.revert-drops-pending~1])。
+    // もう一度で元の false に戻る。元の値に戻ったので、ためる変更から外れる([utest -> req~write-back.revert-drops-pending~2])。
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(pending(&a, 0, "done"), None);
@@ -185,7 +185,7 @@ fn test_ce_4_enter_toggles_checkbox() {
 
 #[test]
 fn test_wb_17_ce_4_empty_checkbox_toggles_back() {
-    // [utest -> req~write-back.revert-drops-pending~1, req~cell-edit.checkbox-empty-true~1] 元が空(キーが無い・`done:`)のチェックボックスで Enter 2回 → true → false。`u` で戻せば未保存 0、
+    // [utest -> req~write-back.revert-drops-pending~2, req~cell-edit.checkbox-empty-true~2] 元が空(キーが無い・`done:`)のチェックボックスで Enter 2回 → true → false。`u` で戻せば未保存 0、
     // 保存してもファイルは変わらない。
     let notes = [
         ("a.md", "---\ndone: true\n---\n"),
@@ -231,7 +231,7 @@ fn row_of(a: &App, name: &str) -> usize {
 
 #[test]
 fn test_wb_17_ce_4_ce_10_bulk_toggle_per_row() {
-    // [utest -> req~write-back.revert-drops-pending~1, req~cell-edit.checkbox-toggle~1, req~cell-edit.bulk-set-same-value~1] 一括の切り替えは、今の行の次の状態(true の次は false、ほかは true)を選んだ行の全部に入れる。
+    // [utest -> req~write-back.revert-drops-pending~2, req~cell-edit.checkbox-toggle~2, req~cell-edit.bulk-set-same-value~2] 一括の切り替えは、今の行の次の状態(true の次は false、ほかは true)を選んだ行の全部に入れる。
     // 元の値と同じになる行は外れる(行ごとに決める)。
     // 例1: a `done: false`・b キー無し を全部選んで Enter 2回。
     let notes = [
@@ -337,7 +337,7 @@ fn test_wb_17_ce_4_ce_10_bulk_toggle_per_row() {
 
 #[test]
 fn test_ce_5_date_input() {
-    // [utest -> req~cell-edit.date-input-forms~1, req~cell-edit.date-input-invalid~1] 実在しない日付は閉じずに不正。`+3`・`-2` は今日から。空で確定 → 保存で `due:` の行が残る。
+    // [utest -> req~cell-edit.date-input-forms~2, req~cell-edit.date-input-invalid~1] 実在しない日付は閉じずに不正。`+3`・`-2` は今日から。空で確定 → 保存で `due:` の行が残る。
     let (t, mut a) = typed(
         "ce5",
         &[
@@ -433,7 +433,7 @@ fn set_done(a: &mut App) {
 
 #[test]
 fn test_ce_10_bulk_set() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1] 3行を選んで status に done → 3つのためる変更(1手)、保存前の差分に3ファイル。
+    // [utest -> req~cell-edit.bulk-set-same-value~2] 3行を選んで status に done → 3つのためる変更(1手)、保存前の差分に3ファイル。
     let (_t, mut a) = make("ce10", THREE);
     ctrl(&mut a, 'a');
     col_named(&mut a, "status");
@@ -454,7 +454,7 @@ fn test_ce_10_bulk_set() {
 
 #[test]
 fn test_ce_10_bulk_skips_read_only_rows() {
-    // [utest -> req~cell-edit.bulk-set-skip-read-only~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.refuse-unsafe-read-only~1] 3行のうち1行が読めないフロントマターのノート(WB-5。閉じの区切りが無い) → 2つのためる変更と
+    // [utest -> req~cell-edit.bulk-set-skip-read-only~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.refuse-unsafe-read-only~1] 3行のうち1行が読めないフロントマターのノート(WB-5。閉じの区切りが無い) → 2つのためる変更と
     // 「1行を飛ばした(理由)」。フロントマターの無いノート(b.md)は飛ばさず、ためる変更になる(WB-3)。
     let (_t, mut a) = make(
         "ce10skip",
@@ -501,7 +501,7 @@ fn test_ce_10_bulk_skips_read_only_rows() {
 
 #[test]
 fn test_ce_10_bulk_toggle_checkbox() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1, req~cell-edit.checkbox-toggle~1] チェックボックスの列は、選んだ行を今の行の次の状態(true の次は false)にそろえる。
+    // [utest -> req~cell-edit.bulk-set-same-value~2, req~cell-edit.checkbox-toggle~2] チェックボックスの列は、選んだ行を今の行の次の状態(true の次は false)にそろえる。
     let (_t, mut a) = make(
         "ce10cb",
         &[
@@ -605,7 +605,7 @@ fn test_ce_1_invalid_value_keeps_input_on_click() {
 
 #[test]
 fn test_ce_1_click_list_item() {
-    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-click-invalid~1, req~cell-edit.value-list-open~1] リストの項目のクリックで、その候補に決める。
+    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-click-invalid~1, req~cell-edit.value-list-open~2] リストの項目のクリックで、その候補に決める。
     let (_t, mut a) = make(
         "ce1list",
         &[
@@ -664,7 +664,7 @@ fn test_ce_11_tab_in_typed_inputs() {
 
 #[test]
 fn test_nv_6_detail_edit_uses_list() {
-    // [utest -> req~navigation.detail-edit~1, req~cell-edit.value-list-open~1] 詳細の表示からの編集でも候補のリストを出す。
+    // [utest -> req~navigation.detail-edit~1, req~cell-edit.value-list-open~2] 詳細の表示からの編集でも候補のリストを出す。
     let (_t, mut a) = make(
         "nv6list",
         &[
@@ -689,7 +689,7 @@ fn test_nv_6_detail_edit_uses_list() {
 
 #[test]
 fn test_ce_10_untouched_input_writes_nothing() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1, req~cell-edit.revert-and-tab~1] 一括で確定したあと Tab で隣へ移ると1行の入力になり、何も打たずに Tab しても書かない。
+    // [utest -> req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1, req~cell-edit.bulk-set-skip-mismatch~1, req~cell-edit.revert-and-tab~1] 一括で確定したあと Tab で隣へ移ると1行の入力になり、何も打たずに Tab しても書かない。
     // 一括の入力をすぐ Enter・外のクリックで閉じても、今の行の値を広げない。
     let (_t, mut a) = make(
         "ce10tab",
@@ -767,7 +767,7 @@ fn test_cv_2_bulk_list_never_offers_mismatched_value() {
 
 #[test]
 fn test_ce_10_outside_selection_and_folded_rows() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1] 今の行が選択の外なら1行の編集。畳んだまとまりの中の行は一括から外し、外した数を出す。
+    // [utest -> req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1] 今の行が選択の外なら1行の編集。畳んだまとまりの中の行は一括から外し、外した数を出す。
     let (_t, mut a) = make(
         "ce10out",
         &[
@@ -836,7 +836,7 @@ fn done_todo(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_ce_10_bulk_same_as_current_row() {
-    // [utest -> req~cell-edit.bulk-set-same-value~1] 今の行と同じ値でも、触れば(打ち直し・リストで動かして戻す)選んだ全部の行に揃える。
+    // [utest -> req~cell-edit.bulk-set-same-value~2] 今の行と同じ値でも、触れば(打ち直し・リストで動かして戻す)選んだ全部の行に揃える。
     // 何も触らずに Enter なら書かない。
     let (_t, mut a) = done_todo("ce10same1");
     wipe(&mut a);

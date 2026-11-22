@@ -91,7 +91,7 @@ fn out(o: &Output) -> String {
 
 #[test]
 fn test_notice_cli_prints_items() {
-    // [stest -> req~notice.cli~1] 件数と連絡を1項目1行で出して終了コード 0。項目が無ければ何も出さない。
+    // [stest -> req~notice.cli~2] 件数と連絡を1項目1行で出して終了コード 0。項目が無ければ何も出さない。
     let items = "[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {count} 件\"\n\
                  [[notices]]\nnote = \"~/notes/inbox.md\"\n";
     let h = home("notice-cli", &conf(items));
@@ -117,7 +117,7 @@ fn test_notice_scope_on_the_command_line() {
 
 #[test]
 fn test_notice_note_item_on_the_command_line() {
-    // [stest -> req~notice.note-item~1] 本文の空でない行を頭から lines 行。無いノートは知らせの1行で、止めない。
+    // [stest -> req~notice.note-item~2] 本文の空でない行を頭から lines 行。無いノートは知らせの1行で、止めない。
     let items = "[[notices]]\nnote = \"~/notes/inbox.md\"\nlines = 2\n[[notices]]\nnote = \"~/notes/none.md\"\n";
     let h = home("notice-note", &conf(items));
     let o = run(h.path(), &["ws/tasks", "--notices"]);
@@ -130,7 +130,7 @@ fn test_notice_note_item_on_the_command_line() {
 
 #[test]
 fn test_notice_cli_plain_and_unreadable() {
-    // [stest -> req~notice.cli-plain~1] 読めない表は「?」を添え、エスケープの文字を出さない。
+    // [stest -> req~notice.cli-plain~2] 読めない表は「?」を添え、エスケープの文字を出さない。
     let items =
         "[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {count} 件\"\nscope = \"workspace\"\n";
     let h = home("notice-plain", &conf(items));
@@ -146,7 +146,7 @@ fn test_notice_cli_plain_and_unreadable() {
 
 #[test]
 fn test_notice_cli_plain_strips_control_characters() {
-    // [stest -> req~notice.cli-plain~1] ノートの中の端末の制御の文字(ESC)は、そのまま出さない。
+    // [stest -> req~notice.cli-plain~2] ノートの中の端末の制御の文字(ESC)は、そのまま出さない。
     let items = "[[notices]]\nnote = \"~/notes/inbox.md\"\n";
     let h = home("notice-esc", &conf(items));
     std::fs::write(
@@ -169,7 +169,7 @@ mod screen {
 
     #[test]
     fn test_notice_opt_in_on_screen() {
-        // [stest -> req~notice.opt-in~1] 項目を書くとヘッダーの上に欄が出る。
+        // [stest -> req~notice.opt-in~2] 項目を書くとヘッダーの上に欄が出る。
         let items = "[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {count} 件\"\n";
         let h = home("notice-screen", &conf(items));
         let t = Tui::spawn(&["ws/tasks"], h.path(), &[("MDGRID_TODAY", TODAY)]);
@@ -186,7 +186,7 @@ mod screen {
 
     #[test]
     fn test_notice_layout_on_screen() {
-        // [stest -> req~notice.layout~1] 件数の項目を1行目に · でつなぎ、連絡は次の行。
+        // [stest -> req~notice.layout~2] 件数の項目を1行目に · でつなぎ、連絡は次の行。
         let items = "[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {count} 件\"\n\
                      [[notices]]\ncond = \"overdue\"\ntext = \"今日まで {count} 件\"\nscope = \"workspace\"\n\
                      [[notices]]\nnote = \"~/notes/inbox.md\"\n";
@@ -208,7 +208,7 @@ mod screen {
 
     #[test]
     fn test_notice_jump_on_screen() {
-        // [stest -> req~notice.jump~1] 欄へ移って Enter → 今の表が期限切れの2行になり、帯に条件。
+        // [stest -> req~notice.jump~2] 欄へ移って Enter → 今の表が期限切れの2行になり、帯に条件。
         let items = "[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {count} 件\"\n";
         let h = home("notice-jump", &conf(items));
         let mut t = Tui::spawn(&["ws/tasks"], h.path(), &[("MDGRID_TODAY", TODAY)]);

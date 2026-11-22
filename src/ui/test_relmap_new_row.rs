@@ -34,7 +34,7 @@ fn new_at(a: &App) -> Option<(usize, usize)> {
 
 #[test]
 fn test_ce_25_relmap_new_same_row_as_view_bar() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1] 既定(余白 1)の 120×30: 表の画面の「+ 新規」は帯の真ん中の行(4行目)。関係マップでも同じ行・同じ
+    // [utest -> req~cell-edit.new-note-relmap-button~2] 既定(余白 1)の 120×30: 表の画面の「+ 新規」は帯の真ん中の行(4行目)。関係マップでも同じ行・同じ
     // 位置で、ヘッダーとの間の行(3行目)は空いている。
     let tmp = workspace("ce25_row");
     let mut a = boot_tasks(&tmp);
@@ -59,7 +59,7 @@ fn test_ce_25_relmap_new_same_row_as_view_bar() {
 
 #[test]
 fn test_ce_25_relmap_new_click_on_same_row() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-relmap-start~1] 関係マップで、表の画面と同じ行の「+ 新規」を押す → 表の画面に戻って名前の欄が出る。
+    // [utest -> req~cell-edit.new-note-relmap-button~2, req~cell-edit.new-note-relmap-start~1] 関係マップで、表の画面と同じ行の「+ 新規」を押す → 表の画面に戻って名前の欄が出る。
     let tmp = workspace("ce25_rowclick");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);
@@ -72,7 +72,7 @@ fn test_ce_25_relmap_new_click_on_same_row() {
 
 #[test]
 fn test_ce_25_relmap_new_row_follows_bar_padding() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1] 帯の余白が 0 なら、表の画面でも関係マップでもヘッダーのすぐ下の行(同じ行のまま)。
+    // [utest -> req~cell-edit.new-note-relmap-button~2] 帯の余白が 0 なら、表の画面でも関係マップでもヘッダーのすぐ下の行(同じ行のまま)。
     let tmp = workspace("ce25_row0");
     let mut a = boot_tasks(&tmp);
     a.resize(120, 30);

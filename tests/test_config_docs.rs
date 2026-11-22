@@ -215,7 +215,7 @@ fn test_cli_2_help_mentions_print_config() {
 
 #[test]
 fn test_cli_12_keys_cover_known_items() {
-    // [stest -> req~cli.config-docs~1] 実装の項目の一覧に、今ある設定の項目(CLI-3・SR-13・SR-8 ほか)が区画の道筋で入っている。
+    // [stest -> req~cli.config-docs~2] 実装の項目の一覧に、今ある設定の項目(CLI-3・SR-13・SR-8 ほか)が区画の道筋で入っている。
     let set = keys_set();
     for name in [
         "keys",
@@ -237,7 +237,7 @@ fn test_cli_12_keys_cover_known_items() {
 
 #[test]
 fn test_cli_12_parse_knows_every_key() {
-    // [stest -> req~cli.config-docs~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] KEYS の項目はどれも設定の読み取りが知っている(知らない項目の警告にならない)。
+    // [stest -> req~cli.config-docs~2, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] KEYS の項目はどれも設定の読み取りが知っている(知らない項目の警告にならない)。
     let (_, w) = parse("zz_not_a_config_item = 0\n").expect("読める");
     assert_eq!(w.len(), 1, "知らない項目の警告が1つ出る: {w:?}");
     let unknown = w[0].rsplit(": ").next().unwrap().to_string();
@@ -258,7 +258,7 @@ fn test_cli_12_parse_knows_every_key() {
 
 #[test]
 fn test_cli_12_english_doc_matches_keys() {
-    // [stest -> req~cli.config-docs~1] docs/config.md の項目と実装の項目が同じ集合。
+    // [stest -> req~cli.config-docs~2] docs/config.md の項目と実装の項目が同じ集合。
     let doc = doc_items("docs/config.md");
     let keys = keys_set();
     assert_eq!(
@@ -272,7 +272,7 @@ fn test_cli_12_english_doc_matches_keys() {
 
 #[test]
 fn test_cli_12_japanese_doc_matches_keys() {
-    // [stest -> req~cli.config-docs~1] docs/config.ja.md の項目と実装の項目が同じ集合。
+    // [stest -> req~cli.config-docs~2] docs/config.ja.md の項目と実装の項目が同じ集合。
     let doc = doc_items("docs/config.ja.md");
     let keys = keys_set();
     assert_eq!(
@@ -286,7 +286,7 @@ fn test_cli_12_japanese_doc_matches_keys() {
 
 #[test]
 fn test_cli_12_print_config_matches_keys() {
-    // [stest -> req~cli.config-docs~1] --print-config の項目(コメントアウトの例も含む)と実装の項目が同じ集合。値の行の区画は、どれも実装の区画。
+    // [stest -> req~cli.config-docs~2] --print-config の項目(コメントアウトの例も含む)と実装の項目が同じ集合。値の行の区画は、どれも実装の区画。
     let text = print_config();
     let printed: BTreeSet<String> = KEYS
         .iter()
@@ -320,7 +320,7 @@ fn test_cli_12_print_config_matches_keys() {
 
 #[test]
 fn test_cli_12_docs_list_old_names() {
-    // [stest -> req~cli.config-docs~1, req~cli.legacy-config-apply~1] 文書に、旧い名前と移った先の対応の表がある(実装の表 LEGACY と同じ行)。
+    // [stest -> req~cli.config-docs~2, req~cli.legacy-config-apply~2] 文書に、旧い名前と移った先の対応の表がある(実装の表 LEGACY と同じ行)。
     for rel in ["docs/config.md", "docs/config.ja.md"] {
         let text = repo_file(rel);
         for (old, new) in mdgrid::schema::LEGACY {

@@ -25,7 +25,7 @@ fn test_bv_22_no_panic_multibyte_tail() {
     assert_eq!(stem("x.MD"), "x");
 }
 
-// [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-backlinks~1, req~base-view.links-eval-has-link~1, req~base-view.links-eval-this~1]
+// [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-backlinks~1, req~base-view.links-eval-has-link~1, req~base-view.links-eval-this~2]
 #[test]
 fn test_bv_22_no_panic_long_hostile_lines_are_fast() {
     let n = 200_000;

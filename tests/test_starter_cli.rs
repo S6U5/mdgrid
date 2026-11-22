@@ -605,7 +605,7 @@ fn test_st_4_second_run_fails_with_2_and_changes_nothing() {
 
 #[test]
 fn test_st_4_unknown_starter_one_line_names_starters_flag() {
-    // [stest -> req~starter.init-bad-args~1] --starter nope → 理由1行(nope と、--starters で一覧を見られること)と終了コード 2。フォルダも作らない。
+    // [stest -> req~starter.init-bad-args~2] --starter nope → 理由1行(nope と、--starters で一覧を見られること)と終了コード 2。フォルダも作らない。
     let t = home("st-unknown");
     let h = t.path();
     let o = run(h, h, &["books", "--init-workspace", "--starter", "nope"]);
@@ -621,7 +621,7 @@ fn test_st_4_unknown_starter_one_line_names_starters_flag() {
 
 #[test]
 fn test_st_4_flag_misuse_is_one_line_and_code_2() {
-    // [stest -> req~starter.init-no-overwrite~1, req~starter.init-bad-args~1] --init-workspace の無い --starter、--starter の無い --with-samples、値の無い --starter、
+    // [stest -> req~starter.init-no-overwrite~1, req~starter.init-bad-args~2] --init-workspace の無い --starter、--starter の無い --with-samples、値の無い --starter、
     // 2つ以上のフォルダは、CLI-4 と同じく理由1行と終了コード 2。何も作らない。
     let t = home("st-misuse");
     let h = t.path();

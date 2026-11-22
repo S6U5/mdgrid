@@ -23,7 +23,7 @@ fn resolve_all(layers: &[Layer]) -> Resolved {
 
 #[test]
 fn test_sr_44_narrow_place_wins() {
-    // [utest -> req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~1, req~screen.profile-scopes-theme-cut~1] 狭い範囲が勝つ: 全体 sumi、ワークスペース nord、表 dracula → dracula。表が無ければ nord。
+    // [utest -> req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~2, req~screen.profile-scopes-theme-cut~1] 狭い範囲が勝つ: 全体 sumi、ワークスペース nord、表 dracula → dracula。表が無ければ nord。
     let global = layer(Place::Config, "config.toml", "[look]\ntheme = \"sumi\"\n");
     let ws = layer(Place::Workspace, "ws", "[look]\ntheme = \"nord\"\n");
     let table = layer(
@@ -88,7 +88,7 @@ fn test_sr_44_preset_drops_wider_parts_and_theme_drops_wider_roles() {
 
 #[test]
 fn test_sr_44_template_is_laid_under_the_place() {
-    // [utest -> req~screen.profile-scopes-use~1] use はテンプレートをその範囲の値の下に敷く。無い名前とテンプレートの中の use は警告。
+    // [utest -> req~screen.profile-scopes-use~2] use はテンプレートをその範囲の値の下に敷く。無い名前とテンプレートの中の use は警告。
     let mut night = Profile::default();
     night.look.theme = Some(ThemeSpec::Named(Theme::Dracula));
     night.look.preset = Some(Preset::DozyPink);
@@ -140,7 +140,7 @@ fn test_sr_44_global_items_are_refused_in_other_places() {
 
 #[test]
 fn test_sr_44_profile_round_trips() {
-    // [utest -> req~screen.profile-scopes-order~1] 画面が書くプロファイルは、書いて読むと同じ。
+    // [utest -> req~screen.profile-scopes-order~2] 画面が書くプロファイルは、書いて読むと同じ。
     let mut p = Profile {
         use_: Some("夜".into()),
         ..Profile::default()

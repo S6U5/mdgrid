@@ -45,7 +45,7 @@ fn is_table(s: &str) -> bool {
 
 #[test]
 fn test_ch_2_p_opens_chart_and_esc_returns_e2e() {
-    // [stest -> req~chart.open-title~1, req~chart.open-title-inferred~1, req~chart.keys-no-write~1, req~chart.keys-enter~1, req~chart.keys-back~1, req~chart.keys-read-only~1] P → グラフの題と棒の項目(設定なしで status を推定)。Esc で表に戻る。q・P でも表に戻り
+    // [stest -> req~chart.open-title~1, req~chart.open-title-inferred~1, req~chart.keys-no-write~1, req~chart.keys-enter~2, req~chart.keys-back~1, req~chart.keys-read-only~1] P → グラフの題と棒の項目(設定なしで status を推定)。Esc で表に戻る。q・P でも表に戻り
     // (q で終わらない)、表で q を押すと終わる(終了コード 0)。
     let home = root("chart-e2e", "");
     let mut tui = Tui::spawn(&["t", "--no-color"], home.path(), &[]);
@@ -65,7 +65,7 @@ fn test_ch_2_p_opens_chart_and_esc_returns_e2e() {
 
 #[test]
 fn test_ch_8_enter_filters_to_selected_item_e2e() {
-    // [stest -> req~chart.keys-enter~1] chart = { kind = "bar", x = "status" } の表で P → 最初の項目(done。3件)で Enter → 表が done の
+    // [stest -> req~chart.keys-enter~2] chart = { kind = "bar", x = "status" } の表で P → 最初の項目(done。3件)で Enter → 表が done の
     // 3行だけになる(下の帯の「1/3行」)。
     let home = root(
         "chart-e2e-enter",

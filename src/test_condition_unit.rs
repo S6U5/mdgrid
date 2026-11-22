@@ -153,7 +153,7 @@ fn test_condition_digit_dup_first_written_wins() {
 
 #[test]
 fn test_condition_label_defaults_to_the_name() {
-    // [utest -> req~condition.label~1] label があればそれを、無ければ名前を見せる。
+    // [utest -> req~condition.label~2] label があればそれを、無ければ名前を見せる。
     let text = format!("{SOON}label = \"期限が近い\"\n[conditions.far]\nexpr = 'true'\n");
     let (c, _) = read(&text);
     assert_eq!(

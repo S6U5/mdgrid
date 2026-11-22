@@ -106,7 +106,7 @@ fn test_sr_36_default_sumi_screen() {
 
 #[test]
 fn test_sr_36_overrides_each_part() {
-    // [utest -> req~screen.style-parts-choose~1] 部品ごとの上書き: status = "chip" は今までの札、tags = "hash"、check = "bracket"、
+    // [utest -> req~screen.style-parts-choose~2] 部品ごとの上書き: status = "chip" は今までの札、tags = "hash"、check = "bracket"、
     // icons = true は見出しの印。
     let tmp = notes("sr36_over");
     let a = with(
@@ -127,7 +127,7 @@ fn test_sr_36_overrides_each_part() {
 
 #[test]
 fn test_sr_36_preset_saas_tints_and_segments() {
-    // [utest -> req~screen.style-parts-preset~1] preset = "saas": status は淡い地の札(点つき)、リストも淡い地の札。
+    // [utest -> req~screen.style-parts-preset~2] preset = "saas": status は淡い地の札(点つき)、リストも淡い地の札。
     let tmp = notes("sr36_saas");
     let mut a = with(&tmp, ColorMode::Rgb, "[look]\npreset = \"saas\"\n");
     a.col = a.cols.iter().position(|c| c == "done").unwrap();
@@ -159,7 +159,7 @@ fn test_sr_36_pill_needs_nerd_font() {
 
 #[test]
 fn test_sr_36_cross_tints_column() {
-    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1, req~screen.style-parts-nerd-auto~1] select = "cross": 今の列を、ほかの行でも淡く塗る。
+    // [utest -> req~screen.style-parts-choose~2, req~screen.style-parts-preset~2, req~screen.style-parts-nerd-auto~1] select = "cross": 今の列を、ほかの行でも淡く塗る。
     let tmp = notes("sr36_cross");
     let mut a = with(&tmp, ColorMode::Rgb, "[look.style]\nselect = \"cross\"\n");
     a.col = a.cols.iter().position(|c| c == "done").unwrap();
@@ -173,7 +173,7 @@ fn test_sr_36_cross_tints_column() {
 
 #[test]
 fn test_sr_36_rules_and_frames() {
-    // [utest -> req~screen.style-parts-choose~1] rules = "columns" は列の区切り線、frames = "square" は角の四角い窓。
+    // [utest -> req~screen.style-parts-choose~2] rules = "columns" は列の区切り線、frames = "square" は角の四角い窓。
     let tmp = notes("sr36_frames");
     let mut a = with(
         &tmp,
@@ -191,7 +191,7 @@ fn test_sr_36_rules_and_frames() {
 
 #[test]
 fn test_sr_36_no_color_keeps_text() {
-    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1, req~screen.style-parts-default~1, req~screen.rich-cells-plain~1] 色を使わない表示では部品にしない(今の見た目)。
+    // [utest -> req~screen.style-parts-choose~2, req~screen.style-parts-preset~2, req~screen.style-parts-default~1, req~screen.rich-cells-plain~1] 色を使わない表示では部品にしない(今の見た目)。
     let tmp = notes("sr36_plain");
     let a = with(&tmp, ColorMode::None, "[look]\npreset = \"saas\"\n");
     let b = row(&a, "b");

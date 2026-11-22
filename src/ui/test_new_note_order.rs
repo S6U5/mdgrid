@@ -40,7 +40,7 @@ fn boot_ask(name: &str) -> (Tmp, App) {
     (tmp, app)
 }
 
-// [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-ask~1]
+// [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-ask~2]
 #[test]
 fn test_ce_26_place_then_name_then_asked_items() {
     let (tmp, mut a) = boot_ask("ce26_order");

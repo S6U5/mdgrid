@@ -43,7 +43,7 @@ fn test_nv_6_detail_wraps_long_value() {
 
 #[test]
 fn test_sr_16_detail_keys_edit_and_close() {
-    // [utest -> req~screen.key-modes-per-mode~1, req~screen.key-modes-table-defaults~1, req~screen.key-modes-detail-defaults~1] 詳細の表示で Enter = 選んだプロパティの編集、Esc と `K` = 閉じる。表で `K` = 詳細、Space = 行の印。
+    // [utest -> req~screen.key-modes-per-mode~1, req~screen.key-modes-table-defaults~2, req~screen.key-modes-detail-defaults~1] 詳細の表示で Enter = 選んだプロパティの編集、Esc と `K` = 閉じる。表で `K` = 詳細、Space = 行の印。
     assert_eq!(lookup(BINDINGS, Mode::Table, "K"), Some(Action::Detail));
     assert_eq!(lookup(BINDINGS, Mode::Table, "Space"), Some(Action::Mark));
     assert_eq!(lookup(BINDINGS, Mode::Table, "Esc"), Some(Action::Escape));

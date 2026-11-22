@@ -246,7 +246,7 @@ fn wb_2_new_key_does_not_touch_body() {
 
 #[test]
 fn wb_3_appends_missing_key_as_one_line() {
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-setting~1]
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-setting~1]
     let after = apply(&fixture("plain.md"), &[edit("priority", NewValue::Int(1))]).expect("apply");
     assert_eq!(
         after,
@@ -266,7 +266,7 @@ fn wb_3_appended_line_uses_file_newline() {
 
 #[test]
 fn wb_3_no_frontmatter_gets_frontmatter_but_unreadable_is_not_written() {
-    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-skip-broken~1] フロントマターの無いノートは先頭に `---`・キー・`---` を足し、本文のバイトは変えない。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1] フロントマターの無いノートは先頭に `---`・キー・`---` を足し、本文のバイトは変えない。
     let original = fixture("no_frontmatter.md");
     let out = apply(&original, &[edit("status", s("done"))]).expect("apply adds frontmatter");
     let mut want = b"---\nstatus: done\n---\n".to_vec();
@@ -324,7 +324,7 @@ fn wb_5_hard_linked_note_is_not_written() {
 
 #[test]
 fn ce_8_apply_refuses_read_only_values() {
-    // [utest -> req~cell-edit.read-only-forms~1, req~write-back.frontmatter-only-top-level~1]
+    // [utest -> req~cell-edit.read-only-forms~2, req~write-back.frontmatter-only-top-level~1]
     for (file, key) in [
         ("nested_map.md", "meta"),
         ("block_scalar.md", "literal"),
@@ -475,7 +475,7 @@ const RISKY: &[&str] = &[
 
 #[test]
 fn wb_7_risky_strings_are_quoted_and_read_back_as_str() {
-    // [utest -> req~write-back.quoting-keep-style~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
     let before = fixture("plain.md");
     for v in RISKY {
         let after = apply(&before, &[edit("status", s(v))]).expect("apply");
@@ -494,14 +494,14 @@ fn wb_7_risky_strings_are_quoted_and_read_back_as_str() {
 
 #[test]
 fn wb_7_no_is_written_as_double_quoted() {
-    // [utest -> req~write-back.quoting-keep-style~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
     let after = apply(&fixture("plain.md"), &[edit("status", s("no"))]).expect("apply");
     assert_eq!(after, b"---\ntitle: t\nstatus: \"no\"\n---\nbody\n");
 }
 
 #[test]
 fn wb_7_keeps_double_quotes() {
-    // [utest -> req~write-back.quoting-keep-style~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
     let after = apply(&fixture("quoted.md"), &[edit("dq", s("done"))]).expect("apply");
     assert_eq!(
         after,
@@ -521,7 +521,7 @@ fn wb_7_keeps_double_quotes() {
 
 #[test]
 fn wb_7_keeps_single_quotes() {
-    // [utest -> req~write-back.quoting-keep-style~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
     let after = apply(&fixture("quoted.md"), &[edit("sq", s("done"))]).expect("apply");
     assert_eq!(
         after,
@@ -536,14 +536,14 @@ fn wb_7_keeps_single_quotes() {
 
 #[test]
 fn wb_7_plain_safe_string_stays_plain() {
-    // [utest -> req~write-back.quoting-keep-style~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
     let after = apply(&fixture("plain.md"), &[edit("status", s("done"))]).expect("apply");
     assert_eq!(after, b"---\ntitle: t\nstatus: done\n---\nbody\n");
 }
 
 #[test]
 fn wb_7_newline_is_rejected() {
-    // [utest -> req~write-back.quoting-keep-style~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
     for v in ["a\nb", "a\r\nb", "a\rb", "\n"] {
         let r = apply(&fixture("plain.md"), &[edit("status", s(v))]);
         assert_eq!(r, Err(EditError::Newline), "{v:?}");

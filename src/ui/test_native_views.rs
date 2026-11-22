@@ -443,7 +443,7 @@ fn test_bv_17_tabs_list_default_and_saved_views() {
 
 #[test]
 fn test_bv_17_hand_written_views_toml_becomes_tabs() {
-    // [utest -> req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1] 設定の置き場の views.toml を手で書く → タブになり、選ぶとその絞り込みと列で表を組む。
+    // [utest -> req~base-view.own-views-tabs~1, req~base-view.own-views-toml~2] 設定の置き場の views.toml を手で書く → タブになり、選ぶとその絞り込みと列で表を組む。
     // 書き足して開き直す → タブが増える。ノートのフォルダには何も書かない。
     let tmp = vault("bv17hand");
     let notes_before = snapshot(&tmp.notes());
@@ -535,7 +535,7 @@ fn test_bv_17_no_new_files_in_notes_folder() {
 
 #[test]
 fn test_bv_18_save_as_adds_tab() {
-    // [utest -> req~base-view.save-view-save-as~1, req~navigation.view-settings~1] `o` で done を外し「名前を付けて保存」で「未完了」→ タブに「未完了」が増え、
+    // [utest -> req~base-view.save-view-save-as~1, req~navigation.view-settings~2] `o` で done を外し「名前を付けて保存」で「未完了」→ タブに「未完了」が増え、
     // views.toml にその設定で残る。
     let tmp = vault("bv18save");
     let mut a = boot_folder(&tmp, false);
@@ -801,7 +801,7 @@ fn test_bv_20_broken_views_toml_warns_and_starts_without_tabs() {
 
 #[test]
 fn test_bv_20_unknown_key_warns_and_reads() {
-    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 知らない項目 `color = 1` → 警告して、そのビューはタブに出る。
+    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] 知らない項目 `color = 1` → 警告して、そのビューはタブに出る。
     let tmp = vault("bv20unknown");
     std::fs::create_dir_all(conf_dir(&tmp)).unwrap();
     let real = std::fs::canonicalize(tmp.notes()).unwrap();
@@ -820,7 +820,7 @@ fn test_bv_20_unknown_key_warns_and_reads() {
 
 #[test]
 fn test_bv_20_base_views_come_first() {
-    // [utest -> req~base-view.views-toml-tab-order~1, req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~1] `.base` と mdgrid のビューの両方がある対象 → タブは `.base` のビューが先、
+    // [utest -> req~base-view.views-toml-tab-order~1, req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~2] `.base` と mdgrid のビューの両方がある対象 → タブは `.base` のビューが先、
     // 起動は先頭(`.base` の最初のビュー)。mdgrid のビューに切り替えるとその見せ方。
     let tmp = vault("bv20order");
     let bp = base_path(&tmp);

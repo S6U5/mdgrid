@@ -60,7 +60,7 @@ fn test_ce_3_type_continues_after_cursor_key() {
     assert_eq!(a.input.as_ref().unwrap().text, "doing!");
 }
 
-// [utest -> req~cell-edit.value-list-none~1, req~cell-edit.value-list-type-replaces~1]
+// [utest -> req~cell-edit.value-list-none~1, req~cell-edit.value-list-type-replaces~2]
 #[test]
 fn test_ce_3_type_continues_after_revert() {
     let (_t, mut a) = three();

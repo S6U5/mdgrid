@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 #[test]
 fn test_cli_12_keys_item_lists_every_mode() {
-    // [utest -> req~cli.config-docs~1] 設定の項目の表の keys の説明(--print-config と文書の元)に、どのモードの名前もある。
+    // [utest -> req~cli.config-docs~2] 設定の項目の表の keys の説明(--print-config と文書の元)に、どのモードの名前もある。
     let item = mdgrid::config::ITEMS
         .iter()
         .find(|i| i.path == "keys")
@@ -44,7 +44,7 @@ fn test_sr_4_one_table_drives_dispatch_and_hints() {
 
 #[test]
 fn test_sr_13_default_keys() {
-    // [utest -> req~screen.keys-vim-and-arrows-bases~1] vim 風と矢印の両方、Bases の主なキー。
+    // [utest -> req~screen.keys-vim-and-arrows-bases~2] vim 風と矢印の両方、Bases の主なキー。
     assert_eq!(
         lookup(BINDINGS, Mode::Table, "j"),
         lookup(BINDINGS, Mode::Table, "Down")
@@ -69,14 +69,14 @@ fn test_sr_13_default_keys() {
         lookup(BINDINGS, Mode::Table, "Backspace"),
         Some(Action::Clear)
     );
-    // [utest -> req~screen.default-keys~1] 読み込みの中止は Ctrl+G(Ctrl+C ではない)。
+    // [utest -> req~screen.default-keys~2] 読み込みの中止は Ctrl+G(Ctrl+C ではない)。
     assert_eq!(
         lookup(BINDINGS, Mode::Table, "Ctrl+g"),
         Some(Action::CancelLoad)
     );
     // [utest -> req~output.copy-tsv~1, req~output.copy-both-targets~1] Ctrl+C はコピー。
     assert_eq!(lookup(BINDINGS, Mode::Table, "Ctrl+c"), Some(Action::Copy));
-    // [utest -> req~screen.keys-vim-and-arrows-bases~1, req~screen.keys-vim-and-arrows-remap~1] 検索の `/` `n` `N`。[utest -> req~navigation.search-input-place~1] `\`、[utest -> req~navigation.jump~1] `0` `$` Ctrl+D Ctrl+U。
+    // [utest -> req~screen.keys-vim-and-arrows-bases~2, req~screen.keys-vim-and-arrows-remap~1] 検索の `/` `n` `N`。[utest -> req~navigation.search-input-place~2] `\`、[utest -> req~navigation.jump~1] `0` `$` Ctrl+D Ctrl+U。
     assert_eq!(lookup(BINDINGS, Mode::Table, "/"), Some(Action::Search));
     assert_eq!(lookup(BINDINGS, Mode::Table, "n"), Some(Action::SearchNext));
     assert_eq!(lookup(BINDINGS, Mode::Table, "N"), Some(Action::SearchPrev));
@@ -97,7 +97,7 @@ fn test_sr_13_default_keys() {
         lookup(BINDINGS, Mode::Table, "Ctrl+u"),
         Some(Action::HalfPageUp)
     );
-    // [utest -> req~screen.default-keys~1] Ctrl+A 全部を選ぶ、Esc 選択を解く、`*` 強調、`,` 同じ値の行だけ。
+    // [utest -> req~screen.default-keys~2] Ctrl+A 全部を選ぶ、Esc 選択を解く、`*` 強調、`,` 同じ値の行だけ。
     assert_eq!(
         lookup(BINDINGS, Mode::Table, "Ctrl+a"),
         Some(Action::SelectAll)
@@ -111,7 +111,7 @@ fn test_sr_13_default_keys() {
     // [utest -> req~navigation.select-rows~1] Shift+矢印は範囲。
     let shift_down = KeyEvent::new(KeyCode::Down, KeyModifiers::SHIFT);
     assert_eq!(key_name(&shift_down), Some("Shift+Down".into()));
-    // [utest -> req~screen.key-modes-per-mode~1, req~screen.key-modes-no-dup~1, req~screen.key-modes-table-defaults~1, req~screen.key-modes-edit-defaults~1] 編集で Ctrl+R は編集前の値、表ではやり直し。
+    // [utest -> req~screen.key-modes-per-mode~1, req~screen.key-modes-no-dup~1, req~screen.key-modes-table-defaults~2, req~screen.key-modes-edit-defaults~1] 編集で Ctrl+R は編集前の値、表ではやり直し。
     assert_eq!(lookup(BINDINGS, Mode::Edit, "Ctrl+r"), Some(Action::Revert));
     assert_eq!(lookup(BINDINGS, Mode::Table, "Ctrl+r"), Some(Action::Redo));
 }
@@ -159,7 +159,7 @@ fn test_sr_16_palette_and_help_keys() {
     assert_eq!(lookup(BINDINGS, Mode::Table, "?"), Some(Action::Help));
     assert_eq!(lookup(BINDINGS, Mode::Table, "e"), Some(Action::OpenEditor));
     assert_eq!(lookup(BINDINGS, Mode::Table, "y"), Some(Action::Copy));
-    // [utest -> req~screen.palette-fuzzy~1] 動作の名前はパレットで探す鍵なので、動作ごとに違う。
+    // [utest -> req~screen.palette-fuzzy~2] 動作の名前はパレットで探す鍵なので、動作ごとに違う。
     let actions: HashSet<Action> = BINDINGS.iter().map(|b| b.action).collect();
     let names: HashSet<&str> = actions.iter().map(|a| a.name()).collect();
     assert_eq!(actions.len(), names.len());

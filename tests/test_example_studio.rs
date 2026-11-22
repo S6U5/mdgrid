@@ -34,7 +34,7 @@ fn edge(from: &str, column: &str, to: &str, many: bool) -> Edge {
 
 #[test]
 fn test_example_studio_marker_tables() {
-    // [utest -> req~workspace.marker-form~1, req~workspace.marker-auto-tables~1, req~workspace.marker-open~1, req~workspace.marker-open-view~1] 印に書いた5つの表。Tasks は .base(ビューを持つ)、ほかはフォルダ。
+    // [utest -> req~workspace.marker-form~2, req~workspace.marker-auto-tables~1, req~workspace.marker-open~1, req~workspace.marker-open-view~1] 印に書いた5つの表。Tasks は .base(ビューを持つ)、ほかはフォルダ。
     let (ws, _) = workspace::read_marker(&studio());
     let names: Vec<&str> = ws.tables.iter().map(|t| t.name.as_str()).collect();
     assert_eq!(
@@ -46,7 +46,7 @@ fn test_example_studio_marker_tables() {
 
 #[test]
 fn test_example_studio_edges() {
-    // [utest -> req~relations.table-links-detect~1] 設定なしで見つかるつながり。リストの列(team・attendees・depends_on)は多対多。
+    // [utest -> req~relations.table-links-detect~2] 設定なしで見つかるつながり。リストの列(team・attendees・depends_on)は多対多。
     let mut got = edges(&tables());
     got.sort_by(|a, b| (&a.from, &a.column).cmp(&(&b.from, &b.column)));
     assert_eq!(
@@ -67,7 +67,7 @@ fn test_example_studio_edges() {
 
 #[test]
 fn test_example_studio_every_link_resolves() {
-    // [utest -> req~relations.link-forms-kinds~1] 見本のリンクは全部、行き先のノートがある(REL-10 の ? の印が出ない)。
+    // [utest -> req~relations.link-forms-kinds~2] 見本のリンクは全部、行き先のノートがある(REL-10 の ? の印が出ない)。
     let root = studio();
     let notes = Notes::scan(&root);
     let all = [&notes];

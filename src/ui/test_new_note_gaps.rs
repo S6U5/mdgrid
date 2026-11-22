@@ -218,7 +218,7 @@ fn test_ce_26_view_rule_overrides_config() {
 
 #[test]
 fn test_ce_26_default_table_uses_config_rule() {
-    // [utest -> req~cell-edit.new-note-form-ask~1, req~cell-edit.new-note-form-per-view~1, req~cell-edit.new-note-config-view~1] 同じ設定・同じ views.toml で、既定の表(ビューを選ばない)では設定の status を聞く。
+    // [utest -> req~cell-edit.new-note-form-ask~2, req~cell-edit.new-note-form-per-view~1, req~cell-edit.new-note-config-view~1] 同じ設定・同じ views.toml で、既定の表(ビューを選ばない)では設定の status を聞く。
     // ビューの set(kind)は入らない。
     let tmp = vault("nng_default");
     write_view(
@@ -244,7 +244,7 @@ fn test_ce_26_default_table_uses_config_rule() {
 
 #[test]
 fn test_ce_26_text_ask_shows_same_list_as_cell_edit() {
-    // [utest -> req~cell-edit.new-note-form-bad-name~1, req~cell-edit.value-list-type-replaces~1, req~cell-edit.value-list-narrow~1] status が todo・done だけ → 名前のあとに、セルの編集で status のセルを開いたときと
+    // [utest -> req~cell-edit.new-note-form-bad-name~1, req~cell-edit.value-list-type-replaces~2, req~cell-edit.value-list-narrow~2] status が todo・done だけ → 名前のあとに、セルの編集で status のセルを開いたときと
     // 同じ候補(todo・done と「なし」)が同じ見せ方で出る。
     let tmp = vault("nng_list");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"status\"]\n"));
@@ -272,7 +272,7 @@ fn test_ce_26_text_ask_shows_same_list_as_cell_edit() {
 
 #[test]
 fn test_ce_26_text_ask_pick_done_from_list() {
-    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-move~1, req~cell-edit.value-list-narrow~1] 候補のリストで done を選んで確定 → 作ったノートが `status: done`。
+    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-move~2, req~cell-edit.value-list-narrow~2] 候補のリストで done を選んで確定 → 作ったノートが `status: done`。
     let tmp = vault("nng_pick");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"status\"]\n"));
     start_and_name(&mut a, "選ぶ");
@@ -289,7 +289,7 @@ fn test_ce_26_text_ask_pick_done_from_list() {
 
 #[test]
 fn test_ce_26_text_ask_free_input_from_list() {
-    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-move~1, req~cell-edit.new-note-form-create~1, req~cell-edit.new-note-form-bad-name~1, req~cell-edit.value-list-open~1, req~cell-edit.value-list-free-input~1] 候補のリストから、打って自由入力に切り替える(リストは消える)→ `waiting` で作れる。
+    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-move~2, req~cell-edit.new-note-form-create~1, req~cell-edit.new-note-form-bad-name~1, req~cell-edit.value-list-open~2, req~cell-edit.value-list-free-input~1] 候補のリストから、打って自由入力に切り替える(リストは消える)→ `waiting` で作れる。
     let tmp = vault("nng_free");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"status\"]\n"));
     start_and_name(&mut a, "自由");
@@ -313,7 +313,7 @@ fn test_ce_26_text_ask_free_input_from_list() {
 
 #[test]
 fn test_ce_26_text_ask_too_many_values_is_one_line() {
-    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-move~1, req~cell-edit.new-note-form-typed~1, req~cell-edit.new-note-form-create~1, req~cell-edit.value-list-open~1] status の異なる値が 21 個(既定の 20 より多い)→ セルの編集と同じく候補のリストは出さず
+    // [utest -> req~cell-edit.new-note-form-fields~1, req~cell-edit.new-note-form-source~1, req~cell-edit.new-note-form-move~2, req~cell-edit.new-note-form-typed~1, req~cell-edit.new-note-form-create~1, req~cell-edit.value-list-open~2] status の異なる値が 21 個(既定の 20 より多い)→ セルの編集と同じく候補のリストは出さず
     // 1行の入力。打った値で作る。
     let tmp = Tmp::new("nng_many");
     for i in 0..21 {

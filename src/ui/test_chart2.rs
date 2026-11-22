@@ -172,7 +172,7 @@ fn test_ch_3_number_column_is_split_into_bins() {
 
 #[test]
 fn test_ch_3_order_by_count_then_name_and_none_last() {
-    // [utest -> req~chart.buckets-order~1] 決まりの無い列: 値の大きい順(done 3・todo 2)、同じなら名前の順(doing・waiting)、値の無い行は最後の
+    // [utest -> req~chart.buckets-order~2] 決まりの無い列: 値の大きい順(done 3・todo 2)、同じなら名前の順(doing・waiting)、値の無い行は最後の
     // 「(なし)」(数が多くても最後)。
     let notes = md(&[
         ("a1", "status: todo"),
@@ -205,7 +205,7 @@ fn test_ch_3_order_by_count_then_name_and_none_last() {
 
 #[test]
 fn test_ch_3_rule_order_wins_over_count() {
-    // [utest -> req~chart.buckets-order~1] 列の決まり(values = [todo, doing, done])があればその順(件数の順の done・todo・doing ではない)。
+    // [utest -> req~chart.buckets-order~2] 列の決まり(values = [todo, doing, done])があればその順(件数の順の done・todo・doing ではない)。
     let (_t, mut a) = boot(
         "ch3rules",
         &status_notes(),
@@ -225,7 +225,7 @@ fn test_ch_3_rule_order_wins_over_count() {
 
 #[test]
 fn test_ch_4_bar_lengths_follow_values() {
-    // [utest -> req~chart.bar-scale~1] status(todo 2・doing 1・done 3)の棒 → done の棒が全長、todo はその 2/3、doing は 1/3(1字の幅)。
+    // [utest -> req~chart.bar-scale~2] status(todo 2・doing 1・done 3)の棒 → done の棒が全長、todo はその 2/3、doing は 1/3(1字の幅)。
     // 右に値、選んでいるのは最初の項目(done)だけで `>` が付き、説明は「done: 3」。
     let (_t, mut a) = boot("ch4ratio", &status_notes(), "", "");
     let c = open(&mut a);
@@ -260,7 +260,7 @@ fn test_ch_4_j_k_move_selection_marker() {
 
 #[test]
 fn test_ch_4_negative_value_draws_no_bar() {
-    // [utest -> req~chart.bar-scale~1] 負の値は棒を描かず値だけ: gain の合計で todo が -2 → todo の棒は長さ 0 で値「-2」。done の 3 が全長。
+    // [utest -> req~chart.bar-scale~2] 負の値は棒を描かず値だけ: gain の合計で todo が -2 → todo の棒は長さ 0 で値「-2」。done の 3 が全長。
     let notes = md(&[
         ("alpha", "status: todo\ngain: -2"),
         ("beta", "status: done\ngain: 3"),
@@ -280,7 +280,7 @@ fn test_ch_4_negative_value_draws_no_bar() {
 
 #[test]
 fn test_ch_4_item_without_numbers_shows_dash() {
-    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~1, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~1] 数の値のある行が無い項目は値なし: 平均で doing は「-」で棒なし。
+    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~2, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~1] 数の値のある行が無い項目は値なし: 平均で doing は「-」で棒なし。
     let notes = md(&[
         ("alpha", "status: todo\nestimate: 2"),
         ("beta", "status: doing"),
@@ -461,7 +461,7 @@ fn test_ch_4_scrolls_to_keep_selected_visible() {
 
 #[test]
 fn test_ch_4_no_color_narrow_terminal_still_marks_selection() {
-    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~1, req~chart.bar-fill-glyph~1, req~chart.bar-cursor~1, req~cell-view.not-color-only~1] 色なしで幅 80・高さ 24 でも、棒の行と `>` と値が出る(3本、done に `>`)。
+    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~2, req~chart.bar-fill-glyph~1, req~chart.bar-cursor~1, req~cell-view.not-color-only~1] 色なしで幅 80・高さ 24 でも、棒の行と `>` と値が出る(3本、done に `>`)。
     let (_t, mut a) = boot_full(
         "ch4narrow",
         &status_notes(),

@@ -43,7 +43,7 @@ fn read_ok(text: &str) -> Config {
 
 #[test]
 fn test_sr_21_defaults() {
-    // [stest -> req~screen.display-config-keys~1] 設定が空なら row_numbers=false・zebra=false・column_lines=false・group_gap=false・tabs="always"・
+    // [stest -> req~screen.display-config-keys~2] 設定が空なら row_numbers=false・zebra=false・column_lines=false・group_gap=false・tabs="always"・
     // search_bar=true・chips=true。
     let c = read_ok("");
     assert_eq!(display_values(&c), DEFAULTS);
@@ -56,7 +56,7 @@ fn test_sr_21_defaults() {
 
 #[test]
 fn test_sr_21_reads_each_item() {
-    // [stest -> req~screen.display-config-keys~1] 7項目を全部既定と逆にして読む。
+    // [stest -> req~screen.display-config-keys~2] 7項目を全部既定と逆にして読む。
     let text =
         "[display]\nrow_numbers = true\nzebra = true\ncolumn_lines = true\ngroup_gap = true\n\
                 tabs = \"never\"\nsearch_bar = false\nchips = false\n";
@@ -87,7 +87,7 @@ fn test_sr_21_reads_each_item() {
 
 #[test]
 fn test_sr_21_display_is_a_known_item() {
-    // [stest -> req~screen.display-config-keys~1, req~cli.config-docs~1] `display.*` は設定の項目の表にある(知らない項目の警告にならない)。
+    // [stest -> req~screen.display-config-keys~2, req~cli.config-docs~2] `display.*` は設定の項目の表にある(知らない項目の警告にならない)。
     for name in [
         "row_numbers",
         "zebra",
@@ -109,7 +109,7 @@ fn test_sr_21_display_is_a_known_item() {
 
 #[test]
 fn test_sr_21_wrong_type_warns_and_keeps_default() {
-    // [stest -> req~screen.display-config-keys~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 型の違う値は警告して既定のまま。止めずに、ほかの項目は読む。
+    // [stest -> req~screen.display-config-keys~2, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] 型の違う値は警告して既定のまま。止めずに、ほかの項目は読む。
     for (name, default) in DEFAULTS {
         let text = format!("[edit]\ncandidates = 7\n\n[display]\n{name} = \"yes\"\n");
         let (c, warnings) = parse(&text).expect("型違いでも止めない");
@@ -144,7 +144,7 @@ fn test_sr_21_wrong_type_warns_and_keeps_default() {
 
 #[test]
 fn test_sr_21_unknown_item_warns() {
-    // [stest -> req~screen.display-config-keys~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] [display] の知らない項目は警告して無視、ほかは読む。
+    // [stest -> req~screen.display-config-keys~2, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] [display] の知らない項目は警告して無視、ほかは読む。
     let (c, warnings) = parse("[display]\nfoo = true\nzebra = true\n").expect("止めない");
     assert_eq!(warnings.len(), 1, "{warnings:?}");
     assert!(warnings[0].contains("display.foo"), "{warnings:?}");
@@ -153,7 +153,7 @@ fn test_sr_21_unknown_item_warns() {
 
 #[test]
 fn test_cli_20_old_display_names_are_moved() {
-    // [stest -> req~cli.legacy-config-apply~1] 最上位の search_bar・view_tabs と、[display] の tabs の真偽は、警告して新しい道筋として読む。
+    // [stest -> req~cli.legacy-config-apply~2] 最上位の search_bar・view_tabs と、[display] の tabs の真偽は、警告して新しい道筋として読む。
     let (c, warnings) = parse("search_bar = false\nview_tabs = \"auto\"\n").unwrap();
     assert_eq!(warnings.len(), 2, "{warnings:?}");
     assert!(!c.resolved().display.search_bar);
@@ -192,7 +192,7 @@ fn print_config() -> String {
 
 #[test]
 fn test_sr_21_print_config_has_display() {
-    // [stest -> req~screen.display-config-keys~1, req~cli.print-config-output~1] --print-config に [display] の15項目が既定値で出る(TOML として読んで判定)。
+    // [stest -> req~screen.display-config-keys~2, req~cli.print-config-output~1] --print-config に [display] の15項目が既定値で出る(TOML として読んで判定)。
     let text = print_config();
     let table: toml::Table = text.parse().expect("--print-config の出力は TOML");
     let display = table

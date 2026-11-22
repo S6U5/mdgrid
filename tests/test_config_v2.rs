@@ -63,7 +63,7 @@ const OLD: &str = "theme = \"auto\"\ntheme_light = \"paper\"\nborders = \"ascii\
 
 #[test]
 fn test_cli_20_old_names_are_read_with_warnings() {
-    // [stest -> req~cli.legacy-config-apply~1] 0.3.0 の書き方は新しい道筋として読み、旧い名前ごとに移った先を警告する。
+    // [stest -> req~cli.legacy-config-apply~2] 0.3.0 の書き方は新しい道筋として読み、旧い名前ごとに移った先を警告する。
     let (c, w) = parse(OLD).unwrap();
     let r = c.resolved();
     assert_eq!(
@@ -137,7 +137,7 @@ fn test_cli_20_migrate_config_prints_the_new_layout() {
 
 #[test]
 fn test_cli_3_warning_shape_in_every_file() {
-    // [stest -> req~cli.config-file-warning-form~1] 警告はどのファイルでも「ファイルの名前: 項目の道筋: 理由」。
+    // [stest -> req~cli.config-file-warning-form~2] 警告はどのファイルでも「ファイルの名前: 項目の道筋: 理由」。
     let (_, w) = parse("[look.style]\nstatus = \"neon\"\n").unwrap();
     assert!(
         w[0].starts_with("config.toml: look.style.status: "),
@@ -157,7 +157,7 @@ fn test_cli_3_warning_shape_in_every_file() {
 
 #[test]
 fn test_cli_21_print_resolved_names_the_origin() {
-    // [stest -> req~cli.resolved-config-origin~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~1] 印・views.toml・config.toml を重ねた値を、出どころのコメント付きで出す。読み直せる。
+    // [stest -> req~cli.resolved-config-origin~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~2] 印・views.toml・config.toml を重ねた値を、出どころのコメント付きで出す。読み直せる。
     let t = Tmp::new("resolved");
     t.write("config/mdgrid/config.toml", "[look]\ntheme = \"sumi\"\n");
     t.write("notes/tasks/a.md", "---\nx: 1\n---\n");

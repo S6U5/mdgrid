@@ -142,7 +142,7 @@ const OPS: [CmpOp; 6] = [
 
 #[test]
 fn test_bv_19_keep_drop_match_settings() {
-    // [utest -> req~base-view.export-base-write~1, req~navigation.settings-filter~1, req~navigation.filter-conditions-checklist~1, req~navigation.filter-conditions-more~1, req~navigation.filter-conditions-all~1] Keep・Drop(「(空)」・リストの要素・数・真偽・日付)を式にしても settings と同じ行。
+    // [utest -> req~base-view.export-base-write~1, req~navigation.settings-filter~2, req~navigation.filter-conditions-checklist~1, req~navigation.filter-conditions-more~1, req~navigation.filter-conditions-all~1] Keep・Drop(「(空)」・リストの要素・数・真偽・日付)を式にしても settings と同じ行。
     let all = clean();
     for kind in [Kind::Text, Kind::List, Kind::Checkbox, Kind::DateTime] {
         for keys in [
@@ -546,7 +546,7 @@ name = "消す"
 
 #[test]
 fn test_bv_20_unknown_nested_settings_key_warns() {
-    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] settings の中の知らない項目も警告にして、ビューは読む。
+    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] settings の中の知らない項目も警告にして、ビューは読む。
     let t = Tmp::new("nested");
     let key = config::target_key(&t.0);
     let text = format!(

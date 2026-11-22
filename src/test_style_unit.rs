@@ -10,7 +10,7 @@ fn parse(text: &str) -> (Resolved, crate::config::Config, Vec<String>) {
 
 #[test]
 fn test_sr_36_style_presets_and_overrides() {
-    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1] 既定は sumi。look.preset で組をまとめて選び、[look.style] の項目はその上に重ねる。
+    // [utest -> req~screen.style-parts-choose~2, req~screen.style-parts-preset~2] 既定は sumi。look.preset で組をまとめて選び、[look.style] の項目はその上に重ねる。
     let (r, _, w) = parse("");
     assert!(w.is_empty());
     assert_eq!(r.style, Style::of(Preset::Sumi));
@@ -51,7 +51,7 @@ fn test_sr_36_style_bad_values_warn() {
 
 #[test]
 fn test_sr_37_new_themes_and_sr_39_auto() {
-    // [utest -> req~screen.calm-themes-add~1] 新しいテーマの名前を受ける。[utest -> req~screen.theme-auto-pick~1, req~screen.theme-auto-partial~1] look.theme の "auto" と明暗の表。
+    // [utest -> req~screen.calm-themes-add~1] 新しいテーマの名前を受ける。[utest -> req~screen.theme-auto-pick~2, req~screen.theme-auto-partial~2] look.theme の "auto" と明暗の表。
     use crate::theme::Theme;
     for name in ["sumi", "slate", "saas", "saas-dark", "paper"] {
         let (r, _, w) = parse(&format!("[look]\ntheme = \"{name}\"\n"));

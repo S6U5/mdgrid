@@ -45,7 +45,7 @@ fn body_of(tmp: &Tmp, name: &str) -> String {
         .unwrap_or(text)
 }
 
-// [utest -> req~cell-edit.body-choose-field~1]
+// [utest -> req~cell-edit.body-choose-field~2]
 #[test]
 fn test_body_folder_adds_a_template_field_listing_its_md_files() {
     // body がフォルダなら、名前の次に「雛形」の欄が出て、そのフォルダの .md の名前が名前の順に並ぶ。
@@ -60,7 +60,7 @@ fn test_body_folder_adds_a_template_field_listing_its_md_files() {
     assert!(!s.contains("memo"), "{s}");
 }
 
-// [utest -> req~cell-edit.body-choose-pick~1]
+// [utest -> req~cell-edit.body-choose-pick~2]
 #[test]
 fn test_body_picked_in_the_field_becomes_the_body() {
     // 欄で idea を選んで作ると、idea.md の中身(変数を埋めたもの)が本文になる。

@@ -21,7 +21,7 @@ fn strs(v: &Value) -> Vec<String> {
 
 #[test]
 fn test_sr_38_catalog_colors() {
-    // [utest -> req~screen.style-catalog-sync~1, req~screen.color-overrides-roles~1, req~screen.color-overrides-format~1] カタログの色の役割と色の名前が本体と同じ(増減・改名したら落ちる)。
+    // [utest -> req~screen.style-catalog-sync~1, req~screen.color-overrides-roles~1, req~screen.color-overrides-format~2] カタログの色の役割と色の名前が本体と同じ(増減・改名したら落ちる)。
     let n = names();
     let roles: Vec<String> = mdgrid::colors::ROLES
         .iter()

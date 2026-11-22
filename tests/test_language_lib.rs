@@ -308,7 +308,7 @@ fn setup(f: &Form, tag: &str) -> (TempDir, Markdown) {
 
 #[test]
 fn test_sr_23_lib_read_only_reasons_are_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2, req~screen.locales-ledger~1, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-skip-broken~1] 英語のとき、読むだけの形のどれも、セル(status・title・無いキー)の lock の理由が空でなく、
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-ledger~1, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1] 英語のとき、読むだけの形のどれも、セル(status・title・無いキー)の lock の理由が空でなく、
     // 日本語の文字を含まない。重なったキーの名前はそのまま差し込まれる。形ごとの理由は互いに違う。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
@@ -355,7 +355,7 @@ fn test_sr_23_lib_read_only_reasons_are_english() {
 
 #[test]
 fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1] 同じノートを scoped(Ja) で開くと、今の日本語の文(形に固有の言葉を含む。権限は「書き込めない権限」)。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1] 同じノートを scoped(Ja) で開くと、今の日本語の文(形に固有の言葉を含む。権限は「書き込めない権限」)。
     // 英語の文とは違う。
     let mut fails = Vec::new();
     for f in forms() {
@@ -393,7 +393,7 @@ fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
 
 #[test]
 fn test_sr_23_lib_changes_skip_reason_matches_lock_in_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~1] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
+    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~2] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
     for f in forms() {
@@ -426,7 +426,7 @@ fn test_sr_23_lib_changes_skip_reason_matches_lock_in_english() {
 
 #[test]
 fn test_sr_23_lib_config_warnings_are_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 英語のとき、設定の知らない項目と型の違う値の警告は英語で、キーの名前はそのまま出る。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] 英語のとき、設定の知らない項目と型の違う値の警告は英語で、キーの名前はそのまま出る。
     let cases = [
         ("unknownitem = 1\n", "unknownitem"),
         ("[edit]\nadd_frontmatter = \"no\"\n", "add_frontmatter"),
@@ -454,7 +454,7 @@ fn test_sr_23_lib_config_warnings_are_english() {
 
 #[test]
 fn test_sr_23_lib_config_warnings_stay_japanese_under_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] scoped(Ja) では今の日本語の警告。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-no-translate~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] scoped(Ja) では今の日本語の警告。
     let _g = scoped(Lang::Ja);
     for text in ["unknownitem = 1\n", "[edit]\nadd_frontmatter = \"no\"\n"] {
         let (_c, w) = parse_config(text).expect("警告にとどまる");
@@ -578,7 +578,7 @@ fn test_sr_23_lib_base_errors_stay_japanese_under_ja() {
 
 #[test]
 fn test_sr_23_lib_date_errors_are_english() {
-    // [stest -> req~screen.locales-auto~2, req~screen.locales-ledger~1, req~cell-edit.date-format-display~1, req~cell-edit.date-input-invalid~1] 英語のとき、読めない日付の形と、読めない・実在しない日付の打ち込みの理由が英語。
+    // [stest -> req~screen.locales-auto~3, req~screen.locales-ledger~1, req~cell-edit.date-format-display~2, req~cell-edit.date-input-invalid~1] 英語のとき、読めない日付の形と、読めない・実在しない日付の打ち込みの理由が英語。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
     match DateFormat::parse("QQ") {
@@ -602,7 +602,7 @@ fn test_sr_23_lib_date_errors_are_english() {
 
 #[test]
 fn test_sr_23_lib_date_errors_stay_japanese_under_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.date-format-display~1] scoped(Ja) では今の日本語の理由。
+    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.date-format-display~2] scoped(Ja) では今の日本語の理由。
     let _g = scoped(Lang::Ja);
     // DateFormat に Debug があるとは仮定しない(tests/test_date_format.rs と同じ)ので match で取り出す。
     match DateFormat::parse("QQ") {

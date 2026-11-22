@@ -97,7 +97,7 @@ fn test_delete_note_from_the_palette_moves_it_to_the_trash() {
 
 #[test]
 fn test_undo_right_after_creating_a_note_moves_it_to_the_trash() {
-    // [stest -> req~cell-edit.new-note-undo~1] 「zeta」を作って `u` → `zeta.md` が元の場所に無く、ごみ箱に同じバイトであり、表から zeta の行が無くなる。
+    // [stest -> req~cell-edit.new-note-undo~2] 「zeta」を作って `u` → `zeta.md` が元の場所に無く、ごみ箱に同じバイトであり、表から zeta の行が無くなる。
     let (home, v) = vault("undo");
     let mut t = open(&home, &v);
     t.send_settle("a");
@@ -120,7 +120,7 @@ fn test_undo_right_after_creating_a_note_moves_it_to_the_trash() {
 
 #[test]
 fn test_restore_from_the_trash_after_a_restart() {
-    // [stest -> req~cell-edit.trash-restore-list~1] `beta.md` を消して起動し直し、「ごみ箱から戻す」で beta を選ぶ → `beta.md` が同じバイトで戻り、表に beta の行が出る。
+    // [stest -> req~cell-edit.trash-restore-list~2] `beta.md` を消して起動し直し、「ごみ箱から戻す」で beta を選ぶ → `beta.md` が同じバイトで戻り、表に beta の行が出る。
     let (home, v) = vault("restore");
     let mut t = open(&home, &v);
     delete_beta(&mut t, &v);

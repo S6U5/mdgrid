@@ -26,7 +26,7 @@ fn out(tmp: &Tmp, name: &str) -> std::path::PathBuf {
     tmp.notes().parent().unwrap().join(name)
 }
 
-// [utest -> req~output.export-shown~1, req~output.export-format~1]
+// [utest -> req~output.export-shown~1, req~output.export-format~2]
 #[test]
 fn test_out_2_export_shown_table() {
     let (tmp, mut a) = app("out2shown");
@@ -96,7 +96,7 @@ fn test_out_5_export_matches_print_with_path() {
     assert_eq!(got, print::render(&want, print::Format::Json));
 }
 
-// [utest -> req~output.export-path-name~1, req~output.export-path-overwrite~1]
+// [utest -> req~output.export-path-name~2, req~output.export-path-overwrite~1]
 #[test]
 fn test_out_5_overwrite_asks_and_home() {
     let (tmp, mut a) = app("out5over");

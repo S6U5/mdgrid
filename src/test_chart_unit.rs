@@ -73,7 +73,7 @@ fn test_ch_1_agg_names_round_trip() {
 
 #[test]
 fn test_ch_1_spec_default_is_all_omitted() {
-    // [utest -> req~chart.config-one~1, req~chart.config-missing-column~1] 鍵はどれも省けるので、既定の設定は全部が無い(cumulative は false)。
+    // [utest -> req~chart.config-one~1, req~chart.config-missing-column~2] 鍵はどれも省けるので、既定の設定は全部が無い(cumulative は false)。
     let s = ChartSpec::default();
     assert_eq!(s.name, None);
     assert_eq!(s.kind, None);
@@ -133,7 +133,7 @@ fn spec_x(kind: Option<ChartKind>, x: &str) -> ChartSpec {
 
 #[test]
 fn test_ch_1_marker_reads_one_chart() {
-    // [utest -> req~chart.config-invalid~1, req~chart.config-missing-column~1] chart = { kind = "bar", x = "status" } → グラフ1つ、場所は table[1].chart、警告なし。
+    // [utest -> req~chart.config-invalid~1, req~chart.config-missing-column~2] chart = { kind = "bar", x = "status" } → グラフ1つ、場所は table[1].chart、警告なし。
     // 範囲の読み(read_marker)でも chart は知らない項目にならない。
     let r = Root::new(
         "one",
@@ -293,7 +293,7 @@ fn test_ch_1_marker_bad_values_warn_and_drop_that_chart() {
 
 #[test]
 fn test_ch_1_marker_not_a_table_warns() {
-    // [utest -> req~chart.config-invalid~1, req~chart.config-missing-column~1] chart が表でも表の配列でもない(文字・数)→ 警告1行(場所 table[1].chart)で、グラフは無い。
+    // [utest -> req~chart.config-invalid~1, req~chart.config-missing-column~2] chart が表でも表の配列でもない(文字・数)→ 警告1行(場所 table[1].chart)で、グラフは無い。
     for line in ["chart = \"bar\"", "chart = 3"] {
         let (got, warns) = read_chart("nottable", line);
         assert!(got.is_empty(), "{line}: {got:?}");
@@ -325,7 +325,7 @@ fn test_ch_1_marker_array_drops_only_bad_one() {
 
 #[test]
 fn test_ch_1_marker_second_table_location() {
-    // [utest -> req~chart.config-one~1, req~chart.config-array~1, req~chart.config-invalid~1, req~chart.config-missing-column~1] 2つ目の表のグラフの場所は table[2].chart。1つ目の表のグラフは2つ目の表に漏れない。
+    // [utest -> req~chart.config-one~1, req~chart.config-array~1, req~chart.config-invalid~1, req~chart.config-missing-column~2] 2つ目の表のグラフの場所は table[2].chart。1つ目の表のグラフは2つ目の表に漏れない。
     let r = Root::new(
         "second",
         &format!(
@@ -342,7 +342,7 @@ fn test_ch_1_marker_second_table_location() {
 
 #[test]
 fn test_ch_1_marker_does_not_check_columns() {
-    // [utest -> req~chart.config-missing-column~1] 印の読みは列が表にあるかを決めない(列が出そろってから画面の側で警告する)。x = "none" も読む。
+    // [utest -> req~chart.config-missing-column~2] 印の読みは列が表にあるかを決めない(列が出そろってから画面の側で警告する)。x = "none" も読む。
     let (got, warns) = read_chart("nonecol", "chart = { x = \"none\" }");
     assert!(warns.is_empty(), "{warns:?}");
     assert_eq!(got.len(), 1);
@@ -353,7 +353,7 @@ fn test_ch_1_marker_does_not_check_columns() {
 
 #[test]
 fn test_ch_2_infer_status_name_first() {
-    // [utest -> req~chart.open-infer~1] 状態の列の名前(KB-1。大文字小文字を問わない)が最優先: 決まりのある列や日付の列より先。
+    // [utest -> req~chart.open-infer~2] 状態の列の名前(KB-1。大文字小文字を問わない)が最優先: 決まりのある列や日付の列より先。
     assert_eq!(
         x_of(&[
             ("title", Kind::Text, false),
@@ -378,7 +378,7 @@ fn test_ch_2_infer_status_name_first() {
 
 #[test]
 fn test_ch_2_infer_skips_list_status_then_rule_values() {
-    // [utest -> req~chart.open-infer~1] リストの型の状態の列は選ばない。次は決まり(CE-36 の values)のある列。
+    // [utest -> req~chart.open-infer~2] リストの型の状態の列は選ばない。次は決まり(CE-36 の values)のある列。
     assert_eq!(
         x_of(&[
             ("status", Kind::List, false),
@@ -396,7 +396,7 @@ fn test_ch_2_infer_skips_list_status_then_rule_values() {
 
 #[test]
 fn test_ch_2_infer_checkbox_then_list_then_date_then_first() {
-    // [utest -> req~chart.open-infer~1] チェックボックス → リスト → 日付(日付・日時)→ 最初の列の順。
+    // [utest -> req~chart.open-infer~2] チェックボックス → リスト → 日付(日付・日時)→ 最初の列の順。
     assert_eq!(
         x_of(&[
             ("tags", Kind::List, false),
@@ -433,7 +433,7 @@ fn test_ch_2_infer_checkbox_then_list_then_date_then_first() {
 
 #[test]
 fn test_ch_2_infer_no_columns_is_none() {
-    // [utest -> req~chart.open-refuse~1] 境界: 列が1つも無い → None(画面は理由1行で開かない)。
+    // [utest -> req~chart.open-refuse~2] 境界: 列が1つも無い → None(画面は理由1行で開かない)。
     assert_eq!(infer_x(&[]), None);
 }
 
@@ -536,7 +536,7 @@ fn test_ch_3_bins_single_value() {
 
 #[test]
 fn test_ch_3_fmt_num() {
-    // [utest -> req~chart.buckets-date~1, req~chart.buckets-number~1, req~chart.buckets-order~1] 数の書き方: 整数ならそのまま、ほかは小数2桁までで末尾の 0 を除く。
+    // [utest -> req~chart.buckets-date~1, req~chart.buckets-number~1, req~chart.buckets-order~2] 数の書き方: 整数ならそのまま、ほかは小数2桁までで末尾の 0 を除く。
     assert_eq!(fmt_num(3.0), "3");
     assert_eq!(fmt_num(2.5), "2.5");
     assert_eq!(fmt_num(10.0 / 3.0), "3.33");

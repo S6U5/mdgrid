@@ -78,7 +78,7 @@ fn test_ce_26_form_shows_fields_and_creates() {
     assert!(!t.contains("priority"), "{t}");
 }
 
-// [utest -> req~cell-edit.new-note-form-ask~1]
+// [utest -> req~cell-edit.new-note-form-ask~2]
 #[test]
 fn test_ce_26_form_defaults_to_visible_columns_and_back() {
     let tmp = vault("ce26cols");

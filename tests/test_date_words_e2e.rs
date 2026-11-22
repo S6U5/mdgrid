@@ -25,7 +25,7 @@ fn line_with(s: &str, needle: &str) -> Option<String> {
 
 #[test]
 fn test_date_words_preview_e2e() {
-    // [stest -> req~cell-edit.date-words-preview~1] `来週の金` まで打つと読めないと出て、続けて `曜` で入力の欄の横に `2026-11-27(金)` が出てカレンダーが 27 日を選び、Enter で due: 2026-11-27 をためる。
+    // [stest -> req~cell-edit.date-words-preview~2] `来週の金` まで打つと読めないと出て、続けて `曜` で入力の欄の横に `2026-11-27(金)` が出てカレンダーが 27 日を選び、Enter で due: 2026-11-27 をためる。
     let home = root("date-words-e2e");
     let mut tui = Tui::spawn(&["t"], home.path(), &[("MDGRID_TODAY", "2026-11-21")]);
     tui.wait_until("表が出る", |s| s.contains("2026-10-05"));

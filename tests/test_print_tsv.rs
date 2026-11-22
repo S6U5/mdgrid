@@ -3,7 +3,7 @@
 
 use std::process::Command;
 
-// [stest -> req~cli.print-fail~1]
+// [stest -> req~cli.print-fail~2]
 #[test]
 fn test_cli_5_print_tsv() {
     let nanos = std::time::SystemTime::now()

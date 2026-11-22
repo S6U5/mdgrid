@@ -62,7 +62,7 @@ fn test_nv_24_window_sort_kept_after_restart() {
 
 #[test]
 fn test_nv_24_readonly_sorts_without_writing() {
-    // [utest -> req~navigation.sort-window-edit~1] 読むだけの起動でも並べ替えられ、ノートも状態も書かない。
+    // [utest -> req~navigation.sort-window-edit~2] 読むだけの起動でも並べ替えられ、ノートも状態も書かない。
     let tmp = notes("nv24ro");
     let before = std::fs::read(tmp.notes().join("a.md")).unwrap();
     let mut a = boot(&tmp, "", true);

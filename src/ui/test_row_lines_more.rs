@@ -173,7 +173,7 @@ fn test_cv_8_menu_window_from_first_line() {
 
 #[test]
 fn test_cv_8_view_override_applies() {
-    // [utest -> req~cell-view.row-lines-view-override~1, req~screen.display-options-config~1, req~screen.display-options-per-view~1] 設定は 0 でも、ビューの設定の上書きが 2 なら、そのビューの行は伸びる。
+    // [utest -> req~cell-view.row-lines-view-override~1, req~screen.display-options-config~2, req~screen.display-options-per-view~1] 設定は 0 でも、ビューの設定の上書きが 2 なら、そのビューの行は伸びる。
     let (_t, mut a) = boot("cv8m_view", &notes(), "", ColorMode::None);
     let before = lines(&a);
     assert!(

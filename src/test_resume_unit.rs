@@ -37,7 +37,7 @@ fn strings(v: &[&str]) -> Vec<String> {
 
 #[test]
 fn test_reopen_args_folder_with_workspace_and_readonly() {
-    // [utest -> req~resume.reopen-args~1] `-w tasks --readonly` でビューの無いフォルダ notes を開く → mdgrid <notes の絶対パス> --raw -w tasks --readonly。
+    // [utest -> req~resume.reopen-args~2] `-w tasks --readonly` でビューの無いフォルダ notes を開く → mdgrid <notes の絶対パス> --raw -w tasks --readonly。
     let t = Tmp::new("args-folder");
     let notes = t.dir("notes");
     let r = Reopen::new(
@@ -60,7 +60,7 @@ fn test_reopen_args_folder_with_workspace_and_readonly() {
 
 #[test]
 fn test_reopen_args_base_view_and_relative_path() {
-    // [utest -> req~resume.reopen-args~1] `.base` のビュー「進行中」を開いている → mdgrid <.base の絶対パス> --view 進行中(相対で渡しても絶対パス。`--raw` は付けない)。
+    // [utest -> req~resume.reopen-args~2] `.base` のビュー「進行中」を開いている → mdgrid <.base の絶対パス> --view 進行中(相対で渡しても絶対パス。`--raw` は付けない)。
     let t = Tmp::new("args-base");
     let base = t.0.join("tasks.base");
     std::fs::write(&base, "views: []\n").unwrap();
@@ -86,7 +86,7 @@ fn test_reopen_args_base_view_and_relative_path() {
 
 #[test]
 fn test_reopen_args_order_of_all_flags() {
-    // [utest -> req~resume.reopen-args~1] 命令は、パス・`--raw`・`--view`・`-w`・`--readonly`・`--no-color`・`--config`(絶対パス)の順。
+    // [utest -> req~resume.reopen-args~2] 命令は、パス・`--raw`・`--view`・`-w`・`--readonly`・`--no-color`・`--config`(絶対パス)の順。
     let t = Tmp::new("args-all");
     let notes = t.dir("notes");
     let mut r = Reopen::new(
@@ -130,7 +130,7 @@ fn test_reopen_args_order_of_all_flags() {
 
 #[test]
 fn test_seq_grows_within_a_run_and_across_restarts() {
-    // [utest -> req~resume.herdr-seq~1] 起動してビューを切り替えて終える → 3つの数がこの順に大きい。起動し直す → 最初の数が前の回の最後より大きい。
+    // [utest -> req~resume.herdr-seq~2] 起動してビューを切り替えて終える → 3つの数がこの順に大きい。起動し直す → 最初の数が前の回の最後より大きい。
     // 観点: 同じ時刻に続けて伝えても(時計が進まなくても)増える。
     let now = 1_700_000_000_000_000;
     let mut s = Seq::default();
@@ -166,7 +166,7 @@ fn test_herdr_accepts_boundaries() {
 
 #[test]
 fn test_herdr_from_env_needs_all_three() {
-    // [utest -> req~resume.herdr-report~1] HERDR_ENV=1 と窓の ID と道具のパスがそろった窓だけ。HERDR_ENV の無い窓 → 呼ばない。
+    // [utest -> req~resume.herdr-report~2] HERDR_ENV=1 と窓の ID と道具のパスがそろった窓だけ。HERDR_ENV の無い窓 → 呼ばない。
     let env = |pairs: &'static [(&'static str, &'static str)]| {
         move |k: &str| {
             pairs
@@ -217,7 +217,7 @@ fn test_herdr_from_env_needs_all_three() {
 
 #[test]
 fn test_herdr_report_and_release_args() {
-    // [utest -> req~resume.herdr-report~1] pane report-agent w1:p1 --source mdgrid --agent mdgrid --state idle --seq <数> -- mdgrid <パス> --view 進行中。
+    // [utest -> req~resume.herdr-report~2] pane report-agent w1:p1 --source mdgrid --agent mdgrid --state idle --seq <数> -- mdgrid <パス> --view 進行中。
     // [utest -> req~resume.herdr-release~1] pane release-agent w1:p1 --source mdgrid --agent mdgrid --seq <数>。
     let h = Herdr {
         bin: PathBuf::from("/bin/herdr"),
@@ -292,7 +292,7 @@ fn test_last_screen_round_trip_per_folder() {
 
 #[test]
 fn test_last_screen_broken_file_is_none() {
-    // [utest -> req~resume.continue-fallback~1] 最後の画面のファイルが壊れている・無い → 読まない(引数なしの起動にする)。
+    // [utest -> req~resume.continue-fallback~2] 最後の画面のファイルが壊れている・無い → 読まない(引数なしの起動にする)。
     let t = Tmp::new("broken");
     let state = t.dir("state");
     let notes = t.dir("notes");
@@ -480,7 +480,7 @@ fn test_herdr_title_unsendable_is_not_sent() {
 
 #[test]
 fn test_title_form_workspace_base_and_folder() {
-    // [utest -> req~resume.herdr-title-form~1] ワークスペースの表 `name = "タスク"` の notes/tasks → 「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ワークスペースに無い `.base` は拡張子を除いたファイル名で、ビューのタブを出さない表(ビューが1つ)は表の名前だけ。
+    // [utest -> req~resume.herdr-title-form~2] ワークスペースの表 `name = "タスク"` の notes/tasks → 「タスク · 進行中」。ビューの無いフォルダ notes → 「notes」。ワークスペースに無い `.base` は拡張子を除いたファイル名で、ビューのタブを出さない表(ビューが1つ)は表の名前だけ。
     let t = Tmp::new("title");
     let notes = t.dir("notes");
     let base = notes.join("tasks.base");

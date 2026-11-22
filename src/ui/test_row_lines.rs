@@ -80,7 +80,7 @@ fn refs<'a>(v: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a str)> {
 
 #[test]
 fn test_cv_8_long_value_wraps_to_three_lines() {
-    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-height~1] row_extra_lines = 2、幅 20 の列に 50 字 → その行は3行の高さで、説明が全部見える。
+    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-height~2] row_extra_lines = 2、幅 20 の列に 50 字 → その行は3行の高さで、説明が全部見える。
     let notes = three_notes();
     let (_t, a) = boot("cv8_wrap", &refs(&notes), "row_extra_lines = 2\n");
     let l = lines(&a);
@@ -259,7 +259,7 @@ fn test_cv_8_edit_box_on_first_line() {
 
 #[test]
 fn test_cv_8_settings_cycles_zero_to_three() {
-    // [utest -> req~cell-view.row-lines-settings-toggle~1, req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~1] ビューの設定の「表示」の区画で「行を伸ばす」を 0 → 1 → 2 → 3 → 0 と切り替える。
+    // [utest -> req~cell-view.row-lines-settings-toggle~1, req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~2] ビューの設定の「表示」の区画で「行を伸ばす」を 0 → 1 → 2 → 3 → 0 と切り替える。
     let notes = three_notes();
     let (_t, mut a) = boot("cv8_settings", &refs(&notes), "");
     a.resize(120, 50);

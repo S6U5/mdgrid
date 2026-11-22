@@ -63,7 +63,7 @@ fn assert_rounded_up(l: &[String]) {
 
 #[test]
 fn test_sr_1_half_explicit_no_color_rounds_up() {
-    // [utest -> req~screen.layout-order~1, req~screen.layout-top-padding~1, req~screen.layout-half-padding~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-fallback~1] 色なしで `top_padding = 0.5`・`bar_padding = 0.5` → 上下に1行ずつ空く。
+    // [utest -> req~screen.layout-order~2, req~screen.layout-top-padding~2, req~screen.layout-half-padding~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-fallback~1] 色なしで `top_padding = 0.5`・`bar_padding = 0.5` → 上下に1行ずつ空く。
     let (_t, a) = boot("halfx_nocolor", HALF, ColorMode::None);
     assert_rounded_up(&lines(&a));
 }

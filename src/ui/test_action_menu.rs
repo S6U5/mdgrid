@@ -221,7 +221,7 @@ pub(super) fn band(s: &str) -> String {
 
 #[test]
 fn test_sr_24_x_opens_menu_with_sections_and_keys() {
-    // [utest -> req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1] 表のモードの既定 `x` = action_menu。status のセルで `x` → 一覧のモードになり、
+    // [utest -> req~screen.action-menu-open-key~2, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1] 表のモードの既定 `x` = action_menu。status のセルで `x` → 一覧のモードになり、
     // 「セル」「列」「行」の節の見出しと、「編集  Enter」「この列で並べ替え  s」の行が出る。
     let (_t, mut a) = make("sr24open", NOTES);
     assert_eq!(
@@ -294,7 +294,7 @@ fn test_sr_24_enter_on_sort_item_sorts_like_s() {
 
 #[test]
 fn test_sr_24_jk_move_in_menu() {
-    // [utest -> req~screen.action-menu-enter~1] 一覧の中は `j` `k` でも動く: `j` 6回・`k` 1回で「この列で並べ替え」→ Enter で `s` と同じ。
+    // [utest -> req~screen.action-menu-enter~2] 一覧の中は `j` `k` でも動く: `j` 6回・`k` 1回で「この列で並べ替え」→ Enter で `s` と同じ。
     let want = sorted_by_s("sr24jk-s");
     let (_t, mut a) = make("sr24jk", NOTES);
     open_menu(&mut a, 0);
@@ -396,7 +396,7 @@ fn test_sr_24_esc_closes_without_doing_anything() {
 
 #[test]
 fn test_sr_24_rebound_key_opens_menu() {
-    // [utest -> req~screen.action-menu-open-key~1, req~screen.action-menu-too-low~1, req~screen.key-table~1] 設定 `[keys.table] "m" = "action_menu"` → `m` で一覧が開く。
+    // [utest -> req~screen.action-menu-open-key~2, req~screen.action-menu-too-low~1, req~screen.key-table~1] 設定 `[keys.table] "m" = "action_menu"` → `m` で一覧が開く。
     let tmp = Tmp::new("sr24rebind");
     for (n, t) in NOTES {
         tmp.write(n, t);
@@ -463,7 +463,7 @@ fn test_sr_24_english_menu_has_no_japanese() {
 
 #[test]
 fn test_sr_25_prefix_g_shows_next_keys_then_moves() {
-    // [utest -> req~screen.prefix-hints-show~1, req~screen.prefix-hints-restore~1] 表で `g` → 下の帯が続きのキーの案内(`g` と「先頭の行」)になる。続けて `g` → 先頭の行へ動き、
+    // [utest -> req~screen.prefix-hints-show~2, req~screen.prefix-hints-restore~2] 表で `g` → 下の帯が続きのキーの案内(`g` と「先頭の行」)になる。続けて `g` → 先頭の行へ動き、
     // 帯が元(「Enter 編集」などの形)に戻る。
     let (_t, mut a) = make("sr25g", NOTES);
     a.row = 2;
@@ -500,7 +500,7 @@ fn test_sr_25_prefix_g_shows_next_keys_then_moves() {
 
 #[test]
 fn test_sr_25_prefix_then_esc_restores_band() {
-    // [utest -> req~screen.prefix-hints-restore~1] `g` のあと Esc → 動かず、帯が元に戻る。
+    // [utest -> req~screen.prefix-hints-restore~2] `g` のあと Esc → 動かず、帯が元に戻る。
     let (_t, mut a) = make("sr25esc", NOTES);
     a.row = 2;
     a.scroll_into_view();
@@ -524,7 +524,7 @@ fn test_sr_25_prefix_then_esc_restores_band() {
 
 #[test]
 fn test_sr_25_configured_prefix_shows_hint() {
-    // [utest -> req~screen.prefix-hints-show~1, req~screen.prefix-hints-restore~1, req~screen.prefix-hints-menu~1] 設定で `[keys.table] "z z" = "bottom"` を足す → `z` で帯に `z` と「末尾の行」。続けて `z` → 末尾の行。
+    // [utest -> req~screen.prefix-hints-show~2, req~screen.prefix-hints-restore~2, req~screen.prefix-hints-menu~1] 設定で `[keys.table] "z z" = "bottom"` を足す → `z` で帯に `z` と「末尾の行」。続けて `z` → 末尾の行。
     let tmp = Tmp::new("sr25z");
     for (n, t) in NOTES {
         tmp.write(n, t);

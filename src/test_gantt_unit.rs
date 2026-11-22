@@ -284,7 +284,7 @@ fn test_ga_1_marker_gantt_warns_and_none_when_malformed() {
 
 #[test]
 fn test_ga_7_tree_and_gantt_read_in_the_same_shape() {
-    // [utest -> req~gantt.screen-config~1] 画面の型ごとの設定は [[table]] に型の名前のキーで同じ形。tree と gantt の両方がある表は、
+    // [utest -> req~gantt.screen-config~2] 画面の型ごとの設定は [[table]] に型の名前のキーで同じ形。tree と gantt の両方がある表は、
     // marker_tree と marker_gantt の両方が読め、警告は無い。
     let r = Root::new(
         "both",

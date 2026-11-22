@@ -63,7 +63,7 @@ fn day(s: &str) -> i64 {
 
 #[test]
 fn date_format_rejects_ambiguous_and_duplicate_parts() {
-    // [utest -> req~cell-edit.date-format-display~1] M・D を数の部品と区切り無しで並べる形、部品の重ね、知らない英字は Err。
+    // [utest -> req~cell-edit.date-format-display~2] M・D を数の部品と区切り無しで並べる形、部品の重ね、知らない英字は Err。
     for p in [
         "MD",
         "YYYYM/D",
@@ -84,7 +84,7 @@ fn date_format_rejects_ambiguous_and_duplicate_parts() {
 
 #[test]
 fn date_input_weekday_mismatch_and_century() {
-    // [utest -> req~cell-edit.date-format-display~1] 曜日の食い違いは Err。YY は today の世紀。
+    // [utest -> req~cell-edit.date-format-display~2] 曜日の食い違いは Err。YY は today の世紀。
     let f = DateFormat::parse("YYYY/MM/DD (ddd)").unwrap();
     let today = day("2026-10-02");
     assert!(parse_date_input("2026/11/03 (水)", &f, today).is_err());
@@ -102,7 +102,7 @@ fn date_input_weekday_mismatch_and_century() {
 
 #[test]
 fn month_grid_and_add_months_edges() {
-    // [utest -> req~cell-edit.calendar-keys-week-start~1, req~cell-edit.calendar-keys-too-small~1] 知らない月は空。範囲の端を越える月の足し引きは端で止まる。
+    // [utest -> req~cell-edit.calendar-keys-week-start~2, req~cell-edit.calendar-keys-too-small~1] 知らない月は空。範囲の端を越える月の足し引きは端で止まる。
     assert!(month_grid(2026, 0, WeekStart::Sun).is_empty());
     assert!(month_grid(2026, 13, WeekStart::Mon).is_empty());
     // 2026-02 は日曜始まりでちょうど4週。

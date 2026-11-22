@@ -60,7 +60,7 @@ fn row(a: &App, id: &str) -> usize {
 
 #[test]
 fn test_sc_17_typed_input_date_and_checkbox() {
-    // [utest -> req~scope.csv-features-edit~1, req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1, req~cell-edit.checkbox-clear~1, req~cell-edit.date-input-type-replaces~1] 日付の列は日付の入力で、真偽の列は Enter で切り替え。書くのは直した値の文字だけ。
+    // [utest -> req~scope.csv-features-edit~1, req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2, req~cell-edit.checkbox-clear~1, req~cell-edit.date-input-type-replaces~1] 日付の列は日付の入力で、真偽の列は Enter で切り替え。書くのは直した値の文字だけ。
     let (t, mut a) = open("sc17typed");
     let b = row(&a, "B");
     edit_cell(&mut a, b, "bought", "2026-12-01");
@@ -80,7 +80,7 @@ fn test_sc_17_typed_input_date_and_checkbox() {
 
 #[test]
 fn test_sc_17_bulk_edit_and_undo() {
-    // [utest -> req~scope.csv-features-edit~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1, req~write-back.redo-keys~1] 印を付けた2行の qty をまとめて直し、取り消すと戻る。やり直して保存 → 2行だけ変わる。
+    // [utest -> req~scope.csv-features-edit~1, req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1, req~write-back.redo-keys~1] 印を付けた2行の qty をまとめて直し、取り消すと戻る。やり直して保存 → 2行だけ変わる。
     let (t, mut a) = open("sc17bulk");
     a.row = row(&a, "A");
     col_named(&mut a, "qty");
@@ -123,7 +123,7 @@ fn test_sc_17_filter_and_sort() {
 
 #[test]
 fn test_sc_17_saved_view_with_group() {
-    // [utest -> req~scope.csv-features-views~1, req~base-view.own-views-tabs~1, req~base-view.own-views-no-note-files~1, req~base-view.own-views-beyond-base~1, req~navigation.settings-group~1] CSV のファイルにも mdgrid のビューを保存でき、開くとタブになり、絞り込みとグループ分けが効く。
+    // [utest -> req~scope.csv-features-views~1, req~base-view.own-views-tabs~1, req~base-view.own-views-no-note-files~1, req~base-view.own-views-beyond-base~1, req~navigation.settings-group~2] CSV のファイルにも mdgrid のビューを保存でき、開くとタブになり、絞り込みとグループ分けが効く。
     let t = Tmp::new("sc17view");
     t.write("台帳.csv", LEDGER);
     let p = t.notes().join("台帳.csv");

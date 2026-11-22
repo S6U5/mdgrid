@@ -56,7 +56,7 @@ fn resolved(tag: &str, config: Option<&str>) -> (String, String) {
 
 #[test]
 fn test_vim_setting_is_false_by_default_and_read_from_keys() {
-    // [stest -> req~screen.vim-setting~1] 設定が無い → vim モードは false(既定)。`[keys]` に `vim = true` → true として読み、警告を出さない
+    // [stest -> req~screen.vim-setting~2] 設定が無い → vim モードは false(既定)。`[keys]` に `vim = true` → true として読み、警告を出さない
     // (`[keys]` の下のモードの表と一緒に書ける)。
     let (out, err) = resolved("default", None);
     assert!(out.contains("[keys]\n# default\nvim = false"), "{out}");
@@ -129,7 +129,7 @@ mod screen {
 
     #[test]
     fn test_vim_setting_off_esc_cancels_the_cell_input() {
-        // [stest -> req~screen.vim-setting~1] 設定が無い → セルの入力の欄で Esc を押すと、今どおり入力を取りやめて閉じる。
+        // [stest -> req~screen.vim-setting~2] 設定が無い → セルの入力の欄で Esc を押すと、今どおり入力を取りやめて閉じる。
         let h = home("vim-off", None);
         let mut t = open(&h);
         t.send_settle("\r");
@@ -148,7 +148,7 @@ mod screen {
 
     #[test]
     fn test_vim_setting_on_esc_goes_to_normal_and_keeps_the_input() {
-        // [stest -> req~screen.vim-setting~1, req~screen.vim-mode-shown~1] `vim = true` → 同じ Esc で入力の欄がノーマルのモードになり、
+        // [stest -> req~screen.vim-setting~2, req~screen.vim-mode-shown~2] `vim = true` → 同じ Esc で入力の欄がノーマルのモードになり、
         // 閉じない。下の帯は「-- 挿入 --」から「-- ノーマル --」に変わり、もう一度 Esc で取りやめて閉じる。
         let h = home("vim-on", Some("[keys]\nvim = true\n"));
         let mut t = open(&h);

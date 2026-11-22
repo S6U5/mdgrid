@@ -64,7 +64,7 @@ fn test_sr_40_accent_override() {
 
 #[test]
 fn test_sr_41_value_colors() {
-    // [utest -> req~screen.value-colors-apply~1] [colors.values] の日本語の値 進行中 → 点がその色。決めていない done は今までの意味の色。
+    // [utest -> req~screen.value-colors-apply~2] [colors.values] の日本語の値 進行中 → 点がその色。決めていない done は今までの意味の色。
     let (_t, a) = boot(
         "sr41_values",
         "[look.colors.values]\n\"進行中\" = \"#d6a85c\"\n",
@@ -80,7 +80,7 @@ fn test_sr_41_value_colors() {
 
 #[test]
 fn test_sr_36_solid() {
-    // [utest -> req~screen.style-parts-choose~1] status = "solid" → 値の色をそのまま地に塗った札(淡くない)。nerd_font なら両端が丸い端の字。
+    // [utest -> req~screen.style-parts-choose~2] status = "solid" → 値の色をそのまま地に塗った札(淡くない)。nerd_font なら両端が丸い端の字。
     let (_t, a) = boot(
         "sr36_solid",
         "[look.style]\nstatus = \"solid\"\n\n[look.colors.values]\ndone = \"#2f9e66\"\n",

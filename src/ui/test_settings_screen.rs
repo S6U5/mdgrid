@@ -236,7 +236,7 @@ fn hide_done(a: &mut App) {
 
 #[test]
 fn test_nv_13_apply_and_cancel() {
-    // [utest -> req~navigation.view-settings~1] 設定の画面で status の done を隠す → 反映の前は表に done の行が残り、反映で消える。
+    // [utest -> req~navigation.view-settings~2] 設定の画面で status の done を隠す → 反映の前は表に done の行が残り、反映で消える。
     // 取り消し(Esc・ボタン)で閉じる → 表は開く前のまま。
     let (_t, mut a) = folder("nv13");
     let before = labels(&a);
@@ -275,7 +275,7 @@ fn test_nv_13_apply_and_cancel() {
 
 #[test]
 fn test_nv_13_palette_opens_settings() {
-    // [utest -> req~navigation.view-settings~1, req~screen.palette-keys~1] パレットの動作 `view_settings` からも開ける。キーは表のモードの `o`。
+    // [utest -> req~navigation.view-settings~2, req~screen.palette-keys~1] パレットの動作 `view_settings` からも開ける。キーは表のモードの `o`。
     let (_t, mut a) = folder("nv13pal");
     assert_eq!(
         keymap::lookup(&a.keys, Mode::Table, "o"),
@@ -435,14 +435,14 @@ fn test_nv_18_values_picker_golden() {
 
 #[test]
 fn test_nv_14_keep_only_book_from_screen() {
-    // [utest -> req~navigation.settings-filter~1] 種別の列の 本 だけを残す → 本 の行だけ。
+    // [utest -> req~navigation.settings-filter~2] 種別の列の 本 だけを残す → 本 の行だけ。
     let (_t, mut a) = folder("nv14");
     open(&mut a);
     add_values(&mut a, "種別", &[Some("本")], true);
     assert_eq!(draft(&a).s.filters[0].op, Op::Keep(vec![Some("本".into())]));
     apply_btn(&mut a);
     assert_eq!(labels(&a), ["b.md", "c.md", "f.md"]);
-    // [utest -> req~navigation.settings-filter~1] キーの無いノートは「(空)」として選べる。
+    // [utest -> req~navigation.settings-filter~2] キーの無いノートは「(空)」として選べる。
     open(&mut a);
     section(&mut a, Sec::Filters);
     sel_to(&mut a, 0);
@@ -454,7 +454,7 @@ fn test_nv_14_keep_only_book_from_screen() {
 
 #[test]
 fn test_nv_14_filter_by_key_not_in_view() {
-    // [utest -> req~navigation.settings-filter~1] ビューの列に無いノートのキー(status)でも、列を選んで隠せる。
+    // [utest -> req~navigation.settings-filter~2] ビューの列に無いノートのキー(status)でも、列を選んで隠せる。
     let tmp = vault("nv14key");
     let mut a = boot(&tmp, Some("名前だけ"), false);
     assert_eq!(a.cols, ["title"]);
@@ -518,7 +518,7 @@ fn test_nv_19_compare_and_contains_from_screen() {
 
 #[test]
 fn test_nv_15_group_off_and_by_column() {
-    // [utest -> req~navigation.settings-group~1] groupBy のある `.base` のビューで「しない」→ 見出しの行が消える。種別を選ぶ → 種別ごとの見出し。
+    // [utest -> req~navigation.settings-group~2] groupBy のある `.base` のビューで「しない」→ 見出しの行が消える。種別を選ぶ → 種別ごとの見出し。
     // `.base` のバイトは同じ。
     let tmp = vault("nv15");
     let mut a = boot(&tmp, None, false);
@@ -845,7 +845,7 @@ fn test_nv_19_formula_kind_stable_across_restart() {
 
 #[test]
 fn test_nv_18_apply_keeps_selected_column_by_name() {
-    // [utest -> req~navigation.settings-layout-pane~1, req~navigation.settings-layout-pending~1] status を選んだまま左の title を隠して反映 → 選んだ列は status のまま。
+    // [utest -> req~navigation.settings-layout-pane~2, req~navigation.settings-layout-pending~1] status を選んだまま左の title を隠して反映 → 選んだ列は status のまま。
     // 選んでいた列を隠したら、最寄りの(右の)列。
     let (_t, mut a) = folder("nv18sel");
     col_named(&mut a, "status");
@@ -891,7 +891,7 @@ fn test_sr_9_settings_screen_fits_narrow() {
 
 #[test]
 fn test_nv_18_click_items_and_buttons() {
-    // [utest -> req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~1, req~navigation.settings-layout-buttons~1, req~navigation.settings-layout-pending~1] 左の一覧のクリックで区画を選び、項目のクリックで選んで決め、上の「反映」のクリックで押す。
+    // [utest -> req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~2, req~navigation.settings-layout-buttons~2, req~navigation.settings-layout-pending~1] 左の一覧のクリックで区画を選び、項目のクリックで選んで決め、上の「反映」のクリックで押す。
     let (_t, mut a) = folder("nv18click");
     open(&mut a);
     // 左の一覧の「フィルター」をクリック → 右がフィルターの区画(列の区画から移る)。

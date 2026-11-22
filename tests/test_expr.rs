@@ -394,7 +394,7 @@ fn test_bv_7_uncomputable_file_property_is_unsupported() {
 
 #[test]
 fn test_bv_7_syntax_errors() {
-    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 文法の誤りは Syntax
+    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~2, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 文法の誤りは Syntax
     syntax_error("1 +");
     syntax_error("(1 + 2");
     syntax_error("\"abc");

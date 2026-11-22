@@ -7,7 +7,7 @@ use ratatui::crossterm::event::KeyCode;
 
 #[test]
 fn test_nv_24_click_x_removes_rule() {
-    // [utest -> req~navigation.sort-window-edit~1, req~navigation.sort-window-close~1] 決まりを足して、行の「×」をクリック → 外れる。行の真ん中のクリック → 向きが変わる。
+    // [utest -> req~navigation.sort-window-edit~2, req~navigation.sort-window-close~2] 決まりを足して、行の「×」をクリック → 外れる。行の真ん中のクリック → 向きが変わる。
     let (_t, mut a) = make(
         "nv24x",
         &[

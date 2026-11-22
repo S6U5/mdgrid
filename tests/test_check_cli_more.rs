@@ -54,7 +54,7 @@ const TYPES_AND_REQUIRED: &str = "[types]\ndue = \"date\"\n\n[rules.status]\nreq
 
 #[test]
 fn test_cli_23_md_arg_checks_only_that_note() {
-    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~1] `.md` を渡すと(CLI-15 と同じく)そのノートの行だけを確かめる。
+    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~2] `.md` を渡すと(CLI-15 と同じく)そのノートの行だけを確かめる。
     // ほかのノートに問題があっても出ず、渡したノートに問題が無ければ終了コード 0。
     let ok = "---\ntitle: OK\ndue: 2026-10-02\nstatus: todo\n---\n";
     let bad_type = "---\ntitle: X\ndue: someday\nstatus: todo\n---\n";

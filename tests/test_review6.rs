@@ -109,7 +109,7 @@ fn test_cli_17_json_empty_list_and_big_int() {
     );
 }
 
-// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-bad-expr~1]
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~2, req~cli.print-filter-sort-base-sort~1, req~cli.print-filter-sort-bad-expr~1]
 #[test]
 fn test_cli_16_sort_column_with_colon() {
     let root = dir("colon");

@@ -233,7 +233,7 @@ fn relmap_names(a: &mut App) -> Vec<String> {
 
 #[test]
 fn test_rel_7_partial_workspace_has_no_extra_table() {
-    // [utest -> req~relations.map~1] ルートフォルダの下の一部のフォルダだけを表にした範囲で、その1つを開くと、関係マップの箱は
+    // [utest -> req~relations.map~2] ルートフォルダの下の一部のフォルダだけを表にした範囲で、その1つを開くと、関係マップの箱は
     // その表だけ(ルートフォルダの残りのノートの余分な箱が出ない)。今の表の箱を選ぶ。
     let tmp = vault("ll_partial");
     let mut a = boot_folder(&tmp);
@@ -256,7 +256,7 @@ fn test_rel_7_partial_workspace_has_no_extra_table() {
 
 #[test]
 fn test_rel_7_folder_inside_base_table_has_no_extra_table() {
-    // [utest -> req~relations.map~1] 今のフォルダが範囲の `.base` の表(ルートフォルダ)の中なら、今の表の箱を足さず、`.base` の箱を選ぶ。
+    // [utest -> req~relations.map~2] 今のフォルダが範囲の `.base` の表(ルートフォルダ)の中なら、今の表の箱を足さず、`.base` の箱を選ぶ。
     let tmp = vault("ll_inside_base");
     let mut a = boot_folder(&tmp);
     choose(
