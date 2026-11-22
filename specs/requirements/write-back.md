@@ -165,8 +165,8 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 値を空にする(null を書く)ときは、キーの後ろの区切りの空白(`:` のあとから値の前まで)も値の範囲に含め、Obsidian と同じく `key:` と書く(cell-edit.empty-is-null)
 `req~write-back.byte-range-null~1` P1
 - Acceptance:
-  - Given: `status: done` を空にする
-  - When:
+  - Given:
+  - When: `status: done` を空にする
   - Then: `status:`(区切りの空白も消え、行末のコメントと改行はそのまま)。
 
 #### キーを足すとき(write-back.add-key-and-frontmatter)は、そのキーの行(リストの値は cell-edit.list-layout の縦の形の、キーの行と要素の行)を足すことだけを許さなければならない
@@ -214,8 +214,8 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 書き込んでよいのは、ノートのフロントマターの第1階層のキーの値と、キーの名前の変更・キーの削除(cell-edit.rename-delete-key)だけにしなければならない
 `req~write-back.frontmatter-only-top-level~1` P0
 - Acceptance:
-  - Given: 値がネストした map の `meta` のセルに書こうとする
-  - When:
+  - Given:
+  - When: 値がネストした map の `meta` のセルに書こうとする
   - Then: 読むだけで、ファイルは変わらない。
 
 #### mdgrid は、ノートの本文・`.base`・他のファイルを書き換えてはならない
@@ -368,8 +368,8 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 新しい値は、元の値と同じクオートの種類と同じ形(フロー形式かブロック形式か)で書かなければならない
 `req~write-back.quoting-keep-style~2` P1
 - Acceptance:
-  - Given: `title: 'a'` を b にする
-  - When:
+  - Given:
+  - When: `title: 'a'` を b にする
   - Then: `title: 'b'`(単一引用符のまま)。
 - Acceptance:
   - Given:
@@ -379,15 +379,15 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 元のクオートで安全に表せない値は、二重引用符で書かなければならない
 `req~write-back.quoting-double-fallback~1` P0
 - Acceptance:
-  - Given: クオートの無い `title: abc` を `a: b` にする
-  - When:
+  - Given:
+  - When: クオートの無い `title: abc` を `a: b` にする
   - Then: `title: "a: b"`。
 
 #### 改行を含む入力は、受け付けてはならない
 `req~write-back.quoting-no-newline~1` P0
 - Acceptance:
-  - Given: 改行を含む文字をセルに貼って確定する
-  - When:
+  - Given:
+  - When: 改行を含む文字をセルに貼って確定する
   - Then: 受け付けず「未保存 0」のまま。
 
 #### `no`・`yes`・`on`・数字に見える文字列・`: `・` #` を含む値・先頭が記号の値はクオートし、YAML 1.1 と 1.2 のどちらで読んでも型が変わらない書き方にしなければならない

@@ -79,8 +79,8 @@
 `req~cell-edit.column-type-mixed-datetime~1` P1
 - Rationale: 日付だけの値も日時の列に合うので、時刻を型の不一致として扱わないため
 - Acceptance:
-  - Given: types.json の無い列で 2026-08-01 と 2026-08-03T08:15 が混ざる
-  - When:
+  - Given:
+  - When: types.json の無い列で 2026-08-01 と 2026-08-03T08:15 が混ざる
   - Then: 日時の列で、どちらも `!` が付かない。
 
 #### 改行を含む値は、1行の入力では編集できないようにし、エディタ(screen.editor)で開くか読むだけにするべき
@@ -135,8 +135,8 @@
 #### 新しいノートを作る既定のフォルダは、設定で変えられるべき
 `req~cell-edit.new-note-default-folder~1` P1
 - Acceptance:
-  - Given: 設定で既定のフォルダを `inbox` にする
-  - When:
+  - Given:
+  - When: 設定で既定のフォルダを `inbox` にする
   - Then: 「メモ」と打って Enter で `inbox/メモ.md` が作られる。
 
 #### フォルダを2つ以上開いたとき(起動の引数に2つ以上のフォルダや `.base`)は、名前の欄の前に、作る場所を開いたフォルダの一覧から選ぶ欄を出すべき(一覧は起動の引数の順。既定は最初のフォルダ。Esc で取りやめ)
@@ -556,15 +556,15 @@
 #### カレンダーは、今日に戻す操作を持つべき
 `req~cell-edit.calendar-keys-today~1` P1
 - Acceptance:
-  - Given: 2026-10-30 のセルのカレンダーで今日に戻す
-  - When:
+  - Given:
+  - When: 2026-10-30 のセルのカレンダーで今日に戻す
   - Then: 今日の日。
 
 #### カレンダーは、空にする操作(cell-edit.date-input の空と同じ)を持つべき
 `req~cell-edit.calendar-keys-clear~1` P1
 - Acceptance:
-  - Given: due のセルのカレンダーで空にする
-  - When:
+  - Given:
+  - When: due のセルのカレンダーで空にする
   - Then: null のためる変更。
 
 #### カレンダーは、今日・元の値・選んでいる日を、色のほかに印でも見分けられるようにするべき(cell-view.not-color-only)
@@ -656,8 +656,8 @@
 `req~cell-edit.calendar-month-keys-hint~1` P1
 - Rationale: PageUp・PageDown の無いキーボードでも、月を動かすキーに気づけるようにするため
 - Acceptance:
-  - Given: 日付のセルでカレンダーを出す
-  - When:
+  - Given:
+  - When: 日付のセルでカレンダーを出す
   - Then: カレンダーの下の縁に `Shift+←→ 月` の文字。
 
 #### 月を動かすキーは、設定の割り当て直し(screen.key-table)で変えられてよい
@@ -1016,8 +1016,8 @@
 #### 時刻の無い値で時刻を動かさずに確定したら、日だけを選んだときと同じく時刻を書かないべき
 `req~cell-edit.datetime-calendar-keep-date-only~1` P1
 - Acceptance:
-  - Given: `at: 2026-10-30` で時刻を動かさずに確定
-  - When:
+  - Given:
+  - When: `at: 2026-10-30` で時刻を動かさずに確定
   - Then: `2026-10-30` のまま。
 
 #### 日時の列の時刻は、打ち込みでも今までどおり入れられるべき
@@ -1037,8 +1037,8 @@
 #### 時刻の欄へ切り替えるキーを、カレンダーの下の縁に出すべき
 `req~cell-edit.time-keys-hint~1` P1
 - Acceptance:
-  - Given: 日時の列のセルでカレンダーを出す
-  - When:
+  - Given:
+  - When: 日時の列のセルでカレンダーを出す
   - Then: カレンダーの下の縁に Ctrl+O の文字。
 
 #### 時刻の無い値で最初に時刻を動かすときは、09:00 から動かすべき
@@ -1412,8 +1412,8 @@
 #### 列の型を選び直しても、ノートの値は書き換えないべき
 `req~cell-edit.type-config-notes-untouched~1` P1
 - Acceptance:
-  - Given: 型の窓で due を「数」にする
-  - When:
+  - Given:
+  - When: 型の窓で due を「数」にする
   - Then: ノートのファイルは1バイトも変わらない。
 
 #### `file.*`・`formula.*` の列では、型を選び直す窓を出さないべき
@@ -1447,8 +1447,8 @@
 #### 列の決まりは、範囲ごとに項目ごとに重ね、狭い範囲が勝つべき(screen.profile-scopes)
 `req~cell-edit.rules-scopes~1` P1
 - Acceptance:
-  - Given: 全体で `[rules.status] values = ["todo", "doing", "done"]`、表の範囲で `values = ["todo", "done"]` を重ねる
-  - When:
+  - Given:
+  - When: 全体で `[rules.status] values = ["todo", "doing", "done"]`、表の範囲で `values = ["todo", "done"]` を重ねる
   - Then: 表では doing も違反。
 
 #### 列の決まりは、ノートを書き換えないべき

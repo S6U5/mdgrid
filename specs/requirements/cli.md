@@ -150,8 +150,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### 画面で選んだ設定を置くときは、config.toml を書き換えないべき
 `req~cli.config-file-ui-keeps-config~1` P1
 - Acceptance:
-  - Given: 見た目の区画(screen.look-section)で選んだ設定を反映する
-  - When:
+  - Given:
+  - When: 見た目の区画(screen.look-section)で選んだ設定を反映する
   - Then: ui.toml に書かれ、config.toml のバイトは変わらない。
 
 #### 設定が無くても、既定で動くべき
@@ -402,8 +402,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `--print` は、ノートを書き換えないべき(cli.readonly と同じ)
 `req~cli.print-no-write~1` P1
 - Acceptance:
-  - Given: `--print` で表を出す
-  - When:
+  - Given:
+  - When: `--print` で表を出す
   - Then: ノートのフォルダのファイルは変わらず、新しいファイルもできない。
 
 #### `--print` で起動できないとき・知らない形の名前は、cli.fail-fast と同じく理由1行と終了コード 2 にするべき
@@ -509,8 +509,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `--print-config --resolved` が出したものは、設定ファイルとして警告なしに読めるべき
 `req~cli.resolved-config-reads-back~1` P1
 - Acceptance:
-  - Given: 出した文を `--config` で読む
-  - When:
+  - Given:
+  - When: 出した文を `--config` で読む
   - Then: 警告なし。
 
 #### `--print-config --resolved` は、画面を開かないべき
@@ -559,8 +559,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### スキルのプラグインのマニフェストの版は、Cargo.toml の版と揃えるべき
 `req~cli.agent-skill-version~1` P1
 - Acceptance:
-  - Given: マニフェストの版が Cargo.toml の版と違う
-  - When:
+  - Given:
+  - When: マニフェストの版が Cargo.toml の版と違う
   - Then: 試験が落ちる。
 
 #### `mdgrid [<.base | フォルダ> …] --check [--view <名前>]` は、画面を出さずに、開いたビューの各ノートを確かめ、問題を1つ1行で `<パス>:<行>: <列>: <理由>` の形で標準出力に出すべき
@@ -603,8 +603,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 `req~cli.check-exit-code~2` P1
 - Rationale: CI と pre-commit で止められるようにするため
 - Acceptance:
-  - Given: 問題が2つ
-  - When:
+  - Given:
+  - When: 問題が2つ
   - Then: 終了コード 1。
 - Acceptance:
   - Given:
@@ -721,8 +721,8 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When: `required = ["priority"]` の台帳で `mdgrid t --new-note a`
   - Then: 理由1行(priority を言う)と終了コード 2 で作らない。
 - Acceptance:
-  - Given: `--set priority=p2` を添える
-  - When:
+  - Given:
+  - When: `--set priority=p2` を添える
   - Then: 作る。
 
 #### `--new-note` の無い `--set`・2つ以上のフォルダ・`--print` などほかの命令との組・空の名前は、cli.fail-fast と同じく理由1行と終了コード 2 にするべき

@@ -33,8 +33,8 @@
 `req~notice.count-item~2` P1
 - Rationale: 何を何件と知らせるかを、人が自分の言葉で決められるようにするため(neomutt のサイドバーが、保存した検索ごとに件数を並べるのと同じ形)
 - Acceptance:
-  - Given: `cond = "overdue"`・`text = "期限切れ {count} 件"` で、overdue に当たる行が3つ
-  - When:
+  - Given:
+  - When: `cond = "overdue"`・`text = "期限切れ {count} 件"` で、overdue に当たる行が3つ
   - Then: 欄に「期限切れ 3 件」。
 - Acceptance:
   - Given: `text` を書かない
@@ -105,8 +105,8 @@
   - When:
   - Then: 欄は2行で、1行目が「期限切れ 3 件 · 今日まで 2 件」、2行目が連絡。
 - Acceptance:
-  - Given: 連絡を `lines = 5` で出す
-  - When:
+  - Given:
+  - When: 連絡を `lines = 5` で出す
   - Then: 欄は3行で、3行目が「ほか 3 行」。
 - Needs: stest
 
@@ -118,8 +118,8 @@
   - When: 期限切れ 3 件の表で1行の due を来月に直して保存
   - Then: 「期限切れ 2 件」。
 - Acceptance:
-  - Given: 開いたまま日付が 2026-11-21 から 2026-11-22 に変わる
-  - When:
+  - Given:
+  - When: 開いたまま日付が 2026-11-21 から 2026-11-22 に変わる
   - Then: due が 2026-11-21 の行も期限切れに数える。
 
 #### ほかの表を数える項目は、最初の画面を待たせずに数え、数え終わるまで件数の所に「…」を出すべき

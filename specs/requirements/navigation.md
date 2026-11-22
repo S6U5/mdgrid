@@ -392,8 +392,8 @@
 #### `tab_break` はビューと一緒に動くべき(navigation.view-tabs で並べ替えると切れ目もそのタブと動く)
 `req~navigation.tab-break-moves~1` P1
 - Acceptance:
-  - Given: 4つのタブ A・B・C・D の表で C に `tab_break = true`、ビューの区画で C を B の前へ上げる
-  - When:
+  - Given:
+  - When: 4つのタブ A・B・C・D の表で C に `tab_break = true`、ビューの区画で C を B の前へ上げる
   - Then: 下の1行目に A、2行目に C と B と D。
 
 #### `tab_break` は行の置き方だけを変え、`[` `]` の順(navigation.view-tabs)は変えないべき
@@ -558,8 +558,8 @@
 #### ビューの区画で、既定のビュー(navigation.default-view)を変えられるべき
 `req~navigation.view-tabs-default~1` P1
 - Acceptance:
-  - Given: ビューの区画で「進行中」を既定にする
-  - When:
+  - Given:
+  - When: ビューの区画で「進行中」を既定にする
   - Then: 「既定」の印が付き、views.toml に default_view = "進行中"。
 
 #### ビューの区画で、mdgrid のビューの名前を変えられるべき(base-view.save-view)
@@ -655,8 +655,8 @@
 #### 親子で並べたとき、兄弟の順は今の並べ替え(navigation.header-sort・navigation.sort-window・`.base` の sort)のままにするべき
 `req~navigation.parent-child-sibling-order~1` P1
 - Acceptance:
-  - Given: 親子をオンにした表を title の降順で並べる
-  - When:
+  - Given:
+  - When: 親子をオンにした表を title の降順で並べる
   - Then: 兄弟の「画面」と「API」だけが入れ替わる。
 
 #### 親子で並べたとき、子を持つ行の名前の前に ▾(開いている)か ▸(畳んでいる)を付けるべき
@@ -760,8 +760,8 @@
   - When:
   - Then: 「1 設計 · 50%」「1.1 画面 · 50%」。
 - Acceptance:
-  - Given: API の status を空にする
-  - When:
+  - Given:
+  - When: API の status を空にする
   - Then: 「1 設計」は 33%(100+0+0 の平均)。
 - Acceptance:
   - Given: 対応表に無い値 blocked
@@ -1011,8 +1011,8 @@
   - When: status の done を外す
   - Then: done の行が消える。
 - Acceptance:
-  - Given: 種別の列の 本 だけを残す
-  - When:
+  - Given:
+  - When: 種別の列の 本 だけを残す
   - Then: 本 の行だけ。キーの無いノートは「(空)」として選べる。
 
 #### 設定で、グループ分けをする列を選ぶことと、グループ分けをしないことを選べるべきで、`.base` の groupBy より設定を優先し、`.base` は書き換えないべき
@@ -1212,8 +1212,8 @@
 #### 設定を `.base` のビューの既定(`.base` なしなら何もしない状態)に戻す操作を持つべき
 `req~navigation.settings-reset-default~1` P1
 - Acceptance:
-  - Given: 設定を戻す
-  - When:
+  - Given:
+  - When: 設定を戻す
   - Then: 帯が消え、`.base` のままの表。
 
 #### 表の上の帯の項目から、1つの条件を外す操作を持つべき
@@ -1325,8 +1325,8 @@
 `req~navigation.across-results~2` P1
 - Rationale: どの表に書いたか覚えていない行を、表を1つずつ開かずに見つけるため
 - Acceptance:
-  - Given: tasks に「見積もり」を含む行が2つ、projects に1つ
-  - When: 「見積もり」と打って Enter
+  - Given:
+  - When: tasks に「見積もり」を含む行が2つ、projects に1つ → 「見積もり」と打って Enter
   - Then: 「tasks」の下に2行、「projects」の下に1行。
 - Acceptance:
   - Given: どこにも当たらない
@@ -1346,8 +1346,8 @@
 `req~navigation.across-progress~2` P1
 - Rationale: 大きな表があっても待たされている理由が分かり、いつでもやめられるようにするため
 - Acceptance:
-  - Given: 表が 5 つの範囲で探す
-  - When:
+  - Given:
+  - When: 表が 5 つの範囲で探す
   - Then: 読み終えた表の結果から並び、「3 / 5 を読みました」。
 - Acceptance:
   - Given:

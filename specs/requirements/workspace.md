@@ -22,8 +22,8 @@
 #### ワークスペース(名前の付いた表の集まり)を、設定のフォルダの `workspaces.toml`(`[[workspace]]` の並び。`name` と、表の並び `table`(`name`・`path`(フォルダか `.base`)・`view`)と、ワークスペースと表それぞれの表のプロファイル(screen.profile-scopes。`[workspace.look]`・`[workspace.table.look]` など))に持つべき
 `req~workspace.app-side-file~2` P1
 - Acceptance:
-  - Given: `[[workspace]]` に name = "Product"、表を2つ
-  - When:
+  - Given:
+  - When: `[[workspace]]` に name = "Product"、表を2つ
   - Then: 2つの表のワークスペース。
 - Acceptance:
   - Given: `[workspace.look] theme = "nord"`
@@ -411,8 +411,8 @@
 `req~workspace.favorite-store~2` P1
 - Rationale: お気に入りは人ごとの好みで、ノートのフォルダを共にする人やほかのマシンの印を変えないため(workspace.app-side-no-note-write と同じ考え)
 - Acceptance:
-  - Given: 「趣味」と印の lab をお気に入りにする
-  - When:
+  - Given:
+  - When: 「趣味」と印の lab をお気に入りにする
   - Then: `workspaces.toml` に `favorites = ["趣味", "~/lab"]`、lab の印のバイトは同じ。
 - Acceptance:
   - Given: お気に入りの印の根が無くなった

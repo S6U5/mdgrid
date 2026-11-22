@@ -30,8 +30,8 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 #### この道具の芯は、Markdown の YAML フロントマターを表として表示し、編集できることにするべき
 `req~scope.core~1` P1
 - Acceptance:
-  - Given:
-  - When: 機能を足す案が、表の表示と編集のどちらにも役立たない
+  - Given: 機能を足す案が、表の表示と編集のどちらにも役立たない
+  - When:
   - Then: 芯から外れる(読んで判定)。
 
 #### 単体の OSS として作るべき
@@ -60,8 +60,8 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 #### 製品名に、Obsidian の名前やロゴを使ってはならない
 `req~scope.no-obsidian-brand~1` P1
 - Acceptance:
-  - Given: 名前の候補に「obsidian」を含む
-  - When:
+  - Given:
+  - When: 名前の候補に「obsidian」を含む
   - Then: 違反。README で互換を説明するのはよい(読んで判定)。
 
 ### 最初の版の範囲
@@ -69,8 +69,8 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 #### 最初の版には、AI エージェントの機能を載せなくてよい(今後載せる)
 `req~scope.no-agent-v1~1` P1
 - Acceptance:
-  - Given:
-  - When: 最初の版にエージェントの起動・枠・実行ログが無い
+  - Given: 最初の版にエージェントの起動・枠・実行ログが無い
+  - When:
   - Then: 適合(読んで判定)。
 
 #### 最初の版では、値の書き換えとリストからの選択ができてよい
@@ -120,16 +120,16 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 #### このリポに秘密情報を置いてはならない
 `req~scope.no-secrets~1` P1
 - Acceptance:
-  - Given:
-  - When: API キーの形の文字列を含むファイルがある
+  - Given: API キーの形の文字列を含むファイルがある
+  - When:
   - Then: 違反(読んで判定)。
 
 #### 公開するときは、履歴の無い新しいリポに書き出さなければならない
 `req~scope.publish-fresh-history~1` P1
 - Rationale: 非公開のリポを公開に切り替えると、非公開の間のコミットが見えるため
 - Acceptance:
-  - Given:
-  - When: 公開の手順が「このリポの公開範囲を切り替える」になっている
+  - Given: 公開の手順が「このリポの公開範囲を切り替える」になっている
+  - When:
   - Then: 違反(読んで判定)。
 
 #### 起動の引数に `.csv`・`.tsv` のファイルを渡したら、1行目を列の名前、2行目からを行とする表として開くべき

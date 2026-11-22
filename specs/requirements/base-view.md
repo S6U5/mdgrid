@@ -218,8 +218,8 @@
 #### 式は `file.backlinks` を、そのノートを行き先に持つノートのリストとして評価するべき
 `req~base-view.links-eval-backlinks~1` P1
 - Acceptance:
-  - Given: b.md を a と c が指す
-  - When:
+  - Given:
+  - When: b.md を a と c が指す
   - Then: b の file.backlinks に a と c。
 
 #### 式は `file.hasLink(x)`(x はノートの名前・パス・`this.file`)を評価するべき
@@ -468,8 +468,8 @@
 #### `.base` のビューを mdgrid のビューとして取り込めてよい
 `req~base-view.export-base-import~1` P1
 - Acceptance:
-  - Given: tasks.base のビュー「進行」を取り込む
-  - When:
+  - Given:
+  - When: tasks.base のビュー「進行」を取り込む
   - Then: mdgrid のビューのタブ「進行」が増え、`.base` の絞り込みが効く。
 
 #### 書き出しと取り込みでは、`.base` で表せない部分(または mdgrid で解釈できない部分)は落とし、何を落としたかを知らせてよい
@@ -503,8 +503,8 @@
 #### 壊れた `views.toml` は、警告して読まずに起動するべき
 `req~base-view.views-toml-broken~1` P1
 - Acceptance:
-  - Given: `views.toml` を手で壊す
-  - When:
+  - Given:
+  - When: `views.toml` を手で壊す
   - Then: 起動して警告、mdgrid のビューのタブは出ない。
 
 #### `.base` で開いたときのタブは、`.base` のビューのあとに mdgrid のビューを並べるべき(起動時に開くのは base-view.view-switch のとおり、既定に選んだビューか先頭のビュー)

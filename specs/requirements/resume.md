@@ -36,8 +36,8 @@
   - When: `-w tasks --readonly` で、ビューの無いフォルダ notes を開く
   - Then: 命令が `mdgrid <notes の絶対パス> --raw -w tasks --readonly`。
 - Acceptance:
-  - Given:
-  - When: `.base` のビュー「進行中」を開いている
+  - Given: `.base` のビュー「進行中」を開いている
+  - When:
   - Then: `mdgrid <.base の絶対パス> --view 進行中`。
 
 #### 表かビューを移ったら、伝えた命令を、移った先の表とビューのものに替えるべき
@@ -189,8 +189,8 @@
   - When: 最後の画面の無いフォルダで `mdgrid --continue`
   - Then: `mdgrid` と同じ表が開く。
 - Acceptance:
-  - Given: 最後の画面のファイルを壊す
-  - When:
+  - Given:
+  - When: 最後の画面のファイルを壊す
   - Then: 同じ。
 - Acceptance:
   - Given:

@@ -33,8 +33,8 @@
   - When: 80×24 の端末で起動
   - Then: 1行目は空いた上の余白、2行目にヘッダー(screen.breadcrumb。範囲と表のパンくずと行数、右の端に画面の型のメニュー(relations.screen-menu)と設定のボタン)、3〜5行目にビューの帯(navigation.search-box。3行目と5行目は空き行、4行目は左にタブ、右に検索の欄と絞り込み・並べ替え・分類・列のボタン、右の端に作れるときは「+ 新規」(cell-edit.new-note))、6行目から表(ゴールデン)。
 - Acceptance:
-  - Given:
-  - When: 絞り込みが効いているとき
+  - Given: 絞り込みが効いているとき
+  - When:
   - Then: ビューの帯と表のあいだに設定の帯の行が入る。
 
 #### 上の余白は、設定 `display.top_padding` で 0〜2 を 0.5 刻みで選べ、既定を 1 にするべき
@@ -732,8 +732,8 @@
   - When: `vim = true` で a.md の status を done にしたあと `j` で b.md へ移り、選んでいる列が due でも `.`
   - Then: b.md の status が done のためる変更。
 - Acceptance:
-  - Given:
-  - When: まだ何も直していない
+  - Given: まだ何も直していない
+  - When:
   - Then: 何も変わらない。
 
 #### パレットの `q!` は、ためた変更を確かめずに捨てて終わるべき(vim モードによらない)
@@ -825,8 +825,8 @@
 #### 表のセルの部品の色は値ごとに決まった色にし、どの値も文字はそのまま見せる(色だけで値を伝えない。cell-view.not-color-only)
 `req~screen.rich-cells-value-color~1` P1
 - Acceptance:
-  - Given: 組 classic の色のある表示で status が doing の行が2つ
-  - When:
+  - Given:
+  - When: 組 classic の色のある表示で status が doing の行が2つ
   - Then: 2つの札の地が同じ色で、どちらの札にも `doing` の文字がある。
 
 #### 部品の種類ごとに部品を使わないときは、screen.style-parts のその部品の形を文字のままの形(`status`・`tags`・`links` は `plain`、`check` は `text`、印は `icons = false`)にする
@@ -998,8 +998,8 @@
 #### 端末の地の明るさは、環境変数 `COLORFGBG` か端末への問い合わせ(短い待ち時間で、答えが無ければ諦める)で決め、分からなければ暗い地とみなす
 `req~screen.theme-auto-detect~1` P1
 - Acceptance:
-  - Given:
-  - When: `[look] theme = "auto"` で `COLORFGBG` が無く、問い合わせに答えない
+  - Given: `[look] theme = "auto"` で `COLORFGBG` が無く、問い合わせに答えない
+  - When:
   - Then: sumi。
 
 #### 設定の `[look.colors]` で、テーマ(screen.themes)の色のうち役割ごとに色を上書きできるべき
@@ -1299,8 +1299,8 @@
 #### 表の見せ方の次の4つの既定を、設定(cli.config-file の設定ファイル)で決められるべき: 行番号(表の左に1始まりの番号。既定は出さない)・一行おきの色(既定は付けない)・列の区切り線(既定は今の見た目)・上の帯(ビューの帯のタブと検索の欄(navigation.search-box)、設定の帯(navigation.settings-bar)をそれぞれ出すか。タブと検索の欄を両方出さなければ、ビューの帯の行ごと出さない)
 `req~screen.display-options-config~2` P1
 - Acceptance:
-  - Given: 設定で行番号を出す
-  - When:
+  - Given:
+  - When: 設定で行番号を出す
   - Then: 各行の左に 1・2・3。
 - Acceptance:
   - Given: 一行おきの色
@@ -1565,8 +1565,8 @@
 #### 文言は言語ごとの台帳(`locales/<言語の符号>.toml`。英語の `en.toml` が文言の名前と並びの正本)に置き、どれかの台帳で文言が欠けるか余るか空であるか、差し込みの番号(`{0}` など)の組が英語と違えば、ビルドで落ちるべき
 `req~screen.locales-ledger~1` P1
 - Acceptance:
-  - Given: `locales/ja.toml` で文言が1つ欠ける、または差し込みの番号が英語と違う
-  - When:
+  - Given:
+  - When: `locales/ja.toml` で文言が1つ欠ける、または差し込みの番号が英語と違う
   - Then: ビルドが落ちる。
 
 #### 文言の言語の一覧は台帳のファイルから作り、言語を足すときは台帳を足せばよい形にするべき
@@ -1604,8 +1604,8 @@
 `req~screen.locales-fit~1` P1
 - Rationale: ドイツ語のような長い語や、中国語・韓国語の幅の広い字で、画面が崩れないようにするため
 - Acceptance:
-  - Given: 80桁・24行の端末で、9つの台帳のそれぞれで表の画面とビューの設定の画面を出す
-  - When:
+  - Given:
+  - When: 80桁・24行の端末で、9つの台帳のそれぞれで表の画面とビューの設定の画面を出す
   - Then: どの行も80桁を超えず、部品の文字が重ならず、切った所に `…`。
 - Needs: stest
 
@@ -1931,8 +1931,8 @@
 #### 画面の型(表・木・関係マップなど)を足す変更は、見せ方の一覧のページに1項を足すべき
 `req~screen.views-page-keep~1` P1
 - Acceptance:
-  - Given:
-  - When: 画面の型を足した変更の記録で、この一覧に項が無い
+  - Given: 画面の型を足した変更の記録で、この一覧に項が無い
+  - When:
   - Then: 違反(読んで判定)。
 
 #### 説明書の目次(`docs/manual/<言語>/index.md`)と、サイトの説明書の章の並び(`scripts/pages.py` の `PAGES`)は、読む人の順に並べるべき: 誰のための道具で何がどう見えるか(index)→ 見せ方の一覧(views)→ はじめかた(getting-started。1分で試す道を1本)→ 作業の手引き(tasks)→ 考え方(concepts)→ 見た目(appearance・themes)→ 困ったとき(faq)→ 参照
@@ -1945,8 +1945,8 @@
 #### 説明書とサイトの入口は短く保ち、詳しさは下のページへ送るべき
 `req~screen.docs-order-short-entry~1` P1
 - Acceptance:
-  - Given: 入口(`docs/manual/<言語>/index.md` と `scripts/pages.py` の入口の文言)を読む
-  - When:
+  - Given:
+  - When: 入口(`docs/manual/<言語>/index.md` と `scripts/pages.py` の入口の文言)を読む
   - Then: 詳しい手順と設定の説明は無く、下のページへのリンクで送っている(読んで判定)。
 
 #### 説明書・サイト・README の文は `docs/writing.md` の決まり(具体から書く、語尾と長さを変える、接続詞を連ねない、箇条書きは並列のものだけ、大げさな語・対比の型・三つ組・太字の強調・締めの定型句を使わない)で書くべき
@@ -1987,8 +1987,8 @@
 #### 機能を足す変更は、機能の一覧のページに1項を足すべき
 `req~screen.features-page-keep~1` P1
 - Acceptance:
-  - Given:
-  - When: 機能を足した変更の記録で、この一覧に項が無い
+  - Given: 機能を足した変更の記録で、この一覧に項が無い
+  - When:
   - Then: 違反(読んで判定)。
 
 ## 未確定事項

@@ -86,15 +86,15 @@
 #### リンクの列(値の多くがリンクの列)のセルを直すときは、候補に、その列のリンクの行き先があるフォルダのノートの名前を出すべき
 `req~relations.link-input-candidates~1` P1
 - Acceptance:
-  - Given: project の列の値がどれも `[[…]]` で projects/ を指す
-  - When:
+  - Given:
+  - When: project の列の値がどれも `[[…]]` で projects/ を指す
   - Then: 候補は projects/ のノート。
 
 #### リンクの列のセルで候補から選んだら、選んだノートへのリンクを書くべき
 `req~relations.link-input-write~1` P1
 - Acceptance:
-  - Given: project の列の値がどれも `[[…]]` で projects/ を指す
-  - When:
+  - Given:
+  - When: project の列の値がどれも `[[…]]` で projects/ を指す
   - Then: 候補の mdgrid を選ぶと `"[[mdgrid]]"` と書く。
 
 #### リンクの列に書く形は、その列で使われている形(`[[…]]`・`[…](…)`・パス)に合わせ、無ければ `[[名前]]` にする
@@ -156,8 +156,8 @@
 #### つながった行を探す範囲は、開いたフォルダと、ワークスペース(workspace.scope-order の順で決めたもの。無ければ登録した表)の表にするべき
 `req~relations.backlinks-scope~1` P1
 - Acceptance:
-  - Given:
-  - When: tasks のフォルダを開き、ワークスペースに meetings の表がある
+  - Given: tasks のフォルダを開き、ワークスペースに meetings の表がある
+  - When:
   - Then: projects/mdgrid.md の「つながった行」に、tasks の project の列と meetings の project の列から指す行が出る。
 
 #### ワークスペースの表で、列の値の行き先が別の表のノートなら、設定を書かなくても、その列をその表へのつながり(リストの列なら多対多、そうでなければ多対一)とみなすべき
@@ -254,15 +254,15 @@
 #### 左の欄(ワークスペースの表の一覧)・真ん中・右の詳細・下のつながった行のような段組みは、端末の幅と高さに合わせて変えるべき(広ければ並べ、狭ければ1つずつにしてタブかキーで切り替える)
 `req~relations.layout-adapt~1` P1
 - Acceptance:
-  - Given: 幅 160・100・60 の端末で関係マップの画面を出す
-  - When:
+  - Given:
+  - When: 幅 160・100・60 の端末で関係マップの画面を出す
   - Then: それぞれ並べる・2つ・1つになる。
 
 #### 関係マップの段組みは、どの幅でも、文字が重なったり切れて読めなくなったりしてはならない
 `req~relations.layout-readable~1` P1
 - Acceptance:
-  - Given: 幅 160・100・60 の端末で関係マップの画面を出す
-  - When:
+  - Given:
+  - When: 幅 160・100・60 の端末で関係マップの画面を出す
   - Then: どれも文字が重ならず、切れて読めなくならない。
 
 #### 関係マップの画面で、表(左の一覧の行か盤の箱)をクリックしたら、その表を選ぶべき

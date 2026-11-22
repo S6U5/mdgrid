@@ -221,8 +221,8 @@
   - When:
   - Then: `0`。
 - Acceptance:
-  - Given: `--view 進行中` を添える
-  - When:
+  - Given:
+  - When: `--view 進行中` を添える
   - Then: そのビューの絞り込みのあとで数える。
 - Needs: stest
 

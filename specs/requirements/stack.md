@@ -78,8 +78,8 @@
 `req~stack.limit~2` P1
 - Rationale: 1つ1つの表が読めないほど細くならないようにするため
 - Acceptance:
-  - Given: 表を4つ並べて「下に表を並べる」
-  - When:
+  - Given:
+  - When: 表を4つ並べて「下に表を並べる」
   - Then: 足さずに理由。
 - Acceptance:
   - Given:
@@ -135,8 +135,8 @@
 `req~stack.page-save~2` P1
 - Rationale: よく見比べる組を、毎回並べ直さずに開けるようにするため(2026-11-21 に人が「両方」(その場で並べ、名前を付けて残す)と決めた)
 - Acceptance:
-  - Given: tasks(今日)と projects(進行中)を並べ、名前「朝」で残す
-  - When:
+  - Given:
+  - When: tasks(今日)と projects(進行中)を並べ、名前「朝」で残す
   - Then: `workspaces.toml` の work に `[[workspace.page]]`・`name = "朝"`・2つの表とビュー。
 - Acceptance:
   - Given: 範囲がワークスペースでないとき
@@ -156,8 +156,8 @@
 `req~stack.page-save-marker~1` P1
 - Rationale: 人が手で書いた印の中身を、ページを足すついでに崩さないため
 - Acceptance:
-  - Given: コメントと空行を含む印でページ「朝」を残す
-  - When:
+  - Given:
+  - When: コメントと空行を含む印でページ「朝」を残す
   - Then: 印の差分は足した `[[page]]` の区切りだけ。
 
 #### ページは、引き出し(workspace.drawer)の今の範囲の表の上に並べ、選ぶと並べた形で開くべき

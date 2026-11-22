@@ -138,8 +138,8 @@
   - When:
   - Then: 理由1行で開かない。
 - Acceptance:
-  - Given:
-  - When: ビューで絞って行が1つも無い
+  - Given: ビューで絞って行が1つも無い
+  - When:
   - Then: 理由1行で開かない。
 
 ### 分ける列が文字かチェックボックスの列なら、値ごとの項目にするべき
@@ -159,8 +159,8 @@
 ### 分ける列の値の無い行は、最後の「(なし)」の項目にするべき
 `req~chart.buckets-none~1` P1
 - Acceptance:
-  - Given: status の値の無い行が1つ
-  - When:
+  - Given:
+  - When: status の値の無い行が1つ
   - Then: 最後の「(なし)」の項目に 1。
 
 ### 日付の列は日・週・月の区切りで分け、最初から最後までの区切りを、行の無い区切りも 0 として並べるべき(開くときは区切りが幅に収まる最も細かい単位。gantt.open と同じ)
@@ -173,8 +173,8 @@
 ### 数の列は、等しい幅の区間(10 まで)に分けるべき
 `req~chart.buckets-number~1` P1
 - Acceptance:
-  - Given: estimate が 0・37・100 の3行で分ける
-  - When:
+  - Given:
+  - When: estimate が 0・37・100 の3行で分ける
   - Then: 区間は 10 以下で、どの区間も同じ幅。
 
 ### 日付と数の列で分けるとき、値の無い・読めない行は数えず、外した行の数を示すべき
@@ -459,8 +459,8 @@
 ### 棒と積み上げ棒では、`j` `k` で項目を選ぶべき
 `req~chart.keys-item~1` P1
 - Acceptance:
-  - Given:
-  - When: status の棒で最初の項目を選んでいる
+  - Given: status の棒で最初の項目を選んでいる
+  - When:
   - Then: `j` で次の項目、続けて `k` で最初の項目に戻る。
 
 ### 棒と積み上げ棒では、`Enter` で選んだ項目の値の行だけに絞って表に戻るべき(navigation.frequency の頻度表の Enter と同じ絞り込み)

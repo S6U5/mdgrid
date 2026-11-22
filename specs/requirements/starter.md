@@ -58,8 +58,8 @@
 #### mdgrid は組み込みのスターター `tasks`・`tasks-ai`・`bookmarks`・`reading`・`people` を実行ファイルの中に持つべき
 `req~starter.builtin-list~2` P1
 - Acceptance:
-  - Given:
-  - When: 設定の置き場が無い
+  - Given: 設定の置き場が無い
+  - When:
   - Then: 組み込みのスターターは `tasks`(タスク)・`tasks-ai`(人と AI で分けるタスクとルーチン)・`bookmarks`(ブックマーク)・`reading`(読書・視聴の記録)・`people`(人・連絡先・会議メモ)の5つで、どれからも `--init-workspace --starter` で作れる。
 
 #### 組み込みのスターターは、ユーザーのスターター(starter.user)と同じ形・同じ読み方の見本とし、組み込みだけに効く特例を作らないべき
@@ -170,8 +170,8 @@
 #### `mdgrid --starters` は、スターターの名前と今の言語の1行の説明を1行ずつ標準出力に出して終了コード 0 で終わり、設定の置き場が無くても組み込みを出すべき
 `req~starter.user-list~2` P1
 - Acceptance:
-  - Given:
-  - When: 置き場なし
+  - Given: 置き場なし
+  - When:
   - Then: `--starters` が組み込みの5つを、名前と説明の1行ずつ標準出力に出し、終了コード 0。
 
 #### 読めないスターター(壊れた `starter.toml`・`ledger/.mdgrid/workspace.toml` の無いもの)は、cli.config-file の形で警告して飛ばすべき
