@@ -53,7 +53,7 @@ fn test_sr_29_note_column_drops_common_folder_and_md() {
     assert!(s.contains("Tasks/a ") && s.contains("Notes/c "), "{s}");
 }
 
-// [utest -> req~screen.note-column-marks-only~1]
+// [utest -> req~screen.note-column-marks-only~2]
 #[test]
 fn test_sr_29_name_column_hides_names_but_keeps_marks() {
     let tmp = Tmp::new("sr29name");

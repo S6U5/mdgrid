@@ -67,7 +67,7 @@ fn test_condition_digit_key_toggles_the_rows() {
 
 #[test]
 fn test_condition_digit_stack_shows_items_and_narrows_both() {
-    // [utest -> req~condition.digit-stack~1] 2つ入れると帯に「1 期限が近い」「2 mine」が出て、両方に当たる行だけ。
+    // [utest -> req~condition.digit-stack~2] 2つ入れると帯に「1 期限が近い」「2 mine」が出て、両方に当たる行だけ。
     let (_t, mut a) = make("cond-stack", NOTES);
     let _g = with_conf(&mut a, CONF);
     ch(&mut a, '1');
@@ -84,7 +84,7 @@ fn test_condition_digit_stack_shows_items_and_narrows_both() {
 
 #[test]
 fn test_condition_digit_lifetime_keeps_across_views() {
-    // [utest -> req~condition.digit-lifetime~1] ビューを移っても数字のキーの条件は入れたまま。
+    // [utest -> req~condition.digit-lifetime~2] ビューを移っても数字のキーの条件は入れたまま。
     let tmp = Tmp::new("cond-views");
     for (n, t) in NOTES {
         tmp.write(n, t);
@@ -101,7 +101,7 @@ fn test_condition_digit_lifetime_keeps_across_views() {
 
 #[test]
 fn test_condition_digit_hints_in_help() {
-    // [utest -> req~condition.digit-hints~1] ヘルプに数字と見せる名前。条件の無い数字は出さない。
+    // [utest -> req~condition.digit-hints~2] ヘルプに数字と見せる名前。条件の無い数字は出さない。
     let (_t, mut a) = make("cond-help", NOTES);
     let _g = with_conf(&mut a, CONF);
     let help: Vec<String> = super::help::help_lines(&a, super::keymap::Mode::Table, 120)
@@ -167,7 +167,7 @@ fn test_condition_hide_always_respects_the_exception() {
 
 #[test]
 fn test_condition_hide_toggle_shows_and_hides_again() {
-    // [utest -> req~condition.hide-toggle~1] `9` で隠した行が出て帯が「far を出す」、もう一度で隠れる。
+    // [utest -> req~condition.hide-toggle~2] `9` で隠した行が出て帯が「far を出す」、もう一度で隠れる。
     let (_t, mut a) = make("cond-hide-key", NOTES);
     let conf = "[conditions.far]\nexpr = 'due > today() + \"30d\"'\nhide = true\nkey = 9\n";
     let _g = with_conf(&mut a, conf);
@@ -255,7 +255,7 @@ fn test_expr_filter_from_the_palette() {
 
 #[test]
 fn test_expr_filter_error_keeps_rows_and_text() {
-    // [utest -> req~navigation.expr-filter-error~1] 読めない式は行を変えず、理由を出し、入力の欄に式を残す。
+    // [utest -> req~navigation.expr-filter-error~2] 読めない式は行を変えず、理由を出し、入力の欄に式を残す。
     let (_t, mut a) = make("expr-filter-bad", NOTES);
     let _g = with_conf(&mut a, CONF);
     a.apply(Action::ExprFilter);
@@ -278,7 +278,7 @@ fn test_expr_filter_error_keeps_rows_and_text() {
 
 #[test]
 fn test_expr_filter_lifetime_chip_removal() {
-    // [utest -> req~navigation.expr-filter-lifetime~1] 帯の式の項目を外すと元の行。
+    // [utest -> req~navigation.expr-filter-lifetime~2] 帯の式の項目を外すと元の行。
     let (_t, mut a) = make("expr-filter-chip", NOTES);
     let _g = with_conf(&mut a, CONF);
     a.apply(Action::ExprFilter);

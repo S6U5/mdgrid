@@ -185,7 +185,7 @@ fn test_st_6_opening_a_made_ledger_changes_no_bytes_e2e() {
 
 #[test]
 fn test_st_2_tasks_starter_prefixes_new_notes_and_hides_the_prefix_e2e() {
-    // [stest -> req~starter.tasks-name-prefix~1] tasks から作った台帳は、新しいノートの名前を今日の8桁と `_` で始め、ノートの欄にはその頭を出さない。
+    // [stest -> req~starter.tasks-name-prefix~2] tasks から作った台帳は、新しいノートの名前を今日の8桁と `_` で始め、ノートの欄にはその頭を出さない。
     // 観点: 日本語と英語の変種の両方。頭の無い名前はそのまま出る。
     for (lang, word) in [
         ("ja_JP.UTF-8", "請求書を送る"),

@@ -839,7 +839,7 @@ fn test_tr_1_no_table_hint_head_row() {
 
 #[test]
 fn test_rel_7_no_table_hint_head_row() {
-    // [utest -> req~relations.map~1] 表で見出しの行を選んだまま `R` → 関係マップのメッセージ行に「見出しの行」の案内が出ない。
+    // [utest -> req~relations.map~2] 表で見出しの行を選んだまま `R` → 関係マップのメッセージ行に「見出しの行」の案内が出ない。
     let tmp = super::test_relations::workspace("rel7hinthead");
     let mut a = super::test_relations::boot_tasks(&tmp);
     group_by_status(&mut a);

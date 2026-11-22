@@ -98,7 +98,7 @@ fn apply(a: &mut App) {
 
 #[test]
 fn test_sr_44_workspace_and_table_overrides_at_start() {
-    // [utest -> req~screen.profile-scopes-order~1] config.toml の sumi、印の nord、印の表の項目の dracula → tasks は dracula、projects は nord。
+    // [utest -> req~screen.profile-scopes-order~2] config.toml の sumi、印の nord、印の表の項目の dracula → tasks は dracula、projects は nord。
     // views.toml の表の項目は印の表の項目より先(同じ範囲では画面が書いたもの)。
     let marker = "name = \"N\"\n[look]\ntheme = \"nord\"\n[[table]]\npath = \"tasks\"\n[table.look]\ntheme = \"dracula\"\n[[table]]\npath = \"projects\"\n";
     let tmp = tables("sr44start", Some(marker));
@@ -123,7 +123,7 @@ fn test_sr_44_workspace_and_table_overrides_at_start() {
 
 #[test]
 fn test_sr_43_save_to_this_table_shows_origin_and_reset() {
-    // [utest -> req~screen.look-section-save~1, req~screen.look-section-clear~1] 保存先「この表」でテーマ nord を反映 → views.toml の対象の [table.look]、横に「(この表)」、
+    // [utest -> req~screen.look-section-save~2, req~screen.look-section-clear~1] 保存先「この表」でテーマ nord を反映 → views.toml の対象の [table.look]、横に「(この表)」、
     // ほかの表と ui.toml は変わらない。「この範囲の上書きを外す」→ その表も既定。
     let tmp = tables("sr43table", None);
     let mut a = boot_at(&tmp, "tasks", "");
@@ -155,7 +155,7 @@ fn test_sr_43_save_to_this_table_shows_origin_and_reset() {
 
 #[test]
 fn test_sr_43_save_to_app_workspace() {
-    // [utest -> req~screen.look-section-save~1, req~screen.look-section-marker~1] workspaces.toml のワークスペースなら「このワークスペース」で [workspace.look] に書く。
+    // [utest -> req~screen.look-section-save~2, req~screen.look-section-marker~1] workspaces.toml のワークスペースなら「このワークスペース」で [workspace.look] に書く。
     let tmp = tables("sr43ws", None);
     std::fs::write(
         tmp.0.join("config/workspaces.toml"),
@@ -201,7 +201,7 @@ fn test_sr_43_marker_workspace_is_not_written() {
 
 #[test]
 fn test_sr_43_save_to_this_view() {
-    // [utest -> req~screen.look-section-save~1] 保存先「このビュー」は、ビューの設定に残し、開き直しても効く。
+    // [utest -> req~screen.look-section-save~2] 保存先「このビュー」は、ビューの設定に残し、開き直しても効く。
     let tmp = tables("sr43view", None);
     let mut a = boot_at(&tmp, "tasks", "");
     choose(&mut a, 0, "このビュー");

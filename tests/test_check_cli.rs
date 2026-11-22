@@ -100,7 +100,7 @@ fn test_cli_23_reports_type_and_required_problems() {
 
 #[test]
 fn test_cli_23_no_problems_prints_nothing_and_exits_0() {
-    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~1] 直したあと → 標準出力に何も出さず、終了コード 0。
+    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~2] 直したあと → 標準出力に何も出さず、終了コード 0。
     let root = vault(
         "clean",
         &[("a.md", A_OK), ("b.md", B_OK)],

@@ -128,7 +128,7 @@ fn test_ce_26_cleared_filter_value_is_not_written() {
 
 #[test]
 fn test_ce_25_palette_after_key_removed() {
-    // [utest -> req~cell-edit.new-note-start-keys~1, req~screen.palette-fuzzy~1] `a` を外しても、パレットの「新しいノート」から始められる。
+    // [utest -> req~cell-edit.new-note-start-keys~1, req~screen.palette-fuzzy~2] `a` を外しても、パレットの「新しいノート」から始められる。
     let tmp = vault("nnm_pal");
     let mut a = boot(&tmp, config("[keys.table]\n\"a\" = \"none\"\n"));
     ch(&mut a, 'a');
@@ -150,7 +150,7 @@ fn test_ce_25_palette_after_key_removed() {
 
 #[test]
 fn test_ce_26_shift_tab_goes_back_to_name() {
-    // [utest -> req~cell-edit.new-note-form-move~1] 聞く項目で Shift+Tab → 名前の欄に戻る(打った名前のまま)。直して進めると、その名前で作る。
+    // [utest -> req~cell-edit.new-note-form-move~2] 聞く項目で Shift+Tab → 名前の欄に戻る(打った名前のまま)。直して進めると、その名前で作る。
     let tmp = vault("nnm_back");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"priority\"]\n"));
     ch(&mut a, 'a');
@@ -175,7 +175,7 @@ fn test_ce_26_shift_tab_goes_back_to_name() {
 
 #[test]
 fn test_ce_25_bands_show_new_note_keys() {
-    // [utest -> req~cell-edit.new-note-folder-pick~1, req~screen.layout-order~1] 下の帯は新しいノートの入力のキー(次へ・やめる)。メッセージ行にセルの案内は出さない。
+    // [utest -> req~cell-edit.new-note-folder-pick~1, req~screen.layout-order~2] 下の帯は新しいノートの入力のキー(次へ・やめる)。メッセージ行にセルの案内は出さない。
     // チェックの項目の案内に「↑↓ でリスト」は出さない。
     let tmp = vault("nnm_bands");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"done\"]\n"));

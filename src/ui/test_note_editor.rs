@@ -53,7 +53,7 @@ fn test_ce_33_editor_mode_creates_and_opens() {
     assert!(a.wants_editor());
 }
 
-// [utest -> req~cell-edit.new-note-mode-select~1, req~cell-edit.new-note-mode-editor-open~1, req~cell-edit.new-note-mode-form-ctrl-e~1]
+// [utest -> req~cell-edit.new-note-mode-select~2, req~cell-edit.new-note-mode-editor-open~1, req~cell-edit.new-note-mode-form-ctrl-e~1]
 #[test]
 fn test_ce_33_form_ctrl_e_creates_and_opens() {
     let tmp = Tmp::new("ce33ctrle");
@@ -73,7 +73,7 @@ fn test_ce_33_form_ctrl_e_creates_and_opens() {
     assert!(!b.wants_editor());
 }
 
-// [utest -> req~cell-edit.new-note-mode-select~1]
+// [utest -> req~cell-edit.new-note-mode-select~2]
 #[test]
 fn test_ce_33_bad_mode_warns_and_uses_form() {
     let (c, warnings) = mdgrid::config::parse("[new_note]\nmode = \"vim\"\n").unwrap();

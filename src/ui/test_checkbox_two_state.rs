@@ -30,7 +30,7 @@ fn toggle(a: &mut App) {
     assert_eq!(a.mode, Mode::Table);
 }
 
-// [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1]
+// [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2]
 #[test]
 fn test_ce_4_two_state_false_and_true() {
     let (_t, mut a) = make("ce4two", NOTES);

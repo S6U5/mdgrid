@@ -129,7 +129,7 @@ fn test_ce_35_menu_lists_types_and_writes_table_scope() {
 
 #[test]
 fn test_ce_35_auto_returns_to_inference() {
-    // [utest -> req~cell-edit.type-config-auto~1] 「自動」を選ぶ → 推定の型に戻り、views.toml から due が消える。
+    // [utest -> req~cell-edit.type-config-auto~2] 「自動」を選ぶ → 推定の型に戻り、views.toml から due が消える。
     let (t, mut a) = boot("ce35_auto", "", ColorMode::None);
     open_menu(&mut a);
     choose(&mut a, "数");
@@ -141,7 +141,7 @@ fn test_ce_35_auto_returns_to_inference() {
 
 #[test]
 fn test_ce_35_header_mark_click_opens_menu() {
-    // [utest -> req~cell-edit.type-config-dialog~1, req~cell-edit.type-config-dialog-write~1, req~screen.rich-cells-parts~1] 色を使う表示の見出しの型の印(日付の ◷)をクリック → 型の窓。見出しの名前のクリックは
+    // [utest -> req~cell-edit.type-config-dialog~1, req~cell-edit.type-config-dialog-write~1, req~screen.rich-cells-parts~2] 色を使う表示の見出しの型の印(日付の ◷)をクリック → 型の窓。見出しの名前のクリックは
     // 今までどおり並べ替え(NV-3)。
     let (_t, mut a) = boot("ce35_click", "[look.style]\nicons = true\n", ColorMode::Rgb);
     let s = screen(&a);

@@ -146,7 +146,7 @@ fn test_condition_hide_everywhere_in_print() {
 
 #[test]
 fn test_condition_show_hidden_cli() {
-    // [stest -> req~condition.show-hidden-cli~1] --show-hidden で隠す条件を当てず、--print などが無ければ理由と 2。
+    // [stest -> req~condition.show-hidden-cli~2] --show-hidden で隠す条件を当てず、--print などが無ければ理由と 2。
     let h = home("cond-show-hidden", CONF);
     let o = run(
         h.path(),
@@ -161,7 +161,7 @@ fn test_condition_show_hidden_cli() {
 
 #[test]
 fn test_condition_count_prints_only_the_number() {
-    // [stest -> req~condition.count~1] 当たる行の数だけの1行と終了コード 0。当たらなければ 0。
+    // [stest -> req~condition.count~2] 当たる行の数だけの1行と終了コード 0。当たらなければ 0。
     let h = home("cond-count", CONF);
     let o = run(
         h.path(),
@@ -184,7 +184,7 @@ fn test_condition_count_prints_only_the_number() {
 
 #[test]
 fn test_condition_count_with_view() {
-    // [stest -> req~condition.count~1] --view を添えると、そのビューの絞り込みのあとで数える。
+    // [stest -> req~condition.count~2] --view を添えると、そのビューの絞り込みのあとで数える。
     let h = home("cond-count-view", CONF);
     let base = "views:\n  - type: table\n    name: 進行中\n    filters: 'status == \"todo\"'\n";
     std::fs::write(h.path().join("notes/tasks.base"), base).unwrap();
@@ -199,7 +199,7 @@ fn test_condition_count_with_view() {
 
 #[test]
 fn test_condition_count_like_print() {
-    // [stest -> req~condition.count-like-print~1] 読めない表・--print と一緒は理由1行と 2。
+    // [stest -> req~condition.count-like-print~2] 読めない表・--print と一緒は理由1行と 2。
     let h = home("cond-count-like", CONF);
     let o = run(h.path(), &["missing", "--count"]);
     assert_eq!(o.status.code(), Some(2));
@@ -237,7 +237,7 @@ mod screen {
 
     #[test]
     fn test_condition_digit_keys_on_screen() {
-        // [stest -> req~condition.digit-keys~1] `1` で soon の行だけ、もう一度で戻る。
+        // [stest -> req~condition.digit-keys~2] `1` で soon の行だけ、もう一度で戻る。
         let h = home("cond-digit-screen", CONF);
         let mut t = spawn(&h);
         press_until(&mut t, "1", |s| s.contains("1 期限が近い"));
@@ -254,7 +254,7 @@ mod screen {
 
     #[test]
     fn test_condition_hide_always_on_screen() {
-        // [stest -> req~condition.hide-always~1] far の行は初めから出ず、帯に far と隠した数。
+        // [stest -> req~condition.hide-always~2] far の行は初めから出ず、帯に far と隠した数。
         let h = home("cond-hide-screen", CONF);
         let t = spawn(&h);
         t.wait_until("隠す帯", |s| s.contains("far を隠す 1"));

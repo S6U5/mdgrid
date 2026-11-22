@@ -101,7 +101,7 @@ mod screen {
 
     #[test]
     fn test_across_option_hidden_without_setting() {
-        // [stest -> req~navigation.across-option~1] 設定に [search] が無い → パレットに出ない。
+        // [stest -> req~navigation.across-option~2] 設定に [search] が無い → パレットに出ない。
         let h = home("across-off", "");
         let mut t = Tui::spawn(&["ws/tasks"], h.path(), &[]);
         t.wait_for("見積もりを出す");
@@ -117,7 +117,7 @@ mod screen {
 
     #[test]
     fn test_across_results_on_screen() {
-        // [stest -> req~navigation.across-results~1] 「見積もり」で Enter → 「tasks」の下に2行、「projects」の下に1行(表の並びは範囲の順)。
+        // [stest -> req~navigation.across-results~2] 「見積もり」で Enter → 「tasks」の下に2行、「projects」の下に1行(表の並びは範囲の順)。
         let h = home("across-results", ON);
         let mut t = Tui::spawn(&["ws/tasks"], h.path(), &[]);
         search(&mut t);
@@ -164,7 +164,7 @@ mod screen {
 
     #[test]
     fn test_across_esc_on_screen() {
-        // [stest -> req~navigation.across-progress~1] 結果を出したまま Esc → 元の表の画面のまま(検索の語も入らない)。
+        // [stest -> req~navigation.across-progress~2] 結果を出したまま Esc → 元の表の画面のまま(検索の語も入らない)。
         let h = home("across-esc", ON);
         let mut t = Tui::spawn(&["ws/tasks"], h.path(), &[]);
         search(&mut t);

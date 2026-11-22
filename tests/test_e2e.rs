@@ -133,7 +133,7 @@ fn test_sr_8_e2e_config_editor_with_args_gets_note_path_as_one_arg() {
 
 #[test]
 fn test_sr_8_e2e_visual_before_editor_without_config() {
-    // [stest -> req~screen.editor-choice~1] 設定が無く VISUAL と EDITOR が両方ある → VISUAL。
+    // [stest -> req~screen.editor-choice~2] 設定が無く VISUAL と EDITOR が両方ある → VISUAL。
     let env = Env::new("sr8-visual");
     let vis = env.fake_editor("visual-editor", None);
     let edi = env.fake_editor("editor-editor", None);
@@ -149,7 +149,7 @@ fn test_sr_8_e2e_visual_before_editor_without_config() {
 
 #[test]
 fn test_sr_8_e2e_config_editor_before_visual_and_editor() {
-    // [stest -> req~screen.editor-choice~1, req~screen.editor-fallback~1] 既定の置き場の設定に editor があれば、VISUAL・EDITOR より先。
+    // [stest -> req~screen.editor-choice~2, req~screen.editor-fallback~1] 既定の置き場の設定に editor があれば、VISUAL・EDITOR より先。
     let env = Env::new("sr8-config");
     let cfg_ed = env.fake_editor("config-editor", None);
     let vis = env.fake_editor("visual-editor", None);
@@ -205,7 +205,7 @@ fn test_wb_3_e2e_add_frontmatter_false_makes_cell_readonly_with_reason() {
 
 #[test]
 fn test_wb_3_e2e_default_writes_and_adds_frontmatter_on_save() {
-    // [stest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] 既定(設定なし)ではフロントマターの無いノートのセルに書け、保存で先頭に足される。
+    // [stest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1] 既定(設定なし)ではフロントマターの無いノートのセルに書け、保存で先頭に足される。
     let env = Env::new("wb3-default");
     let mut t = open(&env, &[], &[]);
     go_row(&mut t, 2);

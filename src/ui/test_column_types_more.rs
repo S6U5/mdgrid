@@ -54,7 +54,7 @@ fn test_ce_35_input_follows_set_type() {
 
 #[test]
 fn test_ce_35_auto_undoes_wider_type() {
-    // [utest -> req~cell-edit.type-config-auto~1] 全体の設定で due = "number" のとき、型の窓で「自動」→ 表に due = "auto" を書き、推定(日付)に戻る。
+    // [utest -> req~cell-edit.type-config-auto~2] 全体の設定で due = "number" のとき、型の窓で「自動」→ 表に due = "auto" を書き、推定(日付)に戻る。
     let (t, mut a) = boot("ce35m_auto", "[types]\ndue = \"number\"\n", false);
     col(&mut a, "due");
     assert_eq!(a.kind_of("due"), Kind::Number);
@@ -81,7 +81,7 @@ fn test_ce_35_palette_in_readonly() {
 
 #[test]
 fn test_ce_35_set_type_not_chips() {
-    // [utest -> req~cell-edit.type-config-types~1, req~cell-edit.type-config-auto~1, req~cell-edit.type-config-unknown~1, req~screen.rich-cells-value-color~1, req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] 札になる列(st)を number にすると札にしない。
+    // [utest -> req~cell-edit.type-config-types~1, req~cell-edit.type-config-auto~2, req~cell-edit.type-config-unknown~1, req~screen.rich-cells-value-color~1, req~screen.rich-cells-per-kind~2, req~screen.rich-cells-per-column~2] 札になる列(st)を number にすると札にしない。
     let (_t, mut a) = boot("ce35m_chip", "", false);
     assert!(a.is_select("st"), "前提: st は札の列");
     a.set_column_type("st", Some(Kind::Number));

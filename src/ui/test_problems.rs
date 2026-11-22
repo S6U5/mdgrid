@@ -107,7 +107,7 @@ fn line_with<'s>(s: &'s str, word: &str) -> &'s str {
 
 #[test]
 fn test_cv_9_rule_violation_marked() {
-    // [utest -> req~cell-view.problems-mark~1, req~cell-view.problems-reasons~1] values に無い値(wip)と、型と合わない値(someday)のセルに `!`。合う値(todo・done・日付)には付かない。
+    // [utest -> req~cell-view.problems-mark~1, req~cell-view.problems-reasons~2] values に無い値(wip)と、型と合わない値(someday)のセルに `!`。合う値(todo・done・日付)には付かない。
     let (_t, a) = boot("cv9_mark", NOTES, RULES, false);
     let s = screen(&a);
     assert!(s.contains("!wip"), "{s}");
@@ -167,7 +167,7 @@ fn test_nv_30_prev_problem() {
 
 #[test]
 fn test_nv_30_problem_count_in_bottom_band() {
-    // [utest -> req~navigation.problem-jump-count~1, req~navigation.problem-jump-filter~1] 下の帯に問題の数「問題 3」。
+    // [utest -> req~navigation.problem-jump-count~2, req~navigation.problem-jump-filter~1] 下の帯に問題の数「問題 3」。
     let (_t, a) = boot("nv30_count", NOTES, RULES, false);
     let s = screen(&a);
     assert!(s.contains("問題 3"), "{s}");
@@ -175,7 +175,7 @@ fn test_nv_30_problem_count_in_bottom_band() {
 
 #[test]
 fn test_nv_30_no_problems() {
-    // [utest -> req~navigation.problem-jump-none~1, req~navigation.problem-jump-count~1] 問題の無い表 → 帯に問題の数が出ず、`!` で「問題は無い」を出して動かない。
+    // [utest -> req~navigation.problem-jump-none~1, req~navigation.problem-jump-count~2] 問題の無い表 → 帯に問題の数が出ず、`!` で「問題は無い」を出して動かない。
     let notes = &[NOTES[0], NOTES[4]];
     let (_t, mut a) = boot("nv30_none", notes, RULES, false);
     assert!(!screen(&a).contains("問題 "), "{}", screen(&a));
@@ -187,7 +187,7 @@ fn test_nv_30_no_problems() {
 
 #[test]
 fn test_nv_30_problems_only_toggle() {
-    // [utest -> req~navigation.problem-jump-filter-off~1, req~navigation.problem-jump-filter-shown~2] パレットの problems_only → 問題のある行(b・c・d)だけ、ヘッダーに「問題のある行だけ」。
+    // [utest -> req~navigation.problem-jump-filter-off~1, req~navigation.problem-jump-filter-shown~3] パレットの problems_only → 問題のある行(b・c・d)だけ、ヘッダーに「問題のある行だけ」。
     // もう一度 → 元の5行に戻る。
     let (_t, mut a) = boot("nv30_only", NOTES, RULES, false);
     assert_eq!(a.rows.len(), 5);
@@ -204,7 +204,7 @@ fn test_nv_30_problems_only_toggle() {
 
 #[test]
 fn test_nv_30_problems_only_esc_clears() {
-    // [utest -> req~navigation.problem-jump-filter-shown~2] 絞っている間に Esc → 外れて元の行に戻る。
+    // [utest -> req~navigation.problem-jump-filter-shown~3] 絞っている間に Esc → 外れて元の行に戻る。
     let (_t, mut a) = boot("nv30_esc", NOTES, RULES, false);
     palette(&mut a, "problems_only");
     assert_eq!(a.rows.len(), 3);
@@ -269,7 +269,7 @@ fn test_ce_36_values_listed_as_candidates() {
 
 #[test]
 fn test_nv_30_folded_group_not_counted_or_jumped() {
-    // [utest -> req~navigation.problem-jump-reason~1, req~navigation.problem-jump-count~1, req~navigation.problem-jump-filter~1] まとまりを畳むと、その中の問題は下の帯の数にも跳ぶ先にも入れない(数と跳べる先をそろえる)。
+    // [utest -> req~navigation.problem-jump-reason~1, req~navigation.problem-jump-count~2, req~navigation.problem-jump-filter~1] まとまりを畳むと、その中の問題は下の帯の数にも跳ぶ先にも入れない(数と跳べる先をそろえる)。
     // status でまとめ、b(due が日付でない)のある todo のまとまりを畳む → 数は 2、`!` は b に止まらない。
     let (_t, mut a) = boot("nv30_fold", NOTES, RULES, false);
     a.settings.group = mdgrid::settings::Group::By {

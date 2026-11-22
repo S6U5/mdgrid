@@ -20,7 +20,7 @@ fn home(tag: &str, look: &str) -> TempDir {
 
 #[test]
 fn test_sr_43_look_toml_applies_at_start() {
-    // [stest -> req~screen.look-section-apply~1, req~screen.look-section-save~1, req~screen.look-section-preset~1] look.toml の preset = "slate" → リストが #red の形。
+    // [stest -> req~screen.look-section-apply~2, req~screen.look-section-save~2, req~screen.look-section-preset~1] look.toml の preset = "slate" → リストが #red の形。
     let h = home("look-slate", "preset = \"slate\"\n");
     let mut t = Tui::spawn(&["vault"], h.path(), &[("COLORTERM", "truecolor")]);
     t.wait_for("#red");
@@ -30,7 +30,7 @@ fn test_sr_43_look_toml_applies_at_start() {
 
 #[test]
 fn test_sr_43_broken_look_toml_warns() {
-    // [stest -> req~screen.look-section-save~1] 壊れた look.toml → 警告して config.toml のとおりに起動(リストは既定の組の形)。
+    // [stest -> req~screen.look-section-save~2] 壊れた look.toml → 警告して config.toml のとおりに起動(リストは既定の組の形)。
     let h = home("look-broken", "preset = \n");
     let mut t = Tui::spawn(&["vault"], h.path(), &[("COLORTERM", "truecolor")]);
     t.wait_for("look.toml が読めない");

@@ -432,7 +432,7 @@ fn test_kb_3_click_after_resize_hits_the_drawn_lane() {
 
 #[test]
 fn test_kb_3_enter_on_empty_lane_stays_with_reason() {
-    // [utest -> req~kanban.keys-move~1, req~kanban.keys-enter~1, req~kanban.keys-wheel~1] #2: 札の無いレーン(waiting)で Enter → 表で選べる行が無いので、カンバンのまま理由1行。
+    // [utest -> req~kanban.keys-move~1, req~kanban.keys-enter~1, req~kanban.keys-wheel~2] #2: 札の無いレーン(waiting)で Enter → 表で選べる行が無いので、カンバンのまま理由1行。
     let (_t, mut a) = boot("kbfix2e", NOTES, RULES, KANBAN);
     open(&mut a);
     ch(&mut a, 'l');
@@ -995,7 +995,7 @@ fn test_tr_2_empty_ledger_does_not_warn_and_tree_opens_after_adding_note() {
 
 #[test]
 fn test_sr_22_screen_menu_doc_names_gantt_and_kanban_keys() {
-    // [utest -> req~screen.keys-docs-files~1, req~screen.keys-docs-by-mode~1] #7: キーの文書(docs/keys.md・keys.ja.md)の `screen_menu` の節に、ガントの `C` とカンバンの `B` がある。
+    // [utest -> req~screen.keys-docs-files~2, req~screen.keys-docs-by-mode~1] #7: キーの文書(docs/keys.md・keys.ja.md)の `screen_menu` の節に、ガントの `C` とカンバンの `B` がある。
     for file in ["docs/keys.md", "docs/keys.ja.md"] {
         let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(file);
         let text = std::fs::read_to_string(&p).unwrap();

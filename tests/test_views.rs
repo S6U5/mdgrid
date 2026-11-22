@@ -371,7 +371,7 @@ fn toml_str(s: &str) -> String {
 
 #[test]
 fn test_bv_20_hand_written_views_toml_is_read() {
-    // [utest -> req~base-view.views-toml-layout~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1, req~base-view.own-views-beyond-base~1] 設計の形で手で書いた views.toml が読める。settings を省いた・空のビューは既定の設定。
+    // [utest -> req~base-view.views-toml-layout~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~2, req~base-view.own-views-beyond-base~1] 設計の形で手で書いた views.toml が読める。settings を省いた・空のビューは既定の設定。
     let t = TempDir::new("handwritten");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -431,7 +431,7 @@ path = {o}
 
 #[test]
 fn test_bv_20_unknown_key_warns_but_views_load() {
-    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] 知らない項目 `color = 1` → 警告の文にその名前が出て、ビューは読める。
+    // [utest -> req~base-view.views-toml-unknown-items~1, req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] 知らない項目 `color = 1` → 警告の文にその名前が出て、ビューは読める。
     let t = TempDir::new("unknown");
     let conf = t.mkdir("config");
     let notes = t.mkdir("notes");
@@ -481,7 +481,7 @@ fn test_bv_20_broken_toml_warns_and_returns_no_views() {
 
 #[test]
 fn test_bv_20_missing_file_is_empty_without_warning() {
-    // [utest -> req~base-view.views-toml-layout~1, req~cli.config-file-location~1, req~cli.config-file-warning-form~1] views.toml が無い(置き場のフォルダも無い)→ 空で警告なし。
+    // [utest -> req~base-view.views-toml-layout~1, req~cli.config-file-location~1, req~cli.config-file-warning-form~2] views.toml が無い(置き場のフォルダも無い)→ 空で警告なし。
     let t = TempDir::new("missing");
     let notes = t.mkdir("notes");
     let conf = t.path().join("no-such-config");

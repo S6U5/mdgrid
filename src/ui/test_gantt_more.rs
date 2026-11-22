@@ -354,7 +354,7 @@ fn test_ga_3_z_keeps_the_selected_row() {
 
 #[test]
 fn test_ga_3_z_keeps_the_table_row_by_key() {
-    // [utest -> req~gantt.tree-wbs-order~1] 表で delta(最後の行)を選んでからガントで alpha を畳んで Esc → 表の行は delta のまま(添字でなく鍵で保つ)。
+    // [utest -> req~gantt.tree-wbs-order~2] 表で delta(最後の行)を選んでからガントで alpha を畳んで Esc → 表の行は delta のまま(添字でなく鍵で保つ)。
     // 表で gamma(alpha の子)を選んでからガントで alpha を畳んで Esc → 表の行は畳んだ親の alpha。
     let (_t, mut a) = boot("ga3zrow", TREE_NOTES, GANTT);
     tree_on(&mut a, None);
@@ -412,7 +412,7 @@ fn test_ga_1_missing_column_warning_names_the_key() {
 
 #[test]
 fn test_ga_7_title_shows_dash_for_missing_column() {
-    // [utest -> req~gantt.screen-config~1] 推定で終わりの列だけ → 題は「- → due」。
+    // [utest -> req~gantt.screen-config~2] 推定で終わりの列だけ → 題は「- → due」。
     let list = [("a.md", "---\ndue: 2026-10-03\n---\n")];
     let (_t, mut a) = boot("ga7dash", &list, "");
     ch(&mut a, 'C');

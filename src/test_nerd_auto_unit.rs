@@ -23,7 +23,7 @@ fn test_sr_36_nerd_auto() {
 
 #[test]
 fn test_sr_36_nerd_font_setting() {
-    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-nerd-font~1, req~screen.style-parts-unknown~1] 既定は "auto"。true・false は auto を外す。ほかの値は警告して既定(auto)のまま。
+    // [utest -> req~screen.style-parts-choose~2, req~screen.style-parts-nerd-font~1, req~screen.style-parts-unknown~1] 既定は "auto"。true・false は auto を外す。ほかの値は警告して既定(auto)のまま。
     use crate::config::NerdFont;
     let nerd = |text: &str| {
         let (c, w) = crate::config::parse(text).unwrap();

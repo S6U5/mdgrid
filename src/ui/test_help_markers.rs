@@ -16,7 +16,7 @@ fn help_end(name: &str) -> String {
     screen(&a)
 }
 
-// [utest -> req~screen.help~1]
+// [utest -> req~screen.help~2]
 #[test]
 fn test_sr_5_markers_section_at_end_ja() {
     let s = help_end("sr5marks_ja");
@@ -39,7 +39,7 @@ fn test_sr_5_markers_section_at_end_ja() {
     assert!(last.contains('~'), "最後は ~ の行: {last:?}\n{s}");
 }
 
-// [utest -> req~screen.help~1]
+// [utest -> req~screen.help~2]
 #[test]
 fn test_sr_5_markers_section_at_end_en() {
     let _g = scoped(Lang::En);

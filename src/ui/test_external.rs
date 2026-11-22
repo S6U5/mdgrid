@@ -149,7 +149,7 @@ fn test_sr_8_editor_reload() {
 #[cfg(unix)]
 #[test]
 fn test_sr_8_editor_with_pending_marks_external() {
-    // [utest -> req~screen.editor-open~1, req~screen.editor-choice~1, req~write-back.external-keep-pending~1, req~write-back.external-mark~1, req~write-back.external-save-choice~1] ためた変更のある行をエディタで変えたら、外の変更と同じに「外で変更」の印。
+    // [utest -> req~screen.editor-open~1, req~screen.editor-choice~2, req~write-back.external-keep-pending~1, req~write-back.external-mark~1, req~write-back.external-save-choice~1] ためた変更のある行をエディタで変えたら、外の変更と同じに「外で変更」の印。
     let _lock = editor_lock();
     let (t, mut a) = make("sr8b", &[("a.md", "---\nstatus: 前\ntitle: t\n---\n")]);
     // エディタは title のキーを消すので、空にするためた値は WB-17・SR-18 で外れる。status を空にしてためる。
@@ -322,7 +322,7 @@ fn test_out_1_one_side_fails_still_copies() {
 
 #[test]
 fn test_sr_18_ctrl_c_copies_while_loading() {
-    // [utest -> req~screen.default-keys~1, req~output.copy-one-side-fails~1] 読み込み中に Ctrl+C → コピーになり、読み込みは止まらない。
+    // [utest -> req~screen.default-keys~2, req~output.copy-one-side-fails~1] 読み込み中に Ctrl+C → コピーになり、読み込みは止まらない。
     let tmp = Tmp::new("sr18c");
     for i in 0..50 {
         tmp.write(&format!("n{i:02}.md"), &format!("---\nn: {i}\n---\n"));

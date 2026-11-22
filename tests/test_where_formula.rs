@@ -105,7 +105,7 @@ fn titles(o: &Output) -> Vec<String> {
 
 #[test]
 fn test_ws_10_where_formula_column() {
-    // [stest -> req~workspace.marker-where-match~1] `where = { "formula.期限" = ["期限切れ"] }` → 計算の列の値で絞る(期限が昨日の行だけ)。
+    // [stest -> req~workspace.marker-where-match~2] `where = { "formula.期限" = ["期限切れ"] }` → 計算の列の値で絞る(期限が昨日の行だけ)。
     let t = TempDir::new("where-formula");
     let root = t.path();
     sample(root);

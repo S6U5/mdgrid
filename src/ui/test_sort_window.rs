@@ -45,7 +45,7 @@ fn pick(a: &mut App, col: &str) {
 
 #[test]
 fn test_nv_24_sort_window() {
-    // [utest -> req~navigation.sort-window-close~1] ボタンで開く → 「+ 並べ替えを足す」→ due → すぐ due の昇順、ボタンに「↑ due」。
+    // [utest -> req~navigation.sort-window-close~2] ボタンで開く → 「+ 並べ替えを足す」→ due → すぐ due の昇順、ボタンに「↑ due」。
     // Enter で降順、d で外す。窓の外のクリックで閉じる。
     let (_t, mut a) = boot("nv24");
     assert!(screen(&a).contains("並べ替え"), "{}", screen(&a));
@@ -71,7 +71,7 @@ fn test_nv_24_sort_window() {
 
 #[test]
 fn test_nv_24_two_rules_and_order() {
-    // [utest -> req~navigation.sort-window-edit~1, req~navigation.sort-window-label~1] 決まりを2つ(prio・due)、K で順を入れ替える。ボタンは「↑ prio +1」。S のキーでも開く。
+    // [utest -> req~navigation.sort-window-edit~2, req~navigation.sort-window-label~2] 決まりを2つ(prio・due)、K で順を入れ替える。ボタンは「↑ prio +1」。S のキーでも開く。
     let (_t, mut a) = boot("nv24two");
     ch(&mut a, 'S');
     assert_eq!(a.mode, Mode::Sorts);

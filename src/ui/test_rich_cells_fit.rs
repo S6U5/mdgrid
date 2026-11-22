@@ -44,7 +44,7 @@ fn test_sr_35_chips_all_fit() {
 
 #[test]
 fn test_sr_35_first_chip_too_wide_is_cut() {
-    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1] 1つ目の札が入らなければ、その札を `…` で切って見せる。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-value-color~1] 1つ目の札が入らなければ、その札を `…` で切って見せる。
     let (_t, a) = app("sr35f_cut", "[documentation]", 8);
     let r = row_a(&a);
     assert!(r.contains("docu") && r.contains('…'), "{r}");

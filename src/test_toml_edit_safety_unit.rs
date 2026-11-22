@@ -26,7 +26,7 @@ fn t(name: &str, path: &str) -> WsTable {
 
 #[test]
 fn test_ws_1_header_with_comment_keeps_neighbour() {
-    // [utest -> req~workspace.app-side-file~1, req~workspace.app-side-bad-entry~1] `[[workspace]] # second` も見出し。a を消しても b は残る。a に足しても b に入らない。
+    // [utest -> req~workspace.app-side-file~2, req~workspace.app-side-bad-entry~1] `[[workspace]] # second` も見出し。a を消しても b は残る。a に足しても b に入らない。
     let d = tmp("hdr");
     let text = "[[workspace]]\nname = \"a\"\n[[workspace.table]]\npath = \"/p\"\n\n[[workspace]] # second\nname = \"b\"\n[[workspace.table]]\npath = \"/q\"\n";
     std::fs::write(d.join("workspaces.toml"), text).unwrap();
@@ -46,7 +46,7 @@ fn test_ws_1_header_with_comment_keeps_neighbour() {
 
 #[test]
 fn test_ws_1_trailing_table_and_inline_form_survive() {
-    // [utest -> req~workspace.app-side-file~1] 末尾の別の表([meta])は消さない。1行の形で書いたワークスペースも壊さない(読み直して違えば書き直す)。
+    // [utest -> req~workspace.app-side-file~2] 末尾の別の表([meta])は消さない。1行の形で書いたワークスペースも壊さない(読み直して違えば書き直す)。
     let d = tmp("tail");
     // パスは一時フォルダの下の絶対パス(Windows でも絶対)。TOML には引用して書く。
     let p = d.join("p");
@@ -102,7 +102,7 @@ fn test_cli_18_place_header_with_comment_keeps_neighbour() {
 
 #[test]
 fn test_ws_7_marker_paths_stay_inside() {
-    // [utest -> req~workspace.marker-form~1, req~workspace.marker-open-unknown~1] 印の表は根の中だけ。`../x` や根の外の絶対パスは警告して使わない。
+    // [utest -> req~workspace.marker-form~2, req~workspace.marker-open-unknown~1] 印の表は根の中だけ。`../x` や根の外の絶対パスは警告して使わない。
     let d = tmp("marker");
     std::fs::create_dir_all(d.join("root/tasks")).unwrap();
     std::fs::create_dir_all(d.join("root/.mdgrid")).unwrap();

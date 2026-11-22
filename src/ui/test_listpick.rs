@@ -69,7 +69,7 @@ fn space(a: &mut App) {
 
 #[test]
 fn test_ce_16_open_filter_and_add() {
-    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] tags のセルで Enter → 保管庫の中のタグの一覧。[utest -> req~cell-edit.list-candidates-order~1, req~cell-edit.list-candidates-match~1] 件数の多い順、同じ件数は文字の順、今の値に [x]。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] tags のセルで Enter → 保管庫の中のタグの一覧。[utest -> req~cell-edit.list-candidates-order~1, req~cell-edit.list-candidates-match~1] 件数の多い順、同じ件数は文字の順、今の値に [x]。
     let (_t, mut a) = make("ce16", TAGS);
     open_tags(&mut a, 2);
     assert_eq!(
@@ -156,7 +156,7 @@ fn test_ce_19_hash_and_no_duplicates() {
     assert_eq!(shown(&a), vec!["[x] 新規 0"]);
     press(&mut a, KeyCode::Tab);
     assert_eq!(pending(&a, 2, "tags"), list(&["会議", "新規"]));
-    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1] 打った文字は大文字小文字を区別しない部分一致。全角の文字は全角のまま入る(SR-17)。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1] 打った文字は大文字小文字を区別しない部分一致。全角の文字は全角のまま入る(SR-17)。
     let (_t2, mut b) = make(
         "ce19case",
         &[
@@ -192,7 +192,7 @@ fn test_ce_19_remove_all_writes_key() {
 
 #[test]
 fn test_ce_19_read_only_list_not_opened() {
-    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~1] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
+    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~2] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
     let (_t, mut a) = make(
         "ce19lock",
         &[
@@ -249,7 +249,7 @@ const BULK: &[(&str, &str)] = &[
 
 #[test]
 fn test_ce_17_bulk_add_and_remove() {
-    // [utest -> req~cell-edit.list-bulk~1] 3行を選び、tags に 会議 を足す → 3行とも足され、元のタグは残る。
+    // [utest -> req~cell-edit.list-bulk~2] 3行を選び、tags に 会議 を足す → 3行とも足され、元のタグは残る。
     let (t, mut a) = make("ce17", BULK);
     col_named(&mut a, "tags");
     for _ in 0..3 {
@@ -302,7 +302,7 @@ fn test_ce_17_bulk_add_and_remove() {
     ctrl(&mut a, 'z');
     assert_eq!(pending(&a, 0, "tags"), list(&["本", "秋", "会議"]));
     ctrl(&mut a, 'r');
-    // [utest -> req~cell-edit.list-layout~1] 保存の差分とファイル: フローは1行のまま、縦のリストは同じ字下げで1行増える。
+    // [utest -> req~cell-edit.list-layout~2] 保存の差分とファイル: フローは1行のまま、縦のリストは同じ字下げで1行増える。
     ctrl(&mut a, 's');
     assert_eq!(a.mode, Mode::Confirm);
     let s = screen(&a);
@@ -317,8 +317,8 @@ fn test_ce_17_bulk_add_and_remove() {
 
 #[test]
 fn test_ce_17_bulk_skips_read_only_rows() {
-    // [utest -> req~cell-edit.list-bulk~1, req~cell-edit.bulk-set-skip-read-only~1] 選んだ行のうち書けない行(読めないフロントマターのノート。WB-5)は飛ばし、数と理由を出す。
-    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(d.md)は飛ばさず、ためる変更になる。
+    // [utest -> req~cell-edit.list-bulk~2, req~cell-edit.bulk-set-skip-read-only~1] 選んだ行のうち書けない行(読めないフロントマターのノート。WB-5)は飛ばし、数と理由を出す。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(d.md)は飛ばさず、ためる変更になる。
     let (_t, mut a) = make(
         "ce17skip",
         &[
@@ -495,7 +495,7 @@ fn test_ce_16_tab_never_opens_line_input_on_list() {
 
 #[test]
 fn test_ce_17_bulk_when_current_row_cannot_open() {
-    // [utest -> req~cell-edit.list-bulk~1] (b) 一括で今の行が開けない(`tags: 2024` は文字列でない1つの値)→ 1行の入力は開かず、
+    // [utest -> req~cell-edit.list-bulk~2] (b) 一括で今の行が開けない(`tags: 2024` は文字列でない1つの値)→ 1行の入力は開かず、
     // リストの選択を開いて開けない行を飛ばす。
     let (_t, mut a) = typed_tags(
         "ce17cur",
@@ -526,7 +526,7 @@ fn test_ce_17_bulk_when_current_row_cannot_open() {
 
 #[test]
 fn test_ce_19_read_only_shapes_have_reasons() {
-    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~1] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
+    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~2] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
     let (_t, mut a) = typed_tags(
         "ce19shapes",
         &[
@@ -621,7 +621,7 @@ fn test_sr_3_commit_only_when_cell_drawn() {
 
 #[test]
 fn test_ce_17_bulk_enter_in_search_only_attaches() {
-    // [utest -> req~cell-edit.list-bulk~1, req~cell-edit.list-candidates-no-dup~1, req~cell-edit.list-candidates-unkeepable~1] 一括で、全部の行が持つ 会議 を打って Enter 2回 → 付けるだけなので何も変わらない。
+    // [utest -> req~cell-edit.list-bulk~2, req~cell-edit.list-candidates-no-dup~1, req~cell-edit.list-candidates-unkeepable~1] 一括で、全部の行が持つ 会議 を打って Enter 2回 → 付けるだけなので何も変わらない。
     let (_t, mut a) = make("ce17enter", TAGS);
     col_named(&mut a, "tags");
     for _ in 0..3 {

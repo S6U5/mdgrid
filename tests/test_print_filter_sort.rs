@@ -62,7 +62,7 @@ fn names(out: &Output) -> Vec<String> {
         .collect()
 }
 
-// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-folder~1]
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~2, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_folder_filter_and_sort() {
     let root = vault("folder");
@@ -82,7 +82,7 @@ fn test_cli_16_folder_filter_and_sort() {
     assert_eq!(names(&out), ["d.md", "c.md", "b.md"]);
 }
 
-// [stest -> req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-base-sort~1]
+// [stest -> req~cli.print-filter-sort-order~2, req~cli.print-filter-sort-base-sort~1]
 #[test]
 fn test_cli_16_sort_desc_and_several_keys() {
     let root = vault("desc");
@@ -102,7 +102,7 @@ fn test_cli_16_sort_desc_and_several_keys() {
     assert_eq!(names(&out), ["b.md", "d.md", "c.md", "a.md"]);
 }
 
-// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~1, req~cli.print-filter-sort-folder~1]
+// [stest -> req~cli.print-filter-sort-filter~1, req~cli.print-filter-sort-order~2, req~cli.print-filter-sort-folder~1]
 #[test]
 fn test_cli_16_several_filters_all_hold() {
     let root = vault("and");

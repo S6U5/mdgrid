@@ -15,7 +15,7 @@ fn dir(name: &str) -> PathBuf {
 
 #[test]
 fn test_nv_26_tab_prefs_round_trip_keeps_views() {
-    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-save~1, req~navigation.view-tabs-count~1] 書いて読むと同じ。同じ対象のビューと既定のビュー、ほかの対象はそのまま。
+    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-save~1, req~navigation.view-tabs-count~2] 書いて読むと同じ。同じ対象のビューと既定のビュー、ほかの対象はそのまま。
     let d = dir("rt");
     let t = d.join("notes");
     let other = d.join("other");

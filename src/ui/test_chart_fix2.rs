@@ -211,7 +211,7 @@ fn test_ch_5_line_overflowing_range_places_points_apart() {
 
 #[test]
 fn test_ch_8_unit_keys_on_too_wide_dates_do_not_say_not_split_by_date() {
-    // [utest -> req~chart.keys-unit~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~1] #14: 0001-01-01 と 9999-12-31 の日付の列で分けたグラフ(理由を出している)→ `-` と `+` の知らせが
+    // [utest -> req~chart.keys-unit~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~2] #14: 0001-01-01 と 9999-12-31 の日付の列で分けたグラフ(理由を出している)→ `-` と `+` の知らせが
     // 「日付の列で分けていないので、単位は変えない」(ChartNoUnit)にならない。グラフのまま。
     let notes = md(&[
         ("alpha", "status: todo\ndue: 0001-01-01"),

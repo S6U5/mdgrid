@@ -659,7 +659,7 @@ fn test_ch_1_array_brackets_switch_saved_charts() {
 
 #[test]
 fn test_ch_1_unknown_kind_warns_and_that_chart_is_not_shown() {
-    // [utest -> req~chart.config-invalid~1, req~chart.config-missing-column~1] kind = "pie" → 読み終えて警告1行(CLI-3 の形。場所 table[1].chart)で、そのグラフは出ない。
+    // [utest -> req~chart.config-invalid~1, req~chart.config-missing-column~2] kind = "pie" → 読み終えて警告1行(CLI-3 の形。場所 table[1].chart)で、そのグラフは出ない。
     // P は推定のグラフで開き、題に名前「円」は無い。
     let (_t, mut a) = boot(
         "ch1pie",
@@ -701,7 +701,7 @@ fn test_ch_1_array_keeps_good_charts_when_one_is_bad() {
 
 #[test]
 fn test_ch_1_missing_column_warns_once_after_loading() {
-    // [utest -> req~chart.config-missing-column~1] x = "none"(表に無い列)→ 読み終えて警告1行(CLI-3 の形。場所 table[1].chart と列の名前 none)。
+    // [utest -> req~chart.config-missing-column~2] x = "none"(表に無い列)→ 読み終えて警告1行(CLI-3 の形。場所 table[1].chart と列の名前 none)。
     // そのグラフは外れ、P は推定のグラフで開く(題に名前「無い列」は無い)。警告は1回だけ(開き直しても・
     // 変化の無い poll でも出し直さない)。
     let (_t, mut a) = boot(
@@ -736,7 +736,7 @@ fn press_back(a: &mut App) {
 
 #[test]
 fn test_ch_1_empty_table_does_not_warn_and_p_gives_reason() {
-    // [utest -> req~chart.config-missing-column~1] 行が1つも無い表で x = "none" → 列があるかを決めず、読み終えても警告しない(GA-1 と同じ)。
+    // [utest -> req~chart.config-missing-column~2] 行が1つも無い表で x = "none" → 列があるかを決めず、読み終えても警告しない(GA-1 と同じ)。
     // 画面の型のメニューに「グラフ」(キー P)が出て、P は開かずに理由1行。
     let (_t, mut a) = boot("ch1empty", &[], "", "chart = { x = \"none\" }");
     assert!(a.rows.is_empty(), "前提: 0件");
@@ -772,7 +772,7 @@ fn test_ch_2_infers_status_bar_and_title_says_so() {
 
 #[test]
 fn test_ch_2_infers_rule_column_without_status() {
-    // [utest -> req~chart.open-infer~1] 状態の名前の列が無い → 決まり(values)のある列(phase)を推定する。最初の列(title)ではない。
+    // [utest -> req~chart.open-infer~2] 状態の名前の列が無い → 決まり(values)のある列(phase)を推定する。最初の列(title)ではない。
     let notes = md(&[
         ("alpha", "title: a\nphase: plan"),
         ("beta", "title: b\nphase: build"),
@@ -797,7 +797,7 @@ fn test_ch_2_infers_rule_column_without_status() {
 
 #[test]
 fn test_ch_2_menu_offers_chart_with_p_and_opens_it() {
-    // [utest -> req~chart.open-screen~1, req~relations.screen-menu-open~1] 画面の型のメニューに「グラフ」(切り替えのキー P)が出て、選ぶとグラフが開く。P で表に戻る。
+    // [utest -> req~chart.open-screen~1, req~relations.screen-menu-open~2] 画面の型のメニューに「グラフ」(切り替えのキー P)が出て、選ぶとグラフが開く。P で表に戻る。
     let (_t, mut a) = boot("ch2menu", &status_notes(), "", "");
     let s = screen(&a);
     let (x, y) = s
@@ -852,7 +852,7 @@ fn test_ch_2_counts_only_view_rows() {
 
 #[test]
 fn test_ch_2_table_without_columns_gives_reason() {
-    // [utest -> req~chart.open-refuse~1] 列が1つも無い表(フロントマターの無いノートだけ)→ P は開かずに理由1行。メニューにも出ない。
+    // [utest -> req~chart.open-refuse~2] 列が1つも無い表(フロントマターの無いノートだけ)→ P は開かずに理由1行。メニューにも出ない。
     let notes = vec![
         ("alpha.md".to_string(), "# alpha\n本文\n".to_string()),
         ("beta.md".to_string(), "# beta\n".to_string()),
@@ -870,7 +870,7 @@ fn test_ch_2_table_without_columns_gives_reason() {
 
 #[test]
 fn test_ch_2_empty_view_gives_reason() {
-    // [utest -> req~chart.open-refuse~1] ビューの絞り込みで行が1つも無い(列はある)→ P は開かずに理由1行。
+    // [utest -> req~chart.open-refuse~2] ビューの絞り込みで行が1つも無い(列はある)→ P は開かずに理由1行。
     let (_t, mut a) = boot("ch2noview", &status_notes(), "", "");
     ch(&mut a, '\\');
     typing(&mut a, "zzzz");

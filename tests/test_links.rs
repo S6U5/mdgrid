@@ -183,7 +183,7 @@ fn test_bv_22_same_name_resolves_nearest_root() {
 
 #[test]
 fn test_bv_22_backlinks_and_has_link() {
-    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-backlinks~1, req~base-view.links-eval-this~1] file.backlinks はそのノートを指すノートのリスト、file.hasLink(x) は x を指すか(決定 links-backlinks)。
+    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-backlinks~1, req~base-view.links-eval-this~2] file.backlinks はそのノートを指すノートのリスト、file.hasLink(x) は x を指すか(決定 links-backlinks)。
     let d = TempDir::new("backlinks");
     d.write("a.md", "[[b]]\n");
     d.write("c.md", "---\nrel: \"[[b]]\"\n---\n");
@@ -221,7 +221,7 @@ fn test_bv_22_backlinks_and_has_link() {
 
 #[test]
 fn test_bv_22_links_contains_name() {
-    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-has-link~1, req~base-view.links-eval-this~1] file.links.contains("b") は a で真(b を指さないノートは偽)
+    // [stest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-has-link~1, req~base-view.links-eval-this~2] file.links.contains("b") は a で真(b を指さないノートは偽)
     let d = TempDir::new("contains");
     d.write("a.md", "[[b]]\n");
     d.write("b.md", "b\n");
@@ -269,7 +269,7 @@ views:
 
 #[test]
 fn test_bv_22_this_file_name_and_folder() {
-    // [stest -> req~base-view.links-eval-this~1] Projects.base を開いたときの this はその .base: this.file.name・this.file.folder
+    // [stest -> req~base-view.links-eval-this~2] Projects.base を開いたときの this はその .base: this.file.name・this.file.folder
     let d = TempDir::new("this");
     d.write("P/a.md", "a\n");
     d.write("other.md", "o\n");
@@ -281,7 +281,7 @@ fn test_bv_22_this_file_name_and_folder() {
 
 #[test]
 fn test_bv_22_in_folder_of_this() {
-    // [stest -> req~base-view.links-eval-this~1] file.inFolder(this.file.folder) → .base と同じフォルダ(とその下)のノートだけ
+    // [stest -> req~base-view.links-eval-this~2] file.inFolder(this.file.folder) → .base と同じフォルダ(とその下)のノートだけ
     let d = TempDir::new("infolder");
     d.write("P/a.md", "a\n");
     d.write("P/sub/b.md", "b\n");
@@ -293,7 +293,7 @@ fn test_bv_22_in_folder_of_this() {
 
 #[test]
 fn test_bv_22_links_contains_this_file() {
-    // [stest -> req~base-view.links-eval-this~1] file.links.contains(this.file) → .base を指すノートだけ(名前でもパスでも)
+    // [stest -> req~base-view.links-eval-this~2] file.links.contains(this.file) → .base を指すノートだけ(名前でもパスでも)
     let d = TempDir::new("contains-this");
     d.write("a.md", "[[Projects.base]] を見る\n");
     d.write("b.md", "[[P/Projects.base|一覧]]\n");
@@ -306,7 +306,7 @@ fn test_bv_22_links_contains_this_file() {
 
 #[test]
 fn test_bv_22_this_without_base_file_is_unsupported() {
-    // [stest -> req~base-view.links-eval-this~1, req~base-view.unsupported-filters~1] this の無いところ(`.base` のファイルを渡していない)では、this を使う絞り込みは開かず理由に this、
+    // [stest -> req~base-view.links-eval-this~2, req~base-view.unsupported-filters~1] this の無いところ(`.base` のファイルを渡していない)では、this を使う絞り込みは開かず理由に this、
     // this を使う formula の列は未対応
     use mdgrid::base;
     use mdgrid::source::markdown::Markdown;

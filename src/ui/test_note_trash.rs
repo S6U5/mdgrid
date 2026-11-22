@@ -245,7 +245,7 @@ fn test_delete_note_is_refused_on_a_csv_table() {
 
 #[test]
 fn test_undo_right_after_creating_a_note_moves_it_to_the_trash() {
-    // [utest -> req~cell-edit.new-note-undo~1] 「買い物」を作って `u` → `買い物.md` が元の場所に無く、ごみ箱に同じバイトであり、行が無くなる。
+    // [utest -> req~cell-edit.new-note-undo~2] 「買い物」を作って `u` → `買い物.md` が元の場所に無く、ごみ箱に同じバイトであり、行が無くなる。
     let (t, mut a) = notes("nn-undo");
     create(&mut a, "買い物");
     let made = std::fs::read(t.notes().join("買い物.md")).unwrap();
@@ -257,7 +257,7 @@ fn test_undo_right_after_creating_a_note_moves_it_to_the_trash() {
 
 #[test]
 fn test_undo_after_editing_the_new_note_reverts_only_the_edit() {
-    // [utest -> req~cell-edit.new-note-undo~1] 「買い物」を作って status を直してから `u` を1回 → status の直しだけが戻り、`買い物.md` は残る。
+    // [utest -> req~cell-edit.new-note-undo~2] 「買い物」を作って status を直してから `u` を1回 → status の直しだけが戻り、`買い物.md` は残る。
     let (t, mut a) = notes("nn-undo-edit");
     create(&mut a, "買い物");
     let row = a.cur_row().unwrap();
@@ -273,7 +273,7 @@ fn test_undo_after_editing_the_new_note_reverts_only_the_edit() {
 
 #[test]
 fn test_undo_of_creation_leaves_an_older_pending_change_alone() {
-    // [utest -> req~cell-edit.new-note-undo~1] 先に「メモ」の status を直してから「買い物」を作り、`u` を1回 → 「買い物」だけがごみ箱へ行き、ためた変更は1件のまま。
+    // [utest -> req~cell-edit.new-note-undo~2] 先に「メモ」の status を直してから「買い物」を作り、`u` を1回 → 「買い物」だけがごみ箱へ行き、ためた変更は1件のまま。
     let (t, mut a) = notes("nn-undo-order");
     select(&mut a, "メモ");
     let row = a.cur_row().unwrap();
@@ -317,7 +317,7 @@ fn test_redo_of_creation_is_dropped_after_a_new_edit() {
 
 #[test]
 fn test_undo_and_redo_of_a_deletion() {
-    // [utest -> req~cell-edit.delete-note-undo~1] 「メモ」を消して `u` → 同じバイトで戻って行が選ばれる。続けて Ctrl+R → 元の場所に無く、ごみ箱にある。
+    // [utest -> req~cell-edit.delete-note-undo~2] 「メモ」を消して `u` → 同じバイトで戻って行が選ばれる。続けて Ctrl+R → 元の場所に無く、ごみ箱にある。
     let (t, mut a) = notes("dn-undo");
     delete(&mut a, "メモ", "y");
     ch(&mut a, 'u');
@@ -337,7 +337,7 @@ fn test_undo_and_redo_of_a_deletion() {
 
 #[test]
 fn test_restore_from_the_trash_after_a_restart() {
-    // [utest -> req~cell-edit.trash-restore-list~1] `プロジェクト/メモ.md` を消して起動し直し、「ごみ箱から戻す」で選ぶ → 同じバイトで戻り、行が選ばれる。
+    // [utest -> req~cell-edit.trash-restore-list~2] `プロジェクト/メモ.md` を消して起動し直し、「ごみ箱から戻す」で選ぶ → 同じバイトで戻り、行が選ばれる。
     let t = Tmp::new("tr-list");
     std::fs::create_dir_all(t.notes().join("プロジェクト")).unwrap();
     t.write("a.md", "---\nstatus: doing\n---\n");
@@ -361,7 +361,7 @@ fn test_restore_from_the_trash_after_a_restart() {
 
 #[test]
 fn test_restore_with_an_empty_trash_says_so() {
-    // [utest -> req~cell-edit.trash-restore-list~1] ごみ箱が空のとき、一覧を出さず、空だと知らせる。
+    // [utest -> req~cell-edit.trash-restore-list~2] ごみ箱が空のとき、一覧を出さず、空だと知らせる。
     let (_t, mut a) = notes("tr-empty");
     a.apply(Action::RestoreNote);
     assert_eq!(a.mode, Mode::Table);
@@ -436,7 +436,7 @@ fn test_restore_is_hidden_when_readonly() {
 
 #[test]
 fn test_delete_note_shows_how_many_notes_link_to_it_and_keeps_the_links() {
-    // [utest -> req~cell-edit.delete-note-links~1] `[[メモ]]` を持つノートが2つあるとき、確かめに 2 個と出て、y のあとも2つのノートは同じバイトで、ためた変更は0件。
+    // [utest -> req~cell-edit.delete-note-links~2] `[[メモ]]` を持つノートが2つあるとき、確かめに 2 個と出て、y のあとも2つのノートは同じバイトで、ためた変更は0件。
     let a1 = "---\nproject: \"[[メモ]]\"\n---\n";
     let a2 = "---\nrelated:\n  - \"[[メモ|覚え書き]]\"\n---\n";
     let (t, mut a) = make(
@@ -471,7 +471,7 @@ fn test_delete_note_shows_how_many_notes_link_to_it_and_keeps_the_links() {
 
 #[test]
 fn test_delete_note_shows_no_count_when_nothing_links_to_it() {
-    // [utest -> req~cell-edit.delete-note-links~1] 指すノートが無いとき、確かめに数を出さない。
+    // [utest -> req~cell-edit.delete-note-links~2] 指すノートが無いとき、確かめに数を出さない。
     let (_t, mut a) = notes("dn-nolinks");
     select(&mut a, "メモ");
     a.apply(Action::DeleteNote);

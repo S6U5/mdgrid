@@ -312,7 +312,7 @@ fn toggle_display(a: &mut App, label: &str) -> bool {
 
 #[test]
 fn test_sr_20_row_numbers_from_config() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-config-keys~1] 設定 `[display] row_numbers = true` → 各行の左に 1・2・3…。既定(設定なし)では出さない。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-config-keys~2] 設定 `[display] row_numbers = true` → 各行の左に 1・2・3…。既定(設定なし)では出さない。
     let (_t, a) = folder_with("sr20num0", "", ColorMode::None);
     assert_unnumbered(&a);
     let (_t, mut a) = folder_with(
@@ -342,7 +342,7 @@ fn test_sr_20_row_numbers_from_config() {
 
 #[test]
 fn test_sr_20_row_numbers_follow_sort_and_filter() {
-    // [utest -> req~screen.display-options-config~1] 番号は今の表示の並び(並べ替え・絞り込みのあと)の 1 始まり。
+    // [utest -> req~screen.display-options-config~2] 番号は今の表示の並び(並べ替え・絞り込みのあと)の 1 始まり。
     let (_t, mut a) = folder_with(
         "sr20sort",
         "[display]\nrow_numbers = true\n",
@@ -367,7 +367,7 @@ fn test_sr_20_row_numbers_follow_sort_and_filter() {
 
 #[test]
 fn test_sr_20_row_numbers_skip_group_headings() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-zebra-no-color~1] グループの見出しの行には番号を付けない。ノートの行の番号は続く。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-zebra-no-color~1] グループの見出しの行には番号を付けない。ノートの行の番号は続く。
     let tmp = vault("sr20group");
     let a = boot_base(
         &tmp,
@@ -384,7 +384,7 @@ fn test_sr_20_row_numbers_skip_group_headings() {
 
 #[test]
 fn test_sr_20_settings_screen_has_display_section() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-per-view~1, req~navigation.view-settings~1] ビューの設定の画面に「表示」の節と6つの項目。値は今効いているもの(設定の既定)。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-per-view~1, req~navigation.view-settings~2] ビューの設定の画面に「表示」の節と6つの項目。値は今効いているもの(設定の既定)。
     let (_t, mut a) = folder_with("sr20sec", "", ColorMode::None);
     open(&mut a);
     // NV-18: 左の一覧から「表示」の区画へ。
@@ -416,7 +416,7 @@ fn test_sr_20_settings_screen_has_display_section() {
 
 #[test]
 fn test_sr_20_toggle_in_settings_applies_to_that_view_only() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-per-view~1, req~navigation.view-settings~1] 設定で番号を出す。ビュー「全部」の設定の画面で行番号を消す → 反映の前は変わらず、
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-per-view~1, req~navigation.view-settings~2] 設定で番号を出す。ビュー「全部」の設定の画面で行番号を消す → 反映の前は変わらず、
     // 反映で「全部」だけ番号が無い。「進行」には番号が残る。取り消しなら変わらない。
     let tmp = vault("sr20view");
     let mut a = boot_base(
@@ -448,7 +448,7 @@ fn test_sr_20_toggle_in_settings_applies_to_that_view_only() {
 
 #[test]
 fn test_sr_20_saved_native_view_keeps_display() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-per-view~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1, req~base-view.own-views-beyond-base~1] 設定で番号を出す。設定の画面で行番号を消し、mdgrid のビュー「番号なし」として保存 →
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-per-view~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~2, req~base-view.own-views-beyond-base~1] 設定で番号を出す。設定の画面で行番号を消し、mdgrid のビュー「番号なし」として保存 →
     // そのビューだけ番号が無い。終了して開き直しても同じ。
     let tmp = vault("sr20save");
     let config = "[display]\nrow_numbers = true\n";
@@ -506,7 +506,7 @@ fn probe_xs(a: &App) -> Vec<u16> {
 
 #[test]
 fn test_sr_20_zebra_colors_even_rows() {
-    // [utest -> req~screen.display-options-config~1] 一行おきの色: 2行目・4行目(偶数の行)の背景の色が、3行目・5行目(奇数の行)と違う。
+    // [utest -> req~screen.display-options-config~2] 一行おきの色: 2行目・4行目(偶数の行)の背景の色が、3行目・5行目(奇数の行)と違う。
     // 1行目は選んだ行なので比べない。
     let (_t, a) = folder_with("sr20zebra", "[display]\nzebra = true\n", ColorMode::Indexed);
     assert_eq!(a.row, 0);
@@ -524,7 +524,7 @@ fn test_sr_20_zebra_colors_even_rows() {
 
 #[test]
 fn test_sr_20_zebra_off_by_default() {
-    // [utest -> req~screen.display-options-config~1] 既定(zebra = false)では、偶数と奇数の行の背景は同じ。
+    // [utest -> req~screen.display-options-config~2] 既定(zebra = false)では、偶数と奇数の行の背景は同じ。
     let (_t, a) = folder_with("sr20zebra0", "", ColorMode::Indexed);
     let buf = buffer(&a);
     for x in probe_xs(&a) {
@@ -538,7 +538,7 @@ fn test_sr_20_zebra_off_by_default() {
 
 #[test]
 fn test_sr_20_zebra_not_without_color() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-zebra-no-color~1, req~cell-view.not-color-only~1] 色を使わない表示(`--no-color`・NO_COLOR = ColorMode::None、設定 color = false)では
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-zebra-no-color~1, req~cell-view.not-color-only~1] 色を使わない表示(`--no-color`・NO_COLOR = ColorMode::None、設定 color = false)では
     // 一行おきの色を付けない: 偶数と奇数の行の style(背景・前景・飾り)は同じ。
     let check = |a: &App| {
         let buf = buffer(a);
@@ -585,7 +585,7 @@ fn test_sr_20_zebra_not_without_color() {
 
 #[test]
 fn test_sr_20_column_lines_default_none_on_draws_bars() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-config-keys~1] 列の区切り線(既定 column_lines = false): 既定・false は今の見た目のまま(列の間は空白で
+    // [utest -> req~screen.display-options-config~2, req~screen.display-config-keys~2] 列の区切り線(既定 column_lines = false): 既定・false は今の見た目のまま(列の間は空白で
     // `│` が無い。golden sr_1 と同じ)。true → 列の見出しの行と各ノートの行の列の間に `│`(どの行でも同じ桁)。
     let notes = [
         (
@@ -667,7 +667,7 @@ fn test_sr_20_column_lines_default_none_on_draws_bars() {
 
 #[test]
 fn test_sr_20_search_bar_hidden_from_settings_screen() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-hidden-keys~1, req~navigation.search-box-narrow~1, req~navigation.search-box-half-fallback~1, req~navigation.search-box-hide~1] 設定の画面の「表示」で検索の欄を隠して反映 → 欄が無く表が1行広い。`\` は最下行で打てる。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-hidden-keys~2, req~navigation.search-box-narrow~1, req~navigation.search-box-half-fallback~1, req~navigation.search-box-hide~1] 設定の画面の「表示」で検索の欄を隠して反映 → 欄が無く表が1行広い。`\` は最下行で打てる。
     // SR-1: 欄はビューのタブと同じ行(ビューの帯)にあり、行ごと消えるのはタブも出さないとき。前の「欄の行が
     // 消える」と同じ形にするため、タブを出さない設定(SR-34 の never)で始める。
     let (_t, mut a) = folder_with("sr20bar", "[display]\ntabs = \"never\"\n", ColorMode::None);
@@ -703,7 +703,7 @@ fn test_sr_20_search_bar_hidden_from_settings_screen() {
 
 #[test]
 fn test_sr_20_tabs_hidden_but_brackets_switch() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-hidden-keys~1, req~screen.display-config-keys~1] 設定 `[display] tabs = false` → タブが無い。SR-1 で検索の欄はタブと同じ行(ビューの帯)に
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-hidden-keys~2, req~screen.display-config-keys~2] 設定 `[display] tabs = false` → タブが無い。SR-1 で検索の欄はタブと同じ行(ビューの帯)に
     // あるので、行は欄のために残り、表は上がらない(決定 2026-10-11-view-bar-locks)。`]` でビューは切り替わる。
     let tmp = vault("sr20tabs");
     let on = boot_base(&tmp, cfg(""), ColorMode::None);
@@ -743,7 +743,7 @@ fn test_sr_20_tabs_hidden_but_brackets_switch() {
 
 #[test]
 fn test_sr_20_chips_hidden_but_f_works() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-hidden-keys~1, req~navigation.settings-bar-items~1, req~navigation.settings-bar-empty~1, req~navigation.settings-reset-bar-item~1] 設定 `[display] chips = false` → 設定が効いていても帯が無い(表は下がらない)。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-hidden-keys~2, req~navigation.settings-bar-items~1, req~navigation.settings-bar-empty~1, req~navigation.settings-reset-bar-item~1] 設定 `[display] chips = false` → 設定が効いていても帯が無い(表は下がらない)。
     // 帯の操作 `f` は効く: 帯の項目を選ぶモードに入り、Backspace で条件を外せる。
     let (_t, mut a) = folder_with("sr20chips", "[display]\nchips = false\n", ColorMode::None);
     let dy = view::data_y(&a);
@@ -766,7 +766,7 @@ fn test_sr_20_chips_hidden_but_f_works() {
 
 #[test]
 fn test_sr_20_chips_hidden_from_settings_screen() {
-    // [utest -> req~screen.display-options-config~1, req~screen.display-options-per-view~1, req~screen.display-options-hidden-keys~1, req~navigation.settings-bar-items~1] 設定の画面の「表示」で設定の帯を隠して反映 → 効いている設定があっても帯が無い。
+    // [utest -> req~screen.display-options-config~2, req~screen.display-options-per-view~1, req~screen.display-options-hidden-keys~2, req~navigation.settings-bar-items~1] 設定の画面の「表示」で設定の帯を隠して反映 → 効いている設定があっても帯が無い。
     let (_t, mut a) = folder_with("sr20chips2", "", ColorMode::None);
     a.settings.sorts.push(("priority".into(), Dir::Desc));
     a.refresh();

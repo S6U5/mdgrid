@@ -63,7 +63,7 @@ fn col(l: &str, t: &str) -> Option<usize> {
 
 #[test]
 fn test_nv_23_box_default_three_rows() {
-    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~screen.layout-order~1] 80×24 で `buttons = "box"`(2026-10-12-view-bar-plain で既定は plain になった)→ 2〜4行目がビューの帯。2行目と4行目に囲みの線の角が3つずつ(検索の欄・
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~screen.layout-order~2] 80×24 で `buttons = "box"`(2026-10-12-view-bar-plain で既定は plain になった)→ 2〜4行目がビューの帯。2行目と4行目に囲みの線の角が3つずつ(検索の欄・
     // 絞り込み・並べ替え)、3行目に「既定の表」・「\ 検索…」・「| 絞り込み」・「S 並べ替え」・分類・列、
     // 5行目が列の見出し。
     let (_t, a) = boot_config("boxdef", "[display]\nbuttons = \"box\"\n");
@@ -87,7 +87,7 @@ fn test_nv_23_box_default_three_rows() {
 
 #[test]
 fn test_nv_23_box_surrounds_search_field() {
-    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1] 検索の欄の囲み: 上の線の角と下の線の角が、真ん中の行の縦の線と同じ桁で、欄の字はその内側。
+    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~2, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1] 検索の欄の囲み: 上の線の角と下の線の角が、真ん中の行の縦の線と同じ桁で、欄の字はその内側。
     let (_t, a) = boot_config("boxfield", "[display]\nbuttons = \"box\"\n");
     let l = lines(&a);
     let s = l.join("\n");
@@ -174,7 +174,7 @@ fn test_nv_23_box_low_terminal_one_row() {
 
 #[test]
 fn test_nv_23_box_off_when_search_hidden() {
-    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-hide~1, req~screen.display-options-config~1] 検索の欄を出さない → 囲みも出さず、ビューの帯は1行(タブとボタン)。
+    // [utest -> req~navigation.search-box-place~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~navigation.search-box-hide~1, req~screen.display-options-config~2] 検索の欄を出さない → 囲みも出さず、ビューの帯は1行(タブとボタン)。
     let (_t, a) = boot_config(
         "boxnosearch",
         "[display]\ntabs = \"always\"\nsearch_bar = false\nbuttons = \"box\"\n",

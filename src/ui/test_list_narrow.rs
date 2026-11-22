@@ -26,7 +26,7 @@ fn open(name: &str) -> (super::test_screen::Tmp, App) {
     (t, a)
 }
 
-// [utest -> req~cell-edit.value-list-narrow~1]
+// [utest -> req~cell-edit.value-list-narrow~2]
 #[test]
 fn test_ce_3_narrow_shows_matches_without_selection() {
     let (_t, mut a) = open("ce3n_show");
@@ -41,7 +41,7 @@ fn test_ce_3_narrow_shows_matches_without_selection() {
     assert_eq!(pending(&a), Some(NewValue::Str("do".into())));
 }
 
-// [utest -> req~cell-edit.value-list-narrow-pick~1]
+// [utest -> req~cell-edit.value-list-narrow-pick~2]
 #[test]
 fn test_ce_3_narrow_down_picks_match() {
     let (_t, mut a) = open("ce3n_pick");
@@ -60,7 +60,7 @@ fn test_ce_3_narrow_down_picks_match() {
     assert_eq!(pending(&a), Some(NewValue::Str("doing".into())));
 }
 
-// [utest -> req~cell-edit.value-list-type-replaces~1, req~cell-edit.value-list-narrow~1]
+// [utest -> req~cell-edit.value-list-type-replaces~2, req~cell-edit.value-list-narrow~2]
 #[test]
 fn test_ce_3_narrow_no_match_hides_and_revert_restores() {
     let (_t, mut a) = open("ce3n_none");
@@ -92,7 +92,7 @@ fn test_sr_24_menu_position_shown_when_scrolled() {
     assert!(s.text.lines().any(|l| l.contains("╰2/")), "{s}");
 }
 
-// [utest -> req~screen.action-menu-open-key~1, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-enter~1, req~screen.action-menu-bulk-hidden~1]
+// [utest -> req~screen.action-menu-open-key~2, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-enter~1, req~screen.action-menu-bulk-hidden~1]
 #[test]
 fn test_sr_24_menu_position_hidden_when_all_fit() {
     let (_t, mut a) = make("sr24all", NOTES);
@@ -102,7 +102,7 @@ fn test_sr_24_menu_position_hidden_when_all_fit() {
     assert!(!s.text.lines().any(|l| l.contains("╰1/")), "{s}");
 }
 
-// [utest -> req~cell-edit.value-list-type-replaces~1]
+// [utest -> req~cell-edit.value-list-type-replaces~2]
 #[test]
 fn test_ce_3_narrow_up_picks_last_and_typing_replaces() {
     let (_t, mut a) = open("ce3n_up");

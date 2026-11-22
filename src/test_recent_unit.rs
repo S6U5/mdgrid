@@ -68,7 +68,7 @@ fn test_recent_missing_path_is_dropped() {
 
 #[test]
 fn test_recent_line_form() {
-    // [utest -> req~cli.recent-cli~1] 「パス(タブ)ビューの名前(タブ)最後に開いた日時」の1行。ビューが無ければ空の欄。
+    // [utest -> req~cli.recent-cli~2] 「パス(タブ)ビューの名前(タブ)最後に開いた日時」の1行。ビューが無ければ空の欄。
     let r = Recent {
         path: PathBuf::from("/home/u/notes/tasks.base"),
         view: Some("進行中".into()),

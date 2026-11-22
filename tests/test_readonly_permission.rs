@@ -293,7 +293,7 @@ fn test_wb_5_permission_writeback_save_refuses_0444() {
 
 #[test]
 fn test_wb_5_permission_set_many_skips_0444_rows() {
-    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1] 0444 のノート2つと普通のノート2つを選んで set_many → 0444 の2行は飛ばされ、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1] 0444 のノート2つと普通のノート2つを選んで set_many → 0444 の2行は飛ばされ、
     // 飛ばした数(2)と理由(セルの lock と同じで「書き込めない権限」を含む)が返る。ためるのは書ける2行だけ。
     // 保存しても 0444 のファイルは変わらない。
     if running_as_root() {

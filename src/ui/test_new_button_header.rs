@@ -46,7 +46,7 @@ fn lines(a: &App) -> Vec<String> {
 
 #[test]
 fn test_ce_25_new_in_header_when_bar_hidden() {
-    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~1] 帯を出さない → ヘッダーの行の、画面の型のメニューのボタンの左に「a + 新規」。押すと名前の欄。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~2] 帯を出さない → ヘッダーの行の、画面の型のメニューのボタンの左に「a + 新規」。押すと名前の欄。
     let (_t, mut a) = boot("ce25h_hidden", HIDDEN, false, 100);
     let l = lines(&a);
     let s = l.join("\n");
@@ -69,7 +69,7 @@ fn test_ce_25_new_in_header_when_bar_hidden() {
 
 #[test]
 fn test_ce_25_new_in_bar_not_header_when_bar_shown() {
-    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~1] 帯を出すとき(既定)は今までどおり帯の右の端だけで、ヘッダーには出さない。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~2] 帯を出すとき(既定)は今までどおり帯の右の端だけで、ヘッダーには出さない。
     let (_t, a) = boot("ce25h_shown", "", false, 100);
     let l = lines(&a);
     let head = super::bands::head_y(&a) as usize;
@@ -86,7 +86,7 @@ fn test_ce_25_new_in_header_not_readonly() {
 
 #[test]
 fn test_ce_25_new_in_header_dropped_when_narrow() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1, req~screen.breadcrumb-narrow~1] 狭くて入らなければ出さず、パンくずとメニューのボタンを残す。
+    // [utest -> req~cell-edit.new-note-relmap-button~2, req~screen.breadcrumb-narrow~1] 狭くて入らなければ出さず、パンくずとメニューのボタンを残す。
     let (_t, a) = boot("ce25h_narrow", HIDDEN, false, 30);
     let l = lines(&a);
     let head = super::bands::head_y(&a) as usize;
@@ -96,7 +96,7 @@ fn test_ce_25_new_in_header_dropped_when_narrow() {
 
 #[test]
 fn test_ce_25_new_in_header_narrow_keeps_new_over_settings() {
-    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~1, req~screen.breadcrumb-narrow~1] 設定のボタンまで入らない幅(80 未満)では設定を先に省き、「+ 新規」とメニューを残す。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~2, req~screen.breadcrumb-narrow~1] 設定のボタンまで入らない幅(80 未満)では設定を先に省き、「+ 新規」とメニューを残す。
     let (_t, a) = boot("ce25h_mid", HIDDEN, false, 60);
     let l = lines(&a);
     let head = super::bands::head_y(&a) as usize;
@@ -107,7 +107,7 @@ fn test_ce_25_new_in_header_narrow_keeps_new_over_settings() {
 
 #[test]
 fn test_ce_25_relmap_new_in_header_when_bar_hidden() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1, req~relations.screen-menu-open~1] 帯を出さないとき、関係マップでも表の画面と同じくヘッダーの行の、画面の型のメニューのすぐ左に
+    // [utest -> req~cell-edit.new-note-relmap-button~2, req~relations.screen-menu-open~2] 帯を出さないとき、関係マップでも表の画面と同じくヘッダーの行の、画面の型のメニューのすぐ左に
     // 「+ 新規」(窓の縁には出さない。メニューの文字の幅が画面で違うので、桁はメニューに合わせて動く)。
     use super::test_relations::{boot_tasks, workspace};
     use super::test_screen::ch;
@@ -133,7 +133,7 @@ fn test_ce_25_relmap_new_in_header_when_bar_hidden() {
 
 #[test]
 fn test_ce_25_relmap_header_new_click_opens_name() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-relmap-start~1] 帯を出さないとき、関係マップのヘッダーの「+ 新規」を押す → 選んでいる表で名前の欄が開く。
+    // [utest -> req~cell-edit.new-note-relmap-button~2, req~cell-edit.new-note-relmap-start~1] 帯を出さないとき、関係マップのヘッダーの「+ 新規」を押す → 選んでいる表で名前の欄が開く。
     use super::test_relations::{boot_tasks, workspace};
     use super::test_screen::ch;
     let tmp = workspace("ce25h_relclick");
@@ -155,7 +155,7 @@ fn test_ce_25_relmap_header_new_click_opens_name() {
 
 #[test]
 fn test_ce_25_new_in_header_tabs_auto_single_view() {
-    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~1, req~screen.tabs-setting-auto-single~1] tabs = "auto" でビューが1つ、検索の欄も隠す → 帯を出さないので、ヘッダーに「+ 新規」。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-relmap-button~2, req~screen.tabs-setting-auto-single~1] tabs = "auto" でビューが1つ、検索の欄も隠す → 帯を出さないので、ヘッダーに「+ 新規」。
     let (_t, a) = boot(
         "ce25h_auto",
         "[display]\ntabs = \"auto\"\nsearch_bar = false\n",

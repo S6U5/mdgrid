@@ -35,7 +35,7 @@ fn save(a: &mut App) {
 
 #[test]
 fn test_ce_4_false_toggles_to_true() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1, req~cell-edit.checkbox-clear~1, req~cell-edit.empty-is-null~1] `done: false` のセルで Enter → true のためる変更。空にするのは BS(保存すると `done:`)。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2, req~cell-edit.checkbox-clear~1, req~cell-edit.empty-is-null~1] `done: false` のセルで Enter → true のためる変更。空にするのは BS(保存すると `done:`)。
     let (t, mut a) = make(
         "ce4false",
         &[
@@ -63,7 +63,7 @@ fn test_ce_4_false_toggles_to_true() {
 
 #[test]
 fn test_ce_4_false_full_cycle_returns_to_original() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~write-back.revert-drops-pending~1] `done: false` で Enter 2回 → true → false。元の false に戻ればためる変更から外れる。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~write-back.revert-drops-pending~2] `done: false` で Enter 2回 → true → false。元の false に戻ればためる変更から外れる。
     let notes = [
         ("a.md", "---\ndone: false\n---\n"),
         ("b.md", "---\ndone: true\n---\n"),
@@ -84,7 +84,7 @@ fn test_ce_4_false_full_cycle_returns_to_original() {
 
 #[test]
 fn test_ce_4_keyless_note_toggles_true_false() {
-    // [utest -> req~cell-edit.checkbox-empty-true~1, req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1] キーの無いノートで Enter → true、もう一度 → false、もう一度 → true(空には戻らない)。
+    // [utest -> req~cell-edit.checkbox-empty-true~2, req~write-back.revert-drops-pending~2, req~write-back.revert-not-written~1] キーの無いノートで Enter → true、もう一度 → false、もう一度 → true(空には戻らない)。
     let notes = [
         ("a.md", "---\ndone: true\ntitle: a\n---\n"),
         ("b.md", "---\ntitle: b\n---\n"),
@@ -117,7 +117,7 @@ fn test_ce_4_keyless_note_toggles_true_false() {
 
 #[test]
 fn test_ce_4_keyless_note_saves_false() {
-    // [utest -> req~cell-edit.checkbox-empty-true~1] キーの無いノートで Enter 2回 → false。保存すると `done: false` が足される。
+    // [utest -> req~cell-edit.checkbox-empty-true~2] キーの無いノートで Enter 2回 → false。保存すると `done: false` が足される。
     let (t, mut a) = make(
         "ce4keylesssave",
         &[
@@ -137,7 +137,7 @@ fn test_ce_4_keyless_note_saves_false() {
 
 #[test]
 fn test_ce_4_true_toggles_to_false() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1] `done: true` で Enter → false。さらに → true(元に戻って外れる)。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2] `done: true` で Enter → false。さらに → true(元に戻って外れる)。
     let (t, mut a) = make(
         "ce4true",
         &[
@@ -160,7 +160,7 @@ fn test_ce_4_true_toggles_to_false() {
 
 #[test]
 fn test_ce_4_empty_value_toggles_to_true() {
-    // [utest -> req~cell-edit.checkbox-empty-true~1, req~cell-edit.checkbox-clear~1, req~write-back.revert-drops-pending~1] `done:` の空のセルで Enter → true、→ false(空には戻らない)。
+    // [utest -> req~cell-edit.checkbox-empty-true~2, req~cell-edit.checkbox-clear~1, req~write-back.revert-drops-pending~2] `done:` の空のセルで Enter → true、→ false(空には戻らない)。
     let notes = [
         ("a.md", "---\ndone: true\n---\n"),
         ("c.md", "---\ndone:\ntitle: c\n---\n"),
@@ -195,7 +195,7 @@ const BULK: [(&str, &str); 4] = [
 
 #[test]
 fn test_ce_4_ce_10_bulk_toggle_follows_current_row() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.bulk-set-same-value~1, req~write-back.revert-drops-pending~1] 全部を選んで切り替え → 今の行(a: false)の次の状態が全部の行に入る。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.bulk-set-same-value~2, req~write-back.revert-drops-pending~2] 全部を選んで切り替え → 今の行(a: false)の次の状態が全部の行に入る。
     // Enter ごとに true と false を切り替える。
     let (t, mut a) = make("ce4bulk", &BULK);
     ctrl(&mut a, 'a');
@@ -229,7 +229,7 @@ fn test_ce_4_ce_10_bulk_toggle_follows_current_row() {
 
 #[test]
 fn test_ce_4_ce_10_bulk_toggle_from_empty_current_row() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.bulk-set-same-value~1, req~write-back.revert-drops-pending~1] 今の行がキーなし(空)なら、次の状態 true が全部の行に入る。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.bulk-set-same-value~2, req~write-back.revert-drops-pending~2] 今の行がキーなし(空)なら、次の状態 true が全部の行に入る。
     // 今の行が true(b)なら false が、`done:`(d)なら true が全部の行に入る。
     for (cur, next) in [
         ("c.md", NewValue::Bool(true)),
@@ -265,7 +265,7 @@ fn test_ce_4_ce_10_bulk_toggle_from_empty_current_row() {
 
 #[test]
 fn test_ce_4_empty_string_toggles_to_true() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1, req~write-back.revert-drops-pending~1] `done: ""`(空の文字列)は空として扱う: Enter → true、→ false。1回で true を保存 → `done: true`。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2, req~write-back.revert-drops-pending~2] `done: ""`(空の文字列)は空として扱う: Enter → true、→ false。1回で true を保存 → `done: true`。
     let notes = [
         ("a.md", "---\ndone: true\n---\n"),
         ("c.md", "---\ndone: \"\"\ntitle: c\n---\n"),
@@ -284,7 +284,7 @@ fn test_ce_4_empty_string_toggles_to_true() {
 
 #[test]
 fn test_ce_4_ce_10_bulk_empty_string_row_is_empty() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.bulk-set-same-value~1] 一括でも空の文字列の行は空として扱う: 今の行が `done: ""` なら true が全部に入る。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.bulk-set-same-value~2] 一括でも空の文字列の行は空として扱う: 今の行が `done: ""` なら true が全部に入る。
     let notes = [
         ("a.md", "---\ndone: false\n---\n"),
         ("b.md", "---\ndone: \"\"\n---\n"),
@@ -304,7 +304,7 @@ fn test_ce_4_ce_10_bulk_empty_string_row_is_empty() {
 
 #[test]
 fn test_ce_4_ce_10_bulk_skips_mismatched_rows() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.bulk-set-skip-mismatch~1] 一括で型の合わない行(`done: yes`・`done: "true"`)は上書きせずに飛ばし、数と理由を出す。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.bulk-set-skip-mismatch~1] 一括で型の合わない行(`done: yes`・`done: "true"`)は上書きせずに飛ばし、数と理由を出す。
     let notes = [
         ("a.md", "---\ndone: true\n---\n"),
         ("b.md", "---\ndone: yes\n---\n"),
@@ -335,7 +335,7 @@ fn test_ce_4_ce_10_bulk_skips_mismatched_rows() {
 
 #[test]
 fn test_ce_4_detail_view_cycles() {
-    // [utest -> req~cell-edit.checkbox-toggle~1, req~cell-edit.checkbox-empty-true~1, req~navigation.detail-edit~1, req~navigation.detail-body~1] 詳細の表示からの切り替えも true と false を切り替える(入力は開かず詳細の表示に留まる)。
+    // [utest -> req~cell-edit.checkbox-toggle~2, req~cell-edit.checkbox-empty-true~2, req~navigation.detail-edit~1, req~navigation.detail-body~1] 詳細の表示からの切り替えも true と false を切り替える(入力は開かず詳細の表示に留まる)。
     let (_t, mut a) = make(
         "ce4detail",
         &[

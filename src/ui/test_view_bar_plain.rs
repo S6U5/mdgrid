@@ -67,7 +67,7 @@ fn col(l: &str, t: &str) -> Option<usize> {
 
 #[test]
 fn test_nv_23_plain_default_blank_rows_around() {
-    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~screen.layout-order~1] 既定 → 2行目と4行目は空き(線も無い)、3行目にタブ・欄・ボタン、5行目が見出し。
+    // [utest -> req~navigation.search-box-buttons~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-style~1, req~screen.layout-order~2] 既定 → 2行目と4行目は空き(線も無い)、3行目にタブ・欄・ボタン、5行目が見出し。
     let (_t, a) = boot("plaindef", "", ColorMode::None);
     let l = lines(&a);
     let s = l.join("\n");

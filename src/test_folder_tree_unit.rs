@@ -202,7 +202,7 @@ fn test_tr_2_marker_tree_reads_path_order_and_default_separator() {
 
 #[test]
 fn test_tr_2_empty_separator_warns_and_no_tree() {
-    // [utest -> req~tree.config-invalid~1] 区切りが空の文字なら、CLI-3 の形の警告1行で、木を出さない。
+    // [utest -> req~tree.config-invalid~2] 区切りが空の文字なら、CLI-3 の形の警告1行で、木を出さない。
     let r = Root::new(
         "sep",
         "[[table]]\npath = \"bm\"\ntree = { path = \"folder\", separator = \"\" }\n",

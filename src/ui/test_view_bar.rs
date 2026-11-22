@@ -277,7 +277,7 @@ fn boot_work(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_1_view_bar_rows() {
-    // [utest -> req~screen.layout-order~1] 80×24 で起動 → 1行目がヘッダー、2行目にビューのタブ・検索の欄・絞り込み・並べ替えが同じ行、
+    // [utest -> req~screen.layout-order~2] 80×24 で起動 → 1行目がヘッダー、2行目にビューのタブ・検索の欄・絞り込み・並べ替えが同じ行、
     // 3行目が列の見出し(条件が無いとき)。
     let (_t, a) = boot("sr1bar");
     let s = scr(&a);
@@ -304,7 +304,7 @@ fn test_sr_1_view_bar_rows() {
 
 #[test]
 fn test_sr_1_view_bar_with_condition_then_chips() {
-    // [utest -> req~screen.layout-order~1, req~navigation.settings-bar-items~1] 条件が効いているとき → 3行目が設定の帯、4行目が列の見出し。
+    // [utest -> req~screen.layout-order~2, req~navigation.settings-bar-items~1] 条件が効いているとき → 3行目が設定の帯、4行目が列の見出し。
     let (_t, mut a) = boot("sr1chips");
     ch(&mut a, '|');
     hide_done(&mut a);
@@ -325,7 +325,7 @@ fn test_sr_1_view_bar_with_condition_then_chips() {
 
 #[test]
 fn test_sr_1_view_bar_hidden_when_tabs_and_search_hidden() {
-    // [utest -> req~screen.layout-no-view-bar~1, req~screen.display-options-config~1] タブ(`tabs = "never"`)と検索の欄(`search_bar = false`)を両方隠す → ビューの帯の行ごと
+    // [utest -> req~screen.layout-no-view-bar~1, req~screen.display-options-config~2] タブ(`tabs = "never"`)と検索の欄(`search_bar = false`)を両方隠す → ビューの帯の行ごと
     // 出さず、2行目が列の見出し。
     let (_t, a) = boot_config(
         "sr1hide",
@@ -342,7 +342,7 @@ fn test_sr_1_view_bar_hidden_when_tabs_and_search_hidden() {
 
 #[test]
 fn test_sr_1_view_bar_tabs_hidden_keeps_search_and_buttons() {
-    // [utest -> req~screen.layout-order~1, req~screen.layout-hide-parts~1, req~screen.layout-no-view-bar~1, req~screen.tabs-setting-values~1, req~screen.tabs-setting-auto-single~1] タブだけ隠す(`tabs = "never"`)→ ビューの帯は残り、検索の欄とボタンが2行目、3行目が見出し。
+    // [utest -> req~screen.layout-order~2, req~screen.layout-hide-parts~1, req~screen.layout-no-view-bar~1, req~screen.tabs-setting-values~2, req~screen.tabs-setting-auto-single~1] タブだけ隠す(`tabs = "never"`)→ ビューの帯は残り、検索の欄とボタンが2行目、3行目が見出し。
     let (_t, a) = boot_config("sr1tabs", "[display]\ntabs = \"never\"\n");
     let s = scr(&a);
     let bar = line(&a, BAR);
@@ -378,7 +378,7 @@ fn test_nv_23_view_bar_buttons_in_order_with_keys() {
 
 #[test]
 fn test_nv_23_view_bar_search_word_and_count() {
-    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-style~1, req~navigation.search-input-place~1, req~navigation.search-over-base~1, req~navigation.search-naming~1] 「会議」で絞る → ビューの帯の検索の欄に語と「3/5行」。ボタンは残る。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-style~1, req~navigation.search-input-place~2, req~navigation.search-over-base~1, req~navigation.search-naming~1] 「会議」で絞る → ビューの帯の検索の欄に語と「3/5行」。ボタンは残る。
     let (_t, mut a) = make(
         "nv23word",
         &[
@@ -469,7 +469,7 @@ fn test_nv_23_view_bar_click_search_field_enters() {
 
 #[test]
 fn test_nv_23_view_bar_tab_click_switches_view() {
-    // [utest -> req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-window-below~1, req~screen.layout-order~1, req~screen.layout-hide-parts~1, req~screen.layout-no-view-bar~1] ビューが3つの `.base` で、ビューの帯(検索の欄と同じ行)のタブ「完了」をクリック → ビューが変わる。
+    // [utest -> req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-window-below~1, req~screen.layout-order~2, req~screen.layout-hide-parts~1, req~screen.layout-no-view-bar~1] ビューが3つの `.base` で、ビューの帯(検索の欄と同じ行)のタブ「完了」をクリック → ビューが変わる。
     let tmp = super::test_grid::vault("nv23tab");
     let mut a = super::test_grid::open(&tmp, super::test_grid::TASKS, None);
     let bar = line(&a, BAR);
@@ -522,7 +522,7 @@ fn test_nv_29_table_window_below_button() {
 
 #[test]
 fn test_nv_29_table_rows_have_column_op_value_remove() {
-    // [utest -> req~navigation.filter-window-open~1, req~navigation.filter-window-edit~1, req~navigation.filter-window-inline~1] 条件を2つ足した窓で、各条件の行に 列・比べ方・値・× がこの順に並ぶ。
+    // [utest -> req~navigation.filter-window-open~1, req~navigation.filter-window-edit~2, req~navigation.filter-window-inline~1] 条件を2つ足した窓で、各条件の行に 列・比べ方・値・× がこの順に並ぶ。
     let (_t, a) = two_conditions("nv29rows");
     let st = cond_row(&a, "status");
     assert!(
@@ -540,7 +540,7 @@ fn test_nv_29_table_rows_have_column_op_value_remove() {
 
 #[test]
 fn test_nv_29_table_edit_op_in_place() {
-    // [utest -> req~navigation.filter-window-edit~1, req~navigation.filter-window-inline~1] status の条件の行で → を押して比べ方の欄を選び Enter → 種類を選ぶ段。「含む」を選んで「ing」と
+    // [utest -> req~navigation.filter-window-edit~2, req~navigation.filter-window-inline~1] status の条件の行で → を押して比べ方の欄を選び Enter → 種類を選ぶ段。「含む」を選んで「ing」と
     // 打って Enter → その条件が Contains("ing") に変わり、条件の数は増えない(priority の条件はそのまま)。
     let (_t, mut a) = two_conditions("nv29op");
     select(&mut a, "status");
@@ -573,7 +573,7 @@ fn test_nv_29_table_edit_op_in_place() {
 
 #[test]
 fn test_nv_29_table_edit_column_in_place() {
-    // [utest -> req~navigation.filter-window-edit~1] status の条件の行で ← を押して列の欄を選び Enter → 列を選ぶ段。memo を選び、種類「空である」→
+    // [utest -> req~navigation.filter-window-edit~2] status の条件の行で ← を押して列の欄を選び Enter → 列を選ぶ段。memo を選び、種類「空である」→
     // その条件が memo の空であるに変わり、条件の数は増えない。
     let (_t, mut a) = two_conditions("nv29col");
     select(&mut a, "status");
@@ -599,7 +599,7 @@ fn test_nv_29_table_edit_column_in_place() {
 
 #[test]
 fn test_nv_29_table_edit_value_field() {
-    // [utest -> req~navigation.filter-window-edit~1] 値の欄で Enter → 値の一覧(status の隠す条件。done にチェック)か、値の入力(priority ≥ 3 は「3」)。
+    // [utest -> req~navigation.filter-window-edit~2] 値の欄で Enter → 値の一覧(status の隠す条件。done にチェック)か、値の入力(priority ≥ 3 は「3」)。
     let (_t, mut a) = two_conditions("nv29val");
     select(&mut a, "status");
     field(&mut a, 2);
@@ -635,7 +635,7 @@ fn test_nv_29_table_edit_value_field() {
 
 #[test]
 fn test_sr_42_crumb_scope_and_table() {
-    // [utest -> req~screen.breadcrumb-path~1, req~workspace.scope-order-crumb~1] ワークスペース Work の tasks を開く → 1行目の左が「w Work › tasks ▾」と行数。
+    // [utest -> req~screen.breadcrumb-path~2, req~workspace.scope-order-crumb~1] ワークスペース Work の tasks を開く → 1行目の左が「w Work › tasks ▾」と行数。
     // 「ワークスペース」のボタンは無い。「設定」は 2026-10-12-header-menu で右の端のボタンになった。
     let (_tmp, a) = boot_work("sr42crumb");
     let head = line(&a, HEAD);
@@ -650,7 +650,7 @@ fn test_sr_42_crumb_scope_and_table() {
 
 #[test]
 fn test_sr_42_crumb_click_toggles_drawer() {
-    // [utest -> req~screen.breadcrumb-drawer~1, req~workspace.drawer-open~1, req~workspace.drawer-from-map~1] パンくずの範囲の名前をクリック → 引き出しが開き、もう一度で閉じる。表の名前でも開く。
+    // [utest -> req~screen.breadcrumb-drawer~1, req~workspace.drawer-open~2, req~workspace.drawer-from-map~1] パンくずの範囲の名前をクリック → 引き出しが開き、もう一度で閉じる。表の名前でも開く。
     let (_tmp, mut a) = boot_work("sr42click");
     click_text(&mut a, HEAD, "Work");
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
@@ -677,7 +677,7 @@ fn test_sr_42_crumb_same_column_in_relations() {
 
 #[test]
 fn test_sr_42_crumb_without_scope() {
-    // [utest -> req~screen.breadcrumb-path~1, req~screen.breadcrumb-relation-map~1] 範囲が無い(登録した表だけ)→ 「›」が無く、表の名前と行数。
+    // [utest -> req~screen.breadcrumb-path~2, req~screen.breadcrumb-relation-map~1] 範囲が無い(登録した表だけ)→ 「›」が無く、表の名前と行数。
     let tmp = workspace("sr42none");
     let a = boot_tasks(&tmp);
     assert!(a.scope.is_none());
@@ -693,7 +693,7 @@ fn test_sr_42_crumb_without_scope() {
 
 #[test]
 fn test_ws_8_crumb_drawer_switches_table() {
-    // [utest -> req~workspace.drawer-switch~1, req~workspace.drawer-open~1, req~workspace.drawer-from-map~1, req~screen.breadcrumb-drawer~1] パンくずの範囲の名前から開いた引き出しで Projects をクリック → その表へ移る。
+    // [utest -> req~workspace.drawer-switch~2, req~workspace.drawer-open~2, req~workspace.drawer-from-map~1, req~screen.breadcrumb-drawer~1] パンくずの範囲の名前から開いた引き出しで Projects をクリック → その表へ移る。
     let (tmp, mut a) = boot_work("ws8crumb");
     click_text(&mut a, HEAD, "Work");
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));

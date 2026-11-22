@@ -29,7 +29,7 @@ fn run_with(src: &str, x: &str) -> Val {
     eval(&parse(src).expect(src), &env)
 }
 
-// [utest -> req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1]
+// [utest -> req~base-view.unsupported-column-mark~2, req~base-view.unsupported-column-readonly~1]
 #[test]
 fn test_bv_7_string_cap_replace_empty_pattern() {
     let big = "a".repeat(2000);
@@ -42,7 +42,7 @@ fn test_bv_7_string_cap_replace_empty_pattern() {
     );
 }
 
-// [utest -> req~base-view.unsupported-column-mark~1]
+// [utest -> req~base-view.unsupported-column-mark~2]
 #[test]
 fn test_bv_7_string_cap_concat() {
     let half = "a".repeat(600 * 1024);

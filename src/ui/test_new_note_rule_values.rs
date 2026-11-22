@@ -48,7 +48,7 @@ fn boot(tag: &str, notes: &[(&str, &str)], top: &str, line: &str) -> (Tmp, App) 
 
 #[test]
 fn test_new_note_form_lists_rule_values_before_any_note_has_the_column() {
-    // [utest -> req~cell-edit.new-note-form-rule-values~1] ノートが1件も無い表で、決まりに values のある priority を聞く → 候補のリストに p1・p2・p3 が決まりの順で並ぶ。
+    // [utest -> req~cell-edit.new-note-form-rule-values~2] ノートが1件も無い表で、決まりに values のある priority を聞く → 候補のリストに p1・p2・p3 が決まりの順で並ぶ。
     let (_t, mut a) = boot("nn-rule-values", &[], TOP, "");
     ch(&mut a, 'a');
     typing(&mut a, "first");

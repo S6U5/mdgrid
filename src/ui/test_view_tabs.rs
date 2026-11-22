@@ -197,7 +197,7 @@ fn test_nv_26_current_and_base_refused() {
 
 #[test]
 fn test_nv_26_rename_delete_follow_prefs() {
-    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-rename~1, req~navigation.view-tabs-save~1, req~navigation.view-tabs-count~1] 開いていない mdgrid のビューの名前を変える・消す。設定の画面は開いたまま、タブの順・隠す・
+    // [utest -> req~navigation.view-tabs-section~1, req~navigation.view-tabs-rename~1, req~navigation.view-tabs-save~1, req~navigation.view-tabs-count~2] 開いていない mdgrid のビューの名前を変える・消す。設定の画面は開いたまま、タブの順・隠す・
     // 既定の名前も合わせる。
     let tmp = setup("nv26c");
     let mut a = boot(&tmp, false);

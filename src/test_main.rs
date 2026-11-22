@@ -6,7 +6,7 @@ fn args(a: &[&str]) -> Vec<OsString> {
 
 #[test]
 fn test_cli_1_paths_or_current_folder() {
-    // [utest -> req~cli.launch-marker-open~1] 引数が無ければ今のフォルダ、あればフォルダの並び。
+    // [utest -> req~cli.launch-marker-open~2] 引数が無ければ今のフォルダ、あればフォルダの並び。
     assert_eq!(parse_args(&[]), Ok(Command::Run(vec![PathBuf::from(".")])));
     assert_eq!(
         parse_args(&args(&["a", "b"])),
@@ -22,7 +22,7 @@ fn test_cli_1_paths_or_current_folder() {
 
 #[test]
 fn test_cli_1_no_args_opens_current_folder_default_table() {
-    // [utest -> req~cli.launch-marker-open~1] 引数なし → 今のフォルダの既定の表。parse_args(&[]) から check_paths → open_target → App まで
+    // [utest -> req~cli.launch-marker-open~2] 引数なし → 今のフォルダの既定の表。parse_args(&[]) から check_paths → open_target → App まで
     // main と同じ道を通す。今のフォルダ(`.`)は試験の間で共有されるので、`.` の解決だけを一時フォルダに差し替える。
     assert_eq!(parse_args(&[]), Ok(Command::Run(vec![PathBuf::from(".")])));
     let t = TempDir::new("cli1");
@@ -175,7 +175,7 @@ fn test_cli_2_config_path() {
 
 #[test]
 fn test_cli_3_config_missing_unknown_broken() {
-    // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1, req~cli.config-file-warning-form~1] 設定の無い環境 → 既定。知らない項目 → 警告して読む。壊れた TOML → 理由1行と終了コード 2。
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-defaults~1, req~cli.config-file-warning-form~2] 設定の無い環境 → 既定。知らない項目 → 警告して読む。壊れた TOML → 理由1行と終了コード 2。
     let t = TempDir::new("cli3");
     let (c, w) = load_config(None, Some(t.0.join("mdgrid/config.toml"))).unwrap();
     assert_eq!(c, Config::default());

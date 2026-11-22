@@ -446,7 +446,7 @@ fn gantt_on_hidden_row(tag: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_14_palette_quit_from_empty_kanban_lane_quits() {
-    // [utest -> req~screen.palette-fuzzy~1, req~screen.palette-keys~1] #10: カンバンの札の無いレーン(waiting)で、パレットから `q`(終わる)→ 札の行は要らない動作なので、
+    // [utest -> req~screen.palette-fuzzy~2, req~screen.palette-keys~1] #10: カンバンの札の無いレーン(waiting)で、パレットから `q`(終わる)→ 札の行は要らない動作なので、
     // 止めずに効く(ためた変更が無いので終わる)。
     let (_t, mut a) = boot("kbfx10q", NOTES, RULES, KANBAN);
     open(&mut a);
@@ -479,7 +479,7 @@ fn test_sr_14_palette_switch_screen_from_empty_kanban_lane() {
 
 #[test]
 fn test_sr_14_palette_search_from_card_hidden_in_table_opens_search() {
-    // [utest -> req~screen.palette-fuzzy~1, req~screen.palette-keys~1] #10: 表で畳んだ親の子(beta)の札で、パレットから検索(search)→ 札の行は要らない動作なので、
+    // [utest -> req~screen.palette-fuzzy~2, req~screen.palette-keys~1] #10: 表で畳んだ親の子(beta)の札で、パレットから検索(search)→ 札の行は要らない動作なので、
     // 表に戻って検索の入力が開く。
     let (_t, mut a) = kanban_on_hidden_card("kbfx10s");
     palette(&mut a, "search");
@@ -495,7 +495,7 @@ fn test_sr_14_palette_search_from_card_hidden_in_table_opens_search() {
 
 #[test]
 fn test_sr_14_palette_quit_from_gantt_row_hidden_in_table_quits() {
-    // [utest -> req~screen.palette-fuzzy~1, req~screen.palette-keys~1] #10: ガントで表の畳んだまとまりの行(delta)を選び、パレットから `q` → 止めずに効く(終わる)。
+    // [utest -> req~screen.palette-fuzzy~2, req~screen.palette-keys~1] #10: ガントで表の畳んだまとまりの行(delta)を選び、パレットから `q` → 止めずに効く(終わる)。
     let (_t, mut a) = gantt_on_hidden_row("gafx10q");
     palette(&mut a, "q");
     assert!(
@@ -509,7 +509,7 @@ fn test_sr_14_palette_quit_from_gantt_row_hidden_in_table_quits() {
 
 #[test]
 fn test_sr_14_palette_search_from_gantt_row_hidden_in_table_opens_search() {
-    // [utest -> req~screen.palette-fuzzy~1] #10: ガントで表の畳んだまとまりの行(delta)を選び、パレットから検索 → 表に戻って検索の入力が開く。
+    // [utest -> req~screen.palette-fuzzy~2] #10: ガントで表の畳んだまとまりの行(delta)を選び、パレットから検索 → 表に戻って検索の入力が開く。
     let (_t, mut a) = gantt_on_hidden_row("gafx10s");
     palette(&mut a, "search");
     assert_eq!(
@@ -552,7 +552,7 @@ fn rename_status(a: &mut App) {
 
 #[test]
 fn test_kb_2_pending_key_rename_keeps_cards_in_their_value_lanes() {
-    // [utest -> req~kanban.open-lanes~1, req~kanban.open-lane-order~1] #11: status のキーの名前の変更をためても、「→ phase」のレーンはできず、札は元の値のレーン
+    // [utest -> req~kanban.open-lanes~1, req~kanban.open-lane-order~2] #11: status のキーの名前の変更をためても、「→ phase」のレーンはできず、札は元の値のレーン
     // (alpha は todo、beta は doing)にある。
     let (_t, mut a) = boot("kbfx11l", RENAME_NOTES, RULES, KANBAN);
     rename_status(&mut a);
@@ -686,7 +686,7 @@ fn test_ga_1_gantt_opened_while_loading_closes_when_column_missing() {
 
 #[test]
 fn test_tr_2_tree_opened_while_loading_closes_when_column_missing() {
-    // [utest -> req~tree.config-invalid~1, req~tree.config-empty-table~1] #13: 設定の列が表に無い(path = "none")表で、読み込みの途中に T で木を開く → 読み終えて列が無いと
+    // [utest -> req~tree.config-invalid~2, req~tree.config-empty-table~1] #13: 設定の列が表に無い(path = "none")表で、読み込みの途中に T で木を開く → 読み終えて列が無いと
     // 分かったら、警告(CLI-3 の形)を出し、開いている木を閉じて表に戻る。
     let (_t, a) = open_while_loading("trfx13", "tree = { path = \"none\" }", 'T', Mode::Tree);
     let m = a.message.clone().unwrap_or_default();

@@ -82,7 +82,7 @@ fn test_put_twice_with_the_same_name_keeps_both_in_the_trash() {
 
 #[test]
 fn test_restore_puts_the_note_back_where_it_was() {
-    // [utest -> req~cell-edit.trash-restore-list~1] ごみ箱のノートは、元のフォルダへ同じバイトで戻り、ごみ箱から無くなる。
+    // [utest -> req~cell-edit.trash-restore-list~2] ごみ箱のノートは、元のフォルダへ同じバイトで戻り、ごみ箱から無くなる。
     let t = Tmp::new("restore");
     let p = t.write("プロジェクト/メモ.md", "---\nstatus: todo\n---\n");
     let item = put(&t.0, &p, 1_800_000_000).unwrap();
@@ -111,7 +111,7 @@ fn test_restore_refuses_when_a_file_is_at_the_original_place() {
 
 #[test]
 fn test_list_shows_the_original_place_and_time_newest_first() {
-    // [utest -> req~cell-edit.trash-restore-list~1] 一覧は、元の場所と消した時刻を持ち、新しい順に並ぶ。ごみ箱が無ければ空。
+    // [utest -> req~cell-edit.trash-restore-list~2] 一覧は、元の場所と消した時刻を持ち、新しい順に並ぶ。ごみ箱が無ければ空。
     let t = Tmp::new("list");
     assert_eq!(list(&t.0), Vec::new());
     let a = t.write("a.md", "a");

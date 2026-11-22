@@ -123,7 +123,7 @@ pub(super) fn col_named(app: &mut App, name: &str) {
 
 #[test]
 fn test_sr_1_five_bands() {
-    // [utest -> req~screen.layout-order~1, req~screen.layout-bottom-bar~1] ヘッダー(フォルダの名前と行数)・タブ・表・下の帯(モード・位置・未保存・キー)・メッセージ行。
+    // [utest -> req~screen.layout-order~2, req~screen.layout-bottom-bar~1] ヘッダー(フォルダの名前と行数)・タブ・表・下の帯(モード・位置・未保存・キー)・メッセージ行。
     let (_t, app) = make(
         "sr1",
         &[
@@ -324,7 +324,7 @@ fn test_sr_17_fullwidth_and_marks() {
 
 #[test]
 fn test_sr_18_backspace_and_undo() {
-    // [utest -> req~screen.default-keys~1] Backspace でセルを空にする(ためる変更)→「未保存 1」。[utest -> req~write-back.redo-keys~1] `u` で戻して「未保存 0」、`U` でやり直し。
+    // [utest -> req~screen.default-keys~2] Backspace でセルを空にする(ためる変更)→「未保存 1」。[utest -> req~write-back.redo-keys~1] `u` で戻して「未保存 0」、`U` でやり直し。
     let (_t, mut a) = make(
         "sr18",
         &[
@@ -336,7 +336,7 @@ fn test_sr_18_backspace_and_undo() {
     press(&mut a, KeyCode::Backspace);
     assert_eq!(a.changes.count(), 1);
     assert!(screen(&a).contains("未保存 1"));
-    // [utest -> req~screen.layout-order~1, req~screen.layout-bottom-bar~1] 狭い端末でも「未保存 N」は切れない。
+    // [utest -> req~screen.layout-order~2, req~screen.layout-bottom-bar~1] 狭い端末でも「未保存 N」は切れない。
     let narrow = view::render(&a, 12, 23);
     let foot: String = narrow[21]
         .spans
@@ -353,12 +353,12 @@ fn test_sr_18_backspace_and_undo() {
     assert_eq!(a.changes.count(), 0);
     a.key(KeyEvent::new(KeyCode::Char('r'), KeyModifiers::CONTROL));
     assert_eq!(a.changes.count(), 1);
-    // [utest -> req~screen.default-keys~1] 未保存があると `q` では終わらない(終了の確認 WB-11)。
+    // [utest -> req~screen.default-keys~2] 未保存があると `q` では終わらない(終了の確認 WB-11)。
     ch(&mut a, 'q');
     assert!(!a.quit);
     press(&mut a, KeyCode::Esc);
     ch(&mut a, 'u');
-    // [utest -> req~screen.default-keys~1] キーの無いセル(b の status)で Backspace → 何も変わらない。
+    // [utest -> req~screen.default-keys~2] キーの無いセル(b の status)で Backspace → 何も変わらない。
     ch(&mut a, 'j');
     press(&mut a, KeyCode::Delete);
     assert_eq!(a.changes.count(), 0);
@@ -368,7 +368,7 @@ fn test_sr_18_backspace_and_undo() {
 
 #[test]
 fn test_sr_18_read_only_cell_reason() {
-    // [utest -> req~screen.default-keys~1] 読むだけのセルでは理由を出して何もしない。[utest -> req~cell-view.not-color-only~1] 選ぶとメッセージ行に理由。
+    // [utest -> req~screen.default-keys~2] 読むだけのセルでは理由を出して何もしない。[utest -> req~cell-view.not-color-only~1] 選ぶとメッセージ行に理由。
     // 材料は CE-8 の読むだけの形(2行にまたがるフローのリスト)。1行の `[a, b]` は CE-16 で書ける。
     let (_t, mut a) = make(
         "sr18ro",
@@ -386,7 +386,7 @@ fn test_sr_18_read_only_cell_reason() {
     let dy = view::data_y(&a);
     let ro = cell_text(s.lines().nth(dy).unwrap(), "a ");
     assert!(ro.starts_with('#'), "{s}");
-    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-new~1] 書ける形のリスト(1行の `[a, b]`)には `#` の印が無い。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-new~1] 書ける形のリスト(1行の `[a, b]`)には `#` の印が無い。
     let rw = cell_text(s.lines().nth(dy + 1).unwrap(), "b ");
     assert_eq!(rw, "[a, b]", "{s}");
     press(&mut a, KeyCode::Backspace);
@@ -506,7 +506,7 @@ fn test_bv_10_selection_kept_after_reload() {
 
 #[test]
 fn test_bv_16_cancel_load() {
-    // [utest -> req~base-view.large-load~1] 読み込みの途中で Ctrl+G → 止まり、読んだ分の表が残る。
+    // [utest -> req~base-view.large-load~2] 読み込みの途中で Ctrl+G → 止まり、読んだ分の表が残る。
     let tmp = Tmp::new("bv16");
     for i in 0..50 {
         tmp.write(&format!("n{i:02}.md"), "---\nx: 1\n---\n");
@@ -695,11 +695,11 @@ fn test_ce_12_newline_value_not_opened() {
 
 #[test]
 fn test_ce_8_read_only_not_opened() {
-    // [utest -> req~cell-edit.read-only-forms~1, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
+    // [utest -> req~cell-edit.read-only-forms~2, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
     // [utest -> req~cell-edit.list-candidates-read-only~1] CE-8 の形のリスト(複数行にまたがるフロー)も開かずに理由。
     // 書ける形のリスト(d.md の `tags: [x, y]`)の画面の振る舞いはタスク 2(リストの選択の画面)で
     // 確かめる。ここでは核の Cell.lock が無いことだけを見る [utest -> req~cell-edit.list-items-candidates~1]。
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(e.md)は読むだけでなく、入力が開く。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(e.md)は読むだけでなく、入力が開く。
     let (_t, mut a) = make(
         "ce8",
         &[
@@ -726,12 +726,12 @@ fn test_ce_8_read_only_not_opened() {
         assert!(msg.contains("読むだけ") && msg.contains(want), "{msg}");
     }
     assert_eq!(a.changes.count(), 0);
-    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1] 書ける形のリストのセルは読むだけでない(lock なし)。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1] 書ける形のリストのセルは読むだけでない(lock なし)。
     let d = a.rows[3].clone();
     assert_eq!(a.src.label(&d), "d.md");
     let c = a.src.get(&d, "tags");
     assert!(c.lock.is_none(), "writable list is locked: {:?}", c.lock);
-    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは lock なしで、Enter で入力が開く(読むだけの理由は出ない)。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは lock なしで、Enter で入力が開く(読むだけの理由は出ない)。
     let e = a.rows[4].clone();
     assert_eq!(a.src.label(&e), "e.md");
     let c = a.src.get(&e, "title");
@@ -816,7 +816,7 @@ fn test_wb_9_review_then_save() {
 
 #[test]
 fn test_wb_17_revert_clears_pending() {
-    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-undoable~1] status を done に直して todo に戻す → 「未保存 0」、セルに `*` が無い、Ctrl+S は確認を開かず「変更が無い」。
+    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-undoable~1] status を done に直して todo に戻す → 「未保存 0」、セルに `*` が無い、Ctrl+S は確認を開かず「変更が無い」。
     let (t, mut a) = make("wb17", TWO);
     edit_cell(&mut a, 0, "status", "done");
     assert_eq!(a.changes.count(), 1);
@@ -831,7 +831,7 @@ fn test_wb_17_revert_clears_pending() {
     assert_eq!(a.mode, keymap::Mode::Table);
     assert_eq!(a.message.as_deref(), Some("保存する変更が無い"));
     assert_eq!(read(&t, "a.md"), TWO[0].1);
-    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-undoable~1] 外す操作も1手: `u` で done に戻る。
+    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-undoable~1] 外す操作も1手: `u` で done に戻る。
     ch(&mut a, 'u');
     assert_eq!(a.changes.count(), 1);
     assert!(screen(&a).contains("未保存 1"));
@@ -839,7 +839,7 @@ fn test_wb_17_revert_clears_pending() {
 
 #[test]
 fn test_wb_17_external_same_value_clears_pending() {
-    // [utest -> req~write-back.revert-drops-pending~1] status に done をためたまま、外で同じ done に直す → poll → 「未保存 0」・`*` なし。`u` で戻る。
+    // [utest -> req~write-back.revert-drops-pending~2] status に done をためたまま、外で同じ done に直す → poll → 「未保存 0」・`*` なし。`u` で戻る。
     let (t, mut a) = make("wb17ext", TWO);
     edit_cell(&mut a, 0, "status", "done");
     assert!(screen(&a).contains("未保存 1"));
@@ -857,7 +857,7 @@ fn test_wb_17_external_same_value_clears_pending() {
 
 #[test]
 fn test_wb_17_save_drops_same_before_review() {
-    // [utest -> req~write-back.revert-drops-pending~1, req~write-back.revert-not-written~1] 読んだ値と同じセルだけがためてある(上書きで外れたものを `u` で戻した)→ Ctrl+S は確認を開かず
+    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-not-written~1] 読んだ値と同じセルだけがためてある(上書きで外れたものを `u` で戻した)→ Ctrl+S は確認を開かず
     // 「保存する変更が無い」、未保存 0、ファイルは変わらない。
     let (t, mut a) = make("wb17save", TWO);
     edit_cell(&mut a, 0, "status", "done");

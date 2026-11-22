@@ -256,7 +256,7 @@ fn loaded_on_screen(s: &str) -> usize {
 
 #[test]
 fn test_bv_16_ten_thousand_notes_first_screen_fast() {
-    // [utest -> req~base-view.large-load~1] 1万ノート → 最初の読み込みの1歩のあと1秒以内に画面が出て、進捗(読み込み中 N/1万)が増えて画面に出る。
+    // [utest -> req~base-view.large-load~2] 1万ノート → 最初の読み込みの1歩のあと1秒以内に画面が出て、進捗(読み込み中 N/1万)が増えて画面に出る。
     let tmp = Tmp::new("bv16big");
     for i in 0..10_000 {
         std::fs::write(

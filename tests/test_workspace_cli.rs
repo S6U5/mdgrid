@@ -74,7 +74,7 @@ fn test_ws_3_add_list_remove_on_pipe() {
 
 #[test]
 fn test_ws_3_bad_input_one_line_reason() {
-    // [stest -> req~workspace.cli-open~1] 無いパス・無い名前・組めない旗は、理由1行と 0 以外の終了コード。
+    // [stest -> req~workspace.cli-open~2] 無いパス・無い名前・組めない旗は、理由1行と 0 以外の終了コード。
     let home = TempDir::new("ws-cli-bad");
     let h = home.path();
     notes(h);
@@ -114,7 +114,7 @@ fn test_ws_3_folder_named_workspace_opens() {
 
 #[test]
 fn test_ws_7_init_marker() {
-    // [stest -> req~workspace.marker-init~1] --init-workspace で、そのフォルダ(無ければ今のフォルダ)に印を作る。もうあれば書かずに理由。
+    // [stest -> req~workspace.marker-init~2] --init-workspace で、そのフォルダ(無ければ今のフォルダ)に印を作る。もうあれば書かずに理由。
     let home = TempDir::new("ws-cli-init");
     let h = home.path();
     notes(h);
@@ -131,7 +131,7 @@ fn test_ws_7_init_marker() {
 
 #[test]
 fn test_ws_3_w_opens_first_table() {
-    // [stest -> req~workspace.cli-list~1, req~workspace.cli-add~1, req~workspace.cli-open~1, req~workspace.cli-flags~1] `-w <名前>` だけなら、そのワークスペースの最初の表を開き、ヘッダーのパンくずに名前(WS-6・SR-42)。
+    // [stest -> req~workspace.cli-list~1, req~workspace.cli-add~1, req~workspace.cli-open~2, req~workspace.cli-flags~1] `-w <名前>` だけなら、そのワークスペースの最初の表を開き、ヘッダーのパンくずに名前(WS-6・SR-42)。
     let home = TempDir::new("ws-cli-w");
     let h = home.path();
     notes(h);

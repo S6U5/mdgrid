@@ -49,7 +49,7 @@ fn test_sr_36_value_list_keeps_pill_shape() {
 
 #[test]
 fn test_sr_36_picking_cell_keeps_parts() {
-    // [utest -> req~screen.style-parts-preset~1] saas で status のセルで Enter(候補が開く)→ セルは淡い札のまま。文字を打つと入力の欄になる。
+    // [utest -> req~screen.style-parts-preset~2] saas で status のセルで Enter(候補が開く)→ セルは淡い札のまま。文字を打つと入力の欄になる。
     let tmp = Tmp::new("sr36_picking");
     for (n, s) in [("a", "doing"), ("b", "todo"), ("c", "doing")] {
         tmp.write(

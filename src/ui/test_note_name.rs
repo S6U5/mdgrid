@@ -96,7 +96,7 @@ fn one(tag: &str, file: &str, path: &str, re: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_47_strip_leading_date() {
-    // [utest -> req~screen.note-name-regex~1, req~screen.note-name-match~1] note_path = "name"・note_name = '^\d{8}_' で plan/20260301_見積を出す.md → 欄は 見積を出す。
+    // [utest -> req~screen.note-name-regex~1, req~screen.note-name-match~2] note_path = "name"・note_name = '^\d{8}_' で plan/20260301_見積を出す.md → 欄は 見積を出す。
     let (_t, a) = one(
         "sr47strip",
         "plan/20260301_見積を出す.md",
@@ -111,7 +111,7 @@ fn test_sr_47_strip_leading_date() {
 
 #[test]
 fn test_sr_47_named_group_name() {
-    // [utest -> req~screen.note-name-match~1] 名前の付いた組 `name` があればその部分(1つ目の組より先)。
+    // [utest -> req~screen.note-name-match~2] 名前の付いた組 `name` があればその部分(1つ目の組より先)。
     let (_t, a) = one(
         "sr47named",
         "plan/20260301_見積を出す.md",
@@ -123,7 +123,7 @@ fn test_sr_47_named_group_name() {
 
 #[test]
 fn test_sr_47_first_group() {
-    // [utest -> req~screen.note-name-match~1] 組 `name` が無く組があれば1つ目の組: '^(.+)_v\d+$' で 設計書_v12.md → 設計書。
+    // [utest -> req~screen.note-name-match~2] 組 `name` が無く組があれば1つ目の組: '^(.+)_v\d+$' で 設計書_v12.md → 設計書。
     let (_t, a) = one("sr47first", "設計書_v12.md", "name", r"^(.+)_v\d+$");
     let s = screen(&a);
     assert_eq!(note_cell(&a, "v1"), "設計書", "{s}");
@@ -132,7 +132,7 @@ fn test_sr_47_first_group() {
 
 #[test]
 fn test_sr_47_no_match_keeps_name() {
-    // [utest -> req~screen.note-name-match~1] 一致しない名前はそのまま: '^\d{8}_' で 覚え書き.md → 覚え書き。一致する行と並べても崩れない。
+    // [utest -> req~screen.note-name-match~2] 一致しない名前はそのまま: '^\d{8}_' で 覚え書き.md → 覚え書き。一致する行と並べても崩れない。
     let tmp = notes(
         "sr47nomatch",
         &[
@@ -151,7 +151,7 @@ fn test_sr_47_no_match_keeps_name() {
 
 #[test]
 fn test_sr_47_empty_result_keeps_name() {
-    // [utest -> req~screen.note-name-match~1] 結果が空になる正規表現は名前のまま: '^.*$'(全部を除く)・'^(x*)'(空の組)。
+    // [utest -> req~screen.note-name-match~2] 結果が空になる正規表現は名前のまま: '^.*$'(全部を除く)・'^(x*)'(空の組)。
     let (_t, a) = one("sr47empty", "棚卸し.md", "name", "^.*$");
     assert_eq!(note_cell(&a, "v1"), "棚卸し", "{}", screen(&a));
     let (_u, b) = one("sr47empty2", "棚卸し.md", "name", "^(x*)");
@@ -194,7 +194,7 @@ fn test_sr_47_common_keeps_folders() {
 
 #[test]
 fn test_sr_47_search_still_matches_date() {
-    // [utest -> req~screen.note-name-match~1, req~screen.note-name-search-kept~1, req~navigation.find~1] 欄から日付を除いても、`\` の検索で 20260307 と打つとその行が当たる(検索は根からのパスのまま)。
+    // [utest -> req~screen.note-name-match~2, req~screen.note-name-search-kept~1, req~navigation.find~1] 欄から日付を除いても、`\` の検索で 20260307 と打つとその行が当たる(検索は根からのパスのまま)。
     let tmp = notes(
         "sr47search",
         &[
@@ -216,7 +216,7 @@ fn test_sr_47_search_still_matches_date() {
 
 #[test]
 fn test_sr_47_ledger_look() {
-    // [utest -> req~screen.note-name-regex~1, req~screen.note-name-match~1, req~screen.note-column-path~1, req~screen.note-column-marks-only~1, req~screen.note-path-scopes~1] 台帳の形: todo/20261015_資料を作る.md・archive/todo/20261001_会議の準備.md
+    // [utest -> req~screen.note-name-regex~1, req~screen.note-name-match~2, req~screen.note-column-path~1, req~screen.note-column-marks-only~2, req~screen.note-path-scopes~1] 台帳の形: todo/20261015_資料を作る.md・archive/todo/20261001_会議の準備.md
     // (frontmatter に title と status)、`[display] note_path = "name"`・`note_name = '^\d{8}_'` → 欄は
     // 資料を作る・会議の準備。画面にフォルダは出ず、表の行に作成日の数字も出ない。
     let tmp = notes(

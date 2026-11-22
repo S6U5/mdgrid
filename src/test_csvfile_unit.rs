@@ -23,7 +23,7 @@ fn test_sc_15_parse_quotes_newlines_bom_crlf() {
 
 #[test]
 fn test_sc_15_parse_errors() {
-    // [utest -> req~scope.csv-open-unreadable~1] UTF-8 でない・空・閉じない引用符は理由。
+    // [utest -> req~scope.csv-open-unreadable~2] UTF-8 でない・空・閉じない引用符は理由。
     assert!(parse(&[0x83, 0x41, b','], b',').is_err());
     assert!(parse(b"", b',').is_err());
     assert!(parse(b"\n\n", b',').is_err());

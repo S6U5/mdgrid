@@ -170,7 +170,7 @@ fn assert_japanese_help(help: &str, what: &str) {
 
 #[test]
 fn test_sr_23_help_en_with_lang_en() {
-    // [stest -> req~screen.locales-auto~2] LANG=en_US.UTF-8 → --help が英語。
+    // [stest -> req~screen.locales-auto~3] LANG=en_US.UTF-8 → --help が英語。
     let out = run("help-en", EN, None, &["--help"]);
     let help = stdout_ok(&out, "LANG=en --help");
     assert_english_help(&help, "LANG=en");
@@ -178,7 +178,7 @@ fn test_sr_23_help_en_with_lang_en() {
 
 #[test]
 fn test_sr_23_help_ja_with_lang_ja() {
-    // [stest -> req~screen.locales-auto~2] LANG=ja_JP.UTF-8 → 日本語。
+    // [stest -> req~screen.locales-auto~3] LANG=ja_JP.UTF-8 → 日本語。
     let out = run("help-ja", JA, None, &["--help"]);
     let help = stdout_ok(&out, "LANG=ja --help");
     assert_japanese_help(&help, "LANG=ja");
@@ -186,7 +186,7 @@ fn test_sr_23_help_ja_with_lang_ja() {
 
 #[test]
 fn test_sr_23_help_config_ja_wins_over_lang_en() {
-    // [stest -> req~screen.locales-setting~2] LANG=en_US.UTF-8 で設定に language = "ja" → 日本語。
+    // [stest -> req~screen.locales-setting~3] LANG=en_US.UTF-8 で設定に language = "ja" → 日本語。
     let out = run("help-conf-ja", EN, Some("language = \"ja\"\n"), &["--help"]);
     let help = stdout_ok(&out, "LANG=en language=ja --help");
     assert_japanese_help(&help, "LANG=en language=ja");
@@ -194,7 +194,7 @@ fn test_sr_23_help_config_ja_wins_over_lang_en() {
 
 #[test]
 fn test_sr_23_help_config_en_wins_over_lang_ja() {
-    // [stest -> req~screen.locales-setting~2, req~screen.locales-auto~2] LANG=ja_JP.UTF-8 で設定に language = "en" → 英語。
+    // [stest -> req~screen.locales-setting~3, req~screen.locales-auto~3] LANG=ja_JP.UTF-8 で設定に language = "en" → 英語。
     let out = run("help-conf-en", JA, Some("language = \"en\"\n"), &["--help"]);
     let help = stdout_ok(&out, "LANG=ja language=en --help");
     assert_english_help(&help, "LANG=ja language=en");
@@ -202,7 +202,7 @@ fn test_sr_23_help_config_en_wins_over_lang_ja() {
 
 #[test]
 fn test_sr_23_help_config_auto_follows_lang() {
-    // [stest -> req~screen.locales-auto~2] language = "auto" は環境に従う。
+    // [stest -> req~screen.locales-auto~3] language = "auto" は環境に従う。
     let out = run(
         "help-auto-ja",
         JA,
@@ -221,7 +221,7 @@ fn test_sr_23_help_config_auto_follows_lang() {
 
 #[test]
 fn test_sr_23_help_no_locale_env_is_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2] LC_ALL・LC_MESSAGES・LANG のどれも無い → 英語。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3] LC_ALL・LC_MESSAGES・LANG のどれも無い → 英語。
     let out = run("help-none", None, None, &["--help"]);
     let help = stdout_ok(&out, "環境変数なし --help");
     assert_english_help(&help, "環境変数なし");
@@ -231,7 +231,7 @@ fn test_sr_23_help_no_locale_env_is_english() {
 
 #[test]
 fn test_sr_23_missing_path_reason_en() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2] LANG=en で無いパス → 理由の1行が英語、終了コード 2。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3] LANG=en で無いパス → 理由の1行が英語、終了コード 2。
     let out = run("missing-en", EN, None, &["no-such-dir-xyz"]);
     let line = one_error_line(&out, "LANG=en 無いパス");
     let bad = japanese_chars(&line);
@@ -244,7 +244,7 @@ fn test_sr_23_missing_path_reason_en() {
 
 #[test]
 fn test_sr_23_missing_path_reason_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2, req~screen.locales-no-translate~1] LANG=ja で無いパス → 日本語(今と同じ文)、終了コード 2。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-no-translate~1] LANG=ja で無いパス → 日本語(今と同じ文)、終了コード 2。
     let out = run("missing-ja", JA, None, &["no-such-dir-xyz"]);
     let line = one_error_line(&out, "LANG=ja 無いパス");
     assert!(
@@ -259,7 +259,7 @@ fn test_sr_23_missing_path_reason_ja() {
 
 #[test]
 fn test_sr_23_missing_path_reason_config_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~2] LANG=en でも設定の language = "ja" なら起動の理由も日本語。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3] LANG=en でも設定の language = "ja" なら起動の理由も日本語。
     let out = run(
         "missing-conf-ja",
         EN,
@@ -301,7 +301,7 @@ fn test_sr_23_unknown_option_ja() {
 
 #[test]
 fn test_sr_23_print_config_has_language_auto() {
-    // [stest -> req~screen.locales-setting~2, req~cli.print-config-reads-back~1] --print-config に language = "auto" の行があり、読み直すと既定と同じ。
+    // [stest -> req~screen.locales-setting~3, req~cli.print-config-reads-back~1] --print-config に language = "auto" の行があり、読み直すと既定と同じ。
     let out = run("print-config", EN, None, &["--print-config"]);
     let text = stdout_ok(&out, "--print-config");
     assert!(
@@ -328,7 +328,7 @@ fn test_sr_23_print_config_has_language_auto() {
 
 #[test]
 fn test_sr_23_language_values_read_without_warning() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-setting~2, req~screen.locales-auto~2, req~screen.locales-ledger~1] language の auto・en・ja は警告なしで読める(--print-config と並べて確かめる)。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-setting~3, req~screen.locales-auto~3, req~screen.locales-ledger~1] language の auto・en・ja は警告なしで読める(--print-config と並べて確かめる)。
     for v in ["auto", "en", "ja"] {
         let text = format!("language = \"{v}\"\n");
         let (_c, warnings) = parse(&text).unwrap_or_else(|e| panic!("{text}: 読めない: {e:?}"));

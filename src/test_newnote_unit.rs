@@ -171,7 +171,7 @@ fn names_in(dir: &Path) -> Vec<String> {
 
 #[test]
 fn test_ce_25_spaced_dotdot_does_not_escape() {
-    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-start-keys~1, req~cell-edit.new-note-name~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-folder-root~1, req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-relmap-button~1, req~cell-edit.new-note-readonly~1] 空白で囲んだ `..` も外に出る部品として断り、外に何も作らない(フォルダの設定も同じ)。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-start-keys~1, req~cell-edit.new-note-name~1, req~cell-edit.new-note-default-folder~1, req~cell-edit.new-note-folder-root~1, req~cell-edit.new-note-refuse-outside~1, req~cell-edit.new-note-relmap-button~2, req~cell-edit.new-note-readonly~1] 空白で囲んだ `..` も外に出る部品として断り、外に何も作らない(フォルダの設定も同じ)。
     let t = Tmp::new("escape");
     let root = t.0.join("vault");
     std::fs::create_dir_all(&root).unwrap();
@@ -192,7 +192,7 @@ fn test_ce_25_spaced_dotdot_does_not_escape() {
 
 #[test]
 fn test_ce_25_obsidian_bad_chars_and_dot_parts_are_refused() {
-    // [utest -> req~cell-edit.new-note-relmap-button~1] Obsidian が許さない文字・`\`・`.` で始まる部品(.obsidian・.git・.trash も)は理由つきで断る。
+    // [utest -> req~cell-edit.new-note-relmap-button~2] Obsidian が許さない文字・`\`・`.` で始まる部品(.obsidian・.git・.trash も)は理由つきで断る。
     let root = Path::new("/no/such/root");
     for name in [
         "a#b",

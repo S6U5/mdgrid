@@ -102,7 +102,7 @@ fn test_add_stages_only_the_written_notes() {
 
 #[test]
 fn test_commit_holds_only_the_written_notes() {
-    // [utest -> req~write-back.git-commit~1] auto = "commit" → 書いた a.md と新しい c.md だけの1つのコミット。変更中の other.txt と、先にステージしてあった b.md は入らず、そのまま残る。
+    // [utest -> req~write-back.git-commit~2] auto = "commit" → 書いた a.md と新しい c.md だけの1つのコミット。変更中の other.txt と、先にステージしてあった b.md は入らず、そのまま残る。
     let t = repo("commit");
     std::fs::write(t.0.join("a.md"), "a2\n").unwrap();
     std::fs::write(t.0.join("c.md"), "c\n").unwrap();
@@ -127,7 +127,7 @@ fn test_commit_holds_only_the_written_notes() {
 
 #[test]
 fn test_commit_without_a_difference_makes_no_commit() {
-    // [utest -> req~write-back.git-commit~1] 境界: 書いたノートが HEAD と同じ中身 → コミットは作らない(空のコミットを作らない)。
+    // [utest -> req~write-back.git-commit~2] 境界: 書いたノートが HEAD と同じ中身 → コミットは作らない(空のコミットを作らない)。
     let t = repo("nodiff");
     let before = head(&t.0);
     let done = run(Level::Commit, &[t.0.join("a.md")], "x").unwrap();
@@ -137,7 +137,7 @@ fn test_commit_without_a_difference_makes_no_commit() {
 
 #[test]
 fn test_auto_message_has_the_first_line_and_the_paths() {
-    // [utest -> req~write-back.git-message-auto~1] 自動の文は、1行目、空行、リポの根からのパスを1行ずつ。
+    // [utest -> req~write-back.git-message-auto~2] 自動の文は、1行目、空行、リポの根からのパスを1行ずつ。
     let t = repo("msg");
     std::fs::create_dir_all(t.0.join("Tasks")).unwrap();
     std::fs::write(t.0.join("Tasks/x.md"), "x\n").unwrap();

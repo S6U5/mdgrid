@@ -198,7 +198,7 @@ fn group_by(col: &str, dir: Dir, hide_empty: bool) -> Group {
 
 #[test]
 fn test_nv_14_drop_done_hides_done_rows() {
-    // [utest -> req~navigation.settings-filter~1] status の done を外す → done の行が消える。
+    // [utest -> req~navigation.settings-filter~2] status の done を外す → done の行が消える。
     assert_eq!(
         filtered(vec![cond("status", Op::Drop(some(&["done"])))]),
         names(&["r1", "r3", "r4"])
@@ -207,7 +207,7 @@ fn test_nv_14_drop_done_hides_done_rows() {
 
 #[test]
 fn test_nv_14_keep_only_book_in_other_column() {
-    // [utest -> req~navigation.settings-filter~1] status 以外の列(種別)でも効く。本 だけを残す → 本 の行だけ。
+    // [utest -> req~navigation.settings-filter~2] status 以外の列(種別)でも効く。本 だけを残す → 本 の行だけ。
     assert_eq!(
         filtered(vec![cond("種別", Op::Keep(some(&["本"])))]),
         names(&["r1", "r3", "r5"])
@@ -216,7 +216,7 @@ fn test_nv_14_keep_only_book_in_other_column() {
 
 #[test]
 fn test_nv_14_empty_value_can_be_kept_or_dropped() {
-    // [utest -> req~navigation.settings-filter~1] キーの無い行は「(空)」(None)として選べる。
+    // [utest -> req~navigation.settings-filter~2] キーの無い行は「(空)」(None)として選べる。
     assert_eq!(
         filtered(vec![cond("status", Op::Keep(vec![None]))]),
         names(&["r3"])
@@ -237,7 +237,7 @@ fn test_nv_14_empty_value_can_be_kept_or_dropped() {
 
 #[test]
 fn test_nv_14_keep_works_on_number_column() {
-    // [utest -> req~navigation.settings-filter~1] 数の列でも、値(表示の文字列)を選んで残せる。
+    // [utest -> req~navigation.settings-filter~2] 数の列でも、値(表示の文字列)を選んで残せる。
     assert_eq!(
         filtered(vec![cond("priority", Op::Keep(some(&["3"])))]),
         names(&["r3"])
@@ -246,7 +246,7 @@ fn test_nv_14_keep_works_on_number_column() {
 
 #[test]
 fn test_nv_14_matches_single_value() {
-    // [utest -> req~navigation.settings-filter~1] matches は1つの値に条件を当てる。
+    // [utest -> req~navigation.settings-filter~2] matches は1つの値に条件を当てる。
     let drop_done = cond("status", Op::Drop(some(&["done"])));
     assert!(!matches(&drop_done, Some(&str_v("done")), Kind::Text));
     assert!(matches(&drop_done, Some(&str_v("todo")), Kind::Text));
@@ -260,7 +260,7 @@ fn test_nv_14_matches_single_value() {
 
 #[test]
 fn test_nv_14_no_filters_keeps_all_rows_in_order() {
-    // [utest -> req~navigation.settings-filter~1] 条件が無ければ行はそのまま。
+    // [utest -> req~navigation.settings-filter~2] 条件が無ければ行はそのまま。
     let (rows, groups) = run(&Settings::default());
     assert_eq!(ids(&rows), names(&["r1", "r2", "r3", "r4", "r5"]));
     assert!(groups.is_empty());
@@ -441,7 +441,7 @@ fn test_nv_19_conditions_are_and() {
 
 #[test]
 fn test_nv_15_inherit_keeps_given_groups() {
-    // [utest -> req~navigation.settings-group~1] Inherit は渡された groups(`.base` の groupBy の結果)のまま。
+    // [utest -> req~navigation.settings-group~2] Inherit は渡された groups(`.base` の groupBy の結果)のまま。
     let given = vec![("A".to_string(), 0..2), ("B".to_string(), 2..5)];
     let (rows, groups) = run_with_groups(&Settings::default(), given.clone());
     assert_eq!(ids(&rows), names(&["r1", "r2", "r3", "r4", "r5"]));
@@ -450,7 +450,7 @@ fn test_nv_15_inherit_keeps_given_groups() {
 
 #[test]
 fn test_nv_15_off_removes_groups() {
-    // [utest -> req~navigation.settings-group~1] 「しない」を選ぶ → 見出しが消える(.base の groupBy より優先)。
+    // [utest -> req~navigation.settings-group~2] 「しない」を選ぶ → 見出しが消える(.base の groupBy より優先)。
     let given = vec![("A".to_string(), 0..2), ("B".to_string(), 2..5)];
     let s = Settings {
         group: Group::Off,
@@ -463,7 +463,7 @@ fn test_nv_15_off_removes_groups() {
 
 #[test]
 fn test_nv_15_group_by_column_values() {
-    // [utest -> req~navigation.settings-group~1] 種別の列を選ぶ → 種別ごとの見出しと範囲。まとまりの中は元の順(安定)。
+    // [utest -> req~navigation.settings-group~2] 種別の列を選ぶ → 種別ごとの見出しと範囲。まとまりの中は元の順(安定)。
     let given = vec![("A".to_string(), 0..5)];
     let s = Settings {
         group: group_by("種別", Dir::Asc, false),
@@ -493,7 +493,7 @@ fn test_nv_15_group_by_column_values() {
 
 #[test]
 fn test_nv_15_group_by_list_column_does_not_lose_rows() {
-    // [utest -> req~navigation.settings-group~1] まとまりは全部の行を覆う(範囲が隙間なく続く)。
+    // [utest -> req~navigation.settings-group~2] まとまりは全部の行を覆う(範囲が隙間なく続く)。
     let s = Settings {
         group: group_by("status", Dir::Asc, false),
         ..Settings::default()
@@ -512,7 +512,7 @@ fn test_nv_15_group_by_list_column_does_not_lose_rows() {
 
 #[test]
 fn test_nv_15_sort_by_number_asc_desc() {
-    // [utest -> req~navigation.settings-group~1] 並べ替え: 数として並べ、型の合わない値は Asc でも Desc でも後ろ。
+    // [utest -> req~navigation.settings-group~2] 並べ替え: 数として並べ、型の合わない値は Asc でも Desc でも後ろ。
     assert_eq!(
         sorted(vec![("priority", Dir::Asc)]),
         names(&["r2", "r3", "r5", "r1", "r4"])
@@ -525,7 +525,7 @@ fn test_nv_15_sort_by_number_asc_desc() {
 
 #[test]
 fn test_nv_15_sort_by_date_puts_mismatched_and_empty_last() {
-    // [utest -> req~navigation.settings-group~1] 日付の並べ替え: `someday` と空は後ろ(Desc でも)。
+    // [utest -> req~navigation.settings-group~2] 日付の並べ替え: `someday` と空は後ろ(Desc でも)。
     let asc = sorted(vec![("due", Dir::Asc)]);
     assert_eq!(asc[..3].to_vec(), names(&["r1", "r5", "r2"]));
     let mut tail = asc[3..].to_vec();
@@ -541,7 +541,7 @@ fn test_nv_15_sort_by_date_puts_mismatched_and_empty_last() {
 
 #[test]
 fn test_nv_15_sort_is_stable_and_empty_last() {
-    // [utest -> req~navigation.settings-group~1] 並べ替えは安定(同じ値は元の順)。空は Desc でも後ろ。
+    // [utest -> req~navigation.settings-group~2] 並べ替えは安定(同じ値は元の順)。空は Desc でも後ろ。
     assert_eq!(
         sorted(vec![("種別", Dir::Asc)]),
         names(&["r1", "r3", "r5", "r2", "r4"])
@@ -554,7 +554,7 @@ fn test_nv_15_sort_is_stable_and_empty_last() {
 
 #[test]
 fn test_nv_15_multiple_sorts() {
-    // [utest -> req~navigation.settings-group~1] 複数の列で並べる: 種別 ↑ → priority ↓。
+    // [utest -> req~navigation.settings-group~2] 複数の列で並べる: 種別 ↑ → priority ↓。
     assert_eq!(
         sorted(vec![("種別", Dir::Asc), ("priority", Dir::Desc)]),
         names(&["r1", "r5", "r3", "r2", "r4"])
@@ -563,7 +563,7 @@ fn test_nv_15_multiple_sorts() {
 
 #[test]
 fn test_nv_15_group_by_with_sort_inside_groups() {
-    // [utest -> req~navigation.settings-group~1] まとまりの中は sorts の順。
+    // [utest -> req~navigation.settings-group~2] まとまりの中は sorts の順。
     let s = Settings {
         sorts: vec![("priority".to_string(), Dir::Desc)],
         group: group_by("種別", Dir::Asc, false),
@@ -580,7 +580,7 @@ fn test_nv_15_group_by_with_sort_inside_groups() {
 
 #[test]
 fn test_nv_15_filter_then_group() {
-    // [utest -> req~navigation.settings-group~1] 絞った行だけをまとめる。
+    // [utest -> req~navigation.settings-group~2] 絞った行だけをまとめる。
     let s = Settings {
         filters: vec![cond("status", Op::Drop(some(&["done"])))],
         group: group_by("種別", Dir::Asc, false),

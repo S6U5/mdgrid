@@ -40,7 +40,7 @@ fn lines_with(name: &str, toml: &str) -> Vec<String> {
 
 #[test]
 fn test_nv_23_bar_padding_zero_is_one_row() {
-    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-half-fallback~1] `bar_padding = 0` → 余白なしの1行(2行目に欄、3行目が見出し)。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-half-fallback~1] `bar_padding = 0` → 余白なしの1行(2行目に欄、3行目が見出し)。
     let l = lines_with("pad0", "[display]\nbar_padding = 0\n");
     let s = l.join("\n");
     assert!(l[1].contains("\\ 検索…"), "{s}");
@@ -49,7 +49,7 @@ fn test_nv_23_bar_padding_zero_is_one_row() {
 
 #[test]
 fn test_nv_23_bar_padding_two_rows_each() {
-    // [utest -> req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-fallback~1] `bar_padding = 2` → 2・3行目と5・6行目が空き、4行目に欄、7行目が見出し。
+    // [utest -> req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-fallback~1] `bar_padding = 2` → 2・3行目と5・6行目が空き、4行目に欄、7行目が見出し。
     let l = lines_with("pad2", "[display]\nbar_padding = 2\n");
     let s = l.join("\n");
     for y in [1, 2, 4, 5] {
@@ -61,7 +61,7 @@ fn test_nv_23_bar_padding_two_rows_each() {
 
 #[test]
 fn test_nv_23_box_needs_padding() {
-    // [utest -> req~navigation.search-box-padding-setting~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-half-fallback~1, req~navigation.search-box-style~1] `buttons = "box"` で `bar_padding = 0` → 線を描かず1行。
+    // [utest -> req~navigation.search-box-padding-setting~2, req~navigation.search-box-screen-bg~2, req~navigation.search-box-half-fallback~1, req~navigation.search-box-style~1] `buttons = "box"` で `bar_padding = 0` → 線を描かず1行。
     let l = lines_with("box0", "[display]\nbuttons = \"box\"\nbar_padding = 0\n");
     let s = l.join("\n");
     assert!(!l[1].contains('│') && !l[1].contains('╭'), "{s}");

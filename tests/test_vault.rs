@@ -142,7 +142,7 @@ fn test_bv_1_skips_obsidian_git_and_trash() {
 
 #[test]
 fn test_bv_2_root_is_nearest_parent_with_obsidian() {
-    // [utest -> req~base-view.root-folder-nearest~1] .obsidian/ を持つ最寄りの上のフォルダが根になる
+    // [utest -> req~base-view.root-folder-nearest~2] .obsidian/ を持つ最寄りの上のフォルダが根になる
     let t = TempDir::new("bv2up");
     t.mkdir("vault/.obsidian");
     let inner = t.mkdir("vault/projects/x");
@@ -152,7 +152,7 @@ fn test_bv_2_root_is_nearest_parent_with_obsidian() {
 
 #[test]
 fn test_bv_2_root_is_given_folder_without_obsidian() {
-    // [utest -> req~base-view.root-folder-nearest~1] .obsidian/ が無ければ渡したフォルダが根
+    // [utest -> req~base-view.root-folder-nearest~2] .obsidian/ が無ければ渡したフォルダが根
     let t = TempDir::new("bv2plain");
     let inner = t.mkdir("plain/sub");
     let r = roots(std::slice::from_ref(&inner)).unwrap();
@@ -370,7 +370,7 @@ fn test_bv_10_empty_gives_none() {
 
 #[test]
 fn test_bv_16_load_is_incremental_and_cancellable() {
-    // [utest -> req~base-view.large-load~1] 読み込みを待たずに始まり、少しずつ増え、中止すると読んだ分が残る
+    // [utest -> req~base-view.large-load~2] 読み込みを待たずに始まり、少しずつ増え、中止すると読んだ分が残る
     let t = TempDir::new("bv16");
     for i in 0..300 {
         t.write(
@@ -402,7 +402,7 @@ fn test_bv_16_load_is_incremental_and_cancellable() {
 
 #[test]
 fn test_bv_16_load_finishes_with_all_notes() {
-    // [utest -> req~base-view.large-load~1] 最後まで読めば done=true で全ノート
+    // [utest -> req~base-view.large-load~2] 最後まで読めば done=true で全ノート
     let t = TempDir::new("bv16all");
     for i in 0..300 {
         t.write(&format!("d{}/n{:03}.md", i % 7, i), b"x\n");

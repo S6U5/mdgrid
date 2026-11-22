@@ -48,7 +48,7 @@ fn boot(tag: &str, line: &str) -> (Tmp, App) {
 
 #[test]
 fn test_gantt_columns_declared_in_types_do_not_warn_when_no_note_has_them() {
-    // [utest -> req~gantt.config-declared-column~1] [types] に start・due を書いた表で、start も due も持たないノートが1件 → 警告は無く、C でガントの画面が開く。
+    // [utest -> req~gantt.config-declared-column~2] [types] に start・due を書いた表で、start も due も持たないノートが1件 → 警告は無く、C でガントの画面が開く。
     let (_t, mut a) = boot("dc-gantt", "gantt = { start = \"start\", end = \"due\" }");
     assert_eq!(a.message, None);
     ch(&mut a, 'C');
@@ -57,7 +57,7 @@ fn test_gantt_columns_declared_in_types_do_not_warn_when_no_note_has_them() {
 
 #[test]
 fn test_gantt_column_in_neither_notes_nor_config_still_warns() {
-    // [utest -> req~gantt.config-declared-column~1] 境界: [types] にも [rules] にもノートにも無い列 begin → 今までどおり警告1行で、ガントは開かない。
+    // [utest -> req~gantt.config-declared-column~2] 境界: [types] にも [rules] にもノートにも無い列 begin → 今までどおり警告1行で、ガントは開かない。
     let (_t, mut a) = boot(
         "dc-gantt-miss",
         "gantt = { start = \"begin\", end = \"due\" }",
@@ -70,7 +70,7 @@ fn test_gantt_column_in_neither_notes_nor_config_still_warns() {
 
 #[test]
 fn test_kanban_column_declared_in_rules_does_not_warn_when_no_note_has_it() {
-    // [utest -> req~kanban.config-declared-column~1] [rules.status] のある表で、status を持たないノートが1件 → 警告は無く、B でカンバンが開き、決まりの値のレーン todo・doing・done が並ぶ。
+    // [utest -> req~kanban.config-declared-column~2] [rules.status] のある表で、status を持たないノートが1件 → 警告は無く、B でカンバンが開き、決まりの値のレーン todo・doing・done が並ぶ。
     let (_t, mut a) = boot("dc-kanban", "kanban = { column = \"status\" }");
     assert_eq!(a.message, None);
     ch(&mut a, 'B');
@@ -83,7 +83,7 @@ fn test_kanban_column_declared_in_rules_does_not_warn_when_no_note_has_it() {
 
 #[test]
 fn test_chart_column_declared_in_rules_does_not_warn_when_no_note_has_it() {
-    // [utest -> req~chart.config-declared-column~1] [rules.status] のある表で、status を持たないノートが1件、印のグラフ x = "status" → 警告は無い。x = "none" は今までどおり警告1行。
+    // [utest -> req~chart.config-declared-column~2] [rules.status] のある表で、status を持たないノートが1件、印のグラフ x = "status" → 警告は無い。x = "none" は今までどおり警告1行。
     let (_t, a) = boot("dc-chart", "chart = [{ name = \"S\", x = \"status\" }]");
     assert_eq!(a.message, None);
     let (_t, a) = boot("dc-chart-miss", "chart = [{ name = \"S\", x = \"none\" }]");
@@ -93,7 +93,7 @@ fn test_chart_column_declared_in_rules_does_not_warn_when_no_note_has_it() {
 
 #[test]
 fn test_tree_path_declared_in_types_does_not_warn_when_no_note_has_it() {
-    // [utest -> req~tree.config-declared-column~1] [types] に folder を書いた表で、folder を持たないノートが1件、tree = { path = "folder" } → 警告は無い。path = "none" は今までどおり警告1行。
+    // [utest -> req~tree.config-declared-column~2] [types] に folder を書いた表で、folder を持たないノートが1件、tree = { path = "folder" } → 警告は無い。path = "none" は今までどおり警告1行。
     let (_t, a) = boot("dc-tree", "tree = { path = \"folder\" }");
     assert_eq!(a.message, None);
     let (_t, a) = boot("dc-tree-miss", "tree = { path = \"none\" }");
@@ -106,7 +106,7 @@ fn test_tree_path_declared_in_types_does_not_warn_when_no_note_has_it() {
 
 #[test]
 fn test_kanban_opens_with_empty_lanes_when_there_are_no_rows() {
-    // [utest -> req~kanban.open-empty-lanes~1] ノートが1件も無い表で [rules.status] values = todo・doing・done、kanban = { column = "status" } → B でカンバンが開き、札 0 枚のレーン todo・doing・done がこの順で並ぶ。
+    // [utest -> req~kanban.open-empty-lanes~2] ノートが1件も無い表で [rules.status] values = todo・doing・done、kanban = { column = "status" } → B でカンバンが開き、札 0 枚のレーン todo・doing・done がこの順で並ぶ。
     let tmp = Tmp::new("dc-kanban-empty");
     std::fs::create_dir_all(tmp.notes()).unwrap();
     std::fs::create_dir_all(tmp.0.join(".mdgrid")).unwrap();

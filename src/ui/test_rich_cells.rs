@@ -57,7 +57,7 @@ fn row(a: &App, name: &str) -> String {
 
 #[test]
 fn test_sr_35_rich_cells() {
-    // [utest -> req~screen.rich-cells-parts~1] 色のある表示: 真偽は ☑ ☐、リストの要素と status の値は札、見出しに型の印。値の文字は見せる。
+    // [utest -> req~screen.rich-cells-parts~2] 色のある表示: 真偽は ☑ ☐、リストの要素と status の値は札、見出しに型の印。値の文字は見せる。
     let tmp = notes("sr35_rich");
     let a = with(&tmp, ColorMode::Rgb, "");
     let h = head(&a);
@@ -126,7 +126,7 @@ fn test_sr_35_plain_without_color_or_setting() {
 
 #[test]
 fn test_sr_35_per_part_and_column() {
-    // [utest -> req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] 部品の種類ごと(checkbox = false)と列ごと(status は文字、memo は札)。列が種類より優先。
+    // [utest -> req~screen.rich-cells-per-kind~2, req~screen.rich-cells-per-column~2] 部品の種類ごと(checkbox = false)と列ごと(status は文字、memo は札)。列が種類より優先。
     let tmp = notes("sr35_cols");
     let a = with(
         &tmp,
@@ -156,7 +156,7 @@ fn test_sr_35_per_part_and_column() {
 
 #[test]
 fn test_sr_35_search_matches_value_text() {
-    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1, req~screen.rich-cells-values-kept~1] 検索は見せる文字(☑)でなく値の文字(true)でも一致する。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-value-color~1, req~screen.rich-cells-values-kept~1] 検索は見せる文字(☑)でなく値の文字(true)でも一致する。
     let tmp = notes("sr35_search");
     let mut a = with(&tmp, ColorMode::Rgb, "");
     a.search = Some("true".into());

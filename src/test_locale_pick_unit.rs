@@ -13,7 +13,7 @@ fn pick(v: &str) -> Option<&'static str> {
 
 #[test]
 fn test_locale_pick_language_and_region() {
-    // [utest -> req~screen.locales-auto~2] 言語と地域が合う台帳、無ければ言語が合う台帳、どれも合わなければ無し(英語)。
+    // [utest -> req~screen.locales-auto~3] 言語と地域が合う台帳、無ければ言語が合う台帳、どれも合わなければ無し(英語)。
     assert_eq!(pick("en_US.UTF-8"), Some("en"));
     assert_eq!(pick("ja_JP.UTF-8"), Some("ja"));
     assert_eq!(pick("zh_TW.UTF-8"), Some("zh-TW"));

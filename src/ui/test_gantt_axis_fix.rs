@@ -419,7 +419,7 @@ fn test_ga_2_band_month_cells_even_past_9999() {
 
 #[test]
 fn test_rel_7_no_view_error_hint() {
-    // [utest -> req~relations.map~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~1] 今の表のビューが開けない(`.base` の評価できない絞り込み)ときに `R` で関係マップを開く → メッセージ行に
+    // [utest -> req~relations.map~2, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~2] 今の表のビューが開けない(`.base` の評価できない絞り込み)ときに `R` で関係マップを開く → メッセージ行に
     // 開けないビューの案内(「このビューは開けない(理由は表の欄)。[ ] でほかのビューへ」)が出ない(関係マップには表の欄も
     // `[` `]` も無い)。関係マップは今の表だけでも開く。
     let tmp = Tmp::new("rel7viewerr");

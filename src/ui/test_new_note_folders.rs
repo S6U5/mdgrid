@@ -145,7 +145,7 @@ fn assert_created_and_selected(a: &App, path: &Path) {
 
 #[test]
 fn test_ce_25_folders_pick_second_creates_there() {
-    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-folder-root~1, req~cell-edit.new-note-relmap-button~1] A・B を開く → ビューの帯の右の端に「+ 新規」(2026-10-12-header-menu でヘッダーから移った)。`a` → A と B の一覧(A に印)。
+    // [utest -> req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-folder-root~1, req~cell-edit.new-note-relmap-button~2] A・B を開く → ビューの帯の右の端に「+ 新規」(2026-10-12-header-menu でヘッダーから移った)。`a` → A と B の一覧(A に印)。
     // ↓ で B → Enter → 名前の欄 → 「メモ」Enter → `B/メモ.md` ができ、A には作らない。その行が選ばれる。
     let tmp = two_folders("ce25f_pick");
     let mut a = boot_ab(&tmp, false);

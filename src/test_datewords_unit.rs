@@ -63,7 +63,7 @@ fn test_date_words_regardless_of_language() {
 
 #[test]
 fn test_date_words_weekday() {
-    // [utest -> req~cell-edit.date-words-weekday~1] 曜日の言葉は、今日より後の最初のその曜日・今の週・次の週の曜日になり、週は dates.week_start で区切る。
+    // [utest -> req~cell-edit.date-words-weekday~2] 曜日の言葉は、今日より後の最初のその曜日・今の週・次の週の曜日になり、週は dates.week_start で区切る。
     let cases = [
         ("金曜", "2026-11-20", WeekStart::Sun, "2026-11-27"),
         ("今週の金曜", "2026-11-20", WeekStart::Sun, "2026-11-20"),
@@ -83,7 +83,7 @@ fn test_date_words_weekday() {
 
 #[test]
 fn test_date_words_weekday_spellings() {
-    // [utest -> req~cell-edit.date-words-weekday~1] `金曜日`・`fri`・`friday` は `金曜` と、`this fri` は `今週の金曜` と、`next fri` は `来週の金曜` と同じ日になる。
+    // [utest -> req~cell-edit.date-words-weekday~2] `金曜日`・`fri`・`friday` は `金曜` と、`this fri` は `今週の金曜` と、`next fri` は `来週の金曜` と同じ日になる。
     let today = "2026-11-20";
     for (text, want) in [
         ("金曜日", "2026-11-27"),
@@ -102,7 +102,7 @@ fn test_date_words_weekday_spellings() {
 
 #[test]
 fn test_date_words_period() {
-    // [utest -> req~cell-edit.date-words-period~1] 今日が 2026-11-21・日曜始まりなら、来週は次の週の初めの日、来月は次の月の1日、月末・来月末はその月の最後の日になる。
+    // [utest -> req~cell-edit.date-words-period~2] 今日が 2026-11-21・日曜始まりなら、来週は次の週の初めの日、来月は次の月の1日、月末・来月末はその月の最後の日になる。
     let cases = [
         ("来週", "2026-11-22"),
         ("next week", "2026-11-22"),
@@ -123,7 +123,7 @@ fn test_date_words_period() {
 
 #[test]
 fn test_date_words_month_does_not_overflow() {
-    // [utest -> req~cell-edit.date-words-period~1] 今日が 2027-01-31 なら、`1か月後` は月の終わりを越えずに 2027-02-28 になる。
+    // [utest -> req~cell-edit.date-words-period~2] 今日が 2027-01-31 なら、`1か月後` は月の終わりを越えずに 2027-02-28 になる。
     assert_eq!(
         read("1か月後", "2027-01-31", WeekStart::Sun),
         Ok("2027-02-28".to_string())

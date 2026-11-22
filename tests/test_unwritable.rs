@@ -266,7 +266,7 @@ fn report(stage: &str, fails: Vec<String>) {
 
 #[test]
 fn test_wb_5_parse_returns_expected_read_only() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-newline~1] frontmatter::parse が形ごとの ReadOnly を返す。ハードリンクはバイト列が普通なので Ok
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1] frontmatter::parse が形ごとの ReadOnly を返す。ハードリンクはバイト列が普通なので Ok
     // (ハードリンクは save と Source が見る)。フロントマターの無いノートは NoFrontmatter(書ける側。WB-3)。
     let mut fails = Vec::new();
     for f in forms() {
@@ -282,7 +282,7 @@ fn test_wb_5_parse_returns_expected_read_only() {
 
 #[test]
 fn test_wb_5_cell_lock_has_form_specific_reason() {
-    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~1] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~2] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
     // ほかの形の言葉を含まない(理由を取り違えない)。7つの理由は互いに違う。書ける側(空のフロントマターを含む。WB-3)は lock が None。
     let all = forms();
     let words = keywords(&all);
@@ -421,7 +421,7 @@ fn test_wb_5_writeback_save_refuses_and_keeps_bytes() {
 
 #[test]
 fn test_wb_5_changes_set_is_skipped_with_reason() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~1] Changes::set は Skip(行と、セルの lock と同じ理由)を返し、何もためない。書ける側はためる。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~2] Changes::set は Skip(行と、セルの lock と同じ理由)を返し、何もためない。書ける側はためる。
     let mut fails = Vec::new();
     for f in forms() {
         let (_dir, src) = setup(&f, "set");
@@ -470,7 +470,7 @@ fn test_wb_5_changes_set_is_skipped_with_reason() {
 
 #[test]
 fn test_wb_5_changes_set_many_skips_count_and_reason() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~cell-edit.bulk-set-same-value~1, req~cell-edit.bulk-set-skip-read-only~1] 形のノート(ハードリンクは両方の行)と ok.md を選んで set_many → 形の行は飛ばされ、
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~cell-edit.bulk-set-same-value~2, req~cell-edit.bulk-set-skip-read-only~1] 形のノート(ハードリンクは両方の行)と ok.md を選んで set_many → 形の行は飛ばされ、
     // 飛ばした数と理由(セルの lock と同じ)が返り、ためるのは書ける行だけ。書ける側は飛ばさない(WB-3)。
     let mut fails = Vec::new();
     for f in forms() {

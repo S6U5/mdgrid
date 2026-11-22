@@ -51,7 +51,7 @@ fn row_text(a: &App, name: &str) -> String {
 
 #[test]
 fn test_sr_35_chip_column_wins_over_parts() {
-    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-per-kind~1, req~screen.rich-cells-per-column~1] 列の "chip" は、全体が plain でもリストを札にする(列の設定が優先)。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-per-kind~2, req~screen.rich-cells-per-column~2] 列の "chip" は、全体が plain でもリストを札にする(列の設定が優先)。
     let tmp = notes("sr35m_chip");
     let a = with(
         &tmp,
@@ -64,7 +64,7 @@ fn test_sr_35_chip_column_wins_over_parts() {
 
 #[test]
 fn test_sr_35_detail_shows_value_text() {
-    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1] 部品は表の中だけ。詳細は値の文字(true・[ui, perf])。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-value-color~1] 部品は表の中だけ。詳細は値の文字(true・[ui, perf])。
     let tmp = notes("sr35m_detail");
     let a = with(&tmp, "");
     let row = a
@@ -79,7 +79,7 @@ fn test_sr_35_detail_shows_value_text() {
 
 #[test]
 fn test_sr_35_search_marks_rich_cells() {
-    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-value-color~1, req~screen.rich-cells-values-kept~1, req~navigation.find~1] 検索の語が値の文字に一致すれば、☑ のセルにも検索の印(下線)。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-value-color~1, req~screen.rich-cells-values-kept~1, req~navigation.find~1] 検索の語が値の文字に一致すれば、☑ のセルにも検索の印(下線)。
     let tmp = notes("sr35m_search");
     let mut a = with(&tmp, "");
     a.col = a.cols.iter().position(|c| c == "tags").unwrap();
@@ -98,7 +98,7 @@ fn test_sr_35_search_marks_rich_cells() {
 
 #[test]
 fn test_sr_35_dotted_key_can_be_chips() {
-    // [utest -> req~screen.rich-cells-parts~1, req~screen.rich-cells-per-column~1] 名前に点を含むふつうのキー(rel.ver)も、くり返しのある短い値なら札(計算の列だけ除く)。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-per-column~2] 名前に点を含むふつうのキー(rel.ver)も、くり返しのある短い値なら札(計算の列だけ除く)。
     let tmp = notes("sr35m_dot");
     let a = with(&tmp, "");
     assert!(a.is_select("rel.ver"));

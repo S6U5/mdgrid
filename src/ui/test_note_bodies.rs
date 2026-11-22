@@ -45,7 +45,7 @@ fn body_of(tmp: &Tmp, name: &str) -> String {
         .unwrap_or(text)
 }
 
-// [utest -> req~cell-edit.body-choose-field~1]
+// [utest -> req~cell-edit.body-choose-field~2]
 #[test]
 fn test_body_folder_adds_a_template_field_listing_its_md_files() {
     // body がフォルダなら、名前の次に「雛形」の欄が出て、そのフォルダの .md の名前が名前の順に並ぶ。

@@ -133,7 +133,7 @@ fn test_nv_23_config_off_hides_bar_and_uses_bottom_line() {
 
 #[test]
 fn test_nv_2_backslash_enters_bar_and_esc_restores() {
-    // [utest -> req~navigation.search-incremental~1, req~navigation.search-input-place~1] `\` で上の欄に入り「会議」と打つ → 「会議」を含む行だけ。Esc で元に戻る。
+    // [utest -> req~navigation.search-incremental~1, req~navigation.search-input-place~2] `\` で上の欄に入り「会議」と打つ → 「会議」を含む行だけ。Esc で元に戻る。
     let (_t, mut a) = sixteen("nv2bar");
     ch(&mut a, '\\');
     assert_eq!(a.mode, Mode::Filter);
@@ -198,7 +198,7 @@ fn test_nv_23_click_bar_enters_and_enter_keeps_filter() {
 
 #[test]
 fn test_nv_23_row_click_hits_right_row_below_bar() {
-    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-hide~1, req~screen.mouse-click-select~1] 帯が1行増えても、行のクリックは見えている行を選ぶ。設定の帯(NV-16)が重なっても同じ。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-hide~1, req~screen.mouse-click-select~1] 帯が1行増えても、行のクリックは見えている行を選ぶ。設定の帯(NV-16)が重なっても同じ。
     let (_t, mut a) = sixteen("nv23hit");
     let dy = view::data_y(&a) as u16;
     let (_, sy) = search_at(&a);
@@ -288,7 +288,7 @@ fn test_nv_23_bar_fits_narrow_terminals() {
 
 #[test]
 fn test_nv_23_low_terminal_bar_not_drawn_ignores_click() {
-    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~1, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~1, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~navigation.search-box-low-height~1, req~navigation.search-box-hide~1] 低い端末では検索の欄が描かれない(欄のある行は下の帯)。下の帯のクリックで絞り込みの入力に入らない。
+    // [utest -> req~navigation.search-box-hits~1, req~navigation.search-box-narrow~1, req~navigation.search-box-padding-default~1, req~navigation.search-box-padding-setting~2, req~navigation.search-box-half-glyphs~1, req~navigation.search-box-screen-bg~2, req~navigation.search-box-style~1, req~navigation.search-box-window-below~1, req~navigation.search-box-low-height~1, req~navigation.search-box-hide~1] 低い端末では検索の欄が描かれない(欄のある行は下の帯)。下の帯のクリックで絞り込みの入力に入らない。
     // `\` で打つときは最下行に語を出し、カーソルも最下行に置く(SR-17)。
     // SR-1 で欄はビューの帯(行 1)に入ったので、欄の行が下の帯になる高さは 4(前は欄が行 2 で高さ 5)。
     let (_t, mut a) = sixteen("nv23low");

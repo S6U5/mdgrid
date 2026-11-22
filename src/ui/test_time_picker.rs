@@ -49,7 +49,7 @@ fn open(a: &mut App, row: usize) {
     assert!(calendar::shown(a), "{}", screen(a));
 }
 
-// [utest -> req~cell-edit.datetime-calendar-time-field~1, req~cell-edit.datetime-calendar-keep-date-only~1, req~cell-edit.datetime-calendar-typing~1]
+// [utest -> req~cell-edit.datetime-calendar-time-field~2, req~cell-edit.datetime-calendar-keep-date-only~1, req~cell-edit.datetime-calendar-typing~1]
 #[test]
 fn test_ce_30_time_picker_moves_and_commits() {
     let (_t, mut a) = vault(

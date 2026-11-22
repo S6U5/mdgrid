@@ -25,7 +25,7 @@ fn table(name: &str, path: PathBuf) -> WsTable {
 
 #[test]
 fn test_ws_1_add_keeps_hand_written_text() {
-    // [utest -> req~workspace.app-side-file~1] Work に表を足しても、コメント・空行・~ のパス・ほかのワークスペースはそのまま。読み直すと Work に2つ。
+    // [utest -> req~workspace.app-side-file~2] Work に表を足しても、コメント・空行・~ のパス・ほかのワークスペースはそのまま。読み直すと Work に2つ。
     let d = tmp("add");
     std::fs::write(d.join(FILE_NAME), HAND).unwrap();
     add(&d, "Work", table("Projects", d.join("projects"))).unwrap();
@@ -58,7 +58,7 @@ fn test_ws_1_add_keeps_hand_written_text() {
 
 #[test]
 fn test_ws_1_replace_and_remove_only_that_part() {
-    // [utest -> req~workspace.app-side-file~1] 同じ表の置き換えと、表を外す・ワークスペースを消すは、その区画だけ。ほかのコメントは残る。
+    // [utest -> req~workspace.app-side-file~2] 同じ表の置き換えと、表を外す・ワークスペースを消すは、その区画だけ。ほかのコメントは残る。
     let d = tmp("rm");
     std::fs::write(d.join(FILE_NAME), HAND).unwrap();
     add(&d, "Work", table("Todo", d.join("tasks"))).unwrap();

@@ -122,7 +122,7 @@ fn test_sections_keys_list_and_items() {
 
 #[test]
 fn test_sections_digits_numbers_and_jump() {
-    // [utest -> req~navigation.settings-sections-digits~1] `o` → 左の一覧が「1 列」「2 フィルター」「3 並べ替え」…。
+    // [utest -> req~navigation.settings-sections-digits~2] `o` → 左の一覧が「1 列」「2 フィルター」「3 並べ替え」…。
     // `3` → 並べ替えの区画が選ばれ、右がその中身。
     let (_t, mut a) = folder("secs-digits");
     open(&mut a);
@@ -156,7 +156,7 @@ fn test_sections_digits_numbers_and_jump() {
 
 #[test]
 fn test_sections_digits_beyond_count() {
-    // [utest -> req~navigation.settings-sections-digits~1] 区画の数より大きい数字 → 何も変わらない。
+    // [utest -> req~navigation.settings-sections-digits~2] 区画の数より大きい数字 → 何も変わらない。
     let (_t, mut a) = folder("secs-digits-over");
     open(&mut a);
     ch(&mut a, '3');
@@ -170,7 +170,7 @@ fn test_sections_digits_beyond_count() {
 
 #[test]
 fn test_sections_digits_in_value_input() {
-    // [utest -> req~navigation.settings-sections-digits~1] 値の入力の欄にいるとき(navigation.settings-filter の値の入力)の数字 → 入力の文字になる。
+    // [utest -> req~navigation.settings-sections-digits~2] 値の入力の欄にいるとき(navigation.settings-filter の値の入力)の数字 → 入力の文字になる。
     let (_t, mut a) = folder("secs-digits-text");
     open(&mut a);
     ch(&mut a, '2');
@@ -198,7 +198,7 @@ fn test_sections_digits_in_value_input() {
 
 #[test]
 fn test_sections_focus_marker() {
-    // [utest -> req~navigation.settings-sections-focus~1] 左の一覧にいる → 左の選んだ区画の頭に選びの印、右の項目には印が無い。
+    // [utest -> req~navigation.settings-sections-focus~2] 左の一覧にいる → 左の選んだ区画の頭に選びの印、右の項目には印が無い。
     // `l` → 印が右の項目へ移る。
     let (_t, mut a) = folder("secs-focus");
     open(&mut a);
