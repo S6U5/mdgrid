@@ -100,7 +100,7 @@ fn test_tr_1_tree_screen_counts_and_jump_e2e() {
 
 #[test]
 fn test_tr_2_empty_separator_warns_e2e() {
-    // [stest -> req~tree.config-invalid~1] separator = "" → 警告1行(CLI-3 の形)で、T は木を開かない。
+    // [stest -> req~tree.config-invalid~2] separator = "" → 警告1行(CLI-3 の形)で、T は木を開かない。
     let home = root(
         "tree-e2e-sep",
         "tree = { path = \"folder\", separator = \"\" }",

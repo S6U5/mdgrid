@@ -33,7 +33,7 @@ fn current(a: &App) -> String {
 
 #[test]
 fn test_nv_25_default_view() {
-    // [utest -> req~navigation.default-view-open~1, req~base-view.view-switch-startup~1] 「完了」を既定のビューにする → views.toml に default_view。開き直すと「完了」。
+    // [utest -> req~navigation.default-view-open~2, req~base-view.view-switch-startup~2] 「完了」を既定のビューにする → views.toml に default_view。開き直すと「完了」。
     // `--view` があればそちら。先頭(進行中)を選ぶと名前を消す。
     let tmp = vault("nv25");
     base_path(&tmp, TASKS);

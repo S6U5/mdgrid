@@ -105,7 +105,7 @@ fn front(text: &str) -> Vec<String> {
 
 #[test]
 fn test_new_note_uses_the_new_note_settings_and_template() {
-    // [stest -> req~cli.new-note-create~1] 印に folder・set・hidden・body のある台帳で --new-note "Buy milk" → Tasks/Buy milk.md ができ、set の値(status・今日の created)と、変数を埋めた雛形の本文が入る。
+    // [stest -> req~cli.new-note-create~2] 印に folder・set・hidden・body のある台帳で --new-note "Buy milk" → Tasks/Buy milk.md ができ、set の値(status・今日の created)と、変数を埋めた雛形の本文が入る。
     let t = ledger("nn-create", MARKER);
     let o = run(t.path(), &["t", "--new-note", "Buy milk"]);
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
@@ -127,7 +127,7 @@ fn test_new_note_uses_the_new_note_settings_and_template() {
 
 #[test]
 fn test_new_note_uses_the_settings_of_the_marker_open_table() {
-    // [stest -> req~cli.new-note-create~1] 印の open の表に書いた [table.new_note](folder = "Tasks")は、台帳を相対のパスで渡しても今のフォルダから起動しても使う。
+    // [stest -> req~cli.new-note-create~2] 印の open の表に書いた [table.new_note](folder = "Tasks")は、台帳を相対のパスで渡しても今のフォルダから起動しても使う。
     let marker = "open = \"Tasks\"\n\n[[table]]\nname = \"Tasks\"\n\n\
 [table.new_note]\nfolder = \"Tasks\"\n\n[table.new_note.set]\nstatus = \"todo\"\n\n\
 [table.base]\nfilters = { and = ['file.inFolder(\"Tasks\")'] }\n";
@@ -150,7 +150,7 @@ fn test_new_note_uses_the_settings_of_the_marker_open_table() {
 
 #[test]
 fn test_new_note_without_settings_makes_an_empty_note_in_the_folder() {
-    // [stest -> req~cli.new-note-create~1] 境界: 設定も印も無いフォルダで --new-note memo → そのフォルダに空の memo.md。フォルダを渡さなければ今のフォルダ。
+    // [stest -> req~cli.new-note-create~2] 境界: 設定も印も無いフォルダで --new-note memo → そのフォルダに空の memo.md。フォルダを渡さなければ今のフォルダ。
     let t = TempDir::new("nn-plain");
     std::fs::create_dir_all(t.path().join("notes")).unwrap();
     let o = run(t.path(), &["notes", "--new-note", "memo"]);
@@ -168,7 +168,7 @@ fn test_new_note_without_settings_makes_an_empty_note_in_the_folder() {
 
 #[test]
 fn test_new_note_set_values_are_read_by_column_type() {
-    // [stest -> req~cli.new-note-set~1] --set due=2026-12-01(日付)・priority=p1・points=3(数)・tags=home,errand(リスト)・status=(空)→ 型どおりに書き、空の status は書かない。
+    // [stest -> req~cli.new-note-set~2] --set due=2026-12-01(日付)・priority=p1・points=3(数)・tags=home,errand(リスト)・status=(空)→ 型どおりに書き、空の status は書かない。
     let t = ledger("nn-set", MARKER);
     let o = run(
         t.path(),
@@ -210,7 +210,7 @@ fn test_new_note_set_values_are_read_by_column_type() {
 
 #[test]
 fn test_new_note_set_refuses_unreadable_values_and_writes_nothing() {
-    // [stest -> req~cli.new-note-set~1] 失敗: 数の列に points=many・`=` の無い --set due → 理由1行と終了コード 2 で、ノートを作らない。
+    // [stest -> req~cli.new-note-set~2] 失敗: 数の列に points=many・`=` の無い --set due → 理由1行と終了コード 2 で、ノートを作らない。
     let t = ledger("nn-set-bad", MARKER);
     for (args, word) in [
         (
@@ -274,7 +274,7 @@ fn test_new_note_never_overwrites_an_existing_note() {
 
 #[test]
 fn test_new_note_refuses_names_outside_the_folder() {
-    // [stest -> req~cli.new-note-refuse-outside~1] `../x` と絶対パスの名前 → 理由1行と終了コード 2 で、フォルダの外に何も作らない。下のフォルダ `sub/x` は作る。
+    // [stest -> req~cli.new-note-refuse-outside~2] `../x` と絶対パスの名前 → 理由1行と終了コード 2 で、フォルダの外に何も作らない。下のフォルダ `sub/x` は作る。
     let t = ledger("nn-outside", MARKER);
     let abs = t.path().join("abs");
     for name in ["../x", "../../x", abs.to_str().unwrap()] {
@@ -290,7 +290,7 @@ fn test_new_note_refuses_names_outside_the_folder() {
 
 #[test]
 fn test_new_note_refuses_when_a_required_column_is_empty() {
-    // [stest -> req~cli.new-note-required~1] required = ["priority"] の台帳: --set priority=p2 があれば作り、無ければ理由1行(列の名前 priority を言う)と終了コード 2 で作らない。
+    // [stest -> req~cli.new-note-required~2] required = ["priority"] の台帳: --set priority=p2 があれば作り、無ければ理由1行(列の名前 priority を言う)と終了コード 2 で作らない。
     let marker = MARKER.replace("hidden = ", "required = [\"priority\"]\nhidden = ");
     let t = ledger("nn-required", &marker);
     let o = run(t.path(), &["t", "--new-note", "a"]);
@@ -304,7 +304,7 @@ fn test_new_note_refuses_when_a_required_column_is_empty() {
 
 #[test]
 fn test_new_note_flag_misuse_is_one_line_and_code_2() {
-    // [stest -> req~cli.new-note-bad-args~1] --new-note の無い --set・フォルダ2つ・--print との組・空の名前 → 理由1行と終了コード 2 で何も作らない。
+    // [stest -> req~cli.new-note-bad-args~2] --new-note の無い --set・フォルダ2つ・--print との組・空の名前 → 理由1行と終了コード 2 で何も作らない。
     let t = ledger("nn-args", MARKER);
     std::fs::create_dir_all(t.path().join("u")).unwrap();
     for args in [

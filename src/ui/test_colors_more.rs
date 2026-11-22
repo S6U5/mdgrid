@@ -23,7 +23,7 @@ fn boot(name: &str, color: ColorMode, cfg: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_41_value_color_in_every_chip_shape() {
-    // [utest -> req~screen.value-colors-apply~1] chip・soft・pill の札も、決めた値の色を地にする。
+    // [utest -> req~screen.value-colors-apply~2] chip・soft・pill の札も、決めた値の色を地にする。
     for status in ["chip", "soft", "pill"] {
         let cfg = format!(
             "[terminal]\nnerd_font = true\n\n[look.style]\nstatus = \"{status}\"\n\n[look.colors.values]\nDone = \"#2f9e66\"\n"

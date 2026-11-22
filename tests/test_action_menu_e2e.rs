@@ -28,7 +28,7 @@ fn has_section(screen: &str, name: &str) -> bool {
 
 #[test]
 fn test_sr_24_e2e_right_click_selects_cell_and_opens_menu() {
-    // [stest -> req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1] 選んでいない行(beta.md)の status のセルを右クリック → そのセルが選ばれ、一覧が開く。
+    // [stest -> req~screen.action-menu-open-key~2, req~screen.action-menu-right-click~1] 選んでいない行(beta.md)の status のセルを右クリック → そのセルが選ばれ、一覧が開く。
     // Esc で閉じると、選んだ位置は 2行目・2列目(status)。
     let home = TempDir::new("sr24-right");
     let v = home.path().join("vault");

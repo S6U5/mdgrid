@@ -323,7 +323,7 @@ fn all_known() -> BTreeSet<&'static str> {
 
 #[test]
 fn test_bv_21_english_doc_has_sections() {
-    // [utest -> req~base-view.support-docs-list~1] 英語の文書に、読む項目・ビューの型・演算子・関数・メソッド・file・解釈しないものの節がある
+    // [utest -> req~base-view.support-docs-list~2] 英語の文書に、読む項目・ビューの型・演算子・関数・メソッド・file・解釈しないものの節がある
     let text = repo_file(EN);
     for (en, _) in OTHER_SECTIONS
         .iter()
@@ -335,7 +335,7 @@ fn test_bv_21_english_doc_has_sections() {
 
 #[test]
 fn test_bv_21_japanese_doc_has_sections() {
-    // [utest -> req~base-view.support-docs-list~1] 日本語の文書に、同じ節がある
+    // [utest -> req~base-view.support-docs-list~2] 日本語の文書に、同じ節がある
     let text = repo_file(JA);
     for (_, ja) in OTHER_SECTIONS
         .iter()
@@ -347,7 +347,7 @@ fn test_bv_21_japanese_doc_has_sections() {
 
 #[test]
 fn test_bv_21_docs_link_each_other() {
-    // [utest -> req~base-view.support-docs-list~1] 英と日の文書は互いにリンクする
+    // [utest -> req~base-view.support-docs-list~2] 英と日の文書は互いにリンクする
     let en = repo_file(EN);
     let ja = repo_file(JA);
     assert!(
@@ -364,37 +364,37 @@ fn test_bv_21_docs_link_each_other() {
 
 #[test]
 fn test_bv_21_english_functions_match() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.support-docs-check~1] docs/obsidian-bases.md の関数の一覧 = FUNCTIONS
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.support-docs-check~2] docs/obsidian-bases.md の関数の一覧 = FUNCTIONS
     assert_same(EN, SEC_FUNCTIONS.0, "FUNCTIONS", FUNCTIONS);
 }
 
 #[test]
 fn test_bv_21_english_methods_match() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.support-docs-check~1] docs/obsidian-bases.md のメソッドの一覧 = METHODS
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.support-docs-check~2] docs/obsidian-bases.md のメソッドの一覧 = METHODS
     assert_same(EN, SEC_METHODS.0, "METHODS", METHODS);
 }
 
 #[test]
 fn test_bv_21_english_file_properties_match() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.support-docs-check~1] docs/obsidian-bases.md の file の一覧 = FILE_FIELDS
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.support-docs-check~2] docs/obsidian-bases.md の file の一覧 = FILE_FIELDS
     assert_same(EN, SEC_FILE.0, "FILE_FIELDS", FILE_FIELDS);
 }
 
 #[test]
 fn test_bv_21_japanese_functions_match() {
-    // [utest -> req~base-view.support-docs-check~1] docs/obsidian-bases.ja.md の関数の一覧 = FUNCTIONS
+    // [utest -> req~base-view.support-docs-check~2] docs/obsidian-bases.ja.md の関数の一覧 = FUNCTIONS
     assert_same(JA, SEC_FUNCTIONS.1, "FUNCTIONS", FUNCTIONS);
 }
 
 #[test]
 fn test_bv_21_japanese_methods_match() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.support-docs-check~1] docs/obsidian-bases.ja.md のメソッドの一覧 = METHODS
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.support-docs-check~2] docs/obsidian-bases.ja.md のメソッドの一覧 = METHODS
     assert_same(JA, SEC_METHODS.1, "METHODS", METHODS);
 }
 
 #[test]
 fn test_bv_21_japanese_file_properties_match() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.support-docs-check~1] docs/obsidian-bases.ja.md の file の一覧 = FILE_FIELDS
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.support-docs-check~2] docs/obsidian-bases.ja.md の file の一覧 = FILE_FIELDS
     assert_same(JA, SEC_FILE.1, "FILE_FIELDS", FILE_FIELDS);
 }
 
@@ -402,7 +402,7 @@ fn test_bv_21_japanese_file_properties_match() {
 
 #[test]
 fn test_bv_21_constants_hold_current_names() {
-    // [utest -> req~base-view.support-docs-check~1] 今の式の評価が受け付ける名前(tests/test_expr.rs が使うもの)は、どれかの定数にある
+    // [utest -> req~base-view.support-docs-check~2] 今の式の評価が受け付ける名前(tests/test_expr.rs が使うもの)は、どれかの定数にある
     let known = all_known();
     for f in ["if", "date", "now", "today", "duration"] {
         assert!(FUNCTIONS.contains(&f), "FUNCTIONS に {f:?} が無い");
@@ -431,7 +431,7 @@ fn test_bv_21_constants_hold_current_names() {
 
 #[test]
 fn test_bv_21_functions_are_accepted() {
-    // [utest -> req~base-view.support-docs-list~1] FUNCTIONS の各関数を使った式は、parse で未対応にならない
+    // [utest -> req~base-view.support-docs-list~2] FUNCTIONS の各関数を使った式は、parse で未対応にならない
     for name in FUNCTIONS {
         assert_function_accepted(name, "FUNCTIONS");
     }
@@ -439,7 +439,7 @@ fn test_bv_21_functions_are_accepted() {
 
 #[test]
 fn test_bv_21_methods_are_accepted() {
-    // [utest -> req~base-view.support-docs-list~1] METHODS の各メソッドを使った式は、parse で未対応にならない
+    // [utest -> req~base-view.support-docs-list~2] METHODS の各メソッドを使った式は、parse で未対応にならない
     for name in METHODS {
         assert_method_accepted(name, "METHODS");
     }
@@ -447,7 +447,7 @@ fn test_bv_21_methods_are_accepted() {
 
 #[test]
 fn test_bv_21_file_fields_are_accepted() {
-    // [utest -> req~base-view.support-docs-list~1] FILE_FIELDS の各名前を使った式は、parse で未対応にならない
+    // [utest -> req~base-view.support-docs-list~2] FILE_FIELDS の各名前を使った式は、parse で未対応にならない
     for name in FILE_FIELDS {
         assert_file_field_accepted(name, "FILE_FIELDS");
     }
@@ -455,7 +455,7 @@ fn test_bv_21_file_fields_are_accepted() {
 
 #[test]
 fn test_bv_21_doc_names_are_accepted() {
-    // [utest -> req~base-view.support-docs-list~1] 文書(英・日)に書いた関数・メソッド・file の名前を使った絞り込みの式は、BV-7 の未対応にならない
+    // [utest -> req~base-view.support-docs-list~2] 文書(英・日)に書いた関数・メソッド・file の名前を使った絞り込みの式は、BV-7 の未対応にならない
     for rel in [EN, JA] {
         let (f, m, file) = if rel == EN {
             (SEC_FUNCTIONS.0, SEC_METHODS.0, SEC_FILE.0)
@@ -476,7 +476,7 @@ fn test_bv_21_doc_names_are_accepted() {
 
 #[test]
 fn test_bv_21_filter_with_supported_names_is_not_unsupported() {
-    // [utest -> req~base-view.support-docs-list~1] 対応する関数・メソッド・file を組み合わせた絞り込みの式は、まとめて読める
+    // [utest -> req~base-view.support-docs-list~2] 対応する関数・メソッド・file を組み合わせた絞り込みの式は、まとめて読める
     let src = "file.inFolder(\"notes\") && file.hasTag(\"proj\") && note.list.contains(\"x\") \
                && if(status == \"done\", true, false) && date(\"2026-09-30\") < today() \
                && file.name.contains(\"a\") && file.mtime < now()";
@@ -490,7 +490,7 @@ fn test_bv_21_filter_with_supported_names_is_not_unsupported() {
 
 #[test]
 fn test_bv_21_fake_names_are_unsupported() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~1] 定数に無い作りものの名前は未対応になる
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~2] 定数に無い作りものの名前は未対応になる
     assert_all_unsupported("fakefn", &function_forms("fakefn"));
     assert_all_unsupported(
         "fakeMethod",
@@ -599,7 +599,7 @@ const OBSIDIAN_FILE_FIELDS: &[&str] = &[
 
 #[test]
 fn test_bv_21_unlisted_obsidian_functions_are_unsupported() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.unsupported-filters~1] Obsidian の関数で FUNCTIONS(ほかの定数も含む)に無いものは、どの引数の数でも読めない
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.unsupported-filters~1] Obsidian の関数で FUNCTIONS(ほかの定数も含む)に無いものは、どの引数の数でも読めない
     let known = all_known();
     let failures: Vec<String> = OBSIDIAN_FUNCTIONS
         .iter()
@@ -611,7 +611,7 @@ fn test_bv_21_unlisted_obsidian_functions_are_unsupported() {
 
 #[test]
 fn test_bv_21_unlisted_obsidian_methods_are_unsupported() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.unsupported-column-mark~1] Obsidian のメソッドで定数に無いものは、リスト・文字列に付けても読めない
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.unsupported-column-mark~2] Obsidian のメソッドで定数に無いものは、リスト・文字列に付けても読めない
     let known = all_known();
     let failures: Vec<String> = OBSIDIAN_METHODS
         .iter()
@@ -631,7 +631,7 @@ fn test_bv_21_unlisted_obsidian_methods_are_unsupported() {
 
 #[test]
 fn test_bv_21_unlisted_obsidian_file_fields_are_unsupported() {
-    // [utest -> req~base-view.support-docs-list~1, req~base-view.unsupported-column-mark~1] Obsidian の file の名前で定数に無いもの(backlinks など)は、file.X で読めない
+    // [utest -> req~base-view.support-docs-list~2, req~base-view.unsupported-column-mark~2] Obsidian の file の名前で定数に無いもの(backlinks など)は、file.X で読めない
     let known = all_known();
     let failures: Vec<String> = OBSIDIAN_FILE_FIELDS
         .iter()

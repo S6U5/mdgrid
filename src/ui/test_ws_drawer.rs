@@ -211,7 +211,7 @@ fn test_ws_8_w_opens_scope_tables_with_mark() {
 
 #[test]
 fn test_ws_8_palette_opens() {
-    // [utest -> req~workspace.drawer-open~1] パレットの動作 workspace_drawer でも開く。
+    // [utest -> req~workspace.drawer-open~2] パレットの動作 workspace_drawer でも開く。
     let (_tmp, mut a) = boot_work("ws8_palette");
     ch(&mut a, ':');
     typing(&mut a, "workspace_drawer");
@@ -222,7 +222,7 @@ fn test_ws_8_palette_opens() {
 
 #[test]
 fn test_ws_8_enter_switches_and_closes() {
-    // [utest -> req~workspace.drawer-close~1, req~workspace.drawer-unsaved~1] Projects を Enter → switch_to が Projects、範囲は Work のまま。引き出しは閉じ、変更が無いのですぐ移る。
+    // [utest -> req~workspace.drawer-close~2, req~workspace.drawer-unsaved~1] Projects を Enter → switch_to が Projects、範囲は Work のまま。引き出しは閉じ、変更が無いのですぐ移る。
     let (tmp, mut a) = boot_work("ws8_enter");
     ch(&mut a, 'w');
     ch(&mut a, 'g');
@@ -238,7 +238,7 @@ fn test_ws_8_enter_switches_and_closes() {
 
 #[test]
 fn test_ws_8_current_table_just_closes() {
-    // [utest -> req~workspace.drawer-close~1] 今の表 Tasks を選ぶ → 開き直さず閉じるだけ。
+    // [utest -> req~workspace.drawer-close~2] 今の表 Tasks を選ぶ → 開き直さず閉じるだけ。
     let (_tmp, mut a) = boot_work("ws8_current");
     ch(&mut a, 'w');
     click_on(&mut a, "Tasks");
@@ -248,7 +248,7 @@ fn test_ws_8_current_table_just_closes() {
 
 #[test]
 fn test_ws_8_other_workspace_heading_then_click() {
-    // [utest -> req~workspace.drawer-switch~1, req~workspace.drawer-expand~1] 見出し Hobby を開くと Books が並ぶ → Books をクリック → Books の表へ、範囲は Hobby。
+    // [utest -> req~workspace.drawer-switch~2, req~workspace.drawer-expand~1] 見出し Hobby を開くと Books が並ぶ → Books をクリック → Books の表へ、範囲は Hobby。
     let (tmp, mut a) = boot_work("ws8_other");
     ch(&mut a, 'w');
     ch(&mut a, 'G');
@@ -269,7 +269,7 @@ fn test_ws_8_other_workspace_heading_then_click() {
 
 #[test]
 fn test_ws_8_heading_fold_keys() {
-    // [utest -> req~workspace.drawer-open~1, req~workspace.drawer-others~1, req~workspace.drawer-expand~1] 見出しは l で開き h で畳む。畳むと Books は消える。
+    // [utest -> req~workspace.drawer-open~2, req~workspace.drawer-others~1, req~workspace.drawer-expand~1] 見出しは l で開き h で畳む。畳むと Books は消える。
     let (_tmp, mut a) = boot_work("ws8_fold");
     ch(&mut a, 'w');
     ch(&mut a, 'G');
@@ -282,7 +282,7 @@ fn test_ws_8_heading_fold_keys() {
 
 #[test]
 fn test_ws_8_esc_and_w_close_without_change() {
-    // [utest -> req~workspace.drawer-close~1] 開いて Esc → 何も変わらずに閉じる(画面も選びも前と同じ)。もう一度 `w` で開き、`w` でも閉じる。
+    // [utest -> req~workspace.drawer-close~2] 開いて Esc → 何も変わらずに閉じる(画面も選びも前と同じ)。もう一度 `w` で開き、`w` でも閉じる。
     let (_tmp, mut a) = boot_work("ws8_esc");
     let before = scr(&a);
     let (row, col) = (a.row, a.col);
@@ -303,7 +303,7 @@ fn test_ws_8_esc_and_w_close_without_change() {
 
 #[test]
 fn test_ws_8_click_outside_closes() {
-    // [utest -> req~workspace.drawer-close~1] 引き出しの外(表の右の側)をクリック → 閉じるだけで、移らない。
+    // [utest -> req~workspace.drawer-close~2] 引き出しの外(表の右の側)をクリック → 閉じるだけで、移らない。
     let (_tmp, mut a) = boot_work("ws8_outside");
     ch(&mut a, 'w');
     assert_eq!(a.mode, Mode::Drawer);
@@ -315,7 +315,7 @@ fn test_ws_8_click_outside_closes() {
 
 #[test]
 fn test_ws_8_click_row_switches() {
-    // [utest -> req~workspace.drawer-switch~1, req~workspace.drawer-unsaved~1] 表の行 Projects をクリック → その表へ移る。
+    // [utest -> req~workspace.drawer-switch~2, req~workspace.drawer-unsaved~1] 表の行 Projects をクリック → その表へ移る。
     let (tmp, mut a) = boot_work("ws8_click");
     ch(&mut a, 'w');
     click_on(&mut a, "Projects");

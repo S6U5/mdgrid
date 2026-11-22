@@ -153,7 +153,7 @@ fn test_nv_8_comma_on_empty_cell_shows_empty_label() {
 
 #[test]
 fn test_nv_9_not_while_loading() {
-    // [utest -> req~navigation.frequency-scope~1, req~base-view.large-load~1] 読み込みの途中は開かず、理由を出す。
+    // [utest -> req~navigation.frequency-scope~1, req~base-view.large-load~2] 読み込みの途中は開かず、理由を出す。
     let (_t, mut a) = make("nv9more-loading", NOTES);
     a.progress.done = false;
     col_named(&mut a, "tags");

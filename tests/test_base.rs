@@ -558,7 +558,7 @@ fn test_bv_7_unsupported_function_in_filters_is_err_with_name() {
 
 #[test]
 fn test_bv_7_unsupported_function_in_global_filters_is_err() {
-    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~1, req~base-view.unsupported-cell-band~1] 全体の filters に未対応の関数があっても同じ。
+    // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.unsupported-filters~1, req~base-view.unsupported-column-mark~2, req~base-view.unsupported-cell-band~1] 全体の filters に未対応の関数があっても同じ。
     let dir = vault("base-bv7-global");
     let text = r#"filters:
   or:
@@ -577,7 +577,7 @@ views:
 
 #[test]
 fn test_bv_7_unsupported_formula_column_is_marked() {
-    // [utest -> req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 評価できない式の列: build は Ok、セルは Shown::Unsupported、notes に説明。
+    // [utest -> req~base-view.unsupported-column-mark~2, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] 評価できない式の列: build は Ok、セルは Shown::Unsupported、notes に説明。
     let dir = vault("base-bv7-formula");
     let text = r"formulas:
   fixed: 'priority.toFixed(2)'

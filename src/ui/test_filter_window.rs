@@ -230,7 +230,7 @@ fn test_nv_29_click_opens_window_and_hide_done() {
 
 #[test]
 fn test_nv_29_compare_adds_and_remove_restores() {
-    // [utest -> req~navigation.filter-window-edit~1] done を隠した上に priority の `≥ 3` を足す → 両方を満たす行だけ、ボタンは「絞り込み 2」。
+    // [utest -> req~navigation.filter-window-edit~2] done を隠した上に priority の `≥ 3` を足す → 両方を満たす行だけ、ボタンは「絞り込み 2」。
     // 窓で条件を外す(d)→ 外した分だけ戻り、全部外すと元の行。
     let (_t, mut a) = boot("nv29cmp");
     click_filter_button(&mut a);
@@ -274,7 +274,7 @@ fn test_nv_29_compare_adds_and_remove_restores() {
 
 #[test]
 fn test_nv_29_bad_operand_is_refused_with_reason() {
-    // [utest -> req~navigation.filter-window-open~1, req~navigation.filter-window-edit~1, req~navigation.filter-window-inline~1] 比べる値が列の型(数)で読めない → 理由を出し、条件を足さない(値を打つ段のまま)。
+    // [utest -> req~navigation.filter-window-open~1, req~navigation.filter-window-edit~2, req~navigation.filter-window-inline~1] 比べる値が列の型(数)で読めない → 理由を出し、条件を足さない(値を打つ段のまま)。
     // 打ち直せば足せる。値が空の Enter も足さない。
     let (_t, mut a) = boot("nv29bad");
     click_filter_button(&mut a);
@@ -303,7 +303,7 @@ fn test_nv_29_bad_operand_is_refused_with_reason() {
 
 #[test]
 fn test_nv_29_contains_and_empty_kinds() {
-    // [utest -> req~navigation.filter-window-edit~1] 種類の「含む」は値を打って Enter、「空である」はすぐ足す。値を打つ段の Esc は足さずに窓へ戻る。
+    // [utest -> req~navigation.filter-window-edit~2] 種類の「含む」は値を打って Enter、「空である」はすぐ足す。値を打つ段の Esc は足さずに窓へ戻る。
     let (_t, mut a) = boot("nv29kinds");
     click_filter_button(&mut a);
     start_add(&mut a, "status", "含む");
@@ -340,7 +340,7 @@ fn test_nv_29_contains_and_empty_kinds() {
 
 #[test]
 fn test_nv_29_close_by_outside_click_and_esc() {
-    // [utest -> req~navigation.filter-window-close~1, req~navigation.filter-window-palette~1] 窓の外のクリックで閉じる。Esc でも閉じる。閉じても足した条件は効いたまま。
+    // [utest -> req~navigation.filter-window-close~2, req~navigation.filter-window-palette~2] 窓の外のクリックで閉じる。Esc でも閉じる。閉じても足した条件は効いたまま。
     let (_t, mut a) = boot("nv29close");
     click_filter_button(&mut a);
     assert_eq!(a.mode, Mode::FilterWin);
@@ -359,7 +359,7 @@ fn test_nv_29_close_by_outside_click_and_esc() {
 
 #[test]
 fn test_nv_29_palette_and_menu_open_window() {
-    // [utest -> req~navigation.filter-window-palette~1] パレットの動作 filter_menu(読むだけでも出る)。検索の欄を出さない設定では操作の一覧からも開ける。
+    // [utest -> req~navigation.filter-window-palette~2] パレットの動作 filter_menu(読むだけでも出る)。検索の欄を出さない設定では操作の一覧からも開ける。
     let act = filter_menu();
     assert_eq!(act.name(), "filter_menu");
     assert!(
@@ -384,7 +384,7 @@ fn test_nv_29_palette_and_menu_open_window() {
 
 #[test]
 fn test_nv_29_narrow_terminal_hides_button_but_palette_opens() {
-    // [utest -> req~navigation.filter-window-palette~1] 端末が狭く、ボタンが入らない → 「絞り込み」のボタンを出さない(右の端を押しても窓は開かない)。
+    // [utest -> req~navigation.filter-window-palette~2] 端末が狭く、ボタンが入らない → 「絞り込み」のボタンを出さない(右の端を押しても窓は開かない)。
     // パレットの filter_menu では開ける。
     let (_t, mut a) = boot("nv29narrow");
     a.resize(30, 24);

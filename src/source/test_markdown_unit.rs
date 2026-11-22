@@ -99,7 +99,7 @@ fn labels(md: &Markdown) -> Vec<String> {
 
 #[test]
 fn scalar_in_list_column_is_locked_and_counted() {
-    // [utest -> req~cell-edit.list-items-toggle~1, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1, req~cell-edit.list-candidates-scalar-open~1, req~cell-edit.list-candidates-unkeepable~1] リストの列で `tags: x`(1つの文字列)のセルは、1つの要素のリストとして開ける(lock なし)。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1, req~cell-edit.list-candidates-scalar-open~1, req~cell-edit.list-candidates-unkeepable~1] リストの列で `tags: x`(1つの文字列)のセルは、1つの要素のリストとして開ける(lock なし)。
     // 文字列でない1つの値(`tags: 2024`)は読むだけ。候補には1つの要素として数える。空の値・キーなしは lock なし。
     let t = tmp("scalar-list");
     std::fs::write(t.0.join("a.md"), "---\ntags: [x, y]\n---\n").unwrap();
@@ -212,7 +212,7 @@ fn save_replaces_without_rereading_and_preview_reads_disk() {
 
 #[test]
 fn setting_false_refuses_save_directly() {
-    // [utest -> req~write-back.add-frontmatter-at-head~1, req~write-back.add-frontmatter-setting~1] add_frontmatter = false: 画面の lock を通らずに save を呼んでも、フロントマターの無いノートと
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1] add_frontmatter = false: 画面の lock を通らずに save を呼んでも、フロントマターの無いノートと
     // 空のフロントマターのノートは書かない(ファイルは変わらない)。preview は書かないので設定を見ない。
     let t = tmp("addfm-off");
     let files = [("nofm.md", "body\n"), ("empty.md", "---\n---\nbody\n")];

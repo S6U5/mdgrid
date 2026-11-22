@@ -185,14 +185,14 @@ fn assert_two_marked_paths(sink: Sink, tag: &str) {
 
 #[test]
 fn test_out_3_pick_path_prints_marked_rows_in_table_order() {
-    // [stest -> req~output.pick-path~1] 2行に印を付けて Enter → 2つのパスが表の並びの順に1行ずつ、終了コード 0。
+    // [stest -> req~output.pick-path~2] 2行に印を付けて Enter → 2つのパスが表の並びの順に1行ずつ、終了コード 0。
     // 引数を相対(`notes`)で渡したので、パスは「引数の文字 + 相対」(下のフォルダは `sub/` つき)。
     assert_two_marked_paths(Sink::File, "path-marked");
 }
 
 #[test]
 fn test_out_3_pick_path_without_marks_prints_selected_row() {
-    // [stest -> req~output.pick-path~1] 印なしで Enter → 選んでいる行の1行。
+    // [stest -> req~output.pick-path~2] 印なしで Enter → 選んでいる行の1行。
     let env = Env::new("path-cursor");
     let mut t = open(&env, &["notes", "--pick", "path"], Sink::File);
     t.send_settle("jj"); // c.md
@@ -205,7 +205,7 @@ fn test_out_3_pick_path_without_marks_prints_selected_row() {
 
 #[test]
 fn test_out_3_pick_path_with_absolute_argument_prints_absolute_path() {
-    // [stest -> req~output.pick-path~1, req~output.pick-column~1] 引数を絶対のパスで渡す → 出るパスは「引数の文字 + 相対」= 絶対。
+    // [stest -> req~output.pick-path~2, req~output.pick-column~1] 引数を絶対のパスで渡す → 出るパスは「引数の文字 + 相対」= 絶対。
     let env = Env::new("path-abs");
     let vault = env.vault();
     let arg = vault.to_str().unwrap();
@@ -291,7 +291,7 @@ fn test_out_3_esc_without_marks_cancels_with_exit_1() {
 
 #[test]
 fn test_out_3_esc_with_marks_only_clears_marks() {
-    // [stest -> req~output.pick-path~1] 印があるときの Esc は印を解くだけで終わらない。続けて Enter → 選んでいる行の1行。
+    // [stest -> req~output.pick-path~2] 印があるときの Esc は印を解くだけで終わらない。続けて Enter → 選んでいる行の1行。
     let env = Env::new("esc-marks");
     let mut t = open(&env, &["notes", "--pick", "path"], Sink::File);
     t.send_settle(" "); // a.md に印、b.md へ
@@ -314,7 +314,7 @@ fn test_out_3_esc_with_marks_only_clears_marks() {
 
 #[test]
 fn test_out_3_unknown_column_exits_2_with_one_line_reason_without_screen() {
-    // [stest -> req~output.pick-path~1, req~output.pick-unknown-column~1] 表に無い列の名前 → 画面を出さずにすぐ、理由1行と終了コード 2(キーは何も送らない)。
+    // [stest -> req~output.pick-path~2, req~output.pick-unknown-column~1] 表に無い列の名前 → 画面を出さずにすぐ、理由1行と終了コード 2(キーは何も送らない)。
     let env = Env::new("unknown-col");
     let mut t = spawn(&env, &["notes", "--pick", "無い列"], Sink::File);
     let code = t.wait_exit();
@@ -342,7 +342,7 @@ fn test_out_3_unknown_column_exits_2_with_one_line_reason_without_screen() {
 
 #[test]
 fn test_out_3_pick_works_when_stdout_is_pipe() {
-    // [stest -> req~output.pick-pipe~1, req~cell-view.no-color-pipe-print-pick~1] 標準出力がパイプ(`| cat`)でも、ファイルのときと同じ結果。
+    // [stest -> req~output.pick-pipe~1, req~cell-view.no-color-pipe-print-pick~2] 標準出力がパイプ(`| cat`)でも、ファイルのときと同じ結果。
     assert_two_marked_paths(Sink::Pipe, "pipe");
 }
 

@@ -81,7 +81,7 @@ fn test_sr_34_auto_hides_single_tab() {
 
 #[test]
 fn test_sr_34_auto_shows_tabs_with_two_views() {
-    // [utest -> req~screen.tabs-setting-values~1] auto でも、ビューを保存して2つ以上になればタブの行を出す。
+    // [utest -> req~screen.tabs-setting-values~2] auto でも、ビューを保存して2つ以上になればタブの行を出す。
     let tmp = folder("sr34_two");
     save_views(
         &tmp.0.join("config"),
@@ -100,7 +100,7 @@ fn test_sr_34_auto_shows_tabs_with_two_views() {
 
 #[test]
 fn test_sr_34_unknown_value_warns() {
-    // [utest -> req~screen.tabs-setting-values~1] 知らない値は警告して always。
+    // [utest -> req~screen.tabs-setting-values~2] 知らない値は警告して always。
     let (c, w) = mdgrid::config::parse("[display]\ntabs = \"sometimes\"\n").unwrap();
     assert_eq!(c.resolved().display.tabs, mdgrid::display::TabsMode::Always);
     assert_eq!(w.len(), 1, "{w:?}");

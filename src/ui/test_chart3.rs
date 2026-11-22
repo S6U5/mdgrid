@@ -337,7 +337,7 @@ fn test_ch_7_heatmap_cells_show_values_and_density() {
 
 #[test]
 fn test_ch_7_hjkl_select_cells_and_describe() {
-    // [utest -> req~chart.heatmap-select~1] h j k l でます目を選び、選んだ組と値を出す: 左上「todo × alice: 2」、l「todo × bob: 1」、
+    // [utest -> req~chart.heatmap-select~2] h j k l でます目を選び、選んだ組と値を出す: 左上「todo × alice: 2」、l「todo × bob: 1」、
     // j「doing × bob: 0」、h「doing × alice: 1」。
     let (_t, mut a) = boot("ch7keys", &heat_notes(), "", HEAT);
     open(&mut a);
@@ -354,7 +354,7 @@ fn test_ch_7_hjkl_select_cells_and_describe() {
 
 #[test]
 fn test_ch_7_enter_filters_both_values() {
-    // [utest -> req~chart.heatmap-enter~1] todo × alice で Enter → 表が status = todo かつ assignee = alice の行(alpha・beta)だけ。
+    // [utest -> req~chart.heatmap-enter~2] todo × alice で Enter → 表が status = todo かつ assignee = alice の行(alpha・beta)だけ。
     let (_t, mut a) = boot("ch7enter", &heat_notes(), "", HEAT);
     open(&mut a);
     to_top_left(&mut a);
@@ -366,7 +366,7 @@ fn test_ch_7_enter_filters_both_values() {
 
 #[test]
 fn test_ch_7_enter_on_date_bucket_gives_reason() {
-    // [utest -> req~chart.heatmap-enter~1] 縦が日付の区切り(due の月)のヒートマップで Enter → 絞らずに理由1行(グラフのまま)。
+    // [utest -> req~chart.heatmap-enter~2] 縦が日付の区切り(due の月)のヒートマップで Enter → 絞らずに理由1行(グラフのまま)。
     let notes = md(&[
         ("alpha", "due: 2026-10-03\nassignee: alice"),
         ("beta", "due: 2026-11-03\nassignee: bob"),
@@ -580,7 +580,7 @@ fn test_ch_8_b_changes_breakdown_column() {
 
 #[test]
 fn test_ch_8_plus_minus_change_date_unit() {
-    // [utest -> req~chart.keys-unit~1, req~chart.keys-charts~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~1] 日付の列の棒で、+ で単位を細かく(月 → 週 → 日)、- で粗く。月より粗くはならない。
+    // [utest -> req~chart.keys-unit~1, req~chart.keys-charts~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~2] 日付の列の棒で、+ で単位を細かく(月 → 週 → 日)、- で粗く。月より粗くはならない。
     let notes = md(&[
         ("alpha", "due: 2026-10-01"),
         ("beta", "due: 2026-10-02"),
@@ -654,7 +654,7 @@ fn test_ch_8_switching_does_not_rewrite_marker() {
 
 #[test]
 fn test_ch_8_enter_filters_like_frequency_table() {
-    // [utest -> req~chart.keys-enter~1] done の棒(最初の項目)で Enter → 表が status = done の行だけになり、ヘッダーの帯に絞り込み(done)。
+    // [utest -> req~chart.keys-enter~2] done の棒(最初の項目)で Enter → 表が status = done の行だけになり、ヘッダーの帯に絞り込み(done)。
     let (_t, mut a) = boot("ch8enter", &status_notes(), "", "");
     assert!(!top_rows(&a).contains("done"), "前提: 帯に条件が無い");
     let c = open(&mut a);
@@ -668,7 +668,7 @@ fn test_ch_8_enter_filters_like_frequency_table() {
 
 #[test]
 fn test_ch_8_enter_on_none_and_list_items() {
-    // [utest -> req~chart.keys-kind-unfit~1, req~chart.keys-enter~1, req~chart.keys-click-again~1] 「(なし)」で Enter → 値の無い行だけ。リストの列の項目(会議)で Enter → 会議を含む行だけ。
+    // [utest -> req~chart.keys-kind-unfit~1, req~chart.keys-enter~2, req~chart.keys-click-again~1] 「(なし)」で Enter → 値の無い行だけ。リストの列の項目(会議)で Enter → 会議を含む行だけ。
     let notes = md(&[
         ("alpha", "status: todo\ntags: [会議, 家]"),
         ("beta", "status: todo\ntags: [会議]"),
@@ -707,7 +707,7 @@ fn test_ch_8_enter_on_none_and_list_items() {
 
 #[test]
 fn test_ch_8_enter_on_date_item_gives_reason() {
-    // [utest -> req~chart.keys-enter~1] 日付の区切りの項目で Enter → 絞らずに理由1行(グラフのまま)。
+    // [utest -> req~chart.keys-enter~2] 日付の区切りの項目で Enter → 絞らずに理由1行(グラフのまま)。
     let notes = md(&[("alpha", "due: 2026-10-01"), ("beta", "due: 2026-11-02")]);
     let (_t, mut a) = boot(
         "ch8datenter",
@@ -725,7 +725,7 @@ fn test_ch_8_enter_on_date_item_gives_reason() {
 
 #[test]
 fn test_ch_8_esc_q_p_return_to_table() {
-    // [utest -> req~chart.keys-no-write~1, req~chart.keys-enter~1, req~chart.keys-back~1] Esc・q・P で表に戻る(q で終わらない)。
+    // [utest -> req~chart.keys-no-write~1, req~chart.keys-enter~2, req~chart.keys-back~1] Esc・q・P で表に戻る(q で終わらない)。
     let (_t, mut a) = boot("ch8back", &status_notes(), "", "");
     open(&mut a);
     press(&mut a, KeyCode::Esc);
@@ -742,7 +742,7 @@ fn test_ch_8_esc_q_p_return_to_table() {
 
 #[test]
 fn test_ch_8_arrow_keys_move_like_jk() {
-    // [utest -> req~chart.keys-item~1, req~chart.keys-enter~1, req~chart.keys-click~1, req~chart.keys-click-again~1] ↓ ↑ は j k と同じ(棒の項目を選ぶ)。
+    // [utest -> req~chart.keys-item~1, req~chart.keys-enter~2, req~chart.keys-click~1, req~chart.keys-click-again~1] ↓ ↑ は j k と同じ(棒の項目を選ぶ)。
     let (_t, mut a) = boot("ch8arrows", &status_notes(), "", "");
     open(&mut a);
     press(&mut a, KeyCode::Down);

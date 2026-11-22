@@ -54,7 +54,7 @@ fn pending(a: &App) -> Vec<String> {
     out
 }
 
-// [utest -> req~cell-edit.then-set~1]
+// [utest -> req~cell-edit.then-set~2]
 #[test]
 fn test_then_sets_the_other_column_when_the_value_matches() {
     // status を done に直すと done_at に今日がたまり、doing に直した行には何もたまらない。
@@ -79,7 +79,7 @@ fn test_then_is_undone_in_one_step_with_the_edit() {
     assert_eq!(pending(&a), Vec::<String>::new());
 }
 
-// [utest -> req~cell-edit.then-unset~1]
+// [utest -> req~cell-edit.then-unset~2]
 #[test]
 fn test_then_value_is_dropped_when_the_edit_moves_to_another_value() {
     // done に直してから doing に直すと、done_at にためた値は外れる。元の値に戻したときも外れる。

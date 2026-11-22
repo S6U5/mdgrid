@@ -52,7 +52,7 @@ fn lines(a: &App) -> Vec<String> {
 
 #[test]
 fn test_sr_34_auto_single_view_keeps_search_bar() {
-    // [utest -> req~screen.tabs-setting-auto-single~1, req~screen.layout-order~1] auto でビューが1つ → タブは出さず、ヘッダーにもビューの名前を足さない。検索の欄を
+    // [utest -> req~screen.tabs-setting-auto-single~1, req~screen.layout-order~2] auto でビューが1つ → タブは出さず、ヘッダーにもビューの名前を足さない。検索の欄を
     // 出しているので、ビューの帯の行は残り(欄とボタン)、見出しは3行目。
     let (_t, a) = boot_config("sr34auto", "[display]\ntabs = \"auto\"\n");
     let l = lines(&a);
@@ -73,7 +73,7 @@ fn test_sr_34_auto_single_view_keeps_search_bar() {
 
 #[test]
 fn test_sr_20_search_hidden_keeps_tabs_and_buttons() {
-    // [utest -> req~screen.display-options-config~1, req~screen.layout-order~1, req~screen.layout-hide-parts~1] タブを出し、検索の欄だけ隠す → ビューの帯の行は残り、タブとボタンが並ぶ。欄は無い。
+    // [utest -> req~screen.display-options-config~2, req~screen.layout-order~2, req~screen.layout-hide-parts~1] タブを出し、検索の欄だけ隠す → ビューの帯の行は残り、タブとボタンが並ぶ。欄は無い。
     let (_t, a) = boot_config(
         "sr20nosearch",
         "[display]\ntabs = \"always\"\nsearch_bar = false\n",

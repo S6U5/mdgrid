@@ -65,7 +65,7 @@ const TWO: &[(&str, &str)] = &[
 
 #[test]
 fn test_sr_19_name_click_other_row_selects_only() {
-    // [utest -> req~screen.click-name~1, req~screen.mouse-click-select~1] 別の行の行の名前の欄を1回クリック → その行を選ぶだけで、エディタは開かない(編集も始めない)。
+    // [utest -> req~screen.click-name~2, req~screen.mouse-click-select~1] 別の行の行の名前の欄を1回クリック → その行を選ぶだけで、エディタは開かない(編集も始めない)。
     let (_t, mut a) = make("sr19sel", TWO);
     col_named(&mut a, "title");
     assert_eq!(a.row, 0);
@@ -80,7 +80,7 @@ fn test_sr_19_name_click_other_row_selects_only() {
 #[cfg(unix)]
 #[test]
 fn test_sr_19_name_click_selected_row_opens_editor_and_reloads() {
-    // [utest -> req~screen.click-name~1, req~screen.editor-open~1, req~screen.editor-reload~1] 選んだ行の行の名前の欄をクリック → そのノートのパスでエディタが起動し、
+    // [utest -> req~screen.click-name~2, req~screen.editor-open~1, req~screen.editor-reload~1] 選んだ行の行の名前の欄をクリック → そのノートのパスでエディタが起動し、
     // 戻るとその行を読み直す(エディタが書き換えた値が表に出る)。編集は始めない。
     let _lock = editor_lock();
     let (t, mut a) = make("sr19open", TWO);
@@ -124,7 +124,7 @@ const BASE_FILE: &str =
 #[cfg(unix)]
 #[test]
 fn test_sr_19_file_name_cell_click_opens_editor() {
-    // [utest -> req~screen.click-name~1] `file.name` の列を出したビューで、別の行の `file.name` のセルは選ぶだけ、
+    // [utest -> req~screen.click-name~2] `file.name` の列を出したビューで、別の行の `file.name` のセルは選ぶだけ、
     // 選んだ行の `file.name` のセルのクリックでエディタが起動し、戻ると読み直す。
     let _lock = editor_lock();
     let tmp = vault("sr19fn");
@@ -166,7 +166,7 @@ fn test_sr_19_file_name_cell_click_opens_editor() {
 
 #[test]
 fn test_sr_19_file_path_cell_click_does_not_open() {
-    // [utest -> req~screen.click-name~1] `file.path` など他の file.* の列のセルは今までどおり: 選んだ行でクリックしても開かない
+    // [utest -> req~screen.click-name~2] `file.path` など他の file.* の列のセルは今までどおり: 選んだ行でクリックしても開かない
     // (読むだけのセルとして理由を出す)。
     let tmp = vault("sr19fp");
     let mut a = open(&tmp, BASE_FILE, None);
@@ -227,7 +227,7 @@ fn press_e(a: &mut App) {
 
 #[test]
 fn test_sr_19_empty_editor_click_same_as_e() {
-    // [utest -> req~screen.click-name~1, req~screen.editor-open~1, req~screen.editor-choice~1, req~screen.editor-args~1] EDITOR が空(無い)でも、選んだ行のファイル名のクリック(名前の欄・file.name のセル)は
+    // [utest -> req~screen.click-name~2, req~screen.editor-open~1, req~screen.editor-choice~2, req~screen.editor-args~1] EDITOR が空(無い)でも、選んだ行のファイル名のクリック(名前の欄・file.name のセル)は
     // `e` を押したのと全く同じ結果: 同じ行を同じ引数(空なら vi + ノートのパス)で起動するよう頼み、
     // 同じモード・同じメッセージになる。EDITOR の値は main と同じく open_editor に渡す。
     let _lock = editor_lock();
@@ -263,7 +263,7 @@ fn test_sr_19_empty_editor_click_same_as_e() {
 
 #[test]
 fn test_sr_19_readonly_click_same_as_e() {
-    // [utest -> req~screen.click-name~1, req~cli.readonly~1] 読むだけの起動(`--readonly`)でも、選んだ行のファイル名のクリック(名前の欄・file.name のセル)は
+    // [utest -> req~screen.click-name~2, req~cli.readonly~1] 読むだけの起動(`--readonly`)でも、選んだ行のファイル名のクリック(名前の欄・file.name のセル)は
     // `e` を押したのと全く同じ結果: 同じ行を同じ引数で起動するよう頼み、同じモード・同じメッセージになる
     // (読むだけの案内に変えて編集を拒むのではない)。
     let _lock = editor_lock();

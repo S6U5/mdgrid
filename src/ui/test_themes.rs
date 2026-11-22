@@ -342,7 +342,7 @@ fn test_sr_26_palettes_follow_the_mockups() {
 
 #[test]
 fn test_sr_26_zebra_uses_theme_colors() {
-    // [utest -> req~screen.themes-paint~1, req~screen.display-options-config~1] 一行おきの色(zebra = true)は、テーマの zebra_bg・zebra_fg で塗る。
+    // [utest -> req~screen.themes-paint~1, req~screen.display-options-config~2] 一行おきの色(zebra = true)は、テーマの zebra_bg・zebra_fg で塗る。
     let tmp = vault("thzebra");
     let a = themed(
         &tmp,
@@ -373,7 +373,7 @@ fn test_sr_26_zebra_uses_theme_colors() {
 
 #[test]
 fn test_sr_27_default_is_unchanged() {
-    // [utest -> req~screen.theme-names-list~1, req~screen.theme-names-no-color~1] 設定なしと theme = "default" の画面は、テーマの機能が無いときと各セルまで同じ。
+    // [utest -> req~screen.theme-names-list~2, req~screen.theme-names-no-color~1] 設定なしと theme = "default" の画面は、テーマの機能が無いときと各セルまで同じ。
     let tmp = vault("thdefault");
     for color in [ColorMode::Rgb, ColorMode::Indexed, ColorMode::None] {
         let want = buffer(&plain(&tmp, color));
@@ -401,7 +401,7 @@ fn test_sr_27_default_is_unchanged() {
 
 #[test]
 fn test_sr_27_default_zebra_is_unchanged() {
-    // [utest -> req~screen.theme-names-list~1, req~screen.display-options-config~1, req~screen.display-options-zebra-no-color~1] 既定のテーマの一行おきの色は今と同じ。
+    // [utest -> req~screen.theme-names-list~2, req~screen.display-options-config~2, req~screen.display-options-zebra-no-color~1] 既定のテーマの一行おきの色は今と同じ。
     let tmp = vault("thdefzebra");
     let mut a = app_of(&tmp, ColorMode::Rgb);
     let c = cfg("[look]\nmode = \"classic\"\ntheme = \"default\"\n\n[display]\nzebra = true\n");
@@ -417,7 +417,7 @@ fn test_sr_27_default_zebra_is_unchanged() {
 
 #[test]
 fn test_sr_27_theme_names() {
-    // [utest -> req~screen.theme-names-list~1, req~screen.theme-names-unknown~1] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
+    // [utest -> req~screen.theme-names-list~2, req~screen.theme-names-unknown~1] 設定の名前は12(見本の7つと落ち着いた組の5つ)。知らない名前は None。
     let names = [
         ("default", Theme::Default),
         ("nord", Theme::Nord),

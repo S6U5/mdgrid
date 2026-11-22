@@ -65,7 +65,7 @@ fn bold_underlined(buf: &Buffer, y: u16) -> Vec<u16> {
 
 #[test]
 fn test_sr_26_zebra_row_selection_mark_and_bold() {
-    // [utest -> req~screen.themes-paint~1, req~screen.themes-color-only~1, req~screen.display-options-config~1] zebra = true で偶数番目の行を選ぶ → 選んでいるセルは選択の色(反転は外れる)、
+    // [utest -> req~screen.themes-paint~1, req~screen.themes-color-only~1, req~screen.display-options-config~2] zebra = true で偶数番目の行を選ぶ → 選んでいるセルは選択の色(反転は外れる)、
     // 左端の `>` は mark、名前の太字は strong、ほかの文字は zebra_fg、地は zebra_bg。
     let tmp = vault("thmzebsel");
     let zebra = "[display]\nzebra = true\n";

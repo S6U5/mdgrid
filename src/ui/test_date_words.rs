@@ -121,7 +121,7 @@ fn test_date_words_bulk_set() {
 
 #[test]
 fn test_date_words_week_start_setting() {
-    // [utest -> req~cell-edit.date-words-weekday~1] 設定の週の始まりが月曜で今日が 2026-11-22(日)なら、セルで `今週の月曜` は 2026-11-16、`来週の月曜` は 2026-11-23 になる。
+    // [utest -> req~cell-edit.date-words-weekday~2] 設定の週の始まりが月曜で今日が 2026-11-22(日)なら、セルで `今週の月曜` は 2026-11-16、`来週の月曜` は 2026-11-23 になる。
     let (_t, mut a) = vault(
         "dw-week",
         &[

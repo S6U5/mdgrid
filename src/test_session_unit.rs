@@ -46,7 +46,7 @@ fn test_session_round_trip_keeps_every_field() {
 #[test]
 fn test_session_store_table_and_unknown_item_warns() {
     // [utest -> req~cli.session-store~1] `[sessions.進行中]` に置き、手で足した `color = "red"` は警告にとどめる。
-    // [utest -> req~cli.config-file-warning-form~1] 警告は「ファイルの名前: 項目の道筋: 理由」の形。
+    // [utest -> req~cli.config-file-warning-form~2] 警告は「ファイルの名前: 項目の道筋: 理由」の形。
     let _ja = i18n::scoped(Lang::Ja);
     let text = to_toml(&[sample()]);
     let t: toml::Table = text.parse().unwrap();
@@ -81,7 +81,7 @@ fn test_session_store_wrong_types_warn() {
 
 #[test]
 fn test_session_broken_file_is_an_error() {
-    // [utest -> req~cli.session-errors~1] 壊れた sessions.toml は理由1行(行の番号つき)。
+    // [utest -> req~cli.session-errors~2] 壊れた sessions.toml は理由1行(行の番号つき)。
     let _ja = i18n::scoped(Lang::Ja);
     let e = parse("[sessions.a\nfolders = 1\n").unwrap_err();
     assert!(e.starts_with("sessions.toml が読めない(1 行目): "), "{e}");
@@ -129,7 +129,7 @@ fn test_session_save_refuses_a_broken_file() {
 
 #[test]
 fn test_session_list_text() {
-    // [utest -> req~cli.session-screen-list~1] 1つ1行で「名前<TAB>開くフォルダ」。無ければ何も出さない。
+    // [utest -> req~cli.session-screen-list~2] 1つ1行で「名前<TAB>開くフォルダ」。無ければ何も出さない。
     let s = sample();
     assert_eq!(list_text(&[s]), "進行中\t/data/notes/tasks\n");
     assert_eq!(list_text(&[]), "");
@@ -137,7 +137,7 @@ fn test_session_list_text() {
 
 #[test]
 fn test_session_home_is_written_with_tilde() {
-    // [utest -> req~cli.session-screen-list~1] ホームの下のフォルダは `~/…` で書き、読むとホームに戻す。
+    // [utest -> req~cli.session-screen-list~2] ホームの下のフォルダは `~/…` で書き、読むとホームに戻す。
     let Some(home) = crate::config::home_dir() else {
         return;
     };

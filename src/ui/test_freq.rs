@@ -124,7 +124,7 @@ fn above_message(s: &str) -> String {
 
 #[test]
 fn test_nv_9_percent_key_is_frequency() {
-    // [utest -> req~navigation.frequency-open~1, req~navigation.frequency-scope~1, req~screen.key-modes-per-mode~1, req~screen.key-modes-no-dup~1, req~screen.key-modes-table-defaults~1] 表のモードの既定 `%` = frequency。
+    // [utest -> req~navigation.frequency-open~1, req~navigation.frequency-scope~1, req~screen.key-modes-per-mode~1, req~screen.key-modes-no-dup~1, req~screen.key-modes-table-defaults~2] 表のモードの既定 `%` = frequency。
     let (_t, a) = make("nv9key", TAGS);
     assert_eq!(
         keymap::lookup(&a.keys, Mode::Table, "%"),
@@ -454,7 +454,7 @@ fn test_nv_9_rebound_key_opens() {
 
 #[test]
 fn test_nv_9_palette_opens() {
-    // [utest -> req~navigation.frequency-open~1, req~screen.palette-fuzzy~1] パレットで frequency を実行 → 頻度表が開く。
+    // [utest -> req~navigation.frequency-open~1, req~screen.palette-fuzzy~2] パレットで frequency を実行 → 頻度表が開く。
     let (_t, mut a) = make("nv9pal", TAGS);
     col_named(&mut a, "tags");
     ch(&mut a, ':');
@@ -483,7 +483,7 @@ fn menu_items(lines: &[String]) -> Vec<String> {
 
 #[test]
 fn test_nv_9_action_menu_column_section_has_item() {
-    // [utest -> req~navigation.frequency-open~1, req~screen.action-menu-open-key~1, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-bulk-hidden~1] tags のセルで `x` → 「列」の節に頻度表の項目(キー `%` を添える)。Enter で開ける。
+    // [utest -> req~navigation.frequency-open~1, req~screen.action-menu-open-key~2, req~screen.action-menu-right-click~1, req~screen.action-menu-sections~1, req~screen.action-menu-row-keys~1, req~screen.action-menu-bulk-hidden~1] tags のセルで `x` → 「列」の節に頻度表の項目(キー `%` を添える)。Enter で開ける。
     let (_t, mut a) = make("nv9menu", TAGS);
     let label = label_of(&a, freq_action());
     a.row = 0;

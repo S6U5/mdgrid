@@ -260,7 +260,7 @@ fn test_modes_quit_save_reviews_writes_and_quits() {
 
 #[test]
 fn test_modes_palette_row_number_and_wq() {
-    // [stest -> req~navigation.jump~1, req~screen.key-modes-palette-commands~2] パレットの行番号 `3` → 3行目が選ばれる。
+    // [stest -> req~navigation.jump~1, req~screen.key-modes-palette-commands~3] パレットの行番号 `3` → 3行目が選ばれる。
     // 未保存 1 でパレットの `wq` → 差分の確認が出て、確定で書いて終わる。
     let h = home("modes-palette-wq", &NOTES);
     let mut t = open(&h, 3, 4);
@@ -294,7 +294,7 @@ fn test_modes_palette_row_number_and_wq() {
 
 #[test]
 fn test_modes_palette_finds_save_with_its_key() {
-    // [stest -> req~screen.palette-fuzzy~1, req~screen.palette-keys~1] `:` で「save」と打つ → 保存が候補の先頭に出て、横に
+    // [stest -> req~screen.palette-fuzzy~2, req~screen.palette-keys~1] `:` で「save」と打つ → 保存が候補の先頭に出て、横に
     // そのキー(Ctrl+S。画面の書き方は ^S)。Ctrl+P で開いて「save」と打つ → 同じ。Esc で閉じる。
     let h = home("modes-palette-save", &NOTES);
     let mut t = open(&h, 3, 4);
@@ -324,7 +324,7 @@ fn test_modes_palette_finds_save_with_its_key() {
 
 #[test]
 fn test_modes_help_shows_current_keys_first_and_marks_last() {
-    // [stest -> req~screen.help~1] 表で `?` → 先頭に今押せるキー(表の操作)。末尾の「印」の節に `∅` と `#` の意味。Esc で閉じる。
+    // [stest -> req~screen.help~2] 表で `?` → 先頭に今押せるキー(表の操作)。末尾の「印」の節に `∅` と `#` の意味。Esc で閉じる。
     let h = home("modes-help", &NOTES);
     let mut t = open(&h, 3, 4);
     t.send("?");
@@ -553,7 +553,7 @@ fn add_due_before(t: &mut Tui) {
 
 #[test]
 fn test_modes_settings_compare_filter_applies_and_cancel_keeps_table() {
-    // [stest -> req~navigation.view-settings~1, req~navigation.filter-conditions-more~1] `o` のフィルターの区画で、日付の列の
+    // [stest -> req~navigation.view-settings~2, req~navigation.filter-conditions-more~1] `o` のフィルターの区画で、日付の列の
     // `< 2026-10-01` を打って足す。取り消しで閉じる → 表は開く前のまま。反映 → それより前の行だけになり、`someday` の
     // ような型の合わない値の行は残らない。
     let h = home(
@@ -614,7 +614,7 @@ fn hide_done(t: &mut Tui) {
 
 #[test]
 fn test_modes_filter_window_adds_and_removes_conditions() {
-    // [stest -> req~navigation.filter-window-open~1, req~navigation.filter-window-live~1, req~navigation.filter-window-count~1, req~navigation.filter-window-edit~1, req~navigation.filter-window-close~1]
+    // [stest -> req~navigation.filter-window-open~1, req~navigation.filter-window-live~1, req~navigation.filter-window-count~1, req~navigation.filter-window-edit~2, req~navigation.filter-window-close~2]
     // `|` → 窓に「+ 絞り込みを足す」。status の done を外す → すぐ done の行が消え、帯に「status: done を除く」、ボタンに
     // 「絞り込み 1」。続けて priority の `≥ 3` を打って足す → 両方を満たす行だけ。窓で条件を外す → 元の行。Esc で閉じる。
     let h = home("modes-filter-window", &NOTES);
@@ -707,7 +707,7 @@ fn test_modes_chips_remove_item_brings_rows_back() {
 
 #[test]
 fn test_modes_value_list_picks_status_and_saves() {
-    // [stest -> req~cell-edit.value-list-open~1, req~cell-edit.value-list-mark~1, req~cell-edit.value-list-none~1]
+    // [stest -> req~cell-edit.value-list-open~2, req~cell-edit.value-list-mark~1, req~cell-edit.value-list-none~1]
     // status が doing のセルで Enter → todo・done・doing と「なし」のリストが出て、今の値の doing に印。done を選んで保存 →
     // ノートの status が done になる。
     let h = home("modes-value-list", &NOTES);
@@ -744,7 +744,7 @@ fn test_modes_value_list_picks_status_and_saves() {
 
 #[test]
 fn test_modes_list_select_adds_a_tag_as_one_line() {
-    // [stest -> req~cell-edit.list-items-toggle~1, req~write-back.byte-range-add-item~1] tags のセルで 家 を付けて確定 → tags に
+    // [stest -> req~cell-edit.list-items-toggle~2, req~write-back.byte-range-add-item~1] tags のセルで 家 を付けて確定 → tags に
     // 家 が足されたためる変更。保存 → 字下げ2の縦のリストに `  - 家` の1行だけが増え、ほかのバイトは同じ。
     let h = home("modes-list-select", &NOTES);
     let mut t = open(&h, 3, 4);
@@ -831,7 +831,7 @@ fn test_modes_freq_counts_values_and_enter_narrows() {
 
 #[test]
 fn test_modes_sort_window_adds_flips_and_removes_a_rule() {
-    // [stest -> req~navigation.sort-window-open~1, req~navigation.sort-window-live~1, req~navigation.sort-window-label~1, req~navigation.sort-window-edit~1, req~navigation.sort-window-close~1]
+    // [stest -> req~navigation.sort-window-open~1, req~navigation.sort-window-live~1, req~navigation.sort-window-label~2, req~navigation.sort-window-edit~2, req~navigation.sort-window-close~2]
     // `S` → 窓に「+ 並べ替えを足す」。priority を足す → すぐ priority の昇順、ボタンに「↑ priority」。その行で Enter →
     // 降順「↓ priority」。決まりを外す → 元の並び。Esc で閉じる。
     let h = home("modes-sorts", &NOTES);
@@ -901,7 +901,7 @@ fn workspace(tag: &str, link: bool) -> TempDir {
 
 #[test]
 fn test_modes_drawer_lists_tables_and_switches() {
-    // [stest -> req~workspace.drawer-hidden~1, req~workspace.drawer-overlay~1, req~workspace.drawer-current-mark~1, req~workspace.drawer-close~1, req~workspace.drawer-switch~1]
+    // [stest -> req~workspace.drawer-hidden~1, req~workspace.drawer-overlay~1, req~workspace.drawer-current-mark~1, req~workspace.drawer-close~2, req~workspace.drawer-switch~2]
     // 普段は引き出しが無い。tasks で `w` → 左に重ねて tasks(印付き)・projects。Esc → 何も変わらずに閉じる。
     // projects を Enter → projects の表になり、引き出しは閉じる。
     let h = workspace("modes-drawer", false);
@@ -944,7 +944,7 @@ fn test_modes_drawer_lists_tables_and_switches() {
 
 #[test]
 fn test_modes_screen_menu_lists_types_and_switches() {
-    // [stest -> req~relations.screen-menu-open~1, req~relations.screen-menu-current~1, req~relations.screen-menu-key-hint~1, req~relations.screen-menu-close~1, req~relations.screen-menu-switch~1]
+    // [stest -> req~relations.screen-menu-open~2, req~relations.screen-menu-current~1, req~relations.screen-menu-key-hint~1, req~relations.screen-menu-close~2, req~relations.screen-menu-switch~1]
     // 表の画面で「▦ 表 ▾」を押す → ボタンのすぐ下の窓に「表」(今の型の印 ●)と「関係マップ」(切り替えのキー R)。Esc → 窓が
     // 閉じ、画面は変わらない。窓で「関係マップ」を選ぶ → 関係マップの画面になり、ボタンは「関係マップ ▾」。
     let h = workspace("modes-screen-menu", true);

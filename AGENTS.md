@@ -21,7 +21,7 @@
 
 ## 要求とテスト(trace-gate)
 
-- 要求とテストの期待値は人が決める。AI は案を PR に出し、決まっていないことは `tbd~` の行に残す(黙って埋めると人が気づけないため)。
+- 要求とテストの期待値は人が決める。AI は案を PR に出し、決まっていないことは `tbd~` の区切りに残す(黙って埋めると人が気づけないため)。
 - 期待値は仕様と受け入れの例から取る(実装から取ると、今の誤りを正しいと固めるため)。
 - テストが落ちたら実装を直す。仕様の読みが割れたとき(仕様どうし・仕様とテスト・例と要求文)は、どれも直さずに止め、場所と両方の読みと選べる直し方を書いて、人への問いで終える。
 - 要求は write-requirement、テストは write-tests のスキルで書く(正本 `specs/requirements/<能力>.md`、印 `[utest -> req~名前~版]`)。
@@ -30,6 +30,6 @@
 このリポに固有の決まり:
 
 - Rust のテストの印は、テストの関数の直前か本体の中のコメントに `// [utest -> req~名前~版]` と書く。本物の実行ファイルを動かすテスト(`CARGO_BIN_EXE_mdgrid` か疑似端末の道具 `pty` を使うファイル)は `stest` にする。
-- このリポは trace-gate を CI に載せる設定にした(`trace-gate.json` の `parts.ci` が true。`.github/workflows/trace-gate.yml` は forge-gate が作る写しで手で直さず、`forge-gate.json` を直して `forge_gate.py init` を走らせる)。ほかの CI(ci.yml など)はそのまま別にある。手元でも check を見る(Stop のフックと `./ci.sh` の最後)。要求は 1 要求 1 文・受け入れ 1 つの見出しの区切りで書く。
+- このリポは trace-gate を CI に載せる設定にした(`trace-gate.json` の `parts.ci` が true。`.github/workflows/trace-gate.yml` は forge-gate が作る写しで手で直さず、`forge-gate.json` を直して `forge_gate.py init` を走らせる)。ほかの CI(ci.yml など)はそのまま別にある。手元でも check を見る(Stop のフックと `./ci.sh` の最後)。要求は見出しの区切りで1件ずつ書き、欄の名前は英語(`Rationale:`・`Acceptance:`・`Needs:`、未確定事項は `Decider:`・`Provisional:`)にする。受け入れは `- Acceptance:` の下に字下げした `- Given:`・`- When:`・`- Then:` で書く(`trace-gate.json` の `require_accept_parts` で必須)。2026-11-22 より前の要求は、1行の文を矢印の所で機械的に Given・When・Then に分けたもの(手順の流れは途中の結果ごと `When:` に入っている)なので、その要求を直すときに読みやすく書き直す(文を書き直すと版を上げる。Given と When のあいだで移すだけなら指紋は変わらない)。
 - 断言をヘルパーの関数に任せたテストは、今の検査器が断言と数えない(`tbd~rust-helper-asserts`)。そういうテストには印を付けず、コメントに要求の名前だけを `[base-view.expr-eval]` の形で書く。
 - 検査器の写し `tools/trace_gate.py` と写しの錠 `tools/trace-gate.lock.json`、承認の記録 `specs/approvals.jsonl` は人だけが書く。更新はプラグインから人が `init --force` で取り込む。

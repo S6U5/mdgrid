@@ -103,7 +103,7 @@ fn test_ce_36_file_and_formula_columns_warn_and_are_unused() {
 
 #[test]
 fn test_ce_36_wrong_value_types_warn_and_item_is_unused() {
-    // [utest -> req~cell-edit.rules-bad-items~1] 型の違う値(required が文字・values が配列でない)は警告し、その項目を使わない。
+    // [utest -> req~cell-edit.rules-bad-items~2] 型の違う値(required が文字・values が配列でない)は警告し、その項目を使わない。
     // ほかの項目はそのまま使う。
     let (c, w) = parse(
         "[rules.status]\nrequired = \"yes\"\nvalues = [\"a\"]\n\n[rules.owner]\nrequired = true\nvalues = \"todo\"\n",
@@ -128,7 +128,7 @@ fn test_ce_36_wrong_value_types_warn_and_item_is_unused() {
 
 #[test]
 fn test_ce_36_unknown_item_and_non_string_values_warn() {
-    // [utest -> req~cell-edit.rules-values~1, req~cell-edit.rules-bad-items~1] 知らない項目は警告する。values に文字でない要素があれば警告する。
+    // [utest -> req~cell-edit.rules-values~1, req~cell-edit.rules-bad-items~2] 知らない項目は警告する。values に文字でない要素があれば警告する。
     let (_, w) = parse("[rules.status]\nfoo = 1\n").expect("止めない");
     assert!(
         w.iter().any(|x| x.contains("rules.status.foo")),
@@ -235,7 +235,7 @@ fn test_ce_36_type_mismatch_comes_first() {
 
 #[test]
 fn test_cv_9_reason_texts_in_japanese() {
-    // [utest -> req~cell-view.problems-reasons~1] 理由を「型が合わない(〇〇ではない)」「必須のキーが無い」「選べる値ではない」の3つで言い分ける。
+    // [utest -> req~cell-view.problems-reasons~2] 理由を「型が合わない(〇〇ではない)」「必須のキーが無い」「選べる値ではない」の3つで言い分ける。
     let _g = scoped(Lang::Ja);
     let names = [
         (Kind::Text, "テキスト"),
@@ -257,7 +257,7 @@ fn test_cv_9_reason_texts_in_japanese() {
 
 #[test]
 fn test_cv_9_reason_texts_follow_language() {
-    // [utest -> req~cell-view.problems-reasons~1] 理由の文は今の言語で出る(英語では日本語の字を含まず、3つが互いに違う)。
+    // [utest -> req~cell-view.problems-reasons~2] 理由の文は今の言語で出る(英語では日本語の字を含まず、3つが互いに違う)。
     let _g = scoped(Lang::En);
     let texts = [
         Reason::Type(Kind::Date).text(),

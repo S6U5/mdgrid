@@ -35,7 +35,7 @@ fn test_ce_21_offset_time_kept() {
     );
 }
 
-// [utest -> req~cell-edit.calendar-keys-move~1, req~cell-edit.calendar-keys-keep-time~1]
+// [utest -> req~cell-edit.calendar-keys-move~2, req~cell-edit.calendar-keys-keep-time~1]
 #[test]
 fn test_ce_21_space_separated_written_with_t() {
     use super::entry::parse;

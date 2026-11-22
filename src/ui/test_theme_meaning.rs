@@ -51,7 +51,7 @@ fn set_wip(a: &mut App) {
     press(a, KeyCode::Enter);
 }
 
-// [utest -> req~screen.theme-meaning-colors-paint~1, req~screen.theme-meaning-colors-marks~1]
+// [utest -> req~screen.theme-meaning-colors-paint~2, req~screen.theme-meaning-colors-marks~1]
 #[test]
 fn test_sr_28_pending_cell_uses_theme_color() {
     let (_t, mut a) = app("sr28p", "solarized-light");
@@ -59,7 +59,7 @@ fn test_sr_28_pending_cell_uses_theme_color() {
     assert_eq!(fg_of(&buffer(&a), "wip"), Some(SOL_PENDING));
 }
 
-// [utest -> req~screen.theme-meaning-colors-paint~1, req~screen.theme-meaning-colors-marks~1]
+// [utest -> req~screen.theme-meaning-colors-paint~2, req~screen.theme-meaning-colors-marks~1]
 #[test]
 fn test_sr_28_diff_lines_use_theme_colors() {
     let (_t, mut a) = app("sr28d", "solarized-light");
@@ -71,7 +71,7 @@ fn test_sr_28_diff_lines_use_theme_colors() {
     assert_eq!(fg_of(&buf, "-status: todo"), Some(SOL_DEL));
 }
 
-// [utest -> req~screen.theme-meaning-colors-paint~1]
+// [utest -> req~screen.theme-meaning-colors-paint~2]
 #[test]
 fn test_sr_28_highlight_background_uses_theme_color() {
     let (_t, mut a) = app("sr28h", "solarized-light");
@@ -90,7 +90,7 @@ fn test_sr_28_highlight_background_uses_theme_color() {
     assert!((lum(p.hl_bg) - lum(p.fg)).abs() > 80.0);
 }
 
-// [utest -> req~screen.theme-meaning-colors-paint~1, req~screen.theme-meaning-colors-marks~1]
+// [utest -> req~screen.theme-meaning-colors-paint~2, req~screen.theme-meaning-colors-marks~1]
 #[test]
 fn test_sr_28_default_theme_keeps_colors() {
     let (_t, mut a) = app("sr28def", "default");

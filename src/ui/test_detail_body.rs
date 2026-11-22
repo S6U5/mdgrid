@@ -160,7 +160,7 @@ fn test_nv_6_body_arrows_stay_on_properties() {
 
 #[test]
 fn test_nv_6_body_heading_english() {
-    // [utest -> req~navigation.detail-body~1, req~screen.locales-two-languages~1, req~screen.locales-auto~2, req~screen.locales-ledger~1] 英語の画面では見出しが "Body"。
+    // [utest -> req~navigation.detail-body~1, req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-ledger~1] 英語の画面では見出しが "Body"。
     let _g = scoped(Lang::En);
     let (_t, _a, s) = detail_screen(
         &[("a.md", "---\ntitle: meeting\n---\nfirst line of the body\n")],

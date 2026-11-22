@@ -451,7 +451,7 @@ fn test_tr_1_no_table_hint_under_help() {
 
 #[test]
 fn test_ga_2_view_hint_still_shown() {
-    // [utest -> req~gantt.open-bars~1, req~base-view.unsupported-no-guess~1, req~base-view.unsupported-column-mark~1, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] ガントの画面でも、ビューの案内はメッセージ行に出る: `.base` のビューの集計が式(customAverage)で
+    // [utest -> req~gantt.open-bars~1, req~base-view.unsupported-no-guess~1, req~base-view.unsupported-column-mark~2, req~base-view.unsupported-column-readonly~1, req~base-view.unsupported-cell-band~1] ガントの画面でも、ビューの案内はメッセージ行に出る: `.base` のビューの集計が式(customAverage)で
     // 未対応 → 表で出る「未対応: …customAverage…」が、`C` で開いたガント(日付の列 start・due から推定)のメッセージ行にも
     // 出る(表の行とセルの案内とは違い、ビューの案内は画面の型によらない)。
     let tmp = Tmp::new("ga2viewhint");

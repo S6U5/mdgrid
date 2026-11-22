@@ -61,7 +61,7 @@ fn test_sc_17_e2e_editor_refused_and_add_row() {
 
 #[test]
 fn test_sc_15_e2e_print_and_unreadable() {
-    // [stest -> req~scope.csv-open-unreadable~1] `--print` は CSV の行を出す。UTF-8 でないファイルは理由1行と 0 以外の終了コード。
+    // [stest -> req~scope.csv-open-unreadable~2] `--print` は CSV の行を出す。UTF-8 でないファイルは理由1行と 0 以外の終了コード。
     let h = home("csv-print");
     std::fs::write(h.path().join("sjis.csv"), b"name\n\x82\xa0\n").unwrap();
     let bin = env!("CARGO_BIN_EXE_mdgrid");

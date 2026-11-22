@@ -106,7 +106,7 @@ fn open_title(a: &mut App) {
 
 #[test]
 fn test_vim_setting_off_esc_cancels_on_esc_goes_normal() {
-    // [utest -> req~screen.vim-input-modes~1] 設定が無い → セルの入力の欄で Esc を押すと、今どおり入力を取りやめて閉じる。
+    // [utest -> req~screen.vim-input-modes~2] 設定が無い → セルの入力の欄で Esc を押すと、今どおり入力を取りやめて閉じる。
     // `vim = true` → 同じ Esc で入力の欄がノーマルのモードになり、閉じない。
     let (_t, mut a) = make("vimset-off", NOTES);
     open_title(&mut a);
@@ -155,7 +155,7 @@ fn test_vim_setting_off_adds_no_keys() {
 
 #[test]
 fn test_vim_input_modes_insert_then_normal_then_cancel_or_commit() {
-    // [utest -> req~screen.vim-input-modes~1] `vim = true` で title のセルを Enter → 打った字が入る。Esc → 欄は開いたまま。
+    // [utest -> req~screen.vim-input-modes~2] `vim = true` で title のセルを Enter → 打った字が入る。Esc → 欄は開いたまま。
     // もう一度 Esc → 取りやめて閉じ、値は前のまま。ノーマルのモードで Enter → 決まる。
     let (_t, mut a) = vim_app("vimin");
     open_title(&mut a);
@@ -179,7 +179,7 @@ fn test_vim_input_modes_insert_then_normal_then_cancel_or_commit() {
 
 #[test]
 fn test_vim_input_modes_every_input_box_starts_in_insert() {
-    // [utest -> req~screen.vim-input-modes~1] 探す・検索・パレット・設定の値の入力・絞り込みの窓の値・新しいノートの名前の欄も、
+    // [utest -> req~screen.vim-input-modes~2] 探す・検索・パレット・設定の値の入力・絞り込みの窓の値・新しいノートの名前の欄も、
     // 挿入のモードで始まり(打った字が入る)、Esc でノーマルのモード、ノーマルのモードの Esc で取りやめる。
     let (_t, mut a) = vim_app("vimin-all");
     let check = |a: &mut App, mode: Mode, what: &str| {
@@ -233,7 +233,7 @@ fn test_vim_input_modes_every_input_box_starts_in_insert() {
 
 #[test]
 fn test_vim_input_modes_tab_opens_next_cell_in_insert() {
-    // [utest -> req~screen.vim-input-modes~1] ノーマルのモードから Tab で隣のセルへ移ると、隣の欄も挿入のモードで始まる。
+    // [utest -> req~screen.vim-input-modes~2] ノーマルのモードから Tab で隣のセルへ移ると、隣の欄も挿入のモードで始まる。
     let (_t, mut a) = vim_app("vimin-tab");
     open_title(&mut a);
     press(&mut a, KeyCode::Esc);
@@ -247,7 +247,7 @@ fn test_vim_input_modes_tab_opens_next_cell_in_insert() {
 
 #[test]
 fn test_vim_mode_shown_in_bottom_band_and_cursor() {
-    // [utest -> req~screen.vim-mode-shown~1] `vim = true` で入力の欄を開く → 下の帯に「-- 挿入 --」。Esc → 「-- ノーマル --」。
+    // [utest -> req~screen.vim-mode-shown~2] `vim = true` で入力の欄を開く → 下の帯に「-- 挿入 --」。Esc → 「-- ノーマル --」。
     // カーソルの形も変わる(挿入は棒、ノーマルは四角。欄の外は端末の既定)。
     let (_t, mut a) = vim_app("vimshown");
     assert_eq!(a.cursor_shape(), CursorShape::Default);
@@ -264,7 +264,7 @@ fn test_vim_mode_shown_in_bottom_band_and_cursor() {
 
 #[test]
 fn test_vim_mode_not_shown_without_vim() {
-    // [utest -> req~screen.vim-mode-shown~1] vim が無い設定では、入力の欄でもモードを出さず、カーソルの形も変えない。
+    // [utest -> req~screen.vim-mode-shown~2] vim が無い設定では、入力の欄でもモードを出さず、カーソルの形も変えない。
     let (_t, mut a) = make("vimshown-off", NOTES);
     open_title(&mut a);
     assert!(!footer(&a).contains("-- 挿入 --"), "{}", footer(&a));
@@ -275,7 +275,7 @@ fn test_vim_mode_not_shown_without_vim() {
 
 #[test]
 fn test_vim_normal_keys_acceptance() {
-    // [utest -> req~screen.vim-normal-keys~1] `会議の見積もり` の欄で Esc・`0`・`dw` → `の見積もり`(語の切れ目は vim の `w` と同じ)。
+    // [utest -> req~screen.vim-normal-keys~2] `会議の見積もり` の欄で Esc・`0`・`dw` → `の見積もり`(語の切れ目は vim の `w` と同じ)。
     // `$`・`x` → 最後の1字が消える。`cc` → 欄が空になり挿入のモード。`u` → 1つ前の形に戻る。
     let (_t, mut a) = vim_app("vimnk");
     open_title(&mut a);
@@ -316,7 +316,7 @@ fn run(action: Action, text: &str, at: usize) -> (String, usize, bool) {
 
 #[test]
 fn test_vim_normal_keys_motions() {
-    // [utest -> req~screen.vim-normal-keys~1] 動き(`h`・`l`・`0`・`$`・`w`・`b`・`e`)は vim と同じ(語は英数字・記号・空白・
+    // [utest -> req~screen.vim-normal-keys~2] 動き(`h`・`l`・`0`・`$`・`w`・`b`・`e`)は vim と同じ(語は英数字・記号・空白・
     // ひらがな・カタカナ・漢字の種類の切れ目。カーソルは最後の字より後ろに出ない)。
     let t = "foo bar.baz 会議の";
     assert_eq!(run(Action::CursorLeft, t, 4).1, 3);
@@ -350,7 +350,7 @@ fn test_vim_normal_keys_motions() {
 
 #[test]
 fn test_vim_normal_keys_insert_entries() {
-    // [utest -> req~screen.vim-normal-keys~1] 挿入への移り(`i` は前、`a` は後ろ、`I` は頭(空白の後ろ)、`A` は末尾)。
+    // [utest -> req~screen.vim-normal-keys~2] 挿入への移り(`i` は前、`a` は後ろ、`I` は頭(空白の後ろ)、`A` は末尾)。
     let t = "  abc";
     assert_eq!(run(Action::Insert, t, 3), (t.into(), 3, true));
     assert_eq!(run(Action::Append, t, 3), (t.into(), 4, true));
@@ -366,7 +366,7 @@ fn test_vim_normal_keys_insert_entries() {
 
 #[test]
 fn test_vim_normal_keys_deletes() {
-    // [utest -> req~screen.vim-normal-keys~1] 消す(`x`・`X`・`dw`・`db`・`d$`・`D`・`dd`)は vim と同じ。
+    // [utest -> req~screen.vim-normal-keys~2] 消す(`x`・`X`・`dw`・`db`・`d$`・`D`・`dd`)は vim と同じ。
     let t = "foo bar baz";
     assert_eq!(
         run(Action::DeleteForward, t, 0),
@@ -407,7 +407,7 @@ fn test_vim_normal_keys_deletes() {
 
 #[test]
 fn test_vim_normal_keys_changes() {
-    // [utest -> req~screen.vim-normal-keys~1] 替える(`cw` は語の終わりまでで後ろの空白を残す、`c$`・`C` は末尾まで、`cc` は全部)は
+    // [utest -> req~screen.vim-normal-keys~2] 替える(`cw` は語の終わりまでで後ろの空白を残す、`c$`・`C` は末尾まで、`cc` は全部)は
     // 消してから挿入のモード。
     let t = "foo bar baz";
     assert_eq!(run(Action::ChangeWord, t, 4), ("foo  baz".into(), 4, true));
@@ -423,7 +423,7 @@ fn test_vim_normal_keys_changes() {
 
 #[test]
 fn test_vim_normal_keys_every_key_bound() {
-    // [utest -> req~screen.vim-normal-keys~1] ノーマルのモードのキーの表に、動き・挿入への移り・消す・替える・取り消しのキーが全部ある。
+    // [utest -> req~screen.vim-normal-keys~2] ノーマルのモードのキーの表に、動き・挿入への移り・消す・替える・取り消しのキーが全部ある。
     let (_t, a) = vim_app("vimnk-keys");
     let want = [
         ("h", Action::CursorLeft),
@@ -461,7 +461,7 @@ fn test_vim_normal_keys_every_key_bound() {
 
 #[test]
 fn test_vim_normal_keys_in_search_box_without_cursor() {
-    // [utest -> req~screen.vim-normal-keys~1, req~screen.vim-input-modes~1] カーソルを持たなかった欄(探す)でも、ノーマルのモードで
+    // [utest -> req~screen.vim-normal-keys~2, req~screen.vim-input-modes~2] カーソルを持たなかった欄(探す)でも、ノーマルのモードで
     // 直せて、`i` のあとはカーソルの所に打てる。打つたびに探し直す。
     let (_t, mut a) = vim_app("vimnk-search");
     ch(&mut a, '/');
@@ -483,7 +483,7 @@ fn test_vim_normal_keys_in_search_box_without_cursor() {
 
 #[test]
 fn test_vim_normal_keys_other_letters_do_nothing() {
-    // [utest -> req~screen.vim-normal-keys~1] ノーマルのモードでは、表に無い文字は入れない(`d` のあとの表に無いキーは前置きを捨てて引き直す)。
+    // [utest -> req~screen.vim-normal-keys~2] ノーマルのモードでは、表に無い文字は入れない(`d` のあとの表に無いキーは前置きを捨てて引き直す)。
     let (_t, mut a) = vim_app("vimnk-other");
     open_title(&mut a);
     press(&mut a, KeyCode::Esc);
@@ -510,7 +510,7 @@ fn trashed(a: &App) -> Vec<String> {
 
 #[test]
 fn test_vim_dd_deletes_after_confirm_and_u_restores() {
-    // [utest -> req~screen.vim-dd~1] `vim = true` で a.md の行で `dd` → 名前の確かめ → `y` → a.md が `.trash/` へ動き、表から消える。
+    // [utest -> req~screen.vim-dd~2] `vim = true` で a.md の行で `dd` → 名前の確かめ → `y` → a.md が `.trash/` へ動き、表から消える。
     // `u` → 元の場所に戻る。
     let (t, mut a) = vim_app("vimdd");
     select(&mut a, "a.md");
@@ -530,7 +530,7 @@ fn test_vim_dd_deletes_after_confirm_and_u_restores() {
 
 #[test]
 fn test_vim_dd_range_d_deletes_both_and_one_u_restores_both() {
-    // [utest -> req~screen.vim-dd~1] `v` で2行選んで `d` → 2つともごみ箱へ、`u` 1回で2つとも戻る。
+    // [utest -> req~screen.vim-dd~2] `v` で2行選んで `d` → 2つともごみ箱へ、`u` 1回で2つとも戻る。
     let (t, mut a) = vim_app("vimdd-range");
     select(&mut a, "a.md");
     keys(&mut a, "vj");
@@ -551,7 +551,7 @@ fn test_vim_dd_range_d_deletes_both_and_one_u_restores_both() {
 
 #[test]
 fn test_vim_dd_marked_rows() {
-    // [utest -> req~screen.vim-dd~1] 印を付けた行があれば、`dd` は印を付けた行のノートを消す(選んでいる行ではなく)。
+    // [utest -> req~screen.vim-dd~2] 印を付けた行があれば、`dd` は印を付けた行のノートを消す(選んでいる行ではなく)。
     let (t, mut a) = vim_app("vimdd-marked");
     select(&mut a, "a.md");
     press(&mut a, KeyCode::Char(' '));
@@ -567,7 +567,7 @@ fn test_vim_dd_marked_rows() {
 
 #[test]
 fn test_vim_dd_readonly_refuses_with_reason() {
-    // [utest -> req~screen.vim-dd~1] 読むだけの起動(cli.readonly)→ 何もせず理由を出す。
+    // [utest -> req~screen.vim-dd~2] 読むだけの起動(cli.readonly)→ 何もせず理由を出す。
     let (t, mut a) = vim_app("vimdd-ro");
     a.readonly = true;
     select(&mut a, "a.md");
@@ -579,7 +579,7 @@ fn test_vim_dd_readonly_refuses_with_reason() {
 
 #[test]
 fn test_vim_dd_without_vim_does_nothing() {
-    // [utest -> req~screen.vim-dd~1] `vim` が無い設定で `dd` → 何も変わらない。
+    // [utest -> req~screen.vim-dd~2] `vim` が無い設定で `dd` → 何も変わらない。
     let (t, mut a) = make("vimdd-off", NOTES);
     select(&mut a, "a.md");
     keys(&mut a, "dd");
@@ -593,7 +593,7 @@ fn test_vim_dd_without_vim_does_nothing() {
 
 #[test]
 fn test_vim_paste_cell_into_selected_cell() {
-    // [utest -> req~screen.vim-paste~1] `vim = true` で a.md の status(done)で `y`、b.md の status で `p` → b.md の status が done のためる変更。
+    // [utest -> req~screen.vim-paste~2] `vim = true` で a.md の status(done)で `y`、b.md の status で `p` → b.md の status が done のためる変更。
     let (_t, mut a) = vim_app("vimp-cell");
     select(&mut a, "a.md");
     col_named(&mut a, "status");
@@ -609,7 +609,7 @@ fn test_vim_paste_cell_into_selected_cell() {
 
 #[test]
 fn test_vim_paste_row_into_same_named_columns() {
-    // [utest -> req~screen.vim-paste~1] a.md の行で `Y`、c.md の行で `p` → c.md の、a.md と同じ名前の書ける列が a.md の値になり、
+    // [utest -> req~screen.vim-paste~2] a.md の行で `Y`、c.md の行で `p` → c.md の、a.md と同じ名前の書ける列が a.md の値になり、
     // `file.name` と計算の列は変わらない。
     let (t, mut a) = vim_app("vimp-row");
     select(&mut a, "a.md");
@@ -642,7 +642,7 @@ fn test_vim_paste_row_into_same_named_columns() {
 
 #[test]
 fn test_vim_paste_nothing_copied_gives_reason() {
-    // [utest -> req~screen.vim-paste~1] 何も写していない → 何もせず理由を出す。
+    // [utest -> req~screen.vim-paste~2] 何も写していない → 何もせず理由を出す。
     let (_t, mut a) = vim_app("vimp-none");
     select(&mut a, "b.md");
     col_named(&mut a, "status");
@@ -658,7 +658,7 @@ fn test_vim_paste_nothing_copied_gives_reason() {
 
 #[test]
 fn test_vim_repeat_last_value_into_same_column() {
-    // [utest -> req~screen.vim-repeat~1] `vim = true` で a.md の status を done にしたあと `j` で b.md へ移り、選んでいる列が due でも `.`
+    // [utest -> req~screen.vim-repeat~2] `vim = true` で a.md の status を done にしたあと `j` で b.md へ移り、選んでいる列が due でも `.`
     // → b.md の status が done のためる変更。
     let (_t, mut a) = make(
         "vimrep",
@@ -689,7 +689,7 @@ fn test_vim_repeat_last_value_into_same_column() {
 
 #[test]
 fn test_vim_repeat_nothing_changed_yet() {
-    // [utest -> req~screen.vim-repeat~1] まだ何も直していない → 何も変わらない。
+    // [utest -> req~screen.vim-repeat~2] まだ何も直していない → 何も変わらない。
     let (_t, mut a) = vim_app("vimrep-none");
     select(&mut a, "b.md");
     ch(&mut a, '.');
@@ -700,7 +700,7 @@ fn test_vim_repeat_nothing_changed_yet() {
 
 #[test]
 fn test_quit_discard_with_two_pending() {
-    // [utest -> req~screen.quit-discard~1] 未保存 2 でパレットの `q!` → 確かめずに終わり、ノートのファイルは前のまま。
+    // [utest -> req~screen.quit-discard~2] 未保存 2 でパレットの `q!` → 確かめずに終わり、ノートのファイルは前のまま。
     let (t, mut a) = make("qdis", NOTES);
     edit_cell(&mut a, 0, "status", "x");
     edit_cell(&mut a, 1, "status", "y");
@@ -721,7 +721,7 @@ fn test_quit_discard_with_two_pending() {
 
 #[test]
 fn test_quit_discard_with_nothing_pending() {
-    // [utest -> req~screen.quit-discard~1] 未保存 0 → そのまま終わる。vim モードでも同じ(挿入のモードで打って Enter)。
+    // [utest -> req~screen.quit-discard~2] 未保存 0 → そのまま終わる。vim モードでも同じ(挿入のモードで打って Enter)。
     let (_t, mut a) = make("qdis0", NOTES);
     ch(&mut a, ':');
     typing(&mut a, "q!");
@@ -736,7 +736,7 @@ fn test_quit_discard_with_nothing_pending() {
 
 #[test]
 fn test_quit_plain_q_still_confirms() {
-    // [utest -> req~screen.quit-discard~1] パレットの `q` はこれまでどおり確かめる(ためた変更があれば終了の確認)。
+    // [utest -> req~screen.quit-discard~2] パレットの `q` はこれまでどおり確かめる(ためた変更があれば終了の確認)。
     let (_t, mut a) = make("qconf", NOTES);
     edit_cell(&mut a, 0, "status", "x");
     ch(&mut a, ':');

@@ -43,7 +43,7 @@ fn names(ts: &[WsTable]) -> Vec<String> {
 
 #[test]
 fn test_ws_1_read_write_round_trip() {
-    // [utest -> req~workspace.app-side-file~1] workspaces.toml を読み書きする。表を足す・置き換える・外す・ワークスペースごと消す。
+    // [utest -> req~workspace.app-side-file~2] workspaces.toml を読み書きする。表を足す・置き換える・外す・ワークスペースごと消す。
     let t = Tmp::new("rw");
     let cfg = t.0.join("config");
     notes(&t, "tasks");
@@ -151,7 +151,7 @@ fn test_ws_7_marker_auto_and_listed_tables() {
 
 #[test]
 fn test_ws_5_detect_vault_and_git() {
-    // [utest -> req~workspace.detect-roots-find~1] 上へたどって最初の保管庫かリポの根。設定で選んだものだけ。
+    // [utest -> req~workspace.detect-roots-find~2] 上へたどって最初の保管庫かリポの根。設定で選んだものだけ。
     let t = Tmp::new("detect");
     t.mkdir("repo/.git");
     t.mkdir("repo/vault/.obsidian");
@@ -170,7 +170,7 @@ fn test_ws_5_detect_vault_and_git() {
 
 #[test]
 fn test_ws_6_resolve_order() {
-    // [utest -> req~workspace.scope-order-rank~1] -w → 印 → workspaces.toml → 検知 → None(登録した表)。
+    // [utest -> req~workspace.scope-order-rank~2] -w → 印 → workspaces.toml → 検知 → None(登録した表)。
     let t = Tmp::new("order");
     t.mkdir("vault/.obsidian");
     notes(&t, "vault/tasks");

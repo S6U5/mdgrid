@@ -233,7 +233,7 @@ fn test_sr_29_note_path_name_shows_only_names() {
 
 #[test]
 fn test_sr_29_note_path_full_keeps_common_folder() {
-    // [utest -> req~screen.note-column-path~1, req~screen.note-path-scopes~1, req~screen.note-path-per-view~1] note_path = "full" で Tasks/alpha.md・Tasks/beta.md(全部が同じフォルダ)→ 欄は
+    // [utest -> req~screen.note-column-path~1, req~screen.note-path-scopes~1, req~screen.note-path-per-view~2] note_path = "full" で Tasks/alpha.md・Tasks/beta.md(全部が同じフォルダ)→ 欄は
     // Tasks/alpha・Tasks/beta(共通のフォルダも除かない)。`.md` は除く。
     let tmp = tasks("sr29np_full");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"full\"\n"));
@@ -270,7 +270,7 @@ fn test_sr_29_note_path_name_search_matches_folder() {
 
 #[test]
 fn test_sr_29_note_path_off_hides_names_and_heading() {
-    // [utest -> req~screen.note-column-marks-only~1, req~screen.note-path-per-view~1] note_path = "off" → 欄に名前も見出し「ノート」も出ない(file.name の列のときと同じ)。
+    // [utest -> req~screen.note-column-marks-only~2, req~screen.note-path-per-view~2] note_path = "off" → 欄に名前も見出し「ノート」も出ない(file.name の列のときと同じ)。
     // 値の列は残る。
     let tmp = ledger("sr29np_off");
     let a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
@@ -288,7 +288,7 @@ fn test_sr_29_note_path_off_hides_names_and_heading() {
 
 #[test]
 fn test_sr_29_note_path_off_keeps_marks() {
-    // [utest -> req~screen.note-column-marks-only~1, req~write-back.external-keep-pending~1] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
+    // [utest -> req~screen.note-column-marks-only~2, req~write-back.external-keep-pending~1] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
     let tmp = ledger("sr29np_offmark");
     let mut a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
     let i = a
@@ -322,7 +322,7 @@ fn test_sr_46_config_name_applies_to_every_table() {
 
 #[test]
 fn test_sr_46_unknown_value_keeps_default_look() {
-    // [utest -> req~screen.note-path-unknown~1, req~cli.config-file-warning-form~1] note_path = "short" → `config.toml: display.note_path:` で始まる警告と既定の見た目
+    // [utest -> req~screen.note-path-unknown~1, req~cli.config-file-warning-form~2] note_path = "short" → `config.toml: display.note_path:` で始まる警告と既定の見た目
     // (共通のフォルダの無い表なので todo/alpha・archive/todo/beta)。
     let tmp = ledger("sr46short");
     let (c, w) = parse("[display]\nnote_path = \"short\"\n").unwrap();
@@ -339,7 +339,7 @@ fn test_sr_46_unknown_value_keeps_default_look() {
 
 #[test]
 fn test_sr_46_settings_cycles_four_values() {
-    // [utest -> req~screen.note-path-per-view~1, req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~1, req~navigation.settings-layout-pending~1] ビューの設定の「表示」の区画で「ノートのパス」を common → name → full → off → common と
+    // [utest -> req~screen.note-path-per-view~2, req~navigation.settings-layout-sections~1, req~navigation.settings-layout-pane~2, req~navigation.settings-layout-pending~1] ビューの設定の「表示」の区画で「ノートのパス」を common → name → full → off → common と
     // 順に切り替える。既定は common。
     let tmp = ledger("sr46cycle");
     let mut a = boot_folder(&tmp, cfg_ok(""));
@@ -362,7 +362,7 @@ fn test_sr_46_settings_cycles_four_values() {
 
 #[test]
 fn test_sr_46_settings_full_applies_to_that_view_only() {
-    // [utest -> req~screen.note-path-scopes~1, req~screen.note-path-per-view~1, req~navigation.view-settings~1] `.base` のビュー「一」の設定の画面で「ノートのパス」を full にして反映 → 「一」だけ
+    // [utest -> req~screen.note-path-scopes~1, req~screen.note-path-per-view~2, req~navigation.view-settings~2] `.base` のビュー「一」の設定の画面で「ノートのパス」を full にして反映 → 「一」だけ
     // Tasks/alpha・Tasks/beta。「二」は既定(共通のフォルダを除いて alpha・beta)のまま。
     let tmp = tasks("sr46view");
     let mut a = boot_base(&tmp, cfg_ok(""));
@@ -395,7 +395,7 @@ fn test_sr_46_settings_full_applies_to_that_view_only() {
 
 #[test]
 fn test_sr_46_saved_native_view_keeps_note_path() {
-    // [utest -> req~screen.note-path-per-view~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1] 「ノートのパス」を full にして、mdgrid のビュー「フル」として保存 → そのビューだけ根からの
+    // [utest -> req~screen.note-path-per-view~2, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~2] 「ノートのパス」を full にして、mdgrid のビュー「フル」として保存 → そのビューだけ根からの
     // パス。終了して開き直しても同じで、設定の画面の項目も full。
     let tmp = tasks("sr46save");
     let mut a = boot_folder(&tmp, cfg_ok(""));

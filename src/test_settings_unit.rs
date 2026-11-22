@@ -66,7 +66,7 @@ fn test_nv_17_keys_toml_form() {
 
 #[test]
 fn test_nv_15_inherit_drops_emptied_groups() {
-    // [utest -> req~navigation.settings-group~1] Inherit で絞ってまとまりが空になったら、その見出しは出さない。
+    // [utest -> req~navigation.settings-group~2] Inherit で絞ってまとまりが空になったら、その見出しは出さない。
     let rows: Vec<RowId> = ["a", "b", "c"]
         .iter()
         .map(|s| RowId(s.to_string()))
@@ -108,7 +108,7 @@ fn test_nv_19_ne_on_list_needs_every_element_unequal() {
 
 #[test]
 fn test_nv_15_sort_list_value_in_non_list_column_skips_empty_elements() {
-    // [utest -> req~navigation.settings-group~1] List でない列のリストの値は、空でない最初の要素で並べる([null, "b"] は "b")。
+    // [utest -> req~navigation.settings-group~2] List でない列のリストの値は、空でない最初の要素で並べる([null, "b"] は "b")。
     let rows: Vec<RowId> = ["x", "y"].iter().map(|s| RowId(s.to_string())).collect();
     let get = |r: &RowId, _: &str| -> Option<Value> {
         Some(if r.0 == "x" {

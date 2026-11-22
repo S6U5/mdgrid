@@ -103,7 +103,7 @@ fn test_default_runs_no_git() {
 
 #[test]
 fn test_commit_on_every_save_holds_only_the_saved_note() {
-    // [utest -> req~write-back.git-commit~1, req~write-back.git-when~1] auto = "commit"(when は既定の save)→ 保存1回で1つのコミット。中身は書いたノートだけで、変更中の other.txt は入らない。知らせが1行出る。
+    // [utest -> req~write-back.git-commit~2, req~write-back.git-when~2] auto = "commit"(when は既定の save)→ 保存1回で1つのコミット。中身は書いたノートだけで、変更中の other.txt は入らない。知らせが1行出る。
     let (t, mut a) = boot("git-commit", "[git]\nauto = \"commit\"\n", true);
     std::fs::write(t.0.join("other.txt"), "o2\n").unwrap();
     save_status(&mut a, "a.md", "done");
@@ -118,7 +118,7 @@ fn test_commit_on_every_save_holds_only_the_saved_note() {
 
 #[test]
 fn test_auto_message_counts_the_notes() {
-    // [utest -> req~write-back.git-message-auto~1] 自動の文の1行目は、1件なら「mdgrid: 1 件のノートを更新」、2件まとめてなら「mdgrid: 2 件のノートを更新」。
+    // [utest -> req~write-back.git-message-auto~2] 自動の文の1行目は、1件なら「mdgrid: 1 件のノートを更新」、2件まとめてなら「mdgrid: 2 件のノートを更新」。
     let (t, mut a) = boot("git-msg", "[git]\nauto = \"commit\"\n", true);
     save_status(&mut a, "a.md", "done");
     assert_eq!(last_subject(&t.0), "mdgrid: 1 件のノートを更新");
@@ -135,7 +135,7 @@ fn test_auto_message_counts_the_notes() {
 
 #[test]
 fn test_when_quit_commits_once_at_exit() {
-    // [utest -> req~write-back.git-when~1] when = "quit" → 保存を2回しても、そのあいだコミットは増えない。終了のときに、2つのノートが1つのコミットになる。
+    // [utest -> req~write-back.git-when~2] when = "quit" → 保存を2回しても、そのあいだコミットは増えない。終了のときに、2つのノートが1つのコミットになる。
     let (t, mut a) = boot(
         "git-quit",
         "[git]\nauto = \"commit\"\nwhen = \"quit\"\n",
@@ -152,7 +152,7 @@ fn test_when_quit_commits_once_at_exit() {
 
 #[test]
 fn test_new_note_from_the_screen_is_committed() {
-    // [utest -> req~write-back.git-when~1] 画面から新しいノート c を作る(when は save)→ c.md だけのコミットができる。
+    // [utest -> req~write-back.git-when~2] 画面から新しいノート c を作る(when は save)→ c.md だけのコミットができる。
     let (t, mut a) = boot("git-new", "[git]\nauto = \"commit\"\n", true);
     ch(&mut a, 'a');
     typing(&mut a, "c");
@@ -164,7 +164,7 @@ fn test_new_note_from_the_screen_is_committed() {
 
 #[test]
 fn test_ask_takes_the_typed_first_line() {
-    // [utest -> req~write-back.git-message-ask~1] message = "ask" → 保存のあとに1行の欄が開き、「見直し」と打って Enter → 1行目が「見直し」のコミット。
+    // [utest -> req~write-back.git-message-ask~2] message = "ask" → 保存のあとに1行の欄が開き、「見直し」と打って Enter → 1行目が「見直し」のコミット。
     let (t, mut a) = boot(
         "git-ask",
         "[git]\nauto = \"commit\"\nmessage = \"ask\"\n",
@@ -182,7 +182,7 @@ fn test_ask_takes_the_typed_first_line() {
 
 #[test]
 fn test_ask_empty_uses_the_auto_message_and_esc_leaves_it_for_exit() {
-    // [utest -> req~write-back.git-message-ask~1] 境界: 欄を空のまま Enter → 自動の文でコミット。Esc → コミットせず、終了のときに自動の文でコミットする。
+    // [utest -> req~write-back.git-message-ask~2] 境界: 欄を空のまま Enter → 自動の文でコミット。Esc → コミットせず、終了のときに自動の文でコミットする。
     let (t, mut a) = boot(
         "git-ask2",
         "[git]\nauto = \"commit\"\nmessage = \"ask\"\n",
@@ -231,7 +231,7 @@ fn test_git_failure_keeps_the_save_and_says_so_in_one_line() {
 
 #[test]
 fn test_git_section_is_read_from_the_config_only() {
-    // [utest -> req~write-back.git-global-only~1] config.toml の [git] は読め、知らない値は警告1行で既定(off)のまま。台帳の印に書いた [git] は警告して使わない。
+    // [utest -> req~write-back.git-global-only~2] config.toml の [git] は読め、知らない値は警告1行で既定(off)のまま。台帳の印に書いた [git] は警告して使わない。
     let (c, warns) = mdgrid::config::parse("[git]\nauto = \"push\"\nwhen = \"quit\"\n").unwrap();
     assert!(warns.is_empty(), "{warns:?}");
     assert_eq!(c.git.auto, mdgrid::gitsync::Level::Push);

@@ -25,7 +25,7 @@ fn sample(root: &std::path::Path) {
 
 #[test]
 fn test_ws_9_switch_back_to_marker_base_table() {
-    // [stest -> req~workspace.marker-base-inline~1, req~workspace.marker-base-invalid~1, req~workspace.drawer-overlay~1] 台帳 → 引き出しでルーチン → 引き出しで台帳に戻ると、台帳の行が出る。
+    // [stest -> req~workspace.marker-base-inline~2, req~workspace.marker-base-invalid~1, req~workspace.drawer-overlay~1] 台帳 → 引き出しでルーチン → 引き出しで台帳に戻ると、台帳の行が出る。
     let t = TempDir::new("mb-switch");
     let root = t.path();
     sample(root);

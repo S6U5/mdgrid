@@ -63,7 +63,7 @@ fn spawn(h: &Path, rel: &str, row: &str) -> Tui {
 
 #[test]
 fn test_switch_list_opens_on_the_kanban() {
-    // [stest -> req~workspace.switch-open~1] お気に入りが work・趣味 → カンバンの画面で切り替えのキー → 「1 work」「2 趣味」の一覧。
+    // [stest -> req~workspace.switch-open~2] お気に入りが work・趣味 → カンバンの画面で切り替えのキー → 「1 work」「2 趣味」の一覧。
     let h = home("switch-kanban", "favorites = [\"work\", \"趣味\"]");
     let mut t = spawn(h.path(), "notes/tasks", "todo");
     press_until(&mut t, "B", |s| s.contains("カンバン"));
@@ -83,7 +83,7 @@ fn test_switch_list_opens_on_the_kanban() {
 
 #[test]
 fn test_switch_list_without_favorites_shows_how() {
-    // [stest -> req~workspace.switch-open~1] お気に入りが無い → 一覧に、お気に入りの入れ方の案内の1行。
+    // [stest -> req~workspace.switch-open~2] お気に入りが無い → 一覧に、お気に入りの入れ方の案内の1行。
     let h = home("switch-none", "");
     let mut t = spawn(h.path(), "notes/tasks", "todo");
     press_until(&mut t, "W", |s| s.contains("お気に入りが無い"));
@@ -92,7 +92,7 @@ fn test_switch_list_without_favorites_shows_how() {
 
 #[test]
 fn test_switch_back_to_where_you_started() {
-    // [stest -> req~workspace.switch-origin~1] ワークスペースでない scratch を開き、切り替えで work へ移る → もう一度開くと先頭に
+    // [stest -> req~workspace.switch-origin~2] ワークスペースでない scratch を開き、切り替えで work へ移る → もう一度開くと先頭に
     // 「最初に開いた所: scratch」→ 選ぶ → scratch の表に戻る。scratch にいるあいだは「最初に開いた所」は無い。
     let h = home("switch-origin", "favorites = [\"work\", \"趣味\"]");
     let mut t = spawn(h.path(), "notes/scratch", "scribble");
@@ -116,7 +116,7 @@ fn test_switch_back_to_where_you_started() {
 
 #[test]
 fn test_favorite_marker_workspace_is_stored_by_path() {
-    // [stest -> req~workspace.favorite-store~1] 「趣味」と印の lab をお気に入りにする → workspaces.toml に favorites = ["趣味", "~/lab"]、lab の印のバイトは同じ。
+    // [stest -> req~workspace.favorite-store~2] 「趣味」と印の lab をお気に入りにする → workspaces.toml に favorites = ["趣味", "~/lab"]、lab の印のバイトは同じ。
     let h = home("switch-store", "favorites = [\"趣味\"]");
     let p = h.path();
     let marker = p.join("lab/.mdgrid/workspace.toml");

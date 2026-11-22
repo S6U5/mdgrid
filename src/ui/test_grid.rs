@@ -96,7 +96,7 @@ fn assert_fits(s: &str) {
 
 #[test]
 fn test_sr_1_base_header_and_tabs() {
-    // [utest -> req~screen.layout-order~1] ヘッダーは `.base` の名前(引き出しのボタン。SR-42)と行数。[utest -> req~base-view.view-switch-startup~1] タブに3つ、先頭のビューが選ばれている。
+    // [utest -> req~screen.layout-order~2] ヘッダーは `.base` の名前(引き出しのボタン。SR-42)と行数。[utest -> req~base-view.view-switch-startup~2] タブに3つ、先頭のビューが選ばれている。
     let tmp = vault("sr1base");
     let app = open(&tmp, TASKS, None);
     let s = screen(&app);
@@ -188,7 +188,7 @@ fn test_sr_2_group_heading_enter_folds() {
 
 #[test]
 fn test_bv_7_unsupported_formula_column() {
-    // [utest -> req~base-view.unsupported-column-mark~1] 評価できない式の列は全行に薄い `?`。選ぶと下の帯とメッセージ行に未対応の式が出る。
+    // [utest -> req~base-view.unsupported-column-mark~2] 評価できない式の列は全行に薄い `?`。選ぶと下の帯とメッセージ行に未対応の式が出る。
     // 値が `?` のテキストの列は普通の `?`(薄くない)。
     let tmp = vault("bv7col");
     tmp.write("e.md", "---\ntitle: \"?\"\nstatus: 完了\n---\n");
@@ -352,7 +352,7 @@ fn test_sr_3_resize_column_keys_and_drag() {
 
 #[test]
 fn test_cli_2_view_option_opens_named_view() {
-    // [utest -> req~cli.options~2] `--view 完了` で2つ目のビューで開く。[utest -> req~cli.launch-marker-open~1, req~cli.launch-marker-headless~1] `.base` のパスを受ける。
+    // [utest -> req~cli.options~2] `--view 完了` で2つ目のビューで開く。[utest -> req~cli.launch-marker-open~2, req~cli.launch-marker-headless~1] `.base` のパスを受ける。
     let tmp = vault("cli2");
     let p = base_path(&tmp, TASKS);
     assert!(crate::check_paths(std::slice::from_ref(&p)).is_ok());

@@ -192,7 +192,7 @@ fn test_stack_title_marks_the_focused_table() {
 
 #[test]
 fn test_stack_focus_keys_and_click() {
-    // [utest -> req~stack.focus~1] 上の tasks を選んで Ctrl+w j → 下の projects が選ばれ、j が projects の中の行を
+    // [utest -> req~stack.focus~2] 上の tasks を選んで Ctrl+w j → 下の projects が選ばれ、j が projects の中の行を
     // 動かす。いちばん下で Ctrl+w j → 動かない。下の表の行をクリック → その表が選ばれ、その行が選ばれる。
     let t = workspace("focus", "");
     let mut app = stacked(&t);
@@ -222,7 +222,7 @@ fn test_stack_focus_keys_and_click() {
 
 #[test]
 fn test_stack_each_table_search_and_view() {
-    // [utest -> req~stack.each-table~1] 下の projects を選んで `\` で「会議」と打つ → projects だけが絞られ、上の
+    // [utest -> req~stack.each-table~2] 下の projects を選んで `\` で「会議」と打つ → projects だけが絞られ、上の
     // tasks の行は変わらない。projects でビューのタブを移る → projects だけのビューが替わる。
     let t = workspace("each", "");
     let mut app = stacked(&t);
@@ -244,7 +244,7 @@ fn test_stack_each_table_search_and_view() {
 
 #[test]
 fn test_stack_close_and_last_table() {
-    // [utest -> req~stack.close~1] tasks と projects を並べて projects を選び Ctrl+w c → tasks だけの画面。表が
+    // [utest -> req~stack.close~2] tasks と projects を並べて projects を選び Ctrl+w c → tasks だけの画面。表が
     // 1つだけのときの Ctrl+w c → 何もせず、メッセージ行に閉じられない理由。
     let t = workspace("close", "");
     let mut app = stacked(&t);
@@ -267,7 +267,7 @@ fn test_stack_close_and_last_table() {
 
 #[test]
 fn test_stack_limit_four_and_height() {
-    // [utest -> req~stack.limit~1] 表を4つ並べて「下に表を並べる」→ 足さずに理由。高さ 12 行の端末で2つ目を
+    // [utest -> req~stack.limit~2] 表を4つ並べて「下に表を並べる」→ 足さずに理由。高さ 12 行の端末で2つ目を
     // 足す → 入るなら足す。入らなければ理由。端末を低くして入らなくなる → 下の表から順に畳んで見出しだけにする。
     let t = workspace("limit", "");
     let mut app = stacked(&t);
@@ -454,7 +454,7 @@ fn test_stack_save_all_one_review_by_table() {
 
 #[test]
 fn test_stack_close_pending_asks() {
-    // [utest -> req~stack.close-pending~1] 下の projects に1件ためて Ctrl+w c → 保存か取りやめの確認。取りやめ →
+    // [utest -> req~stack.close-pending~2] 下の projects に1件ためて Ctrl+w c → 保存か取りやめの確認。取りやめ →
     // projects は並んだまま。保存 → その表の変更だけの差分を確かめて書き、閉じる。
     let t = workspace("close-pending", "");
     let mut app = stacked(&t);
@@ -498,7 +498,7 @@ fn test_stack_close_pending_asks() {
 
 #[test]
 fn test_stack_close_keeps_changes_shown_elsewhere() {
-    // [utest -> req~stack.close-pending~1] 閉じる表の変更が、残る表にも出ているノートのものなら、確かめずに閉じ、
+    // [utest -> req~stack.close-pending~2] 閉じる表の変更が、残る表にも出ているノートのものなら、確かめずに閉じ、
     // 変更は残る表のためた変更として残る(黙って捨てない)。
     let t = workspace("close-shared", "");
     let mut app = open(&t, "tasks");
@@ -594,7 +594,7 @@ fn test_stack_page_save_needs_workspace() {
 
 #[test]
 fn test_stack_page_resume_command_and_title() {
-    // [utest -> req~stack.page-resume~1, req~resume.herdr-title-form~1] ページ「朝」を開いている → 伝える命令は
+    // [utest -> req~stack.page-resume~2, req~resume.herdr-title-form~2] ページ「朝」を開いている → 伝える命令は
     // `mdgrid -w work --page 朝`、窓の題は「朝」。その場で並べた形 → 選んでいる表とビュー。
     let mut r = mdgrid::resume::Reopen::new(
         &[PathBuf::from("/x/notes/tasks")],
@@ -633,7 +633,7 @@ fn test_stack_page_resume_command_and_title() {
 
 #[test]
 fn test_stack_page_cli_unknown_name() {
-    // [utest -> req~stack.page-cli~1] 無い名前 → 「ページ「夜」はありません(ある名前: 朝)」の1行。
+    // [utest -> req~stack.page-cli~2] 無い名前 → 「ページ「夜」はありません(ある名前: 朝)」の1行。
     let t = workspace(
         "page-cli",
         "\n[[page]]\nname = \"朝\"\ntables = [{ table = \"tasks\" }, { table = \"projects\" }]\n",

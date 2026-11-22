@@ -101,7 +101,7 @@ fn test_bv_22_backlinks_and_has_link() {
 
 #[test]
 fn test_bv_22_has_link_to_non_note_file_by_path() {
-    // [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-this~1] .base のような .md でないファイル: 根からのパスか、ファイルの名前で書いたリンクに当たる
+    // [utest -> req~base-view.links-eval-links~1, req~base-view.links-eval-resolve~1, req~base-view.links-eval-this~2] .base のような .md でないファイル: 根からのパスか、ファイルの名前で書いたリンクに当たる
     let ix = index(&[
         ("a.md", "[[Projects.base]]"),
         ("b.md", "[[P/Projects.base]]"),
@@ -114,7 +114,7 @@ fn test_bv_22_has_link_to_non_note_file_by_path() {
 
 #[test]
 fn test_bv_22_links_toward_non_note_file() {
-    // [utest -> req~base-view.links-eval-resolve~1, req~base-view.links-eval-this~1] .base のようなノートでないファイルを名前かパスで指すリンクは、そのファイルのパスにそろえる
+    // [utest -> req~base-view.links-eval-resolve~1, req~base-view.links-eval-this~2] .base のようなノートでないファイルを名前かパスで指すリンクは、そのファイルのパスにそろえる
     let ix = index(&[
         ("a.md", "[[Projects.base]] [[Projects]] [[b]]"),
         ("b.md", ""),

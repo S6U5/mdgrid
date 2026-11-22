@@ -21,7 +21,7 @@ fn test_cv_8_config_default_is_zero() {
 
 #[test]
 fn test_cv_8_config_reads_value() {
-    // [stest -> req~cell-view.row-lines-extend~1, req~screen.display-config-keys~1] `[display] row_extra_lines = 2` → 2(警告なし)。上限の 9 も読める。
+    // [stest -> req~cell-view.row-lines-extend~1, req~screen.display-config-keys~2] `[display] row_extra_lines = 2` → 2(警告なし)。上限の 9 も読める。
     for n in [2, 9] {
         let (d, w) = display_debug(&format!("[display]\nrow_extra_lines = {n}\n"));
         assert!(w.is_empty(), "{n}: {w:?}");
@@ -52,7 +52,7 @@ fn test_cv_8_config_view_override_is_known() {
 
 #[test]
 fn test_sr_21_row_extra_lines_in_print_config() {
-    // [stest -> req~screen.display-config-keys~1, req~cell-view.row-lines-view-override~1] --print-config の [display] に row_extra_lines = 0 が出て、項目は15。
+    // [stest -> req~screen.display-config-keys~2, req~cell-view.row-lines-view-override~1] --print-config の [display] に row_extra_lines = 0 が出て、項目は15。
     let nowhere =
         std::env::temp_dir().join(format!("mdgrid-row-lines-none-{}", std::process::id()));
     let out = Command::new(env!("CARGO_BIN_EXE_mdgrid"))

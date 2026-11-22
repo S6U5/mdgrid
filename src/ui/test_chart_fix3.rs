@@ -60,7 +60,7 @@ fn test_ch_6_scatter_with_count_agg_keeps_written_y() {
 
 #[test]
 fn test_ch_8_stacked_with_by_same_as_only_column_gives_reason() {
-    // [utest -> req~chart.bar-scale~1, req~chart.keys-kind-unfit~1] #19: 列が status だけの表で chart = { kind = "stacked", by = "status" } → 分ける列も status に
+    // [utest -> req~chart.bar-scale~2, req~chart.keys-kind-unfit~1] #19: 列が status だけの表で chart = { kind = "stacked", by = "status" } → 分ける列も status に
     // なるので、1色の棒を描かずに体に理由(内訳にできる列が無い)を出す。Tab で積み上げ棒へ移る道と同じ。
     let notes = super::test_chart::md(&[("alpha", "status: todo"), ("beta", "status: done")]);
     let (_t, mut a) = boot(

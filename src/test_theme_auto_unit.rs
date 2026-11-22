@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn test_sr_39_auto_theme() {
-    // [utest -> req~screen.theme-auto-pick~1, req~screen.theme-auto-detect~1] COLORFGBG=0;15(明るい地)→ theme_light、15;0 → theme_dark、分からない → theme_dark。
+    // [utest -> req~screen.theme-auto-pick~2, req~screen.theme-auto-detect~1] COLORFGBG=0;15(明るい地)→ theme_light、15;0 → theme_dark、分からない → theme_dark。
     let (light, dark) = (Theme::Saas, Theme::Sumi);
     assert_eq!(light_from_colorfgbg("0;15"), Some(true));
     assert_eq!(light_from_colorfgbg("15;0"), Some(false));

@@ -421,7 +421,7 @@ fn s(x: &str) -> String {
 
 #[test]
 fn test_cli_14_csv_with_path_first_column_is_note_path() {
-    // [stest -> req~cli.with-path-column~1, req~output.pick-path~1] フォルダ `--print --with-path` → 見出しの行の先頭が `path`、各行の先頭のセルが
+    // [stest -> req~cli.with-path-column~1, req~output.pick-path~2] フォルダ `--print --with-path` → 見出しの行の先頭が `path`、各行の先頭のセルが
     // 「引数のフォルダ + / + ノートの相対」、行の数はノートの数(4)、終了コード 0。
     let t = make_folder_vault("csv");
     let out = run_in(&t, &["notes", "--print", "--with-path"]);
@@ -463,7 +463,7 @@ fn test_cli_14_rows_without_frontmatter_are_told_apart_by_path() {
 
 #[test]
 fn test_cli_14_without_flag_output_has_no_path_column() {
-    // [stest -> req~cli.with-path-column~1, req~cli.print-rows~1, req~cli.print-no-write~1, req~cli.print-fail~1] `--with-path` を付けない → path の列は無い(今のまま)。
+    // [stest -> req~cli.with-path-column~1, req~cli.print-rows~2, req~cli.print-no-write~1, req~cli.print-fail~2] `--with-path` を付けない → path の列は無い(今のまま)。
     // 付けたときの出力から先頭の列を除くと、付けないときの出力と同じ(行の中身と並びは変わらない)。
     let t = make_folder_vault("plain");
     let plain = ok_stdout(&run_in(&t, &["notes", "--print"]), "--print");
@@ -577,7 +577,7 @@ fn test_cli_14_md_with_path_first_header_column_is_path() {
 
 #[test]
 fn test_cli_14_base_with_path_is_relative_to_base_folder() {
-    // [stest -> req~cli.with-path-column~1, req~output.pick-path~1] `.base` を渡す → パスは「.base のあるフォルダの文字 + / + ノートの相対」。
+    // [stest -> req~cli.with-path-column~1, req~output.pick-path~2] `.base` を渡す → パスは「.base のあるフォルダの文字 + / + ノートの相対」。
     // file.inFolder("Tasks") で notes/other.md は外れる。
     let t = make_base_vault("base");
     let out = run_in(&t, &["notes/tasks.base", "--print", "--with-path"]);

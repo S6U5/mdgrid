@@ -21,7 +21,7 @@ fn display_debug(text: &str) -> (String, Vec<String>) {
 
 #[test]
 fn test_sr_46_config_default_is_common() {
-    // [stest -> req~screen.note-path-scopes~1, req~screen.display-config-keys~1] 書かなければ "common"。
+    // [stest -> req~screen.note-path-scopes~1, req~screen.display-config-keys~2] 書かなければ "common"。
     let (d, w) = display_debug("");
     assert!(w.is_empty(), "{w:?}");
     assert!(d.contains("note_path: Common"), "{d}");
@@ -29,7 +29,7 @@ fn test_sr_46_config_default_is_common() {
 
 #[test]
 fn test_sr_46_config_reads_each_value() {
-    // [stest -> req~screen.note-path-scopes~1, req~screen.note-path-per-view~1] `[display] note_path` の4つの値を警告なしで読む。ほかの項目は既定のまま。
+    // [stest -> req~screen.note-path-scopes~1, req~screen.note-path-per-view~2] `[display] note_path` の4つの値を警告なしで読む。ほかの項目は既定のまま。
     for (v, want) in [
         ("common", "Common"),
         ("name", "Name"),
@@ -45,7 +45,7 @@ fn test_sr_46_config_reads_each_value() {
 
 #[test]
 fn test_sr_46_unknown_value_warns_and_keeps_default() {
-    // [stest -> req~screen.note-path-unknown~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~1] `note_path = "short"`・型の違う値 → `config.toml: display.note_path:` で始まる警告1つと既定。
+    // [stest -> req~screen.note-path-unknown~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2] `note_path = "short"`・型の違う値 → `config.toml: display.note_path:` で始まる警告1つと既定。
     // 知らない項目の警告ではなく、値の警告(項目は知っている)。ほかの項目は読む。
     for v in ["\"short\"", "\"Name\"", "true", "1"] {
         let (d, w) = display_debug(&format!("[display]\nnote_path = {v}\nzebra = true\n"));
@@ -62,7 +62,7 @@ fn test_sr_46_unknown_value_warns_and_keeps_default() {
 
 #[test]
 fn test_sr_46_known_item_and_view_override_key() {
-    // [stest -> req~screen.note-path-scopes~1, req~screen.display-config-keys~1, req~cli.config-docs~1] `display.note_path` は設定の項目の表にあり、ビューの上書きの項目でもある。
+    // [stest -> req~screen.note-path-scopes~1, req~screen.display-config-keys~2, req~cli.config-docs~2] `display.note_path` は設定の項目の表にあり、ビューの上書きの項目でもある。
     assert!(KEYS.contains(&"display.note_path"), "{KEYS:?}");
     assert!(
         mdgrid::display::OVERRIDE_KEYS.contains(&"note_path"),
@@ -93,7 +93,7 @@ fn note_path_of(layers: &[Layer]) -> String {
 
 #[test]
 fn test_sr_46_scopes_narrow_wins() {
-    // [stest -> req~screen.note-path-scopes~1, req~screen.profile-scopes-sections~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~1] 全体 "name"、ワークスペース "full"、表 "common" → 表の "common"。表が無ければ "full"。
+    // [stest -> req~screen.note-path-scopes~1, req~screen.profile-scopes-sections~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~2] 全体 "name"、ワークスペース "full"、表 "common" → 表の "common"。表が無ければ "full"。
     // ワークスペースだけ "name" → "name"。
     let global = layer(
         Place::Config,
@@ -145,7 +145,7 @@ fn views_toml(name: &str, display: &str) -> (PathBuf, PathBuf) {
 
 #[test]
 fn test_sr_46_views_override_reads_value() {
-    // [stest -> req~screen.note-path-per-view~1, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~1] mdgrid のビューの設定の `display` の `note_path = "full"` を警告なしで読む。
+    // [stest -> req~screen.note-path-per-view~2, req~base-view.own-views-tabs~1, req~base-view.own-views-toml~2] mdgrid のビューの設定の `display` の `note_path = "full"` を警告なしで読む。
     let (conf, notes) = views_toml("ok", "note_path = \"full\"");
     let (views, warns) = mdgrid::views::load_views(&conf, &notes);
     assert!(warns.is_empty(), "{warns:?}");
@@ -157,7 +157,7 @@ fn test_sr_46_views_override_reads_value() {
 
 #[test]
 fn test_sr_46_views_override_unknown_value_warns() {
-    // [stest -> req~screen.note-path-per-view~1, req~screen.note-path-unknown~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1] ビューの上書きの知らない値 → 警告して上書きを持たない。ビューそのものは捨てない。
+    // [stest -> req~screen.note-path-per-view~2, req~screen.note-path-unknown~1, req~cli.config-file-location~1, req~cli.config-file-warn-only~1] ビューの上書きの知らない値 → 警告して上書きを持たない。ビューそのものは捨てない。
     let (conf, notes) = views_toml("bad", "note_path = \"short\"");
     let (views, warns) = mdgrid::views::load_views(&conf, &notes);
     assert_eq!(warns.len(), 1, "{warns:?}");
@@ -190,7 +190,7 @@ fn print_config() -> String {
 
 #[test]
 fn test_sr_21_note_path_in_print_config() {
-    // [stest -> req~screen.display-config-keys~1, req~screen.note-path-scopes~1, req~cli.print-config-reads-back~1] --print-config の [display] に note_path = "common" が出て、項目は15(2026-10-15-note-name で note_name、2026-10-15-tab-wrap で tab_wrap、2026-10-15-tab-wrap-below で tab_wrap_gap が増えた)。
+    // [stest -> req~screen.display-config-keys~2, req~screen.note-path-scopes~1, req~cli.print-config-reads-back~1] --print-config の [display] に note_path = "common" が出て、項目は15(2026-10-15-note-name で note_name、2026-10-15-tab-wrap で tab_wrap、2026-10-15-tab-wrap-below で tab_wrap_gap が増えた)。
     // 出力を読み直しても警告なし。
     let text = print_config();
     let table: toml::Table = text.parse().expect("TOML");
@@ -212,7 +212,7 @@ fn repo_file(rel: &str) -> String {
 
 #[test]
 fn test_sr_21_note_path_in_config_docs() {
-    // [stest -> req~screen.display-config-keys~1, req~screen.note-path-scopes~1, req~cli.config-docs~1] docs/config.md と docs/config.ja.md に項目の見出し `### \`display.note_path\`` があり、
+    // [stest -> req~screen.display-config-keys~2, req~screen.note-path-scopes~1, req~cli.config-docs~2] docs/config.md と docs/config.ja.md に項目の見出し `### \`display.note_path\`` があり、
     // その下に4つの値が書いてある。
     for rel in ["docs/config.md", "docs/config.ja.md"] {
         let text = repo_file(rel);

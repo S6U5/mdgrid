@@ -71,7 +71,7 @@ fn out(o: &Output) -> String {
 
 #[test]
 fn test_recent_cli_prints_newest_first() {
-    // [stest -> req~cli.recent-cli~1] `mdgrid --recent` → 「パス(タブ)ビューの名前(タブ)最後に開いた日時」の行が新しい順。標準出力はパイプ。
+    // [stest -> req~cli.recent-cli~2] `mdgrid --recent` → 「パス(タブ)ビューの名前(タブ)最後に開いた日時」の行が新しい順。標準出力はパイプ。
     let h = home("recent-cli");
     let p = h.path();
     let base = p.join("notes/tasks.base");
@@ -92,7 +92,7 @@ fn test_recent_cli_prints_newest_first() {
 
 #[test]
 fn test_recent_cli_nothing_remembered() {
-    // [stest -> req~cli.recent-cli~1] 覚えた表が無い → 何も出さず終了コード 0。
+    // [stest -> req~cli.recent-cli~2] 覚えた表が無い → 何も出さず終了コード 0。
     let h = home("recent-none");
     let o = run(h.path(), &["--recent"]);
     assert_eq!(o.status.code(), Some(0));
@@ -175,7 +175,7 @@ mod screen {
 
     #[test]
     fn test_recent_records_tables_opened_on_screen() {
-        // [stest -> req~cli.recent-record~1] tasks を開き、projects、また tasks を開く → tasks・projects の順で tasks は1件だけ。ノートのフォルダに新しいファイルは無い。
+        // [stest -> req~cli.recent-record~2] tasks を開き、projects、また tasks を開く → tasks・projects の順で tasks は1件だけ。ノートのフォルダに新しいファイルは無い。
         let h = home("recent-screen");
         let p = h.path();
         let before = listing(&p.join("notes"));

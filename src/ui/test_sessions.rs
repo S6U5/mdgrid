@@ -143,7 +143,7 @@ fn shape(a: &mut App, tmp: &Tmp) {
 
 #[test]
 fn test_session_save_from_palette_and_open_again() {
-    // [utest -> req~cli.session-save~1] 絞り込み・並び・列を決めて名前 `進行中` で保存 → 開き直すと同じ表。
+    // [utest -> req~cli.session-save~2] 絞り込み・並び・列を決めて名前 `進行中` で保存 → 開き直すと同じ表。
     // [utest -> req~cli.session-screen-save~1] パレットの「セッションを保存」→ 名前 → sessions.toml に `[sessions.進行中]`。
     let tmp = vault("ses_save");
     let mut a = boot(&tmp);
@@ -219,7 +219,7 @@ fn test_session_keeps_every_screen_filter() {
 
 #[test]
 fn test_session_columns_before_view_state() {
-    // [utest -> req~cli.session-content-columns-first~1] 見た目の状態で due を隠した表を、title・status・due の
+    // [utest -> req~cli.session-content-columns-first~2] 見た目の状態で due を隠した表を、title・status・due の
     // 3列のセッションで開く → 3列が出る。
     let tmp = vault("ses_cols");
     let state = tmp.0.join("state");
@@ -255,7 +255,7 @@ fn test_session_columns_before_view_state() {
 
 #[test]
 fn test_session_missing_column_is_skipped_with_a_warning() {
-    // [utest -> req~cli.session-content-columns-first~1] セッションにあって今の表に無い列 → その列だけ飛ばして警告。
+    // [utest -> req~cli.session-content-columns-first~2] セッションにあって今の表に無い列 → その列だけ飛ばして警告。
     let tmp = vault("ses_missing");
     let s = Session {
         columns: vec!["title".into(), "owner".into(), "due".into()],

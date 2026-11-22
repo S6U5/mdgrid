@@ -223,7 +223,7 @@ fn test_ch_4_stacked_picks_top_five_by_count_not_rule_order() {
 
 #[test]
 fn test_ch_7_heatmap_picks_top_columns_by_count_not_rule_order() {
-    // [utest -> req~chart.heatmap-cells~1, req~chart.heatmap-enter~1, req~chart.bar-stacked-top5~1] #2: ヒートマップの横(12 まで)も件数の多い順に選ぶ: [rules.tag] values = h01〜h13 で h13 が 10 行・
+    // [utest -> req~chart.heatmap-cells~1, req~chart.heatmap-enter~2, req~chart.bar-stacked-top5~1] #2: ヒートマップの横(12 まで)も件数の多い順に選ぶ: [rules.tag] values = h01〜h13 で h13 が 10 行・
     // ほかが1行ずつ → h13 は「その他」でなく自分の列になり、ます目の説明に「todo × h13: 10」が出る。
     let mut list: Vec<(String, String)> = Vec::new();
     for i in 1..=12 {
@@ -259,7 +259,7 @@ fn test_ch_7_heatmap_picks_top_columns_by_count_not_rule_order() {
 
 #[test]
 fn test_ch_2_no_columns_with_saved_chart_menu_hides_and_p_gives_reason() {
-    // [utest -> req~chart.open-refuse~1] #3: 前付けの無いノートだけの表(列が1つも無い)で印に chart = { kind = "bar" } → メニューに「グラフ」を
+    // [utest -> req~chart.open-refuse~2] #3: 前付けの無いノートだけの表(列が1つも無い)で印に chart = { kind = "bar" } → メニューに「グラフ」を
     // 出さず、P は理由1行で開かない。
     let notes = vec![
         ("alpha.md".to_string(), "# alpha\n本文\n".to_string()),
@@ -283,7 +283,7 @@ fn test_ch_2_no_columns_with_saved_chart_menu_hides_and_p_gives_reason() {
 
 #[test]
 fn test_ch_8_click_on_scrolled_item_does_not_jump() {
-    // [utest -> req~chart.bar-scroll~1, req~chart.keys-enter~1, req~chart.keys-click~1, req~chart.keys-click-again~1] #4: 項目 20 個が高さに収まらない(高さ 16)。j で最後まで下りてずらしたあと、見えている一番上の
+    // [utest -> req~chart.bar-scroll~1, req~chart.keys-enter~2, req~chart.keys-click~1, req~chart.keys-click-again~1] #4: 項目 20 個が高さに収まらない(高さ 16)。j で最後まで下りてずらしたあと、見えている一番上の
     // 項目をクリック → その項目が選ばれ、同じ画面の行に残る。同じ所をもう一度クリック → Enter と同じく、その値の
     // 行だけの表。
     let list: Vec<(String, String)> = (0..20)
@@ -335,7 +335,7 @@ fn test_ch_8_click_on_scrolled_item_does_not_jump() {
 
 #[test]
 fn test_ch_8_plus_message_matches_actual_unit() {
-    // [utest -> req~chart.keys-unit~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~1] #5: 50 年に広がる日付(1950-01-01 と 2000-01-01)の棒 → 月の単位。+ で細かくしても区切りが多すぎて数える
+    // [utest -> req~chart.keys-unit~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~2] #5: 50 年に広がる日付(1950-01-01 と 2000-01-01)の棒 → 月の単位。+ で細かくしても区切りが多すぎて数える
     // 側で月に戻るとき、知らせ(メッセージ行)が「単位: 週」のように実際と違う単位を言わない。知らせが単位を言うなら、
     // 題の単位と同じ。
     let notes = md(&[("alpha", "due: 1950-01-01"), ("beta", "due: 2000-01-01")]);
@@ -364,7 +364,7 @@ fn test_ch_8_plus_message_matches_actual_unit() {
 
 #[test]
 fn test_ch_3_extreme_date_range_shows_reason_in_body() {
-    // [utest -> req~chart.buckets-date~1, req~chart.buckets-x-skip~1, req~chart.buckets-agg~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~1] #5: 0001-01-01 と 9999-12-31 の2行の日付の列 → グラフにせず、体に理由1行(棒は描かない)。開いても
+    // [utest -> req~chart.buckets-date~1, req~chart.buckets-x-skip~1, req~chart.buckets-agg~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~2] #5: 0001-01-01 と 9999-12-31 の2行の日付の列 → グラフにせず、体に理由1行(棒は描かない)。開いても
     // パニックせず、Tab で種類を回しても画面が描ける。
     let notes = md(&[
         ("alpha", "status: todo\ndue: 0001-01-01"),
@@ -395,7 +395,7 @@ fn test_ch_3_extreme_date_range_shows_reason_in_body() {
 
 #[test]
 fn test_ch_7_enter_on_other_column_gives_other_reason() {
-    // [utest -> req~chart.heatmap-enter~1] #6: ヒートマップの「その他」の列(横が 12 を超える)で Enter → 表に戻らず、「その他」と書かれた理由。
+    // [utest -> req~chart.heatmap-enter~2] #6: ヒートマップの「その他」の列(横が 12 を超える)で Enter → 表に戻らず、「その他」と書かれた理由。
     let mut list: Vec<(String, String)> = Vec::new();
     for i in 1..=14 {
         list.push((format!("n-{i:02}"), format!("status: todo\ntag: t{i:02}")));
@@ -504,7 +504,7 @@ fn test_ch_4_long_values_stay_inside_frame_every_kind() {
 
 #[test]
 fn test_ch_2_tab_inferring_breakdown_marks_title_inferred() {
-    // [utest -> req~chart.open-infer~1, req~chart.open-title-inferred~1] #9: 全部の鍵を書いた印のグラフ(kind = "bar", x = "status")は題に推定が無い。Tab で積み上げ棒へ移り、
+    // [utest -> req~chart.open-infer~2, req~chart.open-title-inferred~1] #9: 全部の鍵を書いた印のグラフ(kind = "bar", x = "status")は題に推定が無い。Tab で積み上げ棒へ移り、
     // 内訳(assignee)を推し量ったら、題に「推定」。
     let notes = md(&[
         ("alpha", "status: todo\nassignee: alice"),

@@ -87,7 +87,7 @@ fn test_sr_42_settings_button() {
 
 #[test]
 fn test_sr_42_workspace_button() {
-    // [utest -> req~screen.breadcrumb-path~1, req~screen.breadcrumb-drawer~1, req~screen.breadcrumb-button-look~1] ワークスペースの範囲で開いたら、パンくずにその名前。押すと表の一覧の引き出し(WS-8)、
+    // [utest -> req~screen.breadcrumb-path~2, req~screen.breadcrumb-drawer~1, req~screen.breadcrumb-button-look~2] ワークスペースの範囲で開いたら、パンくずにその名前。押すと表の一覧の引き出し(WS-8)、
     // もう一度押すと閉じる。ワークスペースが1つも無くても、引き出しの入口(パンくずの表の名前)は出す(WS-6)。
     // 前の配置のヘッダーのボタン「▾ Work」「ワークスペース」は、パンくずの「Work」と表の名前に置き換わった。
     let tmp = workspace("sr42_ws");
@@ -116,7 +116,7 @@ fn test_sr_42_workspace_button() {
 
 #[test]
 fn test_sr_42_narrow_hides_buttons() {
-    // [utest -> req~screen.breadcrumb-path~1, req~screen.breadcrumb-button-look~1, req~screen.breadcrumb-right-buttons~1, req~screen.breadcrumb-narrow~1] 幅が足りなければボタンを隠し、画面の型のメニューと「+ 新規」(2026-10-12-header-menu で
+    // [utest -> req~screen.breadcrumb-path~2, req~screen.breadcrumb-button-look~2, req~screen.breadcrumb-right-buttons~1, req~screen.breadcrumb-narrow~1] 幅が足りなければボタンを隠し、画面の型のメニューと「+ 新規」(2026-10-12-header-menu で
     // ビューの帯に移った)は残す。
     let tmp = workspace("sr42_narrow");
     add_work(&tmp);

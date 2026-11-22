@@ -13,7 +13,7 @@ fn detect_debug(text: &str) -> (String, Vec<String>) {
 
 #[test]
 fn test_ws_5_detect_reads_marker_names() {
-    // [stest -> req~workspace.detect-roots-find~1] `detect = [".obsidian", ".git"]` → 両方、警告なし。
+    // [stest -> req~workspace.detect-roots-find~2] `detect = [".obsidian", ".git"]` → 両方、警告なし。
     let (d, w) = detect_debug("[workspace]\ndetect = [\".obsidian\", \".git\"]\n");
     assert!(w.is_empty(), "{w:?}");
     assert_eq!(d, "[Vault, Git]");
@@ -21,7 +21,7 @@ fn test_ws_5_detect_reads_marker_names() {
 
 #[test]
 fn test_ws_5_detect_old_names_read_with_warning() {
-    // [stest -> req~workspace.detect-roots-find~1] 旧い `"vault"`・`"git"` も同じ意味で読み、移ったと警告する(新しい値を示す)。
+    // [stest -> req~workspace.detect-roots-find~2] 旧い `"vault"`・`"git"` も同じ意味で読み、移ったと警告する(新しい値を示す)。
     let (d, w) = detect_debug("[workspace]\ndetect = [\"vault\", \"git\"]\n");
     assert_eq!(d, "[Vault, Git]");
     assert_eq!(w.len(), 1, "{w:?}");
@@ -31,7 +31,7 @@ fn test_ws_5_detect_old_names_read_with_warning() {
 
 #[test]
 fn test_ws_5_detect_unknown_warns() {
-    // [stest -> req~workspace.detect-roots-find~1] 知らない値 → 警告して既定(`[".obsidian"]`)。警告は新しい値の名前を示す。
+    // [stest -> req~workspace.detect-roots-find~2] 知らない値 → 警告して既定(`[".obsidian"]`)。警告は新しい値の名前を示す。
     let (d, w) = detect_debug("[workspace]\ndetect = [\"svn\"]\n");
     assert_eq!(d, "[Vault]");
     assert_eq!(w.len(), 1, "{w:?}");
@@ -58,7 +58,7 @@ fn run(args: &[&str], lang: &str) -> String {
 
 #[test]
 fn test_ws_5_print_config_default_is_obsidian() {
-    // [stest -> req~workspace.detect-roots-find~1, req~cli.print-config-output~1] --print-config の `[workspace] detect` の既定は `[".obsidian"]`。
+    // [stest -> req~workspace.detect-roots-find~2, req~cli.print-config-output~1] --print-config の `[workspace] detect` の既定は `[".obsidian"]`。
     let text = run(&["--print-config"], "en_US.UTF-8");
     let table: toml::Table = text.parse().expect("TOML");
     let d = table["workspace"]["detect"].as_array().expect("detect");
@@ -76,7 +76,7 @@ fn test_ws_5_print_config_default_is_obsidian() {
 
 #[test]
 fn test_bv_2_help_says_root_folder() {
-    // [stest -> req~base-view.root-folder-nearest~1, req~base-view.root-folder-multiple~1] --help は「ルートフォルダ」(英語 root folder)と言い、保管庫・vault と言わない。
+    // [stest -> req~base-view.root-folder-nearest~2, req~base-view.root-folder-multiple~1] --help は「ルートフォルダ」(英語 root folder)と言い、保管庫・vault と言わない。
     let en = run(&["--help"], "en_US.UTF-8");
     assert!(en.contains("root folder"), "{en}");
     assert!(!en.to_lowercase().contains("vault"), "{en}");
@@ -87,7 +87,7 @@ fn test_bv_2_help_says_root_folder() {
 
 #[test]
 fn test_ws_5_migrate_config_rewrites_old_values() {
-    // [stest -> req~workspace.detect-roots-find~1, req~cli.legacy-config-migrate~1] --migrate-config は検知の旧い値を目印のフォルダの名前に写す。読み直すと警告なしで同じ検知。
+    // [stest -> req~workspace.detect-roots-find~2, req~cli.legacy-config-migrate~1] --migrate-config は検知の旧い値を目印のフォルダの名前に写す。読み直すと警告なしで同じ検知。
     for text in [
         "[workspace]\ndetect = [\"vault\", \"git\"]\n",
         "workspace_detect = [\"vault\"]\n",

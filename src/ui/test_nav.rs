@@ -29,7 +29,7 @@ fn header_x(app: &App, title: &str) -> u16 {
 
 #[test]
 fn test_nv_1_search_smartcase_and_n() {
-    // [utest -> req~navigation.find~1] `/Todo` は大文字小文字を区別、`/todo` は区別しない。`n` `N` で前後の一致へ。[utest -> req~screen.keys-vim-and-arrows-bases~1] `/` `n` `N`。
+    // [utest -> req~navigation.find~1] `/Todo` は大文字小文字を区別、`/todo` は区別しない。`n` `N` で前後の一致へ。[utest -> req~screen.keys-vim-and-arrows-bases~2] `/` `n` `N`。
     let (_t, mut a) = make(
         "nv1",
         &[
@@ -295,7 +295,7 @@ const STATUS: &[(&str, &str)] = &[
 
 #[test]
 fn test_nv_8_same_value_highlight_and_filter() {
-    // [utest -> req~navigation.same-value~1] status が done のセルで `,` → done の行だけ。`*` は同じ値の行を強調。[utest -> req~screen.default-keys~1] `*`・`,`。
+    // [utest -> req~navigation.same-value~1] status が done のセルで `,` → done の行だけ。`*` は同じ値の行を強調。[utest -> req~screen.default-keys~2] `*`・`,`。
     let (_t, mut a) = make("nv8", STATUS);
     col_named(&mut a, "status");
     ch(&mut a, '*');
@@ -329,7 +329,7 @@ fn test_sr_17_marks_act_as_comma_and_slash() {
 
 #[test]
 fn test_sr_18_esc_clears_selection_then_filter() {
-    // [utest -> req~screen.default-keys~1] Esc は、選択があれば選択を、無ければ簡易の絞り込みを解く。
+    // [utest -> req~screen.default-keys~2] Esc は、選択があれば選択を、無ければ簡易の絞り込みを解く。
     let (_t, mut a) = make("sr18esc", STATUS);
     ch(&mut a, '\\');
     typing(&mut a, "done");

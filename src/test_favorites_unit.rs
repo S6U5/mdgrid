@@ -40,7 +40,7 @@ fn setup(name: &str) -> (PathBuf, PathBuf, PathBuf) {
 
 #[test]
 fn test_favorites_written_at_top_in_order() {
-    // [utest -> req~workspace.favorite-store~1] 「趣味」と印の lab をお気に入りにする → workspaces.toml の最上位に入れた順の favorites、lab の印のバイトは同じ。
+    // [utest -> req~workspace.favorite-store~2] 「趣味」と印の lab をお気に入りにする → workspaces.toml の最上位に入れた順の favorites、lab の印のバイトは同じ。
     let (_d, cfg, lab) = setup("store");
     let marker = lab.join(MARKER_DIR).join(MARKER_FILE);
     let before = std::fs::read(&marker).unwrap();
@@ -63,7 +63,7 @@ fn test_favorites_written_at_top_in_order() {
 
 #[test]
 fn test_favorites_resolve_names_and_marker_roots() {
-    // [utest -> req~workspace.favorite-store~1] 名前は workspaces.toml のワークスペース、パスは印の根(名前は印の name か、無ければフォルダの名前)。
+    // [utest -> req~workspace.favorite-store~2] 名前は workspaces.toml のワークスペース、パスは印の根(名前は印の name か、無ければフォルダの名前)。
     let (_d, cfg, lab) = setup("resolve");
     set(&cfg, "趣味", true).unwrap();
     set(&cfg, &marker_entry(&lab), true).unwrap();
@@ -84,7 +84,7 @@ fn test_favorites_resolve_names_and_marker_roots() {
 
 #[test]
 fn test_favorites_gone_marker_is_left_out_with_warning() {
-    // [utest -> req~workspace.favorite-store~1] お気に入りの印の根が無くなった → 一覧から外して「workspaces.toml: favorites[2]: …」の警告。
+    // [utest -> req~workspace.favorite-store~2] お気に入りの印の根が無くなった → 一覧から外して「workspaces.toml: favorites[2]: …」の警告。
     let (_d, cfg, lab) = setup("gone");
     set(&cfg, "趣味", true).unwrap();
     set(&cfg, &marker_entry(&lab), true).unwrap();
@@ -101,7 +101,7 @@ fn test_favorites_gone_marker_is_left_out_with_warning() {
 
 #[test]
 fn test_favorites_toggle_off_and_keep_hand_written_text() {
-    // [utest -> req~workspace.favorite-mark~1] もう一度で外れる。手で書いたコメントとワークスペースの区画は残し、並びが空なら favorites の行を消す。
+    // [utest -> req~workspace.favorite-mark~2] もう一度で外れる。手で書いたコメントとワークスペースの区画は残し、並びが空なら favorites の行を消す。
     let (_d, cfg, _lab) = setup("off");
     let path = cfg.join(FILE_NAME);
     let hand = format!("# 手で書いた\n{}", std::fs::read_to_string(&path).unwrap());
@@ -117,7 +117,7 @@ fn test_favorites_toggle_off_and_keep_hand_written_text() {
 
 #[test]
 fn test_favorites_survive_workspace_rewrite() {
-    // [utest -> req~workspace.favorite-store~1] ワークスペースの書き換え(表を足す)でも favorites は残る。
+    // [utest -> req~workspace.favorite-store~2] ワークスペースの書き換え(表を足す)でも favorites は残る。
     let (d, cfg, _lab) = setup("keep");
     set(&cfg, "趣味", true).unwrap();
     let tasks = d.join("tasks");

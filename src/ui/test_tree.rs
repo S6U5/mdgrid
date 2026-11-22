@@ -105,7 +105,7 @@ fn test_nv_27_sort_within_siblings() {
 
 #[test]
 fn test_nv_27_shift_z_folds_and_unfolds() {
-    // [utest -> req~navigation.parent-child-fold~1] 設計で Z → 子孫が隠れて ▸ 設計。もう一度 Z → 戻る。子の無い行は理由。
+    // [utest -> req~navigation.parent-child-fold~2] 設計で Z → 子孫が隠れて ▸ 設計。もう一度 Z → 戻る。子の無い行は理由。
     let (_t, mut a) = notes("nv27c");
     tree_on(&mut a);
     let total = a.slots.len();
@@ -130,7 +130,7 @@ fn test_nv_27_shift_z_folds_and_unfolds() {
 
 #[test]
 fn test_nv_27_missing_parent_goes_top_and_off_restores() {
-    // [utest -> req~navigation.parent-child-orphans~1] 設計を絞り込みで外す → 画面と API が一番上の段(行は落ちない)。親子をオフ → 字下げなし。
+    // [utest -> req~navigation.parent-child-orphans~2] 設計を絞り込みで外す → 画面と API が一番上の段(行は落ちない)。親子をオフ → 字下げなし。
     let (_t, mut a) = notes("nv27d");
     tree_on(&mut a);
     a.settings.filters = vec![Cond {
@@ -188,7 +188,7 @@ fn test_nv_27_settings_section_turns_on() {
 
 #[test]
 fn test_nv_27_click_mark_folds() {
-    // [utest -> req~navigation.parent-child-fold~1] 名前の欄の ▾ をクリック → 畳んで ▸。もう一度 → 開く。名前のほかの所のクリックは畳まない。
+    // [utest -> req~navigation.parent-child-fold~2] 名前の欄の ▾ をクリック → 畳んで ▸。もう一度 → 開く。名前のほかの所のクリックは畳まない。
     let (_t, mut a) = notes("nv27f");
     tree_on(&mut a);
     let total = a.slots.len();

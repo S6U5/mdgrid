@@ -12,7 +12,7 @@ const NOTES: &[(&str, &str)] = &[
     ("b.md", "---\nstatus: done\nn: 2\n---\n"),
 ];
 
-// [utest -> req~screen.input-box-fill~1, req~screen.input-box-width~1, req~screen.input-box-form-frame~1]
+// [utest -> req~screen.input-box-fill~2, req~screen.input-box-width~1, req~screen.input-box-form-frame~1]
 #[test]
 fn test_sr_31_input_box_is_wide_and_filled() {
     let (_t, mut a) = make("sr31input", NOTES);

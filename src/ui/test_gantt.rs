@@ -532,7 +532,7 @@ fn test_ga_5_read_only_and_rebuilds_on_external_change() {
 
 #[test]
 fn test_ga_7_menu_lists_only_openable_types() {
-    // [utest -> req~gantt.screen-config~1] 印に tree と gantt の両方がある表 → 窓に 表・木・ガント。どちらも無く日付の列が start・due の表 →
+    // [utest -> req~gantt.screen-config~2] 印に tree と gantt の両方がある表 → 窓に 表・木・ガント。どちらも無く日付の列が start・due の表 →
     // 表・ガント(推定)で、木は出ない。
     let notes: &[(&str, &str)] = &[
         (

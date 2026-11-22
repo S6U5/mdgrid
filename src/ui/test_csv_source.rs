@@ -33,7 +33,7 @@ fn disk(t: &Tmp, file: &str) -> String {
 
 #[test]
 fn test_sc_15_open_csv_as_table() {
-    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~1, req~scope.csv-open-ragged-rows~1] 1行目が列、2行目からが行。値は文字のまま(先頭の 0 は消さない)、数は数。列の数が合わない行は理由つきで読むだけ。
+    // [utest -> req~scope.csv-open-table~1, req~scope.csv-open-unreadable~2, req~scope.csv-open-ragged-rows~1] 1行目が列、2行目からが行。値は文字のまま(先頭の 0 は消さない)、数は数。列の数が合わない行は理由つきで読むだけ。
     let (_t, a) = open("sc15", "台帳.csv", LEDGER);
     assert_eq!(a.src.columns(), ["name", "qty", "code", "note"]);
     assert_eq!(a.rows.len(), 3);
@@ -53,7 +53,7 @@ fn test_sc_15_open_csv_as_table() {
 
 #[test]
 fn test_sc_15_unreadable_csv_reason() {
-    // [utest -> req~scope.csv-open-unreadable~1] UTF-8 でない・空のファイルは開かず理由。
+    // [utest -> req~scope.csv-open-unreadable~2] UTF-8 でない・空のファイルは開かず理由。
     let t = Tmp::new("sc15bad");
     std::fs::write(t.notes().join("sjis.csv"), b"name\n\x82\xa0\n").unwrap();
     t.write("empty.csv", "");

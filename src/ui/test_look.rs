@@ -146,7 +146,7 @@ fn test_sr_33_table_selection_is_tinted() {
 
 #[test]
 fn test_sr_33_classic_and_no_color_keep_reverse() {
-    // [utest -> req~screen.modern-look-classic~1] look = "classic" と色なしは今まで(反転)。
+    // [utest -> req~screen.modern-look-classic~2] look = "classic" と色なしは今まで(反転)。
     for (name, toml, color) in [
         (
             "sr33_classic",
@@ -176,7 +176,7 @@ fn test_sr_33_classic_and_no_color_keep_reverse() {
 
 #[test]
 fn test_sr_33_text_is_the_same_in_every_look() {
-    // [utest -> req~screen.modern-look-classic~1, req~screen.modern-look-same-text~1, req~screen.themes-color-only~1] どの見た目でも画面の文字は同じ(表・候補の窓)。
+    // [utest -> req~screen.modern-look-classic~2, req~screen.modern-look-same-text~1, req~screen.themes-color-only~1] どの見た目でも画面の文字は同じ(表・候補の窓)。
     let (_t, modern) = with_list("sr33_same_m", "", ColorMode::Rgb);
     let (_u, classic) = with_list(
         "sr33_same_c",
@@ -200,7 +200,7 @@ fn test_sr_33_text_is_the_same_in_every_look() {
 
 #[test]
 fn test_sr_33_bad_value_warns() {
-    // [utest -> req~screen.modern-look-frames~1, req~screen.modern-look-classic~1] 知らない値は警告にして既定(modern)。
+    // [utest -> req~screen.modern-look-frames~1, req~screen.modern-look-classic~2] 知らない値は警告にして既定(modern)。
     let (c, w) = mdgrid::config::parse("[look]\nmode = \"fancy\"\n").unwrap();
     assert_eq!(w.len(), 1, "{w:?}");
     assert!(!c.resolved().classic);

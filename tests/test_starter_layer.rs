@@ -122,7 +122,7 @@ fn setup(tag: &str, own: &str) -> TempDir {
 
 #[test]
 fn test_marker_with_starter_and_options_opens_their_tables_and_views() {
-    // [stest -> req~starter.layer-marker~1, req~starter.option-shape~1] 印が starter = "kb" と options = ["who"] だけ → スターターの表 Board の All(オプションが足した actor の列つき)で開き、オプションのビュー AI は actor が ai の行だけ。
+    // [stest -> req~starter.layer-marker~2, req~starter.option-shape~1] 印が starter = "kb" と options = ["who"] だけ → スターターの表 Board の All(オプションが足した actor の列つき)で開き、オプションのビュー AI は actor が ai の行だけ。
     let t = setup("marker", "starter = \"kb\"\noptions = [\"who\"]\n");
     let h = t.path();
     let all = lines(run(h, &["L", "--print"]), "All");
@@ -158,7 +158,7 @@ fn test_own_items_win_over_the_starter() {
 
 #[test]
 fn test_own_views_are_added_after_the_starter_views() {
-    // [stest -> req~starter.layer-tables~1] 印の表 Board に自分のビュー Mine だけを書く → スターターの All とオプションの AI はそのまま使え、Mine も使える(列は priority)。
+    // [stest -> req~starter.layer-tables~2] 印の表 Board に自分のビュー Mine だけを書く → スターターの All とオプションの AI はそのまま使え、Mine も使える(列は priority)。
     let t = setup("tables", OWN);
     let h = t.path();
     assert_eq!(
@@ -247,7 +247,7 @@ fn test_missing_starter_warns_and_opens_with_the_marker_alone() {
 
 #[test]
 fn test_body_template_comes_from_the_starter_unless_the_ledger_has_its_own() {
-    // [stest -> req~starter.layer-files~1] 台帳に雛形のファイルが無い → 新しいノートの本文はスターターの雛形(`# x`)。台帳に同じパスの雛形を置く → そちらを使う(`mine y`)。
+    // [stest -> req~starter.layer-files~2] 台帳に雛形のファイルが無い → 新しいノートの本文はスターターの雛形(`# x`)。台帳に同じパスの雛形を置く → そちらを使う(`mine y`)。
     let t = setup("files", "starter = \"kb\"\n");
     let h = t.path();
     lines(run(h, &["L", "--new-note", "x"]), "x");
@@ -265,7 +265,7 @@ fn test_body_template_comes_from_the_starter_unless_the_ledger_has_its_own() {
 
 #[test]
 fn test_starter_lang_fixes_the_language_variant() {
-    // [stest -> req~starter.layer-lang~1] スターターに ledger.ja/(All の列は priority だけ)がある。LANG が ja で starter_lang が無い → ja の変種。starter_lang = "en" → LANG が ja でも英語の変種。
+    // [stest -> req~starter.layer-lang~2] スターターに ledger.ja/(All の列は priority だけ)がある。LANG が ja で starter_lang が無い → ja の変種。starter_lang = "en" → LANG が ja でも英語の変種。
     let t = setup("lang", "starter = \"kb\"\n");
     let h = t.path();
     let ja = STARTER.replace(

@@ -7,7 +7,7 @@ use pty::{TempDir, Tui};
 
 #[test]
 fn test_ws_9_marker_base_header_shows_table_name() {
-    // [stest -> req~workspace.marker-base-inline~1] `[[table]] name = "台帳"` と `[table.base]` の印 → ヘッダーに「台帳」が出て、「台帳.base」は出ない。
+    // [stest -> req~workspace.marker-base-inline~2] `[[table]] name = "台帳"` と `[table.base]` の印 → ヘッダーに「台帳」が出て、「台帳.base」は出ない。
     let t = TempDir::new("mb-name");
     let root = t.path();
     for d in ["todo", ".mdgrid", "config/mdgrid", "state"] {

@@ -94,7 +94,7 @@ fn test_cli_18_default_name_is_current_view() {
 
 #[test]
 fn test_cli_19_reopen_selects_registered_view() {
-    // [utest -> req~cli.places-list-order~1, req~cli.places-list-open~1, req~cli.places-list-pending~1, req~cli.places-list-missing-path~1] 開き直した表で、登録のビューを名前で選ぶ(main が開き直したあとに呼ぶ)。無ければ理由を出して先頭。
+    // [utest -> req~cli.places-list-order~1, req~cli.places-list-open~2, req~cli.places-list-pending~1, req~cli.places-list-missing-path~1] 開き直した表で、登録のビューを名前で選ぶ(main が開き直したあとに呼ぶ)。無ければ理由を出して先頭。
     let tmp = vault("plm_sel");
     with_view(&tmp, "やること");
     let mut a = boot(&tmp, false);

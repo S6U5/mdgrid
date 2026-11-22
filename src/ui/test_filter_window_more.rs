@@ -42,7 +42,7 @@ fn test_nv_29_low_terminal_step_closes_with_reason() {
 
 #[test]
 fn test_nv_29_old_mode_names_keep_meaning() {
-    // [utest -> req~navigation.find~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1, req~navigation.filter-window-palette~1] 呼び直す前の表示名を書いた設定は、前のモードのまま読む(`検索`・`Search` は `/`、
+    // [utest -> req~navigation.find~1, req~navigation.search-naming~1, req~navigation.filter-window-open~1, req~navigation.filter-window-palette~2] 呼び直す前の表示名を書いた設定は、前のモードのまま読む(`検索`・`Search` は `/`、
     // `絞り込み`・`Filter` は上の欄)。新しい名前と設定の名前も引ける。
     assert_eq!(Mode::by_name("検索"), Some(Mode::Search));
     assert_eq!(Mode::by_name("Search"), Some(Mode::Search));

@@ -50,7 +50,7 @@ fn test_cv_2_big_int_prints_original_text() {
 const BASE: &str =
     "filters:\n  and:\n    - file.inFolder(\"Projects\")\nviews:\n  - type: table\n    name: v\n";
 
-// [stest -> req~base-view.root-folder-nearest~1]
+// [stest -> req~base-view.root-folder-nearest~2]
 #[test]
 fn test_bv_2_vault_root_named_when_empty_without_obsidian() {
     // Bases/Tasks.base と Projects/a.md。.obsidian が無いので根は Bases になり、0行。
@@ -66,7 +66,7 @@ fn test_bv_2_vault_root_named_when_empty_without_obsidian() {
     assert!(err.contains("Bases"), "探した根の場所: {err}");
 }
 
-// [stest -> req~base-view.root-folder-nearest~1, req~base-view.root-folder-multiple~1]
+// [stest -> req~base-view.root-folder-nearest~2, req~base-view.root-folder-multiple~1]
 #[test]
 fn test_bv_2_vault_root_silent_with_obsidian_or_rows() {
     // .obsidian があれば根は上になり行が出る。知らせは出さない。

@@ -8,7 +8,7 @@ use proptest::prelude::*;
 
 #[test]
 fn test_sr_40_color_boundaries() {
-    // [utest -> req~screen.color-overrides-roles~1, req~screen.color-overrides-format~1, req~screen.color-overrides-default-theme~1] 桁の数の境目(2・3・4・5・6・7 桁)、空、# だけ、大文字の16進、前後の空白、名前の大文字。
+    // [utest -> req~screen.color-overrides-roles~1, req~screen.color-overrides-format~2, req~screen.color-overrides-default-theme~1] 桁の数の境目(2・3・4・5・6・7 桁)、空、# だけ、大文字の16進、前後の空白、名前の大文字。
     for bad in [
         "", "#", "#1", "#12", "#1234", "#12345", "#1234567", "#ggg", "# fff", "fff", "#-12", "red2",
     ] {
@@ -25,7 +25,7 @@ fn test_sr_40_color_boundaries() {
 
 #[test]
 fn test_sr_40_colors_wrong_types_warn() {
-    // [utest -> req~screen.color-overrides-roles~1, req~screen.color-overrides-default-theme~1, req~screen.color-overrides-invalid~1, req~screen.value-colors-set~1, req~screen.value-colors-match~1] 表でない [colors]・表でない values・文字でない色・空の表 → 警告して無視(落ちない)。
+    // [utest -> req~screen.color-overrides-roles~1, req~screen.color-overrides-default-theme~1, req~screen.color-overrides-invalid~1, req~screen.value-colors-set~2, req~screen.value-colors-match~1] 表でない [colors]・表でない values・文字でない色・空の表 → 警告して無視(落ちない)。
     for (cfg, warns) in [
         ("[look]\ncolors = \"red\"\n", 1),
         ("[look]\ncolors = 3\n", 1),
@@ -55,7 +55,7 @@ fn test_sr_40_colors_wrong_types_warn() {
 
 #[test]
 fn test_sr_36_style_wrong_types_warn() {
-    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-preset~1, req~screen.style-parts-unknown~1] 型の誤り(preset が数・icons が文字・[style] が文字・空の文字・大文字の名前)→ 警告して既定のまま。
+    // [utest -> req~screen.style-parts-choose~2, req~screen.style-parts-preset~2, req~screen.style-parts-unknown~1] 型の誤り(preset が数・icons が文字・[style] が文字・空の文字・大文字の名前)→ 警告して既定のまま。
     for cfg in [
         "[look]\nstyle = \"saas\"\n",
         "[look]\npreset = 1\n",
@@ -81,7 +81,7 @@ fn test_sr_36_style_wrong_types_warn() {
 
 #[test]
 fn test_sr_39_colorfgbg_boundaries() {
-    // [utest -> req~screen.theme-auto-pick~1, req~screen.theme-auto-detect~1] 地の番号の境目: 0〜6・8 は暗い、7・9〜15 は明るい。16 以上・負・空・数でない → 分からない。
+    // [utest -> req~screen.theme-auto-pick~2, req~screen.theme-auto-detect~1] 地の番号の境目: 0〜6・8 は暗い、7・9〜15 は明るい。16 以上・負・空・数でない → 分からない。
     for (v, want) in [
         ("0;0", Some(false)),
         ("0;6", Some(false)),
@@ -106,7 +106,7 @@ fn test_sr_39_colorfgbg_boundaries() {
 
 #[test]
 fn test_sr_39_osc11_boundaries() {
-    // [utest -> req~screen.theme-auto-pick~1, req~screen.theme-auto-partial~1] 1〜4 桁の16進、5 桁、足りない成分、rgba、真ん中の灰の境目。
+    // [utest -> req~screen.theme-auto-pick~2, req~screen.theme-auto-partial~2] 1〜4 桁の16進、5 桁、足りない成分、rgba、真ん中の灰の境目。
     assert_eq!(light_from_osc11("rgb:f/f/f"), Some(true));
     assert_eq!(light_from_osc11("rgb:0/0/0"), Some(false));
     assert_eq!(light_from_osc11("rgb:fff/fff/fff"), Some(true));

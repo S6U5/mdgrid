@@ -245,7 +245,7 @@ fn test_nv_31_click_wrapped_tab_selects_view() {
 
 #[test]
 fn test_nv_31_wide_same_as_off() {
-    // [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-fits~1] 幅 200 ではタブが入りきるので、tab_wrap = true でも false と同じ画面(足す行は無い)。
+    // [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-fits~2] 幅 200 ではタブが入りきるので、tab_wrap = true でも false と同じ画面(足す行は無い)。
     let (_t, a) = boot("nv31_wide_on", WRAP, 200);
     let (_t2, b) = boot("nv31_wide_off", NO_WRAP, 200);
     let s = scr(&a);
@@ -260,7 +260,7 @@ fn test_nv_31_wide_same_as_off() {
     }
 }
 
-// [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-fits~1]
+// [utest -> req~navigation.tab-wrap-below~1, req~navigation.tab-wrap-fits~2]
 #[test]
 fn test_nv_31_off_keeps_current_tab_only() {
     // [NV-31・NV-23] tab_wrap = false(既定)で幅 60 → 今のタブだけ(今のでないタブは省く)。既定の設定も同じ。

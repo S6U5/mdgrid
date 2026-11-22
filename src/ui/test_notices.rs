@@ -93,7 +93,7 @@ fn test_notice_opt_in_without_items() {
 
 #[test]
 fn test_notice_count_item_text_and_default() {
-    // [utest -> req~notice.count-item~1] {count} を数に置き換える。text が無ければ条件の名前と数。
+    // [utest -> req~notice.count-item~2] {count} を数に置き換える。text が無ければ条件の名前と数。
     let (_t, mut a) = make("notice-text", TASKS);
     let conf = format!("{OVERDUE}[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {{count}} 件\"\n[[notices]]\ncond = \"overdue\"\n");
     let _g = with_conf(&mut a, &conf);
@@ -107,7 +107,7 @@ fn test_notice_count_item_text_and_default() {
 
 #[test]
 fn test_notice_count_item_unknown_condition_is_warned() {
-    // [utest -> req~notice.count-item~1] cond に書いていない名前は警告して項目を出さない。
+    // [utest -> req~notice.count-item~2] cond に書いていない名前は警告して項目を出さない。
     let conf = "[[notices]]\ncond = \"nosuch\"\n";
     let (c, w) = config::parse(conf).unwrap();
     assert!(c.notices.is_empty());
@@ -116,7 +116,7 @@ fn test_notice_count_item_unknown_condition_is_warned() {
 
 #[test]
 fn test_notice_zero_is_hidden_unless_show_zero() {
-    // [utest -> req~notice.zero~1] 0 件は出さず、ほかに無ければ欄ごと出ない。show_zero = true なら出す。
+    // [utest -> req~notice.zero~2] 0 件は出さず、ほかに無ければ欄ごと出ない。show_zero = true なら出す。
     let notes = [("a.md", "---\ndue: 2026-12-11\nstatus: todo\n---\n")];
     let (_t, mut a) = make("notice-zero", &notes);
     let conf =
@@ -146,7 +146,7 @@ fn test_notice_scope_table_workspace_and_names() {
 
 #[test]
 fn test_notice_count_rows_ignore_view_filters() {
-    // [utest -> req~notice.count-rows~1] 検索で1行に絞っても、欄の数は変わらない。
+    // [utest -> req~notice.count-rows~2] 検索で1行に絞っても、欄の数は変わらない。
     let (_t, mut a) = make("notice-rows", TASKS);
     let conf =
         format!("{OVERDUE}[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {{count}} 件\"\n");
@@ -203,7 +203,7 @@ fn test_notice_layout_counts_line_and_more() {
 
 #[test]
 fn test_notice_refresh_after_outside_change() {
-    // [utest -> req~notice.refresh~1] 期限切れの1行の due を直して読み直すと、1件減る。
+    // [utest -> req~notice.refresh~2] 期限切れの1行の due を直して読み直すと、1件減る。
     let (t, mut a) = make("notice-refresh", TASKS);
     let conf =
         format!("{OVERDUE}[[notices]]\ncond = \"overdue\"\ntext = \"期限切れ {{count}} 件\"\n");
@@ -247,7 +247,7 @@ fn test_notice_unreadable_table_adds_question_mark() {
 
 #[test]
 fn test_notice_focus_key_and_esc() {
-    // [utest -> req~notice.focus~1] 欄へ移るキーで1つ目を選び、Esc で表へ。欄が無ければ何もしない。
+    // [utest -> req~notice.focus~2] 欄へ移るキーで1つ目を選び、Esc で表へ。欄が無ければ何もしない。
     let (_t, mut a) = make("notice-focus", TASKS);
     let g = with_conf(&mut a, OVERDUE);
     ch(&mut a, 'm');
@@ -307,7 +307,7 @@ fn test_notice_jump_lists_tables() {
 
 #[test]
 fn test_notice_open_note_asks_editor() {
-    // [utest -> req~notice.open-note~1] 連絡の項目で Enter → そのノートをエディタで開くよう頼む。
+    // [utest -> req~notice.open-note~2] 連絡の項目で Enter → そのノートをエディタで開くよう頼む。
     let (t, mut a) = make("notice-open", TASKS);
     let inbox = t.notes().join("inbox.md");
     std::fs::write(&inbox, "- 金曜に請求書\n").unwrap();

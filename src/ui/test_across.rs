@@ -101,7 +101,7 @@ fn label() -> &'static str {
 
 #[test]
 fn test_across_option_off_by_default() {
-    // [utest -> req~navigation.across-option~1] 設定に [search] が無い → パレットにもヘルプにも出ない。across = true → 出る。
+    // [utest -> req~navigation.across-option~2] 設定に [search] が無い → パレットにもヘルプにも出ない。across = true → 出る。
     let (_t, mut a) = make("across-option", TASKS);
     let (c, w) = mdgrid::config::parse("").unwrap();
     assert!(w.is_empty() && !c.search_across);
@@ -131,7 +131,7 @@ fn test_across_option_off_by_default() {
 
 #[test]
 fn test_across_option_wrong_type_warns() {
-    // [utest -> req~navigation.across-option~1] 真偽でない値・知らない項目は警告して既定(出さない)のまま。
+    // [utest -> req~navigation.across-option~2] 真偽でない値・知らない項目は警告して既定(出さない)のまま。
     let (c, w) = mdgrid::config::parse("[search]\nacross = \"yes\"\nfast = true\n").unwrap();
     assert!(!c.search_across);
     assert_eq!(w.len(), 2, "{w:?}");
@@ -141,7 +141,7 @@ fn test_across_option_wrong_type_warns() {
 
 #[test]
 fn test_across_results_grouped_per_table() {
-    // [utest -> req~navigation.across-results~1] tasks に2行・projects に1行 → 表ごとに、ノートの名前と当たった列と値を添えて並ぶ。
+    // [utest -> req~navigation.across-results~2] tasks に2行・projects に1行 → 表ごとに、ノートの名前と当たった列と値を添えて並ぶ。
     let (t, mut a) = make("across-results", TASKS);
     workspace(&mut a, &t, false);
     across_on(&mut a);
@@ -181,7 +181,7 @@ fn test_across_results_grouped_per_table() {
 
 #[test]
 fn test_across_results_same_matching_as_search() {
-    // [utest -> req~navigation.across-results~1] 表の中の検索と同じ当て方: 小文字の語は大文字小文字を区別せず、大文字を含む語は区別する。
+    // [utest -> req~navigation.across-results~2] 表の中の検索と同じ当て方: 小文字の語は大文字小文字を区別せず、大文字を含む語は区別する。
     let notes = [
         ("a.md", "---\ntitle: Todo list\n---\n"),
         ("b.md", "---\ntitle: todo later\n---\n"),
@@ -201,7 +201,7 @@ fn test_across_results_same_matching_as_search() {
 
 #[test]
 fn test_across_results_none() {
-    // [utest -> req~navigation.across-results~1] どこにも当たらない → 「当たる行がありません」。
+    // [utest -> req~navigation.across-results~2] どこにも当たらない → 「当たる行がありません」。
     let (t, mut a) = make("across-none", TASKS);
     workspace(&mut a, &t, false);
     across_on(&mut a);
@@ -286,7 +286,7 @@ fn test_across_open_this_table() {
 
 #[test]
 fn test_across_progress_shows_tables_read_and_results_so_far() {
-    // [utest -> req~navigation.across-progress~1] 5 つの表のうち 3 つを読んだ → 読んだ表の結果が並び、「3 / 5 を読みました」。
+    // [utest -> req~navigation.across-progress~2] 5 つの表のうち 3 つを読んだ → 読んだ表の結果が並び、「3 / 5 を読みました」。
     let (t, mut a) = make("across-progress", TASKS);
     workspace(&mut a, &t, false);
     across_on(&mut a);
@@ -340,7 +340,7 @@ fn test_across_progress_shows_tables_read_and_results_so_far() {
 
 #[test]
 fn test_across_progress_esc_stops_and_returns() {
-    // [utest -> req~navigation.across-progress~1] 読んでいる途中で Esc → 止めて元の表の画面のまま(行も選びも変えない)。
+    // [utest -> req~navigation.across-progress~2] 読んでいる途中で Esc → 止めて元の表の画面のまま(行も選びも変えない)。
     let (t, mut a) = make("across-esc", TASKS);
     workspace(&mut a, &t, false);
     across_on(&mut a);
@@ -379,7 +379,7 @@ fn test_across_progress_esc_stops_and_returns() {
 
 #[test]
 fn test_across_progress_unreadable_table_is_named_at_the_end() {
-    // [utest -> req~navigation.across-progress~1] 読めない表は飛ばし、結果の終わりに読めなかった表の名前。
+    // [utest -> req~navigation.across-progress~2] 読めない表は飛ばし、結果の終わりに読めなかった表の名前。
     let (t, mut a) = make("across-gone", TASKS);
     workspace(&mut a, &t, true);
     across_on(&mut a);

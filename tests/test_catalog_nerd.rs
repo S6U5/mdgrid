@@ -2,7 +2,7 @@
 
 #[test]
 fn test_sr_38_catalog_nerd_default() {
-    // [utest -> req~screen.style-catalog-sync~1, req~screen.style-parts-choose~1, req~screen.style-parts-preset~1, req~screen.style-parts-default~1, req~screen.style-parts-nerd-font~1, req~screen.style-parts-nerd-auto~1] カタログの nerd_font の既定の書き方が、本体の項目の表の既定と同じ。
+    // [utest -> req~screen.style-catalog-sync~1, req~screen.style-parts-choose~2, req~screen.style-parts-preset~2, req~screen.style-parts-default~1, req~screen.style-parts-nerd-font~1, req~screen.style-parts-nerd-auto~1] カタログの nerd_font の既定の書き方が、本体の項目の表の既定と同じ。
     let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/catalog/index.html");
     let html = std::fs::read_to_string(p).unwrap();
     let head = r#"<script type="application/json" id="names">"#;

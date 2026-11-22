@@ -677,7 +677,7 @@ proptest! {
 
     #[test]
     fn test_wb_1_props_added_key_is_one_line(note in note(), w in written()) {
-        // [utest -> req~write-back.byte-range-null~1, req~write-back.add-frontmatter-at-head~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~1] 元のバイトはそのまま残り、閉じの区切りの前に1行だけ増える。
+        // [utest -> req~write-back.byte-range-null~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~1] 元のバイトはそのまま残り、閉じの区切りの前に1行だけ増える。
         prop_assume!(!w.has_newline());
         let before = &note.bytes;
         let fm_before = parse(before).unwrap();

@@ -7,7 +7,7 @@ use ratatui::style::Color;
 
 #[test]
 fn test_sr_36_value_list_follows_style() {
-    // [utest -> req~screen.style-parts-choose~1, req~screen.style-parts-default~1] 既定(sumi・status = "dot")で status のセルで Enter → 候補 doing は値の色の文字で、札の地は無い。
+    // [utest -> req~screen.style-parts-choose~2, req~screen.style-parts-default~1] 既定(sumi・status = "dot")で status のセルで Enter → 候補 doing は値の色の文字で、札の地は無い。
     let tmp = Tmp::new("sr36_list");
     for (n, s) in [("a", "todo"), ("b", "doing"), ("c", "todo"), ("d", "done")] {
         tmp.write(

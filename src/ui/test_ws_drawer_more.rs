@@ -53,7 +53,7 @@ fn test_ws_8_back_forgets_the_scope() {
 
 #[test]
 fn test_ws_8_rebound_key_closes() {
-    // [utest -> req~workspace.drawer-open~1, req~workspace.drawer-close~1, req~screen.keys-vim-and-arrows-remap~1] 開くキーを `t` に割り当て直す → `t` で開き、もう一度の `t` で閉じる。
+    // [utest -> req~workspace.drawer-open~2, req~workspace.drawer-close~2, req~screen.keys-vim-and-arrows-remap~1] 開くキーを `t` に割り当て直す → `t` で開き、もう一度の `t` で閉じる。
     let (_tmp, mut a) = boot("ws8_rebind");
     let w = keymap::rebind(
         &mut a.keys,
