@@ -55,9 +55,11 @@ struct Site {
 }
 
 impl Site {
-    /// 出力のフォルダの中のファイルの中身(無ければ None)。
+    /// 出力のフォルダの中のファイルの中身(無ければ None)。Windows の Python は改行を CRLF で書くので、LF にそろえる。
     fn file(&self, rel: &str) -> Option<String> {
-        std::fs::read_to_string(self.out.join(rel)).ok()
+        std::fs::read_to_string(self.out.join(rel))
+            .ok()
+            .map(|t| t.replace("\r\n", "\n"))
     }
 
     fn page(&self, rel: &str) -> String {

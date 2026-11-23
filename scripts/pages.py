@@ -1838,6 +1838,9 @@ def build_blog_only(out: Path, src: Path) -> None:
 
 
 if __name__ == "__main__":
+    # 誤りの文を、どの OS でも UTF-8 で出す(Windows のパイプでは、既定がその地域の文字コードで、日本語が \uXXXX になる)。
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8")
     args = sys.argv[1:]
     shots = ROOT / "target" / "shots"
     if "--shots" in args:
