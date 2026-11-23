@@ -16,6 +16,9 @@
 - 入口の部品: 場面の切り替え、仕組みの図、場面のタブ、テーマ、写すボタン、明るい・暗いの切り替え
 - 見た目のカタログ: 見本の画面が描かれる、幅 390px で縮んで横にはみ出さない、拡大の切り替え、広い幅では切り替えを出さない
 - 入口が幅 390px で横にはみ出さない
+- ブログ(公開する記事があるときだけ作られる。site.blog-check): 記事の一覧・記事のページ・言語を決めて移る blog/ も
+  上と同じ項目(リンク・地図・head・hreflang・コンソールのエラー・幅 390px)で確かめる。訳の無い記事は hreflang を
+  持たない。blog/ は、日本語のブラウザで ja/blog/、英語で en/blog/、入口で English を選んだあとは en/blog/ へ移る
 - 環境変数 GA_MEASUREMENT_ID があれば、全部のページにその ID の、公開のホストでだけ動くアクセス解析(GA4)のタグがある。無ければどのページにも無い
 - どのページにもコンソールのエラー(とページの例外)が無い
 落ちたら理由を並べて終了コード 1。
@@ -68,12 +71,15 @@ SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 
 def site_pages(site: str) -> set:
     """サイトの地図に載るべきページの URL(scripts/pages.py の決まりを、作った site/ のファイルから別に数える):
-    HTML のうち、言語を選んで移るだけの根の入口と前の URL、mdBook の目次の部品・404・印刷の版を除いたもの。
+    HTML のうち、言語を選んで移るだけの根の入口と前の URL とブログの入口(blog/)、mdBook の目次の部品・404・印刷の版を
+    除いたもの。
     index.html はフォルダの形(説明書の入口も。canonical・hreflang と同じ形)。"""
     out = set()
     for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True):
         rel = os.path.relpath(f, site).replace(os.sep, "/")
-        if rel in ("index.html", "gallery.html") or os.path.basename(rel) in (
+        if rel in ("index.html", "gallery.html", "blog/index.html") or os.path.basename(
+            rel
+        ) in (
             "toc.html",
             "404.html",
             "print.html",
@@ -156,14 +162,23 @@ def heads(site: str) -> None:
     )
 
 
+def untranslated_post(site: str, url: str) -> bool:
+    """もう一方の言語に同じ名前の記事が無いブログの記事か(hreflang を持たない。site.blog-lang-switch)。"""
+    m = re.fullmatch(re.escape(SITE) + r"(ja|en)/blog/([^/]+\.html)", url)
+    if not m:
+        return False
+    other = "en" if m.group(1) == "ja" else "ja"
+    return not os.path.isfile(os.path.join(site, other, "blog", m.group(2)))
+
+
 def hreflang(site: str) -> None:
-    """地図に載るページ(1枚で両方の言語を持つカタログを除く)は hreflang を持つ。hreflang を持つページは、
-    ja・en・x-default を示し、その組に自分が入り、示した先のページが同じ組を示し返す。"""
+    """地図に載るページ(1枚で両方の言語を持つカタログと、訳の無いブログの記事を除く)は hreflang を持つ。
+    hreflang を持つページは、ja・en・x-default を示し、その組に自分が入り、示した先のページが同じ組を示し返す。"""
     bad = []
     must = {
         os.path.normpath(file_of(site, u))
         for u in site_pages(site)
-        if u != SITE + "catalog/"
+        if u != SITE + "catalog/" and not untranslated_post(site, u)
     }
     for f in glob.glob(os.path.join(site, "**", "*.html"), recursive=True):
         alts = alternates_of(head_of(f))
@@ -287,7 +302,22 @@ def all_images_load(page) -> tuple[int, int]:
     )
 
 
-def browser_checks(base: str) -> None:
+def blog_pages(site: str) -> list:
+    """ブログのページ(言語を決めて移る blog/・記事の一覧・記事)のサイトの中の道筋。記事が無ければ空。"""
+    if not os.path.isfile(os.path.join(site, "blog", "index.html")):
+        return []
+    out = ["blog/"]
+    for lang in ("ja", "en"):
+        out.append(f"{lang}/blog/")
+        out += sorted(
+            f"{lang}/blog/{os.path.basename(f)}"
+            for f in glob.glob(os.path.join(site, lang, "blog", "*.html"))
+            if os.path.basename(f) != "index.html"
+        )
+    return out
+
+
+def browser_checks(base: str, blog: list) -> None:
     with sync_playwright() as p:
         b = p.chromium.launch()
 
@@ -318,6 +348,29 @@ def browser_checks(base: str) -> None:
         check(pg.url.endswith("/en/"), f"English を選んだあと / → /en/(今: {pg.url})")
         ctx.close()
 
+        # ブログの入口(blog/)の振り分け(site.blog-root)。公開する記事があるときだけある。
+        if blog:
+            for loc, want in [("ja-JP", "/ja/blog/"), ("en-US", "/en/blog/")]:
+                ctx = b.new_context(locale=loc)
+                pg = ctx.new_page()
+                pg.goto(base + "blog/")
+                pg.wait_for_timeout(300)
+                path = pg.url[len(base) - 1 :]
+                check(path == want, f"{loc} のブラウザで /blog/ → {want}(今: {path})")
+                ctx.close()
+            ctx = b.new_context(locale="ja-JP")
+            pg = ctx.new_page()
+            pg.goto(base + "ja/")
+            pg.click('nav.top a[data-pick="en"]')
+            pg.wait_for_url("**/en/")
+            pg.goto(base + "blog/")
+            pg.wait_for_timeout(300)
+            check(
+                pg.url.endswith("/en/blog/"),
+                f"English を選んだあと /blog/ → /en/blog/(今: {pg.url})",
+            )
+            ctx.close()
+
         ctx = b.new_context(locale="en-US", viewport={"width": 1280, "height": 900})
         # どのページにもコンソールのエラーが無い。
         pages = [
@@ -333,7 +386,7 @@ def browser_checks(base: str) -> None:
             "manual/en/index.html",
             "manual/ja/tasks.html",
             "manual/en/keys.html",
-        ]
+        ] + blog
         for u in pages:
             pg = ctx.new_page()
             errs = errors_of(pg)
@@ -498,7 +551,7 @@ def browser_checks(base: str) -> None:
             not errs,
             f"390px のカタログにコンソールのエラーが無い{': ' + errs[0][:120] if errs else ''}",
         )
-        for u in ["ja/", "en/", "en/gallery.html", "manual/ja/tasks.html"]:
+        for u in ["ja/", "en/", "en/gallery.html", "manual/ja/tasks.html"] + blog:
             pg.goto(base + u)
             pg.wait_for_timeout(200)
             sw = pg.evaluate("document.documentElement.scrollWidth")
@@ -516,7 +569,7 @@ def main() -> int:
     analytics(site)
     httpd, base = serve(site)
     try:
-        browser_checks(base)
+        browser_checks(base, blog_pages(site))
     finally:
         httpd.shutdown()
     if FAILS:
