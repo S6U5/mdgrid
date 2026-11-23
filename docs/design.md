@@ -886,3 +886,11 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **はみ出し**: 部品の文字は `width::fit` で幅に切る。どの言語でも 80 桁でヘッダーの右の端のボタンと設定の画面のボタンが残ることを、言語ごとに試験で見る。
 - **訳さないもの**: キーの名前・旗・設定の項目と値・式・ファイルの名前・ノートの中身。日付の言葉(`src/datewords.rs`)は日本語と英語だけを読む。推定に使う列の名前の並び(`GanttStartNames` など)は全部の言語の台帳を合わせて使う。
 
+
+## ファイルを読む口(write-back.refuse-not-text・write-back.refuse-not-text-any-file・cli.read-text-only。2026-11-23)
+
+- **口は1つ**: mdgrid が読むファイル(ノート・CSV と TSV の台帳・`.base`・設定・ワークスペースの印・状態・雛形・`--apply` の入力・通知の連絡のノート)は、どれも `src/textfile.rs` を通す。`std::fs::read`・`std::fs::read_to_string` は `clippy.toml` の `disallowed-methods` で止まるので、読む所を足すときに判定を通し忘れない(試験のクレートと build.rs は許す)。
+- **文字のファイルの決まり**: 先頭の 8,000 バイト(`frontmatter::SNIFF_LEN`。git が文字か否かを見る幅)に NUL がある・UTF-16 の BOM で始まる・UTF-8 として読めない、のどれかなら文字のファイルでない(`frontmatter::text_kind`・`textfile::check`)。頭の印(`MZ`・`PK` など)では決めない。同じ字で始まるふつうのノートを誤って止めるため。
+- **読み方は3つ**: 文字として使うものは `read_text`(文字のファイルでなければ `InvalidData` の誤りで、文は理由)。書き戻すために元のバイトが要るノートと CSV は `read_bytes` で読み、使う前に `frontmatter::parse`(ノート)か `textfile::check`(CSV)を通す。読んで書き換えるもの(`places.toml`・`workspaces.toml` など)は `read_text_for_edit` で、無ければ空、読めない・文字のファイルでなければ誤りにして書かない(読めない中身を空とみなして上書きしない)。
+- **ノートの理由**: 読むだけの理由の型 `ReadOnly` には種類を足さず、`NotUtf8` を「UTF-8 のテキストとして読めない」に広げて、理由の文だけを中身で分ける(`source::markdown::read_only_reason`)。種類を足すと、網羅の `match` を持つ試験(tests/test_safety_docs.rs)が前のコードで組み立てられず、新しい P0 の f2p の門が回らないため。
+- **エディタと URL**: エディタに渡す前にもファイルの頭を見て、文字のファイルでなければ渡さない(UTF-16 は渡す)。ブラウザに渡す URL は `folder_tree::url_refusal` で、最後の部分の拡張子(`\` は `/` と読み、`%` を戻す)と向きを変える文字を見る。

@@ -203,6 +203,105 @@ pub fn web_url(s: &str) -> Option<&str> {
     Some(t)
 }
 
+/// URL を開かない理由(tree.open-url-disguised)。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UrlRefusal {
+    /// 最後の部分が実行ファイルかインストーラーの拡張子で終わる(点の無い小文字の拡張子)。
+    Executable(String),
+    /// 文字の向きを変える書式の文字を含む。
+    Bidi,
+}
+
+/// 開かない実行ファイルとインストーラーの拡張子(小文字)。tbd~tree.open-url-executable-exts:
+/// 誤って止めやすい com(`example.com` で終わる URL)・app・sh・js・iso・bin は入れない。
+const EXECUTABLE_EXTS: &[&str] = &[
+    "exe",
+    "msi",
+    "msix",
+    "msixbundle",
+    "appx",
+    "appxbundle",
+    "bat",
+    "cmd",
+    "scr",
+    "pif",
+    "cpl",
+    "ps1",
+    "psm1",
+    "vbs",
+    "vbe",
+    "jse",
+    "wsf",
+    "wsh",
+    "hta",
+    "lnk",
+    "reg",
+    "jar",
+    "dmg",
+    "pkg",
+    "mpkg",
+    "command",
+    "apk",
+    "deb",
+    "rpm",
+    "appimage",
+    "run",
+];
+
+/// 文字の向きを変える書式の文字(U+200E・U+200F・U+202A〜U+202E・U+2066〜U+2069)。
+fn is_bidi(c: char) -> bool {
+    matches!(c, '\u{200E}' | '\u{200F}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}')
+}
+
+/// `%XX` を戻す(戻せない `%` はそのまま)。
+fn percent_decode(s: &str) -> String {
+    let b = s.as_bytes();
+    let mut out = Vec::with_capacity(b.len());
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] == b'%' && i + 2 < b.len() {
+            let hex = std::str::from_utf8(&b[i + 1..i + 3]).ok();
+            if let Some(v) = hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
+                out.push(v);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(b[i]);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// tree.open-url-disguised: `web_url` を通った URL を開かない理由。開いてよければ None。
+/// 見るのは最後の部分(`?`・`#` より前の、最後の `/` より後ろ。`%` を戻して読む)と、URL の全体の向きを変える文字。
+pub fn url_refusal(url: &str) -> Option<UrlRefusal> {
+    if url.chars().any(is_bidi) {
+        return Some(UrlRefusal::Bidi);
+    }
+    let rest = url.split_once("://").map_or(url, |(_, r)| r);
+    // ブラウザ(WHATWG の URL)は http・https の `\` を `/` と読むので、同じに読む
+    // (`https://example.com\setup.exe` はブラウザでは `/setup.exe`)。
+    let rest = rest.replace('\\', "/");
+    // ホストは最初の `/`・`?`・`#` で終わる。道が無ければ(ホストだけなら)止めない: ホストの終わりを拡張子と
+    // 見ると、`.run` のような実在のドメインを誤って止めるため。
+    let after_host = &rest[rest.find(['/', '?', '#'])?..];
+    if !after_host.starts_with('/') {
+        return None;
+    }
+    let path = after_host.split(['?', '#']).next().unwrap_or("");
+    let last = percent_decode(path.rsplit('/').next().unwrap_or(""));
+    if last.chars().any(is_bidi) {
+        return Some(UrlRefusal::Bidi);
+    }
+    // Windows は名前の終わりの点と空白を落とすので、`setup.exe.` も exe として見る。
+    let name = last.trim_end_matches(['.', ' ']).to_ascii_lowercase();
+    let (_, ext) = name.rsplit_once('.')?;
+    EXECUTABLE_EXTS
+        .contains(&ext)
+        .then(|| UrlRefusal::Executable(ext.to_string()))
+}
+
 #[cfg(test)]
 #[path = "test_folder_tree_unit.rs"]
 mod tests;

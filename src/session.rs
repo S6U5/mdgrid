@@ -89,7 +89,7 @@ impl Session {
 /// 知らない項目と型の違う値は警告にして飛ばす(cli.session-store)。並びは名前の順。
 pub fn load(dir: &Path) -> Result<(Vec<Session>, Vec<String>), String> {
     let path = dir.join(FILE_NAME);
-    match std::fs::read_to_string(&path) {
+    match crate::textfile::read_text(&path) {
         Ok(text) => parse_named(&text, &path.display().to_string()),
         Err(e) if e.kind() == io::ErrorKind::NotFound => Ok((Vec::new(), Vec::new())),
         Err(e) => Err(Msg::SessionsUnreadable.fill(&[&path.display(), &e])),
@@ -441,7 +441,7 @@ pub fn to_toml(list: &[Session]) -> String {
 /// 名前のセッションを置く(同じ名前があれば置き換え、無ければ後ろに足す)。ファイルの文字を区画ごとに扱うので、
 /// 手で書いたコメント・空行・ほかのセッションは文字のまま残る。今のファイルが壊れていれば書かない(理由)。
 pub fn save(dir: &Path, s: &Session) -> io::Result<()> {
-    let text = match std::fs::read_to_string(dir.join(FILE_NAME)) {
+    let text = match crate::textfile::read_text(dir.join(FILE_NAME)) {
         Ok(t) => t,
         Err(e) if e.kind() == io::ErrorKind::NotFound => String::new(),
         Err(e) => return Err(e),

@@ -243,7 +243,7 @@ fn inline_file_name(name: &str) -> String {
 /// 警告は、無いスターター(印に書いた中身だけで開く)と無いオプション(そのオプションだけ飛ばす)。
 fn marker_source(root: &Path) -> (String, Vec<String>) {
     let file = root.join(MARKER_DIR).join(MARKER_FILE);
-    let text = std::fs::read_to_string(&file).unwrap_or_default();
+    let text = crate::textfile::read_text(&file).unwrap_or_default();
     let Ok(mut own) = text.parse::<toml::Table>() else {
         return (text, Vec::new());
     };
@@ -310,7 +310,7 @@ fn marker_source(root: &Path) -> (String, Vec<String>) {
 /// 印に `starter` が無い・そのスターターが無い・そのファイルが無いなら None。
 pub fn starter_file(root: &Path, rel: &Path) -> Option<String> {
     let file = root.join(MARKER_DIR).join(MARKER_FILE);
-    let own: toml::Table = std::fs::read_to_string(&file).ok()?.parse().ok()?;
+    let own: toml::Table = crate::textfile::read_text(&file).ok()?.parse().ok()?;
     let name = own.get("starter")?.as_str()?.trim();
     let lang = match own.get("starter_lang").and_then(|v| v.as_str()) {
         Some(l) if !l.trim().is_empty() => l.trim().to_string(),
@@ -971,7 +971,7 @@ fn parse_in(text: &str, base: Option<&Path>) -> (Vec<Workspace>, Vec<String>) {
 
 /// 設定のフォルダの workspaces.toml を読む。無ければ空。
 pub fn load(dir: &Path) -> (Vec<Workspace>, Vec<String>) {
-    match std::fs::read_to_string(dir.join(FILE_NAME)) {
+    match crate::textfile::read_text(dir.join(FILE_NAME)) {
         Ok(t) => parse_in(&t, Some(dir)),
         Err(_) => (Vec::new(), Vec::new()),
     }
@@ -1065,7 +1065,7 @@ pub fn add(dir: &Path, ws: &str, table: WsTable) -> io::Result<()> {
         }
         None => w.tables.push(table.clone()),
     }
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text_for_edit(dir.join(FILE_NAME))?;
     let new = checked(edit_add(&text, dir, ws, &table), &text, dir, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())
 }
@@ -1136,7 +1136,7 @@ pub fn remove(dir: &Path, ws: &str, path: Option<&Path>) -> io::Result<bool> {
     if list == before {
         return Ok(false);
     }
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text_for_edit(dir.join(FILE_NAME))?;
     let new = checked(edit_remove(&text, dir, ws, path), &text, dir, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())?;
     Ok(true)
@@ -1247,7 +1247,7 @@ pub fn save_profile(dir: &Path, ws: &str, profile: &Profile) -> io::Result<()> {
         return Err(io::Error::other(Msg::WsUnknown.fill(&[&ws])));
     };
     w.profile = profile.clone();
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text_for_edit(dir.join(FILE_NAME))?;
     let new = checked(edit_profile(&text, ws, profile), &text, dir, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())
 }
@@ -1753,7 +1753,7 @@ pub fn load_pages(home: &PageHome) -> (Vec<crate::page::Page>, Vec<String>) {
 
 /// workspaces.toml のワークスペース `ws` のページ(`[[workspace.page]]`)。
 pub fn app_pages(dir: &Path, ws: &str) -> (Vec<crate::page::Page>, Vec<String>) {
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text(dir.join(FILE_NAME)).unwrap_or_default();
     pages_in(&text, dir, ws)
 }
 
@@ -1838,7 +1838,7 @@ fn save_app_page(dir: &Path, ws: &str, page: &crate::page::Page) -> io::Result<(
     if !list.iter().any(|w| w.name == ws) {
         return Err(io::Error::other(Msg::WsUnknown.fill(&[&ws])));
     }
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text_for_edit(dir.join(FILE_NAME))?;
     let mut owned: Vec<String> = text.split_inclusive('\n').map(str::to_string).collect();
     if let Some(last) = owned.last_mut() {
         if !last.ends_with('\n') {
@@ -1882,7 +1882,7 @@ fn save_app_page(dir: &Path, ws: &str, page: &crate::page::Page) -> io::Result<(
 /// 行・並び・コメントは1字も変えない。読み直して書いたページがあるときだけ書く。
 fn save_marker_page(root: &Path, page: &crate::page::Page) -> io::Result<()> {
     let file = root.join(MARKER_DIR).join(MARKER_FILE);
-    let text = std::fs::read_to_string(&file)?;
+    let text = crate::textfile::read_text(&file)?;
     let piece = crate::page::text(page, MARKER_PAGE_HEAD);
     let lines: Vec<&str> = text.split_inclusive('\n').collect();
     let inner = |h: &str| h.starts_with("[page.") || h.starts_with("[[page.");

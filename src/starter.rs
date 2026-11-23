@@ -171,7 +171,7 @@ pub fn read_user(dir: &Path) -> Result<Starter, String> {
     let mlabel = format!("{label}/{MANIFEST}");
     if manifest.is_file() {
         // 読めないファイルは「starters/<名前>: <中の相対パス>: 理由」(印の無いときと同じ形)。
-        let text = std::fs::read_to_string(&manifest)
+        let text = crate::textfile::read_text(&manifest)
             .map_err(|_| warn(&label, MANIFEST, Msg::StarterNotText.text().to_string()))?;
         match read_manifest(&text) {
             Ok((t, d)) => {
@@ -207,7 +207,7 @@ pub fn read_user(dir: &Path) -> Result<Starter, String> {
                 continue;
             }
             let full = p.join(&rel);
-            let text = std::fs::read_to_string(&full).map_err(|_| {
+            let text = crate::textfile::read_text(&full).map_err(|_| {
                 warn(
                     &label,
                     &rel_str(&p.strip_prefix(dir).unwrap_or(&p).join(&rel)),

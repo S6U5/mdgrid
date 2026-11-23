@@ -361,7 +361,7 @@ fn add_route(found: &mut Vec<PathBuf>, route: PathBuf) {
 /// 更新時刻を先に取ってから読む。読む間に変わっても、次の poll で時刻のずれとして見つかる。
 fn read_note(real: PathBuf, rel: String, found: Vec<PathBuf>) -> io::Result<Note> {
     let meta = fs::metadata(&real)?;
-    let bytes = fs::read(&real)?;
+    let bytes = crate::textfile::read_bytes(&real)?;
     let stamp = Stamp {
         mtime: stamp_of(&meta).mtime,
         len: bytes.len() as u64,

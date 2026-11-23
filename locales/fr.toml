@@ -119,6 +119,10 @@ CliBadSort = "--sort {0} : écrire une colonne, suivie éventuellement de :asc o
 CliFilterNativeView = "--filter et --sort fonctionnent avec une vue .base ou un dossier, pas avec la vue mdgrid \"{0}\""
 LockToml = "le front matter est en TOML (+++), pas en YAML"
 LockNotUtf8 = "le fichier n'est pas en UTF-8"
+LockNotText = "ce n'est pas un fichier texte (contient des octets NUL)"
+LockUtf16 = "le fichier est en UTF-16"
+## {0} is the file name, {1} the reason (write-back.refuse-not-text-any-file).
+FileNotRewritten = "{0} n'est pas réécrit ({1})"
 LockMixedNewlines = "fins de ligne mélangées"
 ## {0} は重なったキー。
 LockDuplicateKey = "la même clé apparaît deux fois ({0})"
@@ -242,6 +246,8 @@ WantNoticeScope = "\"table\", \"workspace\" ou un tableau de noms de tables"
 RsnNoticeNoCond = "pas de condition \"{0}\" dans [conditions] (ignoré)"
 ## notice.note-item: {0} はノートのファイルの名前。
 NoticeNoNote = "{0} est introuvable"
+## {0} is the note name, {1} the reason (the note is not a text file).
+NoticeNotText = "{0} n'est pas lu ({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "{0} lignes de plus"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
@@ -987,6 +993,8 @@ EditorNoTerminal = "impossible de restaurer le terminal, l'éditeur n'a donc pas
 EditorCannotStart = "impossible de lancer l'éditeur : {0} ({1})"
 ## {0} は終了の状態、{1} はノート。
 EditorFailed = "l'éditeur s'est terminé en échec ({0}) : {1}"
+## {0} is the note name.
+EditorNotText = "{0} n'est pas un fichier texte (contient des octets NUL), il n'est donc pas ouvert dans l'éditeur"
 EditorReturned = "retour de l'éditeur : {0}"
 EditorTermNotRestored = ". Impossible de restaurer le terminal : {0}"
 EditorCannotReload = ". Impossible de recharger : {0}"
@@ -1702,6 +1710,10 @@ TreeRowHidden = "la ligne n'est pas affichée dans la table (dans un groupe repl
 UrlOpening = "ouverture de {0}"
 ## {0} is the URL, {1} the reason.
 UrlOpenFailed = "impossible d'ouvrir {0} : {1}"
+## {0} is the URL, {1} the file extension without the dot (tbd~tree.open-url-executable-exts).
+UrlRefuseExecutable = "{0} pointe vers un fichier exécutable (.{1}), il n'est donc pas ouvert (pour l'ouvrir, copiez l'URL et collez-la dans le navigateur)"
+## {0} is the URL.
+UrlRefuseBidi = "{0} contient des caractères qui changent le sens du texte, il n'est donc pas ouvert"
 RsnTreeNotTable = "pas une table comme { path = \"<colonne>\" }, donc pas d'arbre"
 RsnTreeNeedPath = "pas de path (la colonne des dossiers), donc pas d'arbre"
 RsnTreeEmptySep = "le séparateur est vide, donc pas d'arbre"

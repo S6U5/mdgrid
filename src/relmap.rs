@@ -42,7 +42,7 @@ pub struct Link {
 }
 
 fn entries(path: &Path) -> Vec<(String, Value)> {
-    let Ok(bytes) = std::fs::read(path) else {
+    let Ok(bytes) = crate::textfile::read_bytes(path) else {
         return Vec::new();
     };
     match frontmatter::parse(&bytes) {

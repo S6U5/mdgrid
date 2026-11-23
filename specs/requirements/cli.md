@@ -186,6 +186,27 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When: 無いパスを渡す
   - Then: 理由1行と終了コード 2。
 
+#### 読むだけのファイル(`.base`・設定ファイル・`--apply` の入力・新しいノートの雛形)も、文字のファイルでない(write-back.refuse-not-text-any-file と同じ決まり)ときは中身を使わず、そのファイルの名前とテキストでないという理由を出すべき
+`req~cli.read-text-only~1` P1
+- Rationale: 名前だけ `.base` や `.toml` のほかのファイルを読んで、意味の無い表や設定にしないため。UTF-8 でないファイルと同じに止め、理由で見分けられるようにする
+- Acceptance:
+  - Given: NUL のバイトを含む `tasks.base`
+  - When: `mdgrid tasks.base --print`
+  - Then: 表を出さず、`tasks.base` とテキストでないという理由の1行と、終了コード 2。
+- Acceptance:
+  - Given: NUL のバイトを含む設定ファイル
+  - When: `mdgrid --config <その設定ファイル> notes --print`
+  - Then: 表を出さず、設定ファイルのパスとテキストでないという理由の1行と、終了コード 2(UTF-8 でない設定ファイルと同じ)。
+- Acceptance:
+  - Given: NUL のバイトを含む `in.csv`
+  - When: `mdgrid notes --apply in.csv`
+  - Then: どのノートも書かず、`in.csv` とテキストでないという理由の1行と、終了コード 2。
+- Acceptance:
+  - Given: `[new_note] body` の雛形が NUL のバイトを含む
+  - When: `mdgrid notes --new-note 会議`
+  - Then: ノートを作らず、雛形のパスとテキストでないという理由の1行と、0 以外の終了コード。
+- Needs: stest
+
 #### `mdgrid --print-config` は、設定の全項目を、区画ごとに既定値と説明のコメント付きの TOML で標準出力に出し、終了コード 0 で終わるべき
 `req~cli.print-config-output~1` P1
 - Rationale: dotfiles に貼る出発点にするため

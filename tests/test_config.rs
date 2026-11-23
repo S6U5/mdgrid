@@ -19,6 +19,8 @@
 //!
 //! keys は (モード, キー, 動作) の並びに写る。並びの順は問わない。
 
+#![allow(clippy::disallowed_methods)]
+
 use mdgrid::config::{apply_state, config_path, load_state, parse, save_state, ViewState};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;

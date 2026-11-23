@@ -188,6 +188,31 @@
   - When:
   - Then: 出さないか、理由を出して開かない。
 
+#### URL を開く操作で、最後の部分(`?`・`#` より前の、最後の `/` より後ろ。ブラウザと同じく `\` も `/` と読み、`%` の書き方は戻して読む)が実行ファイルかインストーラーの拡張子で終わる URL と、文字の向きを変える書式の文字(U+200E・U+200F・U+202A〜U+202E・U+2066〜U+2069)を含む URL は、開いてはならず、理由を出すべき
+`req~tree.open-url-disguised~1` P1
+- Rationale: 「report.pdf.exe」のように拡張子を偽った実行ファイルや、向きを変える文字で見た目を偽った URL を、ノートからブラウザへ渡さないため。開きたいときは、URL を写して自分でブラウザに貼る(2026-11-23 に人が「開かずに理由を出す」と決めた)
+- Acceptance:
+  - Given: url が `https://example.com/files/report.pdf.exe` の行
+  - When: 「URL を開く」
+  - Then: OS の開くコマンドに渡らず、実行ファイル(.exe)を指すので開かないという理由が出る。
+- Acceptance:
+  - Given: url が `https://example.com/setup%2Eexe?x=1` の行
+  - When: 「URL を開く」
+  - Then: 開かず、実行ファイル(.exe)を指すので開かないという理由が出る。
+- Acceptance:
+  - Given: url が `https://example.com\setup.exe`(`\` で道の区切りを隠した形)の行
+  - When: 「URL を開く」
+  - Then: 開かず、実行ファイル(.exe)を指すので開かないという理由が出る。
+- Acceptance:
+  - Given: url の途中に U+202E を含む行
+  - When: 「URL を開く」
+  - Then: 開かず、文字の向きを変える文字を含むという理由が出る。
+- Acceptance:
+  - Given: url が `https://example.com/manual.pdf`・`https://example.com/download?file=setup.exe`・`https://web.archive.org/web/2026/https://example.com`・`https://example.run`(道の無い、ホストだけの URL)の行
+  - When: 「URL を開く」
+  - Then: どれも OS の開くコマンドに渡る(最後の部分が実行ファイルの拡張子で終わらないか、道が無い)。
+- Needs: utest
+
 #### 木の画面の段組み(左の木・右の行)は、端末の幅と高さに合わせて変えるべき(広ければ並べ、狭ければ1つずつにしてキーかタブで切り替える)
 `req~tree.layout-width~1` P1
 - Acceptance:
@@ -274,3 +299,10 @@
   - Given: a・b・c の順の行で c を一番上へ
   - When:
   - Then: c・a・b の順に order が 10 ずつ増える値に振り直す変更がたまり、保存では差分を見せてから書く(読んで判定)。
+
+## 未確定事項
+
+### URL を開かない実行ファイルとインストーラーの拡張子
+`tbd~tree.open-url-executable-exts`
+- Decider: 人
+- Provisional: exe・msi・msix・msixbundle・appx・appxbundle・bat・cmd・scr・pif・cpl・ps1・psm1・vbs・vbe・jse・wsf・wsh・hta・lnk・reg・jar・dmg・pkg・mpkg・command・apk・deb・rpm・appimage・run(大文字小文字を問わない)。誤って止めやすい com(`example.com` で終わる URL)・app・sh・js・iso・bin は入れない

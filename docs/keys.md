@@ -573,7 +573,7 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 | `Space` | `toggle` | Open or close the folder |
 | `Tab` | `next_section` | Switch between the folders and the rows |
 | `Shift+Tab` | `prev_section` | Switch between the folders and the rows |
-| `o` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the URL is shown in the message line first; other values are never opened) |
+| `o` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the URL is shown in the message line first; other values, URLs that point to an executable file and URLs with characters that change the text direction are never opened, with the reason shown) |
 | `x` | `action_menu` | Actions on the selected row (open the URL, show the row in the table) |
 | `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | Command palette (closing it returns to the tree) |

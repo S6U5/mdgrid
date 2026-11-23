@@ -335,6 +335,57 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
   - When:
   - Then: 編集できず「書き込めない権限」と理由を表示。
 
+#### 先頭の 8,000 バイトに NUL(0x00)のバイトがある `.md` は、名前だけが Markdown のほかのファイル(実行ファイル・圧縮ファイル・画像など)とみなし、値を読まず、書き込まず、エディタにも渡さず、その行を読むだけにして理由を表示しなければならない(設定で変えられてはならない)
+`req~write-back.refuse-not-text~1` P0
+- Rationale: 拡張子を `.md` に変えたほかのファイル(偽装した拡張子)に、フロントマターを足したりエディタで開いたりして壊さないため。UTF-8 の文には NUL が出ないので、ふつうのノートを誤って止めない。8,000 バイトは、git がファイルを文字か否か見分けるのと同じ幅(2026-11-23 に人が「偽装拡張子は開かない。誤検知に気をつけて」と決めた)
+- Acceptance:
+  - Given: `PK\x03\x04` で始まり NUL のバイトを含み、UTF-8 としては読める `archive.md`
+  - When: その行のセルで Enter
+  - Then: 入力が開かず、中身がテキストでないという理由が出る。
+- Acceptance:
+  - Given: `archive.md` と、ふつうのノート2つの行を選ぶ
+  - When: status に done をまとめて入れて保存する
+  - Then: ふつうのノート2つだけが書かれ、`archive.md` は1バイトも変わらない。
+- Acceptance:
+  - Given: `archive.md` の行
+  - When: `e`
+  - Then: エディタは起動せず、メッセージ行に中身がテキストでないという理由が出る。
+- Acceptance:
+  - Given: 先頭から 8,000 番目のバイトが NUL のノートと、8,001 番目のバイトが NUL のノート
+  - When: そのフォルダを開く
+  - Then: 8,000 番目のノートは読むだけで、8,001 番目のノートは NUL の無いノートと同じに扱う。
+- Acceptance:
+  - Given: 本文が「MZ-700 の思い出」で始まり、NUL の無いノート
+  - When: その行の status を直して保存する
+  - Then: ふつうのノートと同じに書ける。
+- Needs: utest
+
+#### UTF-16 の BOM(`FF FE` か `FE FF`)で始まる `.md` は、その行を読むだけにし、UTF-16 で書かれていて mdgrid は UTF-8 だけを読むという理由を表示するべき
+`req~write-back.refuse-utf16~1` P1
+- Rationale: UTF-16 の文にも NUL が入るので、write-back.refuse-not-text の「テキストでない」と取り違えず、UTF-8 で保存し直せばよいと分かる理由を出すため。UTF-16 は文字のファイルなので、エディタには渡してよい
+- Acceptance:
+  - Given: `FF FE` で始まる UTF-16 のノート
+  - When: その行のセルで Enter
+  - Then: 入力が開かず、UTF-16 で書かれている(UTF-8 だけを読む)という理由が出る。
+- Acceptance:
+  - Given: 同じノートの行
+  - When: `e`
+  - Then: エディタが起動する。
+- Needs: utest
+
+#### ノートのほかに mdgrid が読んで書き戻すファイル(CSV・TSV の台帳と、設定のフォルダの TOML)も、文字のファイルでない(先頭の 8,000 バイトに NUL がある・UTF-16 の BOM で始まる・UTF-8 でない)ときは、中身を使わず、そのファイルに書かず、理由を出さなければならない(設定で変えられてはならない)
+`req~write-back.refuse-not-text-any-file~1` P0
+- Rationale: 名前だけ `.csv` や `.toml` のほかのファイルを、台帳や設定として直して上書きし、壊さないため。write-back.refuse-not-text の決まりを、読むどのファイルにも当てる(2026-11-23 に人が「どのファイルでも読み込むなら対策を入れる」と決めた)
+- Acceptance:
+  - Given: 2行目に NUL のバイトがあり、UTF-8 としては読める `tasks.csv`
+  - When: `mdgrid tasks.csv --print`
+  - Then: 表を出さず、テキストでないという理由1行と終了コード 2 で終わり、`tasks.csv` は1バイトも変わらない。
+- Acceptance:
+  - Given: 設定のフォルダの `places.toml` が UTF-8 でない
+  - When: 画面から表を登録する
+  - Then: `places.toml` は1バイトも変わらず、メッセージ行に書かない理由が出る。
+- Needs: utest, stest
+
 #### 読むだけにしたノートの行では、操作の一覧(screen.action-menu)にも編集と空にするを出してはならない
 `req~write-back.refuse-unsafe-action-menu~1` P1
 - Acceptance:

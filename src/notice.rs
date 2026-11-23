@@ -187,7 +187,13 @@ pub fn note_lines(path: &Path, lines: usize) -> Result<Vec<String>, String> {
         || path.display().to_string(),
         |n| n.to_string_lossy().into_owned(),
     );
-    let bytes = std::fs::read(path).map_err(|_| Msg::NoticeNoNote.fill(&[&name]))?;
+    let bytes = crate::textfile::read_bytes(path).map_err(|_| Msg::NoticeNoNote.fill(&[&name]))?;
+    // write-back.refuse-not-text-any-file: 文字のファイルでないノートの本文は出さない。
+    if let Err(n) = crate::textfile::check(&bytes) {
+        if n != crate::textfile::NotText::NotUtf8 {
+            return Err(Msg::NoticeNotText.fill(&[&name, &n.reason()]));
+        }
+    }
     // 本文は、フロントマターの閉じの区切りの行の次から(フロントマターが無ければ頭から)。
     let body_at = frontmatter::parse(&bytes).ok().map_or(0, |fm| {
         bytes[fm.end..]

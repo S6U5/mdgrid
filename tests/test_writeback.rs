@@ -320,6 +320,80 @@ fn wb_5_hard_linked_note_is_not_written() {
     );
 }
 
+// ---- 偽装した拡張子 ----
+
+/// ZIP の頭の印(`PK\x03\x04`)と NUL のバイトで始まる、名前だけ .md のファイルの中身。UTF-8 としては読める。
+fn zip_like() -> Vec<u8> {
+    let mut b = b"PK\x03\x04\x14\x00\x00\x00\x08\x00".to_vec();
+    b.extend_from_slice(b"report.txt\x00\x00");
+    b
+}
+
+#[test]
+fn wb_refuse_not_text_apply() {
+    // [utest -> req~write-back.refuse-not-text~1] 先頭の 8,000 バイトに NUL のある .md には、フロントマターを足さず書かない。
+    // 観点: UTF-8 としては読めるので、今までは「フロントマターの無いノート」として先頭に足されていた形。
+    let zip = zip_like();
+    assert!(std::str::from_utf8(&zip).is_ok());
+    assert_eq!(
+        apply(&zip, &[edit("status", s("done"))]),
+        Err(EditError::ReadOnly(ReadOnly::NotUtf8))
+    );
+    // 境界: 7,999・8,000 番目のバイトの NUL は止め、8,001 番目は NUL の無いノートと同じに書く(先頭に足す)。
+    for (nth, refused) in [(7_999, true), (8_000, true), (8_001, false)] {
+        let mut bytes = vec![b'a'; 8_001];
+        bytes[nth - 1] = 0;
+        let got = apply(&bytes, &[edit("status", s("done"))]);
+        if refused {
+            assert_eq!(got, Err(EditError::ReadOnly(ReadOnly::NotUtf8)), "{nth}");
+        } else {
+            let mut want = b"---\nstatus: done\n---\n".to_vec();
+            want.extend_from_slice(&bytes);
+            assert_eq!(got, Ok(want), "{nth}");
+        }
+    }
+    // 誤って止めない: 実行ファイルの頭の印と同じ字(MZ)で始まる本文の、NUL の無いノート。
+    let mz = "---\nstatus: todo\n---\nMZ-700 の思い出\n";
+    assert_eq!(
+        apply(mz.as_bytes(), &[edit("status", s("done"))]),
+        Ok("---\nstatus: done\n---\nMZ-700 の思い出\n"
+            .as_bytes()
+            .to_vec())
+    );
+}
+
+#[test]
+fn wb_refuse_not_text_save_keeps_bytes() {
+    // [utest -> req~write-back.refuse-not-text~1] 名前だけ .md のファイルは、保存しても1バイトも変わらない。
+    let dir = TempDir::new("nottext");
+    let bytes = zip_like();
+    let note = dir.write("archive.md", &bytes);
+    let base = baseline(&note).unwrap();
+    let r = save(&note, &base, &[edit("status", s("done"))]);
+    assert!(r.is_err(), "save must refuse a file that is not text");
+    assert_eq!(std::fs::read(&note).unwrap(), bytes);
+}
+
+#[test]
+fn wb_refuse_utf16_apply() {
+    // [utest -> req~write-back.refuse-utf16~1] UTF-16 の BOM(FF FE・FE FF)で始まるノートには書かない。
+    for le in [true, false] {
+        let mut b = if le {
+            vec![0xFF, 0xFE]
+        } else {
+            vec![0xFE, 0xFF]
+        };
+        for u in "---\nstatus: todo\n---\n".encode_utf16() {
+            b.extend_from_slice(&if le { u.to_le_bytes() } else { u.to_be_bytes() });
+        }
+        assert_eq!(
+            apply(&b, &[edit("status", s("done"))]),
+            Err(EditError::ReadOnly(ReadOnly::NotUtf8)),
+            "le={le}"
+        );
+    }
+}
+
 // ---- CE-8 ----
 
 #[test]

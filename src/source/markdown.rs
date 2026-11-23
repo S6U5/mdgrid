@@ -98,7 +98,7 @@ impl Markdown {
         let per_root: Vec<HashMap<String, Kind>> = roots
             .iter()
             .map(|r| {
-                std::fs::read(r.join(".obsidian").join("types.json"))
+                crate::textfile::read_bytes(r.join(".obsidian").join("types.json"))
                     .map(|b| types::read_types_json(&b))
                     .unwrap_or_default()
             })
@@ -334,8 +334,18 @@ fn parse_note(note: &Note, row: bool) -> Parsed {
         Err(ReadOnly::InvalidYaml) => shown.as_ref(),
         Err(_) => None,
     };
-    let tags = tags_of(&note.bytes, placed);
-    let links = links_of(&note.bytes, placed);
+    // 文字のファイルでないもの(write-back.refuse-not-text)からは、本文のタグとリンクも読まない。
+    let text = crate::frontmatter::text_kind(&note.bytes) == crate::frontmatter::TextKind::Text;
+    let tags = if text {
+        tags_of(&note.bytes, placed)
+    } else {
+        Vec::new()
+    };
+    let links = if text {
+        links_of(&note.bytes, placed)
+    } else {
+        Vec::new()
+    };
     Parsed {
         fm,
         shown,
@@ -536,7 +546,11 @@ fn read_only_reason(r: &ReadOnly, bytes: &[u8]) -> String {
         ReadOnly::NoFrontmatter => Msg::LockNoFrontmatter.text().into(),
         ReadOnly::EmptyFrontmatter => Msg::LockEmptyFrontmatter.text().into(),
         ReadOnly::Bom => Msg::LockBom.text().into(),
-        ReadOnly::NotUtf8 => Msg::LockNotUtf8.text().into(),
+        ReadOnly::NotUtf8 => match crate::frontmatter::text_kind(bytes) {
+            crate::frontmatter::TextKind::NotText => Msg::LockNotText.text().into(),
+            crate::frontmatter::TextKind::Utf16 => Msg::LockUtf16.text().into(),
+            crate::frontmatter::TextKind::Text => Msg::LockNotUtf8.text().into(),
+        },
         ReadOnly::MixedNewlines => Msg::LockMixedNewlines.text().into(),
         ReadOnly::DuplicateKey(k) => Msg::LockDuplicateKey.fill(&[k]),
         ReadOnly::Unclosed => Msg::LockUnclosed.text().into(),
@@ -851,7 +865,7 @@ impl Source for Markdown {
         // 設定 add_frontmatter はここでは見ない(書かない。外で変わった行の差分を外の変更として見せるため。
         // 書くかの判断は save が基準の検査のあとにする)。
         // 今のディスクのバイト。読んだ内容(vault)は変えない。
-        let before = std::fs::read(&note.path)
+        let before = crate::textfile::read_bytes(&note.path)
             .map_err(|e| EditError::NotEditable(Msg::CannotRead.fill(&[&e])))?;
         let after = writeback::apply(&before, edits)?;
         Ok((before, after))
@@ -874,7 +888,7 @@ impl Source for Markdown {
             let bytes = if stamp_of(note).hash == base.hash {
                 note.bytes.clone()
             } else {
-                std::fs::read(&path)?
+                crate::textfile::read_bytes(&path)?
             };
             if writeback::sha256(&bytes) != base.hash {
                 return Err(SaveError::Changed);

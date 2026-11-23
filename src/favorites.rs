@@ -70,7 +70,7 @@ fn parse(text: &str) -> (Vec<String>, Vec<String>) {
 
 /// 書いてある並び(文字のまま。読めない項目は飛ばす)。ファイルが無ければ空。
 pub fn entries(dir: &Path) -> Vec<String> {
-    std::fs::read_to_string(dir.join(FILE_NAME))
+    crate::textfile::read_text(dir.join(FILE_NAME))
         .map(|t| parse(&t).0)
         .unwrap_or_default()
 }
@@ -84,7 +84,7 @@ fn is_marker_root(p: &Path) -> bool {
 /// ワークスペース。名前が `apps` に無く、印の根でもない項目(消したワークスペース・無くなった根)は、
 /// 一覧から外して警告にする(cli.config-file-warning-form)。
 pub fn resolve(dir: &Path, apps: &[Workspace]) -> (Vec<Favorite>, Vec<String>) {
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text(dir.join(FILE_NAME)).unwrap_or_default();
     let (list, mut warns) = parse(&text);
     let mut out: Vec<Favorite> = Vec::new();
     for (k, e) in list.iter().enumerate() {
@@ -149,7 +149,7 @@ pub fn contains(list: &[String], entry: &str) -> bool {
 /// `workspaces.toml` の最上位の `favorites` の行だけを書き換える。ファイルが読めない TOML なら書かない。
 pub fn set(dir: &Path, entry: &str, on: bool) -> io::Result<()> {
     let path = dir.join(FILE_NAME);
-    let text = std::fs::read_to_string(&path).unwrap_or_default();
+    let text = crate::textfile::read_text_for_edit(&path)?;
     if let Err(e) = text.parse::<toml::Table>() {
         let (line, msg) = config::toml_error(&text, &e);
         let at = line.map(|l| l.to_string()).unwrap_or_default();

@@ -40,7 +40,7 @@ pub fn expand_home(s: &str) -> PathBuf {
 /// 設定のフォルダの places.toml を読む。無ければ空。読めない行は警告にして飛ばす(CLI-18)。
 pub fn load(dir: &Path) -> (Vec<Place>, Vec<String>) {
     let path = dir.join(FILE_NAME);
-    let Ok(text) = std::fs::read_to_string(&path) else {
+    let Ok(text) = crate::textfile::read_text(&path) else {
         return (Vec::new(), Vec::new());
     };
     parse(&text)
@@ -133,7 +133,7 @@ pub fn to_toml(places: &[Place]) -> String {
 /// 1つ登録する。同じ名前があれば置き換え、無ければ後ろに足す。ファイルの文字を区画ごとに扱うので、
 /// 手で書いたコメント・空行・`~` のパス・読めなかった行は文字のまま残る。
 pub fn save(dir: &Path, place: Place) -> io::Result<()> {
-    let text = std::fs::read_to_string(dir.join(FILE_NAME)).unwrap_or_default();
+    let text = crate::textfile::read_text_for_edit(dir.join(FILE_NAME))?;
     config::write_atomic(dir, FILE_NAME, upsert(&text, &place).as_bytes())
 }
 
