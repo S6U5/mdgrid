@@ -11,7 +11,7 @@
 - 採らない: 条件をワークスペースの印(workspace.marker)や `workspaces.toml` に書くこと(2026-11-21 に人が「設定だけ」と決めた)。
 - 採らない: vim のような回数(`5j`)。数字のキーは条件に使う(理由は condition.digit-keys)。
 - 採らない: 条件を `.base` に書き足すこと(mdgrid は `.base` を書き換えない。base-view.base-untouched)。
-- 条件に当たる行の数を画面の上の欄に出すのは、通知の欄(notice)。
+- 条件に当たる行の数を画面の上の欄に出すのは、通知の欄(notice)。新しく当たった行を知らせるのは notify。
 
 ## 要求
 
