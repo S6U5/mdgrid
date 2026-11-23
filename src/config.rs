@@ -115,6 +115,8 @@ pub struct Config {
     pub conditions: std::sync::Arc<crate::condition::Conditions>,
     /// notice.opt-in: `[[notices]]`(書いた順)。連絡の項目のパスは読んだまま(main が設定のフォルダで直す)。
     pub notices: Vec<crate::notice::Item>,
+    /// notify.opt-in: `[[notify]]`(書いた順。使える項目だけ)。
+    pub notify: Vec<crate::notify::Item>,
     /// navigation.across-option: `[search]` の `across`(パレットの「ワークスペースを横断して探す」。既定は偽)。
     pub search_across: bool,
 }
@@ -134,6 +136,7 @@ impl Default for Config {
             templates: Vec::new(),
             conditions: std::sync::Arc::default(),
             notices: Vec::new(),
+            notify: Vec::new(),
             search_across: false,
         }
     }
@@ -202,6 +205,7 @@ pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), Stri
             "keys" => read_keys(value, &mut c.keys, &mut c.vim, file, &mut w),
             "templates" => c.templates = read_templates(value, file, &mut w),
             "notices" => c.notices = crate::notice::read(value, file, &mut w),
+            "notify" => c.notify = crate::notify::read(value, file, &mut w),
             "search" => read_search(value, &mut c.search_across, file, &mut w),
             "conditions" => {
                 let specs = crate::condition::in_written_order(
@@ -232,6 +236,19 @@ pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), Stri
         kept.push(item);
     }
     c.notices = kept;
+    // notify.item: 書いていない条件と、前の項目と同じ条件の項目は、警告して使わない。
+    let mut kept: Vec<crate::notify::Item> = Vec::new();
+    for (i, item) in std::mem::take(&mut c.notify).into_iter().enumerate() {
+        let at = format!("notify[{}].cond", i + 1);
+        if conds.get(&item.cond).is_none() {
+            warn(&mut w, file, &at, Msg::RsnNoticeNoCond.fill(&[&item.cond]));
+        } else if kept.iter().any(|k| k.cond == item.cond) {
+            warn(&mut w, file, &at, Msg::RsnNotifyDupCond.fill(&[&item.cond]));
+        } else {
+            kept.push(item);
+        }
+    }
+    c.notify = kept;
     Ok((c, w))
 }
 

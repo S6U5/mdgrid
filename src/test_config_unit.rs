@@ -79,6 +79,7 @@ fn test_cli_12_items_have_descriptions() {
             "templates",
             "conditions",
             "notices",
+            "notify",
         ]
     );
     // 例はどれも警告なしに読める(use の例は、そのテンプレートを足して読む)。

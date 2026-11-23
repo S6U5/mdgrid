@@ -11,6 +11,7 @@ pub(crate) mod conds;
 mod date_words;
 pub mod detail;
 pub(crate) mod notices;
+pub(crate) mod notify;
 // navigation.across-*: ワークスペースを横断して探す。
 pub(crate) mod across;
 // 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
@@ -542,6 +543,8 @@ mod test_note_rename;
 mod test_note_trash;
 #[cfg(test)]
 mod test_notices;
+#[cfg(test)]
+mod test_notify;
 #[cfg(test)]
 mod test_pending_shape;
 #[cfg(test)]

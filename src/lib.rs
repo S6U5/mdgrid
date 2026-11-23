@@ -32,6 +32,7 @@ pub mod links;
 pub(crate) mod mdtext;
 pub mod newnote;
 pub mod notice;
+pub mod notify;
 pub mod page;
 pub mod places;
 pub mod print;
@@ -67,6 +68,10 @@ mod test_toml_edit_safety;
 #[cfg(test)]
 #[path = "test_condition_unit.rs"]
 mod test_condition_unit;
+
+#[cfg(test)]
+#[path = "test_notify_unit.rs"]
+mod test_notify_unit;
 
 #[cfg(test)]
 #[path = "test_locale_pick_unit.rs"]

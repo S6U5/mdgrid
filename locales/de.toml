@@ -250,6 +250,28 @@ NoticeNoNote = "{0} fehlt"
 NoticeNotText = "{0} wird nicht gelesen ({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "{0} weitere Zeilen"
+## notify.opt-in: [[notify]] の形。
+WantNotifyArray = "ein Array von Tabellen ([[notify]])"
+RsnNotifyNeedCond = "braucht cond (den Namen einer benannten Bedingung) (ignoriert)"
+## notify.item: {0} は前の項目と同じ条件の名前。
+RsnNotifyDupCond = "dieselbe Bedingung \"{0}\" wie ein früherer Eintrag (ignoriert)"
+## notify.to: {0} は知らない出す先の名前。
+RsnNotifyUnknownTo = "unbekanntes Ziel \"{0}\" (terminal, desktop oder command; ignoriert)"
+RsnNotifyNoCommand = "to enthält command, aber command (Programm und Argumente) fehlt (an keinen Befehl gesendet)"
+## notify.group: {0} はまとめた行の数。
+NotifyGroup = "{0} neu"
+## notify.fail: {0} は出す先の名前(terminal など)、{1} は理由。
+NotifyFailed = "Benachrichtigung über {0} fehlgeschlagen: {1}"
+## notify.state-broken: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateRebuilt = "Benachrichtigungsprotokoll {0} nicht lesbar; die jetzt passenden Zeilen wurden ohne Benachrichtigung neu gemerkt ({1})"
+## notify.state: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateUnwritable = "Benachrichtigungsprotokoll {0} kann nicht geschrieben werden ({1})"
+## notify.fail: {0} は打ち切った秒数。
+NotifyTimeout = "nach {0} Sekunden gestoppt"
+## notify.fail: {0} はプログラム、{1} は終了コード。
+NotifyExit = "{0} endete mit Code {1}"
+## notify.fail: {0} はプログラム、{1} は理由。
+NotifyNoProgram = "{0} kann nicht ausgeführt werden ({1})"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "keine Tabelle namens {0} im Marker (Tabellen: {1}); der Ordner wurde so geöffnet, wie er ist"
 RsnStarterUnknown = "kein Starter namens {0}; geöffnet mit dem, was der Marker selbst angibt (mdgrid --starters listet sie)"
@@ -2103,6 +2125,8 @@ CfgTemplates = "Benannte Teile eines Profils ([look], [display], [dates], [edit]
 CfgConditions = "Benannte Bedingungen: ein Ausdruck (expr), einmal geschrieben und per Name verwendet:\ncond(\"<Name>\") in jedem Ausdruck, eine Zifferntaste (key = 1-9), die nur passende Zeilen zeigt,\nder Filterabschnitt der Ansichtseinstellungen und hide = true, um passende Zeilen in jeder Tabelle\nauszublenden. label ist der angezeigte Name."
 ## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
 CfgNotices = "Das Hinweisfeld über der Kopfzeile, nur sichtbar, wenn Einträge geschrieben sind. Ein Zähleintrag\nzählt die Zeilen, die eine benannte Bedingung ([conditions]) erfüllen, in der Tabelle, dem\nWorkspace oder benannten Tabellen; ein Notizeintrag zeigt die ersten Zeilen des Inhalts einer\nNotiz. mdgrid --notices gibt dieselben Zeilen aus."
+## 設定の項目 `notify` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotify = "Benachrichtigt, wenn eine Zeile neu eine benannte Bedingung ([conditions]) erfüllt, eine Nachricht pro\nZeile, an das Terminal, den Desktop oder einen eigenen Befehl. Beim Anlegen bereits passende Zeilen\nwerden still gemerkt; mehr neue Zeilen als group_over in einer Prüfung werden eine Nachricht. Geprüft\nwird, solange mdgrid offen ist; mdgrid --notify prüft einmal für einen geplanten Lauf."
 
 # ---- stack: tables stacked top to bottom and pages (stack.*) ----
 SecStack = "Gestapelte Tabellen"

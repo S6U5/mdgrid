@@ -328,7 +328,7 @@ pub fn value_plain(v: &Value) -> String {
     }
 }
 
-fn val_plain(v: &Val) -> String {
+pub fn val_plain(v: &Val) -> String {
     match v {
         Val::List(items) => items.iter().map(val_plain).collect::<Vec<_>>().join(", "),
         _ => val_text_with(v, &same),

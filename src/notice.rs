@@ -128,7 +128,7 @@ fn read_item(t: &toml::Table, file: &str, path: &str, w: &mut Vec<String>) -> Op
     })
 }
 
-fn read_scope(v: &toml::Value) -> Option<Scope> {
+pub(crate) fn read_scope(v: &toml::Value) -> Option<Scope> {
     match v {
         toml::Value::String(s) if s == "table" => Some(Scope::Table),
         toml::Value::String(s) if s == "workspace" => Some(Scope::Workspace),

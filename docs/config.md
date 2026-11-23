@@ -915,3 +915,36 @@ lines = 2
 [conditions.overdue]
 expr = 'due < today() && status != "done"'
 ```
+
+## `[[notify]]` — notifications
+
+### `notify`
+
+- Type: `array of tables ([[notify]] with cond, scope, title, text, to, group_over, group_text, command)`
+- Default: none
+- Scope: global only
+
+Tells you when a row starts to match a [named condition](#conditions--named-conditions): a reminder time has come, or a task has just become overdue. Nothing happens until you write an item here. Each `[[notify]]` watches one condition, and one condition can be watched by only one item.
+
+- `cond` is the condition to watch.
+- `scope` picks the tables to watch: `"workspace"` (every table of the current workspace, the default), `"table"` (the open table) or a list of table names.
+- `title` and `text` are the title and the text of the notification. `{column}` becomes the row's value, and `{file.name}` and `{formula.x}` work too; a column the row doesn't have becomes empty. Without them, the title is the condition's label and the text is the note's name.
+- `to` lists where it goes: `"desktop"` (the OS notification, the default), `"terminal"` (your terminal's own notification) and `"command"` (your own program).
+- `command` is the program and its arguments for `"command"`. `{title}`, `{text}` and `{path}` in the arguments are filled in. No shell runs it, so a value in a note never turns into a command.
+- When more rows than `group_over` (default 3) start to match in one check, they arrive as one notification. `group_text` is its text, with `{count}` replaced by the number of rows (default: "4 new").
+
+A row is notified once, when it starts to match. It stays quiet while it keeps matching, and is notified again if it stops matching and later matches again. When you add an item, the rows that already match are remembered without a notification, so nothing floods in. The record is kept in mdgrid's state folder, never in your notes.
+
+mdgrid checks when you open a table, after you save and every minute while it is open. If a notification can't be delivered, the reason shows at the bottom of the screen once, and the row is tried again at the next check.
+
+macOS, Windows and WSL show the desktop notification with what the OS already has; inside WSL it goes to Windows. On Linux it needs `notify-send`. For `"terminal"`, mdgrid sends the one signal your terminal understands (iTerm2, kitty, Ghostty, WezTerm, foot, Windows Terminal) and a bell to other terminals. Inside tmux, turn on `set -g allow-passthrough on`.
+
+```toml
+[[notify]]
+cond = "remind"
+text = "{title} ({remind})"
+to = ["desktop", "terminal"]
+
+[conditions.remind]
+expr = 'remind <= now() && status != "done"'
+```

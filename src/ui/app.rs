@@ -172,6 +172,8 @@ pub struct App {
     pub(crate) cond: super::conds::CondState,
     /// 通知の欄(notice。notices.rs)。
     pub(crate) notice: super::notices::NoticeState,
+    /// 新しく当たった行の知らせ(notify。notify.rs)。
+    pub(crate) notify: super::notify::NotifyState,
     /// notice.open-note: エディタで開く連絡のノート(表の行でないもの)。
     pub(crate) editor_note: Option<std::path::PathBuf>,
     /// ワークスペースを横断して探す(navigation.across-*。across.rs)。
@@ -395,6 +397,7 @@ impl App {
             only_problems: false,
             cond: Default::default(),
             notice: Default::default(),
+            notify: Default::default(),
             editor_note: None,
             across: Default::default(),
             prompt: None,
@@ -507,6 +510,7 @@ impl App {
         warnings.extend(keymap::rebind(&mut self.keys, &c.keys));
         warnings.extend(self.configure_conditions(c.conditions.clone()));
         self.configure_notices(c.notices.clone());
+        self.configure_notify(c.notify.clone());
         // navigation.across-option: 横断の検索は設定で入れたときだけ。
         self.across.on = c.search_across;
         self.scroll_into_view();

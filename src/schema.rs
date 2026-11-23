@@ -616,6 +616,17 @@ pub const ITEMS: &[Item] = &[
         ja: Msg::CfgNotices.ja(),
         msg: Msg::CfgNotices,
     },
+    Item {
+        path: "notify",
+        ty: "array of tables ([[notify]] with cond, scope, title, text, to, group_over, group_text, command)",
+        ty_ja: "表の並び([[notify]] の下に cond・scope・title・text・to・group_over・group_text・command)",
+        default: None,
+        example: "[[notify]]\ncond = \"remind\"\ntext = \"{title} ({remind})\"\nto = [\"desktop\", \"terminal\"]\n\n[conditions.remind]\nexpr = 'remind <= now() && status != \"done\"'",
+        scope: Scope::Global,
+        en: Msg::CfgNotify.en(),
+        ja: Msg::CfgNotify.ja(),
+        msg: Msg::CfgNotify,
+    },
 ];
 
 /// 実装が読む設定の項目の道筋の一覧(`ITEMS` の道筋。CLI-12)。
@@ -667,6 +678,7 @@ pub const GLOBAL_KEYS: &[&str] = &[
     "templates",
     "conditions",
     "notices",
+    "notify",
     "search",
 ];
 

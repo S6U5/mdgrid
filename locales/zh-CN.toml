@@ -249,6 +249,28 @@ NoticeNoNote = "缺少 {0}"
 NoticeNotText = "不读取 {0}（{1}）"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "还有 {0} 行"
+## notify.opt-in: [[notify]] の形。
+WantNotifyArray = "表的数组（[[notify]]）"
+RsnNotifyNeedCond = "需要 cond（命名条件的名字）（不使用）"
+## notify.item: {0} は前の項目と同じ条件の名前。
+RsnNotifyDupCond = "与前面的项目相同的条件“{0}”（不使用）"
+## notify.to: {0} は知らない出す先の名前。
+RsnNotifyUnknownTo = "未知的通知目标“{0}”（terminal、desktop、command 之一；不使用）"
+RsnNotifyNoCommand = "to 中有 command，但没有 command（程序和参数的数组）（不发送到命令）"
+## notify.group: {0} はまとめた行の数。
+NotifyGroup = "新增 {0} 条"
+## notify.fail: {0} は出す先の名前(terminal など)、{1} は理由。
+NotifyFailed = "无法通过 {0} 通知：{1}"
+## notify.state-broken: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateRebuilt = "无法读取通知记录 {0}，已不通知地重新记住当前匹配的行（{1}）"
+## notify.state: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateUnwritable = "无法写入通知记录 {0}（{1}）"
+## notify.fail: {0} は打ち切った秒数。
+NotifyTimeout = "{0} 秒内未结束，已停止"
+## notify.fail: {0} はプログラム、{1} は終了コード。
+NotifyExit = "{0} 以退出码 {1} 结束"
+## notify.fail: {0} はプログラム、{1} は理由。
+NotifyNoProgram = "无法运行 {0}（{1}）"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "标记中没有名为 {0} 的表格（现有表格：{1}）；已直接打开文件夹"
 RsnStarterUnknown = "没有名为 {0} 的预设；只按标记本身的内容打开（mdgrid --starters 可列出预设）"
@@ -2102,6 +2124,8 @@ CfgTemplates = "配置集的命名片段（[look]、[display]、[dates]、[edit]
 CfgConditions = "命名条件：写一次表达式（expr），按名称使用。可在任何表达式中用 cond(\"<名称>\")，\n用数字键（key = 1-9）只显示匹配的行，用于视图设置的筛选部分，\n以及用 hide = true 在所有表格中隐藏匹配的行。label 是显示的名称。"
 ## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
 CfgNotices = "标题栏上方的通知栏，只在写了项目时显示。计数项统计表格、工作区或指定表格中\n匹配某个命名条件（[conditions]）的行数；笔记项显示\n笔记正文的前几行。mdgrid --notices 输出相同的行。"
+## 設定の項目 `notify` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotify = "当某行新匹配命名条件（[conditions]）时，逐行通知到终端、桌面或你自己的命令。\n添加项目时已匹配的行会被静默记住；一次检查中新匹配的行超过 group_over 时合并为一条。\nmdgrid 打开期间由界面检查；mdgrid --notify 供定时任务检查一次。"
 
 # ---- stack: tables stacked top to bottom and pages (stack.*) ----
 SecStack = "上下排列的表格"

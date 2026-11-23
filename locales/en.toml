@@ -250,6 +250,28 @@ NoticeNoNote = "{0} is missing"
 NoticeNotText = "{0} is not read ({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "{0} more lines"
+## notify.opt-in: [[notify]] の形。
+WantNotifyArray = "an array of tables ([[notify]])"
+RsnNotifyNeedCond = "needs cond (the name of a named condition) (ignored)"
+## notify.item: {0} は前の項目と同じ条件の名前。
+RsnNotifyDupCond = "the same condition \"{0}\" as an earlier item (ignored)"
+## notify.to: {0} は知らない出す先の名前。
+RsnNotifyUnknownTo = "unknown destination \"{0}\" (one of terminal, desktop, command; ignored)"
+RsnNotifyNoCommand = "to has command but command (the program and its arguments) is missing (nothing is sent to a command)"
+## notify.group: {0} はまとめた行の数。
+NotifyGroup = "{0} new"
+## notify.fail: {0} は出す先の名前(terminal など)、{1} は理由。
+NotifyFailed = "could not notify via {0}: {1}"
+## notify.state-broken: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateRebuilt = "could not read the notification record {0}, so the rows matching now were remembered again without notifying ({1})"
+## notify.state: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateUnwritable = "cannot write the notification record {0} ({1})"
+## notify.fail: {0} は打ち切った秒数。
+NotifyTimeout = "stopped after {0} seconds"
+## notify.fail: {0} はプログラム、{1} は終了コード。
+NotifyExit = "{0} exited with code {1}"
+## notify.fail: {0} はプログラム、{1} は理由。
+NotifyNoProgram = "cannot run {0} ({1})"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "no table named {0} in the marker (tables: {1}); opened the folder as it is"
 RsnStarterUnknown = "no starter named {0}; opened with what the marker itself says (mdgrid --starters lists them)"
@@ -2103,6 +2125,8 @@ CfgTemplates = "Named pieces of a profile ([look], [display], [dates], [edit], [
 CfgConditions = "Named conditions: an expression (expr) written once and used by name. cond(\"<name>\") in any\nexpression, a digit key (key = 1-9) that shows only the matching rows, the filter section of the\nview settings, and hide = true to hide the matching rows in every table. label is the name shown."
 ## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
 CfgNotices = "The notice box above the header, shown only when items are written. A count item counts the rows that\nmatch a named condition ([conditions]) in the table, the workspace or named tables; a note item shows\nthe first lines of a note's body. mdgrid --notices prints the same lines."
+## 設定の項目 `notify` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotify = "Notify when a row newly matches a named condition ([conditions]), one notification per row, to the\nterminal, the desktop or your own command. Rows already matching when you add an item are remembered\nsilently; more new rows than group_over in one check become one notification. Checked while mdgrid is\nopen; mdgrid --notify checks once for a scheduled run."
 
 # ---- stack: tables stacked top to bottom and pages (stack.*) ----
 SecStack = "Stacked tables"
