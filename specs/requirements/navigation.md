@@ -1332,7 +1332,7 @@
   - Given: どこにも当たらない
   - When:
   - Then: 「当たる行がありません」。
-- Needs: stest
+- Needs: utest・stest
 
 #### 横断の検索の結果で行を選ぶと、その表を開き、同じ語で検索した状態でその行を選ぶべき
 `req~navigation.across-open~1` P1
