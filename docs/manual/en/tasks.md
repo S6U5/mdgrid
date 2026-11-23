@@ -139,6 +139,109 @@ The numbers are counted again when you open the table, after a save, when a note
 
 ![The notice box](images/notices.svg)
 
+## Get notified when a row matches
+
+Write `[[notify]]` in the config to get notified, one row at a time, when a row starts to match a [named condition](#filter-with-named-conditions). Put the time you want to be reminded in a `remind` column, and an OS notification comes at that time. The [configuration reference](../../config.md#notify--notifications) has every item.
+
+```toml
+[conditions.remind]
+expr = 'remind <= now() && status != "done"'
+label = "Remind"
+
+[[notify]]
+cond = "remind"
+text = "{title} (due {due})"
+to = ["desktop", "terminal"]
+```
+
+| Destination | Where it shows |
+|---|---|
+| `"desktop"` (the default) | the OS notification; macOS, Windows and WSL use what the OS already has, Linux uses `notify-send` |
+| `"terminal"` | your terminal's notification (iTerm2, kitty, Ghostty, WezTerm, foot, Windows Terminal); other terminals ring the bell. Inside tmux, turn on `set -g allow-passthrough on` |
+| `"command"` | your own command (`command = ["program", "{title}", "{text}"]`), for example a tool that sends it to your phone |
+
+A row is notified once, when it starts to match. It stays quiet while it keeps matching, and is notified again if it stops matching and later matches again. The rows that already match when you write the config are remembered without a notification. When four or more rows start to match at once, they arrive as one notification ("4 new"). While mdgrid is open, it checks when you open a table, after you save and every minute. If a notification can't be delivered, the reason shows at the bottom of the screen.
+
+On macOS the notifications come from Script Editor, on Windows and WSL from Windows PowerShell. If you don't see them, allow that app in the OS notification settings.
+
+**Get notified while mdgrid is closed**: `mdgrid --notify` checks once without the screen and sends the notifications. Register it with your OS scheduler, and notifications arrive while mdgrid is closed too. It shares its record with the open screen, so a row is never notified twice even when both check. If a notification can't be delivered, it prints the reason to standard error and exits with code 1.
+
+The examples below all run every 5 minutes. Replace `home` with the name of your workspace and `/path/to/mdgrid` with what `command -v mdgrid` (`where mdgrid` on Windows) prints. A scheduler doesn't read your shell's settings, so if your shell changes `XDG_CONFIG_HOME` or similar, pass the config file with `--config` as well.
+
+Linux (a systemd user timer): put two files in place and turn the timer on.
+
+```ini
+# ~/.config/systemd/user/mdgrid-notify.service
+[Unit]
+Description=mdgrid notify
+
+[Service]
+Type=oneshot
+ExecStart=/path/to/mdgrid -w home --notify
+```
+
+```ini
+# ~/.config/systemd/user/mdgrid-notify.timer
+[Unit]
+Description=mdgrid notify every 5 minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now mdgrid-notify.timer
+```
+
+From cron, OS notifications may not arrive, because cron's environment doesn't know where the desktop's notifications go (`DBUS_SESSION_BUS_ADDRESS`). If you use cron, pass it on the line (replace `1000` with what `id -u` prints).
+
+```sh
+*/5 * * * * DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /path/to/mdgrid -w home --notify
+```
+
+macOS (launchd): put `~/Library/LaunchAgents/local.mdgrid.notify.plist` in place and load it.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.mdgrid.notify</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/path/to/mdgrid</string>
+    <string>-w</string>
+    <string>home</string>
+    <string>--notify</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
+</dict>
+</plist>
+```
+
+```sh
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.mdgrid.notify.plist
+```
+
+Windows (Task Scheduler): register it from the Command Prompt. A console window flashes each time it runs.
+
+```bat
+schtasks /Create /TN "mdgrid notify" /SC MINUTE /MO 5 /TR "C:\path\to\mdgrid.exe -w home --notify"
+```
+
+WSL (from the Windows Task Scheduler): cron inside WSL only runs while WSL is up, so call it from the Windows side. `wslg.exe` is the `wsl.exe` that opens no window, and comes with current WSL. Replace `Ubuntu` with the name `wsl -l` shows.
+
+```bat
+schtasks /Create /TN "mdgrid notify" /SC MINUTE /MO 5 /TR "wslg.exe -d Ubuntu --exec /path/to/mdgrid -w home --notify"
+```
+
 ## Search across the workspace
 
 When you can't remember which table a row is in, search every table of the [workspace](#group-tables-into-workspaces) at once. Without a workspace open, mdgrid searches your [registered tables](#register-the-tables-you-use-and-switch-between-them). Turn it on in the config first; without it the palette doesn't show the command.

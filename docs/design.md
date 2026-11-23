@@ -865,6 +865,7 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **端末の合図**: 環境変数で端末を見分け、合図を1つだけ作る(`detect_term`)。kitty は OSC 99、iTerm2 は OSC 9、Ghostty・WezTerm・foot・Windows Terminal は OSC 777、ほかは BEL。tmux の中では TERM と TERM_PROGRAM が tmux のものになるので、外の端末が残す環境変数(`KITTY_WINDOW_ID`・`ITERM_SESSION_ID`・`GHOSTTY_RESOURCES_DIR`・`WEZTERM_PANE`・`WT_SESSION`)でも見分け、DCS `tmux;` で包む(ESC は2つに重ねる)。画面では、糸が作ったバイトを受け取り、描いたあとに端末へ書く(描く途中の出力に混ぜない)。
 - **OS の通知**: macOS は `osascript -`(台本は標準入力、題と文は引数)。Linux は `notify-send --app-name=mdgrid -- 題 文`。Windows と WSL は Windows PowerShell 5.1(`powershell.exe -EncodedCommand`)の WinRT のトーストで、登録の要らない PowerShell の AUMID で出す。題と文は環境変数で渡し、台本の文字に混ぜない(WSL は `WSLENV` に名前を足す)。WSL は Linux より先に、`WSL_DISTRO_NAME` かカーネルの版の名前(`/proc/sys/kernel/osrelease`)の `microsoft` で見分ける。却下: PowerShell 7(`pwsh`)は WinRT の型を読めない。却下: 通知の crate(依存を足さず、OS に元からある仕組みだけで出す)。
 - **プログラムの動かし方**: シェルを通さず、出力は捨て、`TIMEOUT`(10 秒。tbd~notify.timeout)で止める。Windows では窓を出さない旗(`CREATE_NO_WINDOW`)を付ける。値の制御文字は、どの出す先でも空白にしてから渡す(`clean`)。
+- **`--notify`**: 画面と同じ道(`open_app`)で App を作り、`notify_once` がその場で確かめる(表の読み方・範囲・いつも隠す条件は画面と同じ `notify_jobs`)。端末の合図は標準出力が端末のときだけ送る。理由は標準エラーに1行ずつ出し、届けられなかったか読めない表があれば終了コード 1。読めない表の理由には表の名前を添える。試験の出す先は、どの OS でも動くよう実行ファイル自身の `--new-note` にする(`tests/test_notify_e2e.rs`)。
 - **試験**: 画面の試験は出す先を `TestOutlet` に差し替え(`#[cfg(test)]`)、記録は一時のフォルダに置く(App の `notify.dir` の既定は None で、main が状態の置き場を入れる。試験が本物の置き場に書かないため)。時刻は `notify_start(today, now)` に渡す。
 
 ## ワークスペースを横断して探す(navigation.across-*。2026-11-21)

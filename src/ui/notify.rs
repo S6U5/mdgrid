@@ -47,6 +47,20 @@ pub(crate) struct TestOutlet {
     pub fail: Vec<notify::To>,
 }
 
+/// 項目ごとに範囲の表をファイルから読み、当たった行を選ぶ(`crate::notify_hits`)。
+fn checks(jobs: Vec<Job>, hides: &[Expr], today: i64, now: i64) -> Vec<Check> {
+    jobs.into_iter()
+        .map(|(item, label, e, places)| {
+            let tables = crate::notify_hits(&places, &e, hides, &item, &label, today, now);
+            Check {
+                item,
+                label,
+                tables,
+            }
+        })
+        .collect()
+}
+
 impl App {
     /// 設定の `[[notify]]` を当てる(App::configure から)。開いたときに1回確かめる。
     pub(crate) fn configure_notify(&mut self, items: Vec<Item>) {
@@ -90,44 +104,12 @@ impl App {
         };
         self.notify.want = false;
         self.notify.last = Some(Instant::now());
-        let jobs: Vec<Job> = self
-            .notify
-            .items
-            .iter()
-            .filter_map(|item| {
-                let e = self.cond.all.expr(&item.cond)?.clone();
-                let label = self
-                    .cond
-                    .all
-                    .get(&item.cond)
-                    .map_or_else(|| item.cond.clone(), |c| c.shown().to_string());
-                Some((item.clone(), label, e, self.notify_places(&item.scope)))
-            })
-            .collect();
-        // いつも隠す条件は、数字のキーで見せている間も当てる(画面の見せ方で知らせが変わらないように)。
-        let hides: Vec<Expr> = self
-            .cond
-            .all
-            .list()
-            .iter()
-            .filter(|c| c.hide)
-            .filter_map(|c| self.cond.all.expr(&c.name).cloned())
-            .collect();
+        let (jobs, hides) = self.notify_jobs();
         #[cfg(test)]
         let test = self.notify.test.clone();
         let (tx, rx) = mpsc::channel();
         std::thread::spawn(move || {
-            let checks: Vec<Check> = jobs
-                .into_iter()
-                .map(|(item, label, e, places)| {
-                    let tables = crate::notify_hits(&places, &e, &hides, &item, &label, today, now);
-                    Check {
-                        item,
-                        label,
-                        tables,
-                    }
-                })
-                .collect();
+            let checks = checks(jobs, &hides, today, now);
             let mut term = Vec::new();
             #[cfg(test)]
             if let Some(t) = test {
@@ -153,6 +135,59 @@ impl App {
             let _ = tx.send((report, term));
         });
         self.notify.rx = Some(rx);
+    }
+
+    /// notify.cli: その場で1回確かめて鳴らす(`--notify`)。端末の合図は `terminal` に渡す。項目が無ければ
+    /// 何もせず、記録の置き場が無ければ理由を返す。
+    pub(crate) fn notify_once(
+        &self,
+        today: i64,
+        now: i64,
+        terminal: &mut dyn FnMut(Vec<u8>) -> Result<(), String>,
+    ) -> Report {
+        if self.notify.items.is_empty() {
+            return Report::default();
+        }
+        let Some(dir) = self.notify.dir.clone() else {
+            return Report {
+                failures: vec![mdgrid::i18n::Msg::NotifyNoStateDir.text().to_string()],
+                ..Report::default()
+            };
+        };
+        let (jobs, hides) = self.notify_jobs();
+        let checks = checks(jobs, &hides, today, now);
+        let out = notify::Outlets::current();
+        notify::run(&dir, &checks, &mut |to, item, note| {
+            out.send(to, item, note, terminal)
+        })
+    }
+
+    /// 確かめる項目(条件の式・見せる名前・範囲の表)と、いつも隠す条件の式。いつも隠す条件は、数字のキーで
+    /// 見せている間も当てる(画面の見せ方で知らせが変わらないように。`--notify` と同じ行を見る)。
+    fn notify_jobs(&self) -> (Vec<Job>, Vec<Expr>) {
+        let jobs = self
+            .notify
+            .items
+            .iter()
+            .filter_map(|item| {
+                let e = self.cond.all.expr(&item.cond)?.clone();
+                let label = self
+                    .cond
+                    .all
+                    .get(&item.cond)
+                    .map_or_else(|| item.cond.clone(), |c| c.shown().to_string());
+                Some((item.clone(), label, e, self.notify_places(&item.scope)))
+            })
+            .collect();
+        let hides = self
+            .cond
+            .all
+            .list()
+            .iter()
+            .filter(|c| c.hide)
+            .filter_map(|c| self.cond.all.expr(&c.name).cloned())
+            .collect();
+        (jobs, hides)
     }
 
     /// 確かめている途中か。

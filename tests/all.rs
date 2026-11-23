@@ -149,6 +149,8 @@ mod test_note_path;
 mod test_note_trash_e2e;
 #[path = "test_notice_e2e.rs"]
 mod test_notice_e2e;
+#[path = "test_notify_e2e.rs"]
+mod test_notify_e2e;
 #[path = "test_open_md_file.rs"]
 mod test_open_md_file;
 #[path = "test_pages.rs"]

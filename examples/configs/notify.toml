@@ -1,0 +1,20 @@
+# Notifications: tell me when a task becomes late, one task at a time.
+# Try it from the repository root:
+#   mdgrid --config examples/configs/notify.toml examples/studio/Tasks
+# The first check only remembers the rows that already match, so nothing comes up
+# until a task newly becomes late. `mdgrid --notify` does the same check once, for a
+# scheduled run while mdgrid is closed. Your own config lives at
+# $XDG_CONFIG_HOME/mdgrid/config.toml.
+
+[conditions.late]
+expr = 'due < today() && status != "done"'
+label = "Late"
+key = 2
+
+# The title and text take column values: {due}, {owner}, {file.basename} and so on.
+# "desktop" is the OS notification; "terminal" is your terminal's own notification.
+[[notify]]
+cond = "late"
+title = "Late: {file.basename}"
+text = "Was due {due}"
+to = ["desktop", "terminal"]

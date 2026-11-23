@@ -77,6 +77,7 @@ enum Command {
     Count(Vec<PathBuf>, Vec<String>),
     /// notice.cli: 画面を出さずに、通知の欄の項目を出す(開くパス)。
     Notices(Vec<PathBuf>),
+    Notify(Vec<PathBuf>),
     /// OUT-3: 画面(`/dev/tty`)で選んだ行のパスか列の値を出す(開くパスと出すもの)。
     Pick(Vec<PathBuf>, Pick),
     /// WS-3・WS-7: ワークスペースの操作(画面を出さない)。
@@ -154,7 +155,7 @@ struct Cli {
     #[arg(long)]
     raw: bool,
     /// ワークスペースのページ([[page]])を、表を縦に並べた形で開く(stack.page-cli)
-    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note"])]
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note"])]
     page: Option<String>,
     /// 読むだけで開く(編集も保存もしない)
     #[arg(long)]
@@ -166,13 +167,13 @@ struct Cli {
     #[arg(long = "continue", conflicts_with_all = ["paths", "view", "workspace", "raw", "page", "print", "pick", "check", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     resume: bool,
     /// その名前で保存したセッション(sessions.toml)の表示で開く(表・ビュー・絞り込み・並び・列。cli.session-save)
-    #[arg(short = 's', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "raw", "resume", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(short = 's', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     session: Option<String>,
     /// 保存したセッション(sessions.toml)の名前と開くフォルダを1行ずつ出す(cli.session-screen-list)
-    #[arg(long, conflicts_with_all = ["paths", "session", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(long, conflicts_with_all = ["paths", "session", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     sessions: bool,
     /// 画面で開いた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の1行ずつ出す(cli.recent-cli)
-    #[arg(long, conflicts_with_all = ["paths", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(long, conflicts_with_all = ["paths", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     recent: bool,
     /// この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)
     #[arg(long, value_name = Msg::ValuePath.ja(), allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
@@ -204,6 +205,9 @@ struct Cli {
     /// 画面を出さずに、通知の欄([[notices]])の項目を1行ずつ出す(notice.cli)
     #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply", "count"])]
     notices: bool,
+    /// 画面を出さずに、[[notify]] の項目を1回確かめて、新しく当たった行を知らせる(notify.cli)
+    #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply", "count", "notices"])]
+    notify: bool,
     /// --print の形の CSV・JSON(- で標準入力)の値をノートに当てる(既定は差分だけ。--yes で書く)
     #[arg(long, value_name = Msg::ValuePath.ja(), conflicts_with_all = ["print", "pick"], allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
     apply: Option<PathBuf>,
@@ -460,6 +464,8 @@ impl Cli {
                 Command::Count(paths, self.filter)
             } else if self.notices {
                 Command::Notices(paths)
+            } else if self.notify {
+                Command::Notify(paths)
             } else if self.print {
                 Command::Print(
                     paths,
@@ -490,6 +496,7 @@ impl Cli {
             (self.check, "--check"),
             (self.count, "--count"),
             (self.notices, "--notices"),
+            (self.notify, "--notify"),
             (self.with_path, "--with-path"),
             (self.workspaces, "--workspaces"),
             (self.init_workspace, "--init-workspace"),
@@ -1132,6 +1139,17 @@ fn main() -> ExitCode {
             let (p, opts) = marker_for_print(p, &opts, use_marker);
             return notices_cli(&md_to_folder(p).0, &opts);
         }
+        Ok(Command::Notify(p)) => {
+            let p = match &opts.workspace {
+                Some(name) => match workspace_paths(name, p, no_args) {
+                    Ok(p) => p,
+                    Err(e) => return fail(&e),
+                },
+                None => p,
+            };
+            let (p, opts) = marker_for_print(p, &opts, use_marker);
+            return notify_cli(&md_to_folder(p).0, &opts);
+        }
         Ok(Command::Check(p)) => {
             // CLI-15: 渡した `.md` のノートだけを確かめる(`--print` と同じ。pre-commit で変えたノートだけを渡せる)。
             let only = md_files(&p);
@@ -1745,6 +1763,42 @@ fn notices_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
     emit(Ok(out.into_bytes()))
 }
 
+/// notify.cli・notify.fail: 画面を出さずに `[[notify]]` の項目を1回確かめて鳴らす。表は画面と同じ道で開く
+/// (範囲も同じ)。端末の合図は標準出力が端末のときだけ送り、ほかは何も出さない。届けられなかった出す先と
+/// 読めない表の理由は標準エラーに1行ずつ出して終了コード 1、記録を作り直した旨は標準エラーに出して 0。
+fn notify_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
+    let opts = Options {
+        no_color: true,
+        readonly: true,
+        ..opts.clone()
+    };
+    let (app, _) = match open_app(paths, opts.view.as_deref(), &opts, true, Vec::new()) {
+        Ok(a) => a,
+        Err(e) => return fail(&e),
+    };
+    let (today, now) = mdgrid::clock::today_now(|k| std::env::var(k).ok());
+    let tty = io::stdout().is_terminal();
+    let report = app.notify_once(today, now, &mut |b| {
+        // notify.terminal: パイプやファイルには送らない(届けられなかったとは数えない)。
+        if tty {
+            let mut out = io::stdout();
+            out.write_all(&b)
+                .and_then(|()| out.flush())
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    });
+    let mut err = io::stderr();
+    for line in report.failures.iter().chain(&report.warnings) {
+        let _ = writeln!(err, "{}", ui::width::sanitize(line));
+    }
+    if report.failures.is_empty() {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
+    }
+}
+
 /// notice.scope・notice.count-rows・notice.unreadable: 表ごとに、表の行(`.base` の最上位の絞り込みと、
 /// いつも隠す条件 `hides` のあと)のうち `cond` に当たる行を数える。開けない表は理由にする。
 /// 通知の欄(裏の糸)と `--notices` が使う。
@@ -1801,7 +1855,7 @@ pub(crate) fn notify_hits(
     use mdgrid::notify::{fill, Hit};
     places
         .iter()
-        .map(|(_, paths)| {
+        .map(|(name, paths)| {
             let key = paths
                 .iter()
                 .map(|p| p.display().to_string())
@@ -1867,7 +1921,8 @@ pub(crate) fn notify_hits(
                     })
                     .collect()
             });
-            (key, hits)
+            // notify.fail: 読めない表は、どの表かが分かるよう名前を添える。
+            (key, hits.map_err(|e| format!("{name}: {e}")))
         })
         .collect()
 }
