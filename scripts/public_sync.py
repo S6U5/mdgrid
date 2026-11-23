@@ -322,10 +322,17 @@ def cmd_export(a, st):
             f"{a.source} に {st.branch} の取り込みが入っていない。先に {st.branch} をマージする"
         )
     remote_branch = f"refs/remotes/{st.remote}/{branch}"
-    ours = rev(remote_branch) or rev(st.main)
+    main = rev(st.main)
+    ours = rev(remote_branch) or main
+    # 前の書き出しのあとに公開リポの main が進んだ(ほかの PR のマージ)ときは、main も親にする。
+    # 親に無いと、PR の差分が古い main から数えられ、main に入った変更まで PR に並ぶ
+    # (squash のマージは、書き出しのブランチの履歴に入らないため)
+    parents = [ours]
+    if git("merge-base", "--is-ancestor", main, ours, check=False).returncode != 0:
+        parents.append(main)
     # 書き出す木 = 伏せ字にした手元の木。取り込み済みなので、公開リポの側だけの変更は無い
     tree = redacted_tree(source, st)
-    if tree == out("rev-parse", ours + "^{tree}"):
+    if tree == out("rev-parse", ours + "^{tree}") and len(parents) == 1:
         print(
             "書き出すものがない(%s と同じ)"
             % (branch if rev(remote_branch) else "公開リポの main")
@@ -338,13 +345,20 @@ def cmd_export(a, st):
             + "\n  ".join(bad[:30])
         )
     print(out("diff", "--stat", ours, tree))
+    if len(parents) > 1:
+        print(
+            f"公開リポの main({main[:9]})も親にする(前の書き出しのあとに main が進んだ)。"
+            "PR に出る main からの差:"
+        )
+        print(out("diff", "--stat", main, tree))
     if a.dry_run:
         print(f"試しだけ。木 {tree}(見る: git diff {ours[:9]} {tree[:9]})")
         return 0
     if not a.message:
         raise Fail("-m でコミットの文を渡す")
     msg = "\n\n".join(a.message) + "\n"
-    commit = out("commit-tree", tree, "-p", ours, input=msg.encode())
+    parent_args = [arg for p in parents for arg in ("-p", p)]
+    commit = out("commit-tree", tree, *parent_args, input=msg.encode())
     print(f"push: {commit[:9]} → {st.remote} {branch}")
     p = subprocess.run(
         ["git", "push", st.remote, f"{commit}:refs/heads/{branch}"], check=False
