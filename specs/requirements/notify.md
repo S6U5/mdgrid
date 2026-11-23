@@ -202,7 +202,7 @@ macOS・Linux・Windows と、WSL の中の mdgrid で、同じ設定が動く�
   - Given: 新しく当たったノート a
   - When: `--notify` で鳴らす
   - Then: ノートのフォルダのファイルの数とバイトは変わらない。
-- Needs: stest
+- Needs: utest・stest
 
 #### 記録が読めないときは、初めて確かめたとき(notify.first-silent)と同じく黙って覚え直し、警告を1回出すべき
 `req~notify.state-broken~1` P1
@@ -215,7 +215,7 @@ macOS・Linux・Windows と、WSL の中の mdgrid で、同じ設定が動く�
   - Given: その `--notify` のあと
   - When: 4つ目の行が新しく当たって `--notify`
   - Then: 4つ目だけを鳴らす。
-- Needs: stest
+- Needs: utest・stest
 
 ### 出す先
 
