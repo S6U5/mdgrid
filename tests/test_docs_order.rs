@@ -109,6 +109,19 @@ fn manual_pages(lang: &str) -> Vec<PathBuf> {
     v
 }
 
+/// ブログの記事(docs/blog/<言語>/*.md)。置き場が無ければ空。
+fn blog_posts(lang: &str) -> Vec<PathBuf> {
+    let Ok(dir) = std::fs::read_dir(root().join("docs/blog").join(lang)) else {
+        return Vec::new();
+    };
+    let mut v: Vec<PathBuf> = dir
+        .map(|e| e.unwrap().path())
+        .filter(|p| p.extension().is_some_and(|x| x == "md"))
+        .collect();
+    v.sort();
+    v
+}
+
 /// 英語の語を、語の頭で区切って(前が英字でない)、大文字小文字を問わず探す。
 /// 後ろは区切らないので、powerfully・seamlessly・leverages のような活用も拾う。
 fn has_en_word(line: &str, word: &str) -> bool {
@@ -189,11 +202,12 @@ fn test_sr_50_pages_py_pages_in_reading_order() {
 
 #[test]
 fn test_sr_50_no_hype_words_ja() {
-    // [utest -> req~screen.docs-order-style~1] 日本語の説明書(docs/manual/ja/*.md)・README.ja.md・scripts/pages.py の日本語の文言に、
-    // 大げさな語(強力・シームレス・直感的・画期的・最適・豊富)が無い。見つけた行を全部出す。
+    // [utest -> req~screen.docs-order-style~1, req~site.blog-style~1] 日本語の説明書(docs/manual/ja/*.md)・README.ja.md・scripts/pages.py の日本語の文言・
+    // 日本語のブログの記事(docs/blog/ja/*.md)に、大げさな語(強力・シームレス・直感的・画期的・最適・豊富)が無い。見つけた行を全部出す。
     let mut files = manual_pages("ja");
     files.push(root().join("README.ja.md"));
     files.push(root().join("scripts/pages.py"));
+    files.extend(blog_posts("ja"));
     let found = hits(&files, &JA_WORDS, |line, w| line.contains(w));
     assert!(
         found.is_empty(),
@@ -205,12 +219,13 @@ fn test_sr_50_no_hype_words_ja() {
 
 #[test]
 fn test_sr_50_no_hype_words_en() {
-    // [utest -> req~screen.docs-order-style~1] 英語の説明書(docs/manual/en/*.md)・README.md・scripts/pages.py に、大げさな語
-    // (seamless・robust・powerful・intuitive・leverage・empower・delve・crucial・pivotal。
+    // [utest -> req~screen.docs-order-style~1, req~site.blog-style~1] 英語の説明書(docs/manual/en/*.md)・README.md・scripts/pages.py・
+    // 英語のブログの記事(docs/blog/en/*.md)に、大げさな語(seamless・robust・powerful・intuitive・leverage・empower・delve・crucial・pivotal。
     // 単語として、大文字小文字は問わず、活用も含む)が無い。見つけた行を全部出す。
     let mut files = manual_pages("en");
     files.push(root().join("README.md"));
     files.push(root().join("scripts/pages.py"));
+    files.extend(blog_posts("en"));
     let found = hits(&files, &EN_WORDS, has_en_word);
     assert!(
         found.is_empty(),

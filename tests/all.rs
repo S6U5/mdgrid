@@ -153,6 +153,8 @@ mod test_notice_e2e;
 mod test_open_md_file;
 #[path = "test_pages.rs"]
 mod test_pages;
+#[path = "test_pages_blog.rs"]
+mod test_pages_blog;
 #[path = "test_pages_check.rs"]
 mod test_pages_check;
 #[path = "test_pages_images.rs"]

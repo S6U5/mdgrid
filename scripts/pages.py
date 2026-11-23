@@ -2,6 +2,10 @@
 """GitHub Pages のサイトを作る(日英)。
 
     python3 scripts/pages.py [出力のフォルダ(既定 site)] [--shots 画面のフォルダ(既定 target/shots)]
+                             [--blog-src 記事の置き場(既定 docs/blog)] [--blog-only]
+
+--blog-only は、ブログと言語の入口とサイトの地図だけを作る(説明書・画面の写しを作らず、mdbook も撮った画面も
+要らない)。記事を書きながら見るときと、試験(tests/test_pages_blog.rs)に使う。
 
 先に画面を撮る(本物の mdgrid を疑似端末で動かす。cargo build --release のあと):
 
@@ -16,6 +20,9 @@
 - catalog/      見た目のカタログ(docs/catalog/index.html をそのまま。SR-38)
 - gallery.html  前の画面の一覧の URL(言語を決めて ja/・en/ の画面の一覧へ移る)
 - images/ja・en 撮った画面の SVG
+- ja/blog/・en/blog/  ブログ(docs/blog/<言語>/*.md。記事の一覧・記事のページ・Atom のフィード feed.xml)。
+                blog/ は言語を決めて移るページ。公開する記事(draft: true でない記事)がどの言語にも無いあいだは作らず、
+                入口からのリンクも出さない
 - sitemap.xml   検索エンジンに出すサイトの地図(公開するページだけ。検索の管理に直に出す)
 
 どのページの head にも、正規の URL(canonical)と、貼ったときのカードのタグ(OGP・Twitter Card)を入れる。
@@ -27,6 +34,7 @@
 画面の画像はリポに入れない(撮るたびに履歴が太るため)。mdbook が要る。Python 3.11 以上(tomllib)。
 """
 
+import datetime
 import html
 import json
 import os
@@ -37,11 +45,14 @@ import sys
 import urllib.parse
 from pathlib import Path
 
+import mdhtml
 import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
 LANGS = ("ja", "en")
 REPO = "https://github.com/S6U5/mdgrid"
+# ブログの記事の置き場(site.blog-post-file)
+BLOG_SRC = ROOT / "docs" / "blog"
 
 TEXT = {
     "ja": {
@@ -69,6 +80,14 @@ TEXT = {
         "copy": "写す",
         "copied": "写した",
         "mode": "明るい・暗いを切り替える",
+        "blog": "ブログ",
+        "blog_desc": "そのときの話題から、mdgrid を使う理由と使い方を書いた記事です。",
+        "blog_empty": "日本語の記事はまだありません。",
+        "blog_feed": "mdgrid のブログ",
+        "feed": "フィード(Atom)",
+        "updated": "更新",
+        "to_index": "記事の一覧へ",
+        "to_home": "mdgrid の入口へ",
     },
     "en": {
         "title": "mdgrid",
@@ -95,6 +114,14 @@ TEXT = {
         "copy": "Copy",
         "copied": "Copied",
         "mode": "Switch light and dark",
+        "blog": "Blog",
+        "blog_desc": "Posts on why and how to use mdgrid, each starting from a current topic.",
+        "blog_empty": "No posts in English yet.",
+        "blog_feed": "mdgrid blog",
+        "feed": "Feed (Atom)",
+        "updated": "updated",
+        "to_index": "All posts",
+        "to_home": "mdgrid home",
     },
 }
 
@@ -119,6 +146,7 @@ DEMOS = [
 # 見た目(CSS)と入口の動き(JS)は scripts/site/ に置き、各ページに埋める(1枚の HTML で完結し、外から何も読まない)。
 CSS = (ROOT / "scripts/site/site.css").read_text(encoding="utf-8")
 LANDING_JS = (ROOT / "scripts/site/landing.js").read_text(encoding="utf-8")
+BLOG_CSS = (ROOT / "scripts/site/blog.css").read_text(encoding="utf-8")
 
 SITE = "https://s6u5.github.io/mdgrid/"
 NAMES = {"ja": "日本語", "en": "English"}
@@ -235,9 +263,10 @@ def page(
     script: str = "",
     top: str = "",
     wide: bool = False,
+    css: str = "",
 ) -> str:
     """1枚のページ。`url` はそのページの公開の URL(canonical とカードのタグに入れる)。`top` は上の帯、
-    `wide` は幅いっぱいの段を自分で持つページ(入口)。"""
+    `wide` は幅いっぱいの段を自分で持つページ(入口)。`css` は site.css の後ろに足す見た目(ブログのページ)。"""
     main = body if wide else f'<div class="wrap">\n{body}\n</div>'
     GA = ANALYTICS + "\n" if ANALYTICS else ""
     head = social(lang, title, desc, url) + ("\n" + head if head else "")
@@ -251,7 +280,7 @@ def page(
 <link rel="icon" href="{FAVICON}">
 {GA}{head}
 <script>{EARLY}</script>
-<style>{CSS}</style>
+<style>{CSS}{css}</style>
 </head>
 <body>
 {top}
@@ -276,11 +305,10 @@ def lang_bar(lang: str, file: str) -> str:
     return f'<div class="bar"><span class="muted">{t["lang"]}</span><div class="chips">{"".join(items)}</div></div>'
 
 
-def build(out: Path, shots_dir: Path) -> None:
-    scen = tomllib.loads(
-        (ROOT / "docs/manual-scenarios.toml").read_text(encoding="utf-8")
-    )
+def build(out: Path, shots_dir: Path, blog_src: Path = BLOG_SRC) -> None:
     verify = verification()  # 値がおかしければ、作り始める前に止める
+    posts = blog_posts(blog_src)  # 記事の誤りも、作り始める前に止める
+    has_blog = any(posts.values())
     global ANALYTICS
     ANALYTICS = analytics()
     if out.exists():
@@ -304,11 +332,8 @@ def build(out: Path, shots_dir: Path) -> None:
         catalog = catalog.replace("</head>", ANALYTICS + "\n</head>", 1)
     (out / "catalog/index.html").write_text(catalog, encoding="utf-8")
     shots = []
-    for s in scen["shot"]:
+    for s in scenes():
         sid = s["id"]
-        # README の動きの GIF を作るためのコマ(gif-*)は、画面の一覧に出さない。
-        if sid.startswith("gif-"):
-            continue
         missing = [
             l for l in LANGS if not (shots_dir / l / "images" / f"{sid}.svg").exists()
         ]
@@ -348,8 +373,13 @@ def build(out: Path, shots_dir: Path) -> None:
         )
     for l in LANGS:
         (out / l).mkdir()
-        (out / l / "index.html").write_text(landing(l, shown, shots), encoding="utf-8")
-        (out / l / "gallery.html").write_text(gallery(l, shots), encoding="utf-8")
+        (out / l / "index.html").write_text(
+            landing(l, shown, shots, has_blog), encoding="utf-8"
+        )
+        (out / l / "gallery.html").write_text(
+            gallery(l, shots, has_blog), encoding="utf-8"
+        )
+    blog(out, blog_src, posts)
     (out / "index.html").write_text(chooser(verify=verify), encoding="utf-8")
     # 前の画面の一覧の URL(README の古いリンク)は、言語を決めて新しい URL へ。
     (out / "gallery.html").write_text(chooser("gallery.html"), encoding="utf-8")
@@ -400,9 +430,9 @@ def analytics() -> str:
     return GTAG % (HOST, v, v)
 
 
-# サイトの地図に載せないページ: 言語を選んで移るだけの入口と前の URL(検索の取得は en/ へ移されるので、
+# サイトの地図に載せないページ: 言語を選んで移るだけの入口と前の URL とブログの入口(検索の取得は en/ へ移されるので、
 # 移る先の ja/・en/ を載せる)と、mdBook の目次の部品・404 のページ(印刷の版と目次は noindex でも外れる)。
-NOT_IN_SITEMAP = {"index.html", "gallery.html"}
+NOT_IN_SITEMAP = {"index.html", "gallery.html", "blog/index.html"}
 BOOK_PARTS = {"toc.html", "404.html"}
 
 
@@ -444,12 +474,13 @@ OG_ALT = {
 }
 
 
-def chooser(file: str = "", verify: str = "") -> str:
+def chooser(file: str = "", verify: str = "", up: str = "") -> str:
     """入口(x-default): 覚えた選択か、?lang= か、ブラウザの言語(navigator.languages)で /ja/・/en/ へ移る。
     合わなければ選ぶ画面のまま。移るのは location.replace(戻るで戻されない)。JS が無くても両方へのリンクが見える。
-    `verify` は head に足す検索の管理の確認のタグ(入口だけ)。"""
+    `verify` は head に足す検索の管理の確認のタグ(入口だけ)。`up` は今のページからサイトの根への道筋
+    (blog/ のページは ../。site.blog-root)。"""
     links = "".join(
-        f'<a class="card" href="{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}"><h2>{NAMES[l]}</h2>'
+        f'<a class="card" href="{up}{l}/{file}" hreflang="{l}" lang="{l}" data-pick="{l}"><h2>{NAMES[l]}</h2>'
         f'<p class="muted">{html.escape(TEXT[l]["lead"])}</p></a>'
         for l in LANGS
     )
@@ -462,7 +493,7 @@ def chooser(file: str = "", verify: str = "") -> str:
     var nav = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
     for (var i = 0; i < nav.length && !pick; i++) {{ var p = String(nav[i]).slice(0, 2).toLowerCase(); if (langs.indexOf(p) >= 0) pick = p; }}
   }}
-  if (pick) location.replace(pick + "/{file}" + location.hash);
+  if (pick) location.replace("{up}" + pick + "/{file}" + location.hash);
 }})();
 """
     body = f"""
@@ -473,9 +504,13 @@ def chooser(file: str = "", verify: str = "") -> str:
     head = alternates("ja/" + file, SITE + file)
     if verify:
         head = verify + "\n" + head
-    # 題には探す語を入れる(根の入口は検索の結果に出る)。前の画面の一覧の URL は画面の一覧の題。
-    title = f"{TEXT['en']['gallery']} · mdgrid" if file else ROOT_TITLE
-    desc = TEXT["en"]["gallery_desc"] if file else TEXT["en"]["lead"]
+    # 題には探す語を入れる(根の入口は検索の結果に出る)。前の画面の一覧の URL は画面の一覧の題、ブログはブログの題。
+    en = TEXT["en"]
+    title, desc = {
+        "": (ROOT_TITLE, en["lead"]),
+        "gallery.html": (f"{en['gallery']} · mdgrid", en["gallery_desc"]),
+        "blog/": (f"{en['blog']} · mdgrid", en["blog_desc"]),
+    }[file]
     return page("en", title, body, desc, SITE + file, head, route)
 
 
@@ -999,18 +1034,21 @@ def cmd(text: str, lang: str, prompt: str = "$ ") -> str:
     )
 
 
-def nav(lang: str, file: str) -> str:
-    """どのページにも同じ上の帯(説明書・カタログ・画面の一覧・GitHub、言語と明暗の切り替え、はじめかた)。"""
+def nav(lang: str, file: str, blog: bool = False, up: str = "") -> str:
+    """どのページにも同じ上の帯(説明書・カタログ・画面の一覧・ブログ・GitHub、言語と明暗の切り替え、はじめかた)。
+    `file` は言語の切り替えの先の、言語のフォルダ(ja/・en/)からの道筋。`up` は今のページから言語のフォルダへの
+    道筋(記事のページは ../)。`blog` は公開する記事があるとき(site.blog-link)。"""
     t = TEXT[lang]
     o = other_lang(lang)
+    blog_link = f'<a href="{up}blog/">{t["blog"]}</a>' if blog else ""
     return (
-        f'<nav class="top"><a class="brand" href="./">{LOGO}mdgrid</a>'
-        f'<div class="links"><a href="../manual/{lang}/">{t["manual"]}</a><a href="../catalog/?lang={lang}">{t["catalog"]}</a>'
-        f'<a href="gallery.html">{t["gallery"]}</a><a href="{REPO}">GitHub</a></div>'
+        f'<nav class="top"><a class="brand" href="{up or "./"}">{LOGO}mdgrid</a>'
+        f'<div class="links"><a href="{up}../manual/{lang}/">{t["manual"]}</a><a href="{up}../catalog/?lang={lang}">{t["catalog"]}</a>'
+        f'<a href="{up}gallery.html">{t["gallery"]}</a>{blog_link}<a href="{REPO}">GitHub</a></div>'
         f'<span class="grow"></span><div class="tools">'
-        f'<a class="opt" href="../{o}/{file}" hreflang="{o}" lang="{o}" data-pick="{o}">{NAMES[o]}</a>'
+        f'<a class="opt" href="{up}../{o}/{file}" hreflang="{o}" lang="{o}" data-pick="{o}">{NAMES[o]}</a>'
         f'<button class="opt mode" id="mode" type="button" aria-label="{t["mode"]}" title="{t["mode"]}">{ICON_MODE}</button>'
-        f'<a class="go" href="../manual/{lang}/getting-started.html">{t["start"]}</a></div></nav>'
+        f'<a class="go" href="{up}../manual/{lang}/getting-started.html">{t["start"]}</a></div></nav>'
     )
 
 
@@ -1074,7 +1112,7 @@ def model(lang: str, notes: list) -> str:
 </div>"""
 
 
-def landing(lang: str, shown, shots) -> str:
+def landing(lang: str, shown, shots, blog: bool = False) -> str:
     t, h = TEXT[lang], HOME[lang]
     i = 1 if lang == "ja" else 2
     img = lambda sid: f"../images/{lang}/{sid}.svg"
@@ -1283,7 +1321,7 @@ def landing(lang: str, shown, shots) -> str:
         f"{SITE}{lang}/",
         alternates("ja/") + "\n" + software_ld(lang),
         LANDING_JS,
-        top=nav(lang, ""),
+        top=nav(lang, "", blog),
         wide=True,
     )
 
@@ -1316,7 +1354,7 @@ def software_ld(lang: str) -> str:
     )
 
 
-def gallery(lang: str, shots) -> str:
+def gallery(lang: str, shots, blog: bool = False) -> str:
     t = TEXT[lang]
     figs = []
     for s in shots:
@@ -1351,7 +1389,7 @@ def gallery(lang: str, shots) -> str:
         f"{SITE}{lang}/gallery.html",
         alternates("ja/gallery.html", SITE + "gallery.html"),
         FIND,
-        top=nav(lang, "gallery.html"),
+        top=nav(lang, "gallery.html", blog),
     )
 
 
@@ -1570,11 +1608,255 @@ def book(lang: str, dest: Path, images: Path) -> None:
     )
 
 
+# --- ブログ(site.blog-*) ---------------------------------------------------
+# 記事は docs/blog/<言語>/<名前>.md に1記事1ファイル。画像は docs/blog/images/ に置き、記事からは images/<名前> で指す。
+# tbd~site.blog-url: URL の形は仮決め。一覧は <言語>/blog/、記事は <言語>/blog/<名前>.html、フィードは
+# <言語>/blog/feed.xml、言語を決めて移るページは blog/。
+POST_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
+POST_KEYS = ("title", "date", "description")
+
+
+def front(text: str) -> tuple:
+    """記事のフロントマター(`鍵: 値` の行だけを読む。値の両端の引用符は外す)と本文。"""
+    text = text.replace("\r\n", "\n")
+    if not text.startswith("---\n"):
+        return {}, text
+    end = text.find("\n---", 3)
+    if end < 0:
+        return {}, text
+    meta = {}
+    for line in text[4:end].split("\n"):
+        m = re.match(r"([A-Za-z_][\w-]*):\s*(.*?)\s*$", line)
+        if not m:
+            continue
+        v = m.group(2)
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            v = v[1:-1]
+        meta[m.group(1)] = v
+    return meta, text[end + 4 :].lstrip("\n")
+
+
+def is_date(v: str) -> bool:
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        return False
+    try:
+        datetime.date.fromisoformat(v)
+    except ValueError:
+        return False
+    return True
+
+
+def blog_posts(src: Path) -> dict:
+    """<src>/<言語>/*.md を読んで確かめ、言語ごとに公開する記事(下書きを除く)を date の新しい順で返す。
+    名前・足りない鍵・日付の形の誤りは、全部並べて止める(site.blog-post-file)。下書きも確かめる。"""
+    posts = {l: [] for l in LANGS}
+    errors = []
+    for l in LANGS:
+        d = src / l
+        if not d.is_dir():
+            continue
+        for f in sorted(d.glob("*.md")):
+            where = f.relative_to(ROOT) if f.is_relative_to(ROOT) else f
+            if not POST_NAME.fullmatch(f.stem):
+                errors.append(
+                    f"{where}: 記事の名前は英小文字・数字・- だけにする(名前が記事の URL になる)"
+                )
+                continue
+            meta, body = front(f.read_text(encoding="utf-8"))
+            lacks = [k for k in POST_KEYS if not meta.get(k)]
+            if lacks:
+                errors.append(f"{where}: フロントマターに {'・'.join(lacks)} が無い")
+                continue
+            bad = [k for k in ("date", "updated") if k in meta and not is_date(meta[k])]
+            if bad:
+                errors.append(
+                    f"{where}: {'・'.join(bad)} は YYYY-MM-DD の形の日付にする"
+                )
+                continue
+            if meta.get("draft", "").lower() == "true":
+                continue
+            posts[l].append(
+                {
+                    "name": f.stem,
+                    "title": meta["title"],
+                    "date": meta["date"],
+                    "updated": meta.get("updated", ""),
+                    "description": meta["description"],
+                    "body": body,
+                }
+            )
+    if errors:
+        raise SystemExit("ブログの記事に誤りがある:\n  " + "\n  ".join(errors))
+    for l in LANGS:
+        posts[l].sort(key=lambda p: (p["date"], p["name"]), reverse=True)
+    return posts
+
+
+def blog_feed_link(lang: str) -> str:
+    t = TEXT[lang]
+    return f'<link rel="alternate" type="application/atom+xml" title="{t["blog_feed"]}" href="{SITE}{lang}/blog/feed.xml">'
+
+
+def blog_index(lang: str, posts: list) -> str:
+    """言語ごとの記事の一覧(新しい順。題・日付・説明と記事へのリンク)。記事が無い言語は、そのことを1文で伝える。"""
+    t = TEXT[lang]
+    if posts:
+        items = "".join(
+            f'<li><a href="{p["name"]}.html"><h2>{html.escape(p["title"])}</h2></a>'
+            f'<p class="muted small"><time datetime="{p["date"]}">{p["date"]}</time></p>'
+            f"<p>{html.escape(p['description'])}</p></li>"
+            for p in posts
+        )
+        listing = f'<ul class="posts">{items}</ul>'
+    else:
+        listing = f"<p>{t['blog_empty']}</p>"
+    body = f"""
+<h1>{t["blog"]}</h1>
+<p class="muted">{html.escape(t["blog_desc"])} <a href="feed.xml">{t["feed"]}</a></p>
+{listing}
+"""
+    return page(
+        lang,
+        f"{t['blog']} · mdgrid",
+        body,
+        t["blog_desc"],
+        f"{SITE}{lang}/blog/",
+        alternates("ja/blog/", SITE + "blog/") + "\n" + blog_feed_link(lang),
+        top=nav(lang, "blog/", True, "../"),
+        css=BLOG_CSS,
+    )
+
+
+def blog_post(lang: str, p: dict, pair: bool) -> str:
+    """記事のページ。`pair` はもう一方の言語に同じ名前の記事があるとき(言語の切り替えと hreflang がその記事を指す)。"""
+    t = TEXT[lang]
+    rel = f"blog/{p['name']}.html"
+    dates = f'<time datetime="{p["date"]}">{p["date"]}</time>'
+    if p["updated"]:
+        dates += (
+            f' · {t["updated"]} <time datetime="{p["updated"]}">{p["updated"]}</time>'
+        )
+    body = f"""
+<article class="post">
+<p class="small"><a href="./">{t["blog"]}</a></p>
+<h1>{html.escape(p["title"])}</h1>
+<p class="muted small">{dates}</p>
+{mdhtml.convert(p["body"])}
+<p class="foot"><a href="./">{t["to_index"]}</a><a href="../">{t["to_home"]}</a></p>
+</article>
+"""
+    head = alternates(f"ja/{rel}", f"{SITE}en/{rel}") if pair else ""
+    return page(
+        lang,
+        f"{p['title']} · mdgrid",
+        body,
+        p["description"],
+        f"{SITE}{lang}/{rel}",
+        head,
+        top=nav(lang, rel if pair else "blog/", True, "../"),
+        css=BLOG_CSS,
+    )
+
+
+def blog_feed(lang: str, posts: list, latest: str) -> str:
+    """言語ごとの Atom のフィード(新しい順。日付は updated があればその日)。`latest` はどの言語も含めた一番新しい日。"""
+    base = f"{SITE}{lang}/blog/"
+    x = html.escape
+    entries = "".join(
+        f"""  <entry>
+    <title>{x(p["title"])}</title>
+    <link href="{x(base + p["name"])}.html"/>
+    <id>{x(base + p["name"])}.html</id>
+    <published>{p["date"]}T00:00:00Z</published>
+    <updated>{p["updated"] or p["date"]}T00:00:00Z</updated>
+    <summary>{x(p["description"])}</summary>
+  </entry>
+"""
+        for p in posts
+    )
+    return f"""<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{lang}">
+  <title>{x(TEXT[lang]["blog_feed"])}</title>
+  <link href="{base}feed.xml" rel="self"/>
+  <link href="{base}" rel="alternate" type="text/html"/>
+  <id>{base}</id>
+  <updated>{latest}T00:00:00Z</updated>
+  <author><name>mdgrid</name></author>
+{entries}</feed>
+"""
+
+
+def blog(out: Path, src: Path, posts: dict) -> None:
+    """記事の一覧・記事・フィードを言語ごとに、言語を決めて移るページを blog/ に作る。公開する記事がどの言語にも
+    無ければ何も作らない(site.blog-hidden-when-empty)。"""
+    if not any(posts.values()):
+        return
+    names = {l: {p["name"] for p in posts[l]} for l in LANGS}
+    latest = max(p["updated"] or p["date"] for l in LANGS for p in posts[l])
+    for l in LANGS:
+        d = out / l / "blog"
+        d.mkdir(parents=True)
+        if (src / "images").is_dir():
+            shutil.copytree(src / "images", d / "images")
+        (d / "index.html").write_text(blog_index(l, posts[l]), encoding="utf-8")
+        (d / "feed.xml").write_text(blog_feed(l, posts[l], latest), encoding="utf-8")
+        for p in posts[l]:
+            pair = p["name"] in names[other_lang(l)]
+            (d / f"{p['name']}.html").write_text(
+                blog_post(l, p, pair), encoding="utf-8"
+            )
+    (out / "blog").mkdir()
+    (out / "blog" / "index.html").write_text(
+        chooser("blog/", up="../"), encoding="utf-8"
+    )
+
+
+def scenes() -> list:
+    """画面の一覧に出す場面(README の動きの GIF を作るためのコマ gif-* は除く)。"""
+    scen = tomllib.loads(
+        (ROOT / "docs/manual-scenarios.toml").read_text(encoding="utf-8")
+    )
+    return [s for s in scen["shot"] if not s["id"].startswith("gif-")]
+
+
+def build_blog_only(out: Path, src: Path) -> None:
+    """ブログと、そのリンクを持つ言語の入口と、サイトの地図だけを作る(説明書・カタログ・画面の写しは作らない。
+    mdbook も撮った画面も要らない)。記事を書きながら見るときと、試験(tests/test_pages_blog.rs)のため。"""
+    posts = blog_posts(src)
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    blog(out, src, posts)
+    has = any(posts.values())
+    for l in LANGS:
+        (out / l).mkdir(exist_ok=True)
+        (out / l / "index.html").write_text(
+            landing(l, [], scenes(), has), encoding="utf-8"
+        )
+    urls = sitemap(out)
+    print(json.dumps({"out": str(out), "blog": has, "sitemap": urls}))
+
+
 if __name__ == "__main__":
+    # 誤りの文を、どの OS でも UTF-8 で出す(Windows のパイプでは、既定がその地域の文字コードで、日本語が \uXXXX になる)。
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8")
     args = sys.argv[1:]
     shots = ROOT / "target" / "shots"
     if "--shots" in args:
         i = args.index("--shots")
         shots = Path(args[i + 1]).resolve()
         del args[i : i + 2]
-    build(Path(args[0]) if args else ROOT / "site", shots)
+    blog_src = BLOG_SRC
+    if "--blog-src" in args:
+        i = args.index("--blog-src")
+        blog_src = Path(args[i + 1]).resolve()
+        del args[i : i + 2]
+    blog_only = "--blog-only" in args
+    if blog_only:
+        args.remove("--blog-only")
+    out = Path(args[0]) if args else ROOT / "site"
+    if blog_only:
+        build_blog_only(out, blog_src)
+    else:
+        build(out, shots, blog_src)
