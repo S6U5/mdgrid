@@ -935,7 +935,7 @@ Tells you when a row starts to match a [named condition](#conditions--named-cond
 
 A row is notified once, when it starts to match. It stays quiet while it keeps matching, and is notified again if it stops matching and later matches again. When you add an item, the rows that already match are remembered without a notification, so nothing floods in. The record is kept in mdgrid's state folder, never in your notes.
 
-mdgrid checks when you open a table, after you save and every minute while it is open. If a notification can't be delivered, the reason shows at the bottom of the screen once, and the row is tried again at the next check.
+mdgrid checks when you open a table, after you save and every minute while it is open. While mdgrid is closed, `mdgrid --notify` checks once without the screen, for your OS scheduler to run ([how to register it](manual/en/tasks.md#get-notified-when-a-row-matches)); it shares the record with the screen, so a row is never notified twice. If a notification can't be delivered, the reason shows at the bottom of the screen once, and the row is tried again at the next check.
 
 macOS, Windows and WSL show the desktop notification with what the OS already has; inside WSL it goes to Windows. On Linux it needs `notify-send`. For `"terminal"`, mdgrid sends the one signal your terminal understands (iTerm2, kitty, Ghostty, WezTerm, foot, Windows Terminal) and a bell to other terminals. Inside tmux, turn on `set -g allow-passthrough on`.
 

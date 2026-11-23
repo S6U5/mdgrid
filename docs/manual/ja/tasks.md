@@ -138,6 +138,109 @@ lines = 2
 
 ![通知の欄](images/notices.svg)
 
+## 新しく当たった行を知らせる
+
+設定に `[[notify]]` を書くと、[名前を付けた条件](#名前を付けた条件で絞る)に新しく当たった行を、1行ずつ知らせます。思い出したい時刻を `remind` の列に書いておけば、その時刻に OS の通知が出ます。書き方の全部は[設定の文書](../../config.ja.md#notify--知らせ)にあります。
+
+```toml
+[conditions.remind]
+expr = 'remind <= now() && status != "done"'
+label = "思い出す"
+
+[[notify]]
+cond = "remind"
+text = "{title}(期限 {due})"
+to = ["desktop", "terminal"]
+```
+
+| 出す先 | 出る所 |
+|---|---|
+| `"desktop"`(既定) | OS の通知。macOS・Windows・WSL は OS に元からある仕組みで出し、Linux は `notify-send` を使う |
+| `"terminal"` | 端末の通知(iTerm2・kitty・Ghostty・WezTerm・foot・Windows Terminal)。ほかの端末ではベルが鳴る。tmux の中では `set -g allow-passthrough on` が要る |
+| `"command"` | 自分のコマンド(`command = ["プログラム", "{title}", "{text}"]`)。電話へ送る道具などに渡せる |
+
+知らせるのは、行が当たり始めたときの1回だけです。当たり続けている間は黙り、外れてまた当たれば、もう一度知らせます。設定を書いたときに当たっている行は、知らせずに覚えます。1回に4行以上が当たり始めたら、「新しく 4 件」の1件にまとめます。mdgrid を開いている間は、開いたとき・保存したあと・1分ごとに確かめます。届けられなかったときは、理由が画面の下に出ます。
+
+macOS の通知はスクリプトエディタから、Windows と WSL の通知は Windows PowerShell から出たものとして並びます。出ないときは、OS の通知の設定でそれを許可します。
+
+**閉じているあいだも知らせる**: `mdgrid --notify` は、画面を出さずに1回だけ確かめて知らせます。これを OS の定期実行に登録すると、mdgrid を閉じていても知らせが届きます。開いている画面と同じ記録を使うので、両方が確かめても同じ行を二度知らせません。届けられなかったときは理由を標準エラーに出し、終了コード 1 で終わります。
+
+下の例はどれも5分ごとです。`home` は自分のワークスペースの名前に、`/path/to/mdgrid` は `command -v mdgrid`(Windows は `where mdgrid`)で調べたパスに替えます。定期実行はシェルの設定を読まないので、シェルで `XDG_CONFIG_HOME` などを変えているなら、`--config` で設定のファイルも渡します。
+
+Linux(systemd のユーザーのタイマー): 2つのファイルを置いて、タイマーを入れます。
+
+```ini
+# ~/.config/systemd/user/mdgrid-notify.service
+[Unit]
+Description=mdgrid notify
+
+[Service]
+Type=oneshot
+ExecStart=/path/to/mdgrid -w home --notify
+```
+
+```ini
+# ~/.config/systemd/user/mdgrid-notify.timer
+[Unit]
+Description=mdgrid notify every 5 minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now mdgrid-notify.timer
+```
+
+cron から呼ぶと、OS の通知が届かないことがあります。cron の環境には、デスクトップの通知の宛先(`DBUS_SESSION_BUS_ADDRESS`)が無いためです。cron を使うなら、その行で宛先を渡します(`1000` は `id -u` の数に替えます)。
+
+```sh
+*/5 * * * * DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /path/to/mdgrid -w home --notify
+```
+
+macOS(launchd): `~/Library/LaunchAgents/local.mdgrid.notify.plist` を置いて読み込ませます。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.mdgrid.notify</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/path/to/mdgrid</string>
+    <string>-w</string>
+    <string>home</string>
+    <string>--notify</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
+</dict>
+</plist>
+```
+
+```sh
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.mdgrid.notify.plist
+```
+
+Windows(タスク スケジューラ): コマンド プロンプトで登録します。走るたびにコンソールの窓が一瞬出ます。
+
+```bat
+schtasks /Create /TN "mdgrid notify" /SC MINUTE /MO 5 /TR "C:\path\to\mdgrid.exe -w home --notify"
+```
+
+WSL(Windows のタスク スケジューラから): WSL の中の cron は WSL が動いているあいだしか動かないので、Windows の側から呼びます。`wslg.exe` は窓を出さない `wsl.exe` で、今の WSL に入っています。`Ubuntu` は `wsl -l` で見られる名前に替えます。
+
+```bat
+schtasks /Create /TN "mdgrid notify" /SC MINUTE /MO 5 /TR "wslg.exe -d Ubuntu --exec /path/to/mdgrid -w home --notify"
+```
+
 ## ワークスペースを横断して探す
 
 どの表に書いたか覚えていない行は、[ワークスペース](#ワークスペースで表をまとめる)の表の全部からまとめて探せます。ワークスペースを開いていなければ、[登録した表](#使う表を登録して切り替える)の全部から探します。初めに設定で入れます(書かなければパレットにも出ません)。

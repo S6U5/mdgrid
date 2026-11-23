@@ -333,7 +333,7 @@ fn save(dir: &Path, seen: &Seen) -> std::io::Result<()> {
         seen: seen.clone(),
     };
     let text = serde_json::to_string_pretty(&f).map_err(std::io::Error::other)?;
-    crate::config::write_atomic(dir, STATE_FILE, text.as_bytes())
+    crate::config::write_atomic(dir, STATE_FILE, format!("{text}\n").as_bytes())
 }
 
 /// 1つの項目: 表ごとに記録と比べ、新しく当たった行を(多ければまとめて)鳴らし、記録を進める。

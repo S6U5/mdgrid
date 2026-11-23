@@ -458,6 +458,14 @@ wait = { en = "late", ja = "late" }
 text = { en = "The sample config counts the late tasks with [[notices]]. The box sits above the header; m moves into it and Enter narrows the table to those rows.", ja = "見本の設定は [[notices]] で遅れたタスクを数える。欄はヘッダーの上にあり、m で移って Enter でその行に絞る。" }
 
 [[shot]]
+id = "notify"
+title = { en = "Get notified when a row matches", ja = "新しく当たった行を知らせる" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/notify.toml", "examples/studio/Tasks"]
+keys = ["2"]
+wait = { en = "Late", ja = "Late" }
+text = { en = "examples/configs/notify.toml notifies each task that becomes late, through the OS notification and the terminal. The notification itself shows outside mdgrid; here 2 keeps only the rows that match the condition.", ja = "examples/configs/notify.toml は、遅れたタスクを1件ずつ OS の通知と端末に知らせる。知らせは mdgrid の外に出る。画面は、2 でその条件に当たる行だけにしたところ。" }
+
+[[shot]]
 id = "vim-normal"
 title = { ja = "vim のキーで直す", en = "Edit with vim keys" }
 command = ["./target/release/mdgrid", "--config", "examples/configs/vim.toml", "examples/studio/Tasks"]

@@ -82,6 +82,14 @@ Show how many tasks are overdue, or a few lines you wrote yourself, in a small b
 
 [Notices above the table](tasks.md#notices-above-the-table)
 
+## Get notified when a row matches
+
+![Get notified when a row matches](images/notify.svg)
+
+Get an OS or terminal notification when a reminder time or a due date comes. Each row that starts to match a named condition is notified once, and rows that keep matching stay quiet. Register `mdgrid --notify` with your OS scheduler, and notifications arrive while mdgrid is closed too.
+
+[Get notified when a row matches](tasks.md#get-notified-when-a-row-matches)
+
 ## Search across the workspace
 
 ![Search across the workspace](images/across.svg)

@@ -93,6 +93,8 @@ cp -R examples/bookmarks /tmp/bookmarks
 mdgrid /tmp/bookmarks                 # opens the Bookmarks table; press T
 ```
 
+[configs/notify.toml](configs/notify.toml) notifies each task that becomes late, through the OS notification and the terminal ([[notify]](../docs/config.md#notify--notifications)).
+
 [configs/vim.toml](configs/vim.toml) turns on vim mode only: input boxes get insert and normal modes, and the table gets `dd`, `p` and `.` ([keys.vim](../docs/config.md#keysvim)).
 
 ## places: registered tables
