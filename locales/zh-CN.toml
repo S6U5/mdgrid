@@ -118,6 +118,10 @@ CliBadSort = "--sort {0}：请写列名，后面可加 :asc 或 :desc"
 CliFilterNativeView = "--filter 和 --sort 用于 .base 视图或文件夹，不能用于 mdgrid 视图 \"{0}\""
 LockToml = "front matter 是 TOML（+++），不是 YAML"
 LockNotUtf8 = "文件不是 UTF-8"
+LockNotText = "不是文本文件（含有 NUL 字节）"
+LockUtf16 = "文件是 UTF-16"
+## {0} is the file name, {1} the reason (write-back.refuse-not-text-any-file).
+FileNotRewritten = "不改写 {0}（{1}）"
 LockMixedNewlines = "混用了不同的换行符"
 ## {0} は重なったキー。
 LockDuplicateKey = "同一个键出现了两次（{0}）"
@@ -241,6 +245,8 @@ WantNoticeScope = "\"table\"、\"workspace\" 或表格名称的数组"
 RsnNoticeNoCond = "[conditions] 中没有条件 \"{0}\"（已忽略）"
 ## notice.note-item: {0} はノートのファイルの名前。
 NoticeNoNote = "缺少 {0}"
+## {0} is the note name, {1} the reason (the note is not a text file).
+NoticeNotText = "不读取 {0}（{1}）"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "还有 {0} 行"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
@@ -986,6 +992,8 @@ EditorNoTerminal = "无法恢复终端，因此未打开编辑器：{0}"
 EditorCannotStart = "无法启动编辑器：{0}（{1}）"
 ## {0} は終了の状態、{1} はノート。
 EditorFailed = "编辑器异常退出（{0}）：{1}"
+## {0} is the note name.
+EditorNotText = "{0} 不是文本文件（含有 NUL 字节），不在编辑器中打开"
 EditorReturned = "已从编辑器返回：{0}"
 EditorTermNotRestored = "。无法恢复终端：{0}"
 EditorCannotReload = "。无法重新加载：{0}"
@@ -1701,6 +1709,10 @@ TreeRowHidden = "该行未在表格中显示（在折叠的分组中或被筛选
 UrlOpening = "正在打开 {0}"
 ## {0} is the URL, {1} the reason.
 UrlOpenFailed = "无法打开 {0}：{1}"
+## {0} is the URL, {1} the file extension without the dot (tbd~tree.open-url-executable-exts).
+UrlRefuseExecutable = "{0} 指向可执行文件（.{1}），不打开（要打开，请复制 URL 粘贴到浏览器）"
+## {0} is the URL.
+UrlRefuseBidi = "{0} 含有改变文字方向的字符，不打开"
 RsnTreeNotTable = "不是 { path = \"<列>\" } 形式的表，因此不显示树"
 RsnTreeNeedPath = "没有 path（存放文件夹层级的列），因此不显示树"
 RsnTreeEmptySep = "分隔符为空，因此不显示树"

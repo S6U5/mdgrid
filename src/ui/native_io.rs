@@ -674,7 +674,7 @@ impl App {
                 let Some(dir) = self.export_dir() else {
                     return;
                 };
-                let parsed = std::fs::read_to_string(dir.join(&rel))
+                let parsed = mdgrid::textfile::read_text(dir.join(&rel))
                     .map_err(|e| e.to_string())
                     .and_then(|t| base::parse(&t));
                 match parsed {

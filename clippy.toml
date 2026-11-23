@@ -1,0 +1,7 @@
+# ファイルを読む口は src/textfile.rs だけにする(write-back.refuse-not-text-any-file・cli.read-text-only)。
+# どのファイルも、文字のファイルか(先頭の NUL・UTF-16 の BOM・UTF-8)を同じ決まりで見るため。読む所を足すときは
+# mdgrid::textfile の関数を使う(docs/design.md「ファイルを読む口」)。試験のクレートと build.rs では使ってよい。
+disallowed-methods = [
+    { path = "std::fs::read", reason = "mdgrid::textfile::read_bytes を使う(文字のファイルかの判定を通すため)" },
+    { path = "std::fs::read_to_string", reason = "mdgrid::textfile::read_text を使う(文字のファイルかの判定を通すため)" },
+]

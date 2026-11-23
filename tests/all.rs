@@ -4,6 +4,8 @@
 //! tests/test_config.rs は、ほかの試験とぶつからないように別の実行ファイルにする(Cargo.toml の [[test]])。
 //! Cargo.toml は `autotests = false` なので、新しい試験のファイルはここに足す(足し忘れは下の試験が落とす)。
 
+#![allow(clippy::disallowed_methods)]
+
 // 疑似端末の道具(tests/pty/mod.rs)は、ここで1回だけ読み、各ファイルは `use crate::pty;` で使う。
 mod pty;
 
@@ -137,6 +139,8 @@ mod test_new_note;
 mod test_new_note_cli;
 #[path = "test_no_japanese_literals.rs"]
 mod test_no_japanese_literals;
+#[path = "test_not_text_files.rs"]
+mod test_not_text_files;
 #[path = "test_note_name.rs"]
 mod test_note_name;
 #[path = "test_note_path.rs"]

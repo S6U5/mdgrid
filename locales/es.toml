@@ -119,6 +119,10 @@ CliBadSort = "--sort {0}: escriba una columna, opcionalmente seguida de :asc o :
 CliFilterNativeView = "--filter y --sort funcionan con una vista de .base o una carpeta, no con la vista de mdgrid \"{0}\""
 LockToml = "el front matter es TOML (+++), no YAML"
 LockNotUtf8 = "el archivo no es UTF-8"
+LockNotText = "no es un archivo de texto (contiene bytes NUL)"
+LockUtf16 = "el archivo está en UTF-16"
+## {0} is the file name, {1} the reason (write-back.refuse-not-text-any-file).
+FileNotRewritten = "{0} no se reescribe ({1})"
 LockMixedNewlines = "finales de línea mezclados"
 ## {0} は重なったキー。
 LockDuplicateKey = "la misma clave aparece dos veces ({0})"
@@ -242,6 +246,8 @@ WantNoticeScope = "\"table\", \"workspace\" o un array de nombres de tabla"
 RsnNoticeNoCond = "no hay condición \"{0}\" en [conditions] (se ignora)"
 ## notice.note-item: {0} はノートのファイルの名前。
 NoticeNoNote = "falta {0}"
+## {0} is the note name, {1} the reason (the note is not a text file).
+NoticeNotText = "{0} no se lee ({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "{0} líneas más"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
@@ -987,6 +993,8 @@ EditorNoTerminal = "no se puede restaurar el terminal, así que no se abrió el 
 EditorCannotStart = "no se puede iniciar el editor: {0} ({1})"
 ## {0} は終了の状態、{1} はノート。
 EditorFailed = "el editor terminó con un fallo ({0}): {1}"
+## {0} is the note name.
+EditorNotText = "{0} no es un archivo de texto (contiene bytes NUL), así que no se abre en el editor"
 EditorReturned = "de vuelta del editor: {0}"
 EditorTermNotRestored = ". No se puede restaurar el terminal: {0}"
 EditorCannotReload = ". No se puede recargar: {0}"
@@ -1702,6 +1710,10 @@ TreeRowHidden = "la fila no se muestra en la tabla (está en un grupo plegado o 
 UrlOpening = "abriendo {0}"
 ## {0} is the URL, {1} the reason.
 UrlOpenFailed = "no se pudo abrir {0}: {1}"
+## {0} is the URL, {1} the file extension without the dot (tbd~tree.open-url-executable-exts).
+UrlRefuseExecutable = "{0} apunta a un archivo ejecutable (.{1}), así que no se abre (para abrirlo, copie la URL y péguela en el navegador)"
+## {0} is the URL.
+UrlRefuseBidi = "{0} contiene caracteres que cambian la dirección del texto, así que no se abre"
 RsnTreeNotTable = "no es una tabla como { path = \"<columna>\" }, así que no hay árbol"
 RsnTreeNeedPath = "no tiene path (la columna con las carpetas), así que no hay árbol"
 RsnTreeEmptySep = "el separador está vacío, así que no hay árbol"

@@ -527,3 +527,67 @@ fn test_tr_7_mouse() {
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(lab(&a, &a.cur_row().unwrap()), "alpha");
 }
+
+#[test]
+fn test_tr_5_open_url_refuses_disguised() {
+    // [utest -> req~tree.open-url-disguised~1] 最後の部分が実行ファイルの拡張子で終わる URL(`%` を戻して読む)と、向きを変える文字を含む URL は開かずに理由を出す。
+    // 最後の部分でない所(問い合わせ・途中の道)に拡張子やドメインがあるだけの URL は開く(誤って止めない)。
+    let (_t, mut a) = super::test_screen::make(
+        "tr5dis",
+        &[
+            (
+                "a.md",
+                "---\nurl: https://example.com/files/report.pdf.exe\n---\n",
+            ),
+            (
+                "b.md",
+                "---\nurl: https://example.com/setup%2Eexe?x=1\n---\n",
+            ),
+            ("c.md", "---\nurl: \"https://exa\u{202E}mple.com/\"\n---\n"),
+            // ブラウザは `\` を `/` と読む(道の区切りを隠して点検を抜ける形)。
+            ("c2.md", "---\nurl: 'https://example.com\\setup.exe'\n---\n"),
+            // 道の無い、ホストだけの URL は止めない(`.run` は実在のトップレベルドメイン)。
+            ("g.md", "---\nurl: https://example.run\n---\n"),
+            ("d.md", "---\nurl: https://example.com/manual.pdf\n---\n"),
+            (
+                "e.md",
+                "---\nurl: https://example.com/download?file=setup.exe\n---\n",
+            ),
+            (
+                "f.md",
+                "---\nurl: https://web.archive.org/web/2026/https://example.com\n---\n",
+            ),
+        ],
+    );
+    let log = OpenLog::default();
+    let seen = log.0.clone();
+    a.opener = Box::new(log);
+    let at = |a: &App, n: &str| a.rows.iter().position(|r| a.src.label(r) == n).unwrap();
+    for (name, word) in [
+        ("a.md", "(.exe)"),
+        ("b.md", "(.exe)"),
+        ("c.md", "向き"),
+        ("c2.md", "(.exe)"),
+    ] {
+        a.row = at(&a, name);
+        a.open_url_here();
+        let m = a.message.clone().unwrap_or_default();
+        assert!(m.contains(word), "{name}: {m}");
+        assert!(m.contains("開かない"), "{name}: {m}");
+        assert!(!m.contains('\u{202E}'), "{name}: {m}");
+    }
+    assert!(seen.borrow().is_empty(), "{:?}", seen.borrow());
+    for name in ["d.md", "e.md", "f.md", "g.md"] {
+        a.row = at(&a, name);
+        a.open_url_here();
+    }
+    assert_eq!(
+        *seen.borrow(),
+        vec![
+            "https://example.com/manual.pdf".to_string(),
+            "https://example.com/download?file=setup.exe".to_string(),
+            "https://web.archive.org/web/2026/https://example.com".to_string(),
+            "https://example.run".to_string(),
+        ]
+    );
+}

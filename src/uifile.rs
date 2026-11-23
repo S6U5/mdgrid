@@ -44,7 +44,7 @@ impl UiFile {
 /// ui.toml(無ければ look.toml)を読む。無ければ空。壊れていれば警告して空。
 pub fn load(dir: &Path) -> (UiFile, Vec<String>) {
     let mut w = Vec::new();
-    if let Ok(text) = std::fs::read_to_string(dir.join(FILE_NAME)) {
+    if let Ok(text) = crate::textfile::read_text(dir.join(FILE_NAME)) {
         return match text.parse::<toml::Table>() {
             Ok(t) => (read(&t, &mut w), w),
             Err(e) => {
@@ -54,7 +54,7 @@ pub fn load(dir: &Path) -> (UiFile, Vec<String>) {
             }
         };
     }
-    let Ok(text) = std::fs::read_to_string(dir.join(OLD_FILE_NAME)) else {
+    let Ok(text) = crate::textfile::read_text(dir.join(OLD_FILE_NAME)) else {
         return (UiFile::default(), w);
     };
     match text.parse::<toml::Table>() {

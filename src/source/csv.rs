@@ -126,7 +126,7 @@ impl Csv {
         let path = path
             .canonicalize()
             .map_err(|e| Msg::CannotRead.fill(&[&e]))?;
-        let bytes = std::fs::read(&path).map_err(|e| Msg::CannotRead.fill(&[&e]))?;
+        let bytes = crate::textfile::read_bytes(&path).map_err(|e| Msg::CannotRead.fill(&[&e]))?;
         let file = csvfile::parse(&bytes, csvfile::delim_of(&path))?;
         let stamp = stamp_of(&path, &bytes);
         let n = file.records.len() as u64;
@@ -252,7 +252,7 @@ impl Csv {
 
     /// 今のディスクのバイト(この読み込み口の知らない基準なら、ほかで変わった)。
     fn disk(&self) -> io::Result<Vec<u8>> {
-        std::fs::read(&self.path)
+        crate::textfile::read_bytes(&self.path)
     }
 
     /// 新しい内容を読んだものにする。`outside` なら外で変わった内容で、行の番号は行の中身で引き継ぎ(`carried`)、

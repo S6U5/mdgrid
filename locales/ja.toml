@@ -118,6 +118,10 @@ CliBadSort = "--sort {0}: 列の名前と、後ろに :asc か :desc(無くて�
 CliFilterNativeView = "--filter・--sort は .base のビューかフォルダに使う(mdgrid のビュー「{0}」には使えない)"
 LockToml = "フロントマターが YAML でなく TOML(+++)"
 LockNotUtf8 = "UTF-8 ではない"
+LockNotText = "テキストでないファイル(NUL を含む)"
+LockUtf16 = "UTF-16 のファイル"
+## {0} is the file name, {1} the reason (write-back.refuse-not-text-any-file).
+FileNotRewritten = "{0} を書き換えない({1})"
 LockMixedNewlines = "改行コードが混ざっている"
 ## {0} は重なったキー。
 LockDuplicateKey = "同じキーが2回ある({0})"
@@ -241,6 +245,8 @@ WantNoticeScope = "\"table\"・\"workspace\" か表の名前の並び"
 RsnNoticeNoCond = "[conditions] に条件「{0}」が無い(使わない)"
 ## notice.note-item: {0} はノートのファイルの名前。
 NoticeNoNote = "{0} がありません"
+## {0} is the note name, {1} the reason (the note is not a text file).
+NoticeNotText = "{0} を読まない({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "ほか {0} 行"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
@@ -986,6 +992,8 @@ EditorNoTerminal = "端末を戻せないのでエディタを開かない: {0}"
 EditorCannotStart = "エディタを起動できない: {0}({1})"
 ## {0} は終了の状態、{1} はノート。
 EditorFailed = "エディタが失敗で終わった({0}): {1}"
+## {0} is the note name.
+EditorNotText = "{0} はテキストでないファイル(NUL を含む)なので、エディタで開かない"
 EditorReturned = "エディタから戻った: {0}"
 EditorTermNotRestored = "。端末を戻せない: {0}"
 EditorCannotReload = "。読み直せない: {0}"
@@ -1701,6 +1709,10 @@ TreeRowHidden = "表でその行が見えない(畳んだ分類の中か、絞�
 UrlOpening = "開く: {0}"
 ## {0} は URL、{1} は理由。
 UrlOpenFailed = "{0} を開けなかった: {1}"
+## {0} is the URL, {1} the file extension without the dot (tbd~tree.open-url-executable-exts).
+UrlRefuseExecutable = "{0} は実行ファイル(.{1})を指すので開かない(開くなら URL を写してブラウザに貼る)"
+## {0} is the URL.
+UrlRefuseBidi = "{0} は文字の向きを変える文字を含むので開かない"
 RsnTreeNotTable = "{ path = \"<列>\" } の形の表でないので、木を出さない"
 RsnTreeNeedPath = "path(階層の列)が無いので、木を出さない"
 RsnTreeEmptySep = "区切りが空なので、木を出さない"

@@ -231,3 +231,25 @@ fn test_cli_19_no_places_message() {
     assert_eq!(a.mode, Mode::Table);
     assert!(a.message.as_deref().unwrap_or("").contains("この表を登録"));
 }
+
+#[test]
+fn test_places_not_text_is_not_overwritten() {
+    // [utest -> req~write-back.refuse-not-text-any-file~1] 設定のフォルダの places.toml が UTF-8 でない → 「この表を登録」しても places.toml は1バイトも変わらず、
+    // メッセージ行に places.toml を書かない理由が出る(読めない中身を空とみなして上書きしない)。
+    let tmp = vault("pl_nottext");
+    let bad: &[u8] = b"[[place]]\nname = \"caf\xE9\"\npath = \"~/notes\"\n";
+    std::fs::write(tmp.0.join("config/places.toml"), bad).unwrap();
+    let mut a = boot(&tmp);
+    palette(&mut a, "この表を登録");
+    clear_query(&mut a);
+    typing(&mut a, "タスク");
+    press(&mut a, KeyCode::Enter);
+    typing(&mut a, "仕事");
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(
+        std::fs::read(tmp.0.join("config/places.toml")).unwrap(),
+        bad
+    );
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("places.toml"), "{m}");
+}

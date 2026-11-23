@@ -476,7 +476,7 @@ pub fn table_of<'a>(note: &Path, tables: &'a [Table]) -> Option<&'a Table> {
 
 /// フロントマターの (列, 値) を読む。読めなければ空。
 fn entries(path: &Path) -> Vec<(String, Value)> {
-    let Ok(bytes) = std::fs::read(path) else {
+    let Ok(bytes) = crate::textfile::read_bytes(path) else {
         return Vec::new();
     };
     match frontmatter::parse(&bytes) {

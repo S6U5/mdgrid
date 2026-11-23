@@ -382,3 +382,57 @@ fn test_sr_8_nested_ignore_restores_only_on_last_drop() {
     assert_eq!([is_ignored(SIGINT), is_ignored(SIGQUIT)], before);
     assert_eq!(before, [false, false]);
 }
+
+/// 名前だけ .md のほかのファイル(ZIP の頭の印と NUL)の中身。UTF-8 としては読める。
+const ZIP_LIKE: &str = "PK\u{3}\u{4}\u{14}\u{0}\u{0}\u{0}report.txt\u{0}\u{0}";
+
+#[test]
+fn test_wb_refuse_not_text_editor() {
+    // [utest -> req~write-back.refuse-not-text~1] 名前だけ .md のファイル(先頭に NUL)の行で `e` → エディタを起動せず(端末も戻さず)、メッセージ行に理由を出す。
+    let _lock = editor_lock();
+    let (_t, mut a) = make(
+        "ntedit",
+        &[("archive.md", ZIP_LIKE), ("b.md", "---\ns: 1\n---\n")],
+    );
+    a.row = a
+        .rows
+        .iter()
+        .position(|r| a.src.label(r) == "archive.md")
+        .unwrap();
+    ch(&mut a, 'e');
+    let mut calls = Vec::new();
+    a.open_editor("/nonexistent/mdgrid-editor", &mut |l| {
+        calls.push(l);
+        Ok(())
+    });
+    assert_eq!(calls, Vec::<bool>::new());
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("archive.md"), "{m}");
+    assert!(m.contains("テキストでない"), "{m}");
+}
+
+#[test]
+fn test_wb_refuse_utf16_editor_opens() {
+    // [utest -> req~write-back.refuse-utf16~1] UTF-16 のノートは文字のファイルなので、`e` でエディタに渡す(起動できないエディタで、起動を試みたことを見る)。
+    let _lock = editor_lock();
+    let (t, mut a) = make("u16edit", &[("u.md", "x\n"), ("b.md", "---\ns: 1\n---\n")]);
+    let mut bytes = vec![0xFF, 0xFE];
+    for u in "---\ns: 1\n---\n".encode_utf16() {
+        bytes.extend_from_slice(&u.to_le_bytes());
+    }
+    std::fs::write(t.notes().join("u.md"), &bytes).unwrap();
+    a.row = a
+        .rows
+        .iter()
+        .position(|r| a.src.label(r) == "u.md")
+        .unwrap();
+    ch(&mut a, 'e');
+    let mut calls = Vec::new();
+    a.open_editor("/nonexistent/mdgrid-editor", &mut |l| {
+        calls.push(l);
+        Ok(())
+    });
+    assert_eq!(calls, vec![true, false]);
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("エディタを起動できない"), "{m}");
+}

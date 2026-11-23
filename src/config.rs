@@ -791,7 +791,7 @@ fn state_file_name(target: &str, view: &str) -> String {
 pub fn load_state(dir: &Path, target: &Path, view: &str) -> ViewState {
     let key = target_key(target);
     let path = dir.join(state_file_name(&key, view));
-    let Ok(bytes) = std::fs::read(&path) else {
+    let Ok(bytes) = crate::textfile::read_bytes(&path) else {
         return ViewState::default();
     };
     let Ok(text) = std::str::from_utf8(&bytes) else {

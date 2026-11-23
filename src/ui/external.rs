@@ -150,6 +150,23 @@ impl Opener for SystemOpener {
     }
 }
 
+/// write-back.refuse-not-text: ファイルの先頭(`SNIFF_LEN` バイト)に NUL があるか。読めないファイルは
+/// ここでは止めない(エディタの側が理由を出す)。
+fn not_text(path: &Path) -> bool {
+    use std::io::Read;
+    let Ok(f) = std::fs::File::open(path) else {
+        return false;
+    };
+    let mut head = Vec::new();
+    if f.take(mdgrid::frontmatter::SNIFF_LEN as u64)
+        .read_to_end(&mut head)
+        .is_err()
+    {
+        return false;
+    }
+    mdgrid::frontmatter::text_kind(&head) == mdgrid::frontmatter::TextKind::NotText
+}
+
 /// 試験の開く口: 渡された URL を覚えるだけ。
 #[cfg(test)]
 #[derive(Default)]
@@ -642,6 +659,11 @@ impl App {
             return;
         };
         let path = PathBuf::from(&row.0);
+        // write-back.refuse-not-text: 名前だけ .md のほかのファイルはエディタに渡さない。
+        if not_text(&path) {
+            self.message = Some(Msg::EditorNotText.fill(&[&self.src.label(&row)]));
+            return;
+        }
         let argv = match editor_argv(editor, &path) {
             Ok(a) => a,
             Err(e) => {
@@ -693,6 +715,14 @@ impl App {
         path: &std::path::Path,
         term: &mut dyn FnMut(bool) -> io::Result<()>,
     ) {
+        if not_text(path) {
+            let label = path.file_name().map_or_else(
+                || path.display().to_string(),
+                |n| n.to_string_lossy().into_owned(),
+            );
+            self.message = Some(Msg::EditorNotText.fill(&[&label]));
+            return;
+        }
         let argv = match editor_argv(editor, path) {
             Ok(a) => a,
             Err(e) => {

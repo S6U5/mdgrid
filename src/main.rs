@@ -1,5 +1,7 @@
 //! mdgrid の実行ファイル: 引数(CLI-1・CLI-2・CLI-4。clap で読み、補完と man も同じ定義から出す CLI-13)、設定の読み込み(CLI-3)、端末の準備と後始末、イベントのループ。
 
+#![cfg_attr(test, allow(clippy::disallowed_methods))]
+
 mod apply;
 mod diff;
 mod edit;
@@ -655,7 +657,7 @@ fn load_config(
             _ => return Ok((Config::default(), Vec::new())),
         },
     };
-    let text = std::fs::read_to_string(&path)
+    let text = mdgrid::textfile::read_text(&path)
         .map_err(|e| Msg::ConfigUnreadable.fill(&[&path.display(), &e]))?;
     let name = path.file_name().map_or_else(
         || config::CONFIG_FILE.to_string(),
@@ -678,7 +680,8 @@ fn config_text(explicit: Option<&Path>, default: Option<PathBuf>) -> Result<Stri
             _ => return Ok(String::new()),
         },
     };
-    std::fs::read_to_string(&path).map_err(|e| Msg::ConfigUnreadable.fill(&[&path.display(), &e]))
+    mdgrid::textfile::read_text(&path)
+        .map_err(|e| Msg::ConfigUnreadable.fill(&[&path.display(), &e]))
 }
 
 /// 画面を出さない命令(`--apply`・`--print-config --resolved`)のための、開く表で効く設定(SR-44): config.toml・
@@ -870,7 +873,7 @@ fn open_target(paths: &[PathBuf], view: Option<&str>) -> Result<Target, String> 
     let inline = mdgrid::workspace::inline_base(bp);
     let text = match &inline {
         Some((t, _)) => t.clone(),
-        None => std::fs::read_to_string(bp)
+        None => mdgrid::textfile::read_text(bp)
             .map_err(|e| Msg::BaseUnreadable.fill(&[&bp.display(), &e]))?,
     };
     let base =
@@ -936,7 +939,7 @@ fn fail(msg: &str) -> ExitCode {
 fn language(explicit: Option<&Path>, default: Option<PathBuf>) -> Lang {
     let path = explicit.map(Path::to_path_buf).or(default);
     let setting = path
-        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|p| mdgrid::textfile::read_text(p).ok())
         .map_or(Language::Auto, |t| config::peek_language(&t));
     i18n::resolve(setting, |k| std::env::var(k).ok())
 }
@@ -946,7 +949,7 @@ fn conditions(explicit: Option<&Path>, default: Option<PathBuf>) -> condition::C
     explicit
         .map(Path::to_path_buf)
         .or(default)
-        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|p| mdgrid::textfile::read_text(p).ok())
         .map(|t| condition::peek(&t))
         .unwrap_or_default()
 }
@@ -2189,13 +2192,9 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
         return fail(&e);
     }
     let text = if file == Path::new("-") {
-        let mut s = String::new();
-        match io::Read::read_to_string(&mut io::stdin(), &mut s) {
-            Ok(_) => Ok(s),
-            Err(e) => Err(e),
-        }
+        mdgrid::textfile::read_stdin_text()
     } else {
-        std::fs::read_to_string(file)
+        mdgrid::textfile::read_text(file)
     };
     let text = match text {
         Ok(t) => t,
