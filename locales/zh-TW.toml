@@ -250,6 +250,28 @@ NoticeNoNote = "找不到 {0}"
 NoticeNotText = "不讀取 {0}（{1}）"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "還有 {0} 行"
+## notify.opt-in: [[notify]] の形。
+WantNotifyArray = "表格的陣列（[[notify]]）"
+RsnNotifyNeedCond = "需要 cond（具名條件的名稱）（不使用）"
+## notify.item: {0} は前の項目と同じ条件の名前。
+RsnNotifyDupCond = "與前面項目相同的條件「{0}」（不使用）"
+## notify.to: {0} は知らない出す先の名前。
+RsnNotifyUnknownTo = "未知的通知目標「{0}」（terminal、desktop、command 其中之一；不使用）"
+RsnNotifyNoCommand = "to 中有 command，但沒有 command（程式與參數的陣列）（不送到命令）"
+## notify.group: {0} はまとめた行の数。
+NotifyGroup = "新增 {0} 筆"
+## notify.fail: {0} は出す先の名前(terminal など)、{1} は理由。
+NotifyFailed = "無法透過 {0} 通知：{1}"
+## notify.state-broken: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateRebuilt = "無法讀取通知紀錄 {0}，已不通知地重新記住目前符合的列（{1}）"
+## notify.state: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateUnwritable = "無法寫入通知紀錄 {0}（{1}）"
+## notify.fail: {0} は打ち切った秒数。
+NotifyTimeout = "{0} 秒內未結束，已停止"
+## notify.fail: {0} はプログラム、{1} は終了コード。
+NotifyExit = "{0} 以結束代碼 {1} 結束"
+## notify.fail: {0} はプログラム、{1} は理由。
+NotifyNoProgram = "無法執行 {0}（{1}）"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "標記檔中沒有名為 {0} 的表格（現有表格：{1}）；已直接開啟資料夾"
 RsnStarterUnknown = "沒有名為 {0} 的起始範本；僅依標記檔本身的內容開啟（mdgrid --starters 可列出）"
@@ -2103,6 +2125,8 @@ CfgTemplates = "設定組的具名片段（[look]、[display]、[dates]、[edit]
 CfgConditions = "具名條件：寫一次的運算式（expr），以名稱使用。可用於任何運算式中的\ncond(\"<名稱>\")、只顯示符合列的數字鍵（key = 1-9）、檢視設定的篩選區塊，\n以及用 hide = true 在所有表格中隱藏符合的列。label 是顯示的名稱。"
 ## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
 CfgNotices = "標題列上方的通知欄，僅在寫了項目時顯示。計數項目會在目前表格、工作區或指定的表格中，\n計算符合具名條件（[conditions]）的列數；筆記項目會顯示\n筆記內文的開頭幾行。mdgrid --notices 會輸出相同的行。"
+## 設定の項目 `notify` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotify = "當某列新符合具名條件（[conditions]）時，逐列通知到終端機、桌面或你自己的命令。\n加入項目時已符合的列會被靜默記住；一次檢查中新符合的列超過 group_over 時合併為一則。\nmdgrid 開啟期間由畫面檢查；mdgrid --notify 供排程執行檢查一次。"
 
 # ---- stack: tables stacked top to bottom and pages (stack.*) ----
 SecStack = "堆疊表格"

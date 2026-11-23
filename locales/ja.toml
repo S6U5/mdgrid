@@ -249,6 +249,28 @@ NoticeNoNote = "{0} がありません"
 NoticeNotText = "{0} を読まない({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "ほか {0} 行"
+## notify.opt-in: [[notify]] の形。
+WantNotifyArray = "表の並び([[notify]])"
+RsnNotifyNeedCond = "cond(名前の条件の名前)が要る(使わない)"
+## notify.item: {0} は前の項目と同じ条件の名前。
+RsnNotifyDupCond = "前の項目と同じ条件「{0}」(使わない)"
+## notify.to: {0} は知らない出す先の名前。
+RsnNotifyUnknownTo = "知らない出す先「{0}」(terminal・desktop・command のどれか。使わない)"
+RsnNotifyNoCommand = "to に command があるのに command(プログラムと引数の並び)が無い(コマンドには出さない)"
+## notify.group: {0} はまとめた行の数。
+NotifyGroup = "新しく {0} 件"
+## notify.fail: {0} は出す先の名前(terminal など)、{1} は理由。
+NotifyFailed = "{0} に知らせを出せなかった: {1}"
+## notify.state-broken: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateRebuilt = "知らせの記録 {0} が読めないので、今当たっている行を鳴らさずに覚え直した({1})"
+## notify.state: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateUnwritable = "知らせの記録 {0} を書けない({1})"
+## notify.fail: {0} は打ち切った秒数。
+NotifyTimeout = "{0} 秒で終わらないので止めた"
+## notify.fail: {0} はプログラム、{1} は終了コード。
+NotifyExit = "{0} が終了コード {1} で終わった"
+## notify.fail: {0} はプログラム、{1} は理由。
+NotifyNoProgram = "{0} を動かせない({1})"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "印に {0} という表は無いので、フォルダをそのまま開いた(ある表: {1})"
 RsnStarterUnknown = "スターター {0} は無いので、印に書いた中身だけで開いた(mdgrid --starters で一覧)"
@@ -2102,6 +2124,8 @@ CfgTemplates = "名前を付けたプロファイルの断片([look]・[display]
 CfgConditions = "名前を付けた条件: 1回書いた式(expr)を名前で使う。どの式でも cond(\"<名前>\")、数字のキー(key = 1〜9)で当たる行だけにする、ビューの設定のフィルターの区画、hide = true でどの表でも当たる行を隠す。label は見せる名前。"
 ## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
 CfgNotices = "ヘッダーの上の通知の欄(項目を書いたときだけ出す)。件数の項目は、名前の条件([conditions])に当たる行を今の表・ワークスペース・名前を挙げた表で数える。連絡の項目は、ノートの本文の頭の行を出す。mdgrid --notices も同じ行を出す。"
+## 設定の項目 `notify` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotify = "名前の条件([conditions])に新しく当たった行を、1行ずつ端末・OS の通知・自分のコマンドに知らせる。項目を書いたときに当たっている行は黙って覚え、1回の確かめで新しく当たった行が group_over を超えたら1件にまとめる。開いている間は画面が確かめ、mdgrid --notify は定期実行から1回確かめる。"
 
 # ---- stack: 縦に並べた表とページ(stack.*) ----
 SecStack = "縦に並べる"

@@ -244,6 +244,8 @@ impl App {
         // notice.refresh: 書いたら通知の欄を数え直す。
         if !saved.is_empty() {
             self.notice.dirty = true;
+            // notify.while-open: 書いたら、次の機会に確かめる。
+            self.notify.want = true;
         }
         // write-back.git-*: 書けたノートを覚える(git に渡すのは、表に戻ったあと)。
         for ((_, out), (_, file)) in results.iter().zip(places) {

@@ -855,6 +855,18 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **`--notices`**: 画面と同じ道(`open_app`)で App を作り、読み終えてから、裏の糸の結果を待って出す。範囲(ワークスペース)の決め方が画面と同じになる。
 - **起動の直後のキー**: テーマの `auto` の地の色の問い合わせが、起動の直後の1打を吸うことがある(前からの振る舞い)。疑似端末の試験は、移った印が出るまで押し直す。
 
+## 知らせ(notify.*。2026-11-23)
+
+- **核と画面を分ける**: 設定の読み・記録と比べて鳴らす行を決める・まとめる・出す先へ渡すのは `src/notify.rs`(表を知らない)。表をファイルから開いて条件に当たる行を選び、題と文を埋めるのは `main.rs` の `notify_hits`(通知の欄の `count_tables` と同じ道。`--notify` も使う)。開いている間の時と糸は `src/ui/notify.rs`。
+- **いつ確かめるか**: 開いたとき(`configure_notify` が `want` を立てる)・保存で書いたとき(`review.rs` が `want` を立てる)・最後に確かめ始めてから `INTERVAL`(1分。tbd~notify.interval)が過ぎたとき。画面を回すたびに `notify_poll` が見る。確かめている途中は次を始めない。表は画面の App の行でなくファイルから読むので、ためた変更は数えず、外のエディタで直したノートは拾う。
+- **記録**: 見た目の状態の置き場の `notify.json`(`{"version":1,"seen":{"<条件の名前>\t<表の見分け>":[行の見分け…]}}`)。表の見分けは開くパスの並び、行の見分けはノートのファイルのパス、CSV・TSV は表のパスと行の値の並び(tbd~notify.csv-row-id)。記録に無い表は初めての確かめで、当たっている行を覚えるだけ(notify.first-silent)。新しい記録は、当たり続けている行と鳴らせた行だけ(外れた行は忘れ、鳴らせなかった行は次にまた鳴らす)。読めない表の記録は触らない。読めない記録は空として読み、どの表も初めてになる(notify.state-broken)。書くのは設定と同じく一時ファイルからの名前の変更。
+- **錠**: 同じ置き場の `notify.lock` を `File::lock`(標準の、ファイルの錠。MSRV 1.90 で使える)で取り、記録を読んでから鳴らして書くまで持つ。画面と `--notify`、2つの `--notify` が同時に確かめても、同じ行は1回だけ鳴る。錠を待つのは裏の糸なので、画面は止まらない。
+- **まとめ**: 1つの項目の1回の確かめで、範囲の表の全部を合わせた新しい行の数が `group_over` を超えたら1件にする。題は条件の見せる名前。どれかの出す先に届けば、まとめた行を全部覚える。
+- **端末の合図**: 環境変数で端末を見分け、合図を1つだけ作る(`detect_term`)。kitty は OSC 99、iTerm2 は OSC 9、Ghostty・WezTerm・foot・Windows Terminal は OSC 777、ほかは BEL。tmux の中では TERM と TERM_PROGRAM が tmux のものになるので、外の端末が残す環境変数(`KITTY_WINDOW_ID`・`ITERM_SESSION_ID`・`GHOSTTY_RESOURCES_DIR`・`WEZTERM_PANE`・`WT_SESSION`)でも見分け、DCS `tmux;` で包む(ESC は2つに重ねる)。画面では、糸が作ったバイトを受け取り、描いたあとに端末へ書く(描く途中の出力に混ぜない)。
+- **OS の通知**: macOS は `osascript -`(台本は標準入力、題と文は引数)。Linux は `notify-send --app-name=mdgrid -- 題 文`。Windows と WSL は Windows PowerShell 5.1(`powershell.exe -EncodedCommand`)の WinRT のトーストで、登録の要らない PowerShell の AUMID で出す。題と文は環境変数で渡し、台本の文字に混ぜない(WSL は `WSLENV` に名前を足す)。WSL は Linux より先に、`WSL_DISTRO_NAME` かカーネルの版の名前(`/proc/sys/kernel/osrelease`)の `microsoft` で見分ける。却下: PowerShell 7(`pwsh`)は WinRT の型を読めない。却下: 通知の crate(依存を足さず、OS に元からある仕組みだけで出す)。
+- **プログラムの動かし方**: シェルを通さず、出力は捨て、`TIMEOUT`(10 秒。tbd~notify.timeout)で止める。Windows では窓を出さない旗(`CREATE_NO_WINDOW`)を付ける。値の制御文字は、どの出す先でも空白にしてから渡す(`clean`)。
+- **試験**: 画面の試験は出す先を `TestOutlet` に差し替え(`#[cfg(test)]`)、記録は一時のフォルダに置く(App の `notify.dir` の既定は None で、main が状態の置き場を入れる。試験が本物の置き場に書かないため)。時刻は `notify_start(today, now)` に渡す。
+
 ## ワークスペースを横断して探す(navigation.across-*。2026-11-21)
 
 - **入れ切り**: 設定の `[search] across`(全体だけ)が真のときだけ、パレットとヘルプにコマンド `across_search` を出す(`App::command_shown`)。コマンドは読むだけの起動でも出す `READ_COMMANDS` に置く。書くコマンドの表(`COMMANDS`)に置くと、既定の設定でパレットに出ることを確かめる main の試験が落ちる(reverse-run)。

@@ -250,6 +250,28 @@ NoticeNoNote = "{0} não existe"
 NoticeNotText = "{0} não é lido ({1})"
 ## notice.layout: {0} は欄に入らない行の数。
 NoticeMore = "mais {0} linhas"
+## notify.opt-in: [[notify]] の形。
+WantNotifyArray = "um array de tabelas ([[notify]])"
+RsnNotifyNeedCond = "precisa de cond (o nome de uma condição nomeada) (ignorado)"
+## notify.item: {0} は前の項目と同じ条件の名前。
+RsnNotifyDupCond = "a mesma condição \"{0}\" de um item anterior (ignorado)"
+## notify.to: {0} は知らない出す先の名前。
+RsnNotifyUnknownTo = "destino desconhecido \"{0}\" (terminal, desktop ou command; ignorado)"
+RsnNotifyNoCommand = "to tem command, mas falta command (o programa e seus argumentos) (nada é enviado a um comando)"
+## notify.group: {0} はまとめた行の数。
+NotifyGroup = "{0} novas"
+## notify.fail: {0} は出す先の名前(terminal など)、{1} は理由。
+NotifyFailed = "não foi possível avisar por {0}: {1}"
+## notify.state-broken: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateRebuilt = "não foi possível ler o registro de avisos {0}; as linhas que atendem agora foram memorizadas de novo sem avisar ({1})"
+## notify.state: {0} は記録のファイルのパス、{1} は理由。
+NotifyStateUnwritable = "não é possível gravar o registro de avisos {0} ({1})"
+## notify.fail: {0} は打ち切った秒数。
+NotifyTimeout = "interrompido após {0} segundos"
+## notify.fail: {0} はプログラム、{1} は終了コード。
+NotifyExit = "{0} terminou com o código {1}"
+## notify.fail: {0} はプログラム、{1} は理由。
+NotifyNoProgram = "não é possível executar {0} ({1})"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "não há tabela chamada {0} no marcador (tabelas: {1}); a pasta foi aberta como está"
 RsnStarterUnknown = "não há kit inicial chamado {0}; aberto com o que o próprio marcador diz (mdgrid --starters os lista)"
@@ -2103,6 +2125,8 @@ CfgTemplates = "Peças nomeadas de um perfil ([look], [display], [dates], [edit]
 CfgConditions = "Condições nomeadas: uma expressão (expr) escrita uma vez e usada pelo nome. cond(\"<name>\") em\nqualquer expressão, uma tecla de dígito (key = 1-9) que mostra só as linhas que batem, a seção\nde filtros dos ajustes da visão, e hide = true para ocultar as linhas que batem em todas as\ntabelas. label é o nome mostrado."
 ## 設定の項目 `notices` の説明(行の区切りは --print-config のコメントの行)。
 CfgNotices = "O quadro de avisos acima do cabeçalho, mostrado só quando há itens escritos. Um item de contagem\nconta as linhas que atendem a uma condição nomeada ([conditions]) na tabela, no espaço de\ntrabalho ou em tabelas nomeadas; um item de nota mostra as primeiras linhas do corpo de uma\nnota. mdgrid --notices imprime as mesmas linhas."
+## 設定の項目 `notify` の説明(行の区切りは --print-config のコメントの行)。
+CfgNotify = "Avisa quando uma linha passa a atender uma condição nomeada ([conditions]), um aviso por linha, no\nterminal, na área de trabalho ou por um comando seu. Linhas que já atendem ao adicionar o item são\nmemorizadas em silêncio; mais linhas novas que group_over em uma verificação viram um só aviso.\nVerifica enquanto o mdgrid está aberto; mdgrid --notify verifica uma vez para uma execução agendada."
 
 # ---- stack: tables stacked top to bottom and pages (stack.*) ----
 SecStack = "Tabelas empilhadas"

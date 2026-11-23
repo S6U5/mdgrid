@@ -915,3 +915,36 @@ lines = 2
 [conditions.overdue]
 expr = 'due < today() && status != "done"'
 ```
+
+## `[[notify]]` — 知らせ
+
+### `notify`
+
+- 型: `表の並び([[notify]] の下に cond・scope・title・text・to・group_over・group_text・command)`
+- 既定: なし
+- 範囲: 全体だけ
+
+[名前を付けた条件](#conditions--名前を付けた条件)に行が新しく当たったときに知らせる。思い出したい時刻が来たときや、タスクが期限切れになったときに使う。ここに項目を書くまでは何も起きない。`[[notify]]` の1つが1つの条件を見張り、1つの条件を見張れるのは1項目だけ。
+
+- `cond` は見張る条件。
+- `scope` は見張る表で、`"workspace"`(今のワークスペースの表の全部。既定)・`"table"`(開いている表)・表の名前の並びから選ぶ。
+- `title` と `text` は知らせの題と文。`{列の名前}` はその行の値になり、`{file.name}` や `{formula.x}` も使える。行に無い列は空になる。書かなければ、題は条件の見せる名前、文はノートの名前。
+- `to` は出す先の並びで、`"desktop"`(OS の通知。既定)・`"terminal"`(端末の通知)・`"command"`(自分のプログラム)から選ぶ。
+- `command` は `"command"` で動かすプログラムと引数の並び。引数の `{title}`・`{text}`・`{path}` を埋める。シェルを通さないので、ノートの値が命令として動くことはない。
+- 1回の確かめで新しく当たった行が `group_over`(既定 3)を超えたら、1件の知らせにまとめる。`group_text` はその文で、`{count}` が行の数になる(既定は「新しく 4 件」)。
+
+知らせるのは、行が当たり始めたときの1回だけ。当たり続けている間は黙り、外れてからまた当たれば、もう一度知らせる。項目を足したときに既に当たっている行は、知らせずに覚えるだけなので、一度にたくさん届くことはない。この記録は mdgrid の状態のフォルダに置き、ノートには書かない。
+
+確かめるのは、表を開いたとき・保存したあと・開いている間の1分ごと。届けられなかったときは、理由を画面の下に1回だけ出し、その行は次の確かめでまた知らせる。
+
+OS の通知は、macOS・Windows・WSL では OS に元からある仕組みで出す。WSL の中からは Windows の通知に出る。Linux では `notify-send` が要る。`"terminal"` では、使っている端末(iTerm2・kitty・Ghostty・WezTerm・foot・Windows Terminal)が読む合図を1つだけ送り、ほかの端末にはベルを鳴らす。tmux の中では `set -g allow-passthrough on` を入れておく。
+
+```toml
+[[notify]]
+cond = "remind"
+text = "{title} ({remind})"
+to = ["desktop", "terminal"]
+
+[conditions.remind]
+expr = 'remind <= now() && status != "done"'
+```

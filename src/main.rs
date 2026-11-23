@@ -1429,6 +1429,8 @@ fn open_app(
     );
     let color = ColorMode::detect(|k| std::env::var(k).ok());
     let mut app = App::new(target.src, color);
+    // notify.state: 知らせの記録は見た目の状態の置き場に持つ。
+    app.notify.dir = config::state_dir();
     app.prof.ui = ui;
     // SR-36: nerd_font = "auto" は端末の名前で決める(丸い端を自分で描く端末だけ)。
     app.prof.term_program = std::env::var("TERM_PROGRAM").ok();
@@ -1779,6 +1781,93 @@ pub(crate) fn count_tables(
                     .count()
             });
             (name.clone(), path.clone(), counted)
+        })
+        .collect()
+}
+
+/// notify.item・notify.text・notify.new-match: 表ごとに、表の行(`.base` の最上位の絞り込みと、いつも隠す条件
+/// `hides` のあと)のうち `cond` に当たる行を、項目の題と文を埋めて返す。開けない表は理由にする。表の見分けは
+/// 開くパスの並び。行の見分けは、ノートはファイルのパス、CSV・TSV は表のパスと行の値の並び
+/// (tbd~notify.csv-row-id)。開いている画面(裏の糸)と `--notify` が使う。
+pub(crate) fn notify_hits(
+    places: &[(String, Vec<PathBuf>)],
+    cond: &mdgrid::expr::Expr,
+    hides: &[mdgrid::expr::Expr],
+    item: &mdgrid::notify::Item,
+    label: &str,
+    today: i64,
+    now: i64,
+) -> Vec<(String, Result<Vec<mdgrid::notify::Hit>, String>)> {
+    use mdgrid::notify::{fill, Hit};
+    places
+        .iter()
+        .map(|(_, paths)| {
+            let key = paths
+                .iter()
+                .map(|p| p.display().to_string())
+                .collect::<Vec<_>>()
+                .join("\n");
+            let hits = open_target(paths, None).map(|t| {
+                let mut src = t.src;
+                while !src.load(LOAD_BUDGET).done {}
+                let base = t.base.map(|(b, _, _)| b);
+                let prop = |r: &mdgrid::source::RowId, k: &str| src.get(r, k).value;
+                let eval = |r: &mdgrid::source::RowId, e: &mdgrid::expr::Expr| match &base {
+                    Some(b) => b.eval_row(src.as_ref(), &prop, r, e, today, now),
+                    None => base::eval_plain(src.as_ref(), &prop, r, e, today, now),
+                };
+                let notes = src.notes();
+                let columns = src.columns();
+                src.rows()
+                    .iter()
+                    .filter(|r| {
+                        base.as_ref()
+                            .is_none_or(|b| b.keeps(src.as_ref(), &prop, r, today, now))
+                    })
+                    .filter(|r| !hides.iter().any(|e| mdgrid::expr::passes(&eval(r, e))))
+                    .filter(|r| mdgrid::expr::passes(&eval(r, cond)))
+                    .map(|r| {
+                        let plain = |k: &str| src.get(r, k).value.as_ref().map(print::value_plain);
+                        // notify.text: `{列の名前}` はその行の値。`file.*`・`formula.*` は式として評価する。無い列は空。
+                        let value = |k: &str| {
+                            let computed = ["file.", "formula.", "note."]
+                                .iter()
+                                .any(|p| k.starts_with(p));
+                            if computed {
+                                if let Ok(e) = mdgrid::expr::parse(k) {
+                                    return Some(print::val_plain(&eval(r, &e)));
+                                }
+                            }
+                            Some(plain(k).unwrap_or_default())
+                        };
+                        let (path, _) = src.locate(r);
+                        let (id, name) = if notes {
+                            let name = src.file(r).map(|f| f.basename).unwrap_or_default();
+                            (r.0.clone(), name)
+                        } else {
+                            let values: Vec<String> = columns
+                                .iter()
+                                .map(|c| plain(c).unwrap_or_default())
+                                .collect();
+                            let first = values.first().cloned().unwrap_or_default();
+                            (
+                                format!("{}\u{1f}{}", path.display(), values.join("\u{1f}")),
+                                first,
+                            )
+                        };
+                        Hit {
+                            id,
+                            path,
+                            title: item
+                                .title
+                                .as_deref()
+                                .map_or_else(|| label.to_string(), |t| fill(t, &value)),
+                            text: item.text.as_deref().map_or(name, |t| fill(t, &value)),
+                        }
+                    })
+                    .collect()
+            });
+            (key, hits)
         })
         .collect()
 }
@@ -2510,6 +2599,8 @@ fn event_loop(
         tick(app);
         // notice.background: 裏の糸で数えた通知の欄の数を拾う。
         app.notice_poll();
+        // notify.while-open: 裏の糸で確かめた知らせの結果を拾い、時が来ていれば確かめ始める。
+        app.notify_poll();
         // navigation.across-progress: 横断の検索で読み終えた表の結果を拾う。
         app.across_poll();
         if !app.loaded() {
@@ -2523,6 +2614,12 @@ fn event_loop(
         execute!(term.backend_mut(), BeginSynchronizedUpdate)?;
         term.draw(|f| ui::draw_screen(f, app))?;
         execute!(term.backend_mut(), EndSynchronizedUpdate)?;
+        // notify.terminal: 端末の通知の合図は、描いたあとに送る(描く途中の出力に混ぜない)。
+        let bytes = app.notify_take_term();
+        if !bytes.is_empty() {
+            term.backend_mut().write_all(&bytes)?;
+            term.backend_mut().flush()?;
+        }
         if app.cursor_shape() != shape {
             shape = app.cursor_shape();
             set_cursor_shape(term.backend_mut(), shape)?;
