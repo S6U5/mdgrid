@@ -71,7 +71,7 @@ from collections import Counter
 from functools import lru_cache
 
 TOOL_NAME = "trace-gate"
-TOOL_VERSION = "0.37.0"
+TOOL_VERSION = "0.40.0"
 LEDGER_FORMAT = "trace-gate-ledger"
 FINDINGS_FORMAT = "trace-gate-findings"
 FORMAT_VERSION = 1
@@ -220,7 +220,6 @@ RULES = {
     "req-duplicate": "名前は1つの要求に1つ。消した要求の名前も使い回さない(古い印が別の要求に結びつくため)",
     "name-reused": "名前の表(設定の renames)で付け替えた旧い名前か消した名前を、今の要求に使わない(古いテストの印が新しい意味の要求に黙って結びつくため)。新しい名前を付ける",
     "renames-malformed": "名前の表の行は「| `旧い名前` | `新しい名前` |」か「| `旧い名前` | 消した(理由) |」。旧い名前は1行に1つ、行は付け替えた順に足し、前の行の旧い名前を新しい名前に使わない",
-    "p0-multi-criteria": "P0 は受け入れの基準を1つにする(テストで1つの「はい/いいえ」に写し、P0 の確かめを薄めないため)。基準ごとに要求を分けるか、P0 でない基準を P1 の要求に移す(要求の変更は PR で人が承認する)",
     "req-none": "設定の requirements が要求の正本を指しているか確かめる。要求が0件のまま通すと、何も見ずに通る",
     "inputs-present": "設定の tests か requirements に書いた置き場が何にも当たらない(グロブでない道が無い、グロブに当たるファイルが無い、当たったテストが全部 exclude で外れた)。置き場か exclude を直す(0件のまま通すと何も見ずに通る)",
     "open-dangling": "製品のコードのコメントに残った tbd~名前 が正本の未確定事項に無い。決まったなら仮置きのコメントを消し、残っているなら正本に未確定事項を書く",
@@ -1265,17 +1264,6 @@ def parse_block(lines, i, head, path, findings):
     r.ups, r.up_titles = up_refs(r.sources), up_titles(r.sources)
     r.fingerprint = fingerprint(r.text, r.accepts, r.treatment == "廃止")
     r.dupes = []  # 同じ名前の2つ目から後ろの (道, 行)。あれば名前は曖昧で、どちらも確かめたと数えない
-    if r.priority == "P0" and len(r.accepts) > 1 and "line" in r.accept_forms:  # 欄の数だけを見る。字下げの形の欄だけなら、場面ごとに分けた欄として出さない
-        findings.append(
-            Finding(
-                "p0-multi-criteria",
-                path,
-                no,
-                "P0 の要求 %s に 受け入れ: の欄が %d つある(P0 は受け入れの基準を1つにする)" % (r.name, len(r.accepts)),
-                key=r.name,
-                severity="warning",
-            )
-        )
     return nxt, r
 
 
@@ -2030,7 +2018,24 @@ def match_close(mask, pos, open_ch, close_ch):
 
 
 class Test(object):
-    __slots__ = ("path", "name", "node", "start", "end", "lang", "skip", "empty", "links", "qual", "trivial", "scope", "platform", "quarantined", "heads")
+    __slots__ = (
+        "path",
+        "name",
+        "node",
+        "start",
+        "end",
+        "lang",
+        "skip",
+        "empty",
+        "links",
+        "qual",
+        "trivial",
+        "scope",
+        "platform",
+        "host",
+        "quarantined",
+        "heads",
+    )
 
     def __init__(self, path, name, start, end, lang, skip=None, empty=False, qual=""):
         self.path, self.name, self.start, self.end, self.lang = path, name, start, end, lang
@@ -2041,6 +2046,7 @@ class Test(object):
         )
         self.scope = ""  # Rust: ファイルの中で囲む mod の名前の並び(a::tests)。走らせた結果の名前の照らしにだけ使い、node には入れない
         self.platform = False  # 条件つきの条件が OS か CPU で決まる(1つの OS の結果で走らないのは誤りでない)
+        self.host = None  # 条件つきのテストが、検査を走らせている OS で組まれて走るか(True・False・None は決まらない)
         self.quarantined = False  # 設定の quarantine にある(確かめに数えない)
         self.node = "%s::%s" % (path, (qual + "::" if qual else "") + name)
 
@@ -2110,9 +2116,29 @@ GO_FUNC = re.compile(r"\bfunc\s+(Test\w*)\s*\(\s*(\w+)\s+\*testing\.T\s*\)")
 CFG_TOKEN = re.compile(r'\s*(?:([A-Za-z_][\w]*)|(=)|("(?:\\.|[^"\\])*")|([(),]))')
 
 
-def cfg_value(text):
+def rust_host():
+    """検査を走らせている OS の、Rust の cfg の OS の設定の値(up~marks.host-os)。target_arch などは Python から確かに
+    読めないので持たない(述語は決まらない)。"""
+    plat = sys.platform
+    if plat.startswith(("win32", "cygwin", "msys")):
+        target_os = "windows"
+    elif plat == "darwin":
+        target_os = "macos"
+    elif plat.startswith("linux"):
+        target_os = "linux"
+    else:
+        target_os = re.sub(r"\d+$", "", plat)
+    return {"target_os": target_os, "target_family": "windows" if os.name == "nt" else "unix"}
+
+
+# 検査を走らせている OS(試験はこれを差し替えて、ほかの OS の数え方を見る)
+RUST_HOST = rust_host()
+
+
+def cfg_value(text, host=None):
     """Rust の cfg の述語の値。True(いつも真)・False(いつも偽)・None(環境と feature で決まるか読めない)。
-    test はテストを組むときに真。中身の無い any() は偽、all() は真(Rust のリファレンスの条件つきのコンパイル)。"""
+    test はテストを組むときに真。中身の無い any() は偽、all() は真(Rust のリファレンスの条件つきのコンパイル)。
+    host(`RUST_HOST` の形)を渡すと、unix・windows・target_os・target_family をその OS の値で読む。"""
     toks, pos = [], 0
     while pos < len(text):
         m = CFG_TOKEN.match(text, pos)
@@ -2120,7 +2146,7 @@ def cfg_value(text):
             if text[pos:].strip():
                 return None
             break
-        toks.append(m.group(1) or m.group(2) or (m.group(3) and '"') or m.group(4))
+        toks.append(m.group(1) or m.group(2) or m.group(3) or m.group(4))
         pos = m.end()
 
     def parse(i):
@@ -2139,7 +2165,12 @@ def cfg_value(text):
                 return (True if True in vals else False if all(v is False for v in vals) else None), i
             return (False if False in vals else True if all(v is True for v in vals) else None), i
         if i + 1 < len(toks) and toks[i + 1] == "=":
+            value = toks[i + 2]
+            if host and name in ("target_os", "target_family") and value.startswith('"'):
+                return host[name] == value[1:-1], i + 3
             return None, i + 3
+        if host and name in ("unix", "windows"):
+            return host["target_family"] == name, i + 1
         return {"test": True, "true": True, "false": False}.get(name), i + 1
 
     try:
@@ -2480,6 +2511,27 @@ def rust_cfg_blocks(mask):
     return out
 
 
+def rust_cfg_host(attr_texts, ignore_preds):
+    """条件つきのテストが、検査を走らせている OS で組まれて ignore にならないか(up~marks.host-os)。cfg の述語が1つでも
+    偽か ignore の述語が真なら False、全部が決まって組まれるなら True、OS の外の語(feature など)を含めば None。"""
+    runs = True
+    for attrs in attr_texts:
+        for m in RUST_CFG.finditer(attrs):
+            close = match_close(attrs, m.end() - 1, "(", ")")
+            value = cfg_value(attrs[m.end() : close], RUST_HOST)
+            if value is False:
+                return False
+            if value is None:
+                runs = None
+    for pred in ignore_preds:
+        value = cfg_value(pred, RUST_HOST)
+        if value is True:
+            return False
+        if value is None:
+            runs = None
+    return runs
+
+
 def rust_cfg_skip(skip, attr_texts):
     """テストに効く cfg の属性(関数・囲む mod・内の属性)を読み、いつも偽なら skip、環境で決まるなら conditional を足す。"""
     if skip == "skip":
@@ -2541,11 +2593,13 @@ def scan_brace_lang(path, text, lang, helpers=()):
             close = match_close(mask, brace, "{", "}")
             body = mask[brace : close + 1]
             skip = "skip" if SKIP_WORDS["rust"].search(attrs) else None
+            ignore_preds = []
             for ca in re.finditer(r"#\s*\[\s*cfg_attr\s*\((.*)\]", attrs):
                 pred, _, rest = ca.group(1).rpartition(",") if "ignore" in ca.group(1) else ("", "", "")
                 if skip is None and re.search(r"\bignore\b", rest):
                     value = cfg_value(pred)
                     skip = "skip" if value is True else None if value is False else "conditional"
+                    ignore_preds.append(pred)
             cond_attrs = [attrs] + [a for a, lo, hi in cfg_blocks if lo <= f.start() <= hi]
             skip = rust_cfg_skip(skip, cond_attrs)
             empty = not (has_assert("rust", body, hp) or re.search(r"#\s*\[\s*should_panic", attrs))
@@ -2556,6 +2610,8 @@ def scan_brace_lang(path, text, lang, helpers=()):
             tests[-1].platform = skip == "conditional" and any(
                 RUST_OS.search(x.group(0)) for a in cond_attrs for x in re.finditer(r"#\s*\[\s*cfg(?:_attr)?\s*\(.*", a)
             )
+            if skip == "conditional":
+                tests[-1].host = rust_cfg_host(cond_attrs, ignore_preds)
     elif lang == "go":
         for m in GO_FUNC.finditer(mask):
             brace = mask.find("{", m.end())
@@ -3025,7 +3081,12 @@ def link(reqs, tests, findings, renames=None):
             continue
         if r.needs is None:
             continue
-        have = {ln["kind"] for t, ln in linked if ln.get("status") == "covers" and not t.skip and not t.empty and not t.quarantined}
+        # up~marks.host-os: OS だけで決まる条件つきは、この OS で組まれて走るなら種類に数える(P0 の確かめの good には入れない)
+        have = {
+            ln["kind"]
+            for t, ln in linked
+            if ln.get("status") == "covers" and (not t.skip or (t.skip == "conditional" and t.host is True)) and not t.empty and not t.quarantined
+        }
         for kind in sorted(r.needs - have):
             findings.append(
                 Finding(
