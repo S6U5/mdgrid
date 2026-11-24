@@ -345,3 +345,26 @@ fn test_rel_1_registered_base_uses_vault_root() {
         plain.0.join("b")
     );
 }
+
+#[test]
+fn test_current_table_is_not_added_when_its_notes_are_in_tables() {
+    // [utest -> req~relations.map~2] 同じ根を絞り込みで分けた表の1つ(根のフォルダで開く)を開いたとき、今の表のノートが
+    // 全部どれかの表のフォルダの下にあれば、今の表を別の箱として足さない。どの表にも無いノートがあれば足す。
+    let root = PathBuf::from("/w");
+    let tables = vec![
+        Table {
+            name: "タスク".into(),
+            dir: root.join("Tasks"),
+        },
+        Table {
+            name: "ルーチン".into(),
+            dir: root.join("Routines"),
+        },
+    ];
+    let in_tables = vec![root.join("Tasks/a.md"), root.join("Tasks/b.md")];
+    assert!(!adds_current(&tables, &root, &in_tables));
+    let loose = vec![root.join("Tasks/a.md"), root.join("memo.md")];
+    assert!(adds_current(&tables, &root, &loose));
+    // 今の表のフォルダが表のフォルダの下なら、今までどおり足さない。
+    assert!(!adds_current(&tables, &root.join("Tasks/sub"), &loose));
+}

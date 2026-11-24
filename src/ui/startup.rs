@@ -68,6 +68,8 @@ impl App {
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
             warnings.push(e);
         }
+        // routine.opt-in: 範囲の表のうち、印に `runs` を書いた表がルーチンの表(書き方が違えば警告して外す)。
+        warnings.extend(self.configure_routine(&s.target));
         // stack.page-store: 範囲のページ(読めない行は警告して飛ばす。stack.rs)。
         warnings.extend(self.load_pages(&s.target, s.config_dir.as_deref()));
         // TR-2: 印に書いた木の設定(書き方が違えば警告して木を出さない)。
@@ -81,6 +83,11 @@ impl App {
         // KB-1: 印に書いたカンバンの設定(書き方が違えば警告して設定を外す。推定は別に効く)。
         let (kanban, warns) = mdgrid::workspace::marker_kanban(&s.target);
         self.kanban_spec = kanban;
+        warnings.extend(warns);
+        // navigation.parent-child-config: 印に書いた親子の設定(表でないか key が無ければ警告して外す。列が表に
+        // 無いことは読み終えてから確かめる)。
+        let (children, warns) = mdgrid::workspace::marker_children(&s.target);
+        self.children_spec = children;
         warnings.extend(warns);
         // CH-1: 印に書いたグラフの設定(書き方が違うグラフは警告して外す。無くても推定で開ける)。
         let (charts, warns) = mdgrid::workspace::marker_chart(&s.target);

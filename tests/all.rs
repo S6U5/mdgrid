@@ -99,6 +99,8 @@ mod test_frontmatter;
 mod test_gantt_docs;
 #[path = "test_gantt_e2e.rs"]
 mod test_gantt_e2e;
+#[path = "test_group_values.rs"]
+mod test_group_values;
 #[path = "test_hwheel_e2e.rs"]
 mod test_hwheel_e2e;
 #[path = "test_i18n.rs"]
@@ -191,6 +193,8 @@ mod test_review6;
 mod test_review_fixes;
 #[path = "test_root_folder.rs"]
 mod test_root_folder;
+#[path = "test_routine_e2e.rs"]
+mod test_routine_e2e;
 #[path = "test_row_lines_config.rs"]
 mod test_row_lines_config;
 #[path = "test_row_lines_views.rs"]

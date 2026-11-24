@@ -178,12 +178,203 @@ fn test_rel_7_empty_workspace() {
     assert!(m.boxes.is_empty());
 }
 
+/// tasks の routine が routines のノートを、parent が tasks のノートを指すワークスペース。
+fn self_workspace(name: &str) -> (Tmp, Vec<Table>) {
+    let t = Tmp::new(name);
+    t.write("routines/weekly.md", "---\nevery: week\n---\n");
+    t.write(
+        "tasks/a.md",
+        "---\ndue: 2026-11-01\nroutine: \"[[weekly]]\"\n---\n",
+    );
+    t.write(
+        "tasks/b.md",
+        "---\ndue: 2026-11-02\nroutine: \"[[weekly]]\"\nparent: \"[[a]]\"\n---\n",
+    );
+    t.write("tasks/c.md", "---\nparent: \"[[a]]\"\n---\n");
+    let tables = vec![
+        Table::new("Tasks", &t.0.join("tasks")),
+        Table::new("Routines", &t.0.join("routines")),
+    ];
+    (t, tables)
+}
+
+/// つながり `k` の矢印の先のセル(盤の全部で1つだけのはず)。
+fn arrows_of(m: &Map, k: usize) -> Vec<(usize, usize, char)> {
+    let mut out = Vec::new();
+    for (y, row) in m.cells.iter().enumerate() {
+        for (x, c) in row.iter().enumerate() {
+            if c.role == Role::Arrow && c.link == Some(k) {
+                out.push((x, y, c.ch));
+            }
+        }
+    }
+    out
+}
+
+#[test]
+fn test_self_link_counts_as_second_link() {
+    // [utest -> req~relations.map-self-links~1] routine が routines を、parent が tasks を指すと、つながりは tasks → routines と tasks → tasks の2つで、盤にも矢印が2本ある。
+    let (_t, tables) = self_workspace("self_two");
+    let (infos, links) = read(&tables);
+    let mut got: Vec<(&str, &str, &str, bool)> = links
+        .iter()
+        .map(|l| (l.from.as_str(), l.column.as_str(), l.to.as_str(), l.many))
+        .collect();
+    got.sort_unstable();
+    assert_eq!(
+        got,
+        vec![
+            ("Tasks", "parent", "Tasks", false),
+            ("Tasks", "routine", "Routines", false),
+        ]
+    );
+    for ascii in [false, true] {
+        let m = layout(&infos, &links, ascii);
+        for (k, l) in links.iter().enumerate() {
+            assert_eq!(
+                arrows_of(&m, k).len(),
+                1,
+                "{}.{} の矢印(ascii {ascii}):\n{}",
+                l.from,
+                l.column,
+                text(&m)
+            );
+        }
+    }
+}
+
+#[test]
+fn test_self_link_loops_back_to_own_box() {
+    // [utest -> req~relations.map-self-links~1, req~relations.layout-readable~1] 同じ表を指す列は、その列の行の横から出て、同じ箱へ戻る矢印になる。行き先の側に多対一の 1。箱の文字は線で消えない。
+    let (_t, tables) = self_workspace("self_loop");
+    let (infos, links) = read(&tables);
+    let k = links
+        .iter()
+        .position(|l| l.from == "Tasks" && l.to == "Tasks")
+        .expect("tasks → tasks のつながり");
+    for ascii in [false, true] {
+        let m = layout(&infos, &links, ascii);
+        let s = text(&m);
+        let b = m.boxes[0];
+        let (right, left) = if ascii { ('<', '>') } else { ('◀', '▶') };
+        let arrows = arrows_of(&m, k);
+        assert_eq!(arrows.len(), 1, "{s}");
+        let (ax, ay, ach) = arrows[0];
+        // 矢印は箱の縁のすぐ外から、箱の中を向く。
+        let into_box = (ax == b.x + b.w && ach == right) || (ax + 1 == b.x && ach == left);
+        assert!(into_box, "({ax}, {ay}) {ach}:\n{s}");
+        assert!(b.y < ay && ay + 1 < b.y + b.h, "箱の行に入る:\n{s}");
+        // 出る所は parent の行の、矢印と同じ側の縁のすぐ外で、元の側の札 N。
+        let py = (b.y..b.y + b.h)
+            .find(|&y| m.line(y).contains("parent"))
+            .expect("parent の行");
+        let sx = if ach == right { b.x + b.w } else { b.x - 1 };
+        let start = m.cells[py][sx];
+        assert_eq!(
+            (start.ch, start.role, start.link),
+            ('N', Role::Label, Some(k)),
+            "{s}"
+        );
+        // 行き先の側の札は多対一の 1(矢印の手前)。
+        let bx = if ach == right { ax + 1 } else { ax - 1 };
+        assert_eq!(
+            (m.cells[ay][bx].ch, m.cells[ay][bx].link),
+            ('1', Some(k)),
+            "{s}"
+        );
+        // 箱の文字は残る。
+        assert!(m.line(b.y + 1).contains("Tasks (3)"), "{s}");
+        assert!(m.line(py).contains("parent"), "{s}");
+    }
+}
+
+#[test]
+fn test_column_marks_by_kind() {
+    // [utest -> req~relations.map-column-types~1] 箱の列の印: 数・日付・日時・チェック・リスト・札の列は見出しと同じ種類の印、リンクの列(つながりの元と、値の多くがリンクの列)はリンクの印。ただの文字の列は印なし。
+    let t = Tmp::new("marks");
+    t.write("routines/weekly.md", "---\nevery: week\n---\n");
+    t.write(
+        "tasks/a.md",
+        "---\nn: 3\ndue: 2026-11-01\nat: 2026-11-01T10:00\ndone: true\ntags: [x, y]\nstatus: todo\ntitle: first one\nroutine: \"[[weekly]]\"\nref: \"[[nowhere]]\"\n---\n",
+    );
+    t.write(
+        "tasks/b.md",
+        "---\nn: 5\ndue: 2026-11-02\nat: 2026-11-02T11:00\ndone: false\ntags: [y]\nstatus: todo\ntitle: second one\nroutine: \"[[weekly]]\"\nparent: \"[[a]]\"\nref: \"[[nowhere]]\"\n---\n",
+    );
+    t.write(
+        "tasks/c.md",
+        "---\nstatus: done\ntitle: third one\nparent: \"[[a]]\"\n---\n",
+    );
+    let tables = vec![
+        Table::new("Tasks", &t.0.join("tasks")),
+        Table::new("Routines", &t.0.join("routines")),
+    ];
+    let (infos, links, marks) = read_marked(&tables);
+    assert_eq!(infos.len(), marks.len());
+    assert_eq!(links.len(), 2, "{links:?}");
+    let mut tasks = marks[0].clone();
+    tasks.sort();
+    let mut want = vec![
+        ("n".to_string(), Mark::Number),
+        ("due".to_string(), Mark::Date),
+        ("at".to_string(), Mark::DateTime),
+        ("done".to_string(), Mark::Check),
+        ("tags".to_string(), Mark::List),
+        ("status".to_string(), Mark::Select),
+        ("routine".to_string(), Mark::Link),
+        ("parent".to_string(), Mark::Link),
+        ("ref".to_string(), Mark::Link),
+    ];
+    want.sort();
+    assert_eq!(tasks, want, "title はただの文字の列なので印なし");
+    // routines の every は1行だけの文字(くり返しが無い)なので印なし。
+    assert_eq!(marks[1], Vec::new());
+}
+
+#[test]
+fn test_layout_puts_marks_before_column_names() {
+    // [utest -> req~relations.map-column-types~1] 印は箱の列の名前の前(つながりの列も)に、空白を挟んで添える。
+    let (_t, tables) = self_workspace("marks_layout");
+    let (infos, links) = read(&tables);
+    let mark = |t: usize, c: &str| -> Option<String> {
+        (t == 0).then(|| match c {
+            "due" => "D".to_string(),
+            _ => "L".to_string(),
+        })
+    };
+    let m = layout_with(&infos, &links, false, &mark);
+    let s = text(&m);
+    assert!(s.contains("D due"), "{s}");
+    assert!(s.contains("L parent → Tasks"), "{s}");
+    assert!(s.contains("L routine → Routines"), "{s}");
+}
+
 #[test]
 #[ignore = "見本の盤を手で見るための出力(cargo test -- --ignored show_sample)"]
 fn show_sample() {
     let (_t, tables) = workspace("show");
     let (infos, links) = read(&tables);
     println!("{}", text(&layout(&infos, &links, false)));
+    // 自分へ戻る輪(relations.map-self-links)と、列の印(relations.map-column-types)。
+    let (t, mut tables) = self_workspace("show_self");
+    t.write(
+        "routines/weekly.md",
+        "---\nevery: week\nexample: \"[[a]]\"\n---\n",
+    );
+    t.write(
+        "tasks/d.md",
+        "---\nparent: \"[[a]]\"\nblocks:\n  - \"[[b]]\"\n  - \"[[c]]\"\n---\n",
+    );
+    tables.push(Table::new("Empty", &t.0.join("empty")));
+    let (infos, links, marks) = read_marked(&tables);
+    let mark = |i: usize, c: &str| {
+        marks[i]
+            .iter()
+            .find(|(x, _)| x == c)
+            .map(|(_, m)| format!("{m:?}").chars().next().unwrap().to_string())
+    };
+    println!("{}", text(&layout_with(&infos, &links, false, &mark)));
+    println!("{}", text(&layout_with(&infos, &links, true, &mark)));
 }
 
 #[test]
@@ -205,4 +396,72 @@ fn test_rel_7_control_chars_are_not_drawn() {
         pairs: Vec::new(),
     };
     assert!(!link_text(&l).chars().any(char::is_control));
+}
+
+/// 1つの印に、同じフォルダの中を `file.inFolder` で分けた表「タスク」と「ルーチン」を書いた台帳(スターター tasks-ai と同じ形)。
+fn marker_ledger(name: &str) -> (Tmp, Vec<Table>) {
+    let t = Tmp::new(name);
+    t.write(
+        ".mdgrid/workspace.toml",
+        "open = \"タスク\"\n\n[[table]]\nname = \"タスク\"\n\n[table.base]\nfilters = { and = ['file.inFolder(\"Tasks\")'] }\n\n[[table]]\nname = \"ルーチン\"\n\n[table.base]\nfilters = { and = ['file.inFolder(\"Routines\")'] }\n",
+    );
+    t.write(
+        "Tasks/請求書.md",
+        "---\nstatus: todo\nroutine: \"[[毎月の請求]]\"\n---\n",
+    );
+    t.write("Tasks/掃除.md", "---\nstatus: done\n---\n");
+    t.write(
+        "Routines/毎月の請求.md",
+        "---\nrecurrence: monthly 1\n---\n",
+    );
+    let tables = vec![
+        Table::new("タスク", &t.0.join("タスク.base")),
+        Table::new("ルーチン", &t.0.join("ルーチン.base")),
+    ];
+    (t, tables)
+}
+
+#[test]
+fn test_marker_tables_split_by_in_folder() {
+    // [utest -> req~relations.map~2] 同じフォルダの中を `file.inFolder` で分けた表は、それぞれ自分のフォルダのノートだけを数え、
+    // タスクの routine はルーチンへのつながりになる(どのノートも最後の表に入るのではない)。
+    let (_t, tables) = marker_ledger("inf1");
+    let (infos, links) = read(&tables);
+    let rows: Vec<(&str, usize)> = infos.iter().map(|i| (i.name.as_str(), i.rows)).collect();
+    assert_eq!(rows, vec![("タスク", 2), ("ルーチン", 1)]);
+    let edges: Vec<(&str, &str, &str)> = links
+        .iter()
+        .map(|l| (l.from.as_str(), l.column.as_str(), l.to.as_str()))
+        .collect();
+    assert_eq!(edges, vec![("タスク", "routine", "ルーチン")]);
+}
+
+#[test]
+fn test_vault_base_files_split_by_in_folder() {
+    // [utest -> req~relations.map~2] 保管庫(.obsidian のあるフォルダ)の根に置いた `.base` も、全体の絞り込みの
+    // `file.inFolder` のフォルダのノートを、その表のノートとして数える。
+    let t = Tmp::new("inf2");
+    std::fs::create_dir_all(t.0.join(".obsidian")).unwrap();
+    t.write(
+        "Tasks.base",
+        "filters:\n  and:\n    - file.inFolder(\"Tasks\")\n",
+    );
+    t.write(
+        "People.base",
+        "filters:\n  and:\n    - file.inFolder(\"People\")\n",
+    );
+    t.write("Tasks/a.md", "---\nowner: \"[[Alice]]\"\n---\n");
+    t.write("People/Alice.md", "---\nrole: dev\n---\n");
+    let tables = vec![
+        Table::new("Tasks", &t.0.join("Tasks.base")),
+        Table::new("People", &t.0.join("People.base")),
+    ];
+    let (infos, links) = read(&tables);
+    let rows: Vec<(&str, usize)> = infos.iter().map(|i| (i.name.as_str(), i.rows)).collect();
+    assert_eq!(rows, vec![("Tasks", 1), ("People", 1)]);
+    assert_eq!(links.len(), 1, "{links:?}");
+    assert_eq!(
+        (links[0].from.as_str(), links[0].to.as_str()),
+        ("Tasks", "People")
+    );
 }

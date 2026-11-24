@@ -677,6 +677,15 @@ impl Profile {
                             .collect();
                         t.insert("then".into(), toml::Value::Table(then));
                     }
+                    for (item, names) in [("icons", &r.icons), ("labels", &r.labels)] {
+                        if let Some(names) = names {
+                            let names = names
+                                .iter()
+                                .map(|(v, s)| (v.clone(), toml::Value::String(s.clone())))
+                                .collect();
+                            t.insert(item.into(), toml::Value::Table(names));
+                        }
+                    }
                     (c.clone(), toml::Value::Table(t))
                 })
                 .collect();
@@ -756,11 +765,52 @@ fn read_rules(
                     }
                 }
                 "then" => layer.then = read_then(v, file, &ip, w),
+                "icons" => layer.icons = read_names(v, file, &ip, w),
+                "labels" => layer.labels = read_names(v, file, &ip, w),
                 _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
+            }
+        }
+        // navigation.group-values-icon: 同じ表の values に無い値の字と名前は、警告して使わない(書き誤りに気づけるように)。
+        // values を広い範囲に書いたときは、ここでは確かめず、使うときに重ねた values で絞る(`Resolved::value_shown`)。
+        if let Some(values) = &layer.values {
+            for (item, names) in [("icons", &mut layer.icons), ("labels", &mut layer.labels)] {
+                let Some(names) = names else { continue };
+                names.retain(|value, _| {
+                    let known = values.contains(value);
+                    if !known {
+                        let p = join(&join(&cp, item), value);
+                        warn(w, file, &p, Msg::RsnNotInValues.text().to_string());
+                    }
+                    known
+                });
             }
         }
         out.insert(col.clone(), layer);
     }
+}
+
+/// `[rules.<列>] icons`・`labels` を読む: `値 = "文字"`。表でなければ警告して使わない。文字列でない項目は、警告してその
+/// 項目だけ飛ばす(navigation.group-values-icon)。
+fn read_names(
+    v: &toml::Value,
+    file: &str,
+    path: &str,
+    w: &mut Vec<String>,
+) -> Option<rules::Names> {
+    let Some(t) = v.as_table() else {
+        warn(w, file, path, not(Msg::WantValueTextTable));
+        return None;
+    };
+    let mut out = rules::Names::new();
+    for (value, text) in t {
+        match text.as_str() {
+            Some(s) => {
+                out.insert(value.clone(), s.to_string());
+            }
+            None => warn(w, file, &join(path, value), not(Msg::WantString)),
+        }
+    }
+    Some(out)
 }
 
 /// `[rules.<列>.then]` を読む: `値 = { 列 = "入れる文字" }`。表でない `then` は警告して使わない。表でない値の項目・
@@ -1039,6 +1089,10 @@ pub struct Resolved {
     pub rules: BTreeMap<String, Rule>,
     /// `[rules.<列>.then]`(cell-edit.then): 列 → 一緒に入れる値。狭い範囲に書けば、その列の分が丸ごと代わる。
     pub then: BTreeMap<String, rules::Then>,
+    /// `[rules.<列>] icons`(navigation.group-values-icon): 列 → 値 → 字。狭い範囲に書けば、その列の分が丸ごと代わる。
+    pub icons: BTreeMap<String, rules::Names>,
+    /// `[rules.<列>] labels`(navigation.group-values-icon): 列 → 値 → 見せる名前。重ね方は icons と同じ。
+    pub labels: BTreeMap<String, rules::Names>,
     /// 項目の道筋 → 出どころ(既定の項目は無い)。
     pub origins: BTreeMap<String, Origin>,
 }
@@ -1061,12 +1115,37 @@ impl Default for Resolved {
             types: BTreeMap::new(),
             rules: BTreeMap::new(),
             then: BTreeMap::new(),
+            icons: BTreeMap::new(),
+            labels: BTreeMap::new(),
             origins: BTreeMap::new(),
         }
     }
 }
 
 impl Resolved {
+    /// navigation.group-values-icon: 列 `col` の値 `v` の、まとまりの見出しとカンバンのレーンの題に出す文字
+    /// (「字 名前」。字だけなら「字 値」、名前だけなら名前)。字も名前も無い値と、重ねた values に無い値は None
+    /// (値のまま見せる)。セル・絞り込み・検索・出力は値のまま(tbd~navigation.value-labels-cells の仮決め)なので、
+    /// ここを呼ぶのは見出しと題だけ。
+    pub fn value_shown(&self, col: &str, v: &str) -> Option<String> {
+        let values = self.rules.get(col)?.values.as_ref()?;
+        if !values.iter().any(|x| x == v) {
+            return None;
+        }
+        let pick = |m: &BTreeMap<String, rules::Names>| {
+            m.get(col)
+                .and_then(|n| n.get(v))
+                .filter(|s| !s.trim().is_empty())
+                .cloned()
+        };
+        match (pick(&self.icons), pick(&self.labels)) {
+            (None, None) => None,
+            (Some(i), None) => Some(format!("{i} {v}")),
+            (None, Some(l)) => Some(l),
+            (Some(i), Some(l)) => Some(format!("{i} {l}")),
+        }
+    }
+
     /// 道筋の出どころ(無ければ既定)。
     pub fn origin(&self, path: &str) -> Place {
         self.origins.get(path).map_or(Place::Default, |o| o.place)
@@ -1147,6 +1226,15 @@ impl Resolved {
                 self.then.insert(col.clone(), t.clone());
                 self.mark(&format!("rules.{col}.then"), o);
             }
+            // navigation.group-values-icon: 字と名前は then と同じく、書いた範囲のものが丸ごと代わる。
+            if let Some(n) = &l.icons {
+                self.icons.insert(col.clone(), n.clone());
+                self.mark(&format!("rules.{col}.icons"), o);
+            }
+            if let Some(n) = &l.labels {
+                self.labels.insert(col.clone(), n.clone());
+                self.mark(&format!("rules.{col}.labels"), o);
+            }
         }
         for name in p.display.apply_to(&mut self.display) {
             self.mark(&format!("display.{name}"), o);
@@ -1217,6 +1305,8 @@ impl Resolved {
                     required: Some(r.required),
                     values: r.values.clone(),
                     then: self.then.get(c).filter(|t| !t.is_empty()).cloned(),
+                    icons: self.icons.get(c).filter(|n| !n.is_empty()).cloned(),
+                    labels: self.labels.get(c).filter(|n| !n.is_empty()).cloned(),
                 };
                 (c.clone(), l)
             })

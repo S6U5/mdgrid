@@ -91,6 +91,10 @@ pub struct Settings {
     /// NV-27: 親子で並べるときの親のキー(None は並べない)。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tree: Option<String>,
+    /// navigation.parent-child-config: 印の `children` で親子に並べる表で、このビューは親子をオフにした
+    /// (`tree` が None のときだけ効く。false なら印の `children` の `key` で並べる)。
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub tree_off: bool,
     /// NV-28: WBS の番号と進み具合(None は出さない。親子で並べているときだけ効く)。
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wbs: Option<Wbs>,
@@ -528,12 +532,85 @@ fn group_label(v: Option<&Value>) -> Option<String> {
 
 /// 行を絞り(全部の条件を満たす行だけ。NV-14・NV-19)、並べ(sorts があれば並べ直す。安定。型の合わない値と空は後ろ)、
 /// まとめる(Inherit は渡された groups のまま、Off はまとめない、By は列の値でまとめ直す。NV-15・NV-21)。
+/// 値の候補を見ない(`apply_with` に候補の無い列を渡したのと同じ)。
 pub fn apply(
     rows: Vec<RowId>,
     groups: Vec<(String, Range<usize>)>,
     s: &Settings,
     get: &dyn Fn(&RowId, &str) -> Option<Value>,
     kind: &dyn Fn(&str) -> Kind,
+) -> (Vec<RowId>, Vec<(String, Range<usize>)>) {
+    apply_with(rows, groups, s, get, kind, &|_| None)
+}
+
+/// まとまりの並びでの値の位置(navigation.group-values-order): 候補 `values` の何番目か。候補に無い値は None。
+fn rank_in(values: &[String], label: &str) -> Option<usize> {
+    values.iter().position(|v| v == label)
+}
+
+/// navigation.group-values-order: 渡されたまとまり(`.base` の groupBy の結果)を、値の候補 `values` の順に並べ直す。
+/// 候補に当たるまとまりを候補の順(`Desc` は逆)で先に、ほかは渡された順のまま後ろに置く(`.base` の組み立てが、
+/// 候補に無い値を値の順に、値の無い行を最後に並べている)。`is_empty` は値の無い行のまとまりか(見出しの文字が
+/// 候補と同じでも候補に数えない)。まとまりが行を隙間なく覆っていなければ、そのまま返す。
+pub fn order_groups(
+    rows: Vec<RowId>,
+    groups: Vec<(String, Range<usize>)>,
+    values: &[String],
+    dir: Dir,
+    is_empty: &dyn Fn(&Range<usize>) -> bool,
+) -> (Vec<RowId>, Vec<(String, Range<usize>)>) {
+    let mut at = 0;
+    for (_, r) in &groups {
+        if r.start != at || r.end < r.start {
+            return (rows, groups);
+        }
+        at = r.end;
+    }
+    if at != rows.len() {
+        return (rows, groups);
+    }
+    let mut keyed: Vec<(Option<usize>, usize)> = groups
+        .iter()
+        .enumerate()
+        .map(|(i, (h, r))| {
+            let rank = if is_empty(r) {
+                None
+            } else {
+                rank_in(values, h)
+            };
+            (rank, i)
+        })
+        .collect();
+    keyed.sort_by(|(a, i), (b, j)| match (a, b) {
+        (Some(x), Some(y)) => match dir {
+            Dir::Asc => x.cmp(y),
+            Dir::Desc => y.cmp(x),
+        },
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => i.cmp(j),
+    });
+    let mut rows_out = Vec::with_capacity(rows.len());
+    let mut groups_out = Vec::with_capacity(groups.len());
+    for (_, i) in keyed {
+        let (h, r) = &groups[i];
+        let start = rows_out.len();
+        rows_out.extend_from_slice(&rows[r.clone()]);
+        groups_out.push((h.clone(), start..rows_out.len()));
+    }
+    (rows_out, groups_out)
+}
+
+/// `apply` と同じ。まとめ直す列(Group::By)に値の候補(`values_of`。`[rules.<列>] values`)があれば、まとまりを
+/// 候補の順(昇順。降順は逆)に並べ、候補に無い値はそのあと(昇順なら値の順、降順なら逆)、値の無い行は最後にする
+/// (navigation.group-values-order。カンバンのレーンの順 kanban.open-lane-order とそろえる)。
+pub fn apply_with(
+    rows: Vec<RowId>,
+    groups: Vec<(String, Range<usize>)>,
+    s: &Settings,
+    get: &dyn Fn(&RowId, &str) -> Option<Value>,
+    kind: &dyn Fn(&str) -> Kind,
+    values_of: &dyn Fn(&str) -> Option<Vec<String>>,
 ) -> (Vec<RowId>, Vec<(String, Range<usize>)>) {
     let kinds: Vec<Kind> = s.filters.iter().map(|c| kind(&c.col)).collect();
     let keep = |r: &RowId| -> bool {
@@ -616,20 +693,30 @@ pub fn apply(
                     order.push((label, key, vec![r]));
                 }
             }
-            // まとまりの並び: 値の順(向きつき)。型の合わない値はその後ろ(文字の順)、空は最後。
+            // まとまりの並び: 値の候補があれば候補の順(向きつき)を先に(navigation.group-values-order)。ほかは値の順
+            // (向きつき)。型の合わない値はその後ろ(文字の順)、空は最後。
+            let values = values_of(col).unwrap_or_default();
             order.sort_by(|a, b| match (&a.0, &b.0) {
                 (None, None) => Ordering::Equal,
                 (None, Some(_)) => Ordering::Greater,
                 (Some(_), None) => Ordering::Less,
-                (Some(x), Some(y)) => match (&a.1, &b.1) {
-                    (None, None) => {
-                        let o = x.cmp(y);
-                        match dir {
-                            Dir::Asc => o,
-                            Dir::Desc => o.reverse(),
+                (Some(x), Some(y)) => match (rank_in(&values, x), rank_in(&values, y)) {
+                    (Some(i), Some(j)) => match dir {
+                        Dir::Asc => i.cmp(&j),
+                        Dir::Desc => j.cmp(&i),
+                    },
+                    (Some(_), None) => Ordering::Less,
+                    (None, Some(_)) => Ordering::Greater,
+                    (None, None) => match (&a.1, &b.1) {
+                        (None, None) => {
+                            let o = x.cmp(y);
+                            match dir {
+                                Dir::Asc => o,
+                                Dir::Desc => o.reverse(),
+                            }
                         }
-                    }
-                    _ => key_cmp(&a.1, &b.1, *dir),
+                        _ => key_cmp(&a.1, &b.1, *dir),
+                    },
                 },
             });
             let mut rows_out = Vec::new();

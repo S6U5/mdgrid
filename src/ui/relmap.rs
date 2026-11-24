@@ -13,7 +13,7 @@ use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
 use mdgrid::places::Place;
 use mdgrid::relations::{self, Table};
-use mdgrid::relmap::{self, Cell, Link, Map, Role, TableInfo};
+use mdgrid::relmap::{self, Cell, Link, Map, Mark, Role, TableInfo};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 
@@ -229,21 +229,29 @@ impl App {
             self.message = Some(Msg::RelMapNoTables.into());
             return;
         }
-        let (infos, links) = relmap::read(&tables);
-        let ascii = popup::frame(self) == popup::ASCII;
-        let map = relmap::layout(&infos, &links, ascii);
+        let (infos, links, mut marks) = relmap::read_marked(&tables);
         // 今の表を含む箱(いちばん深いもの)を選ぶ。
-        let here = self.current_table_dir();
-        let sel = here
-            .and_then(|d| {
-                infos
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, t)| d.starts_with(&t.dir))
-                    .max_by_key(|(_, t)| t.dir.components().count())
-                    .map(|(i, _)| i)
-            })
-            .unwrap_or(0);
+        let here = self.current_table_dir().and_then(|d| {
+            infos
+                .iter()
+                .enumerate()
+                .filter(|(_, t)| d.starts_with(&t.dir))
+                .max_by_key(|(_, t)| t.dir.components().count())
+                .map(|(i, _)| i)
+        });
+        if let Some(i) = here {
+            self.current_marks(&infos[i], &mut marks[i]);
+        }
+        let sel = here.unwrap_or(0);
+        let ascii = popup::frame(self) == popup::ASCII;
+        // relations.map-column-types: 箱の列の印は、色や部品の設定によらず字で出す(cell-view.not-color-only)。
+        let mark = |t: usize, c: &str| {
+            marks
+                .get(t)
+                .and_then(|m| m.iter().find(|(x, _)| x == c))
+                .map(|(_, m)| mark_text(self, *m).to_string())
+        };
+        let map = relmap::layout_with(&infos, &links, ascii, &mark);
         self.leave_screens();
         let mut rm = RelMap {
             infos,
@@ -255,6 +263,39 @@ impl App {
         rm.link = rm.links_of(sel).first().copied();
         self.relmap = Some(rm);
         self.set_mode(Mode::Relations);
+    }
+
+    /// relations.map-column-types: 今の表の列の印を、列の見出しと同じに設定で決めた型(`[types]`)と札にした列
+    /// (`[look.columns]` の chip)で直す。リンクの列の印はそのまま(つながりの元の列を見分けるため)。
+    fn current_marks(&self, info: &TableInfo, marks: &mut Vec<(String, Mark)>) {
+        for c in &info.columns {
+            let at = marks.iter().position(|(x, _)| x == c);
+            let now = at.map(|i| marks[i].1);
+            if now == Some(Mark::Link) {
+                continue;
+            }
+            let set = self.prof.resolved.types.get(c).copied();
+            let text = set.map_or(matches!(now, None | Some(Mark::Select)), |k| {
+                k == mdgrid::types::Kind::Text
+            });
+            let want = if text && self.cells.forced_chip(c) {
+                Some(Mark::Select)
+            } else {
+                match set {
+                    Some(mdgrid::types::Kind::Text) => now.filter(|m| *m == Mark::Select),
+                    Some(k) => Mark::of_kind(k),
+                    None => now,
+                }
+            };
+            match (at, want) {
+                (Some(i), Some(m)) => marks[i].1 = m,
+                (Some(i), None) => {
+                    marks.remove(i);
+                }
+                (None, Some(m)) => marks.push((c.clone(), m)),
+                (None, None) => {}
+            }
+        }
     }
 
     /// ワークスペースの表(登録した表と今の表)を今読む。
@@ -369,6 +410,21 @@ impl App {
         self.switch_select = None;
         self.begin_quit();
     }
+}
+
+/// relations.map-column-types: 箱の列の印の字(列の見出しと同じ型の印と、リンクの列の印)。
+fn mark_text(app: &App, m: Mark) -> &'static str {
+    use mdgrid::types::Kind;
+    let kind = match m {
+        Mark::Link => return super::glyphs::glyph(app, super::glyphs::Glyph::Link),
+        Mark::Number => Kind::Number,
+        Mark::Date => Kind::Date,
+        Mark::DateTime => Kind::DateTime,
+        Mark::Check => Kind::Checkbox,
+        Mark::List => Kind::List,
+        Mark::Select => Kind::Text,
+    };
+    super::view::kind_mark(app, kind, true).unwrap_or_default()
 }
 
 /// 窓: 枠と題の付いた w×h の行。`focused` なら枠はアクセントの色(モダン)か太字の題(ほか)。
@@ -593,11 +649,11 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
         out.push(row(Msg::RelMapColumn.text(), l.column.clone()));
         out.push(row(Msg::RelMapTarget.text(), l.to.clone()));
         out.push(row(Msg::RelMapLinks.text(), l.pairs.len().to_string()));
-        // 逆向き: 行き先から元へ戻るつながり。
+        // 逆向き: 行き先から元へ戻るつながり(自分へ戻るつながりは、それ自身を逆向きに数えない)。
         let back: Vec<String> = rm
             .links
             .iter()
-            .filter(|x| x.from == l.to && x.to == l.from)
+            .filter(|x| x.from == l.to && x.to == l.from && !std::ptr::eq(*x, l))
             .map(|x| x.column.clone())
             .collect();
         if !back.is_empty() {

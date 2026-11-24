@@ -5,7 +5,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "用法：  mdgrid [<.base | 資料夾 | .md | .csv> ...] [--view <名稱>] [-w <名稱>] [--page <名稱>] [--raw] [--readonly] [--no-color] [--config <路徑>]\n        mdgrid [<.base | 資料夾 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <名稱>]\n                 [--filter <運算式>]... [--sort <欄位>[:desc]]...\n        mdgrid [<.base | 資料夾 | .md> ...] --pick path|<欄位> [--view <名稱>]\n        mdgrid [<.base | 資料夾 | .md> ...] --check [--view <名稱>]\n        mdgrid [<.base | 資料夾 | .md> ...] --count [--view <名稱>] [--filter <運算式>]...\n        mdgrid [<.base | 資料夾> ...] --notices\n        mdgrid [<.base | 資料夾> ...] --notify\n        mdgrid [<.base | 資料夾> ...] --apply <路徑> [--yes]\n        mdgrid [<資料夾 | .base> ...] --add-to <名稱> [--as <表格名稱>] | --remove-from <名稱>\n        mdgrid [<資料夾> ...] --init-workspace [--starter <名稱> [--with-samples]]\n        mdgrid [<資料夾>] --new-note <名稱> [--set <欄位>=<值>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <路徑>]\n        mdgrid -s <名稱> [--readonly] [--no-color] [--config <路徑>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名稱>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  開啟由資料夾中 Markdown 筆記組成的表格：每則筆記一列，每個 front matter\n  鍵一欄。指定 .base 時，開啟其表格檢視（筆記從根資料夾下尋找）。\n  指定 .md 檔案時，開啟其所在資料夾並選取該筆記。\n  指定 .csv 或 .tsv 檔案時，將其開啟為表格：每行一列，第一行為\n  欄位名稱。\n  不帶引數時開啟目前的資料夾（若 places.toml 有登錄的表格，會在上方\n  疊加其清單）。若資料夾的標記檔 .mdgrid/workspace.toml 在 \"open\" 指定了\n  表格，則改為開啟該表格。\n\n  --view <名稱>           開啟 .base 的該檢視（省略時為第一個檢視；\n                          --print 也會尋找 mdgrid 的檢視）\n  -w, --workspace <名稱>  以該工作區（workspaces.toml）作為連結與關聯圖的範圍；\n                          未指定路徑時開啟其第一個表格\n  --page <名稱>           開啟工作區的該頁面（[[page]]），其表格上下堆疊\n  --raw                   開啟資料夾本身，而非標記檔 \"open\" 指定的表格\n  --readonly              以唯讀開啟（不編輯、不儲存）\n  --no-color              不使用色彩繪製\n  --config <路徑>         讀取此設定檔\n                          （預設：$XDG_CONFIG_HOME/mdgrid/config.toml）\n  --continue              開啟此資料夾中最後顯示的表格與檢視（若沒有則與\n                          不帶引數相同；用於 tmux 等還原視窗的情境）\n  -s, --session <名稱>    開啟以該名稱儲存的工作階段（表格、檢視、篩選、\n                          排序與欄位；在命令面板以「儲存工作階段」儲存）\n  --sessions              列出已儲存的工作階段（sessions.toml）：名稱與資料夾，每行一筆\n  --recent                依新到舊輸出最近在畫面上開啟的表格，每行一筆，\n                          格式為 \"路徑<TAB>檢視名稱<TAB>最後開啟時間\"（最多 20 筆）\n  --print                 不顯示畫面，將檢視的表格輸出到標準輸出\n                          （不修改筆記）\n  --format <格式>         --print 的格式（csv、tsv、json、md；預設 csv）\n  --with-path             在 --print 前面加上 \"path\" 欄，內容為各列筆記的路徑\n                          （與 --pick path 的路徑相同）\n  --filter <運算式>       只保留 .base 運算式為真的列\n                          （可重複；用於 .base 檢視時與其篩選條件合併）\n  --sort <欄位>[:desc]    依此欄位排序 --print 的輸出（可重複；\n                          取代檢視的排序）\n  --count                 不顯示畫面，輸出檢視的列數（套用 --filter 之後）\n  --show-hidden           搭配 --print、--pick 或 --count 時，保留被 hide = true 的\n                          條件（[conditions]）隱藏的列\n  --notices               不顯示畫面，每行輸出一個通知欄（[[notices]]）的項目\n                          （用於 tmux 狀態列或 shell 提示字元）\n  --notify                不顯示畫面，檢查一次 [[notify]] 的項目，通知新符合的列\n                          （供排程執行呼叫；有通知未送達時結束代碼為 1）\n  --pick <path|欄位>      在終端機以唯讀顯示畫面；按 Enter 會將已標記的列\n                          （或選取的列）的路徑或欄位值，每行一個，\n                          輸出到標準輸出後結束\n                          （按 q 或 Esc 取消，結束碼為 1）\n  --check                 輸出不符合欄位型別或規則（[rules]）的值，\n                          每行一個（路徑:行: 欄位: 原因；若有問題，\n                          結束碼為 1）\n  --apply <路徑>          讀取 --print --with-path 格式的 CSV 或 JSON（- 表示標準輸入）\n                          並修改有差異的儲存格；只顯示差異\n  --yes                   搭配 --apply，寫入變更\n  --workspaces            列出工作區（workspaces.toml）\n  --add-to <名稱>         將指定的表格（預設：此資料夾）加入該工作區，\n                          必要時建立工作區；以 --as <名稱> 指定表格名稱\n  --remove-from <名稱>    從該工作區移除指定的表格（預設：此資料夾）\n  --remove-workspace <名稱>  刪除該工作區（不會動到筆記）\n  --init-workspace        在資料夾中放置工作區標記檔 .mdgrid/workspace.toml\n                          （預設：此資料夾）\n  --starter <名稱>        搭配 --init-workspace，從該起始範本建立帳本（標記檔、筆記範本）：\n                          內建的，或設定資料夾中的 starters/<名稱>\n  --with-samples          搭配 --starter，一併加入起始範本的範例筆記\n  --starters              列出起始範本，每行一個（名稱與一行說明）\n  --new-note <名稱>       不顯示畫面，在資料夾（預設：此資料夾）建立新筆記 <名稱>.md，\n                          依 [new_note]（folder、set、範本）建立；輸出建立的路徑，\n                          絕不覆寫\n  --set <欄位>=<值>       搭配 --new-note，將該值填入欄位（可重複；清單項目以\n                          逗號分隔；空值不寫入）\n  --print-config          以 TOML 輸出所有設定項目，附預設值\n                          與說明（docs/config.md）\n  --completions <shell>   輸出 shell 補全定義（bash、zsh、fish、elvish、powershell）\n  --man                   輸出 man 頁面（roff）\n  --help                  輸出此說明\n  --version               輸出版本"
+Usage = "用法：  mdgrid [<.base | 資料夾 | .md | .csv> ...] [--view <名稱>] [-w <名稱>] [--page <名稱>] [--raw] [--readonly] [--no-color] [--config <路徑>]\n        mdgrid [<.base | 資料夾 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <名稱>]\n                 [--filter <運算式>]... [--sort <欄位>[:desc]]...\n        mdgrid [<.base | 資料夾 | .md> ...] --pick path|<欄位> [--view <名稱>]\n        mdgrid [<.base | 資料夾 | .md> ...] --check [--view <名稱>]\n        mdgrid [<.base | 資料夾 | .md> ...] --count [--view <名稱>] [--filter <運算式>]...\n        mdgrid [<.base | 資料夾> ...] --notices\n        mdgrid [<.base | 資料夾> ...] --notify\n        mdgrid [<.base | 資料夾> ...] --runs\n        mdgrid [<.base | 資料夾> ...] --apply <路徑> [--yes]\n        mdgrid [<資料夾 | .base> ...] --add-to <名稱> [--as <表格名稱>] | --remove-from <名稱>\n        mdgrid [<資料夾> ...] --init-workspace [--starter <名稱> [--with-samples]]\n        mdgrid [<資料夾>] --new-note <名稱> [--set <欄位>=<值>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <路徑>]\n        mdgrid -s <名稱> [--readonly] [--no-color] [--config <路徑>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名稱>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  開啟由資料夾中 Markdown 筆記組成的表格：每則筆記一列，每個 front matter\n  鍵一欄。指定 .base 時，開啟其表格檢視（筆記從根資料夾下尋找）。\n  指定 .md 檔案時，開啟其所在資料夾並選取該筆記。\n  指定 .csv 或 .tsv 檔案時，將其開啟為表格：每行一列，第一行為\n  欄位名稱。\n  不帶引數時開啟目前的資料夾（若 places.toml 有登錄的表格，會在上方\n  疊加其清單）。若資料夾的標記檔 .mdgrid/workspace.toml 在 \"open\" 指定了\n  表格，則改為開啟該表格。\n\n  --view <名稱>           開啟 .base 的該檢視（省略時為第一個檢視；\n                          --print 也會尋找 mdgrid 的檢視）\n  -w, --workspace <名稱>  以該工作區（workspaces.toml）作為連結與關聯圖的範圍；\n                          未指定路徑時開啟其第一個表格\n  --page <名稱>           開啟工作區的該頁面（[[page]]），其表格上下堆疊\n  --raw                   開啟資料夾本身，而非標記檔 \"open\" 指定的表格\n  --readonly              以唯讀開啟（不編輯、不儲存）\n  --no-color              不使用色彩繪製\n  --config <路徑>         讀取此設定檔\n                          （預設：$XDG_CONFIG_HOME/mdgrid/config.toml）\n  --continue              開啟此資料夾中最後顯示的表格與檢視（若沒有則與\n                          不帶引數相同；用於 tmux 等還原視窗的情境）\n  -s, --session <名稱>    開啟以該名稱儲存的工作階段（表格、檢視、篩選、\n                          排序與欄位；在命令面板以「儲存工作階段」儲存）\n  --sessions              列出已儲存的工作階段（sessions.toml）：名稱與資料夾，每行一筆\n  --recent                依新到舊輸出最近在畫面上開啟的表格，每行一筆，\n                          格式為 \"路徑<TAB>檢視名稱<TAB>最後開啟時間\"（最多 20 筆）\n  --print                 不顯示畫面，將檢視的表格輸出到標準輸出\n                          （不修改筆記）\n  --format <格式>         --print 的格式（csv、tsv、json、md；預設 csv）\n  --with-path             在 --print 前面加上 \"path\" 欄，內容為各列筆記的路徑\n                          （與 --pick path 的路徑相同）\n  --filter <運算式>       只保留 .base 運算式為真的列\n                          （可重複；用於 .base 檢視時與其篩選條件合併）\n  --sort <欄位>[:desc]    依此欄位排序 --print 的輸出（可重複；\n                          取代檢視的排序）\n  --count                 不顯示畫面，輸出檢視的列數（套用 --filter 之後）\n  --show-hidden           搭配 --print、--pick 或 --count 時，保留被 hide = true 的\n                          條件（[conditions]）隱藏的列\n  --notices               不顯示畫面，每行輸出一個通知欄（[[notices]]）的項目\n                          （用於 tmux 狀態列或 shell 提示字元）\n  --notify                不顯示畫面，檢查一次 [[notify]] 的項目，通知新符合的列\n                          （供排程執行呼叫；有通知未送達時結束代碼為 1）\n  --runs                  不顯示畫面，建立到期的例行事項（標記中 [[table]] 的 runs）的筆記，逐行輸出建立的路徑\n                          （從系統的排程呼叫；有未能建立的則結束碼為 1）\n  --pick <path|欄位>      在終端機以唯讀顯示畫面；按 Enter 會將已標記的列\n                          （或選取的列）的路徑或欄位值，每行一個，\n                          輸出到標準輸出後結束\n                          （按 q 或 Esc 取消，結束碼為 1）\n  --check                 輸出不符合欄位型別或規則（[rules]）的值，\n                          每行一個（路徑:行: 欄位: 原因；若有問題，\n                          結束碼為 1）\n  --apply <路徑>          讀取 --print --with-path 格式的 CSV 或 JSON（- 表示標準輸入）\n                          並修改有差異的儲存格；只顯示差異\n  --yes                   搭配 --apply，寫入變更\n  --workspaces            列出工作區（workspaces.toml）\n  --add-to <名稱>         將指定的表格（預設：此資料夾）加入該工作區，\n                          必要時建立工作區；以 --as <名稱> 指定表格名稱\n  --remove-from <名稱>    從該工作區移除指定的表格（預設：此資料夾）\n  --remove-workspace <名稱>  刪除該工作區（不會動到筆記）\n  --init-workspace        在資料夾中放置工作區標記檔 .mdgrid/workspace.toml\n                          （預設：此資料夾）\n  --starter <名稱>        搭配 --init-workspace，從該起始範本建立帳本（標記檔、筆記範本）：\n                          內建的，或設定資料夾中的 starters/<名稱>\n  --with-samples          搭配 --starter，一併加入起始範本的範例筆記\n  --starters              列出起始範本，每行一個（名稱與一行說明）\n  --new-note <名稱>       不顯示畫面，在資料夾（預設：此資料夾）建立新筆記 <名稱>.md，\n                          依 [new_note]（folder、set、範本）建立；輸出建立的路徑，\n                          絕不覆寫\n  --set <欄位>=<值>       搭配 --new-note，將該值填入欄位（可重複；清單項目以\n                          逗號分隔；空值不寫入）\n  --print-config          以 TOML 輸出所有設定項目，附預設值\n                          與說明（docs/config.md）\n  --completions <shell>   輸出 shell 補全定義（bash、zsh、fish、elvish、powershell）\n  --man                   輸出 man 頁面（roff）\n  --help                  輸出此說明\n  --version               輸出版本"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "路徑"
@@ -275,6 +275,38 @@ NotifyExit = "{0} 以結束代碼 {1} 結束"
 NotifyNoProgram = "無法執行 {0}（{1}）"
 ## notify.cli: 記録の置き場が決まらない。
 NotifyNoStateDir = "沒有存放通知紀錄的狀態資料夾（$XDG_STATE_HOME 或主資料夾）"
+## routine.opt-in: 印の [[table]] の runs の形。
+RsnRunsNotTable = "不是 { folder = \"<資料夾>\", rule = \"<欄>\" } 形式的表，所以不建立例行事項的各次"
+RsnRunsNeedFolder = "沒有 folder（存放各次筆記的資料夾），所以不建立例行事項的各次"
+RsnRunsNeedRule = "沒有 rule（重複規則的欄），所以不建立例行事項的各次"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値。
+RoutineRuleUnreadable = "例行事項 {0}：無法讀取規則 \"{1}\"，所以不建立這一次（請寫成 daily、weekly mon thu、monthly 1 15、monthly last 或 every 3d）"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値、{2} は起点の列の名前。
+RoutineRuleNoStart = "例行事項 {0}：規則 \"{1}\" 從欄 {2} 的日期開始計算，但沒有該日期，所以不建立這一次"
+## routine.fail: {0} はルーチンの名前、{1} は回のノートのパス、{2} は理由。
+RoutineCannotCreate = "例行事項 {0}：無法建立 {1}（{2}）"
+## routine.state: {0} は記録のファイルのパス、{1} は理由。
+RoutineStateRebuilt = "無法讀取例行事項的紀錄 {0}，已重新建立（{1}）"
+RoutineStateUnwritable = "無法寫入例行事項的紀錄 {0}（{1}）"
+## routine.cli: 記録の置き場が決まらない。
+RoutineNoStateDir = "沒有存放例行事項紀錄的狀態資料夾（$XDG_STATE_HOME 或主資料夾）"
+## routine.readonly: --runs を --readonly と一緒に渡した。
+RoutineReadonly = "--runs 會寫入各次的筆記，所以不能與 --readonly 一起使用"
+## routine.opt-in: ルーチンの表が CSV・TSV。
+RoutineNotNotes = "列不是筆記（CSV 或 TSV），所以不建立例行事項的各次"
+## routine.screen-offer: 下の帯。{0} は来ている回の数。
+FooterRoutine = "  有 {0} 次例行事項到期"
+## routine.screen-create: パレットのコマンドと確かめ。
+CmdRoutineRuns = "建立例行事項的各次"
+AskRoutineRuns = "建立這些例行事項？輸入 y 後按 Enter："
+## {0} は作るノートの数。
+RoutineRunsWhich = "要建立的筆記（{0}）："
+## {0} は並べきれないノートの数。
+RoutineRunsMore = "另有 {0} 篇"
+RoutineNone = "沒有到期的例行事項"
+## {0} は作ったノートの数。
+RoutineMade = "已建立 {0} 次例行事項"
+RoutineDismissed = "未建立例行事項（今天不再詢問）"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "標記檔中沒有名為 {0} 的表格（現有表格：{1}）；已直接開啟資料夾"
 RsnStarterUnknown = "沒有名為 {0} 的起始範本；僅依標記檔本身的內容開啟（mdgrid --starters 可列出）"
@@ -1690,6 +1722,8 @@ WantRulesTable = "每個欄位一個表（[rules.<欄位>]）"
 WantRuleTable = "含 required 與 values 的表"
 WantStringList = "字串清單"
 RsnRuleComputed = "計算欄位不能設定規則，已忽略"
+WantValueTextTable = "由 值 = 字串 組成的表"
+RsnNotInValues = "不在 values 中，已忽略"
 ## {0} is the name of the type (Date, Number …).
 ProblemType = "型別不符（應為{0}）"
 ProblemRequired = "缺少必填的鍵"
@@ -1829,6 +1863,30 @@ RsnKanbanNeedColumn = "沒有 column（狀態欄位），因此不顯示看板"
 RsnKanbanNoColumn = "表格沒有欄位 {0}，因此不顯示看板"
 ## {0} is the column.
 RsnKanbanListColumn = "欄位 {0} 是清單，因此不顯示看板（一列會同時位於多個泳道）"
+
+# ---- 親子の設定(印の children。navigation.parent-child-config・cell-edit.children-done*・gantt.children-span-*。ui/children.rs) ----
+RsnChildrenNotTable = "不是 { key = \"<欄位>\" } 形式的表，因此不使用父子設定"
+RsnChildrenNeedKey = "沒有 key（指向父項的連結欄位），因此不使用父子設定"
+## {0} は列。
+RsnChildrenNoColumn = "表格沒有欄位 {0}，因此不依父子排列"
+## {0} は列(children の status に書いた状態の列)。
+RsnChildrenNoStatus = "表格沒有欄位 {0}，因此完成父項時子項維持不變"
+## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。
+ChildrenOpenRefuse = "還有 {0} 個子項未完成，因此不設為完成"
+## `ChildrenOpenRefuse` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenRefuseOne = "還有 {0} 個子項未完成，因此不設為完成"
+## {0} は終わっていない子孫の数。親だけを完了にしたときの知らせ(on_done = "keep")。
+ChildrenOpenKeep = "還有 {0} 個子項未完成"
+## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenKeepOne = "還有 {0} 個子項未完成"
+## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
+GanttOverParent = "超出父項期間 {0} 天"
+## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverParentOne = "超出父項期間 {0} 天"
+## {0} は日数。ガントで選んだ親の行の期間から、子孫がはみ出す日数(一番多いもの)。
+GanttOverKids = "有子項超出此期間 {0} 天"
+## `GanttOverKids` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverKidsOne = "有子項超出此期間 {0} 天"
 
 # ---- vim モード(screen.vim-*。vim.rs) ----
 ModeInputNormal = "輸入一般模式"
@@ -2061,7 +2119,7 @@ CfgUse = "將樣板 [templates.<名稱>] 鋪在此處所寫的值之下。"
 ## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
 CfgTypes = "單一欄位的型別。優先於根資料夾的型別設定（.obsidian/types.json）\n與從值推測的結果；\"auto\" 會回到推測（較窄的範圍可取消較寬範圍的\n設定）。型別決定儲存格的輸入方式、不符合之值的 ! 標示、排序與欄位標題的\n型別標示。不會修改筆記。點擊標題的型別標示，或在命令面板或動作選單使用\ncolumn_type，即可選擇型別並寫入 views.toml 的表。"
 ## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
-CfgRules = "單一欄位的規則，與欄位型別一併檢查。required = true 會將缺少鍵、\nnull、空字串或空清單視為問題；values 列出允許的值（清單的每個項目都必須是\n其中之一，區分大小寫）。較窄的範圍逐項優先。\n問題會加上 ! 標示，底部列會計數，以 ! 與 @ 在問題之間跳轉，\nmdgrid --check 會列出問題。檢查規則絕不會修改筆記，也不會阻止你寫入值；\n有 values 的欄位會在儲存格輸入時提供這些值。then 會在你將該欄設為某個值時，\n填入同一列的其他欄位（值 = { 欄位 = 文字 }；可使用 {date} 等範本變數，\n空文字會清除該欄）；它會與你的編輯一起暫存，也一起復原。\n計算欄位（file.*、formula.*）不能設定規則。"
+CfgRules = "單一欄位的規則，與欄位型別一併檢查。required = true 會將缺少鍵、\nnull、空字串或空清單視為問題；values 列出允許的值（清單的每個項目都必須是\n其中之一，區分大小寫）。較窄的範圍逐項優先。\n問題會加上 ! 標示，底部列會計數，以 ! 與 @ 在問題之間跳轉，\nmdgrid --check 會列出問題。檢查規則絕不會修改筆記，也不會阻止你寫入值；\n有 values 的欄位會在儲存格輸入時提供這些值。then 會在你將該欄設為某個值時，\n填入同一列的其他欄位（值 = { 欄位 = 文字 }；可使用 {date} 等範本變數，\n空文字會清除該欄）；它會與你的編輯一起暫存，也一起復原。\n計算欄位（file.*、formula.*）不能設定規則。\n依含 values 的欄位分組時，群組依其順序排列（降冪時相反）。icons 與 labels（值 = 文字）\n會在群組標題與看板泳道標題顯示值的符號與名稱（儲存格、篩選、搜尋與 --print 保留原值）。"
 ## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalColor = "使用色彩。false 不使用色彩繪製（與 NO_COLOR 或 --no-color 相同）。"
 ## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
@@ -2069,7 +2127,7 @@ CfgTerminalAmbiguousWide = "將東亞模糊寬度字元（如 ○ 與 ※）視�
 ## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalNerdFont = "是否可繪製圓角膠囊（Nerd Font 字符）。true：終端機字型為 Nerd\nFont。\"auto\"：僅在會自行繪製這些字符的終端機（Ghostty、WezTerm）中使用，\n以免在其他終端機中顯示錯亂。無法繪製圓角時，\"pill\" 會以 \"soft\" 繪製。"
 ## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
-CfgTerminalNerdIcons = "在設定按鈕、畫面類型按鈕與選單、欄位標題的型別標示與行事曆標題中，\n使用 Nerd Font 的圖示字符。僅在終端機字型為 Nerd Font 時設為 true；\n預設使用一般字元（⚙、▦、◇、#、◷、⋮、◉、✓）。絕不使用表情符號。"
+CfgTerminalNerdIcons = "在設定按鈕、畫面類型按鈕與選單、欄位標題與關聯圖方框的型別標示與行事曆標題中，\n使用 Nerd Font 的圖示字符。僅在終端機字型為 Nerd Font 時設為 true；\n預設使用一般字元（⚙、▦、◇、#、◷、⋮、◉、✓、↪）。絕不使用表情符號。"
 ## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalHerdr = "在 Herdr 窗格中，告知 Herdr 重新開啟目前表格與檢視的指令，\n讓 Herdr 在其伺服器重新啟動後再次開啟。false 則絕不呼叫 Herdr。"
 ## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。

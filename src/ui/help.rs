@@ -561,6 +561,11 @@ impl App {
         if matches!(self.nv.ask, Some(super::native_views::Ask::Across)) {
             self.across_stop();
         }
+        // routine.screen-create: 作るノートの確かめを閉じたら(Esc)、やめたのと同じ。
+        if matches!(self.nv.ask, Some(super::native_views::Ask::RoutineRuns(_))) {
+            self.nv.ask = None;
+            self.routine_dismiss();
+        }
         self.palette = None;
         self.nv.ask = None;
         // TR-5: 木(ほかの表でない画面の型)から開いたパレットは、閉じるとその画面に戻る。

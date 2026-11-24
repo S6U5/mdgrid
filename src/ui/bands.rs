@@ -1344,6 +1344,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
     if app.built.problems > 0 {
         text.push_str(&Msg::FooterProblems.fill(&[&app.built.problems]));
     }
+    // routine.screen-offer: 来ているルーチンの回の数(1つ以上のとき。クリックで作るノートの名前を並べて確かめる)。
+    if app.routine_count() > 0 {
+        text.push_str(&Msg::FooterRoutine.fill(&[&app.routine_count()]));
+    }
     // NV-5: 選んだ行の数。
     let n = app.selection().len();
     if n > 0 {
@@ -1461,6 +1465,22 @@ pub(crate) fn problems_x(app: &App, x: u16) -> bool {
     x >= x0 + lead && x < x0 + width(&t)
 }
 
+/// routine.screen-create: (x, y) が下の帯のルーチンの回の知らせか(押すと作るノートの名前を並べて確かめる)。
+pub(crate) fn routine_at(app: &App, x: u16, y: u16) -> bool {
+    let n = app.routine_count();
+    if n == 0 || y as usize + 3 != app.size.1 as usize || super::stack::in_region(app) {
+        return false;
+    }
+    let mut x0 = width(&Msg::FooterUnsaved.fill(&[&app.changes.count()]));
+    if app.built.problems > 0 {
+        x0 += width(&Msg::FooterProblems.fill(&[&app.built.problems]));
+    }
+    let t = Msg::FooterRoutine.fill(&[&n]);
+    let lead = t.len() - t.trim_start().len();
+    let x = x as usize;
+    x >= x0 + lead && x < x0 + width(&t)
+}
+
 /// 前置きのキーの続きの案内(SR-25): 先頭に `前置き →`、続けて押せるキーと表示名。
 /// 操作の一覧(SR-24)の上では、一覧のモードの続きと、表のモードの続きのうち一覧の項目の動作だけ
 /// (一覧の上のほかのキーは表のモードのキーとして読むので)。
@@ -1516,7 +1536,8 @@ pub(crate) fn message(app: &App, w: usize) -> Line<'static> {
             // ビューの未対応の理由だけを出す。開けないビューの案内は表の欄と `[` `]` を指すので出さない(関係マップは
             // 行が無くても開ける)。
             if on_other_screen(app) {
-                return notes();
+                // gantt.children-span-mark: ガントで選んでいる行が親の期間からはみ出していれば、その日数。
+                return super::gantt::span_hint(app).or_else(notes);
             }
             if app.view_error.is_some() {
                 return Some(Msg::HintViewError.text().into());

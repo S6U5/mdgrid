@@ -122,3 +122,117 @@ pub fn progress<T: Clone + Eq + Hash>(
         .map(|(r, (s, c))| (r.clone(), (s / c.max(1)) as u8))
         .collect()
 }
+
+/// navigation.parent-child-config: 印の `[[table]]` の `children = { key, status, done, closed, on_done, gantt }`。
+/// 書いた表は、どのビューも `key` の列で親子に並べ(ビューの設定でオフにしたビューを除く)、親を完了にしたときの子孫
+/// (cell-edit.children-done)と、ガントで子が親の期間をはみ出したとき(gantt.children-span-*)をここで決める。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChildrenSpec {
+    /// 親のノートへのリンクを書く列。
+    pub key: String,
+    /// 状態の列。None は書いていない(画面が、印の kanban の column か `status` を使う)。
+    pub status: Option<String>,
+    /// 完了の値(既定 `done`)。
+    pub done: String,
+    /// 終わったとみなす値(既定 `["done"]`)。
+    pub closed: Vec<String>,
+    /// 親を完了にしたときの子孫の扱い。
+    pub on_done: OnDone,
+    /// ガントで子孫の棒が親の期間からはみ出したときの扱い。
+    pub gantt: SpanRule,
+}
+
+/// cell-edit.children-done: 親を完了の値に直したときの、まだ終わっていない子孫の扱い。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OnDone {
+    /// 子孫も完了の値にする(cell-edit.children-done-complete)。
+    #[default]
+    Complete,
+    /// 親を直さない(cell-edit.children-done-refuse)。
+    Refuse,
+    /// 親だけ直して、残りの数を知らせる(cell-edit.children-done-keep)。
+    Keep,
+}
+
+impl OnDone {
+    pub const NAMES: [&'static str; 3] = ["complete", "refuse", "keep"];
+
+    pub fn parse(s: &str) -> Option<OnDone> {
+        match s {
+            "complete" => Some(OnDone::Complete),
+            "refuse" => Some(OnDone::Refuse),
+            "keep" => Some(OnDone::Keep),
+            _ => None,
+        }
+    }
+}
+
+/// gantt.children-span-mark・gantt.children-span-extend: 子孫の棒が親の期間からはみ出したときの扱い。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SpanRule {
+    /// 印を付ける(既定。tbd~gantt.children-span-default の仮決め)。
+    #[default]
+    Mark,
+    /// 子の棒を動かす・伸ばすとき、親を子孫の範囲まで広げる。
+    Extend,
+    /// 何もしない。
+    None,
+}
+
+impl SpanRule {
+    pub const NAMES: [&'static str; 3] = ["mark", "extend", "none"];
+
+    pub fn parse(s: &str) -> Option<SpanRule> {
+        match s {
+            "mark" => Some(SpanRule::Mark),
+            "extend" => Some(SpanRule::Extend),
+            "none" => Some(SpanRule::None),
+            _ => None,
+        }
+    }
+}
+
+/// 完了の値の既定。
+pub const DEFAULT_DONE: &str = "done";
+
+impl ChildrenSpec {
+    /// `key` だけを書いたときの設定(ほかは既定)。
+    pub fn new(key: &str) -> ChildrenSpec {
+        ChildrenSpec {
+            key: key.to_string(),
+            status: None,
+            done: DEFAULT_DONE.to_string(),
+            closed: vec![DEFAULT_DONE.to_string()],
+            on_done: OnDone::default(),
+            gantt: SpanRule::default(),
+        }
+    }
+
+    /// 値が終わったとみなす値か(`closed` に入るか、完了の値そのもの)。前後の空白は見ない。
+    /// 完了の値は `closed` に書かなくても終わったとみなす(完了の値の子を「終わっていない」と数えると、`refuse` で
+    /// 親をいつまでも完了にできないため)。
+    pub fn is_closed(&self, value: &str) -> bool {
+        let v = value.trim();
+        v == self.done || self.closed.iter().any(|c| c == v)
+    }
+}
+
+/// `root` の子孫(`kids` は行 → 子の並び)を前順に。輪になっていても1行は1回だけで、`root` は入れない。
+pub fn descendants<T: Clone + Eq + Hash>(root: &T, kids: &HashMap<T, Vec<T>>) -> Vec<T> {
+    let mut out = Vec::new();
+    let mut seen: HashSet<&T> = HashSet::from([root]);
+    let mut stack: Vec<&T> = kids
+        .get(root)
+        .map(|k| k.iter().rev().collect())
+        .unwrap_or_default();
+    while let Some(r) = stack.pop() {
+        if !seen.insert(r) {
+            continue;
+        }
+        out.push(r.clone());
+        if let Some(k) = kids.get(r) {
+            stack.extend(k.iter().rev());
+        }
+    }
+    out
+}

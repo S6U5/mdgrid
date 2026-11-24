@@ -7,6 +7,7 @@
   - [Find, filter and sort](#find-filter-and-sort)
   - [Filter with named conditions](#filter-with-named-conditions)
   - [Notices above the table](#notices-above-the-table)
+  - [Create routine runs](#create-routine-runs)
   - [Search across the workspace](#search-across-the-workspace)
   - [Edit many rows at once](#edit-many-rows-at-once)
   - [Type dates in words](#type-dates-in-words)
@@ -240,6 +241,124 @@ WSL (from the Windows Task Scheduler): cron inside WSL only runs while WSL is up
 
 ```bat
 schtasks /Create /TN "mdgrid notify" /SC MINUTE /MO 5 /TR "wslg.exe -d Ubuntu --exec /path/to/mdgrid -w home --notify"
+```
+
+## Create routine runs
+
+Write each piece of recurring work (a weekly review, the invoices at the end of the month) as a routine note, and the note for each run ("Weekly review 2026-11-23") appears in another folder. A run note is an ordinary note: it shows in the table, the kanban and the gantt as it is, and whether you finished it stays with that run.
+
+In the ledger's marker `.mdgrid/workspace.toml`, add `runs` to the `[[table]]` of the routine table. `folder` is where the run notes go, and `rule` is the column that holds the rule. The [configuration reference](../../config.md#overrides-per-workspace-table-and-view) has every item.
+
+```toml
+[[table]]
+name = "Routines"
+path = "Routines"
+runs = { folder = "Runs", rule = "recurrence", set = { status = "todo" }, copy = ["actor"] }
+```
+
+```markdown
+---
+recurrence: weekly mon
+actor: both
+---
+```
+
+Write one of these in the rule column. The English and the Japanese forms make the same runs.
+
+| Rule | Date of the run |
+|---|---|
+| `daily`, `毎日` | every day |
+| `weekly mon thu`, `毎週 月 木` | those weekdays (`mon` to `sun`, `月` to `日`); list as many as you like |
+| `monthly 1 15`, `毎月 1日 15日` | those days; a month without a 31st has no run on the 31st |
+| `monthly last`, `毎月 末日` | the last day of the month |
+| `every 3d`, `3日ごと` | every 3 days from the date in the `start` column |
+
+A note with an empty rule column is a routine that makes no runs. A rule that can't be read (`weekly someday`) gets a reason with the note's name and the value, and the other routines still make their runs.
+
+A run note is named like `Runs/Weekly review 2026-11-23.md`. Its frontmatter has the link `routine: "[[Weekly review]]"`, the run's date `date`, and the `set` and `copy` values, and its body starts with a heading of the run's name. The `name` and `body` templates change the name and the body.
+
+Only the latest run up to today is made, so after a while away you don't come back to a pile of runs you can no longer do. Each run is made once, and a note that already has the same name is never overwritten. Delete a run note you don't need, and that run counts as done: it isn't made again.
+
+While mdgrid is open, it checks when you open a table and when the date changes. When runs are due, the bottom band says "2 routine runs are due". Click it, or pick **Create the routine runs** (`routine_runs`) in the palette (`:`), and the names of the notes to create are listed. Type `y` and Enter to create them; any other answer or Esc leaves them, and those runs aren't mentioned again that day. Opened read-only (`--readonly`), mdgrid shows neither the count nor the command.
+
+![Create routine runs](images/routine.svg)
+
+**Create runs while mdgrid is closed**: `mdgrid <ledger> --runs` (`mdgrid -w <name> --runs` for a workspace) creates every due run without the screen and without asking, and prints the path of each note it created, one per line. It shares its record with the open screen, so a run is never made twice even when both check. A run it can't create gets its reason on standard error and exit code 1, and the next call tries again. Registering it with your OS scheduler counts as saying yes to those notes.
+
+The examples below call `--runs` every 5 minutes and then [`--notify`](#get-notified-when-a-row-matches), so a new run note that matches a notification condition is notified in the same pass. If you already registered `--notify`, replace that registration with this one. Without `--notify`, drop that part; you can also make the interval longer, such as every hour. Replace `/path/to/notes` with the ledger's folder and `/path/to/mdgrid` with what `command -v mdgrid` (`where mdgrid` on Windows) prints.
+
+Linux (a systemd user timer): put two files in place and turn the timer on. The `-` in front of the `--runs` line lets `--notify` run even when a run couldn't be created.
+
+```ini
+# ~/.config/systemd/user/mdgrid-routine.service
+[Unit]
+Description=mdgrid routine runs
+
+[Service]
+Type=oneshot
+ExecStart=-/path/to/mdgrid /path/to/notes --runs
+ExecStart=/path/to/mdgrid /path/to/notes --notify
+```
+
+```ini
+# ~/.config/systemd/user/mdgrid-routine.timer
+[Unit]
+Description=mdgrid routine runs every 5 minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now mdgrid-routine.timer
+```
+
+From cron, pass the address of the desktop notifications, as for [notifications](#get-notified-when-a-row-matches) (replace `1000` with what `id -u` prints).
+
+```sh
+*/5 * * * * /path/to/mdgrid /path/to/notes --runs; DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /path/to/mdgrid /path/to/notes --notify
+```
+
+macOS (launchd): put `~/Library/LaunchAgents/local.mdgrid.routine.plist` in place and load it. It hands both calls to `/bin/sh`, one after the other.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.mdgrid.routine</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-c</string>
+    <string>/path/to/mdgrid /path/to/notes --runs; /path/to/mdgrid /path/to/notes --notify</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
+</dict>
+</plist>
+```
+
+```sh
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.mdgrid.routine.plist
+```
+
+Windows (Task Scheduler): register it from the Command Prompt. `cmd /c` runs the two calls one after the other. A console window flashes each time it runs.
+
+```bat
+schtasks /Create /TN "mdgrid routine" /SC MINUTE /MO 5 /TR "cmd /c C:\path\to\mdgrid.exe C:\path\to\notes --runs & C:\path\to\mdgrid.exe C:\path\to\notes --notify"
+```
+
+WSL (from the Windows Task Scheduler): from the Windows side, hand both calls to `sh` inside WSL. Replace `Ubuntu` with the name `wsl -l` shows.
+
+```bat
+schtasks /Create /TN "mdgrid routine" /SC MINUTE /MO 5 /TR "wslg.exe -d Ubuntu --exec sh -c \"/path/to/mdgrid /path/to/notes --runs; /path/to/mdgrid /path/to/notes --notify\""
 ```
 
 ## Search across the workspace
@@ -610,7 +729,7 @@ depends_on:                           # many
 
 The sample `examples/studio` links tasks, projects, clients, people and meetings this way: `mdgrid examples/studio/Tasks`.
 
-**The relation map.** Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the tables as boxes with their row counts and columns, and an arrow from each link column to the table it points at (`N` → `1`, or `N` → `N` for a list of links). `↑` `↓` pick a table, `←` `→` pick a link; the details and, on a tall terminal, the linked records follow the selection. The layout adapts to the terminal width. You can also click: a table selects it and a second click opens it, a line or an arrow selects that link, and a linked record opens its note. Press `R` again to go back to the table. The map covers the current workspace (see below), or the registered tables if there is none.
+**The relation map.** Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the tables as boxes with their row counts and columns, and an arrow from each link column to the table it points at (`N` → `1`, or `N` → `N` for a list of links). A column that points inside its own table, like a task's `parent`, loops back to its own box. The columns in each box carry the same type marks as the headings, and link columns carry `↪`. `↑` `↓` pick a table, `←` `→` pick a link; the details and, on a tall terminal, the linked records follow the selection. The layout adapts to the terminal width. You can also click: a table selects it and a second click opens it, a line or an arrow selects that link, and a linked record opens its note. Press `R` again to go back to the table. The map covers the current workspace (see below), or the registered tables if there is none.
 
 ## Group tables into workspaces
 

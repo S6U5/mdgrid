@@ -181,10 +181,12 @@ fn read_tables(
                 .filter(|s| !s.is_empty())
                 .unwrap_or_else(|| "base".to_string());
             // TR-2・GA-1・KB-1・CH-1: 印の `tree`(木)・`gantt`(ガント)・`kanban`(カンバン)・`chart`(グラフ)の設定は
-            // 開くときに marker_tree・marker_gantt・marker_kanban・marker_chart が読む。
+            // 開くときに marker_tree・marker_gantt・marker_kanban・marker_chart が読む。`children`(親子。
+            // navigation.parent-child-config)は marker_children、routine.opt-in: `runs`(ルーチンの回)は marker_runs が読む。
             let skip: &[&str] = if file.starts_with(MARKER_DIR) {
                 &[
-                    "name", "path", "view", "base", "tree", "gantt", "kanban", "chart",
+                    "name", "path", "view", "base", "tree", "gantt", "kanban", "chart", "children",
+                    "runs",
                 ]
             } else {
                 &["name", "path", "view", "base"]
@@ -217,7 +219,9 @@ fn read_tables(
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| stem_of(&p));
         let skip: &[&str] = if file.starts_with(MARKER_DIR) {
-            &["name", "path", "view", "tree", "gantt", "kanban", "chart"]
+            &[
+                "name", "path", "view", "tree", "gantt", "kanban", "chart", "children", "runs",
+            ]
         } else {
             &["name", "path", "view"]
         };
@@ -492,12 +496,36 @@ pub fn marker_kanban(opened: &Path) -> (Option<(crate::kanban::KanbanSpec, Strin
     marker_setting(opened, "kanban", read_kanban)
 }
 
+/// routine.opt-in: 開いたものの表に、印の `[[table]]` で書いたルーチンの回の設定(`runs = { folder, rule, … }`)と、
+/// 印の根(`folder` と `body` の基準)。印が無い・その表が無い・`runs` が無いなら None。書き方が違えば CLI-3 の形で
+/// 警告して None(表でない・`folder` か `rule` が無い)。鍵の名前 `runs` は仮決め(tbd~routine.names)。
+pub fn marker_runs(opened: &Path) -> (Option<(crate::routine::Spec, PathBuf)>, Vec<String>) {
+    let (spec, warns) = marker_setting(opened, "runs", crate::routine::read);
+    let start = if opened.extension().is_some_and(|x| x == "base") {
+        opened.parent().unwrap_or(opened).to_path_buf()
+    } else {
+        opened.to_path_buf()
+    };
+    let got = spec.and_then(|(s, _)| Some((s, find_marker(&start)?)));
+    (got, warns)
+}
+
 /// CH-1: 開いたものの表に、印の `[[table]]` で書いたグラフの設定(`chart = { … }` か、その配列)と、それぞれの
 /// 警告の場所(`table[n].chart` か `table[n].chart[k]`)。印が無い・その表が無い・`chart` が無いなら空。書き方が
 /// 違うグラフは CLI-3 の形で警告して外す。
 pub fn marker_chart(opened: &Path) -> (Vec<(crate::chart::ChartSpec, String)>, Vec<String>) {
     let (specs, warns) = marker_setting(opened, "chart", read_charts);
     (specs.map(|(v, _)| v).unwrap_or_default(), warns)
+}
+
+/// navigation.parent-child-config: 開いたものの表に、印の `[[table]]` で書いた親子の設定
+/// (`children = { key, status, done, closed, on_done, gantt }`)と、警告の場所(`table[n].children`)。印が無い・その
+/// 表が無い・`children` が無いなら None。表でないか `key` が無ければ CLI-3 の形で警告して None。ほかの項目の
+/// 書き方が違えば、警告してその項目を既定にする。
+pub fn marker_children(
+    opened: &Path,
+) -> (Option<(crate::tree::ChildrenSpec, String)>, Vec<String>) {
+    marker_setting(opened, "children", read_children)
 }
 
 /// GA-7: 画面の型ごとの設定の共通の読み方。開いたもの(フォルダか .base)と `real_path` で同じ `[[table]]` を探し、
@@ -732,6 +760,105 @@ fn read_kanban(
         return None;
     };
     Some(crate::kanban::KanbanSpec { column })
+}
+
+/// navigation.parent-child-config: `children = { key = "<列>", status = "<列>", done = "<値>", closed = ["<値>", …],
+/// on_done = "complete|refuse|keep", gantt = "mark|extend|none" }` を読む。書いていない項目は既定
+/// (`ChildrenSpec::new`)。`key` の無い・表でない設定は None、ほかの項目の書き方の違いは警告してその項目を既定にする。
+fn read_children(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::tree::ChildrenSpec> {
+    use crate::profile::{not, not_one_of, warn};
+    use crate::tree::{ChildrenSpec, OnDone, SpanRule};
+    const KEYS: [&str; 6] = ["key", "status", "done", "closed", "on_done", "gantt"];
+    let Some(t) = v.as_table() else {
+        warn(warns, file, at, Msg::RsnChildrenNotTable.text().to_string());
+        return None;
+    };
+    for k in t.keys() {
+        if !KEYS.contains(&k.as_str()) {
+            warn(
+                warns,
+                file,
+                &format!("{at}.{k}"),
+                Msg::RsnUnknown.text().to_string(),
+            );
+        }
+    }
+    // 文字の項目: 無い・空は None、文字でなければ警告して None。
+    let text = |key: &str, warns: &mut Vec<String>| -> Option<String> {
+        match t.get(key) {
+            None => None,
+            Some(toml::Value::String(s)) => Some(s.trim().to_string()).filter(|s| !s.is_empty()),
+            Some(_) => {
+                warn(warns, file, &format!("{at}.{key}"), not(Msg::WantString));
+                None
+            }
+        }
+    };
+    let key = match t.get("key") {
+        Some(toml::Value::String(s)) if !s.trim().is_empty() => s.trim().to_string(),
+        Some(toml::Value::String(_)) | None => {
+            warn(
+                warns,
+                file,
+                &format!("{at}.key"),
+                Msg::RsnChildrenNeedKey.text().to_string(),
+            );
+            return None;
+        }
+        Some(_) => {
+            warn(warns, file, &format!("{at}.key"), not(Msg::WantString));
+            return None;
+        }
+    };
+    let mut spec = ChildrenSpec::new(&key);
+    spec.status = text("status", warns);
+    if let Some(done) = text("done", warns) {
+        spec.done = done;
+    }
+    match t.get("closed") {
+        None => {}
+        Some(toml::Value::Array(a)) if a.iter().all(toml::Value::is_str) => {
+            spec.closed = a
+                .iter()
+                .filter_map(toml::Value::as_str)
+                .map(|s| s.trim().to_string())
+                .collect();
+        }
+        Some(_) => warn(
+            warns,
+            file,
+            &format!("{at}.closed"),
+            not(Msg::WantStringList),
+        ),
+    }
+    if let Some(s) = text("on_done", warns) {
+        match OnDone::parse(&s) {
+            Some(o) => spec.on_done = o,
+            None => warn(
+                warns,
+                file,
+                &format!("{at}.on_done"),
+                not_one_of(&OnDone::NAMES),
+            ),
+        }
+    }
+    if let Some(s) = text("gantt", warns) {
+        match SpanRule::parse(&s) {
+            Some(g) => spec.gantt = g,
+            None => warn(
+                warns,
+                file,
+                &format!("{at}.gantt"),
+                not_one_of(&SpanRule::NAMES),
+            ),
+        }
+    }
+    Some(spec)
 }
 
 /// GA-1: `gantt = { start = "<列>", end = "<列>", days = "<列>" }` を読む(`end` か `days` のどちらか)。

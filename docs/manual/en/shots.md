@@ -716,7 +716,7 @@ Keys: `R`
 
 ![Relation map](images/demo-relmap.svg)
 
-R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at: tasks to projects and people, projects to clients, meetings to projects and people.
+R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at: tasks to projects and people, projects to clients, meetings to projects and people. The depends_on column of tasks points at other tasks, so its arrow loops back to the same box, and every column carries its type mark.
 
 ## Count the values of a column
 

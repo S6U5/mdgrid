@@ -78,6 +78,8 @@ enum Command {
     /// notice.cli: 画面を出さずに、通知の欄の項目を出す(開くパス)。
     Notices(Vec<PathBuf>),
     Notify(Vec<PathBuf>),
+    /// routine.cli: 画面を出さずに、来ているルーチンの回を作る(開くパス)。
+    Runs(Vec<PathBuf>),
     /// OUT-3: 画面(`/dev/tty`)で選んだ行のパスか列の値を出す(開くパスと出すもの)。
     Pick(Vec<PathBuf>, Pick),
     /// WS-3・WS-7: ワークスペースの操作(画面を出さない)。
@@ -155,7 +157,7 @@ struct Cli {
     #[arg(long)]
     raw: bool,
     /// ワークスペースのページ([[page]])を、表を縦に並べた形で開く(stack.page-cli)
-    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note"])]
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "print", "pick", "check", "count", "notices", "notify", "runs", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note"])]
     page: Option<String>,
     /// 読むだけで開く(編集も保存もしない)
     #[arg(long)]
@@ -167,13 +169,13 @@ struct Cli {
     #[arg(long = "continue", conflicts_with_all = ["paths", "view", "workspace", "raw", "page", "print", "pick", "check", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     resume: bool,
     /// その名前で保存したセッション(sessions.toml)の表示で開く(表・ビュー・絞り込み・並び・列。cli.session-save)
-    #[arg(short = 's', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(short = 's', long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "runs", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     session: Option<String>,
     /// 保存したセッション(sessions.toml)の名前と開くフォルダを1行ずつ出す(cli.session-screen-list)
-    #[arg(long, conflicts_with_all = ["paths", "session", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(long, conflicts_with_all = ["paths", "session", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "runs", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     sessions: bool,
     /// 画面で開いた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の1行ずつ出す(cli.recent-cli)
-    #[arg(long, conflicts_with_all = ["paths", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
+    #[arg(long, conflicts_with_all = ["paths", "view", "workspace", "raw", "resume", "print", "pick", "check", "count", "notices", "notify", "runs", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note", "print_config", "migrate_config", "completions", "man"])]
     recent: bool,
     /// この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)
     #[arg(long, value_name = Msg::ValuePath.ja(), allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
@@ -208,6 +210,10 @@ struct Cli {
     /// 画面を出さずに、[[notify]] の項目を1回確かめて、新しく当たった行を知らせる(notify.cli)
     #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply", "count", "notices"])]
     notify: bool,
+    /// 画面を出さずに、ルーチンの表(印の runs)の来ている回のノートを作り、作ったパスを1行ずつ出す(routine.cli。
+    /// 旗の名前は仮決め: tbd~routine.names)
+    #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply", "count", "notices", "notify"])]
+    runs: bool,
     /// --print の形の CSV・JSON(- で標準入力)の値をノートに当てる(既定は差分だけ。--yes で書く)
     #[arg(long, value_name = Msg::ValuePath.ja(), conflicts_with_all = ["print", "pick"], allow_hyphen_values = true, value_hint = ValueHint::FilePath)]
     apply: Option<PathBuf>,
@@ -466,6 +472,8 @@ impl Cli {
                 Command::Notices(paths)
             } else if self.notify {
                 Command::Notify(paths)
+            } else if self.runs {
+                Command::Runs(paths)
             } else if self.print {
                 Command::Print(
                     paths,
@@ -497,6 +505,7 @@ impl Cli {
             (self.count, "--count"),
             (self.notices, "--notices"),
             (self.notify, "--notify"),
+            (self.runs, "--runs"),
             (self.with_path, "--with-path"),
             (self.workspaces, "--workspaces"),
             (self.init_workspace, "--init-workspace"),
@@ -1150,6 +1159,17 @@ fn main() -> ExitCode {
             let (p, opts) = marker_for_print(p, &opts, use_marker);
             return notify_cli(&md_to_folder(p).0, &opts);
         }
+        Ok(Command::Runs(p)) => {
+            let p = match &opts.workspace {
+                Some(name) => match workspace_paths(name, p, no_args) {
+                    Ok(p) => p,
+                    Err(e) => return fail(&e),
+                },
+                None => p,
+            };
+            let (p, opts) = marker_for_print(p, &opts, use_marker);
+            return runs_cli(&md_to_folder(p).0, &opts);
+        }
         Ok(Command::Check(p)) => {
             // CLI-15: 渡した `.md` のノートだけを確かめる(`--print` と同じ。pre-commit で変えたノートだけを渡せる)。
             let only = md_files(&p);
@@ -1449,6 +1469,8 @@ fn open_app(
     let mut app = App::new(target.src, color);
     // notify.state: 知らせの記録は見た目の状態の置き場に持つ。
     app.notify.dir = config::state_dir();
+    // routine.state: ルーチンの回の記録も見た目の状態の置き場に持つ。
+    app.routine.dir = config::state_dir();
     app.prof.ui = ui;
     // SR-36: nerd_font = "auto" は端末の名前で決める(丸い端を自分で描く端末だけ)。
     app.prof.term_program = std::env::var("TERM_PROGRAM").ok();
@@ -1794,6 +1816,46 @@ fn notify_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
     }
     if report.failures.is_empty() {
         ExitCode::SUCCESS
+    } else {
+        ExitCode::from(1)
+    }
+}
+
+/// routine.cli・routine.fail・routine.readonly: 画面を出さずに、範囲のルーチンの表の来ている回を全部、確かめずに
+/// 作る。表は画面と同じ道で開く(範囲も同じ)。作ったノートのパスを標準出力に1行ずつ出す。印の警告・記録を
+/// 作り直した旨は標準エラーに出し、作れなかった回と読めない表・決まりがあれば理由を1行ずつ出して終了コード 1。
+/// 読むだけ(`--readonly`)では何も書かずに理由1行と終了コード 2。
+fn runs_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
+    if opts.readonly {
+        return fail(Msg::RoutineReadonly.text());
+    }
+    let opts = Options {
+        no_color: true,
+        readonly: true,
+        ..opts.clone()
+    };
+    let (app, _) = match open_app(paths, opts.view.as_deref(), &opts, true, Vec::new()) {
+        Ok(a) => a,
+        Err(e) => return fail(&e),
+    };
+    let (today, now) = mdgrid::clock::today_now(|k| std::env::var(k).ok());
+    let report = app.routine_once(today, now);
+    let mut err = io::stderr();
+    // 印の警告は、ほかの画面を出さない起動(marker_for_print)と同じく頭に mdgrid: を付ける。
+    for line in &app.routine.warnings {
+        let _ = writeln!(err, "mdgrid: {}", ui::width::sanitize(line));
+    }
+    for line in report.warnings.iter().chain(&report.failures) {
+        let _ = writeln!(err, "{}", ui::width::sanitize(line));
+    }
+    let mut out = String::new();
+    for p in &report.made {
+        out.push_str(&p.display().to_string());
+        out.push('\n');
+    }
+    let code = emit(Ok(out.into_bytes()));
+    if report.failures.is_empty() {
+        code
     } else {
         ExitCode::from(1)
     }
@@ -2269,6 +2331,10 @@ fn new_note_cli(
     }
     let mut rule = resolved.new_note.clone();
     let (today, now) = print::today_now(|k| std::env::var(k).ok());
+    // cli.new-note-name-head: `name_head = "hide"` なら、渡した名前に名前の雛形の頭を付ける(画面の窓と同じ決まり)。
+    let head = newnote::hidden_head(&rule, today, &newnote::Ids::new());
+    let full = newnote::attach_head(&head, name, resolved.display.note_name);
+    let name = full.as_str();
     let bare = name.trim();
     let bare = bare.strip_suffix(".md").unwrap_or(bare);
     let vars = newnote::Vars {
@@ -2658,6 +2724,8 @@ fn event_loop(
         app.notice_poll();
         // notify.while-open: 裏の糸で確かめた知らせの結果を拾い、時が来ていれば確かめ始める。
         app.notify_poll();
+        // routine.screen-offer: 開いたときと日付が変わったときに、来ているルーチンの回を裏で確かめる。
+        app.routine_poll();
         // navigation.across-progress: 横断の検索で読み終えた表の結果を拾う。
         app.across_poll();
         if !app.loaded() {

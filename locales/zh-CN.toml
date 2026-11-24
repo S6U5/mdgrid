@@ -4,7 +4,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "用法：  mdgrid [<.base | 文件夹 | .md | .csv> ...] [--view <名称>] [-w <名称>] [--page <名称>] [--raw] [--readonly] [--no-color] [--config <路径>]\n        mdgrid [<.base | 文件夹 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <名称>]\n                 [--filter <表达式>]... [--sort <列>[:desc]]...\n        mdgrid [<.base | 文件夹 | .md> ...] --pick path|<列> [--view <名称>]\n        mdgrid [<.base | 文件夹 | .md> ...] --check [--view <名称>]\n        mdgrid [<.base | 文件夹 | .md> ...] --count [--view <名称>] [--filter <表达式>]...\n        mdgrid [<.base | 文件夹> ...] --notices\n        mdgrid [<.base | 文件夹> ...] --notify\n        mdgrid [<.base | 文件夹> ...] --apply <路径> [--yes]\n        mdgrid [<文件夹 | .base> ...] --add-to <名称> [--as <表名>] | --remove-from <名称>\n        mdgrid [<文件夹> ...] --init-workspace [--starter <名称> [--with-samples]]\n        mdgrid [<文件夹>] --new-note <名称> [--set <列>=<值>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <路径>]\n        mdgrid -s <名称> [--readonly] [--no-color] [--config <路径>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名称>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  打开文件夹中 Markdown 笔记的表格：每篇笔记一行，每个 front matter 键\n  一列。给出 .base 时，打开它的 table 视图（在根文件夹下查找笔记）。\n  给出 .md 文件时，打开其所在文件夹并选中该笔记。\n  给出 .csv 或 .tsv 文件时，将其作为表格打开：文件的每一行为表格的一行，\n  第一行为列名。\n  不带参数时打开当前文件夹（若 places.toml 中登记了表格，则在上面叠加显示\n  其列表）。若文件夹中有标记 .mdgrid/workspace.toml 且其 \"open\" 指定了\n  表格，则改为打开该表格。\n\n  --view <名称>           以 .base 的该视图打开（省略时为第一个视图；\n                          --print 也会查找 mdgrid 视图）\n  -w, --workspace <名称>  以该工作区（workspaces.toml）作为链接和关系图的范围；\n                          未给出路径时打开其第一个表格\n  --page <名称>           打开工作区的该页面（[[page]]），其中的表格上下排列\n  --raw                   打开文件夹本身，而不是其标记的 \"open\" 所指定的表格\n  --readonly              以只读方式打开（不编辑、不保存）\n  --no-color              不使用颜色绘制\n  --config <路径>         读取此配置文件\n                          （默认：$XDG_CONFIG_HOME/mdgrid/config.toml）\n  --continue              打开此文件夹中上次显示的表格和视图（若没有，则与不带\n                          参数相同；用于 tmux 等恢复窗口）\n  -s, --session <名称>    打开以该名称保存的会话（其表格、视图、筛选、\n                          排序和列；在命令面板中用 \"保存会话\" 保存）\n  --sessions              逐行列出已保存的会话（sessions.toml）：名称和文件夹\n  --recent                按从新到旧逐行输出最近在界面中打开的表格，\n                          格式为 \"路径<TAB>视图名<TAB>最后打开时间\"（最多 20 个）\n  --print                 不显示界面，将视图的表格输出到标准输出\n                          （不修改笔记）\n  --format <格式>         --print 的格式（csv、tsv、json、md；默认 csv）\n  --with-path             在 --print 的开头加一列 \"path\"，内容为每行的笔记路径\n                          （与 --pick path 的路径相同）\n  --filter <表达式>       只保留 .base 表达式为真的行\n                          （可重复；用于 .base 视图时与其筛选同时生效）\n  --sort <列>[:desc]      按此列对 --print 排序（可重复；取代视图的\n                          排序）\n  --count                 不显示界面，输出视图的行数（--filter 之后）\n  --show-hidden           与 --print、--pick 或 --count 一起用时，保留被 hide = true 的\n                          条件（[conditions]）隐藏的行\n  --notices               不显示界面，逐行输出通知栏（[[notices]]）的项目\n                          （用于 tmux 状态栏或 shell 提示符）\n  --notify                不显示界面，检查一次 [[notify]] 的项目，通知新匹配的行\n                          （供定时任务调用；有通知未送达时退出码为 1）\n  --pick <path|列>        在终端上以只读方式显示界面；按 Enter 将标记的行\n                          （无标记时为选中的行）的路径或该列的值\n                          逐行输出到标准输出并退出\n                          （q 或 Esc 取消，退出码为 1）\n  --check                 逐行输出不符合列类型或规则（[rules]）的值\n                          （格式为 路径:行号: 列: 原因；若有这样的值，\n                          退出码为 1）\n  --apply <路径>          读取 --print --with-path 格式的 CSV 或 JSON（- 表示标准输入），\n                          修改不同的单元格；只显示差异\n  --yes                   与 --apply 一起用时，写入更改\n  --workspaces            列出工作区（workspaces.toml）\n  --add-to <名称>         将给出的表格（默认：当前文件夹）加入该工作区，\n                          必要时新建工作区；--as <名称> 指定表格名称\n  --remove-from <名称>    从该工作区移除给出的表格（默认：当前文件夹）\n  --remove-workspace <名称>  删除该工作区（不改动笔记）\n  --init-workspace        在文件夹中放置工作区标记 .mdgrid/workspace.toml\n                          （默认：当前文件夹）\n  --starter <名称>        与 --init-workspace 一起用时，从该预设创建台账（标记、笔记模板）：\n                          内置的预设，或配置文件夹中的 starters/<名称>\n  --with-samples          与 --starter 一起用时，同时加入预设的示例笔记\n  --starters              逐行列出预设（名称和一行说明）\n  --new-note <名称>       不显示界面，在文件夹（默认：当前文件夹）中新建笔记 <名称>.md，\n                          使用 [new_note]（folder、set、template）；输出所建的路径，\n                          绝不覆盖已有文件\n  --set <列>=<值>         与 --new-note 一起用时，在该列填入该值（可重复；列表的项\n                          用逗号分隔；空值不写入）\n  --print-config          以 TOML 输出全部配置项及其默认值\n                          和说明（docs/config.md）\n  --completions <shell>   输出 shell 补全脚本（bash、zsh、fish、elvish、powershell）\n  --man                   输出 man 手册页（roff）\n  --help                  显示此帮助\n  --version               显示版本"
+Usage = "用法：  mdgrid [<.base | 文件夹 | .md | .csv> ...] [--view <名称>] [-w <名称>] [--page <名称>] [--raw] [--readonly] [--no-color] [--config <路径>]\n        mdgrid [<.base | 文件夹 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <名称>]\n                 [--filter <表达式>]... [--sort <列>[:desc]]...\n        mdgrid [<.base | 文件夹 | .md> ...] --pick path|<列> [--view <名称>]\n        mdgrid [<.base | 文件夹 | .md> ...] --check [--view <名称>]\n        mdgrid [<.base | 文件夹 | .md> ...] --count [--view <名称>] [--filter <表达式>]...\n        mdgrid [<.base | 文件夹> ...] --notices\n        mdgrid [<.base | 文件夹> ...] --notify\n        mdgrid [<.base | 文件夹> ...] --runs\n        mdgrid [<.base | 文件夹> ...] --apply <路径> [--yes]\n        mdgrid [<文件夹 | .base> ...] --add-to <名称> [--as <表名>] | --remove-from <名称>\n        mdgrid [<文件夹> ...] --init-workspace [--starter <名称> [--with-samples]]\n        mdgrid [<文件夹>] --new-note <名称> [--set <列>=<值>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <路径>]\n        mdgrid -s <名称> [--readonly] [--no-color] [--config <路径>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名称>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  打开文件夹中 Markdown 笔记的表格：每篇笔记一行，每个 front matter 键\n  一列。给出 .base 时，打开它的 table 视图（在根文件夹下查找笔记）。\n  给出 .md 文件时，打开其所在文件夹并选中该笔记。\n  给出 .csv 或 .tsv 文件时，将其作为表格打开：文件的每一行为表格的一行，\n  第一行为列名。\n  不带参数时打开当前文件夹（若 places.toml 中登记了表格，则在上面叠加显示\n  其列表）。若文件夹中有标记 .mdgrid/workspace.toml 且其 \"open\" 指定了\n  表格，则改为打开该表格。\n\n  --view <名称>           以 .base 的该视图打开（省略时为第一个视图；\n                          --print 也会查找 mdgrid 视图）\n  -w, --workspace <名称>  以该工作区（workspaces.toml）作为链接和关系图的范围；\n                          未给出路径时打开其第一个表格\n  --page <名称>           打开工作区的该页面（[[page]]），其中的表格上下排列\n  --raw                   打开文件夹本身，而不是其标记的 \"open\" 所指定的表格\n  --readonly              以只读方式打开（不编辑、不保存）\n  --no-color              不使用颜色绘制\n  --config <路径>         读取此配置文件\n                          （默认：$XDG_CONFIG_HOME/mdgrid/config.toml）\n  --continue              打开此文件夹中上次显示的表格和视图（若没有，则与不带\n                          参数相同；用于 tmux 等恢复窗口）\n  -s, --session <名称>    打开以该名称保存的会话（其表格、视图、筛选、\n                          排序和列；在命令面板中用 \"保存会话\" 保存）\n  --sessions              逐行列出已保存的会话（sessions.toml）：名称和文件夹\n  --recent                按从新到旧逐行输出最近在界面中打开的表格，\n                          格式为 \"路径<TAB>视图名<TAB>最后打开时间\"（最多 20 个）\n  --print                 不显示界面，将视图的表格输出到标准输出\n                          （不修改笔记）\n  --format <格式>         --print 的格式（csv、tsv、json、md；默认 csv）\n  --with-path             在 --print 的开头加一列 \"path\"，内容为每行的笔记路径\n                          （与 --pick path 的路径相同）\n  --filter <表达式>       只保留 .base 表达式为真的行\n                          （可重复；用于 .base 视图时与其筛选同时生效）\n  --sort <列>[:desc]      按此列对 --print 排序（可重复；取代视图的\n                          排序）\n  --count                 不显示界面，输出视图的行数（--filter 之后）\n  --show-hidden           与 --print、--pick 或 --count 一起用时，保留被 hide = true 的\n                          条件（[conditions]）隐藏的行\n  --notices               不显示界面，逐行输出通知栏（[[notices]]）的项目\n                          （用于 tmux 状态栏或 shell 提示符）\n  --notify                不显示界面，检查一次 [[notify]] 的项目，通知新匹配的行\n                          （供定时任务调用；有通知未送达时退出码为 1）\n  --runs                  不显示界面，创建到期的例行事项（标记中 [[table]] 的 runs）的笔记，逐行输出创建的路径\n                          （从系统的定时任务调用；有未能创建的则退出码为 1）\n  --pick <path|列>        在终端上以只读方式显示界面；按 Enter 将标记的行\n                          （无标记时为选中的行）的路径或该列的值\n                          逐行输出到标准输出并退出\n                          （q 或 Esc 取消，退出码为 1）\n  --check                 逐行输出不符合列类型或规则（[rules]）的值\n                          （格式为 路径:行号: 列: 原因；若有这样的值，\n                          退出码为 1）\n  --apply <路径>          读取 --print --with-path 格式的 CSV 或 JSON（- 表示标准输入），\n                          修改不同的单元格；只显示差异\n  --yes                   与 --apply 一起用时，写入更改\n  --workspaces            列出工作区（workspaces.toml）\n  --add-to <名称>         将给出的表格（默认：当前文件夹）加入该工作区，\n                          必要时新建工作区；--as <名称> 指定表格名称\n  --remove-from <名称>    从该工作区移除给出的表格（默认：当前文件夹）\n  --remove-workspace <名称>  删除该工作区（不改动笔记）\n  --init-workspace        在文件夹中放置工作区标记 .mdgrid/workspace.toml\n                          （默认：当前文件夹）\n  --starter <名称>        与 --init-workspace 一起用时，从该预设创建台账（标记、笔记模板）：\n                          内置的预设，或配置文件夹中的 starters/<名称>\n  --with-samples          与 --starter 一起用时，同时加入预设的示例笔记\n  --starters              逐行列出预设（名称和一行说明）\n  --new-note <名称>       不显示界面，在文件夹（默认：当前文件夹）中新建笔记 <名称>.md，\n                          使用 [new_note]（folder、set、template）；输出所建的路径，\n                          绝不覆盖已有文件\n  --set <列>=<值>         与 --new-note 一起用时，在该列填入该值（可重复；列表的项\n                          用逗号分隔；空值不写入）\n  --print-config          以 TOML 输出全部配置项及其默认值\n                          和说明（docs/config.md）\n  --completions <shell>   输出 shell 补全脚本（bash、zsh、fish、elvish、powershell）\n  --man                   输出 man 手册页（roff）\n  --help                  显示此帮助\n  --version               显示版本"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "路径"
@@ -274,6 +274,38 @@ NotifyExit = "{0} 以退出码 {1} 结束"
 NotifyNoProgram = "无法运行 {0}（{1}）"
 ## notify.cli: 記録の置き場が決まらない。
 NotifyNoStateDir = "没有存放通知记录的状态文件夹（$XDG_STATE_HOME 或主文件夹）"
+## routine.opt-in: 印の [[table]] の runs の形。
+RsnRunsNotTable = "不是 { folder = \"<文件夹>\", rule = \"<列>\" } 形式的表，所以不创建例行事项的各次"
+RsnRunsNeedFolder = "没有 folder（存放各次笔记的文件夹），所以不创建例行事项的各次"
+RsnRunsNeedRule = "没有 rule（重复规则的列），所以不创建例行事项的各次"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値。
+RoutineRuleUnreadable = "例行事项 {0}：无法读取规则 \"{1}\"，所以不创建这一次（请写成 daily、weekly mon thu、monthly 1 15、monthly last 或 every 3d）"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値、{2} は起点の列の名前。
+RoutineRuleNoStart = "例行事项 {0}：规则 \"{1}\" 从列 {2} 的日期开始计算，但没有该日期，所以不创建这一次"
+## routine.fail: {0} はルーチンの名前、{1} は回のノートのパス、{2} は理由。
+RoutineCannotCreate = "例行事项 {0}：无法创建 {1}（{2}）"
+## routine.state: {0} は記録のファイルのパス、{1} は理由。
+RoutineStateRebuilt = "无法读取例行事项的记录 {0}，已重新创建（{1}）"
+RoutineStateUnwritable = "无法写入例行事项的记录 {0}（{1}）"
+## routine.cli: 記録の置き場が決まらない。
+RoutineNoStateDir = "没有存放例行事项记录的状态文件夹（$XDG_STATE_HOME 或主文件夹）"
+## routine.readonly: --runs を --readonly と一緒に渡した。
+RoutineReadonly = "--runs 会写入各次的笔记，所以不能与 --readonly 一起使用"
+## routine.opt-in: ルーチンの表が CSV・TSV。
+RoutineNotNotes = "行不是笔记（CSV 或 TSV），所以不创建例行事项的各次"
+## routine.screen-offer: 下の帯。{0} は来ている回の数。
+FooterRoutine = "  有 {0} 次例行事项到期"
+## routine.screen-create: パレットのコマンドと確かめ。
+CmdRoutineRuns = "创建例行事项的各次"
+AskRoutineRuns = "创建这些例行事项？输入 y 并按 Enter："
+## {0} は作るノートの数。
+RoutineRunsWhich = "要创建的笔记（{0} 篇）："
+## {0} は並べきれないノートの数。
+RoutineRunsMore = "另有 {0} 篇"
+RoutineNone = "没有到期的例行事项"
+## {0} は作ったノートの数。
+RoutineMade = "已创建 {0} 次例行事项"
+RoutineDismissed = "未创建例行事项（今天不再询问）"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "标记中没有名为 {0} 的表格（现有表格：{1}）；已直接打开文件夹"
 RsnStarterUnknown = "没有名为 {0} 的预设；只按标记本身的内容打开（mdgrid --starters 可列出预设）"
@@ -1689,6 +1721,8 @@ WantRulesTable = "每列一个表（[rules.<列>]）"
 WantRuleTable = "由 required 和 values 组成的表"
 WantStringList = "字符串列表"
 RsnRuleComputed = "计算列不能有规则，已忽略"
+WantValueTextTable = "由 值 = 字符串 组成的表"
+RsnNotInValues = "不在 values 中，已忽略"
 ## {0} is the name of the type (Date, Number …).
 ProblemType = "类型不符（应为{0}）"
 ProblemRequired = "缺少必填的键"
@@ -1828,6 +1862,30 @@ RsnKanbanNeedColumn = "没有 column（状态列），因此不显示看板"
 RsnKanbanNoColumn = "表格中没有列 {0}，因此不显示看板"
 ## {0} is the column.
 RsnKanbanListColumn = "列 {0} 是列表，因此不显示看板（一行会同时出现在多个泳道中）"
+
+# ---- 親子の設定(印の children。navigation.parent-child-config・cell-edit.children-done*・gantt.children-span-*。ui/children.rs) ----
+RsnChildrenNotTable = "不是 { key = \"<列>\" } 形式的表，因此不使用父子设置"
+RsnChildrenNeedKey = "没有 key（指向父项的链接列），因此不使用父子设置"
+## {0} は列。
+RsnChildrenNoColumn = "表格中没有列 {0}，因此不按父子排列"
+## {0} は列(children の status に書いた状態の列)。
+RsnChildrenNoStatus = "表格中没有列 {0}，因此完成父项时子项保持不变"
+## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。
+ChildrenOpenRefuse = "还有 {0} 个子项未完成，因此不设为完成"
+## `ChildrenOpenRefuse` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenRefuseOne = "还有 {0} 个子项未完成，因此不设为完成"
+## {0} は終わっていない子孫の数。親だけを完了にしたときの知らせ(on_done = "keep")。
+ChildrenOpenKeep = "还有 {0} 个子项未完成"
+## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenKeepOne = "还有 {0} 个子项未完成"
+## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
+GanttOverParent = "超出父项期间 {0} 天"
+## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverParentOne = "超出父项期间 {0} 天"
+## {0} は日数。ガントで選んだ親の行の期間から、子孫がはみ出す日数(一番多いもの)。
+GanttOverKids = "有子项超出此期间 {0} 天"
+## `GanttOverKids` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverKidsOne = "有子项超出此期间 {0} 天"
 
 # ---- vim モード(screen.vim-*。vim.rs) ----
 ModeInputNormal = "输入框普通"
@@ -2060,7 +2118,7 @@ CfgUse = "将模板 [templates.<名称>] 垫在此处所写的值之下。"
 ## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
 CfgTypes = "单个列的类型。优先于根文件夹的类型设置（.obsidian/types.json）\n和根据值的推断；\"auto\" 回到推断（较窄的范围可以撤销\n较宽范围的设置）。类型决定单元格的输入、不符合的值上的 ! 标记、排序和\n列标题的类型标记。不修改笔记。点击标题的类型标记，或\n在命令面板或操作菜单中使用 column_type，即可选择类型并将其写入\nviews.toml 中的表。"
 ## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
-CfgRules = "单个列的规则，与列类型一起检查。required = true 会把\n缺少键、null、空字符串或空列表视为问题；values 列出允许的值\n（列表的每一项都必须是其中之一，区分大小写）。较窄的范围逐项优先。\n问题会带 ! 标记，底部栏显示其数量，! 和 @ 在问题之间跳转，\nmdgrid --check 会列出它们。检查规则从不修改笔记，也不会阻止你写入值；\n有 values 的列会在单元格输入中提供这些值。then 会在你把该列设为某个值时\n填写同一行的其他列（值 = { 列 = 文本 }；可以使用 {date} 等模板变量，\n空文本会清空该列）；它会与你的编辑一起暂存，并一起撤销。\n计算列（file.*、formula.*）不能有规则。"
+CfgRules = "单个列的规则，与列类型一起检查。required = true 会把\n缺少键、null、空字符串或空列表视为问题；values 列出允许的值\n（列表的每一项都必须是其中之一，区分大小写）。较窄的范围逐项优先。\n问题会带 ! 标记，底部栏显示其数量，! 和 @ 在问题之间跳转，\nmdgrid --check 会列出它们。检查规则从不修改笔记，也不会阻止你写入值；\n有 values 的列会在单元格输入中提供这些值。then 会在你把该列设为某个值时\n填写同一行的其他列（值 = { 列 = 文本 }；可以使用 {date} 等模板变量，\n空文本会清空该列）；它会与你的编辑一起暂存，并一起撤销。\n计算列（file.*、formula.*）不能有规则。\n按带 values 的列分组时，分组按其顺序排列（降序时相反）。icons 和 labels（值 = 文字）\n在分组标题和看板泳道标题中显示值的符号和名称（单元格、筛选、搜索和 --print 保持原值）。"
 ## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalColor = "使用颜色。false 则不使用颜色绘制（与 NO_COLOR 或 --no-color 相同）。"
 ## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
@@ -2068,7 +2126,7 @@ CfgTerminalAmbiguousWide = "将东亚宽度不明确（East Asian Ambiguous）�
 ## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalNerdFont = "是否可以绘制圆头标签（Nerd Font 字形）。true：终端字体是 Nerd\nFont。\"auto\"：仅在自行绘制这些字形的终端（Ghostty、WezTerm）中绘制，\n以免在其他终端中显示错乱。没有圆头时，\"pill\" 按 \"soft\" 绘制。"
 ## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
-CfgTerminalNerdIcons = "在设置按钮、界面类型按钮和菜单、列标题的类型标记和日历标题中\n使用 Nerd Font 的图标字形。仅当终端字体是 Nerd Font 时才设为 true；\n默认使用普通字符（⚙、▦、◇、#、◷、⋮、◉、✓）。从不使用 emoji。"
+CfgTerminalNerdIcons = "在设置按钮、界面类型按钮和菜单、列标题与关系图方框的类型标记和日历标题中\n使用 Nerd Font 的图标字形。仅当终端字体是 Nerd Font 时才设为 true；\n默认使用普通字符（⚙、▦、◇、#、◷、⋮、◉、✓、↪）。从不使用 emoji。"
 ## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalHerdr = "在 Herdr 窗格中，把重新打开当前表格和视图的命令告诉 Herdr，以便\nHerdr 在其服务器重启后重新打开它。false 则从不调用 Herdr。"
 ## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。

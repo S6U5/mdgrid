@@ -46,6 +46,13 @@ const ALLOWED: &[(&str, &str, &str)] = &[
         "",
         "日付の言葉の語の表(打ち込みを読む語。訳さない)",
     ),
+    // ルーチンの決まり(routine.rule)も、画面の言語によらず英語と日本語の形を読む打ち込みの語。recurrence.rs は語の表と
+    // 読み方だけで、文言は持たない(datewords.rs と同じ)。
+    (
+        "recurrence.rs",
+        "",
+        "ルーチンの決まりの語の表(打ち込みを読む語。訳さない)",
+    ),
     // man と補完の説明(clap の about・long_about)は日本語のまま(記録の仮定。英語にそろえるかは後で)。
     ("main.rs", "about = \"", "clap の about(man と補完の説明)"),
     (

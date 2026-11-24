@@ -470,6 +470,8 @@ pub enum Action {
     AcrossSearch,
     /// cli.session-screen-save: 今の表示を名前を付けたセッションとして保存する(パレットから)。
     SaveSession,
+    /// routine.screen-create: 来ているルーチンの回を作る(パレットと下の帯の知らせ。キーなし。tbd~routine.offer-key)。
+    RoutineRuns,
     /// cli.recent-list: 最近開いた表の一覧を出して開く(パレット)。
     OpenRecent,
     /// workspace.switch-open: お気に入りのワークスペースの切り替えの一覧を開く。
@@ -695,6 +697,7 @@ impl Action {
             Action::AcrossSearch => "across_search",
             Action::SaveSession => "save_session",
             Action::OpenRecent => "open_recent",
+            Action::RoutineRuns => "routine_runs",
             Action::WsSwitch => "workspace_switch",
             Action::WsFavorite => "workspace_favorite",
             Action::Choose(n) => CHOOSE
@@ -984,6 +987,10 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::StackAdd, Msg::CmdStackAdd, STACK),
     cmd(Action::StackClose, Msg::KeyStackClose, STACK),
     cmd(Action::PageSave, Msg::CmdPageSave, STACK),
+    // routine.screen-create・routine.readonly: ルーチンの回を作る。ノートを書くが、書くコマンドの表(`COMMANDS`)に置くと、
+    // その全部が既定の設定でパレットとヘルプに出ることを確かめる main の試験が落ちる(reverse-run)ので、ここに置く。
+    // ルーチンの表が無いときと読むだけの起動では、パレットとヘルプに出さない(`App::command_shown`)。
+    cmd(Action::RoutineRuns, Msg::CmdRoutineRuns, NOTE),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。

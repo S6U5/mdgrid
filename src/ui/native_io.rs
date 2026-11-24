@@ -139,6 +139,8 @@ pub(crate) enum Ask {
     },
     /// stack.page-save: 残すページの名前(候補なし)。
     PageName,
+    /// routine.screen-create: 作るルーチンの回のノートの名前(印の根からの相対のパス)。続けて `y`。
+    RoutineRuns(Vec<String>),
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -264,6 +266,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::OpenRecent { .. }) => Msg::AskOpenRecent.into(),
         Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
         Some(Ask::PageName) => Msg::AskPageName.into(),
+        Some(Ask::RoutineRuns(_)) => Msg::AskRoutineRuns.into(),
     }
 }
 
@@ -328,6 +331,26 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
             | Ask::PageName
     ) {
         // 候補の無い入力。
+    } else if let Ask::RoutineRuns(names) = ask {
+        // routine.screen-create: 作るノートの名前を1行に1つ(入りきらない分は数だけ)。
+        out.push(Line::from(fit(
+            &Msg::RoutineRunsWhich.fill(&[&names.len()]),
+            w,
+            Align::Left,
+        )));
+        let room = lines.len().saturating_sub(5).clamp(1, ASK_ROWS);
+        let shown = if names.len() > room { room - 1 } else { room };
+        for n in names.iter().take(shown) {
+            out.push(Line::from(fit(
+                &format!("  {}", sanitize(n)),
+                w,
+                Align::Left,
+            )));
+        }
+        if names.len() > shown {
+            let more = Msg::RoutineRunsMore.fill(&[&(names.len() - shown)]);
+            out.push(Line::from(fit(&format!("  {more}"), w, Align::Left)));
+        }
     } else if let Ask::DeleteNote { rows, links } = ask {
         // cell-edit.delete-note-confirm: 消すノートの名前を、問いの下の1行に出す(長い名前で問いが切れないように)。
         let labels: Vec<String> = rows.iter().map(|r| app.src.label(r)).collect();
@@ -649,6 +672,12 @@ impl App {
             Some(Ask::DeleteNote { rows, .. }) => {
                 let rows = rows.clone();
                 self.confirm_delete_note(rows, query.trim().eq_ignore_ascii_case("y"));
+            }
+            Some(Ask::RoutineRuns(_)) => {
+                // 閉じるときにやめたことにしない(close_palette)よう、問いを先に外す。
+                self.nv.ask = None;
+                self.close_palette();
+                self.confirm_routine_runs(query.trim().eq_ignore_ascii_case("y"));
             }
             Some(Ask::RestoreNote { notes, .. }) => {
                 let Some(item) = picked.and_then(|k| notes.get(k)).cloned() else {

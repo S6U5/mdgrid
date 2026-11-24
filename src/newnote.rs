@@ -475,6 +475,38 @@ pub fn expand_name(template: &str, today: i64) -> String {
 }
 
 /// `expand_name` と同じで、`{uuid}`・`{uid}` をそのノートの値 `ids` で埋める。
+/// cell-edit.new-note-name-head・cli.new-note-name-head: `name_head = "hide"` のとき、名前の雛形を埋めた頭(名前の
+/// 欄に出さずに、打った名前の前に付ける文字)。`"hide"` でないときと、`/` を含む頭(欄に出す)は空。
+pub fn hidden_head(rule: &NewNote, today: i64, ids: &Ids) -> String {
+    if !rule.hide_head() {
+        return String::new();
+    }
+    let text = expand_name_ids(&rule.name, today, ids);
+    if text.contains('/') {
+        String::new()
+    } else {
+        text
+    }
+}
+
+/// cell-edit.new-note-name-head・cli.new-note-name-head: 打った名前 `typed` に、隠している頭 `head` を付けた名前。
+/// 頭は最後の名前の部分に付ける。空の名前と、`note_name` に当たる頭を自分で打った名前には付けない。
+pub fn attach_head(head: &str, typed: &str, note_name: Option<crate::display::NoteName>) -> String {
+    if head.is_empty() || typed.trim().is_empty() {
+        return typed.to_string();
+    }
+    let t = typed.trim();
+    let (dir, base) = match t.rsplit_once('/') {
+        Some((d, b)) => (format!("{d}/"), b),
+        None => (String::new(), t),
+    };
+    let own = note_name.is_some_and(|re| re.apply(base) != base);
+    if base.is_empty() || own {
+        return typed.to_string();
+    }
+    format!("{dir}{head}{base}")
+}
+
 pub fn expand_name_ids(template: &str, today: i64, ids: &Ids) -> String {
     let v = Vars {
         today,

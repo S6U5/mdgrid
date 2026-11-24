@@ -286,6 +286,12 @@ impl Bar {
     }
 }
 
+/// gantt.children-span-mark: 子の日の範囲 `child`(最初の日, 最後の日)が、親の期間 `parent` からはみ出す日数。
+/// 始まりが親の始まりより前の日数と、終わりが親の終わりより後の日数の和(親を広げるときに要る日数)。
+pub fn overrun(parent: (i64, i64), child: (i64, i64)) -> i64 {
+    (parent.0 - child.0).max(0) + (child.1 - parent.1).max(0)
+}
+
 #[cfg(test)]
 #[path = "test_gantt_unit.rs"]
 mod tests;

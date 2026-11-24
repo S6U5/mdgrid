@@ -87,17 +87,88 @@ impl App {
     }
 
     /// 重ね順の2段目(NV-20): `.base` の結果に、ビューの設定を重ねる(絞る・並べる・まとめる)。
+    /// まとまりの列に値の候補があれば、まとまりは候補の順(navigation.group-values-order)。
     fn apply_settings(
         &self,
         rows: Vec<RowId>,
         groups: Vec<(String, std::ops::Range<usize>)>,
     ) -> (Vec<RowId>, Vec<(String, std::ops::Range<usize>)>) {
+        let (rows, groups) = self.order_base_groups(rows, groups);
         if self.settings.no_conditions() {
             return (rows, groups);
         }
         let get = |r: &RowId, c: &str| self.setting_value(r, c);
         let kind = |c: &str| self.column_kind(c);
-        settings::apply(rows, groups, &self.settings, &get, &kind)
+        let values = |c: &str| self.rule_values(c);
+        settings::apply_with(rows, groups, &self.settings, &get, &kind, &values)
+    }
+
+    /// 列 `col` の値の候補(`[rules.<列>] values`。重ねたもの)。
+    fn rule_values(&self, col: &str) -> Option<Vec<String>> {
+        self.prof.resolved.rules.get(col)?.values.clone()
+    }
+
+    /// navigation.group-values-order: `.base` の groupBy のまとまりのまま(ビューの設定でまとめ直さない)なら、
+    /// groupBy の列の値の候補の順に並べ直す。
+    fn order_base_groups(
+        &self,
+        rows: Vec<RowId>,
+        groups: Vec<(String, std::ops::Range<usize>)>,
+    ) -> (Vec<RowId>, Vec<(String, std::ops::Range<usize>)>) {
+        if groups.is_empty() || self.settings.group != Group::Inherit {
+            return (rows, groups);
+        }
+        let Some((col, dir)) = self.base_group_by() else {
+            return (rows, groups);
+        };
+        let Some(values) = self.rule_values(&col) else {
+            return (rows, groups);
+        };
+        let dir = match dir {
+            base::Dir::Asc => settings::Dir::Asc,
+            base::Dir::Desc => settings::Dir::Desc,
+        };
+        // 値の無い行のまとまり(見出しの文字が候補と同じでも候補に数えない)の始まりの行。
+        let empty: HashSet<usize> = groups
+            .iter()
+            .filter(|(_, r)| {
+                rows.get(r.start).is_none_or(|row| {
+                    settings::value_keys(self.setting_value(row, &col).as_ref()) == [None]
+                })
+            })
+            .map(|(_, r)| r.start)
+            .collect();
+        settings::order_groups(rows, groups, &values, dir, &|r| empty.contains(&r.start))
+    }
+
+    /// `.base` の今のビューの groupBy の列と向き(mdgrid のビューは groupBy を持たない)。
+    fn base_group_by(&self) -> Option<(String, base::Dir)> {
+        if self.nv.at.is_some() {
+            return None;
+        }
+        let b = self.base.as_ref()?;
+        b.base.views.get(b.view)?.group_by.clone()
+    }
+
+    /// 今のまとまりの列(ビューの設定でまとめ直した列か、`.base` の groupBy の列)。まとめていなければ None。
+    pub(crate) fn group_col(&self) -> Option<String> {
+        match &self.settings.group {
+            Group::Off => None,
+            Group::By { col, .. } => Some(col.clone()),
+            Group::Inherit => self.base_group_by().map(|(c, _)| c),
+        }
+    }
+
+    /// navigation.group-values-icon: まとまり `g` の見出しに出す「字 名前」(`[rules.<列>] icons`・`labels`)。
+    /// 書いていない値と、値の無い行のまとまりは None(見出しは値のまま)。
+    pub(crate) fn group_shown(&self, g: usize) -> Option<String> {
+        let (h, range) = self.groups.get(g)?;
+        let col = self.group_col()?;
+        let first = self.rows.get(range.start)?;
+        if settings::value_keys(self.setting_value(first, &col).as_ref()) == [None] {
+            return None;
+        }
+        self.prof.resolved.value_shown(&col, h)
     }
 
     pub(crate) fn build_grid(&self) -> Result<Grid, String> {
@@ -642,7 +713,8 @@ impl App {
     }
 
     /// NV-27: 親子で並べるなら、まとまりごとに親の下に子を前順に並べ直し、行ごとの深さ・子の有無を持つ。
-    /// 親は親のキーの値(リストなら先頭)のリンクの行き先のノート(REL-1 と同じ解き方)。
+    /// 親は親のキーの値(リストなら先頭)のリンクの行き先のノート(REL-1 と同じ解き方。`tree_parent`)。
+    /// 親のキーはビューの設定か、印の children(navigation.parent-child-config。`tree_key`)。
     fn arrange_tree(
         &mut self,
         rows: Vec<RowId>,
@@ -652,22 +724,10 @@ impl App {
         self.tree_away.clear();
         self.wbs_num.clear();
         self.wbs_pct.clear();
-        let Some(key) = self.settings.tree.clone() else {
+        let Some(key) = self.tree_key() else {
             return (rows, groups);
         };
-        let parent = |r: &RowId| -> Option<RowId> {
-            let v = self.prop(r, &key)?;
-            let s = match &v {
-                Value::Str(s) => s.clone(),
-                Value::List(items) => items.iter().find_map(|x| match x {
-                    Value::Str(s) => Some(s.clone()),
-                    _ => None,
-                })?,
-                _ => return None,
-            };
-            let (_, target) = self.link_target(r, &s)?;
-            Some(RowId(target?.to_string_lossy().into_owned()))
-        };
+        let parent = |r: &RowId| -> Option<RowId> { self.tree_parent(r, &key) };
         let ranges: Vec<(String, std::ops::Range<usize>)> = if groups.is_empty() {
             vec![(String::new(), 0..rows.len())]
         } else {
@@ -741,7 +801,7 @@ impl App {
 
     /// NV-27 の `z`: 選んだ行が子を持てば、その子孫を畳む・開く(選んだ行はそのまま)。
     pub(crate) fn toggle_tree(&mut self) {
-        if self.settings.tree.is_none() {
+        if self.tree_key().is_none() {
             let o = self.key_of(
                 super::keymap::Mode::Table,
                 super::keymap::Action::ViewSettings,
@@ -786,18 +846,13 @@ impl App {
 
     /// groupBy の列の見出し(見出しの行に出す)。ビューの設定でまとめ直したら、その列(NV-15)。
     pub(crate) fn group_title(&self) -> Option<String> {
-        match &self.settings.group {
-            Group::Off => return None,
-            Group::By { col, .. } => return Some(self.title(col)),
-            Group::Inherit => {}
-        }
-        // mdgrid のビューは groupBy を持たない(まとめるのはビューの設定)。
-        if self.nv.at.is_some() {
-            return None;
-        }
-        let b = self.base.as_ref()?;
-        let (id, _) = b.base.views.get(b.view)?.group_by.as_ref()?;
-        Some(self.title(id))
+        let c = self.group_col()?;
+        // base-view.default-headings-display-name: ビューに出していない列でも、`.base` の displayName を使う。
+        Some(match (self.built.titles.get(&c), &self.base) {
+            (Some(t), _) => t.clone(),
+            (None, Some(b)) => b.base.column_title(&c),
+            (None, None) => base::default_title(&c),
+        })
     }
 
     /// `.base` を開く(CLI-1・CLI-2)。`view` は先頭(BV-13)か `--view` で選んだビュー。
