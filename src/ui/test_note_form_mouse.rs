@@ -50,7 +50,7 @@ fn boot(tmp: &Tmp, toml: &str) -> App {
     app
 }
 
-/// ノートのフォルダの下の `.md`(根からの相対。名前の順)。
+/// ノートのフォルダの下の `.md`(根からの相対。区切りは `/`。名前の順)。
 fn notes_in(tmp: &Tmp) -> Vec<String> {
     fn walk(dir: &std::path::Path, root: &std::path::Path, out: &mut Vec<String>) {
         for e in std::fs::read_dir(dir).unwrap().flatten() {
@@ -58,7 +58,9 @@ fn notes_in(tmp: &Tmp) -> Vec<String> {
             if p.is_dir() {
                 walk(&p, root, out);
             } else if p.extension().is_some_and(|x| x == "md") {
-                out.push(p.strip_prefix(root).unwrap().to_string_lossy().into_owned());
+                // Windows の区切り `\\` も `/` にそろえる。
+                let rel = p.strip_prefix(root).unwrap().to_string_lossy();
+                out.push(rel.replace('\\', "/"));
             }
         }
     }
