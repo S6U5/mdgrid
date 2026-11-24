@@ -287,3 +287,55 @@ fn test_filtered_out_parent_no_away_mark() {
     n.sort();
     assert_eq!(n, vec!["API", "画面"]);
 }
+
+/// 設計(p2)の下に画面(p1)と API(p3)。3つとも todo で、同じまとまりに入る。
+fn same_group(name: &str) -> (Tmp, App) {
+    make(
+        name,
+        &[
+            ("設計.md", "---\nstatus: todo\npriority: p2\n---\n"),
+            (
+                "画面.md",
+                "---\nparent: \"[[設計]]\"\nstatus: todo\npriority: p1\n---\n",
+            ),
+            (
+                "API.md",
+                "---\nparent: \"[[設計]]\"\nstatus: todo\npriority: p3\n---\n",
+            ),
+            ("メモ.md", "---\nstatus: doing\npriority: p1\n---\n"),
+        ],
+    )
+}
+
+// [utest -> req~navigation.parent-child-groups~1]
+/// グループ分けをしても、同じまとまりの子は、そのまとまりの中で親の下に字下げして並ぶ。
+#[test]
+fn test_same_group_children_under_parent() {
+    let (_t, mut a) = same_group("nv27grp1");
+    tree_on(&mut a);
+    group_by_status(&mut a);
+    let n = names(&a);
+    let at = n
+        .iter()
+        .position(|x| x == "▾ 設計")
+        .unwrap_or_else(|| panic!("{n:?}"));
+    let mut kids = n[at + 1..at + 3].to_vec();
+    kids.sort();
+    assert_eq!(kids, vec!["  API", "  画面"], "{n:?}");
+}
+
+// [utest -> req~navigation.parent-child-groups~1]
+/// まとまりの中で並べ替えても、子は親より上に出ず、並べ替えは兄弟の中で効く。
+#[test]
+fn test_same_group_sort_keeps_children_under_parent() {
+    let (_t, mut a) = same_group("nv27grp2");
+    a.settings.sorts = vec![("priority".into(), Dir::Asc)];
+    tree_on(&mut a);
+    group_by_status(&mut a);
+    let n = names(&a);
+    let at = n
+        .iter()
+        .position(|x| x == "▾ 設計")
+        .unwrap_or_else(|| panic!("{n:?}"));
+    assert_eq!(n[at + 1..at + 3], ["  画面", "  API"], "{n:?}");
+}

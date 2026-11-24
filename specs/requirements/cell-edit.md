@@ -1681,6 +1681,64 @@
   - When:
   - Then: `config.toml: rules.status.then:` で始まる警告1行で、status を `done` に直してもためる変更は `status: done` だけ。
 
+### 親を完了にしたときの子
+
+#### `children` の表(navigation.parent-child-config)で、親の行の状態の列(`children` の `status`。書かなければ kanban の column、無ければ `status`)を完了の値(`done`。書かなければ `"done"`)に直したら、`on_done`(書かなければ `"complete"`)のとおりに、まだ終わっていない(`closed` に無い。書かなければ `["done"]`)子孫を扱うべき
+`req~cell-edit.children-done~1` P1
+- Rationale: 親を済ませたのに子が残ると、済んでいない子が表に散らばるため。どう扱うかは使い方で違うので、設定で選べるようにする(2026-11-24 に人が「子も完了にするがデフォルト。選べてもいい。子を完了にするまでダメとか、子が完了になっていないけど大丈夫とか。設定で柔軟に変えられるのが思想」と決めた)
+- Acceptance:
+  - Given: `children = { key = "parent", on_done = "nope" }`
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で `on_done` を言う警告1行で、`"complete"` として扱う。
+- Acceptance:
+  - Given: `children = { key = "parent", closed = ["done", "dropped"] }` で、「設計」の子が dropped の「旧案」だけ
+  - When: 「設計」を done に直す
+  - Then: 「旧案」は dropped のまま(終わっているとみなす)。
+- Needs: utest
+
+#### `on_done = "complete"` では、まだ終わっていない子孫の状態も完了の値にする変更を、親と同じ1手としてため、子孫にも一緒に入れる値(cell-edit.then-set)をためるべき
+`req~cell-edit.children-done-complete~1` P1
+- Rationale: 保存の前の差分で、親と一緒に何が完了になるかを確かめ、取り消し1回で戻せるようにするため
+- Acceptance:
+  - Given: doing の「設計」の子に todo の「画面」と done の「API」、「画面」の子に todo の「部品」、`[rules.status.then] done = { done_at = "{date}" }`、今日が 2026-11-24
+  - When: 「設計」の status を done に直す
+  - Then: 「設計」「画面」「部品」の status が done・done_at が 2026-11-24 のためる変更になり、「API」は変わらない。
+- Acceptance:
+  - Given: その直しのあと
+  - When: 取り消しを1回
+  - Then: 4つの行とも直す前の値に戻る。
+- Acceptance:
+  - Given: 同じ表をカンバンで開いている
+  - When: 「設計」の札を done のレーンへ動かす
+  - Then: 「画面」「部品」も done のためる変更になる。
+- Needs: utest
+
+#### `on_done = "refuse"` では、まだ終わっていない子孫があれば親の状態を直さず、残っている子孫の数を添えた理由を出すべき
+`req~cell-edit.children-done-refuse~1` P1
+- Rationale: 子を全部済ませるまで親を済ませない使い方のため
+- Acceptance:
+  - Given: `on_done = "refuse"` と、todo の子が2つある「設計」
+  - When: 「設計」の status を done に直す
+  - Then: 何もためず、「終わっていない子が 2 件ある」旨の理由が出る。
+- Acceptance:
+  - Given: 同じ表で、子の2つを done にした
+  - When: 「設計」の status を done に直す
+  - Then: done のためる変更になる。
+- Acceptance:
+  - Given: 同じ設定で、「設計」と子の無い「メモ」を選んでいる
+  - When: 一括の編集で status を done にする
+  - Then: 「メモ」だけが done になり、直さなかった行の数(1)が理由と一緒に出る。
+- Needs: utest
+
+#### `on_done = "keep"` では、親の状態だけを直し、まだ終わっていない子孫の数を下の帯に知らせるべき
+`req~cell-edit.children-done-keep~1` P1
+- Rationale: 子が残っていても親を済ませてよい使い方のため。黙って済ませると、残った子に気づけない
+- Acceptance:
+  - Given: `on_done = "keep"` と、todo の子が2つある「設計」
+  - When: 「設計」の status を done に直す
+  - Then: 「設計」だけが done のためる変更になり、下の帯に「終わっていない子が 2 件ある」旨の1行が出る。
+- Needs: utest
+
 ### 日付を言葉で入れる
 
 #### 日付の入力(セルの編集・一括の設定・絞り込みの比べる値)は、cell-edit.date-input-forms の形に加えて、日本語と英語の日付の言葉を、文言の言語によらず受け付けるべき
@@ -1787,3 +1845,13 @@
 `tbd~name-template-other-vars`
 - Decider: 人
 - Provisional: 文字のまま残す(`{time}`・`{now}` は名前に書けない `:` が入り、`{name}`・`{folder}` は名前を決める前で値が無いため)。日付の変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{weekday}`)と印の変数(`{uuid}`・`{uid}`)は埋める。
+
+### 親の完了で子孫を扱うのを、印の `children` が無く、ビューの設定で親子をオンにしただけの表でも効かせるか
+`tbd~cell-edit.children-done-scope`
+- Decider: 人
+- Provisional: 効かせない(書いた `children` があるときだけ。ビューの設定の親子は並べ方だけを変える)
+
+### `--apply` と `--set` で親を完了にしたときも子孫を扱うか
+`tbd~cell-edit.children-done-cli`
+- Decider: 人
+- Provisional: 扱わない(画面の直しだけ。次の段)

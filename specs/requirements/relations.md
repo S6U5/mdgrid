@@ -304,6 +304,31 @@
   - When: 表の一覧で tasks を選んでホイールを下へ1つ
   - Then: tasks の次の表を選ぶ。
 
+#### 同じ表の中のノートを指す列(タスクの `parent` など)も、その表から自分への矢印(輪)のつながりとして関係マップに描き、詳細に元の列と種類(多対一・多対多)を出すべき
+`req~relations.map-self-links~1` P1
+- Rationale: 親子のように表の中でつながる形も、表どうしの図(ER 図)で見えるようにするため(2026-11-24 に人が「表どうしの図」を選んだ)。relations.table-links-detect は別の表へのつながりだけを数えていた
+- Acceptance:
+  - Given: tasks の parent が tasks のノートを指す
+  - When: 関係マップを開く
+  - Then: tasks の箱から tasks の箱へ戻る矢印があり、選ぶと詳細に「parent」と「多対一」。
+- Acceptance:
+  - Given: tasks の routine が routines のノートを、parent が tasks のノートを指す
+  - When: 関係マップを開く
+  - Then: つながりは2つ(tasks → routines と tasks → tasks)。
+- Needs: utest
+
+#### 関係マップの表の箱の列に、列の見出しと同じ型の印(数・日付・日時・チェック・リスト・札の列)と、リンクの列の印を添え、つながりの元の列を見分けられるようにするべき
+`req~relations.map-column-types~1` P1
+- Rationale: 表どうしの図で、列がどんな値を持つかと、どの列がほかの表を指すかを、箱を見るだけで分かるようにするため
+- Acceptance:
+  - Given: tasks の due が日付の列、parent と routine がリンクの列
+  - When: 関係マップを開く
+  - Then: tasks の箱の due に日付の印、parent と routine にリンクの印が付く。
+- Acceptance:
+  - Given: 色を使わない表示(`--no-color`)
+  - When: 関係マップを開く
+  - Then: 同じ印が字で出る(cell-view.not-color-only)。
+- Needs: utest
 ### 次の段(まだ作っていない。P2)
 
 #### mdgrid でノートの名前(ファイル名)を変えるときは、そのノートを指すリンク(開いたフォルダと登録した表の中)を、差分を見せてから新しい名前に書き直せるべき
