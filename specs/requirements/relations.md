@@ -76,6 +76,27 @@
   - When:
   - Then: `project: "[[projects/mdgrid|mdgrid]]"` → `mdgrid`。`tags: ["[[tui]]", "[[relations]]"]` → `[tui, relations]`。
 
+#### リンクの値のセルは、行き先のノートの名前に、そのセルのある表のノートの欄と同じ `display.note_name`(screen.note-name)を当てて見せ、`[[…|表示]]` の表示の文字はそのまま見せ、ノートに書く値と出力は変えないべき
+`req~relations.link-display-note-name~1` P1
+- Rationale: 日付の頭(`20261120_`)を付けて作るノートでは、ノートの欄で頭を隠していても、親やルーチンを指すリンクのセルに頭が出て、同じノートが2つの名前で見えるため(2026-11-24 に理想のワークスペースを組んで気づいた)
+- Acceptance:
+  - Given: `[display] note_name = '^\d{8}_'` と、`parent: "[[20261120_設計]]"` の行
+  - When: 表を描く
+  - Then: parent のセルは「設計」。
+- Acceptance:
+  - Given: 同じ設定
+  - When: `--print --format csv`
+  - Then: parent の値は `[[20261120_設計]]` のまま。
+- Acceptance:
+  - Given: 同じ設定で、`parent: "[[20261120_設計|設計の案]]"` の行
+  - When: 表を描く
+  - Then: parent のセルは「設計の案」。
+- Acceptance:
+  - Given: `display.note_name` を書かない表
+  - When: 表を描く
+  - Then: parent のセルは「20261120_設計」(今までどおり)。
+- Needs: utest
+
 #### `[[…]]` か `[…](…)` の形なのに行き先のノートが見つからないリンクは、書いた文字のまま、行き先が無いと分かる印(cell-view.not-color-only と同じく色に頼らない)を付けて見せるべき
 `req~relations.broken-link~1` P1
 - Acceptance:
