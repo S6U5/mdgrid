@@ -31,6 +31,7 @@ mod gitflow;
 pub(crate) mod glyphs;
 pub mod grid;
 pub mod help;
+pub mod hyperlink;
 pub mod input;
 pub mod kanban;
 pub mod keymap;
@@ -86,7 +87,11 @@ use unicode_segmentation::UnicodeSegmentation;
 
 /// 描く範囲(最下行と右端の1桁を空けたもの)。
 fn draw_area(frame: &Frame<'_>) -> Rect {
-    let full = frame.area();
+    screen_area(frame.area())
+}
+
+/// 画面の全体 `full` のうちの描く範囲。
+pub fn screen_area(full: Rect) -> Rect {
     Rect {
         x: full.x,
         y: full.y,
@@ -98,6 +103,7 @@ fn draw_area(frame: &Frame<'_>) -> Rect {
 /// 画面を描く。最下行と右端の1桁は空ける(端末の自動折り返しを避ける)。
 pub fn draw(frame: &mut Frame<'_>, app: &App) {
     let area = draw_area(frame);
+    app.url_spots.clear();
     let lines = view::render(app, area.width as usize, area.height as usize);
     paint(frame, app, lines, view::cursor(app));
 }
@@ -110,6 +116,7 @@ pub fn draw_screen(frame: &mut Frame<'_>, app: &mut App) {
     }
     app.stack_sync();
     let area = draw_area(frame);
+    app.url_spots.clear();
     let (lines, cursor) = stack::render(app, area.width as usize, area.height as usize);
     paint(frame, app, lines, cursor);
 }
@@ -439,6 +446,8 @@ mod test_then;
 mod test_time_picker;
 #[cfg(test)]
 mod test_trust_notices;
+#[cfg(test)]
+mod test_url_links;
 #[cfg(test)]
 mod test_view_tabs_auto;
 #[cfg(test)]

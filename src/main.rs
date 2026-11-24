@@ -2667,7 +2667,10 @@ fn event_loop(
         let size = term.size()?;
         app.resize(size.width, size.height);
         execute!(term.backend_mut(), BeginSynchronizedUpdate)?;
-        term.draw(|f| ui::draw_screen(f, app))?;
+        let done = term.draw(|f| ui::draw_screen(f, app))?;
+        // cell-view.url-full-target: 切って見せた URL の字を、全体の URL を行き先にして書き直す。
+        let links = ui::hyperlink::linked(app, done.buffer, ui::screen_area(done.area));
+        ui::hyperlink::write(term.backend_mut(), &links)?;
         execute!(term.backend_mut(), EndSynchronizedUpdate)?;
         // notify.terminal: 端末の通知の合図は、描いたあとに送る(描く途中の出力に混ぜない)。
         let bytes = app.notify_take_term();

@@ -329,6 +329,7 @@ pub(crate) fn render_detail(app: &App, w: usize, h: usize) -> Vec<Line<'static>>
     ]);
     let mut lines = vec![Line::from(Span::styled(fit(&head, w, Align::Left), bold))];
     let input = detail_input_at(app, w);
+    let key_w = (!props.is_empty()).then(|| app.detail_key_w(&props, w));
     for (k, l) in body.iter().enumerate().skip(d.top).take(body_h) {
         let y = 1 + k - d.top;
         if let Some((x, _, room)) = input.filter(|(_, iy, _)| *iy == y) {
@@ -350,6 +351,17 @@ pub(crate) fn render_detail(app: &App, w: usize, h: usize) -> Vec<Line<'static>>
             (None, true, _) | (None, _, true) => bold,
             _ => Style::default(),
         };
+        // cell-view.url-full-target: 折り返した URL のどの行にも、全体の URL を行き先に付ける。
+        if let (Some(p), Some(kw)) = (props.get(l.prop), key_w) {
+            let x = (kw + 3).min(w);
+            let head = take(&l.text, x);
+            let val = &l.text[head.len()..];
+            if width(&head) == x && x + width(val) <= w {
+                if let Some(url) = app.link_url(&app.plain(&d.row, p)) {
+                    app.url_spots.push(x, lines.len(), val.to_string(), &url);
+                }
+            }
+        }
         lines.push(Line::from(Span::styled(fit(&l.text, w, Align::Left), st)));
     }
     while lines.len() < h.saturating_sub(2) {

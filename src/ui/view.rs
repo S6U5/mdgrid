@@ -495,6 +495,8 @@ fn column_header(app: &App, lay: &Layout, cols: &[(usize, usize)]) -> Line<'stat
 /// 行ごとに変わらない描画の材料(選択の範囲。NV-5)。
 pub(crate) struct RowCtx {
     pub span: Option<(usize, usize)>,
+    /// cell-view.url-full-target: この行の1行目の、描く行の中の位置。
+    pub y: usize,
 }
 
 /// SR-31: 入力欄の見た目(太字・下線と、色を使うときは地の色)。テーマがあれば選んだセルの地の色。
@@ -591,7 +593,10 @@ fn data_row(
         .collect();
     // 入力ボックスが列より広く右の列に重なれば、1行目はそこまで(2行目より下は続ける)。
     let mut covered = false;
+    let mut next_x = lay.data_x();
     for &(j, cw) in cols {
+        let cell_x = next_x;
+        next_x += cw + 1;
         for m in &mut more {
             m.push(Span::styled(sep, sep_st));
         }
@@ -689,6 +694,17 @@ fn data_row(
         // CV-8: 伸ばせるときは折り返した行(0 では `s.text` の1行)。
         let align = align_of(app.kinds[j]);
         let cl = cell_lines(app, &s, row, &app.cols[j], cw, max);
+        // cell-view.url-full-target: URL のセルは、切った文字にも折り返した行にも、全体の URL を行き先に付ける。
+        if s.text.contains("://") {
+            if let Some(url) = app.link_url(&app.plain(row, &app.cols[j])) {
+                for (n, t) in cl.iter().enumerate().take(k.max(1)) {
+                    if n > 0 || !covered {
+                        app.url_spots
+                            .push(cell_x, ctx.y + n, fit(t, cw, align), &url);
+                    }
+                }
+            }
+        }
         cell.push(Span::styled(fit(&cl[0], cw, align), st));
         for (n, m) in more.iter_mut().enumerate() {
             m.push(match cl.get(n + 1) {
@@ -1010,13 +1026,17 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     }
     lines.push(column_header(app, &lay, &cols));
     let data_h = table_height(app, h);
-    let ctx = RowCtx {
+    let mut ctx = RowCtx {
         span: app.anchor_span(app.row),
+        y: 0,
     };
     // CV-8: 伸ばした行は高さの分の行を並べる(一番下の行は入る分だけ)。
     for (i, _, k) in super::rows::frame_in(app, &cols, data_h) {
         match &app.slots[i] {
-            Slot::Row(r) => lines.extend(data_row(app, &lay, &cols, i, &app.rows[*r], &ctx, k)),
+            Slot::Row(r) => {
+                ctx.y = lines.len();
+                lines.extend(data_row(app, &lay, &cols, i, &app.rows[*r], &ctx, k));
+            }
             Slot::Head(g) => lines.push(heading_row(app, i, *g, w)),
             // SR-30: 見出しの上の空き。
             Slot::Gap => lines.push(Line::from(" ".repeat(w))),

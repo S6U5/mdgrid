@@ -249,3 +249,36 @@
   - Given:
   - When: `[rules.status] values = ["todo", "done"]` の `wip`
   - Then: 「選べる値ではない」。
+
+#### 値の全体が `http://` か `https://` の URL(tree.open-url-scheme で開いてよい形)の値を、表のセル・木の画面の右の欄・詳細の表示で、切って見せるときも折り返して見せるときも、見えている文字には、切る前の URL の全体を、端末が開く行き先(OSC 8 のハイパーリンク)として付けるべき
+`req~cell-view.url-full-target~1` P1
+- Rationale: 端末は画面の文字から URL を見つけて開くので、`…` で切った文字や折り返した1行だけだと、途中までの URL が開くため(2026-11-24 の報告)。OSC 8 は、文字と別に行き先を端末へ伝える決まりで、知らない端末は読み飛ばす
+- Acceptance:
+  - Given: url が `https://example.com/docs/guide/chapter-12/section-3` のノートと、url の列の幅が 24 桁の表
+  - When: 表を描く
+  - Then: url のセルの見える文字は `…` で終わり、端末へ書いた列に、その文字を包む行き先 `https://example.com/docs/guide/chapter-12/section-3` がある。
+- Acceptance:
+  - Given: 同じノートと、`row_extra_lines = 2` で url の列の幅が 24 桁の表
+  - When: 表を描く
+  - Then: 折り返した url の行のどれにも、同じ全体の URL が行き先として付く。
+- Acceptance:
+  - Given: 同じノートを右の欄に出した木の画面(値の欄は 24 桁まで)
+  - When: 木の画面を描く
+  - Then: 右の欄の `…` で終わる url の文字に、全体の URL が行き先として付く。
+- Acceptance:
+  - Given: 同じノートの詳細の表示で、url の値が2行に折り返る幅
+  - When: 詳細の表示を描く
+  - Then: 折り返した2行のどちらにも、全体の URL が行き先として付く。
+- Acceptance:
+  - Given: url が `https://example.com/files/report.pdf.exe`(tree.open-url-disguised で開かない URL)と `notes about https://example.com`(値の全体が URL でない)の行
+  - When: 表を描く
+  - Then: どちらのセルにも行き先を付けない。
+- Acceptance:
+  - Given: url のセルの上に操作の一覧の窓が重なっている表
+  - When: 表を描く
+  - Then: 窓の文字には行き先を付けない。
+- Acceptance:
+  - Given: `TERM=dumb`
+  - When: 表を描く
+  - Then: 行き先の列(OSC 8)を端末へ書かない。
+- Needs: utest

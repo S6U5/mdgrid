@@ -294,9 +294,23 @@ pub(crate) fn render(
                     None
                 };
             }
-            region(app, w, hk)
+            // cell-view.url-full-target: 区画の中で覚えた URL の所を、区画の行の分だけ下へずらす。
+            let mark = app.url_spots.len();
+            let part = region(app, w, hk);
+            app.url_spots.shift(mark, 0, y0);
+            part
         } else {
-            app.with_table(k, |o| region(o, w, hk)).unwrap_or_default()
+            let (part, mut spots) = app
+                .with_table(k, |o| {
+                    o.url_spots.clear();
+                    (region(o, w, hk), o.url_spots.take())
+                })
+                .unwrap_or_default();
+            for s in &mut spots {
+                s.y += y0;
+            }
+            app.url_spots.extend(spots);
+            part
         };
         lines.extend(part);
         while lines.len() < y0 + hk {
