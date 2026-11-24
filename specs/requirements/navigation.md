@@ -700,6 +700,27 @@
   - When:
   - Then: そのまとまりの中で「設計」の下に「画面」と「API」。
 
+#### グループ分けで、親が今の表の別のまとまりにある子の行には、名前の前に `↳` の印を付けるべき
+`req~navigation.parent-child-away-mark~1` P1
+- Rationale: 親と子でグループ分けの値が違うと、子は自分のまとまりの一番上の段に並び(navigation.parent-child-orphans)、字下げが無いので、子であることが見えなくなるため(2026-11-24 の報告)。まとまりは崩さず、印で知らせる
+- Acceptance:
+  - Given: status が doing の「設計」、`parent: "[[設計]]"` で status が todo の「画面」と「API」がある表を、status でグループ分けし、親子をオン
+  - When: 表を描く
+  - Then: todo のまとまりの名前の欄は `↳ 画面` と `↳ API`。doing のまとまりの「設計」には `↳` が無い。
+- Acceptance:
+  - Given: status が doing の「設計」、`parent: "[[設計]]"` で todo の「画面」、`parent: "[[画面]]"` で todo の「部品」がある表を、status でグループ分けし、親子をオン
+  - When: 表を描く
+  - Then: todo のまとまりは `↳ ▾ 画面` と、その下に2桁字下げした「部品」(「部品」には `↳` が無い)。
+- Acceptance:
+  - Given: 同じ「設計」「画面」「API」の表で、グループ分けをせずに親子をオン
+  - When: 表を描く
+  - Then: どの行にも `↳` が無い。
+- Acceptance:
+  - Given: 同じ表を status でグループ分けして親子をオンにし、「設計」を絞り込みで外す
+  - When: 表を描く
+  - Then: 「画面」と「API」に `↳` が無い(親が今の表に無い)。
+- Needs: utest
+
 #### 親子のオン・オフとキーは、ビューの設定として反映で効くべき
 `req~navigation.parent-child-apply~1` P1
 - Acceptance:

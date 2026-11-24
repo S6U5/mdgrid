@@ -306,6 +306,9 @@ pub(crate) fn note_name(app: &App, row: &RowId) -> String {
     }
 }
 
+/// navigation.parent-child-away-mark: 親が別のまとまりにある子の行の印。
+const AWAY_MARK: &str = "↳ ";
+
 /// 行の表示名。外で変わった行・同期の競合ファイルには `!`、値を直して元の位置に留めている行には `~`
 /// を付ける(色に頼らない)。
 pub(crate) fn label(app: &App, row: &RowId) -> String {
@@ -342,7 +345,13 @@ pub(crate) fn label(app: &App, row: &RowId) -> String {
                 name = format!("{name} · {t}");
             }
         }
-        name = format!("{}{mark}{name}", "  ".repeat(n.depth));
+        // navigation.parent-child-away-mark: 親が別のまとまりにある行は、名前の前に `↳`。
+        let away = if app.tree_away.contains(row) {
+            AWAY_MARK
+        } else {
+            ""
+        };
+        name = format!("{}{away}{mark}{name}", "  ".repeat(n.depth));
     }
     if app.held.contains(row) {
         name = format!("{HELD_MARK}{name}");

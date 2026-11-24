@@ -69,6 +69,8 @@ pub struct App {
     /// NV-27: 親子で並べたときの行ごとの深さ・子の有無・親(並べていなければ空)と、畳んだ親の行。
     pub(crate) tree: std::collections::HashMap<RowId, mdgrid::tree::Node<RowId>>,
     pub(crate) tree_folded: HashSet<RowId>,
+    /// navigation.parent-child-away-mark: 親が今の表の別のまとまりにある行(名前の前に `↳`)。
+    pub(crate) tree_away: HashSet<RowId>,
     /// NV-28: WBS の番号と、子のある行の進み具合(%)。WBS を出さなければ空。
     pub(crate) wbs_num: std::collections::HashMap<RowId, String>,
     pub(crate) wbs_pct: std::collections::HashMap<RowId, u8>,
@@ -338,6 +340,7 @@ impl App {
             folded: HashSet::new(),
             tree: HashMap::default(),
             tree_folded: HashSet::new(),
+            tree_away: HashSet::new(),
             wbs_num: HashMap::default(),
             wbs_pct: HashMap::default(),
             view_trash: None,
