@@ -29,9 +29,11 @@ done = { done_at = "{date}" }
 values = ["p1", "p2", "p3"]
 
 # 新しいノート(a): 名前は今日の日付(20261118_)で始め、期限・優先度・URL を聞き、残りを埋め、本文を雛形から始める。
+# name_head = "hide": その日付は名前を打つ欄に出さず、打った名前の前に付ける("show" にすると欄に入って出る)。
 [new_note]
 folder = "Tasks"
 name = "{date:YYYYMMDD}_"
+name_head = "hide"
 ask = ["due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"

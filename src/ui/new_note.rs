@@ -214,8 +214,12 @@ impl App {
         }
         let ids = newnote::Ids::new();
         let text = newnote::expand_name_ids(&rule.name, self.today, &ids);
-        // cell-edit.new-note-name-head: 表で隠している頭は、名前の欄に出さずに付ける。
-        let head = self.hidden_head(&text);
+        // cell-edit.new-note-name-head: `name_head = "hide"` なら、頭は名前の欄に出さずに付ける。
+        let head = if rule.hide_head() && !text.contains('/') {
+            text.clone()
+        } else {
+            String::new()
+        };
         let text = if head.is_empty() { text } else { String::new() };
         // CE-26: 窓の欄は、設定の ask があればその列、無ければ表で見えている列(書けない列と hidden は除く)。
         let source: Vec<String> = if rule.ask.is_empty() {
@@ -386,18 +390,6 @@ impl App {
             return self.open_note_input(Entry::Text, name, None);
         }
         self.open_step(None);
-    }
-
-    /// cell-edit.new-note-name-head: 雛形を埋めた文字 `text` の全部が、`display.note_name` でノートの欄から
-    /// 削られる頭なら、その頭(名前の欄に出さずに付ける)。そうでなければ空。
-    fn hidden_head(&self, text: &str) -> String {
-        if text.is_empty() || text.contains('/') {
-            return String::new();
-        }
-        match self.settings.display.over(&self.display).note_name {
-            Some(re) if re.apply(&format!("{text}x")) == "x" => text.to_string(),
-            _ => String::new(),
-        }
     }
 
     /// cell-edit.new-note-name-head: 打った名前 `typed` に、隠している頭を付けた名前。頭は最後の名前の部分に

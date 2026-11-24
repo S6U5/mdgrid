@@ -36,17 +36,33 @@ pub struct NewNote {
     pub body: String,
     /// CE-33: 作り方(`editor` なら名前だけを聞いて作り、すぐエディタで開く。ほかは窓)。
     pub mode: String,
+    /// cell-edit.new-note-name-head: 名前の雛形を埋めた文字の見せ方(`hide` なら名前の欄に出さずに付ける。
+    /// ほか(空・`show`)は欄に入れて出す)。
+    pub name_head: String,
 }
 
 impl NewNote {
     /// 設定の `[new_note]` と views.toml の `[table.view.new_note]` で知っている項目(読み書きの全部で使う)。
     pub const KEYS: &'static [&'static str] = &[
-        "mode", "folder", "name", "ask", "required", "hidden", "body", "set",
+        "mode",
+        "folder",
+        "name",
+        "name_head",
+        "ask",
+        "required",
+        "hidden",
+        "body",
+        "set",
     ];
 
     /// CE-33: エディタで作るか。
     pub fn editor(&self) -> bool {
         self.mode == "editor"
+    }
+
+    /// cell-edit.new-note-name-head: 名前の雛形を埋めた文字を、名前の欄に出さずに付けるか。
+    pub fn hide_head(&self) -> bool {
+        self.name_head == "hide"
     }
 }
 
@@ -271,6 +287,11 @@ impl NewNote {
             name: text("name")?,
             body: text("body")?,
             mode: text("mode")?,
+            // 知らない値は既定(欄に出す)として読む(警告は設定の読み込み profile.rs が出す)。
+            name_head: text("name_head")
+                .ok()
+                .filter(|s| s == "hide" || s == "show")
+                .unwrap_or_default(),
             ..NewNote::default()
         };
         for (key, out) in [("required", &mut n.required), ("hidden", &mut n.hidden)] {
@@ -331,6 +352,12 @@ impl NewNote {
         if !self.mode.is_empty() {
             t.insert("mode".into(), toml::Value::String(self.mode.clone()));
         }
+        if !self.name_head.is_empty() {
+            t.insert(
+                "name_head".into(),
+                toml::Value::String(self.name_head.clone()),
+            );
+        }
         if !self.set.is_empty() {
             let set = self
                 .set
@@ -368,6 +395,8 @@ struct Raw {
     body: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     mode: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    name_head: String,
 }
 
 impl Serialize for NewNote {
@@ -380,6 +409,7 @@ impl Serialize for NewNote {
             hidden: self.hidden.clone(),
             body: self.body.clone(),
             mode: self.mode.clone(),
+            name_head: self.name_head.clone(),
             set: self
                 .set
                 .iter()
@@ -426,6 +456,7 @@ impl<'de> Deserialize<'de> for NewNote {
             hidden: keys(raw.hidden),
             body: raw.body,
             mode: raw.mode,
+            name_head: raw.name_head,
         })
     }
 }

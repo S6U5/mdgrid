@@ -217,6 +217,7 @@ RsnNestedUse = "un modèle ne peut pas utiliser un autre modèle (ignoré)"
 RsnBadDateFormat = "{0} ; le format par défaut YYYY-MM-DD est utilisé"
 RsnBadColumn = "`{0}` n'est pas une colonne modifiable, ou est en double (ignoré)"
 RsnBadNoteMode = "\"{0}\" n'est ni \"form\" ni \"editor\" ; le formulaire est utilisé"
+RsnBadNameHead = "\"{0}\" n'est ni \"show\" ni \"hide\" ; affiché dans le champ du nom"
 RsnNeedName = "il faut un nom (chaîne) qui ne se répète pas (ignoré)"
 RsnNeedPath = "il faut un chemin (chaîne) (ignoré)"
 ## condition.invalid: 条件の名前の決まり。
@@ -2114,7 +2115,7 @@ CfgEditCandidates = "Nombre maximal de valeurs candidates proposées en modifian
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Permettre d'écrire dans les notes sans front matter ou avec un front matter vide (un front matter\nou une ligne de clé est ajouté). false met ces notes en lecture seule."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "Comment une nouvelle note est créée depuis la table : mode (\"form\" : un formulaire avec chaque\nchamp, ou \"editor\" : créer et ouvrir dans l'éditeur), folder (relatif au dossier ouvert), name\n(modèle de nom), ask (les colonnes du formulaire ; par défaut : les colonnes visibles), required\n(colonnes à remplir obligatoirement), hidden (colonnes écrites sans champ), body (un fichier\nmodèle de corps) et [new_note.set] (colonne = valeur). Les modèles peuvent utiliser {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} et {folder}. Les valeurs du filtre\nde la vue passent en premier. La table est un seul élément : un endroit plus étroit qui l'écrit la\nremplace entièrement."
+CfgNewNote = "Comment une nouvelle note est créée depuis la table : mode (\"form\" : un formulaire avec chaque\nchamp, ou \"editor\" : créer et ouvrir dans l'éditeur), folder (relatif au dossier ouvert), name\n(modèle de nom), ask (les colonnes du formulaire ; par défaut : les colonnes visibles), required\n(colonnes à remplir obligatoirement), hidden (colonnes écrites sans champ), body (un fichier\nmodèle de corps) et [new_note.set] (colonne = valeur). Les modèles peuvent utiliser {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} et {folder}. Les valeurs du filtre\nde la vue passent en premier. La table est un seul élément : un endroit plus étroit qui l'écrit la\nremplace entièrement. name_head (\"show\" : le modèle rempli apparaît dans le champ du nom ; \"hide\" : il n'apparaît pas et est ajouté devant le nom saisi)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "Réaffectation des touches par mode : sous [keys.<mode>], écrire touche = nom d'action. \"none\"\nretire la touche. Modes : table, edit, review, quit, help, palette, search, filter, detail,\nsettings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window,\nfilter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch, input_normal\n(mode vim). Les noms d'action sont affichés dans la palette de commandes (:)."
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

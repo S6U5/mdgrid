@@ -305,11 +305,11 @@
   - When: `required = ["due"]` で due を空のまま Ctrl+S
   - Then: 作らずに due の欄に理由。
 
-#### 新しいノートの名前の雛形(cell-edit.new-note-config の `name`)を埋めた文字の全部が、`display.note_name`(screen.note-name)でノートの欄から削られる頭なら、名前の欄にはその頭を出さず、打った名前の前に付けて作るべき
+#### 設定の `[new_note]` の表に、`name_head`(名前の雛形 `name` を埋めた文字の見せ方)を持ち、`"show"`(既定)では名前の欄に入れて出し、`"hide"` では名前の欄に出さず、打った名前の前に付けて作るべき
 `req~cell-edit.new-note-name-head~1` P1
-- Rationale: 表で隠している頭(日付の `20261002_` など)が、名前を打つ欄にだけ出ると、打つ前に目に入り、カーソルで戻ると消してしまうため(2026-11-24 の報告)。隠すと決めた頭は、打つ人に見せずに付ける
+- Rationale: 名前の頭に付ける日付を、初めから欄に入れて見せたい人と、見ずに題だけを打ちたい人がいるため(2026-11-24 に人が「選べるようにする」と決めた)。表で頭を隠す `display.note_name`(screen.note-name)と `"hide"` を組むと、表でも打つ欄でも頭を見ない
 - Acceptance:
-  - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"`、`[display] note_name = '^\d{8}_'`
+  - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"`・`name_head = "hide"`
   - When: 新しいノートの窓を開く
   - Then: 名前の欄は空で、`20261002_` が出ない。
 - Acceptance:
@@ -325,7 +325,7 @@
   - When: 名前の欄に何も打たずに Ctrl+S
   - Then: ノートを作らず、窓は開いたまま。
 - Acceptance:
-  - Given: 同じ設定
+  - Given: 同じ設定に `[display] note_name = '^\d{8}_'` を足す
   - When: 名前の欄に `20250101_古い`(`note_name` に当たる頭を自分で打った名前)と打って Ctrl+S
   - Then: `20250101_古い.md` が作られる(頭を重ねない)。
 - Acceptance:
@@ -333,9 +333,13 @@
   - When: 名前の欄に「買い物」と打って Enter
   - Then: priority の欄に移り、名前の欄には `20261002_買い物` が見える。
 - Acceptance:
-  - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"` で、`display.note_name` が無い
+  - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"` で、`name_head` が無いか `"show"`(`display.note_name` があっても同じ)
   - When: 新しいノートの窓を開く
   - Then: 名前の欄に `20261002_` が入って出る(cell-edit.new-note-config-name のまま)。
+- Acceptance:
+  - Given: `[new_note] name_head = "maybe"`
+  - When: 設定を読む
+  - Then: `"show"` でも `"hide"` でもないと警告し、`"show"` として扱う。
 - Needs: utest
 
 #### 新しいノートの窓の欄の行をクリックしたら、今の欄を確定して、クリックした欄に移るべき(今の欄の値が読めなければ、移らずに理由を出す)

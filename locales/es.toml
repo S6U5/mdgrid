@@ -217,6 +217,7 @@ RsnNestedUse = "una plantilla no puede usar otra plantilla (se ignora)"
 RsnBadDateFormat = "{0}; se usa el valor por defecto YYYY-MM-DD"
 RsnBadColumn = "`{0}` no es una columna escribible, o está repetida (se ignora)"
 RsnBadNoteMode = "\"{0}\" no es \"form\" ni \"editor\"; se usa el formulario"
+RsnBadNameHead = "\"{0}\" no es \"show\" ni \"hide\"; se muestra en el campo del nombre"
 RsnNeedName = "necesita un nombre (cadena) que no se repita (se ignora)"
 RsnNeedPath = "necesita una ruta (cadena) (se ignora)"
 ## condition.invalid: 条件の名前の決まり。
@@ -2114,7 +2115,7 @@ CfgEditCandidates = "Número máximo de valores candidatos que se ofrecen al edi
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Permite escribir en notas sin front matter o con uno vacío (se añade un front matter o una\nlínea de clave). false deja esas notas en solo lectura."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "Cómo se crea una nota nueva desde la tabla: mode (\"form\": un formulario con todos los campos,\no \"editor\": crear y abrir en el editor), folder (relativa a la carpeta abierta), name\n(plantilla del nombre), ask (las columnas del formulario; por defecto: las columnas visibles),\nrequired (columnas que hay que rellenar), hidden (columnas que se escriben sin campo), body (un\narchivo de plantilla del cuerpo) y [new_note.set] (columna = valor). Las plantillas pueden usar\n{date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} y {folder}. Los valores\ndel filtro de la vista van primero.\nLa tabla es un solo elemento: un lugar más estrecho que la escribe la sustituye entera."
+CfgNewNote = "Cómo se crea una nota nueva desde la tabla: mode (\"form\": un formulario con todos los campos,\no \"editor\": crear y abrir en el editor), folder (relativa a la carpeta abierta), name\n(plantilla del nombre), ask (las columnas del formulario; por defecto: las columnas visibles),\nrequired (columnas que hay que rellenar), hidden (columnas que se escriben sin campo), body (un\narchivo de plantilla del cuerpo) y [new_note.set] (columna = valor). Las plantillas pueden usar\n{date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} y {folder}. Los valores\ndel filtro de la vista van primero.\nLa tabla es un solo elemento: un lugar más estrecho que la escribe la sustituye entera. name_head (\"show\": la plantilla rellenada aparece en el campo del nombre; \"hide\": no aparece y se añade delante del nombre escrito)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "Reasignación de teclas por modo: bajo [keys.<modo>], escriba tecla = nombre de la acción.\n\"none\" quita la tecla. Modos: table, edit, review, quit, help, palette, search, filter, detail,\nsettings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window,\nfilter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch, input_normal\n(modo vim). Los nombres de las acciones se muestran en la paleta de comandos (:)."
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

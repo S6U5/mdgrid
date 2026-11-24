@@ -216,6 +216,7 @@ RsnNestedUse = "模板不能使用其他模板（已忽略）"
 RsnBadDateFormat = "{0}；使用默认的 YYYY-MM-DD"
 RsnBadColumn = "`{0}` 不是可写的列，或者重复了（已忽略）"
 RsnBadNoteMode = "\"{0}\" 不是 \"form\" 或 \"editor\"；使用表单"
+RsnBadNameHead = "\"{0}\" 不是 \"show\" 或 \"hide\"；显示在名称栏中"
 RsnNeedName = "需要不重复的 name（字符串）（已忽略）"
 RsnNeedPath = "需要 path（字符串）（已忽略）"
 ## condition.invalid: 条件の名前の決まり。
@@ -2113,7 +2114,7 @@ CfgEditCandidates = "编辑文本单元格时提供的候选值的最大数量�
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "允许写入没有 front matter 或 front matter 为空的笔记（会添加 front matter 或键\n行）。false 则这些笔记为只读。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "从表格新建笔记的方式：mode（\"form\"：包含所有字段的表单，或\n\"editor\"：创建后在编辑器中打开）、folder（相对于打开的文件夹）、name（名称\n模板）、ask（表单中的列；默认：可见的列）、required（必须\n填写的列）、hidden（不显示字段而直接写入的列）、body（正文模板文件）和\n[new_note.set]（列 = 值）。模板中可以使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 和 {folder}。视图筛选中的值优先。\n此表是一个整体：在较窄范围中写入它会整体替换。"
+CfgNewNote = "从表格新建笔记的方式：mode（\"form\"：包含所有字段的表单，或\n\"editor\"：创建后在编辑器中打开）、folder（相对于打开的文件夹）、name（名称\n模板）、ask（表单中的列；默认：可见的列）、required（必须\n填写的列）、hidden（不显示字段而直接写入的列）、body（正文模板文件）和\n[new_note.set]（列 = 值）。模板中可以使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 和 {folder}。视图筛选中的值优先。\n此表是一个整体：在较窄范围中写入它会整体替换。 name_head（\"show\"：把填好的模板放进名称栏；\"hide\"：不显示，并加在输入的名称前面）。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "按模式重新绑定按键：在 [keys.<模式>] 下写 键 = 操作名称。\n\"none\" 移除该键。模式：table, edit, review, quit, help, palette, search,\nfilter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch,\ninput_normal（vim 模式）。操作名称显示在命令面板（:）中。"
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

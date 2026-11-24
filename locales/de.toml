@@ -217,6 +217,7 @@ RsnNestedUse = "eine Vorlage kann keine andere Vorlage verwenden (ignoriert)"
 RsnBadDateFormat = "{0}; Standard YYYY-MM-DD wird verwendet"
 RsnBadColumn = "`{0}` ist keine schreibbare Spalte oder doppelt (ignoriert)"
 RsnBadNoteMode = "\"{0}\" ist weder \"form\" noch \"editor\"; das Formular wird verwendet"
+RsnBadNameHead = "\"{0}\" ist weder \"show\" noch \"hide\"; es wird im Namensfeld angezeigt"
 RsnNeedName = "braucht einen eindeutigen Namen (Zeichenkette) (ignoriert)"
 RsnNeedPath = "braucht einen Pfad (Zeichenkette) (ignoriert)"
 ## condition.invalid: 条件の名前の決まり。
@@ -2114,7 +2115,7 @@ CfgEditCandidates = "Höchstzahl der Wertvorschläge beim Bearbeiten einer Textz
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Schreiben in Notizen ohne oder mit leerem Front Matter erlauben (ein Front Matter oder eine\nSchlüsselzeile wird ergänzt). false macht diese Notizen schreibgeschützt."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "Wie eine neue Notiz aus der Tabelle entsteht: mode (\"form\": ein Formular mit allen Feldern, oder\n\"editor\": anlegen und im Editor öffnen), folder (relativ zum geöffneten Ordner), name\n(Namensvorlage), ask (die Spalten des Formulars; Standard: die sichtbaren Spalten), required\n(Spalten, die ausgefüllt sein müssen), hidden (Spalten, die ohne Feld geschrieben werden), body\n(eine Vorlagendatei für den Inhalt) und [new_note.set] (Spalte = Wert). Vorlagen können {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} und {folder} verwenden. Werte aus\ndem Filter der Ansicht kommen zuerst. Die Tabelle ist ein Eintrag: eine engere Stelle, die sie\nschreibt, ersetzt sie ganz."
+CfgNewNote = "Wie eine neue Notiz aus der Tabelle entsteht: mode (\"form\": ein Formular mit allen Feldern, oder\n\"editor\": anlegen und im Editor öffnen), folder (relativ zum geöffneten Ordner), name\n(Namensvorlage), ask (die Spalten des Formulars; Standard: die sichtbaren Spalten), required\n(Spalten, die ausgefüllt sein müssen), hidden (Spalten, die ohne Feld geschrieben werden), body\n(eine Vorlagendatei für den Inhalt) und [new_note.set] (Spalte = Wert). Vorlagen können {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} und {folder} verwenden. Werte aus\ndem Filter der Ansicht kommen zuerst. Die Tabelle ist ein Eintrag: eine engere Stelle, die sie\nschreibt, ersetzt sie ganz. name_head (\"show\": die ausgefüllte Vorlage steht im Namensfeld; \"hide\": sie wird nicht gezeigt und vor den getippten Namen gesetzt)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "Tastenbelegung je Modus: unter [keys.<Modus>] Taste = Aktionsname schreiben.\n\"none\" entfernt die Taste. Modi: table, edit, review, quit, help, palette, search, filter, detail,\nsettings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window,\nfilter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch, input_normal\n(vim-Modus). Die Aktionsnamen zeigt die Befehlspalette (:)."
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

@@ -10,7 +10,7 @@ use mdgrid::source::markdown::Markdown;
 use mdgrid::types;
 use ratatui::crossterm::event::KeyCode;
 
-const HEAD: &str = "[display]\nnote_name = '^\\d{8}_'\n[new_note]\nname = \"{date:YYYYMMDD}_\"\n";
+const HEAD: &str = "[display]\nnote_name = '^\\d{8}_'\n[new_note]\nname = \"{date:YYYYMMDD}_\"\nname_head = \"hide\"\n";
 
 fn vault(name: &str) -> Tmp {
     let tmp = Tmp::new(name);
@@ -168,13 +168,29 @@ fn test_full_name_shown_after_leaving_name_field() {
 }
 
 // [utest -> req~cell-edit.new-note-name-head~1]
-/// `display.note_name` が無ければ、雛形の頭は今までどおり名前の欄に入って出る。
+/// `name_head` が無いか `"show"` なら、`display.note_name` があっても、頭は名前の欄に入って出る。
 #[test]
-fn test_head_shown_without_note_name_rule() {
-    let tmp = vault("nnhead7");
-    let mut a = boot(&tmp, "[new_note]\nname = \"{date:YYYYMMDD}_\"\n");
-    ch(&mut a, 'a');
-    assert_eq!(input_text(&a), "20261002_");
+fn test_head_shown_by_default_and_with_show() {
+    for (tag, line) in [("nnhead7a", ""), ("nnhead7b", "name_head = \"show\"\n")] {
+        let tmp = vault(tag);
+        let toml = format!(
+            "[display]\nnote_name = '^\\d{{8}}_'\n[new_note]\nname = \"{{date:YYYYMMDD}}_\"\n{line}"
+        );
+        let mut a = boot(&tmp, &toml);
+        ch(&mut a, 'a');
+        assert_eq!(input_text(&a), "20261002_", "{line:?}");
+    }
+}
+
+// [utest -> req~cell-edit.new-note-name-head~1]
+/// `name_head` が `"show"` でも `"hide"` でもなければ、警告して `"show"` として扱う。
+#[test]
+fn test_bad_name_head_warns_and_shows() {
+    let toml = "[new_note]\nname = \"{date:YYYYMMDD}_\"\nname_head = \"maybe\"\n";
+    let (cfg, warnings) = mdgrid::config::parse(toml).unwrap();
+    assert_eq!(warnings.len(), 1, "{warnings:?}");
+    assert!(warnings[0].contains("maybe"), "{warnings:?}");
+    assert_eq!(cfg.resolved().new_note.name_head, "");
 }
 
 // [utest -> req~cell-edit.new-note-form-click-field~1]
