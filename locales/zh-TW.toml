@@ -1859,6 +1859,10 @@ PasteNoCell = "沒有可貼上值的儲存格"
 PasteNoRow = "沒有可貼上值的列"
 ## {0} is the number of rows.
 PasteRows = "已將複製的列貼到 {0} 列（未儲存）"
+PasteCells = "已貼到 {0} 個儲存格（未儲存）"
+PasteOverflow = "；{0} 個值超出表格，未貼上"
+PasteEmpty = "沒有可貼上的內容"
+CopyWhatColumn = "所選 {0} 列的 {1}"
 RepeatNothing = "尚無可重複的值（請先設定一個儲存格）"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "捨棄變更並結束"

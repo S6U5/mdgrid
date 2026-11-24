@@ -1859,6 +1859,10 @@ PasteNoCell = "값을 넣을 셀이 없음"
 PasteNoRow = "값을 넣을 행이 없음"
 ## {0} is the number of rows.
 PasteRows = "복사한 행을 {0}행에 넣음(저장 안 됨)"
+PasteCells = "{0}개 셀에 붙여 넣음(저장 안 됨)"
+PasteOverflow = ". 표에 들어가지 않은 값 {0}개는 붙여 넣지 않음"
+PasteEmpty = "붙여 넣을 값이 없음"
+CopyWhatColumn = "선택한 {0}행의 {1}"
 RepeatNothing = "아직 반복할 값이 없음(먼저 셀에 값을 넣을 것)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "변경을 버리고 종료"

@@ -21,7 +21,7 @@ fn test_out_1_windows_uses_clip() {
 
 #[test]
 fn test_out_1_windows_text_is_utf16le_bom_crlf() {
-    // [utest -> req~output.copy-tsv~1] clip には BOM つきの UTF-16LE。改行は CRLF にし、元の CRLF は二重にしない。日本語も1字ずつ。
+    // [utest -> req~output.copy-tsv~2] clip には BOM つきの UTF-16LE。改行は CRLF にし、元の CRLF は二重にしない。日本語も1字ずつ。
     let got = ClipInput::WindowsText.encode("a\tあ\nb\r\n");
     let mut want = vec![0xFF, 0xFE];
     for u in "a\tあ\r\nb\r\n".encode_utf16() {

@@ -1858,6 +1858,10 @@ PasteNoCell = "没有可放入值的单元格"
 PasteNoRow = "没有可放入值的行"
 ## {0} is the number of rows.
 PasteRows = "已将复制的行放入 {0} 行（未保存）"
+PasteCells = "已粘贴到 {0} 个单元格（未保存）"
+PasteOverflow = "；{0} 个值超出表格，未粘贴"
+PasteEmpty = "没有可粘贴的内容"
+CopyWhatColumn = "所选 {0} 行的 {1}"
 RepeatNothing = "还没有可重复的值（请先设置一个单元格）"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "放弃更改并退出"

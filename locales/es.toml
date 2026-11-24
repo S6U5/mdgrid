@@ -1859,6 +1859,10 @@ PasteNoCell = "no hay celda donde pegar el valor"
 PasteNoRow = "no hay fila donde pegar los valores"
 ## {0} is the number of rows.
 PasteRows = "fila copiada pegada en {0} fila(s) (sin guardar)"
+PasteCells = "pegado en {0} celda(s) (sin guardar)"
+PasteOverflow = "; {0} valor(es) no cabían en la tabla y no se pegaron"
+PasteEmpty = "nada que pegar"
+CopyWhatColumn = "{1} de {0} fila(s) seleccionada(s)"
 RepeatNothing = "aún no hay valor que repetir (asigne antes una celda)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "Descartar los cambios y salir"

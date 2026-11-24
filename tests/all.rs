@@ -217,6 +217,8 @@ mod test_stack_e2e;
 mod test_starter_cli;
 #[path = "test_starter_e2e.rs"]
 mod test_starter_e2e;
+#[path = "test_paste_e2e.rs"]
+mod test_paste_e2e;
 #[path = "test_starter_examples.rs"]
 mod test_starter_examples;
 #[path = "test_starter_layer.rs"]

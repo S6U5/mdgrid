@@ -742,7 +742,9 @@ mdgrid /tmp/mdgrid-sample/Tasks --pick status
 
 ![Pick rows for another command](images/pick.svg)
 
-`y` (or `Ctrl+C`) copies the cell and `Y` the whole row to the clipboard.
+`y` (or `Ctrl+C`) copies the value of the cell to the clipboard. With rows selected, it copies the current column's values of those rows, one per line. `Y` copies the whole row as tab-separated text with a header.
+
+To paste, select the cell to start from and use your terminal's paste (`Ctrl+V`, `Cmd+V` or whatever your terminal uses). Values separated by line breaks go down the rows, and values separated by tabs go right across the columns, so a range copied from a spreadsheet pastes the same way. Pasted values are pending changes until you save, and one `u` undoes the paste.
 
 ## Choose a theme
 

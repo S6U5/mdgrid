@@ -1859,6 +1859,10 @@ PasteNoCell = "keine Zelle zum Einfügen"
 PasteNoRow = "keine Zeile zum Einfügen"
 ## {0} is the number of rows.
 PasteRows = "kopierte Zeile in {0} Zeile(n) eingefügt (ungespeichert)"
+PasteCells = "in {0} Zelle(n) eingefügt (ungespeichert)"
+PasteOverflow = "; {0} Wert(e) passten nicht in die Tabelle und wurden nicht eingefügt"
+PasteEmpty = "nichts einzufügen"
+CopyWhatColumn = "{1} aus {0} ausgewählten Zeile(n)"
 RepeatNothing = "noch kein Wert zum Wiederholen (zuerst eine Zelle setzen)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "Änderungen verwerfen und beenden"

@@ -70,9 +70,9 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `Ctrl+p` | `palette` | Open the command palette |
 | `x` | `action_menu` | Open the menu of actions you can use on the selected cell, each with its current key (right-clicking a cell also opens it) |
 | `e` | `open_editor` | Open the selected note in your editor, and reload it when you return |
-| `y` | `copy` | Copy the selected cell (or the selected rows) to the clipboard |
-| `Ctrl+c` | `copy` | Copy the selected cell (or the selected rows) to the clipboard |
-| `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard |
+| `y` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
+| `Ctrl+c` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
+| `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard as tab-separated text with a header |
 | `[` | `prev_view` | Switch to the previous view |
 | `]` | `next_view` | Switch to the next view |
 | `<` | `narrow_column` | Make the column narrower |
@@ -782,7 +782,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `palette` — open the command palette
 - `action_menu` — open the menu of actions for the selected cell
 - `open_editor` — open the note in your editor
-- `copy` — copy the cell or the selected rows
+- `copy` — copy the cell's value (with rows selected, the current column's values)
 - `copy_row` — copy the row or the selected rows
 - `prev_view` — switch to the previous view
 - `next_view` — switch to the next view

@@ -1859,6 +1859,10 @@ PasteNoCell = "aucune cellule où coller la valeur"
 PasteNoRow = "aucune ligne où coller les valeurs"
 ## {0} is the number of rows.
 PasteRows = "ligne copiée collée dans {0} ligne(s) (non enregistré)"
+PasteCells = "collé dans {0} cellule(s) (non enregistré)"
+PasteOverflow = " ; {0} valeur(s) ne tenaient pas dans le tableau et n'ont pas été collées"
+PasteEmpty = "rien à coller"
+CopyWhatColumn = "{1} de {0} ligne(s) sélectionnée(s)"
 RepeatNothing = "aucune valeur à répéter pour l'instant (définir d'abord une cellule)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "Abandonner les modifications et quitter"

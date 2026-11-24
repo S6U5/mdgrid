@@ -18,12 +18,55 @@
 
 ### コピー
 
-#### 選んだセル・行・選んだ複数の行を、タブ区切りでクリップボードにコピーできるべき(Ctrl+C と `y`)
-`req~output.copy-tsv~1` P1
+#### Ctrl+C と `y` は、選んだセルの値だけを、行の選択(navigation.select-rows)があれば今の列の選んだ行の値を1行に1つずつ、クリップボードにコピーし、`Y` は行(選択があれば選んだ行)を見出しつきのタブ区切りでコピーするべき
+`req~output.copy-tsv~2` P1
+- Rationale: コピーしたセルを、ほかのセルやほかの道具にそのまま貼れるようにするため(2026-11-24 に人が「セルの列を普通にコピペしたい」と決めた。前は、セル1つでも `列の名前<TAB>値` の形で、行を選んだ `y` も行の全部だった)。列の名前や行の全部が要るときは `Y`
 - Acceptance:
-  - Given:
-  - When: 2行を選んで `y`
-  - Then: 見出しつきのタブ区切り2行が OSC 52 で出る。
+  - Given: status が「進行中」のセルを選んでいる(行の選択なし)
+  - When: `y`
+  - Then: クリップボードに `進行中` だけが出る(列の名前は付かない)。Ctrl+C でも同じ。
+- Acceptance:
+  - Given: title が「会議のメモ」と「買い物」の2行を選び、title の列にいる
+  - When: `y`
+  - Then: クリップボードに `会議のメモ` と `買い物` の2行(見出しの行もノートの名前も付かない)。
+- Acceptance:
+  - Given: 同じ2行を選んでいる
+  - When: `Y`
+  - Then: 見出しの行と2行の、タブ区切りの3行が出る。
+- Needs: utest
+
+#### 表の画面で端末の貼り付け(Ctrl+V など。端末が送る貼り付けの文字)を受けたら、改行で行、タブで列に分けた値を、選んだセルを左上にして下の行と右の列へ、ためる変更(write-back.pending)として1手で貼るべき
+`req~output.paste~2` P1
+- Rationale: コピーしたセルの列(output.copy-tsv)や、表計算の道具から写した値を、1つずつ打ち直さずに入れるため(2026-11-24 に人が決めた)。ためる変更なので、保存の前に差分で確かめられ、1回で取り消せる
+- Acceptance:
+  - Given: 3行の表で、1行目の status のセルを選んでいる
+  - When: `done`・`doing`・`todo` の3行を貼る
+  - Then: 上から3行の status が done・doing・todo のためる変更になり、取り消し1回で3つとも戻る。
+- Acceptance:
+  - Given: 列が title・status の順の表で、1行目の title のセルを選んでいる
+  - When: `A<TAB>x` と `B<TAB>y` の2行を貼る
+  - Then: 1行目は title = A・status = x、2行目は title = B・status = y。
+- Acceptance:
+  - Given: 2行の表で、2行目の status のセルを選んでいる
+  - When: 3行の値を貼る
+  - Then: 2行目だけに1行目の値が入り、表に入らなかった値が2つあると知らせる。
+- Acceptance:
+  - Given: priority が数の列の表で、1行目の priority のセルを選んでいる
+  - When: `5` と `abc` の2行を貼る
+  - Then: 1行目は 5 になり、2行目は変わらず、数として読めない理由が出る。
+- Acceptance:
+  - Given: まとまりの見出しの行をはさんで行が並ぶ、グループ分けした表
+  - When: 見出しの上の行から2行の値を貼る
+  - Then: 見出しの行は飛ばし、見出しの下の最初の行に2行目の値が入る。
+- Acceptance:
+  - Given: `--readonly` で開いた表
+  - When: 値を貼る
+  - Then: 何もためず、読むだけの理由が出る。
+- Acceptance:
+  - Given: セルの入力の欄を開いている
+  - When: `abc` と `def` の2行を貼る
+  - Then: 入力の欄に `abc` が入り(1行目だけ)、ほかのセルは変わらない。
+- Needs: utest
 
 #### クリップボードへのコピーは、OSC 52 と OS のクリップボードの両方に送るべき
 `req~output.copy-both-targets~1` P1
@@ -164,12 +207,3 @@
   - Given: `--pick 無い列`
   - When:
   - Then: 理由1行と終了コード 2。
-
-### 次の段(まだ作っていない。P2)
-
-#### タブと改行で区切られた値を、ためる変更として、選んだセルから下へ複数の行に貼れてよい
-`req~output.paste~1` P2
-- Acceptance:
-  - Given:
-  - When: 3行の値を貼る
-  - Then: 3つのためる変更(読んで判定)。

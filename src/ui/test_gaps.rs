@@ -96,20 +96,17 @@ fn poll_until(a: &mut App, n: usize) {
 const BASE_COPY: &str = "formulas:\n  num: '1 + 2'\nviews:\n  - type: table\n    name: 全部\n    order: [title, file.name, formula.num]\n";
 
 #[test]
-fn test_out_1_y_with_selection_copies_rows_with_header() {
-    // [utest -> req~output.copy-tsv~1] 2行を選んで(Space×2)`y` → 見出しつきのタブ区切り2行が OSC 52 で出る(Ctrl+C も同じ)。
-    // 計算の列(file.*・formula.*)は画面と同じ値で写す。
+fn test_out_1_y_with_selection_copies_column_values() {
+    // [utest -> req~output.copy-tsv~2] 2行を選んで(Space×2)title の列で `y` → 今の列の値が1行に1つずつ(見出しもノートの名前も無い。Ctrl+C も同じ)。
+    // `Y` は行の全部を見出しつきで。計算の列(file.*・formula.*)は画面と同じ値で写す。
     let tmp = vault("out1y");
     let mut a = open(&tmp, BASE_COPY, None);
     let log = memory(&mut a);
     press(&mut a, KeyCode::Char(' '));
     press(&mut a, KeyCode::Char(' '));
+    col_named(&mut a, "title");
     ch(&mut a, 'y');
-    let want = format!(
-        "ノート\ttitle\tfile.name\tformula.num\n{}\t会議のメモ\ta.md\t3\n{}\t買い物\tb.md\t3",
-        label_of(&a, 0),
-        label_of(&a, 1)
-    );
+    let want = "会議のメモ\n買い物".to_string();
     {
         let l = log.borrow();
         assert_eq!(l.osc.len(), 1);
@@ -118,7 +115,22 @@ fn test_out_1_y_with_selection_copies_rows_with_header() {
     }
     assert!(a.message.as_deref().unwrap().contains("選んだ 2 行"));
     ctrl(&mut a, 'c');
-    assert_eq!(osc52_text(&log.borrow().osc[1]), want, "Ctrl+C も選んだ行");
+    assert_eq!(
+        osc52_text(&log.borrow().osc[1]),
+        want,
+        "Ctrl+C も選んだ行の今の列"
+    );
+    ch(&mut a, 'Y');
+    let rows = format!(
+        "ノート\ttitle\tfile.name\tformula.num\n{}\t会議のメモ\ta.md\t3\n{}\t買い物\tb.md\t3",
+        label_of(&a, 0),
+        label_of(&a, 1)
+    );
+    assert_eq!(
+        osc52_text(&log.borrow().osc[2]),
+        rows,
+        "Y は行の全部を見出しつきで"
+    );
 }
 
 #[test]
@@ -132,8 +144,8 @@ fn test_out_1_y_copies_computed_column_value() {
     col_named(&mut a, "file.name");
     ch(&mut a, 'y');
     let l = log.borrow();
-    assert_eq!(osc52_text(&l.osc[0]), "formula.num\t3");
-    assert_eq!(osc52_text(&l.osc[1]), "file.name\ta.md");
+    assert_eq!(osc52_text(&l.osc[0]), "3");
+    assert_eq!(osc52_text(&l.osc[1]), "a.md");
 }
 
 // ---- SR-10 ----

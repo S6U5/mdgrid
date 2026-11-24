@@ -375,6 +375,8 @@ mod test_note_time;
 #[cfg(test)]
 mod test_padding_default_one;
 #[cfg(test)]
+mod test_paste;
+#[cfg(test)]
 mod test_places;
 #[cfg(test)]
 mod test_places_align;

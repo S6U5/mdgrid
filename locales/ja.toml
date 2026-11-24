@@ -1858,6 +1858,10 @@ PasteNoCell = "値を入れるセルが無い"
 PasteNoRow = "値を入れる行が無い"
 ## {0} は行の数。
 PasteRows = "写した行の値を {0} 行に入れた(未保存)"
+PasteCells = "{0} 個のセルに貼った(未保存)"
+PasteOverflow = "。表に入らなかった値 {0} 個は貼らない"
+PasteEmpty = "貼る値が無い"
+CopyWhatColumn = "選んだ {0} 行の {1}"
 RepeatNothing = "繰り返す値がまだ無い(先にセルに値を入れる)"
 ## screen.quit-discard: パレットの q!。
 PaletteDiscardQuit = "変更を捨てて終わる"

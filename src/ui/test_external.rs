@@ -227,7 +227,7 @@ fn test_out_1_base64_and_osc52() {
 
 #[test]
 fn test_out_1_osc52_tmux_and_limit() {
-    // [utest -> req~output.copy-tsv~1, req~output.copy-both-targets~1, req~output.copy-one-side-fails~1] tmux の中では DCS のパススルーでも送る(中の ESC は2重)。
+    // [utest -> req~output.copy-tsv~2, req~output.copy-both-targets~1, req~output.copy-one-side-fails~1] tmux の中では DCS のパススルーでも送る(中の ESC は2重)。
     let seqs = osc52_seqs("a\tb", true).unwrap();
     assert_eq!(seqs.len(), 2);
     assert_eq!(seqs[0], b"\x1b]52;c;YQli\x07".to_vec());
@@ -281,15 +281,15 @@ const NOTES: &[(&str, &str)] = &[
 
 #[test]
 fn test_out_1_copy_cell_and_row() {
-    // [utest -> req~output.copy-tsv~1] `y` と Ctrl+C は選んだセルを見出しつきのタブ区切り1行で、OSC 52 と OS のクリップボードの両方へ。
+    // [utest -> req~output.copy-tsv~2] `y` と Ctrl+C は選んだセルの値だけを、OSC 52 と OS のクリップボードの両方へ。
     let (_t, mut a) = make("out1", NOTES);
     let log = memory(&mut a, false);
     col_named(&mut a, "status");
     ch(&mut a, 'y');
     {
         let l = log.borrow();
-        assert_eq!(l.system, vec!["status\t進行中".to_string()]);
-        let want = format!("\x1b]52;c;{}\x07", base64("status\t進行中".as_bytes()));
+        assert_eq!(l.system, vec!["進行中".to_string()]);
+        let want = format!("\x1b]52;c;{}\x07", base64("進行中".as_bytes()));
         assert_eq!(l.osc, vec![want.into_bytes()]);
     }
     assert!(a.message.as_deref().unwrap().contains("コピーした"));
