@@ -451,10 +451,18 @@ impl Table {
         let dir = if path.extension().is_some_and(|x| x == "base") {
             let here = path.parent().unwrap_or(Path::new(".")).to_path_buf();
             let here = std::fs::canonicalize(&here).unwrap_or(here);
-            here.ancestors()
+            let root = here
+                .ancestors()
                 .find(|a| a.join(".obsidian").is_dir())
                 .map(Path::to_path_buf)
-                .unwrap_or(here)
+                .unwrap_or(here);
+            // relations.map: 全体の絞り込みに `file.inFolder("x")` があれば、そのフォルダ(&& でつないだ項の一番深いもの)を
+            // 表のフォルダにする。同じ根の中を絞り込みで分けた表(印の [[table]]・保管庫の根の .base)が、どれも根の
+            // ノートを全部数え、最後の表がノートを取ってしまわないように。
+            match base_folder(path) {
+                Some(f) => root.join(f),
+                None => root,
+            }
         } else {
             path.to_path_buf()
         };
@@ -464,6 +472,31 @@ impl Table {
             dir,
         }
     }
+}
+
+/// `.base`(ファイルか、印に中身を書いた表。WS-9)の全体の絞り込みの `file.inFolder` のフォルダ(ルートフォルダから。
+/// 一番深いもの)。読めない・書いていないなら None。
+fn base_folder(path: &Path) -> Option<String> {
+    let text = match crate::workspace::inline_base(path) {
+        Some((json, _)) => json,
+        None => crate::textfile::read_text(path).ok()?,
+    };
+    let base = crate::base::parse(&text).ok()?;
+    let exprs = base.filter_exprs(&mut Vec::new());
+    crate::newnote::view_folder(&exprs).filter(|f| !f.is_empty())
+}
+
+/// REL-5・REL-7: 範囲の表に今の表(フォルダ `dir`、ノート `notes`)を足すか。今の表のフォルダがどれかの表のフォルダ
+/// (の下)にあるときと、今の表のノートが全部どれかの表のフォルダの下にあるとき(同じ根を絞り込みで分けた表の1つを、
+/// 根のフォルダで開いた)は、その表のノートとして数えるので足さない。
+pub fn adds_current(tables: &[Table], dir: &Path, notes: &[PathBuf]) -> bool {
+    if tables.iter().any(|t| dir.starts_with(&t.dir)) {
+        return false;
+    }
+    notes.is_empty()
+        || !notes
+            .iter()
+            .all(|n| tables.iter().any(|t| n.starts_with(&t.dir)))
 }
 
 /// ノートを含む表(フォルダのいちばん深いもの)。

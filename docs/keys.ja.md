@@ -956,3 +956,4 @@ vim モード(`[keys]` の `vim = true`)の入力の欄のノーマルのモー�
 - `across_search` — ワークスペースの表の全部から語を探し、選んだ行の表を開く(`[search]` の `across = true` のときだけ。[config.ja.md](config.ja.md#searchacross))
 - `stack_add` — 今の範囲の表を選んで、今の表の下に縦に並べる(4つまで)
 - `page_save` — 縦に並べた形(表・ビュー・高さの比)に名前を付けて、今のワークスペースのページとして残す
+- `routine_runs` — 来ているルーチンの回のノートの名前を並べ、確かめてから作る(範囲の表の印に `runs` があるときだけ。読むだけでは出ない。下の帯の回の数のクリックでも。[config.ja.md](config.ja.md#ワークスペース表ビューごとの上書き))

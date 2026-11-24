@@ -203,7 +203,8 @@ fn pending(app: &App, d: &Draft) -> usize {
         d.s.filters != s.filters,
         d.s.sorts != s.sorts,
         d.s.group != s.group,
-        d.s.tree != s.tree,
+        // navigation.parent-child-config: 親子は今の並び(印の children に従う分も)と比べる。
+        d.s.tree != app.tree_key(),
         d.s.wbs != s.wbs,
         d.s.display != s.display,
         d.look != d.look0,

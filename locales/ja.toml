@@ -4,7 +4,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--page <名前>] [--raw] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --check [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --count [--view <名前>] [--filter <式>]…\n        mdgrid [<.base | フォルダ> …] --notices\n        mdgrid [<.base | フォルダ> …] --notify\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace [--starter <名前> [--with-samples]]\n        mdgrid [<フォルダ>] --new-note <名前> [--set <列>=<値>]…\n        mdgrid --continue [--readonly] [--no-color] [--config <パス>]\n        mdgrid -s <名前> [--readonly] [--no-color] [--config <パス>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n  印 .mdgrid/workspace.toml の open に表を書いたフォルダは、その表を開く。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --page <名前>           そのワークスペースのページ([[page]])を、表を縦に並べた形で開く\n  --raw                   印の open の表ではなく、フォルダそのものを開く\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              今のフォルダで最後に開いていた表とビューで開く(無ければ引数なしと同じ。\n                          tmux などで窓を立て直すときに使う)\n  -s, --session <名前>    その名前で保存したセッションの表示(表・ビュー・絞り込み・並び・列)で開く\n                          (パレットの「セッションを保存」で作る)\n  --sessions              保存したセッション(sessions.toml)の名前と開くフォルダを1行ずつ出す\n  --recent                画面で開いた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の\n                          1件1行で出す(最大 20 件)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --count                 画面を出さずに、ビューの行の数(--filter のあと)を出す\n  --show-hidden           --print・--pick・--count で、hide = true の名前の条件([conditions])で隠す行も出す\n  --notices               画面を出さずに、通知の欄([[notices]])の項目を1行ずつ出す(tmux の帯や\n                          シェルのプロンプトに)\n  --notify                画面を出さずに [[notify]] の項目を1回確かめ、新しく当たった行を知らせる\n                          (OS の定期実行から呼ぶ。届けられなかったら終了コード 1)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --check                 画面を出さずに、ビューの行の型と決まり([rules])に合わない値を1行ずつ出す\n                          (パス:行: 列: 理由。あれば終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --starter <名前>        --init-workspace で、そのスターター(組み込みか、設定のフォルダの starters/<名前>)から\n                          台帳(印とノートの雛形)を作る\n  --with-samples          --starter で、見本のノートも入れる\n  --starters              スターターの一覧(名前と1行の説明)を1行ずつ出す\n  --new-note <名前>       画面を出さずに、フォルダ(無ければ今のフォルダ)に新しいノート <名前>.md を作る\n                          (設定の [new_note] の folder・set・雛形を使い、作ったパスを1行出す。上書きしない)\n  --set <列>=<値>         --new-note で、その列の値を入れる(何度でも。リストの列は , で区切る。空の値は書かない)\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
+Usage = "使い方: mdgrid [<.base | フォルダ | .md | .csv> …] [--view <名前>] [-w <名前>] [--page <名前>] [--raw] [--readonly] [--no-color] [--config <パス>]\n        mdgrid [<.base | フォルダ | .md> …] --print [--format csv|tsv|json|md] [--with-path] [--view <名前>]\n                 [--filter <式>]… [--sort <列>[:desc]]…\n        mdgrid [<.base | フォルダ | .md> …] --pick path|<列の名前> [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --check [--view <名前>]\n        mdgrid [<.base | フォルダ | .md> …] --count [--view <名前>] [--filter <式>]…\n        mdgrid [<.base | フォルダ> …] --notices\n        mdgrid [<.base | フォルダ> …] --notify\n        mdgrid [<.base | フォルダ> …] --runs\n        mdgrid [<.base | フォルダ> …] --apply <パス> [--yes]\n        mdgrid [<フォルダ | .base> …] --add-to <名前> [--as <表の名前>] | --remove-from <名前>\n        mdgrid [<フォルダ> …] --init-workspace [--starter <名前> [--with-samples]]\n        mdgrid [<フォルダ>] --new-note <名前> [--set <列>=<値>]…\n        mdgrid --continue [--readonly] [--no-color] [--config <パス>]\n        mdgrid -s <名前> [--readonly] [--no-color] [--config <パス>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <名前>\n        mdgrid --print-config\n        mdgrid --completions <シェル>\n        mdgrid --man\n\n  フォルダの中の Markdown のノートを行、フロントマターのキーを列にした表を開く。\n  .base を渡すと、その table ビューで開く(ノートはルートフォルダの下から探す)。\n  .md のファイルを渡すと、そのフォルダを開いてその行を選ぶ。\n  .csv・.tsv のファイルを渡すと、1行目を列の名前にした表として開く。\n  引数が無ければ今のフォルダを開く(places.toml に登録した表があれば、その一覧を重ねる)。\n  印 .mdgrid/workspace.toml の open に表を書いたフォルダは、その表を開く。\n\n  --view <名前>           .base のそのビューで開く(無ければ先頭のビュー。--print では mdgrid のビューも探す)\n  -w, --workspace <名前>  そのワークスペース(workspaces.toml)をリンクと関係マップの範囲にする\n                          (パスが無ければその最初の表を開く)\n  --page <名前>           そのワークスペースのページ([[page]])を、表を縦に並べた形で開く\n  --raw                   印の open の表ではなく、フォルダそのものを開く\n  --readonly              読むだけで開く(編集も保存もしない)\n  --no-color              色なしで出す\n  --config <パス>         この設定ファイルを読む(既定は $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              今のフォルダで最後に開いていた表とビューで開く(無ければ引数なしと同じ。\n                          tmux などで窓を立て直すときに使う)\n  -s, --session <名前>    その名前で保存したセッションの表示(表・ビュー・絞り込み・並び・列)で開く\n                          (パレットの「セッションを保存」で作る)\n  --sessions              保存したセッション(sessions.toml)の名前と開くフォルダを1行ずつ出す\n  --recent                画面で開いた表を新しい順に「パス(タブ)ビューの名前(タブ)最後に開いた日時」の\n                          1件1行で出す(最大 20 件)\n  --print                 画面を出さずに、ビューの表を標準出力に出す(ノートは書き換えない)\n  --format <形>           --print の形(csv・tsv・json・md。既定は csv)\n  --with-path             --print の表の先頭に、各行のノートのパスの列 path を足す(--pick path と同じ形)\n  --filter <式>           .base の式が真の行だけを --print に出す(何度でも。.base のビューでは、その絞り込みと両方)\n  --sort <列>[:desc]      --print をこの列で並べる(何度でも。ビューの並べ替えの代わり)\n  --count                 画面を出さずに、ビューの行の数(--filter のあと)を出す\n  --show-hidden           --print・--pick・--count で、hide = true の名前の条件([conditions])で隠す行も出す\n  --notices               画面を出さずに、通知の欄([[notices]])の項目を1行ずつ出す(tmux の帯や\n                          シェルのプロンプトに)\n  --notify                画面を出さずに [[notify]] の項目を1回確かめ、新しく当たった行を知らせる\n                          (OS の定期実行から呼ぶ。届けられなかったら終了コード 1)\n  --runs                  画面を出さずに、ルーチンの表(印の [[table]] の runs)の来ている回のノートを作り、\n                          作ったパスを1行ずつ出す(OS の定期実行から呼ぶ。作れない回があれば終了コード 1)\n  --pick <path|列>        画面を端末に読むだけで出し、Enter で印の行(無ければ選んでいる行)のパスか\n                          列の値を1行ずつ標準出力に出して終わる(q・Esc で取りやめ、終了コード 1)\n  --check                 画面を出さずに、ビューの行の型と決まり([rules])に合わない値を1行ずつ出す\n                          (パス:行: 列: 理由。あれば終了コード 1)\n  --apply <パス>          --print --with-path の形の CSV・JSON(- で標準入力)を読み、違うセルを変える(差分だけ出す)\n  --yes                   --apply で、差分を出すだけでなく書く\n  --workspaces            ワークスペース(workspaces.toml)の一覧を出す\n  --add-to <名前>         渡した表(無ければ今のフォルダ)をそのワークスペースに足す(無ければ作る。\n                          --as <名前> で表の名前)\n  --remove-from <名前>    渡した表(無ければ今のフォルダ)をそのワークスペースから外す\n  --remove-workspace <名前>  そのワークスペースを消す(ノートには触らない)\n  --init-workspace        フォルダ(無ければ今のフォルダ)にワークスペースの印 .mdgrid/workspace.toml を作る\n  --starter <名前>        --init-workspace で、そのスターター(組み込みか、設定のフォルダの starters/<名前>)から\n                          台帳(印とノートの雛形)を作る\n  --with-samples          --starter で、見本のノートも入れる\n  --starters              スターターの一覧(名前と1行の説明)を1行ずつ出す\n  --new-note <名前>       画面を出さずに、フォルダ(無ければ今のフォルダ)に新しいノート <名前>.md を作る\n                          (設定の [new_note] の folder・set・雛形を使い、作ったパスを1行出す。上書きしない)\n  --set <列>=<値>         --new-note で、その列の値を入れる(何度でも。リストの列は , で区切る。空の値は書かない)\n  --print-config          設定の全項目を既定値と説明付きの TOML で出す(docs/config.md)\n  --completions <シェル>  シェルの補完の定義を出す(bash・zsh・fish・elvish・powershell)\n  --man                   man ページ(roff)を出す\n  --help                  この案内を出す\n  --version               版を出す"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "パス"
@@ -274,6 +274,38 @@ NotifyExit = "{0} が終了コード {1} で終わった"
 NotifyNoProgram = "{0} を動かせない({1})"
 ## notify.cli: 記録の置き場が決まらない。
 NotifyNoStateDir = "知らせの記録を置く状態のフォルダが無い($XDG_STATE_HOME かホームのフォルダ)"
+## routine.opt-in: 印の [[table]] の runs の形。
+RsnRunsNotTable = "{ folder = \"<フォルダ>\", rule = \"<列>\" } の形の表でないので、ルーチンの回を作らない"
+RsnRunsNeedFolder = "folder(回のノートを作るフォルダ)が無いので、ルーチンの回を作らない"
+RsnRunsNeedRule = "rule(決まりの列)が無いので、ルーチンの回を作らない"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値。
+RoutineRuleUnreadable = "ルーチン「{0}」の決まり「{1}」が読めないので、回を作らない(daily・weekly mon thu・monthly 1 15・monthly last・every 3d・毎日・毎週 月 木・毎月 1日 15日・毎月 末日・3日ごと のように書く)"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値、{2} は起点の列の名前。
+RoutineRuleNoStart = "ルーチン「{0}」の決まり「{1}」は列 {2} の日から数えるのに、その日が無いので、回を作らない"
+## routine.fail: {0} はルーチンの名前、{1} は回のノートのパス、{2} は理由。
+RoutineCannotCreate = "ルーチン「{0}」の回 {1} を作れない({2})"
+## routine.state: {0} は記録のファイルのパス、{1} は理由。
+RoutineStateRebuilt = "ルーチンの回の記録 {0} が読めないので、作り直した({1})"
+RoutineStateUnwritable = "ルーチンの回の記録 {0} を書けない({1})"
+## routine.cli: 記録の置き場が決まらない。
+RoutineNoStateDir = "ルーチンの回の記録を置く状態のフォルダが無い($XDG_STATE_HOME かホームのフォルダ)"
+## routine.readonly: --runs を --readonly と一緒に渡した。
+RoutineReadonly = "--runs は回のノートを書くので、--readonly と一緒に使えない"
+## routine.opt-in: ルーチンの表が CSV・TSV。
+RoutineNotNotes = "行がノートでない(CSV・TSV)ので、ルーチンの回を作らない"
+## routine.screen-offer: 下の帯。{0} は来ている回の数。
+FooterRoutine = "  ルーチンの回が {0} 件来ています"
+## routine.screen-create: パレットのコマンドと確かめ。
+CmdRoutineRuns = "ルーチンの回を作る"
+AskRoutineRuns = "このルーチンの回を作る? y と打って Enter: "
+## {0} は作るノートの数。
+RoutineRunsWhich = "作るノート({0} 件):"
+## {0} は並べきれないノートの数。
+RoutineRunsMore = "ほか {0} 件"
+RoutineNone = "来ているルーチンの回は無い"
+## {0} は作ったノートの数。
+RoutineMade = "ルーチンの回を {0} 件作った"
+RoutineDismissed = "ルーチンの回を作らなかった(今日はもう知らせない)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "印に {0} という表は無いので、フォルダをそのまま開いた(ある表: {1})"
 RsnStarterUnknown = "スターター {0} は無いので、印に書いた中身だけで開いた(mdgrid --starters で一覧)"
@@ -1689,6 +1721,8 @@ WantRulesTable = "列ごとの表([rules.<列>])"
 WantRuleTable = "required と values の表"
 WantStringList = "文字列の並び"
 RsnRuleComputed = "計算の列には決まりを書けないので無視した"
+WantValueTextTable = "値 = 文字列 の表"
+RsnNotInValues = "values に無い値なので無視した"
 ## {0} は型の名前(日付・数 など)。
 ProblemType = "型が合わない({0}ではない)"
 ProblemRequired = "必須のキーが無い"
@@ -1828,6 +1862,30 @@ RsnKanbanNeedColumn = "column(状態の列)が無いので、カンバンを出�
 RsnKanbanNoColumn = "表に列 {0} が無いので、カンバンを出さない"
 ## {0} は列。
 RsnKanbanListColumn = "列 {0} はリストなので、カンバンを出さない(1行が複数のレーンに入るため)"
+
+# ---- 親子の設定(印の children。navigation.parent-child-config・cell-edit.children-done*・gantt.children-span-*。ui/children.rs) ----
+RsnChildrenNotTable = "{ key = \"<列>\" } の形の表でないので、親子の設定を使わない"
+RsnChildrenNeedKey = "key(親へのリンクの列)が無いので、親子の設定を使わない"
+## {0} は列。
+RsnChildrenNoColumn = "表に列 {0} が無いので、親子で並べない"
+## {0} は列(children の status に書いた状態の列)。
+RsnChildrenNoStatus = "表に列 {0} が無いので、親を完了にしても子はそのまま"
+## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。
+ChildrenOpenRefuse = "終わっていない子が {0} 件あるので、完了にしない"
+## `ChildrenOpenRefuse` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenRefuseOne = "終わっていない子が {0} 件あるので、完了にしない"
+## {0} は終わっていない子孫の数。親だけを完了にしたときの知らせ(on_done = "keep")。
+ChildrenOpenKeep = "終わっていない子が {0} 件ある"
+## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenKeepOne = "終わっていない子が {0} 件ある"
+## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
+GanttOverParent = "親の期間から {0} 日はみ出す"
+## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverParentOne = "親の期間から {0} 日はみ出す"
+## {0} は日数。ガントで選んだ親の行の期間から、子孫がはみ出す日数(一番多いもの)。
+GanttOverKids = "子が期間から {0} 日はみ出す"
+## `GanttOverKids` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverKidsOne = "子が期間から {0} 日はみ出す"
 
 # ---- vim モード(screen.vim-*。vim.rs) ----
 ModeInputNormal = "入力の欄のノーマル"
@@ -2060,7 +2118,7 @@ CfgUse = "テンプレート [templates.<名前>] を、この場所に書いた
 ## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
 CfgTypes = "列ごとの型。ルートフォルダの型の設定(.obsidian/types.json)と、値からの推定より優先する。\"auto\" は推定に戻す(狭い範囲で広い範囲の型を外せる)。型はセルの入力・合わない値の ! の印・並べ替え・列の見出しの型の印に効く。ノートは書き換えない。見出しの型の印のクリック、パレットか操作の一覧の column_type で型を選ぶと、views.toml の表に書く。"
 ## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
-CfgRules = "列ごとの決まり。列の型と合わせて確かめる。required = true は、キーが無い・null・空の文字列・空のリストを問題にする。values は選べる値の並び(リストは各要素がこのどれか。大文字小文字を区別する)。狭い範囲が項目ごとに勝つ。問題には ! の印が付き、下の帯に数が出て、! と @ で跳べ、mdgrid --check で並べて出せる。決まりの確かめはノートを書き換えず、値を書くことも止めない。values のある列は、セルの入力の候補にその値を並べる。then は、その列をある値に直したとき、同じ行のほかの列にも値を入れる(値 = { 列 = 入れる文字 }。{date} などの雛形の変数を書け、空の文字はその列を空にする)。直した値と同じ変更としてたまり、一緒に取り消せる。計算の列(file.*・formula.*)には書けない。"
+CfgRules = "列ごとの決まり。列の型と合わせて確かめる。required = true は、キーが無い・null・空の文字列・空のリストを問題にする。values は選べる値の並び(リストは各要素がこのどれか。大文字小文字を区別する)。狭い範囲が項目ごとに勝つ。問題には ! の印が付き、下の帯に数が出て、! と @ で跳べ、mdgrid --check で並べて出せる。決まりの確かめはノートを書き換えず、値を書くことも止めない。values のある列は、セルの入力の候補にその値を並べる。then は、その列をある値に直したとき、同じ行のほかの列にも値を入れる(値 = { 列 = 入れる文字 }。{date} などの雛形の変数を書け、空の文字はその列を空にする)。直した値と同じ変更としてたまり、一緒に取り消せる。計算の列(file.*・formula.*)には書けない。values のある列でグループ分けすると、まとまりはその順(降順なら逆)に並ぶ。icons と labels(値 = 文字)は、まとまりの見出しとカンバンのレーンの題に、値の字と名前を出す(セル・絞り込み・検索・--print は値のまま)。"
 ## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalColor = "色を使う。false で色なし(NO_COLOR・--no-color と同じ)。"
 ## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
@@ -2068,7 +2126,7 @@ CfgTerminalAmbiguousWide = "East Asian Ambiguous の文字(○・※ など)を�
 ## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalNerdFont = "丸い札の端(Nerd Font の字)を描いてよいか。true は端末の字形が Nerd Font。\"auto\" は、その字を字体に頼らず自分で描く端末(Ghostty・WezTerm)のときだけ(ほかの端末で字が化けないように)。描けなければ \"pill\" は \"soft\" で描く。"
 ## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
-CfgTerminalNerdIcons = "設定のボタン・画面の型のボタンと窓・列の見出しの型の印・カレンダーの題に、アイコン用のフォント(Nerd Font)の記号を使う。端末の字形が Nerd Font のときだけ true にする。既定は字の記号(⚙・▦・◇・#・◷・⋮・◉・✓)。絵文字は使わない。"
+CfgTerminalNerdIcons = "設定のボタン・画面の型のボタンと窓・列の見出しと関係マップの箱の型の印・カレンダーの題に、アイコン用のフォント(Nerd Font)の記号を使う。端末の字形が Nerd Font のときだけ true にする。既定は字の記号(⚙・▦・◇・#・◷・⋮・◉・✓・↪)。絵文字は使わない。"
 ## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalHerdr = "Herdr の窓で、今の表とビューで開き直す命令を Herdr に伝え、Herdr のサーバーを立て直したときに開き直してもらう。false で Herdr を呼ばない。"
 ## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。

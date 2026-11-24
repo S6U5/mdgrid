@@ -203,6 +203,8 @@ impl App {
         self.check_kanban_column();
         // CH-1: 印のグラフの列が表に無ければ警告する(そのグラフは出さない)。
         self.check_chart_columns();
+        // navigation.parent-child-config: 印の children の列が表に無ければ警告する(key なら親子にしない)。
+        self.check_children_columns();
         let off = match self.screen() {
             Screen::Tree => !self.tree_ready(),
             Screen::Gantt => self.gantt_spec().is_none(),

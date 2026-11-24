@@ -206,6 +206,10 @@ impl Msg {
             Msg::ReviewStopped => Some((0, Msg::ReviewStoppedOne)),
             Msg::ReviewFailed => Some((0, Msg::ReviewFailedOne)),
             Msg::ReviewHead => Some((0, Msg::ReviewHeadOne)),
+            Msg::ChildrenOpenRefuse => Some((0, Msg::ChildrenOpenRefuseOne)),
+            Msg::ChildrenOpenKeep => Some((0, Msg::ChildrenOpenKeepOne)),
+            Msg::GanttOverParent => Some((0, Msg::GanttOverParentOne)),
+            Msg::GanttOverKids => Some((0, Msg::GanttOverKidsOne)),
             _ => None,
         }
     }

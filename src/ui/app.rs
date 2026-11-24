@@ -178,6 +178,8 @@ pub struct App {
     pub(crate) notice: super::notices::NoticeState,
     /// 新しく当たった行の知らせ(notify。notify.rs)。
     pub(crate) notify: super::notify::NotifyState,
+    /// ルーチンの回を作る(routine。routine.rs)。
+    pub(crate) routine: super::routine::RoutineState,
     /// notice.open-note: エディタで開く連絡のノート(表の行でないもの)。
     pub(crate) editor_note: Option<std::path::PathBuf>,
     /// ワークスペースを横断して探す(navigation.across-*。across.rs)。
@@ -292,6 +294,8 @@ pub struct App {
     pub(crate) kanban_spec: Option<(mdgrid::kanban::KanbanSpec, String)>,
     /// KB-2: カンバンの画面(開いている間だけ。kanban.rs)。
     pub(crate) kanban: Option<super::kanban::Kanban>,
+    /// navigation.parent-child-config: 印に書いた親子の設定と、警告の場所(`table[n].children`。children.rs)。
+    pub(crate) children_spec: Option<(mdgrid::tree::ChildrenSpec, String)>,
     /// CH-1: 印に書いたグラフの設定と、それぞれの警告の場所(`table[n].chart` か `table[n].chart[k]`)。
     pub(crate) chart_specs: Vec<(mdgrid::chart::ChartSpec, String)>,
     /// CH-2: グラフの画面(開いている間だけ。chart.rs)。
@@ -404,6 +408,7 @@ impl App {
             cond: Default::default(),
             notice: Default::default(),
             notify: Default::default(),
+            routine: Default::default(),
             editor_note: None,
             across: Default::default(),
             prompt: None,
@@ -462,6 +467,7 @@ impl App {
             gantt: None,
             kanban_spec: None,
             kanban: None,
+            children_spec: None,
             chart_specs: Vec::new(),
             chart: None,
             columns_checked: false,
@@ -1129,6 +1135,7 @@ impl App {
             Action::ExprFilter => self.open_expr_filter(),
             Action::FocusNotice => self.focus_notice(),
             Action::AcrossSearch => self.start_across(),
+            Action::RoutineRuns => self.start_routine_runs(),
             _ => {}
         }
     }
@@ -1340,6 +1347,11 @@ impl App {
         // NV-30: 下の帯の問題の数で、問題のある行だけに絞る・外す。
         if super::bands::problems_at(self, x, y) {
             self.apply(Action::ProblemsOnly);
+            return;
+        }
+        // routine.screen-create: 下の帯のルーチンの回の知らせで、作るノートの名前を並べて確かめる(tbd~routine.offer-key)。
+        if super::bands::routine_at(self, x, y) {
+            self.apply(Action::RoutineRuns);
             return;
         }
         // CE-25: ビューの帯の「+ 新規」で新しいノートの名前の欄を開く。

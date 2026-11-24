@@ -248,3 +248,58 @@ fn test_sr_47_ledger_look() {
         }
     }
 }
+
+// ---- relations.link-display-note-name: リンクのセルの行き先の名前にも当てる ----
+
+/// 日付の頭の付いた親「20261120_設計」と、それを parent で指す子(値 kid で見分ける)を、設定 `toml` で開く。
+fn linked(tag: &str, toml: &str, parent: &str) -> (Tmp, App) {
+    let kid = format!("---\nstatus: kid\nparent: \"{parent}\"\n---\n");
+    let tmp = notes(
+        tag,
+        &[
+            ("20261120_設計.md", "---\nstatus: top\n---\n"),
+            ("20261121_画面.md", kid.as_str()),
+        ],
+    );
+    let a = boot(&tmp, cfg_ok(toml));
+    (tmp, a)
+}
+
+const HIDE_HEAD: &str = "[display]\nnote_name = '^\\d{8}_'\n";
+
+#[test]
+fn test_link_cell_uses_note_name() {
+    // [utest -> req~relations.link-display-note-name~1] note_name = '^\d{8}_' なら、parent のセルは「設計」(頭の 20261120_ が出ない)。
+    let (_t, a) = linked("lnk_nn1", HIDE_HEAD, "[[20261120_設計]]");
+    let line = row_line(&a, "kid");
+    assert!(line.contains("設計"), "{line}");
+    assert!(!line.contains("2026112"), "{line}");
+}
+
+#[test]
+fn test_link_cell_keeps_value_and_output() {
+    // [utest -> req~relations.link-display-note-name~1] 見せる名前を変えても、ノートの値と書き出しの値は `[[20261120_設計]]` のまま。
+    let (t, mut a) = linked("lnk_nn2", HIDE_HEAD, "[[20261120_設計]]");
+    let csv = t.0.join("out.csv");
+    a.export_table_to(csv.to_str().unwrap());
+    let out = mdgrid::textfile::read_text(&csv).unwrap();
+    assert!(out.contains("[[20261120_設計]]"), "{out}");
+    let note = mdgrid::textfile::read_text(t.notes().join("20261121_画面.md")).unwrap();
+    assert!(note.contains("parent: \"[[20261120_設計]]\""), "{note}");
+}
+
+#[test]
+fn test_link_cell_alias_wins() {
+    // [utest -> req~relations.link-display-note-name~1] `[[20261120_設計|設計の案]]` の表示の文字は、そのまま「設計の案」。
+    let (_t, a) = linked("lnk_nn3", HIDE_HEAD, "[[20261120_設計|設計の案]]");
+    let line = row_line(&a, "kid");
+    assert!(line.contains("設計の案"), "{line}");
+}
+
+#[test]
+fn test_link_cell_without_note_name() {
+    // [utest -> req~relations.link-display-note-name~1] note_name を書かない表では、今までどおり「20261120_設計」。
+    let (_t, a) = linked("lnk_nn4", "", "[[20261120_設計]]");
+    let line = row_line(&a, "kid");
+    assert!(line.contains("20261120_設計"), "{line}");
+}

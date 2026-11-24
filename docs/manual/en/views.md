@@ -70,7 +70,7 @@ If notes carry `parent: "[[Parent]]"`, the parent/child section of the view sett
 
 ![Relation map](images/demo-relmap.svg)
 
-`R` draws the tables of the workspace as boxes and the link columns as arrows. You can see which table points at which, and `Enter` opens the one under the cursor.
+`R` draws the tables of the workspace as boxes and the link columns as arrows. You can see which table points at which, and `Enter` opens the one under the cursor. A column that points inside its own table, such as a parent, loops back to its box, and the columns in each box carry their type marks.
 
 [The relation map](concepts.md#the-relation-map)
 

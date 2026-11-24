@@ -38,9 +38,11 @@ pub mod places;
 pub mod print;
 pub mod profile;
 pub mod recent;
+pub mod recurrence;
 pub mod relations;
 pub mod relmap;
 pub mod resume;
+pub mod routine;
 pub mod rules;
 pub mod schema;
 pub mod session;
@@ -72,6 +74,10 @@ mod test_condition_unit;
 #[cfg(test)]
 #[path = "test_notify_unit.rs"]
 mod test_notify_unit;
+
+#[cfg(test)]
+#[path = "test_routine_unit.rs"]
+mod test_routine_unit;
 
 #[cfg(test)]
 #[path = "test_locale_pick_unit.rs"]

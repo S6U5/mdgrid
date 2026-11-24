@@ -134,7 +134,13 @@ impl App {
     /// ノートとして数えるので足さない。足すときは今の表の名前で。
     pub(crate) fn with_current_table(&self, mut tables: Vec<Table>) -> Vec<Table> {
         if let Some(dir) = self.current_table_dir() {
-            if !tables.iter().any(|t| dir.starts_with(&t.dir)) {
+            let notes: Vec<PathBuf> = self
+                .src
+                .rows()
+                .iter()
+                .map(|r| PathBuf::from(&r.0))
+                .collect();
+            if relations::adds_current(&tables, &dir, &notes) {
                 tables.push(Table::new(&self.src.name(), &dir));
             }
         }
@@ -164,7 +170,13 @@ impl App {
     /// 文字1つの見せ方(REL-2・REL-10)。リンクでなければ None。
     fn link_word(&self, row: &RowId, s: &str) -> Option<String> {
         let (link, target) = self.link_target(row, s)?;
-        let name = relations::display(&link, target.as_deref());
+        let mut name = relations::display(&link, target.as_deref());
+        // relations.link-display-note-name: 表示の文字(`[[…|表示]]`)が無ければ、ノートの欄と同じ名前の正規表現を当てる。
+        if link.alias.is_none() || link.form != Form::Wiki {
+            if let Some(re) = self.settings.display.over(&self.display).note_name {
+                name = re.apply(&name);
+            }
+        }
         Some(match target {
             Some(_) => name,
             None => format!("{MISSING_MARK}{name}"),

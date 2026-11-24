@@ -67,3 +67,32 @@ fn test_nv_27_order_empty_and_flat() {
     assert!(run(&[], &[]).is_empty());
     assert_eq!(run(&["a", "b"], &[]), [("a", 0, false), ("b", 0, false)]);
 }
+
+#[test]
+fn test_descendants_are_preorder_once_even_in_a_loop() {
+    // 子孫は前順に1回ずつ並び、親子が輪になっていても止まり、根は入らない。
+    // [utest -> req~cell-edit.children-done-complete~1]
+    use crate::tree::descendants;
+    use std::collections::HashMap;
+    let kids: HashMap<&str, Vec<&str>> = HashMap::from([
+        ("設計", vec!["画面", "API"]),
+        ("画面", vec!["部品"]),
+        ("部品", vec!["設計"]),
+    ]);
+    assert_eq!(descendants(&"設計", &kids), ["画面", "部品", "API"]);
+    assert_eq!(descendants(&"API", &kids), Vec::<&str>::new());
+}
+
+#[test]
+fn test_closed_values_include_the_done_value() {
+    // 終わったとみなす値は closed の値と完了の値で、前後の空白は見ない。
+    // [utest -> req~cell-edit.children-done~1]
+    use crate::tree::ChildrenSpec;
+    let mut s = ChildrenSpec::new("parent");
+    assert!(s.is_closed("done") && s.is_closed(" done "));
+    assert!(!s.is_closed("dropped") && !s.is_closed("todo"));
+    s.closed = vec!["dropped".into()];
+    s.done = "完了".into();
+    assert!(s.is_closed("dropped") && s.is_closed("完了"));
+    assert!(!s.is_closed("todo"));
+}

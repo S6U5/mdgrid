@@ -13,6 +13,7 @@ use super::width::{fit, sanitize, width, Align};
 use mdgrid::gantt::{self, Bar, GanttSpec, Unit};
 use mdgrid::i18n::Msg;
 use mdgrid::source::RowId;
+use mdgrid::tree::SpanRule;
 use mdgrid::types::{parse_date, Kind};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -37,7 +38,13 @@ pub(crate) struct Gantt {
     /// gantt.range-key: 最後に選んだ期間(`r` の次の期間を決める。開いたときは無し)。
     /// ビューごとには覚えない(tbd~gantt.range-remember)。
     pub range: Option<Range>,
+    /// gantt.children-span-mark: 親の期間からはみ出した子と、その親の行(子としてはみ出す日数, 親として子孫が
+    /// はみ出す日数。どちらも一番多いもの)。印の children の `gantt` が `mark` のときだけ。
+    pub over: HashMap<RowId, (i64, i64)>,
 }
+
+/// gantt.children-span-mark: はみ出した子と親の行の名前の欄の右端に付ける、色に頼らない印。
+pub(crate) const SPAN_MARK: &str = "!";
 
 /// gantt.range-presets: 選べる期間。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -306,6 +313,140 @@ impl App {
         out
     }
 
+    /// 印の children の `key` で、表の全部の行の親(自分を指す行は入れない)。印が無いか列が表に無ければ空。
+    /// 子が親の期間をはみ出したときの扱い(gantt.children-span-*)は、ビューの並びでなく、この親子でたどる
+    /// (絞り込みで外れた親・別のまとまりの親も見る。親を完了にしたときの子孫と同じ)。
+    fn children_parents(&self) -> HashMap<RowId, RowId> {
+        let Some(key) = self.children_key() else {
+            return HashMap::new();
+        };
+        self.src
+            .rows()
+            .into_iter()
+            .filter_map(|r| {
+                let p = self.tree_parent(&r, &key).filter(|p| *p != r)?;
+                Some((r, p))
+            })
+            .collect()
+    }
+
+    /// gantt.children-span-mark: 自分の日付を持つ祖先の期間から、自分の棒がはみ出す子と、その祖先(行 → (子として
+    /// はみ出す日数, 親として子孫がはみ出す日数)。どちらも一番多いもの)。印の children の `gantt` が `mark`
+    /// (書かなければ mark。tbd~gantt.children-span-default の仮決め)のときだけ。
+    fn gantt_overruns(&self, spec: &GanttSpec) -> HashMap<RowId, (i64, i64)> {
+        let mut out: HashMap<RowId, (i64, i64)> = HashMap::new();
+        if !self
+            .children_spec
+            .as_ref()
+            .is_some_and(|(c, _)| c.gantt == SpanRule::Mark)
+        {
+            return out;
+        }
+        let parent = self.children_parents();
+        // 親子に出てくる行の自分の棒(祖先をたどるたびに読み直さない)。
+        let bars: HashMap<&RowId, Bar> = parent
+            .iter()
+            .flat_map(|(c, p)| [c, p])
+            .map(|r| (r, self.own_bar(r, spec)))
+            .collect();
+        let bar = |r: &RowId| bars.get(r).copied().unwrap_or_default();
+        for r in parent.keys() {
+            let Some(child) = bar(r).bounds() else {
+                continue;
+            };
+            let mut seen: std::collections::HashSet<&RowId> = std::collections::HashSet::from([r]);
+            let mut cur = parent.get(r);
+            while let Some(p) = cur {
+                if !seen.insert(p) {
+                    break;
+                }
+                if let Some(period) = bar(p).range() {
+                    let d = gantt::overrun(period, child);
+                    if d > 0 {
+                        let e = out.entry(r.clone()).or_default();
+                        e.0 = e.0.max(d);
+                        let e = out.entry(p.clone()).or_default();
+                        e.1 = e.1.max(d);
+                    }
+                }
+                cur = parent.get(p);
+            }
+        }
+        out
+    }
+
+    /// gantt.children-span-extend: 子 `row` の棒を `writes`(列 → 新しい文字)のとおりに直すとき、自分の日付を持つ
+    /// 祖先の期間からはみ出すなら、その始まりか終わりを子の範囲まで広げる書き込み(行, 列, 文字)。印の children の
+    /// `gantt` が `extend` のときだけ。親の棒を動かしても子は動かさない(tbd~gantt.children-move の仮決め)。
+    fn gantt_extend(
+        &self,
+        row: &RowId,
+        spec: &GanttSpec,
+        writes: &[(String, String)],
+    ) -> Vec<(RowId, String, String)> {
+        if !self
+            .children_spec
+            .as_ref()
+            .is_some_and(|(c, _)| c.gantt == SpanRule::Extend)
+        {
+            return Vec::new();
+        }
+        // 直したあとの子の範囲(書く列は新しい文字、ほかは今の値で、`own_bar` と同じ読み方)。
+        let text = |col: &str| -> String {
+            writes
+                .iter()
+                .find(|(c, _)| c == col)
+                .map_or_else(|| self.plain(row, col), |(_, t)| t.clone())
+        };
+        let day = |col: &Option<String>| {
+            let s = text(col.as_deref()?);
+            let s = s.trim();
+            parse_date(s).or_else(|| s.get(..10).and_then(parse_date))
+        };
+        let days = spec
+            .days
+            .as_deref()
+            .and_then(|c| text(c).trim().parse::<f64>().ok())
+            .map(|d| d.round().clamp(-1e15, 1e15) as i64);
+        let Some((cs, ce)) = Bar::from_values(day(&spec.start), day(&spec.end), days).bounds()
+        else {
+            return Vec::new();
+        };
+        let parent = self.children_parents();
+        let mut out = Vec::new();
+        let mut seen: std::collections::HashSet<&RowId> = std::collections::HashSet::from([row]);
+        let mut cur = parent.get(row);
+        while let Some(p) = cur {
+            if !seen.insert(p) {
+                break;
+            }
+            cur = parent.get(p);
+            // 自分の日付の無い親(棒は子孫の範囲。gantt.tree-wbs-parent-range)には書かない。
+            let Some((s, e)) = self.own_bar(p, spec).range() else {
+                continue;
+            };
+            if gantt::overrun((s, e), (cs, ce)) == 0 {
+                continue;
+            }
+            let (ns, ne) = (s.min(cs), e.max(ce));
+            let old = |col: &str| self.plain(p, col).trim().to_string();
+            if ns < s {
+                if let Some(c) = &spec.start {
+                    out.push((p.clone(), c.clone(), put_day(ns, &old(c))));
+                }
+            }
+            match (&spec.end, &spec.days) {
+                (Some(c), _) if ne > e => out.push((p.clone(), c.clone(), put_day(ne, &old(c)))),
+                // `days` の設定: 始まりを前へ広げても終わりを後へ広げても、日数を書き直す。
+                (None, Some(c)) if ns < s || ne > e => {
+                    out.push((p.clone(), c.clone(), (ne - ns + 1).to_string()));
+                }
+                _ => {}
+            }
+        }
+        out
+    }
+
     /// 見せる行(表の並びのうち畳まれていないもの)。
     fn gantt_rows(&self) -> Vec<RowId> {
         self.rows
@@ -350,6 +491,7 @@ impl App {
             .cur_row()
             .and_then(|cur| rows.iter().position(|r| *r == cur))
             .unwrap_or(0);
+        let over = self.gantt_overruns(&spec);
         self.leave_screens();
         self.gantt = Some(Gantt {
             rows,
@@ -360,6 +502,7 @@ impl App {
             inferred,
             bars,
             range: None,
+            over,
         });
         self.set_mode(Mode::Gantt);
     }
@@ -382,6 +525,7 @@ impl App {
         };
         let rows = self.gantt_rows();
         let bars = self.gantt_bars(&spec);
+        let over = self.gantt_overruns(&spec);
         let sel = keep
             .and_then(|k| rows.iter().position(|r| *r == k))
             .unwrap_or(0)
@@ -392,6 +536,7 @@ impl App {
             g.sel = sel;
             g.spec = spec;
             g.inferred = inferred;
+            g.over = over;
         }
     }
 
@@ -585,14 +730,7 @@ impl App {
             let day = self.gantt_day(&row, col)?;
             Some((col.to_string(), day, text))
         };
-        let put = |day: i64, old: &str| -> String {
-            match old.get(10..) {
-                Some(rest) if parse_date(old).is_none() => {
-                    format!("{}{rest}", mdgrid::types::format_date(day))
-                }
-                _ => mdgrid::types::format_date(day),
-            }
-        };
+        let put = put_day;
         let (start, end) = (dated(&spec.start), dated(&spec.end));
         let mut writes: Vec<(String, String)> = Vec::new();
         if whole {
@@ -635,24 +773,30 @@ impl App {
             }
             writes.push((col, (new - s + 1).to_string()));
         }
+        // gantt.children-span-extend: 祖先の期間からはみ出すなら、祖先を広げる書き込みも同じ1手に入れる。
+        let mut all: Vec<(RowId, String, String)> = writes
+            .iter()
+            .map(|(c, t)| (row.clone(), c.clone(), t.clone()))
+            .collect();
+        all.extend(self.gantt_extend(&row, &spec, &writes));
         // 書く前に、どの列も直せるかを確かめる(片方だけ書かない)。
         let mut cells = Vec::new();
-        for (col, text) in &writes {
+        for (r, col, text) in &all {
             // 読むだけのセル(計算の列・ファイルの列など。BV-7・BV-12)は理由を出す。
-            if let Err(m) = self.editable(&row, col) {
+            if let Err(m) = self.editable(r, col) {
                 self.message = Some(m);
                 return;
             }
             // CE-29: キーの名前の変更か削除をためた列は、値の書き換えで黙って上書きしない。
             if matches!(
-                self.changes.pending(&row, col),
+                self.changes.pending(r, col),
                 Some(mdgrid::source::NewValue::RenameKey(_) | mdgrid::source::NewValue::DeleteKey)
             ) {
                 self.message = Some(Msg::KanbanKeyPending.fill(&[&sanitize(col)]));
                 return;
             }
             match super::kanban::value_for(self, col, text) {
-                Ok(nv) => cells.push((row.clone(), col.clone(), nv)),
+                Ok(nv) => cells.push((r.clone(), col.clone(), nv)),
                 Err(m) => {
                     self.message = Some(m);
                     return;
@@ -664,15 +808,25 @@ impl App {
             return;
         }
         // NV-12: 直した行は、保存か移動の操作まで表の元の位置に留める。
-        self.stay.insert(row.clone());
+        let mut set: Vec<(RowId, Vec<String>)> = Vec::new();
+        for (r, c, v) in &all {
+            self.stay.insert(r.clone());
+            let item = format!("{} = {}", sanitize(c), sanitize(v));
+            match set.iter_mut().find(|(x, _)| x == r) {
+                Some((_, items)) => items.push(item),
+                None => set.push((r.clone(), vec![item])),
+            }
+        }
         self.regrid = true;
         self.rebuild_gantt();
-        let name = sanitize(&self.src.label(&row));
-        let now: Vec<String> = writes
+        let msgs: Vec<String> = set
             .iter()
-            .map(|(c, v)| format!("{} = {}", sanitize(c), sanitize(v)))
+            .map(|(r, items)| {
+                let name = sanitize(&self.src.label(r));
+                Msg::GanttBarSet.fill(&[&name, &items.join(", ")])
+            })
             .collect();
-        self.message = Some(Msg::GanttBarSet.fill(&[&name, &now.join(", ")]));
+        self.message = Some(msgs.join(" / "));
     }
 
     /// GA-4: ガントの画面のクリック。行のクリックで選び、選んでいる行をもう一度で表のその行へ。
@@ -719,6 +873,16 @@ impl App {
     /// GA-4: 横のホイールで時間軸を動かす。
     pub(crate) fn gantt_hwheel(&mut self, right: bool) {
         self.gantt_action(if right { Action::Right } else { Action::Left });
+    }
+}
+
+/// 日付の列に書く文字: 日を `day` に替える(元の文字が日時なら時刻の部分を残す)。
+fn put_day(day: i64, old: &str) -> String {
+    match old.get(10..) {
+        Some(rest) if parse_date(old).is_none() => {
+            format!("{}{rest}", mdgrid::types::format_date(day))
+        }
+        _ => mdgrid::types::format_date(day),
     }
 }
 
@@ -920,8 +1084,31 @@ fn bar_cells(g: &Gantt, bar: Bar, pct: Option<u8>, cols: usize, today: i64) -> S
     out
 }
 
-/// 行の名前の欄: `番号 字下げ 名前`(選んでいる行は `>`)。
+/// 行の名前の欄: `番号 字下げ 名前`(選んでいる行は `>`)。親の期間からはみ出した子とその親の行は、右端に
+/// ` !`(gantt.children-span-mark。色に頼らない)。
 fn name_cell(app: &App, g: &Gantt, row: &RowId, w: usize) -> String {
+    if g.over.contains_key(row) && w > 2 {
+        return format!("{} {SPAN_MARK}", plain_name_cell(app, g, row, w - 2));
+    }
+    plain_name_cell(app, g, row, w)
+}
+
+/// gantt.children-span-mark: 選んでいる行の、はみ出した日数の案内(子として、無ければ親として)。下の帯に出す。
+pub(crate) fn span_hint(app: &App) -> Option<String> {
+    if app.mode != Mode::Gantt {
+        return None;
+    }
+    let g = app.gantt.as_ref()?;
+    let (as_child, as_parent) = g.over.get(g.rows.get(g.sel)?)?;
+    Some(if *as_child > 0 {
+        Msg::GanttOverParent.fill(&[as_child])
+    } else {
+        Msg::GanttOverKids.fill(&[as_parent])
+    })
+}
+
+/// 名前の欄の印の無い形。
+fn plain_name_cell(app: &App, g: &Gantt, row: &RowId, w: usize) -> String {
     let sel = g.rows.get(g.sel) == Some(row);
     let depth = app.tree.get(row).map_or(0, |n| n.depth);
     let num = app

@@ -1,0 +1,15 @@
+# The mdgrid workspace marker (WS-7) of the studio's routines: recurring work, one note per routine under Routines/,
+# each with its rule in `recurrence`. `runs` (routine.opt-in) makes Routines a routine table: the latest run of each
+# routine becomes a note in Runs/, linked back to the routine (`routine`), with the date of the run (`date`),
+# status = "todo" and the routine's owner.
+#
+# Open it (`mdgrid examples/routines`) and the bottom band counts the runs that are due. Click the count, or pick
+# routine_runs in the palette (:), to see the names; y and Enter create them. `mdgrid examples/routines --runs`
+# creates them without asking. Both write into Runs/ here, so try them on a copy of the folder.
+name = "Northwind Studio routines"
+open = "Routines"
+
+[[table]]
+name = "Routines"
+path = "Routines"
+runs = { folder = "Runs", rule = "recurrence", set = { status = "todo" }, copy = ["owner"] }

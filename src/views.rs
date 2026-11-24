@@ -67,7 +67,8 @@ const VIEW_KEYS: &[&str] = &[
 ];
 const NEW_NOTE_KEYS: &[&str] = NewNote::KEYS;
 const SETTINGS_KEYS: &[&str] = &[
-    "filters", "sorts", "group", "display", "look", "dates", "edit", "use", "tree", "wbs",
+    "filters", "sorts", "group", "display", "look", "dates", "edit", "use", "tree", "tree_off",
+    "wbs",
 ];
 const COND_KEYS: &[&str] = &["col", "op"];
 

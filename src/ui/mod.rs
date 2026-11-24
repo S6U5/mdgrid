@@ -5,6 +5,7 @@ pub mod app;
 pub mod bands;
 pub mod calendar;
 pub mod cell;
+pub(crate) mod children;
 pub(crate) mod chips;
 pub mod columns;
 pub(crate) mod conds;
@@ -12,6 +13,8 @@ mod date_words;
 pub mod detail;
 pub(crate) mod notices;
 pub(crate) mod notify;
+// routine.*: ルーチンの回を作る。
+pub(crate) mod routine;
 // navigation.across-*: ワークスペースを横断して探す。
 pub(crate) mod across;
 // 差分は --apply と共有するので src/diff.rs にある(今までの道 `ui::diff` はそのまま使える)。
@@ -263,6 +266,8 @@ mod test_checkbox;
 #[cfg(test)]
 mod test_checkbox_two_state;
 #[cfg(test)]
+mod test_children;
+#[cfg(test)]
 mod test_clear_input;
 #[cfg(test)]
 mod test_click_name;
@@ -329,6 +334,8 @@ mod test_gitflow;
 #[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]
+mod test_group_values;
+#[cfg(test)]
 mod test_half_explicit_rounds_up;
 #[cfg(test)]
 mod test_header_buttons;
@@ -394,6 +401,8 @@ mod test_relations_open;
 mod test_relmap;
 #[cfg(test)]
 mod test_relmap_click;
+#[cfg(test)]
+mod test_relmap_er;
 #[cfg(test)]
 mod test_relmap_new_note;
 #[cfg(test)]
@@ -564,6 +573,8 @@ mod test_notify;
 mod test_pending_shape;
 #[cfg(test)]
 mod test_plural_en;
+#[cfg(test)]
+mod test_routine;
 #[cfg(test)]
 mod test_screen;
 #[cfg(test)]

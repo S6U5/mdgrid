@@ -6,6 +6,7 @@
 - [探す・絞る・並べる](#探す絞る並べる)
 - [名前を付けた条件で絞る](#名前を付けた条件で絞る)
 - [通知の欄で知らせる](#通知の欄で知らせる)
+- [ルーチンの回を作る](#ルーチンの回を作る)
 - [ワークスペースを横断して探す](#ワークスペースを横断して探す)
 - [まとめて直す](#まとめて直す)
 - [日付を言葉で入れる](#日付を言葉で入れる)
@@ -239,6 +240,124 @@ WSL(Windows のタスク スケジューラから): WSL の中の cron は WSL �
 
 ```bat
 schtasks /Create /TN "mdgrid notify" /SC MINUTE /MO 5 /TR "wslg.exe -d Ubuntu --exec /path/to/mdgrid -w home --notify"
+```
+
+## ルーチンの回を作る
+
+毎週のレビューや月末の請求のような繰り返しの仕事を、ルーチンとして1つずつノートに書いておくと、その回のノート(「週次レビュー 2026-11-23」)が別のフォルダにできます。回のノートは普通のノートなので、表・カンバン・ガントでそのまま扱え、済んだかどうかも回ごとに残ります。
+
+台帳の印 `.mdgrid/workspace.toml` で、ルーチンの表の `[[table]]` に `runs` を書きます。`folder` は回のノートを作るフォルダ、`rule` は決まりを書いた列です。書き方の全部は[設定の文書](../../config.ja.md#ワークスペース表ビューごとの上書き)にあります。
+
+```toml
+[[table]]
+name = "ルーチン"
+path = "ルーチン"
+runs = { folder = "Runs", rule = "recurrence", set = { status = "todo" }, copy = ["actor"] }
+```
+
+```markdown
+---
+recurrence: weekly mon
+actor: both
+---
+```
+
+決まりの列には次のどれかを書きます。英語と日本語のどちらで書いても同じ回になります。
+
+| 書き方 | 回の日 |
+|---|---|
+| `daily`・`毎日` | 毎日 |
+| `weekly mon thu`・`毎週 月 木` | その曜日(`mon`〜`sun`、`月`〜`日`)。いくつ並べてもよい |
+| `monthly 1 15`・`毎月 1日 15日` | その日。31 日の無い月には、31 日の回は無い |
+| `monthly last`・`毎月 末日` | 月の末日 |
+| `every 3d`・`3日ごと` | 列 `start` の日から 3 日ごと |
+
+決まりの列が空のノートは、回を作らないルーチンとみなします。読めない決まり(`毎週かも` など)は、ノートの名前と値を添えた理由が出て、ほかのルーチンの回はそのまま作られます。
+
+回のノートは `Runs/週次レビュー 2026-11-23.md` のような名前で、フロントマターにはルーチンへのリンク `routine: "[[週次レビュー]]"`・回の日 `date`・`set` と `copy` の値が入り、本文は回の名前の見出しから始まります。名前と本文は `name` と `body` の雛形で変えられます。
+
+作るのは今日までの一番新しい回だけです。しばらく開かなかったあとでも、済ませようのない古い回のノートはたまりません。同じ回は1回しか作らず、同じ名前のノートがもうあれば上書きしません。要らない回のノートを消せば、その回は済んだことになり、作り直しません。
+
+mdgrid を開いている間は、開いたときと日付が変わったときに確かめます。作る回があれば、画面の下の帯に「ルーチンの回が 2 件来ています」と出ます。そこをクリックするか、パレット(`:`)の「ルーチンの回を作る」(`routine_runs`)を選ぶと、作るノートの名前が並びます。`y` と打って Enter で作り、ほかの答えか Esc でやめます。やめた回は、その日のうちはもう知らせません。読むだけ(`--readonly`)で開いたときは、知らせも作る操作も出ません。
+
+![ルーチンの回を作る](images/routine.svg)
+
+**閉じているあいだも作る**: `mdgrid <台帳> --runs`(ワークスペースの名前なら `mdgrid -w <名前> --runs`)は、画面を出さずに、来ている回を確かめずに全部作り、作ったノートのパスを1行ずつ出します。開いている画面と同じ記録を使うので、両方が確かめても同じ回を二度作りません。作れなかった回は理由を標準エラーに出して終了コード 1 で終わり、次に呼んだときにまた作ろうとします。OS の定期実行に登録したことを、作ってよいという合図とみなします。
+
+下の例はどれも5分ごとに `--runs` を呼び、続けて[`--notify`](#新しく当たった行を知らせる)を呼びます。できた回のノートが知らせの条件に当たれば、同じ回のうちに知らせも届きます。`--notify` を登録してあるなら、その登録をこれに置き換えます。`--notify` を使わないなら、その部分を消し、間隔も1時間ごとなどに延ばしてかまいません。`/path/to/notes` は台帳のフォルダに、`/path/to/mdgrid` は `command -v mdgrid`(Windows は `where mdgrid`)で調べたパスに替えます。
+
+Linux(systemd のユーザーのタイマー): 2つのファイルを置いて、タイマーを入れます。`--runs` の行の頭の `-` は、作れない回があっても続けて `--notify` を呼ぶための印です。
+
+```ini
+# ~/.config/systemd/user/mdgrid-routine.service
+[Unit]
+Description=mdgrid routine runs
+
+[Service]
+Type=oneshot
+ExecStart=-/path/to/mdgrid /path/to/notes --runs
+ExecStart=/path/to/mdgrid /path/to/notes --notify
+```
+
+```ini
+# ~/.config/systemd/user/mdgrid-routine.timer
+[Unit]
+Description=mdgrid routine runs every 5 minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```sh
+systemctl --user daemon-reload
+systemctl --user enable --now mdgrid-routine.timer
+```
+
+cron から呼ぶときは、[知らせ](#新しく当たった行を知らせる)と同じく、デスクトップの通知の宛先を渡します(`1000` は `id -u` の数に替えます)。
+
+```sh
+*/5 * * * * /path/to/mdgrid /path/to/notes --runs; DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /path/to/mdgrid /path/to/notes --notify
+```
+
+macOS(launchd): `~/Library/LaunchAgents/local.mdgrid.routine.plist` を置いて読み込ませます。2つを続けて呼ぶので、`/bin/sh` に渡します。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.mdgrid.routine</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-c</string>
+    <string>/path/to/mdgrid /path/to/notes --runs; /path/to/mdgrid /path/to/notes --notify</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>300</integer>
+</dict>
+</plist>
+```
+
+```sh
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/local.mdgrid.routine.plist
+```
+
+Windows(タスク スケジューラ): コマンド プロンプトで登録します。2つを `cmd /c` で続けて呼びます。走るたびにコンソールの窓が一瞬出ます。
+
+```bat
+schtasks /Create /TN "mdgrid routine" /SC MINUTE /MO 5 /TR "cmd /c C:\path\to\mdgrid.exe C:\path\to\notes --runs & C:\path\to\mdgrid.exe C:\path\to\notes --notify"
+```
+
+WSL(Windows のタスク スケジューラから): Windows の側から、WSL の中の `sh` に2つを続けて渡します。`Ubuntu` は `wsl -l` で見られる名前に替えます。
+
+```bat
+schtasks /Create /TN "mdgrid routine" /SC MINUTE /MO 5 /TR "wslg.exe -d Ubuntu --exec sh -c \"/path/to/mdgrid /path/to/notes --runs; /path/to/mdgrid /path/to/notes --notify\""
 ```
 
 ## ワークスペースを横断して探す
@@ -609,7 +728,7 @@ depends_on:                           # 複数
 
 見本 `examples/studio` は、この形でタスク・案件・顧客・人・会議をつないでいます: `mdgrid examples/studio/Tasks`。
 
-**関係マップ。** `R`(か右上の画面の型のメニューの **関係マップ**)で、表を箱(行の数と列)にし、リンクの列から行き先の表へ矢印を引いた図が出ます(`N` → `1`、リンクのリストなら `N` → `N`)。`↑` `↓` で表を、`←` `→` でつながりを選ぶと、詳細と(縦に広い端末では)つながった行が変わります。並びは端末の幅に合わせて変わります。クリックでも操作できます(表は1回で選び、もう一度で開く。線や矢印でつながりを選び、つながった行でそのノートを開く)。もう一度 `R` で表に戻ります。図に出るのは今のワークスペース(下)の表、無ければ登録した表です。
+**関係マップ。** `R`(か右上の画面の型のメニューの **関係マップ**)で、表を箱(行の数と列)にし、リンクの列から行き先の表へ矢印を引いた図が出ます(`N` → `1`、リンクのリストなら `N` → `N`)。タスクの `parent` のように同じ表の中を指す列は、その箱へ戻る矢印です。箱の列には、見出しと同じ型の印と、リンクの列の `↪` が付きます。`↑` `↓` で表を、`←` `→` でつながりを選ぶと、詳細と(縦に広い端末では)つながった行が変わります。並びは端末の幅に合わせて変わります。クリックでも操作できます(表は1回で選び、もう一度で開く。線や矢印でつながりを選び、つながった行でそのノートを開く)。もう一度 `R` で表に戻ります。図に出るのは今のワークスペース(下)の表、無ければ登録した表です。
 
 ## ワークスペースで表をまとめる
 

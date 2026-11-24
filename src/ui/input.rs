@@ -573,15 +573,23 @@ impl App {
     ) -> Result<(), String> {
         let Some(rows) = bulk else {
             let v = v.value(self, row, col);
-            let follow = self.follow(col);
-            self.changes
-                .set_then(self.src.as_ref(), row, col, v.clone(), &follow)
-                .map_err(|s| Msg::CannotCommit.fill(&[&s.reason]))?;
+            // cell-edit.children-done: 親を完了にしたら、印の children のとおりに子孫も扱う(children.rs)。
+            let st = self.stage_children(col, vec![(row.clone(), Some(v.clone()))]);
+            if let Some((_, why)) = st.refused.into_iter().next() {
+                return Err(why);
+            }
+            if let Some(s) = st.skips.first() {
+                return Err(Msg::CannotCommit.fill(&[&s.reason]));
+            }
             // screen.vim-repeat: 1つのセルに入れた値を `.` で繰り返せるように覚える。
             self.remember_set(col, &v);
             // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
             self.stay.insert(row.clone());
+            self.stay.extend(st.extra);
             self.regrid = true;
+            if st.notice.is_some() {
+                self.message = st.notice;
+            }
             return Ok(());
         };
         let mut reasons: Vec<String> = Vec::new();
@@ -599,19 +607,29 @@ impl App {
                 items.push((r.clone(), Some(rv)));
             }
         }
-        let follow = self.follow(col);
-        let skips = self
-            .changes
-            .set_each_then(self.src.as_ref(), col, &items, &follow);
-        reasons.extend(skips.iter().map(|s| s.reason.clone()));
-        let done = items.len() - skips.len();
-        self.stay.extend(items.into_iter().map(|(r, _)| r));
+        // cell-edit.children-done: 完了にする親は、印の children のとおりに子孫も扱う。断った親は飛ばした行に数える。
+        let st = self.stage_children(col, items.clone());
+        reasons.extend(st.refused.iter().map(|(_, why)| why.clone()));
+        reasons.extend(st.skips.iter().map(|s| s.reason.clone()));
+        let done = items.len() - st.skips.len() - st.refused.len();
+        let refused: Vec<&RowId> = st.refused.iter().map(|(r, _)| r).collect();
+        self.stay.extend(
+            items
+                .into_iter()
+                .map(|(r, _)| r)
+                .filter(|r| !refused.contains(&r)),
+        );
+        self.stay.extend(st.extra);
         self.regrid = true;
         let mut msg = Msg::BulkSet.fill(&[&done]);
         if same > 0 {
             msg.push_str(&Msg::BulkSame.fill(&[&same]));
         }
         bulk_tail(&mut msg, folded_out, reasons);
+        if let Some(n) = st.notice {
+            msg.push_str(" / ");
+            msg.push_str(&n);
+        }
         self.message = Some(msg);
         Ok(())
     }

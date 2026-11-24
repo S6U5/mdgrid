@@ -812,20 +812,25 @@ impl App {
         self.vim_set(&row, &col, v);
     }
 
-    /// 1つのセルに値をためる(列の `then` も一緒に。表の入力と同じ)。入れた値は `.` で繰り返せる。
+    /// 1つのセルに値をためる(列の `then` と、印の children の子孫も一緒に。表の入力と同じ)。入れた値は `.` で
+    /// 繰り返せる。
     fn vim_set(&mut self, row: &RowId, col: &str, v: NewValue) {
-        let follow = self.follow(col);
-        match self
-            .changes
-            .set_then(self.src.as_ref(), row, col, v.clone(), &follow)
-        {
-            Ok(()) => {
-                // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
-                self.stay.insert(row.clone());
-                self.regrid = true;
-                self.remember_set(col, &v);
-            }
-            Err(s) => self.message = Some(Msg::CannotCommit.fill(&[&s.reason])),
+        let st = self.stage_children(col, vec![(row.clone(), Some(v.clone()))]);
+        if let Some((_, why)) = st.refused.into_iter().next() {
+            self.message = Some(why);
+            return;
+        }
+        if let Some(s) = st.skips.first() {
+            self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
+            return;
+        }
+        // NV-12: 直した行は、保存か移動の操作まで元の位置に留める。
+        self.stay.insert(row.clone());
+        self.stay.extend(st.extra);
+        self.regrid = true;
+        self.remember_set(col, &v);
+        if st.notice.is_some() {
+            self.message = st.notice;
         }
     }
 }

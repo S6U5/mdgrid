@@ -66,6 +66,24 @@ A `[[table]]` in the marker can also set up the gantt screen (`C`; `gantt` in [K
 
 A `[[table]]` in the marker can also set up the kanban screen (`B`; `kanban` in [Keys](keys.md)): `kanban = { column = "<column>" }`. The rows become cards in lanes, one lane per value of that column, in the order of the column's allowed values (`[rules.<column>] values`), then any other value as the rows show it, and last **(none)** for rows without a value. Without the setting, mdgrid infers the column from its name (status, state, stage, 状態, ステータス, 段階; any case) and the screen title says so. A list column is never inferred, and naming one in the setting is a warning, because a row would sit in several lanes. A `kanban` that is not a table or has no `column` is a warning and the setting is dropped; a column the table does not have is reported once the notes are read.
 
+A `[[table]]` in the marker can also set up parents and children: `children = { key = "<column>" }`. Every view of that table then lists each row under the note its `key` column links to (the first link of a list), indented, the same way as turning on the "Tree" section of the view settings. A view where you turn it off in the view settings stays off when you open it again. Besides `key`, every item is optional:
+
+- `status`: the status column. Without it, the `column` of the marker's `kanban`, or else `status`.
+- `done`: the done value. `"done"` when left out.
+- `closed`: the values that count as finished. `["done"]` when left out; the done value always counts as finished.
+- `on_done`: what happens to unfinished descendants when you set a parent's status to the done value. `"complete"` (the default) sets them to the done value too, with the column's `then` values, in the same step as the parent, so one undo takes it all back. `"refuse"` leaves the parent as it is while descendants are unfinished and says how many. `"keep"` sets only the parent and shows how many are left on the bottom line.
+- `gantt`: what the gantt screen does when a descendant's bar runs outside the dates of a parent that has its own dates. `"mark"` (the default) puts a `!` at the right end of the name of the child's and the parent's rows, and the bottom line of a selected row says by how many days. `"extend"` moves the parent's start or end to cover the child when you move or stretch the child's bar, in the same step (moving a parent does not move its children). `"none"` does nothing.
+
+Descendants are followed through the links of every row of the table, whatever the view filters or groups. Finishing a parent only touches its descendants when you edit on the screen (a cell, a bulk edit, a kanban card, `.` in vim mode), not with `--apply`, and not in a table where only the view settings turned parent/child on. A `key` column the table does not have is reported once the notes are read (in the form `.mdgrid/workspace.toml: table[1].children.key: …`), and the rows are not arranged as parents and children. A `children` that is not a table or has no `key` is a warning and the setting is dropped; another item with a wrong value is a warning and that item keeps its default.
+
+```toml
+# tasks/.mdgrid/workspace.toml — keep a parent open while children are left, and stretch it with its children
+[[table]]
+name = "tasks"
+path = "tasks"
+children = { key = "parent", on_done = "refuse", gantt = "extend" }
+```
+
 A `[[table]]` in the marker can also set up the chart screen (`P`; `chart` in [Keys](keys.md)): `chart = { kind = "bar", x = "status" }`. Every key is optional. `kind` is the kind (`bar`, `stacked`, `line`, `scatter`, `heatmap`; bar when left out), `x` the column to split by, `y` a number column for the value (a count when left out; for a scatter, the vertical column, a number or a date), `agg` the aggregate (`count`, `sum`, `avg`, `min`, `max`; sum when `y` is given), `by` the breakdown column (needed by stacked bars and heatmaps and guessed when left out; optional for lines and scatters), `unit` the date range (`day`, `week`, `month`; the finest that fits when left out), `cumulative = true` a cumulative line, and `name` a name for the title. For several charts, write an array (`chart = [ { … }, { … } ]`) and move between them with `[` and `]` on the screen:
 
 ```toml
@@ -89,6 +107,16 @@ A `[[table]]` in the marker can also set up the tree view (`T`; `tree` in [Keys]
 name = "Bookmarks"
 path = "Bookmarks"
 tree = { path = "folder", order = "order" }
+```
+
+A `[[table]]` in the marker with `runs` becomes a routine table: a table of recurring work (a weekly review, a monthly invoice), where each row's rule makes one note per run in another folder. `runs = { folder = "<folder>", rule = "<column>", name = "<name template>", set = { <column> = <value> }, copy = ["<column>"], body = "<template file>" }`. Only `folder` (where the run notes go, relative to the marker's root) and `rule` (the column with the rule) are needed. `name` is the name template of a run note (default `{routine} {date:YYYY-MM-DD}`; `{routine}` is the routine note's name, `{date}` the date of the run, and the other variables are those of [`new_note`](#new_note)), `set` the values to put in it, `copy` the columns whose routine values it copies, and `body` the body template (relative to the marker's root; default one heading with the run's name). The frontmatter of a run note is the link `routine` (`"[[name]]"`), the run's date `date`, then `set` and `copy`. A rule is written `daily`, `weekly mon thu`, `monthly 1 15`, `monthly last` or `every 3d` (counted from the date in the `start` column), or the Japanese forms `毎日`, `毎週 月 木`, `毎月 1日 15日`, `毎月 末日` and `3日ごと`. Only the latest run up to today is made, the runs made are remembered in `routine.json` in the state folder, and a note with the same name is never overwritten. The open screen shows the names and asks before it creates them; `mdgrid <ledger> --runs` creates them without asking ([guide](manual/en/tasks.md#create-routine-runs)). A `runs` that is not a table, or has no `folder` or `rule`, is a warning (in the form `.mdgrid/workspace.toml: table[1].runs.folder: …`), and that table makes no runs.
+
+```toml
+# notes/.mdgrid/workspace.toml — make run notes in Runs/ from the rules written in the routine table
+[[table]]
+name = "Routines"
+path = "Routines"
+runs = { folder = "Runs", rule = "recurrence", set = { status = "todo" }, copy = ["actor"] }
 ```
 
 A workspace can also hold **pages**: named arrangements of tables stacked top to bottom (`[[page]]` in a marker, `[[workspace.page]]` under the workspace in `workspaces.toml`). Write `name` and the list `tables`, top first; each entry names a table of the scope in `table`, the view to open in `view` (default: the table's usual view) and a height ratio in `height` (an integer of 1 or more; default 1). **Save the arrangement as a page** in the command palette writes the same shape (replacing a page of the same name); in a marker it only appends at the end of the file and leaves every other line and comment as it was. Pages are listed above the tables in the table list drawer, and `mdgrid -w <workspace> --page <name>` (for a marker workspace, `mdgrid <folder> --page <name>`) opens one. A row that cannot be read (a page with no name, a table that is not in the scope, …) is a warning in the form `.mdgrid/workspace.toml: page[1].tables[2].table: …` and is skipped.
@@ -252,7 +280,7 @@ nerd_font = true
 - Default: `false`
 - Scope: global only
 
-Use icon glyphs from a Nerd Font for the settings button (gear), the screen type button and menu (table, relation map), the type marks of column headings (number, date, date and time, checkbox, list, chip columns) and the calendar title. Set `true` only if your terminal font is a Nerd Font: other fonts show empty boxes for these glyphs. By default plain characters are used (`⚙`, `▦`, `◇`, `#`, `◷`, `⋮`, `◉`, and the check mark of the part shape, `✓` by default). Emoji are never used. The glyphs are counted with the same character widths as the rest of the screen.
+Use icon glyphs from a Nerd Font for the settings button (gear), the screen type button and menu (table, relation map), the type marks of column headings and relation map boxes (number, date, date and time, checkbox, list, chip columns, and link columns in the boxes) and the calendar title. Set `true` only if your terminal font is a Nerd Font: other fonts show empty boxes for these glyphs. By default plain characters are used (`⚙`, `▦`, `◇`, `#`, `◷`, `⋮`, `◉`, `↪`, and the check mark of the part shape, `✓` by default). Emoji are never used. The glyphs are counted with the same character widths as the rest of the screen.
 
 ```toml
 [terminal]
@@ -619,7 +647,7 @@ tab_wrap_gap = true
 - Default: `""`
 - Scope: global, workspace, table, view
 
-A regular expression applied to the name in the note column, after `note_path` (with folders, to the last part of the path only). When it matches, the column shows the group named `name`, or else the first group, or else the name with the matched part removed. A name that does not match, or that would become empty, is shown as it is. `""` sets nothing. Search and the note names in messages and the detail view are not changed. An expression that cannot be read produces a warning and is not used. It is not switched in the "Display" section of the view settings (it is free text); a view can still override it in the view's `display` in `views.toml`.
+A regular expression applied to the name in the note column, after `note_path` (with folders, to the last part of the path only). When it matches, the column shows the group named `name`, or else the first group, or else the name with the matched part removed. A name that does not match, or that would become empty, is shown as it is. `""` sets nothing. It is applied the same way to the target name shown in link cells (the alias text of `[[…|alias]]` is shown as written). Search, the note names in messages and the detail view, the values written to notes and the `--print` values are not changed. An expression that cannot be read produces a warning and is not used. It is not switched in the "Display" section of the view settings (it is free text); a view can still override it in the view's `display` in `views.toml`.
 
 ```toml
 [display]
@@ -773,18 +801,22 @@ estimate = "number"
 
 ### `rules`
 
-- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } } })`
+- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } }, icons = { value = string }, labels = { value = string } })`
 - Default: `{}`
 - Scope: global, workspace, table, view
 
-Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Checking a rule never changes a note and never stops you writing a value. A column with `values` offers them in the cell input. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
+Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Checking a rule never changes a note and never stops you writing a value. A column with `values` offers them in the cell input. Grouping by a column with `values` puts the groups in that order (reversed when descending), then any other value in text order, and the group without a value last: the same order as the kanban lanes. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
 
 `then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today.
+
+`icons` and `labels` decide how the values read in group headings and kanban lane titles. With `icons = { todo = "○" }` and `labels = { todo = "To do" }`, the `todo` group is headed `○ To do`; a value with only a glyph reads `○ todo`, and a value with neither stays as it is. Any glyph works, Nerd Font ones too, and mdgrid prints it as you wrote it. Its width is counted like the rest of the screen, so if your font draws a glyph such as `○` two cells wide and it runs into the next letter, turn on [`terminal.ambiguous_wide`](#terminalambiguous_wide). Cells, filters, search, `--print` and the notes keep the plain value. An entry for a value missing from `values` in the same table produces a warning naming it (`rules.status.icons.blocked`) and is ignored; when `values` comes from a wider scope, entries for values outside it are simply not shown. A narrower scope that writes `icons` or `labels` replaces it whole.
 
 ```toml
 [rules.status]
 required = true
 values = ["todo", "doing", "done"]
+icons = { todo = "○", doing = "◐", done = "●" }
+labels = { todo = "To do", doing = "In progress" }
 
 [rules.status.then]
 done = { done_at = "{date}" }

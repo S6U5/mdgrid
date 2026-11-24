@@ -104,10 +104,16 @@ fn sel_style(app: &App) -> Style {
     }
 }
 
-/// レーンの名前(値なしは「(なし)」)。
-fn lane_name(key: &LaneKey) -> String {
+/// レーンの名前(値なしは「(なし)」)。列 `col` の決まりに字と名前があれば「字 名前」(navigation.group-values-icon。
+/// 札を動かして書く値は `key` の値のまま)。
+fn lane_name(app: &App, col: &str, key: &LaneKey) -> String {
     match key {
-        LaneKey::Value(v) => sanitize(v),
+        LaneKey::Value(v) => sanitize(
+            &app.prof
+                .resolved
+                .value_shown(col, v)
+                .unwrap_or_else(|| v.clone()),
+        ),
         LaneKey::NoValue => Msg::KanbanNoValue.text().to_string(),
     }
 }
@@ -439,16 +445,19 @@ impl App {
                 return;
             }
         };
-        let follow = self.follow(&col);
-        if let Err(s) = self
-            .changes
-            .set_then(self.src.as_ref(), &row, &col, nv, &follow)
-        {
+        // cell-edit.children-done: 親の札を完了のレーンへ動かしたら、印の children のとおりに子孫も扱う。
+        let st = self.stage_children(&col, vec![(row.clone(), Some(nv))]);
+        if let Some((_, why)) = st.refused.into_iter().next() {
+            self.message = Some(why);
+            return;
+        }
+        if let Some(s) = st.skips.first() {
             self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
             return;
         }
         // NV-12: 直した行は、保存か移動の操作まで表の元の位置に留める。
         self.stay.insert(row.clone());
+        self.stay.extend(st.extra);
         self.regrid = true;
         let name = card_name(self, &row);
         let old = if old.is_empty() {
@@ -456,7 +465,12 @@ impl App {
         } else {
             sanitize(&old)
         };
-        self.message = Some(Msg::KanbanMoved.fill(&[&name, &old, &sanitize(&v)]));
+        let mut msg = Msg::KanbanMoved.fill(&[&name, &old, &sanitize(&v)]);
+        if let Some(n) = st.notice {
+            msg.push_str(" / ");
+            msg.push_str(&n);
+        }
+        self.message = Some(msg);
     }
 
     /// KB-4: 取り消し・やり直し(カンバンのまま。読むだけでは何もしない)。
@@ -647,7 +661,7 @@ fn body_lines(app: &App, k: &Kanban, iw: usize, vis: usize) -> Vec<Line<'static>
         let text = format!(
             "{}{} ({})",
             if on { ">" } else { " " },
-            lane_name(&l.key),
+            lane_name(app, &k.spec.column, &l.key),
             l.rows.len()
         );
         let text = fit(&text, lw, Align::Left);

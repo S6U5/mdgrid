@@ -14,6 +14,7 @@ Every sample here belongs to the same made-up company, **Northwind Studio**: a s
 | [tasks/](tasks) | A task ledger made with `--init-workspace --starter tasks --with-samples`: tabs by status (Open, Overdue, Doing, Waiting, Done), due date, priority and tags. |
 | [reading/](reading) | A reading ledger from the reading starter: books, articles, films and talks, with the tabs Queue, Now and Done. |
 | [people/](people) | A people-and-meetings ledger from the people starter: a People table and a Meetings table linked to it (press `R` for the map). |
+| [routines/](routines) | The studio's recurring work as routine notes with rules like `weekly mon` and `every 3d`. The marker's `runs` turns each due run into a note in `Runs/`: open it and click the count in the bottom band, or run `mdgrid examples/routines --runs` (on a copy). |
 
 `sh demos/try.sh <sample>` opens a sample in a throwaway copy with its own config, and removes it when you quit.
 

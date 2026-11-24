@@ -956,3 +956,4 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `across_search` — search every table in the workspace for a word and open the table of the row you pick (only with `across = true` under `[search]`; see [config.md](config.md#searchacross))
 - `stack_add` — pick a table of the current scope and stack it below the current table (up to 4)
 - `page_save` — name the stacked arrangement (tables, views, height ratios) and save it as a page of the current workspace
+- `routine_runs` — list the routine runs that are due and create their notes after you confirm (only when a table of the scope has `runs` in its marker, and not when read-only; also by clicking the count in the bottom band; see [config.md](config.md#overrides-per-workspace-table-and-view))

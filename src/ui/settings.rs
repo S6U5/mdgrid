@@ -406,8 +406,10 @@ impl App {
             });
         let cols = self.column_list();
         let keys = self.setting_keys();
+        let s = self.draft_settings();
+        let tree = s.tree.clone();
         self.draft = Some(Draft {
-            s: self.settings.clone(),
+            s,
             cols0: cols.clone(),
             cols,
             keys,
@@ -422,10 +424,8 @@ impl App {
             look0: self.look_pick_now(),
             look_n: self.look_len(),
             look_scopes: self.look_scopes().len(),
-            tree_key: self
-                .settings
-                .tree
-                .clone()
+            tree_key: tree
+                .or_else(|| self.children_spec.as_ref().map(|(c, _)| c.key.clone()))
                 .unwrap_or_else(|| "parent".into()),
             wbs: wbs.clone(),
             wbs_vals: self.wbs_values(&wbs),
@@ -694,10 +694,11 @@ impl App {
     /// 「取り消し」・Esc: 写しを捨てて表へ(表は開く前のまま。NV-13)。
     fn cancel_settings(&mut self) {
         // 写しを変えていなければ「閉じた」(ビューの区画の変更はもう保存してある。NV-26)。
+        let now = self.draft_settings();
         let changed = self
             .draft
             .take()
-            .is_some_and(|d| d.s != self.settings || d.cols_changed());
+            .is_some_and(|d| d.s != now || d.cols_changed());
         self.set_mode(Mode::Table);
         self.message = Some(if changed {
             Msg::SettingsCancelled.into()
@@ -713,10 +714,15 @@ impl App {
             Ok(g) if !g.columns.is_empty() => g.columns.into_iter().map(|c| c.id).collect(),
             _ => self.column_list().into_iter().map(|c| c.0).collect(),
         };
+        // navigation.parent-child-config: 既定は印の children に従う親子(オフにしたのを戻す)。
+        let tree = self.children_key();
         let Some(d) = self.draft.as_mut() else {
             return;
         };
-        d.s = Settings::default();
+        d.s = Settings {
+            tree,
+            ..Settings::default()
+        };
         d.cols = order.into_iter().map(|c| (c, true)).collect();
         d.select(Sec::Buttons, 0);
         self.message = Some(Msg::SettingsReset.into());
@@ -736,6 +742,8 @@ impl App {
             self.apply_look(&mut d.s, d.look, d.look0);
             notes.extend(self.message.take());
         }
+        // navigation.parent-child-config: 印の children に従う親子は書かずに残し、オフにしたことは残す。
+        self.settle_tree(&mut d.s);
         self.settings = d.s;
         notes.extend(self.apply_profile());
         if d.cols != d.cols0 {

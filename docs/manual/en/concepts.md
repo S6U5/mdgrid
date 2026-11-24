@@ -83,7 +83,7 @@ When one is in use, the breadcrumb in the header shows `<workspace> › <table>`
 
 ## The relation map
 
-Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the workspace as a diagram: one box per table with its row count and columns, and an arrow from each link column to the table it points at, marked `N:1` (one link) or `N:N` (a list of links). Select a table or a link with the arrow keys or the mouse; the details and the linked records follow the selection. `Enter` (or a second click) opens the table. Press `R` again to go back.
+Press `R` (or pick **Relation map** in the screen type menu at the top right) to see the workspace as a diagram: one box per table with its row count and columns, and an arrow from each link column to the table it points at, marked `N:1` (one link) or `N:N` (a list of links). A column that points at notes of its own table, such as a task's `parent`, gets an arrow that leaves the box on the right and comes back into it. In each box the column names carry the same type marks as the table headings (`#` number, `◷` date and date-time, `⋮` list, `◉` chip column and so on), and link columns carry `↪`. The marks are characters, so the columns stay apart without color too. Select a table or a link with the arrow keys or the mouse; the details and the linked records follow the selection. `Enter` (or a second click) opens the table. Press `R` again to go back.
 
 ## Where mdgrid keeps things
 

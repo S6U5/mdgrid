@@ -735,6 +735,23 @@
   - When: 親子をオンにして反映し、終了して開き直す
   - Then: 親子の並びのまま。
 
+#### 印の `[[table]]` に `children = { key = "<列>" }` を書いた表は、どのビューも、その列で親子(navigation.parent-child-rows)をオンにして開き、ビューの設定の「親子」の区画でオフにしたビューはオフのまま残すべき
+`req~navigation.parent-child-config~1` P1
+- Rationale: 親子の並びは今、ビューの設定でその場でオンにするだけで、印の `.base` のビューには書けず、ワークスペースを開き直すと字下げの無い表に戻るため(2026-11-24 に人が「グルーピングした時にうまくインデントされない」と言った)。親と子の扱い(cell-edit.children-done・gantt.children-span-mark)も同じ `children` に書く
+- Acceptance:
+  - Given: `children = { key = "parent" }` の表と、`parent: "[[設計]]"` の「画面」
+  - When: その表を開く
+  - Then: 「▾ 設計」の下に2桁字下げした「画面」。
+- Acceptance:
+  - Given: 同じ表のビュー「完了」で、ビューの設定の親子をオフにして反映した
+  - When: 終了して開き直し、「完了」を選ぶ
+  - Then: 「完了」は字下げなし、ほかのビューは親子のまま。
+- Acceptance:
+  - Given: `children = { key = "owner" }` で、owner の列が表に無い
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で警告し、親子をオンにしない。
+- Needs: utest
+
 #### ビューの設定の画面の「親子」の区画で、親子で並べているビュー(navigation.parent-child)に WBS をオンにできるべき
 `req~navigation.wbs-on~1` P1
 - Acceptance:
@@ -1230,6 +1247,44 @@
   - When: status でグループ分けし、空を隠す
   - Then: `(空)` の見出しと行が出ない。
 
+#### グループ分けの列に値の候補(`[rules.<列>] values`)があれば、まとまりを候補の順(昇順。降順はその逆)に並べ、候補に無い値のまとまりはそのあと(昇順なら文字の順、降順なら逆の順)に、値の無い行のまとまりは最後に並べるべき
+`req~navigation.group-values-order~1` P1
+- Rationale: 状態のような値は、文字の順(doing・done・todo・waiting)より、仕事の流れの順(todo・doing・waiting・done)で見たいため。カンバンのレーンの順(kanban.open-lane-order)とそろえる(2026-11-24 に人が「値の候補に書く」と決めた)
+- Acceptance:
+  - Given: `[rules.status] values = ["todo", "doing", "waiting", "done"]` と、status が doing・todo・waiting・blocked・(なし) の行
+  - When: status で昇順にグループ分けする
+  - Then: まとまりは todo・doing・waiting・blocked・(なし) の順。
+- Acceptance:
+  - Given: 同じ表
+  - When: status で降順にグループ分けする
+  - Then: まとまりは waiting・doing・todo・blocked・(なし) の順。
+- Acceptance:
+  - Given: 値の候補の無い列 owner
+  - When: owner で昇順にグループ分けする
+  - Then: 今までどおり、値の文字の順。
+- Needs: utest
+
+#### `[rules.<列>]` に `icons = { <値> = "<字>" }` と `labels = { <値> = "<名前>" }` を書いてよく、その列のまとまりの見出しとカンバンのレーンの題を「字 名前」(書かない値は値のまま)で見せ、ノートに書く値・セルの値・絞り込み・検索・出力は値のままにするべき
+`req~navigation.group-values-icon~1` P1
+- Rationale: まとまりを、英語の値(todo)ではなく、アイコンと自分の言葉(「未着手」)で見分けるため。式で見出しの文字を作る回り道(式の値の文字の順で並ぶ)をやめる(2026-11-24 に人が「グルーピングで分けるならアイコンも設定」「値の候補に書く」と決めた)。字は Nerd Font の字でもよく、人が書いた字をそのまま出す
+- Acceptance:
+  - Given: `[rules.status]` に `values = ["todo", "doing"]`・`icons = { todo = "○" }`・`labels = { todo = "未着手", doing = "進行中" }`
+  - When: status でグループ分けする
+  - Then: まとまりの見出しは「○ 未着手」と「進行中」で、todo の行の status のセルは `todo` のまま。
+- Acceptance:
+  - Given: 同じ設定で、`kanban = { column = "status" }` の表
+  - When: カンバンで開く
+  - Then: レーンの題は「○ 未着手」と「進行中」。
+- Acceptance:
+  - Given: 同じ設定
+  - When: `--print --format csv`
+  - Then: status の値は `todo`・`doing` のまま。
+- Acceptance:
+  - Given: `icons = { blocked = "!" }`(blocked は values に無い)
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で `icons.blocked` を言う警告1行で、その字は使わない。
+- Needs: utest
+
 #### 設定を `.base` のビューの既定(`.base` なしなら何もしない状態)に戻す操作を持つべき
 `req~navigation.settings-reset-default~1` P1
 - Acceptance:
@@ -1390,3 +1445,7 @@
 
 ## 未確定事項
 
+### 値の見せる名前とアイコンを、セルにも出すか
+`tbd~navigation.value-labels-cells`
+- Decider: 人
+- Provisional: 出さない(セルは値を直す所なので値のまま。まとまりの見出しとカンバンのレーンだけ)

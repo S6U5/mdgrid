@@ -145,10 +145,10 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         path: "rules",
-        ty: "table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } } })",
-        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …], then = { 値 = { 列 = 文字列 } } })",
+        ty: "table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } }, icons = { value = string }, labels = { value = string } })",
+        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …], then = { 値 = { 列 = 文字列 } }, icons = { 値 = 文字列 }, labels = { 値 = 文字列 } })",
         default: Some("{}"),
-        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }",
+        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\nicons = { todo = \"○\", doing = \"◐\", done = \"●\" }\nlabels = { todo = \"To do\", doing = \"In progress\" }\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }",
         scope: Scope::Profile,
         en: Msg::CfgRules.en(),
         ja: Msg::CfgRules.ja(),

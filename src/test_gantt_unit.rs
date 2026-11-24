@@ -317,3 +317,97 @@ fn test_ga_7_tree_and_gantt_read_in_the_same_shape() {
     assert_eq!(gantt.start.as_deref(), Some("start"));
     assert_eq!(at, "table[2].gantt");
 }
+
+#[test]
+fn test_overrun_counts_days_before_the_start_and_after_the_end() {
+    // 子が親の期間からはみ出す日数は、始まりより前の日数と終わりより後の日数の和で、中に収まれば 0。
+    // [utest -> req~gantt.children-span-mark~1]
+    let parent = (d("2026-11-01"), d("2026-11-10"));
+    assert_eq!(overrun(parent, (d("2026-11-05"), d("2026-11-12"))), 2);
+    assert_eq!(overrun(parent, (d("2026-11-05"), d("2026-11-11"))), 1);
+    assert_eq!(overrun(parent, (d("2026-11-05"), d("2026-11-10"))), 0);
+    assert_eq!(overrun(parent, (d("2026-11-01"), d("2026-11-01"))), 0);
+    assert_eq!(overrun(parent, (d("2026-10-31"), d("2026-11-11"))), 2);
+}
+
+#[test]
+fn test_marker_children_reads_the_keys_and_defaults() {
+    // 印の children を読む。key だけなら既定(done・["done"]・complete・mark)で、警告は無く、範囲の読みでも知らない項目にならない。
+    // [utest -> req~navigation.parent-child-config~1, req~cell-edit.children-done~1, req~gantt.children-span-mark~1]
+    use crate::tree::{ChildrenSpec, OnDone, SpanRule};
+    let r = Root::new(
+        "children",
+        &format!("{MARKER_HEAD}children = {{ key = \"parent\" }}\n"),
+    );
+    let (got, warns) = crate::workspace::marker_children(&r.notes());
+    assert!(warns.is_empty(), "{warns:?}");
+    let (got, at) = got.expect("children");
+    assert_eq!(got, ChildrenSpec::new("parent"));
+    assert_eq!(at, "table[1].children");
+    let (_, warns) = crate::workspace::read_marker(&r.0);
+    assert!(warns.is_empty(), "{warns:?}");
+    let r = Root::new(
+        "children-all",
+        &format!(
+            "{MARKER_HEAD}children = {{ key = \"up\", status = \"state\", done = \"完了\", closed = [\"完了\", \"中止\"], on_done = \"refuse\", gantt = \"extend\" }}\n"
+        ),
+    );
+    let (got, warns) = crate::workspace::marker_children(&r.notes());
+    assert!(warns.is_empty(), "{warns:?}");
+    let (got, _) = got.expect("children");
+    assert_eq!(
+        got,
+        ChildrenSpec {
+            key: "up".into(),
+            status: Some("state".into()),
+            done: "完了".into(),
+            closed: vec!["完了".into(), "中止".into()],
+            on_done: OnDone::Refuse,
+            gantt: SpanRule::Extend,
+        }
+    );
+}
+
+#[test]
+fn test_marker_children_warns_in_place_and_falls_back() {
+    // 書き方の違う children は場所を言う警告1行。key が無いか表でなければ設定を使わず、値の違う項目は既定にする。
+    // [utest -> req~cell-edit.children-done~1, req~gantt.children-span-mark~1]
+    use crate::tree::{OnDone, SpanRule};
+    for (bad, at) in [
+        ("children = \"parent\"", "table[1].children: "),
+        ("children = { status = \"s\" }", "table[1].children.key: "),
+        ("children = { key = 1 }", "table[1].children.key: "),
+    ] {
+        let r = Root::new("children-bad", &format!("{MARKER_HEAD}{bad}\n"));
+        let (got, warns) = crate::workspace::marker_children(&r.notes());
+        assert!(got.is_none(), "{bad}");
+        assert_eq!(warns.len(), 1, "{bad}: {warns:?}");
+        assert!(
+            warns[0].starts_with(&format!(".mdgrid/workspace.toml: {at}")),
+            "{bad}: {warns:?}"
+        );
+    }
+    for (bad, at) in [
+        ("on_done = \"nope\"", "table[1].children.on_done: "),
+        ("gantt = \"wide\"", "table[1].children.gantt: "),
+        ("closed = \"done\"", "table[1].children.closed: "),
+        ("done = 1", "table[1].children.done: "),
+        ("color = \"red\"", "table[1].children.color: "),
+    ] {
+        let r = Root::new(
+            "children-val",
+            &format!("{MARKER_HEAD}children = {{ key = \"parent\", {bad} }}\n"),
+        );
+        let (got, warns) = crate::workspace::marker_children(&r.notes());
+        let (got, _) = got.expect(bad);
+        assert_eq!(warns.len(), 1, "{bad}: {warns:?}");
+        assert!(
+            warns[0].starts_with(&format!(".mdgrid/workspace.toml: {at}")),
+            "{bad}: {warns:?}"
+        );
+        assert_eq!(got.on_done, OnDone::Complete, "{bad}");
+        assert_eq!(got.gantt, SpanRule::Mark, "{bad}");
+        assert_eq!(got.done, "done", "{bad}");
+        assert_eq!(got.closed, ["done"], "{bad}");
+    }
+}

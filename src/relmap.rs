@@ -1,14 +1,20 @@
 //! 関係マップ(REL-7): ワークスペースの表の形とつながりを読み、箱と矢印を文字の盤に並べる純関数。
 //!
 //! - 読み取り(`read`): 表ごとのノートの数とフロントマターの列(多い順)、表どうしのつながり(REL-6 と同じ
-//!   見つけ方)と、つながりごとの実際のリンクの組(元のノート, 行き先のノート)。
-//! - 並べ方(`layout`): 左から右の層(つながりの元が左、行き先が右)。箱は「題(名前と行の数)・区切り・列」。
-//!   つながりの列は先に並べ `→ 行き先` を添える。矢印はつながりの列の行から出て、行き先の箱の題の行に入る
-//!   (`▶`)。元の側に `N`、行き先の側に `1`(多対一)か `N`(多対多)。行き先が同じか左の層なら、元の箱の
-//!   左を回る。盤の各セルは役割(枠・題・列・つながりの列・線・矢印・数の札)と、どの表・どのつながりかを持つ。
+//!   見つけ方。同じ表の中を指す列も)と、つながりごとの実際のリンクの組(元のノート, 行き先のノート)。
+//!   `read_marked` は、列の印(relations.map-column-types)も返す: つながりの元の列と値の多くがリンクの列は
+//!   リンク、ほかは列の見出しと同じ型(表のフォルダの types.json か値の推定)と札の列。
+//! - 並べ方(`layout`・`layout_with`): 左から右の層(つながりの元が左、行き先が右)。箱は「題(名前と行の数)・
+//!   区切り・列」。つながりの列は先に並べ `→ 行き先` を添え、`layout_with` は列の名前の前に印を添える。矢印は
+//!   つながりの列の行から出て、行き先の箱の題の行に入る(`▶`)。元の側に `N`、行き先の側に `1`(多対一)か
+//!   `N`(多対多)。行き先が同じか左の層なら、元の箱の左を回る。同じ表へのつながり(relations.map-self-links)は、
+//!   元の箱の右の隙間のいちばん近い道を回って、同じ箱の右の縁の空いた行へ戻る(`◀`)。盤の各セルは役割(枠・題・
+//!   列・つながりの列・線・矢印・数の札)と、どの表・どのつながりかを持つ。
 
 use crate::frontmatter::{self, Value};
-use crate::relations::{file_stem, parse, resolve, strings, table_of, Notes, Table};
+use crate::relations::{file_stem, parse, resolve, strings, table_of, Form, Notes, Table};
+use crate::types;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 /// 1つのつながりで覚えるリンクの組の上限。
@@ -41,6 +47,95 @@ pub struct Link {
     pub pairs: Vec<(PathBuf, PathBuf)>,
 }
 
+/// 箱の列に添える印の種類(relations.map-column-types): 列の見出しの型の印と同じ種類と、リンクの列。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Mark {
+    Number,
+    Date,
+    DateTime,
+    Check,
+    List,
+    /// 札の列(くり返しのある短い文字の値)。
+    Select,
+    /// リンクの列(値の多くがリンクの列か、つながりの元の列)。
+    Link,
+}
+
+impl Mark {
+    /// 列の型の印。ただの文字の列は None。
+    pub fn of_kind(kind: types::Kind) -> Option<Mark> {
+        match kind {
+            types::Kind::Number => Some(Mark::Number),
+            types::Kind::Date => Some(Mark::Date),
+            types::Kind::DateTime => Some(Mark::DateTime),
+            types::Kind::Checkbox => Some(Mark::Check),
+            types::Kind::List => Some(Mark::List),
+            types::Kind::Text => None,
+        }
+    }
+}
+
+/// 表ごとの列の印(infos と同じ添字)。印の無い列(ただの文字の列)は入れない。
+pub type Marks = Vec<Vec<(String, Mark)>>;
+
+/// 列の値の見たもの(印を決める)。
+#[derive(Default)]
+struct Seen {
+    /// 値(型の推定と札の列の判定)。
+    values: Vec<Value>,
+    /// 空でない値の数と、そのうちリンクの値の数(REL-3 のリンクの列は過半数がリンク。relations::link_column)。
+    filled: usize,
+    links: usize,
+}
+
+/// 表のフォルダの `.obsidian/types.json` の型(その表を開いたときと同じ)。大文字小文字だけ違う名前で型が
+/// 食い違えば、その名前は引かない。
+fn declared(dir: &Path) -> HashMap<String, Option<types::Kind>> {
+    let map = crate::textfile::read_bytes(dir.join(".obsidian").join("types.json"))
+        .map(|b| types::read_types_json(&b))
+        .unwrap_or_default();
+    let mut lower: HashMap<String, Option<types::Kind>> = HashMap::new();
+    for (k, v) in map {
+        lower
+            .entry(k.to_lowercase())
+            .and_modify(|x| {
+                if *x != Some(v) {
+                    *x = None;
+                }
+            })
+            .or_insert(Some(v));
+    }
+    lower
+}
+
+/// 列の印: つながりの元の列か、値の多くがリンクの列はリンク。ほかは列の見出しと同じ型(types.json か値の
+/// 推定)で、ただの文字の列はくり返しのある短い値なら札の列。
+fn mark_of(seen: &Seen, source: bool, declared: Option<types::Kind>) -> Option<Mark> {
+    if source || (seen.filled > 0 && seen.links * 2 > seen.filled) {
+        return Some(Mark::Link);
+    }
+    let kind = declared.unwrap_or_else(|| types::infer(seen.values.iter()));
+    if kind != types::Kind::Text {
+        return Mark::of_kind(kind);
+    }
+    // 表の札の列と同じ見方(リンクの形の値は札にしない)。
+    let texts = seen.values.iter().filter_map(|v| match v {
+        Value::Str(s) if parse(s).is_some() => Some("\n"),
+        Value::Str(s) => Some(s.as_str()),
+        _ => None,
+    });
+    crate::cells::looks_like_select(texts).then_some(Mark::Select)
+}
+
+/// 空の値(REL-3 のリンクの列の数に入れない): Null と空白だけの文字。
+fn blank(v: &Value) -> bool {
+    match v {
+        Value::Null => true,
+        Value::Str(s) => s.trim().is_empty(),
+        _ => false,
+    }
+}
+
 fn entries(path: &Path) -> Vec<(String, Value)> {
     let Ok(bytes) = crate::textfile::read_bytes(path) else {
         return Vec::new();
@@ -53,14 +148,22 @@ fn entries(path: &Path) -> Vec<(String, Value)> {
 
 /// ワークスペースの表の形とつながりを読む。表のフォルダが入れ子なら、ノートはいちばん深い表のもの。
 pub fn read(tables: &[Table]) -> (Vec<TableInfo>, Vec<Link>) {
+    let (infos, links, _) = read_marked(tables);
+    (infos, links)
+}
+
+/// `read` と同じものと、表ごとの列の印(relations.map-column-types)。
+pub fn read_marked(tables: &[Table]) -> (Vec<TableInfo>, Vec<Link>, Marks) {
     let scanned: Vec<Notes> = tables.iter().map(|t| Notes::scan(&t.dir)).collect();
     let all: Vec<&Notes> = scanned.iter().collect();
     let mut infos: Vec<TableInfo> = Vec::new();
     let mut links: Vec<Link> = Vec::new();
+    let mut marks: Marks = Vec::new();
     for (i, t) in tables.iter().enumerate() {
         let n = &scanned[i];
         let mut rows = 0usize;
-        let mut cols: Vec<(String, usize)> = Vec::new();
+        // (列, 出た数, 値の見たもの)。
+        let mut cols: Vec<(String, usize, Seen)> = Vec::new();
         for rel in &n.rels {
             let note = n.root.join(rel);
             if table_of(&note, tables).map(|x| &x.name) != Some(&t.name) {
@@ -70,15 +173,25 @@ pub fn read(tables: &[Table]) -> (Vec<TableInfo>, Vec<Link>) {
             let mut order: Vec<&Notes> = vec![n];
             order.extend(all.iter().filter(|x| !std::ptr::eq(**x, n)));
             for (col, v) in entries(&note) {
-                match cols.iter_mut().find(|(c, _)| *c == col) {
-                    Some((_, k)) => *k += 1,
-                    None => cols.push((col.clone(), 1)),
-                }
+                let ci = if let Some(ci) = cols.iter().position(|(c, _, _)| *c == col) {
+                    ci
+                } else {
+                    cols.push((col.clone(), 0, Seen::default()));
+                    cols.len() - 1
+                };
+                cols[ci].1 += 1;
                 let many = matches!(v, Value::List(_));
+                let mut is_link = false;
                 for s in strings(&v) {
-                    let Some(target) = parse(s).and_then(|l| resolve(&l, &note, &order)) else {
+                    let Some(l) = parse(s) else {
                         continue;
                     };
+                    let Some(target) = resolve(&l, &note, &order) else {
+                        // 行き先の無い `[[…]]`・`[…](…)` もリンク(REL-10)。ただのパスは在るときだけ。
+                        is_link |= matches!(l.form, Form::Wiki | Form::Md);
+                        continue;
+                    };
+                    is_link = true;
                     let Some(to) = table_of(&target, tables) else {
                         continue;
                     };
@@ -103,18 +216,34 @@ pub fn read(tables: &[Table]) -> (Vec<TableInfo>, Vec<Link>) {
                         e.pairs.push((note.clone(), target));
                     }
                 }
+                let seen = &mut cols[ci].2;
+                if !blank(&v) {
+                    seen.filled += 1;
+                    seen.links += usize::from(is_link);
+                }
+                seen.values.push(v);
             }
         }
         // 多い順(安定な並べ替えなので、同じ数は最初に出た順)。
         cols.sort_by_key(|c| std::cmp::Reverse(c.1));
+        let decl = declared(&t.dir);
+        marks.push(
+            cols.iter()
+                .filter_map(|(c, _, seen)| {
+                    let source = links.iter().any(|l| l.from == t.name && l.column == *c);
+                    let d = decl.get(c.to_lowercase().as_str()).copied().flatten();
+                    mark_of(seen, source, d).map(|m| (c.clone(), m))
+                })
+                .collect(),
+        );
         infos.push(TableInfo {
             name: t.name.clone(),
             dir: t.dir.clone(),
             rows,
-            columns: cols.into_iter().map(|(c, _)| c).collect(),
+            columns: cols.into_iter().map(|(c, _, _)| c).collect(),
         });
     }
-    (infos, links)
+    (infos, links, marks)
 }
 
 /// 盤のセルの役割(色を付けるのに使う)。
@@ -296,20 +425,23 @@ fn clip(s: &str, w: usize) -> String {
     out
 }
 
-/// 箱の中の行: (文字, 役割, つながりの添字)。
+/// 箱の中の行: (文字, 役割, つながりの添字)。`mark` が列の印の字を返せば、列の名前の前に添え
+/// (relations.map-column-types)、印の無い行は同じ幅だけ空けて列の名前の頭をそろえる。
 fn box_lines(
     info: &TableInfo,
     links: &[Link],
     idx: usize,
     g: &Glyphs,
+    mark: &dyn Fn(usize, &str) -> Option<String>,
 ) -> Vec<(String, Role, Option<usize>)> {
-    let _ = idx;
-    let mut out = Vec::new();
+    // (印, 文字, 役割, つながりの添字)。
+    let mut out: Vec<(Option<String>, String, Role, Option<usize>)> = Vec::new();
     let mut shown: Vec<String> = Vec::new();
     for (k, l) in links.iter().enumerate() {
         if l.from == info.name && !shown.contains(&l.column) {
             shown.push(l.column.clone());
             out.push((
+                mark(idx, &l.column),
                 format!("{} {} {}", l.column, g.arrow_r, l.to),
                 Role::Link,
                 Some(k),
@@ -319,16 +451,43 @@ fn box_lines(
     let rest: Vec<&String> = info.columns.iter().filter(|c| !shown.contains(c)).collect();
     let room = MAX_FIELDS.saturating_sub(out.len());
     for c in rest.iter().take(room) {
-        out.push(((*c).clone(), Role::Field, None));
+        out.push((mark(idx, c), (*c).clone(), Role::Field, None));
     }
     if rest.len() > room {
-        out.push((format!("+{}", rest.len() - room), Role::Field, None));
+        out.push((None, format!("+{}", rest.len() - room), Role::Field, None));
     }
-    out
+    let mw = out
+        .iter()
+        .filter_map(|(m, _, _, _)| m.as_deref().map(|m| sw(&clean(m))))
+        .max();
+    out.into_iter()
+        .map(|(m, t, role, k)| {
+            let text = match (mw, m) {
+                (None, _) => t,
+                // 印は右に寄せる(幅の違う印 `[x]` があっても列の名前の頭がそろう)。
+                (Some(w), Some(m)) => {
+                    format!("{}{m} {t}", " ".repeat(w.saturating_sub(sw(&clean(&m)))))
+                }
+                (Some(w), None) => format!("{} {t}", " ".repeat(w)),
+            };
+            (text, role, k)
+        })
+        .collect()
 }
 
 /// 箱と矢印を盤に並べる(REL-7)。`ascii` なら ASCII の線(SR-32)。
 pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
+    layout_with(infos, links, ascii, &|_, _| None)
+}
+
+/// `layout` に、列の印を添えるもの(relations.map-column-types)。`mark(表の添字, 列)` が印の字を返せば、
+/// 箱の列の名前の前に添える。
+pub fn layout_with(
+    infos: &[TableInfo],
+    links: &[Link],
+    ascii: bool,
+    mark: &dyn Fn(usize, &str) -> Option<String>,
+) -> Map {
     let g = if ascii { PLAIN } else { ROUND };
     let n = infos.len();
     let index = |name: &str| infos.iter().position(|t| t.name == name);
@@ -354,7 +513,7 @@ pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
     let contents: Vec<Vec<(String, Role, Option<usize>)>> = infos
         .iter()
         .enumerate()
-        .map(|(i, t)| box_lines(t, links, i, &g))
+        .map(|(i, t)| box_lines(t, links, i, &g, mark))
         .collect();
     let titles: Vec<String> = infos
         .iter()
@@ -386,6 +545,8 @@ pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
         Prev(usize, usize),
         /// 離れた層へ: (出る隙間, 道, 入る隙間, 道, 下の道)。
         Far(usize, usize, usize, usize, usize),
+        /// 同じ表へ(relations.map-self-links): 元の右の隙間の道を回って、同じ箱の右の縁へ戻る。
+        Loop(usize, usize),
     }
     let mut gap_edges: Vec<usize> = vec![0; ncol + 1];
     let take = |gi: usize, gap_edges: &mut Vec<usize>| {
@@ -395,6 +556,14 @@ pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
     };
     let mut lanes = 0usize;
     let mut kinds: Vec<Option<Kind>> = vec![None; links.len()];
+    // 自分へ戻る輪は、右の隙間でいちばん箱に近い道を先に取る(ほかの矢印の横の線と重ならない)。
+    for (k, l) in links.iter().enumerate() {
+        if let (Some(a), Some(b)) = (index(&l.from), index(&l.to)) {
+            if a == b {
+                kinds[k] = Some(Kind::Loop(layer[a] + 1, take(layer[a] + 1, &mut gap_edges)));
+            }
+        }
+    }
     for (k, l) in links.iter().enumerate() {
         let (Some(a), Some(b)) = (index(&l.from), index(&l.to)) else {
             continue;
@@ -540,7 +709,11 @@ pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
         };
         left + 2 + 2 * slot
     };
-    for (k, l) in links.iter().enumerate() {
+    // 自分へ戻る輪は、ほかの矢印を描いたあとに、右の縁の空いている行へ入れる。
+    let (loops, others): (Vec<usize>, Vec<usize>) =
+        (0..links.len()).partition(|&k| matches!(kinds[k], Some(Kind::Loop(..))));
+    for k in others.into_iter().chain(loops) {
+        let l = &links[k];
         let (Some(a), Some(b)) = (index(&l.from), index(&l.to)) else {
             continue;
         };
@@ -554,18 +727,47 @@ pub fn layout(infos: &[TableInfo], links: &[Link], ascii: bool) -> Map {
             .position(|(_, _, lk)| lk.is_some_and(|x| links[x].column == l.column))
             .unwrap_or(0);
         let sy = src.y + 3 + row;
-        // 入る行: 題の行、続けて列の行(区切りの行は飛ばす)。
-        let entries: Vec<usize> = std::iter::once(dst.y + 1)
-            .chain(dst.y + 3..dst.y + dst.h - 1)
-            .collect();
-        let ey = entries[incoming[b] % entries.len()];
-        incoming[b] += 1;
+        let src_r = src.x + src.w; // 元の右の縁のすぐ右
+        let ey = if let Kind::Loop(..) = kind {
+            // 輪の入る行: 題の行、続けてつながりの列でない列の行(つながりの列の行は矢印の出る所)のうち、
+            // 右の縁のすぐ外(矢印と札)が空いている最初の行。無ければ題の行。
+            let free = |y: usize| {
+                y != sy
+                    && map.get(src_r, y).role == Role::Empty
+                    && map.get(src_r + 1, y).role == Role::Empty
+            };
+            std::iter::once(src.y + 1)
+                .chain(
+                    contents[a]
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, (_, r, _))| *r == Role::Field)
+                        .map(|(i, _)| src.y + 3 + i),
+                )
+                .find(|&y| free(y))
+                .unwrap_or(src.y + 1)
+        } else {
+            // 入る行: 題の行、続けて列の行(区切りの行は飛ばす)。
+            let entries: Vec<usize> = std::iter::once(dst.y + 1)
+                .chain(dst.y + 3..dst.y + dst.h - 1)
+                .collect();
+            let ey = entries[incoming[b] % entries.len()];
+            incoming[b] += 1;
+            ey
+        };
         let lane_y = |i: usize| boxes_h + 1 + i;
         let right_in = dst.x.saturating_sub(1); // 行き先の左の縁のすぐ左(右向きの矢印)
         let left_in = dst.x + dst.w; // 行き先の右の縁のすぐ右(左向きの矢印)
-        let src_r = src.x + src.w; // 元の右の縁のすぐ右
         let src_l = src.x.saturating_sub(1); // 元の左の縁のすぐ左
         let (pts, arrow, start): Route = match kind {
+            Kind::Loop(gi, slot) => {
+                let cx = gap_x(gi, slot);
+                (
+                    vec![(src_r, sy), (cx, sy), (cx, ey), (src_r, ey)],
+                    (src_r, ey, g.left),
+                    (src_r, sy),
+                )
+            }
             Kind::Next(gi, slot) => {
                 let cx = gap_x(gi, slot);
                 (

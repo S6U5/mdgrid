@@ -848,21 +848,27 @@ pub(crate) fn head_text(app: &App, col: &str) -> String {
     if !app.style.icons || !app.rich(col, mdgrid::cells::Part::Icons) {
         return title;
     }
+    let kind = app.kind_of(col);
+    match kind_mark(app, kind, kind == Kind::Text && app.is_select(col)) {
+        Some(m) => format!("{m} {title}"),
+        None => title,
+    }
+}
+
+/// SR-35: 型の印の字(列の見出しと、関係マップの箱の列。relations.map-column-types)。`select` は札の列か。
+/// ただの文字の列は None。
+pub(crate) fn kind_mark(app: &App, kind: Kind, select: bool) -> Option<&'static str> {
     // SR-45: 記号は glyphs.rs(設定でアイコン用のフォントの記号)。
     use super::glyphs::{glyph, nerd_on, Glyph};
-    let mark = match app.kind_of(col) {
+    match kind {
         Kind::Number => Some(glyph(app, Glyph::Number)),
         Kind::Date => Some(glyph(app, Glyph::Date)),
         Kind::DateTime => Some(glyph(app, Glyph::DateTime)),
         Kind::Checkbox if nerd_on(app) => Some(glyph(app, Glyph::Check)),
         Kind::Checkbox => Some(super::cell::check_marks(app.style.check).map_or("✓", |m| m.0)),
         Kind::List => Some(glyph(app, Glyph::List)),
-        Kind::Text if app.is_select(col) => Some(glyph(app, Glyph::Select)),
+        Kind::Text if select => Some(glyph(app, Glyph::Select)),
         Kind::Text => None,
-    };
-    match mark {
-        Some(m) => format!("{m} {title}"),
-        None => title,
     }
 }
 
@@ -873,11 +879,11 @@ fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
     };
     let open = !app.folded.contains(h);
     let by = app.group_title().map(|t| format!("{}: ", sanitize(&t)));
+    // navigation.group-values-icon: 列の決まりに字と名前があれば「字 名前」。
     // REL-2: リンクの値のまとまりは、セルと同じに行き先の名前で見せる(まとまりの最初の行から解く)。
     let shown = app
-        .rows
-        .get(range.start)
-        .and_then(|r| app.link_label(r, h))
+        .group_shown(g)
+        .or_else(|| app.rows.get(range.start).and_then(|r| app.link_label(r, h)))
         .unwrap_or_else(|| h.clone());
     let text = Msg::HeadingRow.fill(&[
         &if i == app.row { ">" } else { " " },

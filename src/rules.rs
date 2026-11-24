@@ -22,6 +22,10 @@ pub struct Rule {
 /// 雛形の変数を書ける)。重ねたあとの値は `Resolved.then`(列 → Then)にある。
 pub type Then = BTreeMap<String, BTreeMap<String, String>>;
 
+/// `[rules.<列>] icons`・`labels` の中身: 値 → 字か見せる名前(navigation.group-values-icon)。重ねたあとの値は
+/// `Resolved.icons`・`Resolved.labels`(列 → Names)にある。
+pub type Names = BTreeMap<String, String>;
+
 /// 1つの範囲に書いた決まり(書いた項目だけ。狭い範囲が項目ごとに勝つ。SR-44)。
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RuleLayer {
@@ -29,6 +33,10 @@ pub struct RuleLayer {
     pub values: Option<Vec<String>>,
     /// 書けば、広い範囲の `then` に丸ごと代わる。
     pub then: Option<Then>,
+    /// まとまりの見出しとカンバンのレーンの題に出す字(navigation.group-values-icon)。書けば丸ごと代わる。
+    pub icons: Option<Names>,
+    /// まとまりの見出しとカンバンのレーンの題に出す名前(navigation.group-values-icon)。書けば丸ごと代わる。
+    pub labels: Option<Names>,
 }
 
 impl RuleLayer {

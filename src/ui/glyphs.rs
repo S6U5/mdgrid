@@ -1,5 +1,6 @@
 //! 画面の記号(SR-45)。設定 `terminal.nerd_icons` が true ならアイコン用のフォント(Nerd Font)の記号、既定は今の字の
-//! 記号。記号を使う所(設定のボタン・画面の型のボタンと窓・列の見出しの型の印・カレンダーの題)は、ここを通す。
+//! 記号。記号を使う所(設定のボタン・画面の型のボタンと窓・列の見出しと関係マップの箱の型の印・カレンダーの題)は、
+//! ここを通す。
 //! 絵文字は使わない。Nerd Font の記号は私用の領域の字で、幅は字の幅の決まり(width.rs。CV-6)で数える。
 
 use super::app::App;
@@ -32,6 +33,8 @@ pub(crate) enum Glyph {
     Select,
     /// 型の印: チェック(今の字の記号は部品の形 `check` で決まる)。
     Check,
+    /// 関係マップの箱の印: リンクの列(relations.map-column-types)。
+    Link,
 }
 
 /// 今の字の記号(既定)。チェックは呼ぶ側が部品の形から決めるので、ここでは既定の ✓。カレンダーの題は記号なし。
@@ -49,6 +52,7 @@ fn plain(g: Glyph) -> &'static str {
         Glyph::List => "⋮",
         Glyph::Select => "◉",
         Glyph::Check => "✓",
+        Glyph::Link => "↪",
     }
 }
 
@@ -68,6 +72,7 @@ fn nerd(g: Glyph) -> &'static str {
         Glyph::List => "\u{f0ca}",     // nf-fa-list_ul
         Glyph::Select => "\u{f192}",   // nf-fa-dot_circle_o
         Glyph::Check => "\u{f046}",    // nf-fa-check_square_o
+        Glyph::Link => "\u{f0c1}",     // nf-fa-link
     }
 }
 

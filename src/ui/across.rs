@@ -68,8 +68,14 @@ const ACROSS_ROWS: usize = 16;
 
 impl App {
     /// navigation.across-option: パレットとヘルプにそのコマンドを出すか(横断の検索は設定で入れたときだけ)。
+    /// routine.screen-create・routine.readonly: ルーチンの回を作るコマンドは、ルーチンの表があって、読むだけの起動で
+    /// ないときだけ。
     pub(crate) fn command_shown(&self, action: super::keymap::Action) -> bool {
-        action != super::keymap::Action::AcrossSearch || self.across.on
+        match action {
+            super::keymap::Action::AcrossSearch => self.across.on,
+            super::keymap::Action::RoutineRuns => !self.readonly && !self.routine.tables.is_empty(),
+            _ => true,
+        }
     }
 
     /// パレットの「ワークスペースを横断して探す」: 続けて語を打つ(navigation.across-option)。

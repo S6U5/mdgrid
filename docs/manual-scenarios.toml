@@ -466,6 +466,15 @@ wait = { en = "Late", ja = "Late" }
 text = { en = "examples/configs/notify.toml notifies each task that becomes late, through the OS notification and the terminal. The notification itself shows outside mdgrid; here 2 keeps only the rows that match the condition.", ja = "examples/configs/notify.toml は、遅れたタスクを1件ずつ OS の通知と端末に知らせる。知らせは mdgrid の外に出る。画面は、2 でその条件に当たる行だけにしたところ。" }
 
 [[shot]]
+id = "routine"
+title = { en = "Create routine runs", ja = "ルーチンの回を作る" }
+command = ["./target/release/mdgrid", "examples/routines"]
+ready = "Routines"
+keys = [":", "text:routine_runs", "Enter"]
+wait = { en = "Notes to create", ja = "作るノート" }
+text = { en = "examples/routines has four routines with rules like weekly mon and every 3d. The bottom band counts the runs that are due; routine_runs in the palette lists the notes it would create, and y with Enter creates them in Runs/.", ja = "examples/routines には weekly mon や every 3d の決まりを書いた4つのルーチンがある。下の帯が来ている回を数え、パレットの routine_runs で作るノートの名前が並ぶ。y と Enter で Runs/ に作る。" }
+
+[[shot]]
 id = "vim-normal"
 title = { ja = "vim のキーで直す", en = "Edit with vim keys" }
 command = ["./target/release/mdgrid", "--config", "examples/configs/vim.toml", "examples/studio/Tasks"]
@@ -862,7 +871,7 @@ command = ["./target/release/mdgrid", "examples/studio/Tasks"]
 ready = "Northwind Studio"
 keys = ["R"]
 wait = { en = "Relation map", ja = "関係マップ" }
-text = { en = "R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at: tasks to projects and people, projects to clients, meetings to projects and people.", ja = "R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。タスクから案件と人へ、案件から顧客へ、会議から案件と人へ。" }
+text = { en = "R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at: tasks to projects and people, projects to clients, meetings to projects and people. The depends_on column of tasks points at other tasks, so its arrow loops back to the same box, and every column carries its type mark.", ja = "R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。タスクから案件と人へ、案件から顧客へ、会議から案件と人へ。タスクの depends_on はほかのタスクを指すので、同じ箱へ戻る矢印になる。箱の列には型の印。" }
 
 [[shot]]
 id = "demo-freq"

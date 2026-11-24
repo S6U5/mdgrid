@@ -90,6 +90,14 @@ Get an OS or terminal notification when a reminder time or a due date comes. Eac
 
 [Get notified when a row matches](tasks.md#get-notified-when-a-row-matches)
 
+## Create routine runs
+
+![Create routine runs](images/routine.svg)
+
+Write your recurring work (a weekly review, the invoices at the end of the month) as routine notes with a rule like `weekly mon`, and mdgrid makes the note for each run in another folder: "Weekly review 2026-11-23", linked back to its routine. The open screen shows the names and asks first; `mdgrid --runs` from your OS scheduler makes them while mdgrid is closed. Only the latest run is made, and nothing is overwritten.
+
+[Create routine runs](tasks.md#create-routine-runs)
+
 ## Search across the workspace
 
 ![Search across the workspace](images/across.svg)
@@ -120,13 +128,15 @@ Press `u` right after creating a note by mistake and it moves to the trash; `Ctr
 
 `o` sets the columns, filters, sorting, grouping and display; save it under a name and it becomes a tab. The sections are numbered, so `3` takes you straight to sorting. Choose "Set as default view" and the folder opens on that view next time.
 
-[Shape a view and save it](tasks.md#shape-a-view-and-save-it)
+Group by status and the groups come in the order of the column's allowed values (todo, doing, waiting, done), not the alphabet. Give those values a glyph and a name (`icons`, `labels`) and the headings and kanban lanes read "○ To do", while the notes keep `todo`.
+
+[Shape a view and save it](tasks.md#shape-a-view-and-save-it), [Column rules](../../config.md#rules)
 
 ## See the schedule as a gantt
 
 ![The gantt screen](images/gantt.svg)
 
-`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
+`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`. In a table with `children` in the marker, a child bar that runs past its parent's dates puts a `!` at the end of both rows, and selecting one shows by how many days. With `gantt = "extend"`, stretching the child stretches the parent's end too.
 
 [Gantt in the list of views](views.md#gantt), [Key bindings](../../keys.md)
 
@@ -135,6 +145,8 @@ Press `u` right after creating a note by mistake and it moves to the trash; `Ctr
 ![The kanban screen](images/kanban.svg)
 
 `B` shows every status at once: one lane per status, the tasks as cards. Press `L` on a todo card and it moves to doing, with its status rewritten as an unsaved change; `u` takes it back, and `Ctrl+s` shows the diff before anything is written. The lanes follow the allowed values of the status column, so an empty status still has a lane to move into.
+
+Write `children = { key = "parent" }` in the marker's `[[table]]` and every view lists children indented under their parent. Move a parent's card to done (or set it in the table) and its unfinished children become done with it; one `u` takes it all back. You can also keep the parent open while children are left (`on_done = "refuse"`), or finish only the parent and be told how many are left (`"keep"`).
 
 [Kanban in the list of views](views.md#kanban), [Key bindings](../../keys.md)
 

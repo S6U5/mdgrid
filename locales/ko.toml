@@ -5,7 +5,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "사용법: mdgrid [<.base | 폴더 | .md | .csv> ...] [--view <이름>] [-w <이름>] [--page <이름>] [--raw] [--readonly] [--no-color] [--config <경로>]\n        mdgrid [<.base | 폴더 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <이름>]\n                 [--filter <식>]... [--sort <열>[:desc]]...\n        mdgrid [<.base | 폴더 | .md> ...] --pick path|<열> [--view <이름>]\n        mdgrid [<.base | 폴더 | .md> ...] --check [--view <이름>]\n        mdgrid [<.base | 폴더 | .md> ...] --count [--view <이름>] [--filter <식>]...\n        mdgrid [<.base | 폴더> ...] --notices\n        mdgrid [<.base | 폴더> ...] --notify\n        mdgrid [<.base | 폴더> ...] --apply <경로> [--yes]\n        mdgrid [<폴더 | .base> ...] --add-to <이름> [--as <표 이름>] | --remove-from <이름>\n        mdgrid [<폴더> ...] --init-workspace [--starter <이름> [--with-samples]]\n        mdgrid [<폴더>] --new-note <이름> [--set <열>=<값>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <경로>]\n        mdgrid -s <이름> [--readonly] [--no-color] [--config <경로>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <이름>\n        mdgrid --print-config\n        mdgrid --completions <셸>\n        mdgrid --man\n\n  폴더 안의 Markdown 노트를 표로 연다. 노트 하나가 한 행, 프런트매터의 키 하나가\n  한 열이 된다. .base를 주면 그 table 뷰로 연다(노트는 루트 폴더 아래에서 찾는다).\n  .md 파일을 주면 그 폴더를 열고 그 노트를 선택한다.\n  .csv나 .tsv 파일을 주면 표로 연다. 한 줄이 한 행이고,\n  첫 줄이 열 이름이 된다.\n  인수가 없으면 현재 폴더를 연다(places.toml에 등록한 표가 있으면 그 목록을 위에\n  띄운다). 마커 .mdgrid/workspace.toml의 \"open\"에 표를 적은 폴더는\n  대신 그 표를 연다.\n\n  --view <이름>           .base의 그 뷰로 연다(생략하면 첫 뷰.\n                          --print는 mdgrid 뷰도 찾는다)\n  -w, --workspace <이름>  링크와 관계도의 범위로 그 워크스페이스(workspaces.toml)를 쓴다.\n                          경로가 없으면 그 첫 표를 연다\n  --page <이름>           워크스페이스의 그 페이지([[page]])를, 표를 세로로 쌓아 연다\n  --raw                   마커의 \"open\"에 적힌 표가 아니라 폴더 자체를 연다\n  --readonly              읽기 전용으로 연다(편집도 저장도 하지 않는다)\n  --no-color              색 없이 그린다\n  --config <경로>         이 설정 파일을 읽는다\n                          (기본값: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              이 폴더에서 마지막으로 보던 표와 뷰로 연다(없으면 인수 없이\n                          연 것과 같다. tmux 등에서 창을 되살릴 때 쓴다)\n  -s, --session <이름>    그 이름으로 저장한 세션(표, 뷰, 필터, 정렬, 열)으로 연다\n                          (팔레트의 \"세션 저장\"으로 저장한다)\n  --sessions              저장한 세션(sessions.toml)의 이름과 폴더를 한 줄에 하나씩 출력한다\n  --recent                화면에서 최근에 연 표를 최신순으로, 한 줄에 하나씩\n                          \"경로<TAB>뷰 이름<TAB>마지막으로 연 때\" 형식으로 출력한다(최대 20개)\n  --print                 화면 없이 뷰의 표를 표준 출력에 출력한다\n                          (노트는 바꾸지 않는다)\n  --format <형식>         --print의 형식(csv, tsv, json, md. 기본값 csv)\n  --with-path             --print의 첫 열에 각 행의 노트 경로 \"path\"를 더한다\n                          (--pick path와 같은 경로)\n  --filter <식>           .base 식이 참인 행만 남긴다\n                          (반복 가능. .base 뷰에서는 뷰의 필터와 함께 적용)\n  --sort <열>[:desc]      --print를 이 열로 정렬한다(반복 가능. 뷰의 정렬을\n                          대신한다)\n  --count                 화면 없이 뷰의 행 수(--filter 적용 후)를 출력한다\n  --show-hidden           --print, --pick, --count에서 hide = true인 조건([conditions])이\n                          숨긴 행도 남긴다\n  --notices               화면 없이 알림 칸([[notices]])의 항목을 한 줄에 하나씩 출력한다\n                          (tmux 상태 줄이나 셸 프롬프트용)\n  --notify                화면 없이 [[notify]] 항목을 한 번 확인하고, 새로 맞게 된 행을 알린다\n                          (정기 실행용. 보내지 못하면 종료 코드 1)\n  --pick <path|열>        터미널에 화면을 읽기 전용으로 띄운다. Enter를 누르면\n                          표시한 행(없으면 선택한 행)의 경로나 열 값을\n                          한 줄에 하나씩 표준 출력에 내고 끝난다\n                          (q나 Esc로 취소하면 종료 코드 1)\n  --check                 열 형식이나 규칙([rules])에 맞지 않는 값을\n                          한 줄에 하나씩 출력한다(경로:줄: 열: 이유. 하나라도 있으면\n                          종료 코드 1)\n  --apply <경로>          --print --with-path 형식의 CSV나 JSON(-는 표준 입력)을 읽어\n                          값이 다른 셀을 바꾼다. 차이만 보여 준다\n  --yes                   --apply에서 변경을 실제로 쓴다\n  --workspaces            워크스페이스(workspaces.toml) 목록을 출력한다\n  --add-to <이름>         지정한 표(기본값: 이 폴더)를 그 워크스페이스에 더한다.\n                          없으면 만든다. --as <이름>으로 표 이름을 정한다\n  --remove-from <이름>    지정한 표(기본값: 이 폴더)를 그 워크스페이스에서 뺀다\n  --remove-workspace <이름>  그 워크스페이스를 지운다(노트는 건드리지 않는다)\n  --init-workspace        폴더에 워크스페이스 마커 .mdgrid/workspace.toml을 둔다\n                          (기본값: 이 폴더)\n  --starter <이름>        --init-workspace에서 그 스타터로 대장(마커, 노트 템플릿)을\n                          만든다. 내장 스타터나 설정 폴더의 starters/<이름>\n  --with-samples          --starter에서 스타터의 견본 노트도 더한다\n  --starters              스타터 목록(이름과 한 줄 설명)을 한 줄에 하나씩 출력한다\n  --new-note <이름>       화면 없이 폴더(기본값: 이 폴더)에 새 노트 <이름>.md를 만든다.\n                          [new_note](folder, set, template)를 쓰고, 만든 경로를 출력한다.\n                          덮어쓰지 않는다\n  --set <열>=<값>         --new-note에서 그 열에 값을 넣는다(반복 가능. 목록 항목은\n                          쉼표로 구분. 빈 값은 아무것도 쓰지 않는다)\n  --print-config          모든 설정 항목을 기본값과 설명을 붙인 TOML로 출력한다\n                          (docs/config.md)\n  --completions <셸>      셸 자동 완성을 출력한다(bash, zsh, fish, elvish, powershell)\n  --man                   man 페이지(roff)를 출력한다\n  --help                  이 도움말을 출력한다\n  --version               버전을 출력한다"
+Usage = "사용법: mdgrid [<.base | 폴더 | .md | .csv> ...] [--view <이름>] [-w <이름>] [--page <이름>] [--raw] [--readonly] [--no-color] [--config <경로>]\n        mdgrid [<.base | 폴더 | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <이름>]\n                 [--filter <식>]... [--sort <열>[:desc]]...\n        mdgrid [<.base | 폴더 | .md> ...] --pick path|<열> [--view <이름>]\n        mdgrid [<.base | 폴더 | .md> ...] --check [--view <이름>]\n        mdgrid [<.base | 폴더 | .md> ...] --count [--view <이름>] [--filter <식>]...\n        mdgrid [<.base | 폴더> ...] --notices\n        mdgrid [<.base | 폴더> ...] --notify\n        mdgrid [<.base | 폴더> ...] --runs\n        mdgrid [<.base | 폴더> ...] --apply <경로> [--yes]\n        mdgrid [<폴더 | .base> ...] --add-to <이름> [--as <표 이름>] | --remove-from <이름>\n        mdgrid [<폴더> ...] --init-workspace [--starter <이름> [--with-samples]]\n        mdgrid [<폴더>] --new-note <이름> [--set <열>=<값>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <경로>]\n        mdgrid -s <이름> [--readonly] [--no-color] [--config <경로>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <이름>\n        mdgrid --print-config\n        mdgrid --completions <셸>\n        mdgrid --man\n\n  폴더 안의 Markdown 노트를 표로 연다. 노트 하나가 한 행, 프런트매터의 키 하나가\n  한 열이 된다. .base를 주면 그 table 뷰로 연다(노트는 루트 폴더 아래에서 찾는다).\n  .md 파일을 주면 그 폴더를 열고 그 노트를 선택한다.\n  .csv나 .tsv 파일을 주면 표로 연다. 한 줄이 한 행이고,\n  첫 줄이 열 이름이 된다.\n  인수가 없으면 현재 폴더를 연다(places.toml에 등록한 표가 있으면 그 목록을 위에\n  띄운다). 마커 .mdgrid/workspace.toml의 \"open\"에 표를 적은 폴더는\n  대신 그 표를 연다.\n\n  --view <이름>           .base의 그 뷰로 연다(생략하면 첫 뷰.\n                          --print는 mdgrid 뷰도 찾는다)\n  -w, --workspace <이름>  링크와 관계도의 범위로 그 워크스페이스(workspaces.toml)를 쓴다.\n                          경로가 없으면 그 첫 표를 연다\n  --page <이름>           워크스페이스의 그 페이지([[page]])를, 표를 세로로 쌓아 연다\n  --raw                   마커의 \"open\"에 적힌 표가 아니라 폴더 자체를 연다\n  --readonly              읽기 전용으로 연다(편집도 저장도 하지 않는다)\n  --no-color              색 없이 그린다\n  --config <경로>         이 설정 파일을 읽는다\n                          (기본값: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              이 폴더에서 마지막으로 보던 표와 뷰로 연다(없으면 인수 없이\n                          연 것과 같다. tmux 등에서 창을 되살릴 때 쓴다)\n  -s, --session <이름>    그 이름으로 저장한 세션(표, 뷰, 필터, 정렬, 열)으로 연다\n                          (팔레트의 \"세션 저장\"으로 저장한다)\n  --sessions              저장한 세션(sessions.toml)의 이름과 폴더를 한 줄에 하나씩 출력한다\n  --recent                화면에서 최근에 연 표를 최신순으로, 한 줄에 하나씩\n                          \"경로<TAB>뷰 이름<TAB>마지막으로 연 때\" 형식으로 출력한다(최대 20개)\n  --print                 화면 없이 뷰의 표를 표준 출력에 출력한다\n                          (노트는 바꾸지 않는다)\n  --format <형식>         --print의 형식(csv, tsv, json, md. 기본값 csv)\n  --with-path             --print의 첫 열에 각 행의 노트 경로 \"path\"를 더한다\n                          (--pick path와 같은 경로)\n  --filter <식>           .base 식이 참인 행만 남긴다\n                          (반복 가능. .base 뷰에서는 뷰의 필터와 함께 적용)\n  --sort <열>[:desc]      --print를 이 열로 정렬한다(반복 가능. 뷰의 정렬을\n                          대신한다)\n  --count                 화면 없이 뷰의 행 수(--filter 적용 후)를 출력한다\n  --show-hidden           --print, --pick, --count에서 hide = true인 조건([conditions])이\n                          숨긴 행도 남긴다\n  --notices               화면 없이 알림 칸([[notices]])의 항목을 한 줄에 하나씩 출력한다\n                          (tmux 상태 줄이나 셸 프롬프트용)\n  --notify                화면 없이 [[notify]] 항목을 한 번 확인하고, 새로 맞게 된 행을 알린다\n                          (정기 실행용. 보내지 못하면 종료 코드 1)\n  --runs                  화면 없이 온 루틴 회차(표식의 [[table]] runs)의 노트를 만들고, 만든 경로를 한 줄씩 출력한다\n                          (OS의 예약 실행에서 부른다. 만들지 못한 회차가 있으면 종료 코드 1)\n  --pick <path|열>        터미널에 화면을 읽기 전용으로 띄운다. Enter를 누르면\n                          표시한 행(없으면 선택한 행)의 경로나 열 값을\n                          한 줄에 하나씩 표준 출력에 내고 끝난다\n                          (q나 Esc로 취소하면 종료 코드 1)\n  --check                 열 형식이나 규칙([rules])에 맞지 않는 값을\n                          한 줄에 하나씩 출력한다(경로:줄: 열: 이유. 하나라도 있으면\n                          종료 코드 1)\n  --apply <경로>          --print --with-path 형식의 CSV나 JSON(-는 표준 입력)을 읽어\n                          값이 다른 셀을 바꾼다. 차이만 보여 준다\n  --yes                   --apply에서 변경을 실제로 쓴다\n  --workspaces            워크스페이스(workspaces.toml) 목록을 출력한다\n  --add-to <이름>         지정한 표(기본값: 이 폴더)를 그 워크스페이스에 더한다.\n                          없으면 만든다. --as <이름>으로 표 이름을 정한다\n  --remove-from <이름>    지정한 표(기본값: 이 폴더)를 그 워크스페이스에서 뺀다\n  --remove-workspace <이름>  그 워크스페이스를 지운다(노트는 건드리지 않는다)\n  --init-workspace        폴더에 워크스페이스 마커 .mdgrid/workspace.toml을 둔다\n                          (기본값: 이 폴더)\n  --starter <이름>        --init-workspace에서 그 스타터로 대장(마커, 노트 템플릿)을\n                          만든다. 내장 스타터나 설정 폴더의 starters/<이름>\n  --with-samples          --starter에서 스타터의 견본 노트도 더한다\n  --starters              스타터 목록(이름과 한 줄 설명)을 한 줄에 하나씩 출력한다\n  --new-note <이름>       화면 없이 폴더(기본값: 이 폴더)에 새 노트 <이름>.md를 만든다.\n                          [new_note](folder, set, template)를 쓰고, 만든 경로를 출력한다.\n                          덮어쓰지 않는다\n  --set <열>=<값>         --new-note에서 그 열에 값을 넣는다(반복 가능. 목록 항목은\n                          쉼표로 구분. 빈 값은 아무것도 쓰지 않는다)\n  --print-config          모든 설정 항목을 기본값과 설명을 붙인 TOML로 출력한다\n                          (docs/config.md)\n  --completions <셸>      셸 자동 완성을 출력한다(bash, zsh, fish, elvish, powershell)\n  --man                   man 페이지(roff)를 출력한다\n  --help                  이 도움말을 출력한다\n  --version               버전을 출력한다"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "경로"
@@ -275,6 +275,38 @@ NotifyExit = "{0}이(가) 종료 코드 {1}(으)로 끝남"
 NotifyNoProgram = "{0}을(를) 실행할 수 없음({1})"
 ## notify.cli: 記録の置き場が決まらない。
 NotifyNoStateDir = "알림 기록을 둘 상태 폴더가 없음($XDG_STATE_HOME 또는 홈 폴더)"
+## routine.opt-in: 印の [[table]] の runs の形。
+RsnRunsNotTable = "{ folder = \"<폴더>\", rule = \"<열>\" } 형태의 표가 아니므로 루틴 회차를 만들지 않음"
+RsnRunsNeedFolder = "folder(회차 노트를 만들 폴더)가 없으므로 루틴 회차를 만들지 않음"
+RsnRunsNeedRule = "rule(반복 규칙 열)이 없으므로 루틴 회차를 만들지 않음"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値。
+RoutineRuleUnreadable = "루틴 {0}: 규칙 \"{1}\"을(를) 읽을 수 없어 회차를 만들지 않음(daily, weekly mon thu, monthly 1 15, monthly last, every 3d 처럼 쓰기)"
+## routine.rule-unreadable: {0} はルーチンのノートの名前、{1} は決まりの値、{2} は起点の列の名前。
+RoutineRuleNoStart = "루틴 {0}: 규칙 \"{1}\"은(는) 열 {2}의 날짜부터 세는데 그 날짜가 없어 회차를 만들지 않음"
+## routine.fail: {0} はルーチンの名前、{1} は回のノートのパス、{2} は理由。
+RoutineCannotCreate = "루틴 {0}: 회차 {1}을(를) 만들 수 없음({2})"
+## routine.state: {0} は記録のファイルのパス、{1} は理由。
+RoutineStateRebuilt = "루틴 회차 기록 {0}을(를) 읽을 수 없어 다시 만듦({1})"
+RoutineStateUnwritable = "루틴 회차 기록 {0}을(를) 쓸 수 없음({1})"
+## routine.cli: 記録の置き場が決まらない。
+RoutineNoStateDir = "루틴 회차 기록을 둘 상태 폴더가 없음($XDG_STATE_HOME 또는 홈 폴더)"
+## routine.readonly: --runs を --readonly と一緒に渡した。
+RoutineReadonly = "--runs는 회차 노트를 쓰므로 --readonly와 함께 쓸 수 없음"
+## routine.opt-in: ルーチンの表が CSV・TSV。
+RoutineNotNotes = "행이 노트가 아니므로(CSV·TSV) 루틴 회차를 만들지 않음"
+## routine.screen-offer: 下の帯。{0} は来ている回の数。
+FooterRoutine = "  루틴 회차 {0}건이 왔습니다"
+## routine.screen-create: パレットのコマンドと確かめ。
+CmdRoutineRuns = "루틴 회차 만들기"
+AskRoutineRuns = "이 루틴 회차를 만들까요? y를 입력하고 Enter: "
+## {0} は作るノートの数。
+RoutineRunsWhich = "만들 노트({0}개):"
+## {0} は並べきれないノートの数。
+RoutineRunsMore = "그 밖에 {0}개"
+RoutineNone = "온 루틴 회차가 없음"
+## {0} は作ったノートの数。
+RoutineMade = "루틴 회차 {0}개를 만듦"
+RoutineDismissed = "루틴 회차를 만들지 않음(오늘은 다시 묻지 않음)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "마커에 {0}(이)라는 표가 없음(표: {1}). 폴더를 그대로 열었음"
 RsnStarterUnknown = "{0}(이)라는 스타터가 없음. 마커에 적힌 내용만으로 열었음(목록은 mdgrid --starters)"
@@ -1690,6 +1722,8 @@ WantRulesTable = "열마다 하나의 테이블([rules.<열>])"
 WantRuleTable = "required와 values의 테이블"
 WantStringList = "문자열 목록"
 RsnRuleComputed = "계산 열에는 규칙을 둘 수 없음(무시함)"
+WantValueTextTable = "값 = 문자열의 테이블"
+RsnNotInValues = "values에 없는 값이라 무시함"
 ## {0} is the name of the type (Date, Number …).
 ProblemType = "형식이 맞지 않음(필요한 형식: {0})"
 ProblemRequired = "필수 키가 없음"
@@ -1829,6 +1863,30 @@ RsnKanbanNeedColumn = "column(상태 열)이 없어서 칸반 없음"
 RsnKanbanNoColumn = "표에 {0} 열이 없어서 칸반 없음"
 ## {0} is the column.
 RsnKanbanListColumn = "{0} 열이 목록이라 칸반 없음(한 행이 여러 레인에 들어가게 됨)"
+
+# ---- 親子の設定(印の children。navigation.parent-child-config・cell-edit.children-done*・gantt.children-span-*。ui/children.rs) ----
+RsnChildrenNotTable = "{ key = \"<열>\" } 형태의 테이블이 아니어서 부모·자식 설정 없음"
+RsnChildrenNeedKey = "key(부모로 가는 링크 열)가 없어서 부모·자식 설정 없음"
+## {0} は列。
+RsnChildrenNoColumn = "표에 {0} 열이 없어서 부모·자식으로 정렬하지 않음"
+## {0} は列(children の status に書いた状態の列)。
+RsnChildrenNoStatus = "표에 {0} 열이 없어서 부모를 완료해도 자식은 그대로"
+## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。
+ChildrenOpenRefuse = "끝나지 않은 자식이 {0}개 있어서 완료로 바꾸지 않음"
+## `ChildrenOpenRefuse` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenRefuseOne = "끝나지 않은 자식이 {0}개 있어서 완료로 바꾸지 않음"
+## {0} は終わっていない子孫の数。親だけを完了にしたときの知らせ(on_done = "keep")。
+ChildrenOpenKeep = "끝나지 않은 자식이 {0}개 있음"
+## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ChildrenOpenKeepOne = "끝나지 않은 자식이 {0}개 있음"
+## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
+GanttOverParent = "부모 기간에서 {0}일 벗어남"
+## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverParentOne = "부모 기간에서 {0}일 벗어남"
+## {0} は日数。ガントで選んだ親の行の期間から、子孫がはみ出す日数(一番多いもの)。
+GanttOverKids = "자식이 기간에서 {0}일 벗어남"
+## `GanttOverKids` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+GanttOverKidsOne = "자식이 기간에서 {0}일 벗어남"
 
 # ---- vim モード(screen.vim-*。vim.rs) ----
 ModeInputNormal = "입력 노멀"
@@ -2061,7 +2119,7 @@ CfgUse = "이 위치에 적은 값 아래에 템플릿 [templates.<이름>]을 �
 ## 設定の項目 `types` の説明(行の区切りは --print-config のコメントの行)。
 CfgTypes = "열 하나하나의 형식. 루트 폴더의 형식 설정(.obsidian/types.json)과\n값으로 하는 추정보다 우선함. \"auto\"는 추정으로 되돌림(좁은 범위에서 넓은 범위의 형식을\n취소할 수 있음). 형식은 셀 입력, 맞지 않는 값의 ! 표시, 정렬, 열 머리글의 형식 표시에\n쓰임. 노트는 바꾸지 않음. 머리글의 형식 표시를 클릭하거나, 팔레트나 동작 메뉴의\ncolumn_type으로 형식을 고르면 views.toml의\n표에 적음."
 ## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
-CfgRules = "열 하나하나의 규칙. 열 형식과 함께 검사함. required = true는 키가 없거나 null,\n빈 문자열, 빈 목록이면 문제로 봄. values는 허용하는 값의 목록\n(목록 값은 각 항목이 이 중 하나여야 하며, 대소문자를 구별함). 좁은 범위가 항목마다 우선함.\n문제에는 ! 표시가 붙고, 아래 표시줄에 개수가 나오며, !와 @로 문제 사이를 이동하고,\nmdgrid --check로 목록을 볼 수 있음. 규칙 검사는 노트를 바꾸거나 값 쓰기를 막지 않음.\nvalues가 있는 열은 셀 입력에서 그 값을 후보로 보여 줌. then은 그 열을 어떤 값으로 바꿀 때\n같은 행의 다른 열도 채움(값 = { 열 = 텍스트 }. {date} 같은 템플릿 변수를\n쓸 수 있고, 빈 텍스트는 그 열을 비움). 편집과 함께 보류되고 함께 실행 취소됨.\n계산 열(file.*, formula.*)에는 규칙을 둘 수 없음."
+CfgRules = "열 하나하나의 규칙. 열 형식과 함께 검사함. required = true는 키가 없거나 null,\n빈 문자열, 빈 목록이면 문제로 봄. values는 허용하는 값의 목록\n(목록 값은 각 항목이 이 중 하나여야 하며, 대소문자를 구별함). 좁은 범위가 항목마다 우선함.\n문제에는 ! 표시가 붙고, 아래 표시줄에 개수가 나오며, !와 @로 문제 사이를 이동하고,\nmdgrid --check로 목록을 볼 수 있음. 규칙 검사는 노트를 바꾸거나 값 쓰기를 막지 않음.\nvalues가 있는 열은 셀 입력에서 그 값을 후보로 보여 줌. then은 그 열을 어떤 값으로 바꿀 때\n같은 행의 다른 열도 채움(값 = { 열 = 텍스트 }. {date} 같은 템플릿 변수를\n쓸 수 있고, 빈 텍스트는 그 열을 비움). 편집과 함께 보류되고 함께 실행 취소됨.\n계산 열(file.*, formula.*)에는 규칙을 둘 수 없음.\nvalues가 있는 열로 묶으면 묶음은 그 순서(내림차순이면 반대)로 놓임.\nicons와 labels(값 = 문자)는 묶음 제목과 칸반 레인 제목에 값의 기호와 이름을 보여 줌\n(셀·필터·검색·--print는 값 그대로)."
 ## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalColor = "색을 씀. false면 색 없이 그림(NO_COLOR나 --no-color와 같음)."
 ## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
@@ -2069,7 +2127,7 @@ CfgTerminalAmbiguousWide = "East Asian Ambiguous 문자(○, ※ 등)를 너비 
 ## 設定の項目 `terminal.nerd_font` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalNerdFont = "둥근 칩 끝(Nerd Font 글리프)을 그려도 되는지. true: 터미널 글꼴이 Nerd\nFont임. \"auto\": 이 글리프를 직접 그리는 터미널(Ghostty, WezTerm)에서만 그려서\n다른 곳에서 깨지지 않게 함. 둥근 끝이 없으면 \"pill\"은 \"soft\"로 그림."
 ## 設定の項目 `terminal.nerd_icons` の説明(行の区切りは --print-config のコメントの行)。
-CfgTerminalNerdIcons = "설정 버튼, 화면 유형 버튼과 메뉴, 열 머리글의 형식 표시, 캘린더 제목에\nNerd Font의 아이콘 글리프를 씀. 터미널 글꼴이 Nerd Font일 때만 true로 설정.\n기본값은 일반 문자(⚙, ▦, ◇, #, ◷, ⋮, ◉, ✓). 이모지는 쓰지 않음."
+CfgTerminalNerdIcons = "설정 버튼, 화면 유형 버튼과 메뉴, 열 머리글과 관계도 상자의 형식 표시, 캘린더 제목에\nNerd Font의 아이콘 글리프를 씀. 터미널 글꼴이 Nerd Font일 때만 true로 설정.\n기본값은 일반 문자(⚙, ▦, ◇, #, ◷, ⋮, ◉, ✓, ↪). 이모지는 쓰지 않음."
 ## 設定の項目 `terminal.herdr` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalHerdr = "Herdr 창 안에서는 현재 표와 뷰를 다시 여는 명령을 Herdr에 알려,\nHerdr 서버가 다시 시작된 뒤 다시 열게 함. false면 Herdr를 부르지 않음."
 ## 設定の項目 `workspace.detect` の説明(行の区切りは --print-config のコメントの行)。
