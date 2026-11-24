@@ -161,6 +161,8 @@ mod test_pages_blog;
 mod test_pages_check;
 #[path = "test_pages_images.rs"]
 mod test_pages_images;
+#[path = "test_paste_e2e.rs"]
+mod test_paste_e2e;
 #[path = "test_pick.rs"]
 mod test_pick;
 #[path = "test_places_e2e.rs"]
@@ -217,8 +219,6 @@ mod test_stack_e2e;
 mod test_starter_cli;
 #[path = "test_starter_e2e.rs"]
 mod test_starter_e2e;
-#[path = "test_paste_e2e.rs"]
-mod test_paste_e2e;
 #[path = "test_starter_examples.rs"]
 mod test_starter_examples;
 #[path = "test_starter_layer.rs"]
