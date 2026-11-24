@@ -233,3 +233,36 @@ fn test_group_values_icon_unknown_value_warns_once_at_start_and_is_not_used() {
     assert!(s.contains("status: blocked("), "{s}");
     assert!(!s.contains("! blocked"), "{s}");
 }
+
+#[test]
+fn test_group_heading_uses_display_name_of_hidden_column() {
+    // [utest -> req~base-view.default-headings-display-name~1] `.base` の properties に displayName のある列で
+    // まとめたら、その列をビューに出していなくても、まとまりの見出しの列の名前は displayName(「状態: 」)。
+    let tmp = Tmp::new("gv_dn");
+    for (n, t) in NOTES {
+        tmp.write(n, t);
+    }
+    let yaml = "properties:\n  note.status:\n    displayName: 状態\nviews:\n  - type: table\n    name: V\n    order:\n      - owner\n    groupBy:\n      property: status\n      direction: ASC\n";
+    tmp.write("T.base", yaml);
+    let path = tmp.notes().join("T.base");
+    let base = mdgrid::base::parse(yaml).unwrap();
+    let src = Markdown::open_vault(&path).unwrap();
+    let mut a = App::new(Box::new(src), ColorMode::None);
+    a.resize(120, 30);
+    a.start(Startup {
+        config: Config::default(),
+        warnings: Vec::new(),
+        readonly: false,
+        no_color: true,
+        state_dir: Some(tmp.0.join("state")),
+        config_dir: Some(tmp.0.join("config")),
+        target: path,
+        base: Some((base, "T.base".into(), None)),
+    });
+    while !a.loaded() {
+        a.load_step(100);
+    }
+    let s = screen(&a);
+    assert!(s.contains("状態: "), "{s}");
+    assert!(!s.contains("status: "), "{s}");
+}

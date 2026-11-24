@@ -917,6 +917,12 @@ impl Base {
         self.this = this;
     }
 
+    /// 列の見出し(base-view.default-headings-display-name: displayName があればそれ、無ければ Obsidian の既定)。
+    /// ビューに出していない列(まとまりの見出しの列など)にも使う。
+    pub fn column_title(&self, id: &str) -> String {
+        self.title(&column_id(id))
+    }
+
     fn title(&self, id: &str) -> String {
         self.display
             .get(id)

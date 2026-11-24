@@ -846,7 +846,13 @@ impl App {
 
     /// groupBy の列の見出し(見出しの行に出す)。ビューの設定でまとめ直したら、その列(NV-15)。
     pub(crate) fn group_title(&self) -> Option<String> {
-        self.group_col().map(|c| self.title(&c))
+        let c = self.group_col()?;
+        // base-view.default-headings-display-name: ビューに出していない列でも、`.base` の displayName を使う。
+        Some(match (self.built.titles.get(&c), &self.base) {
+            (Some(t), _) => t.clone(),
+            (None, Some(b)) => b.base.column_title(&c),
+            (None, None) => base::default_title(&c),
+        })
     }
 
     /// `.base` を開く(CLI-1・CLI-2)。`view` は先頭(BV-13)か `--view` で選んだビュー。
