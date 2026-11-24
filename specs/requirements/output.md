@@ -66,7 +66,7 @@
   - Given: セルの入力の欄を開いている
   - When: `abc` と `def` の2行を貼る
   - Then: 入力の欄に `abc` が入り(1行目だけ)、ほかのセルは変わらない。
-- Needs: utest
+- Needs: utest・stest
 
 #### クリップボードへのコピーは、OSC 52 と OS のクリップボードの両方に送るべき
 `req~output.copy-both-targets~1` P1
