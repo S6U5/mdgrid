@@ -694,6 +694,23 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When:
   - Then: 空の `<名前>.md`。
 
+#### `--new-note` は、`[new_note] name_head = "hide"` のときは、渡した名前に、名前の雛形(`name`)を埋めた頭を、新しいノートの窓(cell-edit.new-note-name-head)と同じ決まりで付けて作り、`"show"` か書かないときは渡した名前のまま作るべき
+`req~cli.new-note-name-head~1` P1
+- Rationale: 画面で作ったノートと、スクリプトや AI のエージェントが命令で作ったノートの名前の形をそろえるため。日付の頭を付けて作る台帳で、命令で足したタスクにだけ頭が無かった(2026-11-24 に理想のワークスペースを組んで気づいた)
+- Acceptance:
+  - Given: 今日が 2026-11-18、印に `[new_note] folder = "Tasks"`・`name = "{date:YYYYMMDD}_"`・`name_head = "hide"` のある台帳 `t`
+  - When: `mdgrid t --new-note 設計`
+  - Then: `t/Tasks/20261118_設計.md` ができ、標準出力はそのパスの1行。
+- Acceptance:
+  - Given: 同じ台帳に `[display] note_name = '^\d{8}_'` を足した
+  - When: `mdgrid t --new-note 20250101_古い`
+  - Then: `t/Tasks/20250101_古い.md` ができる(頭を重ねない)。
+- Acceptance:
+  - Given: `name_head` を書かない同じ台帳
+  - When: `mdgrid t --new-note 設計`
+  - Then: `t/Tasks/設計.md` ができる(今までどおり)。
+- Needs: stest
+
 #### `--new-note` の `--set <列>=<値>`(何度でも)は、新しいノートの窓で答えた値(cell-edit.new-note-form-fields)と同じに扱い、値を列の型(cell-edit.column-type)で読むべき
 `req~cli.new-note-set~2` P1
 - Acceptance:

@@ -145,6 +145,40 @@
   - When:
   - Then: 親の棒は 10/01〜10/07。
 
+### `children` の表(navigation.parent-child-config)で、自分の日付を持つ親の期間から子孫の棒がはみ出したら、`children` の `gantt`(書かなければ `"mark"`)が `"mark"` なら、はみ出した子と親の行に色に頼らない印を付け、選んだ行の下の帯にはみ出した日数を出し、`"none"` なら何もしないべき
+`req~gantt.children-span-mark~1` P1
+- Rationale: 親の期限のあとまで子が続く計画の崩れに、ガントの画面で気づくため。期間をどう扱うかは設定で選べるようにする(2026-11-24 に人が「ガントチャートの期間に関してもどうするかは考えて」と言った。既定は tbd~gantt.children-span-default)
+- Acceptance:
+  - Given: 親が 2026-11-01〜11-10、子が 11-05〜11-12
+  - When: ガントで開く
+  - Then: 子と親の行に印が付き、子を選ぶと下の帯に「親の期間から 2 日はみ出す」旨の1行が出る。
+- Acceptance:
+  - Given: 同じ表で、子が 11-05〜11-10
+  - When: ガントで開く
+  - Then: どの行にも印が無い。
+- Acceptance:
+  - Given: `children = { key = "parent", gantt = "none" }` で、子が 11-05〜11-12
+  - When: ガントで開く
+  - Then: どの行にも印が無い。
+- Needs: utest
+
+### `children` の `gantt = "extend"` では、子の棒を動かす・伸ばす(gantt.edit-move・gantt.edit-resize)と親の期間からはみ出すとき、親の始まりか終わりを子孫の範囲まで広げる変更を、子の変更と同じ1手としてためるべき
+`req~gantt.children-span-extend~1` P1
+- Rationale: 子の予定を延ばしたら、親の期間も合わせて延ばす使い方のため(要約のタスクの期間を子に合わせる、計画の道具の慣習)。親の棒を動かしたときに子も動かすかは tbd~gantt.children-move
+- Acceptance:
+  - Given: `gantt = "extend"`、親が 11-01〜11-10、子が 11-05〜11-10、日の単位
+  - When: 子を選んで `>` を2回
+  - Then: 子の終わりが 11-12、親の終わりも 11-12 のためる変更になる。
+- Acceptance:
+  - Given: その変更のあと
+  - When: `u` を2回
+  - Then: 子と親の終わりが 11-10 に戻る。
+- Acceptance:
+  - Given: 同じ設定で、自分の日付の無い親(棒は子孫の範囲。gantt.tree-wbs-parent-range)
+  - When: 子を `>` で伸ばす
+  - Then: 親には何もためない。
+- Needs: utest
+
 ### ガントの親の棒の塗りの長さは、WBS の進み具合の割合にするべき
 `req~gantt.tree-wbs-progress-fill~1` P1
 - Acceptance:
@@ -423,3 +457,13 @@
 `tbd~gantt.range-remember`
 - Decider: 人
 - Provisional: 覚えない(開くたびに「全体」から。開いている間だけ効く)。覚えるなら、見た目の状態(screen.view-state)に期間の名前(今週・今月・四半期・全体)で残す
+
+### 子が親の期間からはみ出したときの扱いの既定
+`tbd~gantt.children-span-default`
+- Decider: 人
+- Provisional: `"mark"`(印を付けるだけで、値は書かない)
+
+### 親の棒を動かしたときに子も動かすか
+`tbd~gantt.children-move`
+- Decider: 人
+- Provisional: 動かさない
