@@ -185,7 +185,7 @@ fn test_st_6_opening_a_made_ledger_changes_no_bytes_e2e() {
 
 #[test]
 fn test_st_2_tasks_starter_prefixes_new_notes_and_hides_the_prefix_e2e() {
-    // [stest -> req~starter.tasks-name-prefix~2] tasks から作った台帳は、新しいノートの名前を今日の8桁と `_` で始め、ノートの欄にはその頭を出さない。
+    // [stest -> req~starter.tasks-name-prefix~3] tasks から作った台帳は、新しいノートの名前を今日の8桁と `_` で始め、ノートの欄にも名前を打つ欄にもその頭を出さない。
     // 観点: 日本語と英語の変種の両方。頭の無い名前はそのまま出る。
     for (lang, word) in [
         ("ja_JP.UTF-8", "請求書を送る"),
@@ -210,11 +210,18 @@ fn test_st_2_tasks_starter_prefixes_new_notes_and_hides_the_prefix_e2e() {
             tui.screen()
         );
         tui.send("a");
-        tui.wait_until("名前の欄に今日の8桁と _", |s| {
-            s.contains("20261006_")
-        });
-        tui.send_settle("\x1b");
-        tui.wait_until("窓が閉じる", |s| !s.contains("20261006_"));
+        tui.wait_until("新しいノートの窓が開く", |s| s.contains("^S"));
+        assert!(
+            !tui.screen().contains("20261006_"),
+            "{lang}: 名前の欄に頭の日付が出ている\n{}",
+            tui.screen()
+        );
+        tui.send("memo2");
+        tui.wait_until("打った名前が出る", |s| s.contains("memo2"));
+        // Ctrl+S: 作る。
+        tui.send("\x13");
+        let made = h.join("tasks/Tasks/20261006_memo2.md");
+        tui.wait_until("頭の付いた名前で作られる", |_| made.exists());
         tui.send("q");
         assert_eq!(tui.wait_exit(), 0, "{lang}");
     }

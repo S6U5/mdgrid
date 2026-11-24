@@ -367,6 +367,8 @@ mod test_note_editor;
 #[cfg(test)]
 mod test_note_form;
 #[cfg(test)]
+mod test_note_form_mouse;
+#[cfg(test)]
 mod test_note_time;
 #[cfg(test)]
 mod test_padding_default_one;

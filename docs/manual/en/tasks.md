@@ -328,7 +328,7 @@ The palette's `q!` throws the pending changes away and quits without asking. It 
 ## Create a note
 
 1. Press `a`, or click `+ New` at the right end of the view bar. A form opens with the name and a field for each column.
-2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back; each field takes the input for its type (candidates, calendar, list).
+2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back. With the mouse, click a field's row to move to it; the keys on the bottom row of the window (Create, Cancel and so on) and the candidates can be clicked too. A name prefix that the table hides (a date removed by `display.note_name`, for example) is not shown in the name field and is added when the note is made; each field takes the input for its type (candidates, calendar, list).
 3. Press `Ctrl+S` from any field (or `Enter` on the last one). The file is created at once and its row is selected. `Ctrl+E` creates it and opens it in your editor.
 
 ![The new note form](images/new-note.svg)

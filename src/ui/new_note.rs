@@ -59,8 +59,14 @@ pub(crate) struct Flow {
     rule: NewNote,
     /// 今のビューの絞り込みから前もって入れる値。
     prefill: Vec<Edit>,
-    /// 決めた名前(名前の Enter のあと)。
+    /// 決めた名前(名前の Enter のあと)。隠している頭(`head`)を付けたあとの、作るノートの名前。
     name: String,
+    /// cell-edit.new-note-name-head: 名前の欄に打った文字(頭を付ける前)。頭が無ければ `name` と同じ。
+    typed: String,
+    /// cell-edit.new-note-name-head: 名前の欄に出さずに付ける頭(雛形を埋めた文字。隠さなければ空)。
+    head: String,
+    /// cell-edit.new-note-form-click-field: 今の欄を確定したあとに移る欄(クリックした欄。0 は名前)。
+    jump: Option<usize>,
     /// 0 は名前、k は `fields[k - 1]`。
     pub(crate) step: usize,
     /// CE-26: 窓の欄の列(設定の ask があればその列、無ければ表で見えている列。hidden は除く)。
@@ -208,6 +214,9 @@ impl App {
         }
         let ids = newnote::Ids::new();
         let text = newnote::expand_name_ids(&rule.name, self.today, &ids);
+        // cell-edit.new-note-name-head: 表で隠している頭は、名前の欄に出さずに付ける。
+        let head = self.hidden_head(&text);
+        let text = if head.is_empty() { text } else { String::new() };
         // CE-26: 窓の欄は、設定の ask があればその列、無ければ表で見えている列(書けない列と hidden は除く)。
         let source: Vec<String> = if rule.ask.is_empty() {
             self.cols.clone()
@@ -228,6 +237,9 @@ impl App {
             rule,
             prefill,
             name: String::new(),
+            typed: String::new(),
+            head,
+            jump: None,
             step: 0,
             fields,
             answers: Vec::new(),
@@ -294,10 +306,12 @@ impl App {
         }
         f.set_bodies();
         f.choosing = false;
-        let text = if f.name.is_empty() {
+        let text = if !f.typed.is_empty() {
+            f.typed.clone()
+        } else if f.head.is_empty() {
             newnote::expand_name_ids(&f.rule.name, today, &f.ids)
         } else {
-            f.name.clone()
+            String::new()
         };
         self.open_note_input(Entry::Text, text, None);
     }
@@ -357,8 +371,56 @@ impl App {
         let Some(f) = &mut self.note.flow else {
             return;
         };
-        f.step += 1;
+        f.step = f.jump.take().unwrap_or(f.step + 1);
+        self.open_current();
+    }
+
+    /// 今の欄を開く(名前なら打った名前で、ほかは前の答えか前もって入れる値で)。
+    fn open_current(&mut self) {
+        let Some(f) = &self.note.flow else {
+            return;
+        };
+        if f.step == 0 {
+            let name = f.typed.clone();
+            self.pick = None;
+            return self.open_note_input(Entry::Text, name, None);
+        }
         self.open_step(None);
+    }
+
+    /// cell-edit.new-note-name-head: 雛形を埋めた文字 `text` の全部が、`display.note_name` でノートの欄から
+    /// 削られる頭なら、その頭(名前の欄に出さずに付ける)。そうでなければ空。
+    fn hidden_head(&self, text: &str) -> String {
+        if text.is_empty() || text.contains('/') {
+            return String::new();
+        }
+        match self.settings.display.over(&self.display).note_name {
+            Some(re) if re.apply(&format!("{text}x")) == "x" => text.to_string(),
+            _ => String::new(),
+        }
+    }
+
+    /// cell-edit.new-note-name-head: 打った名前 `typed` に、隠している頭を付けた名前。頭は最後の名前の部分に
+    /// 付ける。空の名前と、`note_name` に当たる頭を自分で打った名前には付けない。
+    fn full_name(&self, head: &str, typed: &str) -> String {
+        if head.is_empty() || typed.trim().is_empty() {
+            return typed.to_string();
+        }
+        let t = typed.trim();
+        let (dir, base) = match t.rsplit_once('/') {
+            Some((d, b)) => (format!("{d}/"), b),
+            None => (String::new(), t),
+        };
+        let own = self
+            .settings
+            .display
+            .over(&self.display)
+            .note_name
+            .is_some_and(|re| re.apply(base) != base);
+        if base.is_empty() || own {
+            return typed.to_string();
+        }
+        format!("{dir}{head}{base}")
     }
 
     /// Shift+Tab: 前の項目へ戻る(名前まで戻れる)。前に答えた値で欄を開き直す。
@@ -370,7 +432,7 @@ impl App {
         if f.step == 0 {
             // CE-25: 作る場所を選ぶ欄があれば、名前からそこへ戻る(打っていた名前は覚えておく)。
             if !f.choosing && f.places.len() > 1 {
-                f.name = self
+                f.typed = self
                     .input
                     .as_ref()
                     .map(|i| i.text.clone())
@@ -387,11 +449,7 @@ impl App {
             return;
         }
         f.step -= 1;
-        if f.step == 0 {
-            let name = f.name.clone();
-            return self.open_note_input(Entry::Text, name, None);
-        }
-        self.open_step(None);
+        self.open_current();
     }
 
     /// 今の聞く項目の欄を開く。`value` があればその値で(戻ったとき)、無ければ前もって入れる値で始める。
@@ -560,15 +618,17 @@ impl App {
         }
         if f.step == 0 {
             // 名前は、ここで場所と名前を確かめる(聞き終えてから断らない)。
-            if let Err(e) = newnote::note_path(&f.root, &f.rule.folder, &i.text) {
+            let name = self.full_name(&f.head, &i.text);
+            if let Err(e) = newnote::note_path(&f.root, &f.rule.folder, &name) {
                 self.message = Some(e);
                 self.input = Some(i);
                 return;
             }
-            let done = f.finish || f.fields.is_empty();
-            let name = i.text.clone();
+            let done = f.finish || (f.fields.is_empty() && f.jump.is_none());
+            let typed = i.text.clone();
             if let Some(f) = &mut self.note.flow {
                 f.name = name;
+                f.typed = typed;
             }
             if done {
                 if !self.finish_note() {
@@ -622,7 +682,7 @@ impl App {
         };
         f.answers.retain(|e| e.key != col);
         f.answers.push(Edit { key: col, value });
-        if !f.finish && f.step < f.fields.len() {
+        if !f.finish && (f.step < f.fields.len() || f.jump.is_some()) {
             self.ask_next();
             return true;
         }
@@ -782,14 +842,68 @@ impl App {
             return false;
         }
         f.step = at;
-        if at == 0 {
-            let name = f.name.clone();
-            self.pick = None;
-            self.open_note_input(Entry::Text, name, None);
-        } else {
-            self.open_step(None);
-        }
+        self.open_current();
         true
+    }
+
+    /// 新しいノートの窓のクリック。カレンダーの日と候補のリストの項目は、その値に決める。窓の欄の行は、
+    /// 今の欄を確定してその欄へ(cell-edit.new-note-form-click-field)。キーの行の項目は、そのキーと同じ
+    /// (cell-edit.new-note-form-click-keys)。ほかの所(窓の外も)は何もしない。
+    pub(crate) fn note_click(&mut self, x: u16, y: u16) {
+        if self.mode == Mode::Edit && (self.calendar_click(x, y) || self.list_click(x, y)) {
+            return;
+        }
+        let (x, y) = (x as usize, y as usize);
+        if super::listpick::covers(self, x, y) {
+            return;
+        }
+        let (Some(g), Some(f)) = (geom(self), self.note.flow.as_ref()) else {
+            return;
+        };
+        if x <= g.left || x + 1 >= g.left + g.bw {
+            return;
+        }
+        let rows_y = g.top + 1;
+        if (rows_y..rows_y + g.count).contains(&y) {
+            let k = g.first + (y - rows_y);
+            // 作る場所の欄と、今の欄は何もしない(作る場所は Shift+Tab で戻る)。
+            let (Some(Some(step)), false) = (rows(f).get(k).copied(), f.choosing) else {
+                return;
+            };
+            if step != f.step {
+                self.note_goto(step);
+            }
+            return;
+        }
+        if y != rows_y + g.count + 1 {
+            return;
+        }
+        // キーの行: 描くとき(overlay)と同じ並び(縁・空白1桁のあと、2桁あけて並べる)。
+        let mut at = g.left + 2;
+        let hit = key_actions(self).into_iter().find_map(|(text, action)| {
+            let w = width(&sanitize(&text));
+            let found = (at..at + w).contains(&x).then_some(action);
+            at += w + 2;
+            found
+        });
+        if let Some(action) = hit {
+            self.apply(action);
+        }
+    }
+
+    /// 今の欄を確定して、欄 `step`(0 は名前)へ移る。今の欄の値が読めなければ移らない(理由は確定が出す)。
+    fn note_goto(&mut self, step: usize) {
+        if let Some(f) = &mut self.note.flow {
+            f.jump = Some(step);
+        }
+        if self.mode == Mode::ListPick {
+            self.note_pick_commit();
+        } else {
+            self.note_commit();
+        }
+        if let Some(f) = &mut self.note.flow {
+            f.jump = None;
+        }
     }
 
     /// 作ったノートを読み直して表に入れ、その行を選ぶ。見えない(絞り込み・畳んだまとまり)なら知らせる。
@@ -952,8 +1066,15 @@ pub(crate) fn note_box(app: &App, w: usize) -> Option<InputBox> {
 
 /// 下の帯の「今押せるキー」(新しいノートの入力のとき。キーの表から。SR-4)。そうでなければ None。
 pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
-    let f = app.note.flow.as_ref()?;
-    let key = |m: Mode, a: Action| keymap::key_for(&app.keys, m, a);
+    app.note.flow.as_ref()?;
+    Some(key_actions(app).into_iter().map(|(t, _)| t).collect())
+}
+
+/// 今押せるキーの案内の文字と、その動作(窓のキーの行のクリックで同じ動作をする)。
+fn key_actions(app: &App) -> Vec<(String, Action)> {
+    let Some(f) = app.note.flow.as_ref() else {
+        return Vec::new();
+    };
     let last = f.step >= f.fields.len();
     let next = if f.choosing {
         Msg::KeyDecide.text()
@@ -963,42 +1084,37 @@ pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
         Msg::NoteNext.text()
     };
     let mut out = Vec::new();
-    let mut push = |k: Option<String>, label: &str| {
-        if let Some(k) = k {
-            out.push(format!("{k} {label}"));
+    let mut push = |m: Mode, a: Action, label: &str| {
+        if let Some(k) = keymap::key_for(&app.keys, m, a) {
+            out.push((format!("{k} {label}"), a));
         }
     };
     if app.mode == Mode::ListPick {
-        push(key(Mode::ListPick, Action::Toggle), Msg::NoteToggle.text());
-        push(key(Mode::ListPick, Action::Run), next);
+        push(Mode::ListPick, Action::Toggle, Msg::NoteToggle.text());
+        push(Mode::ListPick, Action::Run, next);
         if !last {
-            push(
-                key(Mode::ListPick, Action::CreateNote),
-                Msg::NoteCreate.text(),
-            );
+            push(Mode::ListPick, Action::CreateNote, Msg::NoteCreate.text());
         }
-        push(key(Mode::ListPick, Action::Cancel), Msg::NoteStop.text());
+        push(Mode::ListPick, Action::Cancel, Msg::NoteStop.text());
     } else {
-        push(key(Mode::Edit, Action::Commit), next);
+        push(Mode::Edit, Action::Commit, next);
         if !last && !f.choosing {
-            push(key(Mode::Edit, Action::CreateNote), Msg::NoteCreate.text());
+            push(Mode::Edit, Action::CreateNote, Msg::NoteCreate.text());
         }
         if f.step > 0 || (!f.choosing && f.places.len() > 1) {
-            push(
-                key(Mode::Edit, Action::CommitPrev),
-                Msg::NotePrevField.text(),
-            );
+            push(Mode::Edit, Action::CommitPrev, Msg::NotePrevField.text());
         }
-        push(key(Mode::Edit, Action::Cancel), Msg::NoteStop.text());
+        push(Mode::Edit, Action::Cancel, Msg::NoteStop.text());
         // CE-33: 作ってエディタで開く(帯が狭いので最後に短く)。
         if !f.choosing && !f.rule.editor() {
             push(
-                key(Mode::Edit, Action::CreateNoteEdit),
+                Mode::Edit,
+                Action::CreateNoteEdit,
                 Msg::NoteEditShort.text(),
             );
         }
     }
-    Some(out)
+    out
 }
 
 /// メッセージ行の案内(新しいノートの入力のとき): 聞く項目の入り方。テキストの列で候補のリスト(CE-3)が

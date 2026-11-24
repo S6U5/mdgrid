@@ -585,6 +585,17 @@ struct Geom {
     vis: usize,
 }
 
+/// 画面の (x, y) が、リストの選択の窓の上か(窓の下の画面がクリックを受けないように)。
+pub(crate) fn covers(app: &App, x: usize, y: usize) -> bool {
+    let (w, h) = (
+        app.size.0.saturating_sub(1) as usize,
+        app.size.1.saturating_sub(1) as usize,
+    );
+    geometry(app, w, h.saturating_sub(2)).is_some_and(|g| {
+        (g.x..g.x + g.iw).contains(&x) && (g.top..g.top + g.vis + FRAME + 1).contains(&y)
+    })
+}
+
 /// 縁2行と検索の1行。
 const FRAME: usize = 3;
 /// 窓の最小の幅。

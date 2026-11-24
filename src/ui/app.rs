@@ -1175,8 +1175,10 @@ impl App {
         }
         match self.mode {
             // CE-25: 新しいノートの入力では、カレンダーの日のクリックだけを受ける(外のクリックで作らない)。
-            Mode::Edit if self.note.flow.is_some() => {
-                self.calendar_click(x, y);
+            // CE-25: 新しいノートの窓は、カレンダーの日・候補・窓の欄の行・キーの行のクリックを受ける
+            // (窓の外のクリックでは作らない。new_note.rs の note_click)。
+            Mode::Edit | Mode::ListPick if self.note.flow.is_some() => {
+                self.note_click(x, y);
                 return;
             }
             Mode::Edit => {
