@@ -109,6 +109,8 @@ pub struct App {
     pub(crate) color: ColorMode,
     /// 絵文字を出さない(`TERM=dumb`。SR-10)。描画の終わりで値の中の絵文字を `?` に置き換える。
     pub(crate) no_emoji: bool,
+    /// cell-view.url-full-target: この描画で URL を見せた所(描いたあとに OSC 8 で包む。hyperlink.rs)。
+    pub(crate) url_spots: super::hyperlink::Links,
     /// SR-35: セルの部品(`look.cells`・`[look.columns]`)。
     pub(crate) cells: mdgrid::cells::Cells,
     /// East Asian Ambiguous を幅2で数える(CV-6)。
@@ -362,6 +364,7 @@ impl App {
             prefix: None,
             color,
             no_emoji: false,
+            url_spots: super::hyperlink::Links::default(),
             ambiguous_wide: false,
             next_refresh: 0,
             data_gen: 0,

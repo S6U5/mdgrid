@@ -733,7 +733,13 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
             fit(name, nw, Align::Left)
         );
         for (_, cw, vals) in &cols {
-            t.push_str(&format!("  {}", fit(&vals[k], *cw, Align::Left)));
+            let shown = fit(&vals[k], *cw, Align::Left);
+            // cell-view.url-full-target: 切って見せた URL にも、全体の URL を行き先に付ける(窓の中の桁で覚える)。
+            if let Some(url) = app.link_url(&vals[k]) {
+                app.url_spots
+                    .push(width(&t) + 2, out.len(), shown.clone(), &url);
+            }
+            t.push_str(&format!("  {shown}"));
         }
         let st = if sel {
             sel_style(app, ft.focus == Pane::Rows)
@@ -784,8 +790,12 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
             ft.focus == Pane::Rows,
         )
     };
+    // cell-view.url-full-target: 右の欄が覚えた所を、窓の枠(1桁・1行)と窓の位置の分だけずらす。
+    let mark = app.url_spots.len();
     if g.two {
+        let y0 = lines.len();
         lines.extend(side_by_side(vec![left(g.left.1), right(g.right.1)]));
+        app.url_spots.shift(mark, g.right.0 + 1, y0 + 1);
     } else {
         let (t1, t2) = tab_texts(ft);
         let st = |p: Pane| {
@@ -806,10 +816,12 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
             tabs.push(Span::raw(" ".repeat(w - used)));
         }
         lines.push(Line::from(tabs));
+        let y0 = lines.len();
         lines.extend(match ft.focus {
             Pane::Folders => left(w),
             Pane::Rows => right(w),
         });
+        app.url_spots.shift(mark, 1, y0 + 1);
     }
     let body = h.saturating_sub(2);
     while lines.len() < body {
