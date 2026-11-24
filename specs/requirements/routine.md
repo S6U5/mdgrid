@@ -192,6 +192,27 @@
   - Then: 理由1行と終了コード 2 で、ノートのフォルダのファイルの数は変わらない。
 - Needs: utest・stest
 
+#### 式で、決まりの文字の値に `nextRun()`(起点の日を渡してよい: `recurrence.nextRun(start)`)を付けると、今日以後の一番近い回の日(今日が回の日なら今日)を日付で返し、読めない決まり・空の値・`every` で起点が無いときは空を返すべき
+`req~routine.next-run~1` P1
+- Rationale: ルーチンの表で、次の回の日を、人が `next_due` を書き直さなくても見せるため(繰り返しの仕事を扱う道具は、次の予定日を出すのが当たり前)。計算の列なので、ノートには書かない(tbd~routine.next-due)
+- Acceptance:
+  - Given: 今日が 2026-11-24(火)で、`recurrence: weekly mon` のルーチン
+  - When: 式の列 `recurrence.nextRun()` を見る
+  - Then: 2026-11-30。
+- Acceptance:
+  - Given: 今日が 2026-11-24(火)で、`recurrence: 毎週 火` のルーチン
+  - When: 同じ式の列を見る
+  - Then: 2026-11-24(今日)。
+- Acceptance:
+  - Given: 今日が 2026-11-24 で、`start: 2026-11-20`・`recurrence: 3日ごと` のルーチン
+  - When: 式の列 `recurrence.nextRun(start)` を見る
+  - Then: 2026-11-26。
+- Acceptance:
+  - Given: `recurrence: 毎週かも` のルーチン
+  - When: 式の列 `recurrence.nextRun()` を見る
+  - Then: セルは空で、`--print` の値も空。
+- Needs: utest
+
 ### 閉じているあいだ
 
 #### `mdgrid [<フォルダ> | -w <名前>] --runs` は、画面を出さずに、作る回を全部確かめずに作り、作ったノートのパスを標準出力に1行ずつ出して、終了コード 0 で終わるべき
@@ -239,7 +260,7 @@
 ### 設定の `runs` と旗 `--runs` の名前
 `tbd~routine.names`
 - Decider: 人
-- Provisional: `runs` と `--runs`(回を英語で run と呼ぶ)
+- Provisional: `runs` と `--runs`、式の `nextRun()`(回を英語で run と呼ぶ)
 
 ### 決まりの書き方(英語の短い形と日本語の形の範囲)
 `tbd~routine.rule-syntax`
@@ -264,4 +285,4 @@
 ### 回が済んだら、ルーチンの `last_done` と `next_due` を書き換えるか
 `tbd~routine.next-due`
 - Decider: 人
-- Provisional: 書き換えない(次の段)。ルーチンの表で次の回の日を見せる計算の列を足すかも、次の段で決める
+- Provisional: 書き換えない(次の段)。次の回の日は、式の `nextRun()`(routine.next-run)の計算の列で見せる

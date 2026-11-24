@@ -87,6 +87,7 @@ pub const METHODS: &[&str] = &[
     "time",
     "format",
     "relative",
+    "nextRun",
     "join",
     "unique",
     "sort",
@@ -372,6 +373,8 @@ enum Meth {
     Format,
     /// 日付・日時の、今日・今からの隔たりの文(`relative`)。
     Relative,
+    /// routine.next-run: ルーチンの決まりの文から、今日以後の一番近い回の日(`nextRun`。mdgrid の足したメソッド)。
+    NextRun,
     Join,
     Unique,
     Sort,
@@ -497,6 +500,7 @@ fn meth_spec(name: &str) -> Option<(Meth, usize, usize)> {
         "time" => (Meth::Time, 0, 0),
         "format" => (Meth::Format, 1, 1),
         "relative" => (Meth::Relative, 0, 0),
+        "nextRun" => (Meth::NextRun, 0, 1),
         "join" => (Meth::Join, 1, 1),
         "unique" => (Meth::Unique, 0, 0),
         "sort" => (Meth::Sort, 0, 0),
@@ -1285,6 +1289,22 @@ fn to_text(v: &Val) -> String {
 }
 
 /// filters と名前の条件(condition)が行を残す値か: `true` だけ(BV-6)。
+/// routine.next-run: 決まりの文 `rule` から、今日以後の一番近い回の日。起点 `start` は日付・日時・日付の文字。
+/// 決まりが文字でない・読めない・起点の要る決まりで起点が無いなら None。
+fn next_run(rule: &Val, start: Option<&Val>, today: i64) -> Option<i64> {
+    let Val::Str(text) = rule else {
+        return None;
+    };
+    let rule = crate::recurrence::Rule::parse(text)?;
+    let start = match start {
+        Some(Val::Date(d)) => Some(*d),
+        Some(Val::DateTime(t)) => Some(t.div_euclid(86_400)),
+        Some(Val::Str(s)) => crate::types::parse_date(s),
+        _ => None,
+    };
+    rule.next(start, today)
+}
+
 pub fn passes(v: &Val) -> bool {
     matches!(v, Val::Bool(true))
 }
@@ -1595,6 +1615,10 @@ fn ev(n: &Node, cx: &Cx<'_>) -> Val {
             if *m == Meth::Relative {
                 // 今日・今に依るので、環境の時計で数える(ほかのメソッドは値だけで決まる)。
                 return relative(&r, cx.env.today, cx.env.now).map_or(Val::Null, Val::Str);
+            }
+            if *m == Meth::NextRun {
+                // routine.next-run: 今日に依るので、環境の時計で数える。
+                return next_run(&r, args.first(), cx.env.today).map_or(Val::Null, Val::Date);
             }
             method(&r, *m, &args)
         }

@@ -103,6 +103,29 @@ impl Rule {
             }
         }
     }
+
+    /// routine.next-run: 今日 `today` 以後の一番近い回の日(今日が回の日なら今日)。起点の要る決まりで起点が無ければ None。
+    pub fn next(&self, start: Option<i64>, today: i64) -> Option<i64> {
+        match self {
+            Rule::Daily => Some(today),
+            Rule::Weekly(days) => (0..7)
+                .map(|k| today + k)
+                .find(|d| days.contains(&(types::weekday_sun0(*d) as u32))),
+            // 31 日の回は、31 日の無い月を挟むと 2 か月先になる(最も離れるのは 62 日)。
+            Rule::Monthly { days, last } => (0..=62).map(|k| today + k).find(|d| {
+                let (y, m, dd) = types::ymd(*d);
+                days.contains(&dd) || (*last && dd == types::days_in_month(y, m))
+            }),
+            Rule::Every(n) => {
+                let s = start?;
+                Some(if s >= today {
+                    s
+                } else {
+                    s + (today - s + n - 1) / n * n
+                })
+            }
+        }
+    }
 }
 
 /// 頭の語のすぐ後ろに続けて書いた語(`毎週月` の `月`)を、残りの語の前に足す。

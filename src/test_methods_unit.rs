@@ -361,3 +361,106 @@ fn test_relative_in_english_uses_the_singular_for_one() {
         s("1 minute ago")
     );
 }
+
+// ---- nextRun(): ルーチンの決まりから、今日以後の一番近い回の日 ----
+
+/// `props` の値を持つ行で、今日を `today`(1970-01-01 からの日数)として式を評価する。
+fn run_on(src: &str, props: &[(&str, &str)], today: i64) -> Val {
+    let map: HashMap<String, Value> = props
+        .iter()
+        .map(|(k, v)| ((*k).to_string(), Value::Str((*v).to_string())))
+        .collect();
+    let prop = move |k: &str| map.get(k).cloned();
+    let formula = |_: &str| None;
+    let f = FileInfo {
+        name: "n.md".into(),
+        basename: "n".into(),
+        ext: "md".into(),
+        path: "n.md".into(),
+        folder: String::new(),
+        size: 0,
+        mtime: 0,
+        ctime: 0,
+        tags: Vec::new(),
+    };
+    let env = Env {
+        prop: &prop,
+        file: &f,
+        formula: &formula,
+        today,
+        now: today * 86_400,
+    };
+    eval(&parse(src).expect(src), &env)
+}
+
+fn day(s: &str) -> Val {
+    Val::Date(crate::types::parse_date(s).expect(s))
+}
+
+/// 2026-11-24(火)。
+fn nov24() -> i64 {
+    crate::types::parse_date("2026-11-24").unwrap()
+}
+
+// [utest -> req~routine.next-run~1]
+#[test]
+fn test_next_run_weekly_is_the_next_listed_weekday() {
+    // 今日が 2026-11-24(火)で weekly mon → 2026-11-30。毎週 火 → 今日。
+    let r = run_on(
+        "recurrence.nextRun()",
+        &[("recurrence", "weekly mon")],
+        nov24(),
+    );
+    assert_eq!(r, day("2026-11-30"));
+    let r = run_on(
+        "recurrence.nextRun()",
+        &[("recurrence", "毎週 火")],
+        nov24(),
+    );
+    assert_eq!(r, day("2026-11-24"));
+}
+
+// [utest -> req~routine.next-run~1]
+#[test]
+fn test_next_run_every_counts_from_the_start_argument() {
+    // start 2026-11-20 から 3日ごと → 11-20・11-23・11-26 の並びで、今日(11-24)以後は 11-26。
+    let props = [("recurrence", "3日ごと"), ("start", "2026-11-20")];
+    let r = run_on("recurrence.nextRun(start)", &props, nov24());
+    assert_eq!(r, day("2026-11-26"));
+    // 起点が無ければ空。
+    assert_eq!(
+        run_on(
+            "recurrence.nextRun()",
+            &[("recurrence", "3日ごと")],
+            nov24()
+        ),
+        Val::Null
+    );
+}
+
+// [utest -> req~routine.next-run~1]
+#[test]
+fn test_next_run_of_an_unreadable_rule_is_empty() {
+    assert_eq!(
+        run_on(
+            "recurrence.nextRun()",
+            &[("recurrence", "毎週かも")],
+            nov24()
+        ),
+        Val::Null
+    );
+    assert_eq!(
+        run_on("recurrence.nextRun()", &[("recurrence", "")], nov24()),
+        Val::Null
+    );
+}
+
+// [utest -> req~routine.next-run~1]
+#[test]
+fn test_next_run_monthly_last_and_daily() {
+    // 毎月 末日 → 11-30。31 日の無い月を挟む monthly 31 → 12-31。daily → 今日。
+    let at = |rule: &str| run_on("recurrence.nextRun()", &[("recurrence", rule)], nov24());
+    assert_eq!(at("毎月 末日"), day("2026-11-30"));
+    assert_eq!(at("monthly 31"), day("2026-12-31"));
+    assert_eq!(at("daily"), day("2026-11-24"));
+}
