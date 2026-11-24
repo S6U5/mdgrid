@@ -89,7 +89,7 @@ jobs:
         uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
       - name: "準備 3(forge-gate.json の test.setup)"
         if: success() || failure()
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        uses: taiki-e/install-action@25f51f6b1bf4e18876107cece836f4f77ac17c8c # v2.90.7
         with:
           tool: "nextest@0.9"
       - name: "base のテストを head のコードで走らせる(reverse-run。断言の失敗は人が見る)"
@@ -122,7 +122,7 @@ jobs:
       - name: "準備 2(forge-gate.json の test.setup)"
         uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
       - name: "準備 3(forge-gate.json の test.setup)"
-        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
+        uses: taiki-e/install-action@25f51f6b1bf4e18876107cece836f4f77ac17c8c # v2.90.7
         with:
           tool: "nextest@0.9"
       - name: "テスト(forge-gate.json の test.run。結果を junit.xml に)"
