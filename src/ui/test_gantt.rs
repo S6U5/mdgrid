@@ -494,7 +494,7 @@ fn test_ga_4_mouse_click_and_wheel() {
 
 #[test]
 fn test_ga_5_read_only_and_rebuilds_on_external_change() {
-    // [utest -> req~gantt.read-only-no-edit~1, req~gantt.read-only-external~1] ガントでは値を直せない: 編集のキー(e・Space・Backspace・Delete・文字)を押しても、ためた変更は無く
+    // [utest -> req~gantt.read-only-no-edit~2, req~gantt.read-only-external~1] ガントでは値を直せない: 編集のキー(e・Space・Backspace・Delete・文字)を押しても、ためた変更は無く
     // エディタも開かない。開いたまま外で alpha の due を 10/04 に直す → poll → 棒が4つになり、選んでいた行は同じ。
     let (t, mut a) = boot("ga5");
     ch(&mut a, 'C');

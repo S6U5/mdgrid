@@ -392,6 +392,16 @@ pub enum Action {
     ZoomIn,
     /// GA-4: ガントの時間軸の単位を粗く(日 → 週 → 月)。
     ZoomOut,
+    /// gantt.range-key: ガントの期間を切り替える(今週 → 今月 → 四半期 → 全体)。
+    GanttRange,
+    /// gantt.edit-move: ガントの選んだ行の棒を1単位前へ動かす(日付を書き換える)。
+    BarEarlier,
+    /// gantt.edit-move: ガントの選んだ行の棒を1単位後ろへ動かす(日付を書き換える)。
+    BarLater,
+    /// gantt.edit-resize: ガントの選んだ行の棒の終わりを1単位伸ばす。
+    BarLonger,
+    /// gantt.edit-resize: ガントの選んだ行の棒の終わりを1単位縮める。
+    BarShorter,
     /// KB-2: 表とカンバンの画面を切り替える。
     KanbanView,
     /// KB-4: カンバンの札を左のレーンへ動かす(状態の値を書き換える)。
@@ -646,6 +656,11 @@ impl Action {
             Action::GanttView => "gantt_view",
             Action::ZoomIn => "zoom_in",
             Action::ZoomOut => "zoom_out",
+            Action::GanttRange => "gantt_range",
+            Action::BarEarlier => "bar_earlier",
+            Action::BarLater => "bar_later",
+            Action::BarLonger => "bar_longer",
+            Action::BarShorter => "bar_shorter",
             Action::KanbanView => "kanban_view",
             Action::MoveCardLeft => "move_card_left",
             Action::MoveCardRight => "move_card_right",
@@ -2997,6 +3012,73 @@ pub const BINDINGS: &[Binding] = &[
         0,
     ),
     m(Mode::Gantt, "?", Action::Help, Msg::KeyHelp, IN_GANTT, 0),
+    // gantt.range-key・gantt.edit-move・gantt.edit-resize・gantt.edit-undo: 期間と、棒を動かす・伸ばす・縮める。
+    m(
+        Mode::Gantt,
+        "r",
+        Action::GanttRange,
+        Msg::KeyGanttRange,
+        IN_GANTT,
+        7,
+    ),
+    m(
+        Mode::Gantt,
+        "L",
+        Action::BarLater,
+        Msg::KeyBarLater,
+        IN_GANTT,
+        8,
+    ),
+    m(
+        Mode::Gantt,
+        "H",
+        Action::BarEarlier,
+        Msg::KeyBarEarlier,
+        IN_GANTT,
+        9,
+    ),
+    m(
+        Mode::Gantt,
+        ">",
+        Action::BarLonger,
+        Msg::KeyBarLonger,
+        IN_GANTT,
+        10,
+    ),
+    m(
+        Mode::Gantt,
+        "<",
+        Action::BarShorter,
+        Msg::KeyBarShorter,
+        IN_GANTT,
+        11,
+    ),
+    m(Mode::Gantt, "u", Action::Undo, Msg::KeyUndo, IN_GANTT, 0),
+    m(
+        Mode::Gantt,
+        "Ctrl+z",
+        Action::Undo,
+        Msg::KeyUndo,
+        IN_GANTT,
+        0,
+    ),
+    m(Mode::Gantt, "U", Action::Redo, Msg::KeyRedo, IN_GANTT, 0),
+    m(
+        Mode::Gantt,
+        "Ctrl+r",
+        Action::Redo,
+        Msg::KeyRedo,
+        IN_GANTT,
+        0,
+    ),
+    m(
+        Mode::Gantt,
+        "Ctrl+s",
+        Action::Save,
+        Msg::KeySave,
+        IN_GANTT,
+        0,
+    ),
     // KB-2〜KB-5: カンバンの画面。↑↓ で札、←→ でレーン、H L で札を動かす(状態の値を書き換える)、u で取り消し、
     // Ctrl+s で表の保存の確かめ、Enter で表のその行へ。
     m(

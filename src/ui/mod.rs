@@ -321,6 +321,8 @@ mod test_gantt_axis_more;
 #[cfg(test)]
 mod test_gantt_axis_sel;
 #[cfg(test)]
+mod test_gantt_controls;
+#[cfg(test)]
 mod test_gantt_more;
 #[cfg(test)]
 mod test_gitflow;

@@ -126,7 +126,7 @@ Press `u` right after creating a note by mistake and it moves to the trash; `Ctr
 
 ![The gantt screen](images/gantt.svg)
 
-`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
+`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
 
 [Gantt in the list of views](views.md#gantt), [Key bindings](../../keys.md)
 
