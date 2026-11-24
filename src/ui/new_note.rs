@@ -395,24 +395,8 @@ impl App {
     /// cell-edit.new-note-name-head: 打った名前 `typed` に、隠している頭を付けた名前。頭は最後の名前の部分に
     /// 付ける。空の名前と、`note_name` に当たる頭を自分で打った名前には付けない。
     fn full_name(&self, head: &str, typed: &str) -> String {
-        if head.is_empty() || typed.trim().is_empty() {
-            return typed.to_string();
-        }
-        let t = typed.trim();
-        let (dir, base) = match t.rsplit_once('/') {
-            Some((d, b)) => (format!("{d}/"), b),
-            None => (String::new(), t),
-        };
-        let own = self
-            .settings
-            .display
-            .over(&self.display)
-            .note_name
-            .is_some_and(|re| re.apply(base) != base);
-        if base.is_empty() || own {
-            return typed.to_string();
-        }
-        format!("{dir}{head}{base}")
+        let note_name = self.settings.display.over(&self.display).note_name;
+        newnote::attach_head(head, typed, note_name)
     }
 
     /// Shift+Tab: 前の項目へ戻る(名前まで戻れる)。前に答えた値で欄を開き直す。

@@ -2331,6 +2331,10 @@ fn new_note_cli(
     }
     let mut rule = resolved.new_note.clone();
     let (today, now) = print::today_now(|k| std::env::var(k).ok());
+    // cli.new-note-name-head: `name_head = "hide"` なら、渡した名前に名前の雛形の頭を付ける(画面の窓と同じ決まり)。
+    let head = newnote::hidden_head(&rule, today, &newnote::Ids::new());
+    let full = newnote::attach_head(&head, name, resolved.display.note_name);
+    let name = full.as_str();
     let bare = name.trim();
     let bare = bare.strip_suffix(".md").unwrap_or(bare);
     let vars = newnote::Vars {

@@ -333,3 +333,43 @@ fn test_help_lists_new_note_in_both_languages() {
         );
     }
 }
+
+/// 名前の頭(`{date:YYYYMMDD}_`)を付けて作る台帳の印。`extra` は最上位に足す行。
+fn head_marker(name_head: &str, extra: &str) -> String {
+    format!(
+        "open = \"Tasks\"\n{extra}\n[new_note]\nfolder = \"Tasks\"\nname = \"{{date:YYYYMMDD}}_\"\n{name_head}\n\n\
+[[table]]\nname = \"Tasks\"\n\n[table.base]\nfilters = {{ and = ['file.inFolder(\"Tasks\")'] }}\n"
+    )
+}
+
+#[test]
+fn test_new_note_attaches_the_hidden_head() {
+    // [stest -> req~cli.new-note-name-head~1] name_head = "hide" の台帳で --new-note 設計 → Tasks/20261118_設計.md ができ、標準出力はそのパス。
+    let t = ledger("nn-head", &head_marker("name_head = \"hide\"", ""));
+    let o = run(t.path(), &["t", "--new-note", "設計"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(out(&o), "t/Tasks/20261118_設計.md\n");
+    assert!(t.path().join("t/Tasks/20261118_設計.md").is_file());
+}
+
+#[test]
+fn test_new_note_does_not_double_the_head() {
+    // [stest -> req~cli.new-note-name-head~1] note_name に当たる頭を自分で付けた名前には、頭を重ねない。
+    let marker = head_marker(
+        "name_head = \"hide\"",
+        "\n[display]\nnote_name = '^\\d{8}_'\n",
+    );
+    let t = ledger("nn-head-own", &marker);
+    let o = run(t.path(), &["t", "--new-note", "20250101_古い"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(out(&o), "t/Tasks/20250101_古い.md\n");
+}
+
+#[test]
+fn test_new_note_without_name_head_keeps_the_name() {
+    // [stest -> req~cli.new-note-name-head~1] name_head を書かなければ、渡した名前のまま(今までどおり)。
+    let t = ledger("nn-head-show", &head_marker("", ""));
+    let o = run(t.path(), &["t", "--new-note", "設計"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(out(&o), "t/Tasks/設計.md\n");
+}
