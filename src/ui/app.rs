@@ -69,6 +69,8 @@ pub struct App {
     /// NV-27: 親子で並べたときの行ごとの深さ・子の有無・親(並べていなければ空)と、畳んだ親の行。
     pub(crate) tree: std::collections::HashMap<RowId, mdgrid::tree::Node<RowId>>,
     pub(crate) tree_folded: HashSet<RowId>,
+    /// navigation.parent-child-away-mark: 親が今の表の別のまとまりにある行(名前の前に `↳`)。
+    pub(crate) tree_away: HashSet<RowId>,
     /// NV-28: WBS の番号と、子のある行の進み具合(%)。WBS を出さなければ空。
     pub(crate) wbs_num: std::collections::HashMap<RowId, String>,
     pub(crate) wbs_pct: std::collections::HashMap<RowId, u8>,
@@ -338,6 +340,7 @@ impl App {
             folded: HashSet::new(),
             tree: HashMap::default(),
             tree_folded: HashSet::new(),
+            tree_away: HashSet::new(),
             wbs_num: HashMap::default(),
             wbs_pct: HashMap::default(),
             view_trash: None,
@@ -1172,8 +1175,10 @@ impl App {
         }
         match self.mode {
             // CE-25: 新しいノートの入力では、カレンダーの日のクリックだけを受ける(外のクリックで作らない)。
-            Mode::Edit if self.note.flow.is_some() => {
-                self.calendar_click(x, y);
+            // CE-25: 新しいノートの窓は、カレンダーの日・候補・窓の欄の行・キーの行のクリックを受ける
+            // (窓の外のクリックでは作らない。new_note.rs の note_click)。
+            Mode::Edit | Mode::ListPick if self.note.flow.is_some() => {
+                self.note_click(x, y);
                 return;
             }
             Mode::Edit => {

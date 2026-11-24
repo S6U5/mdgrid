@@ -207,3 +207,83 @@ fn test_nv_27_click_mark_folds() {
     a.click(x + 3, y);
     assert_eq!(a.slots.len(), total);
 }
+
+/// status でグループ分けする。
+fn group_by_status(a: &mut App) {
+    a.settings.group = mdgrid::settings::Group::By {
+        col: "status".into(),
+        dir: Dir::Asc,
+        hide_empty: false,
+    };
+    a.regrid = true;
+    a.refresh_if_needed();
+}
+
+/// 設計(doing)の下に画面と API(どちらも todo)。
+fn across_groups(name: &str) -> (Tmp, App) {
+    make(
+        name,
+        &[
+            ("設計.md", "---\nstatus: doing\n---\n"),
+            ("画面.md", "---\nparent: \"[[設計]]\"\nstatus: todo\n---\n"),
+            ("API.md", "---\nparent: \"[[設計]]\"\nstatus: todo\n---\n"),
+        ],
+    )
+}
+
+// [utest -> req~navigation.parent-child-away-mark~1]
+/// 親が別のまとまりにある子の行は、名前の前に `↳` が付く。
+#[test]
+fn test_away_parent_marks_child() {
+    let (_t, mut a) = across_groups("nv27away1");
+    tree_on(&mut a);
+    group_by_status(&mut a);
+    let mut n = names(&a);
+    n.sort();
+    assert_eq!(n, vec!["↳ API", "↳ 画面", "設計"]);
+}
+
+// [utest -> req~navigation.parent-child-away-mark~1]
+/// 印の付いた子の下の、同じまとまりの孫は、印なしで2桁字下げになる。
+#[test]
+fn test_away_child_keeps_own_kids_indented() {
+    let (_t, mut a) = make(
+        "nv27away2",
+        &[
+            ("設計.md", "---\nstatus: doing\n---\n"),
+            ("画面.md", "---\nparent: \"[[設計]]\"\nstatus: todo\n---\n"),
+            ("部品.md", "---\nparent: \"[[画面]]\"\nstatus: todo\n---\n"),
+        ],
+    );
+    tree_on(&mut a);
+    group_by_status(&mut a);
+    assert_eq!(names(&a), vec!["設計", "↳ ▾ 画面", "  部品"]);
+}
+
+// [utest -> req~navigation.parent-child-away-mark~1]
+/// グループ分けをしなければ、どの行にも `↳` が付かない。
+#[test]
+fn test_no_group_no_away_mark() {
+    let (_t, mut a) = across_groups("nv27away3");
+    tree_on(&mut a);
+    let n = names(&a);
+    assert_eq!(n.len(), 3);
+    assert!(n.iter().all(|x| !x.contains('↳')), "{n:?}");
+    assert!(n.contains(&"  画面".to_string()), "{n:?}");
+}
+
+// [utest -> req~navigation.parent-child-away-mark~1]
+/// 親を絞り込みで外すと、子に `↳` が付かない。
+#[test]
+fn test_filtered_out_parent_no_away_mark() {
+    let (_t, mut a) = across_groups("nv27away4");
+    tree_on(&mut a);
+    a.settings.filters = vec![Cond {
+        col: "status".into(),
+        op: Op::Drop(vec![Some("doing".into())]),
+    }];
+    group_by_status(&mut a);
+    let mut n = names(&a);
+    n.sort();
+    assert_eq!(n, vec!["API", "画面"]);
+}

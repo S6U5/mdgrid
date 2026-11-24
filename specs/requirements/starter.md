@@ -99,12 +99,16 @@
   - Then: `--check` の問題が 0。`LANG=en_US.UTF-8` でも同じ。
 
 #### 組み込みのスターター `tasks` から作った台帳は、新しいノートの名前を今日の日付8桁と `_` で始め、ノートの欄にはその頭の部分を出さないべき
-`req~starter.tasks-name-prefix~2` P1
-- Rationale: 同じ題のタスクを別の日にも作れ、ファイルが作った順に並び、表では題だけを読めるようにするため
+`req~starter.tasks-name-prefix~3` P1
+- Rationale: 同じ題のタスクを別の日にも作れ、ファイルが作った順に並び、表では題だけを読めるようにするため。頭の日付は、名前を打つ欄にも出さずに付ける(台帳の `name_head = "hide"`。cell-edit.new-note-name-head。2026-11-24 に人が「初めから日付が見えるのは嫌で、勝手に付いてほしい」と言い、`"show"` に書き換えれば欄に出せる)
 - Acceptance:
-  - Given:
-  - When: 今日が 2026-10-06 で、`tasks` から作った台帳の表で新しいノートを作り始める
-  - Then: 名前の欄に `20261006_` が入って出る。
+  - Given: 今日が 2026-10-06 で、`tasks` から作った台帳の表
+  - When: 新しいノートを作り始める
+  - Then: 名前の欄に `20261006_` が出ない。
+- Acceptance:
+  - Given: 今日が 2026-10-06 で、`tasks` から作った台帳の表
+  - When: 新しいノートの名前の欄に `memo2` と打って作る
+  - Then: `Tasks/20261006_memo2.md` が作られる。
 - Acceptance:
   - Given:
   - When: その台帳の `Tasks/20261006_請求書を送る.md`

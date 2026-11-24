@@ -29,9 +29,11 @@ done = { done_at = "{date}" }
 values = ["p1", "p2", "p3"]
 
 # New note (a): the name starts with today's date (20261118_); it asks for the due date, the priority and a URL, fills in the rest, and starts the body from the template.
+# name_head = "hide": that date is kept out of the name field and added before the name you type ("show" puts it in the field).
 [new_note]
 folder = "Tasks"
 name = "{date:YYYYMMDD}_"
+name_head = "hide"
 ask = ["due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"

@@ -2,9 +2,11 @@
 //! ノートのパスは RowId から得る(Markdown では RowId.0 が実体のパス。SC-14: frontmatter・vault は直接使わない)。
 
 use super::app::App;
+use super::keymap::Mode;
 use super::view::LABEL_HEADER;
 use mdgrid::i18n::Msg;
 use mdgrid::source::RowId;
+use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::ffi::OsString;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -559,10 +561,10 @@ impl App {
         tsv(&self.plain(row, col))
     }
 
-    /// 選んだセルを、見出しつきのタブ区切り1行(`列の名前<TAB>値`)にする(OUT-1)。
+    /// 選んだセルの値(output.copy-tsv: 値だけ。列の名前は付けない。ほかのセルにそのまま貼れる形)。
     pub(crate) fn cell_tsv(&self) -> Option<String> {
         let (row, col) = self.selected()?;
-        Some(format!("{}\t{}", tsv(&col), self.copy_value(&row, &col)))
+        Some(self.copy_value(&row, &col))
     }
 
     /// 行を、見出しの行(ノートと列の名前)と値の行のタブ区切りにする(OUT-1)。
@@ -582,15 +584,20 @@ impl App {
         lines.join("\n")
     }
 
-    /// `y` と Ctrl+C: 選んだセルをコピーする。行の選択(NV-5)があれば、`Y` と同じく選んだ行を
-    /// 見出しつきで(OUT-1)。
+    /// `y` と Ctrl+C: 選んだセルの値をコピーする。行の選択(NV-5)があれば、今の列の選んだ行の値を
+    /// 1行に1つずつ(output.copy-tsv。行の全部は `Y`)。
     pub(crate) fn copy_cell(&mut self) {
         let sel = self.selection();
         if !sel.is_empty() {
-            // screen.vim-paste: 行を写したのと同じ(`p` は選んだ行の先頭の行の値を入れる)。
-            self.remember_row_yank(&sel[0]);
-            let t = self.rows_tsv(&sel);
-            return self.send_copy(&t, &Msg::CopyWhatSelected.fill(&[&sel.len()]));
+            let Some(col) = self.cols.get(self.col).cloned() else {
+                self.message = Some(Msg::CopyNoCell.text().into());
+                return;
+            };
+            // screen.vim-paste: mdgrid の中では、先頭の行のセルの値を覚える。
+            self.remember_cell_yank(&sel[0], &col);
+            let t: Vec<String> = sel.iter().map(|r| self.copy_value(r, &col)).collect();
+            let what = Msg::CopyWhatColumn.fill(&[&sel.len(), &super::width::sanitize(&col)]);
+            return self.send_copy(&t.join("\n"), &what);
         }
         match self.cell_tsv() {
             Some(t) => {
@@ -602,6 +609,88 @@ impl App {
             }
             None => self.message = Some(Msg::CopyNoCell.text().into()),
         }
+    }
+
+    /// output.paste: 端末の貼り付けの文字を受ける。表の画面では、改行で行・タブで列に分けて、選んだセルを
+    /// 左上にして下の行と右の列へ貼る。入力の欄が開いている画面では、1行目の文字を打ったのと同じに入れる。
+    /// ほかの画面では何もしない(貼った文字をキーとして読んで、思わぬ操作をしないため)。
+    pub fn paste(&mut self, text: &str) {
+        match self.mode {
+            Mode::Table => self.paste_cells(text),
+            Mode::Edit
+            | Mode::Search
+            | Mode::Filter
+            | Mode::Palette
+            | Mode::SettingsText
+            | Mode::ListPick => {
+                let line = text.lines().next().unwrap_or_default();
+                for c in line.chars().filter(|c| !c.is_control()) {
+                    self.key(KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// output.paste: 表の画面の貼り付け。値はためる変更として1手で入れる(取り消しも1手)。まとまりの見出しの行は
+    /// 飛ばす。表に入らない値(下の行・右の列が足りない)と、列に入れられない値は貼らずに知らせる。
+    fn paste_cells(&mut self, text: &str) {
+        if self.readonly {
+            self.message = Some(super::startup::READONLY.into());
+            return;
+        }
+        let body = text.strip_suffix('\n').unwrap_or(text);
+        let body = body.strip_suffix('\r').unwrap_or(body);
+        let lines: Vec<Vec<&str>> = body
+            .split('\n')
+            .map(|l| l.strip_suffix('\r').unwrap_or(l).split('\t').collect())
+            .collect();
+        if text.trim().is_empty() {
+            self.message = Some(Msg::PasteEmpty.text().into());
+            return;
+        }
+        if self.cur_row().is_none() || self.cols.get(self.col).is_none() {
+            self.message = Some(Msg::PasteNoCell.text().into());
+            return;
+        }
+        // 選んだ行から下の、ノートの行(見出しと空きの行は飛ばす)。
+        let rows: Vec<RowId> = self
+            .slots
+            .iter()
+            .skip(self.row)
+            .filter_map(|s| match s {
+                super::grid::Slot::Row(r) => self.rows.get(*r).cloned(),
+                _ => None,
+            })
+            .take(lines.len())
+            .collect();
+        let cols: Vec<String> = self.cols[self.col..].to_vec();
+        let mut items = Vec::new();
+        let mut reasons = Vec::new();
+        let mut outside = 0;
+        for (i, fields) in lines.iter().enumerate() {
+            for (j, f) in fields.iter().enumerate() {
+                let (Some(row), Some(col)) = (rows.get(i), cols.get(j)) else {
+                    outside += 1;
+                    continue;
+                };
+                match self.paste_text_value(col, f) {
+                    Ok(v) => items.push((row.clone(), col.clone(), v)),
+                    Err(e) => reasons.push(e),
+                }
+            }
+        }
+        let skips = self.changes.set_cells(self.src.as_ref(), &items);
+        let done = items.len() - skips.len();
+        reasons.extend(skips.into_iter().map(|s| s.reason));
+        self.stay.extend(rows.iter().cloned());
+        self.regrid = true;
+        let mut msg = Msg::PasteCells.fill(&[&done]);
+        if outside > 0 {
+            msg.push_str(&Msg::PasteOverflow.fill(&[&outside]));
+        }
+        super::input::bulk_tail(&mut msg, 0, reasons);
+        self.message = Some(msg);
     }
 
     /// `Y`: 選んだ行(NV-5 の選択があればその全部、無ければ今の行)をコピーする。

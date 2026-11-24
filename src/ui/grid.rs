@@ -649,6 +649,7 @@ impl App {
         groups: Vec<(String, std::ops::Range<usize>)>,
     ) -> (Vec<RowId>, Vec<(String, std::ops::Range<usize>)>) {
         self.tree.clear();
+        self.tree_away.clear();
         self.wbs_num.clear();
         self.wbs_pct.clear();
         let Some(key) = self.settings.tree.clone() else {
@@ -677,7 +678,23 @@ impl App {
         let mut nodes = Vec::with_capacity(rows.len());
         let mut nums = HashMap::new();
         let mut pcts = HashMap::new();
+        // navigation.parent-child-away-mark: まとまりの外(今の表の中)に親がある行を覚える。
+        let all: HashSet<&RowId> = if groups.is_empty() {
+            HashSet::new()
+        } else {
+            rows.iter().collect()
+        };
+        let mut away = HashSet::new();
         for (_, range) in &ranges {
+            if !all.is_empty() {
+                let here: HashSet<&RowId> = rows[range.clone()].iter().collect();
+                for r in &rows[range.clone()] {
+                    if parent(r).is_some_and(|p| p != *r && all.contains(&p) && !here.contains(&p))
+                    {
+                        away.insert(r.clone());
+                    }
+                }
+            }
             let group = mdgrid::tree::order(&rows[range.clone()], parent);
             // NV-28: 番号はまとまりごとに 1 から。子の無い行の割合は対応表の値(無ければ 0)。
             if let Some(w) = &wbs {
@@ -695,6 +712,7 @@ impl App {
                 nodes.push(n);
             }
         }
+        self.tree_away = away;
         self.wbs_num = nums;
         self.wbs_pct = pcts;
         self.tree = nodes.into_iter().map(|n| (n.row.clone(), n)).collect();

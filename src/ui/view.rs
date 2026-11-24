@@ -306,6 +306,9 @@ pub(crate) fn note_name(app: &App, row: &RowId) -> String {
     }
 }
 
+/// navigation.parent-child-away-mark: 親が別のまとまりにある子の行の印。
+const AWAY_MARK: &str = "↳ ";
+
 /// 行の表示名。外で変わった行・同期の競合ファイルには `!`、値を直して元の位置に留めている行には `~`
 /// を付ける(色に頼らない)。
 pub(crate) fn label(app: &App, row: &RowId) -> String {
@@ -342,7 +345,13 @@ pub(crate) fn label(app: &App, row: &RowId) -> String {
                 name = format!("{name} · {t}");
             }
         }
-        name = format!("{}{mark}{name}", "  ".repeat(n.depth));
+        // navigation.parent-child-away-mark: 親が別のまとまりにある行は、名前の前に `↳`。
+        let away = if app.tree_away.contains(row) {
+            AWAY_MARK
+        } else {
+            ""
+        };
+        name = format!("{}{away}{mark}{name}", "  ".repeat(n.depth));
     }
     if app.held.contains(row) {
         name = format!("{HELD_MARK}{name}");
@@ -497,6 +506,9 @@ pub(crate) struct RowCtx {
     pub span: Option<(usize, usize)>,
     /// cell-view.url-full-target: この行の1行目の、描く行の中の位置。
     pub y: usize,
+    /// cell-view.row-lines-height: この行の高さ(全部の列で決めたもの。画面の下で切れていても全部の高さ)。
+    /// 右端で切って見せる列が、この高さに入りきらなければ `…` を付ける。
+    pub max: usize,
 }
 
 /// SR-31: 入力欄の見た目(太字・下線と、色を使うときは地の色)。テーマがあれば選んだセルの地の色。
@@ -587,7 +599,7 @@ fn data_row(
     };
     let sep = col_sep(app);
     // CV-8: 2行目より下の行。左の欄(行の印・行番号・名前)は空け、セルは折り返した続き。
-    let max = 1 + super::rows::extra(app);
+    let max = ctx.max.max(1);
     let mut more: Vec<Vec<Span<'static>>> = (1..k)
         .map(|_| vec![Span::raw(" ".repeat(lay.label_x() + lay.label_w))])
         .collect();
@@ -1029,12 +1041,16 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let mut ctx = RowCtx {
         span: app.anchor_span(app.row),
         y: 0,
+        max: 1,
     };
     // CV-8: 伸ばした行は高さの分の行を並べる(一番下の行は入る分だけ)。
-    for (i, _, k) in super::rows::frame_in(app, &cols, data_h) {
+    // cell-view.row-lines-height: 行の高さは、画面の外の列も含めた全部の列で決める。
+    let tall = super::rows::height_cols(&lay);
+    for (i, _, k) in super::rows::frame_in(app, &tall, data_h) {
         match &app.slots[i] {
             Slot::Row(r) => {
                 ctx.y = lines.len();
+                ctx.max = super::rows::height(app, &tall, i);
                 lines.extend(data_row(app, &lay, &cols, i, &app.rows[*r], &ctx, k));
             }
             Slot::Head(g) => lines.push(heading_row(app, i, *g, w)),

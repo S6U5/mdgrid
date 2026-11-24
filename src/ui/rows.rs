@@ -1,5 +1,6 @@
 //! 表の行の高さと画面の位置(CV-8)。設定 `display.row_extra_lines` で、ノートの行を最大で「1 + その数」の
-//! 行の高さまで伸ばす。行の高さは、見えている列のセルのうち一番多くの行が要るものに合わせ、行ごとに変わる。
+//! 行の高さまで伸ばす。行の高さは、ビューの全部の列(横に送って画面の外にある列も含む。cell-view.row-lines-height)の
+//! セルのうち一番多くの行が要るものに合わせ、行ごとに変わる(見えている列だけで決めると、横に送ったとたんに縮む)。
 //! まとまりの見出しと空き行は1行。`app.top` は slot の添字のまま(行の途中から描かない)。
 //!
 //! 行の位置を出す所(描く・クリック・入力の欄と窓・スクロール・ページ送り)は、ここの関数を通す。
@@ -52,12 +53,18 @@ pub(crate) fn frame_in(app: &App, cols: &[(usize, usize)], h: usize) -> Vec<(usi
     out
 }
 
-/// 見えている列と、見えている slot(`frame_in` の戻り)。
+/// 高さを決める列(全部の列と、その列の幅)と、見えている slot(`frame_in` の戻り)。
 type Frame = (Vec<(usize, usize)>, Vec<(usize, usize, usize)>);
 
-/// 今の画面の、見えている slot(`frame_in` を今の列と表の高さで)。
+/// 行の高さを決める列: ビューの全部の列と、その列の幅(画面の外の列も、切って見せている右端の列も、列の幅で)。
+pub(crate) fn height_cols(lay: &super::view::Layout) -> Vec<(usize, usize)> {
+    lay.widths.iter().copied().enumerate().collect()
+}
+
+/// 今の画面の、見えている slot(`frame_in` を全部の列と表の高さで)。
 fn frame(app: &App) -> Frame {
-    let (_, cols) = visible_layout(app);
+    let (lay, _) = visible_layout(app);
+    let cols = height_cols(&lay);
     let f = frame_in(app, &cols, app.data_height());
     (cols, f)
 }

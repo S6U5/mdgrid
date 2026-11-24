@@ -70,9 +70,9 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `Ctrl+p` | `palette` | Open the command palette |
 | `x` | `action_menu` | Open the menu of actions you can use on the selected cell, each with its current key (right-clicking a cell also opens it) |
 | `e` | `open_editor` | Open the selected note in your editor, and reload it when you return |
-| `y` | `copy` | Copy the selected cell (or the selected rows) to the clipboard |
-| `Ctrl+c` | `copy` | Copy the selected cell (or the selected rows) to the clipboard |
-| `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard |
+| `y` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
+| `Ctrl+c` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
+| `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard as tab-separated text with a header |
 | `[` | `prev_view` | Switch to the previous view |
 | `]` | `next_view` | Switch to the next view |
 | `<` | `narrow_column` | Make the column narrower |
@@ -581,7 +581,7 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 
 ## `gantt`
 
-The gantt screen (`C`, `:gantt_view`, or **Gantt** in the screen type menu at the top right). It is offered on a table whose `[[table]]` in the workspace marker has `gantt = { start = "<column>", end = "<column>" }` (`days = "<column>"` instead of `end` also works), or, without a setting, on a table whose date columns can be inferred by name (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了). See [Configuration](config.md). The rows of the current view are listed with their names on the left and a time axis with bars on the right. The unit is a day, a week or a month; on opening, the finest unit that fits the range of the rows in the width. Today's column is marked (`┊` in the rows, and `▾` in the header, or the header digit shown reversed when today falls on it). In the month unit a month takes three characters, one for each third of the month. With a color theme (not `default`), the background of the time axis alternates by month (by year in the month unit), and weekends get a slightly stronger tint in the day unit. A row with only one of the two dates shows `◆`; a row with neither shows no bar. With parent/child rows in the view settings, the order, indent and folding are the same as in the table, and so are the WBS numbers and progress (`█` and `░` in the bar); a parent without dates gets the span of its descendants. The screen is read-only; dates are edited in the table.
+The gantt screen (`C`, `:gantt_view`, or **Gantt** in the screen type menu at the top right). It is offered on a table whose `[[table]]` in the workspace marker has `gantt = { start = "<column>", end = "<column>" }` (`days = "<column>"` instead of `end` also works), or, without a setting, on a table whose date columns can be inferred by name (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了). See [Configuration](config.md). The rows of the current view are listed with their names on the left and a time axis with bars on the right. The unit is a day, a week or a month; on opening, the finest unit that fits the range of the rows in the width. Today's column is marked (`┊` in the rows, and `▾` in the header, or the header digit shown reversed when today falls on it). In the month unit a month takes three characters, one for each third of the month. With a color theme (not `default`), the background of the time axis alternates by month (by year in the month unit), and weekends get a slightly stronger tint in the day unit. A row with only one of the two dates shows `◆`; a row with neither shows no bar. With parent/child rows in the view settings, the order, indent and folding are the same as in the table, and so are the WBS numbers and progress (`█` and `░` in the bar); a parent without dates gets the span of its descendants. The control bar on the bottom edge of the window (`◀ ▶`, the units, Today, Week, Month, Quarter, All) can be clicked too. `H` and `L` move the selected row's bar by one unit, and `<` and `>` shorten or extend its end (the dates are written as pending changes; `u` undoes, `Ctrl+S` goes to the save confirmation). To type a date, edit it in the table.
 
 The mouse works too: click a row to select it, click the selected row again to move to that row in the table. The wheel selects up and down; the horizontal wheel moves the time axis.
 
@@ -607,6 +607,16 @@ The mouse works too: click a row to select it, click the selected row again to m
 | `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | The command palette (closing it returns to the gantt) |
 | `?` | `help` | Show the help |
+| `r` | `gantt_range` | Switch the period (this week → this month → quarter → all) |
+| `L` | `bar_later` | Move the bar one unit later (rewrites the dates) |
+| `H` | `bar_earlier` | Move the bar one unit earlier (rewrites the dates) |
+| `>` | `bar_longer` | Extend the end of the bar by one unit |
+| `<` | `bar_shorter` | Shorten the end of the bar by one unit |
+| `u` | `undo` | Undo |
+| `Ctrl+z` | `undo` | Undo |
+| `U` | `redo` | Redo |
+| `Ctrl+r` | `redo` | Redo |
+| `Ctrl+s` | `save` | Save |
 
 ## `kanban`
 
@@ -772,7 +782,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `palette` — open the command palette
 - `action_menu` — open the menu of actions for the selected cell
 - `open_editor` — open the note in your editor
-- `copy` — copy the cell or the selected rows
+- `copy` — copy the cell's value (with rows selected, the current column's values)
 - `copy_row` — copy the row or the selected rows
 - `prev_view` — switch to the previous view
 - `next_view` — switch to the next view
@@ -787,6 +797,11 @@ Every action name you can write in the keys section of the config file. Each one
 - `gantt_view` — switch between the table and the gantt screen
 - `zoom_in` — finer unit of the gantt time axis (month → week → day)
 - `zoom_out` — coarser unit of the gantt time axis (day → week → month)
+- `gantt_range` — switch the gantt period (this week → this month → quarter → all)
+- `bar_earlier` — move the selected gantt bar one unit earlier (rewrites the dates)
+- `bar_later` — move the selected gantt bar one unit later (rewrites the dates)
+- `bar_longer` — extend the end of the selected gantt bar by one unit
+- `bar_shorter` — shorten the end of the selected gantt bar by one unit
 - `kanban_view` — switch between the table and the kanban screen
 - `move_card_left` — move the kanban card to the lane on the left (rewrites the status)
 - `move_card_right` — move the kanban card to the lane on the right (rewrites the status)

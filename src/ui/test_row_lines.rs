@@ -80,7 +80,7 @@ fn refs<'a>(v: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a str)> {
 
 #[test]
 fn test_cv_8_long_value_wraps_to_three_lines() {
-    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-height~2] row_extra_lines = 2、幅 20 の列に 50 字 → その行は3行の高さで、説明が全部見える。
+    // [utest -> req~cell-view.row-lines-extend~1, req~cell-view.row-lines-height~3] row_extra_lines = 2、幅 20 の列に 50 字 → その行は3行の高さで、説明が全部見える。
     let notes = three_notes();
     let (_t, a) = boot("cv8_wrap", &refs(&notes), "row_extra_lines = 2\n");
     let l = lines(&a);
@@ -289,4 +289,33 @@ fn test_cv_8_settings_cycles_zero_to_three() {
         ch(&mut a, ' ');
         assert!(value(&a).contains(want), "{want}: {}", value(&a));
     }
+}
+
+// [utest -> req~cell-view.row-lines-height~3]
+/// 長い値の列を横に送って画面の外に出しても、その行は3行の高さのまま。
+#[test]
+fn test_row_height_kept_when_long_column_scrolls_off() {
+    let notes = vec![
+        (
+            "a.md",
+            format!("---\ndesc: {LONG50}\nc1: x1\nc2: x2\nc3: x3\nc4: x4\n---\n"),
+        ),
+        (
+            "b.md",
+            "---\ndesc: short\nc1: y1\nc2: y2\nc3: y3\nc4: y4\n---\n".to_string(),
+        ),
+    ];
+    let (_t, mut a) = boot("cv8_hscroll", &refs(&notes), "row_extra_lines = 2\n");
+    for c in ["c1", "c2", "c3", "c4"] {
+        a.widths.insert(c.into(), 40);
+    }
+    let l = lines(&a);
+    assert_eq!(line_of(&l, "y1"), line_of(&l, "x1") + 3, "{}", l.join("\n"));
+    for _ in 0..4 {
+        ch(&mut a, 'l');
+    }
+    let l = lines(&a);
+    let s = l.join("\n");
+    assert!(!s.contains("abcdefghij"), "desc は画面の外:\n{s}");
+    assert_eq!(line_of(&l, "y4"), line_of(&l, "x4") + 3, "{s}");
 }

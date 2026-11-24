@@ -916,6 +916,11 @@ fn read_new_note(v: &toml::Value, file: &str, path: &str, w: &mut Vec<String>) -
                 Some(s) => warn(w, file, &p, Msg::RsnBadNoteMode.fill(&[&s])),
                 None => warn(w, file, &p, not(Msg::WantString)),
             },
+            "name_head" => match v.as_str() {
+                Some(s @ ("show" | "hide")) => n.name_head = s.to_string(),
+                Some(s) => warn(w, file, &p, Msg::RsnBadNameHead.fill(&[&s])),
+                None => warn(w, file, &p, not(Msg::WantString)),
+            },
             "ask" | "required" | "hidden" => match cols(v) {
                 Some(cs) => {
                     let out = match k.as_str() {

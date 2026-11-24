@@ -74,7 +74,7 @@ fn test_sr_13_default_keys() {
         lookup(BINDINGS, Mode::Table, "Ctrl+g"),
         Some(Action::CancelLoad)
     );
-    // [utest -> req~output.copy-tsv~1, req~output.copy-both-targets~1] Ctrl+C はコピー。
+    // [utest -> req~output.copy-tsv~2, req~output.copy-both-targets~1] Ctrl+C はコピー。
     assert_eq!(lookup(BINDINGS, Mode::Table, "Ctrl+c"), Some(Action::Copy));
     // [utest -> req~screen.keys-vim-and-arrows-bases~2, req~screen.keys-vim-and-arrows-remap~1] 検索の `/` `n` `N`。[utest -> req~navigation.search-input-place~2] `\`、[utest -> req~navigation.jump~1] `0` `$` Ctrl+D Ctrl+U。
     assert_eq!(lookup(BINDINGS, Mode::Table, "/"), Some(Action::Search));

@@ -305,6 +305,86 @@
   - When: `required = ["due"]` で due を空のまま Ctrl+S
   - Then: 作らずに due の欄に理由。
 
+#### 設定の `[new_note]` の表に、`name_head`(名前の雛形 `name` を埋めた文字の見せ方)を持ち、`"show"`(既定)では名前の欄に入れて出し、`"hide"` では名前の欄に出さず、打った名前の前に付けて作るべき
+`req~cell-edit.new-note-name-head~1` P1
+- Rationale: 名前の頭に付ける日付を、初めから欄に入れて見せたい人と、見ずに題だけを打ちたい人がいるため(2026-11-24 に人が「選べるようにする」と決めた)。表で頭を隠す `display.note_name`(screen.note-name)と `"hide"` を組むと、表でも打つ欄でも頭を見ない
+- Acceptance:
+  - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"`・`name_head = "hide"`
+  - When: 新しいノートの窓を開く
+  - Then: 名前の欄は空で、`20261002_` が出ない。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 名前の欄に「買い物」と打って Ctrl+S
+  - Then: `20261002_買い物.md` が作られる。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 名前の欄に「sub/買い物」と打って Ctrl+S
+  - Then: `sub/20261002_買い物.md` が作られる(頭は最後の名前の部分に付く)。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 名前の欄に何も打たずに Ctrl+S
+  - Then: ノートを作らず、窓は開いたまま。
+- Acceptance:
+  - Given: 同じ設定に `[display] note_name = '^\d{8}_'` を足す
+  - When: 名前の欄に `20250101_古い`(`note_name` に当たる頭を自分で打った名前)と打って Ctrl+S
+  - Then: `20250101_古い.md` が作られる(頭を重ねない)。
+- Acceptance:
+  - Given: 同じ設定で、ask = [priority]
+  - When: 名前の欄に「買い物」と打って Enter
+  - Then: priority の欄に移り、名前の欄には `20261002_買い物` が見える。
+- Acceptance:
+  - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"` で、`name_head` が無いか `"show"`(`display.note_name` があっても同じ)
+  - When: 新しいノートの窓を開く
+  - Then: 名前の欄に `20261002_` が入って出る(cell-edit.new-note-config-name のまま)。
+- Acceptance:
+  - Given: `[new_note] name_head = "maybe"`
+  - When: 設定を読む
+  - Then: `"show"` でも `"hide"` でもないと警告し、`"show"` として扱う。
+- Needs: utest
+
+#### 新しいノートの窓の欄の行をクリックしたら、今の欄を確定して、クリックした欄に移るべき(今の欄の値が読めなければ、移らずに理由を出す)
+`req~cell-edit.new-note-form-click-field~1` P1
+- Rationale: 前の欄へ戻るのが Shift+Tab だけで、打ち直したい欄へ直に行けないため(2026-11-24 の報告)
+- Acceptance:
+  - Given: ask = [priority, due] の窓で、名前に「メモ」と打って Enter を2回押し、due の欄にいる
+  - When: 名前の欄の行をクリック
+  - Then: 名前の欄の入力が「メモ」で開く。
+- Acceptance:
+  - Given: ask = [priority, due] の窓で、名前に「メモ」と打った
+  - When: due の欄の行をクリック
+  - Then: due の欄の入力が開き、名前の欄には「メモ」が見える。
+- Acceptance:
+  - Given: ask = [priority, due](priority は数の列)の窓で、priority の欄に `12a` と打った
+  - When: 名前の欄の行をクリック
+  - Then: priority の欄のまま、数として読めない理由が出る。
+- Needs: utest
+
+#### 新しいノートの窓のキーの行(次へ・作る・前の項目・やめる・エディタで)の項目をクリックしたら、そのキーを押したのと同じ振る舞いにするべき
+`req~cell-edit.new-note-form-click-keys~1` P1
+- Rationale: マウスで欄を選んだあと、作る・やめるのためにキーへ手を戻さずに済むようにするため(2026-11-24 の報告)
+- Acceptance:
+  - Given: 名前に「メモ」と打った窓
+  - When: キーの行の「作る」をクリック
+  - Then: `メモ.md` が作られる。
+- Acceptance:
+  - Given: 名前に「メモ」と打った窓
+  - When: キーの行の「やめる」をクリック
+  - Then: 窓が閉じ、ノートは作られない。
+- Acceptance:
+  - Given: ask = [priority] の窓で、名前に「メモ」と打って Enter を押し、priority の欄にいる
+  - When: キーの行の「前の項目」をクリック
+  - Then: 名前の欄の入力が「メモ」で開く。
+- Needs: utest
+
+#### 新しいノートの窓の欄に出た候補のリストの項目をクリックしたら、その値に決めて次の欄へ移るべき(最後の欄ならノートを作る)
+`req~cell-edit.new-note-form-click-list~1` P1
+- Rationale: 表のセルの編集(候補のクリックで決まる)と同じにするため
+- Acceptance:
+  - Given: `[rules.status] values = ["todo", "doing", "done"]`、ask = [status, priority] の窓で、status の欄にいる
+  - When: 候補のリストの `doing` をクリック
+  - Then: priority の欄に移り、status の欄には `doing` が見える。
+- Needs: utest
+
 #### 新しいノートの窓の設定は、ビューごとにも決められてよい(mdgrid のビュー、base-view.own-views)
 `req~cell-edit.new-note-form-per-view~1` P1
 - Acceptance:

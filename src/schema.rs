@@ -541,8 +541,8 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         path: "new_note",
-        ty: "table (mode, folder, name, ask, required, hidden, body and [new_note.set])",
-        ty_ja: "表(mode・folder・name・ask・required・hidden・body と [new_note.set])",
+        ty: "table (mode, folder, name, name_head, ask, required, hidden, body and [new_note.set])",
+        ty_ja: "表(mode・folder・name・name_head・ask・required・hidden・body と [new_note.set])",
         default: None,
         example: "[new_note]\nfolder = \"inbox\"\nname = \"{date} \"\nask = [\"priority\", \"due\"]\nrequired = [\"due\"]\nhidden = [\"created\"]\nbody = \"templates/note.md\"\n\n[new_note.set]\ntags = [\"inbox\"]\ndue = \"{date+7}\"\ncreated = \"{now}\"",
         scope: Scope::Profile,

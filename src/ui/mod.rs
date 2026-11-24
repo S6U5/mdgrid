@@ -321,6 +321,8 @@ mod test_gantt_axis_more;
 #[cfg(test)]
 mod test_gantt_axis_sel;
 #[cfg(test)]
+mod test_gantt_controls;
+#[cfg(test)]
 mod test_gantt_more;
 #[cfg(test)]
 mod test_gitflow;
@@ -367,9 +369,13 @@ mod test_note_editor;
 #[cfg(test)]
 mod test_note_form;
 #[cfg(test)]
+mod test_note_form_mouse;
+#[cfg(test)]
 mod test_note_time;
 #[cfg(test)]
 mod test_padding_default_one;
+#[cfg(test)]
+mod test_paste;
 #[cfg(test)]
 mod test_places;
 #[cfg(test)]

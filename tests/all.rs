@@ -161,6 +161,8 @@ mod test_pages_blog;
 mod test_pages_check;
 #[path = "test_pages_images.rs"]
 mod test_pages_images;
+#[path = "test_paste_e2e.rs"]
+mod test_paste_e2e;
 #[path = "test_pick.rs"]
 mod test_pick;
 #[path = "test_places_e2e.rs"]

@@ -40,7 +40,7 @@ Write `tree = { path = "folder" }` on the table in the workspace file (`.mdgrid/
 
 ![The gantt screen](images/gantt.svg)
 
-`C` turns the rows of the current view into bars on a time axis. The start and end columns come from `gantt = { start = "start", end = "due" }` in the workspace marker, or, without a setting, are inferred from date columns named like `start` and `due`. With parent/child rows and WBS in the view settings, the order, numbers and progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month, `t` goes to today. The gantt screen is there from 0.4.0.
+`C` turns the rows of the current view into bars on a time axis. The start and end columns come from `gantt = { start = "start", end = "due" }` in the workspace marker, or, without a setting, are inferred from date columns named like `start` and `due`. With parent/child rows and WBS in the view settings, the order, numbers and progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month, `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The gantt screen is there from 0.4.0.
 
 The `gantt` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
 

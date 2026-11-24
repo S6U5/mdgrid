@@ -217,6 +217,7 @@ RsnNestedUse = "樣板不能使用另一個樣板（已忽略）"
 RsnBadDateFormat = "{0}；改用預設的 YYYY-MM-DD"
 RsnBadColumn = "`{0}` 不是可寫入的欄位，或重複了（已忽略）"
 RsnBadNoteMode = "\"{0}\" 不是 \"form\" 或 \"editor\"；改用表單"
+RsnBadNameHead = "\"{0}\" 不是 \"show\" 或 \"hide\"；顯示在名稱欄中"
 RsnNeedName = "需要不重複的 name（字串）（已忽略）"
 RsnNeedPath = "需要 path（字串）（已忽略）"
 ## condition.invalid: 条件の名前の決まり。
@@ -1757,6 +1758,20 @@ KeyGanttEarlier = "時間軸往前捲動"
 KeyGanttZoomIn = "較細的單位（月 → 週 → 日）"
 KeyGanttZoomOut = "較粗的單位（日 → 週 → 月）"
 KeyGanttToday = "移至今天"
+KeyGanttRange = "切換期間（本週 → 本月 → 季度 → 全部）"
+KeyBarLater = "把長條往後移動一個單位（改寫日期）"
+KeyBarEarlier = "把長條往前移動一個單位（改寫日期）"
+KeyBarLonger = "把長條的結束延長一個單位"
+KeyBarShorter = "把長條的結束縮短一個單位"
+GanttToday = "今天"
+GanttThisWeek = "本週"
+GanttThisMonth = "本月"
+GanttQuarter = "季度"
+GanttAll = "全部"
+GanttNoOwnDates = "此列沒有自己的日期，無法移動"
+GanttCannotShrink = "無法再縮短（結束會早於開始）"
+GanttNoEnd = "此列沒有結束日期，無法調整長度"
+GanttBarSet = "{0}：{1}"
 CmdGanttView = "開啟甘特圖"
 ## {0} is the start column, {1} the end column (or the days column), {2} the unit.
 GanttTitle = "甘特圖：{0} → {1}（{2}）"
@@ -1844,6 +1859,10 @@ PasteNoCell = "沒有可貼上值的儲存格"
 PasteNoRow = "沒有可貼上值的列"
 ## {0} is the number of rows.
 PasteRows = "已將複製的列貼到 {0} 列（未儲存）"
+PasteCells = "已貼到 {0} 個儲存格（未儲存）"
+PasteOverflow = "；{0} 個值超出表格，未貼上"
+PasteEmpty = "沒有可貼上的內容"
+CopyWhatColumn = "所選 {0} 列的 {1}"
 RepeatNothing = "尚無可重複的值（請先設定一個儲存格）"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "捨棄變更並結束"
@@ -2114,7 +2133,7 @@ CfgEditCandidates = "編輯文字儲存格時提供的值候選數上限。\n不
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "允許寫入沒有 front matter 或 front matter 為空的筆記（會新增 front matter 或\n鍵的那一行）。false 會讓這些筆記成為唯讀。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "從表格建立新筆記的方式：mode（\"form\"：含所有欄位的表單，或\n\"editor\"：建立後用編輯器開啟）、folder（相對於開啟的資料夾）、name（名稱\n範本）、ask（表單的欄位；預設：可見的欄位）、required（必須填寫的\n欄位）、hidden（不顯示欄位而直接寫入的欄位）、body（內文範本檔）與\n[new_note.set]（欄位 = 值）。範本可使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 與 {folder}。來自檢視篩選的值優先。\n此表為單一項目：在較窄範圍寫入時會整個取代。"
+CfgNewNote = "從表格建立新筆記的方式：mode（\"form\"：含所有欄位的表單，或\n\"editor\"：建立後用編輯器開啟）、folder（相對於開啟的資料夾）、name（名稱\n範本）、ask（表單的欄位；預設：可見的欄位）、required（必須填寫的\n欄位）、hidden（不顯示欄位而直接寫入的欄位）、body（內文範本檔）與\n[new_note.set]（欄位 = 值）。範本可使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 與 {folder}。來自檢視篩選的值優先。\n此表為單一項目：在較窄範圍寫入時會整個取代。 name_head（\"show\"：把填好的範本放進名稱欄；\"hide\"：不顯示，並加在輸入的名稱前面）。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "依模式重新指派按鍵：在 [keys.<模式>] 下寫 按鍵 = 動作名稱。\n\"none\" 會移除該按鍵。模式：table、edit、review、quit、help、palette、search、\nfilter、detail、settings、settings_input、chips、list_select、menu、freq、sorts、relations、drawer、filter_window、filter_input、screen_menu、column_type、tree、gantt、kanban、chart、notice、switch、\ninput_normal（vim 模式）。動作名稱顯示在命令面板（:）中。"
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

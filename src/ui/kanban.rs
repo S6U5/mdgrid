@@ -460,7 +460,7 @@ impl App {
     }
 
     /// KB-4: 取り消し・やり直し(カンバンのまま。読むだけでは何もしない)。
-    fn kanban_undo(&mut self, redo: bool) {
+    pub(crate) fn kanban_undo(&mut self, redo: bool) {
         if self.readonly {
             self.message = Some(super::startup::READONLY.into());
             return;

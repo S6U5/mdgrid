@@ -34,6 +34,92 @@ pub(crate) struct Gantt {
     pub inferred: bool,
     /// 行ごとの棒(親は自分の日付、無ければ子孫の範囲)。
     pub bars: HashMap<RowId, Bar>,
+    /// gantt.range-key: 最後に選んだ期間(`r` の次の期間を決める。開いたときは無し)。
+    /// ビューごとには覚えない(tbd~gantt.range-remember)。
+    pub range: Option<Range>,
+}
+
+/// gantt.range-presets: 選べる期間。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Range {
+    Week,
+    Month,
+    Quarter,
+    All,
+}
+
+impl Range {
+    /// `r` で次に移る期間(今週 → 今月 → 四半期 → 全体 → 今週)。
+    fn next(prev: Option<Range>) -> Range {
+        match prev {
+            None | Some(Range::All) => Range::Week,
+            Some(Range::Week) => Range::Month,
+            Some(Range::Month) => Range::Quarter,
+            Some(Range::Quarter) => Range::All,
+        }
+    }
+}
+
+/// gantt.controls-bar: 操作の帯の項目。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Ctl {
+    Earlier,
+    Later,
+    Unit(Unit),
+    Today,
+    Range(Range),
+}
+
+/// gantt.controls-bar: 操作の帯の項目の字と動作(この順に並べる)。今の単位は `[ ]` で囲む(色に頼らない)。
+fn controls(g: &Gantt) -> Vec<(String, Ctl)> {
+    let unit = |u: Unit| {
+        let t = unit_text(u);
+        let t = if u == g.unit {
+            format!("[{t}]")
+        } else {
+            t.to_string()
+        };
+        (t, Ctl::Unit(u))
+    };
+    vec![
+        ("◀".to_string(), Ctl::Earlier),
+        ("▶".to_string(), Ctl::Later),
+        unit(Unit::Day),
+        unit(Unit::Week),
+        unit(Unit::Month),
+        (Msg::GanttToday.text().to_string(), Ctl::Today),
+        (
+            Msg::GanttThisWeek.text().to_string(),
+            Ctl::Range(Range::Week),
+        ),
+        (
+            Msg::GanttThisMonth.text().to_string(),
+            Ctl::Range(Range::Month),
+        ),
+        (
+            Msg::GanttQuarter.text().to_string(),
+            Ctl::Range(Range::Quarter),
+        ),
+        (Msg::GanttAll.text().to_string(), Ctl::Range(Range::All)),
+    ]
+}
+
+/// 操作の帯の項目の置き場(窓の左端からの桁・幅・動作)。描画とクリックで同じものを使う。項目の間は2桁あけ、
+/// 窓の幅(枠を含む `w`)に入る項目だけを出す。
+fn control_spots(g: &Gantt, w: usize) -> Vec<(usize, String, Ctl)> {
+    let mut out = Vec::new();
+    // 左下の角・横の線1字・空白1字のあとから。
+    let mut x = 3;
+    for (text, ctl) in controls(g) {
+        let tw = width(&text);
+        // 右に、空白1字・横の線1字・右下の角を残す。
+        if x + tw + 3 > w {
+            break;
+        }
+        out.push((x, text, ctl));
+        x += tw + 2;
+    }
+    out
 }
 
 /// 時間軸を動かしたとき、今日を置く位置(マスの何分の1か)。
@@ -251,15 +337,8 @@ impl App {
         }
         let bars = self.gantt_bars(&spec);
         let cols = axis_cols(inner_now(self));
-        let bounds = rows
-            .iter()
-            .filter_map(|r| bars.get(r).and_then(Bar::bounds))
-            .fold(None, |acc: Option<(i64, i64)>, (s, e)| {
-                Some(acc.map_or((s, e), |(a, b)| (a.min(s), b.max(e))))
-            });
-        let (unit, origin) = if let Some((first, last)) = bounds {
-            let unit = gantt::fit_unit(first, last, cols);
-            (unit, gantt::floor_unit(first, unit))
+        let (unit, origin) = if let Some(fit) = fit_all(&rows, &bars, cols) {
+            fit
         } else {
             self.message = Some(Msg::GanttNoDates.text().into());
             let unit = Unit::Day;
@@ -280,6 +359,7 @@ impl App {
             spec,
             inferred,
             bars,
+            range: None,
         });
         self.set_mode(Mode::Gantt);
     }
@@ -390,6 +470,18 @@ impl App {
                 }
             }
             Action::Today => self.gantt_today(),
+            Action::GanttRange => {
+                let next = Range::next(self.gantt.as_ref().and_then(|g| g.range));
+                self.gantt_set_range(next);
+            }
+            Action::BarEarlier => self.gantt_edit(true, -1),
+            Action::BarLater => self.gantt_edit(true, 1),
+            Action::BarShorter => self.gantt_edit(false, -1),
+            Action::BarLonger => self.gantt_edit(false, 1),
+            Action::Undo | Action::Redo => {
+                self.kanban_undo(action == Action::Redo);
+                self.rebuild_gantt();
+            }
             Action::ToggleTree => self.gantt_toggle(),
             Action::Run => {
                 self.gantt_show_in_table();
@@ -406,13 +498,204 @@ impl App {
         }
     }
 
+    /// gantt.range-presets: 期間を選ぶ(時間軸の左端と単位を決める。行は隠さない)。
+    fn gantt_set_range(&mut self, range: Range) {
+        let cols = axis_cols(inner_now(self));
+        let today = self.today;
+        let Some(g) = self.gantt.as_mut() else {
+            return;
+        };
+        g.range = Some(range);
+        // 左端の日から最後の日までが幅に収まる最も細かい単位にし、左端は単位の境に切り下げる。
+        let span = match range {
+            Range::Week => {
+                let mon = gantt::floor_unit(today, Unit::Week);
+                g.unit = Unit::Day;
+                g.origin = mon;
+                return;
+            }
+            Range::Month => {
+                let first = gantt::floor_unit(today, Unit::Month);
+                Some((first, mdgrid::types::add_months(first, 1) - 1))
+            }
+            Range::Quarter => {
+                let first = gantt::floor_unit(today, Unit::Month);
+                let (_, m, _) = gantt::civil(first);
+                let back = i32::try_from((m - 1) % 3).unwrap_or(0);
+                let first = mdgrid::types::add_months(first, -back);
+                Some((first, mdgrid::types::add_months(first, 3) - 1))
+            }
+            Range::All => None,
+        };
+        match span {
+            Some((first, last)) => {
+                g.unit = gantt::fit_unit(first, last, cols);
+                g.origin = gantt::floor_unit(first, g.unit);
+            }
+            None => {
+                if let Some((unit, origin)) = fit_all(&g.rows, &g.bars, cols) {
+                    g.unit = unit;
+                    g.origin = origin;
+                }
+            }
+        }
+    }
+
+    /// gantt.controls-click: 操作の帯の項目の動作。
+    fn gantt_control(&mut self, ctl: Ctl) {
+        match ctl {
+            Ctl::Earlier => self.gantt_action(Action::Left),
+            Ctl::Later => self.gantt_action(Action::Right),
+            Ctl::Today => self.gantt_today(),
+            Ctl::Range(r) => self.gantt_set_range(r),
+            Ctl::Unit(u) => {
+                if let Some(g) = self.gantt.as_mut() {
+                    g.unit = u;
+                    g.origin = gantt::floor_unit(g.origin, u);
+                }
+            }
+        }
+    }
+
+    /// gantt.edit-move・gantt.edit-resize: 選んでいる行の棒を1単位動かす(`whole`)か、終わりを1単位伸ばす・縮める。
+    /// 値はためる変更として、1手で書く(取り消しも1手)。動かせない棒は理由を出して何も書かない(gantt.edit-refuse)。
+    fn gantt_edit(&mut self, whole: bool, dir: i32) {
+        let Some(g) = self.gantt.as_ref() else {
+            return;
+        };
+        let Some(row) = g.rows.get(g.sel).cloned() else {
+            return;
+        };
+        let (spec, unit) = (g.spec.clone(), g.unit);
+        // WB-15: 読むだけで開いたら書かない。
+        if self.readonly {
+            self.message = Some(super::startup::READONLY.into());
+            return;
+        }
+        let shift = |d: i64| match unit {
+            Unit::Day => d + i64::from(dir),
+            Unit::Week => d + 7 * i64::from(dir),
+            Unit::Month => mdgrid::types::add_months(d, dir),
+        };
+        // 列の今の値(ためた値を重ねたもの)の日と、日を替えた文字(日時は時刻を残す)。
+        let dated = |col: &Option<String>| -> Option<(String, i64, String)> {
+            let col = col.as_deref()?;
+            let text = self.plain(&row, col);
+            let text = text.trim().to_string();
+            let day = self.gantt_day(&row, col)?;
+            Some((col.to_string(), day, text))
+        };
+        let put = |day: i64, old: &str| -> String {
+            match old.get(10..) {
+                Some(rest) if parse_date(old).is_none() => {
+                    format!("{}{rest}", mdgrid::types::format_date(day))
+                }
+                _ => mdgrid::types::format_date(day),
+            }
+        };
+        let (start, end) = (dated(&spec.start), dated(&spec.end));
+        let mut writes: Vec<(String, String)> = Vec::new();
+        if whole {
+            for (col, day, old) in [&start, &end].into_iter().flatten() {
+                writes.push((col.clone(), put(shift(*day), old)));
+            }
+            if writes.is_empty() {
+                self.message = Some(Msg::GanttNoOwnDates.text().into());
+                return;
+            }
+        } else if let Some((col, day, old)) = &end {
+            let new = shift(*day);
+            if start.as_ref().is_some_and(|(_, s, _)| new < *s) {
+                self.message = Some(Msg::GanttCannotShrink.text().into());
+                return;
+            }
+            writes.push((col.clone(), put(new, old)));
+        } else {
+            // `days` の設定: 終わりは「始まり + 日数 - 1」。伸ばした終わりから日数を出して、日数の列を書く。
+            let days = spec.days.as_deref().and_then(|c| {
+                let n = self.plain(&row, c).trim().parse::<f64>().ok()?.round() as i64;
+                (n >= 1).then(|| (c.to_string(), n))
+            });
+            let (Some((_, s, _)), Some((col, n))) = (&start, days) else {
+                self.message = Some(
+                    if start.is_none() && end.is_none() {
+                        Msg::GanttNoOwnDates
+                    } else {
+                        Msg::GanttNoEnd
+                    }
+                    .text()
+                    .into(),
+                );
+                return;
+            };
+            let new = shift(s + n - 1);
+            if new < *s {
+                self.message = Some(Msg::GanttCannotShrink.text().into());
+                return;
+            }
+            writes.push((col, (new - s + 1).to_string()));
+        }
+        // 書く前に、どの列も直せるかを確かめる(片方だけ書かない)。
+        let mut cells = Vec::new();
+        for (col, text) in &writes {
+            // 読むだけのセル(計算の列・ファイルの列など。BV-7・BV-12)は理由を出す。
+            if let Err(m) = self.editable(&row, col) {
+                self.message = Some(m);
+                return;
+            }
+            // CE-29: キーの名前の変更か削除をためた列は、値の書き換えで黙って上書きしない。
+            if matches!(
+                self.changes.pending(&row, col),
+                Some(mdgrid::source::NewValue::RenameKey(_) | mdgrid::source::NewValue::DeleteKey)
+            ) {
+                self.message = Some(Msg::KanbanKeyPending.fill(&[&sanitize(col)]));
+                return;
+            }
+            match super::kanban::value_for(self, col, text) {
+                Ok(nv) => cells.push((row.clone(), col.clone(), nv)),
+                Err(m) => {
+                    self.message = Some(m);
+                    return;
+                }
+            }
+        }
+        if let Some(s) = self.changes.set_cells(self.src.as_ref(), &cells).pop() {
+            self.message = Some(Msg::CannotCommit.fill(&[&s.reason]));
+            return;
+        }
+        // NV-12: 直した行は、保存か移動の操作まで表の元の位置に留める。
+        self.stay.insert(row.clone());
+        self.regrid = true;
+        self.rebuild_gantt();
+        let name = sanitize(&self.src.label(&row));
+        let now: Vec<String> = writes
+            .iter()
+            .map(|(c, v)| format!("{} = {}", sanitize(c), sanitize(v)))
+            .collect();
+        self.message = Some(Msg::GanttBarSet.fill(&[&name, &now.join(", ")]));
+    }
+
     /// GA-4: ガントの画面のクリック。行のクリックで選び、選んでいる行をもう一度で表のその行へ。
-    pub(crate) fn gantt_click(&mut self, _x: u16, y: u16) {
+    /// 窓の下の縁の操作の帯の項目は、その動作をする(gantt.controls-click)。
+    pub(crate) fn gantt_click(&mut self, x: u16, y: u16) {
         let Some(g) = self.gantt.as_ref() else {
             return;
         };
         // 描画(`ui::draw` → `render`)と同じ高さから、行の数を出す(枠の2行と見出しの2行を除く)。
         let h = super::popup::screen(self).1 + 2;
+        let bh = body_h(self, h);
+        if bh >= 2 && usize::from(y) == body_y(self) + bh - 1 {
+            let w = super::popup::screen(self).0;
+            let x = usize::from(x);
+            let hit = control_spots(g, w)
+                .into_iter()
+                .find(|(at, text, _)| (*at..*at + width(text)).contains(&x))
+                .map(|(_, _, ctl)| ctl);
+            if let Some(ctl) = hit {
+                self.gantt_control(ctl);
+            }
+            return;
+        }
         let top = body_y(self) + 1 + 2; // 枠の上の縁と、見出しの2行
         let vis = body_h(self, h).saturating_sub(2 + 2);
         let y = usize::from(y);
@@ -437,6 +720,19 @@ impl App {
     pub(crate) fn gantt_hwheel(&mut self, right: bool) {
         self.gantt_action(if right { Action::Right } else { Action::Left });
     }
+}
+
+/// gantt.range-presets の「全体」: 行の範囲の最初の日を左端に、最後の日までが幅に収まる最も細かい単位。
+/// 日付を持つ行が無ければ None。
+fn fit_all(rows: &[RowId], bars: &HashMap<RowId, Bar>, cols: usize) -> Option<(Unit, i64)> {
+    let (first, last) = rows
+        .iter()
+        .filter_map(|r| bars.get(r).and_then(Bar::bounds))
+        .fold(None, |acc: Option<(i64, i64)>, (s, e)| {
+            Some(acc.map_or((s, e), |(a, b)| (a.min(s), b.max(e))))
+        })?;
+    let unit = gantt::fit_unit(first, last, cols);
+    Some((unit, gantt::floor_unit(first, unit)))
 }
 
 /// 時間軸の見出しの2行と、下の行で反転して示す今日の字。字はマスを `col_chars` 字ずつ並べたもの(月は3字)。
@@ -704,6 +1000,35 @@ fn body_lines(app: &App, g: &Gantt, iw: usize, vis: usize) -> Vec<Line<'static>>
     lines
 }
 
+/// gantt.controls-bar: 窓の下の縁(`edge`)に、操作の帯の項目を並べた行。項目の間は枠の横の線でつなぐ。
+fn controls_line(app: &App, g: &Gantt, w: usize, edge: &Line<'static>) -> Line<'static> {
+    let spots = control_spots(g, w);
+    if spots.is_empty() || w < 8 {
+        return edge.clone();
+    }
+    let f = super::popup::frame(app);
+    let st = edge.spans.first().map(|s| s.style).unwrap_or_default();
+    let key_st = match super::look::look(app) {
+        Some(l) => l.key(),
+        None => Style::default().add_modifier(Modifier::BOLD),
+    };
+    let h = f.h.to_string();
+    let mut spans = vec![Span::styled(format!("{}{h} ", f.bl), st)];
+    let mut x = 3;
+    for (at, text, _) in spots {
+        if at > x {
+            spans.push(Span::styled(" ".repeat(at - x), st));
+        }
+        x = at + width(&text);
+        spans.push(Span::styled(text, key_st));
+    }
+    spans.push(Span::styled(" ", st));
+    x += 1;
+    let rest = w.saturating_sub(x + 1);
+    spans.push(Span::styled(format!("{}{}", h.repeat(rest), f.br), st));
+    Line::from(spans)
+}
+
 /// 画面の全部の行(幅 `w`、高さ `h`)。
 pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let Some(g) = app.gantt.as_ref() else {
@@ -717,7 +1042,14 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let bh = h.saturating_sub(lines.len() + 2);
     let iw = inner_w(w);
     let body = body_lines(app, g, iw, bh.saturating_sub(2));
-    lines.extend(panel(app, &title(g), body, w, bh, true));
+    let mut boxed = panel(app, &title(g), body, w, bh, true);
+    // gantt.controls-bar: 窓の下の縁に操作の帯を重ねる(行と時間軸の位置は変えない)。
+    if bh >= 2 {
+        if let Some(last) = boxed.last_mut() {
+            *last = controls_line(app, g, w, last);
+        }
+    }
+    lines.extend(boxed);
     let body_end = h.saturating_sub(2);
     while lines.len() < body_end {
         lines.push(Line::from(" ".repeat(w)));

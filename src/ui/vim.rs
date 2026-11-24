@@ -728,6 +728,14 @@ impl App {
         }
     }
 
+    /// output.paste: 貼った文字を、入れる列の型の値にする(打ち込みと同じ読み方。空の文字は空にする)。
+    pub(crate) fn paste_text_value(&self, col: &str, text: &str) -> Result<NewValue, String> {
+        match self.col_type(col) {
+            Kind::List if !text.is_empty() => Ok(NewValue::List(vec![text.to_string()])),
+            _ => super::kanban::value_for(self, col, text),
+        }
+    }
+
     /// screen.vim-paste: `p`。セルを写したなら選んでいるセルに、行を写したなら印を付けた行(無ければ選んでいる行)の
     /// 同じ名前の書ける列に、ためる変更として入れる(行は1手)。
     pub(crate) fn vim_paste(&mut self) {

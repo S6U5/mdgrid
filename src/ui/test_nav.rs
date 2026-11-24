@@ -406,7 +406,7 @@ fn test_nv_12_move_releases_held_row() {
 
 #[test]
 fn test_out_1_copy_selected_rows() {
-    // [utest -> req~output.copy-tsv~1] 選んだ2行を `Y` → 見出しつきのタブ区切り(見出しの行 + 2行)。
+    // [utest -> req~output.copy-tsv~2] 選んだ2行を `Y` → 見出しつきのタブ区切り(見出しの行 + 2行)。
     let (_t, mut a) = make("out1sel", STATUS);
     let log = Rc::new(RefCell::new(MemoryLog::default()));
     a.clipboard = Box::new(Memory(log.clone()));

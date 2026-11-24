@@ -216,6 +216,7 @@ RsnNestedUse = "テンプレートの中の use は読まない"
 RsnBadDateFormat = "{0}。既定の YYYY-MM-DD にした"
 RsnBadColumn = "`{0}` は書けない列か重なりなので無視した"
 RsnBadNoteMode = "\"{0}\" は \"form\" でも \"editor\" でもないので窓で作る"
+RsnBadNameHead = "\"{0}\" は \"show\" でも \"hide\" でもないので名前の欄に出す"
 RsnNeedName = "重ならない name の文字列が要るので無視した"
 RsnNeedPath = "path の文字列が要るので無視した"
 ## condition.invalid: 条件の名前の決まり。
@@ -1756,6 +1757,20 @@ KeyGanttEarlier = "時間軸を前へ"
 KeyGanttZoomIn = "単位を細かく(月 → 週 → 日)"
 KeyGanttZoomOut = "単位を粗く(日 → 週 → 月)"
 KeyGanttToday = "今日へ"
+KeyGanttRange = "期間を切り替える(今週 → 今月 → 四半期 → 全体)"
+KeyBarLater = "棒を1単位後ろへ動かす(日付を書き換える)"
+KeyBarEarlier = "棒を1単位前へ動かす(日付を書き換える)"
+KeyBarLonger = "棒の終わりを1単位伸ばす"
+KeyBarShorter = "棒の終わりを1単位縮める"
+GanttToday = "今日"
+GanttThisWeek = "今週"
+GanttThisMonth = "今月"
+GanttQuarter = "四半期"
+GanttAll = "全体"
+GanttNoOwnDates = "この行に日付が無いので動かせない"
+GanttCannotShrink = "これ以上縮められない(終わりが始まりより前になる)"
+GanttNoEnd = "この行に終わりの日付が無いので伸ばせない"
+GanttBarSet = "{0}: {1}"
 CmdGanttView = "ガントを開く"
 ## {0} は始まりの列、{1} は終わりの列(か日数の列)、{2} は単位。
 GanttTitle = "ガント: {0} → {1}({2})"
@@ -1843,6 +1858,10 @@ PasteNoCell = "値を入れるセルが無い"
 PasteNoRow = "値を入れる行が無い"
 ## {0} は行の数。
 PasteRows = "写した行の値を {0} 行に入れた(未保存)"
+PasteCells = "{0} 個のセルに貼った(未保存)"
+PasteOverflow = "。表に入らなかった値 {0} 個は貼らない"
+PasteEmpty = "貼る値が無い"
+CopyWhatColumn = "選んだ {0} 行の {1}"
 RepeatNothing = "繰り返す値がまだ無い(先にセルに値を入れる)"
 ## screen.quit-discard: パレットの q!。
 PaletteDiscardQuit = "変更を捨てて終わる"
@@ -2113,7 +2132,7 @@ CfgEditCandidates = "テキストのセルの編集で出す値の候補の上�
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "フロントマターの無いノートと空のフロントマターのノートにも書く(フロントマターかキーの行を足す)。false ならこの2つは読むだけ。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・name(名前の雛形)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。"
+CfgNewNote = "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・name(名前の雛形)・name_head(\"show\" は雛形を埋めた文字を名前の欄に入れて出す、\"hide\" は欄に出さずに打った名前の前に付ける)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "モードごとのキーの割り当て直し。[keys.<モード>] の下に キー = 動作の名前。\"none\" でそのキーを外す。モードは table・edit・review・quit・help・palette・search・filter・detail・settings・settings_input・chips・list_select・menu・freq・sorts・relations・drawer・filter_window・filter_input・screen_menu・column_type・tree・gantt・kanban・chart・notice・switch・input_normal(vim モード)。動作の名前はコマンドのパレット(:)に出る。"
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

@@ -217,6 +217,7 @@ RsnNestedUse = "un modèle ne peut pas utiliser un autre modèle (ignoré)"
 RsnBadDateFormat = "{0} ; le format par défaut YYYY-MM-DD est utilisé"
 RsnBadColumn = "`{0}` n'est pas une colonne modifiable, ou est en double (ignoré)"
 RsnBadNoteMode = "\"{0}\" n'est ni \"form\" ni \"editor\" ; le formulaire est utilisé"
+RsnBadNameHead = "\"{0}\" n'est ni \"show\" ni \"hide\" ; affiché dans le champ du nom"
 RsnNeedName = "il faut un nom (chaîne) qui ne se répète pas (ignoré)"
 RsnNeedPath = "il faut un chemin (chaîne) (ignoré)"
 ## condition.invalid: 条件の名前の決まり。
@@ -1757,6 +1758,20 @@ KeyGanttEarlier = "Axe du temps : plus tôt"
 KeyGanttZoomIn = "Unité plus fine (mois → semaine → jour)"
 KeyGanttZoomOut = "Unité plus large (jour → semaine → mois)"
 KeyGanttToday = "Aller à aujourd'hui"
+KeyGanttRange = "Changer de période (cette semaine → ce mois → trimestre → tout)"
+KeyBarLater = "Décaler la barre d'une unité plus tard (réécrit les dates)"
+KeyBarEarlier = "Décaler la barre d'une unité plus tôt (réécrit les dates)"
+KeyBarLonger = "Allonger la fin de la barre d'une unité"
+KeyBarShorter = "Raccourcir la fin de la barre d'une unité"
+GanttToday = "Aujourd'hui"
+GanttThisWeek = "Semaine"
+GanttThisMonth = "Mois"
+GanttQuarter = "Trimestre"
+GanttAll = "Tout"
+GanttNoOwnDates = "cette ligne n'a pas de dates propres, elle ne peut pas être déplacée"
+GanttCannotShrink = "impossible de raccourcir davantage (la fin précéderait le début)"
+GanttNoEnd = "cette ligne n'a pas de date de fin, elle ne peut pas être redimensionnée"
+GanttBarSet = "{0} : {1}"
 CmdGanttView = "Ouvrir le Gantt"
 ## {0} is the start column, {1} the end column (or the days column), {2} the unit.
 GanttTitle = "Gantt : {0} → {1} ({2})"
@@ -1844,6 +1859,10 @@ PasteNoCell = "aucune cellule où coller la valeur"
 PasteNoRow = "aucune ligne où coller les valeurs"
 ## {0} is the number of rows.
 PasteRows = "ligne copiée collée dans {0} ligne(s) (non enregistré)"
+PasteCells = "collé dans {0} cellule(s) (non enregistré)"
+PasteOverflow = " ; {0} valeur(s) ne tenaient pas dans le tableau et n'ont pas été collées"
+PasteEmpty = "rien à coller"
+CopyWhatColumn = "{1} de {0} ligne(s) sélectionnée(s)"
 RepeatNothing = "aucune valeur à répéter pour l'instant (définir d'abord une cellule)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "Abandonner les modifications et quitter"
@@ -2114,7 +2133,7 @@ CfgEditCandidates = "Nombre maximal de valeurs candidates proposées en modifian
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Permettre d'écrire dans les notes sans front matter ou avec un front matter vide (un front matter\nou une ligne de clé est ajouté). false met ces notes en lecture seule."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "Comment une nouvelle note est créée depuis la table : mode (\"form\" : un formulaire avec chaque\nchamp, ou \"editor\" : créer et ouvrir dans l'éditeur), folder (relatif au dossier ouvert), name\n(modèle de nom), ask (les colonnes du formulaire ; par défaut : les colonnes visibles), required\n(colonnes à remplir obligatoirement), hidden (colonnes écrites sans champ), body (un fichier\nmodèle de corps) et [new_note.set] (colonne = valeur). Les modèles peuvent utiliser {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} et {folder}. Les valeurs du filtre\nde la vue passent en premier. La table est un seul élément : un endroit plus étroit qui l'écrit la\nremplace entièrement."
+CfgNewNote = "Comment une nouvelle note est créée depuis la table : mode (\"form\" : un formulaire avec chaque\nchamp, ou \"editor\" : créer et ouvrir dans l'éditeur), folder (relatif au dossier ouvert), name\n(modèle de nom), ask (les colonnes du formulaire ; par défaut : les colonnes visibles), required\n(colonnes à remplir obligatoirement), hidden (colonnes écrites sans champ), body (un fichier\nmodèle de corps) et [new_note.set] (colonne = valeur). Les modèles peuvent utiliser {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} et {folder}. Les valeurs du filtre\nde la vue passent en premier. La table est un seul élément : un endroit plus étroit qui l'écrit la\nremplace entièrement. name_head (\"show\" : le modèle rempli apparaît dans le champ du nom ; \"hide\" : il n'apparaît pas et est ajouté devant le nom saisi)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "Réaffectation des touches par mode : sous [keys.<mode>], écrire touche = nom d'action. \"none\"\nretire la touche. Modes : table, edit, review, quit, help, palette, search, filter, detail,\nsettings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window,\nfilter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch, input_normal\n(mode vim). Les noms d'action sont affichés dans la palette de commandes (:)."
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

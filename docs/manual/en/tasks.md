@@ -328,7 +328,7 @@ The palette's `q!` throws the pending changes away and quits without asking. It 
 ## Create a note
 
 1. Press `a`, or click `+ New` at the right end of the view bar. A form opens with the name and a field for each column.
-2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back; each field takes the input for its type (candidates, calendar, list).
+2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back. With the mouse, click a field's row to move to it; the keys on the bottom row of the window (Create, Cancel and so on) and the candidates can be clicked too. With `name_head = "hide"`, the name prefix from `[new_note] name` (a date, for example) is not shown in the name field and is added when the note is made (`"show"`, the default, puts it in the field); each field takes the input for its type (candidates, calendar, list).
 3. Press `Ctrl+S` from any field (or `Enter` on the last one). The file is created at once and its row is selected. `Ctrl+E` creates it and opens it in your editor.
 
 ![The new note form](images/new-note.svg)
@@ -413,7 +413,7 @@ Pass one `.csv` or `.tsv` file and mdgrid opens it as a table: the first line na
 - Columns: which columns to show, and their order
 - Filters: add conditions. Choosing a column lists its values with counts, and you tick the values to keep or hide
 - Sort and group
-- Tree (parent/child): when on, child notes with `parent: "[[Parent]]"` (the key can be changed) are indented under their parent. `Z` or a click on ▾ / ▸ folds or unfolds a parent. Sorting works among siblings, and a child whose parent is not in the table stays at the top level. In the same section, turn on WBS to number the rows (`1.2.1`) and build a table of values for the progress key (default `status`): type a percent and a label for each value (for example `100 Done`; `-` removes it). Rows without children show the label, parents show the average percent of their descendants. The table is saved with the view settings
+- Tree (parent/child): when on, child notes with `parent: "[[Parent]]"` (the key can be changed) are indented under their parent. `Z` or a click on ▾ / ▸ folds or unfolds a parent. Sorting works among siblings, and a child whose parent is not in the table stays at the top level. With grouping, a child that lands in a different group from its parent gets `↳` before its name instead of an indent. In the same section, turn on WBS to number the rows (`1.2.1`) and build a table of values for the progress key (default `status`): type a percent and a label for each value (for example `100 Done`; `-` removes it). Rows without children show the label, parents show the average percent of their descendants. The table is saved with the view settings
 - Display: row numbers, zebra stripes, column lines, tabs, the search bar, the settings band
 - Views: the tabs above the table. `Space` shows or hides a tab, `K` / `J` move it, `Enter` makes it the default, renames or deletes it, and the last row turns the "[ ] to switch" hint on or off. These changes are saved to `views.toml` right away, without `Apply` (the view you are on cannot be hidden, and `.base` views cannot be renamed or deleted)
 - Look: choose where to save ("Save to": global, this workspace, this table or this view), then pick the theme, parts and round pill ends with `Enter`; the theme and parts show where their current value comes from, such as `(this table)`. `Apply` shows them and keeps them in that place (`ui.toml`, `workspaces.toml`, `views.toml` or the view settings; `config.toml` and the workspace marker are never rewritten). "+ Save this look as a template" names the combination; pick a template to use it, `d` deletes it. "Remove the override of this place" goes back to the wider place
@@ -742,7 +742,9 @@ mdgrid /tmp/mdgrid-sample/Tasks --pick status
 
 ![Pick rows for another command](images/pick.svg)
 
-`y` (or `Ctrl+C`) copies the cell and `Y` the whole row to the clipboard.
+`y` (or `Ctrl+C`) copies the value of the cell to the clipboard. With rows selected, it copies the current column's values of those rows, one per line. `Y` copies the whole row as tab-separated text with a header.
+
+To paste, select the cell to start from and use your terminal's paste (`Ctrl+V`, `Cmd+V` or whatever your terminal uses). Values separated by line breaks go down the rows, and values separated by tabs go right across the columns, so a range copied from a spreadsheet pastes the same way. Pasted values are pending changes until you save, and one `u` undoes the paste.
 
 ## Choose a theme
 

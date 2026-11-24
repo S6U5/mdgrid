@@ -701,7 +701,7 @@ add_frontmatter = false
 
 ### `new_note`
 
-- Type: `table (mode, folder, name, ask, required, hidden, body and [new_note.set])`
+- Type: `table (mode, folder, name, name_head, ask, required, hidden, body and [new_note.set])`
 - Default: none
 - Scope: global, workspace, table, view
 
@@ -709,6 +709,7 @@ How a new note is made from the table ("+ New" at the right end of the view bar,
 
 - `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the root folder) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
 - `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`); `{date:YYYYMMDD}_` starts the name with `20261118_`.
+- `name_head`: how the filled `name` template is shown. `"show"` (default) puts it in the name field. `"hide"` keeps it out of the field and adds it before the name you type (with `sub/name` it goes on the last part; a name that already starts with a prefix matched by `display.note_name` is left as typed). Together with a `display.note_name` that hides the prefix in the table, you type only the title and never see the date.
 - `ask`: the columns shown as fields in the new note form, in order. Without `ask`, the form shows the columns visible in the table. Each field is edited with the input for its type; a field left empty is not written. `Ctrl+S` creates the note from any field.
 - `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
 - `hidden`: columns written into every new note without a field in the form (with `[new_note.set]`, for values such as the creation date).

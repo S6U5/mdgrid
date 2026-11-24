@@ -217,6 +217,7 @@ RsnNestedUse = "una plantilla no puede usar otra plantilla (se ignora)"
 RsnBadDateFormat = "{0}; se usa el valor por defecto YYYY-MM-DD"
 RsnBadColumn = "`{0}` no es una columna escribible, o está repetida (se ignora)"
 RsnBadNoteMode = "\"{0}\" no es \"form\" ni \"editor\"; se usa el formulario"
+RsnBadNameHead = "\"{0}\" no es \"show\" ni \"hide\"; se muestra en el campo del nombre"
 RsnNeedName = "necesita un nombre (cadena) que no se repita (se ignora)"
 RsnNeedPath = "necesita una ruta (cadena) (se ignora)"
 ## condition.invalid: 条件の名前の決まり。
@@ -1757,6 +1758,20 @@ KeyGanttEarlier = "Desplazar el eje temporal hacia antes"
 KeyGanttZoomIn = "Unidad más fina (mes → semana → día)"
 KeyGanttZoomOut = "Unidad más gruesa (día → semana → mes)"
 KeyGanttToday = "Ir a hoy"
+KeyGanttRange = "Cambiar el periodo (esta semana → este mes → trimestre → todo)"
+KeyBarLater = "Mover la barra una unidad más tarde (reescribe las fechas)"
+KeyBarEarlier = "Mover la barra una unidad antes (reescribe las fechas)"
+KeyBarLonger = "Alargar el final de la barra una unidad"
+KeyBarShorter = "Acortar el final de la barra una unidad"
+GanttToday = "Hoy"
+GanttThisWeek = "Semana"
+GanttThisMonth = "Mes"
+GanttQuarter = "Trimestre"
+GanttAll = "Todo"
+GanttNoOwnDates = "esta fila no tiene fechas propias, no se puede mover"
+GanttCannotShrink = "no se puede acortar más (el final quedaría antes del inicio)"
+GanttNoEnd = "esta fila no tiene fecha final, no se puede redimensionar"
+GanttBarSet = "{0}: {1}"
 CmdGanttView = "Abrir el Gantt"
 ## {0} is the start column, {1} the end column (or the days column), {2} the unit.
 GanttTitle = "Gantt: {0} → {1} ({2})"
@@ -1844,6 +1859,10 @@ PasteNoCell = "no hay celda donde pegar el valor"
 PasteNoRow = "no hay fila donde pegar los valores"
 ## {0} is the number of rows.
 PasteRows = "fila copiada pegada en {0} fila(s) (sin guardar)"
+PasteCells = "pegado en {0} celda(s) (sin guardar)"
+PasteOverflow = "; {0} valor(es) no cabían en la tabla y no se pegaron"
+PasteEmpty = "nada que pegar"
+CopyWhatColumn = "{1} de {0} fila(s) seleccionada(s)"
 RepeatNothing = "aún no hay valor que repetir (asigne antes una celda)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "Descartar los cambios y salir"
@@ -2114,7 +2133,7 @@ CfgEditCandidates = "Número máximo de valores candidatos que se ofrecen al edi
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Permite escribir en notas sin front matter o con uno vacío (se añade un front matter o una\nlínea de clave). false deja esas notas en solo lectura."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "Cómo se crea una nota nueva desde la tabla: mode (\"form\": un formulario con todos los campos,\no \"editor\": crear y abrir en el editor), folder (relativa a la carpeta abierta), name\n(plantilla del nombre), ask (las columnas del formulario; por defecto: las columnas visibles),\nrequired (columnas que hay que rellenar), hidden (columnas que se escriben sin campo), body (un\narchivo de plantilla del cuerpo) y [new_note.set] (columna = valor). Las plantillas pueden usar\n{date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} y {folder}. Los valores\ndel filtro de la vista van primero.\nLa tabla es un solo elemento: un lugar más estrecho que la escribe la sustituye entera."
+CfgNewNote = "Cómo se crea una nota nueva desde la tabla: mode (\"form\": un formulario con todos los campos,\no \"editor\": crear y abrir en el editor), folder (relativa a la carpeta abierta), name\n(plantilla del nombre), ask (las columnas del formulario; por defecto: las columnas visibles),\nrequired (columnas que hay que rellenar), hidden (columnas que se escriben sin campo), body (un\narchivo de plantilla del cuerpo) y [new_note.set] (columna = valor). Las plantillas pueden usar\n{date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} y {folder}. Los valores\ndel filtro de la vista van primero.\nLa tabla es un solo elemento: un lugar más estrecho que la escribe la sustituye entera. name_head (\"show\": la plantilla rellenada aparece en el campo del nombre; \"hide\": no aparece y se añade delante del nombre escrito)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "Reasignación de teclas por modo: bajo [keys.<modo>], escriba tecla = nombre de la acción.\n\"none\" quita la tecla. Modos: table, edit, review, quit, help, palette, search, filter, detail,\nsettings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window,\nfilter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch, input_normal\n(modo vim). Los nombres de las acciones se muestran en la paleta de comandos (:)."
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

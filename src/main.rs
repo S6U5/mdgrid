@@ -2576,7 +2576,7 @@ fn restore(screen: Screen) {
     if CURSOR_SHAPED.load(std::sync::atomic::Ordering::SeqCst) {
         let _ = execute!(out, cursor::SetCursorStyle::DefaultUserShape);
     }
-    let _ = out.write_all(b"\x1b[?1006l\x1b[?1002l");
+    let _ = out.write_all(b"\x1b[?2004l\x1b[?1006l\x1b[?1002l");
     let _ = execute!(
         out,
         EndSynchronizedUpdate,
@@ -2613,6 +2613,8 @@ fn enter(screen: Screen) -> io::Result<()> {
     execute!(out, EnterAlternateScreen, cursor::Hide)?;
     // マウス: ボタンイベントの追跡と SGR(docs/design.md)。
     out.write_all(b"\x1b[?1002h\x1b[?1006h")?;
+    // output.paste: 貼り付けの文字を、キーの並びでなく1つのまとまりで受ける(bracketed paste)。
+    out.write_all(b"\x1b[?2004h")?;
     out.flush()
 }
 
@@ -2723,6 +2725,8 @@ fn event_loop(
 fn handle(app: &mut App, ev: Event) {
     match ev {
         Event::Key(k) => app.key(k),
+        // output.paste: 端末の貼り付け。
+        Event::Paste(s) => app.paste(&s),
         // マウスは App の側でキーと同じ意図に直す(CE-1 の入力の外のクリック・SR-6)。
         Event::Mouse(m) => match m.kind {
             // SR-6: shift を押したホイールは、表では横のホイールと同じ(横を送らない端末とマウスのため)。

@@ -217,6 +217,7 @@ RsnNestedUse = "a template cannot use another template (ignored)"
 RsnBadDateFormat = "{0}; using the default YYYY-MM-DD"
 RsnBadColumn = "`{0}` is not a writable column, or a duplicate (ignored)"
 RsnBadNoteMode = "\"{0}\" is not \"form\" or \"editor\"; using the form"
+RsnBadNameHead = "\"{0}\" is not \"show\" or \"hide\"; showing it in the name field"
 RsnNeedName = "needs a name (string) that does not repeat (ignored)"
 RsnNeedPath = "needs a path (string) (ignored)"
 ## condition.invalid: 条件の名前の決まり。
@@ -1757,6 +1758,20 @@ KeyGanttEarlier = "Scroll the time axis earlier"
 KeyGanttZoomIn = "Finer unit (month → week → day)"
 KeyGanttZoomOut = "Coarser unit (day → week → month)"
 KeyGanttToday = "Go to today"
+KeyGanttRange = "Switch the period (this week → this month → quarter → all)"
+KeyBarLater = "Move the bar one unit later (rewrites the dates)"
+KeyBarEarlier = "Move the bar one unit earlier (rewrites the dates)"
+KeyBarLonger = "Extend the end of the bar by one unit"
+KeyBarShorter = "Shorten the end of the bar by one unit"
+GanttToday = "Today"
+GanttThisWeek = "Week"
+GanttThisMonth = "Month"
+GanttQuarter = "Quarter"
+GanttAll = "All"
+GanttNoOwnDates = "this row has no dates of its own, so it cannot be moved"
+GanttCannotShrink = "cannot shorten further (the end would come before the start)"
+GanttNoEnd = "this row has no end date, so it cannot be resized"
+GanttBarSet = "{0}: {1}"
 CmdGanttView = "Open the gantt"
 ## {0} is the start column, {1} the end column (or the days column), {2} the unit.
 GanttTitle = "Gantt: {0} → {1} ({2})"
@@ -1844,6 +1859,10 @@ PasteNoCell = "no cell to put the value in"
 PasteNoRow = "no row to put the values in"
 ## {0} is the number of rows.
 PasteRows = "put the copied row into {0} row(s) (unsaved)"
+PasteCells = "pasted into {0} cell(s) (unsaved)"
+PasteOverflow = "; {0} value(s) did not fit in the table and were not pasted"
+PasteEmpty = "nothing to paste"
+CopyWhatColumn = "{1} of {0} selected row(s)"
 RepeatNothing = "no value to repeat yet (set a cell first)"
 ## screen.quit-discard: the palette's q!.
 PaletteDiscardQuit = "Discard the changes and quit"
@@ -2114,7 +2133,7 @@ CfgEditCandidates = "Maximum number of value candidates offered when editing a t
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Allow writing to notes with no front matter or an empty one (a front matter or a key\nline is added). false makes those notes read-only."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
-CfgNewNote = "How a new note is made from the table: mode (\"form\": a form with every field, or\n\"editor\": create and open in the editor), folder (relative to the opened folder), name (name\ntemplate), ask (the form's columns; default: the visible columns), required (columns that must\nbe filled), hidden (columns written without a field), body (a body template file) and\n[new_note.set] (column = value). Templates may use {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} and {folder}. Values from the view's filter come first.\nThe table is one item: a narrower place that writes it replaces it whole."
+CfgNewNote = "How a new note is made from the table: mode (\"form\": a form with every field, or\n\"editor\": create and open in the editor), folder (relative to the opened folder), name (name\ntemplate), name_head (\"show\": put the filled template in the name field, or \"hide\": keep it\nout of the field and add it before the typed name), ask (the form's columns; default: the visible columns), required (columns that must\nbe filled), hidden (columns written without a field), body (a body template file) and\n[new_note.set] (column = value). Templates may use {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} and {folder}. Values from the view's filter come first.\nThe table is one item: a narrower place that writes it replaces it whole."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
 CfgKeys = "Key rebinding per mode: under [keys.<mode>], write key = action name.\n\"none\" removes the key. Modes: table, edit, review, quit, help, palette, search,\nfilter, detail, settings, settings_input, chips, list_select, menu, freq, sorts, relations, drawer, filter_window, filter_input, screen_menu, column_type, tree, gantt, kanban, chart, notice, switch,\ninput_normal (vim mode). Action names are shown in the command palette (:)."
 ## 設定の項目 `keys.vim` の説明(行の区切りは --print-config のコメントの行)。

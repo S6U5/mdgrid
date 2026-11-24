@@ -10,7 +10,7 @@ Four starters are built in, and each one is a sample of a way to use mdgrid. The
 
 ![The tasks starter](images/starter-tasks.svg)
 
-Tasks. One note per task, with status tabs (Open, Overdue, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you. The name of a new note starts with today's date, like `20261118_`, so you can make a task with the same title on another day; the table hides that date and shows only the title. Setting the status to `done` fills the done date (`done_at`) with today. Next to the due date, the "Time left" column says how near it is: "in 3 days", "5 days ago". With its `start` and `due` columns, `C` shows it as a Gantt too.
+Tasks. One note per task, with status tabs (Open, Overdue, Doing, Waiting, Done), due date, priority and tags. A new note asks only for the due date and priority; the status and the created date are filled in for you. The name of a new note starts with today's date, like `20261118_`, so you can make a task with the same title on another day; the table and the name field hide that date, so you type only the title and the date is added for you. Setting the status to `done` fills the done date (`done_at`) with today. Next to the due date, the "Time left" column says how near it is: "in 3 days", "5 days ago". With its `start` and `due` columns, `C` shows it as a Gantt too.
 
 ![The tree screen](images/tree.svg)
 
@@ -126,7 +126,7 @@ Press `u` right after creating a note by mistake and it moves to the trash; `Ctr
 
 ![The gantt screen](images/gantt.svg)
 
-`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
+`C` turns the rows of the current view into bars from the start date to the due date. With parent/child rows and WBS, the numbers and the progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month; `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The start and end columns come from the marker, or are inferred from date columns named like `start` and `due`.
 
 [Gantt in the list of views](views.md#gantt), [Key bindings](../../keys.md)
 
