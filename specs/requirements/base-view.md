@@ -107,7 +107,7 @@
   - Then: 見出しは `名前`。
 
 #### 列の名前を見せる所(まとまりの見出し・ビューの帯の条件と並べ替えとグループの札・ビューの設定の絞り込みの一覧・カンバンとガントとグラフとリストの値の付け外しの窓の題・新しいノートの窓の欄・木の画面の右の欄の列の見出し)は、列の見出しと同じく `properties` の displayName があればそれを使い、ノートに書く値・式・設定・`--print` の鍵は変えないべき
-`req~base-view.display-name-everywhere~1` P1
+`req~base-view.display-name-everywhere~2` P1
 - Rationale: 列の見出しは「状態」なのに、まとまりの見出しや帯の札やカンバンの題には生の列名(`status`)が出て、同じ列が2つの名前で見えていたため(2026-11-25 に、まとまりの見出しの「actor:」を直したときに、同じ形の所を洗い出した)
 - Acceptance:
   - Given: `properties` で `note.status` に displayName `状態` の表で、絞り込み「status が done を除く」
