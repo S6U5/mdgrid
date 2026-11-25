@@ -1176,6 +1176,8 @@ impl App {
     /// 編集中に入力の外をクリックしたら確定を試み、確定できなければそのクリックを捨てる(CE-1)。
     /// 表では、選んでいない行のセルは選ぶだけ、選んだ行のセルは編集(見出しの行なら開閉)を始める(SR-6・SR-2)。
     /// 選んだ行のファイル名(行の名前の欄・`file.name` のセル)は `e` と同じくエディタで開く(SR-19)。
+    /// 値の全体が URL のセルは、選んでいないセルなら選ぶだけ、選んでいるセルなら `O` と同じ道で開く
+    /// (screen.url-click-open)。
     /// タブの帯はビューの切り替え(BV-13)、検索の欄は簡易の絞り込みの入力(NV-23)、
     /// 列の見出しの境界はドラッグの始まり(SR-3)。
     pub fn click(&mut self, x: u16, y: u16) {
@@ -1241,6 +1243,9 @@ impl App {
             }
             // NV-18: 設定の画面の項目とボタンのクリック。
             Mode::Settings => return self.settings_click(x, y),
+            // navigation.detail-click-select・navigation.detail-url-open: 項目の行のクリックで選び、選んでいる
+            // URL の値のクリックで開く。
+            Mode::Detail => return self.detail_click(x, y),
             // screen.help-run: ヘルプの項目のクリックで選び、選んでいる項目のクリックで Enter と同じ。
             Mode::Help => return self.help_click(x, y),
             // SR-24: 一覧の項目のクリックで実行して閉じ、窓の外のクリックで閉じるだけ。
@@ -1451,13 +1456,27 @@ impl App {
                 Some(super::grid::Slot::Row(r)) => self.rows.get(*r).cloned(),
                 _ => None,
             };
-            if row.is_some_and(|r| view::tree_mark_at(self, &r, x as usize)) {
+            if row
+                .as_ref()
+                .is_some_and(|r| view::tree_mark_at(self, r, x as usize))
+            {
                 self.row = i;
                 self.message = None;
                 self.toggle_tree();
                 return;
             }
             let same_row = i == self.row;
+            let same_cell = same_row && j == self.col;
+            let in_name = {
+                let lay = view::layout(self);
+                let x0 = lay.label_x();
+                (x0..x0 + lay.label_w).contains(&(x as usize))
+            };
+            // screen.url-click-open: 値の全体が http・https の URL のセル(行の名前の欄は除く)。
+            let url = match (&row, self.cols.get(j)) {
+                (Some(r), Some(c)) if !in_name => self.value_url(r, c),
+                _ => None,
+            };
             self.row = i;
             self.col = j;
             self.message = None;
@@ -1466,13 +1485,16 @@ impl App {
                 self.refresh_if_needed();
             }
             self.scroll_into_view();
+            // screen.url-click-open・tbd~screen.url-click-edit: URL のセルは、選んでいないセルなら選ぶだけ、
+            // 選んでいるセルなら `O` と同じ道で開く(クリックでは直さない)。
+            if let Some(url) = url {
+                if same_cell {
+                    self.open_url(&url);
+                }
+                return;
+            }
             if same_row {
                 // SR-19: 選んだ行のファイル名(行の名前の欄・`file.name` のセル)は `e` と同じ。
-                let in_name = {
-                    let lay = view::layout(self);
-                    let x0 = lay.label_x();
-                    (x0..x0 + lay.label_w).contains(&(x as usize))
-                };
                 let file_name = self.cols.get(j).is_some_and(|c| c == "file.name");
                 if (in_name || file_name) && self.cur_row().is_some() {
                     self.apply(Action::OpenEditor);

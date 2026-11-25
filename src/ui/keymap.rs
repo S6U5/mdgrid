@@ -1419,6 +1419,15 @@ pub const BINDINGS: &[Binding] = &[
         IN_DETAIL,
         2,
     ),
+    // navigation.detail-url-open: 選んでいる項目の URL を開く(表の `O` と同じ。下の帯には出さない)。
+    m(
+        Mode::Detail,
+        "O",
+        Action::OpenUrl,
+        Msg::KeyOpenUrl,
+        IN_DETAIL,
+        0,
+    ),
     m(Mode::Detail, "j", Action::Down, Msg::KeyDown, IN_DETAIL, 3),
     m(
         Mode::Detail,

@@ -249,9 +249,56 @@ impl App {
                 }
             }
             Action::Help => self.open_help(),
+            // navigation.detail-url-open: 選んでいる項目の値が URL ならその URL、無ければ行の URL(表の `O` と同じ道)。
+            Action::OpenUrl => {
+                let (row, sel) = (d.row.clone(), d.sel);
+                match self
+                    .detail_props(&row)
+                    .get(sel)
+                    .and_then(|p| self.value_url(&row, p))
+                {
+                    Some(url) => self.open_url(&url),
+                    None => self.open_row_url(&row),
+                }
+            }
             _ => {}
         }
         self.detail_scroll();
+    }
+
+    /// navigation.detail-click-select・navigation.detail-url-open: 項目の行(折り返した行も)のクリックでその項目を
+    /// 選び、選んでいる項目の値の全体が URL なら、値の欄のもう一度のクリックで開く(表の `O` と同じ道)。
+    /// tbd~navigation.detail-reclick: URL でない項目のもう一度のクリックは、選んだままにする。
+    pub(crate) fn detail_click(&mut self, x: u16, y: u16) {
+        let w = self.size.0.saturating_sub(1) as usize;
+        let (x, y) = (x as usize, y as usize);
+        // 1行目は見出し。本文はその下から `detail_height` 行。
+        if y == 0 || y > self.detail_height() {
+            return;
+        }
+        let Some(d) = &self.detail else {
+            return;
+        };
+        let (row, sel) = (d.row.clone(), d.sel);
+        let Some(prop) = self
+            .detail_body(d, w)
+            .get(d.top + y - 1)
+            .map(|l| l.prop)
+            .filter(|&p| p != NOT_PROP)
+        else {
+            return;
+        };
+        let props = self.detail_props(&row);
+        let on_value = x > self.detail_key_w(&props, w) + 2;
+        let url = props.get(prop).and_then(|p| self.value_url(&row, p));
+        if let Some(d) = &mut self.detail {
+            d.sel = prop;
+        }
+        self.message = None;
+        self.detail_scroll();
+        if let (true, true, Some(url)) = (prop == sel, on_value, url) {
+            self.open_url(&url);
+        }
     }
 
     /// 詳細の表示から開いた入力の Tab / Shift+Tab: 確定して、下・上のプロパティを選ぶ。扱ったら true。

@@ -631,12 +631,12 @@ fn test_ce_1_click_outside_commits() {
     let (cx, cy) = view::cursor(&a).unwrap();
     a.click(cx - 1, cy);
     assert_eq!(a.mode, keymap::Mode::Edit);
-    // [utest -> req~screen.mouse-click-select~1, req~screen.mouse-click-edit~1] 別の行のセルのクリック → 確定して、その行を選ぶだけ(編集は始めない)。
+    // [utest -> req~screen.mouse-click-select~1, req~screen.mouse-click-edit~2] 別の行のセルのクリック → 確定して、その行を選ぶだけ(編集は始めない)。
     a.click(cx - 1, cy + 1);
     assert_eq!(a.mode, keymap::Mode::Table);
     assert_eq!(a.changes.count(), 1);
     assert_eq!(a.row, 1);
-    // [utest -> req~screen.mouse-click-edit~1] 選んだ行のセルのクリック → 編集を始める。
+    // [utest -> req~screen.mouse-click-edit~2] 選んだ行のセルのクリック → 編集を始める。
     a.click(cx - 1, cy + 1);
     assert_eq!(a.mode, keymap::Mode::Edit);
 }

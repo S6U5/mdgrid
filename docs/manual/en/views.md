@@ -32,7 +32,7 @@ Rows gather under heading rows, one per value of a column. `Enter` on a heading 
 
 ![The tree screen](images/tree.svg)
 
-Write `tree = { path = "folder" }` on the table in the workspace file (`.mdgrid/workspace.toml`), and `T` turns the paths in that column (`bar > Dev > Web`) into a folder tree: the tree with counts on the left, the notes of the selected folder on the right. Good for bookmarks and reference material; the built-in bookmarks starter is set up this way. The tree screen is there from 0.4.0.
+Write `tree = { path = "folder" }` on the table in the workspace file (`.mdgrid/workspace.toml`), and `T` turns the paths in that column (`bar > Dev > Web`) into a folder tree: the tree with counts on the left, the notes of the selected folder on the right. Click a row on the right again to go to it in the table; click the URL of the selected row again to open it in your browser. Good for bookmarks and reference material; the built-in bookmarks starter is set up this way. The tree screen is there from 0.4.0.
 
 [The `tree` setting](../../config.md), [Create a ledger from a starter](tasks.md#create-a-ledger-from-a-starter)
 
@@ -96,7 +96,7 @@ The `freq` section of [Key bindings](../../keys.md)
 
 ![Details of one note](images/detail.svg)
 
-`K` lists every key and value of the selected row top to bottom. For the moment when there are more columns than the screen is wide.
+`K` lists every key and value of the selected row top to bottom. For the moment when there are more columns than the screen is wide. A long URL that wraps opens in full too: click it to select it, then click it again or press `O`.
 
 The `detail` section of [Key bindings](../../keys.md)
 

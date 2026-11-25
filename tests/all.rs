@@ -261,6 +261,8 @@ mod test_trust_notices;
 mod test_types;
 #[path = "test_unwritable.rs"]
 mod test_unwritable;
+#[path = "test_url_click_e2e.rs"]
+mod test_url_click_e2e;
 #[path = "test_value_labels_e2e.rs"]
 mod test_value_labels_e2e;
 #[path = "test_vault.rs"]

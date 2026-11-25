@@ -14,7 +14,7 @@ Tasks. One note per task, with status tabs (Open, Overdue, Doing, Waiting, Done)
 
 ![The tree screen](images/tree.svg)
 
-Bookmarks. One note per bookmark, with its place written as `folder: bar > Dev > Web`; `T` shows them as a folder tree, and `o` on the tree screen opens the URL in your browser. In the table, `O` does the same.
+Bookmarks. One note per bookmark, with its place written as `folder: bar > Dev > Web`; `T` shows them as a folder tree, and `o` on the tree screen opens the URL in your browser. In the table, `O` does the same. With the mouse, click a URL cell to select it and click it again to open it; a URL cut short with `…` by the column width still opens in full.
 
 ![The reading starter](images/starter-reading.svg)
 

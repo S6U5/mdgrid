@@ -491,7 +491,7 @@ fn fits(a: &App, w: u16) {
 
 #[test]
 fn test_tr_7_mouse() {
-    // [utest -> req~tree.mouse-toggle~2, req~tree.mouse-row-reclick~1, req~tree.mouse-wheel~2] 開発 の印のクリック → 閉じる。Web をクリック → 選ぶ。右の行のクリック2回 → 表のその行へ。ホイールで上下。
+    // [utest -> req~tree.mouse-toggle~2, req~tree.mouse-row-reclick~2, req~tree.mouse-wheel~2] 開発 の印のクリック → 閉じる。Web をクリック → 選ぶ。右の行のクリック2回 → 表のその行へ。ホイールで上下。
     let (_t, mut a) = boot("tr7");
     ch(&mut a, 'T');
     let s = screen(&a);

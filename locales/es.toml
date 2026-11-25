@@ -1833,6 +1833,9 @@ UrlOpenFailed = "no se pudo abrir {0}: {1}"
 UrlRefuseExecutable = "{0} apunta a un archivo ejecutable (.{1}), así que no se abre (para abrirlo, copie la URL y péguela en el navegador)"
 ## {0} is the URL.
 UrlRefuseBidi = "{0} contiene caracteres que cambian la dirección del texto, así que no se abre"
+## {0} is the key that opens the URL on this screen (screen.url-click-hint).
+HintUrlClick = "URL: haga clic de nuevo o pulse {0} para abrir"
+HintUrlClickOnly = "URL: haga clic de nuevo para abrir"
 RsnTreeNotTable = "no es una tabla como { path = \"<columna>\" }, así que no hay árbol"
 RsnTreeNeedPath = "no tiene path (la columna con las carpetas), así que no hay árbol"
 RsnTreeEmptySep = "el separador está vacío, así que no hay árbol"

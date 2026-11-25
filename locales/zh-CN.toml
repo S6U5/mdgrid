@@ -1832,6 +1832,9 @@ UrlOpenFailed = "无法打开 {0}：{1}"
 UrlRefuseExecutable = "{0} 指向可执行文件（.{1}），不打开（要打开，请复制 URL 粘贴到浏览器）"
 ## {0} is the URL.
 UrlRefuseBidi = "{0} 含有改变文字方向的字符，不打开"
+## {0} is the key that opens the URL on this screen (screen.url-click-hint).
+HintUrlClick = "URL：再次点击或按 {0} 打开"
+HintUrlClickOnly = "URL：再次点击打开"
 RsnTreeNotTable = "不是 { path = \"<列>\" } 形式的表，因此不显示树"
 RsnTreeNeedPath = "没有 path（存放文件夹层级的列），因此不显示树"
 RsnTreeEmptySep = "分隔符为空，因此不显示树"
