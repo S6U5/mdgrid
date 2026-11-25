@@ -99,6 +99,19 @@ path = "tasks"
 children = { key = "parent", on_done = "refuse", gantt = "extend" }
 ```
 
+ニュースは新しい順、支出は日付の新しい順のように、表ごとに決まった並びがあるときは、印の `[[table]]` に既定の並べ替えを書く: `sort = [{ property = "<列>", direction = "DESC" }, …]`。形は `.base` のビューの `sort` と同じで、`direction` は `ASC` か `DESC`(大文字小文字は問わない。省くと昇順)。書いた順が優先の順で、前の決まりで並びが同じ行を次の決まりで並べる。
+
+効くのは、その表のビューのうち自分の `sort` を持たないもの(`.base` のファイルのビュー・印の `[[table.base.views]]`・並べ替えを持たない mdgrid のビュー)と、ビューの無い表。`--print` の出力、カンバンのレーンの中の札、ガントの行も同じ順になる。`sort` を持つビューはそのビューの `sort` のまま。見出しの `s` や並べ替えの窓(`S`)で並べ替えると、その決まりが先に効き、並びが同じ行はビューの `sort`(無ければ表の既定)の順に残る(既定が期限の順の表で状態の見出しを押すと、同じ状態の中は期限の順)。並べ替えの窓とビューの設定の並べ替えの区画では、既定から来た決まりに「既定・印」(表の既定)か「既定・ビュー」(ビューの `sort`)を添え、画面で変えたあとは窓の「既定に戻す」で戻せる。
+
+書けるのは印の `[[table]]` だけで(画面の型の設定と同じ)、`workspaces.toml` と `views.toml` には書かない。全体の設定にも無い(表ごとに列が違うため)。`sort` が配列でないときは警告して使わず、`property` が無い・`direction` が `ASC` と `DESC` のどちらでもない決まりは警告してその決まりだけを外す。表に無い列はノートを読み終えたときに知らせる(`.mdgrid/workspace.toml: table[1].sort[1].property: …` の形)。
+
+```toml
+# research/.mdgrid/workspace.toml — ニュースは日付の新しい順、同じ日はファイルの名前の順
+[[table]]
+name = "ニュース"
+sort = [{ property = "date", direction = "DESC" }, { property = "file.name", direction = "ASC" }]
+```
+
 印の `[[table]]` には、グラフの画面(`P`。[キー](keys.ja.md) の `chart`)の設定も書ける: `chart = { kind = "bar", x = "status" }`。鍵はどれも省ける。`kind` は種類(`bar` 棒・`stacked` 積み上げ棒・`line` 折れ線・`scatter` 散布図・`heatmap` ヒートマップ。省くと棒)、`x` は分ける列、`y` は値の数の列(省くと件数。散布図では縦の列で、数か日付の列)、`agg` は集め方(`count`・`sum`・`avg`・`min`・`max`。`y` があって省くと合計)、`by` は内訳の列(積み上げ棒・ヒートマップでは要り、省くと推し量る。折れ線・散布図では任意)、`unit` は日付の区切り(`day`・`week`・`month`。省くと収まる最も細かい単位)、`cumulative = true` は折れ線の累積、`name` は題に出す名前。グラフを複数書くときは配列(`chart = [ { … }, { … } ]`)にし、画面の `[` `]` で移る:
 
 ```toml

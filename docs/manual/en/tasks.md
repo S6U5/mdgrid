@@ -90,6 +90,8 @@ Search ignores case when the word is all lowercase. `Esc` clears the selection f
 
 A sort is kept for the current view, so the table opens in the same order next time (the `.base` file is not changed). In the sort window you can add a rule (`Enter`, then pick a column), flip its direction (`Enter`), remove it (`d`) and reorder (`K`, `J`); every change applies right away. The quick filter `\` is temporary. To keep more, see [Shape a view and save it](#shape-a-view-and-save-it).
 
+The view's `sort`, or the table's default sort written in the workspace marker ([configuration](../../config.md)), is the default order. The sort window marks those rules "default · view" or "default · marker", and `d` does not remove them: they always come last to order rows that are otherwise tied. Sorting from a heading or the window puts your rules first, and tied rows stay in the default order. Flipping a default rule with `Enter` or moving it with `K` and `J` turns the rules you see into your own. While you have changed the sort, the button shows in the active color, and **Back to default** at the end of the window returns to the default order.
+
 ## Filter with named conditions
 
 Write a condition you use often once, with a name, under `[conditions]` in the config. The [configuration reference](../../config.md#conditions--named-conditions) has every item.

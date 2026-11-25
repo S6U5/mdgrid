@@ -188,11 +188,12 @@ fn read_tables(
                 .unwrap_or_else(|| "base".to_string());
             // TR-2・GA-1・KB-1・CH-1: 印の `tree`(木)・`gantt`(ガント)・`kanban`(カンバン)・`chart`(グラフ)の設定は
             // 開くときに marker_tree・marker_gantt・marker_kanban・marker_chart が読む。`children`(親子。
-            // navigation.parent-child-config)は marker_children、routine.opt-in: `runs`(ルーチンの回)は marker_runs が読む。
+            // navigation.parent-child-config)は marker_children、routine.opt-in: `runs`(ルーチンの回)は marker_runs、
+            // base-view.table-sort: `sort`(表の既定の並べ替え)は marker_sort が読む。
             let skip: &[&str] = if file.starts_with(MARKER_DIR) {
                 &[
                     "name", "path", "view", "base", "tree", "gantt", "kanban", "chart", "children",
-                    "runs",
+                    "runs", "sort",
                 ]
             } else {
                 &["name", "path", "view", "base"]
@@ -227,6 +228,7 @@ fn read_tables(
         let skip: &[&str] = if file.starts_with(MARKER_DIR) {
             &[
                 "name", "path", "view", "tree", "gantt", "kanban", "chart", "children", "runs",
+                "sort",
             ]
         } else {
             &["name", "path", "view"]
@@ -541,6 +543,96 @@ pub fn marker_children_reopen(
     opened: &Path,
 ) -> (Option<(crate::tree::ReopenSpec, String)>, Vec<String>) {
     marker_setting(opened, "children", read_children_reopen)
+}
+
+/// base-view.table-sort: 開いたものの表に、印の `[[table]]` で書いた表の既定の並べ替え
+/// (`sort = [{ property, direction }, …]`)。印が無い・その表が無い・`sort` が無いなら None。書き誤りは CLI-3 の形で
+/// 警告し、配列でなければ全部を、決まりが読めなければその決まりだけを使わない(base-view.table-sort-bad)。
+pub fn marker_sort(opened: &Path) -> (Option<TableSort>, Vec<String>) {
+    let (got, warns) = marker_setting(opened, "sort", read_sort);
+    (got.map(|(s, _)| s), warns)
+}
+
+/// base-view.table-sort: 印の表の既定の並べ替え。`rules` は列の id(`note.` は外す)と向きを書いた順に、`at` は
+/// それぞれの決まりの警告の場所(`table[n].sort[k]`。列が表に無いときの警告に使う)。
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct TableSort {
+    pub rules: Vec<(String, crate::base::Dir)>,
+    pub at: Vec<String>,
+}
+
+/// base-view.table-sort・base-view.table-sort-bad: `sort` を読む。配列でなければ警告して None。決まりが表でない・
+/// `property` が無いか空か文字でない・`direction` が ASC と DESC(大文字小文字を問わない)のどちらでもない決まりは
+/// 警告して使わない。`direction` を省けば昇順(`.base` と同じ)。知らない鍵は警告して決まりは使う。同じ列の2つめからは使わない。
+fn read_sort(v: &toml::Value, file: &str, at: &str, warns: &mut Vec<String>) -> Option<TableSort> {
+    use crate::base::Dir;
+    use crate::profile::{not, not_one_of, warn};
+    let Some(items) = v.as_array() else {
+        warn(warns, file, at, not(Msg::WantSortList));
+        return None;
+    };
+    let mut out = TableSort::default();
+    for (k, item) in items.iter().enumerate() {
+        let here = format!("{at}[{}]", k + 1);
+        let Some(t) = item.as_table() else {
+            warn(warns, file, &here, not(Msg::WantTable));
+            continue;
+        };
+        for key in t.keys() {
+            if key != "property" && key != "direction" {
+                warn(
+                    warns,
+                    file,
+                    &format!("{here}.{key}"),
+                    Msg::RsnUnknown.text().to_string(),
+                );
+            }
+        }
+        let col = match t.get("property") {
+            Some(toml::Value::String(s)) if !s.trim().is_empty() => {
+                let s = s.trim();
+                s.strip_prefix("note.").unwrap_or(s).trim().to_string()
+            }
+            Some(toml::Value::String(_)) | None => {
+                warn(
+                    warns,
+                    file,
+                    &format!("{here}.property"),
+                    Msg::RsnSortNeedProperty.text().to_string(),
+                );
+                continue;
+            }
+            Some(_) => {
+                warn(
+                    warns,
+                    file,
+                    &format!("{here}.property"),
+                    not(Msg::WantString),
+                );
+                continue;
+            }
+        };
+        let dir = match t.get("direction") {
+            None => Dir::Asc,
+            Some(toml::Value::String(s)) if s.trim().eq_ignore_ascii_case("asc") => Dir::Asc,
+            Some(toml::Value::String(s)) if s.trim().eq_ignore_ascii_case("desc") => Dir::Desc,
+            Some(_) => {
+                warn(
+                    warns,
+                    file,
+                    &format!("{here}.direction"),
+                    not_one_of(&["ASC", "DESC"]),
+                );
+                continue;
+            }
+        };
+        if col.is_empty() || out.rules.iter().any(|(c, _)| *c == col) {
+            continue;
+        }
+        out.rules.push((col, dir));
+        out.at.push(here);
+    }
+    Some(out)
 }
 
 /// GA-7: 画面の型ごとの設定の共通の読み方。開いたもの(フォルダか .base)と `real_path` で同じ `[[table]]` を探し、

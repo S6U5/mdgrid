@@ -478,6 +478,8 @@ mod test_tab_wrap_below;
 #[cfg(test)]
 mod test_table_names;
 #[cfg(test)]
+mod test_table_sort;
+#[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
 mod test_then;

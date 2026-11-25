@@ -185,7 +185,15 @@ impl App {
             return g;
         }
         let Some(b) = &self.base else {
-            return Ok(base::default_grid(self.src.as_ref()));
+            // base-view.table-sort: ビューの無い表は表の既定の並べ替えで並べる。
+            let prop = |r: &RowId, k: &str| self.prop(r, k);
+            return Ok(base::default_grid_sorted(
+                self.src.as_ref(),
+                &prop,
+                &self.table_sort.rules,
+                self.today,
+                self.now,
+            ));
         };
         if b.base.views.is_empty() {
             return Err(Msg::PrintNoViews.text().into());

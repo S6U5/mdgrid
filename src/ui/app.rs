@@ -296,6 +296,8 @@ pub struct App {
     pub(crate) kanban: Option<super::kanban::Kanban>,
     /// navigation.parent-child-config: 印に書いた親子の設定と、警告の場所(`table[n].children`。children.rs)。
     pub(crate) children_spec: Option<(mdgrid::tree::ChildrenSpec, String)>,
+    /// base-view.table-sort: 印に書いた表の既定の並べ替えと、決まりごとの警告の場所(`table[n].sort[k]`。sorts.rs)。
+    pub(crate) table_sort: mdgrid::workspace::TableSort,
     /// cell-edit.children-closed-by・cell-edit.children-reopen: 同じ children の `closed_by` と `on_reopen`。
     pub(crate) children_reopen: mdgrid::tree::ReopenSpec,
     /// cell-edit.children-reopen: on_reopen = "ask" で、子も戻すかを選ぶのを待っている直し(children.rs)。
@@ -472,6 +474,7 @@ impl App {
             kanban_spec: None,
             kanban: None,
             children_spec: None,
+            table_sort: mdgrid::workspace::TableSort::default(),
             children_reopen: mdgrid::tree::ReopenSpec::default(),
             children_ask: None,
             chart_specs: Vec::new(),

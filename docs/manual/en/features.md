@@ -64,7 +64,9 @@ Type `tomorrow`, `next fri`, `eom` or `+2w` in a due date cell and you get that 
 
 `\` narrows the rows as you type, `/` searches, `s` sorts by the column. Keep only the rows with the same value, count a column's values and keep one (`%`), hide the columns you do not need.
 
-[Find, filter and sort](tasks.md#find-filter-and-sort)
+When a table has an order of its own, like news newest first, write it once in the workspace marker: views without a `sort`, a table without views, `--print` and the kanban cards all follow it. Sort by status from a heading and each status group stays in that order. The sort window marks those rules "default · marker", and "Back to default" brings the order back.
+
+[Find, filter and sort](tasks.md#find-filter-and-sort), [default sort of a table](../../config.md)
 
 ## Filter with named conditions
 

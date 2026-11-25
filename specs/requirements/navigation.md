@@ -429,12 +429,16 @@
 
 ### 並べ替えと列
 
-#### 列の見出しから並べ替え(昇順 → 降順 → 解除)ができるべき
-`req~navigation.header-sort-cycle~1` P1
+#### 列の見出しから並べ替え(昇順 → 降順 → 解除)ができるべきで、解除すると既定の並び(navigation.sort-default-tiebreak。ビューの `sort`、無ければ表の既定の並べ替え)に戻るべき
+`req~navigation.header-sort-cycle~2` P1
 - Acceptance:
   - Given:
   - When: 見出しを2回 → 降順、3回
   - Then: `.base` の並びに戻る。
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "due", direction = "ASC" }]`(base-view.table-sort)の表
+  - When: title の見出しで `s` を3回
+  - Then: 行は due の昇順に戻り、知らせは「並べ替えを解いた(既定の並び)」。
 
 #### 見出しからの並べ替えは、今のビューの設定の並べ替え(navigation.view-settings)として当て、見た目の状態(screen.state-store)に保存して、次に開いても同じ並びにするべき
 `req~navigation.header-sort-save~1` P1
@@ -518,6 +522,87 @@
   - Given:
   - When: 検索の欄を出さない設定でパレットから並べ替えの窓を開く
   - Then: 「+ 並べ替えを足す」のある窓が開く。
+
+#### 見出しのクリックと `s`、並べ替えの窓で決めた並べ替えのあとには、既定の並べ替え(`.base` のビューの `sort`、無ければ表の既定の並べ替え。base-view.table-sort)を最後の決め手として付け、決めた並べ替えで並びが同じ行どうしは既定の順に並べるべき(決めた並べ替えと同じ列の既定の決まりは重ねない)
+`req~navigation.sort-default-tiebreak~1` P1
+- Rationale: 既定が期限の順の表で状態の見出しを押したとき、同じ状態の中が期限の順のままだと読みやすい。見出しのクリックと `s` は今までどおり、その列だけの並べ替えに置き換える(昇順 → 降順 → 解除)。2番目の決め手を見出しの Shift+クリックで足す形は採らない(多くの端末で Shift+クリックは文字の選びに取られて届かない)。いくつもの決め手の優先の順は、並べ替えの窓で決まりを足して順を入れ替えて決める。mdgrid のビューの並べ替えはビューの設定そのもの(定義に保存して直せる)なので、見出しと窓で置き換わり、最後の決め手は表の既定の並べ替えになる
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "due", direction = "ASC" }]`、ノート a(status todo・due 2026-11-30)・b(done・2026-11-10)・c(todo・2026-11-05)・d(done・2026-11-20)
+  - When: status の見出しで `s`
+  - Then: 行は b・d・c・a の順(status の昇順で、同じ status の中は due の昇順)。
+- Acceptance:
+  - Given: 同じ表で、並べ替えの窓で status の降順と title の昇順を決めた(どのノートも title が同じ)
+  - When: 表を見る
+  - Then: 行は c・a・b・d の順(status の降順、同じ status と title の中は due の昇順)。
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "due", direction = "ASC" }]` の表
+  - When: due の見出しで `s` を2回(due の降順)
+  - Then: 行は due の降順(既定の due の昇順を重ねない)。
+- Needs: utest, stest
+
+#### 並べ替えの窓は、決めた並べ替えの決まりのあとに、既定の並べ替えの決まり(決めた並べ替えと同じ列のものを除く)を並べ、既定から来た決まりには「既定」と出どころ(印の表の既定か、`.base` のビューの `sort` か)を添えるべきで、既定の決まりは外せず、向きを変える・順を入れ替えると、窓に見えている並びのまま決めた並べ替えになるべき
+`req~navigation.sort-window-default~1` P1
+- Rationale: 今どの並びで並んでいて、それがどこで決まったか(画面で変えたのか、表やビューの既定か)を窓で分かるようにするため。既定は並びが同じ行の最後の決め手として必ず付くので、窓で外せても戻ってくる。mdgrid のビューの並べ替えはビューの設定そのもの(定義に保存して直せる)なので、既定に数えず、外せる
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]`、`sort` の無いビュー
+  - When: 並べ替えの窓を開く
+  - Then: 決まりの行は「↓ date」に降順と「既定・印」を添えた1行で、右の端に「×」が無い。
+- Acceptance:
+  - Given: ビューの `sort` が `[{ property = "due", direction = "ASC" }]` の `.base` のビュー
+  - When: 並べ替えの窓を開く
+  - Then: 決まりの行は「↑ due」に「既定・ビュー」を添えた1行。
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]` の表で、並べ替えの窓を開いた
+  - When: date の行で Enter
+  - Then: 決まりの行は「↑ date」で「既定」を添えず、表は date の昇順になる。
+- Acceptance:
+  - Given: 同じ表で並べ替えの窓を開いた
+  - When: date の行で外すキー
+  - Then: 決まりの行は「↓ date」(既定・印)のまま残り、外せない理由の知らせが出る。
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]`、定義の並べ替えが due の昇順の mdgrid のビュー
+  - When: 並べ替えの窓を開く
+  - Then: 決まりの行は「↑ due」(右の端に「×」、既定を添えない)と「↓ date」(既定・印)の2行。
+- Needs: utest
+
+#### 並べ替えを画面で変えている間は、並べ替えの窓に「既定に戻す」を出し、選ぶと画面で変えた並べ替えを外して既定の並びに戻し、見た目の状態(screen.state-store)にも残すべき
+`req~navigation.sort-window-reset~1` P1
+- Rationale: 見出しや窓でいくつも決まりを変えたあとに、1手で既定の並びに戻すため
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]` の表で、title の見出しで `s` を押した
+  - When: 並べ替えの窓の「既定に戻す」を選ぶ
+  - Then: 表は date の降順に戻り、窓の決まりの行は「↓ date」(既定・印)だけになり、開き直しても date の降順。
+- Acceptance:
+  - Given: 同じ表で、画面で並べ替えを変えていない
+  - When: 並べ替えの窓を開く
+  - Then: 窓に「既定に戻す」が無い。
+- Needs: utest
+
+#### 並べ替えのボタンは、画面で変えていない間は既定の並べ替えの先頭の決まり(と残りの数)を効いていない見た目(条件の無い絞り込みのボタンと同じ)で見せ、画面で変えたら変えた決まりを効いている見た目で見せるべき
+`req~navigation.sort-button-default~1` P1
+- Rationale: 既定のままか画面で変えたかを、窓を開かずにボタンで見分けるため(色を使わない表示では、効いている見た目は太字)
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }, { property = "title", direction = "ASC" }]` の表
+  - When: 表を開く
+  - Then: 並べ替えのボタンは「↓ date +1」で、効いていない見た目。
+- Acceptance:
+  - Given: 同じ表
+  - When: title の見出しで `s`
+  - Then: 並べ替えのボタンは「↑ title」で、効いている見た目。
+- Needs: utest
+
+#### ビューの設定(navigation.view-settings)の並べ替えの区画は、並べ替えの窓と同じく、決めた並べ替えのあとに既定の決まりを出どころ(「既定・印」か「既定・ビュー」)を添えて並べ、区画で既定の決まりを変えたときは見えている並びのまま決めた並べ替えにするべき
+`req~navigation.settings-sort-default~1` P1
+- Rationale: ビューの設定からも、表の既定から来た並べ替えだと分かり、窓と同じ扱いで変えられるようにするため
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]`、`sort` の無いビュー
+  - When: ビューの設定の並べ替えの区画を開く
+  - Then: 「1. date ↓」に「既定・印」を添えた行と「+ 並べ替えを足す」が並ぶ。
+- Acceptance:
+  - Given: 同じ区画を開いた
+  - When: date の行で Enter のあと反映
+  - Then: 表は date の昇順で、ビューの設定の並べ替えは date の昇順。
+- Needs: utest
 
 #### ビューのタブのうち1つを「既定のビュー」に選べるべきで、操作の一覧とコマンドのパレットの「既定のビューにする」で今のビューを選び、mdgrid の設定の置き場の `views.toml` の、開いた対象の項目に名前で残すべき(ノートのフォルダと `.base` には書かない)
 `req~navigation.default-view-set~1` P1

@@ -763,6 +763,64 @@
   - Then: 上限に届かずに、一番遅い会議の日時が出る。
 - Needs: utest
 
+### 表の既定の並べ替え
+
+#### ワークスペースの印の `[[table]]` に `sort = [{ property = "<列>", direction = "ASC|DESC" }, …]`(`.base` のビューの `sort` と同じ形)を書いてよく、その表の、自分の並べ替えを持たないビュー(`.base` のファイルのビュー・印の `[[table.base.views]]`・mdgrid のビュー)とビューの無い表を、書いた順を優先の順として並べるべき
+`req~base-view.table-sort~1` P1
+- Rationale: 既定でかかる絞り込み(ビューの `filters`・名前の条件の `hide`)はあるのに、並べ替えはビューごとの `sort` しかなく、`sort` の無いビューとビューの無い表はファイルの名前の順に並んでいた。ニュースは新しい順、支出は日付の新しい順のように表で決まった並びを、ビューごとに同じ `sort` を書かずに1回で決めるため。書く所は、ほかの画面の型の設定(`kanban`・`gantt`・`children`)と同じく印の `[[table]]` だけにし、全体の設定には置かない(表ごとに列が違う)。`direction` を省いた決まりは `.base` と同じく昇順
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]`、ビューの無い表に date が 2026-11-20 の a・2026-11-25 の b・2026-11-22 の c
+  - When: 表を開く
+  - Then: 行は b・c・a の順(ファイルの名前の順でない)。
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "status", direction = "ASC" }, { property = "date", direction = "DESC" }]`、status が todo で date が 2026-11-20 の a と 2026-11-25 の b、status が done で date が 2026-11-22 の c
+  - When: 表を開く
+  - Then: 行は c・b・a の順(status の順に並び、同じ status の中は date の新しい順)。
+- Acceptance:
+  - Given: 同じ `sort = [{ property = "date", direction = "DESC" }]` の表に、`sort` の無い印の `[[table.base.views]]` のビュー「全部」と、並べ替えを持たない mdgrid のビュー「下書き」
+  - When: 「全部」のタブと「下書き」のタブを開く
+  - Then: どちらのタブも行は b・c・a の順。
+- Needs: utest, stest
+
+#### 自分の並べ替えを持つビュー(`.base` のビューの `sort`、mdgrid のビューの設定の並べ替え)は、表の既定の並べ替えでなく、そのビューの並べ替えで並べるべき
+`req~base-view.table-sort-own-view~1` P1
+- Rationale: ビューごとに決めた並び(「今週」は取り上げ方の順など)を、表の既定で崩さないため
+- Acceptance:
+  - Given: 印の `[[table]]` に `sort = [{ property = "date", direction = "DESC" }]`、ビュー「名前の順」に `sort = [{ property = "file.name", direction = "ASC" }]`、ノート a(2026-11-20)・b(2026-11-25)・c(2026-11-22)
+  - When: 「名前の順」のタブを開く
+  - Then: 行は a・b・c の順。
+- Needs: utest
+
+#### 表の既定の並べ替えは、画面の表のほか、`--print` の出力の行の順(`--pick` は画面の表と同じ)、カンバンのレーンの中の札の順、ガントの行の順にも、画面の表と同じに効くべき
+`req~base-view.table-sort-outputs~1` P1
+- Rationale: 同じビューを画面と書き出しとほかの画面の型で見たときに、並びが変わらないようにするため
+- Acceptance:
+  - Given: base-view.table-sort の1つめの表(`sort = [{ property = "date", direction = "DESC" }]`、ノート a・b・c)
+  - When: `mdgrid <表> --print --format csv`
+  - Then: データの行は b・c・a の順。
+- Acceptance:
+  - Given: 同じ表に `kanban = { column = "status" }` と、status がどれも todo の a・b・c
+  - When: `B` でカンバンを開く
+  - Then: todo のレーンの札は上から b・c・a。
+- Needs: utest, stest
+
+#### 印の `sort` の書き誤り(配列でない・決まりが表でない・`property` が無いか空・`direction` が ASC と DESC のどちらでもない(大文字小文字は問わない)・`property` の列が表に無い)は、cli.config-file の形で警告1行にし、その決まりを使わず、ほかの決まりは使うべき
+`req~base-view.table-sort-bad~1` P1
+- Rationale: 印は人が手で書くので、綴りの誤りで並びが黙って変わらない(効かない)ことに気づけるようにするため
+- Acceptance:
+  - Given: 1つめの `[[table]]` に `sort = [{ direction = "DESC" }, { property = "date", direction = "DOWN" }, { property = "title" }]`
+  - When: 表を開く
+  - Then: 警告に `table[1].sort[1].property` と `table[1].sort[2].direction` が出て、表は title の昇順に並ぶ。
+- Acceptance:
+  - Given: `sort = "date"`
+  - When: 表を開く
+  - Then: 警告に `table[1].sort` が出て、表の既定の並べ替えは無い(ファイルの名前の順)。
+- Acceptance:
+  - Given: `sort = [{ property = "dat", direction = "DESC" }]`(dat の列はどのノートにも無い)
+  - When: 読み終える
+  - Then: 警告に `table[1].sort[1].property` と列の名前 dat が出る。
+- Needs: utest
+
 ## 未確定事項
 
 ### `relative()` の言い回しと数え方

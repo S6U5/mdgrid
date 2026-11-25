@@ -858,7 +858,8 @@ fn button_text(app: &App, b: ViewButton) -> (String, bool) {
         ViewButton::Sort => (
             Some(A::SortMenu),
             super::sorts::label(app),
-            !app.settings.sorts.is_empty(),
+            // navigation.sort-button-default: 既定のままは効いていない見た目。
+            super::sorts::button_on(app),
         ),
         ViewButton::Group => match &app.settings.group {
             mdgrid::settings::Group::By { col, .. } => (

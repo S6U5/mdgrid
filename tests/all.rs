@@ -247,6 +247,8 @@ mod test_starter_layer;
 mod test_switch_e2e;
 #[path = "test_table_flag.rs"]
 mod test_table_flag;
+#[path = "test_table_sort_e2e.rs"]
+mod test_table_sort_e2e;
 #[path = "test_tag_keys.rs"]
 mod test_tag_keys;
 #[path = "test_theme_auto_e2e.rs"]

@@ -103,6 +103,11 @@ impl App {
             self.children_reopen = reopen.map(|(r, _)| r).unwrap_or_default();
             warnings.extend(warns);
         }
+        // base-view.table-sort: 印に書いた表の既定の並べ替え(書き誤りの決まりは警告して外す。列が表に無いことは読み終えて
+        // から確かめる)。`.base` のビューと mdgrid のビューとビューの無い表に置く。
+        let (table_sort, warns) = mdgrid::workspace::marker_sort(&s.target);
+        self.table_sort = table_sort.unwrap_or_default();
+        warnings.extend(warns);
         // CH-1: 印に書いたグラフの設定(書き方が違うグラフは警告して外す。無くても推定で開ける)。
         let (charts, warns) = mdgrid::workspace::marker_chart(&s.target);
         self.chart_specs = charts;
@@ -125,7 +130,8 @@ impl App {
             target: s.target,
             shown: false,
         });
-        if let Some((base, name, view)) = s.base {
+        if let Some((mut base, name, view)) = s.base {
+            base.set_table_sort(&self.table_sort.rules);
             // BV-13: 起動は先頭のビュー(`--view` があればそれ)。
             self.set_base(base, name, view.unwrap_or(0));
         } else {

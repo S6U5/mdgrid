@@ -179,8 +179,12 @@ fn badge(app: &App, d: &Draft, sec: Sec) -> String {
         Sec::Columns => format!("{}/{}", d.cols.iter().filter(|c| c.1).count(), d.cols.len()),
         Sec::Filters if d.s.filters.is_empty() && d.s.named.is_empty() => none(),
         Sec::Filters => (d.s.filters.len() + d.s.named.len()).to_string(),
-        Sec::Sorts if d.s.sorts.is_empty() => none(),
-        Sec::Sorts => d.s.sorts.len().to_string(),
+        // navigation.settings-sort-default: 決めた決まりの数。無ければ既定の並びがあるときは「既定」。
+        Sec::Sorts => match d.s.sorts.len() {
+            0 if d.sort_base.defaults.is_empty() => none(),
+            0 => Msg::OriginDefault.to_string(),
+            n => n.to_string(),
+        },
         Sec::Group => match &d.s.group {
             Group::By { col, .. } => sanitize(&app.title(col)),
             Group::Off => Msg::NavGroupOff.to_string(),
@@ -344,19 +348,28 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
             v
         }
         Sec::Sorts => {
-            let n = d.s.sorts.len();
-            let mut v: Vec<Row> =
-                d.s.sorts
-                    .iter()
-                    .enumerate()
-                    .map(|(i, (c, dir))| {
-                        Row::item(
-                            format!("{}. {} {}", i + 1, sanitize(&app.title(c)), arrow(*dir)),
-                            Hit::Item(Sec::Sorts, i),
-                            sel(i),
-                        )
-                    })
-                    .collect();
+            // navigation.settings-sort-default: 決めた決まりのあとに、既定の決まりを出どころを添えて並べる。
+            let rules = d.sort_base.rules(&d.s.sorts);
+            let n = rules.len();
+            let mut v: Vec<Row> = rules
+                .iter()
+                .enumerate()
+                .map(|(i, r)| {
+                    let from = r
+                        .from
+                        .map_or_else(String::new, |f| format!("  ({})", f.label()));
+                    Row::item(
+                        format!(
+                            "{}. {} {}{from}",
+                            i + 1,
+                            sanitize(&app.title(&r.col)),
+                            arrow(r.dir)
+                        ),
+                        Hit::Item(Sec::Sorts, i),
+                        sel(i),
+                    )
+                })
+                .collect();
             v.push(Row::item(Msg::SetAddSort, Hit::Item(Sec::Sorts, n), sel(n)));
             v
         }

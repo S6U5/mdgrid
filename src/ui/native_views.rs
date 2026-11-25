@@ -59,9 +59,10 @@ pub(crate) struct Native {
     pub tabs: views::TabPrefs,
 }
 
-/// mdgrid のビューの列の並びと式の絞り込みを `.base` にする(核の `print::synth`。`--print` と同じ組み立て)。
-fn synth_of(nv: &NativeView) -> Result<Base, String> {
-    mdgrid::print::synth(nv)
+/// mdgrid のビューの列の並びと式の絞り込みを `.base` にする(核の `print::synth_sorted`。`--print` と同じ組み立て)。
+/// 既定の並び(定義の並べ替え、無ければ表の既定の並べ替え。base-view.table-sort)を置く。
+fn synth_of(nv: &NativeView, table_sort: &[(String, mdgrid::base::Dir)]) -> Result<Base, String> {
+    mdgrid::print::synth_sorted(nv, table_sort)
 }
 
 /// 定義の指紋(名前は入れない)。見た目の状態がどの定義の上に重ねたものかを見分ける。
@@ -239,7 +240,7 @@ impl App {
             self.nv.synth = None;
         } else {
             let k = i - nb;
-            self.nv.synth = Some(synth_of(&self.nv.views[k]));
+            self.nv.synth = Some(synth_of(&self.nv.views[k], &self.table_sort.rules));
             self.nv.at = Some(k);
         }
         self.reset_view();
@@ -248,7 +249,7 @@ impl App {
     /// 選んだ mdgrid のビューの定義から表の元を作り直す(名前を変えたあと)。
     pub(crate) fn refresh_native_synth(&mut self) {
         if let Some(v) = self.native_view() {
-            self.nv.synth = Some(synth_of(v));
+            self.nv.synth = Some(synth_of(v, &self.table_sort.rules));
         }
     }
 
@@ -356,6 +357,10 @@ impl App {
             if let Some(s) = &mut self.store {
                 s.shown = false;
             }
+        }
+        // navigation.sort-default-tiebreak: 定義の並べ替えは選んだビューの既定の並びなので、書き換えた定義で作り直す。
+        if let Some(k) = self.nv.at {
+            self.nv.synth = Some(synth_of(&self.nv.views[k], &self.table_sort.rules));
         }
     }
 
@@ -562,7 +567,7 @@ impl App {
         self.adopt_views(list, Some(&name));
         self.rename_in_tabs(&old, Some(&name));
         if let Some(v) = self.native_view() {
-            self.nv.synth = Some(synth_of(v));
+            self.nv.synth = Some(synth_of(v, &self.table_sort.rules));
         }
         self.close_draft();
         let note = if unapplied {
