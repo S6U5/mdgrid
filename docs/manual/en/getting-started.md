@@ -85,7 +85,7 @@ Cell marks:
 | blank | the note has no such key |
 | leading `!` | a value that does not fit the column's type (`someday` in a date column); sorts last |
 | `*` | an unsaved change |
-| `#` | a read-only cell (a note that cannot be written safely, or a read-only value such as a nested one); select it to see why |
+| `#` | a read-only cell (a note that cannot be written safely, or a read-only value such as a nested one); select it to see why. Formula columns (headed `ƒ`) are read-only as a whole, so with colors on their cells are dim instead of marked `#` |
 | `!` at the start of the row | a conflict file made by a sync tool, or a note that changed on disk while you had pending changes |
 | `~` at the start of the row | an edited row that would now sort or filter elsewhere, kept in place until you save or move |
 

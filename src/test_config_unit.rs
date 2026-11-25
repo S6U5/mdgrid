@@ -1,5 +1,44 @@
 use super::*;
 
+/// 文字の並び(1字が1つの列)。
+fn cols(s: &str) -> Vec<String> {
+    s.chars().map(String::from).collect()
+}
+
+#[test]
+fn test_follow_order_keeps_moves_that_do_not_conflict() {
+    // [utest -> req~screen.state-store-follow-order~1] 印の order が abc で c を先頭に動かした(cab)あと、印が axbc に
+    // なれば cax b。印が変わらなければ覚えた並びのまま。印が消した列は戻さない。
+    assert_eq!(
+        follow_order(&cols("abc"), &cols("cab"), &cols("axbc")),
+        cols("caxb")
+    );
+    assert_eq!(
+        follow_order(&cols("abc"), &cols("cab"), &cols("abc")),
+        cols("cab")
+    );
+    assert_eq!(
+        follow_order(&cols("abc"), &cols("cab"), &cols("ab")),
+        cols("ab")
+    );
+}
+
+#[test]
+fn test_follow_order_marker_wins_on_conflict() {
+    // [utest -> req~screen.state-store-follow-order~1] 人が c を b の前に動かし(acb)、印も c を先頭に動かした(cab)
+    // ときは、食い違うので印のまま(cab)。人が動かした列の直前の列を印が動かしたときも印のまま。
+    assert_eq!(
+        follow_order(&cols("abc"), &cols("acb"), &cols("cab")),
+        cols("cab")
+    );
+    // 人は b を d の後ろに動かした(acdb)が、印は d を c の前に動かした(abdc): b を置く基準の d を印が動かしたので、
+    // 印の並びのまま。
+    assert_eq!(
+        follow_order(&cols("abcd"), &cols("acdb"), &cols("abdc")),
+        cols("abdc")
+    );
+}
+
 #[test]
 fn test_sr_8_blank_is_same_as_empty() {
     // [utest -> req~screen.editor-choice~2, req~screen.editor-fallback~1, req~screen.editor-no-shell~1] 空白だけの値も空とみなし、次の候補へ進む。

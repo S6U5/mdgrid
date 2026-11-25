@@ -1,7 +1,5 @@
 //! 値の候補の窓(セルを直すときと、新しいノートの窓の欄の候補)に、`[rules.<列>] labels` の名前を値に添える試験
-//! (「未着手 todo」。書く値と、セルの見せ方は値のまま。tbd~navigation.value-labels-cells)。値は作ったもの。
-//!
-//! 要求の文はまだ無い(人が書き足す)。印は要求ができてから付ける。
+//! (「未着手 todo」。書く値は値のまま。navigation.value-labels-picker)。値は作ったもの。
 
 use super::app::{App, ColorMode};
 use super::keymap::Mode;
@@ -59,8 +57,7 @@ fn texts(a: &App) -> Vec<String> {
 
 #[test]
 fn test_value_labels_in_cell_candidates() {
-    // [utest -> req~navigation.value-labels-picker~1] 名前のある値の候補は「未着手 todo」(名前と値)、名前の無い値は doing のまま。選んで書く値は todo。
-    // セルは値のまま(todo)。
+    // [utest -> req~navigation.value-labels-picker~2] 名前のある値の候補は「未着手 todo」(名前と値)、名前の無い値は doing のまま。選んで書く値は todo。
     let (_t, mut a) = boot("vl_cell");
     a.row = 0;
     a.col = a.cols.iter().position(|c| c == "status").unwrap();
@@ -85,13 +82,11 @@ fn test_value_labels_in_cell_candidates() {
         a.changes.pending(&row, "status"),
         Some(&NewValue::Str("todo".into()))
     );
-    let s = screen(&a);
-    assert!(!s.contains("未着手"), "セルは値のまま:\n{s}");
 }
 
 #[test]
 fn test_value_labels_in_new_note_candidates() {
-    // [utest -> req~navigation.value-labels-picker~1] 新しいノートの窓の status の欄の候補も「未着手 todo」と「doing」。
+    // [utest -> req~navigation.value-labels-picker~2] 新しいノートの窓の status の欄の候補も「未着手 todo」と「doing」。
     let (_t, mut a) = boot("vl_new_note");
     ch(&mut a, 'a');
     typing(&mut a, "gamma");

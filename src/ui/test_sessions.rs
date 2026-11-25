@@ -190,7 +190,8 @@ fn test_session_keeps_every_screen_filter() {
     a.filter = Some("会議".into());
     a.run_expr_filter("due >= \"2026-08-01\"");
     ch(&mut a, '1');
-    ch(&mut a, '9');
+    // condition.digit-order: key = 9 の old は、key を書いた2つ目の条件なので `2` に振ってある。
+    ch(&mut a, '2');
     let s = a.current_session("全部".into());
     assert_eq!(s.folders, [tmp.notes().canonicalize().unwrap()]);
     assert_eq!(s.base, None);

@@ -687,9 +687,9 @@ fn data_row(
                 Some(Select::Bar | Select::Cross | Select::Tint | Select::Outline)
             );
         match &s.part {
-            CellPart::Chips { items, list } if keep_parts => {
+            CellPart::Chips { items, list, mark } if keep_parts => {
                 // CV-8: 札は1行のまま。
-                chip_spans(app, items, *list, cw, st, &mut cell);
+                chip_spans(app, items, *list, mark, cw, st, &mut cell);
                 for m in &mut more {
                     m.push(Span::styled(" ".repeat(cw), blank(st)));
                 }
@@ -750,22 +750,35 @@ fn blank(st: Style) -> Style {
 
 /// SR-35・SR-36: 値の部品の並びを幅 `cw` に描く(部品ごとに色)。入らない要素は途中で切らず、残りの数を
 /// `+N` で示す(1つ目の要素は、単独で入れば丸ごと、入らなければ列の幅いっぱいに `…` で切って見せる。+N は
-/// 入る余地があるときだけ)。残りは `st` の空白。
+/// 入る余地があるときだけ)。残りは `st` の空白。要素は (値, 見せる文字)(navigation.value-labels-cells)。
+/// セルの印 `mark`(`!` など)は部品の前に `st` の文字で出す(cell-view.marks-on-parts)。
 fn chip_spans(
     app: &App,
-    items: &[String],
+    items: &[(String, String)],
     list: bool,
+    mark: &str,
     cw: usize,
     st: Style,
     spans: &mut Vec<Span<'static>>,
 ) {
-    let Some(parts) = super::chips::parts(app, items, list) else {
+    let Some(parts) = super::chips::parts_named(app, items, list) else {
+        let shown: Vec<&str> = items.iter().map(|(_, t)| t.as_str()).collect();
         spans.push(Span::styled(
-            fit(&sanitize(&items.join(", ")), cw, Align::Left),
+            fit(
+                &sanitize(&format!("{mark}{}", shown.join(", "))),
+                cw,
+                Align::Left,
+            ),
             st,
         ));
         return;
     };
+    let mark = take(mark, cw);
+    let mark_w = width(&mark);
+    if mark_w > 0 {
+        spans.push(Span::styled(mark, st));
+    }
+    let cw = cw - mark_w;
     let seg_w = |segs: &[super::chips::Seg]| segs.iter().map(|(t, _)| width(t)).sum::<usize>();
     let look = |o: &Option<Style>| o.map_or(st, |x| st.patch(x));
     let mut used = 0;

@@ -115,7 +115,7 @@ impl Scope {
     /// ワークスペースの範囲の層(SR-44)。検知した範囲は None。
     pub fn layer(&self) -> Option<Layer> {
         Some(Layer {
-            origin: Origin::new(Place::Workspace, self.label()?),
+            origin: Origin::new(Place::Workspace, self.label()?).by_author(self.by_author()),
             profile: self.profile.clone(),
         })
     }
@@ -125,9 +125,15 @@ impl Scope {
         let label = self.label()?;
         let t = self.tables.iter().find(|t| same_path(&t.path, opened))?;
         Some(Layer {
-            origin: Origin::new(Place::TableHand, format!("{label}: {}", t.name)),
+            origin: Origin::new(Place::TableHand, format!("{label}: {}", t.name))
+                .by_author(self.by_author()),
             profile: t.profile.clone(),
         })
+    }
+
+    /// 範囲の層が台帳の作り手の勧める既定か(印から来た範囲。screen.profile-scopes-marker-look)。
+    pub fn by_author(&self) -> bool {
+        self.source == Source::Marker
     }
 }
 
@@ -1691,11 +1697,20 @@ pub fn read_marker(root: &Path) -> (Workspace, Vec<String>) {
     );
     // WS-7: `open`(根を開いたときの表)は marker_open が読む。
     // stack.page-store: ページ(`[[page]]`)は marker_pages が読む。
+    // condition.marker・notice.marker・notify.marker: 名前の条件・通知の欄・知らせは config::for_table が読む。
     let profile = Profile::read_scoped(
         &table,
         &label,
         "",
-        &["name", "table", "open", crate::page::KEY],
+        &[
+            "name",
+            "table",
+            "open",
+            crate::page::KEY,
+            "conditions",
+            "notices",
+            "notify",
+        ],
         &mut warns,
     );
     // 印はノートと一緒に配られるので、根の外を指す表は使わない(開いただけで外のフォルダを読ませない)。
@@ -1775,6 +1790,35 @@ pub fn marker_open(root: &Path) -> (Option<WsTable>, Vec<String>) {
         );
         (None, warns)
     }
+}
+
+/// condition.marker・notice.marker・notify.marker: 開いたもの(フォルダか .base。改行でつないだ複数のパスは最初の
+/// 1つ)から上へたどって最初に見つかった印の、根・出どころの名前(`.mdgrid/workspace.toml (<ワークスペースの名前>)`)・
+/// スターターを重ねた文(starter.layer-marker。`[[notices]]`・`[[notify]]` は台帳の印に書けば丸ごと置き換わる。
+/// tbd~starter.marker-arrays)とその表。印が無い・読めない(壊れた TOML)なら None。壊れた TOML は
+/// 範囲を決めるときに read_marker が知らせる。
+pub fn marker_table(opened: &Path) -> Option<(PathBuf, String, String, toml::Table)> {
+    let first = opened
+        .to_string_lossy()
+        .lines()
+        .next()
+        .map_or_else(|| opened.to_path_buf(), PathBuf::from);
+    let start = if first.extension().is_some_and(|x| x == "base") {
+        first.parent().unwrap_or(&first).to_path_buf()
+    } else {
+        first
+    };
+    let root = find_marker(&start)?;
+    let text = marker_source(&root).0;
+    let table: toml::Table = text.parse().ok()?;
+    let name = table
+        .get("name")
+        .and_then(|v| v.as_str())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| stem_of(&root));
+    let origin = format!("{MARKER_DIR}/{MARKER_FILE} ({name})");
+    Some((root, origin, text, table))
 }
 
 /// 印を作る(WS-7)。既にあれば理由。作ったファイルのパス。

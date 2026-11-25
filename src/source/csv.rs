@@ -322,8 +322,12 @@ impl Source for Csv {
         }
     }
 
+    /// 行の案内は、セルの読むだけの理由と同じ前置き「読むだけ: 」を付けた理由(理由の文は前置きの語を含まない。
+    /// screen.read-only-reason-once)。
     fn mark(&self, row: &RowId) -> Option<String> {
-        self.index(row).and_then(|i| self.row_lock(i))
+        self.index(row)
+            .and_then(|i| self.row_lock(i))
+            .map(|r| format!("{}{r}", Msg::ReadOnlyLead.text()))
     }
 
     fn columns(&self) -> Vec<String> {

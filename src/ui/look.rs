@@ -30,7 +30,7 @@ pub(crate) struct Look {
 }
 
 /// 2つの色の中間(t は b の割合)。
-fn mix(a: [u8; 3], b: [u8; 3], t: f32) -> [u8; 3] {
+pub(crate) fn mix(a: [u8; 3], b: [u8; 3], t: f32) -> [u8; 3] {
     let m = |x: u8, y: u8| (f32::from(x) * (1.0 - t) + f32::from(y) * t).round() as u8;
     [m(a[0], b[0]), m(a[1], b[1]), m(a[2], b[2])]
 }

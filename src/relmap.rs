@@ -433,6 +433,7 @@ fn box_lines(
     idx: usize,
     g: &Glyphs,
     mark: &dyn Fn(usize, &str) -> Option<String>,
+    title: &dyn Fn(usize, &str) -> String,
 ) -> Vec<(String, Role, Option<usize>)> {
     // (印, 文字, 役割, つながりの添字)。
     let mut out: Vec<(Option<String>, String, Role, Option<usize>)> = Vec::new();
@@ -442,7 +443,7 @@ fn box_lines(
             shown.push(l.column.clone());
             out.push((
                 mark(idx, &l.column),
-                format!("{} {} {}", l.column, g.arrow_r, l.to),
+                format!("{} {} {}", title(idx, &l.column), g.arrow_r, l.to),
                 Role::Link,
                 Some(k),
             ));
@@ -451,7 +452,7 @@ fn box_lines(
     let rest: Vec<&String> = info.columns.iter().filter(|c| !shown.contains(c)).collect();
     let room = MAX_FIELDS.saturating_sub(out.len());
     for c in rest.iter().take(room) {
-        out.push((mark(idx, c), (*c).clone(), Role::Field, None));
+        out.push((mark(idx, c), title(idx, c), Role::Field, None));
     }
     if rest.len() > room {
         out.push((None, format!("+{}", rest.len() - room), Role::Field, None));
@@ -488,6 +489,18 @@ pub fn layout_with(
     ascii: bool,
     mark: &dyn Fn(usize, &str) -> Option<String>,
 ) -> Map {
+    layout_titled(infos, links, ascii, mark, &|_, c| c.to_string())
+}
+
+/// `layout_with` に、列の名前の見せ方を添えるもの(base-view.display-name-everywhere)。`title(表の添字, 列)` を
+/// 箱の列の名前に使う(つながりを結ぶ名前と添字は列のキーのまま)。
+pub fn layout_titled(
+    infos: &[TableInfo],
+    links: &[Link],
+    ascii: bool,
+    mark: &dyn Fn(usize, &str) -> Option<String>,
+    title: &dyn Fn(usize, &str) -> String,
+) -> Map {
     let g = if ascii { PLAIN } else { ROUND };
     let n = infos.len();
     let index = |name: &str| infos.iter().position(|t| t.name == name);
@@ -513,7 +526,7 @@ pub fn layout_with(
     let contents: Vec<Vec<(String, Role, Option<usize>)>> = infos
         .iter()
         .enumerate()
-        .map(|(i, t)| box_lines(t, links, i, &g, mark))
+        .map(|(i, t)| box_lines(t, links, i, &g, mark, title))
         .collect();
     let titles: Vec<String> = infos
         .iter()
@@ -939,13 +952,34 @@ fn draw_path(map: &mut Map, pts: &[(usize, usize)], k: usize, g: &Glyphs) {
 
 /// つながりの1行の文(狭い画面の一覧・詳細): `Tasks.project → Projects (N:1)`。
 pub fn link_text(l: &Link) -> String {
+    link_text_as(l, &l.column)
+}
+
+/// `link_text` の列の名前を `column`(元の表の displayName など。base-view.display-name-everywhere)にしたもの。
+pub fn link_text_as(l: &Link, column: &str) -> String {
     clean(&format!(
         "{}.{} → {} ({})",
         l.from,
-        l.column,
+        column,
         l.to,
         if l.many { "N:N" } else { "N:1" }
     ))
+}
+
+/// relations.map-reverse: つながり `k` の逆向きのつながり(添字)。行き先の表から元の表へ戻るつながりのうち、元の
+/// ノートが指した行き先のノートからその元のノートを指し返す組が1つ以上あるもの。`k` そのものは数えない(同じ表の
+/// 中のつながりは、表の形だけではどれがどれの逆向きかを決められないので、ノートの指し合いで決める)。
+pub fn reverse_of(links: &[Link], k: usize) -> Vec<usize> {
+    let Some(l) = links.get(k) else {
+        return Vec::new();
+    };
+    let back: std::collections::HashSet<(&PathBuf, &PathBuf)> =
+        l.pairs.iter().map(|(a, b)| (b, a)).collect();
+    (0..links.len())
+        .filter(|&x| x != k)
+        .filter(|&x| links[x].from == l.to && links[x].to == l.from)
+        .filter(|&x| links[x].pairs.iter().any(|(a, b)| back.contains(&(a, b))))
+        .collect()
 }
 
 /// つながりの組のうち、行き先ごとの数の多いもの(詳細の見本): (行き先の名前, 元の数)。

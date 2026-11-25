@@ -33,16 +33,18 @@ impl Condition {
     }
 }
 
-/// 使える条件の並び(書いた順)と、置き換え済みの式。
+/// 使える条件の並び(書いた順。印の条件が先)と、置き換え済みの式。
 #[derive(Clone, Debug, Default)]
 pub struct Conditions {
     list: Vec<Condition>,
     exprs: HashMap<String, Expr>,
+    /// condition.marker: 印(ワークスペースの印)から来た条件の名前。
+    marker: HashSet<String>,
 }
 
 impl PartialEq for Conditions {
     fn eq(&self, other: &Self) -> bool {
-        self.list == other.list
+        self.list == other.list && self.marker == other.marker
     }
 }
 
@@ -81,8 +83,76 @@ impl Conditions {
         }
     }
 
+    /// condition.marker: 印から来た条件か(`--print-config --resolved` の出どころ。cli.resolved-config-ledger)。
+    pub fn from_marker(&self, name: &str) -> bool {
+        self.marker.contains(name)
+    }
+
+    /// condition.digit-order: 数字のキーに振る順の条件(`key` を書いたもの)。印の条件が先、全体の設定の条件が後で、
+    /// それぞれ `key` の小さい順(同じ数なら書いた順)。今の表で使えるかと、割り当て直した数字は見ない(画面が見る)。
+    pub fn digit_order(&self) -> Vec<&Condition> {
+        let mut keyed: Vec<(usize, &Condition)> = self
+            .list
+            .iter()
+            .filter(|c| c.key.is_some())
+            .map(|c| (usize::from(!self.marker.contains(&c.name)), c))
+            .collect();
+        keyed.sort_by_key(|(layer, c)| (*layer, c.key));
+        keyed.into_iter().map(|(_, c)| c).collect()
+    }
+
+    /// condition.marker・condition.marker-layer: 印の条件 `marker`(読んだまま。書いた順)を、全体の設定の条件
+    /// `global` の前に並べて組む。同じ名前は印の条件を使い、全体の設定の条件の式の中の `cond()` も印の条件を指す。
+    /// 数字の重なり(condition.digit-dup)は、同じファイルの中だけを見る。警告は印の条件のものを `file` の名前で出す。
+    pub fn layered(
+        marker: Vec<Condition>,
+        file: &str,
+        global: &Conditions,
+        w: &mut Vec<String>,
+    ) -> Conditions {
+        if marker.is_empty() {
+            return global.clone();
+        }
+        let names: HashSet<String> = marker.iter().map(|c| c.name.clone()).collect();
+        let mut specs: Vec<(Condition, usize)> = marker.into_iter().map(|c| (c, 0)).collect();
+        specs.extend(
+            global
+                .list
+                .iter()
+                .filter(|c| !names.contains(&c.name))
+                .map(|c| (c.clone(), 1)),
+        );
+        // 全体の設定の条件の問題は、設定を読むところで出してある(印に重ねて新しく起きる輪などは出す)。
+        let mut out = Conditions::build_layers(specs, &[file, crate::config::CONFIG_FILE], w);
+        out.marker = names
+            .into_iter()
+            .filter(|n| out.exprs.contains_key(n))
+            .collect();
+        out
+    }
+
     /// 書いた条件(読んだまま)から、使える条件を組む。名前・式・輪・数字の重なりの問題は `w` に警告して外す。
     pub fn build(specs: Vec<Condition>, file: &str, w: &mut Vec<String>) -> Conditions {
+        Conditions::build_layers(specs.into_iter().map(|c| (c, 0)).collect(), &[file], w)
+    }
+
+    /// `build` の中身。条件ごとに、書いたファイル(`files` の添字)を添える。
+    fn build_layers(
+        specs: Vec<(Condition, usize)>,
+        files: &[&str],
+        w: &mut Vec<String>,
+    ) -> Conditions {
+        let file_of: HashMap<String, String> = specs
+            .iter()
+            .map(|(c, k)| {
+                let f = files.get(*k).copied().unwrap_or_default();
+                (c.name.clone(), f.to_string())
+            })
+            .collect();
+        let file_for = |name: &str| file_of.get(name).cloned().unwrap_or_default();
+        let layer_of: HashMap<String, usize> =
+            specs.iter().map(|(c, k)| (c.name.clone(), *k)).collect();
+        let specs: Vec<Condition> = specs.into_iter().map(|(c, _)| c).collect();
         // 1. 式を読む(`cond("x")` は参照のまま)。読めない式は警告して外す。
         let mut open: HashMap<String, (Expr, Vec<String>)> = HashMap::new();
         let mut order = Vec::new();
@@ -94,7 +164,7 @@ impl Conditions {
                 }
                 Err(e) => warn(
                     w,
-                    file,
+                    &file_for(&c.name),
                     &format!("conditions.{}.expr", c.name),
                     Msg::RsnCondExpr.fill(&[&expr_reason(&e)]),
                 ),
@@ -108,7 +178,7 @@ impl Conditions {
             path.push(cycle[0].clone());
             warn(
                 w,
-                file,
+                &file_for(&cycle[0]),
                 &format!("conditions.{}", cycle[0]),
                 Msg::RsnCondCycle.fill(&[&path.join(" → ")]),
             );
@@ -117,34 +187,39 @@ impl Conditions {
         let mut done: HashMap<String, Option<Expr>> = HashMap::new();
         for name in &order {
             if !in_cycle.contains(name) {
-                resolve(name, &open, &in_cycle, &mut done, file, w);
+                resolve(name, &open, &in_cycle, &mut done, &file_for, w);
             }
         }
-        // 4. 数字の重なり(condition.digit-dup): 先に書いた条件に当てる。
+        // 4. 数字の重なり(condition.digit-dup): 同じファイルの中で、先に書いた条件に当てる。
         let mut list = Vec::new();
         let mut exprs = HashMap::new();
-        let mut used: HashMap<u8, String> = HashMap::new();
+        let mut used: HashMap<(usize, u8), String> = HashMap::new();
         for mut c in specs {
             let Some(Some(e)) = done.remove(&c.name) else {
                 continue;
             };
             if let Some(d) = c.key {
-                if let Some(first) = used.get(&d) {
+                let layer = layer_of.get(&c.name).copied().unwrap_or_default();
+                if let Some(first) = used.get(&(layer, d)) {
                     warn(
                         w,
-                        file,
+                        &file_for(&c.name),
                         &format!("conditions.{}.key", c.name),
                         Msg::RsnCondKeyDup.fill(&[&d, first]),
                     );
                     c.key = None;
                 } else {
-                    used.insert(d, c.name.clone());
+                    used.insert((layer, d), c.name.clone());
                 }
             }
             exprs.insert(c.name.clone(), e);
             list.push(c);
         }
-        Conditions { list, exprs }
+        Conditions {
+            list,
+            exprs,
+            marker: HashSet::new(),
+        }
     }
 }
 
@@ -154,7 +229,7 @@ fn resolve(
     open: &HashMap<String, (Expr, Vec<String>)>,
     in_cycle: &HashSet<&String>,
     done: &mut HashMap<String, Option<Expr>>,
-    file: &str,
+    file_for: &dyn Fn(&str) -> String,
     w: &mut Vec<String>,
 ) -> Option<Expr> {
     if let Some(r) = done.get(name) {
@@ -163,7 +238,7 @@ fn resolve(
     let (e, refs) = open.get(name)?;
     for r in refs {
         if open.contains_key(r) && !in_cycle.contains(r) {
-            resolve(r, open, in_cycle, done, file, w);
+            resolve(r, open, in_cycle, done, file_for, w);
         }
     }
     let get = |n: &str| done.get(n).cloned().flatten();
@@ -175,7 +250,12 @@ fn resolve(
             } else {
                 Msg::CondUnknown.fill(&[&missing, &known(open)])
             };
-            warn(w, file, &format!("conditions.{name}.expr"), reason);
+            warn(
+                w,
+                &file_for(name),
+                &format!("conditions.{name}.expr"),
+                reason,
+            );
             None
         }
     };
@@ -393,6 +473,12 @@ impl Drop for Scoped {
         let prev = self.0.take();
         LOCAL.with(|l| *l.borrow_mut() = prev);
     }
+}
+
+/// condition.columns-present: 式 `e` が使う列(`Expr::columns`)が全部、今の表にある(`has`)か。1つでも無ければ
+/// 使えない(tbd~condition.columns-all)。列を使わない式はどの表でも使える。
+pub fn usable(e: &Expr, has: &dyn Fn(&str) -> bool) -> bool {
+    e.columns().iter().all(|c| has(c))
 }
 
 /// condition.unknown-name: 無い名前の理由(ある名前を添える)。

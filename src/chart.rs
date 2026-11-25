@@ -3,7 +3,7 @@
 //! 日付の区切りはガントの単位(`gantt::Unit`。日・週・月)を使う。
 
 use crate::gantt::{floor_unit, Unit};
-use crate::types::{format_date, Kind};
+use crate::types::{format_date, Kind, WeekStart};
 
 /// グラフの種類。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -301,11 +301,30 @@ pub fn fmt_num(v: f64) -> String {
     s.trim_end_matches('0').trim_end_matches('.').to_string()
 }
 
-/// 日付の区切りの名前(区切りの始まりの日 `start_day`)。日 `2026-10-01`、週は週の始まりの日、月 `2026-10`。
-pub fn bucket_label(start_day: i64, unit: Unit) -> String {
-    let d = format_date(floor_unit(start_day, unit));
+/// chart.buckets-week-start: 日 `d` を区切りの始まりの日に切り下げる。週は `week`(設定の `dates.week_start`)の
+/// 曜日、月は1日、日はそのまま。ガントの週(`gantt::floor_unit`。月曜)とは別に持つ。
+pub fn floor_bucket(d: i64, unit: Unit, week: WeekStart) -> i64 {
     match unit {
-        Unit::Month => d.get(..7).unwrap_or(&d).to_string(),
-        Unit::Day | Unit::Week => d,
+        // 1970-01-01 は木曜。日曜からの日数は (d + 4) mod 7、月曜からの日数は (d + 3) mod 7。
+        Unit::Week => {
+            let shift = match week {
+                WeekStart::Sun => 4,
+                WeekStart::Mon => 3,
+            };
+            d - (d + shift).rem_euclid(7)
+        }
+        Unit::Day | Unit::Month => floor_unit(d, unit),
+    }
+}
+
+/// 日付の区切りの名前(区切りの始まりの日 `start_day`。`floor_bucket` で切り下げた日)。日 `2026-10-01`、週はその
+/// 始まりの日のまま(週の始まりの曜日は設定による)、月 `2026-10`。
+pub fn bucket_label(start_day: i64, unit: Unit) -> String {
+    match unit {
+        Unit::Month => {
+            let d = format_date(floor_unit(start_day, unit));
+            d.get(..7).unwrap_or(&d).to_string()
+        }
+        Unit::Day | Unit::Week => format_date(start_day),
     }
 }

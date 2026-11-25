@@ -19,6 +19,14 @@ use std::path::{Path, PathBuf};
 /// 行き先の無い `[[…]]`・`[…](…)` の印(REL-10。名前の前。評価できない式の `?` は1字だけで薄い)。
 pub(crate) const MISSING_MARK: char = '?';
 
+/// base-view.display-name-everywhere: ある表の列の名前の引き方。今の表は列の見出しと同じ、`.base` の表(印の中の
+/// 表も)はその `properties` の displayName、`.base` の無いほかの表はキーのまま(既定の見出し)。
+pub(crate) enum Titles {
+    Here,
+    Base(Box<mdgrid::base::Base>),
+    Keys,
+}
+
 /// リンクを解くための表と、解いた結果。描くたびに全部の行を作り直さないよう、今の表は読み込みが進んだときと
 /// 読み直し・保存のとき(世代)だけ、登録した表は登録が変わったときと世代が変わったときだけ作り直す。
 #[derive(Default)]
@@ -428,7 +436,11 @@ impl App {
                 self.open_note(&t);
             }
             _ => {
-                let items = targets.iter().map(|t| relations::file_stem(t)).collect();
+                // screen.note-name-everywhere: 選ぶ一覧の名前も、ノートの欄と同じ見せ方。
+                let items = targets
+                    .iter()
+                    .map(|t| super::view::note_name_of(self, &relations::file_stem(t)))
+                    .collect();
                 self.open_ask(Ask::OpenLink { items, targets });
             }
         }
@@ -446,6 +458,9 @@ impl App {
             self.message = Some(Msg::RelNoBacklinks.fill(&[&relations::file_stem(&target)]));
             return;
         }
+        // base-view.display-name-everywhere・screen.note-name-everywhere: 列はその列のある表の displayName、ノートの
+        // 名前はノートの欄と同じ見せ方(表ごとの列の名前の引き方は1回だけ作る)。
+        let mut titles: HashMap<String, Titles> = HashMap::new();
         let items = found
             .iter()
             .map(|b| {
@@ -456,11 +471,49 @@ impl App {
                         .map(|n| n.to_string_lossy().into_owned())
                         .unwrap_or_default()
                 });
-                format!("{table} › {} ← {}", b.column, relations::file_stem(&b.note))
+                let column = match b
+                    .table
+                    .as_ref()
+                    .and_then(|n| tables.iter().find(|t| &t.name == n))
+                {
+                    Some(t) => {
+                        let ts = titles
+                            .entry(t.name.clone())
+                            .or_insert_with(|| self.titles_of(t));
+                        self.title_in(ts, &b.column)
+                    }
+                    None => b.column.clone(),
+                };
+                let name = super::view::note_name_of(self, &relations::file_stem(&b.note));
+                format!("{table} › {column} ← {name}")
             })
             .collect();
         let notes = found.into_iter().map(|b| b.note).collect();
         self.open_ask(Ask::LinkedRows { items, notes });
+    }
+
+    /// base-view.display-name-everywhere: 表 `t` の列の名前の引き方(`Titles`)。`.base` の表はその displayName を
+    /// 読み、`.base` の無い表は今の表なら列の見出しと同じ、ほかの表はキーのまま。
+    pub(crate) fn titles_of(&self, t: &Table) -> Titles {
+        let base = self
+            .link_places()
+            .into_iter()
+            .find(|p| Table::new(&p.name, &p.path).dir == t.dir)
+            .and_then(|p| relations::table_base(&p.path));
+        match base {
+            Some(b) => Titles::Base(Box::new(b)),
+            None if self.current_table_dir().as_ref() == Some(&t.dir) => Titles::Here,
+            None => Titles::Keys,
+        }
+    }
+
+    /// `titles` で引いた列 `col` の名前。
+    pub(crate) fn title_in(&self, titles: &Titles, col: &str) -> String {
+        match titles {
+            Titles::Here => self.title(col),
+            Titles::Base(b) => b.column_title(col),
+            Titles::Keys => mdgrid::base::default_title(col),
+        }
     }
 
     /// ノートを開く(REL-4・REL-5): 今の表にあればその行へ移る。無ければ、ノートを含む登録した表(無ければノートの

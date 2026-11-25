@@ -195,6 +195,19 @@ impl App {
             .build(b.view, self.src.as_ref(), &prop, self.today, self.now)
     }
 
+    /// screen.rich-cells-table-wide: 表の全部の行(`.base` があればその全体の絞り込みを通った行、無ければ読んだ行の
+    /// 全部)。ビューの絞り込みと簡易の絞り込みの前の行で、札にするかを決めるのに使う。
+    pub(crate) fn table_rows(&self) -> Vec<RowId> {
+        match &self.base {
+            Some(b) => {
+                let prop = |r: &RowId, k: &str| self.prop(r, k);
+                b.base
+                    .table_rows(self.src.as_ref(), &prop, self.today, self.now)
+            }
+            None => self.src.rows(),
+        }
+    }
+
     /// セル1つの見せ方の元(BV-7)。`.base` なしならノートのキーのセル。
     pub(crate) fn cell(&self, row: &RowId, col: &str) -> Shown {
         if let Some(b) = self.native_synth() {
@@ -412,6 +425,7 @@ impl App {
             .iter()
             .map(|c| (c.id.clone(), c.title.clone()))
             .collect::<HashMap<_, _>>();
+        self.built.natural = grid.columns.iter().map(|c| c.id.clone()).collect();
         if let Some(c) = selected_col {
             if let Some(i) = self.cols.iter().position(|x| *x == c) {
                 self.col = i;
@@ -445,6 +459,9 @@ impl App {
         if self.built.selects_key.as_ref() != Some(&key) {
             // SR-35: 自動の札の列(文字の列で、くり返しのある短い値。リンクの列と計算の列は除く)。
             // 部品を使わない列(色なし・plain・select = false)は数えない。行は流して読み、決まったら止める。
+            // screen.rich-cells-table-wide: 数える行は今のビューの行でなく表の全部の行(`.base` の全体の絞り込みを
+            // 通った行)。同じ表の同じ列は、どのビューでも同じ見せ方になる。
+            let table_rows = self.table_rows();
             let selects: std::collections::HashSet<String> = grid
                 .columns
                 .iter()
@@ -465,8 +482,7 @@ impl App {
                 // 読み込みの途中は数えない(読み終えたときに一度。BV-16 の組み直しを軽く)。
                 .filter(|_| self.progress.done)
                 .filter(|c| {
-                    let vals = grid
-                        .rows
+                    let vals = table_rows
                         .iter()
                         .filter_map(|r| match self.src.get(r, c).value {
                             // リンクの値は札の列にしない(改行入りの値として渡すと、すぐ「札でない」に決まる)。
@@ -952,6 +968,8 @@ pub(crate) struct Built {
     pub summaries: Vec<(String, mdgrid::summary::Summary, mdgrid::expr::Val)>,
     /// 列の id → 見出し(displayName。BV-5)。
     pub titles: HashMap<String, String>,
+    /// 組み立てた表の列の並び(見た目の状態を当てる前。screen.state-store-arranged-only の比べる相手)。
+    pub natural: Vec<String>,
     /// SR-29: 読み込んだ全部の行に共通のフォルダ(末尾の `/` まで)。左のノートの欄はこれを除いて出す。
     pub label_prefix: String,
     /// 列の id → 型。組み立て直しのたびに `.base` の結果の行の全部から決める(kinds とビューの設定が引く)。

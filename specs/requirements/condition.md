@@ -8,7 +8,7 @@
 
 ## 範囲外
 
-- 採らない: 条件をワークスペースの印(workspace.marker)や `workspaces.toml` に書くこと(2026-11-21 に人が「設定だけ」と決めた)。
+- 採らない: 条件を `workspaces.toml` に書くこと。ワークスペースの印(workspace.marker)には書ける(condition.marker)。2026-11-21 に人が「設定だけ」と決めたが、2026-11-25 に、台帳と一緒に配れないことと、タスクの台帳の数字のキーが人やお金の台帳でも効いて 0 行になることから、人が「印にも書けるようにする」と決め直した。
 - 採らない: vim のような回数(`5j`)。数字のキーは条件に使う(理由は condition.digit-keys)。
 - 採らない: 条件を `.base` に書き足すこと(mdgrid は `.base` を書き換えない。base-view.base-untouched)。
 - 条件に当たる行の数を画面の上の欄に出すのは、通知の欄(notice)。新しく当たった行を知らせるのは notify。
@@ -83,8 +83,8 @@
 
 ### 数字のキー
 
-#### 条件に数字のキー `key`(1〜9)を書いたら、表の画面でその数字を押すたびに、その条件に当たる行だけに絞るのと解くのを切り替えるべき
-`req~condition.digit-keys~2` P1
+#### 条件に数字のキー `key`(1〜9)を書いたら、表の画面で、その条件に振った数字(condition.digit-order)を押すたびに、その条件に当たる行だけに絞るのと解くのを切り替えるべき
+`req~condition.digit-keys~3` P1
 - Rationale: よく使う絞り込みを1打で入れたり切ったりするため。数字だけのキーで切り替えるのは、同じ種類の端末の道具の慣わし(yazi はタブ、lazygit は区画、k9s はお気に入りの名前空間)で、どれも vim の回数を取らない。回数を取るのは vim をまるごとまねる道具(vifm・ranger)。mdgrid は表を見る道具なので前者に合わせる(2026-11-21 に人が「ベストを調べて」と任せた)
 - Acceptance:
   - Given: 5行のうち2行が soon に当たる表で、soon に `key = 1`
@@ -145,9 +145,9 @@
   - When:
   - Then: ヘルプに数字の行が無い。
 
-#### 2つの条件に同じ数字を書いたら、設定で先に書いた条件にその数字を当て、あとの条件の `key` を警告して使わないべき
-`req~condition.digit-dup~1` P1
-- Rationale: 1つのキーで2つの条件が切り替わる曖昧さを無くし、どちらが効くかを書いた順で決めるため
+#### 1つのファイル(全体の設定か1つの印)の2つの条件に同じ数字を書いたら、先に書いた条件だけを数字のキーの並び(condition.digit-order)に入れ、あとの条件の `key` を警告して使わないべき
+`req~condition.digit-dup~2` P1
+- Rationale: 1つのキーで2つの条件が切り替わる曖昧さを無くし、どちらが効くかを書いた順で決めるため。全体の設定と印に同じ数字を書くのは重なりとしない(印の条件を先に振る。condition.digit-order)
 - Acceptance:
   - Given:
   - When:
@@ -160,6 +160,40 @@
   - Given: `[keys.table]` で `1` を別の動作に割り当て、soon に `key = 1`
   - When:
   - Then: `1` は割り当て直した動作をし、soon の `key` の警告が出る。
+
+#### 数字のキーは、`key` を書いた条件のうち今の表で使えるもの(condition.columns-present)に、印の条件(condition.marker)を先に、全体の設定の条件を後に、それぞれ `key` の小さい順(同じ数なら書いた順)で 1 から詰めて振り、別の動作に割り当て直した数字(condition.digit-remap)は飛ばし、9 より後ろの条件には振らないべき
+`req~condition.digit-order~1` P1
+- Rationale: 開いている台帳の条件を一番押しやすい数字に置き、その表で使えない条件のせいで番号が飛ばないようにするため(2026-11-25 に人が「数字キーの番号は、印の条件を先に、全体の条件を後に振る。番号は出すものだけで詰める」と決めた)。`key` に書いた数は、振る順を決める
+- Acceptance:
+  - Given: 全体の設定に due(`due <= today()`・`key = 1`)と week(`due <= today() + "7d"`・`key = 2`)、印に contact(`next <= today()`・`key = 5`)、表の行に due と next の列がある
+  - When:
+  - Then: `1` が contact、`2` が due、`3` が week を切り替え、contact を入れると帯に「1 contact」が出る。
+- Acceptance:
+  - Given: 同じ設定で、due の列の無い表
+  - When:
+  - Then: `1` が contact を切り替え、`2` と `3` は行を変えない。
+- Acceptance:
+  - Given: 全体の設定に soon(`key = 1`)と far(`key = 9`)だけ
+  - When:
+  - Then: `1` が soon、`2` が far を切り替える。
+- Needs: utest・stest
+
+#### 式が使う列(ノートのキーと `formula.*`)のうち1つでも今の表の行(`.base` の最上位の絞り込みのあと)に無い条件は、今の表では、数字のキーに振らず、ヘルプとパレットの数字の行と、ビューの設定のフィルターの区画に出さないべき
+`req~condition.columns-present~1` P1
+- Rationale: 期限や担当の列の無い人やお金の台帳で、タスクの条件の数字を押して 0 行になったり、フィルターの区画に使えない条件が並んだりしないようにするため(2026-11-25 に人が決めた)。式に `cond("<名前>")` と書いたときは、condition.any-table のとおり無い列を値の無い列として読む。列が1つでも無ければ使えないとする(tbd~condition.columns-all)。いつも隠す条件は、この要求に入れない(tbd~condition.columns-hide)
+- Acceptance:
+  - Given: 全体の設定に mine(`actor != "ai" && status != "done"`・`key = 1`)と open(`status != "done"`・`key = 2`)、表の行に status があり actor が無い
+  - When: ヘルプを開く
+  - Then: 「1」と「open」の行があり、「mine」の行が無い。
+- Acceptance:
+  - Given: 同じ表
+  - When: `1`
+  - Then: open に当たる行だけになる。
+- Acceptance:
+  - Given: 同じ表
+  - When: `o` でビューの設定を開く
+  - Then: フィルターの区画の条件の並びは open だけ。
+- Needs: utest・stest
 
 ### ビューと、いつも隠す条件
 
@@ -184,16 +218,16 @@
   - Then: 帯に far の項目が出ない。
 - Needs: stest
 
-#### いつも隠す条件(condition.hide-always)に数字のキーを書いたら、そのキーで、隠すのを止めるのと戻すのを切り替えるべき
-`req~condition.hide-toggle~2` P1
+#### いつも隠す条件(condition.hide-always)に数字のキーを書いたら、その条件に振った数字(condition.digit-order)で、隠すのを止めるのと戻すのを切り替えるべき
+`req~condition.hide-toggle~3` P1
 - Rationale: 隠した行を、設定を書き換えずにすぐ見られるようにするため
 - Acceptance:
-  - Given: far に `hide = true`・`key = 9`
-  - When:
-  - Then: `9` で隠していた行が出て、帯の far の項目が「far を出す」に替わる。
+  - Given: far に `hide = true`・`key = 9`(`key` を書いた条件はほかに無い)
+  - When: `1`
+  - Then: 隠していた行が出て、帯の far の項目が「far を出す」に替わる。
 - Acceptance:
   - Given:
-  - When: もう一度 `9`
+  - When: もう一度 `1`
   - Then: また隠れる。
 - Acceptance:
   - Given:
@@ -255,6 +289,42 @@
   - When: `--count` と `--print` を一緒に渡す
   - Then: 理由1行と終了コード 2。
 
+### 台帳の印に書く
+
+#### ワークスペースの印(workspace.marker)の最上位にも `[conditions.<名前>]` を全体の設定と同じ形で書けるべきで、印の条件は、上へたどって最初に見つかる印がその印である表を開いたときだけ使うべき
+`req~condition.marker~1` P1
+- Rationale: 台帳の条件を台帳と一緒に配り、ほかの台帳には持ち込まないため(2026-11-25 に人が「印にも書けるようにする」と決めた)。書き方の誤りは、全体の設定と同じく警告してその条件だけを使わない(condition.invalid)
+- Acceptance:
+  - Given: 印に `[conditions.contact]`・`expr = 'next <= today()'` を書いた台帳 people と、印の無いフォルダ tasks、今日が 2026-11-21
+  - When: people の表で `--print --filter 'cond("contact")'`
+  - Then: next が 2026-11-21 の行が出て、2026-11-30 の行は出ない。
+- Acceptance:
+  - Given: 同じ2つ
+  - When: tasks で `--print --filter 'cond("contact")'`
+  - Then: 「条件「contact」はありません」を含む理由1行と終了コード 2(condition.unknown-name と同じ)。
+- Acceptance:
+  - Given: people の印に、ほかに `[conditions.broken]`・`expr = 'next <='`
+  - When: people で `--print`
+  - Then: 標準エラーに `.mdgrid/workspace.toml: conditions.broken.expr` を含む警告が出て、表は出る。
+- Needs: stest
+
+#### 印の条件と全体の設定の条件は並べて使い、同じ名前の条件は印のものを使い、全体の設定の条件の式の中の `cond()` も印のものを指すべき
+`req~condition.marker-layer~1` P1
+- Rationale: 台帳の中でも全体の条件を使い続けながら、同じ名前の条件を台帳に合わせて書き直せるようにするため(2026-11-25 に人が「同じ名前なら印が勝つ」と決めた)
+- Acceptance:
+  - Given: 全体の設定に soon(`due <= today() + "7d"`)・near(`cond("soon")`)・open(`status != "done"`)、印に soon(`due <= today() + "3d"`)、今日が 2026-11-21
+  - When: 印の台帳で `--print --filter 'cond("soon")'`
+  - Then: due が 2026-11-24 の行が出て、2026-11-26 の行は出ない。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 印の台帳で `--print --filter 'cond("near")'`
+  - Then: soon と同じ行が出る。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 印の台帳で `--print --filter 'cond("open")'`
+  - Then: status が done でない行が出る。
+- Needs: stest
+
 ## 未確定事項
 
 ### 式の中で名前の条件を呼ぶ書き方
@@ -266,3 +336,13 @@
 `tbd~condition.show-hidden-flag`
 - Decider: 人
 - Provisional: `--show-hidden`
+
+### 使う列の一部だけがある表で条件を使えるか
+`tbd~condition.columns-all`
+- Decider: 人
+- Provisional: 使えない(式が使う列が全部ある表だけで使える)。1つでもあれば使える形にすると、状態の列だけがある会議の表に、担当と状態を見る条件の数字が出る
+
+### いつも隠す条件も、列の無い表では当てないか
+`tbd~condition.columns-hide`
+- Decider: 人
+- Provisional: 当てる(列の有無を見ない)。far(始まりが先で、期限が近くないもの)のように、始まりの列だけがある表でも隠したい条件があるため

@@ -119,6 +119,210 @@ pub struct Config {
     pub notify: Vec<crate::notify::Item>,
     /// navigation.across-option: `[search]` の `across`(パレットの「ワークスペースを横断して探す」。既定は偽)。
     pub search_across: bool,
+    /// condition.marker・notice.marker・notify.marker: 開く表の印から重ねたもの(`for_table`)。印が無ければ None。
+    pub ledger: Option<Ledger>,
+}
+
+/// 印(ワークスペースの印)から設定に重ねたもの(condition.marker・notice.marker・notify.marker)。
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Ledger {
+    /// 出どころの名前(`.mdgrid/workspace.toml (<ワークスペースの名前>)`。cli.resolved-config-ledger)。
+    pub origin: String,
+    /// 印の根。
+    pub root: PathBuf,
+    /// 全体の設定の条件(ほかの表を数えるとき、その表の印と重ね直す。`table_conditions`)。
+    pub global: std::sync::Arc<crate::condition::Conditions>,
+    /// `notices` の頭の、印から来た項目の数(tbd~notice.marker-order: 印の項目が先)。
+    pub notices: usize,
+    /// `notify` の頭の、印から来た項目の数。
+    pub notify: usize,
+}
+
+/// 印の警告の場所の名前。
+fn marker_label() -> String {
+    format!(
+        "{}/{}",
+        crate::workspace::MARKER_DIR,
+        crate::workspace::MARKER_FILE
+    )
+}
+
+/// condition.marker: 印の表 `table`(文 `text`)の `[conditions]`(書いた順)。
+fn marker_conditions(
+    table: &toml::Table,
+    text: &str,
+    w: &mut Vec<String>,
+) -> Vec<crate::condition::Condition> {
+    let label = marker_label();
+    table.get("conditions").map_or_else(Vec::new, |v| {
+        crate::condition::in_written_order(crate::condition::read(v, &label, w), text)
+    })
+}
+
+/// condition.marker-layer: 開く表 `opened` の印の条件を、全体の設定の条件 `global` に重ねた条件(印が無ければ
+/// `global` のまま)。印の警告は捨てる(開く表の警告は `for_table` が出す)。ほかの表を数えるときに使う。
+pub fn table_conditions(
+    opened: &Path,
+    global: &std::sync::Arc<crate::condition::Conditions>,
+) -> std::sync::Arc<crate::condition::Conditions> {
+    let Some((_, _, text, table)) = crate::workspace::marker_table(opened) else {
+        return global.clone();
+    };
+    let mut w = Vec::new();
+    let marker = marker_conditions(&table, &text, &mut w);
+    if marker.is_empty() {
+        return global.clone();
+    }
+    std::sync::Arc::new(crate::condition::Conditions::layered(
+        marker,
+        &marker_label(),
+        global,
+        &mut w,
+    ))
+}
+
+/// notice.marker-inside: 印に書いた相対のパス `rel` が、台帳の根 `root` の中を指すか。絶対のパス・`~` で始まる
+/// パス・`..` を含むパスは外とみなし、在るファイルはリンクをたどった先が根の中かも見る(まだ無いファイルは、
+/// 根からの相対なので中)。
+fn inside_root(root: &Path, rel: &Path) -> bool {
+    use std::path::Component;
+    if rel.to_string_lossy().starts_with('~')
+        || rel.components().any(|c| {
+            matches!(
+                c,
+                Component::ParentDir | Component::RootDir | Component::Prefix(_)
+            )
+        })
+    {
+        return false;
+    }
+    match (
+        std::fs::canonicalize(root.join(rel)),
+        std::fs::canonicalize(root),
+    ) {
+        (Ok(full), Ok(r)) => full.starts_with(r),
+        _ => true,
+    }
+}
+
+/// condition.marker・notice.marker・notify.marker: 開く表 `opened`(フォルダか .base。改行でつないだ複数のパスは
+/// 最初の1つ)で効く設定。上へたどって最初に見つかった印の `[conditions]`・`[[notices]]`・`[[notify]]` を、全体の
+/// 設定のものに重ねる: 条件は印のものを先に並べて同じ名前は印のもの(condition.marker-layer)、通知の欄は印の項目を
+/// 先に(tbd~notice.marker-order)、知らせは印の項目を先にし、印と同じ `cond` の全体の項目は使わない(notify.marker)。
+/// 連絡の項目の相対の `note` は印の根から、`~` は `home` から。印の警告(`.mdgrid/workspace.toml: …`)も返す。
+/// 印が無い・どれも書いていなければ、設定をそのまま返す。
+pub fn for_table(c: &Config, opened: &Path, home: Option<&Path>) -> (Config, Vec<String>) {
+    let mut w = Vec::new();
+    let Some((root, origin, text, table)) = crate::workspace::marker_table(opened) else {
+        return (c.clone(), w);
+    };
+    if !["conditions", "notices", "notify"]
+        .iter()
+        .any(|k| table.contains_key(*k))
+    {
+        return (c.clone(), w);
+    }
+    let label = marker_label();
+    let marker = marker_conditions(&table, &text, &mut w);
+    let conds = std::sync::Arc::new(crate::condition::Conditions::layered(
+        marker,
+        &label,
+        &c.conditions,
+        &mut w,
+    ));
+    // notice.marker: 書いていない条件の件数の項目は、警告して使わない(全体の設定と同じ。notice.count-item)。
+    let mut notices: Vec<crate::notice::Item> = Vec::new();
+    if let Some(v) = table.get("notices") {
+        for (i, item) in crate::notice::read(v, &label, &mut w)
+            .into_iter()
+            .enumerate()
+        {
+            if let crate::notice::Item::Count { cond, .. } = &item {
+                if conds.get(cond).is_none() {
+                    warn(
+                        &mut w,
+                        &label,
+                        &format!("notices[{}].cond", i + 1),
+                        Msg::RsnNoticeNoCond.fill(&[cond]),
+                    );
+                    continue;
+                }
+            }
+            // notice.marker-inside: 印は人から受け取ったフォルダにも入っているので、連絡の項目のノートは台帳の根の中だけ。
+            if let crate::notice::Item::Note { path, .. } = &item {
+                if !inside_root(&root, path) {
+                    warn(
+                        &mut w,
+                        &label,
+                        &format!("notices[{}].note", i + 1),
+                        Msg::RsnNoticeNoteOutside.fill(&[&path.display()]),
+                    );
+                    continue;
+                }
+            }
+            notices.push(item);
+        }
+    }
+    crate::notice::resolve_notes(&mut notices, Some(&root), home);
+    // notify.marker: 書いていない条件と、印の前の項目と同じ条件の項目は、警告して使わない(notify.item)。
+    let mut notify: Vec<crate::notify::Item> = Vec::new();
+    if let Some(v) = table.get("notify") {
+        for (i, mut item) in crate::notify::read(v, &label, &mut w)
+            .into_iter()
+            .enumerate()
+        {
+            // notify.marker-no-command: 印は人から受け取ったフォルダにも入っているので、コマンドの出し先は外す
+            // (開いただけ・--notify だけで、ほかの人が書いたコマンドを動かさない)。出し先が残らなければ使わない。
+            if item.to.contains(&crate::notify::To::Command) || !item.command.is_empty() {
+                warn(
+                    &mut w,
+                    &label,
+                    &format!("notify[{}].command", i + 1),
+                    Msg::RsnNotifyCommandInMarker.text().to_string(),
+                );
+                item.to.retain(|t| *t != crate::notify::To::Command);
+                item.command.clear();
+                if item.to.is_empty() {
+                    continue;
+                }
+            }
+            let at = format!("notify[{}].cond", i + 1);
+            if conds.get(&item.cond).is_none() {
+                warn(
+                    &mut w,
+                    &label,
+                    &at,
+                    Msg::RsnNoticeNoCond.fill(&[&item.cond]),
+                );
+            } else if notify.iter().any(|k| k.cond == item.cond) {
+                warn(
+                    &mut w,
+                    &label,
+                    &at,
+                    Msg::RsnNotifyDupCond.fill(&[&item.cond]),
+                );
+            } else {
+                notify.push(item);
+            }
+        }
+    }
+    let ledger = Ledger {
+        origin,
+        root,
+        global: c.conditions.clone(),
+        notices: notices.len(),
+        notify: notify.len(),
+    };
+    let mut out = c.clone();
+    out.conditions = conds;
+    notices.extend(c.notices.iter().cloned());
+    out.notices = notices;
+    // 印と同じ条件を見張る全体の項目は、印の項目に置き換わる(警告しない)。
+    let own: Vec<String> = notify.iter().map(|i| i.cond.clone()).collect();
+    notify.extend(c.notify.iter().filter(|i| !own.contains(&i.cond)).cloned());
+    out.notify = notify;
+    out.ledger = Some(ledger);
+    (out, w)
 }
 
 impl Default for Config {
@@ -138,6 +342,7 @@ impl Default for Config {
             notices: Vec::new(),
             notify: Vec::new(),
             search_across: false,
+            ledger: None,
         }
     }
 }
@@ -590,6 +795,109 @@ pub fn app_toml(c: &Config) -> String {
     out
 }
 
+/// cli.resolved-config-ledger: その表で効く名前の条件・通知の欄・知らせの項目(`for_table` で印を重ねた設定)を、
+/// 項目ごとに出どころ(`# config.toml` か `# .mdgrid/workspace.toml (<名前>)`)のコメントを添えた TOML にする。
+/// 設定のファイルとしてそのまま読める形(cli.resolved-config-reads-back)。
+pub fn ledger_toml(c: &Config) -> String {
+    let marker = c.ledger.as_ref().map(|l| l.origin.as_str());
+    let origin = |from_marker: bool| match (from_marker, marker) {
+        (true, Some(m)) => m,
+        _ => CONFIG_FILE,
+    };
+    let s = |v: &str| toml::Value::String(v.to_string());
+    let scope_value = |sc: &crate::notice::Scope| match sc {
+        crate::notice::Scope::Table => s("table"),
+        crate::notice::Scope::Workspace => s("workspace"),
+        crate::notice::Scope::Tables(names) => {
+            toml::Value::Array(names.iter().map(|n| s(n)).collect())
+        }
+    };
+    let block = |key: &str, t: toml::Table, array: bool| {
+        let mut outer = toml::Table::new();
+        if array {
+            outer.insert(key.into(), toml::Value::Array(vec![toml::Value::Table(t)]));
+        } else {
+            outer.insert(key.into(), toml::Value::Table(t));
+        }
+        toml::to_string(&outer).unwrap_or_default()
+    };
+    let mut out = String::new();
+    for cond in c.conditions.list() {
+        let mut t = toml::Table::new();
+        t.insert("expr".into(), s(&cond.src));
+        if let Some(l) = &cond.label {
+            t.insert("label".into(), s(l));
+        }
+        if let Some(k) = cond.key {
+            t.insert("key".into(), toml::Value::Integer(i64::from(k)));
+        }
+        if cond.hide {
+            t.insert("hide".into(), toml::Value::Boolean(true));
+        }
+        let mut named = toml::Table::new();
+        named.insert(cond.name.clone(), toml::Value::Table(t));
+        out.push_str(&format!(
+            "\n# {}\n",
+            origin(c.conditions.from_marker(&cond.name))
+        ));
+        out.push_str(&block("conditions", named, false));
+    }
+    let own_notices = c.ledger.as_ref().map_or(0, |l| l.notices);
+    for (i, item) in c.notices.iter().enumerate() {
+        let mut t = toml::Table::new();
+        match item {
+            crate::notice::Item::Count {
+                cond,
+                text,
+                scope,
+                show_zero,
+            } => {
+                t.insert("cond".into(), s(cond));
+                if let Some(x) = text {
+                    t.insert("text".into(), s(x));
+                }
+                t.insert("scope".into(), scope_value(scope));
+                if *show_zero {
+                    t.insert("show_zero".into(), toml::Value::Boolean(true));
+                }
+            }
+            crate::notice::Item::Note { path, lines } => {
+                t.insert("note".into(), s(&path.to_string_lossy()));
+                let n = i64::try_from(*lines).unwrap_or(1);
+                t.insert("lines".into(), toml::Value::Integer(n));
+            }
+        }
+        out.push_str(&format!("\n# {}\n", origin(i < own_notices)));
+        out.push_str(&block("notices", t, true));
+    }
+    let own_notify = c.ledger.as_ref().map_or(0, |l| l.notify);
+    for (i, item) in c.notify.iter().enumerate() {
+        let mut t = toml::Table::new();
+        t.insert("cond".into(), s(&item.cond));
+        t.insert("scope".into(), scope_value(&item.scope));
+        if let Some(x) = &item.title {
+            t.insert("title".into(), s(x));
+        }
+        if let Some(x) = &item.text {
+            t.insert("text".into(), s(x));
+        }
+        let to = item.to.iter().map(|x| s(x.name())).collect();
+        t.insert("to".into(), toml::Value::Array(to));
+        let n = i64::try_from(item.group_over).unwrap_or(i64::MAX);
+        t.insert("group_over".into(), toml::Value::Integer(n));
+        if let Some(x) = &item.group_text {
+            t.insert("group_text".into(), s(x));
+        }
+        if !item.command.is_empty() {
+            let argv = item.command.iter().map(|x| s(x)).collect();
+            t.insert("command".into(), toml::Value::Array(argv));
+        }
+        out.push_str(&format!("\n# {}\n", origin(i < own_notify)));
+        out.push_str(&block("notify", t, true));
+    }
+    out
+}
+
 /// `--migrate-config` の出力(CLI-20): 旧い書き方を新しい形に写した TOML。注釈は移らない。
 pub fn migrate(text: &str) -> Result<String, String> {
     let table = parse_table(text)?;
@@ -772,6 +1080,67 @@ pub struct ViewState {
     pub settings: crate::settings::Settings,
 }
 
+/// screen.state-store-follow-order: 覚えた列の並び `saved`(覚えたときの印の `order` が `before`)を、今の印の
+/// `order` の `now` に合わせた並び。`now` から始め、人が動かした列(`before` から `saved` への最長の共通の並びに
+/// 入らない列)のうち、印も動かしていない列だけを、`saved` で直前にあった列の後ろ(無ければ先頭)へ移す。直前の
+/// 列を印が動かしていれば、食い違うので印のままにする。印が消した列は戻さない。
+pub fn follow_order(before: &[String], saved: &[String], now: &[String]) -> Vec<String> {
+    let kept_by_user = common_order(before, saved);
+    let kept_by_marker = common_order(before, now);
+    let marker_moved = |c: &String| now.contains(c) && !kept_by_marker.contains(c);
+    let mut out: Vec<String> = now.to_vec();
+    for (i, c) in saved.iter().enumerate() {
+        if kept_by_user.contains(c) || marker_moved(c) {
+            continue;
+        }
+        let anchor = saved[..i].iter().rev().find(|p| out.contains(p));
+        if anchor.is_some_and(marker_moved) {
+            continue;
+        }
+        match out.iter().position(|x| x == c) {
+            Some(at) => {
+                out.remove(at);
+            }
+            // 印が消した列は戻さない(印に無かった列は、あとで現れたときのために位置を残す)。
+            None if before.contains(c) => continue,
+            None => {}
+        }
+        let at = anchor
+            .and_then(|p| out.iter().position(|x| x == p))
+            .map_or(0, |k| k + 1);
+        out.insert(at, c.clone());
+    }
+    out
+}
+
+/// 2つの並びの最長の共通の並び(並びの中の列は重ならない)。同じ長さなら前の並び `a` の前の方を残す。
+fn common_order(a: &[String], b: &[String]) -> Vec<String> {
+    let (n, m) = (a.len(), b.len());
+    let mut t = vec![vec![0usize; m + 1]; n + 1];
+    for i in (0..n).rev() {
+        for j in (0..m).rev() {
+            t[i][j] = if a[i] == b[j] {
+                t[i + 1][j + 1] + 1
+            } else {
+                t[i + 1][j].max(t[i][j + 1])
+            };
+        }
+    }
+    let (mut i, mut j, mut out) = (0, 0, Vec::new());
+    while i < n && j < m {
+        if a[i] == b[j] {
+            out.push(a[i].clone());
+            i += 1;
+            j += 1;
+        } else if t[i][j + 1] >= t[i + 1][j] {
+            j += 1;
+        } else {
+            i += 1;
+        }
+    }
+    out
+}
+
 /// 状態のファイルの中身。取り違え(ハッシュの衝突)を避けるため、対象とビューの名前も持つ。
 #[derive(Serialize, Deserialize)]
 struct StateFile {
@@ -781,6 +1150,10 @@ struct StateFile {
     /// ビューの設定(NV-17)。`state` の中ではなく最上位に置く。無い古い形は既定。
     #[serde(default, skip_serializing_if = "crate::settings::Settings::is_default")]
     settings: crate::settings::Settings,
+    /// screen.state-store-follow-order: 列の並びを覚えたときの印(`.base`)のビューの `order` の控え。印の `order` が
+    /// 無いビューと、並びを覚えていない状態では書かない。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    base_order: Option<Vec<String>>,
 }
 
 /// 対象の実体のパス(解決できなければ渡されたまま)の文字列。
@@ -806,17 +1179,26 @@ fn state_file_name(target: &str, view: &str) -> String {
 
 /// 状態を読む。無い・読めない・壊れている・別の対象のもの → 既定(空)。
 pub fn load_state(dir: &Path, target: &Path, view: &str) -> ViewState {
+    load_state_with_base(dir, target, view).0
+}
+
+/// 状態と、列の並びを覚えたときの印の `order` の控え(screen.state-store-follow-order。無ければ None)を読む。
+pub fn load_state_with_base(
+    dir: &Path,
+    target: &Path,
+    view: &str,
+) -> (ViewState, Option<Vec<String>>) {
     let key = target_key(target);
     let path = dir.join(state_file_name(&key, view));
     let Ok(bytes) = crate::textfile::read_bytes(&path) else {
-        return ViewState::default();
+        return (ViewState::default(), None);
     };
     let Ok(text) = std::str::from_utf8(&bytes) else {
-        return ViewState::default();
+        return (ViewState::default(), None);
     };
     // 設定(NV-17)は別に読む。設定の表が壊れていても、ほかの見た目の状態は捨てない。
     let Ok(mut table) = toml::from_str::<toml::Table>(text) else {
-        return ViewState::default();
+        return (ViewState::default(), None);
     };
     let top = table.remove("settings");
     let inner = table
@@ -827,9 +1209,9 @@ pub fn load_state(dir: &Path, target: &Path, view: &str) -> ViewState {
         Ok(f) if f.target == key && f.view_name == view => {
             let mut s = f.state;
             s.settings = top.or(inner).map(read_settings).unwrap_or_default();
-            s
+            (s, f.base_order)
         }
-        _ => ViewState::default(),
+        _ => (ViewState::default(), None),
     }
 }
 
@@ -840,6 +1222,17 @@ fn read_settings(v: toml::Value) -> crate::settings::Settings {
 
 /// 状態を書く。dir の中に一時ファイルを書いてから名前を変えて置き換える。
 pub fn save_state(dir: &Path, target: &Path, view: &str, s: &ViewState) -> io::Result<()> {
+    save_state_with_base(dir, target, view, s, None)
+}
+
+/// 状態を、列の並びを覚えたときの印の `order` の控え `base`(screen.state-store-follow-order)と一緒に書く。
+pub fn save_state_with_base(
+    dir: &Path,
+    target: &Path,
+    view: &str,
+    s: &ViewState,
+    base: Option<&[String]>,
+) -> io::Result<()> {
     let key = target_key(target);
     let name = state_file_name(&key, view);
     let mut state = s.clone();
@@ -849,6 +1242,7 @@ pub fn save_state(dir: &Path, target: &Path, view: &str, s: &ViewState) -> io::R
         view_name: view.to_string(),
         state,
         settings,
+        base_order: base.map(<[String]>::to_vec),
     };
     let text = toml::to_string(&file).map_err(|e| io::Error::other(squash_ws(&e.to_string())))?;
     write_atomic(dir, &name, text.as_bytes())

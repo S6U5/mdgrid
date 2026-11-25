@@ -430,6 +430,19 @@
   - When:
   - Then: `starter` の nope を言う警告1行で、印に書いた表とビューだけで開く。ノートと印のバイトは変わらない。
 
+#### スターターの印にも名前の条件・通知の欄・知らせ(condition.marker・notice.marker・notify.marker)を書けて、スターターから作った台帳と、印の `starter` でそのスターターを元にした台帳で、印に書いたのと同じに効くべき
+`req~starter.marker-conditions~1` P1
+- Rationale: よくある台帳の数字のキーと知らせを、スターターと一緒に配るため(2026-11-25 に人が決めた)。スターターの印の `[[notices]]`・`[[notify]]` は、台帳の印に同じ鍵を書くと丸ごと置き換わる(tbd~starter.marker-arrays)
+- Acceptance:
+  - Given: ユーザーのスターター kb の印に `[conditions.open]`(`status != "done"`)
+  - When: `--init-workspace --starter kb` で作った台帳で `--print --filter 'cond("open")'`
+  - Then: 終了コード 0 で、status が done でない行が出る。
+- Acceptance:
+  - Given: 印が `starter = "kb"` の1行だけの台帳
+  - When: 同じ `--print`
+  - Then: 同じ行が出る。
+- Needs: stest
+
 ## 未確定事項
 
 ### 組み込みのスターターをやめるとき、その台帳をどうやって手で書いた台帳に落とすか(中身は実行ファイルにしか無いので、無くなった版では書き出せない)
@@ -457,3 +470,8 @@
 - Decider: 人
 - Provisional: 付けない(見本のノートは題だけの名前のままにし、ノートの欄にはそのまま出る)
 - Basis: 見本の `created` は作る日からの相対(`{date-2}`)で書くとき埋まるが、ファイルの名前は埋めない。名前に決まった日付を書くと `created` とずれ、名前も書くとき埋めるには `{date-2:YYYYMMDD}` のような形が要るが、`:` は Windows のファイルの名前に書けない。
+
+### スターターの印の `[[notices]]`・`[[notify]]` と台帳の印の重ね方
+`tbd~starter.marker-arrays`
+- Decider: 人
+- Provisional: 台帳の印に `[[notices]]`(か `[[notify]]`)を書けば、スターターの並びを丸ごと置き換える(starter.layer-tables の表とビューのようには名前で突き合わせない。ほかの並びと同じ)。条件(`[conditions.<名前>]`)は名前で突き合わせ、項目ごとに台帳の印が勝つ

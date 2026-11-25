@@ -960,6 +960,11 @@ fn language(explicit: Option<&Path>, default: Option<PathBuf>) -> Lang {
     i18n::resolve(setting, |k| std::env::var(k).ok())
 }
 
+/// condition.marker: 開く表(`paths` の最初)の印の名前の条件を全体の設定の条件に重ね、今の条件に置く。
+fn install_table_conditions(paths: &[PathBuf], config: &Config) {
+    condition::install(table_conds(paths, &config.conditions));
+}
+
 /// condition.define: 設定の名前の条件(警告は捨てる。設定を読むところで同じ警告が出る)。
 fn conditions(explicit: Option<&Path>, default: Option<PathBuf>) -> condition::Conditions {
     explicit
@@ -1065,11 +1070,17 @@ fn main() -> ExitCode {
             let (r, w) = resolve_table(&config, &paths, &opts);
             warnings.extend(marker_warns);
             warnings.extend(w);
+            // cli.resolved-config-ledger: 印から重ねた名前の条件・通知の欄・知らせも、出どころを添えて出す。
+            let home = std::env::var_os("HOME").map(PathBuf::from);
+            let target = paths.first().cloned().unwrap_or_else(|| PathBuf::from("."));
+            let (ledger, w) = config::for_table(&config, &target, home.as_deref());
+            warnings.extend(w);
             for w in &warnings {
                 eprintln!("mdgrid: {w}");
             }
             let mut out = config::app_toml(&config);
             out.push_str(&mdgrid::profile::resolved_toml(&r));
+            out.push_str(&config::ledger_toml(&ledger));
             return emit(Ok(out.into_bytes()));
         }
         // CLI-20: 今の形に写した設定(ファイルは書かない)。
@@ -1441,13 +1452,15 @@ fn open_app(
     pick: bool,
     marker_warns: Vec<String>,
 ) -> Result<(App, String), String> {
+    let (config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
+    // condition.marker: 開く表の印の条件を、表(`.base` の式)を読む前に置く(印の警告は App::start が出す)。
+    install_table_conditions(paths, &config);
     // cli.view-own-views: `--view` は `.base` のビューを先に引き、無ければ開いてから mdgrid のビューを探す。
     let mut target = open_target(paths, None)?;
     if let (Some(v), Some((b, _, idx))) = (view, &mut target.base) {
         *idx = b.views.iter().position(|x| x.name == v);
     }
     let own_view = view.filter(|_| !matches!(&target.base, Some((_, _, Some(_)))));
-    let (config, mut warnings) = load_config(opts.config.as_deref(), config::config_path())?;
     // WS-7: 印の `open` の警告も起動の警告に並べる。
     warnings.extend(marker_warns);
     // SR-43・CLI-3: 画面で選んだ全体の設定(ui.toml。無ければ前の版の look.toml)を config.toml の上に重ねる。
@@ -1798,6 +1811,15 @@ fn notify_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
         Ok(a) => a,
         Err(e) => return fail(&e),
     };
+    // notify.marker-no-command: 印の知らせの警告(コマンドの出し先を外したなど)は、画面が無いので標準エラーに出す。
+    if let Ok((config, _)) = load_config(opts.config.as_deref(), config::config_path()) {
+        let home = std::env::var_os("HOME").map(PathBuf::from);
+        let (_, marker_warns) = config::for_table(&config, &state_target(paths), home.as_deref());
+        let mut err = io::stderr();
+        for line in &marker_warns {
+            let _ = writeln!(err, "{}", ui::width::sanitize(line));
+        }
+    }
     let (today, now) = mdgrid::clock::today_now(|k| std::env::var(k).ok());
     let tty = io::stdout().is_terminal();
     let report = app.notify_once(today, now, &mut |b| {
@@ -1861,23 +1883,59 @@ fn runs_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
     }
 }
 
-/// notice.scope・notice.count-rows・notice.unreadable: 表ごとに、表の行(`.base` の最上位の絞り込みと、
-/// いつも隠す条件 `hides` のあと)のうち `cond` に当たる行を数える。開けない表は理由にする。
-/// 通知の欄(裏の糸)と `--notices` が使う。
+/// condition.marker-layer・condition.columns-present: ほかの表を数える・確かめるときの、その表の条件(その表の印を
+/// 全体の設定の条件 `global` に重ねたもの)。表の `.base` の式の `cond()` もこの条件で読む(糸ごとに置く)。
+fn table_conds(
+    paths: &[PathBuf],
+    global: &std::sync::Arc<condition::Conditions>,
+) -> std::sync::Arc<condition::Conditions> {
+    paths
+        .first()
+        .map_or_else(|| global.clone(), |p| config::table_conditions(p, global))
+}
+
+/// condition.columns-present: 読み終えた表で、列 `col` が表の行(`.base` の最上位の絞り込みのあと)にあるか。
+/// 画面の `App::has_table_column` と同じ判定(ノートのキーは値を持つ行が1つでもあれば、`formula.x` は表の式に x があれば)。
+fn table_has(src: &dyn Source, base: Option<&Base>, col: &str, today: i64, now: i64) -> bool {
+    if let Some(f) = col.strip_prefix("formula.") {
+        return base.is_some_and(|b| b.formula_names().iter().any(|n| n == f));
+    }
+    let prop = |r: &mdgrid::source::RowId, k: &str| src.get(r, k).value;
+    src.columns().iter().any(|c| c == col)
+        && src.rows().iter().any(|r| {
+            src.get(r, col).value.is_some()
+                && base.is_none_or(|b| b.keeps(src, &prop, r, today, now))
+        })
+}
+
+/// notice.scope・notice.count-rows・notice.unreadable・notice.columns-present: 表ごとに、表の行(`.base` の最上位の
+/// 絞り込みと、いつも隠す条件のあと)のうち名前 `cond` の条件に当たる行を数える。条件はその表の印を `global` に
+/// 重ねたもので、その表に無い条件と、その表で使えない条件(condition.columns-present)は数えない(0)。開けない表は
+/// 理由にする。通知の欄(裏の糸)と `--notices` が使う。
 pub(crate) fn count_tables(
     places: &[(String, PathBuf)],
-    cond: &mdgrid::expr::Expr,
-    hides: &[mdgrid::expr::Expr],
+    cond: &str,
+    global: &std::sync::Arc<condition::Conditions>,
     today: i64,
     now: i64,
 ) -> Vec<(String, PathBuf, Result<usize, String>)> {
     places
         .iter()
         .map(|(name, path)| {
+            let conds = table_conds(std::slice::from_ref(path), global);
+            let _here = condition::scoped(conds.clone());
             let counted = open_target(std::slice::from_ref(path), None).map(|t| {
                 let mut src = t.src;
                 while !src.load(LOAD_BUDGET).done {}
                 let base = t.base.map(|(b, _, _)| b);
+                let Some(e) = conds.expr(cond).filter(|e| {
+                    condition::usable(e, &|c| {
+                        table_has(src.as_ref(), base.as_ref(), c, today, now)
+                    })
+                }) else {
+                    return 0;
+                };
+                let hides = hide_exprs(&conds);
                 let prop = |r: &mdgrid::source::RowId, k: &str| src.get(r, k).value;
                 let hits = |r: &mdgrid::source::RowId, e: &mdgrid::expr::Expr| {
                     let v = match &base {
@@ -1893,7 +1951,7 @@ pub(crate) fn count_tables(
                             .is_none_or(|b| b.keeps(src.as_ref(), &prop, r, today, now))
                     })
                     .filter(|r| !hides.iter().any(|e| hits(r, e)))
-                    .filter(|r| hits(r, cond))
+                    .filter(|r| hits(r, e))
                     .count()
             });
             (name.clone(), path.clone(), counted)
@@ -1901,14 +1959,24 @@ pub(crate) fn count_tables(
         .collect()
 }
 
-/// notify.item・notify.text・notify.new-match: 表ごとに、表の行(`.base` の最上位の絞り込みと、いつも隠す条件
-/// `hides` のあと)のうち `cond` に当たる行を、項目の題と文を埋めて返す。開けない表は理由にする。表の見分けは
-/// 開くパスの並び。行の見分けは、ノートはファイルのパス、CSV・TSV は表のパスと行の値の並び
-/// (tbd~notify.csv-row-id)。開いている画面(裏の糸)と `--notify` が使う。
+/// いつも隠す条件の式(condition.hide-always)。
+fn hide_exprs(conds: &condition::Conditions) -> Vec<mdgrid::expr::Expr> {
+    conds
+        .list()
+        .iter()
+        .filter(|c| c.hide)
+        .filter_map(|c| conds.expr(&c.name).cloned())
+        .collect()
+}
+
+/// notify.item・notify.text・notify.new-match・notify.columns-present: 表ごとに、表の行(`.base` の最上位の絞り込みと、
+/// いつも隠す条件のあと)のうち項目の条件に当たる行を、項目の題と文を埋めて返す。条件はその表の印を `global` に
+/// 重ねたもので、その表に無い条件と、その表で使えない条件(condition.columns-present)は確かめない(当たる行なし)。
+/// 開けない表は理由にする。表の見分けは開くパスの並び。行の見分けは、ノートはファイルのパス、CSV・TSV は表の
+/// パスと行の値の並び(tbd~notify.csv-row-id)。開いている画面(裏の糸)と `--notify` が使う。
 pub(crate) fn notify_hits(
     places: &[(String, Vec<PathBuf>)],
-    cond: &mdgrid::expr::Expr,
-    hides: &[mdgrid::expr::Expr],
+    global: &std::sync::Arc<condition::Conditions>,
     item: &mdgrid::notify::Item,
     label: &str,
     today: i64,
@@ -1923,10 +1991,20 @@ pub(crate) fn notify_hits(
                 .map(|p| p.display().to_string())
                 .collect::<Vec<_>>()
                 .join("\n");
+            let conds = table_conds(paths, global);
+            let _here = condition::scoped(conds.clone());
             let hits = open_target(paths, None).map(|t| {
                 let mut src = t.src;
                 while !src.load(LOAD_BUDGET).done {}
                 let base = t.base.map(|(b, _, _)| b);
+                let Some(cond) = conds.expr(&item.cond).filter(|e| {
+                    condition::usable(e, &|c| {
+                        table_has(src.as_ref(), base.as_ref(), c, today, now)
+                    })
+                }) else {
+                    return Vec::new();
+                };
+                let hides = hide_exprs(&conds);
                 let prop = |r: &mdgrid::source::RowId, k: &str| src.get(r, k).value;
                 let eval = |r: &mdgrid::source::RowId, e: &mdgrid::expr::Expr| match &base {
                     Some(b) => b.eval_row(src.as_ref(), &prop, r, e, today, now),
@@ -2081,12 +2159,17 @@ fn print_view(
     if let Err(e) = check_paths(paths) {
         return fail(&e);
     }
-    let target = match open_target(paths, None) {
-        Ok(t) => t,
-        Err(e) => return fail(&e),
-    };
     let (config, mut warnings) = match load_config(opts.config.as_deref(), config::config_path()) {
         Ok(c) => c,
+        Err(e) => return fail(&e),
+    };
+    // condition.marker: 開く表の印の条件を全体の設定の条件に重ね、`--filter` と `.base` の式を読む前に置く。
+    let home = std::env::var_os("HOME").map(PathBuf::from);
+    let (config, marker_warns) = config::for_table(&config, &state_target(paths), home.as_deref());
+    warnings.extend(marker_warns);
+    condition::install(config.conditions.clone());
+    let target = match open_target(paths, None) {
+        Ok(t) => t,
         Err(e) => return fail(&e),
     };
     let guessed_root = target.guessed_root;
@@ -2267,6 +2350,7 @@ fn check_rows(
 /// set・hidden・body と雛形の変数)でノートを1つ作り、作ったパスを1行出す。`--set 列=値` は窓の答えと同じに扱う
 /// (列の型で読む。空の値はその列を書かない)。作れなければ何も書かずに理由1行と終了コード 2。
 /// ビューの絞り込みの値は使わない(`tbd~cli.new-note-view-values`)。名前は必ず渡す(`tbd~cli.new-note-name-template`)。
+/// 印の根の表のノートを置くフォルダを渡したら、その表として作る(cli.new-note-table-folder)。
 fn new_note_cli(
     paths: &[PathBuf],
     opts: &Options,
@@ -2277,21 +2361,41 @@ fn new_note_cli(
     use mdgrid::newnote;
     use mdgrid::source::{Edit, NewValue};
     use mdgrid::types::{self, Kind};
-    let [root] = paths else {
+    let [given] = paths else {
         return fail(Msg::NewNoteCliOne.text());
     };
     if let Err(e) = check_paths(paths) {
         return fail(&e);
     }
-    if !root.is_dir() {
+    if !given.is_dir() {
         return fail(Msg::NewNoteCliOne.text());
     }
     let (config, mut warnings) = match load_config(opts.config.as_deref(), config::config_path()) {
         Ok(c) => c,
         Err(e) => return fail(&e),
     };
-    // 設定は画面と同じ範囲で重ねる: 印の `open` の表があればその表の範囲(`--raw` なら フォルダそのもの)。
-    let (table, _) = marker_for_print(paths.to_vec(), opts, use_marker);
+    // cli.new-note-table-folder: 渡したフォルダが印の根の表のノートのフォルダなら、作る場所の根は印の根(渡した
+    // フォルダからその表のフォルダの段だけ上がったもの)にして、その表の範囲で設定を重ねる。
+    let found = table_of_folder(given).filter(|_| use_marker);
+    let (root, table, within) = match &found {
+        Some((path, rel)) => {
+            let up = rel.split('/').count();
+            let r = given.ancestors().nth(up).unwrap_or(Path::new(""));
+            let r = if r.as_os_str().is_empty() {
+                PathBuf::from(".")
+            } else {
+                r.to_path_buf()
+            };
+            (r, vec![path.clone()], Some(rel.clone()))
+        }
+        // 設定は画面と同じ範囲で重ねる: 印の `open` の表があればその表の範囲(`--raw` なら フォルダそのもの)。
+        None => (
+            given.clone(),
+            marker_for_print(paths.to_vec(), opts, use_marker).0,
+            None,
+        ),
+    };
+    let root = &root;
     let (resolved, w) = resolve_table(&config, &table, opts);
     warnings.extend(w);
     // 列の型は画面と同じ順(設定 → ノートからの推定)。
@@ -2337,13 +2441,23 @@ fn new_note_cli(
         });
     }
     let mut rule = resolved.new_note.clone();
+    // cli.new-note-table-folder: 表のフォルダを渡したら、そのフォルダの中に作る(設定のフォルダがその中ならそのまま)。
+    if let Some(rel) = &within {
+        let folder = rule.folder.trim().trim_matches('/');
+        if folder != rel && !folder.starts_with(&format!("{rel}/")) {
+            rule.folder.clone_from(rel);
+        }
+    }
     let (today, now) = print::today_now(|k| std::env::var(k).ok());
     // cli.new-note-name-head: `name_head = "hide"` なら、渡した名前に名前の雛形の頭を付ける(画面の窓と同じ決まり)。
-    let head = newnote::hidden_head(&rule, today, &newnote::Ids::new());
+    // cell-edit.template-vars-id-same: 名前の頭・前もって入れる値・本文の `{uuid}`・`{uid}` は1つの値(画面の窓と同じ)。
+    let ids = newnote::Ids::new();
+    let head = newnote::hidden_head(&rule, today, &ids);
     let full = newnote::attach_head(&head, name, resolved.display.note_name);
-    let name = full.as_str();
+    // cell-edit.template-vars-name-head: `{name}` は頭を付ける前の、渡した名前(頭を隠さなければ同じ)。
     let bare = name.trim();
     let bare = bare.strip_suffix(".md").unwrap_or(bare);
+    let name = full.as_str();
     let vars = newnote::Vars {
         today,
         minutes: now.rem_euclid(86_400) / 60,
@@ -2352,7 +2466,7 @@ fn new_note_cli(
     };
     // 前もって入れる値の変数を埋め、日付・日時の列の文字は日付として書く(画面と同じ)。
     for (key, v) in &mut rule.set {
-        *v = match newnote::expand_value(v, &vars) {
+        *v = match newnote::expand_value_ids(v, &vars, &ids) {
             NewValue::Str(s)
                 if types::date_or_datetime(&s)
                     && matches!(kind(key), Kind::Date | Kind::DateTime) =>
@@ -2380,11 +2494,12 @@ fn new_note_cli(
     if let Some(c) = missing {
         return fail(&Msg::NewNoteCliRequired.fill(&[c]));
     }
-    let body = match newnote::read_body(root, &rule.body) {
+    // cli.new-note-body-folder: 雛形のフォルダなら、画面で選ばずに作るときと同じ最初の雛形(無ければ本文なし)。
+    let body = match newnote::read_body(root, &newnote::default_body(root, &rule.body)) {
         Ok(b) => b,
         Err(e) => return fail(&e),
     };
-    let bytes = match newnote::build_with(&rule, &[], &answers, &vars, body.as_deref()) {
+    let bytes = match newnote::build_with_ids(&rule, &[], &answers, &vars, &ids, body.as_deref()) {
         Ok(b) => b,
         Err(e) => return fail(&e),
     };
@@ -2394,9 +2509,72 @@ fn new_note_cli(
     for w in &warnings {
         eprintln!("mdgrid: {w}");
     }
+    // cli.new-note-report: 渡したフォルダにつないだ形で出す(表のフォルダを渡したときも)。
+    let shown = within
+        .as_deref()
+        .and_then(|rel| path.strip_prefix(root.join(rel)).ok())
+        .map_or_else(|| path.clone(), |rest| given.join(rest));
     emit(Ok(
-        format!("{}\n", slash(path.display().to_string())).into_bytes()
+        format!("{}\n", slash(shown.display().to_string())).into_bytes()
     ))
+}
+
+/// cli.new-note-table-folder: `folder` が、上の印(自分は印の根でない)に書いた表のノートを置くフォルダなら、
+/// (その表の開くパス, 印の根からのフォルダ)。ノートを置くフォルダは、表の `[new_note] folder` と、表の `.base` の
+/// 絞り込みの `file.inFolder`。当たる表が2つ以上なら印の順で最初のもの。
+fn table_of_folder(folder: &Path) -> Option<(PathBuf, String)> {
+    use mdgrid::workspace::{self, MARKER_DIR, MARKER_FILE};
+    let real = folder.canonicalize().ok()?;
+    if real.join(MARKER_DIR).join(MARKER_FILE).is_file() {
+        return None;
+    }
+    let root = workspace::find_marker(&real)?;
+    let rel: Vec<String> = real
+        .strip_prefix(&root)
+        .ok()?
+        .components()
+        .map(|c| c.as_os_str().to_string_lossy().into_owned())
+        .collect();
+    let rel = rel.join("/");
+    if rel.is_empty() {
+        return None;
+    }
+    let (ws, _) = workspace::read_marker(&root);
+    ws.tables
+        .iter()
+        .find(|t| {
+            let own = t
+                .profile
+                .new_note
+                .as_ref()
+                .is_some_and(|n| n.folder.trim().trim_matches('/') == rel);
+            own || base_folder(&root, &t.path).is_some_and(|f| f == rel)
+        })
+        .map(|t| (t.path.clone(), rel.clone()))
+}
+
+/// 表の `.base`(印に書いた中身か、`.base` のファイル)の絞り込みの `file.inFolder` が指すフォルダの、印の根
+/// `root` からの相対(`/` でつなぐ)。`.base` でない・読めない・当たる絞り込みが無い・根の外なら None。
+fn base_folder(root: &Path, table: &Path) -> Option<String> {
+    let text = match mdgrid::workspace::inline_base(table) {
+        Some((t, _)) => t,
+        None if is_base(table) => mdgrid::textfile::read_text(table).ok()?,
+        None => return None,
+    };
+    let b = base::parse(&text).ok()?;
+    let dir = mdgrid::newnote::view_folder(&b.filter_exprs(&mut Vec::new()))?;
+    // file.inFolder はルートフォルダ(`.obsidian` のある最寄りの上。BV-2)から(画面の new_note.rs と同じ読み)。
+    let vault = mdgrid::vault::roots(&[root.to_path_buf()])
+        .ok()?
+        .into_iter()
+        .next()?;
+    let rel = vault.join(dir.trim_matches('/'));
+    let rel = rel.strip_prefix(root).ok()?;
+    let parts: Vec<String> = rel
+        .components()
+        .map(|c| c.as_os_str().to_string_lossy().into_owned())
+        .collect();
+    Some(parts.join("/"))
 }
 
 /// `--apply`(CLI-17): CSV・JSON を読み、全部を確かめてから、差分を出す(`--yes` なら書く)。

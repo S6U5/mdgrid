@@ -370,7 +370,7 @@ fn test_sr_12_broken_state_file_gives_default() {
 
 #[test]
 fn test_sr_12_apply_state_reconciles_columns() {
-    // [utest -> req~screen.state-store-columns~1] 状態の並びと隠す列は今ある列にだけ当て、状態に無い列は右に足し、無くなった列は落ちる。
+    // [utest -> req~screen.state-store-columns~2] 状態の並びと隠す列は今ある列にだけ当て、状態に無い列は右に足し、無くなった列は落ちる。
     let columns = s(&["a", "b", "c", "d"]);
     // x は今の列に無い(無くなった列)。d は状態に無い(増えた列)。
     let st = state(&["c", "x", "b", "a"], &["b", "x"], &[], &[], None);
@@ -381,7 +381,7 @@ fn test_sr_12_apply_state_reconciles_columns() {
 
 #[test]
 fn test_sr_12_apply_state_empty_keeps_columns() {
-    // [utest -> req~screen.state-store-columns~1] 状態が空なら今の列の並びのまま、隠す列なし。
+    // [utest -> req~screen.state-store-columns~2] 状態が空なら今の列の並びのまま、隠す列なし。
     let columns = s(&["title", "status", "due"]);
     let (order, hidden) = apply_state(&columns, &state(&[], &[], &[], &[], None));
     assert_eq!(order, columns);
@@ -390,7 +390,7 @@ fn test_sr_12_apply_state_empty_keeps_columns() {
 
 #[test]
 fn test_sr_12_apply_state_new_columns_appended_in_current_order() {
-    // [utest -> req~screen.state-store-columns~1] 状態に無い列が複数あれば、今の列の順で右に足す。
+    // [utest -> req~screen.state-store-columns~2] 状態に無い列が複数あれば、今の列の順で右に足す。
     let columns = s(&["a", "b", "c", "d", "e"]);
     let (order, hidden) = apply_state(&columns, &state(&["d", "b"], &[], &[], &[], None));
     assert_eq!(order, s(&["d", "b", "a", "c", "e"]));

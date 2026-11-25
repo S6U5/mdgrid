@@ -709,11 +709,20 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
         .unwrap_or(4)
         .min((w.saturating_sub(1) / 2).max(8));
     // 列の見出しは表の列の見出しと同じ displayName(base-view.display-name-everywhere)。
-    let mut cols: Vec<(String, usize, Vec<String>)> = Vec::new();
+    type Col = (String, usize, Vec<String>, Vec<Option<String>>);
+    let mut cols: Vec<Col> = Vec::new();
     let mut used = 1 + nw;
     for c in &app.cols {
         let title = sanitize(&app.title(c));
-        let vals: Vec<String> = items.iter().map(|r| one_line(app.plain(r, c))).collect();
+        // navigation.value-labels-cells: 名前のある値は名前で(URL の行き先は素の値から)。
+        let vals: Vec<String> = items
+            .iter()
+            .map(|r| one_line(super::cell::shown_plain(app, r, c)))
+            .collect();
+        let urls: Vec<Option<String>> = items
+            .iter()
+            .map(|r| app.link_url(&one_line(app.plain(r, c))))
+            .collect();
         let cw = vals
             .iter()
             .map(|v| width(v))
@@ -725,7 +734,7 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
             break;
         }
         used += 2 + cw;
-        cols.push((title, cw, vals));
+        cols.push((title, cw, vals, urls));
     }
     let faint = super::look::look(app).map_or_else(
         || Style::default().add_modifier(Modifier::BOLD),
@@ -733,7 +742,7 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
     );
     let mut out = Vec::new();
     let mut h = format!(" {}", fit(head, nw, Align::Left));
-    for (c, cw, _) in &cols {
+    for (c, cw, _, _) in &cols {
         h.push_str(&format!("  {}", fit(c, *cw, Align::Left)));
     }
     out.push(Line::from(Span::styled(fit(&h, w, Align::Left), faint)));
@@ -746,12 +755,12 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
             if sel { ">" } else { " " },
             fit(name, nw, Align::Left)
         );
-        for (_, cw, vals) in &cols {
+        for (_, cw, vals, urls) in &cols {
             let shown = fit(&vals[k], *cw, Align::Left);
             // cell-view.url-full-target: 切って見せた URL にも、全体の URL を行き先に付ける(窓の中の桁で覚える)。
-            if let Some(url) = app.link_url(&vals[k]) {
+            if let Some(url) = &urls[k] {
                 app.url_spots
-                    .push(width(&t) + 2, out.len(), shown.clone(), &url);
+                    .push(width(&t) + 2, out.len(), shown.clone(), url);
             }
             t.push_str(&format!("  {shown}"));
         }

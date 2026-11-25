@@ -13,6 +13,8 @@ use std::cell::Cell;
 pub(crate) const LOCK_MARK: char = '#';
 /// 型の合わない値の印(CV-2)。
 pub(crate) const MISFIT_MARK: char = '!';
+/// `MISFIT_MARK` の文字列。
+const MISFIT: &str = "!";
 /// 評価できない式の印(BV-7。薄く出す)。
 pub(crate) const UNSUPPORTED_MARK: &str = "?";
 
@@ -35,10 +37,13 @@ pub(crate) struct Shown {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum CellPart {
     None,
-    /// 値の部品の並び(SR-36 の形。text は chips::parts の文字)。`list` はリストの列の値。
+    /// 値の部品の並び(SR-36 の形。text は印 `mark` と chips::parts_named の文字)。`list` はリストの列の値。
     Chips {
-        items: Vec<String>,
+        /// (値, 見せる文字)。部品の色と形は値で、文字は見せる文字(名前のある値は名前。navigation.value-labels-cells)。
+        items: Vec<(String, String)>,
         list: bool,
+        /// 部品の前に出すセルの印(決まりに合わない `!` など。cell-view.marks-on-parts)。
+        mark: String,
     },
     /// リンク(アクセントの色)。
     Link,
@@ -59,11 +64,101 @@ pub(crate) fn check_marks(check: mdgrid::style::Check) -> Option<(&'static str, 
     }
 }
 
-/// 値の部品の文字と部品(SR-36)。形が plain なら None。
-fn parts_of(app: &App, items: Vec<String>, list: bool, part: &mut CellPart) -> Option<String> {
-    let t = super::chips::parts(app, &items, list)?.text();
-    *part = CellPart::Chips { items, list };
+/// 値の部品の文字と部品(SR-36)。形が plain なら None。印(`mark`)は呼ぶ側が決めたあとに入れる。
+fn parts_of(
+    app: &App,
+    items: Vec<(String, String)>,
+    list: bool,
+    part: &mut CellPart,
+) -> Option<String> {
+    let t = super::chips::parts_named(app, &items, list)?.text();
+    *part = CellPart::Chips {
+        items,
+        list,
+        mark: String::new(),
+    };
     Some(t)
+}
+
+/// 決まりの values と比べる値の文字(rules の比べ方と同じ。真偽はチェックボックスで見せるので名前を当てない)。
+fn scalar_key(v: &Value) -> Option<String> {
+    match v {
+        Value::Str(s) if !s.is_empty() => Some(s.clone()),
+        Value::Int(i) => Some(i.to_string()),
+        Value::Float(f) => Some(float_text(*f)),
+        _ => None,
+    }
+}
+
+/// navigation.value-labels-cells: 列 `col` の値の文字 `key` の見せる文字(`[rules.<列>] icons`・`labels` の「字 名前」。
+/// 1行にして無害にしたもの)。名前も字も無い値と、決まりの values に無い値は None。
+pub(crate) fn label_of(app: &App, col: &str, key: &str) -> Option<String> {
+    app.prof
+        .resolved
+        .value_shown(col, key)
+        .map(|t| first_line_marked(&t))
+}
+
+/// 値の文字(CV-1)に、名前のある値は名前を当てたもの(リストは要素ごと。navigation.value-labels-cells)。
+pub(crate) fn labeled_text(app: &App, col: &str, v: &Value) -> String {
+    match v {
+        Value::List(items) => format!(
+            "[{}]",
+            items
+                .iter()
+                .map(|x| labeled_text(app, col, x))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+        _ => scalar_key(v)
+            .and_then(|k| label_of(app, col, &k))
+            .unwrap_or_else(|| value_text(v)),
+    }
+}
+
+/// ためた値の文字に、名前のある値は名前を当てたもの(navigation.value-labels-cells)。
+fn labeled_new_text(app: &App, col: &str, v: &NewValue) -> String {
+    let named = |k: String| label_of(app, col, &k);
+    match v {
+        NewValue::Str(s) if !s.is_empty() => named(s.clone()),
+        NewValue::Int(i) => named(i.to_string()),
+        NewValue::Float(f) => named(float_text(*f)),
+        NewValue::List(items) => Some(format!(
+            "[{}]",
+            items
+                .iter()
+                .map(|s| named(s.clone()).unwrap_or_else(|| first_line_marked(s)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
+        _ => None,
+    }
+    .unwrap_or_else(|| new_value_text(v))
+}
+
+/// 値を見せる所(木の画面の右の欄など)の素の文字: `App::plain` に名前を当てたもの(リストは要素を `, ` でつなぐ。
+/// navigation.value-labels-cells)。比べる・書く所は `plain` のまま使う。
+pub(crate) fn shown_plain(app: &App, row: &RowId, col: &str) -> String {
+    let one = |k: &str| label_of(app, col, k).unwrap_or_else(|| k.to_string());
+    if let Some(nv) = app.changes.pending(row, col) {
+        return match nv {
+            NewValue::List(items) => items.iter().map(|s| one(s)).collect::<Vec<_>>().join(", "),
+            _ => one(&app.plain(row, col)),
+        };
+    }
+    let scalar = |x: &Value| {
+        scalar_key(x)
+            .and_then(|k| label_of(app, col, &k))
+            .unwrap_or_else(|| mdgrid::print::value_plain(x))
+    };
+    match app.cell(row, col) {
+        base::Shown::Prop(c) => match &c.value {
+            Some(Value::List(items)) => items.iter().map(scalar).collect::<Vec<_>>().join(", "),
+            Some(v) => scalar(v),
+            None => String::new(),
+        },
+        _ => app.plain(row, col),
+    }
 }
 
 thread_local! {
@@ -166,9 +261,13 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
             NewValue::Bool(b) if app.rich(col, Part::Checkbox) => {
                 check_marks(app.style.check).map(|(on, off)| if *b { on } else { off }.to_string())
             }
-            NewValue::List(items) if !items.is_empty() && app.rich(col, Part::Chips) => {
-                Some(items.join(" · "))
-            }
+            NewValue::List(items) if !items.is_empty() && app.rich(col, Part::Chips) => Some(
+                items
+                    .iter()
+                    .map(|s| label_of(app, col, s).unwrap_or_else(|| s.clone()))
+                    .collect::<Vec<_>>()
+                    .join(" · "),
+            ),
             _ => None,
         }
         // REL-2: ためたリンクも行き先の名前で見せる。
@@ -180,7 +279,10 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
             ""
         };
         return Shown {
-            text: format!("*{bad}{}", text.unwrap_or_else(|| new_value_text(nv))),
+            text: format!(
+                "*{bad}{}",
+                text.unwrap_or_else(|| labeled_new_text(app, col, nv))
+            ),
             null: false,
             pending: true,
             locked: app.src.get(row, col).lock,
@@ -189,7 +291,8 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
         };
     }
     let mut part = CellPart::None;
-    let (text, null, lock) = match app.cell(row, col) {
+    // `mark` は値の前の印(型か決まりに合わない `!`。CV-2・CV-9)。部品のセルでも落とさない(cell-view.marks-on-parts)。
+    let (text, mark, null, lock) = match app.cell(row, col) {
         base::Shown::Unsupported(reason) => {
             // BV-7: 薄い `?`。本当の値の `?` とは薄さと、選んだときの下の帯で見分ける。
             return Shown {
@@ -201,12 +304,12 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                 part: CellPart::None,
             };
         }
-        base::Shown::Computed(v) => (val_text(&v), false, app.src.get(row, col).lock),
+        base::Shown::Computed(v) => (val_text(&v), "", false, app.src.get(row, col).lock),
         base::Shown::Prop(cell) => {
-            let (text, null) = match &cell.value {
+            let (text, mark, null) = match &cell.value {
                 // キーが無いときは空欄(CV-1)。必須の決まり(CE-36)があれば `!` だけ(CV-9)。
-                None if app.problem(row, col).is_some() => (MISFIT_MARK.to_string(), false),
-                None => (String::new(), false),
+                None if app.problem(row, col).is_some() => (String::new(), MISFIT, false),
+                None => (String::new(), "", false),
                 Some(v) => {
                     let date = match v {
                         Value::Str(s) => date_text(app, col, s),
@@ -227,27 +330,34 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                     } else {
                         None
                     }
-                    .unwrap_or_else(|| value_text(v));
+                    // navigation.value-labels-cells: 名前のある値は名前で(書く値は値のまま)。
+                    .unwrap_or_else(|| labeled_text(app, col, v));
                     // CV-2・CV-9: 列の型か決まりに合わない値は、そのまま見せて `!` を付ける。
                     let bad = !fits || app.problem(row, col).is_some();
-                    let t = if bad { format!("{MISFIT_MARK}{t}") } else { t };
-                    (t, matches!(v, Value::Null))
+                    (t, if bad { MISFIT } else { "" }, matches!(v, Value::Null))
                 }
             };
-            (text, null, cell.lock)
+            (text, mark, null, cell.lock)
         }
     };
     // 読むだけのセルは薄い表示に加えて先頭に `#`(色や薄い表示に頼らない。SR-15)。
     // `#` は、ためる変更の `*`・未対応の `?`(BV-7)・型の合わない `!`(CV-2)・負の数の `-` と重ならない。
     // cell-view.formula-empty-mark: 式の列の空の値には付けず、空のセルにする(`#` だけが残ると値があるように見える)。
+    // cell-view.formula-mark-no-color: 式の列は、色のある表示では付けない(薄い表示と見出しの ƒ で見分ける。
+    // 色を使わない表示では薄い表示が出ないので付ける)。
     // 読むだけの理由(`locked`)は残す(選んだときのメッセージ行と、直せないことは同じ)。
-    let bare = text.is_empty() && col.starts_with("formula.");
-    let text = match &lock {
-        Some(_) if !bare => format!("{LOCK_MARK}{text}"),
-        _ => text,
+    let formula = col.starts_with("formula.");
+    let bare = text.is_empty() && formula;
+    let quiet = formula && app.color != super::app::ColorMode::None;
+    let lead = match &lock {
+        Some(_) if !bare && !quiet => format!("{LOCK_MARK}{mark}"),
+        _ => mark.to_string(),
     };
+    if let CellPart::Chips { mark, .. } = &mut part {
+        mark.clone_from(&lead);
+    }
     Shown {
-        text,
+        text: format!("{lead}{text}"),
         null,
         pending: false,
         locked: lock,
@@ -285,22 +395,30 @@ pub(crate) fn cell_lines(
     out
 }
 
-/// SR-35: 真偽・リスト・札の列の値の部品の文字。部品にしなければ None。
+/// SR-35: 真偽・リスト・札の列の値の部品の文字。部品にしなければ None。部品の文字は、名前のある値は名前
+/// (色と形は値のまま。navigation.value-labels-cells)。
 fn rich_text(app: &App, col: &str, v: &Value, part: &mut CellPart) -> Option<String> {
+    let pair = |x: &Value| {
+        let t = value_text(x);
+        let shown = scalar_key(x)
+            .and_then(|k| label_of(app, col, &k))
+            .unwrap_or_else(|| t.clone());
+        (t, shown)
+    };
     match v {
         Value::Bool(b) if app.rich(col, Part::Checkbox) => {
             let (on, off) = check_marks(app.style.check)?;
             Some(if *b { on } else { off }.to_string())
         }
         Value::List(items) if !items.is_empty() && app.rich(col, Part::Chips) => {
-            parts_of(app, items.iter().map(value_text).collect(), true, part)
+            parts_of(app, items.iter().map(pair).collect(), true, part)
         }
         // 札を強いた列(`"chip"`)の数も札に。
         Value::Int(_) | Value::Float(_) if app.cells.forced_chip(col) && app.is_select(col) => {
-            parts_of(app, vec![value_text(v)], false, part)
+            parts_of(app, vec![pair(v)], false, part)
         }
         Value::Str(s) if !s.is_empty() && app.is_select(col) => {
-            parts_of(app, vec![first_line_marked(s)], false, part)
+            parts_of(app, vec![pair(v)], false, part)
         }
         _ => None,
     }

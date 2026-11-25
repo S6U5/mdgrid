@@ -108,6 +108,7 @@ fn sel_style(app: &App) -> Style {
 /// 札を動かして書く値は `key` の値のまま)。
 fn lane_name(app: &App, col: &str, key: &LaneKey) -> String {
     match key {
+        LaneKey::Value(v) if v.is_empty() => Msg::KanbanNoValue.text().to_string(),
         LaneKey::Value(v) => sanitize(
             &app.prof
                 .resolved
@@ -465,12 +466,10 @@ impl App {
         self.stay.extend(st.extra);
         self.regrid = true;
         let name = card_name(self, &row);
-        let old = if old.is_empty() {
-            Msg::KanbanNoValue.text().to_string()
-        } else {
-            sanitize(&old)
-        };
-        let mut msg = Msg::KanbanMoved.fill(&[&name, &old, &sanitize(&v)]);
+        // navigation.value-labels-cells: 知らせの値もレーンの題と同じ名前で(書いた値は値のまま)。
+        let old = lane_name(self, &col, &LaneKey::Value(old));
+        let new = lane_name(self, &col, &LaneKey::Value(v));
+        let mut msg = Msg::KanbanMoved.fill(&[&name, &old, &new]);
         if let Some(n) = st.notice {
             msg.push_str(" / ");
             msg.push_str(&n);

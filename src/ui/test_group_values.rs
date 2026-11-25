@@ -176,9 +176,9 @@ const NOTES2: &[(&str, &str)] = &[
 ];
 
 #[test]
-fn test_group_values_icon_headings_show_glyph_and_name_cells_keep_value() {
-    // [utest -> req~navigation.group-values-icon~1] status でまとめると、見出しは「○ 未着手」と「進行中」で、
-    // todo の行の status のセルは todo のまま。
+fn test_group_values_icon_headings_show_glyph_and_name() {
+    // [utest -> req~navigation.group-values-icon~2] status でまとめると、見出しは「○ 未着手」と「進行中」。
+    // まとまりの鍵(ノートに書く値)は値のまま。セルの見せ方は navigation.value-labels-cells(test_value_labels_cells.rs)。
     let (_t, mut a) = boot("gvi_head", NOTES2, ICONS, "");
     group_by(&mut a, "status", Dir::Asc);
     let s = screen(&a);
@@ -188,16 +188,12 @@ fn test_group_values_icon_headings_show_glyph_and_name_cells_keep_value() {
         !s.contains("status: todo(") && !s.contains("status: doing("),
         "{s}"
     );
-    // tbd~navigation.value-labels-cells の仮決め: セルは値のまま。
-    let row = line_with(&s, "alpha");
-    assert!(row.contains("todo") && !row.contains("未着手"), "{row}");
-    // ノートに書く値も鍵も値のまま。
     assert_eq!(heads(&a), want(&["todo", "doing"]));
 }
 
 #[test]
 fn test_group_values_icon_kanban_lane_titles() {
-    // [utest -> req~navigation.group-values-icon~1] 同じ設定で kanban = { column = "status" } の表をカンバンで開くと、
+    // [utest -> req~navigation.group-values-icon~2] 同じ設定で kanban = { column = "status" } の表をカンバンで開くと、
     // レーンの題は「○ 未着手」と「進行中」。
     let (_t, mut a) = boot(
         "gvi_kanban",
@@ -216,7 +212,7 @@ fn test_group_values_icon_kanban_lane_titles() {
 
 #[test]
 fn test_group_values_icon_unknown_value_warns_once_at_start_and_is_not_used() {
-    // [utest -> req~navigation.group-values-icon~1] values に無い blocked の字を書いて起動すると、
+    // [utest -> req~navigation.group-values-icon~2] values に無い blocked の字を書いて起動すると、
     // `icons.blocked` を言う cli.config-file-warning-form の形の警告が1行で、その字は使わない。
     let top = "[rules.status]\nvalues = [\"todo\", \"doing\"]\nicons = { blocked = \"!\" }\n";
     let notes = [("alpha.md", "---\nstatus: blocked\n---\n")];

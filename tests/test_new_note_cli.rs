@@ -373,3 +373,121 @@ fn test_new_note_without_name_head_keeps_the_name() {
     assert_eq!(o.status.code(), Some(0), "{}", err(&o));
     assert_eq!(out(&o), "t/Tasks/設計.md\n");
 }
+
+#[test]
+fn test_new_note_name_variable_has_no_hidden_head() {
+    // [stest -> req~cell-edit.template-vars-name-head~1] name_head = "hide" の台帳で --new-note テスト → 本文の雛形の `# {name}` は `# テスト`(頭を除いた名前)。
+    let marker = head_marker(
+        "name_head = \"hide\"\nbody = \".mdgrid/templates/task.md\"",
+        "",
+    );
+    let t = ledger("nn-head-body", &marker);
+    let o = run(t.path(), &["t", "--new-note", "テスト"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    let text = read(&t.path().join("t/Tasks/20261118_テスト.md"));
+    assert!(text.starts_with("# テスト\n"), "{text:?}");
+}
+
+#[test]
+fn test_new_note_uid_is_the_same_in_name_and_frontmatter() {
+    // [stest -> req~cell-edit.template-vars-id-same~1, req~cli.new-note-create~2] `name = "{uid}_"`(頭を隠す)と `set` の
+    // `id = "{uid}"` で --new-note t → ファイルの名前の頭とフロントマターの id が同じ8字(画面の窓と同じ)。
+    let marker = "open = \"Tasks\"\n\n[new_note]\nfolder = \"Tasks\"\nname = \"{uid}_\"\nname_head = \"hide\"\n\
+hidden = [\"id\"]\n\n[new_note.set]\nid = \"{uid}\"\n\n\
+[[table]]\nname = \"Tasks\"\n\n[table.base]\nfilters = { and = ['file.inFolder(\"Tasks\")'] }\n";
+    let t = ledger("nn-uid-same", marker);
+    let o = run(t.path(), &["t", "--new-note", "t"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    let line = out(&o);
+    let name = line
+        .trim()
+        .strip_prefix("t/Tasks/")
+        .and_then(|n| n.strip_suffix("_t.md"))
+        .unwrap_or_else(|| panic!("{line:?}"))
+        .to_string();
+    assert_eq!(name.len(), 8, "{line:?}");
+    let text = read(&t.path().join(format!("t/Tasks/{name}_t.md")));
+    assert!(front(&text).contains(&format!("id: {name}")), "{text:?}");
+}
+
+/// 印の根 `r` に表を2つ書いた台帳(ニュースは News/、問いは Questions/)。開くのは問い。
+const TABLES: &str = "open = \"問い\"\n\n[display]\nnote_name = '^\\d{8}_'\n\n\
+[[table]]\nname = \"問い\"\n\n[table.new_note]\nfolder = \"Questions\"\n\n\
+[table.base]\nfilters = { and = ['file.inFolder(\"Questions\")'] }\n\n\
+[[table]]\nname = \"ニュース\"\n\n[table.new_note]\nfolder = \"News\"\nname = \"{date:YYYYMMDD}_\"\n\
+name_head = \"hide\"\nbody = \".mdgrid/templates/news.md\"\n\n[table.new_note.set]\ndate = \"{date}\"\n\n\
+[table.base]\nfilters = { and = ['file.inFolder(\"News\")'] }\n";
+
+fn tables_ledger(tag: &str) -> TempDir {
+    let t = TempDir::new(tag);
+    let root = t.path().join("r");
+    for d in [".mdgrid/templates", "News", "Questions", "Other"] {
+        std::fs::create_dir_all(root.join(d)).unwrap();
+    }
+    std::fs::write(root.join(".mdgrid/workspace.toml"), TABLES).unwrap();
+    std::fs::write(
+        root.join(".mdgrid/templates/news.md"),
+        "# {name}\n\n## 要点\n",
+    )
+    .unwrap();
+    std::fs::write(
+        root.join("News/20261101_前の.md"),
+        "---\ndate: 2026-11-01\n---\n",
+    )
+    .unwrap();
+    std::fs::write(root.join("Questions/問い.md"), "---\nstatus: open\n---\n").unwrap();
+    t
+}
+
+#[test]
+fn test_new_note_in_a_table_folder_uses_that_table() {
+    // [stest -> req~cli.new-note-table-folder~1] 印の根の表「ニュース」のフォルダ r/News を渡す → その表の決まり(頭・set・雛形)で r/News に作る。
+    let t = tables_ledger("nn-table-folder");
+    let o = run(t.path(), &["r/News", "--new-note", "見出し"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(out(&o), "r/News/20261118_見出し.md\n");
+    let text = read(&t.path().join("r/News/20261118_見出し.md"));
+    assert!(front(&text).contains(&format!("date: {TODAY}")), "{text:?}");
+    assert!(text.ends_with("---\n# 見出し\n\n## 要点\n"), "{text:?}");
+}
+
+#[test]
+fn test_new_note_in_a_plain_folder_of_a_ledger_stays_plain() {
+    // [stest -> req~cli.new-note-table-folder~1] どの表のフォルダでもない r/Other を渡す → 表の決まりを使わず、r/Other/x.md を空で作る。
+    let t = tables_ledger("nn-plain-folder");
+    let o = run(t.path(), &["r/Other", "--new-note", "x"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(out(&o), "r/Other/x.md\n");
+    assert_eq!(read(&t.path().join("r/Other/x.md")), "");
+}
+
+#[test]
+fn test_new_note_body_folder_uses_the_first_template() {
+    // [stest -> req~cli.new-note-body-folder~1] body がフォルダ → 名前の順で最初の雛形(book.md)を本文にする。
+    let t = ledger("nn-body-folder", "[new_note]\nbody = \"templates\"\n");
+    let tpl = t.path().join("t/templates");
+    std::fs::create_dir_all(&tpl).unwrap();
+    std::fs::write(tpl.join("book.md"), "# {name}\n").unwrap();
+    std::fs::write(tpl.join("memo.md"), "メモ\n").unwrap();
+    let o = run(t.path(), &["t", "--new-note", "本"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(read(&t.path().join("t/本.md")), "# 本\n");
+}
+
+#[test]
+fn test_new_note_body_folder_without_templates_writes_no_body() {
+    // [stest -> req~cli.new-note-body-folder~1] body のフォルダに .md が1つも無い → 本文の無いノート。
+    // 印の決まりが効いていることは set の値で見る(表のフォルダ Notes/ があって、ワークスペースになる)。
+    let t = ledger(
+        "nn-body-empty",
+        "[new_note]\nbody = \"templates\"\n\n[new_note.set]\nkind = \"memo\"\n",
+    );
+    let tpl = t.path().join("t/templates");
+    std::fs::create_dir_all(&tpl).unwrap();
+    std::fs::write(tpl.join("readme.txt"), "x\n").unwrap();
+    std::fs::create_dir_all(t.path().join("t/Notes")).unwrap();
+    std::fs::write(t.path().join("t/Notes/a.md"), "---\nkind: memo\n---\n").unwrap();
+    let o = run(t.path(), &["t", "--new-note", "x"]);
+    assert_eq!(o.status.code(), Some(0), "{}", err(&o));
+    assert_eq!(read(&t.path().join("t/x.md")), "---\nkind: memo\n---\n");
+}

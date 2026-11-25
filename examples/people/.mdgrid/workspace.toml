@@ -14,6 +14,13 @@ last_contact = "date"
 attendees = "list"
 tags = "list"
 
+# A named condition for this ledger only: it works while a table of this ledger is open, next to the
+# conditions of your config.toml, and gets the first digit key (press 1 in People).
+[conditions.quiet]
+label = "No contact for 3 days"
+expr = 'last_contact <= today() - "3d"'
+key = 1
+
 [[table]]
 name = "Meetings"
 

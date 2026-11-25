@@ -129,9 +129,11 @@ fn rows(app: &App, w: &FilterWin) -> (String, Vec<String>) {
             };
             let mut items = vec![mode.to_string()];
             items.extend(counts.iter().map(|(k, n)| {
-                let label = k
-                    .as_deref()
-                    .map_or_else(|| Msg::EmptyHeading.into(), sanitize);
+                // navigation.value-labels-picker: 名前のある値は「名前 値」。
+                let label = k.as_deref().map_or_else(
+                    || Msg::EmptyHeading.into(),
+                    |v| app.value_choice_text(col, v),
+                );
                 Msg::PickValueRow.fill(&[&check(checked.contains(k)), &label, n])
             }));
             // screen.checklist-keys: 一番下に「[ 決める ]」の行。

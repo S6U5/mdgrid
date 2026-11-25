@@ -49,8 +49,8 @@ fn test_ch_3_list_column_counts_each_element() {
 
 #[test]
 fn test_ch_3_week_buckets_include_empty_weeks() {
-    // [utest -> req~chart.buckets-date~1] due が 10/01 と 10/20 の2行で週の単位 → 10/01 の週(2026-09-28)から 10/20 の週(2026-10-19)まで
-    // 4つの区切り(間の2つは 0)が小さい順に並ぶ。
+    // [utest -> req~chart.buckets-date~1] due が 10/01 と 10/20 の2行で週の単位 → 10/01 の週(2026-09-27)から 10/20 の週(2026-10-18)まで
+    // 4つの区切り(間の2つは 0)が小さい順に並ぶ。週は既定の日曜で区切る(chart.buckets-week-start)。
     let notes = md(&[("alpha", "due: 2026-10-01"), ("beta", "due: 2026-10-20")]);
     let (_t, mut a) = boot(
         "ch3week",
@@ -62,10 +62,10 @@ fn test_ch_3_week_buckets_include_empty_weeks() {
     assert_eq!(
         c.items(),
         want(&[
-            ("2026-09-28", "1"),
-            ("2026-10-05", "0"),
-            ("2026-10-12", "0"),
-            ("2026-10-19", "1"),
+            ("2026-09-27", "1"),
+            ("2026-10-04", "0"),
+            ("2026-10-11", "0"),
+            ("2026-10-18", "1"),
         ]),
         "{}",
         c.raw
@@ -280,7 +280,7 @@ fn test_ch_4_negative_value_draws_no_bar() {
 
 #[test]
 fn test_ch_4_item_without_numbers_shows_dash() {
-    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~2, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~1] 数の値のある行が無い項目は値なし: 平均で doing は「-」で棒なし。
+    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~2, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~2] 数の値のある行が無い項目は値なし: 平均で doing は「-」で棒なし。
     let notes = md(&[
         ("alpha", "status: todo\nestimate: 2"),
         ("beta", "status: doing"),
@@ -391,7 +391,7 @@ fn test_ch_4_percent_makes_every_bar_full() {
 
 #[test]
 fn test_ch_4_stacked_keeps_five_and_groups_rest_as_other() {
-    // [utest -> req~chart.bar-stacked-top5~1] 内訳は全体で多い順に5つまで(o1〜o5)、残り(o6・o7)は「その他」(塗りの字 `:`)にまとめる。
+    // [utest -> req~chart.bar-stacked-top5~2] 内訳は全体で多い順に5つまで(o1〜o5)、残り(o6・o7)は「その他」(塗りの字 `:`)にまとめる。
     let mut list: Vec<(String, String)> = Vec::new();
     for (owner, n) in [
         ("o1", 6),

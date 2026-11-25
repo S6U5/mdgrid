@@ -93,7 +93,7 @@ fn note_path_of(layers: &[Layer]) -> String {
 
 #[test]
 fn test_sr_46_scopes_narrow_wins() {
-    // [stest -> req~screen.note-path-scopes~1, req~screen.profile-scopes-sections~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~2] 全体 "name"、ワークスペース "full"、表 "common" → 表の "common"。表が無ければ "full"。
+    // [stest -> req~screen.note-path-scopes~1, req~screen.profile-scopes-sections~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~3] 全体 "name"、ワークスペース "full"、表 "common" → 表の "common"。表が無ければ "full"。
     // ワークスペースだけ "name" → "name"。
     let global = layer(
         Place::Config,

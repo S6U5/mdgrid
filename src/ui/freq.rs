@@ -69,7 +69,8 @@ pub(crate) fn same_cond(app: &App, col: &str, value: String) -> Same {
     }
 }
 
-/// 項目の見せ方(REL-2): リンクはセルと同じに行き先の名前(その値を持つ最初の行から解く)、ほかは値のまま。
+/// 項目の見せ方(REL-2): リンクはセルと同じに行き先の名前(その値を持つ最初の行から解く)、名前のある値は
+/// 「名前 値」(navigation.value-labels-picker)、ほかは値のまま。
 pub(crate) fn labels(app: &App, col: &str, items: &[(Option<String>, usize)]) -> Vec<String> {
     let mut first: HashMap<String, RowId> = HashMap::new();
     for r in &app.rows {
@@ -84,7 +85,14 @@ pub(crate) fn labels(app: &App, col: &str, items: &[(Option<String>, usize)]) ->
         .map(|(v, _)| {
             v.as_ref()
                 .and_then(|s| app.link_label(first.get(s)?, s))
-                .map_or_else(|| value_text(v), |t| sanitize(&t))
+                .map(|t| sanitize(&t))
+                .or_else(|| {
+                    v.as_deref()
+                        .filter(|s| !s.is_empty())
+                        .and_then(|s| app.prof.resolved.value_choice(col, s))
+                        .map(|t| sanitize(&t))
+                })
+                .unwrap_or_else(|| value_text(v))
         })
         .collect()
 }

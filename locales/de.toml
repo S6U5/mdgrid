@@ -61,7 +61,7 @@ PickNoColumn = "--pick: die Spalte \"{0}\" ist nicht in der Tabelle (Spalten: {1
 # ---- source/markdown: 読むだけの理由(WB-3・WB-5・CE-8・CE-16・CE-19・BV-12) ----
 LockNoFrontmatterSetting = "kein Front Matter (laut Einstellung nicht ergänzt)"
 LockEmptyFrontmatterSetting = "leeres Front Matter (laut Einstellung nicht befüllt)"
-LockTypesConflict = "types.json gibt dieser Spalte je Stammordner verschiedene Typen (schreibgeschützt)"
+LockTypesConflict = "types.json gibt dieser Spalte je Stammordner verschiedene Typen"
 LockNoFrontmatter = "kein Front Matter"
 LockEmptyFrontmatter = "Front Matter ist leer"
 LockBom = "die Datei beginnt mit einem BOM"
@@ -128,10 +128,10 @@ LockMixedNewlines = "gemischte Zeilenenden"
 LockDuplicateKey = "derselbe Schlüssel kommt doppelt vor ({0})"
 LockUnclosed = "Front Matter ist nicht geschlossen"
 LockHardLink = "die Datei hat Hardlinks"
-LockInvalidYaml = "unlesbares Format (schreibgeschützt)"
-LockInvalidYamlAt = "unlesbares YAML in Zeile {0}: {1} (schreibgeschützt)"
-LockFileAttr = "Dateiattribut (schreibgeschützt)"
-LockFormulaColumn = "Formelspalte (schreibgeschützt)"
+LockInvalidYaml = "unlesbares Format"
+LockInvalidYamlAt = "unlesbares YAML in Zeile {0}: {1}"
+LockFileAttr = "Dateiattribut"
+LockFormulaColumn = "Formelspalte"
 ## WB-5。`writeback::NO_PERMISSION` は日本語。
 NoPermission = "keine Schreibberechtigung"
 ListBlankBetween = "Liste mit Leerzeilen zwischen Einträgen"
@@ -212,6 +212,8 @@ RsnUnknown = "unbekannter Eintrag (ignoriert)"
 ## {0} は新しい道筋(CLI-20)。
 RsnMoved = "der alte Name heißt jetzt `{0}` (so gelesen)"
 RsnGlobalOnly = "nur in config.toml erlaubt (ignoriert)"
+## condition.marker: 名前の条件・通知の欄・知らせを、印の表の中など書けない所に書いた。
+RsnLedgerOnly = "nur in config.toml oder oben in der Workspace-Markierung erlaubt (ignoriert)"
 RsnNoTemplate = "keine Vorlage namens \"{0}\" (ignoriert)"
 RsnNestedUse = "eine Vorlage kann keine andere Vorlage verwenden (ignoriert)"
 RsnBadDateFormat = "{0}; Standard YYYY-MM-DD wird verwendet"
@@ -256,6 +258,8 @@ WantNotifyArray = "ein Array von Tabellen ([[notify]])"
 RsnNotifyNeedCond = "braucht cond (den Namen einer benannten Bedingung) (ignoriert)"
 ## notify.item: {0} は前の項目と同じ条件の名前。
 RsnNotifyDupCond = "dieselbe Bedingung \"{0}\" wie ein früherer Eintrag (ignoriert)"
+RsnNotifyCommandInMarker = "ein Arbeitsbereichsmarker kann keine Benachrichtigungen an einen Befehl senden (Befehle nur in config.toml; nicht an den Befehl gesendet)"
+RsnNoticeNoteOutside = "eine Hinweisnotiz in einem Arbeitsbereichsmarker muss eine Datei im Arbeitsbereich sein (ignoriert): {0}"
 ## notify.to: {0} は知らない出す先の名前。
 RsnNotifyUnknownTo = "unbekanntes Ziel \"{0}\" (terminal, desktop oder command; ignoriert)"
 RsnNotifyNoCommand = "to enthält command, aber command (Programm und Argumente) fehlt (an keinen Befehl gesendet)"
@@ -329,7 +333,7 @@ WantDisplayTable = "eine Tabelle [display]"
 ViewsTomlLine = "{0} nicht lesbar (Zeile {1}), daher werden keine mdgrid-Ansichten geladen: {2}"
 ## SR-43: 見た目の区画。
 NavLook = "Aussehen"
-DescLook = "Theme, Elementformen und runde Pillenenden (gespeichert in look.toml)"
+DescLook = "Theme (mit eigenen Farben), Elementformen und runde Pillenenden (gespeichert am gewählten Ort)"
 LookScope = "Speichern in"
 LookTheme = "Theme"
 LookPreset = "Elemente"
@@ -355,7 +359,33 @@ OriginGlobal = "global"
 OriginWorkspace = "dieser Workspace"
 OriginTable = "diese Tabelle"
 OriginThisView = "diese Ansicht"
+OriginMarker = "Marker"
 TextLookTemplate = "Vorlagenname"
+## screen.look-section-custom: カスタムのテーマ。{0} は元のテーマの名前・役割の名前・打った文字。
+LookCustom = "Eigenes"
+LookCustomOf = "Eigenes (Basis {0})"
+LookBaseTheme = "Basis-Theme"
+LookRoleOf = "Farbe: {0}"
+LookColorKeep = "Farbe des Themes"
+LookColorType = "#rrggbb (Farbe eingeben)"
+TextLookColor = "Farbe: {0} (#rrggbb oder Farbname)"
+LookColorBad = "„{0}“ ist keine lesbare Farbe; #rrggbb, #rgb oder einen Farbnamen eingeben"
+LookRoleBackground = "Hintergrund"
+LookRoleText = "Text"
+LookRoleHeader = "Oberste Zeile"
+LookRoleSelection = "Gewählte Zeile"
+LookRoleSelectionText = "Text der gewählten Zeile"
+LookRoleBand = "Untere Leiste"
+LookRoleBandText = "Text der unteren Leiste"
+LookRoleAccent = "Akzent"
+LookRoleStrong = "Betonung"
+LookRoleZebra = "Wechselnde Zeilen"
+LookRoleZebraText = "Text wechselnder Zeilen"
+LookRoleMark = "Markierung links"
+LookRoleAdded = "Hinzugefügte Zeilen"
+LookRoleRemoved = "Entfernte Zeilen"
+LookRolePending = "Ausstehende Änderungen"
+LookRoleHighlight = "Suchtreffer"
 SetHintLook = "{0} wählen oder verwenden  {1} Vorlage löschen (Anwenden zeigt das Aussehen)"
 ## SR-43: look.toml の警告。
 LookBroken = "{0}: nicht lesbar ({1}); das Aussehen aus config.toml wird verwendet"
@@ -943,6 +973,8 @@ NoteBodyOutside = "die Inhaltsvorlage {0} muss eine Datei im geöffneten Ordner 
 NoteBodyUnreadable = "Inhaltsvorlage {0} nicht lesbar: {1}"
 NoteNext = "Weiter"
 NoteToggle = "Umschalten"
+NoteOpenList = "Liste öffnen"
+NoteCloseList = "Liste schließen"
 NoteStop = "Abbrechen"
 NotePrevField = "Voriges Feld"
 NoteHintPlace = "↑↓ Ort wählen, Enter bestätigt"
@@ -1166,7 +1198,7 @@ CsvUnclosedQuote = "ein in Zeile {0} geöffnetes Anführungszeichen wird nie ges
 CsvNoHeader = "die Datei ist leer (die erste Zeile muss die Spaltennamen enthalten)"
 CsvCrOnly = "Zeile {0} endet mit einem einzelnen CR (zum Öffnen mit LF- oder CRLF-Zeilenenden speichern)"
 CsvRowChanged = "diese Zeile wurde außerhalb von mdgrid geändert oder entfernt; die Änderung wird nicht in eine andere Zeile geschrieben"
-CsvColumnCount = "diese Zeile hat {0} Werte, es gibt aber {1} Spalten; sie ist schreibgeschützt"
+CsvColumnCount = "diese Zeile hat {0} Werte, es gibt aber {1} Spalten"
 ## SC-17: CSV・TSV ではしない操作。
 CsvNoteOnly = "in einer CSV/TSV-Tabelle nicht verfügbar (wirkt auf Notizen)"
 CsvRowAdded = "Zeile am Ende von {0} hinzugefügt"
@@ -2120,10 +2152,11 @@ SessionNoCond = "die benannte Bedingung {0} der Sitzung steht nicht in der Konfi
 # ---- schema: 設定の項目の説明(--print-config のコメント。screen.locales-all-in-ledger) ----
 ## --print-config の頭の説明(行ごとに "# " を付けて出す)。
 CfgPrintHead = "mdgrid-Konfiguration mit jedem Eintrag auf seinem Standardwert.\nOrt: $XDG_CONFIG_HOME/mdgrid/config.toml (oder ~/.config/mdgrid/config.toml;\nunter Windows %APPDATA%\\mdgrid\\config.toml).\nEinträge mit \"nur global\" gelten für die ganze App; die übrigen bilden das Tabellenprofil und\nlassen sich auch je Workspace, Tabelle und Ansicht schreiben.\nOptionen: mdgrid --help. Vollständige Referenz: docs/config.md im mdgrid-Repository."
-## --print-config の書ける範囲の行。{0} は範囲の名前(CfgScopeGlobal・CfgScopeProfile)。
+## --print-config の書ける範囲の行。{0} は範囲の名前(CfgScopeGlobal・CfgScopeProfile・CfgScopeLedger)。
 CfgScopeLine = "Bereich: {0}."
 CfgScopeGlobal = "nur global"
 CfgScopeProfile = "global, Workspace, Tabelle, Ansicht"
+CfgScopeLedger = "global, Workspace-Markierung"
 ## --print-config の例の見出し。
 CfgExampleLine = "Beispiel:"
 ## 設定の項目 `language` の説明(行の区切りは --print-config のコメントの行)。
@@ -2203,7 +2236,7 @@ CfgDisplayNoteName = "Ein regulärer Ausdruck für den Namen in der Notizspalte 
 ## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
 CfgDatesFormat = "Wie Datumsangaben in der Tabelle gezeigt und eingegeben werden. Teile: YYYY, YY, MM, M, DD, D, ddd\n(Wochentag) und nicht-alphanumerische Trennzeichen. Notizen werden immer als YYYY-MM-DD\ngeschrieben."
 ## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
-CfgDatesWeekStart = "Erster Wochentag im Datumskalender."
+CfgDatesWeekStart = "Erster Wochentag für den Datumskalender, die Datumswörter (diese Woche, nächste Woche) und die Wochen in Diagrammen."
 ## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditCandidates = "Höchstzahl der Wertvorschläge beim Bearbeiten einer Textzelle.\nSpalten mit mehr verschiedenen Werten bieten keine Vorschläge."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。

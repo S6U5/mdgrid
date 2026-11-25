@@ -157,7 +157,8 @@ fn test_cli_3_warning_shape_in_every_file() {
 
 #[test]
 fn test_cli_21_print_resolved_names_the_origin() {
-    // [stest -> req~cli.resolved-config-origin~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~2] 印・views.toml・config.toml を重ねた値を、出どころのコメント付きで出す。読み直せる。
+    // [stest -> req~cli.resolved-config-origin~1, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~3, req~screen.profile-scopes-marker-look~1] 印・views.toml・config.toml を重ねた値を、出どころのコメント付きで出す。読み直せる。
+    // 印の [look] は作り手の勧める既定なので、config.toml に書いたテーマが勝ち、config.toml に無い組は印のまま。
     let t = Tmp::new("resolved");
     t.write("config/mdgrid/config.toml", "[look]\ntheme = \"sumi\"\n");
     t.write("notes/tasks/a.md", "---\nx: 1\n---\n");
@@ -188,14 +189,15 @@ fn test_cli_21_print_resolved_names_the_origin() {
     let (c, w) = parse(&out).unwrap();
     assert!(w.is_empty(), "{w:?}\n{out}");
     assert_eq!(c.resolved().theme, ThemeSpec::Named(Theme::Dracula));
-    // ほかの表はワークスペースの nord。
+    // ほかの表のテーマは、印の nord でなく config.toml の sumi。組は印の saas。
     let out = stdout(&t.run(&[
         t.0.join("notes/projects").to_str().unwrap(),
         "--print-config",
         "--resolved",
     ]));
+    assert!(out.contains("# config.toml\ntheme = \"sumi\""), "{out}");
     assert!(
-        out.contains("# N (.mdgrid/workspace.toml)\ntheme = \"nord\""),
+        out.contains("# N (.mdgrid/workspace.toml)\npreset = \"saas\""),
         "{out}"
     );
 }

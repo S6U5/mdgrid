@@ -338,6 +338,10 @@ pub fn home_dir() -> Option<PathBuf>;               // $HOME、無ければ Wind
 pub const DEFAULT_EDITOR: &str;                     // SR-8 の既定: vi、Windows は notepad(vi がふつう無い)
 pub fn load_state(dir: &Path, target: &Path, view: &str) -> ViewState;   // 無い・壊れている → 既定(空)
 pub fn save_state(dir: &Path, target: &Path, view: &str, s: &ViewState) -> io::Result<()>;  // 一時ファイル → 名前の変更
+pub fn load_state_with_base(dir: &Path, target: &Path, view: &str) -> (ViewState, Option<Vec<String>>);  // 並びを覚えたときの印の order の控えも
+pub fn save_state_with_base(dir: &Path, target: &Path, view: &str, s: &ViewState, base: Option<&[String]>) -> io::Result<()>;
+/// screen.state-store-follow-order: 覚えた並びを今の印の order に合わせる(人の動かした列のうち食い違わないものを残す)。
+pub fn follow_order(before: &[String], saved: &[String], now: &[String]) -> Vec<String>;
 /// SR-12: 状態の並びと隠す列は今ある列にだけ当て、状態に無い列は右に足す。(並び, 隠す列)を返す。
 pub fn apply_state(columns: &[String], s: &ViewState) -> (Vec<String>, Vec<String>);
 
@@ -597,7 +601,11 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 ## 部品の形と端末に従うテーマ(SR-36・SR-39)
 
 - 設定: lib の `src/style.rs` に部品ごとの列挙(`named!` で名前と値の表を1か所に)と組(`Style::of`)。`[style]` は `preset` を先に当て、ほかの項目で上書き。カタログ(SR-38)と名前を突き合わせる試験の元もこの表。
-- 値の部品: `ui/chips.rs` の `parts` が値を「前置き・要素ごとの切れ・区切り」の並び(`Parts`)にし、セルの文字(幅を数える)と描く所(`view::chip_spans`)の両方がこれを使う(幅と描きのずれを作らない)。切れの見た目は行の見た目に重ねる(`patch`)ので、一行おきの色や十字の選びの地を点や区切りが消さない。色は状態の英語の語(done・doing・blocked・todo など)なら意味の色、ほかは値の文字の指紋から。
+- 値の部品: `ui/chips.rs` の `parts_named` が (値, 見せる文字) の並びを「前置き・要素ごとの切れ・区切り」の並び(`Parts`)にし、セルの文字(幅を数える)と描く所(`view::chip_spans`)の両方がこれを使う(幅と描きのずれを作らない)。切れの見た目は行の見た目に重ねる(`patch`)ので、一行おきの色や十字の選びの地を点や区切りが消さない。色は状態の英語の語(done・doing・blocked・todo など)なら意味の色、ほかは値の文字の指紋から(見せる文字が名前でも、色は値で決める。navigation.value-labels-cells)。
+- セルの印と部品(cell-view.marks-on-parts。2026-11-25): `cell::shown` は値の前の印(`!`、読むだけの `#`)を `CellPart::Chips` の `mark` にも入れ、`chip_spans` は部品の前に印を描いてから残りの幅に部品を並べる。前は部品を値の並びから描き直していたので、文字の頭の `!` が札では消えていた。ためた値(`*`)・評価できない式(`?`)・読むだけのセルは部品にしないので、前から文字の印のまま。
+- 札にするか(screen.rich-cells-table-wide。2026-11-25): `looks_like_select` に渡す行は、今のビューの行でなく `App::table_rows`(`.base` があれば `Base::table_rows` で全体の `filters` を通った行、無ければ読んだ行の全部)。ビューの行で決めると、行の少ないタブで値がくり返さず、同じ列がタブごとに札と文字に変わった。全体の絞り込みを見るのは、`.base` の表は全体の絞り込みが表の中身を決める(同じフォルダのほかの表の行を数えない)ため。判定の使い回し(`SelectsKey`)は前のまま。
+- 窓の縁の外の札の切れ端(screen.window-chip-remnants。2026-11-25): 窓は表の行に字の単位で重ねる(`list::splice`)ので、窓が札の体を隠すと、縁の外に丸い端の字(U+E0B6・U+E0B4)だけが残った。窓ごとに直さず、描く直前(`ui::paint`)に `chips::drop_lone_caps` が、隣に体(端の字の色を地にした字)の無い丸い端の字を空白にする。どの窓(新しいノート・候補・操作の一覧・絞り込み・カレンダーなど)と、列の幅で切れた札にも効く。Nerd Font の無いときの端(`▐`・`▌`)は、グラフの棒の字と同じ字なので見分けられず、扱わない。
+- 式の列の `#`(cell-view.formula-mark-no-color。2026-11-25): 式の列(`formula.*`)は列ごと読むだけで、見出しに `ƒ` がある(screen.formula-mark-prefix)。色のある表示では `cell::shown` が `#` を付けず、薄い表示(`locked` は残す)と見出しで見分ける。色を使わない表示では薄い表示が出ないので `#` を付ける。読むだけのノートと `file.*` の列は前のまま。
 - 選び・線・タブ・帯は `ui/look.rs` の `select`・`rules`・`Look::tab`・`Look::band_key`。モダンな見た目(色あり・look = modern)のときだけ効き、classic と色なしは今まで(SR-33)。どの形でも画面の文字は変えない(見出しの下の線は下線、選びの `bar` も印は `>` のまま色で)。窓の枠は `popup::frame` が `frames` から(線なしも幅は同じ)。
 - 端末に従うテーマ: `ui/termbg.rs`。`COLORFGBG` の地の番号(7・9〜15 を明るい)を先に見て、無ければ `/dev/tty` を raw にして OSC 11 と DA1 を続けて送り、`poll` で最大 200ms 待つ。DA1 の答えが先に来たら答えない端末とみなしてすぐやめる(遅れた答えを表のキーと読まないため)。依存を足さず、std がリンクしている libc の `poll` を直接呼ぶ(`ui/external.rs` の `signal` と同じ形)。Windows は問い合わせない。解決は起動のとき1回(`main::open_app`)。
 - 選ばなかった案: 選びの `bar` で印を `▌` にする(SR-33 の文字を変えない決まりと、`>` を確かめる多くの試験とぶつかる)。状態の日本語の語の表(SR-23 でコードに日本語のリテラルを置かない)。
@@ -609,10 +617,11 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **項目の表を1つに**: lib の `src/schema.rs` に、項目ごとの `Item { path: "look.style.status", ty, ty_ja, default, example, scope: Scope::Global | Scope::Profile, en, ja }` を並べる(`config_items.rs` を置き換える)。読み取りの知らない項目の判定・`--print-config`(区画ごと)・`--print-config --resolved`・docs/config*.md と突き合わせる試験・カタログの試験が、この表を見る。新しい項目は表に1行足し、読み取りの `match` に1つ足す(足し忘れは試験で落ちる)。
 - **旧い名前の表**: 同じファイルの `LEGACY: &[(old, new)]`。読み取りは、最上位で旧い名前を見つけたら、表を新しい形に写して(`legacy::lift`)から読み、「旧い名前は新しい道筋に移った」と警告する。新しい道筋にも書いてあれば新しいほう。`--migrate-config` は同じ写しをして `toml::to_string` で出す(注釈は移らない)。docs の旧い名前の表もこの表と突き合わせる。
 - **プロファイル**: `src/profile.rs` の `Profile`(どの欄も Option の部分の値): `look: LookLayer`(theme・preset・mode・cells・style の部品ごと・columns・colors の役割ごと・values)、`display: DisplayOverride`(今の型。tabs を `Tabs3` にする)、`dates: DatesLayer`、`edit: EditLayer`、`new_note: Option<NewNote>`、`use_: Option<String>`。`Profile::read(table, file, prefix, warns)` が config.toml・ui.toml・ワークスペースの印・workspaces.toml・views.toml のどれでも同じ読み方をし、`Profile::write(&mut toml::Table)` が画面の書くファイルに書く。
-- **決まった値**: `profile::resolve(layers: &[Layer], templates) -> Resolved` が、既定から狭い範囲へ順に重ねる。`Layer { origin: Origin, profile: &Profile }`、並びは 既定 → config.toml → ui.toml → ワークスペース → 表(手) → 表(views.toml) → ビュー。各層は先に `use` のテンプレートを敷いてから自分の値を重ねる(テンプレートの中の `use` は警告して読まない)。組を持つ層で `style` をその組の形に戻し(それより前の層の部品の形を捨てる)、テーマを持つ層で役割の色を空に戻す(値の色は残す)。`Resolved` は今の画面が使う型(`Style`・`Colors`・`Cells`・`Display`・`DateFormat`・`WeekStart`・`NewNote` など)と、項目の道筋ごとの `Origin`(SR-43 の「(この表)」と CLI-21 のコメント)を持つ。
+- **決まった値**: `profile::resolve(layers: &[Layer], templates) -> Resolved` が、既定から狭い範囲へ順に重ねる。`Layer { origin: Origin, profile: &Profile }`、並びは 既定 → config.toml → ui.toml → ワークスペース → 表(手) → 表(views.toml) → ビュー。ただし `[look]` だけは、印から来た層(`Origin::by_author`。`Scope::layer`・`table_layer` が印の範囲で立てる)を先に、人の層をそのあとに重ねる(screen.profile-scopes-marker-look。`resolve` は `[look]` を `apply_look` で、ほかを `apply_rest` で2回に分けて重ねる)。印を `Place` の新しい値にしないのは、`[display]` などは今までどおりワークスペースの範囲で、出どころの範囲(「(この表)」・`--print-config --resolved` のコメント)も変えないため。却下: 印の層を並びの先頭に動かす(`[look]` のほかの区画まで負けてしまう)。各層は先に `use` のテンプレートを敷いてから自分の値を重ねる(テンプレートの中の `use` は警告して読まない)。組を持つ層で `style` をその組の形に戻し(それより前の層の部品の形を捨てる)、テーマを持つ層で役割の色を空に戻す(値の色は残す)。`Resolved` は今の画面が使う型(`Style`・`Colors`・`Cells`・`Display`・`DateFormat`・`WeekStart`・`NewNote` など)と、項目の道筋ごとの `Origin`(SR-43 の「(この表)」と CLI-21 のコメント)を持つ。
 - **Config**: アプリ全体の項目(`language`・`editor`・`poll_ms`・`terminal`・`workspace`・`keys`)と、config.toml のプロファイルとテンプレートを持つ。ui.toml は `UiFile { profile, templates, nerd_font }`。App は全体・ワークスペース・表の層を持ち、ビューを選ぶたびにビューの層を足して `resolve` し直す(`App::apply_profile`)。表を切り替えるときは main が開き直すので、範囲(WS-6)が決まったあとの `App::start` で層を集める。`add_frontmatter` は表で決まるので、読み込みの前(`start` の中)に源へ渡す。
 - **警告の形**: `Msg::SettingWarn = "{0}: {1}: {2}"`(ファイル・道筋・理由)。理由は `Msg::Want*`・`Msg::Moved` など。どのファイルの読み取りも `warn(file, path, reason)` を通す。
 - **画面の書く場所**: 全体 → ui.toml(`config::write_atomic`)、ワークスペース → workspaces.toml のそのワークスペースの区画(`workspace::save_profile`。文字の区画を置き換える今の書き方で、手のコメントを残す)、表 → views.toml の `[[table]]` の `look` など、ビュー → ビューの設定(`Settings` に `look`・`dates`・`edit`・`use_` を足す)。
+- **見た目の区画のカスタム(screen.look-section-custom)**: 写しの `LookPick` に `custom` と役割の色 `colors` を持ち、カスタムなら区画に元のテーマと16の役割の行を足す(項目の番号は 4 が元のテーマ、5 からが役割で、テンプレートの行はそのあと)。反映でテーマか役割の色を変えていれば、選んだ範囲の層に元のテーマと写しの役割の色を丸ごと書く。テーマを書いた層は広い範囲の役割の色を使わないので、広い範囲から来ていた色も同じ層にそろえて持たせる。名前のテーマを選ぶと写しの色を空にし、反映でその層の役割の色も外す。値の色(`[look.colors.values]`)は触らない。却下: `theme = "custom"` のような新しいテーマの名前にする(設定の形が増え、元のテーマが残らない)。
 - 選ばなかった案: 範囲ごとに丸ごとの Config を作って上書きする(どの値がどこから来たかが分からず、組とテーマの決まりが書けない)。`serde` の derive で全部を読む(知らない項目・型の違いを「ファイル: 道筋: 理由」で出せず、旧い名前を写せない)。
 
 ## 型と決まりの問題(CE-36・CV-9・NV-30・CLI-23。type-check。2026-10-14)
@@ -621,7 +630,7 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 - **判定は1か所**: lib の `src/rules.rs` の `problem(kind, rule, value)` が、型(`types::fits`)→ 必須 → 選べる値の順で最初の理由を返す。画面(`App::problem`。ためた値を重ねた値)と `--check`(`rules::check`。ノートの全部のキーと決まりのある列)が同じ関数を使う。却下: 画面の cell.rs の判定を CLI に写す(食い違いが生まれる)。
 - **一緒に入れる値(`then`)**: `[rules.<列>.then]`(`Resolved.then: 列 → 値 → 列 → 入れる文字`。`Rule` の形は変えない)。画面(`ui/then.rs` の `App::follow`)が変数を埋めて列の型で読み、`Changes::set_each_then` が元の直しと同じ1手(`Step`)に入れる。だから取り消し・やり直し・差分は今までの道のまま。前のためた値で入れた列は、別の値に直したときに外す。却下: 保存のときに入れる(差分に出る前に書かれ、取り消せない)。
-- **値の字と名前(`icons`・`labels`。navigation.group-values-icon。2026-11-24)**: `RuleLayer` の `icons`・`labels`(値 → 文字)を `Resolved.icons`・`Resolved.labels` に重ねる(`then` と同じく、書いた範囲のものが丸ごと代わる。`Rule` の形は変えない)。見せる文字は `Resolved::value_shown` の1か所で作り、まとまりの見出し(`App::group_shown`)とカンバンのレーンの題だけが呼ぶ。セル・絞り込み・検索・出力・書く値は値のまま(`tbd~navigation.value-labels-cells` の仮決め)。同じ `[rules.<列>]` に `values` があれば、そこに無い値の項目は読むときに `ファイル: 道筋: 理由` の警告にして捨てる。`values` が広い範囲にあるときは、読むときには確かめず、`value_shown` が重ねた `values` に無い値を出さない。却下: 重ねたあとに警告する(起動の途中の、範囲の層を集める前の重ねで、狭い範囲の `values` を知らずに誤って警告し、表で `values` を狭めただけの正しい設定にも警告が出る)。
+- **値の字と名前(`icons`・`labels`。navigation.group-values-icon。2026-11-24)**: `RuleLayer` の `icons`・`labels`(値 → 文字)を `Resolved.icons`・`Resolved.labels` に重ねる(`then` と同じく、書いた範囲のものが丸ごと代わる。`Rule` の形は変えない)。見せる文字は `Resolved::value_shown` の1か所で作り、まとまりの見出し(`App::group_shown`)とカンバンのレーンの題と、セルの見せ方(下の「値の名前をセルにも」)が呼ぶ。書く値と書き出しは値のまま。同じ `[rules.<列>]` に `values` があれば、そこに無い値の項目は読むときに `ファイル: 道筋: 理由` の警告にして捨てる。`values` が広い範囲にあるときは、読むときには確かめず、`value_shown` が重ねた `values` に無い値を出さない。却下: 重ねたあとに警告する(起動の途中の、範囲の層を集める前の重ねで、狭い範囲の `values` を知らずに誤って警告し、表で `values` を狭めただけの正しい設定にも警告が出る)。
 - **まとまりの順(navigation.group-values-order)**: まとめる列に `values` があれば、候補の順(降順は逆)→ 候補に無い値(今までの値の順)→ 値の無い行。ビューの設定でまとめ直すときは `settings::apply_with`(`apply` は候補を見ない形のまま残す。前からの試験と呼ぶ側を変えないため)、`.base` の groupBy のまとまりのままのときは `settings::order_groups` が `Base::build` の結果のまとまりを並べ直す(`Base` は設定を知らないので、画面の側で重ねる)。`--print` は設定を重ねないので、今までの値の順のまま。
 - **決まりの置き場**: 表のプロファイルの `[rules.<列>]`(`Profile.rules: 列 → RuleLayer`)。`[types]` と同じく範囲を重ね、列ごと・項目ごと(`required`・`values`)に狭い範囲が勝つ(`Resolved.rules`)。決まりは書き戻しを止めない(型の CV-2 と違い、合わない値でも書き戻しの安全に関わらないため)。
 - **数は組み立てのときに**: 下の帯の問題の数は、組み立て直し(`rebuild`)の終わりに今の行と見えている列で数えて `Built.problems` に持つ。描くたびに数えない(1万行で重い)。問題のある行だけの絞り込みは `overlay` の `passes` に重ねる(簡易の絞り込み・同じ値と同じ段)。そのため列の型(`kinds`)は `overlay` の前に決める。
@@ -643,6 +652,11 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **新しいノートの窓の頭とクリック**(`ui/new_note.rs`): `[new_note] name_head = "hide"` なら、名前の雛形を埋めた文字を `Flow.head` に持って名前の欄には出さず、確定のとき `full_name` で最後の名前の部分に付ける(打った文字は `Flow.typed`、作る名前は `Flow.name`)。欄の行のクリックは、移る先を `Flow.jump` に置いてからふだんの確定を呼ぶ(確かめと答えの記録を1つの道にするため。読めない値なら移らない)。キーの行のクリックは、描くのと同じ並び(`key_actions`)から桁を割り出して、その動作を `apply` に渡す。リストの選択の窓の上のクリックは、下の欄の行に通さない(`listpick::covers`)。
 - **切って見せた URL の行き先(cell-view.url-full-target)**: 端末は画面の文字から URL を見つけて開くので、`…` で切った文字のままだと途中までの URL が開く。描く側(表の `view::data_row`・木の右の欄・詳細)が「この桁のこの文字は、この URL」を `App.url_spots`(`ui/hyperlink.rs`。描く関数は `&App` なので RefCell)に覚えさせ、`main` が描いたあとに、その桁の字を OSC 8 で包んで書き直す(ratatui のバッファに制御の列を入れると字の幅の数えが狂うので、描画には混ぜない)。窓や区画の中で覚えた桁は `shift` で画面の桁に直す。描き終えたバッファの字が覚えた文字と違う所(窓が重なった所)は包まない。包み直しは毎回の描画でする(ratatui が字を書き直すと行き先が外れるため。同期の更新の中なのでちらつかない)。行き先にするのは `web_url` を通り `url_refusal` に当たらない値だけで、`TERM=dumb` では書かない。
 - **パレットは木の上に重ねる**: 木から開いたパレットは閉じると木に戻り、木に無い動作を選んだら表に戻ってから行う。
+- **新しいノートの窓の欄はセルの編集と同じ入れ方**(cell-edit.new-note-form-same-input。2026-11-25): 欄の候補は `open_step` が `input.rs` の `open_at_inner` と同じ順(リンクの列 → 決まりの values → ノートの値。チェックボックスは true・false・なし)で作り、開いた直後に打つと置き換える `fresh` も同じ条件で立てる。リンクの書く形と答えたリンクの見せ方は、まだ無い作るノートのパス(`note_row`)を行の鍵にして `link_list`・`link_cands`・`link_text_new` に渡す(相対のパスの形でも、作る場所から書く)。ノートの値の候補が0件のテキストの列だけは、セルと違って「なし」だけのリストを出さない(cell-edit.new-note-form-rule-values)。
+- **候補の窓の Esc**(cell-edit.new-note-form-esc-popup): 値の候補のリストとカレンダーは、Esc で入力の `list`・`cal` を外すだけ(入力は打った文字のまま開いたまま。入り直すと作り直す)。リストの欄の付け外しの窓は、`Revert` で開いたときの付け方に戻して `Flow.rest` を立て、描かない(`listpick::geometry` が None。文字は捨てる)。`rest` のあいだの Enter・Space で窓を戻し、Tab はその値で次の欄へ、Esc は窓を閉じる。窓を閉じる Esc は確かめない(セルの入力の Esc と同じ。cell-edit.new-note-form-esc)。
+- **理由の印**(cell-edit.new-note-form-error-clear): `Flow.error` は作るときの理由の欄と文で、その欄の値を決めたら(必須の欄がまだ空なら残して)消す。名前の欄で打っている間の理由はメッセージ行だけに出す(作れない名前は確定で止めるので、欄の印にはならない)。
+- **頭を隠すときの `{name}`**(cell-edit.template-vars-name-head): 変数の名前は、頭を隠すとき(`Flow.head` が空でない)は打った名前 `Flow.typed`、ほかは作る名前 `Flow.name` の最後の部分。名前の欄の見せ方も同じ。`--new-note` も、頭を付ける前の渡した名前で埋める。
+- **`--new-note` の表のフォルダ**(cli.new-note-table-folder): 渡したフォルダの上に印があり、自分は印の根でないとき、印の表のうち `[new_note] folder` か `.base` の絞り込みの `file.inFolder`(ルートフォルダから)がそのフォルダを指す最初の表を選び、作る場所の根を印の根(渡したパスからフォルダの段だけ上がったもの)にして、その表のパスで設定を重ねる。出すパスは渡したフォルダにつなぐ。画面で表のフォルダを直に開いたときは、まだ表の決まりを使わない。本文の雛形がフォルダなら、画面で選ばずに作ったときと同じ最初の雛形(`newnote::default_body`。`.md` の無いフォルダは本文なし。画面の窓も同じ関数を使う)。
 
 ## 台帳のスターター(ST-1〜ST-6。starter。2026-10-24)
 
@@ -774,15 +788,17 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 ## グラフの画面(CH-1〜CH-9。chart)
 
-木・ガント・カンバンと同じ仕組みで足した: 印の `[[table]]` の設定(`chart = { … }` か、その配列)→ 画面の型のメニュー(REL-8)→ 画面のモジュール(`src/ui/chart.rs`)。分岐は `screens.rs` に1行ずつ足すだけで済んだ。核(`src/chart.rs`)は画面に依存せず、種類(`ChartKind`)と集め方(`Agg`)の名前、印の設定の形(`ChartSpec`。鍵はどれも省ける)、分ける列の推定(`infer_x`)、数え(`Acc`: 行の数と、数のある行の合計・最小・最大)、数の列の区間(`bins`)、数と日付の区切りの書き方を持つ。日付の区切りはガントの `gantt::Unit` と `floor_unit`・`cell_of`・`fit_unit` をそのまま使う。
+木・ガント・カンバンと同じ仕組みで足した: 印の `[[table]]` の設定(`chart = { … }` か、その配列)→ 画面の型のメニュー(REL-8)→ 画面のモジュール(`src/ui/chart.rs`)。分岐は `screens.rs` に1行ずつ足すだけで済んだ。核(`src/chart.rs`)は画面に依存せず、種類(`ChartKind`)と集め方(`Agg`)の名前、印の設定の形(`ChartSpec`。鍵はどれも省ける)、分ける列の推定(`infer_x`)、数え(`Acc`: 行の数と、数のある行の合計・最小・最大)、数の列の区間(`bins`)、数と日付の区切りの書き方を持つ。日付の区切りはガントの `gantt::Unit` と `cell_of` を使い、区切りの始まりは `chart::floor_bucket` で決める(週は設定の `dates.week_start` の曜日。カレンダーと日付の言葉の週にそろえる。ガントの週は gantt.range-presets のとおり月曜のままなので、ガントの `floor_unit` は使わない)。
 
 印の読みは `workspace::marker_setting` を使い、`read_charts` が値を表か表の配列として読む(配列の k 番目の警告の場所は `table[n].chart[k]`)。ほかの型と違い、書き方の違うグラフは丸ごと外す(グラフは鍵が多く、知らない鍵を無視して残すと、書いた人の意図と違う種類や列で開くため)。列が表にあるかは、ほかの型と同じく列が出そろってから確かめる(行の無い表では決めない)。
 
 種類は1つの画面の型の中で切り替える(`Tab`)。種類ごとに型を分けると、メニューとキーが種類の数だけ増え、同じ行の数え方を型ごとに持つことになる。画面の状態は、印の鍵と推定で全部埋めた `Resolved`(種類・分ける列・値の列・集め方・内訳・単位・累積)と、それで数えた `Data`。キー(`x` `y` `a` `b` `+` `-`)は `Resolved` を変えて数え直すだけで、印は書き換えない(設定のファイルを画面から書く道を増やさない。書き出しは次の段)。種類を変えるときは、今の列を保ち、その種類に合わない列だけ合う最初の列に替える(折れ線と散布図の横は日付か数、散布図の縦は横と別の数か日付、ほかの値は数、内訳は文字・チェックボックス・リスト)。替えられなければその種類を飛ばして理由を出す。
 
-数え方は頻度表(NV-9)にそろえた: 値は `setting_value`(ためた値を重ねる)と `settings::value_keys`(リストは要素ごと、空は値の無い行)、項目の名前は頻度表の `labels`(リンクは行き先の名前)。だから棒の `Enter` は、頻度表の `Enter` と同じ同じ値の絞り込み(`freq::push_same`。リストの列は「含む」)で、件数と絞ったあとの行の数が合う。日付と数の区切りは同じ値の絞り込みでは表せないので絞らない。項目の順は、列の決まり(CE-36)があればその順(行の無い値も 0 の棒にする。カンバンのレーンと同じ)、ほかは値の大きい順で、値の無い行は最後。
+数え方は頻度表(NV-9)にそろえた: 値は `setting_value`(ためた値を重ねる)と `settings::value_keys`(リストは要素ごと、空は値の無い行)、項目の名前は頻度表の `labels`(リンクは行き先の名前)で、列の決まりに `icons`・`labels` のある値だけ、まとまりの見出しと同じ `Resolved::value_shown` の「字 名前」に置き換える(chart.value-labels。絞り込みの鍵は値のまま)。だから棒の `Enter` は、頻度表の `Enter` と同じ同じ値の絞り込み(`freq::push_same`。リストの列は「含む」)で、件数と絞ったあとの行の数が合う。日付と数の区切りは同じ値の絞り込みでは表せないので絞らない。項目の順は、列の決まり(CE-36)があればその順(行の無い値も 0 の棒にする。カンバンのレーンと同じ)、ほかは値の大きい順で、値の無い行は最後。
 
 描き方: 線と点は自前で行(`Line`)に組む。ratatui の `Chart` の部品は使わない(画面はどれも行を組んで描き、East Asian Ambiguous を幅2で数える描画 CV-6 もその形を前提にするため。部品をバッファに描いてから行に写すと、目盛りの日本語の幅と色なしの点の字を部品の外で直すことになる)。折れ線は点字(U+2800〜。幅は1)の格子にブレゼンハムで線を引き、区切りの点に内訳ごとの点の字(`*` `+` `o` `x` `#`)を重ねる。色が無くても点の字で線を見分けられる(SR-15)。積み上げ棒は内訳ごとの塗りの字(`█` `▓` `▒` `░` `▞`、その他 `:`)で、境は累積で丸めて字の数のずれをためない。ヒートマップは値 ÷ 最大を 4 段の濃さの字にし、色があれば地の色も付ける。枠の文字が ASCII のとき(`borders = "ascii"` と CV-6)は、塗りと濃さも ASCII の字にする。
+
+色(chart.series-contrast・chart.heatmap-readable): 画面の地(テーマの地、無ければ端末に問い合わせた地、分からなければ黒)が明るいか暗いかで、内訳の色の組を分ける。暗い地には今までの明るい組、明るい地には濃い組で、どちらも全部のテーマの地と WCAG の対比 3 以上(試験がテーマを全部回して確かめる。テーマを足しても同じ試験が回る)。積み上げ棒の地を埋めない塗りの字(`▓` `░` など)は、字の点が粗く棒の形が地に溶けるので、地を内訳の色へ 22% 寄せる。ヒートマップの地は、画面の地からテーマのアクセント(列の見出しの色)へ 0.3・0.55・0.8・1.0 寄せた4段で、明るい地では濃く、暗い地では明るくなる。256 色では近い番号に丸めるので、前の段と同じ番号になったら番号が変わるまで寄せ、アクセントでも変わらなければアクセントから文字の色へ寄せる(dozy-pink の4段目)。数の字は、テーマの文字の色か地の色のうち、地との対比が 4.5 以上のものを先に使い、どちらも届かなければ黒か白へ 1/4 ずつ寄せる(テーマの色味を残すため、いきなり黒と白にしない)。濃さの字(`░` 〜 `█`)は色なしの表示のためのもので、色のあるときはます目の地と同じ色で描き、左端の塊に見せない。前は暗い地の端末向けの紺の段を決め打ちし、数の字はテーマの文字の色のままだったので、明るい地のテーマで数が読めず、段も逆に見えた。
 
 件数と合計の折れ線は、行の無い区切りを 0 にする(平均・最小・最大は値なしで線を切る)。日付の単位は、区切りの並ぶ向きの長さ(棒・ヒートマップは縦の行、折れ線は横の字)に収まる最も細かい単位で開き、折れ線は区切りが字より多くならないところまで粗くする。
 
@@ -872,6 +888,15 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **数字のキー**: 動作 `condition_1`〜`condition_9` を表のモードの `1`〜`9` に置く。割り当て直しはほかのキーと同じ。ヘルプとパレットは、条件の無い数字を出さず、名前は条件の見せる名前にする。
 - **`--print` などの段**: `print::table` の結果から、いつも隠す条件と mdgrid のビューの名前の条件の行を除く(`main.rs` の `drop_by_conditions`)。`--count` はその行の数だけを出す。`--pick` は画面と同じ道を通る。
 
+## 台帳の印に書く条件・通知の欄・知らせ(condition.marker・condition.digit-order・condition.columns-present。2026-11-25)
+
+- **重ねる所は1つ**: 開く表から上へたどって最初に見つかった印(`workspace::marker_table`。スターターを重ねた文)の `[conditions]`・`[[notices]]`・`[[notify]]` を、`config::for_table` が全体の設定に重ねた `Config` を返す。画面は `App::start` で、`--print`・`--count`・`--check` は `print_view` で、`--print-config --resolved` は出す前に呼ぶ。`--notices`・`--notify`・`--runs` は画面と同じ道(`open_app` → `start`)を通る。重ねたかどうかと出どころは `Config.ledger` に持つ(`Config` は試験が `..Config::default()` で組むので、項目を足しても main の試験は組み立てられる)。
+- **条件は1回で組み直す**: 印の条件を先に、全体の条件のうち同じ名前の無いものを後に並べ、`Conditions::build` と同じ手順で1回で組む(`Conditions::layered`)。全体の条件の式の `cond()` も印の条件を指すのは、このため。数字の重なりは、どのファイル(層)の条件かを添えて、同じファイルの中だけで見る。印から来た名前は `Conditions` の中に持つ(`Condition` は変えない)。
+- **式を読む前に置く**: `cond()` は式を読むときに置き換わるので、`.base` を読む `open_target` の前に、開く表の条件を `condition::install` で置く(`open_app` は設定を読む順を `open_target` の前に移した)。ほかの表を数える・確かめる裏の糸(`count_tables`・`notify_hits`)は、表ごとにその表の印を全体の条件に重ね直し(`config::table_conditions`)、糸の中で `condition::scoped` に置いてからその表を開く。どの表の行も、その表で効く条件で数える。全体の条件は `CondState.global` に持って糸に渡す。
+- **数字は振る**: `key` は振る順。`Conditions::digit_order` が印の条件・全体の条件の順に `key` の小さい順で並べ、画面の `App::digits` が、今の表で使えない条件と、書いた数字を割り当て直した条件(condition.digit-remap の警告を出す)を飛ばし、割り当て直した数字も飛ばして 1 から振る。キーを押したとき・帯・ヘルプ・パレットは、どれも `digits` から引く。
+- **列があるか**: 式が使う列は `Expr::columns`(ノートのキーと `formula.*`。`file.*` は入れない)。今の表の行は `.base` の最上位の絞り込み(`Base::keeps`)を通った行で、ノートのキーは値を持つ行(空の値も含む)が1つでもあれば、`formula.x` は表の式に x があれば、ある。画面はこの答えを列ごとに `CondState.present` に覚え、表の形(`data_gen`・読んだ数・読み終えたか・ためた変更の数)が変わったら数え直す(ヘルプは描くたびに数字を引くので、毎回は数えない)。裏の糸とコマンドは `main.rs` の `table_has` で同じ判定をする。印の表に中身を書いた表は印の根のノートを全部読むので、ほかの表のノートだけにある列を、ある列と数えないためにも行で見る。
+- **いつも隠す条件は列を見ない**: far のように、始まりの列だけがある表でも隠したい条件があるため(tbd~condition.columns-hide)。
+
 ## 通知の欄(notice.*。2026-11-21)
 
 - **置き場**: 欄は画面のいちばん上(`bands::top_lines` の頭)に置き、`top_rows` に欄の行の数を足す。どの画面の型も `top_lines` と `top_rows` から組むので、欄の分だけそろって下がる。項目が無ければ 0 行で、今の画面と1字も変わらない。
@@ -958,7 +983,20 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **ノートの名前は `view::note_name` と `view::note_name_of`**: 表の行のノートは `note_name`(`.md` を除き、note_path と note_name)、表の行でない名前(関係マップのリンクの組・リンクの列の候補・横断の検索の結果)は `note_name_of` で `display.note_name` だけを当てる(フォルダは残し、最後の部分だけ。`NoteName::apply_last`)。今の表の設定を当てる(リンクのセルの行き先と同じ)。ほかの表の範囲に書いた note_name は見ない。数えるのと当てるのは元の名前で、見せる所だけを変える(関係マップの「よく指される」は元の名前ごとに数える)。
 - **表の名前は `bands::table_name`**: 印の範囲で、開いたパスの `[[table]]` にパスと違う `name` があればその名前、無ければ `.base` の名前かフォルダの名前。ヘッダーのパンくずと通知の欄の今の表が使う。最近開いた表は `Recent::name` が、そのパスの上の印を読んで同じ引き方をする(`resume::table_name`)。workspaces.toml で名前を付けた表のパンくずは、まだフォルダの名前のまま。
 - **`--print` の並び**: `print::table_with` が値の候補(`[rules.<列>] values`)を受け、`.base` の groupBy は `settings::order_groups_by`(画面の `order_base_groups` と同じ関数)、mdgrid のビューのグループは `settings::apply_with` で並べる。候補は `resolve_table`(画面と同じ範囲の重ね)から読み、`--count` と `--check` では読まない。`print::table` は候補を見ない形のまま残す(試験と `--apply` が使う)。
-- **値の候補の窓**: `App::with_value_labels` が、`[rules.<列>] labels` の名前のある値の項目の文字を「名前 値」にする(`Resolved::value_choice`)。書く値(`Item::value`)とセルは値のまま(tbd~navigation.value-labels-cells)。
+- **値を選ぶ窓**: `App::with_value_labels`(セルを直すときと新しいノートの窓の候補)と `App::value_choice_text`(リストの値の付け外し・絞り込みの窓とビューの設定の値の一覧・値の件数の窓)が、`[rules.<列>] labels` の名前のある値の項目の文字を「名前 値」にする(`Resolved::value_choice`。navigation.value-labels-picker)。書く値(`Item::value`)と絞る値は値のまま。
+- **値の名前をセルにも(navigation.value-labels-cells。2026-11-25)**: 人が「出す」と決めた。セルの文字は `cell::shown` の中で、日付・リンクでない値に `cell::label_of`(`Resolved::value_shown` を1行にして無害にしたもの)を当てる。札の部品は `CellPart::Chips` の要素を (値, 見せる文字) の組で持ち、色と形の記号は値から、文字は見せる文字から作る(`chips::parts_named`)。名前で色が変わると、done の緑のような意味の色と、設定の値の色(`[look.colors.values]`)が効かなくなるため。値を見せるほかの所(詳細の `detail_text`・木の画面の右の欄)は `cell::shown_plain` か `cell::labeled_text` を通す。比べる・書く所(`App::plain`・まとまりの鍵・カンバンのレーンの値・同じ値の絞り込み・コピー・書き出し)は値のまま。`\` の簡易の絞り込みは、値と見せる名前のどちらでも当てる(`tbd~navigation.value-labels-match` の仮決め。`/` の検索は前からセルの文字でも当てていた)。名前は values にある値にだけ当てるので、values に無い値は値のまま `!` が付く。
+- **ほかの表の列の名前は `App::titles_of` と `App::title_in`**: 関係マップとつながった行の一覧は、ほかの表の列を見せる。表のフォルダ(`relations::Table`)から、同じフォルダになる範囲の表(`link_places`)を探し、そのパスが `.base`(印の中の表も)なら `relations::table_base` で読んで `Base::column_title`、`.base` でなく今の表なら `App::title`、ほかは既定の見出し。関係マップは開くときに表ごとの名前を1回だけ引いて `RelMap` に持ち、箱は `relmap::layout_titled`、狭い画面の一覧は `relmap::link_text_as` に渡す(つながりを結ぶ名前と添字はキーのまま)。つながった行の一覧は表ごとに1回だけ引く。
+- **関係マップの逆向き(relations.map-reverse)**: `relmap::reverse_of` が、行き先の表から元の表へ戻るつながりのうち、組 (a, b) に対して (b, a) を持つものを返す。表の形(元と行き先の表)だけで決めると、同じ表の中のつながりは全部が互いの逆向きになっていた。組は1つのつながりで最大 500 なので、大きな表では指し返す組を取りこぼすことがある。
+
+## 見た目の状態の列の並びと印の order(screen.state-store-arranged-only・screen.state-store-follow-order。2026-11-25)
+
+開いただけで列の並びを書くと、あとで人が印の `order` に足した列が右の端に回っていた(状態の並びに無い列は右に足す決まり)。
+
+- **書くのは人が動かしたときだけ**: `persist_state` は、並び(隠した列を戻した位置に入れた並び)が状態の無いときの並びと同じで隠した列も無ければ、並びを空にして書く。比べる相手は、印のビューの `order`(`App::marker_order`。mdgrid のビューと `order` の無いビューは None)、無ければ組んだ表の列の並び(`built.natural`)。幅・畳んだまとまり・ビューの設定は今までどおり書く(どれも人が変えたものしか入らない)。動かしたかどうかの旗を持たないのは、動かして戻したときも状態の無いときと同じにするため。
+- **控え**: 並びを書くときは、そのときの印の `order` を状態のファイルの最上位の `base_order` に書く(`config::save_state_with_base`)。`ViewState` に項目を足さないのは、試験が `ViewState` を項目の全部で組み立てていて、main の試験がコンパイルできなくなるため(reverse-run)。
+- **合わせ方(`config::follow_order`)**: 開くとき、控えと今の `order` が違えば、今の `order` から始め、人が動かした列(控えから覚えた並びへの最長の共通の並びに入らない列)のうち、印も動かしていない列(控えから今の `order` への最長の共通の並びに入る列)だけを、覚えた並びで直前にあった列の後ろ(無ければ先頭)へ移す。直前の列を印が動かしていれば食い違うので移さない。最長の共通の並びが2つ以上あるときは、控えの前の方の列を残す方を取る(abc → bac は「b を先頭へ」と読む)。印が消した列は戻さない。隠した列は名前で持つので、並びを合わせても隠したまま。
+- **控えの無い前の版の状態**: 前の版は開いただけでも並びを書いていたので、人が動かした並びと区別できない。印の `order` があれば捨てて `order` に合わせる(tbd~screen.state-store-legacy-order)。
+- mdgrid のビュー(views.toml)は、前から定義の指紋(`ViewState::view`)が変われば定義の並びに戻すので、この合わせ方は使わない。
 
 ## 一覧の窓のキー(screen.checklist-keys・screen.window-key-hints。2026-11-25)
 
@@ -966,7 +1004,7 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 
 - **チェックの窓の Enter は付け外し**: リストの値の付け外し(`listpick.rs`)と絞り込みの窓の値の一覧(`filters.rs` の `Step::Values`)では、Enter(`run`)も Space(`toggle`)と同じく選んだ行のチェックを付け外しし、窓は開いたまま。決めるのは、どの行でも Tab(`commit`。絞り込みの窓には `[keys.filter_window]` の Tab を足した)と、窓の一番下に足した「[ 決める ]」の行での Enter かクリック。リストの値の付け外しの検索中は今までどおり、Space は空白、Enter は選んだ候補を付けるだけで外さない(cell-edit.list-candidates-no-dup の「打って足す」を、外すことにしないため)。
 - **形は変えない**: `Pick::rows` と `PickRow` は変えず(試験がそのまま組み立てる)、「[ 決める ]」の行は選びの添字 `rows().len()` で表す。描くときの中身の行は `listpick::Body`(候補・当たり無し・決める)。絞り込みの窓は値の一覧の行の並びの最後に足す(`sel > counts.len()` が決める行)。
-- **新しいノートの窓の聞く項目では変えない**: 同じリストの選択の窓を使うが、Enter は今の欄を決めて次の欄へ進む(cell-edit.new-note-form-move・cell-edit.new-note-form-create)ので、「[ 決める ]」の行と下の縁のキーは出さない(`App::pick_decide_row`)。窓の下の行に、その窓のキーの行がある。
+- **新しいノートの窓のリストの欄も同じ**(2026-11-25 に変えた): 前は Enter で欄を決めて次へ進め、「[ 決める ]」の行を出さなかったが、値を入れるつもりの Enter で何も選ばないままノートができた。今はセルの窓と同じキーと「[ 決める ]」の行・下の縁のキーで、決める・やめるだけを `new_note_pick_action` が先に受ける(Tab と「[ 決める ]」の Enter は次の欄へ、最後の欄なら作る。Shift+Tab は前の欄。リストの選択の Shift+Tab はセルの窓では何もしない)。クリックも `pick_apply` で同じ道を通す。
 - **スターターのオプションの一覧**: starter.pick-options の画面がまだ無い。作るときに同じキー(Enter・Space で付け外し、「[ 決める ]」か Tab で決める)にする。
 - **下の縁のキーはキーの表から**: 窓ごとに並べたい動作の並び(`(Action, Option<Msg>)`)を持ち、`popup::key_hints` が今のキーの表(割り当て直したあと)の最初のキーと表示名で「キー 動作」の字を作る。キーを外した動作は出さない。名前は表の表示名で、段で意味の変わる所だけ文言を添える(絞り込みの窓の値の一覧の Enter は「入れる・外す」、段の中の Esc は「戻る」、並べ替えの窓の Enter は縁の短い名前「向き・足す」)。リストの値の付け外しのキーの表示名は、縁にそのまま出せる形にした(Enter「入れる・外す」・Tab「決める」・Esc「やめる」)。
 - **並べ方とクリック**: 左下の角・横の線1字・空白1字のあとに、案内を2桁あけて並べ、右に空白1字・横の線1字を残す(ガントの操作の帯と同じ形)。入らない案内は後ろから省き、縁の線と字を重ねない(`bottom_hints`)。クリックの当たりは描くときと同じ置き場(`hint_at`)で、その動作を窓のモードの動作として渡す(キーを押したのと同じ道)。値の候補の窓と操作の一覧は、下の縁の左に今までの「選んでいる番号/数」を置き、その後ろに並べる。値の候補の窓を入力の欄の上に出すときは下の縁が入力の欄の側になるが、そこにもキーを並べる(窓は今までどおり縁で閉じる)。

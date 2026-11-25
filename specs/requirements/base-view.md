@@ -106,9 +106,9 @@
   - When:
   - Then: 見出しは `名前`。
 
-#### 列の名前を見せる所(まとまりの見出し・ビューの帯の条件と並べ替えとグループの札・ビューの設定の絞り込みの一覧・カンバンとガントとグラフとリストの値の付け外しの窓の題・新しいノートの窓の欄・木の画面の右の欄の列の見出し)は、列の見出しと同じく `properties` の displayName があればそれを使い、ノートに書く値・式・設定・`--print` の鍵は変えないべき
-`req~base-view.display-name-everywhere~2` P1
-- Rationale: 列の見出しは「状態」なのに、まとまりの見出しや帯の札やカンバンの題には生の列名(`status`)が出て、同じ列が2つの名前で見えていたため(2026-11-25 に、まとまりの見出しの「actor:」を直したときに、同じ形の所を洗い出した)
+#### 列の名前を見せる所(まとまりの見出し・ビューの帯の条件と並べ替えとグループの札・ビューの設定の絞り込みの一覧・カンバンとガントとグラフとリストの値の付け外しの窓の題・新しいノートの窓の欄・木の画面の右の欄の列の見出し・関係マップの箱の列と詳細の列と逆向きの列・操作の一覧の「つながった行」の一覧の列)は、列の見出しと同じく、その列のある表の `properties` の displayName があればそれを使い、ノートに書く値・式・設定・`--print` の鍵は変えないべき
+`req~base-view.display-name-everywhere~3` P1
+- Rationale: 列の見出しは「状態」なのに、まとまりの見出しや帯の札やカンバンの題には生の列名(`status`)が出て、同じ列が2つの名前で見えていたため(2026-11-25 に、まとまりの見出しの「actor:」を直したときに、同じ形の所を洗い出した。同じ日の実地の操作で、関係マップの箱と詳細と、つながった行の一覧にも生の列名 `attendees` が残っていた。ほかの表の列は、その表の displayName で見せる)
 - Acceptance:
   - Given: `properties` で `note.status` に displayName `状態` の表で、絞り込み「status が done を除く」
   - When: 表を描く
@@ -129,7 +129,15 @@
   - Given: displayName の無い列 owner で絞り込む
   - When: 表を描く
   - Then: 帯の札は「owner: …」のまま。
-- Needs: utest
+- Acceptance:
+  - Given: 表「会議」の `properties` で `note.attendees` に displayName `出席者` があり、会議の attendees が表「人」のノートを指す
+  - When: 関係マップを開き、会議.attendees のつながりを選ぶ
+  - Then: 会議の箱の行は「出席者 → 人」、詳細の題は「会議.出席者 → 人」、詳細の「列」は「出席者」で、`attendees` はどこにも出ない。
+- Acceptance:
+  - Given: 同じ表で、会議のノートの attendees が人のノート「安藤」を指す
+  - When: 人の表の「安藤」の行で、操作の一覧の「つながった行」を開く
+  - Then: 一覧の行は「会議 › 出席者 ← …」。
+- Needs: utest, stest
 
 #### 式は、比較・論理・算術、`note.`・`file.`・`formula.` の参照、よく使う関数(`file.hasTag`・`file.inFolder`・`file.hasProperty`・`contains` 系・`if`・`date`・`now`・`today` と期間の足し引き)を評価するべき
 `req~base-view.expr-eval~1` P1

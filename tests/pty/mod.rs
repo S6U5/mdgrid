@@ -255,6 +255,33 @@ impl Tui {
         w.flush().unwrap();
     }
 
+    /// 画面のどこかのセルの文字か地が、トゥルーカラーの `rgb` で塗られているか。
+    pub fn has_color(&self, rgb: [u8; 3]) -> bool {
+        let p = self.parser.lock().unwrap();
+        let s = p.screen();
+        let want = vt100::Color::Rgb(rgb[0], rgb[1], rgb[2]);
+        (0..ROWS).any(|r| {
+            (0..COLS).any(|c| {
+                s.cell(r, c)
+                    .is_some_and(|x| x.fgcolor() == want || x.bgcolor() == want)
+            })
+        })
+    }
+
+    /// `has_color(rgb)` が `want` になるまで待つ(上限 10 秒。上限で落ちる)。
+    pub fn wait_color(&self, rgb: [u8; 3], want: bool) {
+        let start = Instant::now();
+        while self.has_color(rgb) != want {
+            assert!(
+                start.elapsed() <= LIMIT,
+                "色 {rgb:?} が{}のを待って時間切れ。画面:\n{}",
+                if want { "出る" } else { "消える" },
+                self.screen()
+            );
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+
     /// キーを送ったあと、画面が落ち着くまで少し置く。
     pub fn send_settle(&mut self, keys: &str) {
         self.send(keys);

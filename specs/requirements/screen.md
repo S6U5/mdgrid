@@ -63,6 +63,23 @@
   - When: 80×24 の端末で起動
   - Then: 下の帯に今のモード、選んだセルの位置、「未保存 0」、今押せるキーが並ぶ(ゴールデン)。
 
+#### 読むだけのセルの理由に前置きの「読むだけ: 」を付けて出す所(セルを選んだときの案内・直そうとしたときのメッセージ)では、理由の文に同じ「読むだけ」を重ねないべき(どの言語の文言でも同じ)
+`req~screen.read-only-reason-once~1` P1
+- Rationale: 式の列のセルを選ぶと「読むだけ: 式の列(読むだけ)」と同じ語が2回出ていたため(2026-11-25 の実地の操作で見つかった。理由の文の側にも「(読むだけ)」「なので読むだけ」が付いていた)
+- Acceptance:
+  - Given: `.base` の式の列のセル
+  - When: 選ぶ
+  - Then: 案内は「読むだけ: 式の列」。
+- Acceptance:
+  - Given: 値が3つで列が2つの CSV の行のセル
+  - When: 選ぶ
+  - Then: 案内は「読むだけ: この行は値が 3 個で、列は 2 個」。
+- Acceptance:
+  - Given: 読むだけの理由の文言(全部の言語)
+  - When: 試験で読む
+  - Then: どれも、その言語の前置きの語(日本語は「読むだけ」、英語は "read-only")を含まない。
+- Needs: utest
+
 #### ビューの帯のタブと検索の欄、設定の帯は、screen.display-options で隠せる
 `req~screen.layout-hide-parts~1` P1
 - Acceptance:
@@ -937,6 +954,23 @@
   - When:
   - Then: `\` の検索で `true` と打つと当たり、`--print` の done の列は `true`。
 
+#### 種類の少ない短い文字の列の値を札にするか(screen.rich-cells-parts)は、今のビューの行でなく表の全部の行(`.base` の全体の絞り込みを通った行。ビューの絞り込みの前)で決め、同じ表の同じ列はどのビュー(タブ)でも同じ見せ方にするべき(`[look.columns]` で決めた列はそのとおり)
+`req~screen.rich-cells-table-wide~1` P1
+- Rationale: 見えている行で値がくり返すかで決めていたので、同じ列が、行の多いタブでは札、行の少ないタブでは文字になり、タブを替えるたびに見え方が変わったため(2026-11-25 の台帳3つの実地の操作で見つかった)
+- Acceptance:
+  - Given: status が todo・todo・doing・done の4行の表と、全部の行のビュー「全部」と、`status != "todo"` で絞ったビュー「残り」(色のある表示)
+  - When: ビュー「残り」を開く
+  - Then: status の doing と done のセルは札(ビュー「全部」と同じ)。
+- Acceptance:
+  - Given: `.base` の全体の絞り込みが `file.inFolder("A")` で、A の中の行の status がくり返さず(doing・done)、A の外の行に todo がくり返す表
+  - When: 表を描く
+  - Then: status のセルは文字のまま(全体の絞り込みの外の行は数えない)。
+- Acceptance:
+  - Given: 1つ目の受け入れと同じ表に `[look.columns] status = "plain"`
+  - When: どちらのビューを開く
+  - Then: status のセルは文字のまま。
+- Needs: utest
+
 #### 設定の `[look.style]` で、表と窓の部品の形を部品の種類ごとに選べるべき
 `req~screen.style-parts-choose~2` P1
 - Acceptance:
@@ -1207,12 +1241,12 @@
   - When:
   - Then: 設定のボタンが無く、パンくずと「▦ 表 ▾」は出る。
 
-#### ビューの設定の画面(navigation.settings-layout)の左の一覧に「見た目」の区画を持ち、テーマ(screen.themes・screen.calm-themes。`auto` を含む)・組(screen.style-parts の `look.preset`)・丸い札の端(`terminal.nerd_font`: `auto`・`true`・`false`)を選べるべき
-`req~screen.look-section-items~1` P1
+#### ビューの設定の画面(navigation.settings-layout)の左の一覧に「見た目」の区画を持ち、テーマ(screen.themes・screen.calm-themes。`auto` と、一覧の最後の「カスタム」(screen.look-section-custom)を含む)・組(screen.style-parts の `look.preset`)・丸い札の端(`terminal.nerd_font`: `auto`・`true`・`false`)を選べるべき
+`req~screen.look-section-items~2` P1
 - Acceptance:
   - Given:
   - When: `o`
-  - Then: 左の一覧に「見た目」があり、その区画でテーマ(`auto` を含む)・組・丸い札の端(`auto`・`true`・`false`)を選べる。
+  - Then: 左の一覧に「見た目」があり、その区画でテーマ(`auto` と、一覧の最後の「カスタム」を含む)・組・丸い札の端(`auto`・`true`・`false`)を選べる。
 
 #### 「見た目」の区画の上で保存先の範囲(全体・このワークスペース・この表・このビュー。screen.profile-scopes)を選べ、既定は全体にするべき
 `req~screen.look-section-scope~1` P1
@@ -1221,8 +1255,9 @@
   - When: ワークスペースの表で `o`
   - Then: 保存先は「全体」で、全体・このワークスペース・この表・このビューから選べる。
 
-#### 「見た目」の区画のテーマと組の横には、今効いている値がどこから来たか(例「dracula(この表)」「sumi(config.toml)」)を出すべき
-`req~screen.look-section-origin~2` P1
+#### 「見た目」の区画のテーマと組の横には、今効いている値がどこから来たか(例「dracula(この表)」「sumi(config.toml)」。ワークスペースの印から来た値は「dozy-pink(印)」)を出すべき
+`req~screen.look-section-origin~3` P1
+- Rationale: 印の見た目は台帳の作り手の勧める既定で、人の選びより先に負ける(screen.profile-scopes-marker-look)。「このワークスペース」と出すと、保存先の「このワークスペース」と同じ所に見え、全体を選んでも変わらない理由が分からなかったため
 - Acceptance:
   - Given:
   - When: config.toml に `[look] theme = "sumi"` で `o`
@@ -1231,6 +1266,10 @@
   - Given:
   - When: 保存先「この表」でテーマ nord を反映
   - Then: テーマの横に「(この表)」。
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[look] theme = "dozy-pink"` と `preset = "dozy-pink"`
+  - When: notes/tasks で `o`
+  - Then: テーマと組の横に「(印)」が出て、「(このワークスペース)」は出ない。
 
 #### 「見た目」の区画で選んだ見た目は、「反映」で画面にすぐ効かせるべき
 `req~screen.look-section-apply~2` P1
@@ -1333,6 +1372,71 @@
   - When:
   - Then: 左に「見た目 dozy-pink」。
 
+#### 「見た目」の区画のテーマの一覧の「カスタム」を選ぶと、今のテーマを元のテーマにして、区画に元のテーマの行と、役割ごとの色(screen.color-overrides-roles の16の役割)の行を出し、それぞれを選んで直せるべき(名前のテーマを選び直せば、役割の行と上書きの色を外す)
+`req~screen.look-section-custom~1` P1
+- Rationale: 自分で色を決めたい人が、設定のファイルを書かずに、今のテーマから少しだけ変えられるように
+- Needs: utest・stest
+- Acceptance:
+  - Given: テーマ dozy-pink
+  - When: 「見た目」の区画のテーマの一覧で「カスタム」を選ぶ
+  - Then: テーマの欄が「カスタム(元: dozy-pink)」になり、元のテーマの行(dozy-pink)と、地・文字・アクセントなど16の役割の行が出る。
+- Acceptance:
+  - Given: カスタムでアクセントを orange にした写し
+  - When: 元のテーマの行で nord を選ぶ
+  - Then: テーマの欄が「カスタム(元: nord)」で、アクセントは orange のまま。
+- Acceptance:
+  - Given: カスタムでアクセントを orange にした写し
+  - When: テーマの一覧で sumi を選ぶ
+  - Then: テーマの欄が「sumi」で、役割の行が無く、写しに上書きの色が無い。
+
+#### 「見た目」の区画のカスタムの役割の色は、「テーマのまま」・見本の色の一覧(screen.color-overrides-format の名前の色)・`#rrggbb` を打つ、から選べ、読めない色は理由を出して入れないべき
+`req~screen.look-section-custom-colors~1` P1
+- Needs: utest
+- Acceptance:
+  - Given: カスタムの役割の行が出ている
+  - When: アクセントの行で見本の色の orange を選ぶ
+  - Then: アクセントの行が #ea8c34。
+- Acceptance:
+  - Given: カスタムの役割の行が出ている
+  - When: アクセントの行で `#e0a458` を打って決める
+  - Then: アクセントの行が #e0a458。
+- Acceptance:
+  - Given: カスタムの役割の行が出ている
+  - When: アクセントの行で `#zz` を打って決める
+  - Then: 読めない理由が出て、入力の欄は開いたまま、アクセントの行は変わらない。
+- Acceptance:
+  - Given: アクセントを #e0a458 にした写し
+  - When: アクセントの行で「テーマのまま」を選ぶ
+  - Then: アクセントの行は元のテーマの色で、写しにアクセントの上書きが無い。
+
+#### 「見た目」の区画でカスタムの色を反映すると、画面にすぐ効かせ、選んだ範囲の画面が書く場所(screen.look-section-save)に、`theme` に元のテーマ、`[look.colors]` に上書きした役割の色(`"#rrggbb"`)を書くべき(上書きの無い役割は書かない。値の色 `[look.colors.values]` は変えない)
+`req~screen.look-section-custom-save~1` P1
+- Needs: utest・stest
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[look] theme = "dozy-pink"`
+  - When: 保存先「全体」、カスタムでアクセントを #e0a458 にして反映
+  - Then: 画面のアクセントの色が #e0a458 で、ui.toml の `[look]` に theme = "dozy-pink"、`[look.colors]` に accent = "#e0a458" だけがあり、開き直しても同じ。
+- Acceptance:
+  - Given: ui.toml に theme = "dozy-pink" と `[look.colors] accent = "#e0a458"`・`[look.colors.values] done = "green"`
+  - When: 保存先「全体」でテーマ nord を選んで反映
+  - Then: ui.toml の theme が nord で、`[look.colors]` に accent が無く、values の done は残る。
+- Acceptance:
+  - Given: カスタムでアクセントを #e0a458 にした写し
+  - When: 「名前を付けて保存」で「夜」
+  - Then: ui.toml の `[templates.夜.look]` に元のテーマ、`[templates.夜.look.colors]` に accent = "#e0a458"。
+
+#### 今の見た目が役割の色の上書き(`[look.colors]` の役割)を持つときは、「見た目」の区画のテーマの欄に「カスタム(元: <テーマ>)」と出し、役割の行を出すべき
+`req~screen.look-section-custom-label~1` P1
+- Needs: utest
+- Acceptance:
+  - Given: config.toml に `[look] theme = "sumi"` と `[look.colors] accent = "orange"`
+  - When: `o` で「見た目」の区画を見る
+  - Then: テーマの欄が「カスタム(元: sumi)」で、アクセントの行が #ea8c34。
+- Acceptance:
+  - Given: config.toml に `[look] theme = "sumi"` と `[look.colors.values] done = "green"` だけ
+  - When: `o` で「見た目」の区画を見る
+  - Then: テーマの欄は「sumi」(値の色はカスタムに数えない)。
+
 #### 設定(ユーザーが書くもの)と見た目の状態(列の幅・選んだビュー・畳んだまとまりなど、消えても困らないもの)を分け、見た目の状態は、ノートのフォルダの中に書くべきでない
 `req~screen.state-separate~1` P1
 - Acceptance:
@@ -1354,12 +1458,17 @@
   - When: 状態のファイルを壊して起動
   - Then: 既定で起動し、エラーで止まらない。
 
-#### 見た目の状態の列の並びと隠す列は、今の `.base` にある列にだけ当て、`.base` に増えた列は右に足すべき
-`req~screen.state-store-columns~1` P1
+#### 見た目の状態の列の並びと隠す列は、今の `.base` にある列にだけ当て、`.base` に増えた列は `.base` のビューの `order` の中の位置に入れ(screen.state-store-follow-order。`order` の終わりに足した列は右)、`order` の無い表で増えた列は右に足すべき
+`req~screen.state-store-columns~2` P1
+- Rationale: 増えた列をいつも右に足すと、印の `order` の途中に足した列が、印を直した人の置いた位置に出ないため(2026-11-25 の実地の操作で見つかった)
 - Acceptance:
   - Given:
   - When: 列 a・b・c を c・a・b に並べて終了し、`.base` に列 d を足して開き直す
   - Then: c・a・b・d の順。
+- Acceptance:
+  - Given: `order` が status・due・title の表で、title を先頭に動かして終了した(title・status・due)
+  - When: `order` を file.name・status・title にして開き直す
+  - Then: title・file.name・status の順(消えた due は出ず、足した file.name は印の位置の status の前)。
 
 #### 見出しからの並べ替え(navigation.header-sort)は、設定の並べ替えとして残すべき
 `req~screen.state-store-header-sort~1` P1
@@ -1367,6 +1476,36 @@
   - Given:
   - When: 見出しから title で並べ替えて終了し、同じ対象で開き直す
   - Then: title で並んだまま。
+
+#### 見た目の状態の列の並びと隠す列は、人が列を動かすか隠したときだけ覚え、開いただけ・幅を変えただけ・畳んだだけでは覚えないべき(幅と畳んだまとまりは、人が変えたものだけを今までどおり覚える)
+`req~screen.state-store-arranged-only~1` P1
+- Rationale: ビューを一度開いただけで、そのときの列の並びが状態に書かれ、あとで印(`.base`・印の `[table.base]`)の `order` に列を足しても、足した列が右の端に回っていたため(2026-11-25 の実地の操作で見つかった。人は印を手で直す)
+- Acceptance:
+  - Given: 印のビューの `order` が a・b・c の表
+  - When: 開いて何もせずに終了し、`order` を a・b・d・c にして開き直す
+  - Then: 列は a・b・d・c の順。
+- Acceptance:
+  - Given: 同じ表
+  - When: b の幅を変えて終了し、`order` を a・b・d・c にして開き直す
+  - Then: 列は a・b・d・c の順で、b は変えた幅のまま。
+- Needs: utest
+
+#### 列の並びを覚えたあとで、印(`.base`・印の `[table.base]`)のビューの `order` が覚えたときから変わったら、`order` に合わせ、覚えた列の動かし方のうち `order` の変更と食い違わないものだけを残すべき(隠した列と幅は残す)
+`req~screen.state-store-follow-order~1` P1
+- Rationale: 印を直した人の意図(列を足す・動かす)を、前に覚えた並びで消さないため。覚えた並びを丸ごと捨てると、人が動かした列まで戻ってしまう
+- Acceptance:
+  - Given: `order` が a・b・c の表で、c を先頭に動かして終了した(c・a・b)
+  - When: `order` を a・x・b・c にして開き直す
+  - Then: 列は c・a・x・b の順(足した x は印の位置に入り、先頭に動かした c は先頭のまま)。
+- Acceptance:
+  - Given: 同じ表で c を先頭に動かして終了した
+  - When: `order` を変えずに開き直す
+  - Then: 列は c・a・b の順(screen.state-store-columns と同じ)。
+- Acceptance:
+  - Given: `order` が a・b・c の表で、c を先頭に動かし、b を隠して終了した
+  - When: `order` を b・a・c にして開き直す
+  - Then: 列は c・a の順で、b は隠したまま。
+- Needs: utest
 
 #### 表の見せ方の次の4つの既定を、設定(cli.config-file の設定ファイル)で決められるべき: 行番号(表の左に1始まりの番号。既定は出さない)・一行おきの色(既定は付けない)・列の区切り線(既定は今の見た目)・上の帯(ビューの帯のタブと検索の欄(navigation.search-box)、設定の帯(navigation.settings-bar)をそれぞれ出すか。タブと検索の欄を両方出さなければ、ビューの帯の行ごと出さない)
 `req~screen.display-options-config~2` P1
@@ -1524,6 +1663,23 @@
   - Given:
   - When: 既定で候補の窓を開く
   - Then: 枠が `╭─…─╮`。`[look.style] frames = "ascii"` か `[terminal] ambiguous_wide = true` → `+-…-+`。
+
+#### 表に重ねる窓(候補・操作の一覧・リストの選択・カレンダー・頻度表・絞り込みの窓・新しいノートの窓など)の縁の外に、窓に隠れた札の丸い端の字だけを残さないべき
+`req~screen.window-chip-remnants~1` P1
+- Rationale: ブックマークの台帳で新しいノートの窓を開くと、窓の右の縁の外に、窓に隠れた下の表の札の丸い端だけが残り、何かの印のように見えたため(2026-11-25 の実地の操作)。札の体が見えていれば、丸い端は札の一部として読めるので残す
+- Acceptance:
+  - Given: 丸い札(`[look.style] status = "pill"` と `nerd_font = true`)の status の札の体がちょうど窓に隠れ、右の丸い端の字(U+E0B4)が窓の右の縁の外にくる表
+  - When: 窓を開く
+  - Then: 窓の右の縁の外のその桁は空白で、丸い端の字が無い。
+- Acceptance:
+  - Given: 札の左の丸い端の字(U+E0B6)だけが窓の左の縁の外にくる表
+  - When: 窓を開く
+  - Then: その桁は空白。
+- Acceptance:
+  - Given: 窓の外にある札と、体の一部が窓の外に見える札
+  - When: 窓を開く
+  - Then: どちらの札も、見えている体の隣の丸い端の字は残る。
+- Needs: utest
 
 #### 色を使える表示で、設定の `look.mode` が `"modern"`(既定)のときは、今どきの道具のような見た目として、窓の枠を薄い色にし、今操作している窓の枠と題をアクセントの色にするべき
 `req~screen.modern-look-frames~1` P1
@@ -1778,28 +1934,28 @@
   - When: 検知(workspace.detect-roots)から来た範囲で表を開く
   - Then: ワークスペースの範囲の値を使わず、表・全体・既定の値で描く。
 
-#### 表のプロファイルの効く値は項目ごとに、狭い範囲を広い範囲より先にし(ビュー → 表 → ワークスペース → 全体 → 既定)、同じ範囲に2つあるときは画面が書いたものを手で書いたものより先にする(全体は ui.toml → config.toml、表は views.toml → ワークスペースの表の項目)べき
-`req~screen.profile-scopes-order~2` P1
+#### 表のプロファイルの効く値は項目ごとに、狭い範囲を広い範囲より先にし(ビュー → 表 → ワークスペース → 全体 → 既定)、同じ範囲に2つあるときは画面が書いたものを手で書いたものより先にする(全体は ui.toml → config.toml、表は views.toml → ワークスペースの表の項目)べき(ワークスペースの印に書いた `[look]` だけは、screen.profile-scopes-marker-look のとおり全体より広い範囲とする)
+`req~screen.profile-scopes-order~3` P1
 - Acceptance:
-  - Given: config.toml に `[look] theme = "sumi"`、notes/.mdgrid/workspace.toml に `[look] theme = "nord"`、views.toml の notes/tasks の `[table.look] theme = "dracula"`
+  - Given: config.toml に `[look] theme = "sumi"`、workspaces.toml のワークスペース W(表 notes/tasks・notes/projects)に `[workspace.look] theme = "nord"`、views.toml の notes/tasks の `[table.look] theme = "dracula"`
   - When:
-  - Then: notes/tasks の地が dracula、notes/projects は nord、notes の外の表は sumi。
+  - Then: notes/tasks の地が dracula、notes/projects は nord、W の外の表は sumi。
 - Acceptance:
   - Given: 別に、ui.toml に `[look] theme = "dracula"`、config.toml に `[look] theme = "sumi"` だけ
   - When:
   - Then: どの表も dracula。
 
-#### 組(`look.preset`)を書いた範囲より広い範囲の部品ごとの形(`[look.style]`)は、使わないべき
-`req~screen.profile-scopes-preset-cut~1` P1
+#### 組(`look.preset`)を書いた範囲より広い範囲(screen.profile-scopes-order・screen.profile-scopes-marker-look の順で先に重ねる範囲)の部品ごとの形(`[look.style]`)は、使わないべき
+`req~screen.profile-scopes-preset-cut~2` P1
 - Acceptance:
-  - Given: ワークスペースに `[look] preset = "saas"`、config.toml に `[look.style] status = "chip"`
+  - Given: workspaces.toml のワークスペースに `[look] preset = "saas"`、config.toml に `[look.style] status = "chip"`
   - When:
   - Then: ワークスペースの表の status は saas の形。
 
-#### テーマ(`look.theme`)を書いた範囲より広い範囲の役割の色(`[look.colors]` の役割。値の色 `[look.colors.values]` は除く)は、使わないべき
-`req~screen.profile-scopes-theme-cut~1` P1
+#### テーマ(`look.theme`)を書いた範囲より広い範囲(screen.profile-scopes-order・screen.profile-scopes-marker-look の順で先に重ねる範囲)の役割の色(`[look.colors]` の役割。値の色 `[look.colors.values]` は除く)は、使わないべき
+`req~screen.profile-scopes-theme-cut~2` P1
 - Acceptance:
-  - Given: ワークスペースに `[look] theme = "nord"`、config.toml に `[look.colors] accent = "orange"`
+  - Given: workspaces.toml のワークスペースに `[look] theme = "nord"`、config.toml に `[look.colors] accent = "orange"`
   - When:
   - Then: accent は nord の色。
 
@@ -1822,10 +1978,10 @@
   - Then: 警告して無視。
 
 #### 表を切り替えたら(workspace.palette・cli.places-list・関係マップから開く)、その表で効く表のプロファイルの値で画面を描き直すべき
-`req~screen.profile-scopes-redraw~1` P1
+`req~screen.profile-scopes-redraw~2` P1
 - Acceptance:
-  - Given:
-  - When: config.toml に sumi、notes/.mdgrid/workspace.toml に nord、notes/tasks に dracula の設定で notes/tasks を開き、関係マップから notes/projects を開く
+  - Given: notes/.mdgrid/workspace.toml に nord、views.toml の notes/tasks に dracula
+  - When: notes/tasks を開き、関係マップから notes/projects を開く
   - Then: nord で描き直す。
 
 #### 関係マップのように1つの画面に複数の表が出るときは、今開いている表のプロファイルの値を使うべき
@@ -1834,6 +1990,31 @@
   - Given:
   - When: notes/tasks に dracula、notes/projects に nord の設定で、notes/tasks から関係マップを開く
   - Then: 関係マップの地は dracula。
+
+#### ワークスペースの印(workspace.marker)に書いた `[look]`(最上位の `[look]` と、`[[table]]` の `[table.look]`)は、台帳の作り手が勧める既定として、重ねるときは全体より広い範囲(既定のすぐ上。印の表の項目は印の最上位より狭い)とし、人の選んだ見た目(config.toml・ui.toml・workspaces.toml・views.toml・ビューの設定)のどれもを印より先にするべき(`[look]` のほかの区画は screen.profile-scopes-order のとおり)
+`req~screen.profile-scopes-marker-look~1` P1
+- Rationale: 台帳の印に `[look] theme` を書いておくと、人が画面で全体のテーマを選んでも印が勝って変わらなかったため。印は台帳と一緒に配り分け合うもので、見た目は使う人の好みを先にする
+- Needs: utest・stest
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[look] theme = "dozy-pink"`、ui.toml に `[look] theme = "sumi"`
+  - When: notes/tasks を開く
+  - Then: 地が sumi で、「見た目」の区画のテーマの横は「(全体)」。
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[look] theme = "dozy-pink"`、config.toml に `[look] theme = "sumi"`
+  - When: notes/tasks を開く
+  - Then: 地が sumi。
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[look] theme = "nord"`・`preset = "saas"` と、tasks の `[table.look]` に theme = "dracula"、config.toml と ui.toml に `[look]` が無い
+  - When: notes/tasks と notes/projects を開く
+  - Then: tasks の地は dracula、projects は nord、どちらも組は saas。
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[look] theme = "nord"`・`preset = "saas"`、config.toml に `[look] theme = "sumi"`
+  - When: notes/tasks を開く
+  - Then: 地は sumi、組は saas(項目ごとに重ねる)。
+- Acceptance:
+  - Given: notes/.mdgrid/workspace.toml に `[display] zebra = true`、config.toml に `[display] zebra = false`
+  - When: notes/tasks を開く
+  - Then: 一行おきの色がある(`[display]` は印のワークスペースの範囲が全体より先のまま)。
 
 #### アイコン用のフォント(Nerd Font)の記号は、設定 `terminal.nerd_icons`(真偽値。既定 false。全体だけ)を true にしたときだけ使うべきで、既定では今の字の記号(設定のボタンの `⚙`・画面の型のメニューのボタンの `▦`・`◇`・列の見出しの型の印 `#`・`◷`・`⋮`・`◉`)のままにするべき
 `req~screen.nerd-icons-setting~1` P1
@@ -1899,9 +2080,9 @@
   - When:
   - Then: `note_path = "common"` と `'^\d{8}_'` で `todo/20261015_a.md`・`archive/todo/20261001_b.md` → `todo/a`・`archive/todo/b`(フォルダは残し、最後の名前の部分に当てる)。
 
-#### ノートの名前を見せる所(関係マップのつながった行とよく指される行・木の画面の葉・横断の検索の結果・リンクの列を直すときの候補)にも、ノートの欄と同じ見せ方(`display.note_path` と `display.note_name`)を当てるべき(メッセージ・詳しく見る画面・検索で当てる文字・書くリンクの値は変えない)
-`req~screen.note-name-everywhere~1` P1
-- Rationale: ノートの欄とリンクのセルでは日付の頭(`20261120_`)を隠しているのに、関係マップのつながった行などには頭が出て、同じノートが2つの名前で見えていたため(2026-11-25 に、リンクのセルの頭を直したときに、同じ形の所を洗い出した)
+#### ノートの名前を見せる所(関係マップのつながった行とよく指される行・木の画面の葉・横断の検索の結果・リンクの列を直すときの候補・操作の一覧の「つながった行」の一覧・行き先が2つ以上のリンクを開くときの一覧)にも、ノートの欄と同じ見せ方(`display.note_path` と `display.note_name`)を当てるべき(メッセージ・詳しく見る画面・検索で当てる文字・書くリンクの値は変えない)
+`req~screen.note-name-everywhere~2` P1
+- Rationale: ノートの欄とリンクのセルでは日付の頭(`20261120_`)を隠しているのに、関係マップのつながった行などには頭が出て、同じノートが2つの名前で見えていたため(2026-11-25 に、リンクのセルの頭を直したときに、同じ形の所を洗い出した。同じ日の実地の操作で、操作の一覧の「つながった行」の一覧にも頭が残っていた)
 - Acceptance:
   - Given: `[display] note_name = '^\d{8}_'` と、`20261121_画面` が `parent: "[[20261120_設計]]"` で指す表
   - When: 関係マップで parent のつながりを選ぶ
@@ -1918,6 +2099,14 @@
   - Given: 同じ設定で、parent がリンクの列の表
   - When: 「画面」の parent のセルを直して候補を出す
   - Then: 候補の名前は「設計」で、選ぶと `[[20261120_設計]]` を書く。
+- Acceptance:
+  - Given: 同じ設定で、`20261121_画面` が parent で `20261120_設計` を指す表「Notes」
+  - When: 「設計」の行で、操作の一覧の「つながった行」を開く
+  - Then: 一覧の行は「Notes › parent ← 画面」で、選ぶと `20261121_画面` の行を開く。
+- Acceptance:
+  - Given: 同じ設定で、`20261121_画面` の related が `20261120_設計` と `20261119_要件` を指す
+  - When: 「画面」の related のセルで「行き先を開く」
+  - Then: 選ぶ一覧の行は「設計」と「要件」。
 - Acceptance:
   - Given: `display.note_name` を書かない表
   - When: 関係マップを開く
@@ -2111,3 +2300,9 @@
 `tbd~screen.vim-setting-name`
 - Decider: 人
 - Provisional: `[keys]` の `vim`(真偽。既定は `false`)
+
+### 印の order の控えを持たない、前の版の見た目の状態の列の並び
+`tbd~screen.state-store-legacy-order`
+- Decider: 人
+- Provisional: 前の版は、開いただけでも列の並びを状態に書いていて、人が動かした並びと区別できない。そこで、覚えたときの `order` の控えを持たない状態の並びは、印のビューに `order` があれば捨てて `order` に合わせる(隠した列・幅・畳んだまとまり・ビューの設定は残す)。前の版で人が動かした並びは一度だけ戻る。
+- Basis: 2026-11-25 の実地の操作で、印の `order` に足した列が右の端に回った(screen.state-store-follow-order)。人は細かい決めを任せると言った。

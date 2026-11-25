@@ -93,9 +93,25 @@ impl App {
         }
         match &self.filter {
             None => true,
+            // tbd~navigation.value-labels-match の仮決め: 見せる名前(navigation.value-labels-cells)でも当たる。
+            // navigation.search-scope: ノートの名前(全部の文字)と、ビューの列・隠した列・ビューに出していない
+            // ノートのキーの値に当てる(見えている列だけだと、読みの列を出さないビューで名前の読みが当たらない)。
             Some(q) => {
                 matches(q, &self.src.label(row))
-                    || self.cols.iter().any(|c| matches(q, &self.plain(row, c)))
+                    || self.cols.iter().any(|c| {
+                        matches(q, &self.plain(row, c))
+                            || matches(q, &super::cell::shown_plain(self, row, c))
+                    })
+                    || self
+                        .hidden
+                        .iter()
+                        .any(|(c, _, _)| matches(q, &self.plain(row, c)))
+                    || self
+                        .src
+                        .columns()
+                        .iter()
+                        .filter(|c| !self.cols.contains(c))
+                        .any(|c| matches(q, &self.plain(row, c)))
             }
         }
     }

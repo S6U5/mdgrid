@@ -127,8 +127,21 @@ impl List {
 }
 
 impl App {
+    /// 値を選ぶ窓の値 `v` の見せ方(navigation.value-labels-picker): 列 `col` の `[rules.<列>] labels` に名前のある値は
+    /// 「字 名前 値」、ほかは値のまま(無害にしたもの)。リストの値の付け外し・絞り込みの窓とビューの設定の値の一覧・
+    /// 値の件数の窓で使う。
+    pub(crate) fn value_choice_text(&self, col: &str, v: &str) -> String {
+        sanitize(
+            &self
+                .prof
+                .resolved
+                .value_choice(col, v)
+                .unwrap_or_else(|| v.to_string()),
+        )
+    }
+
     /// 値の候補のリストの項目に、列 `col` の `[rules.<列>] labels` の名前を添える(「未着手 todo」。書く値は値のまま。
-    /// セルの見せ方は値のまま: tbd~navigation.value-labels-cells)。セルの編集と新しいノートの窓の値の候補で使う。
+    /// navigation.value-labels-picker)。セルの編集と新しいノートの窓の値の候補で使う。
     pub(crate) fn with_value_labels(&self, col: &str, mut list: List) -> List {
         for it in &mut list.items {
             if matches!(it.value, NewValue::Null) {
@@ -272,12 +285,14 @@ struct Geom {
     below: bool,
 }
 
-/// 下の縁のキー(screen.window-key-hints): 決める・取り消す。キーと名前はキーの表から。
+/// 下の縁のキー(screen.window-key-hints): 決める・取り消す。キーと名前はキーの表から。新しいノートの窓の欄では、
+/// Esc はこの候補だけを閉じる(cell-edit.new-note-form-esc-popup)ので、その名前で。
 fn hints(app: &App) -> Vec<popup::KeyHint> {
+    let esc = (app.note.flow.is_some() && !app.note_choosing()).then_some(Msg::NoteCloseList);
     popup::key_hints(
         app,
         Mode::Edit,
-        &[(Action::Commit, None), (Action::Cancel, None)],
+        &[(Action::Commit, None), (Action::Cancel, esc)],
     )
 }
 

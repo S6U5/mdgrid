@@ -104,16 +104,16 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `!` | `next_problem` | Jump to the next problem: a value that does not fit the column type or a rule (`[rules]`); the reason shows below |
 | `@` | `prev_problem` | Jump to the previous problem |
 | `%` | `frequency` | Show how many rows have each value of the selected column, and pick one to show only those rows |
-| `1` | `condition_1` | Show only the rows that match the named condition with `key = 1` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `2` | `condition_2` | Show only the rows that match the named condition with `key = 2` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `3` | `condition_3` | Show only the rows that match the named condition with `key = 3` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `4` | `condition_4` | Show only the rows that match the named condition with `key = 4` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `5` | `condition_5` | Show only the rows that match the named condition with `key = 5` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `6` | `condition_6` | Show only the rows that match the named condition with `key = 6` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `7` | `condition_7` | Show only the rows that match the named condition with `key = 7` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
-| `8` | `condition_8` | Show only the rows that match the named condition with `key = 8` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `1` | `condition_1` | Show only the rows that match the named condition given digit 1 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `2` | `condition_2` | Show only the rows that match the named condition given digit 2 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `3` | `condition_3` | Show only the rows that match the named condition given digit 3 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `4` | `condition_4` | Show only the rows that match the named condition given digit 4 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `5` | `condition_5` | Show only the rows that match the named condition given digit 5 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `6` | `condition_6` | Show only the rows that match the named condition given digit 6 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `7` | `condition_7` | Show only the rows that match the named condition given digit 7 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
+| `8` | `condition_8` | Show only the rows that match the named condition given digit 8 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
 | `m` | `notice` | Go to the notice box above the header (`[[notices]]`); does nothing when there is no box |
-| `9` | `condition_9` | Show only the rows that match the named condition with `key = 9` ([conditions]), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this key |
+| `9` | `condition_9` | Show only the rows that match the named condition given digit 9 ([conditions]; digits go to the conditions with a `key`, the ledger marker\'s first, and only to those the current table can use), or undo it; for a condition with `hide = true`, show or hide again the rows it hides. Does nothing if no condition has this digit |
 | `Space` | `mark_row` | Mark or unmark the row, then move down |
 | `v` | `select_range` | Start selecting a range of rows; press again to mark the range |
 | `Shift+Up` | `extend_up` | Extend the selection up |
@@ -369,6 +369,7 @@ Picking values for a list property. Enter checks or unchecks the highlighted val
 | `Ctrl+r` | `revert` | Put back the selection from when the list was opened |
 | `Ctrl+s` | `create_note` | In the new note form, create the note now from any field |
 | `Ctrl+e` | `create_note_edit` | In the new note form, create the note and open it in the editor |
+| `Shift+Tab` | `commit_prev` | In the new note form, go back to the previous field |
 | `Up` | `list_up` | Previous candidate |
 | `Down` | `list_down` | Next candidate |
 | `Ctrl+p` | `list_up` | Previous candidate |
@@ -377,7 +378,7 @@ Picking values for a list property. Enter checks or unchecks the highlighted val
 | `PageDown` | `page_down` | Scroll down one screen |
 | `Backspace` | `delete_back` | Delete the character before the cursor |
 
-Clicking a value checks or unchecks it, and clicking **[ OK ]** confirms. In the new note form, Space checks a value and Enter confirms the field and moves on, so there is no **[ OK ]** line there.
+Clicking a value checks or unchecks it, and clicking **[ OK ]** confirms. A list field in the new note form uses the same keys: Enter checks a value, and Tab or **[ OK ]** confirms the field and moves on (on the last field, it creates the note). There, Esc closes only this window and keeps the form. After that, Enter opens it again, Tab moves to the next field, and a second Esc closes the form.
 
 ## `menu`
 

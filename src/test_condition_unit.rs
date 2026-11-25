@@ -140,7 +140,7 @@ fn test_condition_unknown_name_lists_the_known_names() {
 
 #[test]
 fn test_condition_digit_dup_first_written_wins() {
-    // [utest -> req~condition.digit-dup~1] 同じ数字は先に書いた条件に当て、あとの条件の key は警告して外す。
+    // [utest -> req~condition.digit-dup~2] 同じファイルの同じ数字は先に書いた条件だけを並びに入れ、あとの条件の key は警告して外す。
     let text =
         "[conditions.soon]\nexpr = 'true'\nkey = 1\n[conditions.mine]\nexpr = 'true'\nkey = 1\n";
     let (c, w) = read(text);

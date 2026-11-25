@@ -194,7 +194,7 @@ fn test_ch_6_single_date_column_still_skips_scatter() {
 
 #[test]
 fn test_ch_4_stacked_picks_top_five_by_count_not_rule_order() {
-    // [utest -> req~chart.bar-stacked-top5~1] #2: [rules.owner] values = o1〜o6 で o1〜o5 が1行ずつ、o6 が 10 行 → 内訳は件数の多い順に5つ
+    // [utest -> req~chart.bar-stacked-top5~2] #2: [rules.owner] values = o1〜o6 で o1〜o5 が1行ずつ、o6 が 10 行 → 内訳は件数の多い順に5つ
     // (o6 と、同じ件数の o1〜o4)。凡例に o6 が出て、「その他」には名前の順で後ろの o5 が入る。
     let mut list: Vec<(String, String)> = Vec::new();
     for o in ["o1", "o2", "o3", "o4", "o5"] {
@@ -223,7 +223,7 @@ fn test_ch_4_stacked_picks_top_five_by_count_not_rule_order() {
 
 #[test]
 fn test_ch_7_heatmap_picks_top_columns_by_count_not_rule_order() {
-    // [utest -> req~chart.heatmap-cells~1, req~chart.heatmap-enter~2, req~chart.bar-stacked-top5~1] #2: ヒートマップの横(12 まで)も件数の多い順に選ぶ: [rules.tag] values = h01〜h13 で h13 が 10 行・
+    // [utest -> req~chart.heatmap-cells~1, req~chart.heatmap-enter~2, req~chart.bar-stacked-top5~2] #2: ヒートマップの横(12 まで)も件数の多い順に選ぶ: [rules.tag] values = h01〜h13 で h13 が 10 行・
     // ほかが1行ずつ → h13 は「その他」でなく自分の列になり、ます目の説明に「todo × h13: 10」が出る。
     let mut list: Vec<(String, String)> = Vec::new();
     for i in 1..=12 {

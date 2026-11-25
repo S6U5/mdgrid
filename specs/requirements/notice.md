@@ -208,6 +208,51 @@
   - When: `mdgrid --notices | od -c`
   - Then: エスケープの文字が無い。
 
+### 台帳の印に書く
+
+#### ワークスペースの印(workspace.marker)の最上位にも `[[notices]]` を全体の設定と同じ形で書けるべきで、印の項目は、上へたどって最初に見つかる印がその印である表を開いたときだけ、全体の設定の項目より先に並べ、連絡の項目の相対の `note` は印の根から読むべき
+`req~notice.marker~1` P1
+- Rationale: 台帳の知らせを台帳と一緒に配り、ほかの台帳の画面には出さないため(2026-11-25 に人が「印にも書けるようにする」と決めた)。印の項目を先にするのは、開いている台帳の知らせを先に読めるようにするため(tbd~notice.marker-order)
+- Acceptance:
+  - Given: 印に `[[notices]]`・`cond = "contact"`・`text = "連絡する人 {count} 人"` と、当たる行が2つの条件 contact、全体の設定に `[[notices]]`・`cond = "open"`・`text = "未完了 {count} 件"`
+  - When: 印の台帳で `--notices`
+  - Then: 1行目が「連絡する人 2 人」、2行目が「未完了」で始まる。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 印の無いフォルダで `--notices`
+  - Then: 「連絡する人」の行が無い。
+- Acceptance:
+  - Given: 印に `[[notices]]`・`note = "inbox.md"` を書き、印の根に本文が「- 鍵を返す」の inbox.md
+  - When: 印の台帳で `--notices`
+  - Then: 「- 鍵を返す」の行が出る。
+- Needs: stest
+
+#### 印の `[[notices]]` の連絡の項目の `note` は、その印の台帳の根の中のファイルだけを指せ、根の外(絶対のパス・`~` で始まるパス・`..` で根を出るパス・根の外を指すリンク)は、警告してその項目を使わないべき
+`req~notice.marker-inside~1` P1
+- Rationale: 印は人から受け取ったフォルダにも入っているので、開いただけで台帳の外のファイル(ホームのメモなど)の中身を画面や `--notices` に出さないため。印の表のパスが根の外を指せない(workspace.marker)のと同じ考え。全体の設定 config.toml の `note` は人が自分で書くので、今までどおりどこでも指せる
+- Acceptance:
+  - Given: 印の `[[notices]]` に `note = "inbox.md"`・`note = "~/secret.md"`・`note = "../outside.md"`・`note = "/tmp/x.md"` の4項目
+  - When: 印を読む
+  - Then: 使う連絡の項目は台帳の根の `inbox.md` の1つだけで、ほかの3つには台帳の中だけを指せるという理由の警告が1つずつ出る。
+- Acceptance:
+  - Given: 台帳の根の `link.md` が根の外のファイルを指すリンクで、印に `note = "link.md"`
+  - When: 印を読む
+  - Then: その項目は使わず、警告が出る。
+- Needs: utest
+
+#### 件数の項目は、範囲の表のうち、その条件が使えない表(condition.columns-present)を数えず、範囲が今の表(`"table"`)の項目は、今の表で使えなければ `show_zero` によらず出さないべき
+`req~notice.columns-present~1` P1
+- Rationale: 期限の列の無い台帳を開いたときに「期限切れ 0 件」を出したり、担当の列の無い表の行を `actor != "ai"` のような条件で数えたりしないため(2026-11-25 に人が決めた)
+- Acceptance:
+  - Given: 件数の項目 overdue(`due < today()`)に `show_zero = true`
+  - When: due の列の無い表を開く
+  - Then: 欄に overdue の項目が無い。
+- Acceptance:
+  - Given: `scope = "workspace"`・`text = "担当 {count} 件"` の件数の項目 mine(`actor != "ai"`)で、tasks に actor が me の行が2つ、actor の列の無い people に行が3つ
+  - When: people を開く
+  - Then: 欄は「担当 2 件」。
+- Needs: utest
+
 ## 未確定事項
 
 ### 通知の欄へ移るキー
@@ -219,3 +264,8 @@
 `tbd~notice.position`
 - Decider: 人
 - Provisional: ヘッダーの上(画面のいちばん上)。ヘッダーとビューの帯のあいだに置く形も選べる
+
+### 印の項目と全体の設定の項目の並び
+`tbd~notice.marker-order`
+- Decider: 人
+- Provisional: 印の項目を先に、全体の設定の項目を後に並べる(数字のキーと同じ順。condition.digit-order)

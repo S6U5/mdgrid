@@ -10,7 +10,7 @@ use super::view::{footer, message};
 use super::width::{fit, sanitize, take, width, wrap, Align};
 use mdgrid::base::Shown;
 use mdgrid::i18n::Msg;
-use mdgrid::source::{RowId, Value};
+use mdgrid::source::{NewValue, RowId, Value};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use unicode_segmentation::UnicodeSegmentation;
@@ -97,26 +97,35 @@ impl App {
         out
     }
 
-    /// 詳細に出す値の全文(改行も保つ)。ためた値は `*`、読むだけは `#` を先頭に。
+    /// 詳細に出す値の全文(改行も保つ)。ためた値は `*`、読むだけは `#` を先頭に。名前のある値
+    /// (`[rules.<列>] labels`・`icons`)は表のセルと同じ名前で見せる(navigation.value-labels-cells)。
     pub(crate) fn detail_text(&self, row: &RowId, col: &str) -> String {
+        let label = |v: &str| super::cell::label_of(self, col, v);
         if let Some(nv) = self.changes.pending(row, col) {
-            return format!("*{}", new_value_text(nv));
+            let named = match nv {
+                NewValue::Str(v) => label(v),
+                _ => None,
+            };
+            return format!("*{}", named.unwrap_or_else(|| new_value_text(nv)));
         }
         let s = shown(self, row, col);
         if let Shown::Prop(c) = self.cell(row, col) {
             if let Some(Value::Str(v)) = &c.value {
                 if !v.is_empty() {
                     let mark = if s.locked.is_some() { "#" } else { "" };
-                    return format!("{mark}{v}");
+                    return format!("{mark}{}", label(v).unwrap_or_else(|| v.clone()));
                 }
             }
         }
-        // SR-35: 部品(☑・札)は表の中だけ。詳細は値の文字で見せる。
+        // SR-35: 部品(☑・札)は表の中だけ。詳細は値の文字で見せる(名前のある値は名前)。
         if let Shown::Prop(c) = self.cell(row, col) {
             let rich =
                 s.part != super::cell::CellPart::None || matches!(c.value, Some(Value::Bool(_)));
             if let (true, Some(v)) = (rich && s.locked.is_none(), &c.value) {
-                return super::cell::value_plain(v);
+                return match v {
+                    Value::Bool(_) => super::cell::value_plain(v),
+                    _ => super::cell::labeled_text(self, col, v),
+                };
             }
         }
         s.text
