@@ -230,7 +230,7 @@ text = { en = "/ highlights every match; n and N move between them. Lowercase te
 id = "quick-filter"
 title = { en = "Quick filter", ja = "簡易の絞り込み" }
 keys = ["\\", "text:bakery"]
-wait = { en = "/20 rows", ja = "/20行" }
+wait = { en = "/15 rows", ja = "/15行" }
 text = { en = "\\ moves into the search bar; rows narrow as you type, and the bar shows the count. Esc clears it.", ja = "\\ で上の欄に入り、打つたびに行が絞られ件数が出る。Esc で解除。" }
 
 [[shot]]
@@ -307,9 +307,9 @@ text = { en = "Typing in the list replaces the value with what you type (← or 
 [[shot]]
 id = "checkbox-toggle"
 title = { en = "Toggle a checkbox", ja = "チェックボックスを切り替える" }
-keys = ["l", "l", "l", "l", "l", "l", "Enter"]
+keys = ["]", "]", "]", "l", "l", "l", "l", "j", "Enter"]
 wait = { en = "Unsaved 1", ja = "未保存 1" }
-text = { en = "Enter switches between true and false (an empty cell becomes true; Backspace empties it). The change is pending until you save.", ja = "Enter で true と false を切り替える(空のセルは true に。空にするのは BS)。保存までは書かない。" }
+text = { en = "On the billable column of the By project tab, Enter switches between true and false (an empty cell becomes true; Backspace empties it). The change is pending until you save.", ja = "By project のタブの billable の列で、Enter で true と false を切り替える(空のセルは true に。空にするのは BS)。保存までは書かない。" }
 
 [[shot]]
 id = "edit-date-invalid"
@@ -532,7 +532,7 @@ text ={ en = "Choose a column, then tick the values to keep or hide. Counts are 
 id = "chips"
 title = { en = "The settings band", ja = "設定の帯" }
 keys = ["o", "Enter", "Enter", "Enter", "Down", "Down", "Down", "Space", "Enter", "Tab", "Tab", "Tab", "Tab", "Tab", "Tab", "Tab", "Enter", "f"]
-wait = { en = "except done", ja = "done を除く" }
+wait = { en = "except doing", ja = "doing を除く" }
 text = { en = "Active filters, sorting and grouping appear above the table. f moves into the band; Backspace removes an item.", ja = "効いている条件が表の上に並ぶ。f で帯に入り、Backspace で外す。" }
 
 [[shot]]
@@ -944,9 +944,10 @@ text = { en = "T, on a table whose workspace marker has a tree setting. The left
 [[shot]]
 id = "starter-pick"
 title = { en = "Create a ledger from a starter", ja = "スターターから台帳を作る" }
+env = { XDG_CONFIG_HOME = "/tmp/mdgrid-demo/examples/places" }
 keys = [":", "text:starter", "Enter"]
 wait = { en = "starter:", ja = "スターター:" }
-text = { en = "The command palette's \"Create a ledger from a starter\" lists the built-in starters (tasks, tasks-ai, bookmarks, reading, people) and your own. Pick one, choose the folder, say whether to include the samples, and the new table opens.", ja = "パレットの「スターターから台帳を作る」で、組み込み(tasks・bookmarks・reading・people)と自分のスターターが並ぶ。選んで、作る場所と見本を入れるかを答えると、新しい表が開く。" }
+text = { en = "The command palette's \"Create a ledger from a starter\" lists your own starters first, marked (yours), then the built-in ones (tasks, tasks-ai, bookmarks, reading, people). Here the journal is one of your own, from the config folder's starters/journal/. Pick one, choose the folder, say whether to include the samples, and the new table opens.", ja = "パレットの「スターターから台帳を作る」で、自分のスターター(「(自分の)」と添える)が先に、組み込み(tasks・tasks-ai・bookmarks・reading・people)が後に並ぶ。ここでは日記が自分のもので、設定のフォルダの starters/journal/ にある。選んで、作る場所と見本を入れるかを答えると、新しい表が開く。" }
 
 [[shot]]
 id = "starter-tasks"

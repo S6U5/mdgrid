@@ -700,7 +700,7 @@ HOME = {
         "try_more": "入れ方のほかの道と画面の読み方",
         "scene_eyebrow": "自分の場面で",
         "scene_h": "空のフォルダから、台帳の形で始める。",
-        "scene_p": "4つのスターターが入っています。印と雛形と見本を書き出すので、最初の1枚から表で見られます。ノートがもうあるなら、そのフォルダを渡すだけです。",
+        "scene_p": "5つのスターターが入っていて、自分のスターターも作れます。印と雛形と見本を書き出すので、最初の1枚から表で見られます。ノートがもうあるなら、そのフォルダを渡すだけです。",
         "scenes": [
             (
                 "tasks",
@@ -729,6 +729,13 @@ HOME = {
                 "フォルダで眺めるブックマーク",
                 "folder の列からフォルダの木を組みます。T で木が開き、右に選んだフォルダの行。Enter で URL を開けます。",
                 "tree",
+            ),
+            (
+                "mine",
+                "自分のスターター",
+                "作り込んだ台帳を、次の台帳の雛形に",
+                "気に入った台帳の .mdgrid/ を、設定のフォルダの starters/<名前>/ledger/ に写すと、組み込みと並んで選べるようになります。写るのは印と雛形だけで、ノートの中身は入りません。dotfiles に置けば、どのマシンでも同じ台帳から始められます。",
+                "starter-pick",
             ),
         ],
         "look_eyebrow": "見た目",
@@ -934,7 +941,7 @@ HOME = {
         "try_more": "Other ways to install, and how to read the screen",
         "scene_eyebrow": "For your own notes",
         "scene_h": "Start from an empty folder, already shaped as a table.",
-        "scene_p": "Four starters are built in. Each writes a marker, a note template and a few samples, so the first note already shows up in a table. If you have notes, just pass their folder.",
+        "scene_p": "Five starters are built in, and you can make your own. Each writes a marker, a note template and a few samples, so the first note already shows up in a table. If you have notes, just pass their folder.",
         "scenes": [
             (
                 "tasks",
@@ -963,6 +970,13 @@ HOME = {
                 "Bookmarks you browse by folder",
                 "The folder column becomes a tree. Press T for the tree, with the rows of the selected folder on the right. Enter opens the URL.",
                 "tree",
+            ),
+            (
+                "mine",
+                "Your own",
+                "A ledger you shaped, as the template for the next one",
+                "Copy the .mdgrid/ of a ledger you like into starters/<name>/ledger/ in the config folder, and it is offered next to the built-in ones. Only the marker and the templates go in, never your notes. Keep it in your dotfiles and every machine starts from the same ledger.",
+                "starter-pick",
             ),
         ],
         "look_eyebrow": "Looks",
@@ -1154,10 +1168,21 @@ def landing(lang: str, shown, shots, blog: bool = False) -> str:
         return f'<div class="tabs" role="tablist" aria-label="{html.escape(label)}">{tabs}</div>\n{panels}'
 
     db = tabset("db-", h["db_eyebrow"], h["db"])
-    starter = lambda sid: cmd(
-        f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}",
-        lang,
-    )
+
+    def starter(sid: str) -> str:
+        if sid == "mine":
+            # 自分のスターター: 台帳の印を設定のフォルダに写し、新しい台帳をそこから作る。
+            return cmd(
+                "mkdir -p ~/.config/mdgrid/starters/journal/ledger\n"
+                "cp -R ~/notes/journal/.mdgrid ~/.config/mdgrid/starters/journal/ledger/\n"
+                "mdgrid ~/notes/journal-2027 --init-workspace --starter journal",
+                lang,
+            )
+        return cmd(
+            f"mdgrid ~/{sid} --init-workspace --starter {sid} --with-samples\nmdgrid ~/{sid}",
+            lang,
+        )
+
     scenes = tabset("scene-", h["scene_eyebrow"], h["scenes"], starter)
 
     # 分割した画面: 左は架空のエージェントの画面(どの製品の画面も写さない。名前も sample-agent)、右は本物の画面。

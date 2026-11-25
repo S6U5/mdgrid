@@ -1,0 +1,55 @@
+# mdgrid のワークスペースの印(WS-7)。スターター「日記」(自分のスターターの見本)から作った日記の台帳。
+# Journal/ に1日1ノートを、その日の日付の名前で置く。
+open = "日記"
+
+[display]
+note_path = "name"
+
+[types]
+date = "date"
+tags = "list"
+
+# その日の気分。グラフとまとまりはこの順。
+[rules.mood]
+values = ["great", "good", "okay", "low"]
+labels = { great = "とても良い", good = "良い", okay = "ふつう", low = "低め" }
+
+# 新しいノート(a): 名前は今日の日付から始め、気分を聞き、本文を雛形から始める。
+[new_note]
+folder = "Journal"
+name = "{date:YYYY-MM-DD}"
+ask = ["mood"]
+hidden = ["date"]
+body = ".mdgrid/templates/day.md"
+
+[new_note.set]
+date = "{date}"
+
+[[table]]
+name = "日記"
+# 新しい日が上。タブが自分で並べ替えないときの順。
+sort = [{ property = "date", direction = "DESC" }]
+# グラフの画面(P): 気分ごとの日数と、月ごとに書いた日数。
+chart = [
+  { name = "気分", x = "mood" },
+  { name = "月ごとの日数", kind = "line", x = "date", unit = "month" },
+]
+
+[table.base]
+filters = { and = ['file.inFolder("Journal")'] }
+
+[table.base.properties]
+"note.date" = { displayName = "日付" }
+"note.mood" = { displayName = "気分" }
+"note.tags" = { displayName = "タグ" }
+
+[[table.base.views]]
+type = "table"
+name = "今週"
+filters = { and = ['date >= today() - "7d"'] }
+order = ["date", "mood", "tags"]
+
+[[table.base.views]]
+type = "table"
+name = "全部"
+order = ["date", "mood", "tags"]
