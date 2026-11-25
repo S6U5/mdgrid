@@ -841,7 +841,9 @@ values = ["p1", "p2", "p3", "p4"]
 
 Tables and views are matched by name: items you write in a view of the same name change only those items, and a view with a new name is added after the starter's. If the starter or an option cannot be found, mdgrid prints one warning line and opens with what the marker itself says. For now you write this kind of marker by hand (`--init-workspace --starter` still copies everything).
 
-Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones (`starter.toml`, `ledger/`, `samples/`). The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `ledger/`.
+Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones (`starter.toml`, `ledger/`, `samples/`). The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `ledger/`. Only the marker and the templates go in, never your notes, so a ledger you have shaped becomes the template for the next one. The list and the palette show your own starters first, marked (yours).
+
+To keep a starter in your dotfiles and use it on every machine, link the starter's whole folder. A link to the folder is read, but links to the files inside it are not followed.
 
 ## Use with other commands
 

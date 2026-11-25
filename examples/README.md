@@ -104,4 +104,6 @@ mdgrid /tmp/bookmarks                 # opens the Bookmarks table; press T
 
 The same folder has [places/mdgrid/workspaces.toml](places/mdgrid/workspaces.toml) with three favorite workspaces (Studio, Reading, People). `XDG_CONFIG_HOME=examples/places mdgrid examples/quirks/Tasks`, then `W` and a number, moves to one; `W` again lists **Where you started** at the top to come back.
 
+It also holds one starter of your own, [places/mdgrid/starters/journal](places/mdgrid/starters/journal) (a journal, one note per day). `XDG_CONFIG_HOME=examples/places mdgrid --starters` lists it first, marked (yours), and `XDG_CONFIG_HOME=examples/places mdgrid /tmp/journal --init-workspace --starter journal` makes a ledger from it.
+
 日本語: 見本はどれも、架空の小さな制作会社 Northwind Studio のもの。主役の [studio](studio) は、タスク・案件・顧客・人・会議の5つの表をフロントマターのリンクでつないだルートフォルダ。[quirks](quirks) は扱いにくいノート(フロントマター無し・重複キー・型の合わない値など)の見本、[configs](configs) は多くの機能を有効にした設定、[ai-human](ai-human/README.md) は人と AI のタスクを分ける見本。どれもリポの根で開き、保存するなら一時フォルダに写すか `--readonly` を付ける。

@@ -184,7 +184,7 @@ starters/kanban/
   ledger.ja/  samples.ja/       # 任意: 言語が ja のとき、ledger/ と samples/ の代わりに使う
 ```
 
-組み込みと同じ名前のスターターは、組み込みの代わりになる。いちばん早い作り方は、気に入った台帳の `.mdgrid/` を `starters/<名前>/ledger/` に写すこと。
+組み込みと同じ名前のスターターは、組み込みの代わりになる。いちばん早い作り方は、気に入った台帳の `.mdgrid/` を `starters/<名前>/ledger/` に写すこと([examples/places/mdgrid/starters/journal](../examples/places/mdgrid/starters/journal) が見本)。スターターのフォルダそのものはシンボリックリンクでもよい(dotfiles の道具が置く形)が、中のリンクはたどらないので、ファイルごとではなくフォルダごとリンクする。
 
 ## 旧い名前(0.3.0)
 

@@ -184,7 +184,7 @@ starters/kanban/
   ledger.ja/  samples.ja/       # optional: used instead of ledger/ and samples/ when the language is ja
 ```
 
-A starter with the same name as a built-in one replaces it. The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `starters/<name>/ledger/`.
+A starter with the same name as a built-in one replaces it. The quickest way to make one is to copy the `.mdgrid/` of a ledger you like into `starters/<name>/ledger/`; [examples/places/mdgrid/starters/journal](../examples/places/mdgrid/starters/journal) is one. The starter's folder itself may be a symbolic link (as dotfiles tools make it), but links inside it are not followed, so link the whole folder rather than each file.
 
 ## Old names (0.3.0)
 

@@ -1,0 +1,55 @@
+# The mdgrid workspace marker (WS-7) of a journal, made from the starter "journal" (an example of your own starter).
+# One note per day under Journal/, named after the day.
+open = "Journal"
+
+[display]
+note_path = "name"
+
+[types]
+date = "date"
+tags = "list"
+
+# How the day felt. The chart and the groups follow this order.
+[rules.mood]
+values = ["great", "good", "okay", "low"]
+labels = { great = "Great", good = "Good", okay = "Okay", low = "Low" }
+
+# New note (a): the name starts as today's date, asks for the mood, and starts the body from the template.
+[new_note]
+folder = "Journal"
+name = "{date:YYYY-MM-DD}"
+ask = ["mood"]
+hidden = ["date"]
+body = ".mdgrid/templates/day.md"
+
+[new_note.set]
+date = "{date}"
+
+[[table]]
+name = "Journal"
+# The newest day first, unless a tab sorts on its own.
+sort = [{ property = "date", direction = "DESC" }]
+# The chart screen (P): days per mood, and days written per month.
+chart = [
+  { name = "Mood", x = "mood" },
+  { name = "Days per month", kind = "line", x = "date", unit = "month" },
+]
+
+[table.base]
+filters = { and = ['file.inFolder("Journal")'] }
+
+[table.base.properties]
+"note.date" = { displayName = "Date" }
+"note.mood" = { displayName = "Mood" }
+"note.tags" = { displayName = "Tags" }
+
+[[table.base.views]]
+type = "table"
+name = "This week"
+filters = { and = ['date >= today() - "7d"'] }
+order = ["date", "mood", "tags"]
+
+[[table.base.views]]
+type = "table"
+name = "All"
+order = ["date", "mood", "tags"]

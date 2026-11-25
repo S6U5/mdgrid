@@ -1,6 +1,6 @@
 [package]
 name = "mdgrid"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 rust-version = "1.90"
 # 結合の試験は tests/all.rs と tests/test_config.rs の2つの実行ファイルにまとめる(下の [[test]]。tests/all.rs の頭)。

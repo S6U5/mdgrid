@@ -1,0 +1,10 @@
+# An example of your own starter (ST-3). Your own starters live in the config folder under starters/<name>/, in the
+# same shape as the built-in ones; this one is in examples/places, so `XDG_CONFIG_HOME=examples/places mdgrid --starters`
+# lists it after the built-in ones. The quickest way to make one is to copy the .mdgrid/ of a ledger you like into ledger/.
+[name]
+en = "Journal"
+ja = "日記"
+
+[description]
+en = "One note per day with the mood, what went well and what to change; this week, all days and a mood chart"
+ja = "1日1ノートの日記。気分・よかったこと・変えたいこと。今週と全部のタブ、気分のグラフ"
