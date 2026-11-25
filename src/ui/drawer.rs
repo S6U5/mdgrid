@@ -1,6 +1,7 @@
 //! 表の一覧の引き出し(WS-8): 画面の左から表の上に重ねて出し、今の範囲(WS-6)の表と、ほかのワークスペースの
 //! 見出し(畳んで出し、開くとその表)を並べる。選んだ表へ移る(終わる手順を通してから main が開き直す。CLI-19 と
-//! 同じ保存の確かめ)。
+//! 同じ保存の確かめ)。今の範囲の表の下には、「最初に開いた所」(離れているとき)とお気に入りのワークスペースを
+//! 並べ、選んだら切り替えの一覧と同じ道で移る(workspace.drawer-favorites。switch.rs の `go_to`)。
 //!
 //! 普段は出さない(左に自分の一覧を持つ端末の道具の中で、左に帯が2本並ばないように)。ヘッダーのボタン
 //! 「ワークスペース」(SR-42)・`w`・パレットで開き、表を選ぶ・Esc・窓の外のクリック・同じボタンかキーで閉じる。
@@ -9,7 +10,9 @@
 use super::app::App;
 use super::keymap::{Action, Mode};
 use super::popup;
+use super::switch::{spot_of, Dest, Picker, Spot};
 use super::width::{fit, sanitize, width, Align};
+use mdgrid::favorites::Favorite;
 use mdgrid::i18n::Msg;
 use mdgrid::places::Place;
 use mdgrid::workspace::{self, Source};
@@ -32,6 +35,12 @@ pub(crate) struct Drawer {
     pub sel: usize,
     /// 開いた見出し(ワークスペースの名前)。
     pub open: Vec<String>,
+    /// workspace.drawer-favorites: お気に入りのワークスペース(開いたときに読み解いたもの)。
+    favs: Vec<Favorite>,
+    /// 「最初に開いた所」を並べる(起動したときに開いた所から今は離れている)。
+    origin: bool,
+    /// 今いる所(開いたときに決めたもの。お気に入りの今の印に使う)。
+    here: Option<Spot>,
 }
 
 /// 引き出しの1行。
@@ -48,9 +57,14 @@ enum Row {
     Head { name: String, open: bool },
     /// stack.page-open: 今の範囲のページ(表の上に並べる)。`current` は開いているページ。
     Page { name: String, current: bool },
+    /// workspace.drawer-favorites: 最初に開いた所。
+    Origin,
+    /// workspace.drawer-favorites: お気に入りのワークスペース。`current` は今いる所。
+    Fav { fav: Favorite, current: bool },
 }
 
-/// 並べる行: 今の範囲の表、そのあとにほかのワークスペースの見出し(開いていればその表)。
+/// 並べる行: 今の範囲のページと表、最初に開いた所とお気に入りのワークスペース、そのあとにほかのワークスペースの
+/// 見出し(開いていればその表)。
 fn rows(app: &App, d: &Drawer) -> Vec<Row> {
     let mut out = Vec::new();
     // workspaces.toml のワークスペースの範囲だけ、その名前で開き直す(印・検知の範囲は workspaces.toml に名前が
@@ -70,13 +84,29 @@ fn rows(app: &App, d: &Drawer) -> Vec<Row> {
         });
     }
     let places = app.scope_places();
-    let cur = current_index(app, &places);
+    // stack.page-drawer-leave: ページを開いているあいだは、今の印はページの見出しだけ(表の行には付けない)。
+    let cur = if page.is_some() {
+        None
+    } else {
+        current_index(app, &places)
+    };
     for (i, place) in places.into_iter().enumerate() {
         out.push(Row::Table {
             place,
             ws: ws.clone(),
             current: cur == Some(i),
             child: false,
+        });
+    }
+    // workspace.drawer-favorites: 今の範囲の表の下に、最初に開いた所とお気に入り。ページを開いているあいだは、今の
+    // 印をページの見出しだけにする(stack.page-drawer-leave)。
+    if d.origin {
+        out.push(Row::Origin);
+    }
+    for f in &d.favs {
+        out.push(Row::Fav {
+            fav: f.clone(),
+            current: page.is_none() && d.here.as_ref() == Some(&spot_of(f)),
         });
     }
     for w in app
@@ -171,6 +201,17 @@ fn label(app: &App, r: &Row) -> String {
             };
             format!("{mark}{} · {}", sanitize(name), Msg::DrawerPage.text())
         }
+        Row::Origin => format!("  {}", app.origin_label()),
+        // お気に入りの行は、見出しと同じく名前の後ろに ★。
+        Row::Fav { fav, current } => {
+            let mark = match (*current, plain) {
+                (false, _) => "  ",
+                (true, false) => "● ",
+                (true, true) => "* ",
+            };
+            let star = if plain { " *" } else { " ★" };
+            format!("{mark}{}{star}", sanitize(fav.name()))
+        }
     }
 }
 
@@ -192,6 +233,15 @@ struct Geom {
     start: usize,
 }
 
+/// 下の縁のキー(screen.window-key-hints): 開く・閉じる。キーと名前はキーの表から。
+fn hints(app: &App) -> Vec<popup::KeyHint> {
+    popup::key_hints(
+        app,
+        Mode::Drawer,
+        &[(Action::Run, None), (Action::Close, None)],
+    )
+}
+
 fn window(app: &App) -> Option<Geom> {
     let d = app.drawer.as_ref()?;
     let items: Vec<String> = rows(app, d).iter().map(|r| label(app, r)).collect();
@@ -202,7 +252,9 @@ fn window(app: &App) -> Option<Geom> {
         .chain(std::iter::once(width(&title(app))))
         .max()
         .unwrap_or(0);
-    let iw = (inner + 2).clamp(MIN_W, MAX_W).min(sw);
+    // screen.window-key-hints: 下の縁のキーが入るまで広げる(引き出しの幅の上限まで)。
+    let edge = popup::hints_width(&hints(app));
+    let iw = popup::widen_for_hints((inner + 2).clamp(MIN_W, MAX_W), edge, MAX_W.min(sw));
     let vis = limit.saturating_sub(top(app) + popup::FRAME);
     if iw < 12 || vis < popup::MIN_VIS.min(items.len().max(1)) {
         return None;
@@ -219,14 +271,18 @@ impl App {
     /// WS-8: 引き出しを開く(関係マップからは表の画面に戻ってから)。並べるものが無い・端末が小さければ理由。
     pub(crate) fn open_drawer(&mut self) {
         self.leave_screens();
-        // workspace.favorite-mark: 見出しの印のために、お気に入りを読み直す(ほかの窓で変えたかもしれない)。
-        if let Some(dir) = &self.nv.dir {
-            self.favorites = mdgrid::favorites::entries(dir);
-        }
+        // workspace.favorite-mark・workspace.drawer-favorites: 見出しの印とお気に入りの行のために、お気に入りを
+        // 読み直す(ほかの窓で変えたかもしれない)。読めない項目の警告は切り替えの一覧と同じくメッセージ行に出す。
+        let (favs, warns) = self.resolved_favorites();
         if self.mode != Mode::Table {
             self.set_mode(Mode::Table);
         }
-        let mut d = Drawer::default();
+        let mut d = Drawer {
+            favs,
+            origin: self.origin_away(),
+            here: self.here_spot(),
+            ..Drawer::default()
+        };
         let list = rows(self, &d);
         if list.is_empty() {
             self.message = Some(Msg::DrawerEmpty.text().into());
@@ -247,6 +303,9 @@ impl App {
             self.drawer = None;
             self.message = Some(Msg::DrawerNoRoom.text().into());
             return;
+        }
+        if !warns.is_empty() {
+            self.message = Some(warns.join(" / "));
         }
         self.set_mode(Mode::Drawer);
     }
@@ -285,6 +344,15 @@ impl App {
                 return self.drawer_choose(place, ws, child);
             }
             (Action::Run, Some(Row::Head { name, open })) => toggle(&mut d, name, !open),
+            // workspace.drawer-favorites: 切り替えの一覧と同じ道で移る(今いる所なら閉じて知らせる)。
+            (Action::Run, Some(Row::Origin)) => {
+                self.drawer = Some(d);
+                return self.go_to(Dest::Origin, Picker::Drawer);
+            }
+            (Action::Run, Some(Row::Fav { fav, .. })) => {
+                self.drawer = Some(d);
+                return self.go_to(Dest::Fav(fav), Picker::Drawer);
+            }
             // stack.page-open: ページを選ぶと、その並べた形で開く(開いているページなら閉じるだけ)。
             (Action::Run, Some(Row::Page { name, .. })) => {
                 self.close_drawer();
@@ -313,6 +381,14 @@ impl App {
             // workspace.favorite-mark: 見出しのワークスペースをお気に入りに入れる・外す(見出しでないところでは案内)。
             (Action::WsFavorite, Some(Row::Head { name, .. })) => {
                 self.toggle_favorite(&name, &name);
+                // お気に入りの行を読み直し、選びは同じ見出しに置く。
+                d.favs = self.resolved_favorites().0;
+                if let Some(h) = rows(self, &d)
+                    .iter()
+                    .position(|r| matches!(r, Row::Head { name: h, .. } if *h == name))
+                {
+                    d.sel = h;
+                }
             }
             (Action::WsFavorite, _) => {
                 self.message = Some(Msg::WsFavoriteHeadOnly.text().into());
@@ -325,9 +401,12 @@ impl App {
 
     /// 表を選んだ: 今の範囲の行で今の表と同じ実体なら閉じるだけ(行のビューが今と違えばそのビューにする)。
     /// ほかの表と、ほかのワークスペースの行(範囲が変わる)へは終わる手順を通してから移る。無いパスは理由を
-    /// 出して引き出しに残る。
+    /// 出して引き出しに残る。ページを開いているあいだは、選んでいる表と同じでもページを閉じて、その表を1つで
+    /// 開く(stack.page-drawer-leave)。
     fn drawer_choose(&mut self, place: Place, ws: Option<String>, child: bool) {
-        let same = !child && here(self).is_some_and(|h| workspace::same_path(&place.path, &h));
+        let in_page = self.stack.as_ref().is_some_and(|s| s.page.is_some());
+        let same =
+            !child && !in_page && here(self).is_some_and(|h| workspace::same_path(&place.path, &h));
         if same {
             self.close_drawer();
             if let Some(v) = &place.view {
@@ -357,6 +436,13 @@ impl App {
         let Some(g) = window(self) else {
             return self.close_drawer();
         };
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some(dx) = popup::on_bottom(x, y, 0, g.iw, top(self) + g.vis + 1) {
+            if let Some(a) = popup::hint_at(&hints(self), g.iw - 2, "", dx) {
+                self.drawer_action(a);
+            }
+            return;
+        }
         match popup::hit(x, y, 0, top(self), g.iw, g.vis) {
             None => self.close_drawer(),
             Some(None) => {}
@@ -407,6 +493,9 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         };
         out.push((fr.side(&fit(&text, tw, Align::Left)), st));
     }
-    out.push((fr.bottom(tw), Style::default()));
+    out.push((
+        popup::bottom_hints(fr, tw, "", &hints(app)),
+        Style::default(),
+    ));
     popup::blit(app, lines, 0, top(app), g.iw, w, out);
 }

@@ -72,6 +72,30 @@ fn rows(app: &App, w: &SortWin) -> (String, Vec<String>) {
     }
 }
 
+/// 下の縁のキー(screen.window-key-hints): 並びでは向き・足すと閉じる、列を選ぶ段では決めると戻る。キーはキーの表から。
+/// 窓はボタンのすぐ下に左の端をそろえて置く(NV-23)ので、幅 80 の端末で右へはみ出さないよう、名前は縁の短い名前にし、
+/// 外す(各決まりの行の右の端の「×」と下の帯にある)は並べない。
+fn hints(app: &App, w: &SortWin) -> Vec<popup::KeyHint> {
+    if w.picking.is_some() {
+        return popup::key_hints(
+            app,
+            Mode::Sorts,
+            &[
+                (Action::Run, Some(Msg::KeyDecide)),
+                (Action::Close, Some(Msg::KeyBack)),
+            ],
+        );
+    }
+    popup::key_hints(
+        app,
+        Mode::Sorts,
+        &[
+            (Action::Run, Some(Msg::HintSortsRun)),
+            (Action::Close, None),
+        ],
+    )
+}
+
 /// 窓の置き場所と大きさ。
 struct Geom {
     x: usize,
@@ -88,19 +112,20 @@ fn window(app: &App) -> Option<Geom> {
     let inner = items
         .iter()
         .map(|t| width(t) + 5)
-        .chain(std::iter::once(width(&title) + 2))
+        .chain([width(&title) + 2])
         .max()
         .unwrap_or(10);
-    let iw = (inner + 2).min(sw);
-    if iw < 8 {
-        return None;
-    }
     // NV-23: ビューの帯のボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
     // ボタンが描かれていなければ、ヘッダーの下に右の端にそろえて置く。
     let (bx, ay) = super::bands::button_anchor(app, super::bands::ViewButton::Sort)
         .map_or((None, super::bands::head_y(app) as usize), |(x, y)| {
             (Some(x), y)
         });
+    // screen.window-key-hints: 下の縁のキーが入るまで広げる。
+    let iw = popup::widen_for_hints(inner + 2, popup::hints_width(&hints(app, w)), sw);
+    if iw < 8 {
+        return None;
+    }
     let popup::Place { top, vis } = popup::place(ay, items.len(), limit)?;
     let sel = match &w.picking {
         Some((_, s)) => *s,
@@ -218,6 +243,17 @@ impl App {
         let Some(g) = window(self) else {
             return self.close_sorts();
         };
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some(dx) = popup::on_bottom(x, y, g.x, g.iw, g.top + g.vis + 1) {
+            let hit = self
+                .sorts_win
+                .as_ref()
+                .and_then(|w| popup::hint_at(&hints(self, w), g.iw - 2, "", dx));
+            if let Some(a) = hit {
+                self.sorts_action(a);
+            }
+            return;
+        }
         match popup::hit(x, y, g.x, g.top, g.iw, g.vis) {
             None => self.close_sorts(),
             Some(None) => {}
@@ -277,6 +313,9 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         };
         out.push((fr.side(&line), st));
     }
-    out.push((fr.bottom(tw), Style::default()));
+    out.push((
+        popup::bottom_hints(fr, tw, "", &hints(app, win)),
+        Style::default(),
+    ));
     popup::blit(app, lines, g.x, g.top, g.iw, w, out);
 }

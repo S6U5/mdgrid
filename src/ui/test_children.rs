@@ -662,3 +662,261 @@ fn test_extend_leaves_a_parent_without_own_dates() {
     assert_eq!(pending(&a, "設計", "start"), None);
     assert_eq!(a.changes.count(), 1);
 }
+
+// ---- cell-edit.children-closed-by・cell-edit.children-reopen ----
+
+/// doing の「設計」の子に todo の「画面」と done の「API」(閉じた印の列 closed_by はまだどのノートにも無い)。
+const CLOSING: &[(&str, &str)] = &[
+    ("設計.md", "---\nstatus: doing\n---\n"),
+    ("画面.md", "---\nparent: \"[[設計]]\"\nstatus: todo\n---\n"),
+    ("API.md", "---\nparent: \"[[設計]]\"\nstatus: done\n---\n"),
+];
+
+// [utest -> req~cell-edit.children-closed-by~1]
+#[test]
+fn test_closed_by_links_the_children_the_parent_closed() {
+    // `children = { key = "parent", closed_by = "closed_by" }` で設計を done に直すと、画面は status が done・closed_by が
+    // [[設計]] のためる変更になり、API には closed_by を書かない。
+    let (_t, mut a) = boot(
+        "ch-closed-by",
+        CLOSING,
+        "children = { key = \"parent\", closed_by = \"closed_by\" }",
+        "",
+    );
+    assert!(a.message.is_none(), "{:?}", a.message);
+    set_status(&mut a, "設計", "done");
+    assert_eq!(pending(&a, "画面", "status").as_deref(), Some("done"));
+    assert_eq!(
+        pending(&a, "画面", "closed_by").as_deref(),
+        Some("[[設計]]"),
+        "{:?}",
+        a.message
+    );
+    assert_eq!(pending(&a, "API", "status"), None);
+    assert_eq!(pending(&a, "API", "closed_by"), None);
+    assert_eq!(pending(&a, "設計", "closed_by"), None);
+    // 親と同じ1手(取り消し1回で全部戻る)。
+    a.apply(Action::Undo);
+    assert_eq!(a.changes.count(), 0);
+}
+
+/// 完了の「設計」の子に、親の完了で閉じた「画面」(closed_by が [[設計]])と、自分で済ませた「API」(closed_by が空)。
+const CLOSED: &[(&str, &str)] = &[
+    ("設計.md", "---\nstatus: done\n---\n"),
+    (
+        "画面.md",
+        "---\nparent: \"[[設計]]\"\nstatus: done\nclosed_by: \"[[設計]]\"\n---\n",
+    ),
+    (
+        "API.md",
+        "---\nparent: \"[[設計]]\"\nstatus: done\nclosed_by:\n---\n",
+    ),
+];
+
+fn is_null(a: &App, name: &str, col: &str) -> bool {
+    matches!(a.changes.pending(&row(a, name), col), Some(NewValue::Null))
+}
+
+// [utest -> req~cell-edit.children-reopen~1]
+#[test]
+fn test_reopen_brings_back_the_children_the_parent_closed() {
+    // on_reopen = "reopen"・closed_by = "closed_by" で設計を todo に戻すと、画面は status が todo・closed_by が空の
+    // ためる変更になり、API は done のまま。取り消し1回で戻る。
+    let (_t, mut a) = boot(
+        "ch-reopen",
+        CLOSED,
+        "children = { key = \"parent\", closed_by = \"closed_by\", on_reopen = \"reopen\" }",
+        "",
+    );
+    assert!(a.message.is_none(), "{:?}", a.message);
+    set_status(&mut a, "設計", "todo");
+    assert_eq!(pending(&a, "設計", "status").as_deref(), Some("todo"));
+    assert_eq!(
+        pending(&a, "画面", "status").as_deref(),
+        Some("todo"),
+        "{:?}",
+        a.message
+    );
+    assert!(
+        is_null(&a, "画面", "closed_by"),
+        "{:?}",
+        pending(&a, "画面", "closed_by")
+    );
+    assert_eq!(pending(&a, "API", "status"), None);
+    assert_eq!(pending(&a, "API", "closed_by"), None);
+    a.apply(Action::Undo);
+    for n in ["設計", "画面", "API"] {
+        assert_eq!(pending(&a, n, "status"), None, "{n}");
+        assert_eq!(pending(&a, n, "closed_by"), None, "{n}");
+    }
+    assert_eq!(a.changes.count(), 0);
+}
+
+// [utest -> req~cell-edit.children-reopen~1]
+#[test]
+fn test_keep_is_the_default_and_leaves_the_children() {
+    // on_reopen を書かなければ "keep": 設計を todo に戻しても、親の完了で閉じた画面は done のまま。
+    let (_t, mut a) = boot(
+        "ch-reopen-keep",
+        CLOSED,
+        "children = { key = \"parent\", closed_by = \"closed_by\" }",
+        "",
+    );
+    assert!(a.message.is_none(), "{:?}", a.message);
+    set_status(&mut a, "設計", "todo");
+    assert_eq!(pending(&a, "設計", "status").as_deref(), Some("todo"));
+    assert_eq!(pending(&a, "画面", "status"), None);
+    assert_eq!(pending(&a, "画面", "closed_by"), None);
+    assert_eq!(a.changes.count(), 1);
+}
+
+/// on_reopen = "ask" の表で設計を todo に戻し、選ぶ窓が出たことを確かめる。
+fn boot_ask(tag: &str) -> (Tmp, App) {
+    let (t, mut a) = boot(
+        tag,
+        CLOSED,
+        "children = { key = \"parent\", closed_by = \"closed_by\", on_reopen = \"ask\" }",
+        "",
+    );
+    assert!(a.message.is_none(), "{:?}", a.message);
+    set_status(&mut a, "設計", "todo");
+    assert_eq!(a.mode, Mode::Palette, "{:?}", a.message);
+    let s = screen(&a);
+    assert!(s.contains("子も戻す") && s.contains("親だけ"), "{s}");
+    // 選ぶまでは何もためない。
+    assert_eq!(a.changes.count(), 0);
+    (t, a)
+}
+
+/// 選ぶ窓で `label` の項目を選ぶ。
+fn choose(a: &mut App, label: &str) {
+    typing(a, label);
+    press(a, KeyCode::Enter);
+}
+
+// [utest -> req~cell-edit.children-reopen~1]
+#[test]
+fn test_ask_parent_only_sets_only_the_parent() {
+    // on_reopen = "ask" で設計を todo に戻すと「子も戻す」「親だけ」を選ぶ窓が出て、「親だけ」なら設計だけが todo になる。
+    let (_t, mut a) = boot_ask("ch-ask-parent");
+    choose(&mut a, "親だけ");
+    assert_eq!(a.mode, Mode::Table, "{:?}", a.message);
+    assert_eq!(pending(&a, "設計", "status").as_deref(), Some("todo"));
+    assert_eq!(pending(&a, "画面", "status"), None);
+    assert_eq!(pending(&a, "画面", "closed_by"), None);
+    assert_eq!(a.changes.count(), 1);
+}
+
+// [utest -> req~cell-edit.children-reopen~1]
+#[test]
+fn test_ask_children_too_reopens_them_in_one_step() {
+    // 「子も戻す」なら "reopen" と同じ: 画面も todo・closed_by が空になり、取り消し1回で戻る。
+    let (_t, mut a) = boot_ask("ch-ask-all");
+    choose(&mut a, "子も戻す");
+    assert_eq!(a.mode, Mode::Table, "{:?}", a.message);
+    assert_eq!(pending(&a, "設計", "status").as_deref(), Some("todo"));
+    assert_eq!(pending(&a, "画面", "status").as_deref(), Some("todo"));
+    assert!(is_null(&a, "画面", "closed_by"));
+    assert_eq!(pending(&a, "API", "status"), None);
+    a.apply(Action::Undo);
+    assert_eq!(a.changes.count(), 0);
+}
+
+// [utest -> req~cell-edit.children-reopen~1]
+#[test]
+fn test_ask_closed_with_esc_changes_nothing() {
+    // 選ぶ窓を Esc で閉じれば、親も子も直さない。
+    let (_t, mut a) = boot_ask("ch-ask-esc");
+    press(&mut a, KeyCode::Esc);
+    assert_eq!(a.mode, Mode::Table);
+    assert_eq!(a.changes.count(), 0);
+}
+
+// [utest -> req~cell-edit.children-reopen~1]
+#[test]
+fn test_reopen_without_closed_by_warns_once_and_keeps() {
+    // on_reopen = "reopen"(と "ask")で closed_by を書かないと、起動で on_reopen の場所を言う警告1行を出し、"keep" として扱う。
+    for how in ["reopen", "ask"] {
+        let (_t, mut a) = boot(
+            &format!("ch-reopen-no-col-{how}"),
+            CLOSED,
+            &format!("children = {{ key = \"parent\", on_reopen = \"{how}\" }}"),
+            "",
+        );
+        let m = a.message.clone().unwrap_or_default();
+        assert_eq!(
+            m.matches(".mdgrid/workspace.toml: table[1].children.on_reopen: ")
+                .count(),
+            1,
+            "{how}: {m}"
+        );
+        assert!(m.contains("closed_by"), "{how}: {m}");
+        assert_eq!(m.matches("children").count(), 1, "{how}: {m}");
+        a.message = None;
+        set_status(&mut a, "設計", "todo");
+        assert_eq!(a.mode, Mode::Table, "{how}");
+        assert_eq!(pending(&a, "設計", "status").as_deref(), Some("todo"));
+        assert_eq!(pending(&a, "画面", "status"), None, "{how}");
+        assert_eq!(a.changes.count(), 1, "{how}");
+    }
+}
+
+// ---- relations.link-input-no-cycle ----
+
+/// 選んでいるセルの入力の候補の見せる名前。
+fn input_items(a: &App) -> Vec<String> {
+    a.input
+        .as_ref()
+        .and_then(|i| i.list.as_ref())
+        .map(|l| l.items.iter().map(|i| i.text.clone()).collect())
+        .unwrap_or_default()
+}
+
+/// 「設計」の子に「画面」、「画面」の子に「部品」。ほかのタスク「調査」「メモ」は親子でない。
+const CHAIN: &[(&str, &str)] = &[
+    ("設計.md", "---\nstatus: doing\nparent:\n---\n"),
+    ("画面.md", "---\nparent: \"[[設計]]\"\nstatus: todo\n---\n"),
+    ("部品.md", "---\nparent: \"[[画面]]\"\nstatus: todo\n---\n"),
+    ("調査.md", "---\nstatus: todo\nparent:\n---\n"),
+    ("メモ.md", "---\nstatus: todo\nparent:\n---\n"),
+];
+
+// [utest -> req~relations.link-input-no-cycle~1]
+#[test]
+fn test_parent_candidates_leave_out_the_row_and_its_descendants() {
+    // 「設計」の子に「画面」、「画面」の子に「部品」がある表で、設計の parent のセルを直して候補を出すと、候補に
+    // 設計・画面・部品は無く、ほかのタスク(調査・メモ)は並ぶ。
+    let (_t, mut a) = boot("ch-no-cycle", CHAIN, "children = { key = \"parent\" }", "");
+    select(&mut a, "設計");
+    col_named(&mut a, "parent");
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Edit, "{:?}", a.message);
+    let items = input_items(&a);
+    for n in ["設計", "画面", "部品"] {
+        assert!(!items.iter().any(|t| t == n), "{n}: {items:?}");
+    }
+    for n in ["調査", "メモ"] {
+        assert!(items.iter().any(|t| t == n), "{n}: {items:?}");
+    }
+}
+
+// [utest -> req~relations.link-input-no-cycle~1]
+#[test]
+fn test_parent_candidates_of_a_leaf_keep_its_ancestors() {
+    // 子の無い「部品」の parent の候補からは部品だけを外し、祖先の画面・設計は並ぶ(選んでも輪にならない)。
+    let (_t, mut a) = boot(
+        "ch-no-cycle-leaf",
+        CHAIN,
+        "children = { key = \"parent\" }",
+        "",
+    );
+    select(&mut a, "部品");
+    col_named(&mut a, "parent");
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Edit, "{:?}", a.message);
+    let items = input_items(&a);
+    assert!(!items.iter().any(|t| t == "部品"), "{items:?}");
+    for n in ["設計", "画面", "調査", "メモ"] {
+        assert!(items.iter().any(|t| t == n), "{n}: {items:?}");
+    }
+}

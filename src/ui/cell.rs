@@ -239,9 +239,12 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
     };
     // 読むだけのセルは薄い表示に加えて先頭に `#`(色や薄い表示に頼らない。SR-15)。
     // `#` は、ためる変更の `*`・未対応の `?`(BV-7)・型の合わない `!`(CV-2)・負の数の `-` と重ならない。
+    // cell-view.formula-empty-mark: 式の列の空の値には付けず、空のセルにする(`#` だけが残ると値があるように見える)。
+    // 読むだけの理由(`locked`)は残す(選んだときのメッセージ行と、直せないことは同じ)。
+    let bare = text.is_empty() && col.starts_with("formula.");
     let text = match &lock {
-        Some(_) => format!("{LOCK_MARK}{text}"),
-        None => text,
+        Some(_) if !bare => format!("{LOCK_MARK}{text}"),
+        _ => text,
     };
     Shown {
         text,

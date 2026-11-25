@@ -29,7 +29,7 @@ In the `table` mode, full-width letters and symbols typed while a Japanese input
 
 The main grid of notes.
 
-When you start mdgrid with `--pick`, `Enter` on a note row prints the marked rows (or the selected row) and quits, `q` cancels, and `Esc` clears the selection, filters, and search as usual, cancelling only when there is nothing left to clear. `Enter` on a group heading row still expands or collapses it, and `e` does not open the editor.
+When you start mdgrid with `--pick`, `Enter` on a note row prints the marked rows (or the selected row) and quits, `q` cancels, and `Esc` clears the selection, filters, the conditions turned on with digit keys or the notice band, and search as usual, cancelling only when there is nothing left to clear. `Enter` on a group heading row still expands or collapses it, and `e` does not open the editor.
 
 | Key | Action | Description |
 |---|---|---|
@@ -73,6 +73,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `y` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
 | `Ctrl+c` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
 | `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard as tab-separated text with a header |
+| `O` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the same as `o` in the tree; the URL is shown in the message line first) |
 | `[` | `prev_view` | Switch to the previous view |
 | `]` | `next_view` | Switch to the next view |
 | `<` | `narrow_column` | Make the column narrower |
@@ -118,7 +119,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `Shift+Up` | `extend_up` | Extend the selection up |
 | `Shift+Down` | `extend_down` | Extend the selection down |
 | `Ctrl+a` | `select_all` | Select all rows |
-| `Esc` | `clear_selection` | Clear the selection; if nothing is selected, clear the filter, then the search highlight |
+| `Esc` | `clear_selection` | Clear the selection; if nothing is selected, clear the filter, then every condition turned on with a digit key or from the notice band (conditions with `hide` stay), then the search highlight |
 | `K` | `detail` | Show every property of the selected note, and the first lines of its body |
 | `o` | `view_settings` | Open the view settings (filters, sort, grouping, columns) |
 | `f` | `focus_chips` | Move to the settings bar above the table |
@@ -235,21 +236,22 @@ The prompt shown when you quit with unsaved changes.
 
 ## `help`
 
-The help screen (`?`).
+The help screen (`?`). Select a line of the first section, the keys you can press now, with ↑↓ or a click and press `Enter`: the help closes and that action runs, the same as pressing its key on the screen you came from. Clicking the selected line again does the same. A line that groups digit keys (`1-9`) runs the first key (`1`). Lines further down (every key, the meaning of the marks) can be selected, but `Enter` does nothing there. The mouse wheel scrolls the help without moving the selection.
 
 | Key | Action | Description |
 |---|---|---|
-| `Esc` | `close` | Close the help |
-| `q` | `close` | Close the help |
-| `?` | `close` | Close the help |
-| `j` | `down` | Scroll down |
-| `Down` | `down` | Scroll down |
-| `k` | `up` | Scroll up |
-| `Up` | `up` | Scroll up |
-| `PageDown` | `page_down` | Scroll down one screen |
-| `PageUp` | `page_up` | Scroll up one screen |
-| `g g` | `top` | Go to the top |
-| `G` | `bottom` | Go to the bottom |
+| `Enter` | `run` | Run the selected key you can press now and close the help |
+| `Esc` | `close` | Close the help without doing anything |
+| `q` | `close` | Close the help without doing anything |
+| `?` | `close` | Close the help without doing anything |
+| `j` | `down` | Next item |
+| `Down` | `down` | Next item |
+| `k` | `up` | Previous item |
+| `Up` | `up` | Previous item |
+| `PageDown` | `page_down` | Down one screen |
+| `PageUp` | `page_up` | Up one screen |
+| `g g` | `top` | First item |
+| `G` | `bottom` | Last item |
 
 ## `search`
 
@@ -356,14 +358,14 @@ The notice box above the header (`m`, or a click on it), with the items written 
 
 ## `list_select`
 
-Picking values for a list property. Letter keys type into the search box.
+Picking values for a list property. Enter checks or unchecks the highlighted value and leaves the window open, so you can check several in a row. When you are done, press Tab, or Enter on the **[ OK ]** line at the bottom. Letter keys type into the search box. The window's main keys are also shown on its bottom edge, and you can click them.
 
 | Key | Action | Description |
 |---|---|---|
-| `Tab` | `commit` | Confirm the selection |
-| `Enter` | `run` | Confirm the selection; while searching, add the highlighted candidate and clear the search |
-| `Space` | `toggle` | Add or remove the highlighted candidate; while searching, type a space |
-| `Esc` | `cancel` | Cancel |
+| `Tab` | `commit` | Confirm the checks and close, from any line |
+| `Enter` | `run` | Check or uncheck the highlighted value (the window stays open); on **[ OK ]**, confirm. While searching, add the highlighted candidate and clear the search |
+| `Space` | `toggle` | Check or uncheck the highlighted value; while searching, type a space |
+| `Esc` | `cancel` | Close without changing anything |
 | `Ctrl+r` | `revert` | Put back the selection from when the list was opened |
 | `Ctrl+s` | `create_note` | In the new note form, create the note now from any field |
 | `Ctrl+e` | `create_note_edit` | In the new note form, create the note and open it in the editor |
@@ -374,6 +376,8 @@ Picking values for a list property. Letter keys type into the search box.
 | `PageUp` | `page_up` | Scroll up one screen |
 | `PageDown` | `page_down` | Scroll down one screen |
 | `Backspace` | `delete_back` | Delete the character before the cursor |
+
+Clicking a value checks or unchecks it, and clicking **[ OK ]** confirms. In the new note form, Space checks a value and Enter confirms the field and moves on, so there is no **[ OK ]** line there.
 
 ## `menu`
 
@@ -434,7 +438,7 @@ Clicking a line does what `Enter` does, and clicking the `×` at the right end o
 
 ## `drawer`
 
-The table list (`w`, `:workspace_drawer`, or the scope or table name in the header breadcrumb). It slides over the table from the left and lists the tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Below them, the other workspaces are listed by name, folded; unfold one to see its tables. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). It is hidden until opened.
+The table list (`w`, `:workspace_drawer`, or the scope or table name in the header breadcrumb). It slides over the table from the left and lists the tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Below them come **Where you started** (when you have moved away from it) and your favorite workspaces (the one you are in marked with `●`); choosing one goes where the switch list (`switch`) would. Below those, the other workspaces are listed by name, folded; unfold one to see its tables. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). While a page is open, only the page name has the `●`, and selecting a table closes the page and opens that table on its own. It is hidden until opened.
 
 | Key | Action | Description |
 |---|---|---|
@@ -462,7 +466,7 @@ The filter window (`|`, or the **Filter** button in the view bar; it opens right
 
 | Key | Action | Description |
 |---|---|---|
-| `Enter` | `run` | Edit the condition, or add one (pick a column, then a kind); inside a step, go on with the selected item |
+| `Enter` | `run` | Edit the condition, or add one (pick a column, then a kind); inside a step, go on with the selected item. In the value list, check or uncheck the value (on **[ OK ]** at the bottom, confirm) |
 | `Esc` | `close` | Close the window (while adding, go back to the conditions) |
 | `q` | `close` | Close the window |
 | `j` | `down` | Next line |
@@ -470,6 +474,7 @@ The filter window (`|`, or the **Filter** button in the view bar; it opens right
 | `k` | `up` | Previous line |
 | `Up` | `up` | Previous line |
 | `Space` | `toggle` | Check or uncheck a value in the value list (on the first line, switch keep / hide) |
+| `Tab` | `commit` | In the value list, confirm the checks, from any line |
 | `d` | `remove_item` | Remove the selected condition |
 | `Delete` | `remove_item` | Remove the selected condition |
 | `Backspace` | `remove_item` | Remove the selected condition |
@@ -478,7 +483,7 @@ The filter window (`|`, or the **Filter** button in the view bar; it opens right
 | `l` | `right` | Next field of the condition |
 | `Right` | `right` | Next field of the condition |
 
-Clicking a line does what `Enter` does (in the value list, it checks the value); clicking the `×` at the right of a condition removes it. Clicking outside closes the window.
+Clicking a line does what `Enter` does (in the value list, it checks the value, and **[ OK ]** confirms); clicking the `×` at the right of a condition removes it. The keys of the current step are on the bottom edge of the window and can be clicked. Clicking outside closes the window.
 
 ## `filter_input`
 
@@ -699,7 +704,7 @@ The mouse works too: click an item to select it, and click the selected item aga
 
 ## `switch`
 
-The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; add one with `f` on a heading in the drawer or with `:workspace_favorite`). The workspace you are in is marked with `●`. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
+The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; add one with `f` on a heading in the drawer or with `:workspace_favorite`). The workspace you are in is marked with `●`. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**, numbered `0`. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
 
 | Key | Action | Description |
 |---|---|---|
@@ -710,6 +715,7 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `Down` | `down` | Next line |
 | `k` | `up` | Previous line |
 | `Up` | `up` | Previous line |
+| `0` | `choose_0` | Go back to where you started |
 | `1` | `choose_1` | Go to favorite 1 |
 | `2` | `choose_2` | Go to favorite 2 |
 | `3` | `choose_3` | Go to favorite 3 |
@@ -720,7 +726,7 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `8` | `choose_8` | Go to favorite 8 |
 | `9` | `choose_9` | Go to favorite 9 |
 
-The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it.
+While the list is open, the bottom band says that the digit keys (`0`-`9`) go to the numbered place. Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it. The **W ⇄** button at the right of the header (shown when you have favorites or have moved away from where you started; on a narrow terminal it is dropped before the settings button) opens it too.
 
 ## `input_normal`
 
@@ -818,7 +824,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `chart_next_saved` — next chart in the marker
 - `chart_cumulative` — toggle a cumulative line
 - `chart_percent` — toggle percentages of a stacked bar
-- `open_url` — open the http or https URL of the selected row in the browser (in the table, from the palette and the action menu)
+- `open_url` — open the http or https URL of the selected row in the browser (`O` in the table, `o` in the tree; also from the palette and the action menu)
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
 - `move_column_right` — move the column to the right
@@ -847,6 +853,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `workspace_drawer` — open or close the table list
 - `workspace_switch` — open or close the list of favorite workspaces to switch to
 - `workspace_favorite` — add a workspace to favorites or remove it (on a heading in the table list)
+- `choose_0` — in the switch list, go back to where you started
 - `choose_1` — in the switch list, go to favorite 1
 - `choose_2` — in the switch list, go to favorite 2
 - `choose_3` — in the switch list, go to favorite 3
@@ -861,7 +868,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `extend_up` — extend the selection up
 - `extend_down` — extend the selection down
 - `select_all` — select all rows
-- `clear_selection` — clear the selection or the filter
+- `clear_selection` — clear the selection, the filter, the conditions, then the search highlight, one at a time
 - `detail` — show every property of the note
 - `view_settings` — open the view settings
 - `focus_chips` — move to the settings bar
@@ -956,4 +963,4 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `across_search` — search every table in the workspace for a word and open the table of the row you pick (only with `across = true` under `[search]`; see [config.md](config.md#searchacross))
 - `stack_add` — pick a table of the current scope and stack it below the current table (up to 4)
 - `page_save` — name the stacked arrangement (tables, views, height ratios) and save it as a page of the current workspace
-- `routine_runs` — list the routine runs that are due and create their notes after you confirm (only when a table of the scope has `runs` in its marker, and not when read-only; also by clicking the count in the bottom band; see [config.md](config.md#overrides-per-workspace-table-and-view))
+- `routine_runs` — read the routine table again, list the routine runs that are due (including ones you left earlier that day) and create their notes after you confirm (only when a table of the scope has `runs` in its marker, and not when read-only; also by clicking the count in the bottom band; see [config.md](config.md#overrides-per-workspace-table-and-view))

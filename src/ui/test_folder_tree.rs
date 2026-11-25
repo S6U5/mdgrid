@@ -341,7 +341,8 @@ fn test_tr_4_rows_by_order_and_enter_jumps() {
     goto_folder(&mut a, "開発");
     assert_eq!(right_names(&a), vec!["beta", "alpha", "omega", "zeta"]);
     let s = screen(&a);
-    let ys: Vec<u16> = ["beta.md", "alpha.md", "omega.md", "zeta.md"]
+    // 右の欄の名前は表のノートの欄と同じ見せ方(`.md` なし。screen.note-name-everywhere)。
+    let ys: Vec<u16> = ["beta", "alpha", "omega", "zeta"]
         .iter()
         .map(|n| find(&s, n).unwrap_or_else(|| panic!("{n}:\n{s}")).1)
         .collect();

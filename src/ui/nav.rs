@@ -168,7 +168,8 @@ impl App {
         true
     }
 
-    /// Esc(SR-18): 選択があれば選択を、無ければ簡易の絞り込み(と同じ値の絞り込み)を、
+    /// Esc(SR-18): 選択があれば選択を、無ければ簡易の絞り込み(と同じ値の絞り込み)を、それも無ければ数字のキーと
+    /// 通知の欄から付けた名前の条件を(condition.esc-clear。いつも隠す条件 `hide` と、それを止めたものは変えない)、
     /// それも無ければ検索と同じ値の強調を解く。
     fn escape(&mut self) {
         if self.anchor.is_some() || !self.marked.is_empty() {
@@ -181,6 +182,10 @@ impl App {
             self.only_problems = false;
             self.relayout();
             self.message = Some(Msg::FilterCleared.into());
+        } else if !self.cond.on.is_empty() {
+            self.cond.on.clear();
+            self.relayout();
+            self.message = Some(Msg::ConditionsCleared.into());
         } else if self.search.is_some() || self.same_mark.is_some() {
             self.search = None;
             self.same_mark = None;
@@ -250,13 +255,15 @@ impl App {
                 }
                 true
             }
-            // SR-18 の Esc の順(選択 → 絞り込み → 検索・強調)は保ち、解くものが何も無いときだけ取りやめ。
+            // SR-18 の Esc の順(選択 → 絞り込み → 条件 → 検索・強調。condition.esc-clear)は保ち、解くものが何も
+            // 無いときだけ取りやめ。
             Action::Escape
                 if self.anchor.is_none()
                     && self.marked.is_empty()
                     && self.filter.is_none()
                     && self.same.is_empty()
                     && !self.only_problems
+                    && self.cond.on.is_empty()
                     && self.search.is_none()
                     && self.same_mark.is_none() =>
             {

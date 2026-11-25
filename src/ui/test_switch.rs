@@ -356,3 +356,305 @@ fn test_favorite_current_needs_a_workspace() {
         .contains("ワークスペース"));
     assert!(favorites::entries(&tmp.0.join("config")).is_empty());
 }
+
+/// 印のワークスペース lab で起動し(最初に開いた所)、切り替えで work へ移った画面。
+fn moved_from_lab(tag: &str) -> (Tmp, App) {
+    let tmp = fixture(tag, &["work"]);
+    let mut l = boot(&tmp, "lab/x", None);
+    l.mark_origin(None);
+    let mut w = boot(&tmp, "tasks", Some("work"));
+    move_on(l, &mut w);
+    (tmp, w)
+}
+
+#[test]
+fn test_switch_origin_row_has_number_zero() {
+    // [utest -> req~workspace.switch-origin-key~1] 印の lab から work へ移ったあとの一覧: 先頭は「0 最初に開いた所: lab」、次が「1 work」(今いる所の印つき)。
+    let (_t, mut w) = moved_from_lab("sw_zero_row");
+    ch(&mut w, 'W');
+    let sc = screen(&w);
+    let pos = |t: &str| sc.find(t).unwrap_or_else(|| panic!("{t} が無い:\n{sc}"));
+    assert!(pos("0 最初に開いた所: lab") < pos("● 1 work"), "{sc}");
+}
+
+#[test]
+fn test_switch_zero_goes_back_to_the_origin() {
+    // [utest -> req~workspace.switch-origin-key~1] 同じ一覧で `0` → lab の表に戻る。
+    let (tmp, mut w) = moved_from_lab("sw_zero_back");
+    ch(&mut w, 'W');
+    ch(&mut w, '0');
+    assert!(w.quit, "ためた変更が無ければすぐ移る");
+    let to = w.switch_to.clone().unwrap();
+    assert_eq!(to.path, real(tmp.notes().join("lab/x")));
+}
+
+#[test]
+fn test_switch_zero_without_origin_row_does_nothing() {
+    // [utest -> req~workspace.switch-origin-key~1] 起動したときの所にいるあいだ(「最初に開いた所」の行が無い)の `0` は何もしない。
+    let tmp = fixture("sw_zero_none", &["work"]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    ch(&mut a, 'W');
+    ch(&mut a, '0');
+    assert_eq!(a.mode, Mode::Switch);
+    assert!(a.switch_to.is_none() && !a.quit);
+}
+
+/// App の大きさ(`resize` した幅と高さ)で描いた画面の文字(共通の screen は 80×24 で描く)。
+fn sized(a: &App) -> String {
+    let (w, h) = a.size;
+    let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(w, h)).unwrap();
+    term.draw(|f| super::draw(f, a)).unwrap();
+    super::test_screen::text(term.backend().buffer())
+}
+
+/// ヘッダーの行で、切り替えのボタンの桁(無ければ None)。
+fn switch_button_x(a: &App) -> Option<u16> {
+    let y = super::bands::head_y(a);
+    (0..a.size.0).find(|x| {
+        super::bands::header_button_at(a, *x, y) == Some(super::bands::HeaderButton::Switch)
+    })
+}
+
+#[test]
+fn test_switch_button_in_the_header_opens_the_list() {
+    // [utest -> req~workspace.switch-button~1] お気に入りが work・幅 100 → ヘッダーの右の端に「W ⇄」。押すと切り替えの一覧。
+    let tmp = fixture("sw_button", &["work"]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    let head = sized(&a)
+        .lines()
+        .nth(usize::from(super::bands::head_y(&a)))
+        .unwrap_or("")
+        .to_string();
+    assert!(head.contains("W ⇄"), "{head}");
+    let x = switch_button_x(&a).expect("切り替えのボタン");
+    a.click(x, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::Switch);
+    assert!(screen(&a).contains("1 work"), "{}", screen(&a));
+}
+
+#[test]
+fn test_switch_button_hidden_without_favorites_at_the_origin() {
+    // [utest -> req~workspace.switch-button~1] お気に入りが無く、起動したときの所にいる → ボタンは無い。
+    let tmp = fixture("sw_button_none", &[]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    assert!(!sized(&a).contains('⇄'), "{}", sized(&a));
+    assert_eq!(switch_button_x(&a), None);
+}
+
+#[test]
+fn test_switch_button_dropped_before_settings_when_narrow() {
+    // [utest -> req~workspace.switch-button~1] 設定のボタンを出せる下限の幅ちょうど(端末 80)→ 設定のボタンはあり、「W ⇄」は無い。
+    let tmp = fixture("sw_button_narrow", &["work"]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    a.resize(80, 30);
+    let s = sized(&a);
+    assert!(s.contains("設定"), "{s}");
+    assert!(!s.contains('⇄'), "{s}");
+}
+
+// ---- workspace.switch-hint ----
+
+/// 下の帯の行(「未保存」で始まる行)。
+fn band(a: &App) -> String {
+    sized(a)
+        .lines()
+        .find(|l| l.trim_start().starts_with("未保存"))
+        .unwrap_or("")
+        .to_string()
+}
+
+#[test]
+fn test_switch_band_tells_the_digit_keys() {
+    // [utest -> req~workspace.switch-hint~1] 切り替えの一覧を開いている → 下の帯に、数字のキー(0〜9)で番号の所へ移れることが出る。
+    let tmp = fixture("sw_hint_band", &["work", "趣味"]);
+    let mut a = boot(&tmp, "tasks", None);
+    ch(&mut a, 'W');
+    assert_eq!(a.mode, Mode::Switch);
+    let b = band(&a);
+    assert!(b.contains("0〜9 番号の所へ移る"), "{b}\n{}", sized(&a));
+}
+
+#[test]
+fn test_switch_number_of_the_current_place_says_so() {
+    // [utest -> req~workspace.switch-hint~1] work(tasks の表)にいて、一覧の「1 work」が今いる所 → `1` → 一覧は閉じ、下の帯に
+    // 「今いるワークスペース」である旨の1行が出る(移らない)。
+    let tmp = fixture("sw_hint_here", &["work", "趣味"]);
+    let mut a = boot(&tmp, "tasks", None);
+    ch(&mut a, 'W');
+    assert!(sized(&a).contains("● 1 work"), "{}", sized(&a));
+    ch(&mut a, '1');
+    assert_eq!(a.mode, Mode::Table);
+    assert!(a.switch_to.is_none() && !a.quit);
+    let msg = a.message.clone().unwrap_or_default();
+    assert!(msg.contains("今いるワークスペース"), "{msg}");
+    assert!(sized(&a).contains(&msg), "{}", sized(&a));
+}
+
+// ---- workspace.drawer-favorites ----
+
+/// 印のワークスペース mytestgrid(表 memo)と tasks(表 todo)を作り、tasks をお気に入りに入れる。
+fn marker_pair(tag: &str) -> Tmp {
+    let tmp = Tmp::new(tag);
+    let n = tmp.notes();
+    let w = |rel: &str, text: &str| {
+        let p = n.join(rel);
+        std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+        std::fs::write(p, text).unwrap();
+    };
+    w("mytestgrid/memo/m.md", "---\nnote: x\n---\n");
+    w(
+        "mytestgrid/.mdgrid/workspace.toml",
+        "name = \"mytestgrid\"\n\n[[table]]\nname = \"memo\"\npath = \"memo\"\n",
+    );
+    w("tasks/todo/t.md", "---\nstatus: todo\n---\n");
+    w(
+        "tasks/.mdgrid/workspace.toml",
+        "name = \"tasks\"\n\n[[table]]\nname = \"todo\"\npath = \"todo\"\n",
+    );
+    let cfg = tmp.0.join("config");
+    std::fs::create_dir_all(&cfg).unwrap();
+    let root = real(n.join("tasks"));
+    favorites::set(&cfg, &favorites::marker_entry(&root), true).unwrap();
+    tmp
+}
+
+/// 印のワークスペース mytestgrid で起動し(最初に開いた所)、お気に入りの tasks へ移った画面。
+fn moved_to_tasks(tag: &str) -> (Tmp, App) {
+    let tmp = marker_pair(tag);
+    let mut m = boot(&tmp, "mytestgrid/memo", None);
+    m.mark_origin(None);
+    let mut t = boot(&tmp, "tasks/todo", None);
+    move_on(m, &mut t);
+    (tmp, t)
+}
+
+/// 引き出しの枠の中の行(上から。枠の縦線の間の文字)。
+fn drawer_rows(a: &App) -> Vec<String> {
+    sized(a)
+        .lines()
+        .filter_map(|l| l.split('│').nth(1).map(|x| x.trim_end().to_string()))
+        .filter(|x| !x.trim().is_empty())
+        .collect()
+}
+
+#[test]
+fn test_drawer_lists_origin_and_favorites_below_tables() {
+    // [utest -> req~workspace.drawer-favorites~1] 印の mytestgrid で起動し、お気に入りの tasks へ移った → 引き出しを開く → 今の範囲の表
+    // (todo)の下に「最初に開いた所: mytestgrid」と「tasks」(今いる印つき)が並ぶ。
+    let (_t, mut a) = moved_to_tasks("dr_fav_list");
+    ch(&mut a, 'w');
+    assert_eq!(a.mode, Mode::Drawer, "{:?}", a.message);
+    let rows = drawer_rows(&a);
+    let pos = |t: &str| {
+        rows.iter()
+            .position(|r| r.contains(t))
+            .unwrap_or_else(|| panic!("{t} が無い: {rows:#?}"))
+    };
+    let origin = pos("最初に開いた所: mytestgrid");
+    assert!(pos("todo") < origin, "{rows:#?}");
+    let fav = rows
+        .iter()
+        .position(|r| r.contains("tasks") && !r.contains("最初に開いた所"))
+        .unwrap_or_else(|| panic!("tasks が無い: {rows:#?}"));
+    assert!(origin < fav, "{rows:#?}");
+    assert!(rows[fav].contains("● tasks"), "{rows:#?}");
+    assert!(!rows[origin].contains('●'), "{rows:#?}");
+}
+
+#[test]
+fn test_drawer_origin_row_goes_back() {
+    // [utest -> req~workspace.drawer-favorites~1] 同じ引き出しで「最初に開いた所: mytestgrid」を選ぶ → mytestgrid の表に戻る
+    // (切り替えの一覧と同じく、印のワークスペースは -w を外して開く)。
+    let (tmp, mut a) = moved_to_tasks("dr_fav_origin");
+    ch(&mut a, 'w');
+    let at = drawer_rows(&a)
+        .iter()
+        .position(|r| r.contains("最初に開いた所: mytestgrid"))
+        .expect("最初に開いた所");
+    if let Some(d) = a.drawer.as_mut() {
+        d.sel = at;
+    }
+    press(&mut a, KeyCode::Enter);
+    assert!(a.quit, "ためた変更が無ければすぐ移る: {:?}", a.message);
+    let to = a.switch_to.clone().unwrap();
+    assert_eq!(to.path, real(tmp.notes().join("mytestgrid/memo")));
+    assert!(a.switch_leave_workspace);
+}
+
+#[test]
+fn test_drawer_favorite_row_moves_like_the_switch_list() {
+    // [utest -> req~workspace.drawer-favorites~1] mytestgrid にいるあいだの引き出し(起動したときの所なので「最初に開いた所」は無い)で、
+    // お気に入りの「tasks」を選ぶ → 切り替えの一覧と同じく tasks の表(印の最初の表)へ移る。
+    let tmp = marker_pair("dr_fav_move");
+    let mut a = boot(&tmp, "mytestgrid/memo", None);
+    a.mark_origin(None);
+    ch(&mut a, 'w');
+    let rows = drawer_rows(&a);
+    assert!(
+        !rows.iter().any(|r| r.contains("最初に開いた所")),
+        "{rows:#?}"
+    );
+    let at = rows
+        .iter()
+        .position(|r| r.contains("tasks"))
+        .unwrap_or_else(|| panic!("tasks が無い: {rows:#?}"));
+    assert!(!rows[at].contains('●'), "{rows:#?}");
+    if let Some(d) = a.drawer.as_mut() {
+        d.sel = at;
+    }
+    press(&mut a, KeyCode::Enter);
+    let to = a.switch_to.clone().expect("移る表");
+    assert_eq!(to.path, real(tmp.notes().join("tasks/todo")));
+    assert!(
+        a.switch_leave_workspace,
+        "印のワークスペースは -w を外して開く"
+    );
+}
+
+#[test]
+fn test_palette_open_workspace_lists_favorites_and_origin() {
+    // [utest -> req~workspace.drawer-favorites~1] 同じ状態で、パレットの「ワークスペースを開く」→「ワークスペースはまだ無い」と言わずに、
+    // お気に入りの tasks と最初に開いた所を並べる。最初に開いた所を選ぶと mytestgrid の表に戻る。
+    let (tmp, mut a) = moved_to_tasks("dr_fav_palette");
+    ch(&mut a, ':');
+    typing(&mut a, "ワークスペースを開く");
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Palette, "{:?}", a.message);
+    let s = sized(&a);
+    assert!(!s.contains("まだ無い"), "{s}");
+    assert!(s.contains("最初に開いた所: mytestgrid"), "{s}");
+    assert!(
+        s.lines()
+            .skip(1)
+            .any(|l| l.contains("tasks") && !l.contains("最初に開いた所")),
+        "{s}"
+    );
+    typing(&mut a, "最初に開いた所");
+    press(&mut a, KeyCode::Enter);
+    let to = a.switch_to.clone().expect("移る表");
+    assert_eq!(to.path, real(tmp.notes().join("mytestgrid/memo")));
+}
+
+#[test]
+fn test_switch_bottom_edge_key_hints() {
+    // [utest -> req~screen.window-key-hints~1] 切り替えの一覧の下の縁に、その窓で効く主なキー(Enter と Esc)を「キー 動作」で並べ、縁の「Esc 閉じる」のクリックで閉じる。
+    let tmp = fixture("sw_hints", &["work", "趣味"]);
+    let mut a = boot(&tmp, "tasks", None);
+    ch(&mut a, 'W');
+    assert_eq!(a.mode, Mode::Switch);
+    let s = sized(&a);
+    let (y, line) = s
+        .lines()
+        .enumerate()
+        .find(|(_, l)| l.contains('╰') && l.contains("Esc 閉じる"))
+        .unwrap_or_else(|| panic!("縁の案内が無い:\n{s}"));
+    assert!(line.contains("Enter "), "{line:?}");
+    let at = line.find("Esc 閉じる").unwrap();
+    let x = width::width(&line[..at]) as u16;
+    a.click(x + 1, y as u16);
+    assert_eq!(a.mode, Mode::Table, "{}", sized(&a));
+}

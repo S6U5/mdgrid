@@ -630,6 +630,7 @@ KeyNarrower = "Estreitar coluna"
 KeyWider = "Alargar coluna"
 KeySort = "Ordenar por esta coluna"
 KeySortsRun = "Inverter direção / adicionar"
+HintSortsRun = "Direção / adicionar"
 KeyScreenMenuRun = "Mudar para a tela"
 ## NV-24: 並べ替えの窓。
 CmdSortMenu = "Ordenar…"
@@ -727,9 +728,10 @@ KeyRemove = "Remover"
 KeyLeftItem = "Item à esquerda"
 KeyRightItem = "Item à direita"
 KeyBackToTable = "Voltar à tabela"
-KeyPickRun = "Confirmar (adicionar ao buscar)"
-KeyPickToggle = "Alternar (espaço ao buscar)"
+KeyPickRun = "Marcar / desmarcar"
+KeyPickToggle = "Marcar / desmarcar (espaço ao buscar)"
 KeyPickRevert = "Voltar ao estado inicial"
+KeyStop = "Cancelar"
 KeyPrevItem = "Item anterior"
 KeyNextItem = "Próximo item"
 ## 保存の確認で全部を書く。
@@ -741,8 +743,6 @@ KeyDiscardRow = "Descartar alterações pendentes"
 ## 終了の確認で保存する。
 KeyQuitSave = "Salvar e sair"
 KeyQuitDiscard = "Descartar e sair"
-KeyScrollDown = "Rolar para baixo"
-KeyScrollUp = "Rolar para cima"
 KeyRun = "Executar"
 ## 読むだけのときの表の Enter(SR-2)。
 KeyToggleGroup = "Abrir/fechar grupo"
@@ -1437,6 +1437,8 @@ VisualHint = "selecione um intervalo: mova-se e tecle v para confirmar (Esc para
 SelectedAll = "todas as linhas selecionadas ({0})"
 SelectionCleared = "seleção limpa"
 FilterCleared = "busca limpa"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "condições limpas"
 NoRowToSelect = "nenhuma linha para selecionar"
 SelectValueCell = "selecione uma célula com valor"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1534,6 +1536,10 @@ SwitchHint = "ainda não há favoritos: tecle {1} num cabeçalho de espaço de t
 SwitchNoRoom = "o terminal é pequeno demais para a lista de troca"
 KeySwitchRun = "Ir ao selecionado"
 KeySwitchNumber = "Ir ao espaço de trabalho com esse número"
+KeySwitchOrigin = "Voltar para onde você começou"
+KeySwitchDigits = "Ir para esse número"
+KeyDigitRange = "{0}-{1}"
+SwitchAlreadyHere = "{0} é o espaço de trabalho em que você está"
 ModeSwitch = "Troca"
 SecInSwitch = "Na lista de troca"
 
@@ -1797,6 +1803,8 @@ KeyBarLater = "Mover a barra uma unidade para depois (reescreve as datas)"
 KeyBarEarlier = "Mover a barra uma unidade para antes (reescreve as datas)"
 KeyBarLonger = "Estender o fim da barra em uma unidade"
 KeyBarShorter = "Encurtar o fim da barra em uma unidade"
+GanttBandMove = "Mover a barra"
+GanttBandResize = "alongar/encurtar"
 GanttToday = "Hoje"
 GanttThisWeek = "Semana"
 GanttThisMonth = "Mês"
@@ -1879,6 +1887,16 @@ ChildrenOpenRefuseOne = "{0} filho ainda não está concluído, então não fica
 ChildrenOpenKeep = "{0} filhos ainda não estão concluídos"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "{0} filho ainda não está concluído"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "sem closed_by (a coluna que marca os filhos fechados com o pai) não se sabe quais filhos reabrir, então é tratado como \"keep\""
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "Filhos foram fechados com este pai. Reabri-los? "
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "Reabrir os filhos também"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "Só o pai"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "alguns filhos não puderam ser reabertos"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "passa {0} dias do período do pai"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

@@ -161,9 +161,14 @@ impl Settings {
             && self.group == Group::Inherit
     }
 
-    /// 表の上の帯の項目(NV-16)。1条件 = 1項目。
+    /// 表の上の帯の項目(NV-16)。1条件 = 1項目。列の名前は id のまま。
     pub fn chips(&self) -> Vec<String> {
-        let mut out: Vec<String> = self.filters.iter().map(cond_text).collect();
+        self.chips_titled(&str::to_string)
+    }
+
+    /// `chips` と同じ。列の名前は `title`(画面の列の見出しと同じ displayName。base-view.display-name-everywhere)で見せる。
+    pub fn chips_titled(&self, title: &dyn Fn(&str) -> String) -> Vec<String> {
+        let mut out: Vec<String> = self.filters.iter().map(|c| cond_text(c, title)).collect();
         for n in &self.named {
             let shown = crate::condition::current()
                 .get(&n.name)
@@ -175,7 +180,7 @@ impl Settings {
             });
         }
         for (col, dir) in &self.sorts {
-            out.push(Msg::ChipSort.fill(&[col, &arrow(*dir)]));
+            out.push(Msg::ChipSort.fill(&[&title(col), &arrow(*dir)]));
         }
         match &self.group {
             Group::Inherit => {}
@@ -185,7 +190,7 @@ impl Settings {
                 dir,
                 hide_empty,
             } => {
-                let mut s = Msg::ChipGroup.fill(&[col, &arrow(*dir)]);
+                let mut s = Msg::ChipGroup.fill(&[&title(col), &arrow(*dir)]);
                 if *hide_empty {
                     s.push_str(Msg::ChipHideEmpty.text());
                 }
@@ -235,7 +240,7 @@ pub fn cond_parts(c: &Cond) -> (String, String) {
     }
 }
 
-fn cond_text(c: &Cond) -> String {
+fn cond_text(c: &Cond, title: &dyn Fn(&str) -> String) -> String {
     let body = match &c.op {
         Op::Keep(k) => Msg::CondOnly.fill(&[&keys_label(k)]),
         Op::Drop(k) => Msg::CondExcept.fill(&[&keys_label(k)]),
@@ -245,7 +250,7 @@ fn cond_text(c: &Cond) -> String {
         Op::Empty => Msg::CondEmpty.text().to_string(),
         Op::NotEmpty => Msg::CondNotEmpty.text().to_string(),
     };
-    format!("{}: {}", c.col, body)
+    format!("{}: {}", title(&c.col), body)
 }
 
 /// スカラーの値の表示の文字列。空(Null・空の文字列)は None。
@@ -599,6 +604,26 @@ pub fn order_groups(
         groups_out.push((h.clone(), start..rows_out.len()));
     }
     (rows_out, groups_out)
+}
+
+/// `order_groups` と同じ。値の無い行のまとまりは、始まりの行の値 `value`(まとまりの列の値)で見分ける
+/// (画面の `.base` の groupBy と `--print` が使う。navigation.group-values-order・cli.print-group-order)。
+pub fn order_groups_by(
+    rows: Vec<RowId>,
+    groups: Vec<(String, Range<usize>)>,
+    values: &[String],
+    dir: Dir,
+    value: &dyn Fn(&RowId) -> Option<Value>,
+) -> (Vec<RowId>, Vec<(String, Range<usize>)>) {
+    let empty: std::collections::HashSet<usize> = groups
+        .iter()
+        .filter(|(_, r)| {
+            rows.get(r.start)
+                .is_none_or(|row| value_keys(value(row).as_ref()) == [None])
+        })
+        .map(|(_, r)| r.start)
+        .collect();
+    order_groups(rows, groups, values, dir, &|r| empty.contains(&r.start))
 }
 
 /// `apply` と同じ。まとめ直す列(Group::By)に値の候補(`values_of`。`[rules.<列>] values`)があれば、まとまりを

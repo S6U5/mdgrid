@@ -79,7 +79,7 @@ pub(crate) fn recent_labels(list: &[Recent]) -> Vec<String> {
     let heads: Vec<String> = list
         .iter()
         .map(|r| {
-            let name = mdgrid::workspace::stem_of(&r.path);
+            let name = r.name();
             match &r.view {
                 Some(v) => format!("{name} · {v}"),
                 None => name,
@@ -97,10 +97,10 @@ pub(crate) fn recent_labels(list: &[Recent]) -> Vec<String> {
         .collect()
 }
 
-/// 覚えた表を開く登録の形(名前はフォルダか `.base` の名前)。
+/// 覚えた表を開く登録の形(名前は印で付けた表の名前か、フォルダか `.base` の名前)。
 fn recent_place(r: &Recent, group: &str) -> Place {
     Place {
-        name: mdgrid::workspace::stem_of(&r.path),
+        name: r.name(),
         group: group.to_string(),
         path: r.path.clone(),
         view: r.view.clone(),

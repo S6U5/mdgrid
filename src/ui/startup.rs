@@ -63,6 +63,8 @@ impl App {
             let (ws, warns) = mdgrid::workspace::load(dir);
             self.workspaces = ws;
             warnings.extend(warns);
+            // workspace.switch-button: ヘッダーの切り替えのボタンを出すかを決めるため、お気に入りを先に読む。
+            self.favorites = mdgrid::favorites::entries(dir);
         }
         // WS-6: 範囲を決める(-w → 印 → workspaces.toml → 検知 → 登録した表)。
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {
@@ -89,6 +91,14 @@ impl App {
         let (children, warns) = mdgrid::workspace::marker_children(&s.target);
         self.children_spec = children;
         warnings.extend(warns);
+        // cell-edit.children-closed-by・cell-edit.children-reopen: 同じ children の closed_by と on_reopen(親子の設定を
+        // 使うときだけ。closed_by の無い reopen・ask は警告して keep)。
+        self.children_reopen = mdgrid::tree::ReopenSpec::default();
+        if self.children_spec.is_some() {
+            let (reopen, warns) = mdgrid::workspace::marker_children_reopen(&s.target);
+            self.children_reopen = reopen.map(|(r, _)| r).unwrap_or_default();
+            warnings.extend(warns);
+        }
         // CH-1: 印に書いたグラフの設定(書き方が違うグラフは警告して外す。無くても推定で開ける)。
         let (charts, warns) = mdgrid::workspace::marker_chart(&s.target);
         self.chart_specs = charts;

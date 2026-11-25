@@ -66,6 +66,15 @@ struct Geom {
     vis: usize,
 }
 
+/// 下の縁のキー(screen.window-key-hints): 切り替えると閉じる。キーと名前はキーの表から。
+fn hints(app: &App) -> Vec<popup::KeyHint> {
+    popup::key_hints(
+        app,
+        Mode::ScreenMenu,
+        &[(Action::Run, None), (Action::Close, None)],
+    )
+}
+
 /// 行の中身の幅(印・名前・キー)。
 fn inner_width(app: &App) -> usize {
     screens(app)
@@ -85,12 +94,13 @@ fn window(app: &App) -> Option<Geom> {
     app.screen_menu.as_ref()?;
     let n = screens(app).len();
     let (sw, limit) = popup::screen(app);
-    let iw = (inner_width(app) + 2).min(sw);
+    // ボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
+    let bx = super::bands::menu_anchor(app);
+    // screen.window-key-hints: 下の縁のキーが入るまで広げる。
+    let iw = popup::widen_for_hints(inner_width(app) + 2, popup::hints_width(&hints(app)), sw);
     if iw < 8 {
         return None;
     }
-    // ボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
-    let bx = super::bands::menu_anchor(app);
     // SR-1: ヘッダーの行(上の余白の分だけ下がる)のすぐ下に開く。
     let ay = super::bands::head_y(app) as usize;
     let popup::Place { top, vis } = popup::place(ay, n, limit)?;
@@ -171,6 +181,13 @@ impl App {
         let Some(g) = window(self) else {
             return self.close_screen_menu();
         };
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some(dx) = popup::on_bottom(x, y, g.x, g.iw, g.top + g.vis + 1) {
+            if let Some(a) = popup::hint_at(&hints(self), g.iw - 2, "", dx) {
+                self.screen_menu_action(a);
+            }
+            return;
+        }
         match popup::hit(x, y, g.x, g.top, g.iw, g.vis) {
             None => self.close_screen_menu(),
             Some(None) => {}
@@ -218,6 +235,9 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         };
         out.push((fr.side(&line), st));
     }
-    out.push((fr.bottom(tw), Style::default()));
+    out.push((
+        popup::bottom_hints(fr, tw, "", &hints(app)),
+        Style::default(),
+    ));
     popup::blit(app, lines, g.x, g.top, g.iw, w, out);
 }

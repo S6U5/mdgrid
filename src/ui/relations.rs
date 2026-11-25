@@ -261,7 +261,7 @@ impl App {
 
     /// 書く値(REL-3)。`row` のノートから `target` を指す、`form` の形の値。名前が探す表の全部で1つでなければ、
     /// 取り違えないようにパスで書く。
-    fn link_value(&self, row: &RowId, form: Form, target: &Path) -> String {
+    pub(crate) fn link_value(&self, row: &RowId, form: Form, target: &Path) -> String {
         let note = PathBuf::from(&row.0);
         let unique = self.with_links(|ctx| {
             relations::count_name(&relations::file_stem(target), &ctx.notes()) <= 1
@@ -270,18 +270,28 @@ impl App {
     }
 
     /// リンクの列の1つの値のセルの候補(REL-3): 行き先のフォルダのノート。見せるのは名前、書くのはリンク。
-    /// リンクの列でなければ None(今までの候補)。
-    pub(crate) fn link_list(&self, row: &RowId, col: &str, cur: Option<&NewValue>) -> Option<List> {
+    /// リンクの列でなければ None(今までの候補)。`editing` は直す行(一括なら選んだ行の全部)で、印の children の
+    /// 親を指す列では、その行と子孫を候補に出さない(relations.link-input-no-cycle)。
+    pub(crate) fn link_list(
+        &self,
+        row: &RowId,
+        col: &str,
+        cur: Option<&NewValue>,
+        editing: &[RowId],
+    ) -> Option<List> {
         let (form, dir) = self.link_column(col)?;
         let dir = dir?;
         let cur_target = match cur {
             Some(NewValue::Str(s)) => self.link_target(row, s).and_then(|(_, t)| t),
             _ => None,
         };
+        let skip = self.not_parents(col, editing);
+        // screen.note-name-everywhere: 見せる名前は、ノートの欄と同じ名前の正規表現を当てたもの。
         let mut items: Vec<Item> = relations::notes_in(&dir)
             .into_iter()
+            .filter(|t| !skip.contains(t))
             .map(|t| Item {
-                text: relations::file_stem(&t),
+                text: super::view::note_name_of(self, &relations::file_stem(&t)),
                 current: cur_target.as_deref() == Some(t.as_path()),
                 value: NewValue::Str(self.link_value(row, form, &t)),
             })
@@ -304,7 +314,8 @@ impl App {
     }
 
     /// リンクのリストの列の候補(REL-3。多対多): 行き先のフォルダのノート。今の要素が同じノートを指すなら、
-    /// その要素の文字を使う(付け外しの見分けを今の値と合わせる)。リンクの列でなければ None。
+    /// その要素の文字を使う(付け外しの見分けを今の値と合わせる)。リンクの列でなければ None。印の children の
+    /// 親を指す列では、書く行と子孫を候補に出さない(relations.link-input-no-cycle。今の要素は外せるように残す)。
     pub(crate) fn link_cands(
         &self,
         col: &str,
@@ -323,11 +334,15 @@ impl App {
                 }
             }
         }
+        let rows: Vec<RowId> = targets.iter().map(|(r, _)| r.clone()).collect();
+        let skip = self.not_parents(col, &rows);
         Some(
             relations::notes_in(&dir)
                 .into_iter()
+                .filter(|t| !skip.contains(t) || existing.iter().any(|(p, _)| p == t))
                 .map(|t| {
-                    let name = relations::file_stem(&t);
+                    // screen.note-name-everywhere: 見せる名前はノートの欄と同じ名前の正規表現を当てたもの。
+                    let name = super::view::note_name_of(self, &relations::file_stem(&t));
                     let value = existing
                         .iter()
                         .find(|(p, _)| p == &t)

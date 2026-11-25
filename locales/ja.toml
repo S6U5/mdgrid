@@ -629,6 +629,7 @@ KeyNarrower = "列を狭く"
 KeyWider = "列を広く"
 KeySort = "この列で並べ替え"
 KeySortsRun = "向きを変える・足す"
+HintSortsRun = "向き・足す"
 KeyScreenMenuRun = "その画面に切り替える"
 ## NV-24: 並べ替えの窓。
 CmdSortMenu = "並べ替え…"
@@ -726,9 +727,10 @@ KeyRemove = "外す"
 KeyLeftItem = "左の項目"
 KeyRightItem = "右の項目"
 KeyBackToTable = "表に戻る"
-KeyPickRun = "確定(検索中は付ける)"
-KeyPickToggle = "付け外し(検索中は空白)"
+KeyPickRun = "入れる・外す"
+KeyPickToggle = "入れる・外す(検索中は空白)"
 KeyPickRevert = "開いたときに戻す"
+KeyStop = "やめる"
 KeyPrevItem = "前の候補"
 KeyNextItem = "次の候補"
 ## 保存の確認で全部を書く。
@@ -740,8 +742,6 @@ KeyDiscardRow = "ためた変更を捨てる"
 ## 終了の確認で保存する。
 KeyQuitSave = "保存する"
 KeyQuitDiscard = "捨てて終わる"
-KeyScrollDown = "下へ流す"
-KeyScrollUp = "上へ流す"
 KeyRun = "実行"
 ## 読むだけのときの表の Enter(SR-2)。
 KeyToggleGroup = "見出しの開閉"
@@ -1115,7 +1115,7 @@ PickBulkSame = "({0}行は変わらない)"
 PickBulkSameOne = "({0}行は変わらない)"
 ## {0}・{1} はキー。
 PickKeysSearching = "{0} 付ける(新規は足す)・{1} 確定"
-PickKeys = "{0} 付け外し・{1} 確定"
+PickKeys = "{0} 入れる・外す・{1} 決める"
 ## {1} は `PickKeys*`。
 PickHintBulk = "一括 {0}行([x]=全部の行 [-]=一部の行 [ ]=なし)。{1}"
 ## `PickHintBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
@@ -1436,6 +1436,8 @@ VisualHint = "範囲で選ぶ: 動かして v で決める(Esc で解く)"
 SelectedAll = "全部の行を選んだ({0}行)"
 SelectionCleared = "選択を解いた"
 FilterCleared = "検索を解いた"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "条件を解いた"
 NoRowToSelect = "選ぶ行が無い"
 SelectValueCell = "値のセルを選ぶ"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1533,6 +1535,10 @@ SwitchHint = "お気に入りが無い: 引き出し({0})の見出しで {1} か
 SwitchNoRoom = "端末が小さく、切り替えの一覧を出せない"
 KeySwitchRun = "選んだ所へ移る"
 KeySwitchNumber = "その番号のワークスペースへ移る"
+KeySwitchOrigin = "最初に開いた所へ戻る"
+KeySwitchDigits = "番号の所へ移る"
+KeyDigitRange = "{0}〜{1}"
+SwitchAlreadyHere = "{0} は今いるワークスペース"
 ModeSwitch = "ワークスペースの切り替え"
 SecInSwitch = "切り替えの一覧の中"
 
@@ -1796,6 +1802,8 @@ KeyBarLater = "棒を1単位後ろへ動かす(日付を書き換える)"
 KeyBarEarlier = "棒を1単位前へ動かす(日付を書き換える)"
 KeyBarLonger = "棒の終わりを1単位伸ばす"
 KeyBarShorter = "棒の終わりを1単位縮める"
+GanttBandMove = "棒を動かす"
+GanttBandResize = "伸ばす・縮める"
 GanttToday = "今日"
 GanttThisWeek = "今週"
 GanttThisMonth = "今月"
@@ -1878,6 +1886,16 @@ ChildrenOpenRefuseOne = "終わっていない子が {0} 件あるので、完�
 ChildrenOpenKeep = "終わっていない子が {0} 件ある"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "終わっていない子が {0} 件ある"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "closed_by(親の完了で閉じた印の列)が無いと戻す子が分からないので、\"keep\" として扱う"
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "親の完了で一緒に閉じた子がある。どうする: "
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "子も戻す"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "親だけ"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "戻せなかった子がある"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "親の期間から {0} 日はみ出す"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

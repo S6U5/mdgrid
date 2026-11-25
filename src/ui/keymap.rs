@@ -495,10 +495,10 @@ pub enum Action {
     PageSave,
 }
 
-/// `Choose(1)`〜`Choose(9)` の名前(動作ごとに違う名前。workspace.switch-keys)。
-const CHOOSE: [&str; 9] = [
-    "choose_1", "choose_2", "choose_3", "choose_4", "choose_5", "choose_6", "choose_7", "choose_8",
-    "choose_9",
+/// `Choose(0)`〜`Choose(9)` の名前(動作ごとに違う名前。workspace.switch-keys。0 は workspace.switch-origin-key)。
+const CHOOSE: [&str; 10] = [
+    "choose_0", "choose_1", "choose_2", "choose_3", "choose_4", "choose_5", "choose_6", "choose_7",
+    "choose_8", "choose_9",
 ];
 
 /// `GoToSection(1)`〜`GoToSection(9)` の名前(動作ごとに違う名前。SR-14・SR-13)。
@@ -700,10 +700,7 @@ impl Action {
             Action::RoutineRuns => "routine_runs",
             Action::WsSwitch => "workspace_switch",
             Action::WsFavorite => "workspace_favorite",
-            Action::Choose(n) => CHOOSE
-                .get(usize::from(n).wrapping_sub(1))
-                .copied()
-                .unwrap_or("choose"),
+            Action::Choose(n) => CHOOSE.get(usize::from(n)).copied().unwrap_or("choose"),
             Action::StackAdd => "stack_add",
             Action::StackClose => "stack_close",
             Action::StackDown => "stack_down",
@@ -961,7 +958,7 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::SaveSession, Msg::CmdSaveSession, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
-    // TR-5: 行の URL を開く(既定のキーなし。木の中では `o`。操作の一覧からも)。
+    // TR-5: 行の URL を開く(表では `O`、木の中では `o`。キーを外しても、パレットと操作の一覧から使える)。
     cmd(Action::OpenUrl, Msg::CmdOpenUrl, OUTSIDE),
     // GA-2: ガントの画面(画面の型のメニューとパレットからも)。
     cmd(Action::GanttView, Msg::CmdGanttView, FIND),
@@ -1051,6 +1048,8 @@ pub const BINDINGS: &[Binding] = &[
     b("y", Action::Copy, Msg::KeyCopyCell, OUTSIDE, 0),
     b("Ctrl+c", Action::Copy, Msg::KeyCopyCell, OUTSIDE, 0),
     b("Y", Action::CopyRow, Msg::KeyCopyRow, OUTSIDE, 0),
+    // screen.open-url-key・TR-5: 選んだ行の URL を開く(木の画面の `o` と同じ動作。`o` はビューの設定なので Shift)。
+    b("O", Action::OpenUrl, Msg::KeyOpenUrl, OUTSIDE, 0),
     // 表の形(BV-13・SR-3・NV-4)。見出しの行の Enter は開閉(SR-2。Enter の「編集」と同じ動作)。
     b("[", Action::PrevView, Msg::KeyPrevView, SHAPE, 0),
     b("]", Action::NextView, Msg::KeyNextView, SHAPE, 0),
@@ -1874,8 +1873,9 @@ pub const BINDINGS: &[Binding] = &[
     ),
     m(Mode::Notice, "?", Action::Help, Msg::KeyHelp, IN_NOTICE, 0),
     // リストの選択の中(CE-16・CE-17・CE-19・CE-11)。文字1つのキーは割り当てない(打つ文字は検索に入る)。
-    // 検索が空のとき Space=付け外し・Enter=確定。検索中は Space=空白・Enter=選んだ候補を付けるだけ
-    // (既に付いていれば何もしない。新規なら足す)で検索を空に戻す。Tab はいつでも確定。
+    // screen.checklist-keys: 検索が空のとき Enter・Space=付け外し(窓は開いたまま)。検索中は Space=空白・Enter=選んだ
+    // 候補を付けるだけ(既に付いていれば何もしない。新規なら足す)で検索を空に戻す。窓の一番下の「[ 決める ]」の行の
+    // Enter と、どの行でも Tab で決める。Esc でやめる。
     // CE-26: 新しいノートの窓では、どの欄からでも Ctrl+S で作る(入力とリストの選択の両方)。
     m(
         Mode::ListPick,
@@ -1914,9 +1914,9 @@ pub const BINDINGS: &[Binding] = &[
         Mode::ListPick,
         "Tab",
         Action::Commit,
-        Msg::KeyCommit,
+        Msg::KeyDecide,
         IN_PICK,
-        1,
+        2,
     ),
     m(
         Mode::ListPick,
@@ -1924,7 +1924,7 @@ pub const BINDINGS: &[Binding] = &[
         Action::Run,
         Msg::KeyPickRun,
         IN_PICK,
-        2,
+        1,
     ),
     m(
         Mode::ListPick,
@@ -1932,15 +1932,15 @@ pub const BINDINGS: &[Binding] = &[
         Action::Toggle,
         Msg::KeyPickToggle,
         IN_PICK,
-        3,
+        4,
     ),
     m(
         Mode::ListPick,
         "Esc",
         Action::Cancel,
-        Msg::KeyCancel,
+        Msg::KeyStop,
         IN_PICK,
-        4,
+        3,
     ),
     m(
         Mode::ListPick,
@@ -2078,28 +2078,22 @@ pub const BINDINGS: &[Binding] = &[
     ),
     m(Mode::Quit, "Esc", Action::Back, Msg::KeyBack, QUIT, 3),
     m(Mode::Quit, "?", Action::Help, Msg::KeyHelp, QUIT, 0),
-    // ヘルプの中(SR-5)
-    m(Mode::Help, "Esc", Action::Close, Msg::KeyClose, IN_HELP, 1),
-    m(Mode::Help, "q", Action::Close, Msg::KeyClose, IN_HELP, 1),
-    m(Mode::Help, "?", Action::Close, Msg::KeyClose, IN_HELP, 1),
-    m(
-        Mode::Help,
-        "j",
-        Action::Down,
-        Msg::KeyScrollDown,
-        IN_HELP,
-        2,
-    ),
+    // ヘルプの中(SR-5)。↑↓ で項目を選び、Enter で「今押せるキー」の項目をする(screen.help-run)。
+    m(Mode::Help, "Enter", Action::Run, Msg::KeyRun, IN_HELP, 1),
+    m(Mode::Help, "Esc", Action::Close, Msg::KeyClose, IN_HELP, 2),
+    m(Mode::Help, "q", Action::Close, Msg::KeyClose, IN_HELP, 2),
+    m(Mode::Help, "?", Action::Close, Msg::KeyClose, IN_HELP, 2),
+    m(Mode::Help, "j", Action::Down, Msg::KeyNextItem, IN_HELP, 3),
     m(
         Mode::Help,
         "Down",
         Action::Down,
-        Msg::KeyScrollDown,
+        Msg::KeyNextItem,
         IN_HELP,
-        2,
+        3,
     ),
-    m(Mode::Help, "k", Action::Up, Msg::KeyScrollUp, IN_HELP, 3),
-    m(Mode::Help, "Up", Action::Up, Msg::KeyScrollUp, IN_HELP, 3),
+    m(Mode::Help, "k", Action::Up, Msg::KeyPrevItem, IN_HELP, 4),
+    m(Mode::Help, "Up", Action::Up, Msg::KeyPrevItem, IN_HELP, 4),
     m(
         Mode::Help,
         "PageDown",
@@ -2307,6 +2301,7 @@ pub const BINDINGS: &[Binding] = &[
     m(Mode::Freq, "g g", Action::Top, Msg::KeyTop, IN_FREQ, 0),
     m(Mode::Freq, "G", Action::Bottom, Msg::KeyBottom, IN_FREQ, 0),
     // 絞り込みの窓の中(NV-29。filters.rs)。Enter で条件を直すか足す段へ進み、Space で値のチェック、d で外す。←→ で条件の行の欄(列・比べ方・値)を選ぶ。
+    // screen.checklist-keys: 値の一覧では Enter も値のチェック。一番下の「[ 決める ]」の行の Enter か Tab で決める。
     m(
         Mode::FilterWin,
         "h",
@@ -2402,6 +2397,14 @@ pub const BINDINGS: &[Binding] = &[
         Msg::KeyFiltersCheck,
         IN_FILTERS,
         3,
+    ),
+    m(
+        Mode::FilterWin,
+        "Tab",
+        Action::Commit,
+        Msg::KeyDecide,
+        IN_FILTERS,
+        0,
     ),
     m(
         Mode::FilterWin,
@@ -3549,6 +3552,15 @@ pub const BINDINGS: &[Binding] = &[
         IN_SWITCH,
         0,
     ),
+    // workspace.switch-origin-key: 「0 最初に開いた所」へ戻る。
+    m(
+        Mode::Switch,
+        "0",
+        Action::Choose(0),
+        Msg::KeySwitchOrigin,
+        IN_SWITCH,
+        0,
+    ),
     m(
         Mode::Switch,
         "1",
@@ -3817,6 +3829,11 @@ pub fn keys_of(table: &[Binding], mode: Mode, action: Action) -> Vec<String> {
 /// 下の帯に出す「今押せるキー」(SR-1): 順位の順に、動作ごとに表の最初のキーと表示名。
 /// 全部のキーはヘルプ(SR-5)に出す。
 pub fn hints(table: &[Binding], mode: Mode) -> Vec<String> {
+    ranked(table, mode).into_iter().map(|(_, s)| s).collect()
+}
+
+/// `hints` の並びの、動作と文字(画面ごとに案内を入れ替えるとき。gantt.band-edit-keys)。
+pub fn ranked(table: &[Binding], mode: Mode) -> Vec<(Action, String)> {
     let mut shown: Vec<(u8, Action, String)> = Vec::new();
     for b in table.iter().filter(|b| b.mode == mode && b.rank > 0) {
         if !shown.iter().any(|(_, a, _)| *a == b.action) {
@@ -3824,7 +3841,7 @@ pub fn hints(table: &[Binding], mode: Mode) -> Vec<String> {
         }
     }
     shown.sort_by_key(|(r, _, _)| *r);
-    shown.into_iter().map(|(_, _, s)| s).collect()
+    shown.into_iter().map(|(_, a, s)| (a, s)).collect()
 }
 
 /// 前置きのキー `prefix` のあとに続けて押せるキーと表示名(SR-25)。表の順に、動作ごとに最初の並び。

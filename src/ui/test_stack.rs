@@ -551,6 +551,71 @@ fn test_stack_page_open_from_drawer() {
     assert!(app.quit);
 }
 
+/// 印のワークスペース work に表「タスク」(tasks.base)と「ルーチンの回」(notes/)、その2つを並べたページ「今日」を
+/// 書き、ページを開いた画面(main の `open_page` と同じく、表を1つずつ開いて上から並べる。「タスク」を選ぶ)。
+fn page_today(tag: &str) -> (Tmp, App) {
+    let t = workspace(tag, "");
+    t.write(
+        ".mdgrid/workspace.toml",
+        "name = \"work\"\n\n[[table]]\nname = \"タスク\"\npath = \"tasks.base\"\n\n[[table]]\nname = \"ルーチンの回\"\npath = \"notes\"\n\n[[page]]\nname = \"今日\"\ntables = [{ table = \"タスク\" }, { table = \"ルーチンの回\" }]\n",
+    );
+    let mut tasks = open(&t, "tasks.base");
+    tasks.place_name = Some("タスク".into());
+    let mut runs = open(&t, "notes");
+    runs.place_name = Some("ルーチンの回".into());
+    let mut app = App::stack_of(vec![tasks, runs], vec![1, 1], Some("今日".into())).unwrap();
+    app.resize(80, 24);
+    assert_eq!(app.stack_page().map(|p| p.0).as_deref(), Some("今日"));
+    assert_eq!(table_label(&app), "タスク");
+    (t, app)
+}
+
+/// 引き出しの中で `name` の行(枠の中の文字。選びの印 `> ` の後ろ)。
+fn drawer_row(s: &str, name: &str) -> String {
+    s.lines()
+        .find_map(|l| {
+            let inner = l.split('│').nth(1)?;
+            inner.contains(name).then(|| inner.trim_end().to_string())
+        })
+        .unwrap_or_else(|| panic!("引き出しに {name} の行が無い:\n{s}"))
+}
+
+#[test]
+fn test_stack_page_drawer_marks_only_the_page() {
+    // [utest -> req~stack.page-drawer-leave~1] ページ「今日」を開いて引き出しを開く → ● は「今日」の見出しだけに付き、
+    // タスクの行には付かない。
+    let (_t, mut app) = page_today("page-drawer-mark");
+    app.apply(Action::WsDrawer);
+    assert_eq!(app.mode, Mode::Drawer);
+    let s = draw(&mut app);
+    assert!(drawer_row(&s, "今日 · ページ").contains("● 今日"), "{s}");
+    assert!(!drawer_row(&s, "タスク").contains('●'), "{s}");
+    assert!(!drawer_row(&s, "ルーチンの回").contains('●'), "{s}");
+    assert_eq!(s.matches('●').count(), 1, "{s}");
+}
+
+#[test]
+fn test_stack_page_drawer_table_leaves_the_page() {
+    // [utest -> req~stack.page-drawer-leave~1] ページ「今日」を開いて、引き出しで(選んでいる)「タスク」を選ぶ → ページを
+    // 閉じ、タスクの表を1つで開くよう頼む(main が `switch_to` の表だけを開き直す。ページは頼まない)。
+    let (t, mut app) = page_today("page-drawer-leave");
+    app.apply(Action::WsDrawer);
+    let s = draw(&mut app);
+    let at = s
+        .lines()
+        .filter(|l| l.contains('│'))
+        .position(|l| l.contains("タスク"))
+        .expect(&s);
+    if let Some(d) = app.drawer.as_mut() {
+        d.sel = at;
+    }
+    app.apply(Action::Run);
+    let to = app.switch_to.clone().expect("移る表");
+    assert_eq!(to.path, t.ws().join("tasks.base"));
+    assert_eq!(app.stack_request, None);
+    assert!(app.quit, "ためた変更が無ければすぐ移る");
+}
+
 #[test]
 fn test_stack_page_save_from_palette_to_marker() {
     // [utest -> req~stack.page-save-marker~1] [stack.page-save] tasks(今日)と projects(進行中)を並べ、名前

@@ -170,6 +170,19 @@
   - When: 設定で `j` を外す
   - Then: ↓ だけが効く。
 
+#### 表の画面では `O`(Shift+o)で、選んだ行の URL を開き(木の画面の `o` と同じ動作)、`[keys.table]` で `open_url` を別のキーに割り当て直せるべき
+`req~screen.open-url-key~1` P1
+- Rationale: 日常で使うサイトの表で、URL を開くのに操作の一覧かパレットを通るしかなく、自分でキーを割り当てようとしても「表のモードでは使えない」と無視されていたため(2026-11-25 に人が「両方」と決めた)
+- Acceptance:
+  - Given: `url: https://example.com/mail` の行を選んだ表
+  - When: `O`
+  - Then: その URL を OS の既定のブラウザに渡す(開く前にメッセージ行に URL を出す)。
+- Acceptance:
+  - Given: 設定に `[keys.table]` の `"u" = "open_url"`
+  - When: 起動して `u`
+  - Then: 警告を出さず、選んだ行の URL を開く。
+- Needs: utest
+
 #### キーの定義は1か所の表に置き、キーの振り分け・下の帯・ヘルプを、すべてその表から作るべき
 `req~screen.key-table~1` P1
 - Acceptance:
@@ -359,6 +372,65 @@
   - Given:
   - When: 表で `?`
   - Then: 先頭に表の操作。
+
+#### `?` のヘルプの先頭の「今押せるキー」の行は、↑↓ とクリックで選べ、Enter でヘルプを閉じてその操作をするべき(lazygit の `?` と同じく、覚えていない操作もヘルプから選んで使える)
+`req~screen.help-run~1` P1
+- Rationale: 操作を覚えなくても使えるようにするため。ヘルプでキーを探して、閉じてから押し直す手間をなくす(2026-11-25 に人が「lazygit みたいに操作方法を覚えなくても使えるようにしたい」と言った)
+- Acceptance:
+  - Given: `url` のある行を選んだ表
+  - When: `?` で「今押せるキー」の「URL を開く」の行を選んで Enter
+  - Then: ヘルプが閉じ、その行の URL を開く(`O` を押したのと同じ)。
+- Acceptance:
+  - Given: ヘルプを開いた
+  - When: 「今押せるキー」より下の節(全部のキー・印の意味)の行で Enter
+  - Then: 何もせず、ヘルプは開いたまま。
+- Acceptance:
+  - Given: ヘルプで行を選んだ
+  - When: Esc
+  - Then: 何もせずにヘルプを閉じる。
+- Needs: utest
+
+#### チェックを付け外しする一覧の窓(リストの値の付け外し・絞り込みの値の一覧・スターターのオプションの一覧)では、Enter と Space で選んだ行のチェックを付け外しし、窓の一番下の「[ 決める ]」の行での Enter かクリック、またはどの行でも Tab で決め、Esc でやめるべき(打った字で絞る欄に打っているあいだの Space は空白のまま)
+`req~screen.checklist-keys~1` P1
+- Rationale: チェックを入れるつもりで Enter を押すと、入れずに窓が閉じたため。Enter で入れ、決めるのは見える「[ 決める ]」の行か Tab にする(2026-11-25 に人が「Enter で入れる」と決めた)
+- Acceptance:
+  - Given: tags の候補に 仕事・開発・家 があり、仕事が付いたセル
+  - When: 付け外しの窓で「開発」を選んで Enter
+  - Then: 開発にチェックが付き、窓は開いたまま。
+- Acceptance:
+  - Given: 同じ窓で開発にチェックを付けた
+  - When: Tab
+  - Then: 窓が閉じ、tags は「仕事・開発」のためる変更。
+- Acceptance:
+  - Given: 同じ窓で開発にチェックを付けた
+  - When: 「[ 決める ]」の行で Enter
+  - Then: Tab と同じく決める。
+- Acceptance:
+  - Given: 同じ窓で開発にチェックを付けた
+  - When: Esc
+  - Then: 窓が閉じ、何もためない。
+- Acceptance:
+  - Given: 絞り込みの窓の status の値の一覧
+  - When: 「done」で Enter、続けて Tab
+  - Then: done のチェックが入り、「status が done を除く」(か「done だけ」。一覧の先頭の切り替えのとおり)の条件ができる。
+- Needs: utest
+
+#### 一覧の窓(値の候補・リストの値の付け外し・絞り込みの窓・並べ替えの窓・切り替えの一覧・引き出し・画面の型のメニュー・操作の一覧)の下の縁に、その窓で効く主なキーを「キー 動作」で並べ、クリックでその動作をし、幅が足りなければ後ろから省くべき
+`req~screen.window-key-hints~1` P1
+- Rationale: 下の帯は画面の端にあって目が届きにくく、窓の中で何を押せばよいかが分からなかったため。窓のそばにキーを出し、押せるようにする(2026-11-25 に人が「lazygit みたいに」と言った)
+- Acceptance:
+  - Given: リストの値の付け外しの窓
+  - When: 窓を描く
+  - Then: 下の縁に「Enter 入れる・外す」「Tab 決める」「Esc やめる」が並ぶ。
+- Acceptance:
+  - Given: 同じ窓
+  - When: 下の縁の「Tab 決める」をクリック
+  - Then: Tab と同じく決める。
+- Acceptance:
+  - Given: 幅の狭い窓
+  - When: 窓を描く
+  - Then: 入らないキーは後ろから省き、縁の線と字が重ならない。
+- Needs: utest
 
 #### コマンドの名前であいまいに探して実行できるパレット(`:` と Ctrl+P)を持つべき
 `req~screen.palette-fuzzy~2` P1
@@ -1826,6 +1898,48 @@
   - Given:
   - When:
   - Then: `note_path = "common"` と `'^\d{8}_'` で `todo/20261015_a.md`・`archive/todo/20261001_b.md` → `todo/a`・`archive/todo/b`(フォルダは残し、最後の名前の部分に当てる)。
+
+#### ノートの名前を見せる所(関係マップのつながった行とよく指される行・木の画面の葉・横断の検索の結果・リンクの列を直すときの候補)にも、ノートの欄と同じ見せ方(`display.note_path` と `display.note_name`)を当てるべき(メッセージ・詳しく見る画面・検索で当てる文字・書くリンクの値は変えない)
+`req~screen.note-name-everywhere~1` P1
+- Rationale: ノートの欄とリンクのセルでは日付の頭(`20261120_`)を隠しているのに、関係マップのつながった行などには頭が出て、同じノートが2つの名前で見えていたため(2026-11-25 に、リンクのセルの頭を直したときに、同じ形の所を洗い出した)
+- Acceptance:
+  - Given: `[display] note_name = '^\d{8}_'` と、`20261121_画面` が `parent: "[[20261120_設計]]"` で指す表
+  - When: 関係マップで parent のつながりを選ぶ
+  - Then: つながった行は「画面 → 設計」、よく指される行は「設計」。
+- Acceptance:
+  - Given: 同じ設定で、木の設定(`tree`)のある表の `20261120_設計`
+  - When: 木の画面を開く
+  - Then: 葉の名前は「設計」。
+- Acceptance:
+  - Given: 同じ設定のワークスペース
+  - When: 横断の検索で「設計」を探す
+  - Then: 結果の名前は「設計」。
+- Acceptance:
+  - Given: 同じ設定で、parent がリンクの列の表
+  - When: 「画面」の parent のセルを直して候補を出す
+  - Then: 候補の名前は「設計」で、選ぶと `[[20261120_設計]]` を書く。
+- Acceptance:
+  - Given: `display.note_name` を書かない表
+  - When: 関係マップを開く
+  - Then: つながった行は「20261121_画面 → 20261120_設計」のまま。
+- Needs: utest
+
+#### 印の `[[table]]` に `name` を書いた表は、パンくず・最近開いた表の一覧・通知の欄の今の表に、フォルダの名前でなくその `name` を見せるべき
+`req~screen.table-name-marker~1` P1
+- Rationale: 引き出しと印では「予定」なのに、開くとパンくずと最近開いた表の一覧が「calendar」(path のフォルダの名前)になり、同じ表が2つの名前で見えていたため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: 印の `[[table]]` に `name = "予定"`・`path = "calendar"` の表
+  - When: その表を開く
+  - Then: パンくずは「<ワークスペース> › 予定」。
+- Acceptance:
+  - Given: 同じ表を開いたことがある
+  - When: 最近開いた表の一覧を開く
+  - Then: 行の名前は「予定」。
+- Acceptance:
+  - Given: 印の `[[table]]` に `path = "calendar"` だけを書いた表
+  - When: その表を開く
+  - Then: パンくずは今までどおり「calendar」。
+- Needs: utest
 
 #### `display.note_name` は、表のプロファイルの項目として全体・ワークスペース・表・ビューの範囲(screen.profile-scopes)に書けるべき
 `req~screen.note-name-scopes~1` P1

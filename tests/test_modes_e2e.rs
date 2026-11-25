@@ -595,7 +595,8 @@ fn test_modes_settings_compare_filter_applies_and_cancel_keeps_table() {
 
 // ---------------------------------------------------------------- filter_window・filter_input・chips
 
-/// 絞り込みの窓(開いて「+ 絞り込みを足す」を選んでいるところ)で、status の値の一覧の done を隠す条件を足す。
+/// 絞り込みの窓(開いて「+ 絞り込みを足す」を選んでいるところ)で、status の値の一覧の done を隠す条件を足す
+/// (done にチェックして Tab で決める。screen.checklist-keys)。
 fn hide_done(t: &mut Tui) {
     t.send(ENTER);
     t.wait_for("絞り込む列");
@@ -609,7 +610,7 @@ fn hide_done(t: &mut Tui) {
     t.wait_for("> [ ] done");
     t.send(" ");
     t.wait_for("[x] done");
-    t.send(ENTER);
+    t.send(TAB);
 }
 
 #[test]

@@ -105,15 +105,15 @@ fn test_ce_16_open_filter_and_add() {
     press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(pending(&a, 2, "tags"), list(&["会議", "会計"]));
-    // tags の無いノートで、会議 を付けて確定(検索が空なら Enter で確定)。
+    // tags の無いノートで、会議 を付けて確定(screen.checklist-keys: 検索が空の Enter は付け外しなので、Tab で決める)。
     open_tags(&mut a, 5);
     typing(&mut a, "会");
     select(&mut a, "会議");
     press(&mut a, KeyCode::Enter);
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(pending(&a, 5, "tags"), list(&["会議"]));
-    // 一覧に無い 新規 を打って Enter で足し、もう一度 Enter で確定 → 新規 が足される。
+    // 一覧に無い 新規 を打って Enter で足し、Tab で確定 → 新規 が足される。
     open_tags(&mut a, 5);
     typing(&mut a, "新規");
     assert_eq!(shown(&a), vec!["+新規"]);
@@ -121,7 +121,7 @@ fn test_ce_16_open_filter_and_add() {
     assert_eq!(a.mode, Mode::ListPick);
     assert_eq!(a.pick.as_ref().unwrap().query, "");
     assert!(shown(&a).contains(&"[x] 新規 0".to_string()));
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(pending(&a, 5, "tags"), list(&["会議", "新規"]));
 }
@@ -133,18 +133,22 @@ fn test_ce_19_hash_and_no_duplicates() {
     open_tags(&mut a, 2);
     typing(&mut a, "#会議");
     assert_eq!(shown(&a), vec!["[x] 会議 5"]);
-    // Enter(検索中は付けるだけ)→ 既に付いているので何もせず、検索が空に戻る。もう一度 Enter で確定 → 何もためない。
+    // Enter(検索中は付けるだけ)→ 既に付いているので何もせず、検索が空に戻る。Tab で確定 → 何もためない。
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::ListPick);
     assert_eq!(a.pick.as_ref().unwrap().query, "");
     assert_eq!(shown(&a)[0], "[x] 会議 5");
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.changes.count(), 0);
-    // `#` だけ打って Enter → 検索が空と同じ(確定)。何も変わらない。
+    // `#` だけ打って Enter → 検索が空と同じ(screen.checklist-keys: 付け外しなので、付いている 会議 が外れる。
+    // 検索中なら付けるだけで外れない)。Esc でやめれば何も変わらない。
     open_tags(&mut a, 2);
     typing(&mut a, "#");
     press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::ListPick);
+    assert_eq!(shown(&a)[0], "[ ] 会議 5");
+    press(&mut a, KeyCode::Esc);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.changes.count(), 0);
     // 新規も `#` を除いて足す。足した要素をもう一度打っても2つ足さない。
@@ -182,7 +186,7 @@ fn test_ce_19_remove_all_writes_key() {
     open_tags(&mut a, 2);
     space(&mut a);
     assert_eq!(shown(&a)[0], "[ ] 会議 5");
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(pending(&a, 2, "tags"), list(&[]));
     ctrl(&mut a, 's');
     assert_eq!(a.mode, Mode::Confirm);
@@ -234,7 +238,7 @@ fn test_ce_1_esc_and_ce_11_revert() {
         shown(&a),
         vec!["[x] 会議 5", "[ ] 本 2", "[ ] 会計 1", "[ ] 旅行 1"]
     );
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.changes.count(), 0);
 }
@@ -274,7 +278,7 @@ fn test_ce_17_bulk_add_and_remove() {
     select(&mut a, "会議");
     space(&mut a);
     assert_eq!(mark(&a, "会議"), Mark::All);
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert!(a.message.clone().unwrap().contains("一括: 3行を直した"));
     assert_eq!(pending(&a, 0, "tags"), list(&["本", "秋", "会議"]));
@@ -298,7 +302,7 @@ fn test_ce_17_bulk_add_and_remove() {
     assert_eq!(pending(&a, 1, "tags"), list(&["映画", "会議"]));
     // 触らずに閉じたら何も書かない(1手も足さない)。
     press(&mut a, KeyCode::Enter);
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     ctrl(&mut a, 'z');
     assert_eq!(pending(&a, 0, "tags"), list(&["本", "秋", "会議"]));
     ctrl(&mut a, 'r');
@@ -338,7 +342,7 @@ fn test_ce_17_bulk_skips_read_only_rows() {
     assert_eq!(a.pick.as_ref().unwrap().targets.len(), 3);
     typing(&mut a, "z");
     press(&mut a, KeyCode::Enter);
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     let m = a.message.clone().unwrap();
     assert!(
         m.contains("一括: 3行を直した") && m.contains("1行を飛ばした"),
@@ -368,7 +372,7 @@ fn test_nv_6_detail_enter_opens_pick() {
     press(&mut a, KeyCode::Enter);
     select(&mut a, "本");
     space(&mut a);
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Detail);
     assert_eq!(pending(&a, 2, "tags"), list(&["会議", "本"]));
 }
@@ -435,7 +439,7 @@ fn test_sr_16_list_pick_keys() {
     open_tags(&mut a, 0);
     let s = screen(&a);
     assert!(
-        s.contains("Space 付け外し") && s.contains("リストの選択"),
+        s.contains("Enter 入れる・外す") && s.contains("リストの選択"),
         "{s}"
     );
 }
@@ -621,7 +625,7 @@ fn test_sr_3_commit_only_when_cell_drawn() {
 
 #[test]
 fn test_ce_17_bulk_enter_in_search_only_attaches() {
-    // [utest -> req~cell-edit.list-bulk~2, req~cell-edit.list-candidates-no-dup~1, req~cell-edit.list-candidates-unkeepable~1] 一括で、全部の行が持つ 会議 を打って Enter 2回 → 付けるだけなので何も変わらない。
+    // [utest -> req~cell-edit.list-bulk~2, req~cell-edit.list-candidates-no-dup~1, req~cell-edit.list-candidates-unkeepable~1] 一括で、全部の行が持つ 会議 を打って Enter のあと Tab → 付けるだけなので何も変わらない。
     let (_t, mut a) = make("ce17enter", TAGS);
     col_named(&mut a, "tags");
     for _ in 0..3 {
@@ -633,7 +637,7 @@ fn test_ce_17_bulk_enter_in_search_only_attaches() {
     typing(&mut a, "会議");
     press(&mut a, KeyCode::Enter);
     assert_eq!(shown(&a)[0], "[x] 会議 5");
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.changes.count(), 0);
     // 一部の行だけが持つ 本 は、検索中の Enter で [-] → [x](外れない)。
@@ -642,7 +646,7 @@ fn test_ce_17_bulk_enter_in_search_only_attaches() {
     typing(&mut a, "本");
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.pick.as_ref().unwrap().cands[1].mark, Mark::All);
-    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Tab);
     assert_eq!(pending(&a, 2, "tags"), list(&["会議", "本"]));
     assert_eq!(pending(&a, 0, "tags"), None);
 }

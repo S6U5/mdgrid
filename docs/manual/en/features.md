@@ -14,7 +14,7 @@ Tasks. One note per task, with status tabs (Open, Overdue, Doing, Waiting, Done)
 
 ![The tree screen](images/tree.svg)
 
-Bookmarks. One note per bookmark, with its place written as `folder: bar > Dev > Web`; `T` shows them as a folder tree, and `o` on the tree screen opens the URL in your browser.
+Bookmarks. One note per bookmark, with its place written as `folder: bar > Dev > Web`; `T` shows them as a folder tree, and `o` on the tree screen opens the URL in your browser. In the table, `O` does the same.
 
 ![The reading starter](images/starter-reading.svg)
 
@@ -70,7 +70,7 @@ Type `tomorrow`, `next fri`, `eom` or `+2w` in a due date cell and you get that 
 
 ![Narrow with a named condition](images/conditions.svg)
 
-Give a name to a condition such as "due within a week" and write it once in the config. One digit key then keeps only the matching rows, and `cond("name")` works in any expression. You can also hide rows you rarely need, such as plans far in the future, in every table. `mdgrid --count` prints how many rows match.
+Give a name to a condition such as "due within a week" and write it once in the config. One digit key then keeps only the matching rows, `Esc` clears them all at once, and `cond("name")` works in any expression. You can also hide rows you rarely need, such as plans far in the future, in every table. `mdgrid --count` prints how many rows match.
 
 [Filter with named conditions](tasks.md#filter-with-named-conditions)
 
@@ -146,7 +146,7 @@ Group by status and the groups come in the order of the column's allowed values 
 
 `B` shows every status at once: one lane per status, the tasks as cards. Press `L` on a todo card and it moves to doing, with its status rewritten as an unsaved change; `u` takes it back, and `Ctrl+s` shows the diff before anything is written. The lanes follow the allowed values of the status column, so an empty status still has a lane to move into.
 
-Write `children = { key = "parent" }` in the marker's `[[table]]` and every view lists children indented under their parent. Move a parent's card to done (or set it in the table) and its unfinished children become done with it; one `u` takes it all back. You can also keep the parent open while children are left (`on_done = "refuse"`), or finish only the parent and be told how many are left (`"keep"`).
+Write `children = { key = "parent" }` in the marker's `[[table]]` and every view lists children indented under their parent. Move a parent's card to done (or set it in the table) and its unfinished children become done with it; one `u` takes it all back. You can also keep the parent open while children are left (`on_done = "refuse"`), or finish only the parent and be told how many are left (`"keep"`). Add `closed_by = "closed_by"` and the children closed together with their parent carry that mark, so setting the parent back can bring them back too (`on_reopen = "reopen"`) or ask you on the spot (`"ask"`). Children you finished yourself stay finished.
 
 [Kanban in the list of views](views.md#kanban), [Key bindings](../../keys.md)
 
@@ -226,7 +226,7 @@ Go back to a table you never registered, in the view you were on. mdgrid remembe
 
 ![Switch workspace](images/switch.svg)
 
-Put the workspaces you go back and forth between, say work and a hobby, in your favorites. From the table, the gantt, the kanban or any other screen, `W` opens the list and one digit takes you there, to the table and view you last had open in that workspace. If you started in a plain folder, **Where you started** at the top of the list takes you back.
+Put the workspaces you go back and forth between, say work and a hobby, in your favorites. From the table, the gantt, the kanban or any other screen, `W` opens the list and one digit takes you there, to the table and view you last had open in that workspace. If you started in a plain folder, **Where you started** at the top of the list takes you back. With the mouse, the table list that opens from the breadcrumb lists the same places.
 
 [Switch between favorite workspaces](tasks.md#switch-between-favorite-workspaces), [Key bindings](../../keys.md#switch)
 
@@ -250,9 +250,17 @@ Color themes, the shape of chips and checkboxes, row numbers and column lines, t
 
 ![The command palette](images/palette.svg)
 
-Vim keys and arrow keys both work. `x` lists what you can do on the cell, `:` finds a command by name, `?` lists every key. All of them can be rebound.
+Vim keys and arrow keys both work. `x` lists what you can do on the cell, `:` finds a command by name, `?` lists every key, with the ones you can press now first: select one and press `Enter` to run it without remembering the key. Every key can be rebound.
 
 [Key bindings](../../keys.md)
+
+## See the keys of a window
+
+![Keys on the bottom edge of a window](images/window-keys.svg)
+
+Open the window for tags or the filter window, and its bottom edge lists the keys that work there, like `Enter Check / uncheck` and `Tab OK`. Clicking one does the same thing. Press Enter on each tag you want; the window stays open, so you can check several in a row. When you are done, press Tab or pick `[ OK ]` at the bottom.
+
+[Key bindings](../../keys.md#list_select)
 
 ## Edit with vim keys
 

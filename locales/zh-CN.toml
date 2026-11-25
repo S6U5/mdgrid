@@ -629,6 +629,7 @@ KeyNarrower = "列变窄"
 KeyWider = "列变宽"
 KeySort = "按此列排序"
 KeySortsRun = "翻转方向/添加"
+HintSortsRun = "方向/添加"
 KeyScreenMenuRun = "切换到该界面"
 ## NV-24: 並べ替えの窓。
 CmdSortMenu = "排序…"
@@ -726,9 +727,10 @@ KeyRemove = "移除"
 KeyLeftItem = "左侧项"
 KeyRightItem = "右侧项"
 KeyBackToTable = "返回表格"
-KeyPickRun = "确认（搜索时为添加）"
-KeyPickToggle = "切换（搜索时为空格）"
+KeyPickRun = "勾选/取消勾选"
+KeyPickToggle = "勾选/取消勾选（搜索时为空格）"
 KeyPickRevert = "恢复为打开时的状态"
+KeyStop = "取消"
 KeyPrevItem = "上一项"
 KeyNextItem = "下一项"
 ## 保存の確認で全部を書く。
@@ -740,8 +742,6 @@ KeyDiscardRow = "放弃未保存的更改"
 ## 終了の確認で保存する。
 KeyQuitSave = "保存并退出"
 KeyQuitDiscard = "放弃并退出"
-KeyScrollDown = "向下滚动"
-KeyScrollUp = "向上滚动"
 KeyRun = "执行"
 ## 読むだけのときの表の Enter(SR-2)。
 KeyToggleGroup = "展开/折叠分组"
@@ -1436,6 +1436,8 @@ VisualHint = "选择范围：移动后按 v 确认（Esc 清除）"
 SelectedAll = "已选择所有行（{0}）"
 SelectionCleared = "已清除选择"
 FilterCleared = "已清除搜索"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "已清除条件"
 NoRowToSelect = "没有可选择的行"
 SelectValueCell = "请选择一个值单元格"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1533,6 +1535,10 @@ SwitchHint = "还没有收藏：在表格列表（{0}）的工作区标题上按
 SwitchNoRoom = "终端太小，无法显示切换列表"
 KeySwitchRun = "转到所选项"
 KeySwitchNumber = "转到对应编号的工作区"
+KeySwitchOrigin = "回到最初打开的位置"
+KeySwitchDigits = "转到对应编号"
+KeyDigitRange = "{0}~{1}"
+SwitchAlreadyHere = "{0} 是当前所在的工作区"
 ModeSwitch = "切换"
 SecInSwitch = "在切换列表中"
 
@@ -1796,6 +1802,8 @@ KeyBarLater = "把条形向后移动一个单位（改写日期）"
 KeyBarEarlier = "把条形向前移动一个单位（改写日期）"
 KeyBarLonger = "把条形的结束延长一个单位"
 KeyBarShorter = "把条形的结束缩短一个单位"
+GanttBandMove = "移动条形"
+GanttBandResize = "延长/缩短"
 GanttToday = "今天"
 GanttThisWeek = "本周"
 GanttThisMonth = "本月"
@@ -1878,6 +1886,16 @@ ChildrenOpenRefuseOne = "还有 {0} 个子项未完成，因此不设为完成"
 ChildrenOpenKeep = "还有 {0} 个子项未完成"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "还有 {0} 个子项未完成"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "没有 closed_by（标记随父项完成一起关闭的子项的列），无法知道要恢复哪些子项，因此按 \"keep\" 处理"
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "有随父项完成一起关闭的子项。如何处理："
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "子项也恢复"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "仅父项"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "有子项未能恢复"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "超出父项期间 {0} 天"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

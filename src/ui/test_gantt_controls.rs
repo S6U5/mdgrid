@@ -452,3 +452,87 @@ fn test_ctrl_s_opens_save_confirm() {
     ctrl(&mut a, 's');
     assert_eq!(a.mode, Mode::Confirm);
 }
+
+/// 下の帯(未保存の数で始まる行)。
+fn band(a: &App) -> String {
+    let s = screen(a);
+    s.lines()
+        .find(|l| l.trim_start().starts_with("未保存"))
+        .unwrap_or_else(|| panic!("下の帯が無い:\n{s}"))
+        .to_string()
+}
+
+/// 棒を動かすキーと伸ばす・縮めるキーの、下の帯の案内。
+const MOVE_HINT: &str = "H/L 棒を動かす";
+const RESIZE_HINT: &str = ">/< 伸ばす・縮める";
+
+// [utest -> req~gantt.band-edit-keys~1]
+/// 自分の日付のある行(alpha)を選んだガントの下の帯に、`H`・`L`(棒を動かす)と `>`・`<`(伸ばす・縮める)の説明が出る。
+/// 幅 120 と 80 の端末のどちらでも(80 では入りきらない案内を省いても、この2つは残る)。
+#[test]
+fn test_band_shows_bar_keys_for_movable_bar() {
+    let (_t, mut a) = open("gc_band1");
+    for w in [120u16, 80] {
+        a.resize(w, 30);
+        let b = band(&a);
+        assert!(b.contains(MOVE_HINT), "幅 {w}: {b}");
+        assert!(b.contains(RESIZE_HINT), "幅 {w}: {b}");
+    }
+    // 終わりだけの行(beta)も動かせる・伸ばせる。
+    select(&mut a, "beta");
+    let b = band(&a);
+    assert!(b.contains(MOVE_HINT) && b.contains(RESIZE_HINT), "{b}");
+}
+
+// [utest -> req~gantt.band-edit-keys~1]
+/// 読むだけの起動のガントの下の帯には、棒を動かすキーも伸ばす・縮めるキーも出ない。
+#[test]
+fn test_band_hides_bar_keys_when_readonly() {
+    let (_t, mut a) = boot_opts("gc_band2", NOTES, GANTT, true);
+    ch(&mut a, 'C');
+    assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+    for w in [120u16, 300] {
+        a.resize(w, 30);
+        let b = band(&a);
+        assert!(b.contains("Enter"), "幅 {w}: {b}");
+        for k in ["H/L", ">/<", "棒を"] {
+            assert!(!b.contains(k), "幅 {w}: 「{k}」が出る: {b}");
+        }
+    }
+}
+
+// [utest -> req~gantt.band-edit-keys~1]
+/// 動かせない棒(日付の無い行 delta、読むだけのノート(同じキーが2回ある)の行)を選んでいるときも、棒を動かすキーは
+/// 出ない(gantt.edit-refuse で断る棒。`L` を押しても変わらない)。
+#[test]
+fn test_band_hides_bar_keys_for_unmovable_bar() {
+    let (_t, mut a) = open("gc_band3");
+    a.resize(300, 30);
+    select(&mut a, "delta");
+    let b = band(&a);
+    assert!(b.contains("Enter"), "{b}");
+    for k in ["H/L", ">/<", "棒を"] {
+        assert!(!b.contains(k), "日付の無い行: 「{k}」が出る: {b}");
+    }
+    let (_t2, mut a) = boot_with(
+        "gc_band4",
+        &[
+            (
+                "alpha.md",
+                "---\nstatus: todo\nstatus: done\nstart: 2026-10-01\ndue: 2026-10-03\n---\n",
+            ),
+            ("beta.md", "---\nstart: 2026-10-02\ndue: 2026-10-05\n---\n"),
+        ],
+        GANTT,
+    );
+    ch(&mut a, 'C');
+    assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+    a.resize(300, 30);
+    select(&mut a, "alpha");
+    let b = band(&a);
+    for k in ["H/L", ">/<", "棒を"] {
+        assert!(!b.contains(k), "読むだけのノート: 「{k}」が出る: {b}");
+    }
+    ch(&mut a, 'L');
+    assert_eq!(a.changes.count(), 0, "{:?}", a.message);
+}

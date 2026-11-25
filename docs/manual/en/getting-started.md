@@ -110,7 +110,7 @@ Column types come from `.obsidian/types.json`, or else from the first non-empty 
 
 The mouse works too: click a row to select it, and click a cell of the selected row to edit it. Clicking the selected row's file name is the same as `e` (open in the editor). Click a column heading to sort (the view remembers it), drag a column border to resize, and scroll with the wheel. A sideways trackpad swipe (the horizontal wheel) or shift+wheel moves between columns.
 
-Help (`?`) lists the keys you can press now first.
+Help (`?`) lists the keys you can press now first. Select one with ↑↓ or a click and press `Enter`: the help closes and the action runs, so you can use it without remembering the key.
 
 ![Help](images/help.svg)
 

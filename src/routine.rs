@@ -498,6 +498,15 @@ pub fn due(dir: &Path, tables: &[Loaded], today: i64, now: i64) -> Plan {
     p
 }
 
+/// routine.screen-create: 人が自分で選んだ作る操作で並べる回(書かない)。`due` と同じく同じ名前のノートが
+/// 既にある回は入れないが、その日に画面でやめた回は入れる(やめて静かにするのは下の帯の知らせだけ)。
+pub fn pending(dir: &Path, tables: &[Loaded], today: i64, now: i64) -> Plan {
+    let (state, _) = load(dir);
+    let mut p = plan(&state, tables, today, now);
+    p.runs.retain(|r| !r.exists);
+    p
+}
+
 /// routine.screen-create: 決めた回を作り、記録する(錠を取り、記録を読み直してから)。
 pub fn make(dir: &Path, runs: &[Run]) -> Report {
     let mut report = Report::default();

@@ -159,7 +159,7 @@ fn start_add(a: &mut App, col: &str, kind: &str) {
     press(a, KeyCode::Enter);
 }
 
-/// status の done を隠す条件を足す。
+/// status の done を隠す条件を足す(done にチェックして Tab で決める。screen.checklist-keys)。
 fn hide_done(a: &mut App) {
     start_add(a, "status", "値の一覧");
     if scr(a).contains("チェックした値の行だけ残す") {
@@ -169,7 +169,7 @@ fn hide_done(a: &mut App) {
     assert!(scr(a).contains("チェックした値の行を隠す"), "{}", scr(a));
     select(a, "done");
     ch(a, ' ');
-    press(a, KeyCode::Enter);
+    press(a, KeyCode::Tab);
 }
 
 /// priority の `≥ 3` を足す。

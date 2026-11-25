@@ -190,32 +190,31 @@ fn unit_text(u: Unit) -> &'static str {
 }
 
 /// 値の文(件数・<列> の合計など)。
-fn value_text(r: &Resolved) -> String {
+fn value_text(app: &App, r: &Resolved) -> String {
     match (&r.y, r.agg) {
-        (Some(y), a) if a != Agg::Count => Msg::ChartValueOf.fill(&[&sanitize(y), &agg_text(a)]),
+        (Some(y), a) if a != Agg::Count => {
+            Msg::ChartValueOf.fill(&[&sanitize(&app.title(y)), &agg_text(a)])
+        }
         _ => Msg::ChartCount.text().to_string(),
     }
 }
 
-/// 窓の題(CH-2)。
-fn title(c: &Chart) -> String {
+/// 窓の題(CH-2)。列の名前は列の見出しと同じ displayName(base-view.display-name-everywhere)。
+fn title(app: &App, c: &Chart) -> String {
     let r = &c.cur;
+    let col = |id: &str| sanitize(&app.title(id));
     let mut t = Msg::ChartTitlePrefix.text().to_string();
     if let Some(n) = &r.name {
         t.push_str(&Msg::ChartTitleNamed.fill(&[&sanitize(n)]));
     }
     if r.kind == ChartKind::Scatter {
-        let y = r.y.as_deref().unwrap_or("-");
-        t.push_str(&Msg::ChartTitleScatter.fill(&[
-            &kind_text(r.kind),
-            &sanitize(&r.x),
-            &sanitize(y),
-        ]));
+        let y = r.y.as_deref().map_or_else(|| "-".to_string(), col);
+        t.push_str(&Msg::ChartTitleScatter.fill(&[&kind_text(r.kind), &col(&r.x), &y]));
     } else {
-        t.push_str(&Msg::ChartTitle.fill(&[&kind_text(r.kind), &sanitize(&r.x), &value_text(r)]));
+        t.push_str(&Msg::ChartTitle.fill(&[&kind_text(r.kind), &col(&r.x), &value_text(app, r)]));
     }
     if let (true, Some(b)) = (r.kind.takes_by(), &r.by) {
-        t.push_str(&Msg::ChartTitleBy.fill(&[&sanitize(b)]));
+        t.push_str(&Msg::ChartTitleBy.fill(&[&col(b)]));
     }
     // 日付の区切りの単位(散布図は区切らない)。
     if let (Axis::Dates { unit, .. }, false) = (&c.data.axis, r.kind == ChartKind::Scatter) {
@@ -2260,7 +2259,7 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let bh = h.saturating_sub(lines.len() + 2);
     let iw = w.saturating_sub(2);
     let body = body_lines(app, c, iw, bh.saturating_sub(2));
-    lines.extend(panel(app, &title(c), body, w, bh, true));
+    lines.extend(panel(app, &title(app, c), body, w, bh, true));
     let body_end = h.saturating_sub(2);
     while lines.len() < body_end {
         lines.push(Line::from(" ".repeat(w)));

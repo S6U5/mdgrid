@@ -299,7 +299,11 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
                     .iter()
                     .enumerate()
                     .map(|(i, c)| {
-                        Row::item(sanitize(&cond_label(c)), Hit::Item(Sec::Filters, i), sel(i))
+                        Row::item(
+                            sanitize(&cond_label(app, c)),
+                            Hit::Item(Sec::Filters, i),
+                            sel(i),
+                        )
                     })
                     .collect();
             v.push(Row::item(

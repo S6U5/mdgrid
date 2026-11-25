@@ -447,6 +447,11 @@ impl App {
         };
         // cell-edit.children-done: 親の札を完了のレーンへ動かしたら、印の children のとおりに子孫も扱う。
         let st = self.stage_children(&col, vec![(row.clone(), Some(nv))]);
+        // cell-edit.children-reopen: 子も戻すかを選んでから動かす(選んだら札は表の直しと同じく組み直す)。
+        if st.asked {
+            self.open_children_ask();
+            return;
+        }
         if let Some((_, why)) = st.refused.into_iter().next() {
             self.message = Some(why);
             return;
@@ -626,9 +631,10 @@ fn card_name(app: &App, row: &RowId) -> String {
     }
 }
 
-/// 窓の題: 「カンバン: status」(推定なら「(推定)」を添える)。
-fn title(k: &Kanban) -> String {
-    let col = sanitize(&k.spec.column);
+/// 窓の題: 「カンバン: status」(推定なら「(推定)」を添える)。列の名前は列の見出しと同じ displayName
+/// (base-view.display-name-everywhere)。
+fn title(app: &App, k: &Kanban) -> String {
+    let col = sanitize(&app.title(&k.spec.column));
     if k.inferred {
         Msg::KanbanTitleInferred.fill(&[&col])
     } else {
@@ -738,7 +744,7 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let bh = h.saturating_sub(lines.len() + 2);
     let iw = w.saturating_sub(2);
     let body = body_lines(app, k, iw, bh.saturating_sub(2));
-    lines.extend(panel(app, &title(k), body, w, bh, true));
+    lines.extend(panel(app, &title(app, k), body, w, bh, true));
     let body_end = h.saturating_sub(2);
     while lines.len() < body_end {
         lines.push(Line::from(" ".repeat(w)));

@@ -106,6 +106,31 @@
   - When:
   - Then: 見出しは `名前`。
 
+#### 列の名前を見せる所(まとまりの見出し・ビューの帯の条件と並べ替えとグループの札・ビューの設定の絞り込みの一覧・カンバンとガントとグラフとリストの値の付け外しの窓の題・新しいノートの窓の欄・木の画面の右の欄の列の見出し)は、列の見出しと同じく `properties` の displayName があればそれを使い、ノートに書く値・式・設定・`--print` の鍵は変えないべき
+`req~base-view.display-name-everywhere~1` P1
+- Rationale: 列の見出しは「状態」なのに、まとまりの見出しや帯の札やカンバンの題には生の列名(`status`)が出て、同じ列が2つの名前で見えていたため(2026-11-25 に、まとまりの見出しの「actor:」を直したときに、同じ形の所を洗い出した)
+- Acceptance:
+  - Given: `properties` で `note.status` に displayName `状態` の表で、絞り込み「status が done を除く」
+  - When: 表を描く
+  - Then: ビューの帯の札は「状態: done を除く」。
+- Acceptance:
+  - Given: 同じ表で `kanban = { column = "status" }`
+  - When: カンバンを開く
+  - Then: 窓の題は「カンバン: 状態」。
+- Acceptance:
+  - Given: `note.start` に displayName `開始`、`note.due` に `期限` で、`gantt = { start = "start", end = "due" }`
+  - When: ガントを開く
+  - Then: 窓の題は「ガント: 開始 → 期限(…)」。
+- Acceptance:
+  - Given: 同じ表で、新しいノートの窓で status を聞く(`ask = ["status"]`)
+  - When: `a` で窓を開く
+  - Then: 欄の名前は「状態」。
+- Acceptance:
+  - Given: displayName の無い列 owner で絞り込む
+  - When: 表を描く
+  - Then: 帯の札は「owner: …」のまま。
+- Needs: utest
+
 #### 式は、比較・論理・算術、`note.`・`file.`・`formula.` の参照、よく使う関数(`file.hasTag`・`file.inFolder`・`file.hasProperty`・`contains` 系・`if`・`date`・`now`・`today` と期間の足し引き)を評価するべき
 `req~base-view.expr-eval~1` P1
 - Acceptance:

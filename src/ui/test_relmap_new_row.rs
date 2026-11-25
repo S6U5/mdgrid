@@ -82,3 +82,36 @@ fn test_ce_25_relmap_new_row_follows_bar_padding() {
     ch(&mut a, 'R');
     assert_eq!(new_at(&a), Some(table), "{}", lines(&a).join("\n"));
 }
+
+#[test]
+fn test_ce_25_relmap_new_keeps_frame_corner() {
+    // [utest -> req~cell-edit.new-note-relmap-button~2, req~relations.layout-readable~1] 幅 160・120・100・80・60 の関係マップで、窓の上の縁に重なる
+    // 「+ 新規」は、いちばん右の窓(広ければ詳細、狭ければ関係マップ)の右上の角 `╮` を消さず、窓の題も残す(2026-11-25 の実地の操作で、
+    // ボタンの右の空白が詳細の窓の角を隠し、枠が切れて見えた)。ボタンの「+」の桁は表の画面と同じまま(test_ce_25_relmap_new_same_row_as_view_bar)。
+    let tmp = workspace("ce25_corner");
+    for w in [160u16, 120, 100, 80, 60] {
+        let mut a = boot_tasks(&tmp);
+        a.resize(w, 30);
+        let table = new_at(&a);
+        ch(&mut a, 'R');
+        assert_eq!(a.mode, Mode::Relations);
+        let l = lines(&a);
+        let s = l.join("\n");
+        let (y, x) = new_at(&a).unwrap_or_else(|| panic!("幅 {w}: 「+ 新規」が無い:\n{s}"));
+        if let Some(t) = table {
+            assert_eq!((y, x), t, "幅 {w}: 表の画面と同じ桁:\n{s}");
+        }
+        let row = &l[y];
+        assert_eq!(
+            row.chars().last(),
+            Some('╮'),
+            "幅 {w}: 右上の角が残る:\n{s}"
+        );
+        let title = if w >= 100 {
+            "詳細"
+        } else {
+            "関係マップ"
+        };
+        assert!(row.contains(title), "幅 {w}: 窓の題「{title}」:\n{s}");
+    }
+}

@@ -4,7 +4,8 @@
 //! 窓の中の状態のフィールドには頼らず、キー・クリック・画面の文字・`mode`・`settings.filters`・行の数・
 //! `message` で確かめる。窓の段取りは記録の仮定のとおり: 条件の並びと最後の「+ 絞り込みを足す」→ Enter で
 //! 列を選ぶ → 種類(値の一覧・含む・含まない・比べる・空である・空でない)→ 値の一覧なら先頭の行が残す/隠すの
-//! 切り替え、Space でチェック、Enter で決める。含む・比べるは値を打って Enter。
+//! 切り替え、Space でチェック、Tab で決める(screen.checklist-keys。値の一覧の Enter はチェック)。含む・比べるは
+//! 値を打って Enter。
 //! 選んでいる行は、並べ替えの窓(NV-24)と同じく行の頭の「> 」で見分ける。
 
 use super::keymap::{Action, Mode};
@@ -134,7 +135,7 @@ fn start_add(a: &mut App, col: &str, kind: &str) {
     press(a, KeyCode::Enter);
 }
 
-/// status の done を隠す条件を足す(値の一覧: 隠す方式にして done にチェック → Enter)。
+/// status の done を隠す条件を足す(値の一覧: 隠す方式にして done にチェック → Tab で決める。screen.checklist-keys)。
 fn hide_done(a: &mut App) {
     start_add(a, "status", "値の一覧");
     // 先頭の行が残す/隠すの切り替え。残す方式なら隠す方式に切り替える。
@@ -145,7 +146,7 @@ fn hide_done(a: &mut App) {
     assert!(scr(a).contains("チェックした値の行を隠す"), "{}", scr(a));
     select(a, "done");
     ch(a, ' ');
-    press(a, KeyCode::Enter);
+    press(a, KeyCode::Tab);
 }
 
 fn drop_done() -> Cond {

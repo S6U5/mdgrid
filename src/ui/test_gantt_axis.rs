@@ -470,6 +470,72 @@ fn test_ga_2_day_header_mondays_only() {
     }
 }
 
+/// 見出しの上の行の語(空白で区切ったもの。窓の縦の縁は除く)が、どれも1つの切れ目の字(「YYYY-MM」「MM」「YYYY」)か。
+fn assert_top_words_apart(top: &str, what: &str) {
+    for tok in top.split_whitespace().filter(|t| *t != "│") {
+        let shape: String = tok
+            .chars()
+            .map(|c| if c.is_ascii_digit() { '9' } else { c })
+            .collect();
+        assert!(
+            matches!(shape.as_str(), "9999-99" | "99" | "9999"),
+            "{what}: 見出しの上の行の字どうしがくっつく「{tok}」:\n{top}"
+        );
+    }
+}
+
+#[test]
+fn test_ga_2_day_header_months_apart() {
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1] 日の単位で、原点(10/25)から次の月の始まり(11/01)まで7字しか無くても、見出しの上の行の
+    // 月の字どうしは空白で離れる(「2026-102026-11」とくっつかない。2026-11-25 の実地の操作で見つかった)。11/01 と 12/01 の字の上は
+    // 「2026-11」「2026-12」のまま。
+    let notes = [
+        ("alpha.md", "---\nstart: 2026-10-25\ndue: 2026-11-10\n---\n"),
+        ("bravo.md", "---\nstart: 2026-10-28\ndue: 2026-12-05\n---\n"),
+    ];
+    let (_t, mut a) = boot("ga2dayapart", &notes);
+    ch(&mut a, 'C');
+    assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+    assert_eq!(unit(&a), Unit::Day);
+    let s = screen(&a);
+    let (top, _) = header(&s);
+    assert!(!top.contains("2026-102026"), "月の字がくっつく:\n{s}");
+    assert_top_words_apart(&top, "日の単位");
+    let x0 = bar_x(&s, "alpha");
+    for (days, want) in [(7, "2026-11"), (37, "2026-12")] {
+        let got: String = chars_from(&top, x0 + days).into_iter().take(7).collect();
+        assert_eq!(got, want, "原点から {days} 字目:\n{s}");
+        assert_eq!(
+            char_at(&top, x0 + days - 1),
+            Some(' '),
+            "前の字は空白:\n{s}"
+        );
+    }
+}
+
+#[test]
+fn test_ga_2_week_header_years_apart() {
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1] 週の単位で、原点の週(11/30 の週)から年の変わる週(12/28 の週)まで4字しか無くても、見出しの
+    // 上の行の年の字どうしは空白で離れる(「20262027」とくっつかない)。年の変わる週の上は「2027」のまま。
+    let notes = [("alpha.md", "---\nstart: 2026-12-01\ndue: 2027-04-30\n---\n")];
+    let (_t, mut a) = boot("ga2weekapart", &notes);
+    ch(&mut a, 'C');
+    assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+    assert_eq!(unit(&a), Unit::Week);
+    assert_eq!(
+        a.gantt.as_ref().unwrap().origin,
+        parse_date("2026-11-30").unwrap()
+    );
+    let s = screen(&a);
+    let (top, _) = header(&s);
+    assert!(!top.contains("20262027"), "年の字がくっつく:\n{s}");
+    assert_top_words_apart(&top, "週の単位");
+    let x0 = bar_x(&s, "alpha");
+    let got: String = chars_from(&top, x0 + 4).into_iter().take(4).collect();
+    assert_eq!(got, "2027", "12/28 の週(原点から4字目):\n{s}");
+    assert_eq!(char_at(&top, x0 + 3), Some(' '), "前の字は空白:\n{s}");
+}
+
 // ---- タスク 3: 地の帯 ----
 
 #[test]

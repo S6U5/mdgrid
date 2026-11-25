@@ -3,6 +3,8 @@
 
 use super::app::App;
 use super::native_io::Ask;
+use super::switch::Dest;
+use mdgrid::favorites::Favorite;
 use mdgrid::i18n::Msg;
 use mdgrid::places::Place;
 use mdgrid::workspace::{self, Scope, WsTable};
@@ -59,6 +61,15 @@ impl App {
             None => self.registered.clone(),
         }
     }
+}
+
+/// パレットの「ワークスペースを開く」の1項目。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum WsOpenItem {
+    /// workspaces.toml のワークスペース(続けて表を選ぶ。WS-2)。
+    Named(String),
+    /// 最初に開いた所か、お気に入りの印のワークスペース(切り替えの一覧と同じ道で移る。workspace.drawer-favorites)。
+    Go(Dest),
 }
 
 /// 足す先の候補(見せる文と、選んだときの名前)。打った語が今の名前と同じでなければ、先頭に「+ 新しい
@@ -138,14 +149,31 @@ impl App {
         self.open_ask(Ask::WsRemove(names));
     }
 
-    /// WS-2: ワークスペースを開く(名前を選び、次にその表を選ぶ)。
+    /// WS-2: ワークスペースを開く(名前を選び、次にその表を選ぶ)。workspace.drawer-favorites: 起動したときに開いた
+    /// 所から離れていれば「最初に開いた所」を先頭に、お気に入りの印のワークスペースを末尾に並べ、選んだら切り替えの
+    /// 一覧と同じ道で移る(workspaces.toml のお気に入りは名前の項目のまま)。並べるものが無ければ作り方。
     pub(crate) fn start_ws_open(&mut self) {
-        if self.workspaces.is_empty() {
+        let favs = self.resolved_favorites().0;
+        let (mut items, mut dests) = (Vec::new(), Vec::new());
+        if self.origin_away() {
+            items.push(self.origin_label());
+            dests.push(WsOpenItem::Go(Dest::Origin));
+        }
+        for w in &self.workspaces {
+            items.push(w.name.clone());
+            dests.push(WsOpenItem::Named(w.name.clone()));
+        }
+        for f in favs {
+            if matches!(f, Favorite::Marker { .. }) {
+                items.push(f.name().to_string());
+                dests.push(WsOpenItem::Go(Dest::Fav(f)));
+            }
+        }
+        if items.is_empty() {
             self.message = Some(Msg::WsNone.into());
             return;
         }
-        let names = self.workspaces.iter().map(|w| w.name.clone()).collect();
-        self.open_ask(Ask::WsOpen(names));
+        self.open_ask(Ask::WsOpen { items, dests });
     }
 
     /// 今の表を `name` のワークスペースに足して読み直す(無ければ作る)。

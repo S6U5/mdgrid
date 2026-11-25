@@ -2,9 +2,10 @@
 //! 枠の行、クリックの当たり、表の行への重ね方。窓ごとの中身(行の文字)は各モジュールが作る。
 
 use super::app::App;
-use super::keymap::Action;
+use super::keymap::{self, Action, Mode};
 use super::list::splice;
 use super::width::{take, width};
+use mdgrid::i18n::Msg;
 use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 
@@ -156,6 +157,117 @@ impl Frame {
 pub(crate) fn top_edge(f: Frame, title: &str, tw: usize) -> String {
     let t = take(title, tw);
     format!("{}{t}{}{}", f.tl, f.line(tw - width(&t)), f.tr)
+}
+
+/// チェックの窓の一番下の「[ 決める ]」の行の字(screen.checklist-keys)。動作の名前は決めるキーの表示名と同じ文言。
+pub(crate) fn decide_label() -> String {
+    format!("[ {} ]", Msg::KeyDecide.text())
+}
+
+// ---- 下の縁のキーの案内(screen.window-key-hints) ----
+
+/// 窓の下の縁に並べるキーの案内の1つ: 「キー 動作」の字と、押した(クリックした)ときの動作。
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct KeyHint {
+    pub text: String,
+    pub action: Action,
+}
+
+/// モード `mode` の動作の案内を、並べたい順に作る。キーはキーの表(割り当て直したあと)の最初のキー、動作の名前は
+/// 添えた文言(窓の段で意味が変わるとき)か、無ければ表の表示名。キーを外した動作は出さない(SR-4・SR-13)。
+pub(crate) fn key_hints(app: &App, mode: Mode, items: &[(Action, Option<Msg>)]) -> Vec<KeyHint> {
+    items
+        .iter()
+        .filter_map(|&(action, label)| {
+            let b = app
+                .keys
+                .iter()
+                .find(|b| b.mode == mode && b.action == action)?;
+            let name = label.map_or_else(|| b.text(), Msg::text);
+            Some(KeyHint {
+                text: format!("{} {name}", keymap::display(b.key)),
+                action,
+            })
+        })
+        .collect()
+}
+
+/// 案内を全部入れるのに要る縁の中(角の間)の幅: 線1・空白1・案内(間は2桁)・空白1・線1。案内が無ければ 0。
+pub(crate) fn hints_width(hints: &[KeyHint]) -> usize {
+    if hints.is_empty() {
+        return 0;
+    }
+    hints.iter().map(|h| width(&h.text) + 2).sum::<usize>() + 2
+}
+
+/// 窓の幅(縁を含む): 中身の幅 `content` を、下の縁の案内が全部入る幅(縁の中の幅 `edge` と縁2桁)まで広げ、画面の
+/// 幅 `w` に収める。下の縁も窓の中身なので、右へはみ出すなら中身と同じく左へずらす(置き場は各窓のまま)。画面が狭くて
+/// 入らない案内は、描くときに後ろから省く。
+pub(crate) fn widen_for_hints(content: usize, edge: usize, w: usize) -> usize {
+    if edge == 0 {
+        return content.min(w);
+    }
+    content.max(edge + 2).min(w)
+}
+
+/// 縁の中の幅 `tw` に入る案内の置き場(案内の添字と、縁の中の左の端からの桁)。`lead` 桁(下の縁の数など)のあと、
+/// 線1・空白1を空けて前から並べ、右に空白1・線1が残らない案内からあとは省く(縁の線と字を重ねない)。
+fn hint_spots(hints: &[KeyHint], tw: usize, lead: usize) -> Vec<(usize, usize)> {
+    let mut out = Vec::new();
+    let mut at = lead + 2;
+    for (i, h) in hints.iter().enumerate() {
+        let w = width(&h.text);
+        if at + w + 2 > tw {
+            break;
+        }
+        out.push((i, at));
+        at += w + 2;
+    }
+    out
+}
+
+/// 下の縁の行(角を含む): 左に `lead`(選んでいる番号/数など)、その後ろに入るだけの案内。案内が1つも入らなければ
+/// 今までどおり `lead` と線だけ。
+pub(crate) fn bottom_hints(f: Frame, tw: usize, lead: &str, hints: &[KeyHint]) -> String {
+    let lead = take(lead, tw);
+    let lw = width(&lead);
+    let spots = hint_spots(hints, tw, lw);
+    let mut s = format!("{}{lead}", f.bl);
+    let mut x = lw;
+    for (i, at) in spots {
+        // 最初の案内の前は線1・空白1、案内の間は空白2。
+        if x == lw {
+            s.push(f.h);
+            s.push(' ');
+        } else {
+            s.push_str("  ");
+        }
+        s.push_str(&hints[i].text);
+        x = at + width(&hints[i].text);
+    }
+    if x > lw {
+        s.push(' ');
+        x += 1;
+    }
+    s.push_str(&f.line(tw - x));
+    s.push(f.br);
+    s
+}
+
+/// 下の縁の桁 `dx`(窓の左の端からの桁。左下の角が 0)にある案内の動作。案内の上でなければ None。
+pub(crate) fn hint_at(hints: &[KeyHint], tw: usize, lead: &str, dx: usize) -> Option<Action> {
+    let c = dx.checked_sub(1)?;
+    let lw = width(&take(lead, tw));
+    hint_spots(hints, tw, lw)
+        .into_iter()
+        .find(|&(i, at)| (at..at + width(&hints[i].text)).contains(&c))
+        .map(|(i, _)| hints[i].action)
+}
+
+/// (x, y) が、左の端 `gx`・幅 `iw` の窓の下の縁の行 `bottom` の上なら、窓の左の端からの桁。
+pub(crate) fn on_bottom(x: u16, y: u16, gx: usize, iw: usize, bottom: usize) -> Option<usize> {
+    let (x, y) = (x as usize, y as usize);
+    (y == bottom && (gx..gx + iw).contains(&x)).then(|| x - gx)
 }
 
 /// (x, y) が窓のどこか: 窓の外なら None、窓の中なら中身の行の位置(0 から。縁なら None の中身)。

@@ -521,11 +521,20 @@ pub fn marker_chart(opened: &Path) -> (Vec<(crate::chart::ChartSpec, String)>, V
 /// navigation.parent-child-config: 開いたものの表に、印の `[[table]]` で書いた親子の設定
 /// (`children = { key, status, done, closed, on_done, gantt }`)と、警告の場所(`table[n].children`)。印が無い・その
 /// 表が無い・`children` が無いなら None。表でないか `key` が無ければ CLI-3 の形で警告して None。ほかの項目の
-/// 書き方が違えば、警告してその項目を既定にする。
+/// 書き方が違えば、警告してその項目を既定にする。`closed_by` と `on_reopen` は `marker_children_reopen` が読む。
 pub fn marker_children(
     opened: &Path,
 ) -> (Option<(crate::tree::ChildrenSpec, String)>, Vec<String>) {
     marker_setting(opened, "children", read_children)
+}
+
+/// cell-edit.children-closed-by・cell-edit.children-reopen: 同じ `children` の `closed_by` と `on_reopen`
+/// (`marker_children` の型に項目を足さずに読む。`tree::ReopenSpec`)。`children` が表でなければ None(警告は
+/// `marker_children` が出す)。書き方の違う項目と、`closed_by` の無い `reopen`・`ask` は CLI-3 の形で警告して既定にする。
+pub fn marker_children_reopen(
+    opened: &Path,
+) -> (Option<(crate::tree::ReopenSpec, String)>, Vec<String>) {
+    marker_setting(opened, "children", read_children_reopen)
 }
 
 /// GA-7: 画面の型ごとの設定の共通の読み方。開いたもの(フォルダか .base)と `real_path` で同じ `[[table]]` を探し、
@@ -765,6 +774,7 @@ fn read_kanban(
 /// navigation.parent-child-config: `children = { key = "<列>", status = "<列>", done = "<値>", closed = ["<値>", …],
 /// on_done = "complete|refuse|keep", gantt = "mark|extend|none" }` を読む。書いていない項目は既定
 /// (`ChildrenSpec::new`)。`key` の無い・表でない設定は None、ほかの項目の書き方の違いは警告してその項目を既定にする。
+/// `closed_by`・`on_reopen` は知っている項目として通し、`read_children_reopen` が読む。
 fn read_children(
     v: &toml::Value,
     file: &str,
@@ -773,7 +783,16 @@ fn read_children(
 ) -> Option<crate::tree::ChildrenSpec> {
     use crate::profile::{not, not_one_of, warn};
     use crate::tree::{ChildrenSpec, OnDone, SpanRule};
-    const KEYS: [&str; 6] = ["key", "status", "done", "closed", "on_done", "gantt"];
+    const KEYS: [&str; 8] = [
+        "key",
+        "status",
+        "done",
+        "closed",
+        "on_done",
+        "gantt",
+        "closed_by",
+        "on_reopen",
+    ];
     let Some(t) = v.as_table() else {
         warn(warns, file, at, Msg::RsnChildrenNotTable.text().to_string());
         return None;
@@ -857,6 +876,54 @@ fn read_children(
                 not_one_of(&SpanRule::NAMES),
             ),
         }
+    }
+    Some(spec)
+}
+
+/// cell-edit.children-closed-by・cell-edit.children-reopen: `children` の `closed_by = "<列>"` と
+/// `on_reopen = "keep|reopen|ask"` を読む。書いていなければ列なし・`keep`。表でなければ None(`read_children` が
+/// 警告する)。書き方の違う項目は警告して既定にし、`closed_by` の無い `reopen`・`ask` は警告して `keep` にする。
+fn read_children_reopen(
+    v: &toml::Value,
+    file: &str,
+    at: &str,
+    warns: &mut Vec<String>,
+) -> Option<crate::tree::ReopenSpec> {
+    use crate::profile::{not, not_one_of, warn};
+    use crate::tree::{OnReopen, ReopenSpec};
+    let t = v.as_table()?;
+    let mut spec = ReopenSpec::default();
+    let mut text = |key: &str| -> Option<String> {
+        match t.get(key) {
+            None => None,
+            Some(toml::Value::String(s)) => Some(s.trim().to_string()).filter(|s| !s.is_empty()),
+            Some(_) => {
+                warn(warns, file, &format!("{at}.{key}"), not(Msg::WantString));
+                None
+            }
+        }
+    };
+    spec.closed_by = text("closed_by");
+    let on_reopen = text("on_reopen");
+    if let Some(s) = on_reopen {
+        match OnReopen::parse(&s) {
+            Some(o) => spec.on_reopen = o,
+            None => warn(
+                warns,
+                file,
+                &format!("{at}.on_reopen"),
+                not_one_of(&OnReopen::NAMES),
+            ),
+        }
+    }
+    if spec.on_reopen != OnReopen::Keep && spec.closed_by.is_none() {
+        warn(
+            warns,
+            file,
+            &format!("{at}.on_reopen"),
+            Msg::RsnChildrenReopenNoClosedBy.text().to_string(),
+        );
+        spec.on_reopen = OnReopen::Keep;
     }
     Some(spec)
 }

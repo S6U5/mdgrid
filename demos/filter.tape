@@ -23,11 +23,11 @@ Type "|" Sleep 1.5s
 Enter Sleep 1s
 Enter Sleep 1s
 Enter Sleep 2s
-# 隠す方式のまま done にチェックして決める
+# 隠す方式のまま done にチェックを入れ(Enter。窓は開いたまま)、Tab で決める
 Down Sleep 600ms
 Down Sleep 600ms
-Space Sleep 1s
-Enter Sleep 2s
+Enter Sleep 1s
+Tab Sleep 2s
 
 # priority ≥ 2 を足す(+ Add a filter → priority → Compare → ≥ → 2)
 Down Sleep 600ms
