@@ -170,6 +170,19 @@
   - When: 設定で `j` を外す
   - Then: ↓ だけが効く。
 
+#### 表の画面では `O`(Shift+o)で、選んだ行の URL を開き(木の画面の `o` と同じ動作)、`[keys.table]` で `open_url` を別のキーに割り当て直せるべき
+`req~screen.open-url-key~1` P1
+- Rationale: 日常で使うサイトの表で、URL を開くのに操作の一覧かパレットを通るしかなく、自分でキーを割り当てようとしても「表のモードでは使えない」と無視されていたため(2026-11-25 に人が「両方」と決めた)
+- Acceptance:
+  - Given: `url: https://example.com/mail` の行を選んだ表
+  - When: `O`
+  - Then: その URL を OS の既定のブラウザに渡す(開く前にメッセージ行に URL を出す)。
+- Acceptance:
+  - Given: 設定に `[keys.table]` の `"u" = "open_url"`
+  - When: 起動して `u`
+  - Then: 警告を出さず、選んだ行の URL を開く。
+- Needs: utest
+
 #### キーの定義は1か所の表に置き、キーの振り分け・下の帯・ヘルプを、すべてその表から作るべき
 `req~screen.key-table~1` P1
 - Acceptance:

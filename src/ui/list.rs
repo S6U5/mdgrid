@@ -222,16 +222,11 @@ impl App {
         let Some(g) = geometry(self, w, h.saturating_sub(2)) else {
             return false;
         };
-        let (x, y) = (x as usize, y as usize);
-        if x < g.x || x >= g.x + g.iw || y < g.top || y > g.top + g.vis {
+        let Some(hit) = super::popup::hit(x, y, g.x, g.top, g.iw, g.vis) else {
             return false;
-        }
-        let k = if g.below {
-            y - g.top
-        } else {
-            y.wrapping_sub(g.top + 1)
         };
-        if k < g.vis {
+        // 縁(上と下)のクリックは窓の中として受けるだけ。
+        if let Some(k) = hit {
             let item = self
                 .list_view()
                 .and_then(|(_, shown, _)| shown.get(g.start + k).copied());
@@ -255,7 +250,7 @@ impl App {
 /// リストの置き場所。
 struct Geom {
     x: usize,
-    /// 箱の一番上の行(下に出すなら最初の項目、上に出すなら縁)。
+    /// 箱の上の縁の行(項目はその次の行から。下の縁は項目の次の行)。
     top: usize,
     iw: usize,
     /// 見せる最初の項目と数。
@@ -273,7 +268,8 @@ fn anchor(app: &App, w: usize) -> Option<(usize, usize)> {
     input_box(app, &lay, &cols).map(|b| (b.x, b.y))
 }
 
-/// `limit` は下の帯より上の行の数。
+/// `limit` は下の帯より上の行の数。窓は上と下の縁で閉じる(入力の欄の側の縁が無いと、入力の欄の行の、欄より右の
+/// セルが窓の中に続いて見える。screen.frames)。
 fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
     if app.mode != Mode::Edit {
         return None;
@@ -281,11 +277,12 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
     let (l, shown, _) = app.list_view()?;
     let (ax, ay) = anchor(app, w)?;
     let n = shown.len();
+    let frame = super::popup::FRAME;
     let below_room = limit.saturating_sub(ay + 1);
     let above_room = ay.saturating_sub(1);
-    let below = below_room > n || below_room >= above_room;
+    let below = below_room >= n + frame || below_room >= above_room;
     let room = if below { below_room } else { above_room };
-    let vis = n.min(room.saturating_sub(1));
+    let vis = n.min(room.saturating_sub(frame));
     if vis == 0 {
         return None;
     }
@@ -306,7 +303,7 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
     let start = (at + 1).saturating_sub(vis);
     Some(Geom {
         x: ax.min(w - iw),
-        top: if below { ay + 1 } else { ay - vis - 1 },
+        top: if below { ay + 1 } else { ay - vis - frame },
         iw,
         start,
         vis,
@@ -346,19 +343,16 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         Some(p) => format!("{}/{}", p + 1, shown.len()),
         None => format!("{}", shown.len()),
     };
-    // 窓が下にあれば下の縁、上にあれば上の縁に数を出す。
+    // 窓が下にあれば下の縁、上にあれば上の縁に数を出す(入力の欄の側の縁は線だけ)。
     let line = fit(&count, g.iw - 2, Align::Left).replace(' ', &f.h.to_string());
-    let edge = if g.below {
-        format!("{}{line}{}", f.bl, f.br)
+    let plain = f.line(g.iw - 2);
+    let (head, foot) = if g.below {
+        (&plain, &line)
     } else {
-        format!("{}{line}{}", f.tl, f.tr)
+        (&line, &plain)
     };
-    let edge = (edge, Style::default());
-    if g.below {
-        rows.push(edge);
-    } else {
-        rows.insert(0, edge);
-    }
+    rows.insert(0, (format!("{}{head}{}", f.tl, f.tr), Style::default()));
+    rows.push((format!("{}{foot}{}", f.bl, f.br), Style::default()));
     super::popup::blit(app, lines, g.x, g.top, g.iw, w, rows);
     // SR-35: 札の列の候補(文字の値)は、表と同じ札の色を重ねる(文字と幅は同じ。選んでいる候補は選びの見た目)。
     let Some(col) = app.input.as_ref().map(|i| i.col.clone()) else {
@@ -367,7 +361,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     if !app.is_select(&col) {
         return;
     }
-    let first = g.top + usize::from(!g.below);
+    let first = g.top + 1;
     for (k, &i) in shown.iter().skip(g.start).take(g.vis).enumerate() {
         let it = &l.items[i];
         let NewValue::Str(v) = &it.value else {

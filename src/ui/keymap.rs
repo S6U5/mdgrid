@@ -958,7 +958,7 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::SaveSession, Msg::CmdSaveSession, FILE),
     cmd(Action::OpenLink, Msg::CmdOpenLink, FIND),
     cmd(Action::LinkedRows, Msg::CmdLinkedRows, FIND),
-    // TR-5: 行の URL を開く(既定のキーなし。木の中では `o`。操作の一覧からも)。
+    // TR-5: 行の URL を開く(表では `O`、木の中では `o`。キーを外しても、パレットと操作の一覧から使える)。
     cmd(Action::OpenUrl, Msg::CmdOpenUrl, OUTSIDE),
     // GA-2: ガントの画面(画面の型のメニューとパレットからも)。
     cmd(Action::GanttView, Msg::CmdGanttView, FIND),
@@ -1048,6 +1048,8 @@ pub const BINDINGS: &[Binding] = &[
     b("y", Action::Copy, Msg::KeyCopyCell, OUTSIDE, 0),
     b("Ctrl+c", Action::Copy, Msg::KeyCopyCell, OUTSIDE, 0),
     b("Y", Action::CopyRow, Msg::KeyCopyRow, OUTSIDE, 0),
+    // screen.open-url-key・TR-5: 選んだ行の URL を開く(木の画面の `o` と同じ動作。`o` はビューの設定なので Shift)。
+    b("O", Action::OpenUrl, Msg::KeyOpenUrl, OUTSIDE, 0),
     // 表の形(BV-13・SR-3・NV-4)。見出しの行の Enter は開閉(SR-2。Enter の「編集」と同じ動作)。
     b("[", Action::PrevView, Msg::KeyPrevView, SHAPE, 0),
     b("]", Action::NextView, Msg::KeyNextView, SHAPE, 0),
@@ -3823,6 +3825,11 @@ pub fn keys_of(table: &[Binding], mode: Mode, action: Action) -> Vec<String> {
 /// 下の帯に出す「今押せるキー」(SR-1): 順位の順に、動作ごとに表の最初のキーと表示名。
 /// 全部のキーはヘルプ(SR-5)に出す。
 pub fn hints(table: &[Binding], mode: Mode) -> Vec<String> {
+    ranked(table, mode).into_iter().map(|(_, s)| s).collect()
+}
+
+/// `hints` の並びの、動作と文字(画面ごとに案内を入れ替えるとき。gantt.band-edit-keys)。
+pub fn ranked(table: &[Binding], mode: Mode) -> Vec<(Action, String)> {
     let mut shown: Vec<(u8, Action, String)> = Vec::new();
     for b in table.iter().filter(|b| b.mode == mode && b.rank > 0) {
         if !shown.iter().any(|(_, a, _)| *a == b.action) {
@@ -3830,7 +3837,7 @@ pub fn hints(table: &[Binding], mode: Mode) -> Vec<String> {
         }
     }
     shown.sort_by_key(|(r, _, _)| *r);
-    shown.into_iter().map(|(_, _, s)| s).collect()
+    shown.into_iter().map(|(_, a, s)| (a, s)).collect()
 }
 
 /// 前置きのキー `prefix` のあとに続けて押せるキーと表示名(SR-25)。表の順に、動作ごとに最初の並び。

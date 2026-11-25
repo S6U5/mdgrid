@@ -166,7 +166,8 @@ impl App {
             Action::ListDown => self.list_move(true),
             Action::CommitNext | Action::CommitPrev => {
                 let row = self.input.as_ref().map(|i| i.row.clone());
-                if self.commit() {
+                // cell-edit.children-reopen: 子も戻すかの窓を開いたら、隣は開かない。
+                if self.commit() && self.children_ask.is_none() {
                     // 隣を開くのは組み立て直しのあと(直した値で行が絞り込みから外れたら、別の行に開かない)。
                     if std::mem::take(&mut self.regrid) {
                         self.refresh();
@@ -371,18 +372,22 @@ impl App {
         // 値の候補には、決まりの labels の名前を添える(リンクの列の候補は行き先の名前のまま)。
         let values =
             |c: &[Value]| self.with_value_labels(&col, List::new(c, cur.as_ref(), !mismatch));
+        // relations.link-input-no-cycle: 親を指す列の候補から外す行(直す行の全部)。
+        let editing = bulk.clone().unwrap_or_else(|| vec![base.clone()]);
         let list = match kind {
             // REL-3: リンクの列は、行き先のフォルダのノートを候補にする(見せるのは名前、書くのはリンク)。
-            Kind::Text => self.link_list(&base, &col, cur.as_ref()).or_else(|| {
-                // CE-36: 選べる値(決まりの values)があれば、数の上限によらずその値を候補に。
-                match self.rule_candidates(&col, kind) {
-                    Some(c) => Some(values(&c)),
-                    None => self
-                        .src
-                        .candidates(&col, self.candidates)
-                        .map(|c| values(&c)),
-                }
-            }),
+            Kind::Text => self
+                .link_list(&base, &col, cur.as_ref(), &editing)
+                .or_else(|| {
+                    // CE-36: 選べる値(決まりの values)があれば、数の上限によらずその値を候補に。
+                    match self.rule_candidates(&col, kind) {
+                        Some(c) => Some(values(&c)),
+                        None => self
+                            .src
+                            .candidates(&col, self.candidates)
+                            .map(|c| values(&c)),
+                    }
+                }),
             Kind::Checkbox => Some(List::new(
                 &[Value::Bool(true), Value::Bool(false)],
                 cur.as_ref(),
@@ -561,6 +566,8 @@ impl App {
             }
         }
         self.close_input();
+        // cell-edit.children-reopen: on_reopen = "ask" で、子も戻すかを選ぶのを待つなら、入力を閉じてから窓を開く。
+        self.open_children_ask();
         true
     }
 
@@ -578,6 +585,10 @@ impl App {
             let v = v.value(self, row, col);
             // cell-edit.children-done: 親を完了にしたら、印の children のとおりに子孫も扱う(children.rs)。
             let st = self.stage_children(col, vec![(row.clone(), Some(v.clone()))]);
+            // cell-edit.children-reopen: 子も戻すかを選んでからためる(commit が窓を開く)。
+            if st.asked {
+                return Ok(());
+            }
             if let Some((_, why)) = st.refused.into_iter().next() {
                 return Err(why);
             }
@@ -612,6 +623,10 @@ impl App {
         }
         // cell-edit.children-done: 完了にする親は、印の children のとおりに子孫も扱う。断った親は飛ばした行に数える。
         let st = self.stage_children(col, items.clone());
+        // cell-edit.children-reopen: 子も戻すかを選んでからためる(commit が窓を開く)。
+        if st.asked {
+            return Ok(());
+        }
         reasons.extend(st.refused.iter().map(|(_, why)| why.clone()));
         reasons.extend(st.skips.iter().map(|s| s.reason.clone()));
         let done = items.len() - st.skips.len() - st.refused.len();

@@ -135,7 +135,7 @@ fn test_routine_no_offer_when_nothing_is_due() {
 
 #[test]
 fn test_routine_create_after_confirming_the_names() {
-    // [utest -> req~routine.screen-create~1] 作る操作で2つの名前が並び、確かめると2つのノートができて、表を読み直した Runs の表に2行が出る。
+    // [utest -> req~routine.screen-create~2] 作る操作で2つの名前が並び、確かめると2つのノートができて、表を読み直した Runs の表に2行が出る。
     let (t, mut a) = boot("routine-create", MARKER, &[REVIEW, DIARY], false);
     check(&mut a, "2026-11-24");
     a.apply(Action::RoutineRuns);
@@ -155,7 +155,7 @@ fn test_routine_create_after_confirming_the_names() {
 
 #[test]
 fn test_routine_offer_click_opens_the_names() {
-    // [utest -> req~routine.screen-create~1] 下の帯の知らせのクリックで、作るノートの名前の確かめが開く(tbd~routine.offer-key)。
+    // [utest -> req~routine.screen-create~2] 下の帯の知らせのクリックで、作るノートの名前の確かめが開く(tbd~routine.offer-key)。
     let (t, mut a) = boot("routine-click", MARKER, &[REVIEW, DIARY], false);
     check(&mut a, "2026-11-24");
     click(&mut a, OFFER);
@@ -166,7 +166,7 @@ fn test_routine_offer_click_opens_the_names() {
 
 #[test]
 fn test_routine_palette_opens_the_names() {
-    // [utest -> req~routine.screen-create~1] パレットの「ルーチンの回を作る」(routine_runs)からも、作るノートの名前の確かめが開く(キーは割り当てない。tbd~routine.offer-key)。
+    // [utest -> req~routine.screen-create~2] パレットの「ルーチンの回を作る」(routine_runs)からも、作るノートの名前の確かめが開く(キーは割り当てない。tbd~routine.offer-key)。
     let (t, mut a) = boot("routine-palette", MARKER, &[REVIEW, DIARY], false);
     check(&mut a, "2026-11-24");
     let first = help::candidates(&a, "routine_runs").into_iter().next();
@@ -190,7 +190,7 @@ fn test_routine_palette_opens_the_names() {
 
 #[test]
 fn test_routine_cancel_writes_nothing_and_stays_quiet_today() {
-    // [utest -> req~routine.screen-create~1] 名前の一覧でやめると Runs/ は変わらず、その日のうちは知らせが出ない。次の日に来た回は、また知らせる。
+    // [utest -> req~routine.screen-create~2] 名前の一覧でやめると Runs/ は変わらず、その日のうちは知らせが出ない。次の日に来た回は、また知らせる。
     for cancel in [KeyCode::Esc, KeyCode::Enter] {
         let (t, mut a) = boot("routine-cancel", MARKER, &[REVIEW, DIARY], false);
         check(&mut a, "2026-11-24");
@@ -215,6 +215,58 @@ fn test_routine_cancel_writes_nothing_and_stays_quiet_today() {
             screen(&a)
         );
     }
+}
+
+/// パレットで `routine_runs`(「ルーチンの回を作る」)を選ぶ。
+fn palette_runs(a: &mut App) {
+    ch(a, ':');
+    for c in "routine_runs".chars() {
+        ch(a, c);
+    }
+    press(a, KeyCode::Enter);
+}
+
+#[test]
+fn test_routine_palette_lists_dismissed_runs_and_creates_them() {
+    // [utest -> req~routine.screen-create~2] その日にやめたあと、パレットの「ルーチンの回を作る」を選ぶと、やめた回の名前が並び、
+    // 確かめると作る(やめたのは下の帯の知らせだけ)。
+    let (t, mut a) = boot("routine-after-cancel", MARKER, &[REVIEW, DIARY], false);
+    check(&mut a, "2026-11-24");
+    a.apply(Action::RoutineRuns);
+    press(&mut a, KeyCode::Esc);
+    assert!(runs(&t).is_empty(), "{:?}", runs(&t));
+    assert!(!screen(&a).contains(OFFER), "{}", screen(&a));
+    palette_runs(&mut a);
+    let s = screen(&a);
+    assert!(s.contains("Runs/週次レビュー 2026-11-23.md"), "{s}");
+    assert!(s.contains("Runs/日記 2026-11-24.md"), "{s}");
+    assert!(runs(&t).is_empty(), "確かめる前に書いた: {:?}", runs(&t));
+    ch(&mut a, 'y');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(
+        runs(&t),
+        ["日記 2026-11-24.md", "週次レビュー 2026-11-23.md"]
+    );
+    assert!(!screen(&a).contains(OFFER), "{}", screen(&a));
+}
+
+#[test]
+fn test_routine_palette_recounts_routines_added_after_opening() {
+    // [utest -> req~routine.screen-create~2] 開いたあとに、ルーチンの表で `recurrence: daily` の「散歩」を足して保存し、パレットの
+    // 「ルーチンの回を作る」を選ぶと、「散歩」の今日の回の名前が並ぶ。
+    let (t, mut a) = boot("routine-recount", MARKER, &[REVIEW], false);
+    check(&mut a, "2026-11-24");
+    t.write("散歩.md", "---\nrecurrence: daily\n---\n");
+    palette_runs(&mut a);
+    let s = screen(&a);
+    assert!(s.contains("Runs/散歩 2026-11-24.md"), "{s}");
+    assert!(s.contains("Runs/週次レビュー 2026-11-23.md"), "{s}");
+    ch(&mut a, 'y');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(
+        runs(&t),
+        ["散歩 2026-11-24.md", "週次レビュー 2026-11-23.md"]
+    );
 }
 
 // ---- routine.state ----

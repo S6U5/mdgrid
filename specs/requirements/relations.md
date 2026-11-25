@@ -111,6 +111,15 @@
   - When: project の列の値がどれも `[[…]]` で projects/ を指す
   - Then: 候補は projects/ のノート。
 
+#### `children` の表(navigation.parent-child-config)で、親を指す列(`key`)のセルを直すときの候補には、その行自身とその行の子孫を出さないべき
+`req~relations.link-input-no-cycle~1` P1
+- Rationale: 親の候補に自分自身と自分の子が並び、選ぶと親子が輪になったため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: 「設計」の子に「画面」、「画面」の子に「部品」がある表
+  - When: 「設計」の parent のセルを直して候補を出す
+  - Then: 候補に「設計」「画面」「部品」は無く、ほかのタスクは並ぶ。
+- Needs: utest
+
 #### リンクの列のセルで候補から選んだら、選んだノートへのリンクを書くべき
 `req~relations.link-input-write~1` P1
 - Acceptance:

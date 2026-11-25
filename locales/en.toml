@@ -1437,6 +1437,8 @@ VisualHint = "select a range: move, then v to confirm (Esc to clear)"
 SelectedAll = "selected all rows ({0})"
 SelectionCleared = "selection cleared"
 FilterCleared = "search cleared"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "conditions cleared"
 NoRowToSelect = "no row to select"
 SelectValueCell = "select a value cell"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1535,6 +1537,9 @@ SwitchNoRoom = "the terminal is too small for the switch list"
 KeySwitchRun = "Go to the selected one"
 KeySwitchNumber = "Go to the workspace with that number"
 KeySwitchOrigin = "Go back to where you started"
+KeySwitchDigits = "Go to that number"
+KeyDigitRange = "{0}-{1}"
+SwitchAlreadyHere = "{0} is the workspace you are in"
 ModeSwitch = "Switch"
 SecInSwitch = "In the switch list"
 
@@ -1798,6 +1803,8 @@ KeyBarLater = "Move the bar one unit later (rewrites the dates)"
 KeyBarEarlier = "Move the bar one unit earlier (rewrites the dates)"
 KeyBarLonger = "Extend the end of the bar by one unit"
 KeyBarShorter = "Shorten the end of the bar by one unit"
+GanttBandMove = "Move the bar"
+GanttBandResize = "Lengthen/shorten"
 GanttToday = "Today"
 GanttThisWeek = "Week"
 GanttThisMonth = "Month"
@@ -1880,6 +1887,16 @@ ChildrenOpenRefuseOne = "{0} child is not finished yet, so it is not set to done
 ChildrenOpenKeep = "{0} children are not finished yet"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "{0} child is not finished yet"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "without closed_by (the column that marks the children a parent closed) the children to bring back are unknown, so it is treated as \"keep\""
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "Children were closed with this parent. Bring them back? "
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "Bring the children back too"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "Only the parent"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "some children could not be brought back"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "runs {0} days outside the parent's period"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

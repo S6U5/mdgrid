@@ -29,7 +29,7 @@ In the `table` mode, full-width letters and symbols typed while a Japanese input
 
 The main grid of notes.
 
-When you start mdgrid with `--pick`, `Enter` on a note row prints the marked rows (or the selected row) and quits, `q` cancels, and `Esc` clears the selection, filters, and search as usual, cancelling only when there is nothing left to clear. `Enter` on a group heading row still expands or collapses it, and `e` does not open the editor.
+When you start mdgrid with `--pick`, `Enter` on a note row prints the marked rows (or the selected row) and quits, `q` cancels, and `Esc` clears the selection, filters, the conditions turned on with digit keys or the notice band, and search as usual, cancelling only when there is nothing left to clear. `Enter` on a group heading row still expands or collapses it, and `e` does not open the editor.
 
 | Key | Action | Description |
 |---|---|---|
@@ -73,6 +73,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `y` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
 | `Ctrl+c` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
 | `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard as tab-separated text with a header |
+| `O` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the same as `o` in the tree; the URL is shown in the message line first) |
 | `[` | `prev_view` | Switch to the previous view |
 | `]` | `next_view` | Switch to the next view |
 | `<` | `narrow_column` | Make the column narrower |
@@ -118,7 +119,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `Shift+Up` | `extend_up` | Extend the selection up |
 | `Shift+Down` | `extend_down` | Extend the selection down |
 | `Ctrl+a` | `select_all` | Select all rows |
-| `Esc` | `clear_selection` | Clear the selection; if nothing is selected, clear the filter, then the search highlight |
+| `Esc` | `clear_selection` | Clear the selection; if nothing is selected, clear the filter, then every condition turned on with a digit key or from the notice band (conditions with `hide` stay), then the search highlight |
 | `K` | `detail` | Show every property of the selected note, and the first lines of its body |
 | `o` | `view_settings` | Open the view settings (filters, sort, grouping, columns) |
 | `f` | `focus_chips` | Move to the settings bar above the table |
@@ -434,7 +435,7 @@ Clicking a line does what `Enter` does, and clicking the `×` at the right end o
 
 ## `drawer`
 
-The table list (`w`, `:workspace_drawer`, or the scope or table name in the header breadcrumb). It slides over the table from the left and lists the tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Below them, the other workspaces are listed by name, folded; unfold one to see its tables. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). It is hidden until opened.
+The table list (`w`, `:workspace_drawer`, or the scope or table name in the header breadcrumb). It slides over the table from the left and lists the tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Below them come **Where you started** (when you have moved away from it) and your favorite workspaces (the one you are in marked with `●`); choosing one goes where the switch list (`switch`) would. Below those, the other workspaces are listed by name, folded; unfold one to see its tables. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). While a page is open, only the page name has the `●`, and selecting a table closes the page and opens that table on its own. It is hidden until opened.
 
 | Key | Action | Description |
 |---|---|---|
@@ -721,7 +722,7 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `8` | `choose_8` | Go to favorite 8 |
 | `9` | `choose_9` | Go to favorite 9 |
 
-The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it. The **W ⇄** button at the right of the header (shown when you have favorites or have moved away from where you started; on a narrow terminal it is dropped before the settings button) opens it too.
+While the list is open, the bottom band says that the digit keys (`0`-`9`) go to the numbered place. Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it. The **W ⇄** button at the right of the header (shown when you have favorites or have moved away from where you started; on a narrow terminal it is dropped before the settings button) opens it too.
 
 ## `input_normal`
 
@@ -819,7 +820,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `chart_next_saved` — next chart in the marker
 - `chart_cumulative` — toggle a cumulative line
 - `chart_percent` — toggle percentages of a stacked bar
-- `open_url` — open the http or https URL of the selected row in the browser (in the table, from the palette and the action menu)
+- `open_url` — open the http or https URL of the selected row in the browser (`O` in the table, `o` in the tree; also from the palette and the action menu)
 - `add_column` — add a column for a new key
 - `move_column_left` — move the column to the left
 - `move_column_right` — move the column to the right
@@ -863,7 +864,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `extend_up` — extend the selection up
 - `extend_down` — extend the selection down
 - `select_all` — select all rows
-- `clear_selection` — clear the selection or the filter
+- `clear_selection` — clear the selection, the filter, the conditions, then the search highlight, one at a time
 - `detail` — show every property of the note
 - `view_settings` — open the view settings
 - `focus_chips` — move to the settings bar
@@ -958,4 +959,4 @@ These commands have no key and can't be bound in the config file. Run them from 
 - `across_search` — search every table in the workspace for a word and open the table of the row you pick (only with `across = true` under `[search]`; see [config.md](config.md#searchacross))
 - `stack_add` — pick a table of the current scope and stack it below the current table (up to 4)
 - `page_save` — name the stacked arrangement (tables, views, height ratios) and save it as a page of the current workspace
-- `routine_runs` — list the routine runs that are due and create their notes after you confirm (only when a table of the scope has `runs` in its marker, and not when read-only; also by clicking the count in the bottom band; see [config.md](config.md#overrides-per-workspace-table-and-view))
+- `routine_runs` — read the routine table again, list the routine runs that are due (including ones you left earlier that day) and create their notes after you confirm (only when a table of the scope has `runs` in its marker, and not when read-only; also by clicking the count in the bottom band; see [config.md](config.md#overrides-per-workspace-table-and-view))

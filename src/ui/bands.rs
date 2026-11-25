@@ -1259,6 +1259,7 @@ pub(crate) fn new_button_at(app: &App, x: u16, y: u16) -> bool {
 }
 
 /// CE-25: 関係マップの「+ 新規」: (桁, 文字)。表の画面の帯の真ん中の行と同じ行・同じ桁。入らなければ None。
+/// 文字の右の端の空白は除く: その桁はいちばん右の窓の右上の角で、空白で隠すと窓の枠が切れて見える。
 fn relmap_new_button(app: &App, w: usize) -> Option<(usize, String)> {
     // ビューの帯を出さないときは、表の画面と同じくヘッダーに出す。
     if header_new_shown(app) {
@@ -1266,7 +1267,7 @@ fn relmap_new_button(app: &App, w: usize) -> Option<(usize, String)> {
     }
     let (t, _) = new_button_text(app);
     let tw = width(&t);
-    (super::new_note::button_shown(app) && w >= tw + 2).then(|| (w - tw, t))
+    (super::new_note::button_shown(app) && w >= tw + 2).then(|| (w - tw, t.trim_end().to_string()))
 }
 
 /// CE-25: 関係マップの窓の上の縁(表の画面の帯の真ん中の行と同じ行)の右の端に「+ 新規」を重ねる。
@@ -1438,6 +1439,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             .or_else(|| app.vim_hints())
             // stack.close-pending: 並べた表を閉じる確かめでは、閉じる言葉のキー。
             .or_else(|| super::stack::close_hints(app))
+            // gantt.band-edit-keys: ガントでは、動かせる棒を選んでいるときだけ棒を動かすキー。
+            .or_else(|| super::gantt::hints(app))
+            // workspace.switch-hint: 切り替えの一覧では、数字のキーで番号の所へ移れることも。
+            .or_else(|| super::switch::hints(app))
             .unwrap_or_else(|| keymap::hints(&app.keys, app.mode)),
     };
     let head = text.clone();

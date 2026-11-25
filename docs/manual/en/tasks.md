@@ -84,7 +84,7 @@ Only the notes mdgrid wrote (or created from the screen) enter the commit; other
 | move a column / change its width | `H` `L` / `<` `>` |
 | freeze the columns on the left while scrolling | `F` |
 
-Search ignores case when the word is all lowercase. `Esc` clears the selection first, then the filter, then the search highlight.
+Search ignores case when the word is all lowercase. `Esc` clears the selection first, then the filter, then the conditions turned on with digit keys or the notice band, then the search highlight.
 
 ![Quick filter](images/quick-filter.svg)
 
@@ -110,7 +110,7 @@ key = 1
 | hide the matching rows everywhere | add `hide = true`; the settings band shows how many are hidden, and the condition's digit key shows them again |
 | print how many rows match | `mdgrid --count --filter 'cond("week")'` (for a tmux status line or a shell prompt) |
 
-Digit keys and the expression filter stay on when you switch views, and clear when you go to another table or open mdgrid again. Removing the item from the settings band clears them too.
+Digit keys and the expression filter stay on when you switch views, and clear when you go to another table or open mdgrid again. Removing the item from the settings band clears them too. When nothing is selected and the search box does not filter, `Esc` clears every condition turned on with a digit key or from the notice band at once (conditions with `hide = true` keep their rows hidden).
 
 ![Narrow with a named condition](images/conditions.svg)
 
@@ -279,7 +279,7 @@ A run note is named like `Runs/Weekly review 2026-11-23.md`. Its frontmatter has
 
 Only the latest run up to today is made, so after a while away you don't come back to a pile of runs you can no longer do. Each run is made once, and a note that already has the same name is never overwritten. Delete a run note you don't need, and that run counts as done: it isn't made again.
 
-While mdgrid is open, it checks when you open a table and when the date changes. When runs are due, the bottom band says "2 routine runs are due". Click it, or pick **Create the routine runs** (`routine_runs`) in the palette (`:`), and the names of the notes to create are listed. Type `y` and Enter to create them; any other answer or Esc leaves them, and those runs aren't mentioned again that day. Opened read-only (`--readonly`), mdgrid shows neither the count nor the command.
+While mdgrid is open, it checks when you open a table and when the date changes. When runs are due, the bottom band says "2 routine runs are due". Click it, or pick **Create the routine runs** (`routine_runs`) in the palette (`:`), and the names of the notes to create are listed. Type `y` and Enter to create them; any other answer or Esc leaves them, and the bottom band doesn't mention those runs again that day. If you left them by pressing Enter alone, pick the command in the palette and they are listed again, so you can still create them that day. The list is counted when you pick it, from the routine table as it is on disk, so a routine you added after opening mdgrid is in it. Opened read-only (`--readonly`), mdgrid shows neither the count nor the command.
 
 ![Create routine runs](images/routine.svg)
 
@@ -693,13 +693,15 @@ The list is kept with the screen state (`~/.local/state/mdgrid/recent.toml`); no
 
 When you go back and forth between workspaces, say one for work and one for a hobby, put them in your favorites. In the table list drawer (`w`), select the heading of another workspace and press `f`: the heading gets a `★`, and `f` again takes it out. For the workspace you are in, use **Add the current workspace to favorites** in the palette (if it is already a favorite, this takes it out).
 
-On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette, or the **W ⇄** button at the right of the header) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. Esc closes the list and leaves you where you were.
+On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette, or the **W ⇄** button at the right of the header) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. While the list is open, the bottom band mentions the digit keys too. Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. Esc closes the list and leaves you where you were.
 
 ![Switch workspace](images/switch.svg)
 
 You land on the table and view you last had open in that workspace during this run. The first time, it opens the table named in the marker's `open`, or the first table.
 
 Once you have moved away from where you started (a plain folder, a `.base`, a detected root folder or a workspace), the list starts with **Where you started**, numbered `0`. Pressing `0` or choosing it takes you back to the table you started with, in the view you last had on it. Wherever you go, unsaved changes are offered for saving or discarding first.
+
+If you use the mouse, the table list drawer that opens from the header breadcrumb works too. Below the tables of the current scope it lists **Where you started** and your favorite workspaces (the one you are in has a `●`), and choosing one goes where the switch list would. **Open a workspace** in the palette lists the same two.
 
 Favorites are kept in order in `favorites` at the top of `workspaces.toml`: a workspace from `workspaces.toml` by its name, a marker workspace by the path of its root. You can write it by hand:
 
@@ -784,7 +786,7 @@ Edits pile up in one set of changes, whichever table you edit in. When two table
 
 ### Save an arrangement as a page
 
-Give a pair you compare often a name with **Save the arrangement as a page** in the palette, and it becomes a page of the current workspace. A page remembers the tables, their views and the height ratios, and is listed above the tables in the table list drawer (`w`). Choosing it opens the tables stacked. From the shell:
+Give a pair you compare often a name with **Save the arrangement as a page** in the palette, and it becomes a page of the current workspace. A page remembers the tables, their views and the height ratios, and is listed above the tables in the table list drawer (`w`). Choosing it opens the tables stacked. While a page is open, the drawer puts its `●` on the page name, and choosing a table in the drawer closes the page and opens that table on its own. From the shell:
 
 ```sh
 mdgrid -w work --page morning            # a workspace in workspaces.toml

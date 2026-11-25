@@ -311,3 +311,53 @@ fn test_date_words_filter_preview() {
         "{s}"
     );
 }
+
+/// 行 `line` の中で `pat` が始まる桁(表示の幅で)。
+fn col_of(line: &str, pat: &str) -> Option<usize> {
+    line.find(pat).map(|i| width::width(&line[..i]))
+}
+
+#[test]
+fn test_date_words_preview_inside_new_note_window() {
+    // [cell-edit.date-words-preview] 新しいノートの窓(`a`)の due の欄に `明日` と打つと、読んだ日 `2026-11-22(日)` は欄と同じ行の、窓の枠の中
+    // (左の縁 `╭` と右の縁 `╮` の桁のあいだ)に出て、欄の名前 due と打った文字を隠さない(2026-11-25 の実地の操作で、枠の右の外に
+    // はみ出していた)。幅 80 と 160 の端末で。
+    for wd in [80u16, 160] {
+        let (_t, mut a) = vault(
+            &format!("dw-newnote-{wd}"),
+            &[("a.md", "---\ndue: 2026-10-05\n---\n")],
+            TODAY,
+        );
+        a.resize(wd, 24);
+        ch(&mut a, 'a');
+        assert!(a.note.flow.is_some(), "新しいノートの窓:\n{}", scr(&a));
+        typing(&mut a, "x");
+        press(&mut a, KeyCode::Enter);
+        typing(&mut a, "明日");
+        let s = scr(&a);
+        let top = s
+            .lines()
+            .find(|l| l.contains("新しいノート"))
+            .unwrap_or_else(|| panic!("窓の題が無い:\n{s}"));
+        let left = col_of(top, "╭").expect("窓の左上");
+        let right = col_of(top, "╮").expect("窓の右上");
+        let line = s
+            .lines()
+            .find(|l| l.contains("明日"))
+            .unwrap_or_else(|| panic!("打った文字の行が無い:\n{s}"));
+        let at = col_of(line, "2026-11-22(日)")
+            .unwrap_or_else(|| panic!("幅 {wd}: 読んだ日が無い:\n{s}"));
+        let end = at + width::width("2026-11-22(日)");
+        assert!(
+            left < at && end <= right,
+            "幅 {wd}: 読んだ日({at}〜{end})が窓の枠({left}〜{right})の外:\n{s}"
+        );
+        let label =
+            col_of(line, "due").unwrap_or_else(|| panic!("幅 {wd}: 欄の名前が隠れる:\n{s}"));
+        let typed = col_of(line, "明日").unwrap();
+        assert!(
+            label < typed && typed < at,
+            "幅 {wd}: 欄の名前・打った文字・読んだ日の順:\n{s}"
+        );
+    }
+}

@@ -904,8 +904,8 @@ fn fit_all(rows: &[RowId], bars: &HashMap<RowId, Bar>, cols: usize) -> Option<(U
 /// - 週: 上は年の始まる週(と左端)に「YYYY」、下は1日を含む週に月の数「MM」、ほかは「·」。
 /// - 月: 上は1月のマス(と左端)に「YYYY」、下はマスの先頭から月の数(右寄せの2字)。
 ///
-/// 上の行の字は、次の切れ目までに収まる形を選ぶ(「YYYY-MM」が収まらなければ「MM」、それも収まらなければ
-/// 出さない)ので、1つの字がほかの切れ目を潰さず、年どうしもくっつかない。今日の字は、下の行が空なら `▾`、
+/// 上の行の字は、次の切れ目の1字手前までに収まる形を選ぶ(「YYYY-MM」が収まらなければ「MM」、それも収まらなければ
+/// 出さない)ので、1つの字がほかの切れ目を潰さず、月や年の字どうしもくっつかない。今日の字は、下の行が空なら `▾`、
 /// 数に重なれば数を残してその字を反転で示す(色なしでも見える。SR-15)。
 fn axis_header(g: &Gantt, cols: usize, today: i64) -> (String, String, Option<usize>) {
     let n = usize::try_from(gantt::col_chars(g.unit)).unwrap_or(1);
@@ -955,7 +955,12 @@ fn axis_header(g: &Gantt, cols: usize, today: i64) -> (String, String, Option<us
         }
     }
     for (i, &(at, y, m)) in cuts.iter().enumerate() {
-        let gap = cuts.get(i + 1).map_or(cols, |c| c.0) - at;
+        // 次の切れ目の前には1字の空きを残す(ちょうど収まる字を置くと「2026-112026-12」「20262027」と
+        // くっつく)。最後の切れ目は右の端まで使える。
+        let gap = match cuts.get(i + 1) {
+            Some(next) => next.0 - at - 1,
+            None => cols - at,
+        };
         let label = match (m, gap) {
             (1.., 7..) => format!("{y:04}-{m:02}"),
             (1.., 2..) => format!("{m:02}"),
@@ -1091,6 +1096,99 @@ fn name_cell(app: &App, g: &Gantt, row: &RowId, w: usize) -> String {
         return format!("{} {SPAN_MARK}", plain_name_cell(app, g, row, w - 2));
     }
     plain_name_cell(app, g, row, w)
+}
+
+impl App {
+    /// gantt.band-edit-keys: 選んでいる行の棒を動かせるか(`H` `L`)と、終わりを伸ばし縮めできるか(`>` `<`)。
+    /// 動かせない棒(gantt.edit-refuse: 読むだけの起動・自分の日付の無い行・読むだけの列)は (false, false)。
+    /// 伸ばし縮めは、終わりの日付か(`days` の設定なら)始まりと1以上の日数があるときだけ(`gantt_edit` と同じ)。
+    fn gantt_bar_keys(&self) -> (bool, bool) {
+        let Some(g) = self.gantt.as_ref() else {
+            return (false, false);
+        };
+        let Some(row) = g.rows.get(g.sel) else {
+            return (false, false);
+        };
+        if self.readonly {
+            return (false, false);
+        }
+        let dated = |c: &Option<String>| {
+            c.as_deref()
+                .filter(|c| self.gantt_day(row, c).is_some())
+                .map(str::to_string)
+        };
+        let (start, end) = (dated(&g.spec.start), dated(&g.spec.end));
+        let ok = |c: &str| self.editable(row, c).is_ok();
+        let own: Vec<&String> = start.iter().chain(end.iter()).collect();
+        let movable = !own.is_empty() && own.iter().all(|c| ok(c));
+        let days = g.spec.days.as_deref().filter(|c| {
+            start.is_some()
+                && self
+                    .plain(row, c)
+                    .trim()
+                    .parse::<f64>()
+                    .is_ok_and(|n| n.round() >= 1.0)
+        });
+        let resizable = movable
+            && match (&end, days) {
+                (Some(_), _) => true,
+                (None, Some(c)) => ok(c),
+                (None, None) => false,
+            };
+        (movable, resizable)
+    }
+}
+
+/// gantt.band-edit-keys: ガントの下の帯の「今押せるキー」(表のキーの順位の順)。棒を動かす4つのキーは、1つずつの長い
+/// 説明の代わりに、動かせる棒を選んでいるときだけ `H/L 棒を動かす`・`>/< 伸ばす・縮める` の2つにまとめて Enter の
+/// 次に置く(狭い端末でも残るように。動かせない棒では出さない)。ガントでなければ None。
+pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
+    if app.mode != Mode::Gantt {
+        return None;
+    }
+    use super::keymap::{key_for, ranked};
+    let bar = [
+        Action::BarEarlier,
+        Action::BarLater,
+        Action::BarLonger,
+        Action::BarShorter,
+    ];
+    let all = ranked(&app.keys, Mode::Gantt);
+    let at = all
+        .iter()
+        .filter(|(a, _)| !bar.contains(a))
+        .position(|(a, _)| *a == Action::Run)
+        .map_or(0, |p| p + 1);
+    let mut out: Vec<String> = all
+        .into_iter()
+        .filter(|(a, _)| !bar.contains(a))
+        .map(|(_, s)| s)
+        .collect();
+    let pair = |x: Action, y: Action, label: Msg| {
+        let keys: Vec<String> = [x, y]
+            .into_iter()
+            .filter_map(|a| key_for(&app.keys, Mode::Gantt, a))
+            .collect();
+        (!keys.is_empty()).then(|| format!("{} {}", keys.join("/"), label.text()))
+    };
+    let (movable, resizable) = app.gantt_bar_keys();
+    let mut add = Vec::new();
+    if movable {
+        add.extend(pair(
+            Action::BarEarlier,
+            Action::BarLater,
+            Msg::GanttBandMove,
+        ));
+    }
+    if resizable {
+        add.extend(pair(
+            Action::BarLonger,
+            Action::BarShorter,
+            Msg::GanttBandResize,
+        ));
+    }
+    out.splice(at..at, add);
+    Some(out)
 }
 
 /// gantt.children-span-mark: 選んでいる行の、はみ出した日数の案内(子として、無ければ親として)。下の帯に出す。

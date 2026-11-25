@@ -1437,6 +1437,8 @@ VisualHint = "범위 선택: 이동한 뒤 v로 확정(Esc로 해제)"
 SelectedAll = "모든 행 선택({0})"
 SelectionCleared = "선택 해제"
 FilterCleared = "검색 해제"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "조건 해제"
 NoRowToSelect = "선택할 행이 없음"
 SelectValueCell = "값 셀을 선택"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1535,6 +1537,9 @@ SwitchNoRoom = "터미널이 너무 작아 전환 목록을 띄울 수 없음"
 KeySwitchRun = "선택한 곳으로 이동"
 KeySwitchNumber = "그 번호의 워크스페이스로 이동"
 KeySwitchOrigin = "처음 연 곳으로 돌아가기"
+KeySwitchDigits = "그 번호로 이동"
+KeyDigitRange = "{0}~{1}"
+SwitchAlreadyHere = "{0}은(는) 지금 있는 워크스페이스"
 ModeSwitch = "전환"
 SecInSwitch = "전환 목록에서"
 
@@ -1798,6 +1803,8 @@ KeyBarLater = "막대를 한 단위 뒤로 옮기기(날짜를 고쳐 씀)"
 KeyBarEarlier = "막대를 한 단위 앞으로 옮기기(날짜를 고쳐 씀)"
 KeyBarLonger = "막대의 끝을 한 단위 늘리기"
 KeyBarShorter = "막대의 끝을 한 단위 줄이기"
+GanttBandMove = "막대 옮기기"
+GanttBandResize = "늘이기/줄이기"
 GanttToday = "오늘"
 GanttThisWeek = "이번 주"
 GanttThisMonth = "이번 달"
@@ -1880,6 +1887,16 @@ ChildrenOpenRefuseOne = "끝나지 않은 자식이 {0}개 있어서 완료로 �
 ChildrenOpenKeep = "끝나지 않은 자식이 {0}개 있음"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "끝나지 않은 자식이 {0}개 있음"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "closed_by(부모 완료로 함께 닫힌 자식을 표시하는 열)가 없으면 되돌릴 자식을 알 수 없어서 \"keep\"으로 처리"
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "이 부모와 함께 닫힌 자식이 있습니다. 어떻게 할까요: "
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "자식도 되돌리기"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "부모만"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "되돌리지 못한 자식이 있음"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "부모 기간에서 {0}일 벗어남"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

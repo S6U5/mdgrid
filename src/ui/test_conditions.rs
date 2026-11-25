@@ -294,3 +294,80 @@ fn test_expr_filter_lifetime_chip_removal() {
     a.refresh();
     assert_eq!(names(&a).len(), 5);
 }
+
+// ---- condition.esc-clear ----
+
+/// 今日 2026-11-21 から: p は期限切れで7日以内、q は7日以内、r は先、s は done で7日以内。
+const DUE_NOTES: &[(&str, &str)] = &[
+    ("p.md", "---\ndue: 2026-11-10\nstatus: todo\n---\n"),
+    ("q.md", "---\ndue: 2026-11-24\nstatus: todo\n---\n"),
+    ("r.md", "---\ndue: 2026-12-30\nstatus: todo\n---\n"),
+    ("s.md", "---\ndue: 2026-11-01\nstatus: done\n---\n"),
+];
+
+/// 数字のキー 1 の条件 due と、通知の欄の項目の条件 overdue。
+const DUE_CONF: &str = "\
+[conditions.due]
+expr = 'due <= today() + \"7d\"'
+key = 1
+[conditions.overdue]
+expr = 'due < today() && status != \"done\"'
+[[notices]]
+cond = \"overdue\"
+text = \"期限切れ {count} 件\"
+";
+
+#[test]
+fn test_condition_esc_clears_digit_and_notice_conditions() {
+    // [utest -> req~condition.esc-clear~1] 数字のキー 1 と通知の欄から条件 due と overdue を付けた表(選択も簡単な
+    // 絞り込みも無い)で Esc → 2つの条件が外れ、帯から条件の札が消える。
+    let (_t, mut a) = make("cond-esc", DUE_NOTES);
+    let _g = with_conf(&mut a, DUE_CONF);
+    a.notice_refresh();
+    ch(&mut a, '1');
+    assert_eq!(names(&a), ["p", "q", "s"]);
+    ch(&mut a, 'm');
+    super::test_screen::press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, super::keymap::Mode::Table);
+    assert_eq!(names(&a), ["p"]);
+    assert_eq!(a.bar_chips().len(), 2, "{:?}", a.bar_chips());
+    assert!(a.selection().is_empty() && a.filter.is_none());
+    super::test_screen::press(&mut a, KeyCode::Esc);
+    assert_eq!(names(&a), ["p", "q", "r", "s"]);
+    assert!(a.bar_chips().is_empty(), "{:?}", a.bar_chips());
+    assert!(!screen(&a).contains("[1 due]"), "{}", screen(&a));
+}
+
+#[test]
+fn test_condition_esc_keeps_the_hide_condition() {
+    // [utest -> req~condition.esc-clear~1] hide = true の条件 far がある表で Esc → far で隠した行は隠れたまま
+    // (数字のキーで付けた soon は外れる)。
+    let (_t, mut a) = make("cond-esc-hide", NOTES);
+    let conf = format!("{CONF}[conditions.far]\nexpr = 'due > today() + \"30d\"'\nhide = true\n");
+    let _g = with_conf(&mut a, &conf);
+    ch(&mut a, '1');
+    assert_eq!(names(&a), ["a", "b"]);
+    super::test_screen::press(&mut a, KeyCode::Esc);
+    assert_eq!(names(&a), ["a", "b", "c", "e"]);
+    let chips = a.bar_chips();
+    assert!(chips.contains(&"far を隠す 1".to_string()), "{chips:?}");
+    assert!(!chips.iter().any(|c| c.contains("期限が近い")), "{chips:?}");
+}
+
+#[test]
+fn test_condition_esc_clears_the_quick_filter_first() {
+    // [utest -> req~condition.esc-clear~1] 簡単な絞り込みがあれば、Esc はまずそれを解き(条件は残す)、次の Esc で条件を解く。
+    let (_t, mut a) = make("cond-esc-filter", NOTES);
+    let _g = with_conf(&mut a, CONF);
+    ch(&mut a, '2');
+    assert_eq!(names(&a), ["a", "c", "d", "e"]);
+    ch(&mut a, '\\');
+    typing(&mut a, "2026-11-2");
+    super::test_screen::press(&mut a, KeyCode::Enter);
+    assert_eq!(names(&a), ["a", "c"]);
+    super::test_screen::press(&mut a, KeyCode::Esc);
+    assert!(a.filter.is_none());
+    assert_eq!(names(&a), ["a", "c", "d", "e"]);
+    super::test_screen::press(&mut a, KeyCode::Esc);
+    assert_eq!(names(&a).len(), 5);
+}

@@ -447,6 +447,11 @@ impl App {
         };
         // cell-edit.children-done: 親の札を完了のレーンへ動かしたら、印の children のとおりに子孫も扱う。
         let st = self.stage_children(&col, vec![(row.clone(), Some(nv))]);
+        // cell-edit.children-reopen: 子も戻すかを選んでから動かす(選んだら札は表の直しと同じく組み直す)。
+        if st.asked {
+            self.open_children_ask();
+            return;
+        }
         if let Some((_, why)) = st.refused.into_iter().next() {
             self.message = Some(why);
             return;

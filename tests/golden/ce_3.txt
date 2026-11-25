@@ -5,12 +5,12 @@
 
  ノート title  status
 >a      会議   todo
- b      買い物 │>*todo  │
+ b      買い物 ╭────────╮
+               │>*todo  │
                │  doing │
                │  done  │
                │  なし  │
                ╰1/4─────╯
-
 
 
 

@@ -11,6 +11,8 @@
 //!   作り直すので、見た表の記録(`Visits`)は main が次の App に渡す。
 //! - お気に入りに入れる・外すのは、引き出しのワークスペースの見出し(drawer.rs)と、パレットの
 //!   「今のワークスペースをお気に入りにする」(今のワークスペース。もう入っていれば外す)。
+//! - 引き出し(workspace.drawer-favorites)とパレットの「ワークスペースを開く」も、最初に開いた所とお気に入りを
+//!   並べ、選んだら同じ道(`go_to`)で移る。今いる所を選んだら、閉じて今いる所だと知らせる(workspace.switch-hint)。
 
 use super::app::App;
 use super::keymap::{self, Action, Mode};
@@ -95,6 +97,23 @@ enum Row {
     Hint,
 }
 
+/// 移る先(切り替えの一覧・引き出し・パレットの「ワークスペースを開く」で同じ道)。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum Dest {
+    /// 最初に開いた所(workspace.switch-origin)。
+    Origin,
+    /// お気に入りのワークスペース。
+    Fav(Favorite),
+}
+
+/// 移る先を選んだ窓(移るとき・今いる所のときに閉じる)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Picker {
+    Switch,
+    Drawer,
+    Palette,
+}
+
 /// 開いている切り替えの一覧。
 #[derive(Debug, Clone)]
 pub(crate) struct Switcher {
@@ -122,7 +141,7 @@ impl Switcher {
 }
 
 /// お気に入りの目印。
-fn spot_of(f: &Favorite) -> Spot {
+pub(crate) fn spot_of(f: &Favorite) -> Spot {
     match f {
         Favorite::App(n) => Spot::Named(n.clone()),
         Favorite::Marker { root, .. } => Spot::Root(root.clone()),
@@ -142,12 +161,7 @@ fn start_of(p: &Path) -> PathBuf {
 fn label(app: &App, s: &Switcher, r: Row) -> String {
     match r {
         // workspace.switch-origin-key: 番号 0 を添える(`0` で選べる)。
-        Row::Origin => format!(
-            "0 {}",
-            Msg::SwitchOrigin.fill(&[&sanitize(
-                app.visits.origin.as_ref().map_or("", |o| o.label.as_str()),
-            )])
-        ),
+        Row::Origin => format!("0 {}", app.origin_label()),
         Row::Fav(k) => format!("{} {}", k + 1, sanitize(s.favs[k].name())),
         Row::Hint => {
             let key = |m: Mode, a: Action| {
@@ -244,33 +258,15 @@ impl App {
     /// workspace.switch-button: ヘッダーに切り替えのボタンを出すか。お気に入りが1つ以上あるか、起動したときに
     /// 開いた所から今は離れているとき。
     pub(crate) fn switch_button_shown(&self) -> bool {
-        !self.favorites.is_empty()
-            || self
-                .visits
-                .origin
-                .as_ref()
-                .is_some_and(|o| Some(&o.spot) != self.here_spot().as_ref())
+        !self.favorites.is_empty() || self.origin_away()
     }
 
     /// workspace.switch-open: 切り替えの一覧を開く(今の画面の上に重ねる)。お気に入りの読めない項目は警告を出す。
     pub(crate) fn open_switcher(&mut self) {
         self.message = None;
-        let mut warns = Vec::new();
-        let favs = match self.nv.dir.clone() {
-            Some(dir) => {
-                self.favorites = favorites::entries(&dir);
-                let (f, w) = favorites::resolve(&dir, &self.workspaces);
-                warns = w;
-                f
-            }
-            None => Vec::new(),
-        };
+        let (favs, warns) = self.resolved_favorites();
         let here = self.here_spot();
-        let origin = self
-            .visits
-            .origin
-            .as_ref()
-            .is_some_and(|o| Some(&o.spot) != here.as_ref());
+        let origin = self.origin_away();
         let s = Switcher {
             sel: 0,
             favs,
@@ -333,15 +329,61 @@ impl App {
         self.set_mode(Mode::Switch);
     }
 
-    /// 行を選んだ: その所へ移る(今いる所なら閉じるだけ)。案内の行では何もしない。
+    /// 行を選んだ: その所へ移る(今いる所なら閉じて、今いる所だと知らせる)。案内の行では何もしない。
     fn switch_row(&mut self, row: Option<Row>) {
         let Some(s) = self.switcher.clone() else {
             return;
         };
-        let target = match row {
-            Some(Row::Origin) => {
+        let dest = match row {
+            Some(Row::Origin) => Dest::Origin,
+            Some(Row::Fav(k)) => Dest::Fav(s.favs[k].clone()),
+            Some(Row::Hint) | None => return,
+        };
+        self.go_to(dest, Picker::Switch);
+    }
+
+    /// 最初に開いた所を並べるか(起動したときに開いた所から今は離れているとき)。
+    pub(crate) fn origin_away(&self) -> bool {
+        self.visits
+            .origin
+            .as_ref()
+            .is_some_and(|o| Some(&o.spot) != self.here_spot().as_ref())
+    }
+
+    /// 「最初に開いた所: <名前>」の文字(引き出し・パレット)。
+    pub(crate) fn origin_label(&self) -> String {
+        Msg::SwitchOrigin.fill(&[&sanitize(
+            self.visits.origin.as_ref().map_or("", |o| o.label.as_str()),
+        )])
+    }
+
+    /// お気に入りを読み直して読み解く(読めない項目の警告も)。設定のフォルダが無ければ空。
+    pub(crate) fn resolved_favorites(&mut self) -> (Vec<Favorite>, Vec<String>) {
+        match self.nv.dir.clone() {
+            Some(dir) => {
+                self.favorites = favorites::entries(&dir);
+                favorites::resolve(&dir, &self.workspaces)
+            }
+            None => (Vec::new(), Vec::new()),
+        }
+    }
+
+    /// 選んだ窓を閉じる。
+    fn close_picker(&mut self, from: Picker) {
+        match from {
+            Picker::Switch => self.close_switcher(),
+            Picker::Drawer => self.close_drawer(),
+            Picker::Palette => self.close_palette(),
+        }
+    }
+
+    /// その所へ移る(切り替えの一覧・引き出し・パレットの同じ道)。今いる所なら、窓を閉じて今いる所だと知らせる
+    /// (workspace.switch-hint)。開けない所は理由を出して窓に残る。
+    pub(crate) fn go_to(&mut self, dest: Dest, from: Picker) {
+        let target = match &dest {
+            Dest::Origin => {
                 let Some(o) = self.visits.origin.clone() else {
-                    return self.close_switcher();
+                    return self.close_picker(from);
                 };
                 let view = self.visits.last_view(&o.path).flatten();
                 let place = Place {
@@ -352,14 +394,14 @@ impl App {
                 };
                 Ok((place, o.workspace.clone()))
             }
-            Some(Row::Fav(k)) => {
-                let f = s.favs[k].clone();
-                if s.here.as_ref() == Some(&spot_of(&f)) {
-                    return self.close_switcher();
+            Dest::Fav(f) => {
+                if self.here_spot().as_ref() == Some(&spot_of(f)) {
+                    self.close_picker(from);
+                    self.message = Some(Msg::SwitchAlreadyHere.fill(&[&sanitize(f.name())]));
+                    return;
                 }
-                self.favorite_target(&f)
+                self.favorite_target(f)
             }
-            Some(Row::Hint) | None => return,
         };
         match target {
             Err(e) => self.message = Some(e),
@@ -369,7 +411,7 @@ impl App {
                     self.message = Some(Msg::PlaceMissing.fill(&[&place.path.display()]));
                     return;
                 }
-                self.close_switcher();
+                self.close_picker(from);
                 self.switch_to = Some(place);
                 self.switch_select = None;
                 // workspaces.toml のワークスペースはその名前の範囲で開き、印・ワークスペースでない所は `-w` を外す。
@@ -483,6 +525,29 @@ impl App {
     pub(crate) fn is_favorite_name(&self, name: &str) -> bool {
         favorites::contains(&self.favorites, name)
     }
+}
+
+/// workspace.switch-hint: 切り替えの一覧を開いているあいだの下の帯のキー。今までのキー(順位の順)の Enter の
+/// 後ろに、数字のキーで番号の所へ移れることを足す。数字のキーは表から引く(`0`〜`9`。割り当てを外したキーは
+/// 除き、2つ以上なら最初と最後を範囲にする)。ほかのモードでは None。
+pub(crate) fn hints(app: &App) -> Option<Vec<String>> {
+    if app.mode != Mode::Switch {
+        return None;
+    }
+    let mut out = keymap::hints(&app.keys, Mode::Switch);
+    let keys: Vec<String> = (0..=9)
+        .filter_map(|n| keymap::key_for(&app.keys, Mode::Switch, Action::Choose(n)))
+        .collect();
+    let digits = match keys.as_slice() {
+        [] => return Some(out),
+        [one] => one.clone(),
+        [first, .., last] => Msg::KeyDigitRange.fill(&[first, last]),
+    };
+    let at = keymap::key_for(&app.keys, Mode::Switch, Action::Run)
+        .and_then(|k| out.iter().position(|h| h.starts_with(&format!("{k} "))))
+        .map_or(0, |i| i + 1);
+    out.insert(at, format!("{digits} {}", Msg::KeySwitchDigits.text()));
+    Some(out)
 }
 
 /// 窓を重ねる(左の端、ヘッダーの下)。どの画面の型の描画からも呼ぶ。

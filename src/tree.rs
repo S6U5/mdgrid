@@ -167,6 +167,42 @@ impl OnDone {
     }
 }
 
+/// cell-edit.children-reopen: 完了の親を完了でない値に戻したときの、親の完了で一緒に閉じた子孫の扱い。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OnReopen {
+    /// 子孫を変えない(既定)。
+    #[default]
+    Keep,
+    /// `closed_by` がその親を指す子孫を、親と同じ値に戻して `closed_by` を空にする。
+    Reopen,
+    /// その場で「子も戻す」「親だけ」を選ぶ。
+    Ask,
+}
+
+impl OnReopen {
+    pub const NAMES: [&'static str; 3] = ["keep", "reopen", "ask"];
+
+    pub fn parse(s: &str) -> Option<OnReopen> {
+        match s {
+            "keep" => Some(OnReopen::Keep),
+            "reopen" => Some(OnReopen::Reopen),
+            "ask" => Some(OnReopen::Ask),
+            _ => None,
+        }
+    }
+}
+
+/// cell-edit.children-closed-by・cell-edit.children-reopen: 印の `children` の `closed_by` と `on_reopen`。
+/// `ChildrenSpec` に項目を足すと、項目を並べて組み立てる前からの試験が組み立てられなくなるので、別に持つ。
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct ReopenSpec {
+    /// 親の完了で一緒に完了にした子孫に、親へのリンクを書く列。既定の名前は無い(書いた表だけが書く。
+    /// tbd~cell-edit.children-closed-by-name の仮決め)。
+    pub closed_by: Option<String>,
+    /// 完了の親を戻したときの子孫の扱い。`closed_by` が無ければ `Keep`(読むときに警告して直す)。
+    pub on_reopen: OnReopen,
+}
+
 /// gantt.children-span-mark・gantt.children-span-extend: 子孫の棒が親の期間からはみ出したときの扱い。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SpanRule {

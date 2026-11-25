@@ -1739,6 +1739,32 @@
   - Then: 「設計」だけが done のためる変更になり、下の帯に「終わっていない子が 2 件ある」旨の1行が出る。
 - Needs: utest
 
+#### `children` に `closed_by = "<列>"` を書いた表では、親の完了で一緒に完了にした子孫(cell-edit.children-done-complete)に、その列へ親へのリンクを一緒にためて、親の完了の操作で閉じたと分かるようにするべき
+`req~cell-edit.children-closed-by~1` P1
+- Rationale: 親を戻したときに、どの子が親の操作で閉じたのか(自分で済ませた子か)が分からないと、子を戻すかどうかを決められないため(2026-11-25 に人が「その操作で閉じたと分かる」ようにと言った)
+- Acceptance:
+  - Given: `children = { key = "parent", closed_by = "closed_by" }` で、doing の「設計」の子に todo の「画面」と done の「API」
+  - When: 「設計」を done に直す
+  - Then: 「画面」は status が done、closed_by が `[[設計]]` のためる変更になり、「API」には closed_by を書かない。
+- Needs: utest
+
+#### `children` の `on_reopen`(書かなければ `"keep"`)で、完了の親を完了でない値に戻したときの子孫を決め、`"keep"` は子孫を変えず、`"reopen"` は `closed_by` がその親を指す子孫を親と同じ値に戻して `closed_by` を空にし、`"ask"` はその場で「子も戻す」「親だけ」を選ぶ窓を出すべき
+`req~cell-edit.children-reopen~1` P1
+- Rationale: 親を戻したとき、親の操作で一緒に閉じた子だけを戻したい使い方と、子は済んだままにしたい使い方があるため。設定で選べるようにする(2026-11-25 に人が「制御できてもいい」と言った)
+- Acceptance:
+  - Given: `on_reopen = "reopen"`・`closed_by = "closed_by"` で、親の完了で閉じた「画面」(closed_by が `[[設計]]`)と、自分で済ませた「API」(closed_by が空)
+  - When: 「設計」を todo に戻す
+  - Then: 「画面」は status が todo、closed_by が空のためる変更になり、「API」は done のまま。取り消し1回で戻る。
+- Acceptance:
+  - Given: `on_reopen = "ask"` の同じ表
+  - When: 「設計」を todo に戻す
+  - Then: 「子も戻す」「親だけ」を選ぶ窓が出て、「親だけ」なら「設計」だけが todo になる。
+- Acceptance:
+  - Given: `on_reopen = "reopen"` で `closed_by` を書かない
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で、`closed_by` が無いと戻す子が分からない旨の警告1行を出し、`"keep"` として扱う。
+- Needs: utest
+
 ### 日付を言葉で入れる
 
 #### 日付の入力(セルの編集・一括の設定・絞り込みの比べる値)は、cell-edit.date-input-forms の形に加えて、日本語と英語の日付の言葉を、文言の言語によらず受け付けるべき
@@ -1855,3 +1881,8 @@
 `tbd~cell-edit.children-done-cli`
 - Decider: 人
 - Provisional: 扱わない(画面の直しだけ。次の段)
+
+### 親の完了で閉じた印の列の既定の名前
+`tbd~cell-edit.children-closed-by-name`
+- Decider: 人
+- Provisional: 既定は無し(`closed_by` を書いた表だけが書く。ノートに列が黙って増えないように)

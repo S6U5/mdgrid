@@ -578,6 +578,8 @@ mod test_notices;
 #[cfg(test)]
 mod test_notify;
 #[cfg(test)]
+mod test_open_url_key;
+#[cfg(test)]
 mod test_pending_shape;
 #[cfg(test)]
 mod test_plural_en;

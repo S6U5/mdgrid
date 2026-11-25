@@ -72,22 +72,28 @@ fn input_preview(app: &App) -> Option<String> {
     preview(app, i.entry == Entry::DateTime, &i.text)
 }
 
-/// 入力の欄の横に読みを重ねる(下の帯より上の行 `lines` に)。表のセルの入力の欄と新しいノートの欄は、欄の右
-/// (入らなければ左)。詳細の表示の欄は右の端まで広いので、欄の中の右に寄せる(打った文字に重なるなら出さない)。
+/// 入力の欄の横に読みを重ねる(下の帯より上の行 `lines` に)。表のセルの入力の欄は、欄の右(入らなければ左)。
+/// 詳細の表示の欄と新しいノートの窓の欄は右の端(窓の縁の手前)まで広いので、欄の中の右に寄せる(打った文字に
+/// 重なるなら出さない。欄の外に置くと窓の縁や欄の名前に重なる)。
 pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let Some(label) = input_preview(app) else {
         return;
     };
     let text = format!(" {label} ");
     let tw = width(&text);
+    // 幅 `room` の欄の中の右の端。
+    let inside = |ix: usize, iy: usize, room: usize| {
+        let typed = app.input.as_ref().map_or(0, |i| width(&sanitize(&i.text))) + 1;
+        (typed + tw <= room && ix + room <= w).then(|| (ix + room - tw, iy))
+    };
     let at = if app.detail.is_some() {
-        super::detail::detail_input_at(app, w).and_then(|(ix, iy, room)| {
-            let typed = app.input.as_ref().map_or(0, |i| width(&sanitize(&i.text))) + 1;
-            (typed + tw <= room && ix + room <= w).then(|| (ix + room - tw, iy))
-        })
+        super::detail::detail_input_at(app, w).and_then(|(ix, iy, room)| inside(ix, iy, room))
     } else {
         let (lay, cols) = visible_layout(app);
         super::input::input_box(app, &lay, &cols).and_then(|b| {
+            if app.note.flow.is_some() {
+                return inside(b.x, b.y, b.w);
+            }
             if b.x + b.w + tw <= w {
                 Some((b.x + b.w, b.y))
             } else {
