@@ -1134,15 +1134,20 @@ fn plain_name_cell(app: &App, g: &Gantt, row: &RowId, w: usize) -> String {
     )
 }
 
-/// 窓の題: 「ガント: start → due(日)」(推定なら「推定」を添える。無い列は `-`)。
-fn title(g: &Gantt) -> String {
-    let start = g.spec.start.clone().unwrap_or_else(|| "-".into());
+/// 窓の題: 「ガント: start → due(日)」(推定なら「推定」を添える。無い列は `-`)。列の名前は列の見出しと同じ
+/// displayName(base-view.display-name-everywhere)。
+fn title(app: &App, g: &Gantt) -> String {
+    let start = g
+        .spec
+        .start
+        .as_deref()
+        .map_or_else(|| "-".into(), |c| app.title(c));
     let end = g
         .spec
         .end
-        .clone()
-        .or_else(|| g.spec.days.clone())
-        .unwrap_or_else(|| "-".into());
+        .as_deref()
+        .or(g.spec.days.as_deref())
+        .map_or_else(|| "-".into(), |c| app.title(c));
     let unit = if g.inferred {
         format!("{}, {}", unit_text(g.unit), Msg::GanttInferred.text())
     } else {
@@ -1229,7 +1234,7 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
     let bh = h.saturating_sub(lines.len() + 2);
     let iw = inner_w(w);
     let body = body_lines(app, g, iw, bh.saturating_sub(2));
-    let mut boxed = panel(app, &title(g), body, w, bh, true);
+    let mut boxed = panel(app, &title(app, g), body, w, bh, true);
     // gantt.controls-bar: 窓の下の縁に操作の帯を重ねる(行と時間軸の位置は変えない)。
     if bh >= 2 {
         if let Some(last) = boxed.last_mut() {

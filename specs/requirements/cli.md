@@ -360,6 +360,19 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When:
   - Then: グループの見出しの行は出ない。
 
+#### `--print` の行の並びは、グループ分けの列に値の候補(`[rules.<列>] values`)があれば、画面と同じく候補の順のまとまりで並べるべき(navigation.group-values-order)
+`req~cli.print-group-order~1` P1
+- Rationale: 画面ではまとまりを候補の順(todo・doing・waiting)に並べるのに、`--print` は値の文字の順(doing・todo・waiting)で、画面と出力で行の並びが違っていたため(2026-11-25 に、画面と命令の食い違いを洗い出した)。スクリプトや AI のエージェントが読む順を画面とそろえる
+- Acceptance:
+  - Given: 印に `[rules.status] values = ["todo", "doing", "waiting"]` と、status でグループ分けしたビュー、status が doing・todo・waiting の3行
+  - When: `--print --view <そのビュー>`
+  - Then: 行は todo・doing・waiting の順。
+- Acceptance:
+  - Given: 値の候補の無い列でグループ分けしたビュー
+  - When: `--print`
+  - Then: 今までどおり、値の文字の順。
+- Needs: stest
+
 #### `--print` の列は、ビューの列の並びにするべき
 `req~cli.print-columns~1` P1
 - Acceptance:

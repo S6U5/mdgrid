@@ -296,6 +296,8 @@ mod test_detail_look;
 #[cfg(test)]
 mod test_display_more;
 #[cfg(test)]
+mod test_display_name_everywhere;
+#[cfg(test)]
 mod test_display_options;
 #[cfg(test)]
 mod test_edit_design;
@@ -454,6 +456,8 @@ mod test_tab_wrap;
 #[cfg(test)]
 mod test_tab_wrap_below;
 #[cfg(test)]
+mod test_table_names;
+#[cfg(test)]
 mod test_theme_meaning;
 #[cfg(test)]
 mod test_then;
@@ -463,6 +467,8 @@ mod test_time_picker;
 mod test_trust_notices;
 #[cfg(test)]
 mod test_url_links;
+#[cfg(test)]
+mod test_value_labels_list;
 #[cfg(test)]
 mod test_view_tabs_auto;
 #[cfg(test)]
@@ -559,6 +565,8 @@ mod test_new_note_order;
 mod test_note_column;
 #[cfg(test)]
 mod test_note_name;
+#[cfg(test)]
+mod test_note_name_everywhere;
 #[cfg(test)]
 mod test_note_path;
 #[cfg(test)]

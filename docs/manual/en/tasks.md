@@ -763,7 +763,7 @@ path = "~/notes/projects"
 view = "Open"
 ```
 
-To keep the workspace with the notes instead (for example in a repository you share), run `mdgrid --init-workspace` in its root (or `mdgrid <folder> --init-workspace`). It writes `.mdgrid/workspace.toml`; with no `[[table]]` in it, every folder of notes directly under the root is a table (a `.base` is not added automatically, because it covers the whole root folder; list it with `[[table]]` to include it).
+To keep the workspace with the notes instead (for example in a repository you share), run `mdgrid --init-workspace` in its root (or `mdgrid <folder> --init-workspace`). It writes `.mdgrid/workspace.toml`; with no `[[table]]` in it, every folder of notes directly under the root is a table (a `.base` is not added automatically, because it covers the whole root folder; list it with `[[table]]` to include it). A `[[table]]` with both `name = "Plans"` and `path = "calendar"` shows as "Plans" in the drawer, in the header breadcrumb and in the list of recent tables.
 
 To open a chosen table whenever the root folder is opened, write `open = "<table name>"` at the top level of the marker (the `name` of a `[[table]]`, or the folder name of an automatic table). For example, a ledger folder with a README or AGENTS.md next to its notes can open only its `.base`. Add `--raw` to see every note in the folder.
 

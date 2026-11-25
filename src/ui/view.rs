@@ -293,16 +293,16 @@ pub(crate) fn note_name(app: &App, row: &RowId) -> String {
             .unwrap_or(&full),
     };
     let s = s.strip_suffix(".md").unwrap_or(s);
-    // SR-47: 名前の正規表現は、フォルダを除いた最後の名前の部分に当てる。
+    sanitize(&note_name_of(app, s))
+}
+
+/// SR-47・screen.note-name-everywhere: ノートの名前 `name`(`.md` を除いたもの)に、ノートの欄と同じ名前の正規表現
+/// (`display.note_name`)を当てる。フォルダがあれば最後の名前の部分だけに当てる。関係マップ・横断の検索など、
+/// 表の行でない名前を見せる所で使う。
+pub(crate) fn note_name_of(app: &App, name: &str) -> String {
     match app.settings.display.over(&app.display).note_name {
-        Some(re) => {
-            let (dir, base) = match s.rsplit_once('/') {
-                Some((d, b)) => (format!("{d}/"), b),
-                None => (String::new(), s),
-            };
-            sanitize(&format!("{dir}{}", re.apply(base)))
-        }
-        None => sanitize(s),
+        Some(re) => re.apply_last(name),
+        None => name.to_string(),
     }
 }
 

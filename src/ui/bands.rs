@@ -98,8 +98,20 @@ fn crumb_text(app: &App, name: &str) -> String {
     }
 }
 
-/// 今の表の名前(`.base` を開いたらその名前、無ければフォルダの名前)。
-fn table_name(app: &App) -> String {
+/// 今の表の名前(`.base` を開いたらその名前、無ければフォルダの名前)。印の `[[table]]` で、パスと違う名前を付けた
+/// 表(`name` と `path`)なら、引き出しと同じその名前(最近開いた表の一覧の `Recent::name` と同じ)。
+pub(crate) fn table_name(app: &App) -> String {
+    let marker = app
+        .scope
+        .as_ref()
+        .filter(|s| matches!(s.source, mdgrid::workspace::Source::Marker));
+    if let (Some(s), [p]) = (marker, super::stack::target_paths(app).as_slice()) {
+        let view = app.current_view_name();
+        let n = mdgrid::resume::table_name(std::slice::from_ref(p), &s.tables, view.as_deref());
+        if n != mdgrid::workspace::stem_of(p) {
+            return n;
+        }
+    }
     match &app.base {
         Some(b) => b.name.clone(),
         None => app.src.name(),

@@ -126,6 +126,20 @@ impl List {
 }
 
 impl App {
+    /// 値の候補のリストの項目に、列 `col` の `[rules.<列>] labels` の名前を添える(「未着手 todo」。書く値は値のまま。
+    /// セルの見せ方は値のまま: tbd~navigation.value-labels-cells)。セルの編集と新しいノートの窓の値の候補で使う。
+    pub(crate) fn with_value_labels(&self, col: &str, mut list: List) -> List {
+        for it in &mut list.items {
+            if matches!(it.value, NewValue::Null) {
+                continue;
+            }
+            if let Some(t) = self.prof.resolved.value_choice(col, &it.text) {
+                it.text = t;
+            }
+        }
+        list
+    }
+
     /// 出ているリスト(自由入力に切り替えていない)。
     pub(crate) fn active_list(&self) -> Option<&List> {
         let i = self.input.as_ref()?;

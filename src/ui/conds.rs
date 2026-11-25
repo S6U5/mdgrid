@@ -206,8 +206,9 @@ impl App {
     }
 
     /// 設定の帯の項目の全部(ビューの設定・名前の条件・式。NV-16)。
+    /// 列の名前は列の見出しと同じ displayName(base-view.display-name-everywhere)。
     pub(crate) fn bar_chips(&self) -> Vec<String> {
-        let mut out = self.settings.chips();
+        let mut out = self.settings.chips_titled(&|c| self.title(c));
         out.extend(self.cond_chips().into_iter().map(|(t, _)| t));
         out
     }

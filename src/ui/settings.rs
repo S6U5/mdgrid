@@ -317,13 +317,16 @@ impl Draft {
     }
 }
 
-/// 1つの条件の見せ方(帯の項目と同じ文。NV-16)。
-pub(crate) fn cond_label(c: &Cond) -> String {
+/// 1つの条件の見せ方(帯の項目と同じ文。NV-16。列の名前は displayName。base-view.display-name-everywhere)。
+pub(crate) fn cond_label(app: &App, c: &Cond) -> String {
     let s = Settings {
         filters: vec![c.clone()],
         ..Default::default()
     };
-    s.chips().into_iter().next().unwrap_or_default()
+    s.chips_titled(&|x| app.title(x))
+        .into_iter()
+        .next()
+        .unwrap_or_default()
 }
 
 pub(crate) fn arrow(d: Dir) -> &'static str {

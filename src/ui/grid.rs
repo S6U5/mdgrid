@@ -128,17 +128,10 @@ impl App {
             base::Dir::Asc => settings::Dir::Asc,
             base::Dir::Desc => settings::Dir::Desc,
         };
-        // 値の無い行のまとまり(見出しの文字が候補と同じでも候補に数えない)の始まりの行。
-        let empty: HashSet<usize> = groups
-            .iter()
-            .filter(|(_, r)| {
-                rows.get(r.start).is_none_or(|row| {
-                    settings::value_keys(self.setting_value(row, &col).as_ref()) == [None]
-                })
-            })
-            .map(|(_, r)| r.start)
-            .collect();
-        settings::order_groups(rows, groups, &values, dir, &|r| empty.contains(&r.start))
+        // 値の無い行のまとまりは、見出しの文字が候補と同じでも候補に数えない。
+        settings::order_groups_by(rows, groups, &values, dir, &|row| {
+            self.setting_value(row, &col)
+        })
     }
 
     /// `.base` の今のビューの groupBy の列と向き(mdgrid のビューは groupBy を持たない)。
@@ -294,13 +287,17 @@ impl App {
             .unwrap_or(Kind::Text)
     }
 
-    /// 列の見出し(displayName か id)。
+    /// 列の見出し(displayName か id)。ビューに出していない列(まとまり・絞り込み・カンバンの列など)にも、`.base` の
+    /// displayName を使う(base-view.default-headings-display-name・base-view.display-name-everywhere)。列の名前を
+    /// 見せる所はこれを通す(ノートに書く値・式・設定・`--print` の鍵は id のまま)。
     pub(crate) fn title(&self, col: &str) -> String {
-        self.built
-            .titles
-            .get(col)
-            .cloned()
-            .unwrap_or_else(|| base::default_title(col))
+        if let Some(t) = self.built.titles.get(col) {
+            return t.clone();
+        }
+        match &self.base {
+            Some(b) => b.base.column_title(col),
+            None => base::default_title(col),
+        }
     }
 
     fn slot_key(&self, i: usize) -> Option<SlotKey> {
@@ -846,13 +843,8 @@ impl App {
 
     /// groupBy の列の見出し(見出しの行に出す)。ビューの設定でまとめ直したら、その列(NV-15)。
     pub(crate) fn group_title(&self) -> Option<String> {
-        let c = self.group_col()?;
         // base-view.default-headings-display-name: ビューに出していない列でも、`.base` の displayName を使う。
-        Some(match (self.built.titles.get(&c), &self.base) {
-            (Some(t), _) => t.clone(),
-            (None, Some(b)) => b.base.column_title(&c),
-            (None, None) => base::default_title(&c),
-        })
+        Some(self.title(&self.group_col()?))
     }
 
     /// `.base` を開く(CLI-1・CLI-2)。`view` は先頭(BV-13)か `--view` で選んだビュー。

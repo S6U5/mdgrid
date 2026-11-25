@@ -195,7 +195,30 @@ pub fn synth(nv: &NativeView) -> Result<Base, String> {
 // ---- 表の組み立て ----
 
 /// ビューの表を組む(CLI-5)。ノートは読み終えていること。評価できない filters(BV-7)・table 以外は Err(理由)。
+/// 値の候補は見ない(`table_with` に候補の無い列を渡したのと同じ)。
 pub fn table(src: &dyn Source, view: ViewDef<'_>, today: i64, now: i64) -> Result<Table, String> {
+    table_with(src, view, today, now, &|_| None)
+}
+
+/// セルの見せ方を、ビューの設定で比べる値にする(画面の `App::setting_value` と同じ写し方)。
+fn shown_value(s: Shown) -> Option<Value> {
+    match s {
+        Shown::Computed(v) => Some(val_value(&v)),
+        Shown::Unsupported(_) => None,
+        Shown::Prop(p) => p.value,
+    }
+}
+
+/// `table` と同じ。グループ分けの列に値の候補(`values_of`。`[rules.<列>] values`)があれば、行をまとまりごとに
+/// 候補の順(降順なら逆)に並べ、候補に無い値はそのあと、値の無い行は最後にする(cli.print-group-order。画面の
+/// navigation.group-values-order と同じ並び)。
+pub fn table_with(
+    src: &dyn Source,
+    view: ViewDef<'_>,
+    today: i64,
+    now: i64,
+    values_of: &dyn Fn(&str) -> Option<Vec<String>>,
+) -> Result<Table, String> {
     let prop = |r: &RowId, k: &str| src.get(r, k).value;
     match view {
         ViewDef::Default => {
@@ -209,7 +232,20 @@ pub fn table(src: &dyn Source, view: ViewDef<'_>, today: i64, now: i64) -> Resul
             }
             let g = b.build(i, src, &prop, today, now)?;
             let cell = |r: &RowId, c: &str| b.cell(src, &prop, r, c, today, now);
-            Ok(collect(g.columns, &g.rows, g.notes, &cell))
+            // groupBy のまとまりを、その列の値の候補の順に並べ直す(画面の `order_base_groups` と同じ)。
+            let group = b.views.get(i).and_then(|v| v.group_by.clone());
+            let rows = match group.and_then(|(col, dir)| Some((values_of(&col)?, col, dir))) {
+                Some((values, col, dir)) if !g.groups.is_empty() => {
+                    let dir = match dir {
+                        base::Dir::Asc => settings::Dir::Asc,
+                        base::Dir::Desc => settings::Dir::Desc,
+                    };
+                    let value = |r: &RowId| shown_value(cell(r, &col));
+                    settings::order_groups_by(g.rows, g.groups, &values, dir, &value).0
+                }
+                _ => g.rows,
+            };
+            Ok(collect(g.columns, &rows, g.notes, &cell))
         }
         ViewDef::Native(nv) => {
             let b = synth(nv).map_err(|e| Msg::PrintNativeView.fill(&[&nv.name, &e]))?;
@@ -239,14 +275,10 @@ pub fn table(src: &dyn Source, view: ViewDef<'_>, today: i64, now: i64) -> Resul
             let rows = if nv.settings.no_conditions() {
                 g.rows
             } else {
-                let get = |r: &RowId, c: &str| match cell(r, c) {
-                    Shown::Computed(v) => Some(val_value(&v)),
-                    Shown::Unsupported(_) => None,
-                    Shown::Prop(p) => p.value,
-                };
+                let get = |r: &RowId, c: &str| shown_value(cell(r, c));
                 let all = g.rows.clone();
                 let kind = |c: &str| kind_in(src, c, &all, &cell);
-                settings::apply(g.rows, g.groups, &nv.settings, &get, &kind).0
+                settings::apply_with(g.rows, g.groups, &nv.settings, &get, &kind, values_of).0
             };
             Ok(collect(columns, &rows, g.notes, &cell))
         }
