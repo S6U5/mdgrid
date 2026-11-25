@@ -31,18 +31,17 @@ fn boot(name: &str) -> (Tmp, App) {
 
 #[test]
 fn test_ws_8_back_forgets_the_scope() {
-    // [utest -> req~workspace.drawer-others~1, req~workspace.drawer-unsaved~1] 変更をためてほかのワークスペースの表を選び、確かめで戻る → 移る先の範囲の旗も残らない
-    // (あとで別の道で移るときに、前に選んだワークスペースの範囲で開き直さない)。
-    let (_tmp, mut a) = boot("ws8_back_scope");
+    // [utest -> req~workspace.switch-unsaved~2] 変更をためて切り替えの一覧でほかのワークスペースを選び、確かめで戻る → 移る先の範囲の旗も残らない
+    // (あとで引き出しなど別の道で移るときに、前に選んだワークスペースの範囲で開き直さない)。workspace.drawer-scope-only で
+    // 引き出しからほかのワークスペースへ移れなくなったので、切り替えの一覧で確かめる。
+    let (tmp, mut a) = boot("ws8_back_scope");
+    mdgrid::favorites::set(&tmp.0.join("config"), "Hobby", true).unwrap();
     let row = a.src.rows()[0].clone();
     a.changes
         .set(a.src.as_ref(), &row, "status", NewValue::Str("x".into()))
         .unwrap();
-    ch(&mut a, 'w');
-    ch(&mut a, 'G');
-    press(&mut a, KeyCode::Enter);
-    ch(&mut a, 'j');
-    press(&mut a, KeyCode::Enter);
+    ch(&mut a, 'W');
+    ch(&mut a, '1');
     assert_eq!(a.mode, Mode::Quit);
     assert_eq!(a.switch_workspace.as_deref(), Some("Hobby"));
     press(&mut a, KeyCode::Esc);
@@ -53,7 +52,7 @@ fn test_ws_8_back_forgets_the_scope() {
 
 #[test]
 fn test_ws_8_rebound_key_closes() {
-    // [utest -> req~workspace.drawer-open~2, req~workspace.drawer-close~2, req~screen.keys-vim-and-arrows-remap~1] 開くキーを `t` に割り当て直す → `t` で開き、もう一度の `t` で閉じる。
+    // [utest -> req~workspace.drawer-open~3, req~workspace.drawer-close~2, req~screen.keys-vim-and-arrows-remap~1] 開くキーを `t` に割り当て直す → `t` で開き、もう一度の `t` で閉じる。
     let (_tmp, mut a) = boot("ws8_rebind");
     let w = keymap::rebind(
         &mut a.keys,

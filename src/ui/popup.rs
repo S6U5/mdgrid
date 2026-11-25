@@ -13,6 +13,8 @@ use ratatui::text::{Line, Span};
 pub(crate) const FRAME: usize = 2;
 /// 窓の中に少なくとも見せる行の数(これより低い端末では窓を開かない)。
 pub(crate) const MIN_VIS: usize = 3;
+/// 新しいノートの窓の右に候補の窓を置くとき、縮めてよい幅(cell-edit.new-note-form-popup-place)。
+pub(crate) const SIDE_MIN_W: usize = 24;
 
 /// 描ける幅(右端の1桁を除く)と、下の帯より上の行の数(最下行と下の帯・メッセージ行を除く。mod.rs の draw)。
 pub(crate) fn screen(app: &App) -> (usize, usize) {
@@ -53,6 +55,108 @@ pub(crate) fn place_with(
     let vis = n.min(room - frame);
     let top = if below { ay + 1 } else { ay - (vis + frame) };
     Some(Place { top, vis })
+}
+
+/// 重ねた窓の四角(縁を含む。`right`・`bottom` も縁の桁と行)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Rect {
+    pub left: usize,
+    pub top: usize,
+    pub right: usize,
+    pub bottom: usize,
+}
+
+/// 置く窓の大きさの望み: 中身の行の数 `n`、縁の行の数 `frame`、少なくとも見せる行の数 `min_vis`、望む幅 `iw` と、
+/// 縮めてよい幅 `min_w`。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Want {
+    pub n: usize,
+    pub frame: usize,
+    pub min_vis: usize,
+    pub iw: usize,
+    pub min_w: usize,
+}
+
+/// 置き場所: 左の縁の桁 `x`、上の縁の行 `top`、見せる中身の行の数 `vis`、幅 `iw`、今の欄の行より下か `below`。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Spot {
+    pub x: usize,
+    pub top: usize,
+    pub vis: usize,
+    pub iw: usize,
+    pub below: bool,
+}
+
+/// cell-edit.new-note-form-popup-place: 窓 `form` の行 `ay` の欄(値の桁 `vx`)に出す窓の置き場所。`form` に重ねず、
+/// 右(`form` の右の空きの1桁のあと。縦は行 `ay` の下、入らなければ上)→ 下(`form` の下の縁の次の行から)→ 上
+/// (`form` の上の縁の前の行まで)の順に、入る所に置く。右に入るかは幅を `min_w` まで縮めて決め、上下に入るかは
+/// 縁と `min_vis` 行(中身が少なければその数)が入るかで決める。どこにも入らなければ、行 `ay` の下(入らなければ上)に、
+/// `vx` より右に重ねる(欄の名前を隠さない)。`w` は描ける幅、`limit` は下の帯より上の行の数。置けなければ None。
+pub(crate) fn beside(
+    form: Rect,
+    ay: usize,
+    vx: usize,
+    want: Want,
+    w: usize,
+    limit: usize,
+) -> Option<Spot> {
+    let min_w = want.min_w.min(want.iw);
+    let need = want.frame + want.min_vis.min(want.n);
+    // 右: 窓の右の縁の次の桁は、窓が表の文字と離れるように空けてある(new_note の overlay)。
+    let rx = form.right + 2;
+    if w >= rx + min_w {
+        if let Some(p) = place_with(ay, want.n, limit, want.frame, want.min_vis) {
+            return Some(Spot {
+                x: rx,
+                top: p.top,
+                vis: p.vis,
+                iw: want.iw.min(w - rx),
+                below: p.top > ay,
+            });
+        }
+    }
+    let iw = want.iw.min(w);
+    if iw >= min_w {
+        let x = vx.min(w - iw);
+        let below_room = limit.saturating_sub(form.bottom + 1);
+        if below_room >= need {
+            return Some(Spot {
+                x,
+                top: form.bottom + 1,
+                vis: want.n.min(below_room - want.frame),
+                iw,
+                below: true,
+            });
+        }
+        let above_room = form.top.min(limit);
+        if above_room >= need {
+            let vis = want.n.min(above_room - want.frame);
+            return Some(Spot {
+                x,
+                top: form.top - vis - want.frame,
+                vis,
+                iw,
+                below: false,
+            });
+        }
+    }
+    let p = place_with(ay, want.n, limit, want.frame, want.min_vis)?;
+    let (x, iw) = right_of(vx, want.iw, min_w, w);
+    Some(Spot {
+        x,
+        top: p.top,
+        vis: p.vis,
+        iw,
+        below: p.top > ay,
+    })
+}
+
+/// 幅 `iw` の窓を、桁 `vx` から右に置く左の縁の桁と幅。入らなければ `min_w`(それより狭い窓はその幅)まで縮め、
+/// それでも入らなければ画面の右の端に寄せる(cell-edit.new-note-form-popup-place・navigation.detail-popup-place:
+/// 欄やプロパティの名前を隠さない)。
+pub(crate) fn right_of(vx: usize, iw: usize, min_w: usize, w: usize) -> (usize, usize) {
+    let iw = iw.min(w.saturating_sub(vx)).max(min_w.min(iw)).min(w);
+    (vx.min(w - iw), iw)
 }
 
 /// 一覧の選びを動かす動作(↑↓・先頭・末尾・1画面)なら、`len` 行の一覧の新しい選び。ほかの動作なら None。

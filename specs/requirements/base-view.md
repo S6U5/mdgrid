@@ -328,12 +328,55 @@
   - When:
   - Then: 値は 18(`abc` を数えない)。
 
-#### 式で書いた集計(最上位の `summaries` の formula)とまとまりごとの集計は解釈しないで、未対応の理由を出すべき
-`req~base-view.summaries-unsupported~1` P1
+#### 式で書いた集計(最上位の `summaries` の formula)は解釈しないで、未対応の理由を出すべき
+`req~base-view.summaries-unsupported~2` P1
+- Rationale: 2026-11-25 にまとまりごとの集計を出すことにした(base-view.summaries-per-group)ので、未対応は式の集計だけになった
 - Acceptance:
   - Given: `values.mean` の集計
   - When:
   - Then: 未対応の理由が出て、ビューは開く。
+
+#### まとまりのあるビューでは、集計をまとまりごとにも計算し、まとまりの見出しの行の右に、集計した列の位置にそろえて「集計の名前 値」で出すべきで、表の下の集計の行は表全体の値のままにするべき
+`req~base-view.summaries-per-group~1` P1
+- Rationale: お金の台帳で、月ごと・分類ごとの小計が出ず、まとまりと集計を両方書くと下の帯に「未対応」が出続けた(2026-11-25 の台帳の実地の操作)。見出しの行に置くのは、行を増やさずに済み、畳んだまとまりでも小計が見える(全部を畳むと、まとまりごとの小計の一覧になる)ため。まとまりの末尾に行を足す形は、まとまりごとに1行ずつ表が縮み、畳むと見えなくなる
+- Acceptance:
+  - Given: category でまとめ、`summaries` が `amount: Sum` のビューで、food の行の amount が 1000 と 2500、daily の行が 300
+  - When: ビューを開く
+  - Then: food の見出しの行に「合計 3500」、daily の見出しの行に「合計 300」が amount の列の位置に出て、表の下の集計の行は「合計 3800」。下の帯に未対応の理由は出ない。
+- Acceptance:
+  - Given: 同じビュー
+  - When: food のまとまりを畳む
+  - Then: food の見出しの行に「合計 3500」が出たまま。
+- Acceptance:
+  - Given: 同じビュー
+  - When: 簡易の絞り込みで food の 2500 の行だけを外す
+  - Then: food の見出しの行は「合計 1000」、表の下の集計の行は「合計 1300」。
+- Acceptance:
+  - Given: 同じビューの英語の画面
+  - When: ビューを開く
+  - Then: food の見出しの行に「Sum 3500」。
+- Needs: utest, stest
+
+#### ビューの `summary_labels`(mdgrid の足したキー)で、列ごとに集計の名前を書き換えられ、表の下の集計の行とまとまりの見出しの行の両方で、書いた名前をどの言語の画面でも使うべき
+`req~base-view.summary-labels~1` P1
+- Rationale: 読書の台帳で、読み終えた日の `Filled` が「空でない 13」と出て、「冊数 13」と言えなかった(2026-11-25)。Obsidian の `.base` には集計に名前を付ける書き方が無いので、`tab_break` と同じく mdgrid のキーを足す(Obsidian は知らないキーを無視する)
+- Acceptance:
+  - Given: `summaries` が `finished: Filled` と `pages: Sum`、`summary_labels` が `finished: 冊数` のビューで、finished が空でない行が 13
+  - When: ビューを開く
+  - Then: 表の下の集計の行に「冊数 13」が出て、「空でない」は出ない。pages の集計は「合計」のまま。
+- Acceptance:
+  - Given: 同じビューの英語の画面
+  - When: ビューを開く
+  - Then: 「冊数 13」。
+- Acceptance:
+  - Given: `summary_labels` が `finished: 3`(文字でない値)
+  - When: ビューを開く
+  - Then: 集計の名前は「空でない」のまま。
+- Acceptance:
+  - Given: `summary_labels` が `finished: "冊\e[31m数"`(制御の文字の ESC を含む名前)
+  - When: ビューを開く
+  - Then: 集計の行とまとまりの見出しの行の字に ESC が無く、置き換えた見える字で出る(`冊␛[31m数`)。
+- Needs: utest
 
 ### 今日・今からの隔たり(`relative()`)
 
@@ -568,6 +611,158 @@
   - When: mdgrid のビュー「全部」で title の列の幅を変え、「まとめ」で先頭のまとまりを畳む
   - Then: ほかのビューに移って戻っても、「全部」は同じ幅、「まとめ」は畳んだまま。
 
+### つながったノートの値(ルックアップ・ロールアップ)
+
+#### 式は、リンクの値に付けた `asFile()` を、その行き先のノートの値として評価し、解けないリンクとノートでない値は `null` にするべき
+`req~base-view.lookup-as-file~1` P1
+- Rationale: 抜き書きの行に出典の本の著者を出すなど、リンクの先のノートの値を引く(ルックアップ)入口にするため(2026-11-25 の読書・人と会議・調べ物の台帳の実地)。書き方は表の道具の `.base` の `link.asFile()` と同じにする。リンクの読み方と行き先の解き方は relations.parse・relations.resolve と同じ
+- Acceptance:
+  - Given: `Quotes/q.md` の source が `"[[霧の灯台守]]"` で、`Library/霧の灯台守.md` がある
+  - When: q の行で `source.asFile().path` を評価する
+  - Then: `Library/霧の灯台守.md`。
+- Acceptance:
+  - Given: 同じ台帳で、source が `"[[無い本]]"` の行と、括弧の無い名前 `"霧の灯台守"` の行
+  - When: それぞれの行で `source.asFile()` を評価する
+  - Then: どちらも `null`。
+- Acceptance:
+  - Given: 同じ台帳で、霧の灯台守の行
+  - When: `file.backlinks.map(value.asFile().name)` を評価する(`file.backlinks` の要素はルートフォルダからのパス `Quotes/q`)
+  - Then: `["q.md"]`。
+- Needs: utest
+
+#### 式は、ノートの値に付けた `.properties.<キー>`(`.properties["キー"]`)を、そのノートのフロントマターの値として評価し、ためた値があればためた値にするべき
+`req~base-view.lookup-properties~1` P1
+- Rationale: 行き先のノートの値(本の著者・種類)を、その行に書き写さずに表の列として見るため。書き方は表の道具の `.base` の `file.properties` と同じにする
+- Acceptance:
+  - Given: 霧の灯台守の author が `佐伯 真澄`、kind が `book` で、q の source が霧の灯台守
+  - When: q の行で `source.asFile().properties.author` と `source.asFile().properties["kind"]` と `source.asFile().properties.isbn`(無いキー)を評価する
+  - Then: `佐伯 真澄`・`book`・`null`。
+- Acceptance:
+  - Given: 同じ台帳の画面で、霧の灯台守の author のセルを `佐伯 真澄2` に直して保存の前
+  - When: 抜き書きの表の、式 `source.asFile().properties.author` の列を見る
+  - Then: q の行は `佐伯 真澄2`。
+- Acceptance:
+  - Given: リンクの文字の値(ノートの値でないもの)
+  - When: q の行で `source.properties.author`(`asFile()` を省いた形)を評価する
+  - Then: `佐伯 真澄`(リンクの文字には、ノートの値と同じ項目を直に付けられる)。
+- Needs: utest
+
+#### 引いた値のうち、値まるごとがリンクの文字は、引いたノートからの行き先のノートの値にし、ノートの値とリンクの文字は行き先のノートで比べるべき
+`req~base-view.lookup-link-values~1` P1
+- Rationale: 会議の出席者に人が入っているかを確かめる、人の組織の種類をさらに引くなど、引いた先からもう一度引く・この行と比べるため。`[[名前]]` を名前の文字で比べると、同じ名前のノートや表示の文字(`[[名前|表示]]`)で取り違える
+- Acceptance:
+  - Given: `Meetings/m.md` の attendees が `["[[安藤 真]]", "[[岡田 健]]"]`
+  - When: 安藤 真の行で `file.backlinks.filter(value.properties.attendees.contains(file)).length` を評価する
+  - Then: `1`。
+- Acceptance:
+  - Given: 人 安藤 真の org が `"[[ノースウィンド工房]]"` で、組織のノートの kind が `own`
+  - When: m の行で `attendees[0].asFile().properties.org.properties.kind` を評価する
+  - Then: `own`。
+- Acceptance:
+  - Given: 安藤 真の行
+  - When: `"[[安藤 真]]" == file`・`["[[岡田 健]]", "[[安藤 真]]"].contains(file)`・`"[[岡田 健]]" == file` を評価する
+  - Then: `true`・`true`・`false`。
+- Needs: utest
+
+#### ノートの値には、`file.*` と同じ名前の値(`name`・`basename`・`ext`・`path`・`folder`・`size`・`mtime`・`ctime`・`tags`・`links`・`backlinks`)と関数(`hasTag`・`hasLink`・`inFolder`・`hasProperty`・`linkedFrom`)を付けられ、そのノートについて `file.*` と同じ意味で評価し、`file` だけを書いたらその行のノートの値にするべき
+`req~base-view.lookup-file-members~1` P1
+- Rationale: つながったノートを、どの表(フォルダ)のものかで絞る・名前で見せるため。表の道具の `.base` のファイルの値と同じ名前にする
+- Acceptance:
+  - Given: q の source が `Library/霧の灯台守.md`
+  - When: q の行で `source.asFile().name`・`source.asFile().folder`・`source.asFile().inFolder("Library")`・`source.asFile().inFolder("Quotes")` を評価する
+  - Then: `霧の灯台守.md`・`Library`・`true`・`false`。
+- Acceptance:
+  - Given: q の行
+  - When: `file.name` と `file.asFile().name`、`file == source` を評価する
+  - Then: どちらも `q.md`、`false`。
+- Acceptance:
+  - Given: ノートでない値
+  - When: `"abc".name`・`(3).inFolder("x")`・`[1].path` を評価する
+  - Then: どれも `null`。
+- Needs: utest
+
+#### 式は、リストの `filter(式)`・`map(式)`・`reduce(式, 初めの値)` を、式の中の `value`(要素)・`index`(0 から数えた位置)・`acc`(reduce のそこまでの値)で評価するべき
+`req~base-view.list-filter-map~1` P1
+- Rationale: つながったノートのリストを絞って値を集める(ロールアップ)ため。書き方は表の道具の `.base` と同じにする
+- Acceptance:
+  - Given:
+  - When: `[1, 2, 3, 4].filter(value > 2)`・`[1, 2, 3].map(value * 10 + index)`・`[1, 2, 3].reduce(acc + value, 0)` を評価する
+  - Then: `[3, 4]`・`[10, 21, 32]`・`6`。
+- Acceptance:
+  - Given: フロントマターに `value: 7` のある行
+  - When: `[1, 2].map(note.value)` と、filter・map・reduce の外の `value` を評価する
+  - Then: `[7, 7]` と `7`(`note.value` と外の `value` はフロントマターのキー)。
+- Acceptance:
+  - Given:
+  - When: `"abc".filter(true)`・`null.map(value)` を評価する
+  - Then: どちらも `null`。
+- Needs: utest
+
+#### 式は、リストの `max()`・`min()` を、数の要素があれば数の一番大きい・小さいもの、数が無ければ日付・日時の一番遅い・早いものとし、`sum()` を数の要素の合計にするべき。ほかの型の要素は数えない
+`req~base-view.list-aggregate~1` P1
+- Rationale: つながったノートの値の最大・最小・合計を出すため(人の最後に会った日 = 済んだ会議の日時の最大)。表の道具の `.base` には数を並べて渡す `max(a, b)` しか無く、リストの最大や日付の最大は `reduce` で長く書くことになるので、mdgrid が足す
+- Acceptance:
+  - Given:
+  - When: `[3, "a", 5, null].max()`・`[3, 5].min()`・`[1, 2.5, "x"].sum()` を評価する
+  - Then: `5`・`3`・`3.5`。
+- Acceptance:
+  - Given:
+  - When: `[date("2026-11-01"), date("2026-11-20"), "x"].max()`・`[date("2026-11-01"), date("2026-11-20")].min()` を評価する
+  - Then: 日付の `2026-11-20`・`2026-11-01`。
+- Acceptance:
+  - Given: 要素が無いか、数も日付も無いリスト
+  - When: `[].max()`・`["a"].min()`・`[].sum()` を評価する
+  - Then: `null`・`null`・`0`(tbd~list-aggregate-empty)。
+- Needs: utest
+
+#### 式は、`file.linkedFrom(列, ...)` を、フロントマターのその列(どれか)の値のリンクでこのノートを指すノートの値のリスト(ルートフォルダからのパスの順)として評価し、本文のリンクとほかの列のリンクは数えないべき
+`req~base-view.linked-from~1` P1
+- Rationale: `file.backlinks` は本文とどの列のリンクも1つにまとめるので、どの列から指したかを分けて数えられない(調べ物の問いを指すニュースと関連する問い、読書の本を出典にする抜き書き。2026-11-25 の台帳の実地)。表の道具の `.base` に同じものが無いので mdgrid が足す
+- Acceptance:
+  - Given: 問い `Questions/Q.md` を、ニュース `News/n1.md` が question で、問い `Questions/q2.md` が related で、ノート `n3.md` が本文で指す
+  - When: Q の行で `file.linkedFrom("question").length`・`file.linkedFrom("related").length`・`file.linkedFrom("question", "related").length`・`file.backlinks.length` を評価する
+  - Then: `1`・`1`・`2`・`3`。
+- Acceptance:
+  - Given: 同じ台帳
+  - When: Q の行で `file.linkedFrom("question", "related").map(value.name)` を評価する
+  - Then: `["n1.md", "q2.md"]`。
+- Acceptance:
+  - Given: 同じ台帳で、式 `file.linkedFrom("question")` の列
+  - When: `--print --format json` で出す
+  - Then: Q の行の値は `["News/n1"]`(ノートの値は、`file.links` と同じくルートフォルダからのパスの `.md` を除いたもの)。
+- Needs: utest, stest
+
+#### つながったノートを絞って値を集める式(ロールアップ)は、表の列として行ごとに評価し、`--print` にも同じ値を出すべき
+`req~base-view.rollup-column~1` P1
+- Rationale: 人の「最後に会った日」を、会議を済みにするたびに手で直さず、会議の表から出すため(2026-11-25 の人と会議の台帳の実地)
+- Acceptance:
+  - Given: People/ と Meetings/ の台帳で、安藤 真を attendees に持つ会議が3つ(済みの 2026-11-09T10:00 と 2026-11-24T10:00、予定の 2026-11-30T10:00)、会議の無い人 北川 翔
+  - When: 人の表の式 `met = 'file.linkedFrom("attendees").filter(value.inFolder("Meetings") && value.properties.status == "done").map(value.properties.when).max().date()'` の列を `--print --format csv` で出す
+  - Then: 安藤 真の行は `2026-11-24`、北川 翔の行は空。
+- Needs: stest
+
+#### つながったノートを引く・集める式は、台帳のほかのノートを行ごとに見直さず、つながったノートの分だけを読むべき
+`req~base-view.lookup-speed~1` P1
+- Rationale: 毎日使う台帳は数百〜数千のノートになる。行ごとに台帳の全部のノートを見直すと、行の数の2乗で遅くなり、開くときと流すときに待たされる。どの列から指したかは、読み込みのたびに1回作るリンクの索引(列ごと)で引く
+- Acceptance:
+  - Given: 人 p を attendees に持つ会議が3つと、つながらないノートが 1000 ある台帳
+  - When: p の行で `file.linkedFrom("attendees").filter(value.properties.status == "done").map(value.properties.when).max()` を評価する
+  - Then: 値を読むノートは、その3つの会議だけ(ほかのノートのフロントマターを読まない)。
+- Needs: utest
+
+#### 式の評価は、1つのセル(1つの行の1つの式)ごとに手数の上限を持ち、越えたら値を作らずに評価できない式(base-view.unsupported-column-mark)として理由を出し、ほかのセルは描くべき
+`req~base-view.expr-step-budget~1` P1
+- Rationale: filter・map・reduce を入れ子にすると評価の回数が掛け算で増え、印や `.base` に書いた式1つで、開いただけの画面を固められる(人から受け取った台帳のフォルダにも印は入っている。2026-11-25 の自動のセキュリティの見直し)。被リンクや行き先のリストをたどる手数とリストの並べ替え・重ね除きも同じ上限に入れる。上限は、数千のつながりの台帳のロールアップが届かない大きさにする(tbd~expr-step-budget-size)
+- Acceptance:
+  - Given: nums が 1 から 1000 の数のリストの行と、式 `x = 'nums.filter(nums.map(value * 2).length > 0).length'`(内と外で 1000 × 1000 回の評価)と `y = 'nums.length'` の列
+  - When: その行のセルを評価する
+  - Then: x のセルは値を出さずに評価できない式になり、理由は「式の評価の手数が上限を越えた」。y のセルは `1000`。
+- Acceptance:
+  - Given: 人 p を attendees に持つ会議が 3000 ある台帳
+  - When: p の行で `file.linkedFrom("attendees").filter(value.inFolder("Meetings") && value.properties.status == "done").map(value.properties.when).max()` を評価する
+  - Then: 上限に届かずに、一番遅い会議の日時が出る。
+- Needs: utest
+
 ## 未確定事項
 
 ### `relative()` の言い回しと数え方
@@ -575,3 +770,39 @@
 - Decider: 人
 - Provisional: 言い回しは mdgrid の言語(日本語は「あと14日」「5日前」「今日」、英語は "in 14 days"・"5 days ago"・"today")。日付は今日から日の単位で数え、月と年は暦で数えて端数を切り捨てる。Obsidian の `relative()` の表示とは合わせていない。
 - Basis: 2026-11-18 の話: あと何日・あと何か月を計算して読めるようにする。前の仕様では、言い回しが Obsidian の言語の設定に依るので未対応にしていた(specs/_history/decidespec/_changes/2026-10-06-common-methods.md の仮定)。
+
+### 空のリストの合計と、型の混ざったリストの最大・最小
+`tbd~list-aggregate-empty`
+- Decider: 人
+- Provisional: `sum()` は数の要素が無ければ `0`(`reduce(acc + value, 0)` と同じ)。`max()`・`min()` は数の要素を見て、数が無ければ日付・日時を見て、どちらも無ければ `null`。数と日付が混ざれば数だけを見る。期間・文字・真偽は数えない。表の下の集計(base-view.summaries-type-mismatch)の Sum は数える値が無ければ空欄で、ここは違う。
+- Basis: 2026-11-25 の依頼「数・最大・最小・合計・一覧」。細かい決めは人が任せた。
+
+### つながり(`linkedFrom`・`backlinks`)に、ためた値のリンクを入れるか
+`tbd~lookup-saved-links`
+- Decider: 人
+- Provisional: つながり(`file.linkedFrom()`・`file.backlinks`・`file.links`)は、保存したノートのリンクから読み込みのたびに作る索引で引き、ためた値でリンクを足した・外したことは保存するまで数えない。引く値(`.properties.<キー>`)には、ためた値を重ねる(base-view.lookup-properties)。
+- Basis: 行ごとに全部のノートのためた値を見直さないため(base-view.lookup-speed)。
+
+### `file.backlinks` の要素の型
+`tbd~backlinks-items`
+- Decider: 人
+- Provisional: 表の道具の `.base` で `file.backlinks` の要素がファイルかリンクかは確かめていない。mdgrid は今までどおりルートフォルダからのパスの文字(`Meetings/m`)にし、ノートの値の項目(`.properties.x`・`.inFolder()` など)は、その文字にも直に付けられる(`asFile()` と同じ解き方。base-view.lookup-properties)。
+- Basis: 今ある `file.backlinks.join("|")` などの式の値を変えないため。
+
+### 引いた値の名前を、どの表の決まりから取るか
+`tbd~lookup-labels-from`
+- Decider: 人
+- Provisional: 今の表の決まり(全体・台帳・表の rules を重ねたもの)の、同じキーの列の名前を当てる(cell-view.lookup-shown)。行き先のノートの表の決まりは見ない(人の表から組織の種類を引くと、人の表に kind の決まりが無ければ値のまま見せる)。
+- Basis: どのノートがどの表のものかは、表の絞り込みを全部の表で評価しないと決まらず、行ごとに引くと重いため。台帳の全体の決まり(`[rules.<キー>]`)に書けば、どの表でも名前になる。
+
+### 式の評価の手数の上限の大きさ
+`tbd~expr-step-budget-size`
+- Decider: 人
+- Provisional: 1つのセルの式の評価で 200,000 手(式の節を1つ評価するたびに1手、たどる被リンクと行き先のリストは要素ごとに1手、並べ替えと重ね除きは比べた回数)。手元の計測(release)で 1 手はおよそ 30 ナノ秒なので、上限まで使うセルは 6 ミリ秒ほど(100 万手では 300 行の `--print` が 8.9 秒だった)。3000 のつながりのロールアップは 3 万手ほどで届かない。上限はセルごとで、表の組み立て全体の上限は持たないので、上限まで使う式の列で数千行を並べ替えると、行の数だけ掛かる。
+- Basis: 2026-11-25 の自動のセキュリティの見直し(入れ子の filter・map で画面を固められる)。普通の台帳で届かず、届く式でも1つのセルで画面が目に見えて止まらない大きさ。
+
+### 引けるノートの範囲
+`tbd~lookup-scope`
+- Decider: 人
+- Provisional: 引けるのは、表のルートフォルダの下のノート(`file.links`・`file.backlinks` と同じ範囲)。台帳の根で開いて `[table.base] filters` で絞った表(mytestgrid の読書・人と会議・調べ物の台帳)は台帳のノートを全部引ける。`[[table]] path` で自分のフォルダだけを開いた表(組み込みのスターターの人の表など)は、そのフォルダが根なので、ほかのフォルダのノートを引けず、`file.linkedFrom()` も空。
+- Basis: path の表の根を台帳の根に広げると、その表の `file.path`・`file.folder`・`file.inFolder()` の値が変わり、今ある式と `--print` の出力が変わる。広げるか、ワークスペースの表のフォルダを引く口を足すかは人が決める。

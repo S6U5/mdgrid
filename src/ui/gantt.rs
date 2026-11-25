@@ -14,7 +14,7 @@ use mdgrid::gantt::{self, Bar, GanttSpec, Unit};
 use mdgrid::i18n::Msg;
 use mdgrid::source::RowId;
 use mdgrid::tree::SpanRule;
-use mdgrid::types::{parse_date, Kind};
+use mdgrid::types::{parse_date, Kind, WeekStart};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use std::collections::HashMap;
@@ -478,12 +478,13 @@ impl App {
         }
         let bars = self.gantt_bars(&spec);
         let cols = axis_cols(inner_now(self));
-        let (unit, origin) = if let Some(fit) = fit_all(&rows, &bars, cols) {
+        let week = self.week_start;
+        let (unit, origin) = if let Some(fit) = fit_all(&rows, &bars, cols, week) {
             fit
         } else {
             self.message = Some(Msg::GanttNoDates.text().into());
             let unit = Unit::Day;
-            let today = gantt::floor_unit(self.today, unit);
+            let today = gantt::floor_unit_in(self.today, unit, week);
             let back = i64::try_from(cols / TODAY_AT).unwrap_or(0);
             (unit, gantt::cell_start(-back, today, unit))
         };
@@ -571,8 +572,9 @@ impl App {
     /// GA-4: 時間軸を今日が見える位置へ(今日を左から 1/3 に。戻す数は字でなくマスで数える)。
     fn gantt_today(&mut self) {
         let cols = axis_cols(inner_now(self));
+        let week = self.week_start;
         if let Some(g) = self.gantt.as_mut() {
-            let today = gantt::floor_unit(self.today, g.unit);
+            let today = gantt::floor_unit_in(self.today, g.unit, week);
             let cells = i64::try_from(cols).unwrap_or(0) / gantt::col_chars(g.unit);
             let back = cells / i64::try_from(TODAY_AT).unwrap_or(1);
             g.origin = gantt::cell_start(-back, today, g.unit);
@@ -595,13 +597,16 @@ impl App {
                 }
             }
             Action::Left | Action::Right => {
+                let week = self.week_start;
                 if let Some(g) = self.gantt.as_mut() {
                     let k = if action == Action::Left { -1 } else { 1 };
                     // 日付の端(9999-12 など)で `cell_start` が単位の境でない日を返しても、原点は境に保つ。
-                    g.origin = gantt::floor_unit(gantt::cell_start(k, g.origin, g.unit), g.unit);
+                    let start = gantt::cell_start(k, g.origin, g.unit);
+                    g.origin = gantt::floor_unit_in(start, g.unit, week);
                 }
             }
             Action::ZoomIn | Action::ZoomOut => {
+                let week = self.week_start;
                 if let Some(g) = self.gantt.as_mut() {
                     let u = if action == Action::ZoomIn {
                         g.unit.finer()
@@ -610,7 +615,7 @@ impl App {
                     };
                     if u != g.unit {
                         g.unit = u;
-                        g.origin = gantt::floor_unit(g.origin, u);
+                        g.origin = gantt::floor_unit_in(g.origin, u, week);
                     }
                 }
             }
@@ -647,6 +652,7 @@ impl App {
     fn gantt_set_range(&mut self, range: Range) {
         let cols = axis_cols(inner_now(self));
         let today = self.today;
+        let week = self.week_start;
         let Some(g) = self.gantt.as_mut() else {
             return;
         };
@@ -654,9 +660,9 @@ impl App {
         // 左端の日から最後の日までが幅に収まる最も細かい単位にし、左端は単位の境に切り下げる。
         let span = match range {
             Range::Week => {
-                let mon = gantt::floor_unit(today, Unit::Week);
+                // gantt.week-start: 今週は設定の週の始まりの曜日から。
                 g.unit = Unit::Day;
-                g.origin = mon;
+                g.origin = gantt::floor_unit_in(today, Unit::Week, week);
                 return;
             }
             Range::Month => {
@@ -674,11 +680,11 @@ impl App {
         };
         match span {
             Some((first, last)) => {
-                g.unit = gantt::fit_unit(first, last, cols);
-                g.origin = gantt::floor_unit(first, g.unit);
+                g.unit = gantt::fit_unit_in(first, last, cols, week);
+                g.origin = gantt::floor_unit_in(first, g.unit, week);
             }
             None => {
-                if let Some((unit, origin)) = fit_all(&g.rows, &g.bars, cols) {
+                if let Some((unit, origin)) = fit_all(&g.rows, &g.bars, cols, week) {
                     g.unit = unit;
                     g.origin = origin;
                 }
@@ -694,9 +700,10 @@ impl App {
             Ctl::Today => self.gantt_today(),
             Ctl::Range(r) => self.gantt_set_range(r),
             Ctl::Unit(u) => {
+                let week = self.week_start;
                 if let Some(g) = self.gantt.as_mut() {
                     g.unit = u;
-                    g.origin = gantt::floor_unit(g.origin, u);
+                    g.origin = gantt::floor_unit_in(g.origin, u, week);
                 }
             }
         }
@@ -886,28 +893,39 @@ fn put_day(day: i64, old: &str) -> String {
     }
 }
 
-/// gantt.range-presets の「全体」: 行の範囲の最初の日を左端に、最後の日までが幅に収まる最も細かい単位。
-/// 日付を持つ行が無ければ None。
-fn fit_all(rows: &[RowId], bars: &HashMap<RowId, Bar>, cols: usize) -> Option<(Unit, i64)> {
+/// gantt.range-presets の「全体」: 行の範囲の最初の日を左端に、最後の日までが幅に収まる最も細かい単位。週は
+/// `week` の曜日から(gantt.week-start)。日付を持つ行が無ければ None。
+fn fit_all(
+    rows: &[RowId],
+    bars: &HashMap<RowId, Bar>,
+    cols: usize,
+    week: WeekStart,
+) -> Option<(Unit, i64)> {
     let (first, last) = rows
         .iter()
         .filter_map(|r| bars.get(r).and_then(Bar::bounds))
         .fold(None, |acc: Option<(i64, i64)>, (s, e)| {
             Some(acc.map_or((s, e), |(a, b)| (a.min(s), b.max(e))))
         })?;
-    let unit = gantt::fit_unit(first, last, cols);
-    Some((unit, gantt::floor_unit(first, unit)))
+    let unit = gantt::fit_unit_in(first, last, cols, week);
+    Some((unit, gantt::floor_unit_in(first, unit, week)))
 }
 
 /// 時間軸の見出しの2行と、下の行で反転して示す今日の字。字はマスを `col_chars` 字ずつ並べたもの(月は3字)。
-/// - 日: 上は月の始まるマス(と左端)に「YYYY-MM」、下は月曜のマスにその日の数(1〜2字)。
+/// - 日: 上は月の始まるマス(と左端)に「YYYY-MM」、下は週の始まりの曜日(`week`。gantt.week-start)のマスにその日の
+///   数(1〜2字)。
 /// - 週: 上は年の始まる週(と左端)に「YYYY」、下は1日を含む週に月の数「MM」、ほかは「·」。
 /// - 月: 上は1月のマス(と左端)に「YYYY」、下はマスの先頭から月の数(右寄せの2字)。
 ///
 /// 上の行の字は、次の切れ目の1字手前までに収まる形を選ぶ(「YYYY-MM」が収まらなければ「MM」、それも収まらなければ
 /// 出さない)ので、1つの字がほかの切れ目を潰さず、月や年の字どうしもくっつかない。今日の字は、下の行が空なら `▾`、
 /// 数に重なれば数を残してその字を反転で示す(色なしでも見える。SR-15)。
-fn axis_header(g: &Gantt, cols: usize, today: i64) -> (String, String, Option<usize>) {
+fn axis_header(
+    g: &Gantt,
+    cols: usize,
+    today: i64,
+    week: WeekStart,
+) -> (String, String, Option<usize>) {
     let n = usize::try_from(gantt::col_chars(g.unit)).unwrap_or(1);
     let blank = if g.unit == Unit::Week { '·' } else { ' ' };
     let mut top = vec![' '; cols];
@@ -929,8 +947,8 @@ fn axis_header(g: &Gantt, cols: usize, today: i64) -> (String, String, Option<us
         let (ly, lm, _) = gantt::civil(cell(k + 1) - 1);
         match g.unit {
             Unit::Day => {
-                // 月曜(1970-01-01 は木曜)。
-                if (d + 3).rem_euclid(7) == 0 {
+                // 週の始まりの曜日(週の単位のマスの始まりと同じ日)。
+                if gantt::floor_unit_in(d, Unit::Week, week) == d {
                     put(&mut low, at, &day.to_string());
                 }
                 if k == 0 || day == 1 {
@@ -1258,7 +1276,7 @@ fn title(app: &App, g: &Gantt) -> String {
 fn body_lines(app: &App, g: &Gantt, iw: usize, vis: usize) -> Vec<Line<'static>> {
     let nw = name_w(iw);
     let cols = axis_cols(iw);
-    let (top, low, mark) = axis_header(g, cols, app.today);
+    let (top, low, mark) = axis_header(g, cols, app.today, app.week_start);
     // 見出しの2行: 名前の欄の幅の空白のあとに時間軸(地の帯つき。今日が数に重なればその字を反転)。
     let pad = || Span::raw(" ".repeat(nw + 1));
     let head = |text: &str, mark: Option<usize>| {

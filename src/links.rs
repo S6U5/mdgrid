@@ -17,6 +17,8 @@ pub struct Raw {
     pub target: String,
     /// `[文字](…)` の形(ノートのフォルダからの相対を先に見る)。
     pub md: bool,
+    /// base-view.linked-from: フロントマターのどのキーの値から拾ったか(本文のリンクは None)。
+    pub key: Option<String>,
 }
 
 /// 本文(かフロントマターの値の文字)からリンクを拾う(書いた順)。
@@ -129,6 +131,7 @@ fn line_links(line: &str, out: &mut Vec<Raw>) {
                         out.push(Raw {
                             target: t.to_string(),
                             md: false,
+                            key: None,
                         });
                     }
                     i = j + 2;
@@ -142,6 +145,7 @@ fn line_links(line: &str, out: &mut Vec<Raw>) {
                         out.push(Raw {
                             target: t,
                             md: true,
+                            key: None,
                         });
                     }
                     i = end;
@@ -204,7 +208,7 @@ fn percent_decode(s: &str) -> String {
 }
 
 /// 根からのパスの拡張子 `.md` を除いたもの(`.md` でなければそのまま)。
-fn stem(rel: &str) -> &str {
+pub(crate) fn stem(rel: &str) -> &str {
     // 末尾の3バイトを ASCII として比べる(文字の途中で切らない。`.md` なら切る位置は文字の境目)。
     let b = rel.as_bytes();
     if b.len() > 3 && b[b.len() - 3..].eq_ignore_ascii_case(b".md") {
@@ -253,6 +257,9 @@ pub struct Index {
     links: HashMap<String, Vec<String>>,
     /// 行き先の stem → 元の stem(文字の順)。
     backlinks: HashMap<String, Vec<String>>,
+    /// base-view.linked-from: 行き先の stem → フロントマターのキー → そのキーの値で指す元の stem(文字の順)。
+    /// 式が行ごとに全部のノートを見直さないよう、読み込みのたびに1回作る。
+    keyed: HashMap<String, HashMap<String, Vec<String>>>,
 }
 
 impl Index {
@@ -269,6 +276,7 @@ impl Index {
             v.sort_by(|a, b| nearer(a, b));
         }
         let mut back: HashMap<String, Vec<String>> = HashMap::new();
+        let mut keyed: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
         for (rel, raws) in notes {
             let from = stem(&rel).to_string();
             let mut seen = HashSet::new();
@@ -278,6 +286,14 @@ impl Index {
                     Some(s) => (s, true),
                     None => (r.target.clone(), false),
                 };
+                if let (true, Some(k)) = (resolved, &r.key) {
+                    keyed
+                        .entry(v.clone())
+                        .or_default()
+                        .entry(k.clone())
+                        .or_default()
+                        .push(from.clone());
+                }
                 if !seen.insert(v.clone()) {
                     continue;
                 }
@@ -292,8 +308,40 @@ impl Index {
             v.sort();
             v.dedup();
         }
+        for v in keyed.values_mut().flat_map(HashMap::values_mut) {
+            v.sort();
+            v.dedup();
+        }
         ix.backlinks = back;
+        ix.keyed = keyed;
         ix
+    }
+
+    /// base-view.lookup-as-file: ルートフォルダからのパス(`.md` は有っても無くてもよい。大文字小文字は問わない)の
+    /// ノートの stem。無ければ None。
+    pub fn note(&self, p: &str) -> Option<String> {
+        let p = normalize(stem(p.trim().trim_start_matches('/')))?;
+        self.exact(&p)
+    }
+
+    /// base-view.lookup-link-values: ただのパスの行き先(`folder` はリンクを書いたノートのフォルダ)。
+    /// そのフォルダからの相対、次にルートフォルダからのパスで、在るノートだけ(名前では探さない。REL-1)。
+    pub fn path_note(&self, folder: &str, p: &str) -> Option<String> {
+        let t = stem(p.trim().trim_start_matches('/'));
+        if !folder.is_empty() {
+            if let Some(s) = normalize(&format!("{folder}/{t}")).and_then(|x| self.exact(&x)) {
+                return Some(s);
+            }
+        }
+        self.exact(&normalize(t)?)
+    }
+
+    /// base-view.linked-from: ノート(根からのパス)を、フロントマターのキー `key` の値のリンクで指すノートの stem。
+    pub fn linked_from(&self, rel: &str, key: &str) -> &[String] {
+        self.keyed
+            .get(stem(rel))
+            .and_then(|m| m.get(key))
+            .map_or(&[], Vec::as_slice)
     }
 
     /// stem が在ればそのノートの stem(書いた大文字小文字ではなく、ノートのもの)。
@@ -347,6 +395,7 @@ impl Index {
         let raw = Raw {
             target: x.to_string(),
             md: false,
+            key: None,
         };
         if let Some(s) = self.resolve("", &raw) {
             return links.contains(&s);

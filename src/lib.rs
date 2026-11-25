@@ -33,6 +33,7 @@ pub(crate) mod mdtext;
 pub mod newnote;
 pub mod notice;
 pub mod notify;
+pub mod numfmt;
 pub mod page;
 pub mod places;
 pub mod print;

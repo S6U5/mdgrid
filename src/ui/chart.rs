@@ -23,14 +23,14 @@ use std::collections::HashMap;
 
 /// 日付の区切りの数の上限。超える単位は月まで粗くする(極端な日付の範囲で項目が膨らまないように)。
 const MAX_BUCKETS: usize = 2000;
-/// 内訳の数の上限(積み上げ棒・折れ線・散布図。CH-4・CH-5)。残りは「その他」か、線にしない。
+/// 内訳の数の上限(積み上げ棒・折れ線・散布図。CH-4・CH-5)。残りは「ほか」か、線にしない。
 const MAX_SERIES: usize = 5;
-/// ヒートマップの横の値の数の上限(残りは「その他」)。
+/// ヒートマップの横の値の数の上限(残りは「ほか」)。
 const MAX_HEAT_COLS: usize = 12;
-/// 内訳ごとの塗りの字(積み上げ棒。最後は「その他」)。
+/// 内訳ごとの塗りの字(積み上げ棒。最後は「ほか」)。
 const FILLS: [char; 6] = ['█', '▓', '▒', '░', '▞', ':'];
 const FILLS_ASCII: [char; 6] = ['#', '=', '+', '-', '~', ':'];
-/// 内訳ごとの点の字(折れ線・散布図。最後は「その他」)。
+/// 内訳ごとの点の字(折れ線・散布図。最後は「ほか」)。
 const MARKS: [char; 6] = ['*', '+', 'o', 'x', '#', '.'];
 /// 濃さの字(ヒートマップ。0 と 4 段)。
 const SHADES: [char; 5] = [' ', '░', '▒', '▓', '█'];
@@ -78,7 +78,7 @@ pub(crate) struct Item {
 /// 内訳の値1つ。
 pub(crate) struct Series {
     pub label: String,
-    /// 絞り込みの値の鍵(「その他」は None)。
+    /// 絞り込みの値の鍵(「ほか」は None)。
     pub key: Option<String>,
 }
 
@@ -120,6 +120,8 @@ pub(crate) struct Data {
     pub y_date: bool,
     /// 描けない理由(種類に合う列が無いなど)。あれば体にこれだけを出す。
     pub why: Option<String>,
+    /// cell-view.number-format-totals: 値の字の見せ方(値の列の `[format.<列>]`。件数と散布図は None)。
+    pub fmt: Option<mdgrid::numfmt::NumFormat>,
 }
 
 /// グラフの画面の状態(開いている間だけ)。
@@ -240,6 +242,23 @@ fn num(v: Option<f64>) -> String {
     v.map_or_else(|| "-".to_string(), chart::fmt_num)
 }
 
+/// 値の字(cell-view.number-format-totals): 値の列に数の見せ方があれば当てる。小数の桁を決めていない見せ方は、
+/// `fmt_num` と同じく小数2桁までに丸めてから当てる。
+fn vnum(c: &Chart, v: Option<f64>) -> String {
+    match (&c.data.fmt, v) {
+        (Some(f), Some(x)) if x.is_finite() => {
+            let x = if f.decimals.is_none() && x.abs() < 1e15 {
+                (x * 100.0).round() / 100.0
+            } else {
+                x
+            };
+            // 頭と末尾の字の制御の文字は見える字にする(cell-view.number-format-invalid)。
+            sanitize(&f.float(x))
+        }
+        _ => num(v),
+    }
+}
+
 /// 画面の地の色(chart.series-contrast・chart.heatmap-readable): テーマの地、無ければ端末の地(問い合わせた答え)、
 /// 分からなければ暗い地(黒。screen.theme-auto-detect と同じく暗いとみなす)。
 fn ground(app: &App) -> [u8; 3] {
@@ -292,7 +311,7 @@ fn contrast(a: [u8; 3], b: [u8; 3]) -> f64 {
 }
 
 /// 内訳の色(色があるとき。chart.series-contrast): 暗い地には明るい組、明るい地には濃い組。どれも、どのテーマの地とも
-/// 対比 3 以上(試験が全部のテーマで確かめる)。最後は「その他」の灰。
+/// 対比 3 以上(試験が全部のテーマで確かめる)。最後は「ほか」の灰。
 fn series_color(app: &App, s: usize) -> Option<Color> {
     const DARK: [[u8; 3]; 6] = [
         [86, 182, 194],
@@ -665,10 +684,16 @@ impl App {
             x_date: false,
             y_date: false,
             why,
+            fmt: None,
         };
         if data.why.is_some() {
             return data;
         }
+        data.fmt =
+            r.y.as_ref()
+                .filter(|_| r.agg != Agg::Count && r.kind != ChartKind::Scatter)
+                .and_then(|y| self.prof.resolved.format.get(y))
+                .cloned();
         let xk = self.col_type(&r.x);
         let x_date = matches!(xk, Kind::Date | Kind::DateTime);
         let x_num = xk == Kind::Number;
@@ -715,7 +740,7 @@ impl App {
             };
             rows.push((row, xv, by, y));
         }
-        // 内訳: 全体で多い順に上限まで(同じなら名前の順)。残りは「その他」(折れ線は線にしない)。
+        // 内訳: 全体で多い順に上限まで(同じなら名前の順)。残りは「ほか」(折れ線は線にしない)。
         let has_by = r.kind.takes_by() && r.by.is_some();
         let mut sidx: HashMap<Option<String>, usize> = HashMap::new();
         if has_by {
@@ -1374,7 +1399,7 @@ impl App {
                 if c.cur.kind == ChartKind::Heatmap {
                     let s = c.data.series.get(c.sel2).and_then(|s| s.key.clone());
                     let (Some(by), Some(s)) = (c.cur.by.clone(), s) else {
-                        // 「その他」の列は複数の値をまとめたもので、1つの値では絞れない。
+                        // 「ほか」の列は複数の値をまとめたもので、1つの値では絞れない。
                         self.message = Some(Msg::ChartOtherNoFilter.text().into());
                         return;
                     };
@@ -1686,13 +1711,13 @@ fn detail(c: &Chart) -> String {
         ChartKind::Bar => d
             .items
             .get(c.sel)
-            .map(|i| format!("{}: {}", i.label, num(item_value(i, agg))))
+            .map(|i| format!("{}: {}", i.label, vnum(c, item_value(i, agg))))
             .unwrap_or_default(),
         ChartKind::Stacked => d
             .items
             .get(c.sel)
             .map(|i| {
-                let mut s = format!("{}: {}", i.label, num(item_value(i, agg)));
+                let mut s = format!("{}: {}", i.label, vnum(c, item_value(i, agg)));
                 let sum: f64 = i.parts.iter().filter_map(|p| p.value(agg)).sum();
                 for (p, se) in i.parts.iter().zip(&d.series) {
                     let v = p.value(agg);
@@ -1701,7 +1726,7 @@ fn detail(c: &Chart) -> String {
                         let pc = pc.map_or_else(|| "-".to_string(), |p| format!("{}%", p.round()));
                         s.push_str(&format!(" · {} {pc}", se.label));
                     } else {
-                        s.push_str(&format!(" · {} {}", se.label, num(v)));
+                        s.push_str(&format!(" · {} {}", se.label, vnum(c, v)));
                     }
                 }
                 s
@@ -1713,13 +1738,13 @@ fn detail(c: &Chart) -> String {
                 .get(c.sel)
                 .map(|i| {
                     if d.series.is_empty() {
-                        format!("{}: {}", i.label, num(vals[0][c.sel]))
+                        format!("{}: {}", i.label, vnum(c, vals[0][c.sel]))
                     } else {
                         let parts: Vec<String> = d
                             .series
                             .iter()
                             .enumerate()
-                            .map(|(s, se)| format!("{} {}", se.label, num(vals[s][c.sel])))
+                            .map(|(s, se)| format!("{} {}", se.label, vnum(c, vals[s][c.sel])))
                             .collect();
                         format!("{}: {}", i.label, parts.join(" · "))
                     }
@@ -1743,7 +1768,7 @@ fn detail(c: &Chart) -> String {
                 "{} × {}: {}",
                 i.label,
                 s.label,
-                num(i.parts.get(c.sel2).and_then(|p| p.value(agg)))
+                vnum(c, i.parts.get(c.sel2).and_then(|p| p.value(agg)))
             ),
             _ => String::new(),
         },
@@ -1843,7 +1868,7 @@ fn y_label(c: &Chart, v: f64) -> String {
     if c.cur.kind == ChartKind::Scatter {
         axis_num(v, c.data.y_date)
     } else {
-        chart::fmt_num(v)
+        vnum(c, Some(v))
     }
 }
 
@@ -1912,7 +1937,7 @@ fn heat_layout(c: &Chart, iw: usize) -> HeatLayout {
     let vw = d
         .items
         .iter()
-        .flat_map(|i| i.parts.iter().map(|p| width(&num(p.value(c.cur.agg)))))
+        .flat_map(|i| i.parts.iter().map(|p| width(&vnum(c, p.value(c.cur.agg)))))
         .max()
         .unwrap_or(1);
     let sw = d.series.iter().map(|s| width(&s.label)).max().unwrap_or(1);
@@ -2033,7 +2058,7 @@ fn bar_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<Li
         .unwrap_or(1)
         .clamp(1, (iw / 3).max(4));
     let vals: Vec<Option<f64>> = d.items.iter().map(|i| item_value(i, agg)).collect();
-    let vw = vals.iter().map(|v| width(&num(*v))).max().unwrap_or(1);
+    let vw = vals.iter().map(|v| width(&vnum(c, *v))).max().unwrap_or(1);
     let bw = iw.saturating_sub(1 + lw + 2 + 1 + vw + 1).max(1);
     let stacked = c.cur.kind == ChartKind::Stacked && !d.series.is_empty();
     let sums: Vec<f64> = d
@@ -2104,7 +2129,7 @@ fn bar_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<Li
             let st = series_color(app, 0).map_or(Style::default(), |col| Style::default().fg(col));
             spans.push(Span::styled(bar, st));
         }
-        let value = num(vals[i]);
+        let value = vnum(c, vals[i]);
         spans.push(Span::raw(format!(" {value}")));
         used += 1 + width(&value);
         let rest = iw.saturating_sub(1 + lw + 2 + used);
@@ -2353,7 +2378,7 @@ fn heat_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<L
             } else {
                 SHADES[level]
             };
-            let text = fit(&num(v), lay.cw.saturating_sub(1), Align::Right);
+            let text = fit(&vnum(c, v), lay.cw.saturating_sub(1), Align::Right);
             // chart.heatmap-shade-blend: 色のあるときの濃さの字は、ます目の地と同じ色(塊に見せない)。
             let (shade_st, st) = if on_row && j == c.sel2 {
                 let blend = match (&paint, sel_st.bg) {

@@ -1136,6 +1136,21 @@ fn value_x(g: &Geom) -> usize {
     g.left + 1 + 1 + 2 + g.label_w + 2
 }
 
+/// cell-edit.new-note-form-popup-place: 新しいノートの窓の四角(縁を含む)と、今の欄の入力の欄の位置(値の桁と行)。
+/// 欄に出す候補の窓・カレンダー・リストの値の付け外しの窓は、この四角に重ねずに置く(`popup::beside`)。
+pub(crate) fn form_anchor(app: &App, w: usize) -> Option<(super::popup::Rect, usize, usize)> {
+    let g = geom(app)?;
+    let b = note_box(app, w)?;
+    let rect = super::popup::Rect {
+        left: g.left,
+        top: g.top,
+        right: g.left + g.bw - 1,
+        // 上の縁・欄の行・区切り・キーの行・下の縁(overlay と同じ)。
+        bottom: g.top + g.count + 3,
+    };
+    Some((rect, b.x, b.y))
+}
+
 /// 新しいノートの入力の欄(入力ボックスの位置。今の欄の行。カーソル・カレンダー・リストの選択の窓の置き場)。
 pub(crate) fn note_box(app: &App, w: usize) -> Option<InputBox> {
     let f = app.note.flow.as_ref()?;

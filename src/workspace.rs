@@ -735,7 +735,8 @@ fn read_chart(
     })
 }
 
-/// KB-1: `kanban = { column = "<列>" }` を読む。
+/// KB-1: `kanban = { column = "<列>", card = ["<列>", …] }` を読む。`card`(kanban.card-columns)が列の名前の文字列の
+/// 並びでなければ警告して外す(kanban.card-config-bad。カンバンは出す)。`note.` は除き、空と重なりは飛ばす。
 fn read_kanban(
     v: &toml::Value,
     file: &str,
@@ -748,13 +749,39 @@ fn read_kanban(
         return None;
     };
     for k in t.keys() {
-        if k != "column" {
+        if k != "column" && k != "card" {
             warn(
                 warns,
                 file,
                 &format!("{at}.{k}"),
                 Msg::RsnUnknown.text().to_string(),
             );
+        }
+    }
+    let names = t.get("card").map(|v| {
+        v.as_array().and_then(|a| {
+            a.iter()
+                .map(|x| x.as_str().map(str::to_string))
+                .collect::<Option<Vec<String>>>()
+        })
+    });
+    let mut card: Vec<String> = Vec::new();
+    match names {
+        None => {}
+        Some(None) => warn(
+            warns,
+            file,
+            &format!("{at}.card"),
+            not(Msg::WantColumnNames),
+        ),
+        Some(Some(names)) => {
+            for n in names {
+                let n = n.trim();
+                let n = n.strip_prefix("note.").unwrap_or(n).trim().to_string();
+                if !n.is_empty() && !card.contains(&n) {
+                    card.push(n);
+                }
+            }
         }
     }
     let column = match t.get("column") {
@@ -774,7 +801,7 @@ fn read_kanban(
         );
         return None;
     };
-    Some(crate::kanban::KanbanSpec { column })
+    Some(crate::kanban::KanbanSpec { column, card })
 }
 
 /// navigation.parent-child-config: `children = { key = "<列>", status = "<列>", done = "<値>", closed = ["<値>", …],

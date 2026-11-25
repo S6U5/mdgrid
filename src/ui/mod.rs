@@ -352,6 +352,8 @@ mod test_header_buttons;
 #[cfg(test)]
 mod test_kanban;
 #[cfg(test)]
+mod test_kanban_cards;
+#[cfg(test)]
 mod test_kanban_fix;
 #[cfg(test)]
 mod test_kanban_fix2;
@@ -374,6 +376,8 @@ mod test_load_throttle;
 #[cfg(test)]
 mod test_look;
 #[cfg(test)]
+mod test_lookup_shown;
+#[cfg(test)]
 mod test_modern_rest;
 #[cfg(test)]
 mod test_new_note_rule_values;
@@ -387,6 +391,8 @@ mod test_note_editor;
 mod test_note_form;
 #[cfg(test)]
 mod test_note_form_mouse;
+#[cfg(test)]
+mod test_note_form_place;
 #[cfg(test)]
 mod test_note_form_same;
 #[cfg(test)]
@@ -599,6 +605,8 @@ mod test_note_trash;
 mod test_notices;
 #[cfg(test)]
 mod test_notify;
+#[cfg(test)]
+mod test_number_format;
 #[cfg(test)]
 mod test_open_url_key;
 #[cfg(test)]

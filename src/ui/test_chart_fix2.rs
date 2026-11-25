@@ -72,7 +72,7 @@ fn by_notes() -> Vec<(String, String)> {
 
 #[test]
 fn test_ch_4_stacked_with_only_by_infers_x_from_other_column() {
-    // [utest -> req~chart.config-names~1, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~2] #11: chart = { kind = "stacked", by = "status" } → 分ける列は status でなく assignee、内訳は status。
+    // [utest -> req~chart.config-names~1, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~3] #11: chart = { kind = "stacked", by = "status" } → 分ける列は status でなく assignee、内訳は status。
     // alice の棒は2つの内訳(todo・done)で塗り分ける(1色でない)。
     let (_t, mut a) = boot(
         "chfx11stack",

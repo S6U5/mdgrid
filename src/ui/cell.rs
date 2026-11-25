@@ -99,6 +99,28 @@ pub(crate) fn label_of(app: &App, col: &str, key: &str) -> Option<String> {
         .map(|t| first_line_marked(&t))
 }
 
+/// cell-view.number-format: 列 `col` に `[format.<列>]` があれば、数の値を見せる文字(桁の区切り・小数の桁・頭と
+/// 末尾の字)。名前のある値(`[rules.<列>] labels`・`icons`)は名前が先なので None。書く値・並べ替え・書き出しは
+/// 数のまま(cell-view.number-format-display-only)。
+pub(crate) fn number_text(app: &App, col: &str, v: &Value) -> Option<String> {
+    let f = app.prof.resolved.format.get(col)?;
+    let (key, text) = match v {
+        Value::Int(i) => (i.to_string(), f.int(*i)),
+        Value::Float(x) => (float_text(*x), f.float(*x)),
+        _ => return None,
+    };
+    // 頭と末尾の字は読むときに外しているが、描くときも制御の文字を見える字にする(二重の守り)。
+    label_of(app, col, &key).is_none().then(|| sanitize(&text))
+}
+
+/// `number_text` の計算の列(`formula.*`・`file.*`)の値の版。数でなければ None。
+pub(crate) fn number_val_text(app: &App, col: &str, v: &Val) -> Option<String> {
+    match v {
+        Val::Num(n) => Some(sanitize(&app.prof.resolved.format.get(col)?.float(*n))),
+        _ => None,
+    }
+}
+
 /// 値の文字(CV-1)に、名前のある値は名前を当てたもの(リストは要素ごと。navigation.value-labels-cells)。
 pub(crate) fn labeled_text(app: &App, col: &str, v: &Value) -> String {
     match v {
@@ -235,6 +257,45 @@ pub(crate) fn val_text(v: &Val) -> String {
     mdgrid::print::val_text_with(v, &first_line_marked)
 }
 
+/// cell-view.lookup-shown: 式の列の値の文字。ノートは名前(ノートの欄と同じ名前の正規表現を当てたもの)、日付は日付の
+/// 見せ方(CE-22)、ほかのノートのキー `key` から引いた値は、そのキーの値の名前(navigation.value-labels-cells)。
+/// 式の列のセルの文字: 値の名前(labels)のある値は名前、無ければ数の見せ方(cell-view.number-format)、どちらも
+/// 無ければ引いた値の見せ方(cell-view.lookup-shown)。
+fn computed_cell_text(app: &App, col: &str, v: &Val) -> String {
+    let key = app.lookup_key(col);
+    let labeled = key
+        .as_deref()
+        .is_some_and(|k| label_of(app, k, &mdgrid::print::val_plain(v)).is_some());
+    if labeled {
+        return computed_text(app, key.as_deref(), v);
+    }
+    number_val_text(app, col, v).unwrap_or_else(|| computed_text(app, key.as_deref(), v))
+}
+
+fn computed_text(app: &App, key: Option<&str>, v: &Val) -> String {
+    match v {
+        Val::File(stem) => {
+            let name = stem.rsplit('/').next().unwrap_or(stem);
+            sanitize(&super::view::note_name_of(app, name))
+        }
+        Val::Date(d) => app.date_format.format(*d),
+        Val::List(items) => format!(
+            "[{}]",
+            items
+                .iter()
+                .map(|x| computed_text(app, key, x))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+        Val::Str(_) | Val::Num(_) | Val::Bool(_) => {
+            let text = val_text(v);
+            key.and_then(|k| label_of(app, k, &mdgrid::print::val_plain(v)))
+                .unwrap_or(text)
+        }
+        other => val_text(other),
+    }
+}
+
 /// 列の型の寄せ方(CV-4)。
 pub(crate) fn align_of(kind: Kind) -> Align {
     match kind {
@@ -268,6 +329,9 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                     .collect::<Vec<_>>()
                     .join(" · "),
             ),
+            // cell-view.number-format: ためた数も見せ方を当てる(`*¥5,000`)。
+            NewValue::Int(i) => number_text(app, col, &Value::Int(*i)),
+            NewValue::Float(f) => number_text(app, col, &Value::Float(*f)),
             _ => None,
         }
         // REL-2: ためたリンクも行き先の名前で見せる。
@@ -304,7 +368,12 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                 part: CellPart::None,
             };
         }
-        base::Shown::Computed(v) => (val_text(&v), "", false, app.src.get(row, col).lock),
+        base::Shown::Computed(v) => (
+            computed_cell_text(app, col, &v),
+            "",
+            false,
+            app.src.get(row, col).lock,
+        ),
         base::Shown::Prop(cell) => {
             let (text, mark, null) = match &cell.value {
                 // キーが無いときは空欄(CV-1)。必須の決まり(CE-36)があれば `!` だけ(CV-9)。
@@ -330,6 +399,8 @@ pub(crate) fn shown(app: &App, row: &RowId, col: &str) -> Shown {
                     } else {
                         None
                     }
+                    // cell-view.number-format: 数の見せ方(名前のある値は名前が先)。
+                    .or_else(|| number_text(app, col, v))
                     // navigation.value-labels-cells: 名前のある値は名前で(書く値は値のまま)。
                     .unwrap_or_else(|| labeled_text(app, col, v));
                     // CV-2・CV-9: 列の型か決まりに合わない値は、そのまま見せて `!` を付ける。

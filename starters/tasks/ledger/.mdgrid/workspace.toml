@@ -46,8 +46,9 @@ created = "{date}"
 name = "Tasks"
 # The gantt screen (C, GA-1): bars from the start date to the due date. Parent/child rows (view settings) keep their indent.
 gantt = { start = "start", end = "due" }
-# The kanban screen (B, KB-1): one lane per status, in the order of [rules.status]. H and L move a card and rewrite its status.
-kanban = { column = "status" }
+# The kanban screen (B, KB-1): one lane per status, in the order of [rules.status]. Each card shows its due date and priority
+# under the name (card). H and L move a card and rewrite its status.
+kanban = { column = "status", card = ["due", "priority"] }
 # The chart screen (P, CH-1): tasks per status, due dates by month, and status per priority. [ and ] switch them;
 # Tab, x, y and b change the kind and the columns on the screen.
 chart = [

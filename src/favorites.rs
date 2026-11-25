@@ -3,8 +3,8 @@
 //! (ホームの下なら `~/…`)。人ごとの好みなので、ノートのフォルダと印には書かない(workspace.favorite-store)。
 //!
 //! 書き換えは `workspaces.toml` の文字のまま、最上位の `favorites` の行だけを置き換える(手で書いたコメント・
-//! ワークスペースの区画は残す。workspace.rs の書き換えと同じ考え)。画面の切り替えの一覧(ui/switch.rs)と
-//! 引き出しの見出しの印(ui/drawer.rs)が読む。
+//! ワークスペースの区画は残す。workspace.rs の書き換えと同じ考え)。画面の切り替えの一覧(ui/switch.rs)が
+//! 読み、入れる・外す・並べ替える。
 
 use crate::config;
 use crate::i18n::Msg;
@@ -163,6 +163,32 @@ pub fn set(dir: &Path, entry: &str, on: bool) -> io::Result<()> {
         (false, true) => list.retain(|e| !same(e, entry)),
         _ => return Ok(()),
     }
+    let new = edited(&text, &list);
+    config::write_atomic(dir, FILE_NAME, new.as_bytes())
+}
+
+/// 2つの項目 `a`・`b` の並びの位置を入れ替える(workspace.favorite-reorder。切り替えの一覧で1つ上・下へ動かす)。
+/// どちらかが入っていなければ何もしない。`set` と同じく最上位の `favorites` の行だけを書き換える。
+pub fn swap(dir: &Path, a: &str, b: &str) -> io::Result<()> {
+    let path = dir.join(FILE_NAME);
+    let text = crate::textfile::read_text_for_edit(&path)?;
+    if let Err(e) = text.parse::<toml::Table>() {
+        let (line, msg) = config::toml_error(&text, &e);
+        let at = line.map(|l| l.to_string()).unwrap_or_default();
+        let why = Msg::WsBadToml.fill(&[&FILE_NAME, &at, &msg]);
+        return Err(io::Error::other(Msg::WsFixFirst.fill(&[&why])));
+    }
+    let mut list = parse(&text).0;
+    let (Some(i), Some(j)) = (
+        list.iter().position(|e| same(e, a)),
+        list.iter().position(|e| same(e, b)),
+    ) else {
+        return Ok(());
+    };
+    if i == j {
+        return Ok(());
+    }
+    list.swap(i, j);
     let new = edited(&text, &list);
     config::write_atomic(dir, FILE_NAME, new.as_bytes())
 }

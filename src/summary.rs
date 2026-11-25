@@ -53,6 +53,18 @@ impl Summary {
         Summary::ALL.into_iter().find(|s| s.key() == name)
     }
 
+    /// 件数を数える集計か(値は列の単位でなく件数。数の見せ方を当てない。cell-view.number-format-totals)。
+    pub fn counts(self) -> bool {
+        matches!(
+            self,
+            Summary::Checked
+                | Summary::Unchecked
+                | Summary::Empty
+                | Summary::Filled
+                | Summary::Unique
+        )
+    }
+
     /// 今の言語の見せ方の名前(SR-23)。英語は Obsidian の名前。
     pub fn label(self) -> &'static str {
         self.msg().text()
@@ -106,6 +118,7 @@ fn unique_key(v: &Val) -> (u8, String) {
         Val::Date(d) => (4, d.to_string()),
         Val::DateTime(s) => (5, s.to_string()),
         Val::Duration(ms) => (6, ms.to_string()),
+        Val::File(s) => (8, s.clone()),
         Val::List(xs) => (
             7,
             xs.iter()

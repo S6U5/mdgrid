@@ -91,12 +91,12 @@ fn boot_config(name: &str, toml: &str) -> (Tmp, App) {
 
 #[test]
 fn test_sr_42_crumb_button_key_and_arrow() {
-    // [utest -> req~screen.breadcrumb-path~2] ワークスペース Work の tasks → 1行目の左が「w Work › tasks ▾  3行」。
+    // [utest -> req~screen.breadcrumb-path~3] ワークスペース Work の tasks → 1行目の左が「W Work › w tasks ▾  3行」。
     let (_t, a) = boot_work("crumbbtn");
     let h = head(&a);
     let left = h.trim_start();
-    assert!(left.starts_with("w Work › "), "{h:?}");
-    let rest = left["w Work › ".len()..].to_lowercase();
+    assert!(left.starts_with("W Work › w "), "{h:?}");
+    let rest = left["W Work › w ".len()..].to_lowercase();
     assert!(rest.starts_with("tasks ▾"), "表の名前の後ろに ▾: {h:?}");
     let arrow = h.find('▾').unwrap();
     assert!(h[arrow..].contains("3行"), "行の数は ▾ の右: {h:?}");
@@ -104,34 +104,38 @@ fn test_sr_42_crumb_button_key_and_arrow() {
 
 #[test]
 fn test_sr_42_crumb_button_looks_like_a_button() {
-    // [utest -> req~screen.breadcrumb-button-look~2] 名前から ▾ までが1つのボタンの見た目(同じ見た目)で、行の数とは見た目が違う。頭のキーの字は
-    // 太字で名前と違う見た目(2026-10-12-header-menu。NV-23 と同じ)。
+    // [utest -> req~screen.breadcrumb-button-look~3] 「W Work」と「w tasks ▾」がそれぞれボタンの見た目(範囲の名前・表の名前・▾ は同じ見た目)で、
+    // 間の「›」と行の数はボタンの外。頭のキーの字は太字で名前と違う見た目(2026-10-12-header-menu。NV-23 と同じ)。
     let (_t, a) = boot_work("crumbstyle");
     let b = buf(&a);
-    let x_key = col(&a, "w Work").unwrap();
-    let x_name = x_key + 2;
+    let x_skey = col(&a, "W Work").unwrap();
+    let x_scope = x_skey + 2;
     let x_sep = col(&a, "›").unwrap();
+    let x_tkey = x_sep + 2;
+    let x_name = x_tkey + 2;
     let x_arrow = col(&a, "▾").unwrap();
     let x_rows = col(&a, "3行").unwrap();
     let st = |x: u16| b[(x, hy(&a))].style();
-    assert_eq!(st(x_name), st(x_arrow), "名前と ▾ は同じボタン");
-    assert_eq!(st(x_name), st(x_sep), "区切りもボタンの中");
-    assert!(
-        st(x_key)
-            .add_modifier
-            .contains(ratatui::style::Modifier::BOLD),
-        "キーの字は太字"
-    );
-    assert_ne!(st(x_key), st(x_name), "キーの字は名前と違う見た目");
+    assert_eq!(st(x_name), st(x_arrow), "表の名前と ▾ は同じボタン");
+    assert_eq!(st(x_scope), st(x_name), "範囲の名前も同じボタンの見た目");
+    assert_ne!(st(x_scope), st(x_sep), "区切りはボタンの外");
+    for x in [x_skey, x_tkey] {
+        assert!(
+            st(x).add_modifier.contains(ratatui::style::Modifier::BOLD),
+            "キーの字は太字"
+        );
+    }
+    assert_ne!(st(x_skey), st(x_scope), "キーの字は名前と違う見た目");
+    assert_ne!(st(x_tkey), st(x_name), "キーの字は名前と違う見た目");
     assert_ne!(st(x_name), st(x_rows), "行の数はボタンの外");
     assert_ne!(st(x_name), b[(0, 23)].style(), "ボタンは地の字と違う見た目");
 }
 
 #[test]
 fn test_sr_42_crumb_button_click_key_and_arrow() {
-    // [utest -> req~screen.breadcrumb-path~2, req~screen.breadcrumb-drawer~1, req~screen.breadcrumb-button-look~2, req~screen.breadcrumb-right-buttons~1, req~workspace.drawer-close~2, req~workspace.drawer-from-map~1] キーの字を押す → 引き出しが開く。▾ を押す → 閉じる。行の数は押しても開かない。
+    // [utest -> req~screen.breadcrumb-path~3, req~screen.breadcrumb-drawer~2, req~screen.breadcrumb-button-look~3, req~screen.breadcrumb-right-buttons~1, req~workspace.drawer-close~2] 表の名前の頭のキーの字を押す → 引き出しが開く。▾ を押す → 閉じる。行の数は押しても開かない。
     let (_t, mut a) = boot_work("crumbclick");
-    let x_key = col(&a, "w Work").unwrap();
+    let x_key = col(&a, "› w").unwrap() + 2;
     let x_arrow = col(&a, "▾").unwrap();
     let x_rows = col(&a, "3行").unwrap();
     a.click(x_key, hy(&a));
@@ -144,7 +148,7 @@ fn test_sr_42_crumb_button_click_key_and_arrow() {
 
 #[test]
 fn test_sr_42_crumb_button_without_scope() {
-    // [utest -> req~screen.breadcrumb-path~2] 範囲が無い → 「w tasks ▾  3行」(「›」なし)。
+    // [utest -> req~screen.breadcrumb-path~3] 範囲が無い → 「w tasks ▾  3行」(「›」なし)。
     let tmp = workspace("crumbnone");
     let a = boot_tasks(&tmp);
     assert!(a.scope.is_none());
@@ -158,7 +162,7 @@ fn test_sr_42_crumb_button_without_scope() {
 
 #[test]
 fn test_sr_42_crumb_button_follows_rebound_key() {
-    // [utest -> req~screen.breadcrumb-button-look~2, req~screen.keys-vim-and-arrows-remap~1] 引き出しのキーを W に割り当て直す → 「W notes ▾」。外す → キーなしで「notes ▾」。
+    // [utest -> req~screen.breadcrumb-button-look~3, req~screen.keys-vim-and-arrows-remap~1] 引き出しのキーを W に割り当て直す → 「W notes ▾」。外す → キーなしで「notes ▾」。
     let (_t, a) = boot_config(
         "crumbrebind",
         "[keys.table]\nw = \"none\"\nW = \"workspace_drawer\"\n",

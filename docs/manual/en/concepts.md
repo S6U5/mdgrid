@@ -79,7 +79,7 @@ mdgrid decides the workspace of the table you open in this order:
 4. Detection: the nearest root folder (a folder with `.obsidian/`), or a git repository if you turn that on with `[workspace] detect`. Its folders of notes become the tables.
 5. Otherwise, the registered tables.
 
-When one is in use, the breadcrumb in the header shows `<workspace> › <table>`. See [Group tables into workspaces](tasks.md#group-tables-into-workspaces).
+When one is in use, the breadcrumb in the header shows `<workspace> › <table>`. The workspace name switches between workspaces; the table name switches tables within the workspace. See [Group tables into workspaces](tasks.md#group-tables-into-workspaces).
 
 ## The relation map
 

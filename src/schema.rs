@@ -148,14 +148,25 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         path: "rules",
-        ty: "table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } }, icons = { value = string }, labels = { value = string } })",
-        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …], then = { 値 = { 列 = 文字列 } }, icons = { 値 = 文字列 }, labels = { 値 = 文字列 } })",
+        ty: "table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string or { value = string, if_empty = boolean } } }, icons = { value = string }, labels = { value = string } })",
+        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …], then = { 値 = { 列 = 文字列 か { value = 文字列, if_empty = 真偽値 } } }, icons = { 値 = 文字列 }, labels = { 値 = 文字列 } })",
         default: Some("{}"),
-        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\nicons = { todo = \"○\", doing = \"◐\", done = \"●\" }\nlabels = { todo = \"To do\", doing = \"In progress\" }\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }",
+        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\nicons = { todo = \"○\", doing = \"◐\", done = \"●\" }\nlabels = { todo = \"To do\", doing = \"In progress\" }\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }\ndoing = { started = { value = \"{date}\", if_empty = true } }",
         scope: Scope::Profile,
         en: Msg::CfgRules.en(),
         ja: Msg::CfgRules.ja(),
         msg: Msg::CfgRules,
+    },
+    Item {
+        path: "format",
+        ty: "table of tables (column = { thousands = boolean, decimals = integer from 0 to 10, prefix = string, suffix = string })",
+        ty_ja: "表の表(列 = { thousands = 真偽値, decimals = 0〜10 の整数, prefix = 文字列, suffix = 文字列 })",
+        default: Some("{}"),
+        example: "[format.amount]\nthousands = true\nprefix = \"¥\"\n\n[format.\"formula.rate\"]\ndecimals = 1\nsuffix = \"%\"",
+        scope: Scope::Profile,
+        en: Msg::CfgFormat.en(),
+        ja: Msg::CfgFormat.ja(),
+        msg: Msg::CfgFormat,
     },
     Item {
         path: "terminal.color",
@@ -666,7 +677,7 @@ pub const SECTIONS: &[&str] = &[
 
 /// 表のプロファイルの最上位の名前(どの範囲でも書ける)。
 pub const PROFILE_KEYS: &[&str] = &[
-    "use", "look", "display", "dates", "edit", "new_note", "types", "rules",
+    "use", "look", "display", "dates", "edit", "new_note", "types", "rules", "format",
 ];
 
 /// アプリ全体の最上位の名前(全体にだけ書ける)。

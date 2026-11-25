@@ -54,6 +54,10 @@ theme = "dracula"
 
 The marker can also name the table to open for its root folder: `open = "<table name>"` at the top level (the `name` of a `[[table]]`, or the folder name of an automatic table). Opening the root folder (`mdgrid` there, `mdgrid .`, or its path from elsewhere) then opens that table (in its `view`, unless `--view` is given) instead of every note in the folder; `--print`, `--check` and `--print-config --resolved` use it too. `--raw` opens the folder itself. A subfolder, two or more folders, or a `.md` file do not use it. An `open` that names no table is a warning, and the folder opens as it is.
 
+Open any other table by its name with `--table <table name>` (`mdgrid ~/notes/research --table News`). The marker is looked up from the opened folder (or the current folder) upwards, so the same name works from any folder inside the ledger. The screen, `--print`, `--count`, `--check`, `--new-note`, `--pick`, `--apply`, `--notices`, `--notify`, `--runs`, `--print-config --resolved` and `--page` all treat that table as the opened table, and `--view` looks among its views (without `--view`, its `view`, else its first view). `--new-note` creates the note with that table's `[new_note]` (folder, name head, preset values, body template, required columns). An unknown name, or no marker, stops with one line that lists the marker's table names. With `-w <workspace>`, the name is looked up among that workspace's tables in `workspaces.toml`. It cannot be combined with `--raw`, `-s` or `--continue`.
+
+Opening the folder that holds a table's notes directly (the table's `[new_note] folder`, or the folder of the `file.inFolder` filter of its `.base`; `mdgrid ~/notes/research/News`) also opens that table instead of the bare folder, with its new-note rules, views and value lists. Add `--raw` to see the bare folder.
+
 ```toml
 # tasks/.mdgrid/workspace.toml — `mdgrid` in tasks/ opens tasks.base, not README.md or AGENTS.md
 open = "tasks"
@@ -66,6 +70,14 @@ path = "tasks.base"
 A `[[table]]` in the marker can also set up the gantt screen (`C`; `gantt` in [Keys](keys.md)): `gantt = { start = "<column>", end = "<column>" }`, or `days = "<column>"` (the length in days) instead of `end`. Without the setting, mdgrid infers the columns from the names of the date columns (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了) and the screen title says so. A `gantt` that is not a table, has no `start`, or has neither `end` nor `days` is a warning and the setting is dropped; a column the table does not have is reported once the notes are read. The screen types all take the same shape (`<type> = { <column names> }`), and the screen type menu lists only the types that have a setting or an inference.
 
 A `[[table]]` in the marker can also set up the kanban screen (`B`; `kanban` in [Keys](keys.md)): `kanban = { column = "<column>" }`. The rows become cards in lanes, one lane per value of that column, in the order of the column's allowed values (`[rules.<column>] values`), then any other value as the rows show it, and last **(none)** for rows without a value. Without the setting, mdgrid infers the column from its name (status, state, stage, 状態, ステータス, 段階; any case) and the screen title says so. A list column is never inferred, and naming one in the setting is a warning, because a row would sit in several lanes. A `kanban` that is not a table or has no `column` is a warning and the setting is dropped; a column the table does not have is reported once the notes are read.
+
+Under each card's name, `card = ["<column>", …]` shows the values of those columns, one line each, in the order you write them. The values look as they do in the table cells (glyphs and names from the rules, your date format, the names of linked notes, computed columns), and a column does not have to be in the view. A column with no value on that row gets no line. With `card`, the cards are spaced one line apart, and the rest of the name and the value lines sit two characters in from the name. A name too long for its lane wraps onto a second line and is cut with `…` after that (with or without `card`). A `card` that is not a list of column names is a warning and is dropped (the board still opens, with names only); a column the table does not have is reported once the notes are read.
+
+```toml
+[[table]]
+name = "Reading"
+kanban = { column = "status", card = ["author", "formula.progress", "formula.stars"] }
+```
 
 A `[[table]]` in the marker can also set up parents and children: `children = { key = "<column>" }`. Every view of that table then lists each row under the note its `key` column links to (the first link of a list), indented, the same way as turning on the "Tree" section of the view settings. A view where you turn it off in the view settings stays off when you open it again. Besides `key`, every item is optional:
 
@@ -705,7 +717,7 @@ format = "YYYY/MM/DD (ddd)"
 - Default: `"sun"`
 - Scope: global, workspace, table, view
 
-First day of the week, used by the date calendar, the date words for this week and next week, and the weekly buckets of charts.
+First day of the week, used by the date calendar, the date words for this week and next week, the weekly buckets of charts, and the weeks and "this week" of the Gantt chart.
 
 ```toml
 [dates]
@@ -816,13 +828,13 @@ estimate = "number"
 
 ### `rules`
 
-- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string } }, icons = { value = string }, labels = { value = string } })`
+- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string or { value = string, if_empty = boolean } } }, icons = { value = string }, labels = { value = string } })`
 - Default: `{}`
 - Scope: global, workspace, table, view
 
 Rules for single columns, checked together with the column type. `required = true` makes a missing key, `null`, an empty string or an empty list a problem. `values` lists the allowed values: the value (each item, for a list) must be one of them, case-sensitive. A narrower scope wins item by item (a table can narrow `values` while keeping `required` from the global config). Values that break a rule or do not fit the column type are called problems: they get the `!` mark, the bottom band shows how many there are, `!` and `@` jump to the next and previous one, `problems_only` shows only the rows with problems, and `mdgrid --check` lists them for CI. Checking a rule never changes a note and never stops you writing a value. A column with `values` offers them in the cell input. Grouping by a column with `values` puts the groups in that order (reversed when descending), then any other value in text order, and the group without a value last: the same order as the kanban lanes. `--print` writes the rows in that order too. Computed columns (`file.*`, `formula.*`) cannot have rules; unknown items and values of the wrong type produce a warning and are ignored.
 
-`then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today.
+`then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. To fill a column only while it is empty, write a table instead of the text: `{ value = "{date}", if_empty = true }`. The column is then filled only when it has no key, `null`, an empty string or an empty list (a value staged before counts), so a start date set the first time stays when the status goes back and forth. Changing the cell to another value drops the filled value only while it is still the one `then` put there, so a date you typed yourself stays. A table without `value`, with an `if_empty` that is not true or false, or with an unknown item is a warning, and that column is not filled. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today, and setting it to `doing` fills `started` with today only while `started` is empty.
 
 `icons` and `labels` decide how the values read on screen. With `icons = { todo = "○" }` and `labels = { todo = "To do" }`, `todo` reads `○ To do` in group headings, kanban lane titles, table cells (chips or text), the detail view and the right pane of the tree; a value with only a glyph reads `○ todo`, and a value with neither stays as it is. Chip colors follow the value, so naming a value does not change its color. Any glyph works, Nerd Font ones too, and mdgrid prints it as you wrote it. Its width is counted like the rest of the screen, so if your font draws a glyph such as `○` two cells wide and it runs into the next letter, turn on [`terminal.ambiguous_wide`](#terminalambiguous_wide). Windows where you pick a value (the choices when you edit a cell or fill in the new note window, the list toggle window, the value lists of the filter window and view settings, and the frequency window) show a named value as its name followed by the value (`To do todo`), so you can tell which value you pick. The `\` quick filter and `/` search match the value or the name. The notes and `--print`, `--count` and CSV output keep the plain value. An entry for a value missing from `values` in the same table produces a warning naming it (`rules.status.icons.blocked`) and is ignored; when `values` comes from a wider scope, entries for values outside it are simply not shown. A narrower scope that writes `icons` or `labels` replaces it whole.
 
@@ -835,6 +847,29 @@ labels = { todo = "To do", doing = "In progress" }
 
 [rules.status.then]
 done = { done_at = "{date}" }
+doing = { started = { value = "{date}", if_empty = true } }
+```
+
+## `[format]` — number formats
+
+### `format`
+
+- Type: `table of tables (column = { thousands = boolean, decimals = integer from 0 to 10, prefix = string, suffix = string })`
+- Default: `{}`
+- Scope: global, workspace, table, view
+
+How the numbers of single columns read on screen. `thousands = true` groups the whole part by three digits. `decimals` sets the number of decimal places: missing places are filled with `0`, extra ones are rounded half away from zero (`1234.56` with `decimals = 1` reads `1,234.6`, `3` reads `3.0`); without it the value keeps its own digits. `prefix` and `suffix` go before and after the number, and a negative number puts `-` before the prefix (`-¥1,200`). The grouping and decimal separators follow the screen language: `1,234.5` in English, Japanese, Chinese and Korean, `1.234,5` in German, Spanish and Portuguese, and `1 234,5` (a narrow no-break space) in French. Columns of `formula.*` can have a format too (quote the name: `[format."formula.rate"]`); text values and values with a name from [`labels`](#rules) keep their own look.
+
+The format applies to table cells, the detail view, pending values, the summary row, the subtotals in group headings and the values of a chart whose value column it is (sum, average, min, max). Counting summaries (`Checked`, `Unchecked`, `Empty`, `Filled`, `Unique`) and count charts stay plain numbers. It only changes what you see: the notes, sorting, filters, formulas, the cell input, `--print`, `--count` and copies keep the plain number. A narrower scope wins item by item. Unknown items, values of the wrong type, `decimals` outside 0 to 10, and a `prefix` or `suffix` with a control character or a text direction mark (which could garble the terminal, since a marker can come with a ledger someone sent you) produce a warning and are ignored; the other items still apply.
+
+```toml
+[format.amount]
+thousands = true
+prefix = "¥"
+
+[format."formula.rate"]
+decimals = 1
+suffix = "%"
 ```
 
 ## `[keys]` — key bindings

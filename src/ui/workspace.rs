@@ -68,7 +68,7 @@ impl App {
 pub(crate) enum WsOpenItem {
     /// workspaces.toml のワークスペース(続けて表を選ぶ。WS-2)。
     Named(String),
-    /// 最初に開いた所か、お気に入りの印のワークスペース(切り替えの一覧と同じ道で移る。workspace.drawer-favorites)。
+    /// 最初に開いた所か、お気に入りの印のワークスペース(切り替えの一覧と同じ道で移る。workspace.open-favorites)。
     Go(Dest),
 }
 
@@ -149,7 +149,7 @@ impl App {
         self.open_ask(Ask::WsRemove(names));
     }
 
-    /// WS-2: ワークスペースを開く(名前を選び、次にその表を選ぶ)。workspace.drawer-favorites: 起動したときに開いた
+    /// WS-2: ワークスペースを開く(名前を選び、次にその表を選ぶ)。workspace.open-favorites: 起動したときに開いた
     /// 所から離れていれば「最初に開いた所」を先頭に、お気に入りの印のワークスペースを末尾に並べ、選んだら切り替えの
     /// 一覧と同じ道で移る(workspaces.toml のお気に入りは名前の項目のまま)。並べるものが無ければ作り方。
     pub(crate) fn start_ws_open(&mut self) {

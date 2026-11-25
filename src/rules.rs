@@ -18,9 +18,29 @@ pub struct Rule {
     pub values: Option<Vec<String>>,
 }
 
-/// `[rules.<列>.then]` の中身: その列をある値に直したとき、同じ行に一緒に入れる値。値 → (列 → 入れる文字。
-/// 雛形の変数を書ける)。重ねたあとの値は `Resolved.then`(列 → Then)にある。
-pub type Then = BTreeMap<String, BTreeMap<String, String>>;
+/// `[rules.<列>.then]` の中身: その列をある値に直したとき、同じ行に一緒に入れる値。値 → (列 → 入れる値)。
+/// 重ねたあとの値は `Resolved.then`(列 → Then)にある。
+pub type Then = BTreeMap<String, BTreeMap<String, Fill>>;
+
+/// `then` の1つの入れる値(cell-edit.then-set・cell-edit.then-if-empty)。設定には文字 `"{date}"` か、表
+/// `{ value = "{date}", if_empty = true }` で書く。
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Fill {
+    /// 入れる文字(雛形の変数を書ける。空ならその列を空にする)。
+    pub text: String,
+    /// 真なら、入れる先の列が空(キーが無い・null・空の文字列・空のリスト)のときだけ入れる。
+    pub if_empty: bool,
+}
+
+impl Fill {
+    /// 文字の形(いつも入れる)。
+    pub fn text(text: &str) -> Fill {
+        Fill {
+            text: text.to_string(),
+            if_empty: false,
+        }
+    }
+}
 
 /// `[rules.<列>] icons`・`labels` の中身: 値 → 字か見せる名前(navigation.group-values-icon)。重ねたあとの値は
 /// `Resolved.icons`・`Resolved.labels`(列 → Names)にある。

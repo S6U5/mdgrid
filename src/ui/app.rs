@@ -316,7 +316,7 @@ pub struct App {
     pub(crate) switcher: Option<super::switch::Switcher>,
     /// workspace.switch-origin・workspace.switch-target: この起動で見た表と、最初に開いた所(main が次の App に渡す)。
     pub visits: super::switch::Visits,
-    /// workspace.favorite-mark: お気に入り(workspaces.toml の favorites を書いたままの文字。引き出しの印に使う)。
+    /// workspace.favorite-mark: お気に入り(workspaces.toml の favorites を書いたままの文字。切り替えの一覧の入れる行と、ヘッダーの切り替えのボタンに使う)。
     pub(crate) favorites: Vec<String>,
     /// stack.*: 縦に並べた表(選んでいる表の App だけが持つ。stack.rs)。
     pub(crate) stack: Option<Box<super::stack::Stack>>,
@@ -1258,12 +1258,17 @@ impl App {
             // NV-29: 絞り込みの窓の行のクリック、外のクリックで閉じる。
             Mode::FilterWin | Mode::FilterText => return self.filters_click(x, y),
             Mode::Relations => {
-                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
-                if super::bands::crumb_at(self, x, y) {
-                    self.relmap = None;
-                    self.set_mode(Mode::Table);
-                    self.open_drawer();
-                    return;
+                // SR-42: ヘッダーのパンくず(表の名前は表の画面に戻ってから引き出しを開き、範囲の名前は関係マップの
+                // 上に切り替えの一覧を開く。screen.breadcrumb-switch)。
+                match super::bands::crumb_part_at(self, x, y) {
+                    Some(super::bands::CrumbPart::Table) => {
+                        self.relmap = None;
+                        self.set_mode(Mode::Table);
+                        self.open_drawer();
+                        return;
+                    }
+                    Some(super::bands::CrumbPart::Scope) => return self.open_switcher(),
+                    None => {}
                 }
                 // CE-25: 関係マップでも「+ 新規」(選んでいる表に作る)。
                 if super::new_note::button_at(self, x, y) {
@@ -1280,11 +1285,16 @@ impl App {
                 return;
             }
             Mode::Gantt => {
-                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
-                if super::bands::crumb_at(self, x, y) {
-                    self.close_gantt();
-                    self.open_drawer();
-                    return;
+                // SR-42: ヘッダーのパンくず(表の名前は表の画面に戻ってから引き出しを開き、範囲の名前はこの画面の
+                // 上に切り替えの一覧を開く。screen.breadcrumb-switch)。
+                match super::bands::crumb_part_at(self, x, y) {
+                    Some(super::bands::CrumbPart::Table) => {
+                        self.close_gantt();
+                        self.open_drawer();
+                        return;
+                    }
+                    Some(super::bands::CrumbPart::Scope) => return self.open_switcher(),
+                    None => {}
                 }
                 // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
                 if let Some(b) = super::bands::header_button_at(self, x, y) {
@@ -1296,11 +1306,16 @@ impl App {
                 return;
             }
             Mode::Kanban => {
-                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
-                if super::bands::crumb_at(self, x, y) {
-                    self.close_kanban();
-                    self.open_drawer();
-                    return;
+                // SR-42: ヘッダーのパンくず(表の名前は表の画面に戻ってから引き出しを開き、範囲の名前はこの画面の
+                // 上に切り替えの一覧を開く。screen.breadcrumb-switch)。
+                match super::bands::crumb_part_at(self, x, y) {
+                    Some(super::bands::CrumbPart::Table) => {
+                        self.close_kanban();
+                        self.open_drawer();
+                        return;
+                    }
+                    Some(super::bands::CrumbPart::Scope) => return self.open_switcher(),
+                    None => {}
                 }
                 // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
                 if let Some(b) = super::bands::header_button_at(self, x, y) {
@@ -1312,11 +1327,16 @@ impl App {
                 return;
             }
             Mode::Chart => {
-                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
-                if super::bands::crumb_at(self, x, y) {
-                    self.close_chart();
-                    self.open_drawer();
-                    return;
+                // SR-42: ヘッダーのパンくず(表の名前は表の画面に戻ってから引き出しを開き、範囲の名前はこの画面の
+                // 上に切り替えの一覧を開く。screen.breadcrumb-switch)。
+                match super::bands::crumb_part_at(self, x, y) {
+                    Some(super::bands::CrumbPart::Table) => {
+                        self.close_chart();
+                        self.open_drawer();
+                        return;
+                    }
+                    Some(super::bands::CrumbPart::Scope) => return self.open_switcher(),
+                    None => {}
                 }
                 // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
                 if let Some(b) = super::bands::header_button_at(self, x, y) {
@@ -1328,11 +1348,16 @@ impl App {
                 return;
             }
             Mode::Tree => {
-                // SR-42: ヘッダーのパンくず(表の画面に戻ってから引き出しを開く)。
-                if super::bands::crumb_at(self, x, y) {
-                    self.close_tree();
-                    self.open_drawer();
-                    return;
+                // SR-42: ヘッダーのパンくず(表の名前は表の画面に戻ってから引き出しを開き、範囲の名前はこの画面の
+                // 上に切り替えの一覧を開く。screen.breadcrumb-switch)。
+                match super::bands::crumb_part_at(self, x, y) {
+                    Some(super::bands::CrumbPart::Table) => {
+                        self.close_tree();
+                        self.open_drawer();
+                        return;
+                    }
+                    Some(super::bands::CrumbPart::Scope) => return self.open_switcher(),
+                    None => {}
                 }
                 // SR-42・REL-8: 画面の型のメニューと設定のボタン(設定は表の画面に戻ってから開く)。
                 if let Some(b) = super::bands::header_button_at(self, x, y) {
@@ -1353,10 +1378,14 @@ impl App {
             }
             _ => return,
         }
-        // SR-42: ヘッダーのパンくずで表の一覧の引き出し(WS-8)。
-        if super::bands::crumb_at(self, x, y) {
+        // SR-42: ヘッダーのパンくずの表の名前で表の一覧の引き出し(WS-8)、範囲の名前で切り替えの一覧
+        // (screen.breadcrumb-switch)。
+        if let Some(part) = super::bands::crumb_part_at(self, x, y) {
             self.message = None;
-            self.open_drawer();
+            match part {
+                super::bands::CrumbPart::Table => self.open_drawer(),
+                super::bands::CrumbPart::Scope => self.open_switcher(),
+            }
             return;
         }
         // NV-30: 下の帯の問題の数で、問題のある行だけに絞る・外す。

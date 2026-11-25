@@ -466,6 +466,13 @@ wait = { en = "No contact for 3 days", ja = "No contact for 3 days" }
 text = { en = "examples/people writes \"No contact for 3 days\" in its marker with key = 1. The task conditions of studio.toml (due date, status) have no columns in People, so 1 goes to the ledger's condition.", ja = "examples/people は印に「No contact for 3 days」を key = 1 で書いている。studio.toml のタスクの条件(期限・状態)は People に列が無いので、1 は台帳の条件になる。" }
 
 [[shot]]
+id = "group-totals"
+title = { en = "Subtotals in group headings", ja = "まとまりの見出しの小計" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base", "--view", "By project"]
+wait = { en = "Days", ja = "Days" }
+text = { en = "The By project view sums the estimate and names it Days with summary_labels, so each project heading shows its own total and the row under the table the grand total. studio.toml writes [format.estimate] with decimals = 1 and suffix = \" d\".", ja = "By project のビューは estimate を合計し、summary_labels で Days と名付けている。案件ごとの見出しにその案件の合計、表の下に全体の合計が出る。studio.toml は [format.estimate] に decimals = 1 と suffix = \" d\" を書いている。" }
+
+[[shot]]
 id = "notices"
 title = { en = "The notice box", ja = "通知の欄" }
 command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
@@ -909,6 +916,14 @@ wait = { en = "Relation map", ja = "関係マップ" }
 text = { en = "R draws the tables of the workspace as boxes, with an arrow from each link column to the table it points at: tasks to projects and people, projects to clients, meetings to projects and people. The depends_on column of tasks points at other tasks, so its arrow loops back to the same box, and every column carries its type mark.", ja = "R で、ワークスペースの表を箱にし、リンクの列から行き先の表へ矢印を引く。タスクから案件と人へ、案件から顧客へ、会議から案件と人へ。タスクの depends_on はほかのタスクを指すので、同じ箱へ戻る矢印になる。箱の列には型の印。" }
 
 [[shot]]
+id = "lookup"
+title = { en = "Values gathered from linked notes", ja = "つながったノートから集めた値" }
+command = ["./target/release/mdgrid", "examples/studio/People.base"]
+ready = "Open tasks"
+wait = { en = "Open tasks", ja = "Open tasks" }
+text = { en = "examples/studio/People.base gathers values from the tasks whose owner links to each person: the number of open tasks, the nearest due date among them, and the projects of their tasks shown by name. The formulas use file.linkedFrom(\"owner\") with filter, map, min and unique; the notes themselves hold none of these values.", ja = "examples/studio/People.base は、owner でその人を指すタスクから値を集める。開いているタスクの数、その中で一番近い期限、タスクの案件(名前で見せる)。式は file.linkedFrom(\"owner\") に filter・map・min・unique を付けたもので、ノートには書いていない。" }
+
+[[shot]]
 id = "demo-freq"
 title = { en = "Count the values of a column", ja = "列の値を数える" }
 command = ["./target/release/mdgrid", "examples/studio/Tasks.base"]
@@ -980,6 +995,15 @@ ready = "Tasks"
 keys = ["B"]
 wait = { en = "Kanban:", ja = "カンバン:" }
 text = { en = "B on a table with a status column: the rows of the current view as cards, one lane per status in the order of the allowed values. H and L move a card to the next lane and rewrite its status as an unsaved change.", ja = "状態の列のある表で B。今のビューの行が、決まりの値の順に並んだ状態ごとのレーンの札になる。H と L で札を隣のレーンへ動かすと、状態が未保存の変更として書き換わる。" }
+
+[[shot]]
+id = "kanban-cards"
+title = { en = "Values on kanban cards", ja = "カンバンの札の値" }
+command = ["./target/release/mdgrid", "examples/reading", "--view", "By kind"]
+ready = "Reading"
+keys = ["B"]
+wait = { en = "Kanban:", ja = "カンバン:" }
+text = { en = "The reading log's marker has kanban = { column = \"status\", card = [\"author\", \"rating\"] }: each card shows the author and the rating under the title, as the table cells show them. Long titles wrap onto a second line.", ja = "読書の記録の印に kanban = { column = \"status\", card = [\"author\", \"rating\"] }。札の題の下に、著者と評価が表のセルと同じ見え方で出る。長い題は2行に折り返す。" }
 
 [[shot]]
 id = "chart"

@@ -1191,34 +1191,60 @@
   - Then: status が 進行中 の点・札がその色。
 
 #### ヘッダー(screen.layout)の左に、今の範囲と表を「範囲 › 表」の形(パンくず)で見せ、その右に行の数を見せ、範囲がワークスペースでなければ範囲を省くべき
-`req~screen.breadcrumb-path~2` P1
+`req~screen.breadcrumb-path~3` P1
 - Acceptance:
   - Given:
   - When: ワークスペース「仕事」の tasks を開く
-  - Then: 1行目の左が「w 仕事 › tasks ▾  3行」。
+  - Then: 1行目の左が「W 仕事 › w tasks ▾  3行」。
 - Acceptance:
   - Given: 範囲が無い
   - When:
   - Then: 「w tasks ▾  3行」。
 
-#### パンくずは、表の一覧の引き出し(workspace.drawer)を開け閉めする1つのボタンにするべき
-`req~screen.breadcrumb-drawer~1` P1
+#### パンくずの表の名前の所(後ろの「▾」を含む)は、表の一覧の引き出し(workspace.drawer)を開け閉めするボタンにするべき
+`req~screen.breadcrumb-drawer~2` P1
+- Rationale: 引き出しはワークスペースの中の表の切り替えなので、表の名前の所から開く(2026-11-25 に人が「ビューを押した時はビューの切り替えを」と決めた。前はパンくずの全体が引き出しの1つのボタンだった)
 - Acceptance:
-  - Given:
-  - When: パンくずをクリック
+  - Given: ワークスペース「仕事」の tasks
+  - When: パンくずの「tasks ▾」をクリック
   - Then: 表の一覧の引き出しが開き、もう一度で閉じる。
+- Acceptance:
+  - Given: 切り替えの一覧(workspace.switch-open)を開いている
+  - When: パンくずの「tasks ▾」をクリック
+  - Then: 切り替えの一覧が閉じ、引き出しが開く。
 
-#### パンくずのボタンは、ビューの帯のボタン(navigation.search-box)と同じ見た目にして、頭に引き出しのキー(screen.keys-vim-and-arrows で割り当てたキー。割り当てが無ければ添えない)、後ろに「▾」を添えるべき
-`req~screen.breadcrumb-button-look~2` P1
-- Rationale: 押せることと、何が開くかが見て分かるように
+#### パンくずの範囲の名前の所は、ワークスペースの切り替えの一覧(workspace.switch-open)を開け閉めするボタンにし、表でない画面の型(関係マップ・木・ガント・カンバン・グラフ)ではその画面の上に開くべき
+`req~screen.breadcrumb-switch~1` P1
+- Rationale: 左上のワークスペースの名前を押したらワークスペースの切り替え、表の名前を押したらワークスペースの中の切り替えにして、押す所と開くものを合わせるため(2026-11-25 に人が決めた)
+- Acceptance:
+  - Given: ワークスペース「仕事」の tasks、お気に入りが 仕事・趣味
+  - When: パンくずの「仕事」をクリック
+  - Then: 切り替えの一覧が開き、もう一度で閉じる。
+- Acceptance:
+  - Given: 同じ表で、カンバンの画面
+  - When: パンくずの「仕事」をクリック
+  - Then: カンバンの画面のまま、その上に切り替えの一覧が開く。
+- Acceptance:
+  - Given: 引き出しを開いている
+  - When: パンくずの「仕事」をクリック
+  - Then: 引き出しが閉じ、切り替えの一覧が開く。
+- Acceptance:
+  - Given: ワークスペースでなく検知した範囲「notes」の表で、関係マップの画面(範囲の名前が出る)、お気に入りが無い
+  - When: パンくずの「notes」をクリック
+  - Then: 関係マップの上に、お気に入りの入れ方の案内の1行だけの切り替えの一覧が開く。
+- Needs: utest・stest
+
+#### パンくずの範囲の名前の所と表の名前の所は、それぞれビューの帯のボタン(navigation.search-box)と同じ見た目の別のボタンにして、範囲の名前の頭に切り替えの一覧のキー、表の名前の頭に引き出しのキー(screen.keys-vim-and-arrows で割り当てたキー。割り当てが無ければ添えない)、表の名前の後ろに「▾」を添えるべき
+`req~screen.breadcrumb-button-look~3` P1
+- Rationale: 押せることと、どこを押すと何が開くかが見て分かるように(2026-11-25 に、範囲の名前と表の名前で開くものを分けた)
 - Acceptance:
   - Given:
   - When: ワークスペース「仕事」の tasks を開く
-  - Then: 「w 仕事 › tasks ▾」がボタンの見た目。
+  - Then: 「W 仕事」と「w tasks ▾」がそれぞれボタンの見た目で、間の「›」はボタンの見た目でない。
 - Acceptance:
   - Given:
   - When: 引き出しのキーを外す
-  - Then: 「仕事 › tasks ▾」。
+  - Then: 「W 仕事 › tasks ▾」。
 
 #### ヘッダーの右の端には、画面の型のメニュー(relations.screen-menu)と、ビューの設定の画面(`o`)を開くボタン「⚙ 設定」(キーを添える)をこの順に置くべき(ヘッダーには、どこで何として見るかに関わるものを置き、行を足す「+ 新規」はビューの帯に置く。ビューの帯を出さないときだけ、画面の型のメニューの左に置く。cell-edit.new-note)
 `req~screen.breadcrumb-right-buttons~1` P1
@@ -1227,12 +1253,16 @@
   - When: 1行目の右の端に「▦ 表 ▾」と「o ⚙ 設定」があり、「o ⚙ 設定」を押す
   - Then: ビューの設定の画面。
 
-#### パンくずとヘッダーの右の端のボタンは、表の画面と関係マップで同じ位置に出し、関係マップで押したら表の画面に戻ってから開くべき
-`req~screen.breadcrumb-relation-map~1` P1
+#### パンくずとヘッダーの右の端のボタンは、表の画面と関係マップで同じ位置に出し、関係マップで押したら表の画面に戻ってから開くべき(パンくずの範囲の名前の所で開く切り替えの一覧は、screen.breadcrumb-switch のとおり関係マップの上に開く)
+`req~screen.breadcrumb-relation-map~2` P1
 - Acceptance:
   - Given:
-  - When:
-  - Then: 関係マップでもパンくずは表の画面と同じ桁で、押すと表の画面に戻って開く。
+  - When: 関係マップで、パンくずの表の名前を押す
+  - Then: パンくずは表の画面と同じ桁で、表の画面に戻って引き出しが開く。
+- Acceptance:
+  - Given:
+  - When: 関係マップで、パンくずの範囲の名前を押す
+  - Then: 関係マップの画面のまま、切り替えの一覧が開く。
 
 #### 端末の幅が足りないときは、ヘッダーの設定のボタンを先に省き、次に「+ 新規」を省き、パンくずと画面の型のメニューを残すべき(設定は `o` とパレットでも開ける)
 `req~screen.breadcrumb-narrow~1` P1

@@ -88,3 +88,40 @@ fn test_new_note_form_link_list_keys_and_esc_e2e() {
     assert!(text.contains("tags:\n  - "), "{text:?}");
     assert_gone(t.stop());
 }
+
+#[test]
+fn test_new_note_form_list_sits_below_the_form_e2e() {
+    // [stest -> req~cell-edit.new-note-form-popup-place~1] 80×24 の画面(窓の右には候補の窓が入らない)で source の欄を開くと、
+    // 候補のリストは新しいノートの窓の下の縁より下に出て、窓の欄の名前(名前・source・tags・page)は欠けない。
+    let home = reading("note-form-place-e2e");
+    let mut t = Tui::spawn(&["t"], home.path(), &[]);
+    t.wait_for("q1");
+    t.send("a");
+    t.wait_for("新しいノート");
+    t.send("抜き書き\r");
+    t.wait_for("雨の日の数学");
+    let s = t.screen();
+    let lines: Vec<&str> = s.lines().collect();
+    let top = lines
+        .iter()
+        .position(|l| l.contains("新しいノート"))
+        .unwrap_or_else(|| panic!("新しいノートの窓:\n{s}"));
+    let bottom = (top + 1..lines.len())
+        .find(|&y| lines[y].contains('╰') || lines[y].contains('└'))
+        .unwrap_or_else(|| panic!("窓の下の縁:\n{s}"));
+    for label in ["名前", "source", "tags", "page"] {
+        assert!(
+            lines[top..bottom].iter().any(|l| l.contains(label)),
+            "窓の欄の名前「{label}」が欠ける:\n{s}"
+        );
+    }
+    let cand = lines
+        .iter()
+        .position(|l| l.contains("雨の日の数学"))
+        .unwrap();
+    assert!(
+        cand > bottom,
+        "候補は窓の下の縁({bottom} 行目)より下(候補は {cand} 行目):\n{s}"
+    );
+    assert_gone(t.stop());
+}

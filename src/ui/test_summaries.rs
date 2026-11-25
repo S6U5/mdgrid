@@ -1,7 +1,7 @@
 //! `.base` のビューの集計(summaries)の画面の試験(BV-14・BV-7・SR-23・SR-9)。
 
 use super::test_grid::open;
-use super::test_screen::{assert_fits, ch, press, screen, Tmp};
+use super::test_screen::{assert_fits, ch, press, screen, typing, Tmp};
 use super::*;
 use mdgrid::i18n::{scoped, Lang};
 use mdgrid::summary::Summary;
@@ -174,7 +174,7 @@ fn test_bv_14_no_summaries_no_row() {
 
 #[test]
 fn test_bv_14_formula_summary_unsupported_view_opens() {
-    // [utest -> req~base-view.summaries-unsupported~1, req~base-view.unsupported-filters~1] 式で書いた集計は未対応の理由が出て、ビューは開く。組み込みの集計は出る。
+    // [utest -> req~base-view.summaries-unsupported~2, req~base-view.unsupported-filters~1] 式で書いた集計は未対応の理由が出て、ビューは開く。組み込みの集計は出る。
     let tmp = vault("bv14formula");
     let app = open(&tmp, BASE, Some("Formula"));
     assert!(app.view_error.is_none(), "{:?}", app.view_error);
@@ -192,16 +192,165 @@ fn test_bv_14_formula_summary_unsupported_view_opens() {
     assert!(!row.contains("customAverage"), "{s}");
 }
 
+/// まとまりの見出しの行(「件)」か「)」で終わる見出しの字のある行)のうち、`word` を含む行。
+fn heading_with(s: &str, word: &str) -> String {
+    s.lines()
+        .find(|l| (l.contains('▾') || l.contains('▸')) && l.contains(word))
+        .unwrap_or_else(|| panic!("「{word}」のまとまりの見出しが無い:\n{s}"))
+        .to_string()
+}
+
 #[test]
 fn test_bv_14_grouped_view_total_and_reason() {
-    // [utest -> req~base-view.summaries-unsupported~1] まとまりごとの集計は未対応の理由を出し、表全体の集計を1行出す。
+    // [utest -> req~base-view.summaries-per-group~1] まとまりのあるビューでも未対応の理由を出さず、表の下の集計の行は表全体の値(18)のまま。
     let tmp = vault("bv14group");
     let app = open(&tmp, BASE, Some("Grouped"));
     assert!(app.view_error.is_none());
     assert!(!app.groups.is_empty());
-    assert!(!app.notes.is_empty(), "まとまりごとの集計の理由");
+    assert!(
+        app.notes.is_empty(),
+        "未対応の理由は出ない: {:?}",
+        app.notes
+    );
+    assert!(app.message.is_none(), "{:?}", app.message);
     let s = screen(&app);
     assert!(lines(&s)[SUMMARY].contains(&t(Summary::Sum, "18")), "{s}");
+}
+
+#[test]
+fn test_group_summaries_on_headings() {
+    // [utest -> req~base-view.summaries-per-group~1] done でまとめたビュー: true のまとまり(3 と 5)の見出しに「合計 8」、
+    // false のまとまり(10 と many)の見出しに「合計 10」。どちらも estimate の列の右の端にそろう(数の列は右寄せ)。
+    let tmp = vault("bvgroupsum");
+    let app = open(&tmp, BASE, Some("Grouped"));
+    let s = screen(&app);
+    let yes = heading_with(&s, "true");
+    let no = heading_with(&s, "false");
+    assert!(yes.contains(&t(Summary::Sum, "8")), "{s}");
+    assert!(no.contains(&t(Summary::Sum, "10")), "{s}");
+    let head = lines(&s)
+        .into_iter()
+        .find(|l| l.contains("estimate") && !l.contains('▾'))
+        .unwrap_or_else(|| panic!("列の見出し: {s}"));
+    let sum = t(Summary::Sum, "8");
+    assert_eq!(
+        x_of(&yes, &sum) + width::width(&sum),
+        x_of(&head, "estimate") + "estimate".len(),
+        "小計は列の右の端にそろう: {s}"
+    );
+}
+
+#[test]
+fn test_group_summaries_stay_when_folded() {
+    // [utest -> req~base-view.summaries-per-group~1] 先頭のまとまりを Enter で畳んでも、見出しの行の小計は出たまま。
+    let tmp = vault("bvgroupfold");
+    let mut app = open(&tmp, BASE, Some("Grouped"));
+    let first = app.groups[0].0.clone();
+    let want = if first.contains("true") { "8" } else { "10" };
+    assert!(matches!(app.slots[app.row], super::grid::Slot::Head(0)));
+    press(&mut app, KeyCode::Enter);
+    let s = screen(&app);
+    let line = s
+        .lines()
+        .find(|l| l.contains('▸'))
+        .unwrap_or_else(|| panic!("畳んだ見出し: {s}"));
+    assert!(line.contains(&t(Summary::Sum, want)), "{s}");
+}
+
+#[test]
+fn test_group_summaries_follow_filter() {
+    // [utest -> req~base-view.summaries-per-group~1, req~base-view.summaries-filtered~1] 簡易の絞り込みで「会議」(3)だけにすると、
+    // true のまとまり(3 と 5)の小計は 3 になり、表の下の集計も 3。
+    let tmp = vault("bvgroupfilter");
+    let mut app = open(&tmp, BASE, Some("Grouped"));
+    assert!(heading_with(&screen(&app), "true").contains(&t(Summary::Sum, "8")));
+    ch(&mut app, '\\');
+    typing(&mut app, "会議");
+    press(&mut app, KeyCode::Enter);
+    assert_eq!(app.rows.len(), 1);
+    let s = screen(&app);
+    assert!(
+        heading_with(&s, "true").contains(&t(Summary::Sum, "3")),
+        "{s}"
+    );
+    assert!(lines(&s)[SUMMARY].contains(&t(Summary::Sum, "3")), "{s}");
+}
+
+#[test]
+fn test_group_summaries_english() {
+    // [utest -> req~base-view.summaries-per-group~1, req~base-view.summaries-names~2] 英語の画面では見出しの小計も「Sum 8」。
+    let _g = scoped(Lang::En);
+    let tmp = vault("bvgroupen");
+    let app = open(&tmp, BASE, Some("Grouped"));
+    let s = screen(&app);
+    assert!(heading_with(&s, "true").contains("Sum 8"), "{s}");
+}
+
+#[test]
+fn test_group_summaries_fit_narrow_terminals() {
+    // [utest -> req~base-view.summaries-per-group~1, req~cell-view.grapheme-width-fit~1] まとまりの小計のある見出しの行も、80 桁と狭い端末で幅を超えない。
+    let tmp = vault("bvgroupfit");
+    let mut app = open(&tmp, BASE, Some("Grouped"));
+    assert_fits(&mut app);
+}
+
+const NAMED: &str = r"views:
+  - type: table
+    name: Named
+    order: [title, estimate, due]
+    summaries:
+      title: Filled
+      estimate: Sum
+      due: Earliest
+    summary_labels:
+      title: 件名の数
+      due: 3
+";
+
+#[test]
+fn test_summary_labels_rename() {
+    // [utest -> req~base-view.summary-labels~1] `summary_labels` の title: 件名の数 → 集計の行に「件名の数 4」、「空でない」は出ない。
+    // 名前を書かない estimate は「合計 18」のまま。文字でない名前(due: 3)は組み込みの名前のまま。
+    let tmp = vault("bvlabels");
+    let app = open(&tmp, NAMED, None);
+    let s = screen(&app);
+    let row = &lines(&s)[SUMMARY];
+    assert!(row.contains("件名の数 4"), "{s}");
+    assert!(!row.contains(Summary::Filled.label()), "{s}");
+    assert!(row.contains(&t(Summary::Sum, "18")), "{s}");
+    assert!(row.contains(&t(Summary::Earliest, "2026-10-05")), "{s}");
+}
+
+#[test]
+fn test_summary_labels_any_language() {
+    // [utest -> req~base-view.summary-labels~1] 英語の画面でも書いた名前「件名の数 4」。
+    let _g = scoped(Lang::En);
+    let tmp = vault("bvlabelsen");
+    let app = open(&tmp, NAMED, None);
+    let s = screen(&app);
+    assert!(lines(&s)[SUMMARY].contains("件名の数 4"), "{s}");
+}
+
+#[test]
+fn test_summary_labels_on_group_headings() {
+    // [utest -> req~base-view.summary-labels~1, req~base-view.summaries-per-group~1] まとまりの見出しの小計も書いた名前で出る。
+    let base = r"views:
+  - type: table
+    name: G
+    groupBy:
+      property: done
+      direction: ASC
+    order: [title, estimate]
+    summaries:
+      estimate: Sum
+    summary_labels:
+      estimate: 見積もり
+";
+    let tmp = vault("bvlabelsgroup");
+    let app = open(&tmp, base, None);
+    let s = screen(&app);
+    assert!(heading_with(&s, "true").contains("見積もり 8"), "{s}");
+    assert!(lines(&s)[SUMMARY].contains("見積もり 18"), "{s}");
 }
 
 #[test]
@@ -242,4 +391,27 @@ fn test_bv_14_fits_narrow_terminals() {
     ch(&mut app, ']');
     ch(&mut app, ']');
     assert_fits(&mut app);
+}
+
+#[test]
+fn test_summary_labels_control_chars_replaced() {
+    // [utest -> req~base-view.summary-labels~1] 名前の ESC は、集計の行にもまとまりの見出しの行にも出さず、見える字 `␛` にする。
+    let base = r#"views:
+  - type: table
+    name: G
+    groupBy:
+      property: done
+      direction: ASC
+    order: [title, estimate]
+    summaries:
+      estimate: Sum
+    summary_labels:
+      estimate: "見\e[31m積"
+"#;
+    let tmp = vault("bvlabelsctrl");
+    let app = open(&tmp, base, None);
+    let s = screen(&app);
+    assert!(!s.contains('\u{1b}'), "{s:?}");
+    assert!(heading_with(&s, "true").contains("見␛[31m積 8"), "{s}");
+    assert!(lines(&s)[SUMMARY].contains("見␛[31m積 18"), "{s}");
 }

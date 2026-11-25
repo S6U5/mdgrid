@@ -89,7 +89,7 @@ fn test_sr_42_settings_top_right_after_menu() {
 
 #[test]
 fn test_sr_42_settings_button_opens_settings() {
-    // [utest -> req~screen.breadcrumb-relation-map~1] 「⚙ 設定」をクリック → ビューの設定の画面。関係マップから押しても、表の画面に戻って開く。
+    // [utest -> req~screen.breadcrumb-relation-map~2] 「⚙ 設定」をクリック → ビューの設定の画面。関係マップから押しても、表の画面に戻って開く。
     let (_t, mut a) = boot_linked("hmsettings");
     click_head(&mut a, "設定");
     assert_eq!(a.mode, Mode::Settings, "{}", scr(&a));
@@ -210,7 +210,7 @@ fn test_nv_23_no_settings_in_view_bar() {
 
 #[test]
 fn test_nv_23_key_char_looks_different() {
-    // [utest -> req~navigation.search-box-key-glyph~1, req~screen.breadcrumb-button-look~2, req~screen.breadcrumb-right-buttons~1] ボタンの頭のキーの字は太字で、名前の字と見た目が違う(ビューの帯の S、ヘッダーの o・w)。
+    // [utest -> req~navigation.search-box-key-glyph~1, req~screen.breadcrumb-button-look~3, req~screen.breadcrumb-right-buttons~1] ボタンの頭のキーの字は太字で、名前の字と見た目が違う(ビューの帯の S、ヘッダーの o・w)。
     let (_t, a) = boot_linked("hmkey");
     let b = buf(&a);
     for (y, t) in [

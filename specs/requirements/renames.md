@@ -337,3 +337,6 @@ decidespec の仕様(`specs/_history/decidespec/`)の要件の ID を、trace-ga
 | `tree.mouse` | 消した(分けた: `tree.mouse-folder-click`・`tree.mouse-toggle`・`tree.mouse-row-click`・`tree.mouse-row-reclick`・`tree.mouse-wheel`。1つの要求に何文も詰めていたので、1文ずつに分けた) |
 | `tree.move-row` | 消した(分けた: `tree.move-row-pick`・`tree.move-row-pending`。1つの要求に何文も詰めていたので、1文ずつに分けた) |
 | `tree.reorder` | 消した(分けた: `tree.reorder-move`・`tree.reorder-renumber`。1つの要求に何文も詰めていたので、1文ずつに分けた) |
+| `workspace.drawer-others` | 消した(引き出しは今の範囲の表だけにし、ほかのワークスペースへは切り替えの一覧とパレットで移るため。`workspace.drawer-scope-only`。2026-11-25 に人が決め直した) |
+| `workspace.drawer-expand` | 消した(引き出しにほかのワークスペースの見出しを並べなくなり、開く見出しが無いため。`workspace.drawer-scope-only`。2026-11-25) |
+| `workspace.drawer-favorites` | 消した(最初に開いた所とお気に入りは、引き出しに並べず切り替えの一覧だけに並べるため。`workspace.drawer-scope-only`。パレットの「ワークスペースを開く」の受け入れの例は `workspace.open-favorites` に分けた。2026-11-25) |

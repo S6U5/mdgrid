@@ -1,9 +1,10 @@
-//! [cell-edit.then] 列をある値に直したとき、同じ行に一緒に入れる値(`[rules.<列>.then]`)。
+//! [cell-edit.then] 列をある値に直したとき、同じ行に一緒に入れる値(`[rules.<列>.then]`。空のときだけ入れる値は
+//! cell-edit.then-if-empty)。
 //! 置き場と効かせる範囲は仮決め(tbd~then-scope)。
 
 use super::app::App;
 use super::kanban::value_for;
-use mdgrid::changes::Follow;
+use mdgrid::changes::{Follow, FollowCell};
 use mdgrid::newnote::{expand_ids, Ids, Vars};
 use mdgrid::writeback::NewValue;
 
@@ -24,14 +25,18 @@ impl App {
             .map(|(value, sets)| {
                 let cells = sets
                     .iter()
-                    .filter_map(|(c, text)| {
-                        let text = expand_ids(text, &vars, &ids);
+                    .filter_map(|(c, fill)| {
+                        let text = expand_ids(&fill.text, &vars, &ids);
                         let v = if text.is_empty() {
                             NewValue::Null
                         } else {
                             value_for(self, c, &text).ok()?
                         };
-                        Some((c.clone(), v))
+                        Some(FollowCell {
+                            col: c.clone(),
+                            value: v,
+                            if_empty: fill.if_empty,
+                        })
                     })
                     .collect();
                 (value.clone(), cells)

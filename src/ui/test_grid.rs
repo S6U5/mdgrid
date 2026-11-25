@@ -352,7 +352,7 @@ fn test_sr_3_resize_column_keys_and_drag() {
 
 #[test]
 fn test_cli_2_view_option_opens_named_view() {
-    // [utest -> req~cli.options~2] `--view 完了` で2つ目のビューで開く。[utest -> req~cli.launch-marker-open~2, req~cli.launch-marker-headless~1] `.base` のパスを受ける。
+    // [utest -> req~cli.options~2] `--view 完了` で2つ目のビューで開く。[utest -> req~cli.launch-marker-open~3, req~cli.launch-marker-headless~1] `.base` のパスを受ける。
     let tmp = vault("cli2");
     let p = base_path(&tmp, TASKS);
     assert!(crate::check_paths(std::slice::from_ref(&p)).is_ok());

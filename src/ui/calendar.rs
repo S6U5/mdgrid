@@ -263,10 +263,27 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
     if w < CAL_W {
         return None;
     }
-    let (lay, cols) = visible_layout(app);
-    let b = input_box(app, &lay, &cols)?;
     // 幅の数え方(CV-6 の ambiguous_wide)は visible_layout が App の設定から置いたあとで数える。
     let h = height(app);
+    // cell-edit.new-note-form-popup-place: 新しいノートの窓の欄では、窓に重ねずに右・下・上へ置く。
+    if app.note.flow.is_some() {
+        let (form, vx, ay) = super::new_note::form_anchor(app, w)?;
+        let want = popup::Want {
+            n: h,
+            frame: 0,
+            min_vis: h,
+            iw: CAL_W,
+            min_w: CAL_W,
+        };
+        let s = popup::beside(form, ay, vx, want, w, limit)?;
+        return Some(Geom {
+            x: s.x,
+            top: s.top,
+            h,
+        });
+    }
+    let (lay, cols) = visible_layout(app);
+    let b = input_box(app, &lay, &cols)?;
     let top = if limit.saturating_sub(b.y + 1) >= h {
         b.y + 1
     } else if b.y >= h {

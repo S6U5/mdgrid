@@ -5,18 +5,22 @@
 //!
 //! 札を左右のレーンへ動かすと、その行の列の値を表のセルの直しと同じためる変更(未保存)で書き換える(KB-4)。
 //! 保存は表の保存の確かめ(差分)を通る。
+//!
+//! 札は名前(幅に入らなければ2行まで折り返す)の下に、印の `card` の列の値を1列1行で、表のセルと同じ見せ方で出す
+//! (kanban.card-*)。札の高さが違うので、縦の流しとクリックは `LaneCards` が札の高さで数える(描画とクリックで同じ)。
 
 use super::app::App;
+use super::cell::{CellPart, Shown, LOCK_MARK};
 use super::entry::{parse, Entry};
 use super::keymap::{Action, Mode};
 use super::relmap::panel;
-use super::width::{fit, sanitize, width, Align};
+use super::width::{fit, sanitize, take, truncate, width, Align};
 use mdgrid::i18n::Msg;
 use mdgrid::kanban::{self, KanbanSpec, LaneKey};
 use mdgrid::source::RowId;
 use mdgrid::types::Kind;
 use mdgrid::writeback::NewValue;
-use ratatui::style::{Modifier, Style};
+use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use std::collections::{HashMap, HashSet};
 
@@ -66,11 +70,6 @@ fn body_h(app: &App, h: usize) -> usize {
 /// 今の画面の幅から、窓の中の幅(描画 `ui::draw` と同じく右の1列を除き、枠の2列を除く)。
 fn inner_now(app: &App) -> usize {
     super::popup::screen(app).0.saturating_sub(2)
-}
-
-/// 見せる行の数 `vis` の窓で、`pos` 番目が見えるようにするずらし。
-fn scroll(pos: usize, vis: usize) -> usize {
-    (pos + 1).saturating_sub(vis.max(1))
 }
 
 /// レーンの並べ方: (見せるレーンの数, レーンの幅)。中の幅 `iw` の両端の1字ずつは隠れたレーンの印(`‹` `›`)に取る。
@@ -174,26 +173,45 @@ impl App {
 
     /// KB-1: 列が出そろったときに、設定の列が表に無いかリストなら CLI-3 の形で1回警告する。設定は外さない(あとで
     /// 列ができれば出す。使えないあいだは `kanban_spec` が推定に落ちずに出さない)。
+    /// kanban.card-missing-column: 札に出す列(`card`)が表に無ければ、`table[n].kanban.card` の場所で1行警告する
+    /// (無い列の名前は `, ` でつなぐ。計算の列とファイルの列は表にあると数える)。その列の行は札に出ない(値が無い)。
     pub(crate) fn check_kanban_column(&mut self) {
         let Some((spec, at)) = self.kanban_spec.clone() else {
             return;
         };
-        let Some(why) = self.kanban_column_ok(&spec.column) else {
-            return;
-        };
-        let w = Msg::SettingWarn.fill(&[
-            &format!(
-                "{}/{}",
-                mdgrid::workspace::MARKER_DIR,
-                mdgrid::workspace::MARKER_FILE
-            ),
-            &format!("{at}.column"),
-            &why,
-        ]);
-        self.message = Some(match self.message.take() {
-            Some(m) => format!("{m} / {w}"),
-            None => w,
-        });
+        let mut warns = Vec::new();
+        if let Some(why) = self.kanban_column_ok(&spec.column) {
+            warns.push((format!("{at}.column"), why));
+        }
+        let missing: Vec<String> = spec
+            .card
+            .iter()
+            .filter(|c| {
+                !(c.starts_with("formula.") || c.starts_with("file.") || self.has_column(c))
+            })
+            .map(|c| sanitize(c))
+            .collect();
+        if !missing.is_empty() {
+            warns.push((
+                format!("{at}.card"),
+                Msg::RsnKanbanCardNoColumn.fill(&[&missing.join(", ")]),
+            ));
+        }
+        for (place, why) in warns {
+            let w = Msg::SettingWarn.fill(&[
+                &format!(
+                    "{}/{}",
+                    mdgrid::workspace::MARKER_DIR,
+                    mdgrid::workspace::MARKER_FILE
+                ),
+                &place,
+                &why,
+            ]);
+            self.message = Some(match self.message.take() {
+                Some(m) => format!("{m} / {w}"),
+                None => w,
+            });
+        }
     }
 
     /// 行のレーンの値(ためた値を重ねた文字の前後の空白を除いたもの)。キーの名前の変更か削除(CE-29)をためた
@@ -584,9 +602,15 @@ impl App {
             0 => Some((lane, None)),
             1 => None,
             d => {
-                let first = scroll(l.sel, vis.saturating_sub(2));
-                let i = first + d - 2;
-                (i < l.rows.len()).then_some((lane, Some(i)))
+                // kanban.card-click: 描画と同じ札の高さで行を数え、札の2行目からの行もその札に当てる。札の間の
+                // 空きの行と、札の無い所は何も選ばない。
+                let rows_vis = vis.saturating_sub(2);
+                let mut cards = LaneCards::new(self, &k.spec, &l.rows, lw);
+                let first = cards.first(l.sel, rows_vis);
+                match cards.slots(first, rows_vis).get(d - 2) {
+                    Some(Slot::Line(i, _)) => Some((lane, Some(*i))),
+                    _ => None,
+                }
             }
         }
     }
@@ -687,47 +711,297 @@ fn body_lines(app: &App, k: &Kanban, iw: usize, vis: usize) -> Vec<Line<'static>
         rule.push_str(&"─".repeat(lw));
     }
     lines.push(Line::from(fit(&rule, iw, Align::Left)));
-    // 札: 「>*名前」(`>` は選んでいる札、`*` はためた変更のある札)。
+    // 札: 頭の行は「>*名前」(`>` は選んでいる札、`*` はためた変更のある札)。名前の続きと値の行は2字下げ
+    // (kanban.card-indent)。札の高さが違うので、レーンごとに見せる行を作ってから横に並べる。
     let rows_vis = vis.saturating_sub(2);
-    let firsts: Vec<usize> = lanes.iter().map(|(_, l)| scroll(l.sel, rows_vis)).collect();
+    let cols: Vec<Vec<Vec<Span<'static>>>> = lanes
+        .iter()
+        .map(|(i, l)| {
+            let mut cards = LaneCards::new(app, &k.spec, &l.rows, lw);
+            let first = cards.first(l.sel, rows_vis);
+            let slots = cards.slots(first, rows_vis);
+            slots
+                .iter()
+                .map(|slot| match slot {
+                    Slot::Line(c, n) => {
+                        let look = CardLook {
+                            on: *i == k.lane && *c == l.sel,
+                            dirty: changed.contains(&l.rows[*c]),
+                            strong: !k.spec.card.is_empty(),
+                            sel: sel_st,
+                            pending: pending_st,
+                        };
+                        card_line(app, cards.body(*c), *n, lw, &look)
+                    }
+                    Slot::Gap | Slot::Empty => vec![Span::raw(" ".repeat(lw))],
+                })
+                .collect()
+        })
+        .collect();
     for d in 0..rows_vis {
         let mut spans = vec![Span::raw(" ")];
-        for (j, (i, l)) in lanes.iter().enumerate() {
+        for (j, col) in cols.iter().enumerate() {
             if j > 0 {
                 spans.push(Span::raw("│"));
             }
-            let Some(row) = l.rows.get(firsts[j] + d) else {
-                spans.push(Span::raw(" ".repeat(lw)));
-                continue;
-            };
-            let on = *i == k.lane && firsts[j] + d == l.sel;
-            let dirty = changed.contains(row);
-            let head = format!(
-                "{}{}",
-                if on { ">" } else { " " },
-                if dirty { "*" } else { " " }
-            );
-            let name = card_name(app, row);
-            let text = fit(
-                &format!(
-                    "{head}{}",
-                    fit(&name, lw.saturating_sub(width(&head)), Align::Left)
-                ),
-                lw,
-                Align::Left,
-            );
-            spans.push(if on {
-                Span::styled(text, sel_st)
-            } else if dirty {
-                Span::styled(text, pending_st)
-            } else {
-                Span::raw(text)
-            });
+            match col.get(d) {
+                Some(cell) => spans.extend(cell.iter().cloned()),
+                None => spans.push(Span::raw(" ".repeat(lw))),
+            }
         }
         spans.push(Span::raw(" "));
         lines.push(Line::from(spans));
     }
     lines
+}
+
+/// 札の続きの行(名前の2行目と値の行)を、名前の頭より下げる字数(kanban.card-indent)。
+const CARD_INDENT: usize = 2;
+/// 札の頭の印の幅(選びの `>` とためた変更の `*`)。
+const MARKS: usize = 2;
+
+/// 札1枚の中身(kanban.card-columns・kanban.card-name-wrap)。
+struct CardBody {
+    /// 名前の行(1〜2行。入らなければ2行目の末尾が `…`)。
+    name: Vec<String>,
+    /// 値の行(列ごとに、表のセルと同じ見せ方。値の無い列は除く)。
+    values: Vec<Shown>,
+}
+
+impl CardBody {
+    fn height(&self) -> usize {
+        self.name.len() + self.values.len()
+    }
+}
+
+/// レーンの見せる行の1つ。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Slot {
+    /// 札(レーンの中の番号)の何行目か。
+    Line(usize, usize),
+    /// 札の間の空きの行(kanban.card-gap)。
+    Gap,
+    /// 札の無い所。
+    Empty,
+}
+
+/// 1つのレーンの札を、要る分だけ組み立てて覚えておくもの(描画とクリックで同じ高さを使う)。
+struct LaneCards<'a> {
+    app: &'a App,
+    rows: &'a [RowId],
+    card: &'a [String],
+    lw: usize,
+    /// 札の間の空きの行の数(`card` を書いたときだけ 1。kanban.card-gap)。
+    gap: usize,
+    bodies: Vec<Option<CardBody>>,
+}
+
+impl<'a> LaneCards<'a> {
+    fn new(app: &'a App, spec: &'a KanbanSpec, rows: &'a [RowId], lw: usize) -> Self {
+        LaneCards {
+            app,
+            rows,
+            card: &spec.card,
+            lw,
+            gap: usize::from(!spec.card.is_empty()),
+            bodies: (0..rows.len()).map(|_| None).collect(),
+        }
+    }
+
+    fn body(&mut self, i: usize) -> &CardBody {
+        let (app, rows, card, lw) = (self.app, self.rows, self.card, self.lw);
+        self.bodies[i].get_or_insert_with(|| card_body(app, &rows[i], card, lw))
+    }
+
+    fn height(&mut self, i: usize) -> usize {
+        self.body(i).height()
+    }
+
+    /// kanban.card-scroll: 見せ始める札。選んでいる札 `sel` の全部の行が見えるように、`sel` を下の端に寄せて、
+    /// 上に入るだけの札を見せる(札が1行で間が空かなければ、前の1行の札の流し方と同じ)。札が無ければ 0。
+    fn first(&mut self, sel: usize, vis: usize) -> usize {
+        if self.rows.is_empty() {
+            return 0;
+        }
+        let sel = sel.min(self.rows.len() - 1);
+        let mut used = self.height(sel);
+        let mut first = sel;
+        while first > 0 {
+            let add = self.height(first - 1) + self.gap;
+            if used + add > vis {
+                break;
+            }
+            used += add;
+            first -= 1;
+        }
+        first
+    }
+
+    /// 札 `first` から上に詰めて見せる `vis` 行。
+    fn slots(&mut self, first: usize, vis: usize) -> Vec<Slot> {
+        let mut out = Vec::with_capacity(vis);
+        let mut i = first;
+        while out.len() < vis && i < self.rows.len() {
+            if i > first {
+                out.extend(std::iter::repeat_n(Slot::Gap, self.gap));
+            }
+            let h = self.height(i);
+            out.extend((0..h).map(|n| Slot::Line(i, n)));
+            i += 1;
+        }
+        out.truncate(vis);
+        out.resize(vis, Slot::Empty);
+        out
+    }
+}
+
+/// 札1枚の中身: 名前(折り返し)と、`card` の列の値(値の無い列は飛ばす)。値は1列1行で、列の名前は添えない
+/// (tbd~kanban.card-value-layout の仮決め)。
+fn card_body(app: &App, row: &RowId, card: &[String], lw: usize) -> CardBody {
+    let first = lw.saturating_sub(MARKS);
+    let rest = lw.saturating_sub(MARKS + CARD_INDENT);
+    let name = wrap_name(&card_name(app, row), first, rest);
+    let values = card
+        .iter()
+        .filter(|c| app.changes.pending(row, c).is_some() || !app.plain(row, c).trim().is_empty())
+        .map(|c| card_value(app, row, c))
+        .collect();
+    CardBody { name, values }
+}
+
+/// kanban.card-values-shown: 札の値は表のセルと同じ見せ方(`cell::shown`)。札では直さないので、読むだけの印 `#` は
+/// 付けない(型や決まりに合わない `!` と、ためた変更の `*` は残す)。
+fn card_value(app: &App, row: &RowId, col: &str) -> Shown {
+    let mut s = super::cell::shown(app, row, col);
+    if s.locked.is_some() {
+        if let Some(t) = s.text.strip_prefix(LOCK_MARK) {
+            s.text = t.to_string();
+        }
+        if let CellPart::Chips { mark, .. } = &mut s.part {
+            if let Some(t) = mark.strip_prefix(LOCK_MARK) {
+                *mark = t.to_string();
+            }
+        }
+    }
+    s
+}
+
+/// kanban.card-name-wrap: 札の名前を、頭の行の幅 `first`・続きの行の幅 `rest` で2行まで折り返す(入らなければ
+/// 2行目の末尾を `…`)。空白のある名前は、語の途中で切らないよう頭の行の後ろの半分にある空白で切る(空白の無い
+/// 名前は字で切る)。`card` を書かない札にも効かせる(tbd~kanban.card-name-wrap-always の仮決め)。
+fn wrap_name(name: &str, first: usize, rest: usize) -> Vec<String> {
+    if width(name) <= first || first == 0 {
+        return vec![truncate(name, first)];
+    }
+    let mut head = take(name, first);
+    if head.is_empty() {
+        return vec![truncate(name, first)];
+    }
+    let mid_word = name[head.len()..]
+        .chars()
+        .next()
+        .is_some_and(|c| !c.is_whitespace())
+        && head.chars().last().is_some_and(|c| !c.is_whitespace());
+    if mid_word {
+        if let Some(i) = head.rfind(' ') {
+            if width(&head[..i]) * 2 >= first {
+                head.truncate(i);
+            }
+        }
+    }
+    let tail = name[head.len()..].trim_start();
+    let head = head.trim_end().to_string();
+    if tail.is_empty() {
+        return vec![head];
+    }
+    vec![head, truncate(tail, rest)]
+}
+
+/// 札の行の見た目の元。
+struct CardLook {
+    /// 選んでいる札。
+    on: bool,
+    /// ためた変更のある札。
+    dirty: bool,
+    /// 値の行のある札(`card` を書いた表)。名前を太字にして値の行と見分ける(見分けの正本は字下げ。
+    /// kanban.card-indent)。`card` を書かない表は前の札の見た目のまま。
+    strong: bool,
+    sel: Style,
+    pending: Style,
+}
+
+/// 札の `n` 行目(幅 `lw`)。頭の行は印と名前、続きの名前の行と値の行は2字下げ。選んでいる札は全部の行を選びの
+/// 見た目にし(値も文字で)、ほかの札の値は表のセルと同じ部品(札・リンクの色)で描く。
+fn card_line(
+    app: &App,
+    body: &CardBody,
+    n: usize,
+    lw: usize,
+    look: &CardLook,
+) -> Vec<Span<'static>> {
+    let mut name_st = if look.on {
+        look.sel
+    } else if look.dirty {
+        look.pending
+    } else {
+        Style::default()
+    };
+    if look.strong {
+        name_st = name_st.add_modifier(Modifier::BOLD);
+    }
+    if n == 0 {
+        let head = format!(
+            "{}{}",
+            if look.on { ">" } else { " " },
+            if look.dirty { "*" } else { " " }
+        );
+        let name = body.name.first().cloned().unwrap_or_default();
+        let text = fit(
+            &format!(
+                "{head}{}",
+                fit(&name, lw.saturating_sub(MARKS), Align::Left)
+            ),
+            lw,
+            Align::Left,
+        );
+        return vec![Span::styled(text, name_st)];
+    }
+    let lead = " ".repeat((MARKS + CARD_INDENT).min(lw));
+    let w = lw.saturating_sub(width(&lead));
+    if let Some(t) = body.name.get(n) {
+        return vec![Span::styled(
+            format!("{lead}{}", fit(t, w, Align::Left)),
+            name_st,
+        )];
+    }
+    let Some(v) = body.values.get(n - body.name.len()) else {
+        return vec![Span::raw(" ".repeat(lw))];
+    };
+    if look.on {
+        return vec![Span::styled(
+            format!("{lead}{}", fit(&v.text, w, Align::Left)),
+            look.sel,
+        )];
+    }
+    let mut st = Style::default();
+    if v.null || v.unsupported.is_some() {
+        st = st.add_modifier(Modifier::DIM);
+    }
+    if v.pending {
+        st = st.patch(look.pending);
+    }
+    let mut spans = vec![Span::raw(lead)];
+    match &v.part {
+        CellPart::Chips { items, list, mark } => {
+            super::view::chip_spans(app, items, *list, mark, w, st, &mut spans);
+        }
+        CellPart::Link => {
+            let accent = super::look::look(app).map_or(Color::Cyan, |l| l.accent);
+            spans.push(Span::styled(fit(&v.text, w, Align::Left), st.fg(accent)));
+        }
+        CellPart::None => spans.push(Span::styled(fit(&v.text, w, Align::Left), st)),
+    }
+    spans
 }
 
 /// 画面の全部の行(幅 `w`、高さ `h`)。
