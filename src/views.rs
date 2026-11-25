@@ -339,7 +339,11 @@ pub fn load_table_profile(dir: &Path, target: &Path) -> (Profile, Vec<String>) {
     let mut w = Vec::new();
     let p = Profile::read_scoped(&t, FILE_NAME, TABLE, TARGET_KEYS, &mut w);
     // 知らない項目は load_views が警告するので、ここでは型の違いだけを返す。
-    w.retain(|m| !m.contains(Msg::RsnUnknown.text()) && !m.contains(Msg::RsnGlobalOnly.text()));
+    w.retain(|m| {
+        ![Msg::RsnUnknown, Msg::RsnGlobalOnly, Msg::RsnLedgerOnly]
+            .iter()
+            .any(|r| m.contains(r.text()))
+    });
     (p, w)
 }
 

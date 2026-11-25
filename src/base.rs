@@ -948,9 +948,22 @@ impl Base {
             index: index.as_deref(),
             this: self.this.as_ref(),
         };
+        self.keeps_with(src, prop, row, &links, today, now)
+    }
+
+    /// `keeps` の1行(リンクの索引を作ったあと)。評価できない絞り込みは通す。
+    fn keeps_with(
+        &self,
+        src: &dyn Source,
+        prop: &dyn Fn(&RowId, &str) -> Option<Value>,
+        row: &RowId,
+        links: &Links<'_>,
+        today: i64,
+        now: i64,
+    ) -> bool {
         let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
         let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
-        let ctx = Ctx::new(self, &p, &file, &links, today, now);
+        let ctx = Ctx::new(self, &p, &file, links, today, now);
         let keep = self.filters.pass(&ctx);
         if ctx.bad.borrow_mut().take().is_some() {
             return true;
@@ -986,6 +999,30 @@ impl Base {
 
     /// ビューを組み立てる(BV-4・BV-5・BV-13)。table 以外(SC-8)・評価できない filters(BV-7)は Err(理由)。
     /// 並べ替えは安定(同じ鍵は src.rows() の順)。groupBy のまとまりで並べ、中は sort。limit は最後に全体の行数に効く。
+    /// screen.rich-cells-table-wide: 表の全部の行(全体の `filters` を通った行。ビューの絞り込みの前。行ごとの判定は
+    /// `keeps` と同じ)。全体の絞り込みが無いか、評価できない形なら、読んだ行の全部。
+    pub fn table_rows(
+        &self,
+        src: &dyn Source,
+        prop: &dyn Fn(&RowId, &str) -> Option<Value>,
+        today: i64,
+        now: i64,
+    ) -> Vec<RowId> {
+        let open = matches!(&self.filters, Filter::And(xs) if xs.is_empty());
+        if open || self.filters.check(self).is_err() {
+            return src.rows();
+        }
+        let index = src.link_index();
+        let links = Links {
+            index: index.as_deref(),
+            this: self.this.as_ref(),
+        };
+        src.rows()
+            .into_iter()
+            .filter(|row| self.keeps_with(src, prop, row, &links, today, now))
+            .collect()
+    }
+
     pub fn build(
         &self,
         view: usize,

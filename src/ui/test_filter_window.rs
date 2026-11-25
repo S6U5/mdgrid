@@ -418,7 +418,7 @@ fn test_nv_29_narrow_terminal_hides_button_but_palette_opens() {
 
 #[test]
 fn test_nv_29_kept_after_restart() {
-    // [utest -> req~navigation.filter-window-save~1, req~screen.state-store-columns~1, req~screen.state-store-header-sort~1] 窓で足した条件は、終了して開き直しても同じ(ボタンも「絞り込み 1」)。
+    // [utest -> req~navigation.filter-window-save~1, req~screen.state-store-columns~2, req~screen.state-store-header-sort~1] 窓で足した条件は、終了して開き直しても同じ(ボタンも「絞り込み 1」)。
     let tmp = notes_tmp("nv29keep");
     let mut a = boot_with_state(&tmp, "", false);
     click_filter_button(&mut a);

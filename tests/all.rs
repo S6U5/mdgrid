@@ -37,6 +37,8 @@ mod test_changes;
 mod test_chart_docs;
 #[path = "test_chart_e2e.rs"]
 mod test_chart_e2e;
+#[path = "test_chart_fix_e2e.rs"]
+mod test_chart_fix_e2e;
 #[path = "test_check_cli.rs"]
 mod test_check_cli;
 #[path = "test_check_cli_more.rs"]
@@ -115,6 +117,8 @@ mod test_kanban_e2e;
 mod test_language;
 #[path = "test_language_lib.rs"]
 mod test_language_lib;
+#[path = "test_ledger_conditions_e2e.rs"]
+mod test_ledger_conditions_e2e;
 #[path = "test_links.rs"]
 mod test_links;
 #[path = "test_list_write.rs"]
@@ -143,6 +147,8 @@ mod test_new_note_cli;
 mod test_no_japanese_literals;
 #[path = "test_not_text_files.rs"]
 mod test_not_text_files;
+#[path = "test_note_form_e2e.rs"]
+mod test_note_form_e2e;
 #[path = "test_note_name.rs"]
 mod test_note_name;
 #[path = "test_note_path.rs"]
@@ -187,6 +193,8 @@ mod test_readonly_permission;
 mod test_recent_e2e;
 #[path = "test_relations_e2e.rs"]
 mod test_relations_e2e;
+#[path = "test_relmap_names_e2e.rs"]
+mod test_relmap_names_e2e;
 #[path = "test_resume_e2e.rs"]
 mod test_resume_e2e;
 #[path = "test_review6.rs"]
@@ -245,6 +253,8 @@ mod test_trust_notices;
 mod test_types;
 #[path = "test_unwritable.rs"]
 mod test_unwritable;
+#[path = "test_value_labels_e2e.rs"]
+mod test_value_labels_e2e;
 #[path = "test_vault.rs"]
 mod test_vault;
 #[path = "test_views.rs"]

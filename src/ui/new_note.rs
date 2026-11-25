@@ -2,10 +2,11 @@
 //!
 //! 始め方は3つ: ヘッダーの右の端の「+ 新規」のクリック、表のモードの `new_note`(既定 `a`)、パレットの
 //! 「新しいノート」。表の下の端に欄を出し、名前(雛形 `expand_name` で始まる)を打って Enter →
-//! 決まり(`rule_for`: ビューの new_note か設定の `[new_note]`)の `ask` の列を1つずつ、列の型の入力で聞く
-//! (数・チェックは1行の入力、テキストはセルの編集と同じ CE-3 の候補のリスト付き(list.rs)、
-//! 日付・日時は CE-20 のカレンダー付き、リストは CE-16 の選択)→
-//! 最後の Enter で作る。聞く項目を空で Enter ならその項目は書かない。Esc でどこからでも取りやめる。
+//! 決まり(`rule_for`: ビューの new_note か設定の `[new_note]`)の `ask` の列を1つずつ、セルの編集と同じ候補と入力で
+//! 聞く(cell-edit.new-note-form-same-input: リンクの列は行き先のノート、テキストは CE-3 の候補のリスト(list.rs)、
+//! チェックは true・false・なし、日付・日時は CE-20 のカレンダー付き、リストは CE-16 の付け外しの窓)→
+//! 最後の欄の確定で作る。聞く項目を空で決めればその項目は書かない。候補の窓が出ていれば Esc はその窓だけを閉じ
+//! (cell-edit.new-note-form-esc-popup)、出ていなければ取りやめる。
 //! 入力は編集のモード(`Mode::Edit`・`Mode::ListPick`)の入力ボックス(input.rs)とリストの選択(listpick.rs)を
 //! そのまま使い、確定と取り消しだけをここで受ける(書き先の行は無い)。
 //! 作る場所は開いたフォルダ(`.base` ならそのフォルダ)の下の決まりの `folder`。フォルダを2つ以上開いたときは、
@@ -83,6 +84,9 @@ pub(crate) struct Flow {
     ids: newnote::Ids,
     /// `[new_note] body` がフォルダのときの、選べる雛形の名前(名前の順。フォルダでなければ空)。
     bodies: Vec<String>,
+    /// cell-edit.new-note-form-esc-popup: 今のリストの欄の付け外しの窓を Esc で閉じた(欄にはいるが、窓は出さない)。
+    /// Enter・Space でまた開き、Tab で次の欄へ進む。
+    rest: bool,
 }
 
 /// 窓の欄の並び(`Flow::fields`)の中で、本文の雛形を選ぶ欄を表す名前(列ではない。ノートには書かない)。
@@ -103,7 +107,8 @@ impl Flow {
     /// まだ答えていなければ名前の順で最初の雛形、「なし」なら空(本文なし)。
     fn body(&self) -> String {
         if self.bodies.is_empty() {
-            return self.rule.body.clone();
+            // cli.new-note-body-folder と同じ: `.md` の無いフォルダなら本文なし(フォルダを読もうとしない)。
+            return newnote::default_body(&self.root, &self.rule.body);
         }
         let name = match self.answer_of(BODY_FIELD) {
             Some(NewValue::Null) => return String::new(),
@@ -152,6 +157,30 @@ fn as_date(src: &dyn Source, col: &str, kind: Kind, v: NewValue) -> NewValue {
             NewValue::Date(s)
         }
         v => date_if_untyped(src, col, v),
+    }
+}
+
+/// 作るノートの行の鍵(まだ無いファイルのパス)。リンクの列の書く形(相対のパス)と、答えたリンクの行き先の
+/// 名前を、作るノートの場所から決めるのに使う(relations.link-input-form)。
+fn note_row(f: &Flow) -> RowId {
+    let root = f.root.canonicalize().unwrap_or_else(|_| f.root.clone());
+    let name = match f.name.trim() {
+        "" => "_",
+        n => n.strip_suffix(".md").unwrap_or(n),
+    };
+    let path = root
+        .join(f.rule.folder.trim().trim_matches('/'))
+        .join(format!("{name}.md"));
+    RowId(path.to_string_lossy().into_owned())
+}
+
+/// 必須の欄(CE-27)として空か: 無い・Null・空白だけの文字・要素の無いリスト。
+fn is_empty(v: Option<&NewValue>) -> bool {
+    match v {
+        None | Some(NewValue::Null) => true,
+        Some(NewValue::Str(s)) => s.trim().is_empty(),
+        Some(NewValue::List(items)) => items.is_empty(),
+        _ => false,
     }
 }
 
@@ -252,6 +281,7 @@ impl App {
             open_editor,
             ids,
             bodies: Vec::new(),
+            rest: false,
         });
         if let Some(f) = &mut self.note.flow {
             f.set_bodies();
@@ -387,6 +417,9 @@ impl App {
         if f.step == 0 {
             let name = f.typed.clone();
             self.pick = None;
+            if let Some(f) = &mut self.note.flow {
+                f.rest = false;
+            }
             return self.open_note_input(Entry::Text, name, None);
         }
         self.open_step(None);
@@ -430,6 +463,9 @@ impl App {
 
     /// 今の聞く項目の欄を開く。`value` があればその値で(戻ったとき)、無ければ前もって入れる値で始める。
     fn open_step(&mut self, value: Option<NewValue>) {
+        if let Some(f) = &mut self.note.flow {
+            f.rest = false;
+        }
         let Some(f) = &self.note.flow else {
             return;
         };
@@ -465,7 +501,8 @@ impl App {
                 _ => Vec::new(),
             };
             self.input = None;
-            let pick = self.new_pick(col, vec![(no_row(), items)]);
+            // relations.link-input-candidates: リンクのリストの列の書く形は、作るノートのパスから決める。
+            let pick = self.new_pick(col, vec![(note_row(f), items)]);
             self.pick = Some(pick);
             self.set_mode(Mode::ListPick);
             return;
@@ -484,33 +521,52 @@ impl App {
             None => raw.clone(),
         };
         let cal = Cal::open(entry, &raw, &text, self.today);
-        // CE-3・CE-36: セルの編集と同じ候補のリスト(list.rs)。今の値は前もって入れる値か前の答え。
-        // 決まりの選べる値(`[rules.<列>] values`)があればその値(どのノートにもまだ無い列でも並ぶ)。
-        // 無ければテキストの列はノートにある値で、それも0件なら「なし」だけのリストにせず1行の入力。
+        // cell-edit.new-note-form-same-input: セルの編集(input.rs の `open_at_inner`)と同じ候補のリスト(list.rs)。
+        // 今の値は前もって入れる値か前の答え。リンクの列は行き先のフォルダのノート(relations.link-input-candidates。
+        // 書く形は作るノートのパスから)、次に決まりの選べる値(`[rules.<列>] values`。どのノートにもまだ無い列でも
+        // 並ぶ)、無ければテキストの列はノートにある値で、それも0件なら「なし」だけのリストにせず1行の入力
+        // (cell-edit.new-note-form-rule-values)。チェックボックスの列は true・false・なし(セルに Tab で着いたとき)。
         // 値の候補には、決まりの labels の名前を添える(セルの編集と同じ)。
         let values =
             |c: &[Value]| self.with_value_labels(&col, List::new(c, preset.as_ref(), true));
-        let list = match (self.rule_candidates(&col, kind), kind) {
-            (Some(c), Kind::Text | Kind::Number | Kind::Date | Kind::DateTime) => Some(values(&c)),
-            (_, Kind::Text) => self
-                .src
-                .candidates(&col, self.candidates)
-                .filter(|c| {
-                    c.iter()
-                        .filter_map(to_new)
-                        .any(|v| !matches!(v, NewValue::Null))
-                })
-                .map(|c| values(&c)),
-            _ => None,
+        let list = match kind {
+            Kind::Text => self
+                .link_list(&note_row(f), &col, preset.as_ref(), &[])
+                .or_else(|| match self.rule_candidates(&col, kind) {
+                    Some(c) => Some(values(&c)),
+                    None => self
+                        .src
+                        .candidates(&col, self.candidates)
+                        .filter(|c| {
+                            c.iter()
+                                .filter_map(to_new)
+                                .any(|v| !matches!(v, NewValue::Null))
+                        })
+                        .map(|c| values(&c)),
+                }),
+            Kind::Checkbox => Some(List::new(
+                &[Value::Bool(true), Value::Bool(false)],
+                preset.as_ref(),
+                true,
+            )),
+            Kind::Number | Kind::Date | Kind::DateTime => {
+                self.rule_candidates(&col, kind).map(|c| values(&c))
+            }
+            Kind::List => None,
         };
+        // CE-3・CE-5・CE-7: セルの編集と同じく、候補・日付・日時・数の入力は、開いた直後に打つと今の値を置き換える。
+        let fresh =
+            list.is_some() || matches!(entry, Entry::Date | Entry::DateTime | Entry::Number);
         self.open_note_input(entry, text, cal);
         if let Some(i) = &mut self.input {
             i.list = list;
+            i.fresh = fresh;
         }
     }
 
     /// 編集のモードの動作のうち、新しいノートの入力で受けるもの。扱ったら true。
-    /// 確定(Enter・Tab)で次へ、Shift+Tab で前の項目へ、Esc で取りやめ。日付の「空にして確定」は空の答え。ほかは入力ボックスのまま。
+    /// 確定(Enter・Tab)で次へ、Shift+Tab で前の項目へ、Esc で取りやめ(候補の窓が出ていれば、その窓だけを閉じる。
+    /// cell-edit.new-note-form-esc-popup)。日付の「空にして確定」は空の答え。ほかは入力ボックスのまま。
     pub(crate) fn new_note_input_action(&mut self, action: Action) -> bool {
         if self.note.flow.is_none() {
             return false;
@@ -533,6 +589,7 @@ impl App {
             Action::CreateNote => self.note_create_now(),
             Action::CreateNoteEdit => self.note_create_and_edit(),
             Action::CommitPrev => self.note_back(),
+            Action::Cancel if self.note_popup_shown() => self.close_note_popup(),
             Action::Cancel => self.cancel_note(),
             Action::Clear if self.input.as_ref().is_some_and(|i| i.cal.is_some()) => {
                 if let Some(i) = &mut self.input {
@@ -546,21 +603,67 @@ impl App {
         true
     }
 
-    /// リストの選択の動作のうち、新しいノートの聞く項目で受けるもの(確定・取りやめ)。扱ったら true。
+    /// 欄の上に候補の窓(値の候補のリスト・カレンダー)が出ているか(cell-edit.new-note-form-esc-popup)。作る場所を
+    /// 選ぶ欄のリストは欄そのものなので数えない。
+    pub(crate) fn note_popup_shown(&self) -> bool {
+        !self.note_choosing()
+            && (self.list_view().is_some() || self.input.as_ref().is_some_and(|i| i.cal.is_some()))
+    }
+
+    /// cell-edit.new-note-form-esc-popup: 候補の窓だけを閉じる。入力は打った文字のまま開いたままにし、確定は
+    /// 打った文字を列の型で読む(候補を閉じた自由入力と同じ)。
+    fn close_note_popup(&mut self) {
+        if let Some(i) = &mut self.input {
+            i.list = None;
+            i.cal = None;
+        }
+    }
+
+    /// 新しいノートのリストの欄の付け外しの窓を、Esc で閉じているか(cell-edit.new-note-form-esc-popup)。
+    pub(crate) fn note_pick_hidden(&self) -> bool {
+        self.mode == Mode::ListPick && self.note.flow.as_ref().is_some_and(|f| f.rest)
+    }
+
+    /// リストの選択の動作のうち、新しいノートの聞く項目で受けるもの。扱ったら true。
+    /// cell-edit.new-note-form-move: Enter・Space は付け外し(リストの選択のまま。ここでは受けない)、Tab と
+    /// 「[ 決める ]」の行の Enter で決めて次の欄(最後の欄なら作る。cell-edit.new-note-form-create)、Shift+Tab で
+    /// 前の欄。Esc は付け外しの窓だけを閉じ(付けたチェックは入れない)、閉じているあいだは Enter・Space で
+    /// また開き、Esc で新しいノートの窓を閉じる(cell-edit.new-note-form-esc-popup)。
     pub(crate) fn new_note_pick_action(&mut self, action: Action) -> bool {
         if self.note.flow.is_none() {
             return false;
         }
-        let searching = self
-            .pick
-            .as_ref()
-            .is_some_and(super::listpick::Pick::searching);
+        let on_decide = self.pick.as_ref().is_some_and(|p| p.sel >= p.rows().len());
+        if self.note_pick_hidden() {
+            match action {
+                Action::Run | Action::Toggle => {
+                    if let Some(f) = &mut self.note.flow {
+                        f.rest = false;
+                    }
+                }
+                Action::Commit => self.note_pick_commit(),
+                Action::CommitPrev => self.note_back(),
+                Action::Cancel => self.cancel_note(),
+                Action::CreateNote => self.note_create_now(),
+                Action::CreateNoteEdit => self.note_create_and_edit(),
+                // 窓の無いあいだの候補の操作と文字は捨てる。
+                _ => {}
+            }
+            return true;
+        }
         match action {
-            Action::Cancel => self.cancel_note(),
+            Action::Cancel => {
+                // 開いたときの付け方に戻してから隠す(Tab ならその値で次の欄へ)。
+                self.list_pick_action(Action::Revert);
+                if let Some(f) = &mut self.note.flow {
+                    f.rest = true;
+                }
+            }
             Action::CreateNote => self.note_create_now(),
             Action::CreateNoteEdit => self.note_create_and_edit(),
             Action::Commit => self.note_pick_commit(),
-            Action::Run if !searching => self.note_pick_commit(),
+            Action::Run if on_decide => self.note_pick_commit(),
+            Action::CommitPrev => self.note_back(),
             _ => return false,
         }
         true
@@ -606,6 +709,10 @@ impl App {
             if let Some(f) = &mut self.note.flow {
                 f.name = name;
                 f.typed = typed;
+                // cell-edit.new-note-form-error-clear: 作れる名前に直したら、名前の欄の理由の印を消す。
+                if f.error.as_ref().is_some_and(|(at, _)| *at == 0) {
+                    f.error = None;
+                }
             }
             if done {
                 if !self.finish_note() {
@@ -657,6 +764,11 @@ impl App {
         let Some(f) = &mut self.note.flow else {
             return false;
         };
+        // cell-edit.new-note-form-error-clear: 欄の値を決めたら、その欄の理由の印を消す(必須の欄がまだ空なら残す)。
+        let still = f.rule.required.contains(&col) && is_empty(Some(&value));
+        if !still && f.error.as_ref().is_some_and(|(at, _)| *at == f.step) {
+            f.error = None;
+        }
         f.answers.retain(|e| e.key != col);
         f.answers.push(Edit { key: col, value });
         if !f.finish && (f.step < f.fields.len() || f.jump.is_some()) {
@@ -671,9 +783,12 @@ impl App {
         self.note_vars(f)
     }
 
-    /// CE-32: 雛形の変数(今日・今の時刻・決めた名前・作る場所)。
+    /// CE-32: 雛形の変数(今日・今の時刻・決めた名前・作る場所)。cell-edit.template-vars-name-head: 頭を隠して
+    /// 付けるときの `{name}` は、頭を付ける前の打った名前(頭を自分で打った名前はそのまま。
+    /// tbd~template-vars-name-own-head)。
     fn note_vars(&self, f: &Flow) -> newnote::Vars {
-        let name = f.name.trim();
+        let name = if f.head.is_empty() { &f.name } else { &f.typed };
+        let name = name.trim();
         let name = name.strip_suffix(".md").unwrap_or(name);
         newnote::Vars {
             today: self.today,
@@ -723,15 +838,9 @@ impl App {
         };
         let cur = f.step;
         // CE-27: 必須の欄が空なら作らずにその欄へ。名前が作れないなら名前の欄へ。
-        let empty = |v: Option<&NewValue>| match v {
-            None | Some(NewValue::Null) => true,
-            Some(NewValue::Str(s)) => s.trim().is_empty(),
-            Some(NewValue::List(items)) => items.is_empty(),
-            _ => false,
-        };
         let missing = f.rule.required.iter().find(|c| {
             let v = f.answer_of(c).or_else(|| f.preset(c));
-            empty(v)
+            is_empty(v)
         });
         let problem = match newnote::note_path(&f.root, &f.rule.folder, &f.name) {
             Err(e) => Some((0, e)),
@@ -830,10 +939,12 @@ impl App {
         if self.mode == Mode::Edit && (self.calendar_click(x, y) || self.list_click(x, y)) {
             return;
         }
-        let (x, y) = (x as usize, y as usize);
-        if super::listpick::covers(self, x, y) {
-            return;
+        // cell-edit.new-note-form-move: リストの欄の付け外しの窓のクリックは、セルの窓と同じ(候補は付け外し、
+        // 「[ 決める ]」と下の縁のキー)。窓の上のクリックは、下の欄の行に通さない。
+        if super::listpick::covers(self, x as usize, y as usize) {
+            return self.pick_click(x, y);
         }
+        let (x, y) = (x as usize, y as usize);
         let (Some(g), Some(f)) = (geom(self), self.note.flow.as_ref()) else {
             return;
         };
@@ -1072,12 +1183,30 @@ fn key_actions(app: &App) -> Vec<(String, Action)> {
         }
     };
     if app.mode == Mode::ListPick {
-        push(Mode::ListPick, Action::Toggle, Msg::NoteToggle.text());
-        push(Mode::ListPick, Action::Run, next);
+        // cell-edit.new-note-form-move: Enter で入れる・外す(閉じた窓なら開く)、Tab で決めて次の欄へ。
+        // cell-edit.new-note-form-esc-popup: 窓が出ていれば Esc は窓だけを閉じる。
+        let hidden = app.note_pick_hidden();
+        let run = if hidden {
+            Msg::NoteOpenList.text()
+        } else {
+            Msg::NoteToggle.text()
+        };
+        push(Mode::ListPick, Action::Run, run);
+        push(Mode::ListPick, Action::Commit, next);
         if !last {
             push(Mode::ListPick, Action::CreateNote, Msg::NoteCreate.text());
         }
-        push(Mode::ListPick, Action::Cancel, Msg::NoteStop.text());
+        push(
+            Mode::ListPick,
+            Action::CommitPrev,
+            Msg::NotePrevField.text(),
+        );
+        let stop = if hidden {
+            Msg::NoteStop.text()
+        } else {
+            Msg::NoteCloseList.text()
+        };
+        push(Mode::ListPick, Action::Cancel, stop);
     } else {
         push(Mode::Edit, Action::Commit, next);
         if !last && !f.choosing {
@@ -1086,7 +1215,12 @@ fn key_actions(app: &App) -> Vec<(String, Action)> {
         if f.step > 0 || (!f.choosing && f.places.len() > 1) {
             push(Mode::Edit, Action::CommitPrev, Msg::NotePrevField.text());
         }
-        push(Mode::Edit, Action::Cancel, Msg::NoteStop.text());
+        let stop = if app.note_popup_shown() {
+            Msg::NoteCloseList.text()
+        } else {
+            Msg::NoteStop.text()
+        };
+        push(Mode::Edit, Action::Cancel, stop);
         // CE-33: 作ってエディタで開く(帯が狭いので最後に短く)。
         if !f.choosing && !f.rule.editor() {
             push(
@@ -1171,11 +1305,19 @@ fn value_text(app: &App, f: &Flow, row: Option<usize>) -> (String, bool) {
         return (name, false);
     };
     if k == 0 {
-        return (f.name.clone(), false);
+        // cell-edit.new-note-name-head: 頭を隠しているときは、欄を離れても打った名前だけを見せる。
+        let shown = if f.head.is_empty() { &f.name } else { &f.typed };
+        return (shown.clone(), false);
     }
     let c = &f.fields[k - 1];
+    // cell-edit.new-note-form-link-candidates: リンクの値は、セルと同じく行き先の名前で見せる。
+    // navigation.value-labels-picker: リンクでない値は、値の名前のある値を「名前 値」で見せる。
+    let shown = |v: &NewValue| {
+        app.link_text_new(&note_row(f), v)
+            .unwrap_or_else(|| field_text(app, c, v))
+    };
     if let Some(v) = f.answer_of(c) {
-        return (new_value_text(v), false);
+        return (shown(v), false);
     }
     if c == BODY_FIELD {
         return (f.bodies[0].clone(), false);
@@ -1190,11 +1332,23 @@ fn value_text(app: &App, f: &Flow, row: Option<usize>) -> (String, bool) {
             };
             let text = format!(
                 "{}  {from}",
-                new_value_text(&newnote::expand_value_ids(v, &vars, &f.ids))
+                shown(&newnote::expand_value_ids(v, &vars, &f.ids))
             );
             (text, false)
         }
         None => (type_hint(app, c), true),
+    }
+}
+
+/// 欄の値の文字。名前のある値(`[rules.<列>] labels`)は値を選ぶ窓と同じ「字 名前 値」(navigation.value-labels-picker)。
+fn field_text(app: &App, col: &str, v: &NewValue) -> String {
+    match v {
+        NewValue::Str(s) => app
+            .prof
+            .resolved
+            .value_choice(col, s)
+            .unwrap_or_else(|| new_value_text(v)),
+        _ => new_value_text(v),
     }
 }
 

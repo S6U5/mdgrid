@@ -603,7 +603,9 @@ impl Profile {
                 continue;
             }
             let path = join(prefix, k);
-            if schema::GLOBAL_KEYS.contains(&k.as_str())
+            if schema::LEDGER_KEYS.contains(&k.as_str()) {
+                warn(w, file, &path, Msg::RsnLedgerOnly.text().to_string());
+            } else if schema::GLOBAL_KEYS.contains(&k.as_str())
                 || schema::LEGACY.iter().any(|(old, _)| old == k)
             {
                 warn(w, file, &path, Msg::RsnGlobalOnly.text().to_string());
@@ -1033,6 +1035,9 @@ pub struct Origin {
     pub label: String,
     /// テンプレートから来たならその名前。
     pub template: Option<String>,
+    /// 台帳の作り手が勧める既定(ワークスペースの印とその表の項目)か。`[look]` は全体より広い範囲として重ねる
+    /// (screen.profile-scopes-marker-look)。
+    pub by_author: bool,
 }
 
 impl Origin {
@@ -1041,7 +1046,15 @@ impl Origin {
             place,
             label: label.into(),
             template: None,
+            by_author: false,
         }
+    }
+
+    /// 作り手の勧める既定(印)の出どころにする。
+    #[must_use]
+    pub fn by_author(mut self, yes: bool) -> Origin {
+        self.by_author = yes;
+        self
     }
 
     /// コメントの文(`views.toml (notes/tasks), template night`)。
@@ -1123,10 +1136,10 @@ impl Default for Resolved {
 }
 
 impl Resolved {
-    /// navigation.group-values-icon: 列 `col` の値 `v` の、まとまりの見出しとカンバンのレーンの題に出す文字
-    /// (「字 名前」。字だけなら「字 値」、名前だけなら名前)。字も名前も無い値と、重ねた values に無い値は None
-    /// (値のまま見せる)。セル・絞り込み・検索・出力は値のまま(tbd~navigation.value-labels-cells の仮決め)なので、
-    /// ここを呼ぶのは見出しと題だけ。
+    /// navigation.group-values-icon・navigation.value-labels-cells: 列 `col` の値 `v` の、値を見せる所(まとまりの
+    /// 見出し・カンバンのレーンの題・表のセル・詳細・木の画面の右の欄)に出す文字(「字 名前」。字だけなら「字 値」、
+    /// 名前だけなら名前)。字も名前も無い値と、重ねた values に無い値は None(値のまま見せる)。書く値と書き出し
+    /// (`--print` など)は値のままなので、ここは画面だけが呼ぶ。
     pub fn value_shown(&self, col: &str, v: &str) -> Option<String> {
         let values = self.rules.get(col)?.values.as_ref()?;
         if !values.iter().any(|x| x == v) {
@@ -1169,9 +1182,13 @@ impl Resolved {
         self.origins.insert(path.to_string(), o.clone());
     }
 
-    /// 1つの層の値を重ねる。
-    fn apply(&mut self, p: &Profile, o: &Origin) {
-        let l = &p.look;
+    /// 道筋の出どころ(既定の項目は None)。
+    pub fn origin_of(&self, path: &str) -> Option<&Origin> {
+        self.origins.get(path)
+    }
+
+    /// 1つの層の `[look]` を重ねる。
+    fn apply_look(&mut self, l: &LookLayer, o: &Origin) {
         if let Some(pr) = l.preset {
             // 組を書いた層より広い層の部品の形は使わない(SR-44)。
             self.preset = pr;
@@ -1215,6 +1232,10 @@ impl Resolved {
             self.cells.columns.insert(col.clone(), *st);
             self.mark(&format!("look.columns.{col}"), o);
         }
+    }
+
+    /// 1つの層の `[look]` のほか(型・決まり・表示・日付・編集・新しいノート)を重ねる。
+    fn apply_rest(&mut self, p: &Profile, o: &Origin) {
         // CE-35: 列の型は列ごとに狭い範囲が勝ち、`"auto"` は広い範囲の型を外す。
         for (col, k) in &p.types {
             match k {
@@ -1329,35 +1350,62 @@ impl Resolved {
     }
 }
 
-/// 層を既定から狭い範囲へ順に重ねる(SR-44)。各層は先に `use` のテンプレートを敷く。
-/// 無いテンプレートと、テンプレートの中の `use` は警告にする。
-pub fn resolve(layers: &[Layer], templates: &Templates, w: &mut Vec<String>) -> Resolved {
-    let mut r = Resolved::default();
-    for layer in layers {
-        if let Some(name) = &layer.profile.use_ {
-            match template(templates, name) {
-                Some(t) => {
-                    if t.use_.is_some() {
-                        warn(
-                            w,
-                            &layer.origin.label,
-                            &format!("templates.{name}.use"),
-                            Msg::RsnNestedUse.text().to_string(),
-                        );
-                    }
-                    let mut o = layer.origin.clone();
-                    o.template = Some(name.clone());
-                    r.apply(t, &o);
+/// 1つの層の重ねる分: 先に `use` のテンプレート(あれば)、次に層の値。
+/// 無いテンプレートと、テンプレートの中の `use` は `w` があれば警告にする。
+fn parts<'a>(
+    layer: &'a Layer,
+    templates: &'a Templates,
+    w: Option<&mut Vec<String>>,
+) -> Vec<(&'a Profile, Origin)> {
+    let mut out = Vec::new();
+    if let Some(name) = &layer.profile.use_ {
+        match template(templates, name) {
+            Some(t) => {
+                if let (Some(w), Some(_)) = (w, &t.use_) {
+                    warn(
+                        w,
+                        &layer.origin.label,
+                        &format!("templates.{name}.use"),
+                        Msg::RsnNestedUse.text().to_string(),
+                    );
                 }
-                None => warn(
-                    w,
-                    &layer.origin.label,
-                    "use",
-                    Msg::RsnNoTemplate.fill(&[name]),
-                ),
+                let mut o = layer.origin.clone();
+                o.template = Some(name.clone());
+                out.push((t, o));
+            }
+            None => {
+                if let Some(w) = w {
+                    warn(
+                        w,
+                        &layer.origin.label,
+                        "use",
+                        Msg::RsnNoTemplate.fill(&[name]),
+                    );
+                }
             }
         }
-        r.apply(&layer.profile, &layer.origin);
+    }
+    out.push((&layer.profile, layer.origin.clone()));
+    out
+}
+
+/// 層を既定から狭い範囲へ順に重ねる(SR-44)。各層は先に `use` のテンプレートを敷く。
+/// 無いテンプレートと、テンプレートの中の `use` は警告にする。
+/// `[look]` だけは、作り手の勧める既定(印。`Origin::by_author`)の層を全体より広い範囲として先に重ね、そのあとに
+/// 人の選んだ層を重ねる(screen.profile-scopes-marker-look)。それぞれの中の順は `layers` のまま。
+pub fn resolve(layers: &[Layer], templates: &Templates, w: &mut Vec<String>) -> Resolved {
+    let mut r = Resolved::default();
+    let author = layers.iter().filter(|l| l.origin.by_author);
+    let person = layers.iter().filter(|l| !l.origin.by_author);
+    for layer in author.chain(person) {
+        for (p, o) in parts(layer, templates, None) {
+            r.apply_look(&p.look, &o);
+        }
+    }
+    for layer in layers {
+        for (p, o) in parts(layer, templates, Some(&mut *w)) {
+            r.apply_rest(p, &o);
+        }
     }
     r
 }
@@ -1375,12 +1423,20 @@ pub fn key_line(k: &str, v: &toml::Value) -> String {
 pub fn resolved_toml(r: &Resolved) -> String {
     let t = r.to_profile().to_table();
     let mut out = String::new();
+    // cli.resolved-config-origin-nested: 層が表を丸ごと書く項目(`rules.<列>.icons` など)は、その表の道筋にだけ
+    // 出どころを持つので、中の項目は近い親の道筋の出どころを使う。
     let origin = |path: &str| -> String {
         r.origins
             .iter()
             .filter(|(k, _)| *k == path || k.starts_with(&format!("{path}.")))
             .map(|(_, o)| o.describe())
             .next()
+            .or_else(|| {
+                path.match_indices('.')
+                    .rev()
+                    .find_map(|(i, _)| r.origins.get(&path[..i]))
+                    .map(Origin::describe)
+            })
             .unwrap_or_else(|| "default".to_string())
     };
     fn scalar_lines(

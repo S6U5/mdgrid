@@ -454,7 +454,7 @@ fn test_ce_26_empty_answer_is_not_written() {
 
 #[test]
 fn test_ce_26_esc_while_asking_creates_nothing() {
-    // [utest -> req~cell-edit.new-note-form-move~2] 聞いている途中の Esc → 何も作らない。
+    // [utest -> req~cell-edit.new-note-form-esc~2] 聞いている途中の(候補の窓の出ていない数の欄の)Esc → 何も作らない。
     let tmp = vault("ce26esc");
     let cfg = config("[new_note]\nask = [\"priority\"]\n");
     let mut a = boot(&tmp, cfg, false);

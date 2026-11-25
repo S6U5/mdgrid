@@ -6,18 +6,20 @@
 //! 開いている間に1回だけ出す(notify.fail)。
 
 use super::app::App;
-use mdgrid::expr::Expr;
+use mdgrid::condition::Conditions;
 use mdgrid::notify::{self, Check, Item, Report};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::mpsc::{self, Receiver};
+use std::sync::Arc;
 use std::time::Instant;
 
 /// 糸の結果(確かめの結果と、端末へ送るバイト)。
 type Outcome = (Report, Vec<u8>);
 
-/// 裏の糸で確かめる1項目(項目, 条件の見せる名前, 条件の式, 範囲の表(名前, 開くパス))。
-type Job = (Item, String, Expr, Vec<(String, Vec<PathBuf>)>);
+/// 裏の糸で確かめる1項目(項目, 条件の見せる名前, 範囲の表(名前, 開くパス))。条件の式は表ごとに、その表の印を
+/// 全体の設定の条件に重ね直して引く(notify.columns-present)。
+type Job = (Item, String, Vec<(String, Vec<PathBuf>)>);
 
 /// 知らせの状態。
 #[derive(Default)]
@@ -48,10 +50,10 @@ pub(crate) struct TestOutlet {
 }
 
 /// 項目ごとに範囲の表をファイルから読み、当たった行を選ぶ(`crate::notify_hits`)。
-fn checks(jobs: Vec<Job>, hides: &[Expr], today: i64, now: i64) -> Vec<Check> {
+fn checks(jobs: Vec<Job>, global: &Arc<Conditions>, today: i64, now: i64) -> Vec<Check> {
     jobs.into_iter()
-        .map(|(item, label, e, places)| {
-            let tables = crate::notify_hits(&places, &e, hides, &item, &label, today, now);
+        .map(|(item, label, places)| {
+            let tables = crate::notify_hits(&places, global, &item, &label, today, now);
             Check {
                 item,
                 label,
@@ -104,12 +106,13 @@ impl App {
         };
         self.notify.want = false;
         self.notify.last = Some(Instant::now());
-        let (jobs, hides) = self.notify_jobs();
+        let jobs = self.notify_jobs();
+        let global = self.cond.global.clone();
         #[cfg(test)]
         let test = self.notify.test.clone();
         let (tx, rx) = mpsc::channel();
         std::thread::spawn(move || {
-            let checks = checks(jobs, &hides, today, now);
+            let checks = checks(jobs, &global, today, now);
             let mut term = Vec::new();
             #[cfg(test)]
             if let Some(t) = test {
@@ -154,40 +157,26 @@ impl App {
                 ..Report::default()
             };
         };
-        let (jobs, hides) = self.notify_jobs();
-        let checks = checks(jobs, &hides, today, now);
+        let checks = checks(self.notify_jobs(), &self.cond.global, today, now);
         let out = notify::Outlets::current();
         notify::run(&dir, &checks, &mut |to, item, note| {
             out.send(to, item, note, terminal)
         })
     }
 
-    /// 確かめる項目(条件の式・見せる名前・範囲の表)と、いつも隠す条件の式。いつも隠す条件は、数字のキーで
-    /// 見せている間も当てる(画面の見せ方で知らせが変わらないように。`--notify` と同じ行を見る)。
-    fn notify_jobs(&self) -> (Vec<Job>, Vec<Expr>) {
-        let jobs = self
-            .notify
+    /// 確かめる項目(見せる名前・範囲の表)。条件の式といつも隠す条件は、表ごとに、その表の印を全体の設定の条件に
+    /// 重ねて引く(`crate::notify_hits`)。いつも隠す条件は、数字のキーで見せている間も当てる(画面の見せ方で知らせが
+    /// 変わらないように。`--notify` と同じ行を見る)。
+    fn notify_jobs(&self) -> Vec<Job> {
+        self.notify
             .items
             .iter()
             .filter_map(|item| {
-                let e = self.cond.all.expr(&item.cond)?.clone();
-                let label = self
-                    .cond
-                    .all
-                    .get(&item.cond)
-                    .map_or_else(|| item.cond.clone(), |c| c.shown().to_string());
-                Some((item.clone(), label, e, self.notify_places(&item.scope)))
+                let c = self.cond.all.get(&item.cond)?;
+                let label = c.shown().to_string();
+                Some((item.clone(), label, self.notify_places(&item.scope)))
             })
-            .collect();
-        let hides = self
-            .cond
-            .all
-            .list()
-            .iter()
-            .filter(|c| c.hide)
-            .filter_map(|c| self.cond.all.expr(&c.name).cloned())
-            .collect();
-        (jobs, hides)
+            .collect()
     }
 
     /// 確かめている途中か。

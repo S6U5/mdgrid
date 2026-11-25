@@ -26,7 +26,7 @@ fn night() -> Profile {
 
 #[test]
 fn test_sr_43_ui_round_trip_with_templates() {
-    // [utest -> req~screen.look-section-items~1, req~screen.look-section-save~2, req~screen.look-section-nerd-font~1, req~screen.look-section-template-delete~1] 全体のプロファイル・丸い札の端・テンプレートを書いて読むと同じ。警告なし。空にするとファイルを消す。
+    // [utest -> req~screen.look-section-items~2, req~screen.look-section-save~2, req~screen.look-section-nerd-font~1, req~screen.look-section-template-delete~1] 全体のプロファイル・丸い札の端・テンプレートを書いて読むと同じ。警告なし。空にするとファイルを消す。
     let d = dir("rt");
     let mut profile = Profile::default();
     profile.look.theme = Some(ThemeSpec::AUTO);
@@ -100,7 +100,7 @@ fn test_cli_20_old_look_toml_is_read_and_moved() {
 
 #[test]
 fn test_sr_43_ui_layer_overrides_config() {
-    // [utest -> req~screen.look-section-preset~1, req~screen.profile-scopes-preset-cut~1] ui.toml の層は config.toml の上に重なる。組を書けば config.toml の部品ごとの形は使わない。
+    // [utest -> req~screen.look-section-preset~1, req~screen.profile-scopes-preset-cut~2] ui.toml の層は config.toml の上に重なる。組を書けば config.toml の部品ごとの形は使わない。
     let (c, _) =
         crate::config::parse("[look]\ntheme = \"sumi\"\n[look.style]\nstatus = \"text\"\n")
             .unwrap();

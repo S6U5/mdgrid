@@ -31,6 +31,8 @@ struct Row {
     head: bool,
     /// 区画の説明(薄く)。
     desc: bool,
+    /// 色の見本(screen.look-section-custom): `text` の何バイト目からの2桁の空白を、その色の地で塗るか。
+    swatch: Option<(usize, [u8; 3])>,
 }
 
 impl Row {
@@ -41,6 +43,7 @@ impl Row {
             sel: focus,
             head: true,
             desc: false,
+            swatch: None,
         }
     }
 
@@ -51,6 +54,7 @@ impl Row {
             sel,
             head: false,
             desc: false,
+            swatch: None,
         }
     }
 
@@ -61,7 +65,18 @@ impl Row {
             sel: false,
             head: false,
             desc: true,
+            swatch: None,
         }
+    }
+
+    /// 色の見本(2桁)と `tail` を後ろに足す。色を使わない表示と色の無いときは `tail` だけ。
+    fn swatch(mut self, app: &App, rgb: Option<[u8; 3]>, tail: &str) -> Row {
+        if let (Some(c), true) = (rgb, app.color != super::app::ColorMode::None) {
+            self.swatch = Some((self.text.len(), c));
+            self.text.push_str("   ");
+        }
+        self.text.push_str(tail);
+        self
     }
 
     fn blank() -> Row {
@@ -71,6 +86,7 @@ impl Row {
             sel: false,
             head: false,
             desc: false,
+            swatch: None,
         }
     }
 }
@@ -531,27 +547,24 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
             v
         }
         Sec::Look => {
+            use super::look_section::{self as ls, LookPick};
             let lk = d.look;
-            let from = |path: &str| {
-                format!(
-                    "  ({})",
-                    super::look_section::place_label(app.look_origin(path))
-                )
-            };
+            let from = |path: &str| format!("  ({})", app.look_origin(path));
             let fields = [
-                (
-                    Msg::LookScope,
-                    super::look_section::place_label(lk.scope).to_string(),
-                ),
+                (Msg::LookScope, ls::place_label(lk.scope).to_string()),
                 (
                     Msg::LookTheme,
-                    format!("{}{}", lk.theme.label(), from("look.theme")),
+                    format!(
+                        "{}{}",
+                        LookPick::theme_text(lk.theme, lk.custom),
+                        from("look.theme")
+                    ),
                 ),
                 (
                     Msg::LookPreset,
                     format!("{}{}", lk.preset.name(), from("look.preset")),
                 ),
-                (Msg::LookNerd, super::look_section::nerd_text(lk.nerd)),
+                (Msg::LookNerd, ls::nerd_text(lk.nerd)),
             ];
             let mut v: Vec<Row> = fields
                 .into_iter()
@@ -564,8 +577,41 @@ fn right_rows(app: &App, d: &Draft, ph: usize) -> Vec<Row> {
                     )
                 })
                 .collect();
+            // screen.look-section-custom: カスタムなら元のテーマと役割ごとの色の行(色の見本は値の前)。
+            if lk.custom {
+                let b = ls::BASE_FIELD;
+                v.push(Row::item(
+                    format!(
+                        "{}  ▾ {}",
+                        fit(&format!("  {}", Msg::LookBaseTheme), 20, Align::Left),
+                        lk.theme.label()
+                    ),
+                    Hit::Item(Sec::Look, b),
+                    sel(b),
+                ));
+                for r in 0..mdgrid::colors::ROLES.len() {
+                    let i = b + 1 + r;
+                    let (rgb, keep) = match lk.colors[r] {
+                        Some(c) => (Some(c), String::new()),
+                        None => (
+                            app.theme_role(lk.theme, r),
+                            format!("  ({})", Msg::LookColorKeep),
+                        ),
+                    };
+                    let head = format!(
+                        "{}  ▾ ",
+                        fit(&format!("  {}", ls::role_label(r)), 20, Align::Left)
+                    );
+                    let value = rgb.map_or_else(|| "—".to_string(), mdgrid::colors::hex);
+                    v.push(Row::item(head, Hit::Item(Sec::Look, i), sel(i)).swatch(
+                        app,
+                        rgb,
+                        &format!("{value}{keep}"),
+                    ));
+                }
+            }
             let templates = app.look_templates();
-            let base = super::look_section::LOOK_FIELDS;
+            let base = lk.fields();
             v.push(Row::blank());
             v.push(Row::desc(Msg::LookTemplates));
             for (k, (name, l, _)) in templates.iter().enumerate() {
@@ -653,16 +699,18 @@ fn pick_rows(app: &App, d: &Draft, p: &Pick, ph: usize) -> Vec<Row> {
             d.keys.iter().map(|c| col_text(app, c)).collect(),
         ),
         Pick::Look { field, .. } => {
-            let what = [
-                Msg::LookScope,
-                Msg::LookTheme,
-                Msg::LookPreset,
-                Msg::LookNerd,
-            ][(*field).min(3)];
-            (
-                Msg::LookPickOf.fill(&[&what.text()]),
-                app.look_pick_items(*field),
-            )
+            use super::look_section as ls;
+            let what = match *field {
+                0 => Msg::LookScope.to_string(),
+                1 => Msg::LookTheme.to_string(),
+                2 => Msg::LookPreset.to_string(),
+                3 => Msg::LookNerd.to_string(),
+                f => match ls::role_of_field(f) {
+                    Some(r) => Msg::LookRoleOf.fill(&[&ls::role_label(r).text()]),
+                    None => Msg::LookBaseTheme.to_string(),
+                },
+            };
+            (Msg::LookPickOf.fill(&[&what]), app.look_pick_items(*field))
         }
         Pick::Kind { col, .. } => (
             Msg::PickKindOf.fill(&[&sanitize(&app.title(col))]),
@@ -686,9 +734,11 @@ fn pick_rows(app: &App, d: &Draft, p: &Pick, ph: usize) -> Vec<Row> {
             };
             let mut items = vec![mode.to_string()];
             items.extend(counts.iter().map(|(k, n)| {
-                let label = k
-                    .as_deref()
-                    .map_or_else(|| Msg::EmptyHeading.into(), sanitize);
+                // navigation.value-labels-picker: 名前のある値は「名前 値」。
+                let label = k.as_deref().map_or_else(
+                    || Msg::EmptyHeading.into(),
+                    |v| app.value_choice_text(col, v),
+                );
                 Msg::PickValueRow.fill(&[&check(checked.contains(k)), &label, n])
             }));
             (Msg::PickValuesOf.fill(&[&sanitize(&app.title(col))]), items)
@@ -703,14 +753,59 @@ fn pick_rows(app: &App, d: &Draft, p: &Pick, ph: usize) -> Vec<Row> {
         }
     };
     let at = p.sel();
+    // screen.look-section-custom-colors: 役割の色の選び手は、項目の前に色の見本。
+    let swatches = match p {
+        Pick::Look { field, .. } => app.look_pick_swatches(*field),
+        _ => Vec::new(),
+    };
     let rows: Vec<Row> = items
         .into_iter()
         .enumerate()
-        .map(|(i, t)| Row::item(t, Hit::Pick(i), i == at))
+        .map(|(i, t)| match swatches.get(i) {
+            Some(rgb) => Row::item(String::new(), Hit::Pick(i), i == at).swatch(app, *rgb, &t),
+            None => Row::item(t, Hit::Pick(i), i == at),
+        })
         .collect();
     let mut out = vec![Row::head(head, true)];
     out.extend(window(rows, at, ph.saturating_sub(1)));
     out
+}
+
+/// 欄の1行を幅 `w` の span にする(見出しは太字、説明は薄く、選んだ項目は `>` と反転)。色の見本のある行は、
+/// その2桁を見本の色の地で塗る(反転は外す。screen.look-section-custom)。
+fn row_spans(app: &App, r: Option<&Row>, w: usize) -> Vec<Span<'static>> {
+    let one = row_span(r, w);
+    let Some((row, (at, rgb))) = r.and_then(|r| r.swatch.map(|s| (r, s))) else {
+        return vec![one];
+    };
+    let Some(color) = super::chips::rgb(app, rgb) else {
+        return vec![one];
+    };
+    let text = one.content.to_string();
+    let st = one.style;
+    let pos = row_lead(row).len() + at;
+    if !(text.is_char_boundary(pos) && text.get(pos..pos + 2) == Some("  ")) {
+        return vec![one];
+    }
+    let sw = st.remove_modifier(Modifier::REVERSED).bg(color);
+    vec![
+        Span::styled(text[..pos].to_string(), st),
+        Span::styled("  ".to_string(), sw),
+        Span::styled(text[pos + 2..].to_string(), st),
+    ]
+}
+
+/// 行の頭(見出しと項目、選んだかどうか)。説明の行は1桁。
+fn row_lead(r: &Row) -> &'static str {
+    if r.desc {
+        return " ";
+    }
+    match (r.head, r.sel) {
+        (true, true) => ">",
+        (true, false) => " ",
+        (false, true) => "  >",
+        (false, false) => "   ",
+    }
 }
 
 /// 欄の1行を幅 `w` の span にする(見出しは太字、説明は薄く、選んだ項目は `>` と反転)。
@@ -718,12 +813,7 @@ fn row_span(r: Option<&Row>, w: usize) -> Span<'static> {
     let Some(r) = r else {
         return Span::raw(" ".repeat(w));
     };
-    let lead = match (r.head, r.sel) {
-        (true, true) => ">",
-        (true, false) => " ",
-        (false, true) => "  >",
-        (false, false) => "   ",
-    };
+    let lead = row_lead(r);
     let mut st = Style::default();
     if r.head {
         st = st.add_modifier(Modifier::BOLD);
@@ -734,7 +824,6 @@ fn row_span(r: Option<&Row>, w: usize) -> Span<'static> {
     if r.sel {
         st = st.add_modifier(Modifier::REVERSED);
     }
-    let lead = if r.desc { " " } else { lead };
     Span::styled(fit(&format!("{lead}{}", r.text), w, Align::Left), st)
 }
 
@@ -755,6 +844,13 @@ pub(crate) fn text_prompt(app: &App, col: &str, kind: TextKind) -> String {
         TextKind::SaveAs => Msg::TextSaveAs.into(),
         TextKind::Rename | TextKind::RenameTab => Msg::TextRename.into(),
         TextKind::LookTemplate => Msg::TextLookTemplate.into(),
+        TextKind::LookColor => {
+            let r = mdgrid::colors::ROLES
+                .iter()
+                .position(|r| *r == col)
+                .unwrap_or(0);
+            Msg::TextLookColor.fill(&[&super::look_section::role_label(r).text()])
+        }
         TextKind::WbsValue => Msg::TextWbsValue.fill(&[&sanitize(col)]),
         TextKind::DeleteView => Msg::TextDeleteView.fill(&[&sanitize(col)]),
     }
@@ -907,7 +1003,8 @@ pub(crate) fn render_settings(app: &App, w: usize, h: usize) -> Vec<Line<'static
             }
             None => Span::raw(" ".repeat(nw)),
         };
-        let spans = vec![left, Span::raw(" │ "), row_span(right.get(k), rw)];
+        let mut spans = vec![left, Span::raw(" │ ")];
+        spans.extend(row_spans(app, right.get(k), rw));
         lines.push(pad(spans, w, Style::default()));
     }
     lines.push(Line::from(" ".repeat(w)));

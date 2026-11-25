@@ -463,7 +463,7 @@ fn test_sr_12_temporary_sort_not_kept() {
 
 #[test]
 fn test_sr_12_new_base_column_added_right_and_view_kept() {
-    // [utest -> req~screen.state-store-key~1, req~screen.state-store-columns~1] 状態の並びは今の `.base` の列にだけ当て、`.base` に増えた列は右に足す。
+    // [utest -> req~screen.state-store-key~1, req~screen.state-store-columns~2] 状態の並びは今の `.base` の列にだけ当て、`.base` に増えた列は右に足す。
     // 状態は `.base` のパスとビューの名前ごと。[utest -> req~base-view.view-switch-tabs~1, req~base-view.view-switch-startup~2] 開き直すと先頭のビュー(`--view` があればそちら)で、
     // 前に選んだビューは起動に使わない。
     let tmp = vault("sr12base");
@@ -505,7 +505,8 @@ fn test_sr_12_new_base_column_added_right_and_view_kept() {
     );
     base_path(&tmp, &text);
     let b = boot_base(&tmp, Some("進行中"));
-    assert_eq!(b.cols, ["title", "status", "file.name"]);
+    // screen.state-store-columns~2: 足した file.name は印の order の位置(status の前)、先頭に動かした title は先頭のまま。
+    assert_eq!(b.cols, ["title", "file.name", "status"]);
 }
 
 #[test]
@@ -549,7 +550,7 @@ fn test_sr_13_cannot_unbind_every_exit() {
 
 #[test]
 fn test_sr_12_state_hiding_every_column_keeps_one() {
-    // [utest -> req~screen.state-store-broken~1, req~screen.state-store-columns~1, req~navigation.columns~1] 状態で全部の列を隠していても、列の無い表では起動しない(最後の列は隠せない)。
+    // [utest -> req~screen.state-store-broken~1, req~screen.state-store-columns~2, req~navigation.columns~1] 状態で全部の列を隠していても、列の無い表では起動しない(最後の列は隠せない)。
     let tmp = notes("sr12all");
     let cols = boot(&tmp).cols;
     let mut a = boot(&tmp);

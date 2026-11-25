@@ -240,8 +240,9 @@
   - When:
   - Then: 窓に 名前・priority・tags の欄が並び、tags に「設定から」。
 
-#### 新しいノートの窓を開くと名前の欄の入力が開き、Enter・Tab で今の欄を確定して次の欄、Shift+Tab で前の欄に移るべき
-`req~cell-edit.new-note-form-move~2` P1
+#### 新しいノートの窓を開くと名前の欄の入力が開き、Enter・Tab で今の欄を確定して次の欄、Shift+Tab で前の欄に移るべき。リストの列の欄は、リストの値の付け外しの窓(screen.checklist-keys)と同じく、Enter と Space で選んだ値を入れる・外し、Tab か「[ 決める ]」の行で決めて次の欄に移るべき
+`req~cell-edit.new-note-form-move~3` P1
+- Rationale: リストの欄だけ Enter で次の欄へ進み、最後の欄ではノートができたため、値を入れるつもりの Enter で、何も選ばないままノートができた(2026-11-25 に調べ物の台帳で見つかった。セルのチェックの窓は人が「Enter で入れる」と決めた)
 - Acceptance:
   - Given:
   - When: 設定に ask = [priority] で窓を開く
@@ -250,6 +251,19 @@
   - Given:
   - When: 名前を打って Enter か Tab → priority の欄へ、Shift+Tab
   - Then: 名前の欄へ戻る。
+- Acceptance:
+  - Given: ask = [tags, priority](tags はリストの列で、候補に 仕事・家)の窓で、tags の欄にいる
+  - When: 「仕事」を選んで Enter
+  - Then: 仕事にチェックが付き、tags の欄のまま(候補の窓は開いたまま)。
+- Acceptance:
+  - Given: 同じ窓で、仕事にチェックを付けた
+  - When: Tab
+  - Then: priority の欄に移り、tags の欄には「仕事」が見える。
+- Acceptance:
+  - Given: 同じ窓で、tags の欄にいる
+  - When: Shift+Tab
+  - Then: 名前の欄に移る。
+- Needs: utest, stest
 
 #### 新しいノートの窓の各欄は、型に合った入力(cell-edit.column-type)で直すべき
 `req~cell-edit.new-note-form-typed~1` P1
@@ -270,19 +284,31 @@
   - When:
   - Then: リストを出さず1行の入力。
 
-#### 新しいノートの窓は、Ctrl+S(どの欄からでも)と最後の欄の Enter でノートを作るべき
-`req~cell-edit.new-note-form-create~1` P1
+#### 新しいノートの窓は、Ctrl+S(どの欄からでも)と、最後の欄の確定(リストの列の欄では Tab か「[ 決める ]」の行。ほかの欄では Enter か Tab)でノートを作るべき
+`req~cell-edit.new-note-form-create~2` P1
+- Rationale: リストの欄の Enter は値を入れる・外す(cell-edit.new-note-form-move)ので、最後の欄でも Enter では作らない
 - Acceptance:
   - Given:
   - When: 名前の欄で「メモ」と打って Ctrl+S
   - Then: `メモ.md` が作られる。最後の欄で Enter でも作られる。
+- Acceptance:
+  - Given: ask = [tags](tags はリストの列で、候補に 仕事・家)の窓で、名前に「メモ」と打って tags の欄にいる
+  - When: 「仕事」を選んで Enter
+  - Then: ノートは作られず、仕事にチェックが付く。
+- Acceptance:
+  - Given: 同じ窓で、仕事にチェックを付けた
+  - When: Tab
+  - Then: `メモ.md` が `tags` の要素「仕事」で作られる。
+- Needs: utest
 
-#### 新しいノートの窓は、Esc でノートを作らずにやめるべき
-`req~cell-edit.new-note-form-esc~1` P1
+#### 新しいノートの窓は、欄の上に候補の窓(cell-edit.new-note-form-esc-popup)が出ていないときの Esc で、ノートを作らずにやめるべき(打った値があっても確かめない)
+`req~cell-edit.new-note-form-esc~2` P1
+- Rationale: 候補の窓を閉じるつもりの Esc で窓ごと閉じないように、閉じるのは候補の窓の出ていないときだけにする。窓を閉じるときに確かめないのは、セルの入力の Esc(打った字を確かめずに捨てる)と同じにするため
 - Acceptance:
   - Given:
   - When: 名前を打ってから Esc
   - Then: 窓が閉じ、ノートは作られない。
+- Needs: utest
 
 #### 新しいノートの窓の空の欄は、ノートに書かないべき
 `req~cell-edit.new-note-form-skip-empty~1` P1
@@ -305,9 +331,9 @@
   - When: `required = ["due"]` で due を空のまま Ctrl+S
   - Then: 作らずに due の欄に理由。
 
-#### 設定の `[new_note]` の表に、`name_head`(名前の雛形 `name` を埋めた文字の見せ方)を持ち、`"show"`(既定)では名前の欄に入れて出し、`"hide"` では名前の欄に出さず、打った名前の前に付けて作るべき
-`req~cell-edit.new-note-name-head~1` P1
-- Rationale: 名前の頭に付ける日付を、初めから欄に入れて見せたい人と、見ずに題だけを打ちたい人がいるため(2026-11-24 に人が「選べるようにする」と決めた)。表で頭を隠す `display.note_name`(screen.note-name)と `"hide"` を組むと、表でも打つ欄でも頭を見ない
+#### 設定の `[new_note]` の表に、`name_head`(名前の雛形 `name` を埋めた文字の見せ方)を持ち、`"show"`(既定)では名前の欄に入れて出し、`"hide"` では名前の欄に(名前の欄を離れたあとも)出さず、打った名前の前に付けて作るべき
+`req~cell-edit.new-note-name-head~2` P1
+- Rationale: 名前の頭に付ける日付を、初めから欄に入れて見せたい人と、見ずに題だけを打ちたい人がいるため(2026-11-24 に人が「選べるようにする」と決めた)。表で頭を隠す `display.note_name`(screen.note-name)と `"hide"` を組むと、表でも打つ欄でも頭を見ない。名前の欄を離れたとたんに頭の付いた名前が出ると、隠したはずの頭が見えた(2026-11-25 の実地の操作で見つかった)
 - Acceptance:
   - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"`・`name_head = "hide"`
   - When: 新しいノートの窓を開く
@@ -331,7 +357,7 @@
 - Acceptance:
   - Given: 同じ設定で、ask = [priority]
   - When: 名前の欄に「買い物」と打って Enter
-  - Then: priority の欄に移り、名前の欄には `20261002_買い物` が見える。
+  - Then: priority の欄に移り、名前の欄には「買い物」が見え、`20261002_` は出ない。
 - Acceptance:
   - Given: 今日が 2026-10-02、`[new_note] name = "{date:YYYYMMDD}_"` で、`name_head` が無いか `"show"`(`display.note_name` があっても同じ)
   - When: 新しいノートの窓を開く
@@ -383,6 +409,82 @@
   - Given: `[rules.status] values = ["todo", "doing", "done"]`、ask = [status, priority] の窓で、status の欄にいる
   - When: 候補のリストの `doing` をクリック
   - Then: priority の欄に移り、status の欄には `doing` が見える。
+- Needs: utest
+
+#### 新しいノートの窓のリンクの列(relations.link-input-candidates)の欄は、セルを直すときと同じく、行き先のフォルダのノートを候補にし、選んだノートへのリンクを列の形(relations.link-input-form)で書き、欄にはリンクの行き先の名前を見せるべき(リンクのリストの列も同じ)
+`req~cell-edit.new-note-form-link-candidates~1` P1
+- Rationale: 新しいノートの窓のリンクの欄だけ、候補がその列に今ある値(`[[…]]` の生の形。切れたリンクも混ざる)で、まだどのノートからも指されていないノートを選べなかった(2026-11-25 に読書の記録の台帳で、新しい抜き書きの出典にまだ抜き書きの無い本を選べなかった)
+- Acceptance:
+  - Given: Library/ に「霧の灯台守」と「雨の日の数学」があり、Quotes/ の抜き書きの source はどれも `[[霧の灯台守]]`(雨の日の数学を指す抜き書きは無い)
+  - When: 新しいノートの窓で source の欄を開く
+  - Then: 候補に「霧の灯台守」と「雨の日の数学」が名前で並び、`[[…]]` の形の候補は無い。
+- Acceptance:
+  - Given: 同じ窓
+  - When: 候補の「雨の日の数学」を選んで決め、作る
+  - Then: 作ったノートに `source: "[[雨の日の数学]]"`、決めたあとの source の欄には「雨の日の数学」が見える。
+- Acceptance:
+  - Given: News/ のニュースの question がどれも Questions/ の問いへのリンクのリスト
+  - When: 新しいノートの窓で question の欄を開く
+  - Then: 付け外しの窓の候補は Questions/ の問いの名前で、どのニュースからも指されていない問いも並ぶ。
+- Needs: utest, stest
+
+#### 新しいノートの窓の欄は、同じ列のセルを直すとき(cell-edit.column-type・cell-edit.value-list-open・cell-edit.calendar・cell-edit.list-select)と同じ候補と入れ方で開くべき(チェックボックスの列は true・false・なし の候補、日付・日時・数と候補のある欄は、開いた直後に打つと前もって入れた値を置き換える)
+`req~cell-edit.new-note-form-same-input~1` P1
+- Rationale: 同じ列でも、セルと新しいノートの窓とで候補と打ったときの振る舞いが違い、窓の中だけ別の操作を覚える要があったため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: ask = [fav](fav はチェックボックスの列)の窓
+  - When: fav の欄を開く
+  - Then: 候補に true・false・なし が並ぶ(セルに Tab で着いたときと同じ)。
+- Acceptance:
+  - Given: `[new_note.set] due = "{date+7}"`、ask = [due](due は日付の列)の窓で、due の欄に 7日後の日付が入っている
+  - When: `2026-12-01` と打って Enter
+  - Then: 作ったノートの due は 2026-12-01(前もって入れた日付に続けて打たない)。
+- Acceptance:
+  - Given: ask = [status](`[rules.status] values = ["todo", "done"]`)、`[new_note.set] status = "todo"` の窓
+  - When: status の欄で `done` と打って Enter
+  - Then: 作ったノートの status は done。
+- Needs: utest
+
+#### 新しいノートの窓で、欄の上に候補の窓(値の候補のリスト・カレンダー・リストの値の付け外しの窓)が出ているときの Esc は、その候補の窓だけを閉じ、新しいノートの窓と、ほかの欄の値・その欄に打った文字を残すべき
+`req~cell-edit.new-note-form-esc-popup~1` P1
+- Rationale: 候補を閉じるつもりの Esc で新しいノートの窓ごと閉じ、打った名前や URL が消えた(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: `[rules.status] values = ["todo", "done"]`、ask = [url, status] の窓で、名前と url を打ち、status の欄に候補のリストが出ている
+  - When: Esc
+  - Then: 候補のリストが閉じ、窓は開いたまま status の欄の入力が開いていて、名前と url の欄の値が見える。
+- Acceptance:
+  - Given: 同じ窓で候補のリストを閉じた
+  - When: Esc
+  - Then: 窓が閉じ、ノートは作られない(cell-edit.new-note-form-esc)。
+- Acceptance:
+  - Given: ask = [due](due は日付の列)の窓で、due の欄にカレンダーが出ている
+  - When: Esc
+  - Then: カレンダーが閉じ、due の欄の入力は開いたまま。
+- Acceptance:
+  - Given: ask = [tags, priority](tags はリストの列)の窓で、tags の欄の付け外しの窓が出ていて、「仕事」にチェックを付けた
+  - When: Esc
+  - Then: 付け外しの窓が閉じて付けたチェックは入らず、新しいノートの窓は開いたまま tags の欄にいる。
+- Acceptance:
+  - Given: 同じ窓で付け外しの窓を閉じた
+  - When: Enter
+  - Then: tags の欄の付け外しの窓がまた開く(Tab なら priority の欄へ移る)。
+- Needs: utest, stest
+
+#### 新しいノートの窓の欄に出した作れない理由の印(cell-edit.new-note-form-required・cell-edit.new-note-form-bad-name)は、その欄の値を直して決めたら消すべき(直した値でもまだ作れなければ、作るときにまた出す)
+`req~cell-edit.new-note-form-error-clear~1` P1
+- Rationale: 必須の欄を空のまま作ろうとして出た「! 必須」の印が、値を入れたあとも残り、まだ作れないように見えた(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: `required = ["due"]`、ask = [due, priority] の窓で、due を空のまま Ctrl+S して due の欄に「! 必須」の印が出た
+  - When: due の欄に `2026-10-05` と打って Enter
+  - Then: priority の欄に移り、due の欄に `!` の印は無い。
+- Acceptance:
+  - Given: 名前を「c」に決めて priority の欄にいるあいだに、ほかの道具で `c.md` が作られ、Ctrl+S で名前の欄に戻って理由の印が出た
+  - When: 名前を「d」に直して Enter
+  - Then: priority の欄に移り、名前の欄に `!` の印は無い。
+- Acceptance:
+  - Given: 同じ `required = ["due"]` の窓で due の欄に「! 必須」の印が出た
+  - When: due の欄を空のまま Enter
+  - Then: 印は残る(まだ空のため)。
 - Needs: utest
 
 #### 新しいノートの窓の設定は、ビューごとにも決められてよい(mdgrid のビュー、base-view.own-views)
@@ -1217,6 +1319,23 @@
   - When: `name = "{uid}_"`・`hidden = ["id"]`・`set` に `id = "{uid}"` で、名前の欄の `k3f9x2ab_` に続けて `t` と打って作る
   - Then: `k3f9x2ab_t.md` に `id: k3f9x2ab`。
 
+#### `[new_note] name_head = "hide"`(cell-edit.new-note-name-head)のとき、変数 `{name}` は、隠した頭を付ける前の、打った名前(最後の名前の部分)にするべき(本文の雛形・前もって入れる値・`--new-note` で同じ)
+`req~cell-edit.template-vars-name-head~1` P1
+- Rationale: 名前の頭の日付を隠して作る台帳で、本文の雛形の `# {name}` の見出しに `20261125_テスト` と頭が入り、表で見える名前と見出しが違った(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: 今日が 2026-11-25、`[new_note] name = "{date:YYYYMMDD}_"`・`name_head = "hide"`・`body` の雛形が `# {name}`
+  - When: 新しいノートの窓で名前に「テスト」と打って作る
+  - Then: `20261125_テスト.md` ができ、本文は `# テスト`。
+- Acceptance:
+  - Given: 同じ台帳
+  - When: `mdgrid <台帳> --new-note テスト`
+  - Then: `20261125_テスト.md` の本文は `# テスト`。
+- Acceptance:
+  - Given: 同じ設定で `name_head` を書かない(名前の欄に `20261125_` が入って出る)
+  - When: 名前の欄を `20261125_テスト` のまま作る
+  - Then: 本文は `# 20261125_テスト`(今までどおり)。
+- Needs: utest, stest
+
 #### 新しいノートの作り方は、設定の `[new_note] mode` で `form`(既定。cell-edit.new-note-form の窓)か `editor` を選べるべき
 `req~cell-edit.new-note-mode-select~2` P1
 - Acceptance:
@@ -1871,6 +1990,11 @@
 `tbd~name-template-other-vars`
 - Decider: 人
 - Provisional: 文字のまま残す(`{time}`・`{now}` は名前に書けない `:` が入り、`{name}`・`{folder}` は名前を決める前で値が無いため)。日付の変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{weekday}`)と印の変数(`{uuid}`・`{uid}`)は埋める。
+
+### `name_head = "hide"` で、`display.note_name` に当たる頭を自分で打った名前(`20250101_古い`)の `{name}` から、その頭を除くか
+`tbd~template-vars-name-own-head`
+- Decider: 人
+- Provisional: 除かない(`{name}` は打った名前のまま `20250101_古い`。頭を付けなかった名前には、隠した頭が無いため)
 
 ### 親の完了で子孫を扱うのを、印の `children` が無く、ビューの設定で親子をオンにしただけの表でも効かせるか
 `tbd~cell-edit.children-done-scope`

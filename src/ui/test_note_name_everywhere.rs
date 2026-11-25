@@ -155,7 +155,7 @@ fn first_top_target(s: &str) -> String {
 
 #[test]
 fn test_note_name_relation_map_linked_rows_and_top_targets() {
-    // [utest -> req~screen.note-name-everywhere~1] note_name = '^\d{8}_' で関係マップの parent のつながりを選ぶと、
+    // [utest -> req~screen.note-name-everywhere~2] note_name = '^\d{8}_' で関係マップの parent のつながりを選ぶと、
     // つながった行は「画面 → 設計」、よく指される行は「設計」。
     let (_t, mut a) = boot("nne_relmap", LINKED, cfg(HEAD), "");
     open_parent_link(&mut a);
@@ -167,7 +167,7 @@ fn test_note_name_relation_map_linked_rows_and_top_targets() {
 
 #[test]
 fn test_note_name_relation_map_without_setting_keeps_names() {
-    // [utest -> req~screen.note-name-everywhere~1] display.note_name を書かない表の関係マップのつながった行は
+    // [utest -> req~screen.note-name-everywhere~2] display.note_name を書かない表の関係マップのつながった行は
     // 「20261121_画面 → 20261120_設計」のまま。
     let (_t, mut a) = boot("nne_relmap_raw", LINKED, Config::default(), "");
     open_parent_link(&mut a);
@@ -189,7 +189,7 @@ fn tree_leaves(s: &str, names: &[&str]) -> Vec<String> {
 
 #[test]
 fn test_note_name_tree_leaf() {
-    // [utest -> req~screen.note-name-everywhere~1] 同じ設定で木の設定のある表の 20261120_設計 は、木の画面の葉の名前が「設計」
+    // [utest -> req~screen.note-name-everywhere~2] 同じ設定で木の設定のある表の 20261120_設計 は、木の画面の葉の名前が「設計」
     // (ノートの欄と同じ見せ方。`.md` も付けない)。
     let (_t, mut a) = boot(
         "nne_tree",
@@ -207,7 +207,7 @@ fn test_note_name_tree_leaf() {
 
 #[test]
 fn test_note_name_tree_leaf_follows_note_path() {
-    // [utest -> req~screen.note-name-everywhere~1] 木の画面の葉も、ノートの欄と同じく note_path に従う:
+    // [utest -> req~screen.note-name-everywhere~2] 木の画面の葉も、ノートの欄と同じく note_path に従う:
     // note_path = "name" で Sites/コードの置き場.md の葉は「コードの置き場」。
     let notes = [
         ("Sites/コードの置き場.md", "---\nfolder: 道具\n---\n"),
@@ -255,7 +255,7 @@ fn across_names(s: &str) -> Vec<String> {
 
 #[test]
 fn test_note_name_across_search_result() {
-    // [utest -> req~screen.note-name-everywhere~1] 同じ設定のワークスペースで横断の検索で「設計」を探すと、結果の名前は「設計」。
+    // [utest -> req~screen.note-name-everywhere~2] 同じ設定のワークスペースで横断の検索で「設計」を探すと、結果の名前は「設計」。
     // 観点: 当てる文字はノートの名前の全部のまま(隠した頭の「20261120」でも当たる)。
     let (t, mut a) = boot(
         "nne_across",
@@ -311,7 +311,7 @@ fn edit_link_cell(a: &mut App, name: &str, col: &str) {
 
 #[test]
 fn test_note_name_link_cell_candidates() {
-    // [utest -> req~screen.note-name-everywhere~1] 同じ設定で、リンクの列(parent)のセルを直すときの候補の名前も
+    // [utest -> req~screen.note-name-everywhere~2] 同じ設定で、リンクの列(parent)のセルを直すときの候補の名前も
     // ノートの欄と同じ見せ方(「設計」「画面」)。書く値は今までどおり完全な名前のリンク。
     let (_t, mut a) = boot("nne_link_cell", LINK_CELLS, cfg(HEAD), "");
     edit_link_cell(&mut a, "画面", "parent");
@@ -335,7 +335,7 @@ fn test_note_name_link_cell_candidates() {
 
 #[test]
 fn test_note_name_link_list_cell_candidates() {
-    // [utest -> req~screen.note-name-everywhere~1] リンクのリストの列(related)の付け外しの候補の名前も同じ見せ方。
+    // [utest -> req~screen.note-name-everywhere~2] リンクのリストの列(related)の付け外しの候補の名前も同じ見せ方。
     // 付け外しで書く要素は今までどおり完全な名前のリンク。
     let (_t, mut a) = boot("nne_link_list", LINK_CELLS, cfg(HEAD), "");
     edit_link_cell(&mut a, "画面", "related");
@@ -353,4 +353,66 @@ fn test_note_name_link_list_cell_candidates() {
         .cands
         .iter()
         .any(|c| c.label.as_deref() == Some("画面")));
+}
+
+/// 名前に `name` を含むノートの行を選ぶ。
+fn select_row(a: &mut App, name: &str) {
+    let at = a
+        .rows
+        .iter()
+        .position(|r| a.src.label(r).contains(name))
+        .unwrap_or_else(|| panic!("{name} の行が無い"));
+    a.row = a
+        .slots
+        .iter()
+        .position(|s| *s == super::grid::Slot::Row(at))
+        .unwrap();
+    a.scroll_into_view();
+}
+
+#[test]
+fn test_note_name_linked_rows_list() {
+    // [utest -> req~screen.note-name-everywhere~2] 同じ設定で、「設計」の行で「つながった行」を開くと、一覧の行は
+    // 「Notes › parent ← 画面」で、選ぶと 20261121_画面 の行を開く。
+    let (_t, mut a) = boot("nne_linked_rows", LINKED, cfg(HEAD), "");
+    select_row(&mut a, "設計");
+    a.start_linked_rows();
+    let s = screen(&a);
+    assert!(has_words(&s, &["Notes", "›", "parent", "←", "画面"]), "{s}");
+    assert!(!s.contains("20261121_"), "{s}");
+    press(&mut a, KeyCode::Enter);
+    let row = a.cur_row().expect("選んだ行");
+    assert!(
+        a.src.label(&row).contains("20261121_画面"),
+        "{:?}",
+        a.message
+    );
+}
+
+#[test]
+fn test_note_name_open_link_choices() {
+    // [utest -> req~screen.note-name-everywhere~2] 同じ設定で、「画面」の related が 20261120_設計 と 20261119_要件 を
+    // 指すとき、「行き先を開く」の選ぶ一覧の行は「設計」と「要件」。
+    let notes = [
+        (
+            "20261121_画面.md",
+            "---\nrelated:\n  - \"[[20261120_設計]]\"\n  - \"[[20261119_要件]]\"\n---\n",
+        ),
+        ("20261120_設計.md", "---\nstatus: todo\n---\n"),
+        ("20261119_要件.md", "---\nstatus: todo\n---\n"),
+    ];
+    let (_t, mut a) = boot("nne_open_link", &notes, cfg(HEAD), "");
+    select_row(&mut a, "画面");
+    a.col = a.cols.iter().position(|c| c == "related").unwrap();
+    a.start_open_link();
+    let s = screen(&a);
+    assert!(
+        s.lines().any(|l| words(l).contains(&"設計".to_string())),
+        "{s}"
+    );
+    assert!(
+        s.lines().any(|l| words(l).contains(&"要件".to_string())),
+        "{s}"
+    );
+    assert!(!s.contains("20261120_") && !s.contains("20261119_"), "{s}");
 }

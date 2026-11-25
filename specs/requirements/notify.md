@@ -301,6 +301,34 @@ macOS・Linux・Windows と、WSL の中の mdgrid で、同じ設定が動く�
   - When:
   - Then: 4つの OS の登録の例が写して動く形であり、WSL の例は窓を出さずに動き、cron の理由(デスクトップの通知の宛先の環境変数が無いこと)と直し方がある(読んで判定)。
 
+### 台帳の印に書く
+
+#### ワークスペースの印(workspace.marker)の最上位にも `[[notify]]` を全体の設定と同じ形で書けるべきで、印の項目は、上へたどって最初に見つかる印がその印である表を開いた画面と、その表を開く `--notify` でだけ確かめ、全体の設定の項目と同じ `cond` の項目は、警告せずに印の項目を使うべき
+`req~notify.marker~1` P1
+- Rationale: 台帳の知らせを台帳と一緒に配り、ほかの台帳には出さないため(2026-11-25 に人が「印にも書けるようにする」と決めた)。同じ条件を見張る全体の項目は、台帳では印の項目に置き換わる(条件の名前と同じく印が勝つ。condition.marker-layer)
+- Acceptance:
+  - Given: 印に `[[notify]]`・`cond = "contact"`・`to = ["command"]` を書いた台帳 people で、前の `--notify` のあとに contact に新しく当たった行が1つ
+  - When: `mdgrid people --notify`
+  - Then: コマンドが1回動く。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 印の無いフォルダ tasks で `--notify`
+  - Then: コマンドは動かない。
+- Acceptance:
+  - Given: 全体の設定と印の両方に `cond = "contact"` の項目(全体は `title = "全体"`、印は `title = "台帳"`)
+  - When: 印の台帳で1行が新しく当たる
+  - Then: 題が「台帳」の知らせが1回だけ出て、警告は無い。
+- Needs: utest・stest
+
+#### 範囲の表のうち、項目の条件が使えない表(condition.columns-present)は、確かめずに鳴らさないべき
+`req~notify.columns-present~1` P1
+- Rationale: 担当の列の無い台帳の行を、`actor != "ai"` のような条件で全部鳴らさないため(2026-11-25 に人が決めた)
+- Acceptance:
+  - Given: `cond = "mine"`(`actor != "ai"`)・`scope = "workspace"` の項目で、tasks と、actor の列の無い people の表。初めての確かめは済んでいる
+  - When: people にノートを1つ足して確かめる
+  - Then: people のノートは鳴らない。
+- Needs: utest
+
 ## 未確定事項
 
 ### 設定の `[[notify]]` と旗 `--notify` の名前

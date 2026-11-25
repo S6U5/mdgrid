@@ -458,6 +458,14 @@ wait = { en = "Due this week", ja = "Due this week" }
 text = { en = "The sample config names \"Due this week\" with key = 1. Press 1 to keep only those rows; the settings band shows the condition.", ja = "見本の設定は「Due this week」に key = 1 を付けている。1 でその行だけになり、設定の帯に条件が出る。" }
 
 [[shot]]
+id = "ledger-conditions"
+title = { en = "The ledger's condition on 1", ja = "台帳の条件が 1 番" }
+command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/people/People"]
+keys = ["1"]
+wait = { en = "No contact for 3 days", ja = "No contact for 3 days" }
+text = { en = "examples/people writes \"No contact for 3 days\" in its marker with key = 1. The task conditions of studio.toml (due date, status) have no columns in People, so 1 goes to the ledger's condition.", ja = "examples/people は印に「No contact for 3 days」を key = 1 で書いている。studio.toml のタスクの条件(期限・状態)は People に列が無いので、1 は台帳の条件になる。" }
+
+[[shot]]
 id = "notices"
 title = { en = "The notice box", ja = "通知の欄" }
 command = ["./target/release/mdgrid", "--config", "examples/configs/studio.toml", "examples/studio/Tasks.base"]
@@ -468,9 +476,9 @@ text = { en = "The sample config counts the late tasks with [[notices]]. The box
 id = "notify"
 title = { en = "Get notified when a row matches", ja = "新しく当たった行を知らせる" }
 command = ["./target/release/mdgrid", "--config", "examples/configs/notify.toml", "examples/studio/Tasks"]
-keys = ["2"]
+keys = ["1"]
 wait = { en = "Late", ja = "Late" }
-text = { en = "examples/configs/notify.toml notifies each task that becomes late, through the OS notification and the terminal. The notification itself shows outside mdgrid; here 2 keeps only the rows that match the condition.", ja = "examples/configs/notify.toml は、遅れたタスクを1件ずつ OS の通知と端末に知らせる。知らせは mdgrid の外に出る。画面は、2 でその条件に当たる行だけにしたところ。" }
+text = { en = "examples/configs/notify.toml notifies each task that becomes late, through the OS notification and the terminal. The notification itself shows outside mdgrid; here 1 keeps only the rows that match the condition.", ja = "examples/configs/notify.toml は、遅れたタスクを1件ずつ OS の通知と端末に知らせる。知らせは mdgrid の外に出る。画面は、1 でその条件に当たる行だけにしたところ。" }
 
 [[shot]]
 id = "routine"
@@ -687,6 +695,26 @@ command = ["./target/release/mdgrid", "--config", "examples/themes/paper.toml", 
 ready = "Open"
 env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
 text = { en = "[look] theme = \"paper\" (a light background with a blue accent). Only the colors change; marks such as * and > stay.", ja = "[look] theme = \"paper\"(明るい地・青のアクセント)。変わるのは色だけで、* や > などの印はそのまま。" }
+
+[[shot]]
+id = "look-section"
+title = { en = "Pick a theme on screen", ja = "テーマを画面で選ぶ" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/nord.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
+keys = ["o", "8"]
+wait = { en = "Save to", ja = "保存先" }
+text = { en = "o, then 8: the Look section of the view settings. Save to picks where the choice is kept; the note next to the theme tells where the current one comes from.", ja = "o のあと 8 で、ビューの設定の「見た目」の区画。保存先で残す所を選ぶ。テーマの横は、今のテーマがどこから来たか。" }
+
+[[shot]]
+id = "look-custom"
+title = { en = "Custom colors", ja = "色を自分で決める" }
+command = ["./target/release/mdgrid", "--config", "examples/themes/sumi.toml", "examples/studio/Tasks.base"]
+ready = "Open"
+env = { MDGRID_TODAY = "2026-10-06", COLORTERM = "truecolor" }
+keys = ["o", "8", "j", "Enter", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "Enter", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "j", "Enter", "j", "j", "j", "j", "j", "Enter"]
+wait = { en = "#ea8c34", ja = "#ea8c34" }
+text = { en = "Custom, at the end of the theme list, keeps sumi as the base and changes colors role by role. Here the accent is orange; the other roles keep the theme's colors.", ja = "テーマの一覧の最後の「カスタム」で、sumi を元に役割ごとの色を変える。ここではアクセントを orange にし、ほかの役割はテーマのまま。" }
 
 # ---- The studio sample (examples/studio) for the README ----
 

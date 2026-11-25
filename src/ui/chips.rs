@@ -64,7 +64,7 @@ impl Parts {
     }
 }
 
-fn rgb(app: &App, c: [u8; 3]) -> Option<Color> {
+pub(crate) fn rgb(app: &App, c: [u8; 3]) -> Option<Color> {
     match app.color {
         ColorMode::Indexed => Some(Color::Indexed(to_indexed(c))),
         ColorMode::Rgb => Some(Color::Rgb(c[0], c[1], c[2])),
@@ -174,8 +174,16 @@ fn shape(item: &str) -> &'static str {
 }
 
 /// 値 `items` を部品の形で(SR-36)。`list` はリストの列、そうでなければ札の列(くり返す短い値)。
-/// 部品にしない形(plain)なら None(呼ぶ側が値の文字を使う)。
+/// 部品にしない形(plain)なら None(呼ぶ側が値の文字を使う)。試験から使う(画面は `parts_named`)。
+#[cfg(test)]
 pub(crate) fn parts(app: &App, items: &[String], list: bool) -> Option<Parts> {
+    let pairs: Vec<(String, String)> = items.iter().map(|v| (v.clone(), v.clone())).collect();
+    parts_named(app, &pairs, list)
+}
+
+/// `parts` の、値と見せる文字を分けた形: 要素は (値, 見せる文字)。色・形の記号は値で決め、文字は見せる文字
+/// (`[rules.<列>] labels` の名前。navigation.value-labels-cells)。
+pub(crate) fn parts_named(app: &App, items: &[(String, String)], list: bool) -> Option<Parts> {
     use mdgrid::style::{Status, Tags};
     // 丸い札は Nerd Font のときだけ(無ければ角を落とした札)。
     #[derive(PartialEq)]
@@ -223,51 +231,52 @@ pub(crate) fn parts(app: &App, items: &[String], list: bool) -> Option<Parts> {
         app.palette()
             .map_or([110, 112, 118], |p| mixc(p.fg, p.bg, 0.3)),
     );
-    let item_segs = |v: &String| -> Vec<Seg> {
-        // 値の文字は無害にしてから(端末の制御の文字を画面に出さない)。
-        let v = &super::width::sanitize(v);
+    let item_segs = |(key, shown): &(String, String)| -> Vec<Seg> {
+        // 値の文字は無害にしてから(端末の制御の文字を画面に出さない)。色と形は値 `v`、文字は見せる文字 `t`。
+        let v = &super::width::sanitize(key);
+        let t = &super::width::sanitize(shown);
         let h = hue(app, v);
         match k {
-            K::Dot => vec![("● ".into(), fg_of(app, h)), none(v)],
-            K::Shape => vec![(format!("{} ", shape(v)), fg_of(app, h)), none(v)],
-            K::Text => vec![(v.clone(), fg_of(app, h))],
+            K::Dot => vec![("● ".into(), fg_of(app, h)), none(t)],
+            K::Shape => vec![(format!("{} ", shape(v)), fg_of(app, h)), none(t)],
+            K::Text => vec![(t.clone(), fg_of(app, h))],
             K::Pill | K::Soft => {
                 let (l, r) = if k == K::Pill {
-                    ("\u{e0b6}", "\u{e0b4}")
+                    (LEFT_CAP, RIGHT_CAP)
                 } else {
                     ("▐", "▌")
                 };
                 let cap = chip_bg(app, v).map(|c| Style::default().fg(c));
-                vec![(l.into(), cap), (v.clone(), style(app, v)), (r.into(), cap)]
+                vec![(l.into(), cap), (t.clone(), style(app, v)), (r.into(), cap)]
             }
             // 淡い札。Nerd Font があれば、両端の空白を丸い端の字にする(幅は同じ)。
             K::Tint if !list => {
-                let t = tint(app, v);
-                let dot = t.map(|s| s.fg(rgb(app, h).unwrap_or(Color::Reset)));
-                match tint_caps(app, t) {
-                    Some((l, r)) => vec![l, ("●".into(), dot), (format!(" {v}"), t), r],
-                    None => vec![(" ".into(), t), ("●".into(), dot), (format!(" {v} "), t)],
+                let ts = tint(app, v);
+                let dot = ts.map(|s| s.fg(rgb(app, h).unwrap_or(Color::Reset)));
+                match tint_caps(app, ts) {
+                    Some((l, r)) => vec![l, ("●".into(), dot), (format!(" {t}"), ts), r],
+                    None => vec![(" ".into(), ts), ("●".into(), dot), (format!(" {t} "), ts)],
                 }
             }
             K::Tint => {
-                let t = tint(app, v);
-                match tint_caps(app, t) {
-                    Some((l, r)) => vec![l, (v.clone(), t), r],
-                    None => vec![(format!(" {v} "), t)],
+                let ts = tint(app, v);
+                match tint_caps(app, ts) {
+                    Some((l, r)) => vec![l, (t.clone(), ts), r],
+                    None => vec![(format!(" {t} "), ts)],
                 }
             }
             // 透けない札(値の色をそのまま地に)。Nerd Font があれば両端を丸く。
             K::Solid => {
-                let t = solid(app, v);
-                match tint_caps(app, t) {
-                    Some((l, r)) => vec![l, (v.clone(), t), r],
-                    None => vec![(format!(" {v} "), t)],
+                let ts = solid(app, v);
+                match tint_caps(app, ts) {
+                    Some((l, r)) => vec![l, (t.clone(), ts), r],
+                    None => vec![(format!(" {t} "), ts)],
                 }
             }
-            K::Chip => vec![(format!(" {v} "), style(app, v))],
-            K::Dots => vec![none(v)],
-            K::Hash => vec![(format!("#{v}"), fg_of(app, h))],
-            K::Brackets => vec![("[".into(), dim), (v.clone(), None), ("]".into(), dim)],
+            K::Chip => vec![(format!(" {t} "), style(app, v))],
+            K::Dots => vec![none(t)],
+            K::Hash => vec![(format!("#{t}"), fg_of(app, h))],
+            K::Brackets => vec![("[".into(), dim), (t.clone(), None), ("]".into(), dim)],
         }
     };
     let (lead, sep) = match k {
@@ -333,16 +342,68 @@ pub(crate) fn pill_caps(app: &App, list: bool) -> bool {
         }
 }
 
+/// 丸い札の左と右の端の字(Nerd Font)。端の字の色は札の地の色。
+const LEFT_CAP: &str = "\u{e0b6}";
+const RIGHT_CAP: &str = "\u{e0b4}";
+
+/// screen.window-chip-remnants: 行 `line` の丸い札の端の字のうち、体(端の字の色を地にした字)が隣に無いもの
+/// (左の端は右隣、右の端は左隣)を空白にする。表に重ねた窓が札の体を隠すと、窓の縁の外に端の字だけが残るため。
+/// 体の一部でも見えていれば、端の字は札の一部として残す。字の幅と並びは変えない。
+pub(crate) fn drop_lone_caps(line: &mut ratatui::text::Line<'static>) {
+    use unicode_segmentation::UnicodeSegmentation;
+    if !line
+        .spans
+        .iter()
+        .any(|s| s.content.contains(LEFT_CAP) || s.content.contains(RIGHT_CAP))
+    {
+        return;
+    }
+    // 字ごとの (切れの番号, 字, 見た目)。
+    let base = line.style;
+    let cells: Vec<(usize, String, Style)> = line
+        .spans
+        .iter()
+        .enumerate()
+        .flat_map(|(i, s)| {
+            let st = base.patch(s.style);
+            s.content
+                .graphemes(true)
+                .map(move |g| (i, g.to_string(), st))
+                .collect::<Vec<_>>()
+        })
+        .collect();
+    let bg = |k: Option<usize>| k.and_then(|k| cells.get(k)).and_then(|c| c.2.bg);
+    let lone: Vec<bool> = cells
+        .iter()
+        .enumerate()
+        .map(|(k, (_, g, st))| {
+            let side = match g.as_str() {
+                LEFT_CAP => Some(k + 1),
+                RIGHT_CAP => k.checked_sub(1),
+                _ => return false,
+            };
+            st.fg.is_none() || bg(side) != st.fg
+        })
+        .collect();
+    if !lone.contains(&true) {
+        return;
+    }
+    let mut texts: Vec<String> = vec![String::new(); line.spans.len()];
+    for ((i, g, _), drop) in cells.iter().zip(&lone) {
+        texts[*i].push_str(if *drop { " " } else { g });
+    }
+    for (span, t) in line.spans.iter_mut().zip(texts) {
+        span.content = t.into();
+    }
+}
+
 /// 淡い札の丸い端(Nerd Font のときだけ)。端の字は札の地の色。
 fn tint_caps(app: &App, t: Option<Style>) -> Option<(Seg, Seg)> {
     if !app.nerd_font {
         return None;
     }
     let cap = Style::default().fg(t?.bg?);
-    Some((
-        ("\u{e0b6}".into(), Some(cap)),
-        ("\u{e0b4}".into(), Some(cap)),
-    ))
+    Some(((LEFT_CAP.into(), Some(cap)), (RIGHT_CAP.into(), Some(cap))))
 }
 
 /// 地 `bg` の上で読める文字の色(明るい地には黒、暗い地には白)。

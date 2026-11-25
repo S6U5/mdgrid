@@ -1449,6 +1449,45 @@ impl Expr {
         collect_fixed(&self.node, &mut out);
         out
     }
+
+    /// condition.columns-present: 式が使う列(ノートのキーは `due`、計算の列は `formula.x`。書いた順で重ねない)。
+    /// `file.*` と `this` は、どの表にもあるので入れない。名前の条件(`cond()`)は置き換えた中身の列を入れる。
+    pub fn columns(&self) -> Vec<String> {
+        let mut out = Vec::new();
+        collect_columns(&self.node, &mut out);
+        out
+    }
+}
+
+fn collect_columns(n: &Node, out: &mut Vec<String>) {
+    let push = |c: String, out: &mut Vec<String>| {
+        if !out.contains(&c) {
+            out.push(c);
+        }
+    };
+    match n {
+        Node::Prop(k) => push(k.clone(), out),
+        Node::Formula(k) => push(format!("formula.{k}"), out),
+        Node::Lit(_) | Node::File(_) | Node::This(_) | Node::CondRef(_) | Node::Bad => {}
+        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) | Node::IsTrue(x) => {
+            collect_columns(x, out);
+        }
+        Node::Bin(_, a, b) | Node::Index(a, b) => {
+            collect_columns(a, out);
+            collect_columns(b, out);
+        }
+        Node::List(xs) | Node::Call(_, xs) => {
+            for x in xs {
+                collect_columns(x, out);
+            }
+        }
+        Node::Method(r, _, xs) => {
+            collect_columns(r, out);
+            for x in xs {
+                collect_columns(x, out);
+            }
+        }
+    }
 }
 
 fn uses_this(n: &Node) -> bool {

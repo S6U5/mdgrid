@@ -1918,6 +1918,15 @@ pub const BINDINGS: &[Binding] = &[
         IN_PICK,
         2,
     ),
+    // cell-edit.new-note-form-move: 新しいノートの窓のリストの欄から、前の欄へ(セルの窓では何もしない)。
+    m(
+        Mode::ListPick,
+        "Shift+Tab",
+        Action::CommitPrev,
+        Msg::KeyCommitPrev,
+        IN_PICK,
+        6,
+    ),
     m(
         Mode::ListPick,
         "Enter",

@@ -5,8 +5,8 @@
 //! 空白・Enter は選んだ候補を付けるだけ(既に付いていれば何もしない。新規なら足す)で検索を空に戻す。
 //! tags で `#` を除いた語が空なら検索が空と同じ。窓の一番下の「[ 決める ]」の行の Enter かクリックと、どの行でも
 //! Tab で確定、Esc でやめる、Ctrl+R で開いたときに戻す。下の縁にはこの窓のキーを並べ、クリックでその動作をする
-//! (screen.window-key-hints)。新しいノートの窓の聞く項目(CE-26)では Enter は次の欄へ進むので、「[ 決める ]」の行と
-//! 縁のキーは出さない(窓の下の行に、その窓のキーがある)。
+//! (screen.window-key-hints)。新しいノートの窓のリストの欄(CE-26)でも同じキーで、決めると次の欄へ進む
+//! (cell-edit.new-note-form-move。決める・やめるは new_note.rs が先に受ける)。
 //! リストのセル(列の型がリストか値がリスト)には、どの道(Tab の移動・一括)でも1行の入力を開かない。
 //! 選んだ行(NV-5)を含むときは一括(CE-17): 印は全部の行が持つ `[x]`・一部の行が持つ `[-]`・誰も持たない `[ ]`。
 //! 確定は行ごとに「元の要素に、`[x]` にした要素を足し、`[ ]` にした要素を除いた」並び(触らなかった要素は各行のまま)。
@@ -421,13 +421,19 @@ impl App {
         }
         if let Some(l) = &links {
             super::relations::label_cands(&mut pick.cands, l);
+        } else {
+            // navigation.value-labels-picker: 名前のある要素は「字 名前 値」(付け外しする要素は値のまま)。
+            for c in &mut pick.cands {
+                c.label = self.prof.resolved.value_choice(&col, &c.name);
+            }
         }
         pick
     }
 
-    /// 検索に文字を足す(全角の文字は全角のまま。SR-17)。
+    /// 検索に文字を足す(全角の文字は全角のまま。SR-17)。新しいノートの窓で付け外しの窓を閉じているあいだは捨てる
+    /// (cell-edit.new-note-form-esc-popup)。
     pub(crate) fn list_pick_insert(&mut self, c: char) {
-        if c == '\n' || c == '\r' {
+        if c == '\n' || c == '\r' || self.note_pick_hidden() {
             return;
         }
         if let Some(p) = &mut self.pick {
@@ -436,27 +442,16 @@ impl App {
         }
     }
 
-    /// 窓の一番下に「[ 決める ]」の行と、下の縁にキーを出すか(screen.checklist-keys・screen.window-key-hints)。
-    /// 新しいノートの窓の聞く項目では、Enter が次の欄へ進む(cell-edit.new-note-form-move)ので出さない。
-    pub(crate) fn pick_decide_row(&self) -> bool {
-        self.note.flow.is_none()
-    }
-
     /// リストの選択の動作。
     pub(crate) fn list_pick_action(&mut self, action: Action) {
         let page = self.pick_page();
-        let decide = self.pick_decide_row();
         let Some(p) = &mut self.pick else {
             return self.close_input();
         };
         let rows = p.rows();
-        // 選べる最後の行(「[ 決める ]」の行があればそれ。その行の添字は rows の数)。
-        let last = if decide {
-            rows.len()
-        } else {
-            rows.len().saturating_sub(1)
-        };
-        let on_decide = decide && p.sel >= rows.len();
+        // 選べる最後の行は、窓の一番下の「[ 決める ]」の行(その行の添字は rows の数)。
+        let last = rows.len();
+        let on_decide = p.sel >= rows.len();
         let searching = p.searching();
         match action {
             Action::ListUp => p.sel = p.sel.saturating_sub(1),
@@ -570,19 +565,17 @@ impl App {
 
 /// メッセージ行の案内(リストの選択のとき)。
 pub(crate) fn hint(app: &App) -> Option<String> {
-    if app.mode != Mode::ListPick {
+    if app.mode != Mode::ListPick || app.note_pick_hidden() {
         return None;
     }
     let p = app.pick.as_ref()?;
     let key = |a: Action| keymap::key_for(&app.keys, Mode::ListPick, a).unwrap_or_default();
     // キーの見せ方は表から(SR-4)。検索中は Enter で付ける(外さない)、Space は空白。検索が空なら Enter で付け外し、
-    // Tab で決める(screen.checklist-keys)。新しいノートの窓の聞く項目では Space で付け外し、Enter で次の欄へ。
+    // Tab で決める(screen.checklist-keys。新しいノートの窓のリストの欄も同じ)。
     let keys = if p.searching() {
         Msg::PickKeysSearching.fill(&[&key(Action::Run), &key(Action::Commit)])
-    } else if app.pick_decide_row() {
-        Msg::PickKeys.fill(&[&key(Action::Run), &key(Action::Commit)])
     } else {
-        Msg::PickKeys.fill(&[&key(Action::Toggle), &key(Action::Run)])
+        Msg::PickKeys.fill(&[&key(Action::Run), &key(Action::Commit)])
     };
     Some(if p.bulk {
         Msg::PickHintBulk.fill(&[&p.targets.len(), &keys])
@@ -695,15 +688,13 @@ enum Body {
 }
 
 /// 中身の行の並び: 候補(無ければその旨)と、一番下に「[ 決める ]」の行。
-fn body(app: &App, rows: &[PickRow]) -> Vec<Body> {
+fn body(rows: &[PickRow]) -> Vec<Body> {
     let mut out: Vec<Body> = if rows.is_empty() {
         vec![Body::NoMatch]
     } else {
         (0..rows.len()).map(Body::Row).collect()
     };
-    if app.pick_decide_row() {
-        out.push(Body::Decide);
-    }
+    out.push(Body::Decide);
     out
 }
 
@@ -717,17 +708,16 @@ fn body_at(p: &Pick, rows: &[PickRow], body: &[Body]) -> usize {
 }
 
 /// 下の縁のキー(screen.window-key-hints): 付け外し・決める・やめる。どれもキーの表から。
+/// 新しいノートの窓のリストの欄では、Esc はこの窓だけを閉じる(cell-edit.new-note-form-esc-popup)ので、その名前で。
 fn hints(app: &App) -> Vec<popup::KeyHint> {
-    if !app.pick_decide_row() {
-        return Vec::new();
-    }
+    let esc = app.note.flow.is_some().then_some(Msg::NoteCloseList);
     popup::key_hints(
         app,
         Mode::ListPick,
         &[
             (Action::Run, None),
             (Action::Commit, None),
-            (Action::Cancel, None),
+            (Action::Cancel, esc),
         ],
     )
 }
@@ -735,23 +725,20 @@ fn hints(app: &App) -> Vec<popup::KeyHint> {
 /// `limit` は下の帯より上の行の数。窓は画面の幅と高さに収める(SR-9)。幅は下の縁のキーが全部入るまで広げる
 /// (`popup::widen_for_hints`)。
 fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
-    if app.mode != Mode::ListPick {
+    // cell-edit.new-note-form-esc-popup: 新しいノートの窓で Esc で閉じた付け外しの窓は出さない。
+    if app.mode != Mode::ListPick || app.note_pick_hidden() {
         return None;
     }
     let p = app.pick.as_ref()?;
     let (ax, ay) = anchor(app, w).unwrap_or((0, 0));
     let rows = p.rows();
-    let body = body(app, &rows);
+    let body = body(&rows);
     if w < 8 {
         return None;
     }
     let popup::Place { top, vis } = popup::place_with(ay, body.len(), limit, FRAME, 0)?;
     let (nw, cw) = col_widths(p, w);
-    let decide = if app.pick_decide_row() {
-        1 + width(&popup::decide_label())
-    } else {
-        0
-    };
+    let decide = 1 + width(&popup::decide_label());
     let inner = rows
         .iter()
         .map(|r| 1 + width(&row_text(p, r, nw, cw)))
@@ -784,14 +771,14 @@ impl App {
             return;
         };
         let rows = p.rows();
-        let body = body(self, &rows);
+        let body = body(&rows);
         // 上の縁・検索の行・中身の行・下の縁。
         let first = g.top + 2;
         let bottom = first + g.vis;
         if let Some(dx) = popup::on_bottom(x, y, g.x, g.iw, bottom) {
             if let Some(a) = popup::hint_at(&hints(self), g.iw - 2, "", dx) {
                 self.message = None;
-                self.list_pick_action(a);
+                self.pick_apply(a);
             }
             return;
         }
@@ -808,7 +795,14 @@ impl App {
             p.sel = sel;
         }
         self.message = None;
-        self.list_pick_action(Action::Run);
+        self.pick_apply(Action::Run);
+    }
+
+    /// クリックから来たリストの選択の動作。キーと同じく、新しいノートの窓の決める・やめる(new_note.rs)を先に通す。
+    fn pick_apply(&mut self, action: Action) {
+        if !self.new_note_pick_action(action) {
+            self.list_pick_action(action);
+        }
     }
 }
 
@@ -834,7 +828,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     };
     let tw = g.iw - 2;
     let rows = p.rows();
-    let body = body(app, &rows);
+    let body = body(&rows);
     let (nw, cw) = col_widths(p, w);
     let mut out: Vec<(String, Style)> = Vec::new();
     // 上の縁: 列の名前(一括なら行の数)と、選んだ候補の位置(「[ 決める ]」の行を選んでいれば候補の数だけ)。

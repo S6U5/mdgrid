@@ -15,7 +15,8 @@ use mdgrid::gantt::{self, Unit};
 use mdgrid::i18n::Msg;
 use mdgrid::settings::value_keys;
 use mdgrid::source::RowId;
-use mdgrid::types::{format_date, parse_date, Kind};
+use mdgrid::theme::{indexed_rgb, to_indexed};
+use mdgrid::types::{format_date, parse_date, Kind, WeekStart};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use std::collections::HashMap;
@@ -239,23 +240,114 @@ fn num(v: Option<f64>) -> String {
     v.map_or_else(|| "-".to_string(), chart::fmt_num)
 }
 
-/// 内訳の色(色があるとき)。
+/// 画面の地の色(chart.series-contrast・chart.heatmap-readable): テーマの地、無ければ端末の地(問い合わせた答え)、
+/// 分からなければ暗い地(黒。screen.theme-auto-detect と同じく暗いとみなす)。
+fn ground(app: &App) -> [u8; 3] {
+    app.palette()
+        .map(|p| p.bg)
+        .or(app.term_bg)
+        .unwrap_or([0, 0, 0])
+}
+
+/// 明るい地か(テーマの明暗の判断 `Theme::is_light` と同じ)。
+fn is_light(c: [u8; 3]) -> bool {
+    c.iter().map(|x| u32::from(*x)).sum::<u32>() > 3 * 128
+}
+
+/// 端末に出る色(256 色では、近い番号の色)。色の対比は出る色で比べる。
+fn shown(c: [u8; 3], indexed: bool) -> [u8; 3] {
+    if indexed {
+        indexed_rgb(to_indexed(c)).unwrap_or(c)
+    } else {
+        c
+    }
+}
+
+/// 端末の色にする。
+fn term_color(c: [u8; 3], indexed: bool) -> Color {
+    if indexed {
+        Color::Indexed(to_indexed(c))
+    } else {
+        Color::Rgb(c[0], c[1], c[2])
+    }
+}
+
+/// WCAG の相対輝度。
+fn luminance(c: [u8; 3]) -> f64 {
+    let lin = |v: u8| {
+        let x = f64::from(v) / 255.0;
+        if x <= 0.04045 {
+            x / 12.92
+        } else {
+            ((x + 0.055) / 1.055).powf(2.4)
+        }
+    };
+    0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2])
+}
+
+/// WCAG の色の対比(1〜21)。
+fn contrast(a: [u8; 3], b: [u8; 3]) -> f64 {
+    let (x, y) = (luminance(a), luminance(b));
+    (x.max(y) + 0.05) / (x.min(y) + 0.05)
+}
+
+/// 内訳の色(色があるとき。chart.series-contrast): 暗い地には明るい組、明るい地には濃い組。どれも、どのテーマの地とも
+/// 対比 3 以上(試験が全部のテーマで確かめる)。最後は「その他」の灰。
 fn series_color(app: &App, s: usize) -> Option<Color> {
-    const RGB: [(u8, u8, u8); 6] = [
-        (86, 182, 194),
-        (198, 120, 221),
-        (229, 192, 123),
-        (152, 195, 121),
-        (97, 175, 239),
-        (150, 150, 150),
+    const DARK: [[u8; 3]; 6] = [
+        [86, 182, 194],
+        [198, 120, 221],
+        [229, 192, 123],
+        [152, 195, 121],
+        [97, 175, 239],
+        [150, 150, 150],
     ];
-    const IDX: [u8; 6] = [73, 176, 180, 107, 75, 246];
+    const DARK_IDX: [u8; 6] = [73, 176, 180, 107, 75, 246];
+    const LIGHT: [[u8; 3]; 6] = [
+        [0, 122, 135],
+        [142, 68, 173],
+        [166, 100, 0],
+        [52, 128, 40],
+        [36, 98, 196],
+        [112, 112, 112],
+    ];
     let i = s.min(5);
+    let light = is_light(ground(app));
     match app.color {
         ColorMode::None => None,
-        ColorMode::Indexed => Some(Color::Indexed(IDX[i])),
-        ColorMode::Rgb => Some(Color::Rgb(RGB[i].0, RGB[i].1, RGB[i].2)),
+        ColorMode::Indexed if light => Some(Color::Indexed(to_indexed(LIGHT[i]))),
+        ColorMode::Indexed => Some(Color::Indexed(DARK_IDX[i])),
+        ColorMode::Rgb => Some(term_color(if light { LIGHT[i] } else { DARK[i] }, false)),
     }
+}
+
+/// 積み上げ棒の内訳の塗りの見た目: 字の色は内訳の色。地を埋めない塗りの字(`▓` `▒` `░` `▞` `:` と ASCII の字)は、
+/// 地を内訳の色へ少し寄せて、点の粗い字でも棒の形が画面の地から見分けられるようにする(chart.series-contrast)。
+fn fill_style(app: &App, s: usize, fill: char) -> Style {
+    let Some(col) = series_color(app, s) else {
+        return Style::default();
+    };
+    let st = Style::default().fg(col);
+    let indexed = match (app.color, col) {
+        (_, _) if fill == '█' => return st,
+        (ColorMode::Indexed, Color::Indexed(_)) => true,
+        (ColorMode::Rgb, Color::Rgb(..)) => false,
+        _ => return st,
+    };
+    let rgb = match col {
+        Color::Rgb(r, g, b) => [r, g, b],
+        Color::Indexed(n) => match indexed_rgb(n) {
+            Some(c) => c,
+            None => return st,
+        },
+        _ => return st,
+    };
+    let base = ground(app);
+    let tint = super::look::mix(base, rgb, 0.22);
+    if shown(tint, indexed) == shown(base, indexed) {
+        return st;
+    }
+    st.bg(term_color(tint, indexed))
 }
 
 /// 選んだものの見た目(色なしでは反転。SR-15)。
@@ -642,22 +734,36 @@ impl App {
             } else {
                 MAX_SERIES
             };
-            // CH-4: 上限までの内訳は、行の多い順(値の集め方と列の決まりによらない。同じなら名前の順で、値の無い行も
-            // 多ければ入る)で選ぶ。選んだ内訳は、列の決まりの順 → 行の多い順 → 値の無い行の順に並べる。
+            // CH-4・chart.bar-stacked-top5: 上限までの内訳は、値が数の列(`y`)なら全体の `y` の合計の大きい順、件数なら
+            // 行の多い順(集め方の平均・最小・最大と列の決まりによらない。同じなら名前の順で、値の無い行も多ければ
+            // 入る)で選ぶ。選んだ内訳は、列の決まりの順 → 同じ大きさの順 → 値の無い行の順に並べる。
+            // 散布図は値を集めない(縦の列)ので、件数で選ぶ。
+            let by_sum = r.agg != Agg::Count && r.y.is_some() && r.kind != ChartKind::Scatter;
+            let size = |a: &Acc| -> f64 {
+                if by_sum {
+                    a.value(Agg::Sum).unwrap_or(f64::NEG_INFINITY)
+                } else {
+                    a.rows() as f64
+                }
+            };
             let mut all: Vec<(Option<String>, Acc)> = tot.into_iter().collect();
             all.sort_by(|(ka, a), (kb, b)| {
-                b.rows()
-                    .cmp(&a.rows())
+                size(b)
+                    .total_cmp(&size(a))
                     .then(ka.is_none().cmp(&kb.is_none()))
                     .then_with(|| ka.cmp(kb))
             });
             let rest: Vec<(Option<String>, Acc)> = all.split_off(all.len().min(cap));
             let mut order = all;
-            sort_keys(&mut order, rules.as_deref(), Agg::Count);
+            sort_keys(
+                &mut order,
+                rules.as_deref(),
+                if by_sum { Agg::Sum } else { Agg::Count },
+            );
             let col = r.by.clone().unwrap_or_default();
             let keyed: Vec<(Option<String>, usize)> =
                 order.iter().map(|(k, a)| (k.clone(), a.rows())).collect();
-            let labels = super::freq::labels(self, &col, &keyed);
+            let labels = value_labels(self, &col, &keyed);
             for (i, ((k, _), label)) in order.iter().zip(labels).enumerate() {
                 sidx.insert(k.clone(), i);
                 data.series.push(Series {
@@ -753,28 +859,29 @@ impl App {
             if x_date {
                 let (lo, hi) = (min as i64, max as i64);
                 let len = self.chart_axis_len(r.kind);
-                let mut unit = r.unit.unwrap_or_else(|| gantt::fit_unit(lo, hi, len));
+                let ws = self.week_start;
+                let mut unit = r.unit.unwrap_or_else(|| fit_unit(lo, hi, len, ws));
                 // 折れ線は横の幅に収まる単位まで粗くする(区切りが字より多いと点が重なる)。
                 if r.kind == ChartKind::Line {
-                    while unit != Unit::Month && buckets(lo, hi, unit) > len {
+                    while unit != Unit::Month && buckets(lo, hi, unit, ws) > len {
                         unit = unit.coarser();
                     }
                 }
-                while unit != Unit::Month && buckets(lo, hi, unit) > MAX_BUCKETS {
+                while unit != Unit::Month && buckets(lo, hi, unit, ws) > MAX_BUCKETS {
                     unit = unit.coarser();
                 }
                 // 月でも多すぎる範囲(極端な日付の行)はグラフにせず、範囲を理由に出す。
-                if buckets(lo, hi, unit) > MAX_BUCKETS {
+                if buckets(lo, hi, unit, ws) > MAX_BUCKETS {
                     data.why = Some(Msg::ChartTooWide.fill(&[&format_date(lo), &format_date(hi)]));
                     // 日付の列で分けていることは変わらない(`+` `-` が単位を知らせるように)。
                     data.axis = Axis::Dates {
-                        origin: gantt::floor_unit(lo, unit),
+                        origin: chart::floor_bucket(lo, unit, ws),
                         unit,
                     };
                     return data;
                 }
-                let origin = gantt::floor_unit(lo, unit);
-                let n = buckets(lo, hi, unit);
+                let origin = chart::floor_bucket(lo, unit, ws);
+                let n = buckets(lo, hi, unit, ws);
                 data.items = (0..n)
                     .map(|k| {
                         let s = gantt::cell_start(k as i64, origin, unit);
@@ -843,7 +950,7 @@ impl App {
         sort_keys(&mut order, rules.as_deref(), r.agg);
         let keyed: Vec<(Option<String>, usize)> =
             order.iter().map(|(k, a)| (k.clone(), a.rows())).collect();
-        let labels = super::freq::labels(self, &r.x, &keyed);
+        let labels = value_labels(self, &r.x, &keyed);
         for ((k, _), label) in order.into_iter().zip(labels) {
             if let Some(mut item) = acc.remove(&k) {
                 item.label = if k.is_none() {
@@ -1150,7 +1257,7 @@ impl App {
                 days.iter().copied().min().unwrap_or(0),
                 days.iter().copied().max().unwrap_or(0),
             );
-            if buckets(lo, hi, next) > self.chart_axis_len(ChartKind::Line) {
+            if buckets(lo, hi, next, self.week_start) > self.chart_axis_len(ChartKind::Line) {
                 self.message = Some(Msg::ChartUnitNoRoom.text().into());
                 return;
             }
@@ -1446,10 +1553,19 @@ impl App {
     }
 }
 
-/// `lo..=hi`(日)の区切りの数。
-fn buckets(lo: i64, hi: i64, unit: Unit) -> usize {
-    let origin = gantt::floor_unit(lo.min(hi), unit);
+/// `lo..=hi`(日)の区切りの数(週は `week` の曜日で区切る。chart.buckets-week-start)。
+fn buckets(lo: i64, hi: i64, unit: Unit, week: WeekStart) -> usize {
+    let origin = chart::floor_bucket(lo.min(hi), unit, week);
     usize::try_from(gantt::cell_of(lo.max(hi), origin, unit) + 1).unwrap_or(1)
+}
+
+/// 範囲 `lo..=hi`(日)の区切りが `len` 個に収まる、最も細かい単位(日 → 週 → 月。月でも収まらなければ月)。
+/// `gantt::fit_unit` と同じ決め方で、週の区切りだけ `week` の曜日にする。
+fn fit_unit(lo: i64, hi: i64, len: usize, week: WeekStart) -> Unit {
+    [Unit::Day, Unit::Week]
+        .into_iter()
+        .find(|u| buckets(lo, hi, *u, week) <= len.max(1))
+        .unwrap_or(Unit::Month)
 }
 
 /// 鍵の並べ方(CH-3): 決まりの値の順 → ほかを値の大きい順(同じなら名前の順)→ 値の無い鍵。
@@ -1501,6 +1617,22 @@ fn first_by(cols: &[ColInfo], x: &str, skip: Option<&str>) -> Option<String> {
         .cloned()
         .collect();
     chart::infer_x(&rest)
+}
+
+/// chart.value-labels: 値の鍵の並び `keyed` の見せる名前。列 `col` の決まりに `icons`・`labels` のある値は、まとまりの
+/// 見出しと同じ「字 名前」(navigation.group-values-icon。`value_shown`)、ほかは頻度表と同じ名前(リンクは行き先の
+/// 名前、値の無い鍵は「(なし)」)。絞り込みの鍵(`Item::key`・`Series::key`)は値のまま。
+fn value_labels(app: &App, col: &str, keyed: &[(Option<String>, usize)]) -> Vec<String> {
+    let base = super::freq::labels(app, col, keyed);
+    keyed
+        .iter()
+        .zip(base)
+        .map(|((k, _), label)| {
+            k.as_deref()
+                .and_then(|v| app.prof.resolved.value_shown(col, v))
+                .map_or(label, |s| sanitize(&s))
+        })
+        .collect()
 }
 
 /// 並び `cands` の中で `now` の次(無ければ最初)。候補が1つで、それが今のものなら None。
@@ -1784,7 +1916,9 @@ fn heat_layout(c: &Chart, iw: usize) -> HeatLayout {
         .max()
         .unwrap_or(1);
     let sw = d.series.iter().map(|s| width(&s.label)).max().unwrap_or(1);
-    let cw = (vw + 2).max(sw.min(10)).max(4);
+    // 見出しは 14 字まで(値の名前に幅2の字(Nerd Font のアイコンなど)を付けた「字 名前」の、全角5字の名前が切れない
+    // 幅。chart.value-labels)。
+    let cw = (vw + 2).max(sw.min(14)).max(4);
     let x0 = 1 + lw + 2;
     let shown = (iw.saturating_sub(x0 + 1) / (cw + 1)).max(1);
     let n = d.series.len();
@@ -1837,7 +1971,11 @@ fn body_lines(app: &App, c: &Chart, iw: usize, vis: usize) -> Vec<Line<'static>>
             } else {
                 FILLS[s.min(5)]
             };
-            let st = series_color(app, s).map_or(Style::default(), |col| Style::default().fg(col));
+            let st = if marks {
+                series_color(app, s).map_or(Style::default(), |col| Style::default().fg(col))
+            } else {
+                fill_style(app, s, ch)
+            };
             spans.push(Span::styled(ch.to_string(), st));
             spans.push(Span::raw(format!(" {}  ", sanitize(&se.label))));
         }
@@ -1951,8 +2089,7 @@ fn bar_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<Li
                     } else {
                         FILLS[s.min(5)]
                     };
-                    let st = series_color(app, s)
-                        .map_or(Style::default(), |col| Style::default().fg(col));
+                    let st = fill_style(app, s, ch);
                     spans.push(Span::styled(ch.to_string().repeat(end - at), st));
                     at = end;
                 }
@@ -2173,6 +2310,7 @@ fn heat_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<L
         .flat_map(|i| i.parts.iter().filter_map(|p| p.value(agg)))
         .fold(0.0, f64::max);
     let sel_st = sel_style(app);
+    let paint = heat_paint(app);
     let mut out = Vec::new();
     // 見出し: 横の値。
     let mut head = format!("{}{} ", " ".repeat(1 + lay.lw + 1), g.vbar);
@@ -2215,15 +2353,28 @@ fn heat_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<L
             } else {
                 SHADES[level]
             };
-            let text = format!(
-                "{shade}{}",
-                fit(&num(v), lay.cw.saturating_sub(1), Align::Right)
-            );
-            let mut st = heat_style(app, level);
-            if on_row && j == c.sel2 {
-                st = sel_st;
-            }
+            let text = fit(&num(v), lay.cw.saturating_sub(1), Align::Right);
+            // chart.heatmap-shade-blend: 色のあるときの濃さの字は、ます目の地と同じ色(塊に見せない)。
+            let (shade_st, st) = if on_row && j == c.sel2 {
+                let blend = match (&paint, sel_st.bg) {
+                    (Some(_), Some(b)) => Style::default().fg(b).bg(b),
+                    _ => sel_st,
+                };
+                (blend, sel_st)
+            } else {
+                match (&paint, level.checked_sub(1)) {
+                    (Some(p), Some(i)) => {
+                        let (bg, fg) = p[i];
+                        (
+                            Style::default().fg(bg).bg(bg),
+                            Style::default().fg(fg).bg(bg),
+                        )
+                    }
+                    _ => (Style::default(), Style::default()),
+                }
+            };
             spans.push(Span::raw(" "));
+            spans.push(Span::styled(shade.to_string(), shade_st));
             spans.push(Span::styled(text, st));
         }
         out.push(Line::from(spans));
@@ -2231,18 +2382,74 @@ fn heat_lines(app: &App, c: &Chart, iw: usize, rows: usize, g: &Glyphs) -> Vec<L
     out
 }
 
-/// ヒートマップのます目の地の色(色があるとき。濃さの段 0〜4)。
-fn heat_style(app: &App, level: usize) -> Style {
-    if level == 0 {
-        return Style::default();
+/// ヒートマップの濃さの段 1〜4 の (地の色, 数の字の色)。色を使わない表示では None。
+///
+/// chart.heatmap-readable: 地は、画面の地からテーマのアクセント(列の見出しの色。既定のテーマは青)へ寄せた色で、
+/// 段が上がるほど画面の地から遠い(明るい地では濃く、暗い地では明るく)。256 色で前の段と同じ番号になるときは、
+/// 番号が変わるまで寄せ、アクセントでも変わらなければアクセントから文字の色へ寄せる。数の字は、テーマの文字の色か
+/// 地の色のうち対比 4.5 以上のもの、無ければそれを黒か白へ少しずつ寄せて 4.5 に届いた色。
+fn heat_paint(app: &App) -> Option<[(Color, Color); 4]> {
+    const STEPS: [f32; 4] = [0.3, 0.55, 0.8, 1.0];
+    let indexed = match app.color {
+        ColorMode::None => return None,
+        ColorMode::Indexed => true,
+        ColorMode::Rgb => false,
+    };
+    let base = ground(app);
+    let light = is_light(base);
+    let (text, accent) = match app.palette() {
+        Some(p) => (p.fg, p.colhead),
+        None if light => ([0, 0, 0], [34, 98, 150]),
+        None => ([255, 255, 255], [56, 156, 214]),
+    };
+    let at = |t: f32| {
+        if t <= 1.0 {
+            super::look::mix(base, accent, t)
+        } else {
+            super::look::mix(accent, text, t - 1.0)
+        }
+    };
+    let mut out = [(Color::Reset, Color::Reset); 4];
+    let mut prev = shown(base, indexed);
+    let mut last = 0.0f32;
+    for (k, step) in STEPS.into_iter().enumerate() {
+        let mut t = step.max(last);
+        let mut c = at(t);
+        while shown(c, indexed) == prev && t < 1.95 {
+            t += 0.05;
+            c = at(t);
+        }
+        prev = shown(c, indexed);
+        last = t;
+        let fg = readable_on(c, [text, base], indexed);
+        out[k] = (term_color(c, indexed), term_color(fg, indexed));
     }
-    const RGB: [(u8, u8, u8); 4] = [(32, 52, 74), (34, 82, 120), (40, 118, 168), (56, 156, 214)];
-    const IDX: [u8; 4] = [236, 24, 31, 38];
-    let i = level - 1;
-    match app.color {
-        ColorMode::None => Style::default(),
-        ColorMode::Indexed => Style::default().bg(Color::Indexed(IDX[i])),
-        ColorMode::Rgb => Style::default().bg(Color::Rgb(RGB[i].0, RGB[i].1, RGB[i].2)),
+    Some(out)
+}
+
+/// 地 `cell` の上で対比 4.5 以上になる字の色。`cands` の順に、そのまま → 黒か白(地と逆の向き)へ 1/4 ずつ寄せた色を
+/// 試し、最初に届いた色。どれも届かなければ黒と白の対比の大きい方。
+fn readable_on(cell: [u8; 3], cands: [[u8; 3]; 2], indexed: bool) -> [u8; 3] {
+    const BLACK: [u8; 3] = [0, 0, 0];
+    const WHITE: [u8; 3] = [255, 255, 255];
+    let on = shown(cell, indexed);
+    for t in [0.0, 0.25, 0.5, 0.75, 1.0] {
+        for base in cands {
+            let far = if luminance(base) < luminance(cell) {
+                BLACK
+            } else {
+                WHITE
+            };
+            let c = super::look::mix(base, far, t);
+            if contrast(shown(c, indexed), on) >= 4.5 {
+                return c;
+            }
+        }
+    }
+    if contrast(BLACK, on) >= contrast(WHITE, on) {
+        BLACK
+    } else {
+        WHITE
     }
 }
 

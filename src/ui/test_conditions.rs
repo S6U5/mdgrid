@@ -167,18 +167,21 @@ fn test_condition_hide_always_respects_the_exception() {
 
 #[test]
 fn test_condition_hide_toggle_shows_and_hides_again() {
-    // [utest -> req~condition.hide-toggle~2] `9` で隠した行が出て帯が「far を出す」、もう一度で隠れる。
+    // [utest -> req~condition.hide-toggle~3] key を書いた条件が far だけなら、far に振った `1` で隠した行が出て
+    // 帯が「far を出す」、もう一度で隠れる。書いた数の `9` は何もしない。
     let (_t, mut a) = make("cond-hide-key", NOTES);
     let conf = "[conditions.far]\nexpr = 'due > today() + \"30d\"'\nhide = true\nkey = 9\n";
     let _g = with_conf(&mut a, conf);
     ch(&mut a, '9');
+    assert_eq!(names(&a).len(), 4, "書いた数の 9 は振っていない");
+    ch(&mut a, '1');
     assert_eq!(names(&a).len(), 5);
     assert!(
         a.bar_chips().contains(&"far を出す".to_string()),
         "{:?}",
         a.bar_chips()
     );
-    ch(&mut a, '9');
+    ch(&mut a, '1');
     assert_eq!(names(&a).len(), 4);
 }
 
@@ -197,14 +200,15 @@ fn test_condition_hide_everywhere_on_kanban() {
 
 #[test]
 fn test_condition_any_table_without_the_column() {
-    // [utest -> req~condition.any-table~1] due の無い表で soon → 誤りも警告も無く、どの行も当たらない。
+    // [utest -> req~condition.any-table~1] due の無い表で cond("soon") で絞る → 誤りも警告も無く、どの行も当たらない。
+    // (数字のキーには、使う列の無い soon を振らない。condition.columns-present)
     let notes = [
         ("p.md", "---\ntitle: p\n---\n"),
         ("q.md", "---\ntitle: q\n---\n"),
     ];
     let (_t, mut a) = make("cond-any", &notes);
     let _g = with_conf(&mut a, CONF);
-    ch(&mut a, '1');
+    a.run_expr_filter("cond(\"soon\")");
     assert!(names(&a).is_empty());
     assert!(a.view_error.is_none());
     assert!(a.message.is_none(), "{:?}", a.message);

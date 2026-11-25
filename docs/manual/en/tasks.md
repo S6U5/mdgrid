@@ -75,7 +75,7 @@ Only the notes mdgrid wrote (or created from the screen) enter the commit; other
 | To | Keys |
 |---|---|
 | highlight a word and move between matches | `/`, type, `Enter`; then `n`, `N` |
-| keep only rows containing a word | `\` and type (filters as you type and shows the count); `Esc` clears |
+| keep only rows containing a word | `\` and type (filters as you type and shows the count); `Esc` clears. It looks at the note name and at every value of the note, including hidden columns and columns the view doesn't show |
 | keep only rows with the selected cell's value | `,` (`*` only highlights them) |
 | sort by this column | `s` or click the heading (ascending → descending → off) |
 | build a sort (several columns, directions, order) | `S` or the **Sort** button at the right of the filter bar |
@@ -111,6 +111,8 @@ key = 1
 | print how many rows match | `mdgrid --count --filter 'cond("week")'` (for a tmux status line or a shell prompt) |
 
 Digit keys and the expression filter stay on when you switch views, and clear when you go to another table or open mdgrid again. Removing the item from the settings band clears them too. When nothing is selected and the search box does not filter, `Esc` clears every condition turned on with a digit key or from the notice band at once (conditions with `hide = true` keep their rows hidden).
+
+A condition only one ledger needs, such as "time to get in touch" in a people ledger, goes at the top of that ledger's marker `.mdgrid/workspace.toml`, in the same shape. It works only in the tables of that ledger, and the digit keys start at 1 with the marker's conditions. Task conditions in `config.toml` (due date, owner) get no digit and no help line in a people ledger that has no such columns, so no digit leads to an empty table. `[[notices]]` and `[[notify]]` can go in the marker too.
 
 ![Narrow with a named condition](images/conditions.svg)
 
@@ -447,8 +449,9 @@ The palette's `q!` throws the pending changes away and quits without asking. It 
 ## Create a note
 
 1. Press `a`, or click `+ New` at the right end of the view bar. A form opens with the name and a field for each column.
-2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back. With the mouse, click a field's row to move to it; the keys on the bottom row of the window (Create, Cancel and so on) and the candidates can be clicked too. With `name_head = "hide"`, the name prefix from `[new_note] name` (a date, for example) is not shown in the name field and is added when the note is made (`"show"`, the default, puts it in the field); each field takes the input for its type (candidates, calendar, list).
-3. Press `Ctrl+S` from any field (or `Enter` on the last one). The file is created at once and its row is selected. `Ctrl+E` creates it and opens it in your editor.
+2. Type a name. `sub/name` creates it in a subfolder (made if missing). `Enter` and `Tab` move to the next field, `Shift+Tab` back. With the mouse, click a field's row to move to it; the keys on the bottom row of the window (Create, Cancel and so on) and the candidates can be clicked too. With `name_head = "hide"`, the name prefix from `[new_note] name` (a date, for example) is not shown in the name field and is added when the note is made (`"show"`, the default, puts it in the field).
+3. Fill each field the same way as when you edit a cell of that column. A field with candidates shows the list (for a link column, the names of the notes in the linked table), a date field shows the calendar, and a checkbox field offers true and false. A list field opens the check window: `Enter` checks or unchecks a value, and `Tab` or **[ OK ]** moves to the next field. Closing the candidates or the calendar with `Esc` keeps the form and what you typed; a second `Esc` cancels the form.
+4. Press `Ctrl+S` from any field (or `Enter` on the last one; `Tab` on a list field). The file is created at once and its row is selected. `Ctrl+E` creates it and opens it in your editor.
 
 ![The new note form](images/new-note.svg)
 
@@ -465,7 +468,7 @@ You can also create a note from the command line, without the screen. Scripts an
 mdgrid ~/notes/tasks --new-note "Buy milk" --set due=2026-11-20 --set priority=p1 --set tags=home,errand
 ```
 
-- It uses the same settings as the form (the folder, preset values and body template of `new_note`) and prints the path of the note it created.
+- It uses the same settings as the form (the folder, preset values and body template of `new_note`) and prints the path of the note it created. In a ledger whose marker lists several tables, pass a table's folder (`mdgrid ~/notes/research/News --new-note Headline`) to use that table's settings.
 - `--set column=value` is the same as typing into a field of the form, and can be repeated. The value is read by the column type. Separate list items with commas; an empty value (`--set status=`) leaves the column out.
 - For an existing name, a name outside the folder, a value that does not fit the type, or an empty required column, it creates nothing, prints one line with the reason and exits with code 2.
 
@@ -565,6 +568,7 @@ alias standup='mdgrid ~/notes/Tasks.base --view "By owner"'   # a .base, opened 
 
 - Typing `tasks` opens the task table the way you left it.
 - What is not remembered: the quick filter `\` and anything you change with `--readonly` (sorts from a heading or the sort window are remembered).
+- The column order and hidden columns are remembered only after you move a column with `H`/`L` or hide one with `-`. Just opening a view remembers nothing, so a column you later add to the `order` of the `.base` or the marker shows up where you put it. If you change the `order` after moving columns, new columns still go where the `order` puts them, and the columns you moved stay where you moved them.
 - In fish: `alias --save tasks 'mdgrid ~/notes/Tasks'`.
 
 The output side works the same way with a shell function:

@@ -124,7 +124,7 @@ fn test_sr_43_save_profile_keeps_comments() {
 
 #[test]
 fn test_ws_2_add_keeps_table_profile() {
-    // [utest -> req~workspace.palette~2, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~2] 同じ表を足し直しても、手で書いた表のプロファイルは残る。
+    // [utest -> req~workspace.palette~2, req~screen.profile-scopes-files~1, req~screen.profile-scopes-order~3] 同じ表を足し直しても、手で書いた表のプロファイルは残る。
     let dir = tmp("add");
     // どの OS でも絶対パスになるよう、一時フォルダの下の表を指す。
     let table = dir.join("t");

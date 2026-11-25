@@ -581,6 +581,7 @@ fn test_ch_8_b_changes_breakdown_column() {
 #[test]
 fn test_ch_8_plus_minus_change_date_unit() {
     // [utest -> req~chart.keys-unit~1, req~chart.keys-charts~1, req~chart.keys-kind-unfit~1, req~chart.keys-enter~2] 日付の列の棒で、+ で単位を細かく(月 → 週 → 日)、- で粗く。月より粗くはならない。
+    // 週は既定の日曜で区切る(chart.buckets-week-start)。
     let notes = md(&[
         ("alpha", "due: 2026-10-01"),
         ("beta", "due: 2026-10-02"),
@@ -604,12 +605,12 @@ fn test_ch_8_plus_minus_change_date_unit() {
     assert_eq!(
         c.items(),
         want(&[
-            ("2026-09-28", "2"),
-            ("2026-10-05", "0"),
-            ("2026-10-12", "0"),
-            ("2026-10-19", "0"),
-            ("2026-10-26", "0"),
-            ("2026-11-02", "1"),
+            ("2026-09-27", "2"),
+            ("2026-10-04", "0"),
+            ("2026-10-11", "0"),
+            ("2026-10-18", "0"),
+            ("2026-10-25", "0"),
+            ("2026-11-01", "1"),
         ]),
         "週: {}",
         c.raw

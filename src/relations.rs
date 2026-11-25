@@ -474,14 +474,23 @@ impl Table {
     }
 }
 
-/// `.base`(ファイルか、印に中身を書いた表。WS-9)の全体の絞り込みの `file.inFolder` のフォルダ(ルートフォルダから。
-/// 一番深いもの)。読めない・書いていないなら None。
-fn base_folder(path: &Path) -> Option<String> {
+/// 表のパスが `.base`(ファイルか、印に中身を書いた表。WS-9)なら、読んだもの。`.base` でない・読めないなら None。
+/// ほかの表の列の名前(displayName)を引くのにも使う(base-view.display-name-everywhere)。
+pub fn table_base(path: &Path) -> Option<crate::base::Base> {
+    if path.extension().is_none_or(|x| x != "base") {
+        return None;
+    }
     let text = match crate::workspace::inline_base(path) {
         Some((json, _)) => json,
         None => crate::textfile::read_text(path).ok()?,
     };
-    let base = crate::base::parse(&text).ok()?;
+    crate::base::parse(&text).ok()
+}
+
+/// `.base`(ファイルか、印に中身を書いた表。WS-9)の全体の絞り込みの `file.inFolder` のフォルダ(ルートフォルダから。
+/// 一番深いもの)。読めない・書いていないなら None。
+fn base_folder(path: &Path) -> Option<String> {
+    let base = table_base(path)?;
     let exprs = base.filter_exprs(&mut Vec::new());
     crate::newnote::view_folder(&exprs).filter(|f| !f.is_empty())
 }

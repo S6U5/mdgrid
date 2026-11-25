@@ -40,6 +40,8 @@ theme = { light = "paper", dark = "saas-dark" }
 
 `[look.colors]` overrides single colors of the theme (`accent`, `selection`, …) and `[look.colors.values]` gives a value its own color (`done = "green"`).
 
+Themes and role colors can also be picked on screen: in the "Look" section of the view settings (`o`), choose a theme from the list, or pick Custom at the end of the list to change the current theme's colors role by role. See [Themes](themes.md#how-to-choose).
+
 ## Shapes of parts: style
 
 `[look] preset` picks a whole set of part shapes, and `[look.style]` overrides one part each.
@@ -133,7 +135,9 @@ path = "tasks"
 theme = "dracula"         # only the tasks table
 ```
 
-On the screen, open the view settings (`o`) and go to the "Look" section. "Save to" chooses where the theme and parts are kept: global (`ui.toml`), this workspace (`workspaces.toml`), this table (`views.toml`) or this view. Next to the theme and parts, `(this table)` and the like show where the current value comes from. "Remove the override of this place" goes back to the wider place. mdgrid never writes `config.toml` or the workspace marker; for a marker workspace, write the look into the marker by hand.
+On the screen, open the view settings (`o`) and go to the "Look" section. "Save to" chooses where the theme and parts are kept: global (`ui.toml`), this workspace (`workspaces.toml`), this table (`views.toml`) or this view. Next to the theme and parts, `(this table)` and the like show where the current value comes from; a value from the marker shows `(marker)`. "Remove the override of this place" goes back to the wider place. mdgrid never writes `config.toml` or the workspace marker; for a marker workspace, write the look into the marker by hand.
+
+The `[look]` in a marker is the look the ledger's author suggests. If a ledger you share says dozy-pink, the theme, parts and colors the people who open it chose in their own `config.toml` or on screen still win, whatever place they saved them to. When places are layered, a marker's `[look]` counts as wider than global (just above the defaults). The other sections of a marker, such as `[display]`, stay at the workspace level as before.
 
 A `preset` in a narrower place drops the part shapes of wider places, and a `theme` drops their role colors, so a table that picks its own set gets that whole set. `mdgrid <table> --print-config --resolved` shows what applies to a table and where each value comes from.
 

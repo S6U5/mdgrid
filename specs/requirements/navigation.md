@@ -41,6 +41,23 @@
   - When: `\` で上の欄に入り「会議」と打つ
   - Then: 「会議」を含む行だけ。
 
+#### 行を絞る検索(`\`)は、ノートの名前と、その表の全部の列(ビューの列と隠した列、ビューに出していないキーも含むノートのフロントマターの値)に当て、当たった行の見せ方は今のまま変えないべき
+`req~navigation.search-scope~1` P1
+- Rationale: ビューに出ている列だけを見ていたので、読み(kana)の列を出していないビューで「あんどう」と打っても「安藤」が当たらなかったため(2026-11-25 の実地の操作で見つかった)。navigation.search-incremental に範囲の決まりが無かった
+- Acceptance:
+  - Given: 人の表で、kana を出していないビューと、kana が「あんどう」の「安藤」のノート
+  - When: `\` で「あんどう」と打つ
+  - Then: 「安藤」の行が残り、ほかの行は消える。
+- Acceptance:
+  - Given: 同じ表で、kana を出したビューの kana の列を隠した
+  - When: `\` で「あんどう」と打つ
+  - Then: 「安藤」の行が残る。
+- Acceptance:
+  - Given: `display.note_name` で頭を隠したノート `20261015_資料を作る.md`
+  - When: `\` で `20261015` と打つ
+  - Then: その行が残る(ノートの名前は全部の文字で当てる。screen.note-name-search-kept)。
+- Needs: utest
+
 #### 検索の入力は、表の上の検索の欄(navigation.search-box。`\` かクリックで入る)があればそこで、欄を出さない設定なら最下行で行うべき
 `req~navigation.search-input-place~2` P1
 - Acceptance:
@@ -1264,13 +1281,13 @@
   - Then: 今までどおり、値の文字の順。
 - Needs: utest
 
-#### `[rules.<列>]` に `icons = { <値> = "<字>" }` と `labels = { <値> = "<名前>" }` を書いてよく、その列のまとまりの見出しとカンバンのレーンの題を「字 名前」(書かない値は値のまま)で見せ、ノートに書く値・セルの値・絞り込み・検索・出力は値のままにするべき
-`req~navigation.group-values-icon~1` P1
-- Rationale: まとまりを、英語の値(todo)ではなく、アイコンと自分の言葉(「未着手」)で見分けるため。式で見出しの文字を作る回り道(式の値の文字の順で並ぶ)をやめる(2026-11-24 に人が「グルーピングで分けるならアイコンも設定」「値の候補に書く」と決めた)。字は Nerd Font の字でもよく、人が書いた字をそのまま出す
+#### `[rules.<列>]` に `icons = { <値> = "<字>" }` と `labels = { <値> = "<名前>" }` を書いてよく、その列のまとまりの見出しとカンバンのレーンの題を「字 名前」(書かない値は値のまま)で見せ、ノートに書く値と出力は値のままにするべき(セルなど、値を見せるほかの所は navigation.value-labels-cells)
+`req~navigation.group-values-icon~2` P1
+- Rationale: まとまりを、英語の値(todo)ではなく、アイコンと自分の言葉(「未着手」)で見分けるため。式で見出しの文字を作る回り道(式の値の文字の順で並ぶ)をやめる(2026-11-24 に人が「グルーピングで分けるならアイコンも設定」「値の候補に書く」と決めた)。字は Nerd Font の字でもよく、人が書いた字をそのまま出す。2026-11-25 に人がセルにも出すと決めたので、セルの見せ方は navigation.value-labels-cells に移した
 - Acceptance:
   - Given: `[rules.status]` に `values = ["todo", "doing"]`・`icons = { todo = "○" }`・`labels = { todo = "未着手", doing = "進行中" }`
   - When: status でグループ分けする
-  - Then: まとまりの見出しは「○ 未着手」と「進行中」で、todo の行の status のセルは `todo` のまま。
+  - Then: まとまりの見出しは「○ 未着手」と「進行中」。
 - Acceptance:
   - Given: 同じ設定で、`kanban = { column = "status" }` の表
   - When: カンバンで開く
@@ -1285,9 +1302,9 @@
   - Then: cli.config-file-warning-form の形で `icons.blocked` を言う警告1行で、その字は使わない。
 - Needs: utest
 
-#### 値の候補の窓(セルを直すときと新しいノートの窓)は、`[rules.<列>] labels` に名前のある値を「字 名前 値」(例「○ 未着手 todo」)で見せ、書く値は値のままにするべき
-`req~navigation.value-labels-picker~1` P1
-- Rationale: まとまりの見出しとカンバンのレーンは「未着手」なのに、値を選ぶ窓は todo だけで、どの名前の値かが分からなかったため(2026-11-25 の実地の操作で見つかった)。どの値を書くかが見えるよう、名前に値を添える
+#### 値を選ぶ窓(セルを直すときと新しいノートの窓の値の候補・リストの値の付け外しの窓・絞り込みの窓とビューの設定の値の一覧・値の件数の窓)は、`[rules.<列>] labels` に名前のある値を「字 名前 値」(例「○ 未着手 todo」)で見せ、書く値と絞る値は値のままにするべき
+`req~navigation.value-labels-picker~2` P1
+- Rationale: まとまりの見出しとカンバンのレーンは「未着手」なのに、値を選ぶ窓は todo だけで、どの名前の値かが分からなかったため(2026-11-25 の実地の操作で見つかった)。どの値を書くかが見えるよう、名前に値を添える。セルも名前で見せる(navigation.value-labels-cells)ので、値を選ぶ窓はどれも同じに名前と値を並べる
 - Acceptance:
   - Given: `[rules.status]` に `values = ["todo", "doing"]`・`labels = { todo = "未着手" }`
   - When: status のセルを直して候補を出す
@@ -1297,10 +1314,63 @@
   - When: status の欄に来る
   - Then: 候補は「未着手 todo」と「doing」。
 - Acceptance:
-  - Given: 同じ設定
-  - When: 表を描く
-  - Then: status のセルは `todo` のまま(tbd~navigation.value-labels-cells)。
+  - Given: 同じ設定で、`[new_note.set] status = "todo"` の表
+  - When: 新しいノートの窓を開く
+  - Then: status の欄の値は「未着手 todo」と出どころ「(設定から)」で、作ったノートには `status: todo` と書く。
+- Acceptance:
+  - Given: `[rules.tags]` に `values = ["a", "b"]`・`labels = { a = "甲" }` で、tags が `[a]` の行
+  - When: tags のセルでリストの値の付け外しの窓を開く
+  - Then: 候補の行は「甲 a」と「b」で、「甲 a」の行の印は `[x]`。
+- Acceptance:
+  - Given: status の設定と、status が todo の行と doing の行
+  - When: 絞り込みの窓で status の値の一覧を出す
+  - Then: 一覧の行は「未着手 todo」と「doing」。
+- Acceptance:
+  - Given: 同じ表
+  - When: status の列で値の件数の窓を開く
+  - Then: 項目は「未着手 todo」と「doing」で、「未着手 todo」で Enter を押すと status が todo の行だけが残る。
 - Needs: utest
+
+#### `[rules.<列>] labels`・`icons` に名前か字のある値は、値を見せる所(表のセル(札でも文字でも)・詳細の表示・木の画面の右の欄・縦に並べた表とページの区画の表)で「字 名前」(字だけなら「字 値」)で見せ、ノートに書く値と、`--print`・`--count`・CSV などの書き出しは値のままにするべき
+`req~navigation.value-labels-cells~1` P1
+- Rationale: まとまりの見出しとカンバンのレーンは「読んでる」なのに、セルは reading のままで、同じ値が所によって違う言葉に見えたため(2026-11-25 の台帳の実地の操作)。2026-11-25 に人が「セルにも出す」と決めた。書き出しはほかの道具が読むので値のまま。名前は values に書いた値にだけ当てる(navigation.group-values-icon と同じ)
+- Acceptance:
+  - Given: `[rules.status]` に `values = ["todo", "doing", "done"]`・`icons = { todo = "○" }`・`labels = { todo = "未着手", doing = "進行中" }` と、status が todo・doing・done・blocked の行の表(色を使わない表示)
+  - When: 表を描く
+  - Then: status のセルは「○ 未着手」・「進行中」・`done`・`!blocked`(values に無い値は名前を当てずに、決まりに合わない印を付ける)。
+- Acceptance:
+  - Given: 同じ設定で、色のある表示で status の列を札にした表(`[look.columns] status = "chip"`)
+  - When: 表を描く
+  - Then: todo の行の札の文字は「○ 未着手」で、札の色は値 todo の札の色(名前で色を変えない)。
+- Acceptance:
+  - Given: `[rules.tags]` に `values = ["a", "b"]`・`labels = { a = "甲" }` で、tags が `[a, b]` の行(色を使わない表示)
+  - When: 表を描く
+  - Then: tags のセルは `[甲, b]`。
+- Acceptance:
+  - Given: `[types] rating = "number"` と `[rules.rating]` に `values = ["1", "2", "3"]`・`labels = { "3" = "★★★" }` で、rating が 3 の行
+  - When: 表を描く
+  - Then: rating のセルは「★★★」。
+- Acceptance:
+  - Given: status の設定と、todo の行
+  - When: 詳細の表示を開く
+  - Then: status の値は「○ 未着手」。
+- Acceptance:
+  - Given: status の設定と、右の欄に status の列を出す木の画面
+  - When: 木の画面を描く
+  - Then: 右の欄の todo の行の status は「○ 未着手」。
+- Acceptance:
+  - Given: status の設定と、todo の行
+  - When: status のセルを候補「進行中 doing」で直す
+  - Then: セルは `*進行中` で、保存するとノートには `status: doing` と書く。
+- Acceptance:
+  - Given: status の設定と、`kanban = { column = "status" }` の表の todo の札
+  - When: カンバンで札を doing のレーンへ動かす
+  - Then: メッセージ行の知らせは「○ 未着手 → 進行中」の形で、ためた値は `doing`。
+- Acceptance:
+  - Given: status の設定と、todo の行
+  - When: `--print --format csv` で書き出す
+  - Then: status の値は `todo`。
+- Needs: utest・stest
 
 #### 設定を `.base` のビューの既定(`.base` なしなら何もしない状態)に戻す操作を持つべき
 `req~navigation.settings-reset-default~1` P1
@@ -1462,7 +1532,7 @@
 
 ## 未確定事項
 
-### 値の見せる名前とアイコンを、セルにも出すか
-`tbd~navigation.value-labels-cells`
+### 簡易の絞り込みと検索を、値の見せる名前でも当てるか
+`tbd~navigation.value-labels-match`
 - Decider: 人
-- Provisional: 出さない(セルは値を直す所なので値のまま。まとまりの見出しとカンバンのレーンと、値の候補の窓(navigation.value-labels-picker)だけ)
+- Provisional: 当てる(セルが「未着手」と見えるので、`\` の簡易の絞り込みと `/` の検索は、値 `todo` でも名前「未着手」でも当たる。設定のフィルター・式の絞り込み・同じ値の絞り込みは値で比べる)

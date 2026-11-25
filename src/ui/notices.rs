@@ -18,8 +18,9 @@ use std::sync::mpsc::{self, Receiver};
 /// 表ごとの数(表の名前, パス, 数か読めなかった理由)。
 pub(crate) type PerTable = Vec<(String, PathBuf, Result<usize, String>)>;
 
-/// 裏の糸で数える項目(項目の添字, 数える表(名前, パス), 条件の式)。
-type Job = (usize, Vec<(String, PathBuf)>, Expr);
+/// 裏の糸で数える項目(項目の添字, 数える表(名前, パス), 条件の名前)。条件は表ごとに、その表の印と重ね直す
+/// (notice.columns-present)。
+type Job = (usize, Vec<(String, PathBuf)>, String);
 
 /// 通知の欄の状態。
 #[derive(Default)]
@@ -80,8 +81,10 @@ impl App {
                             self.notice.counts[k] =
                                 Some(vec![(self.table_name(), PathBuf::new(), Ok(here))]);
                         }
-                        Scope::Workspace => jobs.push((k, self.notice_places(None), e)),
-                        Scope::Tables(names) => jobs.push((k, self.notice_places(Some(&names)), e)),
+                        Scope::Workspace => jobs.push((k, self.notice_places(None), cond)),
+                        Scope::Tables(names) => {
+                            jobs.push((k, self.notice_places(Some(&names)), cond));
+                        }
                     }
                 }
             }
@@ -91,15 +94,11 @@ impl App {
             return;
         }
         let (tx, rx) = mpsc::channel();
-        let hides: Vec<Expr> = self
-            .hiding()
-            .iter()
-            .filter_map(|c| self.cond.all.expr(&c.name).cloned())
-            .collect();
+        let global = self.cond.global.clone();
         let (today, now) = (self.today, self.now);
         std::thread::spawn(move || {
-            for (k, places, e) in jobs {
-                let per = crate::count_tables(&places, &e, &hides, today, now);
+            for (k, places, cond) in jobs {
+                let per = crate::count_tables(&places, &cond, &global, today, now);
                 if tx.send((generation, k, per)).is_err() {
                     return;
                 }
@@ -190,8 +189,12 @@ impl App {
                     cond,
                     text,
                     show_zero,
-                    ..
+                    scope,
                 } => {
+                    // notice.columns-present: 今の表だけを数える項目は、今の表で条件が使えなければ出さない。
+                    if *scope == Scope::Table && !self.cond_usable(cond) {
+                        continue;
+                    }
                     let label = self
                         .cond
                         .all

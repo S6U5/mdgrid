@@ -49,7 +49,11 @@ impl App {
         if s.no_color {
             self.color = ColorMode::None;
         }
-        warnings.extend(self.configure(&s.config));
+        // condition.marker・notice.marker・notify.marker: 開く表の印の名前の条件・通知の欄・知らせを、全体の設定に重ねる。
+        let home = std::env::var_os("HOME").map(PathBuf::from);
+        let (config, warns) = config::for_table(&s.config, &s.target, home.as_deref());
+        warnings.extend(warns);
+        warnings.extend(self.configure(&config));
         // CE-25: 作る場所の一覧(起動の引数の順。`.base` はそのフォルダ。同じフォルダは1つ)。
         self.note.places = super::new_note::places(self.src.as_ref(), &s.target, s.base.is_some());
         if s.readonly {
@@ -196,8 +200,21 @@ impl App {
 
     fn restore_state_only(&mut self) {
         let slot = self.store.as_ref().map(|st| self.state_slot(&st.dir));
+        let marker = self.marker_order();
         if let (Some(st), Some((dir, view))) = (&mut self.store, slot) {
-            self.saved = config::load_state(&dir, &st.target, &view);
+            let (saved, before) = config::load_state_with_base(&dir, &st.target, &view);
+            self.saved = saved;
+            // screen.state-store-follow-order: 印の order が覚えたときから変わったら、order に合わせ、人の動かした
+            // 列のうち食い違わないものだけを残す。控えの無い前の版の並びは、order に合わせる
+            // (tbd~screen.state-store-legacy-order)。
+            if let Some(now) = &marker {
+                match before {
+                    Some(b) if &b == now => {}
+                    Some(b) => self.saved.order = config::follow_order(&b, &self.saved.order, now),
+                    None if !self.saved.order.is_empty() => self.saved.order.clone_from(now),
+                    None => {}
+                }
+            }
             st.shown = true;
             // NV-17: ビューの設定もビューごとの状態から。
             self.settings = self.saved.settings.clone();
@@ -219,6 +236,19 @@ impl App {
             self.saved.settings = nv.settings.clone();
             self.settings = nv.settings;
         }
+    }
+
+    /// screen.state-store-follow-order: 今のビューの印(`.base`・印の `[table.base]`)の `order`。mdgrid のビューと、
+    /// `order` の無いビューでは None。
+    pub(crate) fn marker_order(&self) -> Option<Vec<String>> {
+        if self.native_view().is_some() {
+            return None;
+        }
+        self.base
+            .as_ref()
+            .and_then(|b| b.base.views.get(b.view))
+            .map(|v| v.order.clone())
+            .filter(|o| !o.is_empty())
     }
 
     /// 表に新しく現れた列を置く(SR-12): 状態の並びにある列はその順の位置に、状態で隠した列は隠し、
@@ -307,7 +337,21 @@ impl App {
         let mut state = self.view_state();
         // mdgrid のビューの状態は、どの定義の上に重ねたかの指紋を持つ(BV-20)。
         state.view = self.native_view().map(super::native_views::fingerprint);
-        if let Err(e) = config::save_state(&dir, &st.target, &view, &state) {
+        // screen.state-store-arranged-only: 列の並びと隠す列は、人が動かすか隠したときだけ覚える(並びが状態の無いときと
+        // 同じで隠した列も無ければ書かない)。覚えるときは、そのときの印の order の控えを添える。
+        let mut base = None;
+        if self.native_view().is_none() {
+            let marker = self.marker_order();
+            let natural = marker.as_ref().unwrap_or(&self.built.natural);
+            if state.hidden.is_empty() && &state.order == natural {
+                state.order.clear();
+            } else {
+                base = marker;
+            }
+        }
+        if let Err(e) =
+            config::save_state_with_base(&dir, &st.target, &view, &state, base.as_deref())
+        {
             self.message = Some(Msg::StateUnwritable.fill(&[&e]));
         }
     }

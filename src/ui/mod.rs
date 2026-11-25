@@ -133,6 +133,10 @@ fn paint(
 ) {
     let full = frame.area();
     let area = draw_area(frame);
+    // screen.window-chip-remnants: 重ねた窓に体を隠された札の丸い端の字を空白にする(どの窓でも)。
+    for line in &mut lines {
+        chips::drop_lone_caps(line);
+    }
     // SR-10: `TERM=dumb` では絵文字を出さない(同じ幅の `?` と空白に置き換えるので、桁はずれない)。
     if app.no_emoji {
         for line in &mut lines {
@@ -250,6 +254,8 @@ mod test_calendar;
 #[cfg(test)]
 mod test_calendar_seconds;
 #[cfg(test)]
+mod test_cell_marks;
+#[cfg(test)]
 mod test_chart;
 #[cfg(test)]
 mod test_chart2;
@@ -261,6 +267,8 @@ mod test_chart_fix;
 mod test_chart_fix2;
 #[cfg(test)]
 mod test_chart_fix3;
+#[cfg(test)]
+mod test_chart_fix4;
 #[cfg(test)]
 mod test_checkbox;
 #[cfg(test)]
@@ -380,6 +388,8 @@ mod test_note_form;
 #[cfg(test)]
 mod test_note_form_mouse;
 #[cfg(test)]
+mod test_note_form_same;
+#[cfg(test)]
 mod test_note_time;
 #[cfg(test)]
 mod test_padding_default_one;
@@ -394,6 +404,8 @@ mod test_places_more;
 #[cfg(test)]
 mod test_problems;
 #[cfg(test)]
+mod test_read_only_reason;
+#[cfg(test)]
 mod test_recent;
 #[cfg(test)]
 mod test_relations;
@@ -405,6 +417,8 @@ mod test_relmap;
 mod test_relmap_click;
 #[cfg(test)]
 mod test_relmap_er;
+#[cfg(test)]
+mod test_relmap_names;
 #[cfg(test)]
 mod test_relmap_new_note;
 #[cfg(test)]
@@ -467,6 +481,8 @@ mod test_time_picker;
 mod test_trust_notices;
 #[cfg(test)]
 mod test_url_links;
+#[cfg(test)]
+mod test_value_labels_cells;
 #[cfg(test)]
 mod test_value_labels_list;
 #[cfg(test)]
@@ -532,9 +548,13 @@ mod test_language_more;
 #[cfg(test)]
 mod test_layout_util;
 #[cfg(test)]
+mod test_ledger_conditions;
+#[cfg(test)]
 mod test_link_labels;
 #[cfg(test)]
 mod test_list_type;
+#[cfg(test)]
+mod test_look_custom;
 #[cfg(test)]
 mod test_look_keep;
 #[cfg(test)]
@@ -596,6 +616,8 @@ mod test_search_box;
 #[cfg(test)]
 mod test_search_not_found;
 #[cfg(test)]
+mod test_search_scope;
+#[cfg(test)]
 mod test_sessions;
 #[cfg(test)]
 mod test_settings_close;
@@ -615,6 +637,8 @@ mod test_starter;
 mod test_starter_more;
 #[cfg(test)]
 mod test_startup;
+#[cfg(test)]
+mod test_state_order;
 #[cfg(test)]
 mod test_summaries;
 #[cfg(test)]

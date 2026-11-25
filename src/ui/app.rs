@@ -527,6 +527,11 @@ impl App {
         let mut warnings = warnings;
         warnings.extend(keymap::rebind(&mut self.keys, &c.keys));
         warnings.extend(self.configure_conditions(c.conditions.clone()));
+        // notice.columns-present・notify.columns-present: ほかの表は、その表の印を全体の設定の条件に重ね直して数える。
+        self.cond.global = c
+            .ledger
+            .as_ref()
+            .map_or_else(|| c.conditions.clone(), |l| l.global.clone());
         self.configure_notices(c.notices.clone());
         self.configure_notify(c.notify.clone());
         // navigation.across-option: 横断の検索は設定で入れたときだけ。

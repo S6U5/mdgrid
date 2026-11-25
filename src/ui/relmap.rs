@@ -16,6 +16,7 @@ use mdgrid::relations::{self, Table};
 use mdgrid::relmap::{self, Cell, Link, Map, Mark, Role, TableInfo};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
+use std::collections::HashMap;
 
 /// 関係マップの状態(開いたときに読んだ表とつながり)。
 pub(crate) struct RelMap {
@@ -26,6 +27,8 @@ pub(crate) struct RelMap {
     pub sel: usize,
     /// 選んだつながり(links の添字。選んだ表に関わるものだけを ←→ で回る)。
     pub link: Option<usize>,
+    /// 表ごと(infos の添字)の列の名前(キー → 見せる名前。base-view.display-name-everywhere)。
+    titles: Vec<HashMap<String, String>>,
 }
 
 impl RelMap {
@@ -35,6 +38,23 @@ impl RelMap {
         (0..self.links.len())
             .filter(|&k| &self.links[k].from == name || &self.links[k].to == name)
             .collect()
+    }
+
+    /// 表 `t`(infos の添字)の列 `col` の見せる名前(その表の displayName。無ければキーのまま)。
+    fn title(&self, t: usize, col: &str) -> String {
+        self.titles
+            .get(t)
+            .and_then(|m| m.get(col))
+            .cloned()
+            .unwrap_or_else(|| col.to_string())
+    }
+
+    /// 名前 `table` の表の列 `col` の見せる名前。
+    fn title_of(&self, table: &str, col: &str) -> String {
+        match self.infos.iter().position(|i| i.name == table) {
+            Some(t) => self.title(t, col),
+            None => col.to_string(),
+        }
     }
 }
 
@@ -251,7 +271,33 @@ impl App {
                 .and_then(|m| m.iter().find(|(x, _)| x == c))
                 .map(|(_, m)| mark_text(self, *m).to_string())
         };
-        let map = relmap::layout_with(&infos, &links, ascii, &mark);
+        // base-view.display-name-everywhere: 箱と詳細の列の名前は、その列のある表の displayName。
+        let titles: Vec<HashMap<String, String>> = infos
+            .iter()
+            .map(|info| {
+                let ts = self.titles_of(&Table {
+                    name: info.name.clone(),
+                    dir: info.dir.clone(),
+                });
+                let from_links = links
+                    .iter()
+                    .filter(|l| l.from == info.name)
+                    .map(|l| &l.column);
+                info.columns
+                    .iter()
+                    .chain(from_links)
+                    .map(|c| (c.clone(), self.title_in(&ts, c)))
+                    .collect()
+            })
+            .collect();
+        let title = |t: usize, c: &str| {
+            titles
+                .get(t)
+                .and_then(|m| m.get(c))
+                .cloned()
+                .unwrap_or_else(|| c.to_string())
+        };
+        let map = relmap::layout_titled(&infos, &links, ascii, &mark, &title);
         self.leave_screens();
         let mut rm = RelMap {
             infos,
@@ -259,6 +305,7 @@ impl App {
             map,
             sel,
             link: None,
+            titles,
         };
         rm.link = rm.links_of(sel).first().copied();
         self.relmap = Some(rm);
@@ -628,10 +675,12 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
         ])
     };
     let mut out = Vec::new();
-    if let Some(l) = rm.link.map(|k| &rm.links[k]) {
+    if let Some((k, l)) = rm.link.map(|k| (k, &rm.links[k])) {
+        // base-view.display-name-everywhere: 列はその列のある表(元の表)の displayName。
+        let column = rm.title_of(&l.from, &l.column);
         out.push(Line::from(Span::styled(
             fit(
-                &sanitize(&format!("{}.{} → {}", l.from, l.column, l.to)),
+                &sanitize(&format!("{}.{column} → {}", l.from, l.to)),
                 w,
                 Align::Left,
             ),
@@ -646,15 +695,14 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
                 Msg::RelMapManyToOne.text().to_string()
             },
         ));
-        out.push(row(Msg::RelMapColumn.text(), l.column.clone()));
+        out.push(row(Msg::RelMapColumn.text(), column));
         out.push(row(Msg::RelMapTarget.text(), l.to.clone()));
         out.push(row(Msg::RelMapLinks.text(), l.pairs.len().to_string()));
-        // 逆向き: 行き先から元へ戻るつながり(自分へ戻るつながりは、それ自身を逆向きに数えない)。
-        let back: Vec<String> = rm
-            .links
-            .iter()
-            .filter(|x| x.from == l.to && x.to == l.from && !std::ptr::eq(*x, l))
-            .map(|x| x.column.clone())
+        // relations.map-reverse: 逆向きは、行き先から元へ戻るつながりのうち、指し返す組のあるもの(選んだつながり
+        // そのものは数えない)。列はその列のある表の displayName。
+        let back: Vec<String> = relmap::reverse_of(&rm.links, k)
+            .into_iter()
+            .map(|x| rm.title_of(&rm.links[x].from, &rm.links[x].column))
             .collect();
         if !back.is_empty() {
             out.push(row(Msg::RelMapReverse.text(), back.join(", ")));
@@ -684,7 +732,7 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
         out.push(Line::from(fit(Msg::RelMapNoLinks.text(), w, Align::Left)));
         for c in t.columns.iter().take(12) {
             out.push(Line::from(fit(
-                &format!(" {}", sanitize(c)),
+                &format!(" {}", sanitize(&rm.title(rm.sel, c))),
                 w,
                 Align::Left,
             )));
@@ -720,7 +768,12 @@ fn one_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
     let look = super::look::look(app);
     for (k, l) in rm.links.iter().enumerate() {
         let sel = rm.link == Some(k);
-        let text = format!("{}{}", if sel { ">" } else { " " }, relmap::link_text(l));
+        let column = rm.title_of(&l.from, &l.column);
+        let text = format!(
+            "{}{}",
+            if sel { ">" } else { " " },
+            relmap::link_text_as(l, &column)
+        );
         let st = match (&look, sel) {
             (Some(lk), true) => lk.selected(),
             (None, true) => Style::default().add_modifier(Modifier::REVERSED),

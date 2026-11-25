@@ -14,7 +14,7 @@ const ICONS: &str = "[rules.status]\nvalues = [\"todo\", \"doing\"]\nicons = { t
 
 #[test]
 fn test_group_values_icon_reads_icons_and_labels_without_warnings() {
-    // [utest -> req~navigation.group-values-icon~1] icons と labels を警告なしで読み、値の見せる名前は「字 名前」、
+    // [utest -> req~navigation.group-values-icon~2] icons と labels を警告なしで読み、値の見せる名前は「字 名前」、
     // 名前だけなら名前、書かない値は無い(値のまま見せる)。
     let (c, w) = parse(ICONS).expect("読める");
     assert!(w.is_empty(), "{w:?}");
@@ -27,7 +27,7 @@ fn test_group_values_icon_reads_icons_and_labels_without_warnings() {
 
 #[test]
 fn test_group_values_icon_unknown_value_warns_in_file_path_form() {
-    // [utest -> req~navigation.group-values-icon~1] values に無い blocked の字は、cli.config-file-warning-form の形
+    // [utest -> req~navigation.group-values-icon~2] values に無い blocked の字は、cli.config-file-warning-form の形
     // (`config.toml: rules.status.icons.blocked:`)の警告1行で、その字は使わない。
     let text = "[rules.status]\nvalues = [\"todo\", \"doing\"]\nicons = { todo = \"○\", blocked = \"!\" }\n";
     let (c, w) = parse(text).expect("読める");
@@ -43,7 +43,7 @@ fn test_group_values_icon_unknown_value_warns_in_file_path_form() {
 
 #[test]
 fn test_group_values_icon_unknown_label_warns_in_file_path_form() {
-    // [utest -> req~navigation.group-values-icon~1] labels も同じ: values に無い値の名前は `rules.status.labels.blocked` の警告1行で使わない。
+    // [utest -> req~navigation.group-values-icon~2] labels も同じ: values に無い値の名前は `rules.status.labels.blocked` の警告1行で使わない。
     let text = "[rules.status]\nvalues = [\"todo\"]\nlabels = { blocked = \"止まっている\" }\n";
     let (c, w) = parse(text).expect("読める");
     assert_eq!(w.len(), 1, "{w:?}");
@@ -127,7 +127,7 @@ impl Drop for Tmp {
 
 #[test]
 fn test_group_values_icon_print_csv_keeps_values() {
-    // [utest -> req~navigation.group-values-icon~1] 同じ設定で、status でまとめたビューを `--print --format csv` の形にしても、
+    // [utest -> req~navigation.group-values-icon~2, req~navigation.value-labels-cells~1] 同じ設定で、status でまとめたビューを `--print --format csv` の形にしても、
     // status の値は todo・doing のまま(見せる名前と字は出さない)。
     let (c, w) = parse(ICONS).expect("読める");
     assert!(w.is_empty(), "{w:?}");

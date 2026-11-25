@@ -2,18 +2,26 @@
 
 [日本語](../ja/themes.md) · [Contents](index.md)
 
-You can pick one of twelve color themes for the screen (or `auto`, which follows the terminal background). Only the colors change; text and marks (`*` for a pending change, `>` for the selected row, and so on) stay the same.
+You can pick one of twelve color themes for the screen (or `auto`, which follows the terminal background). Starting from a theme, you can also choose the accent and other colors yourself ([Custom](#choose-your-own-colors-custom)). Only the colors change; text and marks (`*` for a pending change, `>` for the selected row, and so on) stay the same.
 
 ## How to choose
 
-Add two lines to the config file (`~/.config/mdgrid/config.toml`):
+The quickest way is on screen. Press `o` to open the view settings, `8` to go to the Look section, and `Enter` on the Theme row to get the list. Pick one and press Apply: the screen changes right away.
+
+![The Look section](images/look-section.svg)
+
+"Save to" at the top of the section decides where the choice is kept. With the default, global, every table opens in that theme (it goes to `ui.toml`). Choose this workspace, this table or this view to change only that place. The note next to the theme, such as "(global)" or "(marker)", tells where the current colors come from.
+
+A theme written in a ledger's marker (`.mdgrid/workspace.toml`) does not override yours. The marker's theme is what the ledger's author suggests, and you get it only until you pick something yourself.
+
+Writing it in the config file (`~/.config/mdgrid/config.toml`) works the same way:
 
 ```toml
 [look]
 theme = "nord"
 ```
 
-A workspace or a single table can have its own theme: see [A look per workspace, table or view](appearance.md#a-look-per-workspace-table-or-view).
+The rules for each place are in [A look per workspace, table or view](appearance.md#a-look-per-workspace-table-or-view).
 
 To try one before changing your config, pass a sample config with `--config` (from the repository root):
 
@@ -36,6 +44,26 @@ mdgrid --config examples/themes/nord.toml /tmp/mdgrid-sample/Tasks.base
 | [`saas-dark`](#saas-dark) | The dark version of saas |
 | [`paper`](#paper) | A light background with a blue accent |
 | `auto` | `saas` on a light terminal background, `sumi` on a dark one. Pick your own pair with `theme = { light = "paper", dark = "saas-dark" }` |
+
+## Choose your own colors (Custom)
+
+The last entry in the theme list, Custom, keeps the current theme as a base and lets you change its sixteen role colors one by one: background, text, accent, selected row and so on. Use it to keep a theme you like and give it your own accent.
+
+![Custom colors](images/look-custom.svg)
+
+Press `Enter` on a role row to see sample colors (fourteen, such as orange and teal). For any other color, pick "#rrggbb (type a color)" at the end of the list and type something like `#e0a458`. "Theme's color" puts the role back to the base theme's color.
+
+Apply keeps the base theme and only the colors you changed. Saved globally, `ui.toml` looks like this:
+
+```toml
+[look]
+theme = "sumi"
+
+[look.colors]
+accent = "#ea8c34"
+```
+
+A look with changed colors shows as "Custom (from sumi)" in the Theme row. Picking a named theme again drops the changed colors. Save as a template to keep the colors too.
 
 ## Gallery
 

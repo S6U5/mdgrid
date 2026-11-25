@@ -74,6 +74,14 @@ Give a name to a condition such as "due within a week" and write it once in the 
 
 [Filter with named conditions](tasks.md#filter-with-named-conditions)
 
+## Conditions and notices per ledger
+
+![The ledger's condition on 1](images/ledger-conditions.svg)
+
+"Not contacted lately" for a people ledger, "payment due soon" for a money ledger: write the conditions, notices and notifications one ledger needs in its marker, and they travel with the ledger. Digit keys start at 1 with the ledger's conditions, and the task conditions in your config stay out of ledgers that have no due date or owner columns. Put them in a starter's marker and every ledger made from it has them.
+
+[Filter with named conditions](tasks.md#filter-with-named-conditions)
+
 ## Notices above the table
 
 ![The notice box](images/notices.svg)
@@ -110,7 +118,7 @@ Was that estimate in a task, or in a project note? Instead of opening one table 
 
 ![Create a note](images/new-note.svg)
 
-`a` (or "+ New" at the right end of the view bar) opens a form with the name and one field per column and writes one note. The folder, the file name and the body template come from the workspace marker. It can also start the file name with today's date or a short id (`{uid}`), and put a UUID (`{uuid}`) in the frontmatter. Keep several body templates in a folder and the form lets you pick one.
+`a` (or "+ New" at the right end of the view bar) opens a form with the name and one field per column and writes one note. The fields take the same candidates and keys as editing a cell, so a link column such as a quote's source lets you pick from the notes of the linked table. The folder, the file name and the body template come from the workspace marker. It can also start the file name with today's date or a short id (`{uid}`), and put a UUID (`{uuid}`) in the frontmatter. Keep several body templates in a folder and the form lets you pick one.
 
 [Create a note](tasks.md#create-a-note)
 
@@ -128,7 +136,7 @@ Press `u` right after creating a note by mistake and it moves to the trash; `Ctr
 
 `o` sets the columns, filters, sorting, grouping and display; save it under a name and it becomes a tab. The sections are numbered, so `3` takes you straight to sorting. Choose "Set as default view" and the folder opens on that view next time.
 
-Group by status and the groups come in the order of the column's allowed values (todo, doing, waiting, done), not the alphabet. Give those values a glyph and a name (`icons`, `labels`) and the headings and kanban lanes read "○ To do", while the notes keep `todo`.
+Group by status and the groups come in the order of the column's allowed values (todo, doing, waiting, done), not the alphabet. Give those values a glyph and a name (`icons`, `labels`) and the headings, the kanban lanes, the cells and the detail view all read "○ To do". When you edit, each choice shows the value after its name ("○ To do todo"), so you see what gets written. The notes and `--print` keep `todo`.
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it), [Column rules](../../config.md#rules)
 
@@ -245,6 +253,14 @@ The screen, `--help`, warnings and the `--print-config` descriptions come in Eng
 Color themes, the shape of chips and checkboxes, row numbers and column lines, the date format: all set in the config, and overridable per workspace, table or view. Compare them in the look catalog and paste the settings.
 
 [Make it look the way you like](appearance.md), [Themes](themes.md), [Look catalog](../../catalog/index.html)
+
+## Pick a theme on screen and choose your own colors
+
+![Custom colors](images/look-custom.svg)
+
+Press `o`, then `8`, for the Look section: pick a theme from the list and Apply shows it at once. Keep it globally and every table uses it, even a ledger whose marker names another theme. Custom, at the end of the list, starts from the current theme and lets you change the accent, the selected row and the other colors one by one, from sample colors or as `#rrggbb`.
+
+[How to choose a theme](themes.md#how-to-choose), [Choose your own colors](themes.md#choose-your-own-colors-custom)
 
 ## Keys and the palette
 

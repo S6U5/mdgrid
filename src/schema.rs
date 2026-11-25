@@ -12,6 +12,8 @@ pub enum Scope {
     Global,
     /// 表のプロファイル: 全体・ワークスペース・表・ビュー。
     Profile,
+    /// condition.marker・notice.marker・notify.marker: 全体と、ワークスペースの印の最上位。
+    Ledger,
 }
 
 impl Scope {
@@ -20,6 +22,7 @@ impl Scope {
         match self {
             Scope::Global => Msg::CfgScopeGlobal,
             Scope::Profile => Msg::CfgScopeProfile,
+            Scope::Ledger => Msg::CfgScopeLedger,
         }
     }
 
@@ -600,7 +603,7 @@ pub const ITEMS: &[Item] = &[
         ty_ja: "表の表([conditions.<名前>] の下に expr・label・key・hide)",
         default: None,
         example: "[conditions.soon]\nexpr = 'due <= today() + \"7d\"'\nkey = 1\n\n[conditions.far]\nexpr = 'start > today() + \"30d\" && !(due <= today() + \"7d\")'\nhide = true\nkey = 9",
-        scope: Scope::Global,
+        scope: Scope::Ledger,
         en: Msg::CfgConditions.en(),
         ja: Msg::CfgConditions.ja(),
         msg: Msg::CfgConditions,
@@ -611,7 +614,7 @@ pub const ITEMS: &[Item] = &[
         ty_ja: "表の並び([[notices]] の下に cond・text・scope・show_zero か note・lines)",
         default: None,
         example: "[[notices]]\ncond = \"overdue\"\ntext = \"{count} overdue\"\nscope = \"workspace\"\n\n[[notices]]\nnote = \"~/notes/inbox.md\"\nlines = 2\n\n[conditions.overdue]\nexpr = 'due < today() && status != \"done\"'",
-        scope: Scope::Global,
+        scope: Scope::Ledger,
         en: Msg::CfgNotices.en(),
         ja: Msg::CfgNotices.ja(),
         msg: Msg::CfgNotices,
@@ -622,7 +625,7 @@ pub const ITEMS: &[Item] = &[
         ty_ja: "表の並び([[notify]] の下に cond・scope・title・text・to・group_over・group_text・command)",
         default: None,
         example: "[[notify]]\ncond = \"remind\"\ntext = \"{title} ({remind})\"\nto = [\"desktop\", \"terminal\"]\n\n[conditions.remind]\nexpr = 'remind <= now() && status != \"done\"'",
-        scope: Scope::Global,
+        scope: Scope::Ledger,
         en: Msg::CfgNotify.en(),
         ja: Msg::CfgNotify.ja(),
         msg: Msg::CfgNotify,
@@ -676,11 +679,11 @@ pub const GLOBAL_KEYS: &[&str] = &[
     "git",
     "keys",
     "templates",
-    "conditions",
-    "notices",
-    "notify",
     "search",
 ];
+
+/// 全体と、ワークスペースの印の最上位にだけ書ける名前(condition.marker・notice.marker・notify.marker)。
+pub const LEDGER_KEYS: &[&str] = &["conditions", "notices", "notify"];
 
 /// 旧い名前(0.3.0 まで)と移った先(CLI-20)。左は旧い道筋、右は新しい道筋。docs の旧い名前の表と突き合わせる。
 pub const LEGACY: &[(&str, &str)] = &[

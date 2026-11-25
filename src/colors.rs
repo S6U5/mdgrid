@@ -88,10 +88,7 @@ impl Colors {
 
     /// テーマの色の表に上書きを当てる。
     pub fn apply(&self, p: Palette) -> Palette {
-        let mut v = [
-            p.bg, p.fg, p.header, p.sel_bg, p.sel_fg, p.band_bg, p.band_fg, p.colhead, p.strong,
-            p.zebra_bg, p.zebra_fg, p.mark, p.add, p.del, p.pending, p.hl_bg,
-        ];
+        let mut v = palette_roles(&p);
         for (slot, o) in v.iter_mut().zip(self.roles.iter()) {
             if let Some(c) = o {
                 *slot = *c;
@@ -116,6 +113,14 @@ impl Colors {
             hl_bg: v[15],
         }
     }
+}
+
+/// テーマの色の表の役割の色(`ROLES` の順)。
+pub fn palette_roles(p: &Palette) -> [[u8; 3]; 16] {
+    [
+        p.bg, p.fg, p.header, p.sel_bg, p.sel_fg, p.band_bg, p.band_fg, p.colhead, p.strong,
+        p.zebra_bg, p.zebra_fg, p.mark, p.add, p.del, p.pending, p.hl_bg,
+    ]
 }
 
 /// `"#rrggbb"` の書き方(画面が書くファイルに色を書くとき)。

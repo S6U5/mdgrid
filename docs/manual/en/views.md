@@ -56,7 +56,7 @@ The `kanban` section of [Key bindings](../../keys.md), [Configuration](../../con
 
 ![The chart screen](images/chart.svg)
 
-`P` counts the rows of the current view and draws a chart: tasks per status, estimates summed per owner, due dates per month, at a glance and without counting the table. There are five kinds, bar, stacked bar, line, scatter and heatmap; `Tab` switches between them, `x` picks the column to split by, `y` the value (a count or the sum of a number column) and `b` the breakdown column. Splitting by a number column gives counts per range (a histogram), and `%` on a stacked bar shows percentages. `Enter` on a bar narrows the table to the rows with that value. Charts you look at often can go in the workspace marker as `chart = { kind = "line", x = "due", unit = "month" }`, and with several of them `[` and `]` move between them; without a setting the screen guesses from columns such as status. The chart screen is there from 0.4.0.
+`P` counts the rows of the current view and draws a chart: tasks per status, estimates summed per owner, due dates per month, at a glance and without counting the table. There are five kinds, bar, stacked bar, line, scatter and heatmap; `Tab` switches between them, `x` picks the column to split by, `y` the value (a count or the sum of a number column) and `b` the breakdown column. Splitting by a number column gives counts per range (a histogram), and `%` on a stacked bar shows percentages. `Enter` on a bar narrows the table to the rows with that value. Charts you look at often can go in the workspace marker as `chart = { kind = "line", x = "due", unit = "month" }`, and with several of them `[` and `]` move between them; without a setting the screen guesses from columns such as status. If the values have names and icons in `[rules.<column>]`, bar names, legends and heatmap headings show them the way the table's group headings do ("icon name"). Weekly buckets start on the day set in `dates.week_start` (Sunday by default). Colors follow the theme's background, so heatmap numbers stay readable on light themes too. The chart screen is there from 0.4.0.
 
 The `chart` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
 
@@ -70,7 +70,7 @@ If notes carry `parent: "[[Parent]]"`, the parent/child section of the view sett
 
 ![Relation map](images/demo-relmap.svg)
 
-`R` draws the tables of the workspace as boxes and the link columns as arrows. You can see which table points at which, and `Enter` opens the one under the cursor. A column that points inside its own table, such as a parent, loops back to its box, and the columns in each box carry their type marks.
+`R` draws the tables of the workspace as boxes and the link columns as arrows. You can see which table points at which, and `Enter` opens the one under the cursor. A column that points inside its own table, such as a parent, loops back to its box, and the columns in each box carry their type marks and the same names as the table headings.
 
 [The relation map](concepts.md#the-relation-map)
 

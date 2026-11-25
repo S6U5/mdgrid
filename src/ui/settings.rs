@@ -133,7 +133,8 @@ pub(crate) enum Pick {
         tab: usize,
         sel: usize,
     },
-    /// 見た目の区画の選び手(SR-43): `field` は 0 テーマ・1 組・2 丸い札の端。
+    /// 見た目の区画の選び手(SR-43): `field` は区画の項目の番号(0 保存先・1 テーマ・2 組・3 丸い札の端・
+    /// カスタムの元のテーマと役割の色。look_section.rs)。
     Look {
         field: usize,
         sel: usize,
@@ -177,6 +178,8 @@ pub(crate) enum TextKind {
     RenameTab,
     /// 見た目のテンプレートの名前(SR-43)。
     LookTemplate,
+    /// カスタムの役割の色(screen.look-section-custom-colors。`col` は役割の設定の名前)。
+    LookColor,
     /// WBS の値の割合とラベル(NV-28。`col` は値)。
     WbsValue,
     /// ビューの削除の確かめ(BV-18。`col` はビューの名前)。`y` で消す。
@@ -425,18 +428,23 @@ impl App {
             tabs: self.section_tabs().len(),
             look: self.look_pick_now(),
             look0: self.look_pick_now(),
-            look_n: self.look_len(),
+            look_n: self.look_len_of(self.look_pick_now()),
             look_scopes: self.look_scopes().len(),
             tree_key: tree
                 .or_else(|| self.children_spec.as_ref().map(|(c, _)| c.key.clone()))
                 .unwrap_or_else(|| "parent".into()),
             wbs: wbs.clone(),
             wbs_vals: self.wbs_values(&wbs),
+            // condition.columns-present: 今の表で使えない条件は並べない(このビューに既に掛けたものは外せるよう残す)。
             conds: self
                 .cond
                 .all
                 .list()
                 .iter()
+                .filter(|c| {
+                    self.cond_usable(&c.name)
+                        || self.settings.named.iter().any(|n| n.name == c.name)
+                })
                 .map(|c| (c.name.clone(), c.shown().to_string()))
                 .collect(),
         });

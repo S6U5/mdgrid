@@ -324,6 +324,7 @@ impl App {
                     // NV-26: ビューの区画からの名前の変更。
                     TextKind::RenameTab => return self.rename_tab(t.col, v),
                     TextKind::LookTemplate => return self.save_look_template(v),
+                    TextKind::LookColor => return self.put_look_color(&t.col, &v),
                     TextKind::WbsValue => return self.put_wbs_value(t.col, v),
                     TextKind::DeleteView => return self.confirm_delete_view(t.col, v == "y"),
                     TextKind::Contains => Op::Contains(v),

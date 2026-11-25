@@ -97,7 +97,7 @@ fn input_text(a: &App) -> String {
     a.input.as_ref().map(|i| i.text.clone()).unwrap_or_default()
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// 表で隠している頭は、名前の欄に出ない。
 #[test]
 fn test_hidden_head_not_shown_in_name_field() {
@@ -108,7 +108,7 @@ fn test_hidden_head_not_shown_in_name_field() {
     assert!(!screen(&a).contains("20261002_"), "{}", screen(&a));
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// 打った名前の前に、隠している頭が付いて作られる。
 #[test]
 fn test_hidden_head_added_on_create() {
@@ -120,7 +120,7 @@ fn test_hidden_head_added_on_create() {
     assert_eq!(notes_in(&tmp), vec!["20261002_買い物.md", "a.md"]);
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// 下のフォルダを打った名前では、頭は最後の名前の部分に付く。
 #[test]
 fn test_hidden_head_goes_on_last_part() {
@@ -132,7 +132,7 @@ fn test_hidden_head_goes_on_last_part() {
     assert_eq!(notes_in(&tmp), vec!["a.md", "sub/20261002_買い物.md"]);
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// 何も打たなければ、頭だけの名前のノートは作らない。
 #[test]
 fn test_hidden_head_alone_creates_nothing() {
@@ -144,7 +144,7 @@ fn test_hidden_head_alone_creates_nothing() {
     assert!(a.note.flow.is_some(), "窓は開いたまま");
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// 頭を自分で打った名前には、頭を重ねない。
 #[test]
 fn test_typed_head_not_doubled() {
@@ -156,20 +156,26 @@ fn test_typed_head_not_doubled() {
     assert_eq!(notes_in(&tmp), vec!["20250101_古い.md", "a.md"]);
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
-/// 名前を決めて次の欄に移ると、名前の欄に頭の付いた名前が見える。
+// [utest -> req~cell-edit.new-note-name-head~2]
+/// 名前を決めて次の欄に移っても、名前の欄には打った名前だけが見え、隠している頭は出ない。
 #[test]
-fn test_full_name_shown_after_leaving_name_field() {
+fn test_typed_name_shown_after_leaving_name_field() {
     let tmp = vault("nnhead6");
     let mut a = boot(&tmp, &format!("{HEAD}ask = [\"priority\"]\n"));
     ch(&mut a, 'a');
     typing(&mut a, "買い物");
     press(&mut a, KeyCode::Enter);
     assert_eq!(current_field(&a), "priority");
-    assert!(screen(&a).contains("20261002_買い物"), "{}", screen(&a));
+    let s = screen(&a);
+    assert!(
+        s.lines()
+            .any(|l| l.contains("名前") && l.contains("買い物")),
+        "{s}"
+    );
+    assert!(!s.contains("20261002_"), "{s}");
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// `name_head` が無いか `"show"` なら、`display.note_name` があっても、頭は名前の欄に入って出る。
 #[test]
 fn test_head_shown_by_default_and_with_show() {
@@ -184,7 +190,7 @@ fn test_head_shown_by_default_and_with_show() {
     }
 }
 
-// [utest -> req~cell-edit.new-note-name-head~1]
+// [utest -> req~cell-edit.new-note-name-head~2]
 /// `name_head` が `"show"` でも `"hide"` でもなければ、警告して `"show"` として扱う。
 #[test]
 fn test_bad_name_head_warns_and_shows() {

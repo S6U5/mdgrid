@@ -9,7 +9,7 @@
 [conditions.late]
 expr = 'due < today() && status != "done"'
 label = "Late"
-key = 2
+key = 1
 
 # The title and text take column values: {due}, {owner}, {file.basename} and so on.
 # "desktop" is the OS notification; "terminal" is your terminal's own notification.

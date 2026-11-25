@@ -613,6 +613,17 @@ pub fn body_choice_path(body: &str, name: &str) -> String {
     format!("{}/{name}.md", body.trim().trim_end_matches('/'))
 }
 
+/// 雛形を選ばずに作るときの本文の雛形(開いたフォルダからの相対)。`body` がフォルダなら名前の順で最初の `.md`
+/// (cell-edit.body-choose-default・cli.new-note-body-folder)、`.md` が1つも無いフォルダなら空(本文なし)、
+/// ほかは `body` のまま。
+pub fn default_body(root: &Path, body: &str) -> String {
+    match body_choices(root, body).first() {
+        Some(first) => body_choice_path(body, first),
+        None if matches!(body_path(root, body), Ok(Some(p)) if p.is_dir()) => String::new(),
+        None => body.to_string(),
+    }
+}
+
 /// `read_body` の確かめ: 雛形の実体のパス(開いたフォルダの中にあると確かめたもの)。
 pub fn body_path(root: &Path, body: &str) -> Result<Option<PathBuf>, String> {
     let body = body.trim();

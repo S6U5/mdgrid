@@ -237,7 +237,7 @@ mod screen {
 
     #[test]
     fn test_condition_digit_keys_on_screen() {
-        // [stest -> req~condition.digit-keys~2] `1` で soon の行だけ、もう一度で戻る。
+        // [stest -> req~condition.digit-keys~3] soon に振った `1` で soon の行だけ、もう一度で戻る。
         let h = home("cond-digit-screen", CONF);
         let mut t = spawn(&h);
         press_until(&mut t, "1", |s| s.contains("1 期限が近い"));

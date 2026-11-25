@@ -96,12 +96,27 @@ fn apply(a: &mut App) {
     assert_eq!(a.mode, Mode::Table);
 }
 
+/// workspaces.toml にワークスペース W(tasks・projects)を書く。`ws`・`table` は `[workspace.look]`・tasks の
+/// `[workspace.table.look]` に足す行。
+fn app_workspace(tmp: &Tmp, ws: &str, table: &str) {
+    std::fs::write(
+        tmp.0.join("config/workspaces.toml"),
+        format!(
+            "[[workspace]]\nname = \"W\"\n\n[workspace.look]\n{ws}\n[[workspace.table]]\nname = \"tasks\"\npath = {}\n\n[workspace.table.look]\n{table}\n[[workspace.table]]\nname = \"projects\"\npath = {}\n",
+            toml::Value::String(real(&tmp.notes().join("tasks"))),
+            toml::Value::String(real(&tmp.notes().join("projects")))
+        ),
+    )
+    .unwrap();
+}
+
 #[test]
 fn test_sr_44_workspace_and_table_overrides_at_start() {
-    // [utest -> req~screen.profile-scopes-order~2] config.toml の sumi、印の nord、印の表の項目の dracula → tasks は dracula、projects は nord。
-    // views.toml の表の項目は印の表の項目より先(同じ範囲では画面が書いたもの)。
-    let marker = "name = \"N\"\n[look]\ntheme = \"nord\"\n[[table]]\npath = \"tasks\"\n[table.look]\ntheme = \"dracula\"\n[[table]]\npath = \"projects\"\n";
-    let tmp = tables("sr44start", Some(marker));
+    // [utest -> req~screen.profile-scopes-order~3] config.toml の sumi、workspaces.toml のワークスペースの nord、その表の項目の dracula
+    // → tasks は dracula、projects は nord。views.toml の表の項目はワークスペースの表の項目より先(同じ範囲では画面が書いたもの)。
+    // ワークスペースの外の表は config.toml の sumi。
+    let tmp = tables("sr44start", None);
+    app_workspace(&tmp, "theme = \"nord\"", "theme = \"dracula\"");
     let cfg = "[look]\ntheme = \"sumi\"\n";
     assert_eq!(boot_at(&tmp, "tasks", cfg).theme, Theme::Dracula);
     assert_eq!(boot_at(&tmp, "projects", cfg).theme, Theme::Nord);
@@ -116,7 +131,7 @@ fn test_sr_44_workspace_and_table_overrides_at_start() {
     let a = boot_at(&tmp, "tasks", cfg);
     assert_eq!(a.theme, Theme::Paper);
     assert!(a.display.zebra);
-    // 印の無い表(notes の外)は config.toml のとおり。
+    // ワークスペースの外の表は config.toml のとおり。
     let other = tables("sr44none", None);
     assert_eq!(boot_at(&other, "tasks", cfg).theme, Theme::Sumi);
 }
@@ -176,6 +191,81 @@ fn test_sr_43_save_to_app_workspace() {
         "{ws}"
     );
     assert_eq!(boot_at(&tmp, "projects", "").theme, Theme::Gruvbox);
+}
+
+#[test]
+fn test_marker_look_is_below_global() {
+    // [utest -> req~screen.profile-scopes-marker-look~1] 印の [look] は作り手の勧める既定で、全体より広い範囲に重ねる: ui.toml・config.toml の
+    // テーマが印に勝つ。人が何も選ばなければ印のまま(印の表の項目は印の最上位より狭い)。項目ごとに重ね、[display] は今までどおり。
+    let marker = "name = \"N\"\n[look]\ntheme = \"dozy-pink\"\n";
+    let tmp = tables("mlookui", Some(marker));
+    std::fs::write(tmp.0.join("config/ui.toml"), "[look]\ntheme = \"sumi\"\n").unwrap();
+    let mut a = boot_at(&tmp, "tasks", "");
+    assert_eq!(a.theme, Theme::Sumi, "ui.toml が印に勝つ");
+    look_section(&mut a, 1);
+    assert!(screen(&a).contains("▾ sumi  (全体)"), "{}", screen(&a));
+    let tmp = tables("mlookcfg", Some(marker));
+    let cfg = "[look]\ntheme = \"sumi\"\n";
+    assert_eq!(
+        boot_at(&tmp, "tasks", cfg).theme,
+        Theme::Sumi,
+        "config.toml が印に勝つ"
+    );
+    let marker = "name = \"N\"\n[look]\ntheme = \"nord\"\npreset = \"saas\"\n[[table]]\npath = \"tasks\"\n[table.look]\ntheme = \"dracula\"\n[[table]]\npath = \"projects\"\n";
+    let tmp = tables("mlooknone", Some(marker));
+    let a = boot_at(&tmp, "tasks", "");
+    assert_eq!(a.theme, Theme::Dracula);
+    assert_eq!(a.style.preset.name(), "saas");
+    let b = boot_at(&tmp, "projects", "");
+    assert_eq!(b.theme, Theme::Nord);
+    assert_eq!(b.style.preset.name(), "saas");
+    let marker =
+        "name = \"N\"\n[look]\ntheme = \"nord\"\npreset = \"saas\"\n[display]\nzebra = true\n";
+    let tmp = tables("mlookmix", Some(marker));
+    let a = boot_at(
+        &tmp,
+        "tasks",
+        "[look]\ntheme = \"sumi\"\n[display]\nzebra = false\n",
+    );
+    assert_eq!(a.theme, Theme::Sumi, "テーマは config.toml");
+    assert_eq!(a.style.preset.name(), "saas", "config.toml に無い組は印");
+    assert!(
+        a.display.zebra,
+        "[display] は印のワークスペースが全体より先"
+    );
+}
+
+#[test]
+fn test_global_choice_beats_marker_look() {
+    // [utest -> req~screen.profile-scopes-marker-look~1, req~screen.look-section-save~2] 印に dozy-pink の表で、保存先「全体」のまま sumi を選んで
+    // 反映 → 画面が sumi になり、ui.toml に残り、出どころは「(全体)」。
+    let marker = "name = \"N\"\n[look]\ntheme = \"dozy-pink\"\npreset = \"dozy-pink\"\n";
+    let tmp = tables("mlookpick", Some(marker));
+    let mut a = boot_at(&tmp, "tasks", "");
+    assert_eq!(a.theme, Theme::DozyPink);
+    choose(&mut a, 1, "sumi");
+    apply(&mut a);
+    assert_eq!(a.theme, Theme::Sumi);
+    let ui = std::fs::read_to_string(tmp.0.join("config/ui.toml")).unwrap();
+    assert!(ui.contains("theme = \"sumi\""), "{ui}");
+    let mut b = boot_at(&tmp, "tasks", "");
+    assert_eq!(b.theme, Theme::Sumi);
+    look_section(&mut b, 1);
+    let s = screen(&b);
+    assert!(s.contains("▾ sumi  (全体)"), "{s}");
+    assert!(s.contains("▾ dozy-pink  (印)"), "組は印のまま: {s}");
+}
+
+#[test]
+fn test_marker_origin_is_shown_as_marker() {
+    // [utest -> req~screen.look-section-origin~3] 印から来たテーマと組の横は「(印)」で、「(このワークスペース)」ではない。
+    let marker = "name = \"N\"\n[look]\ntheme = \"dozy-pink\"\npreset = \"dozy-pink\"\n";
+    let tmp = tables("mlookorigin", Some(marker));
+    let mut a = boot_at(&tmp, "tasks", "");
+    look_section(&mut a, 1);
+    let s = screen(&a);
+    assert!(s.contains("▾ dozy-pink  (印)"), "{s}");
+    assert!(!s.contains("(このワークスペース)"), "{s}");
 }
 
 #[test]

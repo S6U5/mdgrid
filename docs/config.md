@@ -23,6 +23,7 @@ The output reads back without warnings and behaves exactly like having no file. 
 
 - **Whole-app items** (scope "global only"): the top-level `language`, `editor` and `poll_ms`, and the sections `[terminal]`, `[workspace]`, `[git]`, `[keys]`, `[search]` and `[templates]`. They are written only in `config.toml` (`ui.toml` may hold `[terminal] nerd_font`).
 - **The table profile** (scope "global, workspace, table, view"): `use`, `[look]`, `[display]`, `[dates]`, `[edit]` and `[new_note]`. The same shape can be written in every place below, and narrower places override wider ones.
+- **Conditions and notifications per ledger** (scope "global, workspace marker"): `[conditions]`, `[[notices]]` and `[[notify]]`. Write them in `config.toml` and at the top of the marker `.mdgrid/workspace.toml`. What a marker holds works only in the tables of that ledger, next to the global ones ([named conditions](#conditions--named-conditions)).
 
 ## Overrides per workspace, table and view
 
@@ -33,7 +34,7 @@ The output reads back without warnings and behaves exactly like having no file. 
 | Table | the table entry of the workspace (`[[table]]` + `[table.look]` in the marker, `[[workspace.table]]` + `[workspace.table.look]`) | `[[table]]` in `views.toml` |
 | View | — | the view settings (with a mdgrid view, saved in its definition too) |
 
-The value of each item is taken from the narrowest place that writes it (view → table → workspace → global → default). In the same place, what mdgrid wrote wins over what you wrote by hand (`ui.toml` over `config.toml`, `views.toml` over the workspace's table entry). Two exceptions keep looks whole: a `preset` drops the part shapes (`[look.style]`) written in wider places, and a `theme` drops the role colors (`[look.colors]`, not the value colors) written in wider places. `use = "<template>"` lays the template under the values of that place.
+The value of each item is taken from the narrowest place that writes it (view → table → workspace → global → default). In the same place, what mdgrid wrote wins over what you wrote by hand (`ui.toml` over `config.toml`, `views.toml` over the workspace's table entry). The one exception is the `[look]` written in a workspace marker (top level and `[table.look]`): it is what the ledger's author suggests, so it sits in a place wider than global (just above the defaults). A theme, parts or colors you chose yourself, in `config.toml` or on screen, win over the marker whatever place they are in (the marker's other sections stay at the workspace level). Two exceptions keep looks whole: a `preset` drops the part shapes (`[look.style]`) written in wider places, and a `theme` drops the role colors (`[look.colors]`, not the value colors) written in wider places. `use = "<template>"` lays the template under the values of that place.
 
 `mdgrid [<table>] --print-config --resolved` prints what applies to that table, with a comment above every item naming where the value came from.
 
@@ -131,6 +132,18 @@ tables = [
   { table = "tasks", view = "Today", height = 2 },
   { table = "projects", view = "Active", height = 1 },
 ]
+```
+
+The top of a marker can also hold [named conditions](#conditions--named-conditions), [notice items](#notices--the-notice-box) and [notifications](#notify--notifications) (`[conditions.<name>]`, `[[notices]]` and `[[notify]]`, in the same shape as in `config.toml`). They work only while a table of that ledger is open, next to the global ones.
+
+```toml
+# people/.mdgrid/workspace.toml — a condition only for the people ledger; here 1 is "time to get in touch"
+name = "People"
+
+[conditions.contact]
+label = "Time to get in touch"
+expr = 'formula.contact <= today()'
+key = 1
 ```
 
 A marker does not have to be written by hand. A **starter** is a marker plus the note templates (and a few sample notes) for a common kind of ledger, and `mdgrid <folder> --init-workspace --starter <name>` writes it into a new folder: the folder is created if missing, `--with-samples` adds the sample notes, and nothing is ever overwritten (if one target file exists, nothing is written). `mdgrid --starters` lists them, one per line: the built-in `tasks`, `tasks-ai`, `bookmarks`, `reading` and `people`, and your own. The command palette has the same as **Create a ledger from a starter** (pick one, type the folder, answer whether to add the samples). Your own starters live in the config folder under `starters/<name>/`, in the same shape as the built-in ones:
@@ -692,7 +705,7 @@ format = "YYYY/MM/DD (ddd)"
 - Default: `"sun"`
 - Scope: global, workspace, table, view
 
-First day of the week in the date calendar.
+First day of the week, used by the date calendar, the date words for this week and next week, and the weekly buckets of charts.
 
 ```toml
 [dates]
@@ -739,12 +752,12 @@ How a new note is made from the table ("+ New" at the right end of the view bar,
 
 - `folder`: default folder for new notes, relative to the opened folder (empty: the opened folder). Values that leave the opened folder (`..` or an absolute path) are refused. In a `.base` view whose filters include `file.inFolder("X")`, the note is made in that folder (`X` from the root folder) so the new row stays in the view; `folder` is used only when it is inside that folder (such as `X/inbox`).
 - `name`: template put into the name field. `{date}` is today's date (`YYYY-MM-DD`); `{date:YYYYMMDD}_` starts the name with `20261118_`.
-- `name_head`: how the filled `name` template is shown. `"show"` (default) puts it in the name field. `"hide"` keeps it out of the field and adds it before the name you type (with `sub/name` it goes on the last part; a name that already starts with a prefix matched by `display.note_name` is left as typed). `mdgrid --new-note <name>` adds it to the given name the same way. Together with a `display.note_name` that hides the prefix in the table, you type only the title and never see the date.
+- `name_head`: how the filled `name` template is shown. `"show"` (default) puts it in the name field. `"hide"` keeps it out of the field (also after you leave the field) and adds it before the name you type (with `sub/name` it goes on the last part; a name that already starts with a prefix matched by `display.note_name` is left as typed). `mdgrid --new-note <name>` adds it to the given name the same way. Together with a `display.note_name` that hides the prefix in the table, you type only the title and never see the date. With `"hide"`, the variable `{name}` is the name you typed, without the prefix (a body template `# {name}` becomes `# Shopping`).
 - `ask`: the columns shown as fields in the new note form, in order. Without `ask`, the form shows the columns visible in the table. Each field is edited with the input for its type; a field left empty is not written. `Ctrl+S` creates the note from any field.
 - `required`: columns that must be filled; the note is not created while one is empty, and the field shows why.
 - `hidden`: columns written into every new note without a field in the form (with `[new_note.set]`, for values such as the creation date).
 - `mode`: `"form"` (default: the form with every field) or `"editor"` (ask only the name, create the note with the preset values and the body template, then open it in the editor right away). From the form, `Ctrl+E` also creates the note and opens it in the editor.
-- `body`: a template file (relative to the opened folder) whose contents become the body of the new note. If it names a folder, the form gets a "template" field after the name, and you pick one of the folder's `.md` files (the first by name if you do not pick; "(empty)" for no body).
+- `body`: a template file (relative to the opened folder) whose contents become the body of the new note. If it names a folder, the form gets a "template" field after the name, and you pick one of the folder's `.md` files (the first by name if you do not pick; "(empty)" for no body). `--new-note` takes the first one, as when you do not pick; a folder with no `.md` file gives no body.
 - `[new_note.set]`: values written into every new note (column = value): a string, number, boolean, date, or an array of them (written as a vertical list).
 
 Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may use these variables; unknown ones are left as they are:
@@ -757,7 +770,7 @@ Templates (`name`, the text values of `[new_note.set]`, and the `body` file) may
 | `{time}` | the current time (`HH:MM`) |
 | `{now}` | the current date and time (`YYYY-MM-DDTHH:MM`) |
 | `{weekday}` | the day of the week |
-| `{name}` | the note's name |
+| `{name}` | the note's name (with `name_head = "hide"`, the name you typed, without the hidden prefix) |
 | `{folder}` | the folder the note is made in |
 | `{uuid}` | a new UUID for this note (version 4, like `3f2b8c1e-9a4d-4e7b-8c21-5d6f7a8b9c0d`) |
 | `{uid}` | a new short id for this note (8 characters: a lowercase letter, then digits and lowercase letters, like `k3f9x2ab`) |
@@ -811,7 +824,7 @@ Rules for single columns, checked together with the column type. `required = tru
 
 `then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today.
 
-`icons` and `labels` decide how the values read in group headings and kanban lane titles. With `icons = { todo = "○" }` and `labels = { todo = "To do" }`, the `todo` group is headed `○ To do`; a value with only a glyph reads `○ todo`, and a value with neither stays as it is. Any glyph works, Nerd Font ones too, and mdgrid prints it as you wrote it. Its width is counted like the rest of the screen, so if your font draws a glyph such as `○` two cells wide and it runs into the next letter, turn on [`terminal.ambiguous_wide`](#terminalambiguous_wide). When you edit a cell or fill in the new note window, the choices show a named value as its name followed by the value (`To do todo`), so you can tell which value you pick. Cells, filters, search, `--print` and the notes keep the plain value. An entry for a value missing from `values` in the same table produces a warning naming it (`rules.status.icons.blocked`) and is ignored; when `values` comes from a wider scope, entries for values outside it are simply not shown. A narrower scope that writes `icons` or `labels` replaces it whole.
+`icons` and `labels` decide how the values read on screen. With `icons = { todo = "○" }` and `labels = { todo = "To do" }`, `todo` reads `○ To do` in group headings, kanban lane titles, table cells (chips or text), the detail view and the right pane of the tree; a value with only a glyph reads `○ todo`, and a value with neither stays as it is. Chip colors follow the value, so naming a value does not change its color. Any glyph works, Nerd Font ones too, and mdgrid prints it as you wrote it. Its width is counted like the rest of the screen, so if your font draws a glyph such as `○` two cells wide and it runs into the next letter, turn on [`terminal.ambiguous_wide`](#terminalambiguous_wide). Windows where you pick a value (the choices when you edit a cell or fill in the new note window, the list toggle window, the value lists of the filter window and view settings, and the frequency window) show a named value as its name followed by the value (`To do todo`), so you can tell which value you pick. The `\` quick filter and `/` search match the value or the name. The notes and `--print`, `--count` and CSV output keep the plain value. An entry for a value missing from `values` in the same table produces a warning naming it (`rules.status.icons.blocked`) and is ignored; when `values` comes from a wider scope, entries for values outside it are simply not shown. A narrower scope that writes `icons` or `labels` replaces it whole.
 
 ```toml
 [rules.status]
@@ -900,7 +913,7 @@ preset = "dozy-pink"
 
 - Type: `table of tables ([conditions.<name>] with expr, label, key, hide)`
 - Default: none
-- Scope: global only
+- Scope: global, workspace marker
 
 Give a name to a condition you use often, such as "due within a week", and write it once. `expr` is an expression in the same language as the filters of a `.base` file. A name starts with a letter and uses only letters, digits, `_` and `-`. Then use the condition by name:
 
@@ -909,7 +922,11 @@ Give a name to a condition you use often, such as "due within a week", and write
 - in the filter section of the view settings (`o`), to keep only the matching rows or to hide them in that view;
 - with `hide = true`: the matching rows are hidden in every table and screen and in `--print`, `--pick` and `--count`; the settings band shows the condition and how many rows it hides, the digit key of the condition shows them again, and `--show-hidden` prints them.
 
-In the example, `far` hides the plans that start more than 30 days from now, unless they are due within a week. `label` is the name shown on the settings band and in the help (`label = "Due soon"`). A column the table does not have reads as empty, so one condition works for tables with different columns. A name that is not allowed, an expression that cannot be read, conditions that call each other in a loop, and a digit that another condition already uses produce a warning and are skipped.
+In the example, `far` hides the plans that start more than 30 days from now, unless they are due within a week. `label` is the name shown on the settings band and in the help (`label = "Due soon"`). Inside `cond()`, a column the table does not have reads as empty, so one condition works for tables with different columns. A name that is not allowed, an expression that cannot be read, conditions that call each other in a loop, and a digit that another condition in the same file already uses produce a warning and are skipped.
+
+Conditions can also be written, in the same shape, at the top of a ledger's marker `.mdgrid/workspace.toml`. A people ledger can carry "time to get in touch" and a money ledger "payment due soon", and they travel with the ledger. A condition in a marker is available only while a table of that ledger is open, next to the global conditions. With the same name the marker wins, and `cond()` in a global condition points to the marker's one too. Put them in the marker of a starter and every ledger made from it has them. `mdgrid <table> --print-config --resolved` shows where each condition came from.
+
+Digit keys go to the conditions with a `key`: first the marker's, then the global ones, numbered from 1 with no gaps. The `key` number sets the order within one file. A condition whose expression uses a column (a note key or `formula.*`) that no row of the current table has gets no digit there, and it is left out of the help and of the filter section of the view settings. So with task conditions (due date, owner) in `config.toml`, a people ledger still starts at 1 with its own conditions, and no digit leads to an empty table. Conditions with `hide = true` apply whatever the columns.
 
 ```toml
 [conditions.soon]
@@ -928,11 +945,11 @@ key = 9
 
 - Type: `array of tables ([[notices]] with cond, text, scope, show_zero, or note, lines)`
 - Default: none
-- Scope: global only
+- Scope: global, workspace marker
 
-A small box above the header that shows what you want to notice, such as how many tasks are overdue. It appears only when you write items here; nothing changes for anyone else. Each `[[notices]]` is one item, shown in the order written:
+A small box above the header that shows what you want to notice, such as how many tasks are overdue. It appears only when you write items here; nothing changes for anyone else. Each `[[notices]]` is one item, shown in the order written. Items can also sit at the top of a ledger's marker: they show only in the tables of that ledger, before the global items (a relative `note` starts at the marker's folder).
 
-- A count item counts the rows that match a [named condition](#conditions--named-conditions) (`cond`). `text` is the sentence with `{count}` replaced by the number (default: the condition's label and the number). `scope` picks what to count: `"table"` (the open table, the default), `"workspace"` (every table of the current workspace) or a list of table names. Rows are counted after the table's own filter and the conditions with `hide = true`, not after the view, search or digit keys. An item with 0 rows is left out unless `show_zero = true`.
+- A count item counts the rows that match a [named condition](#conditions--named-conditions) (`cond`). `text` is the sentence with `{count}` replaced by the number (default: the condition's label and the number). `scope` picks what to count: `"table"` (the open table, the default), `"workspace"` (every table of the current workspace) or a list of table names. Rows are counted after the table's own filter and the conditions with `hide = true`, not after the view, search or digit keys. An item with 0 rows is left out unless `show_zero = true`. Tables without the columns the condition uses are not counted, and a `"table"` item is left out, `show_zero` or not, when the open table lacks them.
 - A note item shows the first `lines` non-empty lines (default 1) of a note's body (`note`; `~` is the home folder, a relative path starts at the folder of the config file).
 
 Count items share the first line, separated by ` · `; each note line gets its own line; the box is at most 3 lines. Move into the box with its key, pick an item and press `Enter`: a count item narrows the table to that condition (or lists the tables that have matching rows), a note item opens the note in your editor. `mdgrid --notices` prints the same items, one per line, for a tmux status line, a shell prompt or the Herdr sidebar.
@@ -957,9 +974,9 @@ expr = 'due < today() && status != "done"'
 
 - Type: `array of tables ([[notify]] with cond, scope, title, text, to, group_over, group_text, command)`
 - Default: none
-- Scope: global only
+- Scope: global, workspace marker
 
-Tells you when a row starts to match a [named condition](#conditions--named-conditions): a reminder time has come, or a task has just become overdue. Nothing happens until you write an item here. Each `[[notify]]` watches one condition, and one condition can be watched by only one item.
+Tells you when a row starts to match a [named condition](#conditions--named-conditions): a reminder time has come, or a task has just become overdue. Nothing happens until you write an item here. Each `[[notify]]` watches one condition, and one condition can be watched by only one item. Items can also sit at the top of a ledger's marker: they are checked only by a screen showing a table of that ledger and by `mdgrid <ledger> --notify`. When the marker and `config.toml` watch the same condition, the ledger uses the marker's item. Rows of tables without the columns the condition uses are never notified.
 
 - `cond` is the condition to watch.
 - `scope` picks the tables to watch: `"workspace"` (every table of the current workspace, the default), `"table"` (the open table) or a list of table names.

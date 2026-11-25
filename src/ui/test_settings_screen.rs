@@ -148,7 +148,7 @@ pub(super) fn open(a: &mut App) {
 }
 
 /// 今の選び(選び手が開いていればその中、無ければ区画の中)を `to` に動かす(↑↓ で)。
-fn sel_to(a: &mut App, to: usize) {
+pub(super) fn sel_to(a: &mut App, to: usize) {
     loop {
         let d = draft(a);
         let now = match &d.pick {
@@ -179,7 +179,7 @@ pub(super) fn section(a: &mut App, sec: Sec) {
 }
 
 /// 選び手の列を選ぶ。
-fn pick_column(a: &mut App, col: &str) {
+pub(super) fn pick_column(a: &mut App, col: &str) {
     let i = draft(a).keys.iter().position(|c| c == col).unwrap();
     sel_to(a, i);
     press(a, KeyCode::Enter);

@@ -540,6 +540,19 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When: screen.profile-scopes の例で `mdgrid notes/tasks --print-config --resolved`
   - Then: `theme = "dracula"` の上に `# views.toml (notes/tasks)`、`preset` の上に `# default`(来たところは、既定・config.toml・ui.toml・ワークスペースの印か workspaces.toml とその名前・views.toml の表・ビューの名前・テンプレートの名前)。
 
+#### `--print-config --resolved` の入れ子の表の項目(`[rules.<列>]` の `icons`・`labels`・`then` の中の値など、層が表を丸ごと書く項目)の出どころのコメントは、その表を書いた層にするべき
+`req~cli.resolved-config-origin-nested~1` P1
+- Rationale: 印に書いた `[rules.status]` の `values` は印から来たと出るのに、同じ所に書いた `icons`・`labels`・`then` の中の値はどれも `# default` と出て、どこを直せばよいかが読めなかったため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: ワークスペースの印に `[rules.status]` の `values`・`icons`・`labels` と `[rules.status.then]` を書いた表
+  - When: `mdgrid <表> --print-config --resolved`
+  - Then: `[rules.status.icons]`・`[rules.status.labels]`・`[rules.status.then.<値>]` の中の項目の上のコメントは、どれも `values` の上と同じ印の名前で、`# default` でない。
+- Acceptance:
+  - Given: config.toml が `[rules.status]` の `icons` を、ワークスペースの印が同じ列の `labels` を書く
+  - When: 同じ命令
+  - Then: `[rules.status.icons]` の中の項目の上は `# config.toml`、`[rules.status.labels]` の中の項目の上は印の名前。
+- Needs: utest
+
 #### `--print-config --resolved` が出したものは、設定ファイルとして警告なしに読めるべき
 `req~cli.resolved-config-reads-back~1` P1
 - Acceptance:
@@ -793,6 +806,32 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - Given:
   - When: `LANG=ja_JP.UTF-8` と `LANG=en_US.UTF-8` の `mdgrid --help`
   - Then: どちらにも `--new-note` と `--set` の行がある。
+
+#### `--new-note` に、ワークスペースの印の表のノートを置くフォルダ(その表の `[new_note] folder` か、表の絞り込みの `file.inFolder` が指すフォルダ)を渡したら、その表の決まり(名前の頭・前もって入れる値・本文の雛形・必須の列)で、そのフォルダに作るべき
+`req~cli.new-note-table-folder~1` P1
+- Rationale: 印の根に表をいくつも書いた台帳で、表のフォルダを渡して `--new-note` を使うと、表の決まりを使わずに空のファイルができた。画面のその表で作るノートと形がそろわなかった(2026-11-25 に調べ物の台帳で見つかった)
+- Acceptance:
+  - Given: 今日が 2026-11-25、印の根 `r` に表「ニュース」(`[table.new_note] folder = "News"`・`name = "{date:YYYYMMDD}_"`・`name_head = "hide"`・`body` の雛形 `# {name}`・`[table.new_note.set] date = "{date}"`、絞り込み `file.inFolder("News")`)
+  - When: `mdgrid r/News --new-note 見出し`
+  - Then: `r/News/20261125_見出し.md` ができ、フロントマターに `date: 2026-11-25`、本文は `# 見出し`、標準出力は `r/News/20261125_見出し.md` の1行。
+- Acceptance:
+  - Given: 同じ印で、どの表のフォルダでもない `r/Other`
+  - When: `mdgrid r/Other --new-note x`
+  - Then: 表の決まりを使わず、`r/Other/x.md` が空で作られる(今までどおり)。
+- Needs: stest
+
+#### `--new-note` は、`[new_note] body` がフォルダを指すときは、画面で雛形を選ばずに作ったとき(cell-edit.body-choose-default)と同じく、名前の順で最初の雛形を本文にするべき(`.md` が1つも無ければ本文なし)
+`req~cli.new-note-body-folder~1` P1
+- Rationale: 本文の雛形をフォルダに並べた台帳で `--new-note` を使うと、フォルダをファイルとして読もうとして作れなかった(2026-11-25 に読書の記録の台帳で見つかった)
+- Acceptance:
+  - Given: `[new_note] body = "templates"` で、`templates/` に `book.md`(`# {name}`)と `memo.md`
+  - When: `mdgrid t --new-note 本`
+  - Then: `本.md` ができ、本文は `# 本`、終了コード 0。
+- Acceptance:
+  - Given: `body` のフォルダに `.md` が1つも無い
+  - When: `mdgrid t --new-note x`
+  - Then: 本文の無い `x.md` ができ、終了コード 0。
+- Needs: stest
 
 ### セッション
 
@@ -1127,6 +1166,19 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - Given:
   - When:
   - Then: 覚えた projects のフォルダを消してから「最近開いた表」→ projects が無い。
+
+#### `--print-config --resolved` は、その表で効く名前の条件・通知の欄・知らせの項目も出し、各項目の上に出どころ(全体の設定なら `# config.toml`、印なら `# .mdgrid/workspace.toml (<ワークスペースの名前>)`)を添えるべき
+`req~cli.resolved-config-ledger~1` P1
+- Rationale: 台帳の印と全体の設定のどちらの条件と知らせが効いているかを、画面を開かずに確かめるため(2026-11-25 に人が決めた。condition.marker・notice.marker・notify.marker)
+- Acceptance:
+  - Given: 全体の設定に条件 due、名前が「人と会議」の印に条件 contact と `[[notices]]`
+  - When: 印の台帳で `--print-config --resolved`
+  - Then: `[conditions.contact]` と `[[notices]]` の上に `# .mdgrid/workspace.toml (人と会議)`、`[conditions.due]` の上に `# config.toml` がある。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 出した文を `--config` で読む
+  - Then: 警告なし。
+- Needs: stest
 
 ## 未確定事項
 

@@ -78,7 +78,7 @@ fn test_sr_43_only_changed_items_saved() {
 
 #[test]
 fn test_sr_43_auto_kept() {
-    // [utest -> req~screen.look-section-items~1, req~screen.look-section-save~2, req~screen.look-section-nerd-font~1, req~screen.look-section-preset~1] 設定が nerd_font = "auto"(既定)なら、区画は auto と見せ、ほかを変えても ui.toml に false を書かない。
+    // [utest -> req~screen.look-section-items~2, req~screen.look-section-save~2, req~screen.look-section-nerd-font~1, req~screen.look-section-preset~1] 設定が nerd_font = "auto"(既定)なら、区画は auto と見せ、ほかを変えても ui.toml に false を書かない。
     let tmp = setup("sr43auto");
     let mut a = boot(&tmp, mdgrid::config::Config::default());
     press(&mut a, KeyCode::Char('o'));

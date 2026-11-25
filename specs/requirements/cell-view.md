@@ -300,3 +300,37 @@
   - When: 表を描く
   - Then: 「残り」のセルは今までどおり値(「今日」)を見せる。
 - Needs: utest
+
+#### 式の列(`formula.*`)のセルの読むだけの印 `#` は、色を使わない表示(`--no-color`・`NO_COLOR`・`terminal.color = false`・`TERM=dumb`)のときだけ付け、色のある表示では、薄い表示と列の見出しの `ƒ`(screen.formula-mark-prefix)で見分けられるようにするべき
+`req~cell-view.formula-mark-no-color~1` P1
+- Rationale: 式の列は列ごと読むだけなので、どのセルの頭にも `#` が付くと値の頭の字が増えて読みにくかったため(2026-11-25 の台帳の実地の操作)。色のある表示では、見出しの ƒ と薄い表示で足りる。色を使わない表示では薄い表示が出ないので、`#` を残す(cell-view.not-color-only)
+- Acceptance:
+  - Given: `double = 'rating * 2'` の式の列と、rating が 3 の行(色のある表示)
+  - When: 表を描く
+  - Then: 見出しは「ƒ double」で、その行のセルは `6`(`#` が無い)の薄い表示。
+- Acceptance:
+  - Given: 同じ表を色を使わない表示(`--no-color`)で
+  - When: 表を描く
+  - Then: その行のセルは `#6`。
+- Acceptance:
+  - Given: 色のある表示で、書けないノート(読むだけの理由のあるノート)の status のセル
+  - When: 表を描く
+  - Then: 今までどおり `#` が付く(式の列でない読むだけのセルは変えない)。
+- Needs: utest
+
+#### 部品の形(札・点・形・文字の色・淡い札・透けない札など。screen.style-parts)で描くセルにも、文字で描くセルと同じに、値の前のセルの印(決まりと型に合わない `!` など)を出すべき
+`req~cell-view.marks-on-parts~1` P1
+- Rationale: 値の候補に無い `kindle` の値が、丸い札で `kindle` とだけ出て、`!` が消えていたため(2026-11-25 の台帳の実地の操作)。札は値の並びから描き直すので、値の前の印を落としていた
+- Acceptance:
+  - Given: `[rules.copy] values = ["bought", "library"]` と `[look.columns] copy = "chip"` の色のある表示で、copy が kindle の行
+  - When: `[look.style] status` を dot・shape・text・pill・tint・solid・soft・chip のそれぞれにして表を描く
+  - Then: どの形でも、copy のセルは `!` のあとに kindle の部品。
+- Acceptance:
+  - Given: `[rules.tags] values = ["a"]` の色のある表示で、tags が `[a, z]` の行
+  - When: `[look.style] tags` を dots・hash・brackets・pill・tint・solid・soft・chip のそれぞれにして表を描く
+  - Then: どの形でも、tags のセルは `!` で始まる。
+- Acceptance:
+  - Given: 同じ copy の設定で、copy が bought の行
+  - When: 表を描く
+  - Then: bought のセルには `!` が無い。
+- Needs: utest
