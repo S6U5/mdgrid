@@ -420,9 +420,13 @@ note = \"~/secret.md\"
 note = \"../outside.md\"
 [[notices]]
 note = \"/tmp/x.md\"
-[[notices]]
-note = \"link.md\"
 ";
+    // 外を指すリンクは Unix でだけ作れるので、その項目も Unix でだけ書く。
+    let marker = if cfg!(unix) {
+        format!("{marker}[[notices]]\nnote = \"link.md\"\n")
+    } else {
+        marker.to_string()
+    };
     std::fs::write(root.join(".mdgrid/workspace.toml"), marker).unwrap();
     let (c, w) = config::parse("").unwrap();
     assert!(w.is_empty(), "{w:?}");
