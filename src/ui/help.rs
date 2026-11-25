@@ -62,7 +62,8 @@ fn entries(
 ) -> Vec<(String, String, u8)> {
     let group = |a: Action| match a {
         Action::GoToSection(_) => Action::GoToSection(0),
-        Action::Choose(_) => Action::Choose(0),
+        // workspace.switch-origin-key: 0 は「最初に開いた所」で、1〜9 とは別の行。
+        Action::Choose(n) if n > 0 => Action::Choose(1),
         a => a,
     };
     let mut out: Vec<(Mode, Action, String, String, u8)> = Vec::new();
@@ -566,11 +567,24 @@ impl App {
             self.nv.ask = None;
             self.routine_dismiss();
         }
+        // cell-edit.children-reopen: 子も戻すかの窓を閉じたら(Esc)、待っている直しをやめる。詳細の表示で直したなら
+        // 詳細の表示に戻る。
+        let reopen = matches!(
+            self.nv.ask,
+            Some(super::native_views::Ask::ChildrenReopen { .. })
+        );
+        if reopen {
+            self.children_ask = None;
+        }
         self.palette = None;
         self.nv.ask = None;
         // TR-5: 木(ほかの表でない画面の型)から開いたパレットは、閉じるとその画面に戻る。
         let back = self.screen().mode();
-        self.set_mode(back);
+        self.set_mode(if reopen && back == Mode::Table && self.detail.is_some() {
+            Mode::Detail
+        } else {
+            back
+        });
     }
 
     /// パレットの中の動作: 実行・閉じる・候補の選択・1字消す。

@@ -83,7 +83,8 @@ fn test_tr_1_tree_screen_counts_and_jump_e2e() {
     tui.wait_until("開発 を選ぶ", |s| s.contains("行: bar > 開発"));
     let s = tui.screen();
     let beta = s.lines().position(|l| l.contains("beta")).unwrap();
-    let alpha = s.lines().position(|l| l.contains("alpha.md")).unwrap();
+    // 右の欄の名前は表のノートの欄と同じ見せ方(`.md` なし。screen.note-name-everywhere)。
+    let alpha = s.lines().position(|l| l.contains("alpha")).unwrap();
     assert!(beta < alpha, "order の順:\n{s}");
     tui.send("\t");
     tui.send("k");

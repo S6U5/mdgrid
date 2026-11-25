@@ -287,3 +287,16 @@
   - When: 表を描く
   - Then: 行き先の列(OSC 8)を端末へ書かない。
 - Needs: utest
+
+#### 式の列(`formula.*`)の値が空のセルには、式の値の印(`#` など)も出さず、空のセルとして見せるべき
+`req~cell-view.formula-empty-mark~1` P1
+- Rationale: 期限の無い行の「残り」のセルに `#` だけが残り、何かの値があるように見えたため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: `left = 'due.relative()'` の式の列と、due の無い行
+  - When: 表を描く
+  - Then: その行の「残り」のセルは空白だけ。
+- Acceptance:
+  - Given: due が今日の行
+  - When: 表を描く
+  - Then: 「残り」のセルは今までどおり値(「今日」)を見せる。
+- Needs: utest

@@ -1285,6 +1285,23 @@
   - Then: cli.config-file-warning-form の形で `icons.blocked` を言う警告1行で、その字は使わない。
 - Needs: utest
 
+#### 値の候補の窓(セルを直すときと新しいノートの窓)は、`[rules.<列>] labels` に名前のある値を「字 名前 値」(例「○ 未着手 todo」)で見せ、書く値は値のままにするべき
+`req~navigation.value-labels-picker~1` P1
+- Rationale: まとまりの見出しとカンバンのレーンは「未着手」なのに、値を選ぶ窓は todo だけで、どの名前の値かが分からなかったため(2026-11-25 の実地の操作で見つかった)。どの値を書くかが見えるよう、名前に値を添える
+- Acceptance:
+  - Given: `[rules.status]` に `values = ["todo", "doing"]`・`labels = { todo = "未着手" }`
+  - When: status のセルを直して候補を出す
+  - Then: 候補は「未着手 todo」と「doing」で、「未着手 todo」を選ぶと todo を書く。
+- Acceptance:
+  - Given: 同じ設定で、新しいノートの窓で status を聞く
+  - When: status の欄に来る
+  - Then: 候補は「未着手 todo」と「doing」。
+- Acceptance:
+  - Given: 同じ設定
+  - When: 表を描く
+  - Then: status のセルは `todo` のまま(tbd~navigation.value-labels-cells)。
+- Needs: utest
+
 #### 設定を `.base` のビューの既定(`.base` なしなら何もしない状態)に戻す操作を持つべき
 `req~navigation.settings-reset-default~1` P1
 - Acceptance:
@@ -1448,4 +1465,4 @@
 ### 値の見せる名前とアイコンを、セルにも出すか
 `tbd~navigation.value-labels-cells`
 - Decider: 人
-- Provisional: 出さない(セルは値を直す所なので値のまま。まとまりの見出しとカンバンのレーンだけ)
+- Provisional: 出さない(セルは値を直す所なので値のまま。まとまりの見出しとカンバンのレーンと、値の候補の窓(navigation.value-labels-picker)だけ)

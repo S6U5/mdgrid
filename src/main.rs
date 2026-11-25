@@ -2158,7 +2158,14 @@ fn print_view(
         (None, None) => print::ViewDef::Default,
     };
     let (today, now) = print::today_now(|k| std::env::var(k).ok());
-    let mut table = match print::table(src.as_ref(), view, today, now) {
+    // cli.print-group-order: 行の並びは画面と同じく、グループ分けの列の値の候補(開く表で効く `[rules.<列>] values`)の
+    // 順。並びの要らない数と確かめでは読まない。設定の警告は設定と印を読むところが出すので、ここでは重ねて出さない。
+    let rules = match out {
+        ViewOut::Print(..) => resolve_table(&config, paths, opts).0.rules,
+        ViewOut::Check | ViewOut::Count => Default::default(),
+    };
+    let values_of = |c: &str| rules.get(c).and_then(|r| r.values.clone());
+    let mut table = match print::table_with(src.as_ref(), view, today, now, &values_of) {
         Ok(t) => t,
         Err(e) => return fail(&e.replace('\n', " ")),
     };

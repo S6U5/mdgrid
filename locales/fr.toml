@@ -1437,6 +1437,8 @@ VisualHint = "sélectionner une plage : se déplacer, puis v pour valider (Esc p
 SelectedAll = "toutes les lignes sélectionnées ({0})"
 SelectionCleared = "sélection effacée"
 FilterCleared = "recherche effacée"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "conditions effacées"
 NoRowToSelect = "aucune ligne à sélectionner"
 SelectValueCell = "sélectionner une cellule de valeur"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1534,6 +1536,10 @@ SwitchHint = "pas encore de favoris : appuyer sur {1} sur un en-tête d'espace d
 SwitchNoRoom = "le terminal est trop petit pour la liste des espaces"
 KeySwitchRun = "Aller à l'élément sélectionné"
 KeySwitchNumber = "Aller à l'espace de travail de ce numéro"
+KeySwitchOrigin = "Revenir là où vous avez commencé"
+KeySwitchDigits = "Aller à ce numéro"
+KeyDigitRange = "{0}-{1}"
+SwitchAlreadyHere = "{0} est l'espace de travail où vous êtes"
 ModeSwitch = "Changer"
 SecInSwitch = "Dans la liste des espaces"
 
@@ -1797,6 +1803,8 @@ KeyBarLater = "Décaler la barre d'une unité plus tard (réécrit les dates)"
 KeyBarEarlier = "Décaler la barre d'une unité plus tôt (réécrit les dates)"
 KeyBarLonger = "Allonger la fin de la barre d'une unité"
 KeyBarShorter = "Raccourcir la fin de la barre d'une unité"
+GanttBandMove = "Déplacer la barre"
+GanttBandResize = "allonger/raccourcir"
 GanttToday = "Aujourd'hui"
 GanttThisWeek = "Semaine"
 GanttThisMonth = "Mois"
@@ -1879,6 +1887,16 @@ ChildrenOpenRefuseOne = "{0} enfant n'est pas encore terminé, donc pas marqué 
 ChildrenOpenKeep = "{0} enfants ne sont pas encore terminés"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "{0} enfant n'est pas encore terminé"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "sans closed_by (la colonne qui marque les enfants fermés avec le parent), on ne sait pas quels enfants rouvrir, donc traité comme \"keep\""
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "Des enfants ont été fermés avec ce parent. Les rouvrir ? "
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "Rouvrir aussi les enfants"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "Seulement le parent"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "certains enfants n'ont pas pu être rouverts"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "dépasse de {0} jours la période du parent"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

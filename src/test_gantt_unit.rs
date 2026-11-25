@@ -411,3 +411,69 @@ fn test_marker_children_warns_in_place_and_falls_back() {
         assert_eq!(got.closed, ["done"], "{bad}");
     }
 }
+
+#[test]
+fn test_marker_children_reopen_reads_closed_by_and_on_reopen() {
+    // 印の children の closed_by と on_reopen を読む。書かなければ列なし(既定の名前は無い)・keep で、警告は無い。
+    // [utest -> req~cell-edit.children-closed-by~1, req~cell-edit.children-reopen~1]
+    use crate::tree::{OnReopen, ReopenSpec};
+    let r = Root::new(
+        "reopen-none",
+        &format!("{MARKER_HEAD}children = {{ key = \"parent\" }}\n"),
+    );
+    let (got, warns) = crate::workspace::marker_children_reopen(&r.notes());
+    assert!(warns.is_empty(), "{warns:?}");
+    assert_eq!(got.expect("children").0, ReopenSpec::default());
+    assert_eq!(ReopenSpec::default().closed_by, None);
+    assert_eq!(ReopenSpec::default().on_reopen, OnReopen::Keep);
+    for (how, want) in [
+        ("keep", OnReopen::Keep),
+        ("reopen", OnReopen::Reopen),
+        ("ask", OnReopen::Ask),
+    ] {
+        let r = Root::new(
+            "reopen-all",
+            &format!(
+                "{MARKER_HEAD}children = {{ key = \"parent\", closed_by = \"closed_by\", on_reopen = \"{how}\" }}\n"
+            ),
+        );
+        let (got, warns) = crate::workspace::marker_children_reopen(&r.notes());
+        assert!(warns.is_empty(), "{how}: {warns:?}");
+        let got = got.expect(how).0;
+        assert_eq!(got.closed_by.as_deref(), Some("closed_by"), "{how}");
+        assert_eq!(got.on_reopen, want, "{how}");
+        // 親子の設定の読みでも、知らない項目にならない。
+        let (_, warns) = crate::workspace::marker_children(&r.notes());
+        assert!(warns.is_empty(), "{how}: {warns:?}");
+    }
+}
+
+#[test]
+fn test_marker_children_reopen_warns_in_place_and_keeps() {
+    // 書き方の違う closed_by・on_reopen と、closed_by の無い reopen・ask は、場所を言う警告1行で keep にする。
+    // [utest -> req~cell-edit.children-reopen~1]
+    use crate::tree::OnReopen;
+    for (bad, at) in [
+        ("on_reopen = \"nope\"", "table[1].children.on_reopen: "),
+        ("on_reopen = 1", "table[1].children.on_reopen: "),
+        ("on_reopen = \"reopen\"", "table[1].children.on_reopen: "),
+        ("on_reopen = \"ask\"", "table[1].children.on_reopen: "),
+        (
+            "closed_by = 1, on_reopen = \"keep\"",
+            "table[1].children.closed_by: ",
+        ),
+    ] {
+        let r = Root::new(
+            "reopen-bad",
+            &format!("{MARKER_HEAD}children = {{ key = \"parent\", {bad} }}\n"),
+        );
+        let (got, warns) = crate::workspace::marker_children_reopen(&r.notes());
+        let (got, _) = got.expect(bad);
+        assert_eq!(warns.len(), 1, "{bad}: {warns:?}");
+        assert!(
+            warns[0].starts_with(&format!(".mdgrid/workspace.toml: {at}")),
+            "{bad}: {warns:?}"
+        );
+        assert_eq!(got.on_reopen, OnReopen::Keep, "{bad}");
+    }
+}

@@ -468,6 +468,33 @@ fn test_cv_4_formula_number_and_bool_aligned() {
     );
 }
 
+#[test]
+fn test_cv_formula_empty_cell_has_no_mark() {
+    // [utest -> req~cell-view.formula-empty-mark~1] `left = 'due.relative()'` の式の列で、due の無い行(掃除)の「残り」のセルは空白だけ(読むだけの印 `#` も
+    // 出さない)。due が今日(2026-10-05)の行(会議のメモ)の「残り」は今までどおり値 `#今日`。
+    let tmp = vault("cvformulaempty");
+    let text = "formulas:\n  left: 'due.relative()'\nproperties:\n  formula.left:\n    displayName: 残り\nviews:\n  - type: table\n    name: 式\n    order: [title, formula.left]\n";
+    let mut app = open(&tmp, text, None);
+    app.today = mdgrid::types::parse_date("2026-10-05").unwrap();
+    app.regrid = true;
+    app.refresh_if_needed();
+    let s = screen(&app);
+    let line = |name: &str| {
+        s.lines()
+            .find(|l| l.contains(name))
+            .unwrap_or_else(|| panic!("{name} の行が無い:\n{s}"))
+            .to_string()
+    };
+    let empty = line("掃除");
+    assert!(!empty.contains('#'), "due の無い行に印: {empty:?}\n{s}");
+    assert_eq!(
+        empty.split_once("掃除").map(|(_, rest)| rest.trim()),
+        Some(""),
+        "残りのセルは空白だけ:\n{s}"
+    );
+    assert!(line("会議のメモ").contains("#今日"), "{s}");
+}
+
 /// ビューの帯の真ん中の行(タブの行)。2026-10-12-search-box・view-bar-plain の3行の帯では3行目、1行の帯では2行目。
 fn mid(a: &App) -> usize {
     super::bands::mid_row(a)

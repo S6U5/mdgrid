@@ -98,8 +98,20 @@ fn crumb_text(app: &App, name: &str) -> String {
     }
 }
 
-/// 今の表の名前(`.base` を開いたらその名前、無ければフォルダの名前)。
-fn table_name(app: &App) -> String {
+/// 今の表の名前(`.base` を開いたらその名前、無ければフォルダの名前)。印の `[[table]]` で、パスと違う名前を付けた
+/// 表(`name` と `path`)なら、引き出しと同じその名前(最近開いた表の一覧の `Recent::name` と同じ)。
+pub(crate) fn table_name(app: &App) -> String {
+    let marker = app
+        .scope
+        .as_ref()
+        .filter(|s| matches!(s.source, mdgrid::workspace::Source::Marker));
+    if let (Some(s), [p]) = (marker, super::stack::target_paths(app).as_slice()) {
+        let view = app.current_view_name();
+        let n = mdgrid::resume::table_name(std::slice::from_ref(p), &s.tables, view.as_deref());
+        if n != mdgrid::workspace::stem_of(p) {
+            return n;
+        }
+    }
     match &app.base {
         Some(b) => b.name.clone(),
         None => app.src.name(),
@@ -220,11 +232,26 @@ pub(crate) enum HeaderButton {
     Settings,
     /// CE-25: 「+ 新規」(ビューの帯を出さないときだけ。表の画面と関係マップ)。
     New,
+    /// workspace.switch-button: 切り替えの一覧を開く「W ⇄」。
+    Switch,
 }
 
 /// 設定のボタンを出す描ける幅の下限(端末の幅 80。右端の1桁は描かない。狭いときは先に省く。設定は `o` と
 /// パレットでも開ける)。
 const SETTINGS_MIN_W: usize = 79;
+
+/// workspace.switch-button: 切り替えのボタンを出す描ける幅の下限(端末の幅 90。設定のボタンより先に省く)。
+const SWITCH_MIN_W: usize = SETTINGS_MIN_W + 10;
+
+/// workspace.switch-button: 切り替えのボタンの (文字, キー): 「キー ⇄」(キーは切り替えのキー。割り当てが無ければ ⇄ だけ)。
+fn switch_button_text(app: &App) -> (String, Option<String>) {
+    let key = keymap::key_for(&app.keys, Mode::Table, keymap::Action::WsSwitch);
+    let t = match &key {
+        Some(k) => format!(" {k} ⇄ "),
+        None => " ⇄ ".to_string(),
+    };
+    (t, key)
+}
 
 /// 画面の型のメニューのボタンの文字(前後に空白1つ): 表の画面「▦ 表 ▾」、関係マップ「◇ 関係マップ ▾」。
 fn menu_button_text(app: &App) -> String {
@@ -244,7 +271,8 @@ fn settings_button_text(app: &App) -> (String, Option<String>) {
 }
 
 /// 幅 `w` のヘッダーの右の端のボタンの置き方: (桁, 文字, キー, ボタン)。左から「+ 新規」(ビューの帯を出さない
-/// ときだけ。CE-25)・メニュー・設定。幅が足りなければ設定を先に省き、次に「+ 新規」を省き、パンくずとメニューを残す。
+/// ときだけ。CE-25)・切り替え(workspace.switch-button)・メニュー・設定。幅が足りなければ切り替えを先に省き、
+/// 次に設定、次に「+ 新規」を省き、パンくずとメニューを残す。
 fn header_buttons(app: &App, w: usize) -> Vec<(usize, String, Option<String>, HeaderButton)> {
     let crumb_w = width(&crumb_text(app, &table_name(app)));
     let menu = menu_button_text(app);
@@ -256,6 +284,17 @@ fn header_buttons(app: &App, w: usize) -> Vec<(usize, String, Option<String>, He
     let mut cands: Vec<Vec<(String, Option<String>, HeaderButton)>> = Vec::new();
     let m = (menu.clone(), None, HeaderButton::Menu);
     let st = (set.clone(), set_key.clone(), HeaderButton::Settings);
+    // workspace.switch-button: 広ければ、メニューの左に切り替えのボタン。狭ければ設定より先に省く。
+    if w >= SWITCH_MIN_W && app.switch_button_shown() {
+        let (t, k) = switch_button_text(app);
+        let sw = (t, k, HeaderButton::Switch);
+        let mut c = Vec::new();
+        if let Some((nt, nk)) = &new {
+            c.push((nt.clone(), nk.clone(), HeaderButton::New));
+        }
+        c.extend([sw, m.clone(), st.clone()]);
+        cands.push(c);
+    }
     if w >= SETTINGS_MIN_W {
         match &new {
             Some((nt, nk)) => cands.push(vec![
@@ -1220,6 +1259,7 @@ pub(crate) fn new_button_at(app: &App, x: u16, y: u16) -> bool {
 }
 
 /// CE-25: 関係マップの「+ 新規」: (桁, 文字)。表の画面の帯の真ん中の行と同じ行・同じ桁。入らなければ None。
+/// 文字の右の端の空白は除く: その桁はいちばん右の窓の右上の角で、空白で隠すと窓の枠が切れて見える。
 fn relmap_new_button(app: &App, w: usize) -> Option<(usize, String)> {
     // ビューの帯を出さないときは、表の画面と同じくヘッダーに出す。
     if header_new_shown(app) {
@@ -1227,7 +1267,7 @@ fn relmap_new_button(app: &App, w: usize) -> Option<(usize, String)> {
     }
     let (t, _) = new_button_text(app);
     let tw = width(&t);
-    (super::new_note::button_shown(app) && w >= tw + 2).then(|| (w - tw, t))
+    (super::new_note::button_shown(app) && w >= tw + 2).then(|| (w - tw, t.trim_end().to_string()))
 }
 
 /// CE-25: 関係マップの窓の上の縁(表の画面の帯の真ん中の行と同じ行)の右の端に「+ 新規」を重ねる。
@@ -1399,6 +1439,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
             .or_else(|| app.vim_hints())
             // stack.close-pending: 並べた表を閉じる確かめでは、閉じる言葉のキー。
             .or_else(|| super::stack::close_hints(app))
+            // gantt.band-edit-keys: ガントでは、動かせる棒を選んでいるときだけ棒を動かすキー。
+            .or_else(|| super::gantt::hints(app))
+            // workspace.switch-hint: 切り替えの一覧では、数字のキーで番号の所へ移れることも。
+            .or_else(|| super::switch::hints(app))
             .unwrap_or_else(|| keymap::hints(&app.keys, app.mode)),
     };
     let head = text.clone();

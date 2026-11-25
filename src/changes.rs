@@ -180,6 +180,20 @@ impl Changes {
         items: &[(RowId, Option<NewValue>)],
         follow: &Follow,
     ) -> Vec<Skip> {
+        self.set_each_then_with(src, col, items, follow, &[])
+    }
+
+    /// `set_each_then` と同じで、`also`(行, 列, 値)のセルも同じ1手でためる(cell-edit.children-closed-by の閉じた
+    /// 印・cell-edit.children-reopen で空にする印)。`col` を直せなかった行の `also` は入れない。`also` の直せない
+    /// セルは飛ばす(理由は返さない。一緒に入れる値と同じ)。
+    pub fn set_each_then_with(
+        &mut self,
+        src: &dyn Source,
+        col: &str,
+        items: &[(RowId, Option<NewValue>)],
+        follow: &Follow,
+        also: &[(RowId, String, NewValue)],
+    ) -> Vec<Skip> {
         self.gen += 1;
         let mut bases = BTreeMap::new();
         let mut cells = Vec::new();
@@ -216,6 +230,17 @@ impl Changes {
                 }
                 Ok(None) => {}
                 Err(s) => skips.push(s),
+            }
+        }
+        for (row, ac, av) in also {
+            if ac == col
+                || skips.iter().any(|s| s.row == *row)
+                || cells.iter().any(|c| c.row == *row && c.col == *ac)
+            {
+                continue;
+            }
+            if let Ok(Some(c)) = self.plan(src, row, ac, Some(av), &mut bases) {
+                cells.push(c);
             }
         }
         self.commit(cells, bases, true);

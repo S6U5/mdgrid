@@ -2,7 +2,8 @@
 //!
 //! 開いたときと日付が変わったときに、裏の糸でルーチンの表をファイルから読み(`rows`)、記録と比べて来ている回を
 //! 決める(`mdgrid::routine::due`。書かない)。来ている回があれば下の帯に数を出し、人が作る操作(帯のクリックか
-//! パレットの「ルーチンの回を作る」)をして、作るノートの名前を見て確かめたときだけ作る。`--runs` も同じ表の読み方と
+//! パレットの「ルーチンの回を作る」)をして、作るノートの名前を見て確かめたときだけ作る。作る操作は、その時に表を
+//! 読み直して数え直し、その日にやめた回も並べる(`mdgrid::routine::pending`)。`--runs` も同じ表の読み方と
 //! 記録を使う(`routine_once`)。読むだけの起動では確かめず、知らせず、作らない。
 
 use super::app::App;
@@ -31,6 +32,8 @@ pub(crate) struct RoutineState {
     rx: Option<Receiver<Plan>>,
     /// 来ている回(下の帯に数を出す回)。
     pub due: Vec<Run>,
+    /// 作る操作の確かめに並べた回(その時に数え直したもの。やめた回も入る)。
+    asked: Vec<Run>,
     /// 下の帯に出した理由(同じ理由は2回出さない)。
     shown: HashSet<String>,
 }
@@ -198,33 +201,69 @@ impl App {
         }
     }
 
-    /// routine.screen-create: パレットの「ルーチンの回を作る」と、下の帯の知らせのクリック。作るノートの名前を並べて
-    /// 確かめる(続けて `y`)。
+    /// 作る操作で数える今日と今。最後に確かめた日(`routine_poll_at` の日)が時計の今日と違えば、その日の 0 時
+    /// (試験は日を決めて確かめる)。
+    fn routine_today(&self) -> (i64, i64) {
+        let (today, now) = mdgrid::clock::today_now(|k| std::env::var(k).ok());
+        match self.routine.day {
+            Some(d) if d != today => (d, d * 86_400),
+            _ => (today, now),
+        }
+    }
+
+    /// routine.screen-create: パレットの「ルーチンの回を作る」と、下の帯の知らせのクリック。その時にルーチンの表を
+    /// 読み直して来ている回を数え直し(開いたあとに足したルーチンも入る)、作るノートの名前を並べて確かめる
+    /// (続けて `y`)。その日にやめた回も並べる(人が自分で選んだため。下の帯の知らせは出し直さない)。
     pub(crate) fn start_routine_runs(&mut self) {
         if self.readonly {
             self.message = Some(READONLY.into());
             return;
         }
-        if self.routine.due.is_empty() {
+        let Some(dir) = self.routine.dir.clone() else {
+            self.message = Some(Msg::RoutineNone.into());
+            return;
+        };
+        if self.routine.tables.is_empty() {
             self.message = Some(Msg::RoutineNone.into());
             return;
         }
-        let names = self.routine.due.iter().map(|r| r.shown.clone()).collect();
+        let (today, now) = self.routine_today();
+        let plan =
+            mdgrid::routine::pending(&dir, &load(&self.routine.tables, today, now), today, now);
+        let fresh: Vec<String> = plan
+            .problems
+            .into_iter()
+            .filter(|p| self.routine.shown.insert(p.clone()))
+            .collect();
+        if plan.runs.is_empty() {
+            let mut lines = vec![Msg::RoutineNone.text().to_string()];
+            lines.extend(fresh);
+            self.message = Some(lines.join(Msg::SentenceSep.text()));
+            return;
+        }
+        let names = plan.runs.iter().map(|r| r.shown.clone()).collect();
+        self.routine.asked = plan.runs;
         self.open_ask(Ask::RoutineRuns(names));
+        if !fresh.is_empty() {
+            self.message = Some(fresh.join(Msg::SentenceSep.text()));
+        }
     }
 
-    /// routine.screen-create・routine.fail: 確かめの答え。y なら作って表を読み直し、作れなかった回は理由を出して
-    /// 知らせに残す。ほかはやめて、その日のうちは同じ回を知らせない。
+    /// routine.screen-create・routine.fail: 確かめの答え。y なら並べた回を作って表を読み直し、作れなかった回は
+    /// 理由を出して知らせに残す。ほかはやめて、その日のうちは並べた回を下の帯で知らせない。
     pub(crate) fn confirm_routine_runs(&mut self, yes: bool) {
         let Some(dir) = self.routine.dir.clone() else {
             return;
         };
-        let runs = std::mem::take(&mut self.routine.due);
+        let runs = std::mem::take(&mut self.routine.asked);
+        let due = std::mem::take(&mut self.routine.due);
+        let asked = |r: &Run| runs.iter().any(|a| a.key == r.key);
         if !yes {
             let today = self
                 .routine
                 .day
                 .unwrap_or_else(|| mdgrid::clock::today_now(|k| std::env::var(k).ok()).0);
+            self.routine.due = due.into_iter().filter(|r| !asked(r)).collect();
             self.message = Some(match mdgrid::routine::dismiss(&dir, &runs, today) {
                 Ok(()) => Msg::RoutineDismissed.into(),
                 Err(e) => e,
@@ -232,8 +271,10 @@ impl App {
             return;
         }
         let report = mdgrid::routine::make(&dir, &runs);
+        let rest: Vec<Run> = due.into_iter().filter(|r| !asked(r)).collect();
         self.routine.due = runs
             .into_iter()
+            .chain(rest)
             .filter(|r| !report.done.contains(&r.key))
             .collect();
         self.routine_reload(&report.made);

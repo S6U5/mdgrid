@@ -52,3 +52,38 @@ fn test_date_words_preview_e2e() {
     tui.wait_for("+due: 2026-11-27");
     assert_gone(tui.stop());
 }
+
+#[test]
+fn test_date_words_preview_new_note_e2e() {
+    // [stest -> req~cell-edit.date-words-preview~2] 新しいノートの窓(`a`)の due の欄に `明日` と打つと、同じ行の打った文字の右に `2026-11-22(日)` が出て、
+    // その右に窓の右の縁 `│` が残る(枠の外にはみ出さない。2026-11-25 の実地の操作で、枠の右の外に出ていた)。
+    let home = root("date-words-newnote-e2e");
+    let mut tui = Tui::spawn(&["t"], home.path(), &[("MDGRID_TODAY", "2026-11-21")]);
+    tui.wait_until("表が出る", |s| s.contains("2026-10-05"));
+    tui.send("a");
+    tui.wait_until("新しいノートの窓が出る", |s| {
+        s.contains("新しいノート")
+    });
+    tui.send("x\r");
+    tui.wait_until("due の欄のカレンダーが出る", |s| {
+        s.contains("2026年11月")
+    });
+    tui.send("明日");
+    tui.wait_until("読んだ日が出る", |s| {
+        line_with(s, "明日").is_some_and(|l| l.contains("2026-11-22(日)"))
+    });
+    let s = tui.screen();
+    let line = line_with(&s, "明日").unwrap();
+    let typed = line.find("明日").unwrap();
+    let at = line.find("2026-11-22(日)").unwrap();
+    assert!(
+        line.find("due").is_some_and(|d| d < typed) && typed < at,
+        "欄の名前・打った文字・読んだ日の順:\n{s}"
+    );
+    assert!(
+        line[at..].contains('│'),
+        "読んだ日の右に窓の右の縁が残る:\n{s}"
+    );
+    tui.send("\x1b");
+    assert_gone(tui.stop());
+}

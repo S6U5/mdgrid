@@ -664,12 +664,14 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
             fit(Msg::RelMapTop.text(), w, Align::Left),
             strong,
         )));
+        // screen.note-name-everywhere: 行き先の名前にも、ノートの欄と同じ名前の正規表現を当てる(数えるのは元の名前ごと)。
         for (name, k) in relmap::top_targets(l, 5) {
             let count = k.to_string();
             let nw = w.saturating_sub(width(&count) + 2);
+            let name = sanitize(&super::view::note_name_of(app, &name));
             out.push(Line::from(format!(
                 " {} {count}",
-                fit(&sanitize(&name), nw, Align::Left)
+                fit(&name, nw, Align::Left)
             )));
         }
     } else {
@@ -691,21 +693,19 @@ fn detail_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
     out
 }
 
-/// 下のつながった行の中身: 選んだつながりのリンクの組。
-fn linked_body(rm: &RelMap, w: usize) -> Vec<Line<'static>> {
+/// 下のつながった行の中身: 選んだつながりのリンクの組。名前は、ノートの欄と同じ名前の正規表現を当てたもの
+/// (screen.note-name-everywhere)。
+fn linked_body(app: &App, rm: &RelMap, w: usize) -> Vec<Line<'static>> {
     let Some(l) = rm.link.map(|k| &rm.links[k]) else {
         return Vec::new();
     };
+    let name =
+        |p: &std::path::Path| sanitize(&super::view::note_name_of(app, &relations::file_stem(p)));
     l.pairs
         .iter()
         .map(|(a, b)| {
             Line::from(fit(
-                &format!(
-                    " {}  {}  {}",
-                    sanitize(&relations::file_stem(a)),
-                    "→",
-                    sanitize(&relations::file_stem(b))
-                ),
+                &format!(" {}  {}  {}", name(a), "→", name(b)),
                 w,
                 Align::Left,
             ))
@@ -823,7 +823,7 @@ pub(crate) fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
         body.extend(panel(
             app,
             Msg::RelMapLinked.text(),
-            linked_body(rm, w.saturating_sub(2)),
+            linked_body(app, rm, w.saturating_sub(2)),
             w,
             linked_h,
             false,

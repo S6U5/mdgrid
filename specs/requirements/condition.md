@@ -96,6 +96,19 @@
   - Then: 行は変わらない。
 - Needs: stest
 
+#### 表の画面の Esc は、選択と絞り込みが無ければ、数字のキーと通知の欄から付けた条件を全部解くべき(いつも隠す条件 `hide` は解かない)
+`req~condition.esc-clear~1` P1
+- Rationale: 通知の欄から付けた「[ 期限切れ]」が Esc で解けず、キーの説明の「Esc は絞り込みを解く」とも食い違っていたため(2026-11-25 に人が「Esc で解く」と決めた)
+- Acceptance:
+  - Given: 数字のキー 1 と通知の欄から、条件 due と overdue を付けた表(選択も簡単な絞り込みも無い)
+  - When: Esc
+  - Then: 2つの条件が外れ、帯から条件の札が消える。
+- Acceptance:
+  - Given: `hide = true` の条件 far がある表
+  - When: Esc
+  - Then: far で隠した行は隠れたまま。
+- Needs: utest
+
 #### 数字のキーで入れた条件は、設定の帯(navigation.settings-bar-items)に数字と見せる名前で並べ、2つ以上入れたらどれにも当たる行だけにするべき
 `req~condition.digit-stack~2` P1
 - Rationale: 今どの条件で絞っているかを見て分かるようにし、ほかの絞り込み(検索と同じ値の絞り込み)と同じく重ねて狭めるため

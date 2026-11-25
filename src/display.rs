@@ -228,6 +228,14 @@ impl NoteName {
             out
         }
     }
+
+    /// パス `path`(`.md` を除いたもの)の、フォルダを除いた最後の名前の部分にだけ当てる(SR-47)。フォルダは残す。
+    pub fn apply_last(self, path: &str) -> String {
+        match path.rsplit_once('/') {
+            Some((dir, base)) => format!("{dir}/{}", self.apply(base)),
+            None => self.apply(path),
+        }
+    }
 }
 
 impl Serialize for NoteName {

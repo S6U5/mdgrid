@@ -816,6 +816,11 @@ impl App {
     /// 繰り返せる。
     fn vim_set(&mut self, row: &RowId, col: &str, v: NewValue) {
         let st = self.stage_children(col, vec![(row.clone(), Some(v.clone()))]);
+        // cell-edit.children-reopen: 子も戻すかを選んでからためる。
+        if st.asked {
+            self.open_children_ask();
+            return;
+        }
         if let Some((_, why)) = st.refused.into_iter().next() {
             self.message = Some(why);
             return;

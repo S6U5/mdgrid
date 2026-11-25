@@ -686,7 +686,19 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
         return vec![Line::from(fit(Msg::TreeEmptyFolder.text(), w, Align::Left))];
     }
     let one_line = |s: String| sanitize(s.lines().next().unwrap_or_default());
-    let names: Vec<String> = items.iter().map(|r| one_line(app.src.label(r))).collect();
+    // screen.note-name-everywhere: 名前は表のノートの欄と同じ見せ方(`.md` を除き、note_path と note_name に従う)。
+    // 空になる名前は元の名前(カンバンの札と同じ)。
+    let names: Vec<String> = items
+        .iter()
+        .map(|r| {
+            let name = super::view::note_name(app, r);
+            one_line(if name.trim().is_empty() {
+                app.src.label(r)
+            } else {
+                name
+            })
+        })
+        .collect();
     let head = super::view::LABEL_HEADER.text();
     // 名前の欄はいちばん長い名前まで(幅の半分まで)、列の欄はいちばん長い値まで(24 桁まで)。入る列だけ。
     let nw = names
@@ -696,14 +708,16 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
         .max()
         .unwrap_or(4)
         .min((w.saturating_sub(1) / 2).max(8));
+    // 列の見出しは表の列の見出しと同じ displayName(base-view.display-name-everywhere)。
     let mut cols: Vec<(String, usize, Vec<String>)> = Vec::new();
     let mut used = 1 + nw;
     for c in &app.cols {
+        let title = sanitize(&app.title(c));
         let vals: Vec<String> = items.iter().map(|r| one_line(app.plain(r, c))).collect();
         let cw = vals
             .iter()
             .map(|v| width(v))
-            .chain([width(c)])
+            .chain([width(&title)])
             .max()
             .unwrap_or(1)
             .clamp(1, 24);
@@ -711,7 +725,7 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
             break;
         }
         used += 2 + cw;
-        cols.push((c.clone(), cw, vals));
+        cols.push((title, cw, vals));
     }
     let faint = super::look::look(app).map_or_else(
         || Style::default().add_modifier(Modifier::BOLD),
@@ -720,7 +734,7 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
     let mut out = Vec::new();
     let mut h = format!(" {}", fit(head, nw, Align::Left));
     for (c, cw, _) in &cols {
-        h.push_str(&format!("  {}", fit(&sanitize(c), *cw, Align::Left)));
+        h.push_str(&format!("  {}", fit(c, *cw, Align::Left)));
     }
     out.push(Line::from(Span::styled(fit(&h, w, Align::Left), faint)));
     let vis = vis.saturating_sub(1);

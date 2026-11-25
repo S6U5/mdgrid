@@ -1146,6 +1146,20 @@ impl Resolved {
         }
     }
 
+    /// 値の候補の窓での値 `v` の見せ方: 列 `col` の `labels` に名前があれば「名前 値」(字もあれば「字 名前 値」)。
+    /// 選ぶ値が分かるように値を残す(書く値は値のまま)。名前の無い値は None(値のまま見せる)。
+    pub fn value_choice(&self, col: &str, v: &str) -> Option<String> {
+        let named = self
+            .labels
+            .get(col)
+            .and_then(|n| n.get(v))
+            .is_some_and(|s| !s.trim().is_empty());
+        if !named {
+            return None;
+        }
+        self.value_shown(col, v).map(|s| format!("{s} {v}"))
+    }
+
     /// 道筋の出どころ(無ければ既定)。
     pub fn origin(&self, path: &str) -> Place {
         self.origins.get(path).map_or(Place::Default, |o| o.place)

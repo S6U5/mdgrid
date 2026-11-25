@@ -170,6 +170,19 @@
   - When: 設定で `j` を外す
   - Then: ↓ だけが効く。
 
+#### 表の画面では `O`(Shift+o)で、選んだ行の URL を開き(木の画面の `o` と同じ動作)、`[keys.table]` で `open_url` を別のキーに割り当て直せるべき
+`req~screen.open-url-key~1` P1
+- Rationale: 日常で使うサイトの表で、URL を開くのに操作の一覧かパレットを通るしかなく、自分でキーを割り当てようとしても「表のモードでは使えない」と無視されていたため(2026-11-25 に人が「両方」と決めた)
+- Acceptance:
+  - Given: `url: https://example.com/mail` の行を選んだ表
+  - When: `O`
+  - Then: その URL を OS の既定のブラウザに渡す(開く前にメッセージ行に URL を出す)。
+- Acceptance:
+  - Given: 設定に `[keys.table]` の `"u" = "open_url"`
+  - When: 起動して `u`
+  - Then: 警告を出さず、選んだ行の URL を開く。
+- Needs: utest
+
 #### キーの定義は1か所の表に置き、キーの振り分け・下の帯・ヘルプを、すべてその表から作るべき
 `req~screen.key-table~1` P1
 - Acceptance:
@@ -1826,6 +1839,48 @@
   - Given:
   - When:
   - Then: `note_path = "common"` と `'^\d{8}_'` で `todo/20261015_a.md`・`archive/todo/20261001_b.md` → `todo/a`・`archive/todo/b`(フォルダは残し、最後の名前の部分に当てる)。
+
+#### ノートの名前を見せる所(関係マップのつながった行とよく指される行・木の画面の葉・横断の検索の結果・リンクの列を直すときの候補)にも、ノートの欄と同じ見せ方(`display.note_path` と `display.note_name`)を当てるべき(メッセージ・詳しく見る画面・検索で当てる文字・書くリンクの値は変えない)
+`req~screen.note-name-everywhere~1` P1
+- Rationale: ノートの欄とリンクのセルでは日付の頭(`20261120_`)を隠しているのに、関係マップのつながった行などには頭が出て、同じノートが2つの名前で見えていたため(2026-11-25 に、リンクのセルの頭を直したときに、同じ形の所を洗い出した)
+- Acceptance:
+  - Given: `[display] note_name = '^\d{8}_'` と、`20261121_画面` が `parent: "[[20261120_設計]]"` で指す表
+  - When: 関係マップで parent のつながりを選ぶ
+  - Then: つながった行は「画面 → 設計」、よく指される行は「設計」。
+- Acceptance:
+  - Given: 同じ設定で、木の設定(`tree`)のある表の `20261120_設計`
+  - When: 木の画面を開く
+  - Then: 葉の名前は「設計」。
+- Acceptance:
+  - Given: 同じ設定のワークスペース
+  - When: 横断の検索で「設計」を探す
+  - Then: 結果の名前は「設計」。
+- Acceptance:
+  - Given: 同じ設定で、parent がリンクの列の表
+  - When: 「画面」の parent のセルを直して候補を出す
+  - Then: 候補の名前は「設計」で、選ぶと `[[20261120_設計]]` を書く。
+- Acceptance:
+  - Given: `display.note_name` を書かない表
+  - When: 関係マップを開く
+  - Then: つながった行は「20261121_画面 → 20261120_設計」のまま。
+- Needs: utest
+
+#### 印の `[[table]]` に `name` を書いた表は、パンくず・最近開いた表の一覧・通知の欄の今の表に、フォルダの名前でなくその `name` を見せるべき
+`req~screen.table-name-marker~1` P1
+- Rationale: 引き出しと印では「予定」なのに、開くとパンくずと最近開いた表の一覧が「calendar」(path のフォルダの名前)になり、同じ表が2つの名前で見えていたため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: 印の `[[table]]` に `name = "予定"`・`path = "calendar"` の表
+  - When: その表を開く
+  - Then: パンくずは「<ワークスペース> › 予定」。
+- Acceptance:
+  - Given: 同じ表を開いたことがある
+  - When: 最近開いた表の一覧を開く
+  - Then: 行の名前は「予定」。
+- Acceptance:
+  - Given: 印の `[[table]]` に `path = "calendar"` だけを書いた表
+  - When: その表を開く
+  - Then: パンくずは今までどおり「calendar」。
+- Needs: utest
 
 #### `display.note_name` は、表のプロファイルの項目として全体・ワークスペース・表・ビューの範囲(screen.profile-scopes)に書けるべき
 `req~screen.note-name-scopes~1` P1

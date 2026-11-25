@@ -204,3 +204,89 @@ fn test_rel_1_plain_text_column_unchanged() {
     assert!(!s.contains("Other Project"), "{s}");
     let _ = PathBuf::new();
 }
+
+/// 今の端末の大きさで描いた画面の行。
+fn sized_lines(a: &App) -> Vec<String> {
+    let (w, h) = a.size;
+    let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(w, h)).unwrap();
+    term.draw(|f| draw(f, a)).unwrap();
+    super::test_screen::text(term.backend().buffer())
+        .lines()
+        .map(str::to_string)
+        .collect()
+}
+
+/// 行 `line` の、字 `c` の桁(表示の幅で)の全部。
+fn cols_of(line: &str, c: char) -> Vec<usize> {
+    let mut out = Vec::new();
+    let mut x = 0;
+    for ch in line.chars() {
+        if ch == c {
+            out.push(x);
+        }
+        x += super::width::width(&ch.to_string());
+    }
+    out
+}
+
+/// 行 `line` の桁 [from, to) の字。
+fn span_of(line: &str, from: usize, to: usize) -> String {
+    let mut out = String::new();
+    let mut x = 0;
+    for ch in line.chars() {
+        if x >= from && x < to {
+            out.push(ch);
+        }
+        x += super::width::width(&ch.to_string());
+    }
+    out
+}
+
+#[test]
+fn test_rel_3_link_candidates_window_framed() {
+    // [utest -> req~screen.frames~1, req~relations.link-input-candidates~1] リンクの列の候補の窓は、入力の欄の側の縁も `╭─…─╮`(上に出すときは
+    // `╰─…─╯`)で閉じ、入力の欄の行と候補の行のあいだを縁で分ける(縁が無いと、同じ行の右の列の札や文字が窓の中に続いて見えた。
+    // 2026-11-25 の実地の操作で見つかった)。下に出す窓(1行目の a build)と、低い端末で上に出す窓(c test)の両方。
+    let tmp = workspace("rel_pick_frame");
+    for (name, h, below) in [("a build", 24u16, true), ("c test", 12, false)] {
+        let mut a = boot_tasks(&tmp);
+        a.resize(120, h);
+        goto(&mut a, name, "project");
+        press(&mut a, KeyCode::Enter);
+        assert_eq!(a.mode, Mode::Edit);
+        let l = sized_lines(&a);
+        let s = l.join("\n");
+        let (_, y) = super::input::cursor(&a).expect("入力の欄");
+        let y = y as usize;
+        let item = l
+            .iter()
+            .position(|t| t.contains("Other Project"))
+            .unwrap_or_else(|| panic!("{name}: 候補が無い:\n{s}"));
+        let (edge_y, corners, far) = if below {
+            (y + 1, ('╭', '╮'), ('╰', '╯'))
+        } else {
+            (y - 1, ('╰', '╯'), ('╭', '╮'))
+        };
+        assert_eq!(item > y, below, "{name}: 窓の向き:\n{s}");
+        let edge = &l[edge_y];
+        let (Some(&x0), Some(&x1)) = (
+            cols_of(edge, corners.0).first(),
+            cols_of(edge, corners.1).first(),
+        ) else {
+            panic!("{name}: 入力の欄のすぐ隣の行に窓の縁 {corners:?} が無い:\n{s}");
+        };
+        let inner = span_of(edge, x0 + 1, x1);
+        assert!(
+            !inner.is_empty() && inner.chars().all(|c| c == '─'),
+            "{name}: 縁の中は横の線だけ「{inner}」:\n{s}"
+        );
+        // 候補の行は縁の内側(左右の縦の線のあいだ)。
+        assert_eq!(cols_of(&l[item], '│').first(), Some(&x0), "{name}:\n{s}");
+        // 反対の側の縁も同じ桁で閉じる。
+        let other = l
+            .iter()
+            .find(|t| cols_of(t, far.0).contains(&x0) && cols_of(t, far.1).contains(&x1))
+            .is_some();
+        assert!(other, "{name}: 反対の側の縁 {far:?}:\n{s}");
+    }
+}

@@ -418,6 +418,19 @@
   - Then: 保存の確認の画面が出る。
 - Needs: utest
 
+### ガントの画面の下の帯には、棒を動かすキー(`H`・`L`)と伸ばす・縮めるキー(`>`・`<`)を、動かせる棒を選んでいるときに出すべき
+`req~gantt.band-edit-keys~1` P1
+- Rationale: 棒を動かせるのに、下の帯にそのキーが出ず、キーを知らない人には動かせることが分からなかったため(2026-11-25 の実地の操作で見つかった)
+- Acceptance:
+  - Given: 自分の日付のある行を選んだガント
+  - When: 下の帯を見る
+  - Then: `H`・`L` と `>`・`<` の説明がある。
+- Acceptance:
+  - Given: 読むだけの起動のガント
+  - When: 下の帯を見る
+  - Then: 棒を動かすキーは出ない。
+- Needs: utest
+
 ### ガントの画面では、棒を動かす・伸ばす・縮めるキー(gantt.edit-move・gantt.edit-resize)のほかでは値を直せないべき(日付を打つ入力と、棒の端のドラッグはしない)
 `req~gantt.read-only-no-edit~2` P1
 - Acceptance:

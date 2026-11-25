@@ -1437,6 +1437,8 @@ VisualHint = "選取範圍：移動後按 v 確定（按 Esc 清除）"
 SelectedAll = "已選取所有列（{0}）"
 SelectionCleared = "已清除選取"
 FilterCleared = "已清除搜尋"
+## condition.esc-clear: Esc で数字のキーと通知の欄から付けた条件を解いた。
+ConditionsCleared = "已清除條件"
 NoRowToSelect = "沒有可選取的列"
 SelectValueCell = "請選取值的儲存格"
 ## {0} は列、{1} は値、{2} は行の数。
@@ -1534,6 +1536,10 @@ SwitchHint = "尚無我的最愛：在表格清單（{0}）的工作區標題上
 SwitchNoRoom = "終端機太小，無法顯示切換清單"
 KeySwitchRun = "前往選取的項目"
 KeySwitchNumber = "前往該編號的工作區"
+KeySwitchOrigin = "回到最初開啟的位置"
+KeySwitchDigits = "前往該編號"
+KeyDigitRange = "{0}~{1}"
+SwitchAlreadyHere = "{0} 是目前所在的工作區"
 ModeSwitch = "切換"
 SecInSwitch = "切換清單中"
 
@@ -1797,6 +1803,8 @@ KeyBarLater = "把長條往後移動一個單位（改寫日期）"
 KeyBarEarlier = "把長條往前移動一個單位（改寫日期）"
 KeyBarLonger = "把長條的結束延長一個單位"
 KeyBarShorter = "把長條的結束縮短一個單位"
+GanttBandMove = "移動長條"
+GanttBandResize = "延長/縮短"
 GanttToday = "今天"
 GanttThisWeek = "本週"
 GanttThisMonth = "本月"
@@ -1879,6 +1887,16 @@ ChildrenOpenRefuseOne = "還有 {0} 個子項未完成，因此不設為完成"
 ChildrenOpenKeep = "還有 {0} 個子項未完成"
 ## `ChildrenOpenKeep` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ChildrenOpenKeepOne = "還有 {0} 個子項未完成"
+## on_reopen が reopen か ask で、closed_by を書いていない(cell-edit.children-reopen)。
+RsnChildrenReopenNoClosedBy = "沒有 closed_by（標記隨父項完成一起關閉的子項的欄位），無法得知要恢復哪些子項，因此按 \"keep\" 處理"
+## 完了の親を戻したとき、親の完了で一緒に閉じた子も戻すかを選ぶ窓の問い(on_reopen = "ask")。
+AskChildrenReopen = "有隨父項完成一起關閉的子項。如何處理："
+## その窓の選び: 子も戻す。
+ChildrenReopenAll = "子項也恢復"
+## その窓の選び: 親だけ戻す。
+ChildrenReopenParent = "僅父項"
+## 戻す子のうち、直せないセルの子があった(理由を続ける)。
+ChildrenReopenSkipped = "有子項未能恢復"
 ## {0} は日数。ガントで選んだ子の行が、祖先の期間からはみ出す日数(一番多いもの)。
 GanttOverParent = "超出父項期間 {0} 天"
 ## `GanttOverParent` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

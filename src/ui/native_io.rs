@@ -101,8 +101,12 @@ pub(crate) enum Ask {
     WsPick(Vec<String>),
     /// 外すワークスペース(WS-2。この表が入っているもの)。
     WsRemove(Vec<String>),
-    /// 開くワークスペース(WS-2)。
-    WsOpen(Vec<String>),
+    /// 開くワークスペース(WS-2)と、最初に開いた所・お気に入りの印のワークスペース(workspace.drawer-favorites)。
+    /// `dests` は `items` と同じ並び。
+    WsOpen {
+        items: Vec<String>,
+        dests: Vec<super::workspace::WsOpenItem>,
+    },
     /// 開くワークスペースの表(WS-2)。
     WsTable {
         ws: String,
@@ -141,6 +145,9 @@ pub(crate) enum Ask {
     PageName,
     /// routine.screen-create: 作るルーチンの回のノートの名前(印の根からの相対のパス)。続けて `y`。
     RoutineRuns(Vec<String>),
+    /// cell-edit.children-reopen: 完了の親を戻すとき、親の完了で閉じた子も戻すか(「子も戻す」「親だけ」)。待っている
+    /// 直しは `App::children_ask`(children.rs)。
+    ChildrenReopen { items: Vec<String> },
 }
 
 /// 候補を打った語で絞る(パレットと同じあいまいな一致の点の順)。返すのは items の添字。
@@ -255,7 +262,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::WsName) => Msg::AskWsName.into(),
         Some(Ask::WsPick(_)) => Msg::AskWsPick.into(),
         Some(Ask::WsRemove(_)) => Msg::AskWsRemove.into(),
-        Some(Ask::WsOpen(_)) => Msg::AskWsOpen.into(),
+        Some(Ask::WsOpen { .. }) => Msg::AskWsOpen.into(),
         Some(Ask::WsTable { ws, .. }) => Msg::AskWsTable.fill(&[&sanitize(ws)]),
         Some(Ask::StarterPick { .. }) => Msg::AskStarterPick.into(),
         Some(Ask::StarterDir(_)) => Msg::AskStarterDir.into(),
@@ -267,6 +274,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
         Some(Ask::PageName) => Msg::AskPageName.into(),
         Some(Ask::RoutineRuns(_)) => Msg::AskRoutineRuns.into(),
+        Some(Ask::ChildrenReopen { .. }) => Msg::AskChildrenReopen.into(),
     }
 }
 
@@ -279,12 +287,13 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::OpenLink { items, .. }) => items,
         Some(Ask::LinkedRows { items, .. }) => items,
         Some(Ask::RestoreNote { items, .. }) => items,
-        Some(Ask::WsRemove(items) | Ask::WsOpen(items)) => items,
+        Some(Ask::WsRemove(items) | Ask::WsOpen { items, .. }) => items,
         Some(Ask::WsTable { items, .. }) => items,
         Some(Ask::StarterPick { items, .. }) => items,
         Some(Ask::NoticeTables { items, .. }) => items,
         Some(Ask::OpenRecent { items, .. }) => items,
         Some(Ask::StackTable { items, .. }) => items,
+        Some(Ask::ChildrenReopen { items }) => items,
         Some(Ask::WsPick(names)) => {
             // WS-2: 打った語は新しいワークスペースにもなる(places の分類と同じ形)。
             let shown = super::workspace::pick_items(names, query).0;
@@ -679,6 +688,11 @@ impl App {
                 self.close_palette();
                 self.confirm_routine_runs(query.trim().eq_ignore_ascii_case("y"));
             }
+            // cell-edit.children-reopen: 最初の項目が「子も戻す」、次が「親だけ」。
+            Some(Ask::ChildrenReopen { .. }) => match picked {
+                Some(k) => self.children_reopen_chosen(k == 0),
+                None => self.message = Some(Msg::AskNoMatch.into()),
+            },
             Some(Ask::RestoreNote { notes, .. }) => {
                 let Some(item) = picked.and_then(|k| notes.get(k)).cloned() else {
                     self.message = Some(Msg::AskNoMatch.into());
@@ -822,12 +836,18 @@ impl App {
                 };
                 self.ws_remove_current(&name);
             }
-            Some(Ask::WsOpen(items)) => {
-                let Some(name) = picked.and_then(|k| items.get(k)).cloned() else {
+            Some(Ask::WsOpen { dests, .. }) => {
+                let Some(dest) = picked.and_then(|k| dests.get(k)).cloned() else {
                     self.message = Some(Msg::AskNoMatch.into());
                     return;
                 };
-                self.ws_open_tables(&name);
+                match dest {
+                    super::workspace::WsOpenItem::Named(name) => self.ws_open_tables(&name),
+                    // workspace.drawer-favorites: 切り替えの一覧と同じ道で移る。
+                    super::workspace::WsOpenItem::Go(d) => {
+                        self.go_to(d, super::switch::Picker::Palette);
+                    }
+                }
             }
             Some(Ask::WsTable { ws, places, .. }) => {
                 let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {

@@ -487,10 +487,11 @@ impl App {
         // CE-3・CE-36: セルの編集と同じ候補のリスト(list.rs)。今の値は前もって入れる値か前の答え。
         // 決まりの選べる値(`[rules.<列>] values`)があればその値(どのノートにもまだ無い列でも並ぶ)。
         // 無ければテキストの列はノートにある値で、それも0件なら「なし」だけのリストにせず1行の入力。
+        // 値の候補には、決まりの labels の名前を添える(セルの編集と同じ)。
+        let values =
+            |c: &[Value]| self.with_value_labels(&col, List::new(c, preset.as_ref(), true));
         let list = match (self.rule_candidates(&col, kind), kind) {
-            (Some(c), Kind::Text | Kind::Number | Kind::Date | Kind::DateTime) => {
-                Some(List::new(&c, preset.as_ref(), true))
-            }
+            (Some(c), Kind::Text | Kind::Number | Kind::Date | Kind::DateTime) => Some(values(&c)),
             (_, Kind::Text) => self
                 .src
                 .candidates(&col, self.candidates)
@@ -499,7 +500,7 @@ impl App {
                         .filter_map(to_new)
                         .any(|v| !matches!(v, NewValue::Null))
                 })
-                .map(|c| List::new(&c, preset.as_ref(), true)),
+                .map(|c| values(&c)),
             _ => None,
         };
         self.open_note_input(entry, text, cal);
@@ -944,18 +945,19 @@ fn rows(f: &Flow) -> Vec<Option<usize>> {
     out
 }
 
-/// 欄の見出し(必須なら ` *`)。
-fn label(f: &Flow, row: Option<usize>) -> String {
+/// 欄の見出し(必須なら ` *`)。列の欄は、表の列の見出しと同じ displayName(base-view.display-name-everywhere)。
+fn label(app: &App, f: &Flow, row: Option<usize>) -> String {
     match row {
         None => Msg::NoteFieldPlace.text().to_string(),
         Some(0) => format!("{} *", Msg::NoteFieldName.text()),
         Some(k) if f.fields[k - 1] == BODY_FIELD => Msg::NoteFieldBody.text().to_string(),
         Some(k) => {
             let c = &f.fields[k - 1];
+            let name = sanitize(&app.title(c));
             if f.rule.required.contains(c) {
-                format!("{} *", sanitize(c))
+                format!("{name} *")
             } else {
-                sanitize(c)
+                name
             }
         }
     }
@@ -997,7 +999,11 @@ fn geom(app: &App) -> Option<Geom> {
     let count = rs.len().min(room);
     let cur = current(f);
     let first = cur.saturating_sub(count - 1).min(rs.len() - count);
-    let label_w = rs.iter().map(|r| width(&label(f, *r))).max().unwrap_or(4);
+    let label_w = rs
+        .iter()
+        .map(|r| width(&label(app, f, *r)))
+        .max()
+        .unwrap_or(4);
     // 幅: 見出し + 40 桁(値の欄)を目安に、画面の左右に2桁ずつ空ける。真ん中に置く。
     let bw = (label_w + 46)
         .max(48)
@@ -1273,7 +1279,7 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         let mut spans = vec![
             Span::styled(format!("{vt} "), bst),
             Span::styled(if here { "> " } else { "  " }, mark_st),
-            Span::styled(fit(&label(f, *row), g.label_w, Align::Left), bold),
+            Span::styled(fit(&label(app, f, *row), g.label_w, Align::Left), bold),
             Span::raw("  "),
         ];
         let room = (g.left + g.bw).saturating_sub(vx + 1);
