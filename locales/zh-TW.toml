@@ -1534,6 +1534,7 @@ SwitchHint = "尚無我的最愛：在表格清單（{0}）的工作區標題上
 SwitchNoRoom = "終端機太小，無法顯示切換清單"
 KeySwitchRun = "前往選取的項目"
 KeySwitchNumber = "前往該編號的工作區"
+KeySwitchOrigin = "回到最初開啟的位置"
 ModeSwitch = "切換"
 SecInSwitch = "切換清單中"
 

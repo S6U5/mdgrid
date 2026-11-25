@@ -699,7 +699,7 @@ The mouse works too: click an item to select it, and click the selected item aga
 
 ## `switch`
 
-The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; add one with `f` on a heading in the drawer or with `:workspace_favorite`). The workspace you are in is marked with `●`. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
+The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; add one with `f` on a heading in the drawer or with `:workspace_favorite`). The workspace you are in is marked with `●`. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**, numbered `0`. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
 
 | Key | Action | Description |
 |---|---|---|
@@ -710,6 +710,7 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `Down` | `down` | Next line |
 | `k` | `up` | Previous line |
 | `Up` | `up` | Previous line |
+| `0` | `choose_0` | Go back to where you started |
 | `1` | `choose_1` | Go to favorite 1 |
 | `2` | `choose_2` | Go to favorite 2 |
 | `3` | `choose_3` | Go to favorite 3 |
@@ -720,7 +721,7 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `8` | `choose_8` | Go to favorite 8 |
 | `9` | `choose_9` | Go to favorite 9 |
 
-The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it.
+The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it. The **W ⇄** button at the right of the header (shown when you have favorites or have moved away from where you started; on a narrow terminal it is dropped before the settings button) opens it too.
 
 ## `input_normal`
 
@@ -847,6 +848,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `workspace_drawer` — open or close the table list
 - `workspace_switch` — open or close the list of favorite workspaces to switch to
 - `workspace_favorite` — add a workspace to favorites or remove it (on a heading in the table list)
+- `choose_0` — in the switch list, go back to where you started
 - `choose_1` — in the switch list, go to favorite 1
 - `choose_2` — in the switch list, go to favorite 2
 - `choose_3` — in the switch list, go to favorite 3

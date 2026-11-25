@@ -356,3 +356,102 @@ fn test_favorite_current_needs_a_workspace() {
         .contains("ワークスペース"));
     assert!(favorites::entries(&tmp.0.join("config")).is_empty());
 }
+
+/// 印のワークスペース lab で起動し(最初に開いた所)、切り替えで work へ移った画面。
+fn moved_from_lab(tag: &str) -> (Tmp, App) {
+    let tmp = fixture(tag, &["work"]);
+    let mut l = boot(&tmp, "lab/x", None);
+    l.mark_origin(None);
+    let mut w = boot(&tmp, "tasks", Some("work"));
+    move_on(l, &mut w);
+    (tmp, w)
+}
+
+#[test]
+fn test_switch_origin_row_has_number_zero() {
+    // [utest -> req~workspace.switch-origin-key~1] 印の lab から work へ移ったあとの一覧: 先頭は「0 最初に開いた所: lab」、次が「1 work」(今いる所の印つき)。
+    let (_t, mut w) = moved_from_lab("sw_zero_row");
+    ch(&mut w, 'W');
+    let sc = screen(&w);
+    let pos = |t: &str| sc.find(t).unwrap_or_else(|| panic!("{t} が無い:\n{sc}"));
+    assert!(pos("0 最初に開いた所: lab") < pos("● 1 work"), "{sc}");
+}
+
+#[test]
+fn test_switch_zero_goes_back_to_the_origin() {
+    // [utest -> req~workspace.switch-origin-key~1] 同じ一覧で `0` → lab の表に戻る。
+    let (tmp, mut w) = moved_from_lab("sw_zero_back");
+    ch(&mut w, 'W');
+    ch(&mut w, '0');
+    assert!(w.quit, "ためた変更が無ければすぐ移る");
+    let to = w.switch_to.clone().unwrap();
+    assert_eq!(to.path, real(tmp.notes().join("lab/x")));
+}
+
+#[test]
+fn test_switch_zero_without_origin_row_does_nothing() {
+    // [utest -> req~workspace.switch-origin-key~1] 起動したときの所にいるあいだ(「最初に開いた所」の行が無い)の `0` は何もしない。
+    let tmp = fixture("sw_zero_none", &["work"]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    ch(&mut a, 'W');
+    ch(&mut a, '0');
+    assert_eq!(a.mode, Mode::Switch);
+    assert!(a.switch_to.is_none() && !a.quit);
+}
+
+/// App の大きさ(`resize` した幅と高さ)で描いた画面の文字(共通の screen は 80×24 で描く)。
+fn sized(a: &App) -> String {
+    let (w, h) = a.size;
+    let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(w, h)).unwrap();
+    term.draw(|f| super::draw(f, a)).unwrap();
+    super::test_screen::text(term.backend().buffer())
+}
+
+/// ヘッダーの行で、切り替えのボタンの桁(無ければ None)。
+fn switch_button_x(a: &App) -> Option<u16> {
+    let y = super::bands::head_y(a);
+    (0..a.size.0).find(|x| {
+        super::bands::header_button_at(a, *x, y) == Some(super::bands::HeaderButton::Switch)
+    })
+}
+
+#[test]
+fn test_switch_button_in_the_header_opens_the_list() {
+    // [utest -> req~workspace.switch-button~1] お気に入りが work・幅 100 → ヘッダーの右の端に「W ⇄」。押すと切り替えの一覧。
+    let tmp = fixture("sw_button", &["work"]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    let head = sized(&a)
+        .lines()
+        .nth(usize::from(super::bands::head_y(&a)))
+        .unwrap_or("")
+        .to_string();
+    assert!(head.contains("W ⇄"), "{head}");
+    let x = switch_button_x(&a).expect("切り替えのボタン");
+    a.click(x, super::bands::head_y(&a));
+    assert_eq!(a.mode, Mode::Switch);
+    assert!(screen(&a).contains("1 work"), "{}", screen(&a));
+}
+
+#[test]
+fn test_switch_button_hidden_without_favorites_at_the_origin() {
+    // [utest -> req~workspace.switch-button~1] お気に入りが無く、起動したときの所にいる → ボタンは無い。
+    let tmp = fixture("sw_button_none", &[]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    assert!(!sized(&a).contains('⇄'), "{}", sized(&a));
+    assert_eq!(switch_button_x(&a), None);
+}
+
+#[test]
+fn test_switch_button_dropped_before_settings_when_narrow() {
+    // [utest -> req~workspace.switch-button~1] 設定のボタンを出せる下限の幅ちょうど(端末 80)→ 設定のボタンはあり、「W ⇄」は無い。
+    let tmp = fixture("sw_button_narrow", &["work"]);
+    let mut a = boot(&tmp, "lab/x", None);
+    a.mark_origin(None);
+    a.resize(80, 30);
+    let s = sized(&a);
+    assert!(s.contains("設定"), "{s}");
+    assert!(!s.contains('⇄'), "{s}");
+}

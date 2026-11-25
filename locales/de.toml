@@ -1534,6 +1534,7 @@ SwitchHint = "noch keine Favoriten: in der Tabellenliste ({0}) auf einem Workspa
 SwitchNoRoom = "das Terminal ist zu klein für die Wechselliste"
 KeySwitchRun = "Zum gewählten wechseln"
 KeySwitchNumber = "Zum Workspace mit dieser Nummer"
+KeySwitchOrigin = "Zurück zum Ausgangsort"
 ModeSwitch = "Wechseln"
 SecInSwitch = "In der Wechselliste"
 

@@ -1534,6 +1534,7 @@ SwitchHint = "aún no hay favoritos: pulse {1} sobre el encabezado de un espacio
 SwitchNoRoom = "el terminal es demasiado pequeño para la lista para cambiar"
 KeySwitchRun = "Ir al seleccionado"
 KeySwitchNumber = "Ir al espacio de trabajo con ese número"
+KeySwitchOrigin = "Volver al lugar donde empezaste"
 ModeSwitch = "Cambiar"
 SecInSwitch = "En la lista para cambiar"
 

@@ -693,13 +693,13 @@ The list is kept with the screen state (`~/.local/state/mdgrid/recent.toml`); no
 
 When you go back and forth between workspaces, say one for work and one for a hobby, put them in your favorites. In the table list drawer (`w`), select the heading of another workspace and press `f`: the heading gets a `★`, and `f` again takes it out. For the workspace you are in, use **Add the current workspace to favorites** in the palette (if it is already a favorite, this takes it out).
 
-On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. Esc closes the list and leaves you where you were.
+On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette, or the **W ⇄** button at the right of the header) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. Esc closes the list and leaves you where you were.
 
 ![Switch workspace](images/switch.svg)
 
 You land on the table and view you last had open in that workspace during this run. The first time, it opens the table named in the marker's `open`, or the first table.
 
-Once you have moved away from where you started (a plain folder, a `.base`, a detected root folder or a workspace), the list starts with **Where you started**. Choosing it takes you back to the table you started with, in the view you last had on it. Wherever you go, unsaved changes are offered for saving or discarding first.
+Once you have moved away from where you started (a plain folder, a `.base`, a detected root folder or a workspace), the list starts with **Where you started**, numbered `0`. Pressing `0` or choosing it takes you back to the table you started with, in the view you last had on it. Wherever you go, unsaved changes are offered for saving or discarding first.
 
 Favorites are kept in order in `favorites` at the top of `workspaces.toml`: a workspace from `workspaces.toml` by its name, a marker workspace by the path of its root. You can write it by hand:
 

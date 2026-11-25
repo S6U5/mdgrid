@@ -141,9 +141,13 @@ fn start_of(p: &Path) -> PathBuf {
 /// 行の文字(選びの印・今の所の印の後ろ)。
 fn label(app: &App, s: &Switcher, r: Row) -> String {
     match r {
-        Row::Origin => Msg::SwitchOrigin.fill(&[&sanitize(
-            app.visits.origin.as_ref().map_or("", |o| o.label.as_str()),
-        )]),
+        // workspace.switch-origin-key: 番号 0 を添える(`0` で選べる)。
+        Row::Origin => format!(
+            "0 {}",
+            Msg::SwitchOrigin.fill(&[&sanitize(
+                app.visits.origin.as_ref().map_or("", |o| o.label.as_str()),
+            )])
+        ),
         Row::Fav(k) => format!("{} {}", k + 1, sanitize(s.favs[k].name())),
         Row::Hint => {
             let key = |m: Mode, a: Action| {
@@ -237,6 +241,17 @@ impl App {
         self.visits.seen.push(Visit { spot, path, view });
     }
 
+    /// workspace.switch-button: ヘッダーに切り替えのボタンを出すか。お気に入りが1つ以上あるか、起動したときに
+    /// 開いた所から今は離れているとき。
+    pub(crate) fn switch_button_shown(&self) -> bool {
+        !self.favorites.is_empty()
+            || self
+                .visits
+                .origin
+                .as_ref()
+                .is_some_and(|o| Some(&o.spot) != self.here_spot().as_ref())
+    }
+
     /// workspace.switch-open: 切り替えの一覧を開く(今の画面の上に重ねる)。お気に入りの読めない項目は警告を出す。
     pub(crate) fn open_switcher(&mut self) {
         self.message = None;
@@ -296,6 +311,13 @@ impl App {
                 let row = rows.get(s.sel).copied();
                 self.switcher = Some(s);
                 return self.switch_row(row);
+            }
+            // workspace.switch-origin-key: `0` は「最初に開いた所」(その行が無ければ何もしない)。
+            Action::Choose(0) => {
+                if s.origin {
+                    self.switcher = Some(s);
+                    return self.switch_row(Some(Row::Origin));
+                }
             }
             Action::Choose(n) => {
                 let k = usize::from(n).saturating_sub(1);

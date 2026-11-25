@@ -1549,6 +1549,8 @@ impl App {
             H::Menu => self.open_screen_menu(),
             // CE-25: ビューの帯を出さないときの「+ 新規」。
             H::New => self.apply(Action::NewNote),
+            // workspace.switch-button: キーと同じく、どの画面からでも一覧を開く。
+            H::Switch => self.apply(Action::WsSwitch),
             H::Settings => {
                 // 表でない画面の型からは、表の画面に戻ってから開く。
                 if Screen::of_mode(self.mode).is_some_and(|s| s != Screen::Table) {

@@ -1534,6 +1534,7 @@ SwitchHint = "no favorites yet: press {1} on a workspace heading in the drawer (
 SwitchNoRoom = "the terminal is too small for the switch list"
 KeySwitchRun = "Go to the selected one"
 KeySwitchNumber = "Go to the workspace with that number"
+KeySwitchOrigin = "Go back to where you started"
 ModeSwitch = "Switch"
 SecInSwitch = "In the switch list"
 
