@@ -62,7 +62,8 @@ fn entries(
 ) -> Vec<(String, String, u8)> {
     let group = |a: Action| match a {
         Action::GoToSection(_) => Action::GoToSection(0),
-        Action::Choose(_) => Action::Choose(0),
+        // workspace.switch-origin-key: 0 は「最初に開いた所」で、1〜9 とは別の行。
+        Action::Choose(n) if n > 0 => Action::Choose(1),
         a => a,
     };
     let mut out: Vec<(Mode, Action, String, String, u8)> = Vec::new();

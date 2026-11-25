@@ -495,10 +495,10 @@ pub enum Action {
     PageSave,
 }
 
-/// `Choose(1)`〜`Choose(9)` の名前(動作ごとに違う名前。workspace.switch-keys)。
-const CHOOSE: [&str; 9] = [
-    "choose_1", "choose_2", "choose_3", "choose_4", "choose_5", "choose_6", "choose_7", "choose_8",
-    "choose_9",
+/// `Choose(0)`〜`Choose(9)` の名前(動作ごとに違う名前。workspace.switch-keys。0 は workspace.switch-origin-key)。
+const CHOOSE: [&str; 10] = [
+    "choose_0", "choose_1", "choose_2", "choose_3", "choose_4", "choose_5", "choose_6", "choose_7",
+    "choose_8", "choose_9",
 ];
 
 /// `GoToSection(1)`〜`GoToSection(9)` の名前(動作ごとに違う名前。SR-14・SR-13)。
@@ -700,10 +700,7 @@ impl Action {
             Action::RoutineRuns => "routine_runs",
             Action::WsSwitch => "workspace_switch",
             Action::WsFavorite => "workspace_favorite",
-            Action::Choose(n) => CHOOSE
-                .get(usize::from(n).wrapping_sub(1))
-                .copied()
-                .unwrap_or("choose"),
+            Action::Choose(n) => CHOOSE.get(usize::from(n)).copied().unwrap_or("choose"),
             Action::StackAdd => "stack_add",
             Action::StackClose => "stack_close",
             Action::StackDown => "stack_down",
@@ -3546,6 +3543,15 @@ pub const BINDINGS: &[Binding] = &[
         "Up",
         Action::Up,
         Msg::KeyPrevItem,
+        IN_SWITCH,
+        0,
+    ),
+    // workspace.switch-origin-key: 「0 最初に開いた所」へ戻る。
+    m(
+        Mode::Switch,
+        "0",
+        Action::Choose(0),
+        Msg::KeySwitchOrigin,
         IN_SWITCH,
         0,
     ),

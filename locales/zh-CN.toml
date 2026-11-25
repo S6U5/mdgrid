@@ -1533,6 +1533,7 @@ SwitchHint = "还没有收藏：在表格列表（{0}）的工作区标题上按
 SwitchNoRoom = "终端太小，无法显示切换列表"
 KeySwitchRun = "转到所选项"
 KeySwitchNumber = "转到对应编号的工作区"
+KeySwitchOrigin = "回到最初打开的位置"
 ModeSwitch = "切换"
 SecInSwitch = "在切换列表中"
 

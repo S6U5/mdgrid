@@ -134,3 +134,24 @@ fn test_favorite_marker_workspace_is_stored_by_path() {
     );
     assert_eq!(std::fs::read(&marker).unwrap(), before, "印は書かない");
 }
+
+#[test]
+fn test_switch_back_with_zero_from_a_marker_workspace() {
+    // [stest -> req~workspace.switch-origin-key~1] 印のワークスペース lab を開き、切り替えで work へ移る → 一覧の先頭は
+    // 「0 最初に開いた所: lab」→ `0` → lab の表に戻る。
+    let h = home("switch-zero", "favorites = [\"work\"]");
+    let mut t = spawn(h.path(), "lab/x", "lab-note");
+    press_until(&mut t, "W", |s| s.contains("1 work"));
+    t.send("1");
+    t.wait_until("work の表", |s| {
+        s.contains("todo") && !s.contains("lab-note")
+    });
+    t.send("W");
+    t.wait_for("0 最初に開いた所: lab");
+    t.send("0");
+    t.wait_until("lab に戻る", |s| {
+        s.contains("lab-note") && !s.contains("todo")
+    });
+    let s = t.screen();
+    assert!(s.contains("lab-note") && !s.contains("todo"), "{s}");
+}

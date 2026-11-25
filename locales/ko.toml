@@ -1534,6 +1534,7 @@ SwitchHint = "즐겨찾기가 아직 없음: 표 목록({0})의 워크스페이�
 SwitchNoRoom = "터미널이 너무 작아 전환 목록을 띄울 수 없음"
 KeySwitchRun = "선택한 곳으로 이동"
 KeySwitchNumber = "그 번호의 워크스페이스로 이동"
+KeySwitchOrigin = "처음 연 곳으로 돌아가기"
 ModeSwitch = "전환"
 SecInSwitch = "전환 목록에서"
 

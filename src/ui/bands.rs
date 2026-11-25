@@ -220,11 +220,26 @@ pub(crate) enum HeaderButton {
     Settings,
     /// CE-25: 「+ 新規」(ビューの帯を出さないときだけ。表の画面と関係マップ)。
     New,
+    /// workspace.switch-button: 切り替えの一覧を開く「W ⇄」。
+    Switch,
 }
 
 /// 設定のボタンを出す描ける幅の下限(端末の幅 80。右端の1桁は描かない。狭いときは先に省く。設定は `o` と
 /// パレットでも開ける)。
 const SETTINGS_MIN_W: usize = 79;
+
+/// workspace.switch-button: 切り替えのボタンを出す描ける幅の下限(端末の幅 90。設定のボタンより先に省く)。
+const SWITCH_MIN_W: usize = SETTINGS_MIN_W + 10;
+
+/// workspace.switch-button: 切り替えのボタンの (文字, キー): 「キー ⇄」(キーは切り替えのキー。割り当てが無ければ ⇄ だけ)。
+fn switch_button_text(app: &App) -> (String, Option<String>) {
+    let key = keymap::key_for(&app.keys, Mode::Table, keymap::Action::WsSwitch);
+    let t = match &key {
+        Some(k) => format!(" {k} ⇄ "),
+        None => " ⇄ ".to_string(),
+    };
+    (t, key)
+}
 
 /// 画面の型のメニューのボタンの文字(前後に空白1つ): 表の画面「▦ 表 ▾」、関係マップ「◇ 関係マップ ▾」。
 fn menu_button_text(app: &App) -> String {
@@ -244,7 +259,8 @@ fn settings_button_text(app: &App) -> (String, Option<String>) {
 }
 
 /// 幅 `w` のヘッダーの右の端のボタンの置き方: (桁, 文字, キー, ボタン)。左から「+ 新規」(ビューの帯を出さない
-/// ときだけ。CE-25)・メニュー・設定。幅が足りなければ設定を先に省き、次に「+ 新規」を省き、パンくずとメニューを残す。
+/// ときだけ。CE-25)・切り替え(workspace.switch-button)・メニュー・設定。幅が足りなければ切り替えを先に省き、
+/// 次に設定、次に「+ 新規」を省き、パンくずとメニューを残す。
 fn header_buttons(app: &App, w: usize) -> Vec<(usize, String, Option<String>, HeaderButton)> {
     let crumb_w = width(&crumb_text(app, &table_name(app)));
     let menu = menu_button_text(app);
@@ -256,6 +272,17 @@ fn header_buttons(app: &App, w: usize) -> Vec<(usize, String, Option<String>, He
     let mut cands: Vec<Vec<(String, Option<String>, HeaderButton)>> = Vec::new();
     let m = (menu.clone(), None, HeaderButton::Menu);
     let st = (set.clone(), set_key.clone(), HeaderButton::Settings);
+    // workspace.switch-button: 広ければ、メニューの左に切り替えのボタン。狭ければ設定より先に省く。
+    if w >= SWITCH_MIN_W && app.switch_button_shown() {
+        let (t, k) = switch_button_text(app);
+        let sw = (t, k, HeaderButton::Switch);
+        let mut c = Vec::new();
+        if let Some((nt, nk)) = &new {
+            c.push((nt.clone(), nk.clone(), HeaderButton::New));
+        }
+        c.extend([sw, m.clone(), st.clone()]);
+        cands.push(c);
+    }
     if w >= SETTINGS_MIN_W {
         match &new {
             Some((nt, nk)) => cands.push(vec![

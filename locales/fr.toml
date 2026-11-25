@@ -1534,6 +1534,7 @@ SwitchHint = "pas encore de favoris : appuyer sur {1} sur un en-tête d'espace d
 SwitchNoRoom = "le terminal est trop petit pour la liste des espaces"
 KeySwitchRun = "Aller à l'élément sélectionné"
 KeySwitchNumber = "Aller à l'espace de travail de ce numéro"
+KeySwitchOrigin = "Revenir là où vous avez commencé"
 ModeSwitch = "Changer"
 SecInSwitch = "Dans la liste des espaces"
 

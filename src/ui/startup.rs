@@ -63,6 +63,8 @@ impl App {
             let (ws, warns) = mdgrid::workspace::load(dir);
             self.workspaces = ws;
             warnings.extend(warns);
+            // workspace.switch-button: ヘッダーの切り替えのボタンを出すかを決めるため、お気に入りを先に読む。
+            self.favorites = mdgrid::favorites::entries(dir);
         }
         // WS-6: 範囲を決める(-w → 印 → workspaces.toml → 検知 → 登録した表)。
         if let Some(e) = self.resolve_scope(&s.target, &s.config.workspace_detect) {

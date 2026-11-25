@@ -1533,6 +1533,7 @@ SwitchHint = "お気に入りが無い: 引き出し({0})の見出しで {1} か
 SwitchNoRoom = "端末が小さく、切り替えの一覧を出せない"
 KeySwitchRun = "選んだ所へ移る"
 KeySwitchNumber = "その番号のワークスペースへ移る"
+KeySwitchOrigin = "最初に開いた所へ戻る"
 ModeSwitch = "ワークスペースの切り替え"
 SecInSwitch = "切り替えの一覧の中"
 

@@ -1534,6 +1534,7 @@ SwitchHint = "ainda não há favoritos: tecle {1} num cabeçalho de espaço de t
 SwitchNoRoom = "o terminal é pequeno demais para a lista de troca"
 KeySwitchRun = "Ir ao selecionado"
 KeySwitchNumber = "Ir ao espaço de trabalho com esse número"
+KeySwitchOrigin = "Voltar para onde você começou"
 ModeSwitch = "Troca"
 SecInSwitch = "Na lista de troca"
 
