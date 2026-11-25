@@ -390,11 +390,11 @@
   - When:
   - Then: `options` の nope を言う警告1行で、ai は効く。
 
-#### パレットの「スターターから台帳を作る」は、スターターを選んだあとに、そのスターターのオプションを名前と説明の一覧から印を付けて選べるべき
-`req~starter.pick-options~1` P2
+#### パレットの「スターターから台帳を作る」は、スターターを選んだあとに、そのスターターのオプションを名前と説明の一覧から印を付けて選べ、印はチェックの窓と同じ操作(screen.checklist-keys)で付け外しするべき
+`req~starter.pick-options~2` P2
 - Acceptance:
   - Given:
-  - When: tasks を選ぶ → オプションの一覧(ai・routines など。名前と1行の説明)→ Space で ai に印 → Enter → 作る場所
+  - When: tasks を選ぶ → オプションの一覧(ai・routines など。名前と1行の説明)→ ai で Enter(印が付く)→ Tab か「[ 決める ]」→ 作る場所
   - Then: 作った印に `starter = "tasks"` と `options = ["ai"]`。オプションの無いスターターでは、この段を出さない。どの段の Esc も取りやめで何も作らない(読んで判定)。
 
 #### `--init-workspace --starter <名前>` に `--option <名前>`(何度でも)を添えて、オプションを選べるべき

@@ -236,21 +236,22 @@ The prompt shown when you quit with unsaved changes.
 
 ## `help`
 
-The help screen (`?`).
+The help screen (`?`). Select a line of the first section, the keys you can press now, with ↑↓ or a click and press `Enter`: the help closes and that action runs, the same as pressing its key on the screen you came from. Clicking the selected line again does the same. A line that groups digit keys (`1-9`) runs the first key (`1`). Lines further down (every key, the meaning of the marks) can be selected, but `Enter` does nothing there. The mouse wheel scrolls the help without moving the selection.
 
 | Key | Action | Description |
 |---|---|---|
-| `Esc` | `close` | Close the help |
-| `q` | `close` | Close the help |
-| `?` | `close` | Close the help |
-| `j` | `down` | Scroll down |
-| `Down` | `down` | Scroll down |
-| `k` | `up` | Scroll up |
-| `Up` | `up` | Scroll up |
-| `PageDown` | `page_down` | Scroll down one screen |
-| `PageUp` | `page_up` | Scroll up one screen |
-| `g g` | `top` | Go to the top |
-| `G` | `bottom` | Go to the bottom |
+| `Enter` | `run` | Run the selected key you can press now and close the help |
+| `Esc` | `close` | Close the help without doing anything |
+| `q` | `close` | Close the help without doing anything |
+| `?` | `close` | Close the help without doing anything |
+| `j` | `down` | Next item |
+| `Down` | `down` | Next item |
+| `k` | `up` | Previous item |
+| `Up` | `up` | Previous item |
+| `PageDown` | `page_down` | Down one screen |
+| `PageUp` | `page_up` | Up one screen |
+| `g g` | `top` | First item |
+| `G` | `bottom` | Last item |
 
 ## `search`
 
@@ -357,14 +358,14 @@ The notice box above the header (`m`, or a click on it), with the items written 
 
 ## `list_select`
 
-Picking values for a list property. Letter keys type into the search box.
+Picking values for a list property. Enter checks or unchecks the highlighted value and leaves the window open, so you can check several in a row. When you are done, press Tab, or Enter on the **[ OK ]** line at the bottom. Letter keys type into the search box. The window's main keys are also shown on its bottom edge, and you can click them.
 
 | Key | Action | Description |
 |---|---|---|
-| `Tab` | `commit` | Confirm the selection |
-| `Enter` | `run` | Confirm the selection; while searching, add the highlighted candidate and clear the search |
-| `Space` | `toggle` | Add or remove the highlighted candidate; while searching, type a space |
-| `Esc` | `cancel` | Cancel |
+| `Tab` | `commit` | Confirm the checks and close, from any line |
+| `Enter` | `run` | Check or uncheck the highlighted value (the window stays open); on **[ OK ]**, confirm. While searching, add the highlighted candidate and clear the search |
+| `Space` | `toggle` | Check or uncheck the highlighted value; while searching, type a space |
+| `Esc` | `cancel` | Close without changing anything |
 | `Ctrl+r` | `revert` | Put back the selection from when the list was opened |
 | `Ctrl+s` | `create_note` | In the new note form, create the note now from any field |
 | `Ctrl+e` | `create_note_edit` | In the new note form, create the note and open it in the editor |
@@ -375,6 +376,8 @@ Picking values for a list property. Letter keys type into the search box.
 | `PageUp` | `page_up` | Scroll up one screen |
 | `PageDown` | `page_down` | Scroll down one screen |
 | `Backspace` | `delete_back` | Delete the character before the cursor |
+
+Clicking a value checks or unchecks it, and clicking **[ OK ]** confirms. In the new note form, Space checks a value and Enter confirms the field and moves on, so there is no **[ OK ]** line there.
 
 ## `menu`
 
@@ -463,7 +466,7 @@ The filter window (`|`, or the **Filter** button in the view bar; it opens right
 
 | Key | Action | Description |
 |---|---|---|
-| `Enter` | `run` | Edit the condition, or add one (pick a column, then a kind); inside a step, go on with the selected item |
+| `Enter` | `run` | Edit the condition, or add one (pick a column, then a kind); inside a step, go on with the selected item. In the value list, check or uncheck the value (on **[ OK ]** at the bottom, confirm) |
 | `Esc` | `close` | Close the window (while adding, go back to the conditions) |
 | `q` | `close` | Close the window |
 | `j` | `down` | Next line |
@@ -471,6 +474,7 @@ The filter window (`|`, or the **Filter** button in the view bar; it opens right
 | `k` | `up` | Previous line |
 | `Up` | `up` | Previous line |
 | `Space` | `toggle` | Check or uncheck a value in the value list (on the first line, switch keep / hide) |
+| `Tab` | `commit` | In the value list, confirm the checks, from any line |
 | `d` | `remove_item` | Remove the selected condition |
 | `Delete` | `remove_item` | Remove the selected condition |
 | `Backspace` | `remove_item` | Remove the selected condition |
@@ -479,7 +483,7 @@ The filter window (`|`, or the **Filter** button in the view bar; it opens right
 | `l` | `right` | Next field of the condition |
 | `Right` | `right` | Next field of the condition |
 
-Clicking a line does what `Enter` does (in the value list, it checks the value); clicking the `×` at the right of a condition removes it. Clicking outside closes the window.
+Clicking a line does what `Enter` does (in the value list, it checks the value, and **[ OK ]** confirms); clicking the `×` at the right of a condition removes it. The keys of the current step are on the bottom edge of the window and can be clicked. Clicking outside closes the window.
 
 ## `filter_input`
 

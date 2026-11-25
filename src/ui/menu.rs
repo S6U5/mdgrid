@@ -376,6 +376,24 @@ fn item_text(it: &Item, sel: bool, lw: usize, kw: usize) -> String {
     )
 }
 
+/// 下の縁のキー(screen.window-key-hints): 実行と閉じる。キーと名前はキーの表から。
+fn hints(app: &App) -> Vec<popup::KeyHint> {
+    popup::key_hints(
+        app,
+        Mode::Menu,
+        &[(Action::Run, None), (Action::Close, None)],
+    )
+}
+
+/// 下の縁の左の数(全部が窓に入らず流れるときだけ「選んでいる番号/項目の数」。リストの選択と同じ印)。
+fn edge_lead(g: &Geom, ents: &[Entry], sel: usize, n: usize) -> String {
+    if g.vis < ents.len() {
+        format!("{}/{}", sel + 1, n)
+    } else {
+        String::new()
+    }
+}
+
 /// `limit` は下の帯より上の行の数。窓はセルの下(入らなければ上)に、画面の幅と高さに収める(SR-9)。
 fn geometry(
     app: &App,
@@ -402,7 +420,17 @@ fn geometry(
         .chain([width(Mode::Menu.label())])
         .max()
         .unwrap_or(0);
-    let iw = (inner + 2).min(w);
+    // screen.window-key-hints: 下の縁のキーが全部入るまで広げる(流れるときは左の数の分も)。
+    let lead = if vis < ents.len() {
+        width(&format!("{}/{}", items.len(), items.len()))
+    } else {
+        0
+    };
+    let edge = match popup::hints_width(&hints(app)) {
+        0 => 0,
+        e => lead + e,
+    };
+    let iw = popup::widen_for_hints(inner + 2, edge, w);
     // 選んだ項目が見えるように流す。節の最初の項目なら、その見出しも見せる。
     let at = ents
         .iter()
@@ -460,6 +488,16 @@ impl App {
     /// 窓の見出しと縁では何もしない。
     pub(crate) fn menu_click(&mut self, x: u16, y: u16) {
         self.message = None;
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some((g, items, ents, sel)) = window(self) {
+            if let Some(dx) = popup::on_bottom(x, y, g.x, g.iw, g.top + g.vis + 1) {
+                let lead = edge_lead(&g, &ents, sel, items.len());
+                if let Some(a) = popup::hint_at(&hints(self), g.iw - 2, &lead, dx) {
+                    self.menu_action(a);
+                }
+                return;
+            }
+        }
         match hit(self, x, y) {
             None => self.close_menu(),
             Some(Some(i)) => self.run_menu_item(i),
@@ -499,13 +537,12 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
             }
         }
     }
-    // 全部が窓に入らず流れるときは、下の縁に「選んでいる番号/項目の数」(リストの選択と同じ印)。
-    let edge = if g.vis < ents.len() {
-        let count = format!("{}/{}", sel + 1, items.len());
-        fit(&count, tw, Align::Left).replace(' ', &f.h.to_string())
-    } else {
-        f.line(tw)
-    };
-    out.push((format!("{}{edge}{}", f.bl, f.br), Style::default()));
+    // 全部が窓に入らず流れるときは、下の縁に「選んでいる番号/項目の数」(リストの選択と同じ印)。その後ろにこの窓の
+    // キー(screen.window-key-hints。入らなければ後ろから省く)。
+    let lead = edge_lead(&g, &ents, sel, items.len());
+    out.push((
+        popup::bottom_hints(f, tw, &lead, &hints(app)),
+        Style::default(),
+    ));
     popup::blit(app, lines, g.x, g.top, g.iw, w, out);
 }

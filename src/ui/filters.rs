@@ -134,6 +134,8 @@ fn rows(app: &App, w: &FilterWin) -> (String, Vec<String>) {
                     .map_or_else(|| Msg::EmptyHeading.into(), sanitize);
                 Msg::PickValueRow.fill(&[&check(checked.contains(k)), &label, n])
             }));
+            // screen.checklist-keys: 一番下に「[ 決める ]」の行。
+            items.push(popup::decide_label());
             (format!(" {} ", Msg::PickValuesOf.fill(&[&t(col)])), items)
         }
         Some(Step::Text {
@@ -253,6 +255,42 @@ fn selected_mut(w: &mut FilterWin) -> Option<&mut usize> {
     }
 }
 
+/// 下の縁のキー(screen.window-key-hints): 段ごとに、その段で効くキー。キーと名前はキーの表から(段で意味の変わる
+/// 名前だけ文言を添える)。
+fn hints(app: &App, w: &FilterWin) -> Vec<popup::KeyHint> {
+    let back = Some(Msg::KeyBack);
+    match &w.step {
+        None => popup::key_hints(
+            app,
+            Mode::FilterWin,
+            &[
+                (Action::Run, None),
+                (Action::RemoveItem, None),
+                (Action::Close, None),
+            ],
+        ),
+        Some(Step::Column { .. } | Step::Kind { .. } | Step::Cmp { .. }) => popup::key_hints(
+            app,
+            Mode::FilterWin,
+            &[(Action::Run, None), (Action::Close, back)],
+        ),
+        Some(Step::Values { .. }) => popup::key_hints(
+            app,
+            Mode::FilterWin,
+            &[
+                (Action::Run, Some(Msg::KeyPickRun)),
+                (Action::Commit, None),
+                (Action::Close, Some(Msg::KeyStop)),
+            ],
+        ),
+        Some(Step::Text { .. }) => popup::key_hints(
+            app,
+            Mode::FilterText,
+            &[(Action::Commit, None), (Action::Cancel, None)],
+        ),
+    }
+}
+
 /// 窓の置き場所と大きさ。
 struct Geom {
     x: usize,
@@ -269,20 +307,21 @@ fn window(app: &App) -> Option<Geom> {
     let inner = items
         .iter()
         .map(|t| width(t) + 5)
-        .chain(std::iter::once(width(&title) + 2))
+        .chain([width(&title) + 2])
         .max()
         .unwrap_or(10)
         .max(20);
-    let iw = (inner + 2).min(sw);
-    if iw < 8 {
-        return None;
-    }
     // NV-23: ビューの帯のボタンのすぐ下に、ボタンの左の端にそろえて置く(右へはみ出すなら左へずらす)。
     // ボタンが描かれていなければ、ヘッダーの下に右の端にそろえて置く。
     let (bx, ay) = super::bands::button_anchor(app, super::bands::ViewButton::Filter)
         .map_or((None, super::bands::head_y(app) as usize), |(x, y)| {
             (Some(x), y)
         });
+    // screen.window-key-hints: 下の縁のキーが入るまで広げる。
+    let iw = popup::widen_for_hints(inner + 2, popup::hints_width(&hints(app, w)), sw);
+    if iw < 8 {
+        return None;
+    }
     let popup::Place { top, vis } = popup::place(ay, items.len(), limit)?;
     let sel = selected(w).min(items.len() - 1);
     Some(Geom {
@@ -420,6 +459,8 @@ impl App {
                 let op = CMPS.get(sel).map_or(CmpOp::Eq, |c| c.0);
                 w.step = Some(text_step(col, TextKind::Cmp(op), edit));
             }
+            // screen.checklist-keys: 値の一覧では Enter も Space もチェックの付け外し(先頭の行は方式の切り替え)。
+            // 一番下の「[ 決める ]」の行の Enter と、どの行でも Tab で決める。
             (
                 Some(Step::Values {
                     col,
@@ -429,16 +470,19 @@ impl App {
                     sel,
                     edit,
                 }),
-                Action::Toggle,
+                a @ (Action::Toggle | Action::Run | Action::Commit),
             ) => {
-                if sel == 0 {
-                    keep = !keep;
-                } else if let Some((k, _)) = counts.get(sel - 1) {
-                    match checked.iter().position(|c| c == k) {
-                        Some(at) => {
-                            checked.remove(at);
+                let done = a == Action::Commit || (a == Action::Run && sel > counts.len());
+                if !done {
+                    if sel == 0 {
+                        keep = !keep;
+                    } else if let Some((k, _)) = counts.get(sel - 1) {
+                        match checked.iter().position(|c| c == k) {
+                            Some(at) => {
+                                checked.remove(at);
+                            }
+                            None => checked.push(k.clone()),
                         }
-                        None => checked.push(k.clone()),
                     }
                 }
                 w.step = Some(Step::Values {
@@ -449,38 +493,8 @@ impl App {
                     sel,
                     edit,
                 });
-            }
-            (
-                Some(Step::Values {
-                    col,
-                    keep,
-                    checked,
-                    counts,
-                    sel,
-                    edit,
-                }),
-                Action::Run,
-            ) => {
-                if checked.is_empty() {
-                    let sp = self.key_of(Mode::FilterWin, Action::Toggle);
-                    self.message = Some(Msg::NoValueChecked.fill(&[&sp]));
-                    w.step = Some(Step::Values {
-                        col,
-                        keep,
-                        checked,
-                        counts,
-                        sel,
-                        edit,
-                    });
-                } else {
-                    // チェックした値は一覧の順にそろえる。
-                    let keys: Vec<Option<String>> = counts
-                        .into_iter()
-                        .map(|(k, _)| k)
-                        .filter(|k| checked.contains(k))
-                        .collect();
-                    let op = if keep { Op::Keep(keys) } else { Op::Drop(keys) };
-                    return self.put_filter(w, col, op, edit);
+                if done {
+                    return self.put_values(w);
                 }
             }
             (
@@ -577,6 +591,40 @@ impl App {
         }
     }
 
+    /// 値の一覧の段(`w.step`)を決める(screen.checklist-keys)。チェックが無ければ理由を出して値の一覧のまま。
+    fn put_values(&mut self, mut w: FilterWin) {
+        let Some(Step::Values {
+            col,
+            keep,
+            checked,
+            counts,
+            edit,
+            ..
+        }) = &w.step
+        else {
+            return self.put_filter_win(w);
+        };
+        if checked.is_empty() {
+            let sp = self.key_of(Mode::FilterWin, Action::Toggle);
+            self.message = Some(Msg::NoValueChecked.fill(&[&sp]));
+            return self.put_filter_win(w);
+        }
+        // チェックした値は一覧の順にそろえる。
+        let keys: Vec<Option<String>> = counts
+            .iter()
+            .map(|(k, _)| k.clone())
+            .filter(|k| checked.contains(k))
+            .collect();
+        let op = if *keep {
+            Op::Keep(keys)
+        } else {
+            Op::Drop(keys)
+        };
+        let (col, edit) = (col.clone(), *edit);
+        w.step = None;
+        self.put_filter(w, col, op, edit);
+    }
+
     /// 条件を足す(`edit` があれば置き換える)。すぐ表に効かせ、条件の並びに戻ってその条件を選ぶ。
     fn put_filter(&mut self, mut w: FilterWin, col: String, op: Op, edit: Option<usize>) {
         let mut f = self.settings.filters.clone();
@@ -608,13 +656,24 @@ impl App {
         }
     }
 
-    /// 絞り込みの窓の上のクリック: 行なら選んで Enter と同じ(値の一覧はチェック、条件の行の右の端の「×」は
-    /// 外す)。窓の外なら閉じる。縁と値の入力の行では何もしない。
+    /// 絞り込みの窓の上のクリック: 行なら選んで Enter と同じ(値の一覧はチェック、一番下の「[ 決める ]」は決める、
+    /// 条件の行の右の端の「×」は外す)。下の縁のキーはそのキーと同じ(screen.window-key-hints)。窓の外なら閉じる。
+    /// 縁のほかの所と値の入力の行では何もしない。
     pub(crate) fn filters_click(&mut self, x: u16, y: u16) {
         self.message = None;
         let Some(g) = window(self) else {
             return self.close_filters();
         };
+        if let Some(dx) = popup::on_bottom(x, y, g.x, g.iw, g.top + g.vis + 1) {
+            let hit = self
+                .filter_win
+                .as_ref()
+                .and_then(|w| popup::hint_at(&hints(self, w), g.iw - 2, "", dx));
+            if let Some(a) = hit {
+                self.filters_action(a);
+            }
+            return;
+        }
         match popup::hit(x, y, g.x, g.top, g.iw, g.vis) {
             None => self.close_filters(),
             Some(None) => {}
@@ -625,7 +684,9 @@ impl App {
                 };
                 let nf = self.settings.filters.len();
                 let list = w.step.is_none();
-                let values = matches!(w.step, Some(Step::Values { .. }));
+                // 値の一覧の値の行(先頭の方式の行を含む。一番下の「[ 決める ]」の行は Enter と同じ)。
+                let values =
+                    matches!(&w.step, Some(Step::Values { counts, .. }) if i <= counts.len());
                 let Some(s) = selected_mut(w) else {
                     return;
                 };
@@ -701,6 +762,10 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         };
         out.push((fr.side(&line), st));
     }
-    out.push((fr.bottom(tw), Style::default()));
+    // screen.window-key-hints: 下の縁にその段で効くキー(入らなければ後ろから省く)。
+    out.push((
+        popup::bottom_hints(fr, tw, "", &hints(app, win)),
+        Style::default(),
+    ));
     popup::blit(app, lines, g.x, g.top, g.iw, w, out);
 }

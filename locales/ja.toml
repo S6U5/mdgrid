@@ -629,6 +629,7 @@ KeyNarrower = "列を狭く"
 KeyWider = "列を広く"
 KeySort = "この列で並べ替え"
 KeySortsRun = "向きを変える・足す"
+HintSortsRun = "向き・足す"
 KeyScreenMenuRun = "その画面に切り替える"
 ## NV-24: 並べ替えの窓。
 CmdSortMenu = "並べ替え…"
@@ -726,9 +727,10 @@ KeyRemove = "外す"
 KeyLeftItem = "左の項目"
 KeyRightItem = "右の項目"
 KeyBackToTable = "表に戻る"
-KeyPickRun = "確定(検索中は付ける)"
-KeyPickToggle = "付け外し(検索中は空白)"
+KeyPickRun = "入れる・外す"
+KeyPickToggle = "入れる・外す(検索中は空白)"
 KeyPickRevert = "開いたときに戻す"
+KeyStop = "やめる"
 KeyPrevItem = "前の候補"
 KeyNextItem = "次の候補"
 ## 保存の確認で全部を書く。
@@ -740,8 +742,6 @@ KeyDiscardRow = "ためた変更を捨てる"
 ## 終了の確認で保存する。
 KeyQuitSave = "保存する"
 KeyQuitDiscard = "捨てて終わる"
-KeyScrollDown = "下へ流す"
-KeyScrollUp = "上へ流す"
 KeyRun = "実行"
 ## 読むだけのときの表の Enter(SR-2)。
 KeyToggleGroup = "見出しの開閉"
@@ -1115,7 +1115,7 @@ PickBulkSame = "({0}行は変わらない)"
 PickBulkSameOne = "({0}行は変わらない)"
 ## {0}・{1} はキー。
 PickKeysSearching = "{0} 付ける(新規は足す)・{1} 確定"
-PickKeys = "{0} 付け外し・{1} 確定"
+PickKeys = "{0} 入れる・外す・{1} 決める"
 ## {1} は `PickKeys*`。
 PickHintBulk = "一括 {0}行([x]=全部の行 [-]=一部の行 [ ]=なし)。{1}"
 ## `PickHintBulk` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。

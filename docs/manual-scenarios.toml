@@ -54,6 +54,13 @@ keys = ["l", "l", "l", "l", "l", "l", "l", "Enter"]
 text = { ja = "リストの列では、ルートフォルダにある値の一覧から付け外しする。", en = "List columns let you toggle values found across the root folder." }
 
 [[shot]]
+id = "window-keys"
+title = { ja = "窓の下の縁のキー", en = "Keys on the bottom edge of a window" }
+keys = ["l", "l", "l", "l", "l", "l", "l", "Enter", "Enter"]
+wait = { ja = "Tab 決める", en = "Tab OK" }
+text = { ja = "タグの窓で Enter を押すとチェックが入り、窓は開いたまま。下の縁にこの窓のキーが並び、クリックでも押せる。Tab か一番下の「[ 決める ]」で決める。", en = "Enter checks a tag and leaves the window open. The bottom edge lists this window's keys, and you can click them. Tab or [ OK ] at the bottom confirms." }
+
+[[shot]]
 id = "save"
 title = { ja = "差分を見てから保存する", en = "Review the diff, then save" }
 keys = ["Enter", "Down", "Enter", "C-s"]

@@ -419,3 +419,22 @@ fn test_ws_8_from_relmap_header_button() {
     assert_eq!(a.mode, Mode::Table, "{}", scr(&a));
     assert!(a.switch_to.is_none() && !a.quit);
 }
+
+#[test]
+fn test_ws_8_bottom_edge_key_hints() {
+    // [utest -> req~screen.window-key-hints~1] 引き出しの下の縁に、その窓で効く主なキー(Enter と Esc)を「キー 動作」で並べ、縁の「Esc 閉じる」のクリックで閉じる。
+    let (_tmp, mut a) = boot_work("ws8_hints");
+    ch(&mut a, 'w');
+    assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
+    let s = scr(&a);
+    let (y, line) = s
+        .lines()
+        .enumerate()
+        .find(|(_, l)| l.contains('╰') && l.contains("Esc 閉じる"))
+        .unwrap_or_else(|| panic!("縁の案内が無い:\n{s}"));
+    assert!(line.contains("Enter "), "{line:?}");
+    let at = line.find("Esc 閉じる").unwrap();
+    let x = width::width(&line[..at]) as u16;
+    a.click(x + 1, y as u16);
+    assert_eq!(a.mode, Mode::Table, "{}", scr(&a));
+}

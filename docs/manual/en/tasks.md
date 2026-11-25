@@ -36,8 +36,8 @@
    - Text: pick from the values other notes have in this column (when there are at most `candidates` distinct values, 20 by default; otherwise just type), or type a new one.
    - Date: a calendar opens. `←` `→` move by day, `↑` `↓` by week, `PageUp` and `PageDown` by month. You can also type `2026-10-15`, `+3` for three days from today, or words such as `next fri` ([Type dates in words](#type-dates-in-words)). `Ctrl+T` is today.
    - Date and time: the same calendar, with a time field under it. `Ctrl+O` switches to the time field, where `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour. Changing only the day keeps each note's time; you can also type `2026-10-15T09:30`.
-   - List (such as `tags`): toggle values from the list of values found in the root folder.
-   - Checkbox: each `Enter` cycles empty → true → false → empty.これ
+   - List (such as `tags`): toggle values from the list of values found in the root folder. `Enter` (or `Space`) checks or unchecks the highlighted value and leaves the window open, so you can check several. When you are done, press `Tab` or pick `[ OK ]` at the bottom. These keys are also on the bottom edge of the window, and you can click them.
+   - Checkbox: each `Enter` cycles empty → true → false → empty.
    - Number: only values that read as numbers are accepted.
 2. Press `Enter` to confirm, `Esc` to cancel, or `Tab` to confirm and move right.
 3. The edited cell is marked and `Unsaved` in the bottom bar goes up. Nothing is written yet. `u` undoes, `Ctrl+R` redoes.

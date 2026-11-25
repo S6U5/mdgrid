@@ -5,7 +5,8 @@
 
 use super::app::App;
 use super::input::{input_box, new_value_text};
-use super::keymap::Mode;
+use super::keymap::{Action, Mode};
+use super::popup;
 use super::view::visible_layout;
 use super::width::{fit, sanitize, width, Align};
 use mdgrid::i18n::Msg;
@@ -225,6 +226,18 @@ impl App {
         let Some(hit) = super::popup::hit(x, y, g.x, g.top, g.iw, g.vis) else {
             return false;
         };
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some(dx) = popup::on_bottom(x, y, g.x, g.iw, g.top + g.vis + 1) {
+            let lead = if g.below {
+                count_text(self)
+            } else {
+                String::new()
+            };
+            if let Some(a) = popup::hint_at(&hints(self), g.iw - 2, &lead, dx) {
+                self.apply(a);
+            }
+            return true;
+        }
         // 縁(上と下)のクリックは窓の中として受けるだけ。
         if let Some(k) = hit {
             let item = self
@@ -257,6 +270,26 @@ struct Geom {
     start: usize,
     vis: usize,
     below: bool,
+}
+
+/// 下の縁のキー(screen.window-key-hints): 決める・取り消す。キーと名前はキーの表から。
+fn hints(app: &App) -> Vec<popup::KeyHint> {
+    popup::key_hints(
+        app,
+        Mode::Edit,
+        &[(Action::Commit, None), (Action::Cancel, None)],
+    )
+}
+
+/// 窓の縁に出す数: 選べる形は「選んでいる番号/数」、絞った候補(選んでいない)は数だけ。
+fn count_text(app: &App) -> String {
+    let Some((l, shown, pick)) = app.list_view() else {
+        return String::new();
+    };
+    match shown.iter().position(|&k| k == l.sel).filter(|_| pick) {
+        Some(p) => format!("{}/{}", p + 1, shown.len()),
+        None => format!("{}", shown.len()),
+    }
 }
 
 /// 入力の位置(桁と行)。表なら入力ボックス、詳細の表示なら値の欄。
@@ -295,7 +328,17 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         .input
         .as_ref()
         .is_some_and(|i| app.is_select(&i.col) && super::chips::pill_caps(app, false));
-    let iw = (text_w.unwrap_or(0) + 5 + usize::from(caps)).max(8).min(w);
+    // screen.window-key-hints: 下の縁のキーが全部入るまで広げる(窓が下なら、下の縁の左の数の分も)。
+    let lead = if below { width(&format!("{n}/{n}")) } else { 0 };
+    let edge = match popup::hints_width(&hints(app)) {
+        0 => 0,
+        e => lead + e,
+    };
+    let iw = popup::widen_for_hints(
+        (text_w.unwrap_or(0) + 5 + usize::from(caps)).max(8),
+        edge,
+        w,
+    );
     if iw < 5 {
         return None;
     }
@@ -339,20 +382,23 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         rows.push((t, st));
     }
     // 選べる形は「選んでいる番号/数」、絞った候補(選んでいない)は数だけ。
-    let count = match shown.iter().position(|&k| k == l.sel).filter(|_| pick) {
-        Some(p) => format!("{}/{}", p + 1, shown.len()),
-        None => format!("{}", shown.len()),
-    };
-    // 窓が下にあれば下の縁、上にあれば上の縁に数を出す(入力の欄の側の縁は線だけ)。
-    let line = fit(&count, g.iw - 2, Align::Left).replace(' ', &f.h.to_string());
-    let plain = f.line(g.iw - 2);
+    let count = count_text(app);
+    // 窓が下にあれば下の縁、上にあれば上の縁に数を出す。下の縁にはこの窓のキー(screen.window-key-hints。入らなければ
+    // 後ろから省く)。
+    let hints = hints(app);
     let (head, foot) = if g.below {
-        (&plain, &line)
+        (
+            f.line(g.iw - 2),
+            popup::bottom_hints(f, g.iw - 2, &count, &hints),
+        )
     } else {
-        (&line, &plain)
+        (
+            fit(&count, g.iw - 2, Align::Left).replace(' ', &f.h.to_string()),
+            popup::bottom_hints(f, g.iw - 2, "", &hints),
+        )
     };
     rows.insert(0, (format!("{}{head}{}", f.tl, f.tr), Style::default()));
-    rows.push((format!("{}{foot}{}", f.bl, f.br), Style::default()));
+    rows.push((foot, Style::default()));
     super::popup::blit(app, lines, g.x, g.top, g.iw, w, rows);
     // SR-35: 札の列の候補(文字の値)は、表と同じ札の色を重ねる(文字と幅は同じ。選んでいる候補は選びの見た目)。
     let Some(col) = app.input.as_ref().map(|i| i.col.clone()) else {

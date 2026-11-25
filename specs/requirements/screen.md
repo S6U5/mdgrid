@@ -373,6 +373,65 @@
   - When: 表で `?`
   - Then: 先頭に表の操作。
 
+#### `?` のヘルプの先頭の「今押せるキー」の行は、↑↓ とクリックで選べ、Enter でヘルプを閉じてその操作をするべき(lazygit の `?` と同じく、覚えていない操作もヘルプから選んで使える)
+`req~screen.help-run~1` P1
+- Rationale: 操作を覚えなくても使えるようにするため。ヘルプでキーを探して、閉じてから押し直す手間をなくす(2026-11-25 に人が「lazygit みたいに操作方法を覚えなくても使えるようにしたい」と言った)
+- Acceptance:
+  - Given: `url` のある行を選んだ表
+  - When: `?` で「今押せるキー」の「URL を開く」の行を選んで Enter
+  - Then: ヘルプが閉じ、その行の URL を開く(`O` を押したのと同じ)。
+- Acceptance:
+  - Given: ヘルプを開いた
+  - When: 「今押せるキー」より下の節(全部のキー・印の意味)の行で Enter
+  - Then: 何もせず、ヘルプは開いたまま。
+- Acceptance:
+  - Given: ヘルプで行を選んだ
+  - When: Esc
+  - Then: 何もせずにヘルプを閉じる。
+- Needs: utest
+
+#### チェックを付け外しする一覧の窓(リストの値の付け外し・絞り込みの値の一覧・スターターのオプションの一覧)では、Enter と Space で選んだ行のチェックを付け外しし、窓の一番下の「[ 決める ]」の行での Enter かクリック、またはどの行でも Tab で決め、Esc でやめるべき(打った字で絞る欄に打っているあいだの Space は空白のまま)
+`req~screen.checklist-keys~1` P1
+- Rationale: チェックを入れるつもりで Enter を押すと、入れずに窓が閉じたため。Enter で入れ、決めるのは見える「[ 決める ]」の行か Tab にする(2026-11-25 に人が「Enter で入れる」と決めた)
+- Acceptance:
+  - Given: tags の候補に 仕事・開発・家 があり、仕事が付いたセル
+  - When: 付け外しの窓で「開発」を選んで Enter
+  - Then: 開発にチェックが付き、窓は開いたまま。
+- Acceptance:
+  - Given: 同じ窓で開発にチェックを付けた
+  - When: Tab
+  - Then: 窓が閉じ、tags は「仕事・開発」のためる変更。
+- Acceptance:
+  - Given: 同じ窓で開発にチェックを付けた
+  - When: 「[ 決める ]」の行で Enter
+  - Then: Tab と同じく決める。
+- Acceptance:
+  - Given: 同じ窓で開発にチェックを付けた
+  - When: Esc
+  - Then: 窓が閉じ、何もためない。
+- Acceptance:
+  - Given: 絞り込みの窓の status の値の一覧
+  - When: 「done」で Enter、続けて Tab
+  - Then: done のチェックが入り、「status が done を除く」(か「done だけ」。一覧の先頭の切り替えのとおり)の条件ができる。
+- Needs: utest
+
+#### 一覧の窓(値の候補・リストの値の付け外し・絞り込みの窓・並べ替えの窓・切り替えの一覧・引き出し・画面の型のメニュー・操作の一覧)の下の縁に、その窓で効く主なキーを「キー 動作」で並べ、クリックでその動作をし、幅が足りなければ後ろから省くべき
+`req~screen.window-key-hints~1` P1
+- Rationale: 下の帯は画面の端にあって目が届きにくく、窓の中で何を押せばよいかが分からなかったため。窓のそばにキーを出し、押せるようにする(2026-11-25 に人が「lazygit みたいに」と言った)
+- Acceptance:
+  - Given: リストの値の付け外しの窓
+  - When: 窓を描く
+  - Then: 下の縁に「Enter 入れる・外す」「Tab 決める」「Esc やめる」が並ぶ。
+- Acceptance:
+  - Given: 同じ窓
+  - When: 下の縁の「Tab 決める」をクリック
+  - Then: Tab と同じく決める。
+- Acceptance:
+  - Given: 幅の狭い窓
+  - When: 窓を描く
+  - Then: 入らないキーは後ろから省き、縁の線と字が重ならない。
+- Needs: utest
+
 #### コマンドの名前であいまいに探して実行できるパレット(`:` と Ctrl+P)を持つべき
 `req~screen.palette-fuzzy~2` P1
 - Acceptance:

@@ -233,6 +233,15 @@ struct Geom {
     start: usize,
 }
 
+/// 下の縁のキー(screen.window-key-hints): 開く・閉じる。キーと名前はキーの表から。
+fn hints(app: &App) -> Vec<popup::KeyHint> {
+    popup::key_hints(
+        app,
+        Mode::Drawer,
+        &[(Action::Run, None), (Action::Close, None)],
+    )
+}
+
 fn window(app: &App) -> Option<Geom> {
     let d = app.drawer.as_ref()?;
     let items: Vec<String> = rows(app, d).iter().map(|r| label(app, r)).collect();
@@ -243,7 +252,9 @@ fn window(app: &App) -> Option<Geom> {
         .chain(std::iter::once(width(&title(app))))
         .max()
         .unwrap_or(0);
-    let iw = (inner + 2).clamp(MIN_W, MAX_W).min(sw);
+    // screen.window-key-hints: 下の縁のキーが入るまで広げる(引き出しの幅の上限まで)。
+    let edge = popup::hints_width(&hints(app));
+    let iw = popup::widen_for_hints((inner + 2).clamp(MIN_W, MAX_W), edge, MAX_W.min(sw));
     let vis = limit.saturating_sub(top(app) + popup::FRAME);
     if iw < 12 || vis < popup::MIN_VIS.min(items.len().max(1)) {
         return None;
@@ -425,6 +436,13 @@ impl App {
         let Some(g) = window(self) else {
             return self.close_drawer();
         };
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some(dx) = popup::on_bottom(x, y, 0, g.iw, top(self) + g.vis + 1) {
+            if let Some(a) = popup::hint_at(&hints(self), g.iw - 2, "", dx) {
+                self.drawer_action(a);
+            }
+            return;
+        }
         match popup::hit(x, y, 0, top(self), g.iw, g.vis) {
             None => self.close_drawer(),
             Some(None) => {}
@@ -475,6 +493,9 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         };
         out.push((fr.side(&fit(&text, tw, Align::Left)), st));
     }
-    out.push((fr.bottom(tw), Style::default()));
+    out.push((
+        popup::bottom_hints(fr, tw, "", &hints(app)),
+        Style::default(),
+    ));
     popup::blit(app, lines, 0, top(app), g.iw, w, out);
 }

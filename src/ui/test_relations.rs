@@ -181,7 +181,7 @@ fn test_rel_3_list_column_many_to_many() {
     );
     typing(&mut a, "Other Project");
     press(&mut a, KeyCode::Enter); // 検索中の Enter は付けるだけ
-    press(&mut a, KeyCode::Enter); // 確定
+    press(&mut a, KeyCode::Tab); // 確定(screen.checklist-keys: 検索が空の Enter は付け外し)
     let row = row_of(&a, "a build");
     assert_eq!(
         a.changes.pending(&row, "related"),
@@ -276,8 +276,24 @@ fn test_rel_3_link_candidates_window_framed() {
             panic!("{name}: 入力の欄のすぐ隣の行に窓の縁 {corners:?} が無い:\n{s}");
         };
         let inner = span_of(edge, x0 + 1, x1);
+        // 上に出す窓の入力の欄の側の縁は下の縁で、その窓のキー(screen.window-key-hints)を線のあいだに並べる。
+        // キーの字を除けば、縁の中は横の線(とキーの前後の空白)だけ。
+        let lines_only = if below {
+            inner.clone()
+        } else {
+            let mut t = inner.clone();
+            for k in ["Enter 確定", "Esc 取り消し"] {
+                assert!(t.contains(k), "{name}: 下の縁のキー「{k}」:\n{s}");
+                t = t.replace(k, "");
+            }
+            assert!(
+                t.starts_with("─ ") && t.ends_with('─') && t.trim_end_matches('─').ends_with(' '),
+                "{name}: キーの前後は線と空白「{inner}」:\n{s}"
+            );
+            t.replace(' ', "")
+        };
         assert!(
-            !inner.is_empty() && inner.chars().all(|c| c == '─'),
+            !lines_only.is_empty() && lines_only.chars().all(|c| c == '─'),
             "{name}: 縁の中は横の線だけ「{inner}」:\n{s}"
         );
         // 候補の行は縁の内側(左右の縦の線のあいだ)。

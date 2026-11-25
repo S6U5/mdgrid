@@ -32,10 +32,10 @@ Backspace 3 Type "3" Sleep 600ms
 Enter Sleep 1s
 # billable(チェック): Enter で切り替え
 Right Right Enter Sleep 1.2s
-# tags(リスト): Space で候補の先頭を足す
+# tags(リスト): Enter で候補の先頭にチェックを入れ(窓は開いたまま。下の縁にキー)、Tab で決める
 Right Enter Sleep 1.5s
-Space Sleep 800ms
-Enter Sleep 1.2s
+Enter Sleep 800ms
+Tab Sleep 1.2s
 # 保存: 書く前に差分を見せる
 Ctrl+S Sleep 3s
 Enter Sleep 1.5s

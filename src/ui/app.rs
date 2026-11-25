@@ -1194,6 +1194,8 @@ impl App {
                 self.note_click(x, y);
                 return;
             }
+            // screen.checklist-keys・screen.window-key-hints: リストの選択の窓の候補・「[ 決める ]」の行・下の縁のキー。
+            Mode::ListPick => return self.pick_click(x, y),
             Mode::Edit => {
                 // 詳細の表示からの編集は、詳細の入力の位置で判定する(NV-6)。
                 let inside = if self.detail.is_some() {
@@ -1234,6 +1236,8 @@ impl App {
             }
             // NV-18: 設定の画面の項目とボタンのクリック。
             Mode::Settings => return self.settings_click(x, y),
+            // screen.help-run: ヘルプの項目のクリックで選び、選んでいる項目のクリックで Enter と同じ。
+            Mode::Help => return self.help_click(x, y),
             // SR-24: 一覧の項目のクリックで実行して閉じ、窓の外のクリックで閉じるだけ。
             Mode::Menu => return self.menu_click(x, y),
             // NV-9: 頻度表の項目のクリックで絞って閉じ、窓の外のクリックで閉じるだけ。
@@ -1460,8 +1464,8 @@ impl App {
             (Mode::Table, false) => Action::Up,
             (Mode::Confirm, true) => Action::NextFile,
             (Mode::Confirm, false) => Action::PrevFile,
-            (Mode::Help, true) => Action::Down,
-            (Mode::Help, false) => Action::Up,
+            // screen.help-run: ヘルプは選びでなく本文を流す(選んだ項目が見えなくなれば見えている項目へ)。
+            (Mode::Help, _) => return self.help_wheel(down),
             (Mode::Detail, true) => Action::Down,
             (Mode::Detail, false) => Action::Up,
             (Mode::Settings, true) => Action::Down,

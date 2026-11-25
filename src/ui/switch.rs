@@ -183,6 +183,15 @@ struct Geom {
     start: usize,
 }
 
+/// 下の縁のキー(screen.window-key-hints): 移ると閉じる。キーと名前はキーの表から。
+fn edge_hints(app: &App) -> Vec<popup::KeyHint> {
+    popup::key_hints(
+        app,
+        Mode::Switch,
+        &[(Action::Run, None), (Action::Close, None)],
+    )
+}
+
 fn window(app: &App) -> Option<Geom> {
     let s = app.switcher.as_ref()?;
     let rows = s.rows();
@@ -193,7 +202,9 @@ fn window(app: &App) -> Option<Geom> {
         .chain(std::iter::once(width(Msg::SwitchTitle.text())))
         .max()
         .unwrap_or(0);
-    let iw = (inner + 2).max(MIN_W).min(sw);
+    // screen.window-key-hints: 下の縁のキーが入るまで広げる(窓は左の端に置く)。
+    let edge = popup::hints_width(&edge_hints(app));
+    let iw = popup::widen_for_hints((inner + 2).max(MIN_W), edge, sw);
     let ay = super::bands::head_y(app) as usize;
     let popup::Place { top, vis } = popup::place(ay, rows.len(), limit)?;
     if iw < 12 {
@@ -468,6 +479,13 @@ impl App {
         let Some(g) = window(self) else {
             return self.close_switcher();
         };
+        // screen.window-key-hints: 下の縁のキーは、そのキーと同じ。
+        if let Some(dx) = popup::on_bottom(x, y, 0, g.iw, g.top + g.vis + 1) {
+            if let Some(a) = popup::hint_at(&edge_hints(self), g.iw - 2, "", dx) {
+                self.switcher_action(a);
+            }
+            return;
+        }
         match popup::hit(x, y, 0, g.top, g.iw, g.vis) {
             None => self.close_switcher(),
             Some(None) => {}
@@ -591,6 +609,9 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
         };
         out.push((fr.side(&fit(&t, tw, Align::Left)), st));
     }
-    out.push((fr.bottom(tw), Style::default()));
+    out.push((
+        popup::bottom_hints(fr, tw, "", &edge_hints(app)),
+        Style::default(),
+    ));
     popup::blit(app, lines, 0, g.top, g.iw, w, out);
 }

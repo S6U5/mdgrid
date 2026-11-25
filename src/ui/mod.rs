@@ -518,6 +518,8 @@ mod test_help;
 #[cfg(test)]
 mod test_help_markers;
 #[cfg(test)]
+mod test_help_run;
+#[cfg(test)]
 mod test_hwheel;
 #[cfg(test)]
 mod test_input;

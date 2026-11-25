@@ -638,3 +638,23 @@ fn test_palette_open_workspace_lists_favorites_and_origin() {
     let to = a.switch_to.clone().expect("移る表");
     assert_eq!(to.path, real(tmp.notes().join("mytestgrid/memo")));
 }
+
+#[test]
+fn test_switch_bottom_edge_key_hints() {
+    // [utest -> req~screen.window-key-hints~1] 切り替えの一覧の下の縁に、その窓で効く主なキー(Enter と Esc)を「キー 動作」で並べ、縁の「Esc 閉じる」のクリックで閉じる。
+    let tmp = fixture("sw_hints", &["work", "趣味"]);
+    let mut a = boot(&tmp, "tasks", None);
+    ch(&mut a, 'W');
+    assert_eq!(a.mode, Mode::Switch);
+    let s = sized(&a);
+    let (y, line) = s
+        .lines()
+        .enumerate()
+        .find(|(_, l)| l.contains('╰') && l.contains("Esc 閉じる"))
+        .unwrap_or_else(|| panic!("縁の案内が無い:\n{s}"));
+    assert!(line.contains("Enter "), "{line:?}");
+    let at = line.find("Esc 閉じる").unwrap();
+    let x = width::width(&line[..at]) as u16;
+    a.click(x + 1, y as u16);
+    assert_eq!(a.mode, Mode::Table, "{}", sized(&a));
+}

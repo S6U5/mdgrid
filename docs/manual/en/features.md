@@ -250,9 +250,17 @@ Color themes, the shape of chips and checkboxes, row numbers and column lines, t
 
 ![The command palette](images/palette.svg)
 
-Vim keys and arrow keys both work. `x` lists what you can do on the cell, `:` finds a command by name, `?` lists every key. All of them can be rebound.
+Vim keys and arrow keys both work. `x` lists what you can do on the cell, `:` finds a command by name, `?` lists every key, with the ones you can press now first: select one and press `Enter` to run it without remembering the key. Every key can be rebound.
 
 [Key bindings](../../keys.md)
+
+## See the keys of a window
+
+![Keys on the bottom edge of a window](images/window-keys.svg)
+
+Open the window for tags or the filter window, and its bottom edge lists the keys that work there, like `Enter Check / uncheck` and `Tab OK`. Clicking one does the same thing. Press Enter on each tag you want; the window stays open, so you can check several in a row. When you are done, press Tab or pick `[ OK ]` at the bottom.
+
+[Key bindings](../../keys.md#list_select)
 
 ## Edit with vim keys
 

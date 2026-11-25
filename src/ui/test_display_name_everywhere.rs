@@ -8,11 +8,12 @@
 use super::app::{App, ColorMode};
 use super::keymap::Mode;
 use super::startup::Startup;
-use super::test_screen::{ch, text, Tmp};
+use super::test_screen::{ch, press, text, Tmp};
 use mdgrid::config::Config;
 use mdgrid::settings::{Cond, Dir, Group, Op};
 use mdgrid::source::markdown::Markdown;
 use ratatui::backend::TestBackend;
+use ratatui::crossterm::event::KeyCode;
 use ratatui::Terminal;
 
 /// status に displayName「状態」、owner は displayName なし。
@@ -85,7 +86,7 @@ fn drop_value(a: &mut App, col: &str, value: &str) {
 
 #[test]
 fn test_display_name_filter_chip_uses_display_name() {
-    // [utest -> req~base-view.display-name-everywhere~1] 絞り込み「status が done を除く」のビューの帯の札は「状態: done を除く」。
+    // [utest -> req~base-view.display-name-everywhere~2] 絞り込み「status が done を除く」のビューの帯の札は「状態: done を除く」。
     let (_t, mut a) = boot("dn_chip", NOTES, YAML, "");
     drop_value(&mut a, "status", "done");
     let s = screen(&a);
@@ -98,7 +99,7 @@ fn test_display_name_filter_chip_uses_display_name() {
 
 #[test]
 fn test_display_name_filter_chip_without_display_name_keeps_raw_name() {
-    // [utest -> req~base-view.display-name-everywhere~1] displayName の無い列 owner の絞り込みの帯の札は「owner: …」のまま。
+    // [utest -> req~base-view.display-name-everywhere~2] displayName の無い列 owner の絞り込みの帯の札は「owner: …」のまま。
     let (_t, mut a) = boot("dn_chip_raw", NOTES, YAML, "");
     drop_value(&mut a, "owner", "carol");
     let s = screen(&a);
@@ -110,7 +111,7 @@ fn test_display_name_filter_chip_without_display_name_keeps_raw_name() {
 
 #[test]
 fn test_display_name_sort_and_group_chips_use_display_name() {
-    // [utest -> req~base-view.display-name-everywhere~1] 帯の並べ替えとグループの札も、列の見出しと同じ displayName「状態」。
+    // [utest -> req~base-view.display-name-everywhere~2] 帯の並べ替えとグループの札も、列の見出しと同じ displayName「状態」。
     let (_t, mut a) = boot("dn_chip_sort", NOTES, YAML, "");
     a.settings.sorts = vec![("status".into(), Dir::Desc)];
     a.settings.group = Group::By {
@@ -133,7 +134,7 @@ fn test_display_name_sort_and_group_chips_use_display_name() {
 
 #[test]
 fn test_display_name_kanban_title() {
-    // [utest -> req~base-view.display-name-everywhere~1] 同じ表で kanban = { column = "status" } のカンバンの窓の題は「カンバン: 状態」。
+    // [utest -> req~base-view.display-name-everywhere~2] 同じ表で kanban = { column = "status" } のカンバンの窓の題は「カンバン: 状態」。
     let (_t, mut a) = boot("dn_kanban", NOTES, YAML, "kanban = { column = \"status\" }");
     ch(&mut a, 'B');
     assert_eq!(a.mode, Mode::Kanban, "カンバンが開かない: {:?}", a.message);
@@ -144,7 +145,7 @@ fn test_display_name_kanban_title() {
 
 #[test]
 fn test_display_name_gantt_title() {
-    // [utest -> req~base-view.display-name-everywhere~1] note.start に displayName「開始」、note.due に「期限」で
+    // [utest -> req~base-view.display-name-everywhere~2] note.start に displayName「開始」、note.due に「期限」で
     // gantt = { start = "start", end = "due" } のガントの窓の題は「ガント: 開始 → 期限(…)」。
     let yaml = "properties:\n  note.start:\n    displayName: 開始\n  note.due:\n    displayName: 期限\nviews:\n  - type: table\n    name: V\n    order:\n      - start\n      - due\n";
     let notes = [
@@ -180,7 +181,7 @@ fn window_lines(s: &str, title: &str) -> Vec<String> {
 
 #[test]
 fn test_display_name_new_note_window_fields() {
-    // [utest -> req~base-view.display-name-everywhere~1] 新しいノートの窓(a)の欄の名前も、列の見出しと同じ displayName
+    // [utest -> req~base-view.display-name-everywhere~2] 新しいノートの窓(a)の欄の名前も、列の見出しと同じ displayName
     // (status の欄は「状態」。displayName の無い owner は owner のまま)。
     let (_t, mut a) = boot("dn_new_note", NOTES, YAML, "");
     ch(&mut a, 'a');
@@ -193,7 +194,7 @@ fn test_display_name_new_note_window_fields() {
 
 #[test]
 fn test_display_name_tree_column_headings() {
-    // [utest -> req~base-view.display-name-everywhere~1] 木の画面(T)の右の欄の列の見出しも、列の見出しと同じ displayName。
+    // [utest -> req~base-view.display-name-everywhere~2] 木の画面(T)の右の欄の列の見出しも、列の見出しと同じ displayName。
     let yaml = "properties:\n  note.status:\n    displayName: 状態\nviews:\n  - type: table\n    name: V\n    order:\n      - status\n      - owner\n      - folder\n";
     let notes = [
         (
@@ -217,7 +218,7 @@ fn test_display_name_tree_column_headings() {
 
 #[test]
 fn test_display_name_chart_title() {
-    // [utest -> req~base-view.display-name-everywhere~1] 同じ表で chart = { x = "status" } のグラフの窓の題も、列の名前は「状態」(status でない)。
+    // [utest -> req~base-view.display-name-everywhere~2] 同じ表で chart = { x = "status" } のグラフの窓の題も、列の名前は「状態」(status でない)。
     let (_t, mut a) = boot("dn_chart", NOTES, YAML, "chart = { x = \"status\" }");
     ch(&mut a, 'P');
     assert_eq!(a.mode, Mode::Chart, "グラフが開かない: {:?}", a.message);
@@ -225,4 +226,27 @@ fn test_display_name_chart_title() {
     let title = line_with(&s, "グラフ: ");
     assert!(title.contains("状態"), "{title}");
     assert!(!title.contains("status"), "{title}");
+}
+
+#[test]
+fn test_display_name_list_toggle_window_title() {
+    // [utest -> req~base-view.display-name-everywhere~2] リストの値の付け外しの窓の題も、列の見出しと同じ displayName「タグ」(tags でない)。
+    let yaml = "properties:\n  note.tags:\n    displayName: タグ\nviews:\n  - type: table\n    name: V\n    order:\n      - tags\n";
+    let notes = [
+        ("alpha.md", "---\ntags:\n  - 仕事\n---\n"),
+        ("beta.md", "---\ntags:\n  - 家\n---\n"),
+    ];
+    let (_t, mut a) = boot("dn_list_title", &notes, yaml, "");
+    a.row = 0;
+    a.col = a.cols.iter().position(|c| c == "tags").expect("tags の列");
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(
+        a.mode,
+        Mode::ListPick,
+        "付け外しの窓が開かない: {:?}",
+        a.message
+    );
+    let s = screen(&a);
+    assert!(s.contains("タグ "), "{s}");
+    assert!(!s.contains("tags "), "{s}");
 }

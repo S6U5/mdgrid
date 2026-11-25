@@ -1873,8 +1873,9 @@ pub const BINDINGS: &[Binding] = &[
     ),
     m(Mode::Notice, "?", Action::Help, Msg::KeyHelp, IN_NOTICE, 0),
     // リストの選択の中(CE-16・CE-17・CE-19・CE-11)。文字1つのキーは割り当てない(打つ文字は検索に入る)。
-    // 検索が空のとき Space=付け外し・Enter=確定。検索中は Space=空白・Enter=選んだ候補を付けるだけ
-    // (既に付いていれば何もしない。新規なら足す)で検索を空に戻す。Tab はいつでも確定。
+    // screen.checklist-keys: 検索が空のとき Enter・Space=付け外し(窓は開いたまま)。検索中は Space=空白・Enter=選んだ
+    // 候補を付けるだけ(既に付いていれば何もしない。新規なら足す)で検索を空に戻す。窓の一番下の「[ 決める ]」の行の
+    // Enter と、どの行でも Tab で決める。Esc でやめる。
     // CE-26: 新しいノートの窓では、どの欄からでも Ctrl+S で作る(入力とリストの選択の両方)。
     m(
         Mode::ListPick,
@@ -1913,9 +1914,9 @@ pub const BINDINGS: &[Binding] = &[
         Mode::ListPick,
         "Tab",
         Action::Commit,
-        Msg::KeyCommit,
+        Msg::KeyDecide,
         IN_PICK,
-        1,
+        2,
     ),
     m(
         Mode::ListPick,
@@ -1923,7 +1924,7 @@ pub const BINDINGS: &[Binding] = &[
         Action::Run,
         Msg::KeyPickRun,
         IN_PICK,
-        2,
+        1,
     ),
     m(
         Mode::ListPick,
@@ -1931,15 +1932,15 @@ pub const BINDINGS: &[Binding] = &[
         Action::Toggle,
         Msg::KeyPickToggle,
         IN_PICK,
-        3,
+        4,
     ),
     m(
         Mode::ListPick,
         "Esc",
         Action::Cancel,
-        Msg::KeyCancel,
+        Msg::KeyStop,
         IN_PICK,
-        4,
+        3,
     ),
     m(
         Mode::ListPick,
@@ -2077,28 +2078,22 @@ pub const BINDINGS: &[Binding] = &[
     ),
     m(Mode::Quit, "Esc", Action::Back, Msg::KeyBack, QUIT, 3),
     m(Mode::Quit, "?", Action::Help, Msg::KeyHelp, QUIT, 0),
-    // ヘルプの中(SR-5)
-    m(Mode::Help, "Esc", Action::Close, Msg::KeyClose, IN_HELP, 1),
-    m(Mode::Help, "q", Action::Close, Msg::KeyClose, IN_HELP, 1),
-    m(Mode::Help, "?", Action::Close, Msg::KeyClose, IN_HELP, 1),
-    m(
-        Mode::Help,
-        "j",
-        Action::Down,
-        Msg::KeyScrollDown,
-        IN_HELP,
-        2,
-    ),
+    // ヘルプの中(SR-5)。↑↓ で項目を選び、Enter で「今押せるキー」の項目をする(screen.help-run)。
+    m(Mode::Help, "Enter", Action::Run, Msg::KeyRun, IN_HELP, 1),
+    m(Mode::Help, "Esc", Action::Close, Msg::KeyClose, IN_HELP, 2),
+    m(Mode::Help, "q", Action::Close, Msg::KeyClose, IN_HELP, 2),
+    m(Mode::Help, "?", Action::Close, Msg::KeyClose, IN_HELP, 2),
+    m(Mode::Help, "j", Action::Down, Msg::KeyNextItem, IN_HELP, 3),
     m(
         Mode::Help,
         "Down",
         Action::Down,
-        Msg::KeyScrollDown,
+        Msg::KeyNextItem,
         IN_HELP,
-        2,
+        3,
     ),
-    m(Mode::Help, "k", Action::Up, Msg::KeyScrollUp, IN_HELP, 3),
-    m(Mode::Help, "Up", Action::Up, Msg::KeyScrollUp, IN_HELP, 3),
+    m(Mode::Help, "k", Action::Up, Msg::KeyPrevItem, IN_HELP, 4),
+    m(Mode::Help, "Up", Action::Up, Msg::KeyPrevItem, IN_HELP, 4),
     m(
         Mode::Help,
         "PageDown",
@@ -2306,6 +2301,7 @@ pub const BINDINGS: &[Binding] = &[
     m(Mode::Freq, "g g", Action::Top, Msg::KeyTop, IN_FREQ, 0),
     m(Mode::Freq, "G", Action::Bottom, Msg::KeyBottom, IN_FREQ, 0),
     // 絞り込みの窓の中(NV-29。filters.rs)。Enter で条件を直すか足す段へ進み、Space で値のチェック、d で外す。←→ で条件の行の欄(列・比べ方・値)を選ぶ。
+    // screen.checklist-keys: 値の一覧では Enter も値のチェック。一番下の「[ 決める ]」の行の Enter か Tab で決める。
     m(
         Mode::FilterWin,
         "h",
@@ -2401,6 +2397,14 @@ pub const BINDINGS: &[Binding] = &[
         Msg::KeyFiltersCheck,
         IN_FILTERS,
         3,
+    ),
+    m(
+        Mode::FilterWin,
+        "Tab",
+        Action::Commit,
+        Msg::KeyDecide,
+        IN_FILTERS,
+        0,
     ),
     m(
         Mode::FilterWin,
