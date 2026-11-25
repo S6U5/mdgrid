@@ -181,6 +181,30 @@ pub fn table_conditions(
     ))
 }
 
+/// notice.marker-inside: 印に書いた相対のパス `rel` が、台帳の根 `root` の中を指すか。絶対のパス・`~` で始まる
+/// パス・`..` を含むパスは外とみなし、在るファイルはリンクをたどった先が根の中かも見る(まだ無いファイルは、
+/// 根からの相対なので中)。
+fn inside_root(root: &Path, rel: &Path) -> bool {
+    use std::path::Component;
+    if rel.to_string_lossy().starts_with('~')
+        || rel.components().any(|c| {
+            matches!(
+                c,
+                Component::ParentDir | Component::RootDir | Component::Prefix(_)
+            )
+        })
+    {
+        return false;
+    }
+    match (
+        std::fs::canonicalize(root.join(rel)),
+        std::fs::canonicalize(root),
+    ) {
+        (Ok(full), Ok(r)) => full.starts_with(r),
+        _ => true,
+    }
+}
+
 /// condition.marker・notice.marker・notify.marker: 開く表 `opened`(フォルダか .base。改行でつないだ複数のパスは
 /// 最初の1つ)で効く設定。上へたどって最初に見つかった印の `[conditions]`・`[[notices]]`・`[[notify]]` を、全体の
 /// 設定のものに重ねる: 条件は印のものを先に並べて同じ名前は印のもの(condition.marker-layer)、通知の欄は印の項目を
@@ -224,6 +248,18 @@ pub fn for_table(c: &Config, opened: &Path, home: Option<&Path>) -> (Config, Vec
                     continue;
                 }
             }
+            // notice.marker-inside: 印は人から受け取ったフォルダにも入っているので、連絡の項目のノートは台帳の根の中だけ。
+            if let crate::notice::Item::Note { path, .. } = &item {
+                if !inside_root(&root, path) {
+                    warn(
+                        &mut w,
+                        &label,
+                        &format!("notices[{}].note", i + 1),
+                        Msg::RsnNoticeNoteOutside.fill(&[&path.display()]),
+                    );
+                    continue;
+                }
+            }
             notices.push(item);
         }
     }
@@ -231,10 +267,25 @@ pub fn for_table(c: &Config, opened: &Path, home: Option<&Path>) -> (Config, Vec
     // notify.marker: 書いていない条件と、印の前の項目と同じ条件の項目は、警告して使わない(notify.item)。
     let mut notify: Vec<crate::notify::Item> = Vec::new();
     if let Some(v) = table.get("notify") {
-        for (i, item) in crate::notify::read(v, &label, &mut w)
+        for (i, mut item) in crate::notify::read(v, &label, &mut w)
             .into_iter()
             .enumerate()
         {
+            // notify.marker-no-command: 印は人から受け取ったフォルダにも入っているので、コマンドの出し先は外す
+            // (開いただけ・--notify だけで、ほかの人が書いたコマンドを動かさない)。出し先が残らなければ使わない。
+            if item.to.contains(&crate::notify::To::Command) || !item.command.is_empty() {
+                warn(
+                    &mut w,
+                    &label,
+                    &format!("notify[{}].command", i + 1),
+                    Msg::RsnNotifyCommandInMarker.text().to_string(),
+                );
+                item.to.retain(|t| *t != crate::notify::To::Command);
+                item.command.clear();
+                if item.to.is_empty() {
+                    continue;
+                }
+            }
             let at = format!("notify[{}].cond", i + 1);
             if conds.get(&item.cond).is_none() {
                 warn(

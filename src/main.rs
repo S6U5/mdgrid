@@ -1811,6 +1811,15 @@ fn notify_cli(paths: &[PathBuf], opts: &Options) -> ExitCode {
         Ok(a) => a,
         Err(e) => return fail(&e),
     };
+    // notify.marker-no-command: 印の知らせの警告(コマンドの出し先を外したなど)は、画面が無いので標準エラーに出す。
+    if let Ok((config, _)) = load_config(opts.config.as_deref(), config::config_path()) {
+        let home = std::env::var_os("HOME").map(PathBuf::from);
+        let (_, marker_warns) = config::for_table(&config, &state_target(paths), home.as_deref());
+        let mut err = io::stderr();
+        for line in &marker_warns {
+            let _ = writeln!(err, "{}", ui::width::sanitize(line));
+        }
+    }
     let (today, now) = mdgrid::clock::today_now(|k| std::env::var(k).ok());
     let tty = io::stdout().is_terminal();
     let report = app.notify_once(today, now, &mut |b| {

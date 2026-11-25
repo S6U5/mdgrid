@@ -258,6 +258,8 @@ WantNotifyArray = "an array of tables ([[notify]])"
 RsnNotifyNeedCond = "needs cond (the name of a named condition) (ignored)"
 ## notify.item: {0} は前の項目と同じ条件の名前。
 RsnNotifyDupCond = "the same condition \"{0}\" as an earlier item (ignored)"
+RsnNotifyCommandInMarker = "a workspace marker cannot send notifications to a command (write command outlets only in config.toml; not sent to the command)"
+RsnNoticeNoteOutside = "a notice note in a workspace marker must be a file inside the ledger (ignored): {0}"
 ## notify.to: {0} は知らない出す先の名前。
 RsnNotifyUnknownTo = "unknown destination \"{0}\" (one of terminal, desktop, command; ignored)"
 RsnNotifyNoCommand = "to has command but command (the program and its arguments) is missing (nothing is sent to a command)"

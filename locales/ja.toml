@@ -257,6 +257,8 @@ WantNotifyArray = "表の並び([[notify]])"
 RsnNotifyNeedCond = "cond(名前の条件の名前)が要る(使わない)"
 ## notify.item: {0} は前の項目と同じ条件の名前。
 RsnNotifyDupCond = "前の項目と同じ条件「{0}」(使わない)"
+RsnNotifyCommandInMarker = "印の知らせにはコマンドの出し先を書けない(全体の設定 config.toml にだけ書ける。コマンドには出さない)"
+RsnNoticeNoteOutside = "印の通知の欄のノートは、台帳の中のファイルだけを指せる(使わない): {0}"
 ## notify.to: {0} は知らない出す先の名前。
 RsnNotifyUnknownTo = "知らない出す先「{0}」(terminal・desktop・command のどれか。使わない)"
 RsnNotifyNoCommand = "to に command があるのに command(プログラムと引数の並び)が無い(コマンドには出さない)"

@@ -258,6 +258,8 @@ WantNotifyArray = "un arreglo de tablas ([[notify]])"
 RsnNotifyNeedCond = "necesita cond (el nombre de una condición con nombre) (se ignora)"
 ## notify.item: {0} は前の項目と同じ条件の名前。
 RsnNotifyDupCond = "la misma condición \"{0}\" que un elemento anterior (se ignora)"
+RsnNotifyCommandInMarker = "un marcador de espacio de trabajo no puede enviar avisos a un comando (los comandos solo en config.toml; no se envía al comando)"
+RsnNoticeNoteOutside = "una nota de aviso en un marcador de espacio de trabajo debe ser un archivo dentro del registro (se ignora): {0}"
 ## notify.to: {0} は知らない出す先の名前。
 RsnNotifyUnknownTo = "destino desconocido \"{0}\" (terminal, desktop o command; se ignora)"
 RsnNotifyNoCommand = "to incluye command pero falta command (el programa y sus argumentos) (no se envía a ningún comando)"

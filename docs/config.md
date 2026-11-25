@@ -134,7 +134,7 @@ tables = [
 ]
 ```
 
-The top of a marker can also hold [named conditions](#conditions--named-conditions), [notice items](#notices--the-notice-box) and [notifications](#notify--notifications) (`[conditions.<name>]`, `[[notices]]` and `[[notify]]`, in the same shape as in `config.toml`). They work only while a table of that ledger is open, next to the global ones.
+The top of a marker can also hold [named conditions](#conditions--named-conditions), [notice items](#notices--the-notice-box) and [notifications](#notify--notifications) (`[conditions.<name>]`, `[[notices]]` and `[[notify]]`, in the same shape as in `config.toml`). They work only while a table of that ledger is open, next to the global ones. A notice `note` in a marker must be a file inside the ledger (`~`, absolute paths and `..` that leave it are warned about and ignored).
 
 ```toml
 # people/.mdgrid/workspace.toml — a condition only for the people ledger; here 1 is "time to get in touch"
@@ -976,7 +976,7 @@ expr = 'due < today() && status != "done"'
 - Default: none
 - Scope: global, workspace marker
 
-Tells you when a row starts to match a [named condition](#conditions--named-conditions): a reminder time has come, or a task has just become overdue. Nothing happens until you write an item here. Each `[[notify]]` watches one condition, and one condition can be watched by only one item. Items can also sit at the top of a ledger's marker: they are checked only by a screen showing a table of that ledger and by `mdgrid <ledger> --notify`. When the marker and `config.toml` watch the same condition, the ledger uses the marker's item. Rows of tables without the columns the condition uses are never notified.
+Tells you when a row starts to match a [named condition](#conditions--named-conditions): a reminder time has come, or a task has just become overdue. Nothing happens until you write an item here. Each `[[notify]]` watches one condition, and one condition can be watched by only one item. Items can also sit at the top of a ledger's marker: they are checked only by a screen showing a table of that ledger and by `mdgrid <ledger> --notify`. When the marker and `config.toml` watch the same condition, the ledger uses the marker's item. Rows of tables without the columns the condition uses are never notified. A marker item cannot send to a command (`command` in `to`, and `command`): markers also arrive inside folders other people give you, and opening one must never run their commands. mdgrid warns and drops that outlet; write command notifications in `config.toml`.
 
 - `cond` is the condition to watch.
 - `scope` picks the tables to watch: `"workspace"` (every table of the current workspace, the default), `"table"` (the open table) or a list of table names.

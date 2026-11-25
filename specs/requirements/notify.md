@@ -307,17 +307,30 @@ macOS・Linux・Windows と、WSL の中の mdgrid で、同じ設定が動く�
 `req~notify.marker~1` P1
 - Rationale: 台帳の知らせを台帳と一緒に配り、ほかの台帳には出さないため(2026-11-25 に人が「印にも書けるようにする」と決めた)。同じ条件を見張る全体の項目は、台帳では印の項目に置き換わる(条件の名前と同じく印が勝つ。condition.marker-layer)
 - Acceptance:
-  - Given: 印に `[[notify]]`・`cond = "contact"`・`to = ["command"]` を書いた台帳 people で、前の `--notify` のあとに contact に新しく当たった行が1つ
-  - When: `mdgrid people --notify`
-  - Then: コマンドが1回動く。
+  - Given: 印に `[[notify]]`・`cond = "contact"`・`title = "台帳"` を書いた台帳 people で、前の確かめのあとに contact に新しく当たった行が1つ
+  - When: people の表で確かめる
+  - Then: 題が「台帳」の知らせが1回出る。
 - Acceptance:
   - Given: 同じ設定
-  - When: 印の無いフォルダ tasks で `--notify`
-  - Then: コマンドは動かない。
+  - When: 印の無いフォルダ tasks の表で確かめる
+  - Then: 知らせは出ない。
 - Acceptance:
   - Given: 全体の設定と印の両方に `cond = "contact"` の項目(全体は `title = "全体"`、印は `title = "台帳"`)
   - When: 印の台帳で1行が新しく当たる
   - Then: 題が「台帳」の知らせが1回だけ出て、警告は無い。
+- Needs: utest・stest
+
+#### 印の `[[notify]]` には、コマンドの出し先(`to` の `command` と `command`)を書けず、書いてあれば警告してその出し先を外し、出し先が残らない項目は使わないべき
+`req~notify.marker-no-command~1` P1
+- Rationale: 印は台帳のフォルダの中のファイルで、人から受け取ったフォルダや取り込んだリポにも入ってくる。開いただけ・`--notify` を走らせただけで、ほかの人が書いたコマンドを動かさないため(コマンドの知らせは、人が自分で書く全体の設定 config.toml にだけ書ける)
+- Acceptance:
+  - Given: 印に `[[notify]]`・`cond = "contact"`・`to = ["command"]`・`command = [<記録するプログラム>]` を書いた台帳 people で、前の `--notify` のあとに contact に新しく当たった行が1つ
+  - When: `mdgrid people --notify`
+  - Then: コマンドは動かず、標準エラーに、印の知らせにはコマンドを書けないという理由を含む警告が出る。
+- Acceptance:
+  - Given: 印の項目が `to = ["terminal", "command"]`
+  - When: 印を読む
+  - Then: 項目の出し先は terminal だけになり、コマンドの並びは空になる。
 - Needs: utest・stest
 
 #### 範囲の表のうち、項目の条件が使えない表(condition.columns-present)は、確かめずに鳴らさないべき

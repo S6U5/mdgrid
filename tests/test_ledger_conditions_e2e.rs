@@ -228,47 +228,40 @@ fn rung(home: &Path) -> Vec<String> {
 }
 
 #[test]
-fn test_notify_marker_rings_only_in_the_ledger() {
-    // [stest -> req~notify.marker~1] 印の [[notify]] は、その台帳を開く --notify でだけ確かめる。
-    let h = home("ledger-notify", "", "");
+fn test_notify_marker_never_runs_commands() {
+    // [stest -> req~notify.marker-no-command~1] 印の [[notify]] に to = ["command"] を書いても、--notify で新しく
+    // 当たった行があってもコマンドは動かず、印の知らせにはコマンドを書けないという警告が標準エラーに出る。
+    let h = home("ledger-notify-nocmd", "", "");
     let marker = format!(
         "name = \"人と会議\"\n{CONTACT}[[notify]]\ncond = \"contact\"\nto = [\"command\"]\ncommand = {}\n",
         record(h.path(), "text")
     );
     h.write("people/.mdgrid/workspace.toml", &marker);
     note(&h, "people/People/x.md", "next: 2026-11-21");
-    note(&h, "tasks/t.md", "next: 2026-11-01");
     let o = run(h.path(), &["people/People", "--notify"]);
     assert!(o.status.success(), "{}", err(&o));
-    assert!(rung(h.path()).is_empty(), "初めての確かめは黙って覚える");
     note(&h, "people/People/w.md", "next: 2026-11-01");
     let o = run(h.path(), &["people/People", "--notify"]);
-    assert!(o.status.success(), "{}", err(&o));
-    assert_eq!(rung(h.path()), ["w.md"]);
-    // 印の無いフォルダでは、印の項目で確かめない(何度呼んでも鳴らない)。
-    for _ in 0..2 {
-        let o = run(h.path(), &["tasks", "--notify"]);
-        assert!(o.status.success(), "{}", err(&o));
-        note(&h, "tasks/u.md", "next: 2026-11-02");
-    }
-    assert_eq!(rung(h.path()), ["w.md"]);
+    assert!(
+        rung(h.path()).is_empty(),
+        "コマンドが動いた: {:?}",
+        rung(h.path())
+    );
+    assert!(err(&o).contains("config.toml"), "{}", err(&o));
 }
 
 #[test]
 fn test_notify_marker_replaces_the_same_global_item() {
-    // [stest -> req~notify.marker~1] 全体の設定と印に同じ cond の項目があれば、印の項目(題「台帳」)だけが1回鳴り、
-    // 警告は無い。
+    // [stest -> req~notify.marker~1] 全体の設定と印に同じ cond の項目があれば印の項目を使い、全体の項目
+    // (コマンドに出す)は動かず、警告は無い。
     let h = home("ledger-notify-same", "", "");
     let conf = format!(
         "{CONTACT}[[notify]]\ncond = \"contact\"\ntitle = \"全体\"\nto = [\"command\"]\ncommand = {}\n",
         record(h.path(), "title")
     );
     h.write("config/mdgrid/config.toml", &conf);
-    let marker = format!(
-        "name = \"人と会議\"\n[[notify]]\ncond = \"contact\"\ntitle = \"台帳\"\nto = [\"command\"]\ncommand = {}\n",
-        record(h.path(), "title")
-    );
-    h.write("people/.mdgrid/workspace.toml", &marker);
+    let marker = "name = \"人と会議\"\n[[notify]]\ncond = \"contact\"\ntitle = \"台帳\"\nto = [\"terminal\"]\n";
+    h.write("people/.mdgrid/workspace.toml", marker);
     note(&h, "people/People/x.md", "next: 2026-11-30");
     let o = run(h.path(), &["people/People", "--notify"]);
     assert!(o.status.success(), "{}", err(&o));
@@ -276,7 +269,19 @@ fn test_notify_marker_replaces_the_same_global_item() {
     let o = run(h.path(), &["people/People", "--notify"]);
     assert!(o.status.success(), "{}", err(&o));
     assert_eq!(err(&o), "", "警告は無い");
-    assert_eq!(rung(h.path()), ["台帳.md"]);
+    assert!(
+        rung(h.path()).is_empty(),
+        "全体の項目が動いた: {:?}",
+        rung(h.path())
+    );
+    // 印の無いフォルダでは、全体の項目が動く(全体の項目そのものは効いている)。
+    note(&h, "tasks/t.md", "next: 2026-11-30");
+    let o = run(h.path(), &["tasks", "--notify"]);
+    assert!(o.status.success(), "{}", err(&o));
+    note(&h, "tasks/u.md", "next: 2026-11-01");
+    let o = run(h.path(), &["tasks", "--notify"]);
+    assert!(o.status.success(), "{}", err(&o));
+    assert_eq!(rung(h.path()), ["全体.md"]);
 }
 
 #[test]

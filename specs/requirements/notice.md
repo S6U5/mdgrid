@@ -227,6 +227,19 @@
   - Then: 「- 鍵を返す」の行が出る。
 - Needs: stest
 
+#### 印の `[[notices]]` の連絡の項目の `note` は、その印の台帳の根の中のファイルだけを指せ、根の外(絶対のパス・`~` で始まるパス・`..` で根を出るパス・根の外を指すリンク)は、警告してその項目を使わないべき
+`req~notice.marker-inside~1` P1
+- Rationale: 印は人から受け取ったフォルダにも入っているので、開いただけで台帳の外のファイル(ホームのメモなど)の中身を画面や `--notices` に出さないため。印の表のパスが根の外を指せない(workspace.marker)のと同じ考え。全体の設定 config.toml の `note` は人が自分で書くので、今までどおりどこでも指せる
+- Acceptance:
+  - Given: 印の `[[notices]]` に `note = "inbox.md"`・`note = "~/secret.md"`・`note = "../outside.md"`・`note = "/tmp/x.md"` の4項目
+  - When: 印を読む
+  - Then: 使う連絡の項目は台帳の根の `inbox.md` の1つだけで、ほかの3つには台帳の中だけを指せるという理由の警告が1つずつ出る。
+- Acceptance:
+  - Given: 台帳の根の `link.md` が根の外のファイルを指すリンクで、印に `note = "link.md"`
+  - When: 印を読む
+  - Then: その項目は使わず、警告が出る。
+- Needs: utest
+
 #### 件数の項目は、範囲の表のうち、その条件が使えない表(condition.columns-present)を数えず、範囲が今の表(`"table"`)の項目は、今の表で使えなければ `show_zero` によらず出さないべき
 `req~notice.columns-present~1` P1
 - Rationale: 期限の列の無い台帳を開いたときに「期限切れ 0 件」を出したり、担当の列の無い表の行を `actor != "ai"` のような条件で数えたりしないため(2026-11-25 に人が決めた)

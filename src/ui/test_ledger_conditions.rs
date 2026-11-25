@@ -328,3 +328,125 @@ title = \"全体\"
     check(&mut a);
     assert_eq!(rung(&out), [("台帳".to_string(), "w".to_string())]);
 }
+
+#[test]
+fn test_notify_marker_item_rings_in_its_ledger_only() {
+    // [utest -> req~notify.marker~1] 印の [[notify]](題「台帳」)は、その印の台帳の表で確かめると1回出て、
+    // 印の無いフォルダの表で確かめると出ない。
+    let conf = "[conditions.contact]\nexpr = 'next <= today()'\n";
+    let marker = "[[notify]]\ncond = \"contact\"\ntitle = \"台帳\"\n";
+    let (t, mut a) = make(
+        "ledger-notify-own",
+        &[("x.md", "---\nnext: 2026-11-30\n---\n")],
+    );
+    let (_g, w) = with_ledger(&mut a, &t, conf, marker);
+    assert!(w.is_empty(), "{w:?}");
+    let out = outlet(&mut a, &t);
+    check(&mut a);
+    t.write("w.md", "---\nnext: 2026-11-01\n---\n");
+    check(&mut a);
+    assert_eq!(rung(&out), [("台帳".to_string(), "w".to_string())]);
+    // 印の無いフォルダ(同じ全体の設定)では、印の項目で確かめない。
+    let (t2, mut b) = make(
+        "ledger-notify-none",
+        &[("x.md", "---\nnext: 2026-11-30\n---\n")],
+    );
+    let (_g2, w2) = with_ledger(&mut b, &t2, conf, "");
+    assert!(w2.is_empty(), "{w2:?}");
+    let out2 = outlet(&mut b, &t2);
+    check(&mut b);
+    t2.write("w.md", "---\nnext: 2026-11-01\n---\n");
+    check(&mut b);
+    assert!(rung(&out2).is_empty(), "{:?}", rung(&out2));
+}
+
+#[test]
+fn test_notify_marker_drops_command_outlets() {
+    // [utest -> req~notify.marker-no-command~1] 印の項目の to = ["terminal", "command"] は terminal だけになり、
+    // command の並びは空になり、理由の警告が出る。to = ["command"] だけの項目は使わない。
+    let conf = "[conditions.contact]\nexpr = 'next <= today()'\n[conditions.soon]\nexpr = 'next <= today() + \"3d\"'\n";
+    let marker = "\
+[[notify]]
+cond = \"contact\"
+to = [\"terminal\", \"command\"]
+command = [\"touch\", \"/tmp/mdgrid-should-not-run\"]
+
+[[notify]]
+cond = \"soon\"
+to = [\"command\"]
+command = [\"touch\", \"/tmp/mdgrid-should-not-run\"]
+";
+    let t = Tmp::new("ledger-notify-nocmd");
+    std::fs::create_dir_all(t.notes().join(".mdgrid")).unwrap();
+    std::fs::write(t.notes().join(".mdgrid/workspace.toml"), marker).unwrap();
+    let (c, w) = config::parse(conf).unwrap();
+    assert!(w.is_empty(), "{w:?}");
+    let (c, warns) = config::for_table(&c, &t.notes(), None);
+    let mine: Vec<_> = c.notify.iter().filter(|i| i.cond == "contact").collect();
+    assert_eq!(mine.len(), 1, "{:?}", c.notify);
+    assert_eq!(mine[0].to, [mdgrid::notify::To::Terminal]);
+    assert!(mine[0].command.is_empty(), "{:?}", mine[0].command);
+    assert!(
+        !c.notify.iter().any(|i| i.cond == "soon"),
+        "出し先が残らない項目は使わない: {:?}",
+        c.notify
+    );
+    let reason = mdgrid::i18n::Msg::RsnNotifyCommandInMarker.text();
+    assert_eq!(
+        warns.iter().filter(|x| x.contains(reason)).count(),
+        2,
+        "{warns:?}"
+    );
+}
+
+#[test]
+fn test_notice_marker_notes_stay_inside_the_ledger() {
+    // [utest -> req~notice.marker-inside~1] 印の連絡の項目の note は台帳の根の中だけ。~・..・絶対のパス・
+    // 根の外を指すリンクは、警告して使わない。
+    let t = Tmp::new("ledger-notice-inside");
+    let root = t.notes();
+    std::fs::create_dir_all(root.join(".mdgrid")).unwrap();
+    std::fs::write(root.join("inbox.md"), "- 鍵を返す\n").unwrap();
+    let outside = root.parent().unwrap().join("outside.md");
+    std::fs::write(&outside, "- 外のメモ\n").unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(&outside, root.join("link.md")).unwrap();
+    let marker = "\
+[[notices]]
+note = \"inbox.md\"
+[[notices]]
+note = \"~/secret.md\"
+[[notices]]
+note = \"../outside.md\"
+[[notices]]
+note = \"/tmp/x.md\"
+[[notices]]
+note = \"link.md\"
+";
+    std::fs::write(root.join(".mdgrid/workspace.toml"), marker).unwrap();
+    let (c, w) = config::parse("").unwrap();
+    assert!(w.is_empty(), "{w:?}");
+    let home = root.parent().unwrap().to_path_buf();
+    let (c, warns) = config::for_table(&c, &root, Some(&home));
+    let notes: Vec<_> = c
+        .notices
+        .iter()
+        .filter_map(|i| match i {
+            mdgrid::notice::Item::Note { path, .. } => Some(path.clone()),
+            mdgrid::notice::Item::Count { .. } => None,
+        })
+        .collect();
+    assert_eq!(
+        notes,
+        [root.canonicalize().unwrap().join("inbox.md")],
+        "{warns:?}"
+    );
+    let reason = mdgrid::i18n::Msg::RsnNoticeNoteOutside.text();
+    let reason = reason.split('{').next().unwrap();
+    let n = if cfg!(unix) { 4 } else { 3 };
+    assert_eq!(
+        warns.iter().filter(|x| x.contains(reason)).count(),
+        n,
+        "{warns:?}"
+    );
+}

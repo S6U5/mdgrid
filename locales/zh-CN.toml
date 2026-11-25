@@ -257,6 +257,8 @@ WantNotifyArray = "表的数组（[[notify]]）"
 RsnNotifyNeedCond = "需要 cond（命名条件的名字）（不使用）"
 ## notify.item: {0} は前の項目と同じ条件の名前。
 RsnNotifyDupCond = "与前面的项目相同的条件“{0}”（不使用）"
+RsnNotifyCommandInMarker = "工作区标记中不能把通知发给命令（命令只能写在 config.toml 中；不发给命令）"
+RsnNoticeNoteOutside = "工作区标记中的通知栏笔记只能指向台账内的文件（不使用）：{0}"
 ## notify.to: {0} は知らない出す先の名前。
 RsnNotifyUnknownTo = "未知的通知目标“{0}”（terminal、desktop、command 之一；不使用）"
 RsnNotifyNoCommand = "to 中有 command，但没有 command（程序和参数的数组）（不发送到命令）"

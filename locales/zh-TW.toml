@@ -258,6 +258,8 @@ WantNotifyArray = "表格的陣列（[[notify]]）"
 RsnNotifyNeedCond = "需要 cond（具名條件的名稱）（不使用）"
 ## notify.item: {0} は前の項目と同じ条件の名前。
 RsnNotifyDupCond = "與前面項目相同的條件「{0}」（不使用）"
+RsnNotifyCommandInMarker = "工作區標記中不能把通知送給命令（命令只能寫在 config.toml 中；不送給命令）"
+RsnNoticeNoteOutside = "工作區標記中的通知欄筆記只能指向台帳內的檔案（不使用）：{0}"
 ## notify.to: {0} は知らない出す先の名前。
 RsnNotifyUnknownTo = "未知的通知目標「{0}」（terminal、desktop、command 其中之一；不使用）"
 RsnNotifyNoCommand = "to 中有 command，但沒有 command（程式與參數的陣列）（不送到命令）"
