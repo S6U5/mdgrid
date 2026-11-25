@@ -175,6 +175,8 @@ mod test_poll_round_robin;
 mod test_print;
 #[path = "test_print_filter_sort.rs"]
 mod test_print_filter_sort;
+#[path = "test_print_group_order.rs"]
+mod test_print_group_order;
 #[path = "test_print_tsv.rs"]
 mod test_print_tsv;
 #[path = "test_print_with_path.rs"]

@@ -178,10 +178,7 @@ impl App {
 
     /// 今の表の名前(ヘッダーのパンくずの表の名前と同じ)。
     fn table_name(&self) -> String {
-        match &self.base {
-            Some(b) => b.name.clone(),
-            None => self.src.name(),
-        }
+        super::bands::table_name(self)
     }
 
     /// 欄に出す項目(書いた順。0 件で `show_zero` でない件数の項目と、行の無い連絡の項目は出さない)。

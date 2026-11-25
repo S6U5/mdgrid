@@ -368,16 +368,19 @@ impl App {
             Kind::DateTime => Entry::DateTime,
             Kind::Text | Kind::List => Entry::Text,
         };
+        // 値の候補には、決まりの labels の名前を添える(リンクの列の候補は行き先の名前のまま)。
+        let values =
+            |c: &[Value]| self.with_value_labels(&col, List::new(c, cur.as_ref(), !mismatch));
         let list = match kind {
             // REL-3: リンクの列は、行き先のフォルダのノートを候補にする(見せるのは名前、書くのはリンク)。
             Kind::Text => self.link_list(&base, &col, cur.as_ref()).or_else(|| {
                 // CE-36: 選べる値(決まりの values)があれば、数の上限によらずその値を候補に。
                 match self.rule_candidates(&col, kind) {
-                    Some(c) => Some(List::new(&c, cur.as_ref(), !mismatch)),
+                    Some(c) => Some(values(&c)),
                     None => self
                         .src
                         .candidates(&col, self.candidates)
-                        .map(|c| List::new(&c, cur.as_ref(), !mismatch)),
+                        .map(|c| values(&c)),
                 }
             }),
             Kind::Checkbox => Some(List::new(
@@ -386,9 +389,9 @@ impl App {
                 !mismatch,
             )),
             // CE-36: 数・日付・日時の列も、選べる値があればその型の値にして候補に(型に合わない値は並べない)。
-            Kind::Number | Kind::Date | Kind::DateTime => self
-                .rule_candidates(&col, kind)
-                .map(|c| List::new(&c, cur.as_ref(), !mismatch)),
+            Kind::Number | Kind::Date | Kind::DateTime => {
+                self.rule_candidates(&col, kind).map(|c| values(&c))
+            }
             Kind::List => None,
         };
         // CE-22: 日付は設定の形で見せる(4桁の年が無い形なら `YYYY-MM-DD`。型の合わない値はそのまま)。

@@ -38,6 +38,25 @@ impl Recent {
             self.at
         )
     }
+
+    /// 一覧に見せる表の名前: 表のある所の印の `[[table]]` で名前を付けた表ならその `name`(引き出しと同じ。同じパスの
+    /// 表がいくつもあればビューの合うもの)、無ければフォルダか `.base` の名前。
+    pub fn name(&self) -> String {
+        let start = if self.path.is_dir() {
+            Some(self.path.as_path())
+        } else {
+            self.path.parent()
+        };
+        let tables = start
+            .and_then(workspace::find_marker)
+            .map(|root| workspace::read_marker(&root).0.tables)
+            .unwrap_or_default();
+        crate::resume::table_name(
+            std::slice::from_ref(&self.path),
+            &tables,
+            self.view.as_deref(),
+        )
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]

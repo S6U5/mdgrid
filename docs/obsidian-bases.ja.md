@@ -22,7 +22,7 @@ Obsidian と同じく、名前が `.` で始まるフォルダ(`.obsidian`・`.g
 |---|---|
 | `filters` | 全部のビューに効く。ビューの `filters` と AND でつなぐ。 |
 | `formulas` | 名前の付いた式。`formula.<名前>` の列として出せ、並べ替えとグループ分けに使え、ほかの式から参照できる。 |
-| `properties` | `displayName` だけを読み、列の見出しにする。キーは `status` とも `note.status` とも書ける。displayName の無い列は Obsidian の既定の見出し(式の列は式の名前、`file.name` は `file name`、`file.ctime` は `created time` など)。`--print --format json` の鍵も同じ。 |
+| `properties` | `displayName` だけを読み、列の見出しにする。列の名前を見せるほかの所(まとまりの見出し・ビューの帯の条件の札・カンバンとガントの題・新しいノートの窓の欄・木の画面の列)も同じ名前。ノートに書く値・式・設定の列の名前は元のキーのまま。キーは `status` とも `note.status` とも書ける。displayName の無い列は Obsidian の既定の見出し(式の列は式の名前、`file.name` は `file name`、`file.ctime` は `created time` など)。`--print --format json` の鍵も同じ。 |
 | `views` | ビューの並び。ビューごとにタブになり、起動時は先頭のビューを開く。 |
 | `summaries` | 式で書いた集計(`values.mean()` など)は評価しない。それを使うビューも開き、下の帯に未対応と出る。[集計](#集計)を見る。 |
 

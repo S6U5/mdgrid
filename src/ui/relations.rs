@@ -278,10 +278,11 @@ impl App {
             Some(NewValue::Str(s)) => self.link_target(row, s).and_then(|(_, t)| t),
             _ => None,
         };
+        // screen.note-name-everywhere: 見せる名前は、ノートの欄と同じ名前の正規表現を当てたもの。
         let mut items: Vec<Item> = relations::notes_in(&dir)
             .into_iter()
             .map(|t| Item {
-                text: relations::file_stem(&t),
+                text: super::view::note_name_of(self, &relations::file_stem(&t)),
                 current: cur_target.as_deref() == Some(t.as_path()),
                 value: NewValue::Str(self.link_value(row, form, &t)),
             })
@@ -327,7 +328,8 @@ impl App {
             relations::notes_in(&dir)
                 .into_iter()
                 .map(|t| {
-                    let name = relations::file_stem(&t);
+                    // screen.note-name-everywhere: 見せる名前はノートの欄と同じ名前の正規表現を当てたもの。
+                    let name = super::view::note_name_of(self, &relations::file_stem(&t));
                     let value = existing
                         .iter()
                         .find(|(p, _)| p == &t)

@@ -12,6 +12,7 @@ use super::native_views::Ask;
 use super::nav::matches;
 use super::width::{fit, sanitize, width, Align};
 use mdgrid::base::{self, Shown};
+use mdgrid::display::NoteName;
 use mdgrid::expr::Expr;
 use mdgrid::i18n::Msg;
 use mdgrid::places::Place;
@@ -111,8 +112,10 @@ impl App {
             .iter()
             .filter_map(|c| self.cond.all.expr(&c.name).cloned())
             .collect();
-        // 見出しの文言は今の言語で(裏の糸は言語の切り替えを見ない)。
+        // 見出しの文言は今の言語で(裏の糸は言語の切り替えを見ない)。結果の名前には、今の表のノートの欄と同じ名前の
+        // 正規表現を当てる(screen.note-name-everywhere。リンクのセルの行き先の名前と同じく、今の表の設定)。
         let note_head = super::view::LABEL_HEADER.text().to_string();
+        let note_name = self.settings.display.over(&self.display).note_name;
         let stop = Arc::new(AtomicBool::new(false));
         self.across.stop = Some(stop.clone());
         let (tx, rx) = mpsc::channel();
@@ -123,7 +126,8 @@ impl App {
                 if stop.load(Ordering::Relaxed) {
                     return;
                 }
-                let found = search_table(&place, &word, &note_head, &hides, (today, now), &stop);
+                let names = (note_head.as_str(), note_name);
+                let found = search_table(&place, &word, names, &hides, (today, now), &stop);
                 if stop.load(Ordering::Relaxed) || tx.send((generation, (place, found))).is_err() {
                     return;
                 }
@@ -246,11 +250,12 @@ impl App {
 /// navigation.across-results: 表 `place` をファイルから開き、行(`.base` の最上位の絞り込みと、いつも隠す条件 `hides`
 /// のあと)のうち、ノートの名前か開くビューの列の素の値に `word` が当たる行を返す(表の中の検索と同じ当て方)。
 /// 列は、`.base` なら開くビュー(登録したビューか先頭のビュー)の列、ほかは表の既定の列(ノートのキー)。
-/// 当たった列は左から最初のもの、列に無くノートの名前に当たったら `note_head`。開けない表は理由。
+/// 当たった列は左から最初のもの、列に無くノートの名前に当たったら `note_head`。開けない表は理由。結果の名前には
+/// `note_name`(ノートの欄の名前の正規表現)を当てる(screen.note-name-everywhere。当てる文字と当たった値は元の名前)。
 fn search_table(
     place: &Place,
     word: &str,
-    note_head: &str,
+    (note_head, note_name): (&str, Option<NoteName>),
     hides: &[Expr],
     (today, now): (i64, i64),
     stop: &AtomicBool,
@@ -331,7 +336,10 @@ fn search_table(
         if let Some((col, value)) = found {
             out.push(Hit {
                 row: r.0.clone(),
-                note: name,
+                note: match note_name {
+                    Some(re) => re.apply_last(&name),
+                    None => name,
+                },
                 col,
                 value,
             });

@@ -22,7 +22,7 @@ Top level:
 |---|---|
 | `filters` | Applied to every view, combined with the view's own `filters` by AND. |
 | `formulas` | Named expressions. Each one can be shown as a column `formula.<name>`, used for sorting and grouping, and referenced from other expressions. |
-| `properties` | Only `displayName`, which becomes the column title. Keys may be written as `status` or `note.status`. Columns without a `displayName` get Obsidian's default titles (a formula column shows the formula's name, `file.name` shows `file name`, `file.ctime` shows `created time`, and so on). The keys of `--print --format json` use the same titles. |
+| `properties` | Only `displayName`, which becomes the column title. Every other place that names the column uses it too: group headings, the condition chips of the view band, the kanban and gantt titles, the fields of the new note window and the columns of the tree screen. Values written to notes, expressions and settings keep the original key. Keys may be written as `status` or `note.status`. Columns without a `displayName` get Obsidian's default titles (a formula column shows the formula's name, `file.name` shows `file name`, `file.ctime` shows `created time`, and so on). The keys of `--print --format json` use the same titles. |
 | `views` | The list of views. Each view becomes a tab; the first view opens at startup. |
 | `summaries` | Formula summaries (such as `values.mean()`) are not evaluated. A view that uses one still opens, and the bottom line names it as unsupported. See [Summaries](#summaries). |
 
