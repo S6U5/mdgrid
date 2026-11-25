@@ -54,6 +54,8 @@ pub struct Base {
     summary_formulas: HashMap<String, String>,
     /// BV-22: `.base` を直接開いたときの this(その `.base` のファイル)。無ければ this を使う式は未対応(BV-7)。
     this: Option<FileInfo>,
+    /// base-view.table-sort: 表の既定の並べ替え(印の `[[table]]` の `sort`)。自分の `sort` を持たないビューを並べる。
+    table_sort: Vec<(String, Dir)>,
 }
 
 /// 表の列。
@@ -119,6 +121,7 @@ pub fn parse(text: &str) -> Result<Base, String> {
         display: HashMap::new(),
         summary_formulas: HashMap::new(),
         this: None,
+        table_sort: Vec::new(),
     };
     let Some(root) = docs.first().map(untag) else {
         return Ok(base);
@@ -938,6 +941,27 @@ impl Base {
             display: HashMap::new(),
             summary_formulas: HashMap::new(),
             this: None,
+            table_sort: Vec::new(),
+        }
+    }
+
+    /// base-view.table-sort: 表の既定の並べ替え(印の `[[table]]` の `sort`。列の名前の `note.` は外す)を置く。自分の
+    /// `sort` を持たないビューは、組み立てるときにこの順で並べる。
+    pub fn set_table_sort(&mut self, sorts: &[(String, Dir)]) {
+        self.table_sort = sorts.iter().map(|(c, d)| (column_id(c), *d)).collect();
+    }
+
+    /// base-view.table-sort: 表の既定の並べ替え。
+    pub fn table_sort(&self) -> &[(String, Dir)] {
+        &self.table_sort
+    }
+
+    /// base-view.table-sort・base-view.table-sort-own-view: ビュー `view` の既定の並び(navigation.sort-default-tiebreak)と、
+    /// それが表の既定から来たか。ビューが自分の `sort` を持てばそれ(false)、無ければ表の既定(true)。
+    pub fn view_sort(&self, view: usize) -> (&[(String, Dir)], bool) {
+        match self.views.get(view) {
+            Some(v) if !v.sort.is_empty() => (&v.sort, false),
+            _ => (&self.table_sort, true),
         }
     }
 
@@ -1145,8 +1169,10 @@ impl Base {
             .group_by
             .as_ref()
             .map(|(id, d)| (Spec::new(id, src), *d, id));
-        let sorts: Vec<(Spec, Dir, &String)> = v
-            .sort
+        // base-view.table-sort: 自分の `sort` を持たないビューは、表の既定の並べ替えで並べる。
+        let sorts: Vec<(Spec, Dir, &String)> = self
+            .view_sort(view)
+            .0
             .iter()
             .map(|(id, d)| (Spec::new(id, src), *d, id))
             .collect();
@@ -1294,6 +1320,29 @@ impl Base {
             None => Shown::Computed(v),
         }
     }
+}
+
+/// base-view.table-sort: `.base` なしの既定の表(BV-1)を、表の既定の並べ替え `sorts` で並べたもの。列は `default_grid`
+/// と同じで、行の並びと並べられない列の説明だけが `.base` のビューと同じ組み立て(`Base::build`)から来る。`sorts` が空なら
+/// `default_grid` のまま。
+pub fn default_grid_sorted(
+    src: &dyn Source,
+    prop: &dyn Fn(&RowId, &str) -> Option<Value>,
+    sorts: &[(String, Dir)],
+    today: i64,
+    now: i64,
+) -> Grid {
+    let mut g = default_grid(src);
+    if sorts.is_empty() {
+        return g;
+    }
+    let mut b = Base::plain(Vec::new());
+    b.set_table_sort(sorts);
+    if let Ok(built) = b.build(0, src, prop, today, now) {
+        g.rows = built.rows;
+        g.notes = built.notes;
+    }
+    g
 }
 
 /// `.base` なしの既定の表(BV-1): 列は src.columns()、行は src.rows()、グループなし。

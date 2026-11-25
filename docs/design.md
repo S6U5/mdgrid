@@ -1044,6 +1044,15 @@ path = "/Users/.../notes"           # 開いた対象の実体のパス
 - **引いた値の見せ方**: `Expr::lookup_key` が、式の外側が `.properties.<キー>`(とそれを map・filter・sort・max などで包んだもの)ならそのキーを返し、`App::lookup_key` 経由で画面がそのキーの値の名前を当てる。決まりは今の表のもの(tbd~lookup-labels-from)。日付は式の列でもセルと同じく `dates.format` で見せる(前は式の列だけ `YYYY-MM-DD` のままだった。既定の形は同じ)。
 - **範囲**: 引けるのは読み込み口のルートフォルダの下のノート。`[[table]] path` の表はそのフォルダが根なので、ほかのフォルダのノートは引けない(tbd~lookup-scope)。
 
+## 表の既定の並べ替え(base-view.table-sort*・navigation.sort-default-tiebreak・navigation.sort-window-*・navigation.sort-button-default。2026-11-25)
+
+印の `[[table]]` の `sort` は、ほかの画面の型の設定と同じく `workspace::marker_sort`(`marker_setting` の共通の読み方)で読み、`workspace::TableSort`(列と向きと、決まりごとの警告の場所 `table[n].sort[k]`)にする。`WsTable`・`Scope` に欄は足さず、`workspaces.toml` と `views.toml` には書けない(画面の型の設定と同じく印だけ)。列が表に無いことは、ほかの型と同じく列が出そろってから `check_sort_columns` が1回知らせる。
+
+- **並べる所は表の組み立て1か所**: `Base` に `table_sort` を持たせ(`set_table_sort`)、`Base::build` は自分の `sort` を持たないビューをその順で並べる(`Base::view_sort`)。ビューの無い表は `base::default_grid_sorted`(`Base::plain` の組み立てで行の順だけを取り、列は `default_grid` のまま)、mdgrid のビューは `print::synth_sorted`(作った `.base` に表の既定を置く)。画面(`App::start` が印から読んで `.base` に置く。`grid.rs`・`native_views.rs`)と `--print`(`print::table_in`。`main` の `print_view` が印から読む)が同じ関数を通るので、カンバン・ガント・`--print` は表の行の順をそのまま使えばそろう。選ばなかった案: ビューの設定の並べ替え(`Settings.sorts`)に既定を書き込む(見た目の状態に残るので、印の `sort` を直しても古い並びのままになり、画面で変えたかを見分けられない)。
+- **最後の決め手**: 見出しの `s` と並べ替えの窓が変えるのは今までどおり `Settings.sorts` だけで、`settings::apply` は表の組み立てが並べた行を安定に並べ直す。だから画面の決まりで並びが同じ行は、組み立ての並び(ビューの `sort`、無ければ表の既定)に残り、同じ列の既定は画面の決まりに負けて重ならない。既定の列を画面の決まりの後ろに足して並べ直す形は採らなかった(比べ方が `.base` の組み立てと `settings` で2通りあり、同じ並びを2回並べると型の合わない値の並びが変わりうる)。
+- **窓と区画の見せ方**: `sorts::SortBase` が、画面で変えていないときの `Settings.sorts`(mdgrid のビューは定義の並べ替え、ほかは空)と既定の並び(`.base` のビューの `sort`、無ければ表の既定)と出どころを持ち、`rules` が「設定の決まり、続けて既定の決まり(設定の決まりの列を除く)」を並べる。既定の決まりの向きを変える・動かすと、見えている決まりの全部を `Settings.sorts` に書いてから直す(見えている並びのまま自分の決まりになる)。外すのは設定の決まりだけ(既定はいつも後ろに付くので、外しても戻ってくる)。ビューの設定の区画(`Draft.sort_base`)も同じ `SortBase` を使う。mdgrid のビューの並べ替えはビューの設定そのもの(定義に保存して直せる)なので既定に数えない。定義の並べ替えを既定にすると、外しても既定として戻ってきて定義を直せなくなるため。
+- **ボタン**: 文字は設定の決まりがあればその先頭、無ければ既定の先頭(と残りの数)。効いている見た目は「画面で変えていないときと違う」とき(`SortBase::changed`)だけにし、既定のままは絞り込みのボタンの条件の無いときと同じ見た目にした。色を使わない表示では太字の有る無しで分かる。
+
 ## ブログ(site.blog-*。2026-11-23)
 
 - **道具を足さない**: サイトを組む `scripts/pages.py` に足し、静的サイトの生成器は入れない。記事の Markdown を HTML にする所は `scripts/mdhtml.py` に分け、標準ライブラリだけで書く(Pages の workflow と試験に依存を足さないため)。扱う形は記事に要るもの(見出し・段落・入れ子の箇条書き・表・コードのブロック・引用・リンク・画像・強調・コードの字)に絞る。生の HTML は文字として出し、リンクと画像の行き先は http・https・mailto と相対の道筋だけを受ける(記事に書いた字がスクリプトとして動かないため)。

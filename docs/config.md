@@ -99,6 +99,19 @@ path = "tasks"
 children = { key = "parent", on_done = "refuse", gantt = "extend" }
 ```
 
+When a table has an order it should always open in, such as news newest first or expenses by date, write a default sort in the marker's `[[table]]`: `sort = [{ property = "<column>", direction = "DESC" }, …]`. It has the same shape as the `sort` of a `.base` view; `direction` is `ASC` or `DESC` (any case; ascending when left out). The rules apply in the order written, and each later rule orders the rows the earlier ones leave tied.
+
+It applies to the views of that table that have no `sort` of their own (views in a `.base` file, `[[table.base.views]]` in the marker, mdgrid views without a sort) and to a table without views. The `--print` output, the cards inside a kanban lane and the gantt rows follow the same order. A view with its own `sort` keeps it. When you sort with `s` on a heading or in the sort window (`S`), your rules come first and rows they leave tied stay in the view's `sort` order (or the table default): in a table that defaults to due dates, sorting by status keeps each status group in due-date order. The sort window and the sort section of the view settings label rules that come from a default "default · marker" (the table default) or "default · view" (the view's `sort`), and once you change the sort on the screen, "Back to default" in the window undoes it.
+
+Only the marker's `[[table]]` takes it (like the screen settings); `workspaces.toml` and `views.toml` do not, and the global config has no such setting because every table has different columns. A `sort` that is not an array is a warning and is not used; a rule without `property`, or with a `direction` other than `ASC` or `DESC`, is a warning and only that rule is dropped. A column the table does not have is reported once the notes are read (in the form `.mdgrid/workspace.toml: table[1].sort[1].property: …`).
+
+```toml
+# research/.mdgrid/workspace.toml — news newest first, same day by file name
+[[table]]
+name = "News"
+sort = [{ property = "date", direction = "DESC" }, { property = "file.name", direction = "ASC" }]
+```
+
 A `[[table]]` in the marker can also set up the chart screen (`P`; `chart` in [Keys](keys.md)): `chart = { kind = "bar", x = "status" }`. Every key is optional. `kind` is the kind (`bar`, `stacked`, `line`, `scatter`, `heatmap`; bar when left out), `x` the column to split by, `y` a number column for the value (a count when left out; for a scatter, the vertical column, a number or a date), `agg` the aggregate (`count`, `sum`, `avg`, `min`, `max`; sum when `y` is given), `by` the breakdown column (needed by stacked bars and heatmaps and guessed when left out; optional for lines and scatters), `unit` the date range (`day`, `week`, `month`; the finest that fits when left out), `cumulative = true` a cumulative line, and `name` a name for the title. For several charts, write an array (`chart = [ { … }, { … } ]`) and move between them with `[` and `]` on the screen:
 
 ```toml

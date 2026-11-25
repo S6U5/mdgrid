@@ -230,6 +230,8 @@ pub(crate) struct Draft {
     pub wbs_vals: Vec<(String, usize)>,
     /// condition.view-settings: フィルターの区画に並べる名前の条件(名前, 見せる名前。書いた順)。
     pub conds: Vec<(String, String)>,
+    /// navigation.settings-sort-default: 並べ替えの区画の既定の並び(開いたときのビューの。sorts.rs)。
+    pub sort_base: super::sorts::SortBase,
 }
 
 impl Draft {
@@ -270,7 +272,8 @@ impl Draft {
         match sec {
             Sec::Columns => self.cols.len(),
             Sec::Filters => self.s.filters.len() + 1 + self.conds.len(),
-            Sec::Sorts => self.s.sorts.len() + 1,
+            // navigation.settings-sort-default: 決めた決まりと既定の決まり、末尾に「足す」。
+            Sec::Sorts => self.sort_base.rules(&self.s.sorts).len() + 1,
             Sec::Group => GROUP_ITEMS,
             Sec::Display => mdgrid::display::ITEMS.len(),
             // タブの行と、末尾の切り替えの案内。
@@ -447,6 +450,7 @@ impl App {
                 })
                 .map(|c| (c.name.clone(), c.shown().to_string()))
                 .collect(),
+            sort_base: self.sort_base(),
         });
         self.set_mode(Mode::Settings);
     }
@@ -541,15 +545,16 @@ impl App {
                     self.edit_cond(i);
                 }
             }
-            Sec::Sorts => match d.s.sorts.get_mut(i) {
-                Some((_, dir)) => *dir = flip(*dir),
-                None => {
-                    d.pick = Some(Pick::Column {
-                        purpose: Purpose::Sort,
-                        sel: 0,
-                    });
-                }
-            },
+            // navigation.settings-sort-default: 既定の決まりの向きを変えると、見えている並びのまま決めた決まりになる。
+            Sec::Sorts if i < d.sort_base.rules(&d.s.sorts).len() => {
+                d.s.sorts = d.sort_base.flip(&d.s.sorts, i);
+            }
+            Sec::Sorts => {
+                d.pick = Some(Pick::Column {
+                    purpose: Purpose::Sort,
+                    sel: 0,
+                });
+            }
             Sec::Group => match i {
                 0 => d.s.group = Group::Inherit,
                 1 => d.s.group = Group::Off,
@@ -651,7 +656,7 @@ impl App {
         let n = match sec {
             Sec::Columns => d.cols.len(),
             Sec::Filters => d.s.filters.len(),
-            Sec::Sorts => d.s.sorts.len(),
+            Sec::Sorts => d.sort_base.rules(&d.s.sorts).len(),
             _ => return,
         };
         let j = if up { i.checked_sub(1) } else { Some(i + 1) };
@@ -661,7 +666,12 @@ impl App {
         match sec {
             Sec::Columns => d.cols.swap(i, j),
             Sec::Filters => d.s.filters.swap(i, j),
-            _ => d.s.sorts.swap(i, j),
+            // navigation.settings-sort-default: 既定の決まりにかかれば、見えている並びのまま決めた決まりにして入れ替える。
+            _ => {
+                if let Some(v) = d.sort_base.swap(&d.s.sorts, i, j) {
+                    d.s.sorts = v;
+                }
+            }
         }
         d.sel[sec as usize] = j;
     }
@@ -683,8 +693,13 @@ impl App {
                     d.s.named.retain(|n| n.name != name);
                 }
             }
-            Sec::Sorts if i < d.s.sorts.len() => {
-                d.s.sorts.remove(i);
+            Sec::Sorts if i < d.sort_base.rules(&d.s.sorts).len() => {
+                // navigation.sort-window-default: 既定の決まりは外せない。
+                let Some(v) = super::sorts::SortBase::remove(&d.s.sorts, i) else {
+                    self.message = Some(Msg::SortDefaultFixed.into());
+                    return;
+                };
+                d.s.sorts = v;
             }
             Sec::Group => d.s.group = Group::Inherit,
             Sec::Look => {

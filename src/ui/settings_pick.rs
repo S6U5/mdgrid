@@ -193,12 +193,13 @@ impl App {
                         });
                     }
                     Purpose::Sort => {
-                        if d.s.sorts.iter().any(|(c, _)| *c == col) {
+                        // navigation.settings-sort-default: 見えている決まり(既定の決まりも)にある列は足さない。
+                        if d.sort_base.rules(&d.s.sorts).iter().any(|r| r.col == col) {
                             let t = self.title(&col);
                             self.message = Some(Msg::SortAlready.fill(&[&t]));
                             return;
                         }
-                        d.s.sorts.push((col, Dir::Asc));
+                        d.s.sorts = super::sorts::SortBase::add(&d.s.sorts, col);
                         d.pick = None;
                         let n = d.s.sorts.len() - 1;
                         d.select(Sec::Sorts, n);

@@ -194,6 +194,14 @@ pub fn synth(nv: &NativeView) -> Result<Base, String> {
     base::parse(&views::to_base(&v).0)
 }
 
+/// base-view.table-sort・navigation.sort-default-tiebreak: `synth` の `.base` に表の既定の並べ替え `table_sort` を置く。
+/// mdgrid のビューの並べ替えはビューの設定(定義に保存して直せる)なので、この並びの上に重ね、並びが同じ行はこの順に残る。
+pub fn synth_sorted(nv: &NativeView, table_sort: &[(String, base::Dir)]) -> Result<Base, String> {
+    let mut b = synth(nv)?;
+    b.set_table_sort(table_sort);
+    Ok(b)
+}
+
 // ---- 表の組み立て ----
 
 /// ビューの表を組む(CLI-5)。ノートは読み終えていること。評価できない filters(BV-7)・table 以外は Err(理由)。
@@ -221,10 +229,34 @@ pub fn table_with(
     now: i64,
     values_of: &dyn Fn(&str) -> Option<Vec<String>>,
 ) -> Result<Table, String> {
+    table_in(src, view, &[], today, now, values_of)
+}
+
+/// `table_with` と同じ。表の既定の並べ替え `table_sort`(base-view.table-sort。印の `[[table]]` の `sort`)を、ビューの無い表と
+/// 並べ替えを持たない mdgrid のビューに効かせる(画面と同じ並び。base-view.table-sort-outputs)。`.base` のビューは、
+/// その `.base` に置いた表の既定(`Base::set_table_sort`)を使い、置いていなければ `table_sort` を置いて組む。
+pub fn table_in(
+    src: &dyn Source,
+    view: ViewDef<'_>,
+    table_sort: &[(String, base::Dir)],
+    today: i64,
+    now: i64,
+    values_of: &dyn Fn(&str) -> Option<Vec<String>>,
+) -> Result<Table, String> {
     let prop = |r: &RowId, k: &str| src.get(r, k).value;
+    let owned;
+    let view = match view {
+        ViewDef::Base(b, i) if b.table_sort().is_empty() && !table_sort.is_empty() => {
+            let mut c = b.clone();
+            c.set_table_sort(table_sort);
+            owned = c;
+            ViewDef::Base(&owned, i)
+        }
+        v => v,
+    };
     match view {
         ViewDef::Default => {
-            let g = base::default_grid(src);
+            let g = base::default_grid_sorted(src, &prop, table_sort, today, now);
             let cell = |r: &RowId, c: &str| Shown::Prop(src.get(r, c));
             Ok(collect(g.columns, &g.rows, g.notes, &cell))
         }
@@ -250,7 +282,8 @@ pub fn table_with(
             Ok(collect(g.columns, &rows, g.notes, &cell))
         }
         ViewDef::Native(nv) => {
-            let b = synth(nv).map_err(|e| Msg::PrintNativeView.fill(&[&nv.name, &e]))?;
+            let b = synth_sorted(nv, table_sort)
+                .map_err(|e| Msg::PrintNativeView.fill(&[&nv.name, &e]))?;
             let g = b
                 .build(0, src, &prop, today, now)
                 .map_err(|e| Msg::PrintNativeView.fill(&[&nv.name, &e]))?;

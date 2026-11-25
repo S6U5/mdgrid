@@ -2332,7 +2332,14 @@ fn print_view(
         Err(e) => return fail(&e),
     };
     let guessed_root = target.guessed_root;
-    let base = target.base.map(|(b, _, _)| b);
+    let mut base = target.base.map(|(b, _, _)| b);
+    // base-view.table-sort・base-view.table-sort-outputs: 印の表の既定の並べ替え(画面と同じ並び。書き誤りは警告)。
+    let (table_sort, sort_warns) = mdgrid::workspace::marker_sort(&state_target(paths));
+    warnings.extend(sort_warns);
+    let table_sort = table_sort.map(|t| t.rules).unwrap_or_default();
+    if let Some(b) = &mut base {
+        b.set_table_sort(&table_sort);
+    }
     // `--view` は `.base` のビューを先に、無ければ今の対象の mdgrid のビューを名前で探す。
     let mut natives = Vec::new();
     let mut base_view = None;
@@ -2366,7 +2373,6 @@ fn print_view(
     let mut src = target.src;
     while !src.load(LOAD_BUDGET).done {}
     // CLI-16: .base のビューには絞り込みと並べ替えを足し、フォルダは既定の表の列の .base にして足す。
-    let mut base = base;
     if !sorts.is_empty() {
         // 知っている列: ビューの列・ノートのキー・file.*・.base の式。ほかは綴りの誤りとして止める。
         let mut known: std::collections::HashSet<String> = src.columns().into_iter().collect();
@@ -2413,7 +2419,7 @@ fn print_view(
         ViewOut::Check | ViewOut::CheckAll | ViewOut::Count => Default::default(),
     };
     let values_of = |c: &str| rules.get(c).and_then(|r| r.values.clone());
-    let mut table = match print::table_with(src.as_ref(), view, today, now, &values_of) {
+    let mut table = match print::table_in(src.as_ref(), view, &table_sort, today, now, &values_of) {
         Ok(t) => t,
         Err(e) => return fail(&e.replace('\n', " ")),
     };

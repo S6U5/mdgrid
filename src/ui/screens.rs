@@ -205,6 +205,8 @@ impl App {
         self.check_chart_columns();
         // navigation.parent-child-config: 印の children の列が表に無ければ警告する(key なら親子にしない)。
         self.check_children_columns();
+        // base-view.table-sort-bad: 印の表の既定の並べ替えの列が表に無ければ警告する。
+        self.check_sort_columns();
         let off = match self.screen() {
             Screen::Tree => !self.tree_ready(),
             Screen::Gantt => self.gantt_spec().is_none(),
