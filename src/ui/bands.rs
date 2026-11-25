@@ -1633,7 +1633,16 @@ pub(crate) fn message(app: &App, w: usize) -> Line<'static> {
             // 行が無くても開ける)。
             if on_other_screen(app) {
                 // gantt.children-span-mark: ガントで選んでいる行が親の期間からはみ出していれば、その日数。
-                return super::gantt::span_hint(app).or_else(notes);
+                // screen.url-click-hint: 木の画面で選んでいる右の行に開ける URL があれば、開き方。
+                return super::gantt::span_hint(app)
+                    .or_else(|| url_hint(app, w))
+                    .or_else(notes);
+            }
+            // screen.url-click-hint: 詳細の表示で選んでいる項目が開ける URL なら、開き方。
+            if app.mode == Mode::Detail {
+                if let Some(h) = url_hint(app, w) {
+                    return Some(h);
+                }
             }
             if app.view_error.is_some() {
                 return Some(Msg::HintViewError.text().into());
@@ -1658,11 +1667,45 @@ pub(crate) fn message(app: &App, w: usize) -> Line<'static> {
             if let Some(r) = s.unsupported {
                 return Some(Msg::HintUnsupportedFormula.fill(&[&r]));
             }
-            s.locked
-                .map(|r| Msg::HintReadOnly.fill(&[&r]))
+            // screen.url-click-hint: 開ける URL のセルは、読むだけの理由より先に開き方。
+            url_hint(app, w)
+                .or_else(|| s.locked.map(|r| Msg::HintReadOnly.fill(&[&r])))
                 .or_else(notes)
         });
     Line::from(fit(&sanitize(&text.unwrap_or_default()), w, Align::Left))
+}
+
+/// screen.url-click-hint: 開ける URL(値の全体が http・https の URL で、`url_refusal` に当たらないもの)を選んでいる
+/// とき(表のセル・木の画面の右の行・詳細の表示の項目)の案内「URL: もう一度クリックか O で開く」。キーはその画面で
+/// URL を開くキー(外したらクリックだけ)。幅 `w` に入らなければ出さない(途中で切らない)。
+fn url_hint(app: &App, w: usize) -> Option<String> {
+    let url = match app.mode {
+        Mode::Table => {
+            let (row, col) = app.selected()?;
+            app.value_url(&row, &col)?
+        }
+        Mode::Tree => {
+            let ft = app.folder_tree.as_ref()?;
+            if ft.focus != super::folder_tree::Pane::Rows || ft.menu.is_some() {
+                return None;
+            }
+            app.row_url(ft.row()?)?
+        }
+        Mode::Detail => {
+            let d = app.detail.as_ref()?;
+            let p = app.detail_props(&d.row).get(d.sel)?.clone();
+            app.value_url(&d.row, &p)?
+        }
+        _ => return None,
+    };
+    if mdgrid::folder_tree::url_refusal(&url).is_some() {
+        return None;
+    }
+    let text = match keymap::key_for(&app.keys, app.mode, keymap::Action::OpenUrl) {
+        Some(k) => Msg::HintUrlClick.fill(&[&k]),
+        None => Msg::HintUrlClickOnly.text().into(),
+    };
+    (width(&text) <= w).then_some(text)
 }
 
 /// 最下行の検索・簡易の絞り込みの入力の文字(`/語`・`\語`)。最下行で入力中でなければ None

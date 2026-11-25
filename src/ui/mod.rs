@@ -486,6 +486,8 @@ mod test_time_picker;
 #[cfg(test)]
 mod test_trust_notices;
 #[cfg(test)]
+mod test_url_click;
+#[cfg(test)]
 mod test_url_links;
 #[cfg(test)]
 mod test_value_labels_cells;

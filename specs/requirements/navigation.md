@@ -1059,6 +1059,40 @@
   - Then: 付け外しの窓の左の縁は tags の値の欄の桁より左に出ない。
 - Needs: utest
 
+#### 詳細の表示で、項目の行(折り返した行も)をクリックしたら、その項目を選ぶべき
+`req~navigation.detail-click-select~1` P1
+- Rationale: 詳細の表示はクリックを受けず、開ける URL の項目をもう一度のクリックで開く(navigation.detail-url-open)には、先にクリックで選べる要があるため
+- Acceptance:
+  - Given: 1つ目の項目を選んでいる詳細の表示
+  - When: 3つ目の項目の行をクリック
+  - Then: 3つ目の項目が選ばれ、編集は始まらない。
+- Acceptance:
+  - Given: 2行に折り返した url の項目がある詳細の表示
+  - When: url の値の2行目をクリック
+  - Then: url の項目が選ばれる。
+- Needs: utest
+
+#### 詳細の表示で、選んでいる項目の値の全体が `http://` か `https://` の URL なら、その値をもう一度クリックするか `O` で、表の `O`(screen.open-url-key)と同じ守りで、その値の URL の全体を開くべき
+`req~navigation.detail-url-open~1` P1
+- Rationale: 詳細の表示で折り返した URL も、端末を束ねる道具の中では行き先(cell-view.url-full-target)が外の端末へ届かず、1行目だけの URL が開いたため(2026-11-25 の報告。表の screen.url-click-open と同じ形)
+- Acceptance:
+  - Given: url の項目を選んでいない詳細の表示
+  - When: url の値をクリック
+  - Then: url の項目が選ばれ、開く口に何も渡らない。
+- Acceptance:
+  - Given: url の項目を選んでいる詳細の表示
+  - When: url の値をもう一度クリック
+  - Then: 開く前にメッセージ行に URL が出て、開く口に URL の全体が渡り、詳細の表示のまま。
+- Acceptance:
+  - Given: url の項目を選んでいる詳細の表示
+  - When: `O`
+  - Then: 開く口に URL の全体が渡る。
+- Acceptance:
+  - Given: url が `https://example.com/files/report.pdf.exe` の項目を選んでいる詳細の表示
+  - When: url の値をもう一度クリック
+  - Then: 開く口に渡らず、実行ファイル(.exe)を指すので開かないという理由が出る。
+- Needs: utest
+
 ### ビューの設定
 
 #### 表の見せ方を変えるビューの設定の画面を持ち、そこでフィルター・並べ替え・グループ分け・表示する列を組んで、反映の操作で表に効かせるべきで、反映するまでは表を変えず、取り消せば元のままにするべき
@@ -1544,6 +1578,11 @@
   - Then: 1段目の結果(読んで判定)。
 
 ## 未確定事項
+
+### 詳細の表示で選んでいる、開ける URL でない項目をもう一度クリックしたときの振る舞い
+`tbd~navigation.detail-reclick`
+- Decider: 人
+- Provisional: 何もしない(選んだままにする。直すのは `Enter`)。表の画面では選んだ行のセルのクリックで編集を始める(screen.mouse-click-edit)が、詳細の表示のクリックは URL を開くために足した(navigation.detail-click-select)ので、編集までは広げない
 
 ### 簡易の絞り込みと検索を、値の見せる名前でも当てるか
 `tbd~navigation.value-labels-match`

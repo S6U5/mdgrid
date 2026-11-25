@@ -1832,6 +1832,9 @@ UrlOpenFailed = "{0} を開けなかった: {1}"
 UrlRefuseExecutable = "{0} は実行ファイル(.{1})を指すので開かない(開くなら URL を写してブラウザに貼る)"
 ## {0} is the URL.
 UrlRefuseBidi = "{0} は文字の向きを変える文字を含むので開かない"
+## {0} は、その画面で URL を開くキー(screen.url-click-hint)。
+HintUrlClick = "URL: もう一度クリックか {0} で開く"
+HintUrlClickOnly = "URL: もう一度クリックで開く"
 RsnTreeNotTable = "{ path = \"<列>\" } の形の表でないので、木を出さない"
 RsnTreeNeedPath = "path(階層の列)が無いので、木を出さない"
 RsnTreeEmptySep = "区切りが空なので、木を出さない"

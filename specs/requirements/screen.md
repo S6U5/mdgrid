@@ -474,8 +474,8 @@
   - When: 別の行のセルを1回クリック
   - Then: 選ぶだけで編集は始まらない。
 
-#### 選んだ行のセルをクリックしたら、そのセルのその場の編集を始めるべき
-`req~screen.mouse-click-edit~1` P1
+#### 選んだ行のセルをクリックしたら、そのセルのその場の編集を始めるべき(行のファイル名(screen.click-name)と、開ける URL のセル(screen.url-click-open)を除く)
+`req~screen.mouse-click-edit~2` P1
 - Acceptance:
   - Given:
   - When: 選んだ行の status のセルをクリック
@@ -708,6 +708,81 @@
   - Given:
   - When: 選んだ行のファイル名をクリック
   - Then: エディタが起動し、戻るとその行を読み直す。`EDITOR` が空のときと読むだけの起動のときも、`e` と同じ結果。
+
+#### 表の画面で、値の全体が `http://` か `https://` の URL(tree.open-url-scheme で開いてよい形)のセルは、選んでいないセルのクリックではそのセルを選ぶだけにし、選んでいるセルをもう一度クリックしたら、`O`(screen.open-url-key)と同じ守り(tree.open-url-show・tree.open-url-disguised)で、そのセルの切る前の URL の全体を開くべき
+`req~screen.url-click-open~1` P1
+- Rationale: 端末を束ねる道具(Herdr など)の中では、切って見せた URL に付けた行き先(cell-view.url-full-target の OSC 8)が外の端末へ届かず、外の端末が見えている文字から途中までの URL を開いたため(2026-11-25 の報告)。⌘+クリックは外の端末が受け取って mdgrid に届かないので、mdgrid が受けるふつうのクリックで開く。木の画面の右の行(tree.mouse-row-reclick)・関係マップの表と同じく、1回目で選び、2回目で開く。縦に並べた表(ページの区画)の表も同じ
+- Acceptance:
+  - Given: 別の行を選んでいて、url が `https://docs.example.com/guides/workspace-setup/advanced-configuration/a-very-long-page-name`(url の列の幅 24 桁で `…` に切って見せる)の行がある表
+  - When: その行の url のセルを1回クリック
+  - Then: その url のセルが選ばれ、開く口に何も渡らず、編集も始まらない。
+- Acceptance:
+  - Given: 同じ行の title のセルを選んでいる表
+  - When: その行の url のセルを1回クリック
+  - Then: url のセルが選ばれるだけで、編集は始まらず、開く口に何も渡らない。
+- Acceptance:
+  - Given: その url のセルを選んでいる表
+  - When: そのセルをもう一度クリック
+  - Then: 開く前にメッセージ行に URL が出て、開く口に切る前の URL の全体が1回渡り、編集は始まらない。
+- Acceptance:
+  - Given: url が `https://example.com/files/report.pdf.exe` のセルを選んでいる表
+  - When: そのセルをもう一度クリック
+  - Then: 開く口に渡らず、実行ファイル(.exe)を指すので開かないという理由が出る。
+- Acceptance:
+  - Given: url が `file:///etc/passwd` のセルを選んでいる表
+  - When: そのセルをもう一度クリック
+  - Then: 開く口に渡らず、URL のセルとして扱わずに、そのセルの編集が始まる(screen.mouse-click-edit)。
+- Acceptance:
+  - Given: 2つの表を縦に並べたページで、下の表の url のセルを選んでいる
+  - When: そのセルをもう一度クリック
+  - Then: 開く口にそのセルの URL の全体が渡る。
+- Needs: utest, stest
+
+#### 表の画面の `O`(screen.open-url-key)は、選んでいるセルの値が開ける URL なら、行のほかの列の URL より先に、そのセルの URL を開くべき
+`req~screen.open-url-cell-first~1` P1
+- Rationale: 開ける URL のセルを選んだときの案内(screen.url-click-hint)が「もう一度クリックか O で開く」と言うので、URL の列が2つある行で `O` が別の列の URL を開くと、案内とクリックの結果が食い違うため
+- Acceptance:
+  - Given: url が `https://example.com/a`、mirror が `https://example.com/b` の行で、mirror のセルを選んでいる表(列は url・mirror の順)
+  - When: `O`
+  - Then: 開く口に `https://example.com/b` が渡る。
+- Acceptance:
+  - Given: 同じ行で、URL でない title のセルを選んでいる表
+  - When: `O`
+  - Then: 開く口に行の最初の URL `https://example.com/a` が渡る。
+- Needs: utest
+
+#### 開ける URL(値の全体が `http://` か `https://` の URL で、tree.open-url-disguised で止めないもの)を選んでいるとき(表の画面のセル・木の画面の右の行・詳細の表示の項目)、ほかの知らせが無ければ、メッセージ行に「URL: もう一度クリックか O で開く」(キーはその画面で URL を開くキー)の案内を出し、幅に入らなければ案内を出さないべき
+`req~screen.url-click-hint~1` P1
+- Rationale: もう一度のクリックで開くこと(screen.url-click-open)はクリックするまで見えないので、マウスで使う人にも開き方が分かるようにする。キーを外したときはクリックだけを言う
+- Acceptance:
+  - Given: 幅 100 の表で、url が `https://example.com/mail` のセルを選んでいる
+  - When: 表を描く
+  - Then: メッセージ行に `URL: もう一度クリックか O で開く` が出る。
+- Acceptance:
+  - Given: 同じ行の、URL でない title のセルを選んでいる
+  - When: 表を描く
+  - Then: メッセージ行に案内は出ない。
+- Acceptance:
+  - Given: url が `https://example.com/files/report.pdf.exe` のセルを選んでいる
+  - When: 表を描く
+  - Then: メッセージ行に案内は出ない(開かない URL なので)。
+- Acceptance:
+  - Given: 幅 20 の表で、url のセルを選んでいる
+  - When: 表を描く
+  - Then: メッセージ行に案内の切れ端も出さない。
+- Acceptance:
+  - Given: 木の画面で、url が `https://example.com/alpha` の右の行を選んでいる
+  - When: 木の画面を描く
+  - Then: メッセージ行に `URL: もう一度クリックか o で開く` が出る。
+- Acceptance:
+  - Given: 詳細の表示で、url の項目を選んでいる
+  - When: 詳細の表示を描く
+  - Then: メッセージ行に `URL: もう一度クリックか O で開く` が出る。
+- Acceptance:
+  - Given: 設定で表の `O` を外し(`[keys.table]` の `"O" = "none"`)、url のセルを選んでいる
+  - When: 表を描く
+  - Then: メッセージ行に `URL: もう一度クリックで開く` が出る。
+- Needs: utest, stest
 
 ### vim モード
 
@@ -2330,6 +2405,12 @@
 `tbd~screen.vim-setting-name`
 - Decider: 人
 - Provisional: `[keys]` の `vim`(真偽。既定は `false`)
+
+### 開ける URL のセルをマウスで直す道
+`tbd~screen.url-click-edit`
+- Decider: 人
+- Provisional: 開ける URL のセル(screen.url-click-open)は、クリックでは直さない(1回目は選ぶだけ、2回目は開く)。直すときは、選んで `Enter` か、右クリックの操作の一覧の「直す」から。⌘+クリックで開ける端末でも、mdgrid は ⌘ の付いたクリックを受け取らないので、同じ振る舞いにする
+- Basis: 2026-11-25 に人が「選んでいる URL のセルをもう一度クリックすると開く。今、選んでいるセルのクリックに別の振る舞い(編集など)があれば、URL のセルでは開くを先にするか、食い違いを報告して仮に決める」と決めた
 
 ### 印の order の控えを持たない、前の版の見た目の状態の列の並び
 `tbd~screen.state-store-legacy-order`

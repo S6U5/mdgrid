@@ -1833,6 +1833,9 @@ UrlOpenFailed = "無法開啟 {0}：{1}"
 UrlRefuseExecutable = "{0} 指向可執行檔（.{1}），不開啟（要開啟，請複製 URL 貼到瀏覽器）"
 ## {0} is the URL.
 UrlRefuseBidi = "{0} 含有改變文字方向的字元，不開啟"
+## {0} is the key that opens the URL on this screen (screen.url-click-hint).
+HintUrlClick = "URL：再次點擊或按 {0} 開啟"
+HintUrlClickOnly = "URL：再次點擊開啟"
 RsnTreeNotTable = "不是 { path = \"<欄位>\" } 形式的表，因此不顯示樹狀"
 RsnTreeNeedPath = "沒有 path（含資料夾的欄位），因此不顯示樹狀"
 RsnTreeEmptySep = "分隔字元為空，因此不顯示樹狀"

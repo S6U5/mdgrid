@@ -12,6 +12,7 @@ Answers to the questions people run into most. Press `?` in mdgrid for every key
 - [A `.base` column shows `?`](#a-base-column-shows-)
 - [Columns do not line up, or characters look too wide](#columns-do-not-line-up-or-characters-look-too-wide)
 - [The colors are wrong, or there are none](#the-colors-are-wrong-or-there-are-none)
+- [Clicking a long URL opens only part of it](#clicking-a-long-url-opens-only-part-of-it)
 - [A folder opens slowly](#a-folder-opens-slowly)
 - [`mdgrid workspace` opens a folder named "workspace"](#mdgrid-workspace-opens-a-folder-named-workspace)
 - [How do I start over?](#how-do-i-start-over)
@@ -68,6 +69,14 @@ Some characters (`○`, `※`, box-drawing lines) are "ambiguous width": some te
 - No colors at all: `NO_COLOR` is set, `TERM=dumb`, `--no-color` was given, or `color = false` is in the config.
 - Colors look off: your terminal may not support true color; mdgrid then uses the nearest of the 256 colors. Set `COLORTERM=truecolor` if your terminal does support it.
 - You prefer the earlier look: `look = "classic"` (and `cells = "plain"`). See [Make it look the way you like](appearance.md).
+
+## Clicking a long URL opens only part of it
+
+Click the URL cell to select it, then click it again, or press `O`. mdgrid hands the whole URL to your browser and shows it in the message line at the bottom first. The rows on the right of the tree screen (key `o`) and the detail view (`K`) work the same way.
+
+The table cuts a long URL to the column width with `…` and marks the cut text with the whole URL as its target (an OSC 8 hyperlink). Most terminals open that target when you click with Cmd or Ctrl held down. Inside a tool that bundles terminals (Herdr, for example), the target may not reach the outer terminal; that terminal then picks the URL from the visible text alone and opens the cut-off part. A Cmd-click goes to the outer terminal, so mdgrid never sees it.
+
+A URL that points to an executable file, or that contains characters which change the text direction, is never opened, whichever way you try; mdgrid shows the reason instead.
 
 ## A folder opens slowly
 

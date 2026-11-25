@@ -422,7 +422,7 @@ fn test_out_1_copy_selected_rows() {
 
 #[test]
 fn test_sr_6_click_selects_then_edits() {
-    // [utest -> req~screen.mouse-click-select~1, req~screen.mouse-click-edit~1] 別の行のセルを1回クリック → 選ぶだけ。選んだ行のセルのクリック → 編集。ホイールで上下。
+    // [utest -> req~screen.mouse-click-select~1, req~screen.mouse-click-edit~2] 別の行のセルを1回クリック → 選ぶだけ。選んだ行のセルのクリック → 編集。ホイールで上下。
     let (_t, mut a) = make("sr6", STATUS);
     let x = header_x(&a, "status");
     let y = view::data_y(&a) as u16 + 1;

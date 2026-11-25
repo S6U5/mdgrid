@@ -252,8 +252,8 @@
   - When: 右の行をクリック1回
   - Then: その行を選び、表の画面には移らない。
 
-#### 木の画面で、選んでいる右の行をもう一度クリックすると、表の画面のその行に移るべき
-`req~tree.mouse-row-reclick~1` P1
+#### 木の画面で、選んでいる右の行をもう一度クリックすると、表の画面のその行に移るべき(開ける URL の値の上のクリックは除く。tree.url-click-open)
+`req~tree.mouse-row-reclick~2` P1
 - Acceptance:
   - Given:
   - When: 右の行をクリック2回
@@ -269,6 +269,27 @@
   - Given:
   - When: ホイールを下へ
   - Then: Web を選ぶ。
+
+#### 木の画面で、選んでいる右の行の、値の全体が `http://` か `https://` の URL の値の欄をもう一度クリックすると、表の画面へ移らずに、木の `o`(tree.open-url-action)と同じ守り(tree.open-url-show・tree.open-url-scheme・tree.open-url-disguised)で、その値の切る前の URL の全体を開くべき(選んでいない行の URL の値のクリックは、その行を選ぶだけ)
+`req~tree.url-click-open~1` P1
+- Rationale: 端末を束ねる道具の中では、切って見せた URL に付けた行き先(cell-view.url-full-target)が外の端末へ届かず、途中までの URL が開いたため(2026-11-25 の報告。表の screen.url-click-open と同じ形)
+- Acceptance:
+  - Given: 右の欄に url の値の欄を出した木の画面で、alpha(url が `https://example.com/alpha`)でない行を選んでいる
+  - When: alpha の url の値をクリック
+  - Then: alpha を選び、開く口に何も渡らず、木の画面のまま。
+- Acceptance:
+  - Given: alpha を選んでいる
+  - When: alpha の url の値をもう一度クリック
+  - Then: 開く前にメッセージ行に URL が出て、開く口に `https://example.com/alpha` が渡り、木の画面のまま。
+- Acceptance:
+  - Given: alpha を選んでいる
+  - When: alpha の名前をもう一度クリック
+  - Then: 表の画面の alpha の行に移り、開く口に何も渡らない。
+- Acceptance:
+  - Given: beta(url が `file:///etc/passwd`)を選んでいる
+  - When: beta の url の値をもう一度クリック
+  - Then: 開く口に渡らず、表の画面の beta の行に移る(URL の値として扱わない)。
+- Needs: utest, stest
 
 ### 次の段(まだ作っていない。P2)
 

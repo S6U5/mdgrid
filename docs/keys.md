@@ -73,7 +73,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `y` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
 | `Ctrl+c` | `copy` | Copy the value of the selected cell (with rows selected: the current column's values of those rows, one per line) to the clipboard |
 | `Y` | `copy_row` | Copy the whole row (or the selected rows) to the clipboard as tab-separated text with a header |
-| `O` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the same as `o` in the tree; the URL is shown in the message line first) |
+| `O` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the same as `o` in the tree; the URL is shown in the message line first; when the selected cell is a URL, that URL; clicking the selected URL cell again also opens it) |
 | `[` | `prev_view` | Switch to the previous view |
 | `]` | `next_view` | Switch to the next view |
 | `<` | `narrow_column` | Make the column narrower |
@@ -206,13 +206,14 @@ The save review, which shows the pending changes as a diff before writing.
 
 ## `detail`
 
-The detail view, which lists every property of one note and, under a `Body` heading, the first 20 lines of its body (read-only; no heading when the note has no body).
+The detail view, which lists every property of one note and, under a `Body` heading, the first 20 lines of its body (read-only; no heading when the note has no body). Clicking a property's line selects that property.
 
 | Key | Action | Description |
 |---|---|---|
 | `Enter` | `edit` | Edit the selected property |
 | `Esc` | `close` | Close the detail view |
 | `K` | `close` | Close the detail view |
+| `O` | `open_url` | Open the `http://` or `https://` URL of the selected property, or else the URL of the row, in the default browser (the same safeguards as `O` in the table; clicking the selected URL value again also opens it) |
 | `j` | `down` | Move down |
 | `Down` | `down` | Move down |
 | `k` | `up` | Move up |
@@ -574,7 +575,7 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 | `Space` | `toggle` | Open or close the folder |
 | `Tab` | `next_section` | Switch between the folders and the rows |
 | `Shift+Tab` | `prev_section` | Switch between the folders and the rows |
-| `o` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the URL is shown in the message line first; other values, URLs that point to an executable file and URLs with characters that change the text direction are never opened, with the reason shown) |
+| `o` | `open_url` | Open the `http://` or `https://` URL of the selected row in the default browser (the URL is shown in the message line first; other values, URLs that point to an executable file and URLs with characters that change the text direction are never opened, with the reason shown; clicking the URL value of the selected row again also opens it) |
 | `x` | `action_menu` | Actions on the selected row (open the URL, show the row in the table) |
 | `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
 | `:` | `palette` | Command palette (closing it returns to the tree) |

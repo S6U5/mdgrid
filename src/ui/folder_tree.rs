@@ -346,24 +346,44 @@ impl App {
             self.message = Some(Msg::TreeNoUrl.text().into());
             return;
         };
+        self.open_url(&url);
+    }
+
+    /// TR-5: `url`(`folder_tree::web_url` を通った値)を開く口に渡す。開く前にメッセージ行に URL を出す。
+    /// `O`・`o`・パレット・操作の一覧と、選んでいる URL のクリック(screen.url-click-open・tree.url-click-open・
+    /// navigation.detail-url-open)が通る1つの道。
+    pub(crate) fn open_url(&mut self, url: &str) {
         // tree.open-url-disguised: 実行ファイルを指す URL と、向きを変える文字を含む URL は開かない。
-        if let Some(r) = folder_tree::url_refusal(&url) {
+        if let Some(r) = folder_tree::url_refusal(url) {
             self.message = Some(match r {
                 folder_tree::UrlRefusal::Executable(ext) => {
-                    Msg::UrlRefuseExecutable.fill(&[&sanitize(&url), &ext])
+                    Msg::UrlRefuseExecutable.fill(&[&sanitize(url), &ext])
                 }
-                folder_tree::UrlRefusal::Bidi => Msg::UrlRefuseBidi.fill(&[&sanitize(&url)]),
+                folder_tree::UrlRefusal::Bidi => Msg::UrlRefuseBidi.fill(&[&sanitize(url)]),
             });
             return;
         }
-        self.message = Some(Msg::UrlOpening.fill(&[&sanitize(&url)]));
-        if let Err(e) = self.opener.open(&url) {
-            self.message = Some(Msg::UrlOpenFailed.fill(&[&sanitize(&url), &e]));
+        self.message = Some(Msg::UrlOpening.fill(&[&sanitize(url)]));
+        if let Err(e) = self.opener.open(url) {
+            self.message = Some(Msg::UrlOpenFailed.fill(&[&sanitize(url), &e]));
         }
     }
 
-    /// TR-5: 表の画面の `open_url`(パレット・操作の一覧): 今の行の URL を開く。
+    /// screen.url-click-open: 行 `row` の列 `col` の値の全体が http・https の URL なら、その URL(開くかどうかは
+    /// 開くときに `url_refusal` で決める)。
+    pub(crate) fn value_url(&self, row: &RowId, col: &str) -> Option<String> {
+        folder_tree::web_url(&self.plain(row, col)).map(str::to_string)
+    }
+
+    /// TR-5: 表の画面の `open_url`(`O`・パレット・操作の一覧): 今の行の URL を開く。
+    /// screen.open-url-cell-first: 選んでいるセルの値が URL なら、行のほかの列の URL より先にそのセルの URL。
     pub(crate) fn open_url_here(&mut self) {
+        if let Some(url) = self
+            .selected()
+            .and_then(|(row, col)| self.value_url(&row, &col))
+        {
+            return self.open_url(&url);
+        }
         match self.cur_row() {
             Some(r) => self.open_row_url(&r),
             None => self.message = Some(Msg::TreeNoUrl.text().into()),
@@ -570,7 +590,7 @@ impl App {
                 t.item = 0;
             }
             t.focus = Pane::Folders;
-        } else if let Some((_, r)) = inner(g.right).filter(|_| show_right) {
+        } else if let Some((cx, r)) = inner(g.right).filter(|_| show_right) {
             // 1行目は列の見出し。
             let Some(r) = r.checked_sub(1) else {
                 return;
@@ -581,11 +601,15 @@ impl App {
                 return;
             }
             let again = ft.item == k && ft.focus == Pane::Rows;
+            // tree.url-click-open: 選んでいる行の URL の値のもう一度のクリックは、表へ移らずに開く。
+            let url = url_at(self, ft, g.right.1.saturating_sub(2), k, cx);
             let t = self.folder_tree.as_mut().expect("tree");
             t.item = k;
             t.focus = Pane::Rows;
-            if again {
-                self.tree_show_in_table();
+            match (again, url) {
+                (true, Some(url)) => self.open_url(&url),
+                (true, None) => self.tree_show_in_table(),
+                (false, _) => {}
             }
         }
     }
@@ -679,20 +703,30 @@ fn folder_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'s
         .collect()
 }
 
-/// 右の欄の中身: 列の見出しと、選んだフォルダの直下の行(ノートの名前と今のビューの列)。
-fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'static>> {
-    let items: Vec<&RowId> = ft.items().iter().map(|&i| &ft.rows[i]).collect();
-    if items.is_empty() {
-        return vec![Line::from(fit(Msg::TreeEmptyFolder.text(), w, Align::Left))];
-    }
-    let one_line = |s: String| sanitize(s.lines().next().unwrap_or_default());
+/// 右の欄の値の欄: 列の名前・見出し・幅・各行の見せる値・各行の行き先(cell-view.url-full-target)。
+struct RightCol {
+    name: String,
+    title: String,
+    w: usize,
+    vals: Vec<String>,
+    urls: Vec<Option<String>>,
+}
+
+/// 値を1行目だけにして、制御文字を置き換える。
+fn one_line(s: &str) -> String {
+    sanitize(s.lines().next().unwrap_or_default())
+}
+
+/// 右の欄の段組み: 各行の名前、名前の欄の幅、入る値の欄(左から)。行の各桁は「選びの印(1桁)・名前・
+/// (2桁の空き・値)…」。描く `row_lines` とクリックの `tree_click`(tree.url-click-open)が同じ段組みを使う。
+fn right_cols(app: &App, items: &[&RowId], w: usize) -> (Vec<String>, usize, Vec<RightCol>) {
     // screen.note-name-everywhere: 名前は表のノートの欄と同じ見せ方(`.md` を除き、note_path と note_name に従う)。
     // 空になる名前は元の名前(カンバンの札と同じ)。
     let names: Vec<String> = items
         .iter()
         .map(|r| {
             let name = super::view::note_name(app, r);
-            one_line(if name.trim().is_empty() {
+            one_line(&if name.trim().is_empty() {
                 app.src.label(r)
             } else {
                 name
@@ -709,19 +743,18 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
         .unwrap_or(4)
         .min((w.saturating_sub(1) / 2).max(8));
     // 列の見出しは表の列の見出しと同じ displayName(base-view.display-name-everywhere)。
-    type Col = (String, usize, Vec<String>, Vec<Option<String>>);
-    let mut cols: Vec<Col> = Vec::new();
+    let mut cols: Vec<RightCol> = Vec::new();
     let mut used = 1 + nw;
     for c in &app.cols {
         let title = sanitize(&app.title(c));
         // navigation.value-labels-cells: 名前のある値は名前で(URL の行き先は素の値から)。
         let vals: Vec<String> = items
             .iter()
-            .map(|r| one_line(super::cell::shown_plain(app, r, c)))
+            .map(|r| one_line(&super::cell::shown_plain(app, r, c)))
             .collect();
         let urls: Vec<Option<String>> = items
             .iter()
-            .map(|r| app.link_url(&one_line(app.plain(r, c))))
+            .map(|r| app.link_url(&one_line(&app.plain(r, c))))
             .collect();
         let cw = vals
             .iter()
@@ -734,16 +767,50 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
             break;
         }
         used += 2 + cw;
-        cols.push((title, cw, vals, urls));
+        cols.push(RightCol {
+            name: c.clone(),
+            title,
+            w: cw,
+            vals,
+            urls,
+        });
     }
+    (names, nw, cols)
+}
+
+/// tree.url-click-open: 右の欄の行 `k`(選んだフォルダの直下の行の添字)の、欄の中の桁 `cx` にある値の欄の
+/// 値の全体が http・https の URL なら、その URL。`w` は欄の中の幅。
+fn url_at(app: &App, ft: &FolderTree, w: usize, k: usize, cx: usize) -> Option<String> {
+    let items: Vec<&RowId> = ft.items().iter().map(|&i| &ft.rows[i]).collect();
+    let row = *items.get(k)?;
+    let (_, nw, cols) = right_cols(app, &items, w);
+    let mut x = 1 + nw;
+    for c in &cols {
+        x += 2;
+        if (x..x + c.w).contains(&cx) {
+            return app.value_url(row, &c.name);
+        }
+        x += c.w;
+    }
+    None
+}
+
+/// 右の欄の中身: 列の見出しと、選んだフォルダの直下の行(ノートの名前と今のビューの列)。
+fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'static>> {
+    let items: Vec<&RowId> = ft.items().iter().map(|&i| &ft.rows[i]).collect();
+    if items.is_empty() {
+        return vec![Line::from(fit(Msg::TreeEmptyFolder.text(), w, Align::Left))];
+    }
+    let head = super::view::LABEL_HEADER.text();
+    let (names, nw, cols) = right_cols(app, &items, w);
     let faint = super::look::look(app).map_or_else(
         || Style::default().add_modifier(Modifier::BOLD),
         |l| l.faint(),
     );
     let mut out = Vec::new();
     let mut h = format!(" {}", fit(head, nw, Align::Left));
-    for (c, cw, _, _) in &cols {
-        h.push_str(&format!("  {}", fit(c, *cw, Align::Left)));
+    for c in &cols {
+        h.push_str(&format!("  {}", fit(&c.title, c.w, Align::Left)));
     }
     out.push(Line::from(Span::styled(fit(&h, w, Align::Left), faint)));
     let vis = vis.saturating_sub(1);
@@ -755,10 +822,10 @@ fn row_lines(app: &App, ft: &FolderTree, w: usize, vis: usize) -> Vec<Line<'stat
             if sel { ">" } else { " " },
             fit(name, nw, Align::Left)
         );
-        for (_, cw, vals, urls) in &cols {
-            let shown = fit(&vals[k], *cw, Align::Left);
+        for c in &cols {
+            let shown = fit(&c.vals[k], c.w, Align::Left);
             // cell-view.url-full-target: 切って見せた URL にも、全体の URL を行き先に付ける(窓の中の桁で覚える)。
-            if let Some(url) = &urls[k] {
+            if let Some(url) = &c.urls[k] {
                 app.url_spots
                     .push(width(&t) + 2, out.len(), shown.clone(), url);
             }
