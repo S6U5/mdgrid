@@ -67,7 +67,7 @@ fn lines(o: &Output) -> Vec<String> {
 
 #[test]
 fn test_cli_23_reports_type_and_required_problems() {
-    // [stest -> req~cli.check-problems~1] 型の違反(行あり)と必須のキーの無いノート(行なし)を、パスの順に1行ずつ出し、
+    // [stest -> req~cli.check-problems~2] 型の違反(行あり)と必須のキーの無いノート(行なし)を、パスの順に1行ずつ出し、
     // 標準エラーに「問題 2」、終了コード 1。ノートのバイトは変わらない。
     let root = vault(
         "report",
@@ -100,7 +100,7 @@ fn test_cli_23_reports_type_and_required_problems() {
 
 #[test]
 fn test_cli_23_no_problems_prints_nothing_and_exits_0() {
-    // [stest -> req~cli.check-problems~1, req~cli.check-exit-code~2] 直したあと → 標準出力に何も出さず、終了コード 0。
+    // [stest -> req~cli.check-problems~2, req~cli.check-exit-code~2] 直したあと → 標準出力に何も出さず、終了コード 0。
     let root = vault(
         "clean",
         &[("a.md", A_OK), ("b.md", B_OK)],
@@ -125,7 +125,7 @@ fn test_cli_23_missing_path_exits_2() {
 
 #[test]
 fn test_cli_23_values_violation_lines_in_line_order() {
-    // [stest -> req~cli.check-problems~1] values に無い値は「選べる値ではない」。1つのノートの2つの問題は行の順。
+    // [stest -> req~cli.check-problems~2] values に無い値は「選べる値ではない」。1つのノートの2つの問題は行の順。
     // values に合う値(done)は出ない。
     let cfg = "[types]\ndue = \"date\"\n\n[rules.status]\nvalues = [\"todo\", \"done\"]\n";
     let c = "---\nstatus: wip\ndue: later\n---\n";

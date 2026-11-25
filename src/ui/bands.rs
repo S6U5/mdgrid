@@ -79,22 +79,37 @@ pub(crate) fn header_extra(app: &App) -> String {
 }
 
 /// パンくずに出す範囲の名前(SR-42・WS-6): 書いたワークスペースの範囲のとき。検知した範囲は関係マップでだけ。
-fn crumb_scope(app: &App) -> Option<String> {
+pub(crate) fn crumb_scope(app: &App) -> Option<String> {
     let s = app.scope.as_ref()?;
     let detected = matches!(s.source, mdgrid::workspace::Source::Detected(_));
     (on_relmap(app) || !detected).then(|| sanitize(&s.name))
 }
 
-/// パンくずのボタンの文字「キー 範囲 › 表 ▾」(範囲が無ければ表だけ。キーは引き出しのキーで、割り当てが
-/// 無ければ添えない。SR-42)。
-fn crumb_text(app: &App, name: &str) -> String {
-    let crumb = match crumb_scope(app) {
-        Some(sc) => format!("{sc} › {}", sanitize(name)),
-        None => sanitize(name),
+/// パンくずの区切り(範囲の名前のボタンと表の名前のボタンの間。どちらのボタンにも入れない)。
+const CRUMB_SEP: &str = " › ";
+
+/// パンくずの2つのボタンの文字(screen.breadcrumb-button-look): 範囲の名前のボタン「キー 範囲」(範囲を出すときだけ。
+/// キーは切り替えの一覧のキー)と、表の名前のボタン「キー 表 ▾」(キーは引き出しのキー)。キーは割り当てが無ければ
+/// 添えない。
+fn crumb_parts(app: &App, name: &str) -> (Option<String>, String) {
+    let key = |a: keymap::Action| keymap::key_for(&app.keys, Mode::Table, a);
+    let with_key = |k: Option<String>, t: String| match k {
+        Some(k) => format!("{k} {t}"),
+        None => t,
     };
-    match keymap::key_for(&app.keys, Mode::Table, keymap::Action::WsDrawer) {
-        Some(k) => format!("{k} {crumb} ▾"),
-        None => format!("{crumb} ▾"),
+    let scope = crumb_scope(app).map(|sc| with_key(key(keymap::Action::WsSwitch), sc));
+    let table = with_key(
+        key(keymap::Action::WsDrawer),
+        format!("{} ▾", sanitize(name)),
+    );
+    (scope, table)
+}
+
+/// パンくずの文字「キー 範囲 › キー 表 ▾」(範囲が無ければ表のボタンだけ。SR-42)。
+fn crumb_text(app: &App, name: &str) -> String {
+    match crumb_parts(app, name) {
+        (Some(scope), table) => format!("{scope}{CRUMB_SEP}{table}"),
+        (None, table) => table,
     }
 }
 
@@ -118,14 +133,36 @@ pub(crate) fn table_name(app: &App) -> String {
     }
 }
 
-/// SR-42: (x, y) がヘッダーのパンくず(範囲と表の名前)か。押すと表の一覧の引き出し(WS-8)。
-pub(crate) fn crumb_at(app: &App, x: u16, y: u16) -> bool {
+/// ヘッダーのパンくずの押す所(SR-42)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum CrumbPart {
+    /// 範囲の名前: ワークスペースの切り替えの一覧(screen.breadcrumb-switch)。
+    Scope,
+    /// 表の名前(「▾」まで): 表の一覧の引き出し(screen.breadcrumb-drawer)。
+    Table,
+}
+
+/// SR-42: (x, y) がヘッダーのパンくずのどのボタンか(間の区切りと、パンくずの外は None)。
+pub(crate) fn crumb_part_at(app: &App, x: u16, y: u16) -> Option<CrumbPart> {
     // stack.title: 縦に並べた表の区画の見出しは、パンくずを持たない。
     if y != head_y(app) || super::stack::in_region(app) {
-        return false;
+        return None;
     }
-    let x = x as usize;
-    x >= 1 && x < 1 + width(&crumb_text(app, &table_name(app)))
+    let x = (x as usize).checked_sub(1)?;
+    let (scope, table) = crumb_parts(app, &table_name(app));
+    let sw = scope.as_deref().map_or(0, width);
+    let tx = if scope.is_some() {
+        sw + width(CRUMB_SEP)
+    } else {
+        0
+    };
+    if x < sw {
+        Some(CrumbPart::Scope)
+    } else if x >= tx && x < tx + width(&table) {
+        Some(CrumbPart::Table)
+    } else {
+        None
+    }
 }
 
 /// 関係マップの画面か(画面の型のメニューを関係マップから開いている間も)。
@@ -364,34 +401,49 @@ pub(crate) fn header(app: &App, w: usize) -> Line<'static> {
     let look = super::look::look(app);
     // SR-33: 名前の色はテーマのヘッダーの色(テーマが無ければ端末の色)のまま(SR-26)。
     let name_st = bold;
-    // SR-42: パンくずは引き出しのボタン。ビューの帯のボタンと同じ地の色(色なしでは下線)で、名前は太字のまま。
+    // SR-42・screen.breadcrumb-button-look: パンくずは範囲の名前(切り替えの一覧)と表の名前(引き出し)の2つのボタン。
+    // ビューの帯のボタンと同じ地の色(色なしでは下線)で、名前は太字のまま。間の区切りはボタンの外。
     let crumb_st = match &look {
         Some(l) => bold.bg(l.soft_bg),
         None => bold.add_modifier(Modifier::UNDERLINED),
     };
-    let crumb_w = width(&crumb_text(app, &table_name(app)));
-    let crumb_key = keymap::key_for(&app.keys, Mode::Table, keymap::Action::WsDrawer);
+    let (scope_btn, table_btn) = crumb_parts(app, &table_name(app));
+    let scope_w = scope_btn.as_deref().map_or(0, width);
+    let sep_w = if scope_btn.is_some() {
+        width(CRUMB_SEP)
+    } else {
+        0
+    };
+    let table_w = width(&table_btn);
+    let switch_key = keymap::key_for(&app.keys, Mode::Table, keymap::Action::WsSwitch);
+    let drawer_key = keymap::key_for(&app.keys, Mode::Table, keymap::Action::WsDrawer);
     let left = |avail: usize| -> Vec<Span<'static>> {
         let t = fit(&text, avail, Align::Left);
-        // 先頭の空白の次からボタンの幅だけ(詰められていれば入る分だけ)をボタンの見た目にする。
-        let mut head = String::new();
-        let mut btn = String::new();
-        let mut rest = String::new();
+        // 先頭の空白の次から、範囲のボタン・区切り・表のボタンの幅だけ(詰められていれば入る分だけ)に分ける。
+        let bounds = [
+            1,
+            1 + scope_w,
+            1 + scope_w + sep_w,
+            1 + scope_w + sep_w + table_w,
+        ];
+        let mut parts: [String; 5] = Default::default();
         let mut at = 0;
         for c in t.chars() {
             let cw = width(&c.to_string());
-            if at < 1 {
-                head.push(c);
-            } else if at < 1 + crumb_w {
-                btn.push(c);
-            } else {
-                rest.push(c);
-            }
+            let k = bounds.iter().take_while(|b| at >= **b).count();
+            parts[k].push(c);
             at += cw;
         }
+        let [head, scope, sep, table, rest] = parts;
         let mut spans = vec![Span::styled(head, name_st)];
-        // NV-23・SR-42: 頭の引き出しのキーの字は名前と見分ける見た目。
-        spans.extend(key_spans(&btn, crumb_key.as_deref(), crumb_st, &look));
+        // NV-23・SR-42: 頭のキーの字は名前と見分ける見た目。
+        if !scope.is_empty() {
+            spans.extend(key_spans(&scope, switch_key.as_deref(), crumb_st, &look));
+        }
+        spans.push(Span::styled(sep, name_st));
+        if !table.is_empty() {
+            spans.extend(key_spans(&table, drawer_key.as_deref(), crumb_st, &look));
+        }
         spans.push(Span::styled(rest, name_st));
         spans
     };

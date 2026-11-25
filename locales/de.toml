@@ -5,7 +5,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "Aufruf: mdgrid [<.base | Ordner | .md | .csv> ...] [--view <Name>] [-w <Name>] [--page <Name>] [--raw] [--readonly] [--no-color] [--config <Pfad>]\n        mdgrid [<.base | Ordner | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <Name>]\n                 [--filter <Ausdruck>]... [--sort <Spalte>[:desc]]...\n        mdgrid [<.base | Ordner | .md> ...] --pick path|<Spalte> [--view <Name>]\n        mdgrid [<.base | Ordner | .md> ...] --check [--view <Name>]\n        mdgrid [<.base | Ordner | .md> ...] --count [--view <Name>] [--filter <Ausdruck>]...\n        mdgrid [<.base | Ordner> ...] --notices\n        mdgrid [<.base | Ordner> ...] --notify\n        mdgrid [<.base | Ordner> ...] --runs\n        mdgrid [<.base | Ordner> ...] --apply <Pfad> [--yes]\n        mdgrid [<Ordner | .base> ...] --add-to <Name> [--as <Tabellenname>] | --remove-from <Name>\n        mdgrid [<Ordner> ...] --init-workspace [--starter <Name> [--with-samples]]\n        mdgrid [<Ordner>] --new-note <Name> [--set <Spalte>=<Wert>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <Pfad>]\n        mdgrid -s <Name> [--readonly] [--no-color] [--config <Pfad>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <Name>\n        mdgrid --print-config\n        mdgrid --completions <Shell>\n        mdgrid --man\n\n  Öffnet die Markdown-Notizen eines Ordners als Tabelle: eine Zeile je Notiz, eine Spalte je\n  Front-Matter-Schlüssel. Mit einer .base öffnet mdgrid deren Tabellenansicht (die Notizen werden\n  unter dem Stammordner gesucht). Mit einer .md-Datei öffnet es deren Ordner und wählt diese Notiz\n  aus. Eine .csv- oder .tsv-Datei öffnet es als Tabelle: eine Zeile je Dateizeile, die erste Zeile\n  benennt die Spalten.\n  Ohne Argumente öffnet es den aktuellen Ordner (darüber die Liste der in places.toml registrierten\n  Tabellen, falls vorhanden). Ein Ordner mit einem Marker .mdgrid/workspace.toml, der unter \"open\"\n  eine Tabelle nennt, öffnet stattdessen diese Tabelle.\n\n  --view <Name>           diese Ansicht der .base öffnen (ohne Angabe die erste; --print sucht auch\n                          mdgrid-Ansichten)\n  -w, --workspace <Name>  diesen Workspace (workspaces.toml) für Links und die Beziehungskarte\n                          verwenden; ohne Pfad seine erste Tabelle öffnen\n  --page <Name>           diese Seite ([[page]]) des Workspace öffnen, mit untereinander gestapelten\n                          Tabellen\n  --raw                   den Ordner selbst öffnen, nicht die unter \"open\" im Marker genannte\n                          Tabelle\n  --readonly              schreibgeschützt öffnen (kein Bearbeiten, kein Speichern)\n  --no-color              ohne Farben zeichnen\n  --config <Pfad>         diese Konfigurationsdatei lesen\n                          (Standard: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              die zuletzt in diesem Ordner gezeigte Tabelle und Ansicht öffnen (sonst\n                          wie ohne Argumente; zum Wiederherstellen von Fenstern mit tmux u. Ä.)\n  -s, --session <Name>    die unter diesem Namen gespeicherte Sitzung öffnen (Tabelle, Ansicht,\n                          Filter, Sortierung und Spalten; speichern mit \"Sitzung speichern\" in der\n                          Palette)\n  --sessions              die gespeicherten Sitzungen (sessions.toml) auflisten: Name und Ordner,\n                          eine pro Zeile\n  --recent                die zuletzt am Bildschirm geöffneten Tabellen ausgeben, neueste zuerst, je\n                          Zeile \"Pfad<TAB>Ansichtsname<TAB>zuletzt geöffnet\" (bis zu 20)\n  --print                 die Tabelle der Ansicht ohne Bildschirm auf die Standardausgabe schreiben\n                          (Notizen bleiben unverändert)\n  --format <Format>       Format für --print (csv, tsv, json, md; Standard csv)\n  --with-path             --print eine erste Spalte \"path\" mit dem Notizpfad jeder Zeile\n                          voranstellen (derselbe Pfad wie bei --pick path)\n  --filter <Ausdruck>     nur Zeilen behalten, für die der .base-Ausdruck wahr ist (wiederholbar;\n                          bei einer .base-Ansicht zusätzlich zu deren Filtern)\n  --sort <Spalte>[:desc]  --print nach dieser Spalte sortieren (wiederholbar; ersetzt die Sortierung\n                          der Ansicht)\n  --count                 die Zeilenzahl der Ansicht (nach --filter) ohne Bildschirm ausgeben\n  --show-hidden           mit --print, --pick oder --count auch die Zeilen behalten, die Bedingungen\n                          mit hide = true ([conditions]) ausblenden\n  --notices               die Einträge des Hinweisfelds ([[notices]]) ohne Bildschirm ausgeben,\n                          einen pro Zeile (für eine tmux-Statuszeile oder einen Shell-Prompt)\n  --notify                die Einträge von [[notify]] einmal ohne Bildschirm prüfen und neu passende\n                          Zeilen melden (für einen geplanten Lauf; Code 1, wenn etwas nicht ankam)\n  --runs                  die fälligen Routine-Durchläufe ([[table]] runs im Marker) ohne Bildschirm als Notizen anlegen\n                          und ihre Pfade ausgeben (für geplante Läufe; Exit-Code 1, wenn einer nicht angelegt werden konnte)\n  --pick <path|Spalte>    den Bildschirm schreibgeschützt im Terminal zeigen; Enter gibt den Pfad\n                          oder den Spaltenwert der markierten Zeilen (oder der gewählten Zeile)\n                          zeilenweise auf die Standardausgabe aus und beendet\n                          (q oder Esc bricht mit Exit-Code 1 ab)\n  --check                 die Werte ausgeben, die nicht zum Spaltentyp oder zu einer Regel ([rules])\n                          passen, einen pro Zeile (Pfad:Zeile: Spalte: Grund; Exit-Code 1, falls es\n                          welche gibt)\n  --apply <Pfad>          eine CSV oder JSON im Format von --print --with-path lesen (- für die\n                          Standardeingabe) und abweichende Zellen ändern; zeigt nur den Diff\n  --yes                   mit --apply die Änderungen schreiben\n  --workspaces            die Workspaces (workspaces.toml) auflisten\n  --add-to <Name>         die angegebenen Tabellen (Standard: dieser Ordner) zu diesem Workspace\n                          hinzufügen, der bei Bedarf angelegt wird; --as <Name> benennt die Tabelle\n  --remove-from <Name>    die angegebenen Tabellen (Standard: dieser Ordner) aus diesem Workspace\n                          entfernen\n  --remove-workspace <Name>  diesen Workspace löschen (Notizen bleiben unberührt)\n  --init-workspace        einen Workspace-Marker .mdgrid/workspace.toml in den Ordner legen\n                          (Standard: dieser Ordner)\n  --starter <Name>        mit --init-workspace eine Ablage (Marker, Notizvorlagen) aus diesem\n                          Starter anlegen: einem eingebauten oder starters/<Name> im\n                          Konfigurationsordner\n  --with-samples          mit --starter auch die Beispielnotizen des Starters hinzufügen\n  --starters              die Starter auflisten, einen pro Zeile (Name und einzeilige Beschreibung)\n  --new-note <Name>       ohne Bildschirm eine neue Notiz <Name>.md im Ordner (Standard: dieser\n                          Ordner) anlegen, mit [new_note] (folder, set, template); gibt den\n                          angelegten Pfad aus und überschreibt nie\n  --set <Spalte>=<Wert>   mit --new-note diesen Wert in die Spalte schreiben (wiederholbar;\n                          Listeneinträge durch Kommas trennen; ein leerer Wert schreibt nichts)\n  --print-config          jeden Konfigurationseintrag als TOML mit Standardwert und Beschreibung\n                          ausgeben (docs/config.md)\n  --completions <Shell>   Shell-Vervollständigungen ausgeben (bash, zsh, fish, elvish, powershell)\n  --man                   die Manpage ausgeben (roff)\n  --help                  diese Hilfe ausgeben\n  --version               die Version ausgeben"
+Usage = "Aufruf: mdgrid [<.base | Ordner | .md | .csv> ...] [--view <Name>] [-w <Name>] [--page <Name>] [--table <Name>] [--raw] [--readonly] [--no-color] [--config <Pfad>]\n        mdgrid [<.base | Ordner | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <Name>]\n                 [--filter <Ausdruck>]... [--sort <Spalte>[:desc]]...\n        mdgrid [<.base | Ordner | .md> ...] --pick path|<Spalte> [--view <Name>]\n        mdgrid [<.base | Ordner | .md> ...] --check [--view <Name>]\n        mdgrid [<.base | Ordner | .md> ...] --count [--view <Name>] [--filter <Ausdruck>]...\n        mdgrid [<.base | Ordner> ...] --notices\n        mdgrid [<.base | Ordner> ...] --notify\n        mdgrid [<.base | Ordner> ...] --runs\n        mdgrid [<.base | Ordner> ...] --apply <Pfad> [--yes]\n        mdgrid [<Ordner | .base> ...] --add-to <Name> [--as <Tabellenname>] | --remove-from <Name>\n        mdgrid [<Ordner> ...] --init-workspace [--starter <Name> [--with-samples]]\n        mdgrid [<Ordner>] --new-note <Name> [--set <Spalte>=<Wert>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <Pfad>]\n        mdgrid -s <Name> [--readonly] [--no-color] [--config <Pfad>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <Name>\n        mdgrid --print-config\n        mdgrid --completions <Shell>\n        mdgrid --man\n\n  Öffnet die Markdown-Notizen eines Ordners als Tabelle: eine Zeile je Notiz, eine Spalte je\n  Front-Matter-Schlüssel. Mit einer .base öffnet mdgrid deren Tabellenansicht (die Notizen werden\n  unter dem Stammordner gesucht). Mit einer .md-Datei öffnet es deren Ordner und wählt diese Notiz\n  aus. Eine .csv- oder .tsv-Datei öffnet es als Tabelle: eine Zeile je Dateizeile, die erste Zeile\n  benennt die Spalten.\n  Ohne Argumente öffnet es den aktuellen Ordner (darüber die Liste der in places.toml registrierten\n  Tabellen, falls vorhanden). Ein Ordner mit einem Marker .mdgrid/workspace.toml, der unter \"open\"\n  eine Tabelle nennt, öffnet stattdessen diese Tabelle.\n\n  --view <Name>           diese Ansicht der .base öffnen (ohne Angabe die erste; --print sucht auch\n                          mdgrid-Ansichten)\n  -w, --workspace <Name>  diesen Workspace (workspaces.toml) für Links und die Beziehungskarte\n                          verwenden; ohne Pfad seine erste Tabelle öffnen\n  --page <Name>           diese Seite ([[page]]) des Workspace öffnen, mit untereinander gestapelten\n                          Tabellen\n  --table <Name>          die Tabelle dieses Namens im Marker .mdgrid/workspace.toml (mit -w im Workspace) statt\n                          der open-Tabelle öffnen; gilt auch für --print, --check, --new-note\n  --raw                   den Ordner selbst öffnen, nicht die unter \"open\" im Marker genannte\n                          Tabelle\n  --readonly              schreibgeschützt öffnen (kein Bearbeiten, kein Speichern)\n  --no-color              ohne Farben zeichnen\n  --config <Pfad>         diese Konfigurationsdatei lesen\n                          (Standard: $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue              die zuletzt in diesem Ordner gezeigte Tabelle und Ansicht öffnen (sonst\n                          wie ohne Argumente; zum Wiederherstellen von Fenstern mit tmux u. Ä.)\n  -s, --session <Name>    die unter diesem Namen gespeicherte Sitzung öffnen (Tabelle, Ansicht,\n                          Filter, Sortierung und Spalten; speichern mit \"Sitzung speichern\" in der\n                          Palette)\n  --sessions              die gespeicherten Sitzungen (sessions.toml) auflisten: Name und Ordner,\n                          eine pro Zeile\n  --recent                die zuletzt am Bildschirm geöffneten Tabellen ausgeben, neueste zuerst, je\n                          Zeile \"Pfad<TAB>Ansichtsname<TAB>zuletzt geöffnet\" (bis zu 20)\n  --print                 die Tabelle der Ansicht ohne Bildschirm auf die Standardausgabe schreiben\n                          (Notizen bleiben unverändert)\n  --format <Format>       Format für --print (csv, tsv, json, md; Standard csv)\n  --with-path             --print eine erste Spalte \"path\" mit dem Notizpfad jeder Zeile\n                          voranstellen (derselbe Pfad wie bei --pick path)\n  --filter <Ausdruck>     nur Zeilen behalten, für die der .base-Ausdruck wahr ist (wiederholbar;\n                          bei einer .base-Ansicht zusätzlich zu deren Filtern)\n  --sort <Spalte>[:desc]  --print nach dieser Spalte sortieren (wiederholbar; ersetzt die Sortierung\n                          der Ansicht)\n  --count                 die Zeilenzahl der Ansicht (nach --filter) ohne Bildschirm ausgeben\n  --show-hidden           mit --print, --pick oder --count auch die Zeilen behalten, die Bedingungen\n                          mit hide = true ([conditions]) ausblenden\n  --notices               die Einträge des Hinweisfelds ([[notices]]) ohne Bildschirm ausgeben,\n                          einen pro Zeile (für eine tmux-Statuszeile oder einen Shell-Prompt)\n  --notify                die Einträge von [[notify]] einmal ohne Bildschirm prüfen und neu passende\n                          Zeilen melden (für einen geplanten Lauf; Code 1, wenn etwas nicht ankam)\n  --runs                  die fälligen Routine-Durchläufe ([[table]] runs im Marker) ohne Bildschirm als Notizen anlegen\n                          und ihre Pfade ausgeben (für geplante Läufe; Exit-Code 1, wenn einer nicht angelegt werden konnte)\n  --pick <path|Spalte>    den Bildschirm schreibgeschützt im Terminal zeigen; Enter gibt den Pfad\n                          oder den Spaltenwert der markierten Zeilen (oder der gewählten Zeile)\n                          zeilenweise auf die Standardausgabe aus und beendet\n                          (q oder Esc bricht mit Exit-Code 1 ab)\n  --check                 die Werte ausgeben, die nicht zum Spaltentyp oder zu einer Regel ([rules])\n                          passen, einen pro Zeile (Pfad:Zeile: Spalte: Grund; Exit-Code 1, falls es\n                          welche gibt)\n  --apply <Pfad>          eine CSV oder JSON im Format von --print --with-path lesen (- für die\n                          Standardeingabe) und abweichende Zellen ändern; zeigt nur den Diff\n  --yes                   mit --apply die Änderungen schreiben\n  --workspaces            die Workspaces (workspaces.toml) auflisten\n  --add-to <Name>         die angegebenen Tabellen (Standard: dieser Ordner) zu diesem Workspace\n                          hinzufügen, der bei Bedarf angelegt wird; --as <Name> benennt die Tabelle\n  --remove-from <Name>    die angegebenen Tabellen (Standard: dieser Ordner) aus diesem Workspace\n                          entfernen\n  --remove-workspace <Name>  diesen Workspace löschen (Notizen bleiben unberührt)\n  --init-workspace        einen Workspace-Marker .mdgrid/workspace.toml in den Ordner legen\n                          (Standard: dieser Ordner)\n  --starter <Name>        mit --init-workspace eine Ablage (Marker, Notizvorlagen) aus diesem\n                          Starter anlegen: einem eingebauten oder starters/<Name> im\n                          Konfigurationsordner\n  --with-samples          mit --starter auch die Beispielnotizen des Starters hinzufügen\n  --starters              die Starter auflisten, einen pro Zeile (Name und einzeilige Beschreibung)\n  --new-note <Name>       ohne Bildschirm eine neue Notiz <Name>.md im Ordner (Standard: dieser\n                          Ordner) anlegen, mit [new_note] (folder, set, template); gibt den\n                          angelegten Pfad aus und überschreibt nie\n  --set <Spalte>=<Wert>   mit --new-note diesen Wert in die Spalte schreiben (wiederholbar;\n                          Listeneinträge durch Kommas trennen; ein leerer Wert schreibt nichts)\n  --print-config          jeden Konfigurationseintrag als TOML mit Standardwert und Beschreibung\n                          ausgeben (docs/config.md)\n  --completions <Shell>   Shell-Vervollständigungen ausgeben (bash, zsh, fish, elvish, powershell)\n  --man                   die Manpage ausgeben (roff)\n  --help                  diese Hilfe ausgeben\n  --version               die Version ausgeben"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "Pfad"
@@ -196,6 +196,10 @@ WantTabs = "\"always\", \"auto\" oder \"never\""
 WantButtons = "\"plain\" oder \"box\""
 WantBarPadding = "0 bis 2 in Schritten von 0.5 (0, 0.5, 1, 1.5 oder 2)"
 WantRowExtraLines = "eine ganze Zahl von 0 bis 9"
+## 設定の項目 `format.<列>.decimals` の正しい値(cell-view.number-format-invalid)。
+WantDecimals = "eine ganze Zahl von 0 bis 10"
+## 数の見せ方([format])の桁の区切りと小数点の見本。1 と 2 の間が桁の区切り、4 と 5 の間が小数点(cell-view.number-format-locale)。
+NumSample = "1.234,5"
 ## {0} は正規表現を読めない理由。
 RsnBadRegex = "regulärer Ausdruck nicht lesbar (ignoriert): {0}"
 ## WS-9: 印の表に path と base の両方。
@@ -209,6 +213,8 @@ OriginView = "Ansichtseinstellungen"
 ## {0} は求める型(Want*)。
 RsnNot = "erwartet {0} (ignoriert)"
 RsnUnknown = "unbekannter Eintrag (ignoriert)"
+## 設定の文字に制御の文字か文字の向きを変える書式の文字がある(cell-view.number-format-invalid)。
+RsnControlChars = "enthält ein Steuerzeichen oder ein Zeichen für die Schreibrichtung (ignoriert)"
 ## {0} は新しい道筋(CLI-20)。
 RsnMoved = "der alte Name heißt jetzt `{0}` (so gelesen)"
 RsnGlobalOnly = "nur in config.toml erlaubt (ignoriert)"
@@ -462,7 +468,6 @@ EmptyHeading = "(leer)"
 BaseSummaryFormula = "Auswertung von {0}: die Formel-Auswertung {1} wird nicht unterstützt ({2})"
 ## {0} は列、{1} は集計の名前。
 BaseSummaryUnknown = "Auswertung von {0}: unbekannte Auswertung {1}"
-BaseSummaryGroups = "Auswertungen je Gruppe werden nicht unterstützt (die Auswertungszeile gilt für die ganze Tabelle)"
 
 # ---- summary: 組み込みの集計の名前(BV-14。英語は Obsidian の名前) ----
 SummaryAverage = "Durchschnitt"
@@ -488,6 +493,7 @@ ExprNameAfterNumber = "ein Name direkt nach einer Zahl: {0}{1}"
 ExprUnclosedString = "nicht geschlossene Zeichenkette"
 ExprBadChar = "unerwartetes Zeichen: {0}"
 ExprTooDeep = "der Ausdruck ist zu tief verschachtelt"
+ExprBudget = "der Ausdruck braucht zu viele Schritte"
 ExprMissing = "{0} fehlt"
 ExprCommaOrRParen = "`,` oder `)`"
 ExprCommaOrRBrack = "`,` oder `]`"
@@ -528,6 +534,13 @@ NewNoteCliOne = "--new-note legt eine Notiz an: einen Ordner angeben"
 NewNoteCliBadSet = "--set {0}: als Spalte=Wert schreiben"
 NewNoteCliBadValue = "--set {0}={1}: der Wert passt nicht zum Typ der Spalte {0}, daher wurde nichts angelegt"
 NewNoteCliRequired = "die Spalte {0} ist erforderlich: ohne --set {0}=<Wert> wird nichts angelegt"
+
+## CLI の --table(cli.table-*)。{0} は表の名前、{1} はある表の名前の並び(Ws は {1} がワークスペースの名前で {2} が並び)。
+TableUnknown = "keine Tabelle namens {0} im Marker (Tabellen: {1})"
+TableUnknownWs = "keine Tabelle namens {0} im Workspace {1} (Tabellen: {2})"
+TableNoMarker = "--table wählt eine Tabelle des Markers .mdgrid/workspace.toml, aber in {0} und darüber gibt es keinen"
+TableOnePath = "--table öffnet eine Tabelle: höchstens einen Pfad angeben"
+TableWithWsPaths = "--table mit -w wählt die Tabelle aus dem Workspace: keine Pfade angeben"
 
 # ---- print: --print の誤り(CLI-5) ----
 PrintNoViews = ".base hat keine Ansichten"
@@ -1553,18 +1566,20 @@ AskOpenRecent = "Zuletzt geöffnet: "
 # ---- favorites・switch: お気に入りのワークスペースと切り替え(workspace.favorite-*・workspace.switch-*) ----
 CmdWsSwitch = "Workspace wechseln"
 CmdWsFavorite = "Aktuellen Workspace zu Favoriten hinzufügen"
-KeyDrawerFavorite = "Zu Favoriten hinzufügen oder entfernen"
+KeySwitchAddHere = "Aktuellen hinzufügen"
 ## {0} はワークスペースの名前。
 WsFavoriteAdded = "{0} zu Favoriten hinzugefügt"
 WsFavoriteRemoved = "{0} aus Favoriten entfernt"
 WsFavoriteNoWorkspace = "nicht zu Favoriten hinzufügbar: diese Tabelle ist in keinem Workspace (workspaces.toml oder Marker)"
-WsFavoriteHeadOnly = "Favoriten auf einem Workspace-Kopf hinzufügen (für den aktuellen Workspace \"Aktuellen Workspace zu Favoriten hinzufügen\" in der Palette verwenden)"
+## {0} はワークスペースの名前。
+WsFavoriteAlready = "{0} ist bereits ein Favorit"
 ## {0} は workspaces.toml の favorites に書いた名前かパス。
 RsnFavoriteGone = "es gibt keinen Workspace und keinen Marker-Stamm {0}, daher fehlt er in der Wechselliste"
 SwitchTitle = " Workspaces "
 ## {0} は最初に開いた所の名前。
 SwitchOrigin = "Ausgangspunkt: {0}"
-SwitchHint = "noch keine Favoriten: in der Tabellenliste ({0}) auf einem Workspace-Kopf {1} drücken oder \"Aktuellen Workspace zu Favoriten hinzufügen\" in der Palette verwenden"
+## {0} は今いる所をお気に入りに入れるキー。
+SwitchHint = "noch keine Favoriten: in einem Workspace in dieser Liste {0} drücken, um ihn hinzuzufügen"
 SwitchNoRoom = "das Terminal ist zu klein für die Wechselliste"
 KeySwitchRun = "Zum gewählten wechseln"
 KeySwitchNumber = "Zum Workspace mit dieser Nummer"
@@ -1572,6 +1587,9 @@ KeySwitchOrigin = "Zurück zum Ausgangsort"
 KeySwitchDigits = "Zu dieser Nummer wechseln"
 KeyDigitRange = "{0}-{1}"
 SwitchAlreadyHere = "{0} ist der Workspace, in dem Sie gerade sind"
+## {0} は今いるワークスペースの名前。
+SwitchAddHere = "+ {0} zu Favoriten hinzufügen"
+SwitchRemoveFavOnly = "nur Favoriten können entfernt werden"
 ModeSwitch = "Wechseln"
 SecInSwitch = "In der Wechselliste"
 
@@ -1591,9 +1609,7 @@ CmdWsOpen = "Workspace öffnen"
 ## WS-8: 表の一覧の引き出し。
 CmdWsDrawer = "Tabellenliste (Tabellen wechseln)"
 KeyWsDrawer = "Tabellenliste"
-KeyDrawerRun = "Tabelle öffnen / zuklappen"
-KeyDrawerOpen = "Workspace aufklappen"
-KeyDrawerFold = "Workspace zuklappen"
+KeyDrawerRun = "Tabelle öffnen"
 DrawerRegistered = " Registrierte Tabellen "
 DrawerEmpty = "keine Tabellen zum Auflisten: mit :workspace_new einen Workspace anlegen oder mit :register_place eine Tabelle registrieren"
 DrawerNoRoom = "das Terminal ist zu klein für die Tabellenliste"
@@ -1762,6 +1778,12 @@ WantStringList = "eine Liste von Zeichenketten"
 RsnRuleComputed = "berechnete Spalten können keine Regeln haben, ignoriert"
 WantValueTextTable = "eine Tabelle aus Wert = Text"
 RsnNotInValues = "kein Wert aus values, ignoriert"
+## cell-edit.then-if-empty: the shape of a value in then.
+WantThenFill = "ein Text oder eine Tabelle aus value und if_empty"
+## {0} is the expected type (Want*).
+RsnThenSkip = "erwartet {0}, daher wird diese Spalte nicht gefüllt"
+RsnThenUnknown = "unbekannter Eintrag, daher wird diese Spalte nicht gefüllt"
+RsnThenNoValue = "kein value (der einzutragende Text), daher wird diese Spalte nicht gefüllt"
 ## {0} is the name of the type (Date, Number …).
 ProblemType = "falscher Typ (erwartet {0})"
 ProblemRequired = "erforderlicher Schlüssel fehlt"
@@ -1903,6 +1925,8 @@ RsnKanbanNeedColumn = "kein column (die Statusspalte), daher kein Kanban"
 RsnKanbanNoColumn = "die Tabelle hat keine Spalte {0}, daher kein Kanban"
 ## {0} is the column.
 RsnKanbanListColumn = "die Spalte {0} ist eine Liste, daher kein Kanban (eine Karte stünde in mehreren Spalten)"
+## {0} is the column.
+RsnKanbanCardNoColumn = "die Tabelle hat keine Spalte {0}, daher zeigen die Karten sie nicht"
 
 # ---- 親子の設定(印の children。navigation.parent-child-config・cell-edit.children-done*・gantt.children-span-*。ui/children.rs) ----
 RsnChildrenNotTable = "keine Tabelle wie { key = \"<Spalte>\" }, daher keine Eltern-Kind-Einstellung"
@@ -2038,7 +2062,7 @@ ChartSkipped = " · {0} ausgelassen"
 ## {0} is the number of breakdown values not drawn as lines.
 ChartSeriesDropped = " · {0} weitere Aufschlüsselungswerte nicht gezeichnet"
 ChartNoValue = "(ohne)"
-ChartOther = "Sonstige"
+ChartOther = "Rest"
 ChartNoColumns = "diese Tabelle hat keine Spalte für ein Diagramm"
 ChartNoRows = "keine Zeilen für das Diagramm"
 ## {0} is the kind, {1} the reason.
@@ -2049,7 +2073,7 @@ ChartNeedBy = "keine Text-, Checkbox- oder Listenspalte für die Aufschlüsselun
 ChartNoFilter = "Datums- und Zahlenbereiche grenzen die Tabelle nicht ein (den Bereich in den Filter der Tabelle schreiben)"
 ChartLineNoFilter = "Linienbereiche grenzen die Tabelle nicht ein (den Bereich in den Filter der Tabelle schreiben)"
 ChartNoPoint = "kein Punkt gewählt"
-ChartOtherNoFilter = "\"Sonstige\" fasst mehrere Werte zusammen und grenzt die Tabelle daher nicht ein (Aufschlüsselung mit b ändern oder die Tabelle filtern)"
+ChartOtherNoFilter = "\"Rest\" fasst mehrere Werte zusammen und grenzt die Tabelle daher nicht ein (Aufschlüsselung mit b ändern oder die Tabelle filtern)"
 ## {0} is the first date, {1} the last.
 ChartTooWide = "der Datumsbereich ist zu groß für ein Diagramm ({0} bis {1}; mit dem Filter der Tabelle eingrenzen)"
 ChartNoItem = "kein Eintrag gewählt"
@@ -2171,6 +2195,8 @@ CfgUse = "Legt die Vorlage [templates.<Name>] unter die an dieser Stelle geschri
 CfgTypes = "Der Typ einzelner Spalten. Er hat Vorrang vor den Typeinstellungen des Stammordners\n(.obsidian/types.json) und vor dem Erraten aus den Werten; \"auto\" kehrt zum Erraten zurück (ein\nengerer Bereich kann einen weiteren aufheben). Der Typ bestimmt die Zelleingabe, die Markierung !\nbei unpassenden Werten, die Sortierung und das Typsymbol der Spaltenüberschrift. Notizen werden\nnicht geändert. Ein Klick auf das Typsymbol einer Überschrift oder column_type in der Palette oder\nim Aktionsmenü wählt einen Typ und schreibt ihn in die Tabelle in views.toml."
 ## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
 CfgRules = "Regeln für einzelne Spalten, zusammen mit dem Spaltentyp geprüft. required = true macht einen\nfehlenden Schlüssel, null, eine leere Zeichenkette oder eine leere Liste zu einem Problem; values\nlistet die erlaubten Werte (jeder Eintrag einer Liste muss einer davon sein, Groß- und\nKleinschreibung zählen). Ein engerer Bereich gewinnt Eintrag für Eintrag. Probleme bekommen die\nMarkierung !, die untere Leiste zählt sie, ! und @ springen zwischen ihnen, und mdgrid --check\nlistet sie. Eine Regelprüfung ändert nie eine Notiz und hindert nie daran, einen Wert zu\nschreiben; eine Spalte mit values bietet sie in der Zelleingabe an. then füllt andere Spalten\nderselben Zeile, wenn die Spalte auf einen Wert gesetzt wird (value = { column = text };\nVorlagenvariablen wie {date} funktionieren, ein leerer Text leert die Spalte); das wird zusammen\nmit der Änderung vorgemerkt und mit ihr rückgängig gemacht. Berechnete Spalten (file.*, formula.*)\nkönnen keine Regeln haben.\nGruppieren nach einer Spalte mit values ordnet die Gruppen in dieser Reihenfolge (absteigend\numgekehrt). icons und labels (Wert = Text) zeigen für einen Wert ein Zeichen und einen Namen in\nGruppenüberschriften und Kanban-Spalten; Zellen, Filter, Suche und --print behalten den Wert."
+## 設定の項目 `format` の説明(行の区切りは --print-config のコメントの行)。
+CfgFormat = "Wie Zahlen in einzelnen Spalten gezeigt werden. thousands = true gruppiert den ganzzahligen Teil\nin Dreiergruppen; decimals ist die Zahl der Nachkommastellen (0 bis 10; fehlende Stellen werden\nmit 0 aufgefüllt, überzählige kaufmännisch gerundet); prefix und suffix stehen vor und hinter der\nZahl (eine negative Zahl setzt - vor den prefix). Die Trennzeichen folgen der Sprache der\nOberfläche. Gilt für Zellen, die Detailansicht, die Auswertungszeile, die Zwischensummen in\nGruppenüberschriften und Diagrammwerte, aber nicht für zählende Auswertungen oder\nAnzahl-Diagramme. Es ändert nur die Anzeige: Notizen, Sortierung, Filter, Formeln, die\nZelleingabe und --print behalten die Zahl. Auch berechnete Spalten (formula.*) können eine\nhaben. Ein engerer Bereich gewinnt Eintrag für Eintrag."
 ## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalColor = "Farben verwenden. false zeichnet ohne Farben (wie NO_COLOR oder --no-color)."
 ## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
@@ -2236,7 +2262,7 @@ CfgDisplayNoteName = "Ein regulärer Ausdruck für den Namen in der Notizspalte 
 ## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
 CfgDatesFormat = "Wie Datumsangaben in der Tabelle gezeigt und eingegeben werden. Teile: YYYY, YY, MM, M, DD, D, ddd\n(Wochentag) und nicht-alphanumerische Trennzeichen. Notizen werden immer als YYYY-MM-DD\ngeschrieben."
 ## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
-CfgDatesWeekStart = "Erster Wochentag für den Datumskalender, die Datumswörter (diese Woche, nächste Woche) und die Wochen in Diagrammen."
+CfgDatesWeekStart = "Erster Wochentag für den Datumskalender, die Datumswörter (diese Woche, nächste Woche), die Wochen in Diagrammen sowie die Wochen und „diese Woche“ im Gantt-Diagramm."
 ## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditCandidates = "Höchstzahl der Wertvorschläge beim Bearbeiten einer Textzelle.\nSpalten mit mehr verschiedenen Werten bieten keine Vorschläge."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。

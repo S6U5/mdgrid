@@ -730,13 +730,11 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         return None;
     }
     let p = app.pick.as_ref()?;
-    let (ax, ay) = anchor(app, w).unwrap_or((0, 0));
     let rows = p.rows();
     let body = body(&rows);
     if w < 8 {
         return None;
     }
-    let popup::Place { top, vis } = popup::place_with(ay, body.len(), limit, FRAME, 0)?;
     let (nw, cw) = col_widths(p, w);
     let decide = 1 + width(&popup::decide_label());
     let inner = rows
@@ -749,12 +747,40 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         .max()
         .unwrap_or(0);
     let iw = popup::widen_for_hints((inner + 2).max(MIN_W), popup::hints_width(&hints(app)), w);
-    let start = (body_at(p, &rows, &body) + 1).saturating_sub(vis);
+    let at = body_at(p, &rows, &body);
+    // cell-edit.new-note-form-popup-place: 新しいノートの窓の欄では、窓に重ねずに右・下・上へ置く(縮めた幅では
+    // 要素の欄を縮める。overlay の col_widths)。
+    if app.note.flow.is_some() {
+        let (form, vx, ay) = super::new_note::form_anchor(app, w)?;
+        let want = popup::Want {
+            n: body.len(),
+            frame: FRAME,
+            min_vis: popup::MIN_VIS,
+            iw,
+            min_w: MIN_W,
+        };
+        let s = popup::beside(form, ay, vx, want, w, limit)?;
+        return Some(Geom {
+            x: s.x,
+            top: s.top,
+            iw: s.iw,
+            start: (at + 1).saturating_sub(s.vis),
+            vis: s.vis,
+        });
+    }
+    let (ax, ay) = anchor(app, w).unwrap_or((0, 0));
+    let popup::Place { top, vis } = popup::place_with(ay, body.len(), limit, FRAME, 0)?;
+    // navigation.detail-popup-place: 詳細の表示では、値の欄の桁より左に出さない(プロパティの名前を隠さない)。
+    let (x, iw) = if app.detail.is_some() {
+        popup::right_of(ax, iw, MIN_W, w)
+    } else {
+        (ax.min(w - iw), iw)
+    };
     Some(Geom {
-        x: ax.min(w - iw),
+        x,
         top,
         iw,
-        start,
+        start: (at + 1).saturating_sub(vis),
         vis,
     })
 }
@@ -829,7 +855,8 @@ pub(crate) fn overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
     let tw = g.iw - 2;
     let rows = p.rows();
     let body = body(&rows);
-    let (nw, cw) = col_widths(p, w);
+    // 窓の幅に合わせて要素の欄を縮める(新しいノートの窓の右に縮めて置いたとき。cell-edit.new-note-form-popup-place)。
+    let (nw, cw) = col_widths(p, g.iw);
     let mut out: Vec<(String, Style)> = Vec::new();
     // 上の縁: 列の名前(一括なら行の数)と、選んだ候補の位置(「[ 決める ]」の行を選んでいれば候補の数だけ)。
     let pos = if rows.is_empty() {

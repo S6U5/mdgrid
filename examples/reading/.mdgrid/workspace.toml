@@ -35,6 +35,9 @@ added = "{date}"
 
 [[table]]
 name = "Reading"
+# The kanban screen (B, KB-1): one lane per status; each card shows the author and the rating under the title (card).
+# H and L move a card and rewrite its status.
+kanban = { column = "status", card = ["author", "rating"] }
 
 [table.base]
 filters = { and = ['file.inFolder("Reading")'] }

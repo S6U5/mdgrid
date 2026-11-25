@@ -42,7 +42,7 @@ sh demos/record.sh places     # 1本だけ
 | `look.tape` → [demo-look.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-look.gif) | 設定の画面の「見た目」の区画でテーマと組を選び、テンプレートとして保存する |
 | `tree.tape` → [demo-tree.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-tree.gif) | 親子のノートを字下げして並べ、`Z` で畳む |
 | `gantt.tape` → [demo-gantt.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-gantt.gif) | ガント: タスクの台帳を `C` で時間軸の横棒にし、`-` `+` で単位、`t` で今日へ |
-| `kanban.tape` → [demo-kanban.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-kanban.gif) | カンバン: タスクの台帳を `B` で状態ごとのレーンにし、`L` で札を動かして状態を書き換え、`u` で取り消す |
+| `kanban.tape` → [demo-kanban.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-kanban.gif) | カンバン: タスクの台帳を `B` で状態ごとのレーンにし(札の名前の下に期限と優先度)、`L` で札を動かして状態を書き換え、`u` で取り消す |
 | `group-values.tape` → [demo-group-values.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-group-values.gif) | まとまりの順と見せ方: 状態でまとめた表が値の候補の順(todo・doing・waiting)に並び、設定の `icons`・`labels` で見出しとカンバンのレーンの題が「[ ] To do」と出る |
 | `chart.tape` → [demo-chart.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-chart.gif) | グラフ: タスクの台帳を `P` で状態ごとの棒にし、`Tab` で種類を、`]` で印の次のグラフ(月ごとの期限の折れ線)を見て、棒の `Enter` で表を絞る |
 | `ws-drawer.tape` → [demo-ws-drawer.gif](https://github.com/S6U5/mdgrid/releases/latest/download/demo-ws-drawer.gif) | 表の一覧の引き出し: `w` で左から重ねて出し、同じワークスペースの表・ほかのワークスペースの表へ移る |

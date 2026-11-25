@@ -9,6 +9,7 @@ use crate::colors::{self, Colors};
 use crate::display::{ButtonsMode, Display, DisplayOverride, Pad, TabsMode};
 use crate::i18n::Msg;
 use crate::newnote::{self, NewNote};
+use crate::numfmt::{self, FormatLayer, NumFormat};
 use crate::rules::{self, Rule, RuleLayer};
 use crate::schema;
 use crate::style::{Band, Check, Frames, Links, Preset, Rules, Select, Status, Style, Tabs, Tags};
@@ -551,6 +552,8 @@ pub struct Profile {
     pub types: BTreeMap<String, Option<Kind>>,
     /// `[rules.<列>]`(CE-36): 列の名前 → 書いた決まりの項目。
     pub rules: BTreeMap<String, RuleLayer>,
+    /// `[format.<列>]`(cell-view.number-format): 列の名前 → 書いた数の見せ方の項目。
+    pub format: BTreeMap<String, FormatLayer>,
 }
 
 impl Profile {
@@ -583,6 +586,7 @@ impl Profile {
             },
             "types" => read_types(&mut self.types, v, file, &p, w),
             "rules" => read_rules(&mut self.rules, v, file, &p, w),
+            "format" => read_format(&mut self.format, v, file, &p, w),
             _ => return false,
         }
         true
@@ -672,7 +676,16 @@ impl Profile {
                             .map(|(value, sets)| {
                                 let sets = sets
                                     .iter()
-                                    .map(|(c, v)| (c.clone(), toml::Value::String(v.clone())))
+                                    .map(|(c, f)| {
+                                        let text = toml::Value::String(f.text.clone());
+                                        if !f.if_empty {
+                                            return (c.clone(), text);
+                                        }
+                                        let mut t = toml::Table::new();
+                                        t.insert("value".into(), text);
+                                        t.insert("if_empty".into(), toml::Value::Boolean(true));
+                                        (c.clone(), toml::Value::Table(t))
+                                    })
                                     .collect();
                                 (value.clone(), toml::Value::Table(sets))
                             })
@@ -692,6 +705,28 @@ impl Profile {
                 })
                 .collect();
             t.insert("rules".into(), toml::Value::Table(rs));
+        }
+        if !self.format.is_empty() {
+            let fs = self
+                .format
+                .iter()
+                .map(|(c, f)| {
+                    let mut t = toml::Table::new();
+                    if let Some(b) = f.thousands {
+                        t.insert("thousands".into(), toml::Value::Boolean(b));
+                    }
+                    if let Some(d) = f.decimals {
+                        t.insert("decimals".into(), toml::Value::Integer(i64::from(d)));
+                    }
+                    for (item, v) in [("prefix", &f.prefix), ("suffix", &f.suffix)] {
+                        if let Some(v) = v {
+                            t.insert(item.into(), toml::Value::String(v.clone()));
+                        }
+                    }
+                    (c.clone(), toml::Value::Table(t))
+                })
+                .collect();
+            t.insert("format".into(), toml::Value::Table(fs));
         }
     }
 
@@ -791,6 +826,57 @@ fn read_rules(
     }
 }
 
+/// `[format.<列>]` を読む(cell-view.number-format)。`thousands`(真偽)・`decimals`(0〜10 の整数)・`prefix`・
+/// `suffix`(文字列)。知らない項目・型の違う値・範囲の外の値は、警告してその項目だけ使わない
+/// (cell-view.number-format-invalid)。計算の列(`formula.*`)にも書ける。
+fn read_format(
+    out: &mut BTreeMap<String, FormatLayer>,
+    v: &toml::Value,
+    file: &str,
+    path: &str,
+    w: &mut Vec<String>,
+) {
+    let Some(t) = v.as_table() else {
+        return warn(w, file, path, not(Msg::WantTable));
+    };
+    for (col, v) in t {
+        let cp = join(path, col);
+        let Some(items) = v.as_table() else {
+            warn(w, file, &cp, not(Msg::WantTable));
+            continue;
+        };
+        let mut layer = FormatLayer::default();
+        for (k, v) in items {
+            let ip = join(&cp, k);
+            match k.as_str() {
+                "thousands" => match v.as_bool() {
+                    Some(b) => layer.thousands = Some(b),
+                    None => warn(w, file, &ip, not(Msg::WantBool)),
+                },
+                "decimals" => match v
+                    .as_integer()
+                    .and_then(|n| u8::try_from(n).ok())
+                    .filter(|n| *n <= numfmt::MAX_DECIMALS)
+                {
+                    Some(d) => layer.decimals = Some(d),
+                    None => warn(w, file, &ip, not(Msg::WantDecimals)),
+                },
+                "prefix" | "suffix" => match v.as_str() {
+                    // 印は人から受け取った台帳にも入っているので、画面を乱せる字は読まない(描くときも置き換える)。
+                    Some(s) if s.chars().any(numfmt::unsafe_char) => {
+                        warn(w, file, &ip, Msg::RsnControlChars.text().to_string());
+                    }
+                    Some(s) if k == "prefix" => layer.prefix = Some(s.to_string()),
+                    Some(s) => layer.suffix = Some(s.to_string()),
+                    None => warn(w, file, &ip, not(Msg::WantString)),
+                },
+                _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
+            }
+        }
+        out.insert(col.clone(), layer);
+    }
+}
+
 /// `[rules.<列>] icons`・`labels` を読む: `値 = "文字"`。表でなければ警告して使わない。文字列でない項目は、警告してその
 /// 項目だけ飛ばす(navigation.group-values-icon)。
 fn read_names(
@@ -815,8 +901,8 @@ fn read_names(
     Some(out)
 }
 
-/// `[rules.<列>.then]` を読む: `値 = { 列 = "入れる文字" }`。表でない `then` は警告して使わない。表でない値の項目・
-/// 計算の列・文字列でない入れる値は、警告してその項目だけ飛ばす。
+/// `[rules.<列>.then]` を読む: `値 = { 列 = "入れる文字" }` か `値 = { 列 = { value = "入れる文字", if_empty = true } }`。
+/// 表でない `then` は警告して使わない。表でない値の項目・計算の列・形の違う入れる値は、警告してその項目だけ飛ばす。
 fn read_then(v: &toml::Value, file: &str, path: &str, w: &mut Vec<String>) -> Option<rules::Then> {
     let Some(t) = v.as_table() else {
         warn(w, file, path, not(Msg::WantRuleTable));
@@ -836,16 +922,66 @@ fn read_then(v: &toml::Value, file: &str, path: &str, w: &mut Vec<String>) -> Op
                 warn(w, file, &cp, Msg::RsnRuleComputed.text().to_string());
                 continue;
             }
-            match text.as_str() {
-                Some(s) => {
-                    out.insert(col.clone(), s.to_string());
-                }
-                None => warn(w, file, &cp, not(Msg::WantString)),
+            if let Some(fill) = read_fill(text, file, &cp, w) {
+                out.insert(col.clone(), fill);
             }
         }
         then.insert(value.clone(), out);
     }
     Some(then)
+}
+
+/// `then` の1つの入れる値を読む(cell-edit.then-if-empty): 文字か `{ value = "…", if_empty = 真偽 }`。表の形で
+/// `value` が無いか文字列でない・`if_empty` が真偽でない・知らない項目があるときは、警告してその列には入れない
+/// (書き誤った表を「空でなくても入れる」と読むと、残したい値を上書きするため)。
+fn read_fill(v: &toml::Value, file: &str, path: &str, w: &mut Vec<String>) -> Option<rules::Fill> {
+    if let Some(s) = v.as_str() {
+        return Some(rules::Fill::text(s));
+    }
+    let Some(t) = v.as_table() else {
+        warn(w, file, path, not(Msg::WantThenFill));
+        return None;
+    };
+    let mut fill = rules::Fill::default();
+    let mut has_value = false;
+    let mut ok = true;
+    for (k, item) in t {
+        let ip = join(path, k);
+        match (k.as_str(), item) {
+            ("value", toml::Value::String(s)) => {
+                fill.text.clone_from(s);
+                has_value = true;
+            }
+            ("if_empty", toml::Value::Boolean(b)) => fill.if_empty = *b,
+            ("value", _) => {
+                warn(
+                    w,
+                    file,
+                    &ip,
+                    Msg::RsnThenSkip.fill(&[&Msg::WantString.text()]),
+                );
+                ok = false;
+            }
+            ("if_empty", _) => {
+                warn(
+                    w,
+                    file,
+                    &ip,
+                    Msg::RsnThenSkip.fill(&[&Msg::WantBool.text()]),
+                );
+                ok = false;
+            }
+            _ => {
+                warn(w, file, &ip, Msg::RsnThenUnknown.text().to_string());
+                ok = false;
+            }
+        }
+    }
+    if ok && !has_value {
+        warn(w, file, path, Msg::RsnThenNoValue.text().to_string());
+        ok = false;
+    }
+    ok.then_some(fill)
 }
 
 /// `[display]` を読む(SR-21)。`tabs` の真偽は旧い書き方(CLI-20)として受ける。
@@ -1106,6 +1242,8 @@ pub struct Resolved {
     pub icons: BTreeMap<String, rules::Names>,
     /// `[rules.<列>] labels`(navigation.group-values-icon): 列 → 値 → 見せる名前。重ね方は icons と同じ。
     pub labels: BTreeMap<String, rules::Names>,
+    /// `[format.<列>]`(cell-view.number-format): 範囲を重ねた列の数の見せ方。
+    pub format: BTreeMap<String, NumFormat>,
     /// 項目の道筋 → 出どころ(既定の項目は無い)。
     pub origins: BTreeMap<String, Origin>,
 }
@@ -1130,6 +1268,7 @@ impl Default for Resolved {
             then: BTreeMap::new(),
             icons: BTreeMap::new(),
             labels: BTreeMap::new(),
+            format: BTreeMap::new(),
             origins: BTreeMap::new(),
         }
     }
@@ -1271,6 +1410,20 @@ impl Resolved {
                 self.mark(&format!("rules.{col}.labels"), o);
             }
         }
+        // cell-view.number-format: 数の見せ方は列ごと・項目ごとに狭い範囲が勝つ。
+        for (col, l) in &p.format {
+            l.apply(self.format.entry(col.clone()).or_default());
+            for (item, written) in [
+                ("thousands", l.thousands.is_some()),
+                ("decimals", l.decimals.is_some()),
+                ("prefix", l.prefix.is_some()),
+                ("suffix", l.suffix.is_some()),
+            ] {
+                if written {
+                    self.mark(&format!("format.{col}.{item}"), o);
+                }
+            }
+        }
         for name in p.display.apply_to(&mut self.display) {
             self.mark(&format!("display.{name}"), o);
         }
@@ -1345,6 +1498,11 @@ impl Resolved {
                 };
                 (c.clone(), l)
             })
+            .collect();
+        p.format = self
+            .format
+            .iter()
+            .map(|(c, f)| (c.clone(), f.to_layer()))
             .collect();
         p
     }

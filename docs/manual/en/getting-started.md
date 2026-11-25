@@ -68,7 +68,7 @@ From the top:
 
 | Area | What it shows |
 |---|---|
-| Header | a breadcrumb button at the start (press `w` or click it for the drawer listing the tables; `<workspace> › <table> ▾` when a workspace is in use, `vault ▾` here) and the number of rows. At the right, the screen type menu (**▦ Table ▾**, which lists the relation map when there are linked tables) and **⚙ Settings** for the view settings. `+ New`, which creates a note, is at the right end of the view bar |
+| Header | a breadcrumb at the start (click the table name or press `w` for the drawer listing the tables; when a workspace is in use it reads `<workspace> › <table> ▾`, and clicking the workspace name or pressing `W` opens the list of workspaces to switch to; `vault ▾` here) and the number of rows. At the right, the screen type menu (**▦ Table ▾**, which lists the relation map when there are linked tables) and **⚙ Settings** for the view settings. `+ New`, which creates a note, is at the right end of the view bar |
 | View bar | a bar with one empty line above and below it (setting `display.bar_padding`): the view tabs at the left, then the search bar and the Filter, Sort, Group and Columns buttons, and `+ New` at the right end |
 | Tabs | view names: `Default table` (every note of the folder), plus the views of a `.base` and views you saved |
 | Search bar | press `\` to type; rows are filtered as you type |

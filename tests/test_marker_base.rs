@@ -260,7 +260,7 @@ fn test_ws_9_marker_base_view_option() {
 // [stest -> req~workspace.marker-base-inline~2]
 #[test]
 fn test_ws_9_marker_base_check_runs_on_base_rows() {
-    // [WS-9・CLI-23] `--check` も印の中身の表で動く: 最初のビューの行(todo/ の a)の問題は出し、
+    // [WS-9・CLI-23] `--check` も印の中身の表で動く: 表の行(todo/ の a)の問題は出し、
     // 範囲の外(memo/)のノートの問題は出さない。
     let h = home("mb-check");
     let root = h.path().join("led");

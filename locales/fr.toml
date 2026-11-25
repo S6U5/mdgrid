@@ -5,7 +5,7 @@
 
 
 # ---- main: 使い方(CLI-2) ----
-Usage = "Usage : mdgrid [<.base | dossier | .md | .csv> ...] [--view <nom>] [-w <nom>] [--page <nom>] [--raw] [--readonly] [--no-color] [--config <chemin>]\n        mdgrid [<.base | dossier | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <nom>]\n                 [--filter <expression>]... [--sort <colonne>[:desc]]...\n        mdgrid [<.base | dossier | .md> ...] --pick path|<colonne> [--view <nom>]\n        mdgrid [<.base | dossier | .md> ...] --check [--view <nom>]\n        mdgrid [<.base | dossier | .md> ...] --count [--view <nom>] [--filter <expression>]...\n        mdgrid [<.base | dossier> ...] --notices\n        mdgrid [<.base | dossier> ...] --notify\n        mdgrid [<.base | dossier> ...] --runs\n        mdgrid [<.base | dossier> ...] --apply <chemin> [--yes]\n        mdgrid [<dossier | .base> ...] --add-to <nom> [--as <nom de table>] | --remove-from <nom>\n        mdgrid [<dossier> ...] --init-workspace [--starter <nom> [--with-samples]]\n        mdgrid [<dossier>] --new-note <nom> [--set <colonne>=<valeur>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <chemin>]\n        mdgrid -s <nom> [--readonly] [--no-color] [--config <chemin>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <nom>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Ouvre sous forme de table les notes Markdown d'un dossier : une ligne par note, une colonne\n  par clé du front matter. Avec un .base, ouvre sa vue table (les notes sont cherchées sous le\n  dossier racine). Avec un fichier .md, ouvre son dossier en sélectionnant cette note.\n  Avec un fichier .csv ou .tsv, l'ouvre comme une table : une ligne par ligne du fichier, la\n  première ligne donne les noms des colonnes.\n  Sans argument, ouvre le dossier courant (avec par-dessus la liste des tables inscrites dans\n  places.toml, s'il y en a). Un dossier dont le marqueur .mdgrid/workspace.toml nomme une table\n  dans \"open\" ouvre plutôt cette table.\n\n  --view <nom>              ouvre cette vue du .base (par défaut la première ;\n                            --print cherche aussi les vues mdgrid)\n  -w, --workspace <nom>     utilise cet espace de travail (workspaces.toml) pour les liens et la\n                            carte des relations ; sans chemin, ouvre sa première table\n  --page <nom>              ouvre cette page ([[page]]) de l'espace de travail, tables empilées\n  --raw                     ouvre le dossier lui-même, pas la table du \"open\" de son marqueur\n  --readonly                ouvre en lecture seule (ni modification ni enregistrement)\n  --no-color                affiche sans couleurs\n  --config <chemin>         lit ce fichier de configuration\n                            (par défaut : $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue                ouvre la table et la vue affichées en dernier dans ce dossier\n                            (comme sans argument s'il n'y en a pas ; pour restaurer des fenêtres\n                            tmux, etc.)\n  -s, --session <nom>       ouvre la session enregistrée sous ce nom (table, vue, filtres, tri et\n                            colonnes ; \"Enregistrer la session\" dans la palette en crée une)\n  --sessions                liste les sessions enregistrées (sessions.toml) : nom et dossier,\n                            une par ligne\n  --recent                  affiche les tables ouvertes récemment à l'écran, de la plus récente à\n                            la plus ancienne, une par ligne : \"chemin<TAB>nom de la\n                            vue<TAB>dernière ouverture\" (20 au plus)\n  --print                   écrit la table de la vue sur la sortie standard, sans écran\n                            (les notes ne sont pas modifiées)\n  --format <format>         format de --print (csv, tsv, json, md ; csv par défaut)\n  --with-path               ajoute à --print une première colonne \"path\" avec le chemin de la note\n                            de chaque ligne (le même chemin que --pick path)\n  --filter <expression>     ne garde que les lignes où l'expression .base est vraie\n                            (répétable ; avec une vue .base, s'ajoute à ses filtres)\n  --sort <colonne>[:desc]   trie --print selon cette colonne (répétable ; remplace le tri\n                            de la vue)\n  --count                   affiche le nombre de lignes de la vue (après --filter), sans écran\n  --show-hidden             avec --print, --pick ou --count, garde les lignes masquées par les\n                            conditions avec hide = true ([conditions])\n  --notices                 affiche les éléments de la zone d'avis ([[notices]]), un par ligne,\n                            sans écran (pour une barre d'état tmux ou une invite de shell)\n  --notify                  vérifie une fois les éléments de [[notify]], sans écran, et notifie les lignes\n                            qui se mettent à correspondre (exécution planifiée ; code 1 en cas d'échec)\n  --runs                    crée sans écran les notes des occurrences de routine à créer (runs de [[table]] dans le marqueur)\n                            et affiche leurs chemins (pour une exécution planifiée ; code 1 si l'une n'a pas pu être créée)\n  --pick <path|colonne>     affiche l'écran en lecture seule ; Enter écrit le chemin ou la valeur\n                            de la colonne des lignes marquées (ou de la ligne sélectionnée),\n                            une par ligne, sur la sortie standard puis quitte\n                            (q ou Esc annule avec le code de sortie 1)\n  --check                   affiche les valeurs non conformes au type de la colonne ou à une règle\n                            ([rules]), une par ligne (chemin:ligne: colonne: raison ; code de\n                            sortie 1 s'il y en a)\n  --apply <chemin>          lit un CSV ou un JSON au format de --print --with-path (- pour stdin)\n                            et modifie les cellules qui diffèrent ; affiche seulement le diff\n  --yes                     avec --apply, écrit les modifications\n  --workspaces              liste les espaces de travail (workspaces.toml)\n  --add-to <nom>            ajoute les tables données (par défaut : ce dossier) à cet espace de\n                            travail, en le créant si besoin ; --as <nom> nomme la table\n  --remove-from <nom>       retire les tables données (par défaut : ce dossier) de cet espace de\n                            travail\n  --remove-workspace <nom>  supprime cet espace de travail (les notes ne sont pas touchées)\n  --init-workspace          place un marqueur d'espace de travail .mdgrid/workspace.toml dans le\n                            dossier (par défaut : ce dossier)\n  --starter <nom>           avec --init-workspace, crée un registre (marqueur, modèles de notes) à\n                            partir de ce kit de démarrage : un kit intégré, ou starters/<nom> dans\n                            le dossier de configuration\n  --with-samples            avec --starter, ajoute aussi les notes d'exemple du kit\n  --starters                liste les kits de démarrage, un par ligne (nom et description courte)\n  --new-note <nom>          crée sans écran une note <nom>.md dans le dossier (par défaut : ce\n                            dossier) selon [new_note] (folder, set, template) ; affiche le chemin\n                            créé et n'écrase jamais\n  --set <colonne>=<valeur>  avec --new-note, met cette valeur dans la colonne (répétable ;\n                            éléments d'une liste séparés par des virgules ; une valeur vide\n                            n'écrit rien)\n  --print-config            affiche chaque élément de configuration en TOML avec sa valeur par\n                            défaut et une description (docs/config.md)\n  --completions <shell>     affiche les complétions du shell (bash, zsh, fish, elvish, powershell)\n  --man                     affiche la page de manuel (roff)\n  --help                    affiche cette aide\n  --version                 affiche la version"
+Usage = "Usage : mdgrid [<.base | dossier | .md | .csv> ...] [--view <nom>] [-w <nom>] [--page <nom>] [--table <nom>] [--raw] [--readonly] [--no-color] [--config <chemin>]\n        mdgrid [<.base | dossier | .md> ...] --print [--format csv|tsv|json|md] [--with-path] [--view <nom>]\n                 [--filter <expression>]... [--sort <colonne>[:desc]]...\n        mdgrid [<.base | dossier | .md> ...] --pick path|<colonne> [--view <nom>]\n        mdgrid [<.base | dossier | .md> ...] --check [--view <nom>]\n        mdgrid [<.base | dossier | .md> ...] --count [--view <nom>] [--filter <expression>]...\n        mdgrid [<.base | dossier> ...] --notices\n        mdgrid [<.base | dossier> ...] --notify\n        mdgrid [<.base | dossier> ...] --runs\n        mdgrid [<.base | dossier> ...] --apply <chemin> [--yes]\n        mdgrid [<dossier | .base> ...] --add-to <nom> [--as <nom de table>] | --remove-from <nom>\n        mdgrid [<dossier> ...] --init-workspace [--starter <nom> [--with-samples]]\n        mdgrid [<dossier>] --new-note <nom> [--set <colonne>=<valeur>]...\n        mdgrid --continue [--readonly] [--no-color] [--config <chemin>]\n        mdgrid -s <nom> [--readonly] [--no-color] [--config <chemin>]\n        mdgrid --sessions\n        mdgrid --recent\n        mdgrid --starters\n        mdgrid --workspaces | --remove-workspace <nom>\n        mdgrid --print-config\n        mdgrid --completions <shell>\n        mdgrid --man\n\n  Ouvre sous forme de table les notes Markdown d'un dossier : une ligne par note, une colonne\n  par clé du front matter. Avec un .base, ouvre sa vue table (les notes sont cherchées sous le\n  dossier racine). Avec un fichier .md, ouvre son dossier en sélectionnant cette note.\n  Avec un fichier .csv ou .tsv, l'ouvre comme une table : une ligne par ligne du fichier, la\n  première ligne donne les noms des colonnes.\n  Sans argument, ouvre le dossier courant (avec par-dessus la liste des tables inscrites dans\n  places.toml, s'il y en a). Un dossier dont le marqueur .mdgrid/workspace.toml nomme une table\n  dans \"open\" ouvre plutôt cette table.\n\n  --view <nom>              ouvre cette vue du .base (par défaut la première ;\n                            --print cherche aussi les vues mdgrid)\n  -w, --workspace <nom>     utilise cet espace de travail (workspaces.toml) pour les liens et la\n                            carte des relations ; sans chemin, ouvre sa première table\n  --page <nom>              ouvre cette page ([[page]]) de l'espace de travail, tables empilées\n  --table <nom>             ouvre la table de ce nom du marqueur .mdgrid/workspace.toml (avec -w, de l'espace de\n                            travail) au lieu de la table open ; aussi pour --print, --check, --new-note\n  --raw                     ouvre le dossier lui-même, pas la table du \"open\" de son marqueur\n  --readonly                ouvre en lecture seule (ni modification ni enregistrement)\n  --no-color                affiche sans couleurs\n  --config <chemin>         lit ce fichier de configuration\n                            (par défaut : $XDG_CONFIG_HOME/mdgrid/config.toml)\n  --continue                ouvre la table et la vue affichées en dernier dans ce dossier\n                            (comme sans argument s'il n'y en a pas ; pour restaurer des fenêtres\n                            tmux, etc.)\n  -s, --session <nom>       ouvre la session enregistrée sous ce nom (table, vue, filtres, tri et\n                            colonnes ; \"Enregistrer la session\" dans la palette en crée une)\n  --sessions                liste les sessions enregistrées (sessions.toml) : nom et dossier,\n                            une par ligne\n  --recent                  affiche les tables ouvertes récemment à l'écran, de la plus récente à\n                            la plus ancienne, une par ligne : \"chemin<TAB>nom de la\n                            vue<TAB>dernière ouverture\" (20 au plus)\n  --print                   écrit la table de la vue sur la sortie standard, sans écran\n                            (les notes ne sont pas modifiées)\n  --format <format>         format de --print (csv, tsv, json, md ; csv par défaut)\n  --with-path               ajoute à --print une première colonne \"path\" avec le chemin de la note\n                            de chaque ligne (le même chemin que --pick path)\n  --filter <expression>     ne garde que les lignes où l'expression .base est vraie\n                            (répétable ; avec une vue .base, s'ajoute à ses filtres)\n  --sort <colonne>[:desc]   trie --print selon cette colonne (répétable ; remplace le tri\n                            de la vue)\n  --count                   affiche le nombre de lignes de la vue (après --filter), sans écran\n  --show-hidden             avec --print, --pick ou --count, garde les lignes masquées par les\n                            conditions avec hide = true ([conditions])\n  --notices                 affiche les éléments de la zone d'avis ([[notices]]), un par ligne,\n                            sans écran (pour une barre d'état tmux ou une invite de shell)\n  --notify                  vérifie une fois les éléments de [[notify]], sans écran, et notifie les lignes\n                            qui se mettent à correspondre (exécution planifiée ; code 1 en cas d'échec)\n  --runs                    crée sans écran les notes des occurrences de routine à créer (runs de [[table]] dans le marqueur)\n                            et affiche leurs chemins (pour une exécution planifiée ; code 1 si l'une n'a pas pu être créée)\n  --pick <path|colonne>     affiche l'écran en lecture seule ; Enter écrit le chemin ou la valeur\n                            de la colonne des lignes marquées (ou de la ligne sélectionnée),\n                            une par ligne, sur la sortie standard puis quitte\n                            (q ou Esc annule avec le code de sortie 1)\n  --check                   affiche les valeurs non conformes au type de la colonne ou à une règle\n                            ([rules]), une par ligne (chemin:ligne: colonne: raison ; code de\n                            sortie 1 s'il y en a)\n  --apply <chemin>          lit un CSV ou un JSON au format de --print --with-path (- pour stdin)\n                            et modifie les cellules qui diffèrent ; affiche seulement le diff\n  --yes                     avec --apply, écrit les modifications\n  --workspaces              liste les espaces de travail (workspaces.toml)\n  --add-to <nom>            ajoute les tables données (par défaut : ce dossier) à cet espace de\n                            travail, en le créant si besoin ; --as <nom> nomme la table\n  --remove-from <nom>       retire les tables données (par défaut : ce dossier) de cet espace de\n                            travail\n  --remove-workspace <nom>  supprime cet espace de travail (les notes ne sont pas touchées)\n  --init-workspace          place un marqueur d'espace de travail .mdgrid/workspace.toml dans le\n                            dossier (par défaut : ce dossier)\n  --starter <nom>           avec --init-workspace, crée un registre (marqueur, modèles de notes) à\n                            partir de ce kit de démarrage : un kit intégré, ou starters/<nom> dans\n                            le dossier de configuration\n  --with-samples            avec --starter, ajoute aussi les notes d'exemple du kit\n  --starters                liste les kits de démarrage, un par ligne (nom et description courte)\n  --new-note <nom>          crée sans écran une note <nom>.md dans le dossier (par défaut : ce\n                            dossier) selon [new_note] (folder, set, template) ; affiche le chemin\n                            créé et n'écrase jamais\n  --set <colonne>=<valeur>  avec --new-note, met cette valeur dans la colonne (répétable ;\n                            éléments d'une liste séparés par des virgules ; une valeur vide\n                            n'écrit rien)\n  --print-config            affiche chaque élément de configuration en TOML avec sa valeur par\n                            défaut et une description (docs/config.md)\n  --completions <shell>     affiche les complétions du shell (bash, zsh, fish, elvish, powershell)\n  --man                     affiche la page de manuel (roff)\n  --help                    affiche cette aide\n  --version                 affiche la version"
 
 # ---- main: 引数の値の名前(clap の value_name。補完と man は日本語のまま、誤りの文では今の言語) ----
 ValuePath = "chemin"
@@ -196,6 +196,10 @@ WantTabs = "\"always\", \"auto\" ou \"never\""
 WantButtons = "\"plain\" ou \"box\""
 WantBarPadding = "de 0 à 2 par pas de 0.5 (0, 0.5, 1, 1.5 ou 2)"
 WantRowExtraLines = "un nombre entier de 0 à 9"
+## 設定の項目 `format.<列>.decimals` の正しい値(cell-view.number-format-invalid)。
+WantDecimals = "un nombre entier de 0 à 10"
+## 数の見せ方([format])の桁の区切りと小数点の見本。1 と 2 の間が桁の区切り、4 と 5 の間が小数点(cell-view.number-format-locale)。
+NumSample = "1 234,5"
 ## {0} は正規表現を読めない理由。
 RsnBadRegex = "impossible de lire l'expression régulière (ignorée) : {0}"
 ## WS-9: 印の表に path と base の両方。
@@ -209,6 +213,8 @@ OriginView = "réglages de la vue"
 ## {0} は求める型(Want*)。
 RsnNot = "n'est pas {0} (ignoré)"
 RsnUnknown = "élément inconnu (ignoré)"
+## 設定の文字に制御の文字か文字の向きを変える書式の文字がある(cell-view.number-format-invalid)。
+RsnControlChars = "contient un caractère de contrôle ou une marque de sens du texte (ignoré)"
 ## {0} は新しい道筋(CLI-20)。
 RsnMoved = "l'ancien nom a été déplacé vers `{0}` (lu comme tel)"
 RsnGlobalOnly = "ne peut être écrit que dans config.toml (ignoré)"
@@ -462,7 +468,6 @@ EmptyHeading = "(vide)"
 BaseSummaryFormula = "résumé de {0} : le résumé par formule {1} n'est pas pris en charge ({2})"
 ## {0} は列、{1} は集計の名前。
 BaseSummaryUnknown = "résumé de {0} : résumé inconnu {1}"
-BaseSummaryGroups = "les résumés par groupe ne sont pas pris en charge (la ligne de résumé porte sur toute la table)"
 
 # ---- summary: 組み込みの集計の名前(BV-14。英語は Obsidian の名前) ----
 SummaryAverage = "Moyenne"
@@ -488,6 +493,7 @@ ExprNameAfterNumber = "un nom juste après un nombre : {0}{1}"
 ExprUnclosedString = "chaîne non fermée"
 ExprBadChar = "caractère inattendu : {0}"
 ExprTooDeep = "l'expression est trop imbriquée"
+ExprBudget = "l'expression demande trop d'étapes"
 ExprMissing = "{0} manquant"
 ExprCommaOrRParen = "`,` ou `)`"
 ExprCommaOrRBrack = "`,` ou `]`"
@@ -528,6 +534,13 @@ NewNoteCliOne = "--new-note crée une seule note : donner un seul dossier"
 NewNoteCliBadSet = "--set {0} : l'écrire sous la forme colonne=valeur"
 NewNoteCliBadValue = "--set {0}={1} : la valeur ne correspond pas au type de la colonne {0}, rien n'a donc été créé"
 NewNoteCliRequired = "la colonne {0} est requise : rien n'est créé sans --set {0}=<valeur>"
+
+## CLI の --table(cli.table-*)。{0} は表の名前、{1} はある表の名前の並び(Ws は {1} がワークスペースの名前で {2} が並び)。
+TableUnknown = "pas de table nommée {0} dans le marqueur (tables : {1})"
+TableUnknownWs = "pas de table nommée {0} dans l'espace de travail {1} (tables : {2})"
+TableNoMarker = "--table choisit une table du marqueur .mdgrid/workspace.toml, mais il n'y en a pas dans {0} ni au-dessus"
+TableOnePath = "--table ouvre une table : donnez au plus un chemin"
+TableWithWsPaths = "--table avec -w choisit la table dans l'espace de travail : ne donnez pas de chemin"
 
 # ---- print: --print の誤り(CLI-5) ----
 PrintNoViews = ".base n'a pas de vues"
@@ -1553,18 +1566,20 @@ AskOpenRecent = "Tables récentes : "
 # ---- favorites・switch: お気に入りのワークスペースと切り替え(workspace.favorite-*・workspace.switch-*) ----
 CmdWsSwitch = "Changer d'espace de travail"
 CmdWsFavorite = "Ajouter l'espace de travail actuel aux favoris"
-KeyDrawerFavorite = "Ajouter aux favoris ou en retirer"
+KeySwitchAddHere = "Ajouter l'espace actuel"
 ## {0} はワークスペースの名前。
 WsFavoriteAdded = "{0} ajouté aux favoris"
 WsFavoriteRemoved = "{0} retiré des favoris"
 WsFavoriteNoWorkspace = "ajout aux favoris impossible : cette table n'est dans aucun espace de travail (workspaces.toml ou un marqueur)"
-WsFavoriteHeadOnly = "ajouter les favoris sur un en-tête d'espace de travail (pour l'espace actuel, utiliser \"Ajouter l'espace de travail actuel aux favoris\" dans la palette)"
+## {0} はワークスペースの名前。
+WsFavoriteAlready = "{0} est déjà un favori"
 ## {0} は workspaces.toml の favorites に書いた名前かパス。
 RsnFavoriteGone = "il n'y a ni espace de travail ni racine de marqueur {0}, il est donc exclu de la liste des espaces"
 SwitchTitle = " Espaces de travail "
 ## {0} は最初に開いた所の名前。
 SwitchOrigin = "Point de départ : {0}"
-SwitchHint = "pas encore de favoris : appuyer sur {1} sur un en-tête d'espace de travail dans la liste des tables ({0}), ou utiliser \"Ajouter l'espace de travail actuel aux favoris\" dans la palette"
+## {0} は今いる所をお気に入りに入れるキー。
+SwitchHint = "pas encore de favoris : dans un espace de travail, appuyer sur {0} dans cette liste pour l'ajouter"
 SwitchNoRoom = "le terminal est trop petit pour la liste des espaces"
 KeySwitchRun = "Aller à l'élément sélectionné"
 KeySwitchNumber = "Aller à l'espace de travail de ce numéro"
@@ -1572,6 +1587,9 @@ KeySwitchOrigin = "Revenir là où vous avez commencé"
 KeySwitchDigits = "Aller à ce numéro"
 KeyDigitRange = "{0}-{1}"
 SwitchAlreadyHere = "{0} est l'espace de travail où vous êtes"
+## {0} は今いるワークスペースの名前。
+SwitchAddHere = "+ Ajouter {0} aux favoris"
+SwitchRemoveFavOnly = "seul un favori peut être retiré"
 ModeSwitch = "Changer"
 SecInSwitch = "Dans la liste des espaces"
 
@@ -1591,9 +1609,7 @@ CmdWsOpen = "Ouvrir un espace de travail"
 ## WS-8: 表の一覧の引き出し。
 CmdWsDrawer = "Liste des tables (changer de table)"
 KeyWsDrawer = "Liste des tables"
-KeyDrawerRun = "Ouvrir la table / replier"
-KeyDrawerOpen = "Déplier l'espace de travail"
-KeyDrawerFold = "Replier l'espace de travail"
+KeyDrawerRun = "Ouvrir la table"
 DrawerRegistered = " Tables inscrites "
 DrawerEmpty = "aucune table à lister : créer un espace de travail avec :workspace_new ou inscrire une table avec :register_place"
 DrawerNoRoom = "le terminal est trop petit pour la liste des tables"
@@ -1762,6 +1778,12 @@ WantStringList = "une liste de chaînes"
 RsnRuleComputed = "les colonnes calculées ne peuvent pas avoir de règles, ignoré"
 WantValueTextTable = "une table de valeur = texte"
 RsnNotInValues = "ne fait pas partie de values, ignoré"
+## cell-edit.then-if-empty: the shape of a value in then.
+WantThenFill = "un texte ou une table de value et if_empty"
+## {0} is the expected type (Want*).
+RsnThenSkip = "n'est pas {0} ; cette colonne n'est pas remplie"
+RsnThenUnknown = "élément inconnu ; cette colonne n'est pas remplie"
+RsnThenNoValue = "pas de value (le texte à mettre) ; cette colonne n'est pas remplie"
 ## {0} is the name of the type (Date, Number …).
 ProblemType = "mauvais type ({0} attendu)"
 ProblemRequired = "clé requise manquante"
@@ -1903,6 +1925,8 @@ RsnKanbanNeedColumn = "pas de column (la colonne de statut), donc pas de Kanban"
 RsnKanbanNoColumn = "la table n'a pas de colonne {0}, donc pas de Kanban"
 ## {0} is the column.
 RsnKanbanListColumn = "la colonne {0} est une liste, donc pas de Kanban (une ligne serait dans plusieurs couloirs)"
+## {0} is the column.
+RsnKanbanCardNoColumn = "la table n'a pas de colonne {0}, donc les cartes ne l'affichent pas"
 
 # ---- 親子の設定(印の children。navigation.parent-child-config・cell-edit.children-done*・gantt.children-span-*。ui/children.rs) ----
 RsnChildrenNotTable = "pas une table comme { key = \"<colonne>\" }, donc pas de réglage parent-enfant"
@@ -2038,7 +2062,7 @@ ChartSkipped = " · {0} exclues"
 ## {0} is the number of breakdown values not drawn as lines.
 ChartSeriesDropped = " · {0} autres valeurs de ventilation non tracées"
 ChartNoValue = "(aucun)"
-ChartOther = "autres"
+ChartOther = "reste"
 ChartNoColumns = "cette table n'a pas de colonne à représenter"
 ChartNoRows = "aucune ligne pour le graphique"
 ## {0} is the kind, {1} the reason.
@@ -2049,7 +2073,7 @@ ChartNeedBy = "pas de colonne de texte, de case à cocher ou de liste pour la ve
 ChartNoFilter = "les plages de dates et de nombres ne restreignent pas la table (écrire la plage dans le filtre de la table)"
 ChartLineNoFilter = "les plages de la courbe ne restreignent pas la table (écrire la plage dans le filtre de la table)"
 ChartNoPoint = "aucun point sélectionné"
-ChartOtherNoFilter = "\"autres\" regroupe plusieurs valeurs, il ne restreint donc pas la table (changer la ventilation avec b, ou filtrer la table)"
+ChartOtherNoFilter = "\"reste\" regroupe plusieurs valeurs, il ne restreint donc pas la table (changer la ventilation avec b, ou filtrer la table)"
 ## {0} is the first date, {1} the last.
 ChartTooWide = "la plage de dates est trop large pour le graphique ({0} à {1} ; la restreindre avec le filtre de la table)"
 ChartNoItem = "aucun élément sélectionné"
@@ -2171,6 +2195,8 @@ CfgUse = "Pose le modèle [templates.<nom>] sous les valeurs écrites à cet end
 CfgTypes = "Le type de colonnes particulières. Il l'emporte sur les réglages de type du dossier racine\n(.obsidian/types.json) et sur la déduction à partir des valeurs ; \"auto\" revient à la déduction\n(une portée plus étroite peut annuler une plus large). Le type détermine la saisie de la cellule,\nla marque ! sur les valeurs qui ne correspondent pas, le tri et la marque de type de l'en-tête de\ncolonne. Les notes ne sont pas modifiées. Cliquer sur la marque de type d'un en-tête, ou\ncolumn_type dans la palette ou le menu d'actions, choisit un type et l'écrit dans la table de\nviews.toml."
 ## 設定の項目 `rules` の説明(行の区切りは --print-config のコメントの行)。
 CfgRules = "Règles pour des colonnes particulières, vérifiées avec le type de la colonne. required = true fait\nd'une clé manquante, de null, d'une chaîne vide ou d'une liste vide un problème ; values liste les\nvaleurs autorisées (chaque élément d'une liste doit en faire partie, casse comprise). Une portée\nplus étroite l'emporte élément par élément. Les problèmes reçoivent la marque !, le bandeau du bas\nles compte, ! et @ sautent de l'un à l'autre, et mdgrid --check les liste. Vérifier une règle ne\nmodifie jamais une note et n'empêche jamais d'écrire une valeur ; une colonne avec values les\npropose dans la saisie de la cellule. then remplit d'autres colonnes de la même ligne quand vous\ndonnez une valeur à la colonne (valeur = { colonne = texte } ; les variables de modèle comme\n{date} fonctionnent, un texte vide efface la colonne) ; c'est mis en attente avec votre\nmodification et défait avec elle.\nLes colonnes calculées (file.*, formula.*) ne peuvent pas avoir de règles.\nRegrouper par une colonne avec values range les groupes dans cet ordre (inversé en ordre\ndécroissant). icons et labels (valeur = texte) affichent un symbole et un nom pour une valeur\ndans les en-têtes de groupe et les colonnes du kanban ; les cellules, les filtres, la recherche\net --print gardent la valeur."
+## 設定の項目 `format` の説明(行の区切りは --print-config のコメントの行)。
+CfgFormat = "Comment les nombres de colonnes particulières sont affichés. thousands = true groupe la partie\nentière par trois chiffres ; decimals est le nombre de décimales (0 à 10 ; celles qui manquent\nsont complétées par 0, celles en trop sont arrondies) ; prefix et suffix sont placés avant et\naprès le nombre (un nombre négatif met - avant le prefix). Les séparateurs suivent la langue de\nl'écran. Cela s'applique aux cellules, à la vue détaillée, à la ligne de résumé, aux sous-totaux\ndes en-têtes de groupe et aux valeurs des graphiques, mais pas aux résumés qui comptent ni aux\ngraphiques de décompte. Seul l'affichage change : les notes, le tri, les filtres, les formules,\nla saisie de la cellule et --print gardent le nombre. Les colonnes calculées (formula.*) peuvent\naussi en avoir. Une portée plus étroite l'emporte élément par élément."
 ## 設定の項目 `terminal.color` の説明(行の区切りは --print-config のコメントの行)。
 CfgTerminalColor = "Utiliser les couleurs. false affiche sans couleurs (comme NO_COLOR ou --no-color)."
 ## 設定の項目 `terminal.ambiguous_wide` の説明(行の区切りは --print-config のコメントの行)。
@@ -2236,7 +2262,7 @@ CfgDisplayNoteName = "Une expression régulière appliquée au nom dans la colon
 ## 設定の項目 `dates.format` の説明(行の区切りは --print-config のコメントの行)。
 CfgDatesFormat = "Comment les dates sont affichées et tapées dans la table. Parties : YYYY, YY, MM, M, DD, D, ddd\n(jour de la semaine) et des séparateurs non alphanumériques. Les notes sont toujours écrites en\nYYYY-MM-DD."
 ## 設定の項目 `dates.week_start` の説明(行の区切りは --print-config のコメントの行)。
-CfgDatesWeekStart = "Premier jour de la semaine, pour le calendrier des dates, les mots de date (cette semaine, la semaine prochaine) et les semaines des graphiques."
+CfgDatesWeekStart = "Premier jour de la semaine, pour le calendrier des dates, les mots de date (cette semaine, la semaine prochaine), les semaines des graphiques, et les semaines et « cette semaine » du diagramme de Gantt."
 ## 設定の項目 `edit.candidates` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditCandidates = "Nombre maximal de valeurs candidates proposées en modifiant une cellule de texte.\nLes colonnes avec plus de valeurs distinctes ne proposent aucun candidat."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。

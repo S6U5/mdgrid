@@ -334,3 +334,122 @@
   - When: 表を描く
   - Then: bought のセルには `!` が無い。
 - Needs: utest
+
+### 数の見せ方
+
+#### 列ごとの `[format.<列>]` で、数の値を桁の区切り(`thousands`)・小数の桁(`decimals`)・頭の字(`prefix`)・末尾の字(`suffix`)を付けて見せるべき(表のセル・詳細・ためた値・式の列)
+`req~cell-view.number-format~1` P1
+- Rationale: お金の台帳で、金額が「98000」と出て、桁の区切りも通貨の記号も付けられなかった(2026-11-25 の台帳の実地の操作)。`decimals` は足りない桁を 0 で埋め、超える桁は四捨五入する。負の数は `-` を頭の字の前に置く(`-¥1,200`)
+- Acceptance:
+  - Given: `[format.amount]` が `thousands = true`・`prefix = "¥"` で、amount が 98000 の行
+  - When: 表を描く
+  - Then: amount のセルは `¥98,000`。
+- Acceptance:
+  - Given: `[format.distance]` が `thousands = true`・`decimals = 1`・`suffix = " km"` で、distance が 1234.56 と 3 の行
+  - When: 表を描く
+  - Then: セルは `1,234.6 km` と `3.0 km`。
+- Acceptance:
+  - Given: `[format."formula.rate"]` が `suffix = "%"` で、式の列 rate の値が 45
+  - When: 表を描く
+  - Then: セルは `45%`。
+- Acceptance:
+  - Given: `[types] amount = "number"`、`[format.amount]` が `prefix = "¥"`・`thousands = true` で、amount が -1200 の行と、文字の `abc` の行
+  - When: 表を描く
+  - Then: セルは `-¥1,200` と `!abc`(数でない値は見せ方を当てない)。
+- Acceptance:
+  - Given: 同じ `[format.amount]` で、amount を 5000 に直してためた行
+  - When: 表を描く
+  - Then: セルは `*¥5,000`。
+- Needs: utest, stest
+
+#### 数の見せ方は画面の見せ方だけにし、ノートの値・並べ替え・絞り込み・式・編集の欄・`--print` などの書き出しは元の数のままにするべき
+`req~cell-view.number-format-display-only~1` P1
+- Rationale: 見せ方の字(`¥`・`,`)が値に混ざると、書き戻しと書き出しの先で数として読めなくなるため
+- Acceptance:
+  - Given: `[format.amount]` が `thousands = true`・`prefix = "¥"` で、amount が 98000 の行
+  - When: amount のセルで Enter を押す
+  - Then: 編集の欄は `98000`。
+- Acceptance:
+  - Given: 同じ設定
+  - When: `--print`
+  - Then: amount の値は `98000`。
+- Acceptance:
+  - Given: 同じ設定で amount が 98000・500・12000 の行
+  - When: amount で昇順に並べる
+  - Then: 500・12000・98000 の順(数の順)。
+- Needs: utest, stest
+
+#### 数の見せ方は、集計の行・まとまりの見出しの小計・グラフの値の字にも当てるべきで、件数を数える集計(Checked・Unchecked・Empty・Filled・Unique)と件数のグラフには当てないべき
+`req~cell-view.number-format-totals~1` P1
+- Rationale: 金額の列の合計と小計が `¥` と桁の区切りで出ないと、セルと見比べにくいため。件数は金額でないので `¥` を付けない
+- Acceptance:
+  - Given: `[format.amount]` が `thousands = true`・`prefix = "¥"` で、`summaries` が `amount: Sum` のビュー、amount が 98000 と 3500 の行
+  - When: 表を描く
+  - Then: 集計の行に「合計 ¥101,500」。
+- Acceptance:
+  - Given: 同じ設定で、category でまとめたビュー(food が 98000 の1行、daily が 3500 の1行)
+  - When: 表を描く
+  - Then: food の見出しの行に「合計 ¥98,000」。
+- Acceptance:
+  - Given: 同じ設定で、`summaries` が `amount: Filled`
+  - When: 表を描く
+  - Then: 集計の行に「空でない 2」(`¥` が無い)。
+- Acceptance:
+  - Given: 同じ設定で、グラフ `{ x = "category", y = "amount" }`(合計)
+  - When: グラフの画面を開く
+  - Then: food の棒の値の字は `¥98,000`。
+- Needs: utest
+
+#### 桁の区切りと小数点は、画面の言語の習慣に合わせるべき
+`req~cell-view.number-format-locale~1` P1
+- Rationale: ドイツ語やフランス語の画面で `1,234.5` と出ると、小数点と桁の区切りを読み違えるため
+- Acceptance:
+  - Given: `[format.distance]` が `thousands = true`・`decimals = 1` で、distance が 1234.5
+  - When: 英語・日本語の画面で表を描く
+  - Then: セルは `1,234.5`。
+- Acceptance:
+  - Given: 同じ設定
+  - When: ドイツ語の画面で表を描く
+  - Then: セルは `1.234,5`。
+- Acceptance:
+  - Given: 同じ設定
+  - When: フランス語の画面で表を描く
+  - Then: セルは `1 234,5`(区切りは狭い空き U+202F)。
+- Needs: utest
+
+#### `[format.<列>]` の知らない項目・型の違う値・範囲(`decimals` は 0〜10)の外の値と、制御の文字か文字の向きを変える書式の文字(U+061C・U+200E・U+200F・U+202A〜U+202E・U+2066〜U+2069・U+2028・U+2029・U+FEFF)を含む `prefix`・`suffix` は、警告してその項目だけを使わないべきで、画面に描くときも、頭と末尾の字の制御の文字と向きの書式の文字を見える字に置き換えるべき
+`req~cell-view.number-format-invalid~1` P1
+- Rationale: 書き誤りに気づけるようにしつつ、ほかの項目は効かせるため(設定のほかの項目と同じ。cli の設定の警告)。印は人から受け取った台帳のフォルダにも入っているので、頭と末尾の字に ESC や向きの書式の文字があると、端末の画面を乱せる(2026-11-25 の自動のセキュリティの見直し)。読むときに外し、描くときにも置き換えて二重に守る
+- Acceptance:
+  - Given: `[format.amount]` が `prefix = "¥"`・`decimals = 20`・`comma = true`
+  - When: 起動する
+  - Then: `format.amount.decimals` と `format.amount.comma` を言う警告が出て、amount が 98000 のセルは `¥98000`。
+- Acceptance:
+  - Given: `[format.amount]` が `prefix = "\u001b[31m"`・`suffix = "\u202e"`・`thousands = true`
+  - When: 起動する
+  - Then: `format.amount.prefix` と `format.amount.suffix` を言う警告が出て、amount が 98000 のセルは `98,000`。画面の字に ESC も U+202E も無い。
+- Acceptance:
+  - Given: 読み込みを通らずに、頭の字が `"\u001b[31m"` の見せ方が amount に当たった表(集計 `amount: Sum` とグラフ `y = "amount"` のあるビュー)
+  - When: 表とグラフを描く
+  - Then: セル・集計の行・グラフの値の字に ESC が無く、置き換えた見える字(`␛`)で出る。
+
+#### 式の列の値のうち、ノートの値はノートの欄と同じ名前で、日付は日付の見せ方(cell-edit.date-format-display)で、ほかのノートのキーから引いた値はそのキーの値の名前(navigation.value-labels-cells)で見せるべき
+`req~cell-view.lookup-shown~1` P1
+- Rationale: 引いた値(base-view.lookup-properties)が、元の表のセルと同じに読めるようにするため(出典が `Library/霧の灯台守` でなく「霧の灯台守」、本の種類が `book` でなく「本」)。値の名前は今の表の決まりから取る(tbd~lookup-labels-from)。読むだけのセルなのは、ほかの式の列と同じ
+- Acceptance:
+  - Given: 抜き書きの表の式 `book = 'source.asFile()'` の列と、source が `"[[霧の灯台守]]"` の行(本は `Library/霧の灯台守.md`)
+  - When: 表を描く
+  - Then: その行の book のセルは `霧の灯台守`。
+- Acceptance:
+  - Given: `[display] note_name = '^\d{8}_'` と、人の表の式 `ms = 'file.linkedFrom("attendees")'` の列で、`Meetings/20261124_週次定例.md` だけが attendees で指す人の行
+  - When: 表を描く
+  - Then: その行の ms のセルは `[週次定例]`。
+- Acceptance:
+  - Given: `[rules.kind] values = ["book", "article"]`・`labels = { book = "本" }` と、抜き書きの表の式 `kind = 'source.asFile().properties.kind'` の列で、出典の kind が `book` の行
+  - When: 表を描く
+  - Then: その行の kind のセルは `本`。
+- Acceptance:
+  - Given: `[dates] format = "YYYY/MM/DD"` と、人の表の式 `met = 'file.linkedFrom("attendees").map(value.properties.when).max().date()'` の列で、一番遅い会議が 2026-11-24T10:00 の行
+  - When: 表を描く
+  - Then: その行の met のセルは `2026/11/24`。
+- Needs: utest

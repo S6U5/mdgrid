@@ -38,6 +38,7 @@ Inside a view:
 | `groupBy` | `property` and `direction`. Rows are gathered under one heading per value; empty values go under `(empty)` (`(空)` in Japanese). Within a group, rows follow `sort`. |
 | `limit` | A whole number. Applied last, to the total number of rows. |
 | `summaries` | A map from a column (`estimate`, `note.estimate`, `file.*` or `formula.*`) to a built-in summary name. See [Summaries](#summaries). |
+| `summary_labels` | A key mdgrid adds (Obsidian ignores it). A map from a column to the name its summary shows instead of the built-in one, in every language: `finished: Books` makes `Filled 13` read `Books 13`. Only text names are read. See [Summaries](#summaries). |
 | `tab_break` | A key mdgrid adds (Obsidian ignores it). With `true`, the row of tabs breaks before this tab. When a shown tab other than the first has it, all tabs go on rows below the search box, whatever the terminal width and `display.tab_wrap`, and a new row starts here (a row that does not fit wraps within itself). On a hidden tab, the row breaks at the next shown tab. For example, keep the tabs that filter by status and the tabs that filter by due date on separate rows. |
 
 `filters` (both at the top level and in a view) is either an expression string or a map with `and`, `or` and `not`, each holding a list of expression strings or further maps. Several of these keys in one map are combined by AND. `not` keeps a row when none of its entries is true. Any other key in such a map, or a value of another shape, makes the view fail to open (see [Not supported](#not-supported)). A filter keeps a row only when its expression is true under the same rules as `if`: `null`, `false`, `0`, and an empty string are false.
@@ -119,6 +120,13 @@ An operation on types that do not fit gives `null` instead of stopping.
 - `unique()`: a list without repeated items (the first of each is kept).
 - `sort()`: a list from smallest to largest.
 - `flat()`: a list with the lists inside it opened up by one level.
+- `asFile()`: the note a link points to. It takes a value that is a whole link (`[[name]]`, `[text](path.md)`, or a path) and an item of `file.backlinks` (a path from the root folder), and finds the note the same way as `file.links`. A link that matches no note, and any other value, give `null`. See [Linked notes](#linked-notes).
+- `filter(condition)`: the items of a list for which `condition` is true. Inside `condition`, `value` is the item and `index` its position, counted from 0: `[1, 2, 3, 4].filter(value > 2)` gives `[3, 4]`. Elsewhere, and written as `note.value`, `value` is still a frontmatter key.
+- `map(expression)`: a list with `expression` worked out for each item, using the same `value` and `index`: `[1, 2, 3].map(value * 10)` gives `[10, 20, 30]`.
+- `reduce(expression, start)`: one value made from a list. `acc` starts as `start` and becomes `expression` for each item in turn: `[1, 2, 3].reduce(acc + value, 0)` gives `6`.
+- `max()` (added by mdgrid; Obsidian only has `max(a, b, ...)` for numbers): the largest number in a list, or, when the list has no numbers, its latest date or date-time. Other items are skipped, and a list with nothing to compare gives `null`.
+- `min()` (added by mdgrid): the smallest number in a list, or the earliest date or date-time, in the same way as `max()`.
+- `sum()` (added by mdgrid): the total of the numbers in a list, skipping other items (`0` when there are none).
 - `length`: the number of characters of a string or items of a list, written without parentheses (`tags.length`).
 - `year`: the year of a date or date-time, written without parentheses (`due.year`). The same goes for the five below.
 - `month`: the month (1 to 12).
@@ -149,14 +157,42 @@ Functions on `file`:
 - `file.inFolder(folder)`: true when the note is in that folder or one of its subfolders.
 - `file.hasProperty(name)`: true when the frontmatter has that key.
 - `file.hasLink(note)`: true when the note links to `note` (a name, a path, or `this.file`).
+- `file.linkedFrom(key, ...)` (added by mdgrid; not in Obsidian): the notes whose frontmatter `key` (any of the keys given) links to this note, as a list of notes in path order. Links in the body and in other keys do not count, which is what sets it apart from `file.backlinks`: `file.linkedFrom("question").length` counts only the news notes whose `question` points at this question.
+
+A note itself is a value too: `file` on its own is the note of the row, and `asFile()` gives the note a link points to. A note value takes every name above, so `source.asFile().name` and `value.inFolder("Meetings")` work. See [Linked notes](#linked-notes).
 
 ## this
 
 When a `.base` file is opened directly, `this` is that `.base` file. `this.file` gives its path, and `this.file.name`, `this.file.basename`, `this.file.ext`, `this.file.path`, `this.file.folder`, `this.file.size`, `this.file.mtime` and `this.file.ctime` give the same values as for a note (`this.file.tags` is an empty list). For example, `file.inFolder(this.file.folder)` keeps the notes next to the `.base` file, and `file.links.contains(this.file)` keeps the notes that link to it (`[[Projects.base]]` or `[[P/Projects.base]]`: a link to the `.base` file by its name or path gives the same value as `this.file`). Where there is no `.base` file to point at (a mdgrid view of a folder), an expression with `this` is not supported.
 
+## Linked notes
+
+A formula can read values from the note a row links to (a lookup) and gather values from the notes that link to the row (a rollup). A reading note can show the author of its book, a book can count its reading notes, and a person can show the date of the last meeting they attended, without anyone copying the value by hand.
+
+```yaml
+formulas:
+  # Reading notes: the author and kind of the book in `source`
+  author: 'source.asFile().properties.author'
+  kind: 'source.asFile().properties.kind'
+  # Books: how many reading notes cite this book in `source`
+  quotes: 'file.linkedFrom("source").length'
+  # People: the last meeting they attended that is done
+  met: 'file.linkedFrom("attendees").filter(value.inFolder("Meetings") && value.properties.status == "done").map(value.properties.when).max().date()'
+```
+
+`.properties.<key>` (or `.properties["key"]`) on a note value is that note's frontmatter value, with pending (unsaved) values on top. When that value is a whole link, it becomes the note it points to, found from that note's folder, so a lookup can go one more step: `attendees[0].asFile().properties.org.properties.kind`. The names of a note value also work straight on a link text, so `source.properties.author` is the same as `source.asFile().properties.author`. A note and a link text are compared by the note they point to: `"[[Ana Lima]]" == file` and `value.properties.attendees.contains(file)` both work.
+
+On the screen, a note shows as its name (with `display.note_name` applied), a date in the date format of `dates.format`, and a value read with `.properties.<key>` with the value's name from `[rules.<key>] labels` of the current table. `--print` writes a note as its path from the root folder without `.md`, the same as `file.links`.
+
+Only notes under the table's root folder can be looked up, the same ones `file.links` and `file.backlinks` see. A ledger whose tables are narrowed with `[table.base] filters` reaches every note of the ledger; a table opened on its own folder with `path` does not see the other folders. The links between notes come from the saved notes, so a link added in a pending value counts once it is saved. They sit in an index that mdgrid builds once per load, so a rollup reads only the notes that link to the row. One cell can use up to 200,000 steps; a formula that goes past that (deeply nested `filter` and `map` over long lists) shows the unsupported mark with the reason, and the other cells still show.
+
 ## Summaries
 
 A view's `summaries` adds one row under the table, just above the bottom line. The left column says `Summary` (`集計` in Japanese), and each summarized column shows the summary name and its value, for example `Sum 18` or `Earliest 2026-10-05`, lined up with the column and scrolled with it. Summaries are computed from the rows the view shows now, after its filters, the view settings and the search, so narrowing the table changes the values. Pending (unsaved) values count. A view without `summaries` has no summary row. In Japanese the names are shown in Japanese (`合計 18`).
+
+A view with `groupBy` also shows the summaries of each group, on the right of the group heading, lined up with the columns in the same way (`▾ status: done (2)    Sum 8`). The heading text takes the room before the first summarized column (the note column grows a little, up to its usual limit, so that it fits). A folded group keeps its subtotals, so folding every group gives a list of the totals per group. The summary row under the table stays the total of the whole table. Numbers follow the column's [number format](config.md#format) (`Sum ¥101,500`), except for the counting summaries.
+
+To give a summary your own name, add `summary_labels` to the view. It is a key mdgrid adds, and Obsidian ignores it.
 
 ```yaml
 views:
@@ -166,6 +202,8 @@ views:
       estimate: Sum
       due: Earliest
       done: Checked
+    summary_labels:
+      done: Done
 ```
 
 The built-in summaries, as in Obsidian. Values of another type are not counted. When there is nothing to count, a number or date summary is blank; the counting summaries show `0`.
@@ -191,11 +229,10 @@ The built-in summaries, as in Obsidian. Values of another type are not counted. 
 
 mdgrid does not evaluate the following. It never guesses a result for them.
 
-- Every other function and method from Obsidian, for example `link()`, `icon()`, `image()`, and methods such as `map()`, `filter()`, `reduce()`, `toFixed()`, `repeat()`, `asFile()`, and `linksTo()`, and a regular expression given to `replace()` or `split()`. Obsidian's list may grow; anything not listed on this page is treated as unsupported.
-- `file` properties `file.embeds`, `file.properties` and `file.file`, and the function `link()`.
+- Every other function and method from Obsidian, for example `link()`, `icon()`, `image()`, and methods such as `toFixed()`, `repeat()`, `asLink()`, `linksTo()`, `keys()`, and `values()`, and a regular expression given to `replace()` or `split()`. Obsidian's list may grow; anything not listed on this page is treated as unsupported.
+- `file` properties `file.embeds` and `file.file`, `file.properties` on its own and with a method (`file.properties.keys()`; `file.properties.<key>` works), and the function `link()`.
 - `this` other than `this.file` and its values listed under [this](#this), and `this` for a base embedded in a note (mdgrid only opens `.base` files).
 - Formula summaries: the top-level `summaries` (for example `customAverage: 'values.mean()'`) and a view summary that names one, or any name that is not a built-in summary. The view still opens; the bottom line lists it after `unsupported:` (`未対応:` in Japanese) and the other summaries are shown.
-- Summaries per group. With `groupBy`, the summary row is for the whole table, and the bottom line says so.
 - Views other than `table`: `cards`, `list`, `map`, and plugin views.
 - `base` code blocks inside notes. mdgrid only opens `.base` files.
 

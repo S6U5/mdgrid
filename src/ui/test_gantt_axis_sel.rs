@@ -263,9 +263,9 @@ fn today_cells(a: &mut App, today: &str, what: &str) -> (Color, Color, Color) {
     (b(x), b(x - 1), b(x + 1))
 }
 
-/// テーマ・色の種類・見た目(classic か)で開いたガント(日の単位)。
+/// テーマ・色の種類・見た目(classic か)で開いたガント(日の単位)。週の始まりは月曜(今日の字を月曜の日の数に重ねる)。
 fn open_themed(theme: Theme, color: ColorMode, classic: bool, tag: &str) -> (Tmp, App) {
-    let mut config = theme_config(theme);
+    let mut config = format!("[dates]\nweek_start = \"mon\"\n\n{}", theme_config(theme));
     if classic {
         config.push_str("mode = \"classic\"\n");
     }

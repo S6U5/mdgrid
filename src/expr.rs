@@ -19,6 +19,9 @@ pub enum Val {
     DateTime(i64),
     Duration(i64),
     List(Vec<Val>),
+    /// base-view.lookup-as-file: ルートフォルダのノート(根からのパスの `.md` を除いたもの。`file.links` の値と同じ形)。
+    /// `asFile()`・`file`・引いたリンクの値・`file.linkedFrom()` の要素。
+    File(String),
 }
 
 /// parse の誤り。
@@ -52,6 +55,16 @@ pub struct Env<'a> {
 pub struct Links<'a> {
     pub index: Option<&'a crate::links::Index>,
     pub this: Option<&'a FileInfo>,
+    /// base-view.lookup-properties: ほかのノートの属性と値を引く口。無ければ、ノートの値の項目は null。
+    pub notes: Option<&'a dyn Notes>,
+}
+
+/// base-view.lookup-properties: 式からルートフォルダのノートを引く口。ノートは根からのパスの `.md` を除いたもの(stem)。
+pub trait Notes {
+    /// ノートのファイルの属性。無いノートは None。
+    fn file(&self, stem: &str) -> Option<FileInfo>;
+    /// ノートのフロントマターの値(ためた値を重ねたもの)。キーが無ければ None。
+    fn prop(&self, stem: &str, key: &str) -> Option<Value>;
 }
 
 /// 式の読み取りが受け付けるトップの関数の名前(BV-21)。`if(...)` の `if` だけを置く。
@@ -92,6 +105,13 @@ pub const METHODS: &[&str] = &[
     "unique",
     "sort",
     "flat",
+    "asFile",
+    "filter",
+    "map",
+    "reduce",
+    "max",
+    "min",
+    "sum",
     "length",
     "year",
     "month",
@@ -119,6 +139,7 @@ pub const FILE_FIELDS: &[&str] = &[
     "hasLink",
     "inFolder",
     "hasProperty",
+    "linkedFrom",
 ];
 
 /// 構文木の深さと、parse の入れ子の上限。
@@ -130,7 +151,7 @@ const MAX_STR: usize = 1 << 20;
 /// (リストの書き方・flat・split で大きさを倍々にさせない。BV-7)。
 fn weight(v: &Val) -> usize {
     16 + match v {
-        Val::Str(s) => s.len(),
+        Val::Str(s) | Val::File(s) => s.len(),
         Val::List(xs) => xs.iter().map(weight).fold(0usize, usize::saturating_add),
         _ => 0,
     }
@@ -339,6 +360,8 @@ enum Func {
     HasLink,
     InFolder,
     HasProperty,
+    /// base-view.linked-from: `file.linkedFrom(列, ...)`(mdgrid の足した関数)。
+    LinkedFrom,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -379,6 +402,24 @@ enum Meth {
     Unique,
     Sort,
     Flat,
+    /// base-view.lookup-as-file: リンクの値 → 行き先のノート。
+    AsFile,
+    /// base-view.list-filter-map: `value`・`index` の式で絞る・写す、`acc` の式でたたむ。
+    Filter,
+    Map,
+    Reduce,
+    /// base-view.list-aggregate: リストの最大・最小・合計(mdgrid の足したメソッド)。
+    Max,
+    Min,
+    Sum,
+}
+
+/// base-view.list-filter-map: filter・map・reduce の式の中の名前。
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Var {
+    Value,
+    Index,
+    Acc,
 }
 
 /// 括弧の無いメソッド(`x.length`・`d.year` など)。
@@ -428,6 +469,16 @@ enum Node {
     Index(Box<Node>, Box<Node>),
     /// condition.expr-call: 名前の条件(置き換えた式)が真か。値が `true` のときだけ真で、ほかは偽。
     IsTrue(Box<Node>),
+    /// base-view.lookup-file-members: `file` だけ(その行のノートの値)。
+    CurFile,
+    /// base-view.list-filter-map: filter・map・reduce の式の中の `value`・`index`・`acc`。
+    Var(Var),
+    /// base-view.lookup-properties: ノートの値の `.properties.<キー>`。
+    PropOf(Box<Node>, String),
+    /// base-view.lookup-file-members: ノートの値の `file.*` と同じ項目(`.name` など)。
+    FileOf(Box<Node>, FileField),
+    /// base-view.lookup-file-members: ノートの値の `file` の関数(`.inFolder(…)` など)。
+    OnFile(Box<Node>, Func, Vec<Node>),
     /// 条件どうしの参照(`parse_open` の中だけ。置き換え(`inline`)の前で、評価はされない)。
     CondRef(String),
     /// 未対応の場所(parse は Unsupported を返すので評価されない)。
@@ -442,6 +493,9 @@ struct Parser {
     pos: usize,
     nest: usize,
     unsupported: Option<String>,
+    /// base-view.list-filter-map: 読んでいる filter・map・reduce の1つ目の引数の入れ子(reduce なら真)。
+    /// この中の素の `value`・`index`(reduce の中なら `acc` も)は、フロントマターのキーでなく要素の名前。
+    lambda: Vec<bool>,
     /// condition.define: 条件の式を読む途中(`cond("x")` を置き換えずに `CondRef` で残し、名前を `refs` に集める)。
     open: bool,
     refs: Vec<String>,
@@ -505,6 +559,13 @@ fn meth_spec(name: &str) -> Option<(Meth, usize, usize)> {
         "unique" => (Meth::Unique, 0, 0),
         "sort" => (Meth::Sort, 0, 0),
         "flat" => (Meth::Flat, 0, 0),
+        "asFile" => (Meth::AsFile, 0, 0),
+        "filter" => (Meth::Filter, 1, 1),
+        "map" => (Meth::Map, 1, 1),
+        "reduce" => (Meth::Reduce, 2, 2),
+        "max" => (Meth::Max, 0, 0),
+        "min" => (Meth::Min, 0, 0),
+        "sum" => (Meth::Sum, 0, 0),
         _ => return None,
     })
 }
@@ -536,6 +597,7 @@ fn file_func_spec(name: &str) -> Option<(Func, usize, usize)> {
         "hasLink" => (Func::HasLink, 1, 1),
         "inFolder" => (Func::InFolder, 1, 1),
         "hasProperty" => (Func::HasProperty, 1, 1),
+        "linkedFrom" => (Func::LinkedFrom, 1, usize::MAX),
         _ => return None,
     })
 }
@@ -695,6 +757,46 @@ impl Parser {
         }
     }
 
+    /// base-view.list-filter-map: filter・map・reduce の引数。1つ目だけを要素の名前(`value`・`index`、reduce なら
+    /// `acc` も)の中で読む。
+    fn lambda_args(&mut self, reduce: bool) -> Result<(Vec<Node>, usize), String> {
+        let mut v = Vec::new();
+        let mut d = 0;
+        if self.eat(&Tok::RParen) {
+            return Ok((v, d));
+        }
+        loop {
+            let first = v.is_empty();
+            if first {
+                self.lambda.push(reduce);
+            }
+            let r = self.expr();
+            if first {
+                self.lambda.pop();
+            }
+            let (n, dn) = r?;
+            v.push(n);
+            d = d.max(dn);
+            if self.eat(&Tok::RParen) {
+                return Ok((v, d));
+            }
+            self.expect(&Tok::Comma, Msg::ExprCommaOrRParen.text())?;
+        }
+    }
+
+    /// base-view.lookup-properties: `.properties` の後ろのキー(`.x` か `["x"]`)。キーが無い・キーにメソッドを付けた
+    /// (`.properties.isEmpty()` のような、まとまりとして使う形)なら未対応。
+    fn properties(&mut self, n: Node, d: usize) -> Pr {
+        let Some(k) = self.member()? else {
+            return Ok(self.unsupported(".properties".to_string()));
+        };
+        if self.eat(&Tok::LParen) {
+            self.args()?;
+            return Ok(self.unsupported(format!(".properties.{k}()")));
+        }
+        Ok((Node::PropOf(Box::new(n), k), deeper(d)?))
+    }
+
     fn postfix(&mut self) -> Pr {
         let (mut n, mut d) = self.primary()?;
         loop {
@@ -703,18 +805,36 @@ impl Parser {
                     return Err(Msg::ExprNoNameAfterDot.text().to_string());
                 };
                 self.pos += 1;
-                if self.eat(&Tok::LParen) {
-                    let (args, da) = self.args()?;
-                    if let Some((m, lo, hi)) = meth_spec(&name) {
+                if name == "properties" {
+                    // base-view.lookup-properties: `.properties.<キー>` か `.properties["キー"]`。
+                    (n, d) = self.properties(n, d)?;
+                } else if self.eat(&Tok::LParen) {
+                    let spec = meth_spec(&name);
+                    let (args, da) = match spec {
+                        Some((m @ (Meth::Filter | Meth::Map | Meth::Reduce), _, _)) => {
+                            self.lambda_args(m == Meth::Reduce)?
+                        }
+                        _ => self.args()?,
+                    };
+                    if let Some((m, lo, hi)) = spec {
                         arity(&name, args.len(), lo, hi)?;
                         d = deeper(d.max(da))?;
                         n = Node::Method(Box::new(n), m, args);
+                    } else if let Some((f, lo, hi)) = file_func_spec(&name) {
+                        // base-view.lookup-file-members: ノートの値に付けた `file` の関数。
+                        arity(&name, args.len(), lo, hi)?;
+                        d = deeper(d.max(da))?;
+                        n = Node::OnFile(Box::new(n), f, args);
                     } else {
                         (n, d) = self.unsupported(format!(".{name}()"));
                     }
                 } else if let Some(f) = field_spec(&name) {
                     d = deeper(d)?;
                     n = Node::Field(Box::new(n), f);
+                } else if let Some(f) = file_field(&name) {
+                    // base-view.lookup-file-members: ノートの値に付けた `file.*` と同じ項目。
+                    d = deeper(d)?;
+                    n = Node::FileOf(Box::new(n), f);
                 } else {
                     (n, d) = self.unsupported(format!(".{name}"));
                 }
@@ -816,9 +936,26 @@ impl Parser {
                 None => Ok(self.unsupported("formula".to_string())),
             },
             "file" => {
+                let save = self.pos;
+                // base-view.lookup-file-members: `file` だけは、その行のノートの値。
                 let Some(k) = self.member()? else {
-                    return Ok(self.unsupported("file".to_string()));
+                    return Ok((Node::CurFile, 1));
                 };
+                if k == "properties" {
+                    // base-view.lookup-properties: `file.properties.x` は `note.x` と同じ。
+                    return match self.member()? {
+                        Some(key) if self.peek() != Some(&Tok::LParen) => Ok((Node::Prop(key), 1)),
+                        _ => Ok(self.unsupported("file.properties".to_string())),
+                    };
+                }
+                if file_func_spec(&k).is_none()
+                    && file_field(&k).is_none()
+                    && METHODS.contains(&k.as_str())
+                {
+                    // `file.asFile()` などのメソッドは、ノートの値の `file` に付ける(後ろは postfix が読む)。
+                    self.pos = save;
+                    return Ok((Node::CurFile, 1));
+                }
                 if self.eat(&Tok::LParen) {
                     let (args, da) = self.args()?;
                     return match file_func_spec(&k) {
@@ -831,7 +968,7 @@ impl Parser {
                 }
                 match file_field(&k) {
                     Some(f) => Ok((Node::File(f), 1)),
-                    // embeds・properties・file など、計算できない項目(BV-7)
+                    // embeds・file など、計算できない項目(BV-7)
                     None => Ok(self.unsupported(format!("file.{k}"))),
                 }
             }
@@ -854,6 +991,10 @@ impl Parser {
                     Some(f) => Ok((Node::This(Some(f)), 1)),
                 }
             }
+            // base-view.list-filter-map: filter・map・reduce の式の中の要素の名前(`note.value` はフロントマターのキー)。
+            "value" if !self.lambda.is_empty() => Ok((Node::Var(Var::Value), 1)),
+            "index" if !self.lambda.is_empty() => Ok((Node::Var(Var::Index), 1)),
+            "acc" if self.lambda.iter().any(|r| *r) => Ok((Node::Var(Var::Acc), 1)),
             _ => Ok((Node::Prop(name), 1)),
         }
     }
@@ -892,11 +1033,18 @@ fn node_depth(n: &Node) -> usize {
         | Node::Formula(_)
         | Node::This(_)
         | Node::CondRef(_)
+        | Node::CurFile
+        | Node::Var(_)
         | Node::Bad => 0,
-        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) | Node::IsTrue(x) => node_depth(x),
+        Node::Not(x)
+        | Node::Neg(x)
+        | Node::Field(x, _)
+        | Node::IsTrue(x)
+        | Node::PropOf(x, _)
+        | Node::FileOf(x, _) => node_depth(x),
         Node::Bin(_, a, b) | Node::Index(a, b) => node_depth(a).max(node_depth(b)),
         Node::List(xs) | Node::Call(_, xs) => max(xs),
-        Node::Method(r, _, xs) => node_depth(r).max(max(xs)),
+        Node::Method(r, _, xs) | Node::OnFile(r, _, xs) => node_depth(r).max(max(xs)),
     }
 }
 
@@ -918,7 +1066,12 @@ fn inline_node(n: &Node, get: &dyn Fn(&str) -> Option<Expr>) -> Result<Node, Str
         | Node::File(_)
         | Node::Formula(_)
         | Node::This(_)
+        | Node::CurFile
+        | Node::Var(_)
         | Node::Bad => n.clone(),
+        Node::PropOf(x, k) => Node::PropOf(one(x)?, k.clone()),
+        Node::FileOf(x, f) => Node::FileOf(one(x)?, *f),
+        Node::OnFile(r, f, xs) => Node::OnFile(one(r)?, *f, many(xs)?),
         Node::Not(x) => Node::Not(one(x)?),
         Node::Neg(x) => Node::Neg(one(x)?),
         Node::IsTrue(x) => Node::IsTrue(one(x)?),
@@ -979,6 +1132,7 @@ impl Parser {
             open,
             refs: Vec::new(),
             no_cond: None,
+            lambda: Vec::new(),
         })
     }
 
@@ -1285,6 +1439,8 @@ fn to_text(v: &Val) -> String {
         },
         Val::Duration(ms) => ms.to_string(),
         Val::List(xs) => xs.iter().map(to_text).collect::<Vec<_>>().join(", "),
+        // base-view.lookup-as-file: ノートはルートフォルダからのパスの `.md` を除いたもの(`file.links` の値と同じ)。
+        Val::File(s) => s.clone(),
     }
 }
 
@@ -1332,6 +1488,7 @@ fn equal(a: &Val, b: &Val) -> bool {
             x.len() == y.len() && x.iter().zip(y).all(|(p, q)| equal(p, q))
         }
         (Val::Date(x), Val::Date(y)) => x == y,
+        (Val::File(x), Val::File(y)) => x == y,
         (x, y) if is_when(x) && is_when(y) => secs_of(x).is_some() && secs_of(x) == secs_of(y),
         (x, Val::Str(s)) | (Val::Str(s), x) if is_when(x) => {
             parse_when(s).is_some_and(|w| equal(x, &w))
@@ -1343,7 +1500,7 @@ fn equal(a: &Val, b: &Val) -> bool {
 fn order(a: &Val, b: &Val) -> Option<Ordering> {
     match (a, b) {
         (Val::Num(x), Val::Num(y)) => x.partial_cmp(y),
-        (Val::Str(x), Val::Str(y)) => Some(x.cmp(y)),
+        (Val::Str(x) | Val::File(x), Val::Str(y) | Val::File(y)) => Some(x.cmp(y)),
         (Val::Bool(x), Val::Bool(y)) => Some(x.cmp(y)),
         (Val::Duration(x), Val::Duration(y)) => Some(x.cmp(y)),
         (Val::Duration(x), Val::Num(y)) => (*x as f64).partial_cmp(y),
@@ -1444,6 +1601,12 @@ impl Expr {
         uses_this(&self.node)
     }
 
+    /// cell-view.lookup-shown: 式の値が、ほかのノートのキー(`.properties.<キー>`)から引いた値(か、その値のリストを
+    /// 絞った・並べた・写した・最大や最小を取ったもの)なら、そのキー。値の名前(`[rules.<キー>] labels`)で見せるのに使う。
+    pub fn lookup_key(&self) -> Option<&str> {
+        lookup_key(&self.node)
+    }
+
     pub fn fixed_values(&self) -> Vec<Fixed> {
         let mut out = Vec::new();
         collect_fixed(&self.node, &mut out);
@@ -1468,8 +1631,20 @@ fn collect_columns(n: &Node, out: &mut Vec<String>) {
     match n {
         Node::Prop(k) => push(k.clone(), out),
         Node::Formula(k) => push(format!("formula.{k}"), out),
-        Node::Lit(_) | Node::File(_) | Node::This(_) | Node::CondRef(_) | Node::Bad => {}
-        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) | Node::IsTrue(x) => {
+        Node::Lit(_)
+        | Node::File(_)
+        | Node::This(_)
+        | Node::CondRef(_)
+        | Node::CurFile
+        | Node::Var(_)
+        | Node::Bad => {}
+        // ほかのノートのキー(`.properties.x`)は今の表の列ではないので入れない。
+        Node::Not(x)
+        | Node::Neg(x)
+        | Node::Field(x, _)
+        | Node::IsTrue(x)
+        | Node::PropOf(x, _)
+        | Node::FileOf(x, _) => {
             collect_columns(x, out);
         }
         Node::Bin(_, a, b) | Node::Index(a, b) => {
@@ -1481,12 +1656,34 @@ fn collect_columns(n: &Node, out: &mut Vec<String>) {
                 collect_columns(x, out);
             }
         }
-        Node::Method(r, _, xs) => {
+        Node::Method(r, _, xs) | Node::OnFile(r, _, xs) => {
             collect_columns(r, out);
             for x in xs {
                 collect_columns(x, out);
             }
         }
+    }
+}
+
+fn lookup_key(n: &Node) -> Option<&str> {
+    match n {
+        Node::PropOf(_, k) => Some(k),
+        Node::Method(_, Meth::Map, args) => args.first().and_then(lookup_key),
+        Node::Method(
+            r,
+            Meth::Filter
+            | Meth::Unique
+            | Meth::Sort
+            | Meth::Reverse
+            | Meth::Flat
+            | Meth::Slice
+            | Meth::Max
+            | Meth::Min
+            | Meth::Date,
+            _,
+        )
+        | Node::Index(r, _) => lookup_key(r),
+        _ => None,
     }
 }
 
@@ -1498,11 +1695,18 @@ fn uses_this(n: &Node) -> bool {
         | Node::File(_)
         | Node::Formula(_)
         | Node::CondRef(_)
+        | Node::CurFile
+        | Node::Var(_)
         | Node::Bad => false,
-        Node::Not(x) | Node::Neg(x) | Node::Field(x, _) | Node::IsTrue(x) => uses_this(x),
+        Node::Not(x)
+        | Node::Neg(x)
+        | Node::Field(x, _)
+        | Node::IsTrue(x)
+        | Node::PropOf(x, _)
+        | Node::FileOf(x, _) => uses_this(x),
         Node::Bin(_, a, b) | Node::Index(a, b) => uses_this(a) || uses_this(b),
         Node::List(xs) | Node::Call(_, xs) => xs.iter().any(uses_this),
-        Node::Method(r, _, xs) => uses_this(r) || xs.iter().any(uses_this),
+        Node::Method(r, _, xs) | Node::OnFile(r, _, xs) => uses_this(r) || xs.iter().any(uses_this),
     }
 }
 
@@ -1557,14 +1761,179 @@ pub fn eval(e: &Expr, env: &Env<'_>) -> Val {
 }
 
 /// リンクの索引と this を添えた評価(BV-22)。`eval` はどちらも無いもの(`file.links` などは Null)。
+/// 手数の上限(base-view.expr-step-budget)を越えた評価は Null。
 pub fn eval_with(e: &Expr, env: &Env<'_>, links: &Links<'_>) -> Val {
-    ev(&e.node, &Cx { env, links })
+    eval_checked(e, env, links).unwrap_or(Val::Null)
+}
+
+/// base-view.expr-step-budget: 1つの式の評価(1つのセル)で使える手数(tbd~expr-step-budget-size)。式の節を1つ評価するたびに
+/// 1手、たどる被リンク・行き先とリストの要素は1つごとに1手、重ね除きは比べた回数。filter・map・reduce を入れ子にした式で、
+/// 評価の回数が掛け算で増えて画面が固まらないようにする。数千のつながりのロールアップは数万手で届かない。
+const MAX_STEPS: u64 = 200_000;
+
+/// base-view.expr-step-budget: `eval_with` と同じ評価で、手数の上限を越えたら値を作らずに Err(理由)。
+pub fn eval_checked(e: &Expr, env: &Env<'_>, links: &Links<'_>) -> Result<Val, String> {
+    let steps = std::cell::Cell::new(0);
+    let v = ev(
+        &e.node,
+        &Cx {
+            env,
+            links,
+            scope: None,
+            steps: &steps,
+        },
+    );
+    if steps.get() > MAX_STEPS {
+        Err(Msg::ExprBudget.text().to_string())
+    } else {
+        Ok(v)
+    }
 }
 
 /// 評価の中で持ち回る環境。
 struct Cx<'a> {
     env: &'a Env<'a>,
     links: &'a Links<'a>,
+    /// base-view.list-filter-map: filter・map・reduce の今の要素(内側が先)。
+    scope: Option<&'a Scope<'a>>,
+    /// base-view.expr-step-budget: この評価で使った手数(filter・map・reduce の内側とも分ける)。
+    steps: &'a std::cell::Cell<u64>,
+}
+
+/// base-view.list-filter-map: filter・map・reduce の1つの要素の名前の値。
+struct Scope<'a> {
+    value: Val,
+    index: usize,
+    /// reduce のそこまでの値(filter・map では None。外の reduce の acc を見る)。
+    acc: Option<Val>,
+    up: Option<&'a Scope<'a>>,
+}
+
+impl<'a> Cx<'a> {
+    /// 要素の名前を足した環境。
+    fn with<'b>(&'b self, scope: &'b Scope<'b>) -> Cx<'b>
+    where
+        'a: 'b,
+    {
+        Cx {
+            env: self.env,
+            links: self.links,
+            scope: Some(scope),
+            steps: self.steps,
+        }
+    }
+
+    /// base-view.expr-step-budget: 手数を `n` 使う。上限を越えたら偽(呼ぶ側は Null を返して評価を畳む)。
+    fn charge(&self, n: usize) -> bool {
+        let used = self
+            .steps
+            .get()
+            .saturating_add(u64::try_from(n).unwrap_or(u64::MAX));
+        self.steps.set(used);
+        used <= MAX_STEPS
+    }
+
+    fn var(&self, v: Var) -> Val {
+        let mut s = self.scope;
+        while let Some(sc) = s {
+            match v {
+                Var::Value => return sc.value.clone(),
+                Var::Index => return Val::Num(sc.index as f64),
+                Var::Acc => {
+                    if let Some(a) = &sc.acc {
+                        return a.clone();
+                    }
+                }
+            }
+            s = sc.up;
+        }
+        Val::Null
+    }
+
+    /// この行のノート(根からのパスの `.md` を除いたもの)。
+    fn cur_stem(&self) -> String {
+        crate::links::stem(&self.env.file.path).to_string()
+    }
+
+    /// base-view.lookup-as-file: 文字をノートに解く。値まるごとのリンク(`[[名前]]`・`[文字](パス)`・ただのパス。
+    /// relations.parse)は `folder` のノートから書いたリンクとして解き、ほかの文字はルートフォルダからのパス(`file.backlinks`
+    /// の要素)として見る。解けなければ None。
+    fn resolve_text(&self, s: &str, folder: &str, plain: bool) -> Option<String> {
+        use crate::links::Raw;
+        use crate::relations::Form;
+        let ix = self.links.index?;
+        match crate::relations::parse(s) {
+            Some(l) => match l.form {
+                Form::Wiki | Form::Md => ix.resolve(
+                    folder,
+                    &Raw {
+                        target: l.target,
+                        md: l.form == Form::Md,
+                        key: None,
+                    },
+                ),
+                Form::Path { .. } => ix.path_note(folder, &l.target),
+            },
+            None if plain => ix.note(s),
+            None => None,
+        }
+    }
+
+    /// 値がノートなら、そのノート。リンクの文字は、この行のノートから解く。
+    fn as_note(&self, v: &Val) -> Option<String> {
+        match v {
+            Val::File(s) => Some(s.clone()),
+            Val::Str(s) => self.resolve_text(s, &self.env.file.folder, true),
+            _ => None,
+        }
+    }
+
+    /// base-view.lookup-link-values: 引いた値のリンク(値まるごと)を、`folder` のノートからの行き先のノートにする。
+    fn linkify(&self, v: Val, folder: &str) -> Val {
+        match v {
+            Val::Str(s) => match self.resolve_text(&s, folder, false) {
+                Some(stem) => Val::File(stem),
+                None => Val::Str(s),
+            },
+            Val::List(xs) => Val::List(xs.into_iter().map(|x| self.linkify(x, folder)).collect()),
+            other => other,
+        }
+    }
+
+    /// 比べる値の文字をノートにする(ノートと比べるときだけ。解けない文字はそのまま)。
+    fn as_notes(&self, v: Val) -> Val {
+        match v {
+            Val::Str(s) => match self.as_note(&Val::Str(s.clone())) {
+                Some(stem) => Val::File(stem),
+                None => Val::Str(s),
+            },
+            Val::List(xs) => Val::List(xs.into_iter().map(|x| self.as_notes(x)).collect()),
+            other => other,
+        }
+    }
+
+    /// base-view.lookup-properties: ノートのフロントマターの値(リンクは行き先のノートにする)。
+    fn prop_of(&self, stem: &str, key: &str) -> Val {
+        let Some(notes) = self.links.notes else {
+            return Val::Null;
+        };
+        let v = notes.prop(stem, key).map_or(Val::Null, |v| to_val(&v));
+        let folder = stem.rsplit_once('/').map_or("", |(f, _)| f);
+        self.linkify(v, folder)
+    }
+
+    fn note_file(&self, stem: &str) -> Option<FileInfo> {
+        self.links.notes?.file(stem)
+    }
+}
+
+/// 値か、リストの要素にノートがあるか。
+fn has_file(v: &Val) -> bool {
+    match v {
+        Val::File(_) => true,
+        Val::List(xs) => xs.iter().any(has_file),
+        _ => false,
+    }
 }
 
 /// 文字の要素のリスト。重さが上限(MAX_STR)を超えるなら Null(BV-7)。
@@ -1580,6 +1949,15 @@ fn str_list(items: &[String]) -> Val {
 }
 
 fn link_val(f: FileField, fi: &FileInfo, cx: &Cx<'_>) -> Val {
+    // base-view.expr-step-budget: たどるリンクは1つごとに1手。
+    let n = match (f, cx.links.index) {
+        (FileField::Links, Some(ix)) => ix.links(&fi.path).len(),
+        (FileField::Backlinks, Some(ix)) => ix.backlinks(&fi.path).len(),
+        _ => 0,
+    };
+    if !cx.charge(n) {
+        return Val::Null;
+    }
     match (f, cx.links.index) {
         (FileField::Links, Some(ix)) => match cx.links.this {
             // `file.links.contains(this.file)`: .base を指すリンクは this.file と同じ値にする(BV-22)。
@@ -1593,6 +1971,10 @@ fn link_val(f: FileField, fi: &FileInfo, cx: &Cx<'_>) -> Val {
 }
 
 fn ev(n: &Node, cx: &Cx<'_>) -> Val {
+    // base-view.expr-step-budget: 節を1つ評価するたびに1手。使い切ったら、そこから先は評価しない。
+    if !cx.charge(1) {
+        return Val::Null;
+    }
     match n {
         Node::Lit(v) => v.clone(),
         // 重さを足しながら作り、上限を超えたところでやめる(全部を作ってから測らない)。
@@ -1629,6 +2011,12 @@ fn ev(n: &Node, cx: &Cx<'_>) -> Val {
             let (a, b) = (ev(a, cx), ev(b, cx));
             match op {
                 BinOp::Eq | BinOp::Ne => {
+                    // base-view.lookup-link-values: ノートとリンクの文字は、行き先のノートで比べる。
+                    let (a, b) = if has_file(&a) || has_file(&b) {
+                        (cx.as_notes(a), cx.as_notes(b))
+                    } else {
+                        (a, b)
+                    };
                     let eq = equal(&a, &b);
                     Val::Bool(if *op == BinOp::Eq { eq } else { !eq })
                 }
@@ -1647,10 +2035,65 @@ fn ev(n: &Node, cx: &Cx<'_>) -> Val {
                 _ => arith(*op, a, b),
             }
         }
-        Node::Call(f, args) => call(*f, args, cx),
+        Node::Call(f, args) => {
+            if matches!(
+                f,
+                Func::HasTag
+                    | Func::HasLink
+                    | Func::InFolder
+                    | Func::HasProperty
+                    | Func::LinkedFrom
+            ) {
+                file_call(*f, &cx.cur_stem(), cx.env.file, true, args, cx)
+            } else {
+                call(*f, args, cx)
+            }
+        }
+        Node::CurFile => Val::File(cx.cur_stem()),
+        Node::Var(v) => cx.var(*v),
+        Node::PropOf(x, k) => match cx.as_note(&ev(x, cx)) {
+            Some(stem) => cx.prop_of(&stem, k),
+            None => Val::Null,
+        },
+        Node::FileOf(x, f) => {
+            let Some(stem) = cx.as_note(&ev(x, cx)) else {
+                return Val::Null;
+            };
+            cx.note_file(&stem)
+                .map_or(Val::Null, |fi| link_val(*f, &fi, cx))
+        }
+        Node::OnFile(x, f, args) => {
+            let Some(stem) = cx.as_note(&ev(x, cx)) else {
+                return Val::Null;
+            };
+            match cx.note_file(&stem) {
+                Some(fi) => file_call(*f, &stem, &fi, false, args, cx),
+                None => Val::Null,
+            }
+        }
+        Node::Method(recv, m @ (Meth::Filter | Meth::Map | Meth::Reduce), args) => {
+            match ev(recv, cx) {
+                Val::List(xs) => lambda(*m, &xs, args, cx),
+                _ => Val::Null,
+            }
+        }
+        Node::Method(recv, Meth::AsFile, _) => {
+            cx.as_note(&ev(recv, cx)).map_or(Val::Null, Val::File)
+        }
         Node::Method(recv, m, args) => {
             let r = ev(recv, cx);
             let args: Vec<Val> = args.iter().map(|a| ev(a, cx)).collect();
+            // base-view.lookup-link-values: ノートを含むかを見るときは、リンクの文字を行き先のノートにして比べる。
+            let (r, args) = if matches!(m, Meth::Contains | Meth::ContainsAll | Meth::ContainsAny)
+                && (has_file(&r) || args.iter().any(has_file))
+            {
+                (
+                    cx.as_notes(r),
+                    args.into_iter().map(|a| cx.as_notes(a)).collect(),
+                )
+            } else {
+                (r, args)
+            };
             if *m == Meth::Relative {
                 // 今日・今に依るので、環境の時計で数える(ほかのメソッドは値だけで決まる)。
                 return relative(&r, cx.env.today, cx.env.now).map_or(Val::Null, Val::Str);
@@ -1658,6 +2101,18 @@ fn ev(n: &Node, cx: &Cx<'_>) -> Val {
             if *m == Meth::NextRun {
                 // routine.next-run: 今日に依るので、環境の時計で数える。
                 return next_run(&r, args.first(), cx.env.today).map_or(Val::Null, Val::Date);
+            }
+            if let Val::List(xs) = &r {
+                // base-view.expr-step-budget: リストのメソッドは要素ごとに1手(並べ替えは n log n、重ね除きは比べた回数)。
+                let n = xs.len();
+                let cost = match m {
+                    Meth::Sort => n.saturating_mul((usize::BITS - n.leading_zeros()) as usize),
+                    Meth::Unique => return unique(xs, cx),
+                    _ => n,
+                };
+                if !cx.charge(cost) {
+                    return Val::Null;
+                }
             }
             method(&r, *m, &args)
         }
@@ -1747,8 +2202,19 @@ fn call(f: Func, args: &[Node], cx: &Cx<'_>) -> Val {
             v @ Val::Duration(_) => v,
             _ => Val::Null,
         },
+        Func::HasTag | Func::HasLink | Func::InFolder | Func::HasProperty | Func::LinkedFrom => {
+            file_call(f, &cx.cur_stem(), cx.env.file, true, args, cx)
+        }
+    }
+}
+
+/// `file` の関数(`file.hasTag(…)` など)を、ノート `stem`(属性 `fi`)について評価する。`cur` はこの行のノートか
+/// (この行ならフロントマターはためた値を重ねた `env.prop` から、ほかのノートは引く口から)。
+fn file_call(f: Func, stem: &str, fi: &FileInfo, cur: bool, args: &[Node], cx: &Cx<'_>) -> Val {
+    let arg = |i: usize| args.get(i).map_or(Val::Null, |a| ev(a, cx));
+    match f {
         Func::HasTag => {
-            let tags: Vec<String> = cx.env.file.tags.iter().map(|t| t.to_lowercase()).collect();
+            let tags: Vec<String> = fi.tags.iter().map(|t| t.to_lowercase()).collect();
             let hit = args.iter().any(|a| match ev(a, cx) {
                 Val::Str(t) => {
                     let t = t.trim_start_matches('#').to_lowercase();
@@ -1762,14 +2228,14 @@ fn call(f: Func, args: &[Node], cx: &Cx<'_>) -> Val {
             Val::Bool(hit)
         }
         Func::HasLink => match (arg(0), cx.links.index) {
-            (Val::Str(x), Some(ix)) => Val::Bool(ix.has_link(&cx.env.file.path, &x)),
-            (Val::Str(_), None) => Val::Null,
+            (Val::Str(x), Some(ix)) => Val::Bool(ix.has_link(&fi.path, &x)),
+            (Val::File(x), Some(ix)) => Val::Bool(ix.links(&fi.path).contains(&x)),
             _ => Val::Null,
         },
         Func::InFolder => match arg(0) {
             Val::Str(f) => {
                 let f = f.trim_matches('/');
-                let folder = cx.env.file.folder.as_str();
+                let folder = fi.folder.as_str();
                 Val::Bool(
                     f.is_empty()
                         || folder == f
@@ -1779,10 +2245,126 @@ fn call(f: Func, args: &[Node], cx: &Cx<'_>) -> Val {
             _ => Val::Null,
         },
         Func::HasProperty => match arg(0) {
-            Val::Str(p) => Val::Bool((cx.env.prop)(&p).is_some()),
+            Val::Str(p) if cur => Val::Bool((cx.env.prop)(&p).is_some()),
+            Val::Str(p) => match cx.links.notes {
+                Some(n) => Val::Bool(n.prop(stem, &p).is_some()),
+                None => Val::Null,
+            },
             _ => Val::Null,
         },
+        // base-view.linked-from: フロントマターのその列(どれか)の値のリンクで指すノート(パスの順、重ねない)。
+        Func::LinkedFrom => {
+            let Some(ix) = cx.links.index else {
+                return Val::Null;
+            };
+            let mut keys: Vec<String> = Vec::new();
+            for a in args {
+                match ev(a, cx) {
+                    Val::Str(k) => keys.push(k),
+                    Val::List(ks) => keys.extend(ks.into_iter().filter_map(|k| match k {
+                        Val::Str(k) => Some(k),
+                        _ => None,
+                    })),
+                    _ => {}
+                }
+            }
+            let found: Vec<&[String]> = keys.iter().map(|k| ix.linked_from(&fi.path, k)).collect();
+            // base-view.expr-step-budget: たどる被リンクは1つごとに1手。
+            if !cx.charge(found.iter().map(|l| l.len()).sum()) {
+                return Val::Null;
+            }
+            let mut out: Vec<&String> = found.into_iter().flatten().collect();
+            out.sort();
+            out.dedup();
+            Val::List(out.into_iter().map(|s| Val::File(s.clone())).collect())
+        }
+        _ => Val::Null,
     }
+}
+
+/// base-view.list-filter-map: filter・map・reduce。式 `args[0]` を要素ごとに `value`・`index`(reduce は `acc` も)で評価する。
+fn lambda(m: Meth, xs: &[Val], args: &[Node], cx: &Cx<'_>) -> Val {
+    let Some(body) = args.first() else {
+        return Val::Null;
+    };
+    let scope = |i: usize, x: &Val, acc: Option<Val>| Scope {
+        value: x.clone(),
+        index: i,
+        acc,
+        up: cx.scope,
+    };
+    match m {
+        Meth::Filter => Val::List(
+            xs.iter()
+                .enumerate()
+                .filter(|(i, x)| {
+                    let sc = scope(*i, x, None);
+                    truthy(&ev(body, &cx.with(&sc)))
+                })
+                .map(|(_, x)| x.clone())
+                .collect(),
+        ),
+        Meth::Map => {
+            // 重さを足しながら作り、上限を超えたところでやめる(リストの書き方と同じ。BV-7)。
+            let mut out = Vec::with_capacity(xs.len());
+            let mut w = 16usize;
+            for (i, x) in xs.iter().enumerate() {
+                let sc = scope(i, x, None);
+                let v = ev(body, &cx.with(&sc));
+                w = w.saturating_add(weight(&v));
+                if w > MAX_STR {
+                    return Val::Null;
+                }
+                out.push(v);
+            }
+            Val::List(out)
+        }
+        _ => {
+            let mut acc = args.get(1).map_or(Val::Null, |a| ev(a, cx));
+            for (i, x) in xs.iter().enumerate() {
+                let sc = scope(i, x, Some(acc));
+                acc = ev(body, &cx.with(&sc));
+                if weight(&acc) > MAX_STR {
+                    return Val::Null;
+                }
+            }
+            acc
+        }
+    }
+}
+
+/// リストから重なる要素を除く(それぞれ最初のものを残す)。比べた回数を手数に数え、上限を越えたら Null
+/// (base-view.expr-step-budget。長いリストの重ね除きは比べる回数が2乗で増える)。
+fn unique(xs: &[Val], cx: &Cx<'_>) -> Val {
+    let mut out: Vec<Val> = Vec::new();
+    for x in xs {
+        if !cx.charge(out.len().max(1)) {
+            return Val::Null;
+        }
+        if !out.iter().any(|y| equal(x, y)) {
+            out.push(x.clone());
+        }
+    }
+    Val::List(out)
+}
+
+/// base-view.list-aggregate: 数の要素があれば数の最大(最小)、無ければ日付・日時の一番遅い(早い)もの。ほかの要素は数えない。
+fn extreme(xs: &[Val], max: bool) -> Val {
+    let pick = |o: Ordering| if max { o.is_gt() } else { o.is_lt() };
+    let mut best: Option<&Val> = None;
+    for x in xs.iter().filter(|x| matches!(x, Val::Num(_))) {
+        if best.is_none_or(|b| order(x, b).is_some_and(pick)) {
+            best = Some(x);
+        }
+    }
+    if best.is_none() {
+        for x in xs.iter().filter(|x| is_when(x)) {
+            if best.is_none_or(|b| order(x, b).is_some_and(pick)) {
+                best = Some(x);
+            }
+        }
+    }
+    best.cloned().unwrap_or(Val::Null)
 }
 
 fn field(v: &Val, f: Field) -> Val {
@@ -2136,7 +2718,7 @@ fn sort_cmp(a: &Val, b: &Val) -> Ordering {
         Val::Num(_) => 2,
         Val::Duration(_) => 3,
         Val::Date(_) | Val::DateTime(_) => 4,
-        Val::Str(_) => 5,
+        Val::Str(_) | Val::File(_) => 5,
         Val::List(_) => 6,
     };
     order(a, b)
@@ -2157,15 +2739,7 @@ fn list_method(xs: &[Val], m: Meth, args: &[Val]) -> Option<Val> {
             }
             Val::Str(parts.join(sep))
         }
-        Meth::Unique => {
-            let mut out: Vec<Val> = Vec::new();
-            for x in xs {
-                if !out.iter().any(|y| equal(x, y)) {
-                    out.push(x.clone());
-                }
-            }
-            Val::List(out)
-        }
+        // 重ね除き(Unique)は手数を数えるので ev が `unique` で受ける。
         Meth::Sort => {
             let mut v = xs.to_vec();
             v.sort_by(sort_cmp);
@@ -2193,6 +2767,14 @@ fn list_method(xs: &[Val], m: Meth, args: &[Val]) -> Option<Val> {
             let (a, b) = slice_range(xs.len(), args)?;
             Val::List(xs[a..b].to_vec())
         }
+        Meth::Max | Meth::Min => extreme(xs, m == Meth::Max),
+        Meth::Sum => num(xs
+            .iter()
+            .filter_map(|x| match x {
+                Val::Num(n) => Some(*n),
+                _ => None,
+            })
+            .sum()),
         _ => return None,
     })
 }
@@ -2248,6 +2830,8 @@ fn method(r: &Val, m: Meth, args: &[Val]) -> Val {
                 args.iter().all(has)
             })
         }
+        // base-view.lookup-link-values: 1つのノート(1つのリンクの列から引いた値)は、1つの要素のリストとして見る。
+        (_, Val::File(_)) => method(&Val::List(vec![r.clone()]), m, args),
         _ => Val::Null,
     }
 }

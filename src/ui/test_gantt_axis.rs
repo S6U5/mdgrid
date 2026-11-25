@@ -419,10 +419,17 @@ fn test_ga_2_month_today_keeps_digits_reversed() {
 
 #[test]
 fn test_ga_2_day_header_mondays_only() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-today~1] 日の単位(原点 10/01・木)の見出しの下の行は、月曜の字にその日の数だけ: 10/05 に「5」、10/12 に「12」、
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-today~1, req~gantt.week-start~1] 週の始まりを月曜にした(`[dates] week_start = "mon"`)
+    // 日の単位(原点 10/01・木)の見出しの下の行は、月曜の字にその日の数だけ: 10/05 に「5」、10/12 に「12」、
     // 10/19 に「19」、10/26 に「26」(11月より先の月曜も同じ形)。ほかの日の数は無く、今日 10/06(火)の字に ▾。
     let note = "---\nstart: 2026-10-01\ndue: 2026-10-31\n---\n";
-    let (_t, mut a) = boot("ga2dayhdr", &[("alpha.md", note)]);
+    let (_t, mut a) = boot_paint(
+        "ga2dayhdr",
+        &[("alpha.md", note)],
+        GANTT,
+        ColorMode::None,
+        "[dates]\nweek_start = \"mon\"\n",
+    );
     ch(&mut a, 'C');
     assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
     assert_eq!(unit(&a), Unit::Day);
@@ -467,6 +474,51 @@ fn test_ga_2_day_header_mondays_only() {
             format_date(d)
         );
         j += run.len();
+    }
+}
+
+#[test]
+fn test_day_header_numbers_on_week_start_days() {
+    // [utest -> req~gantt.week-start~1] 2026-10-01 を左端にした日の単位: 週の始まりを書いていなければ、見出しの下の行の日の数は
+    // 日曜の 10/04・10/11・10/18・10/25 の字にだけ。`[dates] week_start = "mon"` なら月曜の 10/05・10/12・10/19・10/26 の字にだけ。
+    let note = "---\nstart: 2026-10-01\ndue: 2026-10-31\n---\n";
+    let cases = [
+        ("gaweeksun", "", [4, 11, 18, 25]),
+        (
+            "gaweekmon",
+            "[dates]\nweek_start = \"mon\"\n",
+            [5, 12, 19, 26],
+        ),
+    ];
+    for (tag, config, days) in cases {
+        let (_t, mut a) = boot_paint(tag, &[("alpha.md", note)], GANTT, ColorMode::None, config);
+        ch(&mut a, 'C');
+        assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+        assert_eq!(unit(&a), Unit::Day);
+        let s = screen(&a);
+        let (_, low) = header(&s);
+        let x0 = bar_x(&s, "alpha");
+        let mut want: Vec<(usize, String)> =
+            days.iter().map(|d| (x0 + d - 1, d.to_string())).collect();
+        want.sort();
+        // 見出しの下の行の数の並び(位置と数)。右の端で切れた数は比べない(10/25 か 10/26 のあとの 11 月の数)。
+        let axis = chars_from(&low, x0);
+        let mut got = Vec::new();
+        let mut j = 0;
+        while j < axis.len() {
+            if !axis[j].is_ascii_digit() {
+                j += 1;
+                continue;
+            }
+            let run: String = axis[j..]
+                .iter()
+                .take_while(|c| c.is_ascii_digit())
+                .collect();
+            got.push((x0 + j, run.clone()));
+            j += run.len();
+        }
+        let got: Vec<(usize, String)> = got.into_iter().take(want.len()).collect();
+        assert_eq!(got, want, "{tag}: 日の数の字:\n{low}");
     }
 }
 
@@ -515,8 +567,8 @@ fn test_ga_2_day_header_months_apart() {
 
 #[test]
 fn test_ga_2_week_header_years_apart() {
-    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1] 週の単位で、原点の週(11/30 の週)から年の変わる週(12/28 の週)まで4字しか無くても、見出しの
-    // 上の行の年の字どうしは空白で離れる(「20262027」とくっつかない)。年の変わる週の上は「2027」のまま。
+    // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1] 週の単位で、原点の週(11/29 の週。週の始まりを書いていないので日曜から)から年の変わる
+    // 週(12/27 の週)まで4字しか無くても、見出しの上の行の年の字どうしは空白で離れる(「20262027」とくっつかない)。年の変わる週の上は「2027」のまま。
     let notes = [("alpha.md", "---\nstart: 2026-12-01\ndue: 2027-04-30\n---\n")];
     let (_t, mut a) = boot("ga2weekapart", &notes);
     ch(&mut a, 'C');
@@ -524,7 +576,7 @@ fn test_ga_2_week_header_years_apart() {
     assert_eq!(unit(&a), Unit::Week);
     assert_eq!(
         a.gantt.as_ref().unwrap().origin,
-        parse_date("2026-11-30").unwrap()
+        parse_date("2026-11-29").unwrap()
     );
     let s = screen(&a);
     let (top, _) = header(&s);
@@ -532,7 +584,7 @@ fn test_ga_2_week_header_years_apart() {
     assert_top_words_apart(&top, "週の単位");
     let x0 = bar_x(&s, "alpha");
     let got: String = chars_from(&top, x0 + 4).into_iter().take(4).collect();
-    assert_eq!(got, "2027", "12/28 の週(原点から4字目):\n{s}");
+    assert_eq!(got, "2027", "12/27 の週(原点から4字目):\n{s}");
     assert_eq!(char_at(&top, x0 + 3), Some(' '), "前の字は空白:\n{s}");
 }
 

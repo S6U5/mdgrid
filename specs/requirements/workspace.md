@@ -225,15 +225,15 @@
   - Then: 左に重ねて tasks・projects が出る。
 
 #### 引き出しで選んだ表へ移れるべき
-`req~workspace.drawer-switch~2` P1
+`req~workspace.drawer-switch~3` P1
 - Acceptance:
   - Given:
   - When: projects を Enter
   - Then: projects の表になる。
 - Acceptance:
   - Given:
-  - When: 「趣味」を開いて books をクリック
-  - Then: books の表で範囲は「趣味」。
+  - When: projects をクリック
+  - Then: projects の表で、範囲は「仕事」のまま。
 
 #### 引き出しは、普段は出さないべき
 `req~workspace.drawer-hidden~1` P1
@@ -243,15 +243,16 @@
   - When:
   - Then: 普段の画面に引き出しの帯が無い。
 
-#### 引き出しは、表の画面と関係マップのどちらでも、ヘッダーのパンくずの範囲か表の名前(screen.breadcrumb)・表の画面のキー `w`(割り当て直せる。screen.keys-vim-and-arrows)・パレットで開くべき
-`req~workspace.drawer-open~2` P1
+#### 引き出しは、表の画面と関係マップのどちらでも、ヘッダーのパンくずの表の名前の所(screen.breadcrumb-drawer)・表の画面のキー `w`(割り当て直せる。screen.keys-vim-and-arrows)・パレットで開くべき
+`req~workspace.drawer-open~3` P1
+- Rationale: パンくずの範囲の名前の所は、ワークスペースどうしの切り替えの一覧を開く(screen.breadcrumb-switch)ので、引き出しはワークスペースの中の切り替えとして表の名前の所から開く(2026-11-25 に人が「ワークスペースを押した時はワークスペースの切り替えを、ビューを押した時はビューの切り替えを」と決めた)
 - Acceptance:
   - Given:
   - When: tasks で開き `w`
   - Then: 引き出しが開く。
 - Acceptance:
   - Given:
-  - When: パンくずの範囲の名前をクリック
+  - When: パンくずの表の名前「tasks ▾」をクリック
   - Then: 引き出しが開く。
 
 #### 引き出しは、表を選ぶ(クリックか Enter)・Esc・引き出しの外のクリック・開いたのと同じボタンかキーで閉じるべき
@@ -272,36 +273,18 @@
   - When: tasks で開き `w`
   - Then: tasks(印付き)・projects。
 
-#### 引き出しの今の範囲の表の下に、ほかのワークスペースを名前の見出しだけ畳んで並べるべき
-`req~workspace.drawer-others~1` P1
+#### 引き出しには今の範囲のページと表だけを並べ、ほかのワークスペース・「最初に開いた所」・お気に入りのワークスペースは並べないべき
+`req~workspace.drawer-scope-only~1` P1
+- Rationale: 引き出しはワークスペースの中の表の切り替えにし、ワークスペースどうしの行き来とお気に入りは切り替えの一覧(workspace.switch-open)にまとめる方が、分け方としてきれいなため(2026-11-25 に人が決め直した。前は引き出しに、ほかのワークスペースの畳んだ見出しと、最初に開いた所・お気に入りも並べていた)
 - Acceptance:
-  - Given: 「趣味」に books
+  - Given: ワークスペース「仕事」に tasks・projects、「趣味」に books があり、「趣味」をお気に入りに入れている
   - When: tasks で開き `w`
-  - Then: その下に畳んだ「趣味」があり、books は出ていない。
-
-#### 引き出しの今の範囲の表の下に、「最初に開いた所」(そこから離れているとき)とお気に入りのワークスペース(印のワークスペースを含む)を並べ、選んだら切り替えの一覧(workspace.switch-open)と同じ道で移るべき
-`req~workspace.drawer-favorites~1` P1
-- Rationale: パンくずを押して開く引き出しには今の範囲の表しか無く、マウスで使う人が最初に押すボタンに、元のワークスペースへ戻る道が無かったため(2026-11-25 に人が「並べる」と決めた)
+  - Then: 引き出しには tasks・projects だけが並び、「趣味」も books も無い。
 - Acceptance:
-  - Given: 印のワークスペース mytestgrid で起動し、お気に入りの tasks へ移った
+  - Given: 印のワークスペース mytestgrid で起動し、切り替えの一覧でお気に入りの tasks へ移った
   - When: 引き出しを開く
-  - Then: 今の範囲の表の下に「最初に開いた所: mytestgrid」と「tasks」(今いる印つき)が並ぶ。
-- Acceptance:
-  - Given: 同じ引き出し
-  - When: 「最初に開いた所: mytestgrid」を選ぶ
-  - Then: mytestgrid の表に戻る。
-- Acceptance:
-  - Given: 同じ状態
-  - When: パレットの「ワークスペースを開く」を選ぶ
-  - Then: 「ワークスペースはまだ無い」と言わずに、お気に入りの tasks と最初に開いた所を並べる。
-- Needs: utest
-
-#### 引き出しのほかのワークスペースの見出しを開くと、そのワークスペースの表が並ぶべき
-`req~workspace.drawer-expand~1` P1
-- Acceptance:
-  - Given:
-  - When: 「趣味」を開く
-  - Then: books が並ぶ。
+  - Then: tasks の表だけが並び、「最初に開いた所」の行も、お気に入りの行も無い。
+- Needs: utest・stest
 
 #### 範囲がワークスペースでない(検知(workspace.detect-roots)か登録した表(cli.places))ときは、引き出しにその範囲の表を並べるべき
 `req~workspace.drawer-non-ws~1` P1
@@ -318,10 +301,10 @@
   - Then: 保存の確かめ。
 
 #### 関係マップで引き出しを開いたら、表の画面に戻ってから開くべき
-`req~workspace.drawer-from-map~1` P1
+`req~workspace.drawer-from-map~2` P1
 - Acceptance:
   - Given:
-  - When: 関係マップでヘッダーのパンくずの範囲の名前を押す
+  - When: 関係マップでヘッダーのパンくずの表の名前を押す
   - Then: 表の画面に戻り、引き出しが開く。
 
 #### 印の `[[table]]` には、`path` の `.base` のファイルの代わりに、`.base` と同じ中身(`filters`・`formulas`・`properties`・`summaries`・`views`。キーの名前と式は `.base` と同じ)を TOML の表 `base` に書いてよく、そのときその表は、印の根に置いた同じ中身の `.base` を開いたのと同じに振る舞うべき(ビューのタブ・絞り込み・計算の列・表示名・グループ分け・並べ替え・`--print`・`--check`・`--view`)
@@ -408,21 +391,26 @@
 
 ### お気に入りのワークスペースと切り替え
 
-#### ワークスペース(`workspaces.toml` のものと、印 workspace.marker の根)を、お気に入りに入れたり外したりできるべきで、入れるのは引き出しのワークスペースの見出しとパレットの「今のワークスペースをお気に入りにする」から行うべき
-`req~workspace.favorite-mark~2` P1
-- Rationale: よく行き来するワークスペースを、切り替えの一覧(workspace.switch-open)の先頭に置くため(2026-11-20 に人が挙げた)
+#### ワークスペース(`workspaces.toml` のものと、印 workspace.marker の根)を、お気に入りに入れたり外したりできるべきで、入れる・外すのは切り替えの一覧(workspace.switch-open)とパレットの「今のワークスペースをお気に入りにする」から行うべき
+`req~workspace.favorite-mark~3` P1
+- Rationale: よく行き来するワークスペースを、切り替えの一覧の先頭に置くため(2026-11-20 に人が挙げた)。入れる所を引き出しの見出しから切り替えの一覧へ移したのは、引き出しをワークスペースの中の表の切り替えだけにし(workspace.drawer-scope-only)、ワークスペースどうしの行き来とお気に入りを切り替えの一覧にまとめるため(2026-11-25 に人が決め直した)
 - Acceptance:
-  - Given:
-  - When: 引き出しの「趣味」の見出しでお気に入りのキー
-  - Then: 見出しに ★ が付く。
+  - Given: 「趣味」の books にいて、お気に入りが work だけ
+  - When: 切り替えの一覧で、今いる所をお気に入りに入れるキー
+  - Then: 一覧に「2 趣味」が今いる所の印つきで入り、`workspaces.toml` の `favorites` は `["work", "趣味"]`。
 - Acceptance:
-  - Given:
-  - When: もう一度
-  - Then: ★ が消える。
+  - Given: お気に入りが work・趣味 の切り替えの一覧で「1 work」を選んでいる
+  - When: 選んだお気に入りを外すキー
+  - Then: 一覧から work が消えて「1 趣味」になり、`favorites` は `["趣味"]`。
 - Acceptance:
-  - Given:
-  - When: 印のワークスペース lab を開いてパレットの「今のワークスペースをお気に入りにする」
+  - Given: 印のワークスペース lab を開いている
+  - When: パレットの「今のワークスペースをお気に入りにする」
   - Then: 切り替えの一覧に lab。
+- Acceptance:
+  - Given: ワークスペースでない表 scratch にいる
+  - When: 切り替えの一覧で、今いる所をお気に入りに入れるキー
+  - Then: `favorites` は変わらず、今の表がワークスペースに入っていないという理由が出る。
+- Needs: utest・stest
 
 #### お気に入りは、設定のフォルダの `workspaces.toml` の最上位の `favorites`(`workspaces.toml` のワークスペースは名前、印のワークスペースは根のパス)に入れた順で持ち、ノートのフォルダと印には書かないべき
 `req~workspace.favorite-store~2` P1
@@ -507,11 +495,11 @@
   - Then: 一覧は開いたままで、何も起きない。
 - Needs: utest・stest
 
-#### ヘッダーの右の端のボタンの並びに、切り替えの一覧を開くボタン(頭に切り替えのキー、続けて ⇄。例「W ⇄」)を、お気に入りが1つ以上あるときと「最初に開いた所」から離れているときに出し、押したら一覧を開き(キーと同じ)、端末の幅が足りなければ設定のボタンより先に省くべき
-`req~workspace.switch-button~1` P1
-- Rationale: 切り替えの一覧はキーとパレットでしか開けず、マウスで使う人には切り替えがあることも分からないため(2026-11-25 に人が「クリックで W も操作できるようにした方が良くない?」と言った)。お気に入りが無く、移ってもいないときは、押しても案内しか出ないので出さない
+#### ヘッダーの右の端のボタンの並びに、切り替えの一覧を開くボタン(頭に切り替えのキー、続けて ⇄。例「W ⇄」)を、お気に入りが1つ以上あるときと「最初に開いた所」から離れているときに出し(パンくずに範囲の名前のボタン(screen.breadcrumb-switch)が出ているときは、同じ働きなので出さない)、押したら一覧を開き(キーと同じ)、端末の幅が足りなければ設定のボタンより先に省くべき
+`req~workspace.switch-button~2` P1
+- Rationale: 切り替えの一覧はキーとパレットでしか開けず、マウスで使う人には切り替えがあることも分からないため(2026-11-25 に人が「クリックで W も操作できるようにした方が良くない?」と言った)。お気に入りが無く、移ってもいないときは、押しても案内しか出ないので出さない。ワークスペースにいるときは、左上の範囲の名前を押せば切り替えの一覧が開く(2026-11-25 に人が「左上でワークスペースを押した時はワークスペースの切り替え」と決めた)ので、同じ働きのボタンを2つ並べない
 - Acceptance:
-  - Given: お気に入りが tasks、幅 100 の端末
+  - Given: お気に入りが tasks、印の無いフォルダを開いた幅 100 の端末
   - When: 表の画面を描く
   - Then: ヘッダーの右の端のボタンに「W ⇄」がある。
 - Acceptance:
@@ -526,6 +514,10 @@
   - Given: お気に入りが tasks で、設定のボタンを出せる下限の幅(screen.breadcrumb-narrow)ちょうどの端末
   - When: 表の画面を描く
   - Then: 設定のボタンはあり、「W ⇄」は無い。
+- Acceptance:
+  - Given: 印のワークスペース lab の表を開き、お気に入りが tasks、幅 100 の端末
+  - When: 表の画面を描く
+  - Then: パンくずに範囲の名前のボタン「W lab」があり、右の端の「W ⇄」は無い。
 - Needs: utest
 
 #### ためた変更があるときに切り替えでほかのワークスペースへ移るなら、引き出しで移るとき(workspace.drawer-unsaved)と同じく保存か取りやめを確かめるべき
@@ -551,4 +543,68 @@
   - Given: tasks にいて、一覧の「1 tasks」が今いる所
   - When: `1`
   - Then: 一覧は閉じ、下の帯に「今いるワークスペース」である旨の1行が出る。
+- Needs: utest
+
+#### 切り替えの一覧は、今いるワークスペースがお気に入りでなければ、一覧の末尾に「+ <名前> をお気に入りに入れる」の行を置き、その行を選んだら(Enter かクリック)一覧を開いたままお気に入りに入れるべき
+`req~workspace.switch-add-here~1` P1
+- Rationale: 入れるキーを知らないマウスで使う人にも、今いる所をお気に入りに入れる道を一覧の中に見せるため(2026-11-25 に人が「行かキー」で入れると決めた)
+- Acceptance:
+  - Given: 「趣味」の books にいて、お気に入りが work だけ
+  - When: 切り替えの一覧を開く
+  - Then: 「1 work」の下に「+ 趣味 をお気に入りに入れる」の行がある。
+- Acceptance:
+  - Given: 同じ一覧
+  - When: 「+ 趣味 をお気に入りに入れる」の行をクリック
+  - Then: 一覧は開いたままで、その行が「2 趣味」(今いる所の印つき)に替わる。
+- Acceptance:
+  - Given: work の tasks にいて、お気に入りが work
+  - When: 切り替えの一覧を開く
+  - Then: 「をお気に入りに入れる」の行は無い。
+- Acceptance:
+  - Given: ワークスペースでない表 scratch にいる
+  - When: 切り替えの一覧を開く
+  - Then: 「をお気に入りに入れる」の行は無い。
+- Needs: utest・stest
+
+#### 切り替えの一覧の下の縁と下の帯に、今いる所をお気に入りに入れるキーと、選んだお気に入りを外すキーを「キー 動作」で出し、下の縁のものはクリックでその動作をするべき(screen.window-key-hints)
+`req~workspace.switch-favorite-hints~1` P1
+- Rationale: お気に入りの入れ方と外し方を、一覧を開いたその場で分かるようにするため(2026-11-25 に人が、キーを窓の下の縁と下の帯に出すと決めた)
+- Acceptance:
+  - Given: お気に入りが work・趣味、幅 120 の端末
+  - When: 切り替えの一覧を開く
+  - Then: 下の縁と下の帯の両方に、今いる所を入れるキーと外すキーがある。
+- Acceptance:
+  - Given: 同じ一覧で「2 趣味」を選んでいる
+  - When: 下の縁の外すキーをクリック
+  - Then: 趣味がお気に入りから外れ、一覧は「1 work」だけになる。
+- Needs: utest
+
+#### 切り替えの一覧で、選んだお気に入りを1つ上か下へ動かせ、番号と `favorites` の並びがその順になるべき
+`req~workspace.favorite-reorder~1` P1
+- Rationale: 一覧は数字のキーで選ぶので、よく使う所を小さな番号に置けるようにするため。外して入れ直すと末尾に回るだけで、並べ替える道が無いと順を直せない(2026-11-25 に人が「並べ替えは要るかを考え、安ければ入れる」と任せた)
+- Acceptance:
+  - Given: お気に入りが work・趣味 の一覧で「2 趣味」を選んでいる
+  - When: 上へ動かすキー
+  - Then: 一覧は「1 趣味」「2 work」になり、選びは趣味のまま、`favorites` は `["趣味", "work"]`。
+- Acceptance:
+  - Given: 同じ一覧で「1 趣味」を選んでいる
+  - When: 上へ動かすキー
+  - Then: 一覧も `favorites` も変わらない。
+- Acceptance:
+  - Given: 起動したときの所から離れた一覧で「0 最初に開いた所」を選んでいる
+  - When: 下へ動かすキー
+  - Then: 一覧も `favorites` も変わらない。
+- Needs: utest
+
+#### パレットの「ワークスペースを開く」には、`workspaces.toml` のワークスペースに加えて、「最初に開いた所」(そこから離れているとき)とお気に入りの印のワークスペースを並べ、選んだら切り替えの一覧(workspace.switch-open)と同じ道で移るべき
+`req~workspace.open-favorites~1` P1
+- Rationale: 印のワークスペースだけを使う人に「ワークスペースはまだ無い」と言わず、パレットからも最初の所へ戻れるようにするため(2026-11-25。前は引き出しの要求 workspace.drawer-favorites の受け入れの例の1つで、引き出しから外したのでこちらに分けた)
+- Acceptance:
+  - Given: 印のワークスペース mytestgrid で起動し、切り替えの一覧でお気に入りの tasks へ移った
+  - When: パレットの「ワークスペースを開く」を選ぶ
+  - Then: 「ワークスペースはまだ無い」と言わずに、お気に入りの tasks と「最初に開いた所: mytestgrid」を並べる。
+- Acceptance:
+  - Given: 同じ一覧
+  - When: 「最初に開いた所: mytestgrid」を選ぶ
+  - Then: mytestgrid の表に戻る。
 - Needs: utest

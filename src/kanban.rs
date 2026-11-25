@@ -13,10 +13,12 @@ pub fn column_names() -> Vec<&'static str> {
         .collect()
 }
 
-/// 印の `kanban = { column }`、または推定した列。
+/// 印の `kanban = { column, card }`、または推定した列。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KanbanSpec {
     pub column: String,
+    /// kanban.card-columns: 札の名前の下に値を出す列(書いた順。`note.` を除いた名前。推定では空)。
+    pub card: Vec<String>,
 }
 
 /// KB-1: 列の名前とリストの型かの組から、状態の列を推定する。リストでない列のうち、名前が `column_names()` に
@@ -30,7 +32,10 @@ pub fn infer(cols: &[(String, bool)]) -> Option<KanbanSpec> {
             let lower = n.to_lowercase();
             names.iter().any(|x| x.to_lowercase() == lower)
         })
-        .map(|n| KanbanSpec { column: n.clone() })
+        .map(|n| KanbanSpec {
+            column: n.clone(),
+            card: Vec::new(),
+        })
 }
 
 /// レーンの鍵: 列の値か、値の無い行。

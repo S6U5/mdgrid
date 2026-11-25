@@ -24,7 +24,7 @@ A view is a named set of columns, filters and sorting. Views sit in tabs above t
 
 ![Grouped by status](images/demo-group.svg)
 
-Rows gather under heading rows, one per value of a column. `Enter` on a heading folds it. Groups from a `.base` look the same. Handy for going through tasks one status at a time.
+Rows gather under heading rows, one per value of a column. `Enter` on a heading folds it. Groups from a `.base` look the same. Handy for going through tasks one status at a time. When the view has summaries, each heading shows its group's subtotal on the right, and it stays there when the group is folded.
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it) (the sort and group section of the view settings)
 
@@ -40,7 +40,7 @@ Write `tree = { path = "folder" }` on the table in the workspace file (`.mdgrid/
 
 ![The gantt screen](images/gantt.svg)
 
-`C` turns the rows of the current view into bars on a time axis. The start and end columns come from `gantt = { start = "start", end = "due" }` in the workspace marker, or, without a setting, are inferred from date columns named like `start` and `due`. With parent/child rows and WBS in the view settings, the order, numbers and progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month, `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The gantt screen is there from 0.4.0.
+`C` turns the rows of the current view into bars on a time axis. The start and end columns come from `gantt = { start = "start", end = "due" }` in the workspace marker, or, without a setting, are inferred from date columns named like `start` and `due`. With parent/child rows and WBS in the view settings, the order, numbers and progress (the fill of the bar) stay the same, and a parent without dates gets the span of its children. `+` and `-` switch between day, week and month, `t` goes to today, and `r` switches the period between this week, this month, the quarter and everything. Weeks, including this week, start on the day set in `dates.week_start` (Sunday by default). The bar on the bottom edge of the window (`◀ ▶`, the units, Today and the periods) does the same with a click. To reschedule, select a row and press `H` or `L` to move its bar by one unit, or `<` and `>` to shorten or extend its end. The dates are held as pending changes until you save, like edits in the table, and `u` undoes them. The gantt screen is there from 0.4.0.
 
 The `gantt` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
 
@@ -49,6 +49,8 @@ The `gantt` section of [Key bindings](../../keys.md), [Configuration](../../conf
 ![The kanban screen](images/kanban.svg)
 
 `B` lays out the rows of the current view as cards in lanes, one lane per status. The lanes follow the allowed values of the column (`[rules.status] values`), so todo, doing, waiting and done line up in that order, and a status with no cards still has its empty lane to move a card into. `H` and `L` move the selected card to the next lane and change its status; like an edit in the table, the change waits as unsaved until you save. The column comes from `kanban = { column = "status" }` in the workspace marker, or is inferred from a column named like `status`. The kanban screen is there from 0.4.0.
+
+In the sample task ledger, each card shows its due date and priority under the name. That comes from `card = ["due", "priority"]` in the marker: list the columns you want to read without going back to the table, such as the author and progress of a book or the time and attendees of a meeting. The values look as they do in the table cells. Long names wrap onto a second line, so a long question is not cut after its first few words.
 
 The `kanban` section of [Key bindings](../../keys.md), [Configuration](../../config.md)
 

@@ -287,7 +287,7 @@ fn test_bv_6_method_list_function() {
 #[test]
 fn test_bv_6_method_still_unsupported_names() {
     // [utest -> req~base-view.unsupported-no-guess~1, req~base-view.expr-eval~1] 足していない名前は今までどおり未対応
-    for src in ["(1).toFixed(2)", "[1].map(1)", "x.year()"] {
+    for src in ["(1).toFixed(2)", "\"a\".repeat(2)", "x.year()"] {
         assert!(
             matches!(parse(src), Err(ExprError::Unsupported(_))),
             "{src}"

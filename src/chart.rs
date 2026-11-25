@@ -2,7 +2,7 @@
 //! (CH-1)、分ける列の推定(CH-2)、数え方(件数・合計・平均・最小・最大)と数の列の区間・数の書き方(CH-3)。
 //! 日付の区切りはガントの単位(`gantt::Unit`。日・週・月)を使う。
 
-use crate::gantt::{floor_unit, Unit};
+use crate::gantt::{floor_unit, floor_unit_in, Unit};
 use crate::types::{format_date, Kind, WeekStart};
 
 /// グラフの種類。
@@ -302,19 +302,9 @@ pub fn fmt_num(v: f64) -> String {
 }
 
 /// chart.buckets-week-start: 日 `d` を区切りの始まりの日に切り下げる。週は `week`(設定の `dates.week_start`)の
-/// 曜日、月は1日、日はそのまま。ガントの週(`gantt::floor_unit`。月曜)とは別に持つ。
+/// 曜日、月は1日、日はそのまま。ガントのマスと同じ切り下げ(gantt.week-start)。
 pub fn floor_bucket(d: i64, unit: Unit, week: WeekStart) -> i64 {
-    match unit {
-        // 1970-01-01 は木曜。日曜からの日数は (d + 4) mod 7、月曜からの日数は (d + 3) mod 7。
-        Unit::Week => {
-            let shift = match week {
-                WeekStart::Sun => 4,
-                WeekStart::Mon => 3,
-            };
-            d - (d + shift).rem_euclid(7)
-        }
-        Unit::Day | Unit::Month => floor_unit(d, unit),
-    }
+    floor_unit_in(d, unit, week)
 }
 
 /// 日付の区切りの名前(区切りの始まりの日 `start_day`。`floor_bucket` で切り下げた日)。日 `2026-10-01`、週はその

@@ -36,6 +36,8 @@ pub struct View {
     pub limit: Option<usize>,
     /// `summaries`(列の id → 集計の名前。BV-14)。名前は build で読む。
     pub summaries: Vec<(String, String)>,
+    /// base-view.summary-labels: `summary_labels`(列の id → 集計の見せる名前)。mdgrid の足したキーで、文字の値だけを読む。
+    pub summary_labels: Vec<(String, String)>,
     /// NV-32: `tab_break`(このタブの前でタブの行を改める)。mdgrid の足したキーで、真偽のほかは false。
     pub tab_break: bool,
     filters: Filter,
@@ -74,6 +76,8 @@ pub struct Grid {
     pub marked: usize,
     /// 表の下の集計(列の id と組み込みの集計。BV-14)。無ければ集計の行を出さない。
     pub summaries: Vec<(String, Summary)>,
+    /// base-view.summary-labels: 集計の名前を書き換えた列(列の id → 見せる名前)。
+    pub summary_labels: Vec<(String, String)>,
 }
 
 /// セルの見せ方。
@@ -300,6 +304,20 @@ fn view_of(y: &Yaml<'_>) -> View {
                 .collect()
         })
         .unwrap_or_default();
+    // base-view.summary-labels: 文字の名前だけ(数や真偽の値は書かなかったことにする)。
+    let summary_labels = get(y, "summary_labels")
+        .and_then(|m| m.as_mapping())
+        .map(|m| {
+            m.iter()
+                .filter_map(|(k, v)| match untag(v) {
+                    Yaml::Value(Scalar::String(t)) if !t.trim().is_empty() => {
+                        Some((column_id(&text_of(k)?), t.to_string()))
+                    }
+                    _ => None,
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     View {
         kind: get(y, "type").and_then(text_of).unwrap_or_default(),
         name: get(y, "name").and_then(text_of).unwrap_or_default(),
@@ -308,6 +326,7 @@ fn view_of(y: &Yaml<'_>) -> View {
         group_by,
         limit,
         summaries,
+        summary_labels,
         tab_break: matches!(
             get(y, "tab_break").map(untag),
             Some(Yaml::Value(Scalar::Boolean(true)))
@@ -507,7 +526,11 @@ impl<'a> Ctx<'a> {
             today: self.today,
             now: self.now,
         };
-        expr::eval_with(e, &env, self.links)
+        // base-view.expr-step-budget: 手数の上限を越えた式は、評価できない式として理由を出す。
+        expr::eval_checked(e, &env, self.links).unwrap_or_else(|reason| {
+            self.mark_bad(reason);
+            Val::Null
+        })
     }
 
     fn mark_bad(&self, r: String) {
@@ -555,9 +578,11 @@ pub fn eval_plain(
     now: i64,
 ) -> Val {
     let index = src.link_index();
+    let lookup = SrcNotes { src, prop };
     let links = Links {
         index: index.as_deref(),
         this: None,
+        notes: Some(&lookup),
     };
     let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
     let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
@@ -570,6 +595,24 @@ pub fn eval_plain(
         now,
     };
     expr::eval_with(e, &env, &links)
+}
+
+/// base-view.lookup-properties: 式からほかのノートを引く口(読み込み口と、ためた値を重ねた値)。
+struct SrcNotes<'a> {
+    src: &'a dyn Source,
+    prop: &'a dyn Fn(&RowId, &str) -> Option<Value>,
+}
+
+impl expr::Notes for SrcNotes<'_> {
+    fn file(&self, stem: &str) -> Option<FileInfo> {
+        let row = self.src.note_row(stem)?;
+        self.src.file(&row)
+    }
+
+    fn prop(&self, stem: &str, key: &str) -> Option<Value> {
+        let row = self.src.note_row(stem)?;
+        crate::source::expr_value(self.src, key, (self.prop)(&row, key))
+    }
 }
 
 /// 読んでいない行の代わりの属性(表示名だけ)。
@@ -720,6 +763,7 @@ fn val_text(v: &Val) -> String {
         }
         Val::Duration(ms) => ms.to_string(),
         Val::List(xs) => xs.iter().map(val_text).collect::<Vec<_>>().join(", "),
+        Val::File(s) => s.clone(),
     }
 }
 
@@ -739,7 +783,7 @@ fn rank(v: &Val) -> u8 {
         Val::Num(_) => 2,
         Val::Duration(_) => 3,
         Val::Date(_) | Val::DateTime(_) => 4,
-        Val::Str(_) => 5,
+        Val::Str(_) | Val::File(_) => 5,
         Val::List(_) => 6,
     }
 }
@@ -764,7 +808,7 @@ fn val_cmp(a: &Val, b: &Val) -> Ordering {
         (Val::Num(x), Val::Num(y)) => x.total_cmp(y),
         (Val::Duration(x), Val::Duration(y)) => x.cmp(y),
         (Val::Date(_) | Val::DateTime(_), Val::Date(_) | Val::DateTime(_)) => secs(a).cmp(&secs(b)),
-        (Val::Str(x), Val::Str(y)) => text_cmp(x, y),
+        (Val::Str(x) | Val::File(x), Val::Str(y) | Val::File(y)) => text_cmp(x, y),
         (Val::List(x), Val::List(y)) => {
             for (p, q) in x.iter().zip(y) {
                 let o = val_cmp(p, q);
@@ -826,6 +870,15 @@ impl Base {
     }
 
     /// formula を評価できないなら理由。参照する formula を(循環に気をつけて)たどる(BV-7)。
+    /// cell-view.lookup-shown: 式の列(`formula.x`)の値を引いたキー(`Expr::lookup_key`)。式の列でなければ None。
+    pub fn lookup_key(&self, col: &str) -> Option<String> {
+        let name = col.strip_prefix("formula.")?;
+        match self.formulas.get(name)? {
+            (_, Ok(e)) => e.lookup_key().map(str::to_string),
+            (_, Err(_)) => None,
+        }
+    }
+
     fn formula_problem(&self, name: &str) -> Option<String> {
         let mut path = Vec::new();
         let mut ok = std::collections::HashSet::new();
@@ -876,6 +929,7 @@ impl Base {
                 group_by: None,
                 limit: None,
                 summaries: Vec::new(),
+                summary_labels: Vec::new(),
                 tab_break: false,
                 filters: Filter::And(Vec::new()),
             }],
@@ -905,6 +959,15 @@ impl Base {
         }
         if !sorts.is_empty() {
             v.sort = sorts.iter().map(|(c, d)| (column_id(c), *d)).collect();
+        }
+    }
+
+    /// cli.check-problems: 表の全部の行を組むために、最初のビューの絞り込みと件数の上限を外す(全体の絞り込みは
+    /// 残す)。ビューの無い `.base` は読めない `.base` のまま(組むときに理由。workspace.marker-base-invalid)。
+    pub fn open_first_view(&mut self) {
+        if let Some(v) = self.views.first_mut() {
+            v.filters = Filter::And(Vec::new());
+            v.limit = None;
         }
     }
 
@@ -944,9 +1007,11 @@ impl Base {
             return true;
         }
         let index = src.link_index();
+        let lookup = SrcNotes { src, prop };
         let links = Links {
             index: index.as_deref(),
             this: self.this.as_ref(),
+            notes: Some(&lookup),
         };
         self.keeps_with(src, prop, row, &links, today, now)
     }
@@ -983,9 +1048,11 @@ impl Base {
         now: i64,
     ) -> Val {
         let index = src.link_index();
+        let lookup = SrcNotes { src, prop };
         let links = Links {
             index: index.as_deref(),
             this: self.this.as_ref(),
+            notes: Some(&lookup),
         };
         let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
         let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
@@ -1013,9 +1080,11 @@ impl Base {
             return src.rows();
         }
         let index = src.link_index();
+        let lookup = SrcNotes { src, prop };
         let links = Links {
             index: index.as_deref(),
             this: self.this.as_ref(),
+            notes: Some(&lookup),
         };
         src.rows()
             .into_iter()
@@ -1086,7 +1155,8 @@ impl Base {
                 notes.push(Msg::BaseCannotSort.fill(&[id, &p]));
             }
         }
-        // BV-14: 組み込みの集計だけを読む。式の集計・知らない名前・まとまりごとの集計は理由だけ。
+        // BV-14: 組み込みの集計だけを読む。式の集計・知らない名前は理由だけ。まとまりのあるビューでは画面が
+        // まとまりごとにも計算する(base-view.summaries-per-group)。
         let mut summaries = Vec::new();
         for (id, name) in &v.summaries {
             match Summary::parse(name) {
@@ -1096,9 +1166,6 @@ impl Base {
                     None => Msg::BaseSummaryUnknown.fill(&[id, name]),
                 }),
             }
-        }
-        if v.group_by.is_some() && !v.summaries.is_empty() {
-            notes.push(Msg::BaseSummaryGroups.text().to_string());
         }
 
         // 絞り込みと鍵(行ごとに1回だけ評価する)。
@@ -1110,9 +1177,11 @@ impl Base {
         let mut items: Vec<Item> = Vec::new();
         // リンクの索引は読み込み口が覚えている(行ごとに作らない。BV-22)。
         let index = src.link_index();
+        let lookup = SrcNotes { src, prop };
         let links = Links {
             index: index.as_deref(),
             this: self.this.as_ref(),
+            notes: Some(&lookup),
         };
         for row in src.rows() {
             let file = src.file(&row).unwrap_or_else(|| fallback_file(src, &row));
@@ -1179,6 +1248,7 @@ impl Base {
             notes,
             marked,
             summaries,
+            summary_labels: v.summary_labels.clone(),
         })
     }
 
@@ -1206,9 +1276,11 @@ impl Base {
         let file = src.file(row).unwrap_or_else(|| fallback_file(src, row));
         let p = |k: &str| crate::source::expr_value(src, k, prop(row, k));
         let index = src.link_index();
+        let lookup = SrcNotes { src, prop };
         let links = Links {
             index: index.as_deref(),
             this: self.this.as_ref(),
+            notes: Some(&lookup),
         };
         let ctx = Ctx::new(self, &p, &file, &links, today, now);
         let v = match &spec {
@@ -1240,9 +1312,14 @@ pub fn default_grid(src: &dyn Source) -> Grid {
         notes: Vec::new(),
         marked: 0,
         summaries: Vec::new(),
+        summary_labels: Vec::new(),
     }
 }
 
 #[cfg(test)]
 #[path = "test_base_unit.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "test_lookup_unit.rs"]
+mod test_lookup_unit;

@@ -117,6 +117,8 @@ pub fn val_text_with(v: &Val, text: &dyn Fn(&str) -> String) -> String {
             )
         }
         Val::Duration(ms) => duration_text(*ms),
+        // base-view.lookup-as-file: ノートはルートフォルダからのパスの `.md` を除いたもの(`file.links` の値と同じ)。
+        Val::File(s) => text(s),
         Val::List(items) => format!(
             "[{}]",
             items
@@ -139,7 +141,7 @@ pub fn val_value(v: &Val) -> Value {
         Val::Bool(b) => Value::Bool(*b),
         Val::Num(n) if n.fract() == 0.0 && n.abs() < 1e15 => Value::Int(*n as i64),
         Val::Num(n) => Value::Float(*n),
-        Val::Str(s) => Value::Str(s.clone()),
+        Val::Str(s) | Val::File(s) => Value::Str(s.clone()),
         Val::List(items) => Value::List(items.iter().map(val_value).collect()),
         Val::Date(_) | Val::DateTime(_) | Val::Duration(_) => Value::Str(val_text_with(v, &same)),
     }
@@ -498,7 +500,7 @@ fn val_json(v: &Val) -> String {
         Val::Bool(b) => b.to_string(),
         Val::Num(n) if n.fract() == 0.0 && n.abs() < 1e15 => format!("{}", *n as i64),
         Val::Num(n) => json_float(*n),
-        Val::Str(s) => json_str(s),
+        Val::Str(s) | Val::File(s) => json_str(s),
         Val::List(items) => format!(
             "[{}]",
             items.iter().map(val_json).collect::<Vec<_>>().join(", ")

@@ -35,6 +35,8 @@ added = "{date}"
 
 [[table]]
 name = "読書"
+# カンバンの画面(B。KB-1): 状態ごとのレーンに、題の下に著者と評価を出した札を並べる(card)。H と L で札を動かすと状態を書き換える。
+kanban = { column = "status", card = ["author", "rating"] }
 
 [table.base]
 filters = { and = ['file.inFolder("Reading")'] }

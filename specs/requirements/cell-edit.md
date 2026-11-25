@@ -487,6 +487,35 @@
   - Then: 印は残る(まだ空のため)。
 - Needs: utest
 
+#### 新しいノートの窓の欄に出す候補の窓(値の候補のリスト・カレンダー・リストの値の付け外しの窓)は、新しいノートの窓に重ねず、窓の右(今の欄の行の下から。入らなければ上へ)に置き、右に入らなければ窓の下、それも入らなければ窓の上に置くべき。どこにも入らなければ、今の欄の行の下(入らなければ上)に、欄の名前より右に重ねるべき
+`req~cell-edit.new-note-form-popup-place~1` P1
+- Rationale: 読書の記録で新しい抜き書きの出典の欄を開くと、29 件の候補の窓が新しいノートの窓の左の欄の名前(「ページ」が「ペー」に)と窓の下の部分に重なった(2026-11-25 の実地の操作で見つかった)。セルを直すときの候補が直しているセルを隠さないのと同じく、どの欄に何を入れているかを見たまま選べるようにする。右を先にするのは、今の欄の行のすぐ横で目を動かさずに選べるため。右に入るかは、候補の窓の幅を 24 桁(それより狭い窓はその幅)まで縮めて入るかで決め、縮めたときは長い候補の名前の後ろを切る。上下に入るかは、セルを直すときの候補と同じく、少なくとも3行(候補が少なければその数)見せられるかで決める
+- Acceptance:
+  - Given: 幅 160・高さ 40 の画面で、ask = [source, page, quote] の新しいノートの窓
+  - When: source の欄を開き、29 件の候補(1つは 70 字の名前)のリストが出る
+  - Then: 候補の窓の左の縁は新しいノートの窓の右の縁より右にあり、新しいノートの窓の欄の名前と下の縁の行はどれも欠けない。
+- Acceptance:
+  - Given: 幅 90・高さ 40 の画面で同じ窓
+  - When: source の欄を開く
+  - Then: 候補の窓の上の縁は、新しいノートの窓の下の縁より下にある。
+- Acceptance:
+  - Given: 幅 90・高さ 24 の画面で、欄が 14 ある新しいノートの窓(窓の右にも下にも候補の窓が入らない)
+  - When: 2つ目の欄(source)を開く
+  - Then: 候補の窓の下の縁は、新しいノートの窓の上の縁より上にあり、新しいノートの窓は欠けない。
+- Acceptance:
+  - Given: 新しいノートの窓の右にも下にも上にも候補の窓が入らない
+  - When: 欄の候補の窓を置く
+  - Then: 候補の窓は今の欄の行より下にあり、左の縁は欄の値の桁より左に出ない(欄の名前は欠けない)。
+- Acceptance:
+  - Given: 幅 90・高さ 40 の画面で、ask = [due](due は日付の列)の窓
+  - When: due の欄を開く
+  - Then: カレンダーは新しいノートの窓に重ならない。
+- Acceptance:
+  - Given: 幅 90・高さ 40 の画面で、ask = [tags](tags はリストの列)の窓
+  - When: tags の欄を開く
+  - Then: 付け外しの窓は新しいノートの窓に重ならない。
+- Needs: utest, stest
+
 #### 新しいノートの窓の設定は、ビューごとにも決められてよい(mdgrid のビュー、base-view.own-views)
 `req~cell-edit.new-note-form-per-view~1` P1
 - Acceptance:
@@ -1800,6 +1829,48 @@
   - When:
   - Then: `config.toml: rules.status.then:` で始まる警告1行で、status を `done` に直してもためる変更は `status: done` だけ。
 
+#### `then` の入れる値は、文字の代わりに `{ value = "入れる文字", if_empty = true }` の表で書いてよく、`if_empty = true` なら、入れる先の列が空(キーが無い・null・空の文字列・空のリスト。ためた値があればその値で見る)のときだけ値をためるべき(セルの直し・一括の編集・カンバンで札を動かしたときのどれでも)
+`req~cell-edit.then-if-empty~1` P1
+- Rationale: 読書の記録で「中断」から「読んでる」に戻すと始めた日が今日で上書きされ、調べ物で「調べ中」と別の状態を行き来すると調べ始めた日が上書きされたため(2026-11-25 の実地の操作で見つかった)。書き方は、入れる文字に印を付ける形(`"{date}?"` など)でなく表の形にした。印の形は、`?` で終わる文字を入れたいときと区別できず、印を書き落としても気づけない。表の形は、項目の名前で何をするかが読め、名前の書き誤りは警告で気づける
+- Acceptance:
+  - Given: 今日が 2026-10-06、`[rules.status.then]` に `reading = { started = { value = "{date}", if_empty = true } }`、`status: paused`・`started: 2026-09-01` の行と、`status: todo` で started の無い行
+  - When: 2行とも status を `reading` に直す
+  - Then: 1行目のためる変更は `status: reading` だけ(started は 2026-09-01 のまま)、2行目は `status: reading` と `started: 2026-10-06`。
+- Acceptance:
+  - Given: 同じ設定と2行で、2行に印を付けた
+  - When: status をまとめて `reading` に直す
+  - Then: 1行目のためる変更は `status: reading` だけ、2行目は `status: reading` と `started: 2026-10-06`。
+- Acceptance:
+  - Given: 同じ設定で、status のカンバン
+  - When: `paused` の札(started は 2026-09-01)を `reading` のレーンへ動かす
+  - Then: その行のためる変更は `status: reading` だけ。
+- Acceptance:
+  - Given: 同じ設定で、started の無い `status: todo` の行の started に `2026-10-01` を手で入れた(ためる変更)
+  - When: status を `reading` に直し、続けて `paused` に直す
+  - Then: started の `2026-10-01` のためる変更は残る(手で入れた値は、上書きも、前の値で一緒にためた値として外すことも(cell-edit.then-unset)しない)。
+- Acceptance:
+  - Given: 同じ設定で、started の無い `status: todo` の行
+  - When: status を `reading` に直し、続けて `paused` に直す
+  - Then: ためる変更は `status: paused` だけ(cell-edit.then-unset と同じく、一緒にためた started は外れる)。
+- Needs: utest
+
+#### `then` の表の形の入れる値で、`value` が無いか文字列でないもの・`if_empty` が真偽でないもの・知らない項目のあるものは、cli.config-file の形でその道筋を言う警告を出し、その列には入れないべき
+`req~cell-edit.then-if-empty-invalid~1` P1
+- Rationale: 書き誤った表を「空でなくても入れる」と読むと、残したい値を上書きするため。入れない方に倒し、警告で直す所を知らせる
+- Acceptance:
+  - Given: `[rules.status.then]` に `done = { done_at = { value = "{date}", if_emtpy = true }, note = "済" }`(`if_empty` の書き誤り)
+  - When: 起動して `status: todo` の行の status を `done` に直す
+  - Then: `config.toml: rules.status.then.done.done_at.if_emtpy:` で始まる警告1行で、ためる変更は `status: done` と `note: 済`(done_at には入れない)。
+- Acceptance:
+  - Given: `done = { done_at = { if_empty = true } }`(`value` が無い)
+  - When: 起動して `status: todo` の行の status を `done` に直す
+  - Then: `config.toml: rules.status.then.done.done_at:` で始まる警告1行で、ためる変更は `status: done` だけ。
+- Acceptance:
+  - Given: `done = { done_at = { value = "{date}", if_empty = "yes" } }`
+  - When: 起動して `status: todo` の行の status を `done` に直す
+  - Then: `config.toml: rules.status.then.done.done_at.if_empty:` で始まる警告1行で、ためる変更は `status: done` だけ。
+- Needs: utest
+
 ### 親を完了にしたときの子
 
 #### `children` の表(navigation.parent-child-config)で、親の行の状態の列(`children` の `status`。書かなければ kanban の column、無ければ `status`)を完了の値(`done`。書かなければ `"done"`)に直したら、`on_done`(書かなければ `"complete"`)のとおりに、まだ終わっていない(`closed` に無い。書かなければ `["done"]`)子孫を扱うべき
@@ -1972,7 +2043,7 @@
 ### 一緒に入れる値(`then`)の置き場と、どこまで効かせるか
 `tbd~then-scope`
 - Decider: 人
-- Provisional: 置き場は `[rules.<列>.then]`。効くのは画面の直し(セル・一括・チェックボックス・空にする・カンバン)で、リストの列の直しと `--apply` には効かない。入れる先に値があっても上書きする。入れる文字の `{name}`・`{folder}` は空になる。
+- Provisional: 置き場は `[rules.<列>.then]`。効くのは画面の直し(セル・一括・チェックボックス・空にする・カンバン)で、リストの列の直しと `--apply` には効かない。入れる先に値があっても上書きする(表の形で `if_empty = true` を書いたときだけ、空の列にだけ入れる。cell-edit.then-if-empty)。入れる文字の `{name}`・`{folder}` は空になる。
 - Basis: 2026-11-18 の話: あると便利な機能を探して入れていく。完了にしたら完了日を入れるのを最初に入れた。
 
 ### 新しいノートの名前の空白を、決めた文字に置き換える設定を持つか

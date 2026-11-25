@@ -8,7 +8,7 @@ use ratatui::crossterm::event::KeyCode;
 
 const BASE: &str = "summaries:\n  customAverage: 'values.mean()'\nviews:\n  - type: table\n    name: F\n    order: [title, estimate]\n    summaries:\n      estimate: customAverage\n";
 
-// [utest -> req~base-view.summaries-builtin~2, req~base-view.summaries-unsupported~1]
+// [utest -> req~base-view.summaries-builtin~2, req~base-view.summaries-unsupported~2]
 #[test]
 fn test_bv_14_unsupported_summary_shown_on_open() {
     let tmp = Tmp::new("tn_sum");

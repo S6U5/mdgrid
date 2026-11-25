@@ -101,7 +101,7 @@ fn test_favorites_gone_marker_is_left_out_with_warning() {
 
 #[test]
 fn test_favorites_toggle_off_and_keep_hand_written_text() {
-    // [utest -> req~workspace.favorite-mark~2] もう一度で外れる。手で書いたコメントとワークスペースの区画は残し、並びが空なら favorites の行を消す。
+    // [utest -> req~workspace.favorite-mark~3] もう一度で外れる。手で書いたコメントとワークスペースの区画は残し、並びが空なら favorites の行を消す。
     let (_d, cfg, _lab) = setup("off");
     let path = cfg.join(FILE_NAME);
     let hand = format!("# 手で書いた\n{}", std::fs::read_to_string(&path).unwrap());

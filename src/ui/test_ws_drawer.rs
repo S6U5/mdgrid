@@ -169,7 +169,7 @@ fn pend(a: &mut App) {
 
 #[test]
 fn test_ws_8_no_drawer_by_default() {
-    // [utest -> req~workspace.drawer-hidden~1, req~workspace.drawer-others~1, req~workspace.drawer-expand~1] 普段の画面に引き出しの帯は無い(ほかのワークスペースの名前も、範囲のほかの表の名前も出ない)。
+    // [utest -> req~workspace.drawer-hidden~1] 普段の画面に引き出しの帯は無い(ほかのワークスペースの名前も、範囲のほかの表の名前も出ない)。
     let (_tmp, a) = boot_work("ws8_default");
     assert_eq!(a.mode, Mode::Table);
     let s = scr(&a);
@@ -181,29 +181,24 @@ fn test_ws_8_no_drawer_by_default() {
 
 #[test]
 fn test_ws_8_w_opens_scope_tables_with_mark() {
-    // [utest -> req~workspace.drawer-others~1] `w` で開く → 左の端に今の範囲の表(Tasks・Projects)が並び、その下にほかのワークスペース Hobby の
-    // 見出しだけ(Books は畳まれて出ない)。今の表 Tasks には、選びの位置と関係なく印がある。
+    // [utest -> req~workspace.drawer-overlay~1, req~workspace.drawer-current-mark~1, req~workspace.drawer-scope-only~1] `w` で開く → 左の端に今の範囲の表
+    // (Tasks・Projects)だけが並び、ほかのワークスペース Hobby は出ない。今の表 Tasks には、選びの位置と関係なく印がある。
     let (_tmp, mut a) = boot_work("ws8_open");
     ch(&mut a, 'w');
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
     let s = scr(&a);
     assert!(in_drawer(&a, "Tasks"), "{s}");
     assert!(in_drawer(&a, "Projects"), "{s}");
-    assert!(in_drawer(&a, "Hobby"), "{s}");
-    assert!(!s.contains("Books"), "畳んだ見出しの表は出ない\n{s}");
+    assert!(!s.contains("Hobby") && !s.contains("Books"), "{s}");
     let (_, yt) = find(&a, "Tasks").unwrap();
     let (_, yp) = find(&a, "Projects").unwrap();
-    let (_, yh) = find(&a, "Hobby").unwrap();
-    assert!(
-        yt < yp && yp < yh,
-        "範囲の表が先、ほかのワークスペースは下\n{s}"
-    );
-    // 選びを最後(Hobby の見出し)へ動かし、Tasks と Projects の違いが印だけになるようにする。
+    assert!(yt < yp, "{s}");
+    // 選びを最後(Projects)へ動かし、Tasks の印が選びと別のものだと確かめる。
     ch(&mut a, 'G');
     assert_eq!(a.mode, Mode::Drawer);
     let (t, p) = (deco(&a, "Tasks"), deco(&a, "Projects"));
     assert!(
-        !t.is_empty() && t != p,
+        t.contains('●') && !p.contains('●'),
         "今の表に印: Tasks={t:?} Projects={p:?}\n{}",
         scr(&a)
     );
@@ -211,7 +206,7 @@ fn test_ws_8_w_opens_scope_tables_with_mark() {
 
 #[test]
 fn test_ws_8_palette_opens() {
-    // [utest -> req~workspace.drawer-open~2] パレットの動作 workspace_drawer でも開く。
+    // [utest -> req~workspace.drawer-open~3] パレットの動作 workspace_drawer でも開く。
     let (_tmp, mut a) = boot_work("ws8_palette");
     ch(&mut a, ':');
     typing(&mut a, "workspace_drawer");
@@ -244,40 +239,6 @@ fn test_ws_8_current_table_just_closes() {
     click_on(&mut a, "Tasks");
     assert_eq!(a.mode, Mode::Table, "{}", scr(&a));
     assert!(a.switch_to.is_none() && !a.quit);
-}
-
-#[test]
-fn test_ws_8_other_workspace_heading_then_click() {
-    // [utest -> req~workspace.drawer-switch~2, req~workspace.drawer-expand~1] 見出し Hobby を開くと Books が並ぶ → Books をクリック → Books の表へ、範囲は Hobby。
-    let (tmp, mut a) = boot_work("ws8_other");
-    ch(&mut a, 'w');
-    ch(&mut a, 'G');
-    press(&mut a, KeyCode::Enter);
-    assert_eq!(a.mode, Mode::Drawer, "見出しの Enter は開くだけ");
-    assert!(a.switch_to.is_none());
-    assert!(in_drawer(&a, "Books"), "{}", scr(&a));
-    let (_, yh) = find(&a, "Hobby").unwrap();
-    let (_, yb) = find(&a, "Books").unwrap();
-    assert!(yh < yb, "{}", scr(&a));
-    click_on(&mut a, "Books");
-    assert_ne!(a.mode, Mode::Drawer);
-    let to = a.switch_to.as_ref().expect("移る表");
-    assert_eq!(to.path, dir(&tmp, "books"));
-    assert_eq!(a.switch_workspace.as_deref(), Some("Hobby"));
-    assert!(a.quit);
-}
-
-#[test]
-fn test_ws_8_heading_fold_keys() {
-    // [utest -> req~workspace.drawer-open~2, req~workspace.drawer-others~1, req~workspace.drawer-expand~1] 見出しは l で開き h で畳む。畳むと Books は消える。
-    let (_tmp, mut a) = boot_work("ws8_fold");
-    ch(&mut a, 'w');
-    ch(&mut a, 'G');
-    ch(&mut a, 'l');
-    assert!(in_drawer(&a, "Books"), "{}", scr(&a));
-    ch(&mut a, 'h');
-    assert_eq!(a.mode, Mode::Drawer);
-    assert!(!scr(&a).contains("Books"), "{}", scr(&a));
 }
 
 #[test]
@@ -315,7 +276,7 @@ fn test_ws_8_click_outside_closes() {
 
 #[test]
 fn test_ws_8_click_row_switches() {
-    // [utest -> req~workspace.drawer-switch~2, req~workspace.drawer-unsaved~1] 表の行 Projects をクリック → その表へ移る。
+    // [utest -> req~workspace.drawer-switch~3, req~workspace.drawer-unsaved~1] 表の行 Projects をクリック → その表へ移り、範囲は Work のまま。
     let (tmp, mut a) = boot_work("ws8_click");
     ch(&mut a, 'w');
     click_on(&mut a, "Projects");
@@ -324,6 +285,7 @@ fn test_ws_8_click_row_switches() {
         a.switch_to.as_ref().map(|p| p.path.clone()),
         Some(dir(&tmp, "projects"))
     );
+    assert_eq!(a.switch_workspace.as_deref(), Some("Work"));
     assert!(a.quit);
 }
 
@@ -390,7 +352,7 @@ fn test_ws_8_registered_tables_when_no_workspace() {
 
 #[test]
 fn test_ws_8_nothing_to_list_says_why() {
-    // [utest -> req~workspace.drawer-others~1, req~workspace.drawer-expand~1, req~workspace.drawer-non-ws~1] 並べる表もほかのワークスペースも無い → 引き出しを開かず、理由を出す。
+    // [utest -> req~workspace.drawer-non-ws~1] 並べる表も無い → 引き出しを開かず、理由を出す。
     let tmp = workspace("ws8_bare");
     let mut a = boot_bare(&tmp);
     ch(&mut a, 'w');
@@ -404,17 +366,17 @@ fn test_ws_8_nothing_to_list_says_why() {
 
 #[test]
 fn test_ws_8_from_relmap_header_button() {
-    // [utest -> req~workspace.drawer-from-map~1, req~screen.breadcrumb-drawer~1, req~screen.breadcrumb-relation-map~1] 関係マップでヘッダーのパンくずの「Work」(前の配置のボタン「▾ Work」)を押す → 表の画面に
+    // [utest -> req~workspace.drawer-from-map~2, req~screen.breadcrumb-drawer~2, req~screen.breadcrumb-relation-map~2] 関係マップでヘッダーのパンくずの表の名前を押す → 表の画面に
     // 戻って引き出しが開く。もう一度同じ所を押すと閉じる。
     let (_tmp, mut a) = boot_work("ws8_relmap");
     ch(&mut a, 'R');
     assert_eq!(a.mode, Mode::Relations);
-    let x = head_col(&a, "Work").expect("パンくずのワークスペースの名前");
+    let x = head_col(&a, "› ").expect("パンくずの区切り") + 2;
     a.click(x + 2, super::bands::head_y(&a));
     assert!(a.relmap.is_none(), "表の画面に戻る");
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
     assert!(in_drawer(&a, "Projects"), "{}", scr(&a));
-    let x = head_col(&a, "Work").expect("引き出しを開いていてもパンくずは出る");
+    let x = head_col(&a, "› ").expect("引き出しを開いていてもパンくずは出る") + 2;
     a.click(x + 2, super::bands::head_y(&a));
     assert_eq!(a.mode, Mode::Table, "{}", scr(&a));
     assert!(a.switch_to.is_none() && !a.quit);

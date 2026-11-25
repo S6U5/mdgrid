@@ -3,7 +3,7 @@
 //! (`types::parse_date` と同じ)。
 
 use crate::i18n::{Lang, Msg};
-use crate::types::{add_months, clamp_date, format_date, parse_date};
+use crate::types::{add_months, clamp_date, format_date, parse_date, WeekStart};
 
 /// GA-1: 設定が無いときに始まりの列とみなす名前(大文字小文字を問わない)。全部の言語の表(locales の
 /// `GanttStartNames`、空白区切り)から集める: 訳ではなく、どの言語の画面でも同じ名前を推定に使う
@@ -107,12 +107,25 @@ pub fn civil(d: i64) -> (i64, u32, u32) {
     (y, m, day)
 }
 
-/// GA-2: 日 `d` を単位の境に切り下げる(週は月曜、月は1日、日はそのまま)。
+/// GA-2: 日 `d` を単位の境に切り下げる(週は月曜、月は1日、日はそのまま)。画面のガントとグラフは、設定の
+/// 週の始まりを使う `floor_unit_in` を使う(gantt.week-start)。
 pub fn floor_unit(d: i64, unit: Unit) -> i64 {
+    floor_unit_in(d, unit, WeekStart::Mon)
+}
+
+/// gantt.week-start・chart.buckets-week-start: 日 `d` を単位の境に切り下げる。週は `week`(設定の `dates.week_start`)
+/// の曜日、月は1日、日はそのまま。
+pub fn floor_unit_in(d: i64, unit: Unit, week: WeekStart) -> i64 {
     match unit {
         Unit::Day => d,
-        // 1970-01-01 は木曜。月曜からの日数は (d + 3) mod 7。
-        Unit::Week => d - (d + 3).rem_euclid(7),
+        // 1970-01-01 は木曜。日曜からの日数は (d + 4) mod 7、月曜からの日数は (d + 3) mod 7。
+        Unit::Week => {
+            let shift = match week {
+                WeekStart::Sun => 4,
+                WeekStart::Mon => 3,
+            };
+            d - (d + shift).rem_euclid(7)
+        }
         Unit::Month => {
             let (y, m, _) = civil(d);
             parse_date(&format!("{y:04}-{m:02}-01")).unwrap_or(d)
@@ -185,10 +198,16 @@ pub fn col_days(j: i64, origin: i64, unit: Unit) -> (i64, i64) {
 }
 
 /// GA-2: 範囲 `first..=last`(日)が幅 `cols` のマスに収まる、最も細かい単位(日 → 週 → 月。月でも収まらなければ月)。
+/// 週は月曜から数える。画面のガントは設定の週の始まりを使う `fit_unit_in` を使う(gantt.week-start)。
 pub fn fit_unit(first: i64, last: i64, cols: usize) -> Unit {
+    fit_unit_in(first, last, cols, WeekStart::Mon)
+}
+
+/// `fit_unit` の、週を `week` の曜日から数えるもの(gantt.week-start)。
+pub fn fit_unit_in(first: i64, last: i64, cols: usize, week: WeekStart) -> Unit {
     let cols = i64::try_from(cols.max(1)).unwrap_or(i64::MAX);
     for unit in [Unit::Day, Unit::Week, Unit::Month] {
-        let origin = floor_unit(first.min(last), unit);
+        let origin = floor_unit_in(first.min(last), unit, week);
         if cell_of(first.max(last), origin, unit) < cols {
             return unit;
         }

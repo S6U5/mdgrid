@@ -208,6 +208,14 @@ impl App {
         }
     }
 
+    /// cell-view.lookup-shown: 式の列の値を引いたほかのノートのキー(値の名前で見せる)。無ければ None。
+    pub(crate) fn lookup_key(&self, col: &str) -> Option<String> {
+        if let Some(b) = self.native_synth() {
+            return b.lookup_key(col);
+        }
+        self.base.as_ref()?.base.lookup_key(col)
+    }
+
     /// セル1つの見せ方の元(BV-7)。`.base` なしならノートのキーのセル。
     pub(crate) fn cell(&self, row: &RowId, col: &str) -> Shown {
         if let Some(b) = self.native_synth() {
@@ -291,13 +299,14 @@ impl App {
             && self.rich(col, mdgrid::cells::Part::Select)
     }
 
-    /// 列の型を名前で引く。
+    /// 列の型を名前で引く。ビューに出していない列(カンバンの札の値・詳細の表示の隠した列など)は
+    /// `column_kind`(設定の `[types]` か、組み立て直しのときに決めた型)で、表のセルと同じ型にする
+    /// (kanban.card-values-shown。日付の形と型の合わない印)。
     pub(crate) fn kind_of(&self, col: &str) -> Kind {
-        self.cols
-            .iter()
-            .position(|c| c == col)
-            .and_then(|j| self.kinds.get(j).copied())
-            .unwrap_or(Kind::Text)
+        match self.cols.iter().position(|c| c == col) {
+            Some(j) => self.kinds.get(j).copied().unwrap_or(Kind::Text),
+            None => self.column_kind(col),
+        }
     }
 
     /// 列の見出し(displayName か id)。ビューに出していない列(まとまり・絞り込み・カンバンの列など)にも、`.base` の
@@ -405,6 +414,7 @@ impl App {
                     notes: Vec::new(),
                     marked: 0,
                     summaries: Vec::new(),
+                    summary_labels: Vec::new(),
                 }
             }
         };
@@ -439,6 +449,10 @@ impl App {
         kind_cols.extend(self.settings.sorts.iter().map(|(c, _)| c.as_str()));
         if let Group::By { col, .. } = &self.settings.group {
             kind_cols.push(col);
+        }
+        // kanban.card-values-shown: 札に出す列(ビューに無い列も)は、表のセルと同じ型で見せる。
+        if let Some((k, _)) = &self.kanban_spec {
+            kind_cols.extend(k.card.iter().map(String::as_str));
         }
         let col_kinds: HashMap<String, Kind> = kind_cols
             .into_iter()
@@ -518,7 +532,19 @@ impl App {
             self.message = Some(Msg::HintUnsupported.fill(&[&quiet.join(" / ")]));
         }
         self.notes = grid.notes;
-        self.built.summaries = self.compute_summaries(grid.summaries);
+        self.built.summary_labels = grid.summary_labels.into_iter().collect();
+        self.built.group_summaries = self
+            .groups
+            .iter()
+            .map(|(_, r)| {
+                if grid.summaries.is_empty() {
+                    Vec::new()
+                } else {
+                    self.compute_summaries_in(&grid.summaries, &self.rows[r.clone()])
+                }
+            })
+            .collect();
+        self.built.summaries = self.compute_summaries_in(&grid.summaries, &self.rows);
         self.build_slots();
         let found = old_key
             .and_then(|k| (0..self.slots.len()).find(|&i| self.slot_key(i).as_ref() == Some(&k)));
@@ -529,18 +555,22 @@ impl App {
         self.guard_input();
     }
 
-    /// BV-14: 集計を今の行(ビューの設定・簡易の絞り込みのあと)で計算する。ノートのキーはためた値を重ねた値、
-    /// 計算の列は画面の値、評価できない式は空。列ごとに行を1回だけ走査する。
-    fn compute_summaries(&self, list: Vec<(String, Summary)>) -> Vec<(String, Summary, Val)> {
-        list.into_iter()
+    /// BV-14: 集計を行 `rows`(今の行か、まとまりの行。ビューの設定・簡易の絞り込みのあと)で計算する。ノートの
+    /// キーはためた値を重ねた値、計算の列は画面の値、評価できない式は空。列ごとに行を1回だけ走査する。
+    fn compute_summaries_in(
+        &self,
+        list: &[(String, Summary)],
+        rows: &[RowId],
+    ) -> Vec<(String, Summary, Val)> {
+        list.iter()
             .map(|(col, s)| {
-                let values = self.rows.iter().map(|r| match self.cell(r, &col) {
+                let values = rows.iter().map(|r| match self.cell(r, col) {
                     Shown::Computed(v) => v,
                     Shown::Unsupported(_) => Val::Null,
-                    Shown::Prop(_) => self.prop(r, &col).map_or(Val::Null, |v| to_val(&v)),
+                    Shown::Prop(_) => self.prop(r, col).map_or(Val::Null, |v| to_val(&v)),
                 });
-                let v = summary::compute(s, values);
-                (col, s, v)
+                let v = summary::compute(*s, values);
+                (col.clone(), *s, v)
             })
             .collect()
     }
@@ -966,6 +996,11 @@ pub(crate) struct Built {
     pub extra_cols: Vec<String>,
     /// 表の下の集計(列の id・集計・今の行で計算した値。BV-14)。空なら集計の行を出さない。
     pub summaries: Vec<(String, mdgrid::summary::Summary, mdgrid::expr::Val)>,
+    /// base-view.summaries-per-group: まとまりごとの集計(`App::groups` と同じ順。各まとまりの行で計算した値)。
+    /// まとまりの無い表か集計の無いビューでは空。
+    pub group_summaries: Vec<Vec<(String, mdgrid::summary::Summary, mdgrid::expr::Val)>>,
+    /// base-view.summary-labels: 集計の名前を書き換えた列(列の id → 見せる名前)。
+    pub summary_labels: HashMap<String, String>,
     /// 列の id → 見出し(displayName。BV-5)。
     pub titles: HashMap<String, String>,
     /// 組み立てた表の列の並び(見た目の状態を当てる前。screen.state-store-arranged-only の比べる相手)。

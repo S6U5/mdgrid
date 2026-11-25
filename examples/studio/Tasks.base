@@ -79,6 +79,10 @@ views:
     sort:
       - property: due
         direction: ASC
+    summaries:
+      estimate: Sum
+    summary_labels:
+      estimate: Days
   - type: table
     name: By owner
     groupBy:

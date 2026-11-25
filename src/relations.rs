@@ -194,6 +194,7 @@ impl Notes {
         let raw = Raw {
             target: target.to_string(),
             md: false,
+            key: None,
         };
         let stem = self.index.resolve("", &raw)?;
         Some(self.root.join(format!("{stem}.md")))

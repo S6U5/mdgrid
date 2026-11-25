@@ -46,8 +46,9 @@ created = "{date}"
 name = "タスク"
 # ガントの画面(C。GA-1): 開始から期限までの棒。親子の行(ビューの設定)はその字下げのまま。
 gantt = { start = "start", end = "due" }
-# カンバンの画面(B。KB-1): 状態ごとのレーンに札を [rules.status] の順で並べる。H と L で札を動かすと状態を書き換える。
-kanban = { column = "status" }
+# カンバンの画面(B。KB-1): 状態ごとのレーンに札を [rules.status] の順で並べ、札の名前の下に期限と優先度を出す(card)。
+# H と L で札を動かすと状態を書き換える。
+kanban = { column = "status", card = ["due", "priority"] }
 # グラフの画面(P。CH-1): 状態ごとの数、月ごとの期限、優先度と状態の組。[ と ] で移り、画面の Tab・x・y・b で種類と列を変える。
 chart = [
   { name = "状態ごと", x = "status" },

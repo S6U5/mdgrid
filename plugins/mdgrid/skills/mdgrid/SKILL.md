@@ -22,6 +22,7 @@ mdgrid <folder | .base | .md> ... --print [--format csv|tsv|json|md] [--with-pat
 - `--filter` keeps rows where the expression is true. Repeat it to require all of them.
 - `--sort column` sorts ascending, `column:desc` descending. Repeat it for tie-breakers.
 - With a `.base`, `--view <name>` picks the view (its filters, columns and sort apply; `--filter` narrows it further). Without `--view`, the first view is used.
+- In a folder with a marker `.mdgrid/workspace.toml` that lists several tables, `--table <name>` picks the table (the `name` of a `[[table]]`) for `--print`, `--count`, `--check` and `--new-note` alike; without it, the marker's `open` table is used. An unknown name fails with one line that lists the table names.
 - Paths are folders (all notes below them), `.base` files, or single `.md` files. Several folders can be given. Don't mix a single `.md` file with folders: the other folders are then dropped from the output.
 - Write output files outside the folder you are reading (or name them so they are not notes you scan), so the export doesn't become a note in the next run.
 

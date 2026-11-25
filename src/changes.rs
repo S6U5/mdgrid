@@ -80,8 +80,27 @@ impl Step {
     }
 }
 
-/// 一緒に入れる値(cell-edit.then): 直した値の文字 → 同じ行にためる (列, 値)。
-pub type Follow = BTreeMap<String, Vec<(String, NewValue)>>;
+/// 一緒に入れる値(cell-edit.then): 直した値の文字 → 同じ行にためる値の並び。
+pub type Follow = BTreeMap<String, Vec<FollowCell>>;
+
+/// 一緒に入れる1つの値(cell-edit.then-set・cell-edit.then-if-empty)。
+#[derive(Debug, Clone, PartialEq)]
+pub struct FollowCell {
+    pub col: String,
+    pub value: NewValue,
+    /// 真なら、入れる先の列が空のときだけ入れる。
+    pub if_empty: bool,
+}
+
+/// ためる値が空か(cell-edit.then-if-empty: null・空の文字列・空のリスト・キーを消す)。
+fn new_value_empty(v: &NewValue) -> bool {
+    match v {
+        NewValue::Null | NewValue::DeleteKey => true,
+        NewValue::Str(s) => s.is_empty(),
+        NewValue::List(l) => l.is_empty(),
+        _ => false,
+    }
+}
 
 /// 一緒に入れる値を引く鍵(直した値の文字)。文字・真偽・整数・日付の値だけ。
 fn follow_key(v: &NewValue) -> Option<String> {
@@ -170,9 +189,11 @@ impl Changes {
         self.set_each_then(src, col, items, &Follow::new())
     }
 
-    /// `set_each` と同じで、`col` をある値にためた行には、`follow`(値の文字 → 一緒に入れる (列, 値))の値も同じ1手で
+    /// `set_each` と同じで、`col` をある値にためた行には、`follow`(値の文字 → 一緒に入れる値)の値も同じ1手で
     /// ためる(cell-edit.then)。ためた値を別の値に直したか外したときは、前の値で一緒に入れた列のためた値を外す。
-    /// 一緒に入れる列が直せないセルなら、その列だけ飛ばす(理由は返さない)。
+    /// 一緒に入れる列が直せないセルなら、その列だけ飛ばす(理由は返さない)。`if_empty` の値は、入れる先の列が
+    /// 空(ためた値があればその値で見る)のときだけ入れ、外すのは一緒に入れた値と同じ値がたまっているときだけ
+    /// (手で入れた値は外さない。cell-edit.then-if-empty)。
     pub fn set_each_then(
         &mut self,
         src: &dyn Source,
@@ -214,16 +235,27 @@ impl Changes {
                     };
                     let (old, new) = (of(&c.before), of(&c.after));
                     cells.push(c);
-                    for (fc, fv) in new.iter().filter(|(fc, _)| fc != col) {
-                        if let Ok(Some(c)) = self.plan(src, row, fc, Some(fv), &mut bases) {
+                    for f in new.iter().filter(|f| f.col != col) {
+                        if f.if_empty && !self.is_empty_now(src, row, &f.col) {
+                            continue;
+                        }
+                        if let Ok(Some(c)) = self.plan(src, row, &f.col, Some(&f.value), &mut bases)
+                        {
                             cells.push(c);
                         }
                     }
-                    for (fc, _) in old {
-                        if fc == col || new.iter().any(|(c, _)| c == fc) {
+                    for f in old {
+                        if f.col == col || new.iter().any(|n| n.col == f.col) {
                             continue;
                         }
-                        if let Ok(Some(c)) = self.plan(src, row, fc, None, &mut bases) {
+                        // if_empty の値は、一緒に入れた値と同じ値がたまっているときだけ外す(手で入れた値は残す)。
+                        if f.if_empty {
+                            let put = crate::source::date_if_untyped(src, &f.col, f.value.clone());
+                            if self.pending(row, &f.col) != Some(&put) {
+                                continue;
+                            }
+                        }
+                        if let Ok(Some(c)) = self.plan(src, row, &f.col, None, &mut bases) {
                             cells.push(c);
                         }
                     }
@@ -632,6 +664,18 @@ impl Changes {
 
     /// 1つのセルの変更を決める。何もしないなら Ok(None)。基準が要る行は bases に取る。
     /// v が None なら、ためた値を外す(読むだけかを見ない。読むだけのセルにためた値は無い)。
+    /// 行 `row` の列 `col` の今の値(ためた値があればその値)が空か(cell-edit.then-if-empty)。
+    fn is_empty_now(&self, src: &dyn Source, row: &RowId, col: &str) -> bool {
+        match self.pending(row, col) {
+            Some(v) => new_value_empty(v),
+            None => src
+                .get(row, col)
+                .value
+                .as_ref()
+                .is_none_or(crate::types::is_empty),
+        }
+    }
+
     fn plan(
         &self,
         src: &dyn Source,

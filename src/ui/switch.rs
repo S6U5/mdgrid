@@ -9,12 +9,18 @@
 //!   最初の表。「最初に開いた所」は起動したときの表で、そこで最後に見ていたビュー。
 //! - 移るのは登録した表と同じ道(終わる手順を通してから main が開き直す。ためた変更があれば確かめる)。App は表ごとに
 //!   作り直すので、見た表の記録(`Visits`)は main が次の App に渡す。
-//! - お気に入りに入れる・外すのは、引き出しのワークスペースの見出し(drawer.rs)と、パレットの
-//!   「今のワークスペースをお気に入りにする」(今のワークスペース。もう入っていれば外す)。
-//! - 引き出し(workspace.drawer-favorites)とパレットの「ワークスペースを開く」も、最初に開いた所とお気に入りを
+//! - お気に入りに入れる・外す・並べ替えるのは、この一覧(workspace.favorite-mark・workspace.switch-add-here・
+//!   workspace.favorite-reorder。今いるワークスペースがお気に入りでなければ末尾に「+ <名前> をお気に入りに入れる」の
+//!   行を置き、`a` かその行で入れる。選んだお気に入りを `d` で外し、`K`・`J` で1つ上・下へ動かす)と、パレットの
+//!   「今のワークスペースをお気に入りにする」(今のワークスペース。もう入っていれば外す)。引き出しはワークスペースの
+//!   中の切り替えなので、お気に入りを並べない(workspace.drawer-scope-only)。
+//! - パレットの「ワークスペースを開く」(workspace.open-favorites)も、最初に開いた所とお気に入りの印のワークスペースを
 //!   並べ、選んだら同じ道(`go_to`)で移る。今いる所を選んだら、閉じて今いる所だと知らせる(workspace.switch-hint)。
+//! - ヘッダーのパンくずの範囲の名前は、この一覧を開け閉めする(screen.breadcrumb-switch)。一覧を開いているときに
+//!   表の名前を押したら、一覧を閉じて引き出しを開く(screen.breadcrumb-drawer)。
 
 use super::app::App;
+use super::bands::CrumbPart;
 use super::keymap::{self, Action, Mode};
 use super::popup;
 use super::width::{fit, sanitize, width, Align};
@@ -95,9 +101,11 @@ enum Row {
     Fav(usize),
     /// お気に入りが無いときの、入れ方の案内。
     Hint,
+    /// workspace.switch-add-here: 今いるワークスペース(お気に入りでないとき)をお気に入りに入れる行。
+    AddHere,
 }
 
-/// 移る先(切り替えの一覧・引き出し・パレットの「ワークスペースを開く」で同じ道)。
+/// 移る先(切り替えの一覧・パレットの「ワークスペースを開く」で同じ道)。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Dest {
     /// 最初に開いた所(workspace.switch-origin)。
@@ -110,7 +118,6 @@ pub(crate) enum Dest {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Picker {
     Switch,
-    Drawer,
     Palette,
 }
 
@@ -124,6 +131,8 @@ pub(crate) struct Switcher {
     origin: bool,
     /// 今いる所(開いたときに決めたもの。今のお気に入りの印と、選んだ所が今いる所かに使う)。
     here: Option<Spot>,
+    /// workspace.switch-add-here: 今いるワークスペースがお気に入りでなければ、その書く形と見せる名前。
+    add: Option<(String, String)>,
 }
 
 impl Switcher {
@@ -136,7 +145,25 @@ impl Switcher {
             out.push(Row::Hint);
         }
         out.extend((0..self.favs.len()).map(Row::Fav));
+        if self.add.is_some() {
+            out.push(Row::AddHere);
+        }
         out
+    }
+
+    /// 今いる所のお気に入りの行の添字(無ければ None)。
+    fn here_row(&self) -> Option<usize> {
+        self.rows().iter().position(
+            |r| matches!(r, Row::Fav(k) if self.here.as_ref() == Some(&spot_of(&self.favs[*k]))),
+        )
+    }
+}
+
+/// お気に入りを `workspaces.toml` に書く形(`workspaces.toml` のワークスペースは名前、印のワークスペースは根のパス)。
+fn entry_of(f: &Favorite) -> String {
+    match f {
+        Favorite::App(n) => n.clone(),
+        Favorite::Marker { root, .. } => favorites::marker_entry(root),
     }
 }
 
@@ -163,15 +190,16 @@ fn label(app: &App, s: &Switcher, r: Row) -> String {
         // workspace.switch-origin-key: 番号 0 を添える(`0` で選べる)。
         Row::Origin => format!("0 {}", app.origin_label()),
         Row::Fav(k) => format!("{} {}", k + 1, sanitize(s.favs[k].name())),
+        // 入れるキーを割り当てから外していれば、動作の名前で案内する。
         Row::Hint => {
-            let key = |m: Mode, a: Action| {
-                keymap::key_for(&app.keys, m, a).unwrap_or_else(|| format!(":{}", a.name()))
-            };
             Msg::SwitchHint.fill(&[
-                &key(Mode::Table, Action::WsDrawer),
-                &key(Mode::Drawer, Action::WsFavorite),
+                &keymap::key_for(&app.keys, Mode::Switch, Action::WsFavorite)
+                    .unwrap_or_else(|| format!(":{}", Action::WsFavorite.name())),
             ])
         }
+        Row::AddHere => Msg::SwitchAddHere.fill(&[&sanitize(
+            s.add.as_ref().map_or("", |(_, label)| label.as_str()),
+        )]),
     }
 }
 
@@ -183,12 +211,18 @@ struct Geom {
     start: usize,
 }
 
-/// 下の縁のキー(screen.window-key-hints): 移ると閉じる。キーと名前はキーの表から。
+/// 下の縁のキー(screen.window-key-hints・workspace.switch-favorite-hints): 移る・今いる所を入れる・外す・閉じる。
+/// キーと名前はキーの表から。
 fn edge_hints(app: &App) -> Vec<popup::KeyHint> {
     popup::key_hints(
         app,
         Mode::Switch,
-        &[(Action::Run, None), (Action::Close, None)],
+        &[
+            (Action::Run, None),
+            (Action::WsFavorite, None),
+            (Action::RemoveItem, None),
+            (Action::Close, None),
+        ],
     )
 }
 
@@ -269,7 +303,9 @@ impl App {
     /// workspace.switch-button: ヘッダーに切り替えのボタンを出すか。お気に入りが1つ以上あるか、起動したときに
     /// 開いた所から今は離れているとき。
     pub(crate) fn switch_button_shown(&self) -> bool {
-        !self.favorites.is_empty() || self.origin_away()
+        // workspace.switch-button: パンくずに範囲の名前のボタンが出ているなら、それが同じ働きなので出さない。
+        (!self.favorites.is_empty() || self.origin_away())
+            && super::bands::crumb_scope(self).is_none()
     }
 
     /// workspace.switch-open: 切り替えの一覧を開く(今の画面の上に重ねる)。お気に入りの読めない項目は警告を出す。
@@ -283,6 +319,7 @@ impl App {
             favs,
             origin,
             here,
+            add: self.add_here(),
         };
         self.switcher = Some(s);
         if window(self).is_none() {
@@ -314,10 +351,41 @@ impl App {
             Action::Up | Action::Down | Action::Top | Action::Bottom => {
                 s.sel = popup::step_sel(s.sel, rows.len(), action, 0).unwrap_or(s.sel);
             }
+            // workspace.switch-add-here: 入れる行は、一覧を開いたまま今いる所を入れる。
+            Action::Run if rows.get(s.sel) == Some(&Row::AddHere) => self.switch_add_here(&mut s),
             Action::Run => {
                 let row = rows.get(s.sel).copied();
                 self.switcher = Some(s);
                 return self.switch_row(row);
+            }
+            // workspace.favorite-mark: 今いる所を入れる(キー)と、選んだお気に入りを外す。
+            Action::WsFavorite => self.switch_add_here(&mut s),
+            Action::RemoveItem => match rows.get(s.sel) {
+                Some(Row::Fav(k)) => {
+                    let f = s.favs[*k].clone();
+                    self.toggle_favorite(&entry_of(&f), f.name());
+                    self.refresh_switcher(&mut s);
+                    s.sel = s.sel.min(s.rows().len().saturating_sub(1));
+                }
+                _ => self.message = Some(Msg::SwitchRemoveFavOnly.text().into()),
+            },
+            // workspace.favorite-reorder: 選んだお気に入りを1つ上・下へ(選びはそのお気に入りのまま)。
+            Action::MoveItemUp | Action::MoveItemDown => {
+                if let Some(Row::Fav(k)) = rows.get(s.sel).copied() {
+                    let j = if action == Action::MoveItemUp {
+                        k.checked_sub(1)
+                    } else {
+                        Some(k + 1).filter(|j| *j < s.favs.len())
+                    };
+                    if let Some(j) = j {
+                        let (a, b) = (s.favs[k].clone(), s.favs[j].clone());
+                        self.swap_favorites(&a, &b);
+                        self.refresh_switcher(&mut s);
+                        if let Some(i) = s.rows().iter().position(|r| *r == Row::Fav(j)) {
+                            s.sel = i;
+                        }
+                    }
+                }
             }
             // workspace.switch-origin-key: `0` は「最初に開いた所」(その行が無ければ何もしない)。
             Action::Choose(0) => {
@@ -348,9 +416,63 @@ impl App {
         let dest = match row {
             Some(Row::Origin) => Dest::Origin,
             Some(Row::Fav(k)) => Dest::Fav(s.favs[k].clone()),
-            Some(Row::Hint) | None => return,
+            Some(Row::Hint | Row::AddHere) | None => return,
         };
         self.go_to(dest, Picker::Switch);
+    }
+
+    /// 今いるワークスペースを、お気に入りに書く形と見せる名前で(`workspaces.toml` のワークスペースは名前、印の
+    /// ワークスペースは根のパス)。ワークスペースでなければ(検知した範囲・登録した表・ワークスペースでない表)None。
+    fn current_entry(&self) -> Option<(String, String)> {
+        let scope = self.scope.as_ref()?;
+        let entry = match (scope.source, self.here_spot()?) {
+            (Source::App | Source::Chosen, Spot::Named(n)) => n,
+            (Source::Marker, Spot::Root(r)) => favorites::marker_entry(&r),
+            _ => return None,
+        };
+        Some((entry, scope.name.clone()))
+    }
+
+    /// workspace.switch-add-here: 今いるワークスペースがお気に入りでなければ、その書く形と見せる名前。
+    fn add_here(&self) -> Option<(String, String)> {
+        self.current_entry()
+            .filter(|(e, _)| !favorites::contains(&self.favorites, e))
+    }
+
+    /// 一覧のお気に入りと入れる行を読み直す(入れた・外した・動かしたあと)。
+    fn refresh_switcher(&mut self, s: &mut Switcher) {
+        s.favs = self.resolved_favorites().0;
+        s.add = self.add_here();
+    }
+
+    /// workspace.favorite-mark・workspace.switch-add-here: 今いるワークスペースをお気に入りに入れ、一覧を開いたまま
+    /// 選びをその行に置く。もう入っていれば知らせ、ワークスペースでなければ理由を出す。
+    fn switch_add_here(&mut self, s: &mut Switcher) {
+        let Some((entry, label)) = self.current_entry() else {
+            self.message = Some(Msg::WsFavoriteNoWorkspace.into());
+            return;
+        };
+        if favorites::contains(&self.favorites, &entry) {
+            self.message = Some(Msg::WsFavoriteAlready.fill(&[&sanitize(&label)]));
+            return;
+        }
+        self.toggle_favorite(&entry, &label);
+        self.refresh_switcher(s);
+        if let Some(i) = s.here_row() {
+            s.sel = i;
+        }
+    }
+
+    /// workspace.favorite-reorder: 2つのお気に入りの並びを入れ替えて書く。
+    fn swap_favorites(&mut self, a: &Favorite, b: &Favorite) {
+        let Some(dir) = self.nv.dir.clone() else {
+            self.message = Some(Msg::WsNoConfigDir.into());
+            return;
+        };
+        if let Err(e) = favorites::swap(&dir, &entry_of(a), &entry_of(b)) {
+            self.message = Some(Msg::WsSaveError.fill(&[&e]));
+        }
+        self.favorites = favorites::entries(&dir);
     }
 
     /// 最初に開いた所を並べるか(起動したときに開いた所から今は離れているとき)。
@@ -383,7 +505,6 @@ impl App {
     fn close_picker(&mut self, from: Picker) {
         match from {
             Picker::Switch => self.close_switcher(),
-            Picker::Drawer => self.close_drawer(),
             Picker::Palette => self.close_palette(),
         }
     }
@@ -473,9 +594,18 @@ impl App {
         Ok((place, ws))
     }
 
-    /// 窓の上のクリック: 行なら選んで Enter と同じ、窓の外なら閉じる。縁では何もしない。
+    /// 窓の上のクリック: 行なら選んで Enter と同じ、窓の外なら閉じる。縁では何もしない。ヘッダーのパンくずの範囲の
+    /// 名前は開いたのと同じボタンなので閉じ、表の名前なら閉じて引き出しを開く(screen.breadcrumb-drawer)。
     pub(crate) fn switcher_click(&mut self, x: u16, y: u16) {
         self.message = None;
+        match super::bands::crumb_part_at(self, x, y) {
+            Some(CrumbPart::Scope) => return self.close_switcher(),
+            Some(CrumbPart::Table) => {
+                self.close_switcher();
+                return self.open_drawer();
+            }
+            None => {}
+        }
         let Some(g) = window(self) else {
             return self.close_switcher();
         };
@@ -526,22 +656,10 @@ impl App {
     /// workspace.favorite-mark: パレットの「今のワークスペースをお気に入りにする」。`workspaces.toml` のワークスペースは
     /// 名前、印のワークスペースは根のパスで入れる(もう入っていれば外す)。ワークスペースでなければ理由。
     pub(crate) fn favorite_current(&mut self) {
-        let scope = self.scope.as_ref().map(|s| (s.source, s.name.clone()));
-        let entry = match (scope.as_ref(), self.here_spot()) {
-            (Some((Source::App | Source::Chosen, _)), Some(Spot::Named(n))) => n,
-            (Some((Source::Marker, _)), Some(Spot::Root(r))) => favorites::marker_entry(&r),
-            _ => {
-                self.message = Some(Msg::WsFavoriteNoWorkspace.into());
-                return;
-            }
-        };
-        let label = scope.map(|(_, n)| n).unwrap_or_default();
-        self.toggle_favorite(&entry, &label);
-    }
-
-    /// 引き出しの見出し(workspaces.toml のワークスペース)がお気に入りか。
-    pub(crate) fn is_favorite_name(&self, name: &str) -> bool {
-        favorites::contains(&self.favorites, name)
+        match self.current_entry() {
+            Some((entry, label)) => self.toggle_favorite(&entry, &label),
+            None => self.message = Some(Msg::WsFavoriteNoWorkspace.into()),
+        }
     }
 }
 

@@ -140,6 +140,14 @@ Group by status and the groups come in the order of the column's allowed values 
 
 [Shape a view and save it](tasks.md#shape-a-view-and-save-it), [Column rules](../../config.md#rules)
 
+## Subtotals per group and number formats
+
+![Subtotals in group headings](images/group-totals.svg)
+
+Put summaries on a view grouped by month or by category, and each group heading shows that group's total on its right, lined up with the column. Folded groups keep it, so folding them all leaves a list of spending per month. The summary row under the table stays the grand total. Write `prefix = "¥"` and `thousands = true` under `[format.amount]` and the cells, the total and the subtotals all read `¥98,000`, while the notes and `--print` keep `98000`. To call "Filled 13" "Books 13", add `summary_labels` to the view.
+
+[Number formats](../../config.md#format), [Summaries](../../obsidian-bases.md#summaries)
+
 ## See the schedule as a gantt
 
 ![The gantt screen](images/gantt.svg)
@@ -157,6 +165,16 @@ Group by status and the groups come in the order of the column's allowed values 
 Write `children = { key = "parent" }` in the marker's `[[table]]` and every view lists children indented under their parent. Move a parent's card to done (or set it in the table) and its unfinished children become done with it; one `u` takes it all back. You can also keep the parent open while children are left (`on_done = "refuse"`), or finish only the parent and be told how many are left (`"keep"`). Add `closed_by = "closed_by"` and the children closed together with their parent carry that mark, so setting the parent back can bring them back too (`on_reopen = "reopen"`) or ask you on the spot (`"ask"`). Children you finished yourself stay finished.
 
 [Kanban in the list of views](views.md#kanban), [Key bindings](../../keys.md)
+
+## Show values on kanban cards
+
+![Values on kanban cards](images/kanban-cards.svg)
+
+When a card shows only a name, you keep going back to the table to see who wrote that book or when that meeting is. Write `card = ["author", "rating"]` in the marker's `kanban` and each card lists the author and the rating under the title, one per line. Dates follow your date format, values with a name in the rules show that name, and links show the name of the note they point to, just as in the table cells. Columns outside the view and computed columns work too, and a column with no value on that row gets no line.
+
+A long title wraps onto a second line in its lane and is cut with `…` if it still does not fit. With cards of different heights, `j` and `k` scroll the lane until the selected card is fully in sight, and `H`, `L` and clicks work the same way.
+
+[Kanban in the configuration](../../config.md), [Kanban in the list of views](views.md#kanban)
 
 ## See the numbers in a chart
 
@@ -182,6 +200,14 @@ A link such as `project: "[[mdgrid]]"` turns folders into linked tables: pick a 
 
 [Link tables with relations](tasks.md#link-tables-with-relations), [Group tables into workspaces](tasks.md#group-tables-into-workspaces)
 
+## Read and gather values from linked notes
+
+![Values gathered from linked notes](images/lookup.svg)
+
+A reading note can show the author of the book it quotes, and a person can show the last day you met, taken from the meetings. A formula reads a value from the note a link points to (`source.asFile().properties.author`), and gathers values from the notes that link here, split by the column they link from: count them, or take the latest date or a total (`file.linkedFrom("attendees")` with `filter`, `map` and `max`). Nothing is written into the notes, so marking a meeting done updates the person's row too. Looked-up values look like the cells they come from: a note by its name, a date in your date format, a value with its name.
+
+[Linked notes in Obsidian Bases support](../../obsidian-bases.md#linked-notes)
+
 ## Create a ledger from a starter
 
 ![Create a ledger from a starter](images/starter-pick.svg)
@@ -194,7 +220,7 @@ Pick "Create a ledger from a starter" from the palette (`:`), or run `--init-wor
 
 ![Pick rows for another command](images/pick.svg)
 
-`--print` writes the table as CSV, TSV, JSON or Markdown; edit the CSV in a spreadsheet and bring it back with `--apply`; `--pick` hands the paths of the chosen notes to the next command; `--new-note` adds one note in the same shape as the form. A `.csv` or `.tsv` file opens directly as a ledger. For AI agents there is a skill that teaches these commands.
+`--print` writes the table as CSV, TSV, JSON or Markdown; edit the CSV in a spreadsheet and bring it back with `--apply`; `--pick` hands the paths of the chosen notes to the next command; `--new-note` adds one note in the same shape as the form. In a ledger with several tables, add a table's name like `--table News` and every command works on that table; opening the table's folder directly gives that table too. A `.csv` or `.tsv` file opens directly as a ledger. For AI agents there is a skill that teaches these commands.
 
 [Use with other commands](tasks.md#use-with-other-commands), [Open a CSV or TSV as a ledger](tasks.md#open-a-csv-or-tsv-as-a-ledger)
 
@@ -234,7 +260,7 @@ Go back to a table you never registered, in the view you were on. mdgrid remembe
 
 ![Switch workspace](images/switch.svg)
 
-Put the workspaces you go back and forth between, say work and a hobby, in your favorites. From the table, the gantt, the kanban or any other screen, `W` opens the list and one digit takes you there, to the table and view you last had open in that workspace. If you started in a plain folder, **Where you started** at the top of the list takes you back. With the mouse, the table list that opens from the breadcrumb lists the same places.
+Put the workspaces you go back and forth between, say work and a hobby, in your favorites. From the table, the gantt, the kanban or any other screen, `W` opens the list and one digit takes you there, to the table and view you last had open in that workspace. If you started in a plain folder, **Where you started** at the top of the list takes you back. With the mouse, clicking the workspace name in the header breadcrumb opens the same list. The workspace you are in goes into your favorites from the last line of the list, or with `a`.
 
 [Switch between favorite workspaces](tasks.md#switch-between-favorite-workspaces), [Key bindings](../../keys.md#switch)
 

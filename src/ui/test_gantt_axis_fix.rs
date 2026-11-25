@@ -444,11 +444,14 @@ fn test_rel_7_no_view_error_hint() {
 #[test]
 fn test_ga_2_classic_today_digit_same_in_band() {
     // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1, req~cell-view.not-color-only~1] classic の見た目([look] mode = "classic")と default 以外の全部のテーマ、24 ビットで、日の単位の見出しの
-    // 下の行の今日の字が月曜の日の数に重なるとき(今日を 2026-10-05(月)と 2026-11-02(月)にする)、帯のある月の今日の数の
+    // 下の行の今日の字が月曜の日の数に重なるとき(週の始まりを月曜にし、今日を 2026-10-05(月)と 2026-11-02(月)にする)、帯のある月の今日の数の
     // 字と、帯の無い月の今日の数の字の、地と文字の色が同じ(どちらも選びの色)。帯のある月かどうかは、その週の水曜(今日の
     // 2日あと)の見出しの下の行の地を、窓の地(名前の欄の空き)と比べて見る。
     for theme in themes() {
-        let config = format!("{}mode = \"classic\"\n", theme_config(theme));
+        let config = format!(
+            "[dates]\nweek_start = \"mon\"\n\n{}mode = \"classic\"\n",
+            theme_config(theme)
+        );
         let mut seen = Vec::new();
         for (k, today) in ["2026-10-05", "2026-11-02"].into_iter().enumerate() {
             let tag = format!("ga2classic{}{k}", theme.name());

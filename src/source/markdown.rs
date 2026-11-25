@@ -72,6 +72,9 @@ pub struct Markdown {
     inferred: std::cell::RefCell<HashMap<String, Kind>>,
     /// リンクの索引(BV-22)。inferred と同じく、セルごとに全ノートを見直さないよう覚え、ノートを解析し直したら忘れる。
     link_index: std::cell::RefCell<Option<Rc<links::Index>>>,
+    /// base-view.lookup-properties: ノートの stem(根からのパスの `.md` を除いたもの)→ 行の鍵。link_index と同じく覚えて、
+    /// ノートを解析し直したら忘れる。
+    note_rows: std::cell::RefCell<Option<Rc<HashMap<String, RowId>>>>,
     /// 根ごとの `.obsidian/types.json` を合わせたもの(開いたときに読む)。
     declared: HashMap<String, Declared>,
     /// declared を大文字小文字を外した名前で引く表(CE-2。開くときに1回作る。大文字小文字だけ違う宣言の型が
@@ -110,6 +113,7 @@ impl Markdown {
             parsed: HashMap::new(),
             inferred: std::cell::RefCell::default(),
             link_index: std::cell::RefCell::default(),
+            note_rows: std::cell::RefCell::default(),
             declared_lower: lower_declared(&types::merge(&per_root)),
             declared: types::merge(&per_root),
             columns: Vec::new(),
@@ -225,6 +229,7 @@ impl Markdown {
     fn parse_new(&mut self) {
         self.inferred.borrow_mut().clear();
         self.link_index.borrow_mut().take();
+        self.note_rows.borrow_mut().take();
         let mut new = Vec::new();
         let mut now_rows = Vec::new();
         for n in self.vault.notes() {
@@ -264,6 +269,7 @@ impl Markdown {
     fn rebuild(&mut self, stale: &[PathBuf]) {
         self.inferred.borrow_mut().clear();
         self.link_index.borrow_mut().take();
+        self.note_rows.borrow_mut().take();
         for p in stale {
             self.parsed.remove(p);
         }
@@ -406,7 +412,11 @@ fn links_of(bytes: &[u8], fm: Option<&Frontmatter>) -> Vec<links::Raw> {
         };
         for v in items {
             if let Value::Str(s) = v {
-                out.extend(links::extract(s));
+                // base-view.linked-from: どのキーの値から拾ったかを添える(列ごとの被リンク)。
+                out.extend(links::extract(s).into_iter().map(|mut r| {
+                    r.key = Some(e.key.clone());
+                    r
+                }));
             }
         }
     }
@@ -1074,6 +1084,19 @@ impl Source for Markdown {
         let ix = Rc::new(links::Index::build(notes));
         *self.link_index.borrow_mut() = Some(Rc::clone(&ix));
         Some(ix)
+    }
+
+    fn note_row(&self, stem: &str) -> Option<RowId> {
+        if self.note_rows.borrow().is_none() {
+            let map: HashMap<String, RowId> = self
+                .vault
+                .notes()
+                .iter()
+                .filter_map(|n| Some((links::stem(&n.rel).to_string(), Self::row_of(n)?)))
+                .collect();
+            *self.note_rows.borrow_mut() = Some(Rc::new(map));
+        }
+        self.note_rows.borrow().as_ref()?.get(stem).cloned()
     }
 
     fn list_candidates(&self, col: &str) -> Vec<(String, usize)> {

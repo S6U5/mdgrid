@@ -1217,3 +1217,39 @@ fn test_then_fills_the_other_column_when_a_card_moves_to_the_lane() {
     assert_eq!(lane_of(&screen(&a), "alpha"), "waiting", "{}", screen(&a));
     assert_eq!(a.changes.pending(&row, "done_at"), None);
 }
+
+// [utest -> req~cell-edit.then-if-empty~1]
+#[test]
+fn test_then_if_empty_keeps_a_filled_column_when_a_card_moves() {
+    // `reading = { started = { value = "{date}", if_empty = true } }` で、paused の札(started は 2026-09-01)を reading の
+    // レーンへ動かすと、ためる変更は status だけ。started の無い todo の札を reading へ動かすと、started に今日がたまる。
+    use mdgrid::writeback::NewValue;
+    let top = "[rules.status]\nvalues = [\"todo\", \"reading\", \"paused\"]\n\n[rules.status.then]\nreading = { started = { value = \"{date}\", if_empty = true } }\n";
+    let notes: &[(&str, &str)] = &[
+        (
+            "alpha.md",
+            "---\nstatus: paused\nstarted: 2026-09-01\n---\n",
+        ),
+        ("beta.md", "---\nstatus: todo\n---\n"),
+    ];
+    let (_t, mut a) = boot("then-kanban-empty", notes, top, KANBAN);
+    a.today = mdgrid::types::parse_date("2026-10-06").unwrap();
+    open(&mut a);
+    select_card(&mut a, "alpha");
+    ch(&mut a, 'H');
+    assert_eq!(lane_of(&screen(&a), "alpha"), "reading", "{}", screen(&a));
+    let alpha = a.changes.rows().pop().unwrap();
+    assert_eq!(
+        a.changes.pending(&alpha, "status"),
+        Some(&NewValue::Str("reading".into()))
+    );
+    assert_eq!(a.changes.pending(&alpha, "started"), None);
+    select_card(&mut a, "beta");
+    ch(&mut a, 'L');
+    assert_eq!(lane_of(&screen(&a), "beta"), "reading", "{}", screen(&a));
+    let beta = a.changes.rows().into_iter().find(|r| *r != alpha).unwrap();
+    assert_eq!(
+        a.changes.pending(&beta, "started"),
+        Some(&NewValue::Date("2026-10-06".into()))
+    );
+}

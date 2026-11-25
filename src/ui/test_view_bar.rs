@@ -5,7 +5,7 @@
 //! 行・`switch_to` で確かめる。置いた仮定(記録の「不明点と仮定」に沿う):
 //! - ビューの帯は画面の2行目(添字 1)。ボタンの文字は「絞り込み」「並べ替え」「分類」「列」「⚙」で、
 //!   キーのあるボタンはキーを頭に添える(「| 絞り込み」「S 並べ替え」「o ⚙」)。検索の欄は「\ 検索」。
-//! - パンくずは「範囲 › 表  N行」。範囲の名前を押すと引き出し。表の名前は今の表の名前(フォルダの名前か、
+//! - パンくずは「範囲 › 表  N行」。範囲の名前を押すと切り替えの一覧、表の名前を押すと引き出し。表の名前は今の表の名前(フォルダの名前か、
 //!   ワークスペースに書いた名前のどちらでもよいとする)。
 //! - 窓はボタンの行のすぐ下に、左の端をボタンの左の端にそろえて置く(キーの添えの分の数桁のずれは許す)。
 //! - 絞り込みの窓の条件の行は 列・比べ方・値・× の順に並ぶ。値の一覧で隠す条件の比べ方の字は「隠す」か「除く」。
@@ -635,13 +635,13 @@ fn test_nv_29_table_edit_value_field() {
 
 #[test]
 fn test_sr_42_crumb_scope_and_table() {
-    // [utest -> req~screen.breadcrumb-path~2, req~workspace.scope-order-crumb~1] ワークスペース Work の tasks を開く → 1行目の左が「w Work › tasks ▾」と行数。
+    // [utest -> req~screen.breadcrumb-path~3, req~workspace.scope-order-crumb~1] ワークスペース Work の tasks を開く → 1行目の左が「W Work › w tasks ▾」と行数。
     // 「ワークスペース」のボタンは無い。「設定」は 2026-10-12-header-menu で右の端のボタンになった。
     let (_tmp, a) = boot_work("sr42crumb");
     let head = line(&a, HEAD);
     let left = head.trim_start();
-    assert!(left.starts_with("w Work › "), "{head:?}\n{}", scr(&a));
-    let table = left["w Work › ".len()..].to_lowercase();
+    assert!(left.starts_with("W Work › w "), "{head:?}\n{}", scr(&a));
+    let table = left["W Work › w ".len()..].to_lowercase();
     assert!(table.starts_with("tasks"), "範囲 › 表: {head:?}");
     assert!(head.contains("3行"), "{head:?}");
     assert!(head.trim_end().ends_with("o ⚙ 設定"), "{head:?}");
@@ -650,34 +650,33 @@ fn test_sr_42_crumb_scope_and_table() {
 
 #[test]
 fn test_sr_42_crumb_click_toggles_drawer() {
-    // [utest -> req~screen.breadcrumb-drawer~1, req~workspace.drawer-open~2, req~workspace.drawer-from-map~1] パンくずの範囲の名前をクリック → 引き出しが開き、もう一度で閉じる。表の名前でも開く。
+    // [utest -> req~screen.breadcrumb-drawer~2, req~workspace.drawer-open~3] パンくずの表の名前をクリック → 引き出しが開き、もう一度で閉じる。
     let (_tmp, mut a) = boot_work("sr42click");
-    click_text(&mut a, HEAD, "Work");
+    let x = col_in(&a, HEAD, "› ").expect("区切り") + 2;
+    a.click(x + 2, HEAD);
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
-    click_text(&mut a, HEAD, "Work");
+    a.click(x + 2, HEAD);
     assert_eq!(a.mode, Mode::Table, "{}", scr(&a));
     assert!(a.switch_to.is_none() && !a.quit);
-    let x = col_in(&a, HEAD, "› ").expect("区切り") + 2;
-    a.click(x + 1, HEAD);
-    assert_eq!(a.mode, Mode::Drawer, "表の名前でも開く:\n{}", scr(&a));
 }
 
 #[test]
 fn test_sr_42_crumb_same_column_in_relations() {
-    // [utest -> req~screen.breadcrumb-relation-map~1] 関係マップでもパンくずは同じ桁。押すと表の画面に戻って引き出しが開く。
+    // [utest -> req~screen.breadcrumb-relation-map~2] 関係マップでもパンくずは同じ桁。表の名前を押すと表の画面に戻って引き出しが開く。
     let (_tmp, mut a) = boot_work("sr42rel");
     let x = col_in(&a, HEAD, "Work ›").unwrap_or_else(|| panic!("{}", scr(&a)));
     ch(&mut a, 'R');
     assert_eq!(a.mode, Mode::Relations, "{}", scr(&a));
     assert_eq!(col_in(&a, HEAD, "Work ›"), Some(x), "同じ桁:\n{}", scr(&a));
-    a.click(x + 1, HEAD);
+    let t = col_in(&a, HEAD, "› ").expect("区切り") + 2;
+    a.click(t + 2, HEAD);
     assert!(a.relmap.is_none(), "表の画面に戻る");
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
 }
 
 #[test]
 fn test_sr_42_crumb_without_scope() {
-    // [utest -> req~screen.breadcrumb-path~2, req~screen.breadcrumb-relation-map~1] 範囲が無い(登録した表だけ)→ 「›」が無く、表の名前と行数。
+    // [utest -> req~screen.breadcrumb-path~3, req~screen.breadcrumb-relation-map~2] 範囲が無い(登録した表だけ)→ 「›」が無く、表の名前と行数。
     let tmp = workspace("sr42none");
     let a = boot_tasks(&tmp);
     assert!(a.scope.is_none());
@@ -693,9 +692,10 @@ fn test_sr_42_crumb_without_scope() {
 
 #[test]
 fn test_ws_8_crumb_drawer_switches_table() {
-    // [utest -> req~workspace.drawer-switch~2, req~workspace.drawer-open~2, req~workspace.drawer-from-map~1, req~screen.breadcrumb-drawer~1] パンくずの範囲の名前から開いた引き出しで Projects をクリック → その表へ移る。
+    // [utest -> req~workspace.drawer-switch~3, req~workspace.drawer-open~3, req~screen.breadcrumb-drawer~2] パンくずの表の名前から開いた引き出しで Projects をクリック → その表へ移る。
     let (tmp, mut a) = boot_work("ws8crumb");
-    click_text(&mut a, HEAD, "Work");
+    let x = col_in(&a, HEAD, "› ").expect("区切り") + 2;
+    a.click(x + 2, HEAD);
     assert_eq!(a.mode, Mode::Drawer, "{}", scr(&a));
     let s = scr(&a);
     let y = s

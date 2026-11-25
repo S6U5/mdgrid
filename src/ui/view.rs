@@ -23,6 +23,7 @@ use mdgrid::display::NotePath;
 use mdgrid::expr::Val;
 use mdgrid::i18n::Msg;
 use mdgrid::source::RowId;
+use mdgrid::summary::Summary;
 use mdgrid::types::Kind;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -73,16 +74,40 @@ pub(crate) fn summary_rows(app: &App) -> usize {
 /// 列の集計の文字「集計の名前 値」(BV-14)。日付はセルと同じ形(CE-22)。値が空なら名前だけ。
 fn summary_text(app: &App, col: &str) -> Option<String> {
     let (_, s, v) = app.built.summaries.iter().find(|(c, _, _)| c == col)?;
+    Some(summary_cell(app, col, *s, v))
+}
+
+/// 集計1つの「集計の名前 値」。名前は `summary_labels` で書き換えた名前が先(base-view.summary-labels)。
+/// 数の値には列の数の見せ方を当てる(件数を数える集計は除く。cell-view.number-format-totals)。
+fn summary_cell(app: &App, col: &str, s: Summary, v: &Val) -> String {
     let value = match v {
         Val::Date(d) => app.date_format.format(*d),
+        Val::Num(_) if !s.counts() => {
+            super::cell::number_val_text(app, col, v).unwrap_or_else(|| val_text(v))
+        }
         other => val_text(other),
     };
-    let label = s.label();
-    Some(if value.is_empty() {
-        label.to_string()
+    let label = app
+        .built
+        .summary_labels
+        .get(col)
+        .map_or_else(|| s.label().to_string(), |l| sanitize(l));
+    if value.is_empty() {
+        label
     } else {
         format!("{label} {}", sanitize(&value))
-    })
+    }
+}
+
+/// まとまり `g` の列 `col` の小計の文字(base-view.summaries-per-group)。集計の無い列は None。
+fn group_summary_text(app: &App, g: usize, col: &str) -> Option<String> {
+    let (_, s, v) = app
+        .built
+        .group_summaries
+        .get(g)?
+        .iter()
+        .find(|(c, _, _)| c == col)?;
+    Some(summary_cell(app, col, *s, v))
 }
 
 /// 表の下の集計の行(BV-14): ノートの列に「集計」、集計した列の下に「名前 値」。列の位置と横の送りは表と同じ。
@@ -208,11 +233,17 @@ pub(crate) fn layout(app: &App) -> Layout {
                 .map(|r| width(&shown(app, r, c).text))
                 .chain([width(&head_text(app, c))])
                 .chain(summary_text(app, c).map(|t| width(&t)))
+                // base-view.summaries-per-group: まとまりの見出しの小計も列に入れる。
+                .chain(
+                    (0..app.groups.len())
+                        .filter_map(|g| group_summary_text(app, g, c).map(|t| width(&t))),
+                )
                 .max()
                 .unwrap_or(1)
                 .clamp(1, max)
         })
-        .collect();
+        .collect::<Vec<usize>>();
+    let label_w = heading_room(app, label_w, &widths, num_w, max);
     let mut lay = Layout {
         width: area_w,
         num_w,
@@ -752,7 +783,7 @@ fn blank(st: Style) -> Style {
 /// `+N` で示す(1つ目の要素は、単独で入れば丸ごと、入らなければ列の幅いっぱいに `…` で切って見せる。+N は
 /// 入る余地があるときだけ)。残りは `st` の空白。要素は (値, 見せる文字)(navigation.value-labels-cells)。
 /// セルの印 `mark`(`!` など)は部品の前に `st` の文字で出す(cell-view.marks-on-parts)。
-fn chip_spans(
+pub(crate) fn chip_spans(
     app: &App,
     items: &[(String, String)],
     list: bool,
@@ -886,10 +917,9 @@ pub(crate) fn kind_mark(app: &App, kind: Kind, select: bool) -> Option<&'static 
 }
 
 /// groupBy の見出しの行(BV-5・SR-2): `▾ 列: 値(件数)`、畳んだら `▸`。
-fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
-    let Some((h, range)) = app.groups.get(g) else {
-        return Line::from(" ".repeat(w));
-    };
+/// まとまり `g` の見出しの字(選んでいれば頭に `>`)。まとまりが無ければ None。
+fn heading_text(app: &App, selected: bool, g: usize) -> Option<String> {
+    let (h, range) = app.groups.get(g)?;
     let open = !app.folded.contains(h);
     let by = app.group_title().map(|t| format!("{}: ", sanitize(&t)));
     // navigation.group-values-icon: 列の決まりに字と名前があれば「字 名前」。
@@ -898,13 +928,28 @@ fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
         .group_shown(g)
         .or_else(|| app.rows.get(range.start).and_then(|r| app.link_label(r, h)))
         .unwrap_or_else(|| h.clone());
-    let text = Msg::HeadingRow.fill(&[
-        &if i == app.row { ">" } else { " " },
+    Some(Msg::HeadingRow.fill(&[
+        &if selected { ">" } else { " " },
         &if open { "▾" } else { "▸" },
         &by.unwrap_or_default(),
         &sanitize(&shown),
         &range.len(),
-    ]);
+    ]))
+}
+
+/// まとまりの見出しの行。base-view.summaries-per-group: 集計のあるビューでは、見出しの字を最初の小計の列の手前
+/// までに置き(入らなければ `…` で切る)、まとまりの小計を表の列の位置にそろえて出す(数の列は右寄せ。集計の行と同じ)。
+fn heading_row(
+    app: &App,
+    lay: &Layout,
+    cols: &[(usize, usize)],
+    i: usize,
+    g: usize,
+    w: usize,
+) -> Line<'static> {
+    let Some(text) = heading_text(app, i == app.row, g) else {
+        return Line::from(" ".repeat(w));
+    };
     let mut st = Style::default().add_modifier(Modifier::BOLD);
     if i == app.row {
         st = match super::look::look(app) {
@@ -912,7 +957,70 @@ fn heading_row(app: &App, i: usize, g: usize, w: usize) -> Line<'static> {
             None => st.add_modifier(Modifier::REVERSED),
         };
     }
-    Line::from(Span::styled(fit(&text, w, Align::Left), st))
+    // 見えている列の左の端の桁と、その列の小計。
+    let mut x = lay.data_x();
+    let placed: Vec<(usize, usize, Option<String>)> = cols
+        .iter()
+        .map(|&(j, cw)| {
+            let at = x;
+            x += cw + 1;
+            let sum = group_summary_text(app, g, &app.cols[j]).map(|t| {
+                let align = match app.kinds[j] {
+                    Kind::Number => Align::Right,
+                    _ => Align::Left,
+                };
+                fit(&t, cw, align)
+            });
+            (at, cw, sum)
+        })
+        .collect();
+    let Some(first) = placed
+        .iter()
+        .find(|(_, _, t)| t.is_some())
+        .map(|(at, _, _)| *at)
+    else {
+        return Line::from(Span::styled(fit(&text, w, Align::Left), st));
+    };
+    let mut out = fit(&text, first.saturating_sub(1), Align::Left);
+    for (at, cw, t) in placed.into_iter().filter(|(at, _, _)| *at >= first) {
+        let _ = at;
+        out.push(' ');
+        out.push_str(&t.unwrap_or_else(|| " ".repeat(cw)));
+    }
+    Line::from(Span::styled(fit(&out, w, Align::Left), st))
+}
+
+/// base-view.summaries-per-group: 小計のあるまとまりの見出しの字が、最初の小計の列の手前に入るように広げた
+/// ノートの欄の幅(上限は 1 列の上限 `max`)。ノートの欄を出さない表と、小計の無い表では `label_w` のまま。
+fn heading_room(app: &App, label_w: usize, widths: &[usize], num_w: usize, max: usize) -> usize {
+    if label_hidden(app) || app.built.group_summaries.iter().all(Vec::is_empty) {
+        return label_w;
+    }
+    let summed = |c: &String| {
+        app.built
+            .group_summaries
+            .iter()
+            .any(|gs| gs.iter().any(|(x, _, _)| x == c))
+    };
+    let Some(first) = app.cols.iter().position(summed) else {
+        return label_w;
+    };
+    let before: usize = widths[..first.min(widths.len())]
+        .iter()
+        .map(|w| w + 1)
+        .sum();
+    let need = (0..app.groups.len())
+        .filter_map(|g| heading_text(app, false, g))
+        .map(|t| width(&t))
+        .max()
+        .unwrap_or(0);
+    // 見出しの字が入る幅: 選択の印 1 桁 + 行番号の欄 + ノートの欄 + 区切り + 小計の列より前の列。
+    let have = 1 + num_w + label_w + before;
+    if need <= have {
+        label_w
+    } else {
+        (label_w + need - have).min(max.max(label_w))
+    }
 }
 
 /// 見えている列 `col` の左の端の桁(CE-35 の型の窓の置き場)。見えていなければ None。
@@ -1072,7 +1180,7 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
                 ctx.max = super::rows::height(app, &tall, i);
                 lines.extend(data_row(app, &lay, &cols, i, &app.rows[*r], &ctx, k));
             }
-            Slot::Head(g) => lines.push(heading_row(app, i, *g, w)),
+            Slot::Head(g) => lines.push(heading_row(app, &lay, &cols, i, *g, w)),
             // SR-30: 見出しの上の空き。
             Slot::Gap => lines.push(Line::from(" ".repeat(w))),
         }

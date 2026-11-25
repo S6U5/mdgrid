@@ -280,7 +280,7 @@ fn test_ch_4_negative_value_draws_no_bar() {
 
 #[test]
 fn test_ch_4_item_without_numbers_shows_dash() {
-    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~2, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~2] 数の値のある行が無い項目は値なし: 平均で doing は「-」で棒なし。
+    // [utest -> req~chart.bar-rows~1, req~chart.bar-scale~2, req~chart.bar-stacked~1, req~chart.bar-stacked-top5~3] 数の値のある行が無い項目は値なし: 平均で doing は「-」で棒なし。
     let notes = md(&[
         ("alpha", "status: todo\nestimate: 2"),
         ("beta", "status: doing"),
@@ -391,7 +391,7 @@ fn test_ch_4_percent_makes_every_bar_full() {
 
 #[test]
 fn test_ch_4_stacked_keeps_five_and_groups_rest_as_other() {
-    // [utest -> req~chart.bar-stacked-top5~2] 内訳は全体で多い順に5つまで(o1〜o5)、残り(o6・o7)は「その他」(塗りの字 `:`)にまとめる。
+    // [utest -> req~chart.bar-stacked-top5~3] 内訳は全体で多い順に5つまで(o1〜o5)、残り(o6・o7)は「ほか」(塗りの字 `:`)にまとめる。
     let mut list: Vec<(String, String)> = Vec::new();
     for (owner, n) in [
         ("o1", 6),
@@ -418,20 +418,20 @@ fn test_ch_4_stacked_keeps_five_and_groups_rest_as_other() {
     );
     let c = open(&mut a);
     let legend = c.legend();
-    for v in ["o1", "o2", "o3", "o4", "o5", "その他"] {
+    for v in ["o1", "o2", "o3", "o4", "o5", "ほか"] {
         assert!(legend.contains(v), "凡例に {v}: {legend:?}\n{}", c.raw);
     }
     for v in ["o6", "o7"] {
-        assert!(!legend.contains(v), "{v} はその他に入る: {legend:?}");
+        assert!(!legend.contains(v), "{v} はほかに入る: {legend:?}");
     }
     let todo = c.bar("todo");
     assert!(
         todo.fills.contains(':'),
-        "その他の塗りは `:`: {:?}",
+        "ほかの塗りは `:`: {:?}",
         todo.fills
     );
     let kinds: std::collections::BTreeSet<char> = todo.fills.chars().collect();
-    assert_eq!(kinds.len(), 6, "5つの内訳とその他: {:?}", todo.fills);
+    assert_eq!(kinds.len(), 6, "5つの内訳とほか: {:?}", todo.fills);
 }
 
 #[test]

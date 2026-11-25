@@ -381,7 +381,7 @@ fn syntax_error(src: &str) {
 fn test_bv_7_unknown_function_is_unsupported() {
     // [utest -> req~base-view.unsupported-no-guess~1] 知らない関数・メソッドは parse で Unsupported、名前を含む
     unsupported_with("foo(1)", "foo");
-    unsupported_with("list.map(value + 1)", "map");
+    unsupported_with("list.toFixed(2)", "toFixed");
     unsupported_with("status == \"a\" && bar(status)", "bar");
     unsupported_with("file.name.frobnicate()", "frobnicate");
 }

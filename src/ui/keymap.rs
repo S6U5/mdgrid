@@ -476,7 +476,7 @@ pub enum Action {
     OpenRecent,
     /// workspace.switch-open: お気に入りのワークスペースの切り替えの一覧を開く。
     WsSwitch,
-    /// workspace.favorite-mark: お気に入りに入れる・外す(引き出しの見出しと、パレットの今のワークスペース)。
+    /// workspace.favorite-mark: お気に入りに入れる・外す(パレットの今のワークスペース。切り替えの一覧では今いる所を入れる)。
     WsFavorite,
     /// workspace.switch-keys: 切り替えの一覧で、その番号(1〜9)の項目を選ぶ。名前は番号ごと(`choose_3`)。
     Choose(u8),
@@ -2463,7 +2463,7 @@ pub const BINDINGS: &[Binding] = &[
         IN_FILTERS,
         0,
     ),
-    // 表の一覧の引き出しの中(WS-8。drawer.rs)。Enter で表へ移るか見出しを開け閉めし、l・h で見出しを開く・畳む。
+    // 表の一覧の引き出しの中(WS-8。drawer.rs)。Enter で選んだ表(かページ)へ移る。
     m(
         Mode::Drawer,
         "Enter",
@@ -2534,38 +2534,6 @@ pub const BINDINGS: &[Binding] = &[
         "G",
         Action::Bottom,
         Msg::KeyBottom,
-        IN_DRAWER,
-        0,
-    ),
-    m(
-        Mode::Drawer,
-        "l",
-        Action::Right,
-        Msg::KeyDrawerOpen,
-        IN_DRAWER,
-        3,
-    ),
-    m(
-        Mode::Drawer,
-        "Right",
-        Action::Right,
-        Msg::KeyDrawerOpen,
-        IN_DRAWER,
-        0,
-    ),
-    m(
-        Mode::Drawer,
-        "h",
-        Action::Left,
-        Msg::KeyDrawerFold,
-        IN_DRAWER,
-        4,
-    ),
-    m(
-        Mode::Drawer,
-        "Left",
-        Action::Left,
-        Msg::KeyDrawerFold,
         IN_DRAWER,
         0,
     ),
@@ -3495,16 +3463,9 @@ pub const BINDINGS: &[Binding] = &[
         IN_RELMAP,
         0,
     ),
-    // workspace.favorite-mark: 引き出しのワークスペースの見出しで、お気に入りに入れる・外す。
-    m(
-        Mode::Drawer,
-        "f",
-        Action::WsFavorite,
-        Msg::KeyDrawerFavorite,
-        IN_DRAWER,
-        0,
-    ),
     // 切り替えの一覧の中(workspace.switch-keys。switch.rs)。数字でその番号のワークスペースへ、Enter で選んだ所へ。
+    // workspace.favorite-mark・workspace.favorite-reorder: a で今いる所を入れ、d で選んだお気に入りを外し、K・J で
+    // 1つ上・下へ動かす(並べ替えの窓の d・K・J と同じ流儀)。
     m(
         Mode::Switch,
         "Enter",
@@ -3519,7 +3480,7 @@ pub const BINDINGS: &[Binding] = &[
         Action::Close,
         Msg::KeyClose,
         IN_SWITCH,
-        2,
+        4,
     ),
     m(
         Mode::Switch,
@@ -3558,6 +3519,70 @@ pub const BINDINGS: &[Binding] = &[
         "Up",
         Action::Up,
         Msg::KeyPrevItem,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "a",
+        Action::WsFavorite,
+        Msg::KeySwitchAddHere,
+        IN_SWITCH,
+        2,
+    ),
+    m(
+        Mode::Switch,
+        "d",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_SWITCH,
+        3,
+    ),
+    m(
+        Mode::Switch,
+        "Delete",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "Backspace",
+        Action::RemoveItem,
+        Msg::KeyRemove,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "K",
+        Action::MoveItemUp,
+        Msg::KeyMoveItemUp,
+        IN_SWITCH,
+        5,
+    ),
+    m(
+        Mode::Switch,
+        "Shift+Up",
+        Action::MoveItemUp,
+        Msg::KeyMoveItemUp,
+        IN_SWITCH,
+        0,
+    ),
+    m(
+        Mode::Switch,
+        "J",
+        Action::MoveItemDown,
+        Msg::KeyMoveItemDown,
+        IN_SWITCH,
+        6,
+    ),
+    m(
+        Mode::Switch,
+        "Shift+Down",
+        Action::MoveItemDown,
+        Msg::KeyMoveItemDown,
         IN_SWITCH,
         0,
     ),

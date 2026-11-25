@@ -45,15 +45,15 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - Then: 一覧(先頭は今のフォルダ)。
 
 #### 開くフォルダ(引数に渡したフォルダ1つか、引数が無いときの今のフォルダ)の印 `.mdgrid/workspace.toml` の `open` が印の表を指すときは、既定の表と一覧の代わりにその表を開くべき(workspace.marker)
-`req~cli.launch-marker-open~2` P1
+`req~cli.launch-marker-open~3` P1
 - Acceptance:
   - Given: 根に `tasks.base` と AGENTS.md のあるフォルダに、`open = "台帳"` と `[[table]] name = "台帳"`・`path = "tasks.base"` の印
   - When:
   - Then: そのフォルダで引数なしの起動・`mdgrid .`・ほかのフォルダからそのフォルダのパスを渡した起動のどれでも tasks.base の表が開き、AGENTS.md の行は無い。places.toml に登録があっても cli.places-list の一覧を出さずにその表。
 - Acceptance:
-  - Given:
-  - When: 下の `todo/` を開く
-  - Then: todo の既定の表(印は上へたどらない)。
+  - Given: 同じ印で、根の下に、どの表のノートのフォルダでもない `memo/`
+  - When: `memo/` を開く
+  - Then: memo の既定の表(印の `open` は上へたどらない。表のノートのフォルダを開いたときは cli.launch-table-folder)。
 
 #### 画面を出さない起動(`--print`・`--check`・`--print-config --resolved`)でも、印の `open` を同じに使うべき
 `req~cli.launch-marker-headless~1` P1
@@ -610,12 +610,21 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When: マニフェストの版が Cargo.toml の版と違う
   - Then: 試験が落ちる。
 
-#### `mdgrid [<.base | フォルダ> …] --check [--view <名前>]` は、画面を出さずに、開いたビューの各ノートを確かめ、問題を1つ1行で `<パス>:<行>: <列>: <理由>` の形で標準出力に出すべき
-`req~cli.check-problems~1` P1
+#### `mdgrid [<.base | フォルダ> …] --check [--view <名前>]` は、画面を出さずに、表の各ノート(`--view` を渡したときはそのビューの行)を確かめ、問題を1つ1行で `<パス>:<行>: <列>: <理由>` の形で標準出力に出すべき
+`req~cli.check-problems~2` P1
+- Rationale: 最初のタブで絞った台帳でも、ほかのタブにしか出ない行の問題を見落とさないため(ブックマークの台帳で、URL の無いノートを見落とした。2026-11-25)
 - Acceptance:
   - Given: `[types] due = "date"` で `due: someday` のノートと、`[rules.status] required = true` で status の無いノート
   - When:
-  - Then: `notes/a.md:3: due: 型が合わない(日付ではない)` と `notes/b.md: status: 必須のキーが無い`(キーが無いときは行を付けない)。確かめるのは、ビューの絞り込みのあとの行(cli.print と同じく、画面の見た目の状態は使わない)の各ノートの、全部のフロントマターのキーと決まり(cell-edit.rules)のある列の問題(cell-view.problems)。
+  - Then: `notes/a.md:3: due: 型が合わない(日付ではない)` と `notes/b.md: status: 必須のキーが無い`(キーが無いときは行を付けない)。確かめるのは、`--view` が無ければ表の全部の行(`.base` の全体の絞り込みといつも隠す条件(condition.hide-everywhere)は当て、どのビューの絞り込みも、印の表の `view` も当てない)、`--view` があればそのビューの絞り込みのあとの行(どちらも cli.print と同じく、画面の見た目の状態は使わない)の各ノートの、全部のフロントマターのキーと決まり(cell-edit.rules)のある列の問題(cell-view.problems)。
+- Acceptance:
+  - Given: 最初のビュー「未完了」が `status != "done"` で絞る `.base` の表に、`status: done` と `due: someday` のノート(`[types] due = "date"`)
+  - When: `mdgrid <その .base> --check`
+  - Then: そのノートの `due` の問題の行が出て、終了コード 1。
+- Acceptance:
+  - Given: 同じ表
+  - When: `mdgrid <その .base> --check --view 未完了`
+  - Then: 出力なし、終了コード 0。
 
 #### `--check` の問題の行は、パスと行の順に出すべき
 `req~cli.check-order~1` P1
@@ -1180,6 +1189,114 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - Then: 警告なし。
 - Needs: stest
 
+### 表を名前で選ぶ
+
+#### `--table <名前>` は、開くフォルダ(無ければ今のフォルダ。`.md` のファイルならそのフォルダ)から上へたどって最初に見つかった印 `.mdgrid/workspace.toml` の、その名前の表(書いた表は `name`、自動の表はフォルダの名前。workspace.marker-open と同じ)を、印の `open` の表と既定の表の代わりに開くべき
+`req~cli.table-open~1` P1
+- Rationale: 印に表をいくつも書いた台帳で、`open` でない表を、画面で切り替えずに命令で選べるようにするため。`--print`・`--count`・`--check`・`--new-note` が `open` の表にしか効かず、ニュースを集める道具がニュースの表を使えなかった(2026-11-25 に調べ物・お金・読書の記録の台帳で見つかった)
+- Acceptance:
+  - Given: 印の根 `r` に `open = "問い"` と、表「問い」(絞り込み `file.inFolder("Questions")`)と表「ニュース」(絞り込み `file.inFolder("News")`)
+  - When: `mdgrid r --table ニュース --print --with-path`
+  - Then: `r/News` のノートの行だけが出て(`r/Questions` のノートの行は無い)、終了コード 0。
+- Acceptance:
+  - Given: 同じ台帳で、今のフォルダが `r/Questions`
+  - When: `mdgrid --table ニュース`(画面)
+  - Then: 表「ニュース」のビューのタブで開き、News のノートの行が出る。
+- Needs: stest
+
+#### `--table` は、表を使う命令(画面・`--pick`・`--print`・`--count`・`--check`・`--notices`・`--notify`・`--runs`・`--apply`・`--print-config --resolved`・`--page`)のどれでも、選んだ表を開いた表として効かせるべきで、`--view` はその表のビューから探し、`--view` が無ければ印の `open` で開いたときと同じくその表の `view`(無ければ最初のビュー)にするべき
+`req~cli.table-commands~1` P1
+- Rationale: 画面と命令で、同じ名前が同じ表を指すようにするため。`--print --view 次の支払いの順` が `open` の表のビューだけを探して「ビューは無い」になった(2026-11-25 にお金の台帳で見つかった)
+- Acceptance:
+  - Given: 印の根 `m` に `open = "支出"` と表「支出」と、ビュー「全部」「次の支払いの順」(`status` が active の行)の順の表「定期の支払い」
+  - When: `mdgrid m --table 定期の支払い --print --view 次の支払いの順`
+  - Then: 定期の支払いの active の行だけが出て、終了コード 0。
+- Acceptance:
+  - Given: 同じ台帳
+  - When: `mdgrid m --table 定期の支払い --count`
+  - Then: 定期の支払いの最初のビュー「全部」の行の数。
+- Acceptance:
+  - Given: 同じ台帳で、定期の支払いのノートに `[types]` の日付の列の型に合わない値
+  - When: `mdgrid m --table 定期の支払い --check`
+  - Then: その問題の行が出て、終了コード 1。
+- Acceptance:
+  - Given: 同じ台帳で、表「定期の支払い」にだけ `[table.rules.status] values`
+  - When: `mdgrid m --table 定期の支払い --print-config --resolved`
+  - Then: その `values` が出る。
+- Needs: stest
+
+#### `--new-note` に `--table <名前>` を添えたら、その表の決まり(作る場所の `[new_note] folder`・名前の頭・前もって入れる値・本文の雛形・必須の列)で印の根からの場所に作り、作ったパスを、渡したフォルダ(無ければ今のフォルダ)から見た道で出すべき
+`req~cli.table-new-note~1` P1
+- Rationale: ニュースを集める道具が、どのフォルダから呼んでも、ニュースの表の決まり(名前の日付の頭・雛形・既定の値)でノートを足せるようにするため
+- Acceptance:
+  - Given: 今日が 2026-11-25、印の根 `r` の表「ニュース」に `[table.new_note]` の `folder = "News"`・`name = "{date:YYYYMMDD}_"`・`name_head = "hide"`・`body`(雛形 `# {name}`)と `[table.new_note.set] date = "{date}"`
+  - When: `mdgrid r --table ニュース --new-note 見出し`
+  - Then: `r/News/20261125_見出し.md` ができ、フロントマターに `date: 2026-11-25`、本文は `# 見出し`、標準出力は `r/News/20261125_見出し.md` の1行。
+- Acceptance:
+  - Given: 同じ台帳で、今のフォルダが `r/Questions`
+  - When: `mdgrid --table ニュース --new-note 別`
+  - Then: `r/News/20261125_別.md` ができ、標準出力は `../News/20261125_別.md` の1行。
+- Needs: stest
+
+#### `--table` の名前の表が無いとき(開くフォルダから上へたどって印が無い・印の表のどれの名前でもない)は、何も開かず書かずに、理由1行(印の表があればその名前を並べる)と終了コード 2 で終わるべき
+`req~cli.table-unknown~1` P1
+- Acceptance:
+  - Given: 表「問い」と表「ニュース」の印の根 `r`
+  - When: `mdgrid r --table 無い --print`
+  - Then: 標準出力は空で、標準エラーの理由1行に `問い` と `ニュース` があり、終了コード 2。
+- Acceptance:
+  - Given: 同じ台帳
+  - When: `mdgrid r --table 無い --new-note x`
+  - Then: 理由1行と終了コード 2 で、`r` の下のどこにも `x.md` ができない。
+- Acceptance:
+  - Given: 上へたどっても印の無いフォルダ `plain`
+  - When: `mdgrid plain --table ニュース --print`
+  - Then: 印が無いことを言う理由1行と終了コード 2。
+- Needs: stest
+
+#### `--table` を `--raw`・`-s`・`--continue` と一緒に渡したとき、開くパスを2つ以上添えたとき、`-w` と開くパスの両方と一緒に渡したときは、cli.fail-fast と同じく理由1行と終了コード 2 にするべき
+`req~cli.table-bad-args~1` P1
+- Rationale: `--raw`(印を使わない)・セッションと `--continue`(開く表を自分で持つ)・2つ目のパスは、どの表を開くかが食い違うため
+- Acceptance:
+  - Given: 印の根 `r`
+  - When: `mdgrid r --table ニュース --raw --print`・`mdgrid r r/News --table ニュース --print`・`mdgrid -s 朝 --table ニュース`・`mdgrid --continue --table ニュース`
+  - Then: どれも理由1行と終了コード 2。
+- Needs: stest
+
+#### `-w <名前>` と一緒の `--table` は、`workspaces.toml` のそのワークスペースの表(`[[workspace.table]]` の `name`)から選ぶべき
+`req~cli.table-workspace~1` P1
+- Rationale: `-w` で範囲を決めたときも、表を同じ旗で選べるようにするため
+- Acceptance:
+  - Given: `workspaces.toml` のワークスペース「仕事」に、表「a」(フォルダ `a`)と表「b」(フォルダ `b`)
+  - When: `mdgrid -w 仕事 --table b --print --with-path`
+  - Then: `b` のノートの行だけが出る。
+- Acceptance:
+  - Given: 同じワークスペース
+  - When: `mdgrid -w 仕事 --table c --print`
+  - Then: `a` と `b` を並べた理由1行と終了コード 2。
+- Needs: stest
+
+#### 印の根の下の、印の表のノートを置くフォルダ(その表の `[new_note] folder` か、表の `.base` の絞り込みの `file.inFolder` が指すフォルダ。cli.new-note-table-folder と同じ)を開いたら、画面でも画面を出さない起動でも、そのフォルダの素の表でなくその表を開くべき(`--raw` のときは素の表)
+`req~cli.launch-table-folder~1` P1
+- Rationale: 表のフォルダを直に開くと、その表の決まり(新しいノートの名前の頭・雛形・ビュー・値の候補)が効かない素の表になり、画面で作るノートの形が `--new-note`(cli.new-note-table-folder)とそろわなかった(2026-11-25 に調べ物の台帳で見つかった)
+- Acceptance:
+  - Given: 印の根 `r` の表「ニュース」(絞り込み `file.inFolder("News")`、ビュー「未判定」「全部」)
+  - When: `mdgrid r/News`(画面)
+  - Then: 表「ニュース」のタブ「未判定」「全部」で開く。
+- Acceptance:
+  - Given: 同じ台帳
+  - When: `mdgrid r/News --print --with-path`
+  - Then: `mdgrid r --table ニュース --print --with-path` と同じ行。
+- Acceptance:
+  - Given: 同じ台帳で、どの表のフォルダでもない `r/Other`
+  - When: `mdgrid r/Other --print --with-path`
+  - Then: `r/Other` の既定の表(今までどおり)。
+- Acceptance:
+  - Given: 同じ台帳
+  - When: `mdgrid r/News --raw --print --with-path`
+  - Then: `r/News` の既定の表(表の絞り込みとビューを当てない)。
+- Needs: stest
+
 ## 未確定事項
 
 ### `--new-note` に `--view <名前>` を添えたとき、そのビューの絞り込みで値が1つに決まる列(cell-edit.new-note-filter-values)と、ビューごとの新しいノートの設定(cell-edit.new-note-form-per-view)を使うか
@@ -1191,3 +1308,13 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 `tbd~cli.new-note-name-template`
 - Decider: 人
 - Provisional: 作らない(名前は必ず渡す。空の名前は理由1行と終了コード 2)
+
+### `--table` の表の名前を、シェルの補完の候補に出すか
+`tbd~cli.table-completion`
+- Decider: 人
+- Provisional: 出さない(補完の定義は引数の定義から前もって作る文(cli.completions-man-from-args)で、台帳ごとに変わる表の名前を出すには、補完のたびに mdgrid を呼ぶ形に作り直す必要があるため。名前を間違えたときは、理由の1行に表の名前が並ぶ(cli.table-unknown))
+
+### `--check` で `--view` が無いとき、いつも隠す条件(condition.hide-everywhere)を当てるか
+`tbd~cli.check-hidden-rows`
+- Decider: 人
+- Provisional: 当てる(いつも隠す行は、画面にも `--print` にも `--count` にも無い行なので、確かめる行からも外す。隠した行も確かめたいときは条件を外す)

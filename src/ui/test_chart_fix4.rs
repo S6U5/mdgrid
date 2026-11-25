@@ -183,8 +183,8 @@ fn test_chart_week_starts_on_monday_when_set() {
 
 #[test]
 fn test_chart_stacked_picks_series_by_y_sum() {
-    // [utest -> req~chart.bar-stacked-top5~2] y = amount の合計: housing 1行(80000)、food 10行(各 1000)、comm・daily・fun・health・
-    // transport が3行ずつ(各 100・300・200・10・50)→ 内訳は housing・food・daily・fun・comm で、health と transport は「その他」。
+    // [utest -> req~chart.bar-stacked-top5~3] y = amount の合計: housing 1行(80000)、food 10行(各 1000)、comm・daily・fun・health・
+    // transport が3行ずつ(各 100・300・200・10・50)→ 内訳は housing・food・daily・fun・comm で、health と transport は「ほか」。
     let mut list: Vec<(String, String)> = vec![(
         "rent".to_string(),
         "who: me\ncategory: housing\namount: 80000".to_string(),
@@ -217,15 +217,54 @@ fn test_chart_stacked_picks_series_by_y_sum() {
     );
     let c = open(&mut a);
     let legend = c.legend();
-    for v in ["housing", "food", "daily", "fun", "comm", "その他"] {
+    for v in ["housing", "food", "daily", "fun", "comm", "ほか"] {
         assert!(legend.contains(v), "凡例に {v}: {legend:?}\n{}", c.raw);
     }
     for v in ["health", "transport"] {
-        assert!(
-            !legend.contains(v),
-            "{v} は「その他」: {legend:?}\n{}",
-            c.raw
-        );
+        assert!(!legend.contains(v), "{v} は「ほか」: {legend:?}\n{}", c.raw);
+    }
+}
+
+#[test]
+fn test_chart_stacked_rest_name_differs_from_value_named_other() {
+    // [utest -> req~chart.bar-stacked-top5~3] category の値が7つ(other 5行、c1〜c6 は c1 から 4・3・2・2・1・1 行)で、
+    // other に labels で「その他」 → 凡例に値の名前の「その他」と、あふれた分(c5・c6)の「ほか」が1つずつ並ぶ。
+    let mut list: Vec<(String, String)> = Vec::new();
+    for (cat, n) in [
+        ("other", 5),
+        ("c1", 4),
+        ("c2", 3),
+        ("c3", 2),
+        ("c4", 2),
+        ("c5", 1),
+        ("c6", 1),
+    ] {
+        for k in 0..n {
+            list.push((format!("{cat}-{k}"), format!("who: me\ncategory: {cat}")));
+        }
+    }
+    let (_t, mut a) = boot(
+        "chrestname",
+        &md(&refs(&list)),
+        "[rules.category]\nvalues = [\"other\", \"c1\", \"c2\", \"c3\", \"c4\", \"c5\", \"c6\"]\nlabels = { other = \"その他\" }\n",
+        "chart = { kind = \"stacked\", x = \"who\", by = \"category\" }",
+    );
+    let c = open(&mut a);
+    let legend = c.legend();
+    assert_eq!(
+        legend.matches("その他").count(),
+        1,
+        "値の名前の「その他」は1つ: {legend:?}\n{}",
+        c.raw
+    );
+    assert_eq!(
+        legend.matches("ほか").count(),
+        1,
+        "あふれた分の「ほか」は1つ: {legend:?}\n{}",
+        c.raw
+    );
+    for v in ["c5", "c6"] {
+        assert!(!legend.contains(v), "{v} は「ほか」: {legend:?}\n{}", c.raw);
     }
 }
 
@@ -437,8 +476,8 @@ fn test_chart_heatmap_numbers_readable_in_every_theme() {
 
 #[test]
 fn test_chart_stacked_series_colors_stand_out_in_every_theme() {
-    // [utest -> req~chart.series-contrast~1] 全部のテーマ × 24 ビット・256 色(既定のテーマは暗い端末と明るい端末)で、内訳が
-    // 6つ(o1〜o5 と「その他」)の積み上げ棒を描く → 棒のどの字も、字の色と画面の地の対比が 3 以上。
+    // [utest -> req~chart.series-contrast~2] 全部のテーマ × 24 ビット・256 色(既定のテーマは暗い端末と明るい端末)で、内訳が
+    // 6つ(o1〜o5 と「ほか」)の積み上げ棒を描く → 棒のどの字も、字の色と画面の地の対比が 3 以上。
     let mut list: Vec<(String, String)> = Vec::new();
     for (owner, n) in [
         ("o1", 7),

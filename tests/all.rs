@@ -101,6 +101,8 @@ mod test_frontmatter;
 mod test_gantt_docs;
 #[path = "test_gantt_e2e.rs"]
 mod test_gantt_e2e;
+#[path = "test_group_totals_e2e.rs"]
+mod test_group_totals_e2e;
 #[path = "test_group_values.rs"]
 mod test_group_values;
 #[path = "test_hwheel_e2e.rs"]
@@ -109,6 +111,8 @@ mod test_hwheel_e2e;
 mod test_i18n;
 #[path = "test_install_docs.rs"]
 mod test_install_docs;
+#[path = "test_kanban_cards_e2e.rs"]
+mod test_kanban_cards_e2e;
 #[path = "test_kanban_docs.rs"]
 mod test_kanban_docs;
 #[path = "test_kanban_e2e.rs"]
@@ -129,6 +133,8 @@ mod test_locales;
 mod test_locales_e2e;
 #[path = "test_look_e2e.rs"]
 mod test_look_e2e;
+#[path = "test_lookup.rs"]
+mod test_lookup;
 #[path = "test_marker_base.rs"]
 mod test_marker_base;
 #[path = "test_marker_base_name.rs"]
@@ -239,6 +245,8 @@ mod test_starter_examples;
 mod test_starter_layer;
 #[path = "test_switch_e2e.rs"]
 mod test_switch_e2e;
+#[path = "test_table_flag.rs"]
+mod test_table_flag;
 #[path = "test_tag_keys.rs"]
 mod test_tag_keys;
 #[path = "test_theme_auto_e2e.rs"]

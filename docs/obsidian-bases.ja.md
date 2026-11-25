@@ -38,6 +38,7 @@ Obsidian と同じく、名前が `.` で始まるフォルダ(`.obsidian`・`.g
 | `groupBy` | `property` と `direction`。値ごとの見出しの下にまとめ、空の値は `(空)` にまとめる。まとまりの中は `sort` の順。 |
 | `limit` | 整数。最後に、全体の行数に効く。 |
 | `summaries` | 列(`estimate`・`note.estimate`・`file.*`・`formula.*`)から組み込みの集計の名前へのマップ。[集計](#集計)を見る。 |
+| `summary_labels` | mdgrid の足したキー(Obsidian は無視する)。列から、その集計に組み込みの名前の代わりに出す名前へのマップで、どの言語の画面でも書いた名前を使う。`finished: 冊数` なら `空でない 13` が `冊数 13` になる。文字の名前だけを読む。[集計](#集計)を見る。 |
 | `tab_break` | mdgrid の足したキー(Obsidian は無視する)。`true` なら、タブの行をこのタブの前で改める。見せるタブの先頭でないものにあれば、端末の幅と `display.tab_wrap` に依らず、タブを全部検索の欄の行の下に並べ、ここで行を改める(行に入らなければその行の中で折り返す)。隠したタブにあれば次に見せるタブで改める。例: 状態で選ぶタブと期限で選ぶタブを別の行にする。 |
 
 `filters`(一番外とビューの両方)は、式の文字列か、`and`・`or`・`not` のマップ。それぞれの中は式の文字列か、さらにマップの並び。1つのマップに複数あれば AND でつなぐ。`not` は、中のどれも真でない行を残す。マップにほかのキーがある・形が違うときは、そのビューを開かない([解釈しないもの](#解釈しないもの)を見る)。絞り込みは、式が `if` と同じ真偽の規則で真の行だけを残す(`null`・`false`・`0`・空の文字列は偽)。
@@ -119,6 +120,13 @@ Obsidian と同じく、名前が `.` で始まるフォルダ(`.obsidian`・`.g
 - `unique()`: リストから重なる要素を除く(それぞれ最初のものを残す)。
 - `sort()`: リストを小さい順に並べる。
 - `flat()`: リストの中のリストを1段開く。
+- `asFile()`: リンクの行き先のノート。値まるごとのリンク(`[[名前]]`・`[文字](パス.md)`・パス)と、`file.backlinks` の要素(ルートフォルダからのパス)に付け、`file.links` と同じ決まりで行き先を探す。どのノートにも当たらないリンクと、ほかの値は `null`。[つながったノート](#つながったノート)を見る。
+- `filter(条件)`: リストのうち、条件が真の要素。条件の中では `value` が要素、`index` が 0 から数えた位置: `[1, 2, 3, 4].filter(value > 2)` は `[3, 4]`。この外と `note.value` の `value` は、今までどおりフロントマターのキー。
+- `map(式)`: 要素ごとに式を計算したリスト(`value` と `index` は filter と同じ): `[1, 2, 3].map(value * 10)` は `[10, 20, 30]`。
+- `reduce(式, 初め)`: リストから1つの値を作る。`acc` は `初め` から始まり、要素ごとに式の値になる: `[1, 2, 3].reduce(acc + value, 0)` は `6`。
+- `max()`(mdgrid が足したメソッド。Obsidian には数を並べて渡す `max(a, b, ...)` しか無い): リストの数のうち一番大きいもの。数が無ければ、日付・日時のうち一番遅いもの。ほかの要素は飛ばし、比べるものが無ければ `null`。
+- `min()`(mdgrid が足したメソッド): `max()` と同じ決まりで、一番小さい数か、一番早い日付・日時。
+- `sum()`(mdgrid が足したメソッド): リストの数の合計。ほかの要素は飛ばす(数が無ければ `0`)。
 - `length`: 文字列の文字数か、リストの要素の数。括弧を付けずに書く(`tags.length`)。
 - `year`: 日付・日時の年。括弧を付けずに書く(`due.year`)。下の5つも同じ。
 - `month`: 月(1 〜 12)。
@@ -149,14 +157,42 @@ Obsidian と同じく、名前が `.` で始まるフォルダ(`.obsidian`・`.g
 - `file.inFolder(フォルダ)`: そのフォルダか、その下のフォルダにあれば真。
 - `file.hasProperty(名前)`: フロントマターにそのキーがあれば真。
 - `file.hasLink(ノート)`: そのノート(名前・パス・`this.file`)へリンクしていれば真。
+- `file.linkedFrom(キー, ...)`(mdgrid が足した関数。Obsidian には無い): フロントマターのそのキー(どれか)の値のリンクで、このノートを指すノートのリスト(パスの順)。本文のリンクとほかのキーのリンクは数えないので、`file.backlinks` と違い、どの列から指したかで分けられる: `file.linkedFrom("question").length` は、question でこの問いを指すニュースだけの数。
+
+ノートも値になる: `file` だけを書けばその行のノート、`asFile()` はリンクの行き先のノート。ノートの値には上の名前が全部付くので、`source.asFile().name` や `value.inFolder("Meetings")` と書ける。[つながったノート](#つながったノート)を見る。
 
 ## this
 
 `.base` のファイルを直接開いたとき、`this` はその `.base` のファイル。`this.file` はそのパス、`this.file.name`・`this.file.basename`・`this.file.ext`・`this.file.path`・`this.file.folder`・`this.file.size`・`this.file.mtime`・`this.file.ctime` はノートと同じ意味の値(`this.file.tags` は空のリスト)。例: `file.inFolder(this.file.folder)` は `.base` と同じフォルダ(とその下)のノート、`file.links.contains(this.file)` は `.base` へリンクする(`[[Projects.base]]` か `[[P/Projects.base]]`。`.base` を名前かパスで指すリンクは `this.file` と同じ値になる)ノート。指す `.base` の無いところ(フォルダの mdgrid のビュー)では、`this` を使う式は未対応。
 
+## つながったノート
+
+式で、その行がリンクする先のノートの値を引き(ルックアップ)、その行を指すノートの値を集められる(ロールアップ)。抜き書きの行に本の著者を出す、本に抜き書きの数を出す、人に最後に出た会議の日を出す、を手で写さずにできる。
+
+```yaml
+formulas:
+  # 抜き書き: source の本の著者と種類
+  author: 'source.asFile().properties.author'
+  kind: 'source.asFile().properties.kind'
+  # 本: この本を source で指す抜き書きの数
+  quotes: 'file.linkedFrom("source").length'
+  # 人: 出席した会議のうち、済んだものの一番遅い日
+  met: 'file.linkedFrom("attendees").filter(value.inFolder("Meetings") && value.properties.status == "done").map(value.properties.when).max().date()'
+```
+
+ノートの値の `.properties.<キー>`(`.properties["キー"]`)は、そのノートのフロントマターの値で、ためた(保存の前の)値も重ねる。その値が値まるごとのリンクなら、そのノートのフォルダから探した行き先のノートになるので、もう1段引ける: `attendees[0].asFile().properties.org.properties.kind`。ノートの値の名前はリンクの文字にも直に付き、`source.properties.author` は `source.asFile().properties.author` と同じ。ノートとリンクの文字は行き先のノートで比べるので、`"[[安藤 真]]" == file` も `value.properties.attendees.contains(file)` も当たる。
+
+画面では、ノートは名前(`display.note_name` を当てたもの)、日付は `dates.format` の形、`.properties.<キー>` で引いた値は今の表の `[rules.<キー>] labels` の名前で見せる。`--print` では、ノートは `file.links` と同じく、ルートフォルダからのパスの `.md` を除いたもの。
+
+引けるのは、表のルートフォルダの下のノート(`file.links`・`file.backlinks` と同じ範囲)。`[table.base] filters` で絞った表の台帳なら、台帳のノートを全部引ける。`path` で自分のフォルダだけを開いた表からは、ほかのフォルダは見えない。ノートどうしのつながりは保存したノートから作るので、ためた値で足したリンクは保存してから数える。つながりは読み込みのたびに1回作る索引に持つので、ロールアップが読むのはその行を指すノートだけ。1つのセルの手数は 20 万まで。越える式(長いリストの filter と map を深く入れ子にしたもの)は、未対応の印と理由を出し、ほかのセルは出る。
+
 ## 集計
 
 ビューの `summaries` があると、表の下(下の帯のすぐ上)に1行の集計の行が出る。左のノートの列に `集計`(英語では `Summary`)、集計した列の下に集計の名前と値(例: `合計 18`・`最早 2026-10-05`。英語では Obsidian の名前で `Sum 18`・`Earliest 2026-10-05`)が、列の位置にそろって出る(横に送ると一緒に動く)。集計は今ビューに出ている行(ビューの絞り込み・ビューの設定・検索のあと)で計算するので、絞り込むと値も変わる。ためた(保存前の)値も数える。`summaries` の無いビューには集計の行が無い。
+
+`groupBy` のあるビューでは、まとまりごとの集計(小計)も、まとまりの見出しの行の右に、同じく列の位置にそろえて出る(`▾ status: done(2件)    合計 8`)。見出しの字は最初の小計の列の手前までに置く(入るように、ノートの欄を列の幅の上限まで少し広げる)。畳んだまとまりにも小計が出たままなので、全部を畳むと、まとまりごとの合計の一覧になる。表の下の集計の行は表全体の値のまま。数の値は列の[数の見せ方](config.ja.md#format)で出す(`合計 ¥101,500`)。件数を数える集計には当てない。
+
+集計に自分の名前を付けるには、ビューに `summary_labels` を書く。mdgrid の足したキーで、Obsidian は無視する。
 
 ```yaml
 views:
@@ -166,6 +202,8 @@ views:
       estimate: Sum
       due: Earliest
       done: Checked
+    summary_labels:
+      done: 済み
 ```
 
 組み込みの集計は Obsidian と同じ。型の合わない値は数えない。数える値が無いとき、数と日付の集計は空欄、数を数える集計は `0`。
@@ -191,11 +229,10 @@ views:
 
 次のものは評価しない。推測で結果を作らない。
 
-- Obsidian のほかの関数とメソッド。主なもの: `link()`・`icon()`・`image()`、メソッドの `map()`・`filter()`・`reduce()`・`toFixed()`・`repeat()`・`asFile()`・`linksTo()` など、`replace()`・`split()` に渡す正規表現。Obsidian の一覧は増えうる。この文書に無いものは未対応として扱う。
-- `file` のプロパティの `file.embeds`・`file.properties`・`file.file` と、関数の `link()`。
+- Obsidian のほかの関数とメソッド。主なもの: `link()`・`icon()`・`image()`、メソッドの `toFixed()`・`repeat()`・`asLink()`・`linksTo()`・`keys()`・`values()` など、`replace()`・`split()` に渡す正規表現。Obsidian の一覧は増えうる。この文書に無いものは未対応として扱う。
+- `file` のプロパティの `file.embeds`・`file.file`、`file.properties` だけとメソッドを付けた形(`file.properties.keys()`。`file.properties.<キー>` は読む)、関数の `link()`。
 - [this](#this) に並べた `this.file` とその値のほかの `this`、ノートに埋め込んだ base の `this`(mdgrid が開くのは `.base` のファイルだけ)。
 - 式で書いた集計: 一番外の `summaries`(例: `customAverage: 'values.mean()'`)と、それを名前で使うビューの集計、組み込みでない名前。ビューは開き、下の帯の `未対応:` の後ろに並び、ほかの集計は出る。
-- まとまりごとの集計。`groupBy` のあるビューでも集計の行は表全体の1行で、下の帯にそう出る。
 - `table` 以外のビュー: `cards`・`list`・`map`・プラグインのビュー。
 - ノートの中の `base` のコードブロック。mdgrid が開くのは `.base` のファイルだけ。
 

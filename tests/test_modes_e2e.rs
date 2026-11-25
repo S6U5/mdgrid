@@ -902,13 +902,13 @@ fn workspace(tag: &str, link: bool) -> TempDir {
 
 #[test]
 fn test_modes_drawer_lists_tables_and_switches() {
-    // [stest -> req~workspace.drawer-hidden~1, req~workspace.drawer-overlay~1, req~workspace.drawer-current-mark~1, req~workspace.drawer-close~2, req~workspace.drawer-switch~2]
+    // [stest -> req~workspace.drawer-hidden~1, req~workspace.drawer-overlay~1, req~workspace.drawer-current-mark~1, req~workspace.drawer-close~2, req~workspace.drawer-switch~3]
     // 普段は引き出しが無い。tasks で `w` → 左に重ねて tasks(印付き)・projects。Esc → 何も変わらずに閉じる。
     // projects を Enter → projects の表になり、引き出しは閉じる。
     let h = workspace("modes-drawer", false);
     let mut t = start(&["ws/tasks"], &h, 2, 2);
     let s = t.screen();
-    assert!(s.contains("仕事 › tasks") && !s.contains("╭ 仕事"), "{s}");
+    assert!(s.contains("仕事 › w tasks") && !s.contains("╭ 仕事"), "{s}");
     t.send("w");
     t.wait_for("╭ 仕事");
     let s = t.screen();
@@ -922,10 +922,10 @@ fn test_modes_drawer_lists_tables_and_switches() {
     );
     t.send(ESC);
     t.wait_until("Esc で閉じる", |s| {
-        !s.contains("╭ 仕事") && s.contains("仕事 › tasks") && s.contains("表 1/2行")
+        !s.contains("╭ 仕事") && s.contains("仕事 › w tasks") && s.contains("表 1/2行")
     });
     let s = t.screen();
-    assert!(!s.contains("╭ 仕事") && s.contains("仕事 › tasks"), "{s}");
+    assert!(!s.contains("╭ 仕事") && s.contains("仕事 › w tasks"), "{s}");
     t.send("w");
     t.wait_for("╭ 仕事");
     t.send("j");
@@ -935,10 +935,10 @@ fn test_modes_drawer_lists_tables_and_switches() {
     });
     t.send(ENTER);
     t.wait_until("projects の表", |s| {
-        s.contains("仕事 › projects") && s.contains("表 1/1行") && !s.contains("╭ 仕事")
+        s.contains("仕事 › w projects") && s.contains("表 1/1行") && !s.contains("╭ 仕事")
     });
     let s = t.screen();
-    assert!(s.contains("仕事 › projects") && s.contains("p1"), "{s}");
+    assert!(s.contains("仕事 › w projects") && s.contains("p1"), "{s}");
     assert!(!s.contains("╭ 仕事"), "表を選ぶと引き出しは閉じる:\n{s}");
     assert_gone(t.stop());
 }

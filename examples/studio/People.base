@@ -1,0 +1,21 @@
+# The people of the studio with what they own. The formulas gather values from the tasks whose `owner`
+# links to the person (a rollup): open it with `mdgrid examples/studio/People.base`.
+filters: 'file.inFolder("People")'
+formulas:
+  open: 'file.linkedFrom("owner").filter(value.properties.status != "done").length'
+  next_due: 'file.linkedFrom("owner").filter(value.properties.status != "done").map(value.properties.due).min()'
+  projects: 'file.linkedFrom("owner").map(value.properties.project).filter(value).unique()'
+properties:
+  formula.open:
+    displayName: Open tasks
+  formula.next_due:
+    displayName: Next due
+  formula.projects:
+    displayName: Projects
+views:
+  - type: table
+    name: Workload
+    order: [role, formula.open, formula.next_due, formula.projects]
+    sort:
+      - property: formula.open
+        direction: DESC

@@ -151,7 +151,7 @@ fn test_ws_6_header_shows_workspace() {
         .nth(super::bands::head_y(&a) as usize)
         .unwrap_or_default()
         .to_string();
-    assert!(head.trim_start().starts_with("w Work › "), "{head}");
+    assert!(head.trim_start().starts_with("W Work › w "), "{head}");
 }
 
 /// projects のフォルダを開く(登録した表は無し。範囲はワークスペースで決まる)。

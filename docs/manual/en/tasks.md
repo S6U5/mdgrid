@@ -468,7 +468,7 @@ You can also create a note from the command line, without the screen. Scripts an
 mdgrid ~/notes/tasks --new-note "Buy milk" --set due=2026-11-20 --set priority=p1 --set tags=home,errand
 ```
 
-- It uses the same settings as the form (the folder, preset values and body template of `new_note`) and prints the path of the note it created. In a ledger whose marker lists several tables, pass a table's folder (`mdgrid ~/notes/research/News --new-note Headline`) to use that table's settings.
+- It uses the same settings as the form (the folder, preset values and body template of `new_note`) and prints the path of the note it created. In a ledger whose marker lists several tables, name the table with `--table` (`mdgrid ~/notes/research --table News --new-note Headline`) to use that table's settings from any folder. Passing the table's folder (`mdgrid ~/notes/research/News --new-note Headline`) does the same.
 - `--set column=value` is the same as typing into a field of the form, and can be repeated. The value is read by the column type. Separate list items with commas; an empty value (`--set status=`) leaves the column out.
 - For an existing name, a name outside the folder, a value that does not fit the type, or an empty required column, it creates nothing, prints one line with the reason and exits with code 2.
 
@@ -695,9 +695,9 @@ The list is kept with the screen state (`~/.local/state/mdgrid/recent.toml`); no
 
 ## Switch between favorite workspaces
 
-When you go back and forth between workspaces, say one for work and one for a hobby, put them in your favorites. In the table list drawer (`w`), select the heading of another workspace and press `f`: the heading gets a `★`, and `f` again takes it out. For the workspace you are in, use **Add the current workspace to favorites** in the palette (if it is already a favorite, this takes it out).
+When you go back and forth between workspaces, say one for work and one for a hobby, put them in your favorites. Open the workspace you want and press `W`: the switch list ends with a line "+ Add Work to favorites". Choose that line or press `a`, and it is added while the list stays open. Select a favorite you no longer need and press `d` to take it out. `K` and `J` move the selected one up or down, numbers included, so the place you use most can sit at `1`. **Add the current workspace to favorites** in the palette works too (if it is already a favorite, this takes it out).
 
-On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette, or the **W ⇄** button at the right of the header) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. While the list is open, the bottom band mentions the digit keys too. Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. Esc closes the list and leaves you where you were.
+On any screen (table, relation map, tree, gantt, kanban or chart), `W` (or **Switch workspace** in the palette, the workspace name in the header breadcrumb, or, outside a workspace, the **W ⇄** button at the right of the header) opens the list of your favorites, numbered in the order you added them. A digit goes to that one; `↑` `↓` and Enter go to the selected one. While the list is open, the bottom band mentions the digit keys too. Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. Esc closes the list and leaves you where you were.
 
 ![Switch workspace](images/switch.svg)
 
@@ -705,7 +705,7 @@ You land on the table and view you last had open in that workspace during this r
 
 Once you have moved away from where you started (a plain folder, a `.base`, a detected root folder or a workspace), the list starts with **Where you started**, numbered `0`. Pressing `0` or choosing it takes you back to the table you started with, in the view you last had on it. Wherever you go, unsaved changes are offered for saving or discarding first.
 
-If you use the mouse, the table list drawer that opens from the header breadcrumb works too. Below the tables of the current scope it lists **Where you started** and your favorite workspaces (the one you are in has a `●`), and choosing one goes where the switch list would. **Open a workspace** in the palette lists the same two.
+The table list drawer (`w`, or the table name in the breadcrumb) switches tables within the current workspace. It does not list other workspaces or favorites, so use this list to move between workspaces. **Open a workspace** in the palette lists the workspaces in `workspaces.toml` plus **Where you started** and your favorite marker workspaces.
 
 Favorites are kept in order in `favorites` at the top of `workspaces.toml`: a workspace from `workspaces.toml` by its name, a marker workspace by the path of its root. You can write it by hand:
 
@@ -739,7 +739,7 @@ The sample `examples/studio` links tasks, projects, clients, people and meetings
 
 ## Group tables into workspaces
 
-A workspace is a named set of tables (folders or `.base` files). When the table you open belongs to one, links, linked rows, the relation map and the screen type menu at the top right use only that workspace's tables, so a root folder for work and one for hobbies do not mix. The breadcrumb in the header shows `<workspace> › <table>`.
+A workspace is a named set of tables (folders or `.base` files). When the table you open belongs to one, links, linked rows, the relation map and the screen type menu at the top right use only that workspace's tables, so a root folder for work and one for hobbies do not mix. The breadcrumb in the header shows `<workspace> › <table>`. Click the workspace name for the list of workspaces to switch to (`W`), or the table name for the drawer with that workspace's tables (`w`).
 
 In the palette (`:`): **create a workspace with this table**, **add this table to a workspace** (pick one or type a new name), **remove this table from a workspace**, and **open a workspace** (pick it, then one of its tables). From the shell (with no path, `--add-to` and `--remove-from` use the current folder):
 
@@ -822,7 +822,7 @@ mdgrid ~/notes/books
 
 In the screen, **Create a ledger from a starter** in the command palette (`:`) does the same: pick a starter, type the folder to create (relative to the open folder; the starter's name by default), answer `y`/`n` for the samples, and the new ledger opens. Esc cancels at any step.
 
-`tasks-ai` is a ledger for work shared between people and AI agents. A task's `actor` (human, ai or both) splits it into the "People only" and "AI only" tabs, and the charts by status and by actor (`P`), the Gantt (`C`) and the Kanban (`B`) open as they are. A second table, "Routines", holds repeating work; the task for one round links to it from its `routine` column (switch tables with `w` or the breadcrumb, and press `R` to see the links). mdgrid does not create the next round: a person or an agent adds it, for example with `--new-note`.
+`tasks-ai` is a ledger for work shared between people and AI agents. A task's `actor` (human, ai or both) splits it into the "People only" and "AI only" tabs, and the charts by status and by actor (`P`), the Gantt (`C`) and the Kanban (`B`) open as they are. A second table, "Routines", holds repeating work; the task for one round links to it from its `routine` column (switch tables with `w` or the table name in the breadcrumb, and press `R` to see the links). mdgrid does not create the next round: a person or an agent adds it, for example with `--new-note`.
 
 Instead of copying a whole starter, a ledger's marker can just name the starter it is based on. What you write in the marker always wins, and the starter fills in the rest. When a newer mdgrid ships a newer starter, the new content takes effect without rewriting the marker.
 

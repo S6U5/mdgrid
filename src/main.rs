@@ -156,6 +156,9 @@ struct Cli {
     /// 印の open の表ではなく、フォルダそのものを開く(CLI-1)
     #[arg(long)]
     raw: bool,
+    /// 印 .mdgrid/workspace.toml(-w があればそのワークスペース)のこの名前の表を、open の表の代わりに開く(cli.table-open)
+    #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["raw", "session", "resume", "sessions", "recent", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters"])]
+    table: Option<String>,
     /// ワークスペースのページ([[page]])を、表を縦に並べた形で開く(stack.page-cli)
     #[arg(long, value_name = Msg::ValueName.ja(), allow_hyphen_values = true, conflicts_with_all = ["view", "print", "pick", "check", "count", "notices", "notify", "runs", "apply", "workspaces", "add_to", "remove_from", "remove_workspace", "init_workspace", "starters", "new_note"])]
     page: Option<String>,
@@ -294,6 +297,13 @@ fn parse_cli(args: &[OsString]) -> Result<Cli, String> {
     // cli.session-errors: `-s` とパスの引数は、どちらを開くか曖昧なので一緒に受けない。
     if cli.session.is_some() && !cli.paths.is_empty() {
         return Err(Msg::SessionWithPaths.text().into());
+    }
+    // cli.table-bad-args: `--table` は表を1つ開く(パスは印を探す所で1つまで。`-w` ならワークスペースから選ぶのでパスなし)。
+    if cli.table.is_some() && cli.workspace.is_some() && !cli.paths.is_empty() {
+        return Err(Msg::TableWithWsPaths.text().into());
+    }
+    if cli.table.is_some() && cli.paths.len() > 1 {
+        return Err(Msg::TableOnePath.text().into());
     }
     Ok(cli)
 }
@@ -635,7 +645,8 @@ fn take_options(args: &mut Vec<OsString>) -> Result<Options, String> {
     })
 }
 
-/// 補完の定義(CLI-13)。引数の定義(`Cli`)から作る。
+/// 補完の定義(CLI-13)。引数の定義(`Cli`)から作る。`--table` の値(台帳ごとの表の名前)は出さない
+/// (tbd~cli.table-completion)。
 fn completions(shell: Shell) -> Vec<u8> {
     let mut buf = Vec::new();
     clap_complete::generate(shell, &mut Cli::command(), "mdgrid", &mut buf);
@@ -995,6 +1006,8 @@ fn main() -> ExitCode {
         parse_cli(&args).map_or((None, false), |c| (c.session, c.sessions));
     // stack.page-cli: `--page <名前>`(オプションでも命令の旗でもないので、先に読んでおく)。
     let page = parse_cli(&args).ok().and_then(|c| c.page);
+    // cli.table-open: `--table <名前>`(オプションの構造体の外に持つ。命令の旗でもないので、先に読んでおく)。
+    let table = parse_cli(&args).ok().and_then(|c| c.table);
     let opts = match take_options(&mut args) {
         Ok(o) => o,
         Err(e) => return fail(&e),
@@ -1052,11 +1065,14 @@ fn main() -> ExitCode {
         Ok(Command::PrintConfig) => return emit(Ok(config::default_toml().into_bytes())),
         // CLI-21: その表で効く設定(画面は出さない)。
         Ok(Command::PrintResolved(paths)) => {
-            // CLI-1: 印の根なら、印の `open` の表で効く設定。
-            let (paths, view, _, marker_warns) = if use_marker {
-                marker_paths(paths, &opts)
-            } else {
-                (paths, None, false, Vec::new())
+            // CLI-1: 印の根なら、印の `open` の表で効く設定。cli.table-commands: `--table` ならその表。
+            let (paths, view, _, marker_warns) = match &table {
+                Some(name) => match named_table(&paths, name, opts.workspace.as_deref()) {
+                    Ok(t) => (vec![t.path], t.view, true, Vec::new()),
+                    Err(e) => return fail(&e),
+                },
+                None if use_marker => marker_paths(paths, &opts),
+                None => (paths, None, false, Vec::new()),
             };
             let opts = Options {
                 view: opts.view.clone().or(view),
@@ -1109,14 +1125,11 @@ fn main() -> ExitCode {
             // CLI-15: 渡した `.md` のノートの行だけを出す(フォルダの表と同じ列)。
             let only = md_files(&p);
             // WS-3: `-w` は `--print` でも名前を確かめ、パスが無ければその最初の表を出す。
-            let p = match &opts.workspace {
-                Some(name) => match workspace_paths(name, p, no_args) {
-                    Ok(p) => p,
-                    Err(e) => return fail(&e),
-                },
-                None => p,
+            // cli.table-commands: `--table` ならその表(`--view` が無ければその表の view)。
+            let (p, opts) = match headless_paths(p, &opts, table.as_deref(), use_marker, no_args) {
+                Ok(x) => x,
+                Err(e) => return fail(&e),
             };
-            let (p, opts) = marker_for_print(p, &opts, use_marker);
             let out = ViewOut::Print(f.lib(), w);
             return print_view(
                 &md_to_folder(p).0,
@@ -1130,14 +1143,10 @@ fn main() -> ExitCode {
         }
         Ok(Command::Count(p, filter)) => {
             let only = md_files(&p);
-            let p = match &opts.workspace {
-                Some(name) => match workspace_paths(name, p, no_args) {
-                    Ok(p) => p,
-                    Err(e) => return fail(&e),
-                },
-                None => p,
+            let (p, opts) = match headless_paths(p, &opts, table.as_deref(), use_marker, no_args) {
+                Ok(x) => x,
+                Err(e) => return fail(&e),
             };
-            let (p, opts) = marker_for_print(p, &opts, use_marker);
             return print_view(
                 &md_to_folder(p).0,
                 &opts,
@@ -1149,57 +1158,61 @@ fn main() -> ExitCode {
             );
         }
         Ok(Command::Notices(p)) => {
-            let p = match &opts.workspace {
-                Some(name) => match workspace_paths(name, p, no_args) {
-                    Ok(p) => p,
-                    Err(e) => return fail(&e),
-                },
-                None => p,
+            let (p, opts) = match headless_paths(p, &opts, table.as_deref(), use_marker, no_args) {
+                Ok(x) => x,
+                Err(e) => return fail(&e),
             };
-            let (p, opts) = marker_for_print(p, &opts, use_marker);
             return notices_cli(&md_to_folder(p).0, &opts);
         }
         Ok(Command::Notify(p)) => {
-            let p = match &opts.workspace {
-                Some(name) => match workspace_paths(name, p, no_args) {
-                    Ok(p) => p,
-                    Err(e) => return fail(&e),
-                },
-                None => p,
+            let (p, opts) = match headless_paths(p, &opts, table.as_deref(), use_marker, no_args) {
+                Ok(x) => x,
+                Err(e) => return fail(&e),
             };
-            let (p, opts) = marker_for_print(p, &opts, use_marker);
             return notify_cli(&md_to_folder(p).0, &opts);
         }
         Ok(Command::Runs(p)) => {
-            let p = match &opts.workspace {
-                Some(name) => match workspace_paths(name, p, no_args) {
-                    Ok(p) => p,
-                    Err(e) => return fail(&e),
-                },
-                None => p,
+            let (p, opts) = match headless_paths(p, &opts, table.as_deref(), use_marker, no_args) {
+                Ok(x) => x,
+                Err(e) => return fail(&e),
             };
-            let (p, opts) = marker_for_print(p, &opts, use_marker);
             return runs_cli(&md_to_folder(p).0, &opts);
         }
         Ok(Command::Check(p)) => {
             // CLI-15: 渡した `.md` のノートだけを確かめる(`--print` と同じ。pre-commit で変えたノートだけを渡せる)。
             let only = md_files(&p);
-            let p = match &opts.workspace {
-                Some(name) => match workspace_paths(name, p, no_args) {
-                    Ok(p) => p,
-                    Err(e) => return fail(&e),
-                },
-                None => p,
+            // cli.check-problems: `--view` を渡さなければ、表の全部の行(印の表の view も当てない)。
+            let out = if opts.view.is_some() {
+                ViewOut::Check
+            } else {
+                ViewOut::CheckAll
             };
-            let (p, opts) = marker_for_print(p, &opts, use_marker);
+            let (p, opts) = match headless_paths(p, &opts, table.as_deref(), use_marker, no_args) {
+                Ok(x) => x,
+                Err(e) => return fail(&e),
+            };
             let paths = md_to_folder(p).0;
-            return print_view(&paths, &opts, false, ViewOut::Check, &[], &[], &only);
+            return print_view(&paths, &opts, false, out, &[], &[], &only);
         }
         Ok(Command::NewNote(p, name, sets)) => {
-            return new_note_cli(&p, &opts, use_marker, &name, &sets)
+            return new_note_cli(&p, &opts, use_marker, &name, &sets, table.as_deref())
         }
         Ok(Command::Apply(p, file, yes)) => {
-            return apply_file(&md_to_folder(p).0, &opts, &file, yes)
+            // cli.table-commands: `--table` ならその表(`--view` が無ければその表の view)に当てる。
+            let (p, opts) = match &table {
+                Some(name) => match named_table(&p, name, opts.workspace.as_deref()) {
+                    Ok(t) => (
+                        vec![t.path],
+                        Options {
+                            view: opts.view.clone().or(t.view),
+                            ..opts.clone()
+                        },
+                    ),
+                    Err(e) => return fail(&e),
+                },
+                None => (p, opts.clone()),
+            };
+            return apply_file(&md_to_folder(p).0, &opts, &file, yes);
         }
         Ok(Command::Pick(p, what)) => match &opts.workspace {
             // WS-3: 無い名前は画面を出さずに理由(パスはそのまま)。
@@ -1219,14 +1232,25 @@ fn main() -> ExitCode {
         },
         Err(e) => return fail(&e),
     };
+    // cli.table-open: `--table` は名前の表で開く(`.md` を渡していれば、その表でその行を選ぶ)。
+    let named_select = table.as_ref().and_then(|_| md_to_folder(paths.clone()).1);
     // CLI-1・WS-7: 印の根のフォルダなら、印の `open` の表で開く(登録した表の一覧は重ねない)。
-    let (paths, marker_view, marker, marker_warns) = if use_marker {
-        marker_paths(paths, &opts)
-    } else {
-        (paths, None, false, Vec::new())
+    let (paths, marker_view, marker, marker_warns) = match &table {
+        Some(name) => match named_table(&paths, name, opts.workspace.as_deref()) {
+            Ok(t) => (
+                vec![t.path],
+                t.view.filter(|_| opts.view.is_none()),
+                true,
+                Vec::new(),
+            ),
+            Err(e) => return fail(&e),
+        },
+        None if use_marker => marker_paths(paths, &opts),
+        None => (paths, None, false, Vec::new()),
     };
     // CLI-15: `.md` のファイルはそのフォルダに置き換え、読み終えたらその行を選ぶ。
     let (paths, select) = md_to_folder(paths);
+    let select = select.or(named_select);
     if let Err(e) = check_paths(&paths) {
         return fail(&e);
     }
@@ -1397,7 +1421,108 @@ fn marker_paths(
             true,
             w,
         ),
-        (None, w) => (paths, None, false, w),
+        (None, w) => match table_of_folder(&paths[0]) {
+            // cli.launch-table-folder: 上の印の表のノートを置くフォルダなら、素のフォルダでなくその表(`.base` の表だけ。
+            // フォルダの表はそのフォルダを開けばその表なので置き換えない)。
+            Some((t, _, _)) if is_base(&t.path) => (
+                vec![t.path],
+                t.view.filter(|_| opts.view.is_none()),
+                true,
+                w,
+            ),
+            _ => (paths, None, false, w),
+        },
+    }
+}
+
+/// cli.table-open・cli.table-workspace: `--table <名前>` の表の開くパスと `view`。`-w` があればそのワークスペース
+/// (workspaces.toml)の表から、無ければ開くパス(無ければ今のフォルダ。ファイルならそのフォルダ)から上へたどって
+/// 最初に見つかった印の表から、名前で選ぶ。印の表のパスは、開くパスの書き方のまま(相対なら相対)の印の根につなぐ
+/// (印の `open` と同じ形)。無い名前・無い印は、ある表の名前を並べた理由(cli.table-unknown)。
+fn named_table(
+    paths: &[PathBuf],
+    name: &str,
+    workspace: Option<&str>,
+) -> Result<mdgrid::workspace::WsTable, String> {
+    let pick = |tables: &[mdgrid::workspace::WsTable]| {
+        let names: Vec<&str> = tables.iter().map(|t| t.name.as_str()).collect();
+        (
+            tables.iter().find(|t| t.name == name).cloned(),
+            names.join(", "),
+        )
+    };
+    if let Some(ws) = workspace {
+        let list = config_dir()
+            .map(|d| mdgrid::workspace::load(&d).0)
+            .unwrap_or_default();
+        let w = list
+            .iter()
+            .find(|w| w.name == ws)
+            .ok_or_else(|| Msg::WsUnknown.fill(&[&ws]))?;
+        let (found, names) = pick(&w.tables);
+        return found.ok_or_else(|| Msg::TableUnknownWs.fill(&[&name, &ws, &names]));
+    }
+    let (_, root) = table_marker_root(paths)?;
+    let (ws, _) = mdgrid::workspace::read_marker(&root);
+    let (found, names) = pick(&ws.tables);
+    found.ok_or_else(|| Msg::TableUnknown.fill(&[&name, &names]))
+}
+
+/// cli.table-open: 開くパス(無ければ今のフォルダ。ファイルならそのフォルダ)と、そこから上へたどって最初に見つかった
+/// 印の根(開くパスの書き方のまま)。開くパスが無い・印が無いなら理由。
+fn table_marker_root(paths: &[PathBuf]) -> Result<(PathBuf, PathBuf), String> {
+    let start = paths.first().cloned().unwrap_or_else(|| PathBuf::from("."));
+    let meta =
+        std::fs::metadata(&start).map_err(|e| Msg::PathUnopenable.fill(&[&start.display(), &e]))?;
+    let dir = if meta.is_dir() {
+        start
+    } else {
+        match start.parent() {
+            Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
+            _ => PathBuf::from("."),
+        }
+    };
+    let root = marker_root_of(&dir).ok_or_else(|| Msg::TableNoMarker.fill(&[&dir.display()]))?;
+    Ok((dir, root))
+}
+
+/// フォルダ `dir` から上へたどって最初に見つかった印の根を、`dir` の書き方のまま(相対なら相対。`dir` から段を数えて
+/// 上がる)で返す。リンクなどで実体が食い違うときは実体のパス。印が無ければ None。
+fn marker_root_of(dir: &Path) -> Option<PathBuf> {
+    let real = dir.canonicalize().ok()?;
+    let root = mdgrid::workspace::find_marker(&real)?;
+    let up = real
+        .components()
+        .count()
+        .saturating_sub(root.components().count());
+    let lexical = up_from(dir, up);
+    Some(match lexical.canonicalize() {
+        Ok(r) if r == root => lexical,
+        _ => root,
+    })
+}
+
+/// `start` から `up` 段だけ上のフォルダを、`start` の書き方のまま返す(`.` から上がれば `..`)。
+fn up_from(start: &Path, up: usize) -> PathBuf {
+    use std::path::Component;
+    let mut parts: Vec<Component<'_>> = start
+        .components()
+        .filter(|c| *c != Component::CurDir)
+        .collect();
+    for _ in 0..up {
+        match parts.last() {
+            Some(Component::Normal(_)) => {
+                parts.pop();
+            }
+            // 根より上へは上がれない。
+            Some(Component::RootDir | Component::Prefix(_)) => {}
+            _ => parts.push(Component::ParentDir),
+        }
+    }
+    if parts.is_empty() {
+        PathBuf::from(".")
+    } else {
+        parts.iter().collect()
     }
 }
 
@@ -1419,6 +1544,31 @@ fn marker_for_print(
         ..opts.clone()
     };
     (paths, opts)
+}
+
+/// 画面を出さない命令の開くパスとオプション(cli.table-commands): `--table` ならその名前の表(`-w` があればその
+/// ワークスペースの表)、無ければ `-w`(WS-3)と印の `open`・表のフォルダ(CLI-1・cli.launch-table-folder)。
+/// `--view` が無ければ選んだ表の `view`。
+fn headless_paths(
+    p: Vec<PathBuf>,
+    opts: &Options,
+    table: Option<&str>,
+    use_marker: bool,
+    no_args: bool,
+) -> Result<(Vec<PathBuf>, Options), String> {
+    if let Some(name) = table {
+        let t = named_table(&p, name, opts.workspace.as_deref())?;
+        let opts = Options {
+            view: opts.view.clone().or(t.view),
+            ..opts.clone()
+        };
+        return Ok((vec![t.path], opts));
+    }
+    let p = match &opts.workspace {
+        Some(name) => workspace_paths(name, p, no_args)?,
+        None => p,
+    };
+    Ok(marker_for_print(p, opts, use_marker))
 }
 
 /// `-w <名前>`(WS-3): 名前を workspaces.toml で確かめ、パスが無ければその最初の表を開く。
@@ -1769,7 +1919,10 @@ fn config_dir() -> Option<PathBuf> {
 #[derive(Clone, Copy, PartialEq)]
 enum ViewOut {
     Print(print::Format, bool),
+    /// `--view` で選んだビューの行の問題。
     Check,
+    /// cli.check-problems: `--view` の無い `--check`。表の全部の行(どのビューの絞り込みも当てない)の問題。
+    CheckAll,
     /// condition.count: 行の数。
     Count,
 }
@@ -2139,7 +2292,13 @@ fn print_view(
 ) -> ExitCode {
     let (format, with_path) = match out {
         ViewOut::Print(f, w) => (f, w),
-        ViewOut::Check | ViewOut::Count => (print::Format::Csv, false),
+        ViewOut::Check | ViewOut::CheckAll | ViewOut::Count => (print::Format::Csv, false),
+    };
+    // cli.check-problems: 表の全部の行を確かめるときは、ビュー(印の表の view も)を選ばない。
+    let whole = out == ViewOut::CheckAll;
+    let opts = &Options {
+        view: opts.view.clone().filter(|_| !whole),
+        ..opts.clone()
     };
     // CLI-16: `列[:asc|:desc]` を先に読む(読めなければ理由1行)。
     let mut sorts = Vec::new();
@@ -2235,6 +2394,12 @@ fn print_view(
         let b = base.get_or_insert_with(|| base::Base::plain(src.columns()));
         b.narrow(base_view.unwrap_or(0), filter, &sorts);
     }
+    // cli.check-problems: 表の全部の行は、最初のビューの絞り込みを外したもの(全体の絞り込みは残す)。
+    if whole {
+        if let Some(b) = &mut base {
+            b.open_first_view();
+        }
+    }
     let view = match (native_view, &base) {
         (Some(k), _) => print::ViewDef::Native(&natives[k]),
         (None, Some(b)) => print::ViewDef::Base(b, base_view.unwrap_or(0)),
@@ -2245,7 +2410,7 @@ fn print_view(
     // 順。並びの要らない数と確かめでは読まない。設定の警告は設定と印を読むところが出すので、ここでは重ねて出さない。
     let rules = match out {
         ViewOut::Print(..) => resolve_table(&config, paths, opts).0.rules,
-        ViewOut::Check | ViewOut::Count => Default::default(),
+        ViewOut::Check | ViewOut::CheckAll | ViewOut::Count => Default::default(),
     };
     let values_of = |c: &str| rules.get(c).and_then(|r| r.values.clone());
     let mut table = match print::table_with(src.as_ref(), view, today, now, &values_of) {
@@ -2264,7 +2429,8 @@ fn print_view(
         table.row_ids.retain(|_| *k.next().unwrap_or(&false));
     }
     // condition.hide-everywhere・condition.view-settings: いつも隠す名前の条件(`--show-hidden` で当てない)と、
-    // mdgrid のビューに掛けた名前の条件。
+    // mdgrid のビューに掛けた名前の条件。表の全部の行を確かめる `--check` でも、いつも隠す条件は当てる
+    // (tbd~cli.check-hidden-rows)。
     drop_by_conditions(&mut table, view, src.as_ref(), show_hidden, today, now);
     if out == ViewOut::Count {
         for w in warnings.iter().chain(&table.warnings) {
@@ -2272,7 +2438,7 @@ fn print_view(
         }
         return emit(Ok(format!("{}\n", table.rows.len()).into_bytes()));
     }
-    if out == ViewOut::Check {
+    if matches!(out, ViewOut::Check | ViewOut::CheckAll) {
         return check_rows(paths, opts, &config, src.as_ref(), &table.row_ids, warnings);
     }
     if with_path {
@@ -2357,6 +2523,7 @@ fn new_note_cli(
     use_marker: bool,
     name: &str,
     sets: &[String],
+    named: Option<&str>,
 ) -> ExitCode {
     use mdgrid::newnote;
     use mdgrid::source::{Edit, NewValue};
@@ -2374,32 +2541,49 @@ fn new_note_cli(
         Ok(c) => c,
         Err(e) => return fail(&e),
     };
-    // cli.new-note-table-folder: 渡したフォルダが印の根の表のノートのフォルダなら、作る場所の根は印の根(渡した
-    // フォルダからその表のフォルダの段だけ上がったもの)にして、その表の範囲で設定を重ねる。
-    let found = table_of_folder(given).filter(|_| use_marker);
-    let (root, table, within) = match &found {
-        Some((path, rel)) => {
-            let up = rel.split('/').count();
-            let r = given.ancestors().nth(up).unwrap_or(Path::new(""));
-            let r = if r.as_os_str().is_empty() {
-                PathBuf::from(".")
-            } else {
-                r.to_path_buf()
-            };
-            (r, vec![path.clone()], Some(rel.clone()))
-        }
-        // 設定は画面と同じ範囲で重ねる: 印の `open` の表があればその表の範囲(`--raw` なら フォルダそのもの)。
-        None => (
-            given.clone(),
-            marker_for_print(paths.to_vec(), opts, use_marker).0,
-            None,
-        ),
+    let (root, table, within) = match named {
+        // cli.table-new-note: `--table` の表の決まりで、印の根(渡したフォルダの書き方のまま)からの場所に作る。
+        // `-w` のワークスペースの表は、フォルダの表ならそのフォルダ、`.base` の表ならそのフォルダを根にする。
+        Some(t) => match named_table(paths, t, opts.workspace.as_deref()) {
+            Ok(t) => {
+                let root = match &opts.workspace {
+                    Some(_) if t.path.is_dir() => t.path.clone(),
+                    Some(_) => t
+                        .path
+                        .parent()
+                        .map_or_else(|| ".".into(), Path::to_path_buf),
+                    None => match table_marker_root(paths) {
+                        Ok((_, r)) => r,
+                        Err(e) => return fail(&e),
+                    },
+                };
+                (root, vec![t.path], None)
+            }
+            Err(e) => return fail(&e),
+        },
+        // cli.new-note-table-folder: 渡したフォルダが印の根の表のノートのフォルダなら、作る場所の根は印の根(渡した
+        // フォルダからその表のフォルダの段だけ上がったもの。今のフォルダなら `..`)にして、その表の範囲で設定を重ねる。
+        None => match table_of_folder(given).filter(|_| use_marker) {
+            Some((t, rel, root)) => (root, vec![t.path], Some(rel)),
+            // 設定は画面と同じ範囲で重ねる: 印の `open` の表があればその表の範囲(`--raw` なら フォルダそのもの)。
+            None => (
+                given.clone(),
+                marker_for_print(paths.to_vec(), opts, use_marker).0,
+                None,
+            ),
+        },
     };
     let root = &root;
     let (resolved, w) = resolve_table(&config, &table, opts);
     warnings.extend(w);
-    // 列の型は画面と同じ順(設定 → ノートからの推定)。
-    let mut src = match Markdown::open(paths) {
+    // 列の型は画面と同じ順(設定 → ノートからの推定)。推定は作る場所のノートから(無ければ渡したフォルダ)。
+    let folder_dir = root.join(resolved.new_note.folder.trim().trim_matches('/'));
+    let read_from = if named.is_some() && folder_dir.is_dir() {
+        vec![folder_dir]
+    } else {
+        paths.to_vec()
+    };
+    let mut src = match Markdown::open(&read_from) {
         Ok(s) => s,
         Err(e) => return fail(&Msg::CannotOpen.fill(&[&e])),
     };
@@ -2519,10 +2703,11 @@ fn new_note_cli(
     ))
 }
 
-/// cli.new-note-table-folder: `folder` が、上の印(自分は印の根でない)に書いた表のノートを置くフォルダなら、
-/// (その表の開くパス, 印の根からのフォルダ)。ノートを置くフォルダは、表の `[new_note] folder` と、表の `.base` の
-/// 絞り込みの `file.inFolder`。当たる表が2つ以上なら印の順で最初のもの。
-fn table_of_folder(folder: &Path) -> Option<(PathBuf, String)> {
+/// cli.new-note-table-folder・cli.launch-table-folder: `folder` が、上の印(自分は印の根でない)に書いた表のノートを
+/// 置くフォルダなら、(その表, 印の根からのフォルダ, 印の根)。印の根と表のパスは `folder` の書き方のまま(相対なら
+/// 相対。印の `open` と同じ形)。ノートを置くフォルダは、表の `[new_note] folder` と、表の `.base` の絞り込みの
+/// `file.inFolder`。当たる表が2つ以上なら印の順で最初のもの。
+fn table_of_folder(folder: &Path) -> Option<(mdgrid::workspace::WsTable, String, PathBuf)> {
     use mdgrid::workspace::{self, MARKER_DIR, MARKER_FILE};
     let real = folder.canonicalize().ok()?;
     if real.join(MARKER_DIR).join(MARKER_FILE).is_file() {
@@ -2539,7 +2724,8 @@ fn table_of_folder(folder: &Path) -> Option<(PathBuf, String)> {
     if rel.is_empty() {
         return None;
     }
-    let (ws, _) = workspace::read_marker(&root);
+    let shown = marker_root_of(folder)?;
+    let (ws, _) = workspace::read_marker(&shown);
     ws.tables
         .iter()
         .find(|t| {
@@ -2550,7 +2736,7 @@ fn table_of_folder(folder: &Path) -> Option<(PathBuf, String)> {
                 .is_some_and(|n| n.folder.trim().trim_matches('/') == rel);
             own || base_folder(&root, &t.path).is_some_and(|f| f == rel)
         })
-        .map(|t| (t.path.clone(), rel.clone()))
+        .map(|t| (t.clone(), rel.clone(), shown.clone()))
 }
 
 /// 表の `.base`(印に書いた中身か、`.base` のファイル)の絞り込みの `file.inFolder` が指すフォルダの、印の根

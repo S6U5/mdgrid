@@ -81,8 +81,8 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `s` | `sort_column` | Sort by this column: ascending, descending, then off. The sort is kept for the view (the `.base` file is not changed) |
 | `S` | `sort_menu` | Open the sort window (same as the **Sort** button in the view bar) |
 | `\|` | `filter_menu` | Open the filter window (same as the **Filter** button in the view bar) |
-| `w` | `workspace_drawer` | Open the table list (same as clicking the scope or table name in the header breadcrumb) |
-| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (see `switch`) |
+| `w` | `workspace_drawer` | Open the table list (same as clicking the table name in the header breadcrumb) |
+| `W` | `workspace_switch` | Open the list of favorite workspaces to switch to (same as clicking the scope name in the header breadcrumb; see `switch`) |
 | `-` | `hide_column` | Hide the column |
 | `+` | `show_column` | Bring back the last hidden column |
 | `R` | `relation_map` | Open the relation map of the registered tables |
@@ -439,11 +439,11 @@ Clicking a line does what `Enter` does, and clicking the `×` at the right end o
 
 ## `drawer`
 
-The table list (`w`, `:workspace_drawer`, or the scope or table name in the header breadcrumb). It slides over the table from the left and lists the tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Below them come **Where you started** (when you have moved away from it) and your favorite workspaces (the one you are in marked with `●`); choosing one goes where the switch list (`switch`) would. Below those, the other workspaces are listed by name, folded; unfold one to see its tables. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). While a page is open, only the page name has the `●`, and selecting a table closes the page and opens that table on its own. It is hidden until opened.
+The table list (`w`, `:workspace_drawer`, or the table name in the header breadcrumb). It switches within the workspace: it slides over the table from the left and lists only the pages and tables of the current scope (the workspace, or the registered tables when there is none), marking the current table with `●`. Other workspaces, **Where you started** and favorites are not listed here; use the switch list (`switch`) for them. Selecting a table switches to it (with unsaved changes, you are asked to save or discard first). While a page is open, only the page name has the `●`, and selecting a table closes the page and opens that table on its own. It is hidden until opened.
 
 | Key | Action | Description |
 |---|---|---|
-| `Enter` | `run` | Switch to the selected table, or fold/unfold a heading |
+| `Enter` | `run` | Switch to the selected table or page |
 | `Esc` | `close` | Close the list |
 | `q` | `close` | Close the list |
 | `w` | `close` | Close the list |
@@ -453,13 +453,8 @@ The table list (`w`, `:workspace_drawer`, or the scope or table name in the head
 | `Up` | `up` | Previous line |
 | `g g` | `top` | First line |
 | `G` | `bottom` | Last line |
-| `l` | `right` | Unfold the heading |
-| `Right` | `right` | Unfold the heading |
-| `h` | `left` | Fold the heading (on a table under a heading, fold that heading) |
-| `Left` | `left` | Fold the heading |
-| `f` | `workspace_favorite` | On a workspace heading, add it to favorites, or remove it (a favorite heading shows `★`) |
 
-Clicking a line does what `Enter` does; clicking outside the list (including the header breadcrumb) closes it.
+Clicking a line does what `Enter` does; clicking outside the list (including the table name in the header breadcrumb) closes it. Clicking the scope name in the header breadcrumb closes it and opens the switch list.
 
 ## `filter_window`
 
@@ -705,7 +700,7 @@ The mouse works too: click an item to select it, and click the selected item aga
 
 ## `switch`
 
-The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; add one with `f` on a heading in the drawer or with `:workspace_favorite`). The workspace you are in is marked with `●`. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**, numbered `0`. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
+The list for switching workspaces (`W` on the table, relation map, tree, gantt, kanban and chart screens, or `:workspace_switch`). It opens over the current screen at the left, below the header, and lists your favorite workspaces with numbers in the order you added them (favorites are kept in `favorites` at the top of `workspaces.toml`; see below for adding them). The workspace you are in is marked with `●`. When the workspace you are in is not a favorite, the list ends with **+ Add <name> to favorites**; that line or `a` adds it and keeps the list open. `d` removes the selected favorite, and `K` and `J` move it up or down (its number moves with it). `:workspace_favorite` in the palette also adds or removes the current workspace. When you have moved away from where you started (a plain folder, a `.base`, a detected root folder, or a workspace), the list starts with **Where you started**, numbered `0`. Choosing a workspace opens the table and view you last looked at there in this run, or, the first time, the table named in the marker's `open` or the first table. **Where you started** opens the table you started with, in the view you last looked at there. With unsaved changes, you are asked to save or discard first.
 
 | Key | Action | Description |
 |---|---|---|
@@ -716,6 +711,14 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `Down` | `down` | Next line |
 | `k` | `up` | Previous line |
 | `Up` | `up` | Previous line |
+| `a` | `workspace_favorite` | Add the workspace you are in to favorites (if it already is one, only says so) |
+| `d` | `remove_item` | Remove the selected favorite |
+| `Delete` | `remove_item` | Remove the selected favorite |
+| `Backspace` | `remove_item` | Remove the selected favorite |
+| `K` | `move_item_up` | Move the selected favorite up one place |
+| `Shift+Up` | `move_item_up` | Move the selected favorite up one place |
+| `J` | `move_item_down` | Move the selected favorite down one place |
+| `Shift+Down` | `move_item_down` | Move the selected favorite down one place |
 | `0` | `choose_0` | Go back to where you started |
 | `1` | `choose_1` | Go to favorite 1 |
 | `2` | `choose_2` | Go to favorite 2 |
@@ -727,7 +730,7 @@ The list for switching workspaces (`W` on the table, relation map, tree, gantt, 
 | `8` | `choose_8` | Go to favorite 8 |
 | `9` | `choose_9` | Go to favorite 9 |
 
-While the list is open, the bottom band says that the digit keys (`0`-`9`) go to the numbered place. Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it. The **W ⇄** button at the right of the header (shown when you have favorites or have moved away from where you started; on a narrow terminal it is dropped before the settings button) opens it too.
+While the list is open, the bottom band says that the digit keys (`0`-`9`) go to the numbered place, and shows `a` and `d` (the `a` and `d` on the bottom edge of the list can be clicked too). Pressing the number of the place you are in closes the list and tells you that you are already in that workspace. The key that opened the list (`W`) also closes it. Clicking a line does what `Enter` does; clicking outside the list closes it (clicking the table name in the header breadcrumb closes it and opens the drawer). Clicking the scope name in the header breadcrumb, or the **W ⇄** button at the right of the header (shown when you have favorites or have moved away from where you started; on a narrow terminal it is dropped before the settings button) opens it too.
 
 ## `input_normal`
 
@@ -853,7 +856,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `filter_menu` — open the filter window
 - `workspace_drawer` — open or close the table list
 - `workspace_switch` — open or close the list of favorite workspaces to switch to
-- `workspace_favorite` — add a workspace to favorites or remove it (on a heading in the table list)
+- `workspace_favorite` — add the current workspace to favorites or remove it (in the switch list it only adds)
 - `choose_0` — in the switch list, go back to where you started
 - `choose_1` — in the switch list, go to favorite 1
 - `choose_2` — in the switch list, go to favorite 2

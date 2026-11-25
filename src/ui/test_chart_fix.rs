@@ -3,7 +3,7 @@
 //!
 //! 直す前の版で落ち、直した後の版で通る期待にする。キーとマウスを送り、画面の文字と今ある口(`mode`・`message`・
 //! `rows`・`click`)で見る。題の日付の単位は末尾の ` · 単位 <単位>`、理由の文は決め打ちせず、指摘が名指す文
-//! (「その他」・ChartNeedAxis)だけを見る。
+//! (「ほか」・ChartNeedAxis)だけを見る。
 
 use super::app::ColorMode;
 use super::keymap::Mode;
@@ -194,8 +194,8 @@ fn test_ch_6_single_date_column_still_skips_scatter() {
 
 #[test]
 fn test_ch_4_stacked_picks_top_five_by_count_not_rule_order() {
-    // [utest -> req~chart.bar-stacked-top5~2] #2: [rules.owner] values = o1〜o6 で o1〜o5 が1行ずつ、o6 が 10 行 → 内訳は件数の多い順に5つ
-    // (o6 と、同じ件数の o1〜o4)。凡例に o6 が出て、「その他」には名前の順で後ろの o5 が入る。
+    // [utest -> req~chart.bar-stacked-top5~3] #2: [rules.owner] values = o1〜o6 で o1〜o5 が1行ずつ、o6 が 10 行 → 内訳は件数の多い順に5つ
+    // (o6 と、同じ件数の o1〜o4)。凡例に o6 が出て、「ほか」には名前の順で後ろの o5 が入る。
     let mut list: Vec<(String, String)> = Vec::new();
     for o in ["o1", "o2", "o3", "o4", "o5"] {
         list.push((format!("n-{o}"), format!("status: todo\nowner: {o}")));
@@ -211,20 +211,20 @@ fn test_ch_4_stacked_picks_top_five_by_count_not_rule_order() {
     );
     let c = open(&mut a);
     let legend = c.legend();
-    for v in ["o6", "o1", "o2", "o3", "o4", "その他"] {
+    for v in ["o6", "o1", "o2", "o3", "o4", "ほか"] {
         assert!(legend.contains(v), "凡例に {v}: {legend:?}\n{}", c.raw);
     }
     assert!(
         !legend.contains("o5"),
-        "o5 は「その他」に入る: {legend:?}\n{}",
+        "o5 は「ほか」に入る: {legend:?}\n{}",
         c.raw
     );
 }
 
 #[test]
 fn test_ch_7_heatmap_picks_top_columns_by_count_not_rule_order() {
-    // [utest -> req~chart.heatmap-cells~1, req~chart.heatmap-enter~2, req~chart.bar-stacked-top5~2] #2: ヒートマップの横(12 まで)も件数の多い順に選ぶ: [rules.tag] values = h01〜h13 で h13 が 10 行・
-    // ほかが1行ずつ → h13 は「その他」でなく自分の列になり、ます目の説明に「todo × h13: 10」が出る。
+    // [utest -> req~chart.heatmap-cells~1, req~chart.heatmap-enter~2, req~chart.bar-stacked-top5~3] #2: ヒートマップの横(12 まで)も件数の多い順に選ぶ: [rules.tag] values = h01〜h13 で h13 が 10 行・
+    // ほかの値が1行ずつ → h13 はあふれた分(「ほか」)でなく自分の列になり、ます目の説明に「todo × h13: 10」が出る。
     let mut list: Vec<(String, String)> = Vec::new();
     for i in 1..=12 {
         list.push((format!("n-{i:02}"), format!("status: todo\ntag: h{i:02}")));
@@ -395,7 +395,7 @@ fn test_ch_3_extreme_date_range_shows_reason_in_body() {
 
 #[test]
 fn test_ch_7_enter_on_other_column_gives_other_reason() {
-    // [utest -> req~chart.heatmap-enter~2] #6: ヒートマップの「その他」の列(横が 12 を超える)で Enter → 表に戻らず、「その他」と書かれた理由。
+    // [utest -> req~chart.heatmap-enter~2] #6: ヒートマップの「ほか」の列(横が 12 を超える)で Enter → 表に戻らず、「ほか」と書かれた理由。
     let mut list: Vec<(String, String)> = Vec::new();
     for i in 1..=14 {
         list.push((format!("n-{i:02}"), format!("status: todo\ntag: t{i:02}")));
@@ -411,15 +411,12 @@ fn test_ch_7_enter_on_other_column_gives_other_reason() {
         ch(&mut a, 'l');
     }
     let d = chart(&a).desc();
-    assert!(
-        d.contains("× その他"),
-        "前提: 「その他」の列を選んだ: {d:?}"
-    );
+    assert!(d.contains("× ほか"), "前提: 「ほか」の列を選んだ: {d:?}");
     a.message = None;
     press(&mut a, KeyCode::Enter);
     assert_chart(&a);
     let m = reason(&a);
-    assert!(m.contains("その他"), "理由は「その他」を言う: {m:?}");
+    assert!(m.contains("ほか"), "理由は「ほか」を言う: {m:?}");
 }
 
 #[test]

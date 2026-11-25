@@ -140,7 +140,7 @@ fn test_ws_3_w_opens_first_table() {
         .success());
     let mut tui = Tui::spawn(&["-w", "Product"], h, &[]);
     tui.wait_until("最初の表とワークスペースの名前", |s| {
-        s.contains("Product › projects")
+        s.contains("Product › w projects")
     });
     tui.send("q");
     assert_eq!(tui.wait_exit(), 0);

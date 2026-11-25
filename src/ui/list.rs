@@ -323,17 +323,8 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         return None;
     }
     let (l, shown, _) = app.list_view()?;
-    let (ax, ay) = anchor(app, w)?;
     let n = shown.len();
     let frame = super::popup::FRAME;
-    let below_room = limit.saturating_sub(ay + 1);
-    let above_room = ay.saturating_sub(1);
-    let below = below_room >= n + frame || below_room >= above_room;
-    let room = if below { below_room } else { above_room };
-    let vis = n.min(room.saturating_sub(frame));
-    if vis == 0 {
-        return None;
-    }
     let text_w = shown
         .iter()
         .map(|&k| width(&sanitize(&l.items[k].text)))
@@ -343,6 +334,49 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
         .input
         .as_ref()
         .is_some_and(|i| app.is_select(&i.col) && super::chips::pill_caps(app, false));
+    let at = shown.iter().position(|&k| k == l.sel).unwrap_or(0);
+    // cell-edit.new-note-form-popup-place: 新しいノートの窓の欄では、窓に重ねずに右・下・上へ置く。
+    if app.note.flow.is_some() && app.detail.is_none() {
+        let (form, vx, ay) = super::new_note::form_anchor(app, w)?;
+        // 下の縁の左の数は、窓が下でも上でも入る幅を取る。
+        let edge = match popup::hints_width(&hints(app)) {
+            0 => 0,
+            e => width(&format!("{n}/{n}")) + e,
+        };
+        let iw = popup::widen_for_hints(
+            (text_w.unwrap_or(0) + 5 + usize::from(caps)).max(8),
+            edge,
+            w,
+        );
+        let want = popup::Want {
+            n,
+            frame,
+            min_vis: popup::MIN_VIS,
+            iw,
+            min_w: popup::SIDE_MIN_W,
+        };
+        let s = popup::beside(form, ay, vx, want, w, limit)?;
+        if s.iw < 5 || s.vis == 0 {
+            return None;
+        }
+        return Some(Geom {
+            x: s.x,
+            top: s.top,
+            iw: s.iw,
+            start: (at + 1).saturating_sub(s.vis),
+            vis: s.vis,
+            below: s.below,
+        });
+    }
+    let (ax, ay) = anchor(app, w)?;
+    let below_room = limit.saturating_sub(ay + 1);
+    let above_room = ay.saturating_sub(1);
+    let below = below_room >= n + frame || below_room >= above_room;
+    let room = if below { below_room } else { above_room };
+    let vis = n.min(room.saturating_sub(frame));
+    if vis == 0 {
+        return None;
+    }
     // screen.window-key-hints: 下の縁のキーが全部入るまで広げる(窓が下なら、下の縁の左の数の分も)。
     let lead = if below { width(&format!("{n}/{n}")) } else { 0 };
     let edge = match popup::hints_width(&hints(app)) {
@@ -357,10 +391,15 @@ fn geometry(app: &App, w: usize, limit: usize) -> Option<Geom> {
     if iw < 5 {
         return None;
     }
-    let at = shown.iter().position(|&k| k == l.sel).unwrap_or(0);
     let start = (at + 1).saturating_sub(vis);
+    // navigation.detail-popup-place: 詳細の表示では、値の欄の桁より左に出さない(プロパティの名前を隠さない)。
+    let (x, iw) = if app.detail.is_some() {
+        popup::right_of(ax, iw, popup::SIDE_MIN_W, w)
+    } else {
+        (ax.min(w - iw), iw)
+    };
     Some(Geom {
-        x: ax.min(w - iw),
+        x,
         top: if below { ay + 1 } else { ay - vis - frame },
         iw,
         start,

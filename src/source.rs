@@ -198,6 +198,12 @@ pub trait Source {
     fn link_index(&self) -> Option<std::rc::Rc<crate::links::Index>> {
         None
     }
+    /// base-view.lookup-properties: ルートフォルダのノート(根からのパスの `.md` を除いたもの。リンクの索引の値)の行の鍵。
+    /// 表の絞り込みの外のノートも引ける。ノートを持たない読み込み口と、無いノートは None(既定)。
+    fn note_row(&self, stem: &str) -> Option<RowId> {
+        let _ = stem;
+        None
+    }
 }
 
 /// 箱に入れた読み込み口もそのまま読み込み口(開く対象を形式によらず1つの型で持つため。SC-15)。
@@ -304,6 +310,9 @@ impl<S: Source + ?Sized> Source for Box<S> {
     }
     fn link_index(&self) -> Option<std::rc::Rc<crate::links::Index>> {
         (**self).link_index()
+    }
+    fn note_row(&self, stem: &str) -> Option<RowId> {
+        (**self).note_row(stem)
     }
 }
 

@@ -101,7 +101,7 @@ pub(crate) enum Ask {
     WsPick(Vec<String>),
     /// 外すワークスペース(WS-2。この表が入っているもの)。
     WsRemove(Vec<String>),
-    /// 開くワークスペース(WS-2)と、最初に開いた所・お気に入りの印のワークスペース(workspace.drawer-favorites)。
+    /// 開くワークスペース(WS-2)と、最初に開いた所・お気に入りの印のワークスペース(workspace.open-favorites)。
     /// `dests` は `items` と同じ並び。
     WsOpen {
         items: Vec<String>,
@@ -843,7 +843,7 @@ impl App {
                 };
                 match dest {
                     super::workspace::WsOpenItem::Named(name) => self.ws_open_tables(&name),
-                    // workspace.drawer-favorites: 切り替えの一覧と同じ道で移る。
+                    // workspace.open-favorites: 切り替えの一覧と同じ道で移る。
                     super::workspace::WsOpenItem::Go(d) => {
                         self.go_to(d, super::switch::Picker::Palette);
                     }

@@ -143,7 +143,7 @@ fn assert_default_table(s: &str, what: &str) {
 
 #[test]
 fn test_cli_1_marker_open_no_args_in_root() {
-    // [stest -> req~cli.launch-marker-open~2] 根で引数なし(`--print --with-path`)→ tasks.base の表。AGENTS.md の行は無い。
+    // [stest -> req~cli.launch-marker-open~3] 根で引数なし(`--print --with-path`)→ tasks.base の表。AGENTS.md の行は無い。
     let h = home("mo-noargs");
     let root = h.path().join("led");
     ledger(&root);
@@ -158,7 +158,7 @@ fn test_cli_1_marker_open_no_args_in_root() {
 
 #[test]
 fn test_cli_1_marker_open_dot() {
-    // [stest -> req~cli.launch-marker-open~2, req~cli.launch-marker-headless~1, req~cli.launch-raw~2] 根で `mdgrid .` → tasks.base の表。
+    // [stest -> req~cli.launch-marker-open~3, req~cli.launch-marker-headless~1, req~cli.launch-raw~2] 根で `mdgrid .` → tasks.base の表。
     let h = home("mo-dot");
     let root = h.path().join("led");
     ledger(&root);
@@ -172,7 +172,7 @@ fn test_cli_1_marker_open_dot() {
 
 #[test]
 fn test_cli_1_marker_open_root_path_from_elsewhere() {
-    // [stest -> req~cli.launch-marker-open~2] ほかのフォルダから根のパスを渡す(相対と絶対)→ tasks.base の表。
+    // [stest -> req~cli.launch-marker-open~3] ほかのフォルダから根のパスを渡す(相対と絶対)→ tasks.base の表。
     let h = home("mo-path");
     let root = h.path().join("led");
     ledger(&root);
@@ -192,7 +192,7 @@ fn test_cli_1_marker_open_root_path_from_elsewhere() {
 
 #[test]
 fn test_cli_1_marker_open_print_first_view_rows() {
-    // [stest -> req~cli.launch-marker-open~2, req~cli.launch-marker-headless~1] 根で `mdgrid --print` → tasks.base の最初のビュー(「全部」)の行。案内の行は無い。
+    // [stest -> req~cli.launch-marker-open~3, req~cli.launch-marker-headless~1] 根で `mdgrid --print` → tasks.base の最初のビュー(「全部」)の行。案内の行は無い。
     let h = home("mo-print");
     let root = h.path().join("led");
     ledger(&root);
@@ -242,22 +242,27 @@ fn test_cli_1_marker_open_raw_without_marker_changes_nothing() {
 
 #[test]
 fn test_cli_1_marker_open_subfolder_does_not_search_up() {
-    // [stest -> req~cli.launch-marker-open~2] 下の todo/ を開く(引数で渡す・todo で引数なし)→ todo の既定の表。印は上へたどらない。
-    // 印の表はビュー「済だけ」(b だけ)なので、上へたどれば a の行が消えて見分けられる。
+    // [stest -> req~cli.launch-marker-open~3] 下の、どの表のノートのフォルダでもない memo/ を開く(引数で渡す・memo で
+    // 引数なし)→ memo の既定の表。印の `open` は上へたどらない(上へたどれば tasks.base の a・b の行になり見分けられる)。
+    // todo/ は tasks.base の絞り込みのフォルダなので、開くとその表になる(cli.launch-table-folder。test_table_flag.rs)。
     let h = home("mo-sub");
     let root = h.path().join("led");
     ledger(&root);
+    std::fs::create_dir_all(root.join("memo")).unwrap();
+    std::fs::write(root.join("memo/m.md"), "---\nstatus: 覚え\n---\n").unwrap();
     marker(&root, MARKER_WITH_VIEW);
     let s = ok(
-        run(h.path(), &root, &["todo", "--print", "--with-path"]),
-        "todo",
+        run(h.path(), &root, &["memo", "--print", "--with-path"]),
+        "memo",
     );
-    assert!(has_row(&s, "a.md") && has_row(&s, "b.md"), "{s}");
+    assert!(has_row(&s, "m.md") && !has_row(&s, "b.md"), "{s}");
+    assert_eq!(rows(&s), 1, "{s}");
     let s = ok(
-        run(h.path(), &root.join("todo"), &["--print", "--with-path"]),
-        "todo で引数なし",
+        run(h.path(), &root.join("memo"), &["--print", "--with-path"]),
+        "memo で引数なし",
     );
-    assert!(has_row(&s, "a.md") && has_row(&s, "b.md"), "{s}");
+    assert!(has_row(&s, "m.md") && !has_row(&s, "b.md"), "{s}");
+    assert_eq!(rows(&s), 1, "{s}");
 }
 
 #[test]
@@ -281,7 +286,7 @@ fn test_cli_1_marker_open_two_folders_ignore_marker() {
     assert!(has_row(&s, "other/o.md"), "{s}");
 }
 
-// [stest -> req~cli.launch-marker-open~2, req~cli.launch-marker-skip~2, req~cli.launch-raw~2]
+// [stest -> req~cli.launch-marker-open~3, req~cli.launch-marker-skip~2, req~cli.launch-raw~2]
 #[test]
 fn test_cli_1_marker_open_md_file_ignores_marker() {
     // [CLI-1・CLI-15] `mdgrid AGENTS.md` → 根の既定の表の AGENTS.md の行(印の表には無い行)。
@@ -299,7 +304,7 @@ fn test_cli_1_marker_open_md_file_ignores_marker() {
 
 #[test]
 fn test_cli_1_marker_open_screen_skips_places_list() {
-    // [stest -> req~cli.launch-marker-open~2] places.toml に登録があっても、根で引数なしの起動は一覧(CLI-19)を出さずに印の表を開く。
+    // [stest -> req~cli.launch-marker-open~3] places.toml に登録があっても、根で引数なしの起動は一覧(CLI-19)を出さずに印の表を開く。
     let h = home("mo-places");
     let root = h.path();
     ledger(root);

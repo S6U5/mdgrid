@@ -206,7 +206,7 @@ fn test_ga_4_click_selects_the_clicked_row_when_scrolled() {
 #[test]
 fn test_ga_2_header_labels_do_not_swallow_the_next_month() {
     // [utest -> req~gantt.open-bars~1, req~gantt.open-unit~1] 原点が 10/27(月末の6日以内)でも、11月の字「2026-11」が出る。先頭は収まらないので「10」だけ。
-    // 日の単位の下の行は月曜の日だけ(11/02 の「2」)。週の単位: 上の行は年、下の行は1日を含む週に月の数
+    // 日の単位の下の行は週の始まりの日だけ(週の始まりを書いていないので日曜。11/01 の「1」)。週の単位: 上の行は年、下の行は1日を含む週に月の数
     // (11・12・01)。月の単位: 1か月3字で、下の行に月の数(右寄せ2字)、1月のマスに年(年どうしはくっつかない)。
     // (2026-11-01 の gantt-axis で、日の一の位の並び・月の一の位の並びから今の形に期待を直した。)
     let list = [("a.md", "---\nstart: 2026-10-27\ndue: 2026-11-10\n---\n")];
@@ -221,7 +221,7 @@ fn test_ga_2_header_labels_do_not_swallow_the_next_month() {
     let i11 = cpos(&top, "2026-11").unwrap();
     assert_eq!(i11 - i10, 5, "{top}");
     assert!(!low.contains("7890123"), "{low}");
-    assert_eq!(low.chars().nth(i11 + 1), Some('2'), "{top}\n{low}");
+    assert_eq!(low.chars().nth(i11), Some('1'), "{top}\n{low}");
     // 週。
     ch(&mut a, '-');
     assert_eq!(a.gantt.as_ref().unwrap().unit, Unit::Week);

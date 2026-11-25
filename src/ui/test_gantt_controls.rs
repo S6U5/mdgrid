@@ -25,6 +25,17 @@ const NOTES: &[(&str, &str)] = &[
 const GANTT: &str = "gantt = { start = \"start\", end = \"due\" }";
 
 fn boot_opts(tag: &str, notes: &[(&str, &str)], line: &str, readonly: bool) -> (Tmp, App) {
+    boot_cfg(tag, notes, line, readonly, Config::default())
+}
+
+/// `boot_opts` と同じで、設定を `config` にする。
+fn boot_cfg(
+    tag: &str,
+    notes: &[(&str, &str)],
+    line: &str,
+    readonly: bool,
+    config: Config,
+) -> (Tmp, App) {
     let tmp = Tmp::new(tag);
     for (n, t) in notes {
         tmp.write(n, t);
@@ -40,7 +51,7 @@ fn boot_opts(tag: &str, notes: &[(&str, &str)], line: &str, readonly: bool) -> (
     let mut app = App::new(Box::new(src), ColorMode::None);
     app.resize(120, 30);
     app.start(Startup {
-        config: Config::default(),
+        config,
         warnings: Vec::new(),
         readonly,
         no_color: true,
@@ -194,33 +205,76 @@ fn test_click_this_month_sets_range() {
     assert_eq!(origin(&a), "2026-10-01");
 }
 
-// [utest -> req~gantt.range-presets~1, req~gantt.range-key~1]
-/// `r` は、今週(月曜から日の単位)→ 今月(1日から)→ 四半期 → 全体 → 今週 の順に切り替える。
+// [utest -> req~gantt.range-presets~2, req~gantt.range-key~2]
+/// `r` は、今週(週の始まりの日から日の単位。週の始まりを書いていないので日曜)→ 今月(1日から)→ 四半期 → 全体 →
+/// 今週 の順に切り替える。
 #[test]
 fn test_r_cycles_ranges() {
     let (_t, mut a) = open("gc_range1");
     ch(&mut a, 'r');
-    assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-10-05", Unit::Day));
+    assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-10-04", Unit::Day));
     ch(&mut a, 'r');
     assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-10-01", Unit::Day));
     ch(&mut a, 'r');
     ch(&mut a, 'r');
     assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-10-01", Unit::Day));
     ch(&mut a, 'r');
-    assert_eq!(origin(&a), "2026-10-05");
+    assert_eq!(origin(&a), "2026-10-04");
 }
 
-// [utest -> req~gantt.range-presets~1]
+// [utest -> req~gantt.range-presets~2]
+/// `[dates] week_start = "mon"` なら、今週の左端は月曜。
+#[test]
+fn test_this_week_starts_on_monday_when_set() {
+    let (cfg, w) = mdgrid::config::parse("[dates]\nweek_start = \"mon\"\n").unwrap();
+    assert!(w.is_empty(), "{w:?}");
+    let (_t, mut a) = boot_cfg("gc_range_mon", NOTES, GANTT, false, cfg);
+    ch(&mut a, 'C');
+    assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+    click(&mut a, "今週");
+    assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-10-05", Unit::Day));
+}
+
+// [utest -> req~gantt.week-start~1]
+/// 10/04(日)〜10/10(土)の棒は、週の単位で、週の始まりを書いていなければ(日曜)1マス、`"mon"` なら2マス。
+#[test]
+fn test_week_unit_cells_follow_week_start() {
+    let notes: &[(&str, &str)] = &[("alpha.md", "---\nstart: 2026-10-04\ndue: 2026-10-10\n---\n")];
+    let (mon, w) = mdgrid::config::parse("[dates]\nweek_start = \"mon\"\n").unwrap();
+    assert!(w.is_empty(), "{w:?}");
+    for (tag, cfg, want) in [
+        ("gc_week_sun", Config::default(), 1),
+        ("gc_week_mon", mon, 2),
+    ] {
+        let (_t, mut a) = boot_cfg(tag, notes, GANTT, false, cfg);
+        ch(&mut a, 'C');
+        assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+        ch(&mut a, '-');
+        assert_eq!(unit(&a), Unit::Week);
+        let s = screen(&a);
+        let line = s
+            .lines()
+            .find(|l| l.contains("alpha"))
+            .unwrap_or_else(|| panic!("alpha の行が無い:\n{s}"));
+        assert_eq!(
+            line.chars().filter(|c| *c == '█').count(),
+            want,
+            "{tag}:\n{s}"
+        );
+    }
+}
+
+// [utest -> req~gantt.range-presets~2]
 /// 四半期は、四半期の最初の日を含む単位の境を左端に、末日まで収まる最も細かい単位にする。
 #[test]
 fn test_quarter_range_fits_unit() {
     let (_t, mut a) = open("gc_range2");
     a.today = parse_date("2026-11-20").unwrap();
     click(&mut a, "四半期");
-    assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-09-28", Unit::Week));
+    assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-09-27", Unit::Week));
 }
 
-// [utest -> req~gantt.range-presets~1]
+// [utest -> req~gantt.range-presets~2]
 /// 全体は、開いたときと同じ左端と単位に戻す。
 #[test]
 fn test_all_range_restores_fit() {
@@ -233,7 +287,7 @@ fn test_all_range_restores_fit() {
     assert_eq!((origin(&a).as_str(), unit(&a)), ("2026-10-01", Unit::Day));
 }
 
-// [utest -> req~gantt.range-presets~1]
+// [utest -> req~gantt.range-presets~2]
 /// 期間を選んでも、期間の外の行は隠れない。
 #[test]
 fn test_range_keeps_rows() {

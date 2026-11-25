@@ -13,6 +13,11 @@ format = "YYYY/MM/DD (ddd)"
 # The first day of the week in the calendar ("sun" or "mon").
 week_start = "mon"
 
+# Estimates (in days) read with one decimal place and " d"; the notes keep the plain number.
+[format.estimate]
+decimals = 1
+suffix = " d"
+
 [edit]
 # The most candidates a text cell offers on Enter.
 candidates = 30
