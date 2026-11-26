@@ -50,10 +50,10 @@ chart = [
   { name = "担当と状態", kind = "heatmap", x = "actor", by = "status" },
 ]
 
-# 新しいタスク(a、または mdgrid --new-note): 担当・開始日・期限・優先度を聞き、残りを埋め、本文を雛形から始める。
+# 新しいタスク(a、または mdgrid --new-note): 担当・開始日・期限・優先度・タグ・URL を聞き、残りを埋め、本文を雛形から始める。
 [table.new_note]
 folder = "Tasks"
-ask = ["actor", "start", "due", "priority"]
+ask = ["actor", "start", "due", "priority", "tags", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
 
@@ -118,10 +118,10 @@ sort = [{ property = "done_at", direction = "DESC" }]
 [[table]]
 name = "ルーチン"
 
-# 新しいルーチン: 繰り返し・担当・次にやる日を聞く。
+# 新しいルーチン: 繰り返し・担当・次にやる日・タグを聞く。
 [table.new_note]
 folder = "Routines"
-ask = ["recurrence", "actor", "next_due"]
+ask = ["recurrence", "actor", "next_due", "tags"]
 body = ".mdgrid/templates/routine.md"
 
 [table.base]
