@@ -48,6 +48,10 @@ pub(crate) struct Cal {
     pub on_time: bool,
     /// 日時の列か(時刻の欄を出す)。
     datetime: bool,
+    /// cell-edit.datetime-calendar-time-digits: 時刻を選んでいる間に打った字(数字と `:`)。空なら打っていない。
+    time_buf: String,
+    /// 時刻を打ち始める前の時刻(打った字を全部消したら戻す)。
+    time_before: String,
 }
 
 impl Cal {
@@ -79,6 +83,8 @@ impl Cal {
             seen: text.to_string(),
             on_time: false,
             datetime: entry == Entry::DateTime,
+            time_buf: String::new(),
+            time_before: String::new(),
         })
     }
 }
@@ -219,6 +225,31 @@ fn step_time(time: &str, step: i32) -> String {
     .rem_euclid(24 * 60);
     format!("T{:02}:{:02}{rest}", next / 60, next % 60)
 }
+
+/// cell-edit.datetime-calendar-time-digits: 時刻を選んで打った字の (時, 分)。1〜2桁は時、3〜4桁は時と分、
+/// `:` で区切れば前が時で後ろの2桁が分。読めない・まだ途中なら None。
+fn typed_time(buf: &str) -> Option<(u32, u32)> {
+    let num = |t: &str| {
+        (!t.is_empty() && t.bytes().all(|b| b.is_ascii_digit()))
+            .then(|| t.parse::<u32>().ok())
+            .flatten()
+    };
+    let (h, m) = match buf.split_once(':') {
+        Some((h, m)) if (1..=2).contains(&h.len()) && m.len() == 2 => (num(h)?, num(m)?),
+        Some(_) => return None,
+        None => match buf.len() {
+            1 | 2 => (num(buf)?, 0),
+            3 => (num(&buf[..1])?, num(&buf[1..])?),
+            4 => (num(&buf[..2])?, num(&buf[2..])?),
+            _ => return None,
+        },
+    };
+    (h < 24 && m < 60).then_some((h, m))
+}
+
+/// 時刻の欄の `[-]`・`[+]` のボタン(cell-edit.datetime-calendar-time-buttons)。
+const TIME_DOWN: &str = "[-]";
+const TIME_UP: &str = "[+]";
 
 /// 時刻の欄に出す `HH:MM`(無ければ `--:--`)。
 fn time_label(time: &str) -> String {
@@ -425,12 +456,15 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
     if c.datetime {
         // CE-30: 時刻の欄。選んでいれば反転と `>`(色に頼らない。SR-15)。
         let label = Msg::CalTime.text();
-        let value = format!(
-            "{}{}",
-            if c.on_time { ">" } else { " " },
+        // 打っている途中で時刻として読めない字は、そのまま見せる。
+        let shown = if !c.time_buf.is_empty() && typed_time(&c.time_buf).is_none() {
+            format!("{:<5}", c.time_buf)
+        } else {
             time_label(&c.time)
-        );
-        let pad = (CAL_W - 2).saturating_sub(width(label) + 2 + width(&value));
+        };
+        let value = format!("{}{shown}", if c.on_time { ">" } else { " " });
+        let buttons = format!(" {TIME_DOWN} {TIME_UP}");
+        let pad = (CAL_W - 2).saturating_sub(width(label) + 2 + width(&value) + width(&buttons));
         let st = if c.on_time {
             sel_st(Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD))
         } else {
@@ -440,6 +474,7 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
             Span::styled(f.v.to_string(), bst),
             Span::raw(format!(" {label} ")),
             Span::styled(value, st),
+            Span::raw(buttons),
             Span::raw(" ".repeat(pad)),
             Span::styled(f.v.to_string(), bst),
         ]);
@@ -448,6 +483,21 @@ fn rows(app: &App, c: &Cal) -> Vec<Vec<Span<'static>>> {
         out.push(vec![Span::styled(e, bst)]);
     }
     out
+}
+
+/// cell-edit.datetime-calendar-time-hint: 時刻を選んでいる間のメッセージ行の案内(日に戻るキーはキーの表から)。
+/// 時刻を選んでいなければ None。
+pub(crate) fn time_hint(app: &App) -> Option<String> {
+    let on = app
+        .input
+        .as_ref()
+        .and_then(|i| i.cal.as_ref())
+        .is_some_and(|c| c.on_time);
+    if !(on && shown(app)) {
+        return None;
+    }
+    let key = keymap::key_for(&app.keys, Mode::Edit, Action::TimeFocus).unwrap_or_default();
+    Some(Msg::CalHintTime.fill(&[&key]))
 }
 
 /// 日時の列のカレンダーか(時刻の欄と、そのキーを出す)。
@@ -593,6 +643,7 @@ impl App {
             if let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) {
                 if dt && on {
                     c.on_time = !c.on_time;
+                    c.time_buf.clear();
                 } else {
                     self.message = Some(Msg::CalTimeOnly.text().into());
                 }
@@ -606,6 +657,10 @@ impl App {
                 .and_then(|i| i.cal.as_ref())
                 .is_some_and(|c| c.on_time);
         if on_time {
+            if action == Action::DeleteBack {
+                self.time_backspace();
+                return true;
+            }
             let step = match action {
                 Action::ListUp => 15,
                 Action::ListDown => -15,
@@ -616,6 +671,9 @@ impl App {
                 _ => 0,
             };
             if step != 0 {
+                if let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) {
+                    c.time_buf.clear();
+                }
                 self.time_step(step);
                 return true;
             }
@@ -690,6 +748,73 @@ impl App {
         c.seen.clone_from(&i.text);
     }
 
+    /// cell-edit.datetime-calendar-time-digits: 時刻を選んでいる間に打った字。数字と `:` は時刻として読み、
+    /// ほかの字は捨てる。時刻を選んでいなければ false(入力ボックスに入れる)。
+    pub(crate) fn calendar_time_insert(&mut self, ch: char) -> bool {
+        let on = shown(self);
+        let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) else {
+            return false;
+        };
+        if !(on && c.on_time) {
+            return false;
+        }
+        if !(ch.is_ascii_digit() || ch == ':') {
+            return true;
+        }
+        if c.time_buf.is_empty() {
+            c.time_before.clone_from(&c.time);
+        }
+        if c.time_buf.len() >= 5 {
+            c.time_buf.clear();
+        }
+        c.time_buf.push(ch);
+        self.message = None;
+        self.time_from_buf();
+        true
+    }
+
+    /// 時刻を選んで打った字の最後の1字を消す。全部消したら打つ前の時刻に戻す。
+    fn time_backspace(&mut self) {
+        let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) else {
+            return;
+        };
+        if c.time_buf.pop().is_none() {
+            return;
+        }
+        self.time_from_buf();
+    }
+
+    /// 打った字から時刻と入力ボックスの文字を作り直す。読めれば `YYYY-MM-DDTHH:MM`(秒とタイムゾーンは保つ)、
+    /// 途中か読めなければ打った字のまま(確定は入力の文字を読むので、読めない理由が出る)。
+    fn time_from_buf(&mut self) {
+        let Some(i) = &mut self.input else {
+            return;
+        };
+        let Some(c) = &mut i.cal else {
+            return;
+        };
+        let day = types::format_date(c.sel);
+        if c.time_buf.is_empty() {
+            c.time = c.time_before.clone();
+            c.time_typed = !c.time.is_empty();
+            c.picked = true;
+            i.text = format!("{day}{}", c.time);
+        } else if let Some((h, m)) = typed_time(&c.time_buf) {
+            let rest = hm(&c.time).map_or("", |(_, _, r)| r).to_string();
+            c.time = format!("T{h:02}:{m:02}{rest}");
+            c.time_typed = true;
+            c.picked = true;
+            i.text = format!("{day}{}", c.time);
+        } else {
+            c.picked = false;
+            i.text = format!("{day}T{}", c.time_buf);
+        }
+        i.cursor = i.text.len();
+        i.touched = true;
+        i.fresh = false;
+        c.seen.clone_from(&i.text);
+    }
+
     /// 打った文字が日付として読めれば、カレンダーをその日へ動かす(CE-20。日付の言葉でも。cell-edit.date-words-preview)。
     /// 日時は打った時刻を覚え、打ち込みに時刻が無ければ元の値の時刻を保つ(CE-21)。
     pub(crate) fn calendar_follow(&mut self) {
@@ -731,8 +856,23 @@ impl App {
         }
         // CE-30: 時刻の欄のクリックは時刻の欄を選ぶ。
         if y == g.top + 2 + WEEKS && datetime_open(self) {
+            // cell-edit.datetime-calendar-time-buttons: 縁・空白・見出し・空白・`>HH:MM`・空白のあとに `[-]`・`[+]`。
+            let down = g.x + 1 + 1 + width(Msg::CalTime.text()) + 1 + 6 + 1;
+            let up = down + width(TIME_DOWN) + 1;
+            let step = if (down..down + width(TIME_DOWN)).contains(&x) {
+                -15
+            } else if (up..up + width(TIME_UP)).contains(&x) {
+                15
+            } else {
+                0
+            };
             if let Some(c) = self.input.as_mut().and_then(|i| i.cal.as_mut()) {
                 c.on_time = true;
+                c.time_buf.clear();
+            }
+            if step != 0 {
+                self.message = None;
+                self.time_step(step);
             }
             return true;
         }

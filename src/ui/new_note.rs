@@ -1302,6 +1302,9 @@ pub(crate) fn hint(app: &App) -> Option<Option<String>> {
         };
         return Some(Some(t));
     }
+    if let Some(h) = super::calendar::time_hint(app) {
+        return Some(Some(h));
+    }
     let forms = super::entry::date_forms(&app.date_format);
     let t = match app.input.as_ref().map(|i| i.entry) {
         Some(Entry::Number) => Msg::NoteHintNumber.text().to_string(),

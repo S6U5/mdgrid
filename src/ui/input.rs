@@ -219,6 +219,10 @@ impl App {
         if c == '\n' || c == '\r' {
             return;
         }
+        // cell-edit.datetime-calendar-time-digits: 時刻を選んでいる間の字は時刻に。
+        if self.calendar_time_insert(c) {
+            return;
+        }
         self.message = None;
         // CE-3: リストを開いた直後に打った文字は、今の値を置き換える。
         let replace = self.input.as_ref().is_some_and(|i| {

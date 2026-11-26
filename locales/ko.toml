@@ -945,6 +945,7 @@ CalMonthKeys = "{0} 월"
 CalYearKeys = "{0} 년"
 ## CE-31: 時刻の欄への切り替えのキー。
 CalTimeKey = "{0} 시각"
+CalHintTime = "시각: ↑↓ 15분 · Shift+↑↓ 1시간 · 숫자로 입력(1430·9:30) · {0} 날짜로 돌아가기"
 ## CE-30: 時刻の欄の見出し。
 CalTime = "시각"
 ## CE-30: 時刻の欄は日時の列だけ。

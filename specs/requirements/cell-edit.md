@@ -1326,6 +1326,57 @@
   - When: 日時の列で2行を選んで一括の編集を開き、`2026-10-30` から Ctrl+O・↑ で確定
   - Then: 2行とも `2026-10-30T09:15` のためる変更。
 
+#### カレンダーで時刻を選んでいるときに打った数字は時刻として読み、時刻の欄と入力ボックスの文字をその時刻にするべき(1〜2桁は時、3〜4桁は時と分。`:` で区切ってもよい。Backspace は最後に打った字を消す)
+`req~cell-edit.datetime-calendar-time-digits~1` P1
+- Rationale: 時刻の欄を選んだまま数字を打つと、時刻ではなく入力の文字の後ろに付いて読めない値になり、カレンダーの画面では時刻を変えられないように見えた(2026-11-27 の報告)
+- Acceptance:
+  - Given: `at: 2026-10-30T09:00` のセルのカレンダーで、時刻に切り替えた
+  - When: `1430` と打って Enter
+  - Then: `2026-10-30T14:30` のためる変更。
+- Acceptance:
+  - Given: 同じカレンダーで、時刻に切り替えた
+  - When: `9:30` と打つ
+  - Then: 時刻の欄が 09:30、入力ボックスの文字が `2026-10-30T09:30`。
+- Acceptance:
+  - Given: 同じカレンダーで、時刻に切り替えた
+  - When: `14` と打ってから Backspace を2回
+  - Then: 時刻の欄が 09:00 に戻り、入力ボックスの文字が `2026-10-30T09:00`。
+- Acceptance:
+  - Given: 同じカレンダーで、時刻に切り替えた
+  - When: `25` と打って Enter
+  - Then: 確定せず、セルは `2026-10-30T09:00` のままで、読めない理由が出る。
+- Acceptance:
+  - Given: 新しいノートの窓の日時の欄(cell-edit.new-note-form-typed)のカレンダーで、時刻に切り替えた
+  - When: `1430` と打って Ctrl+S
+  - Then: 作ったノートのその列が、今日の日付と `T14:30`。
+- Needs: utest
+
+#### 日時の列のカレンダーの時刻の欄には `[-]` と `[+]` のボタンを出し、クリックで時刻を15分ずつ動かし(cell-edit.datetime-calendar-time-step と同じ刻み)、時刻の欄を選ぶべき
+`req~cell-edit.datetime-calendar-time-buttons~1` P1
+- Rationale: マウスでは時刻の欄を選べるだけで、時刻を変える手段が無かった(2026-11-27 の報告)
+- Acceptance:
+  - Given: `at: 2026-10-30T09:00` のセルのカレンダー
+  - When: 時刻の欄の `[+]` をクリック
+  - Then: 時刻の欄が 09:15、入力ボックスの文字が `2026-10-30T09:15`。
+- Acceptance:
+  - Given: 同じカレンダー
+  - When: 時刻の欄の `[-]` をクリック
+  - Then: 時刻の欄が 08:45。
+- Needs: utest
+
+#### カレンダーで時刻を選んでいる間は、メッセージ行の案内を時刻の操作(↑↓ で15分・Shift+↑↓ で1時間・数字で打つ・日に戻るキー)にするべき
+`req~cell-edit.datetime-calendar-time-hint~1` P1
+- Rationale: 時刻を選んだあとに何を押せば変わるかが、画面のどこにも出ていなかった
+- Acceptance:
+  - Given: `at: 2026-10-30T09:00` のセルのカレンダー
+  - When: Ctrl+O で時刻に切り替える
+  - Then: メッセージ行に「15分」と「数字」と Ctrl+O の文字が出る。
+- Acceptance:
+  - Given: 新しいノートの窓の日時の欄のカレンダー
+  - When: Ctrl+O で時刻に切り替える
+  - Then: メッセージ行に「15分」と「数字」と Ctrl+O の文字が出る。
+- Needs: utest
+
 #### 新しいノートの名前の雛形と前もって入れる値(cell-edit.new-note-config)には、変数(`{date}`・`{date:形}`・`{date+N}`・`{date-N}`・`{time}`・`{now}`・`{weekday}`・`{name}`・`{folder}`)を書けるべき
 `req~cell-edit.template-vars-list~1` P1
 - Acceptance:
