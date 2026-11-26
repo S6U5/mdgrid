@@ -918,3 +918,103 @@ fn test_st_2_tasks_first_tab_shows_the_time_left_until_due() {
         assert_eq!(left("/c.md"), "", "{lang}: 期限の無いノートは空\n{text}");
     }
 }
+
+/// 印 `.mdgrid/workspace.toml` の最初の `[[table]]`(タスクの表)のビューのうち、`order` に `due` を持つものの名前。
+fn views_with_due(root: &Path) -> Vec<String> {
+    let marker: toml::Table = read(&root.join(".mdgrid/workspace.toml")).parse().unwrap();
+    let table = &marker["table"].as_array().unwrap()[0];
+    table["base"]["views"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|v| {
+            v.get("order")
+                .and_then(toml::Value::as_array)
+                .is_some_and(|o| o.iter().any(|c| c.as_str() == Some("due")))
+        })
+        .map(|v| v["name"].as_str().unwrap().to_string())
+        .collect()
+}
+
+#[test]
+fn test_st_2_tasks_starters_show_start_right_before_due() {
+    // [stest -> req~starter.tasks-start-column~1] tasks と tasks-ai の期限を出すタブは、どれも期限のすぐ前に開始日の列を出す。
+    for (starter, tabs) in [("tasks", 4), ("tasks-ai", 3)] {
+        for (lang, start, due) in [
+            ("ja_JP.UTF-8", "開始", "期限"),
+            ("en_US.UTF-8", "Start", "Due"),
+        ] {
+            let home = home("st-start");
+            let h = home.path();
+            let root = h.join(starter);
+            let made = run_lang(
+                h,
+                h,
+                lang,
+                &[],
+                &[
+                    root.to_str().unwrap(),
+                    "--init-workspace",
+                    "--starter",
+                    starter,
+                ],
+            );
+            ok(made, "作る");
+            // どのタブにも出るよう、状態ごとに1件(担当は人と AI の両方、期限は今日より前)。
+            for st in ["todo", "doing", "waiting"] {
+                put(
+                    &root.join(format!("Tasks/{st}.md")),
+                    &format!(
+                        "---\nstatus: {st}\nactor: both\nstart: 2026-10-01\ndue: 2026-10-09\n---\n"
+                    ),
+                );
+            }
+            let views = views_with_due(&root);
+            assert_eq!(
+                views.len(),
+                tabs,
+                "{starter} {lang}: 期限を出すタブ: {views:?}"
+            );
+            for view in &views {
+                let printed = run_lang(
+                    h,
+                    h,
+                    lang,
+                    &[("MDGRID_TODAY", "2026-10-10")],
+                    &[
+                        root.to_str().unwrap(),
+                        "--print",
+                        "--format",
+                        "tsv",
+                        "--view",
+                        view,
+                    ],
+                );
+                let text = ok(printed, "--print --view");
+                let lines: Vec<&str> = text.lines().collect();
+                let heads: Vec<&str> = lines[0].split('\t').collect();
+                let at = |name: &str| {
+                    heads.iter().position(|x| *x == name).unwrap_or_else(|| {
+                        panic!("{starter} {lang} {view}: 見出しに {name} が無い: {heads:?}")
+                    })
+                };
+                let (s, d) = (at(start), at(due));
+                assert_eq!(
+                    s + 1,
+                    d,
+                    "{starter} {lang} {view}: 開始が期限のすぐ前に無い: {heads:?}"
+                );
+                let row: Vec<&str> = lines
+                    .get(1)
+                    .unwrap_or_else(|| panic!("{starter} {lang} {view}: 行が無い\n{text}"))
+                    .split('\t')
+                    .collect();
+                assert_eq!(
+                    (row[s], row[d]),
+                    ("2026-10-01", "2026-10-09"),
+                    "{starter} {lang} {view}:\n{text}"
+                );
+            }
+        }
+    }
+}

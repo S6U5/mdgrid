@@ -256,3 +256,141 @@ fn test_st_2_tasks_starter_fills_the_done_date_e2e() {
     assert_eq!(body, "---\nstatus: done\ndone_at: 2026-10-06\n---\n");
     tui.stop();
 }
+
+/// 新しいノートの窓で、欄の名前 `label` のある行(`│ > 名前` か `│   名前` の形)。
+fn form_row(screen: &str, label: &str) -> Option<usize> {
+    screen.lines().position(|l| {
+        [
+            format!("│ > {label} "),
+            format!("│   {label} "),
+            format!("│ > {label}│"),
+            format!("│   {label}│"),
+        ]
+        .iter()
+        .any(|p| l.contains(p.as_str()))
+    })
+}
+
+#[test]
+fn test_st_2_tasks_starters_ask_start_right_before_due_e2e() {
+    // [stest -> req~starter.tasks-start-column~1] tasks と tasks-ai の新しいノートの窓は、名前の下に期限のすぐ前で開始日を聞く。
+    for (starter, lang, labels) in [
+        (
+            "tasks",
+            "ja_JP.UTF-8",
+            &["名前", "開始", "期限", "優先度", "URL"][..],
+        ),
+        (
+            "tasks",
+            "en_US.UTF-8",
+            &["name", "Start", "Due", "Priority", "URL"][..],
+        ),
+        (
+            "tasks-ai",
+            "ja_JP.UTF-8",
+            &["名前", "誰が", "開始", "期限", "優先度"][..],
+        ),
+        (
+            "tasks-ai",
+            "en_US.UTF-8",
+            &["name", "Actor", "Start", "Due", "Priority"][..],
+        ),
+    ] {
+        let home = TempDir::new("starter-ask-start");
+        let h = home.path();
+        std::fs::create_dir_all(h.join("state")).unwrap();
+        make_in(h, starter, lang);
+        let mut tui = Tui::spawn(
+            &[starter],
+            h,
+            &[("MDGRID_TODAY", "2026-10-06"), ("LANG", lang)],
+        );
+        tui.wait_until("表が出る", |s| s.contains("a +"));
+        tui.send("a");
+        tui.wait_until("新しいノートの窓が開く", |s| s.contains("^S"));
+        let screen = tui.screen();
+        let rows: Vec<Option<usize>> = labels.iter().map(|l| form_row(&screen, l)).collect();
+        let first = rows[0].unwrap_or_else(|| panic!("{starter} {lang}: 名前の欄が無い\n{screen}"));
+        let want: Vec<Option<usize>> = (0..labels.len()).map(|i| Some(first + i)).collect();
+        assert_eq!(
+            rows, want,
+            "{starter} {lang}: 欄の並び {labels:?}\n{screen}"
+        );
+        tui.stop();
+    }
+}
+
+#[test]
+fn test_st_2_tasks_starters_fill_the_start_date_on_doing_e2e() {
+    // [stest -> req~starter.tasks-start-on-doing~1] tasks と tasks-ai で状態を doing にして保存すると、開始日が空のときだけ今日が入る。
+    for (starter, before, after, pending) in [
+        (
+            "tasks",
+            "---\nstatus: todo\n---\n",
+            "---\nstatus: doing\nstart: 2026-10-06\n---\n",
+            2,
+        ),
+        (
+            "tasks-ai",
+            "---\nstatus: todo\n---\n",
+            "---\nstatus: doing\nstart: 2026-10-06\n---\n",
+            2,
+        ),
+        (
+            "tasks",
+            "---\nstatus: todo\nstart: 2026-10-01\n---\n",
+            "---\nstatus: doing\nstart: 2026-10-01\n---\n",
+            1,
+        ),
+    ] {
+        let home = TempDir::new("starter-start-doing");
+        let h = home.path();
+        std::fs::create_dir_all(h.join("state")).unwrap();
+        make_in(h, starter, "ja_JP.UTF-8");
+        // 見本のノートは除き、札を1枚だけにする。
+        std::fs::remove_dir_all(h.join(format!("{starter}/Tasks"))).unwrap();
+        std::fs::create_dir_all(h.join(format!("{starter}/Tasks"))).unwrap();
+        let note = h.join(format!("{starter}/Tasks/請求書を送る.md"));
+        std::fs::write(&note, before).unwrap();
+        let mut tui = Tui::spawn(&[starter], h, &[("MDGRID_TODAY", "2026-10-06")]);
+        tui.wait_until("表が出る", |s| s.contains("請求書を送る"));
+        // カンバンで todo の札を doing のレーンへ動かす。
+        tui.send("B");
+        tui.wait_until("カンバン", |s| s.contains("doing"));
+        tui.send("L");
+        tui.wait_until("札が動く", |s| s.contains("→ doing"));
+        tui.wait_until("未保存", |s| s.contains(&format!("未保存 {pending}")));
+        tui.send("\x13");
+        tui.wait_for("+status: doing");
+        tui.send("\r");
+        let body = pty::wait_file(&note, &tui, |s| s.contains("status: doing"));
+        assert_eq!(body, after, "{starter}: {before:?}");
+        tui.stop();
+    }
+}
+
+#[test]
+fn test_st_2_tasks_ai_starter_fills_the_done_date_e2e() {
+    // [stest -> req~starter.tasks-ai-done-at~1] tasks-ai から作った台帳で状態を done にして保存すると、ノートの done_at に今日が書かれる。
+    let home = TempDir::new("starter-ai-done-at");
+    let h = home.path();
+    std::fs::create_dir_all(h.join("state")).unwrap();
+    make_in(h, "tasks-ai", "ja_JP.UTF-8");
+    std::fs::remove_dir_all(h.join("tasks-ai/Tasks")).unwrap();
+    std::fs::create_dir_all(h.join("tasks-ai/Tasks")).unwrap();
+    let note = h.join("tasks-ai/Tasks/請求書を送る.md");
+    std::fs::write(&note, "---\nstatus: todo\n---\n").unwrap();
+    let mut tui = Tui::spawn(&["tasks-ai"], h, &[("MDGRID_TODAY", "2026-10-06")]);
+    tui.wait_until("表が出る", |s| s.contains("請求書を送る"));
+    tui.send("B");
+    tui.wait_until("カンバン", |s| s.contains("done"));
+    for lane in ["doing", "waiting", "done"] {
+        tui.send("L");
+        tui.wait_until("札が動く", |s| s.contains(&format!("→ {lane}")));
+    }
+    tui.send("\x13");
+    tui.wait_for("+done_at: 2026-10-06");
+    tui.send("\r");
+    let body = pty::wait_file(&note, &tui, |s| s.contains("status: done"));
+    assert!(body.contains("done_at: 2026-10-06"), "{body}");
+}

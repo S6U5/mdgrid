@@ -150,6 +150,42 @@
   - When: 今日が 2026-10-06 で、`tasks` から作った台帳の `Tasks/` に `due: 2026-10-09`・`due: 2026-10-01`・due の無いノートを置く
   - Then: 最初のタブの「残り」の列は、順に `あと3日`・`5日前`・空。`LANG=en_US.UTF-8` で作った台帳では Time left の列に `in 3 days`・`5 days ago`・空。
 
+#### 組み込みのスターター `tasks`・`tasks-ai` から作った台帳は、新しいタスクの窓で期限のすぐ前に開始日 `start` を聞き、期限を出すタブには期限のすぐ前に開始日の列を出すべき
+`req~starter.tasks-start-column~1` P1
+- Rationale: ガントは開始日から期限までの棒を描くのに、タスクを登録するときに開始日を入れる欄が無く、表のどのタブにも開始日が出なかったため(2026-11-26 に人が不便と言った)
+- Acceptance:
+  - Given: `tasks` から作った台帳の表
+  - When: 新しいノートの窓を開く
+  - Then: 窓の欄は、名前の下に開始日・期限・優先度・URL の順で並ぶ。
+- Acceptance:
+  - Given: `tasks-ai` から作った台帳のタスクの表
+  - When: 新しいノートの窓を開く
+  - Then: 窓の欄は、名前の下に担当・開始日・期限・優先度の順で並ぶ。
+- Acceptance:
+  - Given: `tasks` と `tasks-ai` から作った台帳の、`start: 2026-10-01`・`due: 2026-10-09` のノート
+  - When: 期限の列を持つタブを1つずつ出す
+  - Then: どのタブも、開始日の列(英語は Start、日本語は 開始)が期限の列のすぐ前にあり、そのノートの行に `2026-10-01` と `2026-10-09` が並ぶ。`LANG=en_US.UTF-8` で作った台帳でも同じ。
+
+#### 組み込みのスターター `tasks`・`tasks-ai` から作った台帳は、状態を `doing` に直したら、開始日 `start` が空のときだけ今日を入れるべき
+`req~starter.tasks-start-on-doing~1` P1
+- Rationale: 開始日を決めずに始めたタスクも、始めた日からガントの棒を描けるようにする。前もって決めた開始日は、始めるのが早くても遅くても上書きしない
+- Acceptance:
+  - Given: 今日が 2026-10-06 で、`tasks` から作った台帳の `status: todo` で開始日の無いノート
+  - When: 状態を `doing` にして保存する
+  - Then: ノートは `status: doing`・`start: 2026-10-06`。`tasks-ai` から作った台帳でも同じ。
+- Acceptance:
+  - Given: 今日が 2026-10-06 で、`tasks` から作った台帳の `status: todo`・`start: 2026-10-01` のノート
+  - When: 状態を `doing` にして保存する
+  - Then: ノートは `status: doing`・`start: 2026-10-01` のまま。
+
+#### 組み込みのスターター `tasks-ai` から作った台帳は、状態を `done` に直したら、完了日 `done_at` に今日を入れるべき
+`req~starter.tasks-ai-done-at~1` P1
+- Rationale: 完了のタブは完了日の新しい順に並ぶのに、`tasks-ai` だけ完了日を入れる決まりが無く、手で入れ忘れると並びが崩れたため(starter.tasks-done-at と同じ理由)
+- Acceptance:
+  - Given: 今日が 2026-10-06 で、`tasks-ai` から作った台帳の `status: todo` で完了日の無いノート
+  - When: 状態を `done` にして保存する
+  - Then: ノートの `done_at` は `2026-10-06`。
+
 #### ユーザーのスターターは、設定の置き場(cli.config-file)の `starters/<名前>/` に、組み込みと同じ形で置けるべき
 `req~starter.user-place~1` P1
 - Acceptance:
