@@ -1945,6 +1945,7 @@ RsnChildrenNotTable = "不是 { key = \"<欄位>\" } 形式的表，因此不使
 RsnChildrenNeedKey = "沒有 key（指向父項的連結欄位），因此不使用父子設定"
 ## {0} は列。
 RsnChildrenNoColumn = "表格沒有欄位 {0}，因此不依父子排列"
+LinkTypedSameName = "有 {0} 個同名筆記。請用 ↑↓ 選擇"
 ## {0} は列(children の status に書いた状態の列)。
 RsnChildrenNoStatus = "表格沒有欄位 {0}，因此完成父項時子項維持不變"
 ## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。

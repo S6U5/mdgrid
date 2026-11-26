@@ -731,6 +731,8 @@ depends_on:                           # many
 
 - Link cells show the target note's name. A `[[…]]` whose note does not exist is shown with `?` in front.
 - In a column whose values are mostly links, Enter lists the notes in the target's folder by name. The one you pick is written in the form the column already uses (`[[name]]` if none). In a list column you can tick several.
+- A column that points to a parent, like the `parent` of a task (the `key` of `children` in the marker), lists the notes of the same table even before any task has a parent. In a ledger you have just made, you can pick the very first parent from the list.
+- If you type a name instead of picking, and exactly one note has that name, the link to that note is written. For a task whose name starts with a date (`20261126_Send the quote`), the name the table shows, "Send the quote", is enough. When notes made on different days share a name, the list shows them by file name, and typing the shared name asks you to choose one with `↑` `↓` instead of guessing.
 - `:open_link` (or **Open the link target** in the `x` menu) opens the target: in the same table it moves to the row; otherwise it opens the registered table that holds the note (or its folder) and selects the row. Unsaved changes are confirmed first.
 - `:linked_rows` lists the notes that link to the current one, with the table and column they link from. Pick one to open it.
 - Links work whether you open a folder or a `.base`, and may point outside the opened folder. Register the folders you link between (see above) so names resolve across them. A value counts as a plain-path link only if it contains `/` or ends in `.md` and the note exists, so ordinary words stay text.

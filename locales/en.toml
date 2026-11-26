@@ -1945,6 +1945,7 @@ RsnChildrenNotTable = "not a table like { key = \"<column>\" }, so no parent-chi
 RsnChildrenNeedKey = "no key (the column that links to the parent), so no parent-child setting"
 ## {0} は列。
 RsnChildrenNoColumn = "the table has no column {0}, so the rows are not arranged as parents and children"
+LinkTypedSameName = "{0} notes have this name. Choose one with ↑↓"
 ## {0} は列(children の status に書いた状態の列)。
 RsnChildrenNoStatus = "the table has no column {0}, so finishing a parent leaves its children as they are"
 ## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。

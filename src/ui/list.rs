@@ -38,6 +38,9 @@ pub(crate) struct List {
     pub filter: Option<String>,
     /// 打った文字で候補を絞るか(セルの入力のリスト。新しいノートの置き場の選びは絞らない)。
     pub narrow: bool,
+    /// リンクの列の候補(項目の値は行き先のノートへのリンク)。候補を選ばずに打った名前を、当たるノートへの
+    /// リンクにする(relations.link-input-typed-name)。
+    pub link: bool,
 }
 
 /// 「なし」(Null)の見せ方。`NONE_LABEL.into()` で今の言語の文。
@@ -94,6 +97,7 @@ impl List {
             free: false,
             filter: None,
             narrow: true,
+            link: false,
         }
     }
 

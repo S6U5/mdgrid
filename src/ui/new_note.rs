@@ -322,6 +322,7 @@ impl App {
             free: false,
             filter: None,
             narrow: false,
+            link: false,
         };
         self.open_note_input(Entry::Text, String::new(), None);
         if let Some(i) = &mut self.input {
@@ -724,11 +725,25 @@ impl App {
         }
         // CE-3: 候補のリストが出ていれば選んだ値(「なし」は空の答え)。
         // CE-20・CE-21: カレンダーで選んだ日はその日。ほかは入力の文字を列の型で読む(CE-2)。
-        let picked = i
-            .list
-            .as_ref()
-            .filter(|l| !l.free)
-            .map(super::list::List::chosen);
+        // relations.link-input-typed-name: リンクの欄で候補を選ばずに打った名前が1つのノートに当たればそのリンク、
+        // 同じ名前のノートが複数なら欄を開いたまま選ばせる。
+        let typed = match i.list.as_ref().filter(|l| l.free) {
+            Some(l) => self.typed_link(&note_row(f), l, &i.text),
+            None => None,
+        };
+        let picked = match typed {
+            Some(Err(why)) => {
+                self.message = Some(why);
+                self.input = Some(i);
+                return;
+            }
+            Some(Ok(v)) => Some(v),
+            None => i
+                .list
+                .as_ref()
+                .filter(|l| !l.free)
+                .map(super::list::List::chosen),
+        };
         let value = match picked
             .map(Choice::Value)
             .or_else(|| calendar::choice(&i, self.today, self.date_input()))

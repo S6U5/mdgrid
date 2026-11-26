@@ -277,7 +277,52 @@ impl App {
         relations::format(form, target, &note, unique)
     }
 
-    /// リンクの列の1つの値のセルの候補(REL-3): 行き先のフォルダのノート。見せるのは名前、書くのはリンク。
+    /// リンクの候補にするノートと書く形(REL-3)。印の children の親を指す列は、値がまだ無くても表のノート
+    /// (relations.link-input-children-key。親は同じ表のノートでないと親子に並ばない。書く形は列で使われている形、
+    /// 無ければ `[[名前]]`)。ほかの列は、リンクの列(値の多くがリンク)のときに行き先のフォルダのノート。
+    /// どちらでもなければ None(今までの候補)。
+    fn link_choices(&self, col: &str) -> Option<(Form, Vec<PathBuf>)> {
+        let found = self.link_column(col);
+        if self
+            .children_spec
+            .as_ref()
+            .is_some_and(|(spec, _)| spec.key == col)
+        {
+            let form = found.map_or(Form::Wiki, |(f, _)| f);
+            let mut notes: Vec<PathBuf> = self
+                .table_rows()
+                .into_iter()
+                .map(|r| PathBuf::from(r.0))
+                .filter(|p| p.extension().is_some_and(|x| x.eq_ignore_ascii_case("md")))
+                .collect();
+            notes.sort_by_key(|p| relations::file_stem(p).to_lowercase());
+            return Some((form, notes));
+        }
+        let (form, dir) = found?;
+        Some((form, relations::notes_in(&dir?)))
+    }
+
+    /// 候補のノートの見せる名前。ノートの欄と同じ名前の正規表現を当てたもの(screen.note-name-everywhere)で、
+    /// ほかの候補と重なる名前はファイルの名前にする(relations.link-input-same-shown-name)。
+    fn choice_names(&self, notes: &[PathBuf]) -> Vec<String> {
+        let shown: Vec<String> = notes
+            .iter()
+            .map(|t| super::view::note_name_of(self, &relations::file_stem(t)))
+            .collect();
+        shown
+            .iter()
+            .zip(notes)
+            .map(|(n, t)| {
+                if shown.iter().filter(|x| *x == n).count() > 1 {
+                    relations::file_stem(t)
+                } else {
+                    n.clone()
+                }
+            })
+            .collect()
+    }
+
+    /// リンクの列の1つの値のセルの候補(REL-3): 行き先のノート(`link_choices`)。見せるのは名前、書くのはリンク。
     /// リンクの列でなければ None(今までの候補)。`editing` は直す行(一括なら選んだ行の全部)で、印の children の
     /// 親を指す列では、その行と子孫を候補に出さない(relations.link-input-no-cycle)。
     pub(crate) fn link_list(
@@ -287,21 +332,21 @@ impl App {
         cur: Option<&NewValue>,
         editing: &[RowId],
     ) -> Option<List> {
-        let (form, dir) = self.link_column(col)?;
-        let dir = dir?;
+        let (form, notes) = self.link_choices(col)?;
         let cur_target = match cur {
             Some(NewValue::Str(s)) => self.link_target(row, s).and_then(|(_, t)| t),
             _ => None,
         };
         let skip = self.not_parents(col, editing);
-        // screen.note-name-everywhere: 見せる名前は、ノートの欄と同じ名前の正規表現を当てたもの。
-        let mut items: Vec<Item> = relations::notes_in(&dir)
-            .into_iter()
-            .filter(|t| !skip.contains(t))
-            .map(|t| Item {
-                text: super::view::note_name_of(self, &relations::file_stem(&t)),
+        let notes: Vec<PathBuf> = notes.into_iter().filter(|t| !skip.contains(t)).collect();
+        let names = self.choice_names(&notes);
+        let mut items: Vec<Item> = notes
+            .iter()
+            .zip(names)
+            .map(|(t, text)| Item {
+                text,
                 current: cur_target.as_deref() == Some(t.as_path()),
-                value: NewValue::Str(self.link_value(row, form, &t)),
+                value: NewValue::Str(self.link_value(row, form, t)),
             })
             .collect();
         items.push(Item {
@@ -318,10 +363,48 @@ impl App {
             free: false,
             filter: None,
             narrow: true,
+            link: true,
         })
     }
 
-    /// リンクのリストの列の候補(REL-3。多対多): 行き先のフォルダのノート。今の要素が同じノートを指すなら、
+    /// relations.link-input-typed-name: 候補を選ばずに打った文字 `text` が、リンクの候補のノートの見せる名前
+    /// (重なりを分ける前の、名前の正規表現を当てた名前も)かファイルの名前とちょうど同じか。1つならそのノートへの
+    /// リンク、2つ以上なら選ばせる理由、どれとも合わない・リンクの候補でなければ None(打った文字のまま)。
+    pub(crate) fn typed_link(
+        &self,
+        row: &RowId,
+        list: &List,
+        text: &str,
+    ) -> Option<Result<NewValue, String>> {
+        if !list.link || text.is_empty() {
+            return None;
+        }
+        let hits: Vec<&Item> = list
+            .items
+            .iter()
+            .filter(|it| {
+                let NewValue::Str(v) = &it.value else {
+                    return false;
+                };
+                if it.text == text {
+                    return true;
+                }
+                self.link_target(row, v)
+                    .and_then(|(_, t)| t)
+                    .is_some_and(|t| {
+                        let stem = relations::file_stem(&t);
+                        stem == text || super::view::note_name_of(self, &stem) == text
+                    })
+            })
+            .collect();
+        match hits.as_slice() {
+            [] => None,
+            [one] => Some(Ok(one.value.clone())),
+            many => Some(Err(Msg::LinkTypedSameName.fill(&[&many.len().to_string()]))),
+        }
+    }
+
+    /// リンクのリストの列の候補(REL-3。多対多): 行き先のノート(`link_choices`)。今の要素が同じノートを指すなら、
     /// その要素の文字を使う(付け外しの見分けを今の値と合わせる)。リンクの列でなければ None。印の children の
     /// 親を指す列では、書く行と子孫を候補に出さない(relations.link-input-no-cycle。今の要素は外せるように残す)。
     pub(crate) fn link_cands(
@@ -329,8 +412,7 @@ impl App {
         col: &str,
         targets: &[(RowId, Vec<String>)],
     ) -> Option<Vec<(String, String)>> {
-        let (form, dir) = self.link_column(col)?;
-        let dir = dir?;
+        let (form, notes) = self.link_choices(col)?;
         let row = targets.first().map(|(r, _)| r.clone())?;
         let mut existing: Vec<(PathBuf, String)> = Vec::new();
         for (r, items) in targets {
@@ -344,17 +426,20 @@ impl App {
         }
         let rows: Vec<RowId> = targets.iter().map(|(r, _)| r.clone()).collect();
         let skip = self.not_parents(col, &rows);
+        let notes: Vec<PathBuf> = notes
+            .into_iter()
+            .filter(|t| !skip.contains(t) || existing.iter().any(|(p, _)| p == t))
+            .collect();
+        let names = self.choice_names(&notes);
         Some(
-            relations::notes_in(&dir)
-                .into_iter()
-                .filter(|t| !skip.contains(t) || existing.iter().any(|(p, _)| p == t))
-                .map(|t| {
-                    // screen.note-name-everywhere: 見せる名前はノートの欄と同じ名前の正規表現を当てたもの。
-                    let name = super::view::note_name_of(self, &relations::file_stem(&t));
+            notes
+                .iter()
+                .zip(names)
+                .map(|(t, name)| {
                     let value = existing
                         .iter()
-                        .find(|(p, _)| p == &t)
-                        .map_or_else(|| self.link_value(&row, form, &t), |(_, e)| e.clone());
+                        .find(|(p, _)| p == t)
+                        .map_or_else(|| self.link_value(&row, form, t), |(_, e)| e.clone());
                     (value, name)
                 })
                 .collect(),

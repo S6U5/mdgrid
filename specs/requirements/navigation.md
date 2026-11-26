@@ -854,6 +854,19 @@
   - Then: cli.config-file-warning-form の形で警告し、親子をオンにしない。
 - Needs: utest
 
+#### 表の `.base` の `properties` か、どれかのビューの `order` に書いた列は、まだどのノートにも値が無くても表にある列と数え、印の `children`・ガント・カンバン・グラフ・並べ替え・フォルダの木の設定で「列が無い」と警告しないべき
+`req~navigation.declared-columns~1` P1
+- Rationale: スターターから作った台帳を開くと、まだ親を入れたタスクが無いだけで「table[1].children.key: 表に列 parent が無いので、親子で並べない」と出た(2026-11-26 に見つかった)。列は見出しに並んでいるのに無いと言われ、最初の親を入れたあとに親子に並ぶのかも分からない。名前を付けた列とビューに並べた列は、台帳を作った人が置いた列なので、値がまだ無いだけと扱う
+- Acceptance:
+  - Given: `children = { key = "parent" }` の表で、`properties` に `note.parent` の displayName を書き、どのノートにも parent が無い
+  - When: 起動し、「見積書を作る」の parent に表の「見積もりを出す」へのリンクを入れて保存する
+  - Then: 起動したときに警告を出さず、保存したあとは開き直さずに「見積もりを出す」の下に字下げした「見積書を作る」が並ぶ。
+- Acceptance:
+  - Given: `children = { key = "owner" }` で、owner の列がどのノートにも、`properties` にも、ビューの `order` にも無い
+  - When: 起動する
+  - Then: 今までどおり警告し、親子にしない(navigation.parent-child-config)。
+- Needs: utest
+
 #### ビューの設定の画面の「親子」の区画で、親子で並べているビュー(navigation.parent-child)に WBS をオンにできるべき
 `req~navigation.wbs-on~1` P1
 - Acceptance:

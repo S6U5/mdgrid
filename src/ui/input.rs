@@ -531,6 +531,17 @@ impl App {
         // 触らずに閉じたら書かない(今の行の値を広げない)。1行は、文字が同じかリストの選びが今の値なら書かない。
         let list = i.list.as_ref().filter(|l| !l.free);
         let bulk = i.bulk.is_some();
+        // relations.link-input-typed-name: リンクの列で候補を選ばずに打った名前が1つのノートに当たればそのリンク、
+        // 同じ名前のノートが複数なら書かずに選ばせる。
+        let typed = match i.list.as_ref().filter(|l| l.free) {
+            Some(l) => self.typed_link(&i.row, l, &i.text),
+            None => None,
+        };
+        if let Some(Err(why)) = &typed {
+            self.message = Some(why.clone());
+            self.input = Some(i);
+            return false;
+        }
         let v = match list {
             Some(_) if bulk && !i.touched => None,
             Some(l) if bulk => Some(Choice::Value(l.chosen())),
@@ -538,6 +549,7 @@ impl App {
             Some(l) => Some(Choice::Value(l.chosen())),
             None if bulk && !i.touched => None,
             None if !bulk && i.text == i.initial => None,
+            None if typed.is_some() => typed.and_then(Result::ok).map(Choice::Value),
             // CE-20・CE-21: カレンダーで選んだ日・日時の日だけの打ち込みは calendar.rs が決める。
             None => match super::calendar::choice(&i, self.today, self.date_input()) {
                 Some(c) => Some(c),
