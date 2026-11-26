@@ -21,20 +21,22 @@ tags = "list"
 [rules.status]
 values = ["todo", "doing", "waiting", "done"]
 
-# Setting the status to done fills in the done date with today.
+# Setting the status to done fills in the done date with today. Setting it to doing fills in the start date with today,
+# only when it is empty (a start date you planned stays).
 [rules.status.then]
 done = { done_at = "{date}" }
+doing = { start = { value = "{date}", if_empty = true } }
 
 [rules.priority]
 values = ["p1", "p2", "p3"]
 
-# New note (a): the name starts with today's date (20261118_); it asks for the due date, the priority and a URL, fills in the rest, and starts the body from the template.
+# New note (a): the name starts with today's date (20261118_); it asks for the start date, the due date, the priority and a URL, fills in the rest, and starts the body from the template.
 # name_head = "hide": that date is kept out of the name field and added before the name you type ("show" puts it in the field).
 [new_note]
 folder = "Tasks"
 name = "{date:YYYYMMDD}_"
 name_head = "hide"
-ask = ["due", "priority", "url"]
+ask = ["start", "due", "priority", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
 
@@ -80,7 +82,7 @@ left = 'due.relative()'
 type = "table"
 name = "Open"
 filters = 'status != "done"'
-order = ["status", "due", "formula.left", "priority", "tags", "url"]
+order = ["status", "start", "due", "formula.left", "priority", "tags", "url"]
 groupBy = { property = "status", direction = "ASC" }
 sort = [{ property = "priority", direction = "ASC" }, { property = "due", direction = "ASC" }]
 
@@ -88,21 +90,21 @@ sort = [{ property = "priority", direction = "ASC" }, { property = "due", direct
 type = "table"
 name = "Overdue"
 filters = { and = ['status != "done"', 'due < today()'] }
-order = ["status", "due", "formula.left", "priority", "tags"]
+order = ["status", "start", "due", "formula.left", "priority", "tags"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "Doing"
 where = { status = ["doing"] }
-order = ["due", "priority", "tags", "url"]
+order = ["start", "due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
 type = "table"
 name = "Waiting"
 where = { status = ["waiting"] }
-order = ["due", "priority", "tags", "url"]
+order = ["start", "due", "priority", "tags", "url"]
 sort = [{ property = "due", direction = "ASC" }]
 
 [[table.base.views]]
