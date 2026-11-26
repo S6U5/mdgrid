@@ -386,10 +386,7 @@ impl App {
                     // CE-36: 選べる値(決まりの values)があれば、数の上限によらずその値を候補に。
                     match self.rule_candidates(&col, kind) {
                         Some(c) => Some(values(&c)),
-                        None => self
-                            .src
-                            .candidates(&col, self.candidates)
-                            .map(|c| values(&c)),
+                        None => self.value_cands(&col).map(|c| values(&c)),
                     }
                 }),
             Kind::Checkbox => Some(List::new(

@@ -880,7 +880,7 @@ estimate = "number"
 
 ### `rules`
 
-- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string or { value = string, if_empty = boolean } } }, icons = { value = string }, labels = { value = string } })`
+- Type: `table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string or { value = string, if_empty = boolean } } }, icons = { value = string }, labels = { value = string }, candidates = { sort = "name" | "count" | "recent", where = { column = [value, …] } } })`
 - Default: `{}`
 - Scope: global, workspace, table, view
 
@@ -889,6 +889,8 @@ Rules for single columns, checked together with the column type. `required = tru
 `then` fills other columns of the same row when you set the column to a value. Under `[rules.<column>.then]`, write `value = { column = "text" }`. The text may use the [template variables](#new_note) (`{date}`, `{now}`, `{uuid}` …), is read in the type of the column it goes to, and an empty text clears that column. The extra value is staged together with your edit: it shows in the diff before saving, one undo takes both back, and changing the cell to another value drops it again. It works for cell edits, bulk edits, checkboxes and moving a card on the kanban screen. To fill a column only while it is empty, write a table instead of the text: `{ value = "{date}", if_empty = true }`. The column is then filled only when it has no key, `null`, an empty string or an empty list (a value staged before counts), so a start date set the first time stays when the status goes back and forth. Changing the cell to another value drops the filled value only while it is still the one `then` put there, so a date you typed yourself stays. A table without `value`, with an `if_empty` that is not true or false, or with an unknown item is a warning, and that column is not filled. A narrower scope that writes `then` replaces it whole. In the example below, setting `status` to `done` fills `done_at` with today, and setting it to `doing` fills `started` with today only while `started` is empty.
 
 `icons` and `labels` decide how the values read on screen. With `icons = { todo = "○" }` and `labels = { todo = "To do" }`, `todo` reads `○ To do` in group headings, kanban lane titles, table cells (chips or text), the detail view and the right pane of the tree; a value with only a glyph reads `○ todo`, and a value with neither stays as it is. Chip colors follow the value, so naming a value does not change its color. Any glyph works, Nerd Font ones too, and mdgrid prints it as you wrote it. Its width is counted like the rest of the screen, so if your font draws a glyph such as `○` two cells wide and it runs into the next letter, turn on [`terminal.ambiguous_wide`](#terminalambiguous_wide). Windows where you pick a value (the choices when you edit a cell or fill in the new note window, the list toggle window, the value lists of the filter window and view settings, and the frequency window) show a named value as its name followed by the value (`To do todo`), so you can tell which value you pick. The `\` quick filter and `/` search match the value or the name. The notes and `--print`, `--count` and CSV output keep the plain value. An entry for a value missing from `values` in the same table produces a warning naming it (`rules.status.icons.blocked`) and is ignored; when `values` comes from a wider scope, entries for values outside it are simply not shown. A narrower scope that writes `icons` or `labels` replaces it whole.
+
+`candidates` decides the choices offered when you edit the column (cell edits, bulk edits and the new note window). `sort` picks the order: `"name"` by name, `"count"` most used first, `"recent"` most recently changed first. For a link column, `"count"` is the number of notes in the current table that point to the note, so a column pointing to the parent lists the parents with the most children first; for a value column it is the number of notes with that value. `"recent"` uses the newest change time of the target note for a link column, or of the notes with that value for a value column. Ties go by name. `where` has the same shape as a view's `where` and narrows the notes taken as choices: the target notes for a link column, the notes holding the value for a value column. That keeps finished tasks out of the parent choices, or tags only found on finished notes out of the tag choices. The current value stays among the choices even when it does not match. The choices of a column with `candidates` come from the notes of the current table, not from other tables under the same root. Without `sort`, a link column goes by name and a value column by count; a column without `candidates` works as before. A `sort` that is none of the three, a `where` that is not a table, or a `where` value that is not an array produces a warning and that item is ignored. A column with `values` keeps the order of the rule. A narrower scope that writes `candidates` replaces it whole. The last part of the example below, `[rules.parent.candidates]`, lists the unfinished parents with the most children first.
 
 ```toml
 [rules.status]
@@ -900,6 +902,10 @@ labels = { todo = "To do", doing = "In progress" }
 [rules.status.then]
 done = { done_at = "{date}" }
 doing = { started = { value = "{date}", if_empty = true } }
+
+[rules.parent.candidates]
+where = { status = ["todo", "doing", "waiting"] }
+sort = "count"
 ```
 
 ## `[format]` — number formats

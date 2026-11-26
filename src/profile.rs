@@ -720,6 +720,27 @@ impl Profile {
                             .collect();
                         t.insert("then".into(), toml::Value::Table(then));
                     }
+                    if let Some(c) = &r.candidates {
+                        let mut ct = toml::Table::new();
+                        if let Some(s) = c.sort {
+                            ct.insert("sort".into(), toml::Value::String(s.name().into()));
+                        }
+                        if !c.where_.is_empty() {
+                            let wt = c
+                                .where_
+                                .iter()
+                                .map(|(col, vals)| {
+                                    let vs = vals
+                                        .iter()
+                                        .map(|v| toml::Value::String(v.clone()))
+                                        .collect();
+                                    (col.clone(), toml::Value::Array(vs))
+                                })
+                                .collect();
+                            ct.insert("where".into(), toml::Value::Table(wt));
+                        }
+                        t.insert("candidates".into(), toml::Value::Table(ct));
+                    }
                     for (item, names) in [("icons", &r.icons), ("labels", &r.labels)] {
                         if let Some(names) = names {
                             let names = names
@@ -832,6 +853,7 @@ fn read_rules(
                 "then" => layer.then = read_then(v, file, &ip, w),
                 "icons" => layer.icons = read_names(v, file, &ip, w),
                 "labels" => layer.labels = read_names(v, file, &ip, w),
+                "candidates" => layer.candidates = read_cands(v, file, &ip, w),
                 _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
             }
         }
@@ -852,6 +874,57 @@ fn read_rules(
         }
         out.insert(col.clone(), layer);
     }
+}
+
+/// `[rules.<列>.candidates]` を読む(cell-edit.candidates-sort・cell-edit.candidates-where)。`sort` は
+/// `"name"`・`"count"`・`"recent"`、`where` は列 → 値の配列(文字列・数・真偽)。知らない項目・型の違う値は、警告して
+/// その項目だけ使わない。表でなければ警告して None。
+fn read_cands(
+    v: &toml::Value,
+    file: &str,
+    path: &str,
+    w: &mut Vec<String>,
+) -> Option<rules::Cands> {
+    let Some(t) = v.as_table() else {
+        warn(w, file, path, not(Msg::WantTable));
+        return None;
+    };
+    let mut c = rules::Cands::default();
+    for (k, v) in t {
+        let ip = join(path, k);
+        match k.as_str() {
+            "sort" => match v.as_str().and_then(rules::CandSort::parse) {
+                Some(s) => c.sort = Some(s),
+                None => warn(w, file, &ip, not_one_of(&rules::CandSort::NAMES)),
+            },
+            "where" => {
+                let Some(m) = v.as_table() else {
+                    warn(w, file, &ip, not(Msg::WantTable));
+                    continue;
+                };
+                for (col, vals) in m {
+                    let lits: Option<Vec<String>> =
+                        vals.as_array().filter(|a| !a.is_empty()).and_then(|a| {
+                            a.iter()
+                                .map(|x| match x {
+                                    toml::Value::String(s) => Some(s.clone()),
+                                    toml::Value::Integer(n) => Some(n.to_string()),
+                                    toml::Value::Float(f) => Some(f.to_string()),
+                                    toml::Value::Boolean(b) => Some(b.to_string()),
+                                    _ => None,
+                                })
+                                .collect()
+                        });
+                    match lits {
+                        Some(l) => c.where_.push((col.clone(), l)),
+                        None => warn(w, file, &join(&ip, col), not(Msg::WantValuesArray)),
+                    }
+                }
+            }
+            _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
+        }
+    }
+    Some(c)
 }
 
 /// `[format.<列>]` を読む(cell-view.number-format)。`thousands`(真偽)・`decimals`(0〜10 の整数)・`prefix`・
@@ -1276,6 +1349,8 @@ pub struct Resolved {
     pub icons: BTreeMap<String, rules::Names>,
     /// `[rules.<列>] labels`(navigation.group-values-icon): 列 → 値 → 見せる名前。重ね方は icons と同じ。
     pub labels: BTreeMap<String, rules::Names>,
+    /// `[rules.<列>.candidates]`(cell-edit.candidates-sort・-where): 列 → 候補の出し方。重ね方は then と同じ。
+    pub cands: BTreeMap<String, rules::Cands>,
     /// `[format.<列>]`(cell-view.number-format): 範囲を重ねた列の数の見せ方。
     pub format: BTreeMap<String, NumFormat>,
     /// 項目の道筋 → 出どころ(既定の項目は無い)。
@@ -1305,6 +1380,7 @@ impl Default for Resolved {
             then: BTreeMap::new(),
             icons: BTreeMap::new(),
             labels: BTreeMap::new(),
+            cands: BTreeMap::new(),
             format: BTreeMap::new(),
             origins: BTreeMap::new(),
         }
@@ -1446,6 +1522,10 @@ impl Resolved {
                 self.labels.insert(col.clone(), n.clone());
                 self.mark(&format!("rules.{col}.labels"), o);
             }
+            if let Some(c) = &l.candidates {
+                self.cands.insert(col.clone(), c.clone());
+                self.mark(&format!("rules.{col}.candidates"), o);
+            }
         }
         // cell-view.number-format: 数の見せ方は列ごと・項目ごとに狭い範囲が勝つ。
         for (col, l) in &p.format {
@@ -1547,6 +1627,7 @@ impl Resolved {
                     then: self.then.get(c).filter(|t| !t.is_empty()).cloned(),
                     icons: self.icons.get(c).filter(|n| !n.is_empty()).cloned(),
                     labels: self.labels.get(c).filter(|n| !n.is_empty()).cloned(),
+                    candidates: self.cands.get(c).cloned(),
                 };
                 (c.clone(), l)
             })

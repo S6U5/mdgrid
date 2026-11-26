@@ -30,7 +30,7 @@ People and meetings. Two linked tables, people (role, organization, contact) and
 
 ![Pick a value](images/edit-list.svg)
 
-`Enter` on a cell. Text columns offer the values other notes use, and typing narrows them. Dates get a calendar, tags toggle on and off, checkboxes flip. A value that does not fit the column's type is shown with a `!` and left alone.
+`Enter` on a cell. Text columns offer the values other notes use, and typing narrows them. You can order the choices by name, by how often they are used or by how recently they changed, and keep finished tasks out of the parent choices. Dates get a calendar, tags toggle on and off, checkboxes flip. A value that does not fit the column's type is shown with a `!` and left alone.
 
 [Edit values and save](tasks.md#edit-values-and-save)
 

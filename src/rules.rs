@@ -57,6 +57,50 @@ pub struct RuleLayer {
     pub icons: Option<Names>,
     /// まとまりの見出しとカンバンのレーンの題に出す名前(navigation.group-values-icon)。書けば丸ごと代わる。
     pub labels: Option<Names>,
+    /// 値を直すときの候補の出し方(cell-edit.candidates-sort・-where)。書けば丸ごと代わる。
+    pub candidates: Option<Cands>,
+}
+
+/// `[rules.<列>.candidates]`: 値を直すときの候補の並べ方と絞り(cell-edit.candidates-sort・cell-edit.candidates-where)。
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Cands {
+    /// 並べ方。None なら、リンクの列は名前の順、値の列は多く使われている順。
+    pub sort: Option<CandSort>,
+    /// 候補にするノートの条件(ビューの `where` と同じ形: 列 → 値のどれか。列どうしは全部)。
+    pub where_: Vec<(String, Vec<String>)>,
+}
+
+/// 候補の並べ方(cell-edit.candidates-sort)。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CandSort {
+    /// 名前の順。
+    Name,
+    /// 多く使われている順(リンクの列はそのノートを指すノートの数、値の列はその値を持つノートの数)。
+    Count,
+    /// 最近直した順(リンクの列は行き先のノートの、値の列はその値を持つノートの一番新しい更新の日時)。
+    Recent,
+}
+
+impl CandSort {
+    /// 設定に書ける名前。
+    pub const NAMES: [&'static str; 3] = ["name", "count", "recent"];
+
+    pub fn parse(s: &str) -> Option<CandSort> {
+        match s {
+            "name" => Some(CandSort::Name),
+            "count" => Some(CandSort::Count),
+            "recent" => Some(CandSort::Recent),
+            _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            CandSort::Name => "name",
+            CandSort::Count => "count",
+            CandSort::Recent => "recent",
+        }
+    }
 }
 
 impl RuleLayer {

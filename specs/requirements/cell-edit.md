@@ -2152,6 +2152,59 @@
   - When:
   - Then: `2026-11-22`。
 
+### 候補の出し方
+
+#### 決まり `[rules.<列>.candidates]` の `sort` で、その列の値を直すとき(セルの編集・一括の編集・新しいノートの窓)の候補の並べ方を、`"name"`(名前の順)・`"count"`(多く使われている順)・`"recent"`(最近直した順)から選べるべき。`candidates` を書かない列は今までの並び
+`req~cell-edit.candidates-sort~1` P1
+- Rationale: 候補が名前の順か出てきた順だけで、子の多い親タスクやよく使うタグを探すのに手間がかかった(2026-11-27 に人が「候補の出し方を何パターンか作って選べるように。タスクならまだ todo のもので子が多いものから順に」と言った)。`"count"` は、リンクの列ならそのノートを指している今の表のノートの数(親を指す列なら子の数)、値の列ならその値を持つ今の表のノートの数。`"recent"` は、リンクの列なら行き先のノートの、値の列ならその値を持つノートのうち一番新しい更新の日時。同じなら名前の順。`sort` を書かず `where` だけ書いたときは、リンクの列は名前の順、値の列は多く使われている順
+- Acceptance:
+  - Given: `children = { key = "parent" }` の表で、「設計」の子が3つ・「調査」の子が1つ・「片づけ」の子が無く、`[rules.parent.candidates] sort = "count"`
+  - When: 新しいノートの窓で親を指す列の欄を開く
+  - Then: 候補の先頭から 設計・調査 の順に並び、子の無い 片づけ はその後ろ、最後に「なし」。
+- Acceptance:
+  - Given: 同じ表で `sort = "name"`
+  - When: 新しいノートの窓で親を指す列の欄を開く
+  - Then: 片づけ・設計・調査 がこの順に並ぶ。
+- Acceptance:
+  - Given: リストの列 tags で、「仕事」を持つノートが3件・「家」を持つノートが1件あり、一番新しく直したノートのタグが「家」、`[rules.tags.candidates] sort = "recent"`
+  - When: タグの欄の付け外しの窓を開く
+  - Then: 家・仕事 がこの順に並ぶ。
+- Acceptance:
+  - Given: `[rules.parent.candidates] sort = "often"`
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で `sort` と選べる値を言う警告1行を出し、`sort` を書かなかったときと同じに並べる。
+- Needs: utest
+
+#### 決まり `[rules.<列>.candidates]` の `where`(ビューの `where` と同じ形。列 → 値のどれか)で、候補にするノートを絞るべき。リンクの列では行き先のノートを、値の列ではその値を持つノートを絞る。今の値は絞りに当たらなくても候補に残す
+`req~cell-edit.candidates-where~1` P1
+- Rationale: 済んだタスクや古いタグまで候補に並び、選ぶ前に読み飛ばす手間がかかったため
+- Acceptance:
+  - Given: `children = { key = "parent" }` の表で、「設計」は todo・「旧案」は done、`[rules.parent.candidates] where = { status = ["todo", "doing"] }`
+  - When: 新しいノートの窓で親を指す列の欄を開く
+  - Then: 設計 は候補に出て、旧案 は出ない(「なし」は残る)。
+- Acceptance:
+  - Given: 同じ表で、parent が「旧案」を指すノート
+  - When: そのセルの parent を直す
+  - Then: 旧案 も候補に残り、今の値として選ばれている。
+- Acceptance:
+  - Given: リストの列 tags で、「仕事」は todo のノートにだけ、「昔」は done のノートにだけあり、`[rules.tags.candidates] where = { status = ["todo"] }`
+  - When: タグの欄の付け外しの窓を開く
+  - Then: 仕事 は候補に出て、昔 は出ない。
+- Acceptance:
+  - Given: `[rules.parent.candidates] where = "status"`(表でない)
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で `where` を言う警告1行を出し、`where` を書かなかったときと同じにする。
+- Needs: utest
+
+#### 決まり `[rules.<列>.candidates]` を書いた列の値の候補は、今の表のノートから集めるべき(同じ根のほかの表のノートの値は出さない)
+`req~cell-edit.candidates-table-rows~1` P1
+- Rationale: 同じ根に置いたほかの表(や中の台帳)のノートのタグまで候補に並び、その表で使わない値が混ざったため(2026-11-27、タスクの窓のタグの候補に、ほかの台帳のタグが 105 件並んでいた)。書かない列は今までどおり根のノートの全部から集める
+- Acceptance:
+  - Given: 同じ根に表「タスク」(Tasks/)と「サイト」(Sites/)があり、Tasks/ のノートの tags に「仕事」、Sites/ のノートの tags に「料理」、表「タスク」に `[table.rules.tags.candidates] sort = "count"`
+  - When: 表「タスク」でタグの欄の付け外しの窓を開く
+  - Then: 仕事 は候補に出て、料理 は出ない。
+- Needs: utest
+
 ### 次の段(まだ作っていない。P2)
 
 #### 選んだ範囲の値を、ためる変更として正規表現で置き換えてよい
