@@ -385,6 +385,36 @@
   - Then: priority の欄のまま、数として読めない理由が出る。
 - Needs: utest
 
+#### 新しいノートの窓で Shift+Tab で前の欄に戻るときは、今の欄で打った・選んだ値を確定してから戻るべき(欄の行のクリックと同じく、今の欄の値が読めなければ、戻らずに理由を出す)
+`req~cell-edit.new-note-form-back-keeps~1` P1
+- Rationale: 戻ると今の欄で入れた値が消えたので、上の欄を選び直して進むと、その欄も入れ直すことになった(2026-11-27、タスクの台帳で開始日を入れたあとに担当を選び直そうとして見つかった)。欄の行のクリック(cell-edit.new-note-form-click-field)は前から確定してから移っていた
+- Acceptance:
+  - Given: ask = [priority, due](due は日付の列)の窓で、名前に「メモ」と打って Enter を2回押し、due の欄に 2026-10-09 と打った
+  - When: Shift+Tab
+  - Then: priority の欄が開き、due の欄には 2026-10-09 が見える。
+- Acceptance:
+  - Given: ask = [tags, priority](tags はリストの列で、候補に 仕事・家)の窓で、tags の欄の「仕事」にチェックを付けた
+  - When: Shift+Tab
+  - Then: 名前の欄が開き、tags の欄には「仕事」が見える。
+- Acceptance:
+  - Given: ask = [priority, due](priority は数の列)の窓で、名前に「メモ」と打って Enter を押し、priority の欄に `12a` と打った
+  - When: Shift+Tab
+  - Then: priority の欄のまま、数として読めない理由が出る。
+- Needs: utest
+
+#### 新しいノートの窓の作る場所の欄の行をクリックしたら、今の欄を確定して、作る場所を選ぶ欄に移るべき(今の欄の値が読めなければ、移らずに理由を出す)
+`req~cell-edit.new-note-form-click-place~1` P1
+- Rationale: 作る場所の欄の行だけはクリックしても何もせず、選び直すには Shift+Tab を名前の欄まで押して戻るしかなかった(2026-11-27、上の欄を選び直せないという報告で同じ形を探して見つかった)
+- Acceptance:
+  - Given: フォルダ A と B を開き、作る場所に A を選んで、名前に「メモ」と打って Enter を押し、次の欄にいる
+  - When: 作る場所の欄の行をクリック
+  - Then: 作る場所を選ぶ欄が開き、名前の欄には「メモ」が見える。
+- Acceptance:
+  - Given: 同じ窓で作る場所を選ぶ欄を開き直した
+  - When: B を選んで Enter を押し、Ctrl+S
+  - Then: B に `メモ.md` が作られ、A には作られない。
+- Needs: utest
+
 #### 新しいノートの窓のキーの行(次へ・作る・前の項目・やめる・エディタで)の項目をクリックしたら、そのキーを押したのと同じ振る舞いにするべき
 `req~cell-edit.new-note-form-click-keys~1` P1
 - Rationale: マウスで欄を選んだあと、作る・やめるのためにキーへ手を戻さずに済むようにするため(2026-11-24 の報告)

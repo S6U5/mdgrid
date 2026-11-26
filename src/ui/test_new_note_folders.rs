@@ -270,3 +270,59 @@ fn test_ce_25_folders_readonly_does_not_start() {
     press(&mut a, KeyCode::Esc);
     assert_eq!(snapshot(&tmp.notes()), before, "何も作らない");
 }
+
+// ---- 作る場所の欄の行のクリック(cell-edit.new-note-form-click-place) ----
+
+/// 窓の欄 `label` の行(見出しで探す。今の欄の印 `>` があっても同じ)。
+fn field_line(a: &App, label: &str) -> String {
+    let s = screen(a);
+    s.lines()
+        .find(|l| {
+            l.split('│').skip(1).any(|rest| {
+                let rest = rest.strip_prefix(' ').unwrap_or(rest);
+                let rest = rest.strip_prefix("> ").unwrap_or(rest).trim_start();
+                rest.starts_with(label)
+            })
+        })
+        .unwrap_or_else(|| panic!("欄 {label} の行が無い:\n{s}"))
+        .to_string()
+}
+
+/// A・B を開き、作る場所に A を選んで「メモ」と打って Enter(次の欄にいる)。
+fn past_name(tag: &str) -> (Tmp, App) {
+    let tmp = two_folders(tag);
+    let mut a = boot_ab(&tmp, false);
+    ch(&mut a, 'a');
+    press(&mut a, KeyCode::Enter);
+    typing(&mut a, "メモ");
+    press(&mut a, KeyCode::Enter);
+    let step = a.note.flow.as_ref().expect("窓が開いている").step;
+    assert!(!a.note_choosing() && step == 1, "次の欄:\n{}", screen(&a));
+    (tmp, a)
+}
+
+// [utest -> req~cell-edit.new-note-form-click-place~1]
+/// 次の欄から作る場所の欄の行をクリックすると、作る場所を選ぶ欄が開き、名前は残る。
+#[test]
+fn test_click_place_row_reopens_place() {
+    let (_tmp, mut a) = past_name("ce25f_clickplace1");
+    click_label(&mut a, "作る場所");
+    assert!(a.note_choosing(), "作る場所を選ぶ欄:\n{}", screen(&a));
+    assert_folder_list(&a, A, B);
+    let name = field_line(&a, "名前");
+    assert!(name.contains("メモ"), "{name}");
+}
+
+// [utest -> req~cell-edit.new-note-form-click-place~1]
+/// 開き直した作る場所で B を選んで Enter、Ctrl+S → B に作られ、A には作られない。
+#[test]
+fn test_click_place_row_then_pick_other() {
+    let (tmp, mut a) = past_name("ce25f_clickplace2");
+    click_label(&mut a, "作る場所");
+    press(&mut a, KeyCode::Down);
+    press(&mut a, KeyCode::Enter);
+    ctrl(&mut a, 's');
+    let made = dir(&tmp, B).join("メモ.md");
+    assert!(made.is_file(), "B に作る:\n{}", screen(&a));
+    assert!(!dir(&tmp, A).join("メモ.md").exists(), "A には作らない");
+}

@@ -434,7 +434,17 @@ impl App {
     }
 
     /// Shift+Tab: 前の項目へ戻る(名前まで戻れる)。前に答えた値で欄を開き直す。
+    /// cell-edit.new-note-form-back-keeps: 聞く項目からは、今の欄を確定してから戻る(欄の行のクリックと同じ。
+    /// 読めない値なら戻らずに理由を出す)。
     fn note_back(&mut self) {
+        let back = self
+            .note
+            .flow
+            .as_ref()
+            .filter(|f| f.step > 0 && !f.choosing);
+        if let Some(to) = back.map(|f| f.step - 1) {
+            return self.note_goto(to);
+        }
         self.pick = None;
         let Some(f) = &mut self.note.flow else {
             return;
@@ -969,12 +979,11 @@ impl App {
         let rows_y = g.top + 1;
         if (rows_y..rows_y + g.count).contains(&y) {
             let k = g.first + (y - rows_y);
-            // 作る場所の欄と、今の欄は何もしない(作る場所は Shift+Tab で戻る)。
-            let (Some(Some(step)), false) = (rows(f).get(k).copied(), f.choosing) else {
-                return;
-            };
-            if step != f.step {
-                self.note_goto(step);
+            // 作る場所を選んでいる間と、今の欄は何もしない。
+            match (rows(f).get(k).copied(), f.choosing) {
+                (Some(None), false) => self.note_goto_place(),
+                (Some(Some(step)), false) if step != f.step => self.note_goto(step),
+                _ => {}
             }
             return;
         }
@@ -1006,6 +1015,17 @@ impl App {
         }
         if let Some(f) = &mut self.note.flow {
             f.jump = None;
+        }
+    }
+
+    /// cell-edit.new-note-form-click-place: 今の欄を確定して、作る場所を選ぶ欄へ移る。聞く項目からは名前の欄まで
+    /// 確定して戻り(読めない値なら移らない)、名前の欄からは打った名前を覚えて移る(Shift+Tab と同じ)。
+    fn note_goto_place(&mut self) {
+        if self.note.flow.as_ref().is_some_and(|f| f.step > 0) {
+            self.note_goto(0);
+        }
+        if self.note.flow.as_ref().is_some_and(|f| f.step == 0) {
+            self.note_back();
         }
     }
 
