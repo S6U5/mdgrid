@@ -384,7 +384,7 @@ The results are grouped per table, and each row shows the note name and the colu
 
 ## Edit many rows at once
 
-To rename a note, use **Rename the note** in the action menu (`x`) or the palette (`:`). Links to the old name (`[[old name]]`) are rewritten as pending changes; review the diff with `Ctrl+S` and save.
+To rename a note, use **Rename the note** in the action menu (`x`) or the palette (`:`). The links to it, in `[[…]]`, a Markdown link or a path with folders, are rewritten to the new name as pending changes; review the diff with `Ctrl+S` and save. A link to a note with the same name in another folder is left alone. For a task whose name starts with a date (`20261125_Send the quote`), type over the name you see in the table, "Send the quote", and the date stays. To change the date too, type the whole name, such as `20261201_Quote`. To be asked each time, or to keep the links as they are, set [`edit.rename_links`](../../config.md#editrename_links) to `"ask"` or `"never"`.
 
 1. Mark rows with `Space` (it marks and moves down). `v` marks a range, `Ctrl+A` all rows.
 2. On one of the marked rows, open the cell of the column to change with `Enter` and choose the value.
@@ -730,7 +730,7 @@ depends_on:                           # many
 ```
 
 - Link cells show the target note's name. A `[[…]]` whose note does not exist is shown with `?` in front.
-- In a column whose values are mostly links, Enter lists the notes in the target's folder by name. The one you pick is written in the form the column already uses (`[[name]]` if none). In a list column you can tick several.
+- In a column whose values are mostly links, Enter lists the notes in the target's folder by name. The one you pick is written in the form the column already uses (`[[name]]` if none). In a list column you can tick several. To fix the form and the path for a ledger, set [`edit.link_format`](../../config.md#editlink_format) (`"wiki"` or `"markdown"`) and [`edit.link_path`](../../config.md#editlink_path) (`"shortest"`, `"relative"` or `"absolute"`). For a ledger you also read in another table tool, match that tool's settings so the links added in either one look the same.
 - A column that points to a parent, like the `parent` of a task (the `key` of `children` in the marker), lists the notes of the same table even before any task has a parent. In a ledger you have just made, you can pick the very first parent from the list.
 - If you type a name instead of picking, and exactly one note has that name, the link to that note is written. For a task whose name starts with a date (`20261126_Send the quote`), the name the table shows, "Send the quote", is enough. When notes made on different days share a name, the list shows them by file name, and typing the shared name asks you to choose one with `↑` `↓` instead of guessing.
 - `:open_link` (or **Open the link target** in the `x` menu) opens the target: in the same table it moves to the row; otherwise it opens the registered table that holds the note (or its folder) and selects the row. Unsaved changes are confirmed first.

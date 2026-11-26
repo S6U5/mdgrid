@@ -1228,12 +1228,14 @@ CsvNoKeyOps = "CSV 열은 여기서 이름을 바꾸거나 지울 수 없음"
 CsvNoSuchColumn = "CSV에 {0}(이)라는 열이 없음"
 ## CE-34: ノートの名前の変更。
 AskRenameNote = "노트의 새 이름: "
+AskRenameLinks = "옛 이름을 가리키는 링크 {0}개도 새 이름으로 고쳐 쓸까요? y를 입력하고 Enter: "
 RenameNoteBad = "노트 이름은 비울 수 없고 / 나 \\ 를 넣을 수 없음"
 RenameNoteExists = "{0}이(가) 이미 있음"
 RenameNoteReadOnly = "읽기 전용 노트라 이름을 바꿀 수 없음"
 RenameNotePending = "먼저 이 노트의 변경을 저장하거나 실행 취소할 것"
 RenameNoteDone = "{0}(으)로 이름을 바꿈"
 RenameNoteLinks = "{0}(으)로 이름을 바꿈. 옛 이름을 가리키는 링크 {1}개를 보류 중인 변경으로 고쳐 씀(Ctrl+S로 검토)"
+RenameNoteKeptLinks = "{0}(으)로 이름을 바꿈. 옛 이름을 가리키는 링크 {1}개는 그대로 둠"
 RenameNoteFailed = "이름을 바꿀 수 없었음: {0}"
 ## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
 AskDeleteNote = "휴지통으로 옮길까요? y를 입력하고 Enter: "
@@ -2280,6 +2282,9 @@ CfgDatesWeekStart = "한 주의 첫날. 날짜 캘린더, 날짜 말(이번 주�
 CfgEditCandidates = "텍스트 셀을 편집할 때 보여 줄 값 후보의 최대 개수.\n서로 다른 값이 이보다 많은 열은 후보를 보여 주지 않음."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "프런트매터가 없거나 비어 있는 노트에도 쓰기를 허용함(프런트매터나 키\n줄을 추가함). false면 그런 노트는 읽기 전용."
+CfgEditLinkFormat = "mdgrid가 링크 열에 쓰는 링크의 형식. \"wiki\"는 [[이름]], \"markdown\"은 [이름](경로).\n\"auto\"는 그 열이 이미 쓰는 형식을 따름(없으면 [[이름]])."
+CfgEditLinkPath = "mdgrid가 링크 열에 쓰는 링크의 경로. \"shortest\"는 다른 노트와 이름이 겹치지 않으면 이름만([…](…)는 상대 경로),\n\"relative\"는 쓰는 노트의 폴더에서의 상대 경로, \"absolute\"는 연 루트에서의 경로."
+CfgEditRenameLinks = "노트의 이름을 바꿀 때 그 노트를 가리키는 링크의 고쳐 쓰기를 보류 중인 변경으로 둘지. \"always\"는 항상,\n\"ask\"는 개수를 보여 주고 y일 때만, \"never\"는 두지 않음."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "표에서 새 노트를 만드는 방법: mode(\"form\": 모든 입력란이 있는 입력 창, 또는\n\"editor\": 만들고 편집기로 열기), folder(연 폴더 기준 상대 경로), name(이름\n템플릿), ask(입력 창의 열. 기본값: 보이는 열), required(반드시 채워야 하는\n열), hidden(입력란 없이 적는 열), body(본문 템플릿 파일),\n[new_note.set](열 = 값). 템플릿에는 {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name}, {folder}를 쓸 수 있음. 뷰 필터의 값이 먼저 들어감.\n이 테이블은 한 항목임: 더 좁은 위치에 적으면 통째로 바뀜. name_head(\"show\": 채운 틀을 이름 칸에 넣어 보여 줌, \"hide\": 칸에 보이지 않고 입력한 이름 앞에 붙임)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

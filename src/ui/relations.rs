@@ -46,7 +46,7 @@ pub(crate) struct LinkCtx {
 
 impl LinkCtx {
     /// 探す表(今の表が先)。
-    fn notes(&self) -> Vec<&Notes> {
+    pub(crate) fn notes(&self) -> Vec<&Notes> {
         self.current.iter().chain(self.registered.iter()).collect()
     }
 }
@@ -68,7 +68,7 @@ impl Links {
 
 impl App {
     /// 作り直しが要るなら作る。
-    fn with_links<T>(&self, f: impl FnOnce(&mut LinkCtx) -> T) -> T {
+    pub(crate) fn with_links<T>(&self, f: impl FnOnce(&mut LinkCtx) -> T) -> T {
         let gen = self.links.gen.get();
         let cur_key = (self.progress.loaded, gen);
         let places = self.link_places();
@@ -269,12 +269,29 @@ impl App {
 
     /// 書く値(REL-3)。`row` のノートから `target` を指す、`form` の形の値。名前が探す表の全部で1つでなければ、
     /// 取り違えないようにパスで書く。
+    /// 形は設定 `edit.link_format`(relations.link-format-setting。`auto` なら `form`)、パスは `edit.link_path`
+    /// (relations.link-path-setting)で決める。
     pub(crate) fn link_value(&self, row: &RowId, form: Form, target: &Path) -> String {
+        let r = &self.prof.resolved;
+        let form = r.link_format.pick(form);
+        let path = r.link_path;
         let note = PathBuf::from(&row.0);
-        let unique = self.with_links(|ctx| {
-            relations::count_name(&relations::file_stem(target), &ctx.notes()) <= 1
+        let (unique, root) = self.with_links(|ctx| {
+            let notes = ctx.notes();
+            let unique = relations::count_name(&relations::file_stem(target), &notes) <= 1;
+            (unique, notes.first().map(|n| n.root.clone()))
         });
-        relations::format(form, target, &note, unique)
+        // 開いた根からのパスは、根(実体のパス)と同じ形の行き先から数える。
+        let real;
+        let target = match (path, root.as_ref()) {
+            (relations::LinkPath::Absolute, Some(_)) => {
+                real = std::fs::canonicalize(target).unwrap_or_else(|_| target.to_path_buf());
+                real.as_path()
+            }
+            _ => target,
+        };
+        let root = root.unwrap_or_default();
+        relations::format_with(form, path, target, &note, &root, unique)
     }
 
     /// リンクの候補にするノートと書く形(REL-3)。印の children の親を指す列は、値がまだ無くても表のノート

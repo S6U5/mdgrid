@@ -1228,12 +1228,14 @@ CsvNoKeyOps = "uma coluna de CSV não pode ser renomeada nem removida aqui"
 CsvNoSuchColumn = "não há coluna chamada {0} no CSV"
 ## CE-34: ノートの名前の変更。
 AskRenameNote = "Novo nome da nota: "
+AskRenameLinks = "Reescrever também os {0} link(s) para o nome antigo? Digite y e Enter: "
 RenameNoteBad = "o nome de uma nota não pode ser vazio nem conter / ou \\"
 RenameNoteExists = "{0} já existe"
 RenameNoteReadOnly = "esta nota é somente leitura, então não pode ser renomeada"
 RenameNotePending = "salve ou desfaça antes as alterações desta nota"
 RenameNoteDone = "renomeada para {0}"
 RenameNoteLinks = "renomeada para {0}; {1} link(s) para o nome antigo foram reescritos como alterações pendentes (Ctrl+S para revisar)"
+RenameNoteKeptLinks = "renomeada para {0}; os {1} link(s) para o nome antigo ficam como estão"
 RenameNoteFailed = "não foi possível renomear: {0}"
 ## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
 AskDeleteNote = "Mover para a lixeira? Digite y e Enter: "
@@ -2280,6 +2282,9 @@ CfgDatesWeekStart = "Primeiro dia da semana, usado pelo calendário de datas, pe
 CfgEditCandidates = "Número máximo de valores sugeridos ao editar uma célula de texto.\nColunas com mais valores distintos não oferecem sugestões."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Permite gravar em notas sem front matter ou com um vazio (um front matter ou uma linha de\nchave é adicionado). false torna essas notas somente leitura."
+CfgEditLinkFormat = "A forma dos links que o mdgrid grava numa coluna de links. \"wiki\" grava [[nome]], \"markdown\" grava [nome](caminho).\n\"auto\" segue a forma que a coluna já usa ([[nome]] se não houver)."
+CfgEditLinkPath = "O caminho dos links que o mdgrid grava numa coluna de links. \"shortest\" grava só o nome se nenhuma outra nota o tiver\n([…](…) usa o caminho relativo), \"relative\" o caminho a partir da pasta da nota, \"absolute\" o caminho a partir da raiz aberta."
+CfgEditRenameLinks = "Se renomear uma nota prepara a reescrita dos links para ela. \"always\" sempre, \"ask\" mostra quantos e só com y,\n\"never\" nunca."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Como uma nota nova é criada pela tabela: mode (\"form\": um formulário com todos os campos, ou\n\"editor\": cria e abre no editor), folder (relativo à pasta aberta), name (modelo de nome),\nask (as colunas do formulário; padrão: as colunas visíveis), required (colunas que devem ser\npreenchidas), hidden (colunas gravadas sem campo), body (um arquivo de modelo de corpo) e\n[new_note.set] (coluna = valor). Os modelos podem usar {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} e {folder}. Os valores do filtro da visão vêm primeiro.\nA tabela é um item só: um lugar mais estreito que a escreve a substitui inteira. name_head (\"show\": o modelo preenchido aparece no campo do nome; \"hide\": não aparece e é colocado antes do nome digitado)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

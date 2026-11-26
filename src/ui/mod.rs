@@ -564,6 +564,8 @@ mod test_ledger_conditions;
 #[cfg(test)]
 mod test_link_labels;
 #[cfg(test)]
+mod test_link_settings;
+#[cfg(test)]
 mod test_list_type;
 #[cfg(test)]
 mod test_look_custom;

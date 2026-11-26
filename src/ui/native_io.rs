@@ -52,6 +52,13 @@ pub(crate) enum Ask {
     DeleteKey(String, usize),
     /// 名前を変えるノート(CE-34)。続けて新しい名前。
     RenameNote(mdgrid::source::RowId),
+    /// 名前を変えたノート(新しいファイルの名前)を指していたリンクの書き換えと、その数(cell-edit.rename-note-links-setting
+    /// の `"ask"`)。続けて `y`。
+    RenameLinks {
+        file: String,
+        items: super::note_rename::Rewrites,
+        n: usize,
+    },
     /// 消すノート(vim モードでは印を付けた行の全部。screen.vim-dd)と、そのノートを指しているノートの数
     /// (cell-edit.delete-note-confirm)。続けて `y`。
     DeleteNote {
@@ -249,6 +256,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::RenameKey(k)) => Msg::AskRenameKey.fill(&[&sanitize(k)]),
         Some(Ask::DeleteKey(k, n)) => Msg::AskDeleteKey.fill(&[&sanitize(k), n]),
         Some(Ask::RenameNote(_)) => Msg::AskRenameNote.text().to_string(),
+        Some(Ask::RenameLinks { n, .. }) => Msg::AskRenameLinks.fill(&[n]),
         Some(Ask::DeleteNote { .. }) => Msg::AskDeleteNote.into(),
         Some(Ask::RestoreNote { .. }) => Msg::AskRestoreNote.into(),
         Some(Ask::ImportFile(_)) => Msg::AskImportFile.into(),
@@ -625,8 +633,15 @@ impl App {
         };
         match action {
             Action::Close => {
+                // cell-edit.rename-note-links-setting: リンクを書き換えるかの問いを閉じたら、名前は変えたまま書き換えない。
+                let kept = match &self.nv.ask {
+                    Some(Ask::RenameLinks { file, n, .. }) => {
+                        Some(Msg::RenameNoteKeptLinks.fill(&[file, n]))
+                    }
+                    _ => None,
+                };
                 self.close_palette();
-                self.message = Some(Msg::AskCancelled.into());
+                self.message = Some(kept.unwrap_or_else(|| Msg::AskCancelled.into()));
             }
             Action::Down => p.sel = (p.sel + 1).min(n.saturating_sub(1)),
             Action::Up => p.sel = p.sel.saturating_sub(1),
@@ -677,6 +692,13 @@ impl App {
             Some(Ask::RenameNote(row)) => {
                 let row = row.clone();
                 self.rename_note_to(&row, query);
+            }
+            Some(Ask::RenameLinks { .. }) => {
+                let Some(Ask::RenameLinks { file, items, n }) = self.nv.ask.take() else {
+                    return;
+                };
+                self.close_palette();
+                self.confirm_rename_links(&file, items, n, query.trim().eq_ignore_ascii_case("y"));
             }
             Some(Ask::DeleteNote { rows, .. }) => {
                 let rows = rows.clone();

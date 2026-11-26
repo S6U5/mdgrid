@@ -1227,12 +1227,14 @@ CsvNoKeyOps = "CSV の列の名前の変更・削除はここではできない"
 CsvNoSuchColumn = "CSV に {0} という列は無い"
 ## CE-34: ノートの名前の変更。
 AskRenameNote = "ノートの新しい名前: "
+AskRenameLinks = "古い名前を指すリンク {0} 件も新しい名前に書き換える? y と打って Enter: "
 RenameNoteBad = "ノートの名前は空にできず、/ と \\ を含められない"
 RenameNoteExists = "{0} はもうある"
 RenameNoteReadOnly = "読むだけのノートなので名前を変えられない"
 RenameNotePending = "このノートにためた変更を、先に保存するか取り消す"
 RenameNoteDone = "名前を {0} に変えた"
 RenameNoteLinks = "名前を {0} に変えた。古い名前を指すリンク {1} 件の書き換えをためた(Ctrl+S で差分を見て保存)"
+RenameNoteKeptLinks = "名前を {0} に変えた。古い名前を指すリンク {1} 件はそのまま"
 RenameNoteFailed = "名前を変えられなかった: {0}"
 ## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
 AskDeleteNote = "ごみ箱へ動かす? y と打って Enter: "
@@ -2279,6 +2281,9 @@ CfgDatesWeekStart = "週の始まりの曜日。日付のカレンダー、日�
 CfgEditCandidates = "テキストのセルの編集で出す値の候補の上限。異なる値がこれより多い列は候補を出さない。"
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "フロントマターの無いノートと空のフロントマターのノートにも書く(フロントマターかキーの行を足す)。false ならこの2つは読むだけ。"
+CfgEditLinkFormat = "mdgrid がリンクの列に書くリンクの形。\"wiki\" は [[名前]]、\"markdown\" は [名前](パス)。\"auto\" は列で使われている形に合わせる(無ければ [[名前]])。"
+CfgEditLinkPath = "mdgrid がリンクの列に書くリンクのパス。\"shortest\" は名前がほかと重ならなければ名前だけ([…](…) は相対のパス)、\"relative\" は書くノートのフォルダからの相対、\"absolute\" は開いた根からのパス。"
+CfgEditRenameLinks = "ノートの名前を変えたとき、そのノートを指すリンクの書き換えをためるか。\"always\" はいつも、\"ask\" は件数を見せて y のときだけ、\"never\" はためない。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・name(名前の雛形)・name_head(\"show\" は雛形を埋めた文字を名前の欄に入れて出す、\"hide\" は欄に出さずに打った名前の前に付ける)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

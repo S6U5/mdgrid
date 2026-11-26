@@ -198,7 +198,7 @@ Pass a `.base` file and its table views line up as tabs. Filters, sorting, group
 
 ![Relation map](images/demo-relmap.svg)
 
-A link such as `project: "[[mdgrid]]"` turns folders into linked tables: pick a target by name, open it, list the notes that point here. Tables that belong together form a workspace, and `R` draws the relation map.
+A link such as `project: "[[mdgrid]]"` turns folders into linked tables: pick a target by name, open it, list the notes that point here. Tables that belong together form a workspace, and `R` draws the relation map. Settings choose whether links are written as `[[…]]` or as Markdown links, and whether the path is the name only, relative to the note or from the root; renaming a note brings the links to it along (or asks each time, or leaves them).
 
 [Link tables with relations](tasks.md#link-tables-with-relations), [Group tables into workspaces](tasks.md#group-tables-into-workspaces)
 
