@@ -390,6 +390,8 @@ mod test_note_editor;
 #[cfg(test)]
 mod test_note_form;
 #[cfg(test)]
+mod test_note_form_back;
+#[cfg(test)]
 mod test_note_form_mouse;
 #[cfg(test)]
 mod test_note_form_place;
