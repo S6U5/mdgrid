@@ -365,7 +365,7 @@ impl App {
         let links = self.link_cands(&col, &pick.targets);
         let mut names: Vec<(String, usize)> = match &links {
             Some(l) => {
-                let counts = self.src.list_candidates(&col);
+                let counts = self.list_cands(&col);
                 l.iter()
                     .map(|(v, _)| {
                         let n = counts.iter().find(|(c, _)| c == v).map_or(0, |(_, n)| *n);
@@ -373,7 +373,7 @@ impl App {
                     })
                     .collect()
             }
-            None => self.src.list_candidates(&col),
+            None => self.list_cands(&col),
         };
         // CE-36: 選べる値(決まりの values)も候補にする(まだどのノートにも無い値は件数 0)。
         if let Some(vs) = self

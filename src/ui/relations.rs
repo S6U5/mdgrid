@@ -356,6 +356,9 @@ impl App {
         };
         let skip = self.not_parents(col, editing);
         let notes: Vec<PathBuf> = notes.into_iter().filter(|t| !skip.contains(t)).collect();
+        // cell-edit.candidates-sort・-where: 候補の出し方で絞って並べる(今の値の行き先は残す)。
+        let keep: Vec<PathBuf> = cur_target.iter().cloned().collect();
+        let notes = self.arrange_links(col, notes, &keep);
         let names = self.choice_names(&notes);
         let mut items: Vec<Item> = notes
             .iter()
@@ -447,6 +450,9 @@ impl App {
             .into_iter()
             .filter(|t| !skip.contains(t) || existing.iter().any(|(p, _)| p == t))
             .collect();
+        // cell-edit.candidates-sort・-where: 候補の出し方で絞って並べる(今の要素の行き先は残す)。
+        let keep: Vec<PathBuf> = existing.iter().map(|(p, _)| p.clone()).collect();
+        let notes = self.arrange_links(col, notes, &keep);
         let names = self.choice_names(&notes);
         Some(
             notes

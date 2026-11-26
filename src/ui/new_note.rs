@@ -546,8 +546,7 @@ impl App {
                 .or_else(|| match self.rule_candidates(&col, kind) {
                     Some(c) => Some(values(&c)),
                     None => self
-                        .src
-                        .candidates(&col, self.candidates)
+                        .value_cands(&col)
                         .filter(|c| {
                             c.iter()
                                 .filter_map(to_new)

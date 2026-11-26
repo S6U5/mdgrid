@@ -148,10 +148,10 @@ pub const ITEMS: &[Item] = &[
     },
     Item {
         path: "rules",
-        ty: "table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string or { value = string, if_empty = boolean } } }, icons = { value = string }, labels = { value = string } })",
-        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …], then = { 値 = { 列 = 文字列 か { value = 文字列, if_empty = 真偽値 } } }, icons = { 値 = 文字列 }, labels = { 値 = 文字列 } })",
+        ty: "table of tables (column = { required = boolean, values = [string, …], then = { value = { column = string or { value = string, if_empty = boolean } } }, icons = { value = string }, labels = { value = string }, candidates = { sort = \"name\" | \"count\" | \"recent\", where = { column = [value, …] } } })",
+        ty_ja: "表の表(列 = { required = 真偽値, values = [文字列, …], then = { 値 = { 列 = 文字列 か { value = 文字列, if_empty = 真偽値 } } }, icons = { 値 = 文字列 }, labels = { 値 = 文字列 }, candidates = { sort = \"name\" か \"count\" か \"recent\", where = { 列 = [値, …] } } })",
         default: Some("{}"),
-        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\nicons = { todo = \"○\", doing = \"◐\", done = \"●\" }\nlabels = { todo = \"To do\", doing = \"In progress\" }\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }\ndoing = { started = { value = \"{date}\", if_empty = true } }",
+        example: "[rules.status]\nrequired = true\nvalues = [\"todo\", \"doing\", \"done\"]\nicons = { todo = \"○\", doing = \"◐\", done = \"●\" }\nlabels = { todo = \"To do\", doing = \"In progress\" }\n\n[rules.status.then]\ndone = { done_at = \"{date}\" }\ndoing = { started = { value = \"{date}\", if_empty = true } }\n\n[rules.parent.candidates]\nwhere = { status = [\"todo\", \"doing\", \"waiting\"] }\nsort = \"count\"",
         scope: Scope::Profile,
         en: Msg::CfgRules.en(),
         ja: Msg::CfgRules.ja(),

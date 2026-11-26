@@ -4,6 +4,7 @@
 pub mod app;
 pub mod bands;
 pub mod calendar;
+mod cands;
 pub mod cell;
 pub(crate) mod children;
 pub(crate) mod chips;
@@ -253,6 +254,8 @@ mod test_bulk_outside;
 mod test_calendar;
 #[cfg(test)]
 mod test_calendar_seconds;
+#[cfg(test)]
+mod test_candidate_order;
 #[cfg(test)]
 mod test_cell_marks;
 #[cfg(test)]
