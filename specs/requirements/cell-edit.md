@@ -1475,6 +1475,54 @@
   - When: 「会議の準備」を「会議の準備(10月)」に変える
   - Then: ほかのノートの `project: "[[会議の準備]]"` を書き換える変更が2件ためられて2件と知らされ、Ctrl+S の差分に出る。
 
+#### ノートの名前を変えたら、書き換えるリンクは、値を持つノートから解いた行き先(relations.link-forms-resolve)が名前を変えたノートのものだけにし、`[[…]]`・`[…](…)`・ただのパスのどの形でも、形・フォルダの部分・見出し・`[[…|表示]]` の表示の文字を残して、行き先の名前の部分だけを新しい名前にするべき(`[文字](…)` の文字は、古い名前と同じときだけ新しい名前にする)
+`req~cell-edit.rename-note-links-resolved~1` P1
+- Rationale: 名前の文字だけを置き換えると、`[…](…)` の形と `[[フォルダ/名前]]` のリンクが切れたまま残り、別のフォルダの同じ名前のノートへのリンクまで書き換えてしまうため
+- Acceptance:
+  - Given: `Tasks/見積もりを出す.md` と `Archive/見積もりを出す.md` があり、`Tasks/a.md` は `parent: "[見積もりを出す](見積もりを出す.md)"`、`Tasks/b.md` は `parent: "[[Tasks/見積もりを出す|見積]]"`、`Tasks/c.md` は `ref: Tasks/見積もりを出す.md`、`Archive/d.md` は `parent: "[[見積もりを出す]]"`(行き先は `Archive/見積もりを出す.md`)
+  - When: `Tasks/見積もりを出す.md` の名前を「見積もり」に変える
+  - Then: a は `"[見積もり](見積もり.md)"`、b は `"[[Tasks/見積もり|見積]]"`、c は `Tasks/見積もり.md` を書き換える変更がためられ、d は `"[[見積もりを出す]]"` のまま。
+
+#### ノートの名前を変えるとき、名前に `display.note_name`(screen.note-name)で隠す部分があれば、入力は見せる名前から始め、打った名前に隠した部分を付けた名前に変えるべき。打った名前そのものが `display.note_name` に当たるなら、打ったとおりの名前に変えるべき
+`req~cell-edit.rename-note-hidden-head~1` P1
+- Rationale: 日付で始まる名前のタスクで、名前を変えるたびに隠した日付を打ち直したり、消してしまったりしないため(2026-11-26 に人がタスクの名前の変え方を問うた)
+- Acceptance:
+  - Given: `display.note_name = '^\d{8}_'` の表の `Tasks/20261125_見積もりを出す.md` の行
+  - When: 「ノートの名前を変える」を始める
+  - Then: 入力は「見積もりを出す」から始まる。
+- Acceptance:
+  - Given: `display.note_name = '^\d{8}_'` の表の `Tasks/20261125_見積もりを出す.md` の行
+  - When: 「ノートの名前を変える」で「見積もりを出す(改)」と打って Enter
+  - Then: ファイルは `Tasks/20261125_見積もりを出す(改).md` になる。
+- Acceptance:
+  - Given: `display.note_name = '^\d{8}_'` の表の `Tasks/20261125_見積もりを出す.md` の行
+  - When: 「ノートの名前を変える」で「20261201_見積もり」と打って Enter
+  - Then: ファイルは `Tasks/20261201_見積もり.md` になる。
+
+#### 設定 `edit.rename_links` は、ノートの名前を変えたときのリンクの書き換えを決め、`"always"`(既定)は cell-edit.rename-note-links のとおり書き換えをため、`"ask"` は書き換えるリンクが1件以上あるときだけ件数を見せて問い、`y` のときだけため、`"never"` はためずに、どれもノートの名前は変えるべき。ほかの値は警告して `"always"` にするべき
+`req~cell-edit.rename-note-links-setting~1` P1
+- Rationale: ほかの表の道具と同じく、名前を変えたときにリンクを直すかを人が選べるようにするため(2026-11-26 に人が頼んだ)
+- Acceptance:
+  - Given: `edit.rename_links = "ask"` で、`project: "[[会議の準備]]"` のノートが2件
+  - When: 「会議の準備」を「会議の準備(10月)」に変え、問いに `y`
+  - Then: ファイルは `会議の準備(10月).md` になり、問いに件数 2 が出て、2件の書き換えがためられる。
+- Acceptance:
+  - Given: `edit.rename_links = "ask"` で、`project: "[[会議の準備]]"` のノートが2件
+  - When: 「会議の準備」を「会議の準備(10月)」に変え、問いに Esc
+  - Then: ファイルは `会議の準備(10月).md` になり、ためた変更は無く、2件の値は `[[会議の準備]]` のまま。
+- Acceptance:
+  - Given: `edit.rename_links = "ask"` で、どのノートも「会議の準備」を指さない
+  - When: 「会議の準備」を「会議の準備(10月)」に変える
+  - Then: 問わずにファイルが `会議の準備(10月).md` になる。
+- Acceptance:
+  - Given: `edit.rename_links = "never"` で、`project: "[[会議の準備]]"` のノートが2件
+  - When: 「会議の準備」を「会議の準備(10月)」に変える
+  - Then: ファイルは `会議の準備(10月).md` になり、ためた変更は無い。
+- Acceptance:
+  - Given: `edit.rename_links = "sometimes"` で、`project: "[[会議の準備]]"` のノートが2件
+  - When: 開いて「会議の準備」を「会議の準備(10月)」に変える
+  - Then: `edit.rename_links` を言う警告が出て、2件の書き換えがためられる。
+
 #### 表のモードで、選んだ行のノートを、操作の一覧(screen.action-menu)とパレットの「ノートを消す」でごみ箱へ動かせるべき(キーは既定で割り当てない)
 `req~cell-edit.delete-note-menu~1` P1
 - Rationale: 間違って作ったノートを、mdgrid を出ずに片づけるため

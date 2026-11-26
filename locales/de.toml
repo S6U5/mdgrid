@@ -1228,12 +1228,14 @@ CsvNoKeyOps = "eine CSV-Spalte lässt sich hier nicht umbenennen oder entfernen"
 CsvNoSuchColumn = "keine Spalte namens {0} in der CSV"
 ## CE-34: ノートの名前の変更。
 AskRenameNote = "Neuer Name der Notiz: "
+AskRenameLinks = "Auch die {0} Link(s) auf den alten Namen umschreiben? y und Enter eingeben: "
 RenameNoteBad = "ein Notizname darf nicht leer sein und kein / oder \\ enthalten"
 RenameNoteExists = "{0} existiert bereits"
 RenameNoteReadOnly = "diese Notiz ist schreibgeschützt und lässt sich nicht umbenennen"
 RenameNotePending = "zuerst die Änderungen an dieser Notiz speichern oder rückgängig machen"
 RenameNoteDone = "umbenannt in {0}"
 RenameNoteLinks = "umbenannt in {0}; {1} Link(s) auf den alten Namen werden als ausstehende Änderungen umgeschrieben (Ctrl+S zum Prüfen)"
+RenameNoteKeptLinks = "umbenannt in {0}; die {1} Link(s) auf den alten Namen bleiben, wie sie sind"
 RenameNoteFailed = "Umbenennen fehlgeschlagen: {0}"
 ## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
 AskDeleteNote = "In den Papierkorb verschieben? y und Enter eingeben: "
@@ -2280,6 +2282,9 @@ CfgDatesWeekStart = "Erster Wochentag für den Datumskalender, die Datumswörter
 CfgEditCandidates = "Höchstzahl der Wertvorschläge beim Bearbeiten einer Textzelle.\nSpalten mit mehr verschiedenen Werten bieten keine Vorschläge."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Schreiben in Notizen ohne oder mit leerem Front Matter erlauben (ein Front Matter oder eine\nSchlüsselzeile wird ergänzt). false macht diese Notizen schreibgeschützt."
+CfgEditLinkFormat = "Die Form der Links, die mdgrid in eine Link-Spalte schreibt. \"wiki\" schreibt [[Name]], \"markdown\" schreibt [Name](Pfad).\n\"auto\" folgt der Form, die die Spalte schon nutzt (sonst [[Name]])."
+CfgEditLinkPath = "Der Pfad in den Links, die mdgrid in eine Link-Spalte schreibt. \"shortest\" schreibt nur den Namen, wenn keine andere\nNotiz ihn hat ([…](…) nutzt den relativen Pfad), \"relative\" den Pfad ab dem Ordner der Notiz, \"absolute\" den Pfad ab dem geöffneten Stamm."
+CfgEditRenameLinks = "Ob das Umbenennen einer Notiz das Umschreiben der Links auf sie vormerkt. \"always\" immer, \"ask\" zeigt die Anzahl und\nnur bei y, \"never\" nie."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Wie eine neue Notiz aus der Tabelle entsteht: mode (\"form\": ein Formular mit allen Feldern, oder\n\"editor\": anlegen und im Editor öffnen), folder (relativ zum geöffneten Ordner), name\n(Namensvorlage), ask (die Spalten des Formulars; Standard: die sichtbaren Spalten), required\n(Spalten, die ausgefüllt sein müssen), hidden (Spalten, die ohne Feld geschrieben werden), body\n(eine Vorlagendatei für den Inhalt) und [new_note.set] (Spalte = Wert). Vorlagen können {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} und {folder} verwenden. Werte aus\ndem Filter der Ansicht kommen zuerst. Die Tabelle ist ein Eintrag: eine engere Stelle, die sie\nschreibt, ersetzt sie ganz. name_head (\"show\": die ausgefüllte Vorlage steht im Namensfeld; \"hide\": sie wird nicht gezeigt und vor den getippten Namen gesetzt)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

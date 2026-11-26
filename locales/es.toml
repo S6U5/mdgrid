@@ -1228,12 +1228,14 @@ CsvNoKeyOps = "aquí no se puede renombrar ni quitar una columna CSV"
 CsvNoSuchColumn = "no hay columna llamada {0} en el CSV"
 ## CE-34: ノートの名前の変更。
 AskRenameNote = "Nombre nuevo de la nota: "
+AskRenameLinks = "¿Reescribir también los {0} enlace(s) al nombre antiguo? y + Enter para confirmar: "
 RenameNoteBad = "el nombre de una nota no puede estar vacío ni contener / o \\"
 RenameNoteExists = "{0} ya existe"
 RenameNoteReadOnly = "esta nota es de solo lectura, así que no se puede renombrar"
 RenameNotePending = "primero guarde o deshaga los cambios de esta nota"
 RenameNoteDone = "renombrada a {0}"
 RenameNoteLinks = "renombrada a {0}; {1} enlace(s) al nombre antiguo se reescriben como cambios pendientes (Ctrl+S para revisar)"
+RenameNoteKeptLinks = "renombrada a {0}; los {1} enlace(s) al nombre antiguo se quedan como están"
 RenameNoteFailed = "no se pudo renombrar: {0}"
 ## cell-edit.delete-note-*: ノートの削除(ごみ箱へ動かす)。{0} はノートの名前、{1} は指しているノートの数。
 AskDeleteNote = "¿Mover a la papelera? y + Enter para confirmar: "
@@ -2280,6 +2282,9 @@ CfgDatesWeekStart = "Primer día de la semana, para el calendario de fechas, las
 CfgEditCandidates = "Número máximo de valores candidatos que se ofrecen al editar una celda de texto.\nLas columnas con más valores distintos no ofrecen candidatos."
 ## 設定の項目 `edit.add_frontmatter` の説明(行の区切りは --print-config のコメントの行)。
 CfgEditAddFrontmatter = "Permite escribir en notas sin front matter o con uno vacío (se añade un front matter o una\nlínea de clave). false deja esas notas en solo lectura."
+CfgEditLinkFormat = "La forma de los enlaces que mdgrid escribe en una columna de enlaces. \"wiki\" escribe [[nombre]], \"markdown\" escribe\n[nombre](ruta). \"auto\" sigue la forma que ya usa la columna ([[nombre]] si no hay ninguna)."
+CfgEditLinkPath = "La ruta de los enlaces que mdgrid escribe en una columna de enlaces. \"shortest\" escribe solo el nombre si ninguna otra\nnota lo tiene ([…](…) usa la ruta relativa), \"relative\" la ruta desde la carpeta de la nota, \"absolute\" la ruta desde la raíz abierta."
+CfgEditRenameLinks = "Si al renombrar una nota se preparan los cambios de los enlaces que apuntan a ella. \"always\" siempre, \"ask\" muestra\ncuántos y solo con y, \"never\" nunca."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Cómo se crea una nota nueva desde la tabla: mode (\"form\": un formulario con todos los campos,\no \"editor\": crear y abrir en el editor), folder (relativa a la carpeta abierta), name\n(plantilla del nombre), ask (las columnas del formulario; por defecto: las columnas visibles),\nrequired (columnas que hay que rellenar), hidden (columnas que se escriben sin campo), body (un\narchivo de plantilla del cuerpo) y [new_note.set] (columna = valor). Las plantillas pueden usar\n{date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} y {folder}. Los valores\ndel filtro de la vista van primero.\nLa tabla es un solo elemento: un lugar más estrecho que la escribe la sustituye entera. name_head (\"show\": la plantilla rellenada aparece en el campo del nombre; \"hide\": no aparece y se añade delante del nombre escrito)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

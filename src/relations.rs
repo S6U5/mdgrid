@@ -28,6 +28,102 @@ pub enum Form {
     Path { ext: bool },
 }
 
+/// 設定 `edit.link_format`(relations.link-format-setting): mdgrid がリンクの列に書くリンクの形。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LinkFormat {
+    /// 列で使われている形に合わせる(無ければ `[[名前]]`。relations.link-input-form)。
+    #[default]
+    Auto,
+    /// `[[行き先]]`。
+    Wiki,
+    /// `[名前](パス)`。
+    Markdown,
+}
+
+impl LinkFormat {
+    pub const NAMES: [&'static str; 3] = ["auto", "wiki", "markdown"];
+
+    pub fn parse(s: &str) -> Option<LinkFormat> {
+        match s {
+            "auto" => Some(LinkFormat::Auto),
+            "wiki" => Some(LinkFormat::Wiki),
+            "markdown" => Some(LinkFormat::Markdown),
+            _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        Self::NAMES[self as usize]
+    }
+
+    /// 書く形: 設定で決めていればその形、`auto` なら列の形 `column`。
+    pub fn pick(self, column: Form) -> Form {
+        match self {
+            LinkFormat::Auto => column,
+            LinkFormat::Wiki => Form::Wiki,
+            LinkFormat::Markdown => Form::Md,
+        }
+    }
+}
+
+/// 設定 `edit.link_path`(relations.link-path-setting): mdgrid がリンクの列に書くリンクのパス。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LinkPath {
+    /// `[[…]]` は名前がほかと重ならなければ名前だけ、ほかはノートのフォルダからの相対のパス(`format`)。
+    #[default]
+    Shortest,
+    /// 書くノートのフォルダからの相対のパス。
+    Relative,
+    /// 開いた根からのパス。
+    Absolute,
+}
+
+impl LinkPath {
+    pub const NAMES: [&'static str; 3] = ["shortest", "relative", "absolute"];
+
+    pub fn parse(s: &str) -> Option<LinkPath> {
+        match s {
+            "shortest" => Some(LinkPath::Shortest),
+            "relative" => Some(LinkPath::Relative),
+            "absolute" => Some(LinkPath::Absolute),
+            _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        Self::NAMES[self as usize]
+    }
+}
+
+/// 設定 `edit.rename_links`(cell-edit.rename-note-links-setting): ノートの名前を変えたときのリンクの書き換え。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum RenameLinks {
+    /// いつも書き換えをためる。
+    #[default]
+    Always,
+    /// 書き換えるリンクがあれば件数を見せて問う。
+    Ask,
+    /// 書き換えない。
+    Never,
+}
+
+impl RenameLinks {
+    pub const NAMES: [&'static str; 3] = ["always", "ask", "never"];
+
+    pub fn parse(s: &str) -> Option<RenameLinks> {
+        match s {
+            "always" => Some(RenameLinks::Always),
+            "ask" => Some(RenameLinks::Ask),
+            "never" => Some(RenameLinks::Never),
+            _ => None,
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        Self::NAMES[self as usize]
+    }
+}
+
 /// 値から読んだリンク。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Link {
@@ -343,6 +439,96 @@ pub fn format(form: Form, target: &Path, note: &Path, unique: bool) -> String {
             }
         }
     }
+}
+
+/// 書く値(relations.link-path-setting): `format` に、パスの決め方 `path` を足したもの。`root` は開いた根で、
+/// `"absolute"` のとき `target` とどちらも同じ形(実体のパス)で渡す。
+pub fn format_with(
+    form: Form,
+    path: LinkPath,
+    target: &Path,
+    note: &Path,
+    root: &Path,
+    unique: bool,
+) -> String {
+    let rel = match path {
+        LinkPath::Shortest => return format(form, target, note, unique),
+        LinkPath::Relative => relative(note.parent().unwrap_or(Path::new("")), target),
+        LinkPath::Absolute => relative(root, target),
+    };
+    match form {
+        Form::Wiki => format!("[[{}]]", strip_md(&rel)),
+        Form::Md => format!("[{}]({})", file_stem(target), rel.replace(' ', "%20")),
+        Form::Path { ext } => {
+            if ext {
+                rel
+            } else {
+                strip_md(&rel).to_string()
+            }
+        }
+    }
+}
+
+/// cell-edit.rename-note-links-resolved: リンクの値 `v` の行き先の最後の名前の部分(`.md` を除く)が `old` なら、
+/// そこだけを `new` にした値。形・フォルダの部分・見出し・`[[…|表示]]` の表示の文字は残し、`[文字](…)` の文字は
+/// `old` と同じときだけ `new` にする。`new` に `/` を含めると、名前の部分をそのパスにする(名前が重なるとき)。
+/// リンクでない値と、行き先の名前が `old` でない値は None。
+pub fn retarget(v: &str, old: &str, new: &str) -> Option<String> {
+    let link = parse(v)?;
+    let t = v.trim();
+    match link.form {
+        Form::Wiki => {
+            let start = t.find("[[")? + 2;
+            let end = t.rfind("]]")?;
+            let inner = &t[start..end];
+            let cut = inner.find(['|', '#']).unwrap_or(inner.len());
+            let body = swap_last(&inner[..cut], old, new, false)?;
+            Some(format!(
+                "{}{body}{}{}",
+                &t[..start],
+                &inner[cut..],
+                &t[end..]
+            ))
+        }
+        Form::Md => {
+            let (text, after) = t.strip_prefix('[')?.split_once("](")?;
+            let all = after.strip_suffix(')')?;
+            let cut = all.find('#').unwrap_or(all.len());
+            let path = swap_last(&all[..cut], old, new, true)?;
+            let text = if text.trim() == old {
+                new.rsplit('/').next().unwrap_or(new)
+            } else {
+                text
+            };
+            Some(format!("[{text}]({path}{})", &all[cut..]))
+        }
+        Form::Path { .. } => swap_last(t, old, new, false),
+    }
+}
+
+/// パス `p`(`/` 区切り)の最後の部分が、`.md` を除いて `old`(大文字小文字を問わない)なら `new` にしたパス。
+/// `enc` は Markdown のリンクのパス(`%xx` を戻して比べ、空白を `%20` にして書く)。
+fn swap_last(p: &str, old: &str, new: &str, enc: bool) -> Option<String> {
+    let (dir, last) = match p.rfind('/') {
+        Some(i) => (&p[..=i], &p[i + 1..]),
+        None => ("", p),
+    };
+    let stem = strip_md(last);
+    let ext = &last[stem.len()..];
+    let name = if enc {
+        percent_decode(stem)
+    } else {
+        stem.to_string()
+    };
+    if name.trim().to_lowercase() != old.to_lowercase() {
+        return None;
+    }
+    let new = if enc {
+        new.replace(' ', "%20")
+    } else {
+        new.to_string()
+    };
+    Some(format!("{dir}{new}{ext}"))
 }
 
 /// 列の値の文字(リストは要素)。

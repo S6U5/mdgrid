@@ -10,6 +10,7 @@ use crate::display::{ButtonsMode, Display, DisplayOverride, Pad, TabsMode};
 use crate::i18n::Msg;
 use crate::newnote::{self, NewNote};
 use crate::numfmt::{self, FormatLayer, NumFormat};
+use crate::relations::{LinkFormat, LinkPath, RenameLinks};
 use crate::rules::{self, Rule, RuleLayer};
 use crate::schema;
 use crate::style::{Band, Check, Frames, Links, Preset, Rules, Select, Status, Style, Tabs, Tags};
@@ -408,6 +409,12 @@ pub struct DatesLayer {
 pub struct EditLayer {
     pub candidates: Option<usize>,
     pub add_frontmatter: Option<bool>,
+    /// relations.link-format-setting。
+    pub link_format: Option<LinkFormat>,
+    /// relations.link-path-setting。
+    pub link_path: Option<LinkPath>,
+    /// cell-edit.rename-note-links-setting。
+    pub rename_links: Option<RenameLinks>,
 }
 
 impl DatesLayer {
@@ -477,6 +484,18 @@ impl EditLayer {
                     Some(b) => self.add_frontmatter = Some(b),
                     None => warn(w, file, &p, not(Msg::WantBool)),
                 },
+                "link_format" => match v.as_str().and_then(LinkFormat::parse) {
+                    Some(f) => self.link_format = Some(f),
+                    None => warn(w, file, &p, not_one_of(&LinkFormat::NAMES)),
+                },
+                "link_path" => match v.as_str().and_then(LinkPath::parse) {
+                    Some(f) => self.link_path = Some(f),
+                    None => warn(w, file, &p, not_one_of(&LinkPath::NAMES)),
+                },
+                "rename_links" => match v.as_str().and_then(RenameLinks::parse) {
+                    Some(f) => self.rename_links = Some(f),
+                    None => warn(w, file, &p, not_one_of(&RenameLinks::NAMES)),
+                },
                 _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
             }
         }
@@ -489,6 +508,15 @@ impl EditLayer {
         }
         if let Some(b) = self.add_frontmatter {
             e.insert("add_frontmatter".into(), toml::Value::Boolean(b));
+        }
+        if let Some(f) = self.link_format {
+            e.insert("link_format".into(), toml::Value::String(f.name().into()));
+        }
+        if let Some(f) = self.link_path {
+            e.insert("link_path".into(), toml::Value::String(f.name().into()));
+        }
+        if let Some(f) = self.rename_links {
+            e.insert("rename_links".into(), toml::Value::String(f.name().into()));
         }
         e
     }
@@ -1231,6 +1259,12 @@ pub struct Resolved {
     pub week_start: WeekStart,
     pub candidates: usize,
     pub add_frontmatter: bool,
+    /// `edit.link_format`(relations.link-format-setting)。
+    pub link_format: LinkFormat,
+    /// `edit.link_path`(relations.link-path-setting)。
+    pub link_path: LinkPath,
+    /// `edit.rename_links`(cell-edit.rename-note-links-setting)。
+    pub rename_links: RenameLinks,
     pub new_note: NewNote,
     /// `[types]`(CE-35): 設定で決めた列の型(`"auto"` の列は無い)。
     pub types: BTreeMap<String, Kind>,
@@ -1262,6 +1296,9 @@ impl Default for Resolved {
             week_start: WeekStart::Sun,
             candidates: 20,
             add_frontmatter: true,
+            link_format: LinkFormat::Auto,
+            link_path: LinkPath::Shortest,
+            rename_links: RenameLinks::Always,
             new_note: NewNote::default(),
             types: BTreeMap::new(),
             rules: BTreeMap::new(),
@@ -1443,6 +1480,18 @@ impl Resolved {
             self.add_frontmatter = b;
             self.mark("edit.add_frontmatter", o);
         }
+        if let Some(f) = p.edit.link_format {
+            self.link_format = f;
+            self.mark("edit.link_format", o);
+        }
+        if let Some(f) = p.edit.link_path {
+            self.link_path = f;
+            self.mark("edit.link_path", o);
+        }
+        if let Some(f) = p.edit.rename_links {
+            self.rename_links = f;
+            self.mark("edit.rename_links", o);
+        }
         if let Some(n) = &p.new_note {
             self.new_note = n.clone();
             self.mark("new_note", o);
@@ -1477,6 +1526,9 @@ impl Resolved {
         p.dates.week_start = Some(self.week_start);
         p.edit.candidates = Some(self.candidates);
         p.edit.add_frontmatter = Some(self.add_frontmatter);
+        p.edit.link_format = Some(self.link_format);
+        p.edit.link_path = Some(self.link_path);
+        p.edit.rename_links = Some(self.rename_links);
         if self.new_note != NewNote::default() {
             p.new_note = Some(self.new_note.clone());
         }

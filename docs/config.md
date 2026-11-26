@@ -765,6 +765,45 @@ Allow writing to notes that have no front matter or an empty one (only the two `
 add_frontmatter = false
 ```
 
+### `edit.link_format`
+
+- Type: `string ("auto", "wiki" or "markdown")`
+- Default: `"auto"`
+- Scope: global, workspace, table, view
+
+The form of the links mdgrid writes in a link column: when you pick a candidate, when a name you type matches a note, and in the link fields of the new note form. `"wiki"` writes `[[name]]` and `"markdown"` writes `[name](path.md)`, whatever form the column already holds. `"auto"` follows the form the column already uses, and writes `[[name]]` while it has no values. Set it in a ledger you want to keep in the same form as your other table tools. The `routine` column of routine run notes stays `[[name]]` whatever this says. Other values give a warning and mean `"auto"`.
+
+```toml
+[edit]
+link_format = "markdown"
+```
+
+### `edit.link_path`
+
+- Type: `string ("shortest", "relative" or "absolute")`
+- Default: `"shortest"`
+- Scope: global, workspace, table, view
+
+The path in the links mdgrid writes in a link column. `"shortest"` writes only the name in `[[…]]` unless another note has the same name (then the path from the note's folder), and the path from the note's folder in `[…](…)` and plain paths. `"relative"` writes the path from the note's folder in every form (`[[../Tasks/Send the quote]]` from `Projects/Tidy the house.md`), and `"absolute"` the path from the opened root (`[[Tasks/Send the quote]]`). `[[…]]` never gets `.md`. Other values give a warning and mean `"shortest"`.
+
+```toml
+[edit]
+link_path = "absolute"
+```
+
+### `edit.rename_links`
+
+- Type: `string ("always", "ask" or "never")`
+- Default: `"always"`
+- Scope: global, workspace, table, view
+
+Whether renaming a note with "Rename the note" also rewrites the links to it. Only links that resolve, from the note holding them, to the renamed note are rewritten, in any form (`[[…]]`, `[…](…)`, plain paths): the folder part, the heading and the shown text stay, and only the name changes. A link to a note with the same name in another folder is left alone. The rewrites are pending changes, so you can review them in the diff before saving and undo them. `"always"` always stages them, `"ask"` shows how many links would change and stages them only when you answer `y`, and `"never"` does not. The file is renamed in every case. Other values give a warning and mean `"always"`.
+
+```toml
+[edit]
+rename_links = "ask"
+```
+
 ## `[new_note]` — new notes
 
 ### `new_note`

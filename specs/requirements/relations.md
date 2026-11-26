@@ -187,6 +187,42 @@
   - When: 値が `[[…]]` のリストの tags の列で tui と relations を選ぶ
   - Then: `["[[tui]]", "[[relations]]"]` と書く。
 
+#### 設定 `edit.link_format` に `"wiki"` か `"markdown"` を書いたら、mdgrid がリンクの列に書くリンク(候補から選ぶ・打った名前・新しいノートの窓の欄)は、列で使われている形によらず `[[…]]` か `[名前](パス)` の形にするべき。既定の `"auto"` は relations.link-input-form のとおり列で使われている形に合わせ、ほかの値は警告して `"auto"` にするべき
+`req~relations.link-format-setting~1` P1
+- Rationale: リンクの書き方を台帳ごとに決め、ほかの表の道具で読むときの形にそろえられるようにするため(2026-11-26 に人が頼んだ)。ルーチンの回のノートの `routine` の列は、この設定によらず今までどおり `[[名前]]` で書く
+- Acceptance:
+  - Given: `edit.link_format = "markdown"` の台帳で、`Tasks/` の親タスクの列(`parent`)の値がどれも `[[…]]`
+  - When: `Tasks/見積書を作る.md` の親タスクのセルで候補の「見積もりを出す」を選ぶ
+  - Then: `"[見積もりを出す](見積もりを出す.md)"` と書く。
+- Acceptance:
+  - Given: `edit.link_format = "wiki"` の台帳で、`parent` の値がどれも `[文字](相対のパス)`
+  - When: `Tasks/見積書を作る.md` の親タスクのセルで候補の「見積もりを出す」を選ぶ
+  - Then: `"[[見積もりを出す]]"` と書く。
+- Acceptance:
+  - Given: `edit.link_format = "html"` の台帳で、`parent` の値がどれも `[[…]]`
+  - When: 開く
+  - Then: `edit.link_format` を言う警告が出て、候補の「見積もりを出す」を選ぶと `"[[見積もりを出す]]"` と書く。
+
+#### 設定 `edit.link_path` は、mdgrid がリンクの列に書くリンクのパスを決め、`"shortest"`(既定)は relations.link-input-write・relations.link-input-same-name のとおり(`[[…]]` は名前がほかと重ならなければ名前だけ、重なればノートのフォルダからの相対のパス、`[…](…)` とただのパスはノートのフォルダからの相対のパス)、`"relative"` はどの形も書くノートのフォルダからの相対のパス、`"absolute"` はどの形も開いた根からのパスにし、ほかの値は警告して `"shortest"` にするべき(`[[…]]` には `.md` を付けない)
+`req~relations.link-path-setting~1` P1
+- Rationale: リンクの書き方を台帳ごとに決め、ほかの表の道具で読むときのパスにそろえられるようにするため(2026-11-26 に人が頼んだ)
+- Acceptance:
+  - Given: `edit.link_path = "absolute"` の台帳(根の下に `Tasks/` と `Projects/`)で、`parent` の値がどれも `[[…]]`
+  - When: `Tasks/見積書を作る.md` の親タスクのセルで候補の「見積もりを出す」を選ぶ
+  - Then: `"[[Tasks/見積もりを出す]]"` と書き、そのリンクの行き先は `Tasks/見積もりを出す.md`。
+- Acceptance:
+  - Given: `edit.link_path = "relative"`・`edit.link_format = "markdown"` の台帳
+  - When: `Projects/家の片づけ.md` の `parent` のセルで候補の「見積もりを出す」(`Tasks/見積もりを出す.md`)を選ぶ
+  - Then: `"[見積もりを出す](../Tasks/見積もりを出す.md)"` と書く。
+- Acceptance:
+  - Given: `edit.link_path = "relative"` の台帳で、`parent` の値がどれも `[[…]]`
+  - When: `Projects/家の片づけ.md` の `parent` のセルで候補の「見積もりを出す」(`Tasks/見積もりを出す.md`)を選ぶ
+  - Then: `"[[../Tasks/見積もりを出す]]"` と書き、そのリンクの行き先は `Tasks/見積もりを出す.md`。
+- Acceptance:
+  - Given: `edit.link_path = "longest"` の台帳で、`parent` の値がどれも `[[…]]`
+  - When: 開く
+  - Then: `edit.link_path` を言う警告が出て、`Tasks/見積書を作る.md` で候補の「見積もりを出す」を選ぶと `"[[見積もりを出す]]"` と書く。
+
 #### リンクのセルから、行き先のノートを含む表(登録した表のうち行き先を含むもの、無ければ行き先のフォルダ)を開いて、その行を選べるべき(操作の一覧とパレットから)
 `req~relations.follow-link-open~1` P1
 - Acceptance:
