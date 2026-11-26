@@ -1944,6 +1944,7 @@ RsnChildrenNotTable = "{ key = \"<列>\" } の形の表でないので、親子�
 RsnChildrenNeedKey = "key(親へのリンクの列)が無いので、親子の設定を使わない"
 ## {0} は列。
 RsnChildrenNoColumn = "表に列 {0} が無いので、親子で並べない"
+LinkTypedSameName = "同じ名前のノートが {0} 件あります。↑↓ で選んでください"
 ## {0} は列(children の status に書いた状態の列)。
 RsnChildrenNoStatus = "表に列 {0} が無いので、親を完了にしても子はそのまま"
 ## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。

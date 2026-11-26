@@ -114,18 +114,20 @@ impl App {
         self.set_mode(Mode::Table);
     }
 
-    /// 画面の型の設定の列を確かめてよいか(読み終えて、行が1つ以上ある)。列はノートのキーから作るので、読み込みの
-    /// 途中と行の無い表(見本なしで作った台帳など)では分からない。分からないあいだは印の設定をそのまま使い、
-    /// 列が無いと警告しない(空の台帳を開くたびに警告が出ないように)。
     /// 列が表にあるか: ノートのキーの列か、設定の `[types]`・`[rules.<列>]` に書いた列
     /// (gantt・kanban・chart・tree の config-declared-column: まだどのノートにも無いキーでも、設定に書いた列は
-    /// 表にあると数える)。計算の列・ファイルの列は呼ぶ側が先に見る。
+    /// 表にあると数える)か、`.base` の `properties` で名前を付けた列かビューの `order` に並べた列
+    /// (navigation.declared-columns)。計算の列・ファイルの列は呼ぶ側が先に見る。
     pub(crate) fn has_column(&self, col: &str) -> bool {
         self.src.columns().iter().any(|x| x == col)
             || self.prof.resolved.types.contains_key(col)
             || self.prof.resolved.rules.contains_key(col)
+            || self.base.as_ref().is_some_and(|b| b.base.declares(col))
     }
 
+    /// 画面の型の設定の列を確かめてよいか(読み終えて、行が1つ以上ある)。列はノートのキーから作るので、読み込みの
+    /// 途中と行の無い表(見本なしで作った台帳など)では分からない。分からないあいだは印の設定をそのまま使い、
+    /// 列が無いと警告しない(空の台帳を開くたびに警告が出ないように)。
     pub(crate) fn columns_settled(&self) -> bool {
         self.progress.done && !self.src.rows().is_empty()
     }

@@ -1945,6 +1945,7 @@ RsnChildrenNotTable = "{ key = \"<열>\" } 형태의 테이블이 아니어서 �
 RsnChildrenNeedKey = "key(부모로 가는 링크 열)가 없어서 부모·자식 설정 없음"
 ## {0} は列。
 RsnChildrenNoColumn = "표에 {0} 열이 없어서 부모·자식으로 정렬하지 않음"
+LinkTypedSameName = "이 이름의 노트가 {0}개 있습니다. ↑↓로 고르세요"
 ## {0} は列(children の status に書いた状態の列)。
 RsnChildrenNoStatus = "표에 {0} 열이 없어서 부모를 완료해도 자식은 그대로"
 ## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。

@@ -400,6 +400,8 @@ mod test_note_time;
 #[cfg(test)]
 mod test_padding_default_one;
 #[cfg(test)]
+mod test_parent_link_input;
+#[cfg(test)]
 mod test_paste;
 #[cfg(test)]
 mod test_places;

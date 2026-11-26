@@ -1945,6 +1945,7 @@ RsnChildrenNotTable = "no es una tabla como { key = \"<columna>\" }, así que no
 RsnChildrenNeedKey = "no tiene key (la columna con el enlace al padre), así que no hay ajuste de padres e hijos"
 ## {0} は列。
 RsnChildrenNoColumn = "la tabla no tiene la columna {0}, así que las filas no se ordenan como padres e hijos"
+LinkTypedSameName = "{0} notas tienen este nombre. Elige una con ↑↓"
 ## {0} は列(children の status に書いた状態の列)。
 RsnChildrenNoStatus = "la tabla no tiene la columna {0}, así que terminar un padre no cambia sus hijos"
 ## {0} は終わっていない子孫の数。親を完了にしない理由(on_done = "refuse")。

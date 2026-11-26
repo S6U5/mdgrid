@@ -1004,6 +1004,14 @@ impl Base {
         self.this = this;
     }
 
+    /// navigation.declared-columns: ノートのキー `col` に `properties` で名前を付けたか、どれかのビューの `order` に
+    /// 並べたか(まだどのノートにも値が無くても、表を作った人が置いた列)。`col` はキーのままで比べる(`note.` を
+    /// 外した id と比べるので、キー `note.status` は列 status と別)。
+    pub fn declares(&self, col: &str) -> bool {
+        let col = col.to_string();
+        self.display.contains_key(&col) || self.views.iter().any(|v| v.order.contains(&col))
+    }
+
     /// 列の見出し(base-view.default-headings-display-name: displayName があればそれ、無ければ Obsidian の既定)。
     /// ビューに出していない列(まとまりの見出しの列など)にも使う。
     pub fn column_title(&self, id: &str) -> String {
