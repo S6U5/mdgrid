@@ -110,7 +110,8 @@ fn row(a: &App, stem: &str) -> RowId {
     a.src
         .rows()
         .into_iter()
-        .find(|r| r.0.ends_with(&format!("/{stem}.md")))
+        // パスの区切りは OS で違う(Windows は `\`)ので、ファイルの名前で比べる。
+        .find(|r| std::path::Path::new(&r.0).file_name() == Some(format!("{stem}.md").as_ref()))
         .unwrap_or_else(|| panic!("{stem} が無い"))
 }
 
