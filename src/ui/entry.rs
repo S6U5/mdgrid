@@ -23,6 +23,10 @@ pub(crate) fn hint(app: &App) -> Option<String> {
         t.push_str(Msg::EditMismatch.text());
     }
     let forms = date_forms(&app.date_format);
+    if let Some(h) = super::calendar::time_hint(app) {
+        t.push_str(&h);
+        return Some(t);
+    }
     t.push_str(&if app.active_list().is_some() {
         Msg::EditHintList.text().to_string()
     } else {

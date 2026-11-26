@@ -35,7 +35,7 @@
 1. Select a cell and press `Enter`. The input depends on the column's type:
    - Text: pick from the values other notes have in this column (when there are at most `candidates` distinct values, 20 by default; otherwise just type), or type a new one.
    - Date: a calendar opens. `←` `→` move by day, `↑` `↓` by week, `PageUp` and `PageDown` by month. You can also type `2026-10-15`, `+3` for three days from today, or words such as `next fri` ([Type dates in words](#type-dates-in-words)). `Ctrl+T` is today.
-   - Date and time: the same calendar, with a time field under it. `Ctrl+O` switches to the time field, where `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour. Changing only the day keeps each note's time; you can also type `2026-10-15T09:30`.
+   - Date and time: the same calendar, with a time field under it. `Ctrl+O` switches to the time field, where `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour; typing `1430` or `9:30` there sets that time, and with the mouse the `[-]` `[+]` beside the time move it 15 minutes. Changing only the day keeps each note's time; you can also type `2026-10-15T09:30`.
    - List (such as `tags`): toggle values from the list of values found in the root folder. `Enter` (or `Space`) checks or unchecks the highlighted value and leaves the window open, so you can check several. When you are done, press `Tab` or pick `[ OK ]` at the bottom. These keys are also on the bottom edge of the window, and you can click them.
    - Checkbox: each `Enter` cycles empty → true → false → empty.
    - Number: only values that read as numbers are accepted.
@@ -46,7 +46,7 @@
 
 ![Enter a date with the calendar](images/edit-date.svg)
 
-Date and time columns add a time field under the calendar (here on the meetings of the sample, `examples/studio/Meetings`). `Ctrl+O` switches to it; `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour.
+Date and time columns add a time field under the calendar (here on the meetings of the sample, `examples/studio/Meetings`). `Ctrl+O` switches to it; `↑` `↓` move 15 minutes and `Shift+↑` `Shift+↓` one hour. In the time field you can also type the time as digits (`1430`, `9:30`), or click the `[-]` `[+]` beside it to move 15 minutes.
 
 ![Set the time of a date and time](images/edit-datetime-time.svg)
 
