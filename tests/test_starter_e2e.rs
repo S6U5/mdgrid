@@ -321,6 +321,72 @@ fn test_st_2_tasks_starters_ask_start_right_before_due_e2e() {
 }
 
 #[test]
+fn test_st_2_tasks_starters_ask_tags_e2e() {
+    // [stest -> req~starter.tasks-ask-tags~1] tasks と tasks-ai の新しいタスクの窓はタグ(tasks-ai は URL も)を聞き、tasks-ai の新しいルーチンの窓もタグを聞く。
+    for (starter, lang, table, labels) in [
+        (
+            "tasks",
+            "ja_JP.UTF-8",
+            None,
+            &["名前", "開始", "期限", "優先度", "URL", "タグ"][..],
+        ),
+        (
+            "tasks",
+            "en_US.UTF-8",
+            None,
+            &["name", "Start", "Due", "Priority", "URL", "Tags"][..],
+        ),
+        (
+            "tasks-ai",
+            "ja_JP.UTF-8",
+            None,
+            &["名前", "誰が", "開始", "期限", "優先度", "タグ", "URL"][..],
+        ),
+        (
+            "tasks-ai",
+            "en_US.UTF-8",
+            None,
+            &["name", "Actor", "Start", "Due", "Priority", "Tags", "URL"][..],
+        ),
+        (
+            "tasks-ai",
+            "ja_JP.UTF-8",
+            Some("ルーチン"),
+            &["名前", "繰り返し", "誰が", "次にやる日", "タグ"][..],
+        ),
+        (
+            "tasks-ai",
+            "en_US.UTF-8",
+            Some("Routines"),
+            &["name", "Recurrence", "Actor", "Next", "Tags"][..],
+        ),
+    ] {
+        let home = TempDir::new("starter-ask-tags");
+        let h = home.path();
+        std::fs::create_dir_all(h.join("state")).unwrap();
+        make_in(h, starter, lang);
+        let mut args = vec![starter];
+        if let Some(t) = table {
+            args.extend(["--table", t]);
+        }
+        let mut tui = Tui::spawn(&args, h, &[("MDGRID_TODAY", "2026-10-06"), ("LANG", lang)]);
+        tui.wait_until("表が出る", |s| s.contains("a +"));
+        tui.send("a");
+        tui.wait_until("新しいノートの窓が開く", |s| s.contains("│ > "));
+        let screen = tui.screen();
+        let rows: Vec<Option<usize>> = labels.iter().map(|l| form_row(&screen, l)).collect();
+        let first = rows[0]
+            .unwrap_or_else(|| panic!("{starter} {lang} {table:?}: 名前の欄が無い\n{screen}"));
+        let want: Vec<Option<usize>> = (0..labels.len()).map(|i| Some(first + i)).collect();
+        assert_eq!(
+            rows, want,
+            "{starter} {lang} {table:?}: 欄の並び {labels:?}\n{screen}"
+        );
+        tui.stop();
+    }
+}
+
+#[test]
 fn test_st_2_tasks_starters_fill_the_start_date_on_doing_e2e() {
     // [stest -> req~starter.tasks-start-on-doing~1] tasks と tasks-ai で状態を doing にして保存すると、開始日が空のときだけ今日が入る。
     for (starter, before, after, pending) in [

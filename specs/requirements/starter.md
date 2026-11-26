@@ -186,6 +186,23 @@
   - When: 状態を `done` にして保存する
   - Then: ノートの `done_at` は `2026-10-06`。
 
+#### 組み込みのスターター `tasks`・`tasks-ai` から作った台帳は、新しいタスクの窓で、タブに出しているタグと URL も聞き、`tasks-ai` の新しいルーチンの窓でタグも聞くべき
+`req~starter.tasks-ask-tags~1` P1
+- Rationale: タブにはタグの列があるのに、新しいタスクの窓ではタグを選べず、作ったあとで直すしかなかった(2026-11-27 に人が「タグとかも選べない」と言った)。`tasks-ai` は URL も聞いていなかった。ルーチンのタグは回にも写す
+- Acceptance:
+  - Given: `tasks` から作った台帳の表
+  - When: 新しいノートの窓を開く
+  - Then: 窓の欄は、名前の下に開始日・期限・優先度・URL・タグの順で並ぶ。
+- Acceptance:
+  - Given: `tasks-ai` から作った台帳のタスクの表
+  - When: 新しいノートの窓を開く
+  - Then: 窓の欄は、名前の下に担当・開始日・期限・優先度・タグ・URL の順で並ぶ。
+- Acceptance:
+  - Given: `tasks-ai` から作った台帳のルーチンの表
+  - When: 新しいノートの窓を開く
+  - Then: 窓の欄は、名前の下に繰り返し・担当・次にやる日・タグの順で並ぶ。`LANG=en_US.UTF-8` で作った台帳では Recurrence・Actor・Next・Tags。
+- Needs: stest
+
 #### ユーザーのスターターは、設定の置き場(cli.config-file)の `starters/<名前>/` に、組み込みと同じ形で置けるべき
 `req~starter.user-place~1` P1
 - Acceptance:

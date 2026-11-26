@@ -51,10 +51,10 @@ chart = [
   { name = "Actor and status", kind = "heatmap", x = "actor", by = "status" },
 ]
 
-# A new task (a, or mdgrid --new-note): asks who does it, the start date, the due date and the priority, fills the rest, and starts the body from the template.
+# A new task (a, or mdgrid --new-note): asks who does it, the start date, the due date, the priority, tags and a URL, fills the rest, and starts the body from the template.
 [table.new_note]
 folder = "Tasks"
-ask = ["actor", "start", "due", "priority"]
+ask = ["actor", "start", "due", "priority", "tags", "url"]
 hidden = ["created"]
 body = ".mdgrid/templates/task.md"
 
@@ -120,10 +120,10 @@ sort = [{ property = "done_at", direction = "DESC" }]
 [[table]]
 name = "Routines"
 
-# A new routine: asks the recurrence, who does it and the next date.
+# A new routine: asks the recurrence, who does it, the next date and tags.
 [table.new_note]
 folder = "Routines"
-ask = ["recurrence", "actor", "next_due"]
+ask = ["recurrence", "actor", "next_due", "tags"]
 body = ".mdgrid/templates/routine.md"
 
 [table.base]
