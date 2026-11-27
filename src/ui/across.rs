@@ -77,6 +77,8 @@ impl App {
             super::keymap::Action::RoutineRuns => !self.readonly && !self.routine.tables.is_empty(),
             // ai.proposal-notice: 開いた表の行を指す案があって、読むだけの起動でないときだけ。
             super::keymap::Action::AiProposals => !self.readonly && self.proposal_count() > 0,
+            // ai.ask-command: `ask.command` を書いたときだけ。
+            super::keymap::Action::AiAsk => !self.readonly && !self.ask.command.is_empty(),
             _ => true,
         }
     }

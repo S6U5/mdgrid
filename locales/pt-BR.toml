@@ -318,6 +318,18 @@ FooterRoutine = "  {0}: {1} ocorrências pendentes"
 CmdRoutineRuns = "Criar as ocorrências recorrentes"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "Ver propostas da IA"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "Pedir à IA"
+AskAiAsk = "O que pedir à IA (envia as linhas selecionadas ou as desta visão; a resposta vira uma proposta):"
+FooterAsking = "  perguntando à IA…"
+AskSent = "{0} linhas enviadas à IA; a resposta virará uma proposta"
+AskBusy = "ainda aguardando a resposta da IA"
+AskNoRows = "não há linhas para enviar à IA"
+AskFailed = "o comando de IA falhou: {0}"
+AskCannotRun = "não foi possível executar o comando de IA: {0}"
+AskNoReply = "nenhuma resposta do comando de IA"
+AskNoChanges = "a resposta da IA não tinha alterações para as linhas enviadas"
+AskProposed = "a resposta da IA virou uma proposta ({0} células); aceite ou descarte"
 FooterProposals = "  propostas da IA {0}"
 AskProposals = "Propostas da IA:"
 AskProposalAction = "Esta proposta:"
@@ -2323,6 +2335,8 @@ CfgEditLinkPath = "O caminho dos links que o mdgrid grava numa coluna de links. 
 CfgEditRenameLinks = "Se renomear uma nota prepara a reescrita dos links para ela. \"always\" sempre, \"ask\" mostra quantos e só com y,\n\"never\" nunca."
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "Colunas que as escritas de IA (`--apply … --propose` e o servidor MCP) podem alterar diretamente. Alterações em outras colunas não são gravadas: ficam no registro como propostas que uma pessoa aceita com \"Ver propostas da IA\". Vazio por padrão (nenhuma coluna é gravada diretamente)."
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "O comando e os argumentos que \"Pedir à IA\" executa (sem shell), enviando pela entrada padrão os valores das linhas selecionadas e o seu pedido. As alterações JSON da resposta viram uma proposta. Só na configuração global. Vazio por padrão (oculto)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Como uma nota nova é criada pela tabela: mode (\"form\": um formulário com todos os campos, ou\n\"editor\": cria e abre no editor), folder (relativo à pasta aberta), name (modelo de nome),\nask (as colunas do formulário; padrão: as colunas visíveis), required (colunas que devem ser\npreenchidas), hidden (colunas gravadas sem campo), body (um arquivo de modelo de corpo) e\n[new_note.set] (coluna = valor). Os modelos podem usar {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} e {folder}. Os valores do filtro da visão vêm primeiro.\nA tabela é um item só: um lugar mais estreito que a escreve a substitui inteira. name_head (\"show\": o modelo preenchido aparece no campo do nome; \"hide\": não aparece e é colocado antes do nome digitado)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

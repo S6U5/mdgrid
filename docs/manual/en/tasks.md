@@ -909,6 +909,15 @@ Chat tools without a shell connect through MCP. Add `mdgrid <ledger> --mcp` to t
 
 It offers six tools: list the tables (`tables`), show a table's settings (`describe`), read rows (`query`), count (`count`), check (`check`) and change values (`update`). `update` works like `--propose`: it writes only the columns you let AI change and leaves the rest as a proposal. The server runs on your machine only, never goes online, and never reads or writes outside the ledger you gave it.
 
+You can also ask an AI from mdgrid itself. Put the command to send requests to in the config (config.toml):
+
+```toml
+[ask]
+command = ["claude", "-p", "--tools", ""]
+```
+
+Select rows, choose **Ask AI** in the palette and type something like "fill in the empty categories". The values of the selected rows (or the rows of the current view) and the column types go to that command, and you can keep working while it answers. The changes in the reply become an AI proposal and the list of proposals opens, so you review the diff and take or discard it. mdgrid holds no API keys and never goes online, and it sends only front matter values, never note bodies. Keep the command unable to use tools such as reading or writing files or running commands (`--tools ""` above), so instructions someone slipped into a row value cannot make it act.
+
 Each proposal is its own file, so several people sharing a ledger through a cloud folder or git do not collide. If someone changed a note after the export, both `--apply` and `--propose` stop without writing, and the agent exports again and redoes the edit (the last column, `_rev`, tells them apart).
 
 ## Choose a theme

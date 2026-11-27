@@ -189,6 +189,8 @@ pub struct App {
     pub(crate) routine: super::routine::RoutineState,
     /// ai.proposal-notice: 開いた表の行を指す AI の案。
     pub(crate) ai: super::proposals::AiProposals,
+    /// ai.ask-run: 表から AI に頼む。
+    pub(crate) ask: super::ai_ask::AskState,
     /// notice.open-note: エディタで開く連絡のノート(表の行でないもの)。
     pub(crate) editor_note: Option<std::path::PathBuf>,
     /// ワークスペースを横断して探す(navigation.across-*。across.rs)。
@@ -435,6 +437,7 @@ impl App {
             notify: Default::default(),
             routine: Default::default(),
             ai: Default::default(),
+            ask: Default::default(),
             editor_note: None,
             across: Default::default(),
             prompt: None,
@@ -563,6 +566,8 @@ impl App {
         self.configure_notify(c.notify.clone());
         // navigation.across-option: 横断の検索は設定で入れたときだけ。
         self.across.on = c.search_across;
+        // ai.ask-command: AI に頼むコマンド(全体の設定にだけ書ける)。
+        self.ask.command.clone_from(&c.ask_command);
         self.scroll_into_view();
         warnings
     }
@@ -696,6 +701,8 @@ impl App {
             self.refresh();
             self.notice_refresh();
         }
+        // ai.ask-proposal: AI の答えが来ていれば案にする。
+        self.poll_ai_ask();
         // ai.proposal-notice: 同期で届いた案を数え直す(置き場が変わったときだけ読む)。
         self.refresh_proposals(false);
         let changed = self.src.changed();
@@ -1190,6 +1197,7 @@ impl App {
             Action::AcrossSearch => self.start_across(),
             Action::RoutineRuns => self.start_routine_runs(),
             Action::AiProposals => self.start_ai_proposals(),
+            Action::AiAsk => self.start_ai_ask(),
             _ => {}
         }
     }

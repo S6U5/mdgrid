@@ -143,6 +143,8 @@ pub(crate) enum Ask {
         items: Vec<String>,
         opts: Vec<super::new_note::Linked>,
     },
+    /// ai.ask-run: AI に頼む文(候補なし)。
+    AiRequest,
     /// ai.proposal-notice: AI の案のうち、どれを見るか。`files` は `items` と同じ並び。
     Proposals {
         items: Vec<String>,
@@ -296,6 +298,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::OpenRecent { .. }) => Msg::AskOpenRecent.into(),
         Some(Ask::LinkedNote { .. }) => Msg::AskLinkedNote.into(),
         Some(Ask::Proposals { .. }) => Msg::AskProposals.into(),
+        Some(Ask::AiRequest) => Msg::AskAiAsk.into(),
         Some(Ask::ProposalAction { .. }) => Msg::AskProposalAction.into(),
         Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
         Some(Ask::PageName) => Msg::AskPageName.into(),
@@ -366,6 +369,7 @@ pub(crate) fn ask_overlay(app: &App, lines: &mut [Line<'static>], w: usize) {
             | Ask::SessionName
             | Ask::SessionOverwrite(_)
             | Ask::PageName
+            | Ask::AiRequest
     ) {
         // 候補の無い入力。
     } else if let Ask::RoutineRuns(names) = ask {
@@ -955,6 +959,7 @@ impl App {
             }
             // cli.session-screen-save・cli.session-screen-overwrite: 名前 → (同じ名前があれば)置き換えの確かめ → 書く。
             Some(Ask::SessionName) => self.session_named(query),
+            Some(Ask::AiRequest) => self.send_ai_ask(query),
             Some(Ask::SessionOverwrite(s)) => {
                 let s = (**s).clone();
                 if query.trim().eq_ignore_ascii_case("y") {

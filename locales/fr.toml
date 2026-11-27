@@ -318,6 +318,18 @@ FooterRoutine = "  {0} : {1} occurrences à créer"
 CmdRoutineRuns = "Créer les occurrences récurrentes"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "Voir les propositions de l'IA"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "Demander à l'IA"
+AskAiAsk = "Que demander à l'IA (envoie les lignes sélectionnées ou celles de cette vue ; la réponse devient une proposition) :"
+FooterAsking = "  demande à l'IA…"
+AskSent = "{0} lignes envoyées à l'IA ; la réponse deviendra une proposition"
+AskBusy = "en attente de la réponse de l'IA"
+AskNoRows = "aucune ligne à envoyer à l'IA"
+AskFailed = "la commande d'IA a échoué : {0}"
+AskCannotRun = "impossible d'exécuter la commande d'IA : {0}"
+AskNoReply = "aucune réponse de la commande d'IA"
+AskNoChanges = "la réponse de l'IA ne contenait aucune modification pour les lignes envoyées"
+AskProposed = "réponse de l'IA convertie en proposition ({0} cellules) ; acceptez-la ou rejetez-la"
 FooterProposals = "  propositions de l'IA {0}"
 AskProposals = "Propositions de l'IA :"
 AskProposalAction = "Cette proposition :"
@@ -2323,6 +2335,8 @@ CfgEditLinkPath = "Le chemin des liens que mdgrid écrit dans une colonne de lie
 CfgEditRenameLinks = "Si renommer une note met en attente la réécriture des liens vers elle. \"always\" toujours, \"ask\" indique combien et\nseulement avec y, \"never\" jamais."
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "Colonnes que les écritures d'IA (`--apply … --propose` et le serveur MCP) peuvent modifier directement. Les changements des autres colonnes ne sont pas écrits : ils restent dans le registre comme propositions qu'une personne accepte avec \"Voir les propositions de l'IA\". Vide par défaut (aucune colonne n'est écrite directement)."
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "La commande et ses arguments lancés par \"Demander à l'IA\" (sans shell), qui reçoit sur l'entrée standard les valeurs des lignes sélectionnées et votre demande. Les modifications JSON de la réponse deviennent une proposition. Configuration globale uniquement. Vide par défaut (masquée)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Comment une nouvelle note est créée depuis la table : mode (\"form\" : un formulaire avec chaque\nchamp, ou \"editor\" : créer et ouvrir dans l'éditeur), folder (relatif au dossier ouvert), name\n(modèle de nom), ask (les colonnes du formulaire ; par défaut : les colonnes visibles), required\n(colonnes à remplir obligatoirement), hidden (colonnes écrites sans champ), body (un fichier\nmodèle de corps) et [new_note.set] (colonne = valeur). Les modèles peuvent utiliser {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} et {folder}. Les valeurs du filtre\nde la vue passent en premier. La table est un seul élément : un endroit plus étroit qui l'écrit la\nremplace entièrement. name_head (\"show\" : le modèle rempli apparaît dans le champ du nom ; \"hide\" : il n'apparaît pas et est ajouté devant le nom saisi)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

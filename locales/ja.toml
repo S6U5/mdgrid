@@ -317,6 +317,18 @@ FooterRoutine = "  {0}の回が {1} 件来ています"
 CmdRoutineRuns = "繰り返しの回を作る"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "AI の案を見る"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "AI に頼む"
+AskAiAsk = "AI に頼むこと(選んだ行、無ければ今のビューの行の値を渡す。答えは案になる):"
+FooterAsking = "  AI に頼んでいる…"
+AskSent = "{0} 行を AI に渡した。答えが来たら案にする"
+AskBusy = "AI の答えを待っている(来てから次を頼む)"
+AskNoRows = "AI に渡す行が無い"
+AskFailed = "AI のコマンドが失敗した: {0}"
+AskCannotRun = "AI のコマンドを走らせられない: {0}"
+AskNoReply = "AI のコマンドの答えを受け取れなかった"
+AskNoChanges = "AI の答えに、渡した行を直す直しが無かった"
+AskProposed = "AI の答えを案にした(セル {0})。入れるか捨てるかを選ぶ"
 FooterProposals = "  AI の案 {0}件"
 AskProposals = "AI の案:"
 AskProposalAction = "この案を:"
@@ -2322,6 +2334,8 @@ CfgEditLinkPath = "mdgrid がリンクの列に書くリンクのパス。\"shor
 CfgEditRenameLinks = "ノートの名前を変えたとき、そのノートを指すリンクの書き換えをためるか。\"always\" はいつも、\"ask\" は件数を見せて y のときだけ、\"never\" はためない。"
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "AI の書き込み(`--apply … --propose` と MCP の口)で直に書いてよい列の名前。ほかの列の直しは書かずに案として台帳に置き、人が画面の「AI の案を見る」で受ける。既定は空(どの列も直に書かない)。"
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "「AI に頼む」で選んだ行の値と頼みの文を標準入力に渡すコマンドと引数(シェルを通さない)。答えの JSON の直しは案になる。全体の設定にだけ書ける。既定は空(出さない)。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・name(名前の雛形)・name_head(\"show\" は雛形を埋めた文字を名前の欄に入れて出す、\"hide\" は欄に出さずに打った名前の前に付ける)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

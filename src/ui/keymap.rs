@@ -476,6 +476,8 @@ pub enum Action {
     RoutineRuns,
     /// ai.proposal-notice: AI の案を並べて、入れるか捨てる。
     AiProposals,
+    /// ai.ask-run: 選んだ行を AI に渡して頼む(答えは案になる)。
+    AiAsk,
     /// cli.recent-list: 最近開いた表の一覧を出して開く(パレット)。
     OpenRecent,
     /// workspace.switch-open: お気に入りのワークスペースの切り替えの一覧を開く。
@@ -704,6 +706,7 @@ impl Action {
             Action::OpenRecent => "open_recent",
             Action::RoutineRuns => "routine_runs",
             Action::AiProposals => "ai_proposals",
+            Action::AiAsk => "ai_ask",
             Action::WsSwitch => "workspace_switch",
             Action::WsFavorite => "workspace_favorite",
             Action::Choose(n) => CHOOSE.get(usize::from(n)).copied().unwrap_or("choose"),
@@ -998,6 +1001,8 @@ pub const READ_COMMANDS: &[Command] = &[
     cmd(Action::RoutineRuns, Msg::CmdRoutineRuns, NOTE),
     // ai.proposal-notice: AI の案を並べる(ためる変更にするだけで書かない。案が無いときと読むだけの起動では出さない)。
     cmd(Action::AiProposals, Msg::CmdAiProposals, NOTE),
+    // ai.ask-run: AI に頼む(答えは案になり、ノートは書かない。`ask.command` が無いときと読むだけの起動では出さない)。
+    cmd(Action::AiAsk, Msg::CmdAiAsk, NOTE),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。

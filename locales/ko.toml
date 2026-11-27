@@ -318,6 +318,18 @@ FooterRoutine = "  {0}: 회차 {1}건이 왔습니다"
 CmdRoutineRuns = "반복 회차 만들기"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "AI 제안 보기"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "AI에게 부탁"
+AskAiAsk = "AI에게 부탁할 일(고른 행, 없으면 지금 뷰의 행 값을 보냄. 답은 제안이 됨):"
+FooterAsking = "  AI에게 부탁하는 중…"
+AskSent = "{0}행을 AI에게 보냄. 답이 오면 제안으로 만듦"
+AskBusy = "AI의 답을 기다리는 중"
+AskNoRows = "AI에게 보낼 행이 없음"
+AskFailed = "AI 명령이 실패함: {0}"
+AskCannotRun = "AI 명령을 실행할 수 없음: {0}"
+AskNoReply = "AI 명령의 답을 받지 못함"
+AskNoChanges = "AI의 답에 보낸 행을 고치는 수정이 없었음"
+AskProposed = "AI의 답을 제안으로 만듦(셀 {0}개). 받을지 버릴지 고르기"
 FooterProposals = "  AI 제안 {0}개"
 AskProposals = "AI 제안:"
 AskProposalAction = "이 제안을:"
@@ -2323,6 +2335,8 @@ CfgEditLinkPath = "mdgrid가 링크 열에 쓰는 링크의 경로. \"shortest\"
 CfgEditRenameLinks = "노트의 이름을 바꿀 때 그 노트를 가리키는 링크의 고쳐 쓰기를 보류 중인 변경으로 둘지. \"always\"는 항상,\n\"ask\"는 개수를 보여 주고 y일 때만, \"never\"는 두지 않음."
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "AI의 쓰기(`--apply … --propose`와 MCP 서버)가 바로 써도 되는 열의 이름. 다른 열의 수정은 쓰지 않고 제안으로 장부에 두며, 사람이 화면의 \"AI 제안 보기\"로 받는다. 기본은 비어 있음(어느 열도 바로 쓰지 않음)."
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "\"AI에게 부탁\"이 실행하는 명령과 인수(셸을 거치지 않음). 고른 행의 값과 부탁의 글을 표준 입력으로 보냄. 답의 JSON 수정은 제안이 됨. 전체 설정에만 쓸 수 있음. 기본은 비어 있음(나오지 않음)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "표에서 새 노트를 만드는 방법: mode(\"form\": 모든 입력란이 있는 입력 창, 또는\n\"editor\": 만들고 편집기로 열기), folder(연 폴더 기준 상대 경로), name(이름\n템플릿), ask(입력 창의 열. 기본값: 보이는 열), required(반드시 채워야 하는\n열), hidden(입력란 없이 적는 열), body(본문 템플릿 파일),\n[new_note.set](열 = 값). 템플릿에는 {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name}, {folder}를 쓸 수 있음. 뷰 필터의 값이 먼저 들어감.\n이 테이블은 한 항목임: 더 좁은 위치에 적으면 통째로 바뀜. name_head(\"show\": 채운 틀을 이름 칸에 넣어 보여 줌, \"hide\": 칸에 보이지 않고 입력한 이름 앞에 붙임)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

@@ -318,6 +318,18 @@ FooterRoutine = "  {0}: {1} Durchläufe fällig"
 CmdRoutineRuns = "Wiederkehrende Durchläufe anlegen"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "KI-Vorschläge anzeigen"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "KI fragen"
+AskAiAsk = "Was die KI tun soll (sendet die ausgewählten Zeilen oder die Zeilen dieser Ansicht; die Antwort wird ein Vorschlag):"
+FooterAsking = "  KI wird gefragt…"
+AskSent = "{0} Zeilen an die KI gesendet; die Antwort wird ein Vorschlag"
+AskBusy = "warte noch auf die Antwort der KI"
+AskNoRows = "keine Zeilen für die KI"
+AskFailed = "der KI-Befehl ist fehlgeschlagen: {0}"
+AskCannotRun = "KI-Befehl konnte nicht ausgeführt werden: {0}"
+AskNoReply = "keine Antwort vom KI-Befehl"
+AskNoChanges = "die Antwort der KI enthielt keine Änderungen für die gesendeten Zeilen"
+AskProposed = "Antwort der KI als Vorschlag abgelegt ({0} Zellen); übernehmen oder verwerfen"
 FooterProposals = "  KI-Vorschläge {0}"
 AskProposals = "KI-Vorschläge:"
 AskProposalAction = "Dieser Vorschlag:"
@@ -2323,6 +2335,8 @@ CfgEditLinkPath = "Der Pfad in den Links, die mdgrid in eine Link-Spalte schreib
 CfgEditRenameLinks = "Ob das Umbenennen einer Notiz das Umschreiben der Links auf sie vormerkt. \"always\" immer, \"ask\" zeigt die Anzahl und\nnur bei y, \"never\" nie."
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "Spalten, die KI-Schreibvorgänge (`--apply … --propose` und der MCP-Server) direkt ändern dürfen. Änderungen an anderen Spalten werden nicht geschrieben, sondern als Vorschläge im Ledger abgelegt, die eine Person mit \"KI-Vorschläge anzeigen\" übernimmt. Standardmäßig leer (keine Spalte wird direkt geschrieben)."
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "Befehl und Argumente, die \"KI fragen\" ausführt (ohne Shell) und denen die Werte der ausgewählten Zeilen und die Bitte über die Standardeingabe gesendet werden. Die JSON-Änderungen der Antwort werden ein Vorschlag. Nur in der globalen Konfiguration. Standardmäßig leer (ausgeblendet)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Wie eine neue Notiz aus der Tabelle entsteht: mode (\"form\": ein Formular mit allen Feldern, oder\n\"editor\": anlegen und im Editor öffnen), folder (relativ zum geöffneten Ordner), name\n(Namensvorlage), ask (die Spalten des Formulars; Standard: die sichtbaren Spalten), required\n(Spalten, die ausgefüllt sein müssen), hidden (Spalten, die ohne Feld geschrieben werden), body\n(eine Vorlagendatei für den Inhalt) und [new_note.set] (Spalte = Wert). Vorlagen können {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} und {folder} verwenden. Werte aus\ndem Filter der Ansicht kommen zuerst. Die Tabelle ist ein Eintrag: eine engere Stelle, die sie\nschreibt, ersetzt sie ganz. name_head (\"show\": die ausgefüllte Vorlage steht im Namensfeld; \"hide\": sie wird nicht gezeigt und vor den getippten Namen gesetzt)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。
