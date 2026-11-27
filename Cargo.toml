@@ -102,8 +102,8 @@ unicode-width = "0.2.2"
 unicode-segmentation = "1.13"
 toml = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-saphyr = { version = "0.3", default-features = false }
-saphyr-parser = "0.3"
+saphyr = { version = "0.4", default-features = false }
+saphyr-parser = "0.4"
 # 引数の読み取りと、同じ定義から作る補完・man(CLI-13。docs/design.md)。
 clap = { version = "4.6.7", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 clap_complete = "4.6.11"
@@ -113,7 +113,7 @@ time = { version = "0.3.55", default-features = false, features = ["std", "local
 # --apply(CLI-17)で、--print --format json の形を読む。
 serde_json = "1"
 # 雛形の変数 {uuid}・{uid}(cell-edit.template-vars-uuid)の乱数を OS から取る。
-getrandom = "0.3"
+getrandom = "0.4"
 
 [build-dependencies]
 # 文言の台帳(locales/*.toml)を読む(SR-23。build.rs)。依存の toml と同じ版。
