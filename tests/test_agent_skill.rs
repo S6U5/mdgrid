@@ -266,3 +266,20 @@ fn test_skill_tells_keep_rev_and_reexport() {
         "{rel} に書き出し直してやり直す手順が無い"
     );
 }
+
+// [stest -> req~ai.skill-propose~1]
+#[test]
+fn test_skill_tells_propose_instead_of_yes() {
+    // スキルに、`--propose` を使う手順と、案は人が画面の「AI の案を見る」で受けること、`--yes` は人が頼んだときだけであることがある。
+    let rel = "plugins/mdgrid/skills/mdgrid/SKILL.md";
+    let md = std::fs::read_to_string(repo().join(rel)).unwrap();
+    assert!(md.contains("--propose"), "{rel} に --propose が無い");
+    assert!(
+        md.contains("Show AI proposals"),
+        "{rel} に画面で受ける手順が無い"
+    );
+    assert!(
+        md.contains("only when the user asks"),
+        "{rel} に --yes は人が頼んだときだけとある文が無い"
+    );
+}

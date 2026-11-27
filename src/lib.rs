@@ -38,6 +38,7 @@ pub mod page;
 pub mod places;
 pub mod print;
 pub mod profile;
+pub mod proposals;
 pub mod recent;
 pub mod recurrence;
 pub mod relations;

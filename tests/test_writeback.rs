@@ -217,7 +217,7 @@ fn wb_1_quoted_and_special_values() {
 
 #[test]
 fn wb_2_body_is_unchanged() {
-    // [utest -> req~write-back.frontmatter-only-no-body~1, req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1]
+    // [utest -> req~write-back.frontmatter-only-no-body~2, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~1]
     for (file, key) in [
         ("dash_line.md", "status"),
         ("rich.md", "status"),

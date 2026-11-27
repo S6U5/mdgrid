@@ -222,9 +222,9 @@ Pick "Create a ledger from a starter" from the palette (`:`), or run `--init-wor
 
 ![Pick rows for another command](images/pick.svg)
 
-`--print` writes the table as CSV, TSV, JSON or Markdown; edit the CSV in a spreadsheet and bring it back with `--apply`; `--pick` hands the paths of the chosen notes to the next command; `--new-note` adds one note in the same shape as the form. In a ledger with several tables, add a table's name like `--table News` and every command works on that table; opening the table's folder directly gives that table too. A `.csv` or `.tsv` file opens directly as a ledger. For AI agents there is a skill that teaches these commands.
+`--print` writes the table as CSV, TSV, JSON or Markdown; edit the CSV in a spreadsheet and bring it back with `--apply`; `--pick` hands the paths of the chosen notes to the next command; `--new-note` adds one note in the same shape as the form. In a ledger with several tables, add a table's name like `--table News` and every command works on that table; opening the table's folder directly gives that table too. A `.csv` or `.tsv` file opens directly as a ledger. For AI agents there is a skill that teaches these commands; an agent writes directly only the columns you let it change and leaves the rest as a proposal, which you review and take with "Show AI proposals".
 
-[Use with other commands](tasks.md#use-with-other-commands), [Open a CSV or TSV as a ledger](tasks.md#open-a-csv-or-tsv-as-a-ledger)
+[Use with other commands](tasks.md#use-with-other-commands), [Let AI change values](tasks.md#let-ai-change-values), [Open a CSV or TSV as a ledger](tasks.md#open-a-csv-or-tsv-as-a-ledger)
 
 ## Open read-only
 

@@ -195,6 +195,8 @@ mod test_print_group_order;
 mod test_print_tsv;
 #[path = "test_print_with_path.rs"]
 mod test_print_with_path;
+#[path = "test_propose.rs"]
+mod test_propose;
 #[path = "test_readonly_permission.rs"]
 mod test_readonly_permission;
 #[path = "test_recent_e2e.rs"]

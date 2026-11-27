@@ -99,6 +99,9 @@ ApplyIgnoredOne = "{0} edição numa coluna que não pode ser gravada foi ignora
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}: não há essa coluna na visão nem nas notas"
 ApplyNoChanges = "nenhuma alteração: todos os valores são iguais aos das notas"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "{0} células gravadas; {1} células propostas {2}"
+ProposeFailed = "não foi possível gravar a proposta: {0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "não foi possível ler {0}: {1}"
 ApplyProblems = "nada foi gravado por causa dos problemas acima"
@@ -313,6 +316,20 @@ RoutineNotNotes = "as linhas não são notas (CSV ou TSV), então não há ocorr
 FooterRoutine = "  {0}: {1} ocorrências pendentes"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "Criar as ocorrências recorrentes"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "Ver propostas da IA"
+FooterProposals = "  propostas da IA {0}"
+AskProposals = "Propostas da IA:"
+AskProposalAction = "Esta proposta:"
+ProposalTake = "Aceitar (como alterações pendentes; revise a diferença ao salvar)"
+ProposalDiscard = "Descartar (apagar o arquivo da proposta)"
+ProposalTaken = "{0} células da proposta da IA viraram alterações pendentes (revise a diferença ao salvar)"
+ProposalSkipped = "; {0} células ignoradas porque mudaram depois da proposta ou a linha não existe"
+ProposalDiscarded = "proposta da IA descartada: {0}"
+ProposalNone = "não há propostas da IA para linhas desta tabela"
+ProposalGone = "essa proposta da IA não existe mais (aceita ou descartada em outro lugar)"
+ProposalRemoveFailed = "não foi possível apagar o arquivo da proposta da IA: {0}"
+ProposalItem = "{0}  {1} ({2} células)"
 AskRoutineRuns = "{0}: criar estas ocorrências? Digite y e Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notas a criar ({0}):"
@@ -2304,6 +2321,8 @@ CfgEditAddFrontmatter = "Permite gravar em notas sem front matter ou com um vazi
 CfgEditLinkFormat = "A forma dos links que o mdgrid grava numa coluna de links. \"wiki\" grava [[nome]], \"markdown\" grava [nome](caminho).\n\"auto\" segue a forma que a coluna já usa ([[nome]] se não houver)."
 CfgEditLinkPath = "O caminho dos links que o mdgrid grava numa coluna de links. \"shortest\" grava só o nome se nenhuma outra nota o tiver\n([…](…) usa o caminho relativo), \"relative\" o caminho a partir da pasta da nota, \"absolute\" o caminho a partir da raiz aberta."
 CfgEditRenameLinks = "Se renomear uma nota prepara a reescrita dos links para ela. \"always\" sempre, \"ask\" mostra quantos e só com y,\n\"never\" nunca."
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "Colunas que as escritas de IA (`--apply … --propose` e o servidor MCP) podem alterar diretamente. Alterações em outras colunas não são gravadas: ficam no registro como propostas que uma pessoa aceita com \"Ver propostas da IA\". Vazio por padrão (nenhuma coluna é gravada diretamente)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Como uma nota nova é criada pela tabela: mode (\"form\": um formulário com todos os campos, ou\n\"editor\": cria e abre no editor), folder (relativo à pasta aberta), name (modelo de nome),\nask (as colunas do formulário; padrão: as colunas visíveis), required (colunas que devem ser\npreenchidas), hidden (colunas gravadas sem campo), body (um arquivo de modelo de corpo) e\n[new_note.set] (coluna = valor). Os modelos podem usar {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} e {folder}. Os valores do filtro da visão vêm primeiro.\nA tabela é um item só: um lugar mais estreito que a escreve a substitui inteira. name_head (\"show\": o modelo preenchido aparece no campo do nome; \"hide\": não aparece e é colocado antes do nome digitado)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

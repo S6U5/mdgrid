@@ -281,7 +281,7 @@ fn list_round_trips(v: Option<&Value>) -> bool {
 }
 
 /// セルの値を列の型で書く値にする(画面の入力と同じ読み方)。
-fn to_value(
+pub(crate) fn to_value(
     cell: &Cell,
     kind: Kind,
     cur: Option<&Value>,
@@ -528,4 +528,65 @@ pub(crate) fn save(
         }
     }
     (saved, failed)
+}
+
+/// ためる値を案の JSON の値にする(`--print --format json` と同じ形)。
+fn new_value_json(v: &NewValue) -> serde_json::Value {
+    match v {
+        NewValue::Str(s) | NewValue::Date(s) => serde_json::Value::String(s.clone()),
+        NewValue::Int(n) => serde_json::Value::from(*n),
+        NewValue::Float(f) => serde_json::Value::from(*f),
+        NewValue::Bool(b) => serde_json::Value::Bool(*b),
+        NewValue::List(items) => serde_json::Value::Array(
+            items
+                .iter()
+                .cloned()
+                .map(serde_json::Value::String)
+                .collect(),
+        ),
+        _ => serde_json::Value::Null,
+    }
+}
+
+/// ai.propose-command: ためた変更のうち、`allowed`(設定 ai.write)に無い列のセルをためる変更から外し、案の直しにして返す。
+/// 残ったセルが直に書くもの。案の `path` は台帳の根 `root` からのパス(CSV の台帳の行は位置の印つき)。
+pub(crate) fn split_proposal(
+    plan: &mut Plan,
+    src: &dyn Source,
+    allowed: &[String],
+    root: &std::path::Path,
+) -> Vec<mdgrid::proposals::Change> {
+    let mut out = Vec::new();
+    for row in plan.changes.rows() {
+        let mut set = serde_json::Map::new();
+        let mut was = serde_json::Map::new();
+        for (col, v) in plan.changes.row_cells(&row) {
+            if allowed.contains(&col) {
+                continue;
+            }
+            set.insert(col.clone(), new_value_json(&v));
+            let now = src
+                .get(&row, &col)
+                .value
+                .map_or(serde_json::Value::Null, |v| {
+                    serde_json::from_str(&value_json(&v)).unwrap_or(serde_json::Value::Null)
+                });
+            was.insert(col.clone(), now);
+            let _ = plan.changes.set_each(src, &col, &[(row.clone(), None)]);
+        }
+        if set.is_empty() {
+            continue;
+        }
+        let (file, at) = src.locate(&row);
+        let file = std::fs::canonicalize(&file).unwrap_or(file);
+        let rel = file.strip_prefix(root).unwrap_or(&file);
+        let path = rel
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().into_owned())
+            .collect::<Vec<_>>()
+            .join("/")
+            + &at;
+        out.push(mdgrid::proposals::Change { path, set, was });
+    }
+    out
 }

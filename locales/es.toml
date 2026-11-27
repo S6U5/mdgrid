@@ -99,6 +99,9 @@ ApplyIgnoredOne = "se ignoró {0} edición en una columna que no se puede escrib
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}: esa columna no existe en la vista ni en las notas"
 ApplyNoChanges = "sin cambios: todos los valores son iguales a los de las notas"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "se escribieron {0} celdas; se propusieron {1} celdas {2}"
+ProposeFailed = "no se pudo escribir la propuesta: {0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "no se puede leer {0}: {1}"
 ApplyProblems = "no se escribió nada debido a los problemas anteriores"
@@ -313,6 +316,20 @@ RoutineNotNotes = "las filas no son notas (CSV o TSV), así que no hay ejecucion
 FooterRoutine = "  {0}: {1} ejecuciones pendientes"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "Crear las ejecuciones recurrentes"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "Ver propuestas de IA"
+FooterProposals = "  propuestas de IA {0}"
+AskProposals = "Propuestas de IA:"
+AskProposalAction = "Esta propuesta:"
+ProposalTake = "Aceptarla (como cambios pendientes; revisa la diferencia al guardar)"
+ProposalDiscard = "Descartarla (borrar el archivo de la propuesta)"
+ProposalTaken = "se tomaron {0} celdas de la propuesta de IA como cambios pendientes (revisa la diferencia al guardar)"
+ProposalSkipped = "; se omitieron {0} celdas que cambiaron después de la propuesta o cuya fila ya no existe"
+ProposalDiscarded = "se descartó la propuesta de IA: {0}"
+ProposalNone = "no hay propuestas de IA para filas de esta tabla"
+ProposalGone = "esa propuesta de IA ya no existe (se aceptó o descartó en otro lugar)"
+ProposalRemoveFailed = "no se pudo borrar el archivo de la propuesta de IA: {0}"
+ProposalItem = "{0}  {1} ({2} celdas)"
 AskRoutineRuns = "{0}: ¿crear estas ejecuciones? y + Enter para confirmar: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notas que crear ({0}):"
@@ -2304,6 +2321,8 @@ CfgEditAddFrontmatter = "Permite escribir en notas sin front matter o con uno va
 CfgEditLinkFormat = "La forma de los enlaces que mdgrid escribe en una columna de enlaces. \"wiki\" escribe [[nombre]], \"markdown\" escribe\n[nombre](ruta). \"auto\" sigue la forma que ya usa la columna ([[nombre]] si no hay ninguna)."
 CfgEditLinkPath = "La ruta de los enlaces que mdgrid escribe en una columna de enlaces. \"shortest\" escribe solo el nombre si ninguna otra\nnota lo tiene ([…](…) usa la ruta relativa), \"relative\" la ruta desde la carpeta de la nota, \"absolute\" la ruta desde la raíz abierta."
 CfgEditRenameLinks = "Si al renombrar una nota se preparan los cambios de los enlaces que apuntan a ella. \"always\" siempre, \"ask\" muestra\ncuántos y solo con y, \"never\" nunca."
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "Columnas que las escrituras de IA (`--apply … --propose` y el servidor MCP) pueden cambiar directamente. Los cambios en otras columnas no se escriben: quedan en el registro como propuestas que una persona acepta con \"Ver propuestas de IA\". Vacío por defecto (ninguna columna se escribe directamente)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Cómo se crea una nota nueva desde la tabla: mode (\"form\": un formulario con todos los campos,\no \"editor\": crear y abrir en el editor), folder (relativa a la carpeta abierta), name\n(plantilla del nombre), ask (las columnas del formulario; por defecto: las columnas visibles),\nrequired (columnas que hay que rellenar), hidden (columnas que se escriben sin campo), body (un\narchivo de plantilla del cuerpo) y [new_note.set] (columna = valor). Las plantillas pueden usar\n{date}, {date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} y {folder}. Los valores\ndel filtro de la vista van primero.\nLa tabla es un solo elemento: un lugar más estrecho que la escribe la sustituye entera. name_head (\"show\": la plantilla rellenada aparece en el campo del nombre; \"hide\": no aparece y se añade delante del nombre escrito)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

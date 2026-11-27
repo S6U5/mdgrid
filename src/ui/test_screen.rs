@@ -955,6 +955,35 @@ fn test_merge_other_keys_tells_merged() {
 }
 
 #[test]
+fn test_proposal_file_is_removed_only_when_discarded() {
+    // [utest -> req~write-back.frontmatter-only-no-body~2, req~ai.proposal-discard~1] 開いたフォルダの `.mdgrid/proposals/` の
+    // AI の案を「AI の案を見る」で選んで「捨てる」→ 案のファイルだけが消え、ノートは1バイトも変わらない。
+    let (t, mut a) = make("pr_discard_screen", TWO);
+    a.nv.target = t.notes().clone();
+    let dir = t.notes().join(".mdgrid/proposals");
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("p.json");
+    std::fs::write(
+        &file,
+        r#"{"note": "見直す", "created": "2026-11-28T10:00", "changes": [{"path": "a.md", "set": {"status": "done"}, "was": {"status": "todo"}}]}"#,
+    )
+    .unwrap();
+    a.poll();
+    ch(&mut a, ':');
+    for c in "ai_proposals".chars() {
+        ch(&mut a, c);
+    }
+    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Enter);
+    press(&mut a, KeyCode::Down);
+    press(&mut a, KeyCode::Enter);
+    assert!(!file.exists());
+    assert_eq!(read(&t, "a.md"), TWO[0].1);
+    assert_eq!(read(&t, "b.md"), TWO[1].1);
+    assert_eq!(a.changes.count(), 0);
+}
+
+#[test]
 fn test_wb_16_external_change_discard() {
     // [utest -> req~write-back.external-save-choice~2] ためた変更を捨てる → その行の変更が消え、ファイルは外の変更のまま。
     let (t, mut a) = make("wb16d", TWO);

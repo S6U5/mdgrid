@@ -474,6 +474,8 @@ pub enum Action {
     SaveSession,
     /// routine.screen-create: 来ているルーチンの回を作る(パレットと下の帯の知らせ。キーなし。tbd~routine.offer-key)。
     RoutineRuns,
+    /// ai.proposal-notice: AI の案を並べて、入れるか捨てる。
+    AiProposals,
     /// cli.recent-list: 最近開いた表の一覧を出して開く(パレット)。
     OpenRecent,
     /// workspace.switch-open: お気に入りのワークスペースの切り替えの一覧を開く。
@@ -701,6 +703,7 @@ impl Action {
             Action::SaveSession => "save_session",
             Action::OpenRecent => "open_recent",
             Action::RoutineRuns => "routine_runs",
+            Action::AiProposals => "ai_proposals",
             Action::WsSwitch => "workspace_switch",
             Action::WsFavorite => "workspace_favorite",
             Action::Choose(n) => CHOOSE.get(usize::from(n)).copied().unwrap_or("choose"),
@@ -993,6 +996,8 @@ pub const READ_COMMANDS: &[Command] = &[
     // その全部が既定の設定でパレットとヘルプに出ることを確かめる main の試験が落ちる(reverse-run)ので、ここに置く。
     // ルーチンの表が無いときと読むだけの起動では、パレットとヘルプに出さない(`App::command_shown`)。
     cmd(Action::RoutineRuns, Msg::CmdRoutineRuns, NOTE),
+    // ai.proposal-notice: AI の案を並べる(ためる変更にするだけで書かない。案が無いときと読むだけの起動では出さない)。
+    cmd(Action::AiProposals, Msg::CmdAiProposals, NOTE),
 ];
 
 /// パレットとヘルプに出すキーの無いコマンド(読むだけなら書くコマンドを除く)。

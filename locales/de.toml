@@ -99,6 +99,9 @@ ApplyIgnoredOne = "{0} Änderung in einer nicht schreibbaren Spalte ignoriert ({
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}: diese Spalte gibt es weder in der Ansicht noch in den Notizen"
 ApplyNoChanges = "keine Änderungen: alle Werte stimmen mit den Notizen überein"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "{0} Zellen geschrieben; {1} Zellen vorgeschlagen {2}"
+ProposeFailed = "Vorschlag konnte nicht geschrieben werden: {0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "{0} nicht lesbar: {1}"
 ApplyProblems = "wegen der obigen Probleme wurde nichts geschrieben"
@@ -313,6 +316,20 @@ RoutineNotNotes = "die Zeilen sind keine Notizen (CSV oder TSV), daher keine Rou
 FooterRoutine = "  {0}: {1} Durchläufe fällig"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "Wiederkehrende Durchläufe anlegen"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "KI-Vorschläge anzeigen"
+FooterProposals = "  KI-Vorschläge {0}"
+AskProposals = "KI-Vorschläge:"
+AskProposalAction = "Dieser Vorschlag:"
+ProposalTake = "Übernehmen (als ausstehende Änderungen; Diff beim Speichern prüfen)"
+ProposalDiscard = "Verwerfen (Vorschlagsdatei löschen)"
+ProposalTaken = "{0} Zellen aus dem KI-Vorschlag als ausstehende Änderungen übernommen (Diff beim Speichern prüfen)"
+ProposalSkipped = "; {0} Zellen übersprungen, die sich nach dem Vorschlag geändert haben oder deren Zeile fehlt"
+ProposalDiscarded = "KI-Vorschlag verworfen: {0}"
+ProposalNone = "keine KI-Vorschläge für Zeilen dieser Tabelle"
+ProposalGone = "dieser KI-Vorschlag existiert nicht mehr (anderswo übernommen oder verworfen)"
+ProposalRemoveFailed = "KI-Vorschlagsdatei konnte nicht gelöscht werden: {0}"
+ProposalItem = "{0}  {1} ({2} Zellen)"
 AskRoutineRuns = "{0}: diese Durchläufe anlegen? y und Enter eingeben: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Anzulegende Notizen ({0}):"
@@ -2304,6 +2321,8 @@ CfgEditAddFrontmatter = "Schreiben in Notizen ohne oder mit leerem Front Matter 
 CfgEditLinkFormat = "Die Form der Links, die mdgrid in eine Link-Spalte schreibt. \"wiki\" schreibt [[Name]], \"markdown\" schreibt [Name](Pfad).\n\"auto\" folgt der Form, die die Spalte schon nutzt (sonst [[Name]])."
 CfgEditLinkPath = "Der Pfad in den Links, die mdgrid in eine Link-Spalte schreibt. \"shortest\" schreibt nur den Namen, wenn keine andere\nNotiz ihn hat ([…](…) nutzt den relativen Pfad), \"relative\" den Pfad ab dem Ordner der Notiz, \"absolute\" den Pfad ab dem geöffneten Stamm."
 CfgEditRenameLinks = "Ob das Umbenennen einer Notiz das Umschreiben der Links auf sie vormerkt. \"always\" immer, \"ask\" zeigt die Anzahl und\nnur bei y, \"never\" nie."
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "Spalten, die KI-Schreibvorgänge (`--apply … --propose` und der MCP-Server) direkt ändern dürfen. Änderungen an anderen Spalten werden nicht geschrieben, sondern als Vorschläge im Ledger abgelegt, die eine Person mit \"KI-Vorschläge anzeigen\" übernimmt. Standardmäßig leer (keine Spalte wird direkt geschrieben)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "Wie eine neue Notiz aus der Tabelle entsteht: mode (\"form\": ein Formular mit allen Feldern, oder\n\"editor\": anlegen und im Editor öffnen), folder (relativ zum geöffneten Ordner), name\n(Namensvorlage), ask (die Spalten des Formulars; Standard: die sichtbaren Spalten), required\n(Spalten, die ausgefüllt sein müssen), hidden (Spalten, die ohne Feld geschrieben werden), body\n(eine Vorlagendatei für den Inhalt) und [new_note.set] (Spalte = Wert). Vorlagen können {date},\n{date+7}, {date:YYYY/MM/DD}, {time}, {now}, {weekday}, {name} und {folder} verwenden. Werte aus\ndem Filter der Ansicht kommen zuerst. Die Tabelle ist ein Eintrag: eine engere Stelle, die sie\nschreibt, ersetzt sie ganz. name_head (\"show\": die ausgefüllte Vorlage steht im Namensfeld; \"hide\": sie wird nicht gezeigt und vor den getippten Namen gesetzt)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

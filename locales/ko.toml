@@ -99,6 +99,9 @@ ApplyIgnoredOne = "쓸 수 없는 열의 수정 {0}건은 무시함({1})"
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}: 뷰에도 노트에도 없는 열"
 ApplyNoChanges = "변경 없음: 모든 값이 노트와 같음"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "쓴 셀 {0}・제안한 셀 {1} {2}"
+ProposeFailed = "제안을 쓸 수 없음: {0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "{0}을(를) 읽을 수 없음: {1}"
 ApplyProblems = "위의 문제 때문에 아무것도 쓰지 않음"
@@ -313,6 +316,20 @@ RoutineNotNotes = "행이 노트가 아니므로(CSV·TSV) 루틴 회차를 만�
 FooterRoutine = "  {0}: 회차 {1}건이 왔습니다"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "반복 회차 만들기"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "AI 제안 보기"
+FooterProposals = "  AI 제안 {0}개"
+AskProposals = "AI 제안:"
+AskProposalAction = "이 제안을:"
+ProposalTake = "받기(보류 변경으로. 저장할 때 차이를 보고 씀)"
+ProposalDiscard = "버리기(제안 파일을 지움)"
+ProposalTaken = "AI 제안의 셀 {0}개를 보류 변경으로 받음(저장할 때 차이를 보고 씀)"
+ProposalSkipped = ". 제안 뒤에 바뀐 셀과 표에 없는 행의 셀 {0}개는 받지 않음"
+ProposalDiscarded = "AI 제안을 버림: {0}"
+ProposalNone = "이 표의 행을 가리키는 AI 제안이 없음"
+ProposalGone = "그 AI 제안은 이미 없음(다른 곳에서 받거나 버림)"
+ProposalRemoveFailed = "AI 제안 파일을 지울 수 없음: {0}"
+ProposalItem = "{0}  {1}(셀 {2}개)"
 AskRoutineRuns = "{0}: 이 회차를 만들까요? y를 입력하고 Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "만들 노트({0}개):"
@@ -2304,6 +2321,8 @@ CfgEditAddFrontmatter = "프런트매터가 없거나 비어 있는 노트에도
 CfgEditLinkFormat = "mdgrid가 링크 열에 쓰는 링크의 형식. \"wiki\"는 [[이름]], \"markdown\"은 [이름](경로).\n\"auto\"는 그 열이 이미 쓰는 형식을 따름(없으면 [[이름]])."
 CfgEditLinkPath = "mdgrid가 링크 열에 쓰는 링크의 경로. \"shortest\"는 다른 노트와 이름이 겹치지 않으면 이름만([…](…)는 상대 경로),\n\"relative\"는 쓰는 노트의 폴더에서의 상대 경로, \"absolute\"는 연 루트에서의 경로."
 CfgEditRenameLinks = "노트의 이름을 바꿀 때 그 노트를 가리키는 링크의 고쳐 쓰기를 보류 중인 변경으로 둘지. \"always\"는 항상,\n\"ask\"는 개수를 보여 주고 y일 때만, \"never\"는 두지 않음."
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "AI의 쓰기(`--apply … --propose`와 MCP 서버)가 바로 써도 되는 열의 이름. 다른 열의 수정은 쓰지 않고 제안으로 장부에 두며, 사람이 화면의 \"AI 제안 보기\"로 받는다. 기본은 비어 있음(어느 열도 바로 쓰지 않음)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "표에서 새 노트를 만드는 방법: mode(\"form\": 모든 입력란이 있는 입력 창, 또는\n\"editor\": 만들고 편집기로 열기), folder(연 폴더 기준 상대 경로), name(이름\n템플릿), ask(입력 창의 열. 기본값: 보이는 열), required(반드시 채워야 하는\n열), hidden(입력란 없이 적는 열), body(본문 템플릿 파일),\n[new_note.set](열 = 값). 템플릿에는 {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name}, {folder}를 쓸 수 있음. 뷰 필터의 값이 먼저 들어감.\n이 테이블은 한 항목임: 더 좁은 위치에 적으면 통째로 바뀜. name_head(\"show\": 채운 틀을 이름 칸에 넣어 보여 줌, \"hide\": 칸에 보이지 않고 입력한 이름 앞에 붙임)."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

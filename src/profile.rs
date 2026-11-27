@@ -404,6 +404,51 @@ pub struct DatesLayer {
     pub week_start: Option<WeekStart>,
 }
 
+/// `[ai]` の層(ai.write-columns)。
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct AiLayer {
+    /// AI の書き込みで直に書いてよい列。
+    pub write: Option<Vec<String>>,
+}
+
+impl AiLayer {
+    pub fn is_empty(&self) -> bool {
+        *self == AiLayer::default()
+    }
+
+    fn read(&mut self, v: &toml::Value, file: &str, path: &str, w: &mut Vec<String>) {
+        let Some(t) = v.as_table() else {
+            return warn(w, file, path, not(Msg::WantTable));
+        };
+        for (k, v) in t {
+            let p = join(path, k);
+            match k.as_str() {
+                "write" => match v.as_array().and_then(|a| {
+                    a.iter()
+                        .map(|x| x.as_str().map(str::to_string))
+                        .collect::<Option<Vec<String>>>()
+                }) {
+                    Some(cols) => self.write = Some(cols),
+                    None => warn(w, file, &p, not(Msg::WantStringList)),
+                },
+                _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
+            }
+        }
+    }
+
+    fn to_table(&self) -> toml::Table {
+        let mut t = toml::Table::new();
+        if let Some(cols) = &self.write {
+            let v = cols
+                .iter()
+                .map(|c| toml::Value::String(c.clone()))
+                .collect();
+            t.insert("write".into(), toml::Value::Array(v));
+        }
+        t
+    }
+}
+
 /// `[edit]` の層。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct EditLayer {
@@ -574,6 +619,8 @@ pub struct Profile {
     pub display: DisplayOverride,
     pub dates: DatesLayer,
     pub edit: EditLayer,
+    /// `[ai]`(ai.write-columns)。
+    pub ai: AiLayer,
     /// `[new_note]`(1つの項目。狭い範囲に書けば丸ごと代わる)。
     pub new_note: Option<NewNote>,
     /// `[types]`(CE-35): 列の名前 → 型。None は `"auto"`(推定に戻す。広い範囲の型を外す)。
@@ -608,6 +655,7 @@ impl Profile {
             "display" => read_display(&mut self.display, v, file, &p, w),
             "dates" => self.dates.read(v, file, &p, w),
             "edit" => self.edit.read(v, file, &p, w),
+            "ai" => self.ai.read(v, file, &p, w),
             "new_note" => match v.as_table() {
                 Some(_) => self.new_note = Some(read_new_note(v, file, &p, w)),
                 None => warn(w, file, &p, not(Msg::WantNewNoteTable)),
@@ -668,6 +716,9 @@ impl Profile {
         }
         if !self.edit.is_empty() {
             t.insert("edit".into(), toml::Value::Table(self.edit.to_table()));
+        }
+        if !self.ai.is_empty() {
+            t.insert("ai".into(), toml::Value::Table(self.ai.to_table()));
         }
         if let Some(n) = &self.new_note {
             if let Ok(v) = toml::Value::try_from(n) {
@@ -1348,6 +1399,8 @@ pub struct Resolved {
     pub link_path: LinkPath,
     /// `edit.rename_links`(cell-edit.rename-note-links-setting)。
     pub rename_links: RenameLinks,
+    /// `ai.write`(ai.write-columns): AI の書き込みで直に書いてよい列。
+    pub ai_write: Vec<String>,
     pub new_note: NewNote,
     /// `[types]`(CE-35): 設定で決めた列の型(`"auto"` の列は無い)。
     pub types: BTreeMap<String, Kind>,
@@ -1384,6 +1437,7 @@ impl Default for Resolved {
             link_format: LinkFormat::Auto,
             link_path: LinkPath::Shortest,
             rename_links: RenameLinks::Always,
+            ai_write: Vec::new(),
             new_note: NewNote::default(),
             types: BTreeMap::new(),
             rules: BTreeMap::new(),
@@ -1582,6 +1636,10 @@ impl Resolved {
             self.rename_links = f;
             self.mark("edit.rename_links", o);
         }
+        if let Some(cols) = &p.ai.write {
+            self.ai_write.clone_from(cols);
+            self.mark("ai.write", o);
+        }
         if let Some(n) = &p.new_note {
             self.new_note = n.clone();
             self.mark("new_note", o);
@@ -1619,6 +1677,7 @@ impl Resolved {
         p.edit.link_format = Some(self.link_format);
         p.edit.link_path = Some(self.link_path);
         p.edit.rename_links = Some(self.rename_links);
+        p.ai.write = Some(self.ai_write.clone());
         if self.new_note != NewNote::default() {
             p.new_note = Some(self.new_note.clone());
         }
