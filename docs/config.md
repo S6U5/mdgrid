@@ -499,7 +499,7 @@ owner = "chip"
 - Default: none
 - Scope: global, workspace, table, view
 
-Override the theme's colors by role. Roles: `background`, `text`, `header` (first line), `selection` (selected row), `selection_text`, `band` (key band), `band_text`, `accent` (headings, keys, frames), `strong`, `zebra`, `zebra_text`, `mark`, `added`, `removed`, `pending` (unsaved changes) and `highlight` (search matches). Roles you leave out keep the theme's color. `[look.colors.values]` sets a color per value (matched ignoring case and surrounding spaces); it is used by every part shape, in the value list and for the value in group headings (drawn as the same chip as in the cells), and works for values in any language. Colors are `"#rrggbb"`, `"#rgb"` or a name: `black`, `white`, `gray`, `red`, `orange`, `yellow`, `green`, `teal`, `cyan`, `blue`, `purple`, `magenta`, `pink`, `brown`. With `theme = "default"`, the terminal's own background and text stay, and only `accent`, `selection` and value colors are used. Unknown roles and unreadable colors give a warning and are skipped; so does a value written twice. A theme written in a narrower place drops the role colors of wider places (value colors stay).
+Override the theme's colors by role. Roles: `background`, `text`, `header` (first line), `selection` (selected row), `selection_text`, `band` (key band), `band_text`, `accent` (headings, keys, frames), `strong`, `zebra`, `zebra_text`, `mark`, `added`, `removed`, `pending` (unsaved changes) and `highlight` (search matches). Roles you leave out keep the theme's color. `[look.colors.values]` sets a color per value (matched ignoring case and surrounding spaces); it is used by every part shape, in the value list and for the value in group headings and kanban lane titles (drawn as the same chip as in the cells), and works for values in any language. Colors are `"#rrggbb"`, `"#rgb"` or a name: `black`, `white`, `gray`, `red`, `orange`, `yellow`, `green`, `teal`, `cyan`, `blue`, `purple`, `magenta`, `pink`, `brown`. With `theme = "default"`, the terminal's own background and text stay, and only `accent`, `selection` and value colors are used. Unknown roles and unreadable colors give a warning and are skipped; so does a value written twice. A theme written in a narrower place drops the role colors of wider places (value colors stay).
 
 ```toml
 [look.colors]
@@ -717,7 +717,7 @@ note_path = "name"
 - Default: `"YYYY-MM-DD"`
 - Scope: global, workspace, table, view
 
-How dates are shown and typed in the table. Parts: `YYYY`, `YY`, `MM`, `M`, `DD`, `D`, `ddd` (weekday), and separators that are not letters or digits (`-`, `/`, `.`, space, `年`, …). Month and day are required once each; year and weekday at most once. `M` and `D` (not zero-padded) cannot touch another number part without a separator. Notes are always written as `YYYY-MM-DD`. An unreadable format falls back to the default with a warning.
+How dates are shown and typed in the table. A date-time column shows the date in this format and the time after a space (`2026-11-25 16:00`; the note keeps `2026-11-25T16:00`). Parts: `YYYY`, `YY`, `MM`, `M`, `DD`, `D`, `ddd` (weekday), and separators that are not letters or digits (`-`, `/`, `.`, space, `年`, …). Month and day are required once each; year and weekday at most once. `M` and `D` (not zero-padded) cannot touch another number part without a separator. Notes are always written as `YYYY-MM-DD`. An unreadable format falls back to the default with a warning.
 
 ```toml
 [dates]
@@ -745,7 +745,7 @@ week_start = "mon"
 - Default: `20`
 - Scope: global, workspace, table, view
 
-Maximum number of value candidates offered when editing a text cell. A column with more distinct values than this offers no candidates.
+Maximum number of value candidates offered when editing a text cell. Candidates come from the notes of the current table (not from other tables under the same root). A column with more distinct values than this offers none, and so does a column where five or more rows each have a value of their own (like a URL or a memo).
 
 ```toml
 [edit]

@@ -60,8 +60,8 @@ const STATUS_BASE: &str = r#"views:
 
 #[test]
 fn test_ce_3_list_of_candidates() {
-    // [utest -> req~cell-edit.value-list-open~2] status が todo・doing・done だけ → 3つと「なし」のリスト、今の値に印。
-    // ビューの絞り込みで見えていないノート(done)の値も候補に入る。
+    // [utest -> req~cell-edit.value-list-open~3] status が todo・doing・done だけ → 3つと「なし」のリスト、今の値に印。
+    // ビューの絞り込みで見えていないノート(done)の値も候補に入る。行が5件より少ないので、くり返しが無くても出す。
     let t = Tmp::new("ce3");
     t.write("a.md", "---\ntitle: 会議\nstatus: todo\n---\n");
     t.write("b.md", "---\ntitle: 買い物\nstatus: doing\n---\n");
@@ -134,9 +134,14 @@ fn test_ce_3_none_and_free_input() {
 
 #[test]
 fn test_ce_3_too_many_candidates_is_free_input() {
-    // [utest -> req~cell-edit.value-list-open~2] 候補が上限(既定 20)を超える 21 個 → リストを出さず自由入力。
-    let notes: Vec<(String, String)> = (0..21)
-        .map(|i| (format!("n{i:02}.md"), format!("---\nstatus: s{i}\n---\n")))
+    // [utest -> req~cell-edit.value-list-open~3] くり返しがあっても、候補が上限(既定 20)を超える 21 個 → リストを出さず自由入力。
+    let notes: Vec<(String, String)> = (0..22)
+        .map(|i| {
+            (
+                format!("n{i:02}.md"),
+                format!("---\nstatus: s{}\n---\n", i % 21),
+            )
+        })
         .collect();
     let refs: Vec<(&str, &str)> = notes
         .iter()
@@ -605,7 +610,7 @@ fn test_ce_1_invalid_value_keeps_input_on_click() {
 
 #[test]
 fn test_ce_1_click_list_item() {
-    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-click-invalid~1, req~cell-edit.value-list-open~2] リストの項目のクリックで、その候補に決める。
+    // [utest -> req~cell-edit.inline-input~1, req~cell-edit.inline-click-invalid~1, req~cell-edit.value-list-open~3] リストの項目のクリックで、その候補に決める。
     let (_t, mut a) = make(
         "ce1list",
         &[
@@ -664,7 +669,7 @@ fn test_ce_11_tab_in_typed_inputs() {
 
 #[test]
 fn test_nv_6_detail_edit_uses_list() {
-    // [utest -> req~navigation.detail-edit~1, req~cell-edit.value-list-open~2] 詳細の表示からの編集でも候補のリストを出す。
+    // [utest -> req~navigation.detail-edit~1, req~cell-edit.value-list-open~3] 詳細の表示からの編集でも候補のリストを出す。
     let (_t, mut a) = make(
         "nv6list",
         &[

@@ -687,18 +687,37 @@ fn body_lines(app: &App, k: &Kanban, iw: usize, vis: usize) -> Vec<Line<'static>
             head.push(Span::raw("│"));
         }
         let on = *i == k.lane;
-        let text = format!(
-            "{}{} ({})",
-            if on { ">" } else { " " },
-            lane_name(app, &k.spec.column, &l.key),
-            l.rows.len()
-        );
-        let text = fit(&text, lw, Align::Left);
-        head.push(if on {
-            Span::styled(text, sel_st)
+        let name = lane_name(app, &k.spec.column, &l.key);
+        let st = if on {
+            sel_st
         } else {
-            Span::styled(text, Style::default().add_modifier(Modifier::BOLD))
-        });
+            Style::default().add_modifier(Modifier::BOLD)
+        };
+        // navigation.group-heading-parts: レーンの値は、まとまりの見出しと同じく、その列のセルと同じ部品で描く。
+        let parts = match &l.key {
+            LaneKey::Value(v)
+                if !v.is_empty() && (!on || super::view::parts_when_selected(app)) =>
+            {
+                super::view::value_parts(app, &k.spec.column, v, &name, false)
+            }
+            _ => None,
+        };
+        let lead = if on { ">" } else { " " };
+        let count = format!(" ({})", l.rows.len());
+        match parts {
+            Some(p) => {
+                let mut segs = vec![Span::styled(lead, st)];
+                for (t, o) in p.items.iter().flatten() {
+                    segs.push(Span::styled(t.clone(), o.map_or(st, |x| st.patch(x))));
+                }
+                segs.push(Span::styled(count, st));
+                head.extend(super::view::pad(segs, lw, st).spans);
+            }
+            None => head.push(Span::styled(
+                fit(&format!("{lead}{name}{count}"), lw, Align::Left),
+                st,
+            )),
+        }
     }
     head.push(edge(hidden_right, "›"));
     lines.push(Line::from(head));

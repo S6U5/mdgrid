@@ -373,6 +373,8 @@ mod test_kanban_fix6;
 #[cfg(test)]
 mod test_key_ops;
 #[cfg(test)]
+mod test_ledger_fixes;
+#[cfg(test)]
 mod test_list_chips;
 #[cfg(test)]
 mod test_list_narrow;

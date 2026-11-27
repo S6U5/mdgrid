@@ -634,16 +634,29 @@
 
 ### 型ごとの入り方
 
-#### テキストの列で、読み込んだノート全部(base-view.root-folder の範囲。ビューの絞り込みの前)の同じキーに現れる異なる値が一定数以下(既定 20)なら、その値のリストから選べるようにするべき
-`req~cell-edit.value-list-open~2` P1
+#### テキストの列で、今の表のノート(表の全体の絞り込みを通ったノート。ビューの絞り込みの前)の同じキーに現れる異なる値が一定数以下(既定 20)なら、その値のリストから選べるようにするべき。ただし、値のある行が5件以上あって、どの値も1件だけの列(1件ごとに違う値の列)には出さない
+`req~cell-edit.value-list-open~3` P1
+- Rationale: 前の版は根のノートの全部から集め、くり返しを見なかった。そのため、同じ根のほかの表(や中の台帳)の値が混ざり、URL・メモ・結論・引用のように1件ごとに違う値の列にも、ほかのノートの値が候補として並んだ(2026-11-27 の5つの台帳の実地の操作)。1件ごとに違う値の列には選ぶ値が無い。行の少ない始めたばかりの表(状態が todo・doing・done と1つずつ)では候補を出すため、5件より少なければくり返しを見ない。決まりの `values`(cell-edit.rules-values)と `[rules.<列>.candidates]`(cell-edit.candidates-sort)を書いた列は、くり返しによらず候補を出す
 - Acceptance:
-  - Given:
-  - When: status の値 `doing` のセルで Enter
-  - Then: リスト。ビューの絞り込みで見えていないノートの値も候補に入る。
+  - Given: status が doing・todo・todo の行の表で、ビューは todo だけを見せる
+  - When: status の値 `todo` のセルで Enter
+  - Then: リストに todo と doing(ビューの絞り込みで見えていないノートの値も入る)。
 - Acceptance:
-  - Given: 異なる値が 21 個の列
-  - When:
+  - Given: 異なる値が 21 個で、くり返しのある列
+  - When: そのセルで Enter
   - Then: リストを出さず1行の入力。
+- Acceptance:
+  - Given: url の値が5行とも違う表
+  - When: url のセルで Enter
+  - Then: リストを出さず1行の入力。
+- Acceptance:
+  - Given: status が todo・doing・done の3行の表
+  - When: status のセルで Enter
+  - Then: リストに todo・doing・done。
+- Acceptance:
+  - Given: 同じ根に表「タスク」(Tasks/)と「サイト」(Sites/)があり、Sites/ のノートだけが status に `archived` を持つ
+  - When: 表「タスク」の status のセルで Enter
+  - Then: 候補に `archived` は無い。
 
 #### 値のリストからは、自由入力にも切り替えられるべき
 `req~cell-edit.value-list-free-input~1` P1
@@ -951,12 +964,13 @@
   - When: 会議 を外して確定
   - Then: tags から 会議 が消えたためる変更。
 
-#### リストの要素の候補は、読み込んだノート全部(base-view.root-folder の範囲)のその列に今ある要素とするべき
-`req~cell-edit.list-items-candidates~1` P1
+#### リストの要素の候補は、今の表のノート(表の全体の絞り込みを通ったノート)のその列に今ある要素とするべき
+`req~cell-edit.list-items-candidates~2` P1
+- Rationale: 前の版は根のノートの全部から集めたので、同じ根のほかの表のタグまで並んだ(2026-11-27、タスクの窓のタグの候補に、ほかの台帳のタグが 105 件並んでいた)。表ごとに `[rules.tags.candidates]` を書かなくても、その表のタグだけにする
 - Acceptance:
-  - Given:
-  - When: tags のセルで Enter
-  - Then: ルートフォルダの中のタグの一覧が出る。
+  - Given: 同じ根に表「タスク」(Tasks/)と「サイト」(Sites/)があり、Tasks/ のノートの tags に「仕事」、Sites/ のノートの tags に「料理」
+  - When: 表「タスク」の tags のセルで Enter
+  - Then: 仕事 は候補に出て、料理 は出ない。
 
 #### リストの要素の候補は、打つたびに絞り込んで出すべき
 `req~cell-edit.list-items-narrow~1` P1
@@ -2224,8 +2238,8 @@
 - Needs: utest
 
 #### 決まり `[rules.<列>.candidates]` を書いた列の値の候補は、今の表のノートから集めるべき(同じ根のほかの表のノートの値は出さない)
-`req~cell-edit.candidates-table-rows~1` P1
-- Rationale: 同じ根に置いたほかの表(や中の台帳)のノートのタグまで候補に並び、その表で使わない値が混ざったため(2026-11-27、タスクの窓のタグの候補に、ほかの台帳のタグが 105 件並んでいた)。書かない列は今までどおり根のノートの全部から集める
+`req~cell-edit.candidates-table-rows~2` P1
+- Rationale: 同じ根に置いたほかの表(や中の台帳)のノートのタグまで候補に並び、その表で使わない値が混ざったため(2026-11-27、タスクの窓のタグの候補に、ほかの台帳のタグが 105 件並んでいた)。書かない列も今の表から集める(cell-edit.value-list-open・cell-edit.list-items-candidates)
 - Acceptance:
   - Given: 同じ根に表「タスク」(Tasks/)と「サイト」(Sites/)があり、Tasks/ のノートの tags に「仕事」、Sites/ のノートの tags に「料理」、表「タスク」に `[table.rules.tags.candidates] sort = "count"`
   - When: 表「タスク」でタグの欄の付け外しの窓を開く

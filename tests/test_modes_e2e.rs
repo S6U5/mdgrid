@@ -708,7 +708,7 @@ fn test_modes_chips_remove_item_brings_rows_back() {
 
 #[test]
 fn test_modes_value_list_picks_status_and_saves() {
-    // [stest -> req~cell-edit.value-list-open~2, req~cell-edit.value-list-mark~1, req~cell-edit.value-list-none~1]
+    // [stest -> req~cell-edit.value-list-open~3, req~cell-edit.value-list-mark~1, req~cell-edit.value-list-none~1]
     // status が doing のセルで Enter → todo・done・doing と「なし」のリストが出て、今の値の doing に印。done を選んで保存 →
     // ノートの status が done になる。
     let h = home("modes-value-list", &NOTES);
