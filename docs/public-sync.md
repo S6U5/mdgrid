@@ -40,7 +40,7 @@ python3 scripts/public_sync.py install-hook
 
 1. `python3 scripts/public_sync.py status`: 公開リポを取ってきて、印を進め、まだ取り込んでいない公開リポの変更、まだ書き出していない手元のコミット、今書き出すと変わる量を出す。
 2. 取り込みがあれば、手元の main で `python3 scripts/public_sync.py import`。ぶつかったら直して `git cherry-pick --continue` し、もう一度 `import`。`specs/_history/decidespec/` は 2026-11-17 に凍結した記録なので、ぶつかったら手元の側を取る。要求の正本 `specs/requirements/` がぶつかったら直し、`python3 tools/trace_gate.py check` を通す。誤って入った物(`__pycache__/` など)は取り込みのコミットから外す。作業ツリーに別の作業の未コミットの変更があるときは、それに触らないように進める(git は、上書きになる cherry-pick を自分で止める)。
-3. 書き出すときは `python3 scripts/public_sync.py export <名前> --dry-run` で変わるファイルを見てから、`python3 scripts/public_sync.py export <名前> -m '<PR の題>' -m '<本文>' --pr`。`--pr` は PR が無ければ作る。直しを足すときは、手元の main を直して同じ名前でもう一度 `export` する(同じブランチに次のコミットとして積む)。前の書き出しのあとに公開リポの main が進んでいたら(ほかの PR のマージ)、手元の main を揃えて書き出すブランチに取り込んでから書き出す。道具は、そのコミットの親に公開リポの main も足す。squash のマージは書き出しのブランチの履歴に入らないので、足さないと PR の差分に main の変更まで並ぶ。
+3. 書き出すときは `python3 scripts/public_sync.py export <名前> --dry-run` で変わるファイルを見てから、`python3 scripts/public_sync.py export <名前> -m '<PR の題>' -m '<本文>' --pr`。`--pr` は PR が無ければ作る。PR の題(`--title` で渡すときも)は、コミットと同じく `追加:` などの書き出しで始める。スカッシュのマージは PR の題をそのまま公開リポの main のコミットの題にし、`tests/test_cliff.rs` が履歴の全部の題を確かめるため(書き出しの無い題が main に入ると、以後の PR の CI が落ちる)。直しを足すときは、手元の main を直して同じ名前でもう一度 `export` する(同じブランチに次のコミットとして積む)。前の書き出しのあとに公開リポの main が進んでいたら(ほかの PR のマージ)、手元の main を揃えて書き出すブランチに取り込んでから書き出す。道具は、そのコミットの親に公開リポの main も足す。squash のマージは書き出しのブランチの履歴に入らないので、足さないと PR の差分に main の変更まで並ぶ。
 4. 人が公開リポで PR をマージしたら、次の `status` で印が進む。
 
 まだ手元の main に入れていないブランチを書き出すときは `--from <ブランチ>`。そのブランチは手元の main を含んでいること(取り込みを消さないため)。

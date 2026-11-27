@@ -66,4 +66,7 @@ commit_parsers = [
   { message = "^ci[:：]", skip = true },
   # 公開リポの側で作った PR の題(スカッシュマージの題がそのまま入る)。手元の「文書:」と同じ節に出す。
   { message = "^docs[:：]", group = "<!-- 2 -->Documentation" },
+  # 2026-11-28 に公開リポの #126 を、書き出しの無い PR の題のままスカッシュでマージした(題がそのまま main に入った)。
+  # 履歴を書き換えずに、その1件の題を追加の節に出す。PR の題にも書き出しを付ける(docs/public-sync.md)。
+  { message = "^外の変更が別のキーだけなら合わせて書き、--apply ", group = "<!-- 0 -->Features" },
 ]
