@@ -61,7 +61,9 @@ impl App {
             self.message = Some(Msg::ExportTableBadExt.into());
             return;
         };
-        let table = self.shown_table();
+        let mut table = self.shown_table();
+        // cli.print-rev: `--print --with-path` と同じく、--apply で戻すときの印を足す(見出し `_rev` の列があれば足さない)。
+        print::add_rev(&mut table, self.src.as_ref(), format);
         let n = table.rows.len();
         let shown = path.display().to_string();
         self.message = Some(match std::fs::write(path, print::render(&table, format)) {

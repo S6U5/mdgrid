@@ -628,7 +628,7 @@ fn wb_7_newline_is_rejected() {
 
 #[test]
 fn wb_4_external_change_stops_save() {
-    // [utest -> req~write-back.conflict-stop~1]
+    // [utest -> req~write-back.conflict-stop~2]
     let dir = TempDir::new("wb4-size");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -641,7 +641,7 @@ fn wb_4_external_change_stops_save() {
 
 #[test]
 fn wb_4_same_size_same_mtime_change_is_detected_by_hash() {
-    // [utest -> req~write-back.conflict-stop~1]
+    // [utest -> req~write-back.conflict-stop~2]
     let dir = TempDir::new("wb4-hash");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -663,7 +663,7 @@ fn wb_4_same_size_same_mtime_change_is_detected_by_hash() {
 
 #[test]
 fn wb_4_unchanged_file_saves() {
-    // [utest -> req~write-back.conflict-stop~1]
+    // [utest -> req~write-back.conflict-stop~2]
     let dir = TempDir::new("wb4-ok");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();

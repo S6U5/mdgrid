@@ -18,7 +18,7 @@ mdgrid <folder | .base | .md> ... --print [--format csv|tsv|json|md] [--with-pat
 
 - `--print` writes the table to standard output and exits; nothing on screen, no notes changed. Redirect it to a file with `>`.
 - `--format`: `csv` (default) for spreadsheets, `md` for a Markdown table to read or paste into a chat, `json` for scripts (a list of objects), `tsv` for tab-separated.
-- `--with-path` adds a first column `path` with each note's path. Add it whenever the result may be edited and applied back, or when the reader needs to open the notes.
+- `--with-path` adds a first column `path` with each note's path. Add it whenever the result may be edited and applied back, or when the reader needs to open the notes. In `csv` and `json` it also adds a last column `_rev`, a short mark of each note's values at export time, which `--apply` uses to notice notes that changed after the export.
 - `--filter` keeps rows where the expression is true. Repeat it to require all of them.
 - `--sort column` sorts ascending, `column:desc` descending. Repeat it for tie-breakers.
 - With a `.base`, `--view <name>` picks the view (its filters, columns and sort apply; `--filter` narrows it further). Without `--view`, the first view is used.
@@ -73,7 +73,9 @@ sed 's/,doing,/,done,/' doing.csv > done.csv
 mdgrid tasks --apply done.csv
 ```
 
-Edit the file any way you like (by hand, a script); keep the `path` column and the header, and don't rely on fixed column positions, which follow the keys of the notes (the `sed` above only works because `status` is the column after `path` here). Run `--apply` from the same directory and with the same folder or `.base` as the export, because the paths are relative to them. Step 3 prints a unified diff of the notes and writes nothing. **Show that diff to the user and wait for their approval**, then run the same command with `--yes` (`mdgrid tasks --apply done.csv --yes`) to write. Never add `--yes` on your own. mdgrid writes only the changed values and leaves the rest of each note byte for byte as it was.
+Edit the file any way you like (by hand, a script); keep the `path` and `_rev` columns and the header, and don't rely on fixed column positions, which follow the keys of the notes (the `sed` above only works because `status` is the column after `path` here). Run `--apply` from the same directory and with the same folder or `.base` as the export, because the paths are relative to them. Step 3 prints a unified diff of the notes and writes nothing. **Show that diff to the user and wait for their approval**, then run the same command with `--yes` (`mdgrid tasks --apply done.csv --yes`) to write. Never add `--yes` on your own. mdgrid writes only the changed values and leaves the rest of each note byte for byte as it was.
+
+If someone (a person, a sync tool, another agent) changed a note after your export, `--apply` writes nothing, exits with code 2 and names the note: the row's `_rev` no longer matches, and writing your file would put the old values back over their change. Do not retry with `--yes`. Export it again, redo the same edit on the fresh export, and apply that. Do not delete or invent `_rev` values to get past this.
 
 ## Handing results to another AI or a person
 

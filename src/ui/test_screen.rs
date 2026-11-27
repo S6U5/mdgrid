@@ -904,11 +904,11 @@ pub(super) fn edit_outside(tmp: &Tmp, name: &str, text: &str) {
 
 #[test]
 fn test_wb_16_external_change_overwrite() {
-    // [utest -> req~write-back.external-save-choice~1] status をためたまま外で title を直す → 行に印。保存 → 止まり、差分の画面に印と2つの選択肢。
+    // [utest -> req~write-back.external-save-choice~2] status をためたまま外で title と status を直す → 行に印。保存 → 止まり、差分の画面に印と2つの選択肢。
     let (t, mut a) = make("wb16", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_cell(&mut a, 1, "status", "done");
-    let outside = "---\ntitle: a outside\nstatus: todo\n---\n本文 a\n";
+    let outside = "---\ntitle: a outside\nstatus: wait\n---\n本文 a\n";
     edit_outside(&t, "a.md", outside);
     a.poll();
     assert!(screen(&a).contains("!a "));
@@ -933,15 +933,33 @@ fn test_wb_16_external_change_overwrite() {
     ch(&mut a, 'o');
     assert_eq!(a.mode, keymap::Mode::Table);
     assert_eq!(a.changes.count(), 0);
+    assert_eq!(read(&t, "a.md"), outside.replace("wait", "done"));
+}
+
+#[test]
+fn test_merge_other_keys_tells_merged() {
+    // [utest -> req~write-back.merge-other-keys~1] status をためたまま外で title だけを直す → 保存は止まらずに書いて表に戻り、知らせに
+    // 外の変更と合わせて書いたノートの名前が出る。ファイルは title が外の値、status がためた値。
+    let (t, mut a) = make("merge_msg", TWO);
+    edit_cell(&mut a, 0, "status", "done");
+    let outside = "---\ntitle: a outside\nstatus: todo\n---\n本文 a\n";
+    edit_outside(&t, "a.md", outside);
+    a.poll();
+    ctrl(&mut a, 's');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, keymap::Mode::Table, "{:?}", a.message);
+    assert_eq!(a.changes.count(), 0);
     assert_eq!(read(&t, "a.md"), outside.replace("todo", "done"));
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("外の変更と合わせて書いた 1件(a.md)"), "{m}");
 }
 
 #[test]
 fn test_wb_16_external_change_discard() {
-    // [utest -> req~write-back.external-save-choice~1] ためた変更を捨てる → その行の変更が消え、ファイルは外の変更のまま。
+    // [utest -> req~write-back.external-save-choice~2] ためた変更を捨てる → その行の変更が消え、ファイルは外の変更のまま。
     let (t, mut a) = make("wb16d", TWO);
     edit_cell(&mut a, 0, "status", "done");
-    let outside = "---\ntitle: a outside\nstatus: todo\n---\n本文 a\n";
+    let outside = "---\ntitle: a outside\nstatus: wait\n---\n本文 a\n";
     edit_outside(&t, "a.md", outside);
     a.poll();
     ctrl(&mut a, 's');
@@ -994,17 +1012,17 @@ fn test_wb_11_quit_save() {
 
 #[test]
 fn test_wb_16_overwrite_only_selected_file() {
-    // [utest -> req~write-back.external-save-choice~1] `o` は選んだファイルだけを書き、残りのためた変更は Enter に任せる(画面に残る)。
+    // [utest -> req~write-back.external-save-choice~2] `o` は選んだファイルだけを書き、残りのためた変更は Enter に任せる(画面に残る)。
     let (t, mut a) = make("wb16one", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_cell(&mut a, 1, "status", "done");
-    let outside = "---\ntitle: a outside\nstatus: todo\n---\n本文 a\n";
+    let outside = "---\ntitle: a outside\nstatus: wait\n---\n本文 a\n";
     edit_outside(&t, "a.md", outside);
     a.poll();
     ctrl(&mut a, 's');
     assert!(screen(&a).contains("o このファイルを外の変更の上に書く"));
     ch(&mut a, 'o');
-    assert_eq!(read(&t, "a.md"), outside.replace("todo", "done"));
+    assert_eq!(read(&t, "a.md"), outside.replace("wait", "done"));
     assert_eq!(read(&t, "b.md"), TWO[1].1);
     assert_eq!(a.changes.count(), 1);
     assert_eq!(a.mode, keymap::Mode::Confirm);
@@ -1015,17 +1033,17 @@ fn test_wb_16_overwrite_only_selected_file() {
 
 #[test]
 fn test_wb_16_overwrite_refuses_unseen_content() {
-    // [utest -> req~write-back.external-save-choice~1, req~write-back.pending-hold~1, req~write-back.pending-diff-confirm~1] 差分を見せたあとにまた外で変わったら、`o` は書かずに差分を作り直す。
+    // [utest -> req~write-back.external-save-choice~2, req~write-back.pending-hold~1, req~write-back.pending-diff-confirm~1] 差分を見せたあとにまた外で変わったら、`o` は書かずに差分を作り直す。
     let (t, mut a) = make("wb16seen", TWO);
     edit_cell(&mut a, 0, "status", "done");
     edit_outside(
         &t,
         "a.md",
-        "---\ntitle: a outside\nstatus: todo\n---\n本文 a\n",
+        "---\ntitle: a outside\nstatus: wait\n---\n本文 a\n",
     );
     a.poll();
     ctrl(&mut a, 's');
-    let again = "---\ntitle: a again\nstatus: todo\n---\n本文 a\n";
+    let again = "---\ntitle: a again\nstatus: wait\n---\n本文 a\n";
     edit_outside(&t, "a.md", again);
     ch(&mut a, 'o');
     assert_eq!(read(&t, "a.md"), again);
@@ -1041,7 +1059,7 @@ fn test_wb_16_overwrite_refuses_unseen_content() {
     assert_eq!(read(&t, "a.md"), again);
     // 見直した差分の上なら書ける。
     ch(&mut a, 'o');
-    assert_eq!(read(&t, "a.md"), again.replace("todo", "done"));
+    assert_eq!(read(&t, "a.md"), again.replace("wait", "done"));
     assert_eq!(a.changes.count(), 0);
 }
 

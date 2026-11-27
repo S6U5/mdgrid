@@ -31,7 +31,12 @@ pub enum Outcome {
     Failed(SaveError),
     /// 外で変わって止めた(WB-4・WB-16)。
     Changed,
+    /// 外で変わっていたが、ためたキーには触れていなかったので、今の内容を基準にして書いた(write-back.merge-other-keys)。
+    Merged,
 }
+
+/// 書く単位の中の行ごとの直し。
+type UnitEdits = Vec<(RowId, Vec<Edit>)>;
 
 /// 行の状態(基準と「外で変更」の印)。ためる変更が無い行は (None, false)。
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -46,12 +51,15 @@ const EMPTY: RowState = RowState {
 };
 
 /// 1手の中の1つのセルの前と後(None = ためていない)。
+/// `read` は、そのセルを直し始めたときに読んでいた値(None = 分からない。Some(None) = キーが無かった)。
+/// 当ててためた変更が新しくできたセルに覚え、外の変更と合わせられるかを見る(write-back.merge-other-keys)。
 #[derive(Debug, Clone)]
 struct CellChange {
     row: RowId,
     col: String,
     before: Option<NewValue>,
     after: Option<NewValue>,
+    read: Option<Option<Value>>,
 }
 
 /// 1手の中の1つの行の状態の前と後。
@@ -123,6 +131,8 @@ pub struct Changes {
     cleared: u64,
     /// 変えうる操作をした回数(stack.shared-pending: 並べたほかの表が、組み直すかを見る)。
     gen: u64,
+    /// ためたセルを直し始めたときに読んでいた値(write-back.merge-other-keys)。無いセルは分からない(合わせない)。
+    orig: BTreeMap<(RowId, String), Option<Value>>,
 }
 
 impl Changes {
@@ -403,11 +413,13 @@ impl Changes {
             }
             for col in self.same_cols(src, row) {
                 let before = self.pending(row, &col).cloned();
+                let read = self.orig_of(row, &col);
                 cells.push(CellChange {
                     row: row.clone(),
                     col,
                     before,
                     after: None,
+                    read,
                 });
             }
         }
@@ -530,26 +542,81 @@ impl Changes {
             }
             match src.save_unit(&base, &edits) {
                 Ok(_) => {
-                    // 書いた行の変更は消え、積みからも除く(書いたものは取り消せない)。
-                    for (r, _) in &edits {
-                        self.cells.remove(r);
-                        self.states.remove(r);
-                        for s in self.undo.iter_mut().chain(self.redo.iter_mut()) {
-                            s.drop_row(r);
-                        }
-                    }
-                    self.undo.retain(|s| !s.is_empty());
-                    self.redo.retain(|s| !s.is_empty());
+                    self.forget_written(&edits);
                     out.push((unit, Outcome::Saved));
                 }
-                Err(SaveError::Changed) => {
-                    self.mark_external(unit_rows);
-                    out.push((unit, Outcome::Changed));
-                }
+                // write-back.merge-other-keys: ためたキーに外で触れていなければ、今の内容を基準にして書き直す。
+                Err(SaveError::Changed) => match self.merge(src, unit_rows) {
+                    Some(Ok(edits)) => {
+                        self.forget_written(&edits);
+                        out.push((unit, Outcome::Merged));
+                    }
+                    None | Some(Err(SaveError::Changed)) => {
+                        self.mark_external(unit_rows);
+                        out.push((unit, Outcome::Changed));
+                    }
+                    Some(Err(e)) => out.push((unit, Outcome::Failed(e))),
+                },
                 Err(e) => out.push((unit, Outcome::Failed(e))),
             }
         }
         out
+    }
+
+    /// 書いた行の変更を消し、積みからも除く(書いたものは取り消せない)。
+    fn forget_written(&mut self, edits: &[(RowId, Vec<Edit>)]) {
+        for (r, _) in edits {
+            self.cells.remove(r);
+            self.states.remove(r);
+            self.orig.retain(|(row, _), _| row != r);
+            for s in self.undo.iter_mut().chain(self.redo.iter_mut()) {
+                s.drop_row(r);
+            }
+        }
+        self.undo.retain(|s| !s.is_empty());
+        self.redo.retain(|s| !s.is_empty());
+    }
+
+    /// write-back.merge-other-keys: 外で変わった書く単位を読み直し、どの行もまだあり、ためたどのセルも今の値が直し始めたときの
+    /// 値と同じ(外の変更が別のキーだけ)なら、今の内容を基準にして書く。書いたら Some(Ok(書いた直し))。合わせられなければ None
+    /// (基準と印は呼ぶ側が止まったときと同じに扱う)。読み直したあとに書く前にまた変われば Some(Err(Changed))。
+    fn merge(
+        &mut self,
+        src: &mut dyn Source,
+        rows: &[RowId],
+    ) -> Option<Result<UnitEdits, SaveError>> {
+        let cols: Vec<(RowId, String)> = rows
+            .iter()
+            .flat_map(|r| {
+                self.cells
+                    .get(r)
+                    .into_iter()
+                    .flat_map(move |m| m.keys().map(move |c| (r.clone(), c.clone())))
+            })
+            .collect();
+        // 直し始めたときの値を覚えていないセルがあれば合わせない(取り消しで戻ったセルなど)。
+        if cols.iter().any(|k| !self.orig.contains_key(k)) {
+            return None;
+        }
+        src.reload(rows.first()?).ok()?;
+        if rows.iter().any(|r| src.stamp(r).is_none()) {
+            return None;
+        }
+        if cols
+            .iter()
+            .any(|(r, c)| self.orig.get(&(r.clone(), c.clone())) != Some(&src.get(r, c).value))
+        {
+            return None;
+        }
+        let stamp = src.stamp(&rows[0])?;
+        for r in rows {
+            if let Some(st) = self.states.get_mut(r) {
+                st.base = Some(stamp);
+                st.external = false;
+            }
+        }
+        let edits = self.unit_edits(src, rows);
+        Some(src.save_unit(&stamp, &edits).map(|_| edits))
     }
 
     /// 読み込み口が自分で書いた(ためた値に触れない書き込み。SC-17 の行を足す)あと、`old` を基準にしていた行の基準を
@@ -632,15 +699,17 @@ impl Changes {
     /// 複数の行(1つの書く単位など)の変更を1手として消す。
     pub fn discard_rows(&mut self, rows: &[RowId]) {
         self.gen += 1;
+        let me = &*self;
         let cells = rows
             .iter()
-            .filter_map(|row| self.cells.get(row).map(|m| (row, m)))
+            .filter_map(|row| me.cells.get(row).map(|m| (row, m)))
             .flat_map(|(row, m)| {
                 m.iter().map(move |(col, v)| CellChange {
                     row: row.clone(),
                     col: col.clone(),
                     before: Some(v.clone()),
                     after: None,
+                    read: me.orig_of(row, col),
                 })
             })
             .collect();
@@ -735,12 +804,24 @@ impl Changes {
             })?;
             bases.insert(row.clone(), stamp);
         }
+        // 新しくためるセルは今の読んだ値を、ためていたセルは直し始めたときの値を引き継ぐ。
+        let read = if before.is_none() {
+            Some(src.get(row, col).value)
+        } else {
+            self.orig_of(row, col)
+        };
         Ok(Some(CellChange {
             row: row.clone(),
             col: col.to_string(),
             before,
             after,
+            read,
         }))
+    }
+
+    /// そのセルを直し始めたときに読んでいた値(write-back.merge-other-keys)。覚えていなければ None。
+    fn orig_of(&self, row: &RowId, col: &str) -> Option<Option<Value>> {
+        self.orig.get(&(row.clone(), col.to_string())).cloned()
     }
 
     /// セルの変更を当て、行の状態を合わせ、1手として積む。`clear_redo` が偽なのは外の変化で積む手(drop_same)。
@@ -754,7 +835,7 @@ impl Changes {
             .map(|r| (r.clone(), self.states.get(r).copied().unwrap_or(EMPTY)))
             .collect();
         for c in &cells {
-            self.put(&c.row, &c.col, c.after.clone());
+            self.put_cell(c, c.after.clone());
         }
         let mut rows = Vec::new();
         for (row, before) in befores {
@@ -786,7 +867,7 @@ impl Changes {
             .collect();
         for c in &step.cells {
             let v = if forward { &c.after } else { &c.before };
-            self.put(&c.row, &c.col, v.clone());
+            self.put_cell(c, v.clone());
         }
         for (r, had) in step.rows.iter_mut().zip(had) {
             let has = self.cells.contains_key(&r.row);
@@ -808,6 +889,23 @@ impl Changes {
                 }
                 (false, false) => self.put_state(&r.row, EMPTY),
             }
+        }
+    }
+
+    /// セルにためた値を当て、直し始めたときの値を合わせる: ためた変更が新しくできたら `c.read` を覚え、無くなれば忘れる。
+    fn put_cell(&mut self, c: &CellChange, v: Option<NewValue>) {
+        let had = self.pending(&c.row, &c.col).is_some();
+        let has = v.is_some();
+        self.put(&c.row, &c.col, v);
+        let k = (c.row.clone(), c.col.clone());
+        match (had, has, &c.read) {
+            (false, true, Some(r)) => {
+                self.orig.insert(k, r.clone());
+            }
+            (false, true, None) | (_, false, _) => {
+                self.orig.remove(&k);
+            }
+            (true, true, _) => {}
         }
     }
 

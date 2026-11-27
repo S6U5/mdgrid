@@ -84,6 +84,11 @@ ApplyBadValue = "ligne {0} : {1} : {2} : {3}"
 ApplyLocked = "ligne {0} : {1} : {2} ne peut pas être écrit ({3})"
 ## {0} はノート。
 ApplyChangedOutside = "{0} a été modifié hors de mdgrid ; non écrit"
+## {0} は行(CSV はファイルの行、JSON は何番目か)、{1} は path。
+ApplyStale = "ligne {0} : {1} : la note a changé après l'export (_rev différent) ; exportez à nouveau et refaites la modification"
+## {0} はノートの名前。
+ApplyMerged = "{0} avait d'autres clés modifiées à l'extérieur ; fusionné et écrit"
+PrintRevClash = "la table a une colonne nommée _rev ; la colonne _rev qui vérifie les changements après l'export n'a pas été ajoutée"
 ## {0} は変わるファイルの数。
 ApplyDryRun = "{0} fichiers seraient modifiés ; rien n'a été écrit (ajouter --yes pour les écrire)"
 ## {0} は数。
@@ -1531,6 +1536,9 @@ ReviewSavedList = " ({0})"
 ReviewStopped = "{0} fichiers modifiés à l'extérieur arrêtés ({1})"
 ## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewStoppedOne = "{0} fichier modifié à l'extérieur arrêté ({1})"
+ReviewMerged = "{0} fichiers fusionnés avec des modifications extérieures ({1})"
+## `ReviewMerged` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewMergedOne = "{0} fichier fusionné avec des modifications extérieures ({1})"
 ReviewFailed = "impossible d'écrire {0} fichiers ({1})"
 ## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewFailedOne = "impossible d'écrire {0} fichier ({1})"

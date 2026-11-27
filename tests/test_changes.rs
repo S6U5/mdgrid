@@ -391,11 +391,13 @@ fn test_ce_10_set_on_read_only_cell_is_skip() {
 // ---- WB-4 / WB-16 / WB-14 ----
 
 const B_EXT: &str = "---\nstatus: todo\ntitle: B changed outside\n---\nbody b\n";
+/// 外で title と、ためるキーの status も直した B(write-back.merge-other-keys で合わせられず止まる)。
+const B_EXT_STATUS: &str = "---\nstatus: doing\ntitle: B changed outside\n---\nbody b\n";
 
 #[test]
 fn test_wb_16_external_change_after_set_marks_and_stops_save() {
-    // [utest -> req~write-back.external-save-choice~1] ためたあと外で直す → 印が付き、ためた変更は残る。
-    // [utest -> req~write-back.conflict-stop~1] 保存 → 書かずに止まる(Changed)。[utest -> req~write-back.keep-on-stop~1] 未保存の数は減らない。
+    // [utest -> req~write-back.external-save-choice~2] ためたあと外で同じキーも直す → 印が付き、ためた変更は残る。
+    // [utest -> req~write-back.conflict-stop~2] 保存 → 書かずに止まる(Changed)。[utest -> req~write-back.keep-on-stop~1] 未保存の数は減らない。
     let (dir, src) = setup("wb16");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -404,7 +406,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert!(ch.set(&src, &b, "status", s("done")).is_ok());
     assert!(!ch.external(&b));
 
-    external_edit(&dir, "b.md", B_EXT);
+    external_edit(&dir, "b.md", B_EXT_STATUS);
     let changed = src.changed();
     assert!(changed.contains(&b), "changed() が外の変更を返さない");
     ch.note_external(&changed);
@@ -413,7 +415,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert!(matches!(ch.pending(&b, "status"), Some(NewValue::Str(v)) if v == "done"));
     assert_eq!(ch.count(), 1);
 
-    // [utest -> req~write-back.external-save-choice~1] 差分には印が出る
+    // [utest -> req~write-back.external-save-choice~2] 差分には印が出る
     let pv = ch.previews(&src);
     assert_eq!(pv.len(), 1);
     match &pv[0] {
@@ -425,13 +427,13 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert!(matches!(outcome_of(&res, &b), Outcome::Changed));
     assert_eq!(
         read(&dir, "b.md"),
-        B_EXT,
+        B_EXT_STATUS,
         "止まった保存でファイルが変わった"
     );
     assert_eq!(ch.count(), 1);
     assert!(matches!(ch.pending(&b, "status"), Some(NewValue::Str(v)) if v == "done"));
 
-    // [utest -> req~write-back.conflict-stop-overwrite-choice~1, req~write-back.external-save-choice~1] 外の変更の上に書く → 選んだ時点の内容を基準にし、印が消え、保存は通る
+    // [utest -> req~write-back.conflict-stop-overwrite-choice~1, req~write-back.external-save-choice~2] 外の変更の上に書く → 選んだ時点の内容を基準にし、印が消え、保存は通る
     ch.overwrite(&mut src, &b).expect("overwrite");
     assert!(!ch.external(&b));
     assert_eq!(ch.count(), 1);
@@ -439,13 +441,101 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert!(matches!(outcome_of(&res, &b), Outcome::Saved));
     assert_eq!(ch.count(), 0);
     let text = read(&dir, "b.md");
-    assert_eq!(text, B_EXT.replace("status: todo", "status: done"));
+    assert_eq!(text, B_EXT_STATUS.replace("status: doing", "status: done"));
     assert!(text.contains("title: B changed outside\n"));
 }
 
 #[test]
+fn test_merge_other_keys_writes_both() {
+    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~2] status を done にためたまま外で title だけを直す →
+    // 外の変更と合わせられるので止まらずに書き(Merged)、ファイルの status は done、title は外で直した値。未保存は 0。
+    let (dir, src) = setup("merge_other");
+    let mut src = src;
+    let b = row(&src, "b.md");
+    let mut ch = Changes::new();
+    assert!(ch.set(&src, &b, "status", s("done")).is_ok());
+    external_edit(&dir, "b.md", B_EXT);
+    let changed = src.changed();
+    ch.note_external(&changed);
+    assert!(ch.external(&b));
+
+    let res = ch.save(&mut src);
+    assert_eq!(format!("{:?}", outcome_of(&res, &b)), "Merged");
+    assert_eq!(
+        read(&dir, "b.md"),
+        "---\nstatus: done\ntitle: B changed outside\n---\nbody b\n"
+    );
+    assert_eq!(ch.count(), 0);
+    assert!(!ch.external(&b));
+}
+
+#[test]
+fn test_merge_other_keys_without_noticing_first() {
+    // [utest -> req~write-back.merge-other-keys~1] 外の変更をまだ受け取っていない(印の無い)まま保存しても、書く直前の検査で外の変更に
+    // 気づき、ためたキーに触れていなければ合わせて書く。
+    let (dir, src) = setup("merge_late");
+    let mut src = src;
+    let b = row(&src, "b.md");
+    let mut ch = Changes::new();
+    assert!(ch.set(&src, &b, "status", s("done")).is_ok());
+    external_edit(&dir, "b.md", B_EXT);
+
+    let res = ch.save(&mut src);
+    assert_eq!(format!("{:?}", outcome_of(&res, &b)), "Merged");
+    assert_eq!(
+        read(&dir, "b.md"),
+        "---\nstatus: done\ntitle: B changed outside\n---\nbody b\n"
+    );
+}
+
+#[test]
+fn test_merge_value_back_to_start() {
+    // [utest -> req~write-back.merge-other-keys~1] 外で status を doing に直し、また todo(直し始めたときの値)に戻した → 中身は
+    // 基準と同じでも更新時刻が違う。ためたキーの値は直し始めたときと同じなので、止まらずに書く。
+    let (dir, src) = setup("merge_back");
+    let mut src = src;
+    let b = row(&src, "b.md");
+    let mut ch = Changes::new();
+    assert!(ch.set(&src, &b, "status", s("done")).is_ok());
+    external_edit(&dir, "b.md", &B.replace("status: todo", "status: doing"));
+    external_edit(&dir, "b.md", B);
+    let changed = src.changed();
+    ch.note_external(&changed);
+
+    let res = ch.save(&mut src);
+    assert!(
+        !matches!(outcome_of(&res, &b), Outcome::Changed),
+        "{:?}",
+        outcome_of(&res, &b)
+    );
+    assert_eq!(
+        read(&dir, "b.md"),
+        B.replace("status: todo", "status: done")
+    );
+    assert_eq!(ch.count(), 0);
+}
+
+#[test]
+fn test_merge_refuses_when_same_key_changed() {
+    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~2] 外で title と status の両方を直した → ためた
+    // キーにも触れたので合わせず止まり、ファイルは外の変更のまま、ためた変更は残る。
+    let (dir, src) = setup("merge_same");
+    let mut src = src;
+    let b = row(&src, "b.md");
+    let mut ch = Changes::new();
+    assert!(ch.set(&src, &b, "status", s("done")).is_ok());
+    external_edit(&dir, "b.md", B_EXT_STATUS);
+
+    let res = ch.save(&mut src);
+    assert!(matches!(outcome_of(&res, &b), Outcome::Changed));
+    assert_eq!(read(&dir, "b.md"), B_EXT_STATUS);
+    assert_eq!(ch.count(), 1);
+    assert!(ch.external(&b));
+}
+
+#[test]
 fn test_wb_4_external_change_after_overwrite_stops_again() {
-    // [utest -> req~write-back.conflict-stop~1] 外の変更の上に書くを選んでから書くまでにまた外で変わった → 止まる。
+    // [utest -> req~write-back.conflict-stop~2] 外の変更の上に書くを選んでから書くまでにまた外で status が変わった → 止まる。
     let (dir, src) = setup("wb4again");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -457,7 +547,7 @@ fn test_wb_4_external_change_after_overwrite_stops_again() {
     ch.note_external(&changed);
     ch.overwrite(&mut src, &b).expect("overwrite");
 
-    let again = "---\nstatus: todo\ntitle: B changed outside twice\n---\nbody b\n";
+    let again = "---\nstatus: waiting\ntitle: B changed outside twice\n---\nbody b\n";
     external_edit(&dir, "b.md", again);
     let res = ch.save(&mut src);
     assert!(matches!(outcome_of(&res, &b), Outcome::Changed));
@@ -467,15 +557,15 @@ fn test_wb_4_external_change_after_overwrite_stops_again() {
 
 #[test]
 fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
-    // [utest -> req~write-back.conflict-stop~1, req~write-back.external-save-choice~1] ためたあとの読み直しでは保存の基準を変えない。
-    // 外で変わった行の別のキーにさらにためても、基準は最初にためた時点のまま → 保存は止まる。
+    // [utest -> req~write-back.conflict-stop~2, req~write-back.external-save-choice~2] ためたあとの読み直しでは保存の基準を変えない。
+    // 外で変わった行の別のキーにさらにためても、基準は最初にためた時点のまま → 外で status も変わったので保存は止まる。
     let (dir, src) = setup("wb4keepbase");
     let mut src = src;
     let b = row(&src, "b.md");
     let mut ch = Changes::new();
 
     assert!(ch.set(&src, &b, "status", s("done")).is_ok());
-    external_edit(&dir, "b.md", B_EXT);
+    external_edit(&dir, "b.md", B_EXT_STATUS);
     let changed = src.changed();
     assert!(changed.contains(&b), "changed() が外の変更を返さない");
     ch.note_external(&changed);
@@ -490,7 +580,7 @@ fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
     assert!(matches!(outcome_of(&res, &b), Outcome::Changed));
     assert_eq!(
         read(&dir, "b.md"),
-        B_EXT,
+        B_EXT_STATUS,
         "止まった保存でファイルが変わった"
     );
     assert_eq!(ch.count(), 2);
@@ -498,7 +588,7 @@ fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
 
 #[test]
 fn test_wb_4_external_change_before_set_is_reloaded() {
-    // [utest -> req~write-back.conflict-stop~1, req~write-back.external-reload~1, req~write-back.external-keep-pending~1] ためる前に外で直した → 読み直され、印は付かず、保存は止まらない。
+    // [utest -> req~write-back.conflict-stop~2, req~write-back.external-reload~1, req~write-back.external-keep-pending~1] ためる前に外で直した → 読み直され、印は付かず、保存は止まらない。
     let (dir, src) = setup("wb4before");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -523,14 +613,14 @@ fn test_wb_4_external_change_before_set_is_reloaded() {
 
 #[test]
 fn test_wb_4_same_size_change_is_detected_by_mtime_and_hash() {
-    // [utest -> req~write-back.conflict-stop~1] 大きさが同じ外の変更でも、更新時刻(ずらす)と中身のハッシュで止まる。
+    // [utest -> req~write-back.conflict-stop~2] 大きさが同じ外の変更(ためるキーの status)でも、更新時刻(ずらす)と中身のハッシュで止まる。
     let (dir, src) = setup("wb4same");
     let mut src = src;
     let b = row(&src, "b.md");
     let mut ch = Changes::new();
 
     assert!(ch.set(&src, &b, "status", s("done")).is_ok());
-    let same_len = B.replace("title: B", "title: Z");
+    let same_len = B.replace("status: todo", "status: wait");
     assert_eq!(same_len.len(), B.len());
     let p = dir.path().join("b.md");
     let old = std::fs::metadata(&p).unwrap().modified().unwrap();
@@ -550,7 +640,7 @@ fn test_wb_4_same_size_change_is_detected_by_mtime_and_hash() {
 
 #[test]
 fn test_wb_16_discard_drops_row_changes() {
-    // [utest -> req~write-back.external-save-choice~1] ためた変更を捨てる → その行の変更が消え、ほかの行は残る。1手として取り消せる。
+    // [utest -> req~write-back.external-save-choice~2] ためた変更を捨てる → その行の変更が消え、ほかの行は残る。1手として取り消せる。
     let (dir, src) = setup("wb16discard");
     let mut src = src;
     let a = row(&src, "a.md");

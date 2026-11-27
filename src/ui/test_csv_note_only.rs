@@ -80,7 +80,7 @@ fn test_sc_17_add_row() {
 
 #[test]
 fn test_sc_17_add_row_keeps_pending_edits() {
-    // [utest -> req~scope.csv-features-note-only~1, req~write-back.conflict-stop~1] 直しをためたまま行を足しても、ためた直しは外の変更として止まらずに書ける。
+    // [utest -> req~scope.csv-features-note-only~1, req~write-back.conflict-stop~2] 直しをためたまま行を足しても、ためた直しは外の変更として止まらずに書ける。
     let (t, mut a) = open("sc17keep", LEDGER);
     edit_cell(&mut a, 0, "qty", "5");
     ch(&mut a, 'a');

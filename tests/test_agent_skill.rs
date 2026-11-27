@@ -253,3 +253,16 @@ fn test_cli_22_skill_examples_run() {
         "done の行があってはいけません:\n{text}"
     );
 }
+
+// [stest -> req~cli.agent-skill-apply-stale~1]
+#[test]
+fn test_skill_tells_keep_rev_and_reexport() {
+    // スキルに、`_rev` の列を残すことと、書き出したあとに変わったと止まったら書き出し直して同じ直しをやり直す手順がある。
+    let rel = "plugins/mdgrid/skills/mdgrid/SKILL.md";
+    let md = std::fs::read_to_string(repo().join(rel)).unwrap();
+    assert!(md.contains("`_rev`"), "{rel} に `_rev` が無い");
+    assert!(
+        md.to_lowercase().contains("export it again") && md.contains("redo"),
+        "{rel} に書き出し直してやり直す手順が無い"
+    );
+}
