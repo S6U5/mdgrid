@@ -62,7 +62,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `U` | `redo` | Redo the change you undid |
 | `Ctrl+Shift+z` | `redo` | Redo the change you undid |
 | `a` | `new_note` | Create a new note (same as **+ New** at the right end of the view bar) |
-| `c` | `new_child_note` | In a table shown as a tree, create a new note under the selected row (the parent field is filled in) |
+| `c` | `new_child_note` | Create a new note linked to the selected row: a child in a table shown as a tree (the parent field is filled in), or a note in another table of the workspace whose column points to this table (mdgrid moves to that table, fills the column with the selected row, and comes back after you create or cancel). Asks which when there are two or more |
 | `Ctrl+s` | `save` | Review the pending changes as a diff, then save them |
 | `q` | `quit` | Quit (asks first if there are unsaved changes) |
 | `Ctrl+g` | `cancel_load` | Stop loading notes |
@@ -787,7 +787,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `undo` — undo the last change
 - `redo` — redo the change you undid
 - `new_note` — create a new note
-- `new_child_note` — create a child note of the selected row
+- `new_child_note` — create a note linked to the selected row (a child, or a note in another table that points to it)
 - `save` — review and save the pending changes
 - `quit` — quit mdgrid
 - `cancel_load` — stop loading notes
