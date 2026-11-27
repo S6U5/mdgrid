@@ -11,7 +11,7 @@ mdgrid は Rust 製の単体の実行ファイルです。[GitHub の Releases](
 ```sh
 cargo install mdgrid --locked       # Rust 1.90 以上。ソースからビルドするので数分かかる
 cargo binstall mdgrid               # cargo-binstall。ビルド済みのバイナリが入る
-nix profile install github:S6U5/mdgrid/v0.7.0   # Nix(試すだけなら nix run github:S6U5/mdgrid/v0.7.0)
+nix profile install github:S6U5/mdgrid/v0.8.0   # Nix(試すだけなら nix run github:S6U5/mdgrid/v0.8.0)
 ```
 
 リポを clone して作るときは `cargo build --release` で `target/release/mdgrid` ができます。下の例は `target/release/mdgrid` で書いています。入れた `mdgrid` なら `mdgrid` だけで動きます。
