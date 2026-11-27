@@ -798,6 +798,20 @@ pub fn prefill(
                         .then(|| NewValue::List(vec![s]));
                     (col, v)
                 }
+                // 印のビューの `where` の値1つ: リストの列はその要素1つのリスト、ほかの列はその値。
+                Fixed::Has(col, v) => {
+                    let v = if kind(&col) == Kind::List {
+                        match &v {
+                            expr::Val::Str(s) if !s.is_empty() => {
+                                Some(NewValue::List(vec![s.clone()]))
+                            }
+                            _ => None,
+                        }
+                    } else {
+                        typed_val(kind(&col), &v)
+                    };
+                    (col, v)
+                }
                 // Obsidian の file.hasTag はフロントマターの tags の列を見る。
                 Fixed::Tag(t) => ("tags".to_string(), Some(NewValue::List(vec![t]))),
                 // フォルダは値でなく作る場所(view_folder)。

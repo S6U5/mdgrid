@@ -305,7 +305,7 @@ fn test_where_not_table_warns() {
     assert!(items(&a).contains(&"旧案".to_string()), "{:?}", items(&a));
 }
 
-// [utest -> req~cell-edit.candidates-table-rows~1]
+// [utest -> req~cell-edit.candidates-table-rows~2]
 /// candidates を書いた列の値の候補は今の表のノートから: サイトの表のタグ「料理」はタスクの窓に出ない。
 #[test]
 fn test_values_come_from_this_table() {

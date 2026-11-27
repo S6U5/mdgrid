@@ -42,6 +42,27 @@
   - When:
   - Then: 1行目と `…⏎`(ゴールデン)。
 
+#### 日時の列の値は、日付を日付の見せ方(cell-edit.date-format-display)で、時刻をノートに書いたとおりに、間を空白1つにして見せ、ノートには `2026-11-25T16:00` の形のまま書くべき
+`req~cell-view.datetime-display~1` P1
+- Rationale: `T` はノートの書き方(Obsidian の日時)で、読む人には要らない(2026-11-27 の台帳の実地の操作で、会議の日時が `2026-11-25T16:00` と出て読みにくかった)。日付の見せ方を選んだ人には、日時の日付も同じ形で見せる
+- Acceptance:
+  - Given: `[types] at = "datetime"` と `at: 2026-11-25T16:00` のノート
+  - When: 表とカンバンの札と詳細の表示を描く
+  - Then: どれも `2026-11-25 16:00`。
+- Acceptance:
+  - Given: 同じノートと、設定 `dates.format = "YYYY/MM/DD"`
+  - When: 表を描く
+  - Then: `2026/11/25 16:00`。
+- Acceptance:
+  - Given: 同じ列の `at: 2026-11-25`(日付だけ)
+  - When: 表を描く
+  - Then: `2026-11-25`。
+- Acceptance:
+  - Given: 表の `2026-11-25 16:00` のセル
+  - When: Enter で直し始める
+  - Then: 欄にはノートの値 `2026-11-25T16:00`。直さずに確定すれば、ノートは1バイトも変わらない。
+- Needs: utest
+
 #### 数の列は右寄せ、チェックボックスの列は中央寄せで見せるべき
 `req~cell-view.align~1` P1
 - Acceptance:

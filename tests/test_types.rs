@@ -362,7 +362,7 @@ fn sorted_strs(vals: &[Value]) -> Vec<String> {
 
 #[test]
 fn test_ce_3_candidates_distinct_without_null_and_empty() {
-    // [utest -> req~cell-edit.value-list-open~2, req~cell-edit.value-list-none~1] status が todo・doing・done だけなら3つ(Null と空は除く)
+    // [utest -> req~cell-edit.value-list-none~1] status が todo・doing・done だけなら3つ(Null と空は除く)
     let t = TempDir::new("cand");
     t.mkdir(".obsidian");
     t.write("a.md", b"---\nstatus: todo\n---\n");
@@ -382,7 +382,7 @@ fn test_ce_3_candidates_distinct_without_null_and_empty() {
 
 #[test]
 fn test_ce_3_candidates_over_max_is_none() {
-    // [utest -> req~cell-edit.value-list-open~2] 異なる値が上限を超えたら None。ちょうど上限なら Some
+    // [cell-edit.value-list-open] 異なる値が上限を超えたら None。ちょうど上限なら Some
     let t = TempDir::new("cand-max");
     t.mkdir(".obsidian");
     for i in 0..5 {
@@ -398,7 +398,7 @@ fn test_ce_3_candidates_over_max_is_none() {
 
 #[test]
 fn test_ce_3_candidates_include_notes_outside_given_folder() {
-    // [utest -> req~cell-edit.value-list-open~2] 渡したフォルダの外(根の下)のノートの値も候補に入る
+    // [cell-edit.value-list-open] 渡したフォルダの外(根の下)のノートの値も候補に入る
     let t = TempDir::new("cand-root");
     t.mkdir("vault/.obsidian");
     let sub = t.mkdir("vault/sub");

@@ -219,7 +219,7 @@ fn test_nv_27_click_mark_folds() {
 
 #[test]
 fn test_nv_27_count_direct_children() {
-    // [utest -> req~navigation.parent-child-count~1] 子を持つ行の名前のあとに直の子の数: 設計は (2)(孫の部品は数えない)、画面は (1)。
+    // [utest -> req~navigation.parent-child-count~2] 子を持つ行の名前のあとに直の子の数: 設計は (2)(孫の部品は数えない)、画面は (1)。
     // 子の無い API と部品に数は無い。
     let (_t, mut a) = notes("nv27cnt1");
     tree_on(&mut a);
@@ -232,7 +232,7 @@ fn test_nv_27_count_direct_children() {
 
 #[test]
 fn test_nv_27_count_stays_when_folded() {
-    // [utest -> req~navigation.parent-child-count~1] 設計で Z → 子は隠れても `▸ 設計 (2)`。
+    // [utest -> req~navigation.parent-child-count~2] 設計で Z → 子は隠れても `▸ 設計 (2)`。
     let (_t, mut a) = notes("nv27cnt2");
     tree_on(&mut a);
     a.refresh_if_needed();
@@ -249,7 +249,7 @@ fn test_nv_27_count_stays_when_folded() {
 
 #[test]
 fn test_nv_27_count_only_rows_in_view() {
-    // [utest -> req~navigation.parent-child-count~1] 子の API(done)を絞り込みで外す → `▾ 設計 (1)`(今のビューに並ぶ子だけを数える)。
+    // [utest -> req~navigation.parent-child-count~2] 子の API(done)を絞り込みで外す → `▾ 設計 (1)`(今のビューに並ぶ子だけを数える)。
     let (_t, mut a) = make(
         "nv27cnt3",
         &[
@@ -271,7 +271,7 @@ fn test_nv_27_count_only_rows_in_view() {
 
 #[test]
 fn test_nv_27_count_before_wbs_progress() {
-    // [utest -> req~navigation.parent-child-count~1] WBS をオン → 数は名前のすぐあとで、進み具合の前(`▾ 1 設計 (2) · 割合%`)。
+    // [utest -> req~navigation.parent-child-count~2] WBS をオン → 数は名前のすぐあとで、進み具合の前(`▾ 1 設計 (2) · 割合%`)。
     let (_t, mut a) = notes("nv27cnt4");
     tree_on(&mut a);
     let v = |value: &str, percent: u8, label: &str| mdgrid::settings::WbsValue {

@@ -99,7 +99,7 @@ fn labels(md: &Markdown) -> Vec<String> {
 
 #[test]
 fn scalar_in_list_column_is_locked_and_counted() {
-    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1, req~cell-edit.list-candidates-scalar-open~1, req~cell-edit.list-candidates-unkeepable~1] リストの列で `tags: x`(1つの文字列)のセルは、1つの要素のリストとして開ける(lock なし)。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1, req~cell-edit.list-candidates-scalar-open~1, req~cell-edit.list-candidates-unkeepable~1] リストの列で `tags: x`(1つの文字列)のセルは、1つの要素のリストとして開ける(lock なし)。
     // 文字列でない1つの値(`tags: 2024`)は読むだけ。候補には1つの要素として数える。空の値・キーなしは lock なし。
     let t = tmp("scalar-list");
     std::fs::write(t.0.join("a.md"), "---\ntags: [x, y]\n---\n").unwrap();

@@ -112,19 +112,27 @@ impl App {
         if let Shown::Prop(c) = self.cell(row, col) {
             if let Some(Value::Str(v)) = &c.value {
                 if !v.is_empty() {
+                    // navigation.detail-same-text: 全文(改行も保つ)を、表のセルと同じ名前・日付と日時の見せ方・
+                    // リンクの行き先の名前で。
                     let mark = if s.locked.is_some() { "#" } else { "" };
-                    return format!("{mark}{}", label(v).unwrap_or_else(|| v.clone()));
+                    let text = label(v)
+                        .or_else(|| super::cell::date_text(self, col, v))
+                        .or_else(|| self.link_text(row, &Value::Str(v.clone())))
+                        .unwrap_or_else(|| v.clone());
+                    return format!("{mark}{text}");
                 }
             }
         }
-        // SR-35: 部品(☑・札)は表の中だけ。詳細は値の文字で見せる(名前のある値は名前)。
+        // SR-35: 部品(☑・札)は表の中だけ。詳細は値の文字で見せる(名前のある値は名前、リンクは行き先の名前)。
         if let Shown::Prop(c) = self.cell(row, col) {
             let rich =
                 s.part != super::cell::CellPart::None || matches!(c.value, Some(Value::Bool(_)));
             if let (true, Some(v)) = (rich && s.locked.is_none(), &c.value) {
                 return match v {
                     Value::Bool(_) => super::cell::value_plain(v),
-                    _ => super::cell::labeled_text(self, col, v),
+                    _ => self
+                        .link_text(row, v)
+                        .unwrap_or_else(|| super::cell::labeled_text(self, col, v)),
                 };
             }
         }

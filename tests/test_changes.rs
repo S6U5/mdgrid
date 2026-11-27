@@ -333,7 +333,7 @@ fn test_ce_10_set_many_skips_unreadable_frontmatter() {
 fn test_ce_10_set_on_read_only_cell_is_skip() {
     // [utest -> req~cell-edit.bulk-set-skip-read-only~1] 読むだけのセル(ネストした map・複数行のフローのリスト・読めないフロントマターのノート(WB-5))に
     // set → Err(Skip)。
-    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1] 書ける形のブロックのリスト(a.md の tags)は読むだけでない。
+    // [utest -> req~cell-edit.list-items-narrow~1] 書ける形のブロックのリスト(a.md の tags)は読むだけでない。
     // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは読むだけでなく、ためられる。
     let (_dir, src) = setup_with(
         "ce10ro",

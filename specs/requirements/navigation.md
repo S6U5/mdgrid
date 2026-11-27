@@ -778,7 +778,7 @@
   - Then: 「▸ 設計」。
 
 #### 親子で並べたとき、子を持つ行の名前のあとに、その下に並ぶ直の子の数を `(2)` の形で出すべき
-`req~navigation.parent-child-count~1` P1
+`req~navigation.parent-child-count~2` P1
 - Rationale: 畳んだ親に子がいくつあるか、開いた親でもいくつ残っているかが、数えずに分かるように(2026-11-27 に人が「子タスクの数が()で表示されるといいかも」と言った)。数は今のビューに並ぶ子だけで、絞り込みで外れた子は数えない(畳む・字下げと同じ並びを数える。WBS の割合も今のビューの行から出す)。孫は数えない
 - Acceptance:
   - Given: `parent: "[[設計]]"` の「画面」と「API」、`parent: "[[画面]]"` の「部品」がある表で親子をオン
@@ -796,6 +796,10 @@
   - Given: 同じ表で WBS をオン
   - When: 表を描く
   - Then: 数は名前のすぐあとで、進み具合の前(`▾ 1 設計 (2) · 50%` の形)。
+- Acceptance:
+  - Given: 名前の長い親「家の光熱費を年に3万円下げられるか」に子が1つあり、ノートの欄に名前が入らない幅
+  - When: 表を描く
+  - Then: 名前のほうを `…` で切り、`(1)` は欄の中に残る。
 
 #### 親子で並べたとき、`Z`(Shift+z。とその印のクリック)で子孫を畳む・開くべき
 `req~navigation.parent-child-fold~2` P1
@@ -1168,6 +1172,15 @@
   - When: Space を3行
   - Then: 下の帯に「選択 3」。
 
+#### 詳細の表示の値は、表のセルと同じ見せ方(リンクの行き先の名前・値の名前・日付と日時の見せ方)の文字で見せるべき(札や ☑ の部品にはせず、文字で)
+`req~navigation.detail-same-text~1` P1
+- Rationale: 詳細でリンクのリストが `[[[小さなチームで使うコード検索の道具は何が良いか]]]` と、ノートの書き方のまま出て、表のセルの `[小さなチーム…]` と違って読めた(2026-11-27 の台帳の実地の操作)
+- Acceptance:
+  - Given: `related: ["[[設計]]", "[[画面]]"]` の行
+  - When: `K` で詳細を開く
+  - Then: related の値は `[設計, 画面]`(表のセルと同じ)。
+- Needs: utest
+
 #### 選んだ行の全プロパティを縦に並べた詳細の表示(`K`)があるべき
 `req~navigation.detail-view~1` P1
 - Acceptance:
@@ -1500,8 +1513,8 @@
   - Then: cli.config-file-warning-form の形で `icons.blocked` を言う警告1行で、その字は使わない。
 - Needs: utest
 
-#### まとまりの見出しの値は、その列のセルと同じ部品(screen.style-parts の `status`・`tags` の形と、screen.value-colors の値の色)で描くべき
-`req~navigation.group-heading-parts~1` P1
+#### まとまりの見出しとカンバンのレーンの題の値は、その列のセルと同じ部品(screen.style-parts の `status`・`tags` の形と、screen.value-colors の値の色)で描くべき
+`req~navigation.group-heading-parts~2` P1
 - Rationale: タグや状態でまとめると、見出しは太字の文字だけで、どのまとまりかを色で見分けられず、色を変える口も無かった(2026-11-27 に人が「タグで分けた時のタグの色か強調を変えられるようにしてほしい」と言った)。セルの札と同じ形と色にすれば、見出しと行の値が同じに見え、色は値の色の設定(`[look.colors.values]`。screen.value-colors-set)で、形は `[look.style]` で変えられる。部品を文字のままにする設定(`look.cells = "plain"`・`[look.columns]` の `"plain"`・形の `"plain"`)と色を使わない表示では、今までどおり文字で描く
 - Acceptance:
   - Given: `[look.style] tags = "chip"`・`[look.colors.values] 仕事 = "#3366cc"` と、tags が `[仕事]` の行と `[家]` の行がある表(色のある表示)
@@ -1515,6 +1528,10 @@
   - Given: 同じ表を色を使わない表示で開く
   - When: tags でグループ分けする
   - Then: 見出しは今までどおり `▾ tags: 仕事(1件)`。
+- Acceptance:
+  - Given: `[look.style] status = "chip"`・`[look.colors.values] doing = "#d6a85c"` と、`kanban = { column = "status" }` の表(色のある表示)
+  - When: カンバンで開く
+  - Then: doing のレーンの題の「doing」の字の地は #d6a85c(セルの doing の札と同じ)で、札の数 `(1)` も出る。
 - Needs: utest
 
 #### 値を選ぶ窓(セルを直すときと新しいノートの窓の値の候補・リストの値の付け外しの窓・絞り込みの窓とビューの設定の値の一覧・値の件数の窓)は、`[rules.<列>] labels` に名前のある値を「字 名前 値」(例「○ 未着手 todo」)で見せ、書く値と絞る値は値のままにするべき

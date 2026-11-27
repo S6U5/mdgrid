@@ -38,7 +38,7 @@ A pair `{ light = ..., dark = ... }` picks by the terminal's background; `"auto"
 theme = { light = "paper", dark = "saas-dark" }
 ```
 
-`[look.colors]` overrides single colors of the theme (`accent`, `selection`, …) and `[look.colors.values]` gives a value its own color (`done = "green"`). The color goes on the value's chip in the cells and on the value in group headings alike, so `work = "blue"` turns the heading of the work group blue too.
+`[look.colors]` overrides single colors of the theme (`accent`, `selection`, …) and `[look.colors.values]` gives a value its own color (`done = "green"`). The color goes on the value's chip in the cells, on the value in group headings and on kanban lane titles alike, so `work = "blue"` turns the heading of the work group blue too.
 
 Themes and role colors can also be picked on screen: in the "Look" section of the view settings (`o`), choose a theme from the list, or pick Custom at the end of the list to change the current theme's colors role by role. See [Themes](themes.md#how-to-choose).
 

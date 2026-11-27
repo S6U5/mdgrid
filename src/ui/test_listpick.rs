@@ -69,7 +69,7 @@ fn space(a: &mut App) {
 
 #[test]
 fn test_ce_16_open_filter_and_add() {
-    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] tags のセルで Enter → 保管庫の中のタグの一覧。[utest -> req~cell-edit.list-candidates-order~1, req~cell-edit.list-candidates-match~1] 件数の多い順、同じ件数は文字の順、今の値に [x]。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~2, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] tags のセルで Enter → 保管庫の中のタグの一覧。[utest -> req~cell-edit.list-candidates-order~1, req~cell-edit.list-candidates-match~1] 件数の多い順、同じ件数は文字の順、今の値に [x]。
     let (_t, mut a) = make("ce16", TAGS);
     open_tags(&mut a, 2);
     assert_eq!(
@@ -160,7 +160,7 @@ fn test_ce_19_hash_and_no_duplicates() {
     assert_eq!(shown(&a), vec!["[x] 新規 0"]);
     press(&mut a, KeyCode::Tab);
     assert_eq!(pending(&a, 2, "tags"), list(&["会議", "新規"]));
-    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1] 打った文字は大文字小文字を区別しない部分一致。全角の文字は全角のまま入る(SR-17)。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~2] 打った文字は大文字小文字を区別しない部分一致。全角の文字は全角のまま入る(SR-17)。
     let (_t2, mut b) = make(
         "ce19case",
         &[
@@ -558,7 +558,7 @@ fn test_ce_19_read_only_shapes_have_reasons() {
 
 #[test]
 fn test_ce_16_space_in_search() {
-    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-items-new~1] 検索が空でなければ Space は空白として入る。aliases の列で `new item` と打って Enter
+    // [utest -> req~cell-edit.list-items-candidates~2, req~cell-edit.list-items-new~1] 検索が空でなければ Space は空白として入る。aliases の列で `new item` と打って Enter
     // → `new item` が1つの要素として足される。
     let (_t, mut a) = make(
         "ce16space",

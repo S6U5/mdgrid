@@ -512,7 +512,7 @@ fn test_ce_18_source_save_and_preview_write_list() {
 
 #[test]
 fn test_ce_16_list_candidates_counts_and_order() {
-    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-candidates-order~1] 候補は要素と件数。件数の多い順、同じ件数は文字の順。
+    // [utest -> req~cell-edit.list-candidates-order~1] 候補は要素と件数。件数の多い順、同じ件数は文字の順。
     // tags は先頭の # を除く。渡したフォルダの外(根の下)のノートの要素も入る(BV-2)。
     let dir = TempDir::new("list-cands");
     std::fs::create_dir_all(dir.path().join(".obsidian")).unwrap();
@@ -546,7 +546,7 @@ fn test_ce_16_list_candidates_counts_and_order() {
 
 #[test]
 fn test_ce_16_list_candidates_follow_saved_values() {
-    // [utest -> req~cell-edit.list-items-candidates~1] 保存で足した要素は、そのあとの候補に入る(候補は今ある要素)。
+    // [cell-edit.list-items-candidates] 保存で足した要素は、そのあとの候補に入る(候補は今ある要素)。
     let dir = TempDir::new("list-cands-save");
     dir.write("a.md", b"---\ntags: [x]\n---\n");
     dir.write("b.md", b"---\ntags: [x, y]\n---\n");

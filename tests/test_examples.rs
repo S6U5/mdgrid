@@ -173,7 +173,7 @@ fn test_examples_open_folder() {
         .get(&row_of(src, "Tasks/Service the studio bikes.md"), "steps")
         .lock
         .is_some());
-    // [utest -> req~cell-edit.list-items-candidates~1] リストの値は書ける形なら編集できる: 1行のフロー(tags)も縦のリスト(packing)も lock なし。
+    // [cell-edit.list-items-candidates] リストの値は書ける形なら編集できる: 1行のフロー(tags)も縦のリスト(packing)も lock なし。
     assert!(src
         .get(&row_of(src, "Tasks/Sort the receipts.md"), "tags")
         .lock
@@ -182,7 +182,7 @@ fn test_examples_open_folder() {
         .get(&row_of(src, "Tasks/Pack for the offsite.md"), "packing")
         .lock
         .is_none());
-    // [utest -> req~cell-edit.list-items-candidates~1, req~cell-edit.list-candidates-order~1] tags の候補はルートフォルダの中の要素と件数、件数の多い順。
+    // [utest -> req~cell-edit.list-candidates-order~1] tags の候補はルートフォルダの中の要素と件数、件数の多い順。
     let tags = src.list_candidates("tags");
     assert_eq!(tags.first(), Some(&("office".to_string(), 6)), "{tags:?}");
     assert!(tags.contains(&("money".to_string(), 3)), "{tags:?}");
@@ -287,7 +287,7 @@ const STUDIO_TODAY: i64 = 20732;
 
 #[test]
 fn test_examples_showcase() {
-    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~2, req~base-view.source-folder~1, req~base-view.table-keys~1, req~cell-edit.date-format-display~2, req~cell-edit.date-format-write~1, req~cell-edit.list-items-candidates~1]
+    // [utest -> req~cli.config-file-location~1, req~cli.config-file-items~1, req~cli.config-file-warning-form~2, req~base-view.source-folder~1, req~base-view.table-keys~1, req~cell-edit.date-format-display~2, req~cell-edit.date-format-write~1]
     let (_dir, examples) = sample_of(".", "examples-showcase");
 
     // 設定は警告なしで読め、日付の形・週の始まり・検索の欄・キーの割り当て直しが入る。
@@ -334,7 +334,7 @@ fn test_examples_showcase() {
     for col in cols {
         assert!(src.columns().iter().any(|c| c == col), "column {col}");
     }
-    // [utest -> req~cell-edit.list-items-candidates~1] リストの列は縦の形(depends_on)も1行の形(tags)も編集でき、候補は複数で、重なる要素がある。
+    // [cell-edit.list-items-candidates] リストの列は縦の形(depends_on)も1行の形(tags)も編集でき、候補は複数で、重なる要素がある。
     let task = row_of(src, "Tasks/Build the menu page.md");
     assert!(src.get(&task, "tags").lock.is_none());
     assert!(src.get(&task, "depends_on").lock.is_none());

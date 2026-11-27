@@ -698,7 +698,7 @@ fn test_ce_8_read_only_not_opened() {
     // [utest -> req~cell-edit.read-only-forms~2, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
     // [utest -> req~cell-edit.list-candidates-read-only~1] CE-8 の形のリスト(複数行にまたがるフロー)も開かずに理由。
     // 書ける形のリスト(d.md の `tags: [x, y]`)の画面の振る舞いはタスク 2(リストの選択の画面)で
-    // 確かめる。ここでは核の Cell.lock が無いことだけを見る [utest -> req~cell-edit.list-items-candidates~1]。
+    // 確かめる。ここでは核の Cell.lock が無いことだけを見る [utest -> req~cell-edit.list-items-candidates~2]。
     // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(e.md)は読むだけでなく、入力が開く。
     let (_t, mut a) = make(
         "ce8",
@@ -726,7 +726,7 @@ fn test_ce_8_read_only_not_opened() {
         assert!(msg.contains("読むだけ") && msg.contains(want), "{msg}");
     }
     assert_eq!(a.changes.count(), 0);
-    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~1] 書ける形のリストのセルは読むだけでない(lock なし)。
+    // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-candidates~2] 書ける形のリストのセルは読むだけでない(lock なし)。
     let d = a.rows[3].clone();
     assert_eq!(a.src.label(&d), "d.md");
     let c = a.src.get(&d, "tags");

@@ -1586,6 +1586,9 @@ pub enum Fixed {
     Eq(String, Val),
     /// `列.contains("値")`。
     Contains(String, String),
+    /// `list(列).contains(値)`(印のビューの `where` で値を1つだけ書いた形。cell-edit.new-note-filter-values):
+    /// 列がその値か、リストの列ならその値を要素に持つ。
+    Has(String, Val),
     /// `file.hasTag("x")`(引数1つ。先頭の `#` は除く)。Obsidian と同じく tags の列のタグ。
     Tag(String),
     /// `file.inFolder("x")`(ルートフォルダからのフォルダ。前後の `/` は除く。空は入れない)。
@@ -1728,11 +1731,17 @@ fn collect_fixed(n: &Node, out: &mut Vec<Fixed>) {
             }
             _ => {}
         },
-        Node::Method(recv, Meth::Contains, args) => {
-            if let (Node::Prop(k), [Node::Lit(Val::Str(s))]) = (&**recv, args.as_slice()) {
+        Node::Method(recv, Meth::Contains, args) => match (&**recv, args.as_slice()) {
+            (Node::Prop(k), [Node::Lit(Val::Str(s))]) => {
                 out.push(Fixed::Contains(k.clone(), s.clone()));
             }
-        }
+            (Node::Call(Func::List, inner), [v]) => {
+                if let ([Node::Prop(k)], Some(v)) = (inner.as_slice(), lit(v)) {
+                    out.push(Fixed::Has(k.clone(), v));
+                }
+            }
+            _ => {}
+        },
         Node::Call(Func::HasTag, args) => {
             if let [Node::Lit(Val::Str(s))] = args.as_slice() {
                 let t = s.trim().trim_start_matches('#');

@@ -1,6 +1,7 @@
 //! 候補の出し方(cell-edit.candidates-sort・cell-edit.candidates-where・cell-edit.candidates-table-rows)。
-//! 決まり `[rules.<列>.candidates]` を書いた列だけ、候補を今の表のノートから集め、`where` で絞って `sort` で並べる。
-//! 書かない列は今までどおり(リンクの列は行き先のノートの名前の順、値の列は読み込み口の候補)。
+//! 値の候補は、どの列も今の表のノートから集める(cell-edit.value-list-open・cell-edit.list-items-candidates)。決まり
+//! `[rules.<列>.candidates]` を書いた列は `where` で絞って `sort` で並べ、書かない列は今までの並び(値の列は表の行に
+//! 出てきた順で、くり返しの無い列には出さない。リストの列は多い順)。リンクの列は行き先のノートの名前の順。
 
 use super::App;
 use mdgrid::relations;
@@ -8,6 +9,9 @@ use mdgrid::rules::{CandSort, Cands};
 use mdgrid::source::{RowId, Value};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+
+/// 1件ごとに違う値の列と見なす、値のある行の数の下限(cell-edit.value-list-open)。
+const UNIQUE_MIN: usize = 5;
 
 /// 値の比べる文字(where の値と、候補の名前)。文字・数・真偽だけ。
 fn scalar_text(v: &Value) -> Option<String> {
@@ -178,11 +182,35 @@ impl App {
         stats
     }
 
-    /// 1つの値の列の候補: 出し方を書いた列は今の表のノートから集めて並べ、書かない列は読み込み口の候補(上限を
-    /// 超えれば None)。
+    /// 1つの値の列の候補: 出し方を書いた列は今の表のノートから集めて並べる。書かない列も今の表のノートから、表の行に
+    /// 出てきた順に集め、異なる値が上限を超える列と、値のある行が5件以上でどの値も1件だけの列(URL・メモのように
+    /// 1件ごとに違う値)は None(cell-edit.value-list-open)。
     pub(crate) fn value_cands(&self, col: &str) -> Option<Vec<Value>> {
         let Some(spec) = self.cand_spec(col) else {
-            return self.src.candidates(col, self.candidates);
+            let mut out: Vec<Value> = Vec::new();
+            let mut repeated = false;
+            for r in self.table_rows() {
+                let Some(v) = self.prop(&r, col) else {
+                    continue;
+                };
+                // 空の値(Null・空の文字列・空のリスト)は候補にしない(読み込み口の候補と同じ)。
+                if matches!(&v, Value::Null)
+                    || matches!(&v, Value::Str(x) if x.is_empty())
+                    || matches!(&v, Value::List(l) if l.is_empty())
+                {
+                    continue;
+                }
+                if out.contains(&v) {
+                    repeated = true;
+                    continue;
+                }
+                if out.len() == self.candidates {
+                    return None;
+                }
+                out.push(v);
+            }
+            // 行の少ない表は、くり返しを見ない(始めたばかりの表の状態の列にも候補を出す)。
+            return (repeated || out.len() < UNIQUE_MIN).then_some(out);
         };
         let stats = self.value_stats(col, spec, false);
         if stats.len() > self.candidates {
@@ -191,12 +219,11 @@ impl App {
         Some(stats.into_iter().map(|s| s.value).collect())
     }
 
-    /// リストの列の候補と、その要素を持つノートの数: 出し方を書いた列は今の表のノートから集めて並べ、書かない列は
-    /// 読み込み口の候補(多い順)。
+    /// リストの列の候補と、その要素を持つノートの数: 今の表のノートから集め、出し方を書いた列はその並べ方、書かない列は
+    /// 多い順(同じ数は名前の順。cell-edit.list-items-candidates)。
     pub(crate) fn list_cands(&self, col: &str) -> Vec<(String, usize)> {
-        let Some(spec) = self.cand_spec(col) else {
-            return self.src.list_candidates(col);
-        };
+        let all = Cands::default();
+        let spec = self.cand_spec(col).unwrap_or(&all);
         self.value_stats(col, spec, true)
             .into_iter()
             .map(|s| (s.key, s.count))

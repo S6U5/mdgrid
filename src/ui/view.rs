@@ -367,19 +367,24 @@ pub(crate) fn label_in(app: &App, row: &RowId, lift: usize) -> String {
     label_around(app, row, lift, name)
 }
 
-/// `label_in` と同じ印と字下げで、名前を出さない設定でも名前(ノートの道筋)を出す(ガントの名前の欄)。
-pub(crate) fn label_named(app: &App, row: &RowId, lift: usize) -> String {
-    let name = if label_hidden(app) {
-        sanitize(&app.src.label(row))
-    } else {
-        note_name(app, row)
-    };
-    label_around(app, row, lift, name)
+/// 名前 `name` に、親子の字下げと ▾・▸、WBS の番号と進み具合、子の数、`~` と `!` の印を付ける。
+fn label_around(app: &App, row: &RowId, lift: usize, name: String) -> String {
+    let (head, name, tail) = label_parts(app, row, lift, name);
+    format!("{head}{name}{tail}")
 }
 
-/// 名前 `name` に、親子の字下げと ▾・▸、WBS の番号と進み具合、子の数、`~` と `!` の印を付ける。
-fn label_around(app: &App, row: &RowId, lift: usize, mut name: String) -> String {
+/// 名前の欄の字を、名前の前(`!`・`~` の印・字下げ・▾/▸・WBS の番号)・名前・名前の後(子の数・WBS の進み具合)に
+/// 分けたもの。
+fn label_parts(app: &App, row: &RowId, lift: usize, name: String) -> (String, String, String) {
     let flag = app.changes.external(row) || app.src.mark(row).is_some();
+    let mut head = String::new();
+    if flag {
+        head.push('!');
+    }
+    if app.held.contains(row) {
+        head.push(HELD_MARK);
+    }
+    let mut tail = String::new();
     // NV-27: 親子で並べていれば、深さ1つごとに2桁字下げし、子を持つ行に ▾(開いている)か ▸(畳んでいる)。
     // navigation.parent-child-indent: 子の無い行も印の2桁を空けて兄弟の名前の頭をそろえ、子の名前を親の名前より
     // 右に出す。
@@ -389,16 +394,23 @@ fn label_around(app: &App, row: &RowId, lift: usize, mut name: String) -> String
             (true, false) => "▾ ",
             (true, true) => "▸ ",
         };
+        head.push_str(&"  ".repeat(n.depth.saturating_sub(lift)));
+        head.push_str(mark);
         let num = app.wbs_num.get(row);
         // NV-28: WBS の番号を名前の前に。
         if let Some(num) = num {
-            name = format!("{num} {name}");
+            head.push_str(&format!("{num} "));
         }
-        // navigation.parent-child-count: 名前のすぐあとに、その下に並ぶ直の子の数。
-        name = with_kids(name, n.kids);
+        // navigation.parent-child-count: 名前のすぐあとに、その下に並ぶ直の子の数(名前を出さない設定では数だけ)。
+        if n.kids > 0 {
+            if !name.is_empty() {
+                tail.push(' ');
+            }
+            tail.push_str(&format!("({})", n.kids));
+        }
         // NV-28: 子のある行は進み具合、子の無い行は対応表のラベルをあとに。
         if num.is_some() {
-            let tail = match app.wbs_pct.get(row) {
+            let more = match app.wbs_pct.get(row) {
                 Some(p) => Some(format!("{p}%")),
                 None => app.settings.wbs.as_ref().and_then(|w| {
                     let Some(mdgrid::source::Value::Str(v)) = app.prop(row, &w.key) else {
@@ -409,29 +421,46 @@ fn label_around(app: &App, row: &RowId, lift: usize, mut name: String) -> String
                         .map(|m| sanitize(&m.label))
                 }),
             };
-            if let Some(t) = tail {
-                name = format!("{name} · {t}");
+            if let Some(t) = more {
+                tail.push_str(&format!(" · {t}"));
             }
         }
-        name = format!("{}{mark}{name}", "  ".repeat(n.depth.saturating_sub(lift)));
     }
-    if app.held.contains(row) {
-        name = format!("{HELD_MARK}{name}");
-    }
-    if flag {
-        format!("!{name}")
-    } else {
-        name
-    }
+    (head, name, tail)
 }
 
-/// navigation.parent-child-count: 名前のあとに直の子の数 `(n)` を添える(子が無ければそのまま。名前を出さない
-/// 設定では数だけ)。
-fn with_kids(name: String, kids: usize) -> String {
-    match (kids, name.is_empty()) {
-        (0, _) => name,
-        (k, true) => format!("({k})"),
-        (k, false) => format!("{name} ({k})"),
+/// 行の名前の欄の字を幅 `w` に収めたもの。入らなければ名前のほうを `…` で切り、名前の後(子の数・進み具合)を残す
+/// (navigation.parent-child-count)。名前の後を残すと名前が1字も入らないときは、全体を切る。
+pub(crate) fn label_fit(app: &App, row: &RowId, lift: usize, named: bool, w: usize) -> String {
+    let name = if named {
+        label_name_always(app, row)
+    } else if label_hidden(app) {
+        String::new()
+    } else {
+        note_name(app, row)
+    };
+    let (head, name, tail) = label_parts(app, row, lift, name);
+    let full = format!("{head}{name}{tail}");
+    if width(&full) <= w || tail.is_empty() {
+        return fit(&full, w, Align::Left);
+    }
+    let room = w.saturating_sub(width(&head) + width(&tail));
+    if room < 2 {
+        return fit(&full, w, Align::Left);
+    }
+    fit(
+        &format!("{head}{}{tail}", fit(&name, room, Align::Left)),
+        w,
+        Align::Left,
+    )
+}
+
+/// ガントの名前の欄の名前(名前を出さない設定でもノートの道筋)。
+fn label_name_always(app: &App, row: &RowId) -> String {
+    if label_hidden(app) {
+        sanitize(&app.src.label(row))
+    } else {
+        note_name(app, row)
     }
 }
 
@@ -661,7 +690,7 @@ fn data_row(
     // SR-20: 行番号。
     spans.extend(num_span(app, lay, i));
     spans.push(Span::styled(
-        fit(&label(app, row), lay.label_w, Align::Left),
+        label_fit(app, row, 0, false, lay.label_w),
         label_st,
     ));
     let edit = if sel_row && app.note.flow.is_none() {
@@ -1003,19 +1032,46 @@ fn heading_parts(app: &App, g: usize) -> Option<super::chips::Parts> {
     }
     // セルの部品の決め方(cell::rich_text)と同じ: リストは要素の札、文字は札の列、数は札を強いた列だけ。
     let list = match v {
-        Some(Value::List(_)) if app.rich(&col, mdgrid::cells::Part::Chips) => true,
-        Some(Value::Str(_)) if app.is_select(&col) => false,
-        Some(Value::Int(_) | Value::Float(_))
-            if app.cells.forced_chip(&col) && app.is_select(&col) =>
-        {
-            false
-        }
+        Some(Value::List(_)) => true,
+        Some(Value::Str(_)) => false,
+        Some(Value::Int(_) | Value::Float(_)) if app.cells.forced_chip(&col) => false,
         _ => return None,
     };
     let shown = app.group_shown(g).unwrap_or_else(|| h.clone());
-    let mut p = super::chips::parts_named(app, &[(h.clone(), shown)], list)?;
+    value_parts(app, &col, h, &shown, list)
+}
+
+/// navigation.group-heading-parts: 列 `col` の値 `key`(見せる字は `shown`)を、その列のセルと同じ部品(札の形と値の
+/// 色)にしたもの(セルの頭の空きは除く)。`list` はリストの列の要素か。セルが部品にしない列(部品を文字のままにする
+/// 設定・色を使わない表示・札にしない列)では None。まとまりの見出しとカンバンのレーンの題で使う。
+pub(crate) fn value_parts(
+    app: &App,
+    col: &str,
+    key: &str,
+    shown: &str,
+    list: bool,
+) -> Option<super::chips::Parts> {
+    let on = if list {
+        app.rich(col, mdgrid::cells::Part::Chips)
+    } else {
+        app.is_select(col)
+    };
+    if !on {
+        return None;
+    }
+    let mut p = super::chips::parts_named(app, &[(key.to_string(), shown.to_string())], list)?;
     p.lead.clear();
     Some(p)
+}
+
+/// 選んだ見出し・レーンの題でも値を部品で描くか(セルと同じく、塗る選びと反転では文字のまま。部品の色が選びの塗りに
+/// 埋もれないように)。
+pub(crate) fn parts_when_selected(app: &App) -> bool {
+    use mdgrid::style::Select;
+    matches!(
+        super::look::select(app),
+        Some(Select::Bar | Select::Cross | Select::Tint | Select::Outline)
+    )
 }
 
 /// まとまりの見出しの行。base-view.summaries-per-group: 集計のあるビューでは、見出しの字を最初の小計の列の手前
@@ -1024,37 +1080,62 @@ fn heading_parts(app: &App, g: usize) -> Option<super::chips::Parts> {
 /// そのまとまりの中の深さの字下げと ▾/▸(と WBS の番号・進み具合)のあとに親の名前を薄い字で出し、ほかのセルは空ける。
 fn ghost_row(app: &App, lay: &Layout, g: &super::grid::Ghost, w: usize) -> Line<'static> {
     let dim = Style::default().add_modifier(Modifier::DIM);
-    let text = ghost_text(app, g);
+    let (head, name, tail) = ghost_parts(app, g);
+    let full = format!("{head}{name}{tail}");
+    // navigation.parent-child-count: 入らなければ名前のほうを切り、子の数と進み具合を残す(行と同じ)。
+    let room = lay.label_w.saturating_sub(width(&head) + width(&tail));
+    let text = if width(&full) <= lay.label_w || tail.is_empty() || room < 2 {
+        fit(&full, lay.label_w, Align::Left)
+    } else {
+        fit(
+            &format!("{head}{}{tail}", fit(&name, room, Align::Left)),
+            lay.label_w,
+            Align::Left,
+        )
+    };
     let lead_w = lay.label_x().saturating_sub(width(GHOST_MARK));
     let spans = vec![
         Span::styled(GHOST_MARK, dim),
         Span::raw(" ".repeat(lead_w)),
-        Span::styled(fit(&text, lay.label_w, Align::Left), dim),
+        Span::styled(text, dim),
     ];
     pad(spans, w, Style::default())
 }
 
 /// 添えた薄い行の名前の欄の字(字下げ・▾/▸・WBS の番号・子の数・進み具合と親の名前)。
 fn ghost_text(app: &App, g: &super::grid::Ghost) -> String {
+    let (head, name, tail) = ghost_parts(app, g);
+    format!("{head}{name}{tail}")
+}
+
+/// 添えた薄い行の名前の欄の字を、名前の前(字下げ・▾/▸・WBS の番号)・名前・名前の後(子の数・進み具合)に分けたもの。
+fn ghost_parts(app: &App, g: &super::grid::Ghost) -> (String, String, String) {
     let mark = if app.tree_folded.contains(&g.row) {
         "▸ "
     } else {
         "▾ "
     };
-    let mut name = if label_hidden(app) {
+    let name = if label_hidden(app) {
         String::new()
     } else {
         note_name(app, &g.row)
     };
+    let mut head = format!("{}{mark}", "  ".repeat(g.depth));
     if let Some(num) = &g.num {
-        name = format!("{num} {name}");
+        head.push_str(&format!("{num} "));
     }
+    let mut tail = String::new();
     // navigation.parent-child-count: 添えた行も、その下に並ぶ直の子の数を名前のあとに。
-    name = with_kids(name, g.kids);
-    if let (Some(_), Some(p)) = (&g.num, g.pct) {
-        name = format!("{name} · {p}%");
+    if g.kids > 0 {
+        if !name.is_empty() {
+            tail.push(' ');
+        }
+        tail.push_str(&format!("({})", g.kids));
     }
-    format!("{}{mark}{name}", "  ".repeat(g.depth))
+    if let (Some(_), Some(p)) = (&g.num, g.pct) {
+        tail.push_str(&format!(" · {p}%"));
+    }
+    (head, name, tail)
 }
 
 fn heading_row(
@@ -1065,7 +1146,6 @@ fn heading_row(
     g: usize,
     w: usize,
 ) -> Line<'static> {
-    use mdgrid::style::Select;
     let selected = i == app.row;
     let Some((before, value, after)) = heading_split(app, selected, g) else {
         return Line::from(" ".repeat(w));
@@ -1079,11 +1159,7 @@ fn heading_row(
     }
     // navigation.group-heading-parts: 値はセルと同じ部品で描く。選んだ見出しは、セルと同じく、塗る選びと反転では
     // 文字のまま(部品の色が選びの塗りに埋もれないように)。
-    let keep = !selected
-        || matches!(
-            super::look::select(app),
-            Some(Select::Bar | Select::Cross | Select::Tint | Select::Outline)
-        );
+    let keep = !selected || parts_when_selected(app);
     let parts = heading_parts(app, g).filter(|_| keep);
     let text = format!(
         "{before}{}{after}",

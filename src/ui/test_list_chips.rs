@@ -6,7 +6,7 @@ use ratatui::crossterm::event::KeyCode;
 
 #[test]
 fn test_sr_35_value_list_uses_chip_colors() {
-    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-value-color~1, req~cell-edit.value-list-open~2, req~cell-edit.value-list-narrow~2] status(札の列)のセルで Enter → 選んでいない候補 doing の文字に、表と同じ札の地の色。
+    // [utest -> req~screen.rich-cells-parts~2, req~screen.rich-cells-value-color~1, req~cell-edit.value-list-open~3, req~cell-edit.value-list-narrow~2] status(札の列)のセルで Enter → 選んでいない候補 doing の文字に、表と同じ札の地の色。
     let tmp = Tmp::new("sr35_list");
     for (n, s) in [("a", "todo"), ("b", "doing"), ("c", "todo"), ("d", "done")] {
         tmp.write(

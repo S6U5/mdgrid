@@ -305,12 +305,29 @@ pub(crate) fn align_of(kind: Kind) -> Align {
     }
 }
 
-/// 日付の列の値を設定の日付の形で見せる(CE-22。ファイルの `YYYY-MM-DD` は変えない)。日付でなければ None。
-fn date_text(app: &App, col: &str, s: &str) -> Option<String> {
-    if app.kind_of(col) != Kind::Date {
-        return None;
+/// 日付と日時の列の値 `s` を設定の日付の形で見せる文字(CE-22・cell-view.datetime-display。表のセル・詳細。ファイルの
+/// `YYYY-MM-DD` は変えない)。日付と日時の列でない値と、読めない値は None。
+pub(crate) fn date_text(app: &App, col: &str, s: &str) -> Option<String> {
+    match app.kind_of(col) {
+        Kind::Date => types::parse_date(s).map(|d| app.date_format.format(d)),
+        // cell-view.datetime-display: 日時は、日付を日付の見せ方で、時刻をノートに書いたとおりに、間を空白1つで
+        // (`2026-11-25T16:00` → `2026-11-25 16:00`)。日付だけの値は日付の見せ方。ノートの値は変えない。
+        Kind::DateTime => {
+            if let Some(d) = types::parse_date(s) {
+                return Some(app.date_format.format(d));
+            }
+            let b = s.as_bytes();
+            if b.len() <= 11
+                || !(b[10] == b'T' || b[10] == b' ')
+                || types::parse_datetime(s).is_none()
+            {
+                return None;
+            }
+            let d = types::parse_date(&s[..10])?;
+            Some(format!("{} {}", app.date_format.format(d), &s[11..]))
+        }
+        _ => None,
     }
-    types::parse_date(s).map(|d| app.date_format.format(d))
 }
 
 /// セル1つの見せ方。ためた値が先、ほかは `App::cell`(`.base` があれば Base::cell)から。

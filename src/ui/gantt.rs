@@ -1230,16 +1230,10 @@ fn plain_name_cell(app: &App, g: &Gantt, row: &RowId, w: usize) -> String {
     let lift = app.tree_lift.get(row).copied().unwrap_or(0);
     let head = if sel { ">" } else { " " };
     // gantt.tree-wbs-order: 表のノートの欄と同じ見せ方(字下げ・▾・WBS の番号・子の数。`.md` を除き、フォルダは
-    // note_path に従う)。字下げと番号は重ねて足さない。名前を出さない設定でも名前を出す。
-    let name = super::view::label_named(app, row, lift);
-    fit(
-        &format!(
-            "{head}{}",
-            fit(&name, w.saturating_sub(width(head)), Align::Left)
-        ),
-        w,
-        Align::Left,
-    )
+    // note_path に従う)。字下げと番号は重ねて足さない。名前を出さない設定でも名前を出す。入らなければ名前を切り、
+    // 子の数は残す(navigation.parent-child-count)。
+    let name = super::view::label_fit(app, row, lift, true, w.saturating_sub(width(head)));
+    fit(&format!("{head}{name}"), w, Align::Left)
 }
 
 /// 窓の題: 「ガント: start → due(日)」(推定なら「推定」を添える。無い列は `-`)。列の名前は列の見出しと同じ

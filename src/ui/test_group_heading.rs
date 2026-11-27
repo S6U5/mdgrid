@@ -53,7 +53,7 @@ const CHIP: &str =
 
 #[test]
 fn test_group_heading_value_is_drawn_as_the_cell_part() {
-    // [utest -> req~navigation.group-heading-parts~1] 札の形(chip)と値の色(仕事 = #3366cc)の表を tags でまとめる → 見出しの「仕事」の
+    // [utest -> req~navigation.group-heading-parts~2] 札の形(chip)と値の色(仕事 = #3366cc)の表を tags でまとめる → 見出しの「仕事」の
     // 字の地は #3366cc で、件数 (1件) も出る。
     let (_t, a) = boot("ghparts1", CHIP, ColorMode::Rgb);
     let (x, y) = heading_char(&a);
@@ -72,7 +72,7 @@ fn test_group_heading_value_is_drawn_as_the_cell_part() {
 
 #[test]
 fn test_group_heading_plain_column_stays_text() {
-    // [utest -> req~navigation.group-heading-parts~1] 同じ表で `[look.columns] tags = "plain"` → 見出しの「仕事」の地は #3366cc でない(文字のまま)。
+    // [utest -> req~navigation.group-heading-parts~2] 同じ表で `[look.columns] tags = "plain"` → 見出しの「仕事」の地は #3366cc でない(文字のまま)。
     let cfg = format!("{CHIP}\n[look.columns]\ntags = \"plain\"\n");
     let (_t, a) = boot("ghparts2", &cfg, ColorMode::Rgb);
     let (x, y) = heading_char(&a);
@@ -86,7 +86,7 @@ fn test_group_heading_plain_column_stays_text() {
 
 #[test]
 fn test_group_heading_no_color_is_unchanged() {
-    // [utest -> req~navigation.group-heading-parts~1] 色を使わない表示では、見出しは今までどおり `▾ tags: 仕事(1件)`。
+    // [utest -> req~navigation.group-heading-parts~2] 色を使わない表示では、見出しは今までどおり `▾ tags: 仕事(1件)`。
     let (_t, a) = boot("ghparts3", CHIP, ColorMode::None);
     let s = screen(&a);
     assert!(s.lines().any(|l| l.contains("▾ tags: 仕事(1件)")), "{s}");
