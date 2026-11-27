@@ -281,7 +281,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::OpenRecent { .. }) => Msg::AskOpenRecent.into(),
         Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
         Some(Ask::PageName) => Msg::AskPageName.into(),
-        Some(Ask::RoutineRuns(_)) => Msg::AskRoutineRuns.into(),
+        Some(Ask::RoutineRuns(_)) => Msg::AskRoutineRuns.fill(&[&app.runs_word()]),
         Some(Ask::ChildrenReopen { .. }) => Msg::AskChildrenReopen.into(),
     }
 }

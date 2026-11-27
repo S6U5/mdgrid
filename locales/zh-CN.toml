@@ -304,17 +304,18 @@ RoutineReadonly = "--runs 会写入各次的笔记，所以不能与 --readonly 
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "行不是笔记（CSV 或 TSV），所以不创建例行事项的各次"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  有 {0} 次例行事项到期"
+FooterRoutine = "  {0}：有 {1} 次到期"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "创建例行事项的各次"
-AskRoutineRuns = "创建这些例行事项？输入 y 并按 Enter："
+CmdRoutineRuns = "创建周期事项的各次"
+AskRoutineRuns = "{0}：创建这些次？输入 y 并按 Enter："
 ## {0} は作るノートの数。
 RoutineRunsWhich = "要创建的笔记（{0} 篇）："
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "另有 {0} 篇"
-RoutineNone = "没有到期的例行事项"
+RoutineNone = "{0}：没有到期的次"
 ## {0} は作ったノートの数。
-RoutineMade = "已创建 {0} 次例行事项"
+RoutineMade = "{0}：已创建 {1} 次"
+RunsGeneric = "周期事项"
 RoutineDismissed = "未创建例行事项（今天不再询问）"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "标记中没有名为 {0} 的表格（现有表格：{1}）；已直接打开文件夹"
@@ -1064,7 +1065,7 @@ EditOnlyThisRow = "只编辑此行：不包括已标记的 {0} 行（在已标�
 EditOnlyThisRowOne = "只编辑此行：不包括已标记的 {0} 行（在已标记的行上按 Enter 可编辑它）"
 EditMismatch = "当前值不符合列类型。"
 EditHintList = "↑↓ 选择，Enter 确认，直接输入为自由输入（*=当前值）"
-EditHintNumber = "数字：可读作数字的值，留空则清除"
+EditHintNumber = "数字：可读作数字的值，+10 表示加到当前值，留空则清除"
 EditHintCheckbox = "true 或 false，留空则清除（↑↓ 显示列表）"
 EditHintDate = "日期：{0}、+3 / -2（从今天起），留空则清除"
 EditHintDateTime = "日期时间：YYYY-MM-DDTHH:MM、{0}、+3，留空则清除"

@@ -305,17 +305,18 @@ RoutineReadonly = "--runs escribe notas de ejecución, así que no se puede usar
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "las filas no son notas (CSV o TSV), así que no hay ejecuciones de rutina"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  {0} ejecuciones de rutina pendientes"
+FooterRoutine = "  {0}: {1} ejecuciones pendientes"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "Crear las ejecuciones de rutina"
-AskRoutineRuns = "¿Crear estas ejecuciones de rutina? y + Enter para confirmar: "
+CmdRoutineRuns = "Crear las ejecuciones recurrentes"
+AskRoutineRuns = "{0}: ¿crear estas ejecuciones? y + Enter para confirmar: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notas que crear ({0}):"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "{0} más"
-RoutineNone = "no hay ejecuciones de rutina pendientes"
+RoutineNone = "{0}: no hay ejecuciones pendientes"
 ## {0} は作ったノートの数。
-RoutineMade = "se crearon {0} ejecuciones de rutina"
+RoutineMade = "{0}: se crearon {1} ejecuciones"
+RunsGeneric = "Recurrentes"
 RoutineDismissed = "no se crearon las ejecuciones de rutina (no se vuelve a preguntar hoy)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "no hay tabla llamada {0} en el marcador (tablas: {1}); se abrió la carpeta tal cual"
@@ -1065,7 +1066,7 @@ EditOnlyThisRow = "solo se edita esta fila: las {0} filas marcadas no se incluye
 EditOnlyThisRowOne = "solo se edita esta fila: {0} fila marcada no se incluye (pulse Enter en la fila marcada para editarla)"
 EditMismatch = "el valor actual no encaja con el tipo de la columna. "
 EditHintList = "↑↓ elegir, Enter confirmar, escriba para entrada libre (*=valor actual)"
-EditHintNumber = "número: un valor que se lea como número, vacío para borrar"
+EditHintNumber = "número: un valor que se lea como número, +10 para sumar al valor actual, vacío para borrar"
 EditHintCheckbox = "true o false, vacío para borrar (↑↓ para la lista)"
 EditHintDate = "fecha: {0}, +3 / -2 (desde hoy), vacío para borrar"
 EditHintDateTime = "fecha y hora: YYYY-MM-DDTHH:MM, {0}, +3, vacío para borrar"

@@ -1439,7 +1439,7 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
     }
     // routine.screen-offer: 来ているルーチンの回の数(1つ以上のとき。クリックで作るノートの名前を並べて確かめる)。
     if app.routine_count() > 0 {
-        text.push_str(&Msg::FooterRoutine.fill(&[&app.routine_count()]));
+        text.push_str(&Msg::FooterRoutine.fill(&[&app.runs_word(), &app.routine_count()]));
     }
     // NV-5: 選んだ行の数。
     let n = app.selection().len();
@@ -1572,7 +1572,7 @@ pub(crate) fn routine_at(app: &App, x: u16, y: u16) -> bool {
     if app.built.problems > 0 {
         x0 += width(&Msg::FooterProblems.fill(&[&app.built.problems]));
     }
-    let t = Msg::FooterRoutine.fill(&[&n]);
+    let t = Msg::FooterRoutine.fill(&[&app.runs_word(), &n]);
     let lead = t.len() - t.trim_start().len();
     let x = x as usize;
     x >= x0 + lead && x < x0 + width(&t)

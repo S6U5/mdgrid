@@ -946,6 +946,27 @@
   - When: `priority: 1` のセルで Enter のあと `5`
   - Then: 5(15 ではない)。
 
+#### 数値の列のセルの欄に `+` で始まる数(`+10`・`+2.5`)を打って確定したら、今の値(ためた値があればそれ)にその数を足した値を書くべき(今の値が無いか数でなければ打った数を書く。一括の編集では行ごとに足す。`-` で始まる数は今までどおり負の数)
+`req~cell-edit.number-plus~1` P1
+- Rationale: 読んだページや回数を進めるとき、今の値を見て足し算してから打つ手間があった。読書の記録の道具はページを足して進める(2026-11-27 の読書の台帳の実地の操作で、今のページ 200 の本に `+10` と打つと 10 になった)。`-` は負の数を打つ人がいる(お金の列)ので、引き算にしない
+- Acceptance:
+  - Given: `page: 200` の行
+  - When: page のセルで `+10` と打って確定する
+  - Then: page は 210 のためる変更。
+- Acceptance:
+  - Given: page の無い行
+  - When: page のセルで `+10` と打って確定する
+  - Then: page は 10。
+- Acceptance:
+  - Given: `page: 5` と `page: 7` の2行を選んでいる
+  - When: 一括の編集で `+10` と打って確定する
+  - Then: 15 と 17。
+- Acceptance:
+  - Given: `page: 200` の行
+  - When: `-10` と打って確定する
+  - Then: page は -10。
+- Needs: utest
+
 #### 値を空にしたときは、Obsidian と同じく `key:`(null)と書き、キーは消さないべき
 `req~cell-edit.empty-is-null~1` P1
 - Acceptance:

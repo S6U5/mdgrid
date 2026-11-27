@@ -89,6 +89,14 @@ impl App {
                 out.push(c.clone());
             }
         }
+        // navigation.detail-declared-columns: 表を作った人が置いた列は、値が無くても空欄で並べる(詳細から埋める)。
+        if let Some(b) = &self.base {
+            for c in b.base.declared_columns() {
+                if !out.contains(&c) {
+                    out.push(c);
+                }
+            }
+        }
         for c in self.src.columns() {
             if !out.contains(&c) && self.src.get(row, &c).value.is_some() {
                 out.push(c);

@@ -70,6 +70,30 @@ pub struct Cands {
     pub where_: Vec<(String, Vec<String>)>,
 }
 
+/// `where`(列 → 値のどれか。列どうしは全部)に、値を引く `get` の行が当たるか(候補の出し方と `runs` の `where`)。
+/// リストの値は要素のどれかが値のどれかなら当たり、値の無い列は当たらない。列の名前の頭の `note.` は外して引く。
+pub fn where_matches(
+    where_: &[(String, Vec<String>)],
+    get: impl Fn(&str) -> Option<crate::source::Value>,
+) -> bool {
+    use crate::source::Value;
+    let text = |v: &Value| match v {
+        Value::Str(s) => Some(s.clone()),
+        Value::Int(n) => Some(n.to_string()),
+        Value::Float(f) => Some(f.to_string()),
+        Value::Bool(b) => Some(b.to_string()),
+        _ => None,
+    };
+    where_.iter().all(|(col, vals)| {
+        let key = col.strip_prefix("note.").unwrap_or(col);
+        match get(key) {
+            Some(Value::List(items)) => items.iter().filter_map(text).any(|t| vals.contains(&t)),
+            Some(v) => text(&v).is_some_and(|t| vals.contains(&t)),
+            None => false,
+        }
+    })
+}
+
 /// 候補の並べ方(cell-edit.candidates-sort)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CandSort {

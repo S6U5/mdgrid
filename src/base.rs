@@ -1012,6 +1012,25 @@ impl Base {
         self.display.contains_key(&col) || self.views.iter().any(|v| v.order.contains(&col))
     }
 
+    /// navigation.detail-declared-columns: 表を作った人が置いたノートのキーの列。どれかのビューの `order` に並べた列を
+    /// ビューの順に、次に `properties` で名前を付けた列を名前の順に(重ねない。計算の列とファイルの項目は除く)。
+    pub fn declared_columns(&self) -> Vec<String> {
+        let mut named: Vec<&String> = self.display.keys().collect();
+        named.sort();
+        let mut out: Vec<String> = Vec::new();
+        for c in self.views.iter().flat_map(|v| v.order.iter()).chain(named) {
+            if c.starts_with("formula.")
+                || c.starts_with("file.")
+                || c.is_empty()
+                || out.contains(c)
+            {
+                continue;
+            }
+            out.push(c.clone());
+        }
+        out
+    }
+
     /// 列の見出し(base-view.default-headings-display-name: displayName があればそれ、無ければ Obsidian の既定)。
     /// ビューに出していない列(まとまりの見出しの列など)にも使う。
     pub fn column_title(&self, id: &str) -> String {

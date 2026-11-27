@@ -305,17 +305,18 @@ RoutineReadonly = "--runs schreibt Notizen der Durchläufe und geht daher nicht 
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "die Zeilen sind keine Notizen (CSV oder TSV), daher keine Routine-Durchläufe"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  {0} Routine-Durchläufe fällig"
+FooterRoutine = "  {0}: {1} Durchläufe fällig"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "Routine-Durchläufe anlegen"
-AskRoutineRuns = "Diese Routine-Durchläufe anlegen? y und Enter eingeben: "
+CmdRoutineRuns = "Wiederkehrende Durchläufe anlegen"
+AskRoutineRuns = "{0}: diese Durchläufe anlegen? y und Enter eingeben: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Anzulegende Notizen ({0}):"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "{0} weitere"
-RoutineNone = "keine Routine-Durchläufe fällig"
+RoutineNone = "{0}: keine Durchläufe fällig"
 ## {0} は作ったノートの数。
-RoutineMade = "{0} Routine-Durchläufe angelegt"
+RoutineMade = "{0}: {1} Durchläufe angelegt"
+RunsGeneric = "Wiederkehrend"
 RoutineDismissed = "Routine-Durchläufe nicht angelegt (heute nicht mehr gefragt)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "keine Tabelle namens {0} im Marker (Tabellen: {1}); der Ordner wurde so geöffnet, wie er ist"
@@ -1065,7 +1066,7 @@ EditOnlyThisRow = "nur diese Zeile wird bearbeitet: die {0} markierten Zeilen si
 EditOnlyThisRowOne = "nur diese Zeile wird bearbeitet: die {0} markierte Zeile ist nicht dabei (Enter auf der markierten Zeile bearbeitet sie)"
 EditMismatch = "der aktuelle Wert passt nicht zum Spaltentyp. "
 EditHintList = "↑↓ wählen, Enter bestätigt, Tippen für freie Eingabe (*=aktueller Wert)"
-EditHintNumber = "Zahl: ein als Zahl lesbarer Wert, leer zum Löschen"
+EditHintNumber = "Zahl: ein als Zahl lesbarer Wert, +10 addiert zum jetzigen Wert, leer zum Löschen"
 EditHintCheckbox = "true oder false, leer zum Löschen (↑↓ für die Liste)"
 EditHintDate = "Datum: {0}, +3 / -2 (ab heute), leer zum Löschen"
 EditHintDateTime = "Datum-Zeit: YYYY-MM-DDTHH:MM, {0}, +3, leer zum Löschen"

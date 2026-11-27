@@ -897,34 +897,44 @@ fn read_cands(
                 Some(s) => c.sort = Some(s),
                 None => warn(w, file, &ip, not_one_of(&rules::CandSort::NAMES)),
             },
-            "where" => {
-                let Some(m) = v.as_table() else {
-                    warn(w, file, &ip, not(Msg::WantTable));
-                    continue;
-                };
-                for (col, vals) in m {
-                    let lits: Option<Vec<String>> =
-                        vals.as_array().filter(|a| !a.is_empty()).and_then(|a| {
-                            a.iter()
-                                .map(|x| match x {
-                                    toml::Value::String(s) => Some(s.clone()),
-                                    toml::Value::Integer(n) => Some(n.to_string()),
-                                    toml::Value::Float(f) => Some(f.to_string()),
-                                    toml::Value::Boolean(b) => Some(b.to_string()),
-                                    _ => None,
-                                })
-                                .collect()
-                        });
-                    match lits {
-                        Some(l) => c.where_.push((col.clone(), l)),
-                        None => warn(w, file, &join(&ip, col), not(Msg::WantValuesArray)),
-                    }
-                }
-            }
+            "where" => c.where_ = read_where(v, file, &ip, w),
             _ => warn(w, file, &ip, Msg::RsnUnknown.text().to_string()),
         }
     }
     Some(c)
+}
+
+/// `where = { 列 = [値, …] }`(ビューの `where` と同じ形。候補の出し方の `where` と `runs` の `where`)を読む。表でない
+/// ものは警告して空、値の並びでない列は警告してその列だけ外す。値の文字・数・真偽は文字にして持つ。
+pub(crate) fn read_where(
+    v: &toml::Value,
+    file: &str,
+    path: &str,
+    w: &mut Vec<String>,
+) -> Vec<(String, Vec<String>)> {
+    let Some(m) = v.as_table() else {
+        warn(w, file, path, not(Msg::WantTable));
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    for (col, vals) in m {
+        let lits: Option<Vec<String>> = vals.as_array().filter(|a| !a.is_empty()).and_then(|a| {
+            a.iter()
+                .map(|x| match x {
+                    toml::Value::String(s) => Some(s.clone()),
+                    toml::Value::Integer(n) => Some(n.to_string()),
+                    toml::Value::Float(f) => Some(f.to_string()),
+                    toml::Value::Boolean(b) => Some(b.to_string()),
+                    _ => None,
+                })
+                .collect()
+        });
+        match lits {
+            Some(l) => out.push((col.clone(), l)),
+            None => warn(w, file, &join(path, col), not(Msg::WantValuesArray)),
+        }
+    }
+    out
 }
 
 /// `[format.<列>]` を読む(cell-view.number-format)。`thousands`(真偽)・`decimals`(0〜10 の整数)・`prefix`・

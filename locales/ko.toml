@@ -305,17 +305,18 @@ RoutineReadonly = "--runs는 회차 노트를 쓰므로 --readonly와 함께 쓸
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "행이 노트가 아니므로(CSV·TSV) 루틴 회차를 만들지 않음"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  루틴 회차 {0}건이 왔습니다"
+FooterRoutine = "  {0}: 회차 {1}건이 왔습니다"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "루틴 회차 만들기"
-AskRoutineRuns = "이 루틴 회차를 만들까요? y를 입력하고 Enter: "
+CmdRoutineRuns = "반복 회차 만들기"
+AskRoutineRuns = "{0}: 이 회차를 만들까요? y를 입력하고 Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "만들 노트({0}개):"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "그 밖에 {0}개"
-RoutineNone = "온 루틴 회차가 없음"
+RoutineNone = "{0}: 온 회차가 없음"
 ## {0} は作ったノートの数。
-RoutineMade = "루틴 회차 {0}개를 만듦"
+RoutineMade = "{0}: 회차 {1}개를 만듦"
+RunsGeneric = "반복"
 RoutineDismissed = "루틴 회차를 만들지 않음(오늘은 다시 묻지 않음)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "마커에 {0}(이)라는 표가 없음(표: {1}). 폴더를 그대로 열었음"
@@ -1065,7 +1066,7 @@ EditOnlyThisRow = "이 행만 편집: 표시한 {0}행은 포함하지 않음(�
 EditOnlyThisRowOne = "이 행만 편집: 표시한 {0}행은 포함하지 않음(표시한 행에서 Enter를 누르면 그 행을 편집)"
 EditMismatch = "현재 값이 열 형식에 맞지 않음. "
 EditHintList = "↑↓ 선택, Enter 확정, 입력하면 자유 입력(*=현재 값)"
-EditHintNumber = "숫자: 숫자로 읽히는 값, 비우면 지움"
+EditHintNumber = "숫자: 숫자로 읽히는 값, +10이면 지금 값에 더함, 비우면 지움"
 EditHintCheckbox = "true 또는 false, 비우면 지움(↑↓ 목록)"
 EditHintDate = "날짜: {0}, +3 / -2(오늘부터), 비우면 지움"
 EditHintDateTime = "일시: YYYY-MM-DDTHH:MM, {0}, +3, 비우면 지움"

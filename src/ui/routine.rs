@@ -80,6 +80,8 @@ pub(crate) fn rows(t: &Table, today: i64, now: i64) -> Result<Vec<Routine>, Stri
             base.as_ref()
                 .is_none_or(|b| b.keeps(src.as_ref(), &prop, r, today, now))
         })
+        // routine.runs-where: `where` に当たるルーチンだけ回を作る(止めたルーチンの決まりの値は残せる)。
+        .filter(|r| mdgrid::rules::where_matches(&t.spec.where_, |k| prop(r, k)))
         .map(|r| Routine {
             name: src.file(r).map(|f| f.basename).unwrap_or_default(),
             path: src.locate(r).0,
@@ -193,6 +195,15 @@ impl App {
     }
 
     /// 下の帯に出す、来ている回の数(読むだけの起動では 0)。
+    /// routine.run-words: 回の知らせと作る操作の言葉に使う名前。範囲に回を作る表が1つならその表の名前、2つ以上
+    /// (か無い)なら「繰り返し」。
+    pub(crate) fn runs_word(&self) -> String {
+        match self.routine.tables.as_slice() {
+            [t] => super::width::sanitize(&t.name),
+            _ => Msg::RunsGeneric.text().to_string(),
+        }
+    }
+
     pub(crate) fn routine_count(&self) -> usize {
         if self.readonly {
             0
@@ -220,11 +231,11 @@ impl App {
             return;
         }
         let Some(dir) = self.routine.dir.clone() else {
-            self.message = Some(Msg::RoutineNone.into());
+            self.message = Some(Msg::RoutineNone.fill(&[&self.runs_word()]));
             return;
         };
         if self.routine.tables.is_empty() {
-            self.message = Some(Msg::RoutineNone.into());
+            self.message = Some(Msg::RoutineNone.fill(&[&self.runs_word()]));
             return;
         }
         let (today, now) = self.routine_today();
@@ -236,7 +247,7 @@ impl App {
             .filter(|p| self.routine.shown.insert(p.clone()))
             .collect();
         if plan.runs.is_empty() {
-            let mut lines = vec![Msg::RoutineNone.text().to_string()];
+            let mut lines = vec![Msg::RoutineNone.fill(&[&self.runs_word()])];
             lines.extend(fresh);
             self.message = Some(lines.join(Msg::SentenceSep.text()));
             return;
@@ -278,7 +289,7 @@ impl App {
             .filter(|r| !report.done.contains(&r.key))
             .collect();
         self.routine_reload(&report.made);
-        let mut lines = vec![Msg::RoutineMade.fill(&[&report.made.len()])];
+        let mut lines = vec![Msg::RoutineMade.fill(&[&self.runs_word(), &report.made.len()])];
         lines.extend(report.failures.iter().chain(&report.warnings).cloned());
         self.message = Some(lines.join(Msg::SentenceSep.text()));
     }

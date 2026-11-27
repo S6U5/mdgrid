@@ -305,17 +305,18 @@ RoutineReadonly = "--runs écrit des notes d'occurrence, donc ne va pas avec --r
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "les lignes ne sont pas des notes (CSV ou TSV), donc pas d'occurrences de routine"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  {0} occurrences de routine à créer"
+FooterRoutine = "  {0} : {1} occurrences à créer"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "Créer les occurrences de routine"
-AskRoutineRuns = "Créer ces occurrences de routine ? Taper y puis Enter : "
+CmdRoutineRuns = "Créer les occurrences récurrentes"
+AskRoutineRuns = "{0} : créer ces occurrences ? Taper y puis Enter : "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notes à créer ({0}) :"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "{0} de plus"
-RoutineNone = "aucune occurrence de routine à créer"
+RoutineNone = "{0} : aucune occurrence à créer"
 ## {0} は作ったノートの数。
-RoutineMade = "{0} occurrences de routine créées"
+RoutineMade = "{0} : {1} occurrences créées"
+RunsGeneric = "Récurrent"
 RoutineDismissed = "occurrences de routine non créées (plus de question aujourd'hui)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "pas de table nommée {0} dans le marqueur (tables : {1}) ; le dossier a été ouvert tel quel"
@@ -1065,7 +1066,7 @@ EditOnlyThisRow = "modification de cette ligne seulement : les {0} lignes marqu�
 EditOnlyThisRowOne = "modification de cette ligne seulement : la ligne marquée ({0}) n'est pas incluse (Enter sur la ligne marquée pour la modifier)"
 EditMismatch = "la valeur actuelle ne correspond pas au type de la colonne. "
 EditHintList = "↑↓ choisir, Enter valider, taper pour saisie libre (*=valeur actuelle)"
-EditHintNumber = "nombre : une valeur lue comme un nombre, vide pour effacer"
+EditHintNumber = "nombre : une valeur lue comme un nombre, +10 pour ajouter à la valeur actuelle, vide pour effacer"
 EditHintCheckbox = "true ou false, vide pour effacer (↑↓ pour la liste)"
 EditHintDate = "date : {0}, +3 / -2 (depuis aujourd'hui), vide pour effacer"
 EditHintDateTime = "date-heure : YYYY-MM-DDTHH:MM, {0}, +3, vide pour effacer"
