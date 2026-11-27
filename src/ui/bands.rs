@@ -1445,6 +1445,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
     if app.proposal_count() > 0 {
         text.push_str(&Msg::FooterProposals.fill(&[&app.proposal_count()]));
     }
+    // ai.ask-run: AI の答えを待っているあいだ。
+    if app.asking() {
+        text.push_str(Msg::FooterAsking.text());
+    }
     // NV-5: 選んだ行の数。
     let n = app.selection().len();
     if n > 0 {

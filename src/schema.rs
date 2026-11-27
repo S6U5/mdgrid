@@ -642,6 +642,17 @@ pub const ITEMS: &[Item] = &[
         msg: Msg::CfgSearchAcross,
     },
     Item {
+        path: "ask.command",
+        ty: "list of strings (a command and its arguments)",
+        ty_ja: "文字列の並び(コマンドと引数)",
+        default: Some("[]"),
+        example: "[ask]\ncommand = [\"claude\", \"-p\", \"--tools\", \"\"]",
+        scope: Scope::Global,
+        en: Msg::CfgAskCommand.en(),
+        ja: Msg::CfgAskCommand.ja(),
+        msg: Msg::CfgAskCommand,
+    },
+    Item {
         path: "templates",
         ty: "table of tables ([templates.<name>] with profile items)",
         ty_ja: "表の表([templates.<名前>] の下にプロファイルの項目)",
@@ -716,6 +727,7 @@ pub const SECTIONS: &[&str] = &[
     "new_note",
     "keys",
     "search",
+    "ask",
     "templates",
     "conditions",
 ];
@@ -736,6 +748,7 @@ pub const GLOBAL_KEYS: &[&str] = &[
     "keys",
     "templates",
     "search",
+    "ask",
 ];
 
 /// 全体と、ワークスペースの印の最上位にだけ書ける名前(condition.marker・notice.marker・notify.marker)。

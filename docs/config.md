@@ -999,6 +999,23 @@ With `false` (the default) the palette does not show the command, so people who 
 across = true
 ```
 
+## `[ask]` — asking AI
+
+### `ask.command`
+
+- Type: `list of strings (a command and its arguments)`
+- Default: `[]`
+- Scope: global only
+
+The command and arguments that "Ask AI" in the palette runs. It runs without a shell and receives on standard input the selected rows (or the rows of the current view, up to 200) with their paths from the ledger root and front matter values, the columns with their types and allowed values, and the request you typed. Note bodies are not sent. The JSON changes the command prints (`[{"path": …, "set": {column: value}}]`) are narrowed to the rows and columns that were sent and become an AI proposal, which you review and take with "Show AI proposals". mdgrid holds no API keys and never goes online; the command (your local AI tool) holds the keys and decides where the data goes. So that a shared ledger's marker cannot make your machine run a command, it can only be set in the global config (config.toml). Empty by default, and then "Ask AI" does not appear in the palette.
+
+Row values may have been written by other people, and someone could slip instructions for an AI into them. mdgrid puts the values inside marked delimiters, tells the model not to follow instructions found there, and narrows the reply to a proposal for the rows and columns it sent; still, choose a command that cannot use tools such as reading or writing files or running commands.
+
+```toml
+[ask]
+command = ["claude", "-p", "--tools", ""]
+```
+
 ## `[templates]` — templates
 
 ### `templates`

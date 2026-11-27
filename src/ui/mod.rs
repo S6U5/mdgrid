@@ -15,6 +15,7 @@ pub mod detail;
 pub(crate) mod notices;
 pub(crate) mod notify;
 // routine.*: ルーチンの回を作る。
+pub(crate) mod ai_ask;
 pub(crate) mod proposals;
 pub(crate) mod routine;
 // navigation.across-*: ワークスペースを横断して探す。
@@ -243,6 +244,8 @@ mod test_action_menu_gaps;
 mod test_action_menu_more;
 #[cfg(test)]
 mod test_add_column;
+#[cfg(all(test, unix))]
+mod test_ai_ask;
 #[cfg(test)]
 mod test_audit4;
 #[cfg(test)]

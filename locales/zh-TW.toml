@@ -318,6 +318,18 @@ FooterRoutine = "  {0}：有 {1} 次到期"
 CmdRoutineRuns = "建立週期事項的各次"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "查看 AI 提案"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "請 AI 處理"
+AskAiAsk = "要請 AI 做什麼（傳送選取的列，沒有則為此檢視的列；回答會成為提案）："
+FooterAsking = "  正在請 AI 處理…"
+AskSent = "已將 {0} 列交給 AI；回答到達後會成為提案"
+AskBusy = "仍在等待 AI 的回答"
+AskNoRows = "沒有可交給 AI 的列"
+AskFailed = "AI 命令失敗：{0}"
+AskCannotRun = "無法執行 AI 命令：{0}"
+AskNoReply = "沒有收到 AI 命令的回答"
+AskNoChanges = "AI 的回答中沒有針對所傳送列的修改"
+AskProposed = "已將 AI 的回答作為提案（{0} 個儲存格）；選擇接受或丟棄"
 FooterProposals = "  AI 提案 {0} 則"
 AskProposals = "AI 提案："
 AskProposalAction = "此提案："
@@ -2323,6 +2335,8 @@ CfgEditLinkPath = "mdgrid 在連結欄寫入的連結路徑。\"shortest\" 在�
 CfgEditRenameLinks = "重新命名筆記時，是否把指向它的連結的改寫作為未儲存的變更。\"always\" 一律，\"ask\" 顯示數量並僅在輸入 y 時，\n\"never\" 不改寫。"
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "AI 寫入（`--apply … --propose` 與 MCP 伺服器）可以直接修改的欄名。其他欄的修改不會寫入，而是作為提案留在台帳中，由人在畫面的「查看 AI 提案」中接受。預設為空（不直接寫入任何欄）。"
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "「請 AI 處理」執行的命令和參數（不經過 shell），透過標準輸入傳送所選列的值和請求。回答中的 JSON 修改會成為提案。只能寫在全域設定中。預設為空（不顯示）。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "從表格建立新筆記的方式：mode（\"form\"：含所有欄位的表單，或\n\"editor\"：建立後用編輯器開啟）、folder（相對於開啟的資料夾）、name（名稱\n範本）、ask（表單的欄位；預設：可見的欄位）、required（必須填寫的\n欄位）、hidden（不顯示欄位而直接寫入的欄位）、body（內文範本檔）與\n[new_note.set]（欄位 = 值）。範本可使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 與 {folder}。來自檢視篩選的值優先。\n此表為單一項目：在較窄範圍寫入時會整個取代。 name_head（\"show\"：把填好的範本放進名稱欄；\"hide\"：不顯示，並加在輸入的名稱前面）。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

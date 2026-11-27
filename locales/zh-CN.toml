@@ -317,6 +317,18 @@ FooterRoutine = "  {0}：有 {1} 次到期"
 CmdRoutineRuns = "创建周期事项的各次"
 ## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
 CmdAiProposals = "查看 AI 提案"
+## ai.ask-run・ai.ask-proposal: 表から AI に頼む。AskSent の {0} は渡した行の数、AskFailed の {0} は標準エラーの最初の行、AskProposed の {0} はセルの数。
+CmdAiAsk = "请 AI 处理"
+AskAiAsk = "要请 AI 做什么（发送选中的行，没有则为此视图的行；回答会成为提案）："
+FooterAsking = "  正在请 AI 处理…"
+AskSent = "已将 {0} 行交给 AI；回答到达后会成为提案"
+AskBusy = "仍在等待 AI 的回答"
+AskNoRows = "没有可交给 AI 的行"
+AskFailed = "AI 命令失败：{0}"
+AskCannotRun = "无法运行 AI 命令：{0}"
+AskNoReply = "没有收到 AI 命令的回答"
+AskNoChanges = "AI 的回答中没有针对所发送行的修改"
+AskProposed = "已将 AI 的回答作为提案（{0} 个单元格）；选择接受或丢弃"
 FooterProposals = "  AI 提案 {0} 条"
 AskProposals = "AI 提案："
 AskProposalAction = "此提案："
@@ -2322,6 +2334,8 @@ CfgEditLinkPath = "mdgrid 在链接列中写入的链接路径。\"shortest\" �
 CfgEditRenameLinks = "重命名笔记时，是否把指向它的链接的改写作为未保存的更改。\"always\" 总是，\"ask\" 显示数量并仅在输入 y 时，\n\"never\" 不改写。"
 ## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
 CfgAiWrite = "AI 写入（`--apply … --propose` 与 MCP 服务器）可以直接修改的列名。其他列的修改不会写入，而是作为提案留在台账中，由人在界面的“查看 AI 提案”中接受。默认为空（不直接写入任何列）。"
+## 設定の項目 `ask.command` の説明(行の区切りは --print-config のコメントの行)。
+CfgAskCommand = "“请 AI 处理”运行的命令和参数（不经过 shell），通过标准输入发送所选行的值和请求。回答中的 JSON 修改会成为提案。只能写在全局设置中。默认为空（不显示）。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "从表格新建笔记的方式：mode（\"form\"：包含所有字段的表单，或\n\"editor\"：创建后在编辑器中打开）、folder（相对于打开的文件夹）、name（名称\n模板）、ask（表单中的列；默认：可见的列）、required（必须\n填写的列）、hidden（不显示字段而直接写入的列）、body（正文模板文件）和\n[new_note.set]（列 = 值）。模板中可以使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 和 {folder}。视图筛选中的值优先。\n此表是一个整体：在较窄范围中写入它会整体替换。 name_head（\"show\"：把填好的模板放进名称栏；\"hide\"：不显示，并加在输入的名称前面）。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

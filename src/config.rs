@@ -119,6 +119,8 @@ pub struct Config {
     pub notify: Vec<crate::notify::Item>,
     /// navigation.across-option: `[search]` の `across`(パレットの「ワークスペースを横断して探す」。既定は偽)。
     pub search_across: bool,
+    /// ai.ask-command: `[ask]` の `command`(AI に頼むコマンドと引数。全体の設定にだけ書ける。既定は空)。
+    pub ask_command: Vec<String>,
     /// condition.marker・notice.marker・notify.marker: 開く表の印から重ねたもの(`for_table`)。印が無ければ None。
     pub ledger: Option<Ledger>,
 }
@@ -342,6 +344,7 @@ impl Default for Config {
             notices: Vec::new(),
             notify: Vec::new(),
             search_across: false,
+            ask_command: Vec::new(),
             ledger: None,
         }
     }
@@ -412,6 +415,7 @@ pub fn parse_named(text: &str, file: &str) -> Result<(Config, Vec<String>), Stri
             "notices" => c.notices = crate::notice::read(value, file, &mut w),
             "notify" => c.notify = crate::notify::read(value, file, &mut w),
             "search" => read_search(value, &mut c.search_across, file, &mut w),
+            "ask" => read_ask(value, &mut c.ask_command, file, &mut w),
             "conditions" => {
                 let specs = crate::condition::in_written_order(
                     crate::condition::read(value, file, &mut w),
@@ -496,6 +500,27 @@ fn read_terminal(v: &toml::Value, t: &mut Terminal, file: &str, w: &mut Vec<Stri
 }
 
 /// `[search]`(navigation.across-option): `across`(真偽)。知らない項目と型の違う値は警告して既定のまま。
+/// `[ask]`(ai.ask-command): `command`(文字列の並び。空の並びは無いのと同じ)。
+fn read_ask(v: &toml::Value, command: &mut Vec<String>, file: &str, w: &mut Vec<String>) {
+    let Some(tab) = v.as_table() else {
+        return warn(w, file, "ask", not(Msg::WantTable));
+    };
+    for (k, v) in tab {
+        let p = format!("ask.{k}");
+        match k.as_str() {
+            "command" => match v.as_array().and_then(|a| {
+                a.iter()
+                    .map(|x| x.as_str().map(str::to_string))
+                    .collect::<Option<Vec<String>>>()
+            }) {
+                Some(c) => *command = c,
+                None => warn(w, file, &p, not(Msg::WantStringList)),
+            },
+            _ => warn(w, file, &p, Msg::RsnUnknown.text().to_string()),
+        }
+    }
+}
+
 fn read_search(v: &toml::Value, across: &mut bool, file: &str, w: &mut Vec<String>) {
     let Some(tab) = v.as_table() else {
         return warn(w, file, "search", not(Msg::WantTable));
@@ -774,6 +799,14 @@ pub fn app_toml(c: &Config) -> String {
     out.push_str("\n[search]\n");
     out.push_str(src(c.search_across == d.search_across));
     out.push_str(&line("across", toml::Value::Boolean(c.search_across)));
+    out.push_str("\n[ask]\n");
+    out.push_str(src(c.ask_command == d.ask_command));
+    let command = c
+        .ask_command
+        .iter()
+        .map(|s| toml::Value::String(s.clone()))
+        .collect();
+    out.push_str(&line("command", toml::Value::Array(command)));
     out.push_str("\n[keys]\n");
     out.push_str(src(c.vim == d.vim));
     out.push_str(&line("vim", toml::Value::Boolean(c.vim)));
