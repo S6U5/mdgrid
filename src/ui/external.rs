@@ -837,7 +837,9 @@ impl App {
         let mut saved = Vec::new();
         for (r, out) in &results {
             match out {
-                mdgrid::changes::Outcome::Saved => saved.push(r.clone()),
+                mdgrid::changes::Outcome::Saved | mdgrid::changes::Outcome::Merged => {
+                    saved.push(r.clone());
+                }
                 mdgrid::changes::Outcome::Changed => {
                     return Err(Msg::EditorChangedOutside.fill(&[&label, &save_key]));
                 }

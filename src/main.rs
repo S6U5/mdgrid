@@ -2462,6 +2462,10 @@ fn print_view(
             let p = row_path(paths, src.as_ref(), id);
             cells.insert(0, print::PrintCell::Prop(Some(Value::Str(p))));
         }
+        // cli.print-rev: --apply が、書き出したあとに変わった行を見分ける印。
+        if !print::add_rev(&mut table, src.as_ref(), format) {
+            eprintln!("mdgrid: {}", Msg::PrintRevClash.text());
+        }
     }
     for w in warnings.iter().chain(&table.warnings) {
         eprintln!("mdgrid: {w}");

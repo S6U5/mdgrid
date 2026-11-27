@@ -94,7 +94,7 @@ fn test_sc_16_save_only_edited_cells() {
 
 #[test]
 fn test_sc_16_external_change_refused() {
-    // [utest -> req~scope.csv-write-back-conflict~1, req~write-back.conflict-stop~1] 開いたあとに外でファイルが変わったら、書かずに止める。
+    // [utest -> req~scope.csv-write-back-conflict~1, req~write-back.conflict-stop~2] 開いたあとに外でファイルが変わったら、書き込みの口は書かずに止める。
     let (t, mut a) = open("sc16ext", "a.tsv", "name\tqty\nx\t1\n");
     edit_cell(&mut a, 0, "qty", "2");
     let p = t.notes().join("a.tsv");
@@ -121,13 +121,13 @@ fn test_sc_16_external_change_refused() {
 
 #[test]
 fn test_sc_16_external_change_stops_whole_file() {
-    // [utest -> req~scope.csv-write-back-bytes~1, req~write-back.external-save-choice~1] ためたまま外でファイルが変わる → 保存は止まり、ファイルの見出しに印。d で2行の直しをまとめて捨てる。
+    // [utest -> req~scope.csv-write-back-bytes~1, req~write-back.external-save-choice~2] ためたまま外でファイルの、ためた行が変わる → 保存は止まり、ファイルの見出しに印。d で2行の直しをまとめて捨てる。
     let (t, mut a) = open("sc16stop", "a.csv", "name,qty\nx,1\ny,2\n");
     edit_cell(&mut a, 0, "qty", "5");
     edit_cell(&mut a, 1, "qty", "6");
     let p = t.notes().join("a.csv");
     let old = std::fs::metadata(&p).unwrap().modified().unwrap();
-    std::fs::write(&p, "name,qty\nx,1\ny,2\nz,3\n").unwrap();
+    std::fs::write(&p, "name,qty\nx,1\ny,9\nz,3\n").unwrap();
     std::fs::File::options()
         .write(true)
         .open(&p)
@@ -139,7 +139,50 @@ fn test_sc_16_external_change_stops_whole_file() {
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, Mode::Confirm, "{:?}", a.message);
     assert!(a.review.as_ref().unwrap().items[0].external);
-    assert_eq!(disk(&t, "a.csv"), "name,qty\nx,1\ny,2\nz,3\n");
+    assert_eq!(disk(&t, "a.csv"), "name,qty\nx,1\ny,9\nz,3\n");
     ch(&mut a, 'd');
     assert_eq!(a.changes.count(), 0);
+}
+
+/// 外で CSV の台帳を直す(大きさが変わらなくても気づくよう、更新時刻をずらす)。
+fn edit_csv_outside(t: &Tmp, file: &str, text: &str) {
+    let p = t.notes().join(file);
+    let old = std::fs::metadata(&p).unwrap().modified().unwrap();
+    std::fs::write(&p, text).unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(&p)
+        .unwrap()
+        .set_modified(old + std::time::Duration::from_secs(10))
+        .unwrap();
+}
+
+#[test]
+fn test_merge_other_row_of_csv() {
+    // [utest -> req~write-back.merge-other-keys~1] CSV の台帳の1行目の qty をためたまま、外で2行目のセルを直す → 保存は止まらずに
+    // 書き、1行目の qty はためた値、2行目は外で直した値。未保存は 0 で表に戻る。
+    let (t, mut a) = open("merge_csv", "a.csv", "name,qty\nx,1\ny,2\n");
+    edit_cell(&mut a, 0, "qty", "5");
+    edit_csv_outside(&t, "a.csv", "name,qty\nx,1\ny,9\n");
+    a.poll();
+    ctrl(&mut a, 's');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Table, "{:?}", a.message);
+    assert_eq!(a.changes.count(), 0, "{:?}", a.message);
+    assert_eq!(disk(&t, "a.csv"), "name,qty\nx,5\ny,9\n");
+}
+
+#[test]
+fn test_merge_refuses_same_row_of_csv() {
+    // [utest -> req~write-back.merge-other-keys~1] CSV の台帳の1行目の qty をためたまま、外で1行目の name を直す → 行の中身が変わって
+    // どの行かを引き継げないので止まり、ためた変更は残り、ファイルは外の変更のまま。
+    let (t, mut a) = open("merge_csv_same", "a.csv", "name,qty\nx,1\ny,2\n");
+    edit_cell(&mut a, 0, "qty", "5");
+    edit_csv_outside(&t, "a.csv", "name,qty\nxx,1\ny,2\n");
+    a.poll();
+    ctrl(&mut a, 's');
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Confirm, "{:?}", a.message);
+    assert_eq!(a.changes.count(), 1);
+    assert_eq!(disk(&t, "a.csv"), "name,qty\nxx,1\ny,2\n");
 }

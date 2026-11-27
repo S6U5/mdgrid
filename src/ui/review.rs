@@ -220,19 +220,31 @@ impl App {
                 .collect()
         };
         let mut saved = Vec::new();
+        let mut merged = Vec::new();
         let mut stopped = Vec::new();
         let mut failed = Vec::new();
         for ((_, out), (label, _)) in results.iter().zip(&places) {
             let label = label.clone();
             match out {
                 Outcome::Saved => saved.push(label),
+                // write-back.merge-other-keys: 書けた数に入れ、合わせたノートの名前も知らせる。
+                Outcome::Merged => {
+                    saved.push(label.clone());
+                    merged.push(label);
+                }
                 Outcome::Changed => stopped.push(label),
                 Outcome::Failed(e) => failed.push(format!("{label}: {}", save_error_text(e))),
             }
         }
         let mut parts = vec![Msg::ReviewSaved.fill(&[&saved.len()])];
-        if !saved.is_empty() {
-            parts[0].push_str(&Msg::ReviewSavedList.fill(&[&saved.join(", ")]));
+        // 合わせて書いたノートは、あとの知らせで名前を言う(同じ名前を2回出さない)。
+        let plain: Vec<&String> = saved.iter().filter(|l| !merged.contains(l)).collect();
+        if !plain.is_empty() {
+            let names: Vec<&str> = plain.iter().map(|s| s.as_str()).collect();
+            parts[0].push_str(&Msg::ReviewSavedList.fill(&[&names.join(", ")]));
+        }
+        if !merged.is_empty() {
+            parts.push(Msg::ReviewMerged.fill(&[&merged.len(), &merged.join(", ")]));
         }
         if !stopped.is_empty() {
             parts.push(Msg::ReviewStopped.fill(&[&stopped.len(), &stopped.join(", ")]));
@@ -249,13 +261,13 @@ impl App {
         }
         // write-back.git-*: 書けたノートを覚える(git に渡すのは、表に戻ったあと)。
         for ((_, out), (_, file)) in results.iter().zip(places) {
-            if matches!(out, Outcome::Saved) {
+            if matches!(out, Outcome::Saved | Outcome::Merged) {
                 self.git_note(file);
             }
         }
         let written: Vec<RowId> = results
             .iter()
-            .filter(|(_, o)| matches!(o, Outcome::Saved))
+            .filter(|(_, o)| matches!(o, Outcome::Saved | Outcome::Merged))
             .map(|(r, _)| r.clone())
             .collect();
         if stopped.is_empty() && !(one && self.changes.count() > 0) {

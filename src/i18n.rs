@@ -204,6 +204,7 @@ impl Msg {
             Msg::ApplyDryRun => Some((0, Msg::ApplyDryRunOne)),
             Msg::ApplyIgnored => Some((0, Msg::ApplyIgnoredOne)),
             Msg::ReviewStopped => Some((0, Msg::ReviewStoppedOne)),
+            Msg::ReviewMerged => Some((0, Msg::ReviewMergedOne)),
             Msg::ReviewFailed => Some((0, Msg::ReviewFailedOne)),
             Msg::ReviewHead => Some((0, Msg::ReviewHeadOne)),
             Msg::ChildrenOpenRefuse => Some((0, Msg::ChildrenOpenRefuseOne)),

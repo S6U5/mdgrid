@@ -362,6 +362,46 @@ fn collect(
     }
 }
 
+/// cli.print-rev: 行の印(そのノートのフロントマターのキーと値から作る。本文は入れない)。形は約束しない。
+/// キーの名前の順に「キー NUL 値の JSON 改行」を並べた文字の SHA-256 の先頭 6 バイトを 16 進で。
+pub fn row_rev(src: &dyn Source, row: &RowId) -> String {
+    let mut cols = src.columns();
+    cols.sort();
+    cols.dedup();
+    let mut text = String::new();
+    for c in cols {
+        if let Some(v) = src.get(row, &c).value {
+            text.push_str(&c);
+            text.push('\0');
+            text.push_str(&value_json(&v));
+            text.push('\n');
+        }
+    }
+    crate::source::content_hash(text.as_bytes())[..6]
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+/// cli.print-rev: csv と json の表の最後に見出し `_rev` の列を足す(md と tsv は `--apply` が読まないので足さない)。
+/// 表に見出しが `_rev` の列があれば足さずに false。
+pub fn add_rev(t: &mut Table, src: &dyn Source, f: Format) -> bool {
+    if !matches!(f, Format::Csv | Format::Json) {
+        return true;
+    }
+    if t.columns.iter().any(|c| c.title == "_rev") {
+        return false;
+    }
+    t.columns.push(Column {
+        id: "_rev".into(),
+        title: "_rev".into(),
+    });
+    for (cells, id) in t.rows.iter_mut().zip(&t.row_ids) {
+        cells.push(PrintCell::Prop(Some(Value::Str(row_rev(src, id)))));
+    }
+    true
+}
+
 // ---- 書き出し ----
 
 /// 表を形に書く(改行は LF、最後の行も LF で終わる)。

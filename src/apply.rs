@@ -19,6 +19,8 @@ pub(crate) struct Record {
     pub line: usize,
     pub path: String,
     pub cells: Vec<(String, Cell)>,
+    /// 書き出したときの行の印(cli.print-rev)。無い・空なら確かめない。
+    pub rev: Option<String>,
 }
 
 /// セルの値。JSON はその型のまま、CSV は文字。
@@ -58,8 +60,16 @@ fn read_json(text: &str) -> Result<Input, String> {
         let Some(path) = obj.get("path").and_then(|p| p.as_str()) else {
             return Err(Msg::ApplyNoPath.fill(&[&(i + 1)]));
         };
+        let rev = obj
+            .get("_rev")
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.is_empty())
+            .map(str::to_string);
         let mut cells = Vec::new();
-        for (k, v) in obj.iter().filter(|(k, _)| k.as_str() != "path") {
+        for (k, v) in obj
+            .iter()
+            .filter(|(k, _)| k.as_str() != "path" && k.as_str() != "_rev")
+        {
             if !headers.contains(k) {
                 headers.push(k.clone());
             }
@@ -69,6 +79,7 @@ fn read_json(text: &str) -> Result<Input, String> {
             line: i + 1,
             path: path.to_string(),
             cells,
+            rev,
         });
     }
     Ok(Input { records, headers })
@@ -136,6 +147,8 @@ fn read_csv(text: &str) -> Result<Input, String> {
     let Some(at) = head.iter().position(|h| h == "path") else {
         return Err(Msg::ApplyNoPathColumn.text().into());
     };
+    // cli.print-rev: 行の印の列(値として書かない)。
+    let rev_at = head.iter().position(|h| h == "_rev");
     let mut seen = HashSet::new();
     for h in &head {
         if !seen.insert(h) {
@@ -157,15 +170,16 @@ fn read_csv(text: &str) -> Result<Input, String> {
                 .iter()
                 .zip(r.iter())
                 .enumerate()
-                .filter(|(k, _)| *k != at)
+                .filter(|(k, _)| *k != at && Some(*k) != rev_at)
                 .map(|(_, (h, v))| (h.clone(), Cell::Text(v.clone())))
                 .collect(),
+            rev: rev_at.map(|k| r[k].clone()).filter(|s| !s.is_empty()),
         });
     }
     let headers = head
         .into_iter()
         .enumerate()
-        .filter(|(k, _)| *k != at)
+        .filter(|(k, _)| *k != at && Some(*k) != rev_at)
         .map(|(_, h)| h)
         .collect();
     Ok(Input { records, headers })
@@ -376,6 +390,12 @@ pub(crate) fn plan(
                 continue;
             }
         };
+        // cli.apply-stale-row: 書き出したあとに変わった行は、今と違うセルを1つも書かない(どのセルを直したのか分からない)。
+        let stale = r
+            .rev
+            .as_ref()
+            .is_some_and(|rev| *rev != mdgrid::print::row_rev(src, &row));
+        let mut told = false;
         for (name, cell) in &r.cells {
             let id = match ids.get(name) {
                 Some(Some(id)) => id,
@@ -403,6 +423,13 @@ pub(crate) fn plan(
             let cur = src.get(&row, id);
             // 書き出したまま(同じ)なら変えない。型の読み直しも、読むだけの確かめもしない。
             if unchanged(cell, cur.value.as_ref()) {
+                continue;
+            }
+            if stale {
+                if !told {
+                    problems.push(Msg::ApplyStale.fill(&[&r.line, &r.path]));
+                    told = true;
+                }
                 continue;
             }
             let ck = src.kind(id);
@@ -492,6 +519,10 @@ pub(crate) fn save(
     for (row, outcome) in plan.changes.save(src) {
         match outcome {
             Outcome::Saved => saved.push(label(&row)),
+            Outcome::Merged => {
+                saved.push(label(&row));
+                eprintln!("mdgrid: {}", Msg::ApplyMerged.fill(&[&label(&row)]));
+            }
             Outcome::Changed => failed.push(Msg::ApplyChangedOutside.fill(&[&label(&row)])),
             Outcome::Failed(e) => failed.push(format!("{}: {}", label(&row), save_error_text(&e))),
         }

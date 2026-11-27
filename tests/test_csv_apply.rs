@@ -35,10 +35,14 @@ fn test_sc_17_with_path_and_apply_roundtrip() {
     let out = mdgrid(&d, &["--print", "--with-path", "台帳.csv"]);
     assert!(out.status.success());
     let text = String::from_utf8(out.stdout).unwrap();
-    assert_eq!(text.lines().nth(2).unwrap(), "台帳.csv#2,B,2", "{text}");
+    // cli.print-rev: 行の最後に `_rev` の印が付く。
+    assert!(
+        text.lines().nth(2).unwrap().starts_with("台帳.csv#2,B,2,"),
+        "{text}"
+    );
     std::fs::write(
         d.join("edit.csv"),
-        text.replace("台帳.csv#2,B,2", "台帳.csv#2,B,7"),
+        text.replace("台帳.csv#2,B,2,", "台帳.csv#2,B,7,"),
     )
     .unwrap();
     let out = mdgrid(&d, &["台帳.csv", "--apply", "edit.csv", "--yes"]);

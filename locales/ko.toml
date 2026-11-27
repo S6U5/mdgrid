@@ -84,6 +84,11 @@ ApplyBadValue = "{0}번째 줄: {1}: {2}: {3}"
 ApplyLocked = "{0}번째 줄: {1}: {2}에 쓸 수 없음({3})"
 ## {0} はノート。
 ApplyChangedOutside = "{0}: mdgrid 밖에서 바뀌어 쓰지 않음"
+## {0} は行(CSV はファイルの行、JSON は何番目か)、{1} は path。
+ApplyStale = "{0}행: {1}: 내보낸 뒤에 노트가 바뀜(_rev 다름). 다시 내보내고 같은 수정을 다시 하세요"
+## {0} はノートの名前。
+ApplyMerged = "{0}: 밖에서 다른 키가 바뀌어 합쳐서 씀"
+PrintRevClash = "표에 제목이 _rev인 열이 있어서, 내보낸 뒤의 변경을 확인하는 _rev 열을 넣지 않음"
 ## {0} は変わるファイルの数。
 ApplyDryRun = "파일 {0}개가 바뀜. 아직 아무것도 쓰지 않음(쓰려면 --yes 추가)"
 ## {0} は数。
@@ -1531,6 +1536,9 @@ ReviewSavedList = " ({0})"
 ReviewStopped = "밖에서 바뀐 파일 {0}개는 멈춤({1})"
 ## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewStoppedOne = "밖에서 바뀐 파일 {0}개는 멈춤({1})"
+ReviewMerged = "밖의 변경과 합쳐서 쓴 파일 {0}개({1})"
+## `ReviewMerged` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewMergedOne = "밖의 변경과 합쳐서 쓴 파일 {0}개({1})"
 ReviewFailed = "파일 {0}개를 쓸 수 없었음({1})"
 ## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewFailedOne = "파일 {0}개를 쓸 수 없었음({1})"

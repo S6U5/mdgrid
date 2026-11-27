@@ -851,7 +851,7 @@ To keep a starter in your dotfiles and use it on every machine, link the starter
 
 ## Use with other commands
 
-To save the table exactly as shown — with your filters, sorting and hidden columns — choose **Export the table to a file** in the command palette (`:`) and type a file name. The extension picks the format: `.csv`, `.tsv`, `.json` or `.md`. The first column is each note's path, so a CSV or JSON can come back with `--apply`.
+To save the table exactly as shown — with your filters, sorting and hidden columns — choose **Export the table to a file** in the command palette (`:`) and type a file name. The extension picks the format: `.csv`, `.tsv`, `.json` or `.md`. The first column is each note's path, so a CSV or JSON can come back with `--apply`. Keep the last column, `_rev`: `--apply` uses it to check that nobody changed the notes after the export.
 
 ![Export the table to a file](images/export-table.svg)
 

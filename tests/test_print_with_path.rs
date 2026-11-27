@@ -487,10 +487,15 @@ fn test_cli_14_without_flag_output_has_no_path_column() {
         .map(|mut r| {
             assert!(!r.is_empty());
             r.remove(0);
+            // cli.print-rev: 最後の `_rev` の列も除く。
+            r.pop();
             r
         })
         .collect();
-    assert_eq!(stripped, rows, "先頭の列を除けば今の出力と同じ");
+    assert_eq!(
+        stripped, rows,
+        "先頭の path と最後の _rev の列を除けば今の出力と同じ"
+    );
 }
 
 // ---- 3. json ----
@@ -586,8 +591,8 @@ fn test_cli_14_base_with_path_is_relative_to_base_folder() {
     assert!(!rows.is_empty(), "見出しの行がある: {text:?}");
     assert_eq!(
         rows[0],
-        vec![s("path"), s("title"), s("status")],
-        "見出しは path とビューの列: {text}"
+        vec![s("path"), s("title"), s("status"), s("_rev")],
+        "見出しは path とビューの列と _rev(cli.print-rev): {text}"
     );
     let paths: BTreeSet<String> = rows[1..].iter().map(|r| r[0].clone()).collect();
     let want: BTreeSet<String> = ["notes/Tasks/x.md", "notes/Tasks/y.md"]

@@ -84,6 +84,11 @@ ApplyBadValue = "第 {0} 行：{1}：{2}：{3}"
 ApplyLocked = "第 {0} 行：{1}：{2} 無法寫入（{3}）"
 ## {0} はノート。
 ApplyChangedOutside = "{0} 已在 mdgrid 外被修改，未寫入"
+## {0} は行(CSV はファイルの行、JSON は何番目か)、{1} は path。
+ApplyStale = "第 {0} 行：{1}：匯出後筆記已被變更（_rev 不同）。請重新匯出並重做同樣的修改"
+## {0} はノートの名前。
+ApplyMerged = "{0} 的其他鍵在外部被變更，已合併寫入"
+PrintRevClash = "表中已有標題為 _rev 的欄，因此未加入用來檢查匯出後變更的 _rev 欄"
 ## {0} は変わるファイルの数。
 ApplyDryRun = "將變更 {0} 個檔案；尚未寫入（加上 --yes 才會寫入）"
 ## {0} は数。
@@ -1531,6 +1536,9 @@ ReviewSavedList = "（{0}）"
 ReviewStopped = "已停止 {0} 個在外部變更的檔案（{1}）"
 ## `ReviewStopped` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewStoppedOne = "已停止 {0} 個在外部變更的檔案（{1}）"
+ReviewMerged = "已與外部變更合併寫入 {0} 個檔案（{1}）"
+## `ReviewMerged` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
+ReviewMergedOne = "已與外部變更合併寫入 {0} 個檔案（{1}）"
 ReviewFailed = "無法寫入 {0} 個檔案（{1}）"
 ## `ReviewFailed` の英語の単数(数が 1 のとき。`Msg::fill` が選ぶ)。
 ReviewFailedOne = "無法寫入 {0} 個檔案（{1}）"
