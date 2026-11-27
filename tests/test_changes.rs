@@ -447,8 +447,8 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
 
 #[test]
 fn test_merge_other_keys_writes_both() {
-    // [utest -> req~write-back.merge-other-keys~1] status を done にためたまま外で title だけを直す → 保存は止まらずに合わせて書き
-    // (Merged)、ファイルの status は done、title は外で直した値。未保存は 0。
+    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~2] status を done にためたまま外で title だけを直す →
+    // 外の変更と合わせられるので止まらずに書き(Merged)、ファイルの status は done、title は外で直した値。未保存は 0。
     let (dir, src) = setup("merge_other");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -460,11 +460,7 @@ fn test_merge_other_keys_writes_both() {
     assert!(ch.external(&b));
 
     let res = ch.save(&mut src);
-    assert!(
-        matches!(outcome_of(&res, &b), Outcome::Merged),
-        "{:?}",
-        outcome_of(&res, &b)
-    );
+    assert_eq!(format!("{:?}", outcome_of(&res, &b)), "Merged");
     assert_eq!(
         read(&dir, "b.md"),
         "---\nstatus: done\ntitle: B changed outside\n---\nbody b\n"
@@ -485,11 +481,7 @@ fn test_merge_other_keys_without_noticing_first() {
     external_edit(&dir, "b.md", B_EXT);
 
     let res = ch.save(&mut src);
-    assert!(
-        matches!(outcome_of(&res, &b), Outcome::Merged),
-        "{:?}",
-        outcome_of(&res, &b)
-    );
+    assert_eq!(format!("{:?}", outcome_of(&res, &b)), "Merged");
     assert_eq!(
         read(&dir, "b.md"),
         "---\nstatus: done\ntitle: B changed outside\n---\nbody b\n"

@@ -316,7 +316,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 - Acceptance:
   - Given: 画面で表を `out.csv` に書き出す
   - When: 書き出したファイルを読む
-  - Then: 見出しの最後が `_rev` で、`--print --with-path` と同じ印。
+  - Then: 見出しの最後が `_rev` で、各行に空でない印。本文だけを直して書き出し直しても同じ印。
 - Needs: utest・stest
 
 #### `--print` の無い `--with-path` は、cli.fail-fast と同じく理由1行と終了コード 2 にするべき

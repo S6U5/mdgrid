@@ -950,12 +950,8 @@ fn test_merge_other_keys_tells_merged() {
     assert_eq!(a.mode, keymap::Mode::Table, "{:?}", a.message);
     assert_eq!(a.changes.count(), 0);
     assert_eq!(read(&t, "a.md"), outside.replace("todo", "done"));
-    let want = mdgrid::i18n::Msg::ReviewMerged.fill(&[&1 as &dyn std::fmt::Display, &"a.md"]);
-    assert!(
-        a.message.as_deref().is_some_and(|m| m.contains(&want)),
-        "{:?} に {want} が無い",
-        a.message
-    );
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("外の変更と合わせて書いた 1件(a.md)"), "{m}");
 }
 
 #[test]

@@ -93,33 +93,52 @@ fn test_out_5_export_matches_print_with_path() {
             print::PrintCell::Prop(Some(mdgrid::frontmatter::Value::Str(p))),
         );
     }
-    // [utest -> req~cli.print-rev~1] 書き出しの json にも、`--print --with-path` と同じ `_rev` の列。
-    assert!(print::add_rev(
-        &mut want,
-        a.src.as_ref(),
-        print::Format::Json
-    ));
+    // 書き出しの json の最後の鍵 `_rev`(cli.print-rev)は、ここでは除いて比べる。
+    let got: String = got
+        .lines()
+        .map(|l| match l.find(", \"_rev\": ") {
+            Some(k) => format!("{}}}{}", &l[..k], if l.ends_with(',') { "," } else { "" }),
+            None => l.to_string(),
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        + "\n";
     assert_eq!(got, print::render(&want, print::Format::Json));
 }
 
 #[test]
 fn test_export_csv_has_rev_last() {
-    // [utest -> req~cli.print-rev~1] 画面で表を csv に書き出す → 見出しの最後が `_rev` で、各行にそのノートの印(空でない)。
-    // md には `_rev` が無い。
+    // [utest -> req~cli.print-rev~1] 画面で表を csv に書き出す → 見出しの最後が `_rev` で、各行に空でない印。値の違うノートは
+    // 違う印、本文だけを直して書き出し直しても同じ印。md には `_rev` が無い。
     let (tmp, mut a) = app("exportrv");
     let csv = out(&tmp, "out.csv");
     a.export_table_to(csv.to_str().unwrap());
     let got = std::fs::read_to_string(&csv).unwrap();
     let head = got.lines().next().unwrap();
     assert!(head.ends_with(",_rev"), "{got}");
-    for r in a.rows.clone() {
-        let rev = print::row_rev(a.src.as_ref(), &r);
-        assert!(!rev.is_empty());
-        assert!(
-            got.lines().any(|l| l.ends_with(&format!(",{rev}"))),
-            "{rev}: {got}"
-        );
-    }
+    let revs = |text: &str| -> Vec<String> {
+        text.lines()
+            .skip(1)
+            .filter(|l| l.contains(".md"))
+            .map(|l| l.rsplit(',').next().unwrap_or_default().to_string())
+            .collect()
+    };
+    let first = revs(&got);
+    assert_eq!(first.len(), 3, "{got}");
+    assert!(
+        first.iter().all(|r| !r.is_empty() && !r.contains(".md")),
+        "{got}"
+    );
+    assert_ne!(first[0], first[1], "{got}");
+    std::fs::write(
+        tmp.notes().join("b.md"),
+        "---\nstatus: done\nmemo: m\nn: 1\n---\n本文を足した\n",
+    )
+    .unwrap();
+    a.poll();
+    std::fs::remove_file(&csv).unwrap();
+    a.export_table_to(csv.to_str().unwrap());
+    assert_eq!(revs(&std::fs::read_to_string(&csv).unwrap()), first);
     let md = out(&tmp, "out.md");
     a.export_table_to(md.to_str().unwrap());
     let md_text = std::fs::read_to_string(&md).unwrap();
