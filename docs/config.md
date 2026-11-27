@@ -812,7 +812,7 @@ rename_links = "ask"
 - Default: `[]`
 - Scope: global, workspace, table, view
 
-Columns that AI writes (`--apply <file> --propose <reason>` and the MCP server) may change directly. Changes to columns not listed here are not written: they are left as proposals in `.mdgrid/proposals/` at the ledger root, and a person reviews the diff and takes them with "Show AI proposals" on screen. Empty by default, so no column is written directly. List only the columns you are happy to let AI change, such as a status or a progress column.
+Columns that AI writes (`--apply <file> --propose <reason>` and `update` in the MCP server, `--mcp`) may change directly. Changes to columns not listed here are not written: they are left as proposals in `.mdgrid/proposals/` at the ledger root, and a person reviews the diff and takes them with "Show AI proposals" on screen. Empty by default, so no column is written directly. List only the columns you are happy to let AI change, such as a status or a progress column.
 
 ```toml
 [ai]

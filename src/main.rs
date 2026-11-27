@@ -5,6 +5,7 @@
 mod apply;
 mod diff;
 mod edit;
+mod mcp;
 mod reopen;
 mod ui;
 mod ws_cli;
@@ -75,6 +76,7 @@ enum Command {
     Check(Vec<PathBuf>),
     /// condition.count: 画面を出さずに、ビューの行の数を出す(開くパスと絞り込みの式)。
     Count(Vec<PathBuf>, Vec<String>),
+    Mcp(Vec<PathBuf>),
     /// notice.cli: 画面を出さずに、通知の欄の項目を出す(開くパス)。
     Notices(Vec<PathBuf>),
     Notify(Vec<PathBuf>),
@@ -204,6 +206,9 @@ struct Cli {
     /// 画面を出さずに、ビューの行の数を出す(condition.count)
     #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply"])]
     count: bool,
+    /// 標準入出力で MCP(JSON-RPC)を話し、AI に台帳を読む・直す道具を渡す(ai.mcp-server)
+    #[arg(long, conflicts_with_all = ["print", "pick", "check", "apply", "count"])]
+    mcp: bool,
     /// --print・--pick・--count で、いつも隠す名前の条件(hide)を当てない(condition.show-hidden-cli)
     #[arg(long)]
     show_hidden: bool,
@@ -479,6 +484,8 @@ impl Cli {
                 Command::Check(paths)
             } else if let Some(file) = self.apply {
                 Command::Apply(paths, file, self.yes, self.propose)
+            } else if self.mcp {
+                Command::Mcp(paths)
             } else if self.count {
                 Command::Count(paths, self.filter)
             } else if self.notices {
@@ -516,6 +523,7 @@ impl Cli {
             (self.print, "--print"),
             (self.check, "--check"),
             (self.count, "--count"),
+            (self.mcp, "--mcp"),
             (self.notices, "--notices"),
             (self.notify, "--notify"),
             (self.runs, "--runs"),
@@ -1147,6 +1155,9 @@ fn main() -> ExitCode {
                 &sort,
                 &only,
             );
+        }
+        Ok(Command::Mcp(p)) => {
+            return mcp::serve(&p, table.as_deref(), opts.view.as_deref());
         }
         Ok(Command::Count(p, filter)) => {
             let only = md_files(&p);

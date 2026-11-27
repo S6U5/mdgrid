@@ -95,6 +95,54 @@
   - Then: 案のファイルが消え、未保存は 0 のまま、下の帯の案の数が消える。
 - Needs: utest
 
+### MCP の口
+
+#### `mdgrid <台帳> --mcp` は、標準入力と標準出力で MCP(JSON-RPC 2.0、1行に1つのメッセージ)を話し、`initialize`・`tools/list`・`tools/call`・`ping` に答え、標準入力が閉じたら終わるべき
+`req~ai.mcp-server~1` P1
+- Rationale: シェルを持たないチャットの道具(手元の MCP のつなぎ先)からも、同じ検査と書き戻しの道で台帳を読んで直せるようにする。手元だけで動き、ネットにはつながない
+- Acceptance:
+  - Given: 台帳のフォルダ
+  - When: `--mcp` で起動し、`initialize` を送る
+  - Then: 同じ `id` の答えに、`serverInfo.name` が `mdgrid` で、`capabilities.tools` がある。
+- Acceptance:
+  - Given: 起動した `--mcp`
+  - When: 知らないメソッドを送る
+  - Then: JSON-RPC の誤り(`-32601`)を返し、続けて次のメッセージに答える。
+- Acceptance:
+  - Given: 起動した `--mcp`
+  - When: 標準入力を閉じる
+  - Then: 終了コード 0 で終わる。
+- Needs: stest
+
+#### MCP の道具は、表の一覧(`tables`)・表の設定(`describe`)・行を読む(`query`)・数える(`count`)・点検(`check`)・直す(`update`)の6つにし、どれも起動で渡した台帳の中だけを、mdgrid の `--print`・`--count`・`--check`・`--apply … --propose` と同じ道で読み書きし、シェルを通したコマンドやエディタ・git を走らせてはならない
+`req~ai.mcp-tools~1` P1
+- Rationale: AI に渡す口を、台帳を読むことと、許した形で直すことに限る
+- Acceptance:
+  - Given: 起動した `--mcp`
+  - When: `tools/list`
+  - Then: 名前が tables・describe・query・count・check・update の6つの道具が、それぞれ入力の JSON Schema つきで並ぶ。
+- Acceptance:
+  - Given: `status: todo` のノートの台帳
+  - When: `query` を `{"filter": "status == \"todo\""}` で呼ぶ
+  - Then: 答えの文に、そのノートの `path`・`status`・`_rev` を持つ JSON の行がある。
+- Acceptance:
+  - Given: 台帳
+  - When: `query` の `table` に台帳に無い表の名前
+  - Then: `isError` が真で、ある表の名前を並べた理由。
+- Needs: stest
+
+#### MCP の `update` は、`--apply … --propose`(ai.propose-command)と同じに、設定 `ai.write` の列は書き、ほかは案として台帳に置き、書き出したあとに変わった行(`_rev` が違う行)は書かないべき
+`req~ai.mcp-update~1` P1
+- Acceptance:
+  - Given: `[table.ai] write = ["status"]` の表の、`status: todo`・`due: 2026-12-01` のノート
+  - When: `update` を `{"reason": "見直す", "changes": [{"path": <query の path>, "_rev": <query の _rev>, "status": "done", "due": "2026-12-20"}]}` で呼ぶ
+  - Then: ノートの status は done、due は元のまま。案のファイルが1つ(due)。答えに書いた数と案にした数。
+- Acceptance:
+  - Given: query のあとに外で due を直したノート
+  - When: 同じく `update`
+  - Then: `isError` が真で、何も書かず案も置かない。
+- Needs: stest
+
 ### スキル
 
 #### mdgrid の CLI の手引きのスキルは、AI が値を直すときは `--apply <ファイル> --propose <理由>` を使い、直に書けなかったセルは人が画面で受けることを書き、`--yes` は人が頼んだときだけにする
