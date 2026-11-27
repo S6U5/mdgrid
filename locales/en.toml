@@ -305,17 +305,18 @@ RoutineReadonly = "--runs writes run notes, so it cannot be used with --readonly
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "the rows are not notes (CSV or TSV), so no routine runs"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  {0} routine runs are due"
+FooterRoutine = "  {0}: {1} runs are due"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "Create the routine runs"
-AskRoutineRuns = "Create these routine runs? Type y and Enter: "
+CmdRoutineRuns = "Create the recurring runs"
+AskRoutineRuns = "{0}: create these runs? Type y and Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notes to create ({0}):"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "{0} more"
-RoutineNone = "no routine runs are due"
+RoutineNone = "{0}: no runs are due"
 ## {0} は作ったノートの数。
-RoutineMade = "created {0} routine runs"
+RoutineMade = "{0}: created {1} runs"
+RunsGeneric = "Recurring"
 RoutineDismissed = "did not create the routine runs (not asked again today)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "no table named {0} in the marker (tables: {1}); opened the folder as it is"
@@ -1065,7 +1066,7 @@ EditOnlyThisRow = "editing this row only: the {0} marked rows are not included (
 EditOnlyThisRowOne = "editing this row only: the {0} marked row is not included (press Enter on the marked row to edit it)"
 EditMismatch = "the current value does not fit the column type. "
 EditHintList = "↑↓ choose, Enter confirm, type for free input (*=current value)"
-EditHintNumber = "number: a value read as a number, empty to clear"
+EditHintNumber = "number: a value read as a number, +10 to add to the current value, empty to clear"
 EditHintCheckbox = "true or false, empty to clear (↑↓ for the list)"
 EditHintDate = "date: {0}, +3 / -2 (from today), empty to clear"
 EditHintDateTime = "datetime: YYYY-MM-DDTHH:MM, {0}, +3, empty to clear"

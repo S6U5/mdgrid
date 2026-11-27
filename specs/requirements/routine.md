@@ -35,6 +35,40 @@
   - Then: cli.config-file-warning-form の形で警告し、その表では回を作らない。
 - Needs: utest
 
+#### `runs` の `where`(ビューの `where` と同じ形。列 → 値のどれか。列どうしは全部)に当たるルーチンだけ回を作り、当たらないルーチンは決まりの列の値が残っていても回を作らないべき
+`req~routine.runs-where~1` P1
+- Rationale: 回を止めるには決まりの列の値を消すしかなく、止めた定期の支払いの周期(`monthly 25` など)が消えて、あとで再開するときに書き直す手間があった(2026-11-27 のお金の台帳の実地の操作)。状態で止められれば、周期は残せる
+- Acceptance:
+  - Given: 表「定期の支払い」に `runs = { folder = "Expenses", rule = "recurrence", where = { status = ["active"] } }`、`recurrence: daily` で status が active の「家賃」と paused の「雑誌」
+  - When: `mdgrid <台帳> --runs`
+  - Then: 「家賃」の今日の回だけを作り、「雑誌」の回は作らない(「雑誌」の recurrence はそのまま)。
+- Acceptance:
+  - Given: `where = "status"`(表でない)
+  - When: 起動する
+  - Then: cli.config-file-warning-form の形で `runs.where` を言う警告1行を出し、`where` を書かなかったときと同じに回を作る。
+- Needs: utest
+
+#### 回の知らせと作る操作の言葉(下の帯の知らせ・作るかの確かめ・作った数・来ていないこと)は、回の元の表の名前で言い(表「定期の支払い」なら「定期の支払いの回が 2 件来ています」)、範囲に回を作る表が2つ以上あれば「繰り返しの回」と言い、パレットの作る操作の名前は「繰り返しの回を作る」にするべき
+`req~routine.run-words~1` P1
+- Rationale: 回を作る仕組みはどの表にも書けるのに、言葉が「ルーチン」に決まっていて、お金の台帳でも「ルーチンの回が 2 件来ています」と出た(2026-11-27 の実地の操作)。表の名前で言えば、タスクの台帳(表「ルーチン」)では今までどおり「ルーチンの回」と読める
+- Acceptance:
+  - Given: 範囲で回を作る表が「定期の支払い」だけで、作る回が2つ
+  - When: 画面で開く
+  - Then: 下の帯に「定期の支払いの回が 2 件来ています」。
+- Acceptance:
+  - Given: 範囲で回を作る表が「ルーチン」だけで、作る回が2つ
+  - When: 画面で開く
+  - Then: 下の帯に「ルーチンの回が 2 件来ています」(今までどおり)。
+- Acceptance:
+  - Given: 範囲で回を作る表が「ルーチン」と「定期の支払い」の2つ
+  - When: 画面で開く
+  - Then: 下の帯に「繰り返しの回が N 件来ています」。
+- Acceptance:
+  - Given:
+  - When: パレットを開いて「回を作る」と打つ
+  - Then: 「繰り返しの回を作る」が出る。
+- Needs: utest
+
 #### 決まりの列の値は、`daily`(毎日)・`weekly <曜日…>`(`weekly mon thu` のように並べてよい)・`monthly <日…>`(`monthly 1 15`。月の末日は `last`)・`every <N>d`(起点の列 `start` の日から N 日ごと)で読み、日本語の `毎日`・`毎週 月 木`・`毎月 1日 15日`・`毎月 末日`・`N日ごと` も同じに読むべき
 `req~routine.rule~1` P1
 - Rationale: 今のルーチンの「繰り返し」は自由な文で、機械では次の回が分からないため。英語の短い形と日本語の形のどちらで書いても同じ回にする(書き方は tbd~routine.rule-syntax)

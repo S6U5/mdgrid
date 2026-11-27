@@ -166,7 +166,7 @@ fn test_routine_offer_click_opens_the_names() {
 
 #[test]
 fn test_routine_palette_opens_the_names() {
-    // [utest -> req~routine.screen-create~2] パレットの「ルーチンの回を作る」(routine_runs)からも、作るノートの名前の確かめが開く(キーは割り当てない。tbd~routine.offer-key)。
+    // [utest -> req~routine.screen-create~2, req~routine.run-words~1] パレットの「繰り返しの回を作る」(routine_runs)からも、作るノートの名前の確かめが開く(キーは割り当てない。tbd~routine.offer-key)。
     let (t, mut a) = boot("routine-palette", MARKER, &[REVIEW, DIARY], false);
     check(&mut a, "2026-11-24");
     let first = help::candidates(&a, "routine_runs").into_iter().next();
@@ -174,7 +174,7 @@ fn test_routine_palette_opens_the_names() {
         first.map(|c| (c.name, c.label, c.keys)),
         Some((
             "routine_runs".to_string(),
-            "ルーチンの回を作る".to_string(),
+            "繰り返しの回を作る".to_string(),
             String::new()
         ))
     );
@@ -403,4 +403,66 @@ fn test_routine_screen_failure_shows_reason_and_retries() {
     ch(&mut a, 'y');
     press(&mut a, KeyCode::Enter);
     assert!(locked.join("日記 2026-11-24.md").is_file());
+}
+
+// ---- routine.runs-where ----
+
+/// 表「定期の支払い」(notes/)に、active のものだけ回を作る `runs` を書いた印。
+const PAY: &str = "name = \"お金\"\n\n[[table]]\nname = \"定期の支払い\"\npath = \"notes\"\nruns = { folder = \"Runs\", rule = \"recurrence\", where = { status = [\"active\"] } }\n\n[[table]]\nname = \"Runs\"\npath = \"Runs\"\n";
+
+#[test]
+fn test_routine_runs_only_where_matches() {
+    // [utest -> req~routine.runs-where~1] where = { status = ["active"] } → active の「家賃」の今日の回だけを作り、paused の「雑誌」は作らない
+    // (雑誌の recurrence は残ったまま)。
+    let rent = ("家賃.md", "---\nrecurrence: daily\nstatus: active\n---\n");
+    let mag = ("雑誌.md", "---\nrecurrence: daily\nstatus: paused\n---\n");
+    let (t, a) = boot("routine-where", PAY, &[rent, mag], false);
+    assert!(a.routine.warnings.is_empty(), "{:?}", a.routine.warnings);
+    let r = runs_cli(&a, "2026-11-24");
+    assert!(r.failures.is_empty(), "{:?}", r.failures);
+    assert_eq!(runs(&t), ["家賃 2026-11-24.md"], "{:?}", r.made);
+    let mag = std::fs::read_to_string(t.notes().join("雑誌.md")).unwrap();
+    assert!(mag.contains("recurrence: daily"), "{mag}");
+}
+
+#[test]
+fn test_routine_runs_where_not_a_table_warns() {
+    // [utest -> req~routine.runs-where~1] where = "status"(表でない)→ runs.where を言う警告1行を出し、where が無いときと同じに回を作る。
+    let marker = PAY.replace("where = { status = [\"active\"] }", "where = \"status\"");
+    let mag = ("雑誌.md", "---\nrecurrence: daily\nstatus: paused\n---\n");
+    let (t, a) = boot("routine-where-bad", &marker, &[mag], false);
+    let w = &a.routine.warnings;
+    assert!(w.len() == 1 && w[0].contains("runs.where"), "{w:?}");
+    runs_cli(&a, "2026-11-24");
+    assert_eq!(runs(&t), ["雑誌 2026-11-24.md"]);
+}
+
+// ---- routine.run-words ----
+
+#[test]
+fn test_routine_words_use_the_table_name() {
+    // [utest -> req~routine.run-words~1] 回を作る表が「定期の支払い」だけ → 下の帯に「定期の支払いの回が 2 件来ています」。
+    let rent = ("家賃.md", "---\nrecurrence: daily\nstatus: active\n---\n");
+    let gas = ("ガス.md", "---\nrecurrence: daily\nstatus: active\n---\n");
+    let (_t, mut a) = boot("routine-words", PAY, &[rent, gas], false);
+    check(&mut a, "2026-11-24");
+    let s = screen(&a);
+    assert!(s.contains("定期の支払いの回が 2 件来ています"), "{s}");
+}
+
+#[test]
+fn test_routine_words_for_two_tables() {
+    // [utest -> req~routine.run-words~1] 回を作る表が「ルーチン」と「定期の支払い」の2つ → 下の帯に「繰り返しの回が 2 件来ています」。
+    let marker = "name = \"暮らし\"\n\n[[table]]\nname = \"ルーチン\"\npath = \"notes\"\nruns = { folder = \"Runs\", rule = \"recurrence\" }\n\n\
+                  [[table]]\nname = \"定期の支払い\"\npath = \"pay\"\nruns = { folder = \"Runs\", rule = \"recurrence\" }\n\n[[table]]\nname = \"Runs\"\npath = \"Runs\"\n";
+    let (t, mut a) = boot("routine-words2", marker, &[DIARY], false);
+    std::fs::create_dir_all(t.0.join("pay")).unwrap();
+    std::fs::write(t.0.join("pay/家賃.md"), "---\nrecurrence: daily\n---\n").unwrap();
+    check(&mut a, "2026-11-24");
+    let s = screen(&a);
+    assert!(
+        s.contains("繰り返しの回が 2 件来ています"),
+        "{s}\n{:?}",
+        a.routine.tables
+    );
 }

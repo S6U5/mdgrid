@@ -555,6 +555,12 @@ impl App {
             None => match super::calendar::choice(&i, self.today, self.date_input()) {
                 Some(c) => Some(c),
                 None => match parse(i.entry, &i.text, self.today, self.date_input()) {
+                    // cell-edit.number-plus: 数の列の `+N` は、行ごとに今の値に足す。
+                    Ok(v @ (NewValue::Int(_) | NewValue::Float(_)))
+                        if i.entry == Entry::Number && i.text.trim().starts_with('+') =>
+                    {
+                        Some(Choice::Plus(v))
+                    }
                     Ok(v) => Some(Choice::Value(v)),
                     Err(e) => {
                         self.message = Some(e);

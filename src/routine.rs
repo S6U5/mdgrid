@@ -39,9 +39,11 @@ pub struct Spec {
     pub copy: Vec<String>,
     /// 本文の雛形のファイル(印の根からの相対。空なら見出し1行)。
     pub body: String,
+    /// 回を作るルーチンの条件(routine.runs-where。列 → 値のどれか。空なら全部)。
+    pub where_: Vec<(String, Vec<String>)>,
 }
 
-const KEYS: [&str; 6] = ["folder", "rule", "name", "set", "copy", "body"];
+const KEYS: [&str; 7] = ["folder", "rule", "name", "set", "copy", "body", "where"];
 
 /// 印の `runs` を読む(警告の場所は `at`)。書き方が違えば CLI-3 の形で警告して None(表でない・`folder` か
 /// `rule` が無い)。知らない鍵と、読めない `set`・`copy` の値は警告して、その鍵か値だけを外す。
@@ -109,6 +111,10 @@ pub fn read(v: &toml::Value, file: &str, at: &str, warns: &mut Vec<String>) -> O
                 Vec::new()
             }),
     };
+    let where_ = t
+        .get("where")
+        .map(|v| crate::profile::read_where(v, file, &format!("{at}.where"), warns))
+        .unwrap_or_default();
     if folder.is_empty() {
         warn(
             warns,
@@ -134,6 +140,7 @@ pub fn read(v: &toml::Value, file: &str, at: &str, warns: &mut Vec<String>) -> O
         set,
         copy,
         body,
+        where_,
     })
 }
 

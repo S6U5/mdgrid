@@ -790,6 +790,8 @@ impl App {
         {
             Some(Choice::Value(v)) => v,
             Some(Choice::Day(d)) => NewValue::Date(types::format_date(d)),
+            // 新しいノートには今の値が無いので、`+N` は N(cell-edit.number-plus)。
+            Some(Choice::Plus(v)) => v,
             None => match parse(i.entry, &i.text, self.today, self.date_input()) {
                 Ok(v) => v,
                 Err(e) => {

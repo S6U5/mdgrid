@@ -157,6 +157,9 @@ pub(crate) enum Choice {
     Value(NewValue),
     /// 日時の列で日だけを決めた: 行ごとに、その行の元の時刻を保つ(元に時刻が無い行は時刻なし)。
     Day(i64),
+    /// cell-edit.number-plus: 数の列に `+N` を打った: 行ごとに、その行の今の値(ためた値があればそれ)に足す
+    /// (今の値が無いか数でなければ N)。
+    Plus(NewValue),
 }
 
 impl Choice {
@@ -170,6 +173,25 @@ impl Choice {
                     _ => String::new(),
                 };
                 NewValue::Date(format!("{}{time}", types::format_date(*d)))
+            }
+            Choice::Plus(n) => {
+                let cur = match app.changes.pending(row, col) {
+                    Some(v) => Some(v.clone()),
+                    None => match app.prop(row, col) {
+                        Some(Value::Int(i)) => Some(NewValue::Int(i)),
+                        Some(Value::Float(f)) => Some(NewValue::Float(f)),
+                        _ => None,
+                    },
+                };
+                match (cur, n) {
+                    (Some(NewValue::Int(a)), NewValue::Int(b)) => a
+                        .checked_add(*b)
+                        .map_or(NewValue::Float(a as f64 + *b as f64), NewValue::Int),
+                    (Some(NewValue::Int(a)), NewValue::Float(b)) => NewValue::Float(a as f64 + b),
+                    (Some(NewValue::Float(a)), NewValue::Int(b)) => NewValue::Float(a + *b as f64),
+                    (Some(NewValue::Float(a)), NewValue::Float(b)) => NewValue::Float(a + b),
+                    _ => n.clone(),
+                }
             }
         }
     }

@@ -373,3 +373,168 @@ fn test_kanban_lane_title_is_drawn_as_the_cell_part() {
         screen(&a)
     );
 }
+
+/// 結論(conclusion)と日数(formula.days)に名前を付け、どのビューにも並べていない表。
+fn declared_table(tag: &str) -> (Tmp, App) {
+    let views = "[[table.base.views]]\ntype = \"table\"\nname = \"全部\"\norder = [\"kind\"]\n\n\
+                 [table.base.formulas]\ndays = '1'\n\n\
+                 [table.base.properties]\n\"note.conclusion\" = { displayName = \"結論\" }\n\"formula.days\" = { displayName = \"日数\" }\n";
+    boot(
+        tag,
+        &marker("", "", views),
+        &[("T/問い.md", "---\nkind: q\n---\n")],
+        "",
+        ColorMode::None,
+    )
+}
+
+#[test]
+fn test_detail_lists_declared_columns_even_when_empty() {
+    // [utest -> req~navigation.detail-declared-columns~1] properties で名前を付けた conclusion は、値が無くてもビューに無くても詳細に
+    // 「結論」として空欄で並ぶ。名前を付けた計算の列 days(今のビューに無い)は並ばない。
+    let (_t, mut a) = declared_table("fix_decl1");
+    select(&mut a, "問い");
+    ch(&mut a, 'K');
+    assert_eq!(a.mode, Mode::Detail, "{:?}", a.message);
+    let s = screen(&a);
+    assert!(s.lines().any(|l| l.contains("結論")), "{s}");
+    assert!(!s.contains("日数"), "{s}");
+}
+
+#[test]
+fn test_detail_edits_a_declared_empty_column() {
+    // [utest -> req~navigation.detail-declared-columns~1] 詳細の空欄の「結論」で Enter → 「分かった」と打って確定 → conclusion のためる変更。
+    let (_t, mut a) = declared_table("fix_decl2");
+    select(&mut a, "問い");
+    ch(&mut a, 'K');
+    let d = a.detail.as_ref().unwrap();
+    let props = a.detail_props(&d.row);
+    let k = props
+        .iter()
+        .position(|p| p == "conclusion")
+        .unwrap_or_else(|| panic!("{props:?}"));
+    for _ in 0..k {
+        ch(&mut a, 'j');
+    }
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Edit, "{:?}", a.message);
+    typing(&mut a, "分かった");
+    press(&mut a, KeyCode::Enter);
+    let row = a.detail.as_ref().unwrap().row.clone();
+    assert_eq!(
+        a.changes.pending(&row, "conclusion"),
+        Some(&mdgrid::source::NewValue::Str("分かった".into()))
+    );
+}
+
+/// 数の列 page の表(`pages` の行ごとに a.md・b.md …。値の無い行は page を書かない)。
+fn pages_table(tag: &str, pages: &[Option<i64>]) -> (Tmp, App) {
+    let files: Vec<(String, String)> = pages
+        .iter()
+        .enumerate()
+        .map(|(i, p)| {
+            let name = format!("T/{}.md", (b'a' + i as u8) as char);
+            let body = match p {
+                Some(n) => format!("---\npage: {n}\nkind: book\n---\n"),
+                None => "---\nkind: book\n---\n".to_string(),
+            };
+            (name, body)
+        })
+        .collect();
+    let refs: Vec<(&str, &str)> = files
+        .iter()
+        .map(|(a, b)| (a.as_str(), b.as_str()))
+        .collect();
+    boot(
+        tag,
+        &marker("[types]\npage = \"number\"", "", "[[table.base.views]]\ntype = \"table\"\nname = \"全部\"\norder = [\"page\", \"kind\"]\n"),
+        &refs,
+        "",
+        ColorMode::None,
+    )
+}
+
+/// 選んでいるセルを開き、欄を空にして `text` を打って確定する。
+fn type_into(a: &mut App, col: &str, text: &str) {
+    col_named(a, col);
+    press(a, KeyCode::Enter);
+    assert_eq!(a.mode, Mode::Edit, "{:?}", a.message);
+    let n = a.input.as_ref().unwrap().text.chars().count();
+    press(a, KeyCode::End);
+    for _ in 0..n {
+        press(a, KeyCode::Backspace);
+    }
+    typing(a, text);
+    press(a, KeyCode::Enter);
+}
+
+/// 名前が `name` の行の列 `col` のためた値。
+fn pending_of(a: &App, name: &str, col: &str) -> Option<mdgrid::source::NewValue> {
+    let r = a
+        .src
+        .rows()
+        .into_iter()
+        .find(|r| a.src.label(r).ends_with(&format!("{name}.md")))?;
+    a.changes.pending(&r, col).cloned()
+}
+
+#[test]
+fn test_number_plus_adds_to_the_current_value() {
+    // [utest -> req~cell-edit.number-plus~1] `page: 200` の行で `+10` → 210。page の無い行で `+10` → 10。`-10` → -10(負の数)。
+    use mdgrid::source::NewValue;
+    let (_t, mut a) = pages_table("fix_plus1", &[Some(200), None, Some(200)]);
+    select(&mut a, "a");
+    type_into(&mut a, "page", "+10");
+    assert_eq!(
+        pending_of(&a, "a", "page"),
+        Some(NewValue::Int(210)),
+        "{:?}",
+        a.message
+    );
+    select(&mut a, "b");
+    type_into(&mut a, "page", "+10");
+    assert_eq!(
+        pending_of(&a, "b", "page"),
+        Some(NewValue::Int(10)),
+        "{:?}",
+        a.message
+    );
+    select(&mut a, "c");
+    type_into(&mut a, "page", "-10");
+    assert_eq!(
+        pending_of(&a, "c", "page"),
+        Some(NewValue::Int(-10)),
+        "{:?}",
+        a.message
+    );
+}
+
+#[test]
+fn test_number_plus_adds_per_row_in_bulk() {
+    // [utest -> req~cell-edit.number-plus~1] `page: 5` と `page: 7` の2行を選んで一括で `+10` → 15 と 17。
+    use mdgrid::source::NewValue;
+    let (_t, mut a) = pages_table("fix_plus2", &[Some(5), Some(7)]);
+    ctrl(&mut a, 'a');
+    col_named(&mut a, "page");
+    press(&mut a, KeyCode::Enter);
+    assert!(a.input.as_ref().unwrap().bulk.is_some());
+    let n = a.input.as_ref().unwrap().text.chars().count();
+    press(&mut a, KeyCode::End);
+    for _ in 0..n {
+        press(&mut a, KeyCode::Backspace);
+    }
+    typing(&mut a, "+10");
+    press(&mut a, KeyCode::Enter);
+    assert_eq!(
+        pending_of(&a, "a", "page"),
+        Some(NewValue::Int(15)),
+        "{:?}",
+        a.message
+    );
+    assert_eq!(
+        pending_of(&a, "b", "page"),
+        Some(NewValue::Int(17)),
+        "{:?}",
+        a.message
+    );
+}

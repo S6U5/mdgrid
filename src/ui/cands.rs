@@ -45,17 +45,7 @@ impl App {
 
     /// 行 `row` が候補の出し方の `where` に当たるか(列ごとに値のどれか。リストの列は要素のどれか。列どうしは全部)。
     fn cand_where_ok(&self, row: &RowId, spec: &Cands) -> bool {
-        spec.where_.iter().all(|(col, vals)| {
-            let key = col.strip_prefix("note.").unwrap_or(col);
-            match self.prop(row, key) {
-                Some(Value::List(items)) => items
-                    .iter()
-                    .filter_map(scalar_text)
-                    .any(|t| vals.contains(&t)),
-                Some(v) => scalar_text(&v).is_some_and(|t| vals.contains(&t)),
-                None => false,
-            }
-        })
+        mdgrid::rules::where_matches(&spec.where_, |k| self.prop(row, k))
     }
 
     /// ノートのパスの行(読み込み口の行の書き方に合わせる。合わなければ実体のパスで探す)。

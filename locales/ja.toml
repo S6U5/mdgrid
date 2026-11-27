@@ -304,17 +304,18 @@ RoutineReadonly = "--runs は回のノートを書くので、--readonly と一�
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "行がノートでない(CSV・TSV)ので、ルーチンの回を作らない"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  ルーチンの回が {0} 件来ています"
+FooterRoutine = "  {0}の回が {1} 件来ています"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "ルーチンの回を作る"
-AskRoutineRuns = "このルーチンの回を作る? y と打って Enter: "
+CmdRoutineRuns = "繰り返しの回を作る"
+AskRoutineRuns = "この{0}の回を作る? y と打って Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "作るノート({0} 件):"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "ほか {0} 件"
-RoutineNone = "来ているルーチンの回は無い"
+RoutineNone = "来ている{0}の回は無い"
 ## {0} は作ったノートの数。
-RoutineMade = "ルーチンの回を {0} 件作った"
+RoutineMade = "{0}の回を {1} 件作った"
+RunsGeneric = "繰り返し"
 RoutineDismissed = "ルーチンの回を作らなかった(今日はもう知らせない)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "印に {0} という表は無いので、フォルダをそのまま開いた(ある表: {1})"
@@ -1064,7 +1065,7 @@ EditOnlyThisRow = "この行だけを直す: 印を付けた {0}行は入れな�
 EditOnlyThisRowOne = "この行だけを直す: 印を付けた {0}行は入れない(印の行の上で Enter なら全部に入れる)"
 EditMismatch = "今の値は列の型に合わない。"
 EditHintList = "↑↓ で選ぶ・Enter で決める・打つと自由入力(*=今の値)"
-EditHintNumber = "数: 数として読める値・空で消す"
+EditHintNumber = "数: 数として読める値・+10 で今の値に足す・空で消す"
 EditHintCheckbox = "true か false・空で消す(↑↓ でリスト)"
 EditHintDate = "日付: {0}・+3 / -2(今日から)・空で消す"
 EditHintDateTime = "日時: YYYY-MM-DDTHH:MM・{0}・+3・空で消す"

@@ -1181,6 +1181,23 @@
   - Then: related の値は `[設計, 画面]`(表のセルと同じ)。
 - Needs: utest
 
+#### 詳細の表示には、今のビューの列と行に値のある列に加えて、表を作った人が置いた列(`.base` の `properties` で名前を付けた列と、どれかのビューの `order` に並べた列。計算の列とファイルの項目は除く)を、値が無くても空欄で並べ、そこから直せるべき
+`req~navigation.detail-declared-columns~1` P1
+- Rationale: 値の無い列はビューに無いと詳細に出ず、結論・確からしさ・評価・決まったことのような、行を開いてあとから埋める列を詳細から埋められなかった(2026-11-27 の調べ物と読書の台帳の実地の操作)。表を作った人が名前を付けた列は、その表の行が持つはずの列なので、空でも出す
+- Acceptance:
+  - Given: `properties` に `note.conclusion`(displayName「結論」)を書き、どのビューの `order` にも conclusion の無い表と、conclusion の無い行
+  - When: その行で `K`
+  - Then: 詳細に「結論」の行が空欄で出る。
+- Acceptance:
+  - Given: 同じ詳細で「結論」を選んでいる
+  - When: Enter で「分かった」と打って確定する
+  - Then: conclusion に「分かった」が入るためる変更ができる。
+- Acceptance:
+  - Given: `properties` に `formula.days` を書いた表
+  - When: 行で `K`
+  - Then: 今のビューに無い計算の列 days は詳細に並ばない。
+- Needs: utest
+
 #### 選んだ行の全プロパティを縦に並べた詳細の表示(`K`)があるべき
 `req~navigation.detail-view~1` P1
 - Acceptance:

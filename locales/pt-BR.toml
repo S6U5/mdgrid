@@ -305,17 +305,18 @@ RoutineReadonly = "--runs grava notas de ocorrência, então não pode ser usado
 ## routine.opt-in: ルーチンの表が CSV・TSV。
 RoutineNotNotes = "as linhas não são notas (CSV ou TSV), então não há ocorrências da rotina"
 ## routine.screen-offer: 下の帯。{0} は来ている回の数。
-FooterRoutine = "  {0} ocorrências de rotina pendentes"
+FooterRoutine = "  {0}: {1} ocorrências pendentes"
 ## routine.screen-create: パレットのコマンドと確かめ。
-CmdRoutineRuns = "Criar as ocorrências de rotina"
-AskRoutineRuns = "Criar estas ocorrências de rotina? Digite y e Enter: "
+CmdRoutineRuns = "Criar as ocorrências recorrentes"
+AskRoutineRuns = "{0}: criar estas ocorrências? Digite y e Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notas a criar ({0}):"
 ## {0} は並べきれないノートの数。
 RoutineRunsMore = "mais {0}"
-RoutineNone = "não há ocorrências de rotina pendentes"
+RoutineNone = "{0}: não há ocorrências pendentes"
 ## {0} は作ったノートの数。
-RoutineMade = "{0} ocorrências de rotina criadas"
+RoutineMade = "{0}: {1} ocorrências criadas"
+RunsGeneric = "Recorrentes"
 RoutineDismissed = "ocorrências de rotina não criadas (sem perguntar de novo hoje)"
 ## {0} は open に書いた名前、{1} は印の表の名前の並び。
 RsnOpenUnknown = "não há tabela chamada {0} no marcador (tabelas: {1}); a pasta foi aberta como está"
@@ -1065,7 +1066,7 @@ EditOnlyThisRow = "editando só esta linha: as {0} linhas marcadas não estão i
 EditOnlyThisRowOne = "editando só esta linha: {0} linha marcada não está incluída (tecle Enter na linha marcada para editá-la)"
 EditMismatch = "o valor atual não se encaixa no tipo da coluna. "
 EditHintList = "↑↓ escolher, Enter confirmar, digite para entrada livre (*=valor atual)"
-EditHintNumber = "número: um valor lido como número, vazio para limpar"
+EditHintNumber = "número: um valor lido como número, +10 para somar ao valor atual, vazio para limpar"
 EditHintCheckbox = "true ou false, vazio para limpar (↑↓ para a lista)"
 EditHintDate = "data: {0}, +3 / -2 (a partir de hoje), vazio para limpar"
 EditHintDateTime = "data-hora: YYYY-MM-DDTHH:MM, {0}, +3, vazio para limpar"
