@@ -337,12 +337,18 @@ pub(crate) fn note_name_of(app: &App, name: &str) -> String {
     }
 }
 
-/// navigation.parent-child-away-mark: 親が別のまとまりにある子の行の印。
-const AWAY_MARK: &str = "↳ ";
+/// navigation.parent-child-away-mark: 別のまとまりにある親を添えた薄い行の、左の端の印(色に頼らない)。
+pub(crate) const GHOST_MARK: &str = "^";
 
 /// 行の表示名。外で変わった行・同期の競合ファイルには `!`、値を直して元の位置に留めている行には `~`
 /// を付ける(色に頼らない)。
 pub(crate) fn label(app: &App, row: &RowId) -> String {
+    label_in(app, row, 0)
+}
+
+/// `label` と同じ。親子の字下げを `lift` 段だけ減らす(navigation.parent-child-away-mark: まとまりの見出しを
+/// 出さないガントは、添えた薄い親の分を字下げしない)。
+pub(crate) fn label_in(app: &App, row: &RowId, lift: usize) -> String {
     let flag = app.changes.external(row) || app.src.mark(row).is_some();
     // SR-29・SR-46: `.md` を除き、フォルダは note_path に従う(既定は共通のフォルダを除く)。file.name の列が
     // あるときと off のときは名前は出さず、印だけ。
@@ -376,13 +382,7 @@ pub(crate) fn label(app: &App, row: &RowId) -> String {
                 name = format!("{name} · {t}");
             }
         }
-        // navigation.parent-child-away-mark: 親が別のまとまりにある行は、名前の前に `↳`。
-        let away = if app.tree_away.contains(row) {
-            AWAY_MARK
-        } else {
-            ""
-        };
-        name = format!("{}{away}{mark}{name}", "  ".repeat(n.depth));
+        name = format!("{}{mark}{name}", "  ".repeat(n.depth.saturating_sub(lift)));
     }
     if app.held.contains(row) {
         name = format!("{HELD_MARK}{name}");
@@ -939,6 +939,36 @@ fn heading_text(app: &App, selected: bool, g: usize) -> Option<String> {
 
 /// まとまりの見出しの行。base-view.summaries-per-group: 集計のあるビューでは、見出しの字を最初の小計の列の手前
 /// までに置き(入らなければ `…` で切る)、まとまりの小計を表の列の位置にそろえて出す(数の列は右寄せ。集計の行と同じ)。
+/// navigation.parent-child-away-mark: 別のまとまりにある親を、子の上に添えた薄い行。左の端は `^`、名前の欄は
+/// そのまとまりの中の深さの字下げと ▾/▸(と WBS の番号・進み具合)のあとに親の名前を薄い字で出し、ほかのセルは空ける。
+fn ghost_row(app: &App, lay: &Layout, g: &super::grid::Ghost, w: usize) -> Line<'static> {
+    let dim = Style::default().add_modifier(Modifier::DIM);
+    let mark = if app.tree_folded.contains(&g.row) {
+        "▸ "
+    } else {
+        "▾ "
+    };
+    let mut name = if label_hidden(app) {
+        String::new()
+    } else {
+        note_name(app, &g.row)
+    };
+    if let Some(num) = &g.num {
+        name = format!("{num} {name}");
+        if let Some(p) = g.pct {
+            name = format!("{name} · {p}%");
+        }
+    }
+    let text = format!("{}{mark}{name}", "  ".repeat(g.depth));
+    let lead_w = lay.label_x().saturating_sub(width(GHOST_MARK));
+    let spans = vec![
+        Span::styled(GHOST_MARK, dim),
+        Span::raw(" ".repeat(lead_w)),
+        Span::styled(fit(&text, lay.label_w, Align::Left), dim),
+    ];
+    pad(spans, w, Style::default())
+}
+
 fn heading_row(
     app: &App,
     lay: &Layout,
@@ -1104,7 +1134,7 @@ pub fn hit(app: &App, x: u16, y: u16) -> Option<(usize, usize)> {
     }
     // CV-8: 伸ばした行の2行目より下も、その行。
     let i = super::rows::slot_at(app, y - dy)?;
-    // SR-30: 見出しの上の空きは選べない。
+    // SR-30: 見出しの上の空きと、添えた薄い行(navigation.parent-child-away-mark)は選べない。
     if i >= app.slots.len() || app.slots[i] == Slot::Gap {
         return None;
     }
@@ -1181,8 +1211,11 @@ pub fn render(app: &App, w: usize, h: usize) -> Vec<Line<'static>> {
                 lines.extend(data_row(app, &lay, &cols, i, &app.rows[*r], &ctx, k));
             }
             Slot::Head(g) => lines.push(heading_row(app, &lay, &cols, i, *g, w)),
-            // SR-30: 見出しの上の空き。
-            Slot::Gap => lines.push(Line::from(" ".repeat(w))),
+            // SR-30: 見出しの上の空き。navigation.parent-child-away-mark: 別のまとまりにある親を添えた薄い行。
+            Slot::Gap => lines.push(match app.ghost_at(i) {
+                Some(g) => ghost_row(app, &lay, g, w),
+                None => Line::from(" ".repeat(w)),
+            }),
         }
     }
     if app.slots.is_empty() {

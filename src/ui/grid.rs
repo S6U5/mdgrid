@@ -30,12 +30,25 @@ pub(crate) struct BaseFile {
 }
 
 /// 表の1行: グループの見出し(`App.groups` の添字)か、ノートの行(`App.rows` の添字)か、
-/// 2つ目からの見出しの上の空き(SR-30。行として数えず、選べない)。
+/// 行として数えず選べない行(`Gap`)。選べない行は、2つ目からの見出しの上の空き(SR-30)か、別のまとまりにある親を
+/// 添えた薄い行(navigation.parent-child-away-mark。どの親かは `App.ghost_slots` に持つ)。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Slot {
     Head(usize),
     Row(usize),
     Gap,
+}
+
+/// navigation.parent-child-away-mark: 子のまとまりに添える、別のまとまりにある親(か祖先)の薄い行。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Ghost {
+    /// 親のノートの行。
+    pub row: RowId,
+    /// そのまとまりの中の深さ(一番上の段は 0)。
+    pub depth: usize,
+    /// NV-28: そのまとまりの中の WBS の番号と、そのまとまりの子孫の進み具合(WBS を出さなければ None)。
+    pub num: Option<String>,
+    pub pct: Option<u8>,
 }
 
 /// 組み立て直しの前後で同じ行を探す鍵(BV-10)。
@@ -377,6 +390,7 @@ impl App {
 
     fn lay_slots(&mut self) {
         self.slots.clear();
+        self.ghost_slots.clear();
         if self.groups.is_empty() {
             let shown: Vec<usize> = (0..self.rows.len())
                 .filter(|&i| !self.under_folded(&self.rows[i]))
@@ -385,19 +399,38 @@ impl App {
             return;
         }
         let gap = self.shows(Item::GroupGap);
+        let mut slots = Vec::new();
+        let mut ghost_slots = HashMap::new();
         for (g, (h, range)) in self.groups.iter().enumerate() {
             if gap && g > 0 {
-                self.slots.push(Slot::Gap);
+                slots.push(Slot::Gap);
             }
-            self.slots.push(Slot::Head(g));
+            slots.push(Slot::Head(g));
             if !self.folded.contains(h) {
-                let shown: Vec<usize> = range
-                    .clone()
-                    .filter(|&i| !self.under_folded(&self.rows[i]))
-                    .collect();
-                self.slots.extend(shown.into_iter().map(Slot::Row));
+                for i in range.clone() {
+                    // navigation.parent-child-away-mark: 行の上に添えた薄い親の行(畳んだ親の下なら出さない)。
+                    if let Some(gs) = self.tree_ghosts.get(&self.rows[i]) {
+                        for (k, gh) in gs.iter().enumerate() {
+                            if !self.under_folded(&gh.row) {
+                                ghost_slots.insert(slots.len(), (i, k));
+                                slots.push(Slot::Gap);
+                            }
+                        }
+                    }
+                    if !self.under_folded(&self.rows[i]) {
+                        slots.push(Slot::Row(i));
+                    }
+                }
             }
         }
+        self.slots = slots;
+        self.ghost_slots = ghost_slots;
+    }
+
+    /// navigation.parent-child-away-mark: 画面の行 `slot` が添えた薄い行なら、その親。
+    pub(crate) fn ghost_at(&self, slot: usize) -> Option<&Ghost> {
+        let &(i, k) = self.ghost_slots.get(&slot)?;
+        self.tree_ghosts.get(self.rows.get(i)?)?.get(k)
     }
 
     /// 行と列を組み立て直す。選んだ行は鍵で保ち(BV-10)、列の順は保って新しい列を右に足す。
@@ -752,14 +785,25 @@ impl App {
         }
     }
 
-    /// SR-30: 選んだ行が見出しの上の空きなら、`dir`(1 なら下、-1 なら上)の向きに1つ進める。
-    /// 空きは先頭にも最後にも来ないので、進んだ先は見出しか行。
+    /// SR-30: 選んだ行が見出しの上の空きか、添えた薄い行(navigation.parent-child-away-mark)なら、`dir`(1 なら下、
+    /// -1 なら上)の向きに選べる行まで進める。その向きに無ければ(畳んだ子の上の薄い行が最後のときなど)逆の向きへ。
     pub(crate) fn step_off_gap(&mut self, dir: isize) {
-        if self.slots.get(self.row) == Some(&Slot::Gap) {
-            self.row = self
-                .row
-                .saturating_add_signed(dir)
-                .min(self.slots.len().saturating_sub(1));
+        let passive = |app: &Self, i: usize| app.slots.get(i) == Some(&Slot::Gap);
+        if !passive(self, self.row) {
+            return;
+        }
+        for d in [dir, -dir] {
+            let mut i = self.row;
+            while passive(self, i) {
+                match i.checked_add_signed(d).filter(|&j| j < self.slots.len()) {
+                    Some(j) => i = j,
+                    None => break,
+                }
+            }
+            if !passive(self, i) {
+                self.row = i;
+                return;
+            }
         }
     }
 
@@ -772,7 +816,8 @@ impl App {
         groups: Vec<(String, std::ops::Range<usize>)>,
     ) -> (Vec<RowId>, Vec<(String, std::ops::Range<usize>)>) {
         self.tree.clear();
-        self.tree_away.clear();
+        self.tree_ghosts.clear();
+        self.tree_lift.clear();
         self.wbs_num.clear();
         self.wbs_pct.clear();
         let Some(key) = self.tree_key() else {
@@ -789,41 +834,117 @@ impl App {
         let mut nodes = Vec::with_capacity(rows.len());
         let mut nums = HashMap::new();
         let mut pcts = HashMap::new();
-        // navigation.parent-child-away-mark: まとまりの外(今の表の中)に親がある行を覚える。
+        let mut ghosts: HashMap<RowId, Vec<Ghost>> = HashMap::new();
+        let mut lift: HashMap<RowId, usize> = HashMap::new();
+        // navigation.parent-child-away-mark: グループ分けのとき、今の表の行(まとまりの外の親を探す)。
         let all: HashSet<&RowId> = if groups.is_empty() {
             HashSet::new()
         } else {
             rows.iter().collect()
         };
-        let mut away = HashSet::new();
         for (_, range) in &ranges {
-            if !all.is_empty() {
-                let here: HashSet<&RowId> = rows[range.clone()].iter().collect();
-                for r in &rows[range.clone()] {
-                    if parent(r).is_some_and(|p| p != *r && all.contains(&p) && !here.contains(&p))
-                    {
-                        away.insert(r.clone());
+            let members = &rows[range.clone()];
+            // 親が今の表の別のまとまりにある行の前に、その親(と、このまとまりに無いその上の祖先)を薄い行として
+            // 差し込んで並べる。差し込んだ行は親子の並びにだけ使い、行には入れない。
+            let mut added: HashSet<RowId> = HashSet::new();
+            let input: Vec<RowId> = if all.is_empty() {
+                members.to_vec()
+            } else {
+                let here: HashSet<&RowId> = members.iter().collect();
+                let mut seq = Vec::with_capacity(members.len());
+                for r in members {
+                    let mut chain: Vec<RowId> = Vec::new();
+                    let mut cur = parent(r);
+                    while let Some(p) = cur {
+                        if p == *r
+                            || here.contains(&p)
+                            || !all.contains(&p)
+                            || added.contains(&p)
+                            || chain.contains(&p)
+                            || chain.len() > rows.len()
+                        {
+                            break;
+                        }
+                        cur = parent(&p);
+                        chain.push(p);
                     }
+                    for p in chain.into_iter().rev() {
+                        added.insert(p.clone());
+                        seq.push(p);
+                    }
+                    seq.push(r.clone());
+                }
+                seq
+            };
+            let group = mdgrid::tree::order(&input, parent);
+            // NV-28: 番号はまとまりごとに 1 から(添えた行も数える)。子の無い行の割合は対応表の値(無ければ 0)。
+            let (gnums, gpcts) = match &wbs {
+                Some(w) => {
+                    let leaf = |r: &RowId| -> u8 {
+                        match self.prop(r, &w.key) {
+                            Some(Value::Str(s)) => w.of(s.trim()).map_or(0, |m| m.percent),
+                            _ => 0,
+                        }
+                    };
+                    (
+                        mdgrid::tree::numbers(&group),
+                        mdgrid::tree::progress(&group, leaf),
+                    )
+                }
+                None => (HashMap::new(), HashMap::new()),
+            };
+            let up: HashMap<&RowId, &RowId> = group
+                .iter()
+                .filter_map(|n| n.parent.as_ref().map(|p| (&n.row, p)))
+                .collect();
+            let mut waiting: Vec<Ghost> = Vec::new();
+            for n in &group {
+                if added.contains(&n.row) {
+                    waiting.push(Ghost {
+                        row: n.row.clone(),
+                        depth: n.depth,
+                        num: gnums.get(&n.row).cloned(),
+                        pct: gpcts.get(&n.row).copied(),
+                    });
+                    continue;
+                }
+                if !waiting.is_empty() {
+                    ghosts.insert(n.row.clone(), std::mem::take(&mut waiting));
+                }
+                // 祖先のうち添えた行の数(ガントの字下げ)。
+                let mut k = 0;
+                let mut cur = up.get(&n.row);
+                let mut steps = 0;
+                while let Some(p) = cur {
+                    if added.contains(*p) {
+                        k += 1;
+                    }
+                    steps += 1;
+                    if steps > group.len() {
+                        break;
+                    }
+                    cur = up.get(*p);
+                }
+                if k > 0 {
+                    lift.insert(n.row.clone(), k);
+                }
+                if let Some(v) = gnums.get(&n.row) {
+                    nums.insert(n.row.clone(), v.clone());
+                }
+                if let Some(v) = gpcts.get(&n.row) {
+                    pcts.insert(n.row.clone(), *v);
                 }
             }
-            let group = mdgrid::tree::order(&rows[range.clone()], parent);
-            // NV-28: 番号はまとまりごとに 1 から。子の無い行の割合は対応表の値(無ければ 0)。
-            if let Some(w) = &wbs {
-                nums.extend(mdgrid::tree::numbers(&group));
-                let leaf = |r: &RowId| -> u8 {
-                    match self.prop(r, &w.key) {
-                        Some(Value::Str(s)) => w.of(s.trim()).map_or(0, |m| m.percent),
-                        _ => 0,
-                    }
-                };
-                pcts.extend(mdgrid::tree::progress(&group, leaf));
-            }
             for n in group {
+                if added.contains(&n.row) {
+                    continue;
+                }
                 out.push(n.row.clone());
                 nodes.push(n);
             }
         }
-        self.tree_away = away;
+        self.tree_ghosts = ghosts;
+        self.tree_lift = lift;
         self.wbs_num = nums;
         self.wbs_pct = pcts;
         self.tree = nodes.into_iter().map(|n| (n.row.clone(), n)).collect();

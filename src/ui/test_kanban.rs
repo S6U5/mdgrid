@@ -959,6 +959,19 @@ fn test_kb_3_wheel_moves_card_and_hwheel_moves_lane() {
 }
 
 #[test]
+fn test_kb_3_shift_wheel_moves_lane() {
+    // [utest -> req~screen.mouse-shift-wheel-wide~1] 左のレーンを選んでいるカンバンで shift+ホイールの下 → 右のレーン(横のホイールと同じ)。
+    let (_t, mut a) = boot("kb3shift", NOTES3, RULES, KANBAN);
+    let s = open(&mut a);
+    assert_eq!(selected(&s), ["alpha"], "{s}");
+    a.shift_wheel(true);
+    assert_eq!(selected(&screen(&a)), ["gamma"]);
+    a.shift_wheel(false);
+    assert_eq!(selected(&screen(&a)), ["alpha"]);
+    assert_kanban(&a);
+}
+
+#[test]
 fn test_kb_3_click_lane_heading_selects_that_lane() {
     // [utest -> req~kanban.keys-click-select~1, req~kanban.keys-wheel~2] レーンの見出しのクリックで、そのレーンを選ぶ(設計の「見出しのクリックでそのレーンを選ぶ」)。
     let (_t, mut a) = boot("kb3head", NOTES3, RULES, KANBAN);

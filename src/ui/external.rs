@@ -5,7 +5,7 @@ use super::app::App;
 use super::keymap::Mode;
 use super::view::LABEL_HEADER;
 use mdgrid::i18n::Msg;
-use mdgrid::source::RowId;
+use mdgrid::source::{RowId, Source};
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::ffi::OsString;
 use std::io::{self, Write};
@@ -760,6 +760,14 @@ impl App {
                 return;
             }
         };
+        // screen.editor-save-first: ためた変更のあるノートは、そのノートだけを先に書いてから渡す(書けなければ開かない)。
+        let saved_first = match self.save_before_editor(&row) {
+            Ok(saved) => saved,
+            Err(msg) => {
+                self.message = Some(msg);
+                return;
+            }
+        };
         let before = self.src.stamp(&row).map(|s| s.hash);
         if let Err(e) = term(true) {
             let _ = term(false);
@@ -774,6 +782,9 @@ impl App {
             Ok(s) if !s.success() => Msg::EditorFailed.fill(&[&s, &label]),
             Ok(_) => Msg::EditorReturned.fill(&[&label]),
         };
+        if saved_first {
+            msg.push_str(&Msg::EditorSavedFirst.fill(&[&label]));
+        }
         if let Err(e) = back {
             msg.push_str(&Msg::EditorTermNotRestored.fill(&[&e]));
         }
@@ -797,6 +808,64 @@ impl App {
 }
 
 impl App {
+    /// screen.editor-save-first: エディタで開く行のノートにためた変更があれば、そのノートだけを書く(ほかのノートの
+    /// ためた変更は残す)。書いたら true、ためた変更が無ければ false。外で変わっていた・書けなければ、書かずに理由。
+    fn save_before_editor(&mut self, row: &RowId) -> Result<bool, String> {
+        let label = self.src.label(row);
+        let (pending, external) = {
+            let (changes, src) = self.save_parts();
+            let rows = changes.rows_in(&src, row);
+            changes.drop_same(&src, &rows);
+            (
+                !changes.rows_in(&src, row).is_empty(),
+                changes.external_unit(&src, row),
+            )
+        };
+        if !pending {
+            return Ok(false);
+        }
+        let save_key = self.key_of(Mode::Table, super::keymap::Action::Save);
+        if external {
+            return Err(Msg::EditorChangedOutside.fill(&[&label, &save_key]));
+        }
+        // REL-1: 保存で値が変わるので、リンクの行き先を解き直す。
+        self.links.invalidate();
+        let results = {
+            let (changes, mut src) = self.save_parts();
+            changes.save_rows(&mut src, std::slice::from_ref(row))
+        };
+        let mut saved = Vec::new();
+        for (r, out) in &results {
+            match out {
+                mdgrid::changes::Outcome::Saved => saved.push(r.clone()),
+                mdgrid::changes::Outcome::Changed => {
+                    return Err(Msg::EditorChangedOutside.fill(&[&label, &save_key]));
+                }
+                mdgrid::changes::Outcome::Failed(e) => {
+                    let why = crate::edit::save_error_text(e);
+                    return Err(Msg::EditorCannotSaveFirst.fill(&[&label, &why]));
+                }
+            }
+        }
+        if saved.is_empty() {
+            return Ok(false);
+        }
+        // 保存の確認の画面から書いたときと同じ後始末(留めた行・通知の欄・知らせ・git・並べた表)。
+        self.stay.clear();
+        self.notice.dirty = true;
+        self.notify.want = true;
+        let files: Vec<PathBuf> = {
+            let (_, src) = self.save_parts();
+            saved.iter().map(|r| src.locate(r).0).collect()
+        };
+        for f in files {
+            self.git_note(f);
+        }
+        self.git_after_write();
+        self.stack_after_save(&saved);
+        Ok(true)
+    }
+
     /// notice.open-note: 通知の欄の連絡のノート(表の行でなくてよい)をエディタで開き、戻ったら欄を読み直す。
     fn open_note_editor(
         &mut self,

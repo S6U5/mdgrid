@@ -332,6 +332,7 @@ fn help_rows(app: &App, from: Mode, w: usize) -> Vec<Row> {
         (">", Msg::MarkRowCurrent),
         ("+", Msg::MarkRowMarked),
         ("!", Msg::MarkRowExternal),
+        (super::view::GHOST_MARK, Msg::MarkRowContext),
         (held.as_str(), Msg::MarkRowHeld),
     ] {
         out.push(mark(m, t));

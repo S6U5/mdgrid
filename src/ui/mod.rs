@@ -383,6 +383,8 @@ mod test_lookup_shown;
 #[cfg(test)]
 mod test_modern_rest;
 #[cfg(test)]
+mod test_new_child;
+#[cfg(test)]
 mod test_new_note_rule_values;
 #[cfg(test)]
 mod test_note_bodies;

@@ -527,8 +527,24 @@
   - When: ヘルプで横のホイール
   - Then: 何も変わらない。
 
-#### 表の画面でない画面(ヘルプなど)では、shift を押したホイールを縦のホイールのままにするべき
-`req~screen.mouse-shift-wheel-other~1` P1
+#### ガントとカンバンの画面では、shift を押したホイールを、その画面の横のホイールと同じにするべき
+`req~screen.mouse-shift-wheel-wide~1` P1
+- Rationale: 横のホイールの無いマウスでは、shift+ホイールのほかに横へ流す手が無いため(2026-11-27 に人が「ガントがシフトスクロールに対応していない」と言った)
+- Acceptance:
+  - Given: ガントの画面
+  - When: shift+ホイールの下
+  - Then: 時間軸が進み(横のホイールを右と同じ)、選んでいる行は変わらない。
+- Acceptance:
+  - Given: shift+ホイールの下で時間軸を進めたガントの画面
+  - When: shift+ホイールの上
+  - Then: 時間軸が元に戻る。
+- Acceptance:
+  - Given: 2つ以上のレーンのあるカンバンの画面で、左のレーンを選んでいる
+  - When: shift+ホイールの下
+  - Then: 右のレーンを選ぶ。
+
+#### 表・ガント・カンバンのほかの画面(ヘルプ・グラフなど)では、shift を押したホイールを縦のホイールのままにするべき
+`req~screen.mouse-shift-wheel-other~2` P1
 - Acceptance:
   - Given:
   - When: ヘルプで shift+ホイールの下
@@ -547,6 +563,23 @@
   - Given:
   - When: `EDITOR="code -w"` で開く
   - Then: 戻ると行が更新。
+
+#### ためた変更のあるノートをエディタで開くときは、開く前にそのノートのためた変更だけを書き、ほかのノートのためた変更は残すべき。書けなければ(外で変わった・書けない)開かずに理由を出すべき
+`req~screen.editor-save-first~1` P1
+- Rationale: 書く前のファイルをエディタに渡すと、表と違う古い値が見え、戻ったあとの保存で外の変更との食い違い(write-back.external-save-choice)になった(2026-11-27 に人が「保存せずに状態を変えて nvim で編集して TUI 側で保存すると競合する」と言い、直し方を任された)。エディタで開くのは今の表の値の続きを直すためなので、そのノートだけは先に書いて、エディタに今の値を渡す。外のほかの道具で変わったときの確かめはそのまま残す
+- Acceptance:
+  - Given: 「a」の status を todo から done に、「b」の status を todo から doing に直してためている
+  - When: 「a」の行で `e` を押し、エディタで本文に1行足して戻る
+  - Then: エディタが開いたときの `a.md` には `status: done` が書かれていて、戻ったあとの `a.md` には足した1行もあり、「未保存 1」(b だけ)で、a の行に「外で変更」の印は付かない。
+- Acceptance:
+  - Given: 同じ表
+  - When: 「a」の行で `e` を押してエディタから戻る
+  - Then: 下の行に、開く前に a を保存したことが出る。
+- Acceptance:
+  - Given: 「a」の status をためたまま、外の道具で a の title を直した
+  - When: 「a」の行で `e`
+  - Then: エディタは開かず、a のためた変更は残り、下の行に、外で変わったので保存(Ctrl+S)で決めてから開くよう出す。
+- Needs: utest
 
 #### エディタは、設定(cli.config-file の設定ファイル)の `editor`、環境変数 `$VISUAL`、`$EDITOR` の順で空でない最初のものにするべき
 `req~screen.editor-choice~2` P1
