@@ -346,7 +346,7 @@ impl App {
     }
 
     /// ワークスペースの表(登録した表と今の表)を今読む。
-    fn workspace_tables_now(&self) -> Vec<Table> {
+    pub(crate) fn workspace_tables_now(&self) -> Vec<Table> {
         let mut out = self.with_current_table(
             self.link_places()
                 .iter()

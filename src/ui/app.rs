@@ -259,6 +259,10 @@ pub struct App {
     pub select_after_load: Option<std::path::PathBuf>,
     /// CE-25: 読み込みが終わったら新しいノートの名前の欄を出す(関係マップの「+ 新規」で移ったとき)。
     pub new_note_after_load: bool,
+    /// cell-edit.new-linked-note: 読み込みのあとに出す新しいノートの窓で、列(名前)に入れるリンクの行き先(実体のパス)。
+    pub new_link_after_load: Option<(String, std::path::PathBuf)>,
+    /// cell-edit.new-linked-note: 新しいノートを作るかやめたら戻る表と、そこで選ぶノート(実体のパス)。
+    pub return_after_note: Option<(mdgrid::places::Place, std::path::PathBuf)>,
     /// BV-2: `.base` の上に `.obsidian/` が無く、根を `.base` のフォルダに推したときのその根。
     pub guessed_root: Option<std::path::PathBuf>,
     /// CLI-18・CLI-19: 登録した表(places.toml)。
@@ -281,6 +285,10 @@ pub struct App {
     pub switch_select: Option<std::path::PathBuf>,
     /// CE-25: 関係マップの「+ 新規」で表を開き直したら、名前の欄を出す。
     pub switch_new_note: bool,
+    /// cell-edit.new-linked-note: 移った表の新しいノートの窓で、列に入れるリンクの行き先(main が new_link_after_load に渡す)。
+    pub switch_new_link: Option<(String, std::path::PathBuf)>,
+    /// cell-edit.new-linked-note: 移った表で新しいノートを作るかやめたら戻る表とノート(main が return_after_note に渡す)。
+    pub switch_return: Option<(mdgrid::places::Place, std::path::PathBuf)>,
     /// notice.jump: 移った表で入れる名前の条件。
     pub switch_cond: Option<String>,
     /// navigation.across-open: 移った表(パス)で検索の欄に入れる語。移る先と違う表では使わない。
@@ -461,6 +469,8 @@ impl App {
             theme: Theme::Default,
             select_after_load: None,
             new_note_after_load: false,
+            new_link_after_load: None,
+            return_after_note: None,
             guessed_root: None,
             registered: Vec::new(),
             workspaces: Vec::new(),
@@ -472,6 +482,8 @@ impl App {
             switch_to: None,
             switch_select: None,
             switch_new_note: false,
+            switch_new_link: None,
+            switch_return: None,
             switch_cond: None,
             switch_search: None,
             links: Default::default(),
@@ -558,6 +570,8 @@ impl App {
         self.switch_to = None;
         self.switch_select = None;
         self.switch_new_note = false;
+        self.switch_new_link = None;
+        self.switch_return = None;
         self.switch_workspace = None;
         self.switch_leave_workspace = false;
         self.switch_search = None;
@@ -629,6 +643,14 @@ impl App {
         // CE-25: 関係マップの「+ 新規」で移った表は、行と列が揃ってビューも決まってから名前の欄を出す。
         if std::mem::take(&mut self.new_note_after_load) {
             self.start_new_note();
+            // cell-edit.new-linked-note: 元の行の `c` で移ってきたら、その列に元の行へのリンクを入れる。
+            if let Some((col, target)) = self.new_link_after_load.take() {
+                self.prefill_link(&col, &target);
+            }
+        }
+        // 窓を開けなかったら(読むだけ・作る場所が無い)、すぐ元の表へ戻る。
+        if self.note.flow.is_none() {
+            self.return_from_note();
         }
         // cli.session-content-columns-first: セッションの列のうち今の表に無いものを知らせる(列が出そろってから)。
         self.check_session_columns();
@@ -1137,7 +1159,7 @@ impl App {
             Action::DeleteKey => self.start_delete_key(),
             // ---- 新しいノート(new_note.rs。CE-25) ----
             Action::NewNote => self.start_new_note(),
-            Action::NewChildNote => self.start_new_child_note(),
+            Action::NewChildNote => self.start_linked_note(),
             // ---- その場の操作の一覧(menu.rs。SR-24) ----
             Action::Menu => self.open_menu(),
             // ---- 列の値の頻度表(freq.rs。NV-9) ----

@@ -138,6 +138,11 @@ pub(crate) enum Ask {
     SessionName,
     /// cli.session-screen-overwrite: 同じ名前のセッションの置き換えの確かめ。続けて `y`。
     SessionOverwrite(Box<mdgrid::session::Session>),
+    /// cell-edit.new-linked-note: 選んだ行につながるノートのうち、どれを作るか。`opts` は `items` と同じ並び。
+    LinkedNote {
+        items: Vec<String>,
+        opts: Vec<super::new_note::Linked>,
+    },
     /// 最近開いた表(cli.recent-list)。`places` は `items` と同じ並び。
     OpenRecent {
         items: Vec<String>,
@@ -279,6 +284,7 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::SessionName) => Msg::AskSessionName.into(),
         Some(Ask::SessionOverwrite(s)) => Msg::AskSessionOverwrite.fill(&[&sanitize(&s.name)]),
         Some(Ask::OpenRecent { .. }) => Msg::AskOpenRecent.into(),
+        Some(Ask::LinkedNote { .. }) => Msg::AskLinkedNote.into(),
         Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
         Some(Ask::PageName) => Msg::AskPageName.into(),
         Some(Ask::RoutineRuns(_)) => Msg::AskRoutineRuns.fill(&[&app.runs_word()]),
@@ -300,6 +306,7 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::StarterPick { items, .. }) => items,
         Some(Ask::NoticeTables { items, .. }) => items,
         Some(Ask::OpenRecent { items, .. }) => items,
+        Some(Ask::LinkedNote { items, .. }) => items,
         Some(Ask::StackTable { items, .. }) => items,
         Some(Ask::ChildrenReopen { items }) => items,
         Some(Ask::WsPick(names)) => {
@@ -813,6 +820,14 @@ impl App {
                 if launch && self.switch_to.is_some() {
                     self.visits.retarget = true;
                 }
+            }
+            Some(Ask::LinkedNote { opts, .. }) => {
+                let Some(o) = picked.and_then(|k| opts.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.close_palette();
+                self.make_linked(o);
             }
             Some(Ask::OpenRecent { places, .. }) => {
                 let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {

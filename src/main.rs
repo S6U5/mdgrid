@@ -1746,6 +1746,9 @@ fn run_switching(
         let select = app.switch_select.take();
         // CE-25: 関係マップの「+ 新規」で移ったら、開いた表で名前の欄を出す。
         let new_note = std::mem::take(&mut app.switch_new_note);
+        // cell-edit.new-linked-note: 移った先の新しいノートの窓で入れるリンクと、作ったあとに戻る表。
+        let new_link = app.switch_new_link.take();
+        let back = app.switch_return.take();
         let cond = app.switch_cond.take();
         // navigation.across-open: 横断の検索から移った表は、同じ語で検索する(移る先の表に向けたものだけ)。
         let search = app
@@ -1774,6 +1777,8 @@ fn run_switching(
                 editor = ed;
                 app.select_after_load = select;
                 app.new_note_after_load = new_note;
+                app.new_link_after_load = new_link;
+                app.return_after_note = back;
                 // notice.jump: 通知の欄から移った表は、その名前の条件で絞る。
                 if let Some(c) = cond {
                     app.narrow_by_condition(&c);

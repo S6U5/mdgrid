@@ -189,6 +189,20 @@ fn no_row() -> RowId {
     RowId(String::new())
 }
 
+/// cell-edit.new-linked-note: 選んだ行につながるノートの作り方の1つ。
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum Linked {
+    /// 同じ表の子(親子のキーの列。cell-edit.new-child-note)。
+    Child,
+    /// ほかの表 `table`(移る先 `place`)の、この表を指す列 `col`(見せる名前 `title`)のノート。
+    Other {
+        place: mdgrid::places::Place,
+        table: String,
+        col: String,
+        title: String,
+    },
+}
+
 impl App {
     /// 「+ 新規」・`a`・パレット: 名前の欄を開く(CE-25)。フォルダを2つ以上開いたときは、その前に
     /// 作る場所を選ぶ欄を開く(既定は最初)。読むだけでは開かない(WB-15)。
@@ -308,19 +322,158 @@ impl App {
             return;
         };
         self.start_new_note();
+        self.prefill_link(&key, Path::new(&parent.0));
+    }
+
+    /// 開いている新しいノートの窓で、列 `col` の答えを `target` のノートへのリンクにする(窓の欄にあれば、そこで選び
+    /// 直せる。欄に無くても書く)。書く形はその列で使われている形(無ければ `[[名前]]`)で、リストの列なら要素1つの
+    /// リスト(cell-edit.new-child-note・cell-edit.new-linked-note)。
+    pub(crate) fn prefill_link(&mut self, col: &str, target: &Path) {
         let Some(row) = self.note.flow.as_ref().map(note_row) else {
             return;
         };
         let form = self
-            .link_column(&key)
+            .link_column(col)
             .map_or(mdgrid::relations::Form::Wiki, |(f, _)| f);
-        let link = self.link_value(&row, form, Path::new(&parent.0));
+        let link = self.link_value(&row, form, target);
+        let value = if self.kind_of(col) == types::Kind::List {
+            NewValue::List(vec![link])
+        } else {
+            NewValue::Str(link)
+        };
         if let Some(f) = &mut self.note.flow {
-            f.answers.retain(|e| e.key != key);
+            f.answers.retain(|e| e.key != col);
             f.answers.push(Edit {
-                key,
-                value: NewValue::Str(link),
+                key: col.to_string(),
+                value,
             });
+        }
+    }
+
+    /// cell-edit.new-linked-note: 選んだ行につながるノートの作り方(同じ表の子と、ほかの表のこの表を指す列)。
+    fn linked_options(&self) -> Vec<Linked> {
+        let mut out = Vec::new();
+        let tree = self.tree_key();
+        if tree.is_some() {
+            out.push(Linked::Child);
+        }
+        let Some(row) = self.cur_row() else {
+            return out;
+        };
+        let tables = self.workspace_tables_now();
+        // 今の表は、選んだ行のノートを含む表(いちばん深いもの。印に中身を書いた表は根を開くので、開いたフォルダ
+        // でなくノートで見分ける)。
+        let Some(me) =
+            mdgrid::relations::table_of(Path::new(&row.0), &tables).map(|t| t.name.clone())
+        else {
+            return out;
+        };
+        let (infos, links) = mdgrid::relmap::read(&tables);
+        let same = |a: &Path, b: &Path| {
+            a == b
+                || a.canonicalize()
+                    .is_ok_and(|x| b.canonicalize().ok() == Some(x))
+        };
+        for l in links.iter().filter(|l| l.to == me) {
+            // 同じ表の親子の列は「子」と同じなので重ねない。
+            if l.from == me && tree.as_deref() == Some(l.column.as_str()) {
+                continue;
+            }
+            let Some(info) = infos.iter().find(|i| i.name == l.from) else {
+                continue;
+            };
+            let place = self
+                .link_places()
+                .into_iter()
+                .find(|p| {
+                    same(
+                        &mdgrid::relations::Table::new(&p.name, &p.path).dir,
+                        &info.dir,
+                    )
+                })
+                .unwrap_or_else(|| mdgrid::places::Place {
+                    name: info.name.clone(),
+                    group: String::new(),
+                    path: info.dir.clone(),
+                    view: None,
+                });
+            // base-view.display-name-everywhere: 列の名前は、その列のある表の displayName。
+            let title = tables.iter().find(|t| t.name == l.from).map_or_else(
+                || l.column.clone(),
+                |t| self.title_in(&self.titles_of(t), &l.column),
+            );
+            out.push(Linked::Other {
+                place,
+                table: l.from.clone(),
+                col: l.column.clone(),
+                title,
+            });
+        }
+        out
+    }
+
+    /// cell-edit.new-linked-note: 選んだ行の子を作るキー(`c`)。作るものが1つならすぐ、2つ以上なら選ぶ窓を出す。
+    /// 1つも無ければ子を作るときの理由(親子で並べていない・行を選んでいない)。
+    pub(crate) fn start_linked_note(&mut self) {
+        if self.cur_row().is_none() {
+            return self.start_new_child_note();
+        }
+        let mut opts = self.linked_options();
+        match opts.len() {
+            0 => self.start_new_child_note(),
+            1 => self.make_linked(opts.remove(0)),
+            _ => {
+                let items = opts
+                    .iter()
+                    .map(|o| match o {
+                        Linked::Child => Msg::LinkedChild.text().to_string(),
+                        Linked::Other { table, title, .. } => {
+                            Msg::LinkedOther.fill(&[&sanitize(table), &sanitize(title)])
+                        }
+                    })
+                    .collect();
+                self.open_ask(super::native_io::Ask::LinkedNote { items, opts });
+            }
+        }
+    }
+
+    /// cell-edit.new-linked-note: 選んだ作り方で作り始める。ほかの表なら、その表へ移って新しいノートの窓を開き、列に
+    /// 選んだ行へのリンクを入れる頼みと、作るかやめたら今の表のこの行へ戻る頼みを残す。
+    pub(crate) fn make_linked(&mut self, o: Linked) {
+        match o {
+            Linked::Child => self.start_new_child_note(),
+            Linked::Other { place, col, .. } => {
+                if self.readonly {
+                    self.message = Some(super::startup::READONLY.into());
+                    return;
+                }
+                let Some(row) = self.cur_row() else {
+                    self.message = Some(Msg::NewChildNoRow.into());
+                    return;
+                };
+                let note = PathBuf::from(&row.0);
+                let here = mdgrid::places::Place {
+                    name: mdgrid::workspace::stem_of(&self.nv.target),
+                    group: String::new(),
+                    path: self.nv.target.clone(),
+                    view: self.current_view_name(),
+                };
+                self.switch_to = Some(place);
+                self.switch_select = None;
+                self.switch_new_note = true;
+                self.switch_new_link = Some((col, note.clone()));
+                self.switch_return = Some((here, note));
+                self.begin_quit();
+            }
+        }
+    }
+
+    /// cell-edit.new-linked-note: 元の表の行の `c` で移ってきたなら、元の表のその行へ戻る(作ったあと・やめたあと)。
+    pub(crate) fn return_from_note(&mut self) {
+        if let Some((place, row)) = self.return_after_note.take() {
+            self.switch_to = Some(place);
+            self.switch_select = Some(row);
+            self.begin_quit();
         }
     }
 
@@ -969,6 +1122,9 @@ impl App {
         if edit {
             let real = path.canonicalize().unwrap_or(path);
             self.editor_request = Some(RowId(real.to_string_lossy().into_owned()));
+        } else {
+            // cell-edit.new-linked-note: 元の表の行から来たなら戻る(エディタで開くときは、この表に残る)。
+            self.return_from_note();
         }
         true
     }
@@ -1100,6 +1256,8 @@ impl App {
         self.pick = None;
         self.set_mode(Mode::Table);
         self.message = Some(Msg::NoteCancelled.text().into());
+        // cell-edit.new-linked-note: 元の表の行から来たなら戻る。
+        self.return_from_note();
     }
 }
 
