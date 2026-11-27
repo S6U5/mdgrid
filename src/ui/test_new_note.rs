@@ -314,7 +314,7 @@ fn test_ce_25_subfolder_name_creates_folder() {
 
 #[test]
 fn test_ce_25_existing_name_refused_and_retype() {
-    // [utest -> req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-readonly~1, req~cell-edit.new-note-no-overwrite~1, req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1] 既にある名前 → 作らず理由をメッセージに出し、欄は開いたまま。打ち直して作れる。
+    // [utest -> req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-readonly~1, req~cell-edit.new-note-no-overwrite~1, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~1] 既にある名前 → 作らず理由をメッセージに出し、欄は開いたまま。打ち直して作れる。
     let tmp = vault("ce25dup");
     let mut a = boot(&tmp, Config::default(), false);
     let before = snapshot(&tmp.notes());

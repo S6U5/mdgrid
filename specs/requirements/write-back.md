@@ -240,15 +240,15 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
   - When: 値がネストした map の `meta` のセルに書こうとする
   - Then: 読むだけで、ファイルは変わらない。
 
-#### mdgrid は、ノートの本文・`.base`・他のファイルを書き換えてはならない
-`req~write-back.frontmatter-only-no-body~1` P0
+#### mdgrid は、ノートの本文・`.base`・他のファイルを書き換えてはならない(AI の案のファイル(ai.proposal-file)を、受けたか捨てたときに消すのは除く)
+`req~write-back.frontmatter-only-no-body~2` P0
 - Acceptance:
   - Given:
   - When:
   - Then: 表からどう操作しても、フロントマターの外のバイトが変わらない。
 
-#### 新しいファイルを作るのは、新しいノート(cell-edit.new-note)と新しい `.base` への書き出し(base-view.export-base)だけにしなければならない(保存の一時ファイル(write-back.atomic-replace)と、設定と見た目の状態の置き場のファイル(cli.config-file・screen.state-store・base-view.views-toml)は除く)
-`req~write-back.frontmatter-only-new-files~1` P1
+#### 新しいファイルを作るのは、新しいノート(cell-edit.new-note)と新しい `.base` への書き出し(base-view.export-base)と AI の案(ai.proposal-file)だけにしなければならない(保存の一時ファイル(write-back.atomic-replace)と、設定と見た目の状態の置き場のファイル(cli.config-file・screen.state-store・base-view.views-toml)は除く)
+`req~write-back.frontmatter-only-new-files~2` P1
 - Acceptance:
   - Given:
   - When: セルを直して保存する

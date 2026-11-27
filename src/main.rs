@@ -67,7 +67,7 @@ enum Command {
     /// CLI-13: man ページを出す。
     Man,
     /// CLI-17: CSV・JSON の値をノートに当てる(開くパスと、読むファイルと、書くか)。
-    Apply(Vec<PathBuf>, PathBuf, bool),
+    Apply(Vec<PathBuf>, PathBuf, bool, Option<String>),
     /// CLI-5: 画面を出さずにビューの表を出す(開くパスと形と、先頭にパスの列を足すか(CLI-14)と、
     /// 絞り込みの式と並べ替え(CLI-16))。
     Print(Vec<PathBuf>, PrintFormat, bool, Vec<String>, Vec<String>),
@@ -223,6 +223,9 @@ struct Cli {
     /// --apply で、差分を出すだけでなく書く
     #[arg(long, requires = "apply")]
     yes: bool,
+    /// --apply を AI の書き込みにする: 設定 ai.write の列は書き、ほかは理由を添えて台帳の案にする(ai.propose-command)
+    #[arg(long, value_name = Msg::ValueName.ja(), requires = "apply", conflicts_with = "yes", allow_hyphen_values = true)]
+    propose: Option<String>,
     /// 画面(端末)で選んだ行のパスか列の値を標準出力に出して終わる
     #[arg(long, value_name = Msg::ValuePick.ja(), conflicts_with = "print")]
     pick: Option<String>,
@@ -475,7 +478,7 @@ impl Cli {
             } else if self.check {
                 Command::Check(paths)
             } else if let Some(file) = self.apply {
-                Command::Apply(paths, file, self.yes)
+                Command::Apply(paths, file, self.yes, self.propose)
             } else if self.count {
                 Command::Count(paths, self.filter)
             } else if self.notices {
@@ -544,6 +547,10 @@ impl Cli {
         }
         if self.yes {
             out.push("--yes".into());
+        }
+        if let Some(r) = &self.propose {
+            out.push("--propose".into());
+            out.push(r.into());
         }
         for (flag, v) in [
             ("--add-to", &self.add_to),
@@ -1197,7 +1204,7 @@ fn main() -> ExitCode {
         Ok(Command::NewNote(p, name, sets)) => {
             return new_note_cli(&p, &opts, use_marker, &name, &sets, table.as_deref())
         }
-        Ok(Command::Apply(p, file, yes)) => {
+        Ok(Command::Apply(p, file, yes, propose)) => {
             // cli.table-commands: `--table` ならその表(`--view` が無ければその表の view)に当てる。
             let (p, opts) = match &table {
                 Some(name) => match named_table(&p, name, opts.workspace.as_deref()) {
@@ -1212,7 +1219,7 @@ fn main() -> ExitCode {
                 },
                 None => (p, opts.clone()),
             };
-            return apply_file(&md_to_folder(p).0, &opts, &file, yes);
+            return apply_file(&md_to_folder(p).0, &opts, &file, yes, propose.as_deref());
         }
         Ok(Command::Pick(p, what)) => match &opts.workspace {
             // WS-3: 無い名前は画面を出さずに理由(パスはそのまま)。
@@ -2780,7 +2787,13 @@ fn base_folder(root: &Path, table: &Path) -> Option<String> {
 
 /// `--apply`(CLI-17): CSV・JSON を読み、全部を確かめてから、差分を出す(`--yes` なら書く)。
 /// 理由が1つでもあれば何も書かずに終了コード 2。書けなかった行(外で変わった等)は終了コード 1。
-fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> ExitCode {
+fn apply_file(
+    paths: &[PathBuf],
+    opts: &Options,
+    file: &Path,
+    yes: bool,
+    propose: Option<&str>,
+) -> ExitCode {
     if opts.readonly {
         return fail(Msg::ApplyReadonly.text());
     }
@@ -2954,6 +2967,44 @@ fn apply_file(paths: &[PathBuf], opts: &Options, file: &Path, yes: bool) -> Exit
     if files == 0 {
         eprintln!("mdgrid: {}", Msg::ApplyNoChanges.text());
         return ExitCode::SUCCESS;
+    }
+    // ai.propose-command: 設定 ai.write の列は書き、ほかは台帳の案にする。
+    if let Some(note) = propose {
+        let root = mdgrid::proposals::root_of(&paths[0]);
+        let created = {
+            let (today, now) = print::today_now(|k| std::env::var(k).ok());
+            let secs = now.rem_euclid(86_400);
+            format!(
+                "{}T{:02}:{:02}",
+                mdgrid::types::format_date(today),
+                secs / 3600,
+                secs % 3600 / 60
+            )
+        };
+        let changes = apply::split_proposal(&mut plan, src.as_ref(), &resolved.ai_write, &root);
+        let proposed: usize = changes.iter().map(|c| c.set.len()).sum();
+        let written = plan.changes.count();
+        let (saved, failed) = apply::save(&mut plan, src.as_mut(), &label);
+        for s in &saved {
+            println!("{s}");
+        }
+        for f in &failed {
+            eprintln!("mdgrid: {f}");
+        }
+        let file = if changes.is_empty() {
+            String::new()
+        } else {
+            match mdgrid::proposals::write(&root, note, &created, &changes) {
+                Ok(p) => p.display().to_string(),
+                Err(e) => return fail(&Msg::ProposeFailed.fill(&[&e])),
+            }
+        };
+        println!("{}", Msg::ProposeDone.fill(&[&written, &proposed, &file]));
+        return if failed.is_empty() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::from(1)
+        };
     }
     if !yes {
         print!("{diff}");

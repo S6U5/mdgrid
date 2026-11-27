@@ -75,6 +75,8 @@ impl App {
         match action {
             super::keymap::Action::AcrossSearch => self.across.on,
             super::keymap::Action::RoutineRuns => !self.readonly && !self.routine.tables.is_empty(),
+            // ai.proposal-notice: 開いた表の行を指す案があって、読むだけの起動でないときだけ。
+            super::keymap::Action::AiProposals => !self.readonly && self.proposal_count() > 0,
             _ => true,
         }
     }

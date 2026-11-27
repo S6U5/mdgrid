@@ -434,7 +434,7 @@ fn test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique() {
 
 #[test]
 fn test_ce_25_whole_flow_writes_new_note_only() {
-    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-top-level~1, req~write-back.frontmatter-only-new-files~1, req~write-back.frontmatter-only-no-replace~1] 「status が todo」のビューで「会議の準備」→ `会議の準備.md` が `---\nstatus: todo\n---\n` で
+    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-top-level~1, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~1] 「status が todo」のビューで「会議の準備」→ `会議の準備.md` が `---\nstatus: todo\n---\n` で
     // 作られ、ほかのファイルは変わらない。
     let t = TempDir::new("flow");
     t.write("既存.md", "---\nstatus: todo\n---\n本文\n".as_bytes());

@@ -1441,6 +1441,10 @@ pub(crate) fn footer(app: &App, w: usize) -> Line<'static> {
     if app.routine_count() > 0 {
         text.push_str(&Msg::FooterRoutine.fill(&[&app.runs_word(), &app.routine_count()]));
     }
+    // ai.proposal-notice: 開いた表の行を指す AI の案の数(クリックで並べる)。
+    if app.proposal_count() > 0 {
+        text.push_str(&Msg::FooterProposals.fill(&[&app.proposal_count()]));
+    }
     // NV-5: 選んだ行の数。
     let n = app.selection().len();
     if n > 0 {
@@ -1573,6 +1577,25 @@ pub(crate) fn routine_at(app: &App, x: u16, y: u16) -> bool {
         x0 += width(&Msg::FooterProblems.fill(&[&app.built.problems]));
     }
     let t = Msg::FooterRoutine.fill(&[&app.runs_word(), &n]);
+    let lead = t.len() - t.trim_start().len();
+    let x = x as usize;
+    x >= x0 + lead && x < x0 + width(&t)
+}
+
+/// ai.proposal-notice: (x, y) が下の帯の AI の案の数か(押すと案を並べる)。
+pub(crate) fn proposals_at(app: &App, x: u16, y: u16) -> bool {
+    let n = app.proposal_count();
+    if n == 0 || y as usize + 3 != app.size.1 as usize || super::stack::in_region(app) {
+        return false;
+    }
+    let mut x0 = width(&Msg::FooterUnsaved.fill(&[&app.changes.count()]));
+    if app.built.problems > 0 {
+        x0 += width(&Msg::FooterProblems.fill(&[&app.built.problems]));
+    }
+    if app.routine_count() > 0 {
+        x0 += width(&Msg::FooterRoutine.fill(&[&app.runs_word(), &app.routine_count()]));
+    }
+    let t = Msg::FooterProposals.fill(&[&n]);
     let lead = t.len() - t.trim_start().len();
     let x = x as usize;
     x >= x0 + lead && x < x0 + width(&t)

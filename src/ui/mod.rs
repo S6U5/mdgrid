@@ -15,6 +15,7 @@ pub mod detail;
 pub(crate) mod notices;
 pub(crate) mod notify;
 // routine.*: ルーチンの回を作る。
+pub(crate) mod proposals;
 pub(crate) mod routine;
 // navigation.across-*: ワークスペースを横断して探す。
 pub(crate) mod across;
@@ -424,6 +425,8 @@ mod test_places_align;
 mod test_places_more;
 #[cfg(test)]
 mod test_problems;
+#[cfg(test)]
+mod test_proposals;
 #[cfg(test)]
 mod test_read_only_reason;
 #[cfg(test)]

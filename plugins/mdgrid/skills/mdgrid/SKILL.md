@@ -73,9 +73,20 @@ sed 's/,doing,/,done,/' doing.csv > done.csv
 mdgrid tasks --apply done.csv
 ```
 
-Edit the file any way you like (by hand, a script); keep the `path` and `_rev` columns and the header, and don't rely on fixed column positions, which follow the keys of the notes (the `sed` above only works because `status` is the column after `path` here). Run `--apply` from the same directory and with the same folder or `.base` as the export, because the paths are relative to them. Step 3 prints a unified diff of the notes and writes nothing. **Show that diff to the user and wait for their approval**, then run the same command with `--yes` (`mdgrid tasks --apply done.csv --yes`) to write. Never add `--yes` on your own. mdgrid writes only the changed values and leaves the rest of each note byte for byte as it was.
+Edit the file any way you like (by hand, a script); keep the `path` and `_rev` columns and the header, and don't rely on fixed column positions, which follow the keys of the notes (the `sed` above only works because `status` is the column after `path` here). Run `--apply` from the same directory and with the same folder or `.base` as the export, because the paths are relative to them. Step 3 prints a unified diff of the notes and writes nothing.
 
-If someone (a person, a sync tool, another agent) changed a note after your export, `--apply` writes nothing, exits with code 2 and names the note: the row's `_rev` no longer matches, and writing your file would put the old values back over their change. Do not retry with `--yes`. Export it again, redo the same edit on the fresh export, and apply that. Do not delete or invent `_rev` values to get past this.
+To make the change yourself, apply it as a proposal and give the reason in one line:
+
+```sh
+# 4. Write the columns the ledger lets AI write; leave the rest as a proposal
+mdgrid tasks --apply done.csv --propose "Mark the tasks in progress as done"
+```
+
+`--propose` writes only the columns listed in the ledger's `ai.write` setting (empty by default), through the same safe path as a save in mdgrid. Every other changed cell is not written: it goes into a proposal file in the ledger's `.mdgrid/proposals/`, and a person reviews the diff and takes or discards it in mdgrid with **Show AI proposals** (the command palette, or the count in the bottom band). The command prints how many cells it wrote and proposed and the proposal file. Tell the user what was written and that the rest is waiting as a proposal.
+
+Use `--yes` only when the user asks you to write everything directly: show them the diff from step 3 first and wait for their approval, then run the same command with `--yes` (`mdgrid tasks --apply done.csv --yes`). Never add `--yes` on your own. Either way, mdgrid writes only the changed values and leaves the rest of each note byte for byte as it was.
+
+If someone (a person, a sync tool, another agent) changed a note after your export, `--apply` writes nothing, exits with code 2 and names the note: the row's `_rev` no longer matches, and writing your file would put the old values back over their change. Do not retry with `--yes`. Export it again, redo the same edit on the fresh export, and apply that (with `--propose` as before). Do not delete or invent `_rev` values to get past this.
 
 ## Handing results to another AI or a person
 

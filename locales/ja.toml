@@ -98,6 +98,9 @@ ApplyIgnoredOne = "書けない列の {0} 個の直しは当てなかった({1})
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}: ビューにもノートにも無い列"
 ApplyNoChanges = "変わる値が無い(どれもノートと同じ)"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "書いたセル {0}・案にしたセル {1} {2}"
+ProposeFailed = "案を書けない: {0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "{0} を読めない: {1}"
 ApplyProblems = "上の理由があるので、何も書かなかった"
@@ -312,6 +315,20 @@ RoutineNotNotes = "行がノートでない(CSV・TSV)ので、ルーチンの�
 FooterRoutine = "  {0}の回が {1} 件来ています"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "繰り返しの回を作る"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "AI の案を見る"
+FooterProposals = "  AI の案 {0}件"
+AskProposals = "AI の案:"
+AskProposalAction = "この案を:"
+ProposalTake = "入れる(ためる変更にする。保存の確認で差分を見て書く)"
+ProposalDiscard = "捨てる(案のファイルを消す)"
+ProposalTaken = "AI の案の {0} セルをためた(保存の確認で差分を見て書く)"
+ProposalSkipped = "。案を作ったあとに変わったセルと表に無い行のセル {0} は入れなかった"
+ProposalDiscarded = "AI の案を捨てた: {0}"
+ProposalNone = "この表の行を指す AI の案は無い"
+ProposalGone = "その AI の案はもう無い(ほかで受けたか捨てた)"
+ProposalRemoveFailed = "AI の案のファイルを消せない: {0}"
+ProposalItem = "{0}  {1}(セル {2})"
 AskRoutineRuns = "この{0}の回を作る? y と打って Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "作るノート({0} 件):"
@@ -2303,6 +2320,8 @@ CfgEditAddFrontmatter = "フロントマターの無いノートと空のフロ�
 CfgEditLinkFormat = "mdgrid がリンクの列に書くリンクの形。\"wiki\" は [[名前]]、\"markdown\" は [名前](パス)。\"auto\" は列で使われている形に合わせる(無ければ [[名前]])。"
 CfgEditLinkPath = "mdgrid がリンクの列に書くリンクのパス。\"shortest\" は名前がほかと重ならなければ名前だけ([…](…) は相対のパス)、\"relative\" は書くノートのフォルダからの相対、\"absolute\" は開いた根からのパス。"
 CfgEditRenameLinks = "ノートの名前を変えたとき、そのノートを指すリンクの書き換えをためるか。\"always\" はいつも、\"ask\" は件数を見せて y のときだけ、\"never\" はためない。"
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "AI の書き込み(`--apply … --propose` と MCP の口)で直に書いてよい列の名前。ほかの列の直しは書かずに案として台帳に置き、人が画面の「AI の案を見る」で受ける。既定は空(どの列も直に書かない)。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "表から新しいノートを作るときの決まり。mode(\"form\" は全部の欄を並べた窓、\"editor\" は作ってすぐエディタで開く)・folder(開いたフォルダからの相対)・name(名前の雛形)・name_head(\"show\" は雛形を埋めた文字を名前の欄に入れて出す、\"hide\" は欄に出さずに打った名前の前に付ける)・ask(窓に出す列。既定は見えている列)・required(空では作らない列)・hidden(欄を出さずに値だけ入れる列)・body(本文の雛形のファイル)・[new_note.set](列 = 値)。雛形には {date}・{date+7}・{date:YYYY/MM/DD}・{time}・{now}・{weekday}・{name}・{folder} を書ける。ビューの絞り込みの値が先。この表は1つの項目で、狭い範囲に書けば丸ごと代わる。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

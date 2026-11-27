@@ -98,6 +98,9 @@ ApplyIgnoredOne = "已忽略无法写入的列中的 {0} 处修改（{1}）"
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}：视图和笔记中都没有此列"
 ApplyNoChanges = "没有更改：所有值都与笔记中的相同"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "写入 {0} 个单元格；提案 {1} 个单元格 {2}"
+ProposeFailed = "无法写入提案：{0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "无法读取 {0}：{1}"
 ApplyProblems = "由于上述问题，未写入任何内容"
@@ -312,6 +315,20 @@ RoutineNotNotes = "行不是笔记（CSV 或 TSV），所以不创建例行事�
 FooterRoutine = "  {0}：有 {1} 次到期"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "创建周期事项的各次"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "查看 AI 提案"
+FooterProposals = "  AI 提案 {0} 条"
+AskProposals = "AI 提案："
+AskProposalAction = "此提案："
+ProposalTake = "接受（作为未保存的更改；保存时查看差异再写入）"
+ProposalDiscard = "丢弃（删除提案文件）"
+ProposalTaken = "已将 AI 提案的 {0} 个单元格作为未保存的更改（保存时查看差异再写入）"
+ProposalSkipped = "。提案之后被修改的单元格和表中已没有的行的单元格 {0} 个未接受"
+ProposalDiscarded = "已丢弃 AI 提案：{0}"
+ProposalNone = "没有针对此表行的 AI 提案"
+ProposalGone = "该 AI 提案已不存在（已在别处接受或丢弃）"
+ProposalRemoveFailed = "无法删除 AI 提案文件：{0}"
+ProposalItem = "{0}  {1}（{2} 个单元格）"
 AskRoutineRuns = "{0}：创建这些次？输入 y 并按 Enter："
 ## {0} は作るノートの数。
 RoutineRunsWhich = "要创建的笔记（{0} 篇）："
@@ -2303,6 +2320,8 @@ CfgEditAddFrontmatter = "允许写入没有 front matter 或 front matter 为空
 CfgEditLinkFormat = "mdgrid 在链接列中写入的链接形式。\"wiki\" 写 [[名称]]，\"markdown\" 写 [名称](路径)。\n\"auto\" 沿用该列已使用的形式（没有则为 [[名称]]）。"
 CfgEditLinkPath = "mdgrid 在链接列中写入的链接路径。\"shortest\" 在名称不与其他笔记重复时只写名称（[…](…) 用相对路径），\n\"relative\" 为从所写笔记的文件夹起的相对路径，\"absolute\" 为从打开的根起的路径。"
 CfgEditRenameLinks = "重命名笔记时，是否把指向它的链接的改写作为未保存的更改。\"always\" 总是，\"ask\" 显示数量并仅在输入 y 时，\n\"never\" 不改写。"
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "AI 写入（`--apply … --propose` 与 MCP 服务器）可以直接修改的列名。其他列的修改不会写入，而是作为提案留在台账中，由人在界面的“查看 AI 提案”中接受。默认为空（不直接写入任何列）。"
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "从表格新建笔记的方式：mode（\"form\"：包含所有字段的表单，或\n\"editor\"：创建后在编辑器中打开）、folder（相对于打开的文件夹）、name（名称\n模板）、ask（表单中的列；默认：可见的列）、required（必须\n填写的列）、hidden（不显示字段而直接写入的列）、body（正文模板文件）和\n[new_note.set]（列 = 值）。模板中可以使用 {date}、{date+7}、{date:YYYY/MM/DD}、\n{time}、{now}、{weekday}、{name} 和 {folder}。视图筛选中的值优先。\n此表是一个整体：在较窄范围中写入它会整体替换。 name_head（\"show\"：把填好的模板放进名称栏；\"hide\"：不显示，并加在输入的名称前面）。"
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

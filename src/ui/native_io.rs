@@ -143,6 +143,16 @@ pub(crate) enum Ask {
         items: Vec<String>,
         opts: Vec<super::new_note::Linked>,
     },
+    /// ai.proposal-notice: AI の案のうち、どれを見るか。`files` は `items` と同じ並び。
+    Proposals {
+        items: Vec<String>,
+        files: Vec<std::path::PathBuf>,
+    },
+    /// ai.proposal-take・ai.proposal-discard: 選んだ案を入れるか捨てるか。
+    ProposalAction {
+        items: Vec<String>,
+        file: std::path::PathBuf,
+    },
     /// 最近開いた表(cli.recent-list)。`places` は `items` と同じ並び。
     OpenRecent {
         items: Vec<String>,
@@ -285,6 +295,8 @@ pub(crate) fn ask_lead(app: &App) -> String {
         Some(Ask::SessionOverwrite(s)) => Msg::AskSessionOverwrite.fill(&[&sanitize(&s.name)]),
         Some(Ask::OpenRecent { .. }) => Msg::AskOpenRecent.into(),
         Some(Ask::LinkedNote { .. }) => Msg::AskLinkedNote.into(),
+        Some(Ask::Proposals { .. }) => Msg::AskProposals.into(),
+        Some(Ask::ProposalAction { .. }) => Msg::AskProposalAction.into(),
         Some(Ask::StackTable { .. }) => Msg::AskStackTable.into(),
         Some(Ask::PageName) => Msg::AskPageName.into(),
         Some(Ask::RoutineRuns(_)) => Msg::AskRoutineRuns.fill(&[&app.runs_word()]),
@@ -307,6 +319,7 @@ fn ask_items(app: &App, query: &str) -> (Vec<String>, Vec<usize>) {
         Some(Ask::NoticeTables { items, .. }) => items,
         Some(Ask::OpenRecent { items, .. }) => items,
         Some(Ask::LinkedNote { items, .. }) => items,
+        Some(Ask::Proposals { items, .. } | Ask::ProposalAction { items, .. }) => items,
         Some(Ask::StackTable { items, .. }) => items,
         Some(Ask::ChildrenReopen { items }) => items,
         Some(Ask::WsPick(names)) => {
@@ -828,6 +841,22 @@ impl App {
                 };
                 self.close_palette();
                 self.make_linked(o);
+            }
+            Some(Ask::Proposals { files, .. }) => {
+                let Some(file) = picked.and_then(|k| files.get(k)).cloned() else {
+                    self.message = Some(Msg::AskNoMatch.into());
+                    return;
+                };
+                self.close_palette();
+                self.choose_proposal(file);
+            }
+            Some(Ask::ProposalAction { file, .. }) => {
+                let file = file.clone();
+                match picked {
+                    Some(0) => self.take_proposal(&file),
+                    Some(1) => self.discard_proposal(&file),
+                    _ => self.message = Some(Msg::AskNoMatch.into()),
+                }
             }
             Some(Ask::OpenRecent { places, .. }) => {
                 let Some(place) = picked.and_then(|k| places.get(k)).cloned() else {

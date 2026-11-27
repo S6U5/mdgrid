@@ -187,6 +187,8 @@ pub struct App {
     pub(crate) notify: super::notify::NotifyState,
     /// ルーチンの回を作る(routine。routine.rs)。
     pub(crate) routine: super::routine::RoutineState,
+    /// ai.proposal-notice: 開いた表の行を指す AI の案。
+    pub(crate) ai: super::proposals::AiProposals,
     /// notice.open-note: エディタで開く連絡のノート(表の行でないもの)。
     pub(crate) editor_note: Option<std::path::PathBuf>,
     /// ワークスペースを横断して探す(navigation.across-*。across.rs)。
@@ -432,6 +434,7 @@ impl App {
             notice: Default::default(),
             notify: Default::default(),
             routine: Default::default(),
+            ai: Default::default(),
             editor_note: None,
             across: Default::default(),
             prompt: None,
@@ -623,6 +626,8 @@ impl App {
             self.rebuild_kanban();
             self.rebuild_chart();
             self.select_pending();
+            // ai.proposal-notice: 行が出そろったら、開いた表の行を指す案を数える。
+            self.refresh_proposals(true);
             // notice.refresh: 今の表の行が出そろったら、通知の欄を数え直す。
             self.notice.dirty = true;
             // BV-2: 推した根で0行なら、探した場所を一度出す(黙って空の表にしない)。
@@ -691,6 +696,8 @@ impl App {
             self.refresh();
             self.notice_refresh();
         }
+        // ai.proposal-notice: 同期で届いた案を数え直す(置き場が変わったときだけ読む)。
+        self.refresh_proposals(false);
         let changed = self.src.changed();
         if !changed.is_empty() {
             // notice.refresh: 外の変更を読んだら数え直す。
@@ -1182,6 +1189,7 @@ impl App {
             Action::FocusNotice => self.focus_notice(),
             Action::AcrossSearch => self.start_across(),
             Action::RoutineRuns => self.start_routine_runs(),
+            Action::AiProposals => self.start_ai_proposals(),
             _ => {}
         }
     }
@@ -1436,6 +1444,11 @@ impl App {
         // routine.screen-create: 下の帯のルーチンの回の知らせで、作るノートの名前を並べて確かめる(tbd~routine.offer-key)。
         if super::bands::routine_at(self, x, y) {
             self.apply(Action::RoutineRuns);
+            return;
+        }
+        // ai.proposal-notice: 下の帯の AI の案の数で、案を並べる。
+        if super::bands::proposals_at(self, x, y) {
+            self.apply(Action::AiProposals);
             return;
         }
         // CE-25: ビューの帯の「+ 新規」で新しいノートの名前の欄を開く。

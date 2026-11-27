@@ -99,6 +99,9 @@ ApplyIgnoredOne = "{0} edit in a column that cannot be written was ignored ({1})
 ## CLI-16。{0} は列の名前。
 CliUnknownSort = "--sort {0}: no such column in the view or in the notes"
 ApplyNoChanges = "no changes: every value is the same as in the notes"
+## ai.propose-command の結果: {0} は書いたセルの数、{1} は案にしたセルの数、{2} は案のファイル(無ければ空)。
+ProposeDone = "wrote {0} cells; proposed {1} cells {2}"
+ProposeFailed = "could not write the proposal: {0}"
 ## {0} はファイル、{1} は誤り。
 ApplyUnreadable = "cannot read {0}: {1}"
 ApplyProblems = "nothing was written because of the problems above"
@@ -313,6 +316,20 @@ RoutineNotNotes = "the rows are not notes (CSV or TSV), so no routine runs"
 FooterRoutine = "  {0}: {1} runs are due"
 ## routine.screen-create: パレットのコマンドと確かめ。
 CmdRoutineRuns = "Create the recurring runs"
+## ai.proposal-notice・ai.proposal-take・ai.proposal-discard: AI の案。ProposalItem の {0} は作った日時(MM-DD HH:MM)、{1} は理由、{2} はセルの数。
+CmdAiProposals = "Show AI proposals"
+FooterProposals = "  AI proposals {0}"
+AskProposals = "AI proposals:"
+AskProposalAction = "This proposal:"
+ProposalTake = "Take it (as pending changes; review the diff when you save)"
+ProposalDiscard = "Discard it (delete the proposal file)"
+ProposalTaken = "took {0} cells from the AI proposal as pending changes (review the diff when you save)"
+ProposalSkipped = "; skipped {0} cells that changed after the proposal was made or whose row is gone"
+ProposalDiscarded = "discarded the AI proposal: {0}"
+ProposalNone = "no AI proposals for rows of this table"
+ProposalGone = "that AI proposal is gone (taken or discarded elsewhere)"
+ProposalRemoveFailed = "could not delete the AI proposal file: {0}"
+ProposalItem = "{0}  {1} ({2} cells)"
 AskRoutineRuns = "{0}: create these runs? Type y and Enter: "
 ## {0} は作るノートの数。
 RoutineRunsWhich = "Notes to create ({0}):"
@@ -2304,6 +2321,8 @@ CfgEditAddFrontmatter = "Allow writing to notes with no front matter or an empty
 CfgEditLinkFormat = "The form of the links mdgrid writes in a link column. \"wiki\" writes [[name]], \"markdown\" writes [name](path).\n\"auto\" follows the form the column already uses ([[name]] if none)."
 CfgEditLinkPath = "The path in the links mdgrid writes in a link column. \"shortest\" writes only the name when no other note has it\n([…](…) uses the relative path), \"relative\" the path from the note's folder, \"absolute\" the path from the opened root."
 CfgEditRenameLinks = "Whether renaming a note stages rewrites of the links to it. \"always\" always does, \"ask\" shows how many and does\nit only on y, \"never\" does not."
+## 設定の項目 `ai.write` の説明(行の区切りは --print-config のコメントの行)。
+CfgAiWrite = "Columns that AI writes (`--apply … --propose` and the MCP server) may change directly. Changes to other columns are not written; they are left in the ledger as proposals for a person to take with \"Show AI proposals\". Empty by default (no column is written directly)."
 ## 設定の項目 `new_note` の説明(行の区切りは --print-config のコメントの行)。
 CfgNewNote = "How a new note is made from the table: mode (\"form\": a form with every field, or\n\"editor\": create and open in the editor), folder (relative to the opened folder), name (name\ntemplate), name_head (\"show\": put the filled template in the name field, or \"hide\": keep it\nout of the field and add it before the typed name), ask (the form's columns; default: the visible columns), required (columns that must\nbe filled), hidden (columns written without a field), body (a body template file) and\n[new_note.set] (column = value). Templates may use {date}, {date+7}, {date:YYYY/MM/DD},\n{time}, {now}, {weekday}, {name} and {folder}. Values from the view's filter come first.\nThe table is one item: a narrower place that writes it replaces it whole."
 ## 設定の項目 `keys` の説明(行の区切りは --print-config のコメントの行)。

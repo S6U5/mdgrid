@@ -25,6 +25,7 @@
   - [Group tables into workspaces](#group-tables-into-workspaces)
   - [Stack tables](#stack-tables)
   - [Use with other commands](#use-with-other-commands)
+  - [Let AI change values](#let-ai-change-values)
   - [Choose a theme](#choose-a-theme)
   - [When you cannot edit](#when-you-cannot-edit)
 
@@ -878,6 +879,25 @@ mdgrid /tmp/mdgrid-sample/Tasks --pick status
 `y` (or `Ctrl+C`) copies the value of the cell to the clipboard. With rows selected, it copies the current column's values of those rows, one per line. `Y` copies the whole row as tab-separated text with a header.
 
 To paste, select the cell to start from and use your terminal's paste (`Ctrl+V`, `Cmd+V` or whatever your terminal uses). Values separated by line breaks go down the rows, and values separated by tabs go right across the columns, so a range copied from a spreadsheet pastes the same way. Pasted values are pending changes until you save, and one `u` undoes the paste.
+
+## Let AI change values
+
+For AI agents that run in a terminal, the bundled skill teaches the mdgrid commands. The agent exports the table with `--print --with-path`, edits it, and brings it back with `--apply <file> --propose <reason>`.
+
+```sh
+mdgrid Tasks --apply edited.csv --propose "Review the overdue tasks"
+```
+
+`--propose` writes only the columns you let AI change in this ledger, and does not write the rest. The changes it did not write are left as a proposal, one file in `.mdgrid/proposals/` at the ledger root. List the columns AI may change under `[ai]` in the marker or the config (by default, none):
+
+```toml
+[ai]
+write = ["status", "progress"]
+```
+
+When you open the table in mdgrid and there are proposals for its rows, the bottom band says "AI proposals 1". Click it, or choose **Show AI proposals** in the palette, pick a proposal and choose **Take it**: its values become pending changes, so you see the diff when you save, or undo them with `u`. **Discard it** only deletes the proposal file. Cells someone changed after the proposal was made are not taken, and mdgrid tells you how many.
+
+Each proposal is its own file, so several people sharing a ledger through a cloud folder or git do not collide. If someone changed a note after the export, both `--apply` and `--propose` stop without writing, and the agent exports again and redoes the edit (the last column, `_rev`, tells them apart).
 
 ## Choose a theme
 

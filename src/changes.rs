@@ -379,6 +379,14 @@ impl Changes {
         self.cells.keys().cloned().collect()
     }
 
+    /// その行のためたセル(列の名前の順)。
+    pub fn row_cells(&self, row: &RowId) -> Vec<(String, NewValue)> {
+        self.cells
+            .get(row)
+            .map(|m| m.iter().map(|(c, v)| (c.clone(), v.clone())).collect())
+            .unwrap_or_default()
+    }
+
     /// 外で変わった行を受け取り、ためた変更のある行に「外で変更」の印を付ける(WB-16)。
     pub fn note_external(&mut self, rows: &[RowId]) {
         self.gen += 1;

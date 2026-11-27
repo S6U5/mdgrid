@@ -587,6 +587,17 @@ pub const ITEMS: &[Item] = &[
         msg: Msg::CfgEditRenameLinks,
     },
     Item {
+        path: "ai.write",
+        ty: "list of strings (column names)",
+        ty_ja: "文字列の並び(列の名前)",
+        default: Some("[]"),
+        example: "[ai]\nwrite = [\"status\", \"tags\"]",
+        scope: Scope::Profile,
+        en: Msg::CfgAiWrite.en(),
+        ja: Msg::CfgAiWrite.ja(),
+        msg: Msg::CfgAiWrite,
+    },
+    Item {
         path: "new_note",
         ty: "table (mode, folder, name, name_head, ask, required, hidden, body and [new_note.set])",
         ty_ja: "表(mode・folder・name・name_head・ask・required・hidden・body と [new_note.set])",
@@ -701,6 +712,7 @@ pub const SECTIONS: &[&str] = &[
     "display",
     "dates",
     "edit",
+    "ai",
     "new_note",
     "keys",
     "search",
@@ -710,7 +722,7 @@ pub const SECTIONS: &[&str] = &[
 
 /// 表のプロファイルの最上位の名前(どの範囲でも書ける)。
 pub const PROFILE_KEYS: &[&str] = &[
-    "use", "look", "display", "dates", "edit", "new_note", "types", "rules", "format",
+    "use", "look", "display", "dates", "edit", "ai", "new_note", "types", "rules", "format",
 ];
 
 /// アプリ全体の最上位の名前(全体にだけ書ける)。
