@@ -25,6 +25,61 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 
 ## 要求
 
+### なぜ要るか
+
+#### 表を見て値を直して保存するまでを、端末の中だけで終えられるべき
+`req~scope.value-in-terminal~1` P1
+- Rationale: GUI のアプリを開くのは疲れる。CLI のコーディングエージェントを使っているときは、端末のマルチプレクサの隣の区画で、同じ端末のまま台帳を開ける
+- Acceptance:
+  - Given: 端末のマルチプレクサの1つの区画と、ノートのフォルダ「Tasks」
+  - When: その区画で `mdgrid Tasks` を起動し、値を1つ直して保存し、終わる
+  - Then: 表はその区画の中に出て、終わるまでほかの窓もアプリも開かず、ノートに直した値が書かれている。
+- Needs: stest
+
+#### 表の中を動く・値を直す・保存するまでを、キーボードだけでできるべき
+`req~scope.value-keyboard~1` P1
+- Rationale: キーボードの操作で、手を止めずに効率よく作業することが、この道具の目的だから
+- Acceptance:
+  - Given: 開いた表
+  - When: マウスを使わず、キーだけでセルへ動き、値を直し、保存する
+  - Then: ノートに直した値が書かれている。
+- Needs: stest
+
+#### 表は、説明を読まなくても見て分かり、操作できる形にするべき
+`req~scope.value-intuitive-table~1` P1
+- Rationale: キーボードで速く操作できても、利用者が直感で見て操作できる表でなければ使われないから
+- Acceptance:
+  - Given: キー `status` と `due` を持つノートが3つあるフォルダ
+  - When: そのフォルダを開く
+  - Then: 見出しの行に列の名前 `status` と `due` が出て、ノート1つが1行、キー1つが1列で並ぶ。
+- Acceptance:
+  - Given: 開いた表を、mdgrid を初めて使う人が見る
+  - When:
+  - Then: どの行がどのノートで、今どのキーで何ができるかを、説明書なしで言える(読んで判定)。
+- Needs: stest
+
+#### ノートのあいだのつながり(リレーション)を、表の上で見て、たどれるべき
+`req~scope.value-relations-visible~1` P1
+- Rationale: AI を使って作業していると、ノートのあいだのつながりをつい見失うため
+- Acceptance:
+  - Given: 案件のノート「mdgrid」を指すキー `project` を持つ、タスクのノート
+  - When: タスクの表を開く
+  - Then: `project` のセルに、指す先のノートの名前「mdgrid」が見える。
+- Acceptance:
+  - Given: 案件のノート「mdgrid」を指すタスクのノートが2つ
+  - When: 案件のノート「mdgrid」の行で、指しているノートを見る
+  - Then: 2つのタスクのノートが並ぶ。
+- Needs: stest
+
+#### 表やワークスペースの切り替えは、mdgrid を終えずにできるべき
+`req~scope.value-fast-switch~1` P1
+- Rationale: ほかの道具より速く、仕事の場を切り替えられるようにするため
+- Acceptance:
+  - Given: 登録した表が2つあり、1つ目を開いている
+  - When: 表の一覧から2つ目を選ぶ
+  - Then: mdgrid を終えずに、2つ目の表が出る。
+- Needs: stest
+
 ### 芯と作り方
 
 #### この道具の芯は、Markdown の YAML フロントマターを表として表示し、編集できることにするべき
@@ -247,3 +302,12 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 
 ## 未確定事項
 
+### 使うメモリの上限をいくつにするか
+`tbd~scope.value-memory-budget`
+- Decider: 人
+- Provisional: 数は決めていない。限られたスペックの PC で、Electron などを使った GUI より少ないメモリで動くことが目的(人の発言、2026-11-27)。ノートの数と上限の数(MB)が決まったら、要求にする
+
+### 表やワークスペースの切り替えにかけてよい時間
+`tbd~scope.value-switch-time`
+- Decider: 人
+- Provisional: 数は決めていない。scope.value-fast-switch は「終えずに切り替えられる」までを決め、何秒以内かは決まってから受け入れ基準に足す
