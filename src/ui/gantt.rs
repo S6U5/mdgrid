@@ -1228,27 +1228,14 @@ fn plain_name_cell(app: &App, g: &Gantt, row: &RowId, w: usize) -> String {
     let sel = g.rows.get(g.sel) == Some(row);
     // navigation.parent-child-away-mark: ガントはまとまりの見出しも薄い行も出さないので、添えた親の分は字下げしない。
     let lift = app.tree_lift.get(row).copied().unwrap_or(0);
-    let depth = app
-        .tree
-        .get(row)
-        .map_or(0, |n| n.depth.saturating_sub(lift));
-    let num = app
-        .wbs_num
-        .get(row)
-        .map(|n| format!("{n} "))
-        .unwrap_or_default();
-    let head = format!("{}{num}{}", if sel { ">" } else { " " }, "  ".repeat(depth));
-    // 表のノートの欄と同じ見せ方(`.md` を除き、フォルダは note_path に従う)。名前を出さない設定なら名前。
-    let shown = super::view::label_in(app, row, lift);
-    let name = if shown.trim().is_empty() {
-        sanitize(&app.src.label(row))
-    } else {
-        shown
-    };
+    let head = if sel { ">" } else { " " };
+    // gantt.tree-wbs-order: 表のノートの欄と同じ見せ方(字下げ・▾・WBS の番号・子の数。`.md` を除き、フォルダは
+    // note_path に従う)。字下げと番号は重ねて足さない。名前を出さない設定でも名前を出す。
+    let name = super::view::label_named(app, row, lift);
     fit(
         &format!(
             "{head}{}",
-            fit(&name, w.saturating_sub(width(&head)), Align::Left)
+            fit(&name, w.saturating_sub(width(head)), Align::Left)
         ),
         w,
         Align::Left,

@@ -61,22 +61,23 @@ fn names(a: &App) -> Vec<String> {
 
 #[test]
 fn test_nv_27_indent_under_parent() {
-    // [utest -> req~navigation.parent-child-rows~1] 設計の下に画面(2桁)・その下に部品(4桁、リストの先頭のリンク)・API(2桁)。メモは一番上の段。
+    // [utest -> req~navigation.parent-child-rows~1, req~navigation.parent-child-indent~2] 設計の下に画面・その下に部品(リストの先頭のリンク)・API。
+    // 子の無い行も ▾ の2桁を空けるので、名前の前は設計とメモが2桁、画面と API が4桁、部品が6桁。
     let (_t, mut a) = notes("nv27a");
     tree_on(&mut a);
     let n = names(&a);
     let at = |s: &str| {
         n.iter()
-            .position(|x| x.trim_start().trim_start_matches(['▾', '▸', ' ']) == s)
+            .position(|x| x.trim_start_matches(['▾', '▸', ' ']).split(" (").next() == Some(s))
             .unwrap()
     };
-    assert!(n.contains(&"▾ 設計".to_string()), "{n:?}");
-    assert!(n.contains(&"  ▾ 画面".to_string()), "{n:?}");
-    assert!(n.contains(&"    部品".to_string()), "{n:?}");
-    assert!(n.contains(&"  API".to_string()), "{n:?}");
+    assert!(n.contains(&"▾ 設計 (2)".to_string()), "{n:?}");
+    assert!(n.contains(&"  ▾ 画面 (1)".to_string()), "{n:?}");
+    assert!(n.contains(&"      部品".to_string()), "{n:?}");
+    assert!(n.contains(&"    API".to_string()), "{n:?}");
     assert!(at("設計") < at("画面") && at("画面") < at("部品"), "{n:?}");
     assert!(at("設計") < at("API"), "{n:?}");
-    assert!(n.contains(&"メモ".to_string()), "{n:?}");
+    assert!(n.contains(&"  メモ".to_string()), "{n:?}");
 }
 
 #[test]
@@ -88,7 +89,7 @@ fn test_nv_27_sort_within_siblings() {
     let asc = names(&a);
     a.set_sorts(vec![("n".into(), Dir::Desc)]);
     let desc = names(&a);
-    let pos = |n: &Vec<String>, s: &str| n.iter().position(|x| x.ends_with(s)).unwrap();
+    let pos = |n: &Vec<String>, s: &str| n.iter().position(|x| x.contains(s)).unwrap();
     assert_ne!(
         pos(&asc, "API") < pos(&asc, "画面"),
         pos(&desc, "API") < pos(&desc, "画面"),
@@ -115,7 +116,11 @@ fn test_nv_27_shift_z_folds_and_unfolds() {
     a.row = i;
     ch(&mut a, 'Z');
     assert_eq!(a.slots.len(), total - 3);
-    assert!(names(&a).contains(&"▸ 設計".to_string()), "{:?}", names(&a));
+    assert!(
+        names(&a).contains(&"▸ 設計 (2)".to_string()),
+        "{:?}",
+        names(&a)
+    );
     assert!(!names(&a).iter().any(|n| n.ends_with("部品")));
     ch(&mut a, 'Z');
     assert_eq!(a.slots.len(), total);
@@ -130,7 +135,7 @@ fn test_nv_27_shift_z_folds_and_unfolds() {
 
 #[test]
 fn test_nv_27_missing_parent_goes_top_and_off_restores() {
-    // [utest -> req~navigation.parent-child-orphans~3] 設計を絞り込みで外す → 画面と API が一番上の段(行は落ちない)。親子をオフ → 字下げなし。
+    // [utest -> req~navigation.parent-child-orphans~3, req~navigation.parent-child-indent~2] 設計を絞り込みで外す → 画面と API が一番上の段(行は落ちない)。親子をオフ → 字下げも ▾ の空きも無い。
     let (_t, mut a) = notes("nv27d");
     tree_on(&mut a);
     a.settings.filters = vec![Cond {
@@ -140,9 +145,9 @@ fn test_nv_27_missing_parent_goes_top_and_off_restores() {
     a.regrid = true;
     a.refresh_if_needed();
     let n = names(&a);
-    assert!(n.contains(&"▾ 画面".to_string()), "{n:?}");
-    assert!(n.contains(&"API".to_string()), "{n:?}");
-    assert!(n.contains(&"  部品".to_string()), "{n:?}");
+    assert!(n.contains(&"▾ 画面 (1)".to_string()), "{n:?}");
+    assert!(n.contains(&"  API".to_string()), "{n:?}");
+    assert!(n.contains(&"    部品".to_string()), "{n:?}");
     a.settings.tree = None;
     a.regrid = true;
     a.refresh_if_needed();
@@ -180,7 +185,7 @@ fn test_nv_27_settings_section_turns_on() {
     assert_eq!(a.mode, Mode::Table);
     assert_eq!(a.settings.tree.as_deref(), Some("parent"));
     assert!(
-        names(&a).contains(&"  ▾ 画面".to_string()),
+        names(&a).contains(&"  ▾ 画面 (1)".to_string()),
         "{:?}",
         names(&a)
     );
@@ -199,13 +204,94 @@ fn test_nv_27_click_mark_folds() {
     let x = super::view::layout(&a).label_x() as u16;
     a.click(x, y);
     assert_eq!(a.slots.len(), total - 3);
-    assert!(names(&a).contains(&"▸ 設計".to_string()), "{:?}", names(&a));
+    assert!(
+        names(&a).contains(&"▸ 設計 (2)".to_string()),
+        "{:?}",
+        names(&a)
+    );
     a.click(x + 1, y);
     assert_eq!(a.slots.len(), total);
     // 名前の文字のクリックは、畳まない(行を選ぶだけ)。
     a.row = 0;
     a.click(x + 3, y);
     assert_eq!(a.slots.len(), total);
+}
+
+#[test]
+fn test_nv_27_count_direct_children() {
+    // [utest -> req~navigation.parent-child-count~1] 子を持つ行の名前のあとに直の子の数: 設計は (2)(孫の部品は数えない)、画面は (1)。
+    // 子の無い API と部品に数は無い。
+    let (_t, mut a) = notes("nv27cnt1");
+    tree_on(&mut a);
+    let n = names(&a);
+    assert!(n.contains(&"▾ 設計 (2)".to_string()), "{n:?}");
+    assert!(n.contains(&"  ▾ 画面 (1)".to_string()), "{n:?}");
+    assert!(n.contains(&"    API".to_string()), "{n:?}");
+    assert!(n.contains(&"      部品".to_string()), "{n:?}");
+}
+
+#[test]
+fn test_nv_27_count_stays_when_folded() {
+    // [utest -> req~navigation.parent-child-count~1] 設計で Z → 子は隠れても `▸ 設計 (2)`。
+    let (_t, mut a) = notes("nv27cnt2");
+    tree_on(&mut a);
+    a.refresh_if_needed();
+    a.row = (0..a.slots.len())
+        .find(|&i| matches!(a.slots[i], super::grid::Slot::Row(r) if a.src.label(&a.rows[r]).contains("設計")))
+        .unwrap();
+    ch(&mut a, 'Z');
+    assert!(
+        names(&a).contains(&"▸ 設計 (2)".to_string()),
+        "{:?}",
+        names(&a)
+    );
+}
+
+#[test]
+fn test_nv_27_count_only_rows_in_view() {
+    // [utest -> req~navigation.parent-child-count~1] 子の API(done)を絞り込みで外す → `▾ 設計 (1)`(今のビューに並ぶ子だけを数える)。
+    let (_t, mut a) = make(
+        "nv27cnt3",
+        &[
+            ("設計.md", "---\nstatus: doing\n---\n"),
+            ("画面.md", "---\nparent: \"[[設計]]\"\nstatus: todo\n---\n"),
+            ("API.md", "---\nparent: \"[[設計]]\"\nstatus: done\n---\n"),
+        ],
+    );
+    tree_on(&mut a);
+    a.settings.filters = vec![Cond {
+        col: "status".into(),
+        op: Op::Drop(vec![Some("done".into())]),
+    }];
+    a.regrid = true;
+    a.refresh_if_needed();
+    let n = names(&a);
+    assert!(n.contains(&"▾ 設計 (1)".to_string()), "{n:?}");
+}
+
+#[test]
+fn test_nv_27_count_before_wbs_progress() {
+    // [utest -> req~navigation.parent-child-count~1] WBS をオン → 数は名前のすぐあとで、進み具合の前(`▾ 1 設計 (2) · 割合%`)。
+    let (_t, mut a) = notes("nv27cnt4");
+    tree_on(&mut a);
+    let v = |value: &str, percent: u8, label: &str| mdgrid::settings::WbsValue {
+        value: value.into(),
+        percent,
+        label: label.into(),
+    };
+    a.settings.wbs = Some(mdgrid::settings::Wbs {
+        key: "status".into(),
+        map: vec![
+            v("done", 100, "完了"),
+            v("doing", 50, "作業中"),
+            v("todo", 0, "未着手"),
+        ],
+    });
+    a.regrid = true;
+    a.refresh_if_needed();
+    let n = names(&a);
+    // 番号はメモ(1)の次の 2。
+    assert!(n.iter().any(|x| x.starts_with("▾ 2 設計 (2) · ")), "{n:?}");
 }
 
 /// status でグループ分けする。
@@ -273,8 +359,9 @@ fn on(a: &App, name: &str) -> bool {
         .is_some_and(|r| std::path::Path::new(&r.0).file_stem() == Some(name.as_ref()))
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
-/// 親が別のまとまりにある子は、子のまとまりの中で、`^` の付いた薄い親の行の下に2桁字下げして並ぶ。
+// [utest -> req~navigation.parent-child-away-mark~3]
+/// 親が別のまとまりにある子は、子のまとまりの中で、`^` の付いた薄い親の行(子の数つき)の下に、名前を親の名前より
+/// 2桁右にして並ぶ。
 /// 親のまとまりの「設計」はそのまま。
 #[test]
 fn test_away_parent_shown_as_context_row() {
@@ -289,14 +376,14 @@ fn test_away_parent_shown_as_context_row() {
         .position(|(l, n)| *l == "#" && n.contains("todo"))
         .unwrap_or_else(|| panic!("{got:?}"));
     let doing: Vec<&(&str, &str)> = names[..todo_at].iter().filter(|(l, _)| *l != "#").collect();
-    assert_eq!(doing, [&("", "設計")], "{got:?}");
+    assert_eq!(doing, [&("", "  設計")], "{got:?}");
     let mut todo: Vec<(&str, &str)> = names[todo_at + 1..].to_vec();
-    assert_eq!(todo[0], ("^", "▾ 設計"), "{got:?}");
+    assert_eq!(todo[0], ("^", "▾ 設計 (2)"), "{got:?}");
     todo[1..].sort_unstable();
-    assert_eq!(todo[1..], [("", "  API"), ("", "  画面")], "{got:?}");
+    assert_eq!(todo[1..], [("", "    API"), ("", "    画面")], "{got:?}");
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
+// [utest -> req~navigation.parent-child-away-mark~3]
 /// 薄い親の行は、まとまりの見出しの数に入らず、status などのセルは空。名前は薄い字。
 #[test]
 fn test_away_context_row_not_counted_and_blank() {
@@ -336,7 +423,7 @@ fn test_away_context_row_not_counted_and_blank() {
     );
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
+// [utest -> req~navigation.parent-child-away-mark~3]
 /// 見出しから j で薄い行を飛ばして画面を選び、k で薄い行を飛ばして見出しへ戻る。薄い行のクリックでは選びは変わらない。
 #[test]
 fn test_away_context_row_is_skipped_and_not_clickable() {
@@ -378,8 +465,8 @@ fn line_of_slot_is_ghost(a: &App, k: usize) -> bool {
     lines[super::view::data_y(a) + k].starts_with('^')
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
-/// 親と祖父が別のまとまりなら、薄い祖父・その下に薄い親・その下に4桁字下げした子。
+// [utest -> req~navigation.parent-child-away-mark~3]
+/// 親と祖父が別のまとまりなら、薄い祖父・その下に薄い親・その下に子(名前の前は6桁)。
 #[test]
 fn test_away_context_rows_for_grandparents() {
     let (_t, mut a) = make(
@@ -403,12 +490,16 @@ fn test_away_context_rows_for_grandparents() {
         .collect();
     assert_eq!(
         todo,
-        [("^", "▾ 計画"), ("^", "  ▾ 設計"), ("", "    画面")],
+        [
+            ("^", "▾ 計画 (1)"),
+            ("^", "  ▾ 設計 (1)"),
+            ("", "      画面")
+        ],
         "{got:?}"
     );
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
+// [utest -> req~navigation.parent-child-away-mark~3]
 /// 薄い親の下の子の孫は、同じまとまりなら子の下にもう1段字下げ(薄い行は親だけ)。
 #[test]
 fn test_away_child_keeps_own_kids_indented() {
@@ -433,13 +524,17 @@ fn test_away_child_keeps_own_kids_indented() {
         .collect();
     assert_eq!(
         todo,
-        [("^", "▾ 設計"), ("", "  ▾ 画面"), ("", "    部品")],
+        [
+            ("^", "▾ 設計 (1)"),
+            ("", "  ▾ 画面 (1)"),
+            ("", "      部品")
+        ],
         "{got:?}"
     );
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
-/// グループ分けをしなければ薄い行は無く、画面は設計の下に2桁字下げ。
+// [utest -> req~navigation.parent-child-away-mark~3]
+/// グループ分けをしなければ薄い行は無く、画面は設計の下で、名前を設計の名前より2桁右に。
 #[test]
 fn test_no_group_no_context_row() {
     let (_t, mut a) = across_groups("nv27away3");
@@ -450,10 +545,10 @@ fn test_no_group_no_context_row() {
         got.iter().all(|(l, _)| l.trim() != "^" && l != "#"),
         "{got:?}"
     );
-    assert!(got.iter().any(|(_, n)| n == "  画面"), "{got:?}");
+    assert!(got.iter().any(|(_, n)| n == "    画面"), "{got:?}");
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
+// [utest -> req~navigation.parent-child-away-mark~3]
 /// 親を絞り込みで外すと、薄い行は無く、子は一番上の段。
 #[test]
 fn test_filtered_out_parent_no_context_row() {
@@ -472,11 +567,11 @@ fn test_filtered_out_parent_no_context_row() {
         .collect();
     let mut rows = rows;
     rows.sort_unstable();
-    assert_eq!(rows, [("", "API"), ("", "画面")], "{got:?}");
+    assert_eq!(rows, [("", "  API"), ("", "  画面")], "{got:?}");
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
-/// ガントの画面には薄い行を出さず、画面と API は字下げなしで並ぶ。
+// [utest -> req~navigation.parent-child-away-mark~3]
+/// ガントの画面には薄い行を出さず、画面と API は一番上の段と同じ形(▾ の2桁の空きだけ)で並ぶ。
 #[test]
 fn test_away_context_not_in_gantt() {
     let (_t, mut a) = make(
@@ -497,16 +592,16 @@ fn test_away_context_not_in_gantt() {
             .lines()
             .find(|l| l.contains(n))
             .unwrap_or_else(|| panic!("{n}:\n{s}"));
-        // 窓の枠 `│` のあと、選びの印か空白の1桁のすぐ後ろに名前(字下げの空白が無い)。
+        // 窓の枠 `│` のあと、選びの印か空白の1桁と、▾ の2桁の空きのすぐ後ろに名前(深さの字下げが無い)。
         let at = l.find(n).unwrap();
         let inner = l[..at].trim_start_matches('│');
-        assert!(inner.chars().count() <= 1, "{n} は字下げなし: {l:?}");
+        assert_eq!(inner.chars().count(), 3, "{n} は深さの字下げなし: {l:?}");
     }
     let g = a.gantt.as_ref().unwrap();
     assert_eq!(g.rows.len(), 3);
 }
 
-// [utest -> req~navigation.parent-child-away-mark~2]
+// [utest -> req~navigation.parent-child-away-mark~3]
 /// ヘルプの印の一覧の「行の左」に `^` と、別のまとまりにある親を添えた行である旨。
 #[test]
 fn test_help_lists_context_row_mark() {
@@ -555,11 +650,11 @@ fn test_same_group_children_under_parent() {
     let n = names(&a);
     let at = n
         .iter()
-        .position(|x| x == "▾ 設計")
+        .position(|x| x == "▾ 設計 (2)")
         .unwrap_or_else(|| panic!("{n:?}"));
     let mut kids = n[at + 1..at + 3].to_vec();
     kids.sort();
-    assert_eq!(kids, vec!["  API", "  画面"], "{n:?}");
+    assert_eq!(kids, vec!["    API", "    画面"], "{n:?}");
 }
 
 // [utest -> req~navigation.parent-child-groups~1]
@@ -573,7 +668,42 @@ fn test_same_group_sort_keeps_children_under_parent() {
     let n = names(&a);
     let at = n
         .iter()
-        .position(|x| x == "▾ 設計")
+        .position(|x| x == "▾ 設計 (2)")
         .unwrap_or_else(|| panic!("{n:?}"));
-    assert_eq!(n[at + 1..at + 3], ["  画面", "  API"], "{n:?}");
+    assert_eq!(n[at + 1..at + 3], ["    画面", "    API"], "{n:?}");
+}
+
+#[test]
+fn test_gantt_name_indent_same_as_table() {
+    // [utest -> req~gantt.tree-wbs-order~2] ガントの名前の欄は表のノートの欄と同じ字下げと WBS の番号(重ねて足さない):
+    // 部品(深さ2・子なし)は、選びの印の1桁のあとに6桁空けて `1.1.1 部品`。番号は1回だけ。
+    let (_t, mut a) = make(
+        "nv27gantt",
+        &[
+            ("設計.md", "---\nstatus: doing\nstart: 2026-10-01\ndue: 2026-10-05\n---\n"),
+            ("画面.md", "---\nparent: \"[[設計]]\"\nstatus: todo\nstart: 2026-10-02\ndue: 2026-10-03\n---\n"),
+            ("部品.md", "---\nparent: \"[[画面]]\"\nstatus: todo\nstart: 2026-10-02\ndue: 2026-10-02\n---\n"),
+        ],
+    );
+    tree_on(&mut a);
+    let v = |value: &str, percent: u8, label: &str| mdgrid::settings::WbsValue {
+        value: value.into(),
+        percent,
+        label: label.into(),
+    };
+    a.settings.wbs = Some(mdgrid::settings::Wbs {
+        key: "status".into(),
+        map: vec![v("doing", 50, "作業中"), v("todo", 0, "未着手")],
+    });
+    a.regrid = true;
+    a.refresh_if_needed();
+    ch(&mut a, 'C');
+    assert_eq!(a.mode, Mode::Gantt, "{:?}", a.message);
+    let s = screen(&a);
+    let l = s
+        .lines()
+        .find(|l| l.contains("部品"))
+        .unwrap_or_else(|| panic!("{s}"));
+    assert!(l.contains("│       1.1.1 部品"), "{l:?}");
+    assert_eq!(l.matches("1.1.1").count(), 1, "{l:?}");
 }

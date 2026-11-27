@@ -22,7 +22,7 @@ fn run(
 
 #[test]
 fn test_nv_27_order_preorder_keeps_sibling_order() {
-    // [utest -> req~navigation.parent-child-rows~1, req~navigation.parent-child-indent~1, req~navigation.parent-child-sibling-order~1] 設計の下に画面(その下に部品)と API。兄弟の順は元の並び(API が先なら API が先)。
+    // [utest -> req~navigation.parent-child-rows~1, req~navigation.parent-child-indent~2, req~navigation.parent-child-sibling-order~1] 設計の下に画面(その下に部品)と API。兄弟の順は元の並び(API が先なら API が先)。
     let rows = ["API", "部品", "設計", "画面", "メモ"];
     let pairs = [("画面", "設計"), ("API", "設計"), ("部品", "画面")];
     assert_eq!(

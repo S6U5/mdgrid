@@ -58,13 +58,14 @@ fn on(a: &mut App, wbs: Option<Wbs>) {
 
 #[test]
 fn test_nv_28_numbers_progress_and_labels() {
-    // [utest -> req~navigation.wbs-leaf-label~2] 1 設計 · 50%、1.1 画面 · 50%、1.1.1 部品 · 完了、1.1.2 ボタン · 未着手、1.2 API · 作業中。
+    // [utest -> req~navigation.wbs-leaf-label~2] 1 設計 (2) · 50%、1.1 画面 (2) · 50%、1.1.1 部品 · 完了、1.1.2 ボタン · 未着手、1.2 API · 作業中
+    // (子のある行は名前のあとに直の子の数。navigation.parent-child-count)。
     let (_t, mut a) = notes("nv28a");
     on(&mut a, Some(map()));
     let s = screen(&a);
     for want in [
-        "1 設計 · 50%",
-        "1.1 画面 · 50%",
+        "1 設計 (2) · 50%",
+        "1.1 画面 (2) · 50%",
         "1.1.1 部品 · 完了",
         "1.1.2 ボタン · 未着手",
         "1.2 API · 作業中",
@@ -86,7 +87,7 @@ fn test_nv_28_unmapped_counts_zero_and_off_hides() {
     b.resize(100, 24);
     on(&mut b, Some(map()));
     let s = screen(&b);
-    assert!(s.contains("1 設計 · 33%"), "{s}");
+    assert!(s.contains("1 設計 (2) · 33%"), "{s}");
     assert!(s.contains("1.2 API") && !s.contains("1.2 API ·"), "{s}");
     on(&mut a, None);
     assert!(!screen(&a).contains("1.1 画面"), "{}", screen(&a));
@@ -158,7 +159,7 @@ fn test_nv_28_settings_builds_the_table() {
         Some((100, "完了"))
     );
     assert!(screen(&a).contains("部品 · 完了"), "{}", screen(&a));
-    assert!(screen(&a).contains("1 設計 · "), "{}", screen(&a));
+    assert!(screen(&a).contains("1 設計 (2) · "), "{}", screen(&a));
 }
 
 #[test]

@@ -499,7 +499,7 @@ owner = "chip"
 - 既定: なし
 - 範囲: 全体・ワークスペース・表・ビュー
 
-テーマの色を役割ごとに上書きする。役割: `background`(地)・`text`(文字)・`header`(1行目)・`selection`(選んだ行の地)・`selection_text`・`band`(下の帯の地)・`band_text`・`accent`(見出し・キー・枠)・`strong`(強調)・`zebra`(一行おきの地)・`zebra_text`・`mark`(左端の印)・`added`(足した行)・`removed`(消した行)・`pending`(ためた変更)・`highlight`(検索の一致の地)。書かなかった役割はテーマの色のまま。`[look.colors.values]` は値ごとの色で(前後の空白と大文字・小文字によらず照合)、部品のどの形でも、候補の窓でも使い、日本語の値にも付けられる。色は `"#rrggbb"`・`"#rgb"` か名前(`black`・`white`・`gray`・`red`・`orange`・`yellow`・`green`・`teal`・`cyan`・`blue`・`purple`・`magenta`・`pink`・`brown`)。`theme = "default"` では端末の地と文字は変えず、`accent`・`selection` と値の色だけを使う。知らない役割と読めない色は警告して飛ばし、同じ値を2回書いたときも警告する。狭い範囲に書いたテーマは、広い範囲の役割の色を使わない(値の色は使う)。
+テーマの色を役割ごとに上書きする。役割: `background`(地)・`text`(文字)・`header`(1行目)・`selection`(選んだ行の地)・`selection_text`・`band`(下の帯の地)・`band_text`・`accent`(見出し・キー・枠)・`strong`(強調)・`zebra`(一行おきの地)・`zebra_text`・`mark`(左端の印)・`added`(足した行)・`removed`(消した行)・`pending`(ためた変更)・`highlight`(検索の一致の地)。書かなかった役割はテーマの色のまま。`[look.colors.values]` は値ごとの色で(前後の空白と大文字・小文字によらず照合)、部品のどの形でも、候補の窓でも、まとまりの見出しの値(セルと同じ札で描く)でも使い、日本語の値にも付けられる。色は `"#rrggbb"`・`"#rgb"` か名前(`black`・`white`・`gray`・`red`・`orange`・`yellow`・`green`・`teal`・`cyan`・`blue`・`purple`・`magenta`・`pink`・`brown`)。`theme = "default"` では端末の地と文字は変えず、`accent`・`selection` と値の色だけを使う。知らない役割と読めない色は警告して飛ばし、同じ値を2回書いたときも警告する。狭い範囲に書いたテーマは、広い範囲の役割の色を使わない(値の色は使う)。
 
 ```toml
 [look.colors]

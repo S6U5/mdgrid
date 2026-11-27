@@ -46,6 +46,8 @@ pub(crate) struct Ghost {
     pub row: RowId,
     /// そのまとまりの中の深さ(一番上の段は 0)。
     pub depth: usize,
+    /// そのまとまりの中で、その下に並ぶ直の子の数(navigation.parent-child-count)。
+    pub kids: usize,
     /// NV-28: そのまとまりの中の WBS の番号と、そのまとまりの子孫の進み具合(WBS を出さなければ None)。
     pub num: Option<String>,
     pub pct: Option<u8>,
@@ -903,6 +905,7 @@ impl App {
                     waiting.push(Ghost {
                         row: n.row.clone(),
                         depth: n.depth,
+                        kids: n.kids,
                         num: gnums.get(&n.row).cloned(),
                         pct: gpcts.get(&n.row).copied(),
                     });
