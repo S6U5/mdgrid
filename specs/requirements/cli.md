@@ -294,6 +294,31 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - When: `.base` の無いフォルダで、ノートのキー `path`(値 `中の値`)を持つノートを `--print --with-path --format json`
   - Then: オブジェクトに、鍵 `path`(足したノートのパス)と鍵 `path (path)`(値 `中の値`)の両方がある。
 
+#### `--print --with-path` の csv と json と、画面の表の書き出し(output.export)の csv と json には、最後に見出し `_rev` の列を足し、各行に、そのノートの値(フロントマターのキーと値。本文は入れない)から作った印を出すべき(表に見出しが `_rev` の列があれば足さず、標準エラーに1行で知らせる)
+`req~cli.print-rev~1` P0
+- Rationale: 書き出してから `--apply` で戻すまでのあいだに、ほかの人(や同期で届いた変更)がノートを直していないかを、戻すときに確かめるため(cli.apply-stale-row)。印は中身を言わない文字にし、形は約束しない(あとで細かくできるように)
+- Acceptance:
+  - Given: `status: todo`・`due: 2026-12-01` のノート
+  - When: `--print --with-path` で書き出す
+  - Then: 見出しの行の最後が `_rev` で、その行に空でない印がある。
+- Acceptance:
+  - Given: 同じノートを書き出したあと、本文だけを直した
+  - When: もう一度書き出す
+  - Then: 印は同じ。
+- Acceptance:
+  - Given: 同じノートを書き出したあと、due を直した
+  - When: もう一度書き出す
+  - Then: 印が違う。
+- Acceptance:
+  - Given: `--print --with-path --format json`
+  - When: 書き出す
+  - Then: 各オブジェクトの最後の鍵が `_rev`。`--format md` と `tsv` には `_rev` が無い。
+- Acceptance:
+  - Given: 画面で表を `out.csv` に書き出す
+  - When: 書き出したファイルを読む
+  - Then: 見出しの最後が `_rev` で、`--print --with-path` と同じ印。
+- Needs: utest・stest
+
 #### `--print` の無い `--with-path` は、cli.fail-fast と同じく理由1行と終了コード 2 にするべき
 `req~cli.with-path-needs-print~1` P1
 - Acceptance:
@@ -594,6 +619,15 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - Given: SKILL.md
   - When:
   - Then: `--apply` の差分を人に見せてから `--yes` で書く手順がある。
+
+#### mdgrid の CLI の手引きのスキルは、書き戻すときに `_rev` の列を残すことと、書き出したあとに変わったと止まったら書き出し直して直すことを書く
+`req~cli.agent-skill-apply-stale~1` P1
+- Rationale: AI が `_rev` の列を消すと確かめられず、止まったときに `--yes` を繰り返すと何も進まないため
+- Acceptance:
+  - Given: SKILL.md
+  - When: 読む
+  - Then: `_rev` の列を残すことと、止まったら書き出し直して同じ直しをやり直す手順がある。
+- Needs: stest
 
 #### mdgrid の CLI の手引きのスキルに書いた例のコマンドは、そのまま動かして通るべき
 `req~cli.agent-skill-examples-run~1` P1
@@ -1032,6 +1066,31 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
   - Given: tags の列のセルが `a, b` の CSV で `--apply --yes`
   - When:
   - Then: そのノートの tags が a と b の2つの要素のリストになる。
+
+#### `--apply` の行に `_rev` があり、そのノートの今の印(cli.print-rev)と違うときは、その行に今と違うセルが1つでもあれば、どれも書かずに終了コード 2 にし、その行が書き出したあとに変わったことと、書き出し直して直すことを理由に出すべき
+`req~cli.apply-stale-row~1` P0
+- Rationale: `--apply` は今の値と比べて違うセルを書くので、書き出したあとにほかの人が直したセルを、書き出したときの古い値で戻していた(2026-11-28 に本物で確かめた: 書き出したあとに due を 12-20 に直し、status だけを直した CSV を戻すと、due が 12-01 に戻る差分が出た)。どのセルを直したのかは書き出した印だけでは分からないので、行ごと止めて書き出し直してもらう
+- Acceptance:
+  - Given: `status: todo`・`due: 2026-12-01` のノートを `--print --with-path` で書き出したあと、外で due を 2026-12-20 に直した
+  - When: 書き出した CSV の status を done に直して `--apply --yes`
+  - Then: どれも書かず(status は todo、due は 2026-12-20 のまま)終了コード 2。標準エラーの理由に、そのノートの path と、書き出し直すことが出る。
+- Acceptance:
+  - Given: 同じく書き出したあとに外で due を直した
+  - When: 書き出した CSV をそのまま `--apply --yes`
+  - Then: 今と違うセルは due だけだが、書き出したときの古い値に戻すことになるので、どれも書かずに終了コード 2。
+- Acceptance:
+  - Given: 列が status だけのビュー(`.base`)で書き出したあと、外でビューに無い due を直した
+  - When: 書き出した CSV をそのまま `--apply --yes`
+  - Then: 今と違うセルが無いので、何も書かずに終了コード 0。
+- Acceptance:
+  - Given: 外で直していないノートを書き出した
+  - When: status を done に直して `--apply --yes`
+  - Then: status が done になり、ノートに `_rev` のキーは足されない。
+- Acceptance:
+  - Given: `_rev` の列の無い CSV(手で作った `path,status`)
+  - When: `--apply --yes`
+  - Then: 今までどおり、今と違うセルを書く。
+- Needs: stest
 
 #### よく使う表(フォルダか `.base`。`.base` と mdgrid のビューは名前でビューも)を、名前と1段の分類を付けて、設定のフォルダの `places.toml`(`[[place]]` の並び。`name`・`group`・`path`・`view`)に登録できるべき
 `req~cli.places-store~1` P1

@@ -414,7 +414,7 @@ fn test_wb_12_save_then_save_again_with_returned_stamp() {
 
 #[test]
 fn test_wb_4_external_change_after_stamp_stops_save() {
-    // [utest -> req~write-back.conflict-stop~1] 基準を取ったあとに外でファイルが変わる → SaveError::Changed、ファイルは外の内容のまま。
+    // [utest -> req~write-back.conflict-stop~2] 基準を取ったあとに外でファイルが変わる → SaveError::Changed、ファイルは外の内容のまま。
     let dir = TempDir::new("source-wb4");
     let p = dir.copy_fixture("plain.md");
 

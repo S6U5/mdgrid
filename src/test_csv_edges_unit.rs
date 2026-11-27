@@ -114,7 +114,7 @@ fn test_sc_16_float_stays_decimal() {
 
 #[test]
 fn test_sc_16_preview_against_changed_file_matches_write() {
-    // [utest -> req~scope.csv-write-back-diff~1, req~scope.csv-write-back-conflict~1, req~write-back.external-save-choice~1] 外で行が足されたファイルにも、見せた差分のとおりに当てる(行を1度だけ読んだ位置で)。
+    // [utest -> req~scope.csv-write-back-diff~1, req~scope.csv-write-back-conflict~1, req~write-back.external-save-choice~2] 外で行が足されたファイルにも、見せた差分のとおりに当てる(行を1度だけ読んだ位置で)。
     let p = tmp("prev", "id,v\nA,1\nB,2\n");
     let src = Csv::open(&p).unwrap();
     std::fs::write(&p, "id,v\nA,1\nB,2\nC,3\n").unwrap();

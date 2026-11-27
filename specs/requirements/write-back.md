@@ -112,12 +112,34 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
   - When: status をためたまま外で title を直す
   - Then: 行に印。
 
-#### 外で変わったノートの保存では、差分を見せて、外の変更の上に書くか、ためた変更を捨てるかを選ばせるべき(保存の基準は write-back.conflict-stop のとおり)
-`req~write-back.external-save-choice~1` P1
+#### 外で変わったノートの保存で、ためたキーを外でも変えていたときは、差分を見せて、外の変更の上に書くか、ためた変更を捨てるかを選ばせるべき(保存の基準は write-back.conflict-stop のとおり。別のキーだけなら write-back.merge-other-keys)
+`req~write-back.external-save-choice~2` P1
 - Acceptance:
-  - Given:
-  - When: status をためたまま外で title を直して保存
-  - Then: 止まり、差分と2つの選択肢。
+  - Given: status を done にためている
+  - When: 外で同じノートの status を doing に直してから保存する
+  - Then: 止まり、差分と2つの選択肢が出る。
+- Needs: utest
+
+#### 外で変わったノートでも、ためたキーの今の値が、どれもそのキーを直し始めたときに読んでいた値と同じ(外の変更が別のキーだけ)なら、止めずに今のファイルの内容を基準にして、ためたキーの値だけを書き、外の変更と合わせて書いたことを知らせるべき
+`req~write-back.merge-other-keys~1` P0
+- Rationale: 共有のフォルダ(クラウドの同期・git)で何人かと AI が同じ台帳を書くと、別の人が別のキーを直しただけで保存が止まり、毎回選ばされていた。ためたキーに触れていなければ、どちらの変更も失わずに書ける。同じキーを両方が変えたときだけ人が決める
+- Acceptance:
+  - Given: status を done にためている
+  - When: 外で同じノートの title を直してから保存する
+  - Then: 止まらずに書き、ファイルの status は done、title は外で直した値。知らせに、外の変更と合わせて書いたノートの名前が出る。
+- Acceptance:
+  - Given: status を done にためたあと、外でその status を doing に直し、また todo(直し始めたときの値)に戻した
+  - When: 保存する
+  - Then: 止まらずに書き、status は done。
+- Acceptance:
+  - Given: CSV の台帳の1行目の status を done にためている
+  - When: 外で2行目のセルを直してから保存する
+  - Then: 止まらずに書き、1行目の status は done、2行目は外で直した値。
+- Acceptance:
+  - Given: CSV の台帳の1行目の status を done にためている
+  - When: 外で1行目のほかのセルを直してから保存する(行の中身が変わり、どの行かを引き継げない。source の CSV の読み直しの決まり)
+  - Then: 止まり、ためた変更は残る。
+- Needs: utest
 
 #### ためた値が、そのセルの最後に読んだ値と同じになったら(直して元の値に戻した、一括の設定で元と同じ値を入れた、など)、そのセルをためる変更から外し、未保存の数・保存の差分・ためる変更の印に出すべきでない
 `req~write-back.revert-drops-pending~2` P1
@@ -291,12 +313,13 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 
 ### 書かずに止める
 
-#### 書く直前に、保存の基準(そのノートに最初に変更をためた時点で表が持っていた内容、つまりその時点までに最後に読んだ内容で、ためたあとの読み直し(write-back.external-change)では変えない。自分で書いたあとは write-back.new-baseline の新しい基準。write-back.external-change の保存の選択で外の変更の上に書くを選んだときは、選んだ時点のファイルの内容)から、ファイルの更新時刻・大きさ・中身のハッシュのどれかが変わっていたら、書かずに止めて知らせなければならない
-`req~write-back.conflict-stop~1` P0
+#### 書く直前に、保存の基準(そのノートに最初に変更をためた時点で表が持っていた内容、つまりその時点までに最後に読んだ内容で、ためたあとの読み直し(write-back.external-change)では変えない。自分で書いたあとは write-back.new-baseline の新しい基準。write-back.external-change の保存の選択で外の変更の上に書くを選んだときは、選んだ時点のファイルの内容)から、ファイルの更新時刻・大きさ・中身のハッシュのどれかが変わっていたら、外の変更と合わせられるとき(write-back.merge-other-keys)のほかは、書かずに止めて知らせなければならない
+`req~write-back.conflict-stop~2` P0
 - Acceptance:
-  - Given:
-  - When: status をためたあとに外でノートを直し、保存
+  - Given: status を done にためている
+  - When: 外でノートの status を doing に直してから保存する
   - Then: 書かれず、差分と外部の変更を示す。
+- Needs: utest
 
 
 #### 止まった保存で「外の変更の上に書く」を選んだときは、選んだ時点のファイルの内容を基準にして検査し、ためたキーの値だけを書いて外の変更は残さなければならない

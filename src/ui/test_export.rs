@@ -93,7 +93,37 @@ fn test_out_5_export_matches_print_with_path() {
             print::PrintCell::Prop(Some(mdgrid::frontmatter::Value::Str(p))),
         );
     }
+    // [utest -> req~cli.print-rev~1] 書き出しの json にも、`--print --with-path` と同じ `_rev` の列。
+    assert!(print::add_rev(
+        &mut want,
+        a.src.as_ref(),
+        print::Format::Json
+    ));
     assert_eq!(got, print::render(&want, print::Format::Json));
+}
+
+#[test]
+fn test_export_csv_has_rev_last() {
+    // [utest -> req~cli.print-rev~1] 画面で表を csv に書き出す → 見出しの最後が `_rev` で、各行にそのノートの印(空でない)。
+    // md には `_rev` が無い。
+    let (tmp, mut a) = app("exportrv");
+    let csv = out(&tmp, "out.csv");
+    a.export_table_to(csv.to_str().unwrap());
+    let got = std::fs::read_to_string(&csv).unwrap();
+    let head = got.lines().next().unwrap();
+    assert!(head.ends_with(",_rev"), "{got}");
+    for r in a.rows.clone() {
+        let rev = print::row_rev(a.src.as_ref(), &r);
+        assert!(!rev.is_empty());
+        assert!(
+            got.lines().any(|l| l.ends_with(&format!(",{rev}"))),
+            "{rev}: {got}"
+        );
+    }
+    let md = out(&tmp, "out.md");
+    a.export_table_to(md.to_str().unwrap());
+    let md_text = std::fs::read_to_string(&md).unwrap();
+    assert!(!md_text.contains("_rev"), "{md_text}");
 }
 
 // [utest -> req~output.export-path-name~2, req~output.export-path-overwrite~1]

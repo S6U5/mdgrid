@@ -272,7 +272,7 @@ fn test_sr_4_added_key_shows_everywhere() {
 
 #[test]
 fn test_sr_5_help_stays_when_review_rebuilt() {
-    // [utest -> req~screen.help~2, req~write-back.external-save-choice~1] 保存の確認でヘルプを出している間に外の変更が見つかっても、ヘルプは消えない。
+    // [utest -> req~screen.help~2, req~write-back.external-save-choice~2] 保存の確認でヘルプを出している間に外の変更が見つかっても、ヘルプは消えない。
     // 閉じると作り直した保存の確認に戻る。
     let (t, mut a) = make(
         "sr5p",

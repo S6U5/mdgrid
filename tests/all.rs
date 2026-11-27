@@ -19,6 +19,8 @@ mod test_add_frontmatter;
 mod test_agent_skill;
 #[path = "test_apply.rs"]
 mod test_apply;
+#[path = "test_apply_rev.rs"]
+mod test_apply_rev;
 #[path = "test_apply_review.rs"]
 mod test_apply_review;
 #[path = "test_base.rs"]
