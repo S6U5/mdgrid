@@ -897,6 +897,18 @@ write = ["status", "progress"]
 
 When you open the table in mdgrid and there are proposals for its rows, the bottom band says "AI proposals 1". Click it, or choose **Show AI proposals** in the palette, pick a proposal and choose **Take it**: its values become pending changes, so you see the diff when you save, or undo them with `u`. **Discard it** only deletes the proposal file. Cells someone changed after the proposal was made are not taken, and mdgrid tells you how many.
 
+Chat tools without a shell connect through MCP. Add `mdgrid <ledger> --mcp` to the tool's MCP server settings:
+
+```json
+{
+  "mcpServers": {
+    "mdgrid": { "command": "mdgrid", "args": ["--mcp", "/path/to/ledger/Tasks"] }
+  }
+}
+```
+
+It offers six tools: list the tables (`tables`), show a table's settings (`describe`), read rows (`query`), count (`count`), check (`check`) and change values (`update`). `update` works like `--propose`: it writes only the columns you let AI change and leaves the rest as a proposal. The server runs on your machine only, never goes online, and never reads or writes outside the ledger you gave it.
+
 Each proposal is its own file, so several people sharing a ledger through a cloud folder or git do not collide. If someone changed a note after the export, both `--apply` and `--propose` stop without writing, and the agent exports again and redoes the edit (the last column, `_rev`, tells them apart).
 
 ## Choose a theme

@@ -145,6 +145,8 @@ mod test_marker_base_name;
 mod test_marker_base_switch;
 #[path = "test_marker_open.rs"]
 mod test_marker_open;
+#[path = "test_mcp.rs"]
+mod test_mcp;
 #[path = "test_modes_e2e.rs"]
 mod test_modes_e2e;
 #[path = "test_new_note.rs"]
