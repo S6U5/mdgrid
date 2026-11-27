@@ -148,19 +148,93 @@ fn test_sr_8_editor_reload() {
 
 #[cfg(unix)]
 #[test]
-fn test_sr_8_editor_with_pending_marks_external() {
-    // [utest -> req~screen.editor-open~1, req~screen.editor-choice~2, req~write-back.external-keep-pending~1, req~write-back.external-mark~1, req~write-back.external-save-choice~1] ためた変更のある行をエディタで変えたら、外の変更と同じに「外で変更」の印。
+fn test_sr_8_editor_with_pending_saves_first() {
+    // [utest -> req~screen.editor-open~1, req~screen.editor-choice~2, req~screen.editor-save-first~1] ためた変更のある行をエディタで開く → 開く前にそのノートを書くので、エディタが書き換えて戻っても「外で変更」の印は付かず、ためた変更も残らない。
     let _lock = editor_lock();
     let (t, mut a) = make("sr8b", &[("a.md", "---\nstatus: 前\ntitle: t\n---\n")]);
-    // エディタは title のキーを消すので、空にするためた値は WB-17・SR-18 で外れる。status を空にしてためる。
     col_named(&mut a, "status");
     press(&mut a, KeyCode::Backspace);
     assert_eq!(a.changes.count(), 1);
     ch(&mut a, 'e');
     a.open_editor(&script(&t), &mut |_| Ok(()));
     let row = a.rows[0].clone();
-    assert!(a.changes.external(&row));
+    assert!(!a.changes.external(&row));
+    assert_eq!(a.changes.count(), 0);
+}
+
+/// EDITOR にする小さなシェルスクリプト: 開いたときのノートを `seen` に写し、本文に1行足す。
+#[cfg(unix)]
+fn appending(tmp: &Tmp) -> String {
+    let path = tmp.0.join("append.sh");
+    std::fs::write(
+        &path,
+        "#!/bin/sh\ncp \"$1\" \"$(dirname \"$1\")/../seen\"\nprintf '足した行\\n' >> \"$1\"\n",
+    )
+    .unwrap();
+    format!("/bin/sh {}", path.display())
+}
+
+#[cfg(unix)]
+#[test]
+fn test_sr_8_editor_saves_only_that_note_first() {
+    // [utest -> req~screen.editor-save-first~1] a の status を done、b の status を doing にためて、a で e → エディタで本文に1行足して戻る。
+    // エディタが開いたときの a.md には status: done、戻ったあとの a.md には足した行もあり、「未保存 1」(b だけ)で、a に「外で変更」の印は無い。
+    // 下の行に、開く前に a を保存したことが出る。
+    let _lock = editor_lock();
+    let (t, mut a) = make(
+        "sr8sf",
+        &[
+            ("a.md", "---\nstatus: todo\n---\n本文\n"),
+            ("b.md", "---\nstatus: todo\n---\n"),
+        ],
+    );
+    edit_cell(&mut a, 0, "status", "done");
+    edit_cell(&mut a, 1, "status", "doing");
+    assert_eq!(a.changes.count(), 2);
+    a.row = 0;
+    let row = a.rows[0].clone();
+    assert!(a.src.label(&row).starts_with('a'));
+    ch(&mut a, 'e');
+    a.open_editor(&appending(&t), &mut |_| Ok(()));
+    let seen = std::fs::read_to_string(t.0.join("seen")).expect("エディタが開かなかった");
+    assert_eq!(seen, "---\nstatus: done\n---\n本文\n");
+    assert_eq!(read(&t, "a.md"), "---\nstatus: done\n---\n本文\n足した行\n");
+    assert_eq!(read(&t, "b.md"), "---\nstatus: todo\n---\n");
     assert_eq!(a.changes.count(), 1);
+    assert!(!a.changes.external(&row));
+    let m = a.message.clone().unwrap_or_default();
+    assert!(
+        m.contains("開く前に") && m.contains("a.md") && m.contains("保存"),
+        "{m}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn test_sr_8_editor_does_not_open_when_the_note_changed_outside() {
+    // [utest -> req~screen.editor-save-first~1] a の status をためたまま外の道具で a の title を直す → a で e → エディタは開かず、
+    // ためた変更は残り、外で変わったので保存(Ctrl+S)で決めてから開くよう下の行に出す。
+    let _lock = editor_lock();
+    let (t, mut a) = make("sr8sfx", &[("a.md", "---\ntitle: a\nstatus: todo\n---\n")]);
+    edit_cell(&mut a, 0, "status", "done");
+    edit_outside(&t, "a.md", "---\ntitle: 外で直した\nstatus: todo\n---\n");
+    a.poll();
+    a.row = 0;
+    ch(&mut a, 'e');
+    let mut called = false;
+    a.open_editor(&appending(&t), &mut |_| {
+        called = true;
+        Ok(())
+    });
+    assert!(!called, "エディタを開いた");
+    assert!(!t.0.join("seen").exists());
+    assert_eq!(a.changes.count(), 1);
+    assert_eq!(
+        read(&t, "a.md"),
+        "---\ntitle: 外で直した\nstatus: todo\n---\n"
+    );
+    let m = a.message.clone().unwrap_or_default();
+    assert!(m.contains("外で変わった") && m.contains("^S"), "{m}");
 }
 
 #[test]
@@ -348,10 +422,19 @@ fn test_sr_18_ctrl_c_copies_while_loading() {
 fn test_sr_8_sigint_while_editor_does_not_kill_mdgrid() {
     // [utest -> req~screen.editor-reload~1, req~screen.editor-fallback~1] エディタを待つ間に Ctrl+C(SIGINT)・SIGQUIT が mdgrid に届いても落ちない(ためた変更が消えない)。
     // 子のスクリプトが親(この試験のプロセス)に SIGINT と SIGQUIT を送る。子は既定の扱いに戻っている。
+    // 開くノートのためた変更は開く前に書く(screen.editor-save-first)ので、ためた変更はほかのノート(b)に置く。
     let _lock = editor_lock();
-    let (t, mut a) = make("sr8s", &[("a.md", "---\nstatus: 前\ntitle: t\n---\n")]);
+    let (t, mut a) = make(
+        "sr8s",
+        &[
+            ("a.md", "---\nstatus: 前\ntitle: t\n---\n"),
+            ("b.md", "---\nstatus: 前\ntitle: t\n---\n"),
+        ],
+    );
+    a.row = 1;
     col_named(&mut a, "title");
     press(&mut a, KeyCode::Backspace);
+    a.row = 0;
     let sh = t.0.join("int.sh");
     std::fs::write(
         &sh,

@@ -293,6 +293,37 @@ impl App {
         }
     }
 
+    /// cell-edit.new-child-note: 選んだ行の子のノート。親子で並べていなければ理由(ビューの設定のキー)、ノートの行を
+    /// 選んでいなければ理由を出す。親のキーの列に選んだ行のノートへのリンクを答えとして入れて、新しいノートの窓を開く
+    /// (窓の欄にあれば、そこで選び直せる。欄に無くても書く)。書く形は親の欄の候補と同じ(列で使われている形、無ければ
+    /// `[[名前]]`)。
+    pub(crate) fn start_new_child_note(&mut self) {
+        let Some(key) = self.tree_key() else {
+            let o = self.key_of(Mode::Table, Action::ViewSettings);
+            self.message = Some(Msg::TreeOff.fill(&[&o]));
+            return;
+        };
+        let Some(parent) = self.cur_row() else {
+            self.message = Some(Msg::NewChildNoRow.into());
+            return;
+        };
+        self.start_new_note();
+        let Some(row) = self.note.flow.as_ref().map(note_row) else {
+            return;
+        };
+        let form = self
+            .link_column(&key)
+            .map_or(mdgrid::relations::Form::Wiki, |(f, _)| f);
+        let link = self.link_value(&row, form, Path::new(&parent.0));
+        if let Some(f) = &mut self.note.flow {
+            f.answers.retain(|e| e.key != key);
+            f.answers.push(Edit {
+                key,
+                value: NewValue::Str(link),
+            });
+        }
+    }
+
     /// 作る場所を選ぶ欄が開いているか(CE-25。文字の入力を受けない)。
     pub(crate) fn note_choosing(&self) -> bool {
         self.note.flow.as_ref().is_some_and(|f| f.choosing)

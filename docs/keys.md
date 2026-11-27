@@ -62,6 +62,7 @@ When you start mdgrid with `--pick`, `Enter` on a note row prints the marked row
 | `U` | `redo` | Redo the change you undid |
 | `Ctrl+Shift+z` | `redo` | Redo the change you undid |
 | `a` | `new_note` | Create a new note (same as **+ New** at the right end of the view bar) |
+| `c` | `new_child_note` | In a table shown as a tree, create a new note under the selected row (the parent field is filled in) |
 | `Ctrl+s` | `save` | Review the pending changes as a diff, then save them |
 | `q` | `quit` | Quit (asks first if there are unsaved changes) |
 | `Ctrl+g` | `cancel_load` | Stop loading notes |
@@ -585,7 +586,7 @@ The mouse works too: click a folder to select it, click its `▾` or `▸` mark 
 
 The gantt screen (`C`, `:gantt_view`, or **Gantt** in the screen type menu at the top right). It is offered on a table whose `[[table]]` in the workspace marker has `gantt = { start = "<column>", end = "<column>" }` (`days = "<column>"` instead of `end` also works), or, without a setting, on a table whose date columns can be inferred by name (start: start, begin, from, 開始; end: end, due, finish, until, to, 期限, 終了). See [Configuration](config.md). The rows of the current view are listed with their names on the left and a time axis with bars on the right. The unit is a day, a week or a month; on opening, the finest unit that fits the range of the rows in the width. Today's column is marked (`┊` in the rows, and `▾` in the header, or the header digit shown reversed when today falls on it). In the month unit a month takes three characters, one for each third of the month. With a color theme (not `default`), the background of the time axis alternates by month (by year in the month unit), and weekends get a slightly stronger tint in the day unit. A row with only one of the two dates shows `◆`; a row with neither shows no bar. With parent/child rows in the view settings, the order, indent and folding are the same as in the table, and so are the WBS numbers and progress (`█` and `░` in the bar); a parent without dates gets the span of its descendants. The control bar on the bottom edge of the window (`◀ ▶`, the units, Today, Week, Month, Quarter, All) can be clicked too. `H` and `L` move the selected row's bar by one unit, and `<` and `>` shorten or extend its end (the dates are written as pending changes; `u` undoes, `Ctrl+S` goes to the save confirmation). To type a date, edit it in the table.
 
-The mouse works too: click a row to select it, click the selected row again to move to that row in the table. The wheel selects up and down; the horizontal wheel moves the time axis.
+The mouse works too: click a row to select it, click the selected row again to move to that row in the table. The wheel selects up and down; the horizontal wheel or shift+wheel moves the time axis.
 
 | Key | Action | Description |
 |---|---|---|
@@ -626,7 +627,7 @@ The kanban screen (`B`, `:kanban_view`, or **Kanban** in the screen type menu at
 
 `H` and `L` move the selected card to the lane on the left or right: the row's value in the column becomes that lane's value, as a pending change like an edit in the table (`*`, and the unsaved count goes up). Nothing is written until you save; `Ctrl+s` goes back to the table and opens the review of the pending changes. `u` undoes a move. Cards are not moved into **(none)** (clear the value in the table), and nothing moves when mdgrid was opened with `--readonly` or the cell is read-only; the message line says why.
 
-The mouse works too: click a card to select it, click the selected card again to move to that row in the table, and click a lane header to select the lane. The wheel selects cards up and down; the horizontal wheel moves between lanes.
+The mouse works too: click a card to select it, click the selected card again to move to that row in the table, and click a lane header to select the lane. The wheel selects cards up and down; the horizontal wheel or shift+wheel moves between lanes.
 
 | Key | Action | Description |
 |---|---|---|
@@ -786,6 +787,7 @@ Every action name you can write in the keys section of the config file. Each one
 - `undo` — undo the last change
 - `redo` — redo the change you undid
 - `new_note` — create a new note
+- `new_child_note` — create a child note of the selected row
 - `save` — review and save the pending changes
 - `quit` — quit mdgrid
 - `cancel_load` — stop loading notes

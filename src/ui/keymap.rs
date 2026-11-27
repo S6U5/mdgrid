@@ -368,6 +368,8 @@ pub enum Action {
     StarterNew,
     // 新しいノート(CE-25・CE-27)。ヘッダーの「+ 新規」とパレットからも。
     NewNote,
+    /// cell-edit.new-child-note: 選んだ行の子のノート(親のキーの列に選んだ行へのリンクを入れる)。
+    NewChildNote,
     /// CE-26: 新しいノートの窓で、どの欄からでも作る(既定 Ctrl+S)。
     CreateNote,
     /// CE-33: 新しいノートの窓で、作ってすぐエディタで開く(既定 Ctrl+E)。
@@ -649,6 +651,7 @@ impl Action {
             Action::StarterNew => "starter_new",
             Action::ImportBase => "import_base",
             Action::NewNote => "new_note",
+            Action::NewChildNote => "new_child_note",
             Action::CreateNote => "create_note",
             Action::CreateNoteEdit => "create_note_edit",
             Action::Menu => "action_menu",
@@ -731,6 +734,7 @@ impl Action {
         Action::OpenLink,
         Action::LinkedRows,
         Action::ToggleTree,
+        Action::NewChildNote,
         Action::Menu,
         Action::Detail,
         Action::OpenUrl,
@@ -752,6 +756,7 @@ impl Action {
         Action::LinkedRows,
         Action::RelationMap,
         Action::ToggleTree,
+        Action::NewChildNote,
         Action::ExportBase,
     ];
 
@@ -1034,6 +1039,8 @@ pub const BINDINGS: &[Binding] = &[
     b("Ctrl+Shift+z", Action::Redo, Msg::KeyRedo, EDIT, 6),
     // CE-25・CE-27: 新しいノート(`n` は検索の次の一致なので既定は `a`。割り当て直せる)。
     b("a", Action::NewNote, Msg::KeyNewNote, EDIT, 0),
+    // cell-edit.new-child-note: 選んだ行の子のノート(行の操作の窓とパレットからも)。
+    b("c", Action::NewChildNote, Msg::KeyNewChildNote, EDIT, 0),
     b("Ctrl+s", Action::Save, Msg::KeySave, FILE, 5),
     b("q", Action::Quit, Msg::KeyQuit, FILE, 4),
     b("Ctrl+g", Action::CancelLoad, Msg::KeyCancelLoad, FILE, 0),

@@ -154,6 +154,10 @@ pub(crate) fn items(app: &App) -> Vec<Item> {
         if app.row_has_backlinks() {
             want.push((Section::Row, Action::LinkedRows, false));
         }
+        // cell-edit.new-child-note: 親子で並べていれば、この行の子を作る。
+        if !app.readonly && app.cur_row().is_some() && app.tree_key().is_some() {
+            want.push((Section::Row, Action::NewChildNote, false));
+        }
     }
     if writable {
         want.push((Section::View, Action::NewNote, false));

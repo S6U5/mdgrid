@@ -55,7 +55,7 @@ fn test_sr_6_hwheel_shift_wheel_in_table() {
 
 #[test]
 fn test_sr_6_hwheel_ignored_outside_table() {
-    // [utest -> req~screen.mouse-h-wheel-other~1, req~screen.mouse-shift-wheel-other~1] ヘルプで横のホイール → 何も変わらない。shift+ホイールの下 → ヘルプが下へ流れる(縦のまま)。
+    // [utest -> req~screen.mouse-h-wheel-other~1, req~screen.mouse-shift-wheel-other~2] ヘルプで横のホイール → 何も変わらない。shift+ホイールの下 → ヘルプが下へ流れる(縦のまま)。
     let (_t, mut a) = make("hwheel_help", &[("a.md", "---\ntitle: a\n---\n")]);
     ch(&mut a, '?');
     assert_eq!(a.mode, Mode::Help);

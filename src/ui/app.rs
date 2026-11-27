@@ -69,8 +69,15 @@ pub struct App {
     /// NV-27: 親子で並べたときの行ごとの深さ・子の有無・親(並べていなければ空)と、畳んだ親の行。
     pub(crate) tree: std::collections::HashMap<RowId, mdgrid::tree::Node<RowId>>,
     pub(crate) tree_folded: HashSet<RowId>,
-    /// navigation.parent-child-away-mark: 親が今の表の別のまとまりにある行(名前の前に `↳`)。
-    pub(crate) tree_away: HashSet<RowId>,
+    /// navigation.parent-child-away-mark: グループ分けで、親が今の表の別のまとまりにある子のまとまりに添える薄い親の
+    /// 行。鍵は、添えた行のすぐ下に来るそのまとまりの行(添えた行は `rows` に入れない。数えず、選べない)。
+    pub(crate) tree_ghosts: std::collections::HashMap<RowId, Vec<super::grid::Ghost>>,
+    /// navigation.parent-child-away-mark: 行の祖先のうち、薄い行として添えた数(まとまりの見出しを出さないガントは
+    /// その分だけ字下げを減らす)。
+    pub(crate) tree_lift: std::collections::HashMap<RowId, usize>,
+    /// navigation.parent-child-away-mark: 画面の行(`slots` の添字)のうち、添えた薄い行の、添えた先の行(`rows` の
+    /// 添字)と `tree_ghosts` の何番目か。
+    pub(crate) ghost_slots: std::collections::HashMap<usize, (usize, usize)>,
     /// NV-28: WBS の番号と、子のある行の進み具合(%)。WBS を出さなければ空。
     pub(crate) wbs_num: std::collections::HashMap<RowId, String>,
     pub(crate) wbs_pct: std::collections::HashMap<RowId, u8>,
@@ -350,7 +357,9 @@ impl App {
             folded: HashSet::new(),
             tree: HashMap::default(),
             tree_folded: HashSet::new(),
-            tree_away: HashSet::new(),
+            tree_ghosts: HashMap::default(),
+            tree_lift: HashMap::default(),
+            ghost_slots: HashMap::default(),
             wbs_num: HashMap::default(),
             wbs_pct: HashMap::default(),
             view_trash: None,
@@ -1128,6 +1137,7 @@ impl App {
             Action::DeleteKey => self.start_delete_key(),
             // ---- 新しいノート(new_note.rs。CE-25) ----
             Action::NewNote => self.start_new_note(),
+            Action::NewChildNote => self.start_new_child_note(),
             // ---- その場の操作の一覧(menu.rs。SR-24) ----
             Action::Menu => self.open_menu(),
             // ---- 列の値の頻度表(freq.rs。NV-9) ----
@@ -1581,9 +1591,10 @@ impl App {
         }
     }
 
-    /// shift を押したホイール(SR-6)。表では横のホイールと同じにし、ほかの画面では縦のホイールのまま。
+    /// shift を押したホイール(SR-6)。表・ガント・カンバンでは横のホイールと同じにし(screen.mouse-shift-wheel-wide。
+    /// 横のホイールの無いマウスで横へ流すため)、ほかの画面では縦のホイールのまま(グラフの棒は横に動かないため)。
     pub fn shift_wheel(&mut self, down: bool) {
-        if self.mode == Mode::Table {
+        if matches!(self.mode, Mode::Table | Mode::Gantt | Mode::Kanban) {
             self.hwheel(down);
         } else {
             self.wheel(down);
