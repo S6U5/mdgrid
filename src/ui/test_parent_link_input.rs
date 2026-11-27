@@ -343,11 +343,11 @@ fn test_declared_parent_column_does_not_warn_and_nests_after_saving() {
     let n = names(&a);
     let at = n
         .iter()
-        .position(|x| x == "▾ 見積もりを出す")
+        .position(|x| x == "▾ 見積もりを出す (1)")
         .unwrap_or_else(|| panic!("{n:?}\n{}", screen(&a)));
     assert_eq!(
         n.get(at + 1).map(String::as_str),
-        Some("  見積書を作る"),
+        Some("    見積書を作る"),
         "{n:?}"
     );
 }

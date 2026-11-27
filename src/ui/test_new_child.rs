@@ -167,7 +167,7 @@ fn test_new_child_note_links_the_selected_row() {
     );
     assert_eq!(
         names(&a),
-        ["▾ 見積もりを出す", "  見積書を作る", "部屋の片づけ"]
+        ["▾ 見積もりを出す (1)", "    見積書を作る", "  部屋の片づけ"]
     );
     assert_eq!(cur_stem(&a), "見積書を作る");
 }
@@ -236,10 +236,10 @@ fn test_new_child_note_under_a_child_makes_a_grandchild() {
     assert_eq!(
         names(&a),
         [
-            "▾ 見積もりを出す",
-            "  ▾ 見積書を作る",
-            "    金額を調べる",
-            "部屋の片づけ"
+            "▾ 見積もりを出す (1)",
+            "  ▾ 見積書を作る (1)",
+            "      金額を調べる",
+            "  部屋の片づけ"
         ]
     );
 }

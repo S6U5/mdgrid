@@ -347,6 +347,8 @@ mod test_gitflow;
 #[cfg(test)]
 mod test_group_gap;
 #[cfg(test)]
+mod test_group_heading;
+#[cfg(test)]
 mod test_group_values;
 #[cfg(test)]
 mod test_half_explicit_rounds_up;

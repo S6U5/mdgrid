@@ -157,14 +157,14 @@ const DESIGN: &[(&str, &str)] = &[
 // [utest -> req~navigation.parent-child-config~1]
 #[test]
 fn test_children_key_opens_the_table_in_parent_child_order() {
-    // 印に `children = { key = "parent" }` を書いた表を開くと、「▾ 設計」の下に2桁字下げした「画面」が並ぶ。
+    // 印に `children = { key = "parent" }` を書いた表を開くと、「▾ 設計 (1)」の下に、名前を設計の名前より2桁右にした「画面」が並ぶ。
     let (_t, a) = boot("ch-open", DESIGN, "children = { key = \"parent\" }", "");
     let n = names(&a);
     let at = n
         .iter()
-        .position(|x| x == "▾ 設計")
+        .position(|x| x == "▾ 設計 (1)")
         .unwrap_or_else(|| panic!("{n:?}\n{:?}", a.message));
-    assert_eq!(n.get(at + 1).map(String::as_str), Some("  画面"), "{n:?}");
+    assert_eq!(n.get(at + 1).map(String::as_str), Some("    画面"), "{n:?}");
 }
 
 /// ビューが2つ(全部・完了)の `.base`。名前はノートの欄に出す(`file.name` の列を並べない)。
@@ -190,7 +190,7 @@ fn toggle_tree_in_settings(a: &mut App) {
 }
 
 fn indented(a: &App) -> bool {
-    names(a).iter().any(|n| n == "  画面")
+    names(a).iter().any(|n| n == "    画面")
 }
 
 // [utest -> req~navigation.parent-child-config~1]

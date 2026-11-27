@@ -195,6 +195,14 @@ fn label_width(app: &App, visible: &[&RowId], max: usize) -> usize {
     visible
         .iter()
         .map(|r| width(&label(app, r)))
+        // navigation.parent-child-away-mark: 行の上に添えた薄い親の行の名前も入れる。
+        .chain(
+            visible
+                .iter()
+                .filter_map(|r| app.tree_ghosts.get(*r))
+                .flatten()
+                .map(|g| width(&ghost_text(app, g))),
+        )
         .chain([head])
         // BV-14: 集計の行の見出し(集計の無いビューでは数えない。幅は変わらない)。
         .chain((summary_rows(app) > 0).then(|| width(Msg::SummaryRow.text())))
@@ -349,24 +357,47 @@ pub(crate) fn label(app: &App, row: &RowId) -> String {
 /// `label` と同じ。親子の字下げを `lift` 段だけ減らす(navigation.parent-child-away-mark: まとまりの見出しを
 /// 出さないガントは、添えた薄い親の分を字下げしない)。
 pub(crate) fn label_in(app: &App, row: &RowId, lift: usize) -> String {
-    let flag = app.changes.external(row) || app.src.mark(row).is_some();
     // SR-29・SR-46: `.md` を除き、フォルダは note_path に従う(既定は共通のフォルダを除く)。file.name の列が
     // あるときと off のときは名前は出さず、印だけ。
-    let mut name = if label_hidden(app) {
+    let name = if label_hidden(app) {
         String::new()
     } else {
         note_name(app, row)
     };
+    label_around(app, row, lift, name)
+}
+
+/// `label_in` と同じ印と字下げで、名前を出さない設定でも名前(ノートの道筋)を出す(ガントの名前の欄)。
+pub(crate) fn label_named(app: &App, row: &RowId, lift: usize) -> String {
+    let name = if label_hidden(app) {
+        sanitize(&app.src.label(row))
+    } else {
+        note_name(app, row)
+    };
+    label_around(app, row, lift, name)
+}
+
+/// 名前 `name` に、親子の字下げと ▾・▸、WBS の番号と進み具合、子の数、`~` と `!` の印を付ける。
+fn label_around(app: &App, row: &RowId, lift: usize, mut name: String) -> String {
+    let flag = app.changes.external(row) || app.src.mark(row).is_some();
     // NV-27: 親子で並べていれば、深さ1つごとに2桁字下げし、子を持つ行に ▾(開いている)か ▸(畳んでいる)。
+    // navigation.parent-child-indent: 子の無い行も印の2桁を空けて兄弟の名前の頭をそろえ、子の名前を親の名前より
+    // 右に出す。
     if let Some(n) = app.tree.get(row) {
         let mark = match (n.has_kids, app.tree_folded.contains(row)) {
-            (false, _) => "",
+            (false, _) => "  ",
             (true, false) => "▾ ",
             (true, true) => "▸ ",
         };
-        // NV-28: WBS の番号を名前の前に、子のある行は進み具合、子の無い行は対応表のラベルをあとに。
-        if let Some(num) = app.wbs_num.get(row) {
+        let num = app.wbs_num.get(row);
+        // NV-28: WBS の番号を名前の前に。
+        if let Some(num) = num {
             name = format!("{num} {name}");
+        }
+        // navigation.parent-child-count: 名前のすぐあとに、その下に並ぶ直の子の数。
+        name = with_kids(name, n.kids);
+        // NV-28: 子のある行は進み具合、子の無い行は対応表のラベルをあとに。
+        if num.is_some() {
             let tail = match app.wbs_pct.get(row) {
                 Some(p) => Some(format!("{p}%")),
                 None => app.settings.wbs.as_ref().and_then(|w| {
@@ -391,6 +422,16 @@ pub(crate) fn label_in(app: &App, row: &RowId, lift: usize) -> String {
         format!("!{name}")
     } else {
         name
+    }
+}
+
+/// navigation.parent-child-count: 名前のあとに直の子の数 `(n)` を添える(子が無ければそのまま。名前を出さない
+/// 設定では数だけ)。
+fn with_kids(name: String, kids: usize) -> String {
+    match (kids, name.is_empty()) {
+        (0, _) => name,
+        (k, true) => format!("({k})"),
+        (k, false) => format!("{name} ({k})"),
     }
 }
 
@@ -917,8 +958,17 @@ pub(crate) fn kind_mark(app: &App, kind: Kind, select: bool) -> Option<&'static 
 }
 
 /// groupBy の見出しの行(BV-5・SR-2): `▾ 列: 値(件数)`、畳んだら `▸`。
-/// まとまり `g` の見出しの字(選んでいれば頭に `>`)。まとまりが無ければ None。
+/// まとまり `g` の見出しの字(選んでいれば頭に `>`)。値をセルと同じ部品で描くまとまりは、部品の字
+/// (navigation.group-heading-parts)。まとまりが無ければ None。
 fn heading_text(app: &App, selected: bool, g: usize) -> Option<String> {
+    let (before, value, after) = heading_split(app, selected, g)?;
+    let value = heading_parts(app, g).map_or(value, |p| p.text());
+    Some(format!("{before}{value}{after}"))
+}
+
+/// まとまり `g` の見出しの字を、値の前・値(無害にした字)・値の後に分けたもの。まとまりが無ければ None。
+fn heading_split(app: &App, selected: bool, g: usize) -> Option<(String, String, String)> {
+    const AT: &str = "\u{0}";
     let (h, range) = app.groups.get(g)?;
     let open = !app.folded.contains(h);
     let by = app.group_title().map(|t| format!("{}: ", sanitize(&t)));
@@ -928,13 +978,44 @@ fn heading_text(app: &App, selected: bool, g: usize) -> Option<String> {
         .group_shown(g)
         .or_else(|| app.rows.get(range.start).and_then(|r| app.link_label(r, h)))
         .unwrap_or_else(|| h.clone());
-    Some(Msg::HeadingRow.fill(&[
+    let full = Msg::HeadingRow.fill(&[
         &if selected { ">" } else { " " },
         &if open { "▾" } else { "▸" },
         &by.unwrap_or_default(),
-        &sanitize(&shown),
+        &AT,
         &range.len(),
-    ]))
+    ]);
+    let (before, after) = full.split_once(AT)?;
+    Some((before.to_string(), sanitize(&shown), after.to_string()))
+}
+
+/// navigation.group-heading-parts: まとまり `g` の見出しの値を、その列のセルと同じ部品(札の形と値の色)にしたもの
+/// (セルの頭の空きは除く)。セルが部品にしない値(部品を文字のままにする設定・色を使わない表示・札にしない列)と、
+/// 値の無い行のまとまり・リンクの値(行き先の名前で見せる)は None(文字で描く)。
+fn heading_parts(app: &App, g: usize) -> Option<super::chips::Parts> {
+    use mdgrid::source::Value;
+    let (h, range) = app.groups.get(g)?;
+    let col = app.group_col()?;
+    let first = app.rows.get(range.start)?;
+    let v = app.setting_value(first, &col);
+    if mdgrid::settings::value_keys(v.as_ref()) == [None] || app.link_label(first, h).is_some() {
+        return None;
+    }
+    // セルの部品の決め方(cell::rich_text)と同じ: リストは要素の札、文字は札の列、数は札を強いた列だけ。
+    let list = match v {
+        Some(Value::List(_)) if app.rich(&col, mdgrid::cells::Part::Chips) => true,
+        Some(Value::Str(_)) if app.is_select(&col) => false,
+        Some(Value::Int(_) | Value::Float(_))
+            if app.cells.forced_chip(&col) && app.is_select(&col) =>
+        {
+            false
+        }
+        _ => return None,
+    };
+    let shown = app.group_shown(g).unwrap_or_else(|| h.clone());
+    let mut p = super::chips::parts_named(app, &[(h.clone(), shown)], list)?;
+    p.lead.clear();
+    Some(p)
 }
 
 /// まとまりの見出しの行。base-view.summaries-per-group: 集計のあるビューでは、見出しの字を最初の小計の列の手前
@@ -943,6 +1024,18 @@ fn heading_text(app: &App, selected: bool, g: usize) -> Option<String> {
 /// そのまとまりの中の深さの字下げと ▾/▸(と WBS の番号・進み具合)のあとに親の名前を薄い字で出し、ほかのセルは空ける。
 fn ghost_row(app: &App, lay: &Layout, g: &super::grid::Ghost, w: usize) -> Line<'static> {
     let dim = Style::default().add_modifier(Modifier::DIM);
+    let text = ghost_text(app, g);
+    let lead_w = lay.label_x().saturating_sub(width(GHOST_MARK));
+    let spans = vec![
+        Span::styled(GHOST_MARK, dim),
+        Span::raw(" ".repeat(lead_w)),
+        Span::styled(fit(&text, lay.label_w, Align::Left), dim),
+    ];
+    pad(spans, w, Style::default())
+}
+
+/// 添えた薄い行の名前の欄の字(字下げ・▾/▸・WBS の番号・子の数・進み具合と親の名前)。
+fn ghost_text(app: &App, g: &super::grid::Ghost) -> String {
     let mark = if app.tree_folded.contains(&g.row) {
         "▸ "
     } else {
@@ -955,18 +1048,13 @@ fn ghost_row(app: &App, lay: &Layout, g: &super::grid::Ghost, w: usize) -> Line<
     };
     if let Some(num) = &g.num {
         name = format!("{num} {name}");
-        if let Some(p) = g.pct {
-            name = format!("{name} · {p}%");
-        }
     }
-    let text = format!("{}{mark}{name}", "  ".repeat(g.depth));
-    let lead_w = lay.label_x().saturating_sub(width(GHOST_MARK));
-    let spans = vec![
-        Span::styled(GHOST_MARK, dim),
-        Span::raw(" ".repeat(lead_w)),
-        Span::styled(fit(&text, lay.label_w, Align::Left), dim),
-    ];
-    pad(spans, w, Style::default())
+    // navigation.parent-child-count: 添えた行も、その下に並ぶ直の子の数を名前のあとに。
+    name = with_kids(name, g.kids);
+    if let (Some(_), Some(p)) = (&g.num, g.pct) {
+        name = format!("{name} · {p}%");
+    }
+    format!("{}{mark}{name}", "  ".repeat(g.depth))
 }
 
 fn heading_row(
@@ -977,16 +1065,44 @@ fn heading_row(
     g: usize,
     w: usize,
 ) -> Line<'static> {
-    let Some(text) = heading_text(app, i == app.row, g) else {
+    use mdgrid::style::Select;
+    let selected = i == app.row;
+    let Some((before, value, after)) = heading_split(app, selected, g) else {
         return Line::from(" ".repeat(w));
     };
     let mut st = Style::default().add_modifier(Modifier::BOLD);
-    if i == app.row {
+    if selected {
         st = match super::look::look(app) {
             Some(l) => st.patch(l.selected()),
             None => st.add_modifier(Modifier::REVERSED),
         };
     }
+    // navigation.group-heading-parts: 値はセルと同じ部品で描く。選んだ見出しは、セルと同じく、塗る選びと反転では
+    // 文字のまま(部品の色が選びの塗りに埋もれないように)。
+    let keep = !selected
+        || matches!(
+            super::look::select(app),
+            Some(Select::Bar | Select::Cross | Select::Tint | Select::Outline)
+        );
+    let parts = heading_parts(app, g).filter(|_| keep);
+    let text = format!(
+        "{before}{}{after}",
+        parts
+            .as_ref()
+            .map_or_else(|| value.clone(), super::chips::Parts::text)
+    );
+    // 見出しの字を幅 `room` に収めた切れ(部品が無ければ今までどおり1つの切れ)。
+    let head = |room: usize| -> Vec<Span<'static>> {
+        let Some(p) = &parts else {
+            return vec![Span::styled(fit(&text, room, Align::Left), st)];
+        };
+        let mut v = vec![Span::styled(before.clone(), st)];
+        for (t, o) in p.items.iter().flatten() {
+            v.push(Span::styled(t.clone(), o.map_or(st, |x| st.patch(x))));
+        }
+        v.push(Span::styled(after.clone(), st));
+        pad(v, room, st).spans
+    };
     // 見えている列の左の端の桁と、その列の小計。
     let mut x = lay.data_x();
     let placed: Vec<(usize, usize, Option<String>)> = cols
@@ -1009,15 +1125,17 @@ fn heading_row(
         .find(|(_, _, t)| t.is_some())
         .map(|(at, _, _)| *at)
     else {
-        return Line::from(Span::styled(fit(&text, w, Align::Left), st));
+        return Line::from(head(w));
     };
-    let mut out = fit(&text, first.saturating_sub(1), Align::Left);
+    let mut spans = head(first.saturating_sub(1));
+    let mut out = String::new();
     for (at, cw, t) in placed.into_iter().filter(|(at, _, _)| *at >= first) {
         let _ = at;
         out.push(' ');
         out.push_str(&t.unwrap_or_else(|| " ".repeat(cw)));
     }
-    Line::from(Span::styled(fit(&out, w, Align::Left), st))
+    spans.push(Span::styled(out, st));
+    pad(spans, w, st)
 }
 
 /// base-view.summaries-per-group: 小計のあるまとまりの見出しの字が、最初の小計の列の手前に入るように広げた

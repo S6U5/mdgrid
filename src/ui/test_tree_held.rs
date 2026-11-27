@@ -5,7 +5,7 @@ use ratatui::crossterm::event::KeyCode;
 
 #[test]
 fn test_nv_12_tree_parent_edit_not_held() {
-    // [utest -> req~navigation.keep-edited-rows~1, req~navigation.parent-child-rows~1, req~navigation.parent-child-indent~1] 子を持つ「設計」の n を直す → 並びは変わらないので ~ は付かない。子の行も同じ。
+    // [utest -> req~navigation.keep-edited-rows~1, req~navigation.parent-child-rows~1, req~navigation.parent-child-indent~2] 子を持つ「設計」の n を直す → 並びは変わらないので ~ は付かない。子の行も同じ。
     let (_t, mut a) = make(
         "nv12tree",
         &[

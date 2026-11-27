@@ -13,6 +13,8 @@ pub struct Node<T> {
     pub depth: usize,
     /// 並びの中に子を持つか。
     pub has_kids: bool,
+    /// 並びの中の直の子の数(navigation.parent-child-count。孫は数えない)。
+    pub kids: usize,
     /// 並びの中の親(一番上の段は None)。
     pub parent: Option<T>,
 }
@@ -67,6 +69,7 @@ pub fn order<T: Clone + Eq + Hash>(rows: &[T], parent: impl Fn(&T) -> Option<T>)
             row: r.clone(),
             depth: d,
             has_kids: !ks.is_empty(),
+            kids: ks.len(),
             parent: par.get(r).cloned(),
         });
         for k in ks.iter().rev() {
