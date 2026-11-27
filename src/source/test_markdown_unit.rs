@@ -240,7 +240,7 @@ fn setting_false_refuses_save_directly() {
 
 #[test]
 fn setting_false_external_change_to_empty_frontmatter_is_changed() {
-    // [utest -> req~write-back.conflict-stop~2, req~write-back.external-save-choice~2, req~write-back.add-frontmatter-setting~1] add_frontmatter = false で普通のノートの a をためる → 外で空のフロントマターに変わり、
+    // [utest -> req~write-back.conflict-stop~3, req~write-back.external-save-choice~2, req~write-back.add-frontmatter-setting~1] add_frontmatter = false で普通のノートの a をためる → 外で空のフロントマターに変わり、
     // 読み直しも済む → 保存は設定の失敗ではなく「外の変更」(Changed)。差分も外の変更として出る。
     let t = tmp("addfm-off-external");
     let p = t.0.join("a.md");

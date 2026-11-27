@@ -140,7 +140,8 @@
   - Then: 起動したフォルダの下に書く。
 
 #### 画面の表の書き出しで、同じ名前のファイルが既にあれば、`y` で確かめてから上書きするべき
-`req~output.export-path-overwrite~1` P0
+`req~output.export-path-overwrite~2` P0
+- Rationale: 既にあるファイル(人や自分が作ったもの)を、書き出しで黙って置き換えて壊さないため
 - Acceptance:
   - Given: 既にある `out.csv`
   - When:

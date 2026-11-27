@@ -211,7 +211,7 @@ fn test_modes_edit_and_review_write_only_the_values() {
 
 #[test]
 fn test_modes_quit_asks_and_discard_leaves_the_note() {
-    // [stest -> req~write-back.quit-confirm~1] 未保存 1 で `q` → 保存する・捨てる・戻る の確認。Esc で表に戻り(終わらない)、
+    // [stest -> req~write-back.quit-confirm~2] 未保存 1 で `q` → 保存する・捨てる・戻る の確認。Esc で表に戻り(終わらない)、
     // もう一度 `q` から捨てる → 書かずに終わり、ノートは前のまま。
     let h = home("modes-quit-discard", &NOTES);
     let mut t = open(&h, 3, 4);
@@ -236,7 +236,7 @@ fn test_modes_quit_asks_and_discard_leaves_the_note() {
 
 #[test]
 fn test_modes_quit_save_reviews_writes_and_quits() {
-    // [stest -> req~write-back.quit-confirm~1] 終了の確認で保存する → 差分の確認、確定で書いて終わる。
+    // [stest -> req~write-back.quit-confirm~2] 終了の確認で保存する → 差分の確認、確定で書いて終わる。
     let h = home("modes-quit-save", &NOTES);
     let mut t = open(&h, 3, 4);
     edit_cell(&mut t, "1/3行", "残す題");
@@ -745,7 +745,7 @@ fn test_modes_value_list_picks_status_and_saves() {
 
 #[test]
 fn test_modes_list_select_adds_a_tag_as_one_line() {
-    // [stest -> req~cell-edit.list-items-toggle~2, req~write-back.byte-range-add-item~1] tags のセルで 家 を付けて確定 → tags に
+    // [stest -> req~cell-edit.list-items-toggle~2, req~write-back.byte-range-add-item~2] tags のセルで 家 を付けて確定 → tags に
     // 家 が足されたためる変更。保存 → 字下げ2の縦のリストに `  - 家` の1行だけが増え、ほかのバイトは同じ。
     let h = home("modes-list-select", &NOTES);
     let mut t = open(&h, 3, 4);

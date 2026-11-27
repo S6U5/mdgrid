@@ -623,7 +623,7 @@ fn test_st_4_create_with_samples_fills_sample_vars_only() {
 
 #[test]
 fn test_st_4_create_refuses_when_any_target_exists_and_writes_nothing() {
-    // [utest -> req~starter.init-no-overwrite~1] 書く先に同じパスのファイルが1つでもあれば Err(そのファイルの名前が入る)で、どれも書かず、あるものも変えない。
+    // [utest -> req~starter.init-no-overwrite~2] 書く先に同じパスのファイルが1つでもあれば Err(そのファイルの名前が入る)で、どれも書かず、あるものも変えない。
     let t = Tmp::new("exists");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));
@@ -661,7 +661,7 @@ fn test_st_4_create_refuses_when_any_target_exists_and_writes_nothing() {
 
 #[test]
 fn test_st_4_create_without_samples_ignores_existing_sample_path() {
-    // [utest -> req~starter.init-ledger~1, req~starter.init-no-overwrite~1, req~starter.init-report~1] 書く先だけを見る: with_samples が偽なら、見本のパスにファイルがあっても印と雛形は書ける。
+    // [utest -> req~starter.init-ledger~1, req~starter.init-no-overwrite~2, req~starter.init-report~1] 書く先だけを見る: with_samples が偽なら、見本のパスにファイルがあっても印と雛形は書ける。
     let t = Tmp::new("skip-sample");
     let dir = user_starter(&t.0.join("config"), "kanban", Some(MANIFEST), false);
     let s = read_user(&dir).unwrap_or_else(|e| panic!("読めない: {e}"));

@@ -196,7 +196,7 @@ fn test_ce_19_remove_all_writes_key() {
 
 #[test]
 fn test_ce_19_read_only_list_not_opened() {
-    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~2] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
+    // [utest -> req~cell-edit.list-candidates-read-only~1, req~cell-edit.read-only-forms~3] 2行にまたがるフローのリストのセルで Enter → 開かずに理由。
     let (_t, mut a) = make(
         "ce19lock",
         &[
@@ -322,7 +322,7 @@ fn test_ce_17_bulk_add_and_remove() {
 #[test]
 fn test_ce_17_bulk_skips_read_only_rows() {
     // [utest -> req~cell-edit.list-bulk~2, req~cell-edit.bulk-set-skip-read-only~1] 選んだ行のうち書けない行(読めないフロントマターのノート。WB-5)は飛ばし、数と理由を出す。
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(d.md)は飛ばさず、ためる変更になる。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノート(d.md)は飛ばさず、ためる変更になる。
     let (_t, mut a) = make(
         "ce17skip",
         &[
@@ -530,7 +530,7 @@ fn test_ce_17_bulk_when_current_row_cannot_open() {
 
 #[test]
 fn test_ce_19_read_only_shapes_have_reasons() {
-    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~2] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
+    // [utest -> req~cell-edit.list-candidates-unkeepable~1, req~cell-edit.read-only-forms~3] 書けない形のリストは開かず(表のモードのまま)、形ごとの理由を出す。
     let (_t, mut a) = typed_tags(
         "ce19shapes",
         &[

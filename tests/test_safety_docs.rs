@@ -384,7 +384,7 @@ fn test_wb_19_examples_parse_to_their_reason() {
 
 #[test]
 fn test_wb_19_examples_are_read_only_when_opened() {
-    // [utest -> req~write-back.safety-docs-example-test~1, req~write-back.add-frontmatter-setting~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1] 各例を Source で開く。no_frontmatter・empty_frontmatter は既定で書け、
+    // [utest -> req~write-back.safety-docs-example-test~1, req~write-back.add-frontmatter-setting~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~2, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~2] 各例を Source で開く。no_frontmatter・empty_frontmatter は既定で書け、
     // add_frontmatter = false で読むだけ(理由つき)。ほかの形は既定でも false でも読むだけ(理由つき)。
     for (path, title) in docs() {
         let exs: Vec<(String, Vec<u8>)> = examples(path, title)

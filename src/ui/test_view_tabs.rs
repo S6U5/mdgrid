@@ -264,7 +264,7 @@ fn test_nv_26_switch_hint() {
 
 #[test]
 fn test_nv_26_readonly_shows_but_does_not_write() {
-    // [utest -> req~navigation.view-tabs-readonly~1, req~cli.readonly~1] 読むだけでは区画を見せるが、変える操作は理由を出して書かない。
+    // [utest -> req~navigation.view-tabs-readonly~1, req~cli.readonly~2] 読むだけでは区画を見せるが、変える操作は理由を出して書かない。
     let tmp = setup("nv26e");
     let before = toml(&tmp);
     let mut a = boot(&tmp, true);

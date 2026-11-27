@@ -233,7 +233,7 @@ fn test_nv_30_click_count_toggles() {
 
 #[test]
 fn test_nv_30_readonly() {
-    // [utest -> req~navigation.problem-jump-readonly~1, req~cli.readonly~1] 読むだけの起動でも `!` で跳び、problems_only で絞れる。
+    // [utest -> req~navigation.problem-jump-readonly~1, req~cli.readonly~2] 読むだけの起動でも `!` で跳び、problems_only で絞れる。
     let (_t, mut a) = boot("nv30_ro", NOTES, RULES, true);
     let want = ordered(&a);
     ch(&mut a, '!');

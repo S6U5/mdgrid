@@ -194,7 +194,7 @@ fn test_cli_19_here_closes_list() {
 
 #[test]
 fn test_cli_19_pending_changes_ask_first() {
-    // [utest -> req~cli.places-list-pending~1, req~write-back.quit-confirm~1] ためた変更があれば、保存する・捨てる・戻るを確かめる。戻ると移らない。
+    // [utest -> req~cli.places-list-pending~1, req~write-back.quit-confirm~2] ためた変更があれば、保存する・捨てる・戻るを確かめる。戻ると移らない。
     let tmp = vault("pl_pending");
     let other = tmp.0.join("Other");
     std::fs::create_dir_all(&other).unwrap();

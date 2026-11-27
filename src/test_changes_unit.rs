@@ -50,7 +50,7 @@ fn s(v: &str) -> NewValue {
 
 #[test]
 fn undo_keeps_external_mark() {
-    // [utest -> req~write-back.external-keep-pending~1, req~write-back.undo-pending~1, req~write-back.redo-pending~1] 外で変更 → undo → まだためた変更があれば印は残る。
+    // [utest -> req~write-back.external-keep-pending~2, req~write-back.undo-pending~1, req~write-back.redo-pending~1] 外で変更 → undo → まだためた変更があれば印は残る。
     let (dir, mut src, r) = setup("ext");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -75,7 +75,7 @@ fn undo_keeps_external_mark() {
 
 #[test]
 fn undo_keeps_overwrite_base() {
-    // [utest -> req~write-back.conflict-stop~2, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~2] overwrite → undo → 基準は overwrite で取ったもの。保存は止まらない。
+    // [utest -> req~write-back.conflict-stop~3, req~write-back.external-keep-pending~2, req~write-back.external-save-choice~2] overwrite → undo → 基準は overwrite で取ったもの。保存は止まらない。
     let (dir, mut src, r) = setup("ow");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -101,7 +101,7 @@ fn undo_keeps_overwrite_base() {
 
 #[test]
 fn overwrite_seen_only_when_hash_matches() {
-    // [utest -> req~write-back.external-keep-pending~1, req~write-back.external-save-choice~2, req~write-back.pending-hold~1] 見せた内容のハッシュと同じときだけ基準を進める。違えば基準も印も変えず、保存は止まる(外で status も変えた)。
+    // [utest -> req~write-back.external-keep-pending~2, req~write-back.external-save-choice~2, req~write-back.pending-hold~1] 見せた内容のハッシュと同じときだけ基準を進める。違えば基準も印も変えず、保存は止まる(外で status も変えた)。
     let (dir, mut src, r) = setup("seen");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();
@@ -134,7 +134,7 @@ fn overwrite_seen_only_when_hash_matches() {
 
 #[test]
 fn save_rows_writes_only_given_rows() {
-    // [utest -> req~write-back.keep-on-stop~1] 指定の行だけを書き、ほかの行のためた変更は残す。
+    // [utest -> req~write-back.keep-on-stop~2] 指定の行だけを書き、ほかの行のためた変更は残す。
     let (dir, _first, r) = setup("rows");
     std::fs::write(dir.0.join("q.md"), R).unwrap();
     let mut src = Markdown::open(std::slice::from_ref(&dir.0)).unwrap();
@@ -255,7 +255,7 @@ fn int_float_compare_without_rounding() {
 
 #[test]
 fn external_change_to_same_value_drops_pending() {
-    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-not-written~1, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~2] ためた値と同じ値に外で直された → 読み直したあとは外れ(印も外れ)、保存で何も書かない。undo で戻る。
+    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-not-written~1, req~write-back.external-keep-pending~2, req~write-back.external-save-choice~2] ためた値と同じ値に外で直された → 読み直したあとは外れ(印も外れ)、保存で何も書かない。undo で戻る。
     let (dir, mut src, r) = setup("extsame");
     let file = || std::fs::read_to_string(dir.0.join("r.md")).unwrap();
     let first = "---\ndue: 2026-09-30\ntitle: D\n---\nbody\n";
@@ -295,7 +295,7 @@ fn external_change_to_same_value_drops_pending() {
 
 #[test]
 fn overwrite_seen_drops_same_and_keeps_other_cells() {
-    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-not-written~1, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~2] 見せた内容の上に書くとき、読み直した値と同じセルは外し、違うセルだけを書く(クオートを付けない)。
+    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.revert-not-written~1, req~write-back.external-keep-pending~2, req~write-back.external-save-choice~2] 見せた内容の上に書くとき、読み直した値と同じセルは外し、違うセルだけを書く(クオートを付けない)。
     let (dir, mut src, r) = setup("owsame");
     let first = "---\ndue: 2026-09-30\ntitle: D\n---\nbody\n";
     edit_outside(&dir, first);
@@ -433,7 +433,7 @@ fn save_drops_row_whose_cells_all_match_read() {
 
 #[test]
 fn revert_empties_row_state_and_undo_restores_mark() {
-    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.external-keep-pending~1, req~write-back.external-save-choice~2] 元の値に戻すと行の基準と印も消え、undo で元の基準と印に戻る(取り消しの決まりと同じ)。
+    // [utest -> req~write-back.revert-drops-pending~2, req~write-back.external-keep-pending~2, req~write-back.external-save-choice~2] 元の値に戻すと行の基準と印も消え、undo で元の基準と印に戻る(取り消しの決まりと同じ)。
     let (dir, mut src, r) = setup("revert");
     let mut ch = Changes::new();
     ch.set(&src, &r, "status", s("done")).unwrap();

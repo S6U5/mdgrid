@@ -695,7 +695,7 @@ fn test_ce_12_newline_value_not_opened() {
 
 #[test]
 fn test_ce_8_read_only_not_opened() {
-    // [utest -> req~cell-edit.read-only-forms~2, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
+    // [utest -> req~cell-edit.read-only-forms~3, req~write-back.refuse-unsafe-read-only~1] 読むだけのセルでは開かず、理由をメッセージ行に。
     // [utest -> req~cell-edit.list-candidates-read-only~1] CE-8 の形のリスト(複数行にまたがるフロー)も開かずに理由。
     // 書ける形のリスト(d.md の `tags: [x, y]`)の画面の振る舞いはタスク 2(リストの選択の画面)で
     // 確かめる。ここでは核の Cell.lock が無いことだけを見る [utest -> req~cell-edit.list-items-candidates~2]。
@@ -915,7 +915,7 @@ fn test_wb_16_external_change_overwrite() {
     ctrl(&mut a, 's');
     let s = screen(&a);
     assert!(s.contains("!a.md") && s.contains("外で変更"), "{s}");
-    // [utest -> req~write-back.keep-on-stop~1] 確定 → a は止まり(未保存は残る)、b は書ける。画面に残って選ばせる。
+    // [utest -> req~write-back.keep-on-stop~2] 確定 → a は止まり(未保存は残る)、b は書ける。画面に残って選ばせる。
     press(&mut a, KeyCode::Enter);
     assert_eq!(a.mode, keymap::Mode::Confirm);
     assert_eq!(a.changes.count(), 1);
@@ -956,7 +956,7 @@ fn test_merge_other_keys_tells_merged() {
 
 #[test]
 fn test_proposal_file_is_removed_only_when_discarded() {
-    // [utest -> req~write-back.frontmatter-only-no-body~2, req~ai.proposal-discard~1] 開いたフォルダの `.mdgrid/proposals/` の
+    // [utest -> req~write-back.frontmatter-only-no-body~3, req~ai.proposal-discard~1] 開いたフォルダの `.mdgrid/proposals/` の
     // AI の案を「AI の案を見る」で選んで「捨てる」→ 案のファイルだけが消え、ノートは1バイトも変わらない。
     let (t, mut a) = make("pr_discard_screen", TWO);
     a.nv.target = t.notes().clone();
@@ -1000,7 +1000,7 @@ fn test_wb_16_external_change_discard() {
 
 #[test]
 fn test_wb_11_quit_confirm() {
-    // [utest -> req~write-back.quit-confirm~1] 未保存 1 で `q` → 保存する・捨てる・戻る の確認。
+    // [utest -> req~write-back.quit-confirm~2] 未保存 1 で `q` → 保存する・捨てる・戻る の確認。
     let (t, mut a) = make("wb11", TWO);
     edit_cell(&mut a, 0, "status", "done");
     ch(&mut a, 'q');
@@ -1028,7 +1028,7 @@ fn test_wb_11_quit_confirm() {
 
 #[test]
 fn test_wb_11_quit_save() {
-    // [utest -> req~write-back.quit-confirm~1] 保存する → 差分の画面 → 確定で書いて終わる。
+    // [utest -> req~write-back.quit-confirm~2] 保存する → 差分の画面 → 確定で書いて終わる。
     let (t, mut a) = make("wb11s", TWO);
     edit_cell(&mut a, 0, "status", "done");
     ch(&mut a, 'q');

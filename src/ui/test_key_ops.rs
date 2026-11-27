@@ -19,7 +19,7 @@ fn at(a: &App, name: &str, col: &str) -> Option<NewValue> {
     a.changes.pending(&a.rows[i], col).cloned()
 }
 
-// [utest -> req~cell-edit.rename-delete-key-skip-existing~1, req~cell-edit.rename-delete-key-undo~1]
+// [utest -> req~cell-edit.rename-delete-key-skip-existing~2, req~cell-edit.rename-delete-key-undo~2]
 #[test]
 fn test_ce_29_rename_key_in_all_notes() {
     let (t, mut a) = make("ce29ren", NOTES);
@@ -60,7 +60,7 @@ fn test_ce_29_rename_key_in_all_notes() {
     assert_eq!(read(&t, "d.md"), NOTES[3].1);
 }
 
-// [utest -> req~cell-edit.rename-delete-key-skip-unsafe~1]
+// [utest -> req~cell-edit.rename-delete-key-skip-unsafe~2]
 #[test]
 fn test_ce_29_rename_key_skips_unsafe_notes() {
     let notes: &[(&str, &str)] = &[
@@ -98,7 +98,7 @@ fn test_ce_29_rename_key_skips_unsafe_notes() {
     assert_eq!(read(&t, "a.md"), "---\nstate: todo\n---\n");
 }
 
-// [utest -> req~cell-edit.rename-delete-key-diff~1]
+// [utest -> req~cell-edit.rename-delete-key-diff~2]
 #[test]
 fn test_ce_29_rename_key_review_shows_diff() {
     let (t, mut a) = make("ce29diff", NOTES);
@@ -117,7 +117,7 @@ fn test_ce_29_rename_key_review_shows_diff() {
     assert_eq!(read(&t, "a.md"), NOTES[0].1);
 }
 
-// [utest -> req~cell-edit.rename-delete-key-confirm~1]
+// [utest -> req~cell-edit.rename-delete-key-confirm~2]
 #[test]
 fn test_ce_29_delete_key_after_y() {
     let notes: &[(&str, &str)] = &[
@@ -146,7 +146,7 @@ fn test_ce_29_delete_key_after_y() {
     assert_eq!(read(&t, "c.md"), notes[2].1);
 }
 
-// [utest -> req~cell-edit.rename-delete-key-confirm~1]
+// [utest -> req~cell-edit.rename-delete-key-confirm~2]
 #[test]
 fn test_ce_29_not_in_readonly_or_bad_names() {
     let (_t, mut a) = make("ce29ro", NOTES);
@@ -162,7 +162,7 @@ fn test_ce_29_not_in_readonly_or_bad_names() {
     assert_eq!(a.changes.count(), 0);
 }
 
-// [utest -> req~cell-edit.rename-delete-key-confirm~1]
+// [utest -> req~cell-edit.rename-delete-key-confirm~2]
 #[test]
 fn test_ce_29_pending_edit_is_not_dropped() {
     let (_t, mut a) = make("ce29pend", NOTES);

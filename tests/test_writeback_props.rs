@@ -552,7 +552,7 @@ proptest! {
 
     #[test]
     fn test_wb_1_props_existing_scalar_key((note, i) in note_with_scalar(), w in written()) {
-        // [utest -> req~write-back.byte-range-value~1, req~write-back.verify-before-replace~1]
+        // [utest -> req~write-back.byte-range-value~2, req~write-back.verify-before-replace~2]
         let before = &note.bytes;
         let key = &note.keys[i];
         let fm_before = parse(before);
@@ -643,7 +643,7 @@ proptest! {
 
     #[test]
     fn test_wb_6_props_written_value_reads_back((note, i) in note_with_scalar(), w in written()) {
-        // [utest -> req~write-back.verify-before-replace~1] 2つのキーを1度に書いても、両方が意図した値になり、ほかは変わらない。
+        // [utest -> req~write-back.verify-before-replace~2] 2つのキーを1度に書いても、両方が意図した値になり、ほかは変わらない。
         let scalars = note.scalar_indices();
         let j = scalars[(scalars.iter().position(|&x| x == i).unwrap() + 1) % scalars.len()];
         prop_assume!(!w.has_newline());
@@ -677,7 +677,7 @@ proptest! {
 
     #[test]
     fn test_wb_1_props_added_key_is_one_line(note in note(), w in written()) {
-        // [utest -> req~write-back.byte-range-null~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~1] 元のバイトはそのまま残り、閉じの区切りの前に1行だけ増える。
+        // [utest -> req~write-back.byte-range-null~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~2] 元のバイトはそのまま残り、閉じの区切りの前に1行だけ増える。
         prop_assume!(!w.has_newline());
         let before = &note.bytes;
         let fm_before = parse(before).unwrap();
@@ -706,7 +706,7 @@ proptest! {
         (note, i) in note_with_scalar(),
         random in value_string(),
     ) {
-        // [utest -> req~write-back.quoting-type-safe~1]
+        // [utest -> req~write-back.quoting-type-safe~2]
         let key = &note.keys[i];
         let ValueSpec::Scalar { quote, .. } = &note.values[i] else { unreachable!() };
         let mut values: Vec<String> = RISKY.iter().map(std::string::ToString::to_string).collect();
@@ -781,7 +781,7 @@ proptest! {
         kind in 0u8..4,
         w in written(),
     ) {
-        // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~1] 正しいノートを1か所壊しても panic しない。読めて書けたなら、書いたキーは読み直せる。
+        // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~2] 正しいノートを1か所壊しても panic しない。読めて書けたなら、書いたキーは読み直せる。
         let mut b = note.bytes.clone();
         let p = pos.index(b.len());
         match kind {

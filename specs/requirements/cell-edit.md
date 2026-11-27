@@ -1113,7 +1113,8 @@
 ### 読むだけのセルと一括の編集
 
 #### ファイルの属性(`file.*`)・式の列(`formula.*`)・ネストした map・ブロックスカラー・アンカーや別名を使った値・タグつきの値(`!!str` など)・複数行にまたがる値(素のスカラー・引用符つきの値・フロー形式)のセルは、編集できないようにし、なぜ読むだけかを表示するべき
-`req~cell-edit.read-only-forms~2` P0
+`req~cell-edit.read-only-forms~3` P0
+- Rationale: 安全に書けない形の値を書いて壊さないため。理由を表示するのは、直せないのが故障に見えず、書くと壊す形だと伝わり、利用者が不安にならないようにするため
 - Disposition: 踏襲(形だけを Given・When・Then に移した。振る舞いは前の版のまま)
 - Acceptance:
   - Given: `file.mtime` の列のセル
@@ -1225,35 +1226,40 @@
   - Then: 3つのノートから status の行を消すためる変更。
 
 #### キーの名前の変更では、もうその名前のキーを持つノートを飛ばして、数と理由を知らせるべき
-`req~cell-edit.rename-delete-key-skip-existing~1` P0
+`req~cell-edit.rename-delete-key-skip-existing~2` P0
+- Rationale: そのノートに既にある同じ名前のキーの値(人や自分が書いたもの)を壊さないため。数と理由を知らせるのは、書く前に人が確かめられるようにするため
 - Acceptance:
   - Given:
   - When: status の名前を `state` に変える
   - Then: `state` を既に持つノートは飛ばして「1行を飛ばした(その名前のキーがある)」。
 
 #### キーの名前の変更では、キーを書き換えられないノート(読むだけのノート(write-back.refuse-unsafe-notes)・読むだけの値(cell-edit.read-only-forms))を飛ばして、数と理由を知らせるべき
-`req~cell-edit.rename-delete-key-skip-unsafe~1` P0
+`req~cell-edit.rename-delete-key-skip-unsafe~2` P0
+- Rationale: 書くと壊す形のノートを壊さないため。数と理由を知らせるのは、書く前に人が確かめられるようにするため
 - Acceptance:
   - Given:
   - When: status を持つノートの1つが `chmod 444` のノート(write-back.refuse-unsafe-notes)で、status の名前を `state` に変える
   - Then: そのノートは飛ばして「1行を飛ばした(理由)」。
 
 #### キーの削除は、数を示して確かめてから(`y`)行うべき
-`req~cell-edit.rename-delete-key-confirm~1` P0
+`req~cell-edit.rename-delete-key-confirm~2` P0
+- Rationale: いくつのノートからキーが消えるかを、書く前に人が目で確かめられるようにするため
 - Acceptance:
   - Given:
   - When:
   - Then: 「キーを消す」→「3個のノートから消す? y」→ y で3つのためる変更、y 以外ではためる変更は0。
 
 #### キーの名前の変更と削除は、どちらも1手で取り消せるべき
-`req~cell-edit.rename-delete-key-undo~1` P0
+`req~cell-edit.rename-delete-key-undo~2` P0
+- Rationale: 確かめて違うと分かったときに、書く前に元へ戻せるようにするため
 - Acceptance:
   - Given:
   - When: キーの名前の変更で3つのためる変更ができたあと `u`
   - Then: 3つとも戻る(`u` で全部を戻す)。
 
 #### キーの名前の変更と削除は、保存の前の差分(write-back.pending-and-diff)で全部のファイルを見られるべき
-`req~cell-edit.rename-delete-key-diff~1` P0
+`req~cell-edit.rename-delete-key-diff~2` P0
+- Rationale: キーの操作でも、ファイルに書く前に人が目で全部を確かめられるようにするため
 - Acceptance:
   - Given:
   - When: status の名前を `state` に変えて Ctrl+S
@@ -1556,21 +1562,24 @@
   - Then: 断って理由。
 
 #### ノートの新しい名前がもうあるファイルの名前なら、理由を出して断るべき
-`req~cell-edit.rename-note-refuse-existing~1` P0
+`req~cell-edit.rename-note-refuse-existing~2` P0
+- Rationale: 既にあるノート(人や自分が作ったもの)を、名前の変更で置き換えて壊さないため
 - Acceptance:
   - Given:
   - When: もうある名前
   - Then: 断って理由、どちらのファイルもそのまま。
 
 #### そのノートにためた変更がある間は、ノートの名前の変更を断るべき
-`req~cell-edit.rename-note-refuse-pending~1` P0
+`req~cell-edit.rename-note-refuse-pending~2` P0
+- Rationale: ためた作業を、行き先のファイルごと黙って失わないため
 - Acceptance:
   - Given:
   - When:
   - Then: status をためた変更のある行で「ノートの名前を変える」→ 断る。
 
 #### 読むだけのノート(write-back.refuse-unsafe-notes)では、ノートの名前の変更を断るべき
-`req~cell-edit.rename-note-refuse-unsafe~1` P0
+`req~cell-edit.rename-note-refuse-unsafe~2` P0
+- Rationale: 書くと壊す形のノートに、名前の変更で手を入れて壊さないため
 - Acceptance:
   - Given:
   - When:

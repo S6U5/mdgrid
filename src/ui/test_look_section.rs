@@ -200,7 +200,7 @@ fn test_sr_43_templates_save_use_delete_and_reset() {
 
 #[test]
 fn test_sr_43_readonly_applies_without_writing() {
-    // [utest -> req~screen.look-section-readonly~1, req~cli.readonly~1] 読むだけでも反映で画面には効くが、ui.toml は書かない。テンプレートの保存は理由を出す。
+    // [utest -> req~screen.look-section-readonly~1, req~cli.readonly~2] 読むだけでも反映で画面には効くが、ui.toml は書かない。テンプレートの保存は理由を出す。
     let tmp = setup("sr43c");
     let mut a = boot(&tmp, true);
     choose(&mut a, 1, "gruvbox");

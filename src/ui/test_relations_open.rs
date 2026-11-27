@@ -108,7 +108,7 @@ fn test_rel_4_choose_among_targets() {
 
 #[test]
 fn test_rel_4_pending_changes_ask_first() {
-    // [utest -> req~relations.follow-link-unsaved~1, req~write-back.quit-confirm~1] 保存していない変更があれば、移る前に確かめる。戻ると移らない。
+    // [utest -> req~relations.follow-link-unsaved~1, req~write-back.quit-confirm~2] 保存していない変更があれば、移る前に確かめる。戻ると移らない。
     let tmp = workspace("rel_open_pending");
     let mut a = boot_tasks(&tmp);
     let row = row_of(&a, "c test");

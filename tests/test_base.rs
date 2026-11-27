@@ -700,7 +700,7 @@ views:
 
 #[test]
 fn test_bv_3_base_file_bytes_unchanged() {
-    // [utest -> req~base-view.base-untouched~1] build・cell の前後で `.base` のバイトと更新時刻が同じ。
+    // [utest -> req~base-view.base-untouched~2] build・cell の前後で `.base` のバイトと更新時刻が同じ。
     let dir = vault("base-bv3");
     let text = r#"# comment kept
 filters:

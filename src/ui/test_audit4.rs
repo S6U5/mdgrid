@@ -10,7 +10,7 @@ use ratatui::crossterm::event::KeyCode;
 
 const TOML: &str = "+++\ntitle = \"toml\"\n+++\nbody\n";
 
-// [utest -> req~write-back.toml-frontmatter~1]
+// [utest -> req~write-back.toml-frontmatter~2]
 #[test]
 fn test_wb_20_toml_frontmatter_is_read_only() {
     let tmp = Tmp::new("wb20");
@@ -74,7 +74,7 @@ fn test_nv_9_small_percent() {
     assert_eq!(pct_text(0, 5), "(0%)");
 }
 
-// [utest -> req~write-back.toml-frontmatter~1]
+// [utest -> req~write-back.toml-frontmatter~2]
 #[test]
 fn test_wb_20_writeback_refuses_toml() {
     use mdgrid::source::NewValue;

@@ -115,7 +115,7 @@ fn row_of(src: &dyn Source, label: &str) -> RowId {
 #[test]
 fn test_wb_3_body_only_note_gets_frontmatter() {
     // [utest -> req~write-back.add-frontmatter-at-head~2] 本文だけの `# 見出し\n本文\n` の status に todo → 先頭に3行、本文はそのまま。
-    // [utest -> req~write-back.byte-range-add-frontmatter~1] 足すのは先頭のフロントマターの行だけ(元のバイトは後ろにそのまま)。
+    // [utest -> req~write-back.byte-range-add-frontmatter~2] 足すのは先頭のフロントマターの行だけ(元のバイトは後ろにそのまま)。
     let out = applied(BODY.as_bytes(), &todo());
     assert_eq!(out, "---\nstatus: todo\n---\n# 見出し\n本文\n");
     assert!(out.ends_with(BODY), "[WB-1] body bytes kept");
@@ -123,7 +123,7 @@ fn test_wb_3_body_only_note_gets_frontmatter() {
 
 #[test]
 fn test_wb_3_crlf_note_gets_crlf_frontmatter() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.byte-range-null~1, req~write-back.byte-range-add-frontmatter~1, req~write-back.byte-range-added-newline~1] CRLF のノート → 足す3行も CRLF、本文はそのまま。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.byte-range-null~1, req~write-back.byte-range-add-frontmatter~2, req~write-back.byte-range-added-newline~2] CRLF のノート → 足す3行も CRLF、本文はそのまま。
     let before = "# 見出し\r\n本文\r\n";
     let out = applied(before.as_bytes(), &todo());
     assert_eq!(out, "---\r\nstatus: todo\r\n---\r\n# 見出し\r\n本文\r\n");
@@ -136,14 +136,14 @@ fn test_wb_3_crlf_note_gets_crlf_frontmatter() {
 
 #[test]
 fn test_wb_3_no_newline_file_gets_lf() {
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1] 改行の無いファイル(`本文`)→ LF で足し、本文はそのまま(末尾に改行を足さない)。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2] 改行の無いファイル(`本文`)→ LF で足し、本文はそのまま(末尾に改行を足さない)。
     let out = applied("本文".as_bytes(), &todo());
     assert_eq!(out, "---\nstatus: todo\n---\n本文");
 }
 
 #[test]
 fn test_wb_3_empty_file_gets_frontmatter() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] 空のファイル → `---\nstatus: todo\n---\n`。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] 空のファイル → `---\nstatus: todo\n---\n`。
     let out = applied(b"", &todo());
     assert_eq!(out, "---\nstatus: todo\n---\n");
 }
@@ -207,7 +207,7 @@ fn test_wb_3_null_value_is_bare_key() {
 
 #[test]
 fn test_wb_3_string_is_quoted_like_wb_7() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.quoting-type-safe~1] 型が変わる文字列(`no`)は、足すときも二重引用符で囲む。真偽値と数も素のまま。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.quoting-type-safe~2] 型が変わる文字列(`no`)は、足すときも二重引用符で囲む。真偽値と数も素のまま。
     // (キー名は YAML 1.1 の真偽値の語(`n` など)を避ける。キー名の囲み方はここでは見ない。)
     let out = applied(BODY.as_bytes(), &[edit("status", s("no"))]);
     assert_eq!(out, "---\nstatus: \"no\"\n---\n# 見出し\n本文\n");
@@ -232,7 +232,7 @@ fn test_wb_3_dashes_later_in_body_are_body() {
 
 #[test]
 fn test_wb_3_added_frontmatter_reparses_to_written_values() {
-    // [utest -> req~write-back.add-frontmatter-skip-broken~1, req~write-back.verify-before-replace~1] 足したあと読み直すと、書いた値が読める(他にキーは無い)。
+    // [utest -> req~write-back.add-frontmatter-skip-broken~2, req~write-back.verify-before-replace~2] 足したあと読み直すと、書いた値が読める(他にキーは無い)。
     let out = applied(
         BODY.as_bytes(),
         &[
@@ -267,7 +267,7 @@ fn test_wb_3_added_frontmatter_reparses_to_written_values() {
 
 #[test]
 fn test_wb_3_unreadable_notes_still_refused() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.refuse-unsafe-read-only~1] BOM で始まる本文だけのノート・UTF-8 でないファイル・1行目が `---` で閉じないノートは、
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.refuse-unsafe-read-only~1] BOM で始まる本文だけのノート・UTF-8 でないファイル・1行目が `---` で閉じないノートは、
     // これまでどおり書かない(Err)。
     let cases: [(&str, Vec<u8>); 4] = [
         ("bom body", "\u{FEFF}# 見出し\n本文\n".as_bytes().to_vec()),
@@ -279,7 +279,7 @@ fn test_wb_3_unreadable_notes_still_refused() {
         let r = apply(&bytes, &todo());
         assert!(r.is_err(), "[WB-5] {name}: must not write, got {r:?}");
     }
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] 空のフロントマター(`---\n---\n`)は読めないノートではなく、区切りの間に1行足して書ける
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] 空のフロントマター(`---\n---\n`)は読めないノートではなく、区切りの間に1行足して書ける
     // (2026-10-02 empty-frontmatter-config。詳しくは tests/test_empty_frontmatter.rs)。
     let out = applied("---\n---\n本文\n".as_bytes(), &todo());
     assert_eq!(out, "---\nstatus: todo\n---\n本文\n");
@@ -289,7 +289,7 @@ fn test_wb_3_unreadable_notes_still_refused() {
 
 #[test]
 fn test_wb_3_save_adds_frontmatter_and_keeps_body() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.verify-before-replace~1] save で書ける。本文はそのまま、読み直しの検査を通る。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.verify-before-replace~2] save で書ける。本文はそのまま、読み直しの検査を通る。
     // 読み直しの検査に落ちる失敗を差し込めば、元のファイルは変わらない。
     let dir = TempDir::new("addfm-save");
     let p = dir.write("a.md", BODY.as_bytes());
@@ -317,7 +317,7 @@ fn test_wb_3_save_adds_frontmatter_and_keeps_body() {
 
 #[test]
 fn test_wb_3_source_cell_of_no_frontmatter_note_is_writable() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1, req~write-back.refuse-unsafe-read-only~1] フロントマターの無いノートと空のフロントマターのノートのセルは、既定で lock なし(値は無し)。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-frontmatter-setting~1, req~write-back.refuse-unsafe-read-only~1] フロントマターの無いノートと空のフロントマターのノートのセルは、既定で lock なし(値は無し)。
     // ただし file.* の列は lock あり(CE-8)。BOM・閉じないノートはこれまでどおり lock あり(WB-5)。
     let dir = TempDir::new("addfm-source");
     dir.write("a.md", b"---\nstatus: done\n---\nbody\n");

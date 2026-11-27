@@ -350,7 +350,7 @@ fn test_out_3_pick_works_when_stdout_is_pipe() {
 
 #[test]
 fn test_out_3_pick_opens_readonly_and_writes_nothing() {
-    // [stest -> req~output.pick-open~1, req~cli.readonly~1] 読むだけで開く: セルを空にし(Backspace)、保存(Ctrl+S)を試みても、
+    // [stest -> req~output.pick-open~1, req~cli.readonly~2] 読むだけで開く: セルを空にし(Backspace)、保存(Ctrl+S)を試みても、
     // 「読むだけ」と出て、終わったあと保管庫のファイルのバイトが同じ(増えも減りもしない)。
     let env = Env::new("readonly");
     let before = env.snapshot();

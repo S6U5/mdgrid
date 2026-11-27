@@ -135,7 +135,7 @@ fn lock_of(src: &dyn Source, label: &str, col: &str) -> Option<String> {
 #[test]
 fn test_wb_3_empty_frontmatter_gets_key_between_delimiters() {
     // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-key-empty-frontmatter~1] `---\n---\n本文\n` の status に todo → `---\nstatus: todo\n---\n本文\n`(バイトで完全一致)。
-    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-frontmatter~1, req~write-back.byte-range-added-newline~1] 足すのは区切りの間の1行だけ。
+    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-frontmatter~2, req~write-back.byte-range-added-newline~2] 足すのは区切りの間の1行だけ。
     assert_eq!(parse(EMPTY_FM.as_bytes()), Err(ReadOnly::EmptyFrontmatter));
     let out = apply(EMPTY_FM.as_bytes(), &todo()).expect("[WB-3] empty frontmatter is writable");
     assert_eq!(out, "---\nstatus: todo\n---\n本文\n".as_bytes());
@@ -143,7 +143,7 @@ fn test_wb_3_empty_frontmatter_gets_key_between_delimiters() {
 
 #[test]
 fn test_wb_3_empty_frontmatter_crlf() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.byte-range-add-frontmatter~1, req~write-back.byte-range-added-newline~1] CRLF の空のフロントマター → 足す行も CRLF、ほかのバイトはそのまま。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.byte-range-add-frontmatter~2, req~write-back.byte-range-added-newline~2] CRLF の空のフロントマター → 足す行も CRLF、ほかのバイトはそのまま。
     let out = applied(EMPTY_FM_CRLF.as_bytes(), &todo());
     assert_eq!(out, "---\r\nstatus: todo\r\n---\r\n本文\r\n");
     assert!(
@@ -154,7 +154,7 @@ fn test_wb_3_empty_frontmatter_crlf() {
 
 #[test]
 fn test_wb_3_empty_frontmatter_without_body() {
-    // [utest -> req~write-back.add-frontmatter-newline~1] 本文の無い `---\n---\n` → `---\nstatus: todo\n---\n`。
+    // [utest -> req~write-back.add-frontmatter-newline~2] 本文の無い `---\n---\n` → `---\nstatus: todo\n---\n`。
     assert_eq!(applied(b"---\n---\n", &todo()), "---\nstatus: todo\n---\n");
     // 閉じの区切りの後ろに改行が無い `---\n---` → 足す行の改行は開きの行に合わせ、閉じの行はそのまま。
     assert_eq!(applied(b"---\n---", &todo()), "---\nstatus: todo\n---");
@@ -203,18 +203,18 @@ fn test_wb_3_empty_frontmatter_list_date_null() {
     let out = applied(EMPTY_FM.as_bytes(), &[edit("tags", NewValue::List(vec![]))]);
     assert_eq!(out, "---\ntags:\n---\n本文\n");
 
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.date-quoting-plain~2, req~write-back.date-quoting-keep-quotes~1, req~write-back.date-quoting-untyped~2, req~write-back.date-quoting-text-column~1] 日付 → 囲まない。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.date-quoting-plain~2, req~write-back.date-quoting-keep-quotes~1, req~write-back.date-quoting-untyped~2, req~write-back.date-quoting-text-column~1] 日付 → 囲まない。
     let out = applied(
         EMPTY_FM.as_bytes(),
         &[edit("due", NewValue::Date("2026-11-03".into()))],
     );
     assert_eq!(out, "---\ndue: 2026-11-03\n---\n本文\n");
 
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~cell-edit.empty-is-null~1] Null → `status:`。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-key-empty-frontmatter~1, req~cell-edit.empty-is-null~1] Null → `status:`。
     let out = applied(EMPTY_FM.as_bytes(), &[edit("status", NewValue::Null)]);
     assert_eq!(out, "---\nstatus:\n---\n本文\n");
 
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.quoting-type-safe~1] 型が変わる文字列は二重引用符。真偽値と数は素のまま。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.quoting-type-safe~2] 型が変わる文字列は二重引用符。真偽値と数は素のまま。
     let out = applied(EMPTY_FM.as_bytes(), &[edit("status", s("no"))]);
     assert_eq!(out, "---\nstatus: \"no\"\n---\n本文\n");
     let out = applied(
@@ -229,7 +229,7 @@ fn test_wb_3_empty_frontmatter_list_date_null() {
 
 #[test]
 fn test_wb_3_empty_frontmatter_reparses_to_written_values() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~1] 足したあと読み直すと、書いた値が読める(ほかにキーは無い)。本文はそのまま。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.verify-before-replace~2] 足したあと読み直すと、書いた値が読める(ほかにキーは無い)。本文はそのまま。
     for original in [EMPTY_FM, EMPTY_FM_CRLF] {
         let out = applied(
             original.as_bytes(),
@@ -272,7 +272,7 @@ fn test_wb_3_empty_frontmatter_reparses_to_written_values() {
 
 #[test]
 fn test_wb_6_empty_frontmatter_save_and_corrupt_refused() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1, req~write-back.verify-before-replace~1] save で書ける。読み直しの検査に落ちる失敗を差し込めば、元のファイルは変わらない。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-setting~1, req~write-back.verify-before-replace~2] save で書ける。読み直しの検査に落ちる失敗を差し込めば、元のファイルは変わらない。
     let dir = TempDir::new("emptyfm-save");
     let p = dir.write("a.md", EMPTY_FM.as_bytes());
     let base = baseline(&p).unwrap();
@@ -353,7 +353,7 @@ fn test_wb_3_source_explicit_true_is_same_as_default() {
 
 #[test]
 fn test_cli_3_add_frontmatter_setting() {
-    // [utest -> req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] 既定は true。`[edit] add_frontmatter = false` を読め、知らない項目の警告は出ない。
+    // [utest -> req~cli.config-file-items~1, req~cli.config-file-warn-only~1, req~cli.config-file-warning-form~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-frontmatter-setting~1] 既定は true。`[edit] add_frontmatter = false` を読め、知らない項目の警告は出ない。
     assert!(
         Config::default().resolved().add_frontmatter,
         "default is true"
@@ -490,7 +490,7 @@ fn test_wb_3_setting_false_changes_skip_and_nothing_written() {
 
 #[test]
 fn test_wb_5_other_forms_unaffected_by_setting() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] ほかの WB-5 の形(同じキーが2回・BOM・YAML として読めない・閉じない・UTF-8 でない・
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-newline~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-frontmatter-setting~1] ほかの WB-5 の形(同じキーが2回・BOM・YAML として読めない・閉じない・UTF-8 でない・
     // 改行コードが混ざる・ハードリンク)は、add_frontmatter が true でも false でも読むだけで、理由も同じ。
     let mut bom = vec![0xEF, 0xBB, 0xBF];
     bom.extend_from_slice(b"---\nstatus: draft\n---\nbody\n");

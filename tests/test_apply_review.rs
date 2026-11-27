@@ -111,7 +111,7 @@ fn test_cli_17_round_trip_odd_values_writes_nothing() {
     }
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-dry-run~1, req~cli.apply-yes-write~2]
 #[test]
 fn test_cli_17_round_trip_sample_vaults_writes_nothing() {
     let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -136,7 +136,7 @@ fn test_cli_17_round_trip_sample_vaults_writes_nothing() {
     }
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-dry-run~1, req~cli.apply-yes-write~2]
 #[test]
 fn test_cli_17_crlf_csv_with_multiline_cell() {
     let root = dir("crlf");
@@ -153,7 +153,7 @@ fn test_cli_17_crlf_csv_with_multiline_cell() {
     assert_eq!(snapshot(&root), before);
 }
 
-// [stest -> req~cli.apply-changed-cells~1]
+// [stest -> req~cli.apply-changed-cells~2]
 #[test]
 fn test_cli_17_header_problems() {
     let root = dir("head");

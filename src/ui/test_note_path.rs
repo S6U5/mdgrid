@@ -288,7 +288,7 @@ fn test_sr_29_note_path_off_hides_names_and_heading() {
 
 #[test]
 fn test_sr_29_note_path_off_keeps_marks() {
-    // [utest -> req~screen.note-column-marks-only~2, req~write-back.external-keep-pending~1] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
+    // [utest -> req~screen.note-column-marks-only~2, req~write-back.external-keep-pending~2] "off" でも、直してためた行が外で変わったときの `!` は欄に残る。
     let tmp = ledger("sr29np_offmark");
     let mut a = boot_folder(&tmp, cfg_ok("[display]\nnote_path = \"off\"\n"));
     let i = a

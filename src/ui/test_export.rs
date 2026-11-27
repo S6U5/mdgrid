@@ -145,7 +145,7 @@ fn test_export_csv_has_rev_last() {
     assert!(!md_text.contains("_rev"), "{md_text}");
 }
 
-// [utest -> req~output.export-path-name~2, req~output.export-path-overwrite~1]
+// [utest -> req~output.export-path-name~2, req~output.export-path-overwrite~2]
 #[test]
 fn test_out_5_overwrite_asks_and_home() {
     let (tmp, mut a) = app("out5over");

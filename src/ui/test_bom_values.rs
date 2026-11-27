@@ -8,7 +8,7 @@ use ratatui::crossterm::event::KeyCode;
 
 const BOM: &str = "\u{FEFF}---\nstatus: draft\nowner: ken\n---\nbody\n";
 
-// [utest -> req~write-back.refuse-unsafe-perm-lost~1]
+// [utest -> req~write-back.refuse-unsafe-perm-lost~2]
 #[test]
 fn test_wb_5_bom_values_shown_read_only() {
     let (t, mut a) = make(

@@ -56,7 +56,8 @@
   - Then: 両方のノートが1つの表に入る。
 
 #### `.base` のファイルと、ノートの中の ````base` のブロックを書き換えてはならない
-`req~base-view.base-untouched~1` P0
+`req~base-view.base-untouched~2` P0
+- Rationale: `.base` は人や自分が作ったものなので、mdgrid を通しただけで壊さず、他の人と共同で使えるようにするため
 - Acceptance:
   - Given:
   - When:

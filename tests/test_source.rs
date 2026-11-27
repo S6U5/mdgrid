@@ -253,7 +253,7 @@ fn test_wb_5_duplicate_key_note_is_locked() {
 
 #[test]
 fn test_ce_8_block_scalar_and_nested_are_locked() {
-    // [utest -> req~cell-edit.read-only-forms~2] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
+    // [utest -> req~cell-edit.read-only-forms~3] ブロックスカラー・ネストした map は読むだけ、理由つき。同じノートの素の値は書ける。
     let dir = TempDir::new("source-ce8");
     dir.copy_fixture("block_scalar.md");
     dir.copy_fixture("nested_map.md");
@@ -282,7 +282,7 @@ fn test_ce_8_block_scalar_and_nested_are_locked() {
 #[test]
 fn test_ce_16_list_values_are_editable_unless_ce_8_form() {
     // [utest -> req~cell-edit.list-items-toggle~2, req~cell-edit.list-items-narrow~1, req~cell-edit.list-items-new~1] リストの値の列(tags)は、書ける形なら lock なし。フローのリストもブロックのリストも。
-    // [utest -> req~cell-edit.read-only-forms~2] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
+    // [utest -> req~cell-edit.read-only-forms~3] 書けない形(複数行のフロー・アンカー・入れ子の要素)は読むだけ、理由つき。
     let dir = TempDir::new("source-ce16");
     dir.copy_fixture("flow_list.md");
     dir.copy_fixture("block_list.md");
@@ -414,7 +414,7 @@ fn test_wb_12_save_then_save_again_with_returned_stamp() {
 
 #[test]
 fn test_wb_4_external_change_after_stamp_stops_save() {
-    // [utest -> req~write-back.conflict-stop~2] 基準を取ったあとに外でファイルが変わる → SaveError::Changed、ファイルは外の内容のまま。
+    // [utest -> req~write-back.conflict-stop~3] 基準を取ったあとに外でファイルが変わる → SaveError::Changed、ファイルは外の内容のまま。
     let dir = TempDir::new("source-wb4");
     let p = dir.copy_fixture("plain.md");
 
@@ -442,7 +442,7 @@ fn test_wb_4_external_change_after_stamp_stops_save() {
 
 #[test]
 fn test_wb_4_reload_then_save_over_external_change() {
-    // [utest -> req~write-back.conflict-stop-overwrite-choice~1] 外の変更の上に書く: reload のあとの stamp は今のファイルの内容で、その基準なら保存できる。
+    // [utest -> req~write-back.conflict-stop-overwrite-choice~2] 外の変更の上に書く: reload のあとの stamp は今のファイルの内容で、その基準なら保存できる。
     // ためたキーの値だけが書かれ、外の変更は残る。
     let dir = TempDir::new("source-wb4-reload");
     let p = dir.copy_fixture("plain.md");

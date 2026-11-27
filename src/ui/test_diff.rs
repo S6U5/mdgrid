@@ -24,7 +24,7 @@ fn test_wb_9_line_diff_with_context() {
             Same(s("---")),
         ]
     );
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-key-empty-frontmatter~1] キーを足す1行だけ。CRLF は見せない。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.add-key-empty-frontmatter~1] キーを足す1行だけ。CRLF は見せない。
     let before = "---\r\na: 1\r\n---\r\n";
     let after = "---\r\na: 1\r\nb: x\r\n---\r\n";
     assert_eq!(

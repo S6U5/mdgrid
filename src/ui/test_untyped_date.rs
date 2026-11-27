@@ -161,7 +161,7 @@ fn test_wb_18_untyped_new_note_date_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_new_note_not_only_date_quoted() {
-    // [utest -> req~write-back.date-quoting-untyped~2, req~write-back.quoting-keep-style~2, req~write-back.quoting-type-safe~1] 同じ列に `2026-10-05 ごろ`(日付の形だけでない)→ 囲む。
+    // [utest -> req~write-back.date-quoting-untyped~2, req~write-back.quoting-keep-style~2, req~write-back.quoting-type-safe~2] 同じ列に `2026-10-05 ごろ`(日付の形だけでない)→ 囲む。
     let tmp = vault("wb18nnq");
     let mut a = boot(&tmp, config("[new_note]\nask = [\"deadline\"]\n"));
     let text = new_note_with_answer(&tmp, &mut a, "締め切り", "2026-10-05 ごろ");
@@ -182,7 +182,7 @@ fn test_wb_18_untyped_new_note_datetime_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_new_note_typed_text_quoted() {
-    // [utest -> req~write-back.date-quoting-untyped~2, req~cell-edit.column-type-order~1, req~write-back.quoting-type-safe~1] 型の設定で text と宣言した列は、どのノートにも値が無くても型が決まっている
+    // [utest -> req~write-back.date-quoting-untyped~2, req~cell-edit.column-type-order~1, req~write-back.quoting-type-safe~2] 型の設定で text と宣言した列は、どのノートにも値が無くても型が決まっている
     // → 2026-10-05 は囲む。
     let tmp = vault("wb18nntx");
     types_json(&tmp, r#"{"types": {"deadline": "text"}}"#);
@@ -241,7 +241,7 @@ fn test_wb_18_untyped_cell_base_order_only_unquoted() {
 
 #[test]
 fn test_wb_18_untyped_cell_text_column_quoted() {
-    // [utest -> req~write-back.date-quoting-text-column~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-type-safe~1] あるノートに `memo: hello` → memo はテキストと決まった列。
+    // [utest -> req~write-back.date-quoting-text-column~1, req~write-back.quoting-double-fallback~2, req~write-back.quoting-type-safe~2] あるノートに `memo: hello` → memo はテキストと決まった列。
     // 2026-10-05 を書く → 今どおり囲む(値のあるセルも、キーの無いノートのセルも)。
     let tmp = Tmp::new("wb18text");
     tmp.write("a.md", "---\ntitle: 会議\nmemo: hello\n---\n");
@@ -261,7 +261,7 @@ fn test_wb_18_untyped_cell_text_column_quoted() {
 
 #[test]
 fn test_wb_18_untyped_cell_typed_text_quoted() {
-    // [utest -> req~write-back.date-quoting-untyped~2, req~write-back.date-quoting-text-column~1, req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1, req~write-back.quoting-type-safe~1] 型の設定で deadline を text と宣言。ノートには `deadline:`(空)だけ
+    // [utest -> req~write-back.date-quoting-untyped~2, req~write-back.date-quoting-text-column~1, req~cell-edit.column-type-order~1, req~cell-edit.column-type-mixed-datetime~1, req~write-back.quoting-type-safe~2] 型の設定で deadline を text と宣言。ノートには `deadline:`(空)だけ
     // → 型は決まっている(text)ので、2026-10-05 は囲む。
     let tmp = Tmp::new("wb18ttx");
     types_json(&tmp, r#"{"types": {"deadline": "text"}}"#);

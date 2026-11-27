@@ -122,7 +122,7 @@ fn test_wb_18_plain_date_stays_unquoted() {
         out, "---\ntitle: A  # c\ndue: 2026-11-03\ntags:\n  - x\n---\nbody\n",
         "[WB-18] 素の日付を囲んだか、他のバイトが変わった"
     );
-    // [utest -> req~write-back.verify-before-replace~1] 読み直すと値の文字列は 2026-11-03
+    // [utest -> req~write-back.verify-before-replace~2] 読み直すと値の文字列は 2026-11-03
     assert_reads_as(out.as_bytes(), "due", "2026-11-03");
 }
 
@@ -145,7 +145,7 @@ fn test_wb_18_missing_key_adds_unquoted_line() {
     let out = apply_str(note, "due", date("2026-11-03"));
     let added: Vec<&str> = out.lines().filter(|l| l.starts_with("due")).collect();
     assert_eq!(added, vec!["due: 2026-11-03"], "[WB-18] 足した行: {out:?}");
-    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~1, req~write-back.byte-range-added-newline~1, req~write-back.byte-range-rename-key~1] 足した1行を除けば元と同じ
+    // [utest -> req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~2, req~write-back.byte-range-added-newline~2, req~write-back.byte-range-rename-key~2] 足した1行を除けば元と同じ
     assert_eq!(
         out.replacen("due: 2026-11-03\n", "", 1),
         note,
@@ -198,7 +198,7 @@ fn test_wb_18_not_a_date_is_error() {
 
 #[test]
 fn test_wb_18_text_column_still_quoted() {
-    // [utest -> req~write-back.date-quoting-text-column~1, req~write-back.quoting-double-fallback~1, req~write-back.quoting-type-safe~1] Str("2026-11-03") をテキストの列に当てる → これまでどおり囲む。
+    // [utest -> req~write-back.date-quoting-text-column~1, req~write-back.quoting-double-fallback~2, req~write-back.quoting-type-safe~2] Str("2026-11-03") をテキストの列に当てる → これまでどおり囲む。
     let out = apply_str(
         "---\nmemo: hello\n---\n",
         "memo",
@@ -225,7 +225,7 @@ fn test_wb_18_text_column_still_quoted() {
 
 #[test]
 fn test_wb_18_save_writes_unquoted() {
-    // [utest -> req~write-back.date-quoting-plain~2, req~write-back.date-quoting-untyped~2, req~write-back.verify-before-replace~1] save でも素の日付は囲まずに書き、読み直しの検査を通る。
+    // [utest -> req~write-back.date-quoting-plain~2, req~write-back.date-quoting-untyped~2, req~write-back.verify-before-replace~2] save でも素の日付は囲まずに書き、読み直しの検査を通る。
     let dir = TempDir::new("wb18save");
     let plain = dir.write("plain.md", b"---\ndue: 2026-10-05\ntitle: A\n---\nbody\n");
     let base = baseline(&plain).unwrap();

@@ -587,7 +587,7 @@ fn test_bv_19_to_base_reports_dropped_parts() {
 
 #[test]
 fn test_bv_3_to_base_and_from_base_write_no_files() {
-    // [utest -> req~base-view.base-untouched~1, req~base-view.export-base-new-file~1] 書き出しは文字列を返すだけで、ファイルを書かない。取り込みも書かない。
+    // [utest -> req~base-view.base-untouched~2, req~base-view.export-base-new-file~1] 書き出しは文字列を返すだけで、ファイルを書かない。取り込みも書かない。
     let v = vault("nofile");
     let existing = v.write(
         "existing.base",

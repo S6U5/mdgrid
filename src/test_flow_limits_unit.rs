@@ -7,7 +7,7 @@ fn note(inner: &str) -> Vec<u8> {
     format!("---\n{inner}\n---\nbody\n").into_bytes()
 }
 
-// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
+// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~2, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~2]
 #[test]
 fn test_wb_5_flow_limits_deep_nesting_is_refused() {
     // 10 万段の入れ子: 読み手の再帰に渡さず None(スタックを使い切らない)。
@@ -17,7 +17,7 @@ fn test_wb_5_flow_limits_deep_nesting_is_refused() {
     assert!(flow_frontmatter(&note(&deep_map)).is_none());
 }
 
-// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~1]
+// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~2, req~write-back.refuse-unsafe-action-menu~1, req~write-back.refuse-unsafe-perm-lost~2]
 #[test]
 fn test_wb_5_flow_limits_large_is_refused() {
     let big = format!("{{a: \"{}\"}}", "x".repeat(70 * 1024));

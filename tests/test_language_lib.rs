@@ -308,7 +308,7 @@ fn setup(f: &Form, tag: &str) -> (TempDir, Markdown) {
 
 #[test]
 fn test_sr_23_lib_read_only_reasons_are_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-ledger~1, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1] 英語のとき、読むだけの形のどれも、セル(status・title・無いキー)の lock の理由が空でなく、
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-ledger~1, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~2, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2] 英語のとき、読むだけの形のどれも、セル(status・title・無いキー)の lock の理由が空でなく、
     // 日本語の文字を含まない。重なったキーの名前はそのまま差し込まれる。形ごとの理由は互いに違う。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
@@ -355,7 +355,7 @@ fn test_sr_23_lib_read_only_reasons_are_english() {
 
 #[test]
 fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
-    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~1] 同じノートを scoped(Ja) で開くと、今の日本語の文(形に固有の言葉を含む。権限は「書き込めない権限」)。
+    // [stest -> req~screen.locales-two-languages~1, req~screen.locales-auto~3, req~screen.locales-no-translate~1, req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-no-permission~2] 同じノートを scoped(Ja) で開くと、今の日本語の文(形に固有の言葉を含む。権限は「書き込めない権限」)。
     // 英語の文とは違う。
     let mut fails = Vec::new();
     for f in forms() {
@@ -393,7 +393,7 @@ fn test_sr_23_lib_read_only_reasons_stay_japanese_under_ja() {
 
 #[test]
 fn test_sr_23_lib_changes_skip_reason_matches_lock_in_english() {
-    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~2] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
+    // [stest -> req~screen.locales-two-languages~1, req~cell-edit.read-only-forms~3] 英語のとき、Changes::set は Skip を返し、その理由はセルの lock と同じ英語の文。
     let _g = scoped(Lang::En);
     let mut fails = Vec::new();
     for f in forms() {

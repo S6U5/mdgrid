@@ -3,7 +3,7 @@ use super::*;
 
 #[test]
 fn test_wb_7_underscore_numbers_are_quoted() {
-    // [utest -> req~write-back.quoting-no-newline~1] `_0`・`1_0`・`_1.5` は囲む。`_a`・`snake_case` はそのまま。
+    // [utest -> req~write-back.quoting-no-newline~2] `_0`・`1_0`・`_1.5` は囲む。`_a`・`snake_case` はそのまま。
     for s in ["_0", "1_0", "_1.5", "0_"] {
         assert!(!plain_safe(s), "{s}");
     }

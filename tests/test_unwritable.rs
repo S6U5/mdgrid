@@ -297,7 +297,7 @@ fn report(stage: &str, fails: Vec<String>) {
 
 #[test]
 fn test_wb_5_parse_returns_expected_read_only() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.refuse-not-text~1, req~write-back.refuse-utf16~1] frontmatter::parse が形ごとの ReadOnly を返す。ハードリンクはバイト列が普通なので Ok
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.refuse-not-text~1, req~write-back.refuse-utf16~1] frontmatter::parse が形ごとの ReadOnly を返す。ハードリンクはバイト列が普通なので Ok
     // (ハードリンクは save と Source が見る)。フロントマターの無いノートは NoFrontmatter(書ける側。WB-3)。
     let mut fails = Vec::new();
     for f in forms() {
@@ -313,7 +313,7 @@ fn test_wb_5_parse_returns_expected_read_only() {
 
 #[test]
 fn test_wb_5_cell_lock_has_form_specific_reason() {
-    // [utest -> req~write-back.refuse-unsafe-no-permission~1, req~cell-edit.read-only-forms~2, req~write-back.refuse-not-text~1, req~write-back.refuse-utf16~1] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
+    // [utest -> req~write-back.refuse-unsafe-no-permission~2, req~cell-edit.read-only-forms~3, req~write-back.refuse-not-text~1, req~write-back.refuse-utf16~1] source の Markdown で、形のノートのセルの lock が Some で理由が空でなく、形に固有の言葉を含み、
     // ほかの形の言葉を含まない(理由を取り違えない)。7つの理由は互いに違う。書ける側(空のフロントマターを含む。WB-3)は lock が None。
     let all = forms();
     let words = keywords(&all);
@@ -384,7 +384,7 @@ fn test_wb_5_cell_lock_has_form_specific_reason() {
 
 #[test]
 fn test_wb_5_apply_is_err() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~1, req~write-back.refuse-not-text~1] writeback::apply(バイト列に編集を当てる)が形ごとの EditError::ReadOnly を返す。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.verify-before-replace~2, req~write-back.refuse-not-text~1] writeback::apply(バイト列に編集を当てる)が形ごとの EditError::ReadOnly を返す。
     // ハードリンクはバイト列だけでは分からないので apply は対象外(ファイルを見る save の段で確かめる)。
     // 書ける側は Ok で、status: done が入る。
     let mut fails = Vec::new();
@@ -413,7 +413,7 @@ fn test_wb_5_apply_is_err() {
 
 #[test]
 fn test_wb_5_writeback_save_refuses_and_keeps_bytes() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~write-back.verify-before-replace~1, req~write-back.refuse-not-text~1] writeback::save(ファイルに書く)が形ごとの ReadOnly で止まり、元のファイル(ハードリンクは
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~2, req~write-back.verify-before-replace~2, req~write-back.refuse-not-text~1] writeback::save(ファイルに書く)が形ごとの ReadOnly で止まり、元のファイル(ハードリンクは
     // 両方)が1バイトも変わらない。書ける側は書ける。
     let mut fails = Vec::new();
     for f in forms() {
@@ -452,7 +452,7 @@ fn test_wb_5_writeback_save_refuses_and_keeps_bytes() {
 
 #[test]
 fn test_wb_5_changes_set_is_skipped_with_reason() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.read-only-forms~2] Changes::set は Skip(行と、セルの lock と同じ理由)を返し、何もためない。書ける側はためる。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~2, req~cell-edit.read-only-forms~3] Changes::set は Skip(行と、セルの lock と同じ理由)を返し、何もためない。書ける側はためる。
     let mut fails = Vec::new();
     for f in forms() {
         let (_dir, src) = setup(&f, "set");
@@ -554,7 +554,7 @@ fn test_wb_5_changes_set_many_skips_count_and_reason() {
 
 #[test]
 fn test_wb_5_save_flow_keeps_bytes() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.verify-before-replace~1, req~write-back.refuse-not-text~1] set と set_many を試してから Changes::save(保存の流れ)を通しても、形のファイル
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~2, req~cell-edit.bulk-set-skip-read-only~1, req~write-back.verify-before-replace~2, req~write-back.refuse-not-text~1] set と set_many を試してから Changes::save(保存の流れ)を通しても、形のファイル
     // (ハードリンクは両方)のバイトは1バイトも変わらず、保存の結果に形の行は出ない。隣の ok.md は書かれる。
     // 書ける側(フロントマターの無いノートは先頭にフロントマターを足して。WB-3)は書かれる。
     let mut fails = Vec::new();
