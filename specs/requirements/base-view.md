@@ -58,6 +58,7 @@
 #### `.base` のファイルと、ノートの中の ````base` のブロックを書き換えてはならない
 `req~base-view.base-untouched~2` P0
 - Rationale: `.base` は人や自分が作ったものなので、mdgrid を通しただけで壊さず、他の人と共同で使えるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When:

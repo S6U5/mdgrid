@@ -80,6 +80,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### ためる変更があるまま終わろうとしたら、保存する・捨てる・戻る を確かめるべき
 `req~write-back.quit-confirm~2` P0
 - Rationale: 保存していない変更は人の作業そのものなので、終わるときに黙って失わないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 未保存 1 で `q`
@@ -88,6 +89,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 保存が止まったとき(外部の変更など)は、ためる変更を捨てずに残し、読み直してからやり直せるべき
 `req~write-back.keep-on-stop~2` P0
 - Rationale: 保存が止まっても、ためた作業を黙って失わないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 保存の途中で外部の変更
@@ -103,6 +105,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### ためた変更のあるノートが外やエディタで変わったときは、表の値を読み直しても、ためた変更は残すべき
 `req~write-back.external-keep-pending~2` P0
 - Rationale: 外の変更を読み直すときに、ためた作業を黙って失わないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: status をためたまま外で title を直す
@@ -183,6 +186,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 値を書き戻すときは、対象のキーの値の範囲だけを置き換え、ファイルの他のバイト(他のキー・キーの順・コメント・空行・改行コード・本文)を1バイトも変えてはならない
 `req~write-back.byte-range-value~2` P0
 - Rationale: 人のノートを壊さないため。他の人と共同で使える基盤として育てるには、直した値のほかは変えないと言い切れることが要る
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: ブロックリスト・ネストした map・行末コメント・CRLF・日本語のキーを含むノートの `status` を書く
@@ -198,6 +202,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### キーを足すとき(write-back.add-key-and-frontmatter)は、そのキーの行(リストの値は cell-edit.list-layout の縦の形の、キーの行と要素の行)を足すことだけを許さなければならない
 `req~write-back.byte-range-add-key~2` P0
 - Rationale: キーを足すときも、人のノートのほかの所を変えず、他の人と共同で使える基盤にするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: tags の無いノートに tags の a を足す
@@ -206,6 +211,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### リストに要素を足すとき(cell-edit.list-items・cell-edit.list-layout)は、その要素の行を足すことだけを許さなければならない
 `req~write-back.byte-range-add-item~2` P0
 - Rationale: リストに要素を足すときも、人のノートのほかの所を変えず、他の人と共同で使える基盤にするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 字下げ2の `- a` の縦のリストに c を足す
@@ -214,6 +220,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### フロントマターの無いノートに足すとき(write-back.add-key-and-frontmatter)は、先頭に足すフロントマターの行だけを許さなければならない
 `req~write-back.byte-range-add-frontmatter~2` P0
 - Rationale: フロントマターを足すときも、人が書いた本文を変えず、他の人と共同で使える基盤にするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 本文だけのノートの status に todo を書いて保存
@@ -222,6 +229,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 足す行(キーの行・要素の行・フロントマターの行)の改行コードは、ファイルに合わせなければならない
 `req~write-back.byte-range-added-newline~2` P0
 - Rationale: 足した行だけ改行コードの違うノートにして、人のノートを壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: CRLF のノートの縦のリストに要素を足す
@@ -230,6 +238,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### キーの名前を変えるとき(cell-edit.rename-delete-key)は、そのキーの行のキーの文字だけを置き換えることを許さなければならない
 `req~write-back.byte-range-rename-key~2` P0
 - Rationale: キーの名前を変えるときも、値とほかの行を変えず、人のノートを壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: `a: 1` と `b: [x, y]` の `b` の名前を `c` に
   - When:
@@ -238,6 +247,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### キーを消すとき(cell-edit.rename-delete-key)は、そのキーの行と、その値の続きの行(ブロックのリストの要素の行・複数行の値の行)だけを消すことを許さなければならない(続きの行の後ろの空行とコメントの行は、次のキーのものとして残す)
 `req~write-back.byte-range-delete-key~2` P0
 - Rationale: キーを消すときも、次のキーに付いた空行とコメントを巻き込まず、人のノートを壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: ブロックのリストの `tags` を消す
@@ -246,6 +256,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 書き込んでよいのは、ノートのフロントマターの第1階層のキーの値と、キーの名前の変更・キーの削除(cell-edit.rename-delete-key)だけにしなければならない
 `req~write-back.frontmatter-only-top-level~2` P0
 - Rationale: 書く所を、範囲を言い切れる第1階層のキーに絞り、人のノートを壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 値がネストした map の `meta` のセルに書こうとする
@@ -254,6 +265,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### mdgrid は、ノートの本文・`.base`・他のファイルを書き換えてはならない(AI の案のファイル(ai.proposal-file)を、受けたか捨てたときに消すのは除く)
 `req~write-back.frontmatter-only-no-body~3` P0
 - Rationale: 本文と `.base` とほかのファイルは人やほかの道具が書いたものなので、mdgrid を通しただけで変えず、他の人と共同で使える基盤にするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When:
@@ -269,6 +281,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 既にあるファイルを置き換えてはならない(保存の一時ファイルと名前の変更によるノートの置き換え(write-back.atomic-replace)と、設定と見た目の状態の置き場のファイル(cli.config-file・screen.state-store・base-view.views-toml)は除く)
 `req~write-back.frontmatter-only-no-replace~2` P0
 - Rationale: 既にあるファイルは人や自分が作ったものなので、置き換えて壊さないため(安全のため)
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 新しいノートの名前に既にある `a.md` と同じ名前を打つ
@@ -299,6 +312,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### フロントマターの無いノートに足す行の改行コードは、ファイルに合わせる(改行の無いファイルは LF)
 `req~write-back.add-frontmatter-newline~2` P0
 - Rationale: 足したフロントマターの行だけ改行コードの違うノートにして、人のノートを壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: CRLF のノート
   - When:
@@ -307,6 +321,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 1行目が `---` で始まるが読めないノートは、これまでどおり write-back.refuse-unsafe-notes で書くべきでない
 `req~write-back.add-frontmatter-skip-broken~2` P0
 - Rationale: 読めないフロントマターの上にもう1つ足して、人のノートをさらに壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: BOM で始まるノート
   - When:
@@ -331,6 +346,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 書く直前に、保存の基準(そのノートに最初に変更をためた時点で表が持っていた内容、つまりその時点までに最後に読んだ内容で、ためたあとの読み直し(write-back.external-change)では変えない。自分で書いたあとは write-back.new-baseline の新しい基準。write-back.external-change の保存の選択で外の変更の上に書くを選んだときは、選んだ時点のファイルの内容)から、ファイルの更新時刻・大きさ・中身のハッシュのどれかが変わっていたら、外の変更と合わせられるとき(write-back.merge-other-keys)のほかは、書かずに止めて知らせなければならない
 `req~write-back.conflict-stop~3` P0
 - Rationale: 外で入った変更を知らずに上書きして、意図しない変更を引き起こさないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: status を done にためている
   - When: 外でノートの status を doing に直してから保存する
@@ -341,6 +357,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 止まった保存で「外の変更の上に書く」を選んだときは、選んだ時点のファイルの内容を基準にして検査し、ためたキーの値だけを書いて外の変更は残さなければならない
 `req~write-back.conflict-stop-overwrite-choice~2` P0
 - Rationale: 人が見て選んだ内容の上にためたキーだけを書き、外の変更に意図しない変更を引き起こさないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 止まった保存で「外の変更の上に書く」を選ぶ
@@ -356,6 +373,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### ノートを名前の変更で置き換える直前にも、write-back.conflict-stop の検査をもう一度するべき
 `req~write-back.new-baseline-recheck~2` P0
 - Rationale: 検査から置き換えまでのあいだに入った外の変更を上書きして、意図しない変更を引き起こさないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 一時ファイルに書いたあと、名前を変えて置き換える前に外でノートを直す
@@ -372,6 +390,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 利用者に書き込みの権限が無い(`chmod 444` など)ノートには、書き込んではならず、その行を読むだけにして理由を表示しなければならない(設定で変えられてはならない)
 `req~write-back.refuse-unsafe-no-permission~2` P0
 - Rationale: 書き込みを許していないノートに、意図しない変更を引き起こさないため。理由を表示するのは、直せないのが故障に見えず、利用者が不安にならないようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: `chmod 444` のノートの status
   - When:
@@ -438,6 +457,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 変更をためたあとに書き込みの権限が無くなったノートは、保存で書かずに止めて知らせ、ためた変更を残さなければならない(write-back.keep-on-stop。設定で変えられてはならない)
 `req~write-back.refuse-unsafe-perm-lost~2` P0
 - Rationale: 書き込みを許さなくなったノートに意図しない変更を引き起こさず、ためた作業も黙って失わないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: status をためたあとに外で `chmod 444`
   - When:
@@ -446,6 +466,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 書く前に、一時ファイルに書いた内容を読み直して、対象のキーが意図した値になり、他のキーの値が変わらないことを確かめなければならず、違えば元のファイルを置き換えずに止めなければならない
 `req~write-back.verify-before-replace~2` P0
 - Rationale: 意図した値のほかが変わった内容でノートを置き換えて、意図しない変更を引き起こさないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: 値の書き方の誤りを仕込んだ試験
   - When:
@@ -474,6 +495,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 元のクオートで安全に表せない値は、二重引用符で書かなければならない
 `req~write-back.quoting-double-fallback~2` P0
 - Rationale: 書いた値でフロントマターが壊れるのを防ぐため。クオートを付けても困ることは少ない
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: クオートの無い `title: abc` を `a: b` にする
@@ -482,6 +504,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 改行を含む入力は、受け付けてはならない
 `req~write-back.quoting-no-newline~2` P0
 - Rationale: 改行の入った値でフロントマターが壊れるのを防ぐため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 改行を含む文字をセルに貼って確定する
@@ -490,6 +513,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### `no`・`yes`・`on`・数字に見える文字列・`: `・` #` を含む値・先頭が記号の値はクオートし、YAML 1.1 と 1.2 のどちらで読んでも型が変わらない書き方にしなければならない
 `req~write-back.quoting-type-safe~2` P0
 - Rationale: 書いた値が別の型に読まれたり、フロントマターが壊れたりするのを防ぐため。クオートを付けても困ることは少ない
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: Text 型の列に `no` を入れる
@@ -498,6 +522,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### ノートを書くときは、同じフォルダの一時ファイルに書いて fsync してから名前を変えて置き換えなければならない
 `req~write-back.atomic-replace-temp~2` P0
 - Rationale: 同期の道具や Obsidian など、ほかの道具が書きかけのノートを読まないようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When:
@@ -506,6 +531,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### シンボリックリンクのノートは、辿った先のファイルを書かなければならない
 `req~write-back.atomic-replace-symlink~2` P0
 - Rationale: 一時ファイルからの置き換えで、リンクをふつうのファイルに変えて、人のノートの置き方を壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: シンボリックリンクのノートの status を書く
@@ -514,6 +540,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### ノートを書くときは、ファイルの権限を保たなければならない
 `req~write-back.atomic-replace-mode~2` P0
 - Rationale: 一時ファイルからの置き換えで、人が決めたノートの権限を変えないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: 権限が 600 のノートの status を書く
@@ -585,6 +612,7 @@ mdgrid は、直した値をすぐには書かない。ためておき、保存�
 #### 1行目が `+++` のノート(Hugo・Zola の TOML のフロントマター)には書き込まず、その行を読むだけにして、YAML でないフロントマターだと理由を表示し、フロントマターを足す設定(cell-edit.list-items)があっても(足すと生成器が読めないページになるため)足さないようにするべき
 `req~write-back.toml-frontmatter~2` P0
 - Rationale: 書くと壊す形のノートを壊さないため。理由を表示するのは、直せないのが故障に見えず、利用者が不安にならないようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `+++\ntitle = "x"\n+++\n` のノートの列で Enter

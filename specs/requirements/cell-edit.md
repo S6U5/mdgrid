@@ -1228,6 +1228,7 @@
 #### キーの名前の変更では、もうその名前のキーを持つノートを飛ばして、数と理由を知らせるべき
 `req~cell-edit.rename-delete-key-skip-existing~2` P0
 - Rationale: そのノートに既にある同じ名前のキーの値(人や自分が書いたもの)を壊さないため。数と理由を知らせるのは、書く前に人が確かめられるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: status の名前を `state` に変える
@@ -1236,6 +1237,7 @@
 #### キーの名前の変更では、キーを書き換えられないノート(読むだけのノート(write-back.refuse-unsafe-notes)・読むだけの値(cell-edit.read-only-forms))を飛ばして、数と理由を知らせるべき
 `req~cell-edit.rename-delete-key-skip-unsafe~2` P0
 - Rationale: 書くと壊す形のノートを壊さないため。数と理由を知らせるのは、書く前に人が確かめられるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: status を持つノートの1つが `chmod 444` のノート(write-back.refuse-unsafe-notes)で、status の名前を `state` に変える
@@ -1244,6 +1246,7 @@
 #### キーの削除は、数を示して確かめてから(`y`)行うべき
 `req~cell-edit.rename-delete-key-confirm~2` P0
 - Rationale: いくつのノートからキーが消えるかを、書く前に人が目で確かめられるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When:
@@ -1252,6 +1255,7 @@
 #### キーの名前の変更と削除は、どちらも1手で取り消せるべき
 `req~cell-edit.rename-delete-key-undo~2` P0
 - Rationale: 確かめて違うと分かったときに、書く前に元へ戻せるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: キーの名前の変更で3つのためる変更ができたあと `u`
@@ -1260,6 +1264,7 @@
 #### キーの名前の変更と削除は、保存の前の差分(write-back.pending-and-diff)で全部のファイルを見られるべき
 `req~cell-edit.rename-delete-key-diff~2` P0
 - Rationale: キーの操作でも、ファイルに書く前に人が目で全部を確かめられるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: status の名前を `state` に変えて Ctrl+S
@@ -1564,6 +1569,7 @@
 #### ノートの新しい名前がもうあるファイルの名前なら、理由を出して断るべき
 `req~cell-edit.rename-note-refuse-existing~2` P0
 - Rationale: 既にあるノート(人や自分が作ったもの)を、名前の変更で置き換えて壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: もうある名前
@@ -1572,6 +1578,7 @@
 #### そのノートにためた変更がある間は、ノートの名前の変更を断るべき
 `req~cell-edit.rename-note-refuse-pending~2` P0
 - Rationale: ためた作業を、行き先のファイルごと黙って失わないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When:
@@ -1580,6 +1587,7 @@
 #### 読むだけのノート(write-back.refuse-unsafe-notes)では、ノートの名前の変更を断るべき
 `req~cell-edit.rename-note-refuse-unsafe~2` P0
 - Rationale: 書くと壊す形のノートに、名前の変更で手を入れて壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When:

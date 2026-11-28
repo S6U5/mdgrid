@@ -205,6 +205,7 @@ mdgrid は、フロントマター付き Markdown の集まりをターミナル
 #### CSV・TSV に書き戻す値は、区切り・引用符・改行が入るときだけ引用符で囲むべき
 `req~scope.csv-write-back-quote~2` P0
 - Rationale: 区切り・引用符・改行の入った値で CSV・TSV の行が壊れるのを防ぐため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `a,b` を入れる

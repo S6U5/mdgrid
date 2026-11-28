@@ -142,6 +142,7 @@
 #### 画面の表の書き出しで、同じ名前のファイルが既にあれば、`y` で確かめてから上書きするべき
 `req~output.export-path-overwrite~2` P0
 - Rationale: 既にあるファイル(人や自分が作ったもの)を、書き出しで黙って置き換えて壊さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: 既にある `out.csv`
   - When:

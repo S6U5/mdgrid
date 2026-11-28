@@ -363,6 +363,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### 読むだけの起動(`--readonly`)では、保存の操作を出さず、どのファイルも書くべきでない
 `req~cli.readonly~2` P0
 - Rationale: 見るだけのつもりの押し間違いで直さず、人の台帳を安心して開けるようにするため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `--readonly` で起動して Ctrl+S
@@ -807,6 +808,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `--new-note` は、既にある名前では作らず、既にあるファイルを1バイトも変えずに、理由1行と終了コード 2 で終わらなければならない
 `req~cli.new-note-no-overwrite~2` P0
 - Rationale: 既にあるノート(人や自分が作ったもの)を壊さないため(安全のため)
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `t/Tasks/Buy milk.md` がある台帳で `mdgrid t --new-note "Buy milk" --set priority=p1`
@@ -1015,6 +1017,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `mdgrid [<.base | フォルダ> …] --apply <ファイル>`(`-` で標準入力)は、`--print --with-path` の形の CSV か JSON(`path` の列とノートのキーの列。見出しは列の id か表示名)を読み、各行の `path` のノートの、値が今と違うセルだけを変えるべき
 `req~cli.apply-changed-cells~2` P0
 - Rationale: 表計算の道具で直して戻すときや、AI やスクリプトがまとめて直すときに、触っていないセルを書き換えないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `--print --with-path --format json` の1行の status だけを done に直して `--apply --yes`
@@ -1031,6 +1034,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `--apply` は、`--yes` を添えたときだけ、画面の保存と同じ道(write-back.byte-range から write-back.atomic-replace まで)で書くべき
 `req~cli.apply-yes-write~2` P0
 - Rationale: 画面を通らない口でも、画面の保存と同じ約束(差分を見てから書く・ほかのバイトを変えない)を守るため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `--print --with-path --format json` の status を done に直して `--apply --yes`
@@ -1039,6 +1043,7 @@ mdgrid の起動のしかたと設定ファイル。設定が無くても既定�
 #### `--apply` は、知らない `path`・書けないセル(cell-edit.read-only-forms・write-back.refuse-unsafe-notes)・列の型に合わない値が1つでもあれば、どれも書かずに終了コード 2 にするべき
 `req~cli.apply-reject-all~2` P0
 - Rationale: AI やスクリプトがまとめて直すときに、誤りのある入力を途中まで書いた半端な状態を残さないため
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given: 無い path
   - When:
