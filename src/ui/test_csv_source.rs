@@ -94,7 +94,7 @@ fn test_sc_16_save_only_edited_cells() {
 
 #[test]
 fn test_sc_16_external_change_refused() {
-    // [utest -> req~scope.csv-write-back-conflict~1, req~write-back.conflict-stop~2] 開いたあとに外でファイルが変わったら、書き込みの口は書かずに止める。
+    // [utest -> req~scope.csv-write-back-conflict~1, req~write-back.conflict-stop~3] 開いたあとに外でファイルが変わったら、書き込みの口は書かずに止める。
     let (t, mut a) = open("sc16ext", "a.tsv", "name\tqty\nx\t1\n");
     edit_cell(&mut a, 0, "qty", "2");
     let p = t.notes().join("a.tsv");

@@ -333,7 +333,7 @@ fn test_cli_2_no_color() {
 
 #[test]
 fn test_wb_15_readonly_writes_nothing() {
-    // [utest -> req~cli.readonly~1] `--readonly` では Ctrl+S で「読むだけ」と出し、何も書かない。Backspace・Enter の編集も効かない。
+    // [utest -> req~cli.readonly~2] `--readonly` では Ctrl+S で「読むだけ」と出し、何も書かない。Backspace・Enter の編集も効かない。
     // 保存・空にするのキーは下の帯・ヘルプ・パレットに出さない。見た目の状態も書かない。
     let tmp = notes("wb15");
     let before = snapshot(&tmp.notes());

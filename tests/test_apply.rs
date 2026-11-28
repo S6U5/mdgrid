@@ -68,7 +68,7 @@ fn printed(root: &Path, format: &str) -> String {
     out(&o)
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1, req~cli.apply-empty-cell~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-dry-run~1, req~cli.apply-yes-write~2, req~cli.apply-empty-cell~1]
 #[test]
 fn test_cli_17_json_dry_run_shows_diff_and_writes_nothing() {
     let root = vault("dry");
@@ -86,7 +86,7 @@ fn test_cli_17_json_dry_run_shows_diff_and_writes_nothing() {
     assert!(err(&o).contains("--yes"), "{}", err(&o));
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-yes-write~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-yes-write~2]
 #[test]
 fn test_cli_17_yes_writes_only_changed_cells() {
     let root = vault("yes");
@@ -101,7 +101,7 @@ fn test_cli_17_yes_writes_only_changed_cells() {
     assert_eq!(read(&root, "b.md"), B);
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-list-cell~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_csv_round_trip_from_stdin() {
     let root = vault("csv");
@@ -140,7 +140,7 @@ fn test_cli_17_empty_csv_cell_does_not_add_key() {
     assert_eq!(read(&root, "b.md"), B);
 }
 
-// [stest -> req~cli.apply-reject-all~1]
+// [stest -> req~cli.apply-reject-all~2]
 #[test]
 fn test_cli_17_any_problem_writes_nothing() {
     let root = vault("bad");
@@ -156,7 +156,7 @@ fn test_cli_17_any_problem_writes_nothing() {
     assert_eq!(read(&root, "b.md"), B);
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-dry-run~1, req~cli.apply-yes-write~2]
 #[test]
 fn test_cli_17_locked_cell_is_a_problem() {
     let root = vault("lock");
@@ -169,7 +169,7 @@ fn test_cli_17_locked_cell_is_a_problem() {
     assert_eq!(std::fs::read(root.join("notes/c.md")).unwrap(), bom);
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-dry-run~1, req~cli.apply-yes-write~1, req~cli.apply-reject-all~1, req~cli.apply-list-cell~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-dry-run~1, req~cli.apply-yes-write~2, req~cli.apply-reject-all~2, req~cli.apply-list-cell~1]
 #[test]
 fn test_cli_17_flag_combinations() {
     let root = vault("flags");

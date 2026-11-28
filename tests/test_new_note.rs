@@ -264,7 +264,7 @@ fn test_ce_25_outside_absolute_empty_are_refused() {
 
 #[test]
 fn test_ce_25_existing_name_is_refused() {
-    // [utest -> req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-no-overwrite~1, req~write-back.frontmatter-only-no-replace~1] 既にある名前(`.md` を補っても・付けても)→ 作らず理由。ファイルは変わらない。
+    // [utest -> req~cell-edit.new-note-refuse-existing~1, req~cell-edit.new-note-no-overwrite~1, req~write-back.frontmatter-only-no-replace~2] 既にある名前(`.md` を補っても・付けても)→ 作らず理由。ファイルは変わらない。
     let t = TempDir::new("exists");
     let before = "---\nstatus: done\n---\n本文\n".as_bytes().to_vec();
     t.write("会議の準備.md", &before);
@@ -296,7 +296,7 @@ fn test_ce_25_create_makes_missing_folder_and_writes_bytes() {
 
 #[test]
 fn test_ce_25_create_never_overwrites_existing_file() {
-    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-no-replace~1] 検査のあとにできたファイルも create_new で守る: Err で、1バイトも変わらない。
+    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-no-replace~2] 検査のあとにできたファイルも create_new で守る: Err で、1バイトも変わらない。
     let t = TempDir::new("race");
     let p = note_path(t.path(), "", "a").unwrap();
     let before = b"---\nstatus: done\n---\n# own\n".to_vec();
@@ -434,7 +434,7 @@ fn test_ce_25_unique_and_ambiguous_mixed_keeps_only_unique() {
 
 #[test]
 fn test_ce_25_whole_flow_writes_new_note_only() {
-    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-top-level~1, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~1] 「status が todo」のビューで「会議の準備」→ `会議の準備.md` が `---\nstatus: todo\n---\n` で
+    // [utest -> req~cell-edit.new-note-no-overwrite~1, req~cell-edit.new-note-filter-values~1, req~write-back.frontmatter-only-top-level~2, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~2] 「status が todo」のビューで「会議の準備」→ `会議の準備.md` が `---\nstatus: todo\n---\n` で
     // 作られ、ほかのファイルは変わらない。
     let t = TempDir::new("flow");
     t.write("既存.md", "---\nstatus: todo\n---\n本文\n".as_bytes());

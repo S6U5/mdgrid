@@ -86,7 +86,7 @@ fn test_cli_17_ignored_columns_noted() {
     assert!(!err(&o).contains("file.name"), "{}", err(&o));
 }
 
-// [stest -> req~cli.apply-changed-cells~1, req~cli.apply-reject-all~1]
+// [stest -> req~cli.apply-changed-cells~2, req~cli.apply-reject-all~2]
 #[test]
 fn test_cli_17_wording() {
     let root = vault("word");

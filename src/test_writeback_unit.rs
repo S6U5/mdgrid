@@ -47,7 +47,7 @@ fn write_list(src: &str, items: &[&str]) -> String {
 
 #[test]
 fn block_list_keeps_remaining_lines_byte_for_byte() {
-    // [utest -> req~cell-edit.list-layout~2, req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~1, req~write-back.byte-range-delete-key~1] 残る要素の行は、`-` のあとの空白・末尾の空白・引用符を含めてそのまま。新しい要素の行だけを作る。
+    // [utest -> req~cell-edit.list-layout~2, req~write-back.byte-range-null~1, req~write-back.byte-range-add-item~2, req~write-back.byte-range-delete-key~2] 残る要素の行は、`-` のあとの空白・末尾の空白・引用符を含めてそのまま。新しい要素の行だけを作る。
     let src = "---\ntags:\n  -   a\n  - b  \n  - 'c'\nx: 1\n---\n";
     assert_eq!(
         write_list(src, &["a", "b", "c", "d"]),
@@ -73,7 +73,7 @@ fn block_list_keeps_remaining_lines_byte_for_byte() {
 
 #[test]
 fn flow_list_quotes_values_with_quote_chars() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1] フローの中の `x 'y`・`x "y` は二重引用符で書く(素のままだと読み直しで InvalidYaml)。
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2] フローの中の `x 'y`・`x "y` は二重引用符で書く(素のままだと読み直しで InvalidYaml)。
     for v in ["x 'y", "x \"y", "it's", "a\"b"] {
         let out = write_list("---\ntags: [a]\n---\n", &["a", v]);
         let fm = parse(out.as_bytes()).unwrap_or_else(|r| panic!("{v:?}: {out:?}: {r:?}"));
@@ -154,14 +154,14 @@ fn prepend_same_key_twice_keeps_one_line_with_later_value() {
 
 #[test]
 fn prepend_quotes_yaml11_bool_key() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.quoting-type-safe~1] 足す道でも、YAML 1.1 の真偽値の語のキーは囲んで書き、読み直せる。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.quoting-type-safe~2] 足す道でも、YAML 1.1 の真偽値の語のキーは囲んで書き、読み直せる。
     let out = apply(b"body\n", &[ed("n", NewValue::Int(3))]).unwrap();
     assert_eq!(out, b"---\n\"n\": 3\n---\nbody\n");
 }
 
 #[test]
 fn prepend_refuses_newline_and_bad_date() {
-    // [utest -> req~write-back.add-frontmatter-newline~1] 足す道でも、改行を含む値と日付でない Date は書かない。
+    // [utest -> req~write-back.add-frontmatter-newline~2] 足す道でも、改行を含む値と日付でない Date は書かない。
     let r = apply(b"body\n", &[ed("s", NewValue::Str("a\nb".into()))]);
     assert_eq!(r, Err(EditError::Newline));
     let r = apply(b"body\n", &[ed("due", NewValue::Date("x".into()))]);
@@ -170,14 +170,14 @@ fn prepend_refuses_newline_and_bad_date() {
 
 #[test]
 fn prepend_misquote_is_caught_by_verify() {
-    // [utest -> req~write-back.verify-before-replace~1] 足す道でも、クオートを落とした文字列(`true` → 真偽値)は読み直しの検査で落ちる。
+    // [utest -> req~write-back.verify-before-replace~2] 足す道でも、クオートを落とした文字列(`true` → 真偽値)は読み直しの検査で落ちる。
     let r = apply_inner(b"body\n", &[ed("s", NewValue::Str("true".into()))], true);
     assert!(matches!(r, Err(EditError::Verify(_))), "{r:?}");
 }
 
 #[test]
 fn verify_prepended_checks_body_keys_and_delimiters() {
-    // [utest -> req~write-back.verify-before-replace~1] 足したあとの検査: 本文の変化・知らないキー・閉じの行の違い・読めない結果を落とす。
+    // [utest -> req~write-back.verify-before-replace~2] 足したあとの検査: 本文の変化・知らないキー・閉じの行の違い・読めない結果を落とす。
     let edits = [ed("status", NewValue::Str("todo".into()))];
     let ok = b"---\nstatus: todo\n---\nbody\n";
     assert_eq!(verify_prepended(b"body\n", ok, &edits, b"\n"), Ok(()));
@@ -221,7 +221,7 @@ fn fill_empty_same_key_twice_misquote_and_no_edits() {
     // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-key-empty-frontmatter~1, req~write-back.add-frontmatter-setting~1] 改行を含む値は書かない。
     let r = apply(b"---\n---\n", &[ed("s", NewValue::Str("a\nb".into()))]);
     assert_eq!(r, Err(EditError::Newline));
-    // [utest -> req~write-back.verify-before-replace~1] クオートを落とした文字列は読み直しの検査で落ちる。
+    // [utest -> req~write-back.verify-before-replace~2] クオートを落とした文字列は読み直しの検査で落ちる。
     let r = apply_inner(
         b"---\n---\nbody\n",
         &[ed("s", NewValue::Str("true".into()))],
@@ -232,7 +232,7 @@ fn fill_empty_same_key_twice_misquote_and_no_edits() {
 
 #[test]
 fn verify_filled_checks_outside_bytes_and_keys() {
-    // [utest -> req~write-back.verify-before-replace~1] 空のフロントマターに足したあとの検査: 開きの行・閉じの行・本文の変化、知らないキー、違う値、
+    // [utest -> req~write-back.verify-before-replace~2] 空のフロントマターに足したあとの検査: 開きの行・閉じの行・本文の変化、知らないキー、違う値、
     // 読めない結果を落とす。
     let original = b"--- \n---\t\nbody\n";
     let at = 5;

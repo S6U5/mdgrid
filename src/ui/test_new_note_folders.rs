@@ -244,7 +244,7 @@ fn test_ce_25_folders_single_folder_goes_straight_to_name() {
 
 #[test]
 fn test_ce_25_folders_readonly_does_not_start() {
-    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-readonly~1, req~cli.readonly~1] `--readonly` では2つ以上でも始めない(一覧も名前の欄も出さず、何も作らない)。
+    // [utest -> req~cell-edit.new-note-button~1, req~cell-edit.new-note-button-header~1, req~cell-edit.new-note-folder-pick~1, req~cell-edit.new-note-readonly~1, req~cli.readonly~2] `--readonly` では2つ以上でも始めない(一覧も名前の欄も出さず、何も作らない)。
     let tmp = two_folders("ce25f_ro");
     let mut a = boot_ab(&tmp, true);
     let before = snapshot(&tmp.notes());

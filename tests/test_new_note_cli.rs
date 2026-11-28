@@ -246,7 +246,7 @@ fn test_new_note_prints_the_created_path() {
 
 #[test]
 fn test_new_note_never_overwrites_an_existing_note() {
-    // [stest -> req~cli.new-note-no-overwrite~1] --new-note で作ったノートと同じ名前でもう一度(別の値を添えて)→ 理由1行と終了コード 2 で、既にあるファイルのバイトは変わらない。
+    // [stest -> req~cli.new-note-no-overwrite~2] --new-note で作ったノートと同じ名前でもう一度(別の値を添えて)→ 理由1行と終了コード 2 で、既にあるファイルのバイトは変わらない。
     // 観点: 1回目が作れることを先に確かめる(何も作れない道具でも「上書きしない」は通ってしまうため)。
     let t = ledger("nn-exists", MARKER);
     let path = t.path().join("t/Tasks/Buy milk.md");

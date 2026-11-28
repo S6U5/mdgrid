@@ -124,7 +124,7 @@ fn test_sr_24_gaps_view_section_en() {
 
 #[test]
 fn test_sr_24_gaps_readonly_launch_hides_save_new_export() {
-    // [utest -> req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~cli.readonly~1] 読むだけの起動(--readonly)で `x` → 一覧に保存・新しいノート・.base に書き出すが無い
+    // [utest -> req~screen.action-menu-sections~1, req~screen.action-menu-hide-unavailable~1, req~cli.readonly~2] 読むだけの起動(--readonly)で `x` → 一覧に保存・新しいノート・.base に書き出すが無い
     // (ビューの設定は残る)。対照: 読むだけでない起動では3つともある。
     let [new_note, view, export, save] = view_items();
 

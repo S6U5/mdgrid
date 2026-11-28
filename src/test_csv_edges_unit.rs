@@ -75,7 +75,7 @@ fn test_sc_16_many_edits_use_original_positions() {
 
 #[test]
 fn test_sc_16_quote_only_when_needed() {
-    // [utest -> req~scope.csv-write-back-quote~1] 引用符で囲むのは区切り・引用符・改行が入るときだけ(先頭・末尾の空白は囲まない)。
+    // [utest -> req~scope.csv-write-back-quote~2] 引用符で囲むのは区切り・引用符・改行が入るときだけ(先頭・末尾の空白は囲まない)。
     assert_eq!(encode(" a ", b','), " a ");
     assert_eq!(encode("a\r\nb", b','), "\"a\r\nb\"");
 }

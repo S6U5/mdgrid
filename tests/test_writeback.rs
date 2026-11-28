@@ -167,7 +167,7 @@ fn wb_1_block_scalar_neighbour() {
 
 #[test]
 fn wb_1_keeps_trailing_comment() {
-    // [utest -> req~write-back.byte-range-value~1, req~write-back.byte-range-null~1]
+    // [utest -> req~write-back.byte-range-value~2, req~write-back.byte-range-null~1]
     let after = assert_only_value_changed("trailing_comment.md", "status", s("done"));
     assert_eq!(
         after,
@@ -184,7 +184,7 @@ fn wb_1_keeps_crlf() {
 
 #[test]
 fn wb_1_japanese_key() {
-    // [utest -> req~write-back.byte-range-value~1]
+    // [utest -> req~write-back.byte-range-value~2]
     let after = assert_only_value_changed("japanese_key.md", "状態", s("完了"));
     assert_eq!(
         after,
@@ -217,7 +217,7 @@ fn wb_1_quoted_and_special_values() {
 
 #[test]
 fn wb_2_body_is_unchanged() {
-    // [utest -> req~write-back.frontmatter-only-no-body~2, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~1]
+    // [utest -> req~write-back.frontmatter-only-no-body~3, req~write-back.frontmatter-only-new-files~2, req~write-back.frontmatter-only-no-replace~2]
     for (file, key) in [
         ("dash_line.md", "status"),
         ("rich.md", "status"),
@@ -234,7 +234,7 @@ fn wb_2_body_is_unchanged() {
 
 #[test]
 fn wb_2_new_key_does_not_touch_body() {
-    // [utest -> req~write-back.frontmatter-only-top-level~1, req~write-back.frontmatter-only-no-replace~1]
+    // [utest -> req~write-back.frontmatter-only-top-level~2, req~write-back.frontmatter-only-no-replace~2]
     let before = fixture("dash_line.md");
     let end_before = parse(&before).unwrap().end;
     let after = apply(&before, &[edit("priority", NewValue::Int(1))]).expect("apply");
@@ -246,7 +246,7 @@ fn wb_2_new_key_does_not_touch_body() {
 
 #[test]
 fn wb_3_appends_missing_key_as_one_line() {
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-setting~1]
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.add-frontmatter-setting~1]
     let after = apply(&fixture("plain.md"), &[edit("priority", NewValue::Int(1))]).expect("apply");
     assert_eq!(
         after,
@@ -256,7 +256,7 @@ fn wb_3_appends_missing_key_as_one_line() {
 
 #[test]
 fn wb_3_appended_line_uses_file_newline() {
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-setting~1]
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-newline~2, req~write-back.add-frontmatter-setting~1]
     let after = apply(&fixture("crlf.md"), &[edit("priority", s("high"))]).expect("apply");
     assert_eq!(
         after,
@@ -266,13 +266,13 @@ fn wb_3_appended_line_uses_file_newline() {
 
 #[test]
 fn wb_3_no_frontmatter_gets_frontmatter_but_unreadable_is_not_written() {
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1] フロントマターの無いノートは先頭に `---`・キー・`---` を足し、本文のバイトは変えない。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2] フロントマターの無いノートは先頭に `---`・キー・`---` を足し、本文のバイトは変えない。
     let original = fixture("no_frontmatter.md");
     let out = apply(&original, &[edit("status", s("done"))]).expect("apply adds frontmatter");
     let mut want = b"---\nstatus: done\n---\n".to_vec();
     want.extend_from_slice(&original);
     assert_eq!(out, want);
-    // [utest -> req~write-back.add-frontmatter-skip-broken~1, req~write-back.refuse-unsafe-read-only~1] 1行目が `---` で始まるが閉じないノートは、これまでどおり書かない。
+    // [utest -> req~write-back.add-frontmatter-skip-broken~2, req~write-back.refuse-unsafe-read-only~1] 1行目が `---` で始まるが閉じないノートは、これまでどおり書かない。
     let r = apply(b"---\nstatus: doing\nbody\n", &[edit("status", s("done"))]);
     assert_eq!(r, Err(EditError::ReadOnly(ReadOnly::Unclosed)));
 }
@@ -398,7 +398,7 @@ fn wb_refuse_utf16_apply() {
 
 #[test]
 fn ce_8_apply_refuses_read_only_values() {
-    // [utest -> req~cell-edit.read-only-forms~2, req~write-back.frontmatter-only-top-level~1]
+    // [utest -> req~cell-edit.read-only-forms~3, req~write-back.frontmatter-only-top-level~2]
     for (file, key) in [
         ("nested_map.md", "meta"),
         ("block_scalar.md", "literal"),
@@ -428,7 +428,7 @@ fn ce_8_apply_refuses_read_only_values() {
 
 #[test]
 fn wb_6_reparse_has_intended_value_and_others_unchanged() {
-    // [utest -> req~write-back.verify-before-replace~1]
+    // [utest -> req~write-back.verify-before-replace~2]
     let cases: Vec<(&str, &str, NewValue, Value)> = vec![
         ("rich.md", "status", s("done"), Value::Str("done".into())),
         ("rich.md", "priority", NewValue::Int(7), Value::Int(7)),
@@ -482,7 +482,7 @@ fn wb_6_reparse_has_intended_value_and_others_unchanged() {
 
 #[test]
 fn wb_6_multiple_edits_in_one_apply() {
-    // [utest -> req~write-back.verify-before-replace~1]
+    // [utest -> req~write-back.verify-before-replace~2]
     let before = fixture("rich.md");
     let fm_before = parse(&before).unwrap();
     let after = apply(
@@ -549,7 +549,7 @@ const RISKY: &[&str] = &[
 
 #[test]
 fn wb_7_risky_strings_are_quoted_and_read_back_as_str() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2, req~write-back.quoting-no-newline~2, req~write-back.quoting-type-safe~2]
     let before = fixture("plain.md");
     for v in RISKY {
         let after = apply(&before, &[edit("status", s(v))]).expect("apply");
@@ -568,14 +568,14 @@ fn wb_7_risky_strings_are_quoted_and_read_back_as_str() {
 
 #[test]
 fn wb_7_no_is_written_as_double_quoted() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2, req~write-back.quoting-no-newline~2, req~write-back.quoting-type-safe~2]
     let after = apply(&fixture("plain.md"), &[edit("status", s("no"))]).expect("apply");
     assert_eq!(after, b"---\ntitle: t\nstatus: \"no\"\n---\nbody\n");
 }
 
 #[test]
 fn wb_7_keeps_double_quotes() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2, req~write-back.quoting-no-newline~2, req~write-back.quoting-type-safe~2]
     let after = apply(&fixture("quoted.md"), &[edit("dq", s("done"))]).expect("apply");
     assert_eq!(
         after,
@@ -595,7 +595,7 @@ fn wb_7_keeps_double_quotes() {
 
 #[test]
 fn wb_7_keeps_single_quotes() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2, req~write-back.quoting-no-newline~2, req~write-back.quoting-type-safe~2]
     let after = apply(&fixture("quoted.md"), &[edit("sq", s("done"))]).expect("apply");
     assert_eq!(
         after,
@@ -610,14 +610,14 @@ fn wb_7_keeps_single_quotes() {
 
 #[test]
 fn wb_7_plain_safe_string_stays_plain() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2, req~write-back.quoting-no-newline~2, req~write-back.quoting-type-safe~2]
     let after = apply(&fixture("plain.md"), &[edit("status", s("done"))]).expect("apply");
     assert_eq!(after, b"---\ntitle: t\nstatus: done\n---\nbody\n");
 }
 
 #[test]
 fn wb_7_newline_is_rejected() {
-    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~1, req~write-back.quoting-no-newline~1, req~write-back.quoting-type-safe~1]
+    // [utest -> req~write-back.quoting-keep-style~2, req~write-back.quoting-double-fallback~2, req~write-back.quoting-no-newline~2, req~write-back.quoting-type-safe~2]
     for v in ["a\nb", "a\r\nb", "a\rb", "\n"] {
         let r = apply(&fixture("plain.md"), &[edit("status", s(v))]);
         assert_eq!(r, Err(EditError::Newline), "{v:?}");
@@ -628,7 +628,7 @@ fn wb_7_newline_is_rejected() {
 
 #[test]
 fn wb_4_external_change_stops_save() {
-    // [utest -> req~write-back.conflict-stop~2]
+    // [utest -> req~write-back.conflict-stop~3]
     let dir = TempDir::new("wb4-size");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -641,7 +641,7 @@ fn wb_4_external_change_stops_save() {
 
 #[test]
 fn wb_4_same_size_same_mtime_change_is_detected_by_hash() {
-    // [utest -> req~write-back.conflict-stop~2]
+    // [utest -> req~write-back.conflict-stop~3]
     let dir = TempDir::new("wb4-hash");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -663,7 +663,7 @@ fn wb_4_same_size_same_mtime_change_is_detected_by_hash() {
 
 #[test]
 fn wb_4_unchanged_file_saves() {
-    // [utest -> req~write-back.conflict-stop~2]
+    // [utest -> req~write-back.conflict-stop~3]
     let dir = TempDir::new("wb4-ok");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -694,7 +694,7 @@ fn wb_12_second_save_uses_new_baseline() {
 
 #[test]
 fn wb_12_old_baseline_is_stale_after_save() {
-    // [utest -> req~write-back.new-baseline-after-write~1, req~write-back.new-baseline-recheck~1]
+    // [utest -> req~write-back.new-baseline-after-write~1, req~write-back.new-baseline-recheck~2]
     let dir = TempDir::new("wb12-stale");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -707,7 +707,7 @@ fn wb_12_old_baseline_is_stale_after_save() {
 
 #[test]
 fn wb_8_leaves_no_temp_file() {
-    // [utest -> req~write-back.atomic-replace-symlink~1, req~write-back.atomic-replace-mode~1]
+    // [utest -> req~write-back.atomic-replace-symlink~2, req~write-back.atomic-replace-mode~2]
     let dir = TempDir::new("wb8-tmp");
     let note = dir.write("note.md", &fixture("plain.md"));
     let base = baseline(&note).unwrap();
@@ -717,7 +717,7 @@ fn wb_8_leaves_no_temp_file() {
 
 #[test]
 fn wb_8_failed_save_leaves_original_intact() {
-    // [utest -> req~write-back.atomic-replace-temp~1, req~write-back.atomic-replace-symlink~1, req~write-back.atomic-replace-mode~1]
+    // [utest -> req~write-back.atomic-replace-temp~2, req~write-back.atomic-replace-symlink~2, req~write-back.atomic-replace-mode~2]
     let dir = TempDir::new("wb8-fail");
     let original = fixture("duplicate_key.md");
     let note = dir.write("note.md", &original);
@@ -739,7 +739,7 @@ fn wb_8_failed_save_leaves_original_intact() {
 #[cfg(unix)]
 #[test]
 fn wb_8_symlink_stays_symlink() {
-    // [utest -> req~write-back.atomic-replace-symlink~1, req~write-back.atomic-replace-mode~1]
+    // [utest -> req~write-back.atomic-replace-symlink~2, req~write-back.atomic-replace-mode~2]
     let dir = TempDir::new("wb8-link");
     let target = dir.write("target.md", &fixture("plain.md"));
     let link = dir.path().join("link.md");
@@ -762,7 +762,7 @@ fn wb_8_symlink_stays_symlink() {
 #[cfg(unix)]
 #[test]
 fn wb_8_keeps_permissions() {
-    // [utest -> req~write-back.atomic-replace-symlink~1, req~write-back.atomic-replace-mode~1]
+    // [utest -> req~write-back.atomic-replace-symlink~2, req~write-back.atomic-replace-mode~2]
     use std::os::unix::fs::PermissionsExt;
     let dir = TempDir::new("wb8-perm");
     let note = dir.write("note.md", &fixture("plain.md"));

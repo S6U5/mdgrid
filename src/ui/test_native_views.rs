@@ -642,7 +642,7 @@ fn test_bv_18_delete_removes_tab() {
 fn test_bv_19_export_writes_new_base_and_reports_dropped() {
     // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-new-file~1] 絞り込み・並べ替え・グループ(空を隠す)のあるビューをパレットの「.base に書き出す」で
     // 新しい名前に書き出す → `.base` が1つ増え、読めて、開くと同じ行が出る。表せない「空を隠す」は
-    // 落としたと知らせる。[utest -> req~base-view.base-untouched~1] 既存の `.base` とノートのバイトは同じ。
+    // 落としたと知らせる。[utest -> req~base-view.base-untouched~2] 既存の `.base` とノートのバイトは同じ。
     let tmp = vault("bv19export");
     base_path(&tmp);
     let settings = Settings {
@@ -720,7 +720,7 @@ fn test_bv_19_export_writes_new_base_and_reports_dropped() {
 
 #[test]
 fn test_bv_19_export_refuses_existing_base() {
-    // [utest -> req~base-view.export-base-new-file~1, req~base-view.base-untouched~1] 書き出しで既存の `.base` の名前(tasks.base)を選ぶ → 書かずに理由。
+    // [utest -> req~base-view.export-base-new-file~1, req~base-view.base-untouched~2] 書き出しで既存の `.base` の名前(tasks.base)を選ぶ → 書かずに理由。
     // ノートのフォルダのどのファイルも同じで、新しいファイルも無い。
     let tmp = vault("bv19exist");
     base_path(&tmp);
@@ -849,7 +849,7 @@ fn test_bv_20_base_views_come_first() {
 
 #[test]
 fn test_bv_20_readonly_writes_nothing() {
-    // [utest -> req~base-view.views-toml-layout~1, req~base-view.views-toml-readonly~1, req~cli.readonly~1] `--readonly` で開く → mdgrid のビューのタブは読むが、保存・上書き・書き出しをしても
+    // [utest -> req~base-view.views-toml-layout~1, req~base-view.views-toml-readonly~1, req~cli.readonly~2] `--readonly` で開く → mdgrid のビューのタブは読むが、保存・上書き・書き出しをしても
     // 何も書かれず、「読むだけ」と出る(保存の操作を出さないのでもよい)。views.toml・ノート・状態の置き場は同じ。
     let tmp = vault("bv20ro");
     base_path(&tmp);

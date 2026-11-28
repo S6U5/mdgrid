@@ -59,7 +59,7 @@ fn with_view(tmp: &Tmp, name: &str) {
 
 #[test]
 fn test_cli_18_readonly_registers_without_touching_notes() {
-    // [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-no-note-write~1, req~cli.readonly~1] 読むだけで開いても登録でき、書くのは places.toml だけ(ノートはそのまま)。
+    // [utest -> req~cli.places-store~1, req~cli.places-palette~1, req~cli.places-no-note-write~1, req~cli.readonly~2] 読むだけで開いても登録でき、書くのは places.toml だけ(ノートはそのまま)。
     let tmp = vault("plm_ro");
     let mut a = boot(&tmp, true);
     palette(&mut a, "この表を登録");
@@ -108,7 +108,7 @@ fn test_cli_19_reopen_selects_registered_view() {
 
 #[test]
 fn test_cli_19_save_then_switch() {
-    // [utest -> req~cli.places-list-pending~1, req~write-back.quit-confirm~1] ためた変更があるとき、s → 保存の確認で Enter → 書いてから終わり、選んだ表へ移る。
+    // [utest -> req~cli.places-list-pending~1, req~write-back.quit-confirm~2] ためた変更があるとき、s → 保存の確認で Enter → 書いてから終わり、選んだ表へ移る。
     let tmp = vault("plm_save");
     let other = tmp.0.join("Other");
     std::fs::create_dir_all(&other).unwrap();

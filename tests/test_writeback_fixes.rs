@@ -159,7 +159,7 @@ fn ce_9_save_writes_key_with_nothing_after_colon() {
 #[cfg(unix)]
 #[test]
 fn wb_5_save_refuses_hard_linked_note_with_reason() {
-    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1] ハードリンクのあるノートは書かず、理由は ReadOnly::HardLink。両方のファイルが元のまま。
+    // [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~2] ハードリンクのあるノートは書かず、理由は ReadOnly::HardLink。両方のファイルが元のまま。
     let dir = TempDir::new("wb5-hardlink");
     let original = fixture("plain.md");
     let note = dir.write("note.md", &original);

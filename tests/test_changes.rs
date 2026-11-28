@@ -298,7 +298,7 @@ fn test_sr_18_null_on_missing_key_does_nothing() {
 #[test]
 fn test_ce_10_set_many_skips_unreadable_frontmatter() {
     // [utest -> req~cell-edit.bulk-set-skip-read-only~1] 3行のうち1行が読めないフロントマターのノート(WB-5。閉じない) → 2つためて、1行を飛ばし理由を返す。
-    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートは飛ばさず、ためる変更になる。
+    // [utest -> req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートは飛ばさず、ためる変更になる。
     let (dir, src) = setup_with(
         "ce10",
         &[("a.md", A), ("nofm.md", NOFM), ("bad.md", UNCLOSED)],
@@ -334,7 +334,7 @@ fn test_ce_10_set_on_read_only_cell_is_skip() {
     // [utest -> req~cell-edit.bulk-set-skip-read-only~1] 読むだけのセル(ネストした map・複数行のフローのリスト・読めないフロントマターのノート(WB-5))に
     // set → Err(Skip)。
     // [utest -> req~cell-edit.list-items-narrow~1] 書ける形のブロックのリスト(a.md の tags)は読むだけでない。
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは読むだけでなく、ためられる。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-skip-broken~2, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートのセルは読むだけでなく、ためられる。
     let (_dir, src) = setup_with(
         "ce10ro",
         &[
@@ -397,7 +397,7 @@ const B_EXT_STATUS: &str = "---\nstatus: doing\ntitle: B changed outside\n---\nb
 #[test]
 fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     // [utest -> req~write-back.external-save-choice~2] ためたあと外で同じキーも直す → 印が付き、ためた変更は残る。
-    // [utest -> req~write-back.conflict-stop~2] 保存 → 書かずに止まる(Changed)。[utest -> req~write-back.keep-on-stop~1] 未保存の数は減らない。
+    // [utest -> req~write-back.conflict-stop~3] 保存 → 書かずに止まる(Changed)。[utest -> req~write-back.keep-on-stop~2] 未保存の数は減らない。
     let (dir, src) = setup("wb16");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -433,7 +433,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
     assert_eq!(ch.count(), 1);
     assert!(matches!(ch.pending(&b, "status"), Some(NewValue::Str(v)) if v == "done"));
 
-    // [utest -> req~write-back.conflict-stop-overwrite-choice~1, req~write-back.external-save-choice~2] 外の変更の上に書く → 選んだ時点の内容を基準にし、印が消え、保存は通る
+    // [utest -> req~write-back.conflict-stop-overwrite-choice~2, req~write-back.external-save-choice~2] 外の変更の上に書く → 選んだ時点の内容を基準にし、印が消え、保存は通る
     ch.overwrite(&mut src, &b).expect("overwrite");
     assert!(!ch.external(&b));
     assert_eq!(ch.count(), 1);
@@ -447,7 +447,7 @@ fn test_wb_16_external_change_after_set_marks_and_stops_save() {
 
 #[test]
 fn test_merge_other_keys_writes_both() {
-    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~2] status を done にためたまま外で title だけを直す →
+    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~3] status を done にためたまま外で title だけを直す →
     // 外の変更と合わせられるので止まらずに書き(Merged)、ファイルの status は done、title は外で直した値。未保存は 0。
     let (dir, src) = setup("merge_other");
     let mut src = src;
@@ -517,7 +517,7 @@ fn test_merge_value_back_to_start() {
 
 #[test]
 fn test_merge_refuses_when_same_key_changed() {
-    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~2] 外で title と status の両方を直した → ためた
+    // [utest -> req~write-back.merge-other-keys~1, req~write-back.conflict-stop~3] 外で title と status の両方を直した → ためた
     // キーにも触れたので合わせず止まり、ファイルは外の変更のまま、ためた変更は残る。
     let (dir, src) = setup("merge_same");
     let mut src = src;
@@ -535,7 +535,7 @@ fn test_merge_refuses_when_same_key_changed() {
 
 #[test]
 fn test_wb_4_external_change_after_overwrite_stops_again() {
-    // [utest -> req~write-back.conflict-stop~2] 外の変更の上に書くを選んでから書くまでにまた外で status が変わった → 止まる。
+    // [utest -> req~write-back.conflict-stop~3] 外の変更の上に書くを選んでから書くまでにまた外で status が変わった → 止まる。
     let (dir, src) = setup("wb4again");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -557,7 +557,7 @@ fn test_wb_4_external_change_after_overwrite_stops_again() {
 
 #[test]
 fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
-    // [utest -> req~write-back.conflict-stop~2, req~write-back.external-save-choice~2] ためたあとの読み直しでは保存の基準を変えない。
+    // [utest -> req~write-back.conflict-stop~3, req~write-back.external-save-choice~2] ためたあとの読み直しでは保存の基準を変えない。
     // 外で変わった行の別のキーにさらにためても、基準は最初にためた時点のまま → 外で status も変わったので保存は止まる。
     let (dir, src) = setup("wb4keepbase");
     let mut src = src;
@@ -588,7 +588,7 @@ fn test_wb_4_set_after_external_reload_keeps_old_baseline() {
 
 #[test]
 fn test_wb_4_external_change_before_set_is_reloaded() {
-    // [utest -> req~write-back.conflict-stop~2, req~write-back.external-reload~1, req~write-back.external-keep-pending~1] ためる前に外で直した → 読み直され、印は付かず、保存は止まらない。
+    // [utest -> req~write-back.conflict-stop~3, req~write-back.external-reload~1, req~write-back.external-keep-pending~2] ためる前に外で直した → 読み直され、印は付かず、保存は止まらない。
     let (dir, src) = setup("wb4before");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -613,7 +613,7 @@ fn test_wb_4_external_change_before_set_is_reloaded() {
 
 #[test]
 fn test_wb_4_same_size_change_is_detected_by_mtime_and_hash() {
-    // [utest -> req~write-back.conflict-stop~2] 大きさが同じ外の変更(ためるキーの status)でも、更新時刻(ずらす)と中身のハッシュで止まる。
+    // [utest -> req~write-back.conflict-stop~3] 大きさが同じ外の変更(ためるキーの status)でも、更新時刻(ずらす)と中身のハッシュで止まる。
     let (dir, src) = setup("wb4same");
     let mut src = src;
     let b = row(&src, "b.md");
@@ -683,7 +683,7 @@ fn test_wb_16_discard_drops_row_changes() {
 
 #[test]
 fn test_wb_14_partial_save_keeps_stopped_rows() {
-    // [utest -> req~write-back.keep-on-stop~1] 2行ためて1行だけ外で変える → 1行 Saved・1行 Changed。未保存は残った分だけ。
+    // [utest -> req~write-back.keep-on-stop~2] 2行ためて1行だけ外で変える → 1行 Saved・1行 Changed。未保存は残った分だけ。
     let (dir, src) = setup("wb14");
     let mut src = src;
     let a = row(&src, "a.md");

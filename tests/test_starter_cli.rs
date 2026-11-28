@@ -537,7 +537,7 @@ fn test_st_4_user_starter_samples_get_exact_values() {
 
 #[test]
 fn test_st_4_second_run_fails_with_2_and_changes_nothing() {
-    // [stest -> req~starter.init-no-overwrite~1] 書く先に同じパスのファイルが1つでもあれば、どれも書かずに理由1行と終了コード 2(WS-7 と同じく上書きしない)。
+    // [stest -> req~starter.init-no-overwrite~2] 書く先に同じパスのファイルが1つでもあれば、どれも書かずに理由1行と終了コード 2(WS-7 と同じく上書きしない)。
     // もう一度(見本あり・なし)・見本の1つだけが先にある・印だけが先にある、のどれも。
     let t = home("st-twice");
     let h = t.path();
@@ -621,7 +621,7 @@ fn test_st_4_unknown_starter_one_line_names_starters_flag() {
 
 #[test]
 fn test_st_4_flag_misuse_is_one_line_and_code_2() {
-    // [stest -> req~starter.init-no-overwrite~1, req~starter.init-bad-args~2] --init-workspace の無い --starter、--starter の無い --with-samples、値の無い --starter、
+    // [stest -> req~starter.init-no-overwrite~2, req~starter.init-bad-args~2] --init-workspace の無い --starter、--starter の無い --with-samples、値の無い --starter、
     // 2つ以上のフォルダは、CLI-4 と同じく理由1行と終了コード 2。何も作らない。
     let t = home("st-misuse");
     let h = t.path();

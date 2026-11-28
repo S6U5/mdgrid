@@ -82,7 +82,7 @@ fn test_ce_34_rename_and_stage_link_rewrites() {
 
 #[test]
 fn test_ce_34_refuses_bad_names_and_pending_rows() {
-    // [utest -> req~cell-edit.rename-note-refuse-existing~1, req~cell-edit.rename-note-refuse-pending~1] / を含む名前・もうある名前は断り、ファイルはそのまま。ためた変更のある行は始めない。
+    // [utest -> req~cell-edit.rename-note-refuse-existing~2, req~cell-edit.rename-note-refuse-pending~2] / を含む名前・もうある名前は断り、ファイルはそのまま。ためた変更のある行は始めない。
     let (t, mut a) = notes("ce34b");
     select(&mut a, "会議");
     rename(&mut a, "a/b");
@@ -115,7 +115,7 @@ fn test_ce_34_refuses_bad_names_and_pending_rows() {
 
 #[test]
 fn test_ce_34_refuses_unsafe_note() {
-    // [utest -> req~cell-edit.rename-note-refuse-unsafe~1] 読むだけのノート(書き込めない権限。write-back.refuse-unsafe-notes)の行でノートの名前を変える → 断り、理由が出て、ファイルの名前もバイトもそのまま。
+    // [utest -> req~cell-edit.rename-note-refuse-unsafe~2] 読むだけのノート(書き込めない権限。write-back.refuse-unsafe-notes)の行でノートの名前を変える → 断り、理由が出て、ファイルの名前もバイトもそのまま。
     let (t, a0) = make("ce34u", &[("固定.md", "---\na: 1\n---\n")]);
     drop(a0);
     let p = t.notes().join("固定.md");
@@ -137,7 +137,7 @@ fn test_ce_34_refuses_unsafe_note() {
 
 #[test]
 fn test_ce_34_refuses_duplicate_key_note() {
-    // [utest -> req~cell-edit.rename-note-refuse-unsafe~1] 受け入れの例のとおり、`a: 1\na: 2` を持つノート(読むだけ)の行でノートの名前を変える → 断り、ファイルの名前もバイトもそのまま。
+    // [utest -> req~cell-edit.rename-note-refuse-unsafe~2] 受け入れの例のとおり、`a: 1\na: 2` を持つノート(読むだけ)の行でノートの名前を変える → 断り、ファイルの名前もバイトもそのまま。
     let (t, mut a) = make("ce34d", &[("重複.md", "---\na: 1\na: 2\n---\n")]);
     select(&mut a, "重複");
     rename(&mut a, "改名");

@@ -239,7 +239,7 @@ fn test_sr_8_editor_does_not_open_when_the_note_changed_outside() {
 
 #[test]
 fn test_wb_11_external_change_keeps_pending_and_shows_outside_value() {
-    // [utest -> req~write-back.external-keep-pending~1] status をためたまま外で title を直す → 表の title は外で直した値になり、status のためた値と「未保存 1」は残る。
+    // [utest -> req~write-back.external-keep-pending~2] status をためたまま外で title を直す → 表の title は外で直した値になり、status のためた値と「未保存 1」は残る。
     let (t, mut a) = make(
         "wb11kp",
         &[("a.md", "---\ntitle: a\nstatus: todo\n---\nbody\n")],

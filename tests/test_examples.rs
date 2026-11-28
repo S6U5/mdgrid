@@ -136,7 +136,7 @@ fn test_examples_open_folder() {
     }
     assert_eq!(base::default_grid(src).rows.len(), TASKS + NOTES);
 
-    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~1, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートと空のフロントマターのノートは、書ける(lock なし、値は無し)。
+    // [utest -> req~write-back.add-key-at-end~1, req~write-back.add-frontmatter-at-head~2, req~write-back.add-frontmatter-newline~2, req~write-back.add-frontmatter-setting~1] フロントマターの無いノートと空のフロントマターのノートは、書ける(lock なし、値は無し)。
     for label in ["Notes/Snack list.md", "Notes/Blank.md"] {
         let plain = row_of(src, label);
         assert!(src.get(&plain, "status").lock.is_none(), "{label}");
@@ -161,7 +161,7 @@ fn test_examples_open_folder() {
         Some(Value::Str(String::new()))
     );
     assert_eq!(get("Tasks/Clean up the contact list.md", "status"), None);
-    // [utest -> req~cell-edit.read-only-forms~2] ネストした map・ブロックスカラーは読むだけ。
+    // [utest -> req~cell-edit.read-only-forms~3] ネストした map・ブロックスカラーは読むだけ。
     assert!(src
         .get(
             &row_of(src, "Tasks/Clean up the contact list.md"),
@@ -273,7 +273,7 @@ fn test_examples_base_views() {
     let e = build(&b, view_index(&b, "Cards"), src).unwrap_err();
     assert!(e.contains("cards"), "{e}");
 
-    // [utest -> req~base-view.base-untouched~1] 操作の前後で `.base` のバイトが同じ。
+    // [utest -> req~base-view.base-untouched~2] 操作の前後で `.base` のバイトが同じ。
     assert_eq!(std::fs::read(&base_path).unwrap(), before);
 }
 

@@ -821,7 +821,7 @@ path = "{p}"
 
 #[test]
 fn test_cli_5_print_does_not_modify_or_create_files_in_vault() {
-    // [stest -> req~cli.print-no-write~1, req~cli.readonly~1] 3つの形で出したあとも、保管庫のファイルのバイトと更新時刻は同じで、新しいファイルが無い。
+    // [stest -> req~cli.print-no-write~1, req~cli.readonly~2] 3つの形で出したあとも、保管庫のファイルのバイトと更新時刻は同じで、新しいファイルが無い。
     let (t, notes, base) = make_vault("readonly");
     // 更新時刻の比べを確かにするため、書いてから少し間を空ける。
     std::thread::sleep(std::time::Duration::from_millis(50));

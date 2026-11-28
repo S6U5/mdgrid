@@ -147,7 +147,7 @@ fn test_bv_20_folded_groups_per_native_view() {
 #[test]
 fn test_bv_19_commands_in_help_and_palette() {
     // [utest -> req~base-view.export-base-write~1, req~base-view.export-base-import~1, req~base-view.export-base-dropped~1, req~base-view.export-base-new-file~1, req~screen.help~2, req~screen.palette-fuzzy~2, req~screen.palette-keys~1] キーの無いコマンドもヘルプに出て、パレットで名前から引ける。
-    // [utest -> req~cli.readonly~1] 読むだけではパレットに出さない(書くコマンド)。
+    // [utest -> req~cli.readonly~2] 読むだけではパレットに出さない(書くコマンド)。
     let tmp = vault("nvstate_help");
     let mut a = boot(&tmp);
     let help: Vec<String> = help::help_lines(&a, keymap::Mode::Table, 79)
@@ -385,7 +385,7 @@ fn test_bv_20_rename_moves_and_delete_removes_state() {
 
 #[test]
 fn test_wb_15_readonly_hides_view_buttons_and_commands() {
-    // [utest -> req~cli.readonly~1, req~base-view.save-view-save-as~1, req~base-view.save-view-overwrite~1] 読むだけでは設定の画面の mdgrid のビューのボタンと、ヘルプの書き出し・取り込みを出さない。
+    // [utest -> req~cli.readonly~2, req~base-view.save-view-save-as~1, req~base-view.save-view-overwrite~1] 読むだけでは設定の画面の mdgrid のビューのボタンと、ヘルプの書き出し・取り込みを出さない。
     let tmp = vault("nvstate_ro");
     let mut a = boot(&tmp);
     a.readonly = true;
@@ -428,7 +428,7 @@ fn test_nv_18_left_right_follow_button_rows() {
 
 #[test]
 fn test_bv_20_readonly_view_buttons_say_read_only() {
-    // [utest -> req~base-view.views-toml-readonly~1, req~base-view.views-toml-view-state~1, req~cli.readonly~1] 読むだけでボタンを直に押しても、「読むだけ」と出て views.toml も状態も書かない。
+    // [utest -> req~base-view.views-toml-readonly~1, req~base-view.views-toml-view-state~1, req~cli.readonly~2] 読むだけでボタンを直に押しても、「読むだけ」と出て views.toml も状態も書かない。
     let tmp = vault("nvstate_ro_press");
     let mut a = boot(&tmp);
     a.readonly = true;

@@ -57,7 +57,7 @@ fn now() -> (i64, i64) {
 #[cfg(unix)]
 #[test]
 fn test_st_4_create_refuses_when_a_folder_on_the_way_is_a_link() {
-    // [utest -> req~starter.init-no-overwrite~1] 既にある根の中で、見本の置き場 board/ がリンク(台帳の外を指す)なら、理由を出してどれも書かない
+    // [utest -> req~starter.init-no-overwrite~2] 既にある根の中で、見本の置き場 board/ がリンク(台帳の外を指す)なら、理由を出してどれも書かない
     // (create_dir_all がリンクをたどって外に書くのを防ぐ)。リンクの先にも何も書かれない。
     let t = Tmp::new("link");
     let s = read_user(&kanban(&t.0.join("config"))).unwrap_or_else(|e| panic!("{e}"));

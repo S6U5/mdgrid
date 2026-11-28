@@ -754,7 +754,7 @@ fn test_nv_22_remove_one_from_band() {
 
 #[test]
 fn test_nv_22_readonly_applies_but_writes_nothing() {
-    // [utest -> req~navigation.settings-reset-readonly-no-write~1, req~cli.readonly~1] `--readonly` で設定を反映 → 表は変わり、ノート・`.base`・状態の置き場のどれも書かれない。
+    // [utest -> req~navigation.settings-reset-readonly-no-write~1, req~cli.readonly~2] `--readonly` で設定を反映 → 表は変わり、ノート・`.base`・状態の置き場のどれも書かれない。
     let tmp = vault("nv22ro");
     base_path(&tmp);
     let before = snapshot(&tmp.notes());

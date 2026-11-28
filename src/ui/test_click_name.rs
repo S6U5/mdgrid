@@ -263,7 +263,7 @@ fn test_sr_19_empty_editor_click_same_as_e() {
 
 #[test]
 fn test_sr_19_readonly_click_same_as_e() {
-    // [utest -> req~screen.click-name~2, req~cli.readonly~1] 読むだけの起動(`--readonly`)でも、選んだ行のファイル名のクリック(名前の欄・file.name のセル)は
+    // [utest -> req~screen.click-name~2, req~cli.readonly~2] 読むだけの起動(`--readonly`)でも、選んだ行のファイル名のクリック(名前の欄・file.name のセル)は
     // `e` を押したのと全く同じ結果: 同じ行を同じ引数で起動するよう頼み、同じモード・同じメッセージになる
     // (読むだけの案内に変えて編集を拒むのではない)。
     let _lock = editor_lock();

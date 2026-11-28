@@ -277,7 +277,9 @@
   - Then: 雛形の `{date}` は文字のまま。
 
 #### `--init-workspace --starter` は、書く先に同じパスのファイルが1つでもあれば、どれも書かずに理由を出して終了コード 2 にするべき(workspace.marker と同じく上書きしない)
-`req~starter.init-no-overwrite~1` P0
+`req~starter.init-no-overwrite~2` P0
+- Rationale: 既にあるファイル(人や自分が作ったもの)を壊さないため(安全のため)
+- Disposition: 踏襲(なぜを足しただけ。題と受け入れ基準と振る舞いは前の版のまま)
 - Acceptance:
   - Given:
   - When: `mdgrid books --init-workspace --starter reading` をもう一度

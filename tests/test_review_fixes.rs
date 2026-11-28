@@ -21,7 +21,7 @@ fn wb_5_tab_indented_list_is_invalid_yaml() {
     ));
 }
 
-// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~1] タブで字下げした入れ子の対応も同じ。
+// [utest -> req~write-back.refuse-unsafe-read-only~1, req~write-back.refuse-unsafe-perm-lost~2] タブで字下げした入れ子の対応も同じ。
 #[test]
 fn wb_5_tab_indented_mapping_is_invalid_yaml() {
     let src = b"---\nstatus: todo\nm:\n\tk: v\n---\n";
